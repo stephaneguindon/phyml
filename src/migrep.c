@@ -14,8 +14,6 @@ the GNU public licence. See http://www.opensource.org for details.
    coalescent.
 */
 
-
-coucou
 #include "migrep.h"
 
 //////////////////////////////////////////////////////////////
