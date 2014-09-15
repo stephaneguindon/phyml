@@ -231,7 +231,7 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   tree = Make_Tree_From_Scratch(n_otu,NULL);
   nd   = Make_Node_Light(0);
   devt = MIGREP_Make_Disk_Event(n_dim);
-  MIGREP_Init_Disk_Event(devt);
+  MIGREP_Init_Disk_Event(devt,NULL);
   
   // Allocate coordinates for all the tips first (will grow afterwards)
   ldsk_a = (t_lindisk_nd **)mCalloc(n_otu,sizeof(t_lindisk_nd *));
@@ -268,7 +268,7 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   
   // Allocate and initialise for next event
   devt->prev = MIGREP_Make_Disk_Event(n_dim);
-  MIGREP_Init_Disk_Event(devt->prev);
+  MIGREP_Init_Disk_Event(devt->prev,NULL);
   devt->prev->next = devt;
   
   For(i,n_otu)
@@ -413,7 +413,7 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
       if(n_lineages == 1) break;
 
       devt->prev = MIGREP_Make_Disk_Event(n_dim);
-      MIGREP_Init_Disk_Event(devt->prev);
+      MIGREP_Init_Disk_Event(devt->prev,NULL);
       devt->prev->next = devt;
       
       devt = devt->prev;          
@@ -928,19 +928,21 @@ void MIGREP_One_New_Traj(t_lindisk_nd *y_ldsk, t_lindisk_nd *o_ldsk)
   rad  = ldsk->devt->mmod->rad;
   while(ldsk->prev != o_ldsk)
     {
+      printf("\n. ldsk %s at %f devt: %s ",ldsk->coord->id,ldsk->devt->time,ldsk->devt->id);
+      fflush(NULL);
+
       For(i,ldsk->devt->mmod->n_dim)
         {
           min = 
             MAX(0,
-                MIN(ldsk->coord->lonlat[i] - 2.*rad,
+                MAX(ldsk->coord->lonlat[i] - 2.*rad,
                     o_ldsk->coord->lonlat[i] - 2.*rad*n_disk_btw));
 
           max = 
-            MAX(ldsk->devt->mmod->lim->lonlat[i],
-                MAX(ldsk->coord->lonlat[i] + 2.*rad,
+            MIN(ldsk->devt->mmod->lim->lonlat[i],
+                MIN(ldsk->coord->lonlat[i] + 2.*rad,
                     o_ldsk->coord->lonlat[i] + 2.*rad*n_disk_btw));
           
-          printf("\n. ldsk %s at %f min: %f max: %f",ldsk->coord->id,ldsk->coord->lonlat[i],min,max);
 
           if(max < min)
             {
@@ -955,7 +957,7 @@ void MIGREP_One_New_Traj(t_lindisk_nd *y_ldsk, t_lindisk_nd *o_ldsk)
                  ldsk->prev->coord->id,
                  ldsk->prev->devt->time,
                  ldsk->prev->devt->id,
-                 ldsk->prev->coord->lonlat[0]);
+                 ldsk->prev->coord->lonlat[i]);
           fflush(NULL);
 
           // New coordinate for the centre of the corresponding disk event
