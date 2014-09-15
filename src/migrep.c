@@ -931,7 +931,7 @@ void MIGREP_One_New_Traj(t_lindisk_nd *y_ldsk, t_lindisk_nd *o_ldsk)
       For(i,ldsk->devt->mmod->n_dim)
         {
           min = 
-            MIN(0,
+            MAX(0,
                 MIN(ldsk->coord->lonlat[i] - 2.*rad,
                     o_ldsk->coord->lonlat[i] - 2.*rad*n_disk_btw));
 
