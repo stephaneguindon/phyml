@@ -4993,7 +4993,7 @@ void MCMC_Migrep_Triplet(t_tree *tree)
   t_disk_evt **devt_bkup,*devt,**devt_new_left,**devt_new_rght;
   t_lindisk_nd *ldsk_select,*ldsk_left,*ldsk_rght,*ldsk_up,*ldsk,*new_coal_ldsk;
   phydbl t_min,t_max,t_sampled;
-  int i,j,dir,n_coal,n_rm_disk,min_n_disk,n_new_disk_left,n_new_disk_rght,dir_up_select;
+  int i,j,dir,n_coal,n_rm_disk,min_n_disk,n_new_disk_left,n_new_disk_rght,dir_up_select,idx_ldsk_left;
   phydbl max_dist;
   
   cur_lnL     = tree->devt->mmod->c_lnL;
@@ -5098,7 +5098,6 @@ void MCMC_Migrep_Triplet(t_tree *tree)
       ldsk = ldsk->prev;
     }
 
-
   ldsk = ldsk_select;
   while(ldsk != ldsk_up)
     {
@@ -5109,10 +5108,9 @@ void MCMC_Migrep_Triplet(t_tree *tree)
       ldsk = ldsk->prev;
     }
 
-
   For(i,n_rm_disk) MIGREP_Remove_Devt(devt_bkup[i]);
 
-  // Up to here, we've remove all the disks where a jump occured on the
+  // Up to here, we removed all the disks where a jump occured on the
   // path between ldsk_left and ldsk_select, ldsk_rght and ldsk_select 
   // and ldsk_up and ldsk_select. We now turn to adding new disks
 
@@ -5124,11 +5122,13 @@ void MCMC_Migrep_Triplet(t_tree *tree)
         max_dist = FABS(ldsk_left->coord->lonlat[i] - ldsk_up->coord->lonlat[i]);
     }
   min_n_disk = (int)(max_dist / (2. * tree->mmod->rad));
+  min_n_disk = MAX(1,min_n_disk); // The number of disks needs to be a least 1
+                                  // since a coalescent must occur 
 
   printf("\n. min_n_disk left: %d [%f]",min_n_disk,max_dist);
   fflush(NULL);
 
-  // How many disk along the new path between ldsk_left and ldsk_up
+  // How many disks along the new path between ldsk_left and ldsk_up
   n_new_disk_left = Rand_Int(min_n_disk,min_n_disk+10);
   printf("\n. n_new_disk_left: %d",n_new_disk_left);
   fflush(NULL);
@@ -5137,7 +5137,7 @@ void MCMC_Migrep_Triplet(t_tree *tree)
     {
       // Make new disks to create a new path between ldsk_left and ldsk_up
       devt_new_left = (t_disk_evt **)mCalloc(n_new_disk_left,sizeof(t_disk_evt *));
-      For(i,n_new_disk_left) devt_new_left[i] = MIGREP_Make_Disk_Event(tree->mmod->n_dim);
+      For(i,n_new_disk_left) devt_new_left[i] = MIGREP_Make_Disk_Event(tree->mmod->n_dim,tree->n_otu);
       For(i,n_new_disk_left) MIGREP_Init_Disk_Event(devt_new_left[i],tree->mmod);
       
       // Times of these new disks
@@ -5241,7 +5241,7 @@ void MCMC_Migrep_Triplet(t_tree *tree)
     {
       // Make new disks to create a new path between ldsk_rght and new_coal_ldsk
       devt_new_rght = (t_disk_evt **)mCalloc(n_new_disk_rght,sizeof(t_disk_evt *));
-      For(i,n_new_disk_rght) devt_new_rght[i] = MIGREP_Make_Disk_Event(tree->mmod->n_dim);
+      For(i,n_new_disk_rght) devt_new_rght[i] = MIGREP_Make_Disk_Event(tree->mmod->n_dim,tree->n_otu);
       For(i,n_new_disk_rght) MIGREP_Init_Disk_Event(devt_new_rght[i],tree->mmod);
       
       // Times of these new disks
@@ -5313,7 +5313,10 @@ void MCMC_Migrep_Triplet(t_tree *tree)
   // Generate a trajectory
   MIGREP_One_New_Traj(ldsk_rght,new_coal_ldsk);
   
-  system("sleep 1000");
+  printf("\n. Will draw new tree in 5 seconds"); fflush(NULL);
+  sleep(5);
+  gtk_widget_queue_draw(tree->draw_area);
+  sleep(200);
       
 
 }

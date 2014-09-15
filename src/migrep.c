@@ -51,6 +51,8 @@ int MIGREP_Draw(GtkWidget *widget, cairo_t *cr, gpointer *data)
   while(devt->next) devt = devt->next;
   do
     {      
+      MIGREP_Update_Lindisk_List(devt->time,devt->ldsk_a,&(devt->n_ldsk_a),devt);
+
       cairo_move_to(cr,0,FABS(devt->time)/h);
       cairo_show_text(cr,devt->id); 
       cairo_stroke(cr);
@@ -102,9 +104,10 @@ int MIGREP_Draw(GtkWidget *widget, cairo_t *cr, gpointer *data)
       if(devt->prev == NULL) break;
     }while(1);
 
-  cairo_move_to(cr,devt->ldsk_a[0]->coord->lonlat[1]/w,FABS(devt->time)/h);
-  cairo_show_text(cr,devt->ldsk_a[0]->coord->id); 
-  cairo_arc(cr,devt->ldsk_a[0]->coord->lonlat[1]/w,FABS(devt->time)/h,0.005,0.,2.*PI);
+  // Root disk
+  cairo_move_to(cr,devt->ldsk->coord->lonlat[1]/w,FABS(devt->time)/h);
+  cairo_show_text(cr,devt->ldsk->coord->id); 
+  cairo_arc(cr,devt->ldsk->coord->lonlat[1]/w,FABS(devt->time)/h,0.005,0.,2.*PI);
   cairo_stroke (cr);
 
   /* cairo_scale (cr,WINDOW_WIDTH,WINDOW_HEIGHT); */
@@ -230,7 +233,7 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
 
   tree = Make_Tree_From_Scratch(n_otu,NULL);
   nd   = Make_Node_Light(0);
-  devt = MIGREP_Make_Disk_Event(n_dim);
+  devt = MIGREP_Make_Disk_Event(n_dim,n_otu);
   MIGREP_Init_Disk_Event(devt,NULL);
   
   // Allocate coordinates for all the tips first (will grow afterwards)
@@ -260,14 +263,12 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   
   // First disk event (at time 0)
   devt->time             = 0.0;
-  devt->ldsk_a           = ldsk_a;
   devt->mmod             = mmod;
-  devt->n_ldsk_a         = n_otu;
   devt->centr->lonlat[0] = .5*width;
   devt->centr->lonlat[1] = .5*height;      
   
   // Allocate and initialise for next event
-  devt->prev = MIGREP_Make_Disk_Event(n_dim);
+  devt->prev = MIGREP_Make_Disk_Event(n_dim,n_otu);
   MIGREP_Init_Disk_Event(devt->prev,NULL);
   devt->prev->next = devt;
   
@@ -366,10 +367,6 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
           if(ldsk_a[i]->prev == NULL)
             {
               ldsk_a[i]->prev = ldsk_a[i];
-              /* ldsk_a[i]->prev = MIGREP_Make_Lindisk_Node(n_dim); */
-              /* MIGREP_Init_Lindisk_Node(ldsk_a[i]->prev,n_dim); */
-              /* For(j,mmod->n_dim) ldsk_a[i]->prev->coord->lonlat[j] = ldsk_a[i]->coord->lonlat[j]; */
-              /* ldsk_a[i]->prev->next = ldsk_a[i]; */
               ldsk_a_tmp[n_lineages_new] = ldsk_a[i]->prev;
               n_lineages_new++;
             }          
@@ -389,14 +386,10 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
           new_ldsk->is_coal = YES;
           PhyML_Printf("\n. Coalescent @ disk %s on ldsk %s",devt->id,devt->ldsk->coord->id);
         }
-
  
-      ldsk_a = (t_lindisk_nd **)mCalloc(n_lineages,sizeof(t_lindisk_nd *));
+      ldsk_a = (t_lindisk_nd **)mCalloc(n_otu,sizeof(t_lindisk_nd *));
       For(i,n_lineages) ldsk_a[i] = ldsk_a_tmp[i];
       
-      devt->ldsk_a = ldsk_a;
-      devt->n_ldsk_a = n_lineages;
-
       For(i,n_lineages)
         {
           printf("\n. disk %s [%15f] %3d %s %15f %15f",
@@ -410,9 +403,10 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
 
       n_devt++;
 
+
       if(n_lineages == 1) break;
 
-      devt->prev = MIGREP_Make_Disk_Event(n_dim);
+      devt->prev = MIGREP_Make_Disk_Event(n_dim,n_otu);
       MIGREP_Init_Disk_Event(devt->prev,NULL);
       devt->prev->next = devt;
       
@@ -499,6 +493,8 @@ phydbl MIGREP_Lk(t_disk_evt *devt, t_migrep_mod *mmod)
 
       lnL += log_lbda - mmod->lbda * (devt->time - devt->prev->time);
 
+      MIGREP_Update_Lindisk_List(devt->time,devt->ldsk_a,&(devt->n_ldsk_a),devt);
+
       was_hit = NO;
       n_hit   = 0;
 
@@ -557,6 +553,7 @@ phydbl MIGREP_Lk(t_disk_evt *devt, t_migrep_mod *mmod)
   while(1);
   
   mmod->c_lnL = lnL;
+
   return(lnL);
 }
 
@@ -596,9 +593,6 @@ void MIGREP_MCMC(t_tree *tree)
   MIGREP_Lk(tree->devt,tree->mmod);
   printf("\n. LK: %f",tree->mmod->c_lnL);
 
-  gtk_widget_queue_draw(tree->draw_area);
-  sleep(2);
-
   PhyML_Printf("\n %10s %10s %10s %10s",
                "lnL",
                "lbda",
@@ -611,6 +605,8 @@ void MIGREP_MCMC(t_tree *tree)
       /* MCMC_Migrep_Lbda(tree); */
       /* MCMC_Migrep_Mu(tree); */
       /* MCMC_Migrep_Radius(tree); */
+      gtk_widget_queue_draw(tree->draw_area);
+      sleep(5);
       MCMC_Migrep_Triplet(tree);
       /* MCMC_Migrep_Slice(tree); */
       Exit("\n");
@@ -908,6 +904,7 @@ void MIGREP_One_New_Traj(t_lindisk_nd *y_ldsk, t_lindisk_nd *o_ldsk)
 {
   int n_disk_btw;
   t_lindisk_nd *ldsk;
+  t_disk_evt *devt;
   phydbl min, max;
   int i;
   phydbl rad;
@@ -1003,8 +1000,49 @@ int MIGREP_Get_Next_Direction(t_lindisk_nd *young, t_lindisk_nd *old)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void MIGREP_Update_Lindisk_List(phydbl time, t_lindisk_nd **list, int *pos, t_disk_evt *devt)
+{
+  t_disk_evt *root_devt;
+
+  *pos = 0;
+  root_devt = devt;
+  while(root_devt->prev) root_devt = root_devt->prev;
+  printf("\n. root_devt: %s",root_devt?root_devt->id:"xx");
+  MIGREP_Update_Lindisk_List_Pre(root_devt->ldsk,time,list,pos);
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void MIGREP_Update_Lindisk_List_Pre(t_lindisk_nd *ldsk, phydbl time, t_lindisk_nd **list, int *pos)
+{
+  printf("\n. time: %f pos: %d ldsk: %s n_next: %d ldsk->devt->time: %f devt: %s",time,*pos,ldsk->coord->id,ldsk->n_next,ldsk->devt->time,ldsk->devt->id); fflush(NULL);
+
+  if(ldsk == NULL)
+    {
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
+      Warn_And_Exit("");
+    }
+
+  if((ldsk->prev != NULL) && (ldsk->devt->time > time) && (ldsk->prev->devt->time < time))
+    {
+      list[*pos] = ldsk;
+      *pos = *pos + 1;
+    }
+  else if(Are_Equal(ldsk->devt->time,time,SMALL_DBL))
+    {
+      list[*pos] = ldsk;
+      *pos = *pos + 1;      
+    }
+  else if(ldsk->devt->time < time)
+    {
+      int i;
+      For(i,ldsk->n_next)
+        MIGREP_Update_Lindisk_List_Pre(ldsk->next[i],time,list,pos);    
+    }
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
