@@ -1,0 +1,9 @@
+#!/bin/bash -x
+
+aclocal;
+autoheader;
+autoconf -f;
+automake -f --add-missing;
+./configure;
+make clean;
+make;

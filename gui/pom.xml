@@ -1,0 +1,431 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>nz.org.nesi</groupId>
+	<artifactId>phyml-grid</artifactId>
+	<packaging>jar</packaging>
+	<version>0.7.10-SNAPSHOT</version>
+	<name>a grisu client</name>
+
+	<parent>
+		<groupId>nz.org.nesi</groupId>
+		<artifactId>nesi</artifactId>
+		<version>1.0</version>
+	</parent>
+
+	<repositories>
+		<repository>
+			<id>bestgrid.public.release</id>
+			<url>http://code.ceres.auckland.ac.nz/nexus/content/groups/public/</url>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>daily</updatePolicy>
+				<checksumPolicy>warn</checksumPolicy>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+				<updatePolicy>always</updatePolicy>
+				<checksumPolicy>fail</checksumPolicy>
+			</snapshots>
+		</repository>
+	</repositories>
+
+
+	<dependencies>
+
+		<!-- the main grisu dependency. -->
+		<!-- comment this and uncomment the 'grisu-client' dependency below if you don't need the swing dependencies -->
+		<dependency>
+			<groupId>grisu.frontend</groupId>
+			<artifactId>grisu-client-swing</artifactId>
+			<version>${grisu.version}</version>
+			<type>jar</type>
+			<scope>compile</scope>
+			<exclusions>
+				<exclusion>
+					<artifactId>jgoodiesforms</artifactId>
+					<groupId>com.jgoodies</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+<!-- 		<dependency> -->
+<!-- 			<groupId>grisu.frontend</groupId> -->
+<!-- 			<artifactId>grisu-client</artifactId> -->
+<!-- 			<version>${grisu.version}</version> -->
+<!-- 			<type>jar</type> -->
+<!-- 			<scope>compile</scope> -->
+<!-- 		</dependency> -->
+
+		<!-- we can't include the bouncy castle library in our assembled binary
+			so it has to put in the classpath in some other way. You could either have
+			the bcprov jar in the same directory as your executable jar, or you just
+			do nothing. Grisu will try to download it in the background and put it in
+			the classpath once your application is executed the first time... -->
+		<dependency>
+			<groupId>bouncycastle</groupId>
+			<artifactId>bcprov-jdk15</artifactId>
+			<version>145</version>
+			<type>jar</type>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- further grisu dependencies, incuded by default but can be enabled/disabled
+			if not needed and you want a smaller assembly -->
+		<!-- the grisu-core dependency is needed when you want to connect to a
+			local backend (which is the only supported backend for grisu 0.3 at the moment -->
+		<!-- <dependency>
+			<groupId>grisu.backend</groupId>
+			<artifactId>grisu-core</artifactId>
+			<version>${grisu.version}</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>-->
+
+
+		<!-- test dependencies -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.1</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+
+		<plugins>
+
+			<!-- replace version in file -->
+			<plugin>
+				<groupId>com.google.code.maven-replacer-plugin</groupId>
+				<artifactId>maven-replacer-plugin</artifactId>
+				<version>1.3.2</version>
+				<executions>
+					<execution>
+						<!-- the replace should happen before the app is packaged -->
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>replace</goal>
+						</goals>
+					</execution>
+				</executions>
+
+				<configuration>
+					<includes>
+						<!-- replace the token in this file -->
+						<include>target/classes/this-client.version</include>
+					</includes>
+					<regex>false</regex>
+					<!-- the name of the token to replace -->
+					<token>VERSION_TOKEN</token>
+					<!-- replace it with the maven project version -->
+					<value>${project.version}</value>
+				</configuration>
+			</plugin>
+
+			<!-- you can disable the assembly plugin if you want, your builds will
+				be faster I find it quite handy to have maven build an executable jar, though -->
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<configuration>
+
+							<descriptors>
+								<descriptor>client.assembly.xml</descriptor>
+							</descriptors>
+							<finalName>phyml-grid</finalName>
+							<archive>
+								<index>true</index>
+								<manifest>
+									<mainClass>phyml.PhymlMain</mainClass>
+								</manifest>
+								<manifestEntries>
+									<Class-Path>bcprov.jar local-backend-dev.jar local-backend.jar</Class-Path>
+								</manifestEntries>
+							</archive>
+
+						</configuration>
+						<goals>
+							<goal>attached</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>2.4</version>
+				<!-- <inherited>false</inherited> -->
+				<configuration>
+					<autoVersionSubmodules>true</autoVersionSubmodules>
+					<pushChanges>true</pushChanges>
+					<localCheckout>true</localCheckout>
+					<tagNameFormat>@{project.version}</tagNameFormat>
+					<releaseProfiles>deb,rpm</releaseProfiles>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<profiles>
+		<profile>
+			<id>exec</id>
+
+			<dependencies>
+				<dependency>
+					<groupId>bouncycastle</groupId>
+					<artifactId>bcprov-jdk15</artifactId>
+					<version>145</version>
+					<scope>compile</scope>
+				</dependency>
+			</dependencies>
+
+		</profile>
+
+		<profile>
+			<id>deb</id>
+			<!-- <activation> -->
+			<!-- <property> -->
+			<!-- <name>BUILD_NUMBER</name> -->
+			<!-- </property> -->
+			<!-- </activation> -->
+
+			<build>
+				<plugins>
+
+					<plugin>
+						<artifactId>maven-resources-plugin</artifactId>
+						<version>2.5</version>
+						<executions>
+							<execution>
+								<id>copy-deb-control</id>
+								<!-- here the phase you need -->
+								<phase>prepare-package</phase>
+								<goals>
+									<goal>copy-resources</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>${project.build.directory}/pkg/control</outputDirectory>
+									<resources>
+										<resource>
+											<directory>${project.build.directory}/../src/pkg/control</directory>
+											<filtering>false</filtering>
+										</resource>
+									</resources>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+
+					<plugin>
+						<groupId>com.google.code.maven-replacer-plugin</groupId>
+						<artifactId>maven-replacer-plugin</artifactId>
+						<version>1.4.0</version>
+						<executions>
+							<execution>
+								<id>fix_deb_version</id>
+								<phase>prepare-package</phase>
+								<goals>
+									<goal>replace</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<includes>
+								<include>target/classes/phyml-grid.version</include>
+								<include>target/pkg/control/control</include>
+							</includes>
+							<ignoreMissingFile>false</ignoreMissingFile>
+
+							<replacements>
+								<replacement>
+									<token>VERSION_TOKEN</token>
+									<value>${project.version}</value>
+								</replacement>
+							</replacements>
+						</configuration>
+					</plugin>
+
+					<plugin>
+						<artifactId>jdeb</artifactId>
+						<groupId>org.vafer</groupId>
+						<version>0.9</version>
+						<executions>
+							<execution>
+								<phase>package</phase>
+								<goals>
+									<goal>jdeb</goal>
+								</goals>
+								<configuration>
+									<changesIn>CHANGES.txt</changesIn>
+									<deb>[[buildDir]]/phyml-grid-${project.version}.deb</deb>
+									<controlDir>target/pkg/control</controlDir>
+									<dataSet>
+										<data>
+											<src>${project.build.directory}/phyml-grid-binary.jar</src>
+											<type>file</type>
+											<mapper>
+												<type>perm</type>
+												<prefix>/usr/local/lib/grisu/</prefix>
+												<user>root</user>
+												<group>root</group>
+											</mapper>
+										</data>
+										<data>
+											<src>${project.basedir}/src/pkg/data/phyml-grid</src>
+											<type>file</type>
+											<mapper>
+												<type>perm</type>
+												<prefix>/usr/bin/</prefix>
+												<user>root</user>
+												<group>root</group>
+												<filemode>755</filemode>
+											</mapper>
+										</data>
+										<data>
+											<src>${project.basedir}/src/pkg/data/phyml-grid.desktop</src>
+											<type>file</type>
+											<mapper>
+												<type>perm</type>
+												<prefix>/usr/share/applications/</prefix>
+												<user>root</user>
+												<group>root</group>
+												<filemode>755</filemode>
+											</mapper>
+										</data>
+										<data>
+											<src>${project.basedir}/src/pkg/data/phyml-grid.png</src>
+											<type>file</type>
+											<mapper>
+												<type>perm</type>
+												<prefix>/usr/local/lib/grisu/icons/</prefix>
+												<user>root</user>
+												<group>root</group>
+												<filemode>755</filemode>
+											</mapper>
+										</data>
+									</dataSet>
+
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+
+		</profile>
+		<profile>
+			<id>rpm</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>rpm-maven-plugin</artifactId>
+						<version>2.1-alpha-1</version>
+						<executions>
+							<execution>
+								<goals>
+									<goal>attached-rpm</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<copyright>2012, Public domain</copyright>
+							<distribution>Grisu</distribution>
+							<group>Application/Other</group>
+							<!-- <icon>src/main/resources/icon.gif</icon> -->
+							<packager>Please change</packager>
+<!-- 							<prefix>/usr/local</prefix> -->
+							<version>${project.version}</version>
+							<!-- <changelogFile>src/changelog</changelogFile> -->
+							<!-- <defineStatements> -->
+							<!-- <defineStatement>_unpackaged_files_terminate_build 0</defineStatement> -->
+							<!-- </defineStatements> -->
+							<mappings>
+								<mapping>
+									<directory>/usr/local/lib/grisu</directory>
+									<filemode>755</filemode>
+									<username>root</username>
+									<groupname>root</groupname>
+									<sources>
+										<source>
+											<location>target/phyml-grid-binary.jar</location>
+										</source>
+									</sources>
+								</mapping>
+								<mapping>
+									<directory>/usr/bin</directory>
+									<documentation>true</documentation>
+									<filemode>755</filemode>
+									<username>root</username>
+									<groupname>root</groupname>
+									<sources>
+										<source>
+											<location>src/pkg/data/phyml-grid</location>
+										</source>
+									</sources>
+								</mapping>
+								<mapping>
+									<directory>/usr/share/applications/</directory>
+									<documentation>false</documentation>
+									<filemode>755</filemode>
+									<username>root</username>
+									<groupname>root</groupname>
+									<sources>
+										<source>
+											<location>src/pkg/data/phyml-grid.desktop</location>
+										</source>
+									</sources>
+								</mapping>
+								<mapping>
+									<directory>/usr/local/lib/grisu/icons/</directory>
+									<documentation>false</documentation>
+									<filemode>755</filemode>
+									<username>root</username>
+									<groupname>root</groupname>
+									<sources>
+										<source>
+											<location>src/pkg/data/phyml-grid.png</location>
+										</source>
+									</sources>
+								</mapping>
+							</mappings>
+							<requires>
+								<require>nesi</require>
+								<require>java-1.6.0-openjdk</require>
+							</requires>
+							<preinstallScriptlet>
+								<script>echo "Installing phyml-grid..."</script>
+							</preinstallScriptlet>
+							<!-- <postinstallScriptlet> <scriptFile>src/main/scripts/postinstall</scriptFile>
+								<fileEncoding>utf-8</fileEncoding> </postinstallScriptlet> <preremoveScriptlet>
+								<scriptFile>src/main/scripts/preremove</scriptFile> <fileEncoding>utf-8</fileEncoding>
+								</preremoveScriptlet> -->
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+
+
+		</profile>
+
+	</profiles>
+
+
+	<properties>
+		<grisu.version>0.7.9</grisu.version>
+	</properties>
+	<scm>
+		<url>https://github.com/grisu/phyml-grid</url>
+		<connection>scm:git:git://github.com/grisu/phyml-grid.git</connection>
+		<developerConnection>scm:git:git@github.com:grisu/phyml-grid.git</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
+	<issueManagement>
+		<system>Github</system>
+		<url>https://github.com/grisu/phyml-grid/issues</url>
+	</issueManagement>
+</project>
+

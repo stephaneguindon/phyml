@@ -1,0 +1,38 @@
+<assembly>
+	<id>binary</id>
+	<formats>
+		<format>jar</format>
+	</formats>
+	<includeBaseDirectory>false</includeBaseDirectory>
+	<dependencySets>
+		<dependencySet>
+			<unpack>true</unpack>
+			<useTransitiveDependencies>true</useTransitiveDependencies>
+			<useTransitiveFiltering>true</useTransitiveFiltering>
+			<useProjectArtifact>true</useProjectArtifact>
+			<outputDirectory>/</outputDirectory>
+			<excludes>
+				<exclude>junit:junit</exclude>
+				<exclude>bouncycastle:bcprov-jdk15</exclude>
+			</excludes>
+			<unpackOptions>
+				<excludes>
+					<exclude>**/INDEX.LIST</exclude>
+					<exclude>**/MANIFEST.MF</exclude>
+					<exclude>**/LICENSE.txt</exclude>
+					<exclude>**/NOTICE.txt</exclude>
+					<exclude>**/logback.xml</exclude>
+				</excludes>
+			</unpackOptions>
+		</dependencySet>
+	</dependencySets>
+
+	<!--to make sure the right log4j.properties file is used -->
+	<files>
+		<file>
+			<source>src/main/resources/logback.xml</source>
+			<outputDirectory>/</outputDirectory>
+		</file>
+	</files>
+
+</assembly>

@@ -1,0 +1,86 @@
+bin_PROGRAMS = rwrapper
+PROG = RWRAP
+
+rwrapper_SOURCES = main.c utilities.c optimiz.c lk.c bionj.c models.c free.c\
+help.c simu.c eigen.c pars.c alrt.c interface.c cl.c spr.c draw.c rates.c rwrapper.c numeric.c mcmc.c
+rwrapper_LDADD = main.o utilities.o optimiz.o lk.o bionj.o models.o free.o\
+options.o simu.o eigen.o pars.o alrt.o interface.o cl.o spr.o draw.o rates.o rwrapper.o numeric.o mcmc.o
+
+
+AM_CFLAGS=-fPIC -Wall
+
+AM_LDFLAGS=-lm
+
+DEFS=-DUNIX -D$(PROG) -DDEBUG
+
+# SCOMPILE = $(CC) $(SDEFS) $(DEFS) $(INCLUDES) $(AM_CFLAGS) $(SCFLAGS)
+SCOMPILE = $(CC) $(SDEFS) $(DEFS) $(INCLUDES) $(AM_CFLAGS) $(SCFLAGS) -I/Library/Frameworks/R.framework/Versions/2.8/Resources/include/
+SCCLD = $(CC) $(LIBS)
+SLINK = $(SCCLD) $(AM_CFLAGS) $(SLDFLAGS) $(LDFLAGS) $(INCLUDES) $(AM_LDFLAGS) -bundle -flat_namespace -undefined suppress
+
+rwrapper$(EXEEXT): $(rwrapper_LDADD) $(rwrapper_SOURCES)
+	$(SLINK) $(rwrapper_LDADD) -o $@.so
+
+main.o: main.c
+	$(SCOMPILE) -c main.c
+
+utilities.o: utilities.c utilities.h
+	$(SCOMPILE) -c utilities.c
+
+optimiz.o: optimiz.c optimiz.h
+	$(SCOMPILE) -c optimiz.c
+
+lk.o: lk.c lk.h
+	$(SCOMPILE) -c lk.c
+
+bionj.o: bionj.c bionj.h
+	$(SCOMPILE) -c bionj.c
+
+models.o: models.c models.h
+	$(SCOMPILE) -c models.c
+
+free.o: free.c free.h
+	$(SCOMPILE) -c free.c
+
+options.o: help.c help.h
+	$(SCOMPILE) -c help.c
+
+simu.o: simu.c simu.h
+	$(SCOMPILE) -c simu.c
+
+eigen.o: eigen.c eigen.h
+	$(SCOMPILE) -c eigen.c
+
+pars.o: pars.c pars.h
+	$(SCOMPILE) -c pars.c
+
+alrt.o: alrt.c alrt.h
+	$(SCOMPILE) -c alrt.c
+
+interface.o: interface.c interface.h
+	$(SCOMPILE) -c interface.c
+
+cl.o: cl.c cl.h
+	$(SCOMPILE) -c cl.c
+
+spr.o: spr.c spr.h
+	$(SCOMPILE) -c spr.c
+
+
+mg.o: mg.c
+	$(SCOMPILE) -c mg.c
+
+draw.o: draw.c
+	$(SCOMPILE) -c draw.c
+
+rates.o: rates.c
+	$(SCOMPILE) -c rates.c
+
+rwrapper.o: rwrapper.c
+	$(SCOMPILE) -c rwrapper.c
+
+numeric.o: numeric.c
+	$(SCOMPILE) -c numeric.c
+
+mcmc.o: mcmc.c
+	$(SCOMPILE) -c mcmc.c

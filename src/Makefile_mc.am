@@ -1,0 +1,39 @@
+# AM_CFLAGS=-mpowerpc
+# AM_CFLAGS=-O3 -fomit-frame-pointer -funroll-loops -Wall -m64
+# AM_CFLAGS=-O2 -Wall
+# AM_CFLAGS=-m64
+# AM_CFLAGS=-g -Wall
+
+# AM_LDFLAGS=-lm
+
+# DEFS = -DUNIX -D$(PROG) -DDEBUG -DBATCH -DQUIET
+# DEFS=-DUNIX -D$(PROG) -DDEBUG
+# DEFS=-DUNIX -D$(PROG) 
+# DEFS = -DUNIX -D$(PROG)
+
+AM_MAKEFLAGS = -f Makefile_mc
+
+bin_PROGRAMS = mc
+PROG = MC
+
+DEFS=-DUNIX -D$(PROG) -DDEBUG
+
+mc_SOURCES = main.c utilities.c optimiz.c lk.c bionj.c models.c free.c\
+help.c simu.c eigen.c pars.c alrt.c interface.c cl.c spr.c mc.c m4.c draw.c rates.c mcmc.c numeric.c
+
+# mc_LDADD = -lm
+
+
+# SCOMPILE = $(CC) $(SDEFS) $(DEFS) $(INCLUDES) $(AM_CFLAGS) $(SCFLAGS)
+# SCCLD = $(CC) $(LIBS)
+# SLINK = $(SCCLD) $(AM_CFLAGS) $(SLDFLAGS) $(LDFLAGS) $(INCLUDES) $(AM_LDFLAGS)
+
+all-am: intro mc$(EXEEXT)
+	@echo ""
+	@echo "Done."
+
+intro:	
+	@echo ""
+	@echo "** Building MC version $(VERSION) **"
+	@echo ""
+

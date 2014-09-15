@@ -1,0 +1,58 @@
+<phyml run.id="lg4x" output.file="lg4x.tests" branch.test="no">
+
+  <!-- Tree topology: start with BioNJ and then SPRs -->
+  <topology> 
+    <instance id="T1" init.tree="bionj" optimise.tree="no"/> 
+  </topology>
+  
+
+  <!-- Four rate matrices, read from files -->
+  <ratematrices id="RM1"> 
+    <instance id="M1" model="customaa" ratematrix.file="../examples/lg4x/X1.mat"/> 
+    <instance id="M2" model="customaa" ratematrix.file="../examples/lg4x/X2.mat"/> 
+    <instance id="M3" model="customaa" ratematrix.file="../examples/lg4x/X3.mat"/> 
+    <instance id="M4" model="customaa" ratematrix.file="../examples/lg4x/X4.mat"/> 
+  </ratematrices>
+  
+  <!-- Freerate model of variation of rates across sites -->
+  <siterates id="SR1">
+    <instance id="R1" init.value="0.197063"/>
+    <instance id="R2" init.value="0.750275"/>
+    <instance id="R3" init.value="1.951569"/>
+    <instance id="R4" init.value="5.161586"/>
+    <weights  id="D1" family="freerates" optimise.freerates="yes">
+      <instance appliesto="R1" value="0.422481"/>
+      <instance appliesto="R2" value="0.336848"/>
+      <instance appliesto="R3" value="0.180132"/>
+      <instance appliesto="R4" value="0.060539"/>
+    </weights>
+  </siterates>
+  
+  <!-- Amino-acid equilibrium frequencies are given by the models -->
+  <equfreqs id="EF1">
+    <instance id="F1" aa.freqs="model"/>
+    <instance id="F2" aa.freqs="model"/>
+    <instance id="F3" aa.freqs="model"/>
+    <instance id="F4" aa.freqs="model"/>
+  </equfreqs>
+
+
+  <!-- One vector of branch lengths -->
+  <branchlengths id="BL1" >
+    <instance id="L1" optimise.lens="yes"/>
+  </branchlengths>
+
+
+  <!-- Mixture model assemblage -->
+  <partitionelem id="partition1" file.name="../examples/proteic" data.type="aa" interleaved="yes">
+    <mixtureelem list="T1, T1, T1, T1"/>
+    <mixtureelem list="M1, M2, M3, M4"/>
+    <mixtureelem list="F1, F2, F3, F4"/>
+    <mixtureelem list="R1, R2, R3, R4"/>
+    <mixtureelem list="L1, L1, L1, L1"/>
+  </partitionelem>
+
+  
+</phyml>
+
+

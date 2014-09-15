@@ -1,0 +1,8 @@
+Package: phyml-grid
+Version: VERSION_TOKEN
+Section: misc
+Priority: optional
+Architecture: all
+Depends: java-runtime,nesi-meta
+Maintainer: Please Change <this@src.pkg.control.control>
+Description: Please enter description

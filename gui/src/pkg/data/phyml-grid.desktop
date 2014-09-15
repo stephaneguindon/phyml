@@ -1,0 +1,23 @@
+[Desktop Entry]
+Categories=
+Comment=This starts an instance of phyml-grid
+Comment[en]=This starts an instance of phyml-grid
+Encoding=UTF-8
+Exec=/usr/bin/phyml-grid 
+GenericName=
+GenericName[en]=
+Icon=/usr/local/lib/grisu/icons/phyml-grid.png
+MimeType=
+Name=phyml-grid
+Name[en]=phyml-grid
+Path=
+ServiceTypes=
+SwallowExec=
+SwallowTitle=
+Terminal=false
+TerminalOptions=
+Type=Application
+URL=
+X-KDE-SubstituteUID=false
+X-KDE-Username=root
+

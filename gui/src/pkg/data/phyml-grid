@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# for cli applications:
+#unset DISPLAY
+#export JAVA_OPTS="-Djava.awt.headless=true -Xms128m -Xmx128m"
+# for guis
+export JAVA_OPTS="-Xms128m -Xmx128m"
+
+export X509_USER_PROXY=~/.grid/grid.proxy
+java ${JAVA_OPTS} -jar /usr/local/lib/grisu/phyml-grid-binary.jar $@
+

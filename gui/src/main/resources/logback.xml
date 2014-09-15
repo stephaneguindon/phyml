@@ -1,0 +1,73 @@
+<configuration>
+
+ <logger name="grisu" level="debug"/>
+ <logger name="grith" level="debug"/>
+ <logger name="phyml" level="debug"/>
+
+
+  <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+    <file>${user.home}/.grisu/phyml-grid.debug</file>
+    <append>true</append>
+    <!-- encoders are assigned the type
+         ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
+    <encoder>
+      <pattern>%-30(%d{HH:mm:ss.SSS} [%level] [%thread]) [%logger{0}] csid=[%X{session}] user=[%X{user}] cmdid=[%X{cmdid}] - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+
+<!--  <appender name="STDOUT"
+    class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%-30(%d{HH:mm:ss.SSS} [%level] [%thread]) [%logger{0}] csid=[%X{session}] user=[%X{user}] cmdid=[%X{cmdid}] - %msg%n</pattern>
+    </encoder>
+  </appender> -->
+  
+<!--  <appender name="SYSLOG" class="grisu.control.util.SyslogAppender">
+    <syslogHost>localhost</syslogHost>
+    <facility>USER</facility>
+    <port>514</port>
+    <suffixPattern>[%level] [%thread] [%logger{0}] csid=[%X{session}] user=[%X{user}] cmdid=[%X{cmdid}] - %msg%n</suffixPattern>
+  </appender> -->
+  
+    <!--
+    <appender name="GRAYLOG" class="me.moocar.logbackgelf.GelfAppender">
+        <facility>grisu-backend-test</facility>
+        <graylog2ServerHost>logstash.ceres.auckland.ac.nz</graylog2ServerHost>
+        <graylog2ServerPort>12201</graylog2ServerPort>
+        <useLoggerName>true</useLoggerName>
+        <useThreadName>true</useThreadName>
+        <graylog2ServerVersion>0.9.6</graylog2ServerVersion>
+        <chunkThreshold>1000</chunkThreshold>
+        <additionalField>csid:_client_session_id</additionalField>
+        <additionalField>cmdid:_command_id</additionalField>
+        <additionalField>user:_user</additionalField>
+    </appender> -->
+  
+<!-- <appender name="SIFT" class="ch.qos.logback.classic.sift.SiftingAppender">
+    <discriminator>
+      <key>user</key>
+      <defaultValue>gricli</defaultValue>
+    </discriminator>
+    <sift>
+      <appender name="FILE-${userid}" class="ch.qos.logback.core.FileAppender">
+        <file>/var/log/gricli/${user}.log</file>
+        <append>false</append>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+          <pattern>%-30(%d{HH:mm:ss.SSS} [%level] [%thread]) [%logger{0}] csid=[%X{session}] user=[%X{user}] cmdid=[%X{cmdid}] - %msg%n</pattern>
+        </layout>
+      </appender>
+    </sift>
+  </appender> -->
+  
+  
+
+  <root>
+    <level value="warn" />
+    <appender-ref ref="FILE" />
+<!--     <appender-ref ref="SYSLOG" />  -->
+<!--     <appender-ref ref="GRAYLOG" />  -->
+<!--     <appender-ref ref="SIFT" />  -->
+<!--    <appender-ref ref="STDOUT" />-->
+  </root>
+</configuration>
