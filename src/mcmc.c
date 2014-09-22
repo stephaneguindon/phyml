@@ -5216,7 +5216,7 @@ void MCMC_Migrep_Triplet(t_tree *tree)
     }
 
   // Generate a trajectory
-  MIGREP_One_New_Traj(ldsk_left,ldsk_up);
+  MIGREP_One_New_Traj_Given_Devt(ldsk_left,ldsk_up);
 
   // Select the disk that 'receives' the new coalescent node
   new_coal_ldsk = devt_new_left[Rand_Int(0,n_new_disk_left-1)]->ldsk;
@@ -5317,7 +5317,7 @@ void MCMC_Migrep_Triplet(t_tree *tree)
     }
 
   // Generate a trajectory
-  MIGREP_One_New_Traj(ldsk_rght,new_coal_ldsk);
+  MIGREP_One_New_Traj_Given_Devt(ldsk_rght,new_coal_ldsk);
   
   printf("\n. Will draw new tree in 5 seconds"); fflush(NULL);
   sleep(5);
@@ -5337,7 +5337,7 @@ void MCMC_Migrep_Triplet_Bis(t_tree *tree)
   phydbl cur_lnL, new_lnL;
   phydbl ratio, alpha, u;
   t_disk_evt **devt_bkup,*devt,**devt_new;
-  t_lindisk_nd *ldsk_select,*ldsk_under,*ldsk_up,*ldsk_target,*ldsk,*new_coal_ldsk;
+  t_lindisk_nd *ldsk_select,**ldsk_under,*ldsk_up,*ldsk_target,*ldsk,*new_coal_ldsk,*ldsk_trunk;
   phydbl t_min,t_max,t_sampled;
   int i,j,dir1,dir2,n_coal,n_rm_disk,min_n_disk,n_new_disk,dir_up_select,idx_ldsk_left;
   phydbl max_dist;
@@ -5405,42 +5405,14 @@ void MCMC_Migrep_Triplet_Bis(t_tree *tree)
       ldsk = ldsk->prev;
     }
 
-  ldsk_target = ldsk_up;
-  dir1 = dir2 = -1;
-  
-  do
-    {      
-      // Randomly select one lineage among the sister lineages
-      // connected to ldsk_select
-      if(dir1 < 0)
-        {
-          dir1 = Rand_Int(0,ldsk_select->n_next-1); // first lineage
-          // Find the closest coalescent node towards the bottom left
-          ldsk_under = MIGREP_Next_Coal_Lindisk(ldsk_select->next[dir1]);
-        }
-      else
-        {
-          do
-            {
-              // Find the closest coalescent node towards the bottom right
-              dir2 = Rand_Int(0,ldsk_select->n_next-1); // second lineage
-              printf("\n. dir2: %d",dir2); fflush(NULL);
-              ldsk_under = MIGREP_Next_Coal_Lindisk(ldsk_select->next[dir2]);
-            }
-          while(dir2 == dir1);
-        }
-      
-      if(ldsk_under == NULL)
-        {
-          PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
-          Exit("\n");
-        }
+  ldsk_under = (t_lindisk_nd **)mCalloc(ldsk_select->n_next,sizeof(t_lindisk_nd *));
 
-      printf("\n. under: %s",ldsk_under->coord->id);
-      fflush(NULL);
-  
-      // Remove disks between ldsk_under and ldsk_select and record them
-      ldsk = ldsk_under->prev;
+  // Remove disks between ldsk_select and the next coalescent lindisks underneath
+  For(i,ldsk_select->n_next)
+    {
+      ldsk_under[i] = MIGREP_Next_Coal_Lindisk(ldsk_select->next[i]);
+
+      ldsk = ldsk_under[i]->prev;
       while(ldsk != ldsk_select)
         {
           if(n_rm_disk == 0) devt_bkup = (t_disk_evt **)mCalloc(1,sizeof(t_disk_evt *));
@@ -5450,114 +5422,147 @@ void MCMC_Migrep_Triplet_Bis(t_tree *tree)
           n_rm_disk++;
           ldsk = ldsk->prev;
         }
+    }
+  
+  // Remove the disk associated to ldsk_select
+  MIGREP_Remove_Devt(ldsk_select->devt);
 
+  // Randomly select among ldsk_under the first ldsk that will be joined
+  // to ldsk_up
+  ldsk_trunk = ldsk_under[Rand_Int(0,ldsk_select->n_next-1)];
+  
+  // Build new trajectory between ldsk_trunk and ldsk_up
+  MIGREP_One_New_Traj(ldsk_trunk,ldsk_up);
 
-      // Up to here, we removed all the disks where a jump occured on the
-      // path between ldsk_left and ldsk_select, ldsk_rght and ldsk_select 
-      // and ldsk_up and ldsk_select. We now turn to adding new disks
-      
-      // Minimum number of disks between ldsk_under and ldsk_target
-      max_dist = -1.;
-      For(i,tree->mmod->n_dim)
+  // Select the disk that 'receives' the new coalescent node
+  n_new_disk = 0;
+  ldsk = ldsk_trunk->prev;
+  while(ldsk != ldsk_up) { n_new_disk++; ldsk = ldsk->prev; }
+
+  if(n_new_disk == 0) ldsk_target = ldsk_up;
+  else                ldsk_target = devt_new[Rand_Int(0,n_new_disk-1)]->ldsk;
+  ldsk_target->is_coal = YES;
+  
+  // Build new trajectories between each ldsk_under != ldsk_trunk and
+  // ldsk_target
+  For(i,ldsk_select->n_next)
+    {
+      if(ldsk_under[i] != ldsk_trunk)
         {
-          if(FABS(ldsk_under->coord->lonlat[i] - ldsk_target->coord->lonlat[i]) > max_dist)
-            max_dist = FABS(ldsk_under->coord->lonlat[i] - ldsk_target->coord->lonlat[i]);
+          MIGREP_One_New_Traj(ldsk_trunk,ldsk_target);          
         }
-      min_n_disk = (int)(max_dist / (2. * tree->mmod->rad));
+    }
 
-      printf("\n. min_n_disk left: %d [%f]",min_n_disk,max_dist);
-      fflush(NULL);
 
-      // How many disks along the new path between ldsk_left and ldsk_up
-      n_new_disk = Rand_Int(min_n_disk,min_n_disk+10);
-      printf("\n. n_new_disk: %d",n_new_disk);
-      fflush(NULL);
+
+
+  
       
-      if(n_new_disk > 0)
-        {
-          // Make new disks to create a new path between ldsk_left and ldsk_up
-          devt_new = (t_disk_evt **)mCalloc(n_new_disk,sizeof(t_disk_evt *));
-          For(i,n_new_disk) devt_new[i] = MIGREP_Make_Disk_Event(tree->mmod->n_dim,tree->n_otu);
-          For(i,n_new_disk) MIGREP_Init_Disk_Event(devt_new[i],tree->mmod);
+    /*   // Minimum number of disks between ldsk_under and ldsk_target */
+    /*   max_dist = -1.; */
+    /*   For(i,tree->mmod->n_dim) */
+    /*     { */
+    /*       if(FABS(ldsk_under->coord->lonlat[i] - ldsk_target->coord->lonlat[i]) > max_dist) */
+    /*         max_dist = FABS(ldsk_under->coord->lonlat[i] - ldsk_target->coord->lonlat[i]); */
+    /*     } */
+    /*   min_n_disk = (int)(max_dist / (2. * tree->mmod->rad)); */
+
+    /*   printf("\n. min_n_disk: %d [%f]",min_n_disk,max_dist); */
+    /*   fflush(NULL); */
+
+    /*   // How many disks along the new path between ldsk_left and ldsk_up */
+    /*   n_new_disk = Rand_Int(min_n_disk,min_n_disk+10); */
+    /*   printf("\n. n_new_disk: %d",n_new_disk); */
+    /*   fflush(NULL); */
+      
+    /*   if(n_new_disk > 0) */
+    /*     { */
+    /*       // Make new disks to create a new path between ldsk_left and ldsk_up */
+    /*       devt_new = (t_disk_evt **)mCalloc(n_new_disk,sizeof(t_disk_evt *)); */
+    /*       For(i,n_new_disk) devt_new[i] = MIGREP_Make_Disk_Event(tree->mmod->n_dim,tree->n_otu); */
+    /*       For(i,n_new_disk) MIGREP_Init_Disk_Event(devt_new[i],tree->mmod); */
           
-          // Times of these new disks
-          For(i,n_new_disk) 
-            devt_new[i]->time = 
-            Uni()*(ldsk_under->devt->time - ldsk_target->devt->time) + ldsk_target->devt->time;
+    /*       // Times of these new disks */
+    /*       For(i,n_new_disk)  */
+    /*         devt_new[i]->time =  */
+    /*         Uni()*(ldsk_under->devt->time - ldsk_target->devt->time) + ldsk_target->devt->time; */
       
-          devt = tree->devt;
+    /*       devt = tree->devt; */
       
-          // Insert these events
-          For(i,n_new_disk)
-            {
-              while(devt->prev) devt = devt->prev;
-              while(devt->time < devt_new[i]->time) devt = devt->next;
-              devt_new[i]->prev = devt->prev;
-              devt_new[i]->next = devt;
-              MIGREP_Insert_Devt(devt_new[i]);
-            }
+    /*       // Insert these events */
+    /*       For(i,n_new_disk) */
+    /*         { */
+    /*           while(devt->prev) devt = devt->prev; */
+    /*           while(devt->time < devt_new[i]->time) devt = devt->next; */
+    /*           devt_new[i]->prev = devt->prev; */
+    /*           devt_new[i]->next = devt; */
+    /*           MIGREP_Insert_Devt(devt_new[i]); */
+    /*         } */
       
-          // Sort these events by ascending order of their times
-          For(i,n_new_disk-1)
-            {
-              for(j=i+1;j<n_new_disk;j++)
-                {
-                  if(devt_new[j]->time > devt_new[i]->time)
-                    {
-                      devt        = devt_new[i];
-                      devt_new[i] = devt_new[j];
-                      devt_new[j] = devt;
-                    }
-                }
-            }
+    /*       // Sort these events by ascending order of their times */
+    /*       For(i,n_new_disk-1) */
+    /*         { */
+    /*           for(j=i+1;j<n_new_disk;j++) */
+    /*             { */
+    /*               if(devt_new[j]->time > devt_new[i]->time) */
+    /*                 { */
+    /*                   devt        = devt_new[i]; */
+    /*                   devt_new[i] = devt_new[j]; */
+    /*                   devt_new[j] = devt; */
+    /*                 } */
+    /*             } */
+    /*         } */
       
-          For(i,n_new_disk)
-            {
-              printf("\n. devt_new: %f [%s]",devt_new[i]->time,devt_new[i]->id); fflush(NULL);
-            }
+    /*       For(i,n_new_disk) */
+    /*         { */
+    /*           printf("\n. devt_new: %f [%s]",devt_new[i]->time,devt_new[i]->id); fflush(NULL); */
+    /*         } */
       
-          // Add new lindisks to the new disk events and connect them
-          For(i,n_new_disk) 
-            {
-              devt_new[i]->ldsk = MIGREP_Make_Lindisk_Node(tree->mmod->n_dim);
-              MIGREP_Init_Lindisk_Node(devt_new[i]->ldsk,devt_new[i],tree->mmod->n_dim);
-              MIGREP_Make_Lindisk_Next(devt_new[i]->ldsk);
+    /*       // Add new lindisks to the new disk events and connect them */
+    /*       For(i,n_new_disk)  */
+    /*         { */
+    /*           devt_new[i]->ldsk = MIGREP_Make_Lindisk_Node(tree->mmod->n_dim); */
+    /*           MIGREP_Init_Lindisk_Node(devt_new[i]->ldsk,devt_new[i],tree->mmod->n_dim); */
+    /*           MIGREP_Make_Lindisk_Next(devt_new[i]->ldsk); */
           
-              if(!i) 
-                {
-                  devt_new[i]->ldsk->next[0] = ldsk_under;
-                  ldsk_under->prev           = devt_new[i]->ldsk;
-                }
-              else
-                {
-                  devt_new[i]->ldsk->next[0] = devt_new[i-1]->ldsk;
-                  devt_new[i-1]->ldsk->prev  = devt_new[i]->ldsk;
-                }
+    /*           if(!i)  */
+    /*             { */
+    /*               devt_new[i]->ldsk->next[0] = ldsk_under; */
+    /*               ldsk_under->prev           = devt_new[i]->ldsk; */
+    /*             } */
+    /*           else */
+    /*             { */
+    /*               devt_new[i]->ldsk->next[0] = devt_new[i-1]->ldsk; */
+    /*               devt_new[i-1]->ldsk->prev  = devt_new[i]->ldsk; */
+    /*             } */
               
-              printf("\n. add new lindisk %s on disk %s",
-                     devt_new[i]->ldsk->coord->id,
-                     devt_new[i]->id);
-              fflush(NULL);
-            }
-          ldsk_target->next[dir_up_select]   = devt_new[n_new_disk-1]->ldsk;
-          devt_new[n_new_disk-1]->ldsk->prev = ldsk_target;
-        }
-      else
-        {
-          ldsk_target->next[dir_up_select] = ldsk_under;
-          ldsk_under->prev                 = ldsk_target;
-        }
+    /*           printf("\n. add new lindisk %s on disk %s", */
+    /*                  devt_new[i]->ldsk->coord->id, */
+    /*                  devt_new[i]->id); */
+    /*           fflush(NULL); */
+    /*         } */
+    /*       ldsk_target->next[dir_up_select]   = devt_new[n_new_disk-1]->ldsk; */
+    /*       devt_new[n_new_disk-1]->ldsk->prev = ldsk_target; */
+    /*     } */
+    /*   else */
+    /*     { */
+    /*       ldsk_target->next[dir_up_select] = ldsk_under; */
+    /*       ldsk_under->prev                 = ldsk_target; */
+    /*     } */
       
-      // Generate a trajectory
-      MIGREP_One_New_Traj(ldsk_under,ldsk_target);
+    /*   // Generate a trajectory */
+    /*   MIGREP_One_New_Traj_Given_Devt(ldsk_under,ldsk_target); */
 
-      // Select the disk that 'receives' the new coalescent node
-      ldsk_target          = devt_new[Rand_Int(0,n_new_disk-1)]->ldsk; // TO DO CHECK
-      ldsk_target->is_coal = YES;
+    /*   if(!(dir2 < 0)) break; */
+
+    /*   // Select the disk that 'receives' the new coalescent node */
+    /*   if(n_new_disk == 0) ldsk_target = ldsk_up; */
+    /*   else                ldsk_target = devt_new[Rand_Int(0,n_new_disk-1)]->ldsk; */
+    /*   ldsk_target->is_coal = YES; */
       
-      printf("\n. coalescent will occur on ldsk %s",new_coal_ldsk->coord->id);
-      fflush(NULL);
-    }while(dir2 < 0);
+    /*   printf("\n. coalescent will occur on ldsk %s",ldsk_target->coord->id); */
+    /*   fflush(NULL); */
+    /* }while(1); */
   
   printf("\n. Will draw new tree in 5 seconds"); fflush(NULL);
   sleep(5);

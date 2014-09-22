@@ -34,6 +34,7 @@ void MIGREP_Insert_Devt(t_disk_evt *devt);
 t_lindisk_nd *MIGREP_Prev_Coal_Lindisk(t_lindisk_nd *t);
 t_lindisk_nd *MIGREP_Next_Coal_Lindisk(t_lindisk_nd *t);
 int MIGREP_Get_Next_Direction(t_lindisk_nd *young, t_lindisk_nd *old);
+void MIGREP_One_New_Traj_Given_Devt(t_lindisk_nd *s_ldsk, t_lindisk_nd *e_ldsk);
 void MIGREP_One_New_Traj(t_lindisk_nd *s_ldsk, t_lindisk_nd *e_ldsk);
 void MIGREP_Update_Lindisk_List(phydbl time, t_lindisk_nd **list, int *pos, t_disk_evt *devt);
 void MIGREP_Update_Lindisk_List_Pre(t_lindisk_nd *ldsk, phydbl time, t_lindisk_nd **list, int *pos);

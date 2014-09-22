@@ -53,6 +53,8 @@ int MIGREP_Draw(GtkWidget *widget, cairo_t *cr, gpointer *data)
     {      
       MIGREP_Update_Lindisk_List(devt->time,devt->ldsk_a,&(devt->n_ldsk_a),devt);
 
+      printf("\n. DRAW disk %s n: %d",devt->id,devt->n_ldsk_a); fflush(NULL);
+
       cairo_move_to(cr,0,FABS(devt->time)/h);
       cairo_show_text(cr,devt->id); 
       cairo_stroke(cr);
@@ -87,17 +89,17 @@ int MIGREP_Draw(GtkWidget *widget, cairo_t *cr, gpointer *data)
             {
               cairo_set_source_rgba(cr, 0, 0.2, 0.8, 0.5);
               cairo_arc(cr,devt->ldsk_a[i]->coord->lonlat[1]/w,FABS(devt->time)/h,0.01,0.,2.*PI);
-              cairo_fill (cr);
-              cairo_stroke (cr);
-              cairo_set_source_rgb (cr, 0, 0, 0);
+              cairo_fill(cr);
+              cairo_stroke(cr);
+              cairo_set_source_rgb(cr, 0, 0, 0);
             }
           else
             {
               cairo_set_source_rgba(cr, 0.2, 0.2, 0.2, 0.8);
               cairo_arc(cr,devt->ldsk_a[i]->coord->lonlat[1]/w,FABS(devt->time)/h,0.005,0.,2.*PI);
-              cairo_fill (cr);
-              cairo_stroke (cr);
-              cairo_set_source_rgb (cr, 0, 0, 0);
+              cairo_fill(cr);
+              cairo_stroke(cr);
+              cairo_set_source_rgb(cr, 0, 0, 0);
             }
         }
       devt = devt->prev;
@@ -607,7 +609,7 @@ void MIGREP_MCMC(t_tree *tree)
       /* MCMC_Migrep_Radius(tree); */
       gtk_widget_queue_draw(tree->draw_area);
       sleep(5);
-      MCMC_Migrep_Triplet(tree);
+      MCMC_Migrep_Triplet_Bis(tree);
       /* MCMC_Migrep_Slice(tree); */
       Exit("\n");
 
@@ -889,7 +891,6 @@ t_lindisk_nd *MIGREP_Next_Coal_Lindisk(t_lindisk_nd *t)
           PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
           Warn_And_Exit("");
         }
-
       return MIGREP_Next_Coal_Lindisk(t->next[0]);
     }
 }
@@ -899,8 +900,83 @@ t_lindisk_nd *MIGREP_Next_Coal_Lindisk(t_lindisk_nd *t)
 
 // Generate a new trajectory, including disk event centers, between
 // 'y_ldsk' a ``young'' lindisk event and 'o_ldsk' an old one. 'y_ldsk
-// and 'o_ldsk' remain unaffected.
+// and 'o_ldsk' remain unaffected. No disk events should be present 
+// between y_ldsk and o_ldsk: we need to generate some first.
 void MIGREP_One_New_Traj(t_lindisk_nd *y_ldsk, t_lindisk_nd *o_ldsk)
+{
+  int n_disk_btw;
+  t_lindisk_nd *ldsk;
+  t_disk_evt *devt;
+  phydbl min, max;
+  int i;
+  phydbl rad;
+
+  // Number of disks between y_ldsk and o_ldsk
+  ldsk = y_ldsk;
+  n_disk_btw = 0;
+  while(ldsk->prev != o_ldsk)
+    {
+      n_disk_btw++;
+      ldsk = ldsk->prev;
+    }
+
+  printf("\n. Number of disks between %s and %s: %d",y_ldsk->coord->id,o_ldsk->coord->id,n_disk_btw);
+  fflush(NULL);
+
+  ldsk = y_ldsk;
+  rad  = ldsk->devt->mmod->rad;
+  while(ldsk->prev != o_ldsk)
+    {
+      printf("\n. ldsk %s at %f devt: %s ",ldsk->coord->id,ldsk->devt->time,ldsk->devt->id);
+      fflush(NULL);
+
+      For(i,ldsk->devt->mmod->n_dim)
+        {
+          min = 
+            MAX(0,
+                MAX(ldsk->coord->lonlat[i] - 2.*rad,
+                    o_ldsk->coord->lonlat[i] - 2.*rad*n_disk_btw));
+
+          max = 
+            MIN(ldsk->devt->mmod->lim->lonlat[i],
+                MIN(ldsk->coord->lonlat[i] + 2.*rad,
+                    o_ldsk->coord->lonlat[i] + 2.*rad*n_disk_btw));
+          
+
+          if(max < min)
+            {
+              PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
+              Warn_And_Exit("");              
+            }
+                
+          // New coordinate for the lindisk
+          ldsk->prev->coord->lonlat[i] = Uni()*(max - min) + min;
+
+          printf("\n. NEW TRAJ ldsk %s at %f [devt: %s] located at %f",
+                 ldsk->prev->coord->id,
+                 ldsk->prev->devt->time,
+                 ldsk->prev->devt->id,
+                 ldsk->prev->coord->lonlat[i]);
+          fflush(NULL);
+
+          // New coordinate for the centre of the corresponding disk event
+          max = ldsk->prev->coord->lonlat[i] + rad;
+          min = ldsk->prev->coord->lonlat[i] - rad;
+          ldsk->prev->devt->centr->lonlat[i] = Uni()*(max - min) + min;
+        }
+      ldsk = ldsk->prev;
+      n_disk_btw--;
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+// Generate a new trajectory, including disk event centers, between
+// 'y_ldsk' a ``young'' lindisk event and 'o_ldsk' an old one. 'y_ldsk
+// and 'o_ldsk' remain unaffected. Disk events between these two ldsk
+// should already be set.
+void MIGREP_One_New_Traj_Given_Devt(t_lindisk_nd *y_ldsk, t_lindisk_nd *o_ldsk)
 {
   int n_disk_btw;
   t_lindisk_nd *ldsk;
@@ -1008,7 +1084,7 @@ void MIGREP_Update_Lindisk_List(phydbl time, t_lindisk_nd **list, int *pos, t_di
   *pos = 0;
   root_devt = devt;
   while(root_devt->prev) root_devt = root_devt->prev;
-  printf("\n. root_devt: %s",root_devt?root_devt->id:"xx");
+  /* printf("\n. root_devt: %s",root_devt?root_devt->id:"xx"); */
   MIGREP_Update_Lindisk_List_Pre(root_devt->ldsk,time,list,pos);
 }
 
@@ -1017,7 +1093,7 @@ void MIGREP_Update_Lindisk_List(phydbl time, t_lindisk_nd **list, int *pos, t_di
 
 void MIGREP_Update_Lindisk_List_Pre(t_lindisk_nd *ldsk, phydbl time, t_lindisk_nd **list, int *pos)
 {
-  printf("\n. time: %f pos: %d ldsk: %s n_next: %d ldsk->devt->time: %f devt: %s",time,*pos,ldsk->coord->id,ldsk->n_next,ldsk->devt->time,ldsk->devt->id); fflush(NULL);
+  /* printf("\n. time: %f pos: %d ldsk: %s n_next: %d ldsk->devt->time: %f devt: %s",time,*pos,ldsk->coord->id,ldsk->n_next,ldsk->devt->time,ldsk->devt->id); fflush(NULL); */
 
   if(ldsk == NULL)
     {
