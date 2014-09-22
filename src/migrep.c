@@ -902,71 +902,115 @@ t_lindisk_nd *MIGREP_Next_Coal_Lindisk(t_lindisk_nd *t)
 // 'y_ldsk' a ``young'' lindisk event and 'o_ldsk' an old one. 'y_ldsk
 // and 'o_ldsk' remain unaffected. No disk events should be present 
 // between y_ldsk and o_ldsk: we need to generate some first.
-void MIGREP_One_New_Traj(t_lindisk_nd *y_ldsk, t_lindisk_nd *o_ldsk)
+void MIGREP_One_New_Traj(t_lindisk_nd *y_ldsk, t_lindisk_nd *o_ldsk, int dir_o_y, t_tree *tree)
 {
-  int n_disk_btw;
-  t_lindisk_nd *ldsk;
-  t_disk_evt *devt;
-  phydbl min, max;
-  int i;
-  phydbl rad;
+  t_migrep_mod *mmod;
+  t_disk_evt *devt,**devt_new;
+  phydbl max_dist;
+  int i,j;
+  int min_n_disk,n_new_disk;
 
-  // Number of disks between y_ldsk and o_ldsk
-  ldsk = y_ldsk;
-  n_disk_btw = 0;
-  while(ldsk->prev != o_ldsk)
-    {
-      n_disk_btw++;
-      ldsk = ldsk->prev;
-    }
+  mmod     = tree->mmod;
+  devt     = NULL;
+  devt_new = NULL;
 
-  printf("\n. Number of disks between %s and %s: %d",y_ldsk->coord->id,o_ldsk->coord->id,n_disk_btw);
+  printf("\n. New traj from %s to %s",y_ldsk->coord->id,o_ldsk->coord->id);
   fflush(NULL);
 
-  ldsk = y_ldsk;
-  rad  = ldsk->devt->mmod->rad;
-  while(ldsk->prev != o_ldsk)
+  // Minimum number of disks between y_ldsk and o_ldsk
+  max_dist = -1.;
+  For(i,mmod->n_dim)
     {
-      printf("\n. ldsk %s at %f devt: %s ",ldsk->coord->id,ldsk->devt->time,ldsk->devt->id);
-      fflush(NULL);
-
-      For(i,ldsk->devt->mmod->n_dim)
-        {
-          min = 
-            MAX(0,
-                MAX(ldsk->coord->lonlat[i] - 2.*rad,
-                    o_ldsk->coord->lonlat[i] - 2.*rad*n_disk_btw));
-
-          max = 
-            MIN(ldsk->devt->mmod->lim->lonlat[i],
-                MIN(ldsk->coord->lonlat[i] + 2.*rad,
-                    o_ldsk->coord->lonlat[i] + 2.*rad*n_disk_btw));
-          
-
-          if(max < min)
-            {
-              PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
-              Warn_And_Exit("");              
-            }
-                
-          // New coordinate for the lindisk
-          ldsk->prev->coord->lonlat[i] = Uni()*(max - min) + min;
-
-          printf("\n. NEW TRAJ ldsk %s at %f [devt: %s] located at %f",
-                 ldsk->prev->coord->id,
-                 ldsk->prev->devt->time,
-                 ldsk->prev->devt->id,
-                 ldsk->prev->coord->lonlat[i]);
-          fflush(NULL);
-
-          // New coordinate for the centre of the corresponding disk event
-          max = ldsk->prev->coord->lonlat[i] + rad;
-          min = ldsk->prev->coord->lonlat[i] - rad;
-          ldsk->prev->devt->centr->lonlat[i] = Uni()*(max - min) + min;
-        }
-      ldsk = ldsk->prev;
-      n_disk_btw--;
+      if(FABS(y_ldsk->coord->lonlat[i] - o_ldsk->coord->lonlat[i]) > max_dist)
+        max_dist = FABS(y_ldsk->coord->lonlat[i] - o_ldsk->coord->lonlat[i]);
     }
+  min_n_disk = (int)(max_dist / (2. * mmod->rad));
+  
+  printf("\n. min_n_disk: %d [%f]",min_n_disk,max_dist);
+  fflush(NULL);
+  
+  // How many disks along the new path between y_ldsk and o_ldsk
+  n_new_disk = Rand_Int(min_n_disk,min_n_disk+10);
+  printf("\n. n_new_disk: %d",n_new_disk);
+  fflush(NULL);
+  
+  if(n_new_disk > 0)
+    {
+      // Make new disks to create a new path between ldsk_left and ldsk_up
+      devt_new = (t_disk_evt **)mCalloc(n_new_disk,sizeof(t_disk_evt *));
+      For(i,n_new_disk) devt_new[i] = MIGREP_Make_Disk_Event(mmod->n_dim,tree->n_otu);
+      For(i,n_new_disk) MIGREP_Init_Disk_Event(devt_new[i],mmod);
+      
+      // Times of these new disks
+      For(i,n_new_disk)
+        devt_new[i]->time =
+        Uni()*(y_ldsk->devt->time - o_ldsk->devt->time) + o_ldsk->devt->time;
+      
+      devt = tree->devt;
+      
+      // Insert these events
+      For(i,n_new_disk)
+        {
+          while(devt->prev) devt = devt->prev;
+          while(devt->time < devt_new[i]->time) devt = devt->next;
+          devt_new[i]->prev = devt->prev;
+          devt_new[i]->next = devt;
+          MIGREP_Insert_Devt(devt_new[i]);
+        }
+      
+      // Sort these events by ascending order of their times
+      For(i,n_new_disk-1)
+        {
+          for(j=i+1;j<n_new_disk;j++)
+            {
+              if(devt_new[j]->time > devt_new[i]->time)
+                {
+                  devt        = devt_new[i];
+                  devt_new[i] = devt_new[j];
+                  devt_new[j] = devt;
+                }
+            }
+        }
+      
+      For(i,n_new_disk)
+        {
+          printf("\n. devt_new: %f [%s]",devt_new[i]->time,devt_new[i]->id); fflush(NULL);
+        }
+      
+      // Add new lindisks to the new disk events and connect them
+      For(i,n_new_disk)
+        {
+          devt_new[i]->ldsk = MIGREP_Make_Lindisk_Node(tree->mmod->n_dim);
+          MIGREP_Init_Lindisk_Node(devt_new[i]->ldsk,devt_new[i],tree->mmod->n_dim);
+          MIGREP_Make_Lindisk_Next(devt_new[i]->ldsk);
+          
+          if(!i)
+            {
+              devt_new[i]->ldsk->next[0] = y_ldsk;
+              y_ldsk->prev               = devt_new[i]->ldsk;
+            }
+          else
+            {
+              devt_new[i]->ldsk->next[0] = devt_new[i-1]->ldsk;
+              devt_new[i-1]->ldsk->prev  = devt_new[i]->ldsk;
+            }
+          
+          printf("\n. add new lindisk %s on disk %s",
+                 devt_new[i]->ldsk->coord->id,
+                 devt_new[i]->id);
+          fflush(NULL);
+        }
+      o_ldsk->next[dir_o_y]              = devt_new[n_new_disk-1]->ldsk;
+      devt_new[n_new_disk-1]->ldsk->prev = o_ldsk;
+    }
+  else
+    {
+      o_ldsk->next[dir_o_y] = y_ldsk;
+      y_ldsk->prev          = o_ldsk;
+    }
+ 
+  // Generate a trajectory
+  MIGREP_One_New_Traj_Given_Devt(y_ldsk,o_ldsk);  
 }
 
 //////////////////////////////////////////////////////////////
@@ -980,7 +1024,6 @@ void MIGREP_One_New_Traj_Given_Devt(t_lindisk_nd *y_ldsk, t_lindisk_nd *o_ldsk)
 {
   int n_disk_btw;
   t_lindisk_nd *ldsk;
-  t_disk_evt *devt;
   phydbl min, max;
   int i;
   phydbl rad;
@@ -1052,6 +1095,7 @@ int MIGREP_Get_Next_Direction(t_lindisk_nd *young, t_lindisk_nd *old)
 {
   if(young->devt->time < old->devt->time)
     {
+      PhyML_Printf("\n== young (%s) @ time %f; old (%s) @ time %f",young->coord->id,young->devt->time,old->coord->id,old->devt->time);
       PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Warn_And_Exit("");
     }
