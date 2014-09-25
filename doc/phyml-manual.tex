@@ -2299,15 +2299,15 @@ corresponds to the strict clock model where all the lineages in the tree evolve 
 \subsubsection{PhyTime output}
 
 The     program     PhyTime     generates     two     output     files.      The     file     called
-`\x{your\_seqfile\_phytime.XXXX.stats}', where XXXX is a  randomly generated integer, lists the node
-times and branch  relative rates sampled during  the estimation process.  It also  gives the sampled
-values for other parameters, such as the  autocorrelation of rates (parameter `Nu'), and the rate of
-evolution (parameter `EvolRate') amongst others.  This  output file can be analysed with the program
-Tracer\index{Tracer}            from            the            BEAST\index{BEAST}            package
-(\url{http://beast.bio.ed.ac.uk/Main_Page}).       The       second       file       is       called
-`\x{your\_seqfile\_phytime.XXXX.trees}'.  It is the  list of  trees that  were collected  during the
+`\x{your\_seqfile\_phytime\_XXXX\_stats}', where  XXXX is  a randomly  generated integer,  lists the
+node times  and branch  relative rates  sampled during the  estimation process.   It also  gives the
+sampled values for other parameters, such as  the autocorrelation of rates (parameter `Nu'), and the
+rate of evolution (parameter `EvolRate') amongst others.   This output file can be analysed with the
+program        Tracer\index{Tracer}        from         the        BEAST\index{BEAST}        package
+(\url{http://beast.bio.ed.ac.uk/Main_Page}).        The       second      file       is       called
+`\x{your\_seqfile\_phytime\_XXXX\_trees}'.  It is  the list of trees that were  collected during the
 estimation process, i.e., phylogenies sampled from the posterior density of trees.  This file can be
-processed   using   the   software   TreeAnnotator,   also   part  of   the   BEAST   package   (see
+processed   using   the   software   TreeAnnotator,   also  part   of   the   BEAST   package   (see
 \url{http://beast.bio.ed.ac.uk/Main_Page}) in  order to generate  confidence sets for the  node time
 estimates.
 

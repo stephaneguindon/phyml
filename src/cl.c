@@ -21,8 +21,8 @@ int Read_Command_Line(option *io, int argc, char **argv)
 {
   int c;
   int idx;
-  int writemode;
   int i;
+  int writemode;
 
   PhyML_Printf("\n. command-line: ");
   For(i,argc) PhyML_Printf("%s ",argv[i]);
@@ -125,10 +125,10 @@ int Read_Command_Line(option *io, int argc, char **argv)
 
   io->datatype = UNDEFINED;
 
-  writemode = 1;
   #ifndef PHYML
   int open_ps_file = 0;
   #endif
+
   idx=-1;
 
     do
@@ -1078,8 +1078,6 @@ int Read_Command_Line(option *io, int argc, char **argv)
 		strcpy(io->out_tree_file,optarg);
 #ifdef PHYML
 		strcat(io->out_tree_file,"_phyml_tree");
-#elif PHYTIME
-		strcat(io->out_tree_file,"_phytime_tree");
 #elif M4
 		strcat(io->out_tree_file,"_m4_tree");
 #endif
@@ -1087,8 +1085,6 @@ int Read_Command_Line(option *io, int argc, char **argv)
 		strcpy(io->out_stats_file,optarg);
 #ifdef PHYML
 		strcat(io->out_stats_file,"_phyml_stats");
-#elif PHYTIME
-		strcat(io->out_stats_file,"_phytime_stats");
 #elif M4
 		strcat(io->out_stats_file,"_m4_stats");
 #endif
@@ -1432,7 +1428,8 @@ int Read_Command_Line(option *io, int argc, char **argv)
       PhyML_Printf("\n== Custom model option with amino-acid requires you to specify a rate matrix file through the '--aa_rate_file' option.\n");
       Exit("\n");
     }
-
+  
+#ifndef PHYTIME
   // Make sure you don't erase the input file...
   if(!strcmp(io->out_tree_file,io->in_align_file) ||
      !strcmp(io->out_stats_file,io->in_align_file))
@@ -1441,8 +1438,12 @@ int Read_Command_Line(option *io, int argc, char **argv)
       Exit("\n");      
     }
 
+  writemode = 1;
+
   io->fp_out_tree  = Openfile(io->out_tree_file,writemode);
   io->fp_out_stats = Openfile(io->out_stats_file,writemode);
+#endif
+  writemode++; // just to silence a warning message at compilation
   
   if(io->mod->whichmodel == GTR) 
     {

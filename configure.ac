@@ -46,14 +46,6 @@ AC_FUNC_SETVBUF_REVERSED
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([floor pow rint sqrt strchr strstr])
 
-# Thanks to Shane Sturrock from Biomatters
-#case "${host}" in
-#*darwin*)
-#AM_INIT_AUTOMAKE([no-dependencies])
-#ARCH_flag="-arch i386 -arch ppc -arch x86_64 -mmacosx-version-min=10.4"
-#;;
-#esac
-
 # Thanks for Charles Plessy from Debian
 case "${host}" in
 *i386*|*amd64*|*x86_64*)

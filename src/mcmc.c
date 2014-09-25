@@ -3148,24 +3148,24 @@ void MCMC_Copy_MCMC_Struct(t_mcmc *ori, t_mcmc *cpy, char *filename)
 
       strcpy(cpy->out_filename,filename);
       pid = getpid();
-      sprintf(cpy->out_filename+strlen(cpy->out_filename),".%d",pid);
+      sprintf(cpy->out_filename+strlen(cpy->out_filename),"_%d",pid);
 
       strcpy(s,cpy->io->in_align_file);
       strcat(s,"_");
       strcat(s,cpy->out_filename);
-      strcat(s,".stats");
+      strcat(s,"_stats");
       cpy->out_fp_stats = fopen(s,"w");
 
       strcpy(s,cpy->io->in_align_file);
       strcat(s,"_");
       strcat(s,cpy->out_filename);
-      strcat(s,".trees");
+      strcat(s,"_trees");
       cpy->out_fp_trees = fopen(s,"w");
 
       strcpy(s,cpy->io->in_align_file);
       strcat(s,"_");
       strcat(s,cpy->out_filename);
-      strcat(s,".constree");
+      strcat(s,"_constree");
       cpy->out_fp_constree = fopen(s,"w");
  
       Free(s);
