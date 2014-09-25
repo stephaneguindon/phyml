@@ -2086,52 +2086,54 @@ matrix *K80_dist(calign *data, phydbl g_shape)
 
   Init_Mat(mat,data);
 
+  diff = 0;
+  
   For(i,data->c_seq[0]->len)
     {
       For(j,data->n_otu-1)
-    {
-      for(k=j+1;k<data->n_otu;k++)
         {
-          if(((data->c_seq[j]->state[i] == 'A' || data->c_seq[j]->state[i] == 'G') &&
-          (data->c_seq[k]->state[i] == 'C' || data->c_seq[k]->state[i] == 'T'))||
-         ((data->c_seq[j]->state[i] == 'C' || data->c_seq[j]->state[i] == 'T') &&
-          (data->c_seq[k]->state[i] == 'A' || data->c_seq[k]->state[i] == 'G')))
-        {
-          diff++;
-          mat->Q[j][k]+=data->wght[i];
-          len[j][k]+=data->wght[i];
-          len[k][j]=len[j][k];
-        }
-
-          else
-        if(((data->c_seq[j]->state[i] == 'A' && data->c_seq[k]->state[i] == 'G') ||
-            (data->c_seq[j]->state[i] == 'G' && data->c_seq[k]->state[i] == 'A'))||
-           ((data->c_seq[j]->state[i] == 'C' && data->c_seq[k]->state[i] == 'T') ||
-            (data->c_seq[j]->state[i] == 'T' && data->c_seq[k]->state[i] == 'C')))
-          {
-            diff++;
-            mat->P[j][k]+=data->wght[i];
-            len[j][k]+=data->wght[i];
-            len[k][j]=len[j][k];
-          }
-        else
-          if((data->c_seq[j]->state[i] == 'A' ||
-              data->c_seq[j]->state[i] == 'C' ||
-              data->c_seq[j]->state[i] == 'G' ||
-              data->c_seq[j]->state[i] == 'T')&&
-             (data->c_seq[k]->state[i] == 'A' ||
-              data->c_seq[k]->state[i] == 'C' ||
-              data->c_seq[k]->state[i] == 'G' ||
-              data->c_seq[k]->state[i] == 'T'))
+          for(k=j+1;k<data->n_otu;k++)
             {
-              len[j][k]+=data->wght[i];
-              len[k][j]=len[j][k];
+              if(((data->c_seq[j]->state[i] == 'A' || data->c_seq[j]->state[i] == 'G') &&
+                  (data->c_seq[k]->state[i] == 'C' || data->c_seq[k]->state[i] == 'T'))||
+                 ((data->c_seq[j]->state[i] == 'C' || data->c_seq[j]->state[i] == 'T') &&
+                  (data->c_seq[k]->state[i] == 'A' || data->c_seq[k]->state[i] == 'G')))
+                {
+                  diff++;
+                  mat->Q[j][k]+=data->wght[i];
+                  len[j][k]+=data->wght[i];
+                  len[k][j]=len[j][k];
+                }
+              
+              else
+                if(((data->c_seq[j]->state[i] == 'A' && data->c_seq[k]->state[i] == 'G') ||
+                    (data->c_seq[j]->state[i] == 'G' && data->c_seq[k]->state[i] == 'A'))||
+                   ((data->c_seq[j]->state[i] == 'C' && data->c_seq[k]->state[i] == 'T') ||
+                    (data->c_seq[j]->state[i] == 'T' && data->c_seq[k]->state[i] == 'C')))
+                  {
+                    diff++;
+                    mat->P[j][k]+=data->wght[i];
+                    len[j][k]+=data->wght[i];
+                    len[k][j]=len[j][k];
+                  }
+                else
+                  if((data->c_seq[j]->state[i] == 'A' ||
+                      data->c_seq[j]->state[i] == 'C' ||
+                      data->c_seq[j]->state[i] == 'G' ||
+                      data->c_seq[j]->state[i] == 'T')&&
+                     (data->c_seq[k]->state[i] == 'A' ||
+                      data->c_seq[k]->state[i] == 'C' ||
+                      data->c_seq[k]->state[i] == 'G' ||
+                      data->c_seq[k]->state[i] == 'T'))
+                    {
+                      len[j][k]+=data->wght[i];
+                      len[k][j]=len[j][k];
+                    }
             }
         }
     }
-    }
-
-
+  
+  
   For(i,data->n_otu-1)
     for(j=i+1;j<data->n_otu;j++)
       {
@@ -3887,96 +3889,336 @@ int Are_Compatible(char *statea, char *stateb, int stepsize, int datatype)
   if(datatype == NT)
     {
       For(i,stepsize)
+        {
+          a = statea[i];
+          For(j,stepsize)
+            {
+              b = stateb[j];
+              
+              switch(a)
+                {
+                case 'A':
+                  {
+                    switch(b)
+                      {
+                      case 'A' :
+                      case 'M' :
+                      case 'R' :
+                      case 'W' :
+                      case 'D' :
+                      case 'H' :
+                      case 'V' :
+                      case 'X' : {break;}
+                      default : return 0;
+                      }
+                    break;
+                  }
+                case 'G':
+                  {
+                    switch(b)
+                      {
+                      case 'G' :
+                      case 'R' :
+                      case 'S' :
+                      case 'K' :
+                      case 'B' :
+                      case 'D' :
+                      case 'V' :
+                      case 'X' : {break;}
+                      default : return 0;
+                      }
+                    break;
+                  }
+                case 'C':
+                  {
+                    switch(b)
+                      {
+                      case 'C' :
+                      case 'M' :
+                      case 'S' :
+                      case 'Y' :
+                      case 'B' :
+                      case 'H' :
+                      case 'V' :
+                      case 'X' : { break;}
+                      default : return 0;
+                      }
+                    break;
+                  }
+                case 'T':
+                  {
+                    switch(b)
+                      {
+                      case 'T' :
+                      case 'W' :
+                      case 'Y' :
+                      case 'K' :
+                      case 'B' :
+                      case 'D' :
+                      case 'H' :
+                      case 'X' : { break;}
+                      default : return 0;
+                      }
+                    break;
+                  }
+                case 'M' :
+                  {
+                    switch(b)
+                      {
+                      case 'M' :
+                      case 'A' :
+                      case 'C' :
+                      case 'R' :
+                      case 'W' :
+                      case 'S' :
+                      case 'Y' :
+                      case 'B' :
+                      case 'D' :
+                      case 'H' :
+                      case 'V' :
+                      case 'X' : { break;}
+                      default : return 0;
+                      }
+                    break;
+                  }
+                case 'R' :
+                  {
+                    switch(b)
+                      {
+                      case 'R' :
+                      case 'A' :
+                      case 'G' :
+                      case 'M' :
+                      case 'W' :
+                      case 'S' :
+                      case 'K' :
+                      case 'B' :
+                      case 'D' :
+                      case 'H' :
+                      case 'V' :
+                      case 'X' : { break;}
+                      default : return 0;
+                      }
+                    break;
+                  }
+                  
+                case 'W' :
+                  {
+                    switch(b)
+                      {
+                      case 'W' :
+                      case 'A' :
+                      case 'T' :
+                      case 'M' :
+                      case 'R' :
+                      case 'Y' :
+                      case 'K' :
+                      case 'B' :
+                      case 'D' :
+                      case 'H' :
+                      case 'V' :
+                      case 'X' : { break;}
+                      default : return 0;
+                      }
+                    break;
+                  }
+                  
+                case 'S' :
+                  {
+                    switch(b)
+                      {
+                      case 'S' :
+                      case 'C' :
+                      case 'G' :
+                      case 'M' :
+                      case 'R' :
+                      case 'Y' :
+                      case 'K' :
+                      case 'B' :
+                      case 'D' :
+                      case 'H' :
+                      case 'V' :
+                      case 'X' : { break;}
+                      default : return 0;
+                      }
+                    break;
+                  }
+                  
+                case 'Y' :
+                  {
+                    switch(b)
+                      {
+                      case 'Y' :
+                      case 'C' :
+                      case 'T' :
+                      case 'M' :
+                      case 'W' :
+                      case 'S' :
+                      case 'K' :
+                      case 'B' :
+                      case 'D' :
+                      case 'H' :
+                      case 'V' :
+                      case 'X' : { break;}
+                      default : return 0;
+                      }
+                    break;
+                  }
+                  
+                case 'K' :
+                  {
+                    switch(b)
+                      {
+                      case 'K' :
+                      case 'G' :
+                      case 'T' :
+                      case 'R' :
+                      case 'W' :
+                      case 'S' :
+                      case 'Y' :
+                      case 'B' :
+                      case 'D' :
+                      case 'H' :
+                      case 'V' :
+                      case 'X' : { break;}
+                      default : return 0;
+                      }
+                    break;
+                  }
+                case 'B' :
+                  {
+                    switch(b)
+                      {
+                      case 'B' :
+                      case 'C' :
+                      case 'G' :
+                      case 'T' :
+                      case 'M' :
+                      case 'R' :
+                      case 'W' :
+                      case 'S' :
+                      case 'Y' :
+                      case 'K' :
+                      case 'D' :
+                      case 'H' :
+                      case 'V' :
+                      case 'X' : { break;}
+                      default : return 0;
+                      }
+                    break;
+                  }
+                case 'D' :
+                  {
+                    switch(b)
+                      {
+                      case 'D' :
+                      case 'A' :
+                      case 'G' :
+                      case 'T' :
+                      case 'M' :
+                      case 'R' :
+                      case 'W' :
+                      case 'S' :
+                      case 'Y' :
+                      case 'K' :
+                      case 'B' :
+                      case 'H' :
+                      case 'V' :
+                      case 'X' : { break;}
+                      default : return 0;
+                      }
+                    break;
+                  }
+                case 'H' :
+                  {
+                    switch(b)
+                      {
+                      case 'H' :
+                      case 'A' :
+                      case 'C' :
+                      case 'T' :
+                      case 'M' :
+                      case 'R' :
+                      case 'W' :
+                      case 'S' :
+                      case 'Y' :
+                      case 'K' :
+                      case 'B' :
+                      case 'D' :
+                      case 'V' :
+                      case 'X' : { break;}
+                      default : return 0;
+                      }
+                    break;
+                  }
+                case 'V' :
+                  {
+                    switch(b)
+                      {
+                      case 'V' :
+                      case 'A' :
+                      case 'C' :
+                      case 'G' :
+                      case 'M' :
+                      case 'R' :
+                      case 'W' :
+                      case 'S' :
+                      case 'Y' :
+                      case 'K' :
+                      case 'B' :
+                      case 'D' :
+                      case 'H' :
+                      case 'X' : { break;}
+                      default : return 0;
+                      }
+                    break;
+                  }
+                case 'X' :
+                  {
+                    switch(b)
+                      {
+                      case 'X' :
+                      case 'A' :
+                      case 'C' :
+                      case 'G' :
+                      case 'T' :
+                      case 'M' :
+                      case 'R' :
+                      case 'W' :
+                      case 'S' :
+                      case 'Y' :
+                      case 'K' :
+                      case 'B' :
+                      case 'D' :
+                      case 'H' :
+                      case 'V' : { break;}
+                      default : return 0;
+                      }
+                    break;
+                  }
+                default :
+                  {
+                    PhyML_Printf("\n== Err. in Are_Compatible\n");
+                    PhyML_Printf("\n== Please check that characters `%c` and `%c`",a,b);
+                    PhyML_Printf("\n== correspond to existing nucleotides.\n");
+                    Warn_And_Exit("\n");
+                    return 0;
+                  }
+                }
+            }
+        }
+    }
+  else if(datatype == AA)
     {
-      a = statea[i];
-      For(j,stepsize)
+      a = statea[0]; b = stateb[0];
+      switch(a)
         {
-          b = stateb[j];
-
-          switch(a)
-        {
-        case 'A':
+        case 'A' :
           {
             switch(b)
               {
               case 'A' :
-              case 'M' :
-              case 'R' :
-              case 'W' :
-              case 'D' :
-              case 'H' :
-              case 'V' :
-              case 'X' : {b=b; break;}
-              default : return 0;
-              }
-            break;
-          }
-        case 'G':
-          {
-            switch(b)
-              {
-              case 'G' :
-              case 'R' :
-              case 'S' :
-              case 'K' :
-              case 'B' :
-              case 'D' :
-              case 'V' :
-              case 'X' : {b=b; break;}
-              default : return 0;
-              }
-            break;
-          }
-        case 'C':
-          {
-            switch(b)
-              {
-              case 'C' :
-              case 'M' :
-              case 'S' :
-              case 'Y' :
-              case 'B' :
-              case 'H' :
-              case 'V' :
-              case 'X' : {b=b; break;}
-              default : return 0;
-              }
-            break;
-          }
-        case 'T':
-          {
-            switch(b)
-              {
-              case 'T' :
-              case 'W' :
-              case 'Y' :
-              case 'K' :
-              case 'B' :
-              case 'D' :
-              case 'H' :
-              case 'X' :
-            {b=b; break;}
-              default : return 0;
-              }
-            break;
-          }
-        case 'M' :
-          {
-            switch(b)
-              {
-              case 'M' :
-              case 'A' :
-              case 'C' :
-              case 'R' :
-              case 'W' :
-              case 'S' :
-              case 'Y' :
-              case 'B' :
-              case 'D' :
-              case 'H' :
-              case 'V' :
-              case 'X' :
-            {b=b; break;}
+              case 'X' : { break;}
               default : return 0;
               }
             break;
@@ -3986,101 +4228,18 @@ int Are_Compatible(char *statea, char *stateb, int stepsize, int datatype)
             switch(b)
               {
               case 'R' :
-              case 'A' :
-              case 'G' :
-              case 'M' :
-              case 'W' :
-              case 'S' :
-              case 'K' :
-              case 'B' :
-              case 'D' :
-              case 'H' :
-              case 'V' :
-              case 'X' : {b=b; break;}
+              case 'X' : { break;}
               default : return 0;
               }
             break;
           }
-
-        case 'W' :
+        case 'N' :
           {
             switch(b)
               {
-              case 'W' :
-              case 'A' :
-              case 'T' :
-              case 'M' :
-              case 'R' :
-              case 'Y' :
-              case 'K' :
+              case 'N' :
               case 'B' :
-              case 'D' :
-              case 'H' :
-              case 'V' :
-              case 'X' : {b=b; break;}
-              default : return 0;
-              }
-            break;
-          }
-
-        case 'S' :
-          {
-            switch(b)
-              {
-              case 'S' :
-              case 'C' :
-              case 'G' :
-              case 'M' :
-              case 'R' :
-              case 'Y' :
-              case 'K' :
-              case 'B' :
-              case 'D' :
-              case 'H' :
-              case 'V' :
-              case 'X' : {b=b; break;}
-              default : return 0;
-              }
-            break;
-          }
-
-        case 'Y' :
-          {
-            switch(b)
-              {
-              case 'Y' :
-              case 'C' :
-              case 'T' :
-              case 'M' :
-              case 'W' :
-              case 'S' :
-              case 'K' :
-              case 'B' :
-              case 'D' :
-              case 'H' :
-              case 'V' :
-              case 'X' : {b=b; break;}
-              default : return 0;
-              }
-            break;
-          }
-
-        case 'K' :
-          {
-            switch(b)
-              {
-              case 'K' :
-              case 'G' :
-              case 'T' :
-              case 'R' :
-              case 'W' :
-              case 'S' :
-              case 'Y' :
-              case 'B' :
-              case 'D' :
-              case 'H' :
-              case 'V' :
-              case 'X' : {b=b; break;}
+              case 'X' : { break;}
               default : return 0;
               }
             break;
@@ -4089,20 +4248,9 @@ int Are_Compatible(char *statea, char *stateb, int stepsize, int datatype)
           {
             switch(b)
               {
+              case 'N' :
               case 'B' :
-              case 'C' :
-              case 'G' :
-              case 'T' :
-              case 'M' :
-              case 'R' :
-              case 'W' :
-              case 'S' :
-              case 'Y' :
-              case 'K' :
-              case 'D' :
-              case 'H' :
-              case 'V' :
-              case 'X' : {b=b; break;}
+              case 'X' : { break;}
               default : return 0;
               }
             break;
@@ -4112,19 +4260,59 @@ int Are_Compatible(char *statea, char *stateb, int stepsize, int datatype)
             switch(b)
               {
               case 'D' :
-              case 'A' :
+              case 'X' : { break;}
+              default : return 0;
+              }
+            break;
+          }
+        case 'C' :
+          {
+            switch(b)
+              {
+              case 'C' :
+              case 'X' : { break;}
+              default : return 0;
+              }
+            break;
+          }
+        case 'Q' :
+          {
+            switch(b)
+              {
+              case 'Q' :
+              case 'Z' :
+              case 'X' : { break;}
+              default : return 0;
+              }
+            break;
+          }
+        case 'Z' :
+          {
+            switch(b)
+              {
+              case 'Q' :
+              case 'Z' :
+              case 'X' : { break;}
+              default : return 0;
+              }
+            break;
+          }
+        case 'E' :
+          {
+            switch(b)
+              {
+              case 'E' :
+              case 'X' : { break;}
+              default : return 0;
+              }
+            break;
+          }
+        case 'G' :
+          {
+            switch(b)
+              {
               case 'G' :
-              case 'T' :
-              case 'M' :
-              case 'R' :
-              case 'W' :
-              case 'S' :
-              case 'Y' :
-              case 'K' :
-              case 'B' :
-              case 'H' :
-              case 'V' :
-              case 'X' : {b=b; break;}
+              case 'X' : { break;}
               default : return 0;
               }
             break;
@@ -4134,19 +4322,107 @@ int Are_Compatible(char *statea, char *stateb, int stepsize, int datatype)
             switch(b)
               {
               case 'H' :
-              case 'A' :
-              case 'C' :
-              case 'T' :
-              case 'M' :
-              case 'R' :
-              case 'W' :
-              case 'S' :
-              case 'Y' :
+              case 'X' : { break;}
+              default : return 0;
+              }
+            break;
+          }
+        case 'I' :
+          {
+            switch(b)
+              {
+              case 'I' :
+              case 'X' : { break;}
+              default : return 0;
+              }
+            break;
+          }
+        case 'L' :
+          {
+            switch(b)
+              {
+              case 'L' :
+              case 'X' : { break;}
+              default : return 0;
+              }
+            break;
+          }
+        case 'K' :
+          {
+            switch(b)
+              {
               case 'K' :
-              case 'B' :
-              case 'D' :
-              case 'V' :
-              case 'X' : {b=b; break;}
+              case 'X' : { break;}
+              default : return 0;
+              }
+            break;
+          }
+        case 'M' :
+          {
+            switch(b)
+              {
+              case 'M' :
+              case 'X' : { break;}
+              default : return 0;
+              }
+            break;
+          }
+        case 'F' :
+          {
+            switch(b)
+              {
+              case 'F' :
+              case 'X' : { break;}
+              default : return 0;
+              }
+            break;
+          }
+        case 'P' :
+          {
+            switch(b)
+              {
+              case 'P' :
+              case 'X' : { break;}
+              default : return 0;
+              }
+            break;
+          }
+        case 'S' :
+          {
+            switch(b)
+              {
+              case 'S' :
+              case 'X' : { break;}
+              default : return 0;
+              }
+            break;
+          }
+        case 'T' :
+          {
+            switch(b)
+              {
+              case 'T' :
+              case 'X' : { break;}
+              default : return 0;
+              }
+            break;
+          }
+        case 'W' :
+          {
+            switch(b)
+              {
+              case 'W' :
+              case 'X' : { break;}
+              default : return 0;
+              }
+            break;
+          }
+        case 'Y' :
+          {
+            switch(b)
+              {
+              case 'Y' :
+              case 'X' : { break;}
               default : return 0;
               }
             break;
@@ -4156,19 +4432,7 @@ int Are_Compatible(char *statea, char *stateb, int stepsize, int datatype)
             switch(b)
               {
               case 'V' :
-              case 'A' :
-              case 'C' :
-              case 'G' :
-              case 'M' :
-              case 'R' :
-              case 'W' :
-              case 'S' :
-              case 'Y' :
-              case 'K' :
-              case 'B' :
-              case 'D' :
-              case 'H' :
-              case 'X' : {b=b; break;}
+              case 'X' : { break;}
               default : return 0;
               }
             break;
@@ -4177,319 +4441,55 @@ int Are_Compatible(char *statea, char *stateb, int stepsize, int datatype)
           {
             switch(b)
               {
-              case 'X' :
-              case 'A' :
-              case 'C' :
-              case 'G' :
-              case 'T' :
-              case 'M' :
-              case 'R' :
-              case 'W' :
-              case 'S' :
-              case 'Y' :
-              case 'K' :
-              case 'B' :
-              case 'D' :
-              case 'H' :
-              case 'V' : {b=b; break;}
+              case 'A':case 'R':case 'N' :case 'B' :case 'D' :
+              case 'C':case 'Q':case 'Z' :case 'E' :case 'G' :
+              case 'H':case 'I':case 'L' :case 'K' :case 'M' :
+              case 'F':case 'P':case 'S' :case 'T' :case 'W' :
+              case 'Y':case 'V': case 'X' : { break;}
               default : return 0;
               }
             break;
           }
         default :
           {
-                      PhyML_Printf("\n. Err. in Are_Compatible\n");
-                      PhyML_Printf("\n. Please check that characters `%c` and `%c`\n",a,b);
-                      PhyML_Printf("  correspond to existing nucleotides.\n");
-                      Warn_And_Exit("\n");
-                      return 0;
-          }
-        }
-        }
-    }
-    }
-  else if(datatype == AA)
-    {
-      a = statea[0]; b = stateb[0];
-      switch(a)
-    {
-    case 'A' :
-      {
-        switch(b)
-          {
-          case 'A' :
-          case 'X' : {b=b; break;}
-          default : return 0;
-          }
-        break;
-      }
-    case 'R' :
-      {
-        switch(b)
-          {
-          case 'R' :
-          case 'X' : {b=b; break;}
-          default : return 0;
-          }
-        break;
-      }
-    case 'N' :
-      {
-        switch(b)
-          {
-          case 'N' :
-          case 'B' :
-          case 'X' : {b=b; break;}
-          default : return 0;
-          }
-        break;
-      }
-    case 'B' :
-      {
-        switch(b)
-          {
-          case 'N' :
-          case 'B' :
-          case 'X' : {b=b; break;}
-          default : return 0;
-          }
-        break;
-      }
-    case 'D' :
-      {
-        switch(b)
-          {
-          case 'D' :
-          case 'X' : {b=b; break;}
-          default : return 0;
-          }
-        break;
-      }
-    case 'C' :
-      {
-        switch(b)
-          {
-          case 'C' :
-          case 'X' : {b=b; break;}
-          default : return 0;
-          }
-        break;
-      }
-    case 'Q' :
-      {
-        switch(b)
-          {
-          case 'Q' :
-          case 'Z' :
-          case 'X' : {b=b; break;}
-          default : return 0;
-          }
-        break;
-      }
-    case 'Z' :
-      {
-        switch(b)
-          {
-          case 'Q' :
-          case 'Z' :
-          case 'X' : {b=b; break;}
-          default : return 0;
-          }
-        break;
-      }
-    case 'E' :
-      {
-        switch(b)
-          {
-          case 'E' :
-          case 'X' : {b=b; break;}
-          default : return 0;
-          }
-        break;
-      }
-    case 'G' :
-      {
-        switch(b)
-          {
-          case 'G' :
-          case 'X' : {b=b; break;}
-          default : return 0;
-          }
-        break;
-      }
-    case 'H' :
-      {
-        switch(b)
-          {
-          case 'H' :
-          case 'X' : {b=b; break;}
-          default : return 0;
-          }
-        break;
-      }
-    case 'I' :
-      {
-        switch(b)
-          {
-          case 'I' :
-          case 'X' : {b=b; break;}
-          default : return 0;
-          }
-        break;
-      }
-    case 'L' :
-      {
-        switch(b)
-          {
-          case 'L' :
-          case 'X' : {b=b; break;}
-          default : return 0;
-          }
-        break;
-      }
-    case 'K' :
-      {
-        switch(b)
-          {
-          case 'K' :
-          case 'X' : {b=b; break;}
-          default : return 0;
-          }
-        break;
-      }
-    case 'M' :
-      {
-        switch(b)
-          {
-          case 'M' :
-          case 'X' : {b=b; break;}
-          default : return 0;
-          }
-        break;
-      }
-    case 'F' :
-      {
-        switch(b)
-          {
-          case 'F' :
-          case 'X' : {b=b; break;}
-          default : return 0;
-          }
-        break;
-      }
-    case 'P' :
-      {
-        switch(b)
-          {
-          case 'P' :
-          case 'X' : {b=b; break;}
-          default : return 0;
-          }
-        break;
-      }
-    case 'S' :
-      {
-        switch(b)
-          {
-          case 'S' :
-          case 'X' : {b=b; break;}
-          default : return 0;
-          }
-        break;
-      }
-    case 'T' :
-      {
-        switch(b)
-          {
-          case 'T' :
-          case 'X' : {b=b; break;}
-          default : return 0;
-          }
-        break;
-      }
-    case 'W' :
-      {
-        switch(b)
-          {
-          case 'W' :
-          case 'X' : {b=b; break;}
-          default : return 0;
-          }
-        break;
-      }
-    case 'Y' :
-      {
-        switch(b)
-          {
-          case 'Y' :
-          case 'X' : {b=b; break;}
-          default : return 0;
-          }
-        break;
-      }
-    case 'V' :
-      {
-        switch(b)
-          {
-          case 'V' :
-          case 'X' : {b=b; break;}
-          default : return 0;
-          }
-        break;
-      }
-    case 'X' :
-      {
-        switch(b)
-          {
-          case 'A':case 'R':case 'N' :case 'B' :case 'D' :
-          case 'C':case 'Q':case 'Z' :case 'E' :case 'G' :
-          case 'H':case 'I':case 'L' :case 'K' :case 'M' :
-          case 'F':case 'P':case 'S' :case 'T' :case 'W' :
-          case 'Y':case 'V': case 'X' : {b=b; break;}
-          default : return 0;
-          }
-        break;
-      }
-    default :
-      {
-        PhyML_Printf("\n. Err. in Are_Compatible\n");
-            PhyML_Printf("\n. Please check that characters `%c` and `%c`\n",a,b);
-            PhyML_Printf("  correspond to existing amino-acids.\n");
+            PhyML_Printf("\n== Err. in Are_Compatible\n");
+            PhyML_Printf("\n== Please check that characters `%c` and `%c`",a,b);
+            PhyML_Printf("\n== correspond to existing amino-acids.\n");
             Warn_And_Exit("\n");
-        return 0;
-      }
-    }
+            return 0;
+          }
+        }
     }
   else if(datatype == GENERIC)
     {
       if(Is_Ambigu(statea,GENERIC,stepsize) || Is_Ambigu(stateb,GENERIC,stepsize)) return 1;
       else
-    {
-      int a,b;
-      char format[6];
-
-      sprintf(format,"%%%dd",stepsize);
-
-      if(!sscanf(statea,format,&a))
         {
-          PhyML_Printf("\n. statea = %s",statea);
-          PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-          Warn_And_Exit("");
+          int a,b;
+          char format[6];
+          
+          sprintf(format,"%%%dd",stepsize);
+          
+          if(!sscanf(statea,format,&a))
+            {
+              PhyML_Printf("\n== statea = %s",statea);
+              PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+              Warn_And_Exit("");
+            }
+          if(!sscanf(stateb,format,&b))
+            {
+              PhyML_Printf("\n== statea = %s",stateb);
+              PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+              Warn_And_Exit("");
+            }
+          
+          /* 	  PhyML_Printf("\n. %s %d a=%d b=%d ",__FILE__,__LINE__,a,b);  */
+          
+          if(a == b) return 1;
         }
-      if(!sscanf(stateb,format,&b))
-        {
-          PhyML_Printf("\n. statea = %s",stateb);
-          PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-          Warn_And_Exit("");
-        }
-
-/* 	  PhyML_Printf("\n. %s %d a=%d b=%d ",__FILE__,__LINE__,a,b);  */
-
-      if(a == b) return 1;
-    }
       return 0;
     }
-
+  
   return 1;
 }
 

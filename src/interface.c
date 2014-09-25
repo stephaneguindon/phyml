@@ -675,7 +675,9 @@ void Launch_Interface_Model(option *io)
        (io->mod->whichmodel == TN93)))
     {
       strcpy(s,(io->mod->s_opt->opt_kappa)?("estimated"):("fixed"));
-      (io->mod->s_opt->opt_kappa)?((char *)strcat(s,"")):((char *)strcat(s," (ts/tv = "));
+      if(io->mod->s_opt->opt_kappa) strcat(s,"");
+      else strcat(s," (ts/tv = ");
+        
 /*       (io->mod->s_opt->opt_kappa)?((char *)strcat(s,"")):((char *)sprintf(s+(int)strlen((char *)s),"%3.2f)",io->mod->kappa->v)); */
       if(io->mod->s_opt->opt_kappa)
 	{
@@ -691,9 +693,9 @@ void Launch_Interface_Model(option *io)
 	     " %-15s \n",s);
     }
 
-
-  (io->mod->s_opt->opt_pinvar)?(strcpy(s,"estimated")):(strcpy(s,"fixed"));
-  (io->mod->s_opt->opt_pinvar)?((char *)strcat(s,"")):((char *)strcat(s," (p-invar = "));
+  
+  strcpy(s,io->mod->s_opt->opt_pinvar?"estimated":"fixed");
+  strcat(s,io->mod->s_opt->opt_pinvar?"":" (p-invar = ");
 
   if(io->mod->s_opt->opt_pinvar)
     {
@@ -733,7 +735,7 @@ void Launch_Interface_Model(option *io)
   if((io->mod->ras->n_catg > 1) && (io->mod->ras->free_mixt_rates == NO))
     {
       strcpy(s,(io->mod->s_opt->opt_alpha)?("estimated"):("fixed"));
-      (io->mod->s_opt->opt_alpha)?(strcat(s, "")):(strcat(s," (alpha = "));
+      strcat(s,io->mod->s_opt->opt_alpha?"":" (alpha = ");
       
       if(io->mod->s_opt->opt_alpha)
 	{
@@ -961,6 +963,8 @@ void Launch_Interface_Model(option *io)
 	char answer;
 	int n_trial;
 
+        answer = 0;
+
 	switch(io->mod->s_opt->opt_alpha)
 	  {
 	  case 0 :
@@ -1049,7 +1053,7 @@ void Launch_Interface_Model(option *io)
 
     case 'R' :
       {
-	(io->mod->ras->n_catg == 1)?(io->mod->ras->n_catg = 4):(io->mod->ras->n_catg = 1);
+	io->mod->ras->n_catg = (io->mod->ras->n_catg == 1)?(4):(1);
 	break;
       }
 
@@ -1057,12 +1061,15 @@ void Launch_Interface_Model(option *io)
       {
 	char answer;
 	int n_trial;
+        
+        answer = 0;
 
 	switch(io->mod->s_opt->opt_pinvar)
 	  {
 	  case 0 :
 	    {
 	      PhyML_Printf("\n. Optimise p-invar ? [Y/n] ");
+              answer = 0;
 	      if(!scanf("%c", &answer)) Exit("\n");
 	      if(answer == '\n') answer = 'Y';
 	      else getchar();
@@ -1133,7 +1140,9 @@ void Launch_Interface_Model(option *io)
       {
 	char answer;
 	int n_trial;
-
+        
+        answer = 0;
+        
 	if((io->datatype == AA)  ||
 	   (io->mod->whichmodel == JC69)||
 	   (io->mod->whichmodel == F81) ||
@@ -1159,7 +1168,7 @@ void Launch_Interface_Model(option *io)
 	  case 1 :
 	    {
 	      PhyML_Printf("\n. Optimise ts/tv ratio ? [N/y] ");
-	      if(!scanf("%c", &answer)) Exit("\n");
+              if(!scanf("%c", &answer)) Exit("\n");
 	      if(answer == '\n') answer = 'N';
 	      else getchar();
 	      break;
@@ -1707,6 +1716,7 @@ void Launch_Interface_Branch_Support(option *io)
 	    char answer;
 	    int n_trial;
 
+            answer = 0;
 	    io->ratio_test = 0;
 
 	    if(io->n_data_sets > 1)
@@ -1732,8 +1742,8 @@ void Launch_Interface_Branch_Support(option *io)
 	    io->mod->bootstrap = atoi(r);
 
 	    PhyML_Printf("\n. Print bootstrap trees (and statistics) ? (%s) > ",
-		   (io->print_boot_trees)?("Y/n"):("y/N"));
-
+                         (io->print_boot_trees)?("Y/n"):("y/N"));
+            
 	    if(!scanf("%c",&answer)) Exit("\n");
 	    if(answer == '\n') answer = (io->print_boot_trees)?('Y'):('N');
 	    else getchar();

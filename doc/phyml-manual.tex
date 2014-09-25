@@ -173,7 +173,7 @@ you  will   have  to  add  \x{export   PATH="/your\_path/:\${PATH}"}  to  the   
 contains PhyML binary).
 
 
-\subsection{Installing PhyML on Microsoft Windows}\label{sec:install_windows}
+\subsection{Installing PhyML on Microsoft Windows}\label{sec:install-windows}
 
 Copy the files \x{phyml.exe} and \x{phyml.bat} in  the same directory. To launch PhyML, click on the
 icon  corresponding to \x{phyml.bat}.   Clicking on  the icon  for \x{phyml.exe}  works too  but the
@@ -213,7 +213,7 @@ mpirun -n 4 ./phyml-mpi -i myseq -b 100
 
 \noindent Please read section \ref{sec:parallel_bootstrap} of this document for more information.
 
-\subsection{Installing PhyML-BEAGLE}\label{sec:install_phyml_beagle}
+\subsection{Installing PhyML-BEAGLE}\label{sec:install-phyml-beagle}
 
 PhyML  can use  the  BEAGLE\cite{ayres12}  library for  the  likelihood computation.  BEAGLE
 provides provides  significant speed-up: the  single core  version of PhyML-BEAGLE  can be up  to 10
@@ -245,7 +245,7 @@ more sophisticated. It allows the user to analyse partitionned data using flexib
 \subsection{PHYLIP-like interface}
 
 The default is to use the PHYLIP-like  text interface by simply typing `\x{phyml}' in a command-line
-window or by clicking on the PhyML icon (see Section \ref{sec:install_windows}).  After entering the
+window or by clicking on the PhyML icon (see Section \ref{sec:install-windows}).  After entering the
 name of the input sequence file, a list of  sub-menus helps the users set up the analysis.  There
 are currently four distinct sub-menus:
 
@@ -1159,9 +1159,10 @@ $R_1$, $R_2$  and $R_3$ correspond to  slow, medium and  fast substitution rates
 model allows the  fast evolving rates to have  their own vector of equilibrium  frequencies and rate
 matrix, distinct from that found at the medium  or slow evolving sites.  The likelihood at any given
 site $D_s$ of the alignment is then:
-\begin{eqnarray}\label{equ:mixtlk}
+\begin{eqnarray*}
 \Pr(D_s) = \sum_{c=1}^{3} \Pr(D_s | \mathcal{C}_s=c) \Pr(\mathcal{C}_s=c),
-\end{eqnarray}
+\label{equ:mixtlk}
+\end{eqnarray*}
 where  $\Pr(\mathcal{C}_s=c)$ is  obtained by  multiplying the  probability (density)  of  the three
 components (i.e., rate, matrix, frequencies). For instance, $\Pr(\mathcal{C}_1=\{R_1,M_1,F_1\}) =
  \Pr(R_1)\times \Pr(M_1) \times \Pr(F_1)$.
@@ -1223,11 +1224,14 @@ of parameters,  shared across several partition  elements and other parameters  
 for each element of the partition.
 
 The likelihood of a  data set made of the concatenation of $n$  sequence alignments noted $D^{(1)}$,
-$D^{(2)}, \ldots, D^{(n)}$ is then obtained as follow:
-\begin{eqnarray}
-\Pr(D^{(1)},D^{(2)},\ldots,D^{(n)}) &=& \prod_{i=1}^{n}  \Pr(D^{(i)}) \nonumber\\
+$D^{(2)}, \ldots, D^{(n)}$ is then obtained as follows:
+
+\begin{eqnarray*}
+\Pr(D^{(1)},D^{(2)},\ldots,D^{(n)}) &=& \prod_{i=1}^{n}  \Pr(D^{(i)}) \\
 &=& \prod_{i=1}^{n}  \prod_{s=1}^{L_i} \Pr(D^{(i)}_s),
-\end{eqnarray} where $L_i$ is the number of site columns in partition element $i$.  $\Pr(D^{(i)}_s)$
+\end{eqnarray*} 
+
+where $L_i$ is the number of site columns in partition element $i$.  $\Pr(D^{(i)}_s)$
 is then obtained using Equation \ref{equ:mixtlk}, i.e., by summing over the different classes of the
 mixture model that  applies to site $s$ for  partition element $i$. Hence, the  joint probability of
 all the partition elements is here broken down into the product of likelihood of every site for each
@@ -1266,18 +1270,15 @@ analysis in  PhyML lies  in (1)  the hypothesis of  statistical independance  of
 partition elements and (2) distinct data partition can share model components such as rate matrices,
 equilibrium frequencies or  distribution of rates across  sites. More formally, the  likelihood of a
 data set made of $n$ partition elements is written as follows:
-
 \begin{eqnarray*}
 \Pr(D^{(1)},D^{(2)},\ldots,D^{(n)}) &=& \prod_{i=1}^{n}  \prod_{s=1}^{L_i} \Pr(D^{(i)}_s) \\
 &=& \prod_{i=1}^{n}  \prod_{s=1}^{L_i} \sum_{c=1}^{K_i} \Pr(D^{(i)}_s|\mathcal{C}=c) \Pr(\mathcal{C}=c),
 \end{eqnarray*}
-
 where $L_i$ is  the number of sites in partition  element $i$ and $K_i$ is the  number of classes in
 the mixture model that applies to this same partition  element. Each class of a mixture is made of a
 rate  matrix $M$,  a vector  of equilibrium  frequencies  $F$ and  a relative  rate of  substitution
 $R$. Branch  lengths, $L$ and  tree topology $\tau$  are also required  for the calculation  of the
 likelihood. Hence we have:
-
 \begin{eqnarray*}
 && \Pr(D^{(1)},D^{(2)},\ldots,D^{(n)})  \\
 &&=  \prod_{i=1}^{n}  \prod_{s=1}^{L_i} \sum_{c=1}^{K_i} \Pr(D^{(i)}_s|\mathcal{C}=c) \Pr(\mathcal{C}=c) \\
@@ -1301,10 +1302,11 @@ As stated before, our implementation assumes that the different components of a 
 independant. In other words, we have $\Pr(M_m^{(i)},F_f^{(i)},R_r^{(i)}) = \Pr(M_m^{(i)}) \times
 \Pr(F_f^{(i)}) \times \Pr(R_r^{(i)})$. In practice, the joint probability
 $\Pr(M_m^{(i)},F_f^{(i)},R_r^{(i)})$ is obtained as follows:
-\begin{eqnarray}\label{equ:weights}
+\begin{eqnarray*}
 \Pr(M_m^{(i)},F_f^{(i)},R_r^{(i)}) = \frac{\Pr(M_m^{(i)}) \Pr(F_f^{(i)}) \Pr(R_r^{(i)})}{
   \sum_{m,f,r} \Pr(M_m^{(i)}) \Pr(F_f^{(i)}) \Pr(R_r^{(i)}) \mathcal{I}(m,f,r,i)}
-\end{eqnarray}
+\label{equ:weights}
+\end{eqnarray*}
 The probabilities $\Pr(M_m^{(i)})$, $\Pr(F_f^{(i)})$ and $\Pr(R_r^{(i)})$, also called `weights', can be fixed or estimated
 from the data.
 

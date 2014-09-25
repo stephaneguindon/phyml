@@ -108,8 +108,7 @@ make.c make.h\
 mixt.c mixt.h\
 init.c init.h\
 nexus.c nexus.h\
-xml.c xml.h\
-geo.c geo.h
+xml.c xml.h
 phytime_LDADD = -lm
 else 
 if WANT_PHYCONT

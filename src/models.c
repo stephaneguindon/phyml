@@ -748,29 +748,29 @@ void Translate_Custom_Mod_String(t_mod *mod)
   For(i,6)
     {
       For(j,i)
-    {
-      if((mod->custom_mod_string->s[i] == mod->custom_mod_string->s[j]))
         {
-          break;
+          if(mod->custom_mod_string->s[i] == mod->custom_mod_string->s[j])
+            {
+              break;
+            }
         }
-    }
-
+      
       if(i == j)
-    {
-      mod->r_mat->rr_num->v[i] = mod->r_mat->n_diff_rr;
-      mod->r_mat->n_diff_rr++;
-    }
+        {
+          mod->r_mat->rr_num->v[i] = mod->r_mat->n_diff_rr;
+          mod->r_mat->n_diff_rr++;
+        }
       else
-    {
-      mod->r_mat->rr_num->v[i] = mod->r_mat->rr_num->v[j];
-    }
-
+        {
+          mod->r_mat->rr_num->v[i] = mod->r_mat->rr_num->v[j];
+        }
+      
       mod->r_mat->n_rr_per_cat->v[mod->r_mat->rr_num->v[j]]++;
     }
-
-/*   PhyML_Printf("\n"); */
-/*   For(i,6) PhyML_Printf("%d ",mod->rr_param_num[i]); */
-/*   For(i,mod->n_diff_rr_param) PhyML_Printf("\n. Class %d size %d",i+1,mod->r_mat->n_rr_param_per_cat[i]); */
+  
+  /*   PhyML_Printf("\n"); */
+  /*   For(i,6) PhyML_Printf("%d ",mod->rr_param_num[i]); */
+  /*   For(i,mod->n_diff_rr_param) PhyML_Printf("\n. Class %d size %d",i+1,mod->r_mat->n_rr_param_per_cat[i]); */
 }
 
 //////////////////////////////////////////////////////////////
@@ -1240,14 +1240,14 @@ phydbl GTR_Dist(phydbl *F, phydbl alpha, eigen *eigen_struct)
 /*   F[4*2+0] = 73./4898.;   F[4*2+1] = 0./4898.;    F[4*2+2] = 578./4898.; F[4*2+3] = 0./4898.; */
 /*   F[4*3+0] = 3./4898.;    F[4*3+1] = 117./4898.;  F[4*3+2] = 1./4898.;   F[4*3+3] = 1126./4898.; */
 
-
+  sum = 0.0;
   For(i,eigen_struct->size)
     {
       For(j,eigen_struct->size)
-    {
-      pi[i] += (F[eigen_struct->size*i+j] + F[eigen_struct->size*j+i])/2.;
-      sum += F[eigen_struct->size*i+j];
-    }
+        {
+          pi[i] += (F[eigen_struct->size*i+j] + F[eigen_struct->size*j+i])/2.;
+          sum += F[eigen_struct->size*i+j];
+        }
     }
 
 /* /\*   Jukes and Cantor correction *\/ */

@@ -53,8 +53,6 @@ int MIGREP_Draw(GtkWidget *widget, cairo_t *cr, gpointer *data)
     {      
       MIGREP_Update_Lindisk_List(devt->time,devt->ldsk_a,&(devt->n_ldsk_a),devt);
 
-      printf("\n. DRAW disk %s n: %d",devt->id,devt->n_ldsk_a); fflush(NULL);
-
       cairo_move_to(cr,0,FABS(devt->time)/h);
       cairo_show_text(cr,devt->id); 
       cairo_stroke(cr);
@@ -72,7 +70,7 @@ int MIGREP_Draw(GtkWidget *widget, cairo_t *cr, gpointer *data)
       For(i,devt->n_ldsk_a)
         {
           cairo_move_to(cr,devt->ldsk_a[i]->coord->lonlat[1]/w,FABS(devt->time)/h);
-          cairo_show_text(cr,devt->ldsk_a[i]->coord->id); 
+          /* cairo_show_text(cr,devt->ldsk_a[i]->coord->id);  */
           cairo_stroke(cr);
           cairo_move_to(cr,devt->ldsk_a[i]->coord->lonlat[1]/w,FABS(devt->time)/h);
           cairo_line_to(cr,devt->ldsk_a[i]->coord->lonlat[1]/w,FABS(devt->prev->time)/h);
@@ -181,7 +179,7 @@ int MIGREP_Main(int argc, char *argv[])
   /* seed = 32615; */
   /* seed = 3; */
   /* seed = 1410475473; */
-  seed = 1410476172;
+  /* seed = 1410476172; */
   printf("\n. Seed: %d",seed);
   srand(seed);
   tree = MIGREP_Simulate_Backward((int)atoi(argv[1]),10.,10.);
@@ -930,7 +928,7 @@ void MIGREP_One_New_Traj(t_lindisk_nd *y_ldsk, t_lindisk_nd *o_ldsk, int dir_o_y
   fflush(NULL);
   
   // How many disks along the new path between y_ldsk and o_ldsk
-  n_new_disk = Rand_Int(min_n_disk,min_n_disk+10);
+  n_new_disk = Rand_Int(min_n_disk,min_n_disk+5);
   printf("\n. n_new_disk: %d",n_new_disk);
   fflush(NULL);
   

@@ -81,8 +81,8 @@ AC_ARG_ENABLE([debug],
               [AS_HELP_STRING([--enable-debug],
                               [Remove optimization options and add debug informations.])])
 AS_IF([test "x$enable_debug" = "xyes"],
-      [CFLAGS="-ansi -pedantic -Wall -std=c99 -O0 -g"],
-      [CFLAGS="-Wall -O2 ${MSSE} -fomit-frame-pointer -funroll-loops ${ARCH_flag}"])
+      [CFLAGS="-ansi -pedantic -Wall -std=c99 -O0 -g -Wuninitialized"],
+      [CFLAGS="-Wall -O2 ${MSSE} -fomit-frame-pointer -funroll-loops -Wempty-body -Wuninitialized ${ARCH_flag}"])
 
 AC_ARG_ENABLE([gprof],
               [AS_HELP_STRING([--enable-gprof],
