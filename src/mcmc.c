@@ -4755,14 +4755,24 @@ void MCMC_Read_Param_Vals(t_tree *tree)
   
   in_fp = tree->mcmc->in_fp_par;
   
-
   sizemax = T_MAX_LINE;
 
   token = (char *)mCalloc(sizemax,sizeof(char));
   
-  if(fgets(token,sizemax,in_fp)); // Skip first line
-  if(fgets(token,sizemax,in_fp)); // Skip second
-  
+  if(fgets(token,sizemax,in_fp) == NULL) // Skip first line
+    {
+      PhyML_Printf("\n== Wrong file format.");
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      Exit("\n");
+    }
+    
+  if(fgets(token,sizemax,in_fp) == NULL) // Skip second
+    {
+      PhyML_Printf("\n== Wrong file format.");
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      Exit("\n");
+    }
+
   v=fscanf(in_fp,"%lf\t",&val); // Run
   /* PhyML_Printf("\n. Run = %d",(int)val); */
   v=fscanf(in_fp,"%lf\t",&val); // LnLike[Exact]

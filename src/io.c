@@ -1173,22 +1173,21 @@ void Detect_Align_File_Format(option *io)
     {
       if(errno) io->data_file_format = PHYLIP;
       else if(c == '#')
-    {
-      char s[10],t[6]="NEXUS";
-      if(!fgets(s,6,io->fp_in_align))
         {
-          PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
-          Exit("\n");
+          char s[10],t[6]="NEXUS";
+          if(!fgets(s,6,io->fp_in_align))
+            {
+              PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+              Exit("\n");
+            }
+          if(!strcmp(t,s))
+            {
+              fsetpos(io->fp_in_align,&curr_pos);
+              io->data_file_format = NEXUS;
+              return;
+            }
         }
-      if(!strcmp(t,s))
-        {
-          fsetpos(io->fp_in_align,&curr_pos);
-          io->data_file_format = NEXUS;
-          return;
-        }
-    }
-    }
-
+    }  
   fsetpos(io->fp_in_align,&curr_pos);
 }
 
@@ -1238,13 +1237,13 @@ void Detect_Tree_File_Format(option *io)
 align **Get_Seq(option *io)
 {
   io->data = NULL;
-
+  
   if(!io->fp_in_align)
     {
       PhyML_Printf("\n== Filehandle to '%s' seems to be closed.",io->in_align_file);
       Exit("\n");
     }
-
+  
   Detect_Align_File_Format(io);
 
   switch(io->data_file_format)
@@ -1600,6 +1599,7 @@ align **Get_Seq_Phylip(option *io)
       PhyML_Printf("\n== The number of taxa should not exceed %d",N_MAX_OTU);
       Exit("\n");
     }
+  
 
   if(io->interleaved) io->data = Read_Seq_Interleaved(io);
   else                io->data = Read_Seq_Sequential(io);
@@ -1621,24 +1621,26 @@ void Read_Ntax_Len_Phylip(FILE *fp ,int *n_otu, int *n_tax)
   do
     {
       if(fscanf(fp,"%s",line) == EOF)
-    {
-      Free(line);
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
-          Exit("\n");
-    }
-      else
-    {
-      if(strcmp(line,"\n") && strcmp(line,"\r") && strcmp(line,"\t"))
         {
-          sscanf(line,"%d",n_otu);
-          if(*n_otu <= 0) Warn_And_Exit("\n. The number of taxa cannot be negative.\n");
-
-          if(!fscanf(fp,"%s",line)) Exit("\n");
-          sscanf(line,"%d",n_tax);
-          if(*n_tax <= 0) Warn_And_Exit("\n. The sequence length cannot be negative.\n");
-          else readok = 1;
+          Free(line);
+          PhyML_Printf("\n== PhyML can't read in this alignment.");
+          PhyML_Printf("\n== Could it be that sequence file is empty?");
+          PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+          Exit("\n");
         }
-    }
+      else
+        {
+          if(strcmp(line,"\n") && strcmp(line,"\r") && strcmp(line,"\t"))
+            {
+              sscanf(line,"%d",n_otu);
+              if(*n_otu <= 0) Warn_And_Exit("\n. The number of taxa cannot be negative.\n");
+              
+              if(!fscanf(fp,"%s",line)) Exit("\n");
+              sscanf(line,"%d",n_tax);
+              if(*n_tax <= 0) Warn_And_Exit("\n. The sequence length cannot be negative.\n");
+              else readok = 1;
+            }
+        }
     }while(!readok);
 
   Free(line);
@@ -1661,7 +1663,7 @@ align **Read_Seq_Sequential(option *io)
 
 /*   while((c=fgetc(in))!='\n'); */
  /*  while(((c=fgetc(io->fp_in_align))!='\n') && (c != ' ') && (c != '\r') && (c != '\t')); */
-
+  
   sprintf(format, "%%%ds", T_MAX_NAME);
 
   For(i,io->n_otu)
@@ -1680,11 +1682,11 @@ align **Read_Seq_Sequential(option *io)
       while(data[i]->len < io->init_len * io->state_len) Read_One_Line_Seq(&data,i,io->fp_in_align);
 
       if(data[i]->len != io->init_len * io->state_len)
-    {
-      PhyML_Printf("\n== Err: Problem with species %s's sequence (check the format).\n",data[i]->name);
-      PhyML_Printf("\n== Observed sequence length: %d, expected length: %d\n",data[i]->len, io->init_len * io->state_len);
-      Warn_And_Exit("");
-    }
+        {
+          PhyML_Printf("\n== Err. Problem with species %s's sequence (check the format).\n",data[i]->name);
+          PhyML_Printf("\n== Observed sequence length: %d, expected length: %d\n",data[i]->len, io->init_len * io->state_len);
+          Warn_And_Exit("");
+        }
     }
 
   For(i,io->n_otu) data[i]->state[data[i]->len] = '\0';
@@ -3920,9 +3922,6 @@ option *Get_Input(int argc, char **argv)
   mod->io        = io;
   mod->s_opt     = s_opt;
 
-
-
-
 #ifdef MPI
   rv = Read_Command_Line(io,argc,argv);
 #elif (defined PHYTIME || defined SERGEII)
@@ -3934,19 +3933,19 @@ option *Get_Input(int argc, char **argv)
     {
     case 1:
       {
-    Launch_Interface(io);
-    break;
+        Launch_Interface(io);
+        break;
       }
       /*
-    case 2:
-    Usage();
-    break;
+        case 2:
+        Usage();
+        break;
       */
     default:
       rv = Read_Command_Line(io,argc,argv);
     }
 #endif
-
+  
   if(rv) return io;
   else   return NULL;
 }

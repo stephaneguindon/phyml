@@ -197,7 +197,7 @@ dnl       [CFLAGS="-I/usr/include/cairo ${ARCH_flag}"],
 dnl       [CFLAGS="-Wall -O2 ${MSSE} -fomit-frame-pointer -funroll-loops ${ARCH_flag}"])
 AS_IF([test "x$enable_migrep" = "xyes"],[PKG_CHECK_MODULES([GTK], [gtk+-3.0])])
 AS_IF([test "x$enable_migrep" = "xyes"],[PKG_CHECK_MODULES([CAIRO], [cairo])])
-AS_IF([test "x$enable_migrep" = "xyes"],[CFLAGS="${CFLAGS} -Wpedantic `pkg-config --cflags --libs gtk+-3.0` ${ARCH_flag}"])
+AS_IF([test "x$enable_migrep" = "xyes"],[CFLAGS="${CFLAGS} `pkg-config --cflags --libs gtk+-3.0` ${ARCH_flag}"])
 
 
 dnl AM_PATH_GTK_3_0(,,AC_MSG_ERROR(windoe-default needs GTK+-3))

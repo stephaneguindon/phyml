@@ -673,8 +673,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
 		io->mod->ns         = 4;
 		io->mod->m4mod->n_o = 4;
 		
-		if(
-		   (io->mod->whichmodel == LG)        ||
+		if((io->mod->whichmodel == LG)        ||
 		   (io->mod->whichmodel == WAG)       ||
 		   (io->mod->whichmodel == DAYHOFF)   ||
 		   (io->mod->whichmodel == JTT)       ||
@@ -1074,23 +1073,23 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	      {
 		strcpy(io->in_align_file, optarg);
 		io->fp_in_align = Openfile(io->in_align_file,0);
-
+                
 		strcpy(io->out_file, optarg);
 		strcpy(io->out_tree_file,optarg);
 #ifdef PHYML
 		strcat(io->out_tree_file,"_phyml_tree");
-#elif(MC)
-		strcat(io->out_tree_file,"_mc_tree");
-#elif(M4)
+#elif PHYTIME
+		strcat(io->out_tree_file,"_phytime_tree");
+#elif M4
 		strcat(io->out_tree_file,"_m4_tree");
 #endif
-
+                
 		strcpy(io->out_stats_file,optarg);
 #ifdef PHYML
 		strcat(io->out_stats_file,"_phyml_stats");
-#elif(MC)
-		strcat(io->out_stats_file,"_mc_stats");
-#elif(M4)
+#elif PHYTIME
+		strcat(io->out_stats_file,"_phytime_stats");
+#elif M4
 		strcat(io->out_stats_file,"_m4_stats");
 #endif
 	      }
@@ -1434,6 +1433,14 @@ int Read_Command_Line(option *io, int argc, char **argv)
       Exit("\n");
     }
 
+  // Make sure you don't erase the input file...
+  if(!strcmp(io->out_tree_file,io->in_align_file) ||
+     !strcmp(io->out_stats_file,io->in_align_file))
+    {
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s').\n",__FILE__,__LINE__,__FUNCTION__);
+      Exit("\n");      
+    }
+
   io->fp_out_tree  = Openfile(io->out_tree_file,writemode);
   io->fp_out_stats = Openfile(io->out_stats_file,writemode);
   
@@ -1443,6 +1450,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
       io->mod->s_opt->opt_rr = 1;
     }
   
+
   return 1;
 }
 

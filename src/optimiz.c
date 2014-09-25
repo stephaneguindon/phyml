@@ -943,17 +943,18 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
 
 
       /* Substitutions between nucleotides are considered to follow a
-     GTR model */
+         GTR model */
       
       if(tree->mod->io->datatype == NT)
         {
           if(tree->mod->whichmodel == GTR || tree->mod->whichmodel == CUSTOM)
             {
-              failed = NO;
 
               Switch_Eigen(YES,tree->mod);
 
               For(i,5) tree->mod->m4mod->o_rr[i] = LOG(tree->mod->m4mod->o_rr[i]);
+
+              failed = YES;
 
               /* BFGS(tree,tree->mod->m4mod->o_rr,5,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,YES, */
               BFGS(tree,tree->mod->m4mod->o_rr,5,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,YES,NO,
@@ -1046,11 +1047,11 @@ void BFGS(t_tree *tree,
   if(logt == YES) For(i,n) p[i] = LOG(p[i]);
   
   /* PhyML_Printf("\n. ENTER BFGS WITH: %f\n",fp); */
-
+  
   fp_old = fp;
-
+  
   (*dfunc)(tree,p,n,step_size,logt,func,g,is_positive);
-
+  
   for (i=0;i<n;i++)
     {
       for (j=0;j<n;j++) hessin[i][j]=0.0;
@@ -1058,132 +1059,133 @@ void BFGS(t_tree *tree,
       xi[i] = -g[i];
       sum += p[i]*p[i];
     }
-
+  
   stpmax=STPMX*MAX(SQRT(sum),(phydbl)n);
   for(its=1;its<=ITMAX;its++)
     {
       /* PhyML_Printf("\n. BFGS -> %f\n",tree->c_lnL); */
-
+      
       lnsrch(tree,n,p,fp,g,xi,pnew,&fret,stpmax,&check,logt,is_positive);
-
+      
       fp_old = fp;
       fp = fret;
-
+      
       for (i=0;i<n;i++)
-    {
-      xi[i]=pnew[i]-p[i];
-      p[i]=pnew[i];
-    }
-
+        {
+          xi[i]=pnew[i]-p[i];
+          p[i]=pnew[i];
+        }
+      
       test=0.0;
       for (i=0;i<n;i++)
-    {
-      temp=xi[i]/MAX(p[i],1.0);
-      /* printf("\n. x[i]=%f p[i]=%f",xi[i],p[i]); */
-      if (temp > test) test=temp;
-    }
+        {
+          temp=xi[i]/MAX(p[i],1.0);
+          /* printf("\n. x[i]=%f p[i]=%f",xi[i],p[i]); */
+          if (temp > test) test=temp;
+        }
       if (test < TOLX || (FABS(fp-fp_old) < difff && its > 1))
-    {
-      if(fp > fp_old)
+        {
+          if(fp > fp_old)
             {
               For(i,n) p[i] = init[i];
               *failed = YES;
             }
-
+          
           if(logt == YES) For(i,n) p[i] = EXP(MIN(1.E+2,p[i]));
           For(i,n) sign[i] = p[i] > .0 ? 1. : -1.;
           if(is_positive == YES) For(i,n) p[i] = FABS(p[i]);
-      (*func)(tree);
+          (*func)(tree);
           if(is_positive == YES) For(i,n) p[i] *= sign[i];
           if(logt == YES) For(i,n) p[i] = LOG(p[i]);
-
+          
           if(is_positive == YES) For(i,n) p[i] = FABS(p[i]);
-
-      For(i,n) Free(hessin[i]);
-      free(hessin);
-      free(xi);
-      free(pnew);
-      free(hdg);
-      free(g);
-      free(dg);
+          
+          For(i,n) Free(hessin[i]);
+          free(hessin);
+          free(xi);
+          free(pnew);
+          free(hdg);
+          free(g);
+          free(dg);
           free(init);
           free(sign);
-      return;
-    }
-
+          return;
+        }
+      
       for (i=0;i<n;i++) dg[i]=g[i];
-
+      
       (*dfunc)(tree,p,n,step_size,logt,func,g, is_positive);
-
+      
       test=0.0;
       den=MAX(fret,1.0);
       for (i=0;i<n;i++)
-    {
-      temp=g[i]*MAX(p[i],1.0)/den;
-      if (temp > test) test=temp;
-    }
+        {
+          temp=g[i]*MAX(p[i],1.0)/den;
+          if (temp > test) test=temp;
+        }
       if (test < gtol)
-    {
+        {
+          *failed = NO;
           if(logt == YES) For(i,n) p[i] = EXP(MIN(1.E+2,p[i]));
           For(i,n) sign[i] = p[i] > .0 ? 1. : -1.;
           if(is_positive == YES) For(i,n) p[i] = FABS(p[i]);
-      (*func)(tree);
+          (*func)(tree);
           if(is_positive == YES) For(i,n) p[i] *= sign[i];
           if(logt == YES) For(i,n) p[i] = LOG(p[i]);
-
+          
           if(is_positive == YES) For(i,n) p[i] = FABS(p[i]);
-
-      For(i,n) Free(hessin[i]);
-      free(hessin);
-      free(xi);
-      free(pnew);
-      free(hdg);
-      free(g);
-      free(dg);
+          
+          For(i,n) Free(hessin[i]);
+          free(hessin);
+          free(xi);
+          free(pnew);
+          free(hdg);
+          free(g);
+          free(dg);
           free(init);
           free(sign);
-      return;
-    }
+          return;
+        }
 
     for (i=0;i<n;i++) dg[i]=g[i]-dg[i];
 
     for (i=0;i<n;i++)
       {
-    hdg[i]=0.0;
-    for (j=0;j<n;j++) hdg[i] += hessin[i][j]*dg[j];
+        hdg[i]=0.0;
+        for (j=0;j<n;j++) hdg[i] += hessin[i][j]*dg[j];
       }
-
+    
     fac=fae=sumdg=sumxi=0.0;
     for (i=0;i<n;i++)
       {
-    fac += dg[i]*xi[i];
-    fae += dg[i]*hdg[i];
-    sumdg += SQR(dg[i]);
-    sumxi += SQR(xi[i]);
+        fac += dg[i]*xi[i];
+        fae += dg[i]*hdg[i];
+        sumdg += SQR(dg[i]);
+        sumxi += SQR(xi[i]);
       }
-
+    
     if(fac*fac > EPS*sumdg*sumxi)
       {
-    fac=1.0/fac;
-    fad=1.0/fae;
-    for (i=0;i<n;i++) dg[i]=fac*xi[i]-fad*hdg[i];
-    for (i=0;i<n;i++)
-      {
-        for (j=0;j<n;j++)
+        fac=1.0/fac;
+        fad=1.0/fae;
+        for (i=0;i<n;i++) dg[i]=fac*xi[i]-fad*hdg[i];
+        for (i=0;i<n;i++)
           {
-        hessin[i][j] += fac*xi[i]*xi[j]
-          -fad*hdg[i]*hdg[j]+fae*dg[i]*dg[j];
+            for (j=0;j<n;j++)
+              {
+                hessin[i][j] += fac*xi[i]*xi[j]
+                  -fad*hdg[i]*hdg[j]+fae*dg[i]*dg[j];
+              }
           }
       }
-      }
     for (i=0;i<n;i++)
       {
-    xi[i]=0.0;
-    for (j=0;j<n;j++) xi[i] -= hessin[i][j]*g[j];
+        xi[i]=0.0;
+        for (j=0;j<n;j++) xi[i] -= hessin[i][j]*g[j];
       }
     }
-/*   PhyML_Printf("\n. Too many iterations in BFGS...\n"); */
-  *failed = 1;
+  /*   PhyML_Printf("\n. Too many iterations in BFGS...\n"); */
+  *failed = YES;
   For(i,n) Free(hessin[i]);
   free(hessin);
   free(xi);
@@ -2633,15 +2635,17 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
               
               For(i,tree->mod->r_mat->n_diff_rr) tree->mod->r_mat->rr_val->v[i] = LOG(tree->mod->r_mat->rr_val->v[i]);
               
-              failed = NO;
+              failed = YES;
               
-
               /* BFGS(mixt_tree,tree->mod->r_mat->rr_val->v,tree->mod->r_mat->n_diff_rr,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,YES, */
-              BFGS(mixt_tree,tree->mod->r_mat->rr_val->v,tree->mod->r_mat->n_diff_rr,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,YES,NO,
-                   &Return_Abs_Lk,
-                   &Num_Derivative_Several_Param,
-                   &Lnsrch,&failed);
-              
+              if(tree->mod->r_mat->n_diff_rr > 2)
+                {
+                  BFGS(mixt_tree,tree->mod->r_mat->rr_val->v,tree->mod->r_mat->n_diff_rr,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,YES,NO,
+                       &Return_Abs_Lk,
+                       &Num_Derivative_Several_Param,
+                       &Lnsrch,&failed);
+                }
+
               For(i,tree->mod->r_mat->n_diff_rr) tree->mod->r_mat->rr_val->v[i] = EXP(tree->mod->r_mat->rr_val->v[i]);
               
               if(failed == YES)
@@ -2898,7 +2902,7 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
               /* For(i,2*tree->n_otu-3 + 2*tree->mod->ras->n_catg) printf("\n<> %12f",*(x[i])); */
               /* For(i,2*tree->mod->ras->n_catg) printf("\n<> %12f",*(x[i])); fflush(NULL); */
 
-              failed = NO;
+              failed = YES;
               /* BFGS_Nonaligned(tree,x,2*tree->n_otu-3 + 2*tree->mod->ras->n_catg,1.e-5,tree->mod->s_opt->min_diff_lk_global,1.e-5,YES, */
               BFGS_Nonaligned(tree,x,2*tree->mod->ras->n_catg,1.e-5,tree->mod->s_opt->min_diff_lk_global,1.e-5,YES,NO,
                               &Return_Abs_Lk,
@@ -3183,7 +3187,7 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
 
       if((tree->mod->s_opt->opt_state_freq) && (tree->io->datatype == NT))
         {
-          failed = NO;
+          failed = YES;
 
           BFGS(mixt_tree,tree->mod->e_frq->pi_unscaled->v,tree->mod->ns,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,YES,
            &Return_Abs_Lk,

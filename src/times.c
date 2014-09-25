@@ -57,54 +57,9 @@ int TIMES_main(int argc, char **argv)
   most_likely_tree = NULL;
 
   io = (option *)Get_Input(argc,argv);
+
   r_seed = (io->r_seed < 0)?(time(NULL)):(io->r_seed);
-  /* !!!!!!!!!!!!!!!!!!!!!!!! */
-  /* r_seed = 1289246338; */
-/*   r_seed = 1289266727; */
-/*   r_seed = 1289422815; */
-/*   r_seed = 1289443891; */
-/*   r_seed = 1290652518; */
-/*   r_seed = 1292195490; */
-  /* r_seed =  1298284669; */
-  /* r_seed  = 1298403366; */
-  /* r_seed = 1298509108; */
-  /* sys = system("sleep 5s"); */
-  /* r_seed = 1299649586; */
-  /* r_seed = 1302160422; */
-  /* r_seed = 1302576741; */
-  /* r_seed = 1302588678; */
-  /* r_seed = 1303247709; */
-  /* r_seed =  1303970631; */
-  /* r_seed = 1304059976; */
-  /* r_seed = 1306315195; */
-  /* r_seed = 1308263660; */
-  /* r_seed = 1313356025; */
-
-
-  /* phydbl mean; */
-  /* phydbl T,A,B,u; */
-  /* phydbl K; */
-
-  /* u = 1.E-4; */
-
-  /* K = 1.; */
-  /* T = 9 * K; */
-  /* A = LOG(1/K); */
-  /* B = LOG(2/K); */
-
-  /* Integrated_Geometric_Brownian_Bridge_Mean(T,A,B,u,&mean); */
-  /* printf("\n. mean = %f",mean*T); */
-
-  /* K = 1.E+2; */
-  /* T = 9 * K; */
-  /* A = LOG(1/K); */
-  /* B = LOG(2/K); */
-
-  /* Integrated_Geometric_Brownian_Bridge_Mean(T,A,B,u,&mean); */
-  /* printf("\n. mean = %f",mean*T); */
-
   io->r_seed = r_seed;
-
   srand(r_seed); rand();
   PhyML_Printf("\n. Seed: %d\n",r_seed);
   PhyML_Printf("\n. Pid: %d\n",getpid());
@@ -112,12 +67,13 @@ int TIMES_main(int argc, char **argv)
   mod = io->mod;
   if(io->in_tree == 2) Test_Multiple_Data_Set_Format(io);
   else io->n_trees = 1;
-
+  
   if((io->n_data_sets > 1) && (io->n_trees > 1))
     {
       io->n_data_sets = MIN(io->n_trees,io->n_data_sets);
       io->n_trees     = MIN(io->n_trees,io->n_data_sets);
     }
+  
 
   For(num_data_set,io->n_data_sets)
     {
