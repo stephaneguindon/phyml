@@ -22,21 +22,22 @@ the GNU public licence. See http://www.opensource.org for details.
 
 t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height);
 int MIGREP_Main(int argc, char **argv);
-phydbl MIGREP_Lk(t_disk_evt *devt, t_migrep_mod *mmod);
+phydbl MIGREP_Lk(t_dsk *disk, t_migrep_mod *mmod);
 phydbl MIGREP_Wrap_Lk(t_edge *b, t_tree *tree, supert_tree *stree);
 void MIGREP_MCMC(t_tree *tree);
-int MIGREP_Is_In_Disk(t_geo_coord *coord, t_disk_evt *devt);
-void MIGREP_New_Traj(t_disk_evt *start, t_disk_evt *end, t_tree *tree);
+int MIGREP_Is_In_Disk(t_geo_coord *coord, t_dsk *disk);
+void MIGREP_New_Traj(t_dsk *start, t_dsk *end, t_tree *tree);
 void MIGREP_Copy_Coord(t_geo_coord *ori, t_geo_coord *cpy);
 int MIGREP_Draw(GtkWidget *widget, cairo_t *cr, gpointer *data);
-void MIGREP_Remove_Devt(t_disk_evt *devt);
-void MIGREP_Insert_Devt(t_disk_evt *devt);
-t_lindisk_nd *MIGREP_Prev_Coal_Lindisk(t_lindisk_nd *t);
-t_lindisk_nd *MIGREP_Next_Coal_Lindisk(t_lindisk_nd *t);
-int MIGREP_Get_Next_Direction(t_lindisk_nd *young, t_lindisk_nd *old);
-void MIGREP_One_New_Traj_Given_Devt(t_lindisk_nd *s_ldsk, t_lindisk_nd *e_ldsk);
-void MIGREP_One_New_Traj(t_lindisk_nd *s_ldsk, t_lindisk_nd *e_ldsk, int dir_o_y, t_tree *tree);
-void MIGREP_Update_Lindisk_List(phydbl time, t_lindisk_nd **list, int *pos, t_disk_evt *devt);
-void MIGREP_Update_Lindisk_List_Pre(t_lindisk_nd *ldsk, phydbl time, t_lindisk_nd **list, int *pos);
+void MIGREP_Remove_Disk(t_dsk *disk);
+void MIGREP_Insert_Disk(t_dsk *disk);
+t_ldsk *MIGREP_Prev_Coal_Lindisk(t_ldsk *t);
+t_ldsk *MIGREP_Next_Coal_Lindisk(t_ldsk *t);
+int MIGREP_Get_Next_Direction(t_ldsk *young, t_ldsk *old);
+void MIGREP_One_New_Traj_Given_Disk(t_ldsk *s_ldsk, t_ldsk *e_ldsk);
+void MIGREP_One_New_Traj(t_ldsk *s_ldsk, t_ldsk *e_ldsk, int dir_o_y, t_tree *tree);
+void MIGREP_Update_Lindisk_List(phydbl time, t_ldsk **list, int *pos, t_dsk *disk);
+void MIGREP_Update_Lindisk_List_Pre(t_ldsk *ldsk, phydbl time, t_ldsk **list, int *pos);
+void MIGREP_Connect_Ldsk_Given_Disk(t_dsk **disk, int n_disk, t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y);
 
 #endif

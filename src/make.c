@@ -1362,14 +1362,14 @@ t_migrep_mod *MIGREP_Make_Migrep_Model(int dim)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-t_disk_evt *MIGREP_Make_Disk_Event(int n_dim, int n_otu)
+t_dsk *MIGREP_Make_Disk_Event(int n_dim, int n_otu)
 {
-  t_disk_evt *t;
+  t_dsk *t;
 
-  t         = (t_disk_evt *)mCalloc(1,sizeof(t_disk_evt));
+  t         = (t_dsk *)mCalloc(1,sizeof(t_dsk));
   t->centr  = GEO_Make_Geo_Coord(n_dim);
   t->id     = (char *)mCalloc(T_MAX_ID_DISK,sizeof(char));
-  t->ldsk_a = (t_lindisk_nd **)mCalloc(n_otu,sizeof(t_lindisk_nd *));
+  t->ldsk_a = (t_ldsk **)mCalloc(n_otu,sizeof(t_ldsk *));
 
   return(t);
 }
@@ -1377,10 +1377,10 @@ t_disk_evt *MIGREP_Make_Disk_Event(int n_dim, int n_otu)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-t_lindisk_nd *MIGREP_Make_Lindisk_Node(int n_dim)
+t_ldsk *MIGREP_Make_Lindisk_Node(int n_dim)
 {
-  t_lindisk_nd *t;
-  t = (t_lindisk_nd *)mCalloc(1,sizeof(t_lindisk_nd));
+  t_ldsk *t;
+  t = (t_ldsk *)mCalloc(1,sizeof(t_ldsk));
   t->coord     = GEO_Make_Geo_Coord(n_dim);
   t->cpy_coord = GEO_Make_Geo_Coord(n_dim);
   return(t);
@@ -1388,17 +1388,17 @@ t_lindisk_nd *MIGREP_Make_Lindisk_Node(int n_dim)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void MIGREP_Make_Lindisk_Next(t_lindisk_nd *t)
+void MIGREP_Make_Lindisk_Next(t_ldsk *t)
 {
   if(t->n_next == 0)
-    t->next = (t_lindisk_nd **)mCalloc(1,sizeof(t_lindisk_nd *));
+    t->next = (t_ldsk **)mCalloc(1,sizeof(t_ldsk *));
   else
-    t->next = (t_lindisk_nd **)mRealloc(t->next,
+    t->next = (t_ldsk **)mRealloc(t->next,
                                         t->n_next+1,
-                                        sizeof(t_lindisk_nd *));
+                                        sizeof(t_ldsk *));
   t->n_next++;
-  printf("\n. make next for ldsk %s n_next set to %d",t->coord->id,t->n_next);
-  fflush(NULL);
+  /* printf("\n. make next for ldsk %s n_next set to %d",t->coord->id,t->n_next); */
+  /* fflush(NULL); */
 }
 
 //////////////////////////////////////////////////////////////

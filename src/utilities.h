@@ -592,7 +592,7 @@ typedef struct __Tree{
   struct __Triplet            *triplet_struct;
   struct __Phylogeo                      *geo;
   struct __Migrep_Model                 *mmod;
-  struct __Disk_Event                   *devt;
+  struct __Disk_Event                   *disk;
 
   int                            is_mixt_tree;
   int                                tree_num; /*! tree number. Used for mixture models */
@@ -1675,7 +1675,7 @@ typedef struct __Disk_Event{
   struct __Migrep_Model         *mmod;
   char                            *id;
   struct __Node                   *nd;
-}t_disk_evt;
+}t_dsk;
 
 /*!********************************************************/
 
@@ -1688,7 +1688,7 @@ typedef struct __Geo_Coord{
 /*!********************************************************/
 
 typedef struct __Lindisk_Node{
-  struct __Disk_Event     *devt;
+  struct __Disk_Event     *disk;
   struct __Lindisk_Node  **next;
   struct __Lindisk_Node   *prev;
   struct __Geo_Coord     *coord; 
@@ -1698,7 +1698,7 @@ typedef struct __Lindisk_Node{
   short int              is_hit;
   short int             is_coal;
   int                    n_next;
-}t_lindisk_nd;
+}t_ldsk;
 
 /*!********************************************************/
 /*!********************************************************/

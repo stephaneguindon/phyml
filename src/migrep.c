@@ -24,7 +24,7 @@ int MIGREP_Draw(GtkWidget *widget, cairo_t *cr, gpointer *data)
 {   
   t_tree *tree;
   phydbl h, w;
-  t_disk_evt *devt;
+  t_dsk *disk;
   t_migrep_mod *mmod;
   int i;
 
@@ -32,10 +32,10 @@ int MIGREP_Draw(GtkWidget *widget, cairo_t *cr, gpointer *data)
   
   mmod = tree->mmod;
 
-  devt = tree->devt;
-  while(devt->prev) devt = devt->prev;
+  disk = tree->disk;
+  while(disk->prev) disk = disk->prev;
 
-  h = FABS(devt->time);
+  h = FABS(disk->time);
   w = tree->mmod->lim->lonlat[1];
 
   cairo_select_font_face(cr, "Courier",
@@ -48,45 +48,45 @@ int MIGREP_Draw(GtkWidget *widget, cairo_t *cr, gpointer *data)
   cairo_set_source_rgb(cr,0,0,0);
   cairo_set_line_width(cr,0.002);
 
-  while(devt->next) devt = devt->next;
+  while(disk->next) disk = disk->next;
   do
     {      
-      MIGREP_Update_Lindisk_List(devt->time,devt->ldsk_a,&(devt->n_ldsk_a),devt);
+      MIGREP_Update_Lindisk_List(disk->time,disk->ldsk_a,&(disk->n_ldsk_a),disk);
 
-      cairo_move_to(cr,0,FABS(devt->time)/h);
-      cairo_show_text(cr,devt->id); 
+      cairo_move_to(cr,0,FABS(disk->time)/h);
+      cairo_show_text(cr,disk->id); 
       cairo_stroke(cr);
 
-      cairo_move_to(cr,devt->centr->lonlat[1]/w - mmod->rad/w,FABS(devt->time)/h);
+      cairo_move_to(cr,disk->centr->lonlat[1]/w - mmod->rad/w,FABS(disk->time)/h);
       cairo_set_line_width(cr,0.004);
       cairo_set_source_rgba(cr, 1, 0, 0, 0.3);
       cairo_set_line_width(cr,0.002);
-      cairo_line_to(cr,devt->centr->lonlat[1]/w + mmod->rad/w,FABS(devt->time)/h);
+      cairo_line_to(cr,disk->centr->lonlat[1]/w + mmod->rad/w,FABS(disk->time)/h);
       cairo_stroke(cr);
-      cairo_arc(cr,devt->centr->lonlat[1]/w,FABS(devt->time)/h,0.005,0.,2.*PI);
+      cairo_arc(cr,disk->centr->lonlat[1]/w,FABS(disk->time)/h,0.005,0.,2.*PI);
       cairo_stroke(cr);
       cairo_set_source_rgb(cr, 0, 0, 0);
           
-      For(i,devt->n_ldsk_a)
+      For(i,disk->n_ldsk_a)
         {
-          cairo_move_to(cr,devt->ldsk_a[i]->coord->lonlat[1]/w,FABS(devt->time)/h);
-          /* cairo_show_text(cr,devt->ldsk_a[i]->coord->id);  */
+          cairo_move_to(cr,disk->ldsk_a[i]->coord->lonlat[1]/w,FABS(disk->time)/h);
+          /* cairo_show_text(cr,disk->ldsk_a[i]->coord->id);  */
           cairo_stroke(cr);
-          cairo_move_to(cr,devt->ldsk_a[i]->coord->lonlat[1]/w,FABS(devt->time)/h);
-          cairo_line_to(cr,devt->ldsk_a[i]->coord->lonlat[1]/w,FABS(devt->prev->time)/h);
+          cairo_move_to(cr,disk->ldsk_a[i]->coord->lonlat[1]/w,FABS(disk->time)/h);
+          cairo_line_to(cr,disk->ldsk_a[i]->coord->lonlat[1]/w,FABS(disk->prev->time)/h);
           cairo_stroke(cr);
 
-          if(devt->ldsk_a[i]->prev->devt == devt->prev)
+          if(disk->ldsk_a[i]->prev->disk == disk->prev)
             {
-              cairo_line_to(cr,devt->ldsk_a[i]->coord->lonlat[1]/w,FABS(devt->prev->time)/h);
-              cairo_line_to(cr,devt->ldsk_a[i]->prev->coord->lonlat[1]/w,FABS(devt->prev->time)/h);
+              cairo_line_to(cr,disk->ldsk_a[i]->coord->lonlat[1]/w,FABS(disk->prev->time)/h);
+              cairo_line_to(cr,disk->ldsk_a[i]->prev->coord->lonlat[1]/w,FABS(disk->prev->time)/h);
               cairo_stroke(cr);
             }
 
-          if(devt->ldsk_a[i]->is_coal && devt->ldsk_a[i]->devt == devt) 
+          if(disk->ldsk_a[i]->is_coal && disk->ldsk_a[i]->disk == disk) 
             {
               cairo_set_source_rgba(cr, 0, 0.2, 0.8, 0.5);
-              cairo_arc(cr,devt->ldsk_a[i]->coord->lonlat[1]/w,FABS(devt->time)/h,0.01,0.,2.*PI);
+              cairo_arc(cr,disk->ldsk_a[i]->coord->lonlat[1]/w,FABS(disk->time)/h,0.01,0.,2.*PI);
               cairo_fill(cr);
               cairo_stroke(cr);
               cairo_set_source_rgb(cr, 0, 0, 0);
@@ -94,20 +94,20 @@ int MIGREP_Draw(GtkWidget *widget, cairo_t *cr, gpointer *data)
           else
             {
               cairo_set_source_rgba(cr, 0.2, 0.2, 0.2, 0.8);
-              cairo_arc(cr,devt->ldsk_a[i]->coord->lonlat[1]/w,FABS(devt->time)/h,0.005,0.,2.*PI);
+              cairo_arc(cr,disk->ldsk_a[i]->coord->lonlat[1]/w,FABS(disk->time)/h,0.005,0.,2.*PI);
               cairo_fill(cr);
               cairo_stroke(cr);
               cairo_set_source_rgb(cr, 0, 0, 0);
             }
         }
-      devt = devt->prev;
-      if(devt->prev == NULL) break;
+      disk = disk->prev;
+      if(disk->prev == NULL) break;
     }while(1);
 
   // Root disk
-  cairo_move_to(cr,devt->ldsk->coord->lonlat[1]/w,FABS(devt->time)/h);
-  cairo_show_text(cr,devt->ldsk->coord->id); 
-  cairo_arc(cr,devt->ldsk->coord->lonlat[1]/w,FABS(devt->time)/h,0.005,0.,2.*PI);
+  cairo_move_to(cr,disk->ldsk->coord->lonlat[1]/w,FABS(disk->time)/h);
+  cairo_show_text(cr,disk->ldsk->coord->id); 
+  cairo_arc(cr,disk->ldsk->coord->lonlat[1]/w,FABS(disk->time)/h,0.005,0.,2.*PI);
   cairo_stroke (cr);
 
   /* cairo_scale (cr,WINDOW_WIDTH,WINDOW_HEIGHT); */
@@ -174,15 +174,13 @@ int MIGREP_Main(int argc, char *argv[])
 
   seed = time(NULL);
   /* seed = 1409782620; */
-  /* seed = 32680; */
-  /* seed = 32544; */
-  /* seed = 32615; */
-  /* seed = 3; */
-  /* seed = 1410475473; */
-  /* seed = 1410476172; */
+  /* seed = 1411708990; */
+  /* seed = 1411709351; */
   printf("\n. Seed: %d",seed);
   srand(seed);
   tree = MIGREP_Simulate_Backward((int)atoi(argv[1]),10.,10.);
+  MIGREP_MCMC(tree);
+  Exit("\n");
 
   printf("\n. seed = %d",seed);
 
@@ -222,29 +220,29 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
 {  
   int i;
   t_tree *tree;
-  int n_dim,n_lineages,n_lineages_new,n_devt,n_hit;
-  phydbl curr_t,dt_disk;
+  int n_dim,n_lineages,n_lineages_new,n_disk,n_hit;
+  phydbl curr_t,dt_dsk;
   t_migrep_mod *mmod;
-  t_disk_evt *devt;
-  t_lindisk_nd **ldsk_a,**ldsk_a_tmp,*new_ldsk;
+  t_dsk *disk;
+  t_ldsk **ldsk_a,**ldsk_a_tmp,*new_ldsk;
   t_node *nd;
 
   n_dim = 2; // 2-dimensional landscape
 
   tree = Make_Tree_From_Scratch(n_otu,NULL);
   nd   = Make_Node_Light(0);
-  devt = MIGREP_Make_Disk_Event(n_dim,n_otu);
-  MIGREP_Init_Disk_Event(devt,NULL);
+  disk = MIGREP_Make_Disk_Event(n_dim,n_otu);
+  MIGREP_Init_Disk_Event(disk,NULL);
   
   // Allocate coordinates for all the tips first (will grow afterwards)
-  ldsk_a = (t_lindisk_nd **)mCalloc(n_otu,sizeof(t_lindisk_nd *));
+  ldsk_a = (t_ldsk **)mCalloc(n_otu,sizeof(t_ldsk *));
   For(i,n_otu) 
     {
       ldsk_a[i] = MIGREP_Make_Lindisk_Node(n_dim);
-      MIGREP_Init_Lindisk_Node(ldsk_a[i],devt,n_dim);
+      MIGREP_Init_Lindisk_Node(ldsk_a[i],disk,n_dim);
     }
 
-  ldsk_a_tmp = (t_lindisk_nd **)mCalloc(n_otu,sizeof(t_lindisk_nd *));
+  ldsk_a_tmp = (t_ldsk **)mCalloc(n_otu,sizeof(t_ldsk *));
 
   // Generate coordinates for the tip nodes (uniform distribution on the rectangle)
   For(i,n_otu)
@@ -262,21 +260,21 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   mmod->lim->lonlat[1] = height;
   
   // First disk event (at time 0)
-  devt->time             = 0.0;
-  devt->mmod             = mmod;
-  devt->centr->lonlat[0] = .5*width;
-  devt->centr->lonlat[1] = .5*height;      
+  disk->time             = 0.0;
+  disk->mmod             = mmod;
+  disk->centr->lonlat[0] = .5*width;
+  disk->centr->lonlat[1] = .5*height;      
   
   // Allocate and initialise for next event
-  devt->prev = MIGREP_Make_Disk_Event(n_dim,n_otu);
-  MIGREP_Init_Disk_Event(devt->prev,NULL);
-  devt->prev->next = devt;
+  disk->prev = MIGREP_Make_Disk_Event(n_dim,n_otu);
+  MIGREP_Init_Disk_Event(disk->prev,NULL);
+  disk->prev->next = disk;
   
   For(i,n_otu)
     {
       printf("\nx disk %s [%15f] %3d %s %15f %15f",
-             devt?devt->id:"xxx",
-             devt?devt->time:0.0,
+             disk?disk->id:"xxx",
+             disk?disk->time:0.0,
              i,
              ldsk_a[i]->coord->id,
              ldsk_a[i]->coord->lonlat[0],
@@ -284,7 +282,7 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
     }
 
   // Move to it
-  devt = devt->prev;
+  disk = disk->prev;
 
   // Initialize parameters of migrep model
   mmod->lbda = 0.2;
@@ -292,40 +290,40 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   mmod->rad  = 3.0;
   
   curr_t      = 0.0;
-  dt_disk     = 0.0;
+  dt_dsk     = 0.0;
   n_lineages  = n_otu;
-  n_devt      = 0;
+  n_disk      = 0;
   do
     {
       // Time of next event
-      dt_disk = Rexp(mmod->lbda);
-      curr_t -= dt_disk;
+      dt_dsk = Rexp(mmod->lbda);
+      curr_t -= dt_dsk;
       
       // Coordinates of next event
-      GEO_Init_Coord(devt->centr,n_dim);
-      devt->centr->lonlat[0] = Uni()*width;
-      devt->centr->lonlat[1] = Uni()*height;      
+      GEO_Init_Coord(disk->centr,n_dim);
+      disk->centr->lonlat[0] = Uni()*width;
+      disk->centr->lonlat[1] = Uni()*height;      
 
-      devt->time = curr_t;
-      devt->mmod = mmod;
+      disk->time = curr_t;
+      disk->mmod = mmod;
 
-      /* printf("\n. Disk %s has %d lindisk nodes and %d disks under",devt->id,devt->n_ldsk_a,devt->n_disk_under); */
+      /* printf("\n. Disk %s has %d lindisk nodes and %d disks under",disk->id,disk->n_ldsk_a,disk->n_disk_under); */
 
       // New lindisk (will not be used is no lineage is hit) 
       new_ldsk = MIGREP_Make_Lindisk_Node(n_dim);
-      MIGREP_Init_Lindisk_Node(new_ldsk,devt,n_dim);
+      MIGREP_Init_Lindisk_Node(new_ldsk,disk,n_dim);
       do
         {
           Runif_Disk(new_ldsk->coord->lonlat,
                      new_ldsk->coord->lonlat+1,
-                     devt->centr->lonlat[0],
-                     devt->centr->lonlat[1],
-                     devt->mmod->rad);
+                     disk->centr->lonlat[0],
+                     disk->centr->lonlat[1],
+                     disk->mmod->rad);
           // Check that the next lindisk is within boundaries
           if(new_ldsk->coord->lonlat[0] > 0.0 &&
-             new_ldsk->coord->lonlat[0] < devt->mmod->lim->lonlat[0] &&
+             new_ldsk->coord->lonlat[0] < disk->mmod->lim->lonlat[0] &&
              new_ldsk->coord->lonlat[1] > 0.0 &&
-             new_ldsk->coord->lonlat[1] < devt->mmod->lim->lonlat[0]) break;
+             new_ldsk->coord->lonlat[1] < disk->mmod->lim->lonlat[0]) break;
         }
       while(1);
 
@@ -335,15 +333,15 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
         {
           ldsk_a[i]->prev = NULL;
 
-          if(MIGREP_Is_In_Disk(ldsk_a[i]->coord,devt) == YES) 
+          if(MIGREP_Is_In_Disk(ldsk_a[i]->coord,disk) == YES) 
             {
               if(Uni() < mmod->mu)
                 {
                   printf("\n. Hit and die %s @ time %f. Center: %f %f Go to %f %f",
                          ldsk_a[i]->coord->id,
-                         devt->time,
-                         devt->centr->lonlat[0],
-                         devt->centr->lonlat[1],
+                         disk->time,
+                         disk->centr->lonlat[0],
+                         disk->centr->lonlat[1],
                          new_ldsk->coord->lonlat[0],
                          new_ldsk->coord->lonlat[1]);
                   
@@ -352,7 +350,7 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
                   ldsk_a[i]->prev                    = new_ldsk;
                   ldsk_a[i]->prev->is_hit            = YES;
                   new_ldsk->next[new_ldsk->n_next-1] = ldsk_a[i]; 
-                  devt->ldsk                         = new_ldsk;
+                  disk->ldsk                         = new_ldsk;
 
                   n_hit++;
 
@@ -382,60 +380,60 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
 
       if(n_hit > 1) // a coalescent event occurred
         {
-          devt->nd          = nd;
+          disk->nd          = nd;
           new_ldsk->is_coal = YES;
-          PhyML_Printf("\n. Coalescent @ disk %s on ldsk %s",devt->id,devt->ldsk->coord->id);
+          PhyML_Printf("\n. Coalescent @ disk %s on ldsk %s",disk->id,disk->ldsk->coord->id);
         }
  
-      ldsk_a = (t_lindisk_nd **)mCalloc(n_otu,sizeof(t_lindisk_nd *));
+      ldsk_a = (t_ldsk **)mCalloc(n_otu,sizeof(t_ldsk *));
       For(i,n_lineages) ldsk_a[i] = ldsk_a_tmp[i];
       
       For(i,n_lineages)
         {
           printf("\n. disk %s [%15f] %3d %s %15f %15f",
-                 devt?devt->id:"xxx",
-                 devt?devt->time:0.0,
+                 disk?disk->id:"xxx",
+                 disk?disk->time:0.0,
                  i,
                  ldsk_a[i]->coord->id,
                  ldsk_a[i]->coord->lonlat[0],
                  ldsk_a[i]->coord->lonlat[1]);
         }
 
-      n_devt++;
+      n_disk++;
 
 
       if(n_lineages == 1) break;
 
-      devt->prev = MIGREP_Make_Disk_Event(n_dim,n_otu);
-      MIGREP_Init_Disk_Event(devt->prev,NULL);
-      devt->prev->next = devt;
+      disk->prev = MIGREP_Make_Disk_Event(n_dim,n_otu);
+      MIGREP_Init_Disk_Event(disk->prev,NULL);
+      disk->prev->next = disk;
       
-      devt = devt->prev;          
+      disk = disk->prev;          
     }
   while(1);
 
-  while(devt->next) devt = devt->next;
+  while(disk->next) disk = disk->next;
 
-  tree->devt = devt;
+  tree->disk = disk;
   tree->mmod = mmod;
 
 
-  /* while(devt->prev) */
+  /* while(disk->prev) */
   /*   { */
   /*     printf("\n<><><>"); */
-  /*     printf("\n devt %f %s",devt->time,devt->id); */
-  /*     For(i,devt->n_ldsk_a) */
+  /*     printf("\n disk %f %s",disk->time,disk->id); */
+  /*     For(i,disk->n_ldsk_a) */
   /*       { */
   /*         printf("\n. %s %f %f", */
-  /*            devt->ldsk_a[i]->coord->id, */
-  /*            devt->ldsk_a[i]->coord->lonlat[0], */
-  /*            devt->ldsk_a[i]->coord->lonlat[1]); */
+  /*            disk->ldsk_a[i]->coord->id, */
+  /*            disk->ldsk_a[i]->coord->lonlat[0], */
+  /*            disk->ldsk_a[i]->coord->lonlat[1]); */
   /*       } */
-  /*     devt = devt->prev; */
+  /*     disk = disk->prev; */
   /*   } */
 
 
-  MIGREP_Lk(devt,mmod);
+  MIGREP_Lk(disk,mmod);
   printf("\n. LK: %f",mmod->c_lnL);
   /* Exit("\n"); */
   /* MIGREP_MCMC(tree); */
@@ -446,13 +444,13 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-int MIGREP_Is_In_Disk(t_geo_coord *coord, t_disk_evt *devt)
+int MIGREP_Is_In_Disk(t_geo_coord *coord, t_dsk *disk)
 {
   int i;
 
-  For(i,devt->centr->dim)
+  For(i,disk->centr->dim)
     {
-      if(FABS(coord->lonlat[i] - devt->centr->lonlat[i]) > devt->mmod->rad)
+      if(FABS(coord->lonlat[i] - disk->centr->lonlat[i]) > disk->mmod->rad)
         {
           return(NO);
         }
@@ -463,19 +461,18 @@ int MIGREP_Is_In_Disk(t_geo_coord *coord, t_disk_evt *devt)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-phydbl MIGREP_Lk(t_disk_evt *devt, t_migrep_mod *mmod)
+phydbl MIGREP_Lk(t_dsk *disk, t_migrep_mod *mmod)
 {
   phydbl lnL;
   phydbl log_lbda,log_pi_rad,log_mu,log_one_mu;
-  t_lindisk_nd *lindisk_nd;
+  t_ldsk *lindisk_nd;
   int i;
   short int was_hit, n_hit;
 
-
   // Rewind if necessary
-  while(devt->next) { devt = devt->next; }  
+  while(disk->next) { disk = disk->next; }  
 
-  if(!devt->prev)
+  if(!disk->prev)
     {
       PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Warn_And_Exit("");
@@ -489,32 +486,32 @@ phydbl MIGREP_Lk(t_disk_evt *devt, t_migrep_mod *mmod)
 
   do
     {
-      /* PhyML_Printf("\n. Likelihood - disk %s has %d lindisk nodes [%f]",devt->id,devt->n_ldsk_a,lnL); */
+      /* PhyML_Printf("\n. Likelihood - disk %s has %d lindisk nodes [%f]",disk->id,disk->n_ldsk_a,lnL); */
 
-      lnL += log_lbda - mmod->lbda * (devt->time - devt->prev->time);
+      lnL += log_lbda - mmod->lbda * (disk->time - disk->prev->time);
 
-      MIGREP_Update_Lindisk_List(devt->time,devt->ldsk_a,&(devt->n_ldsk_a),devt);
+      MIGREP_Update_Lindisk_List(disk->time,disk->ldsk_a,&(disk->n_ldsk_a),disk);
 
       was_hit = NO;
       n_hit   = 0;
 
-      For(i,devt->n_ldsk_a)
+      For(i,disk->n_ldsk_a)
         {
-          lindisk_nd = devt->ldsk_a[i];
-          was_hit    = lindisk_nd->prev->devt == devt->prev;
+          lindisk_nd = disk->ldsk_a[i];
+          was_hit    = lindisk_nd->prev->disk == disk->prev;
 
           if(was_hit == YES) n_hit++;
 
-          if(MIGREP_Is_In_Disk(lindisk_nd->coord,devt->prev) == YES)
+          if(MIGREP_Is_In_Disk(lindisk_nd->coord,disk->prev) == YES)
             {
               if(was_hit == YES) // was hit
                 {
-                  /* PhyML_Printf("\n. lindisk %s was hit and gave %s",lindisk_nd->coord->id,lindisk_nd->prev->coord->id); */
+                  /* PhyML_Printf("\n. %d/%d lindisk %s was hit and gave %s",i,disk->n_ldsk_a,lindisk_nd->coord->id,lindisk_nd->prev->coord->id); */
                   lnL += log_mu;
                 }
               else // was not hit
                 {
-                  /* PhyML_Printf("\n. lindisk %s was not hit",lindisk_nd->coord->id); */
+                  /* PhyML_Printf("\n. %d/%d lindisk %s was not hit",i,disk->n_ldsk_a,lindisk_nd->coord->id); */
                   lnL += log_one_mu;
                 }
             }
@@ -530,9 +527,9 @@ phydbl MIGREP_Lk(t_disk_evt *devt, t_migrep_mod *mmod)
                   /*        lindisk_nd->prev->coord->id, */
                   /*        lindisk_nd->prev->coord->lonlat[0], */
                   /*        lindisk_nd->prev->coord->lonlat[1], */
-                  /*        devt->centr->lonlat[0], */
-                  /*        devt->centr->lonlat[1], */
-                  /*        devt->mmod->rad); */
+                  /*        disk->centr->lonlat[0], */
+                  /*        disk->centr->lonlat[1], */
+                  /*        disk->mmod->rad); */
                   /* fflush(NULL); */
                   mmod->c_lnL = UNLIKELY;
                   return UNLIKELY;
@@ -545,9 +542,9 @@ phydbl MIGREP_Lk(t_disk_evt *devt, t_migrep_mod *mmod)
           lnL -= log_pi_rad;
         }
     
-      devt = devt->prev;
+      disk = disk->prev;
 
-      if(!devt->prev) break;
+      if(!disk->prev) break;
 
     }
   while(1);
@@ -590,7 +587,7 @@ void MIGREP_MCMC(t_tree *tree)
   tree->mmod->mu   = Uni()*(tree->mmod->max_mu - tree->mmod->min_mu) + tree->mmod->min_mu;
   tree->mmod->rad  = tree->mmod->max_rad;
 
-  MIGREP_Lk(tree->devt,tree->mmod);
+  MIGREP_Lk(tree->disk,tree->mmod);
   printf("\n. LK: %f",tree->mmod->c_lnL);
 
   PhyML_Printf("\n %10s %10s %10s %10s",
@@ -605,8 +602,10 @@ void MIGREP_MCMC(t_tree *tree)
       /* MCMC_Migrep_Lbda(tree); */
       /* MCMC_Migrep_Mu(tree); */
       /* MCMC_Migrep_Radius(tree); */
-      gtk_widget_queue_draw(tree->draw_area);
-      sleep(5);
+
+      /* gtk_widget_queue_draw(tree->draw_area); */
+      /* sleep(5); */
+
       MCMC_Migrep_Triplet_Bis(tree);
       /* MCMC_Migrep_Slice(tree); */
       Exit("\n");
@@ -621,8 +620,10 @@ void MIGREP_MCMC(t_tree *tree)
                        tree->mmod->rad);
 
           /* gdk_threads_enter(); */
-          gtk_widget_queue_draw(tree->draw_area);
-          sleep(1);
+
+          /* gtk_widget_queue_draw(tree->draw_area); */
+          /* sleep(1); */
+
           /* gdk_threads_leave(); */
         }
 
@@ -637,15 +638,15 @@ void MIGREP_MCMC(t_tree *tree)
 
 phydbl MIGREP_Wrap_Lk(t_edge *b, t_tree *tree, supert_tree *stree)
 {
-  return MIGREP_Lk(tree->devt,tree->mmod);
+  return MIGREP_Lk(tree->disk,tree->mmod);
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void MIGREP_New_Traj(t_disk_evt *start, t_disk_evt *end, t_tree *tree)
+void MIGREP_New_Traj(t_dsk *start, t_dsk *end, t_tree *tree)
 {
-  t_disk_evt *devt;
+  t_dsk *disk;
   int i,j;
   int n_hit_up,n_hit_tot;
   phydbl min_up, min_do;
@@ -657,20 +658,20 @@ void MIGREP_New_Traj(t_disk_evt *start, t_disk_evt *end, t_tree *tree)
     {      
       /* printf("\n<><><>"); */
 
-      devt = end;
-      while(devt != start)
+      disk = end;
+      while(disk != start)
         {
-          devt->ldsk_a[i]->min_coord = GEO_Make_Geo_Coord(devt->mmod->n_dim);
-          devt->ldsk_a[i]->max_coord = GEO_Make_Geo_Coord(devt->mmod->n_dim);                    
-          devt = devt->prev;
+          disk->ldsk_a[i]->min_coord = GEO_Make_Geo_Coord(disk->mmod->n_dim);
+          disk->ldsk_a[i]->max_coord = GEO_Make_Geo_Coord(disk->mmod->n_dim);                    
+          disk = disk->prev;
         }
 
-      devt = end;
+      disk = end;
       n_hit_tot = 0;
-      while(devt != start)
+      while(disk != start)
         {
-          if(devt->ldsk_a[i]->is_hit == YES) n_hit_tot++;
-          devt = devt->prev;
+          if(disk->ldsk_a[i]->is_hit == YES) n_hit_tot++;
+          disk = disk->prev;
         }
 
 
@@ -689,77 +690,77 @@ void MIGREP_New_Traj(t_disk_evt *start, t_disk_evt *end, t_tree *tree)
       /*        end->ldsk_a[i]->coord->lonlat[0], */
       /*        end->ldsk_a[i]->coord->lonlat[1] */
       /*        ); */
-      /* devt = end; */
-      /* while(devt != start) */
+      /* disk = end; */
+      /* while(disk != start) */
       /*   { */
       /*     printf("\n. %d %s %.2f %.2f", */
       /*            i, */
-      /*            devt->ldsk_a[i]->coord->id, */
-      /*            devt->ldsk_a[i]->coord->lonlat[0], */
-      /*            devt->ldsk_a[i]->coord->lonlat[1]); */
-      /*     devt = devt->prev; */
+      /*            disk->ldsk_a[i]->coord->id, */
+      /*            disk->ldsk_a[i]->coord->lonlat[0], */
+      /*            disk->ldsk_a[i]->coord->lonlat[1]); */
+      /*     disk = disk->prev; */
       /*   } */
       
       n_hit_up = 0;
-      devt = end;
-      while(devt->prev != start)
+      disk = end;
+      while(disk->prev != start)
         {
-          if(devt->ldsk_a[i]->is_hit == YES)
+          if(disk->ldsk_a[i]->is_hit == YES)
             {              
               n_hit_up++;
 
-              For(j,devt->mmod->n_dim)
+              For(j,disk->mmod->n_dim)
                 {
-                  min_up = end->ldsk_a[i]->coord->lonlat[j] - n_hit_up * 2. * devt->mmod->rad;
-                  min_do = start->ldsk_a[i]->coord->lonlat[j] - (n_hit_tot - n_hit_up) * 2. * devt->mmod->rad;
-                  devt->ldsk_a[i]->prev->min_coord->lonlat[j] = 
-                    MAX(MAX(MAX(min_up,min_do),0.0),devt->prev->centr->lonlat[j] - devt->mmod->rad);
+                  min_up = end->ldsk_a[i]->coord->lonlat[j] - n_hit_up * 2. * disk->mmod->rad;
+                  min_do = start->ldsk_a[i]->coord->lonlat[j] - (n_hit_tot - n_hit_up) * 2. * disk->mmod->rad;
+                  disk->ldsk_a[i]->prev->min_coord->lonlat[j] = 
+                    MAX(MAX(MAX(min_up,min_do),0.0),disk->prev->centr->lonlat[j] - disk->mmod->rad);
 
-                  max_up = end->ldsk_a[i]->coord->lonlat[j] + n_hit_up * 2. * devt->mmod->rad;
-                  max_do = start->ldsk_a[i]->coord->lonlat[j] + (n_hit_tot - n_hit_up) * 2. * devt->mmod->rad;
-                  devt->ldsk_a[i]->prev->max_coord->lonlat[j] = 
-                    MIN(MIN(MIN(max_up,max_do),devt->mmod->lim->lonlat[j]),devt->prev->centr->lonlat[j] + devt->mmod->rad);
+                  max_up = end->ldsk_a[i]->coord->lonlat[j] + n_hit_up * 2. * disk->mmod->rad;
+                  max_do = start->ldsk_a[i]->coord->lonlat[j] + (n_hit_tot - n_hit_up) * 2. * disk->mmod->rad;
+                  disk->ldsk_a[i]->prev->max_coord->lonlat[j] = 
+                    MIN(MIN(MIN(max_up,max_do),disk->mmod->lim->lonlat[j]),disk->prev->centr->lonlat[j] + disk->mmod->rad);
 
                   /* printf("\n. curr: %s min_up: %.2f min_do: %.2f max_up: %.2f max_do: %.2f %d %d start: %.2f [%.2f %.2f]", */
-                  /*        devt->ldsk_a[i]->prev->coord->id, */
+                  /*        disk->ldsk_a[i]->prev->coord->id, */
                   /*        min_up,min_do,max_up,max_do, */
                   /*        n_hit_tot,n_hit_up, */
                   /*        start->ldsk_a[i]->coord->lonlat[j], */
-                  /*        devt->ldsk_a[i]->prev->min_coord->lonlat[j], */
-                  /*        devt->ldsk_a[i]->prev->max_coord->lonlat[j]); */
+                  /*        disk->ldsk_a[i]->prev->min_coord->lonlat[j], */
+                  /*        disk->ldsk_a[i]->prev->max_coord->lonlat[j]); */
                 }
             }
-          devt = devt->prev;
+          disk = disk->prev;
         }
       
-      devt = end;
-      while(devt->prev != start)
+      disk = end;
+      while(disk->prev != start)
         {
-          if(devt->ldsk_a[i]->is_hit == YES)
+          if(disk->ldsk_a[i]->is_hit == YES)
             {
-              For(j,devt->mmod->n_dim)
-                devt->ldsk_a[i]->prev->coord->lonlat[j] = 
+              For(j,disk->mmod->n_dim)
+                disk->ldsk_a[i]->prev->coord->lonlat[j] = 
                 Uni()*
-                (devt->ldsk_a[i]->prev->max_coord->lonlat[j]  -
-                 devt->ldsk_a[i]->prev->min_coord->lonlat[j]) +
-                devt->ldsk_a[i]->prev->min_coord->lonlat[j];
+                (disk->ldsk_a[i]->prev->max_coord->lonlat[j]  -
+                 disk->ldsk_a[i]->prev->min_coord->lonlat[j]) +
+                disk->ldsk_a[i]->prev->min_coord->lonlat[j];
             }
           else
             {
-              For(j,devt->mmod->n_dim)
-                devt->ldsk_a[i]->prev->coord->lonlat[j] = 
-                devt->ldsk_a[i]->coord->lonlat[j];
+              For(j,disk->mmod->n_dim)
+                disk->ldsk_a[i]->prev->coord->lonlat[j] = 
+                disk->ldsk_a[i]->coord->lonlat[j];
             }
 
-          devt = devt->prev;
+          disk = disk->prev;
         }
       
-      devt = end;
-      while(devt != start)
+      disk = end;
+      while(disk != start)
         {
-          Free_Geo_Coord(devt->ldsk_a[i]->min_coord);
-          Free_Geo_Coord(devt->ldsk_a[i]->max_coord);
-          devt = devt->prev;
+          Free_Geo_Coord(disk->ldsk_a[i]->min_coord);
+          Free_Geo_Coord(disk->ldsk_a[i]->max_coord);
+          disk = disk->prev;
         }
     }
 
@@ -768,27 +769,27 @@ void MIGREP_New_Traj(t_disk_evt *start, t_disk_evt *end, t_tree *tree)
   /* For(i,start->n_ldsk_a) */
   /*   { */
   /*     printf("\n<><><>"); */
-  /*     devt = end; */
-  /*     while(devt != start) */
+  /*     disk = end; */
+  /*     while(disk != start) */
   /*       { */
   /*         printf("\nx %s %.2f %.2f centr: %.2f %.2f", */
-  /*                devt->ldsk_a[i]->coord->id, */
-  /*                devt->ldsk_a[i]->coord->lonlat[0], */
-  /*                devt->ldsk_a[i]->coord->lonlat[1], */
-  /*                devt->centr->lonlat[0], */
-  /*                devt->centr->lonlat[1]); */
-  /*         devt = devt->prev; */
+  /*                disk->ldsk_a[i]->coord->id, */
+  /*                disk->ldsk_a[i]->coord->lonlat[0], */
+  /*                disk->ldsk_a[i]->coord->lonlat[1], */
+  /*                disk->centr->lonlat[0], */
+  /*                disk->centr->lonlat[1]); */
+  /*         disk = disk->prev; */
   /*       } */
   /*     fflush(NULL); */
   /*   } */
   
-  /* MIGREP_Lk(tree->devt,tree->mmod); */
+  /* MIGREP_Lk(tree->disk,tree->mmod); */
   /* printf("\n. >> Lk: %f rad: %f",tree->mmod->c_lnL,tree->mmod->rad); */
   /* sleep(5); */
 }
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
 
 void MIGREP_Copy_Coord(t_geo_coord *ori, t_geo_coord *cpy)
 {
@@ -796,16 +797,16 @@ void MIGREP_Copy_Coord(t_geo_coord *ori, t_geo_coord *cpy)
   For(i,ori->dim) cpy->lonlat[i] = ori->lonlat[i];
 }
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
 
-void MIGREP_Remove_Devt(t_disk_evt *devt)
+void MIGREP_Remove_Disk(t_dsk *disk)
 {
-  t_disk_evt *prev;
-  t_disk_evt *next;
+  t_dsk *prev;
+  t_dsk *next;
 
-  prev = devt->prev;
-  next = devt->next;
+  prev = disk->prev;
+  next = disk->next;
 
   if(prev == NULL)
     {
@@ -819,40 +820,42 @@ void MIGREP_Remove_Devt(t_disk_evt *devt)
       Warn_And_Exit("");
     }
   
-  printf("\n. Remove disk %s",devt->id); fflush(NULL);
+  /* printf("\n. Remove disk %s",disk->id); fflush(NULL); */
   
   prev->next = next;
   next->prev = prev;
 }
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-// Insert disk event. devt->prev and devt->next need to be set
-// accordingly.
-void MIGREP_Insert_Devt(t_disk_evt *devt)
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+/* Insert disk event. disk->prev and disk->next need to be set 
+   accordingly. 
+*/
+void MIGREP_Insert_Disk(t_dsk *disk)
 {
-  if(devt->prev == NULL)
+  if(disk->prev == NULL)
     {
       PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Warn_And_Exit("");
     }
 
-  if(devt->next == NULL)
+  if(disk->next == NULL)
     {
       PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Warn_And_Exit("");
     }
 
-  printf("\n. Insert disk %s @ %f",devt->id,devt->time); fflush(NULL);
+  /* printf("\n. Insert disk %s @ %f",disk->id,disk->time); fflush(NULL); */
 
-  devt->prev->next = devt;
-  devt->next->prev = devt;
+  disk->prev->next = disk;
+  disk->next->prev = disk;
 }
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
 
-t_lindisk_nd *MIGREP_Prev_Coal_Lindisk(t_lindisk_nd *t)
+t_ldsk *MIGREP_Prev_Coal_Lindisk(t_ldsk *t)
 {
   if(t == NULL)
     {
@@ -873,7 +876,7 @@ t_lindisk_nd *MIGREP_Prev_Coal_Lindisk(t_lindisk_nd *t)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-t_lindisk_nd *MIGREP_Next_Coal_Lindisk(t_lindisk_nd *t)
+t_ldsk *MIGREP_Next_Coal_Lindisk(t_ldsk *t)
 {
   if(t == NULL)
     {
@@ -893,29 +896,30 @@ t_lindisk_nd *MIGREP_Next_Coal_Lindisk(t_lindisk_nd *t)
     }
 }
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
 
-// Generate a new trajectory, including disk event centers, between
-// 'y_ldsk' a ``young'' lindisk event and 'o_ldsk' an old one. 'y_ldsk
-// and 'o_ldsk' remain unaffected. No disk events should be present 
-// between y_ldsk and o_ldsk: we need to generate some first.
-void MIGREP_One_New_Traj(t_lindisk_nd *y_ldsk, t_lindisk_nd *o_ldsk, int dir_o_y, t_tree *tree)
+/*  Generate a new trajectory, including disk event centers, between  
+    'y_ldsk' a ``young'' lindisk event and 'o_ldsk' an old one. 'y_ldsk 
+    and 'o_ldsk' remain unaffected. No disk events should be present    
+    between y_ldsk and o_ldsk: we need to generate some first.          
+*/
+void MIGREP_One_New_Traj(t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y, t_tree *tree)
 {
   t_migrep_mod *mmod;
-  t_disk_evt *devt,**devt_new;
+  t_dsk *disk,**disk_new;
   phydbl max_dist;
   int i,j;
   int min_n_disk,n_new_disk;
 
   mmod     = tree->mmod;
-  devt     = NULL;
-  devt_new = NULL;
+  disk     = NULL;
+  disk_new = NULL;
 
-  printf("\n. New traj from %s to %s",y_ldsk->coord->id,o_ldsk->coord->id);
-  fflush(NULL);
+  /* printf("\n. New traj from %s to %s",y_ldsk->coord->id,o_ldsk->coord->id); */
+  /* fflush(NULL); */
 
-  // Minimum number of disks between y_ldsk and o_ldsk
+  /* Minimum number of disks between y_ldsk and o_ldsk */
   max_dist = -1.;
   For(i,mmod->n_dim)
     {
@@ -924,82 +928,53 @@ void MIGREP_One_New_Traj(t_lindisk_nd *y_ldsk, t_lindisk_nd *o_ldsk, int dir_o_y
     }
   min_n_disk = (int)(max_dist / (2. * mmod->rad));
   
-  printf("\n. min_n_disk: %d [%f]",min_n_disk,max_dist);
-  fflush(NULL);
+  /* printf("\n. min_n_disk: %d [%f]",min_n_disk,max_dist); */
+  /* fflush(NULL); */
   
-  // How many disks along the new path between y_ldsk and o_ldsk
+  /* How many disks along the new path between y_ldsk and o_ldsk */
   n_new_disk = Rand_Int(min_n_disk,min_n_disk+5);
-  printf("\n. n_new_disk: %d",n_new_disk);
-  fflush(NULL);
+  /* printf("\n. n_new_disk: %d",n_new_disk); */
+  /* fflush(NULL); */
   
   if(n_new_disk > 0)
     {
-      // Make new disks to create a new path between ldsk_left and ldsk_up
-      devt_new = (t_disk_evt **)mCalloc(n_new_disk,sizeof(t_disk_evt *));
-      For(i,n_new_disk) devt_new[i] = MIGREP_Make_Disk_Event(mmod->n_dim,tree->n_otu);
-      For(i,n_new_disk) MIGREP_Init_Disk_Event(devt_new[i],mmod);
+      /* Make new disks to create a new path between ldsk_left and ldsk_up */
+      disk_new = (t_dsk **)mCalloc(n_new_disk,sizeof(t_dsk *));
+      For(i,n_new_disk) disk_new[i] = MIGREP_Make_Disk_Event(mmod->n_dim,tree->n_otu);
+      For(i,n_new_disk) MIGREP_Init_Disk_Event(disk_new[i],mmod);
       
-      // Times of these new disks
+      /* Times of these new disks */
       For(i,n_new_disk)
-        devt_new[i]->time =
-        Uni()*(y_ldsk->devt->time - o_ldsk->devt->time) + o_ldsk->devt->time;
+        disk_new[i]->time =
+        Uni()*(y_ldsk->disk->time - o_ldsk->disk->time) + o_ldsk->disk->time;
       
-      devt = tree->devt;
+      disk = tree->disk;
       
-      // Insert these events
-      For(i,n_new_disk)
-        {
-          while(devt->prev) devt = devt->prev;
-          while(devt->time < devt_new[i]->time) devt = devt->next;
-          devt_new[i]->prev = devt->prev;
-          devt_new[i]->next = devt;
-          MIGREP_Insert_Devt(devt_new[i]);
-        }
-      
-      // Sort these events by ascending order of their times
-      For(i,n_new_disk-1)
-        {
-          for(j=i+1;j<n_new_disk;j++)
-            {
-              if(devt_new[j]->time > devt_new[i]->time)
-                {
-                  devt        = devt_new[i];
-                  devt_new[i] = devt_new[j];
-                  devt_new[j] = devt;
-                }
-            }
-        }
-      
+      /* Insert these events */
       For(i,n_new_disk)
         {
-          printf("\n. devt_new: %f [%s]",devt_new[i]->time,devt_new[i]->id); fflush(NULL);
+          while(disk->prev) disk = disk->prev;
+          while(disk->time < disk_new[i]->time) disk = disk->next;
+          disk_new[i]->prev = disk->prev;
+          disk_new[i]->next = disk;
+          MIGREP_Insert_Disk(disk_new[i]);
         }
+            
+      /* For(i,n_new_disk) */
+      /*   { */
+      /*     printf("\n. disk_new: %f [%s]",disk_new[i]->time,disk_new[i]->id); fflush(NULL); */
+      /*   } */
       
-      // Add new lindisks to the new disk events and connect them
+      /* Add new lindisks to the new disk events */
       For(i,n_new_disk)
         {
-          devt_new[i]->ldsk = MIGREP_Make_Lindisk_Node(tree->mmod->n_dim);
-          MIGREP_Init_Lindisk_Node(devt_new[i]->ldsk,devt_new[i],tree->mmod->n_dim);
-          MIGREP_Make_Lindisk_Next(devt_new[i]->ldsk);
-          
-          if(!i)
-            {
-              devt_new[i]->ldsk->next[0] = y_ldsk;
-              y_ldsk->prev               = devt_new[i]->ldsk;
-            }
-          else
-            {
-              devt_new[i]->ldsk->next[0] = devt_new[i-1]->ldsk;
-              devt_new[i-1]->ldsk->prev  = devt_new[i]->ldsk;
-            }
-          
-          printf("\n. add new lindisk %s on disk %s",
-                 devt_new[i]->ldsk->coord->id,
-                 devt_new[i]->id);
-          fflush(NULL);
+          disk_new[i]->ldsk = MIGREP_Make_Lindisk_Node(tree->mmod->n_dim);
+          MIGREP_Init_Lindisk_Node(disk_new[i]->ldsk,disk_new[i],tree->mmod->n_dim);
+          MIGREP_Make_Lindisk_Next(disk_new[i]->ldsk);
         }
-      o_ldsk->next[dir_o_y]              = devt_new[n_new_disk-1]->ldsk;
-      devt_new[n_new_disk-1]->ldsk->prev = o_ldsk;
+      
+      /* Connect them */
+      MIGREP_Connect_Ldsk_Given_Disk(disk_new,n_new_disk,y_ldsk,o_ldsk,dir_o_y);
     }
   else
     {
@@ -1007,26 +982,27 @@ void MIGREP_One_New_Traj(t_lindisk_nd *y_ldsk, t_lindisk_nd *o_ldsk, int dir_o_y
       y_ldsk->prev          = o_ldsk;
     }
  
-  // Generate a trajectory
-  MIGREP_One_New_Traj_Given_Devt(y_ldsk,o_ldsk);  
+  /* Generate a trajectory */
+  MIGREP_One_New_Traj_Given_Disk(y_ldsk,o_ldsk);  
 }
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
 
-// Generate a new trajectory, including disk event centers, between
-// 'y_ldsk' a ``young'' lindisk event and 'o_ldsk' an old one. 'y_ldsk
-// and 'o_ldsk' remain unaffected. Disk events between these two ldsk
-// should already be set.
-void MIGREP_One_New_Traj_Given_Devt(t_lindisk_nd *y_ldsk, t_lindisk_nd *o_ldsk)
+/* Generate a new trajectory, including disk event centers, between 
+  'y_ldsk' a ``young'' lindisk event and 'o_ldsk' an old one. 'y_ldsk 
+  and 'o_ldsk' remain unaffected. Disk events between these two ldsk 
+  should already be set. 
+*/
+void MIGREP_One_New_Traj_Given_Disk(t_ldsk *y_ldsk, t_ldsk *o_ldsk)
 {
   int n_disk_btw;
-  t_lindisk_nd *ldsk;
+  t_ldsk *ldsk;
   phydbl min, max;
   int i;
   phydbl rad;
 
-  // Number of disks between y_ldsk and o_ldsk
+  /* Number of disks between y_ldsk and o_ldsk */
   ldsk = y_ldsk;
   n_disk_btw = 0;
   while(ldsk->prev != o_ldsk)
@@ -1035,17 +1011,17 @@ void MIGREP_One_New_Traj_Given_Devt(t_lindisk_nd *y_ldsk, t_lindisk_nd *o_ldsk)
       ldsk = ldsk->prev;
     }
 
-  printf("\n. Number of disks between %s and %s: %d",y_ldsk->coord->id,o_ldsk->coord->id,n_disk_btw);
-  fflush(NULL);
+  /* printf("\n. Number of disks between %s and %s: %d",y_ldsk->coord->id,o_ldsk->coord->id,n_disk_btw); */
+  /* fflush(NULL); */
 
   ldsk = y_ldsk;
-  rad  = ldsk->devt->mmod->rad;
+  rad  = ldsk->disk->mmod->rad;
   while(ldsk->prev != o_ldsk)
     {
-      printf("\n. ldsk %s at %f devt: %s ",ldsk->coord->id,ldsk->devt->time,ldsk->devt->id);
-      fflush(NULL);
+      /* printf("\n. ldsk %s at %f disk: %s ",ldsk->coord->id,ldsk->disk->time,ldsk->disk->id); */
+      /* fflush(NULL); */
 
-      For(i,ldsk->devt->mmod->n_dim)
+      For(i,ldsk->disk->mmod->n_dim)
         {
           min = 
             MAX(0,
@@ -1053,7 +1029,7 @@ void MIGREP_One_New_Traj_Given_Devt(t_lindisk_nd *y_ldsk, t_lindisk_nd *o_ldsk)
                     o_ldsk->coord->lonlat[i] - 2.*rad*n_disk_btw));
 
           max = 
-            MIN(ldsk->devt->mmod->lim->lonlat[i],
+            MIN(ldsk->disk->mmod->lim->lonlat[i],
                 MIN(ldsk->coord->lonlat[i] + 2.*rad,
                     o_ldsk->coord->lonlat[i] + 2.*rad*n_disk_btw));
           
@@ -1067,33 +1043,34 @@ void MIGREP_One_New_Traj_Given_Devt(t_lindisk_nd *y_ldsk, t_lindisk_nd *o_ldsk)
           // New coordinate for the lindisk
           ldsk->prev->coord->lonlat[i] = Uni()*(max - min) + min;
 
-          printf("\n. NEW TRAJ ldsk %s at %f [devt: %s] located at %f",
-                 ldsk->prev->coord->id,
-                 ldsk->prev->devt->time,
-                 ldsk->prev->devt->id,
-                 ldsk->prev->coord->lonlat[i]);
-          fflush(NULL);
+          /* printf("\n. NEW TRAJ ldsk %s at %f [disk: %s] located at %f", */
+          /*        ldsk->prev->coord->id, */
+          /*        ldsk->prev->disk->time, */
+          /*        ldsk->prev->disk->id, */
+          /*        ldsk->prev->coord->lonlat[i]); */
+          /* fflush(NULL); */
 
           // New coordinate for the centre of the corresponding disk event
           max = ldsk->prev->coord->lonlat[i] + rad;
           min = ldsk->prev->coord->lonlat[i] - rad;
-          ldsk->prev->devt->centr->lonlat[i] = Uni()*(max - min) + min;
+          ldsk->prev->disk->centr->lonlat[i] = Uni()*(max - min) + min;
         }
       ldsk = ldsk->prev;
       n_disk_btw--;
     }
 }
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
 
-// Return the index of the 'next' element of 'old' that should be
-// used in order to reach 'young'.
-int MIGREP_Get_Next_Direction(t_lindisk_nd *young, t_lindisk_nd *old)
+/* Return the index of the 'next' element of 'old' that should be
+   used in order to reach 'young'. 
+*/
+int MIGREP_Get_Next_Direction(t_ldsk *young, t_ldsk *old)
 {
-  if(young->devt->time < old->devt->time)
+  if(young->disk->time < old->disk->time)
     {
-      PhyML_Printf("\n== young (%s) @ time %f; old (%s) @ time %f",young->coord->id,young->devt->time,old->coord->id,old->devt->time);
+      PhyML_Printf("\n== young (%s) @ time %f; old (%s) @ time %f",young->coord->id,young->disk->time,old->coord->id,old->disk->time);
       PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Warn_And_Exit("");
     }
@@ -1116,26 +1093,26 @@ int MIGREP_Get_Next_Direction(t_lindisk_nd *young, t_lindisk_nd *old)
   return(-1);
 }
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
 
-void MIGREP_Update_Lindisk_List(phydbl time, t_lindisk_nd **list, int *pos, t_disk_evt *devt)
+void MIGREP_Update_Lindisk_List(phydbl time, t_ldsk **list, int *pos, t_dsk *disk)
 {
-  t_disk_evt *root_devt;
+  t_dsk *root_dsk;
 
   *pos = 0;
-  root_devt = devt;
-  while(root_devt->prev) root_devt = root_devt->prev;
-  /* printf("\n. root_devt: %s",root_devt?root_devt->id:"xx"); */
-  MIGREP_Update_Lindisk_List_Pre(root_devt->ldsk,time,list,pos);
+  root_dsk = disk;
+  while(root_dsk->prev) root_dsk = root_dsk->prev;
+  /* printf("\n. root_dsk: %s",root_dsk?root_dsk->id:"xx"); */
+  MIGREP_Update_Lindisk_List_Pre(root_dsk->ldsk,time,list,pos);
 }
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
 
-void MIGREP_Update_Lindisk_List_Pre(t_lindisk_nd *ldsk, phydbl time, t_lindisk_nd **list, int *pos)
+void MIGREP_Update_Lindisk_List_Pre(t_ldsk *ldsk, phydbl time, t_ldsk **list, int *pos)
 {
-  /* printf("\n. time: %f pos: %d ldsk: %s n_next: %d ldsk->devt->time: %f devt: %s",time,*pos,ldsk->coord->id,ldsk->n_next,ldsk->devt->time,ldsk->devt->id); fflush(NULL); */
+  /* printf("\n. time: %f pos: %d ldsk: %s n_next: %d ldsk->disk->time: %f disk: %s",time,*pos,ldsk->coord->id,ldsk->n_next,ldsk->disk->time,ldsk->disk->id); fflush(NULL); */
 
   if(ldsk == NULL)
     {
@@ -1143,17 +1120,17 @@ void MIGREP_Update_Lindisk_List_Pre(t_lindisk_nd *ldsk, phydbl time, t_lindisk_n
       Warn_And_Exit("");
     }
 
-  if((ldsk->prev != NULL) && (ldsk->devt->time > time) && (ldsk->prev->devt->time < time))
+  if((ldsk->prev != NULL) && (ldsk->disk->time > time) && (ldsk->prev->disk->time < time))
     {
       list[*pos] = ldsk;
       *pos = *pos + 1;
     }
-  else if(Are_Equal(ldsk->devt->time,time,SMALL_DBL))
+  else if(Are_Equal(ldsk->disk->time,time,SMALL_DBL))
     {
       list[*pos] = ldsk;
       *pos = *pos + 1;      
     }
-  else if(ldsk->devt->time < time)
+  else if(ldsk->disk->time < time)
     {
       int i;
       For(i,ldsk->n_next)
@@ -1161,9 +1138,65 @@ void MIGREP_Update_Lindisk_List_Pre(t_lindisk_nd *ldsk, phydbl time, t_lindisk_n
     }
 }
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+/* Connect all the ldsk between y_ldsk (young ldsk) and o_ldsk (old ldsk).
+   The disk between y_ldsk and o_ldsk should have all been set already
+   Note: the disks in **disk are sorted in ascending order of their 
+   times
+*/
+
+void MIGREP_Connect_Ldsk_Given_Disk(t_dsk **disk, int n_disk, t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y)
+{
+  int i,j;
+  t_dsk *disk_tmp;
+
+  /* Sort these events by ascending order of their times */
+  For(i,n_disk-1)
+    {
+      for(j=i+1;j<n_disk;j++)
+        {
+          if(disk[j]->time > disk[i]->time)
+            {
+              disk_tmp = disk[i];
+              disk[i]  = disk[j];
+              disk[j]  = disk_tmp;
+            }
+        }
+    }
+
+  For(i,n_disk)
+    {
+      if(!i)
+        {
+          disk[i]->ldsk->next[0] = y_ldsk;
+          y_ldsk->prev           = disk[i]->ldsk;
+        }
+      else
+        {
+          disk[i]->ldsk->next[0] = disk[i-1]->ldsk;
+          disk[i-1]->ldsk->prev  = disk[i]->ldsk;
+        }
+      
+      /* printf("\n. add new lindisk %s on disk %s", */
+      /*        disk[i]->ldsk->coord->id, */
+      /*        disk[i]->id); */
+      /* fflush(NULL); */
+    }
+  
+  o_ldsk->next[dir_o_y]      = disk[n_disk-1]->ldsk;
+  disk[n_disk-1]->ldsk->prev = o_ldsk;
+
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/

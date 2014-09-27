@@ -3297,7 +3297,7 @@ void GEO_Init_Coord(t_geo_coord *t, int n_dim)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void MIGREP_Init_Disk_Event(t_disk_evt *t, t_migrep_mod *mod)
+void MIGREP_Init_Disk_Event(t_dsk *t, t_migrep_mod *mod)
 {
   t->prev         = NULL;
   t->next         = NULL;
@@ -3336,9 +3336,9 @@ void MIGREP_Init_Migrep_Mod(t_migrep_mod *t, int n_dim)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void MIGREP_Init_Lindisk_Node(t_lindisk_nd *t, t_disk_evt *devt, int n_dim)
+void MIGREP_Init_Lindisk_Node(t_ldsk *t, t_dsk *disk, int n_dim)
 {
-  t->devt    = devt;
+  t->disk    = disk;
   t->prev    = NULL;
   t->next    = NULL;  
   t->is_hit  = NO;

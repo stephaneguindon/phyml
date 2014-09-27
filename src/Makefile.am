@@ -1,5 +1,6 @@
 # EXTRA_DIST = doc bin examples
 
+
 DEFS = $(REVISION)
 
 if WANT_PHYTIME
