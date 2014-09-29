@@ -99,6 +99,8 @@ int Read_Command_Line(option *io, int argc, char **argv)
       {"fastlk",              no_argument,NULL,60},      
       {"free_rates",          no_argument,NULL,61},
       {"freerates",           no_argument,NULL,61},
+      {"freerate",            no_argument,NULL,61},
+      {"free_rate",            no_argument,NULL,61},
       {"is",                  no_argument,NULL,62},
       // no 63 since it corresponds to character '?' 
       {"rate_model",          required_argument,NULL,64},

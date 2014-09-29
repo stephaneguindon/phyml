@@ -191,8 +191,6 @@ void Usage()
   #endif
 
 
-
-
   PhyML_Printf("%s\n\t-t (or --ts/tv) %sts/tv_ratio%s\n",BOLD,LINE,FLAT);
   PhyML_Printf("\t\tts/tv_ratio%s : transition/transversion ratio. DNA sequences only.\n",FLAT);
   PhyML_Printf("\t\tCan be a fixed positive value (ex:4.0) or %se%s to get the maximum likelihood estimate.\n",LINE,FLAT);
@@ -208,6 +206,12 @@ void Usage()
 	 FLAT,LINE,FLAT);
   PhyML_Printf("\t\tMust be a positive integer.\n");
   PhyML_Printf("\n");
+
+  PhyML_Printf("%s\n\t--freerates (or --free_rates or --freerate or --free_rate)\n",BOLD);
+  PhyML_Printf("\t\t%s FreeRate model of substitution rate variation across sites.\n",FLAT);
+  PhyML_Printf("\n");
+
+
   
   PhyML_Printf("%s\n\t-a (or --alpha) %sgamma%s\n",BOLD,LINE,FLAT);
   PhyML_Printf("\t\tgamma%s : distribution of the gamma distribution shape parameter.\n",FLAT);
