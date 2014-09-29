@@ -909,7 +909,7 @@ void MIGREP_One_New_Traj(t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y, t_tree *tr
   t_migrep_mod *mmod;
   t_dsk *disk,**disk_new;
   phydbl max_dist;
-  int i,j;
+  int i;
   int min_n_disk,n_new_disk;
 
   mmod     = tree->mmod;

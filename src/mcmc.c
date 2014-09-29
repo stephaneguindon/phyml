@@ -1186,7 +1186,7 @@ void MCMC_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
 	  PhyML_Printf("\n== t0 = %f t1_new = %f",t0,t1_new);
 	  PhyML_Printf("\n== t_min=%f t_max=%f",t_min,t_max);
 	  PhyML_Printf("\n== (t1-t0)=%f (t2-t1)=%f",t1_cur-t0,t2-t1_cur);
-	  PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+	  PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
 	  /*       Exit("\n"); */
 	}
       if(t1_new > MIN(t2,t3))
@@ -1196,7 +1196,7 @@ void MCMC_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
 	  PhyML_Printf("\n== t0 = %f t1_new = %f t1 = %f t2 = %f t3 = %f MIN(t2,t3)=%f",t0,t1_new,t1_cur,t2,t3,MIN(t2,t3));
 	  PhyML_Printf("\n== t_min=%f t_max=%f",t_min,t_max);
 	  PhyML_Printf("\n== (t1-t0)=%f (t2-t1)=%f",t1_cur-t0,t2-t1_cur);
-	  PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+	  PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
 	  /*       Exit("\n"); */
 	}
       
@@ -1376,8 +1376,7 @@ void MCMC_Jump_Calibration(t_tree *tree)
               for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\n. Node number:[%d] Lower bound:[%f] Upper bound:[%f] Node time:[%f]. \n", i, tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i], tree -> rates -> nd_t[i]);
               PhyML_Printf("\n. ...........................................................................\n");
               PhyML_Printf("\n== There is a problem with calibration information.\n");
-              PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
-              Exit("\n");
+              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
           
           For(i,2*tree->n_otu-2) tree->rates->br_do_updt[i] = YES;
@@ -1446,11 +1445,7 @@ void MCMC_Jump_Calibration(t_tree *tree)
           Check_Node_Time(tree -> n_root, tree -> n_root -> v[2], &result, tree);
           
          
-          if(result != TRUE)
-            {
-              PhyML_Printf("\n== Err. in file %s at line %d (function '%s').\n",__FILE__,__LINE__,__FUNCTION__);
-              Exit("\n");      
-            }
+          if(result != TRUE) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
           tree->mcmc->run_move[move_num]++;
           Free(calib_prior_cumprob);
@@ -1524,8 +1519,7 @@ void MCMC_Root_Time(t_tree *tree)
       PhyML_Printf("\n== t0 = %f t2 = %f t3 = %f",t0,t2,t3);
       PhyML_Printf("\n== t_min = %f t_max = %f",t_min,t_max);
       PhyML_Printf("\n== prior_min = %f prior_max = %f",tree->rates->t_prior_min[root->num],tree->rates->t_prior_max[root->num]);
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
-      Exit("\n");
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
     }
 
   MCMC_Make_Move(&t1_cur,&t1_new,t_min,t_max,&ratio,K,tree->mcmc->move_type[move_num]);
@@ -1569,26 +1563,26 @@ void MCMC_Root_Time(t_tree *tree)
 	{
 	  t1_new = t0+1.E-4;
 	  PhyML_Printf("\n");
-	  PhyML_Printf("\n. t0 = %f t1_new = %f",t0,t1_new);
-	  PhyML_Printf("\n. t_min=%f t_max=%f",t_min,t_max);
-	  PhyML_Printf("\n. (t1-t0)=%f (t2-t1)=%f",t1_cur-t0,t2-t1_cur);
-	  PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+	  PhyML_Printf("\n== t0 = %f t1_new = %f",t0,t1_new);
+	  PhyML_Printf("\n== t_min=%f t_max=%f",t_min,t_max);
+	  PhyML_Printf("\n== (t1-t0)=%f (t2-t1)=%f",t1_cur-t0,t2-t1_cur);
+	  PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
 	  /*       Exit("\n"); */
 	}
       if(t1_new > MIN(t2,t3))
 	{
 	  PhyML_Printf("\n");
-	  PhyML_Printf("\n. t0 = %f t1_new = %f t1 = %f t2 = %f t3 = %f MIN(t2,t3)=%f",t0,t1_new,t1_cur,t2,t3,MIN(t2,t3));
-	  PhyML_Printf("\n. t_min=%f t_max=%f",t_min,t_max);
-	  PhyML_Printf("\n. (t1-t0)=%f (t2-t1)=%f",t1_cur-t0,t2-t1_cur);
-	  PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+	  PhyML_Printf("\n== t0 = %f t1_new = %f t1 = %f t2 = %f t3 = %f MIN(t2,t3)=%f",t0,t1_new,t1_cur,t2,t3,MIN(t2,t3));
+	  PhyML_Printf("\n== t_min=%f t_max=%f",t_min,t_max);
+	  PhyML_Printf("\n== (t1-t0)=%f (t2-t1)=%f",t1_cur-t0,t2-t1_cur);
+	  PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
 	  /*       Exit("\n"); */
 	}
       
       if(isnan(t1_new))
 	{
-	  PhyML_Printf("\n. run=%d",tree->mcmc->run);
-	  PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+	  PhyML_Printf("\n== run=%d",tree->mcmc->run);
+	  PhyML_Printf("\n== Err/ in file %s at line %d\n",__FILE__,__LINE__);
 	  /*       Exit("\n"); */
 	}
     }
@@ -1758,11 +1752,7 @@ void MCMC_Updown_T_Cr(t_tree *tree)
   	}
     }
 
-  if(RATES_Check_Node_Times(tree))
-    {
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
-      Warn_And_Exit("");
-    }
+  if(RATES_Check_Node_Times(tree)) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
   tree->rates->clock_r /= mult;
   if(tree->rates->clock_r < tree->rates->min_clock || tree->rates->clock_r > tree->rates->max_clock)
@@ -1875,11 +1865,7 @@ void MCMC_Updown_T_Br(t_tree *tree)
   	}
     }
 
-  if(RATES_Check_Node_Times(tree))
-    {
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
-      Warn_And_Exit("");
-    }
+  if(RATES_Check_Node_Times(tree)) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
   tree->rates->birth_rate /= mult;
 
@@ -1976,11 +1962,7 @@ void MCMC_Subtree_Height(t_tree *tree)
 
   floor = tree->rates->t_floor[target];
 
-  if(tree->a_nodes[target] == tree->n_root)
-    {
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-      Warn_And_Exit("");
-    }
+  if(tree->a_nodes[target] == tree->n_root) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
   if(!Scale_Subtree_Height(tree->a_nodes[target],mult,floor,&n_nodes,tree))
     {
@@ -2084,11 +2066,7 @@ void MCMC_Tree_Rates(t_tree *tree)
       return;
     }
 
-  if(n_nodes != 2*tree->n_otu-2)
-    {
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-      Warn_And_Exit("");
-    }
+  if(n_nodes != 2*tree->n_otu-2) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
 
   /* Divide clock_r */
   tree->rates->clock_r /= mult;
@@ -3477,8 +3455,7 @@ void MCMC_Randomize_Node_Times(t_tree *tree)
       PhyML_Printf("\n== a up=%f down=%f",tree->rates->t_prior_min[tree->a_nodes[min_node]->anc->num],tree->rates->t_prior_max[tree->a_nodes[min_node]->anc->num]);
       PhyML_Printf("\n== up=%f down=%f",tree->rates->t_prior_min[min_node],tree->rates->t_floor[tree->a_nodes[min_node]->anc->num]);
       PhyML_Printf("\n== min_node = %d",min_node);
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
-      Warn_And_Exit("");
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
     }
 
 
@@ -3486,12 +3463,7 @@ void MCMC_Randomize_Node_Times(t_tree *tree)
 /*   TIMES_Print_Node_Times(tree->n_root,tree->n_root->v[2],tree); */
 /*   TIMES_Print_Node_Times(tree->n_root,tree->n_root->v[1],tree); */
 
-
-  if(RATES_Check_Node_Times(tree))
-    {
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
-      Warn_And_Exit("");
-    }
+  if(RATES_Check_Node_Times(tree)) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);  
 }
 
 //////////////////////////////////////////////////////////////
@@ -3799,13 +3771,8 @@ void MCMC_Br_Lens_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 {
   int i;
 
-
-  if(a == tree->n_root || d == tree->n_root)
-    {
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-      Exit("\n");
-    }
-
+  if(a == tree->n_root || d == tree->n_root) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    
   MCMC_One_Length(b,tree);
   if(d->tax) return;
   else 
@@ -3947,7 +3914,7 @@ void MCMC_Free_Mixt_Rate(t_tree *tree)
 
       new_lnL_data = Lk(NULL,tree);
 
-      // Metropolis-Hastings step
+      /* Metropolis-Hastings step */
       ratio = 0.;
       if(tree->mcmc->use_data == YES) ratio += (new_lnL_data - cur_lnL_data);
       ratio += LOG(hr);
@@ -3957,15 +3924,15 @@ void MCMC_Free_Mixt_Rate(t_tree *tree)
       /* printf("\n. class=%d new_val=%f cur_val=%f ratio=%f hr=%f y=%f denom=%f",c2updt,y[c2updt],y_cur,ratio,Jthen/Jnow,y[c-1],denom); */
 
       u = Uni();
-      if(u > alpha) // Reject
+      if(u > alpha) /* Reject */
  	{
 	  y[c2updt] = y_cur;
 	  tree->c_lnL = cur_lnL_data;
 	}
-      else // Accept
+      else /* Accept */
 	{
 	  cur_lnL_data = new_lnL_data;
-	  // Update the Jacobian
+	  /* Update the Jacobian */
 	  num = z[c-1]*(y[c-1]-y[c-2]);
 	  denom = z[0]*y[0];
 	  for(i=1;i<c;i++) denom += z[i]*(y[i]-y[i-1]);
@@ -4762,15 +4729,13 @@ void MCMC_Read_Param_Vals(t_tree *tree)
   if(fgets(token,sizemax,in_fp) == NULL) // Skip first line
     {
       PhyML_Printf("\n== Wrong file format.");
-      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
-      Exit("\n");
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
     }
     
   if(fgets(token,sizemax,in_fp) == NULL) // Skip second
     {
       PhyML_Printf("\n== Wrong file format.");
-      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
-      Exit("\n");
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
     }
 
   v=fscanf(in_fp,"%lf\t",&val); // Run
@@ -4999,16 +4964,16 @@ void MCMC_Migrep_Slice(t_tree *tree)
 void MCMC_Migrep_Triplet_Bis(t_tree *tree)
 {
   phydbl cur_lnL, new_lnL;
-  /* phydbl ratio, alpha, u; */
+  phydbl ratio, alpha, u;
   t_dsk **disk_bkup,*disk;
   t_ldsk *ldsk_select,**ldsk_under,*ldsk_up,*ldsk_target,*ldsk,*ldsk_trunk,**next_up_orig,**prev_under_orig;
-  int i,j,k,n_coal,n_rm_disk,n_new_disk,target_num,dir_up_trunk,n_next_up_orig;
+  int i,n_coal,n_rm_disk,n_new_disk,target_num,dir_up_trunk,n_next_up_orig;
   
   cur_lnL     =   MIGREP_Lk(tree->disk,tree->mmod);;
   PhyML_Printf("\n. orig lk: %f",MIGREP_Lk(tree->disk,tree->mmod));
   fflush(NULL);
 
-  /* cur_lnL     = tree->disk->mmod->c_lnL; */
+  cur_lnL         = tree->disk->mmod->c_lnL;
   new_lnL         = UNLIKELY;
   disk_bkup       = NULL;
   disk            = NULL;
@@ -5054,11 +5019,7 @@ void MCMC_Migrep_Triplet_Bis(t_tree *tree)
   
   /* printf("\n. ldsk_up: %s",ldsk_up->coord->id); fflush(NULL); */
 
-  if(ldsk_up == NULL)
-    {
-      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
-      Exit("\n");
-    }
+  if(ldsk_up == NULL) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
   /* Copy ldsk_up->next */
   next_up_orig = (t_ldsk **)mCalloc(ldsk_up->n_next,sizeof(t_ldsk *));
@@ -5138,11 +5099,7 @@ void MCMC_Migrep_Triplet_Bis(t_tree *tree)
 
   /* printf("\n. ldsk_target: %s",ldsk_target->coord->id); fflush(NULL); */
 
-  if(ldsk_target->disk->time < ldsk_up->disk->time)
-    {
-      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
-      Exit("\n");
-    }
+  if(ldsk_target->disk->time < ldsk_up->disk->time) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   
   /* Build new trajectories between each ldsk_under != ldsk_trunk and */
   /* ldsk_target */
@@ -5162,45 +5119,56 @@ void MCMC_Migrep_Triplet_Bis(t_tree *tree)
   PhyML_Printf("\n. new lk: %f",MIGREP_Lk(tree->disk,tree->mmod));
   fflush(NULL);
   /* sleep(5); */
-  
-  /* We now go back to the original genealogy */
 
-  /* First, remove the new disks */
-  For(i,ldsk_select->n_next)
+
+  new_lnL = MIGREP_Lk(tree->disk,tree->mmod);
+  ratio = .0;
+  ratio += (new_lnL - cur_lnL);
+
+  ratio = EXP(ratio);
+  alpha = MIN(1.,ratio);
+
+  u = Uni();
+  
+  if(u > alpha) /* Reject */
     {
-      ldsk = ldsk_under[i]->prev;
-      while(ldsk != ldsk_up)
+      /* We now go back to the original genealogy */
+      
+      /* First, remove the new disks */
+      For(i,ldsk_select->n_next)
         {
-          MIGREP_Remove_Disk(ldsk->disk);
-          ldsk = ldsk->prev;
-        }      
+          ldsk = ldsk_under[i]->prev;
+          while(ldsk != ldsk_up)
+            {
+              MIGREP_Remove_Disk(ldsk->disk);
+              ldsk = ldsk->prev;
+            }      
+        }
+      
+      /* Second, re-insert the original disks */
+      For(i,n_rm_disk) MIGREP_Insert_Disk(disk_bkup[i]);
+      
+      /* Then connect ldsk_up->next to the original corresponding
+         ldsk
+      */
+      Free(ldsk_up->next);
+      ldsk_up->n_next = n_next_up_orig;
+      ldsk_up->next   = next_up_orig;
+      
+      /* Then connect each ldsk in the array ldsk_under to the
+         original ldsks
+      */
+      For(i,ldsk_select->n_next) ldsk_under[i]->prev = prev_under_orig[i];
+      
+      Free(prev_under_orig);
+      
+      /* gtk_widget_queue_draw(tree->draw_area); */
+      
+      PhyML_Printf("\n. back lk: %f",MIGREP_Lk(tree->disk,tree->mmod));
+      fflush(NULL);
+      
+      sleep(2);      
     }
-
-  /* Second, re-insert the original disks */
-  For(i,n_rm_disk) MIGREP_Insert_Disk(disk_bkup[i]);
-  
-  /* Then connect ldsk_up->next to the original corresponding
-     ldsk
-  */
-  Free(ldsk_up->next);
-  ldsk_up->n_next = n_next_up_orig;
-  ldsk_up->next   = next_up_orig;
-  
-  /* Then connect each ldsk in the array ldsk_under to the
-     original ldsks
-  */
-  For(i,ldsk_select->n_next) ldsk_under[i]->prev = prev_under_orig[i];
-
-  Free(prev_under_orig);
-
-  /* gtk_widget_queue_draw(tree->draw_area); */
-
-  PhyML_Printf("\n. back lk: %f",MIGREP_Lk(tree->disk,tree->mmod));
-  fflush(NULL);
-
-  sleep(100);
-
-
 }
 #endif
 

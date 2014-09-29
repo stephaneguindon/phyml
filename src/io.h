@@ -93,4 +93,5 @@ void Dump_Arr_S(short int* arr, int num);
 void Dump_Arr_I(int* arr, int num);
 void Print_Tree_Structure(t_tree* tree);
 void Print_Node_Brief(t_node *a, t_node *d, t_tree *tree, FILE *fp);
+void Generic_Exit(const char *file, int line, const char *function);
 #endif
