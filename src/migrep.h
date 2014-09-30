@@ -39,5 +39,6 @@ void MIGREP_One_New_Traj(t_ldsk *s_ldsk, t_ldsk *e_ldsk, int dir_o_y, t_tree *tr
 void MIGREP_Update_Lindisk_List(phydbl time, t_ldsk **list, int *pos, t_dsk *disk);
 void MIGREP_Update_Lindisk_List_Pre(t_ldsk *ldsk, phydbl time, t_ldsk **list, int *pos);
 void MIGREP_Connect_Ldsk_Given_Disk(t_dsk **disk, int n_disk, t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y);
+void MIGREP_Print_Struct(char sign, t_tree *tree);
 
 #endif

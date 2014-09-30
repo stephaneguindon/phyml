@@ -155,6 +155,6 @@ void MCMC_Migrep_Lbda(t_tree *mixt_tree);
 void MCMC_Migrep_Mu(t_tree *mixt_tree);
 void MCMC_Migrep_Radius(t_tree *mixt_tree);
 void MCMC_Migrep_Slice(t_tree *tree);
-void MCMC_Migrep_Triplet_Bis(t_tree *tree);
+void MCMC_Migrep_Triplet(t_tree *tree);
 
 #endif

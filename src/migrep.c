@@ -176,9 +176,11 @@ int MIGREP_Main(int argc, char *argv[])
   /* seed = 1409782620; */
   /* seed = 1411708990; */
   /* seed = 1411709351; */
+  seed = 1412025046;
   printf("\n. Seed: %d",seed);
   srand(seed);
   tree = MIGREP_Simulate_Backward((int)atoi(argv[1]),10.,10.);
+
   MIGREP_MCMC(tree);
   Exit("\n");
 
@@ -472,11 +474,7 @@ phydbl MIGREP_Lk(t_dsk *disk, t_migrep_mod *mmod)
   // Rewind if necessary
   while(disk->next) { disk = disk->next; }  
 
-  if(!disk->prev)
-    {
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
-      Warn_And_Exit("");
-    }
+  if(!disk->prev) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
 
   log_lbda   = LOG(mmod->lbda);
   log_mu     = LOG(mmod->mu);
@@ -606,9 +604,10 @@ void MIGREP_MCMC(t_tree *tree)
       /* gtk_widget_queue_draw(tree->draw_area); */
       /* sleep(5); */
 
-      MCMC_Migrep_Triplet_Bis(tree);
+      MCMC_Migrep_Triplet(tree);
+
       /* MCMC_Migrep_Slice(tree); */
-      Exit("\n");
+      /* Exit("\n"); */
 
       if(mcmc->run%mcmc->sample_interval == 0)
       /* if(mcmc->run == 0) */
@@ -808,22 +807,21 @@ void MIGREP_Remove_Disk(t_dsk *disk)
   prev = disk->prev;
   next = disk->next;
 
-  if(prev == NULL)
-    {
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
-      Warn_And_Exit("");
-    }
+  /* printf("\n. Remove disk %s (prev: %s next: %s)", */
+  /*        disk->id, */
+  /*        prev?prev->id:NULL, */
+  /*        next?next->id:NULL); fflush(NULL); */
 
-  if(next == NULL)
-    {
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
-      Warn_And_Exit("");
-    }
+  if(prev == NULL) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(next == NULL) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
   
-  /* printf("\n. Remove disk %s",disk->id); fflush(NULL); */
   
   prev->next = next;
   next->prev = prev;
+
+  /* printf(" set %s->next to %s and %s->prev to %s", */
+  /*        prev->id,prev->next->id, */
+  /*        next->id,next->prev->id); fflush(NULL); */
 }
 
 /*////////////////////////////////////////////////////////////
@@ -834,19 +832,14 @@ void MIGREP_Remove_Disk(t_dsk *disk)
 */
 void MIGREP_Insert_Disk(t_dsk *disk)
 {
-  if(disk->prev == NULL)
-    {
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
-      Warn_And_Exit("");
-    }
+  if(disk->prev == NULL) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
+  if(disk->next == NULL) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
 
-  if(disk->next == NULL)
-    {
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
-      Warn_And_Exit("");
-    }
-
-  /* printf("\n. Insert disk %s @ %f",disk->id,disk->time); fflush(NULL); */
+  /* printf("\n. Insert disk %s @ %f between %s and %s", */
+  /*        disk->id,disk->time, */
+  /*        disk->prev->id, */
+  /*        disk->next->id);  */
+  /* fflush(NULL); */
 
   disk->prev->next = disk;
   disk->next->prev = disk;
@@ -857,11 +850,7 @@ void MIGREP_Insert_Disk(t_dsk *disk)
 
 t_ldsk *MIGREP_Prev_Coal_Lindisk(t_ldsk *t)
 {
-  if(t == NULL)
-    {
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
-      Warn_And_Exit("");
-    }
+  if(t == NULL) return NULL;
 
   if(t->is_coal == YES) 
     {
@@ -878,11 +867,7 @@ t_ldsk *MIGREP_Prev_Coal_Lindisk(t_ldsk *t)
 
 t_ldsk *MIGREP_Next_Coal_Lindisk(t_ldsk *t)
 {
-  if(t == NULL)
-    {
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
-      Warn_And_Exit("");
-    }
+  if(t == NULL) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
 
   if(t->is_coal == YES || t->next == NULL) return t;
   else
@@ -933,8 +918,7 @@ void MIGREP_One_New_Traj(t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y, t_tree *tr
   
   /* How many disks along the new path between y_ldsk and o_ldsk */
   n_new_disk = Rand_Int(min_n_disk,min_n_disk+5);
-  /* printf("\n. n_new_disk: %d",n_new_disk); */
-  /* fflush(NULL); */
+  /* printf("\n. n_new_disk: %d",n_new_disk); fflush(NULL); */
   
   if(n_new_disk > 0)
     {
@@ -953,7 +937,7 @@ void MIGREP_One_New_Traj(t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y, t_tree *tr
       /* Insert these events */
       For(i,n_new_disk)
         {
-          while(disk->prev) disk = disk->prev;
+          while(disk->prev) disk = disk->prev; /* get to oldest ldsk */
           while(disk->time < disk_new[i]->time) disk = disk->next;
           disk_new[i]->prev = disk->prev;
           disk_new[i]->next = disk;
@@ -971,6 +955,7 @@ void MIGREP_One_New_Traj(t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y, t_tree *tr
           disk_new[i]->ldsk = MIGREP_Make_Lindisk_Node(tree->mmod->n_dim);
           MIGREP_Init_Lindisk_Node(disk_new[i]->ldsk,disk_new[i],tree->mmod->n_dim);
           MIGREP_Make_Lindisk_Next(disk_new[i]->ldsk);
+          /* printf("\n. Add ldsk %s to %s",disk_new[i]->ldsk->coord->id,disk_new[i]->id); fflush(NULL); */
         }
       
       /* Connect them */
@@ -1034,11 +1019,7 @@ void MIGREP_One_New_Traj_Given_Disk(t_ldsk *y_ldsk, t_ldsk *o_ldsk)
                     o_ldsk->coord->lonlat[i] + 2.*rad*n_disk_btw));
           
 
-          if(max < min)
-            {
-              PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
-              Warn_And_Exit("");              
-            }
+          if(max < min) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
                 
           // New coordinate for the lindisk
           ldsk->prev->coord->lonlat[i] = Uni()*(max - min) + min;
@@ -1071,15 +1052,10 @@ int MIGREP_Get_Next_Direction(t_ldsk *young, t_ldsk *old)
   if(young->disk->time < old->disk->time)
     {
       PhyML_Printf("\n== young (%s) @ time %f; old (%s) @ time %f",young->coord->id,young->disk->time,old->coord->id,old->disk->time);
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
-      Warn_And_Exit("");
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
     }
 
-  if(young == NULL)
-    {
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
-      Warn_And_Exit("");
-    }
+  if(young == NULL) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
 
   if(young->prev == old)
     {
@@ -1114,11 +1090,7 @@ void MIGREP_Update_Lindisk_List_Pre(t_ldsk *ldsk, phydbl time, t_ldsk **list, in
 {
   /* printf("\n. time: %f pos: %d ldsk: %s n_next: %d ldsk->disk->time: %f disk: %s",time,*pos,ldsk->coord->id,ldsk->n_next,ldsk->disk->time,ldsk->disk->id); fflush(NULL); */
 
-  if(ldsk == NULL)
-    {
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
-      Warn_And_Exit("");
-    }
+  if(ldsk == NULL) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
   if((ldsk->prev != NULL) && (ldsk->disk->time > time) && (ldsk->prev->disk->time < time))
     {
@@ -1178,11 +1150,6 @@ void MIGREP_Connect_Ldsk_Given_Disk(t_dsk **disk, int n_disk, t_ldsk *y_ldsk, t_
           disk[i]->ldsk->next[0] = disk[i-1]->ldsk;
           disk[i-1]->ldsk->prev  = disk[i]->ldsk;
         }
-      
-      /* printf("\n. add new lindisk %s on disk %s", */
-      /*        disk[i]->ldsk->coord->id, */
-      /*        disk[i]->id); */
-      /* fflush(NULL); */
     }
   
   o_ldsk->next[dir_o_y]      = disk[n_disk-1]->ldsk;
@@ -1192,6 +1159,39 @@ void MIGREP_Connect_Ldsk_Given_Disk(t_dsk **disk, int n_disk, t_ldsk *y_ldsk, t_
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+void MIGREP_Print_Struct(char sign, t_tree *tree)
+{
+  t_dsk *disk;
+  int i;
+  t_ldsk *ldisk;
+
+  disk = tree->disk;
+  while(disk->prev) disk = disk->prev;
+  do
+    {
+      printf("\n%c Disk: %s @ %7.3f has %3s on it is_coal? %2d",
+             sign,
+             disk->id,
+             disk->time,disk->ldsk?disk->ldsk->coord->id:NULL,
+             disk->ldsk?disk->ldsk->is_coal:-1); fflush(NULL);
+
+      MIGREP_Update_Lindisk_List(disk->time,disk->ldsk_a,&(disk->n_ldsk_a),disk);
+
+      For(i,disk->n_ldsk_a)
+        {
+          ldisk = disk->ldsk_a[i];
+          printf("\n%c ldisk: %s prev: %s",
+                 sign,
+                 ldisk->coord->id,
+                 ldisk->prev ? ldisk->prev->coord->id : NULL);
+        }
+
+      disk = disk->next;      
+    }
+  while(disk);
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////
