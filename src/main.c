@@ -50,7 +50,7 @@ int main(int argc, char **argv)
   phydbl best_lnL;
   int r_seed;
   char *most_likely_tree=NULL;
-
+  int orig_random_input_tree;
 
 #ifdef MPI
   int rc;
@@ -106,8 +106,8 @@ int main(int argc, char **argv)
       Set_Model_Name(io->mod);
       Print_Settings(io);
       mod = io->mod;
-
-
+      orig_random_input_tree = io->mod->s_opt->random_input_tree;
+      
       if(io->data)
         {
           if(io->n_data_sets > 1) PhyML_Printf("\n. Data set [#%d]\n",num_data_set+1);
@@ -118,6 +118,12 @@ int main(int argc, char **argv)
           for(num_tree=(io->n_trees == 1)?(0):(num_data_set);num_tree < io->n_trees;num_tree++)
             {
               if(!io->mod->s_opt->random_input_tree) io->mod->s_opt->n_rand_starts = 1;
+
+              if(orig_random_input_tree == YES && io->n_trees > 1)
+                {
+                  PhyML_Printf("\n== Cannot combine random starting trees with multiple input trees.");
+                  Exit("\n");
+                }
 
               For(num_rand_tree,io->mod->s_opt->n_rand_starts)
                 {
@@ -266,7 +272,8 @@ int main(int argc, char **argv)
                   if(!tree->n_root) Get_Best_Root_Position(tree);
 
                   /* Print the tree estimated using the current random (or BioNJ) starting tree */
-                  if(io->mod->s_opt->n_rand_starts > 1)
+                  /* if(io->mod->s_opt->n_rand_starts > 1) */
+                  if(orig_random_input_tree == YES)
                     {
                       Print_Tree(io->fp_out_trees,tree);
                       fflush(NULL);
@@ -284,8 +291,7 @@ int main(int argc, char **argv)
 
                   Print_Fp_Out(io->fp_out_stats,t_beg,t_end,tree,
                                io,num_data_set+1,
-                               (tree->mod->s_opt->n_rand_starts > 1)?
-                               (num_rand_tree):(num_tree),
+                               (orig_random_input_tree == YES)?(num_rand_tree):(num_tree),
                                (num_rand_tree == io->mod->s_opt->n_rand_starts-1)?(YES):(NO));
 
                   if(tree->io->print_site_lnl) Print_Site_Lk(tree,io->fp_out_lk);
@@ -294,7 +300,7 @@ int main(int argc, char **argv)
                   if((num_rand_tree == io->mod->s_opt->n_rand_starts-1) && (tree->mod->s_opt->random_input_tree))
                     {
                       /* Do one more iteration in the loop, but don't randomize the tree */
-                      num_rand_tree--;
+                      tree->mod->s_opt->n_rand_starts++;
                       tree->mod->s_opt->random_input_tree = NO;
                     }
 #ifdef BEAGLE

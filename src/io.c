@@ -531,7 +531,6 @@ int Next_Par(char *s, int pos)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Print_Tree(FILE *fp, t_tree *tree)
 {
   char *s_tree;
@@ -555,7 +554,6 @@ void Print_Tree(FILE *fp, t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 char *Write_Tree(t_tree *tree, int custom)
 {
@@ -2623,10 +2621,8 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
   PhyML_Fprintf(fp_out,"\n. Sequence filename: \t\t\t%s", Basename(io->in_align_file));
   PhyML_Fprintf(fp_out,"\n. Data set: \t\t\t\t#%d",n_data_set);
 
-  if(io->mod->s_opt->random_input_tree)
-    PhyML_Fprintf(fp_out,"\n. Random init tree: \t\t\t#%d",num_tree+1);
-  else if(io->n_trees > 1)
-    PhyML_Fprintf(fp_out,"\n. Starting tree number: \t\t\t#%d",num_tree+1);
+  if(io->mod->s_opt->random_input_tree) PhyML_Fprintf(fp_out,"\n. Random init tree: \t\t\t#%d",num_tree+1);
+  else if(io->n_trees > 1)              PhyML_Fprintf(fp_out,"\n. Starting tree number: \t\t#%d",num_tree+1);
 
   if(io->mod->s_opt->opt_topo)
     {

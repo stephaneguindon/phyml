@@ -135,7 +135,6 @@ int Read_Command_Line(option *io, int argc, char **argv)
 
     do
     {     
-
       c = getopt_long(argc,argv,"qi:d:m:b:n:t:f:zk:v:c:a:u:ho:s:x:g:l:ep",longopts,&idx);
 
       switch(c)
