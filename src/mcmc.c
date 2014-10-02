@@ -4966,7 +4966,7 @@ void MCMC_Migrep_Triplet(t_tree *tree)
   phydbl cur_lnL, new_lnL;
   phydbl ratio, alpha, u, min_under_time;
   t_dsk **disk_bkup,*disk,*coal_disk;
-  t_ldsk *ldsk_coal_cur,**ldsk_under,*ldsk_up,*ldsk,**next_up_orig,**prev_under_orig,*old_ldsk_under,*ldsk_coal_new;
+  t_ldsk *ldsk_coal_cur,**ldsk_under,*ldsk_up,*ldsk,**next_up_orig,**prev_under_orig,*old_ldsk_under,*ldsk_coal_new,*buff_ldsk;
   int i,n_coal,n_rm_disk,dir_up_coal,n_next_up_orig;
   
   cur_lnL     =   MIGREP_Lk(tree->disk,tree->mmod);;
@@ -4986,6 +4986,7 @@ void MCMC_Migrep_Triplet(t_tree *tree)
   prev_under_orig = NULL;
   old_ldsk_under  = NULL;
   coal_disk       = NULL;
+  buff_ldsk       = NULL;
 
   /* Get to the top of the tree */
   disk = tree->disk;
@@ -5184,7 +5185,8 @@ void MCMC_Migrep_Triplet(t_tree *tree)
     {
       /* We now go back to the original genealogy */
       
-      /* First, remove the new disks */      
+      /* First, remove the new disks and free the memory  */
+      /* for the ldsk sitting on it and the disk as well  */
       For(i,ldsk_coal_cur->n_next)
         {
           ldsk = ldsk_under[i]->prev;
@@ -5192,14 +5194,20 @@ void MCMC_Migrep_Triplet(t_tree *tree)
             {
               /* printf("\n. ldsk: %s disk: %s target: %s",ldsk->coord->id,ldsk->disk->id,ldsk_coal_new->coord->id); fflush(NULL); */
               MIGREP_Remove_Disk(ldsk->disk);
+              Free_Disk(ldsk->disk);
+              buff_ldsk = ldsk;
               ldsk = ldsk->prev;
+              Free_Ldisk(buff_ldsk);
             }      
         }
 
       while(ldsk != ldsk_up)
         {
           MIGREP_Remove_Disk(ldsk->disk);
+          Free_Disk(ldsk->disk);
+          buff_ldsk = ldsk;
           ldsk = ldsk->prev;
+          Free_Ldisk(buff_ldsk);
         }      
             
       /* Second, re-insert the original disks */
@@ -5220,10 +5228,9 @@ void MCMC_Migrep_Triplet(t_tree *tree)
       */
       For(i,ldsk_coal_cur->n_next) ldsk_under[i]->prev = prev_under_orig[i];
       
-      /* Free up memory for prev_under_orig */
+      Free(ldsk_under);
       Free(prev_under_orig);
       
-
       new_lnL = MIGREP_Lk(tree->disk,tree->mmod);
       if(Are_Equal(new_lnL,cur_lnL,1.E-3) == NO) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 

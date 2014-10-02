@@ -966,6 +966,8 @@ void MIGREP_One_New_Traj(t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y, t_tree *tr
       
       /* Connect them */
       MIGREP_Connect_Ldsk_Given_Disk(disk_new,n_new_disk,y_ldsk,o_ldsk,dir_o_y);
+
+      Free(disk_new);
     }
   else
     {

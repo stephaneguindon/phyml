@@ -75,6 +75,7 @@ void Free_Edge_Lk_Left(t_edge *b);
 void Free_Edge_Lk_Rght(t_edge *b);
 void Free_Geo(t_geo *t);
 void Free_Geo_Coord(t_geo_coord *t);
-void Free_Disk_Evt(t_dsk *t);
+void Free_Disk(t_dsk *t);
+void Free_Ldisk(t_ldsk *t);
 
 #endif
