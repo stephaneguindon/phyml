@@ -4964,7 +4964,7 @@ void MCMC_Migrep_Slice(t_tree *tree)
 void MCMC_Migrep_Triplet(t_tree *tree)
 {
   phydbl cur_lnL, new_lnL;
-  phydbl ratio, alpha, u, min_under_time;
+  phydbl ratio, alpha, u, min_under_time, hr;
   t_dsk **disk_bkup,*disk,*coal_disk;
   t_ldsk *ldsk_coal_cur,**ldsk_under,*ldsk_up,*ldsk,**next_up_orig,**prev_under_orig,*old_ldsk_under,*ldsk_coal_new,*buff_ldsk;
   int i,n_coal,n_rm_disk,dir_up_coal,n_next_up_orig;
@@ -5024,6 +5024,9 @@ void MCMC_Migrep_Triplet(t_tree *tree)
   /* ldsk_coal_cur is the root node */
   if(ldsk_up == NULL) ldsk_up = ldsk_coal_cur; 
 
+  hr = .0;
+  hr += MIGREP_Uniform_Path_Density(ldsk_coal_cur,ldsk_up);
+
   /* printf("\n. ldsk_up: %s",ldsk_up->coord->id); fflush(NULL); */
 
   /* Copy ldsk_up->next */
@@ -5052,6 +5055,8 @@ void MCMC_Migrep_Triplet(t_tree *tree)
   For(i,ldsk_coal_cur->n_next)
     {
       ldsk_under[i] = MIGREP_Next_Coal_Lindisk(ldsk_coal_cur->next[i]);
+
+      hr += MIGREP_Uniform_Path_Density(ldsk_under[i],ldsk_coal_cur);
       
       /* Record the oldest ldsk_under. Coalescent has to happen */
       /* prior the time of that ldisk */
@@ -5124,6 +5129,10 @@ void MCMC_Migrep_Triplet(t_tree *tree)
       MIGREP_One_New_Traj(ldsk_coal_new,ldsk_up,dir_up_coal,tree);
       /* printf("\n <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< \n"); */
             
+
+      hr -= MIGREP_Uniform_Path_Density(ldsk_coal_new,ldsk_up);
+
+
       /* Build new trajectories between each ldsk in ldsk_under */
       /* ldsk_coal_new  */
       For(i,ldsk_coal_cur->n_next)
@@ -5138,6 +5147,7 @@ void MCMC_Migrep_Triplet(t_tree *tree)
           /* fflush(NULL); */
           MIGREP_Make_Lindisk_Next(ldsk_coal_new);
           MIGREP_One_New_Traj(ldsk_under[i],ldsk_coal_new,ldsk_coal_new->n_next-1,tree);          
+          hr -= MIGREP_Uniform_Path_Density(ldsk_under[i],ldsk_coal_new);
         }
     }
   else /* Coalescent ldsk is the root ldsk */
@@ -5147,6 +5157,7 @@ void MCMC_Migrep_Triplet(t_tree *tree)
         {
           /* printf("\n@ Generate traj from %s to %s",ldsk_under[i]->coord->id,ldsk_up->coord->id); fflush(NULL); */
           MIGREP_One_New_Traj(ldsk_under[i],ldsk_coal_new,i,tree);
+          hr -= MIGREP_Uniform_Path_Density(ldsk_under[i],ldsk_coal_new);
         }
     }
   
@@ -5172,7 +5183,7 @@ void MCMC_Migrep_Triplet(t_tree *tree)
   ratio = .0;
   ratio += (new_lnL - cur_lnL);
   
-  printf("\n. new: %f cur: %f",new_lnL,cur_lnL);
+  printf("\n. new: %12f cur: %12f hr: %12f",new_lnL,cur_lnL,hr);
 
   ratio = EXP(ratio);
   alpha = MIN(1.,ratio);

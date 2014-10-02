@@ -1032,13 +1032,6 @@ void MIGREP_One_New_Traj_Given_Disk(t_ldsk *y_ldsk, t_ldsk *o_ldsk)
           // New coordinate for the lindisk
           ldsk->prev->coord->lonlat[i] = Uni()*(max - min) + min;
 
-          /* printf("\n. NEW TRAJ ldsk %s at %f [disk: %s] located at %f", */
-          /*        ldsk->prev->coord->id, */
-          /*        ldsk->prev->disk->time, */
-          /*        ldsk->prev->disk->id, */
-          /*        ldsk->prev->coord->lonlat[i]); */
-          /* fflush(NULL); */
-
           // New coordinate for the centre of the corresponding disk event
           max = ldsk->prev->coord->lonlat[i] + rad;
           min = ldsk->prev->coord->lonlat[i] - rad;
@@ -1047,6 +1040,63 @@ void MIGREP_One_New_Traj_Given_Disk(t_ldsk *y_ldsk, t_ldsk *o_ldsk)
       ldsk = ldsk->prev;
       n_disk_btw--;
     }
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+phydbl MIGREP_Uniform_Path_Density(t_ldsk *y_ldsk, t_ldsk *o_ldsk)
+{
+  int n_disk_btw;
+  t_ldsk *ldsk;
+  phydbl min, max;
+  int i;
+  phydbl rad;
+  phydbl log_dens;
+
+  if(y_ldsk == o_ldsk) return .0;
+
+  /* Number of disks between y_ldsk and o_ldsk */
+  ldsk = y_ldsk;
+  n_disk_btw = 0;
+  while(ldsk->prev != o_ldsk)
+    {
+      n_disk_btw++;
+      ldsk = ldsk->prev;
+    }
+
+  /* printf("\n. Number of disks between %s and %s: %d",y_ldsk->coord->id,o_ldsk->coord->id,n_disk_btw); */
+  /* fflush(NULL); */
+
+  log_dens = 0.0;
+  ldsk     = y_ldsk;
+  rad      = ldsk->disk->mmod->rad;
+  while(ldsk->prev != o_ldsk)
+    {
+      /* printf("\n. ldsk %s at %f disk: %s ",ldsk->coord->id,ldsk->disk->time,ldsk->disk->id); */
+      /* fflush(NULL); */
+
+      For(i,ldsk->disk->mmod->n_dim)
+        {
+          min = 
+            MAX(0,
+                MAX(ldsk->coord->lonlat[i] - 2.*rad,
+                    o_ldsk->coord->lonlat[i] - 2.*rad*n_disk_btw));
+
+          max = 
+            MIN(ldsk->disk->mmod->lim->lonlat[i],
+                MIN(ldsk->coord->lonlat[i] + 2.*rad,
+                    o_ldsk->coord->lonlat[i] + 2.*rad*n_disk_btw));
+          
+
+          if(max < min) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+                
+          log_dens -= (max - min);
+        }
+      ldsk = ldsk->prev;
+      n_disk_btw--;
+    }
+  return(log_dens);
 }
 
 /*////////////////////////////////////////////////////////////
