@@ -1037,16 +1037,12 @@ phydbl Ppois(phydbl x, phydbl param)
   /* Press et al. (1990) approximation of the CDF for the Poisson distribution */
   if(param < SMALL || x < 0.0) 
     {
-      PhyML_Printf("\n. param = %G x=%G",param,x);
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== param = %G x=%G",param,x);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
   return IncompleteGamma(x,param,LnGamma(param));
 }
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
