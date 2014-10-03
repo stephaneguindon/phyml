@@ -4973,8 +4973,8 @@ void MCMC_Migrep_Triplet(t_tree *tree)
   /* PhyML_Printf("\n. orig lk: %f",MIGREP_Lk(tree->disk,tree->mmod)); */
   /* fflush(NULL); */
 
-  MIGREP_Print_Struct('i',tree);
-  MIGREP_Check_Struct(tree);
+  /* MIGREP_Print_Struct('i',tree); */
+  /* MIGREP_Check_Struct(tree); */
 
   /* cur_lnL         = tree->disk->mmod->c_lnL; */
   new_lnL         = UNLIKELY;
@@ -5092,18 +5092,19 @@ void MCMC_Migrep_Triplet(t_tree *tree)
          has to be older than old_ldsk_under and younger than ldsk_up */
       coal_disk= MIGREP_Make_Disk_Event(tree->mmod->n_dim,tree->n_otu);
       MIGREP_Init_Disk_Event(coal_disk,tree->mmod);
+      GEO_Init_Coord(coal_disk->centr,tree->mmod->n_dim);
       
       /* Set the time of the coalescent disk */
       coal_disk->time = 
         Uni()*(old_ldsk_under->disk->time - ldsk_up->disk->time) + 
         ldsk_up->disk->time;
 
-      printf("\n >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-      printf("\n. coal disk time: %f [%f %f]",
-             coal_disk->time,
-             old_ldsk_under->disk->time,
-             ldsk_up->disk->time); fflush(NULL);
-      fflush(NULL);
+      /* printf("\n >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"); */
+      /* printf("\n. coal disk time: %f [%f %f]", */
+      /*        coal_disk->time, */
+      /*        old_ldsk_under->disk->time, */
+      /*        ldsk_up->disk->time); fflush(NULL); */
+      /* fflush(NULL); */
 
       /* Which index of ldsk_up->next leads to any of */
       /* the ldsk in ldsk_under? This index also leads */
@@ -5112,7 +5113,7 @@ void MCMC_Migrep_Triplet(t_tree *tree)
 
       /* Generate trajectory between the oldest ldisk in ldsk_under and ldsk_up */
       MIGREP_One_New_Traj(old_ldsk_under,ldsk_up,dir_up_coal,coal_disk,tree);
-      printf("\n <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< \n");
+      /* printf("\n <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< \n"); */
 
       hr -= MIGREP_Uniform_Path_Density(old_ldsk_under,ldsk_up);
 
@@ -5127,14 +5128,14 @@ void MCMC_Migrep_Triplet(t_tree *tree)
         {
           if(ldsk_under[i] != old_ldsk_under)
             {
-              printf("\n! Generate traj from %s (disk %s @ %f) to %s (disk %s @ %f)",
-                     ldsk_under[i]->coord->id,
-                     ldsk_under[i]->disk->id,
-                     ldsk_under[i]->disk->time,
-                     ldsk_coal_new->coord->id,
-                     ldsk_coal_new->disk->id,
-                     ldsk_coal_new->disk->time);
-              fflush(NULL);
+              /* printf("\n! Generate traj from %s (disk %s @ %f) to %s (disk %s @ %f)", */
+              /*        ldsk_under[i]->coord->id, */
+              /*        ldsk_under[i]->disk->id, */
+              /*        ldsk_under[i]->disk->time, */
+              /*        ldsk_coal_new->coord->id, */
+              /*        ldsk_coal_new->disk->id, */
+              /*        ldsk_coal_new->disk->time); */
+              /* fflush(NULL); */
               MIGREP_Make_Lindisk_Next(ldsk_coal_new);
               MIGREP_One_New_Traj(ldsk_under[i],ldsk_coal_new,ldsk_coal_new->n_next-1,NULL,tree);          
               hr -= MIGREP_Uniform_Path_Density(ldsk_under[i],ldsk_coal_new);
@@ -5146,7 +5147,7 @@ void MCMC_Migrep_Triplet(t_tree *tree)
       ldsk_coal_new = ldsk_up;
       For(i,ldsk_coal_cur->n_next)
         {
-          printf("\n@ Generate traj from %s to %s",ldsk_under[i]->coord->id,ldsk_up->coord->id); fflush(NULL);
+          /* printf("\n@ Generate traj from %s to %s",ldsk_under[i]->coord->id,ldsk_up->coord->id); fflush(NULL); */
           MIGREP_One_New_Traj(ldsk_under[i],ldsk_coal_new,i,NULL,tree);
           hr -= MIGREP_Uniform_Path_Density(ldsk_under[i],ldsk_coal_new);
         }
@@ -5188,7 +5189,7 @@ void MCMC_Migrep_Triplet(t_tree *tree)
 
   if(u > alpha) /* Reject */
     {
-      PhyML_Printf("\n. Reject\n");
+      /* PhyML_Printf("\n. Reject\n"); */
       /* We now go back to the original genealogy */
       
       /* First, remove the new disks and free the memory  */
@@ -5243,11 +5244,11 @@ void MCMC_Migrep_Triplet(t_tree *tree)
     }
   else
     {
-      PhyML_Printf("\n. Accept\n");
+      /* PhyML_Printf("\n. Accept\n"); */
     }
 
-  MIGREP_Print_Struct('e',tree);
-  MIGREP_Check_Struct(tree);
+  /* MIGREP_Print_Struct('e',tree); */
+  /* MIGREP_Check_Struct(tree); */
 
 }
 #endif
