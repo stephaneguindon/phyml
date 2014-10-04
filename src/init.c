@@ -3297,13 +3297,15 @@ void GEO_Init_Coord(t_geo_coord *t, int n_dim)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void MIGREP_Init_Disk_Event(t_dsk *t, t_migrep_mod *mod)
+void MIGREP_Init_Disk_Event(t_dsk *t, int n_dim, t_migrep_mod *mod)
 {
   t->prev         = NULL;
   t->next         = NULL;
   t->mmod         = NULL;
   t->nd           = NULL;
   Random_String(t->id,3);
+
+  GEO_Init_Coord(t->centr,n_dim);
 
   if(mod != NULL)
     {

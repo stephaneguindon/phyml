@@ -53,19 +53,19 @@ int MIGREP_Draw(GtkWidget *widget, cairo_t *cr, gpointer *data)
     {      
       MIGREP_Update_Lindisk_List(disk->time,disk->ldsk_a,&(disk->n_ldsk_a),disk);
 
-      cairo_move_to(cr,0,FABS(disk->time)/h);
-      cairo_show_text(cr,disk->id); 
-      cairo_stroke(cr);
+      /* cairo_move_to(cr,0,FABS(disk->time)/h); */
+      /* cairo_show_text(cr,disk->id);  */
+      /* cairo_stroke(cr); */
 
-      cairo_move_to(cr,disk->centr->lonlat[1]/w - mmod->rad/w,FABS(disk->time)/h);
-      cairo_set_line_width(cr,0.004);
-      cairo_set_source_rgba(cr, 1, 0, 0, 0.3);
-      cairo_set_line_width(cr,0.002);
-      cairo_line_to(cr,disk->centr->lonlat[1]/w + mmod->rad/w,FABS(disk->time)/h);
-      cairo_stroke(cr);
-      cairo_arc(cr,disk->centr->lonlat[1]/w,FABS(disk->time)/h,0.005,0.,2.*PI);
-      cairo_stroke(cr);
-      cairo_set_source_rgb(cr, 0, 0, 0);
+      /* cairo_move_to(cr,disk->centr->lonlat[1]/w - mmod->rad/w,FABS(disk->time)/h); */
+      /* cairo_set_line_width(cr,0.004); */
+      /* cairo_set_source_rgba(cr, 1, 0, 0, 0.3); */
+      /* cairo_set_line_width(cr,0.002); */
+      /* cairo_line_to(cr,disk->centr->lonlat[1]/w + mmod->rad/w,FABS(disk->time)/h); */
+      /* cairo_stroke(cr); */
+      /* cairo_arc(cr,disk->centr->lonlat[1]/w,FABS(disk->time)/h,0.005,0.,2.*PI); */
+      /* cairo_stroke(cr); */
+      /* cairo_set_source_rgb(cr, 0, 0, 0); */
           
       For(i,disk->n_ldsk_a)
         {
@@ -174,8 +174,8 @@ int MIGREP_Main(int argc, char *argv[])
 
   seed = time(NULL);
   /* seed = 1412214370; */
-  /* seed = 1412289876; */
   printf("\n. Seed: %d",seed); fflush(NULL);
+  seed = 1412394873;
   srand(seed);
   tree = MIGREP_Simulate_Backward((int)atoi(argv[1]),10.,10.);
 
@@ -230,7 +230,7 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   tree = Make_Tree_From_Scratch(n_otu,NULL);
   nd   = Make_Node_Light(0);
   disk = MIGREP_Make_Disk_Event(n_dim,n_otu);
-  MIGREP_Init_Disk_Event(disk,NULL);
+  MIGREP_Init_Disk_Event(disk,n_dim,NULL);
   
   // Allocate coordinates for all the tips first (will grow afterwards)
   ldsk_a = (t_ldsk **)mCalloc(n_otu,sizeof(t_ldsk *));
@@ -265,7 +265,7 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   
   // Allocate and initialise for next event
   disk->prev = MIGREP_Make_Disk_Event(n_dim,n_otu);
-  MIGREP_Init_Disk_Event(disk->prev,NULL);
+  MIGREP_Init_Disk_Event(disk->prev,n_dim,NULL);
   disk->prev->next = disk;
   
   For(i,n_otu)
@@ -283,9 +283,9 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   disk = disk->prev;
 
   // Initialize parameters of migrep model
-  mmod->lbda = 0.2;
-  mmod->mu   = 0.8;
-  mmod->rad  = 3.0;
+  mmod->lbda = 0.4;
+  mmod->mu   = 0.7;
+  mmod->rad  = 7.0;
   
   curr_t      = 0.0;
   dt_dsk     = 0.0;
@@ -298,7 +298,6 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
       curr_t -= dt_dsk;
       
       // Coordinates of next event
-      GEO_Init_Coord(disk->centr,n_dim);
       disk->centr->lonlat[0] = Uni()*width;
       disk->centr->lonlat[1] = Uni()*height;      
 
@@ -403,7 +402,7 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
       if(n_lineages == 1) break;
 
       disk->prev = MIGREP_Make_Disk_Event(n_dim,n_otu);
-      MIGREP_Init_Disk_Event(disk->prev,NULL);
+      MIGREP_Init_Disk_Event(disk->prev,n_dim,NULL);
       disk->prev->next = disk;
       
       disk = disk->prev;          
@@ -447,6 +446,8 @@ int MIGREP_Is_In_Disk(t_geo_coord *coord, t_dsk *disk)
   int i;
   /* PhyML_Printf("\n<> disk %s %d",disk->id,disk->centr->dim); */
 
+  if(!disk->centr->dim) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+
   For(i,disk->centr->dim)
     {
       /* PhyML_Printf("\n<> disk %s ldsk %s %f ctr: %f",disk->id,coord->id,coord->lonlat[i],disk->centr->lonlat[i]); */
@@ -482,11 +483,11 @@ phydbl MIGREP_Lk(t_dsk *disk, t_migrep_mod *mmod)
   log_one_mu = LOG(1. - mmod->mu);  
   lnL        = 0.0;
 
-  /* PhyML_Printf("\n\n. New likelihood call"); */
+  PhyML_Printf("\n\n. New likelihood call");
   do
     {
-      /* PhyML_Printf("\n. Likelihood - disk %s has %d lindisk nodes [%f] rad: %f",disk->id,disk->n_ldsk_a,lnL,mmod->rad); */
-      /* fflush(NULL); */
+      PhyML_Printf("\n. Likelihood - disk %s has %d lindisk nodes [%f] rad: %f",disk->id,disk->n_ldsk_a,lnL,mmod->rad);
+      fflush(NULL);
 
       lnL += log_lbda - mmod->lbda * (disk->time - disk->prev->time);
 
@@ -506,37 +507,37 @@ phydbl MIGREP_Lk(t_dsk *disk, t_migrep_mod *mmod)
             {
               if(was_hit == YES) /* was hit */
                 {
-                  /* PhyML_Printf("\n. %d/%d lindisk %s (@ %f) was hit and gave %s (@ %f)", */
-                  /*              i,disk->n_ldsk_a, */
-                  /*              lindisk_nd->coord->id, */
-                  /*              lindisk_nd->prev->coord->id, */
-                  /*              lindisk_nd->coord->lonlat[0], */
-                  /*              lindisk_nd->prev->coord->lonlat[0]); */
+                  PhyML_Printf("\n. %d/%d lindisk %s (@ %f) was hit and gave %s (@ %f)",
+                               i,disk->n_ldsk_a,
+                               lindisk_nd->coord->id,
+                               lindisk_nd->prev->coord->id,
+                               lindisk_nd->coord->lonlat[0],
+                               lindisk_nd->prev->coord->lonlat[0]);
                   lnL += log_mu;
                 }
               else /* was not hit */
                 {
-                  /* PhyML_Printf("\n. %d/%d lindisk %s was not hit",i,disk->n_ldsk_a,lindisk_nd->coord->id); */
+                  PhyML_Printf("\n. %d/%d lindisk %s was not hit",i,disk->n_ldsk_a,lindisk_nd->coord->id);
                   lnL += log_one_mu;
                 }
             }
           else 
             { 
               /* PhyML_Printf("\n. %s was hit: %d %s %s %s",lindisk_nd->coord->id,was_hit,lindisk_nd->prev->disk->id,disk->prev->id,disk->id); */
-             // has changed spatial coordinates but was outside disk 
+             /* has changed spatial coordinates but was outside disk  */
               if(was_hit == YES) 
                 {
-                  /* printf("\n. FAIL lindisk: %s [%.3f %.3f] prev: %s [%.3f %.3f] centr: [%.3f %.3f] rad: %.3f", */
-                  /*        lindisk_nd->coord->id, */
-                  /*        lindisk_nd->coord->lonlat[0], */
-                  /*        lindisk_nd->coord->lonlat[1], */
-                  /*        lindisk_nd->prev->coord->id, */
-                  /*        lindisk_nd->prev->coord->lonlat[0], */
-                  /*        lindisk_nd->prev->coord->lonlat[1], */
-                  /*        disk->centr->lonlat[0], */
-                  /*        disk->centr->lonlat[1], */
-                  /*        disk->mmod->rad); */
-                  /* fflush(NULL); */
+                  printf("\n. FAIL lindisk: %s [%.3f %.3f] prev: %s [%.3f %.3f] centr: [%.3f %.3f] rad: %.3f",
+                         lindisk_nd->coord->id,
+                         lindisk_nd->coord->lonlat[0],
+                         lindisk_nd->coord->lonlat[1],
+                         lindisk_nd->prev->coord->id,
+                         lindisk_nd->prev->coord->lonlat[0],
+                         lindisk_nd->prev->coord->lonlat[1],
+                         disk->prev->centr->lonlat[0],
+                         disk->prev->centr->lonlat[1],
+                         disk->mmod->rad);
+                  fflush(NULL);
                   mmod->c_lnL = UNLIKELY;
                   return UNLIKELY;
                 }
@@ -589,9 +590,9 @@ void MIGREP_MCMC(t_tree *tree)
   mcmc->chain_len        = 1.E+8;
   mcmc->sample_interval  = 50;
   
-  tree->mmod->lbda = Uni()*(tree->mmod->max_lbda - tree->mmod->min_lbda) + tree->mmod->min_lbda;
-  tree->mmod->mu   = Uni()*(tree->mmod->max_mu - tree->mmod->min_mu) + tree->mmod->min_mu;
-  tree->mmod->rad  = tree->mmod->max_rad;
+  /* tree->mmod->lbda = Uni()*(tree->mmod->max_lbda - tree->mmod->min_lbda) + tree->mmod->min_lbda; */
+  /* tree->mmod->mu   = Uni()*(tree->mmod->max_mu - tree->mmod->min_mu) + tree->mmod->min_mu; */
+  /* tree->mmod->rad  = tree->mmod->max_rad; */
 
   MIGREP_Lk(tree->disk,tree->mmod);
   printf("\n. LK: %f",tree->mmod->c_lnL);
@@ -601,13 +602,13 @@ void MIGREP_MCMC(t_tree *tree)
                "lbda",
                "mu",
                "rad");
-  mcmc->sample_interval = 100;
+  mcmc->sample_interval = 1000;
   mcmc->run = 0;
   do
     {
-      MCMC_Migrep_Lbda(tree);
-      MCMC_Migrep_Mu(tree);
-      MCMC_Migrep_Radius(tree);
+      /* MCMC_Migrep_Lbda(tree); */
+      /* MCMC_Migrep_Mu(tree); */
+      /* MCMC_Migrep_Radius(tree); */
       MCMC_Migrep_Triplet(tree);
 
       if(mcmc->run%mcmc->sample_interval == 0)
@@ -621,7 +622,7 @@ void MIGREP_MCMC(t_tree *tree)
 
           /* gdk_threads_enter(); */
           gtk_widget_queue_draw(tree->draw_area);
-          sleep(3);
+          sleep(1);
           /* gdk_threads_leave(); */
           /* Exit("\n"); */
         }
@@ -790,15 +791,6 @@ void MIGREP_New_Traj(t_dsk *start, t_dsk *end, t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-void MIGREP_Copy_Coord(t_geo_coord *ori, t_geo_coord *cpy)
-{
-  int i;
-  For(i,ori->dim) cpy->lonlat[i] = ori->lonlat[i];
-}
-
-/*////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////*/
-
 void MIGREP_Remove_Disk(t_dsk *disk)
 {
   t_dsk *prev;
@@ -904,8 +896,8 @@ void MIGREP_One_New_Traj(t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y, t_dsk *xtr
   disk     = NULL;
   disk_new = NULL;
 
-  /* printf("\n. New traj from %s to %s",y_ldsk->coord->id,o_ldsk->coord->id); */
-  /* fflush(NULL); */
+  printf("\n. New traj from %s to %s",y_ldsk->coord->id,o_ldsk->coord->id);
+  fflush(NULL);
 
   /* Minimum number of disks between y_ldsk and o_ldsk */
   max_dist = -1.;
@@ -916,8 +908,8 @@ void MIGREP_One_New_Traj(t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y, t_dsk *xtr
     }
   min_n_disk = (int)(max_dist / (2. * mmod->rad));
   
-  /* printf("\n. min_n_disk: %d [%f]",min_n_disk,max_dist); */
-  /* fflush(NULL); */
+  printf("\n. min_n_disk: %d [%f]",min_n_disk,max_dist);
+  fflush(NULL);
   
   /* How many disks along the new path between y_ldsk and o_ldsk */
   n_new_disk = Rand_Int(min_n_disk,min_n_disk+3);
@@ -934,11 +926,7 @@ void MIGREP_One_New_Traj(t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y, t_dsk *xtr
       if(xtra_dsk != NULL) disk_new[n_new_disk-1] = xtra_dsk;
       else                 disk_new[n_new_disk-1] = MIGREP_Make_Disk_Event(mmod->n_dim,tree->n_otu);
 
-      For(i,n_new_disk) 
-        {
-          MIGREP_Init_Disk_Event(disk_new[i],mmod);
-          GEO_Init_Coord(disk_new[i]->centr,mmod->n_dim);
-        }
+      For(i,n_new_disk)  MIGREP_Init_Disk_Event(disk_new[i],mmod->n_dim,mmod);
 
       /* Times of these new disks. If xtra_dsk != NULL, then make sure you do not */
       /* reset the time of that disk  */
@@ -1000,7 +988,7 @@ void MIGREP_One_New_Traj_Given_Disk(t_ldsk *y_ldsk, t_ldsk *o_ldsk)
   int n_disk_btw;
   t_ldsk *ldsk;
   phydbl min, max;
-  int i;
+  int i,k;
   phydbl rad;
 
   /* Number of disks between y_ldsk and o_ldsk */
@@ -1012,48 +1000,57 @@ void MIGREP_One_New_Traj_Given_Disk(t_ldsk *y_ldsk, t_ldsk *o_ldsk)
       ldsk = ldsk->prev;
     }
 
-  /* printf("\n. Number of disks between %s and %s: %d",y_ldsk->coord->id,o_ldsk->coord->id,n_disk_btw); */
-  /* fflush(NULL); */
+  printf("\n# Number of disks between %s and %s: %d",y_ldsk->coord->id,o_ldsk->coord->id,n_disk_btw);
+  fflush(NULL);
 
   ldsk = y_ldsk;
   rad  = ldsk->disk->mmod->rad;
+  k    = 0;
   while(ldsk->prev != o_ldsk)
     {
-      /* printf("\n. ldsk %s at %f disk: %s ",ldsk->coord->id,ldsk->disk->time,ldsk->disk->id); */
-      /* fflush(NULL); */
+      printf("\n# ldsk %s at %f disk: %s ",ldsk->coord->id,ldsk->disk->time,ldsk->disk->id);
+      fflush(NULL);
 
       For(i,ldsk->disk->mmod->n_dim)
         {
           min = 
-            MAX(0,
+            MAX(0.0,
                 MAX(ldsk->coord->lonlat[i] - 2.*rad,
-                    o_ldsk->coord->lonlat[i] - 2.*rad*n_disk_btw));
+                    o_ldsk->disk->centr->lonlat[i] - rad*(2*(n_disk_btw-k)-1)));
 
           max = 
             MIN(ldsk->disk->mmod->lim->lonlat[i],
                 MIN(ldsk->coord->lonlat[i] + 2.*rad,
-                    o_ldsk->coord->lonlat[i] + 2.*rad*n_disk_btw));
+                    o_ldsk->disk->centr->lonlat[i] + rad*(2*(n_disk_btw-k)-1)));
           
-
-
           if(max < min) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
                 
           // New coordinate for the lindisk
           ldsk->prev->coord->lonlat[i] = Uni()*(max - min) + min;
 
-          /* printf("\n# ldsk %s max: %f min:%f set to %f", */
-          /*        ldsk->prev->coord->id, */
-          /*        max,min, */
-          /*        ldsk->prev->coord->lonlat[i]); */
+          printf("\n# ldsk %s max: %f min:%f set to %f n_disk_btw: %d",
+                 ldsk->prev->coord->id,
+                 max,min,
+                 ldsk->prev->coord->lonlat[i],n_disk_btw);
 
 
           // New coordinate for the centre of the corresponding disk event
-          max = ldsk->prev->coord->lonlat[i] + rad;
-          min = ldsk->prev->coord->lonlat[i] - rad;
+          max = MIN(ldsk->disk->mmod->lim->lonlat[i],MIN(ldsk->coord->lonlat[i],ldsk->prev->coord->lonlat[i]) + rad);
+          min = MAX(0.0,MAX(ldsk->coord->lonlat[i],ldsk->prev->coord->lonlat[i]) - rad);
           ldsk->prev->disk->centr->lonlat[i] = Uni()*(max - min) + min;
+
+          printf("\n. Set disk for %s [%f] %s [%f] at [%f] max: %f min: %f %s",
+                 ldsk->coord->id,
+                 ldsk->coord->lonlat[i],
+                 ldsk->prev->coord->id,
+                 ldsk->prev->coord->lonlat[i],
+                 ldsk->prev->disk->centr->lonlat[i],max,min,
+                 o_ldsk->coord->id);
+
+          /* ldsk->prev->disk->centr->lonlat[i] = ldsk->coord->lonlat[i]; */
         }
       ldsk = ldsk->prev;
-      n_disk_btw--;
+      k++;
     }
 }
 
@@ -1314,6 +1311,10 @@ void MIGREP_Check_Struct(t_tree *tree)
                           ldisk->prev->coord->lonlat[j]) > 2.*tree->mmod->rad)
                     {
                       MIGREP_Print_Struct('=',tree);
+                      PhyML_Printf("\n== %f > %f",
+                                   FABS(ldisk->coord->lonlat[j] - 
+                                        ldisk->prev->coord->lonlat[j]),
+                                   2.*tree->mmod->rad);
                       PhyML_Printf("\n== Radius: %f",tree->mmod->rad);
                       PhyML_Printf("\n== Check ldsk %s",ldisk->coord->id);
                       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
@@ -1327,9 +1328,22 @@ void MIGREP_Check_Struct(t_tree *tree)
   while(disk);
 }
 
-
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+t_geo_coord *MIGREP_Copy_Geo_Coord(t_geo_coord *ori)
+{
+  t_geo_coord *cpy;
+  int i;
+
+  cpy = GEO_Make_Geo_Coord(ori->dim);
+
+  For(i,ori->lonlat[i]) cpy->lonlat[i] = ori->lonlat[i];
+  strcpy(cpy->id,ori->id);
+
+  return cpy;
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

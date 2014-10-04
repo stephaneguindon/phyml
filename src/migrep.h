@@ -27,7 +27,6 @@ phydbl MIGREP_Wrap_Lk(t_edge *b, t_tree *tree, supert_tree *stree);
 void MIGREP_MCMC(t_tree *tree);
 int MIGREP_Is_In_Disk(t_geo_coord *coord, t_dsk *disk);
 void MIGREP_New_Traj(t_dsk *start, t_dsk *end, t_tree *tree);
-void MIGREP_Copy_Coord(t_geo_coord *ori, t_geo_coord *cpy);
 int MIGREP_Draw(GtkWidget *widget, cairo_t *cr, gpointer *data);
 void MIGREP_Remove_Disk(t_dsk *disk);
 void MIGREP_Insert_Disk(t_dsk *disk);
@@ -42,5 +41,6 @@ void MIGREP_Connect_Ldsk_Given_Disk(t_dsk **disk, int n_disk, t_ldsk *y_ldsk, t_
 void MIGREP_Print_Struct(char sign, t_tree *tree);
 phydbl MIGREP_Uniform_Path_Density(t_ldsk *y_ldsk, t_ldsk *o_ldsk);
 void MIGREP_Check_Struct(t_tree *tree);
+t_geo_coord *MIGREP_Copy_Geo_Coord(t_geo_coord *orig);
 
 #endif

@@ -4917,8 +4917,7 @@ void MCMC_Migrep_Slice(t_tree *tree)
     {
       For(j,disk->n_ldsk_a)
         {
-          MIGREP_Copy_Coord(disk->ldsk_a[j]->coord,
-                            disk->ldsk_a[j]->cpy_coord);
+          disk->ldsk_a[j]->cpy_coord = MIGREP_Copy_Geo_Coord(disk->ldsk_a[j]->coord);
         }
       disk = disk->next;
     }
@@ -4941,8 +4940,7 @@ void MCMC_Migrep_Slice(t_tree *tree)
         {
           For(j,disk->n_ldsk_a)
             {
-              MIGREP_Copy_Coord(disk->ldsk_a[j]->cpy_coord,
-                                disk->ldsk_a[j]->coord);
+              disk->ldsk_a[j]->coord = MIGREP_Copy_Geo_Coord(disk->ldsk_a[j]->cpy_coord);
             }
           disk = disk->next;
         }
@@ -4968,7 +4966,7 @@ void MCMC_Migrep_Triplet(t_tree *tree)
   t_dsk **disk_bkup,*disk,*coal_disk;
   t_ldsk *ldsk_coal_cur,**ldsk_under,*ldsk_up,*ldsk,**next_up_orig,**prev_under_orig,*old_ldsk_under,*ldsk_coal_new,*buff_ldsk;
   int i,n_coal,n_rm_disk,dir_up_coal,n_next_up_orig;
-  
+
   cur_lnL     =   MIGREP_Lk(tree->disk,tree->mmod);;
   /* PhyML_Printf("\n. orig lk: %f",MIGREP_Lk(tree->disk,tree->mmod)); */
   /* fflush(NULL); */
@@ -5091,13 +5089,13 @@ void MCMC_Migrep_Triplet(t_tree *tree)
       /* Insert the disk on which coalescent will occur. Time of this disk
          has to be older than old_ldsk_under and younger than ldsk_up */
       coal_disk= MIGREP_Make_Disk_Event(tree->mmod->n_dim,tree->n_otu);
-      MIGREP_Init_Disk_Event(coal_disk,tree->mmod);
-      GEO_Init_Coord(coal_disk->centr,tree->mmod->n_dim);
+      MIGREP_Init_Disk_Event(coal_disk,tree->mmod->n_dim,tree->mmod);
       
       /* Set the time of the coalescent disk */
       coal_disk->time = 
         Uni()*(old_ldsk_under->disk->time - ldsk_up->disk->time) + 
         ldsk_up->disk->time;
+
 
       /* printf("\n >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"); */
       /* printf("\n. coal disk time: %f [%f %f]", */
@@ -5174,24 +5172,36 @@ void MCMC_Migrep_Triplet(t_tree *tree)
   new_lnL = MIGREP_Lk(tree->disk,tree->mmod);
   MIGREP_Check_Struct(tree);
 
+
+
   ratio = .0;
   ratio += (new_lnL - cur_lnL);
   ratio += hr;
 
-  /* printf("\n. new: %12f cur: %12f hr: %12f",new_lnL,cur_lnL,hr); */
+  if(ldsk_coal_cur->n_next >= 3)
+    printf("\n. %s new: %12f cur: %12f hr: %12f",ldsk_coal_cur->coord->id,new_lnL,cur_lnL,hr);
+
+  if(new_lnL < UNLIKELY + 0.1) 
+    {
+      MIGREP_Print_Struct('e',tree);
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);      
+    }
 
   ratio = EXP(ratio);
   alpha = MIN(1.,ratio);
 
   u = Uni();
   
-  /* printf("\n. u: %f alpha:%f",u,alpha); fflush(NULL); */
+  if(ldsk_coal_cur->n_next >= 3)
+    printf(" u: %f alpha:%f",u,alpha); fflush(NULL);
 
   if(u > alpha) /* Reject */
     {
-      /* PhyML_Printf("\n. Reject\n"); */
+      if(ldsk_coal_cur->n_next >= 3)
+        PhyML_Printf(" Reject");
       /* We now go back to the original genealogy */
-      
+     
+ 
       /* First, remove the new disks and free the memory  */
       /* for the ldsk sitting on it and the disk as well  */
       For(i,ldsk_coal_cur->n_next)
@@ -5217,6 +5227,7 @@ void MCMC_Migrep_Triplet(t_tree *tree)
           Free_Ldisk(buff_ldsk);
         }      
             
+     
       /* Second, re-insert the original disks */
       For(i,n_rm_disk) MIGREP_Insert_Disk(disk_bkup[i]);
 
@@ -5244,7 +5255,8 @@ void MCMC_Migrep_Triplet(t_tree *tree)
     }
   else
     {
-      /* PhyML_Printf("\n. Accept\n"); */
+      if(ldsk_coal_cur->n_next >= 3)
+        PhyML_Printf(" Accept");
     }
 
   /* MIGREP_Print_Struct('e',tree); */

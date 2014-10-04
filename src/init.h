@@ -59,7 +59,7 @@ void Init_MGF_Bl(t_tree *tree);
 int Init_Qmat_FLU(phydbl *daa, phydbl *pi);
 void Set_Defaults_Ras(t_ras *ras);
 void GEO_Init_Coord(t_geo_coord *t, int n_dim);
-void MIGREP_Init_Disk_Event(t_dsk *t, t_migrep_mod *mod);
+void MIGREP_Init_Disk_Event(t_dsk *t, int n_dim, t_migrep_mod *mod);
 void MIGREP_Init_Lindisk_Node(t_ldsk *t, t_dsk *devt, int n_dim);
 void MIGREP_Init_Migrep_Mod(t_migrep_mod *t, int n_dim);
 
