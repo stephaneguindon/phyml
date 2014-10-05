@@ -5178,8 +5178,8 @@ void MCMC_Migrep_Triplet(t_tree *tree)
   ratio += (new_lnL - cur_lnL);
   ratio += hr;
 
-  if(ldsk_coal_cur->n_next >= 3)
-    printf("\n. %s new: %12f cur: %12f hr: %12f",ldsk_coal_cur->coord->id,new_lnL,cur_lnL,hr);
+  /* if(ldsk_coal_cur->n_next >= 3) */
+  /*   printf("\n. %s new: %12f cur: %12f hr: %12f",ldsk_coal_cur->coord->id,new_lnL,cur_lnL,hr); */
 
   if(new_lnL < UNLIKELY + 0.1) 
     {
@@ -5192,13 +5192,13 @@ void MCMC_Migrep_Triplet(t_tree *tree)
 
   u = Uni();
   
-  if(ldsk_coal_cur->n_next >= 3)
-    printf(" u: %f alpha:%f",u,alpha); fflush(NULL);
+  /* if(ldsk_coal_cur->n_next >= 3) */
+  /*   printf(" u: %f alpha:%f",u,alpha); fflush(NULL); */
 
   if(u > alpha) /* Reject */
     {
-      if(ldsk_coal_cur->n_next >= 3)
-        PhyML_Printf(" Reject");
+      /* if(ldsk_coal_cur->n_next >= 3) */
+      /*   PhyML_Printf(" Reject"); */
       /* We now go back to the original genealogy */
      
  
@@ -5255,8 +5255,8 @@ void MCMC_Migrep_Triplet(t_tree *tree)
     }
   else
     {
-      if(ldsk_coal_cur->n_next >= 3)
-        PhyML_Printf(" Accept");
+      /* if(ldsk_coal_cur->n_next >= 3) */
+      /*   PhyML_Printf(" Accept"); */
     }
 
   /* MIGREP_Print_Struct('e',tree); */
