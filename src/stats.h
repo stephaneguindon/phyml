@@ -108,5 +108,7 @@ int Modulo (int a, int b);
 void Runif_Disk(phydbl *sampled_x, phydbl *sampled_y, phydbl centrx, phydbl centry, phydbl radius);
 void Random_String(char *s, int len);
 int *Random_Permut(int n);
+phydbl Dexp_Trunc(phydbl x, phydbl lambda, phydbl left, phydbl rght);
+phydbl Rexp_Trunc(phydbl lambda, phydbl left, phydbl rght);
 
 #endif

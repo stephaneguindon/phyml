@@ -4972,7 +4972,8 @@ void MCMC_Migrep_Triplet(t_tree *tree)
   /* fflush(NULL); */
 
   /* MIGREP_Print_Struct('i',tree); */
-  /* MIGREP_Check_Struct(tree); */
+  /* printf("\n. $$$$$"); */
+  MIGREP_Check_Struct(tree);
 
   /* cur_lnL         = tree->disk->mmod->c_lnL; */
   new_lnL         = UNLIKELY;
@@ -5092,8 +5093,8 @@ void MCMC_Migrep_Triplet(t_tree *tree)
       MIGREP_Init_Disk_Event(coal_disk,tree->mmod->n_dim,tree->mmod);
       
       /* Set the time of the coalescent disk */
-      coal_disk->time = 
-        Uni()*(old_ldsk_under->disk->time - ldsk_up->disk->time) + 
+      coal_disk->time =
+        Uni()*(old_ldsk_under->disk->time - ldsk_up->disk->time) +
         ldsk_up->disk->time;
 
 
@@ -5170,15 +5171,14 @@ void MCMC_Migrep_Triplet(t_tree *tree)
   /* sleep(2); */
 
   new_lnL = MIGREP_Lk(tree->disk,tree->mmod);
+  /* printf("\n. <><><>"); */
   MIGREP_Check_Struct(tree);
-
-
 
   ratio = .0;
   ratio += (new_lnL - cur_lnL);
-  ratio += hr;
+  /* ratio += hr; */
 
-  /* if(ldsk_coal_cur->n_next >= 3) */
+  /* if(ldsk_coal_cur->n_next >= 10) */
   /*   printf("\n. %s new: %12f cur: %12f hr: %12f",ldsk_coal_cur->coord->id,new_lnL,cur_lnL,hr); */
 
   if(new_lnL < UNLIKELY + 0.1) 
@@ -5192,12 +5192,16 @@ void MCMC_Migrep_Triplet(t_tree *tree)
 
   u = Uni();
   
-  /* if(ldsk_coal_cur->n_next >= 3) */
-  /*   printf(" u: %f alpha:%f",u,alpha); fflush(NULL); */
+  if(ldsk_coal_cur->n_next >= 10)
+    {
+      /* printf(" u: %f alpha:%f",u,alpha); fflush(NULL);       */
+      /* gtk_widget_queue_draw(tree->draw_area); */
+      /* sleep(2); */
+    }
 
   if(u > alpha) /* Reject */
     {
-      /* if(ldsk_coal_cur->n_next >= 3) */
+      /* if(ldsk_coal_cur->n_next >= 10) */
       /*   PhyML_Printf(" Reject"); */
       /* We now go back to the original genealogy */
      
@@ -5255,7 +5259,8 @@ void MCMC_Migrep_Triplet(t_tree *tree)
     }
   else
     {
-      /* if(ldsk_coal_cur->n_next >= 3) */
+      /* printf("\n. %f ",(new_lnL - cur_lnL)); */
+      /* if(ldsk_coal_cur->n_next >= 10) */
       /*   PhyML_Printf(" Accept"); */
     }
 
