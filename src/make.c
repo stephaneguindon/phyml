@@ -1390,12 +1390,14 @@ t_ldsk *MIGREP_Make_Lindisk_Node(int n_dim)
 
 void MIGREP_Make_Lindisk_Next(t_ldsk *t)
 {
+  int block;
+
+  block = 50;
+
   if(t->n_next == 0)
-    t->next = (t_ldsk **)mCalloc(1,sizeof(t_ldsk *));
-  else
-    t->next = (t_ldsk **)mRealloc(t->next,
-                                        t->n_next+1,
-                                        sizeof(t_ldsk *));
+    t->next = (t_ldsk **)mCalloc(block,sizeof(t_ldsk *));
+  else if(!(t->n_next%block))
+    t->next = (t_ldsk **)mRealloc(t->next,t->n_next+block,sizeof(t_ldsk *));
   t->n_next++;
   /* printf("\n. make next for ldsk %s n_next set to %d",t->coord->id,t->n_next); */
   /* fflush(NULL); */

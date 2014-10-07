@@ -735,20 +735,20 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
       /* printf("\n0 %s [%d,%d]",*s_tree,(int)(int)strlen(*s_tree),*available); */
 
       if(*available < 0)
-    {
-      PhyML_Printf("\n== s=%s\n",*s_tree);
-      PhyML_Printf("\n== len=%d\n",(int)strlen(*s_tree));
-      PhyML_Printf("\n== The sequence names in your input file might be too long.");
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
-      Warn_And_Exit("");
-    }
-
+        {
+          PhyML_Printf("\n== s=%s\n",*s_tree);
+          PhyML_Printf("\n== len=%d\n",(int)strlen(*s_tree));
+          PhyML_Printf("\n== The sequence names in your input file might be too long.");
+          PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+          Warn_And_Exit("");
+        }
+      
       if(*available < (int)T_MAX_NAME)
         {
           (*s_tree) = (char *)mRealloc(*s_tree,(int)strlen(*s_tree)+3*(int)T_MAX_NAME,sizeof(char));
-      For(i,3*(int)T_MAX_NAME) (*s_tree)[(int)strlen(*s_tree)+i] = '\0';
+          For(i,3*(int)T_MAX_NAME) (*s_tree)[(int)strlen(*s_tree)+i] = '\0';
           (*available) = 3*(int)T_MAX_NAME;
-      /* printf("\n. ++ 0 Available = %d",(*available)); */
+          /* printf("\n. ++ 0 Available = %d",(*available)); */
         }
 #endif
 
@@ -5266,14 +5266,14 @@ void PhyML_XML(char *xml_filename)
             int n_otu;
 
                         n_otu = tree->n_otu;
-
+                        
                         if(instance->ds->obj == NULL)
-              {
-                if(!lens)
+                          {
+                            if(!lens)
                               {
                                 ori_lens         = (scalar_dbl **)mCalloc(2*tree->n_otu-1,sizeof(scalar_dbl *));
                                 ori_lens_old     = (scalar_dbl **)mCalloc(2*tree->n_otu-1,sizeof(scalar_dbl *));
-
+                                
                                 ori_lens_var     = (scalar_dbl **)mCalloc(2*tree->n_otu-1,sizeof(scalar_dbl *));
                                 ori_lens_var_old = (scalar_dbl **)mCalloc(2*tree->n_otu-1,sizeof(scalar_dbl *));
 
@@ -5301,16 +5301,16 @@ void PhyML_XML(char *xml_filename)
 
                                 lens_size += 2*tree->n_otu-1;
                               }
-
+                            
                             For(i,2*tree->n_otu-1)
-                  {
-                    lens[i] = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
-                    Init_Scalar_Dbl(lens[i]);
-
-                    lens_old[i] = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
-                    Init_Scalar_Dbl(lens_old[i]);
-
-                    lens_var[i] = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+                              {
+                                lens[i] = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+                                Init_Scalar_Dbl(lens[i]);
+                                
+                                lens_old[i] = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+                                Init_Scalar_Dbl(lens_old[i]);
+                                
+                                lens_var[i] = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
                     Init_Scalar_Dbl(lens_var[i]);
 
                     lens_var_old[i] = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));

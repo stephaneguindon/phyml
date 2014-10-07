@@ -146,15 +146,16 @@ void MCMC_Free_MCMC(t_mcmc *mcmc);
 void MCMC_Updown_T_Br(t_tree *tree);
 void MCMC_Root_Time(t_tree *tree);
 void MCMC_Jump_Calibration(t_tree *tree);
-void MCMC_Geo_Lbda(t_tree *mixt_tree);
-void MCMC_Geo_Sigma(t_tree *mixt_tree);
-void MCMC_Geo_Tau(t_tree *mixt_tree);
-void MCMC_Geo_Loc(t_tree *tree);
-void MCMC_Geo_Dum(t_tree *mixt_tree);
-void MCMC_Migrep_Lbda(t_tree *mixt_tree);
-void MCMC_Migrep_Mu(t_tree *mixt_tree);
-void MCMC_Migrep_Radius(t_tree *mixt_tree);
-void MCMC_Migrep_Slice(t_tree *tree);
-void MCMC_Migrep_Triplet(t_tree *tree);
+void MCMC_GEO_Lbda(t_tree *mixt_tree);
+void MCMC_GEO_Sigma(t_tree *mixt_tree);
+void MCMC_GEO_Tau(t_tree *mixt_tree);
+void MCMC_GEO_Loc(t_tree *tree);
+void MCMC_GEO_Dum(t_tree *mixt_tree);
+void MCMC_MIGREP_Lbda(t_tree *mixt_tree);
+void MCMC_MIGREP_Mu(t_tree *mixt_tree);
+void MCMC_MIGREP_Radius(t_tree *mixt_tree);
+void MCMC_MIGREP_Triplet(t_tree *tree);
+void MCMC_MIGREP_Delete_Disk(t_tree *tree);
+void MCMC_MIGREP_Insert_Disk(t_tree *tree);
 
 #endif

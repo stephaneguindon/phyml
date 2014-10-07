@@ -395,13 +395,13 @@ phydbl *GEO_MCMC(t_tree *tree)
   tree->mcmc->run = 0;
   do
     {
-      MCMC_Geo_Lbda(tree);
-      MCMC_Geo_Tau(tree);
+      MCMC_GEO_Lbda(tree);
+      MCMC_GEO_Tau(tree);
       /* MCMC_Geo_Dum(tree); */
-      MCMC_Geo_Loc(tree);
+      MCMC_GEO_Loc(tree);
 
       t->update_fmat = YES;
-      MCMC_Geo_Sigma(tree);
+      MCMC_GEO_Sigma(tree);
       t->update_fmat = NO;
 
 
