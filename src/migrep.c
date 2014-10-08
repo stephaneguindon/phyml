@@ -285,8 +285,8 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
 
   // Initialize parameters of migrep model
   mmod->lbda = 0.1;
-  mmod->mu   = 0.8;
-  mmod->rad  = 3.0;
+  mmod->mu   = 0.9;
+  mmod->rad  = 2.0;
   
   curr_t      = 0.0;
   dt_dsk     = 0.0;
@@ -415,7 +415,6 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   tree->disk = disk;
   tree->mmod = mmod;
 
-
   /* while(disk->prev) */
   /*   { */
   /*     printf("\n<><><>"); */
@@ -431,7 +430,7 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   /*   } */
 
 
-  MIGREP_Lk(disk,mmod);
+  MIGREP_Lk(tree);
   printf("\n. LK: %f",mmod->c_lnL);
   /* Exit("\n"); */
   /* MIGREP_MCMC(tree); */
@@ -465,16 +464,19 @@ int MIGREP_Is_In_Disk(t_geo_coord *coord, t_dsk *disk)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-phydbl MIGREP_Lk(t_dsk *disk, t_migrep_mod *mmod)
+phydbl MIGREP_Lk(t_tree *tree)
 {
   phydbl lnL;
   phydbl log_lbda,log_pi_rad,log_mu,log_one_mu;
-  int i;
+  int i,n_inter;
   short int was_hit, n_hit;
+  t_migrep_mod *mmod;
+  t_dsk *disk;
 
-  // Rewind if necessary
-  while(disk->next) { disk = disk->next; }  
+  mmod = tree->mmod;
+  disk = tree->disk;
 
+  if(disk->next)  Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   if(!disk->prev) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
 
   log_lbda   = LOG(mmod->lbda);
@@ -482,97 +484,96 @@ phydbl MIGREP_Lk(t_dsk *disk, t_migrep_mod *mmod)
   log_pi_rad = LOG(PI*mmod->rad*mmod->rad);
   log_one_mu = LOG(1. - mmod->mu);  
   lnL        = 0.0;
+  n_inter    = MIGREP_Total_Number_Of_Intervals(tree);
+
+  /* Likelihood for the time elapsed between disks */
+  lnL += LnGamma((phydbl)n_inter);
+
 
   /* PhyML_Printf("\n\n. New likelihood call"); */
   do
     {
-      /* PhyML_Printf("\n. Likelihood - disk %s has %d lindisk nodes [%f] rad: %f",disk->id,disk->n_ldsk_a,lnL,mmod->rad); */
-      /* fflush(NULL); */
+      /* /\* PhyML_Printf("\n. Likelihood - disk %s has %d lindisk nodes [%f] rad: %f",disk->id,disk->n_ldsk_a,lnL,mmod->rad); *\/ */
+      /* /\* fflush(NULL); *\/ */
 
-      /* Likelihood for the time elapsed between disk and disk->prev */
-      lnL += log_lbda - mmod->lbda * (disk->time - disk->prev->time);
+      /* /\* Likelihood for the disk center *\/ */
+      /* For(i,disk->mmod->n_dim) lnL -= LOG(disk->mmod->lim->lonlat[i]); */
 
-      /* Likelihood for the disk center */      
-      For(i,disk->mmod->n_dim) lnL -= LOG(disk->mmod->lim->lonlat[i]);
+      /* if(disk->prev->ldsk) */
+      /*   { */
+      /*     MIGREP_Update_Lindisk_List(disk->time,disk->ldsk_a,&(disk->n_ldsk_a),disk); */
 
-      if(!disk->prev->ldsk)
-        {
-          disk = disk->prev;
-          if(!disk->prev) break;
-          continue;
-        }
+      /*     was_hit = NO; */
+      /*     n_hit   = 0; */
+          
+      /*     For(i,disk->n_ldsk_a) */
+      /*       { */
+      /*         was_hit = disk->ldsk_a[i]->prev->disk == disk->prev; */
+              
+      /*         if(was_hit == YES) n_hit++; */
+              
+      /*         if(was_hit == YES && !disk->prev->ldsk) Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
+              
+      /*         if(MIGREP_Is_In_Disk(disk->ldsk_a[i]->coord,disk->prev) == YES) */
+      /*           { */
+      /*             if(was_hit == YES) /\* was hit *\/ */
+      /*               { */
+      /*                 /\* PhyML_Printf("\n. %d/%d lindisk %s (@ %f) was hit and gave %s (@ %f)", *\/ */
+      /*                 /\*              i,disk->n_ldsk_a, *\/ */
+      /*                 /\*              disk->ldsk_a[i]->coord->id, *\/ */
+      /*                 /\*              disk->ldsk_a[i]->prev->coord->id, *\/ */
+      /*                 /\*              disk->ldsk_a[i]->coord->lonlat[0], *\/ */
+      /*                 /\*              disk->ldsk_a[i]->prev->coord->lonlat[0]); *\/ */
+      /*                 if(MIGREP_Is_In_Disk(disk->ldsk_a[i]->prev->coord,disk->prev) == YES) */
+      /*                   lnL += log_mu; */
+      /*                 else /\* Landed outside the disk *\/ */
+      /*                   { */
+      /*                     mmod->c_lnL = UNLIKELY; */
+      /*                     return UNLIKELY; */
+      /*                   } */
+      /*               } */
+      /*             else /\* was not hit *\/ */
+      /*               { */
+      /*                 /\* PhyML_Printf("\n. %d/%d lindisk %s was not hit",i,disk->n_ldsk_a,disk->ldsk_a[i]->coord->id); *\/ */
+      /*                 lnL += log_one_mu; */
+      /*               } */
+      /*           } */
+      /*         else */
+      /*           { */
+      /*             /\* PhyML_Printf("\n. %s was hit: %d %s %s %s",disk->ldsk_a[i]->coord->id,was_hit,disk->ldsk_a[i]->prev->disk->id,disk->prev->id,disk->id); *\/ */
+      /*             /\* has changed spatial coordinates but was outside disk  *\/ */
+      /*             if(was_hit == YES) */
+      /*               { */
+      /*                 /\* printf("\n. FAIL lindisk: %s [%.3f %.3f] prev: %s [%.3f %.3f] centr: [%.3f %.3f] rad: %.3f", *\/ */
+      /*                 /\*        disk->ldsk_a[i]->coord->id, *\/ */
+      /*                 /\*        disk->ldsk_a[i]->coord->lonlat[0], *\/ */
+      /*                 /\*        disk->ldsk_a[i]->coord->lonlat[1], *\/ */
+      /*                 /\*        disk->ldsk_a[i]->prev->coord->id, *\/ */
+      /*                 /\*        disk->ldsk_a[i]->prev->coord->lonlat[0], *\/ */
+      /*                 /\*        disk->ldsk_a[i]->prev->coord->lonlat[1], *\/ */
+      /*                 /\*        disk->prev->centr->lonlat[0], *\/ */
+      /*                 /\*        disk->prev->centr->lonlat[1], *\/ */
+      /*                 /\*        disk->mmod->rad); *\/ */
+      /*                 /\* fflush(NULL); *\/ */
+      /*                 mmod->c_lnL = UNLIKELY; */
+      /*                 return UNLIKELY; */
+      /*               } */
+      /*           } */
+      /*       } */
+          
+      /*     if(n_hit >= 2) /\* a coalescent event occurred *\/ */
+      /*       lnL -= log_pi_rad; */
+      /*   } */
 
-      MIGREP_Update_Lindisk_List(disk->time,disk->ldsk_a,&(disk->n_ldsk_a),disk);
-
-      was_hit = NO;
-      n_hit   = 0;
-
-      For(i,disk->n_ldsk_a)
-        {
-          was_hit = disk->ldsk_a[i]->prev->disk == disk->prev;
-
-          if(was_hit == YES) n_hit++;
-
-          if(was_hit == YES && !disk->prev->ldsk) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-
-          if(MIGREP_Is_In_Disk(disk->ldsk_a[i]->coord,disk->prev) == YES)
-            {
-              if(was_hit == YES) /* was hit */
-                {
-                  /* PhyML_Printf("\n. %d/%d lindisk %s (@ %f) was hit and gave %s (@ %f)", */
-                  /*              i,disk->n_ldsk_a, */
-                  /*              disk->ldsk_a[i]->coord->id, */
-                  /*              disk->ldsk_a[i]->prev->coord->id, */
-                  /*              disk->ldsk_a[i]->coord->lonlat[0], */
-                  /*              disk->ldsk_a[i]->prev->coord->lonlat[0]); */
-                  if(MIGREP_Is_In_Disk(disk->ldsk_a[i]->prev->coord,disk->prev) == YES)
-                    lnL += log_mu;
-                  else /* Landed outside the disk */
-                    {
-                      mmod->c_lnL = UNLIKELY;
-                      return UNLIKELY;
-                    }
-                }
-              else /* was not hit */
-                {
-                  /* PhyML_Printf("\n. %d/%d lindisk %s was not hit",i,disk->n_ldsk_a,disk->ldsk_a[i]->coord->id); */
-                  lnL += log_one_mu;
-                }
-            }
-          else 
-            { 
-              /* PhyML_Printf("\n. %s was hit: %d %s %s %s",disk->ldsk_a[i]->coord->id,was_hit,disk->ldsk_a[i]->prev->disk->id,disk->prev->id,disk->id); */
-             /* has changed spatial coordinates but was outside disk  */
-              if(was_hit == YES) 
-                {
-                  /* printf("\n. FAIL lindisk: %s [%.3f %.3f] prev: %s [%.3f %.3f] centr: [%.3f %.3f] rad: %.3f", */
-                  /*        disk->ldsk_a[i]->coord->id, */
-                  /*        disk->ldsk_a[i]->coord->lonlat[0], */
-                  /*        disk->ldsk_a[i]->coord->lonlat[1], */
-                  /*        disk->ldsk_a[i]->prev->coord->id, */
-                  /*        disk->ldsk_a[i]->prev->coord->lonlat[0], */
-                  /*        disk->ldsk_a[i]->prev->coord->lonlat[1], */
-                  /*        disk->prev->centr->lonlat[0], */
-                  /*        disk->prev->centr->lonlat[1], */
-                  /*        disk->mmod->rad); */
-                  /* fflush(NULL); */
-                  mmod->c_lnL = UNLIKELY;
-                  return UNLIKELY;
-                }
-            }
-        }
-      
-      if(n_hit >= 2) // a coalescent event occurred
-        {
-          lnL -= log_pi_rad;
-        }
-    
       disk = disk->prev;
 
       if(!disk->prev) break;
 
     }
   while(1);
+  
+  lnL -= (n_inter-1.)*LOG(-disk->time);
+  lnL += Dpois((phydbl)(n_inter-1),-mmod->lbda*disk->time,YES);
   
   mmod->c_lnL = lnL;
 
@@ -610,29 +611,29 @@ void MIGREP_MCMC(t_tree *tree)
   mcmc->chain_len        = 1.E+8;
   mcmc->sample_interval  = 50;
   
-  tree->mmod->lbda = Uni()*(tree->mmod->max_lbda - tree->mmod->min_lbda) + tree->mmod->min_lbda;
-  tree->mmod->mu   = Uni()*(tree->mmod->max_mu - tree->mmod->min_mu) + tree->mmod->min_mu;
-  tree->mmod->rad  = tree->mmod->max_rad;
+  /* tree->mmod->lbda = Uni()*(tree->mmod->max_lbda - tree->mmod->min_lbda) + tree->mmod->min_lbda; */
+  /* tree->mmod->mu   = Uni()*(tree->mmod->max_mu - tree->mmod->min_mu) + tree->mmod->min_mu; */
+  /* tree->mmod->rad  = tree->mmod->max_rad; */
 
-  MIGREP_Lk(tree->disk,tree->mmod);
+  MIGREP_Lk(tree);
   printf("\n. LK: %f",tree->mmod->c_lnL);
-  printf("\n. NDISK: %d",MIGREP_Total_Number_Of_Disks(tree));
+  printf("\n. NINTER: %d",MIGREP_Total_Number_Of_Intervals(tree));
 
   PhyML_Printf("\n %10s %10s %10s %10s",
                "lnL",
                "lbda",
                "mu",
                "rad");
-  mcmc->sample_interval = 10;
+  mcmc->sample_interval = 1000;
   mcmc->run = 0;
   do
     {
-      MCMC_MIGREP_Lbda(tree);
-      MCMC_MIGREP_Mu(tree);
-      MCMC_MIGREP_Radius(tree);
-      MCMC_MIGREP_Triplet(tree);
-      /* MCMC_MIGREP_Delete_Disk(tree); */
-      /* MCMC_MIGREP_Insert_Disk(tree); */
+      /* MCMC_MIGREP_Lbda(tree); */
+      /* MCMC_MIGREP_Mu(tree); */
+      /* MCMC_MIGREP_Radius(tree); */
+      /* MCMC_MIGREP_Triplet(tree); */
+      MCMC_MIGREP_Delete_Disk(tree);
+      MCMC_MIGREP_Insert_Disk(tree);
 
       if(mcmc->run%mcmc->sample_interval == 0)
       /* if(mcmc->run == 0) */
@@ -644,7 +645,7 @@ void MIGREP_MCMC(t_tree *tree)
                        tree->mmod->lbda,
                        tree->mmod->mu,
                        tree->mmod->rad,
-                       MIGREP_Total_Number_Of_Disks(tree),
+                       MIGREP_Total_Number_Of_Intervals(tree),
                        disk->time);
 
           /* gdk_threads_enter(); */
@@ -665,7 +666,7 @@ void MIGREP_MCMC(t_tree *tree)
 
 phydbl MIGREP_Wrap_Lk(t_edge *b, t_tree *tree, supert_tree *stree)
 {
-  return MIGREP_Lk(tree->disk,tree->mmod);
+  return MIGREP_Lk(tree);
 }
 
 //////////////////////////////////////////////////////////////
@@ -810,7 +811,7 @@ void MIGREP_New_Traj(t_dsk *start, t_dsk *end, t_tree *tree)
   /*     fflush(NULL); */
   /*   } */
   
-  /* MIGREP_Lk(tree->disk,tree->mmod); */
+  /* MIGREP_Lk(tree); */
   /* printf("\n. >> Lk: %f rad: %f",tree->mmod->c_lnL,tree->mmod->rad); */
   /* sleep(5); */
 }
@@ -1410,20 +1411,20 @@ t_geo_coord *MIGREP_Copy_Geo_Coord(t_geo_coord *ori)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-int MIGREP_Total_Number_Of_Disks(t_tree *tree)
+int MIGREP_Total_Number_Of_Intervals(t_tree *tree)
 {
   t_dsk *disk;
-  int n_disk;
+  int n_intervals;
 
   if(tree->disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   disk = tree->disk;
-  n_disk = 0;
+  n_intervals = 0;
   while(disk->prev)
     {
-      n_disk++;
+      n_intervals++;
       disk = disk->prev;
     }
-  return(n_disk);
+  return(n_intervals);
 }
 
 /*////////////////////////////////////////////////////////////

@@ -22,7 +22,7 @@ the GNU public licence. See http://www.opensource.org for details.
 
 t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height);
 int MIGREP_Main(int argc, char **argv);
-phydbl MIGREP_Lk(t_dsk *disk, t_migrep_mod *mmod);
+phydbl MIGREP_Lk(t_tree *tree);
 phydbl MIGREP_Wrap_Lk(t_edge *b, t_tree *tree, supert_tree *stree);
 void MIGREP_MCMC(t_tree *tree);
 int MIGREP_Is_In_Disk(t_geo_coord *coord, t_dsk *disk);
@@ -42,6 +42,6 @@ void MIGREP_Print_Struct(char sign, t_tree *tree);
 phydbl MIGREP_Uniform_Path_Density(t_ldsk *y_ldsk, t_ldsk *o_ldsk);
 void MIGREP_Check_Struct(t_tree *tree);
 t_geo_coord *MIGREP_Copy_Geo_Coord(t_geo_coord *orig);
-int MIGREP_Total_Number_Of_Disks(t_tree *tree);
+int MIGREP_Total_Number_Of_Intervals(t_tree *tree);
 
 #endif

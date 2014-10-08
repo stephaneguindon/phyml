@@ -52,7 +52,7 @@ phydbl LnFact(int n);
 int    Choose(int n, int k);
 phydbl Ppois(phydbl x, phydbl param);
 phydbl Dexp(phydbl x, phydbl param);
-phydbl Dpois(phydbl x, phydbl param);
+phydbl Dpois(phydbl x, phydbl param, int logit);
 phydbl Rand_Normal_Deviate(phydbl mean, phydbl sd);
 phydbl Rnorm(phydbl mean, phydbl sd);
 phydbl *Rnorm_Multid(phydbl *mu, phydbl *cov, int dim);

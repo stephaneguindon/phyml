@@ -476,8 +476,8 @@ phydbl RATES_Compound_Core_Marginal(phydbl mu1, phydbl mu2, phydbl dt1, phydbl d
   v0 = v1 = v2 = 0.0;
   
   /* Probability of 0 and 1 jumps */
-  p0   = Dpois(0,lexp*(dt2+dt1));       
-  p1   = Dpois(1,lexp*(dt2+dt1));
+  p0   = Dpois(0,lexp*(dt2+dt1),NO);       
+  p1   = Dpois(1,lexp*(dt2+dt1),NO);
   
   dmu1 = RATES_Dmu(mu1,-1,dt1,alpha,beta,lexp,0,0);
   
@@ -505,7 +505,7 @@ phydbl RATES_Compound_Core_Marginal(phydbl mu1, phydbl mu2, phydbl dt1, phydbl d
     {
       v2 =
 	RATES_Dmu(mu1,-1,dt1,alpha,beta,lexp,0,0)*RATES_Dmu(mu2,-1,dt2,alpha,beta,lexp,0,0) -
-	Dpois(0,lexp*dt1) * Dpois(0,lexp*dt2) *
+	Dpois(0,lexp*dt1,NO) * Dpois(0,lexp*dt2,NO) *
 	Dgamma(mu1,alpha,beta) * Dgamma(mu2,alpha,beta);
     }
   else
@@ -514,8 +514,8 @@ phydbl RATES_Compound_Core_Marginal(phydbl mu1, phydbl mu2, phydbl dt1, phydbl d
 	RATES_Dmu_One(mu1,dt1,alpha,beta,lexp) * 
 	RATES_Dmu_One(mu2,dt2,alpha,beta,lexp);
 
-      v2 += Dpois(0,lexp*dt1)*Dgamma(mu1,alpha,beta)*RATES_Dmu(mu2,-1,dt2,alpha,beta,lexp,1,0);
-      v2 += Dpois(0,lexp*dt2)*Dgamma(mu2,alpha,beta)*RATES_Dmu(mu1,-1,dt1,alpha,beta,lexp,1,0);
+      v2 += Dpois(0,lexp*dt1,NO)*Dgamma(mu1,alpha,beta)*RATES_Dmu(mu2,-1,dt2,alpha,beta,lexp,1,0);
+      v2 += Dpois(0,lexp*dt2,NO)*Dgamma(mu2,alpha,beta)*RATES_Dmu(mu1,-1,dt1,alpha,beta,lexp,1,0);
 
     }
 /*   PhyML_Printf("\n. %f %f %f %f %f ",mu1,mu2,dt1,dt2,v2); */
@@ -592,7 +592,7 @@ phydbl RATES_Compound_Core_Joint(phydbl mu1, phydbl mu2, int n1, int n2, phydbl 
 
   density /= dmu1;
 
-  density *= Dpois(n2,dt2*lexp);
+  density *= Dpois(n2,dt2*lexp,NO);
   
   if(density < 1.E-70) density = 1.E-70;
 
@@ -848,11 +848,11 @@ phydbl RATES_Dmu(phydbl mu, int n_jumps, phydbl dt, phydbl a, phydbl b, phydbl l
       lexpdt       = lexp*dt;  
       
       RATES_Bracket_N_Jumps(&up,&down,lexpdt);
-      For(n,MAX(down,min_n)-1) cumpoissprob += Dpois(n,lexpdt);
+      For(n,MAX(down,min_n)-1) cumpoissprob += Dpois(n,lexpdt,NO);
       
       for(n=MAX(down,min_n);n<up+1;n++)
 	{
-	  poissprob    = Dpois(n,lexpdt); /* probability of having n jumps */      
+	  poissprob    = Dpois(n,lexpdt,NO); /* probability of having n jumps */      
 	  var          = (2./(n+2.))*ab2; /* var(mu|n) = var(mu|n=0) * 2 / (n+2) */
 	  gammadens    = Dgamma_Moments(mu,mean,var);
 	  dens         += poissprob * gammadens;
@@ -873,7 +873,7 @@ phydbl RATES_Dmu(phydbl mu, int n_jumps, phydbl dt, phydbl a, phydbl b, phydbl l
       var = (2./(n_jumps+2.))*a*b*b;
 
       if(jps_dens)
-	density = Dgamma_Moments(mu,mean,var) * Dpois(n_jumps,dt*lexp);
+	density = Dgamma_Moments(mu,mean,var) * Dpois(n_jumps,dt*lexp,NO);
       else
 	density = Dgamma_Moments(mu,mean,var);
       
@@ -923,11 +923,11 @@ phydbl RATES_Dmu_One(phydbl mu, phydbl dt, phydbl a, phydbl b, phydbl lexp)
   
   RATES_Bracket_N_Jumps(&up,&down,lexpdt);
 
-  For(n,MAX(1,down)-1) cumpoissprob += Dpois(n,lexpdt);
+  For(n,MAX(1,down)-1) cumpoissprob += Dpois(n,lexpdt,NO);
 
   for(n=MAX(1,down);n<up+1;n++) /* WARNING: we are considering that at least one jump occurs in the interval */
     {
-      poissprob    = Dpois(n,lexpdt); /* probability of having n jumps */      
+      poissprob    = Dpois(n,lexpdt,NO); /* probability of having n jumps */      
       var          = (n/((n+1)*(n+1)*(n+2)))*(POW(1-a*b,2) + 2/(n+1)*ab2) + 2*n*n*ab2/POW(n+1,3);      
       gammadens    = Dgamma_Moments(mu,mean,var);
       dens         += poissprob * gammadens;
@@ -1296,14 +1296,14 @@ phydbl RATES_Dmu2_And_Mu1_Given_Min_N(phydbl mu1, phydbl mu2, phydbl dt1, phydbl
 
   For(i,MAX(up,n_min)-1)
     {
-      poiss = Dpois(i,lexpdt);
+      poiss = Dpois(i,lexpdt,NO);
       cumpoiss = cumpoiss + poiss;
     }
 
   for(i=MAX(up,n_min);i<up;i++)
     {
-/*       poiss = Dpois(i-1,lexpdt); /\* Complies with the no correlation model *\/ */
-      poiss = Dpois(i,lexpdt);
+/*       poiss = Dpois(i-1,lexpdt,NO); /\* Complies with the no correlation model *\/ */
+      poiss = Dpois(i,lexpdt,NO);
       cumpoiss = cumpoiss + poiss;
 
       density = density + poiss * RATES_Dmu2_And_Mu1_Given_N(mu1,mu2,dt1,dt2,i-1,a,b,lexp);
@@ -1440,7 +1440,7 @@ phydbl RATES_Lk_Jumps(t_tree *tree)
       n = tree->a_nodes[i];
       dt = FABS(tree->rates->nd_t[n->num]-tree->rates->nd_t[n->anc->num]);
       n_jps = tree->rates->n_jps[n->num];
-      dens += LOG(Dpois(n_jps,lexp*dt));
+      dens += Dpois(n_jps,lexp*dt,YES);
     }
 
   tree->rates->c_lnL_jps = dens;

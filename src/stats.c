@@ -796,38 +796,41 @@ phydbl Dexp_Trunc(phydbl x, phydbl lambda, phydbl left, phydbl rght)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
-
-
-phydbl Dpois(phydbl x, phydbl param)
+/* Poisson probability */
+phydbl Dpois(phydbl x, phydbl param, int logit)
 {
   phydbl v;
 
-  if(x < 0) 
+  if(x < .0) 
     {
-      PhyML_Printf("\n. x = %f",x);
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== x = %f",x);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 
   v = x * LOG(param) - param - LnGamma(x+1);
-
-  if(v < 500)
-    {
-      v = EXP(v);
-    }
+  if(logit == YES) return v;
   else
     {
-      PhyML_Printf("\n. WARNING v=%f x=%f param=%f",v,x,param);
-      v = EXP(500);
+      if(v < 500.)
+        {
+          v = EXP(v);
+        }
+      else
+        {
+          PhyML_Printf("\n. WARNING v=%f x=%f param=%f",v,x,param);
+          v = EXP(500);
+        }
+      
+      /*   PhyML_Printf("\n. Poi %f %f (x=%f param=%f)", */
+      /* 	 v, */
+      /* 	 POW(param,x) * EXP(-param) / EXP(LnGamma(x+1)), */
+      /* 	 x,param); */
+      /*   return POW(param,x) * EXP(-param) / EXP(LnGamma(x+1)); */
+  
+      return v;
     }
-  
-/*   PhyML_Printf("\n. Poi %f %f (x=%f param=%f)", */
-/* 	 v, */
-/* 	 POW(param,x) * EXP(-param) / EXP(LnGamma(x+1)), */
-/* 	 x,param); */
-/*   return POW(param,x) * EXP(-param) / EXP(LnGamma(x+1)); */
-  
-  return v;
+  return(-1.0);
 }
 
 //////////////////////////////////////////////////////////////
