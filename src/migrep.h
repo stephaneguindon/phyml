@@ -43,5 +43,7 @@ phydbl MIGREP_Uniform_Path_Density(t_ldsk *y_ldsk, t_ldsk *o_ldsk);
 void MIGREP_Check_Struct(t_tree *tree);
 t_geo_coord *MIGREP_Copy_Geo_Coord(t_geo_coord *orig);
 int MIGREP_Total_Number_Of_Intervals(t_tree *tree);
+int MIGREP_Total_Number_Of_Coal_Disks(t_tree *tree);
+int MIGREP_Total_Number_Of_Hit_Disks(t_tree *tree);
 
 #endif

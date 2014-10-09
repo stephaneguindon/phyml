@@ -5179,6 +5179,7 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
   disk          = NULL;
   new_lnL       = UNLIKELY;
   cur_lnL       = tree->mmod->c_lnL;
+  cur_lnL       = MIGREP_Lk(tree);
   hr            = 0.0;
   ratio         = 0.0;
 
@@ -5208,14 +5209,12 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
   hr -= LOG(-T);
   hr += LOG(valid_delete_area);
   hr -= LOG(target_disk->time - target_disk->prev->time);
-  /* printf("\n+ hr: %f",hr); */
 
   new_lnL = MIGREP_Lk(tree);
+  ratio += (new_lnL - cur_lnL);
+  ratio += hr;
 
   /* printf("\n- Delete new_lnL: %f [%f] hr: %f",new_lnL,cur_lnL,hr); */
-
-  ratio += (new_lnL - cur_lnL);
-  /* ratio += hr; */
 
   ratio = EXP(ratio);
   alpha = MIN(1.,ratio);
@@ -5255,6 +5254,7 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
   disk     = NULL;
   new_lnL  = UNLIKELY;
   cur_lnL  = tree->mmod->c_lnL;
+  cur_lnL  = MIGREP_Lk(tree);
   hr       = 0.0;
 
   if(tree->disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
@@ -5297,10 +5297,9 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
 
   new_lnL = MIGREP_Lk(tree);
   ratio = (new_lnL - cur_lnL);
-  /* ratio += hr; */
+  ratio += hr;
 
   /* printf("\n+ Insert %s new_lnL: %f [%f] hr: %f",new_disk->id,new_lnL,cur_lnL,hr); */
-  /* Exit("\n"); */
 
   ratio = EXP(ratio);
   alpha = MIN(1.,ratio);
