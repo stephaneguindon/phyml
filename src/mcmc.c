@@ -4917,8 +4917,6 @@ void MCMC_MIGREP_Triplet(t_tree *tree)
   while(disk);
 
   if(n_coal == 0) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-
-  hr -= LOG((phydbl)n_coal);
     
   /* Randomly select a coalescent disk */
   i = Rand_Int(0,n_coal-1);
@@ -4933,8 +4931,8 @@ void MCMC_MIGREP_Triplet(t_tree *tree)
   /* ldsk_coal_cur is the root node */
   if(ldsk_up == NULL) ldsk_up = ldsk_coal_cur; 
 
-  /* Do not change root node height if there are no sequences involved in the analysis */
-  if(ldsk_up == ldsk_coal_cur) return;
+  /* /\* Do not change root node height if there are no sequences involved in the analysis *\/ */
+  /* if(ldsk_up == ldsk_coal_cur) return; */
 
   /* printf("\n. ldsk_up: %s",ldsk_up->coord->id); fflush(NULL); */
 
@@ -5173,12 +5171,12 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
 {
   phydbl u,alpha,ratio;
   phydbl cur_lnL, new_lnL, hr;
-  phydbl t;
-  t_dsk  *disk,*target_disk,*up_disk,*youngest_disk;
+  phydbl t,valid_delete_area;
+  t_dsk  *disk,*target_disk;
   phydbl T;
+  int i;
 
   disk          = NULL;
-  youngest_disk = NULL;
   new_lnL       = UNLIKELY;
   cur_lnL       = tree->mmod->c_lnL;
   hr            = 0.0;
@@ -5189,28 +5187,35 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
   while(disk->prev) disk = disk->prev;
   T = disk->time; /* Tree height */
 
-  youngest_disk = tree->disk->prev;  
-  while(youngest_disk->prev && youngest_disk->ldsk != NULL) youngest_disk = youngest_disk->prev;
-
-  t = Uni()*(youngest_disk->time - T)+T;    /* Won't work for serially sampled data */    
+  t = Uni()*T;    /* Won't work for serially sampled data */    
 
   while(disk->time < t) disk = disk->next; 
-  while(disk->next && disk->ldsk != NULL) disk = disk->next;   
   if(!disk->next) return;
+  if(disk->ldsk)  return;
   target_disk = disk;
-
-  up_disk = target_disk->prev;
-  while(up_disk->prev && up_disk->ldsk != NULL) up_disk = up_disk->prev; 
       
+  disk = tree->disk->prev;
+  valid_delete_area = 0.0;
+  while(disk->prev)
+    {
+      if(!disk->ldsk) valid_delete_area += (disk->time - disk->prev->time);
+      disk = disk->prev;
+    }
+
   MIGREP_Remove_Disk(target_disk);
   
-  hr += LOG(target_disk->time - up_disk->time);
-  hr -= LOG(youngest_disk->time - T);
+  For(i,tree->mmod->n_dim) hr -= LOG(tree->mmod->lim->lonlat[i]);
+  hr -= LOG(-T);
+  hr += LOG(valid_delete_area);
+  hr -= LOG(target_disk->time - target_disk->prev->time);
+  /* printf("\n+ hr: %f",hr); */
 
   new_lnL = MIGREP_Lk(tree);
 
+  /* printf("\n- Delete new_lnL: %f [%f] hr: %f",new_lnL,cur_lnL,hr); */
+
   ratio += (new_lnL - cur_lnL);
-  ratio += hr;
+  /* ratio += hr; */
 
   ratio = EXP(ratio);
   alpha = MIN(1.,ratio);
@@ -5219,6 +5224,8 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
   
   if(u > alpha) /* Reject */
     {
+      /* printf("- Reject"); */
+
       MIGREP_Insert_Disk(target_disk);
       
       /* tree->mmod->c_lnL = cur_lnL; */
@@ -5228,7 +5235,7 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
     }
   else
     {
-      /* if(indel > 0) printf("\n. Accept"); */
+      /* printf("- Accept"); */
     }
 }
 #endif
@@ -5240,7 +5247,7 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
 void MCMC_MIGREP_Insert_Disk(t_tree *tree)
 {
   t_dsk  *disk,*new_disk,*target_disk;
-  phydbl T,t;
+  phydbl T,t,valid_delete_area;
   phydbl cur_lnL, new_lnL, hr;
   phydbl u,alpha,ratio;
   int i;
@@ -5260,10 +5267,6 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
   while(disk->time < t) disk = disk->next; 
   target_disk = disk;
 
-  /* Part of the Hastings ratio corresponding to the probability */
-  /* of selecting target_disk */
-  hr += LOG(target_disk->time - target_disk->prev->time);
-  hr -= LOG(T);
 
   new_disk= MIGREP_Make_Disk_Event(tree->mmod->n_dim,tree->n_otu);
   MIGREP_Init_Disk_Event(new_disk,tree->mmod->n_dim,tree->mmod);
@@ -5271,25 +5274,33 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
   new_disk->prev = target_disk->prev;
   new_disk->next = target_disk;
   
-  /* Part of the Hastings ratio corresponding to the probability */
-  /* of the time of new_disk */
-  hr -= LOG(target_disk->time - target_disk->prev->time);
-
   new_disk->time =
     Uni()*(new_disk->next->time - new_disk->prev->time) + new_disk->prev->time;
     
   MIGREP_Insert_Disk(new_disk);
   
-  /* It doesn't matter where the centre of that disk is */
   For(i,tree->mmod->n_dim) new_disk->centr->lonlat[i] = Uni()*tree->mmod->lim->lonlat[i];
 
-  /* Part of the Hastings ratio corresponding to the probability */
-  /* of the location of the disk centre */
-  /* For(i,tree->mmod->n_dim) hr -= LOG(tree->mmod->lim->lonlat[i]); */
+  disk = tree->disk->prev;
+  valid_delete_area = 0.0;
+  while(disk->prev)
+    {
+      if(!disk->ldsk) valid_delete_area += (disk->time - disk->prev->time);
+      disk = disk->prev;
+    }
+
     
+  For(i,tree->mmod->n_dim) hr += LOG(tree->mmod->lim->lonlat[i]);
+  hr += LOG(-T);
+  hr -= LOG(valid_delete_area);
+  hr += LOG(new_disk->time - new_disk->prev->time);
+
   new_lnL = MIGREP_Lk(tree);
   ratio = (new_lnL - cur_lnL);
-  ratio += hr;
+  /* ratio += hr; */
+
+  /* printf("\n+ Insert %s new_lnL: %f [%f] hr: %f",new_disk->id,new_lnL,cur_lnL,hr); */
+  /* Exit("\n"); */
 
   ratio = EXP(ratio);
   alpha = MIN(1.,ratio);
@@ -5298,6 +5309,8 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
   
   if(u > alpha) /* Reject */
     {
+      /* printf("+ Reject"); */
+
       MIGREP_Remove_Disk(new_disk);
       
       /* tree->mmod->c_lnL = cur_lnL; */
@@ -5307,6 +5320,7 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
     }
   else
     {
+      /* printf("+ Accept"); */
       /* if(indel > 0) printf("\n. Accept"); */
     }
 }
