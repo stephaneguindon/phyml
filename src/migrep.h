@@ -45,5 +45,7 @@ t_geo_coord *MIGREP_Copy_Geo_Coord(t_geo_coord *orig);
 int MIGREP_Total_Number_Of_Intervals(t_tree *tree);
 int MIGREP_Total_Number_Of_Coal_Disks(t_tree *tree);
 int MIGREP_Total_Number_Of_Hit_Disks(t_tree *tree);
+phydbl MIGREP_Log_Uniform_Rectangle_Overlap(t_dsk *disk, t_migrep_mod *mmod);
+void MIGREP_Runif_Rectangle_Overlap(t_ldsk *ldsk, t_dsk *disk, t_migrep_mod *mod);
 
 #endif

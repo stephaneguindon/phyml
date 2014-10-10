@@ -284,9 +284,9 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   disk = disk->prev;
 
   // Initialize parameters of migrep model
-  mmod->lbda = 1.0;
-  mmod->mu   = 1.0;
-  mmod->rad  = 2.0;
+  mmod->lbda = 0.1;
+  mmod->mu   = 0.4;
+  mmod->rad  = 3.0;
   
   curr_t      = 0.0;
   dt_dsk     = 0.0;
@@ -307,23 +307,13 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
 
       /* printf("\n. Disk %s has %d lindisk nodes and %d disks under",disk->id,disk->n_ldsk_a,disk->n_disk_under); */
 
-      // New lindisk (will not be used if no lineage is hit) 
+      /* New lindisk (will not be used if no lineage is hit)  */
       new_ldsk = MIGREP_Make_Lindisk_Node(n_dim);
       MIGREP_Init_Lindisk_Node(new_ldsk,disk,n_dim);
-      do
-        {
-          Runif_Disk(new_ldsk->coord->lonlat,
-                     new_ldsk->coord->lonlat+1,
-                     disk->centr->lonlat[0],
-                     disk->centr->lonlat[1],
-                     disk->mmod->rad);
-          // Check that the next lindisk is within boundaries
-          if(new_ldsk->coord->lonlat[0] > 0.0 &&
-             new_ldsk->coord->lonlat[0] < mmod->lim->lonlat[0] &&
-             new_ldsk->coord->lonlat[1] > 0.0 &&
-             new_ldsk->coord->lonlat[1] < mmod->lim->lonlat[1]) break;
-        }
-      while(1);
+
+      /* Sample the location of new_ldsk uniformly in the disk. */
+      /* Takes into account the limits of the landscape */
+      MIGREP_Runif_Rectangle_Overlap(new_ldsk,disk,mmod);
 
       n_hit          = 0;
       n_lineages_new = 0;
@@ -440,6 +430,8 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+/* Test whether coord is in disk. Will actually only works in disk */
+/* is a rectangle... */
 
 int MIGREP_Is_In_Disk(t_geo_coord *coord, t_dsk *disk)
 {
@@ -468,7 +460,7 @@ phydbl MIGREP_Lk(t_tree *tree)
 {
   phydbl lnL;
   phydbl log_lbda,log_pi_rad,log_mu,log_one_mu;
-  int i,n_inter;
+  int i,n_inter,n_coal;
   short int was_hit, n_hit;
   t_migrep_mod *mmod;
   t_dsk *disk;
@@ -485,6 +477,7 @@ phydbl MIGREP_Lk(t_tree *tree)
   log_one_mu = LOG(1. - mmod->mu);  
   lnL        = 0.0;
   n_inter    = MIGREP_Total_Number_Of_Intervals(tree);
+  n_coal     = MIGREP_Total_Number_Of_Coal_Disks(tree);
 
   /* Note n_inter might be smaller than n_otu because or multifucraction */
 
@@ -494,7 +487,6 @@ phydbl MIGREP_Lk(t_tree *tree)
   /* PhyML_Printf("\n\n. New likelihood call"); */
   do
     {
-
       /* Likelihood for the disk center */
       For(i,disk->mmod->n_dim) lnL -= LOG(disk->mmod->lim->lonlat[i]);
 
@@ -561,8 +553,8 @@ phydbl MIGREP_Lk(t_tree *tree)
             }
         }
       
-      if(n_hit >= 2) /* a coalescent event occurred */
-        lnL -= log_pi_rad;
+      /* a coalescent event occurred */
+      if(n_hit >= 2) lnL -= MIGREP_Log_Uniform_Rectangle_Overlap(disk,mmod);
     
       disk = disk->prev;
 
@@ -571,23 +563,7 @@ phydbl MIGREP_Lk(t_tree *tree)
     }
   while(1);
   
-  /* lnL -= (n_inter-1.)*LOG(-disk->time); */
-
   lnL += n_inter*log_lbda + mmod->lbda*disk->time;
-  lnL += Dpois((phydbl)(n_inter),-mmod->lbda*disk->time,YES);
-  /* There has to be at least 1 disk event, corresponding to all the tips coalescing */
-  /* at the same node */
-  lnL -= LOG(1. - Dpois(0.,-mmod->lbda*disk->time,NO)); 
-  /* printf("\n.  n_otu:%d n_inter:%d lbda:%f T:%f dpois: %f ppois: %f lnL:%f", */
-  /*        tree->n_otu, */
-  /*        n_inter, */
-  /*        mmod->lbda, */
-  /*        disk->time, */
-  /*        Dpois((phydbl)(n_inter-1),-mmod->lbda*disk->time,YES), */
-  /*        LOG(1. - Ppois((phydbl)(tree->n_otu-1),-mmod->lbda*disk->time)), */
-  /*        lnL); */
-
-  /* Exit("\n"); */
 
   if(isinf(lnL) || isnan(lnL)) lnL = UNLIKELY;
 
@@ -627,10 +603,9 @@ void MIGREP_MCMC(t_tree *tree)
   mcmc->chain_len        = 1.E+8;
   mcmc->sample_interval  = 50;
   
-
-  tree->mmod->lbda = Uni()*(tree->mmod->max_lbda - tree->mmod->min_lbda) + tree->mmod->min_lbda;
-  tree->mmod->mu   = Uni()*(tree->mmod->max_mu - tree->mmod->min_mu) + tree->mmod->min_mu;
-  tree->mmod->rad  = tree->mmod->max_rad;
+  /* tree->mmod->lbda = Uni()*(tree->mmod->max_lbda - tree->mmod->min_lbda) + tree->mmod->min_lbda; */
+  /* tree->mmod->mu   = Uni()*(tree->mmod->max_mu - tree->mmod->min_mu) + tree->mmod->min_mu; */
+  /* tree->mmod->rad  = tree->mmod->max_rad; */
 
   MIGREP_Lk(tree);
   printf("\n. LK: %f",tree->mmod->c_lnL);
@@ -645,10 +620,10 @@ void MIGREP_MCMC(t_tree *tree)
   mcmc->run = 0;
   do
     {
-      MCMC_MIGREP_Lbda(tree);
-      MCMC_MIGREP_Mu(tree);
-      MCMC_MIGREP_Radius(tree);
-      MCMC_MIGREP_Triplet(tree);
+      /* MCMC_MIGREP_Lbda(tree); */
+      /* MCMC_MIGREP_Mu(tree); */
+      /* MCMC_MIGREP_Radius(tree); */
+      /* MCMC_MIGREP_Triplet(tree); */
       MCMC_MIGREP_Delete_Disk(tree);
       MCMC_MIGREP_Insert_Disk(tree);
 
@@ -934,12 +909,13 @@ void MIGREP_One_New_Traj(t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y, t_dsk *xtr
 {
   t_migrep_mod *mmod;
   t_dsk *disk,**disk_new;
-  int i,n;
+  int i,n,K;
   int min_n_disk,n_new_disk,n_disk;
 
   mmod     = tree->mmod;
   disk     = NULL;
   disk_new = NULL;
+  K        = 20;
 
   /* printf("\n# New traj from %s to %s",y_ldsk->coord->id,o_ldsk->coord->id); */
   /* fflush(NULL); */
@@ -970,11 +946,11 @@ void MIGREP_One_New_Traj(t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y, t_dsk *xtr
   /* fflush(NULL); */
   
   /* How many disks along the new path between y_ldsk and o_ldsk */
-  n_new_disk = Rand_Int(min_n_disk,min_n_disk+50);
+  n_new_disk = Rand_Int(min_n_disk,min_n_disk+K);
 
   if(xtra_dsk != NULL) n_new_disk++;
 
-  /* printf("\n# n_new_disk: %d %f",n_new_disk,tree->mmod->lbda); fflush(NULL); */
+  /* printf("\n# Add n_new_disk: %d",n_new_disk); fflush(NULL); */
   
   if(n_new_disk > 0)
     {
@@ -1460,7 +1436,7 @@ int MIGREP_Total_Number_Of_Hit_Disks(t_tree *tree)
 
   disk = tree->disk;
   n_hit_disks = 0;
-  while(disk->prev)
+  while(disk)
     {
       if(disk->ldsk) n_hit_disks++;
       disk = disk->prev;
@@ -1478,10 +1454,9 @@ int MIGREP_Total_Number_Of_Coal_Disks(t_tree *tree)
   int n_coal_disks;
 
   if(tree->disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-
   disk = tree->disk;
   n_coal_disks = 0;
-  while(disk->prev)
+  while(disk)
     {
       if(disk->ldsk && disk->ldsk->is_coal == YES) n_coal_disks++;
       disk = disk->prev;
@@ -1492,8 +1467,36 @@ int MIGREP_Total_Number_Of_Coal_Disks(t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+phydbl MIGREP_Log_Uniform_Rectangle_Overlap(t_dsk *disk, t_migrep_mod *mmod)
+{
+  phydbl up, down, left, rght;
+
+  up   = MIN(disk->centr->lonlat[0] + mmod->rad, mmod->lim->lonlat[0]);
+  down = MAX(disk->centr->lonlat[0] - mmod->rad, 0.0);
+  rght = MIN(disk->centr->lonlat[1] + mmod->rad, mmod->lim->lonlat[1]);
+  left = MAX(disk->centr->lonlat[1] - mmod->rad, 0.0);
+
+  return(LOG(up-down)+LOG(rght-left));
+
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+void MIGREP_Runif_Rectangle_Overlap(t_ldsk *ldsk, t_dsk *disk, t_migrep_mod *mmod)
+{
+  phydbl up, down, left, rght;
+
+  up   = MIN(disk->centr->lonlat[0] + mmod->rad, mmod->lim->lonlat[0]);
+  down = MAX(disk->centr->lonlat[0] - mmod->rad, 0.0);
+  rght = MIN(disk->centr->lonlat[1] + mmod->rad, mmod->lim->lonlat[1]);
+  left = MAX(disk->centr->lonlat[1] - mmod->rad, 0.0);
+
+  ldsk->coord->lonlat[0] = Uni()*(up - down) + down;
+  ldsk->coord->lonlat[1] = Uni()*(rght - left) + left;
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////
