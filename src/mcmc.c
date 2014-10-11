@@ -5201,6 +5201,8 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
       disk = disk->prev;
     }
   while(disk->prev);
+
+  if(!n_valid_disks) return;
   
   /* Uniform selection of a disk where no coalescent nor 'hit' occurred */
   i = Rand_Int(0,n_valid_disks-1);
@@ -5217,13 +5219,13 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
   ratio += (new_lnL - cur_lnL);
   ratio += hr;
 
-  /* printf("\n- Delete new_lnL: %f [%f] hr: %f",new_lnL,cur_lnL,hr); */
-
   ratio = EXP(ratio);
   alpha = MIN(1.,ratio);
   
   u = Uni();
   
+  /* printf("\n- Delete new_lnL: %f [%f] hr: %f u:%f alpha: %f",new_lnL,cur_lnL,hr,u,alpha); */
+
   if(u > alpha) /* Reject */
     {
       /* printf("- Reject"); */
@@ -5292,20 +5294,22 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
   MIGREP_Insert_Disk(new_disk);
   
   For(i,tree->mmod->n_dim) new_disk->centr->lonlat[i] = Uni()*tree->mmod->lim->lonlat[i];
-  hr -= LOG(n_valid_disks);
+
+  For(i,tree->mmod->n_dim) hr += LOG(tree->mmod->lim->lonlat[i]);
+  hr -= LOG(n_valid_disks+1);
   hr += LOG(-T);
 
   new_lnL = MIGREP_Lk(tree);
   ratio = (new_lnL - cur_lnL);
   ratio += hr;
 
-  /* printf("\n+ Insert %s new_lnL: %f [%f] hr: %f",new_disk->id,new_lnL,cur_lnL,hr); */
-
   ratio = EXP(ratio);
   alpha = MIN(1.,ratio);
 
   u = Uni();
   
+  /* printf("\n+ Insert %s new_lnL: %f [%f] hr: %f u: %f alpha: %f",new_disk->id,new_lnL,cur_lnL,hr,u,alpha); */
+
   if(u > alpha) /* Reject */
     {
       /* printf("+ Reject"); */

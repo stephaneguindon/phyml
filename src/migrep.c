@@ -285,7 +285,7 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
 
   // Initialize parameters of migrep model
   mmod->lbda = 0.1;
-  mmod->mu   = 0.4;
+  mmod->mu   = 0.99;
   mmod->rad  = 3.0;
   
   curr_t      = 0.0;
@@ -460,7 +460,7 @@ phydbl MIGREP_Lk(t_tree *tree)
 {
   phydbl lnL;
   phydbl log_lbda,log_pi_rad,log_mu,log_one_mu;
-  int i,n_inter,n_coal;
+  int i,n_inter;
   short int was_hit, n_hit;
   t_migrep_mod *mmod;
   t_dsk *disk;
@@ -476,13 +476,6 @@ phydbl MIGREP_Lk(t_tree *tree)
   log_pi_rad = LOG(PI*mmod->rad*mmod->rad);
   log_one_mu = LOG(1. - mmod->mu);  
   lnL        = 0.0;
-  n_inter    = MIGREP_Total_Number_Of_Intervals(tree);
-  n_coal     = MIGREP_Total_Number_Of_Coal_Disks(tree);
-
-  /* Note n_inter might be smaller than n_otu because or multifucraction */
-
-  /* Likelihood for the time elapsed between disks */
-  /* lnL += LnGamma((phydbl)n_inter); */
 
   /* PhyML_Printf("\n\n. New likelihood call"); */
   do
@@ -520,19 +513,21 @@ phydbl MIGREP_Lk(t_tree *tree)
                     lnL += log_mu;
                   else /* Landed outside the disk */
                     {
+                      /* PhyML_Printf("\n. Landed outside"); */
+                      /* fflush(NULL); */
                       mmod->c_lnL = UNLIKELY;
                       return UNLIKELY;
                     }
                 }
               else /* was not hit */
                 {
-                  /* PhyML_Printf("\n. %d/%d lindisk %s was not hit",i,disk->n_ldsk_a,disk->ldsk_a[i]->coord->id); */
                   lnL += log_one_mu;
+                  /* PhyML_Printf("\n. %d/%d lindisk %s was not hit, ln: %f",i,disk->n_ldsk_a,disk->ldsk_a[i]->coord->id,lnL); */
                 }
             }
           else
             {
-              /* PhyML_Printf("\n. %s was hit: %d %s %s %s",disk->ldsk_a[i]->coord->id,was_hit,disk->ldsk_a[i]->prev->disk->id,disk->prev->id,disk->id); */
+              /* PhyML_Printf("\n. %s was hit: %d %s %s %s lnL:%f",disk->ldsk_a[i]->coord->id,was_hit,disk->ldsk_a[i]->prev->disk->id,disk->prev->id,disk->id,lnL); */
               /* has changed spatial coordinates but was outside disk  */
               if(was_hit == YES)
                 {
@@ -563,7 +558,12 @@ phydbl MIGREP_Lk(t_tree *tree)
     }
   while(1);
   
-  lnL += n_inter*log_lbda + mmod->lbda*disk->time;
+  n_inter = MIGREP_Total_Number_Of_Intervals(tree);
+
+  lnL += (n_inter-1)*LOG(-mmod->lbda*disk->time) + mmod->lbda*disk->time;
+  lnL -= LnGamma((phydbl)(n_inter));
+  
+  /* lnL += Dpois((phydbl)n_inter,-mmod->lbda*disk->time,YES); */
 
   if(isinf(lnL) || isnan(lnL)) lnL = UNLIKELY;
 
@@ -620,12 +620,12 @@ void MIGREP_MCMC(t_tree *tree)
   mcmc->run = 0;
   do
     {
-      /* MCMC_MIGREP_Lbda(tree); */
-      /* MCMC_MIGREP_Mu(tree); */
-      /* MCMC_MIGREP_Radius(tree); */
-      /* MCMC_MIGREP_Triplet(tree); */
-      MCMC_MIGREP_Delete_Disk(tree);
-      MCMC_MIGREP_Insert_Disk(tree);
+      MCMC_MIGREP_Lbda(tree);
+      MCMC_MIGREP_Mu(tree);
+      MCMC_MIGREP_Radius(tree);
+      MCMC_MIGREP_Triplet(tree);
+      /* MCMC_MIGREP_Delete_Disk(tree); */
+      /* MCMC_MIGREP_Insert_Disk(tree); */
 
       if(mcmc->run%mcmc->sample_interval == 0)
       /* if(mcmc->run == 0) */
@@ -1240,7 +1240,7 @@ void MIGREP_Update_Lindisk_List_Pre(t_ldsk *ldsk, phydbl time, t_ldsk **list, in
       list[*pos] = ldsk;
       *pos = *pos + 1;
     }
-  else if(Are_Equal(ldsk->disk->time,time,SMALL_DBL))
+  else if(Are_Equal(ldsk->disk->time,time,1.E-10))
     {
       list[*pos] = ldsk;
       *pos = *pos + 1;      
@@ -1251,6 +1251,8 @@ void MIGREP_Update_Lindisk_List_Pre(t_ldsk *ldsk, phydbl time, t_ldsk **list, in
       For(i,ldsk->n_next)
         MIGREP_Update_Lindisk_List_Pre(ldsk->next[i],time,list,pos);    
     }
+  else Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    
 }
 
 /*////////////////////////////////////////////////////////////
@@ -1476,6 +1478,10 @@ phydbl MIGREP_Log_Uniform_Rectangle_Overlap(t_dsk *disk, t_migrep_mod *mmod)
   down = MAX(disk->centr->lonlat[0] - mmod->rad, 0.0);
   rght = MIN(disk->centr->lonlat[1] + mmod->rad, mmod->lim->lonlat[1]);
   left = MAX(disk->centr->lonlat[1] - mmod->rad, 0.0);
+
+  /* printf("\n. disk %s up: %f down: %f rght: %f left: %f", */
+  /*        disk->id, */
+  /*        up,down,rght,left); */
 
   return(LOG(up-down)+LOG(rght-left));
 
