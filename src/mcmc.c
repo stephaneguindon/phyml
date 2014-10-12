@@ -5213,7 +5213,7 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
   
   For(i,tree->mmod->n_dim) hr -= LOG(tree->mmod->lim->lonlat[i]);
   hr += LOG(n_valid_disks);
-  hr -= LOG(-T);
+  /* hr -= LOG(-T); */
   
   new_lnL = MIGREP_Lk(tree);
   ratio += (new_lnL - cur_lnL);
@@ -5297,7 +5297,7 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
 
   For(i,tree->mmod->n_dim) hr += LOG(tree->mmod->lim->lonlat[i]);
   hr -= LOG(n_valid_disks+1);
-  hr += LOG(-T);
+  /* hr += LOG(-T); */
 
   new_lnL = MIGREP_Lk(tree);
   ratio = (new_lnL - cur_lnL);

@@ -284,8 +284,8 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   disk = disk->prev;
 
   // Initialize parameters of migrep model
-  mmod->lbda = 0.1;
-  mmod->mu   = 0.99;
+  mmod->lbda = 0.05;
+  mmod->mu   = 0.2;
   mmod->rad  = 3.0;
   
   curr_t      = 0.0;
@@ -499,7 +499,7 @@ phydbl MIGREP_Lk(t_tree *tree)
           
           if(was_hit == YES && !disk->prev->ldsk) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
           
-          if(MIGREP_Is_In_Disk(disk->ldsk_a[i]->coord,disk->prev) == YES)
+          if(MIGREP_Is_In_Disk(disk->ldsk_a[i]->coord,disk->prev) == YES) /* 'Departure' point is in disk */
             {
               if(was_hit == YES) /* was hit */
                 {
@@ -509,7 +509,7 @@ phydbl MIGREP_Lk(t_tree *tree)
                   /*              disk->ldsk_a[i]->prev->coord->id, */
                   /*              disk->ldsk_a[i]->coord->lonlat[0], */
                   /*              disk->ldsk_a[i]->prev->coord->lonlat[0]); */
-                  if(MIGREP_Is_In_Disk(disk->ldsk_a[i]->prev->coord,disk->prev) == YES)
+                  if(MIGREP_Is_In_Disk(disk->ldsk_a[i]->prev->coord,disk->prev) == YES) /* 'Arrival' point is in disk */
                     lnL += log_mu;
                   else /* Landed outside the disk */
                     {
@@ -561,7 +561,7 @@ phydbl MIGREP_Lk(t_tree *tree)
   n_inter = MIGREP_Total_Number_Of_Intervals(tree);
 
   lnL += (n_inter-1)*LOG(-mmod->lbda*disk->time) + mmod->lbda*disk->time;
-  lnL -= LnGamma((phydbl)(n_inter));
+  /* lnL -= LnGamma((phydbl)(n_inter)); */
   
   /* lnL += Dpois((phydbl)n_inter,-mmod->lbda*disk->time,YES); */
 
@@ -603,9 +603,9 @@ void MIGREP_MCMC(t_tree *tree)
   mcmc->chain_len        = 1.E+8;
   mcmc->sample_interval  = 50;
   
-  /* tree->mmod->lbda = Uni()*(tree->mmod->max_lbda - tree->mmod->min_lbda) + tree->mmod->min_lbda; */
-  /* tree->mmod->mu   = Uni()*(tree->mmod->max_mu - tree->mmod->min_mu) + tree->mmod->min_mu; */
-  /* tree->mmod->rad  = tree->mmod->max_rad; */
+  tree->mmod->lbda = Uni()*(tree->mmod->max_lbda - tree->mmod->min_lbda) + tree->mmod->min_lbda;
+  tree->mmod->mu   = Uni()*(tree->mmod->max_mu - tree->mmod->min_mu) + tree->mmod->min_mu;
+  tree->mmod->rad  = tree->mmod->max_rad;
 
   MIGREP_Lk(tree);
   printf("\n. LK: %f",tree->mmod->c_lnL);
@@ -623,9 +623,9 @@ void MIGREP_MCMC(t_tree *tree)
       MCMC_MIGREP_Lbda(tree);
       MCMC_MIGREP_Mu(tree);
       MCMC_MIGREP_Radius(tree);
-      MCMC_MIGREP_Triplet(tree);
-      /* MCMC_MIGREP_Delete_Disk(tree); */
-      /* MCMC_MIGREP_Insert_Disk(tree); */
+      /* MCMC_MIGREP_Triplet(tree); */
+      MCMC_MIGREP_Delete_Disk(tree);
+      MCMC_MIGREP_Insert_Disk(tree);
 
       if(mcmc->run%mcmc->sample_interval == 0)
       /* if(mcmc->run == 0) */
