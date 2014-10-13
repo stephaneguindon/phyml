@@ -157,5 +157,6 @@ void MCMC_MIGREP_Radius(t_tree *mixt_tree);
 void MCMC_MIGREP_Triplet(t_tree *tree);
 void MCMC_MIGREP_Delete_Disk(t_tree *tree);
 void MCMC_MIGREP_Insert_Disk(t_tree *tree);
+void MCMC_MIGREP_Move_Disk_Centre(t_tree *tree);
 
 #endif

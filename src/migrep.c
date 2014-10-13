@@ -284,9 +284,9 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   disk = disk->prev;
 
   // Initialize parameters of migrep model
-  mmod->lbda = 0.05;
-  mmod->mu   = 0.2;
-  mmod->rad  = 3.0;
+  mmod->lbda = 0.1;
+  mmod->mu   = 0.7;
+  mmod->rad  = 2.0;
   
   curr_t      = 0.0;
   dt_dsk     = 0.0;
@@ -626,6 +626,7 @@ void MIGREP_MCMC(t_tree *tree)
       /* MCMC_MIGREP_Triplet(tree); */
       MCMC_MIGREP_Delete_Disk(tree);
       MCMC_MIGREP_Insert_Disk(tree);
+      MCMC_MIGREP_Move_Disk_Centre(tree);
 
       if(mcmc->run%mcmc->sample_interval == 0)
       /* if(mcmc->run == 0) */
@@ -1398,8 +1399,9 @@ t_geo_coord *MIGREP_Copy_Geo_Coord(t_geo_coord *ori)
   int i;
 
   cpy = GEO_Make_Geo_Coord(ori->dim);
+  cpy->dim = ori->dim;
 
-  For(i,ori->lonlat[i]) cpy->lonlat[i] = ori->lonlat[i];
+  For(i,ori->dim) cpy->lonlat[i] = ori->lonlat[i];
   strcpy(cpy->id,ori->id);
 
   return cpy;

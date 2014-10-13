@@ -5169,22 +5169,15 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
 {
   phydbl u,alpha,ratio;
   phydbl cur_lnL, new_lnL, hr;
-  phydbl t;
   t_dsk  *disk,*target_disk,**valid_disks;
-  phydbl T;
   int i,block,n_valid_disks;
 
   disk          = NULL;
   new_lnL       = UNLIKELY;
   cur_lnL       = tree->mmod->c_lnL;
-  cur_lnL       = MIGREP_Lk(tree);
   hr            = 0.0;
   ratio         = 0.0;
   block         = 100;
-
-  disk = tree->disk;
-  while(disk->prev) disk = disk->prev;
-  T = disk->time;
 
   if(tree->disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   disk = tree->disk->prev;
@@ -5212,8 +5205,7 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
   MIGREP_Remove_Disk(target_disk);
   
   For(i,tree->mmod->n_dim) hr -= LOG(tree->mmod->lim->lonlat[i]);
-  hr += LOG(n_valid_disks);
-  /* hr -= LOG(-T); */
+  hr += LOG(n_valid_disks+1);
   
   new_lnL = MIGREP_Lk(tree);
   ratio += (new_lnL - cur_lnL);
@@ -5259,7 +5251,6 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
   disk     = NULL;
   new_lnL  = UNLIKELY;
   cur_lnL  = tree->mmod->c_lnL;
-  cur_lnL  = MIGREP_Lk(tree);
   hr       = 0.0;
 
   if(tree->disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
@@ -5296,8 +5287,7 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
   For(i,tree->mmod->n_dim) new_disk->centr->lonlat[i] = Uni()*tree->mmod->lim->lonlat[i];
 
   For(i,tree->mmod->n_dim) hr += LOG(tree->mmod->lim->lonlat[i]);
-  hr -= LOG(n_valid_disks+1);
-  /* hr += LOG(-T); */
+  hr -= LOG(n_valid_disks);
 
   new_lnL = MIGREP_Lk(tree);
   ratio = (new_lnL - cur_lnL);
@@ -5331,6 +5321,82 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+#ifdef MIGREP
+void MCMC_MIGREP_Move_Disk_Centre(t_tree *tree)
+{
+  phydbl u,alpha,ratio;
+  phydbl cur_lnL, new_lnL, hr;
+  t_dsk  *disk,*target_disk,**all_disks;
+  int i,block,n_all_disks;
+  t_geo_coord *bkup_coord;
+
+  disk          = NULL;
+  new_lnL       = UNLIKELY;
+  cur_lnL       = tree->mmod->c_lnL;
+  hr            = 0.0;
+  ratio         = 0.0;
+  block         = 100;
+  
+  if(tree->disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  disk = tree->disk->prev;
+  n_all_disks = 0;
+  do
+    {
+      if(!disk->ldsk)
+        {
+          if(!n_all_disks) all_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
+          else if(!(n_all_disks%block)) all_disks = (t_dsk **)mRealloc(all_disks,n_all_disks+block,sizeof(t_dsk *));
+          all_disks[n_all_disks] = disk;
+          n_all_disks++;
+        }
+      disk = disk->prev;
+    }
+  while(disk->prev);
+
+  if(!n_all_disks) return;
+  
+  /* Uniform selection of a disk */
+  i = Rand_Int(0,n_all_disks-1);
+  target_disk = all_disks[i];
+  Free(all_disks);
+  
+  bkup_coord = MIGREP_Copy_Geo_Coord(target_disk->centr);
+
+  /* New disk center is chosen uniformly in the landscape */
+  For(i,tree->mmod->n_dim) target_disk->centr->lonlat[i] = Uni()*tree->mmod->lim->lonlat[i];
+    
+  new_lnL = MIGREP_Lk(tree);
+  ratio += (new_lnL - cur_lnL);
+  ratio += hr;
+
+  ratio = EXP(ratio);
+  alpha = MIN(1.,ratio);
+  
+  u = Uni();
+  
+  /* printf("\n- Delete new_lnL: %f [%f] hr: %f u:%f alpha: %f",new_lnL,cur_lnL,hr,u,alpha); */
+
+  if(u > alpha) /* Reject */
+    {
+      /* printf("- Reject"); */
+      
+      Free_Geo_Coord(target_disk->centr);
+      target_disk->centr = MIGREP_Copy_Geo_Coord(bkup_coord);
+      
+      /* tree->mmod->c_lnL = cur_lnL; */
+
+      new_lnL = MIGREP_Lk(tree);
+      if(Are_Equal(new_lnL,cur_lnL,1.E-3) == NO) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
+  else
+    {
+      Free_Geo_Coord(bkup_coord);
+      /* printf("- Accept"); */
+    }  
+}
+#endif
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////
