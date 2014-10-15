@@ -34,7 +34,6 @@ t_ldsk *MIGREP_Prev_Coal_Lindisk(t_ldsk *t);
 t_ldsk *MIGREP_Next_Coal_Lindisk(t_ldsk *t);
 int MIGREP_Get_Next_Direction(t_ldsk *young, t_ldsk *old);
 void MIGREP_One_New_Traj_Given_Disk(t_ldsk *s_ldsk, t_ldsk *e_ldsk);
-void MIGREP_One_New_Traj(t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y, t_dsk *xtra_dsk, t_tree *tree);
 void MIGREP_Update_Lindisk_List(phydbl time, t_ldsk **list, int *pos, t_dsk *disk);
 void MIGREP_Update_Lindisk_List_Pre(t_ldsk *ldsk, phydbl time, t_ldsk **list, int *pos);
 void MIGREP_Connect_Ldsk_Given_Disk(t_dsk **disk, int n_disk, t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y);
@@ -47,5 +46,6 @@ int MIGREP_Total_Number_Of_Coal_Disks(t_tree *tree);
 int MIGREP_Total_Number_Of_Hit_Disks(t_tree *tree);
 phydbl MIGREP_Log_Uniform_Rectangle_Overlap(t_dsk *disk, t_migrep_mod *mmod);
 void MIGREP_Runif_Rectangle_Overlap(t_ldsk *ldsk, t_dsk *disk, t_migrep_mod *mod);
+void MIGREP_One_New_Traj(t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y, t_dsk *xtra_dsk, int *n_add_disk, t_tree *tree);
 
 #endif

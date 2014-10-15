@@ -4867,10 +4867,10 @@ void MCMC_MIGREP_Radius(t_tree *mixt_tree)
 void MCMC_MIGREP_Triplet(t_tree *tree)
 {
   phydbl cur_lnL, new_lnL;
-  phydbl ratio, alpha, u, min_under_time, hr;
+  phydbl ratio, alpha, u, min_under_time, max_under_time, hr;
   t_dsk **disk_bkup,*disk,*coal_disk;
-  t_ldsk *ldsk_coal_cur,**ldsk_under,*ldsk_up,*ldsk,**next_up_orig,**prev_under_orig,*old_ldsk_under,*ldsk_coal_new,*buff_ldsk;
-  int i,n_coal,n_rm_disk,dir_up_coal,n_next_up_orig,block;
+  t_ldsk *ldsk_coal_cur,**ldsk_under,*ldsk_up,*ldsk,**next_up_orig,**prev_under_orig,*old_ldsk_under,*young_ldsk_under,*ldsk_coal_new,*buff_ldsk;
+  int i,n_coal,n_rm_disk,n_add_disk,dir_up_coal,n_next_up_orig,block,n_disk_cur,n_disk_new;
   
   /* cur_lnL     =   MIGREP_Lk(tree);; */
   /* PhyML_Printf("\n. orig lk: %f",MIGREP_Lk(tree)); */
@@ -4880,22 +4880,24 @@ void MCMC_MIGREP_Triplet(t_tree *tree)
   /* printf("\n. $$$$$"); */
   /* MIGREP_Check_Struct(tree); */
 
-  cur_lnL         = tree->disk->mmod->c_lnL;
-  new_lnL         = UNLIKELY;
-  disk_bkup       = NULL;
-  disk            = NULL;
-  ldsk_coal_cur   = NULL;
-  ldsk_coal_new   = NULL;
-  ldsk_under      = NULL;
-  ldsk_up         = NULL;
-  ldsk            = NULL;
-  next_up_orig    = NULL;
-  prev_under_orig = NULL;
-  old_ldsk_under  = NULL;
-  coal_disk       = NULL;
-  buff_ldsk       = NULL;
-  hr              = 0.0;
-  block           = 100;
+  cur_lnL          = tree->disk->mmod->c_lnL;
+  new_lnL          = UNLIKELY;
+  disk_bkup        = NULL;
+  disk             = NULL;
+  ldsk_coal_cur    = NULL;
+  ldsk_coal_new    = NULL;
+  ldsk_under       = NULL;
+  ldsk_up          = NULL;
+  ldsk             = NULL;
+  next_up_orig     = NULL;
+  prev_under_orig  = NULL;
+  old_ldsk_under   = NULL;
+  young_ldsk_under = NULL;
+  coal_disk        = NULL;
+  buff_ldsk        = NULL;
+  hr               = 0.0;
+  block            = 100;
+  n_add_disk       = 0;
 
   /* Go to the top of the tree */
   disk = tree->disk;
@@ -4956,6 +4958,26 @@ void MCMC_MIGREP_Triplet(t_tree *tree)
           min_under_time = ldsk_under[i]->disk->time;
           old_ldsk_under = ldsk_under[i];
         }
+    }
+
+  /* Record the youngest ldsk_under. */
+  max_under_time = -INFINITY;
+  For(i,ldsk_coal_cur->n_next)
+    {
+      if(ldsk_under[i]->disk->time > max_under_time) 
+        {
+          max_under_time   = ldsk_under[i]->disk->time;
+          young_ldsk_under = ldsk_under[i];
+        }
+    }
+  
+  /* Count current number of disks between ldsk_up and young_ldsk_under */
+  n_disk_cur = 0;
+  disk = young_ldsk_under->disk->prev;
+  while(disk != ldsk_up->disk)
+    {
+      n_disk_cur++;
+      disk = disk->prev;
     }
 
   /* First part of Hastings ratio */
@@ -5024,7 +5046,7 @@ void MCMC_MIGREP_Triplet(t_tree *tree)
       dir_up_coal = MIGREP_Get_Next_Direction(ldsk_under[0],ldsk_up);
 
       /* Generate trajectory between the oldest ldisk in ldsk_under and ldsk_up */
-      MIGREP_One_New_Traj(old_ldsk_under,ldsk_up,dir_up_coal,coal_disk,tree);
+      MIGREP_One_New_Traj(old_ldsk_under,ldsk_up,dir_up_coal,coal_disk,&n_add_disk,tree);
       /* printf("\n <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< \n"); */
 
       hr -= MIGREP_Uniform_Path_Density(old_ldsk_under,ldsk_up);
@@ -5049,7 +5071,7 @@ void MCMC_MIGREP_Triplet(t_tree *tree)
               /* fflush(NULL); */
 
               MIGREP_Make_Lindisk_Next(ldsk_coal_new);
-              MIGREP_One_New_Traj(ldsk_under[i],ldsk_coal_new,ldsk_coal_new->n_next-1,NULL,tree);
+              MIGREP_One_New_Traj(ldsk_under[i],ldsk_coal_new,ldsk_coal_new->n_next-1,NULL,&n_add_disk,tree);
               hr -= MIGREP_Uniform_Path_Density(ldsk_under[i],ldsk_coal_new);
             }
         }
@@ -5060,12 +5082,27 @@ void MCMC_MIGREP_Triplet(t_tree *tree)
       For(i,ldsk_coal_cur->n_next)
         {
           /* printf("\n@ Generate traj from %s to %s",ldsk_under[i]->coord->id,ldsk_up->coord->id); fflush(NULL); */
-          MIGREP_One_New_Traj(ldsk_under[i],ldsk_coal_new,i,NULL,tree);
+          MIGREP_One_New_Traj(ldsk_under[i],ldsk_coal_new,i,NULL,&n_add_disk,tree);
           hr -= MIGREP_Uniform_Path_Density(ldsk_under[i],ldsk_coal_new);
         }
     }
   
   new_lnL = MIGREP_Lk(tree);
+
+  /* Count new number of disks between ldsk_up and young_ldsk_under */
+  n_disk_new = 0;
+  disk = young_ldsk_under->disk->prev;
+  while(disk != ldsk_up->disk)
+    {
+      n_disk_new++;
+      disk = disk->prev;
+    }
+
+  /* Dimension matching term in the Hastings ratio */
+  if(n_disk_new > n_disk_cur)
+    hr = -(n_disk_new - n_disk_cur)*LOG(n_disk_new);
+  else
+    hr = (n_disk_new - n_disk_cur)*LOG(n_disk_cur);
 
   ratio = .0;
   ratio += (new_lnL - cur_lnL);

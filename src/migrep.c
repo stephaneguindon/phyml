@@ -284,9 +284,9 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   disk = disk->prev;
 
   // Initialize parameters of migrep model
-  mmod->lbda = 0.1;
-  mmod->mu   = 0.7;
-  mmod->rad  = 2.0;
+  mmod->lbda = 0.3;
+  mmod->mu   = 0.6;
+  mmod->rad  = 3.0;
   
   curr_t      = 0.0;
   dt_dsk     = 0.0;
@@ -623,7 +623,7 @@ void MIGREP_MCMC(t_tree *tree)
       MCMC_MIGREP_Lbda(tree);
       MCMC_MIGREP_Mu(tree);
       MCMC_MIGREP_Radius(tree);
-      /* MCMC_MIGREP_Triplet(tree); */
+      MCMC_MIGREP_Triplet(tree);
       MCMC_MIGREP_Delete_Disk(tree);
       MCMC_MIGREP_Insert_Disk(tree);
       MCMC_MIGREP_Move_Disk_Centre(tree);
@@ -906,7 +906,7 @@ t_ldsk *MIGREP_Next_Coal_Lindisk(t_ldsk *t)
     and 'o_ldsk' remain unaffected. No disk events should be present    
     between y_ldsk and o_ldsk: we need to generate some first.          
 */
-void MIGREP_One_New_Traj(t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y, t_dsk *xtra_dsk, t_tree *tree)
+void MIGREP_One_New_Traj(t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y, t_dsk *xtra_dsk, int *n_add_disk, t_tree *tree)
 {
   t_migrep_mod *mmod;
   t_dsk *disk,**disk_new;
@@ -948,6 +948,7 @@ void MIGREP_One_New_Traj(t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y, t_dsk *xtr
   
   /* How many disks along the new path between y_ldsk and o_ldsk */
   n_new_disk = Rand_Int(min_n_disk,min_n_disk+K);
+  (*n_add_disk) += n_new_disk;
 
   if(xtra_dsk != NULL) n_new_disk++;
 
