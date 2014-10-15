@@ -5020,7 +5020,6 @@ void MCMC_MIGREP_Triplet(t_tree *tree)
 
   /* printf("\n. Removed %d disks",n_rm_disk); */
 
-  
   if(ldsk_coal_cur != ldsk_up)
     {
       /* Insert the disk on which coalescent will occur. Time of this disk */
@@ -5162,8 +5161,6 @@ void MCMC_MIGREP_Triplet(t_tree *tree)
       /* Second, re-insert the original disks */
       For(i,n_rm_disk) MIGREP_Insert_Disk(disk_bkup[i]);
 
-      /* Free up memory for disk_bkup */
-      if(n_rm_disk > 0) Free(disk_bkup);
 
       /* Then connect ldsk_up->next to the original corresponding
          ldsk
@@ -5177,9 +5174,6 @@ void MCMC_MIGREP_Triplet(t_tree *tree)
       */
       For(i,ldsk_coal_cur->n_next) ldsk_under[i]->prev = prev_under_orig[i];
       
-      Free(ldsk_under);
-      Free(prev_under_orig);
-
       /* tree->mmod->c_lnL = cur_lnL; */
       new_lnL = MIGREP_Lk(tree);
       
@@ -5187,10 +5181,24 @@ void MCMC_MIGREP_Triplet(t_tree *tree)
     }
   else
     {
+      Free(next_up_orig);
+      
+      For(i,n_rm_disk) 
+        {
+          Free_Ldisk(disk_bkup[i]->ldsk);
+          Free_Disk(disk_bkup[i]);
+        }
+
       /* printf("\n. %f ",(new_lnL - cur_lnL)); */
       /* if(ldsk_coal_cur->n_next >= 10) */
         /* PhyML_Printf(" Accept"); */
     }
+
+
+  Free(ldsk_under);
+  Free(prev_under_orig);
+  if(n_rm_disk > 0) Free(disk_bkup);
+
 
   /* MIGREP_Print_Struct('e',tree); */
   /* MIGREP_Check_Struct(tree); */
@@ -5268,6 +5276,7 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
     }
   else
     {
+      Free_Disk(target_disk);
       /* printf("- Accept"); */
     }
 }
@@ -5341,8 +5350,9 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
     {
       /* printf("+ Reject"); */
 
-      MIGREP_Remove_Disk(new_disk);
-      
+      MIGREP_Remove_Disk(new_disk);      
+      Free_Disk(new_disk);
+
       /* tree->mmod->c_lnL = cur_lnL; */
 
       new_lnL = MIGREP_Lk(tree);      
@@ -5428,9 +5438,11 @@ void MCMC_MIGREP_Move_Disk_Centre(t_tree *tree)
     }
   else
     {
-      Free_Geo_Coord(bkup_coord);
       /* printf("- Accept"); */
     }  
+
+  Free_Geo_Coord(bkup_coord);
+        
 }
 #endif
 

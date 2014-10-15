@@ -459,7 +459,7 @@ int MIGREP_Is_In_Disk(t_geo_coord *coord, t_dsk *disk)
 phydbl MIGREP_Lk(t_tree *tree)
 {
   phydbl lnL;
-  phydbl log_lbda,log_pi_rad,log_mu,log_one_mu;
+  phydbl log_mu,log_one_mu;
   int i,n_inter;
   short int was_hit, n_hit;
   t_migrep_mod *mmod;
@@ -471,9 +471,7 @@ phydbl MIGREP_Lk(t_tree *tree)
   if(disk->next)  Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   if(!disk->prev) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
 
-  log_lbda   = LOG(mmod->lbda);
   log_mu     = LOG(mmod->mu);
-  log_pi_rad = LOG(PI*mmod->rad*mmod->rad);
   log_one_mu = LOG(1. - mmod->mu);  
   lnL        = 0.0;
 
@@ -627,6 +625,7 @@ void MIGREP_MCMC(t_tree *tree)
       MCMC_MIGREP_Delete_Disk(tree);
       MCMC_MIGREP_Insert_Disk(tree);
       MCMC_MIGREP_Move_Disk_Centre(tree);
+
 
       if(mcmc->run%mcmc->sample_interval == 0)
       /* if(mcmc->run == 0) */
@@ -916,7 +915,7 @@ void MIGREP_One_New_Traj(t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y, t_dsk *xtr
   mmod     = tree->mmod;
   disk     = NULL;
   disk_new = NULL;
-  K        = 20;
+  K        = 10;
 
   /* printf("\n# New traj from %s to %s",y_ldsk->coord->id,o_ldsk->coord->id); */
   /* fflush(NULL); */
@@ -958,7 +957,7 @@ void MIGREP_One_New_Traj(t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y, t_dsk *xtr
     {
       /* Make new disks to create a new path between ldsk_left and ldsk_up */
       disk_new = (t_dsk **)mCalloc(n_new_disk,sizeof(t_dsk *));
-      For(i,n_new_disk-1) disk_new[i] = MIGREP_Make_Disk_Event(mmod->n_dim,tree->n_otu);
+      For(i,n_new_disk-1)  disk_new[i] = MIGREP_Make_Disk_Event(mmod->n_dim,tree->n_otu);
       if(xtra_dsk != NULL) disk_new[n_new_disk-1] = xtra_dsk;
       else                 disk_new[n_new_disk-1] = MIGREP_Make_Disk_Event(mmod->n_dim,tree->n_otu);
 
