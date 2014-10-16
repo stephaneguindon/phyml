@@ -173,15 +173,14 @@ int MIGREP_Main(int argc, char *argv[])
   int seed;
 
   seed = time(NULL);
-  /* seed = 1412214370; */
-  /* seed = 1412491177; */
+  /* seed = 1413426621; */
   printf("\n. Seed: %d",seed); fflush(NULL);
   /* seed = 1412394873; */
   srand(seed);
   tree = MIGREP_Simulate_Backward((int)atoi(argv[1]),10.,10.);
 
-  MIGREP_MCMC(tree);
-  Exit("\n");
+  /* MIGREP_MCMC(tree); */
+  /* Exit("\n"); */
 
   /* gdk_threads_init(); */
   /* gdk_threads_enter(); */
@@ -243,7 +242,7 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
 
   ldsk_a_tmp = (t_ldsk **)mCalloc(n_otu,sizeof(t_ldsk *));
 
-  // Generate coordinates for the tip nodes (uniform distribution on the rectangle)
+  /* Generate coordinates for the tip nodes (uniform distribution on the rectangle) */
   For(i,n_otu)
     {
       /* ldsk_a[i]->coord->lonlat[0] = Uni()*width;  // longitude */
@@ -252,19 +251,19 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
       ldsk_a[i]->coord->lonlat[1] = (i+1.)/(n_otu+1.)*height; // latitude
     }
 
-  // Allocate migrep model
+  /* Allocate migrep model */
   mmod = MIGREP_Make_Migrep_Model(n_dim);
   MIGREP_Init_Migrep_Mod(mmod,n_dim);
   mmod->lim->lonlat[0] = width;
   mmod->lim->lonlat[1] = height;
   
-  // First disk event (at time 0)
+  /* First disk event (at time 0) */
   disk->time             = 0.0;
   disk->mmod             = mmod;
   disk->centr->lonlat[0] = .5*width;
   disk->centr->lonlat[1] = .5*height;      
   
-  // Allocate and initialise for next event
+  /* Allocate and initialise for next event */
   disk->prev = MIGREP_Make_Disk_Event(n_dim,n_otu);
   MIGREP_Init_Disk_Event(disk->prev,n_dim,NULL);
   disk->prev->next = disk;
@@ -280,10 +279,10 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   /*            ldsk_a[i]->coord->lonlat[1]); */
   /*   } */
 
-  // Move to it
+  /* Move to it */
   disk = disk->prev;
 
-  // Initialize parameters of migrep model
+  /* Initialize parameters of migrep model */
   mmod->lbda = 0.3;
   mmod->mu   = 0.6;
   mmod->rad  = 3.0;
@@ -294,11 +293,11 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   n_disk      = 0;
   do
     {
-      // Time of next event
+      /* Time of next event */
       dt_dsk = Rexp(mmod->lbda);
       curr_t -= dt_dsk;
       
-      // Coordinates of next event
+      /* Coordinates of next event */
       disk->centr->lonlat[0] = Uni()*width;
       disk->centr->lonlat[1] = Uni()*height;      
 
@@ -550,6 +549,7 @@ phydbl MIGREP_Lk(t_tree *tree)
       
       /* a hit occurred */
       if(n_hit >= 1) lnL -= MIGREP_Log_Uniform_Rectangle_Overlap(disk,mmod);
+      /* if(n_hit >= 2) lnL -= MIGREP_Log_Uniform_Rectangle_Overlap(disk,mmod); */
     
       disk = disk->prev;
 
@@ -560,7 +560,7 @@ phydbl MIGREP_Lk(t_tree *tree)
   
   n_inter = MIGREP_Total_Number_Of_Intervals(tree);
 
-  lnL += (n_inter-1)*LOG(-mmod->lbda*disk->time) + mmod->lbda*disk->time;
+  lnL += (n_inter)*LOG(-mmod->lbda*disk->time) + mmod->lbda*disk->time;
   /* lnL -= LnGamma((phydbl)(n_inter)); */
   
   /* lnL += Dpois((phydbl)n_inter,-mmod->lbda*disk->time,YES); */
@@ -645,8 +645,8 @@ void MIGREP_MCMC(t_tree *tree)
                        disk->time);
 
           /* gdk_threads_enter(); */
-          /* gtk_widget_queue_draw(tree->draw_area); */
-          /* sleep(1); */
+          gtk_widget_queue_draw(tree->draw_area);
+          sleep(1);
           /* gdk_threads_leave(); */
           /* Exit("\n"); */
         }
@@ -917,7 +917,7 @@ void MIGREP_One_New_Traj(t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y, t_dsk *xtr
   mmod     = tree->mmod;
   disk     = NULL;
   disk_new = NULL;
-  K        = 30;
+  K        = 5;
 
   /* printf("\n# New traj from %s to %s",y_ldsk->coord->id,o_ldsk->coord->id); */
   /* fflush(NULL); */
