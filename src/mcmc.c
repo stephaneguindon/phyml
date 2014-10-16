@@ -4867,11 +4867,12 @@ void MCMC_MIGREP_Radius(t_tree *mixt_tree)
 void MCMC_MIGREP_Triplet(t_tree *tree)
 {
   phydbl cur_lnL, new_lnL;
-  phydbl ratio, alpha, u, min_under_time, max_under_time, hr;
+  phydbl ratio, alpha, u, min_under_time, max_under_time, hr,T;
   t_dsk **disk_bkup,*disk,*coal_disk;
   t_ldsk *ldsk_coal_cur,**ldsk_under,*ldsk_up,*ldsk,**next_up_orig,**prev_under_orig,*old_ldsk_under,*young_ldsk_under,*ldsk_coal_new,*buff_ldsk;
   int i,n_coal,n_rm_disk,dir_up_coal,n_next_up_orig,block,n_disk_cur,n_disk_new,n_rm_disk_up_cur,n_rm_disk_up_new,*n_rm_disk_under_cur,*n_rm_disk_under_new,old_ldsk_under_idx;
-  
+  int ori_n_disk;
+
   cur_lnL          = tree->disk->mmod->c_lnL;
   new_lnL          = UNLIKELY;
   disk_bkup        = NULL;
@@ -4889,6 +4890,8 @@ void MCMC_MIGREP_Triplet(t_tree *tree)
   buff_ldsk        = NULL;
   hr               = 0.0;
   block            = 100;
+
+  ori_n_disk = MIGREP_Total_Number_Of_Intervals(tree);
 
   /* Go to the top of the tree */
   disk = tree->disk;
@@ -4923,6 +4926,8 @@ void MCMC_MIGREP_Triplet(t_tree *tree)
   
   /* ldsk_coal_cur is the root node */
   if(ldsk_up == NULL) ldsk_up = ldsk_coal_cur; 
+
+  T = -ldsk_up->disk->time;
 
   /* /\* Do not change root node height if there are no sequences involved in the analysis *\/ */
   /* if(ldsk_up == ldsk_coal_cur) return; */
@@ -4965,6 +4970,10 @@ void MCMC_MIGREP_Triplet(t_tree *tree)
         }
     }
   
+  /* T is the time elapsed between ldsk_up and young_ldsk_under */
+  /* Used in the calculation of the Hastings ratio */
+  T += young_ldsk_under->disk->time;
+
   /* Count current number of disks between ldsk_up and young_ldsk_under */
   n_disk_cur = 0;
   disk = young_ldsk_under->disk->prev;
@@ -5083,15 +5092,16 @@ void MCMC_MIGREP_Triplet(t_tree *tree)
       disk = disk->prev;
     }
 
-  /* /\* Dimension matching term in the Hastings ratio *\/ */
-  /* if(n_disk_new > n_disk_cur) */
-  /*   hr = -(n_disk_new - n_disk_cur)*LOG(n_disk_new); */
-  /* else */
-  /*   hr = (n_disk_new - n_disk_cur)*LOG(n_disk_cur); */
+  /* Dimension matching term in the Hastings ratio */
+  if(n_disk_new > n_disk_cur)
+    hr = (n_disk_new - n_disk_cur)*(LOG(T) - LOG(n_disk_new));
+  else
+    hr = (n_disk_new - n_disk_cur)*(LOG(n_disk_cur) - LOG(T));
 
   ratio = .0;
   ratio += (new_lnL - cur_lnL);
   ratio += hr;
+
 
   if(new_lnL < UNLIKELY + 0.1) 
     {
@@ -5163,7 +5173,8 @@ void MCMC_MIGREP_Triplet(t_tree *tree)
       /* tree->mmod->c_lnL = cur_lnL; */
       new_lnL = MIGREP_Lk(tree);
       
-      if(Are_Equal(new_lnL,cur_lnL,1.E-3) == NO) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+      if(Are_Equal(new_lnL,cur_lnL,1.E-3) == NO) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);      
+      if(ori_n_disk != MIGREP_Total_Number_Of_Intervals(tree)) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);        
     }
   else
     {
@@ -5174,10 +5185,6 @@ void MCMC_MIGREP_Triplet(t_tree *tree)
           Free_Ldisk(disk_bkup[i]->ldsk);
           Free_Disk(disk_bkup[i]);
         }
-
-      /* printf("\n. %f ",(new_lnL - cur_lnL)); */
-      /* if(ldsk_coal_cur->n_next >= 10) */
-        /* PhyML_Printf(" Accept"); */
     }
 
 
@@ -5242,7 +5249,7 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
   T = disk->time;
 
   For(i,tree->mmod->n_dim) hr -= LOG(tree->mmod->lim->lonlat[i]);
-  hr += LOG(n_valid_disks+1);
+  hr += LOG(n_valid_disks);
   hr -= LOG(-T);
   
   new_lnL = MIGREP_Lk(tree);
@@ -5326,7 +5333,7 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
   For(i,tree->mmod->n_dim) new_disk->centr->lonlat[i] = Uni()*tree->mmod->lim->lonlat[i];
 
   For(i,tree->mmod->n_dim) hr += LOG(tree->mmod->lim->lonlat[i]);
-  hr -= LOG(n_valid_disks);
+  hr -= LOG(n_valid_disks+1);
   hr += LOG(-T);
 
   new_lnL = MIGREP_Lk(tree);
@@ -5442,6 +5449,75 @@ void MCMC_MIGREP_Move_Disk_Centre(t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+#ifdef MIGREP
+void MCMC_MIGREP_Move_Disk_Updown(t_tree *tree)
+{
+  phydbl u,alpha,ratio;
+  phydbl cur_lnL, new_lnL, hr;
+  phydbl ori_time, new_time;
+  t_dsk  *disk,*target_disk,**all_disks;
+  int i,block,n_all_disks;
+  t_geo_coord *bkup_coord;
+
+  disk          = NULL;
+  new_lnL       = UNLIKELY;
+  cur_lnL       = tree->mmod->c_lnL;
+  hr            = 0.0;
+  ratio         = 0.0;
+  block         = 100;
+  
+  if(tree->disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  disk = tree->disk->prev;
+  n_all_disks = 0;
+  do
+    {
+      if(!n_all_disks) all_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
+      else if(!(n_all_disks%block)) all_disks = (t_dsk **)mRealloc(all_disks,n_all_disks+block,sizeof(t_dsk *));
+      all_disks[n_all_disks] = disk;
+      n_all_disks++;
+      disk = disk->prev;
+    }
+  while(disk->prev);
+
+  if(!n_all_disks) return;
+  
+  /* Uniform selection of a disk */
+  i = Rand_Int(0,n_all_disks-1);
+  target_disk = all_disks[i];
+  Free(all_disks);
+  
+  ori_time = target_disk->time;
+  new_time = Uni()*(target_disk->next->time - target_disk->prev->time) + target_disk->prev->time;
+  target_disk->time = new_time;
+
+  new_lnL = MIGREP_Lk(tree);
+  ratio += (new_lnL - cur_lnL);
+  ratio += hr;
+
+  ratio = EXP(ratio);
+  alpha = MIN(1.,ratio);
+  
+  u = Uni();
+  
+  /* printf("\n- Move disk new_lnL: %f [%f] hr: %f u:%f alpha: %f",new_lnL,cur_lnL,hr,u,alpha); */
+
+  if(u > alpha) /* Reject */
+    {
+      /* printf("- Reject"); */
+      
+      target_disk->time = ori_time; 
+      /* tree->mmod->c_lnL = cur_lnL; */
+      new_lnL = MIGREP_Lk(tree);
+      if(Are_Equal(new_lnL,cur_lnL,1.E-3) == NO) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
+  else
+    {
+      /* printf("- Accept"); */
+    }  
+}
+#endif
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

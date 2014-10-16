@@ -174,13 +174,15 @@ int MIGREP_Main(int argc, char *argv[])
 
   seed = time(NULL);
   /* seed = 1413426621; */
+  /* seed = 1413492392; */
+  /* seed = 1413497813; */
   printf("\n. Seed: %d",seed); fflush(NULL);
   /* seed = 1412394873; */
   srand(seed);
   tree = MIGREP_Simulate_Backward((int)atoi(argv[1]),10.,10.);
 
-  MIGREP_MCMC(tree);
-  Exit("\n");
+  /* MIGREP_MCMC(tree); */
+  /* Exit("\n"); */
 
   /* gdk_threads_init(); */
   /* gdk_threads_enter(); */
@@ -284,8 +286,8 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
 
   /* Initialize parameters of migrep model */
   mmod->lbda = 0.1;
-  mmod->mu   = 0.7;
-  mmod->rad  = 3.0;
+  mmod->mu   = 0.99;
+  mmod->rad  = 2.0;
   
   curr_t      = 0.0;
   dt_dsk     = 0.0;
@@ -602,9 +604,9 @@ void MIGREP_MCMC(t_tree *tree)
   mcmc->chain_len        = 1.E+8;
   mcmc->sample_interval  = 50;
   
-  tree->mmod->lbda = Uni()*(tree->mmod->max_lbda - tree->mmod->min_lbda) + tree->mmod->min_lbda;
-  tree->mmod->mu   = Uni()*(tree->mmod->max_mu - tree->mmod->min_mu) + tree->mmod->min_mu;
-  tree->mmod->rad  = tree->mmod->max_rad;
+  /* tree->mmod->lbda = Uni()*(tree->mmod->max_lbda - tree->mmod->min_lbda) + tree->mmod->min_lbda; */
+  /* tree->mmod->mu   = Uni()*(tree->mmod->max_mu - tree->mmod->min_mu) + tree->mmod->min_mu; */
+  /* tree->mmod->rad  = tree->mmod->max_rad; */
 
   MIGREP_Lk(tree);
   printf("\n. LK: %f",tree->mmod->c_lnL);
@@ -626,7 +628,7 @@ void MIGREP_MCMC(t_tree *tree)
       MCMC_MIGREP_Delete_Disk(tree);
       MCMC_MIGREP_Insert_Disk(tree);
       MCMC_MIGREP_Move_Disk_Centre(tree);
-
+      MCMC_MIGREP_Move_Disk_Updown(tree);
 
       if(mcmc->run%mcmc->sample_interval == 0)
       /* if(mcmc->run == 0) */
@@ -644,8 +646,8 @@ void MIGREP_MCMC(t_tree *tree)
                        disk->time);
 
           /* gdk_threads_enter(); */
-          /* gtk_widget_queue_draw(tree->draw_area); */
-          /* sleep(1); */
+          gtk_widget_queue_draw(tree->draw_area);
+          sleep(1);
           /* gdk_threads_leave(); */
           /* Exit("\n"); */
         }
@@ -917,7 +919,7 @@ int MIGREP_One_New_Traj(t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y, t_dsk *xtra
   mmod     = tree->mmod;
   disk     = NULL;
   disk_new = NULL;
-  K        = 5;
+  K        = 2;
 
   /* printf("\n# New traj from %s to %s",y_ldsk->coord->id,o_ldsk->coord->id); */
   /* fflush(NULL); */
@@ -926,10 +928,11 @@ int MIGREP_One_New_Traj(t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y, t_dsk *xtra
   min_n_disk = 0;
   For(i,mmod->n_dim)
     {
-      /* PhyML_Printf("\n# y_ldsk %s : %f o_ldsk->disk->centr: %f",  */
+      /* PhyML_Printf("\n# y_ldsk %s : %f o_ldsk->disk->centr: %f rad: %f", */
       /*              y_ldsk->coord->id, */
       /*              y_ldsk->coord->lonlat[i], */
-      /*              o_ldsk->disk->centr->lonlat[i]); */
+      /*              o_ldsk->disk->centr->lonlat[i], */
+      /*              mmod->rad); */
       if(y_ldsk->coord->lonlat[i] < o_ldsk->disk->centr->lonlat[i])
         {
           n_disk = 0;
@@ -942,13 +945,15 @@ int MIGREP_One_New_Traj(t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y, t_dsk *xtra
           while(y_ldsk->coord->lonlat[i] - (2*n_disk-1)*mmod->rad > o_ldsk->disk->centr->lonlat[i] + mmod->rad) n_disk++;
           if(n_disk > min_n_disk) min_n_disk = n_disk;
         }
+      /* printf("  -- min_n_disk: %d",min_n_disk); */
     }
   
   /* printf("\n# min_n_disk: %d cur_n_disk: %d",min_n_disk,n_cur_disk); */
   /* fflush(NULL); */
   
   /* How many disks along the new path between y_ldsk and o_ldsk */
-  n_new_disk = Rand_Int(min_n_disk,min_n_disk+K);
+  n_new_disk = Rand_Int(n_cur_disk-K,n_cur_disk+K);
+  if(n_new_disk < min_n_disk) n_new_disk = min_n_disk;
 
   if(xtra_dsk != NULL) n_new_disk++;
 
@@ -1038,6 +1043,8 @@ void MIGREP_One_New_Traj_Given_Disk(t_ldsk *y_ldsk, t_ldsk *o_ldsk)
       ldsk = ldsk->prev;
     }
 
+  if(n_disk_btw == 0) return;
+
   /* printf("\n# Number of disks between %s and %s: %d",y_ldsk->coord->id,o_ldsk->coord->id,n_disk_btw); */
   /* fflush(NULL); */
 
@@ -1061,6 +1068,17 @@ void MIGREP_One_New_Traj_Given_Disk(t_ldsk *y_ldsk, t_ldsk *o_ldsk)
                 MIN(ldsk->coord->lonlat[i] + 2.*rad,
                     o_ldsk->disk->centr->lonlat[i] + rad*(2.*(n_disk_btw-k)-1.)));
           
+          /* printf("\n## ldsk %s max: %f min:%f cur: %f %f %f set to %f n_disk_btw: %d y_ldsk: %f o_ldsk: %f rad: %f", */
+          /*        ldsk->prev->coord->id, */
+          /*        max,min, */
+          /*        ldsk->coord->lonlat[i], */
+          /*        ldsk->coord->lonlat[i] + 2.*rad, */
+          /*        o_ldsk->disk->centr->lonlat[i] + rad*(2.*(n_disk_btw-k)-1.), */
+          /*        ldsk->prev->coord->lonlat[i],n_disk_btw, */
+          /*        y_ldsk->coord->lonlat[i], */
+          /*        o_ldsk->disk->centr->lonlat[i], */
+          /*        rad); */
+
           if(max < min) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
                 
           /* New coordinate for the lindisk */
@@ -1080,12 +1098,6 @@ void MIGREP_One_New_Traj_Given_Disk(t_ldsk *y_ldsk, t_ldsk *o_ldsk)
           /*     ldsk->prev->coord->lonlat[i] = Rexp_Trunc(1.0,min,max); */
           /*   } */
 
-          /* printf("\n## ldsk %s max: %f min:%f set to %f n_disk_btw: %d y_ldsk: %f o_ldsk: %f", */
-          /*        ldsk->prev->coord->id, */
-          /*        max,min, */
-          /*        ldsk->prev->coord->lonlat[i],n_disk_btw, */
-          /*        y_ldsk->coord->lonlat[i], */
-          /*        o_ldsk->coord->lonlat[i]); */
 
 
           /* New coordinate for the centre of the corresponding disk event */
@@ -1130,6 +1142,8 @@ phydbl MIGREP_Uniform_Path_Density(t_ldsk *y_ldsk, t_ldsk *o_ldsk)
       n_disk_btw++;
       ldsk = ldsk->prev;
     }
+
+  if(n_disk_btw == 0) return(0.0);
 
   /* printf("\n. Number of disks between %s and %s: %d",y_ldsk->coord->id,o_ldsk->coord->id,n_disk_btw); */
   /* fflush(NULL); */
