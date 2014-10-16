@@ -508,7 +508,9 @@ phydbl MIGREP_Lk(t_tree *tree)
                   /*              disk->ldsk_a[i]->coord->lonlat[0], */
                   /*              disk->ldsk_a[i]->prev->coord->lonlat[0]); */
                   if(MIGREP_Is_In_Disk(disk->ldsk_a[i]->prev->coord,disk->prev) == YES) /* 'Arrival' point is in disk */
-                    lnL += log_mu;
+                    {
+                      lnL += log_mu;
+                    }
                   else /* Landed outside the disk */
                     {
                       /* PhyML_Printf("\n. Landed outside"); */
@@ -546,8 +548,8 @@ phydbl MIGREP_Lk(t_tree *tree)
             }
         }
       
-      /* a coalescent event occurred */
-      if(n_hit >= 2) lnL -= MIGREP_Log_Uniform_Rectangle_Overlap(disk,mmod);
+      /* a hit occurred */
+      if(n_hit >= 1) lnL -= MIGREP_Log_Uniform_Rectangle_Overlap(disk,mmod);
     
       disk = disk->prev;
 
@@ -915,7 +917,7 @@ void MIGREP_One_New_Traj(t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y, t_dsk *xtr
   mmod     = tree->mmod;
   disk     = NULL;
   disk_new = NULL;
-  K        = 10;
+  K        = 30;
 
   /* printf("\n# New traj from %s to %s",y_ldsk->coord->id,o_ldsk->coord->id); */
   /* fflush(NULL); */
