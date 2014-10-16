@@ -179,8 +179,8 @@ int MIGREP_Main(int argc, char *argv[])
   srand(seed);
   tree = MIGREP_Simulate_Backward((int)atoi(argv[1]),10.,10.);
 
-  /* MIGREP_MCMC(tree); */
-  /* Exit("\n"); */
+  MIGREP_MCMC(tree);
+  Exit("\n");
 
   /* gdk_threads_init(); */
   /* gdk_threads_enter(); */
@@ -283,8 +283,8 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   disk = disk->prev;
 
   /* Initialize parameters of migrep model */
-  mmod->lbda = 0.3;
-  mmod->mu   = 0.6;
+  mmod->lbda = 0.1;
+  mmod->mu   = 0.7;
   mmod->rad  = 3.0;
   
   curr_t      = 0.0;
@@ -549,7 +549,6 @@ phydbl MIGREP_Lk(t_tree *tree)
       
       /* a hit occurred */
       if(n_hit >= 1) lnL -= MIGREP_Log_Uniform_Rectangle_Overlap(disk,mmod);
-      /* if(n_hit >= 2) lnL -= MIGREP_Log_Uniform_Rectangle_Overlap(disk,mmod); */
     
       disk = disk->prev;
 
@@ -560,7 +559,7 @@ phydbl MIGREP_Lk(t_tree *tree)
   
   n_inter = MIGREP_Total_Number_Of_Intervals(tree);
 
-  lnL += (n_inter)*LOG(-mmod->lbda*disk->time) + mmod->lbda*disk->time;
+  lnL += (n_inter)*LOG(mmod->lbda) + mmod->lbda*disk->time;
   /* lnL -= LnGamma((phydbl)(n_inter)); */
   
   /* lnL += Dpois((phydbl)n_inter,-mmod->lbda*disk->time,YES); */
@@ -645,8 +644,8 @@ void MIGREP_MCMC(t_tree *tree)
                        disk->time);
 
           /* gdk_threads_enter(); */
-          gtk_widget_queue_draw(tree->draw_area);
-          sleep(1);
+          /* gtk_widget_queue_draw(tree->draw_area); */
+          /* sleep(1); */
           /* gdk_threads_leave(); */
           /* Exit("\n"); */
         }
@@ -905,9 +904,10 @@ t_ldsk *MIGREP_Next_Coal_Lindisk(t_ldsk *t)
 /*  Generate a new trajectory, including disk event centers, between  
     'y_ldsk' a ``young'' lindisk event and 'o_ldsk' an old one. 'y_ldsk 
     and 'o_ldsk' remain unaffected. No disk events should be present    
-    between y_ldsk and o_ldsk: we need to generate some first.          
+    between y_ldsk and o_ldsk: we need to generate some first. n_cur_disk
+    is the current number of disks between y_ldsk and o_ldsk.
 */
-void MIGREP_One_New_Traj(t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y, t_dsk *xtra_dsk, int *n_add_disk, t_tree *tree)
+int MIGREP_One_New_Traj(t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y, t_dsk *xtra_dsk, int n_cur_disk, t_tree *tree)
 {
   t_migrep_mod *mmod;
   t_dsk *disk,**disk_new;
@@ -944,12 +944,11 @@ void MIGREP_One_New_Traj(t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y, t_dsk *xtr
         }
     }
   
-  /* printf("\n# min_n_disk: %d",min_n_disk); */
+  /* printf("\n# min_n_disk: %d cur_n_disk: %d",min_n_disk,n_cur_disk); */
   /* fflush(NULL); */
   
   /* How many disks along the new path between y_ldsk and o_ldsk */
   n_new_disk = Rand_Int(min_n_disk,min_n_disk+K);
-  (*n_add_disk) += n_new_disk;
 
   if(xtra_dsk != NULL) n_new_disk++;
 
@@ -1010,6 +1009,8 @@ void MIGREP_One_New_Traj(t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y, t_dsk *xtr
  
   /* Generate a trajectory */
   MIGREP_One_New_Traj_Given_Disk(y_ldsk,o_ldsk);  
+
+  return(n_new_disk);
 }
 
 /*////////////////////////////////////////////////////////////

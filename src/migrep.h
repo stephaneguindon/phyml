@@ -46,6 +46,6 @@ int MIGREP_Total_Number_Of_Coal_Disks(t_tree *tree);
 int MIGREP_Total_Number_Of_Hit_Disks(t_tree *tree);
 phydbl MIGREP_Log_Uniform_Rectangle_Overlap(t_dsk *disk, t_migrep_mod *mmod);
 void MIGREP_Runif_Rectangle_Overlap(t_ldsk *ldsk, t_dsk *disk, t_migrep_mod *mod);
-void MIGREP_One_New_Traj(t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y, t_dsk *xtra_dsk, int *n_add_disk, t_tree *tree);
+int MIGREP_One_New_Traj(t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y, t_dsk *xtra_dsk, int n_cur_disk, t_tree *tree);
 
 #endif
