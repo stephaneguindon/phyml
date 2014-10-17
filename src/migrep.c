@@ -286,7 +286,7 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
 
   /* Initialize parameters of migrep model */
   mmod->lbda = 0.1;
-  mmod->mu   = 0.99;
+  mmod->mu   = 0.9;
   mmod->rad  = 2.0;
   
   curr_t      = 0.0;
@@ -604,19 +604,46 @@ void MIGREP_MCMC(t_tree *tree)
   mcmc->chain_len        = 1.E+8;
   mcmc->sample_interval  = 50;
   
-  /* tree->mmod->lbda = Uni()*(tree->mmod->max_lbda - tree->mmod->min_lbda) + tree->mmod->min_lbda; */
-  /* tree->mmod->mu   = Uni()*(tree->mmod->max_mu - tree->mmod->min_mu) + tree->mmod->min_mu; */
-  /* tree->mmod->rad  = tree->mmod->max_rad; */
+  tree->mmod->lbda = Uni()*(tree->mmod->max_lbda - tree->mmod->min_lbda) + tree->mmod->min_lbda;
+  tree->mmod->mu   = Uni()*(tree->mmod->max_mu - tree->mmod->min_mu) + tree->mmod->min_mu;
+  tree->mmod->rad  = tree->mmod->max_rad;
 
   MIGREP_Lk(tree);
   printf("\n. LK: %f",tree->mmod->c_lnL);
   printf("\n. NINTER: %d",MIGREP_Total_Number_Of_Intervals(tree));
+
+  gtk_widget_queue_draw(tree->draw_area);
+  sleep(2);
+
+  /* Randomization step */
+  mcmc->always_yes = YES;
+  do
+    {
+      /* MCMC_MIGREP_Lbda(tree); */
+      /* MCMC_MIGREP_Mu(tree); */
+      /* MCMC_MIGREP_Radius(tree); */
+      /* MCMC_MIGREP_Triplet(tree); */
+      MCMC_MIGREP_Delete_Disk(tree);
+      /* MCMC_MIGREP_Insert_Disk(tree); */
+      MCMC_MIGREP_Move_Disk_Centre(tree);
+      /* MCMC_MIGREP_Move_Disk_Updown(tree); */
+      MCMC_MIGREP_Swap_Disk(tree);
+      mcmc->run++;
+    }
+  while(mcmc->run < 10000);
+  mcmc->always_yes = NO;
+  mcmc->run        = 0;
 
   PhyML_Printf("\n %13s %13s %13s %13s",
                "lnL",
                "lbda",
                "mu",
                "rad");
+
+  gtk_widget_queue_draw(tree->draw_area);
+  sleep(2);
+
+
   mcmc->sample_interval = 1000;
   mcmc->run = 0;
   do
@@ -624,11 +651,12 @@ void MIGREP_MCMC(t_tree *tree)
       MCMC_MIGREP_Lbda(tree);
       MCMC_MIGREP_Mu(tree);
       MCMC_MIGREP_Radius(tree);
-      MCMC_MIGREP_Triplet(tree);
+      /* MCMC_MIGREP_Triplet(tree); */
       MCMC_MIGREP_Delete_Disk(tree);
       MCMC_MIGREP_Insert_Disk(tree);
       MCMC_MIGREP_Move_Disk_Centre(tree);
       MCMC_MIGREP_Move_Disk_Updown(tree);
+      MCMC_MIGREP_Swap_Disk(tree);
 
       if(mcmc->run%mcmc->sample_interval == 0)
       /* if(mcmc->run == 0) */
