@@ -287,7 +287,7 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   /* Initialize parameters of migrep model */
   mmod->lbda = 0.1;
   mmod->mu   = 0.9;
-  mmod->rad  = 2.0;
+  mmod->rad  = 3.0;
   
   curr_t      = 0.0;
   dt_dsk     = 0.0;
@@ -496,8 +496,12 @@ phydbl MIGREP_Lk(t_tree *tree)
           
           if(was_hit == YES) n_hit++;
           
-          if(was_hit == YES && !disk->prev->ldsk) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-          
+          if(was_hit == YES && !disk->prev->ldsk) 
+            {
+              PhyML_Printf("\n. disk: %s disk->prev: %s",disk->id,disk->prev->id);
+              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+            }
+
           if(MIGREP_Is_In_Disk(disk->ldsk_a[i]->coord,disk->prev) == YES) /* 'Departure' point is in disk */
             {
               if(was_hit == YES) /* was hit */
@@ -550,7 +554,7 @@ phydbl MIGREP_Lk(t_tree *tree)
         }
       
       /* a hit occurred */
-      if(n_hit >= 1) lnL -= MIGREP_Log_Uniform_Rectangle_Overlap(disk,mmod);
+      if(n_hit >= 1) lnL -= MIGREP_Log_Dunif_Rectangle_Overlap(disk,mmod);
     
       disk = disk->prev;
 
@@ -613,24 +617,24 @@ void MIGREP_MCMC(t_tree *tree)
   printf("\n. NINTER: %d",MIGREP_Total_Number_Of_Intervals(tree));
 
   gtk_widget_queue_draw(tree->draw_area);
-  sleep(2);
+  sleep(5);
 
+  PhyML_Printf("\n");
   /* Randomization step */
   mcmc->always_yes = YES;
   do
     {
-      /* MCMC_MIGREP_Lbda(tree); */
-      /* MCMC_MIGREP_Mu(tree); */
-      /* MCMC_MIGREP_Radius(tree); */
-      /* MCMC_MIGREP_Triplet(tree); */
+      MCMC_MIGREP_Insert_Disk(tree);
       MCMC_MIGREP_Delete_Disk(tree);
-      /* MCMC_MIGREP_Insert_Disk(tree); */
       MCMC_MIGREP_Move_Disk_Centre(tree);
-      /* MCMC_MIGREP_Move_Disk_Updown(tree); */
+      MCMC_MIGREP_Move_Disk_Updown(tree);
       MCMC_MIGREP_Swap_Disk(tree);
+      MCMC_MIGREP_Insert_Hit(tree);
+      MCMC_MIGREP_Delete_Hit(tree);
       mcmc->run++;
+      PhyML_Printf("\r. Randomization %5d/5000",mcmc->run);
     }
-  while(mcmc->run < 10000);
+  while(mcmc->run < 5000);
   mcmc->always_yes = NO;
   mcmc->run        = 0;
 
@@ -640,8 +644,8 @@ void MIGREP_MCMC(t_tree *tree)
                "mu",
                "rad");
 
-  gtk_widget_queue_draw(tree->draw_area);
-  sleep(2);
+  /* gtk_widget_queue_draw(tree->draw_area); */
+  /* sleep(2); */
 
 
   mcmc->sample_interval = 1000;
@@ -657,6 +661,8 @@ void MIGREP_MCMC(t_tree *tree)
       MCMC_MIGREP_Move_Disk_Centre(tree);
       MCMC_MIGREP_Move_Disk_Updown(tree);
       MCMC_MIGREP_Swap_Disk(tree);
+      MCMC_MIGREP_Insert_Hit(tree);
+      MCMC_MIGREP_Delete_Hit(tree);
 
       if(mcmc->run%mcmc->sample_interval == 0)
       /* if(mcmc->run == 0) */
@@ -674,8 +680,8 @@ void MIGREP_MCMC(t_tree *tree)
                        disk->time);
 
           /* gdk_threads_enter(); */
-          gtk_widget_queue_draw(tree->draw_area);
-          sleep(1);
+          /* gtk_widget_queue_draw(tree->draw_area); */
+          /* sleep(1); */
           /* gdk_threads_leave(); */
           /* Exit("\n"); */
         }
@@ -1517,7 +1523,7 @@ int MIGREP_Total_Number_Of_Coal_Disks(t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-phydbl MIGREP_Log_Uniform_Rectangle_Overlap(t_dsk *disk, t_migrep_mod *mmod)
+phydbl MIGREP_Log_Dunif_Rectangle_Overlap(t_dsk *disk, t_migrep_mod *mmod)
 {
   phydbl up, down, left, rght;
 
@@ -1536,8 +1542,9 @@ phydbl MIGREP_Log_Uniform_Rectangle_Overlap(t_dsk *disk, t_migrep_mod *mmod)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
-
-void MIGREP_Runif_Rectangle_Overlap(t_ldsk *ldsk, t_dsk *disk, t_migrep_mod *mmod)
+/* Samples uniformly within a rectangle (with truncation for border) */
+/* and returns the corresponding log density */
+phydbl MIGREP_Runif_Rectangle_Overlap(t_ldsk *ldsk, t_dsk *disk, t_migrep_mod *mmod)
 {
   phydbl up, down, left, rght;
 
@@ -1548,6 +1555,14 @@ void MIGREP_Runif_Rectangle_Overlap(t_ldsk *ldsk, t_dsk *disk, t_migrep_mod *mmo
 
   ldsk->coord->lonlat[0] = Uni()*(up - down) + down;
   ldsk->coord->lonlat[1] = Uni()*(rght - left) + left;
+
+  /* printf("\n. disk %s (%f %f) rad: %f up: %f down: %f rght: %f left: %f", */
+  /*        disk->id, */
+  /*        disk->centr->lonlat[0], */
+  /*        disk->centr->lonlat[1], */
+  /*        mmod->rad, */
+  /*        up,down,rght,left); */
+  return(LOG(up-down)+LOG(rght-left));
 }
 
 /*////////////////////////////////////////////////////////////

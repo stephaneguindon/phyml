@@ -5639,7 +5639,6 @@ void MCMC_MIGREP_Swap_Disk(t_tree *tree)
   target_disk->next = disk->next;
 
   MIGREP_Insert_Disk(target_disk);
-    
 
   new_lnL = MIGREP_Lk(tree);
   ratio += (new_lnL - cur_lnL);
@@ -5686,6 +5685,279 @@ void MCMC_MIGREP_Swap_Disk(t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+/* Insert a disk with a new lineage displacement */
+#ifdef MIGREP
+void MCMC_MIGREP_Insert_Hit(t_tree *tree)
+{
+  t_dsk  *disk,*new_disk,*young_disk,*old_disk;
+  t_ldsk *young_ldsk, *old_ldsk, *new_ldsk;
+  phydbl T,t;
+  phydbl cur_lnL, new_lnL, hr;
+  phydbl u,alpha,ratio;
+  phydbl max, min;
+  int i,dir_old_young,n_valid_disks;
+
+  disk     = NULL;
+  new_lnL  = UNLIKELY;
+  cur_lnL  = tree->mmod->c_lnL;
+  hr       = 0.0;
+
+  if(tree->disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+
+  disk = tree->disk->prev;
+  n_valid_disks = 0;
+  do
+    {
+      if(disk->ldsk != NULL && disk->ldsk->n_next == 1) n_valid_disks++;
+      disk = disk->prev;
+    }
+  while(disk->prev);
+
+  disk = tree->disk;
+  while(disk->prev) disk = disk->prev;
+  T = disk->time;
+  
+  /* Time of insertion of new disk */
+  t = Uni()*T;
+  disk = tree->disk;
+  while(disk->time > t) disk = disk->prev;
+
+  /* Disks located just prior and after inserted disk */
+  young_disk = disk->next;
+  old_disk   = disk;
+
+  /* Make and initialize new disk */ 
+  new_disk= MIGREP_Make_Disk_Event(tree->mmod->n_dim,tree->n_otu);
+  MIGREP_Init_Disk_Event(new_disk,tree->mmod->n_dim,tree->mmod);
+  
+  /* Connect it */
+  new_disk->prev = old_disk;
+  new_disk->next = young_disk;
+  
+  /* Time of the new disk */
+  new_disk->time = t;
+
+  /* Insert it */
+  MIGREP_Insert_Disk(new_disk);
+
+  /* Which lineage is going to be hit ? */
+  MIGREP_Update_Lindisk_List(new_disk->time,new_disk->ldsk_a,&(new_disk->n_ldsk_a),new_disk);
+
+  young_ldsk = new_disk->ldsk_a[Rand_Int(0,new_disk->n_ldsk_a-1)];
+  old_ldsk = young_ldsk->prev; 
+  
+  if(old_ldsk->disk->time > young_ldsk->disk->time) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  
+  /* Direction from old to young ldsk */
+  dir_old_young = MIGREP_Get_Next_Direction(young_ldsk,old_ldsk);
+  
+  /* Make and initialize new ldsk */
+  new_ldsk = MIGREP_Make_Lindisk_Node(tree->mmod->n_dim);
+  MIGREP_Init_Lindisk_Node(new_ldsk,new_disk,tree->mmod->n_dim);
+  MIGREP_Make_Lindisk_Next(new_ldsk);
+  new_disk->ldsk = new_ldsk;
+  
+  /* Connect it */
+  new_ldsk->prev                = old_ldsk;
+  new_ldsk->next[0]             = young_ldsk;
+  young_ldsk->prev              = new_ldsk;  
+  old_ldsk->next[dir_old_young] = new_ldsk;
+
+  /* Sample its position (uniform in the disk on which old_ldsk sits) */
+  hr += MIGREP_Runif_Rectangle_Overlap(new_ldsk,old_ldsk->disk,tree->mmod);
+
+  /* Sample position of the center of new_disk */
+  For(i,tree->mmod->n_dim) 
+    {
+      max = MIN(tree->mmod->lim->lonlat[i],MIN(new_ldsk->coord->lonlat[i],young_ldsk->coord->lonlat[i]) + tree->mmod->rad);
+      min = MAX(0.0,MAX(new_ldsk->coord->lonlat[i],young_ldsk->coord->lonlat[i]) - tree->mmod->rad);
+      new_disk->centr->lonlat[i] = Uni()*(max - min) + min;
+      hr += LOG(max - min);
+    }
+
+  hr -= LOG(n_valid_disks+1);
+  hr += LOG(-T);
+
+  new_lnL = MIGREP_Lk(tree);
+  ratio = (new_lnL - cur_lnL);
+  ratio += hr;
+
+  /* gtk_widget_queue_draw(tree->draw_area); */
+  /* sleep(3); */
+
+  if(new_lnL < UNLIKELY + 0.1) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+
+  ratio = EXP(ratio);
+  alpha = MIN(1.,ratio);
+
+  /* Always accept move */
+  if(tree->mcmc->always_yes == YES && new_lnL > UNLIKELY) alpha = 1.0;
+
+  u = Uni();
+  
+  /* printf("\n+ Insert hit %s new_lnL: %f [%f] hr: %f u: %f alpha: %f", */
+  /*        new_disk->id, */
+  /*        new_lnL, */
+  /*        cur_lnL,hr, */
+  /*        u,alpha); */
+
+  if(u > alpha) /* Reject */
+    {
+      /* printf("+ Reject"); */
+
+      MIGREP_Remove_Disk(new_disk);      
+      Free_Disk(new_disk);
+
+      old_ldsk->next[dir_old_young] = young_ldsk;
+      young_ldsk->prev = old_ldsk;
+
+      /* tree->mmod->c_lnL = cur_lnL; */
+
+      new_lnL = MIGREP_Lk(tree);      
+      if(Are_Equal(new_lnL,cur_lnL,1.E-3) == NO) 
+        {
+          PhyML_Printf("\n. new_lnL: %f cur_lnL: %f",new_lnL,cur_lnL);
+          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+        }
+    }
+  else
+    {
+      /* printf("+ Accept"); */
+      /* if(indel > 0) printf("\n. Accept"); */
+    }
+}
+#endif
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/* Remove a disk with a lineage displacement */
+#ifdef MIGREP
+void MCMC_MIGREP_Delete_Hit(t_tree *tree)
+{
+  phydbl u,alpha,ratio;
+  phydbl cur_lnL, new_lnL, hr,T;
+  phydbl max,min;
+  t_dsk  *disk,*target_disk,**valid_disks;
+  t_ldsk *target_ldsk,*old_ldsk,*young_ldsk;
+  int i,block,n_valid_disks,dir_old_young;
+
+  disk          = NULL;
+  new_lnL       = UNLIKELY;
+  cur_lnL       = tree->mmod->c_lnL;
+  hr            = 0.0;
+  ratio         = 0.0;
+  block         = 100;
+
+  disk = tree->disk;
+  while(disk->prev) disk = disk->prev;
+  T = disk->time;
+
+  if(tree->disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  disk = tree->disk->prev;
+  n_valid_disks = 0;
+  do
+    {
+      /* Include only disks with displacement that are not coalescent events */
+      if(disk->ldsk != NULL && disk->ldsk->n_next == 1) 
+        {
+          if(!n_valid_disks) valid_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
+          else if(!(n_valid_disks%block)) valid_disks = (t_dsk **)mRealloc(valid_disks,n_valid_disks+block,sizeof(t_dsk *));
+          valid_disks[n_valid_disks] = disk;
+          n_valid_disks++;
+        }
+      disk = disk->prev;
+    }
+  while(disk->prev);
+
+  if(!n_valid_disks) return;
+  
+  /* Uniform selection of a disk where no coalescent nor 'hit' occurred */
+  i = Rand_Int(0,n_valid_disks-1);
+  target_disk = valid_disks[i];
+  Free(valid_disks);
+  
+  target_ldsk = target_disk->ldsk;
+
+  if(!target_ldsk) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+
+  old_ldsk   = target_ldsk->prev;
+  young_ldsk = target_ldsk->next[0];
+
+
+  /* Bail out if departure point is not within disk of arrival, in */
+  /* which case the likelihood is zero */
+  if(MIGREP_Is_In_Disk(young_ldsk->coord,old_ldsk->disk) == NO) return;
+
+  dir_old_young = MIGREP_Get_Next_Direction(young_ldsk,old_ldsk);
+
+  /* New connections between old_ldsk and young_ldsk */
+  old_ldsk->next[dir_old_young] = young_ldsk;
+  young_ldsk->prev              = old_ldsk;
+
+  /* Remove target disk */
+  MIGREP_Remove_Disk(target_disk);
+  
+  /* Uniform density in the interval defined by old_ldsk->disk */
+  hr -= MIGREP_Log_Dunif_Rectangle_Overlap(old_ldsk->disk,tree->mmod);
+
+  For(i,tree->mmod->n_dim) 
+    {
+      max = MIN(tree->mmod->lim->lonlat[i],MIN(target_ldsk->coord->lonlat[i],young_ldsk->coord->lonlat[i]) + tree->mmod->rad);
+      min = MAX(0.0,MAX(target_ldsk->coord->lonlat[i],young_ldsk->coord->lonlat[i]) - tree->mmod->rad);
+      hr -= LOG(max - min);
+    }
+
+  hr += LOG(n_valid_disks);
+  hr -= LOG(-T);
+  
+  new_lnL = MIGREP_Lk(tree);
+  ratio += (new_lnL - cur_lnL);
+  ratio += hr;
+
+  /* gtk_widget_queue_draw(tree->draw_area); */
+  /* sleep(3); */
+
+  if(new_lnL < UNLIKELY + 0.1) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+
+  ratio = EXP(ratio);
+  alpha = MIN(1.,ratio);
+  
+  /* Always accept move */
+  if(tree->mcmc->always_yes == YES && new_lnL > UNLIKELY) alpha = 1.0;
+
+  u = Uni();
+  
+  /* printf("\n- Delete hit %s new_lnL: %f [%f] hr: %f u:%f alpha: %f", */
+  /*        target_disk->id, */
+  /*        new_lnL,cur_lnL,hr,u,alpha); */
+
+  if(u > alpha) /* Reject */
+    {
+      /* printf("- Reject"); */
+
+      MIGREP_Insert_Disk(target_disk);
+      
+      old_ldsk->next[dir_old_young] = target_ldsk;
+      young_ldsk->prev              = target_ldsk;
+
+      /* tree->mmod->c_lnL = cur_lnL; */
+
+      new_lnL = MIGREP_Lk(tree);
+      if(Are_Equal(new_lnL,cur_lnL,1.E-3) == NO) 
+        {
+          PhyML_Printf("\n. new_lnL: %f cur_lnL: %f",new_lnL,cur_lnL);
+          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+        }
+    }
+  else
+    {
+      Free_Disk(target_disk);
+      Free_Ldisk(target_ldsk);
+      /* printf("- Accept"); */
+    }
+}
+#endif
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

@@ -3338,6 +3338,7 @@ void MIGREP_Init_Migrep_Mod(t_migrep_mod *t, int n_dim)
 void MIGREP_Init_Lindisk_Node(t_ldsk *t, t_dsk *disk, int n_dim)
 {
   t->disk    = disk;
+  /* disk->ldsk = t; */
   t->prev    = NULL;
   t->next    = NULL;  
   t->is_hit  = NO;
