@@ -5344,8 +5344,7 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
   new_disk->prev = target_disk->prev;
   new_disk->next = target_disk;
   
-  new_disk->time =
-    Uni()*(new_disk->next->time - new_disk->prev->time) + new_disk->prev->time;
+  new_disk->time = t;
     
   MIGREP_Insert_Disk(new_disk);
   
@@ -5742,10 +5741,16 @@ void MCMC_MIGREP_Insert_Hit(t_tree *tree)
 
   /* Which lineage is going to be hit ? */
   MIGREP_Update_Lindisk_List(new_disk->time,new_disk->ldsk_a,&(new_disk->n_ldsk_a),new_disk);
+  hr += LOG(new_disk->n_ldsk_a);
 
   young_ldsk = new_disk->ldsk_a[Rand_Int(0,new_disk->n_ldsk_a-1)];
-  old_ldsk = young_ldsk->prev; 
-  
+  old_ldsk = young_ldsk->prev;
+
+
+  /* Bail out if departure point is not within disk of arrival, in */
+  /* which case the likelihood is zero */
+  if(MIGREP_Is_In_Disk(young_ldsk->coord,old_ldsk->disk) == NO) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+
   if(old_ldsk->disk->time > young_ldsk->disk->time) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   
   /* Direction from old to young ldsk */
@@ -5763,16 +5768,34 @@ void MCMC_MIGREP_Insert_Hit(t_tree *tree)
   young_ldsk->prev              = new_ldsk;  
   old_ldsk->next[dir_old_young] = new_ldsk;
 
-  /* Sample its position (uniform in the disk on which old_ldsk sits) */
-  hr += MIGREP_Runif_Rectangle_Overlap(new_ldsk,old_ldsk->disk,tree->mmod);
-
   /* Sample position of the center of new_disk */
-  For(i,tree->mmod->n_dim) 
+  For(i,tree->mmod->n_dim)
     {
-      max = MIN(tree->mmod->lim->lonlat[i],MIN(new_ldsk->coord->lonlat[i],young_ldsk->coord->lonlat[i]) + tree->mmod->rad);
-      min = MAX(0.0,MAX(new_ldsk->coord->lonlat[i],young_ldsk->coord->lonlat[i]) - tree->mmod->rad);
+      max = MIN(tree->mmod->lim->lonlat[i],
+                MIN(old_ldsk->disk->centr->lonlat[i]+2.*tree->mmod->rad,
+                    young_ldsk->coord->lonlat[i]+tree->mmod->rad));
+      min = MAX(0.0,
+                MAX(old_ldsk->disk->centr->lonlat[i]-2.*tree->mmod->rad,
+                    young_ldsk->coord->lonlat[i]-tree->mmod->rad));
+
       new_disk->centr->lonlat[i] = Uni()*(max - min) + min;
+      if(max < min) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
       hr += LOG(max - min);
+    }
+
+  /* Sample position of the displaced ldsk */
+  For(i,tree->mmod->n_dim)
+    {
+      max = MIN(tree->mmod->lim->lonlat[i],
+                MIN(new_disk->centr->lonlat[i],
+                    old_ldsk->disk->centr->lonlat[i]) + tree->mmod->rad);
+      min = MAX(0.0,
+                MAX(new_disk->centr->lonlat[i],
+                    old_ldsk->disk->centr->lonlat[i]) - tree->mmod->rad);
+
+      if(max < min) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+      new_ldsk->coord->lonlat[i] = Uni()*(max - min) + min;
+      hr += LOG(max - min);      
     }
 
   hr -= LOG(n_valid_disks+1);
@@ -5785,8 +5808,15 @@ void MCMC_MIGREP_Insert_Hit(t_tree *tree)
   /* gtk_widget_queue_draw(tree->draw_area); */
   /* sleep(3); */
 
-  if(new_lnL < UNLIKELY + 0.1) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-
+  if(new_lnL < UNLIKELY + 0.1) 
+    {
+      PhyML_Printf("\n. rad: %f %d %d %d",
+                   tree->mmod->rad,
+                   MIGREP_Is_In_Disk(young_ldsk->coord,new_disk),
+                   MIGREP_Is_In_Disk(new_ldsk->coord,new_disk),
+                   MIGREP_Is_In_Disk(old_ldsk->coord,new_disk));
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
   ratio = EXP(ratio);
   alpha = MIN(1.,ratio);
 
@@ -5807,6 +5837,7 @@ void MCMC_MIGREP_Insert_Hit(t_tree *tree)
 
       MIGREP_Remove_Disk(new_disk);      
       Free_Disk(new_disk);
+      Free_Ldisk(new_ldsk);
 
       old_ldsk->next[dir_old_young] = young_ldsk;
       young_ldsk->prev = old_ldsk;
@@ -5877,18 +5908,21 @@ void MCMC_MIGREP_Delete_Hit(t_tree *tree)
   Free(valid_disks);
   
   target_ldsk = target_disk->ldsk;
-
+  
   if(!target_ldsk) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(target_ldsk->n_next != 1) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
   old_ldsk   = target_ldsk->prev;
   young_ldsk = target_ldsk->next[0];
 
-
   /* Bail out if departure point is not within disk of arrival, in */
-  /* which case the likelihood is zero */
+  /* which case the likelihood after removing target_disk is zero */
   if(MIGREP_Is_In_Disk(young_ldsk->coord,old_ldsk->disk) == NO) return;
 
   dir_old_young = MIGREP_Get_Next_Direction(young_ldsk,old_ldsk);
+
+  MIGREP_Update_Lindisk_List(target_disk->time,target_disk->ldsk_a,&(target_disk->n_ldsk_a),target_disk);
+  hr -= LOG(target_disk->n_ldsk_a);
 
   /* New connections between old_ldsk and young_ldsk */
   old_ldsk->next[dir_old_young] = young_ldsk;
@@ -5897,14 +5931,41 @@ void MCMC_MIGREP_Delete_Hit(t_tree *tree)
   /* Remove target disk */
   MIGREP_Remove_Disk(target_disk);
   
-  /* Uniform density in the interval defined by old_ldsk->disk */
-  hr -= MIGREP_Log_Dunif_Rectangle_Overlap(old_ldsk->disk,tree->mmod);
 
-  For(i,tree->mmod->n_dim) 
+  /* Density for position of the center of target_disk */
+  For(i,tree->mmod->n_dim)
     {
-      max = MIN(tree->mmod->lim->lonlat[i],MIN(target_ldsk->coord->lonlat[i],young_ldsk->coord->lonlat[i]) + tree->mmod->rad);
-      min = MAX(0.0,MAX(target_ldsk->coord->lonlat[i],young_ldsk->coord->lonlat[i]) - tree->mmod->rad);
+      max = MIN(tree->mmod->lim->lonlat[i],
+                MIN(old_ldsk->disk->centr->lonlat[i]+2.*tree->mmod->rad,
+                    young_ldsk->coord->lonlat[i]+tree->mmod->rad));
+      min = MAX(0.0,
+                MAX(old_ldsk->disk->centr->lonlat[i]-2.*tree->mmod->rad,
+                    young_ldsk->coord->lonlat[i]-tree->mmod->rad));
+      
+      /* max = tree->mmod->lim->lonlat[i]; */
+      /* min = 0.0; */
+
+      if(max < min) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
       hr -= LOG(max - min);
+    }
+
+  /* Density for position of the displaced ldsk */
+  For(i,tree->mmod->n_dim)
+    {
+      max = MIN(tree->mmod->lim->lonlat[i],
+                MIN(target_disk->centr->lonlat[i],
+                    old_ldsk->disk->centr->lonlat[i]) + tree->mmod->rad);
+      min = MAX(0.0,
+                MAX(target_disk->centr->lonlat[i],
+                    old_ldsk->disk->centr->lonlat[i]) - tree->mmod->rad);
+
+      /* max = MIN(tree->mmod->lim->lonlat[i], */
+      /*           target_disk->centr->lonlat[i] + tree->mmod->rad); */
+      /* min = MAX(0.0, */
+      /*           target_disk->centr->lonlat[i] - tree->mmod->rad); */
+
+      if(max < min) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+      hr -= LOG(max - min);      
     }
 
   hr += LOG(n_valid_disks);
