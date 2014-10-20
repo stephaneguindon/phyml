@@ -1465,6 +1465,13 @@ typedef struct __Tmcmc {
   int num_move_migrep_lbda;
   int num_move_migrep_mu;
   int num_move_migrep_rad;
+  int num_move_migrep_insert_disk;
+  int num_move_migrep_delete_disk;  
+  int num_move_migrep_move_disk_ct;
+  int num_move_migrep_move_disk_ud;
+  int num_move_migrep_swap_disk;
+  int num_move_migrep_delete_hit;
+  int num_move_migrep_insert_hit;
 
   int nd_t_digits;
   int *monitor;

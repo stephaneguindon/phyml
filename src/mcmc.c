@@ -4306,6 +4306,13 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->num_move_migrep_lbda           = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_migrep_mu             = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_migrep_rad            = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_migrep_delete_disk    = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_migrep_insert_disk    = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_migrep_move_disk_ct   = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_migrep_move_disk_ud   = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_migrep_swap_disk      = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_migrep_delete_hit     = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_migrep_insert_hit     = mcmc->n_moves; mcmc->n_moves += 1;
 
   mcmc->run_move           = (int *)mCalloc(mcmc->n_moves,sizeof(int));
   mcmc->acc_move           = (int *)mCalloc(mcmc->n_moves,sizeof(int));
@@ -4362,6 +4369,13 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   strcpy(mcmc->move_name[mcmc->num_move_migrep_lbda],"migrep_lbda");
   strcpy(mcmc->move_name[mcmc->num_move_migrep_mu],"migrep_mu");
   strcpy(mcmc->move_name[mcmc->num_move_migrep_rad],"migrep_rad");
+  strcpy(mcmc->move_name[mcmc->num_move_migrep_delete_disk],"migrep_delete_disk");
+  strcpy(mcmc->move_name[mcmc->num_move_migrep_insert_disk],"migrep_insert_disk");
+  strcpy(mcmc->move_name[mcmc->num_move_migrep_move_disk_ct],"migrep_move_disk_ct");
+  strcpy(mcmc->move_name[mcmc->num_move_migrep_move_disk_ud],"migrep_move_disk_ud");
+  strcpy(mcmc->move_name[mcmc->num_move_migrep_swap_disk],"migrep_swap_disk");
+  strcpy(mcmc->move_name[mcmc->num_move_migrep_delete_hit],"migrep_delete_hit");
+  strcpy(mcmc->move_name[mcmc->num_move_migrep_insert_hit],"migrep_insert_hit");
   
   if(tree->rates && tree->rates->model_log_rates == YES)
     for(i=mcmc->num_move_br_r;i<mcmc->num_move_br_r+2*tree->n_otu-2;i++) mcmc->move_type[i] = MCMC_MOVE_RANDWALK_NORMAL;  
@@ -4459,9 +4473,29 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_geo_updown_lbda_sigma] = 1.0;
   mcmc->move_weight[mcmc->num_move_geo_dum]               = 1.0;
 
-
-
-
+# if defined (MIGREP)
+  mcmc->move_weight[mcmc->num_move_migrep_lbda]          = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_mu]            = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_rad]           = 5.0;
+  mcmc->move_weight[mcmc->num_move_migrep_insert_disk]   = 5.0;
+  mcmc->move_weight[mcmc->num_move_migrep_delete_disk]   = 5.0;  
+  mcmc->move_weight[mcmc->num_move_migrep_move_disk_ct]  = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_move_disk_ud]  = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_swap_disk]     = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_delete_hit]    = 6.0;
+  mcmc->move_weight[mcmc->num_move_migrep_insert_hit]    = 5.0;
+# else
+  mcmc->move_weight[mcmc->num_move_migrep_lbda]          = 0.0;
+  mcmc->move_weight[mcmc->num_move_migrep_mu]            = 0.0;
+  mcmc->move_weight[mcmc->num_move_migrep_rad]           = 0.0;
+  mcmc->move_weight[mcmc->num_move_migrep_insert_disk]   = 0.0;
+  mcmc->move_weight[mcmc->num_move_migrep_delete_disk]   = 0.0;  
+  mcmc->move_weight[mcmc->num_move_migrep_move_disk_ct]  = 0.0;
+  mcmc->move_weight[mcmc->num_move_migrep_move_disk_ud]  = 0.0;
+  mcmc->move_weight[mcmc->num_move_migrep_swap_disk]     = 0.0;
+  mcmc->move_weight[mcmc->num_move_migrep_delete_hit]    = 0.0;
+  mcmc->move_weight[mcmc->num_move_migrep_insert_hit]    = 0.0;
+#endif 
 
 
 
@@ -5519,6 +5553,9 @@ void MCMC_MIGREP_Move_Disk_Updown(t_tree *tree)
   target_disk = all_disks[i];
   Free(all_disks);
   
+  /* Don't move coalescent nove */
+  if(target_disk->ldsk && target_disk->ldsk->n_next > 1) return;
+
   ori_time = target_disk->time;
   new_time = Uni()*(target_disk->next->time - target_disk->prev->time) + target_disk->prev->time;
   target_disk->time = new_time;
@@ -5603,6 +5640,9 @@ void MCMC_MIGREP_Swap_Disk(t_tree *tree)
   target_disk = valid_disks[i];
   Free(valid_disks);
   
+  /* Don't swap coalescent node */
+  if(target_disk->ldsk && target_disk->ldsk->n_next > 1) return;
+
   ori_disk_old   = target_disk->prev;
   ori_disk_young = target_disk->next;
   ori_time       = target_disk->time;

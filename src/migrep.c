@@ -25,13 +25,10 @@ int MIGREP_Draw(GtkWidget *widget, cairo_t *cr, gpointer *data)
   t_tree *tree;
   phydbl h, w;
   t_dsk *disk;
-  t_migrep_mod *mmod;
   int i;
 
   tree = (t_tree *)(data);
   
-  mmod = tree->mmod;
-
   disk = tree->disk;
   while(disk->prev) disk = disk->prev;
 
@@ -176,7 +173,7 @@ int MIGREP_Main(int argc, char *argv[])
   /* seed = 1413426621; */
   /* seed = 1413492392; */
   /* seed = 1413497813; */
-  printf("\n. Seed: %d",seed); fflush(NULL);
+  printf("\n# Seed: %d",seed); fflush(NULL);
   /* seed = 1412394873; */
   srand(seed);
   tree = MIGREP_Simulate_Backward((int)atoi(argv[1]),10.,10.);
@@ -285,8 +282,8 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   disk = disk->prev;
 
   /* Initialize parameters of migrep model */
-  mmod->lbda = 0.1;
-  mmod->mu   = 0.9;
+  mmod->lbda = 0.3;
+  mmod->mu   = 0.7;
   mmod->rad  = 2.0;
   
   curr_t      = 0.0;
@@ -422,7 +419,6 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
 
 
   MIGREP_Lk(tree);
-  printf("\n. LK: %f",mmod->c_lnL);
   /* Exit("\n"); */
   /* MIGREP_MCMC(tree); */
 
@@ -583,10 +579,9 @@ phydbl MIGREP_Lk(t_tree *tree)
 void MIGREP_MCMC(t_tree *tree)
 {
   t_mcmc *mcmc;
-  t_dsk *disk;
   int move;
+  phydbl u;
 
-  disk = NULL;
   mcmc = MCMC_Make_MCMC_Struct();
   MCMC_Complete_MCMC(mcmc,tree);
 
@@ -607,20 +602,20 @@ void MIGREP_MCMC(t_tree *tree)
   mcmc->is_burnin        = NO;
   mcmc->nd_t_digits      = 1;
   mcmc->chain_len        = 1.E+8;
-  mcmc->sample_interval  = 50;
+  mcmc->sample_interval  = 5000;
   
   MIGREP_Lk(tree);
-  printf("\n. before rand lnL: %f",tree->mmod->c_lnL);
-  printf("\n. ninter: %d",MIGREP_Total_Number_Of_Intervals(tree));
-  printf("\n. ncoal: %d",MIGREP_Total_Number_Of_Coal_Disks(tree));
-  printf("\n. nhits: %d",MIGREP_Total_Number_Of_Hit_Disks(tree));
+  printf("\n# before rand lnL: %f",tree->mmod->c_lnL);
+  printf("\n# ninter: %d",MIGREP_Total_Number_Of_Intervals(tree));
+  printf("\n# ncoal: %d",MIGREP_Total_Number_Of_Coal_Disks(tree));
+  printf("\n# nhits: %d",MIGREP_Total_Number_Of_Hit_Disks(tree));
 
   tree->mmod->lbda = Uni()*(tree->mmod->max_lbda - tree->mmod->min_lbda) + tree->mmod->min_lbda;
   tree->mmod->mu   = Uni()*(tree->mmod->max_mu - tree->mmod->min_mu) + tree->mmod->min_mu;
   tree->mmod->rad  = tree->mmod->max_rad;
 
-  /* gtk_widget_queue_draw(tree->draw_area); */
-  /* sleep(3); */
+  /* /\* gtk_widget_queue_draw(tree->draw_area); *\/ */
+  /* /\* sleep(3); *\/ */
 
   /* PhyML_Printf("\n"); */
   /* /\* Randomization step *\/ */
@@ -646,10 +641,10 @@ void MIGREP_MCMC(t_tree *tree)
   /* mcmc->run        = 0; */
 
   MIGREP_Lk(tree);
-  printf("\n. after rand lnL: %f",tree->mmod->c_lnL);
-  printf("\n. ninter: %d",MIGREP_Total_Number_Of_Intervals(tree));
-  printf("\n. ncoal: %d",MIGREP_Total_Number_Of_Coal_Disks(tree));
-  printf("\n. nhits: %d",MIGREP_Total_Number_Of_Hit_Disks(tree));
+  printf("\n# after rand lnL: %f",tree->mmod->c_lnL);
+  printf("\n# ninter: %d",MIGREP_Total_Number_Of_Intervals(tree));
+  printf("\n# ncoal: %d",MIGREP_Total_Number_Of_Coal_Disks(tree));
+  printf("\n# nhits: %d",MIGREP_Total_Number_Of_Hit_Disks(tree));
 
   PhyML_Printf("\n %13s %13s %13s %13s %13s %13s %13s",
                "lnL",
@@ -663,48 +658,57 @@ void MIGREP_MCMC(t_tree *tree)
   /* gtk_widget_queue_draw(tree->draw_area); */
   /* sleep(2); */
 
-  mcmc->sample_interval = 1000;
-  mcmc->run = 0;
   do
     {
-      MCMC_MIGREP_Lbda(tree);
-      MCMC_MIGREP_Mu(tree);
-      MCMC_MIGREP_Radius(tree);
-      /* MCMC_MIGREP_Triplet(tree); */
-      MCMC_MIGREP_Delete_Disk(tree);
-      MCMC_MIGREP_Insert_Disk(tree);
-      /* MCMC_MIGREP_Move_Disk_Centre(tree); */
-      /* MCMC_MIGREP_Move_Disk_Updown(tree); */
-      /* MCMC_MIGREP_Swap_Disk(tree); */
-      MCMC_MIGREP_Delete_Hit(tree);
-      MCMC_MIGREP_Insert_Hit(tree);
+      u = Uni();
 
-      if(mcmc->run%mcmc->sample_interval == 0)
-      /* if(mcmc->run == 0) */
-        {
-          disk = tree->disk;
-          while(disk->prev) disk = disk->prev;
-          PhyML_Printf("\n %13f %13f %13f %13f %13d %13d %13d %13f",
-                       tree->mmod->c_lnL,
-                       tree->mmod->lbda,
-                       tree->mmod->mu,
-                       tree->mmod->rad,
-                       MIGREP_Total_Number_Of_Intervals(tree),
-                       MIGREP_Total_Number_Of_Coal_Disks(tree),
-                       MIGREP_Total_Number_Of_Hit_Disks(tree),
-                       disk->time);
+      For(move,tree->mcmc->n_moves) if(tree->mcmc->move_weight[move] > u) break;
+      
 
-          /* gdk_threads_enter(); */
-          /* gtk_widget_queue_draw(tree->draw_area); */
-          /* sleep(1); */
-          /* gdk_threads_leave(); */
-          /* Exit("\n"); */
-        }
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_lbda"))
+        MCMC_MIGREP_Lbda(tree);
 
-      mcmc->run++;
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_mu"))
+        MCMC_MIGREP_Mu(tree);
+
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_rad"))
+        MCMC_MIGREP_Radius(tree);
+
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_delete_disk"))
+        MCMC_MIGREP_Delete_Disk(tree);
+
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_insert_disk"))
+        MCMC_MIGREP_Insert_Disk(tree);
+
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_move_disk_ct"))
+        MCMC_MIGREP_Move_Disk_Centre(tree);
+
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_move_disk_ud"))
+        MCMC_MIGREP_Move_Disk_Updown(tree);
+
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_swap_disk"))
+        MCMC_MIGREP_Swap_Disk(tree);
+
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_delete_hit"))
+        MCMC_MIGREP_Delete_Hit(tree);
+
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_insert_hit"))
+        MCMC_MIGREP_Insert_Hit(tree);
+
+      tree->mcmc->run++;
+      MCMC_Get_Acc_Rates(tree->mcmc);
+      
+      if(!(tree->mcmc->run%tree->mcmc->sample_interval))
+        PhyML_Printf("\n %13f %13f %13f %13f %13d %13d %13d",
+                     tree->mmod->c_lnL,
+                     tree->mmod->lbda,
+                     tree->mmod->mu,
+                     tree->mmod->rad,
+                     MIGREP_Total_Number_Of_Intervals(tree),
+                     MIGREP_Total_Number_Of_Coal_Disks(tree),
+                     MIGREP_Total_Number_Of_Hit_Disks(tree));
     }
   while(tree->mcmc->run < tree->mcmc->chain_len);
-
 }
 
 //////////////////////////////////////////////////////////////
