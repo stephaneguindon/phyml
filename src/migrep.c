@@ -580,7 +580,8 @@ void MIGREP_MCMC(t_tree *tree)
 {
   t_mcmc *mcmc;
   int move;
-  phydbl u;
+  phydbl u,min_rad;
+  t_dsk *disk;
 
   mcmc = MCMC_Make_MCMC_Struct();
   MCMC_Complete_MCMC(mcmc,tree);
@@ -601,28 +602,35 @@ void MIGREP_MCMC(t_tree *tree)
   mcmc->print_every      = 2;
   mcmc->is_burnin        = NO;
   mcmc->nd_t_digits      = 1;
-  mcmc->chain_len        = 1.E+8;
+  mcmc->chain_len        = 1.E+9;
   mcmc->sample_interval  = 5000;
   
   MIGREP_Lk(tree);
+  MIGREP_LnPrior_Radius(tree);
+
   printf("\n# before rand lnL: %f",tree->mmod->c_lnL);
   printf("\n# ninter: %d",MIGREP_Total_Number_Of_Intervals(tree));
   printf("\n# ncoal: %d",MIGREP_Total_Number_Of_Coal_Disks(tree));
   printf("\n# nhits: %d",MIGREP_Total_Number_Of_Hit_Disks(tree));
 
+
   tree->mmod->lbda = Uni()*(tree->mmod->max_lbda - tree->mmod->min_lbda) + tree->mmod->min_lbda;
   tree->mmod->mu   = Uni()*(tree->mmod->max_mu - tree->mmod->min_mu) + tree->mmod->min_mu;
-  tree->mmod->rad  = tree->mmod->max_rad;
 
-  /* /\* gtk_widget_queue_draw(tree->draw_area); *\/ */
-  /* /\* sleep(3); *\/ */
+  MIGREP_Initial_Ldsk_Pos(tree);
+  min_rad = MIGREP_Min_Radius(tree);
+  /* tree->mmod->rad  = Uni()*(MIN(tree->mmod->max_rad,min_rad+2.0)-min_rad) + min_rad; */
+  tree->mmod->rad  = min_rad;
+
+  /* gtk_widget_queue_draw(tree->draw_area); */
+  /* sleep(3); */
 
   /* PhyML_Printf("\n"); */
   /* /\* Randomization step *\/ */
   /* mcmc->always_yes = YES; */
   /* do */
   /*   { */
-  /*     move = Rand_Int(0,7); */
+  /*     move = Rand_Int(0,5); */
   /*     switch(move) */
   /*       { */
   /*       case 0: { MCMC_MIGREP_Insert_Disk(tree); break; } */
@@ -630,8 +638,6 @@ void MIGREP_MCMC(t_tree *tree)
   /*       case 2: { MCMC_MIGREP_Move_Disk_Updown(tree); break; } */
   /*       case 3: { MCMC_MIGREP_Swap_Disk(tree); break; } */
   /*       case 4: { MCMC_MIGREP_Insert_Hit(tree); break; } */
-  /*       case 5: { MCMC_MIGREP_Delete_Hit(tree); break; } */
-  /*       case 6: { MCMC_MIGREP_Delete_Disk(tree); break; } */
   /*       } */
   /*     mcmc->run++; */
   /*     PhyML_Printf("\r. Randomization %5d/500",mcmc->run); */
@@ -645,15 +651,20 @@ void MIGREP_MCMC(t_tree *tree)
   printf("\n# ninter: %d",MIGREP_Total_Number_Of_Intervals(tree));
   printf("\n# ncoal: %d",MIGREP_Total_Number_Of_Coal_Disks(tree));
   printf("\n# nhits: %d",MIGREP_Total_Number_Of_Hit_Disks(tree));
+  disk = tree->disk;
+  while(disk->prev) disk = disk->prev;
+  printf("\n# root pos: %f %f",disk->ldsk->coord->lonlat[0],disk->ldsk->coord->lonlat[1]);
 
-  PhyML_Printf("\n %13s %13s %13s %13s %13s %13s %13s",
+  PhyML_Printf("\n %13s %13s %13s %13s %13s %13s %13s %13s %13s",
                "lnL",
                "lbda",
                "mu",
                "rad",
                "nInt",
                "nCoal",
-               "nHit");
+               "nHit",
+               "xRootLon",
+               "xRootLat");
 
   /* gtk_widget_queue_draw(tree->draw_area); */
   /* sleep(2); */
@@ -695,18 +706,29 @@ void MIGREP_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"migrep_insert_hit"))
         MCMC_MIGREP_Insert_Hit(tree);
 
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_move_ldsk"))
+        MCMC_MIGREP_Move_Ldsk(tree);
+
+      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_shift_ldsk_to_centre")) */
+      /*   MCMC_MIGREP_Shift_Ldsk_To_Centre(tree); */
+
+      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_shift_centr_to_median")) */
+      /*   MCMC_MIGREP_Shift_Centre_To_Median(tree); */
+
       tree->mcmc->run++;
       MCMC_Get_Acc_Rates(tree->mcmc);
       
       if(!(tree->mcmc->run%tree->mcmc->sample_interval))
-        PhyML_Printf("\n %13f %13f %13f %13f %13d %13d %13d",
+        PhyML_Printf("\n %13f %13f %13f %13f %13d %13d %13d %13f %13f",
                      tree->mmod->c_lnL,
                      tree->mmod->lbda,
                      tree->mmod->mu,
                      tree->mmod->rad,
                      MIGREP_Total_Number_Of_Intervals(tree),
                      MIGREP_Total_Number_Of_Coal_Disks(tree),
-                     MIGREP_Total_Number_Of_Hit_Disks(tree));
+                     MIGREP_Total_Number_Of_Hit_Disks(tree),
+                     disk->ldsk->coord->lonlat[0],
+                     disk->ldsk->coord->lonlat[1]);
     }
   while(tree->mcmc->run < tree->mcmc->chain_len);
 }
@@ -1584,6 +1606,94 @@ phydbl MIGREP_Runif_Rectangle_Overlap(t_ldsk *ldsk, t_dsk *disk, t_migrep_mod *m
   return(LOG(up-down)+LOG(rght-left));
 }
 
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+phydbl MIGREP_Wrap_Prior_Radius(t_edge *e, t_tree *tree, supert_tree *st)
+{
+  return MIGREP_LnPrior_Radius(tree);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+phydbl MIGREP_LnPrior_Radius(t_tree *tree)
+{
+  tree->mmod->c_ln_prior_rad = LOG(tree->mmod->prior_param_rad) - tree->mmod->prior_param_rad * tree->mmod->rad;
+  return(tree->mmod->c_ln_prior_rad);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+void MIGREP_Initial_Ldsk_Pos(t_tree *tree)
+{
+  t_dsk *disk;
+  int i,j;
+  phydbl mean;
+
+  disk = tree->disk->prev;
+
+  do
+    {
+      if(disk->ldsk)
+        {
+          For(i,tree->mmod->n_dim)
+            {
+              mean = 0.0;
+              For(j,disk->ldsk->n_next) mean += disk->ldsk->next[j]->coord->lonlat[i];
+              disk->ldsk->coord->lonlat[i] = mean / (phydbl)disk->ldsk->n_next;
+            }
+        }
+      disk = disk->prev;
+    }
+  while(disk);
+
+
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+phydbl MIGREP_Min_Radius(t_tree *tree)
+{
+  phydbl ori_rad, min_rad;
+
+  ori_rad = tree->mmod->rad;
+  tree->mmod->rad = tree->mmod->max_rad;
+  do
+    {
+      MIGREP_Lk(tree);
+      tree->mmod->rad -= 1.0;
+    }
+  while(tree->mmod->c_lnL > UNLIKELY + 0.1);
+
+  min_rad = tree->mmod->rad + 2.0;
+  tree->mmod->rad = ori_rad;
+  MIGREP_Lk(tree);
+  return(min_rad);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

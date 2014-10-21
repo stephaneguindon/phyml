@@ -47,5 +47,9 @@ int MIGREP_Total_Number_Of_Hit_Disks(t_tree *tree);
 phydbl MIGREP_Log_Dunif_Rectangle_Overlap(t_dsk *disk, t_migrep_mod *mmod);
 phydbl MIGREP_Runif_Rectangle_Overlap(t_ldsk *ldsk, t_dsk *disk, t_migrep_mod *mod);
 int MIGREP_One_New_Traj(t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y, t_dsk *xtra_dsk, int n_cur_disk, t_tree *tree);
+phydbl MIGREP_Wrap_Prior_Radius(t_edge *e, t_tree *tree, supert_tree *st);
+phydbl MIGREP_LnPrior_Radius(t_tree *tree);
+void MIGREP_Initial_Ldsk_Pos(t_tree *tree);
+phydbl MIGREP_Min_Radius(t_tree *tree);
 
 #endif

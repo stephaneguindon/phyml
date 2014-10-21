@@ -81,6 +81,8 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define CT 4
 #define GT 5
 
+#define T_MAX_MCMC_MOVE_NAME 500
+
 #define WINDOW_WIDTH  800
 #define WINDOW_HEIGHT 800
 
@@ -1472,6 +1474,9 @@ typedef struct __Tmcmc {
   int num_move_migrep_swap_disk;
   int num_move_migrep_delete_hit;
   int num_move_migrep_insert_hit;
+  int num_move_migrep_move_ldsk;
+  int num_move_migrep_ldsk_ct;
+  int num_move_migrep_shift_ct_med;
 
   int nd_t_digits;
   int *monitor;
@@ -1663,8 +1668,10 @@ typedef struct __Migrep_Model{
   phydbl                         rad; // radius of the migrep disk 
   phydbl                     min_rad; // min of radius of the migrep disk 
   phydbl                     max_rad; // max of radius of the migrep disk 
+  phydbl             prior_param_rad; // parameter of the parameter for the exponential prior on radius
 
   phydbl                       c_lnL; // current value of log-likelihood 
+  phydbl              c_ln_prior_rad; // current value of log prior for the exponential prior on radius
 
   struct __Geo_Coord            *lim; // max longitude and lattitude (the min are both set to zero)                       
 }t_migrep_mod;
