@@ -4567,26 +4567,26 @@ void PhyML_XML(char *xml_filename)
 
   component = (char *)mCalloc(T_MAX_NAME,sizeof(char));
 
-  m_elem       = NULL;
-  p_elem       = root;
-  io           = NULL;
-  mixt_tree    = NULL;
-  root_tree    = NULL;
-  mod          = NULL;
-  tree         = NULL;
-  lens         = NULL;
+  m_elem           = NULL;
+  p_elem           = root;
+  io               = NULL;
+  mixt_tree        = NULL;
+  root_tree        = NULL;
+  mod              = NULL;
+  tree             = NULL;
+  lens             = NULL;
   lens_var         = NULL;
   lens_old         = NULL;
   lens_var_old     = NULL;
-  select       = -1;
-  class_number = -1;
-  ds           = NULL;
-  lens_size    = 0;
-  ori_lens     = NULL;
-  ori_lens_old = NULL;
+  select           = -1;
+  class_number     = -1;
+  ds               = NULL;
+  lens_size        = 0;
+  ori_lens         = NULL;
+  ori_lens_old     = NULL;
   ori_lens_var     = NULL;
   ori_lens_var_old = NULL;
-  first        = YES;
+  first            = YES;
 
   // Make sure there are no duplicates in node's IDs
   XML_Check_Duplicate_ID(root);
@@ -4647,7 +4647,7 @@ void PhyML_XML(char *xml_filename)
       select = XML_Validate_Attr_Int(s,6,
                                      "true","yes","y",
                                      "false","no","n");
-
+      
       if(select < 3)
         {
           io->print_trace = YES;
@@ -4657,8 +4657,8 @@ void PhyML_XML(char *xml_filename)
           io->fp_out_trace = Openfile(io->out_trace_file,1);
         }
     }
-
-
+  
+  
   s = XML_Get_Attribute_Value(p_elem,"branch.test");
   if(s)
     {
@@ -4685,21 +4685,21 @@ void PhyML_XML(char *xml_filename)
           Exit("\n");
         }
     }
-
-
+  
+  
   /*! Read all partitionelem nodes and mixturelem nodes in each of them
    */
   do
     {
       p_elem = XML_Search_Node_Name("partitionelem",YES,p_elem);
-
+      
       if(p_elem == NULL) break;
-
+      
       buff = (option *)Make_Input();
       Set_Defaults_Input(buff);
       io->next = buff;
       io->next->prev = io;
-
+      
       io = io->next;
       if(first == YES)
         {
@@ -4708,40 +4708,40 @@ void PhyML_XML(char *xml_filename)
           Free_Input(buff);
           first = NO;
         }
-
-
+      
+      
       /*! Set the datatype (required when compressing data)
        */
       char *dt = NULL;
       dt = XML_Get_Attribute_Value(p_elem,"data.type");
       if(!dt)
-    {
-      PhyML_Printf("\n== Please specify the type of data ('aa' or 'nt') for partition element '%s'",
+        {
+          PhyML_Printf("\n== Please specify the type of data ('aa' or 'nt') for partition element '%s'",
                        XML_Get_Attribute_Value(p_elem,"id"));
-      PhyML_Printf("\n== Syntax: 'data.type=\"aa\"' or 'data.type=\"nt\"'");
-      Exit("\n");
-    }
-
+          PhyML_Printf("\n== Syntax: 'data.type=\"aa\"' or 'data.type=\"nt\"'");
+          Exit("\n");
+        }
+      
       select = XML_Validate_Attr_Int(dt,2,"aa","nt");
       switch(select)
-    {
-    case 0:
-      {
-        io->datatype = AA;
-        break;
-      }
-    case 1:
-      {
-        io->datatype = NT;
-        break;
-      }
-    default:
-      {
-        PhyML_Printf("\n== Unknown data type. Must be either 'aa' or 'nt'.");
-        Exit("\n");
-      }
-    }
-
+        {
+        case 0:
+          {
+            io->datatype = AA;
+            break;
+          }
+        case 1:
+          {
+            io->datatype = NT;
+            break;
+          }
+        default:
+          {
+            PhyML_Printf("\n== Unknown data type. Must be either 'aa' or 'nt'.");
+            Exit("\n");
+          }
+        }
+      
       char *format = NULL;
       format = XML_Get_Attribute_Value(p_elem,"format");
       if(format)
@@ -4756,8 +4756,8 @@ void PhyML_XML(char *xml_filename)
               io->interleaved = NO;
             }
         }
-
-
+      
+      
       /*! Attach a model to this io struct
        */
       io->mod = (t_mod *)Make_Model_Basic();
@@ -4765,86 +4765,86 @@ void PhyML_XML(char *xml_filename)
       io->mod->ras->n_catg = 1;
       io->mod->io = io;
       iomod = io->mod;
-
+      
       /*! Attach an optimization structure to this model
        */
       iomod->s_opt = (t_opt *)Make_Optimiz();
       Set_Defaults_Optimiz(iomod->s_opt);
-
+      
       iomod->s_opt->opt_kappa   = NO;
       iomod->s_opt->opt_lambda  = NO;
       iomod->s_opt->opt_rr      = NO;
-
+      
       /*! Input file
        */
       alignment = XML_Get_Attribute_Value(p_elem,"file.name");
-
+      
       if(!alignment)
         {
           PhyML_Printf("\n== 'file.name' tag is mandatory. Please amend your");
           PhyML_Printf("\n== XML file accordingly.");
           Exit("\n");
         }
-
+      
       strcpy(io->in_align_file,alignment);
-
+      
       /*! Open pointer to alignment
        */
       io->fp_in_align = Openfile(io->in_align_file,0);
-
+      
       /*! Load sequence file
        */
       io->data  = Get_Seq(io);
-
+      
       /*! Close pointer to alignment
        */
       fclose(io->fp_in_align);
-
+      
       /*! Compress alignment
        */
       io->cdata = Compact_Data(io->data,io);
-
+      
       /*! Free uncompressed alignment
        */
       Free_Seq(io->data,io->n_otu);
-
+      
       /*! Create new mixture tree
        */
       buff = (t_tree *)Make_Tree_From_Scratch(io->cdata->n_otu,io->cdata);
-
+      
       if(mixt_tree)
-    {
-      mixt_tree->next_mixt            = buff;
-      mixt_tree->next_mixt->prev_mixt = mixt_tree;
-      mixt_tree                       = mixt_tree->next_mixt;
+        {
+          mixt_tree->next_mixt            = buff;
+          mixt_tree->next_mixt->prev_mixt = mixt_tree;
+          mixt_tree                       = mixt_tree->next_mixt;
           mixt_tree->dp                   = mixt_tree->prev_mixt->dp+1;
-    }
+        }
       else mixt_tree = buff;
-
+      
       /*! Connect mixt_tree to io struct
        */
       mixt_tree->io = io;
-
+      
       /*! Connect mixt_tree to model struct
        */
       mixt_tree->mod = iomod;
-
+      
       /*! mixt_tree is a mixture tree
        */
       mixt_tree->is_mixt_tree = YES;
-
+      
       /*! mixt_tree is a mixture tree
        */
       mixt_tree->mod->is_mixt_mod = YES;
-
+      
       /*! Connect mixt_tree to compressed data
        */
       mixt_tree->data = io->cdata;
-
+      
       /*! Set total number of patterns
        */
       mixt_tree->n_pattern = io->cdata->crunch_len;
-
+      
       /*! Remove branch lengths from mixt_tree */
       For(i,2*mixt_tree->n_otu-1)
         {
@@ -4853,7 +4853,7 @@ void PhyML_XML(char *xml_filename)
           Free_Scalar_Dbl(mixt_tree->a_edges[i]->l_var);
           Free_Scalar_Dbl(mixt_tree->a_edges[i]->l_var_old);
         }
-
+      
       /*! Connect last tree of the mixture for the
         previous partition element to the next mixture tree
       */
@@ -4862,7 +4862,7 @@ void PhyML_XML(char *xml_filename)
           tree->next = mixt_tree;
           mixt_tree->prev = tree;
         }
-
+      
       /*! Do the same for the model
        */
       if(mod)
@@ -4870,9 +4870,9 @@ void PhyML_XML(char *xml_filename)
           mod->next = iomod;
           iomod->prev = mod;
         }
-
+      
       if(!root_tree) root_tree = mixt_tree;
-
+      
       /*! Process all the mixtureelem tags in this partition element
        */
       n_components  = 0;
@@ -4882,569 +4882,569 @@ void PhyML_XML(char *xml_filename)
       tree          = NULL;
       class_number  = 0;
       do
-    {
-      m_elem = XML_Search_Node_Name("mixtureelem",YES,m_elem);
-      if(m_elem == NULL) break;
-
-      if(!strcmp(m_elem->name,"mixtureelem"))
         {
-          first_m_elem++;
-
-          /*! Rewind tree and model when processing a new mixtureelem node
+          m_elem = XML_Search_Node_Name("mixtureelem",YES,m_elem);
+          if(m_elem == NULL) break;
+          
+          if(!strcmp(m_elem->name,"mixtureelem"))
+            {
+              first_m_elem++;
+              
+              /*! Rewind tree and model when processing a new mixtureelem node
                */
-          if(first_m_elem > 1)
-        {
-          while(tree->prev && tree->prev->is_mixt_tree == NO) { tree = tree->prev; } // tree = tree->prev->next;
-          while(mod->prev  && mod->prev->is_mixt_mod == NO)   { mod  = mod->prev;  } // mod = mod->prev->next;
-        }
-
-          /*! Read and process model components
+              if(first_m_elem > 1)
+                {
+                  while(tree->prev && tree->prev->is_mixt_tree == NO) { tree = tree->prev; } // tree = tree->prev->next;
+                  while(mod->prev  && mod->prev->is_mixt_mod == NO)   { mod  = mod->prev;  } // mod = mod->prev->next;
+                }
+              
+              /*! Read and process model components
                */
-          char *list;
-          list = XML_Get_Attribute_Value(m_elem,"list");
-
-          j = 0;
-          For(i,(int)strlen(list)) if(list[i] == ',') j++;
-
-          if(j != n_components && first_m_elem > 1)
-        {
-          PhyML_Printf("\n== Discrepancy in the number of elements in nodes 'mixtureelem' partitionelem id '%s'",p_elem->id);
-          PhyML_Printf("\n== Check 'mixturelem' node with list '%s'",list);
-          Exit("\n");
+              char *list;
+              list = XML_Get_Attribute_Value(m_elem,"list");
+              
+              j = 0;
+              For(i,(int)strlen(list)) if(list[i] == ',') j++;
+              
+              if(j != n_components && first_m_elem > 1)
+                {
+                  PhyML_Printf("\n== Discrepancy in the number of elements in nodes 'mixtureelem' partitionelem id '%s'",p_elem->id);
+                  PhyML_Printf("\n== Check 'mixturelem' node with list '%s'",list);
+                  Exit("\n");
+                }
+              n_components = j;
+              
+              i = j = 0;
+              component[0] = '\0';
+              while(1)
+                {
+                  if(list[j] == ',' || j == (int)strlen(list))
+                    {
+                      /*! Reading a new component
+                       */
+                      
+                      if(first_m_elem == YES) // Only true when processing the first mixtureelem node
+                        {
+                          t_tree *this_tree;
+                          t_mod *this_mod;
+                          
+                          /*! Create new tree
+                           */
+                          this_tree = (t_tree *)Make_Tree_From_Scratch(io->cdata->n_otu,io->cdata);
+                          
+                          /*! Update the number of mixtures */
+                          iomod->n_mixt_classes++;
+                          
+                          if(tree)
+                            {
+                              tree->next = this_tree;
+                              tree->next->prev = tree;
+                            }
+                          else
+                            {
+                              mixt_tree->next = this_tree;
+                              mixt_tree->next->prev = mixt_tree;
+                            }
+                          
+                          tree = this_tree;
+                          tree->mixt_tree = mixt_tree;
+                          
+                          
+                          /*! Create a new model
+                           */
+                          this_mod = (t_mod *)Make_Model_Basic();
+                          Set_Defaults_Model(this_mod);
+                          this_mod->ras->n_catg = 1;
+                          
+                          
+                          
+                          if(mod)
+                            {
+                              mod->next = this_mod;
+                              mod->next->prev = mod;
+                            }
+                          else
+                            {
+                              this_mod->prev = iomod;
+                            }
+                          
+                          mod = this_mod;
+                          if(!iomod->next) iomod->next = mod;
+                          mod->io = io;
+                          
+                          mod->s_opt = (t_opt *)Make_Optimiz();
+                          Set_Defaults_Optimiz(mod->s_opt);
+                          
+                          mod->s_opt->opt_alpha  = NO;
+                          mod->s_opt->opt_pinvar = NO;
+                          
+                          tree->data      = io->cdata;
+                          tree->n_pattern = io->cdata->crunch_len;
+                          tree->io        = io;
+                          tree->mod       = mod;
+                          
+                          if(tree->n_pattern != tree->prev->n_pattern)
+                            {
+                              PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+                              Warn_And_Exit("");
+                            }
+                        }
+                      
+                      /*! Read a component
+                       */
+                      component[i] = '\0';
+                      if(j != (int)strlen(list)-1) i = 0;
+                      
+                      /*! Find which node this ID corresponds to
+                       */
+                      instance = XML_Search_Node_ID(component,YES,root);
+                      
+                      if(!instance)
+                        {
+                          PhyML_Printf("\n== Could not find a node with id:'%s'.",component);
+                          PhyML_Printf("\n== Problem with 'mixtureelem' node, list '%s'.",list);
+                          Exit("\n");
+                        }
+                      
+                      if(!instance->parent)
+                        {
+                          PhyML_Printf("\n== Node '%s' with id:'%s' has no parent.",instance->name,component);
+                          Exit("\n");
+                        }
+                      
+                      parent = instance->parent;
+                      
+                      ////////////////////////////////////////
+                      //        SUBSTITUTION MODEL          //
+                      ////////////////////////////////////////
+                      
+                      if(!strcmp(parent->name,"ratematrices"))
+                        {
+                          /* ! First time we process this 'instance' node which has this 'ratematrices' parent */
+                          if(instance->ds->obj == NULL)
+                            {
+                              Make_Ratematrice_From_XML_Node(instance, io, mod);
+                              
+                              ds = instance->ds;
+                              
+                              /*! Connect the data structure n->ds to mod->r_mat */
+                              ds->obj = (t_rmat *)(mod->r_mat);
+                              
+                              /*! Create and connect the data structure n->ds->next to mod->kappa */
+                              ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
+                              ds = ds->next;
+                              ds->obj = (scalar_dbl *)(mod->kappa);
+                              
+                              /*! Create and connect the data structure n->ds->next to mod->s_opt->opt_kappa */
+                              ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
+                              ds = ds->next;
+                              ds->obj = (int *)(&mod->s_opt->opt_kappa);
+                              
+                              /*! Create and connect the data structure n->ds->next to mod->s_opt->opt_rr */
+                              ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
+                              ds = ds->next;
+                              ds->obj = (int *)(&mod->s_opt->opt_rr);
+                              
+                              /*! Create and connect the data structure n->ds->next to mod->whichmodel */
+                              ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
+                              ds = ds->next;
+                              ds->obj = (int *)(&mod->whichmodel);
+                              
+                              /*! Create and connect the data structure n->ds->next to mod->modelname */
+                              ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
+                              ds = ds->next;
+                              ds->obj = (t_string *)(mod->modelname);
+                              
+                              /*! Create and connect the data structure n->ds->next to mod->ns */
+                              ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
+                              ds = ds->next;
+                              ds->obj = (int *)(&mod->ns);
+                              
+                              /*! Create and connect the data structure n->ds->next to mod->modelname */
+                              ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
+                              ds = ds->next;
+                              ds->obj = (t_string *)(mod->custom_mod_string);
+                            }
+                          else
+                            {
+                              /*! Connect to already extisting r_mat & kappa structs. */
+                              t_ds *ds;
+                              
+                              ds = instance->ds;
+                              Free(mod->r_mat);
+                              mod->r_mat             = (t_rmat *)ds->obj;
+                              
+                              ds = ds->next;
+                              Free_Scalar_Dbl(mod->kappa);
+                              mod->kappa             = (scalar_dbl *)ds->obj;
+                              
+                              ds = ds->next;
+                              mod->s_opt->opt_kappa  = *((int *)ds->obj);
+                              
+                              ds = ds->next;
+                              mod->s_opt->opt_rr     = *((int *)ds->obj);
+                              
+                              ds = ds->next;
+                              mod->whichmodel        = *((int *)ds->obj);
+                              
+                              ds = ds->next;
+                              Free_String(mod->modelname);
+                              mod->modelname         = (t_string *)ds->obj;
+                              
+                              ds = ds->next;
+                              mod->ns                = *((int *)ds->obj);
+                              
+                              ds = ds->next;
+                              Free_String(mod->custom_mod_string);
+                              mod->custom_mod_string = (t_string *)ds->obj;
+                            }
+                        }
+                      
+                      ////////////////////////////////////////
+                      //           STATE FREQS              //
+                      ////////////////////////////////////////
+                      
+                      else if(!strcmp(parent->name,"equfreqs"))
+                        {
+                          
+                          // If n->ds == NULL, the corrresponding node data structure, n->ds, has not
+                          // been initialized. If not, do nothing.
+                          if(instance->ds->obj == NULL)
+                            {
+                              Make_Efrq_From_XML_Node(instance,io,mod);
+                              
+                              t_ds *ds;
+                              
+                              ds = instance->ds;
+                              ds->obj = (t_efrq *)mod->e_frq;
+                              
+                              ds->next = (t_ds *)mCalloc(1,sizeof(t_ds));
+                              ds = ds->next;
+                              ds->obj = (int *)(&mod->s_opt->opt_state_freq);
+                              
+                              ds->next = (t_ds *)mCalloc(1,sizeof(t_ds));
+                              ds = ds->next;
+                              ds->obj = (int *)(&mod->s_opt->user_state_freq);
+                              
+                              ds->next = (t_ds *)mCalloc(1,sizeof(t_ds));
+                              ds = ds->next;
+                              ds->obj = (vect_dbl *)(mod->user_b_freq);
+                            }
+                          else
+                            {
+                              // Connect the data structure n->ds to mod->e_frq
+                              
+                              ds = instance->ds;
+                              mod->e_frq = (t_efrq *)ds->obj;
+                              
+                              ds = ds->next;
+                              mod->s_opt->opt_state_freq = *((int *)ds->obj);
+                              
+                              ds = ds->next;
+                              mod->s_opt->user_state_freq = *((int *)ds->obj);
+                              
+                              ds = ds->next;
+                              Free_Vect_Dbl(mod->user_b_freq);
+                              mod->user_b_freq = (vect_dbl *)ds->obj;
+                            }
+                        }
+                      
+                      //////////////////////////////////////////
+                      //             TOPOLOGY                 //
+                      //////////////////////////////////////////
+                      
+                      else if(!strcmp(parent->name,"topology"))
+                        {
+                          if(parent->ds->obj == NULL) Make_Topology_From_XML_Node(instance,io,iomod);
+                          
+                          ds = parent->ds;
+                          
+                          int buff;
+                          ds->obj = (int *)(& buff);
+                        }
+                      
+                      //////////////////////////////////////////
+                      //                RAS                   //
+                      //////////////////////////////////////////
+                      
+                      else if(!strcmp(parent->name,"siterates"))
+                        {
+                          char *rate_value = NULL;
+                          /* scalar_dbl *r; */
+                          phydbl val;
+                          
+                          /*! First time we process this 'siterates' node, check that its format is valid.
+                            and process it afterwards.
+                          */
+                          if(parent->ds->obj == NULL)
+                            {
+                              class_number = 0;
+                              
+                              Make_RAS_From_XML_Node(parent,iomod);
+                              
+                              ds = parent->ds;
+                              
+                              ds->obj = (t_ras *)iomod->ras;
+                              
+                              ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
+                              ds = ds->next;
+                              ds->obj = (int *)(&iomod->s_opt->opt_alpha);
+                              
+                              ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
+                              ds = ds->next;
+                              ds->obj = (int *)(&iomod->s_opt->opt_free_mixt_rates);
+                            }
+                          else /*! Connect ras struct to already defined one. Same for opt_alpha & opt_free_mixt_rates */
+                            {
+                              if(iomod->ras != (t_ras *)parent->ds->obj) Free_RAS(iomod->ras);
+                              iomod->ras = (t_ras *)parent->ds->obj;
+                              iomod->s_opt->opt_alpha = *((int *)parent->ds->next->obj);
+                              iomod->s_opt->opt_free_mixt_rates = *((int *)parent->ds->next->next->obj);
+                            }
+                          
+                          rate_value = XML_Get_Attribute_Value(instance,"init.value");
+                          
+                          val = 1.;
+                          if(rate_value) val = String_To_Dbl(rate_value);
+                          
+                          if(instance->ds->obj == NULL)
+                            {
+                              instance->ds->obj = (phydbl *)(&val);
+                              instance->ds->next = (t_ds *)mCalloc(1,sizeof(t_ds));
+                              instance->ds->next->obj = (int *)(class_num + class_number);
+                              
+                              iomod->ras->gamma_rr->v[class_number] = val;
+                              iomod->ras->gamma_rr_unscaled->v[class_number] = val;
+                              
+                              iomod->ras->init_rr = NO;
+                              
+                              if(Are_Equal(val,0.0,1E-20) == NO) class_number++;
+                            }
+                          
+                          
+                          /*! Note: ras is already connected to the relevant t_ds stucture. No need
+                            to connect ras->gamma_rr or ras->p_invar */
+                          
+                          /*! Invariant */
+                          if(Are_Equal(val,0.0,1E-20))
+                            {
+                              mod->ras->invar = YES;
+                            }
+                          else
+                            {
+                              mod->ras->parent_class_number = *((int *)instance->ds->next->obj);
+                            }
+                          
+                          xml_node *orig_w = NULL;
+                          orig_w = XML_Search_Node_Attribute_Value("appliesto",instance->id,YES,instance->parent);
+                          
+                          if(orig_w)
+                            {
+                              char *weight;
+                              weight = XML_Get_Attribute_Value(orig_w,"value");
+                              if(mod->ras->invar == YES)
+                                {
+                                  iomod->ras->pinvar->v = String_To_Dbl(weight);
+                                }
+                              else
+                                {
+                                  int class;
+                                  class = *((int *)instance->ds->next->obj);
+                                  iomod->ras->gamma_r_proba->v[class] = String_To_Dbl(weight);
+                                  iomod->ras->init_r_proba = NO;
+                                }
+                            }
+                        }
+                      
+                      //////////////////////////////////////////////
+                      //           BRANCH LENGTHS                 //
+                      //////////////////////////////////////////////
+                      
+                      else if(!strcmp(parent->name,"branchlengths"))
+                        {
+                          int i;
+                          int n_otu;
+                          
+                          n_otu = tree->n_otu;
+                          
+                          if(instance->ds->obj == NULL)
+                            {
+                              if(!lens)
+                                {
+                                  ori_lens         = (scalar_dbl **)mCalloc(2*tree->n_otu-1,sizeof(scalar_dbl *));
+                                  ori_lens_old     = (scalar_dbl **)mCalloc(2*tree->n_otu-1,sizeof(scalar_dbl *));
+                                  
+                                  ori_lens_var     = (scalar_dbl **)mCalloc(2*tree->n_otu-1,sizeof(scalar_dbl *));
+                                  ori_lens_var_old = (scalar_dbl **)mCalloc(2*tree->n_otu-1,sizeof(scalar_dbl *));
+                                  
+                                  lens     = ori_lens;
+                                  lens_old = ori_lens_old;
+                                  
+                                  lens_var     = ori_lens_var;
+                                  lens_var_old = ori_lens_var_old;
+                                  
+                                  lens_size = 2*tree->n_otu-1;
+                                }
+                              else
+                                {
+                                  ori_lens         = (scalar_dbl **)mRealloc(ori_lens,2*tree->n_otu-1+lens_size,sizeof(scalar_dbl *));
+                                  ori_lens_old     = (scalar_dbl **)mRealloc(ori_lens_old,2*tree->n_otu-1+lens_size,sizeof(scalar_dbl *));
+                                  
+                                  ori_lens_var     = (scalar_dbl **)mRealloc(ori_lens_var,2*tree->n_otu-1+lens_size,sizeof(scalar_dbl *));
+                                  ori_lens_var_old = (scalar_dbl **)mRealloc(ori_lens_var_old,2*tree->n_otu-1+lens_size,sizeof(scalar_dbl *));
+                                  
+                                  lens     = ori_lens     + lens_size;;
+                                  lens_old = ori_lens_old + lens_size;;
+                                  
+                                  lens_var     = ori_lens_var     + lens_size;;
+                                  lens_var_old = ori_lens_var_old + lens_size;;
+                                  
+                                  lens_size += 2*tree->n_otu-1;
+                                }
+                              
+                              For(i,2*tree->n_otu-1)
+                                {
+                                  lens[i] = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+                                  Init_Scalar_Dbl(lens[i]);
+                                  
+                                  lens_old[i] = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+                                  Init_Scalar_Dbl(lens_old[i]);
+                                  
+                                  lens_var[i] = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+                                  Init_Scalar_Dbl(lens_var[i]);
+                                  
+                                  lens_var_old[i] = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+                                  Init_Scalar_Dbl(lens_var_old[i]);
+                                  
+                                  Free_Scalar_Dbl(tree->a_edges[i]->l);
+                                  Free_Scalar_Dbl(tree->a_edges[i]->l_old);
+                                  
+                                  Free_Scalar_Dbl(tree->a_edges[i]->l_var);
+                                  Free_Scalar_Dbl(tree->a_edges[i]->l_var_old);
+                                  
+                                  if(tree->prev &&
+                                     tree->prev->a_edges[i]->l == mixt_tree->a_edges[i]->l &&
+                                     tree->prev->is_mixt_tree == NO)
+                                    {
+                                      PhyML_Printf("\n== %p %p",tree->a_edges[i]->l,mixt_tree->a_edges[i]->l);
+                                      PhyML_Printf("\n== Only one set of edge lengths is allowed ");
+                                      PhyML_Printf("\n== in a 'partitionelem'. Please fix your XML file.");
+                                      Exit("\n");
+                                    }
+                                }
+                              
+                              char *opt_bl = NULL;
+                              opt_bl = XML_Get_Attribute_Value(instance,"optimise.lens");
+                              
+                              if(opt_bl)
+                                {
+                                  if(!strcmp(opt_bl,"yes") || !strcmp(opt_bl,"true"))
+                                    {
+                                      iomod->s_opt->opt_bl = YES;
+                                    }
+                                  else
+                                    {
+                                      iomod->s_opt->opt_bl = NO;
+                                    }
+                                }
+                              
+                              ds = instance->ds;
+                              
+                              ds->obj       = (scalar_dbl **)lens;
+                              
+                              ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
+                              ds            = ds->next;
+                              ds->obj       = (scalar_dbl **)lens_old;
+                              
+                              ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
+                              ds            = ds->next;
+                              ds->obj       = (scalar_dbl **)lens_var;
+                              
+                              ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
+                              ds            = ds->next;
+                              ds->obj       = (scalar_dbl **)lens_var_old;
+                              
+                              ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
+                              ds            = ds->next;
+                              ds->obj       = (int *)(&iomod->s_opt->opt_bl);
+                            }
+                          else
+                            {
+                              For(i,2*tree->n_otu-1)
+                                {
+                                  Free_Scalar_Dbl(tree->a_edges[i]->l);
+                                  Free_Scalar_Dbl(tree->a_edges[i]->l_old);
+                                  Free_Scalar_Dbl(tree->a_edges[i]->l_var);
+                                  Free_Scalar_Dbl(tree->a_edges[i]->l_var_old);
+                                }
+                              
+                              ds = instance->ds;
+                              
+                              lens     = (scalar_dbl **)ds->obj;
+                              
+                              ds = ds->next;
+                              lens_old = (scalar_dbl **)ds->obj;
+                              
+                              ds = ds->next;
+                              lens_var = (scalar_dbl **)ds->obj;
+                              
+                              ds = ds->next;
+                              lens_var_old = (scalar_dbl **)ds->obj;
+                              
+                              ds = ds->next;
+                              iomod->s_opt->opt_bl = *((int *)ds->obj);
+                            }
+                          
+                          if(n_otu != tree->n_otu)
+                            {
+                              PhyML_Printf("\n== All the data sets should display the same number of sequences.");
+                              PhyML_Printf("\n== Found at least one data set with %d sequences and one with %d sequences.",n_otu,tree->n_otu);
+                              Exit("\n");
+                            }
+                          
+                          For(i,2*tree->n_otu-1)
+                            {
+                              tree->a_edges[i]->l          = lens[i];
+                              mixt_tree->a_edges[i]->l     = lens[i];
+                              tree->a_edges[i]->l_old      = lens_old[i];
+                              mixt_tree->a_edges[i]->l_old = lens_old[i];
+                              
+                              tree->a_edges[i]->l_var          = lens_var[i];
+                              mixt_tree->a_edges[i]->l_var     = lens_var[i];
+                              tree->a_edges[i]->l_var_old      = lens_var_old[i];
+                              mixt_tree->a_edges[i]->l_var_old = lens_var_old[i];
+                            }
+                        }
+                      
+                      ///////////////////////////////////////////////
+                      ///////////////////////////////////////////////
+                      ///////////////////////////////////////////////
+                      
+                      if(first_m_elem > 1) // Done with this component, move to the next tree and model
+                        {
+                          if(tree->next) tree = tree->next;
+                          if(mod->next)   mod  = mod->next;
+                        }
+                      
+                    }
+                  else if(list[j] != ' ')
+                    {
+                      component[i] = list[j];
+                      i++;
+                    }
+                  j++;
+                  if(j == (int)strlen(list)+1) break;
+                  
+                } // end of mixtureelem processing
+            } // end of partitionelem processing
         }
-          n_components = j;
-
-          i = j = 0;
-          component[0] = '\0';
-          while(1)
-          {
-        if(list[j] == ',' || j == (int)strlen(list))
-          {
-            /*! Reading a new component
-                     */
-
-            if(first_m_elem == YES) // Only true when processing the first mixtureelem node
-              {
-            t_tree *this_tree;
-            t_mod *this_mod;
-
-            /*! Create new tree
-                         */
-            this_tree = (t_tree *)Make_Tree_From_Scratch(io->cdata->n_otu,io->cdata);
-
-                        /*! Update the number of mixtures */
-                        iomod->n_mixt_classes++;
-
-            if(tree)
-              {
-                tree->next = this_tree;
-                tree->next->prev = tree;
-              }
-            else
-              {
-                mixt_tree->next = this_tree;
-                mixt_tree->next->prev = mixt_tree;
-              }
-
-            tree = this_tree;
-                        tree->mixt_tree = mixt_tree;
-
-
-            /*! Create a new model
-                         */
-            this_mod = (t_mod *)Make_Model_Basic();
-            Set_Defaults_Model(this_mod);
-            this_mod->ras->n_catg = 1;
-
-
-
-            if(mod)
-              {
-                mod->next = this_mod;
-                mod->next->prev = mod;
-              }
-                        else
-                          {
-                            this_mod->prev = iomod;
-                          }
-
-            mod = this_mod;
-            if(!iomod->next) iomod->next = mod;
-            mod->io = io;
-
-            mod->s_opt = (t_opt *)Make_Optimiz();
-            Set_Defaults_Optimiz(mod->s_opt);
-
-            mod->s_opt->opt_alpha  = NO;
-            mod->s_opt->opt_pinvar = NO;
-
-            tree->data      = io->cdata;
-            tree->n_pattern = io->cdata->crunch_len;
-            tree->io        = io;
-            tree->mod       = mod;
-
-            if(tree->n_pattern != tree->prev->n_pattern)
-              {
-                PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
-                Warn_And_Exit("");
-              }
-              }
-
-            /*! Read a component
-                     */
-            component[i] = '\0';
-            if(j != (int)strlen(list)-1) i = 0;
-
-            /*! Find which node this ID corresponds to
-                     */
-            instance = XML_Search_Node_ID(component,YES,root);
-
-            if(!instance)
-              {
-            PhyML_Printf("\n== Could not find a node with id:'%s'.",component);
-            PhyML_Printf("\n== Problem with 'mixtureelem' node, list '%s'.",list);
-            Exit("\n");
-              }
-
-            if(!instance->parent)
-              {
-            PhyML_Printf("\n== Node '%s' with id:'%s' has no parent.",instance->name,component);
-            Exit("\n");
-              }
-
-            parent = instance->parent;
-
-            ////////////////////////////////////////
-            //        SUBSTITUTION MODEL          //
-            ////////////////////////////////////////
-
-            if(!strcmp(parent->name,"ratematrices"))
-              {
-                        /* ! First time we process this 'instance' node which has this 'ratematrices' parent */
-                        if(instance->ds->obj == NULL)
-                          {
-                            Make_Ratematrice_From_XML_Node(instance, io, mod);
-
-                            ds = instance->ds;
-
-                            /*! Connect the data structure n->ds to mod->r_mat */
-                            ds->obj = (t_rmat *)(mod->r_mat);
-
-                            /*! Create and connect the data structure n->ds->next to mod->kappa */
-                ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
-                            ds = ds->next;
-                ds->obj = (scalar_dbl *)(mod->kappa);
-
-                            /*! Create and connect the data structure n->ds->next to mod->s_opt->opt_kappa */
-                ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
-                            ds = ds->next;
-                ds->obj = (int *)(&mod->s_opt->opt_kappa);
-
-                            /*! Create and connect the data structure n->ds->next to mod->s_opt->opt_rr */
-                ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
-                ds = ds->next;
-                            ds->obj = (int *)(&mod->s_opt->opt_rr);
-
-                            /*! Create and connect the data structure n->ds->next to mod->whichmodel */
-                ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
-                ds = ds->next;
-                            ds->obj = (int *)(&mod->whichmodel);
-
-                            /*! Create and connect the data structure n->ds->next to mod->modelname */
-                ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
-                ds = ds->next;
-                            ds->obj = (t_string *)(mod->modelname);
-
-                            /*! Create and connect the data structure n->ds->next to mod->ns */
-                ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
-                ds = ds->next;
-                            ds->obj = (int *)(&mod->ns);
-
-                            /*! Create and connect the data structure n->ds->next to mod->modelname */
-                ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
-                ds = ds->next;
-                            ds->obj = (t_string *)(mod->custom_mod_string);
-                          }
-                        else
-                          {
-                            /*! Connect to already extisting r_mat & kappa structs. */
-                            t_ds *ds;
-
-                            ds = instance->ds;
-                            Free(mod->r_mat);
-                            mod->r_mat             = (t_rmat *)ds->obj;
-
-                            ds = ds->next;
-                            Free_Scalar_Dbl(mod->kappa);
-                            mod->kappa             = (scalar_dbl *)ds->obj;
-
-                            ds = ds->next;
-                            mod->s_opt->opt_kappa  = *((int *)ds->obj);
-
-                            ds = ds->next;
-                            mod->s_opt->opt_rr     = *((int *)ds->obj);
-
-                            ds = ds->next;
-                            mod->whichmodel        = *((int *)ds->obj);
-
-                            ds = ds->next;
-                            Free_String(mod->modelname);
-                            mod->modelname         = (t_string *)ds->obj;
-
-                            ds = ds->next;
-                            mod->ns                = *((int *)ds->obj);
-
-                            ds = ds->next;
-                            Free_String(mod->custom_mod_string);
-                            mod->custom_mod_string = (t_string *)ds->obj;
-                          }
-                      }
-
-                    ////////////////////////////////////////
-                    //           STATE FREQS              //
-                    ////////////////////////////////////////
-
-            else if(!strcmp(parent->name,"equfreqs"))
-              {
-
-            // If n->ds == NULL, the corrresponding node data structure, n->ds, has not
-            // been initialized. If not, do nothing.
-            if(instance->ds->obj == NULL)
-                          {
-                            Make_Efrq_From_XML_Node(instance,io,mod);
-
-                            t_ds *ds;
-
-                            ds = instance->ds;
-                            ds->obj = (t_efrq *)mod->e_frq;
-
-                ds->next = (t_ds *)mCalloc(1,sizeof(t_ds));
-                            ds = ds->next;
-                            ds->obj = (int *)(&mod->s_opt->opt_state_freq);
-
-                ds->next = (t_ds *)mCalloc(1,sizeof(t_ds));
-                            ds = ds->next;
-                            ds->obj = (int *)(&mod->s_opt->user_state_freq);
-
-                ds->next = (t_ds *)mCalloc(1,sizeof(t_ds));
-                            ds = ds->next;
-                            ds->obj = (vect_dbl *)(mod->user_b_freq);
-                          }
-                        else
-                          {
-                            // Connect the data structure n->ds to mod->e_frq
-
-                            ds = instance->ds;
-                            mod->e_frq = (t_efrq *)ds->obj;
-
-                            ds = ds->next;
-                            mod->s_opt->opt_state_freq = *((int *)ds->obj);
-
-                            ds = ds->next;
-                            mod->s_opt->user_state_freq = *((int *)ds->obj);
-
-                            ds = ds->next;
-                            Free_Vect_Dbl(mod->user_b_freq);
-                            mod->user_b_freq = (vect_dbl *)ds->obj;
-                          }
-                      }
-
-                    //////////////////////////////////////////
-                    //             TOPOLOGY                 //
-                    //////////////////////////////////////////
-
-            else if(!strcmp(parent->name,"topology"))
-              {
-            if(parent->ds->obj == NULL) Make_Topology_From_XML_Node(instance,io,iomod);
-
-                        ds = parent->ds;
-
-                        int buff;
-                        ds->obj = (int *)(& buff);
-                      }
-
-            //////////////////////////////////////////
-            //                RAS                   //
-            //////////////////////////////////////////
-
-            else if(!strcmp(parent->name,"siterates"))
-              {
-            char *rate_value = NULL;
-            /* scalar_dbl *r; */
-                        phydbl val;
-
-            /*! First time we process this 'siterates' node, check that its format is valid.
-                          and process it afterwards.
-                        */
-            if(parent->ds->obj == NULL)
-              {
-                            class_number = 0;
-
-                            Make_RAS_From_XML_Node(parent,iomod);
-
-                            ds = parent->ds;
-
-                ds->obj = (t_ras *)iomod->ras;
-
-                ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
-                            ds = ds->next;
-                ds->obj = (int *)(&iomod->s_opt->opt_alpha);
-
-                ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
-                            ds = ds->next;
-                ds->obj = (int *)(&iomod->s_opt->opt_free_mixt_rates);
-              }
-            else /*! Connect ras struct to already defined one. Same for opt_alpha & opt_free_mixt_rates */
-              {
-                if(iomod->ras != (t_ras *)parent->ds->obj) Free_RAS(iomod->ras);
-                iomod->ras = (t_ras *)parent->ds->obj;
-                iomod->s_opt->opt_alpha = *((int *)parent->ds->next->obj);
-                iomod->s_opt->opt_free_mixt_rates = *((int *)parent->ds->next->next->obj);
-              }
-
-            rate_value = XML_Get_Attribute_Value(instance,"init.value");
-
-                        val = 1.;
-                        if(rate_value) val = String_To_Dbl(rate_value);
-
-            if(instance->ds->obj == NULL)
-              {
-                instance->ds->obj = (phydbl *)(&val);
-                instance->ds->next = (t_ds *)mCalloc(1,sizeof(t_ds));
-                instance->ds->next->obj = (int *)(class_num + class_number);
-
-                iomod->ras->gamma_rr->v[class_number] = val;
-                iomod->ras->gamma_rr_unscaled->v[class_number] = val;
-
-                            iomod->ras->init_rr = NO;
-
-                            if(Are_Equal(val,0.0,1E-20) == NO) class_number++;
-              }
-
-
-                        /*! Note: ras is already connected to the relevant t_ds stucture. No need
-                          to connect ras->gamma_rr or ras->p_invar */
-
-            /*! Invariant */
-            if(Are_Equal(val,0.0,1E-20))
-              {
-                mod->ras->invar = YES;
-              }
-            else
-              {
-                mod->ras->parent_class_number = *((int *)instance->ds->next->obj);
-              }
-
-            xml_node *orig_w = NULL;
-                orig_w = XML_Search_Node_Attribute_Value("appliesto",instance->id,YES,instance->parent);
-
-                if(orig_w)
-                  {
-                    char *weight;
-                    weight = XML_Get_Attribute_Value(orig_w,"value");
-                if(mod->ras->invar == YES)
-                  {
-                iomod->ras->pinvar->v = String_To_Dbl(weight);
-                  }
-                else
-                  {
-                                int class;
-                                class = *((int *)instance->ds->next->obj);
-                iomod->ras->gamma_r_proba->v[class] = String_To_Dbl(weight);
-                                iomod->ras->init_r_proba = NO;
-                  }
-                  }
-              }
-
-            //////////////////////////////////////////////
-            //           BRANCH LENGTHS                 //
-            //////////////////////////////////////////////
-
-            else if(!strcmp(parent->name,"branchlengths"))
-              {
-            int i;
-            int n_otu;
-
-                        n_otu = tree->n_otu;
-                        
-                        if(instance->ds->obj == NULL)
-                          {
-                            if(!lens)
-                              {
-                                ori_lens         = (scalar_dbl **)mCalloc(2*tree->n_otu-1,sizeof(scalar_dbl *));
-                                ori_lens_old     = (scalar_dbl **)mCalloc(2*tree->n_otu-1,sizeof(scalar_dbl *));
-                                
-                                ori_lens_var     = (scalar_dbl **)mCalloc(2*tree->n_otu-1,sizeof(scalar_dbl *));
-                                ori_lens_var_old = (scalar_dbl **)mCalloc(2*tree->n_otu-1,sizeof(scalar_dbl *));
-
-                                lens     = ori_lens;
-                                lens_old = ori_lens_old;
-
-                                lens_var     = ori_lens_var;
-                                lens_var_old = ori_lens_var_old;
-
-                                lens_size = 2*tree->n_otu-1;
-                              }
-                            else
-                              {
-                                ori_lens         = (scalar_dbl **)mRealloc(ori_lens,2*tree->n_otu-1+lens_size,sizeof(scalar_dbl *));
-                                ori_lens_old     = (scalar_dbl **)mRealloc(ori_lens_old,2*tree->n_otu-1+lens_size,sizeof(scalar_dbl *));
-
-                                ori_lens_var     = (scalar_dbl **)mRealloc(ori_lens_var,2*tree->n_otu-1+lens_size,sizeof(scalar_dbl *));
-                                ori_lens_var_old = (scalar_dbl **)mRealloc(ori_lens_var_old,2*tree->n_otu-1+lens_size,sizeof(scalar_dbl *));
-
-                                lens     = ori_lens     + lens_size;;
-                                lens_old = ori_lens_old + lens_size;;
-
-                                lens_var     = ori_lens_var     + lens_size;;
-                                lens_var_old = ori_lens_var_old + lens_size;;
-
-                                lens_size += 2*tree->n_otu-1;
-                              }
-                            
-                            For(i,2*tree->n_otu-1)
-                              {
-                                lens[i] = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
-                                Init_Scalar_Dbl(lens[i]);
-                                
-                                lens_old[i] = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
-                                Init_Scalar_Dbl(lens_old[i]);
-                                
-                                lens_var[i] = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
-                    Init_Scalar_Dbl(lens_var[i]);
-
-                    lens_var_old[i] = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
-                    Init_Scalar_Dbl(lens_var_old[i]);
-
-                                Free_Scalar_Dbl(tree->a_edges[i]->l);
-                                Free_Scalar_Dbl(tree->a_edges[i]->l_old);
-
-                                Free_Scalar_Dbl(tree->a_edges[i]->l_var);
-                                Free_Scalar_Dbl(tree->a_edges[i]->l_var_old);
-
-                                if(tree->prev &&
-                                   tree->prev->a_edges[i]->l == mixt_tree->a_edges[i]->l &&
-                                   tree->prev->is_mixt_tree == NO)
-                                  {
-                                    PhyML_Printf("\n== %p %p",tree->a_edges[i]->l,mixt_tree->a_edges[i]->l);
-                                    PhyML_Printf("\n== Only one set of edge lengths is allowed ");
-                                    PhyML_Printf("\n== in a 'partitionelem'. Please fix your XML file.");
-                                    Exit("\n");
-                                  }
-                  }
-
-                            char *opt_bl = NULL;
-                            opt_bl = XML_Get_Attribute_Value(instance,"optimise.lens");
-
-                            if(opt_bl)
-                              {
-                                if(!strcmp(opt_bl,"yes") || !strcmp(opt_bl,"true"))
-                                  {
-                                    iomod->s_opt->opt_bl = YES;
-                                  }
-                                else
-                                  {
-                                    iomod->s_opt->opt_bl = NO;
-                                  }
-                              }
-
-                            ds = instance->ds;
-
-                ds->obj       = (scalar_dbl **)lens;
-
-                ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
-                            ds            = ds->next;
-                ds->obj       = (scalar_dbl **)lens_old;
-
-                ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
-                            ds            = ds->next;
-                ds->obj       = (scalar_dbl **)lens_var;
-
-                ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
-                            ds            = ds->next;
-                ds->obj       = (scalar_dbl **)lens_var_old;
-
-                ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
-                            ds            = ds->next;
-                ds->obj       = (int *)(&iomod->s_opt->opt_bl);
-              }
-            else
-              {
-                            For(i,2*tree->n_otu-1)
-                              {
-                                Free_Scalar_Dbl(tree->a_edges[i]->l);
-                                Free_Scalar_Dbl(tree->a_edges[i]->l_old);
-                                Free_Scalar_Dbl(tree->a_edges[i]->l_var);
-                                Free_Scalar_Dbl(tree->a_edges[i]->l_var_old);
-                              }
-
-                            ds = instance->ds;
-
-                lens     = (scalar_dbl **)ds->obj;
-
-                            ds = ds->next;
-                lens_old = (scalar_dbl **)ds->obj;
-
-                            ds = ds->next;
-                lens_var = (scalar_dbl **)ds->obj;
-
-                            ds = ds->next;
-                lens_var_old = (scalar_dbl **)ds->obj;
-
-                            ds = ds->next;
-                            iomod->s_opt->opt_bl = *((int *)ds->obj);
-              }
-
-            if(n_otu != tree->n_otu)
-              {
-                PhyML_Printf("\n== All the data sets should display the same number of sequences.");
-                PhyML_Printf("\n== Found at least one data set with %d sequences and one with %d sequences.",n_otu,tree->n_otu);
-                Exit("\n");
-              }
-
-            For(i,2*tree->n_otu-1)
-                          {
-                            tree->a_edges[i]->l          = lens[i];
-                            mixt_tree->a_edges[i]->l     = lens[i];
-                            tree->a_edges[i]->l_old      = lens_old[i];
-                            mixt_tree->a_edges[i]->l_old = lens_old[i];
-
-                            tree->a_edges[i]->l_var          = lens_var[i];
-                            mixt_tree->a_edges[i]->l_var     = lens_var[i];
-                            tree->a_edges[i]->l_var_old      = lens_var_old[i];
-                            mixt_tree->a_edges[i]->l_var_old = lens_var_old[i];
-                          }
-                      }
-
-            ///////////////////////////////////////////////
-            ///////////////////////////////////////////////
-            ///////////////////////////////////////////////
-
-            if(first_m_elem > 1) // Done with this component, move to the next tree and model
-              {
-            if(tree->next) tree = tree->next;
-            if(mod->next)   mod  = mod->next;
-              }
-
-          }
-          else if(list[j] != ' ')
-          {
-            component[i] = list[j];
-            i++;
-          }
-        j++;
-        if(j == (int)strlen(list)+1) break;
-
-          } // end of mixtureelem processing
-        } // end of partitionelem processing
-    }
       while(1);
     }
   while(1);
-
-
-  if(ori_lens)     Free(ori_lens);
-  if(ori_lens_old) Free(ori_lens_old);
+  
+  
+  if(ori_lens)         Free(ori_lens);
+  if(ori_lens_old)     Free(ori_lens_old);
   if(ori_lens_var)     Free(ori_lens_var);
   if(ori_lens_var_old) Free(ori_lens_var_old);
 

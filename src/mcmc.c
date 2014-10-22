@@ -4486,14 +4486,14 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_migrep_lbda]          = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_mu]            = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_rad]           = 3.0;
-  mcmc->move_weight[mcmc->num_move_migrep_insert_disk]   = 5.0;
-  mcmc->move_weight[mcmc->num_move_migrep_delete_disk]   = 5.0;  
+  mcmc->move_weight[mcmc->num_move_migrep_insert_disk]   = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_delete_disk]   = 1.0;  
   mcmc->move_weight[mcmc->num_move_migrep_move_disk_ct]  = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_move_disk_ud]  = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_swap_disk]     = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_delete_hit]    = 5.0;
-  mcmc->move_weight[mcmc->num_move_migrep_insert_hit]    = 5.0;
-  mcmc->move_weight[mcmc->num_move_migrep_move_ldsk]     = 5.0;
+  mcmc->move_weight[mcmc->num_move_migrep_insert_hit]    = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_move_ldsk]     = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_ldsk_ct]       = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_shift_ct_med]  = 8.0;
 # else
@@ -5270,8 +5270,8 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
 {
   phydbl u,alpha,ratio;
   phydbl cur_lnL, new_lnL, hr,T;
-  t_dsk  *disk,*target_disk,**valid_disks;
-  int i,block,n_valid_disks;
+  t_dsk  *disk,**target_disk,**valid_disks;
+  int i,j,block,n_valid_disks,n_delete_disks;
 
   disk          = NULL;
   new_lnL       = UNLIKELY;
@@ -5298,20 +5298,28 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
 
   if(!n_valid_disks) return;
   
-  /* Uniform selection of a disk where no coalescent nor 'hit' occurred */
-  i = Rand_Int(0,n_valid_disks-1);
-  target_disk = valid_disks[i];
-  Free(valid_disks);
+  n_delete_disks = Rand_Int(1,MIN(10,n_valid_disks));
   
-  MIGREP_Remove_Disk(target_disk);
-  
+  target_disk = (t_dsk **)mCalloc(n_delete_disks,sizeof(t_dsk *));
+
   disk = tree->disk;
   while(disk->prev) disk = disk->prev;
   T = disk->time;
 
-  For(i,tree->mmod->n_dim) hr -= LOG(tree->mmod->lim->lonlat[i]);
-  hr += LOG(n_valid_disks);
-  hr -= LOG(-T);
+  For(j,n_delete_disks)
+    {
+      /* Uniform selection of a disk where no coalescent nor 'hit' occurred */
+      i = Rand_Int(0,n_valid_disks-1);
+      target_disk[j] = valid_disks[i];
+  
+      MIGREP_Remove_Disk(target_disk[j]);
+  
+      For(i,tree->mmod->n_dim) hr -= LOG(tree->mmod->lim->lonlat[i]);
+      hr += LOG(n_valid_disks-j);
+      hr -= LOG(-T);
+    }
+
+  Free(valid_disks);
   
   new_lnL = MIGREP_Lk(tree);
   ratio += (new_lnL - cur_lnL);
@@ -5330,11 +5338,9 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
   if(u > alpha) /* Reject */
     {
       /* printf("- Reject"); */
-
-      MIGREP_Insert_Disk(target_disk);
+      For(j,n_delete_disks) MIGREP_Insert_Disk(target_disk[j]);
       
       /* tree->mmod->c_lnL = cur_lnL; */
-
       new_lnL = MIGREP_Lk(tree);
       if(Are_Equal(new_lnL,cur_lnL,1.E-3) == NO) 
         {
@@ -5344,9 +5350,10 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
     }
   else
     {
-      Free_Disk(target_disk);
+      For(j,n_delete_disks) Free_Disk(target_disk[j]);
       /* printf("- Accept"); */
     }
+  Free(target_disk);
 }
 #endif
 
@@ -5356,16 +5363,17 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
 #ifdef MIGREP
 void MCMC_MIGREP_Insert_Disk(t_tree *tree)
 {
-  t_dsk  *disk,*new_disk,*target_disk;
+  t_dsk  *disk,**new_disk,**target_disk;
   phydbl T,t;
   phydbl cur_lnL, new_lnL, hr;
   phydbl u,alpha,ratio;
-  int i,n_valid_disks;
+  int i,j,n_valid_disks,n_insert_disks;
 
-  disk     = NULL;
-  new_lnL  = UNLIKELY;
-  cur_lnL  = tree->mmod->c_lnL;
-  hr       = 0.0;
+  disk           = NULL;
+  new_lnL        = UNLIKELY;
+  cur_lnL        = tree->mmod->c_lnL;
+  hr             = 0.0;
+  n_insert_disks = 0;
 
   if(tree->disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
@@ -5381,27 +5389,35 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
       disk = disk->prev;
     }
   while(disk->prev);
-  
-  t = Uni()*T;
-  disk = tree->disk;
-  while(disk->time > t) disk = disk->prev;
-  target_disk = disk->next;
 
-  new_disk= MIGREP_Make_Disk_Event(tree->mmod->n_dim,tree->n_otu);
-  MIGREP_Init_Disk_Event(new_disk,tree->mmod->n_dim,tree->mmod);
-  
-  new_disk->prev = target_disk->prev;
-  new_disk->next = target_disk;
-  
-  new_disk->time = t;
-    
-  MIGREP_Insert_Disk(new_disk);
-  
-  For(i,tree->mmod->n_dim) new_disk->centr->lonlat[i] = Uni()*tree->mmod->lim->lonlat[i];
+  n_insert_disks = Rand_Int(1,10);
 
-  For(i,tree->mmod->n_dim) hr += LOG(tree->mmod->lim->lonlat[i]);
-  hr -= LOG(n_valid_disks+1);
-  hr += LOG(-T);
+  target_disk = (t_dsk **)mCalloc(n_insert_disks,sizeof(t_dsk *));
+  new_disk    = (t_dsk **)mCalloc(n_insert_disks,sizeof(t_dsk *));
+
+  For(j,n_insert_disks)
+    {
+      t = Uni()*T;
+      disk = tree->disk;
+      while(disk->time > t) disk = disk->prev;
+      target_disk[j] = disk->next;
+      
+      new_disk[j]= MIGREP_Make_Disk_Event(tree->mmod->n_dim,tree->n_otu);
+      MIGREP_Init_Disk_Event(new_disk[j],tree->mmod->n_dim,tree->mmod);
+      
+      new_disk[j]->prev = target_disk[j]->prev;
+      new_disk[j]->next = target_disk[j];
+      
+      new_disk[j]->time = t;
+      
+      MIGREP_Insert_Disk(new_disk[j]);
+  
+      For(i,tree->mmod->n_dim) new_disk[j]->centr->lonlat[i] = Uni()*tree->mmod->lim->lonlat[i];
+
+      For(i,tree->mmod->n_dim) hr += LOG(tree->mmod->lim->lonlat[i]);
+      hr -= LOG(n_valid_disks+1+j);
+      hr += LOG(-T);
+    }
 
   new_lnL = MIGREP_Lk(tree);
   ratio = (new_lnL - cur_lnL);
@@ -5420,9 +5436,13 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
   if(u > alpha) /* Reject */
     {
       /* printf("+ Reject"); */
-
-      MIGREP_Remove_Disk(new_disk);      
-      Free_Disk(new_disk);
+      For(j,n_insert_disks)
+        {
+          MIGREP_Remove_Disk(new_disk[j]);      
+          Free_Disk(new_disk[j]);
+        }
+      Free(target_disk);
+      Free(new_disk);
 
       /* tree->mmod->c_lnL = cur_lnL; */
 

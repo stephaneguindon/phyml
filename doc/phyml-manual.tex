@@ -2415,7 +2415,10 @@ It implements a  Markov Chain Monte Carlo  approach that samples from the  poste
 the three  parameters of  interest in this  model, namely  the competition intensity  $\lambda$, the
 dispersal  bias parameter  $\sigma$ and  the overal  dispersal rate  $\tau$. The  data consist  in a
 phylogeny with node heights proportional to their ages and geographical locations for evety taxon in
-this tree.
+this tree. An important assumption of the model is that each node in the phylogeny corresponds to a
+speciation {\em and} a dispersal event. As a consequence, this model does not authorize a given taxon to
+occupy more than one locations. Note however that the converse is not true: a given location can be
+occupied by several different taxa.
 
 \subsubsection{Installing PhyloGeo}
 
