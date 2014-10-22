@@ -34,8 +34,10 @@ t_ldsk *MIGREP_Prev_Coal_Lindisk(t_ldsk *t);
 t_ldsk *MIGREP_Next_Coal_Lindisk(t_ldsk *t);
 int MIGREP_Get_Next_Direction(t_ldsk *young, t_ldsk *old);
 void MIGREP_One_New_Traj_Given_Disk(t_ldsk *s_ldsk, t_ldsk *e_ldsk);
-void MIGREP_Update_Lindisk_List(phydbl time, t_ldsk **list, int *pos, t_dsk *disk);
-void MIGREP_Update_Lindisk_List_Pre(t_ldsk *ldsk, phydbl time, t_ldsk **list, int *pos);
+void MIGREP_Update_Lindisk_List(t_tree *tree);
+void MIGREP_Update_Lindisk_List_Pre(t_dsk *disk);
+/* void MIGREP_Update_Lindisk_List(phydbl time, t_ldsk **list, int *pos, t_dsk *disk); */
+/* void MIGREP_Update_Lindisk_List_Pre(t_ldsk *ldsk, phydbl time, t_ldsk **list, int *pos); */
 void MIGREP_Connect_Ldsk_Given_Disk(t_dsk **disk, int n_disk, t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y);
 void MIGREP_Print_Struct(char sign, t_tree *tree);
 phydbl MIGREP_Uniform_Path_Density(t_ldsk *y_ldsk, t_ldsk *o_ldsk);

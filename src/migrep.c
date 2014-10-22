@@ -48,7 +48,8 @@ int MIGREP_Draw(GtkWidget *widget, cairo_t *cr, gpointer *data)
   while(disk->next) disk = disk->next;
   do
     {      
-      MIGREP_Update_Lindisk_List(disk->time,disk->ldsk_a,&(disk->n_ldsk_a),disk);
+      /* MIGREP_Update_Lindisk_List(disk->time,disk->ldsk_a,&(disk->n_ldsk_a),disk); */
+      MIGREP_Update_Lindisk_List(tree);
 
       /* cairo_move_to(cr,0,FABS(disk->time)/h); */
       /* cairo_show_text(cr,disk->id); */
@@ -261,7 +262,9 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   disk->mmod             = mmod;
   disk->centr->lonlat[0] = .5*width;
   disk->centr->lonlat[1] = .5*height;      
-  
+  disk->ldsk_a           = ldsk_a;
+  disk->n_ldsk_a         = n_otu;
+
   /* Allocate and initialise for next event */
   disk->prev = MIGREP_Make_Disk_Event(n_dim,n_otu);
   MIGREP_Init_Disk_Event(disk->prev,n_dim,NULL);
@@ -282,8 +285,8 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   disk = disk->prev;
 
   /* Initialize parameters of migrep model */
-  mmod->lbda = 0.3;
-  mmod->mu   = 0.7;
+  mmod->lbda = 0.1;
+  mmod->mu   = 0.9;
   mmod->rad  = 2.0;
   
   curr_t      = 0.0;
@@ -472,13 +475,15 @@ phydbl MIGREP_Lk(t_tree *tree)
   log_one_mu = LOG(1. - mmod->mu);  
   lnL        = 0.0;
 
+  MIGREP_Update_Lindisk_List(tree);
+
   /* PhyML_Printf("\n\n. New likelihood call"); */
   do
     {
       /* Likelihood for the disk center */
       For(i,disk->mmod->n_dim) lnL -= LOG(disk->mmod->lim->lonlat[i]);
 
-      MIGREP_Update_Lindisk_List(disk->time,disk->ldsk_a,&(disk->n_ldsk_a),disk);
+      /* MIGREP_Update_Lindisk_List(disk->time,disk->ldsk_a,&(disk->n_ldsk_a),disk); */
       
       /* PhyML_Printf("\n. Likelihood - disk %s has %d lindisk nodes [%f] rad: %f",disk->id,disk->n_ldsk_a,lnL,mmod->rad); */
       /* fflush(NULL); */
@@ -494,7 +499,7 @@ phydbl MIGREP_Lk(t_tree *tree)
           
           if(was_hit == YES && !disk->prev->ldsk)
             {
-              PhyML_Printf("\n. disk: %s disk->prev: %s",disk->id,disk->prev->id);
+              PhyML_Printf("\n== disk: %s disk->prev: %s",disk->id,disk->prev->id);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
 
@@ -616,11 +621,7 @@ void MIGREP_MCMC(t_tree *tree)
 
   tree->mmod->lbda = Uni()*(tree->mmod->max_lbda - tree->mmod->min_lbda) + tree->mmod->min_lbda;
   tree->mmod->mu   = Uni()*(tree->mmod->max_mu - tree->mmod->min_mu) + tree->mmod->min_mu;
-
-  MIGREP_Initial_Ldsk_Pos(tree);
-  min_rad = MIGREP_Min_Radius(tree);
-  /* tree->mmod->rad  = Uni()*(MIN(tree->mmod->max_rad,min_rad+2.0)-min_rad) + min_rad; */
-  tree->mmod->rad  = min_rad;
+  tree->mmod->rad  = tree->mmod->max_rad;
 
   /* gtk_widget_queue_draw(tree->draw_area); */
   /* sleep(3); */
@@ -675,7 +676,6 @@ void MIGREP_MCMC(t_tree *tree)
 
       For(move,tree->mcmc->n_moves) if(tree->mcmc->move_weight[move] > u) break;
       
-
       if(!strcmp(tree->mcmc->move_name[move],"migrep_lbda"))
         MCMC_MIGREP_Lbda(tree);
 
@@ -709,11 +709,11 @@ void MIGREP_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"migrep_move_ldsk"))
         MCMC_MIGREP_Move_Ldsk(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_shift_ldsk_to_centre")) */
-      /*   MCMC_MIGREP_Shift_Ldsk_To_Centre(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_shift_ldsk_to_centre"))
+        MCMC_MIGREP_Shift_Ldsk_To_Centre(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_shift_centr_to_median")) */
-      /*   MCMC_MIGREP_Shift_Centre_To_Median(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_shift_centr_to_median"))
+        MCMC_MIGREP_Shift_Centre_To_Median(tree);
 
       tree->mcmc->run++;
       MCMC_Get_Acc_Rates(tree->mcmc);
@@ -1301,55 +1301,94 @@ int MIGREP_Get_Next_Direction(t_ldsk *young, t_ldsk *old)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-void MIGREP_Update_Lindisk_List(phydbl time, t_ldsk **list, int *pos, t_dsk *disk)
-{
-  t_dsk *root_dsk;
+/* void MIGREP_Update_Lindisk_List(phydbl time, t_ldsk **list, int *pos, t_dsk *disk) */
+/* { */
+/*   t_dsk *root_dsk; */
 
-  *pos = 0;
-  root_dsk = disk;
-  while(root_dsk->prev) root_dsk = root_dsk->prev;
-  /* printf("\n. root_dsk: %s",root_dsk?root_dsk->id:"xx"); */
-  MIGREP_Update_Lindisk_List_Pre(root_dsk->ldsk,time,list,pos);
+/*   *pos = 0; */
+/*   root_dsk = disk; */
+/*   while(root_dsk->prev) root_dsk = root_dsk->prev; */
+/*   /\* printf("\n. root_dsk: %s",root_dsk?root_dsk->id:"xx"); *\/ */
+/*   MIGREP_Update_Lindisk_List_Pre(root_dsk->ldsk,time,list,pos); */
+/* } */
+
+/* /\*\//////////////////////////////////////////////////////////// */
+/* ////////////////////////////////////////////////////////////\*\/ */
+
+/* void MIGREP_Update_Lindisk_List_Pre(t_ldsk *ldsk, phydbl time, t_ldsk **list, int *pos) */
+/* { */
+/*   /\* printf("\n. time: %f pos: %d ldsk: %s disk: %s n_next: %d ldsk->disk->time: %f disk: %s", *\/ */
+/*   /\*        time, *\/ */
+/*   /\*        *pos, *\/ */
+/*   /\*        ldsk ? ldsk->coord->id : "xx", *\/ */
+/*   /\*        ldsk ? ldsk->disk->id : "zz", *\/ */
+/*   /\*        ldsk ? ldsk->n_next : -1, *\/ */
+/*   /\*        ldsk ? ldsk->disk->time : -1., *\/ */
+/*   /\*        ldsk ? ldsk->disk->id : "yy"); fflush(NULL); *\/ */
+
+/*   if(ldsk == NULL) Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
+
+/*   if((ldsk->prev != NULL) && (ldsk->disk->time > time) && (ldsk->prev->disk->time < time)) */
+/*     { */
+/*       list[*pos] = ldsk; */
+/*       *pos = *pos + 1; */
+/*     } */
+/*   else if(Are_Equal(ldsk->disk->time,time,1.E-10)) */
+/*     { */
+/*       list[*pos] = ldsk; */
+/*       *pos = *pos + 1;       */
+/*     } */
+/*   else if(ldsk->disk->time < time) */
+/*     { */
+/*       int i; */
+/*       For(i,ldsk->n_next) */
+/*         MIGREP_Update_Lindisk_List_Pre(ldsk->next[i],time,list,pos);     */
+/*     } */
+/*   else Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
+    
+/* } */
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+void MIGREP_Update_Lindisk_List(t_tree *tree)
+{
+  MIGREP_Update_Lindisk_List_Pre(tree->disk->prev);
 }
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-void MIGREP_Update_Lindisk_List_Pre(t_ldsk *ldsk, phydbl time, t_ldsk **list, int *pos)
+void MIGREP_Update_Lindisk_List_Pre(t_dsk *disk)
 {
-  /* printf("\n. time: %f pos: %d ldsk: %s disk: %s n_next: %d ldsk->disk->time: %f disk: %s", */
-  /*        time, */
-  /*        *pos, */
-  /*        ldsk ? ldsk->coord->id : "xx", */
-  /*        ldsk ? ldsk->disk->id : "zz", */
-  /*        ldsk ? ldsk->n_next : -1, */
-  /*        ldsk ? ldsk->disk->time : -1., */
-  /*        ldsk ? ldsk->disk->id : "yy"); fflush(NULL); */
-
-  if(ldsk == NULL) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-
-  if((ldsk->prev != NULL) && (ldsk->disk->time > time) && (ldsk->prev->disk->time < time))
-    {
-      list[*pos] = ldsk;
-      *pos = *pos + 1;
-    }
-  else if(Are_Equal(ldsk->disk->time,time,1.E-10))
-    {
-      list[*pos] = ldsk;
-      *pos = *pos + 1;      
-    }
-  else if(ldsk->disk->time < time)
+  if(!disk) return;
+  else
     {
       int i;
-      For(i,ldsk->n_next)
-        MIGREP_Update_Lindisk_List_Pre(ldsk->next[i],time,list,pos);    
+      disk->n_ldsk_a = 0;
+      For(i,disk->next->n_ldsk_a)
+        {
+          if(disk->next->ldsk_a[i]->prev != disk->ldsk)
+            {
+              disk->ldsk_a[disk->n_ldsk_a] = disk->next->ldsk_a[i];
+              disk->n_ldsk_a++;
+            }
+        }
+      
+      if(disk->ldsk) 
+        {
+          disk->ldsk_a[disk->n_ldsk_a] = disk->ldsk;
+          disk->n_ldsk_a++;          
+        }
+
+      if(disk->n_ldsk_a == 0) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+      MIGREP_Update_Lindisk_List_Pre(disk->prev);    
     }
-  else Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-    
 }
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
 
 /* Connect all the ldsk between y_ldsk (young ldsk) and o_ldsk (old ldsk).
    The disk between y_ldsk and o_ldsk should have all been set already
@@ -1419,7 +1458,8 @@ void MIGREP_Print_Struct(char sign, t_tree *tree)
              disk->ldsk?disk->ldsk->is_coal:-1,
              tree->mmod->rad); fflush(NULL);
 
-      MIGREP_Update_Lindisk_List(disk->time,disk->ldsk_a,&(disk->n_ldsk_a),disk);
+      /* MIGREP_Update_Lindisk_List(disk->time,disk->ldsk_a,&(disk->n_ldsk_a),disk); */
+      MIGREP_Update_Lindisk_List(tree);
 
       For(i,disk->n_ldsk_a)
         {
@@ -1451,7 +1491,8 @@ void MIGREP_Check_Struct(t_tree *tree)
   while(disk->prev) disk = disk->prev;
   do
     {
-      MIGREP_Update_Lindisk_List(disk->time,disk->ldsk_a,&(disk->n_ldsk_a),disk);
+      /* MIGREP_Update_Lindisk_List(disk->time,disk->ldsk_a,&(disk->n_ldsk_a),disk); */
+      MIGREP_Update_Lindisk_List(tree);
 
       For(i,disk->n_ldsk_a)
         {

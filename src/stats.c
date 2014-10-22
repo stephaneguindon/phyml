@@ -95,9 +95,7 @@ int Rand_Int(int min, int max)
 /*   return (int)FLOOR(u); */
 
   int u;
-  
   if(max < min) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-
   u = rand();
   return (u%(max+1-min)+min);
 

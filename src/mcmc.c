@@ -4485,7 +4485,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
 # if defined (MIGREP)
   mcmc->move_weight[mcmc->num_move_migrep_lbda]          = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_mu]            = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_rad]           = 5.0;
+  mcmc->move_weight[mcmc->num_move_migrep_rad]           = 3.0;
   mcmc->move_weight[mcmc->num_move_migrep_insert_disk]   = 5.0;
   mcmc->move_weight[mcmc->num_move_migrep_delete_disk]   = 5.0;  
   mcmc->move_weight[mcmc->num_move_migrep_move_disk_ct]  = 1.0;
@@ -4493,9 +4493,9 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_migrep_swap_disk]     = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_delete_hit]    = 5.0;
   mcmc->move_weight[mcmc->num_move_migrep_insert_hit]    = 5.0;
-  mcmc->move_weight[mcmc->num_move_migrep_move_ldsk]     = 10.0;
+  mcmc->move_weight[mcmc->num_move_migrep_move_ldsk]     = 5.0;
   mcmc->move_weight[mcmc->num_move_migrep_ldsk_ct]       = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_shift_ct_med]  = 5.0;
+  mcmc->move_weight[mcmc->num_move_migrep_shift_ct_med]  = 8.0;
 # else
   mcmc->move_weight[mcmc->num_move_migrep_lbda]          = 0.0;
   mcmc->move_weight[mcmc->num_move_migrep_mu]            = 0.0;
@@ -5895,10 +5895,13 @@ void MCMC_MIGREP_Move_Disk_Updown(t_tree *tree)
   n_all_disks = 0;
   do
     {
-      if(!n_all_disks) all_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
-      else if(!(n_all_disks%block)) all_disks = (t_dsk **)mRealloc(all_disks,n_all_disks+block,sizeof(t_dsk *));
-      all_disks[n_all_disks] = disk;
-      n_all_disks++;
+      if(disk->ldsk && disk->ldsk->n_next == 1) /* do not move coalescent disks */
+        {
+          if(!n_all_disks) all_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
+          else if(!(n_all_disks%block)) all_disks = (t_dsk **)mRealloc(all_disks,n_all_disks+block,sizeof(t_dsk *));
+          all_disks[n_all_disks] = disk;
+          n_all_disks++;
+        }
       disk = disk->prev;
     }
   while(disk->prev);
@@ -5910,9 +5913,6 @@ void MCMC_MIGREP_Move_Disk_Updown(t_tree *tree)
   target_disk = all_disks[i];
   Free(all_disks);
   
-  /* Don't move coalescent nove */
-  if(target_disk->ldsk && target_disk->ldsk->n_next > 1) return;
-
   ori_time = target_disk->time;
   new_time = Uni()*(target_disk->next->time - target_disk->prev->time) + target_disk->prev->time;
   target_disk->time = new_time;
@@ -5977,8 +5977,8 @@ void MCMC_MIGREP_Swap_Disk(t_tree *tree)
   n_valid_disks = 0;
   do
     {
-      /* Record disk with either coalescent node or lineage displacement */
-      if(disk->ldsk)
+      /* Record disk with a lineage displacement (not coalescent)*/
+      if(disk->ldsk && disk->ldsk->n_next == 1)
         {
           if(!n_valid_disks) valid_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
           else if(!(n_valid_disks%block)) valid_disks = (t_dsk **)mRealloc(valid_disks,n_valid_disks+block,sizeof(t_dsk *));
@@ -5990,16 +5990,12 @@ void MCMC_MIGREP_Swap_Disk(t_tree *tree)
   while(disk->prev);
 
   if(!n_valid_disks) return;
-
   
   /* Uniform selection of a disk where either a coalescent or a 'hit/displacement' occurred */
   i = Rand_Int(0,n_valid_disks-1);
   target_disk = valid_disks[i];
   Free(valid_disks);
   
-  /* Don't swap coalescent node */
-  if(target_disk->ldsk && target_disk->ldsk->n_next > 1) return;
-
   ori_disk_old   = target_disk->prev;
   ori_disk_young = target_disk->next;
   ori_time       = target_disk->time;
@@ -6137,11 +6133,10 @@ void MCMC_MIGREP_Insert_Hit(t_tree *tree)
   MIGREP_Insert_Disk(new_disk);
 
   /* Which lineage is going to be hit ? */
-  MIGREP_Update_Lindisk_List(new_disk->time,new_disk->ldsk_a,&(new_disk->n_ldsk_a),new_disk);
-  hr += LOG(new_disk->n_ldsk_a);
+  hr += LOG(young_disk->n_ldsk_a);
 
-  young_ldsk = new_disk->ldsk_a[Rand_Int(0,new_disk->n_ldsk_a-1)];
-  old_ldsk = young_ldsk->prev;
+  young_ldsk = young_disk->ldsk_a[Rand_Int(0,young_disk->n_ldsk_a-1)];
+  old_ldsk   = young_ldsk->prev;
 
   /* Bail out if departure point is not within disk of arrival, in */
   /* which case the likelihood is zero */
@@ -6318,7 +6313,8 @@ void MCMC_MIGREP_Delete_Hit(t_tree *tree)
 
   dir_old_young = MIGREP_Get_Next_Direction(young_ldsk,old_ldsk);
 
-  MIGREP_Update_Lindisk_List(target_disk->time,target_disk->ldsk_a,&(target_disk->n_ldsk_a),target_disk);
+  /* Part of the Hastings ratio corresponding to the probability of selecting */
+  /* one of target_disk->n_ldsk_a to be hit */ 
   hr -= LOG(target_disk->n_ldsk_a);
 
   /* New connections between old_ldsk and young_ldsk */
@@ -6328,7 +6324,6 @@ void MCMC_MIGREP_Delete_Hit(t_tree *tree)
   /* Remove target disk */
   MIGREP_Remove_Disk(target_disk);
   
-
   /* Density for position of the center of target_disk */
   For(i,tree->mmod->n_dim)
     {
