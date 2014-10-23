@@ -28,7 +28,7 @@ void Simu_Loop(t_tree *mixt_tree)
   Set_Both_Sides(YES,mixt_tree);
   Lk(NULL,mixt_tree);
   mixt_tree->best_lnL = mixt_tree->c_lnL;
-  PhyML_Printf("\n. Current value of log-likelihood: %f",mixt_tree->c_lnL);
+  if(mixt_tree->mod->s_opt->print) PhyML_Printf("\n. Current value of log-likelihood: %f",mixt_tree->c_lnL);
 
   int n_tot_moves = 0;
   do
