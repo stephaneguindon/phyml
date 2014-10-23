@@ -1142,7 +1142,7 @@ typedef struct __Optimiz { /*! parameters to be optimised (mostly used in 'optim
   int          opt_five_branch;
   int              pars_thresh;
   int            hybrid_thresh;
-  int     opt_br_len_multipler;
+  int          opt_br_len_mult;
 
   phydbl        tree_size_mult; /*! tree size multiplier */
   phydbl     min_diff_lk_local;

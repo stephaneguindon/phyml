@@ -683,7 +683,7 @@ void Set_Defaults_Optimiz(t_opt *s_opt)
   s_opt->brent_it_max         = BRENT_IT_MAX;
   s_opt->steph_spr            = YES;
   s_opt->user_state_freq      = NO;
-  s_opt->opt_br_len_multipler = NO;
+  s_opt->opt_br_len_mult      = NO;
 
   /* s_opt->min_diff_lk_local    = 1.E-04; */
   /* s_opt->min_diff_lk_global   = 1.E-03; */

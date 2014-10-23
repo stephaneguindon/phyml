@@ -4895,7 +4895,7 @@ void PhyML_XML(char *xml_filename)
                                          "true","yes","y",
                                          "false","no","n");
           
-          if(select < 3) mixt_tree->mod->s_opt->opt_br_len_multipler = YES;
+          if(select < 3) mixt_tree->mod->s_opt->opt_br_len_mult = YES;
         }
 
 

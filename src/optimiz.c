@@ -682,17 +682,25 @@ void Optimize_Br_Len_Multiplier(t_tree *mixt_tree, int verbose)
 
   tree = mixt_tree;
   
-  lk_init = Get_Lk(tree);
 
   do
     {      
-      Generic_Brent_Lk(&(tree->mod->br_len_mult_unscaled->v),
-                       1.E-2,1.E+1,
-                       tree->mod->s_opt->min_diff_lk_local,
-                       tree->mod->s_opt->brent_it_max,
-                       tree->mod->s_opt->quickdirty,
-                       Wrap_Lk,NULL,mixt_tree,NULL,NO);
-  
+      if(tree->mod->s_opt->opt_br_len_mult == YES)
+        {
+          lk_init = Get_Lk(tree);
+          Generic_Brent_Lk(&(tree->mod->br_len_mult_unscaled->v),
+                           1.E-2,1.E+1,
+                           tree->mod->s_opt->min_diff_lk_local,
+                           tree->mod->s_opt->brent_it_max,
+                           tree->mod->s_opt->quickdirty,
+                           Wrap_Lk,NULL,mixt_tree,NULL,NO);
+
+          if(Get_Lk(tree) < lk_init - tree->mod->s_opt->min_diff_lk_local)
+            {
+              PhyML_Printf("\n== %f -- %f",lk_init,tree->c_lnL);
+              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+            }
+        }
       tree = tree->next_mixt;
     }
   while(tree);
@@ -709,14 +717,6 @@ void Optimize_Br_Len_Multiplier(t_tree *mixt_tree, int verbose)
       tree = tree->next_mixt;
     }
   while(tree);
-
-
-  tree = mixt_tree;
-  if(Get_Lk(tree) < lk_init - tree->mod->s_opt->min_diff_lk_local)
-    {
-      PhyML_Printf("\n== %f -- %f",lk_init,tree->c_lnL);
-      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-    }
 }
 
 /*////////////////////////////////////////////////////////////

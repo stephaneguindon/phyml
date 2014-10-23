@@ -2007,19 +2007,23 @@ void MIXT_Update_Br_Len_Multipliers(t_mod *mod)
   n_mixt = 0;
   do
     {
-      sum += loc->br_len_mult_unscaled->v;
-      n_mixt++;
+      if(loc->s_opt->opt_br_len_mult == YES)
+        {
+          sum += loc->br_len_mult_unscaled->v;
+          n_mixt++;
+        }
       loc = loc->next_mixt;
-      /* printf("\n. sum: %f",sum); */
     }
   while(loc);
-  /* printf("\n"); */
 
   loc = mod;
   do
     {
-      loc->br_len_mult->v = loc->br_len_mult_unscaled->v / sum;
-      loc->br_len_mult->v *= (phydbl)(n_mixt);
+      if(loc->s_opt->opt_br_len_mult == YES)
+        {
+          loc->br_len_mult->v = loc->br_len_mult_unscaled->v / sum;
+          loc->br_len_mult->v *= (phydbl)(n_mixt);
+        }
       loc = loc->next_mixt;
     }
   while(loc);
