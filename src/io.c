@@ -133,7 +133,7 @@ void R_rtree(char *s_tree_a, char *s_tree_d, t_node *a, t_tree *tree, int *n_int
   if(strstr(s_tree_a," "))
     {
       PhyML_Printf("\n== [%s]",s_tree_a);
-      Warn_And_Exit("\n== Err: the tree must not contain a ' ' character\n");
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
     }
 
   if(s_tree_d[0] == '(')
@@ -2425,7 +2425,7 @@ void Print_Model(t_mod *mod)
   PhyML_Printf("\n. alpha=%f",mod->ras->alpha->v);
   PhyML_Printf("\n. lambda=%f",mod->lambda->v);
   PhyML_Printf("\n. pinvar=%f",mod->ras->pinvar->v);
-  PhyML_Printf("\n. br_len_multiplier=%f",mod->br_len_multiplier->v);
+  PhyML_Printf("\n. br_len_mult=%f",mod->br_len_mult->v);
   PhyML_Printf("\n. whichmodel=%d",mod->whichmodel);
   PhyML_Printf("\n. update_eigen=%d",mod->update_eigen);
   PhyML_Printf("\n. bootstrap=%d",mod->bootstrap);
@@ -3266,9 +3266,15 @@ void Print_Data_Set_Number(option *io, FILE *fp)
 
 void Print_Lk(t_tree *tree, char *string)
 {
-  time(&(tree->t_current));
+  t_tree *loc_tree;
+
+  loc_tree = tree;
+  /*! Rewind back to the first mixt_tree */
+  while(loc_tree->prev) loc_tree = loc_tree->prev;
+
+  time(&(loc_tree->t_current));
   PhyML_Printf("\n. (%5d sec) [%15.4f] %s",
-           (int)(tree->t_current-tree->t_beg),tree->c_lnL,
+           (int)(loc_tree->t_current-loc_tree->t_beg),loc_tree->c_lnL,
            string);
 #ifndef QUIET
   fflush(NULL);
@@ -4503,9 +4509,13 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
         {
           PhyML_Fprintf(fp,"\n");
           PhyML_Fprintf(fp,"\n. Tree estimated from data partition %d",c++);
+          Br_Len_Involving_Invar(tree->next);
+          Rescale_Br_Len_Multiplier_Tree(tree->next);
           s = Write_Tree(tree->next,NO); /*! tree->next is not a mixt_tree so edge lengths
                                            are not averaged over when writing the tree out. */
           PhyML_Fprintf(fp,"\n %s",s);
+          Br_Len_Not_Involving_Invar(tree->next);
+          Unscale_Br_Len_Multiplier_Tree(tree->next);
           Free(s);
           tree = tree->next_mixt;
         }
@@ -4873,6 +4883,23 @@ void PhyML_XML(char *xml_filename)
       
       if(!root_tree) root_tree = mixt_tree;
       
+      /*! Tree size scaling factor */
+      char *scale_tree = NULL;
+      scale_tree = XML_Get_Attribute_Value(p_elem,"optimise.tree.size");
+
+      if(scale_tree)
+        {
+          int select;
+          
+          select = XML_Validate_Attr_Int(scale_tree,6,
+                                         "true","yes","y",
+                                         "false","no","n");
+          
+          if(select < 3) mixt_tree->mod->s_opt->opt_br_len_multipler = YES;
+        }
+
+
+
       /*! Process all the mixtureelem tags in this partition element
        */
       n_components  = 0;
@@ -4894,8 +4921,8 @@ void PhyML_XML(char *xml_filename)
                */
               if(first_m_elem > 1)
                 {
-                  while(tree->prev && tree->prev->is_mixt_tree == NO) { tree = tree->prev; } // tree = tree->prev->next;
-                  while(mod->prev  && mod->prev->is_mixt_mod == NO)   { mod  = mod->prev;  } // mod = mod->prev->next;
+                  while(tree->prev && tree->prev->is_mixt_tree == NO) { tree = tree->prev; } 
+                  while(mod->prev  && mod->prev->is_mixt_mod == NO)   { mod  = mod->prev;  }
                 }
               
               /*! Read and process model components
@@ -4923,7 +4950,7 @@ void PhyML_XML(char *xml_filename)
                       /*! Reading a new component
                        */
                       
-                      if(first_m_elem == YES) // Only true when processing the first mixtureelem node
+                      if(first_m_elem == YES) /* Only true when processing the first mixtureelem node */
                         {
                           t_tree *this_tree;
                           t_mod *this_mod;
@@ -4955,8 +4982,11 @@ void PhyML_XML(char *xml_filename)
                           this_mod = (t_mod *)Make_Model_Basic();
                           Set_Defaults_Model(this_mod);
                           this_mod->ras->n_catg = 1;
-                          
-                          
+
+                          /*! All br_len_mupltiplier point to the corresponding */
+                          /*! parameter in the relevant mixt_tree */
+                          Free_Scalar_Dbl(this_mod->br_len_mult);
+                          this_mod->br_len_mult = iomod->br_len_mult;                          
                           
                           if(mod)
                             {
@@ -5107,8 +5137,8 @@ void PhyML_XML(char *xml_filename)
                       else if(!strcmp(parent->name,"equfreqs"))
                         {
                           
-                          // If n->ds == NULL, the corrresponding node data structure, n->ds, has not
-                          // been initialized. If not, do nothing.
+                          /* If n->ds == NULL, the corrresponding node data structure, n->ds, has not */
+                          /* been initialized. If not, do nothing. */
                           if(instance->ds->obj == NULL)
                             {
                               Make_Efrq_From_XML_Node(instance,io,mod);
@@ -5582,7 +5612,6 @@ void PhyML_XML(char *xml_filename)
         }
       while(tree);
 
-
       /*! Turn all branches to ON state */
       tree = mixt_tree;
       do
@@ -5591,6 +5620,21 @@ void PhyML_XML(char *xml_filename)
           tree = tree->next_mixt;
         }
       while(tree);
+
+      
+      tree = mixt_tree;
+      do
+        {
+          if(tree->next_mixt)
+            {
+              tree->mod->next_mixt = tree->next_mixt->mod;
+              tree->next_mixt->mod->prev_mixt = tree->mod;
+            }
+          tree = tree->next_mixt;
+        }
+      while(tree);
+
+
 
       /* TO DO
 

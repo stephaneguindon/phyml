@@ -498,7 +498,8 @@ void Free_Model_Basic(t_mod *mixt_mod)
   Free_Scalar_Dbl(mixt_mod->mr);
   Free_Scalar_Dbl(mixt_mod->kappa);
   Free_Scalar_Dbl(mixt_mod->lambda);
-  Free_Scalar_Dbl(mixt_mod->br_len_multiplier);
+  Free_Scalar_Dbl(mixt_mod->br_len_mult);
+  Free_Scalar_Dbl(mixt_mod->br_len_mult_unscaled);
   Free_Scalar_Dbl(mixt_mod->e_frq_weight);
   Free_Scalar_Dbl(mixt_mod->r_mat_weight);
   Free_String(mixt_mod->modelname);

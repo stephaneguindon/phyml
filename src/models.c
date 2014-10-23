@@ -783,8 +783,6 @@ void Update_RAS(t_mod *mod)
   phydbl sum;
   int i;
 
-
-
   if(mod->ras->free_mixt_rates == NO) DiscreteGamma(mod->ras->gamma_r_proba->v,
                             mod->ras->gamma_rr->v,
                             mod->ras->alpha->v,
@@ -891,9 +889,6 @@ void Update_Efrq(t_mod *mod)
         update_beagle_efrqs(mod);
 #endif
     }
-
-
-
 }
 
 //////////////////////////////////////////////////////////////

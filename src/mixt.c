@@ -32,7 +32,7 @@ void MIXT_Chain_All(t_tree *mixt_tree)
       MIXT_Chain_String(curr->mod->custom_mod_string,next->mod->custom_mod_string);
       MIXT_Chain_Scalar_Dbl(curr->mod->kappa,next->mod->kappa);
       MIXT_Chain_Scalar_Dbl(curr->mod->lambda,next->mod->lambda);
-      MIXT_Chain_Scalar_Dbl(curr->mod->br_len_multiplier,next->mod->br_len_multiplier);
+      MIXT_Chain_Scalar_Dbl(curr->mod->br_len_mult,next->mod->br_len_mult);
       MIXT_Chain_Scalar_Dbl(curr->mod->mr,next->mod->mr);
       MIXT_Chain_Vector_Dbl(curr->mod->Pij_rr,next->mod->Pij_rr);
       MIXT_Chain_Vector_Dbl(curr->mod->user_b_freq,next->mod->user_b_freq);
@@ -240,6 +240,7 @@ void MIXT_Chain_Scalar_Dbl(scalar_dbl *curr, scalar_dbl *next)
 
       last = NULL;
 
+      /*! Search backward */
       buff = curr;
       while(buff)
         {
@@ -258,6 +259,7 @@ void MIXT_Chain_Scalar_Dbl(scalar_dbl *curr, scalar_dbl *next)
             }
         }
 
+      /*! Not chained yet. Add next at the end of chained list */
       if(!buff)
         {
           last = curr;
@@ -611,6 +613,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
   cpy_mixt_tree   = mixt_tree;
   cpy_mixt_b      = mixt_b;
 
+  MIXT_Update_Br_Len_Multipliers(mixt_tree->mod);
 
   do /*! Consider each element of the data partition */
     {
@@ -622,7 +625,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
         {
           For(br,2*mixt_tree->n_otu-3) Update_PMat_At_Given_Edge(mixt_tree->a_edges[br],mixt_tree);
           if(mixt_tree->n_root)
-        {
+            {
               Update_PMat_At_Given_Edge(mixt_tree->n_root->b[1],tree);
               Update_PMat_At_Given_Edge(mixt_tree->n_root->b[2],tree);
             }
@@ -631,7 +634,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
         {
           Update_PMat_At_Given_Edge(mixt_b,mixt_tree);
         }
-
+      
       if(!cpy_mixt_b)
         {
           if(mixt_tree->n_root)
@@ -650,12 +653,12 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
             }
           else
             {
-          MIXT_Post_Order_Lk(mixt_tree->a_nodes[0],mixt_tree->a_nodes[0]->v[0],mixt_tree);
-          if(mixt_tree->both_sides == YES)
-            MIXT_Pre_Order_Lk(mixt_tree->a_nodes[0],
-                              mixt_tree->a_nodes[0]->v[0],
-                              mixt_tree);
-        }
+              MIXT_Post_Order_Lk(mixt_tree->a_nodes[0],mixt_tree->a_nodes[0]->v[0],mixt_tree);
+              if(mixt_tree->both_sides == YES)
+                MIXT_Pre_Order_Lk(mixt_tree->a_nodes[0],
+                                  mixt_tree->a_nodes[0]->v[0],
+                                  mixt_tree);
+            }
         }
 
 
@@ -705,9 +708,9 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
               ambiguity_check = b->rght->c_seq->is_ambigu[site];
               if(!ambiguity_check) state = b->rght->c_seq->d_state[site];
             }
-
-
-          /*! For all the classes of the mixture */
+          
+          
+          /*! For all classes in the mixture */
           do
             {
               if(tree->is_mixt_tree)
@@ -970,7 +973,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
               PhyML_Printf("\n== Lk = %G LOG(Lk) = %f < %G",site_lk,log_site_lk,-BIG);
               For(class,mixt_tree->mod->ras->n_catg) PhyML_Printf("\n== rr=%f p=%f",mixt_tree->mod->ras->gamma_rr->v[class],mixt_tree->mod->ras->gamma_r_proba->v[class]);
               PhyML_Printf("\n== Pinv = %G",mixt_tree->mod->ras->pinvar->v);
-              PhyML_Printf("\n== Bl mult = %G",mixt_tree->mod->br_len_multiplier->v);
+              PhyML_Printf("\n== Bl mult = %G",mixt_tree->mod->br_len_mult->v);
               PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
               Exit("\n");
             }
@@ -1516,8 +1519,8 @@ void MIXT_Br_Len_Brent(phydbl prop_min,
   while(tree);
 }
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
 
 void MIXT_Prepare_Tree_For_Lk(t_tree *mixt_tree)
 {
@@ -1547,10 +1550,10 @@ void MIXT_Br_Len_Involving_Invar(t_tree *mixt_tree)
     {
       l = mixt_tree->a_edges[i]->l;
       do
-    {
+        {
           l->v *= (1.-mixt_tree->mod->ras->pinvar->v);
           l = l->next;
-    }
+        }
       while(l);
     }
 }
@@ -1567,10 +1570,10 @@ void MIXT_Br_Len_Not_Involving_Invar(t_tree *mixt_tree)
     {
       l = mixt_tree->a_edges[i]->l;
       do
-    {
+        {
           l->v /= (1.-mixt_tree->mod->ras->pinvar->v);
           l = l->next;
-    }
+        }
       while(l);
     }
 }
@@ -1587,10 +1590,10 @@ phydbl MIXT_Unscale_Br_Len_Multiplier_Tree(t_tree *mixt_tree)
     {
       l = mixt_tree->a_edges[i]->l;
       do
-    {
-          l->v /= mixt_tree->mod->br_len_multiplier->v;
+        {
+          l->v /= mixt_tree->mod->br_len_mult->v;
           l = l->next;
-    }
+        }
       while(l);
     }
   return(-1);
@@ -1608,10 +1611,10 @@ phydbl MIXT_Rescale_Br_Len_Multiplier_Tree(t_tree *mixt_tree)
     {
       l = mixt_tree->a_edges[i]->l;
       do
-    {
-          l->v *= mixt_tree->mod->br_len_multiplier->v;
+        {
+          l->v *= mixt_tree->mod->br_len_mult->v;
           l = l->next;
-    }
+        }
       while(l);
     }
   return(-1);
@@ -1767,8 +1770,6 @@ void MIXT_Bootstrap(char *best_tree, xml_node *root)
           strcat(boot_out_file_name,s);
         }
 
-
-
       n_boot = atoi(bootstrap);
 
       io = NULL;
@@ -1813,7 +1814,6 @@ void MIXT_Bootstrap(char *best_tree, xml_node *root)
               /*! Read in the original sequence file */
               orig_data       = Get_Seq(io);
               rewind(io->fp_in_align);
-
 
               /*! Read in the original sequence file and put
                it in 'boot_data' structure */
@@ -1992,11 +1992,42 @@ void MIXT_Set_Br_Len_Var(t_tree *mixt_tree)
   while(tree);
   
 }
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void MIXT_Update_Br_Len_Multipliers(t_mod *mod)
+{
+  phydbl sum;
+  t_mod *loc;
+  int n_mixt;
+
+  loc = mod;
+  sum = 0.0;
+  n_mixt = 0;
+  do
+    {
+      sum += loc->br_len_mult_unscaled->v;
+      n_mixt++;
+      loc = loc->next_mixt;
+      /* printf("\n. sum: %f",sum); */
+    }
+  while(loc);
+  /* printf("\n"); */
+
+  loc = mod;
+  do
+    {
+      loc->br_len_mult->v = loc->br_len_mult_unscaled->v / sum;
+      loc->br_len_mult->v *= (phydbl)(n_mixt);
+      loc = loc->next_mixt;
+    }
+  while(loc);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

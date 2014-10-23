@@ -3355,7 +3355,7 @@ void Record_Model(t_mod *ori, t_mod *cpy)
   cpy->ras->alpha->v        = ori->ras->alpha->v;
   cpy->lambda->v            = ori->lambda->v;
   cpy->ras->pinvar->v            = ori->ras->pinvar->v;
-  cpy->br_len_multiplier->v = ori->br_len_multiplier->v;
+  cpy->br_len_mult->v = ori->br_len_mult->v;
 
   strcpy(cpy->modelname->s,ori->modelname->s);
   strcpy(cpy->custom_mod_string->s,ori->custom_mod_string->s);
@@ -9039,7 +9039,7 @@ phydbl Rescale_Br_Len_Multiplier_Tree(t_tree *tree)
       return(-1.);
     }
 
-  For(i,2*tree->n_otu-1) tree->a_edges[i]->l->v *= tree->mod->br_len_multiplier->v;
+  For(i,2*tree->n_otu-1) tree->a_edges[i]->l->v *= tree->mod->br_len_mult->v;
   return(-1.);
 }
 
@@ -9056,7 +9056,7 @@ phydbl Unscale_Br_Len_Multiplier_Tree(t_tree *tree)
       return(-1.);
     }
 
-  For(i,2*tree->n_otu-1) tree->a_edges[i]->l->v /= tree->mod->br_len_multiplier->v;
+  For(i,2*tree->n_otu-1) tree->a_edges[i]->l->v /= tree->mod->br_len_mult->v;
   return(-1.);
 }
 
@@ -10854,6 +10854,18 @@ int Number_Of_Diff_States_One_Site_Core(t_node *a, t_node *d, t_edge *b, int sit
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+phydbl Get_Lk(t_tree *tree)
+{
+  t_tree *loc_tree;
+
+  loc_tree = tree;
+  /*! Rewind back to the first mixt_tree */
+  while(loc_tree->prev) loc_tree = loc_tree->prev;
+
+  return loc_tree->c_lnL;
+
+}
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

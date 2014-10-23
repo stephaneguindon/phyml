@@ -608,8 +608,11 @@ t_mod *Make_Model_Basic()
   mod->lambda                 = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
   Init_Scalar_Dbl(mod->lambda);
 
-  mod->br_len_multiplier      = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
-  Init_Scalar_Dbl(mod->br_len_multiplier);
+  mod->br_len_mult      = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+  Init_Scalar_Dbl(mod->br_len_mult);
+
+  mod->br_len_mult_unscaled      = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+  Init_Scalar_Dbl(mod->br_len_mult_unscaled);
 
   mod->mr                     = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
   Init_Scalar_Dbl(mod->mr);

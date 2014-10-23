@@ -623,7 +623,7 @@ void Set_Defaults_Model(t_mod *mod)
   mod->io                       = NULL;
   mod->log_l                    = NO;
   mod->gamma_mgf_bl             = NO;
-  mod->br_len_multiplier->v     = 1.0;
+  mod->br_len_mult->v     = 1.0;
 
 
 #if !(defined PHYTIME || defined SERGEII)
@@ -683,6 +683,7 @@ void Set_Defaults_Optimiz(t_opt *s_opt)
   s_opt->brent_it_max         = BRENT_IT_MAX;
   s_opt->steph_spr            = YES;
   s_opt->user_state_freq      = NO;
+  s_opt->opt_br_len_multipler = NO;
 
   /* s_opt->min_diff_lk_local    = 1.E-04; */
   /* s_opt->min_diff_lk_global   = 1.E-03; */
@@ -1017,7 +1018,8 @@ void Init_Model(calign *data, t_mod *mod, option *io)
         }
     }
   
-  mod->br_len_multiplier->v = 1.0;
+  mod->br_len_mult->v          = 1.0;
+  mod->br_len_mult_unscaled->v = 1.0;
   
   For(i,mod->ns)
     {

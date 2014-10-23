@@ -757,7 +757,7 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
       PhyML_Printf("\n== Lk = %G log(Lk) = %f < %G",site_lk,log_site_lk,-BIG);
       For(catg,tree->mod->ras->n_catg) PhyML_Printf("\n== rr=%f p=%f",tree->mod->ras->gamma_rr->v[catg],tree->mod->ras->gamma_r_proba->v[catg]);
       PhyML_Printf("\n== Pinv = %G",tree->mod->ras->pinvar->v);
-      PhyML_Printf("\n== Bl mult = %G",tree->mod->br_len_multiplier->v);
+      PhyML_Printf("\n== Bl mult = %G",tree->mod->br_len_mult->v);
       PhyML_Printf("\n== fact_sum_scale = %d",fact_sum_scale);
       PhyML_Printf("\n== n_catg: %d",tree->mod->ras->n_catg);
       
@@ -2336,7 +2336,7 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
   For(i,tree->mod->ras->n_catg)
     {
       if(tree->mod->ras->skip_rate_cat[i] == YES) continue;
-
+      
       //Update the branch length
       if(b_fcus->has_zero_br_len == YES)
         {
@@ -2350,13 +2350,13 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
       else
         {
           len = MAX(0.0,b_fcus->l->v)*tree->mod->ras->gamma_rr->v[i];//branch_len * rate
-          len *= tree->mod->br_len_multiplier->v;
+          len *= tree->mod->br_len_mult->v;
           if(tree->mixt_tree)  len *= tree->mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number];
           if(len < l_min)      len = l_min;
           else if(len > l_max) len = l_max;
-
+          
           mean = len;
-          var  = MAX(0.0,b_fcus->l_var->v) * POW(tree->mod->ras->gamma_rr->v[i]*tree->mod->br_len_multiplier->v,2);
+          var  = MAX(0.0,b_fcus->l_var->v) * POW(tree->mod->ras->gamma_rr->v[i]*tree->mod->br_len_mult->v,2);
           if(tree->mixt_tree)  var *= POW(tree->mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number],2);
 
           if(var > tree->mod->l_var_max) var = tree->mod->l_var_max;
@@ -2398,7 +2398,7 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
       update_beagle_ras(tree->mod);
 
       //
-      len = MAX(0.0, b_fcus->l->v) * tree->mod->br_len_multiplier->v;
+      len = MAX(0.0, b_fcus->l->v) * tree->mod->br_len_mult->v;
       int p_matrices[1]     = {b_fcus->Pij_rr_idx};
       double branch_lens[1] = {len};
       int ret = beagleUpdateTransitionMatrices(tree->b_inst,0,p_matrices,NULL,NULL,branch_lens,1);

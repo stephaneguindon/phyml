@@ -172,6 +172,7 @@ void Optimize_Efrq_Weights(t_tree *mixt_tree, int verbose);
 void Optimize_Free_Rate(t_tree *mixt_tree, int verbose);
 void Optimize_Free_Rate_Weights(t_tree *tree, int fast, int verbose);
 void Optimize_Free_Rate_Rr(t_tree *tree, int fast, int verbose);
+void Optimize_Br_Len_Multiplier(t_tree *tree, int verbose);
 
 #endif
 

@@ -672,8 +672,55 @@ void Optimize_Br_Len_Serie(t_tree *tree)
     }
 }
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+void Optimize_Br_Len_Multiplier(t_tree *mixt_tree, int verbose)
+{
+  phydbl lk_init;
+  t_tree *tree;
+
+  tree = mixt_tree;
+  
+  lk_init = Get_Lk(tree);
+
+  do
+    {      
+      Generic_Brent_Lk(&(tree->mod->br_len_mult_unscaled->v),
+                       1.E-2,1.E+1,
+                       tree->mod->s_opt->min_diff_lk_local,
+                       tree->mod->s_opt->brent_it_max,
+                       tree->mod->s_opt->quickdirty,
+                       Wrap_Lk,NULL,mixt_tree,NULL,NO);
+  
+      tree = tree->next_mixt;
+    }
+  while(tree);
+
+  tree = mixt_tree;  
+  do
+    {      
+      if(verbose)
+        {
+          Print_Lk(tree,"[Tree size          ]");
+          PhyML_Printf("[%10f]",tree->mod->br_len_mult->v);
+        }
+
+      tree = tree->next_mixt;
+    }
+  while(tree);
+
+
+  tree = mixt_tree;
+  if(Get_Lk(tree) < lk_init - tree->mod->s_opt->min_diff_lk_local)
+    {
+      PhyML_Printf("\n== %f -- %f",lk_init,tree->c_lnL);
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
 
 void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tree)
 {
@@ -685,18 +732,17 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
 
   if(tree->mod->s_opt->constrained_br_len == YES)
     {
-      Generic_Brent_Lk(&(tree->mod->br_len_multiplier->v),
-               1.E-2,1.E+1,
-               tree->mod->s_opt->min_diff_lk_local,
-               tree->mod->s_opt->brent_it_max,
-               tree->mod->s_opt->quickdirty,
-               Wrap_Lk,NULL,tree,NULL,NO);
-
+      Generic_Brent_Lk(&(tree->mod->br_len_mult->v),
+                       1.E-2,1.E+1,
+                       tree->mod->s_opt->min_diff_lk_local,
+                       tree->mod->s_opt->brent_it_max,
+                       tree->mod->s_opt->quickdirty,
+                       Wrap_Lk,NULL,tree,NULL,NO);
 
       if(tree->c_lnL < lk_init - tree->mod->s_opt->min_diff_lk_local)
         {
           PhyML_Printf("\n== %f -- %f",lk_init,tree->c_lnL);
-          Warn_And_Exit("\n== Err. in Optimize_Br_Len_Serie_Post\n");
+          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
         }
 
       return;
@@ -823,6 +869,7 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
   Optimize_Rmat_Weights(tree,verbose);
   Optimize_Efrq_Weights(tree,verbose);
   Optimize_Free_Rate(tree,verbose);
+  Optimize_Br_Len_Multiplier(tree,verbose);
 
   if(tree->mod->use_m4mod)
     {
@@ -2122,7 +2169,7 @@ int Optimiz_Alpha_And_Pinv(t_tree *mixt_tree, int verbose)
           Record_Br_Len(mixt_tree);
           best_alpha = tree->mod->ras->alpha->v;
           best_pinv  = tree->mod->ras->pinvar->v;
-          best_mult  = tree->mod->br_len_multiplier->v;
+          best_mult  = tree->mod->br_len_mult->v;
 
           /* PhyML_Printf("\n\n. Init lnL after std opt = %f [%f] best_alpha=%f best_pinv=%f",mixt_tree->c_lnL,Lk(NULL,mixt_tree),best_alpha,best_pinv); */
           /* PhyML_Printf("\n. Best_lnL = %f %d",best_lnL,tree->mod->ras->invar); */
@@ -2285,7 +2332,7 @@ int Optimiz_Alpha_And_Pinv(t_tree *mixt_tree, int verbose)
                   Record_Br_Len(mixt_tree);
                   best_alpha = tree->mod->ras->alpha->v;
                   best_pinv  = tree->mod->ras->pinvar->v;
-                  best_mult  = tree->mod->br_len_multiplier->v;
+                  best_mult  = tree->mod->br_len_mult->v;
                   /* PhyML_Printf("\n>.< New alpha=%f pinv=%f",best_alpha,best_pinv); */
                 }
               /* PhyML_Printf("\n> f1=%f",f1); */
@@ -2312,7 +2359,7 @@ int Optimiz_Alpha_And_Pinv(t_tree *mixt_tree, int verbose)
                   Record_Br_Len(mixt_tree);
                   best_alpha = tree->mod->ras->alpha->v;
                   best_pinv  = tree->mod->ras->pinvar->v;
-                  best_mult  = tree->mod->br_len_multiplier->v;
+                  best_mult  = tree->mod->br_len_mult->v;
                   /* PhyML_Printf("\n>o< New alpha=%f pinv=%f",best_alpha,best_pinv); */
                 }
               /* PhyML_Printf("\n> f2=%f",f2); */
@@ -2324,21 +2371,21 @@ int Optimiz_Alpha_And_Pinv(t_tree *mixt_tree, int verbose)
 
             }while(iter < 100);
         }
-
+          
           tree->mod->ras->alpha->v  = best_alpha;
           tree->mod->ras->pinvar->v = best_pinv;
-          tree->mod->br_len_multiplier->v = best_mult;
+          tree->mod->br_len_mult->v = best_mult;
           Restore_Br_Len(mixt_tree);
           Set_Both_Sides(YES,mixt_tree);
           Lk(NULL,mixt_tree);
 
           if(verbose)
-        {
-          Print_Lk(mixt_tree,"[Alpha              ]");
-          PhyML_Printf("[%10f]",tree->mod->ras->alpha->v);
-          Print_Lk(mixt_tree,"[P-inv              ]");
-          PhyML_Printf("[%10f]",tree->mod->ras->pinvar->v);
-        }
+            {
+              Print_Lk(mixt_tree,"[Alpha              ]");
+              PhyML_Printf("[%10f]",tree->mod->ras->alpha->v);
+              Print_Lk(mixt_tree,"[P-inv              ]");
+              PhyML_Printf("[%10f]",tree->mod->ras->pinvar->v);
+            }
         }
     }
 
@@ -2700,43 +2747,42 @@ void Optimize_TsTv(t_tree *mixt_tree, int verbose)
   do
     {
       if(tree->next) tree = tree->next;
-
+      
       For(i,n_tstv) if(tree->mod->kappa == tstv[i]) break;
-
+      
       if(i == n_tstv)
-    {
-      if(!tstv) tstv = (scalar_dbl **)mCalloc(1,sizeof(scalar_dbl *));
-      else      tstv = (scalar_dbl **)mRealloc(tstv,n_tstv+1,sizeof(scalar_dbl *));
-      tstv[n_tstv] = tree->mod->kappa;
-      n_tstv++;
-
-      if(tree->mod->s_opt->opt_kappa)
         {
-          Generic_Brent_Lk(&(tree->mod->kappa->v),
-                   0.1,100.,
-                   tree->mod->s_opt->min_diff_lk_local,
-                   tree->mod->s_opt->brent_it_max,
-                   tree->mod->s_opt->quickdirty,
-                   Wrap_Lk,NULL,mixt_tree,NULL,NO);
-
-          if(verbose)
-        {
-          Print_Lk(mixt_tree,"[Ts/ts ratio        ]");
-          PhyML_Printf("[%10f]",tree->mod->kappa->v);
+          if(!tstv) tstv = (scalar_dbl **)mCalloc(1,sizeof(scalar_dbl *));
+          else      tstv = (scalar_dbl **)mRealloc(tstv,n_tstv+1,sizeof(scalar_dbl *));
+          tstv[n_tstv] = tree->mod->kappa;
+          n_tstv++;
+          
+          if(tree->mod->s_opt->opt_kappa)
+            {
+              Generic_Brent_Lk(&(tree->mod->kappa->v),
+                               0.1,100.,
+                               tree->mod->s_opt->min_diff_lk_local,
+                               tree->mod->s_opt->brent_it_max,
+                               tree->mod->s_opt->quickdirty,
+                               Wrap_Lk,NULL,mixt_tree,NULL,NO);
+              
+              if(verbose)
+                {
+                  Print_Lk(mixt_tree,"[Ts/ts ratio        ]");
+                  PhyML_Printf("[%10f]",tree->mod->kappa->v);
+                }              
+            }
         }
-
-        }
-    }
-
+      
       tree = tree->next;
-
+      
     }
   while(tree);
-
+  
   if(tstv) Free(tstv);
-
+  
   Switch_Eigen(NO,mixt_tree->mod);
-
+  
 }
 
 //////////////////////////////////////////////////////////////
@@ -2842,7 +2888,7 @@ void Optimize_Alpha(t_tree *mixt_tree, int verbose)
                     }
                 }
             }
-    }
+        }
       tree = tree->next_mixt;
     }
   while(tree);

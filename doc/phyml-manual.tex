@@ -1763,6 +1763,11 @@ Options:
 \item \x{data.type="nt|aa"}. Specify the type of sequences to be processed (nucleotide of amino-acid sequences).
 \item \x{interleaved="yes|true|no|false"}. Interleaved (\x{yes|true}) or sequential format
   (\x{no|false}) for the sequence alignment.
+\item \x{optimise.tree.size="yes|true|no|false"}. The sum of edge length (or tree size) is
+  optimized. This option is relevant when different data partition elements point to the same set of
+  edge lengths so that setting \x{optimise.tree.size="yes"} will find the optimal ratio of tree sizes
+  considering the two elements. In other words, the different trees all share the same (relative) edge lengths
+  but the corresponding partition elements have different mean rates of substitution.
 \end{itemize}
 
 Each \x{partitionelem} element should include exactly four \x{mixtureelem} elements, corresponding to

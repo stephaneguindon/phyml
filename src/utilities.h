@@ -940,7 +940,8 @@ typedef struct __Model {
 
   scalar_dbl                *kappa; /*! transition/transversion rate */
   scalar_dbl               *lambda; /*! parameter used to define the ts/tv ratios in the F84 and TN93 models */
-  scalar_dbl    *br_len_multiplier; /*! when users want to fix the relative length of edges and simply estimate the total length of the tree. This multiplier does the trick */
+  scalar_dbl          *br_len_mult; /*! when users want to fix the relative length of edges and simply estimate the total length of the tree. This multiplier does the trick */
+  scalar_dbl *br_len_mult_unscaled;
 
   vect_dbl                 *Pij_rr; /*! matrix of change probabilities */
   scalar_dbl                   *mr; /*! mean rate = branch length/time interval  mr = -sum(i)(vct_pi[i].mat_Q[ii]) */
@@ -1110,72 +1111,73 @@ typedef struct __Option { /*! mostly used in 'help.c' */
 /*!********************************************************/
 
 typedef struct __Optimiz { /*! parameters to be optimised (mostly used in 'optimiz.c') */
-  int                 print; /*! =1 -> verbose mode  */
+  int                    print; /*! =1 -> verbose mode  */
 
-  int             opt_alpha; /*! =1 -> the gamma shape parameter is optimised */
-  int             opt_kappa; /*! =1 -> the ts/tv ratio parameter is optimised */
-  int            opt_lambda; /*! =1 -> the F84|TN93 model specific parameter is optimised */
-  int            opt_pinvar; /*! =1 -> the proportion of invariants is optimised */
-  int        opt_state_freq; /*! =1 -> the nucleotide frequencies are optimised */
-  int                opt_rr; /*! =1 -> the relative rate parameters of the GTR or the customn model are optimised */
-  int       opt_subst_param; /*! if opt_topo=0 and opt_subst_param=1 -> the numerical parameters of the
-                model are optimised. if opt_topo=0 and opt_free_param=0 -> no parameter is
-                optimised */
-  int         opt_cov_delta;
-  int         opt_cov_alpha;
-  int    opt_cov_free_rates;
+  int                opt_alpha; /*! =1 -> the gamma shape parameter is optimised */
+  int                opt_kappa; /*! =1 -> the ts/tv ratio parameter is optimised */
+  int               opt_lambda; /*! =1 -> the F84|TN93 model specific parameter is optimised */
+  int               opt_pinvar; /*! =1 -> the proportion of invariants is optimised */
+  int           opt_state_freq; /*! =1 -> the nucleotide frequencies are optimised */
+  int                   opt_rr; /*! =1 -> the relative rate parameters of the GTR or the customn model are optimised */
+  int          opt_subst_param; /*! if opt_topo=0 and opt_subst_param=1 -> the numerical parameters of the
+                   model are optimised. if opt_topo=0 and opt_free_param=0 -> no parameter is
+                   optimised */
+  int            opt_cov_delta;
+  int            opt_cov_alpha;
+  int       opt_cov_free_rates;
 
 
-  int                opt_bl; /*! =1 -> the branch lengths are optimised */
-  int              opt_topo; /*! =1 -> the tree topology is optimised */
-  int           topo_search;
-  phydbl            init_lk; /*! initial loglikelihood value */
-  int              n_it_max; /*! maximum bnumber of iteration during an optimisation step */
-  int              last_opt; /*! =1 -> the numerical parameters are optimised further while the
-                   tree topology remains fixed */
-  int     random_input_tree; /*! boolean */
-  int         n_rand_starts; /*! number of random starting points */
-  int          brent_it_max;
-  int             steph_spr;
-  int       user_state_freq;
-  int       opt_five_branch;
-  int           pars_thresh;
-  int         hybrid_thresh;
+  int                   opt_bl; /*! =1 -> the branch lengths are optimised */
+  int                 opt_topo; /*! =1 -> the tree topology is optimised */
+  int              topo_search;
+  phydbl               init_lk; /*! initial loglikelihood value */
+  int                 n_it_max; /*! maximum bnumber of iteration during an optimisation step */
+  int                 last_opt; /*! =1 -> the numerical parameters are optimised further while the
+                                       tree topology remains fixed */
+  int        random_input_tree; /*! boolean */
+  int            n_rand_starts; /*! number of random starting points */
+  int             brent_it_max;
+  int                steph_spr;
+  int          user_state_freq;
+  int          opt_five_branch;
+  int              pars_thresh;
+  int            hybrid_thresh;
+  int     opt_br_len_multipler;
 
-  phydbl     tree_size_mult; /*! tree size multiplier */
-  phydbl  min_diff_lk_local;
-  phydbl min_diff_lk_global;
-  phydbl   min_diff_lk_move;
-  phydbl p_moves_to_examine;
-  int              fast_nni;
-  int                greedy;
-  int          general_pars;
-  int            quickdirty;
-  int              spr_pars;
-  int               spr_lnL;
-  int        max_depth_path;
-  int        min_depth_path;
-  int          deepest_path;
-  phydbl  max_delta_lnL_spr;
-  int         br_len_in_spr;
-  int   opt_free_mixt_rates;
-  int    constrained_br_len;
-  int      opt_gamma_br_len;
+  phydbl        tree_size_mult; /*! tree size multiplier */
+  phydbl     min_diff_lk_local;
+  phydbl    min_diff_lk_global;
+  phydbl      min_diff_lk_move;
+  phydbl    p_moves_to_examine;
+  int                 fast_nni;
+  int                   greedy;
+  int             general_pars;
+  int               quickdirty;
+  int                 spr_pars;
+  int                  spr_lnL;
+  int           max_depth_path;
+  int           min_depth_path;
+  int             deepest_path;
+  phydbl     max_delta_lnL_spr;
+  int            br_len_in_spr;
+  int      opt_free_mixt_rates;
+  int       constrained_br_len;
+  int         opt_gamma_br_len;
   int first_opt_free_mixt_rates;
-  int           wim_n_rgrft;
-  int           wim_n_globl;
-  int          wim_max_dist;
-  int           wim_n_optim;
-  int            wim_n_best;
-  int        wim_inside_opt;
+  int              wim_n_rgrft;
+  int              wim_n_globl;
+  int             wim_max_dist;
+  int              wim_n_optim;
+  int               wim_n_best;
+  int           wim_inside_opt;
 
-  int       opt_rmat_weight;
-  int       opt_efrq_weight;
+  int          opt_rmat_weight;
+  int          opt_efrq_weight;
 
-  int       skip_tree_traversal;
-  int         serial_free_rates;
+  int      skip_tree_traversal;
+  int        serial_free_rates;
 
-  int       curr_opt_free_rates;
+  int      curr_opt_free_rates;
 }t_opt;
 
 /*!********************************************************/
@@ -1981,6 +1983,7 @@ void Build_Distrib_Number_Of_Diff_States_Under_Model(t_tree *tree);
 int Number_Of_Diff_States_One_Site(int site, t_tree *tree);
 void Number_Of_Diff_States_One_Site_Post(t_node *a, t_node *d, t_edge *b, int site, t_tree *tree);
 int Number_Of_Diff_States_One_Site_Core(t_node *a, t_node *d, t_edge *b, int site, t_tree *tree);
+phydbl Get_Lk(t_tree *tree);
 
 
 #include "xml.h"
