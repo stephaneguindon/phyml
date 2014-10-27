@@ -4164,24 +4164,26 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
       PhyML_Fprintf(fp,"\n|_______________________________________________________________________|");
       PhyML_Fprintf(fp,"\n");
 
-      PhyML_Fprintf(fp,"\n. Number of rate classes:\t\t%12d",mixt_tree->mod->ras->n_catg);
+      PhyML_Fprintf(fp,"\n. Number of rate classes:\t\t%12d",mixt_tree->mod->ras->n_catg+(mixt_tree->mod->ras->invar ?1:0));
       if(mixt_tree->mod->ras->n_catg > 1)
-    {
-      PhyML_Fprintf(fp,"\n. Model of rate variation:\t\t%12s",
-               mixt_tree->mod->ras->free_mixt_rates?"FreeRates":
-               mixt_tree->mod->ras->invar?"Gamma+Inv":"Gamma");
-      if(mixt_tree->mod->ras->free_mixt_rates == NO)
         {
-          PhyML_Fprintf(fp,"\n. Gamma shape parameter value:\t\t%12.2f",mixt_tree->mod->ras->alpha->v);
-          PhyML_Fprintf(fp,"\n   Optimise: \t\t\t\t%12s",mixt_tree->mod->s_opt->opt_alpha==YES?"yes":"no");
+          PhyML_Fprintf(fp,"\n. Model of rate variation:\t\t%12s",
+                        mixt_tree->mod->ras->free_mixt_rates?"FreeRates":
+                        mixt_tree->mod->ras->invar?"Gamma+Inv":"Gamma");
+          if(mixt_tree->mod->ras->free_mixt_rates == NO)
+            {
+              PhyML_Fprintf(fp,"\n. Gamma shape parameter value:\t\t%12.2f",mixt_tree->mod->ras->alpha->v);
+              PhyML_Fprintf(fp,"\n   Optimise: \t\t\t\t%12s",mixt_tree->mod->s_opt->opt_alpha==YES?"yes":"no");
+            }
+          if(mixt_tree->mod->ras->invar == YES)
+            {
+              PhyML_Fprintf(fp,"\n. Proportion of invariable sites:\t%12.2f",mixt_tree->mod->ras->pinvar->v);
+              PhyML_Fprintf(fp,"\n   Optimise: \t\t\t\t%12s",mixt_tree->mod->s_opt->opt_pinvar==YES?"yes":"no");
+            }
         }
-      if(mixt_tree->mod->ras->invar == YES)
-        {
-          PhyML_Fprintf(fp,"\n. Proportion of invariable sites:\t%12.2f",mixt_tree->mod->ras->pinvar->v);
-          PhyML_Fprintf(fp,"\n   Optimise: \t\t\t\t%12s",mixt_tree->mod->s_opt->opt_pinvar==YES?"yes":"no");
-        }
-    }
+      PhyML_Fprintf(fp,"\n. Relative average rate:\t\t%12f",mixt_tree->mod->br_len_mult->v);
 
+      
       r_mat_weight_sum = MIXT_Get_Sum_Chained_Scalar_Dbl(mixt_tree->next->mod->r_mat_weight);
       e_frq_weight_sum = MIXT_Get_Sum_Chained_Scalar_Dbl(mixt_tree->next->mod->e_frq_weight);
 
@@ -4195,9 +4197,17 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
           
           if(mixt_tree->mod->ras->n_catg > 1)
             {
-              PhyML_Fprintf(fp,"\n   Relative substitution rate:\t%12f",mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number]);
-              PhyML_Fprintf(fp,"\n   Relative rate freq.:\t\t%12f",mixt_tree->mod->ras->gamma_r_proba->v[tree->mod->ras->parent_class_number]);
-              PhyML_Fprintf(fp,"\n   Rate class number:\t\t%12d",tree->mod->ras->parent_class_number);
+              if(tree->mod->ras->invar == NO)
+                {
+                  PhyML_Fprintf(fp,"\n   Relative substitution rate:\t%12f",mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number]);
+                  PhyML_Fprintf(fp,"\n   Rel. rate freq. (> 0 rates):\t%12f",mixt_tree->mod->ras->gamma_r_proba->v[tree->mod->ras->parent_class_number]);
+                  PhyML_Fprintf(fp,"\n   Rate class number:\t\t%12d",tree->mod->ras->parent_class_number);
+                }
+              else
+                {
+                  PhyML_Fprintf(fp,"\n   Relative substitution rate:\t%12f",0.0);
+                  PhyML_Fprintf(fp,"\n   Relative rate freq.:\t\t%12f",mixt_tree->mod->ras->pinvar->v);
+                }
             }
 
           PhyML_Fprintf(fp,"\n   Substitution model:\t\t%12s",tree->mod->modelname->s);
@@ -4207,17 +4217,17 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
 
           if(tree->mod->whichmodel == CUSTOMAA)
             PhyML_Fprintf(fp,"\n   Rate matrix file name:\t%12s",tree->mod->aa_rate_mat_file->s);
-
-      if(tree->mod->whichmodel == K80 ||
-         tree->mod->whichmodel == HKY85 ||
-         tree->mod->whichmodel == TN93)
-        {
-          PhyML_Fprintf(fp,"\n   Value of the ts/tv raqtio:\t%12f",tree->mod->kappa->v);
-          PhyML_Fprintf(fp,"\n   Optimise ts/tv ratio:\t%12s",tree->mod->s_opt->opt_kappa?"yes":"no");
-        }
-      else if(tree->mod->whichmodel == GTR ||
-          tree->mod->whichmodel == CUSTOM)
-        {
+          
+          if(tree->mod->whichmodel == K80 ||
+             tree->mod->whichmodel == HKY85 ||
+             tree->mod->whichmodel == TN93)
+            {
+              PhyML_Fprintf(fp,"\n   Value of the ts/tv raqtio:\t%12f",tree->mod->kappa->v);
+              PhyML_Fprintf(fp,"\n   Optimise ts/tv ratio:\t%12s",tree->mod->s_opt->opt_kappa?"yes":"no");
+            }
+          else if(tree->mod->whichmodel == GTR ||
+                  tree->mod->whichmodel == CUSTOM)
+            {
               PhyML_Fprintf(fp,"\n   Optimise subst. rates:\t%12s",tree->mod->s_opt->opt_rr?"yes":"no");
               if(final == YES)
                 {
@@ -4229,17 +4239,14 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
                   PhyML_Fprintf(fp,"\n   Subst. rate G<->T:\t\t%12.2f",tree->mod->r_mat->rr->v[5]);
                 }
             }
-
-
-      PhyML_Fprintf(fp,"\n   Rate matrix weight:\t\t%12f",tree->mod->r_mat_weight->v  / r_mat_weight_sum);
-
-
-
+          
+          PhyML_Fprintf(fp,"\n   Rate matrix weight:\t\t%12f",tree->mod->r_mat_weight->v  / r_mat_weight_sum);
+                    
           if(tree->io->datatype == NT &&
              tree->mod->whichmodel != JC69 &&
              tree->mod->whichmodel != K80)
             {
-          PhyML_Fprintf(fp,"\n   Optimise nucletide freq.:\t%12s",tree->mod->s_opt->opt_state_freq?"yes":"no");
+              PhyML_Fprintf(fp,"\n   Optimise nucletide freq.:\t%12s",tree->mod->s_opt->opt_state_freq?"yes":"no");
               if(final == YES)
                 {
                   PhyML_Fprintf(fp,"\n   Freq(A):\t\t\t%12.2f",tree->mod->e_frq->pi->v[0]);
@@ -6224,7 +6231,7 @@ void Make_RAS_From_XML_Node(xml_node *parent, t_mod *mod)
       select = XML_Validate_Attr_Int(family,3,"gamma","gamma+inv","freerates");
       switch(select)
         {
-        case 0: // Gamma model
+        case 0:// Gamma model
           {
             char *alpha,*alpha_opt;
 

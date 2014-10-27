@@ -621,20 +621,30 @@ xml_node *XML_Search_Node_Attribute_Value(char *attr_name, char *value, int skip
   if(skip == NO && node->attr)
     {
       xml_attr *attr;
+      char *sname, *sval;
+
 
       attr = node->attr;
       do
         {
-          if(!strcmp(attr->name,attr_name) && 
-             !strcmp(attr->value,value)) 
+          sname = To_Lower_String(attr->name);
+          sval  = To_Lower_String(attr->value);
+
+          if(!strcmp(sname,attr_name) && !strcmp(sval,value)) 
             {
               match = node;
+              Free(sname);
+              Free(sval);
               break;
             }
+
+          Free(sname);
+          Free(sval);
           attr = attr->next;
           if(!attr) break;
         }
       while(1);
+
     }
 
   if(match) return(match);
@@ -662,7 +672,7 @@ xml_node *XML_Search_Node_Attribute_Value(char *attr_name, char *value, int skip
 char *XML_Get_Attribute_Value(xml_node *node, char *attr_name)
 {
   xml_attr *attr;
-  
+
   attr = node->attr;
 
   while(attr && strcmp(attr->name,attr_name))
@@ -811,8 +821,8 @@ int XML_Get_Number_Of_Classes_Siterates(xml_node *parent)
 
   if(!parent)
     {
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
-      Exit("\n");         
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
     }
 
   n_classes = 0;

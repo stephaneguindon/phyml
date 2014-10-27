@@ -3554,7 +3554,6 @@ void MCMC_Randomize_Node_Times_Top_Down(t_node *a, t_node *d, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void MCMC_Get_Acc_Rates(t_mcmc *mcmc)
 {
   int i;
@@ -3607,6 +3606,11 @@ void MCMC_Adjust_Tuning_Parameter(int move, t_mcmc *mcmc)
 	  /* rate_sup = 0.3; */
 	  /* rate_inf = 0.7; */
 	  /* rate_sup = 0.7; */
+	}
+      else if(!strcmp(mcmc->move_name[move],"migrep_rad"))
+	{
+	  rate_inf = 0.1;
+	  rate_sup = 0.1;
 	}
       else if(!strcmp(mcmc->move_name[move],"subtree_height"))
 	{
@@ -4319,6 +4323,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->num_move_migrep_move_ldsk      = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_migrep_ldsk_ct        = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_migrep_shift_ct_med   = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_migrep_triplet        = mcmc->n_moves; mcmc->n_moves += 1;
 
   mcmc->run_move           = (int *)mCalloc(mcmc->n_moves,sizeof(int));
   mcmc->acc_move           = (int *)mCalloc(mcmc->n_moves,sizeof(int));
@@ -4385,6 +4390,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   strcpy(mcmc->move_name[mcmc->num_move_migrep_move_ldsk],"migrep_move_ldsk");
   strcpy(mcmc->move_name[mcmc->num_move_migrep_ldsk_ct],"migrep_shift_ldsk_to_centre");
   strcpy(mcmc->move_name[mcmc->num_move_migrep_shift_ct_med],"migrep_shift_centr_to_median");
+  strcpy(mcmc->move_name[mcmc->num_move_migrep_triplet],"migrep_triplet");
   
   if(tree->rates && tree->rates->model_log_rates == YES)
     for(i=mcmc->num_move_br_r;i<mcmc->num_move_br_r+2*tree->n_otu-2;i++) mcmc->move_type[i] = MCMC_MOVE_RANDWALK_NORMAL;  
@@ -4486,16 +4492,17 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_migrep_lbda]          = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_mu]            = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_rad]           = 3.0;
-  mcmc->move_weight[mcmc->num_move_migrep_insert_disk]   = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_delete_disk]   = 1.0;  
+  mcmc->move_weight[mcmc->num_move_migrep_insert_disk]   = 3.0;
+  mcmc->move_weight[mcmc->num_move_migrep_delete_disk]   = 3.0;  
   mcmc->move_weight[mcmc->num_move_migrep_move_disk_ct]  = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_move_disk_ud]  = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_swap_disk]     = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_delete_hit]    = 5.0;
-  mcmc->move_weight[mcmc->num_move_migrep_insert_hit]    = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_delete_hit]    = 3.0;
+  mcmc->move_weight[mcmc->num_move_migrep_insert_hit]    = 3.0;
   mcmc->move_weight[mcmc->num_move_migrep_move_ldsk]     = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_ldsk_ct]       = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_shift_ct_med]  = 8.0;
+  mcmc->move_weight[mcmc->num_move_migrep_ldsk_ct]       = 2.0;
+  mcmc->move_weight[mcmc->num_move_migrep_shift_ct_med]  = 6.0;
+  mcmc->move_weight[mcmc->num_move_migrep_triplet]       = 6.0;
 # else
   mcmc->move_weight[mcmc->num_move_migrep_lbda]          = 0.0;
   mcmc->move_weight[mcmc->num_move_migrep_mu]            = 0.0;
@@ -4510,6 +4517,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_migrep_move_ldsk]     = 0.0;
   mcmc->move_weight[mcmc->num_move_migrep_ldsk_ct]       = 0.0;
   mcmc->move_weight[mcmc->num_move_migrep_shift_ct_med]  = 0.0;
+  mcmc->move_weight[mcmc->num_move_migrep_triplet]       = 0.0;
 #endif 
 
 
@@ -5174,7 +5182,7 @@ void MCMC_MIGREP_Triplet(t_tree *tree)
   
   /* if(ldsk_coal_cur->n_next >= 10) */
   /*   { */
-      /* printf(" u: %f alpha:%f",u,alpha); fflush(NULL);       */
+      /* printf(" u: %f alpha:%f",u,alpha); fflush(NULL); */
       /* gtk_widget_queue_draw(tree->draw_area); */
       /* sleep(2); */
     /* } */
@@ -5269,9 +5277,9 @@ void MCMC_MIGREP_Triplet(t_tree *tree)
 void MCMC_MIGREP_Delete_Disk(t_tree *tree)
 {
   phydbl u,alpha,ratio;
-  phydbl cur_lnL, new_lnL, hr,T;
+  phydbl cur_lnL, new_lnL, hr,T, cur_lbda;
   t_dsk  *disk,**target_disk,**valid_disks;
-  int i,j,block,n_valid_disks,n_delete_disks;
+  int i,j,block,n_valid_disks,n_delete_disks,*permut;
 
   disk          = NULL;
   new_lnL       = UNLIKELY;
@@ -5279,6 +5287,7 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
   hr            = 0.0;
   ratio         = 0.0;
   block         = 100;
+  cur_lbda      = tree->mmod->lbda;
 
   if(tree->disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   disk = tree->disk->prev;
@@ -5306,10 +5315,12 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
   while(disk->prev) disk = disk->prev;
   T = disk->time;
 
+  permut = Permutate(n_valid_disks);
+
   For(j,n_delete_disks)
     {
       /* Uniform selection of a disk where no coalescent nor 'hit' occurred */
-      i = Rand_Int(0,n_valid_disks-1);
+      i = permut[j];
       target_disk[j] = valid_disks[i];
   
       MIGREP_Remove_Disk(target_disk[j]);
@@ -5321,6 +5332,11 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
 
   Free(valid_disks);
   
+  /* Random decrease of the value of lambda */
+  tree->mmod->lbda = Uni()*.2 + (cur_lbda - .2);
+  if(tree->mmod->lbda > tree->mmod->max_lbda) tree->mmod->lbda = tree->mmod->max_lbda;
+  if(tree->mmod->lbda < tree->mmod->min_lbda) tree->mmod->lbda = tree->mmod->min_lbda;
+
   new_lnL = MIGREP_Lk(tree);
   ratio += (new_lnL - cur_lnL);
   ratio += hr;
@@ -5338,6 +5354,9 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
   if(u > alpha) /* Reject */
     {
       /* printf("- Reject"); */
+
+      tree->mmod->lbda = cur_lbda;
+
       For(j,n_delete_disks) MIGREP_Insert_Disk(target_disk[j]);
       
       /* tree->mmod->c_lnL = cur_lnL; */
@@ -5354,6 +5373,7 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
       /* printf("- Accept"); */
     }
   Free(target_disk);
+  Free(permut);
 }
 #endif
 
@@ -5365,7 +5385,7 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
 {
   t_dsk  *disk,**new_disk,**target_disk;
   phydbl T,t;
-  phydbl cur_lnL, new_lnL, hr;
+  phydbl cur_lnL, new_lnL, hr, cur_lbda;
   phydbl u,alpha,ratio;
   int i,j,n_valid_disks,n_insert_disks;
 
@@ -5374,6 +5394,7 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
   cur_lnL        = tree->mmod->c_lnL;
   hr             = 0.0;
   n_insert_disks = 0;
+  cur_lbda       = tree->mmod->lbda;
 
   if(tree->disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
@@ -5419,6 +5440,11 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
       hr += LOG(-T);
     }
 
+  /* Random increase of the value of lambda */
+  tree->mmod->lbda = Uni()*.2 + cur_lbda;
+  if(tree->mmod->lbda > tree->mmod->max_lbda) tree->mmod->lbda = tree->mmod->max_lbda;
+  if(tree->mmod->lbda < tree->mmod->min_lbda) tree->mmod->lbda = tree->mmod->min_lbda;
+
   new_lnL = MIGREP_Lk(tree);
   ratio = (new_lnL - cur_lnL);
   ratio += hr;
@@ -5436,6 +5462,9 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
   if(u > alpha) /* Reject */
     {
       /* printf("+ Reject"); */
+
+      tree->mmod->lbda = cur_lbda;
+
       For(j,n_insert_disks)
         {
           MIGREP_Remove_Disk(new_disk[j]);      
@@ -6103,7 +6132,7 @@ void MCMC_MIGREP_Insert_Hit(t_tree *tree)
 {
   t_dsk  *disk,*new_disk,*young_disk,*old_disk;
   t_ldsk *young_ldsk, *old_ldsk, *new_ldsk;
-  phydbl T,t;
+  phydbl T,t,cur_lbda;
   phydbl cur_lnL, new_lnL, hr;
   phydbl u,alpha,ratio;
   phydbl max, min;
@@ -6113,6 +6142,7 @@ void MCMC_MIGREP_Insert_Hit(t_tree *tree)
   new_lnL  = UNLIKELY;
   cur_lnL  = tree->mmod->c_lnL;
   hr       = 0.0;
+  cur_lbda = tree->mmod->lbda;
 
   if(tree->disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
@@ -6212,6 +6242,11 @@ void MCMC_MIGREP_Insert_Hit(t_tree *tree)
   hr -= LOG(n_valid_disks+1);
   hr += LOG(-T);
 
+  /* Random increase of the value of lambda */
+  tree->mmod->lbda = Uni()*.2 + cur_lbda;
+  if(tree->mmod->lbda > tree->mmod->max_lbda) tree->mmod->lbda = tree->mmod->max_lbda;
+  if(tree->mmod->lbda < tree->mmod->min_lbda) tree->mmod->lbda = tree->mmod->min_lbda;
+
   new_lnL = MIGREP_Lk(tree);
   ratio = (new_lnL - cur_lnL);
   ratio += hr;
@@ -6247,6 +6282,8 @@ void MCMC_MIGREP_Insert_Hit(t_tree *tree)
     {
       /* printf("+ Reject"); */
 
+      tree->mmod->lbda = cur_lbda;
+
       MIGREP_Remove_Disk(new_disk);      
       Free_Disk(new_disk);
       Free_Ldisk(new_ldsk);
@@ -6278,7 +6315,7 @@ void MCMC_MIGREP_Insert_Hit(t_tree *tree)
 void MCMC_MIGREP_Delete_Hit(t_tree *tree)
 {
   phydbl u,alpha,ratio;
-  phydbl cur_lnL, new_lnL, hr,T;
+  phydbl cur_lnL, new_lnL, hr,T, cur_lbda;
   phydbl max,min;
   t_dsk  *disk,*target_disk,**valid_disks;
   t_ldsk *target_ldsk,*old_ldsk,*young_ldsk;
@@ -6290,6 +6327,7 @@ void MCMC_MIGREP_Delete_Hit(t_tree *tree)
   hr            = 0.0;
   ratio         = 0.0;
   block         = 100;
+  cur_lbda      = tree->mmod->lbda;
 
   disk = tree->disk;
   while(disk->prev) disk = disk->prev;
@@ -6383,6 +6421,11 @@ void MCMC_MIGREP_Delete_Hit(t_tree *tree)
   hr += LOG(n_valid_disks);
   hr -= LOG(-T);
   
+  /* Random decrease of the value of lambda */
+  tree->mmod->lbda = Uni()*.2 + (cur_lbda-.2);
+  if(tree->mmod->lbda > tree->mmod->max_lbda) tree->mmod->lbda = tree->mmod->max_lbda;
+  if(tree->mmod->lbda < tree->mmod->min_lbda) tree->mmod->lbda = tree->mmod->min_lbda;
+
   new_lnL = MIGREP_Lk(tree);
   ratio += (new_lnL - cur_lnL);
   ratio += hr;
@@ -6407,6 +6450,8 @@ void MCMC_MIGREP_Delete_Hit(t_tree *tree)
   if(u > alpha) /* Reject */
     {
       /* printf("- Reject"); */
+
+      tree->mmod->lbda = cur_lbda;
 
       MIGREP_Insert_Disk(target_disk);
       

@@ -710,7 +710,7 @@ void Optimize_Br_Len_Multiplier(t_tree *mixt_tree, int verbose)
     {      
       if(verbose)
         {
-          Print_Lk(tree,"[Tree size          ]");
+          Print_Lk(tree,"[Tree scale         ]");
           PhyML_Printf("[%10f]",tree->mod->br_len_mult->v);
         }
 

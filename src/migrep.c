@@ -245,10 +245,10 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   /* Generate coordinates for the tip nodes (uniform distribution on the rectangle) */
   For(i,n_otu)
     {
-      /* ldsk_a[i]->coord->lonlat[0] = Uni()*width;  // longitude */
-      /* ldsk_a[i]->coord->lonlat[1] = Uni()*height; // latitude */
-      ldsk_a[i]->coord->lonlat[0] = (i+1.)/(n_otu+1.)*width;  // longitude
-      ldsk_a[i]->coord->lonlat[1] = (i+1.)/(n_otu+1.)*height; // latitude
+      ldsk_a[i]->coord->lonlat[0] = Uni()*width;  // longitude
+      ldsk_a[i]->coord->lonlat[1] = Uni()*height; // latitude
+      /* ldsk_a[i]->coord->lonlat[0] = (i+1.)/(n_otu+1.)*width;  // longitude */
+      /* ldsk_a[i]->coord->lonlat[1] = (i+1.)/(n_otu+1.)*height; // latitude */
     }
 
   /* Allocate migrep model */
@@ -285,8 +285,8 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   disk = disk->prev;
 
   /* Initialize parameters of migrep model */
-  mmod->lbda = 0.3;
-  mmod->mu   = 0.7;
+  mmod->lbda = 0.4;
+  mmod->mu   = 0.8;
   mmod->rad  = 2.0;
   
   curr_t      = 0.0;
@@ -618,9 +618,9 @@ void MIGREP_MCMC(t_tree *tree)
   printf("\n# ncoal: %d",MIGREP_Total_Number_Of_Coal_Disks(tree));
   printf("\n# nhits: %d",MIGREP_Total_Number_Of_Hit_Disks(tree));
 
-  /* tree->mmod->lbda = Uni()*(tree->mmod->max_lbda - tree->mmod->min_lbda) + tree->mmod->min_lbda; */
-  /* tree->mmod->mu   = Uni()*(tree->mmod->max_mu - tree->mmod->min_mu) + tree->mmod->min_mu; */
-  /* tree->mmod->rad  = tree->mmod->max_rad; */
+  tree->mmod->lbda = Uni()*(tree->mmod->max_lbda - tree->mmod->min_lbda) + tree->mmod->min_lbda;
+  tree->mmod->mu   = Uni()*(tree->mmod->max_mu - tree->mmod->min_mu) + tree->mmod->min_mu;
+  tree->mmod->rad  = tree->mmod->max_rad;
 
   /* gtk_widget_queue_draw(tree->draw_area); */
   /* sleep(3); */
@@ -675,14 +675,17 @@ void MIGREP_MCMC(t_tree *tree)
 
       For(move,tree->mcmc->n_moves) if(tree->mcmc->move_weight[move] > u) break;
       
-      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_lbda")) */
-      /*   MCMC_MIGREP_Lbda(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_lbda"))
+        MCMC_MIGREP_Lbda(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_mu")) */
-      /*   MCMC_MIGREP_Mu(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_mu"))
+        MCMC_MIGREP_Mu(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_rad")) */
-      /*   MCMC_MIGREP_Radius(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_rad"))
+        MCMC_MIGREP_Radius(tree);
+
+      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_triplet")) */
+      /*   MCMC_MIGREP_Triplet(tree); */
 
       if(!strcmp(tree->mcmc->move_name[move],"migrep_delete_disk"))
         MCMC_MIGREP_Delete_Disk(tree);
@@ -690,29 +693,29 @@ void MIGREP_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"migrep_insert_disk"))
         MCMC_MIGREP_Insert_Disk(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_move_disk_ct")) */
-      /*   MCMC_MIGREP_Move_Disk_Centre(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_move_disk_ct"))
+        MCMC_MIGREP_Move_Disk_Centre(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_move_disk_ud")) */
-      /*   MCMC_MIGREP_Move_Disk_Updown(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_move_disk_ud"))
+        MCMC_MIGREP_Move_Disk_Updown(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_swap_disk")) */
-      /*   MCMC_MIGREP_Swap_Disk(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_swap_disk"))
+        MCMC_MIGREP_Swap_Disk(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_delete_hit")) */
-      /*   MCMC_MIGREP_Delete_Hit(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_delete_hit"))
+        MCMC_MIGREP_Delete_Hit(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_insert_hit")) */
-      /*   MCMC_MIGREP_Insert_Hit(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_insert_hit"))
+        MCMC_MIGREP_Insert_Hit(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_move_ldsk")) */
-      /*   MCMC_MIGREP_Move_Ldsk(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_move_ldsk"))
+        MCMC_MIGREP_Move_Ldsk(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_shift_ldsk_to_centre")) */
-      /*   MCMC_MIGREP_Shift_Ldsk_To_Centre(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_shift_ldsk_to_centre"))
+        MCMC_MIGREP_Shift_Ldsk_To_Centre(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_shift_centr_to_median")) */
-      /*   MCMC_MIGREP_Shift_Centre_To_Median(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_shift_centr_to_median"))
+        MCMC_MIGREP_Shift_Centre_To_Median(tree);
 
       tree->mcmc->run++;
       MCMC_Get_Acc_Rates(tree->mcmc);
