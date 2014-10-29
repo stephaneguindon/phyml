@@ -3354,8 +3354,8 @@ void Record_Model(t_mod *ori, t_mod *cpy)
   cpy->kappa->v             = ori->kappa->v;
   cpy->ras->alpha->v        = ori->ras->alpha->v;
   cpy->lambda->v            = ori->lambda->v;
-  cpy->ras->pinvar->v            = ori->ras->pinvar->v;
-  cpy->br_len_mult->v = ori->br_len_mult->v;
+  cpy->ras->pinvar->v       = ori->ras->pinvar->v;
+  cpy->br_len_mult->v       = ori->br_len_mult->v;
 
   strcpy(cpy->modelname->s,ori->modelname->s);
   strcpy(cpy->custom_mod_string->s,ori->custom_mod_string->s);

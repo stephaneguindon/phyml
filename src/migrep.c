@@ -1719,6 +1719,78 @@ phydbl MIGREP_Min_Radius(t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+/* Get the minimum and maximum values a ldsk can take, given the position of the disk centre */
+void MIGREP_Get_Min_Max_Ldsk_Given_Disk(t_ldsk *ldsk, phydbl **min, phydbl **max, t_tree *tree)
+{
+  phydbl *loc_min,*loc_max;
+  int i;
+
+  if(!ldsk->disk->next) return;
+
+  loc_min = (phydbl *)mCalloc(tree->mmod->n_dim, sizeof(phydbl));
+  loc_max = (phydbl *)mCalloc(tree->mmod->n_dim, sizeof(phydbl));
+
+  For(i,tree->mmod->n_dim)
+    {
+      loc_min[i] = ldsk->disk->centr->lonlat[i] - tree->mmod->rad;
+      loc_max[i] = ldsk->disk->centr->lonlat[i] + tree->mmod->rad;     
+    }
+
+  (*min) = loc_min;
+  (*max) = loc_max;
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/* Get the minimum and maximum values a disk centre can take, given the position of the ldsk */
+void MIGREP_Get_Min_Max_Disk_Given_Ldsk(t_dsk *disk, phydbl **min, phydbl **max, t_tree *tree)
+{
+  phydbl *loc_min,*loc_max;
+  int i,j;
+  phydbl tmp_min, tmp_max;
+
+  if(!disk->next) return;
+
+  loc_min = (phydbl *)mCalloc(tree->mmod->n_dim,sizeof(phydbl));
+  loc_max = (phydbl *)mCalloc(tree->mmod->n_dim,sizeof(phydbl));
+
+  if(!disk->ldsk)
+    {
+      For(i,tree->mmod->n_dim)
+        {
+          loc_min[i] = 0.0;
+          loc_max[i] = tree->mmod->lim->lonlat[i];
+        }
+    }
+  else
+    {
+      For(i,tree->mmod->n_dim)
+        {
+          tmp_min = +INFINITY;
+          tmp_max = -INFINITY;
+          For(j,disk->ldsk->n_next)
+            {
+              if(disk->ldsk->next[j]->coord->lonlat[i] < tmp_min) tmp_min = disk->ldsk->next[j]->coord->lonlat[i];
+              if(disk->ldsk->next[j]->coord->lonlat[i] > tmp_max) tmp_max = disk->ldsk->next[j]->coord->lonlat[i];
+            }
+
+          if(disk->ldsk->coord->lonlat[i] < tmp_min) tmp_min = disk->ldsk->coord->lonlat[i];
+          if(disk->ldsk->coord->lonlat[i] > tmp_max) tmp_max = disk->ldsk->coord->lonlat[i];
+
+          loc_min[i] = MAX(0.0,
+                           tmp_max - tree->mmod->rad);
+
+          loc_max[i] = MIN(tree->mmod->lim->lonlat[i], 
+                           tmp_min + tree->mmod->rad);
+                    
+          if(loc_max[i] < loc_min[i]) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+        }
+    }
+
+  (*min) = loc_min;
+  (*max) = loc_max;
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

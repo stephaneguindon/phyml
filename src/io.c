@@ -4892,7 +4892,7 @@ void PhyML_XML(char *xml_filename)
       
       /*! Tree size scaling factor */
       char *scale_tree = NULL;
-      scale_tree = XML_Get_Attribute_Value(p_elem,"optimise.tree.size");
+      scale_tree = XML_Get_Attribute_Value(p_elem,"optimise.tree.scale");
 
       if(scale_tree)
         {
@@ -4904,8 +4904,22 @@ void PhyML_XML(char *xml_filename)
           
           if(select < 3) mixt_tree->mod->s_opt->opt_br_len_mult = YES;
         }
+      
+      scale_tree = NULL;
+      scale_tree = XML_Get_Attribute_Value(p_elem,"tree.scale");
+      
+      if(scale_tree)
+        {
+          char *scale_val;
 
-
+          scale_val = XML_Get_Attribute_Value(p_elem,"tree.scale");
+          if(scale_val)
+            {
+              mixt_tree->mod->br_len_mult->v          = String_To_Dbl(scale_val);
+              mixt_tree->mod->br_len_mult_unscaled->v = String_To_Dbl(scale_val);
+              Free(scale_val);
+            }
+        }
 
       /*! Process all the mixtureelem tags in this partition element
        */
@@ -5020,11 +5034,7 @@ void PhyML_XML(char *xml_filename)
                           tree->io        = io;
                           tree->mod       = mod;
                           
-                          if(tree->n_pattern != tree->prev->n_pattern)
-                            {
-                              PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
-                              Warn_And_Exit("");
-                            }
+                          if(tree->n_pattern != tree->prev->n_pattern) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
                         }
                       
                       /*! Read a component
@@ -5169,7 +5179,7 @@ void PhyML_XML(char *xml_filename)
                             }
                           else
                             {
-                              // Connect the data structure n->ds to mod->e_frq
+                              /* Connect the data structure n->ds to mod->e_frq */
                               
                               ds = instance->ds;
                               mod->e_frq = (t_efrq *)ds->obj;

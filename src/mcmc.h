@@ -165,5 +165,6 @@ void MCMC_MIGREP_Delete_Hit(t_tree *tree);
 void MCMC_MIGREP_Move_Ldsk(t_tree *tree);
 void MCMC_MIGREP_Shift_Ldsk_To_Centre(t_tree *tree);
 void MCMC_MIGREP_Shift_Centre_To_Median(t_tree *tree);
+void MCMC_MIGREP_Shift_Ldsk_Path(t_tree *tree);
 
 #endif

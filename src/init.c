@@ -638,6 +638,9 @@ void Set_Defaults_Model(t_mod *mod)
 
   mod->l_var_min  = mod->l_min;
   mod->l_var_max  = mod->l_max;
+
+  mod->br_len_mult->v          = 1.0;
+  mod->br_len_mult_unscaled->v = 1.0;
 }
 
 //////////////////////////////////////////////////////////////
@@ -1018,8 +1021,8 @@ void Init_Model(calign *data, t_mod *mod, option *io)
         }
     }
   
-  mod->br_len_mult->v          = 1.0;
-  mod->br_len_mult_unscaled->v = 1.0;
+  /* mod->br_len_mult->v          = 1.0; */
+  /* mod->br_len_mult_unscaled->v = 1.0; */
   
   For(i,mod->ns)
     {

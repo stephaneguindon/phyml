@@ -53,5 +53,7 @@ phydbl MIGREP_Wrap_Prior_Radius(t_edge *e, t_tree *tree, supert_tree *st);
 phydbl MIGREP_LnPrior_Radius(t_tree *tree);
 void MIGREP_Initial_Ldsk_Pos(t_tree *tree);
 phydbl MIGREP_Min_Radius(t_tree *tree);
+void MIGREP_Get_Min_Max_Disk_Given_Ldsk(t_dsk *disk, phydbl **min, phydbl **max, t_tree *tree);
+void MIGREP_Get_Min_Max_Ldsk_Given_Disk(t_ldsk *ldsk, phydbl **min, phydbl **max, t_tree *tree);
 
 #endif

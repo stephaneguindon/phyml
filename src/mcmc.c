@@ -6478,6 +6478,118 @@ void MCMC_MIGREP_Delete_Hit(t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+#ifdef MIGREP
+void MCMC_MIGREP_Shift_Ldsk_Path(t_tree *tree)
+{
+  phydbl u,alpha,ratio;
+  phydbl cur_lnL, new_lnL, hr;
+  phydbl *max_coord,*min_coord;
+  t_dsk  *target_disk,**valid_disks,*disk;
+  t_ldsk *ldsk;
+  t_geo_coord **bkup_coord;
+  int i,block,n_valid_disks,n_coord_bkup;
+
+  new_lnL        = UNLIKELY;
+  cur_lnL        = tree->mmod->c_lnL;
+  hr             = 0.0;
+  ratio          = 0.0;
+  block          = 100;
+  valid_disks    = NULL;
+  bkup_coord     = NULL;
+
+  if(tree->disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  disk = tree->disk->prev;
+  n_valid_disks = 0;
+  do
+    {
+      /* Include disks with displacement or coalescent events */
+      if(disk->ldsk != NULL) 
+        {
+          if(!n_valid_disks)              valid_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
+          else if(!(n_valid_disks%block)) valid_disks = (t_dsk **)mRealloc(valid_disks,n_valid_disks+block,sizeof(t_dsk *));
+          valid_disks[n_valid_disks] = disk;
+          n_valid_disks++;
+        }
+      disk = disk->prev;
+    }
+  while(disk->prev);
+
+  if(!n_valid_disks) return;
+  
+  /* Uniform selection of a disk where no coalescent nor 'hit' occurred */
+  i = Rand_Int(0,n_valid_disks-1);
+  target_disk = valid_disks[i];
+  Free(valid_disks);
+    
+  ldsk = target_disk->ldsk;
+
+  n_coord_bkup = 0;
+  while(ldsk->prev)
+    {
+      if(!n_coord_bkup)              bkup_coord = (t_geo_coord **)mCalloc(block,sizeof(t_geo_coord *));
+      else if(!(n_coord_bkup%block)) bkup_coord = (t_geo_coord **)mRealloc(bkup_coord,n_coord_bkup+block,sizeof(t_geo_coord *));
+      
+      bkup_coord[n_coord_bkup] = MIGREP_Copy_Geo_Coord(ldsk->coord);      
+      n_coord_bkup++;
+      
+      MIGREP_Get_Min_Max_Ldsk_Given_Disk(ldsk,&min_coord,&max_coord,tree);
+      
+      For(i,tree->mmod->n_dim) 
+        ldsk->coord->lonlat[i] = Uni() * (max_coord[i] - min_coord[i]) + min_coord[i];
+
+      Free(min_coord);
+      Free(max_coord);
+
+      ldsk = ldsk->prev;
+    }
+  
+  new_lnL = MIGREP_Lk(tree);
+  ratio += (new_lnL - cur_lnL);
+  ratio += hr;
+  
+  if(new_lnL < UNLIKELY + 0.1) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  
+  ratio = EXP(ratio);
+  alpha = MIN(1.,ratio);
+  
+  /* Always accept move */
+  if(tree->mcmc->always_yes == YES && new_lnL > UNLIKELY) alpha = 1.0;
+
+  u = Uni();
+  
+  /* printf("\n- Shift ldsk path %s new_lnL: %f [%f] hr: %f u:%f alpha: %f", */
+  /*        target_disk->id, */
+  /*        new_lnL,cur_lnL,hr,u,alpha); */
+
+  if(u > alpha) /* Reject */
+    {
+      /* printf("- Reject"); */
+      ldsk = target_disk->ldsk;
+      For(i,n_coord_bkup)
+        {
+          Free_Geo_Coord(ldsk->coord);
+          ldsk->coord = MIGREP_Copy_Geo_Coord(bkup_coord[i]);      
+          ldsk = ldsk->prev;
+        }
+      
+      new_lnL = MIGREP_Lk(tree);
+      if(Are_Equal(new_lnL,cur_lnL,1.E-3) == NO) 
+        {
+          PhyML_Printf("\n. new_lnL: %f cur_lnL: %f",new_lnL,cur_lnL);
+          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+        }      
+    }
+  else
+    {
+      For(i,n_coord_bkup) Free_Geo_Coord(bkup_coord[i]);
+    }
+
+  if(n_coord_bkup) Free(bkup_coord);
+
+}
+#endif 
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////
