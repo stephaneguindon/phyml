@@ -4289,41 +4289,42 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->num_move_nd_t = mcmc->n_moves;
   mcmc->n_moves += tree->n_otu-1;
 
-  mcmc->num_move_nu                    = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_clock_r               = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_tree_height           = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_subtree_height        = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_kappa                 = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_tree_rates            = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_subtree_rates         = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_updown_nu_cr          = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_ras                   = mcmc->n_moves; mcmc->n_moves += (tree->mod ? 2*tree->mod->ras->n_catg : 1);
-  mcmc->num_move_updown_t_cr           = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_cov_rates             = mcmc->n_moves; mcmc->n_moves += (tree->mod ? 2*tree->mod->m4mod->n_h : 1);
-  mcmc->num_move_cov_switch            = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_birth_rate            = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_updown_t_br           = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_jump_calibration      = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_geo_lambda            = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_geo_sigma             = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_geo_tau               = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_geo_updown_tau_lbda   = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_geo_updown_lbda_sigma = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_geo_dum               = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_migrep_lbda           = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_migrep_mu             = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_migrep_rad            = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_migrep_delete_disk    = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_migrep_insert_disk    = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_migrep_move_disk_ct   = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_migrep_move_disk_ud   = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_migrep_swap_disk      = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_migrep_delete_hit     = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_migrep_insert_hit     = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_migrep_move_ldsk      = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_migrep_ldsk_ct        = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_migrep_shift_ct_med   = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_migrep_triplet        = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_nu                      = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_clock_r                 = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_tree_height             = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_subtree_height          = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_kappa                   = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_tree_rates              = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_subtree_rates           = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_updown_nu_cr            = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_ras                     = mcmc->n_moves; mcmc->n_moves += (tree->mod ? 2*tree->mod->ras->n_catg : 1);
+  mcmc->num_move_updown_t_cr             = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_cov_rates               = mcmc->n_moves; mcmc->n_moves += (tree->mod ? 2*tree->mod->m4mod->n_h : 1);
+  mcmc->num_move_cov_switch              = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_birth_rate              = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_updown_t_br             = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_jump_calibration        = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_geo_lambda              = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_geo_sigma               = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_geo_tau                 = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_geo_updown_tau_lbda     = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_geo_updown_lbda_sigma   = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_geo_dum                 = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_migrep_lbda             = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_migrep_mu               = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_migrep_rad              = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_migrep_delete_disk      = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_migrep_insert_disk      = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_migrep_move_disk_ct     = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_migrep_move_disk_ud     = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_migrep_swap_disk        = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_migrep_delete_hit       = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_migrep_insert_hit       = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_migrep_move_ldsk        = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_migrep_ldsk_ct          = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_migrep_shift_ct_med     = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_migrep_triplet          = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_migrep_shift_ldsk_path  = mcmc->n_moves; mcmc->n_moves += 1;
 
   mcmc->run_move           = (int *)mCalloc(mcmc->n_moves,sizeof(int));
   mcmc->acc_move           = (int *)mCalloc(mcmc->n_moves,sizeof(int));
@@ -4391,6 +4392,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   strcpy(mcmc->move_name[mcmc->num_move_migrep_ldsk_ct],"migrep_shift_ldsk_to_centre");
   strcpy(mcmc->move_name[mcmc->num_move_migrep_shift_ct_med],"migrep_shift_centr_to_median");
   strcpy(mcmc->move_name[mcmc->num_move_migrep_triplet],"migrep_triplet");
+  strcpy(mcmc->move_name[mcmc->num_move_migrep_shift_ldsk_path],"migrep_shift_ldsk_path");
   
   if(tree->rates && tree->rates->model_log_rates == YES)
     for(i=mcmc->num_move_br_r;i<mcmc->num_move_br_r+2*tree->n_otu-2;i++) mcmc->move_type[i] = MCMC_MOVE_RANDWALK_NORMAL;  
@@ -4489,39 +4491,38 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_geo_dum]               = 1.0;
 
 # if defined (MIGREP)
-  mcmc->move_weight[mcmc->num_move_migrep_lbda]          = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_mu]            = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_rad]           = 3.0;
-  mcmc->move_weight[mcmc->num_move_migrep_insert_disk]   = 3.0;
-  mcmc->move_weight[mcmc->num_move_migrep_delete_disk]   = 3.0;  
-  mcmc->move_weight[mcmc->num_move_migrep_move_disk_ct]  = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_move_disk_ud]  = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_swap_disk]     = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_delete_hit]    = 3.0;
-  mcmc->move_weight[mcmc->num_move_migrep_insert_hit]    = 3.0;
-  mcmc->move_weight[mcmc->num_move_migrep_move_ldsk]     = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_ldsk_ct]       = 2.0;
-  mcmc->move_weight[mcmc->num_move_migrep_shift_ct_med]  = 6.0;
-  mcmc->move_weight[mcmc->num_move_migrep_triplet]       = 6.0;
+  mcmc->move_weight[mcmc->num_move_migrep_lbda]                  = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_mu]                    = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_rad]                   = 3.0;
+  mcmc->move_weight[mcmc->num_move_migrep_insert_disk]           = 3.0;
+  mcmc->move_weight[mcmc->num_move_migrep_delete_disk]           = 3.0;  
+  mcmc->move_weight[mcmc->num_move_migrep_move_disk_ct]          = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_move_disk_ud]          = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_swap_disk]             = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_delete_hit]            = 3.0;
+  mcmc->move_weight[mcmc->num_move_migrep_insert_hit]            = 3.0;
+  mcmc->move_weight[mcmc->num_move_migrep_move_ldsk]             = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_ldsk_ct]               = 2.0;
+  mcmc->move_weight[mcmc->num_move_migrep_shift_ct_med]          = 6.0;
+  mcmc->move_weight[mcmc->num_move_migrep_triplet]               = 0.0;
+  mcmc->move_weight[mcmc->num_move_migrep_shift_ldsk_path]       = 6.0;
 # else
-  mcmc->move_weight[mcmc->num_move_migrep_lbda]          = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_mu]            = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_rad]           = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_insert_disk]   = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_delete_disk]   = 0.0;  
-  mcmc->move_weight[mcmc->num_move_migrep_move_disk_ct]  = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_move_disk_ud]  = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_swap_disk]     = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_delete_hit]    = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_insert_hit]    = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_move_ldsk]     = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_ldsk_ct]       = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_shift_ct_med]  = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_triplet]       = 0.0;
+  mcmc->move_weight[mcmc->num_move_migrep_lbda]                  = 0.0;
+  mcmc->move_weight[mcmc->num_move_migrep_mu]                    = 0.0;
+  mcmc->move_weight[mcmc->num_move_migrep_rad]                   = 0.0;
+  mcmc->move_weight[mcmc->num_move_migrep_insert_disk]           = 0.0;
+  mcmc->move_weight[mcmc->num_move_migrep_delete_disk]           = 0.0;  
+  mcmc->move_weight[mcmc->num_move_migrep_move_disk_ct]          = 0.0;
+  mcmc->move_weight[mcmc->num_move_migrep_move_disk_ud]          = 0.0;
+  mcmc->move_weight[mcmc->num_move_migrep_swap_disk]             = 0.0;
+  mcmc->move_weight[mcmc->num_move_migrep_delete_hit]            = 0.0;
+  mcmc->move_weight[mcmc->num_move_migrep_insert_hit]            = 0.0;
+  mcmc->move_weight[mcmc->num_move_migrep_move_ldsk]             = 0.0;
+  mcmc->move_weight[mcmc->num_move_migrep_ldsk_ct]               = 0.0;
+  mcmc->move_weight[mcmc->num_move_migrep_shift_ct_med]          = 0.0;
+  mcmc->move_weight[mcmc->num_move_migrep_triplet]               = 0.0;
+  mcmc->move_weight[mcmc->num_move_migrep_shift_ldsk_path]       = 0.0;
 #endif 
-
-
-
 
 /*   for(i=mcmc->num_move_br_r;i<mcmc->num_move_br_r+2*tree->n_otu-2;i++) mcmc->move_weight[i] = 0.0; /\* Rates *\/ */
 /*   for(i=mcmc->num_move_nd_r;i<mcmc->num_move_nd_r+2*tree->n_otu-1;i++) mcmc->move_weight[i] = 0.0; /\* Node rates *\/ */

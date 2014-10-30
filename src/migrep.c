@@ -285,7 +285,7 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   disk = disk->prev;
 
   /* Initialize parameters of migrep model */
-  mmod->lbda = 0.4;
+  mmod->lbda = 0.1;
   mmod->mu   = 0.8;
   mmod->rad  = 2.0;
   
@@ -585,7 +585,7 @@ void MIGREP_MCMC(t_tree *tree)
 {
   t_mcmc *mcmc;
   int move;
-  phydbl u,min_rad;
+  phydbl u;
   t_dsk *disk;
 
   mcmc = MCMC_Make_MCMC_Struct();
@@ -684,8 +684,8 @@ void MIGREP_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"migrep_rad"))
         MCMC_MIGREP_Radius(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_triplet")) */
-      /*   MCMC_MIGREP_Triplet(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_triplet"))
+        MCMC_MIGREP_Triplet(tree);
 
       if(!strcmp(tree->mcmc->move_name[move],"migrep_delete_disk"))
         MCMC_MIGREP_Delete_Disk(tree);
@@ -716,6 +716,9 @@ void MIGREP_MCMC(t_tree *tree)
 
       if(!strcmp(tree->mcmc->move_name[move],"migrep_shift_centr_to_median"))
         MCMC_MIGREP_Shift_Centre_To_Median(tree);
+
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_shift_ldsk_path"))
+        MCMC_MIGREP_Shift_Ldsk_Path(tree);
 
       tree->mcmc->run++;
       MCMC_Get_Acc_Rates(tree->mcmc);
@@ -1723,10 +1726,12 @@ phydbl MIGREP_Min_Radius(t_tree *tree)
 void MIGREP_Get_Min_Max_Ldsk_Given_Disk(t_ldsk *ldsk, phydbl **min, phydbl **max, t_tree *tree)
 {
   phydbl *loc_min,*loc_max;
+  t_ldsk *loc_ldsk;
   int i;
 
   if(!ldsk->disk->next) return;
 
+  loc_ldsk = NULL;
   loc_min = (phydbl *)mCalloc(tree->mmod->n_dim, sizeof(phydbl));
   loc_max = (phydbl *)mCalloc(tree->mmod->n_dim, sizeof(phydbl));
 
@@ -1734,9 +1739,21 @@ void MIGREP_Get_Min_Max_Ldsk_Given_Disk(t_ldsk *ldsk, phydbl **min, phydbl **max
     {
       loc_min[i] = ldsk->disk->centr->lonlat[i] - tree->mmod->rad;
       loc_max[i] = ldsk->disk->centr->lonlat[i] + tree->mmod->rad;     
+      
+      loc_ldsk = ldsk->prev;
+      while(loc_ldsk && loc_ldsk != loc_ldsk->disk->ldsk) loc_ldsk = loc_ldsk->prev;
+      
+      if(!loc_ldsk) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+
+      loc_min[i] = MAX(loc_min[i],loc_ldsk->disk->centr->lonlat[i] - tree->mmod->rad);
+      loc_max[i] = MIN(loc_max[i],loc_ldsk->disk->centr->lonlat[i] + tree->mmod->rad);
+
+      loc_min[i] = MAX(0.0,loc_min[i]);
+      loc_max[i] = MIN(tree->mmod->lim->lonlat[i],loc_max[i]);
+
     }
 
-  (*min) = loc_min;
+  (*min) = loc_min,0.0;
   (*max) = loc_max;
 }
 
