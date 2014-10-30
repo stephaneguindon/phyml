@@ -3,6 +3,7 @@
 aclocal;
 autoheader;
 autoconf -f;
+libtoolize;
 automake -f --add-missing;
 ./configure;
 make clean;

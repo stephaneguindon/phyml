@@ -285,9 +285,9 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   disk = disk->prev;
 
   /* Initialize parameters of migrep model */
-  mmod->lbda = 0.1;
+  mmod->lbda = 0.2;
   mmod->mu   = 0.8;
-  mmod->rad  = 2.0;
+  mmod->rad  = 4.0;
   
   curr_t      = 0.0;
   dt_dsk     = 0.0;
@@ -597,7 +597,6 @@ void MIGREP_MCMC(t_tree *tree)
   mcmc->is               = NO;
   mcmc->use_data         = YES;
   mcmc->run              = 0;
-  mcmc->sample_interval  = 1E+3;
   mcmc->chain_len        = 1E+6;
   mcmc->chain_len_burnin = 1E+5;
   mcmc->randomize        = YES;
@@ -608,7 +607,7 @@ void MIGREP_MCMC(t_tree *tree)
   mcmc->is_burnin        = NO;
   mcmc->nd_t_digits      = 1;
   mcmc->chain_len        = 1.E+9;
-  mcmc->sample_interval  = 5000;
+  mcmc->sample_interval  = 1E+5;
   
   MIGREP_Lk(tree);
   MIGREP_LnPrior_Radius(tree);
@@ -655,7 +654,8 @@ void MIGREP_MCMC(t_tree *tree)
   while(disk->prev) disk = disk->prev;
   printf("\n# root pos: %f %f",disk->ldsk->coord->lonlat[0],disk->ldsk->coord->lonlat[1]);
 
-  PhyML_Printf("\n %13s %13s %13s %13s %13s %13s %13s %13s %13s",
+  PhyML_Printf("\n %13s %13s %13s %13s %13s %13s %13s %13s %13s %13s",
+               "run",
                "lnL",
                "lbda",
                "mu",
@@ -683,9 +683,6 @@ void MIGREP_MCMC(t_tree *tree)
 
       if(!strcmp(tree->mcmc->move_name[move],"migrep_rad"))
         MCMC_MIGREP_Radius(tree);
-
-      if(!strcmp(tree->mcmc->move_name[move],"migrep_triplet"))
-        MCMC_MIGREP_Triplet(tree);
 
       if(!strcmp(tree->mcmc->move_name[move],"migrep_delete_disk"))
         MCMC_MIGREP_Delete_Disk(tree);
@@ -720,11 +717,15 @@ void MIGREP_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"migrep_shift_ldsk_path"))
         MCMC_MIGREP_Shift_Ldsk_Path(tree);
 
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_shift_disk_path"))
+        MCMC_MIGREP_Shift_Disk_Path(tree);
+
       tree->mcmc->run++;
       MCMC_Get_Acc_Rates(tree->mcmc);
       
       if(!(tree->mcmc->run%tree->mcmc->sample_interval))
-        PhyML_Printf("\n %13f %13f %13f %13f %13d %13d %13d %13f %13f",
+        PhyML_Printf("\n %13d %13f %13f %13f %13f %13d %13d %13d %13f %13f",
+                     tree->mcmc->run,
                      tree->mmod->c_lnL,
                      tree->mmod->lbda,
                      tree->mmod->mu,

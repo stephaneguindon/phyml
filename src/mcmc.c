@@ -4323,8 +4323,8 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->num_move_migrep_move_ldsk        = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_migrep_ldsk_ct          = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_migrep_shift_ct_med     = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_migrep_triplet          = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_migrep_shift_ldsk_path  = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_migrep_shift_disk_path  = mcmc->n_moves; mcmc->n_moves += 1;
 
   mcmc->run_move           = (int *)mCalloc(mcmc->n_moves,sizeof(int));
   mcmc->acc_move           = (int *)mCalloc(mcmc->n_moves,sizeof(int));
@@ -4391,8 +4391,8 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   strcpy(mcmc->move_name[mcmc->num_move_migrep_move_ldsk],"migrep_move_ldsk");
   strcpy(mcmc->move_name[mcmc->num_move_migrep_ldsk_ct],"migrep_shift_ldsk_to_centre");
   strcpy(mcmc->move_name[mcmc->num_move_migrep_shift_ct_med],"migrep_shift_centr_to_median");
-  strcpy(mcmc->move_name[mcmc->num_move_migrep_triplet],"migrep_triplet");
   strcpy(mcmc->move_name[mcmc->num_move_migrep_shift_ldsk_path],"migrep_shift_ldsk_path");
+  strcpy(mcmc->move_name[mcmc->num_move_migrep_shift_disk_path],"migrep_shift_disk_path");
   
   if(tree->rates && tree->rates->model_log_rates == YES)
     for(i=mcmc->num_move_br_r;i<mcmc->num_move_br_r+2*tree->n_otu-2;i++) mcmc->move_type[i] = MCMC_MOVE_RANDWALK_NORMAL;  
@@ -4504,8 +4504,8 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_migrep_move_ldsk]             = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_ldsk_ct]               = 2.0;
   mcmc->move_weight[mcmc->num_move_migrep_shift_ct_med]          = 6.0;
-  mcmc->move_weight[mcmc->num_move_migrep_triplet]               = 0.0;
   mcmc->move_weight[mcmc->num_move_migrep_shift_ldsk_path]       = 6.0;
+  mcmc->move_weight[mcmc->num_move_migrep_shift_disk_path]       = 6.0;
 # else
   mcmc->move_weight[mcmc->num_move_migrep_lbda]                  = 0.0;
   mcmc->move_weight[mcmc->num_move_migrep_mu]                    = 0.0;
@@ -4520,8 +4520,8 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_migrep_move_ldsk]             = 0.0;
   mcmc->move_weight[mcmc->num_move_migrep_ldsk_ct]               = 0.0;
   mcmc->move_weight[mcmc->num_move_migrep_shift_ct_med]          = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_triplet]               = 0.0;
   mcmc->move_weight[mcmc->num_move_migrep_shift_ldsk_path]       = 0.0;
+  mcmc->move_weight[mcmc->num_move_migrep_shift_disk_path]       = 0.0;
 #endif 
 
 /*   for(i=mcmc->num_move_br_r;i<mcmc->num_move_br_r+2*tree->n_otu-2;i++) mcmc->move_weight[i] = 0.0; /\* Rates *\/ */
@@ -4922,355 +4922,6 @@ void MCMC_MIGREP_Radius(t_tree *mixt_tree)
 }
 #endif 
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-#ifdef MIGREP
-void MCMC_MIGREP_Triplet(t_tree *tree)
-{
-  phydbl cur_lnL, new_lnL;
-  phydbl ratio, alpha, u, min_under_time, max_under_time, hr,T;
-  t_dsk **disk_bkup,*disk,*coal_disk;
-  t_ldsk *ldsk_coal_cur,**ldsk_under,*ldsk_up,*ldsk,**next_up_orig,**prev_under_orig,*old_ldsk_under,*young_ldsk_under,*ldsk_coal_new,*buff_ldsk;
-  int i,n_coal,n_rm_disk,dir_up_coal,n_next_up_orig,block,n_disk_cur,n_disk_new,n_rm_disk_up_cur,n_rm_disk_up_new,*n_rm_disk_under_cur,*n_rm_disk_under_new,old_ldsk_under_idx;
-  int ori_n_disk;
-
-  cur_lnL          = tree->disk->mmod->c_lnL;
-  new_lnL          = UNLIKELY;
-  disk_bkup        = NULL;
-  disk             = NULL;
-  ldsk_coal_cur    = NULL;
-  ldsk_coal_new    = NULL;
-  ldsk_under       = NULL;
-  ldsk_up          = NULL;
-  ldsk             = NULL;
-  next_up_orig     = NULL;
-  prev_under_orig  = NULL;
-  old_ldsk_under   = NULL;
-  young_ldsk_under = NULL;
-  coal_disk        = NULL;
-  buff_ldsk        = NULL;
-  hr               = 0.0;
-  block            = 100;
-
-  ori_n_disk = MIGREP_Total_Number_Of_Intervals(tree);
-
-  /* Go to the top of the tree */
-  disk = tree->disk;
-  while(disk->prev) disk = disk->prev;
-  
-  /* Record the disk events corresponding to coalescent events */
-  n_coal = 0;
-  do
-    {
-      if(disk->ldsk && disk->ldsk->is_coal == YES)
-        {
-          if(!n_coal)              disk_bkup = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
-          else if(!(n_coal%block)) disk_bkup = (t_dsk **)mRealloc(disk_bkup,n_coal+block,sizeof(t_dsk *));
-          disk_bkup[n_coal] = disk;
-          n_coal++;
-        }
-      disk = disk->next;      
-    }
-  while(disk);
-
-  if(n_coal == 0) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-    
-  /* Randomly select a coalescent disk */
-  i = Rand_Int(0,n_coal-1);
-  ldsk_coal_cur = disk_bkup[i]->ldsk;
-  Free(disk_bkup);
-  /* printf("\n. ldsk_coal_cur: %s (n_next: %d) n_coal: %d",ldsk_coal_cur->coord->id,ldsk_coal_cur->n_next,n_coal); fflush(NULL); */
-
-  /* Find the closest coalescent node towards the top along */
-  /* the path from ldsk_coal_cur to the root ldsk */
-  ldsk_up = MIGREP_Prev_Coal_Lindisk(ldsk_coal_cur->prev);
-  
-  /* ldsk_coal_cur is the root node */
-  if(ldsk_up == NULL) ldsk_up = ldsk_coal_cur; 
-
-  T = -ldsk_up->disk->time;
-
-  /* /\* Do not change root node height if there are no sequences involved in the analysis *\/ */
-  /* if(ldsk_up == ldsk_coal_cur) return; */
-
-  /* printf("\n. ldsk_up: %s",ldsk_up->coord->id); fflush(NULL); */
-
-  /* Copy ldsk_up->next */
-  next_up_orig = (t_ldsk **)mCalloc(ldsk_up->n_next,sizeof(t_ldsk *));
-  For(i,ldsk_up->n_next) next_up_orig[i] = ldsk_up->next[i];
-  n_next_up_orig = ldsk_up->n_next;
-  
-  ldsk_under          = (t_ldsk **)mCalloc(ldsk_coal_cur->n_next,sizeof(t_ldsk *));
-  prev_under_orig     = (t_ldsk **)mCalloc(ldsk_coal_cur->n_next,sizeof(t_ldsk *));
-  n_rm_disk_under_cur = (int *)mCalloc(ldsk_coal_cur->n_next,sizeof(int));
-  n_rm_disk_under_new = (int *)mCalloc(ldsk_coal_cur->n_next,sizeof(int));
-
-  For(i,ldsk_coal_cur->n_next) ldsk_under[i] = MIGREP_Next_Coal_Lindisk(ldsk_coal_cur->next[i]);
- 
-  /* Record the oldest ldsk_under. Coalescent has to happen */
-  /* prior the time of that ldisk */
-  min_under_time = +INFINITY;
-  old_ldsk_under_idx = -1;
-  For(i,ldsk_coal_cur->n_next)
-    {
-      if(ldsk_under[i]->disk->time < min_under_time) 
-        {
-          min_under_time     = ldsk_under[i]->disk->time;
-          old_ldsk_under     = ldsk_under[i];
-          old_ldsk_under_idx = i;
-        }
-    }
-
-  /* Record the youngest ldsk_under. */
-  max_under_time = -INFINITY;
-  For(i,ldsk_coal_cur->n_next)
-    {
-      if(ldsk_under[i]->disk->time > max_under_time) 
-        {
-          max_under_time   = ldsk_under[i]->disk->time;
-          young_ldsk_under = ldsk_under[i];
-        }
-    }
-  
-  /* T is the time elapsed between ldsk_up and young_ldsk_under */
-  /* Used in the calculation of the Hastings ratio */
-  T += young_ldsk_under->disk->time;
-
-  /* Count current number of disks between ldsk_up and young_ldsk_under */
-  n_disk_cur = 0;
-  disk = young_ldsk_under->disk->prev;
-  while(disk != ldsk_up->disk)
-    {
-      n_disk_cur++;
-      disk = disk->prev;
-    }
-
-  /* First part of Hastings ratio */
-  hr += MIGREP_Uniform_Path_Density(old_ldsk_under,ldsk_up);
-  For(i,ldsk_coal_cur->n_next)
-    if(ldsk_under[i] != old_ldsk_under)
-      hr += MIGREP_Uniform_Path_Density(ldsk_under[i],ldsk_coal_cur);
-
-  /* Remove disks between ldsk_coal_cur and ldsk_up, including ldsk_coal_cur (if different from ldsk_up) */
-  n_rm_disk = 0;  
-  n_rm_disk_up_cur = 0;
-  ldsk = ldsk_coal_cur;
-  while(ldsk != ldsk_up)
-    {
-      if(!n_rm_disk)              disk_bkup = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
-      else if(!(n_rm_disk%block)) disk_bkup = (t_dsk **)mRealloc(disk_bkup,n_rm_disk+block,sizeof(t_dsk *));
-      disk_bkup[n_rm_disk] = ldsk->disk;
-      MIGREP_Remove_Disk(ldsk->disk);
-      n_rm_disk++;
-      n_rm_disk_up_cur++;
-      ldsk = ldsk->prev;
-    }
-  
-  /* Remove disks between ldsk_coal_cur and the next coalescent lindisks underneath */
-  For(i,ldsk_coal_cur->n_next)
-    {
-      prev_under_orig[i] = ldsk_under[i]->prev;
-
-      /* printf("\n. ldsk_under %d: %s",i+1,ldsk_under[i]->coord->id); fflush(NULL); */
-
-      n_rm_disk_under_cur[i] = 0;
-      ldsk = ldsk_under[i]->prev;
-      while(ldsk != ldsk_coal_cur)
-        {
-          if(!n_rm_disk)              disk_bkup = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
-          else if(!(n_rm_disk%block)) disk_bkup = (t_dsk **)mRealloc(disk_bkup,n_rm_disk+block,sizeof(t_dsk *));
-          disk_bkup[n_rm_disk] = ldsk->disk;
-          MIGREP_Remove_Disk(ldsk->disk);
-          n_rm_disk++;
-          n_rm_disk_under_cur[i]++;
-          ldsk = ldsk->prev;
-        }
-    }
-
-  /* printf("\n. Removed %d disks",n_rm_disk); */
-
-  if(ldsk_coal_cur != ldsk_up)
-    {
-      /* Insert the disk on which coalescent will occur. Time of this disk */
-      /* has to be older than old_ldsk_under and younger than ldsk_up  */
-      coal_disk= MIGREP_Make_Disk_Event(tree->mmod->n_dim,tree->n_otu);
-      MIGREP_Init_Disk_Event(coal_disk,tree->mmod->n_dim,tree->mmod);
-      
-      /* Set the time of the coalescent disk */
-      coal_disk->time =
-        Uni()*(old_ldsk_under->disk->time - ldsk_up->disk->time) +
-        ldsk_up->disk->time;
-
-      /* Which index of ldsk_up->next leads to any of */
-      /* the ldsk in ldsk_under? This index also leads */
-      /* to ldsk_coal. */
-      dir_up_coal = MIGREP_Get_Next_Direction(ldsk_under[0],ldsk_up);
-
-      /* Generate trajectory between the oldest ldisk in ldsk_under and ldsk_up */
-      n_rm_disk_up_new = MIGREP_One_New_Traj(old_ldsk_under,
-                                             ldsk_up,
-                                             dir_up_coal,
-                                             coal_disk,
-                                             n_rm_disk_up_cur + n_rm_disk_under_cur[old_ldsk_under_idx],
-                                             tree);
-
-      hr -= MIGREP_Uniform_Path_Density(old_ldsk_under,ldsk_up);
-
-      /* The new coalescent ldsk should now be sitting on coal_disk */
-      ldsk_coal_new          = coal_disk->ldsk;
-      ldsk_coal_new->is_coal = YES;
-
-      /* Build new trajectories between each ldsk in ldsk_under */
-      /* ldsk_coal_new  */
-      For(i,ldsk_coal_cur->n_next)
-        {
-          if(ldsk_under[i] != old_ldsk_under)
-            {
-              MIGREP_Make_Lindisk_Next(ldsk_coal_new);
-              n_rm_disk_under_new[i] = MIGREP_One_New_Traj(ldsk_under[i],ldsk_coal_new,ldsk_coal_new->n_next-1,NULL,n_rm_disk_under_cur[i],tree);
-              hr -= MIGREP_Uniform_Path_Density(ldsk_under[i],ldsk_coal_new);
-            }
-        }
-    }
-  else /* Coalescent ldsk is the root ldsk */
-    {
-      ldsk_coal_new = ldsk_up;
-      For(i,ldsk_coal_cur->n_next)
-        {
-          /* printf("\n@ Generate traj from %s to %s",ldsk_under[i]->coord->id,ldsk_up->coord->id); fflush(NULL); */
-          n_rm_disk_under_new[i] = MIGREP_One_New_Traj(ldsk_under[i],ldsk_coal_new,i,NULL,n_rm_disk_under_cur[i],tree);
-          hr -= MIGREP_Uniform_Path_Density(ldsk_under[i],ldsk_coal_new);
-        }
-    }
-  
-  new_lnL = MIGREP_Lk(tree);
-
-  /* Count new number of disks between ldsk_up and young_ldsk_under */
-  n_disk_new = 0;
-  disk = young_ldsk_under->disk->prev;
-  while(disk != ldsk_up->disk)
-    {
-      n_disk_new++;
-      disk = disk->prev;
-    }
-
-  /* Dimension matching term in the Hastings ratio */
-  if(n_disk_new > n_disk_cur)
-    hr = (n_disk_new - n_disk_cur)*(LOG(T) - LOG(n_disk_new));
-  else
-    hr = (n_disk_new - n_disk_cur)*(LOG(n_disk_cur) - LOG(T));
-
-  ratio = .0;
-  ratio += (new_lnL - cur_lnL);
-  ratio += hr;
-
-
-  if(new_lnL < UNLIKELY + 0.1) 
-    {
-      MIGREP_Print_Struct('=',tree);
-      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);      
-    }
-
-  ratio = EXP(ratio);
-  alpha = MIN(1.,ratio);
-
-
-  /* Always accept move */
-  if(tree->mcmc->always_yes == YES && new_lnL > UNLIKELY) alpha = 1.0;
-
-  u = Uni();
-  
-  /* if(ldsk_coal_cur->n_next >= 10) */
-  /*   { */
-      /* printf(" u: %f alpha:%f",u,alpha); fflush(NULL); */
-      /* gtk_widget_queue_draw(tree->draw_area); */
-      /* sleep(2); */
-    /* } */
-
-  if(u > alpha) /* Reject */
-    {
-      /* if(ldsk_coal_cur->n_next >= 10) */
-        /* PhyML_Printf(" Reject"); */
-      /* We now go back to the original genealogy */
-     
- 
-      /* First, remove the new disks and free the memory  */
-      /* for the ldsk sitting on it and the disk as well  */
-      For(i,ldsk_coal_cur->n_next)
-        {
-          ldsk = ldsk_under[i]->prev;
-          while(ldsk != ldsk_coal_new)
-            {
-              /* printf("\n. ldsk: %s disk: %s target: %s",ldsk->coord->id,ldsk->disk->id,ldsk_coal_new->coord->id); fflush(NULL); */
-              MIGREP_Remove_Disk(ldsk->disk);
-              Free_Disk(ldsk->disk);
-              buff_ldsk = ldsk;
-              ldsk = ldsk->prev;
-              Free_Ldisk(buff_ldsk);
-            }      
-        }
-
-      while(ldsk != ldsk_up)
-        {
-          MIGREP_Remove_Disk(ldsk->disk);
-          Free_Disk(ldsk->disk);
-          buff_ldsk = ldsk;
-          ldsk = ldsk->prev;
-          Free_Ldisk(buff_ldsk);
-        }      
-            
-     
-      /* Second, re-insert the original disks */
-      For(i,n_rm_disk) MIGREP_Insert_Disk(disk_bkup[i]);
-
-      /* Then connect ldsk_up->next to the original corresponding
-         ldsk
-      */
-      Free(ldsk_up->next);
-      ldsk_up->n_next = n_next_up_orig;
-      ldsk_up->next   = next_up_orig;
-      
-      /* Then connect each ldsk in the array ldsk_under to the
-         original ldsks
-      */
-      For(i,ldsk_coal_cur->n_next) ldsk_under[i]->prev = prev_under_orig[i];
-      
-      /* tree->mmod->c_lnL = cur_lnL; */
-      new_lnL = MIGREP_Lk(tree);
-      
-      if(Are_Equal(new_lnL,cur_lnL,1.E-3) == NO) 
-        {
-          PhyML_Printf("\n. new_lnL: %f cur_lnL: %f",new_lnL,cur_lnL);
-          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);      
-        }
-      if(ori_n_disk != MIGREP_Total_Number_Of_Intervals(tree)) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);        
-    }
-  else
-    {
-      Free(next_up_orig);
-      
-      For(i,n_rm_disk) 
-        {
-          Free_Ldisk(disk_bkup[i]->ldsk);
-          Free_Disk(disk_bkup[i]);
-        }
-    }
-
-
-  Free(ldsk_under);
-  Free(prev_under_orig);
-  if(n_rm_disk > 0) Free(disk_bkup);
-  Free(n_rm_disk_under_cur);
-  Free(n_rm_disk_under_new);
-
-
-  /* MIGREP_Print_Struct('e',tree); */
-  /* MIGREP_Check_Struct(tree); */
-
-}
-#endif
-
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /* Insert or delete a disk that does not affect any ldisk */
@@ -5424,7 +5075,7 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
       while(disk->time > t) disk = disk->prev;
       target_disk[j] = disk->next;
       
-      new_disk[j]= MIGREP_Make_Disk_Event(tree->mmod->n_dim,tree->n_otu);
+      new_disk[j] = MIGREP_Make_Disk_Event(tree->mmod->n_dim,tree->n_otu);
       MIGREP_Init_Disk_Event(new_disk[j],tree->mmod->n_dim,tree->mmod);
       
       new_disk[j]->prev = target_disk[j]->prev;
@@ -5471,8 +5122,6 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
           MIGREP_Remove_Disk(new_disk[j]);      
           Free_Disk(new_disk[j]);
         }
-      Free(target_disk);
-      Free(new_disk);
 
       /* tree->mmod->c_lnL = cur_lnL; */
 
@@ -5488,6 +5137,11 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
       /* printf("+ Accept"); */
       /* if(indel > 0) printf("\n. Accept"); */
     }
+
+  Free(target_disk);
+  Free(new_disk);
+
+
 }
 #endif
 
@@ -6563,6 +6217,7 @@ void MCMC_MIGREP_Shift_Ldsk_Path(t_tree *tree)
   /*        target_disk->id, */
   /*        new_lnL,cur_lnL,hr,u,alpha); */
 
+
   if(u > alpha) /* Reject */
     {
       /* printf("- Reject"); */
@@ -6570,7 +6225,7 @@ void MCMC_MIGREP_Shift_Ldsk_Path(t_tree *tree)
       For(i,n_coord_bkup)
         {
           Free_Geo_Coord(ldsk->coord);
-          ldsk->coord = MIGREP_Copy_Geo_Coord(bkup_coord[i]);      
+          ldsk->coord = bkup_coord[i];      
           ldsk = ldsk->prev;
         }
       
@@ -6593,6 +6248,114 @@ void MCMC_MIGREP_Shift_Ldsk_Path(t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+#ifdef MIGREP
+void MCMC_MIGREP_Shift_Disk_Path(t_tree *tree)
+{
+  phydbl u,alpha,ratio;
+  phydbl cur_lnL, new_lnL, hr;
+  phydbl *max_coord,*min_coord;
+  t_dsk  *target_disk,**valid_disks,*disk;
+  t_geo_coord **bkup_coord;
+  int i,block,n_valid_disks,n_coord_bkup;
+
+  new_lnL        = UNLIKELY;
+  cur_lnL        = tree->mmod->c_lnL;
+  hr             = 0.0;
+  ratio          = 0.0;
+  block          = 100;
+  valid_disks    = NULL;
+  bkup_coord     = NULL;
+
+  if(tree->disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  disk = tree->disk->prev;
+  n_valid_disks = 0;
+  do
+    {
+      /* Include all disks */
+      if(!n_valid_disks)              valid_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
+      else if(!(n_valid_disks%block)) valid_disks = (t_dsk **)mRealloc(valid_disks,n_valid_disks+block,sizeof(t_dsk *));
+      valid_disks[n_valid_disks] = disk;
+      n_valid_disks++;
+      disk = disk->prev;
+    }
+  while(disk->prev);
+
+  if(!n_valid_disks) return;
+  
+  /* Uniform selection of a disk */
+  i = Rand_Int(0,n_valid_disks-1);
+  target_disk = valid_disks[i];
+  Free(valid_disks);
+    
+  disk = target_disk;
+  n_coord_bkup = 0;
+  while(disk->prev)
+    {
+      if(!n_coord_bkup)              bkup_coord = (t_geo_coord **)mCalloc(block,sizeof(t_geo_coord *));
+      else if(!(n_coord_bkup%block)) bkup_coord = (t_geo_coord **)mRealloc(bkup_coord,n_coord_bkup+block,sizeof(t_geo_coord *));
+      
+      bkup_coord[n_coord_bkup] = MIGREP_Copy_Geo_Coord(disk->centr);      
+      n_coord_bkup++;
+      
+      MIGREP_Get_Min_Max_Disk_Given_Ldsk(disk,&min_coord,&max_coord,tree);
+      
+      For(i,tree->mmod->n_dim) 
+        disk->centr->lonlat[i] = Uni() * (max_coord[i] - min_coord[i]) + min_coord[i];
+
+      Free(min_coord);
+      Free(max_coord);
+
+      disk = disk->prev;
+    }
+  
+  new_lnL = MIGREP_Lk(tree);
+  ratio += (new_lnL - cur_lnL);
+  ratio += hr;
+  
+  if(new_lnL < UNLIKELY + 0.1) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  
+  ratio = EXP(ratio);
+  alpha = MIN(1.,ratio);
+  
+  /* Always accept move */
+  if(tree->mcmc->always_yes == YES && new_lnL > UNLIKELY) alpha = 1.0;
+
+  u = Uni();
+  
+  /* printf("\n- Shift ldsk path %s new_lnL: %f [%f] hr: %f u:%f alpha: %f", */
+  /*        target_disk->id, */
+  /*        new_lnL,cur_lnL,hr,u,alpha); */
+
+  if(u > alpha) /* Reject */
+    {
+      /* printf("- Reject"); */
+      disk = target_disk;
+      For(i,n_coord_bkup)
+        {
+          Free_Geo_Coord(disk->centr);
+          disk->centr = bkup_coord[i];      
+          disk = disk->prev;
+        }
+      
+      new_lnL = MIGREP_Lk(tree);
+      if(Are_Equal(new_lnL,cur_lnL,1.E-3) == NO) 
+        {
+          PhyML_Printf("\n. new_lnL: %f cur_lnL: %f",new_lnL,cur_lnL);
+          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+        }      
+    }
+  else
+    {
+      For(i,n_coord_bkup) Free_Geo_Coord(bkup_coord[i]);
+    }
+
+  if(n_coord_bkup) Free(bkup_coord);
+
+}
+#endif 
+
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////
