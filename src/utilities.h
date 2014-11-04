@@ -1479,8 +1479,10 @@ typedef struct __Tmcmc {
   int num_move_migrep_move_ldsk;
   int num_move_migrep_ldsk_ct;
   int num_move_migrep_shift_ct_med;
+  int num_move_migrep_triplet;
   int num_move_migrep_shift_ldsk_path;
   int num_move_migrep_shift_disk_path;
+  int num_move_migrep_subtree;
 
   int nd_t_digits;
   int *monitor;
@@ -1673,9 +1675,15 @@ typedef struct __Migrep_Model{
   phydbl                     min_rad; // min of radius of the migrep disk 
   phydbl                     max_rad; // max of radius of the migrep disk 
   phydbl             prior_param_rad; // parameter of the parameter for the exponential prior on radius
+  phydbl            prior_param_lbda; // parameter of the parameter for the exponential prior on lbda
+  phydbl              prior_param_mu; // parameter of the parameter for the 'exponential' prior on mu
 
   phydbl                       c_lnL; // current value of log-likelihood 
   phydbl              c_ln_prior_rad; // current value of log prior for the exponential prior on radius
+  phydbl             c_ln_prior_lbda; // current value of log prior for the exponential prior on lbda
+  phydbl               c_ln_prior_mu; // current value of log prior for the exponential prior on mu
+
+  phydbl             soft_bound_area;
 
   struct __Geo_Coord            *lim; // max longitude and lattitude (the min are both set to zero)                       
 }t_migrep_mod;
@@ -1698,9 +1706,11 @@ typedef struct __Disk_Event{
 /*!********************************************************/
 
 typedef struct __Geo_Coord{
-  phydbl *lonlat; // longitude-latitude vector
-  int        dim;
-  char       *id;
+  phydbl             *lonlat; /* longitude-latitude vector */
+  int                    dim;
+  char                   *id;
+  struct __Geo_Coord    *cpy; /* keep a copy of this coordinate */
+
 }t_geo_coord;
 
 /*!********************************************************/

@@ -1348,6 +1348,11 @@ t_geo_coord *GEO_Make_Geo_Coord(int dim)
   t = (t_geo_coord *)mCalloc(1,sizeof(t_geo_coord));
   t->lonlat = (phydbl *)mCalloc(dim,sizeof(phydbl));
   t->id = (char *)mCalloc(T_MAX_ID_COORD,sizeof(char));
+
+  t->cpy = (t_geo_coord *)mCalloc(1,sizeof(t_geo_coord));
+  t->cpy->lonlat = (phydbl *)mCalloc(dim,sizeof(phydbl));
+  t->cpy->id = (char *)mCalloc(T_MAX_ID_COORD,sizeof(char));
+
   return(t);
 }
 

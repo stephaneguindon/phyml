@@ -1166,6 +1166,10 @@ void Free_Geo(t_geo *t)
 
 void Free_Geo_Coord(t_geo_coord *t)
 {
+  Free(t->cpy->lonlat); 
+  Free(t->cpy->id);
+  Free(t->cpy);
+
   Free(t->lonlat); 
   Free(t->id);
   Free(t);

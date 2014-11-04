@@ -3320,23 +3320,29 @@ void MIGREP_Init_Disk_Event(t_dsk *t, int n_dim, t_migrep_mod *mmod)
 
 void MIGREP_Init_Migrep_Mod(t_migrep_mod *t, int n_dim)
 {
-  t->n_dim           = n_dim;
+  t->n_dim            = n_dim;
 
-  t->lbda            = 0.1;
-  t->min_lbda        = 1.E-6;
-  t->max_lbda        = 1.E+2;
+  t->lbda             = 0.1;
+  t->min_lbda         = 1.E-6;
+  t->max_lbda         = 3.0;
+  t->prior_param_lbda = 0.5;
 
-  t->mu              = 0.1;
-  t->min_mu          = 0.0;
-  t->max_mu          = 1.0;
+  t->mu               = 0.1;
+  t->min_mu           = 0.0;
+  t->max_mu           = 1.0 - 1.E-10;
+  t->prior_param_mu   = 0.5;
 
-  t->rad             = 3.0;
-  t->min_rad         = 1.E-6;
-  t->max_rad         = 10.;
-  t->prior_param_rad = 0.3;
+  t->rad              = 3.0;
+  t->min_rad          = 1.E-6;
+  t->max_rad          = 10.;
+  t->prior_param_rad  = 1.0;
 
   t->c_lnL           = UNLIKELY;
   t->c_ln_prior_rad  = UNLIKELY;
+  t->c_ln_prior_lbda = UNLIKELY;
+  t->c_ln_prior_mu   = UNLIKELY;
+
+  t->soft_bound_area = 0.1;
 }
 
 //////////////////////////////////////////////////////////////
