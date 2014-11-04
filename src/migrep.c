@@ -624,6 +624,8 @@ void MIGREP_MCMC(t_tree *tree)
   
   MIGREP_Lk(tree);
   MIGREP_LnPrior_Radius(tree);
+  MIGREP_LnPrior_Mu(tree);
+  MIGREP_LnPrior_Lbda(tree);
 
   printf("\n# before rand lnL: %f",tree->mmod->c_lnL);
   printf("\n# ninter: %d",MIGREP_Total_Number_Of_Intervals(tree));
@@ -633,40 +635,52 @@ void MIGREP_MCMC(t_tree *tree)
   /* gtk_widget_queue_draw(tree->draw_area); */
   /* sleep(3); */
 
+  disk = tree->disk;
+  while(disk->prev) disk = disk->prev;
+
   tree->mmod->lbda = Uni()*(tree->mmod->max_lbda - tree->mmod->min_lbda) + tree->mmod->min_lbda;
   tree->mmod->mu   = Uni()*(tree->mmod->max_mu - tree->mmod->min_mu) + tree->mmod->min_mu;
-  tree->mmod->rad  = Uni()*(tree->mmod->max_rad - tree->mmod->min_rad) + tree->mmod->min_rad;
-  /* tree->mmod->rad  = tree->mmod->max_rad; */
+  /* tree->mmod->rad  = Uni()*(tree->mmod->max_rad - tree->mmod->min_rad) + tree->mmod->min_rad; */
+  tree->mmod->rad  = tree->mmod->max_rad;
 
-
-  /* PhyML_Printf("\n"); */
-  /* /\* Randomization step *\/ */
-  /* mcmc->always_yes = YES; */
-  /* do */
-  /*   { */
-  /*     move = Rand_Int(0,5); */
-  /*     switch(move) */
-  /*       { */
-  /*       case 0: { MCMC_MIGREP_Insert_Disk(tree); break; } */
-  /*       case 1: { MCMC_MIGREP_Move_Disk_Centre(tree); break; } */
-  /*       case 2: { MCMC_MIGREP_Move_Disk_Updown(tree); break; } */
-  /*       case 3: { MCMC_MIGREP_Swap_Disk(tree); break; } */
-  /*       case 4: { MCMC_MIGREP_Insert_Hit(tree); break; } */
-  /*       } */
-  /*     mcmc->run++; */
-  /*     PhyML_Printf("\r. Randomization %5d/500",mcmc->run); */
-  /*   } */
-  /* while(mcmc->run < 500); */
-  /* mcmc->always_yes = NO; */
-  /* mcmc->run        = 0; */
+  mcmc->always_yes = YES;
+  mcmc->run        = 0;
+  do
+    {
+        MCMC_MIGREP_Delete_Disk(tree);
+        MCMC_MIGREP_Insert_Disk(tree);
+        MCMC_MIGREP_Move_Disk_Centre(tree);
+        MCMC_MIGREP_Move_Disk_Updown(tree);
+        MCMC_MIGREP_Swap_Disk(tree);
+        MCMC_MIGREP_Delete_Hit(tree);
+        MCMC_MIGREP_Insert_Hit(tree);
+        MCMC_MIGREP_Move_Ldsk(tree);
+        MCMC_MIGREP_Shift_Ldsk_To_Centre(tree);
+        MCMC_MIGREP_Shift_Centre_To_Median(tree);
+        mcmc->run++;
+        
+        if(!(mcmc->run%mcmc->sample_interval))
+          {
+            PhyML_Printf("\n %13d %13f %13f %13f %13f %13d %13d %13d %13f %13f",
+                         mcmc->run,
+                         tree->mmod->c_lnL,
+                         tree->mmod->lbda,
+                         tree->mmod->mu,
+                         tree->mmod->rad,
+                         MIGREP_Total_Number_Of_Intervals(tree),
+                         MIGREP_Total_Number_Of_Coal_Disks(tree),
+                         MIGREP_Total_Number_Of_Hit_Disks(tree),
+                         disk->ldsk->coord->lonlat[0],
+                         disk->ldsk->coord->lonlat[1]);
+          }
+    }
+  while(mcmc->run < 10.*mcmc->sample_interval);
 
   MIGREP_Lk(tree);
   printf("\n# after rand lnL: %f",tree->mmod->c_lnL);
   printf("\n# ninter: %d",MIGREP_Total_Number_Of_Intervals(tree));
   printf("\n# ncoal: %d",MIGREP_Total_Number_Of_Coal_Disks(tree));
   printf("\n# nhits: %d",MIGREP_Total_Number_Of_Hit_Disks(tree));
-  disk = tree->disk;
-  while(disk->prev) disk = disk->prev;
   printf("\n# root pos: %f %f",disk->ldsk->coord->lonlat[0],disk->ldsk->coord->lonlat[1]);
 
   PhyML_Printf("\n %13s %13s %13s %13s %13s %13s %13s %13s %13s %13s",
@@ -684,26 +698,25 @@ void MIGREP_MCMC(t_tree *tree)
   /* gtk_widget_queue_draw(tree->draw_area); */
   /* sleep(2); */
 
-  mcmc->always_yes = YES;
+  PhyML_Printf("\n *** \n");
 
+  mcmc->always_yes = NO;
   do
     {
-      if(mcmc->run > 100.*mcmc->sample_interval) mcmc->always_yes = NO;
       if(mcmc->run == (int)mcmc->chain_len * 0.01) 
         {
           For(i,mcmc->n_moves) tree->mcmc->adjust_tuning[i] = NO;
-          /* tree->mmod->soft_bound_area = 1.E-20; */
         }
 
       u = Uni();
 
       For(move,tree->mcmc->n_moves) if(tree->mcmc->move_weight[move] > u) break;
       
-      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_lbda")) */
-      /*   MCMC_MIGREP_Lbda(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_lbda"))
+        MCMC_MIGREP_Lbda(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_mu")) */
-      /*   MCMC_MIGREP_Mu(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_mu"))
+        MCMC_MIGREP_Mu(tree);
 
       if(!strcmp(tree->mcmc->move_name[move],"migrep_rad"))
         MCMC_MIGREP_Radius(tree);

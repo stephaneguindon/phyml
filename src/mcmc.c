@@ -4877,21 +4877,21 @@ void MCMC_MIGREP_Lbda(t_tree *tree)
 
   ori_lbda = tree->mmod->lbda;
   
-  min = MAX(tree->mmod->min_lbda,tree->mmod->lbda - 0.1);
-  max = MIN(tree->mmod->max_lbda,tree->mmod->lbda + 0.1);
+  min = MAX(tree->mmod->min_lbda,tree->mmod->lbda - 0.01);
+  max = MIN(tree->mmod->max_lbda,tree->mmod->lbda + 0.01);
   hr  += LOG(max-min);
  
   tree->mmod->lbda = Uni()*(max - min) + min;
 
-  min = MAX(tree->mmod->min_lbda,tree->mmod->lbda - 0.1);
-  max = MIN(tree->mmod->max_lbda,tree->mmod->lbda + 0.1);
+  min = MAX(tree->mmod->min_lbda,tree->mmod->lbda - 0.01);
+  max = MIN(tree->mmod->max_lbda,tree->mmod->lbda + 0.01);
   hr  -= LOG(max-min);
 
   new_lnL      = MIGREP_Lk(tree);
   new_lnL_lbda = MIGREP_LnPrior_Lbda(tree);
 
   ratio += (new_lnL - cur_lnL);
-  ratio += (new_lnL_lbda - cur_lnL_lbda);
+  /* ratio += (new_lnL_lbda - cur_lnL_lbda); */
   ratio += hr;
 
   ratio = EXP(ratio);
@@ -4945,14 +4945,14 @@ void MCMC_MIGREP_Mu(t_tree *tree)
 
   ori_mu = tree->mmod->mu;
   
-  min = MAX(tree->mmod->min_mu,tree->mmod->mu - 0.1);
-  max = MIN(tree->mmod->max_mu,tree->mmod->mu + 0.1);
+  min = MAX(tree->mmod->min_mu,tree->mmod->mu - 0.01);
+  max = MIN(tree->mmod->max_mu,tree->mmod->mu + 0.01);
   hr  += LOG(max-min);
  
   tree->mmod->mu = Uni()*(max - min) + min;
 
-  min  = MAX(tree->mmod->min_mu,tree->mmod->mu - 0.1);
-  max  = MIN(tree->mmod->max_mu,tree->mmod->mu + 0.1);
+  min  = MAX(tree->mmod->min_mu,tree->mmod->mu - 0.01);
+  max  = MIN(tree->mmod->max_mu,tree->mmod->mu + 0.01);
   hr  -= LOG(max-min);
 
   new_lnL    = MIGREP_Lk(tree);
