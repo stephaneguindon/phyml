@@ -286,9 +286,9 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   disk = disk->prev;
 
   /* Initialize parameters of migrep model */
-  mmod->lbda = 0.2;
+  mmod->lbda = 0.3;
   mmod->mu   = 0.8;
-  mmod->rad  = 1.0;
+  mmod->rad  = 3.0;
   
   curr_t      = 0.0;
   dt_dsk     = 0.0;
@@ -512,7 +512,7 @@ phydbl MIGREP_Lk(t_tree *tree)
                   /*              disk->ldsk_a[i]->prev->coord->id, */
                   /*              disk->ldsk_a[i]->coord->lonlat[0], */
                   /*              disk->ldsk_a[i]->prev->coord->lonlat[0]); */
-                  if(MIGREP_Is_In_Disk(disk->ldsk_a[i]->prev->coord,disk->prev) == YES) /* 'Arrival' point is in disk */
+                  if(MIGREP_Is_In_Disk(disk->prev->ldsk->coord,disk->prev) == YES) /* 'Arrival' point is in disk */
                     {
                       lnL += log_mu;
                     }
@@ -541,7 +541,7 @@ phydbl MIGREP_Lk(t_tree *tree)
           else
             {
               /* PhyML_Printf("\n. %s was hit: %d %s %s %s lnL:%f",disk->ldsk_a[i]->coord->id,was_hit,disk->ldsk_a[i]->prev->disk->id,disk->prev->id,disk->id,lnL); */
-              /* has changed spatial coordinates but was outside disk  */
+              /* ldsk has changed spatial coordinates but was outside disk, so it could not have been hit  */
               if(was_hit == YES)
                 {
                   /* printf("\n. FAIL lindisk: %s [%.3f %.3f] prev: %s [%.3f %.3f] centr: [%.3f %.3f] rad: %.3f", */
@@ -688,11 +688,11 @@ void MIGREP_MCMC(t_tree *tree)
 
   do
     {
-      if(mcmc->run > 10.*mcmc->sample_interval) mcmc->always_yes = NO;
-      if(mcmc->run > (int)mcmc->chain_len * 0.01) 
+      if(mcmc->run > 100.*mcmc->sample_interval) mcmc->always_yes = NO;
+      if(mcmc->run == (int)mcmc->chain_len * 0.01) 
         {
           For(i,mcmc->n_moves) tree->mcmc->adjust_tuning[i] = NO;
-          tree->mmod->soft_bound_area = 1.E-20;
+          /* tree->mmod->soft_bound_area = 1.E-20; */
         }
 
       u = Uni();

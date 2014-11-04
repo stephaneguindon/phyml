@@ -4500,20 +4500,20 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
 # if defined (MIGREP)
   mcmc->move_weight[mcmc->num_move_migrep_lbda]                  = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_mu]                    = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_rad]                   = 3.0;
-  mcmc->move_weight[mcmc->num_move_migrep_insert_disk]           = 6.0;
-  mcmc->move_weight[mcmc->num_move_migrep_delete_disk]           = 5.0;  
+  mcmc->move_weight[mcmc->num_move_migrep_rad]                   = 2.0;
+  mcmc->move_weight[mcmc->num_move_migrep_insert_disk]           = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_delete_disk]           = 1.0;  
   mcmc->move_weight[mcmc->num_move_migrep_move_disk_ct]          = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_move_disk_ud]          = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_swap_disk]             = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_delete_hit]            = 5.0;
-  mcmc->move_weight[mcmc->num_move_migrep_insert_hit]            = 6.0;
+  mcmc->move_weight[mcmc->num_move_migrep_delete_hit]            = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_insert_hit]            = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_move_ldsk]             = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_ldsk_ct]               = 2.0;
-  mcmc->move_weight[mcmc->num_move_migrep_shift_ct_med]          = 6.0;
-  mcmc->move_weight[mcmc->num_move_migrep_shift_ldsk_path]       = 6.0;
-  mcmc->move_weight[mcmc->num_move_migrep_shift_disk_path]       = 6.0;
-  mcmc->move_weight[mcmc->num_move_migrep_subtree]               = 6.0;
+  mcmc->move_weight[mcmc->num_move_migrep_ldsk_ct]               = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_shift_ct_med]          = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_shift_ldsk_path]       = 0.0;
+  mcmc->move_weight[mcmc->num_move_migrep_shift_disk_path]       = 0.0;
+  mcmc->move_weight[mcmc->num_move_migrep_subtree]               = 0.0;
 # else
   mcmc->move_weight[mcmc->num_move_migrep_lbda]                  = 0.0;
   mcmc->move_weight[mcmc->num_move_migrep_mu]                    = 0.0;
@@ -5034,24 +5034,24 @@ void MCMC_MIGREP_Radius(t_tree *tree)
 
 
   min = MAX(tree->mmod->min_mu,tree->mmod->mu - 0.025);
-  max = MIN(tree->mmod->max_mu,tree->mmod->mu + 0.1);
+  max = MIN(tree->mmod->max_mu,tree->mmod->mu + 0.05);
   hr  += LOG(max-min);
 
   tree->mmod->mu = Uni()*(max - min) + min;
 
   min = MAX(tree->mmod->min_mu,tree->mmod->mu - 0.025);
-  max = MIN(tree->mmod->max_mu,tree->mmod->mu + 0.1);
+  max = MIN(tree->mmod->max_mu,tree->mmod->mu + 0.05);
   hr  -= LOG(max-min);
 
 
   min = MAX(tree->mmod->min_lbda,tree->mmod->lbda - 0.025);
-  max = MIN(tree->mmod->max_lbda,tree->mmod->lbda + 0.1);
+  max = MIN(tree->mmod->max_lbda,tree->mmod->lbda + 0.05);
   hr  += LOG(max-min);
 
   tree->mmod->lbda = Uni()*(max - min) + min;
 
   min = MAX(tree->mmod->min_lbda,tree->mmod->lbda - 0.025);
-  max = MIN(tree->mmod->max_lbda,tree->mmod->lbda + 0.1);
+  max = MIN(tree->mmod->max_lbda,tree->mmod->lbda + 0.05);
   hr  -= LOG(max-min);
 
 
@@ -5137,7 +5137,7 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
 
   if(!n_valid_disks) return;
   
-  n_delete_disks = Rand_Int(1,MIN(10,n_valid_disks));
+  n_delete_disks = Rand_Int(1,MIN(5,n_valid_disks));
   
   target_disk = (t_dsk **)mCalloc(n_delete_disks,sizeof(t_dsk *));
 
@@ -5245,7 +5245,7 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
     }
   while(disk->prev);
 
-  n_insert_disks = Rand_Int(1,10);
+  n_insert_disks = Rand_Int(1,5);
 
   target_disk = (t_dsk **)mCalloc(n_insert_disks,sizeof(t_dsk *));
   new_disk    = (t_dsk **)mCalloc(n_insert_disks,sizeof(t_dsk *));
