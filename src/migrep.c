@@ -745,11 +745,11 @@ void MIGREP_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"migrep_move_ldsk"))
         MCMC_MIGREP_Move_Ldsk(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"migrep_shift_ldsk_to_centre"))
-        MCMC_MIGREP_Shift_Ldsk_To_Centre(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_shift_ldsk_to_centre")) */
+      /*   MCMC_MIGREP_Shift_Ldsk_To_Centre(tree); */
 
-      if(!strcmp(tree->mcmc->move_name[move],"migrep_shift_centr_to_median"))
-        MCMC_MIGREP_Shift_Centre_To_Median(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_shift_centr_to_median")) */
+      /*   MCMC_MIGREP_Shift_Centre_To_Median(tree); */
 
       /* if(!strcmp(tree->mcmc->move_name[move],"migrep_shift_ldsk_path")) */
       /*   MCMC_MIGREP_Shift_Ldsk_Path(tree); */
