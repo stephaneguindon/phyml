@@ -286,9 +286,9 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   disk = disk->prev;
 
   /* Initialize parameters of migrep model */
-  mmod->lbda = 0.3;
+  mmod->lbda = 0.2;
   mmod->mu   = 0.8;
-  mmod->rad  = 3.0;
+  mmod->rad  = 2.0;
   
   curr_t      = 0.0;
   dt_dsk     = 0.0;
