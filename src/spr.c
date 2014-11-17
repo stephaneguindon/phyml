@@ -3297,9 +3297,12 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
               /* printf("\n. 2"); fflush(NULL); */
               /* if(!Check_Lk_At_Given_Edge(YES,tree)) Exit("\n"); */
 
-              accept_prob = exp((tree->spr_list[best_move]->lnL - tree->best_lnL)/tree->annealing_temp);
-              u = Uni();
-              if(!(u > accept_prob)) apply_move = YES;
+              if(best_move > -1)
+                {
+                  accept_prob = exp((tree->spr_list[best_move]->lnL - tree->best_lnL)/tree->annealing_temp);
+                  u = Uni();
+                  if(!(u > accept_prob)) apply_move = YES;
+                }
                 
               /* if((best_move > -1) && (tree->spr_list[best_move]->lnL > tree->best_lnL + tree->mod->s_opt->min_diff_lk_move)) */
               if((best_move > -1) && (apply_move == YES))
@@ -3859,6 +3862,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
       PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Exit("\n");
     }
+
 
   recorded = NO;
   For(i,list_size)

@@ -286,9 +286,9 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   disk = disk->prev;
 
   /* Initialize parameters of migrep model */
-  mmod->lbda = 0.2;
+  mmod->lbda = 0.3;
   mmod->mu   = 0.8;
-  mmod->rad  = 2.0;
+  mmod->rad  = 1.5;
   
   curr_t      = 0.0;
   dt_dsk     = 0.0;
@@ -610,7 +610,6 @@ void MIGREP_MCMC(t_tree *tree)
   mcmc->is               = NO;
   mcmc->use_data         = YES;
   mcmc->run              = 0;
-  mcmc->chain_len        = 1E+6;
   mcmc->chain_len_burnin = 1E+5;
   mcmc->randomize        = YES;
   mcmc->norm_freq        = 1E+3;
@@ -619,7 +618,7 @@ void MIGREP_MCMC(t_tree *tree)
   mcmc->print_every      = 2;
   mcmc->is_burnin        = NO;
   mcmc->nd_t_digits      = 1;
-  mcmc->chain_len        = 1.E+8;
+  mcmc->chain_len        = 5.E+8;
   mcmc->sample_interval  = 1E+3;
   
   MIGREP_Lk(tree);
