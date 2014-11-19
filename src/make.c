@@ -128,8 +128,8 @@ t_edge *Make_Edge_Light(t_node *a, t_node *d, int num)
       /* a tip is necessary on the right side of the t_edge */
 
       (b->left == a)?
-    (Make_Edge_Dirs(b,a,d,NULL)):
-    (Make_Edge_Dirs(b,d,a,NULL));
+        (Set_Edge_Dirs(b,a,d,NULL)):
+        (Set_Edge_Dirs(b,d,a,NULL));
 
       b->l->v             = a->l[b->l_r];
       if(a->tax) b->l->v  = a->l[b->r_l];

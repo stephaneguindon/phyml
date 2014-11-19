@@ -73,7 +73,7 @@ void Unroot_Tree(char **subtrees)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Make_Edge_Dirs(t_edge *b, t_node *a, t_node *d, t_tree *tree)
+void Set_Edge_Dirs(t_edge *b, t_node *a, t_node *d, t_tree *tree)
 {
   int i;
 
@@ -746,11 +746,8 @@ void Connect_One_Edge_To_Two_Nodes(t_node *a, t_node *d, t_edge *b, t_tree *tree
   dir_d_a = -1;
   For(i,3) if(d->v[i] == a) {dir_d_a = i; break;}
 
-  if(dir_a_d == -1 || dir_d_a == -1)
-    {
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
-      Warn_And_Exit("");
-    }
+  if(dir_a_d == -1) Generic_Exit(__FILE__,__LINE__,__FUNCTION__); 
+  if(dir_d_a == -1) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
 
   a->b[dir_a_d] = b;
   d->b[dir_d_a] = b;
@@ -763,8 +760,8 @@ void Connect_One_Edge_To_Two_Nodes(t_node *a, t_node *d, t_edge *b, t_tree *tree
   tree->num_curr_branch_available += 1;
 
   (b->left == a)?
-    (Make_Edge_Dirs(b,a,d,tree)):
-    (Make_Edge_Dirs(b,d,a,tree));
+    (Set_Edge_Dirs(b,a,d,tree)):
+    (Set_Edge_Dirs(b,d,a,tree));
 
   b->l->v                    = a->l[b->l_r];
   if(a->tax) b->l->v         = a->l[b->r_l];
@@ -4829,8 +4826,8 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
     }
 
   (v1 == b1->left)?
-    (Make_Edge_Dirs(b1,v1,v2,tree)):
-    (Make_Edge_Dirs(b1,v2,v1,tree));
+    (Set_Edge_Dirs(b1,v1,v2,tree)):
+    (Set_Edge_Dirs(b1,v2,v1,tree));
 
   if(target)   (*target)   = b1;
   if(residual) (*residual) = b2;
@@ -5027,9 +5024,9 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
   if(residual->l->onoff == ON)
     residual->l->v = target->l->v;
 
-  Make_Edge_Dirs(target,target->left,target->rght,tree);
-  Make_Edge_Dirs(residual,residual->left,residual->rght,tree);
-  Make_Edge_Dirs(b_up,b_up->left,b_up->rght,tree);
+  Set_Edge_Dirs(target,target->left,target->rght,tree);
+  Set_Edge_Dirs(residual,residual->left,residual->rght,tree);
+  Set_Edge_Dirs(b_up,b_up->left,b_up->rght,tree);
 
   /* if(tree->n_root) */
   /*   { */

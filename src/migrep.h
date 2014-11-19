@@ -64,6 +64,7 @@ void MIGREP_Proposal_Disk_Ldsk_Subtree(t_ldsk *root_ldsk, phydbl *logdens, t_tre
 void MIGREP_Proposal_Disk_Ldsk_Subtree_Pre(t_ldsk *old_ldsk, t_ldsk *young_ldsk, t_ldsk *root_ldsk, phydbl *logdens, t_tree *tree);
 phydbl MIGREP_LnPrior_Lbda(t_tree *tree);
 phydbl MIGREP_LnPrior_Mu(t_tree *tree);
-
+void MIGREP_Ldsk_To_Tree(t_tree *tree);
+void MIGREP_Ldsk_To_Tree_Pre(t_node *a, t_ldsk *ldsk, int *available, t_tree *tree);
 
 #endif

@@ -1700,7 +1700,6 @@ typedef struct __Disk_Event{
   struct __Lindisk_Node         *ldsk;
   struct __Migrep_Model         *mmod;
   char                            *id;
-  struct __Node                   *nd;
 }t_dsk;
 
 /*!********************************************************/
@@ -1726,6 +1725,7 @@ typedef struct __Lindisk_Node{
   short int              is_hit;
   short int             is_coal;
   int                    n_next;
+  struct __Node             *nd;
 }t_ldsk;
 
 /*!********************************************************/
@@ -1735,7 +1735,7 @@ void Unroot_Tree(char **subtrees);
 void Init_Tree(t_tree *tree,int n_otu);
 void Init_Edge_Light(t_edge *b,int num);
 void Init_Node_Light(t_node *n,int num);
-void Make_Edge_Dirs(t_edge *b,t_node *a,t_node *d,t_tree *tree);
+void Set_Edge_Dirs(t_edge *b,t_node *a,t_node *d,t_tree *tree);
 void Init_NNI(nni *a_nni);
 void Init_Nexus_Format(nexcom **com);
 void Restrict_To_Coding_Position(align **data,option *io);

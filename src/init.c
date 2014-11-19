@@ -3306,7 +3306,6 @@ void MIGREP_Init_Disk_Event(t_dsk *t, int n_dim, t_migrep_mod *mmod)
 {
   t->prev         = NULL;
   t->next         = NULL;
-  t->nd           = NULL;
   t->mmod         = NULL;
   Random_String(t->id,3);
 
@@ -3354,6 +3353,7 @@ void MIGREP_Init_Lindisk_Node(t_ldsk *t, t_dsk *disk, int n_dim)
   /* disk->ldsk = t; */
   t->prev    = NULL;
   t->next    = NULL;  
+  t->nd      = NULL;
   t->is_hit  = NO;
   t->is_coal = NO;
   t->n_next  = 0;
