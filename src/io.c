@@ -1269,7 +1269,7 @@ align **Get_Seq(option *io)
         break;
       }
     }
-
+  
   if(!io->data)
     {
       PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
@@ -1471,21 +1471,22 @@ int Get_Token(FILE *fp, char *token)
   char c;
 
   c = ' ';
-  while(c == ' ' || c == '\t' || c == '\n')
+
+  while(c == ' ' || c == '\t' || c == '\n' || c == '\r')
     {
       c = fgetc(fp);
       if(c == EOF) return 0;
     }
-
+  
   if(c == '"')
     {
       do
-    {
-      *token = c;
-      token++;
-      c = fgetc(fp);
-      if(c == EOF) return 0;
-    }
+        {
+          *token = c;
+          token++;
+          c = fgetc(fp);
+          if(c == EOF) return 0;
+        }
       while(c != '"');
       *token = c;
       /* c = fgetc(fp); */
@@ -1493,7 +1494,7 @@ int Get_Token(FILE *fp, char *token)
       *(token+1) = '\0';
       return 1;
     }
-
+  
   if(c == '[')
     {
       Skip_Comment(fp);
@@ -1518,12 +1519,12 @@ int Get_Token(FILE *fp, char *token)
   else
     {
       while(isgraph(c) && c != ';' && c != '-' && c != ',' && c != '=')
-    {
-      *(token++) = c;
-      c = fgetc(fp);
-      if(c == EOF) return 0;
-    }
-
+        {
+          *(token++) = c;
+          c = fgetc(fp);
+          if(c == EOF) return 0;
+        }
+      
       fseek(fp,-1*sizeof(char),SEEK_CUR);
 
     }
@@ -1825,7 +1826,6 @@ align **Read_Seq_Interleaved(option *io)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 int Read_One_Line_Seq(align ***data, int num_otu, FILE *in)
 {

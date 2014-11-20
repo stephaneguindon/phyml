@@ -35,7 +35,7 @@ void Find_Nexus_Com(char *token, nexcom **found_com, nexparm **default_parm, nex
 
   if(*found_com && (*found_com)->nparm) *default_parm = (*found_com)->parm[0];
 
-  if(*found_com) PhyML_Printf("\n. Found command '%s'.\n",(*found_com)->name);
+  /* if(*found_com) PhyML_Printf("\n. Found command '%s'.\n",(*found_com)->name); */
 }
 
 //////////////////////////////////////////////////////////////
@@ -71,7 +71,7 @@ void Find_Nexus_Parm(char *token, nexparm **found_parm, nexcom *curr_com)
       if(!ndiff) { *found_parm = curr_com->parm[i]; break; }
     }
 
-  if(*found_parm) PhyML_Printf("\n. Found parameter '%s'.\n",(*found_parm)->name);
+  /* if(*found_parm) PhyML_Printf("\n. Found parameter '%s'.\n",(*found_parm)->name); */
 }
 
 //////////////////////////////////////////////////////////////
@@ -244,7 +244,7 @@ int Read_Nexus_Format(char *token, nexparm *curr_parm, option *io)
   strcpy(curr_parm->value,token);
 
 
-  printf("\n. >> %s",curr_parm->value);
+  /* printf("\n. >> %s",curr_parm->value); */
     
   if(!strcmp(curr_parm->name,"datatype"))
     {
@@ -293,15 +293,16 @@ int Read_Nexus_Format(char *token, nexparm *curr_parm, option *io)
 
   else if(!strcmp(curr_parm->name,"missing"))
     {
-      PhyML_Printf("\n== The 'missing' subcommand is not supported by PhyML. Sorry.\n");
+      PhyML_Printf("\n== The 'missing' subcommand is not supported by PhyML. Please remove it from the NEXUS file.");
+      PhyML_Printf("\n== Note that the characters 'X', '?' and '-' will be considered as indels by default."); 
       PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("");
     }
 
   else if(!strcmp(curr_parm->name,"gap"))
     {
-      PhyML_Printf("\n== The 'gap' subcommand is not supported by PhyML. Sorry.\n");
-      PhyML_Printf("\n== But the characters 'X', '?' and '-' will be considered as indels by default.\n"); 
+      PhyML_Printf("\n== The 'gap' subcommand is not supported by PhyML. Please remove it from the NEXUS file.");
+      PhyML_Printf("\n== Note that the characters 'X', '?' and '-' will be considered as indels by default."); 
       PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("");
     }
