@@ -2378,7 +2378,6 @@ void RATES_Posterior_Time_Root(t_tree *tree)
 void RATES_Update_Cur_Bl(t_tree *tree)
 {
   RATES_Update_Norm_Fact(tree);
-
   RATES_Update_Cur_Bl_Pre(tree->n_root,tree->n_root->v[2],NULL,tree);
   RATES_Update_Cur_Bl_Pre(tree->n_root,tree->n_root->v[1],NULL,tree);
   
@@ -2461,6 +2460,7 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 
       tree->rates->cur_l[d->num] = dt*rr*cr;
       
+
       if(tree->rates->model == GUINDON)
 	{
 	  phydbl m,v;

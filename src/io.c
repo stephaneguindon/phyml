@@ -58,7 +58,7 @@ t_tree *Read_Tree(char **s_tree)
    }
 
   if(degree > 3) /* Multifurcation at the root. Need to re-assemble the subtrees
-                    since Clean_Multifurcation added sets of prevhesis and
+                    since Clean_Multifurcation added sets of parenthesis and
                     the corresponding NULL edges */
     {
       degree = 3;
@@ -148,8 +148,7 @@ void R_rtree(char *s_tree_a, char *s_tree_d, t_node *a, t_tree *tree, int *n_int
         {
           PhyML_Printf("\n== The number of internal nodes in the tree exceeds the number of taxa minus one.");
           PhyML_Printf("\n== There probably is a formating problem in the input tree.");
-          PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
-          Exit("\n");
+          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
         }
 
       d      = tree->a_nodes[n_otu+*n_int];
@@ -804,6 +803,7 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
       
       if(p < 0)
         {
+          PhyML_Printf("\n== pere: %d fils=%d root=%d root->v[2]=%d root->v[1]=%d",pere->num,fils->num,tree->n_root->num,tree->n_root->v[2]->num,tree->n_root->v[1]->num);
           PhyML_Printf("\n== fils=%p root=%p root->v[2]=%p root->v[1]=%p",fils,tree->n_root,tree->n_root->v[2],tree->n_root->v[1]);
           PhyML_Printf("\n== tree->e_root=%p fils->b[0]=%p fils->b[1]=%p fils->b[2]=%p",tree->e_root,fils->b[0],fils->b[1],fils->b[2]);
           PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
@@ -2232,12 +2232,12 @@ void Print_CSeq(FILE *fp, int compressed, calign *cdata)
   For(i,n_otu)
     {
       For(j,50)
-    {
-      if(j<(int)strlen(cdata->c_seq[i]->name))
-        fputc(cdata->c_seq[i]->name[j],fp);
-      else fputc(' ',fp);
-    }
-
+        {
+          if(j<(int)strlen(cdata->c_seq[i]->name))
+            fputc(cdata->c_seq[i]->name[j],fp);
+          else fputc(' ',fp);
+        }
+      
       if(compressed == YES) /* Print out compressed sequences */
         PhyML_Fprintf(fp,"%s",cdata->c_seq[i]->state);
       else /* Print out uncompressed sequences */
@@ -3117,18 +3117,18 @@ void Print_Settings(option *io)
   if (io->datatype == NT)
     {
       if ((io->mod->whichmodel == K80)  ||
-      (io->mod->whichmodel == HKY85)||
-      (io->mod->whichmodel == F84)  ||
-      (io->mod->whichmodel == TN93))
-    {
-      if (io->mod->s_opt->opt_kappa)
-        PhyML_Printf("\n                . Ts/tv ratio:\t\t\t\t\t estimated");
-      else
-        PhyML_Printf("\n                . Ts/tv ratio:\t\t\t\t\t %f", io->mod->kappa->v);
-    }
+          (io->mod->whichmodel == HKY85)||
+          (io->mod->whichmodel == F84)  ||
+          (io->mod->whichmodel == TN93))
+        {
+          if(io->mod->s_opt && io->mod->s_opt->opt_kappa)
+            PhyML_Printf("\n                . Ts/tv ratio:\t\t\t\t\t estimated");
+          else
+            PhyML_Printf("\n                . Ts/tv ratio:\t\t\t\t\t %f", io->mod->kappa->v);
+        }
     }
 
-  if (io->mod->s_opt->opt_pinvar)
+  if(io->mod->s_opt && io->mod->s_opt->opt_pinvar)
     PhyML_Printf("\n                . Proportion of invariable sites:\t\t estimated");
   else
     PhyML_Printf("\n                . Proportion of invariable sites:\t\t %f", io->mod->ras->pinvar->v);
@@ -3138,54 +3138,52 @@ void Print_Settings(option *io)
   if(io->mod->ras->n_catg > 1)
     {
       if(io->mod->ras->free_mixt_rates == NO)
-    {
-      if(io->mod->s_opt->opt_alpha)
-        PhyML_Printf("\n                . Gamma distribution parameter:\t\t\t estimated");
-      else
-        PhyML_Printf("\n                . Gamma distribution parameter:\t\t\t %f", io->mod->ras->alpha->v);
-      PhyML_Printf("\n                . 'Middle' of each rate class:\t\t\t %s",(io->mod->ras->gamma_median)?("median"):("mean"));
+        {
+          if(io->mod->s_opt && io->mod->s_opt->opt_alpha)
+            PhyML_Printf("\n                . Gamma distribution parameter:\t\t\t estimated");
+          else
+            PhyML_Printf("\n                . Gamma distribution parameter:\t\t\t %f", io->mod->ras->alpha->v);
+          PhyML_Printf("\n                . 'Middle' of each rate class:\t\t\t %s",(io->mod->ras->gamma_median)?("median"):("mean"));
+        }
     }
-    }
-
-
+  
+  
   if(io->datatype == AA)
     PhyML_Printf("\n                . Amino acid equilibrium frequencies:\t\t %s", (io->mod->s_opt->opt_state_freq) ? ("empirical"):("model"));
   else if(io->datatype == NT)
     {
       if((io->mod->whichmodel != JC69) &&
-     (io->mod->whichmodel != K80)  &&
-     (io->mod->whichmodel != F81))
-    {
-      if(!io->mod->s_opt->user_state_freq)
+         (io->mod->whichmodel != K80)  &&
+         (io->mod->whichmodel != F81))
         {
-          PhyML_Printf("\n                . Nucleotide equilibrium frequencies:\t\t %s", (io->mod->s_opt->opt_state_freq) ? ("ML"):("empirical"));
-        }
-      else
-        {
-          PhyML_Printf("\n                . Nucleotide equilibrium frequencies:\t\t %s","user-defined");
+          if(io->mod->s_opt && !io->mod->s_opt->user_state_freq)
+            {
+              PhyML_Printf("\n                . Nucleotide equilibrium frequencies:\t\t %s", (io->mod->s_opt->opt_state_freq) ? ("ML"):("empirical"));
+            }
+          else
+            {
+              PhyML_Printf("\n                . Nucleotide equilibrium frequencies:\t\t %s","user-defined");
+            }
         }
     }
-    }
-
-  PhyML_Printf("\n                . Optimise tree topology:\t\t\t %s", (io->mod->s_opt->opt_topo) ? "yes": "no");
-
+  
+  PhyML_Printf("\n                . Optimise tree topology:\t\t\t %s", (io->mod->s_opt && io->mod->s_opt->opt_topo) ? "yes": "no");
+  
   switch(io->in_tree)
     {
     case 0: { strcpy(s,"BioNJ");     break; }
     case 1: { strcpy(s,"parsimony"); break; }
     case 2: { strcpy(s,"user tree (");
-    strcat(s,Basename(io->in_tree_file));
-    strcat(s,")");         break; }
+        strcat(s,Basename(io->in_tree_file));
+        strcat(s,")");         break; }
     }
-
-  if(io->mod->s_opt->opt_topo)
+  
+  if(io->mod->s_opt && io->mod->s_opt->opt_topo)
     {
       if(io->mod->s_opt->topo_search == NNI_MOVE) PhyML_Printf("\n                . Tree topology search:\t\t\t\t NNIs");
       else if(io->mod->s_opt->topo_search == SPR_MOVE) PhyML_Printf("\n                . Tree topology search:\t\t\t\t SPRs");
       else if(io->mod->s_opt->topo_search == BEST_OF_NNI_AND_SPR) PhyML_Printf("\n                . Tree topology search:\t\t\t\t Best of NNIs and SPRs");
-
-
-
+      
       PhyML_Printf("\n                . Starting tree:\t\t\t\t %s",s);
 
       PhyML_Printf("\n                . Add random input tree:\t\t\t %s", (io->mod->s_opt->random_input_tree) ? "yes": "no");
@@ -3193,17 +3191,18 @@ void Print_Settings(option *io)
     PhyML_Printf("\n                . Number of random starting trees:\t\t %d", io->mod->s_opt->n_rand_starts);
     }
   else
-    if(!io->mod->s_opt->random_input_tree)
+    if(io->mod->s_opt && !io->mod->s_opt->random_input_tree)
       PhyML_Printf("\n                . Evaluated tree:\t\t\t\t \"%s\"",s);
 
-  PhyML_Printf("\n                . Optimise branch lengths:\t\t\t %s", (io->mod->s_opt->opt_bl) ? "yes": "no");
+  PhyML_Printf("\n                . Optimise branch lengths:\t\t\t %s", (io->mod->s_opt && io->mod->s_opt->opt_bl) ? "yes": "no");
 
   answer = 0;
-  if(io->mod->s_opt->opt_alpha  ||
-     io->mod->s_opt->opt_kappa  ||
-     io->mod->s_opt->opt_lambda ||
-     io->mod->s_opt->opt_pinvar ||
-     io->mod->s_opt->opt_rr) answer = 1;
+  if(io->mod->s_opt &&
+     (io->mod->s_opt->opt_alpha  ||
+      io->mod->s_opt->opt_kappa  ||
+      io->mod->s_opt->opt_lambda ||
+      io->mod->s_opt->opt_pinvar ||
+      io->mod->s_opt->opt_rr)) answer = 1;
 
   PhyML_Printf("\n                . Optimise substitution model parameters:\t %s", (answer) ? "yes": "no");
 
@@ -3918,10 +3917,10 @@ option *Get_Input(int argc, char **argv)
   s_opt = (t_opt *)Make_Optimiz();
   m4mod = (m4 *)M4_Make_Light();
 
-
   Set_Defaults_Input(io);
   Set_Defaults_Model(mod);
   Set_Defaults_Optimiz(s_opt);
+
   io->mod        = mod;
   io->mod->m4mod = m4mod;
   mod->io        = io;

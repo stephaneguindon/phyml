@@ -446,9 +446,8 @@ phydbl Lk(t_edge *b, t_tree *tree)
       return tree->c_lnL;
     }
 
-  if(!b){
-    Set_Model_Parameters(tree->mod);
-  }
+  if(!b) Set_Model_Parameters(tree->mod);
+  
   Set_Br_Len_Var(tree);
 
   if(tree->mod->s_opt->skip_tree_traversal == NO)

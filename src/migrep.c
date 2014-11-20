@@ -177,6 +177,9 @@ int MIGREP_Main(int argc, char *argv[])
   /* seed = 1414890813; */
   /* seed = 1416279364; */
   /* seed = 1416380281; */
+  /* seed = 141645568010; */
+  /* seed = 141645586510; */
+  seed = 141645647620;
   printf("\n# Seed: %d",seed); fflush(NULL);
   /* seed = 1412394873; */
   srand(seed);
@@ -226,12 +229,56 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   t_migrep_mod *mmod;
   t_dsk *disk;
   t_ldsk **ldsk_a,**ldsk_a_tmp,*new_ldsk;
+  option *io;
+  t_mod *mod;
+  t_opt *s_opt;
+  calign *cdata;
 
   n_dim = 2; // 2-dimensional landscape
 
-  tree = Make_Tree_From_Scratch(n_otu,NULL);
+  io    = (option *)Make_Input();
+  mod   = (t_mod *)Make_Model_Basic();
+  s_opt = (t_opt *)Make_Optimiz();
+
+  Set_Defaults_Input(io);
+  Set_Defaults_Model(mod);
+  Set_Defaults_Optimiz(s_opt);
+
+  io->mod      = mod;
+  mod->io      = io;
+  mod->s_opt   = s_opt;
+  
+  io->n_otu    = n_otu;
+  io->init_len = 10; /* sequence length */
+
+  io->data = Make_Empty_Alignment(io);
+  Print_Seq(stdout,io->data,io->n_otu);
+
+  Make_Model_Complete(io->mod);
+  Set_Model_Name(io->mod);
+
+  Print_Settings(io);
+
+  io->colalias = NO;
+  cdata = Compact_Data(io->data,io);
+  Free_Seq(io->data,io->n_otu);
+
+  tree = Make_Tree_From_Scratch(n_otu,cdata);
+
+  Connect_CSeqs_To_Nodes(cdata,tree);
+  
+  tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
+  RATES_Init_Rate_Struct(tree->rates,io->rates,tree->n_otu);
+  
+  tree->data      = cdata;
+  tree->mod       = mod;
+  tree->io        = io;
+  tree->n_pattern = tree->data->crunch_len;
+
+
   disk = MIGREP_Make_Disk_Event(n_dim,n_otu);
   MIGREP_Init_Disk_Event(disk,n_dim,NULL);
+
   
   // Allocate coordinates for all the tips first (will grow afterwards)
   ldsk_a = (t_ldsk **)mCalloc(n_otu,sizeof(t_ldsk *));
@@ -420,8 +467,24 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   /*     disk = disk->prev; */
   /*   } */
 
-  MIGREP_Ldsk_To_Tree(tree);
 
+  MIGREP_Ldsk_To_Tree(tree);  
+
+  Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
+  Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
+  RATES_Fill_Lca_Table(tree);
+
+  tree->rates->bl_from_rt = YES;
+  tree->rates->clock_r    = 1.0;
+  tree->rates->model      = STRICTCLOCK;
+  RATES_Update_Cur_Bl(tree);
+
+  printf("\n. %s \n",Write_Tree(tree,NO));
+  fflush(NULL);
+
+  Init_Model(cdata,mod,io);
+  Prepare_Tree_For_Lk(tree);
+  Evolve(tree->data,tree->mod,tree);
 
   MIGREP_Lk(tree);
   /* Exit("\n"); */
@@ -1977,7 +2040,8 @@ void MIGREP_Ldsk_To_Tree(t_tree *tree)
 {
   int i;
   t_dsk *disk;
-  
+  t_edge *b;
+
   /* Connect tips */
   For(i,tree->n_otu) tree->disk->ldsk_a[i]->nd = tree->a_nodes[i];
 
@@ -1987,22 +2051,59 @@ void MIGREP_Ldsk_To_Tree(t_tree *tree)
   tree->n_root = tree->a_nodes[2*tree->n_otu-2];
   i = 2*tree->n_otu-3;
   MIGREP_Ldsk_To_Tree_Pre(tree->n_root,disk->ldsk,&i,tree);
-
-  tree->e_root = tree->a_edges[tree->num_curr_branch_available];
           
   For(i,3) if(tree->n_root->v[2]->v[i] == tree->n_root) { tree->n_root->v[2]->v[i] = tree->n_root->v[1]; break; }
   For(i,3) if(tree->n_root->v[1]->v[i] == tree->n_root) { tree->n_root->v[1]->v[i] = tree->n_root->v[2]; break; }
 
+  tree->e_root = tree->a_edges[tree->num_curr_branch_available];
   Connect_One_Edge_To_Two_Nodes(tree->n_root->v[2],
                                 tree->n_root->v[1],
                                 tree->e_root,
                                 tree);
 
   tree->e_root->l->v = tree->n_root->b[2]->l->v + tree->n_root->b[1]->l->v;
-  tree->n_root_pos   = tree->n_root->b[2]->l->v / tree->e_root->l->v;
+  tree->n_root_pos   = tree->n_root->b[2]->l->v / tree->e_root->l->v;         
+  
+
+  /* Put edge root in first position in a_edges */
+  b                                                = tree->a_edges[0];
+  tree->a_edges[0]                                 = tree->a_edges[tree->num_curr_branch_available-1];
+  tree->a_edges[tree->num_curr_branch_available-1] = b;  
+  
+  tree->a_edges[0]->num                                 = 0;
+  tree->a_edges[tree->num_curr_branch_available-1]->num = tree->num_curr_branch_available-1;
+
+
+  /* Put n_root->b[1] in second to last position in a_edges */
+  For(i,tree->num_curr_branch_available) 
+    {
+      b = tree->a_edges[i];
+      if(b == tree->n_root->b[1]) break;
+    }
+
+  b                              = tree->a_edges[i];
+  tree->a_edges[i]               = tree->a_edges[2*tree->n_otu-3];
+  tree->a_edges[2*tree->n_otu-3] = b;
+
+  tree->a_edges[i]->num = i;
+  tree->a_edges[2*tree->n_otu-3]->num = 2*tree->n_otu-3;
+
+
+  /* Put n_root->b[2] in last position in a_edges */
+  For(i,tree->num_curr_branch_available) 
+    {
+      b = tree->a_edges[i];
+      if(b == tree->n_root->b[2]) break;
+    }
+
+  b                              = tree->a_edges[i];
+  tree->a_edges[i]               = tree->a_edges[2*tree->n_otu-2];
+  tree->a_edges[2*tree->n_otu-2] = b;
+
+  tree->a_edges[i]->num = i;
+  tree->a_edges[2*tree->n_otu-2]->num = 2*tree->n_otu-2;
 
 }
-
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
@@ -2010,8 +2111,11 @@ void MIGREP_Ldsk_To_Tree_Pre(t_node *a, t_ldsk *ldsk, int *available, t_tree *tr
 {
   int i;
 
+  ldsk->nd = a;
+  tree->rates->nd_t[a->num] = ldsk->disk->time;
+
   while(ldsk->next && ldsk->n_next == 1) ldsk = ldsk->next[0];
-    
+
   if(!ldsk->next) return;
   else
     {
@@ -2019,10 +2123,10 @@ void MIGREP_Ldsk_To_Tree_Pre(t_node *a, t_ldsk *ldsk, int *available, t_tree *tr
       int n_next;
       t_ldsk *t;
 
-      parent = a;
+      parent       = a;
       parent->v[1] = NULL;
       parent->v[2] = NULL;
-      n_next = 0;
+      n_next       = 0;
       do
         {
           t = ldsk->next[n_next]; 
@@ -2037,8 +2141,7 @@ void MIGREP_Ldsk_To_Tree_Pre(t_node *a, t_ldsk *ldsk, int *available, t_tree *tr
             {
               son = t->nd;
             }
-          
-          
+                    
           if(parent->v[2] != NULL && n_next >= 2) 
             {
               t_node *new_parent;
@@ -2057,7 +2160,7 @@ void MIGREP_Ldsk_To_Tree_Pre(t_node *a, t_ldsk *ldsk, int *available, t_tree *tr
               
               orig_l2 = parent->b[2]->l->v;
 
-              tree->num_curr_branch_available--;
+              if(tree->num_curr_branch_available) tree->num_curr_branch_available--;
               Connect_One_Edge_To_Two_Nodes(parent,new_parent,parent->b[2],tree);
               Connect_One_Edge_To_Two_Nodes(new_parent,new_parent->v[1],tree->a_edges[tree->num_curr_branch_available],tree);
               Connect_One_Edge_To_Two_Nodes(new_parent,new_parent->v[2],tree->a_edges[tree->num_curr_branch_available],tree);
@@ -2066,6 +2169,8 @@ void MIGREP_Ldsk_To_Tree_Pre(t_node *a, t_ldsk *ldsk, int *available, t_tree *tr
               new_parent->b[1]->l->v = orig_l2;
               new_parent->b[2]->l->v = t->disk->time - ldsk->disk->time;
               
+              tree->rates->nd_t[new_parent->num] = ldsk->disk->time;
+
               parent = new_parent;
             }
           else
@@ -2082,7 +2187,7 @@ void MIGREP_Ldsk_To_Tree_Pre(t_node *a, t_ldsk *ldsk, int *available, t_tree *tr
                 parent->b[2]->l->v = t->disk->time - ldsk->disk->time;              
             }
 
-          MIGREP_Ldsk_To_Tree_Pre(son,ldsk->next[n_next],available,tree);
+          MIGREP_Ldsk_To_Tree_Pre(son,t,available,tree);
           n_next++;
         }
       while(n_next != ldsk->n_next);

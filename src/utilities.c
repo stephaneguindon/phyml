@@ -578,7 +578,7 @@ void Get_Base_Freqs(calign *data)
   data->b_frq[0] = fA;
   data->b_frq[1] = fC;
   data->b_frq[2] = fG;
-  data->b_frq[3] = fT;
+  data->b_frq[3] = fT;  
 }
 
 //////////////////////////////////////////////////////////////
@@ -730,7 +730,7 @@ void Connect_Edges_To_Nodes_Recur(t_node *a, t_node *d, t_tree *tree)
   Connect_One_Edge_To_Two_Nodes(a,d,tree->a_edges[tree->num_curr_branch_available],tree);
 
   if(d->tax) return;
-  else For(i,3) if(d->v[i] != a) Connect_Edges_To_Nodes_Recur(d,d->v[i],tree);
+  else For(i,3) if(d->v[i] != a && d->b[i] != tree->e_root) Connect_Edges_To_Nodes_Recur(d,d->v[i],tree);
 }
 
 //////////////////////////////////////////////////////////////
@@ -796,7 +796,6 @@ void Update_Dirs(t_tree *tree)
           b->r_v2 = buff;
         }
     }
-
 }
 
 //////////////////////////////////////////////////////////////
@@ -4153,7 +4152,7 @@ int Are_Compatible(char *statea, char *stateb, int stepsize, int datatype)
                   }
                 default :
                   {
-                    PhyML_Printf("\n== Err. in Are_Compatible\n");
+                    PhyML_Printf("\n== Err. in Are_Compatible.");
                     PhyML_Printf("\n== Please check that characters `%c` and `%c`",a,b);
                     PhyML_Printf("\n== correspond to existing nucleotides.\n");
                     Warn_And_Exit("\n");
@@ -4407,7 +4406,7 @@ int Are_Compatible(char *statea, char *stateb, int stepsize, int datatype)
           }
         default :
           {
-            PhyML_Printf("\n== Err. in Are_Compatible\n");
+            PhyML_Printf("\n== Err. in Are_Compatible.");
             PhyML_Printf("\n== Please check that characters `%c` and `%c`",a,b);
             PhyML_Printf("\n== correspond to existing amino-acids.\n");
             Warn_And_Exit("\n");
@@ -6371,7 +6370,6 @@ void Update_Root_Pos(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Add_Root(t_edge *target, t_tree *tree)
 {
   t_edge *b1, *b2;
@@ -6688,28 +6686,28 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
   Fill_Dir_Table(tree);
   Update_Dirs(tree);
 
-
+  
   /* Add root */
   if(rooted)
     {
       For(i,2*tree->n_otu-3)
-    {
-      if(((tree->a_edges[i]->left == root->v[1]) || (tree->a_edges[i]->rght == root->v[1])) &&
-         ((tree->a_edges[i]->left == root->v[2]) || (tree->a_edges[i]->rght == root->v[2])))
         {
-          Add_Root(tree->a_edges[i],tree);
-          break;
+          if(((tree->a_edges[i]->left == root->v[1]) || (tree->a_edges[i]->rght == root->v[1])) &&
+             ((tree->a_edges[i]->left == root->v[2]) || (tree->a_edges[i]->rght == root->v[2])))
+            {
+              Add_Root(tree->a_edges[i],tree);
+              break;
+            }
         }
-    }
     }
   /* Or not... */
   else
     {
       Free_Node(root);
     }
-
+  
   RATES_Random_Branch_Lengths(tree);
-
+  
   Free(available_nodes);
   Free(connected);
   Free(nonconnected);
@@ -6807,15 +6805,13 @@ void Evolve(calign *data, t_mod *mod, t_tree *tree)
   phydbl *orig_l;
   /* phydbl shape,scale,var,mean; */
   int switch_to_yes;
-
-
+  
   orig_l = (phydbl *)mCalloc(2*tree->n_otu-3,sizeof(phydbl));
   For(i,2*tree->n_otu-3) orig_l[i] = tree->a_edges[i]->l->v;
 
   data->n_otu = tree->n_otu;
 
   if(mod->use_m4mod) tree->write_labels = YES;
-
 
   Set_Br_Len_Var(tree);
 
@@ -6829,11 +6825,13 @@ void Evolve(calign *data, t_mod *mod, t_tree *tree)
   For(site,data->init_len)
     {
 
+      Set_Model_Parameters(mod);
+
       /* Pick the rate class */
       root_state = root_rate_class = -1;
       root_rate_class = Pick_State(mod->ras->n_catg,mod->ras->gamma_r_proba->v);
 
-
+ 
       /* /\* Get the change probability matrices *\/ */
       /* For(i,2*tree->n_otu-3) */
       /*   { */
@@ -6847,15 +6845,12 @@ void Evolve(calign *data, t_mod *mod, t_tree *tree)
 
       /*   } */
 
-      Set_Model_Parameters(mod);
-
       For(i,2*tree->n_otu-3) Update_PMat_At_Given_Edge(tree->a_edges[i],tree);
 
-
       /* Pick the root nucleotide/aa */
+      printf("\n. site: %d",site); fflush(NULL);
       root_state = Pick_State(mod->ns,mod->e_frq->pi->v);
       data->c_seq[0]->state[site] = Reciproc_Assign_State(root_state,tree->io->datatype);
-
 
       /* tree->a_nodes[0] is considered as the root t_node */
       Evolve_Recur(tree->a_nodes[0],
@@ -9635,9 +9630,8 @@ void Connect_CSeqs_To_Nodes(calign *cdata, t_tree *tree)
   For(i,MAX(n_otu_tree,n_otu_cdata))
     {
       For(j,MIN(n_otu_tree,n_otu_cdata))
-        {
-          if(!strcmp(tree->a_nodes[i]->name,cdata->c_seq[j]->name))
-            break;
+        {          
+          if(!strcmp(tree->a_nodes[i]->name,cdata->c_seq[j]->name)) break;
         }
       
       if(j==MIN(n_otu_tree,n_otu_cdata))
@@ -10864,7 +10858,39 @@ phydbl Get_Lk(t_tree *tree)
 
 }
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
 
+align **Make_Empty_Alignment(option *io)
+{
+  int i;
+  char *line;
+  align **data;
 
+  line   = (char *)mCalloc(T_MAX_LINE,sizeof(char));
+  data   = (align **)mCalloc(io->n_otu,sizeof(align *));
+  
+  For(i,io->n_otu)
+    {
+      data[i]        = (align *)mCalloc(1,sizeof(align));
+      data[i]->name  = (char *)mCalloc(T_MAX_NAME,sizeof(char));
+      data[i]->state = (char *)mCalloc(io->init_len*io->state_len+1,sizeof(char));
+
+      data[i]->is_ambigu = NULL;
+      data[i]->len = 0;
+      
+      Random_String(data[i]->name,5);
+
+      while(data[i]->len < io->init_len * io->state_len)
+        {
+          data[i]->state[data[i]->len] = 'X';
+          data[i]->len++;
+        }
+    }
+
+  For(i,io->n_otu) data[i]->state[data[i]->len] = '\0';
+
+  Free(line);
+
+  return data;
+}

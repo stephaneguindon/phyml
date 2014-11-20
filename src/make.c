@@ -66,15 +66,18 @@ void Make_All_Edges_Lk(t_node *a, t_node *d, t_tree *tree)
 {
   int i;
 
-  For(i,3) if((a->v[i]) && (a->v[i] == d)) Make_Edge_Lk(a->b[i],tree);
+  For(i,3) 
+    if((a->v[i]) && (a->v[i] == d)) 
+      Make_Edge_Lk(a->b[i],tree);
+
   if(d->tax) return;
   else
     {
       For(i,3)
-    {
-      if(d->v[i] != a)
-        Make_All_Edges_Lk(d,d->v[i],tree);
-    }
+        {
+          if(d->v[i] != a && d->b[i] != tree->e_root)
+            Make_All_Edges_Lk(d,d->v[i],tree);
+        }
     }
 }
 

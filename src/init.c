@@ -872,7 +872,7 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
 
   rates->step_rate     = 1.E-4;
   rates->approx        = 1;
-  rates->bl_from_rt    = 0;
+  rates->bl_from_rt    = NO;
 
   rates->update_mean_l = NO;
   rates->update_cov_l  = NO;
@@ -884,52 +884,52 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
   if(n_otu > 0)
     {
       For(i,(2*n_otu-2)*(2*n_otu-2)) rates->cov_l[i] = 0.0;
-
+      
       For(i,2*n_otu-2)
-    {
-      rates->n_jps[i]  =  -1;
-      rates->t_jps[i]  =  -1;
-      rates->mean_r[i] = 1.0;
-      rates->mean_l[i] = 0.0;
+        {
+          rates->n_jps[i]  =  -1;
+          rates->t_jps[i]  =  -1;
+          rates->mean_r[i] = 1.0;
+          rates->mean_l[i] = 0.0;
           rates->cur_l[i]  = 0.01;
-    }
-
+        }
+      
       For(i,2*n_otu-1)
-    {
-      if(rates->model_log_rates == YES)
         {
-          rates->nd_r[i]   = 0.0;
-          rates->br_r[i]   = 0.0;
+          if(rates->model_log_rates == YES)
+            {
+              rates->nd_r[i]   = 0.0;
+              rates->br_r[i]   = 0.0;
+            }
+          else
+            {
+              rates->nd_r[i]   = 1.0;
+              rates->br_r[i]   = 1.0;
+            }
+          
+          rates->mean_t[i] = 0.0;
+          rates->nd_t[i]   = 0.0;
+          rates->true_t[i] = 0.0;
+          if(i < n_otu)
+            {
+              rates->t_has_prior[i] = YES;
+              rates->t_prior_max[i] = 0.0;
+              rates->t_prior_min[i] = 0.0;
+            }
+          else
+            {
+              rates->t_has_prior[i] = NO;
+              rates->t_prior_max[i] =  BIG;
+              rates->t_prior_min[i] = -BIG;
+            }
+          
+          rates->br_do_updt[i] = YES;
+          rates->has_survived[i] = NO;
+          
+          rates->t_ranked[i] = i;
         }
-      else
-        {
-          rates->nd_r[i]   = 1.0;
-          rates->br_r[i]   = 1.0;
-        }
-
-      rates->mean_t[i] = 0.0;
-      rates->nd_t[i]   = 0.0;
-      rates->true_t[i] = 0.0;
-      if(i < n_otu)
-        {
-          rates->t_has_prior[i] = YES;
-          rates->t_prior_max[i] = 0.0;
-          rates->t_prior_min[i] = 0.0;
-        }
-      else
-        {
-          rates->t_has_prior[i] = NO;
-          rates->t_prior_max[i] =  BIG;
-          rates->t_prior_min[i] = -BIG;
-        }
-
-      rates->br_do_updt[i] = YES;
-      rates->has_survived[i] = NO;
-
-      rates->t_ranked[i] = i;
     }
-    }
-
+  
   rates->calib = NULL;
   rates->update_time_norm_const = NO;
 }
@@ -1029,6 +1029,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
       mod->e_frq->pi->v[i] = data->b_frq[i];
       mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
     }
+
 
   if(io->datatype == NT)
     {

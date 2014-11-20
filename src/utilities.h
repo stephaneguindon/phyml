@@ -1996,6 +1996,7 @@ int Number_Of_Diff_States_One_Site(int site, t_tree *tree);
 void Number_Of_Diff_States_One_Site_Post(t_node *a, t_node *d, t_edge *b, int site, t_tree *tree);
 int Number_Of_Diff_States_One_Site_Core(t_node *a, t_node *d, t_edge *b, int site, t_tree *tree);
 phydbl Get_Lk(t_tree *tree);
+align **Make_Empty_Alignment(option *io);
 
 
 #include "xml.h"
