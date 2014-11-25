@@ -730,7 +730,10 @@ void Connect_Edges_To_Nodes_Recur(t_node *a, t_node *d, t_tree *tree)
   Connect_One_Edge_To_Two_Nodes(a,d,tree->a_edges[tree->num_curr_branch_available],tree);
 
   if(d->tax) return;
-  else For(i,3) if(d->v[i] != a && d->b[i] != tree->e_root) Connect_Edges_To_Nodes_Recur(d,d->v[i],tree);
+  else 
+    For(i,3) 
+      if(d->v[i] != a) /* Don't add d->b[i] != tree->e_root condition here since tree is not wired yet... */ 
+        Connect_Edges_To_Nodes_Recur(d,d->v[i],tree);
 }
 
 //////////////////////////////////////////////////////////////
@@ -739,7 +742,7 @@ void Connect_Edges_To_Nodes_Recur(t_node *a, t_node *d, t_tree *tree)
 void Connect_One_Edge_To_Two_Nodes(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 {
   int i,dir_a_d,dir_d_a;
-
+    
   dir_a_d = -1;
   For(i,3) if(a->v[i] == d) {dir_a_d = i; break;}
 
@@ -6821,7 +6824,7 @@ void Evolve(calign *data, t_mod *mod, t_tree *tree)
       switch_to_yes = YES;
       /* tree->mod->gamma_mgf_bl = NO; */
     }
-
+  
   For(site,data->init_len)
     {
 
@@ -6848,7 +6851,6 @@ void Evolve(calign *data, t_mod *mod, t_tree *tree)
       For(i,2*tree->n_otu-3) Update_PMat_At_Given_Edge(tree->a_edges[i],tree);
 
       /* Pick the root nucleotide/aa */
-      printf("\n. site: %d",site); fflush(NULL);
       root_state = Pick_State(mod->ns,mod->e_frq->pi->v);
       data->c_seq[0]->state[site] = Reciproc_Assign_State(root_state,tree->io->datatype);
 
@@ -6868,7 +6870,7 @@ void Evolve(calign *data, t_mod *mod, t_tree *tree)
       data->wght[site] = 1;
     }
   data->crunch_len = data->init_len;
-  Print_CSeq(stdout,NO,data);
+  /* Print_CSeq(stdout,NO,data); */
   For(i,2*tree->n_otu-3) tree->a_edges[i]->l->v = orig_l[i];
   Free(orig_l);
 
@@ -10894,3 +10896,7 @@ align **Make_Empty_Alignment(option *io)
 
   return data;
 }
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+

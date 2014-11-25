@@ -89,6 +89,9 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define RR_MIN 0.01
 #define RR_MAX 200.0
 
+#define MIGREP_UNIFORM 0
+#define MIGREP_NORMAL  1
+
 #define MCMC_MOVE_RANDWALK_UNIFORM       0
 #define MCMC_MOVE_LOG_RANDWALK_UNIFORM   1
 #define MCMC_MOVE_RANDWALK_NORMAL        2
@@ -165,6 +168,10 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define INTERFACE_MODEL          2
 #define INTERFACE_TOPO_SEARCH    3
 #define INTERFACE_BRANCH_SUPPORT 4
+
+#define LEFT 0
+#define RGHT 1
+
 
 #ifndef INFINITY
 #define INFINITY HUGE
@@ -1661,6 +1668,7 @@ typedef struct __Phylogeo{
 /*!********************************************************/
 // Structure for the Etheridge-Barton migration/reproduction model
 typedef struct __Migrep_Model{
+  int                           name;
   int                          n_dim;
 
   phydbl                        lbda; // rate at which events occur

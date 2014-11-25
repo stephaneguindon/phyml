@@ -25,7 +25,7 @@ int MIGREP_Main(int argc, char **argv);
 phydbl MIGREP_Lk(t_tree *tree);
 phydbl MIGREP_Wrap_Lk(t_edge *b, t_tree *tree, supert_tree *stree);
 void MIGREP_MCMC(t_tree *tree);
-int MIGREP_Is_In_Disk(t_geo_coord *coord, t_dsk *disk);
+int MIGREP_Is_In_Disk(t_geo_coord *coord, t_dsk *disk, t_migrep_mod *mmod);
 void MIGREP_New_Traj(t_dsk *start, t_dsk *end, t_tree *tree);
 int MIGREP_Draw(GtkWidget *widget, cairo_t *cr, gpointer *data);
 void MIGREP_Remove_Disk(t_dsk *disk);
@@ -65,6 +65,7 @@ void MIGREP_Proposal_Disk_Ldsk_Subtree_Pre(t_ldsk *old_ldsk, t_ldsk *young_ldsk,
 phydbl MIGREP_LnPrior_Lbda(t_tree *tree);
 phydbl MIGREP_LnPrior_Mu(t_tree *tree);
 void MIGREP_Ldsk_To_Tree(t_tree *tree);
-void MIGREP_Ldsk_To_Tree_Pre(t_node *a, t_ldsk *ldsk, int *available, t_tree *tree);
+void MIGREP_Ldsk_To_Tree_Post(t_node *a, t_ldsk *ldsk, int *available, t_tree *tree);
+phydbl MIGREP_Rnorm_Trunc(t_ldsk *ldsk, t_dsk *disk, t_migrep_mod *mod);
 
 #endif

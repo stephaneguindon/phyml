@@ -3320,6 +3320,7 @@ void MIGREP_Init_Disk_Event(t_dsk *t, int n_dim, t_migrep_mod *mmod)
 
 void MIGREP_Init_Migrep_Mod(t_migrep_mod *t, int n_dim)
 {
+  t->name             = MIGREP_NORMAL;
   t->n_dim            = n_dim;
 
   t->lbda             = 0.1;

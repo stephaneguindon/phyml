@@ -214,7 +214,6 @@ void Make_Edge_Lk_Left(t_edge *b, t_tree *tree)
   else
     b->sum_scale_left = NULL;
 
-
   if(b->left)
     {
       if((!b->left->tax) || (tree->mod->s_opt->greedy))

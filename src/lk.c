@@ -414,28 +414,35 @@ void Pre_Order_Lk(t_node *a, t_node *d, t_tree *tree)
 phydbl Lk(t_edge *b, t_tree *tree)
 {
   int br;
-
+  
   if(b == NULL && tree->mod->s_opt->curr_opt_free_rates == YES)
     {
       tree->mod->s_opt->curr_opt_free_rates = NO;
       Optimize_Free_Rate_Weights(tree,YES,YES);
       tree->mod->s_opt->curr_opt_free_rates = YES;
     }
-
-
+  
+  
   if(tree->is_mixt_tree) {
 #ifdef BEAGLE
-      Warn_And_Exit(TODO_BEAGLE);
+    Warn_And_Exit(TODO_BEAGLE);
 #endif
-      return MIXT_Lk(b,tree);
+    return MIXT_Lk(b,tree);
   }
-
+  
   tree->old_lnL = tree->c_lnL;
 
-#if (defined PHYTIME || defined SERGEII)
+  
+#ifdef MIGREP
+  MIGREP_Ldsk_To_Tree(tree);
+#endif
+
+#if (defined PHYTIME || defined SERGEII || defined MIGREP)
   if((tree->rates) && (tree->rates->bl_from_rt)) RATES_Update_Cur_Bl(tree);
 #endif
 
+  
+  
 
   if(tree->rates && tree->io->lk_approx == NORMAL)
     {
@@ -445,19 +452,19 @@ phydbl Lk(t_edge *b, t_tree *tree)
       tree->c_lnL = Lk_Normal_Approx(tree);
       return tree->c_lnL;
     }
-
+  
   if(!b) Set_Model_Parameters(tree->mod);
   
   Set_Br_Len_Var(tree);
-
+  
   if(tree->mod->s_opt->skip_tree_traversal == NO)
     {
       if(!b)//Update the PMat for all edges
         {
           For(br,2*tree->n_otu-3)
-          {
+            {
               Update_PMat_At_Given_Edge(tree->a_edges[br],tree);
-          }
+            }
           if(tree->n_root && tree->ignore_root == NO)
             {
               Update_PMat_At_Given_Edge(tree->n_root->b[1],tree);
@@ -468,7 +475,7 @@ phydbl Lk(t_edge *b, t_tree *tree)
         {
           Update_PMat_At_Given_Edge(b,tree);
         }
-
+      
       if(!b)
         {
           if(tree->n_root)
@@ -491,8 +498,8 @@ phydbl Lk(t_edge *b, t_tree *tree)
                 {
                   Post_Order_Lk(tree->e_root->rght,tree->e_root->left,tree);
                   Post_Order_Lk(tree->e_root->left,tree->e_root->rght,tree);
-
-              if(tree->both_sides == YES)
+                  
+                  if(tree->both_sides == YES)
                     {
                       Pre_Order_Lk(tree->e_root->rght,tree->e_root->left,tree);
                       Pre_Order_Lk(tree->e_root->left,tree->e_root->rght,tree);
@@ -527,6 +534,7 @@ phydbl Lk(t_edge *b, t_tree *tree)
 #ifdef BEAGLE
   calc_edgelks_beagle(b, tree);
 #else
+
   int n_patterns,ambiguity_check,state;
   n_patterns = tree->n_pattern;
   For(tree->curr_site,n_patterns)
@@ -536,10 +544,10 @@ phydbl Lk(t_edge *b, t_tree *tree)
 
       if(tree->data->wght[tree->curr_site] > SMALL)
         {
-          if((b->rght->tax) && (!tree->mod->s_opt->greedy))
+          if((b->rght->tax) && (tree->mod->s_opt->greedy == NO))
             {
               ambiguity_check = b->rght->c_seq->is_ambigu[tree->curr_site];
-              if(!ambiguity_check)
+              if(ambiguity_check == NO)
                 {
                   state = b->rght->c_seq->d_state[tree->curr_site];
                 }
@@ -674,8 +682,16 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
                     
           tree->site_lk_cat[catg] = site_lk_cat;
           
-          //      fprintf(stdout,"[%d,%d,%d]site_lk_cat:%e,e.frq:%f,edge:%d,tax:%d\n",catg,site,state,site_lk_cat,tree->mod->e_frq->pi->v[state],b->num,b->rght->tax);fflush(stdout);
-          
+          /* fprintf(stdout,"[%d,%d,%d]site_lk_cat:%e,e.frq:%f %f %f %f,edge:%d,tax:%d\n", */
+          /*         catg,site,state,site_lk_cat, */
+          /*         tree->mod->e_frq->pi->v[0], */
+          /*         tree->mod->e_frq->pi->v[1], */
+          /*         tree->mod->e_frq->pi->v[2], */
+          /*         tree->mod->e_frq->pi->v[3], */
+          /*         b->num,b->rght->tax); */
+          /* fflush(stdout); */
+          /* Exit("\n"); */
+
         }//site likelihood for all rate classes          
       Pull_Scaling_Factors(site,b,tree);
     }
@@ -2261,12 +2277,12 @@ void Init_P_Lk_Tips_Int(t_tree *tree)
     {
       For(i,tree->n_otu)
         {
-              /* printf("\n. site: %3d %c",curr_site,tree->a_nodes[i]->c_seq->state[curr_site]); */
+          /* printf("\n. site: %3d %c",curr_site,tree->a_nodes[i]->c_seq->state[curr_site]); */
           if(tree->io->datatype == NT)
             {
               Init_Tips_At_One_Site_Nucleotides_Int(tree->a_nodes[i]->c_seq->state[curr_site],
-                                curr_site*dim1,
-                                tree->a_nodes[i]->b[0]->p_lk_tip_r);
+                                                    curr_site*dim1,
+                                                    tree->a_nodes[i]->b[0]->p_lk_tip_r);
           /* Init_Tips_At_One_Site_Nucleotides_Int(tree->data->c_seq[i]->state[curr_site], */
           /* 					    curr_site*dim1, */
           /* 					    tree->a_nodes[i]->b[0]->p_lk_tip_r); */
@@ -2855,12 +2871,12 @@ void Init_P_Lk_Loc(t_tree *tree)
   For(i,2*tree->n_otu-1)
     {
       For(j,tree->n_pattern)
-    {
-      tree->a_edges[i]->p_lk_loc_left[j] = j;
-      tree->a_edges[i]->p_lk_loc_rght[j] = j;
+        {
+          tree->a_edges[i]->p_lk_loc_left[j] = j;
+          tree->a_edges[i]->p_lk_loc_rght[j] = j;
+        }
     }
-    }
-
+  
   For(i,tree->n_otu)
     {
       d = tree->a_nodes[i];
