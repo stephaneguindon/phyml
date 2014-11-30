@@ -163,11 +163,7 @@ void MCMC_MIGREP_Swap_Disk(t_tree *tree);
 void MCMC_MIGREP_Insert_Hit(t_tree *tree);
 void MCMC_MIGREP_Delete_Hit(t_tree *tree);
 void MCMC_MIGREP_Move_Ldsk(t_tree *tree);
-void MCMC_MIGREP_Shift_Ldsk_To_Centre(t_tree *tree);
-void MCMC_MIGREP_Shift_Centre_To_Median(t_tree *tree);
-void MCMC_MIGREP_Shift_Ldsk_Path(t_tree *tree);
-void MCMC_MIGREP_Shift_Disk_Path(t_tree *tree);
-void MCMC_MIGREP_Rad_Mu(t_tree *tree);
-void MCMC_MIGREP_New_Subtree(t_tree *tree);
+void MCMC_MIGREP_Prune_Regraft(t_tree *tree);
+void MCMC_MIGREP_Scale_Times(t_tree *tree);
 
 #endif

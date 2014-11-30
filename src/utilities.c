@@ -720,8 +720,44 @@ void Swap_Nodes_On_Edges(t_edge *e1, t_edge *e2, int swap, t_tree *tree)
   Connect_One_Edge_To_Two_Nodes(e2->left,e2->rght,e2,tree);
 }
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/* As opposed to Connect_Edges_To_Nodes_Recur, the ordering of 
+   edges connected to tips changes does not depend on the topology
+*/
+void Connect_Edges_To_Nodes_Serial(t_tree *tree)
+{
+  int i,j;
+
+  /* Reset */
+  For(i,2*tree->n_otu-1) For(j,3) tree->a_nodes[i]->b[j] = NULL;
+
+  tree->num_curr_branch_available = 0;
+  For(i,tree->n_otu) 
+    {
+      if(!tree->a_nodes[i]->tax) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+
+      Connect_One_Edge_To_Two_Nodes(tree->a_nodes[i],
+                                    tree->a_nodes[i]->v[0],
+                                    tree->a_edges[tree->num_curr_branch_available],
+                                    tree);
+    }
+
+  for(i=tree->n_otu;i<2*tree->n_otu-2;i++)
+    {
+      if(tree->a_nodes[i] == tree->n_root) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+
+      For(j,3) 
+        if(!tree->a_nodes[i]->b[j])
+          Connect_One_Edge_To_Two_Nodes(tree->a_nodes[i],
+                                        tree->a_nodes[i]->v[j],
+                                        tree->a_edges[tree->num_curr_branch_available],
+                                        tree);
+    }
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
 
 void Connect_Edges_To_Nodes_Recur(t_node *a, t_node *d, t_tree *tree)
 {

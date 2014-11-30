@@ -75,7 +75,6 @@ void Init_Tips_At_One_Site_Nucleotides_Float(char state, int pos, phydbl *p_lk)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Init_Tips_At_One_Site_Nucleotides_Int(char state, int pos, short int *p_pars)
 {
   switch(state)
@@ -2256,7 +2255,6 @@ void Init_P_Lk_Tips_Double(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Init_P_Lk_Tips_Int(t_tree *tree)
 {
   int curr_site,i,dim1;
@@ -2278,6 +2276,7 @@ void Init_P_Lk_Tips_Int(t_tree *tree)
       For(i,tree->n_otu)
         {
           /* printf("\n. site: %3d %c",curr_site,tree->a_nodes[i]->c_seq->state[curr_site]); */
+          /* printf("\n. init at %s %p",tree->a_nodes[i]->name,tree->a_nodes[i]->b[0]->p_lk_tip_r); fflush(NULL); */
           if(tree->io->datatype == NT)
             {
               Init_Tips_At_One_Site_Nucleotides_Int(tree->a_nodes[i]->c_seq->state[curr_site],

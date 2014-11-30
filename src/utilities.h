@@ -179,6 +179,7 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 
 #define  N_MAX_OPTIONS        100
 
+#define NEXT_BLOCK_SIZE        50
 
 #define  T_MAX_FILE           200
 #define  T_MAX_LINE       2000000
@@ -1484,12 +1485,8 @@ typedef struct __Tmcmc {
   int num_move_migrep_delete_hit;
   int num_move_migrep_insert_hit;
   int num_move_migrep_move_ldsk;
-  int num_move_migrep_ldsk_ct;
-  int num_move_migrep_shift_ct_med;
-  int num_move_migrep_triplet;
-  int num_move_migrep_shift_ldsk_path;
-  int num_move_migrep_shift_disk_path;
-  int num_move_migrep_subtree;
+  int num_move_migrep_spr;
+  int num_move_migrep_scale_times;
 
   int nd_t_digits;
   int *monitor;
@@ -2005,6 +2002,7 @@ void Number_Of_Diff_States_One_Site_Post(t_node *a, t_node *d, t_edge *b, int si
 int Number_Of_Diff_States_One_Site_Core(t_node *a, t_node *d, t_edge *b, int site, t_tree *tree);
 phydbl Get_Lk(t_tree *tree);
 align **Make_Empty_Alignment(option *io);
+void Connect_Edges_To_Nodes_Serial(t_tree *tree);
 
 
 #include "xml.h"

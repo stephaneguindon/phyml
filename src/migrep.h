@@ -41,7 +41,7 @@ void MIGREP_Connect_Ldsk_Given_Disk(t_dsk **disk, int n_disk, t_ldsk *y_ldsk, t_
 void MIGREP_Print_Struct(char sign, t_tree *tree);
 phydbl MIGREP_Uniform_Path_Density(t_ldsk *y_ldsk, t_ldsk *o_ldsk, t_tree *tree);
 void MIGREP_Check_Struct(t_tree *tree);
-void MIGREP_Copy_Geo_Coord(t_geo_coord *t);
+void MIGREP_Store_Geo_Coord(t_geo_coord *t);
 void MIGREP_Restore_Geo_Coord(t_geo_coord *t);
 int MIGREP_Total_Number_Of_Intervals(t_tree *tree);
 int MIGREP_Total_Number_Of_Coal_Disks(t_tree *tree);
@@ -67,5 +67,6 @@ phydbl MIGREP_LnPrior_Mu(t_tree *tree);
 void MIGREP_Ldsk_To_Tree(t_tree *tree);
 void MIGREP_Ldsk_To_Tree_Post(t_node *a, t_ldsk *ldsk, int *available, t_tree *tree);
 phydbl MIGREP_Rnorm_Trunc(t_ldsk *ldsk, t_dsk *disk, t_migrep_mod *mod);
+void MIGREP_Remove_Lindisk_Next(t_ldsk *ldsk, t_ldsk *rm);
 
 #endif

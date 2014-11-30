@@ -172,8 +172,6 @@ int MIGREP_Main(int argc, char *argv[])
 
   seed = time(NULL);
   /* seed = 141645647620; */
-  /* seed = 141652173010; */
-  /* seed = 141652179910; */
   printf("\n# Seed: %d",seed); fflush(NULL);
   srand(seed);
   tree = MIGREP_Simulate_Backward((int)atoi(argv[1]),10.,10.);
@@ -327,13 +325,13 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
 
   /* Initialize parameters of migrep model */
   mmod->lbda = 0.1;
-  mmod->mu   = 0.8;
-  mmod->rad  = 3.5;
+  mmod->mu   = 0.7;
+  mmod->rad  = 2.5;
   
-  curr_t      = 0.0;
+  curr_t     = 0.0;
   dt_dsk     = 0.0;
-  n_lineages  = n_otu;
-  n_disk      = 0;
+  n_lineages = n_otu;
+  n_disk     = 0;
   do
     {
       /* Time of next event */
@@ -749,40 +747,6 @@ void MIGREP_MCMC(t_tree *tree)
   tree->mmod->rad  = Uni()*(tree->mmod->max_rad - tree->mmod->min_rad) + tree->mmod->min_rad;
   /* tree->mmod->rad  = tree->mmod->max_rad; */
 
-  /* mcmc->always_yes = YES; */
-  /* mcmc->run        = 0; */
-  /* do */
-  /*   { */
-  /*       MCMC_MIGREP_Delete_Disk(tree); */
-  /*       MCMC_MIGREP_Insert_Disk(tree); */
-  /*       MCMC_MIGREP_Move_Disk_Centre(tree); */
-  /*       MCMC_MIGREP_Move_Disk_Updown(tree); */
-  /*       MCMC_MIGREP_Swap_Disk(tree); */
-  /*       MCMC_MIGREP_Delete_Hit(tree); */
-  /*       MCMC_MIGREP_Insert_Hit(tree); */
-  /*       MCMC_MIGREP_Move_Ldsk(tree); */
-  /*       MCMC_MIGREP_Shift_Ldsk_To_Centre(tree); */
-  /*       MCMC_MIGREP_Shift_Centre_To_Median(tree); */
-  /*       mcmc->run++; */
-        
-  /*       if(!(mcmc->run%mcmc->sample_interval)) */
-  /*         { */
-  /*           Lk(NULL,tree); */
-  /*           PhyML_Printf("\n %13d %13f %13f %13f %13f %13f %13d %13d %13d %13f %13f", */
-  /*                        mcmc->run, */
-  /*                        tree->c_lnL, */
-  /*                        tree->mmod->c_lnL, */
-  /*                        tree->mmod->lbda, */
-  /*                        tree->mmod->mu, */
-  /*                        tree->mmod->rad, */
-  /*                        MIGREP_Total_Number_Of_Intervals(tree), */
-  /*                        MIGREP_Total_Number_Of_Coal_Disks(tree), */
-  /*                        MIGREP_Total_Number_Of_Hit_Disks(tree), */
-  /*                        disk->ldsk->coord->lonlat[0], */
-  /*                        disk->ldsk->coord->lonlat[1]); */
-  /*         } */
-  /*   } */
-  /* while(mcmc->run < 10.*mcmc->sample_interval); */
 
   printf("\n. MCMC sampling starts now... \n");
 
@@ -856,6 +820,11 @@ void MIGREP_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"migrep_move_ldsk"))
         MCMC_MIGREP_Move_Ldsk(tree);
 
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_spr"))
+        MCMC_MIGREP_Prune_Regraft(tree);
+
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_scale_times"))
+        MCMC_MIGREP_Scale_Times(tree);
 
       tree->mcmc->run++;
       MCMC_Get_Acc_Rates(tree->mcmc);
@@ -1282,8 +1251,8 @@ void MIGREP_One_New_Traj_Given_Disk(t_ldsk *y_ldsk, t_ldsk *o_ldsk, t_tree *tree
           continue;
         }
       
-      MIGREP_Copy_Geo_Coord(ldsk->coord);
-      MIGREP_Copy_Geo_Coord(ldsk->disk->centr);
+      MIGREP_Store_Geo_Coord(ldsk->coord);
+      MIGREP_Store_Geo_Coord(ldsk->disk->centr);
 
       For(i,tree->mmod->n_dim)
         {
@@ -1657,7 +1626,7 @@ void MIGREP_Check_Struct(t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-void MIGREP_Copy_Geo_Coord(t_geo_coord *t)
+void MIGREP_Store_Geo_Coord(t_geo_coord *t)
 {
   int i;
 
@@ -1668,6 +1637,7 @@ void MIGREP_Copy_Geo_Coord(t_geo_coord *t)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
 
 void MIGREP_Restore_Geo_Coord(t_geo_coord *t)
 {
@@ -1838,7 +1808,8 @@ phydbl MIGREP_Wrap_Prior_Radius(t_edge *e, t_tree *tree, supert_tree *st)
 
 phydbl MIGREP_LnPrior_Lbda(t_tree *tree)
 {
-  tree->mmod->c_ln_prior_lbda = LOG(tree->mmod->prior_param_lbda) - tree->mmod->prior_param_lbda * tree->mmod->lbda;
+  /* tree->mmod->c_ln_prior_lbda = LOG(tree->mmod->prior_param_lbda) - tree->mmod->prior_param_lbda * tree->mmod->lbda; */
+  tree->mmod->c_ln_prior_lbda = 1.0;
   return(tree->mmod->c_ln_prior_lbda);
 }
 
@@ -1847,7 +1818,8 @@ phydbl MIGREP_LnPrior_Lbda(t_tree *tree)
 
 phydbl MIGREP_LnPrior_Mu(t_tree *tree)
 {
-  tree->mmod->c_ln_prior_mu = LOG(tree->mmod->prior_param_mu) - tree->mmod->prior_param_mu * (1. - tree->mmod->mu) - LOG(1.-EXP(-tree->mmod->prior_param_mu));
+  /* tree->mmod->c_ln_prior_mu = LOG(tree->mmod->prior_param_mu) - tree->mmod->prior_param_mu * (1. - tree->mmod->mu) - LOG(1.-EXP(-tree->mmod->prior_param_mu)); */
+  tree->mmod->c_ln_prior_mu = 1.0;
   return(tree->mmod->c_ln_prior_mu);
 }
 
@@ -1856,7 +1828,8 @@ phydbl MIGREP_LnPrior_Mu(t_tree *tree)
 
 phydbl MIGREP_LnPrior_Radius(t_tree *tree)
 {
-  tree->mmod->c_ln_prior_rad = LOG(tree->mmod->prior_param_rad) - tree->mmod->prior_param_rad * tree->mmod->rad;
+  /* tree->mmod->c_ln_prior_rad = LOG(tree->mmod->prior_param_rad) - tree->mmod->prior_param_rad * tree->mmod->rad; */
+  tree->mmod->c_ln_prior_rad = 1.0;
   return(tree->mmod->c_ln_prior_rad);
 }
 
@@ -2121,9 +2094,12 @@ void MIGREP_Ldsk_To_Tree(t_tree *tree)
   
   tree->n_root = tree->a_nodes[2*tree->n_otu-2];
   i = 2*tree->n_otu-3;
-  tree->num_curr_branch_available = 1; /* not 0 because we leave an empty slot for e_root */
+  tree->num_curr_branch_available = 0;
   MIGREP_Ldsk_To_Tree_Post(tree->n_root,disk->ldsk,&i,tree);
           
+
+  For(i,tree->n_otu) if(!tree->a_nodes[i]->v[0]) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+
   For(i,3) 
     if(tree->n_root->v[2]->v[i] == tree->n_root) 
       { 
@@ -2138,8 +2114,10 @@ void MIGREP_Ldsk_To_Tree(t_tree *tree)
         break; 
       }
 
-  tree->num_curr_branch_available = 0;
-  Connect_Edges_To_Nodes_Recur(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree);
+
+  Connect_Edges_To_Nodes_Serial(tree);
+  /* tree->num_curr_branch_available = 0; */
+  /* Connect_Edges_To_Nodes_Recur(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree); */
 
   tree->e_root = NULL;
   For(i,2*tree->n_otu-3)
@@ -2154,7 +2132,6 @@ void MIGREP_Ldsk_To_Tree(t_tree *tree)
     }
   if(tree->e_root == NULL) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   
-
   /* For(i,2*tree->n_otu-1) */
   /*   { */
   /*     printf("\n. * Edge %d %p", */
@@ -2231,7 +2208,7 @@ void MIGREP_Ldsk_To_Tree_Post(t_node *a, t_ldsk *ldsk, int *available, t_tree *t
               son->v[0] = parent;          
               if(!parent->v[1]) parent->v[1] = son;
               else              parent->v[2] = son;
-
+              
               /* printf("\n. connect %d to %d",parent->num,son->num); */
             }
 
@@ -2244,7 +2221,29 @@ void MIGREP_Ldsk_To_Tree_Post(t_node *a, t_ldsk *ldsk, int *available, t_tree *t
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
+void MIGREP_Remove_Lindisk_Next(t_ldsk *ldsk, t_ldsk *rm)
+{
+  t_ldsk **new_next;
+  int i,pos;
 
+  new_next = (t_ldsk **)mCalloc(ldsk->n_next-1+NEXT_BLOCK_SIZE,sizeof(t_ldsk *));
+
+  pos = 0;
+  For(i,ldsk->n_next)
+    {
+      if(ldsk->next[i] != rm)
+        {
+          new_next[pos] = ldsk->next[i];
+          pos++;
+        }
+    }
+
+  ldsk->n_next--;
+  Free(ldsk->next);
+  ldsk->next = new_next;
+  /* printf("\n. remove next for ldsk %s n_next set to %d",ldsk->coord->id,ldsk->n_next); */
+  /* fflush(NULL); */
+}  
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
