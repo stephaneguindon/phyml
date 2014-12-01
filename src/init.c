@@ -3357,7 +3357,6 @@ void MIGREP_Init_Lindisk_Node(t_ldsk *t, t_dsk *disk, int n_dim)
   t->next    = NULL;  
   t->nd      = NULL;
   t->is_hit  = NO;
-  t->is_coal = NO;
   t->n_next  = 0;
   GEO_Init_Coord(t->coord,    n_dim);
   GEO_Init_Coord(t->cpy_coord,n_dim);

@@ -68,5 +68,6 @@ void MIGREP_Ldsk_To_Tree(t_tree *tree);
 void MIGREP_Ldsk_To_Tree_Post(t_node *a, t_ldsk *ldsk, int *available, t_tree *tree);
 phydbl MIGREP_Rnorm_Trunc(t_ldsk *ldsk, t_dsk *disk, t_migrep_mod *mod);
 void MIGREP_Remove_Lindisk_Next(t_ldsk *ldsk, t_ldsk *rm);
+void MIGREP_Simulate_Backward_Core(t_tree *tree);
 
 #endif

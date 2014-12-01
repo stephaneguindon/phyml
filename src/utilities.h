@@ -1728,7 +1728,6 @@ typedef struct __Lindisk_Node{
   struct __Geo_Coord *max_coord; 
   struct __Geo_Coord *cpy_coord; 
   short int              is_hit;
-  short int             is_coal;
   int                    n_next;
   struct __Node             *nd;
 }t_ldsk;

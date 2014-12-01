@@ -81,7 +81,7 @@ int MIGREP_Draw(GtkWidget *widget, cairo_t *cr, gpointer *data)
               cairo_stroke(cr);
             }
 
-          if(disk->ldsk_a[i]->is_coal && disk->ldsk_a[i]->disk == disk) 
+          if(disk->ldsk_a[i]->n_next > 1 && disk->ldsk_a[i]->disk == disk) 
             {
               cairo_set_source_rgba(cr, 0, 0.2, 0.8, 0.5);
               cairo_arc(cr,disk->ldsk_a[i]->coord->lonlat[1]/w,FABS(disk->time)/h,0.01,0.,2.*PI);
@@ -172,6 +172,7 @@ int MIGREP_Main(int argc, char *argv[])
 
   seed = time(NULL);
   /* seed = 141645647620; */
+  /* seed = 1417391862; */
   printf("\n# Seed: %d",seed); fflush(NULL);
   srand(seed);
   tree = MIGREP_Simulate_Backward((int)atoi(argv[1]),10.,10.);
@@ -213,13 +214,12 @@ int MIGREP_Main(int argc, char *argv[])
 // See Kelleher, Barton & Etheridge, Bioinformatics, 2013.
 t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
 {  
-  int i,j;
+  int i;
   t_tree *tree;
-  int n_dim,n_lineages,n_lineages_new,n_disk,n_hit;
-  phydbl curr_t,dt_dsk,prob_hit;
+  int n_dim;
   t_migrep_mod *mmod;
   t_dsk *disk;
-  t_ldsk **ldsk_a,**ldsk_a_tmp,*new_ldsk;
+  t_ldsk **ldsk_a;
   option *io;
   t_mod *mod;
   t_opt *s_opt;
@@ -266,12 +266,11 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   tree->io        = io;
   tree->n_pattern = tree->data->crunch_len;
 
-
   disk = MIGREP_Make_Disk_Event(n_dim,n_otu);
   MIGREP_Init_Disk_Event(disk,n_dim,NULL);
 
   
-  // Allocate coordinates for all the tips first (will grow afterwards)
+  /* Allocate coordinates for all the tips first (will grow afterwards) */
   ldsk_a = (t_ldsk **)mCalloc(n_otu,sizeof(t_ldsk *));
   For(i,n_otu) 
     {
@@ -279,15 +278,12 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
       MIGREP_Init_Lindisk_Node(ldsk_a[i],disk,n_dim);
     }
 
-  ldsk_a_tmp = (t_ldsk **)mCalloc(n_otu,sizeof(t_ldsk *));
 
   /* Generate coordinates for the tip nodes (uniform distribution on the rectangle) */
   For(i,n_otu)
     {
       ldsk_a[i]->coord->lonlat[0] = Uni()*width;  // longitude
       ldsk_a[i]->coord->lonlat[1] = Uni()*height; // latitude
-      /* ldsk_a[i]->coord->lonlat[0] = (i+1.)/(n_otu+1.)*width;  // longitude */
-      /* ldsk_a[i]->coord->lonlat[1] = (i+1.)/(n_otu+1.)*height; // latitude */
     }
 
   /* Allocate migrep model */
@@ -296,6 +292,11 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   mmod->lim->lonlat[0] = width;
   mmod->lim->lonlat[1] = height;
   
+  /* Initialize parameters of migrep model */
+  mmod->lbda = 0.1;
+  mmod->mu   = 0.8;
+  mmod->rad  = 2.5;
+
   /* First disk event (at time 0) */
   disk->time             = 0.0;
   disk->mmod             = mmod;
@@ -304,33 +305,82 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   disk->ldsk_a           = ldsk_a;
   disk->n_ldsk_a         = n_otu;
 
+  tree->disk             = disk;
+  tree->mmod             = mmod;
+    
+  MIGREP_Simulate_Backward_Core(tree);
+
+  /* while(disk->prev) */
+  /*   { */
+  /*     printf("\n<><><>"); */
+  /*     printf("\n disk %f %s",disk->time,disk->id); */
+  /*     For(i,disk->n_ldsk_a) */
+  /*       { */
+  /*         printf("\n. %s %f %f", */
+  /*            disk->ldsk_a[i]->coord->id, */
+  /*            disk->ldsk_a[i]->coord->lonlat[0], */
+  /*            disk->ldsk_a[i]->coord->lonlat[1]); */
+  /*       } */
+  /*     disk = disk->prev; */
+  /*   } */
+
+
+  MIGREP_Ldsk_To_Tree(tree);  
+
+  Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
+  Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
+  RATES_Fill_Lca_Table(tree);
+
+  disk = tree->disk;
+  while(disk->prev) disk = disk->prev;
+  
+
+  tree->rates->bl_from_rt = YES;
+  tree->rates->clock_r    = 0.1 / FABS(disk->time);
+  tree->rates->model      = STRICTCLOCK;
+  RATES_Update_Cur_Bl(tree);
+
+  Init_Model(cdata,mod,io);
+  Prepare_Tree_For_Lk(tree);
+  Evolve(tree->data,tree->mod,tree);
+  
+  if(tree->mod->s_opt->greedy) Init_P_Lk_Tips_Double(tree);
+  else                         Init_P_Lk_Tips_Int(tree);
+  Init_P_Lk_Loc(tree);
+
+  return(tree);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+void MIGREP_Simulate_Backward_Core(t_tree *tree)
+{
+  t_dsk *disk;
+  t_ldsk *new_ldsk,**ldsk_a,**ldsk_a_tmp;
+  int i,j,n_disk,n_lineages,n_dim,n_hit,n_lineages_new,n_otu;
+  phydbl dt_dsk,curr_t,prob_hit;
+  t_migrep_mod *mmod;
+
+  mmod   = tree->mmod;
+  disk   = tree->disk;
+  n_dim  = tree->mmod->n_dim;
+  ldsk_a = disk->ldsk_a;
+  n_otu  = tree->n_otu;
+
   /* Allocate and initialise for next event */
   disk->prev = MIGREP_Make_Disk_Event(n_dim,n_otu);
   MIGREP_Init_Disk_Event(disk->prev,n_dim,NULL);
   disk->prev->next = disk;
-  
-  /* For(i,n_otu) */
-  /*   { */
-  /*     printf("\nx disk %s [%15f] %3d %s %15f %15f", */
-  /*            disk?disk->id:"xxx", */
-  /*            disk?disk->time:0.0, */
-  /*            i, */
-  /*            ldsk_a[i]->coord->id, */
-  /*            ldsk_a[i]->coord->lonlat[0], */
-  /*            ldsk_a[i]->coord->lonlat[1]); */
-  /*   } */
 
   /* Move to it */
   disk = disk->prev;
 
-  /* Initialize parameters of migrep model */
-  mmod->lbda = 0.1;
-  mmod->mu   = 0.7;
-  mmod->rad  = 2.5;
-  
+  ldsk_a_tmp = (t_ldsk **)mCalloc(n_otu,sizeof(t_ldsk *));
+
   curr_t     = 0.0;
   dt_dsk     = 0.0;
-  n_lineages = n_otu;
+  n_lineages = tree->n_otu;
   n_disk     = 0;
   do
     {
@@ -339,8 +389,8 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
       curr_t -= dt_dsk;
       
       /* Coordinates of next event */
-      disk->centr->lonlat[0] = Uni()*width;
-      disk->centr->lonlat[1] = Uni()*height;      
+      disk->centr->lonlat[0] = Uni()*mmod->lim->lonlat[0];
+      disk->centr->lonlat[1] = Uni()*mmod->lim->lonlat[1];      
 
       disk->time = curr_t;
       disk->mmod = mmod;
@@ -378,7 +428,6 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
               }
             }
           
-
           if(MIGREP_Is_In_Disk(ldsk_a[i]->coord,disk,mmod) == YES) 
             {
               if(Uni() < prob_hit)
@@ -423,12 +472,6 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
         }
 
       if(n_hit > 0) n_lineages -= (n_hit-1);
-
-      if(n_hit > 1) // a coalescent event occurred
-        {
-          new_ldsk->is_coal = YES;
-          /* PhyML_Printf("\n. Coalescent @ disk %s on ldsk %s",disk->id,disk->ldsk->coord->id); */
-        }
  
       ldsk_a = (t_ldsk **)mCalloc(n_otu,sizeof(t_ldsk *));
       For(i,n_lineages) ldsk_a[i] = ldsk_a_tmp[i];
@@ -456,60 +499,6 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
       disk = disk->prev;          
     }
   while(1);
-
-  while(disk->next) disk = disk->next;
-
-  tree->disk = disk;
-  tree->mmod = mmod;
-
-  /* while(disk->prev) */
-  /*   { */
-  /*     printf("\n<><><>"); */
-  /*     printf("\n disk %f %s",disk->time,disk->id); */
-  /*     For(i,disk->n_ldsk_a) */
-  /*       { */
-  /*         printf("\n. %s %f %f", */
-  /*            disk->ldsk_a[i]->coord->id, */
-  /*            disk->ldsk_a[i]->coord->lonlat[0], */
-  /*            disk->ldsk_a[i]->coord->lonlat[1]); */
-  /*       } */
-  /*     disk = disk->prev; */
-  /*   } */
-
-
-  MIGREP_Ldsk_To_Tree(tree);  
-
-  Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
-  Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
-  RATES_Fill_Lca_Table(tree);
-
-  disk = tree->disk;
-  while(disk->prev) disk = disk->prev;
-  
-
-  tree->rates->bl_from_rt = YES;
-  tree->rates->clock_r    = 0.1 / FABS(disk->time);
-  tree->rates->model      = STRICTCLOCK;
-  RATES_Update_Cur_Bl(tree);
-
-  printf("\n%s\n",Write_Tree(tree,NO));
-
-  Init_Model(cdata,mod,io);
-  Prepare_Tree_For_Lk(tree);
-  Evolve(tree->data,tree->mod,tree);
-  
-  if(tree->mod->s_opt->greedy) Init_P_Lk_Tips_Double(tree);
-  else                         Init_P_Lk_Tips_Int(tree);
-  Init_P_Lk_Loc(tree);
-
-  printf("\n. alignment log-lk: %f",Lk(NULL,tree));
-  printf("\n. genealogy log-lk: %f",MIGREP_Lk(tree));
-
-  Print_CSeq(stdout,NO,tree->data);
-
-  /* MIGREP_MCMC(tree); */
-
-  return(tree);
 }
 
 //////////////////////////////////////////////////////////////
@@ -703,6 +692,10 @@ void MIGREP_MCMC(t_tree *tree)
   int move,i;
   phydbl u;
   t_dsk *disk;
+  FILE *fp_tree;
+
+
+  fp_tree = Openfile("migrep_trees",WRITE);
 
   mcmc = MCMC_Make_MCMC_Struct();
   MCMC_Complete_MCMC(mcmc,tree);
@@ -725,6 +718,7 @@ void MIGREP_MCMC(t_tree *tree)
   mcmc->sample_interval  = 1E+3;
   
   MIGREP_Lk(tree);
+  Lk(NULL,tree);
   MIGREP_LnPrior_Radius(tree);
   MIGREP_LnPrior_Mu(tree);
   MIGREP_LnPrior_Lbda(tree);
@@ -732,32 +726,38 @@ void MIGREP_MCMC(t_tree *tree)
   disk = tree->disk;
   while(disk->prev) disk = disk->prev;
 
-  printf("\n# before rand lnL: %f",tree->mmod->c_lnL);
-  printf("\n# ninter: %d",MIGREP_Total_Number_Of_Intervals(tree));
-  printf("\n# ncoal: %d",MIGREP_Total_Number_Of_Coal_Disks(tree));
-  printf("\n# nhits: %d",MIGREP_Total_Number_Of_Hit_Disks(tree));
-  printf("\n# root pos: %f %f",disk->ldsk->coord->lonlat[0],disk->ldsk->coord->lonlat[1]);
+  PhyML_Printf("\n# before rand glnL: %f alnL: %f",tree->mmod->c_lnL,tree->c_lnL);
+  PhyML_Printf("\n# ninter: %d",MIGREP_Total_Number_Of_Intervals(tree));
+  PhyML_Printf("\n# ncoal: %d",MIGREP_Total_Number_Of_Coal_Disks(tree));
+  PhyML_Printf("\n# nhits: %d",MIGREP_Total_Number_Of_Hit_Disks(tree));
+  PhyML_Printf("\n# root pos: %f %f",disk->ldsk->coord->lonlat[0],disk->ldsk->coord->lonlat[1]);
+  PhyML_Printf("\n# root time: %f",disk->time);
 
-  /* gtk_widget_queue_draw(tree->draw_area); */
-  /* sleep(3); */
+
+  PhyML_Fprintf(fp_tree,"\n%s",Write_Tree(tree,NO));
 
 
   tree->mmod->lbda = Uni()*(tree->mmod->max_lbda - tree->mmod->min_lbda) + tree->mmod->min_lbda;
   tree->mmod->mu   = Uni()*(tree->mmod->max_mu - tree->mmod->min_mu) + tree->mmod->min_mu;
   tree->mmod->rad  = Uni()*(tree->mmod->max_rad - tree->mmod->min_rad) + tree->mmod->min_rad;
-  /* tree->mmod->rad  = tree->mmod->max_rad; */
 
+  /* Random genealogy */
+  MIGREP_Simulate_Backward_Core(tree);
 
-  printf("\n. MCMC sampling starts now... \n");
+  PhyML_Printf("\n. MCMC sampling starts now... \n");
 
   MIGREP_Lk(tree);
-  printf("\n# after rand lnL: %f",tree->mmod->c_lnL);
-  printf("\n# ninter: %d",MIGREP_Total_Number_Of_Intervals(tree));
-  printf("\n# ncoal: %d",MIGREP_Total_Number_Of_Coal_Disks(tree));
-  printf("\n# nhits: %d",MIGREP_Total_Number_Of_Hit_Disks(tree));
-  printf("\n# root pos: %f %f",disk->ldsk->coord->lonlat[0],disk->ldsk->coord->lonlat[1]);
+  Lk(NULL,tree);
+  disk = tree->disk;
+  while(disk->prev) disk = disk->prev;
+  PhyML_Printf("\n# after rand glnL: %f alnL: %f",tree->mmod->c_lnL,tree->c_lnL);
+  PhyML_Printf("\n# ninter: %d",MIGREP_Total_Number_Of_Intervals(tree));
+  PhyML_Printf("\n# ncoal: %d",MIGREP_Total_Number_Of_Coal_Disks(tree));
+  PhyML_Printf("\n# nhits: %d",MIGREP_Total_Number_Of_Hit_Disks(tree));
+  PhyML_Printf("\n# root pos: %f %f",disk->ldsk->coord->lonlat[0],disk->ldsk->coord->lonlat[1]);
+  PhyML_Printf("\n# root time: %f",disk->time);
 
-  PhyML_Printf("\n %13s %13s %13s %13s %13s %13s %13s %13s %13s %13s %13s",
+  PhyML_Printf("\n %13s %13s %13s %13s %13s %13s %13s %13s %13s %13s %13s %13s",
                "run",
                "alnL",
                "glnL",
@@ -768,12 +768,9 @@ void MIGREP_MCMC(t_tree *tree)
                "nCoal",
                "nHit",
                "xRootLon",
-               "xRootLat");
+               "xRootLat",
+               "rootTime");
 
-  /* gtk_widget_queue_draw(tree->draw_area); */
-  /* sleep(2); */
-
-  PhyML_Printf("\n *** \n");
 
   mcmc->always_yes = NO;
   do
@@ -832,7 +829,7 @@ void MIGREP_MCMC(t_tree *tree)
       if(!(tree->mcmc->run%tree->mcmc->sample_interval))
         {
           Lk(NULL,tree);
-          PhyML_Printf("\n %13d %13f %13f %13f %13f %13f %13d %13d %13d %13f %13f",
+          PhyML_Printf("\n %13d %13f %13f %13f %13f %13f %13d %13d %13d %13f %13f %13f",
                        tree->mcmc->run,
                        tree->c_lnL,
                        tree->mmod->c_lnL,
@@ -843,12 +840,15 @@ void MIGREP_MCMC(t_tree *tree)
                        MIGREP_Total_Number_Of_Coal_Disks(tree),
                        MIGREP_Total_Number_Of_Hit_Disks(tree),
                        disk->ldsk->coord->lonlat[0],
-                       disk->ldsk->coord->lonlat[1]);
-          /* gtk_widget_queue_draw(tree->draw_area); */
-          /* sleep(1); */
+                       disk->ldsk->coord->lonlat[1],
+                       disk->time);
+
+          PhyML_Fprintf(fp_tree,"\n%s",Write_Tree(tree,NO));
         }
     }
   while(tree->mcmc->run < tree->mcmc->chain_len);
+
+  fclose(fp_tree);
 }
 
 //////////////////////////////////////////////////////////////
@@ -1064,7 +1064,7 @@ t_ldsk *MIGREP_Prev_Coal_Lindisk(t_ldsk *t)
 {
   if(t == NULL) return NULL;
 
-  if(t->is_coal == YES) 
+  if(t->n_next > 1) 
     {
       return t;
     }
@@ -1081,7 +1081,7 @@ t_ldsk *MIGREP_Next_Coal_Lindisk(t_ldsk *t)
 {
   if(t == NULL) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
 
-  if(t->is_coal == YES || t->next == NULL) return t;
+  if(t->n_next > 1 || t->next == NULL) return t;
   else
     {
       if(t->n_next > 1) // Should have t->is_coal = YES
@@ -1537,7 +1537,7 @@ void MIGREP_Print_Struct(char sign, t_tree *tree)
              sign,
              disk->id,
              disk->time,disk->ldsk?disk->ldsk->coord->id:NULL,
-             disk->ldsk?disk->ldsk->is_coal:-1,
+             disk->ldsk?disk->ldsk->n_next > 1:-1,
              tree->mmod->rad); fflush(NULL);
       For(j,tree->mmod->n_dim) PhyML_Printf(" %f",disk->centr->lonlat[j]);
 
@@ -1703,7 +1703,7 @@ int MIGREP_Total_Number_Of_Coal_Disks(t_tree *tree)
   n_coal_disks = 0;
   while(disk)
     {
-      if(disk->ldsk && disk->ldsk->is_coal == YES) n_coal_disks++;
+      if(disk->ldsk && disk->ldsk->n_next > 1) n_coal_disks++;
       disk = disk->prev;
     }
 
@@ -2067,7 +2067,6 @@ void MIGREP_Ldsk_To_Tree(t_tree *tree)
 {
   int i,j;
   t_dsk *disk;
-  t_edge *b;
 
   /* Reset */
   For(i,2*tree->n_otu-1) 
