@@ -5611,7 +5611,7 @@ void MCMC_MIGREP_Scale_Times(t_tree *tree)
   phydbl ori_time, new_time;
   phydbl scale_fact;
   t_dsk  *disk;
-  int i;
+  int i,n_disks;
 
   disk     = NULL;
   new_alnL = UNLIKELY;
@@ -5624,13 +5624,17 @@ void MCMC_MIGREP_Scale_Times(t_tree *tree)
   scale_fact = Uni()*(1.2 - 0.8) + 0.8;
   
   if(tree->disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  n_disks = 0;
   disk = tree->disk->prev;
   do
     {
       disk->time *= scale_fact;
       disk = disk->prev;
+      n_disks++;
     }
   while(disk);
+  
+  hr += (n_disks-2)*LOG(scale_fact);
 
   new_glnL = MIGREP_Lk(tree);
   new_alnL = Lk(NULL,tree);
@@ -6265,7 +6269,6 @@ void MCMC_MIGREP_Prune_Regraft(t_tree *tree)
 
   if(!n_valid_disks) return;
   
-
   /* Uniform selection of a disk among the list of valid ones */
   i = Rand_Int(0,n_valid_disks-1);
   regraft_disk = valid_disks[i];

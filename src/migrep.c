@@ -294,8 +294,8 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   
   /* Initialize parameters of migrep model */
   mmod->lbda = 0.1;
-  mmod->mu   = 0.8;
-  mmod->rad  = 2.5;
+  mmod->mu   = 0.9;
+  mmod->rad  = 3.0;
 
   /* First disk event (at time 0) */
   disk->time             = 0.0;
@@ -309,21 +309,6 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   tree->mmod             = mmod;
     
   MIGREP_Simulate_Backward_Core(tree);
-
-  /* while(disk->prev) */
-  /*   { */
-  /*     printf("\n<><><>"); */
-  /*     printf("\n disk %f %s",disk->time,disk->id); */
-  /*     For(i,disk->n_ldsk_a) */
-  /*       { */
-  /*         printf("\n. %s %f %f", */
-  /*            disk->ldsk_a[i]->coord->id, */
-  /*            disk->ldsk_a[i]->coord->lonlat[0], */
-  /*            disk->ldsk_a[i]->coord->lonlat[1]); */
-  /*       } */
-  /*     disk = disk->prev; */
-  /*   } */
-
 
   MIGREP_Ldsk_To_Tree(tree);  
 
@@ -842,8 +827,13 @@ void MIGREP_MCMC(t_tree *tree)
                        disk->ldsk->coord->lonlat[0],
                        disk->ldsk->coord->lonlat[1],
                        disk->time);
+        }
 
-          PhyML_Fprintf(fp_tree,"\n%s",Write_Tree(tree,NO));
+      if(!(tree->mcmc->run%(20*tree->mcmc->sample_interval)))
+        {
+          char *s = Write_Tree(tree,NO);
+          PhyML_Fprintf(fp_tree,"\n%s",s);
+          Free(s);
         }
     }
   while(tree->mcmc->run < tree->mcmc->chain_len);
