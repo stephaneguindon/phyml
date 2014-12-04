@@ -4615,6 +4615,9 @@ void MCMC_Copy_To_New_Param_Val(t_mcmc *mcmc, t_tree *tree)
   For(i,2*tree->n_otu-1)
     mcmc->new_param_val[mcmc->num_move_nd_r+i] = tree->rates->nd_r[i];
   
+  mcmc->new_param_val[mcmc->num_move_migrep_lbda] = tree->mmod ? tree->mmod->lbda : -1.;
+  mcmc->new_param_val[mcmc->num_move_migrep_mu]   = tree->mmod ? tree->mmod->mu   : -1.;
+  mcmc->new_param_val[mcmc->num_move_migrep_rad]  = tree->mmod ? tree->mmod->rad  : -1.;
 }
 
 //////////////////////////////////////////////////////////////

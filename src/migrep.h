@@ -20,7 +20,7 @@ the GNU public licence. See http://www.opensource.org for details.
 #include <pthread.h>
 #include "utilities.h"
 
-t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height);
+t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height, int r_seed);
 int MIGREP_Main(int argc, char **argv);
 phydbl MIGREP_Lk(t_tree *tree);
 phydbl MIGREP_Wrap_Lk(t_edge *b, t_tree *tree, supert_tree *stree);

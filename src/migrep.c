@@ -19,7 +19,6 @@ the GNU public licence. See http://www.opensource.org for details.
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 int MIGREP_Draw(GtkWidget *widget, cairo_t *cr, gpointer *data)
 {   
   t_tree *tree;
@@ -175,8 +174,7 @@ int MIGREP_Main(int argc, char *argv[])
   /* seed = 1417391862; */
   printf("\n# Seed: %d",seed); fflush(NULL);
   srand(seed);
-  tree = MIGREP_Simulate_Backward((int)atoi(argv[1]),10.,10.);
-
+  tree = MIGREP_Simulate_Backward((int)atoi(argv[1]),10.,10.,seed);
   MIGREP_MCMC(tree);
   Exit("\n");
 
@@ -212,7 +210,7 @@ int MIGREP_Main(int argc, char *argv[])
 // Simulate Etheridge-Barton model backward in time, following n_otu lineages
 // on a rectangle of dimension width x height
 // See Kelleher, Barton & Etheridge, Bioinformatics, 2013.
-t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
+t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height, int r_seed)
 {  
   int i;
   t_tree *tree;
@@ -238,7 +236,8 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   io->mod      = mod;
   mod->io      = io;
   mod->s_opt   = s_opt;
-  
+  io->r_seed   = r_seed;
+
   io->n_otu    = n_otu;
   io->init_len = 500; /* sequence length */
 
@@ -293,9 +292,13 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height)
   mmod->lim->lonlat[1] = height;
   
   /* Initialize parameters of migrep model */
-  mmod->lbda = 0.1;
-  mmod->mu   = 0.9;
-  mmod->rad  = 3.0;
+  mmod->lbda = Uni()*(0.3 - 0.05) + 0.05;
+  mmod->mu   = Uni()*(1.0 - 0.3) + 0.3;
+  mmod->rad  = Uni()*(5.0 - 1.5) + 1.5;
+  /* mmod->lbda = 0.1; */
+  /* mmod->mu   = 0.9; */
+  /* mmod->rad  = 3.0; */
+
 
   /* First disk event (at time 0) */
   disk->time             = 0.0;
@@ -677,10 +680,20 @@ void MIGREP_MCMC(t_tree *tree)
   int move,i;
   phydbl u;
   t_dsk *disk;
-  FILE *fp_tree;
+  FILE *fp_tree,*fp_stats;
+  char *s;
+
+  s = (char *)mCalloc(T_MAX_FILE,sizeof(char));
 
 
-  fp_tree = Openfile("migrep_trees",WRITE);
+  strcpy(s,"migrep_trees");
+  sprintf(s+strlen(s),".%d",tree->mod->io->r_seed);
+  fp_tree = Openfile(s,WRITE);
+  strcpy(s,"migrep_stats");
+  sprintf(s+strlen(s),".%d",tree->mod->io->r_seed);
+  fp_stats = Openfile(s,WRITE);
+
+  Free(s);
 
   mcmc = MCMC_Make_MCMC_Struct();
   MCMC_Complete_MCMC(mcmc,tree);
@@ -699,7 +712,7 @@ void MIGREP_MCMC(t_tree *tree)
   mcmc->print_every      = 2;
   mcmc->is_burnin        = NO;
   mcmc->nd_t_digits      = 1;
-  mcmc->chain_len        = 5.E+8;
+  mcmc->chain_len        = 1.E+7;
   mcmc->sample_interval  = 1E+3;
   
   MIGREP_Lk(tree);
@@ -711,50 +724,61 @@ void MIGREP_MCMC(t_tree *tree)
   disk = tree->disk;
   while(disk->prev) disk = disk->prev;
 
-  PhyML_Printf("\n# before rand glnL: %f alnL: %f",tree->mmod->c_lnL,tree->c_lnL);
-  PhyML_Printf("\n# ninter: %d",MIGREP_Total_Number_Of_Intervals(tree));
-  PhyML_Printf("\n# ncoal: %d",MIGREP_Total_Number_Of_Coal_Disks(tree));
-  PhyML_Printf("\n# nhits: %d",MIGREP_Total_Number_Of_Hit_Disks(tree));
-  PhyML_Printf("\n# root pos: %f %f",disk->ldsk->coord->lonlat[0],disk->ldsk->coord->lonlat[1]);
-  PhyML_Printf("\n# root time: %f",disk->time);
+  PhyML_Fprintf(fp_stats,"\n# before rand glnL: %f alnL: %f",tree->mmod->c_lnL,tree->c_lnL);
+  PhyML_Fprintf(fp_stats,"\n# ninter: %d",MIGREP_Total_Number_Of_Intervals(tree));
+  PhyML_Fprintf(fp_stats,"\n# ncoal: %d",MIGREP_Total_Number_Of_Coal_Disks(tree));
+  PhyML_Fprintf(fp_stats,"\n# nhits: %d",MIGREP_Total_Number_Of_Hit_Disks(tree));
+  PhyML_Fprintf(fp_stats,"\n# root pos: %f %f",disk->ldsk->coord->lonlat[0],disk->ldsk->coord->lonlat[1]);
+  PhyML_Fprintf(fp_stats,"\n# root time: %f",disk->time);
+  PhyML_Fprintf(fp_stats,"\n# true lbda: %f",tree->mmod->lbda);
+  PhyML_Fprintf(fp_stats,"\n# true mu: %f",tree->mmod->mu);
+  PhyML_Fprintf(fp_stats,"\n# true rad: %f",tree->mmod->rad);
 
+  s = Write_Tree(tree,NO);
+  PhyML_Fprintf(fp_tree,"\n%s",s);
+  Free(s);
+  
 
-  PhyML_Fprintf(fp_tree,"\n%s",Write_Tree(tree,NO));
-
-
-  tree->mmod->lbda = Uni()*(tree->mmod->max_lbda - tree->mmod->min_lbda) + tree->mmod->min_lbda;
-  tree->mmod->mu   = Uni()*(tree->mmod->max_mu - tree->mmod->min_mu) + tree->mmod->min_mu;
-  tree->mmod->rad  = Uni()*(tree->mmod->max_rad - tree->mmod->min_rad) + tree->mmod->min_rad;
+  /* tree->mmod->lbda = Uni()*(tree->mmod->max_lbda - tree->mmod->min_lbda) + tree->mmod->min_lbda; */
+  /* tree->mmod->mu   = Uni()*(tree->mmod->max_mu - tree->mmod->min_mu) + tree->mmod->min_mu; */
+  /* tree->mmod->rad  = Uni()*(tree->mmod->max_rad - tree->mmod->min_rad) + tree->mmod->min_rad; */
+  tree->mmod->lbda = Uni()*(0.2 - 0.1) + 0.1;
+  tree->mmod->mu   = Uni()*(1.0 - 0.7) + 0.7;
+  tree->mmod->rad  = Uni()*(4.0 - 2.0) + 2.0;
 
   /* Random genealogy */
   MIGREP_Simulate_Backward_Core(tree);
-
-  PhyML_Printf("\n. MCMC sampling starts now... \n");
 
   MIGREP_Lk(tree);
   Lk(NULL,tree);
   disk = tree->disk;
   while(disk->prev) disk = disk->prev;
-  PhyML_Printf("\n# after rand glnL: %f alnL: %f",tree->mmod->c_lnL,tree->c_lnL);
-  PhyML_Printf("\n# ninter: %d",MIGREP_Total_Number_Of_Intervals(tree));
-  PhyML_Printf("\n# ncoal: %d",MIGREP_Total_Number_Of_Coal_Disks(tree));
-  PhyML_Printf("\n# nhits: %d",MIGREP_Total_Number_Of_Hit_Disks(tree));
-  PhyML_Printf("\n# root pos: %f %f",disk->ldsk->coord->lonlat[0],disk->ldsk->coord->lonlat[1]);
-  PhyML_Printf("\n# root time: %f",disk->time);
+  PhyML_Fprintf(fp_stats,"\n# after rand glnL: %f alnL: %f",tree->mmod->c_lnL,tree->c_lnL);
+  PhyML_Fprintf(fp_stats,"\n# ninter: %d",MIGREP_Total_Number_Of_Intervals(tree));
+  PhyML_Fprintf(fp_stats,"\n# ncoal: %d",MIGREP_Total_Number_Of_Coal_Disks(tree));
+  PhyML_Fprintf(fp_stats,"\n# nhits: %d",MIGREP_Total_Number_Of_Hit_Disks(tree));
+  PhyML_Fprintf(fp_stats,"\n# root pos: %f %f",disk->ldsk->coord->lonlat[0],disk->ldsk->coord->lonlat[1]);
+  PhyML_Fprintf(fp_stats,"\n# root time: %f",disk->time);
+  PhyML_Fprintf(fp_stats,"\n# start lbda: %f",tree->mmod->lbda);
+  PhyML_Fprintf(fp_stats,"\n# start mu: %f",tree->mmod->mu);
+  PhyML_Fprintf(fp_stats,"\n# start rad: %f",tree->mmod->rad);
 
-  PhyML_Printf("\n %13s %13s %13s %13s %13s %13s %13s %13s %13s %13s %13s %13s",
-               "run",
-               "alnL",
-               "glnL",
-               "lbda",
-               "mu",
-               "rad",
-               "nInt",
-               "nCoal",
-               "nHit",
-               "xRootLon",
-               "xRootLat",
-               "rootTime");
+  PhyML_Fprintf(fp_stats,"\n %13s %13s %13s %13s %13s %13s %13s %13s %13s %13s %13s %13s %13s %13s",
+                "run",
+                "alnL",
+                "glnL",
+                "lbda",
+                "mu",
+                "rad",
+                "nInt",
+                "nCoal",
+                "nHit",
+                "xRootLon",
+                "xRootLat",
+                "rootTime",
+                "essLbda",
+                "essMu",
+                "essRad");
 
 
   mcmc->always_yes = NO;
@@ -762,7 +786,11 @@ void MIGREP_MCMC(t_tree *tree)
     {
       if(mcmc->run == (int)mcmc->chain_len * 0.01) 
         {
-          For(i,mcmc->n_moves) tree->mcmc->adjust_tuning[i] = NO;
+          For(i,mcmc->n_moves) 
+            {
+              tree->mcmc->adjust_tuning[i] = NO;
+              tree->mcmc->start_ess[i] = YES;
+            }
         }
 
       u = Uni();
@@ -814,19 +842,29 @@ void MIGREP_MCMC(t_tree *tree)
       if(!(tree->mcmc->run%tree->mcmc->sample_interval))
         {
           Lk(NULL,tree);
-          PhyML_Printf("\n %13d %13f %13f %13f %13f %13f %13d %13d %13d %13f %13f %13f",
-                       tree->mcmc->run,
-                       tree->c_lnL,
-                       tree->mmod->c_lnL,
-                       tree->mmod->lbda,
-                       tree->mmod->mu,
-                       tree->mmod->rad,
-                       MIGREP_Total_Number_Of_Intervals(tree),
-                       MIGREP_Total_Number_Of_Coal_Disks(tree),
-                       MIGREP_Total_Number_Of_Hit_Disks(tree),
-                       disk->ldsk->coord->lonlat[0],
-                       disk->ldsk->coord->lonlat[1],
-                       disk->time);
+          PhyML_Fprintf(fp_stats,"\n %13d %13f %13f %13f %13f %13f %13d %13d %13d %13f %13f %13f %13f %13f %13f",
+                        tree->mcmc->run,
+                        tree->c_lnL,
+                        tree->mmod->c_lnL,
+                        tree->mmod->lbda,
+                        tree->mmod->mu,
+                        tree->mmod->rad,
+                        MIGREP_Total_Number_Of_Intervals(tree),
+                        MIGREP_Total_Number_Of_Coal_Disks(tree),
+                        MIGREP_Total_Number_Of_Hit_Disks(tree),
+                        disk->ldsk->coord->lonlat[0],
+                        disk->ldsk->coord->lonlat[1],
+                        disk->time,
+                        tree->mcmc->ess[tree->mcmc->num_move_migrep_lbda],
+                        tree->mcmc->ess[tree->mcmc->num_move_migrep_mu],
+                        tree->mcmc->ess[tree->mcmc->num_move_migrep_rad]);
+
+          MCMC_Copy_To_New_Param_Val(tree->mcmc,tree);
+          
+          For(i,tree->mcmc->n_moves)
+            {
+              if(tree->mcmc->start_ess[i] == YES) MCMC_Update_Effective_Sample_Size(i,tree->mcmc,tree);
+            }
         }
 
       if(!(tree->mcmc->run%(20*tree->mcmc->sample_interval)))
@@ -839,6 +877,7 @@ void MIGREP_MCMC(t_tree *tree)
   while(tree->mcmc->run < tree->mcmc->chain_len);
 
   fclose(fp_tree);
+  fclose(fp_stats);
 }
 
 //////////////////////////////////////////////////////////////
