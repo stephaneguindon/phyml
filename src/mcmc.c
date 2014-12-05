@@ -5085,9 +5085,10 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
   t_dsk  *disk,**target_disk,**valid_disks;
   int i,j,block,n_valid_disks,n_delete_disks,*permut;
 
+  valid_disks   = NULL;
   disk          = NULL;
-  new_glnL       = UNLIKELY;
-  cur_glnL       = tree->mmod->c_lnL;
+  new_glnL      = UNLIKELY;
+  cur_glnL      = tree->mmod->c_lnL;
   hr            = 0.0;
   ratio         = 0.0;
   block         = 100;
@@ -5700,6 +5701,7 @@ void MCMC_MIGREP_Swap_Disk(t_tree *tree)
   target_disk    = NULL;
   ori_disk_old   = NULL;
   ori_disk_young = NULL;
+  valid_disks    = NULL;
   new_glnL       = UNLIKELY;
   cur_glnL       = tree->mmod->c_lnL;
   new_alnL       = UNLIKELY;
@@ -6022,8 +6024,9 @@ void MCMC_MIGREP_Delete_Hit(t_tree *tree)
   int i,block,n_valid_disks,dir_old_young;
 
   disk          = NULL;
-  new_glnL       = UNLIKELY;
-  cur_glnL       = tree->mmod->c_lnL;
+  valid_disks   = NULL;
+  new_glnL      = UNLIKELY;
+  cur_glnL      = tree->mmod->c_lnL;
   hr            = 0.0;
   ratio         = 0.0;
   block         = 100;
