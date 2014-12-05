@@ -5081,7 +5081,7 @@ void MCMC_MIGREP_Radius(t_tree *tree)
 void MCMC_MIGREP_Delete_Disk(t_tree *tree)
 {
   phydbl u,alpha,ratio;
-  phydbl cur_glnL, new_glnL, hr,T, cur_lbda, min, max;
+  phydbl cur_glnL, new_glnL, hr,T, cur_lbda;
   t_dsk  *disk,**target_disk,**valid_disks;
   int i,j,block,n_valid_disks,n_delete_disks,*permut;
 
@@ -5194,7 +5194,7 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
   t_dsk  *disk,**new_disk,**target_disk;
   phydbl T,t;
   phydbl cur_glnL, new_glnL, hr, cur_lbda;
-  phydbl u,alpha,ratio,min,max;
+  phydbl u,alpha,ratio;
   int i,j,n_valid_disks,n_insert_disks;
 
   disk           = NULL;
@@ -5611,10 +5611,9 @@ void MCMC_MIGREP_Scale_Times(t_tree *tree)
   phydbl u,alpha,ratio;
   phydbl cur_glnL, new_glnL, hr;
   phydbl cur_alnL, new_alnL;
-  phydbl ori_time, new_time;
   phydbl scale_fact;
   t_dsk  *disk;
-  int i,n_disks;
+  int n_disks;
 
   disk     = NULL;
   new_alnL = UNLIKELY;
@@ -6202,19 +6201,19 @@ void MCMC_MIGREP_Prune_Regraft(t_tree *tree)
   phydbl u,alpha,ratio,hr;
   phydbl cur_glnL, new_glnL;
   phydbl cur_alnL, new_alnL;
-  phydbl max,min;
   t_dsk  *disk,*prune_disk,*regraft_disk,**valid_disks;
   t_ldsk *prune_ldsk,*regraft_ldsk,*prune_daughter_ldsk;
   int i,block,n_valid_disks,prune_next_num,new_n_coal,cur_n_coal;
 
-  disk     = NULL;
-  new_glnL = UNLIKELY;
-  cur_glnL = tree->mmod->c_lnL;
-  new_alnL = UNLIKELY;
-  cur_alnL = tree->c_lnL;
-  hr       = 0.0;
-  ratio    = 0.0;
-  block    = 100;
+  valid_disks = NULL;
+  disk        = NULL;
+  new_glnL    = UNLIKELY;
+  cur_glnL    = tree->mmod->c_lnL;
+  new_alnL    = UNLIKELY;
+  cur_alnL    = tree->c_lnL;
+  hr          = 0.0;
+  ratio       = 0.0;
+  block       = 100;
 
   if(tree->disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
