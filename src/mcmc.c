@@ -4994,9 +4994,7 @@ void MCMC_MIGREP_Radius(t_tree *tree)
   phydbl u,alpha,ratio;
   phydbl cur_glnL, new_glnL, hr;
   phydbl cur_glnL_rad, new_glnL_rad;
-  phydbl cur_glnL_mu, new_glnL_mu;
-  phydbl cur_glnL_lbda, new_glnL_lbda;
-  phydbl ori_rad,ori_mu,ori_lbda;
+  phydbl ori_rad;
   phydbl min,max;
 
   new_glnL       = UNLIKELY;
@@ -5004,19 +5002,10 @@ void MCMC_MIGREP_Radius(t_tree *tree)
   hr            = 0.0;
   ratio         = 0.0;
   cur_glnL_rad   = MIGREP_LnPrior_Radius(tree);
-  cur_glnL_mu    = MIGREP_LnPrior_Mu(tree);
-  cur_glnL_lbda  = MIGREP_LnPrior_Lbda(tree);
   new_glnL_rad   = UNLIKELY;
-  new_glnL_mu    = UNLIKELY;
-  new_glnL_lbda  = UNLIKELY;
-
-  ori_rad  = tree->mmod->rad;
-  ori_mu   = tree->mmod->mu;
-  ori_lbda = tree->mmod->lbda;
   
-
-
-
+  ori_rad  = tree->mmod->rad;
+  
   min = MAX(tree->mmod->min_rad,tree->mmod->rad - 0.2);  
   max = MIN(tree->mmod->max_rad,tree->mmod->rad + 0.2);
   hr  += LOG(max-min);
@@ -5026,18 +5015,12 @@ void MCMC_MIGREP_Radius(t_tree *tree)
   min = MAX(tree->mmod->min_rad,tree->mmod->rad - 0.2);
   max = MIN(tree->mmod->max_rad,tree->mmod->rad + 0.2);
   hr  -= LOG(max-min);
-  
-      
-  
+    
   new_glnL      = MIGREP_Lk(tree);
   new_glnL_rad  = MIGREP_LnPrior_Radius(tree);
-  /* new_glnL_mu   = MIGREP_LnPrior_Mu(tree); */
-  /* new_glnL_lbda = MIGREP_LnPrior_Lbda(tree); */
   
   ratio += (new_glnL - cur_glnL);
   ratio += (new_glnL_rad - cur_glnL_rad);
-  /* ratio += (new_glnL_mu - cur_glnL_mu); */
-  /* ratio += (new_glnL_lbda - cur_glnL_lbda); */
   
   ratio += hr;
   
@@ -5055,8 +5038,6 @@ void MCMC_MIGREP_Radius(t_tree *tree)
     {
       /* printf("- Reject"); */
       tree->mmod->rad  = ori_rad;
-      tree->mmod->mu   = ori_mu;
-      tree->mmod->lbda = ori_lbda;
 
       /* tree->mmod->c_lnL = cur_glnL; */
       new_glnL = MIGREP_Lk(tree);
