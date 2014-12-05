@@ -184,12 +184,9 @@ AM_CONDITIONAL([WANT_MIGREP], [test "$migrep" = yes])
 if test "$migrep" = yes; then
    AC_DEFINE([MIGREP],[1],[MIGREP tag on])
 fi
-dnl AS_IF([test "x$enable_migrep" = "xyes"],
-dnl       [CFLAGS="-I/usr/include/cairo ${ARCH_flag}"],
-dnl       [CFLAGS="-Wall -O2 ${MSSE} -fomit-frame-pointer -funroll-loops ${ARCH_flag}"])
-AS_IF([test "x$enable_migrep" = "xyes"],[PKG_CHECK_MODULES([GTK], [gtk+-3.0])])
-AS_IF([test "x$enable_migrep" = "xyes"],[PKG_CHECK_MODULES([CAIRO], [cairo])])
-AS_IF([test "x$enable_migrep" = "xyes"],[CFLAGS="${CFLAGS} `pkg-config --cflags --libs gtk+-3.0` ${ARCH_flag}"])
+dnl AS_IF([test "x$enable_migrep" = "xyes"],[PKG_CHECK_MODULES([GTK], [gtk+-3.0])])
+dnl AS_IF([test "x$enable_migrep" = "xyes"],[PKG_CHECK_MODULES([CAIRO], [cairo])])
+dnl AS_IF([test "x$enable_migrep" = "xyes"],[CFLAGS="${CFLAGS} `pkg-config --cflags --libs gtk+-3.0` ${ARCH_flag}"])
 
 
 dnl AM_PATH_GTK_3_0(,,AC_MSG_ERROR(windoe-default needs GTK+-3))

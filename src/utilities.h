@@ -28,10 +28,6 @@ the GNU public licence. See http://www.opensource.org for details.
 #include <float.h>
 #include <stdbool.h>
 
-#ifdef MIGREP
-#include <gtk/gtk.h>
-#endif
-
 extern int n_sec1;
 extern int n_sec2;
 
@@ -690,9 +686,6 @@ typedef struct __Tree{
   int                                  b_inst; /*! The BEAGLE instance id associated with this tree. */
 #endif
 
-#ifdef MIGREP
-  GtkWidget                        *draw_area;
-#endif
 }t_tree;
 
 /*!********************************************************/
