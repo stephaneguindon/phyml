@@ -712,7 +712,7 @@ void MIGREP_MCMC(t_tree *tree)
   mcmc->print_every      = 2;
   mcmc->is_burnin        = NO;
   mcmc->nd_t_digits      = 1;
-  mcmc->chain_len        = 1.E+7;
+  mcmc->chain_len        = 1E+8;
   mcmc->sample_interval  = 1E+3;
   
   MIGREP_Lk(tree);
@@ -784,7 +784,7 @@ void MIGREP_MCMC(t_tree *tree)
   mcmc->always_yes = NO;
   do
     {
-      if(mcmc->run == (int)mcmc->chain_len * 0.01) 
+      if(mcmc->run == 1E+6) 
         {
           For(i,mcmc->n_moves) 
             {
