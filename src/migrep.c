@@ -38,14 +38,14 @@ int MIGREP_Main(int argc, char *argv[])
   sprintf(s+strlen(s),".%d",pid);
   fp_out = Openfile(s,WRITE);
 
-  PhyML_Fprintf(fp_out,"\n# TrueLbda\t TrueMu\t TrueRad\t TrueXroot\t TrueYroot\t Lbda5\t Mu5\t Rad5\t Xroot5\t Yroot5\t Lbda50\t Mu50\t Rad50\t Xroot50\t Yroot50\t Lbda95\t Mu95\t Rad95\t Xroot95\t Yroot95\t ");
+  PhyML_Fprintf(fp_out,"\n# TrueLbda\t TrueMu\t TrueRad\t TrueXroot\t TrueYroot\t Lbda5\t Lbda50\t Lbda95\t Mu5\t Mu50\t Mu95\t Rad5\t Rad50\t Rad95\t Xroot5\t Xroot50\t Xroot95\t Yroot5\t Yroot50\t Yroot95\t ");
 
   tree = MIGREP_Simulate_Backward((int)atoi(argv[1]),10.,10.,seed);
 
   disk = tree->disk;
   while(disk->prev) disk = disk->prev;
 
-  PhyML_Fprintf(fp_out,"\n %f\t %f\t %f\t %f\t %f",
+  PhyML_Fprintf(fp_out,"\n %f\t %f\t %f\t %f\t %f\t ",
                 tree->mmod->lbda,
                 tree->mmod->mu,
                 tree->mmod->rad,
