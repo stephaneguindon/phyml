@@ -680,9 +680,10 @@ void Optimize_Br_Len_Multiplier(t_tree *mixt_tree, int verbose)
   phydbl lk_init;
   t_tree *tree;
 
+
+
   tree = mixt_tree;
   
-
   do
     {      
       if(tree->mod->s_opt->opt_br_len_mult == YES)
@@ -708,7 +709,7 @@ void Optimize_Br_Len_Multiplier(t_tree *mixt_tree, int verbose)
   tree = mixt_tree;  
   do
     {      
-      if(verbose)
+      if(verbose && tree->mod->s_opt->opt_br_len_mult == YES)
         {
           Print_Lk(tree,"[Tree scale         ]");
           PhyML_Printf("[%10f]",tree->mod->br_len_mult->v);

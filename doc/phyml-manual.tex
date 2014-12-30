@@ -1022,9 +1022,9 @@ order to do so, one should use the \x{--constraint\_file}  \x{file\_name} comman
 define. For instance, the following constraints:
 \vspace{0.2cm}
 \begin{Verbatim}
-((A,B,C),(D,E,F));
+((A,B),C,(D,E,F));
 \end{Verbatim}
-indicate that taxa A, B and C belong to the same clade. D, E and F also belong to the
+indicate that taxa D, E and F belong to the same clade. A, B and C also belong to the
 same  clade and the  two clades  hence defined  should not  overlap. Under  these two
 constraints, the tree ((A,B),D,((E,F),C)) is not valid. From the example above, you will notice that
 the constraints are defined  using a multifurcating tree in NEWICK format.  Note that this tree does

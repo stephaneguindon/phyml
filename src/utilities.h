@@ -1676,6 +1676,8 @@ typedef struct __Migrep_Model{
   phydbl            prior_param_lbda; // parameter of the parameter for the exponential prior on lbda
   phydbl              prior_param_mu; // parameter of the parameter for the 'exponential' prior on mu
 
+  phydbl                         rho; // intensity parameter of the Poisson point processs
+
   phydbl                       c_lnL; // current value of log-likelihood 
   phydbl              c_ln_prior_rad; // current value of log prior for the exponential prior on radius
   phydbl             c_ln_prior_lbda; // current value of log prior for the exponential prior on lbda
@@ -1717,8 +1719,6 @@ typedef struct __Lindisk_Node{
   struct __Lindisk_Node  **next;
   struct __Lindisk_Node   *prev;
   struct __Geo_Coord     *coord; 
-  struct __Geo_Coord *min_coord; 
-  struct __Geo_Coord *max_coord; 
   struct __Geo_Coord *cpy_coord; 
   short int              is_hit;
   int                    n_next;

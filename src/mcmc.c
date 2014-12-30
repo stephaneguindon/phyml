@@ -4495,7 +4495,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
 # if defined (MIGREP)
   mcmc->move_weight[mcmc->num_move_migrep_lbda]                  = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_mu]                    = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_rad]                   = 2.0;
+  mcmc->move_weight[mcmc->num_move_migrep_rad]                   = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_insert_disk]           = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_delete_disk]           = 1.0;  
   mcmc->move_weight[mcmc->num_move_migrep_move_disk_ct]          = 1.0;
@@ -4504,7 +4504,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_migrep_delete_hit]            = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_insert_hit]            = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_move_ldsk]             = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_spr]                   = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_spr]                   = 3.0;
   mcmc->move_weight[mcmc->num_move_migrep_scale_times]           = 1.0;
 # else
   mcmc->move_weight[mcmc->num_move_migrep_lbda]                  = 0.0;
@@ -5727,12 +5727,14 @@ void MCMC_MIGREP_Swap_Disk(t_tree *tree)
     if(target_disk->ldsk->next[i]->disk->time < t_max) 
       t_max = target_disk->ldsk->next[i]->disk->time;
     
-
-  if(t_max < t_min) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(t_max < t_min) 
+    {
+      PhyML_Printf("\n. t_min: %f t_max: %f",t_min,t_max);
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
 
   t = Uni()*(t_max - t_min) + t_min;
   target_disk->time = t;
-
 
   disk = target_disk->ldsk->prev->disk;
   while(!(disk->time < t && disk->next->time > t)) 
@@ -5740,7 +5742,13 @@ void MCMC_MIGREP_Swap_Disk(t_tree *tree)
       disk = disk->next;     
       if(!disk || disk->time > t) 
         {
+          PhyML_Printf("\n. name: %s n_next: %d ldsk: %s",target_disk->id,target_disk->ldsk->n_next,target_disk->ldsk->coord->id);
+          PhyML_Printf("\n. prev: %s next: %s",
+                       target_disk->ldsk->prev->coord->id,
+                       target_disk->ldsk->next[0]->coord->id);
+          PhyML_Printf("\n. t_min: %f t_max: %f",t_min,t_max);
           PhyML_Printf("\n. target_t: %f",t);
+          PhyML_Printf("\n. disk->time: %f t: %f start: %f",disk?disk->time:+1.,t,target_disk->ldsk->prev->disk->time);
           Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
         }
     }
@@ -5866,8 +5874,13 @@ void MCMC_MIGREP_Insert_Hit(t_tree *tree)
   /* which case the likelihood is zero */
   if(MIGREP_Is_In_Disk(young_ldsk->coord,old_ldsk->disk,tree->mmod) == NO) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   
-  if(old_ldsk->disk->time > young_ldsk->disk->time) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-  
+  if(old_ldsk->disk->time > young_ldsk->disk->time) 
+    {
+      PhyML_Printf("\n. young_ldsk: %f",young_ldsk->disk->time);
+      PhyML_Printf("\n. old_ldsk: %f",old_ldsk->disk->time);
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
+
   /* Direction from old to young ldsk */
   dir_old_young = MIGREP_Get_Next_Direction(young_ldsk,old_ldsk);
   
