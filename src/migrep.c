@@ -164,8 +164,8 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height, int r_s
 
   tree->mmod = mmod;
     
-  MIGREP_Simulate_Backward_Core(tree);
-  /* MIGREP_Simulate_Forward_Core(tree); */
+  /* MIGREP_Simulate_Backward_Core(YES,tree); */
+  MIGREP_Simulate_Forward_Core(tree);
 
   MIGREP_Ldsk_To_Tree(tree);  
 
@@ -196,7 +196,7 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height, int r_s
 ////////////////////////////////////////////////////////////*/
 // Simulate Etheridge-Barton model backwards in time, following n_otu lineages
 // on a rectangle of dimension width x height
-void MIGREP_Simulate_Backward_Core(t_tree *tree)
+void MIGREP_Simulate_Backward_Core(int new_loc, t_tree *tree)
 {
   t_dsk *disk;
   t_ldsk *new_ldsk,**ldsk_a,**ldsk_a_tmp;
@@ -208,33 +208,47 @@ void MIGREP_Simulate_Backward_Core(t_tree *tree)
   n_dim = tree->mmod->n_dim;
   n_otu = tree->n_otu;
 
-  disk = MIGREP_Make_Disk_Event(n_dim,n_otu);
-  MIGREP_Init_Disk_Event(disk,n_dim,NULL);
-
-  disk->time             = 0.0;
-  disk->mmod             = mmod;
-  disk->centr->lonlat[0] = .5*mmod->lim->lonlat[0];
-  disk->centr->lonlat[1] = .5*mmod->lim->lonlat[1];      
-  disk->n_ldsk_a         = n_otu;  
-  tree->disk             = disk;
-
-  /* Allocate coordinates for all the tips first (will grow afterwards) */
-  ldsk_a = (t_ldsk **)mCalloc(n_otu,sizeof(t_ldsk *));
-  For(i,n_otu) 
+  if(new_loc == YES)
     {
-      ldsk_a[i] = MIGREP_Make_Lindisk_Node(n_dim);
-      MIGREP_Init_Lindisk_Node(ldsk_a[i],disk,n_dim);
+      disk = MIGREP_Make_Disk_Event(n_dim,n_otu);
+      MIGREP_Init_Disk_Event(disk,n_dim,NULL);
+      disk->time             = 0.0;
+      disk->mmod             = mmod;
+      disk->centr->lonlat[0] = .5*mmod->lim->lonlat[0];
+      disk->centr->lonlat[1] = .5*mmod->lim->lonlat[1];      
+      disk->n_ldsk_a         = n_otu;  
+      tree->disk             = disk;
     }
-
-  /* Generate coordinates for the tip nodes (uniform distribution on the rectangle) */
-  For(i,n_otu)
+  else
     {
-      ldsk_a[i]->coord->lonlat[0] = Uni()*tree->mmod->lim->lonlat[0];  // longitude
-      ldsk_a[i]->coord->lonlat[1] = Uni()*tree->mmod->lim->lonlat[1]; // latitude
+      disk = tree->disk;
     }
 
 
-  disk->ldsk_a = ldsk_a;
+  if(new_loc == YES)
+    {
+      /* Allocate coordinates for all the tips first (will grow afterwards) */
+      ldsk_a = (t_ldsk **)mCalloc(n_otu,sizeof(t_ldsk *));
+      For(i,n_otu) 
+        {
+          ldsk_a[i] = MIGREP_Make_Lindisk_Node(n_dim);
+          MIGREP_Init_Lindisk_Node(ldsk_a[i],disk,n_dim);
+        }
+      
+      /* Generate coordinates for the tip nodes (uniform distribution on the rectangle) */
+      For(i,n_otu)
+        {
+          ldsk_a[i]->coord->lonlat[0] = Uni()*tree->mmod->lim->lonlat[0];  // longitude
+          ldsk_a[i]->coord->lonlat[1] = Uni()*tree->mmod->lim->lonlat[1]; // latitude
+        }
+      
+      disk->ldsk_a = ldsk_a;
+    }
+  else
+    {
+      ldsk_a = disk->ldsk_a;
+    }
+
 
   /* Allocate and initialise for next event */
   disk->prev = MIGREP_Make_Disk_Event(n_dim,n_otu);
@@ -881,7 +895,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   tree->mmod->rad  = Uni()*(4.0 - 2.0) + 2.0;
 
   /* Random genealogy */
-  MIGREP_Simulate_Backward_Core(tree);
+  MIGREP_Simulate_Backward_Core(NO,tree);
 
   MIGREP_Lk(tree);
   Lk(NULL,tree);
@@ -898,7 +912,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   PhyML_Fprintf(fp_stats,"\n# start mu: %f",tree->mmod->mu);
   PhyML_Fprintf(fp_stats,"\n# start rad: %f",tree->mmod->rad);
 
-  PhyML_Fprintf(fp_stats,"\n %13s %13s %13s %13s %13s %13s %13s %13s %13s %13s %13s %13s %13s %13s",
+  PhyML_Fprintf(fp_stats,"\n %13s %13s %13s %13s %13s %13s %13s %13s %13s %13s %13s %13s %13s %13s %13s",
                 "run",
                 "alnL",
                 "glnL",
