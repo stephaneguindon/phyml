@@ -557,7 +557,7 @@ void Make_Custom_Model(t_mod *mod)
 {
   if(!mod->r_mat)
     {
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 
@@ -641,6 +641,7 @@ t_mod *Make_Model_Basic()
 
 void Make_Model_Complete(t_mod *mod)
 {
+
   if(mod->use_m4mod == YES)
     {
       M4_Make_Complete(mod->m4mod->n_h,mod->m4mod->n_o,mod->m4mod);
@@ -1412,6 +1413,17 @@ void MIGREP_Make_Lindisk_Next(t_ldsk *t)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+t_poly *Make_Poly(int n)
+{
+  t_poly *p;
+  int i;
+  p = (t_poly *)mCalloc(1,sizeof(t_poly));
+  p->poly_vert = (t_geo_coord **)mCalloc(n,sizeof(t_geo_coord *));
+  For(i,n) p->poly_vert[i] = GEO_Make_Geo_Coord(2);
+  return(p);
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

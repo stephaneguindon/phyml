@@ -35,10 +35,10 @@ int MIGREP_Main(int argc, char *argv[])
   printf("\n. seed: %d",seed);
   srand(seed);
 
-
   strcpy(s,"migrep.out");
   sprintf(s+strlen(s),".%d",pid);
-  fp_out = Openfile(s,WRITE);
+  /* fp_out = Openfile(s,WRITE); */
+  fp_out = stderr;
 
   PhyML_Fprintf(fp_out,"\n# TrueLbda\t TrueMu\t TrueRad\t TrueXroot\t TrueYroot\t Lbda5\t Lbda50\t Lbda95\t Mu5\t Mu50\t Mu95\t Rad5\t Rad50\t Rad95\t Xroot5\t Xroot50\t Xroot95\t Yroot5\t Yroot50\t Yroot95\t ");
 
@@ -394,16 +394,17 @@ void MIGREP_Simulate_Forward_Core(t_tree *tree)
 {
   t_dsk *disk;
   t_ldsk *new_ldsk,**ldsk_a_pop,**ldsk_a_samp,**ldsk_a_tmp,**ldsk_a_tips;
-  int i,j,n_disk,n_dim,n_otu,pop_size,parent_id,n_lineages;
+  int i,j,n_disk,n_dim,n_otu,pop_size,parent_id,n_lineages,sample_size;
   phydbl dt_dsk,curr_t,sum,*parent_prob,prob_death,tree_height;
   short int dies,n_remain;
   t_migrep_mod *mmod;
-  
+  t_poly *poly;
+
   mmod     = tree->mmod;
   n_dim    = tree->mmod->n_dim;
   n_otu    = tree->n_otu;
   /* pop_size = (int)(tree->mmod->rho * tree->mmod->lim->lonlat[0] * tree->mmod->lim->lonlat[1]); */
-  pop_size = 50*n_otu;
+  pop_size = 100*n_otu;
 
   printf("\n. pop_size: %d",pop_size);
 
@@ -536,13 +537,42 @@ void MIGREP_Simulate_Forward_Core(t_tree *tree)
   For(i,pop_size) ldsk_a_pop[i]->disk = disk;
 
 
-  /* Sample individuals (take the first n_otu ldsk within ldsk_a_pop array) */  
   /* Allocate coordinates for all the tips first (will grow afterwards) */
   ldsk_a_samp = (t_ldsk **)mCalloc(n_otu,sizeof(t_ldsk *));
   ldsk_a_tips = (t_ldsk **)mCalloc(n_otu,sizeof(t_ldsk *));
   ldsk_a_tmp  = (t_ldsk **)mCalloc(n_otu,sizeof(t_ldsk *));
 
-  For(i,n_otu) ldsk_a_samp[i] = ldsk_a_pop[i];
+  /* Sample individuals (take the first n_otu ldsk within ldsk_a_pop array) */  
+  /* For(i,n_otu) ldsk_a_samp[i] = ldsk_a_pop[i]; */
+
+  poly = Rpoly(5);
+  For(i,poly->n_poly_vert) 
+    {
+      poly->poly_vert[i]->lonlat[0] *= mmod->lim->lonlat[0]*0.5;
+      poly->poly_vert[i]->lonlat[1] *= mmod->lim->lonlat[1]*0.5;
+      PhyML_Printf("\n# Sampling == polygon vertex @ (%f; %f)",
+                   poly->poly_vert[i]->lonlat[0],
+                   poly->poly_vert[i]->lonlat[1]);
+    }
+
+  sample_size = 0;
+  For(i,pop_size)
+    {
+      if(MIGREP_Is_In_Polygon(ldsk_a_pop[i]->coord,poly) == YES)
+        {
+          ldsk_a_samp[sample_size] = ldsk_a_pop[i];
+          sample_size++;
+          if(sample_size == n_otu) break;
+        }
+    }
+  
+  if(i == pop_size)
+    {
+      PhyML_Printf("\n== Not enough individuals in that polygon (only %d found).",sample_size);
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);      
+    }
+
+
   For(i,n_otu) ldsk_a_tips[i] = ldsk_a_samp[i];
   
   tree->disk             = disk;
@@ -2492,6 +2522,41 @@ phydbl *MIGREP_Mean_Pairwise_Distance_Between_Lineage_Locations(t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+int MIGREP_Is_In_Polygon(t_geo_coord *point, t_poly *poly)
+{
+  int i;
+  phydbl x,y,x1,y1,x2,y2;
+  phydbl x_intersect;
+  short int is_in;
+
+  /* Coordinates of the point to test */
+  x = point->lonlat[0];
+  y = point->lonlat[1];
+
+  is_in = NO;
+  For(i,poly->n_poly_vert-1)
+    {
+      /* Edge of polygon goes from (x1,y1) to (x2,y2) */
+      x1 = poly->poly_vert[i]->lonlat[0];
+      y1 = poly->poly_vert[i]->lonlat[1];
+      x2 = poly->poly_vert[i+1]->lonlat[0];
+      y2 = poly->poly_vert[i+1]->lonlat[1];
+
+      /* Shoot an horizontal ray to the right. Find out if
+         this ray hits the polygon edge */
+      if((y1 < y && y2 > y) || (y2 < y && y1 > y))
+        {
+          /* Coordinates along X-axis of the intersection between ray and edge */
+          x_intersect = (y-y1)/(y1-y2)*(x1-x2)+x1;  
+          if(x_intersect > x) /* Intersection is on the righthand side */
+            is_in = (is_in == YES)?NO:YES;
+        }
+    }
+
+  return is_in;
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

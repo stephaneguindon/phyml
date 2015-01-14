@@ -70,5 +70,6 @@ t_migrep_mod *MIGREP_Make_Migrep_Model();
 t_dsk *MIGREP_Make_Disk_Event(int n_dim, int n_otu);
 t_ldsk *MIGREP_Make_Lindisk_Node(int n_dim);
 void MIGREP_Make_Lindisk_Next(t_ldsk *t);
+t_poly *Make_Poly(int n);
 
 #endif

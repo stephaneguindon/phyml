@@ -4642,6 +4642,12 @@ int *Random_Permut(int n)
   int i,j;
   int tmp;
 
+  if(n < 3) 
+    {
+      PhyML_Printf("\n== Number of vertices in a polygon has to be at least 3.");
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
+    
   permut = (int *)mCalloc(n,sizeof(int));
 
   For(i,n) permut[i] = i;
@@ -4660,5 +4666,21 @@ int *Random_Permut(int n)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+/* Generate a random polygon with n vertices. Each point lies in [0,1] */
+t_poly *Rpoly(int n)
+{
+  t_poly *p;
+  int i;
 
+  p = (t_poly *)Make_Poly(n);  
+  p->n_poly_vert = n;
+  
+  For(i,n)
+    {
+      p->poly_vert[i]->lonlat[0] = Uni();
+      p->poly_vert[i]->lonlat[1] = Uni();
+    }
+  
+  return(p);
+}
 

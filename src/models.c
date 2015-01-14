@@ -634,12 +634,10 @@ void Update_Qmat_Generic(phydbl *rr, phydbl *pi, int ns, phydbl *qmat)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Update_Qmat_GTR(phydbl *rr, phydbl *rr_val, int *rr_num, phydbl *pi, phydbl *qmat)
 {
   int i;
   phydbl mr;
-
 
   For(i,6) rr[i] = rr_val[rr_num[i]];
   For(i,6)
@@ -677,7 +675,7 @@ void Update_Qmat_GTR(phydbl *rr, phydbl *rr_val, int *rr_num, phydbl *pi, phydbl
 
   /* compute diagonal terms of Q and mean rate mr = l/t */
   mr = .0;
-  For (i,4) mr += pi[i] * (-qmat[i*4+i]);
+  For(i,4) mr += pi[i] * (-qmat[i*4+i]);
   For(i,16) qmat[i] /= mr;
 
   /* int j; */
@@ -766,9 +764,9 @@ void Translate_Custom_Mod_String(t_mod *mod)
       mod->r_mat->n_rr_per_cat->v[mod->r_mat->rr_num->v[j]]++;
     }
   
-  /*   PhyML_Printf("\n"); */
-  /*   For(i,6) PhyML_Printf("%d ",mod->rr_param_num[i]); */
-  /*   For(i,mod->n_diff_rr_param) PhyML_Printf("\n. Class %d size %d",i+1,mod->r_mat->n_rr_param_per_cat[i]); */
+    /* PhyML_Printf("\n"); */
+    /* For(i,6) PhyML_Printf("%d ",mod->r_mat->rr_num->v[i]); */
+    /* For(i,mod->r_mat->n_diff_rr) PhyML_Printf("\n. Class %d size %d",i+1,mod->r_mat->n_rr_per_cat->v[i]); */
 }
 
 //////////////////////////////////////////////////////////////

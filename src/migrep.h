@@ -67,5 +67,6 @@ void MIGREP_Remove_Lindisk_Next(t_ldsk *ldsk, t_ldsk *rm);
 void MIGREP_Simulate_Backward_Core(int new_loc, t_tree *tree);
 phydbl *MIGREP_Mean_Pairwise_Distance_Between_Lineage_Locations(t_tree *tree);
 void MIGREP_Simulate_Forward_Core(t_tree *tree);
+int MIGREP_Is_In_Polygon(t_geo_coord *point, t_poly *poly);
 
 #endif

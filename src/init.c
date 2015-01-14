@@ -1041,17 +1041,25 @@ void Init_Model(calign *data, t_mod *mod, option *io)
           mod->lambda->v = 1.0;
         }
       
-      /* if(mod->s_opt->opt_rr) */
-      if(mod->whichmodel == GTR || mod->whichmodel == CUSTOM)
+      if(mod->whichmodel == CUSTOM)
         {
-          mod->r_mat->rr->v[AC]     = 1.0;
-          mod->r_mat->rr->v[AG]     = 4.0;
-          mod->r_mat->rr->v[AT]     = 1.0;
-          mod->r_mat->rr->v[CG]     = 1.0;
-          mod->r_mat->rr->v[CT]     = 4.0;
-          mod->r_mat->rr->v[GT]     = 1.0;
+          For(i,6) mod->r_mat->rr_val->v[i] = 1.0;
 
-          For(i,6) mod->r_mat->rr_val->v[i] = mod->r_mat->rr->v[i];
+          /* Condition below is true for if custom model corresponds to TN93 or K80 */
+          if(mod->r_mat->rr_num->v[AC] == mod->r_mat->rr_num->v[AT] &&
+             mod->r_mat->rr_num->v[AT] == mod->r_mat->rr_num->v[CG] &&
+             mod->r_mat->rr_num->v[CG] == mod->r_mat->rr_num->v[GT] &&
+             mod->r_mat->rr_num->v[AG] != mod->r_mat->rr_num->v[AC] &&
+             mod->r_mat->rr_num->v[CT] != mod->r_mat->rr_num->v[AC]) 
+            {
+              for(i=1;i<mod->r_mat->n_diff_rr;i++) mod->r_mat->rr_val->v[i] = 4.0;          
+            }    
+        }
+      else if(mod->whichmodel == GTR)
+        {
+          For(i,6) mod->r_mat->rr_val->v[i] = 1.0;
+          mod->r_mat->rr_val->v[AG] = 4.0;
+          mod->r_mat->rr_val->v[CT] = 4.0;
         }
     }
   
@@ -1086,20 +1094,20 @@ void Init_Model(calign *data, t_mod *mod, option *io)
       if(mod->whichmodel == F81)
         {
           mod->kappa->v = 1.;
-          mod->update_eigen          = NO;
+          mod->update_eigen = NO;
         }
       
       if(mod->whichmodel == F84)
         {
           aux = ((mod->e_frq->pi->v[0]+mod->e_frq->pi->v[2])-(mod->e_frq->pi->v[1]+mod->e_frq->pi->v[3]))/(2.*mod->kappa->v);
           mod->lambda->v = ((mod->e_frq->pi->v[1]+mod->e_frq->pi->v[3]) + aux)/((mod->e_frq->pi->v[0]+mod->e_frq->pi->v[2]) - aux);
-          mod->update_eigen          = NO;
+          mod->update_eigen = NO;
         }
       
       if(mod->whichmodel == TN93)
         {
-          mod->update_eigen          = NO;
-          if(io->mod->s_opt->opt_kappa) io->mod->s_opt->opt_lambda = 1;
+          mod->update_eigen = NO;
+          if(io->mod->s_opt->opt_kappa) io->mod->s_opt->opt_lambda = YES;
         }
       
       if(mod->whichmodel == GTR)

@@ -110,5 +110,6 @@ void Random_String(char *s, int len);
 int *Random_Permut(int n);
 phydbl Dexp_Trunc(phydbl x, phydbl lambda, phydbl left, phydbl rght);
 phydbl Rexp_Trunc(phydbl lambda, phydbl left, phydbl rght);
+t_poly *Rpoly(int n);
 
 #endif

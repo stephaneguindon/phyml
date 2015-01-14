@@ -459,33 +459,31 @@ calign *Compact_Cdata(calign *data, option *io)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Traverse_Prefix_Tree(int site, int seqnum, int *patt_num, int *n_patt, align **data, option *io, pnode *n)
 {
   if(seqnum == io->n_otu-1)
     {
       n->weight++;
       if(n->weight == 1)
-    {
-      n->num = *n_patt;
-      (*n_patt) += 1;
-    }
+        {
+          n->num = *n_patt;
+          (*n_patt) += 1;
+        }
       (*patt_num) = n->num;
       return;
     }
   else
     {
       int next_state;
-
+      
       next_state = -1;
       next_state = Assign_State_With_Ambiguity(data[seqnum+1]->state+site,
-                           io->datatype,
-                           io->state_len);
-
+                                               io->datatype,
+                                               io->state_len);
+      
       if(!n->next[next_state]) n->next[next_state] = Create_Pnode(T_MAX_ALPHABET);
       Traverse_Prefix_Tree(site,seqnum+1,patt_num,n_patt,data,io,n->next[next_state]);
     }
-
 }
 
 //////////////////////////////////////////////////////////////
@@ -2649,88 +2647,88 @@ int Assign_State_With_Ambiguity(char *c, int datatype, int stepsize)
   if(datatype == NT)
     {
       For(i,stepsize)
-    {
-      switch(c[i])
         {
-        case 'A' : {state[i]= 0;  break;}
-        case 'C' : {state[i]= 1;  break;}
-        case 'G' : {state[i]= 2;  break;}
-        case 'T' : {state[i]= 3;  break;}
-        case 'U' : {state[i]= 3;  break;}
-        case 'M' : {state[i]= 4;  break;}
-        case 'R' : {state[i]= 5;  break;}
-        case 'W' : {state[i]= 6;  break;}
-        case 'S' : {state[i]= 7;  break;}
-        case 'Y' : {state[i]= 8;  break;}
-        case 'K' : {state[i]= 9;  break;}
-        case 'B' : {state[i]=10;  break;}
-        case 'D' : {state[i]=11;  break;}
-        case 'H' : {state[i]=12;  break;}
-        case 'V' : {state[i]=13;  break;}
-        case 'N' : case 'X' : case '?' : case 'O' : case '-' : {state[i]=T_MAX_ALPHABET-1;  break;}
-        default :
-          {
-        PhyML_Printf("\n. Unknown character state : '%c'\n",c[i]);
-        Warn_And_Exit("\n. Init failed (data type supposed to be DNA)\n");
-        break;
-          }
+          switch(c[i])
+            {
+            case 'A' : {state[i]= 0;  break;}
+            case 'C' : {state[i]= 1;  break;}
+            case 'G' : {state[i]= 2;  break;}
+            case 'T' : {state[i]= 3;  break;}
+            case 'U' : {state[i]= 3;  break;}
+            case 'M' : {state[i]= 4;  break;}
+            case 'R' : {state[i]= 5;  break;}
+            case 'W' : {state[i]= 6;  break;}
+            case 'S' : {state[i]= 7;  break;}
+            case 'Y' : {state[i]= 8;  break;}
+            case 'K' : {state[i]= 9;  break;}
+            case 'B' : {state[i]=10;  break;}
+            case 'D' : {state[i]=11;  break;}
+            case 'H' : {state[i]=12;  break;}
+            case 'V' : {state[i]=13;  break;}
+            case 'N' : case 'X' : case '?' : case 'O' : case '-' : {state[i]=T_MAX_ALPHABET-1;  break;}
+            default :
+              {
+                PhyML_Printf("\n== Unknown character state : '%c'\n",c[i]);
+                Warn_And_Exit("\n== Init failed (data type supposed to be DNA)\n");
+                break;
+              }
+            }
+          return (stepsize>1)?(state[0]*16+state[1]*4+state[2]):(state[0]);
         }
-      return (stepsize>1)?(state[0]*16+state[1]*4+state[2]):(state[0]);
-    }
     }
   else if(datatype == AA)
     {
       switch(c[0])
-    {
-    case 'A' : {state[0]= 0; break;}
-    case 'R' : {state[0]= 1; break;}
-    case 'N' : {state[0]= 2; break;}
-    case 'D' : {state[0]= 3; break;}
-    case 'C' : {state[0]= 4; break;}
-    case 'Q' : {state[0]= 5; break;}
-    case 'E' : {state[0]= 6; break;}
-    case 'G' : {state[0]= 7; break;}
-    case 'H' : {state[0]= 8; break;}
-    case 'I' : {state[0]= 9; break;}
-    case 'L' : {state[0]=10; break;}
-    case 'K' : {state[0]=11; break;}
-    case 'M' : {state[0]=12; break;}
-    case 'F' : {state[0]=13; break;}
-    case 'P' : {state[0]=14; break;}
-    case 'S' : {state[0]=15; break;}
-    case 'T' : {state[0]=16; break;}
-    case 'W' : {state[0]=17; break;}
-    case 'Y' : {state[0]=18; break;}
-    case 'V' : {state[0]=19; break;}
-    case 'B' : {state[0]= 2; break;}
-    case 'Z' : {state[0]= 5; break;}
-    case 'X' : case '?' : case '-' : {state[0]=T_MAX_ALPHABET-1; break;}
-    default  :
-      {
-        PhyML_Printf("\n. Unknown character state : %c\n",state[0]);
-        Warn_And_Exit("\n. Init failed (data type supposed to be amino-acids)\n");
-        break;
-      }
-    }
+        {
+        case 'A' : {state[0]= 0; break;}
+        case 'R' : {state[0]= 1; break;}
+        case 'N' : {state[0]= 2; break;}
+        case 'D' : {state[0]= 3; break;}
+        case 'C' : {state[0]= 4; break;}
+        case 'Q' : {state[0]= 5; break;}
+        case 'E' : {state[0]= 6; break;}
+        case 'G' : {state[0]= 7; break;}
+        case 'H' : {state[0]= 8; break;}
+        case 'I' : {state[0]= 9; break;}
+        case 'L' : {state[0]=10; break;}
+        case 'K' : {state[0]=11; break;}
+        case 'M' : {state[0]=12; break;}
+        case 'F' : {state[0]=13; break;}
+        case 'P' : {state[0]=14; break;}
+        case 'S' : {state[0]=15; break;}
+        case 'T' : {state[0]=16; break;}
+        case 'W' : {state[0]=17; break;}
+        case 'Y' : {state[0]=18; break;}
+        case 'V' : {state[0]=19; break;}
+        case 'B' : {state[0]= 2; break;}
+        case 'Z' : {state[0]= 5; break;}
+        case 'X' : case '?' : case '-' : {state[0]=T_MAX_ALPHABET-1; break;}
+        default  :
+          {
+            PhyML_Printf("\n== Unknown character state : %c\n",state[0]);
+            Warn_And_Exit("\n== Init failed (data type supposed to be amino-acids)\n");
+            break;
+          }
+        }
       return state[0];
     }
   else if(datatype == GENERIC)
     {
       if(Is_Ambigu(c,GENERIC,stepsize)) state[0] = T_MAX_ALPHABET-1;
       else
-    {
-      char format[6];
-      sprintf(format,"%%%dd",stepsize);
-      if(!sscanf(c,format,state))
         {
-          PhyML_Printf("\n== Error reading character. Was expecting an integer, got '%c' instead.\n",c[0]);
-          PhyML_Printf("\n== Err in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
-          Warn_And_Exit("");
+          char format[6];
+          sprintf(format,"%%%dd",stepsize);
+          if(!sscanf(c,format,state))
+            {
+              PhyML_Printf("\n== Error reading character. Was expecting an integer, got '%c' instead.\n",c[0]);
+              PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
+              Warn_And_Exit("");
+            }
         }
-    }
       return state[0];
     }
-
+  
   return -1;
 }
 
