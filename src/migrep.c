@@ -946,9 +946,9 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   /* tree->mmod->lbda = Uni()*(tree->mmod->max_lbda - tree->mmod->min_lbda) + tree->mmod->min_lbda; */
   /* tree->mmod->mu   = Uni()*(tree->mmod->max_mu - tree->mmod->min_mu) + tree->mmod->min_mu; */
   /* tree->mmod->rad  = Uni()*(tree->mmod->max_rad - tree->mmod->min_rad) + tree->mmod->min_rad; */
-  tree->mmod->lbda = Uni()*(0.2 - 0.1) + 0.1;
-  tree->mmod->mu   = Uni()*(1.0 - 0.7) + 0.7;
-  tree->mmod->rad  = Uni()*(4.0 - 2.0) + 2.0;
+  tree->mmod->lbda = Uni()*(0.30 - 0.05) + 0.05;
+  tree->mmod->mu   = Uni()*(1.00 - 0.30) + 0.30;
+  tree->mmod->rad  = Uni()*(7.00 - 0.50) + 0.50;
 
   /* Random genealogy */
   MIGREP_Simulate_Backward_Core(NO,tree);
@@ -1087,9 +1087,9 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       /*     Free(s); */
       /*   } */
 
-      if(tree->mcmc->ess[tree->mcmc->num_move_migrep_lbda] > 500. &&
-         tree->mcmc->ess[tree->mcmc->num_move_migrep_mu]   > 500. &&
-         tree->mcmc->ess[tree->mcmc->num_move_migrep_rad]  > 500.) break;      
+      if(tree->mcmc->ess[tree->mcmc->num_move_migrep_lbda] > 100. &&
+         tree->mcmc->ess[tree->mcmc->num_move_migrep_mu]   > 100. &&
+         tree->mcmc->ess[tree->mcmc->num_move_migrep_rad]  > 100.) break;      
     }
   while(tree->mcmc->run < tree->mcmc->chain_len);
 
