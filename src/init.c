@@ -1053,7 +1053,12 @@ void Init_Model(calign *data, t_mod *mod, option *io)
              mod->r_mat->rr_num->v[CT] != mod->r_mat->rr_num->v[AC]) 
             {
               for(i=1;i<mod->r_mat->n_diff_rr;i++) mod->r_mat->rr_val->v[i] = 4.0;          
-            }    
+            }
+          else if(mod->r_mat->n_diff_rr == 6) /* Custom <-> GTR model */
+            {
+              mod->r_mat->rr_val->v[AG] = 4.0;
+              mod->r_mat->rr_val->v[CT] = 4.0;
+            }
         }
       else if(mod->whichmodel == GTR)
         {
