@@ -153,14 +153,13 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height, int r_s
   mmod->lim->lonlat[1] = height;
   
   /* Initialize parameters of migrep model */
-  /* mmod->lbda = Uni()*(0.3 - 0.05) + 0.05; */
-  /* mmod->mu   = Uni()*(1.0 - 0.3)  + 0.3; */
-  /* mmod->rad  = Uni()*(5.0 - 1.5)  + 1.5; */
+  mmod->lbda = Uni()*(0.3 - 0.05) + 0.05;
+  mmod->mu   = Uni()*(1.0 - 0.3)  + 0.3;
+  mmod->rad  = Uni()*(5.0 - 1.5)  + 1.5;
   /* mmod->rho  = 100.; */
-  mmod->lbda = 0.1;
-  mmod->mu   = 0.9;
-  mmod->rad  = 2.0;
-
+  /* mmod->lbda = 0.1; */
+  /* mmod->mu   = 0.6; */
+  /* mmod->rad  = 7.0; */
 
   tree->mmod = mmod;
     
@@ -394,11 +393,11 @@ void MIGREP_Simulate_Forward_Core(t_tree *tree)
 {
   t_dsk *disk;
   t_ldsk *new_ldsk,**ldsk_a_pop,**ldsk_a_samp,**ldsk_a_tmp,**ldsk_a_tips;
-  int i,j,n_disk,n_dim,n_otu,pop_size,parent_id,n_lineages,sample_size;
-  phydbl dt_dsk,curr_t,sum,*parent_prob,prob_death,tree_height;
+  int i,j,n_disk,n_dim,n_otu,pop_size,parent_id,n_lineages,sample_size,n_poly;
+  phydbl dt_dsk,curr_t,sum,*parent_prob,prob_death,tree_height,max_x,max_y,trans_x,trans_y;
   short int dies,n_remain;
   t_migrep_mod *mmod;
-  t_poly *poly;
+  t_poly **poly;
 
   mmod     = tree->mmod;
   n_dim    = tree->mmod->n_dim;
@@ -471,7 +470,7 @@ void MIGREP_Simulate_Forward_Core(t_tree *tree)
 
       /* printf("\n. Disk %s has %s on it",disk->id,ldsk_a_pop[parent_id]->coord->id); */
 
-    /* Which lineages die in that event? Each lineage that dies off is being replaced
+      /* Which lineages die in that event? Each lineage that dies off is being replaced
          with a new one which location is chosen randomly following the model */
       For(i,pop_size)
         {
@@ -514,6 +513,7 @@ void MIGREP_Simulate_Forward_Core(t_tree *tree)
 
               /* Replace dead individual (thus, number of birth == number of death) */
               ldsk_a_pop[i] = new_ldsk;
+
             }
         }
 
@@ -532,7 +532,7 @@ void MIGREP_Simulate_Forward_Core(t_tree *tree)
       disk->time = curr_t;
       disk->mmod = mmod;
     }
-  while(n_disk < 100);
+  while(n_disk < 5000);
 
   For(i,pop_size) ldsk_a_pop[i]->disk = disk;
 
@@ -545,30 +545,56 @@ void MIGREP_Simulate_Forward_Core(t_tree *tree)
   /* Sample individuals (take the first n_otu ldsk within ldsk_a_pop array) */  
   /* For(i,n_otu) ldsk_a_samp[i] = ldsk_a_pop[i]; */
 
-  poly = Rpoly(5);
-  For(i,poly->n_poly_vert) 
-    {
-      poly->poly_vert[i]->lonlat[0] *= mmod->lim->lonlat[0]*0.5;
-      poly->poly_vert[i]->lonlat[1] *= mmod->lim->lonlat[1]*0.5;
-      PhyML_Printf("\n# Sampling == polygon vertex @ (%f; %f)",
-                   poly->poly_vert[i]->lonlat[0],
-                   poly->poly_vert[i]->lonlat[1]);
+  n_poly = 2;
+
+  poly = (t_poly **)mCalloc(n_poly,sizeof(t_poly *));
+  For(i,n_poly) poly[i] = Rpoly(4);
+  For(i,n_poly)
+    {      
+      For(j,poly[i]->n_poly_vert) 
+        {
+          poly[i]->poly_vert[j]->lonlat[0] *= mmod->lim->lonlat[0]*0.5;
+          poly[i]->poly_vert[j]->lonlat[1] *= mmod->lim->lonlat[1]*0.5;
+        }
+      
+      max_x = 0.0;
+      max_y = 0.0;
+      For(j,poly[i]->n_poly_vert) 
+        {
+          if(poly[i]->poly_vert[j]->lonlat[0] > max_x) max_x = poly[i]->poly_vert[j]->lonlat[0];
+          if(poly[i]->poly_vert[j]->lonlat[1] > max_y) max_y = poly[i]->poly_vert[j]->lonlat[1];
+        }
+
+      trans_x = Uni()*(mmod->lim->lonlat[0] - max_x);
+      trans_y = Uni()*(mmod->lim->lonlat[1] - max_y);
+
+      For(j,poly[i]->n_poly_vert) 
+        {
+          poly[i]->poly_vert[j]->lonlat[0] += trans_x;
+          poly[i]->poly_vert[j]->lonlat[1] += trans_y;
+          PhyML_Printf("\n# Sampling == polygon %d vertex @ (%f; %f)",
+                       i,
+                       poly[i]->poly_vert[j]->lonlat[0],
+                       poly[i]->poly_vert[j]->lonlat[1]);
+        }
     }
 
   sample_size = 0;
   For(i,pop_size)
     {
-      if(MIGREP_Is_In_Polygon(ldsk_a_pop[i]->coord,poly) == YES)
+      j = Rand_Int(0,n_poly-1);
+      
+      if(MIGREP_Is_In_Polygon(ldsk_a_pop[i]->coord,poly[j]) == YES)
         {
           ldsk_a_samp[sample_size] = ldsk_a_pop[i];
           sample_size++;
-          if(sample_size == n_otu) break;
+          if(sample_size == n_otu) break;        
         }
     }
   
   if(i == pop_size)
     {
-      PhyML_Printf("\n== Not enough individuals in that polygon (only %d found).",sample_size);
+      PhyML_Printf("\n== Not enough individuals in polygon(s) (only %d found).",sample_size);
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);      
     }
 
