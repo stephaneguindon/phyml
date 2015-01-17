@@ -37,8 +37,8 @@ int MIGREP_Main(int argc, char *argv[])
 
   strcpy(s,"migrep.out");
   sprintf(s+strlen(s),".%d",pid);
-  /* fp_out = Openfile(s,WRITE); */
-  fp_out = stderr;
+  fp_out = Openfile(s,WRITE);
+  /* fp_out = stderr; */
 
   PhyML_Fprintf(fp_out,"\n# TrueLbda\t TrueMu\t TrueRad\t TrueXroot\t TrueYroot\t Lbda5\t Lbda50\t Lbda95\t Mu5\t Mu50\t Mu95\t Rad5\t Rad50\t Rad95\t Xroot5\t Xroot50\t Xroot95\t Yroot5\t Yroot50\t Yroot95\t ");
 
