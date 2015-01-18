@@ -40,6 +40,8 @@ int MIGREP_Main(int argc, char *argv[])
   fp_out = Openfile(s,WRITE);
   /* fp_out = stderr; */
 
+  setvbuf(fp_out,NULL,_IOFBF,1024);
+
   PhyML_Fprintf(fp_out,"\n# TrueLbda\t TrueMu\t TrueRad\t TrueXroot\t TrueYroot\t Lbda5\t Lbda50\t Lbda95\t Mu5\t Mu50\t Mu95\t Rad5\t Rad50\t Rad95\t Xroot5\t Xroot50\t Xroot95\t Yroot5\t Yroot50\t Yroot95\t ");
 
   tree = MIGREP_Simulate_Backward((int)atoi(argv[1]),10.,10.,seed);
