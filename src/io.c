@@ -5601,7 +5601,7 @@ void PhyML_XML(char *xml_filename)
       do
         {
           if(tree != mixt_tree) Copy_Tree(mixt_tree,tree);
-          Connect_CSeqs_To_Nodes(tree->data,tree);
+          Connect_CSeqs_To_Nodes(tree->data,io,tree);
           tree = tree->next;
         }
       while(tree);

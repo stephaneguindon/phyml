@@ -198,6 +198,7 @@ int main(int argc, char **argv)
                       Exit("\n");
                     }
 
+
                   Prepare_Tree_For_Lk(tree);
                   Br_Len_Not_Involving_Invar(tree);
                   Unscale_Br_Len_Multiplier_Tree(tree);

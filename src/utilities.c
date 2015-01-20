@@ -2856,7 +2856,7 @@ void Bootstrap(t_tree *tree)
 
       if((boot_tree->mod->s_opt->random_input_tree) && (boot_tree->mod->s_opt->topo_search == SPR_MOVE)) Random_Tree(boot_tree);
 
-      Connect_CSeqs_To_Nodes(boot_data,boot_tree);
+      Connect_CSeqs_To_Nodes(boot_data,tree->io,boot_tree);
 
       Check_Br_Lens(boot_tree);
       Share_Lk_Struct(tree,boot_tree);
@@ -7564,7 +7564,6 @@ t_tree *Dist_And_BioNJ(calign *cdata, t_mod *mod, option *io)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Add_BioNJ_Branch_Lengths(t_tree *tree, calign *cdata, t_mod *mod)
 {
   matrix *mat;
@@ -7572,7 +7571,7 @@ void Add_BioNJ_Branch_Lengths(t_tree *tree, calign *cdata, t_mod *mod)
   PhyML_Printf("\n");
   PhyML_Printf("\n. Computing branch length estimates...\n");
 
-  Connect_CSeqs_To_Nodes(cdata,tree);
+  Connect_CSeqs_To_Nodes(cdata,mod->io,tree);
   mat = ML_Dist(cdata,mod);
   mat->tree = tree;
   mat->method = 0;
@@ -7604,7 +7603,7 @@ char *Bootstrap_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
   tree->data        = cdata;
   tree->n_pattern   = tree->data->crunch_len;
 
-  Connect_CSeqs_To_Nodes(cdata,tree);
+  Connect_CSeqs_To_Nodes(cdata,io,tree);
   if(tree->mod->s_opt->random_input_tree) Random_Tree(tree);
   Fill_Dir_Table(tree);
   Update_Dirs(tree);
@@ -7662,7 +7661,7 @@ char *aLRT_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
   tree->data        = cdata;
   tree->n_pattern   = tree->data->crunch_len;
 
-  Connect_CSeqs_To_Nodes(cdata,tree);
+  Connect_CSeqs_To_Nodes(cdata,io,tree);
   if(tree->mod->s_opt->random_input_tree) Random_Tree(tree);
   Fill_Dir_Table(tree);
   Update_Dirs(tree);
@@ -7707,7 +7706,7 @@ char *aLRT_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
 
 void Prepare_Tree_For_Lk(t_tree *tree)
 {
-  Connect_CSeqs_To_Nodes(tree->data,tree);
+  Connect_CSeqs_To_Nodes(tree->data,tree->io,tree);
   Fill_Dir_Table(tree);
   Update_Dirs(tree);
   Make_Tree_4_Pars(tree,tree->data,tree->data->init_len);
@@ -9650,19 +9649,19 @@ char *To_Upper_String(char *in)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Connect_CSeqs_To_Nodes(calign *cdata, t_tree *tree)
+void Connect_CSeqs_To_Nodes(calign *cdata, option *io, t_tree *tree)
 {
   int i,j,n_otu_tree,n_otu_cdata;
-
+  
   n_otu_tree  = tree->n_otu;
   n_otu_cdata = cdata->n_otu;
-
-  if((n_otu_tree != n_otu_cdata) && (tree->io->fp_in_constraint_tree == NULL))
+  
+  if((n_otu_tree != n_otu_cdata) && (io->fp_in_constraint_tree == NULL))
     {
       PhyML_Printf("\n== Number of taxa in the tree: %d, number of sequences: %d.",n_otu_tree,n_otu_cdata);
       Warn_And_Exit("\n== The number of tips in the tree is not the same as the number of sequences\n");
     }
-
+  
   For(i,MAX(n_otu_tree,n_otu_cdata))
     {
       For(j,MIN(n_otu_tree,n_otu_cdata))
@@ -9674,12 +9673,10 @@ void Connect_CSeqs_To_Nodes(calign *cdata, t_tree *tree)
         {
           PhyML_Printf("\n== Taxon '%s' was not found in sequence file '%s'.\n",
                        tree->a_nodes[i]->name,
-                       tree->io->in_align_file);
+                       io->in_align_file);
           Exit("\n");
-        }
-      
-      tree->a_nodes[i]->c_seq = cdata->c_seq[j];
-
+        }      
+      tree->a_nodes[i]->c_seq = cdata->c_seq[j];      
     }
 }
 
@@ -10472,15 +10469,13 @@ void Build_Distrib_Number_Of_Diff_States_Under_Model(t_tree *tree)
       Free_Model_Complete(tree->mod);
       Free_Model_Basic(tree->mod);
       
-
       tree->mod  = Copy_Model(orig_mod);
       tree->data = Copy_Cseq(orig_data,tree->io);
-
 
       tree->mod->io    = orig_mod->io;
       tree->mod->s_opt = orig_mod->s_opt;
 
-      Connect_CSeqs_To_Nodes(tree->data,tree);
+      Connect_CSeqs_To_Nodes(tree->data,tree->io,tree);
 
       iter++;
     }

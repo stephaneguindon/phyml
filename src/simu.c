@@ -335,30 +335,30 @@ void Make_N_Swap(t_tree *tree,t_edge **b, int beg, int end)
        tree);
 
       if(!Check_Topo_Constraints(tree,tree->io->cstr_tree))
-    {
-      /* Undo this swap as it violates one of the topological constraints
-         defined in the input constraint tree
-      */
-      Swap(b[i]->nni->swap_node_v2->v[tree->t_dir[b[i]->nni->swap_node_v2->num*dim+b[i]->nni->swap_node_v1->num]],
-           b[i]->nni->swap_node_v2,
-           b[i]->nni->swap_node_v3,
-           b[i]->nni->swap_node_v3->v[tree->t_dir[b[i]->nni->swap_node_v3->num*dim+b[i]->nni->swap_node_v4->num]],
-           tree);
-    }
-
+        {
+          /* Undo this swap as it violates one of the topological constraints
+             defined in the input constraint tree
+          */
+          Swap(b[i]->nni->swap_node_v2->v[tree->t_dir[b[i]->nni->swap_node_v2->num*dim+b[i]->nni->swap_node_v1->num]],
+               b[i]->nni->swap_node_v2,
+               b[i]->nni->swap_node_v3,
+               b[i]->nni->swap_node_v3->v[tree->t_dir[b[i]->nni->swap_node_v3->num*dim+b[i]->nni->swap_node_v4->num]],
+               tree);
+        }
+      
       if(tree->n_root)
-    {
-      tree->n_root->v[2] = tree->e_root->left;
-      tree->n_root->v[1] = tree->e_root->rght;
-    }
-
+        {
+          tree->n_root->v[2] = tree->e_root->left;
+          tree->n_root->v[1] = tree->e_root->rght;
+        }
+      
       orig = b[i];
       do
-    {
-      b[i]->l->v = b[i]->nni->best_l;
-      if(b[i]->next) b[i] = b[i]->next;
-      else            b[i] = b[i]->next;
-    }
+        {
+          b[i]->l->v = b[i]->nni->best_l;
+          if(b[i]->next) b[i] = b[i]->next;
+          else            b[i] = b[i]->next;
+        }
       while(b[i]);
       b[i] = orig;
 

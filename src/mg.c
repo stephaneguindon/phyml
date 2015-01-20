@@ -122,7 +122,7 @@ int PART_main(int argc, char **argv)
 	                                     treelist->tree[part]->io->state_len;
 
           Set_Both_Sides(YES,treelist->tree[part]);
-	  Connect_CSeqs_To_Nodes(cdata[part],treelist->tree[part]);
+	  Connect_CSeqs_To_Nodes(cdata[part],io->st->optionlist[part],treelist->tree[part]);
 	  Fill_Dir_Table(treelist->tree[part]);
 	  Update_Dirs(treelist->tree[part]);
 	  Make_Tree_4_Lk(treelist->tree[part],cdata[part],cdata[part]->init_len);

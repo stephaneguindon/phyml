@@ -4638,7 +4638,6 @@ void Spr_Pars(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void SPR_Shuffle(t_tree *mixt_tree)
 {
   phydbl lk_old;
@@ -4649,6 +4648,7 @@ void SPR_Shuffle(t_tree *mixt_tree)
 
   /*! Get the number of classes in each mixture */
   orig_catg = MIXT_Get_Number_Of_Classes_In_All_Mixtures(mixt_tree);
+
 
   /*! Set the number of rate classes to (at most) 2.
     ! Propagate this to every mixture tree in the analysis

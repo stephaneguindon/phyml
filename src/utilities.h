@@ -1967,7 +1967,7 @@ void Init_Vect_Int(int len,vect_int *p);
 char *To_Lower_String(char *in);
 phydbl String_To_Dbl(char *string);
 char *To_Upper_String(char *in);
-void Connect_CSeqs_To_Nodes(calign *cdata, t_tree *tree);
+void Connect_CSeqs_To_Nodes(calign *cdata, option *io, t_tree *tree);
 void Switch_Eigen(int state, t_mod *mod);
 void Joint_Proba_States_Left_Right(phydbl *Pij, phydbl *p_lk_left, phydbl *p_lk_rght,
                    vect_dbl *pi, int scale_left, int scale_rght,
