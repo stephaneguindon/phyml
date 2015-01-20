@@ -1948,8 +1948,8 @@ matrix *ML_Dist(calign *data, t_mod *mod)
   tmpdata->init_len   = data->init_len;
 
   mat = NULL;
-  if(mod->io->datatype == NT) mat = (mod->whichmodel < 10)?(K80_dist(data,1E+6)):(JC69_Dist(data,mod));
-  else if(mod->io->datatype == AA) mat = JC69_Dist(data,mod);
+  if(mod->io->datatype == NT)           mat = (mod->whichmodel < 10)?(K80_dist(data,1E+6)):(JC69_Dist(data,mod));
+  else if(mod->io->datatype == AA)      mat = JC69_Dist(data,mod);
   else if(mod->io->datatype == GENERIC) mat = JC69_Dist(data,mod);
 
   For(i,mod->ras->n_catg) /* Don't use the discrete gamma distribution */
@@ -2559,22 +2559,22 @@ phydbl Lk_Dist(phydbl *F, phydbl dist, t_mod *mod)
   For(i,mod->ns-1)
     {
       for(j=i+1;j<mod->ns;j++)
-    {
-      For(k,mod->ras->n_catg)
         {
-          lnL +=
-        (F[dim1*k+dim2*i+j] + F[dim1*k+dim2*j+i])*
-        LOG(mod->e_frq->pi->v[i] * mod->Pij_rr->v[dim1*k+dim2*i+j]);
+          For(k,mod->ras->n_catg)
+            {
+              lnL +=
+                (F[dim1*k+dim2*i+j] + F[dim1*k+dim2*j+i])*
+                LOG(mod->e_frq->pi->v[i] * mod->Pij_rr->v[dim1*k+dim2*i+j]);
               /* printf("\n. f: %f Pij:%f F:%f", */
               /*        mod->e_frq->pi->v[i],  */
               /*        mod->Pij_rr->v[dim1*k+dim2*i+j], */
               /*        F[dim1*k+dim2*j+i]); */
+            }
         }
     }
-    }
-
+  
   For(i,mod->ns) For(k,mod->ras->n_catg) lnL += F[dim1*k+dim2*i+i]* LOG(mod->e_frq->pi->v[i] * mod->Pij_rr->v[dim1*k+dim2*i+i]);
-
+  
   return lnL;
 }
 

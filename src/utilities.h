@@ -1686,6 +1686,8 @@ typedef struct __Migrep_Model{
   phydbl             soft_bound_area;
 
   struct __Geo_Coord            *lim; // max longitude and lattitude (the min are both set to zero)                       
+
+  phydbl                  sampl_area;
 }t_migrep_mod;
 
 /*!********************************************************/

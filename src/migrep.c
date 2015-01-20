@@ -42,14 +42,15 @@ int MIGREP_Main(int argc, char *argv[])
 
   setvbuf(fp_out,NULL,_IOFBF,1024);
 
-  PhyML_Fprintf(fp_out,"\n# TrueLbda\t TrueMu\t TrueRad\t TrueXroot\t TrueYroot\t Lbda5\t Lbda50\t Lbda95\t Mu5\t Mu50\t Mu95\t Rad5\t Rad50\t Rad95\t Xroot5\t Xroot50\t Xroot95\t Yroot5\t Yroot50\t Yroot95\t ");
+  PhyML_Fprintf(fp_out,"\n# SampArea\t TrueLbda\t TrueMu\t TrueRad\t TrueXroot\t TrueYroot\t Lbda5\t Lbda50\t Lbda95\t Mu5\t Mu50\t Mu95\t Rad5\t Rad50\t Rad95\t Xroot5\t Xroot50\t Xroot95\t Yroot5\t Yroot50\t Yroot95\t ");
 
   tree = MIGREP_Simulate_Backward((int)atoi(argv[1]),10.,10.,seed);
 
   disk = tree->disk;
   while(disk->prev) disk = disk->prev;
 
-  PhyML_Fprintf(fp_out,"\n %f\t %f\t %f\t %f\t %f\t ",
+  PhyML_Fprintf(fp_out,"\n %f\t %f\t %f\t %f\t %f\t %f\t ",
+                tree->mmod->sampl_area,
                 tree->mmod->lbda,
                 tree->mmod->mu,
                 tree->mmod->rad,
@@ -166,7 +167,7 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height, int r_s
   tree->mmod = mmod;
     
   /* MIGREP_Simulate_Backward_Core(YES,tree); */
-  MIGREP_Simulate_Forward_Core(tree);
+  mmod->sampl_area = MIGREP_Simulate_Forward_Core(tree);
 
   MIGREP_Ldsk_To_Tree(tree);  
 
@@ -391,12 +392,12 @@ void MIGREP_Simulate_Backward_Core(int new_loc, t_tree *tree)
 ////////////////////////////////////////////////////////////*/
 // Simulate Etheridge-Barton model forwards in time, following n_otu lineages
 // on a rectangle of dimension width x height
-void MIGREP_Simulate_Forward_Core(t_tree *tree)
+phydbl MIGREP_Simulate_Forward_Core(t_tree *tree)
 {
   t_dsk *disk;
   t_ldsk *new_ldsk,**ldsk_a_pop,**ldsk_a_samp,**ldsk_a_tmp,**ldsk_a_tips;
   int i,j,n_disk,n_dim,n_otu,pop_size,parent_id,n_lineages,sample_size,n_poly;
-  phydbl dt_dsk,curr_t,sum,*parent_prob,prob_death,tree_height,max_x,max_y,trans_x,trans_y;
+  phydbl dt_dsk,curr_t,sum,*parent_prob,prob_death,tree_height,max_x,max_y,trans_x,trans_y,area;
   short int dies,n_remain;
   t_migrep_mod *mmod;
   t_poly **poly;
@@ -406,8 +407,6 @@ void MIGREP_Simulate_Forward_Core(t_tree *tree)
   n_otu    = tree->n_otu;
   /* pop_size = (int)(tree->mmod->rho * tree->mmod->lim->lonlat[0] * tree->mmod->lim->lonlat[1]); */
   pop_size = 100*n_otu;
-
-  printf("\n. pop_size: %d",pop_size);
 
   parent_prob = (phydbl *)mCalloc(pop_size,sizeof(phydbl));
 
@@ -547,7 +546,7 @@ void MIGREP_Simulate_Forward_Core(t_tree *tree)
   /* Sample individuals (take the first n_otu ldsk within ldsk_a_pop array) */  
   /* For(i,n_otu) ldsk_a_samp[i] = ldsk_a_pop[i]; */
 
-  n_poly = 2;
+  n_poly = 5;
 
   poly = (t_poly **)mCalloc(n_poly,sizeof(t_poly *));
   For(i,n_poly) poly[i] = Rpoly(4);
@@ -594,6 +593,8 @@ void MIGREP_Simulate_Forward_Core(t_tree *tree)
         }
     }
   
+  area = Area_Of_Poly_Monte_Carlo(poly,n_poly,mmod->lim);
+
   if(i == pop_size)
     {
       PhyML_Printf("\n== Not enough individuals in polygon(s) (only %d found).",sample_size);
@@ -689,6 +690,8 @@ void MIGREP_Simulate_Forward_Core(t_tree *tree)
   
   /* MIGREP_Print_Struct('#',tree); */
 
+  return(area);
+ 
 }
 
 //////////////////////////////////////////////////////////////
@@ -2587,8 +2590,47 @@ int MIGREP_Is_In_Polygon(t_geo_coord *point, t_poly *poly)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+phydbl MIGREP_Random_Select_Time_Between_Jumps(t_tree *tree)
+{
+  t_dsk  *disk,**valid_disks;
+  int n_valid_disks,block,select;
+  phydbl time;
+
+  valid_disks   = NULL;
+  disk          = NULL;
+  block         = 100;
+
+  if(tree->disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  disk = tree->disk->prev;
+  n_valid_disks = 0;
+  do
+    {
+      if(disk->ldsk != NULL && disk->prev != NULL)
+        {
+          if(!n_valid_disks) valid_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
+          else if(!(n_valid_disks%block)) valid_disks = (t_dsk **)mRealloc(valid_disks,n_valid_disks+block,sizeof(t_dsk *));
+          valid_disks[n_valid_disks] = disk;
+          n_valid_disks++;
+        }
+      disk = disk->prev;
+    }
+  while(disk->prev);
+
+  if(!n_valid_disks) return -1.0;
+
+  select = Rand_Int(0,n_valid_disks-1);
+
+  time = valid_disks[select]->time - valid_disks[select]->ldsk->prev->disk->time;
+  
+  Free(valid_disks);
+
+  return(time);
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

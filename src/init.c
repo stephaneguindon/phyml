@@ -3357,6 +3357,8 @@ void MIGREP_Init_Migrep_Mod(t_migrep_mod *t, int n_dim)
   t->c_ln_prior_mu   = UNLIKELY;
 
   t->soft_bound_area = 0.1;
+  
+  t->sampl_area      = 0.0;
 }
 
 //////////////////////////////////////////////////////////////
