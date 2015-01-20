@@ -585,7 +585,7 @@ phydbl MIGREP_Simulate_Forward_Core(t_tree *tree)
     {
       j = Rand_Int(0,n_poly-1);
       
-      if(MIGREP_Is_In_Polygon(ldsk_a_pop[i]->coord,poly[j]) == YES)
+      if(Is_In_Polygon(ldsk_a_pop[i]->coord,poly[j]) == YES)
         {
           ldsk_a_samp[sample_size] = ldsk_a_pop[i];
           sample_size++;
@@ -2549,43 +2549,6 @@ phydbl *MIGREP_Mean_Pairwise_Distance_Between_Lineage_Locations(t_tree *tree)
 
   return(dist);
 
-}
-
-/*////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////*/
-
-int MIGREP_Is_In_Polygon(t_geo_coord *point, t_poly *poly)
-{
-  int i;
-  phydbl x,y,x1,y1,x2,y2;
-  phydbl x_intersect;
-  short int is_in;
-
-  /* Coordinates of the point to test */
-  x = point->lonlat[0];
-  y = point->lonlat[1];
-
-  is_in = NO;
-  For(i,poly->n_poly_vert-1)
-    {
-      /* Edge of polygon goes from (x1,y1) to (x2,y2) */
-      x1 = poly->poly_vert[i]->lonlat[0];
-      y1 = poly->poly_vert[i]->lonlat[1];
-      x2 = poly->poly_vert[i+1]->lonlat[0];
-      y2 = poly->poly_vert[i+1]->lonlat[1];
-
-      /* Shoot an horizontal ray to the right. Find out if
-         this ray hits the polygon edge */
-      if((y1 < y && y2 > y) || (y2 < y && y1 > y))
-        {
-          /* Coordinates along X-axis of the intersection between ray and edge */
-          x_intersect = (y-y1)/(y1-y2)*(x1-x2)+x1;  
-          if(x_intersect > x) /* Intersection is on the righthand side */
-            is_in = (is_in == YES)?NO:YES;
-        }
-    }
-
-  return is_in;
 }
 
 /*////////////////////////////////////////////////////////////
