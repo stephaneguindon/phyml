@@ -138,7 +138,7 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height, int r_s
 
   tree = Make_Tree_From_Scratch(n_otu,cdata);
 
-  Connect_CSeqs_To_Nodes(cdata,tree);
+  Connect_CSeqs_To_Nodes(cdata,io,tree);
   
   tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
   RATES_Init_Rate_Struct(tree->rates,io->rates,tree->n_otu);
@@ -546,7 +546,7 @@ phydbl MIGREP_Simulate_Forward_Core(t_tree *tree)
   /* Sample individuals (take the first n_otu ldsk within ldsk_a_pop array) */  
   /* For(i,n_otu) ldsk_a_samp[i] = ldsk_a_pop[i]; */
 
-  n_poly = 5;
+  n_poly = 10;
 
   poly = (t_poly **)mCalloc(n_poly,sizeof(t_poly *));
   For(i,n_poly) poly[i] = Rpoly(4);
