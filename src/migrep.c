@@ -161,8 +161,8 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height, int r_s
   mmod->rad  = Uni()*(5.0 - 1.5)  + 1.5;
   /* mmod->rho  = 100.; */
   /* mmod->lbda = 0.1; */
-  /* mmod->mu   = 0.6; */
-  /* mmod->rad  = 7.0; */
+  /* mmod->mu   = 0.4; */
+  /* mmod->rad  = 2.0; */
 
   tree->mmod = mmod;
     
@@ -546,7 +546,7 @@ phydbl MIGREP_Simulate_Forward_Core(t_tree *tree)
   /* Sample individuals (take the first n_otu ldsk within ldsk_a_pop array) */  
   /* For(i,n_otu) ldsk_a_samp[i] = ldsk_a_pop[i]; */
 
-  n_poly = 10;
+  n_poly = 1;
 
   poly = (t_poly **)mCalloc(n_poly,sizeof(t_poly *));
   For(i,n_poly) poly[i] = Rpoly(4);
@@ -633,7 +633,6 @@ phydbl MIGREP_Simulate_Forward_Core(t_tree *tree)
               n_remain++;
             }
         }
-      fflush(NULL);
 
       For(i,n_remain) ldsk_a_samp[i] = ldsk_a_tmp[i];
       if((disk->prev->ldsk != NULL) && (disk->prev->ldsk->n_next > 0)) ldsk_a_samp[i] = disk->prev->ldsk;
@@ -1068,7 +1067,8 @@ phydbl *MIGREP_MCMC(t_tree *tree)
                         tree->mcmc->ess[tree->mcmc->num_move_migrep_lbda],
                         tree->mcmc->ess[tree->mcmc->num_move_migrep_mu],
                         tree->mcmc->ess[tree->mcmc->num_move_migrep_rad]);
-
+          fflush(fp_stats);
+          
           res[0 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = tree->mmod->lbda; 
           res[1 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = tree->mmod->mu; 
           res[2 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = tree->mmod->rad; 
