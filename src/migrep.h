@@ -17,7 +17,7 @@ the GNU public licence. See http://www.opensource.org for details.
 
 #include "utilities.h"
 
-t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height, int r_seed);
+t_tree *MIGREP_Simulate_Backward(int n_otu, int n_sites, phydbl width, phydbl height, int r_seed);
 int MIGREP_Main(int argc, char **argv);
 phydbl MIGREP_Lk(t_tree *tree);
 phydbl MIGREP_Wrap_Lk(t_edge *b, t_tree *tree, supert_tree *stree);
@@ -67,6 +67,6 @@ void MIGREP_Remove_Lindisk_Next(t_ldsk *ldsk, t_ldsk *rm);
 void MIGREP_Simulate_Backward_Core(int new_loc, t_tree *tree);
 phydbl *MIGREP_Mean_Pairwise_Distance_Between_Lineage_Locations(t_tree *tree);
 phydbl MIGREP_Random_Select_Time_Between_Jumps(t_tree *tree);
-phydbl MIGREP_Simulate_Forward_Core(t_tree *tree);
+phydbl MIGREP_Simulate_Forward_Core(int n_sites, t_tree *tree);
 
 #endif

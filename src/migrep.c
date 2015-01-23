@@ -44,7 +44,7 @@ int MIGREP_Main(int argc, char *argv[])
 
   PhyML_Fprintf(fp_out,"\n# SampArea\t TrueLbda\t TrueMu\t TrueRad\t TrueXroot\t TrueYroot\t Lbda5\t Lbda50\t Lbda95\t Mu5\t Mu50\t Mu95\t Rad5\t Rad50\t Rad95\t Xroot5\t Xroot50\t Xroot95\t Yroot5\t Yroot50\t Yroot95\t ");
 
-  tree = MIGREP_Simulate_Backward((int)atoi(argv[1]),10.,10.,seed);
+  tree = MIGREP_Simulate_Backward((int)atoi(argv[1]),(int)atoi(argv[2]),10.,10.,seed);
 
   disk = tree->disk;
   while(disk->prev) disk = disk->prev;
@@ -95,7 +95,7 @@ int MIGREP_Main(int argc, char *argv[])
 // Simulate Etheridge-Barton model backwards in time, following n_otu lineages
 // on a rectangle of dimension width x height
 // See Kelleher, Barton & Etheridge, Bioinformatics, 2013.
-t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height, int r_seed)
+t_tree *MIGREP_Simulate_Backward(int n_otu, int n_sites, phydbl width, phydbl height, int r_seed)
 {  
   t_tree *tree;
   int n_dim;
@@ -167,7 +167,7 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, phydbl width, phydbl height, int r_s
   tree->mmod = mmod;
     
   /* MIGREP_Simulate_Backward_Core(YES,tree); */
-  mmod->sampl_area = MIGREP_Simulate_Forward_Core(tree);
+  mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree);
 
   MIGREP_Ldsk_To_Tree(tree);  
 
@@ -392,7 +392,7 @@ void MIGREP_Simulate_Backward_Core(int new_loc, t_tree *tree)
 ////////////////////////////////////////////////////////////*/
 // Simulate Etheridge-Barton model forwards in time, following n_otu lineages
 // on a rectangle of dimension width x height
-phydbl MIGREP_Simulate_Forward_Core(t_tree *tree)
+phydbl MIGREP_Simulate_Forward_Core(int n_sites, t_tree *tree)
 {
   t_dsk *disk;
   t_ldsk *new_ldsk,**ldsk_a_pop,**ldsk_a_samp,**ldsk_a_tmp,**ldsk_a_tips;
@@ -546,7 +546,7 @@ phydbl MIGREP_Simulate_Forward_Core(t_tree *tree)
   /* Sample individuals (take the first n_otu ldsk within ldsk_a_pop array) */  
   /* For(i,n_otu) ldsk_a_samp[i] = ldsk_a_pop[i]; */
 
-  n_poly = 1;
+  n_poly = n_sites;
 
   poly = (t_poly **)mCalloc(n_poly,sizeof(t_poly *));
   For(i,n_poly) poly[i] = Rpoly(4);
@@ -594,8 +594,6 @@ phydbl MIGREP_Simulate_Forward_Core(t_tree *tree)
         }
     }
   
-  Exit("\n");
-
 
   area = Area_Of_Poly_Monte_Carlo(poly,n_poly,mmod->lim);
 
