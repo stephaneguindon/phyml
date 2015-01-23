@@ -4716,7 +4716,7 @@ phydbl Area_Of_Poly_Monte_Carlo(t_poly **poly, int n_poly, t_geo_coord *lim)
 
 int Is_In_Polygon(t_geo_coord *point, t_poly *poly)
 {
-  int i;
+  int i,j;
   phydbl x,y,x1,y1,x2,y2;
   phydbl x_intersect;
   short int is_in;
@@ -4725,14 +4725,17 @@ int Is_In_Polygon(t_geo_coord *point, t_poly *poly)
   x = point->lonlat[0];
   y = point->lonlat[1];
 
+  j = poly->n_poly_vert-1;
   is_in = NO;
-  For(i,poly->n_poly_vert-1)
+  For(i,poly->n_poly_vert)
     {
       /* Edge of polygon goes from (x1,y1) to (x2,y2) */
       x1 = poly->poly_vert[i]->lonlat[0];
       y1 = poly->poly_vert[i]->lonlat[1];
-      x2 = poly->poly_vert[i+1]->lonlat[0];
-      y2 = poly->poly_vert[i+1]->lonlat[1];
+      x2 = poly->poly_vert[j]->lonlat[0];
+      y2 = poly->poly_vert[j]->lonlat[1];
+
+      j = i;
 
       /* Shoot an horizontal ray to the right. Find out if
          this ray hits the polygon edge */

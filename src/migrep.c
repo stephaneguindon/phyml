@@ -588,11 +588,15 @@ phydbl MIGREP_Simulate_Forward_Core(t_tree *tree)
       if(Is_In_Polygon(ldsk_a_pop[i]->coord,poly[j]) == YES)
         {
           ldsk_a_samp[sample_size] = ldsk_a_pop[i];
+          PhyML_Printf("\n@ Coord: %f %f",ldsk_a_samp[sample_size]->coord->lonlat[0],ldsk_a_samp[sample_size]->coord->lonlat[1]);
           sample_size++;
           if(sample_size == n_otu) break;        
         }
     }
   
+  Exit("\n");
+
+
   area = Area_Of_Poly_Monte_Carlo(poly,n_poly,mmod->lim);
 
   if(i == pop_size)
