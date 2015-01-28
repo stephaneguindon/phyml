@@ -34,6 +34,8 @@ int MIGREP_Main(int argc, char *argv[])
   seed = pid;
   printf("\n. seed: %d",seed);
   srand(seed);
+  
+  
 
   strcpy(s,"migrep.out");
   sprintf(s+strlen(s),".%d",pid);
@@ -547,7 +549,6 @@ phydbl MIGREP_Simulate_Forward_Core(int n_sites, t_tree *tree)
 
   For(i,pop_size) ldsk_a_pop[i]->disk = disk;
 
-
   /* Allocate coordinates for all the tips first (will grow afterwards) */
   ldsk_a_samp = (t_ldsk **)mCalloc(n_otu,sizeof(t_ldsk *));
   ldsk_a_tips = (t_ldsk **)mCalloc(n_otu,sizeof(t_ldsk *));
@@ -905,6 +906,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   char *s;
   phydbl *res;
   phydbl true_root_x, true_root_y;
+  phydbl max_x, max_y;
 
   s = (char *)mCalloc(T_MAX_FILE,sizeof(char));
 
@@ -974,17 +976,26 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   tree->mmod->mu              = Uni()*(1.00 - 0.30) + 0.30;
   tree->mmod->rad             = Uni()*(7.00 - 0.50) + 0.50;
 
-  tree->mmod->lim->lonlat[0]  = Uni()*(100. - 20.) + 20.;
-  tree->mmod->lim->lonlat[1]  = Uni()*(100. - 20.) + 20.;
+  disk = tree->disk;
+  max_x = 0.0;
+  For(i,disk->n_ldsk_a) if(disk->ldsk_a[i]->coord->lonlat[0] > max_x) max_x = disk->ldsk_a[i]->coord->lonlat[0];
+  max_y = 0.0;
+  For(i,disk->n_ldsk_a) if(disk->ldsk_a[i]->coord->lonlat[1] > max_y) max_y = disk->ldsk_a[i]->coord->lonlat[1];
+
+  printf("\n. max_x = %f max_y = %f",max_x,max_y); fflush(stdout);
+
+  tree->mmod->lim->lonlat[0]  = Uni()*(5.*max_x - max_x) + max_x;
+  tree->mmod->lim->lonlat[1]  = Uni()*(5.*max_y - max_y) + max_y;
 
   /* Random genealogy */
   MIGREP_Simulate_Backward_Core(NO,tree);
-
 
   MIGREP_Lk(tree);
   Lk(NULL,tree);
   disk = tree->disk;
   while(disk->prev) disk = disk->prev;
+
+  printf("\n. lk: %f",tree->mmod->c_lnL); fflush(stdout);
 
   PhyML_Fprintf(fp_stats,"\n# after rand glnL: %f alnL: %f",tree->mmod->c_lnL,tree->c_lnL);
   PhyML_Fprintf(fp_stats,"\n# ninter: %d",MIGREP_Total_Number_Of_Intervals(tree));
