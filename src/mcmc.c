@@ -4324,6 +4324,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->num_move_migrep_move_ldsk        = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_migrep_spr              = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_migrep_scale_times      = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_migrep_ldscape_lim      = mcmc->n_moves; mcmc->n_moves += 1;
 
   mcmc->run_move           = (int *)mCalloc(mcmc->n_moves,sizeof(int));
   mcmc->acc_move           = (int *)mCalloc(mcmc->n_moves,sizeof(int));
@@ -4390,6 +4391,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   strcpy(mcmc->move_name[mcmc->num_move_migrep_move_ldsk],"migrep_move_ldsk");
   strcpy(mcmc->move_name[mcmc->num_move_migrep_spr],"migrep_spr");
   strcpy(mcmc->move_name[mcmc->num_move_migrep_scale_times],"migrep_scale_times");
+  strcpy(mcmc->move_name[mcmc->num_move_migrep_ldscape_lim],"migrep_ldscape_lim");
   
   if(tree->rates && tree->rates->model_log_rates == YES)
     for(i=mcmc->num_move_br_r;i<mcmc->num_move_br_r+2*tree->n_otu-2;i++) mcmc->move_type[i] = MCMC_MOVE_RANDWALK_NORMAL;  
@@ -4506,6 +4508,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_migrep_move_ldsk]             = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_spr]                   = 3.0;
   mcmc->move_weight[mcmc->num_move_migrep_scale_times]           = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_ldscape_lim]           = 1.0;
 # else
   mcmc->move_weight[mcmc->num_move_migrep_lbda]                  = 0.0;
   mcmc->move_weight[mcmc->num_move_migrep_mu]                    = 0.0;
@@ -4520,6 +4523,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_migrep_move_ldsk]             = 0.0;
   mcmc->move_weight[mcmc->num_move_migrep_spr]                   = 0.0;
   mcmc->move_weight[mcmc->num_move_migrep_scale_times]           = 0.0;
+  mcmc->move_weight[mcmc->num_move_migrep_ldscape_lim]           = 0.0;
 #endif
 
 /*   for(i=mcmc->num_move_br_r;i<mcmc->num_move_br_r+2*tree->n_otu-2;i++) mcmc->move_weight[i] = 0.0; /\* Rates *\/ */
@@ -5006,14 +5010,14 @@ void MCMC_MIGREP_Radius(t_tree *tree)
   
   ori_rad  = tree->mmod->rad;
   
-  min = MAX(tree->mmod->min_rad,tree->mmod->rad - 0.2);  
-  max = MIN(tree->mmod->max_rad,tree->mmod->rad + 0.2);
+  min = MAX(tree->mmod->min_rad,tree->mmod->rad - 0.1);  
+  max = MIN(tree->mmod->max_rad,tree->mmod->rad + 0.1);
   hr  += LOG(max-min);
   
   tree->mmod->rad = Uni()*(max - min) + min;
   
-  min = MAX(tree->mmod->min_rad,tree->mmod->rad - 0.2);
-  max = MIN(tree->mmod->max_rad,tree->mmod->rad + 0.2);
+  min = MAX(tree->mmod->min_rad,tree->mmod->rad - 0.1);
+  max = MIN(tree->mmod->max_rad,tree->mmod->rad + 0.1);
   hr  -= LOG(max-min);
     
   new_glnL      = MIGREP_Lk(tree);
@@ -6356,6 +6360,73 @@ void MCMC_MIGREP_Prune_Regraft(t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+#ifdef MIGREP
+void MCMC_MIGREP_Ldscape_Limits(t_tree *tree)
+{
+    phydbl u,alpha,ratio;
+    phydbl cur_glnL, new_glnL, hr;
+    phydbl *ori_lim;
+    phydbl max, min;
+    int i;
+
+    new_glnL  = UNLIKELY;
+    cur_glnL  = tree->mmod->c_lnL;
+    hr        = 0.0;
+    ratio     = 0.0;
+    
+    ori_lim = (phydbl *)mCalloc(tree->mmod->n_dim,sizeof(phydbl));
+
+    For(i,tree->mmod->n_dim)
+      {
+        ori_lim[i] = tree->mmod->lim->lonlat[i];
+  
+        min = MAX(0.0,ori_lim[i] - 0.1);
+        max = MIN(100.,ori_lim[i] + 0.1);
+
+        hr  += LOG(max-min);
+    
+        tree->mmod->lim->lonlat[i] = Uni()*(max - min) + min;
+      }
+
+        
+    new_glnL    = MIGREP_Lk(tree);
+    
+    ratio += (new_glnL - cur_glnL);
+    ratio += hr;
+    
+    ratio = EXP(ratio);
+    alpha = MIN(1.,ratio);
+    
+    /* Always accept move */
+    if(tree->mcmc->always_yes == YES && new_glnL > UNLIKELY) alpha = 1.0;
+    
+    u = Uni();
+    
+    /* printf("\n- Move disk new_glnL: %f [%f] hr: %f u:%f alpha: %f",new_glnL,cur_glnL,hr,u,alpha); */
+    
+    if(u > alpha) /* Reject */
+      {
+        For(i,tree->mmod->n_dim) tree->mmod->lim->lonlat[i] = ori_lim[i];
+      
+        new_glnL = MIGREP_Lk(tree);
+        if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO) 
+          {
+            PhyML_Printf("\n. new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
+            Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+          }
+      }
+    else
+      {
+        /* printf("- Accept"); */
+      }
+
+    Free(ori_lim);
+
+}
+#endif
+
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////
