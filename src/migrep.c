@@ -44,7 +44,7 @@ int MIGREP_Main(int argc, char *argv[])
 
   setvbuf(fp_out,NULL,_IOFBF,1024);
 
-  PhyML_Fprintf(fp_out,"\n# SampArea\t TrueLbda\t TrueMu\t TrueRad\t TrueXroot\t TrueYroot\t Lbda5\t Lbda50\t Lbda95\t Mu5\t Mu50\t Mu95\t Rad5\t Rad50\t Rad95\t Xroot5\t Xroot50\t Xroot95\t Yroot5\t Yroot50\t Yroot95\t ");
+  PhyML_Fprintf(fp_out,"\n# SampArea\t TrueLbda\t TrueMu\t TrueRad\t TrueXroot\t TrueYroot\t Lbda5\t Lbda50\t Lbda95\t Mu5\t Mu50\t Mu95\t Rad5\t Rad50\t Rad95\t Xroot5\t Xroot50\t Xroot95\t Yroot5\t Yroot50\t Yroot95\t limXroot5\t limXroot50\t limXroot95\t limYroot5\t limYroot50\t limYroot95\t ");
 
   tree = MIGREP_Simulate_Backward((int)atoi(argv[1]),(int)atoi(argv[2]),10.,10.,seed);
 
@@ -252,7 +252,7 @@ void MIGREP_Simulate_Backward_Core(int new_loc, t_tree *tree)
       /* Generate coordinates for the tip nodes (uniform distribution on the rectangle) */
       For(i,n_otu)
         {
-          ldsk_a[i]->coord->lonlat[0] = Uni()*tree->mmod->lim->lonlat[0];  // longitude
+          ldsk_a[i]->coord->lonlat[0] = Uni()*tree->mmod->lim->lonlat[0]; // longitude
           ldsk_a[i]->coord->lonlat[1] = Uni()*tree->mmod->lim->lonlat[1]; // latitude
         }
       
