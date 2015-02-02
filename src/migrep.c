@@ -560,7 +560,7 @@ phydbl MIGREP_Simulate_Forward_Core(int n_sites, t_tree *tree)
   n_poly = n_sites;
 
   poly = (t_poly **)mCalloc(n_poly,sizeof(t_poly *));
-  For(i,n_poly) poly[i] = Rpoly(4);
+  For(i,n_poly) poly[i] = Rpoly(3);
   For(i,n_poly)
     {      
       For(j,poly[i]->n_poly_vert) 
@@ -976,16 +976,16 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   tree->mmod->mu              = Uni()*(1.00 - 0.30) + 0.30;
   tree->mmod->rad             = Uni()*(7.00 - 0.50) + 0.50;
 
-  disk = tree->disk;
-  max_x = 0.0;
-  For(i,disk->n_ldsk_a) if(disk->ldsk_a[i]->coord->lonlat[0] > max_x) max_x = disk->ldsk_a[i]->coord->lonlat[0];
-  max_y = 0.0;
-  For(i,disk->n_ldsk_a) if(disk->ldsk_a[i]->coord->lonlat[1] > max_y) max_y = disk->ldsk_a[i]->coord->lonlat[1];
+  /* disk = tree->disk; */
+  /* max_x = 0.0; */
+  /* For(i,disk->n_ldsk_a) if(disk->ldsk_a[i]->coord->lonlat[0] > max_x) max_x = disk->ldsk_a[i]->coord->lonlat[0]; */
+  /* max_y = 0.0; */
+  /* For(i,disk->n_ldsk_a) if(disk->ldsk_a[i]->coord->lonlat[1] > max_y) max_y = disk->ldsk_a[i]->coord->lonlat[1]; */
 
-  printf("\n. max_x = %f max_y = %f",max_x,max_y); fflush(stdout);
+  /* printf("\n. max_x = %f max_y = %f",max_x,max_y); fflush(stdout); */
 
-  tree->mmod->lim->lonlat[0]  = Uni()*(5.*max_x - max_x) + max_x;
-  tree->mmod->lim->lonlat[1]  = Uni()*(5.*max_y - max_y) + max_y;
+  /* tree->mmod->lim->lonlat[0]  = Uni()*(5.*max_x - max_x) + max_x; */
+  /* tree->mmod->lim->lonlat[1]  = Uni()*(5.*max_y - max_y) + max_y; */
 
   /* Random genealogy */
   MIGREP_Simulate_Backward_Core(NO,tree);
@@ -1082,8 +1082,8 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"migrep_scale_times"))
         MCMC_MIGREP_Scale_Times(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"migrep_ldscape_lim"))
-        MCMC_MIGREP_Ldscape_Limits(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_ldscape_lim")) */
+      /*   MCMC_MIGREP_Ldscape_Limits(tree); */
 
       tree->mcmc->run++;
       MCMC_Get_Acc_Rates(tree->mcmc);
