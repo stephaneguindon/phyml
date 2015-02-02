@@ -4272,7 +4272,6 @@ void MCMC_Sim_Rate(t_node *a, t_node *d, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
 {
   int i;
@@ -4498,15 +4497,15 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_migrep_lbda]                  = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_mu]                    = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_rad]                   = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_insert_disk]           = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_delete_disk]           = 1.0;  
+  mcmc->move_weight[mcmc->num_move_migrep_insert_disk]           = 2.0;
+  mcmc->move_weight[mcmc->num_move_migrep_delete_disk]           = 2.0;  
   mcmc->move_weight[mcmc->num_move_migrep_move_disk_ct]          = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_move_disk_ud]          = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_swap_disk]             = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_delete_hit]            = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_insert_hit]            = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_delete_hit]            = 2.0;
+  mcmc->move_weight[mcmc->num_move_migrep_insert_hit]            = 2.0;
   mcmc->move_weight[mcmc->num_move_migrep_move_ldsk]             = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_spr]                   = 3.0;
+  mcmc->move_weight[mcmc->num_move_migrep_spr]                   = 4.0;
   mcmc->move_weight[mcmc->num_move_migrep_scale_times]           = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_ldscape_lim]           = 1.0;
 # else
@@ -5097,7 +5096,8 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
 
   if(!n_valid_disks) return;
   
-  n_delete_disks = Rand_Int(1,MIN(5,n_valid_disks));
+  /* n_delete_disks = Rand_Int(1,MIN(5,n_valid_disks)); */
+  n_delete_disks = 1;
   
   target_disk = (t_dsk **)mCalloc(n_delete_disks,sizeof(t_dsk *));
 
@@ -5205,7 +5205,8 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
     }
   while(disk->prev);
 
-  n_insert_disks = Rand_Int(1,5);
+  /* n_insert_disks = Rand_Int(1,5); */
+  n_insert_disks = 1;
 
   target_disk = (t_dsk **)mCalloc(n_insert_disks,sizeof(t_dsk *));
   new_disk    = (t_dsk **)mCalloc(n_insert_disks,sizeof(t_dsk *));
