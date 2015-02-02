@@ -32,6 +32,7 @@ int MIGREP_Main(int argc, char *argv[])
 
   pid = getpid();
   seed = pid;
+  seed = 32220;
   printf("\n. seed: %d",seed);
   srand(seed);
   
@@ -559,61 +560,70 @@ phydbl MIGREP_Simulate_Forward_Core(int n_sites, t_tree *tree)
 
   n_poly = n_sites;
 
-  poly = (t_poly **)mCalloc(n_poly,sizeof(t_poly *));
-  For(i,n_poly) poly[i] = Rpoly(3);
-  For(i,n_poly)
-    {      
-      For(j,poly[i]->n_poly_vert) 
-        {
-          poly[i]->poly_vert[j]->lonlat[0] *= mmod->lim->lonlat[0]*0.5;
-          poly[i]->poly_vert[j]->lonlat[1] *= mmod->lim->lonlat[1]*0.5;
+  do
+    {
+      poly = (t_poly **)mCalloc(n_poly,sizeof(t_poly *));
+      For(i,n_poly) poly[i] = Rpoly(3);
+      For(i,n_poly)
+        {      
+          For(j,poly[i]->n_poly_vert) 
+            {
+              poly[i]->poly_vert[j]->lonlat[0] *= mmod->lim->lonlat[0]*0.5;
+              poly[i]->poly_vert[j]->lonlat[1] *= mmod->lim->lonlat[1]*0.5;
+            }
+          
+          max_x = 0.0;
+          max_y = 0.0;
+          For(j,poly[i]->n_poly_vert) 
+            {
+              if(poly[i]->poly_vert[j]->lonlat[0] > max_x) max_x = poly[i]->poly_vert[j]->lonlat[0];
+              if(poly[i]->poly_vert[j]->lonlat[1] > max_y) max_y = poly[i]->poly_vert[j]->lonlat[1];
+            }
+          
+          trans_x = Uni()*(mmod->lim->lonlat[0] - max_x);
+          trans_y = Uni()*(mmod->lim->lonlat[1] - max_y);
+          
+          For(j,poly[i]->n_poly_vert) 
+            {
+              poly[i]->poly_vert[j]->lonlat[0] += trans_x;
+              poly[i]->poly_vert[j]->lonlat[1] += trans_y;
+              PhyML_Printf("\n# Sampling == polygon %d vertex @ (%f; %f)",
+                           i,
+                           poly[i]->poly_vert[j]->lonlat[0],
+                           poly[i]->poly_vert[j]->lonlat[1]);
+            }
         }
       
-      max_x = 0.0;
-      max_y = 0.0;
-      For(j,poly[i]->n_poly_vert) 
+      For(i,n_otu) ldsk_a_samp[i] = NULL;
+
+      sample_size = 0;
+      For(i,pop_size)
         {
-          if(poly[i]->poly_vert[j]->lonlat[0] > max_x) max_x = poly[i]->poly_vert[j]->lonlat[0];
-          if(poly[i]->poly_vert[j]->lonlat[1] > max_y) max_y = poly[i]->poly_vert[j]->lonlat[1];
+          j = Rand_Int(0,n_poly-1);
+          
+          if(Is_In_Polygon(ldsk_a_pop[i]->coord,poly[j]) == YES)
+            {
+              ldsk_a_samp[sample_size] = ldsk_a_pop[i];
+              PhyML_Printf("\n@ Coord: %f %f",ldsk_a_samp[sample_size]->coord->lonlat[0],ldsk_a_samp[sample_size]->coord->lonlat[1]);
+              sample_size++;
+              if(sample_size == n_otu) break;        
+            }
         }
-
-      trans_x = Uni()*(mmod->lim->lonlat[0] - max_x);
-      trans_y = Uni()*(mmod->lim->lonlat[1] - max_y);
-
-      For(j,poly[i]->n_poly_vert) 
-        {
-          poly[i]->poly_vert[j]->lonlat[0] += trans_x;
-          poly[i]->poly_vert[j]->lonlat[1] += trans_y;
-          PhyML_Printf("\n# Sampling == polygon %d vertex @ (%f; %f)",
-                       i,
-                       poly[i]->poly_vert[j]->lonlat[0],
-                       poly[i]->poly_vert[j]->lonlat[1]);
-        }
-    }
-
-  sample_size = 0;
-  For(i,pop_size)
-    {
-      j = Rand_Int(0,n_poly-1);
       
-      if(Is_In_Polygon(ldsk_a_pop[i]->coord,poly[j]) == YES)
+      area = Area_Of_Poly_Monte_Carlo(poly,n_poly,mmod->lim);
+      
+      For(j,n_poly) Free_Poly(poly[j]);
+      Free(poly);
+
+      if(i == pop_size)
         {
-          ldsk_a_samp[sample_size] = ldsk_a_pop[i];
-          PhyML_Printf("\n@ Coord: %f %f",ldsk_a_samp[sample_size]->coord->lonlat[0],ldsk_a_samp[sample_size]->coord->lonlat[1]);
-          sample_size++;
-          if(sample_size == n_otu) break;        
+          PhyML_Printf("\n== Not enough individuals in polygon(s) (only %d found).",sample_size);
+          /* Generic_Exit(__FILE__,__LINE__,__FUNCTION__);       */
         }
+      else break;    
     }
-  
-  area = Area_Of_Poly_Monte_Carlo(poly,n_poly,mmod->lim);
-
-  if(i == pop_size)
-    {
-      PhyML_Printf("\n== Not enough individuals in polygon(s) (only %d found).",sample_size);
-      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);      
-    }
-
-
+  while(1);
+      
   For(i,n_otu) ldsk_a_tips[i] = ldsk_a_samp[i];
   
   tree->disk             = disk;
