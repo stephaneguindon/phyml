@@ -32,7 +32,7 @@ int MIGREP_Main(int argc, char *argv[])
 
   pid = getpid();
   seed = pid;
-  /* seed = 32220; */
+  /* seed = 15065; */
   printf("\n. seed: %d",seed);
   srand(seed);
   
@@ -1141,10 +1141,10 @@ phydbl *MIGREP_MCMC(t_tree *tree)
 
       /* if(!(tree->mcmc->run%(20*tree->mcmc->sample_interval))) */
       /*   { */
-      /*     char *s = Write_Tree(tree,NO); */
-      /*     PhyML_Fprintf(fp_tree,"\n%s",s); */
-      /*     Free(s); */
-      /*   } */
+          /* char *s = Write_Tree(tree,NO); */
+          /* PhyML_Fprintf(fp_tree,"\n%s",s); */
+          /* Free(s); */
+        /* } */
 
       if(tree->mcmc->ess[tree->mcmc->num_move_migrep_lbda] > 200. &&
          tree->mcmc->ess[tree->mcmc->num_move_migrep_mu]   > 200. &&

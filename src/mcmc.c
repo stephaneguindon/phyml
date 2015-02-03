@@ -6236,7 +6236,7 @@ void MCMC_MIGREP_Prune_Regraft(t_tree *tree)
         }
       disk = disk->prev;
     }
-  while(disk->prev);
+  while(disk);
 
   if(!n_valid_disks) return;
   
@@ -6252,6 +6252,7 @@ void MCMC_MIGREP_Prune_Regraft(t_tree *tree)
   /* Which daughter lineage are we pruning? */
   prune_next_num = Rand_Int(0,prune_ldsk->n_next-1);
   prune_daughter_ldsk = prune_ldsk->next[prune_next_num];
+
 
   /* Get a ldsk to reattach the pruned lineage to */
   disk = tree->disk->prev;
