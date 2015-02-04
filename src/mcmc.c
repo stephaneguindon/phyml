@@ -5068,6 +5068,7 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
   phydbl cur_glnL, new_glnL, hr,T, cur_lbda;
   t_dsk  *disk,**target_disk,**valid_disks;
   int i,j,block,n_valid_disks,n_delete_disks,*permut;
+  phydbl min, max;
 
   valid_disks   = NULL;
   disk          = NULL;
@@ -5122,14 +5123,16 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
 
   Free(valid_disks);
   
-  /* /\* Random decrease of the value of lambda *\/ */
-  /* min = MAX(tree->mmod->min_lbda,tree->mmod->lbda - 0.05); */
-  /* max = tree->mmod->lbda; */
-  /* tree->mmod->lbda = Uni()*(max-min) + min; */
-  /* hr += LOG(max-min); */
-  /* min = MAX(tree->mmod->min_lbda,tree->mmod->lbda - 0.05); */
-  /* max = tree->mmod->lbda; */
-  /* hr -= LOG(max-min); */
+  /* Random decrease of the value of lambda */
+  min = MAX(tree->mmod->min_lbda,tree->mmod->lbda - 0.05);
+  max = tree->mmod->lbda;
+  tree->mmod->lbda = Uni()*(max-min) + min;
+  hr += LOG(max-min);
+  max = MIN(tree->mmod->max_lbda,tree->mmod->lbda + 0.05);
+  min = tree->mmod->lbda;
+  hr -= LOG(max-min);
+  hr += LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_insert_disk]);
+  hr -= LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_delete_disk]);
 
   new_glnL = MIGREP_Lk(tree);
   ratio += (new_glnL - cur_glnL);
@@ -5182,6 +5185,7 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
   phydbl cur_glnL, new_glnL, hr, cur_lbda;
   phydbl u,alpha,ratio;
   int i,j,n_valid_disks,n_insert_disks;
+  phydbl min,max;
 
   disk           = NULL;
   new_glnL        = UNLIKELY;
@@ -5235,14 +5239,16 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
       hr += LOG(-T);
     }
 
-  /* /\* Random increase of the value of lambda *\/ */
-  /* min = tree->mmod->lbda; */
-  /* max = MIN(tree->mmod->max_lbda,tree->mmod->lbda + 0.05); */
-  /* tree->mmod->lbda = Uni()*(max-min) + min; */
-  /* hr += LOG(max-min); */
-  /* min = tree->mmod->lbda; */
-  /* max = MIN(tree->mmod->max_lbda,tree->mmod->lbda + 0.05); */
-  /* hr -= LOG(max-min); */
+  /* Random increase of the value of lambda */
+  min = tree->mmod->lbda;
+  max = MIN(tree->mmod->max_lbda,tree->mmod->lbda + 0.05);
+  tree->mmod->lbda = Uni()*(max-min) + min;
+  hr += LOG(max-min);
+  max = tree->mmod->lbda;
+  min = MAX(tree->mmod->min_lbda,tree->mmod->lbda - 0.05);
+  hr -= LOG(max-min);
+  hr += LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_delete_disk]);
+  hr -= LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_insert_disk]);
 
   new_glnL = MIGREP_Lk(tree);
   ratio = (new_glnL - cur_glnL);
