@@ -32,7 +32,7 @@ int MIGREP_Main(int argc, char *argv[])
 
   pid = getpid();
   seed = pid;
-  seed = 1019;
+  /* seed = 1019; */
   printf("\n. seed: %d",seed);
   srand(seed);
   
