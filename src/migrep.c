@@ -974,9 +974,9 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   PhyML_Fprintf(fp_stats,"\n# true mu: %f",tree->mmod->mu);
   PhyML_Fprintf(fp_stats,"\n# true rad: %f",tree->mmod->rad);
 
-  s = Write_Tree(tree,NO);
-  PhyML_Fprintf(fp_tree,"\n%s",s);
-  Free(s);
+  /* s = Write_Tree(tree,NO); */
+  /* PhyML_Fprintf(fp_tree,"\n%s",s); */
+  /* Free(s); */
   
 
   /* tree->mmod->lbda = Uni()*(tree->mmod->max_lbda - tree->mmod->min_lbda) + tree->mmod->min_lbda; */
@@ -1141,9 +1141,9 @@ phydbl *MIGREP_MCMC(t_tree *tree)
 
       /* if(!(tree->mcmc->run%(20*tree->mcmc->sample_interval))) */
       /*   { */
-          char *s = Write_Tree(tree,NO);
-          PhyML_Fprintf(fp_tree,"\n%s",s);
-          Free(s);
+          /* char *s = Write_Tree(tree,NO); */
+          /* PhyML_Fprintf(fp_tree,"\n%s",s); */
+          /* Free(s); */
         /* } */
 
       if(tree->mcmc->ess[tree->mcmc->num_move_migrep_lbda] > 100. &&
@@ -1753,28 +1753,7 @@ void MIGREP_Update_Lindisk_List_Pre(t_dsk *disk)
   if(!disk) return;
   else
     {
-      int i;
-      disk->n_ldsk_a = 0;
-      For(i,disk->next->n_ldsk_a)
-        {
-          if(disk->next->ldsk_a[i]->prev != disk->ldsk)
-            {
-              disk->ldsk_a[disk->n_ldsk_a] = disk->next->ldsk_a[i];
-              disk->n_ldsk_a++;
-            }
-        }
-      
-      if(disk->ldsk) 
-        {
-          disk->ldsk_a[disk->n_ldsk_a] = disk->ldsk;
-          disk->n_ldsk_a++;          
-        }
-
-      if(disk->n_ldsk_a == 0) 
-        {
-          PhyML_Printf("\n== disk %s",disk->id);
-          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-        }
+      MIGREP_Update_Lindisk_List_Core(disk);
       MIGREP_Update_Lindisk_List_Pre(disk->prev);    
     }
 }
@@ -1782,6 +1761,34 @@ void MIGREP_Update_Lindisk_List_Pre(t_dsk *disk)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
+void MIGREP_Update_Lindisk_List_Core(t_dsk *disk)
+{
+  int i;
+  disk->n_ldsk_a = 0;
+  For(i,disk->next->n_ldsk_a)
+    {
+      if(disk->next->ldsk_a[i]->prev != disk->ldsk)
+        {
+          disk->ldsk_a[disk->n_ldsk_a] = disk->next->ldsk_a[i];
+          disk->n_ldsk_a++;
+        }
+    }
+  
+  if(disk->ldsk) 
+    {
+      disk->ldsk_a[disk->n_ldsk_a] = disk->ldsk;
+      disk->n_ldsk_a++;          
+    }
+  
+  if(disk->n_ldsk_a == 0) 
+    {
+      PhyML_Printf("\n== disk %s",disk->id);
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
 
 /* Connect all the ldsk between y_ldsk (young ldsk) and o_ldsk (old ldsk).
    The disk between y_ldsk and o_ldsk should have all been set already
