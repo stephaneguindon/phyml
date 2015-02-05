@@ -32,7 +32,7 @@ int MIGREP_Main(int argc, char *argv[])
 
   pid = getpid();
   seed = pid;
-  /* seed = 20041; */
+  seed = 1019;
   printf("\n. seed: %d",seed);
   srand(seed);
   
@@ -974,9 +974,9 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   PhyML_Fprintf(fp_stats,"\n# true mu: %f",tree->mmod->mu);
   PhyML_Fprintf(fp_stats,"\n# true rad: %f",tree->mmod->rad);
 
-  /* s = Write_Tree(tree,NO); */
-  /* PhyML_Fprintf(fp_tree,"\n%s",s); */
-  /* Free(s); */
+  s = Write_Tree(tree,NO);
+  PhyML_Fprintf(fp_tree,"\n%s",s);
+  Free(s);
   
 
   /* tree->mmod->lbda = Uni()*(tree->mmod->max_lbda - tree->mmod->min_lbda) + tree->mmod->min_lbda; */
@@ -984,7 +984,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   /* tree->mmod->rad  = Uni()*(tree->mmod->max_rad - tree->mmod->min_rad) + tree->mmod->min_rad; */
   tree->mmod->lbda            = Uni()*(0.30 - 0.05) + 0.05;
   tree->mmod->mu              = Uni()*(1.00 - 0.30) + 0.30;
-  tree->mmod->rad             = Uni()*(7.00 - 0.50) + 0.50;
+  tree->mmod->rad             = Uni()*(7.00 - 3.00) + 3.00;
 
   /* disk = tree->disk; */
   /* max_x = 0.0; */
@@ -1141,9 +1141,9 @@ phydbl *MIGREP_MCMC(t_tree *tree)
 
       /* if(!(tree->mcmc->run%(20*tree->mcmc->sample_interval))) */
       /*   { */
-          /* char *s = Write_Tree(tree,NO); */
-          /* PhyML_Fprintf(fp_tree,"\n%s",s); */
-          /* Free(s); */
+          char *s = Write_Tree(tree,NO);
+          PhyML_Fprintf(fp_tree,"\n%s",s);
+          Free(s);
         /* } */
 
       if(tree->mcmc->ess[tree->mcmc->num_move_migrep_lbda] > 100. &&
@@ -1152,8 +1152,8 @@ phydbl *MIGREP_MCMC(t_tree *tree)
     }
   while(tree->mcmc->run < tree->mcmc->chain_len);
 
-  /* fclose(fp_tree); */
-  /* fclose(fp_stats); */
+  fclose(fp_tree);
+  fclose(fp_stats);
 
   return(res);
 }
@@ -1672,9 +1672,9 @@ int MIGREP_Get_Next_Direction(t_ldsk *young, t_ldsk *old)
                    old->coord->id,old->disk->time);
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
     }
-
+  
   if(young == NULL) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
-
+  
   if(young->prev == old)
     {
       int i;
