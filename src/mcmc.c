@@ -4497,15 +4497,15 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_migrep_lbda]                  = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_mu]                    = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_rad]                   = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_insert_disk]           = 2.0;
-  mcmc->move_weight[mcmc->num_move_migrep_delete_disk]           = 2.0;  
+  mcmc->move_weight[mcmc->num_move_migrep_insert_disk]           = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_delete_disk]           = 1.0;  
   mcmc->move_weight[mcmc->num_move_migrep_move_disk_ct]          = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_move_disk_ud]          = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_swap_disk]             = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_delete_hit]            = 2.0;
-  mcmc->move_weight[mcmc->num_move_migrep_insert_hit]            = 2.0;
+  mcmc->move_weight[mcmc->num_move_migrep_delete_hit]            = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_insert_hit]            = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_move_ldsk]             = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_spr]                   = 4.0;
+  mcmc->move_weight[mcmc->num_move_migrep_spr]                   = 2.0;
   mcmc->move_weight[mcmc->num_move_migrep_scale_times]           = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_ldscape_lim]           = 1.0;
 # else
@@ -5009,14 +5009,14 @@ void MCMC_MIGREP_Radius(t_tree *tree)
   
   ori_rad  = tree->mmod->rad;
   
-  min = MAX(tree->mmod->min_rad,tree->mmod->rad - 0.1);  
-  max = MIN(tree->mmod->max_rad,tree->mmod->rad + 0.1);
+  min = MAX(tree->mmod->min_rad,tree->mmod->rad - 0.2);  
+  max = MIN(tree->mmod->max_rad,tree->mmod->rad + 0.2);
   hr  += LOG(max-min);
   
   tree->mmod->rad = Uni()*(max - min) + min;
   
-  min = MAX(tree->mmod->min_rad,tree->mmod->rad - 0.1);
-  max = MIN(tree->mmod->max_rad,tree->mmod->rad + 0.1);
+  min = MAX(tree->mmod->min_rad,tree->mmod->rad - 0.2);
+  max = MIN(tree->mmod->max_rad,tree->mmod->rad + 0.2);
   hr  -= LOG(max-min);
     
   new_glnL      = MIGREP_Lk(tree);
