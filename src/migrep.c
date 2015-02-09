@@ -169,9 +169,11 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, int n_sites, phydbl width, phydbl he
   mmod->lim->lonlat[1] = height;
   
   /* Initialize parameters of migrep model */
-  mmod->lbda = Uni()*(0.3 - 0.05) + 0.05;
+  /* mmod->lbda = Uni()*(0.3 - 0.05) + 0.05; */
+  mmod->lbda = 0.1;
   mmod->mu   = Uni()*(1.0 - 0.3)  + 0.3;
-  mmod->rad  = Uni()*(5.0 - 1.5)  + 1.5;
+  /* mmod->rad  = Uni()*(5.0 - 1.5)  + 1.5; */
+  mmod->rad = 1.5;
   /* mmod->rho  = 100.; */
   /* mmod->lbda = 0.1; */
   /* mmod->mu   = 0.4; */
@@ -982,6 +984,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   /* tree->mmod->lbda = Uni()*(tree->mmod->max_lbda - tree->mmod->min_lbda) + tree->mmod->min_lbda; */
   /* tree->mmod->mu   = Uni()*(tree->mmod->max_mu - tree->mmod->min_mu) + tree->mmod->min_mu; */
   /* tree->mmod->rad  = Uni()*(tree->mmod->max_rad - tree->mmod->min_rad) + tree->mmod->min_rad; */
+
   tree->mmod->lbda            = Uni()*(0.30 - 0.05) + 0.05;
   tree->mmod->mu              = Uni()*(1.00 - 0.30) + 0.30;
   tree->mmod->rad             = Uni()*(7.00 - 3.00) + 3.00;

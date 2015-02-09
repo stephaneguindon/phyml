@@ -5097,11 +5097,9 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
 
   if(!n_valid_disks) return;
   
-  /* n_delete_disks = Rand_Int(1,MIN(5,n_valid_disks)); */
   n_delete_disks = Rand_Int(1,1+(int)(n_valid_disks/10));
   /* n_delete_disks = 1; */
   
-
   hr -= LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_delete_disk]);
   hr += LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_insert_disk]);
   hr -= LOG(1.+(n_valid_disks - n_delete_disks)/10.);
@@ -5247,11 +5245,10 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
       For(i,tree->mmod->n_dim) new_disk[j]->centr->lonlat[i] = Uni()*tree->mmod->lim->lonlat[i];
 
       For(i,tree->mmod->n_dim) hr += LOG(tree->mmod->lim->lonlat[i]);
-      hr -= LOG(n_valid_disks+1+j);
+      hr -= LOG(n_valid_disks+j);
       hr += LOG(-T);
     }
 
-  /* hr += LnFact(n_insert_disks); */
 
   /* Random increase of the value of lambda */
   min = tree->mmod->lbda;
@@ -5991,7 +5988,7 @@ void MCMC_MIGREP_Insert_Hit(t_tree *tree)
           hr += LOG(max - min);      
         }
 
-      hr -= LOG(n_valid_disks+1);
+      hr -= LOG(n_valid_disks+j);
       hr += LOG(-T);
     }
 
