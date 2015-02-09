@@ -5245,7 +5245,7 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
       For(i,tree->mmod->n_dim) new_disk[j]->centr->lonlat[i] = Uni()*tree->mmod->lim->lonlat[i];
 
       For(i,tree->mmod->n_dim) hr += LOG(tree->mmod->lim->lonlat[i]);
-      hr -= LOG(n_valid_disks+j);
+      hr -= LOG(n_valid_disks+n_insert_disks-j);
       hr += LOG(-T);
     }
 
@@ -5988,7 +5988,7 @@ void MCMC_MIGREP_Insert_Hit(t_tree *tree)
           hr += LOG(max - min);      
         }
 
-      hr -= LOG(n_valid_disks+j);
+      hr -= LOG(n_valid_disks+n_insert_disks-j);
       hr += LOG(-T);
     }
 
