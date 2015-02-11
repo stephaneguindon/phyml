@@ -512,7 +512,6 @@ void MCMC_Single_Param_Generic(phydbl *val,
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void MCMC_Update_Effective_Sample_Size(int move_num, t_mcmc *mcmc, t_tree *tree)
 {
   phydbl new_val,cur_val;
@@ -4505,7 +4504,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_migrep_delete_hit]            = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_insert_hit]            = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_move_ldsk]             = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_spr]                   = 2.0;
+  mcmc->move_weight[mcmc->num_move_migrep_spr]                   = 5.0;
   mcmc->move_weight[mcmc->num_move_migrep_scale_times]           = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_ldscape_lim]           = 1.0;
 # else
@@ -4857,65 +4856,75 @@ void MCMC_Read_Param_Vals(t_tree *tree)
 #ifdef MIGREP
 void MCMC_MIGREP_Lbda(t_tree *tree)
 {
-  phydbl u,alpha,ratio;
-  phydbl cur_glnL, new_glnL, hr;
-  phydbl cur_glnL_lbda, new_glnL_lbda;
-  phydbl ori_lbda;
-  phydbl min,max;
+  /* phydbl u,alpha,ratio; */
+  /* phydbl cur_glnL, new_glnL, hr; */
+  /* phydbl cur_glnL_lbda, new_glnL_lbda; */
+  /* phydbl ori_lbda; */
+  /* phydbl min,max; */
 
-  new_glnL       = UNLIKELY;
-  cur_glnL       = tree->mmod->c_lnL;
-  hr            = 0.0;
-  ratio         = 0.0;
-  new_glnL_lbda  = UNLIKELY;
-  cur_glnL_lbda  = MIGREP_LnPrior_Lbda(tree);
+  /* new_glnL       = UNLIKELY; */
+  /* cur_glnL       = tree->mmod->c_lnL; */
+  /* hr            = 0.0; */
+  /* ratio         = 0.0; */
+  /* new_glnL_lbda  = UNLIKELY; */
+  /* cur_glnL_lbda  = MIGREP_LnPrior_Lbda(tree); */
 
-  ori_lbda = tree->mmod->lbda;
+  /* ori_lbda = tree->mmod->lbda; */
   
-  min = MAX(tree->mmod->min_lbda,tree->mmod->lbda - 0.01);
-  max = MIN(tree->mmod->max_lbda,tree->mmod->lbda + 0.01);
-  hr  += LOG(max-min);
+  /* min = MAX(tree->mmod->min_lbda,tree->mmod->lbda - 0.01); */
+  /* max = MIN(tree->mmod->max_lbda,tree->mmod->lbda + 0.01); */
+  /* hr  += LOG(max-min); */
  
-  tree->mmod->lbda = Uni()*(max - min) + min;
+  /* tree->mmod->lbda = Uni()*(max - min) + min; */
 
-  min = MAX(tree->mmod->min_lbda,tree->mmod->lbda - 0.01);
-  max = MIN(tree->mmod->max_lbda,tree->mmod->lbda + 0.01);
-  hr  -= LOG(max-min);
+  /* min = MAX(tree->mmod->min_lbda,tree->mmod->lbda - 0.01); */
+  /* max = MIN(tree->mmod->max_lbda,tree->mmod->lbda + 0.01); */
+  /* hr  -= LOG(max-min); */
 
-  new_glnL      = MIGREP_Lk(tree);
-  new_glnL_lbda = MIGREP_LnPrior_Lbda(tree);
+  /* new_glnL      = MIGREP_Lk(tree); */
+  /* new_glnL_lbda = MIGREP_LnPrior_Lbda(tree); */
   
-  ratio += (new_glnL - cur_glnL);
-  ratio += (new_glnL_lbda - cur_glnL_lbda);
-  ratio += hr;
+  /* ratio += (new_glnL - cur_glnL); */
+  /* ratio += (new_glnL_lbda - cur_glnL_lbda); */
+  /* ratio += hr; */
   
-  ratio = EXP(ratio);
-  alpha = MIN(1.,ratio);
+  /* ratio = EXP(ratio); */
+  /* alpha = MIN(1.,ratio); */
   
-  /* Always accept move */
-  if(tree->mcmc->always_yes == YES && new_glnL > UNLIKELY) alpha = 1.0;
+  /* /\* Always accept move *\/ */
+  /* if(tree->mcmc->always_yes == YES && new_glnL > UNLIKELY) alpha = 1.0; */
   
-  u = Uni();
+  /* u = Uni(); */
   
-  /* printf("\n- Move disk new_glnL: %f [%f] hr: %f u:%f alpha: %f",new_glnL,cur_glnL,hr,u,alpha); */
+  /* /\* printf("\n- Move disk new_glnL: %f [%f] hr: %f u:%f alpha: %f",new_glnL,cur_glnL,hr,u,alpha); *\/ */
 
-  if(u > alpha) /* Reject */
-    {
-      /* printf("- Reject"); */
-      tree->mmod->lbda = ori_lbda;
+  /* if(u > alpha) /\* Reject *\/ */
+  /*   { */
+  /*     /\* printf("- Reject"); *\/ */
+  /*     tree->mmod->lbda = ori_lbda; */
 
-      /* tree->mmod->c_lnL = cur_glnL; */
-      new_glnL = MIGREP_Lk(tree);
-      if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO) 
-        {
-          PhyML_Printf("\n. new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
-          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-        }
-    }
-  else
-    {
-      /* printf("- Accept"); */
-    }  
+  /*     /\* tree->mmod->c_lnL = cur_glnL; *\/ */
+  /*     new_glnL = MIGREP_Lk(tree); */
+  /*     if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)  */
+  /*       { */
+  /*         PhyML_Printf("\n. new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL); */
+  /*         Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
+  /*       } */
+  /*   } */
+  /* else */
+  /*   { */
+  /*     /\* printf("- Accept"); *\/ */
+  /*   }   */
+
+  MCMC_Single_Param_Generic(&(tree->mmod->lbda),
+                            tree->mmod->min_lbda,
+                            tree->mmod->max_lbda,
+                            tree->mcmc->num_move_migrep_lbda,
+                            NULL,&(tree->mmod->c_lnL),
+                            NULL,MIGREP_Wrap_Lk,
+                            tree->mcmc->move_type[tree->mcmc->num_move_migrep_lbda],
+                            NO,NULL,tree,NULL);
+  
 }
 #endif
 
@@ -4925,66 +4934,74 @@ void MCMC_MIGREP_Lbda(t_tree *tree)
 #ifdef MIGREP
 void MCMC_MIGREP_Mu(t_tree *tree)
 {
-  phydbl u,alpha,ratio;
-  phydbl cur_glnL, new_glnL, hr;
-  phydbl cur_glnL_mu, new_glnL_mu;
-  phydbl ori_mu;
-  phydbl min,max;
+  /* phydbl u,alpha,ratio; */
+  /* phydbl cur_glnL, new_glnL, hr; */
+  /* phydbl cur_glnL_mu, new_glnL_mu; */
+  /* phydbl ori_mu; */
+  /* phydbl min,max; */
 
-  new_glnL       = UNLIKELY;
-  cur_glnL       = tree->mmod->c_lnL;
-  hr            = 0.0;
-  ratio         = 0.0;
-  new_glnL_mu    = UNLIKELY;
-  cur_glnL_mu    = MIGREP_LnPrior_Mu(tree);
+  /* new_glnL       = UNLIKELY; */
+  /* cur_glnL       = tree->mmod->c_lnL; */
+  /* hr            = 0.0; */
+  /* ratio         = 0.0; */
+  /* new_glnL_mu    = UNLIKELY; */
+  /* cur_glnL_mu    = MIGREP_LnPrior_Mu(tree); */
 
-  ori_mu = tree->mmod->mu;
+  /* ori_mu = tree->mmod->mu; */
   
-  min = MAX(tree->mmod->min_mu,tree->mmod->mu - 0.01);
-  max = MIN(tree->mmod->max_mu,tree->mmod->mu + 0.01);
-  hr  += LOG(max-min);
+  /* min = MAX(tree->mmod->min_mu,tree->mmod->mu - 0.01); */
+  /* max = MIN(tree->mmod->max_mu,tree->mmod->mu + 0.01); */
+  /* hr  += LOG(max-min); */
  
-  tree->mmod->mu = Uni()*(max - min) + min;
+  /* tree->mmod->mu = Uni()*(max - min) + min; */
 
-  min  = MAX(tree->mmod->min_mu,tree->mmod->mu - 0.01);
-  max  = MIN(tree->mmod->max_mu,tree->mmod->mu + 0.01);
-  hr  -= LOG(max-min);
+  /* min  = MAX(tree->mmod->min_mu,tree->mmod->mu - 0.01); */
+  /* max  = MIN(tree->mmod->max_mu,tree->mmod->mu + 0.01); */
+  /* hr  -= LOG(max-min); */
 
-  new_glnL    = MIGREP_Lk(tree);
-  new_glnL_mu = MIGREP_LnPrior_Mu(tree);
+  /* new_glnL    = MIGREP_Lk(tree); */
+  /* new_glnL_mu = MIGREP_LnPrior_Mu(tree); */
   
-  ratio += (new_glnL - cur_glnL);
-  ratio += (new_glnL_mu - cur_glnL_mu);
-  ratio += hr;
+  /* ratio += (new_glnL - cur_glnL); */
+  /* ratio += (new_glnL_mu - cur_glnL_mu); */
+  /* ratio += hr; */
   
-  ratio = EXP(ratio);
-  alpha = MIN(1.,ratio);
+  /* ratio = EXP(ratio); */
+  /* alpha = MIN(1.,ratio); */
   
-  /* Always accept move */
-  if(tree->mcmc->always_yes == YES && new_glnL > UNLIKELY) alpha = 1.0;
+  /* /\* Always accept move *\/ */
+  /* if(tree->mcmc->always_yes == YES && new_glnL > UNLIKELY) alpha = 1.0; */
 
-  u = Uni();
+  /* u = Uni(); */
   
-  /* printf("\n- Move disk new_glnL: %f [%f] hr: %f u:%f alpha: %f",new_glnL,cur_glnL,hr,u,alpha); */
+  /* /\* printf("\n- Move disk new_glnL: %f [%f] hr: %f u:%f alpha: %f",new_glnL,cur_glnL,hr,u,alpha); *\/ */
 
-  if(u > alpha) /* Reject */
-    {
-      /* printf("- Reject"); */
-      tree->mmod->mu = ori_mu;
+  /* if(u > alpha) /\* Reject *\/ */
+  /*   { */
+  /*     /\* printf("- Reject"); *\/ */
+  /*     tree->mmod->mu = ori_mu; */
 
-      /* tree->mmod->c_lnL = cur_glnL; */
-      new_glnL = MIGREP_Lk(tree);
-      if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO) 
-        {
-          PhyML_Printf("\n. new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
-          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-        }
-    }
-  else
-    {
-      /* printf("- Accept"); */
-    }  
+  /*     /\* tree->mmod->c_lnL = cur_glnL; *\/ */
+  /*     new_glnL = MIGREP_Lk(tree); */
+  /*     if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)  */
+  /*       { */
+  /*         PhyML_Printf("\n. new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL); */
+  /*         Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
+  /*       } */
+  /*   } */
+  /* else */
+  /*   { */
+  /*     /\* printf("- Accept"); *\/ */
+  /*   }   */
 
+  MCMC_Single_Param_Generic(&(tree->mmod->mu),
+                            tree->mmod->min_mu,
+                            tree->mmod->max_mu,
+                            tree->mcmc->num_move_migrep_mu,
+                            NULL,&(tree->mmod->c_lnL),
+                            NULL,MIGREP_Wrap_Lk,
+                            tree->mcmc->move_type[tree->mcmc->num_move_migrep_mu],
+                            NO,NULL,tree,NULL);
 }
 #endif
 
@@ -4994,66 +5011,75 @@ void MCMC_MIGREP_Mu(t_tree *tree)
 #ifdef MIGREP
 void MCMC_MIGREP_Radius(t_tree *tree)
 {
-  phydbl u,alpha,ratio;
-  phydbl cur_glnL, new_glnL, hr;
-  phydbl cur_glnL_rad, new_glnL_rad;
-  phydbl ori_rad;
-  phydbl min,max;
+  /* phydbl u,alpha,ratio; */
+  /* phydbl cur_glnL, new_glnL, hr; */
+  /* phydbl cur_glnL_rad, new_glnL_rad; */
+  /* phydbl ori_rad; */
+  /* phydbl min,max; */
 
-  new_glnL       = UNLIKELY;
-  cur_glnL       = tree->mmod->c_lnL;
-  hr            = 0.0;
-  ratio         = 0.0;
-  cur_glnL_rad   = MIGREP_LnPrior_Radius(tree);
-  new_glnL_rad   = UNLIKELY;
+  /* new_glnL       = UNLIKELY; */
+  /* cur_glnL       = tree->mmod->c_lnL; */
+  /* hr            = 0.0; */
+  /* ratio         = 0.0; */
+  /* cur_glnL_rad   = MIGREP_LnPrior_Radius(tree); */
+  /* new_glnL_rad   = UNLIKELY; */
   
-  ori_rad  = tree->mmod->rad;
+  /* ori_rad  = tree->mmod->rad; */
   
-  min = MAX(tree->mmod->min_rad,tree->mmod->rad - 0.2);  
-  max = MIN(tree->mmod->max_rad,tree->mmod->rad + 0.2);
-  hr  += LOG(max-min);
+  /* min = MAX(tree->mmod->min_rad,tree->mmod->rad - 0.1);   */
+  /* max = MIN(tree->mmod->max_rad,tree->mmod->rad + 0.1); */
+  /* hr  += LOG(max-min); */
   
-  tree->mmod->rad = Uni()*(max - min) + min;
+  /* tree->mmod->rad = Uni()*(max - min) + min; */
   
-  min = MAX(tree->mmod->min_rad,tree->mmod->rad - 0.2);
-  max = MIN(tree->mmod->max_rad,tree->mmod->rad + 0.2);
-  hr  -= LOG(max-min);
+  /* min = MAX(tree->mmod->min_rad,tree->mmod->rad - 0.1); */
+  /* max = MIN(tree->mmod->max_rad,tree->mmod->rad + 0.1); */
+  /* hr  -= LOG(max-min); */
     
-  new_glnL      = MIGREP_Lk(tree);
-  new_glnL_rad  = MIGREP_LnPrior_Radius(tree);
+  /* new_glnL      = MIGREP_Lk(tree); */
+  /* new_glnL_rad  = MIGREP_LnPrior_Radius(tree); */
   
-  ratio += (new_glnL - cur_glnL);
-  ratio += (new_glnL_rad - cur_glnL_rad);
+  /* ratio += (new_glnL - cur_glnL); */
+  /* ratio += (new_glnL_rad - cur_glnL_rad); */
   
-  ratio += hr;
+  /* ratio += hr; */
   
-  ratio = EXP(ratio);
-  alpha = MIN(1.,ratio);
+  /* ratio = EXP(ratio); */
+  /* alpha = MIN(1.,ratio); */
   
-  /* Always accept move */
-  if(tree->mcmc->always_yes == YES && new_glnL > UNLIKELY) alpha = 1.0;
+  /* /\* Always accept move *\/ */
+  /* if(tree->mcmc->always_yes == YES && new_glnL > UNLIKELY) alpha = 1.0; */
   
-  u = Uni();
+  /* u = Uni(); */
   
-  /* printf("\n- Move disk new_glnL: %f [%f] hr: %f u:%f alpha: %f",new_glnL,cur_glnL,hr,u,alpha); */
+  /* /\* printf("\n- Move disk new_glnL: %f [%f] hr: %f u:%f alpha: %f",new_glnL,cur_glnL,hr,u,alpha); *\/ */
   
-  if(u > alpha) /* Reject */
-    {
-      /* printf("- Reject"); */
-      tree->mmod->rad  = ori_rad;
+  /* if(u > alpha) /\* Reject *\/ */
+  /*   { */
+  /*     /\* printf("- Reject"); *\/ */
+  /*     tree->mmod->rad  = ori_rad; */
 
-      /* tree->mmod->c_lnL = cur_glnL; */
-      new_glnL = MIGREP_Lk(tree);
-      if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO) 
-        {
-          PhyML_Printf("\n. new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
-          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-        }
-    }
-  else
-    {
-      /* printf("- Accept"); */
-    }  
+  /*     /\* tree->mmod->c_lnL = cur_glnL; *\/ */
+  /*     new_glnL = MIGREP_Lk(tree); */
+  /*     if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)  */
+  /*       { */
+  /*         PhyML_Printf("\n. new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL); */
+  /*         Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
+  /*       } */
+  /*   } */
+  /* else */
+  /*   { */
+  /*     /\* printf("- Accept"); *\/ */
+  /*   }   */
+
+  MCMC_Single_Param_Generic(&(tree->mmod->rad),
+                            tree->mmod->min_rad,
+                            tree->mmod->max_rad,
+                            tree->mcmc->num_move_migrep_rad,
+                            NULL,&(tree->mmod->c_lnL),
+                            NULL,MIGREP_Wrap_Lk,
+                            tree->mcmc->move_type[tree->mcmc->num_move_migrep_rad],
+                            NO,NULL,tree,NULL);
 
 }
 #endif 
