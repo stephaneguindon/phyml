@@ -5885,8 +5885,8 @@ void MCMC_MIGREP_Insert_Hit(t_tree *tree)
     }
   while(disk->prev);
 
-  n_insert_disks = Rand_Int(1,1+(int)(n_valid_disks/10));
-  /* n_insert_disks = 1; */
+  n_insert_disks = Rand_Int(1,1+(int)(n_valid_disks/10)); 
+  /* n_insert_disks = 1000; */
 
   hr += LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_delete_hit]);
   hr -= LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_insert_hit]);
@@ -5964,9 +5964,12 @@ void MCMC_MIGREP_Insert_Hit(t_tree *tree)
       young_ldsk[j]->prev                 = new_ldsk[j];  
       old_ldsk[j]->next[dir_old_young[j]] = new_ldsk[j];
 
-      MIGREP_Update_Lindisk_List_Core(young_disk);
-      MIGREP_Update_Lindisk_List_Core(new_disk[j]);
-      MIGREP_Update_Lindisk_List_Core(old_disk);
+      /* MIGREP_Update_Lindisk_List_Core(young_disk); */
+      /* MIGREP_Update_Lindisk_List_Core(new_disk[j]); */
+      /* MIGREP_Update_Lindisk_List_Core(old_disk); */
+
+      MIGREP_Update_Lindisk_List(tree);
+
       
       /* Sample position of the center of new_disk */
       For(i,tree->mmod->n_dim)
@@ -6135,7 +6138,7 @@ void MCMC_MIGREP_Delete_Hit(t_tree *tree)
   if(!n_valid_disks) return;
   
   n_delete_disks = Rand_Int(1,1+(int)(n_valid_disks/10));
-  /* n_delete_disks = 1; */
+  /* n_delete_disks = n_valid_disks; */
 
   hr -= LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_delete_hit]);
   hr += LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_insert_hit]);
