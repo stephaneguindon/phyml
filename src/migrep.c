@@ -32,7 +32,7 @@ int MIGREP_Main(int argc, char *argv[])
 
   pid = getpid();
   seed = pid;
-  /* seed = 12965; */
+  seed = 12965;
   printf("\n. seed: %d",seed);
   srand(seed);
   
@@ -62,7 +62,7 @@ int MIGREP_Main(int argc, char *argv[])
 
   res = MIGREP_MCMC(tree);
 
-  burnin = (int)((0.5*tree->mcmc->chain_len) / tree->mcmc->sample_interval);
+  burnin = (int)((0.5*tree->mcmc->run) / tree->mcmc->sample_interval);
 
   PhyML_Fprintf(fp_out,"%f\t %f\t %f\t",
                 /* Lbda5 */ Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1,0.025),
