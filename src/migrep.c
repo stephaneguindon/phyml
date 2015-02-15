@@ -23,7 +23,7 @@ int MIGREP_Main(int argc, char *argv[])
 {
   t_tree *tree;
   phydbl *res;
-  int seed,pid;
+  int seed,pid,burnin;
   FILE *fp_out;
   char *s;
   t_dsk *disk;
@@ -62,40 +62,42 @@ int MIGREP_Main(int argc, char *argv[])
 
   res = MIGREP_MCMC(tree);
 
-  PhyML_Fprintf(fp_out,"%f\t %f\t %f\t",
-                /* Lbda5 */ Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.025),
-                /* Lbda50*/ Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.50),
-                /* Lbda95*/ Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.975));
+  burnin = (int)((0.5*tree->mcmc->chain_len) / tree->mcmc->sample_interval);
 
   PhyML_Fprintf(fp_out,"%f\t %f\t %f\t",
-                /* mu5 */ Quantile(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.025),
-                /* mu50*/ Quantile(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.50),
-                /* mu95*/ Quantile(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.975));
+                /* Lbda5 */ Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1,0.025),
+                /* Lbda50*/ Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1,0.50),
+                /* Lbda95*/ Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1,0.975));
 
   PhyML_Fprintf(fp_out,"%f\t %f\t %f\t",
-                /* rad5 */ Quantile(res+2*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.025),
-                /* rad50*/ Quantile(res+2*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.50),
-                /* rad95*/ Quantile(res+2*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.975));
+                /* mu5 */ Quantile(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1,0.025),
+                /* mu50*/ Quantile(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1,0.50),
+                /* mu95*/ Quantile(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1,0.975));
 
   PhyML_Fprintf(fp_out,"%f\t %f\t %f\t",
-                /* X5 */ Quantile(res+3*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.025),
-                /* X50*/ Quantile(res+3*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.50),
-                /* X95*/ Quantile(res+3*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.975));
+                /* rad5 */ Quantile(res+2*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1,0.025),
+                /* rad50*/ Quantile(res+2*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1,0.50),
+                /* rad95*/ Quantile(res+2*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1,0.975));
 
   PhyML_Fprintf(fp_out,"%f\t %f\t %f\t",
-                /* Y5 */ Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.025),
-                /* Y50*/ Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.50),
-                /* Y95*/ Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.975));
+                /* X5 */ Quantile(res+3*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1,0.025),
+                /* X50*/ Quantile(res+3*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1,0.50),
+                /* X95*/ Quantile(res+3*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1,0.975));
 
   PhyML_Fprintf(fp_out,"%f\t %f\t %f\t",
-                /* X5 */ Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.025),
-                /* X50*/ Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.50),
-                /* X95*/ Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.975));
+                /* Y5 */ Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1,0.025),
+                /* Y50*/ Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1,0.50),
+                /* Y95*/ Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1,0.975));
 
   PhyML_Fprintf(fp_out,"%f\t %f\t %f\t",
-                /* X5 */ Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.025),
-                /* X50*/ Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.50),
-                /* X95*/ Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval,tree->mcmc->run / tree->mcmc->sample_interval+1,0.975));
+                /* X5 */ Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1,0.025),
+                /* X50*/ Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1,0.50),
+                /* X95*/ Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1,0.975));
+
+  PhyML_Fprintf(fp_out,"%f\t %f\t %f\t",
+                /* X5 */ Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1,0.025),
+                /* X50*/ Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1,0.50),
+                /* X95*/ Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1,0.975));
 
   Free(res);  
   fclose(fp_out);
@@ -1063,7 +1065,9 @@ phydbl *MIGREP_MCMC(t_tree *tree)
 
       u = Uni();
 
-      For(move,tree->mcmc->n_moves) if(tree->mcmc->move_weight[move] > u) break;
+      For(move,tree->mcmc->n_moves) if(tree->mcmc->move_weight[move] > u-1.E-10) break;
+      
+      if(move == tree->mcmc->n_moves) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
       
       if(!strcmp(tree->mcmc->move_name[move],"migrep_lbda"))
         MCMC_MIGREP_Lbda(tree);
