@@ -32,6 +32,7 @@ int MIGREP_Main(int argc, char *argv[])
 
   pid = getpid();
   seed = pid;
+  /* seed = 25921; */
   /* seed = 12965; */
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -62,7 +63,7 @@ int MIGREP_Main(int argc, char *argv[])
 
   res = MIGREP_MCMC(tree);
 
-  burnin = (int)((0.5*tree->mcmc->run) / tree->mcmc->sample_interval);
+  burnin = (int)(0.5*(tree->mcmc->run / tree->mcmc->sample_interval));
 
   PhyML_Fprintf(fp_out,"%f\t %f\t %f\t",
                 /* Lbda5 */ Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1,0.025),
@@ -171,14 +172,14 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, int n_sites, phydbl width, phydbl he
   mmod->lim->lonlat[1] = height;
   
   /* Initialize parameters of migrep model */
-  /* mmod->lbda = Uni()*(0.3 - 0.05) + 0.05; */
-  /* mmod->mu   = Uni()*(1.0 - 0.3)  + 0.3; */
-  /* mmod->rad  = Uni()*(5.0 - 1.5)  + 1.5; */
-
-
   mmod->lbda = Uni()*(0.3 - 0.05) + 0.05;
   mmod->mu   = Uni()*(1.0 - 0.3)  + 0.3;
-  mmod->rad  = Uni()*(2.5 - 1.5)  + 1.5;
+  mmod->rad  = Uni()*(5.0 - 1.5)  + 1.5;
+
+
+  /* mmod->lbda = Uni()*(0.3 - 0.05) + 0.05; */
+  /* mmod->mu   = Uni()*(1.0 - 0.3)  + 0.3; */
+  /* mmod->rad  = Uni()*(2.5 - 1.5)  + 1.5; */
 
   /* mmod->rho  = 100.; */
   /* mmod->lbda = 0.1; */
@@ -991,14 +992,9 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   /* tree->mmod->mu   = Uni()*(tree->mmod->max_mu - tree->mmod->min_mu) + tree->mmod->min_mu; */
   /* tree->mmod->rad  = Uni()*(tree->mmod->max_rad - tree->mmod->min_rad) + tree->mmod->min_rad; */
 
-  /* tree->mmod->lbda            = Uni()*(0.30 - 0.05) + 0.05; */
-  /* tree->mmod->mu              = Uni()*(1.00 - 0.30) + 0.30; */
-  /* tree->mmod->rad             = Uni()*(7.00 - 3.00) + 3.00; */
-
-  tree->mmod->lbda            = Uni()*(0.30 - 0.2)  + 0.2;
-  tree->mmod->mu              = Uni()*(1.00 - 0.80) + 0.80;
-  tree->mmod->rad             = Uni()*(3.00 - 2.00) + 2.00;
-
+  tree->mmod->lbda            = Uni()*(0.30 - 0.05) + 0.05;
+  tree->mmod->mu              = Uni()*(1.00 - 0.30) + 0.30;
+  tree->mmod->rad             = Uni()*(7.00 - 3.00) + 3.00;
 
   /* disk = tree->disk; */
   /* max_x = 0.0; */
@@ -1031,7 +1027,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   PhyML_Fprintf(fp_stats,"\n# start mu: %f",tree->mmod->mu);
   PhyML_Fprintf(fp_stats,"\n# start rad: %f",tree->mmod->rad);
 
-  PhyML_Fprintf(fp_stats,"\n %13s %13s %13s %13s %13s %13s %13s %13s %13s %13s %13s %13s %13s %13s %13s %13s %13s",
+  PhyML_Fprintf(fp_stats,"\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s",
                 "run",
                 "alnL",
                 "glnL",
@@ -1117,7 +1113,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       if(!(tree->mcmc->run%tree->mcmc->sample_interval))
         {
           Lk(NULL,tree);
-          PhyML_Fprintf(fp_stats,"\n %13d %13f %13f %13f %13f %13f %13d %13d %13d %13f %13f %13f %13f %13f %13f %13f %13f",
+          PhyML_Fprintf(fp_stats,"\n%d\t%f\t%f\t%f\t%f\t%f\t%d\t%d\t%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f",
                         tree->mcmc->run,
                         tree->c_lnL,
                         tree->mmod->c_lnL,
@@ -1162,9 +1158,9 @@ phydbl *MIGREP_MCMC(t_tree *tree)
           /* Free(s); */
         /* } */
 
-      if(tree->mcmc->ess[tree->mcmc->num_move_migrep_lbda] > 200. &&
-         tree->mcmc->ess[tree->mcmc->num_move_migrep_mu]   > 200. &&
-         tree->mcmc->ess[tree->mcmc->num_move_migrep_rad]  > 200.) break;
+      if(tree->mcmc->ess[tree->mcmc->num_move_migrep_lbda] > 400. &&
+         tree->mcmc->ess[tree->mcmc->num_move_migrep_mu]   > 400. &&
+         tree->mcmc->ess[tree->mcmc->num_move_migrep_rad]  > 400.) break;
     }
   while(tree->mcmc->run < tree->mcmc->chain_len);
 
