@@ -65,10 +65,6 @@ int MIGREP_Main(int argc, char *argv[])
 
   burnin = (int)(0.5*(tree->mcmc->run / tree->mcmc->sample_interval));
 
-  PhyML_Fprintf(fp_out,"\n. burnin: %d %d",
-                burnin,
-                tree->mcmc->run / tree->mcmc->sample_interval);
-
   PhyML_Fprintf(fp_out,"%f\t %f\t %f\t",
                 /* Lbda5 */ Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
                 /* Lbda50*/ Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
