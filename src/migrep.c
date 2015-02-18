@@ -983,9 +983,9 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   PhyML_Fprintf(fp_stats,"\n# true mu: %f",tree->mmod->mu);
   PhyML_Fprintf(fp_stats,"\n# true rad: %f",tree->mmod->rad);
 
-  s = Write_Tree(tree,NO);
-  PhyML_Fprintf(fp_tree,"\n%s",s);
-  Free(s);
+  /* s = Write_Tree(tree,NO); */
+  /* PhyML_Fprintf(fp_tree,"\n%s",s); */
+  /* Free(s); */
   
 
   /* tree->mmod->lbda = Uni()*(tree->mmod->max_lbda - tree->mmod->min_lbda) + tree->mmod->min_lbda; */
@@ -1153,9 +1153,9 @@ phydbl *MIGREP_MCMC(t_tree *tree)
 
       /* if(!(tree->mcmc->run%(20*tree->mcmc->sample_interval))) */
       /*   { */
-          char *s = Write_Tree(tree,NO);
-          PhyML_Fprintf(fp_tree,"\n%s",s);
-          Free(s);
+          /* char *s = Write_Tree(tree,NO); */
+          /* PhyML_Fprintf(fp_tree,"\n%s",s); */
+          /* Free(s); */
         /* } */
 
       if(tree->mcmc->ess[tree->mcmc->num_move_migrep_lbda] > 400. &&
