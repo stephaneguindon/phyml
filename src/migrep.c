@@ -34,6 +34,7 @@ int MIGREP_Main(int argc, char *argv[])
   seed = pid;
   /* seed = 25921; */
   /* seed = 12965; */
+  /* seed = 23574; */
   printf("\n. seed: %d",seed);
   srand(seed);
   
@@ -176,10 +177,9 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, int n_sites, phydbl width, phydbl he
   mmod->mu   = Uni()*(1.0 - 0.3)  + 0.3;
   mmod->rad  = Uni()*(5.0 - 1.5)  + 1.5;
 
-
-  /* mmod->lbda = Uni()*(0.3 - 0.05) + 0.05; */
-  /* mmod->mu   = Uni()*(1.0 - 0.3)  + 0.3; */
-  /* mmod->rad  = Uni()*(2.5 - 1.5)  + 1.5; */
+  /* mmod->lbda = 0.10; */
+  /* mmod->mu   = 0.90; */
+  /* mmod->rad  = 4.50; */
 
   /* mmod->rho  = 100.; */
   /* mmod->lbda = 0.1; */
@@ -983,9 +983,9 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   PhyML_Fprintf(fp_stats,"\n# true mu: %f",tree->mmod->mu);
   PhyML_Fprintf(fp_stats,"\n# true rad: %f",tree->mmod->rad);
 
-  /* s = Write_Tree(tree,NO); */
-  /* PhyML_Fprintf(fp_tree,"\n%s",s); */
-  /* Free(s); */
+  s = Write_Tree(tree,NO);
+  PhyML_Fprintf(fp_tree,"\n%s",s);
+  Free(s);
   
 
   /* tree->mmod->lbda = Uni()*(tree->mmod->max_lbda - tree->mmod->min_lbda) + tree->mmod->min_lbda; */
@@ -994,7 +994,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
 
   tree->mmod->lbda            = Uni()*(0.30 - 0.05) + 0.05;
   tree->mmod->mu              = Uni()*(1.00 - 0.30) + 0.30;
-  tree->mmod->rad             = Uni()*(7.00 - 3.00) + 3.00;
+  tree->mmod->rad             = Uni()*(3.00 - 1.00) + 1.00;
 
   /* disk = tree->disk; */
   /* max_x = 0.0; */
@@ -1153,9 +1153,9 @@ phydbl *MIGREP_MCMC(t_tree *tree)
 
       /* if(!(tree->mcmc->run%(20*tree->mcmc->sample_interval))) */
       /*   { */
-          /* char *s = Write_Tree(tree,NO); */
-          /* PhyML_Fprintf(fp_tree,"\n%s",s); */
-          /* Free(s); */
+          char *s = Write_Tree(tree,NO);
+          PhyML_Fprintf(fp_tree,"\n%s",s);
+          Free(s);
         /* } */
 
       if(tree->mcmc->ess[tree->mcmc->num_move_migrep_lbda] > 400. &&
@@ -2679,6 +2679,18 @@ int MIGREP_Is_In_Ldscape(t_ldsk *ldsk, t_migrep_mod *mmod)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+phydbl MIGREP_Mean_Time_Between_Events(t_tree *tree)
+{
+  int n_inter;
+  phydbl T;
+
+  n_inter = MIGREP_Total_Number_Of_Intervals(tree);  
+  T = -tree->rates->nd_t[tree->n_root->num];
+  return((phydbl)(T/n_inter));
+}
+
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

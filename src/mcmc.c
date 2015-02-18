@@ -5154,6 +5154,10 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
 
   Free(valid_disks);
   
+   /* Adjust value of lambda */
+  tree->mmod->lbda = 1./MIGREP_Mean_Time_Between_Events(tree);
+
+
   new_glnL = MIGREP_Lk(tree);
   ratio += (new_glnL - cur_glnL);
   ratio += hr;
@@ -5263,6 +5267,9 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
       hr -= LOG(n_valid_disks+n_insert_disks-j);
       hr += LOG(-T);
     }
+
+   /* Adjust value of lambda */
+  tree->mmod->lbda = 1./MIGREP_Mean_Time_Between_Events(tree);
 
   new_glnL = MIGREP_Lk(tree);
   ratio = (new_glnL - cur_glnL);
@@ -6002,7 +6009,10 @@ void MCMC_MIGREP_Insert_Hit(t_tree *tree)
 
   /* hr += LnFact(n_insert_disks); */
 
+   /* Adjust value of lambda */
+  tree->mmod->lbda = 1./MIGREP_Mean_Time_Between_Events(tree);
   
+
   /* Always accept move */
   new_glnL = MIGREP_Lk(tree);
   ratio = (new_glnL - cur_glnL);
@@ -6208,6 +6218,10 @@ void MCMC_MIGREP_Delete_Hit(t_tree *tree)
     }
 
   Free(valid_disks);
+
+   /* Adjust value of lambda */
+  tree->mmod->lbda = 1./MIGREP_Mean_Time_Between_Events(tree);
+
 
   new_glnL = MIGREP_Lk(tree);
   ratio += (new_glnL - cur_glnL);
