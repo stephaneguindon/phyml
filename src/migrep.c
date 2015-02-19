@@ -1158,9 +1158,9 @@ phydbl *MIGREP_MCMC(t_tree *tree)
           /* Free(s); */
         /* } */
 
-      if(tree->mcmc->ess[tree->mcmc->num_move_migrep_lbda] > 400. &&
-         tree->mcmc->ess[tree->mcmc->num_move_migrep_mu]   > 400. &&
-         tree->mcmc->ess[tree->mcmc->num_move_migrep_rad]  > 400.) break;
+      if(tree->mcmc->ess[tree->mcmc->num_move_migrep_lbda] > 800. &&
+         tree->mcmc->ess[tree->mcmc->num_move_migrep_mu]   > 800. &&
+         tree->mcmc->ess[tree->mcmc->num_move_migrep_rad]  > 800.) break;
     }
   while(tree->mcmc->run < tree->mcmc->chain_len);
 
