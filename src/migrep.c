@@ -34,7 +34,7 @@ int MIGREP_Main(int argc, char *argv[])
   seed = pid;
   /* seed = 25921; */
   /* seed = 12965; */
-  /* seed = 23574; */
+  seed = 2647;
   printf("\n. seed: %d",seed);
   srand(seed);
   
@@ -173,13 +173,13 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, int n_sites, phydbl width, phydbl he
   mmod->lim->lonlat[1] = height;
   
   /* Initialize parameters of migrep model */
-  mmod->lbda = Uni()*(0.3 - 0.05) + 0.05;
-  mmod->mu   = Uni()*(1.0 - 0.3)  + 0.3;
-  mmod->rad  = Uni()*(5.0 - 1.5)  + 1.5;
+  /* mmod->lbda = Uni()*(0.3 - 0.05) + 0.05; */
+  /* mmod->mu   = Uni()*(1.0 - 0.3)  + 0.3; */
+  /* mmod->rad  = Uni()*(5.0 - 1.5)  + 1.5; */
 
-  /* mmod->lbda = 0.10; */
-  /* mmod->mu   = 0.90; */
-  /* mmod->rad  = 4.50; */
+  mmod->lbda = 0.20;
+  mmod->mu   = 0.90;
+  mmod->rad  = 1.50;
 
   /* mmod->rho  = 100.; */
   /* mmod->lbda = 0.1; */
@@ -940,7 +940,6 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   Free(s);
 
   mcmc = MCMC_Make_MCMC_Struct();
-  MCMC_Complete_MCMC(mcmc,tree);
 
   disk = tree->disk;
   while(disk->prev) disk = disk->prev;
@@ -961,11 +960,16 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   mcmc->nd_t_digits      = 1;
   mcmc->chain_len        = 1E+8;
   mcmc->sample_interval  = 1E+3;  
+  mcmc->max_lag          = 8;
+
+  MCMC_Complete_MCMC(mcmc,tree);
+
   n_vars                 = 12;
   true_root_x            = disk->ldsk->coord->lonlat[0];
   true_root_y            = disk->ldsk->coord->lonlat[1];
 
   res = (phydbl *)mCalloc(tree->mcmc->chain_len / tree->mcmc->sample_interval * n_vars,sizeof(phydbl));
+
 
   MIGREP_Lk(tree);
   Lk(NULL,tree);
@@ -1055,6 +1059,12 @@ phydbl *MIGREP_MCMC(t_tree *tree)
           For(i,mcmc->n_moves) 
             {
               tree->mcmc->adjust_tuning[i] = NO;
+            }
+        }
+      if(mcmc->run == 0) 
+        {
+          For(i,mcmc->n_moves) 
+            {
               tree->mcmc->start_ess[i] = YES;
             }
         }
@@ -1158,9 +1168,9 @@ phydbl *MIGREP_MCMC(t_tree *tree)
           /* Free(s); */
         /* } */
 
-      if(tree->mcmc->ess[tree->mcmc->num_move_migrep_lbda] > 800. &&
-         tree->mcmc->ess[tree->mcmc->num_move_migrep_mu]   > 800. &&
-         tree->mcmc->ess[tree->mcmc->num_move_migrep_rad]  > 800.) break;
+      if(tree->mcmc->ess[tree->mcmc->num_move_migrep_lbda] > 200. &&
+         tree->mcmc->ess[tree->mcmc->num_move_migrep_mu]   > 200. &&
+         tree->mcmc->ess[tree->mcmc->num_move_migrep_rad]  > 200.) break;
     }
   while(tree->mcmc->run < tree->mcmc->chain_len);
 

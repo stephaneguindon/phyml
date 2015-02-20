@@ -41,7 +41,6 @@ void MCMC_Lexp(t_tree *tree);
 void MCMC_Print_Param(t_mcmc *mcmc, t_tree *tree);
 t_mcmc *MCMC_Make_MCMC_Struct();
 void MCMC_Free_MCMC(t_mcmc *mcmc);
-void MCMC_Init_MCMC_Struct(char *filename, option *io,t_mcmc *mcmc);
 void MCMC(t_tree *tree);
 void MCMC_Alpha(t_tree *tree);
 void MCMC_Randomize_Branch_Lengths(t_tree *tree);

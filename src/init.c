@@ -3379,3 +3379,76 @@ void MIGREP_Init_Lindisk_Node(t_ldsk *t, t_dsk *disk, int n_dim)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void MCMC_Init_MCMC_Struct(char *filename, option *io, t_mcmc *mcmc)
+{
+  int pid;
+
+  mcmc->io               = io;
+  mcmc->is               = NO;
+  mcmc->use_data         = YES;
+  mcmc->run              = 0;
+  mcmc->sample_interval  = 1E+3;
+  mcmc->chain_len        = 1E+7;
+  mcmc->chain_len_burnin = 1E+4;
+  mcmc->randomize        = YES;
+  mcmc->norm_freq        = 1E+3;
+  mcmc->max_tune         = 1.E+20;
+  mcmc->min_tune         = 1.E-10;
+  mcmc->print_every      = 2;
+  mcmc->is_burnin        = NO;
+  mcmc->nd_t_digits      = 4;
+  mcmc->always_yes       = NO;
+  mcmc->max_lag          = 5;
+
+  if(filename)
+    {
+      char *s;
+
+      s = (char *)mCalloc(T_MAX_NAME,sizeof(char));
+
+      strcpy(mcmc->out_filename,filename);
+      pid = getpid();
+      sprintf(mcmc->out_filename+strlen(mcmc->out_filename),".%d",pid);
+
+      strcpy(s,mcmc->io->in_align_file);
+      strcat(s,"_");
+      strcat(s,mcmc->out_filename);
+      strcat(s,".stats");
+      mcmc->out_fp_stats = fopen(s,"w");
+
+      strcpy(s,mcmc->io->in_align_file);
+      strcat(s,"_");
+      strcat(s,mcmc->out_filename);
+      strcat(s,".trees");
+      mcmc->out_fp_trees = fopen(s,"w");
+
+      strcpy(s,mcmc->io->in_align_file);
+      strcat(s,"_");
+      strcat(s,mcmc->out_filename);
+      strcat(s,".constree");
+      mcmc->out_fp_constree = fopen(s,"w");
+
+/*       strcpy(s,tree->mcmc->out_filename); */
+/*       strcat(s,".means"); */
+/*       tree->mcmc->out_fp_means = fopen(s,"w"); */
+
+/*       strcpy(s,tree->mcmc->out_filename); */
+/*       strcat(s,".lasts"); */
+/*       tree->mcmc->out_fp_last  = fopen(s,"w"); */
+
+      Free(s);
+    }
+  else 
+    {
+      mcmc->out_fp_stats = stderr;
+      mcmc->out_fp_trees = stderr;
+      /* tree->mcmc->out_fp_means = stderr; */
+      /* tree->mcmc->out_fp_last  = stderr; */
+    }
+}
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+

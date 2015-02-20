@@ -1509,12 +1509,15 @@ typedef struct __Tmcmc {
   int chain_len_burnin;
   int print_every;
   int is_burnin;
+  int max_lag;
 
   phydbl max_tune;
   phydbl min_tune;
-
-  phydbl *old_param_val;
+  
+  phydbl *lag_param_val;
   phydbl *new_param_val;
+  phydbl *sumxx;
+  phydbl *sumx;
 
   phydbl *sum_val;
   phydbl *sum_valsq;

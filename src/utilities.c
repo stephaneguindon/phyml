@@ -2871,7 +2871,6 @@ void Bootstrap(t_tree *tree)
       Init_P_Pars_Tips(boot_tree);
       Br_Len_Not_Involving_Invar(boot_tree);
 
-
       if(boot_tree->io->do_alias_subpatt)
         {
           MIXT_Set_Alias_Subpatt(YES,boot_tree);
@@ -7626,6 +7625,10 @@ char *Bootstrap_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
 #endif
 
   Free(s_tree);
+
+  Rescale_Br_Len_Multiplier_Tree(tree);
+  Br_Len_Involving_Invar(tree);
+
   s_tree = Write_Tree(tree,NO);
 
   Free_Spr_List(tree);
