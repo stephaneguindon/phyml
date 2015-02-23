@@ -35,7 +35,7 @@ int MIGREP_Main(int argc, char *argv[])
   /* seed = 25921; */
   /* seed = 12965; */
   /* seed = 2647; */
-  seed = 13824;
+  /* seed = 13824; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
