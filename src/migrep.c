@@ -34,7 +34,7 @@ int MIGREP_Main(int argc, char *argv[])
   seed = pid;
   /* seed = 25921; */
   /* seed = 12965; */
-  seed = 2647;
+  /* seed = 2647; */
   printf("\n. seed: %d",seed);
   srand(seed);
   
@@ -173,13 +173,13 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, int n_sites, phydbl width, phydbl he
   mmod->lim->lonlat[1] = height;
   
   /* Initialize parameters of migrep model */
-  /* mmod->lbda = Uni()*(0.3 - 0.05) + 0.05; */
-  /* mmod->mu   = Uni()*(1.0 - 0.3)  + 0.3; */
-  /* mmod->rad  = Uni()*(5.0 - 1.5)  + 1.5; */
+  mmod->lbda = Uni()*(0.3 - 0.05) + 0.05;
+  mmod->mu   = Uni()*(1.0 - 0.3)  + 0.3;
+  mmod->rad  = Uni()*(5.0 - 1.5)  + 1.5;
 
-  mmod->lbda = 0.20;
-  mmod->mu   = 0.90;
-  mmod->rad  = 1.50;
+  /* mmod->lbda = 0.20; */
+  /* mmod->mu   = 0.90; */
+  /* mmod->rad  = 1.50; */
 
   /* mmod->rho  = 100.; */
   /* mmod->lbda = 0.1; */
@@ -960,7 +960,9 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   mcmc->nd_t_digits      = 1;
   mcmc->chain_len        = 1E+8;
   mcmc->sample_interval  = 1E+3;  
-  mcmc->max_lag          = 8;
+  mcmc->max_lag          = 1000;
+  mcmc->sample_size      = mcmc->chain_len/mcmc->sample_interval;
+  mcmc->sample_num       = 0;
 
   MCMC_Complete_MCMC(mcmc,tree);
 
@@ -1159,6 +1161,8 @@ phydbl *MIGREP_MCMC(t_tree *tree)
             {
               if(tree->mcmc->start_ess[i] == YES) MCMC_Update_Effective_Sample_Size(i,tree->mcmc,tree);
             }
+
+          tree->mcmc->sample_num++;
         }
 
       /* if(!(tree->mcmc->run%(20*tree->mcmc->sample_interval))) */

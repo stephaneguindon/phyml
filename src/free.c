@@ -1033,14 +1033,7 @@ void MCMC_Free_MCMC(t_mcmc *mcmc)
   Free(mcmc->ess_run);
   Free(mcmc->start_ess);
   Free(mcmc->ess);
-  Free(mcmc->sum_val);
-  Free(mcmc->sum_valsq);
-  Free(mcmc->sum_curval_nextval);
-  Free(mcmc->first_val);
-  Free(mcmc->lag_param_val);
-  Free(mcmc->new_param_val);
-  Free(mcmc->sumxx);
-  Free(mcmc->sumx);
+  Free(mcmc->sampled_val);
   Free(mcmc);
 }
 

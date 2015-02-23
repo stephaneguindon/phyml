@@ -3399,7 +3399,8 @@ void MCMC_Init_MCMC_Struct(char *filename, option *io, t_mcmc *mcmc)
   mcmc->is_burnin        = NO;
   mcmc->nd_t_digits      = 4;
   mcmc->always_yes       = NO;
-  mcmc->max_lag          = 5;
+  mcmc->max_lag          = 1000;
+  mcmc->sample_num       = 0;
 
   if(filename)
     {

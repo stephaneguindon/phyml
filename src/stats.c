@@ -4563,8 +4563,28 @@ phydbl Weighted_Mean(phydbl *x, phydbl *w, int l)
   int i;
   phydbl wm;
   wm = .0;
-  For(i,l) wm += x[i]*w[i];
+  if(w) For(i,l) wm += x[i]*w[i];
+  else  
+    {
+      For(i,l) wm += x[i];
+      wm /= (phydbl)l;
+    }
   return(wm);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl Variance(phydbl *x, int l)
+{
+  phydbl mean,sum;
+  int i;
+
+  mean = Weighted_Mean(x,NULL,l);
+  sum = 0.0;
+  For(i,l) sum += x[i]*x[i];
+  
+  return(sum/l - mean*mean);
 }
 
 //////////////////////////////////////////////////////////////

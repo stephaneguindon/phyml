@@ -38,7 +38,7 @@ void Bionj(matrix *mat)
       score = .0;
       Compute_Sx(mat);
       Best_Pair(mat,&x,&y,&score);
-      vxy=Variance(mat,x,y);
+      vxy=BioNJ_Variance(mat,x,y);
       lx=Br_Length(mat,x,y);    
       ly=Br_Length(mat,y,x);
       lamda=Lamda(mat,x,y,vxy); 
@@ -315,8 +315,7 @@ phydbl Dist(matrix *mat, int x, int y)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-phydbl Variance(matrix *mat, int x, int y)
+phydbl BioNJ_Variance(matrix *mat, int x, int y)
 {
     if(x > y)
       {
@@ -353,12 +352,11 @@ phydbl Dist_Red(matrix *mat, int x, phydbl lx, int y, phydbl ly, int i, phydbl l
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 phydbl Var_Red(matrix *mat, int x, int y, int i, phydbl lamda, phydbl vxy)
 {
   phydbl Vui;
-  Vui=lamda*(Variance(mat,x,i))
-     +(1.-lamda)*(Variance(mat,y,i))
+  Vui=lamda*(BioNJ_Variance(mat,x,i))
+     +(1.-lamda)*(BioNJ_Variance(mat,y,i))
     -lamda*(1.-lamda)*vxy;
   return(Vui);
 }
@@ -383,7 +381,7 @@ phydbl Lamda(matrix *mat, int x, int y, phydbl vxy)
 	    For(i,mat->n_otu)
 	      {
 		if((x != i) && (y != i) && (mat->on_off[i]))
-		  lamda = lamda + Variance(mat,y,i) - Variance(mat,x,i);
+		  lamda = lamda + BioNJ_Variance(mat,y,i) - BioNJ_Variance(mat,x,i);
 	      }
 	    lamda = 0.5 + lamda/(2.*(mat->r-2)*vxy);
 	  }
@@ -452,7 +450,7 @@ int Bionj_Br_Length_Post(t_node *a, t_node *d, matrix *mat)
 
       vxy = .0;
       Compute_Sx(mat);
-      vxy=Variance(mat,(x),(y));
+      vxy=BioNJ_Variance(mat,(x),(y));
       lx=Br_Length(mat,(x),(y));    
       ly=Br_Length(mat,(y),(x));
       lamda=Lamda(mat,(x),(y),vxy); 

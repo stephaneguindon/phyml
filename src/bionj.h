@@ -25,7 +25,7 @@ void   Compute_Sx(matrix *mat);
 phydbl Sum_S(matrix *mat, int i);
 phydbl Dist(matrix *mat, int x, int y);
 phydbl Q_Agglo(matrix *mat, int x, int y);
-phydbl Variance(matrix *mat, int x, int y);
+phydbl BioNJ_Variance(matrix *mat, int x, int y);
 phydbl Br_Length(matrix *mat, int x, int y);
 void   Update_Dist(matrix *mat, int x, int y);
 phydbl Lamda(matrix *mat, int x, int y, phydbl vxy);

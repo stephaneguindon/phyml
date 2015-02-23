@@ -1514,16 +1514,10 @@ typedef struct __Tmcmc {
   phydbl max_tune;
   phydbl min_tune;
   
-  phydbl *lag_param_val;
-  phydbl *new_param_val;
-  phydbl *sumxx;
-  phydbl *sumx;
-
-  phydbl *sum_val;
-  phydbl *sum_valsq;
-  phydbl *sum_curval_nextval;
+  phydbl *sampled_val;
+  int sample_size;
+  int sample_num;
   phydbl *ess;
-  phydbl *first_val;
   int    *ess_run;
   int    *start_ess;
   int always_yes; /* Always accept proposed move (as long as log-likelihood > UNLIKELY) */
