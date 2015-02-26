@@ -4405,9 +4405,9 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_geo_dum]               = 1.0;
 
 # if defined (MIGREP)
-  mcmc->move_weight[mcmc->num_move_migrep_lbda]                  = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_mu]                    = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_rad]                   = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_lbda]                  = 2.0;
+  mcmc->move_weight[mcmc->num_move_migrep_mu]                    = 2.0;
+  mcmc->move_weight[mcmc->num_move_migrep_rad]                   = 2.0;
   mcmc->move_weight[mcmc->num_move_migrep_insert_disk]           = 4.0;
   mcmc->move_weight[mcmc->num_move_migrep_delete_disk]           = 3.0;  
   mcmc->move_weight[mcmc->num_move_migrep_move_disk_ct]          = 1.0;
