@@ -48,6 +48,7 @@ int Init_Qmat_CpREV(phydbl *daa,phydbl *pi);
 int Init_Qmat_VT(phydbl *daa,phydbl *pi);
 int Init_Qmat_Blosum62(phydbl *daa,phydbl *pi);
 int Init_Qmat_MtMam(phydbl *daa,phydbl *pi);
+int Init_Qmat_AB(phydbl *daa, phydbl *pi);
 void XML_Init_Attribute(xml_attr *attr);
 void Init_String(t_string *ts);
 void Init_Triplet_Struct(triplet *triplet);

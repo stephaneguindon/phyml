@@ -99,7 +99,7 @@ void Launch_Interface(option *io)
   else if ((io->datatype == AA) && (io->mod->whichmodel < 11))
     {
       char choix;
-      PhyML_Printf("\n== Err: model incompatible with the data type. Please use LG, Dayhoff, JTT, MtREV, WAG, DCMut, RtREV, CpREV, VT, Blosum62, MtMam, MtArt, HIVw or HIVb.\n");
+      PhyML_Printf("\n== Err: model incompatible with the data type. Please use LG, Dayhoff, JTT, MtREV, WAG, DCMut, RtREV, CpREV, VT, Blosum62, MtMam, MtArt, HIVw, HIVb or AB.\n");
       PhyML_Printf("\n. Type any key to exit.\n");
       if(!scanf("%c",&choix)) Exit("\n");
       Exit("\n");
@@ -1330,6 +1330,10 @@ void Launch_Interface_Model(option *io)
 		io->mod->whichmodel = HIVB;
 	      }
 	    else if(io->mod->whichmodel == HIVB)
+	      {
+		io->mod->whichmodel = AB;
+		  }
+		else if(io->mod->whichmodel == AB)
 	      {
 		io->mod->whichmodel = CUSTOMAA;
 	      }

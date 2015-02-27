@@ -4084,6 +4084,11 @@ int Set_Whichmodel(int select)
       {
     wm = LG;
     break;
+	  }
+    case 27:
+      {
+    wm = AB;
+    break;
       }
     default:
       {
@@ -5857,7 +5862,7 @@ void Make_Ratematrice_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
       Exit("\n");
     }
 
-  select = XML_Validate_Attr_Int(model,26,
+  select = XML_Validate_Attr_Int(model,27,
                                  "xxxxx",    //0
                                  "JC69",     //1
                                  "K80",      //2
@@ -5884,7 +5889,8 @@ void Make_Ratematrice_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
                                  "HIVB",     //23
                                  "FLU",      //24
                                  "CUSTOMAA", //25
-                                 "LG");      //26
+                                 "LG",       //26
+                                 "AB" );     //27
 
   if(select < 9)
     {
