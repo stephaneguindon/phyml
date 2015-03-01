@@ -252,7 +252,7 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define FLU       24
 #define CUSTOMAA  25
 #define LG        26
-
+#define AB        27
 // Amino acid ordering:
 // Ala Arg Asn Asp Cys Gln Glu Gly His Ile Leu Lys Met Phe Pro Ser Thr Trp Tyr Val
 

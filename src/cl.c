@@ -688,6 +688,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
 		   (io->mod->whichmodel == MTART)     ||
 		   (io->mod->whichmodel == HIVW)      ||
 		   (io->mod->whichmodel == HIVB)      ||
+		   (io->mod->whichmodel == AB)        ||
 		   (io->mod->whichmodel == CUSTOMAA)
 		   )
 		  {
@@ -863,6 +864,11 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	      {
 		io->datatype              = AA;
 		io->mod->whichmodel       = HIVB;
+	      }
+	    else if(strcmp(optarg, "AB") == 0)
+	      {
+		io->datatype              = AA;
+		io->mod->whichmodel       = AB;
 	      }
 	    else if (strcmp(optarg, "CUSTOM") == 0)
 	      {
@@ -1337,7 +1343,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
   else if ((io->datatype == AA) && (io->mod->whichmodel < 11))
     {
       char choix;
-      PhyML_Printf("\n== Err.: model incompatible with the data type. Please use LG, Dayhoff, JTT, MtREV, WAG, DCMut, RtREV, CpREV, VT, Blosum62, MtMam, MtArt, HIVw or HIVb.\n");
+      PhyML_Printf("\n== Err.: model incompatible with the data type. Please use LG, Dayhoff, JTT, MtREV, WAG, DCMut, RtREV, CpREV, VT, Blosum62, MtMam, MtArt, HIVw, HIVb or AB.\n");
       PhyML_Printf("\n== Type any key to exit.\n");
       if(!scanf("%c",&choix)) Exit("\n");
       Exit("\n");

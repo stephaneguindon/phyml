@@ -8449,6 +8449,11 @@ void Set_Model_Name(t_mod *mod)
     strcpy(mod->modelname->s, "HIVb");
     break;
       }
+    case AB:
+      {
+    strcpy(mod->modelname->s, "AB");
+    break;
+      }
     case CUSTOMAA:
       {
     strcpy(mod->modelname->s, "Custom");
