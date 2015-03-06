@@ -641,6 +641,7 @@ void Set_Defaults_Model(t_mod *mod)
 
   mod->br_len_mult->v          = 1.0;
   mod->br_len_mult_unscaled->v = 1.0;
+  mod->augmented               = NO;
 }
 
 //////////////////////////////////////////////////////////////

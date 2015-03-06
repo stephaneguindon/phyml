@@ -581,7 +581,6 @@ typedef struct __Tree{
   struct __Edge                     **a_edges; /*! array of edges */
   struct __Model                         *mod; /*! substitution model */
   struct __Calign                       *data; /*! sequences */
-  struct __Calign                   *anc_data; /*! ancestral sequences */
   struct __Tree                         *next; /*! set to NULL by default. Used for mixture models */
   struct __Tree                         *prev; /*! set to NULL by default. Used for mixture models */
   struct __Tree                    *next_mixt; /*! set to NULL by default. Used for mixture models */
@@ -933,7 +932,7 @@ typedef struct __Model {
 
   int                   whichmodel;
   int                  is_mixt_mod;
-
+  int                    augmented;
   int                           ns; /*! number of states (4 for ADN, 20 for AA) */
 
   int                    bootstrap; /*! Number of bootstrap replicates (0 : no bootstrap analysis is launched) */

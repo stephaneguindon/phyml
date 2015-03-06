@@ -202,7 +202,7 @@ phydbl Generic_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol,
       Lk(NULL,tree);
       if(tree->c_lnL < init_lnL - tree->mod->s_opt->min_diff_lk_local)
         {
-          PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+          PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
           Warn_And_Exit("");
         }
       return tree->c_lnL;
@@ -639,7 +639,7 @@ void Optimize_Br_Len_Serie(t_tree *tree)
       if(tree->c_lnL < lk_init - tree->mod->s_opt->min_diff_lk_local)
         {
           PhyML_Printf("\n== %f -- %f",lk_init,tree->c_lnL);
-          Warn_And_Exit("\n== Err. in Optimize_Br_Len_Serie_Post (variance)\n");
+          PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
         }
 
       if((tree->io->quiet)?(0):(tree->mod->s_opt->print))
@@ -762,7 +762,8 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
       PhyML_Printf("\n== %f -- %f",lk_init,tree->c_lnL);
       PhyML_Printf("\n== Edge: %d",b_fcus->num);
       PhyML_Printf("\n== is_mixt_tree: %d",tree->is_mixt_tree);
-      Exit("\n== Err. in Optimize_Br_Len_Serie_Post\n");
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
+      Warn_And_Exit("");
     }
 
   if(d->tax) return;
@@ -2157,15 +2158,15 @@ int Optimiz_Alpha_And_Pinv(t_tree *mixt_tree, int verbose)
           best_lnL = f1;
 
           if(lk_a < lk_b - mixt_tree->mod->s_opt->min_diff_lk_local)
-        {
-          PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
-          Exit("\n");
-        }
+            {
+              PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+              Exit("\n");
+            }
           else if(FABS(lk_a - lk_b) < mixt_tree->mod->s_opt->min_diff_lk_local)
-        {
-                  if(alpha) Free(alpha);
-          return 1;
-        }
+            {
+              if(alpha) Free(alpha);
+              return 1;
+            }
 
           Record_Br_Len(mixt_tree);
           best_alpha = tree->mod->ras->alpha->v;
@@ -2627,10 +2628,10 @@ void Opt_Node_Heights_Recurr_Pre(t_node *a, t_node *d, t_tree *tree)
       t_max -= tree->rates->min_dt;
 
       if(t_min > t_max)
-    {
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
-      Exit("\n");
-    }
+        {
+          PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+          Exit("\n");
+        }
 
       Generic_Brent_Lk(&(tree->rates->nd_t[d->num]),
                t_min,t_max,

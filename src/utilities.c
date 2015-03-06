@@ -2575,7 +2575,6 @@ int Assign_State(char *c, int datatype, int stepsize)
 
 char Reciproc_Assign_State(int i_state, int datatype)
 {
-
   if(datatype == NT)
     {
       i_state = i_state%4;
@@ -9539,32 +9538,6 @@ void Get_Edge_Binary_Coding_Number(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-void Make_Ancestral_Seq(t_tree *tree)
-{
-  int i;
-  char **sp_names;
-
-  sp_names = (char **)mCalloc(tree->n_otu,sizeof(char *));
-  For(i,tree->n_otu-1)
-    {
-      sp_names[i] = (char *)mCalloc(10,sizeof(char));
-      sprintf(sp_names[i],"anc%d",i+tree->n_otu);
-    }
-
-  tree->anc_data = Make_Cseq(tree->n_otu-1,
-                 tree->data->init_len,
-                 tree->mod->io->state_len,
-                 tree->data->init_len,
-                 sp_names);
-
-  For(i,tree->n_otu-1) Free(sp_names[i]);
-  Free(sp_names);
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
 void Make_MutMap(t_tree *tree)
 {
   // (# of edges) X (# of sites) X (# mutation types: A<->C A<->G A<->T C<->G C<->T G<->T)
@@ -10021,7 +9994,7 @@ void Set_P_Lk_One_Side(phydbl **Pij, phydbl **p_lk,  int **sum_scale, t_node *d,
 */
 
 void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
-                                 phydbl **p_lk   , int **sum_scale   , int **p_lk_loc,
+                  phydbl **p_lk   , int **sum_scale   , int **p_lk_loc,
                   phydbl **Pij1, phydbl **p_lk_v1, int **sum_scale_v1,
                   phydbl **Pij2, phydbl **p_lk_v2, int **sum_scale_v2,
                   t_node *d, t_edge *b, t_tree *tree

@@ -87,7 +87,6 @@ void MCMC(t_tree *tree)
       char *s,*t;
       FILE *fp;
       
-      Make_Ancestral_Seq(tree);
       Make_MutMap(tree);
  
       For(j,tree->n_otu)

@@ -103,6 +103,11 @@ void Free_Node(t_node *n)
   Free(n->score);
   Free(n->s_ingrp);
   Free(n->s_outgrp);
+  if(n->c_seq_anc != NULL) 
+    {
+      Free(n->c_seq_anc->state);
+      Free(n->c_seq_anc);
+    }
   if(n->ori_name) { Free(n->ori_name); n->ori_name = NULL; }
 
   /* if(n->name)     { Free(n->name);     n->name     = NULL; }  */
@@ -217,7 +222,6 @@ void Free_Bip(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Free_Cseq(calign *data)
 {
   int i;
@@ -231,11 +235,11 @@ void Free_Cseq(calign *data)
     {
       Free(data->c_seq[i]->name);
       if(data->c_seq[i]->state)
-    {
-      Free(data->c_seq[i]->state);
-      Free(data->c_seq[i]->d_state);
-      if(data->c_seq[i]->is_ambigu) Free(data->c_seq[i]->is_ambigu);
-    }
+        {
+          Free(data->c_seq[i]->state);
+          Free(data->c_seq[i]->d_state);
+          if(data->c_seq[i]->is_ambigu) Free(data->c_seq[i]->is_ambigu);
+        }
       Free(data->c_seq[i]);
     }
   Free(data->c_seq);
@@ -244,7 +248,6 @@ void Free_Cseq(calign *data)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void Free_Seq(align **d, int n_otu)
 {
