@@ -48,7 +48,7 @@ int MIGREP_Main(int argc, char *argv[])
   setvbuf(fp_out,NULL,_IOFBF,1024);
 
 
-  tree = MIGREP_Simulate_Backward((int)atoi(argv[1]),(int)atoi(argv[2]),10.,10.,seed);
+  tree = MIGREP_Simulate_Backward((int)atoi(argv[1]),(int)atoi(argv[2]),100.,100.,seed);
 
   disk = tree->disk;
   while(disk->prev) disk = disk->prev;
