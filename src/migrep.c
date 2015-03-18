@@ -40,8 +40,6 @@ int MIGREP_Main(int argc, char *argv[])
   printf("\n. seed: %d",seed);
   srand(seed);
   
-  
-
   strcpy(s,"migrep.out");
   sprintf(s+strlen(s),".%d",pid);
   fp_out = Openfile(s,WRITE);
@@ -49,12 +47,25 @@ int MIGREP_Main(int argc, char *argv[])
 
   setvbuf(fp_out,NULL,_IOFBF,1024);
 
-  PhyML_Fprintf(fp_out,"\n# SampArea\t TrueLbda\t TrueMu\t TrueRad\t TrueXroot\t TrueYroot\t Lbda5\t Lbda50\t Lbda95\t Mu5\t Mu50\t Mu95\t Rad5\t Rad50\t Rad95\t Xroot5\t Xroot50\t Xroot95\t Yroot5\t Yroot50\t Yroot95\t limXroot5\t limXroot50\t limXroot95\t limYroot5\t limYroot50\t limYroot95\t ");
 
   tree = MIGREP_Simulate_Backward((int)atoi(argv[1]),(int)atoi(argv[2]),10.,10.,seed);
 
   disk = tree->disk;
   while(disk->prev) disk = disk->prev;
+
+
+  PhyML_Fprintf(fp_out,"%f %f %f %f %f",
+               tree->mmod->lbda,
+               tree->mmod->mu,
+               tree->mmod->rad,
+               2./tree->mmod->mu,
+               MIGREP_Neigborhood_Regression_Est(tree));
+  fclose(fp_out);
+  Exit("\n");
+
+
+
+  PhyML_Fprintf(fp_out,"\n# SampArea\t TrueLbda\t TrueMu\t TrueRad\t TrueXroot\t TrueYroot\t Lbda5\t Lbda50\t Lbda95\t Mu5\t Mu50\t Mu95\t Rad5\t Rad50\t Rad95\t Xroot5\t Xroot50\t Xroot95\t Yroot5\t Yroot50\t Yroot95\t limXroot5\t limXroot50\t limXroot95\t limYroot5\t limYroot50\t limYroot95\t ");
 
   PhyML_Fprintf(fp_out,"\n %f\t %f\t %f\t %f\t %f\t %f\t ",
                 tree->mmod->sampl_area,
@@ -176,12 +187,12 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, int n_sites, phydbl width, phydbl he
   
   /* Initialize parameters of migrep model */
   mmod->lbda = Uni()*(0.3 - 0.05) + 0.05;
-  mmod->mu   = Uni()*(1.0 - 0.3)  + 0.3;
+  mmod->mu   = Uni()*(1.0 - 0.1)  + 0.1;
   mmod->rad  = Uni()*(5.0 - 1.5)  + 1.5;
 
-  /* mmod->lbda = 0.20; */
-  /* mmod->mu   = 0.90; */
-  /* mmod->rad  = 1.50; */
+  /* mmod->lbda = 0.80; */
+  /* mmod->mu   = 0.10; */
+  /* mmod->rad  = 2.50; */
 
   /* mmod->rho  = 100.; */
   /* mmod->lbda = 0.1; */
@@ -2435,7 +2446,11 @@ void MIGREP_Ldsk_To_Tree(t_tree *tree)
     }
 
   /* Connect tips */
-  For(i,tree->n_otu) tree->disk->ldsk_a[i]->nd = tree->a_nodes[i];
+  For(i,tree->n_otu) 
+    {
+      tree->disk->ldsk_a[i]->nd = tree->a_nodes[i];
+      tree->a_nodes[i]->coord = tree->disk->ldsk_a[i]->coord;
+    }
 
   disk = tree->disk;
   while(disk->prev) disk = disk->prev;
@@ -2496,8 +2511,9 @@ void MIGREP_Ldsk_To_Tree_Post(t_node *a, t_ldsk *ldsk, int *available, t_tree *t
   if(ldsk == NULL) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   if(a == NULL)    Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
-  ldsk->nd = a;
+  ldsk->nd = a;  
   tree->rates->nd_t[a->num] = ldsk->disk->time;
+  a->coord = ldsk->coord;
 
   if(!ldsk->next) return;
   else
@@ -2706,7 +2722,114 @@ phydbl MIGREP_Mean_Time_Between_Events(t_tree *tree)
   return((phydbl)(T/n_inter));
 }
 
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
 
+/* Uses the regression technique described in Barton et al. TPB (2013)
+   to estimate the size of the neighborhood when the population evolve
+   according to a spatial Lambda-Fleming-Viot process.
+*/
+phydbl MIGREP_Neigborhood_Regression_Est(t_tree *tree)
+{
+  int i,j,pair;
+  t_node *anc;
+  phydbl *dist,min_dist;
+  phydbl QA,Qr,*fst,fst0,fst_min_dist;
+  phydbl cov_fst_dist,var_dist,slope;
+  phydbl eps;
+
+  eps = 1.E-10;
+
+  QA = Mean_Identity(tree->data);
+
+  fst  = (phydbl *)mCalloc(tree->n_otu*(tree->n_otu-1)/2,sizeof(phydbl));
+  dist = (phydbl *)mCalloc(tree->n_otu*(tree->n_otu-1)/2,sizeof(phydbl));
+
+  pair = 0;
+  fst0 = 0.0;
+  For(i,tree->n_otu-1)
+    {
+      fst_min_dist = 0.0;
+      min_dist = MDBL_MAX;
+      for(j=i+1;j<tree->n_otu;j++)
+        {
+          anc = Find_Lca_Pair_Of_Nodes(tree->a_nodes[i],tree->a_nodes[j],tree);
+          if(anc == NULL) 
+            {
+              PhyML_Printf("\n. %s",Write_Tree(tree,NO));
+              PhyML_Printf("\n. %s %s",tree->a_nodes[i]->name,tree->a_nodes[j]->name);
+              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);            
+            }
+          
+          dist[pair] = Euclidean_Dist(tree->a_nodes[i]->coord,tree->a_nodes[j]->coord);
+          dist[pair] = LOG(dist[pair]);
+
+          Qr = Pairwise_Identity(i,j,tree->data);
+          fst[pair] = (Qr-QA)/(1.-QA);
+
+          if(dist[pair] < min_dist)
+            {
+              min_dist     = dist[pair];
+              fst_min_dist = fst[pair];
+            }
+
+          pair++;
+        }
+      fst0 += fst_min_dist;
+    }
+
+  fst0 /= (phydbl)(tree->n_otu);
+
+  cov_fst_dist = Covariance(dist,fst,pair);
+  var_dist = Variance(dist,pair);
+
+  slope = cov_fst_dist / var_dist;
+
+  Free(dist);
+  Free(fst);
+
+  return((fst0-1.+eps)/(slope+eps));
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+void MIGREP_Rand_Pairs_Coal_Times_Dist(t_tree *tree)
+{
+  t_node *anc;
+  phydbl dist;
+  int i, j;
+
+  i = Rand_Int(0,tree->n_otu-1);
+  j = Rand_Int(0,tree->n_otu-1);
+
+  if(i == j) PhyML_Printf("\nxxWxx 0.0 0.0");
+  else
+    {
+
+      anc = Find_Lca_Pair_Of_Nodes(tree->a_nodes[i],tree->a_nodes[j],tree);
+      if(anc == NULL) 
+        {
+          PhyML_Printf("\n. %s",Write_Tree(tree,NO));
+          PhyML_Printf("\n. %s %s",tree->a_nodes[i]->name,tree->a_nodes[j]->name);
+          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);            
+        }
+      
+      PhyML_Printf("\nxxWxx %12f",tree->rates->nd_t[anc->num]);
+      dist = Euclidean_Dist(tree->a_nodes[i]->coord,tree->a_nodes[j]->coord);
+      PhyML_Printf(" %f",dist);
+    }
+}
+
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

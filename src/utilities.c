@@ -327,6 +327,8 @@ calign *Compact_Data(align **data, option *io)
 
   cdata_tmp->obs_pinvar = (phydbl)n_invar/data[0]->len;
 
+  cdata_tmp->io = io;
+
   n_sites = 0;
   For(i,cdata_tmp->crunch_len) n_sites += cdata_tmp->wght[i];
   if(n_sites != data[0]->len / io->state_len) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
@@ -1971,12 +1973,6 @@ void Update_SubTree_Partial_Lk(t_edge *b_fcus, t_node *a, t_node *d, t_tree *tre
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-
 void Copy_Seq_Names_To_Tip_Labels(t_tree *tree, calign *data)
 {
   int i;
@@ -2043,7 +2039,7 @@ calign *Copy_Cseq(calign *ori, option *io)
   new->clean_len          = ori->clean_len;
   new->crunch_len         = ori->crunch_len;
   new->n_otu              = ori->n_otu;
-
+  new->io                 = ori->io;
 
   For(i,n_otu) Free(sp_names[i]);
   Free(sp_names);
@@ -6533,18 +6529,20 @@ void Add_Root(t_edge *target, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Update_Ancestors(t_node *a, t_node *d, t_tree *tree)
 {
+
   if(a == tree->n_root) a->anc = NULL;
+
   d->anc = a;
+
   if(d->tax) return;
   else
     {
       int i;
       For(i,3)
-    if((d->v[i] != d->anc) && (d->b[i] != tree->e_root))
-      Update_Ancestors(d,d->v[i],tree);
+        if((d->v[i] != a) && (d->b[i] != tree->e_root))
+          Update_Ancestors(d,d->v[i],tree);
     }
 }
 
@@ -6845,6 +6843,7 @@ void Evolve(calign *data, t_mod *mod, t_tree *tree)
   For(i,2*tree->n_otu-3) orig_l[i] = tree->a_edges[i]->l->v;
 
   data->n_otu = tree->n_otu;
+  data->io    = tree->io;
 
   if(mod->use_m4mod) tree->write_labels = YES;
 
@@ -7043,9 +7042,9 @@ void Site_Diversity_Post(t_node *a, t_node *d, t_edge *b, t_tree *tree)
       int i;
 
       For(i,3)
-    if(d->v[i] != a)
-      Site_Diversity_Post(d,d->v[i],d->b[i],tree);
-
+        if(d->v[i] != a)
+          Site_Diversity_Post(d,d->v[i],d->b[i],tree);
+      
       Subtree_Union(d,b,tree);
     }
 }
@@ -7138,14 +7137,14 @@ void Binary_Decomposition(int value, int *bit_vect, int size)
   for(i=size-1;i>=0;i--)
     {
       if(value - cumul < (int)POW(2,i))
-    {
-      bit_vect[i] = 0;
-    }
+        {
+          bit_vect[i] = 0;
+        }
       else
-    {
-      bit_vect[i] = 1;
-      cumul += (int)POW(2,i);
-    }
+        {
+          bit_vect[i] = 1;
+          cumul += (int)POW(2,i);
+        }
     }
 }
 
@@ -7155,7 +7154,7 @@ void Binary_Decomposition(int value, int *bit_vect, int size)
 
 void Print_Diversity_Header(FILE *fp, t_tree *tree)
 {
-/*   PhyML_Fprintf(fp,"t_edge side mean\n");  */
+  /*   PhyML_Fprintf(fp,"t_edge side mean\n");  */
   PhyML_Fprintf(fp,"t_edge side diversity count\n");
 }
 
@@ -7838,6 +7837,8 @@ t_node *Find_Lca_Pair_Of_Nodes(t_node *n1, t_node *n2, t_tree *tree)
   t_node **list1, **list2, *lca;
   int size1, size2;
 
+  if(n1 == n2) return(n1);
+
   if(!tree->n_root)
     {
       PhyML_Printf("\n. The tree must be rooted in this function.");
@@ -7852,6 +7853,7 @@ t_node *Find_Lca_Pair_Of_Nodes(t_node *n1, t_node *n2, t_tree *tree)
 
   while(list1[size1] == list2[size2])
     {
+
       size1--;
       size2--;
 
@@ -7863,6 +7865,11 @@ t_node *Find_Lca_Pair_Of_Nodes(t_node *n1, t_node *n2, t_tree *tree)
   Free(list1);
   Free(list2);
 
+  if(lca == NULL)
+    {
+      PhyML_Printf("\n. %s",Write_Tree(tree,NO));
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
   return lca;
 }
 
@@ -7899,17 +7906,17 @@ t_node *Find_Lca_Clade(t_node **node_list, int node_list_size, t_tree *tree)
   do
     {
       For(i,node_list_size-1)
-    if(list[i][size[i]] != list[i+1][size[i+1]])
-      break;
-
+        if(list[i][size[i]] != list[i+1][size[i+1]])
+          break;
+      
       if(i != node_list_size-1) break;
-
+      
       For(i,node_list_size)
-    {
-      size[i]--;
-      if(size[i] == 1) break; // We have reached the tip corresponding to node_list[i]
-    }
-
+        {
+          size[i]--;
+          if(size[i] == 1) break; // We have reached the tip corresponding to node_list[i]
+        }
+      
       if(node_list_size == 1) break;
 
     }while(1);
@@ -7931,17 +7938,17 @@ t_node *Find_Lca_Clade(t_node **node_list, int node_list_size, t_tree *tree)
 int Get_List_Of_Ancestors(t_node *ref_node, t_node **list, int *size, t_tree *tree)
 {
   t_node *n;
-
-  *size = 1;
+  
   n = ref_node;
-  list[0] = n;
+  list[0] = n;  
+  *size = 1;
 
   if(!n)
     {
       PhyML_Printf("\n== There seems to be a problem with the calibration file.\n");
       return 0;
     }
-
+  
   while(n != tree->n_root)
     {
       n = n->anc;
@@ -7950,15 +7957,14 @@ int Get_List_Of_Ancestors(t_node *ref_node, t_node **list, int *size, t_tree *tr
           PhyML_Printf("\n== n->anc has not been set properly (call Update_Ancestors first...)\n");
           return 0;
         }
-      *size = *size+1;
       list[*size] = n;
+      *size = *size+1;
     }
   return 1;
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 int Edge_Num_To_Node_Num(int edge_num, t_tree *tree)
 {
@@ -10909,4 +10915,80 @@ align **Make_Empty_Alignment(option *io)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+/* Mean observed frequency of difference between the n(n-1)/2 pairs of sequences */
+phydbl Mean_Identity(calign *data)
+{
+  int i,j,n;
+  phydbl tot_idt;
+  
+  n = data->n_otu;
+  
+  tot_idt = 0.0;
+  For(i,n-1)
+    {
+      for(j=i+1; j<n; j++)
+        {
+          tot_idt += Pairwise_Identity(i,j,data);
+        }
+    }
 
+  return(tot_idt / (phydbl)(n*(n-1.)/2.));
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+/* Observed frequency of difference for the (i,j)-pair of sequences */
+phydbl Pairwise_Identity(int i, int j, calign *data)
+{
+  int k;
+  phydbl div,p,d;
+  
+  div = 0.0;
+  For(k,data->crunch_len)
+    {
+      if(data->c_seq[i]->state[k] == data->c_seq[j]->state[k]) div += (phydbl)data->wght[k];
+    }
+
+  /* proportion of observed identity */
+  p = 1. - div / (phydbl)data->init_len;
+
+
+  d = 0.0;
+
+  if(data->io->datatype == NT)
+    {
+      if(p > 3./4.) return 0.25;
+      else
+        {
+          /* Jukes & Cantor distance */
+          d = -(3./4.)*LOG(1. - 4./3.*p);
+        }
+    }
+  else if(data->io->datatype == AA)
+    {
+      if(p > 19./20.) return 1./20.;
+      else
+        {
+          /* Jukes & Cantor distance */
+          d = -(19./20.)*LOG(1. - 20./19.*p);
+        }
+    }
+  else Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+
+  return(EXP(-d));
+}
+
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+phydbl Fst(int i, int j, calign *data)
+{
+  phydbl FA, Fr;
+
+  FA = Mean_Identity(data);
+  Fr = Pairwise_Identity(i,j,data);
+
+  return((Fr-FA)/(1-FA));
+}

@@ -71,5 +71,9 @@ phydbl MIGREP_Simulate_Forward_Core(int n_sites, t_tree *tree);
 int MIGREP_Is_In_Ldscape(t_ldsk *ldsk, t_migrep_mod *mmod);
 void MIGREP_Update_Lindisk_List_Core(t_dsk *disk);
 phydbl MIGREP_Mean_Time_Between_Events(t_tree *tree);
+void MIGREP_All_Pairs_Coal_Times_Dist(t_tree *tree);
+void MIGREP_Rand_Pairs_Coal_Times_Dist(t_tree *tree);
+phydbl MIGREP_Neigborhood_Regression_Est(t_tree *tree);
+
 
 #endif

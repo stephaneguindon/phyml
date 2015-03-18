@@ -1474,7 +1474,7 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                             }
                           if(isnan(p1_lk1))
                             {
-                              PhyML_Printf("\n== p0=%f p1=%f p2=%f p3=%f",p0,p1,p2,p3);
+                              /* PhyML_Printf("\n== p0=%f p1=%f p2=%f p3=%f",p0,p1,p2,p3); */
                               PhyML_Printf("\n== Err. in file %s at line %d.",__FILE__,__LINE__);
                               Warn_And_Exit("\n");
                             }
@@ -1545,7 +1545,7 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                           if(isnan(p2_lk2))
                             {
                               PhyML_Printf("\n== %f %f",b->l->v,b->l->v*b->l->v*tree->mod->l_var_sigma);
-                              PhyML_Printf("\n== p0=%f p1=%f p2=%f p3=%f",p0,p1,p2,p3);
+                              /* PhyML_Printf("\n== p0=%f p1=%f p2=%f p3=%f",p0,p1,p2,p3); */
                               PhyML_Printf("\n== Pij2[0]=%f Pij2[1]=%f Pij2[2]=%f Pij2[3]=%f",Pij2[catg*dim3+i*dim2+0],Pij2[catg*dim3+i*dim2+1],Pij2[catg*dim3+i*dim2+2],Pij2[catg*dim3+i*dim2+3]);
                               PhyML_Printf("\n== Err. in file %s at line %d (function '%s').",__FILE__,__LINE__,__FUNCTION__);
                               Warn_And_Exit("\n");

@@ -448,8 +448,7 @@ typedef struct __Node {
   int                                rank;
   int                            rank_max;
 
-
-  struct __Lineage_Loc       *lineage_loc; /*! Spatial coordinates */
+  struct __Geo_Coord               *coord;
 
 }t_node;
 
@@ -806,19 +805,20 @@ typedef struct __Align {
 
 typedef struct __Calign {
   struct __Align **c_seq;             /*! compressed sequences      */
+  struct __Option    *io;             /*! input/output */
   phydbl          *b_frq;             /*! observed state frequencies */
   short int       *invar;             /*! < 0 -> polymorphism observed */
   int              *wght;             /*! # of each site in c_align */
   short int      *ambigu;             /*! ambigu[i]=1 is one or more of the sequences at site
-                    i display an ambiguous character */
+                                        i display an ambiguous character */
   phydbl      obs_pinvar;
   int              n_otu;             /*! number of taxa */
   int          clean_len;             /*! uncrunched sequences lenghts without gaps */
   int         crunch_len;             /*! crunched sequences lengths */
   int           init_len;             /*! length of the uncompressed sequences */
   int          *sitepatt;             /*! this array maps the position of the patterns in the
-                       compressed alignment to the positions in the uncompressed
-                       one */
+                                        compressed alignment to the positions in the uncompressed
+                                        one */
   int             format;             /*! 0 (default): PHYLIP. 1: NEXUS. */
 }calign;
 
@@ -2009,6 +2009,9 @@ int Number_Of_Diff_States_One_Site_Core(t_node *a, t_node *d, t_edge *b, int sit
 phydbl Get_Lk(t_tree *tree);
 align **Make_Empty_Alignment(option *io);
 void Connect_Edges_To_Nodes_Serial(t_tree *tree);
+phydbl Mean_Identity(calign *data);
+phydbl Pairwise_Identity(int i, int j, calign *data);
+phydbl Fst(int i, int j, calign *data);
 
 
 #include "xml.h"
