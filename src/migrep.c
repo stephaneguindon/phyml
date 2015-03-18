@@ -54,7 +54,7 @@ int MIGREP_Main(int argc, char *argv[])
   while(disk->prev) disk = disk->prev;
 
 
-  PhyML_Fprintf(fp_out,"%f %f %f %f %f",
+  PhyML_Fprintf(fp_out,"%f %f %f %f %f\n",
                tree->mmod->lbda,
                tree->mmod->mu,
                tree->mmod->rad,
