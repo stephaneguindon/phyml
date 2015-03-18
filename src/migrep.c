@@ -187,7 +187,7 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, int n_sites, phydbl width, phydbl he
   
   /* Initialize parameters of migrep model */
   mmod->lbda = Uni()*(0.3 - 0.05) + 0.05;
-  mmod->mu   = Uni()*(1.0 - 0.1)  + 0.1;
+  mmod->mu   = Uni()*(1.0 - 0.3)  + 0.3;
   mmod->rad  = Uni()*(5.0 - 1.5)  + 1.5;
 
   /* mmod->lbda = 0.80; */
