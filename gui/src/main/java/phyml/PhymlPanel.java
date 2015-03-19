@@ -1,13 +1,5 @@
 package phyml;
 
-import grisu.control.ServiceInterface;
-import grisu.frontend.control.login.LoginException;
-import grisu.frontend.control.login.LoginManager;
-import grith.gridsession.GridClient;
-import grith.jgrith.cred.AbstractCred;
-import grith.jgrith.cred.Cred;
-import nz.org.nesi.phyml.swing.GridPanel;
-import phyml.view.CredCreationDialog;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -27,19 +19,6 @@ import java.io.File;
 
 public class PhymlPanel extends JPanel implements ActionListener {
 
-    private CredCreationDialog ccd = null;
-
-    public void showLoginDialog() {
-        getCredCreationDialog().setVisible(true);
-    }
-
-    private CredCreationDialog getCredCreationDialog() {
-        if ( ccd == null ) {
-            ccd = new CredCreationDialog(gridClient);
-            ccd.pack();
-        }
-        return ccd;
-    }
 
 	/**
 	 * default id
@@ -51,19 +30,16 @@ public class PhymlPanel extends JPanel implements ActionListener {
 	private BranchSupport bS;
 	private static JButton submit;
 	private StandardOutPanel standardOut;
-	private GridPanel gridPanel;
 //	private static TreePanel treePanel;
 	private JTabbedPane tabbedPane;
-	private JCheckBox nesiSubmit;
-    private final GridClient gridClient;
+//	private JCheckBox nesiSubmit;
 
 	/**
 	 * This Class is the main panel for the graphical user interface. I
 	 * specifies the sub panels the phyml gui is subdivided in.
 	 */
-	public PhymlPanel(GridClient gc) {
+	public PhymlPanel() {
 
-        gridClient = gc;
         CustomGridLayout mainLayout = new CustomGridLayout();
 		setLayout(mainLayout);
 		mainLayout.setDimensions(1, 1);
@@ -106,18 +82,14 @@ public class PhymlPanel extends JPanel implements ActionListener {
 		lO1.setDimensions(0.1, 0.6);
 		p1.add(new JPanel());
 		lO1.setDimensions(0.25, 0.6);
-		nesiSubmit = new JCheckBox("Submit to NeSI");
-		p1.add(nesiSubmit);
 		//p1.add(new Separator(false));
 		lO1.setDimensions(1, 0.2);
 		p1.add(new JPanel());
 		layout.setDimensions(1, 0.01);
 		mainPan.add(new Separator(false));
-		gridPanel = new GridPanel(gridClient);
 		tabbedPane.addTab("Run PhyML", mainPan);
 		standardOut = new StandardOutPanel();
 		tabbedPane.addTab("Standard output", standardOut);
-		tabbedPane.addTab("NeSI", gridPanel);
 
 //        tabbedPane.addChangeListener(new ChangeListener() {
 //            public void stateChanged(ChangeEvent e) {
@@ -139,34 +111,12 @@ public class PhymlPanel extends JPanel implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent a) {
 
-        if ( nesiSubmit.isSelected() ) {
-
-            if (gridPanel.getServiceInterface() == null) {
-
-                Cred c = AbstractCred.getExistingCredential();
-
-                if (c == null || !c.isValid()) {
-                    getCredCreationDialog().setVisible(true);
-
-                }
-
-                ServiceInterface si = null;
-                try {
-                    si = LoginManager.login("bestgrid", gridClient.getCredential(), false);
-                } catch (LoginException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                }
-
-                gridPanel.setServiceInterface(si);
-            }
-
-        }
 
 		if (!iDP.getInputPath().equals("") && (new File(iDP.getInputPath())).exists()) {
 //			if(!nesiSubmit.isSelected()){
 				tabbedPane.setSelectedIndex(1);
 //			}
-			callPHYML.callPhyML(gridPanel, nesiSubmit.isSelected(),
+			callPHYML.callPhyML(
 				iDP.getInputPath(),
 				/**
 				 * -i (or --input) seq file name seq file name is the
