@@ -48,30 +48,32 @@ int MIGREP_Main(int argc, char *argv[])
   setvbuf(fp_out,NULL,_IOFBF,1024);
 
 
-  tree = MIGREP_Simulate_Backward((int)atoi(argv[1]),(int)atoi(argv[2]),100.,100.,seed);
+  tree = MIGREP_Simulate_Backward((int)atoi(argv[1]),(int)atoi(argv[2]),10.,10.,seed);
 
   disk = tree->disk;
   while(disk->prev) disk = disk->prev;
 
 
-  PhyML_Fprintf(fp_out,"%f %f %f %f %f\n",
-               tree->mmod->lbda,
-               tree->mmod->mu,
-               tree->mmod->rad,
-               2./tree->mmod->mu,
-               MIGREP_Neigborhood_Regression_Est(tree));
-  fclose(fp_out);
-  Exit("\n");
+  /* PhyML_Fprintf(fp_out,"%f %f %f %f %f\n", */
+  /*              tree->mmod->lbda, */
+  /*              tree->mmod->mu, */
+  /*              tree->mmod->rad, */
+  /*              2./tree->mmod->mu, */
+  /*              MIGREP_Neigborhood_Size_Regression(tree)); */
+  /* fclose(fp_out); */
+  /* Exit("\n"); */
 
 
 
-  PhyML_Fprintf(fp_out,"\n# SampArea\t TrueLbda\t TrueMu\t TrueRad\t TrueXroot\t TrueYroot\t Lbda5\t Lbda50\t Lbda95\t Mu5\t Mu50\t Mu95\t Rad5\t Rad50\t Rad95\t Xroot5\t Xroot50\t Xroot95\t Yroot5\t Yroot50\t Yroot95\t limXroot5\t limXroot50\t limXroot95\t limYroot5\t limYroot50\t limYroot95\t ");
+  PhyML_Fprintf(fp_out,"\n# SampArea\t TrueLbda\t TrueMu\t TrueRad\t TrueDist\t TrueNeigh\t TrueXroot\t TrueYroot\t Lbda5\t Lbda50\t Lbda95\t Mu5\t Mu50\t Mu95\t Rad5\t Rad50\t Rad95\t Xroot5\t Xroot50\t Xroot95\t Yroot5\t Yroot50\t Yroot95\t limXroot5\t limXroot50\t limXroot95\t limYroot5\t limYroot50\t limYroot95\t ");
 
   PhyML_Fprintf(fp_out,"\n %f\t %f\t %f\t %f\t %f\t %f\t ",
                 tree->mmod->sampl_area,
                 tree->mmod->lbda,
                 tree->mmod->mu,
                 tree->mmod->rad,
+                MIGREP_Dist_Parent_To_Offspring(tree),
+                MIGREP_Neigborhood_Size(tree),
                 disk->ldsk->coord->lonlat[0],
                 disk->ldsk->coord->lonlat[1]);
 
@@ -105,14 +107,14 @@ int MIGREP_Main(int argc, char *argv[])
                 /* Y95*/ Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975));
 
   PhyML_Fprintf(fp_out,"%f\t %f\t %f\t",
-                /* X5 */ Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
-                /* X50*/ Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
-                /* X95*/ Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975));
+                /* Dist5 */ Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
+                /* Dist50*/ Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
+                /* Dist95*/ Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975));
 
   PhyML_Fprintf(fp_out,"%f\t %f\t %f\t",
-                /* X5 */ Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
-                /* X50*/ Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
-                /* X95*/ Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975));
+                /* Neigh5 */ Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
+                /* Neigh50*/ Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
+                /* Neigh95*/ Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975));
 
   Free(res);  
   fclose(fp_out);
@@ -201,8 +203,8 @@ t_tree *MIGREP_Simulate_Backward(int n_otu, int n_sites, phydbl width, phydbl he
 
   tree->mmod = mmod;
     
-  MIGREP_Simulate_Backward_Core(YES,tree);
-  /* mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree); */
+  /* MIGREP_Simulate_Backward_Core(YES,tree); */
+  mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree);
 
   MIGREP_Ldsk_To_Tree(tree);  
 
@@ -1001,6 +1003,8 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   PhyML_Fprintf(fp_stats,"\n# true lbda: %f",tree->mmod->lbda);
   PhyML_Fprintf(fp_stats,"\n# true mu: %f",tree->mmod->mu);
   PhyML_Fprintf(fp_stats,"\n# true rad: %f",tree->mmod->rad);
+  PhyML_Fprintf(fp_stats,"\n# true dist parent-offspring: %f",MIGREP_Dist_Parent_To_Offspring(tree));
+  PhyML_Fprintf(fp_stats,"\n# true neighborhood size: %f",MIGREP_Neigborhood_Size(tree));
 
   /* s = Write_Tree(tree,NO); */
   /* PhyML_Fprintf(fp_tree,"\n%s",s); */
@@ -1053,14 +1057,14 @@ phydbl *MIGREP_MCMC(t_tree *tree)
                 "lbda",
                 "mu",
                 "rad",
+                "dist",
+                "neigh",
                 "nInt",
                 "nCoal",
                 "nHit",
                 "xRootLon",
                 "xRootLat",
                 "rootTime",
-                "limX",
-                "limY",
                 "essLbda",
                 "essMu",
                 "essRad");
@@ -1138,21 +1142,21 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       if(!(tree->mcmc->run%tree->mcmc->sample_interval))
         {
           Lk(NULL,tree);
-          PhyML_Fprintf(fp_stats,"\n%d\t%f\t%f\t%f\t%f\t%f\t%d\t%d\t%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f",
+          PhyML_Fprintf(fp_stats,"\n%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\t%d\t%d\t%f\t%f\t%f\t%f\t%f\t%f",
                         tree->mcmc->run,
                         tree->c_lnL,
                         tree->mmod->c_lnL,
                         tree->mmod->lbda,
                         tree->mmod->mu,
                         tree->mmod->rad,
+                        MIGREP_Dist_Parent_To_Offspring(tree),
+                        MIGREP_Neigborhood_Size(tree),
                         MIGREP_Total_Number_Of_Intervals(tree),
                         MIGREP_Total_Number_Of_Coal_Disks(tree),
                         MIGREP_Total_Number_Of_Hit_Disks(tree),
                         true_root_x - disk->ldsk->coord->lonlat[0],
                         true_root_y - disk->ldsk->coord->lonlat[1],
                         disk->time,
-                        tree->mmod->lim->lonlat[0],
-                        tree->mmod->lim->lonlat[1],
                         tree->mcmc->ess[tree->mcmc->num_move_migrep_lbda],
                         tree->mcmc->ess[tree->mcmc->num_move_migrep_mu],
                         tree->mcmc->ess[tree->mcmc->num_move_migrep_rad]);
@@ -1163,10 +1167,8 @@ phydbl *MIGREP_MCMC(t_tree *tree)
           res[2 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = tree->mmod->rad; 
           res[3 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = disk->ldsk->coord->lonlat[0];
           res[4 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = disk->ldsk->coord->lonlat[1];
-          res[5 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = tree->mmod->lim->lonlat[0];
-          res[6 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = tree->mmod->lim->lonlat[1];
-          res[7 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = tree->c_lnL; 
-          res[8 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = tree->mmod->c_lnL; 
+          res[5 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = MIGREP_Dist_Parent_To_Offspring(tree);
+          res[6 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = MIGREP_Neigborhood_Size(tree);
 
           MCMC_Copy_To_New_Param_Val(tree->mcmc,tree);
           
@@ -2729,7 +2731,7 @@ phydbl MIGREP_Mean_Time_Between_Events(t_tree *tree)
    to estimate the size of the neighborhood when the population evolve
    according to a spatial Lambda-Fleming-Viot process.
 */
-phydbl MIGREP_Neigborhood_Regression_Est(t_tree *tree)
+phydbl MIGREP_Neigborhood_Size_Regression(t_tree *tree)
 {
   int i,j,pair;
   t_node *anc;
@@ -2824,8 +2826,30 @@ void MIGREP_Rand_Pairs_Coal_Times_Dist(t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+phydbl MIGREP_Neigborhood_Size(t_tree *tree)
+{
+  switch(tree->mmod->name)
+    {
+    case MIGREP_UNIFORM: { return(1./tree->mmod->mu); break; }
+    case MIGREP_NORMAL:  { return(2./tree->mmod->mu); break; }
+    }
+  return(-1.);
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+phydbl MIGREP_Dist_Parent_To_Offspring(t_tree *tree)
+{  
+  switch(tree->mmod->name)
+    {
+    case MIGREP_UNIFORM: { return(-1.0); break;}
+    case MIGREP_NORMAL:  { return(SQRT(8.*PI*tree->mmod->lbda*POW(tree->mmod->rad,4)*tree->mmod->mu)); break; }
+    }
+  return(-1.);
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

@@ -73,7 +73,9 @@ void MIGREP_Update_Lindisk_List_Core(t_dsk *disk);
 phydbl MIGREP_Mean_Time_Between_Events(t_tree *tree);
 void MIGREP_All_Pairs_Coal_Times_Dist(t_tree *tree);
 void MIGREP_Rand_Pairs_Coal_Times_Dist(t_tree *tree);
-phydbl MIGREP_Neigborhood_Regression_Est(t_tree *tree);
+phydbl MIGREP_Neigborhood_Size_Regression(t_tree *tree);
+phydbl MIGREP_Neigborhood_Size(t_tree *tree);
+phydbl MIGREP_Dist_Parent_To_Offspring(t_tree *tree);
 
 
 #endif
