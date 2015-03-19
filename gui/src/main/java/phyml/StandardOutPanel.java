@@ -1,6 +1,7 @@
 package phyml;
 
-import grisu.jcommons.utils.swing.SmartScroll;
+
+import nz.org.nesi.phyml.swing.SmartScroll;
 
 import javax.swing.*;
 import javax.swing.text.DefaultCaret;
