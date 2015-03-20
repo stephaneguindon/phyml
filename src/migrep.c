@@ -65,15 +65,16 @@ int MIGREP_Main(int argc, char *argv[])
 
 
 
-  PhyML_Fprintf(fp_out,"\n# SampArea\t TrueLbda\t TrueMu\t TrueRad\t TrueDist\t TrueNeigh\t TrueXroot\t TrueYroot\t Lbda5\t Lbda50\t Lbda95\t Mu5\t Mu50\t Mu95\t Rad5\t Rad50\t Rad95\t Xroot5\t Xroot50\t Xroot95\t Yroot5\t Yroot50\t Yroot95\t limXroot5\t limXroot50\t limXroot95\t limYroot5\t limYroot50\t limYroot95\t ");
+  PhyML_Fprintf(fp_out,"\n# SampArea\t TrueLbda\t TrueMu\t TrueRad\t TrueDist\t TrueNeigh\t RegNeigh\t TrueXroot\t TrueYroot\t Lbda5\t Lbda50\t Lbda95\t Mu5\t Mu50\t Mu95\t Rad5\t Rad50\t Rad95\t Xroot5\t Xroot50\t Xroot95\t Yroot5\t Yroot50\t Yroot95\t limXroot5\t limXroot50\t limXroot95\t limYroot5\t limYroot50\t limYroot95\t ");
 
-  PhyML_Fprintf(fp_out,"\n %f\t %f\t %f\t %f\t %f\t %f\t ",
+  PhyML_Fprintf(fp_out,"\n %f\t %f\t %f\t %f\t %f\t %f\t %f\t",
                 tree->mmod->sampl_area,
                 tree->mmod->lbda,
                 tree->mmod->mu,
                 tree->mmod->rad,
                 MIGREP_Dist_Parent_To_Offspring(tree),
                 MIGREP_Neigborhood_Size(tree),
+                MIGREP_Neigborhood_Size_Regression(tree),
                 disk->ldsk->coord->lonlat[0],
                 disk->ldsk->coord->lonlat[1]);
 
@@ -1005,6 +1006,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   PhyML_Fprintf(fp_stats,"\n# true rad: %f",tree->mmod->rad);
   PhyML_Fprintf(fp_stats,"\n# true dist parent-offspring: %f",MIGREP_Dist_Parent_To_Offspring(tree));
   PhyML_Fprintf(fp_stats,"\n# true neighborhood size: %f",MIGREP_Neigborhood_Size(tree));
+  PhyML_Fprintf(fp_stats,"\n# Fst-based estimate of neighborhood size: %f",MIGREP_Neigborhood_Size_Regression(tree));
 
   /* s = Write_Tree(tree,NO); */
   /* PhyML_Fprintf(fp_tree,"\n%s",s); */
@@ -2845,7 +2847,14 @@ phydbl MIGREP_Dist_Parent_To_Offspring(t_tree *tree)
   switch(tree->mmod->name)
     {
     case MIGREP_UNIFORM: { return(-1.0); break;}
-    case MIGREP_NORMAL:  { return(SQRT(8.*PI*tree->mmod->lbda*POW(tree->mmod->rad,4)*tree->mmod->mu)); break; }
+    case MIGREP_NORMAL:  
+      { 
+        return(4.*PI*
+               tree->mmod->lbda/(tree->mmod->lim->lonlat[0]*tree->mmod->lim->lonlat[1])*
+               POW(tree->mmod->rad,4)*
+               tree->mmod->mu); 
+        break; 
+      }
     }
   return(-1.);
 }
