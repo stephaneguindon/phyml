@@ -17,8 +17,10 @@ the GNU public licence. See http://www.opensource.org for details.
 
 #include "utilities.h"
 
-t_tree *MIGREP_Simulate_Backward(int n_otu, int n_sites, phydbl width, phydbl height, int r_seed);
 int MIGREP_Main(int argc, char **argv);
+int MIGREP_Main_Simulate(int argc, char **argv);
+int MIGREP_Main_Estimate(int argc, char **argv);
+t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int r_seed);
 phydbl MIGREP_Lk(t_tree *tree);
 phydbl MIGREP_Wrap_Lk(t_edge *b, t_tree *tree, supert_tree *stree);
 phydbl *MIGREP_MCMC(t_tree *tree);
@@ -76,6 +78,7 @@ void MIGREP_Rand_Pairs_Coal_Times_Dist(t_tree *tree);
 phydbl MIGREP_Neigborhood_Size_Regression(t_tree *tree);
 phydbl MIGREP_Neigborhood_Size(t_tree *tree);
 phydbl MIGREP_Dist_Parent_To_Offspring(t_tree *tree);
+void MIGREP_Read_Tip_Coordinates(t_ldsk **ldsk_a, t_tree *tree);
 
 
 #endif

@@ -805,6 +805,7 @@ option *Make_Input()
   io->in_align_file                     = (char *)mCalloc(T_MAX_FILE,sizeof(char));
   io->in_tree_file                      = (char *)mCalloc(T_MAX_FILE,sizeof(char));
   io->in_constraint_tree_file           = (char *)mCalloc(T_MAX_FILE,sizeof(char));
+  io->in_coord_file                     = (char *)mCalloc(T_MAX_FILE,sizeof(char));
   io->out_file                          = (char *)mCalloc(T_MAX_FILE,sizeof(char));
   io->out_tree_file                     = (char *)mCalloc(T_MAX_FILE,sizeof(char));
   io->out_trees_file                    = (char *)mCalloc(T_MAX_FILE,sizeof(char));

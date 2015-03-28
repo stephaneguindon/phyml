@@ -1045,6 +1045,9 @@ typedef struct __Option { /*! mostly used in 'help.c' */
   char           *out_ancestral_file; /*! name of the file containing the ancestral sequences */
   FILE             *fp_out_ancestral; /*! pointer to the file containing the ancestral sequences */
 
+  char                *in_coord_file; /*! name of input file containing coordinates */
+  FILE                  *fp_in_coord; /*! pointer to the file containing coordinates */
+
   char                     *out_file; /*! name of the output file */
 
   char              *clade_list_file;

@@ -1768,7 +1768,6 @@ void GEO_Read_In_Landscape(char *file_name, t_geo *t, phydbl **ldscape, int **lo
           /* Exit("\n"); */
           continue;
         }
-
       
       /* sscanf(line+pos,"%lf %lf",&longitude,&lattitude); */
       if(fscanf(fp,"%lf",&longitude) == EOF) break;

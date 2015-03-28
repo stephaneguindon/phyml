@@ -21,6 +21,113 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int MIGREP_Main(int argc, char *argv[])
 {
+  return(MIGREP_Main_Estimate(argc,argv));
+  /* return(MIGREP_Main_Simulate(argc,argv)); */
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+int MIGREP_Main_Estimate(int argc, char *argv[])
+{
+  t_tree *tree;
+  phydbl *res;
+  int n_dim,i;
+  t_dsk *disk;
+  option *io;
+  calign *cdata;
+  t_ldsk **ldsk_a;
+
+  n_dim = 2;
+
+  io = (option *)Get_Input(argc,argv);
+  if(!io) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+
+  Get_Seq(io);
+  if(!io->data) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+
+  Make_Model_Complete(io->mod);
+  Set_Model_Name(io->mod);
+  Print_Settings(io);
+
+  cdata = Compact_Data(io->data,io);
+  Free_Seq(io->data,cdata->n_otu);
+
+  tree = Make_Tree_From_Scratch(cdata->n_otu,cdata);
+  Connect_CSeqs_To_Nodes(cdata,io,tree);
+
+  tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
+  RATES_Init_Rate_Struct(tree->rates,io->rates,tree->n_otu);
+  
+  /* Allocate migrep model */
+  tree->mmod = MIGREP_Make_Migrep_Model(n_dim);
+  MIGREP_Init_Migrep_Mod(tree->mmod,n_dim);
+
+  tree->data      = cdata;
+  tree->mod       = io->mod;
+  tree->io        = io;
+  tree->n_pattern = tree->data->crunch_len;
+
+  /* Allocate and initialise first disk event */
+  disk = MIGREP_Make_Disk_Event(n_dim,tree->n_otu);
+  MIGREP_Init_Disk_Event(disk,n_dim,NULL);
+  disk->time             = 0.0;
+  disk->mmod             = tree->mmod;
+  disk->n_ldsk_a         = tree->n_otu;  
+  tree->disk             = disk;
+
+  /* Allocate coordinates for all the tips first (will grow afterwards) */
+  ldsk_a = (t_ldsk **)mCalloc(tree->n_otu,sizeof(t_ldsk *));
+  For(i,tree->n_otu) 
+    {
+      ldsk_a[i] = MIGREP_Make_Lindisk_Node(n_dim);
+      MIGREP_Init_Lindisk_Node(ldsk_a[i],disk,n_dim);
+    }
+  
+  MIGREP_Read_Tip_Coordinates(ldsk_a,tree);
+
+  tree->disk->ldsk_a = ldsk_a;
+
+  /* Initialize parameters of migrep model */
+  tree->mmod->lbda = Uni()*(0.3 - 0.05) + 0.05;
+  tree->mmod->mu   = Uni()*(1.0 - 0.3)  + 0.3;
+  tree->mmod->rad  = Uni()*(5.0 - 1.5)  + 1.5;
+
+  /* Random genealogy */
+  MIGREP_Simulate_Backward_Core(NO,tree);
+
+  MIGREP_Ldsk_To_Tree(tree);  
+
+  Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
+  Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
+  RATES_Fill_Lca_Table(tree);
+
+  disk = tree->disk;
+  while(disk->prev) disk = disk->prev;
+
+  tree->rates->bl_from_rt = YES;
+  tree->rates->clock_r    = 0.1 / FABS(disk->time);
+  tree->rates->model      = STRICTCLOCK;
+  RATES_Update_Cur_Bl(tree);
+
+
+  Init_Model(tree->data,io->mod,io);
+  Prepare_Tree_For_Lk(tree);
+  Init_P_Lk_Tips_Int(tree);
+  Init_P_Lk_Loc(tree);
+
+  res = MIGREP_MCMC(tree);
+
+  Free(res);  
+
+  return 0;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+int MIGREP_Main_Simulate(int argc, char *argv[])
+{
   t_tree *tree;
   phydbl *res;
   int seed,pid,burnin;
@@ -47,8 +154,7 @@ int MIGREP_Main(int argc, char *argv[])
 
   setvbuf(fp_out,NULL,_IOFBF,1024);
 
-
-  tree = MIGREP_Simulate_Backward((int)atoi(argv[1]),(int)atoi(argv[2]),10.,10.,seed);
+  tree = MIGREP_Simulate((int)atoi(argv[1]),(int)atoi(argv[2]),10.,10.,seed);
 
   disk = tree->disk;
   while(disk->prev) disk = disk->prev;
@@ -128,7 +234,7 @@ int MIGREP_Main(int argc, char *argv[])
 // Simulate Etheridge-Barton model backwards in time, following n_otu lineages
 // on a rectangle of dimension width x height
 // See Kelleher, Barton & Etheridge, Bioinformatics, 2013.
-t_tree *MIGREP_Simulate_Backward(int n_otu, int n_sites, phydbl width, phydbl height, int r_seed)
+t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int r_seed)
 {  
   t_tree *tree;
   int n_dim;
@@ -588,7 +694,7 @@ phydbl MIGREP_Simulate_Forward_Core(int n_sites, t_tree *tree)
   do
     {
       poly = (t_poly **)mCalloc(n_poly,sizeof(t_poly *));
-      For(i,n_poly) poly[i] = Rpoly(3);
+      For(i,n_poly) poly[i] = Rpoly(3); /* triangles */
       For(i,n_poly)
         {      
           For(j,poly[i]->n_poly_vert) 
@@ -941,17 +1047,11 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   char *s;
   phydbl *res;
   phydbl true_root_x, true_root_y;
-  phydbl max_x, max_y;
 
   s = (char *)mCalloc(T_MAX_FILE,sizeof(char));
 
-  strcpy(s,"migrep_trees");
-  sprintf(s+strlen(s),".%d",tree->mod->io->r_seed);
-  fp_tree = Openfile(s,WRITE);
-  strcpy(s,"migrep_stats");
-  sprintf(s+strlen(s),".%d",tree->mod->io->r_seed);
-  fp_stats = Openfile(s,WRITE);
-  /* fp_stats = stderr; */
+  fp_tree  = tree->io->fp_out_tree;
+  fp_stats = tree->io->fp_out_stats;
 
   Free(s);
 
@@ -1016,6 +1116,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   /* tree->mmod->lbda = Uni()*(tree->mmod->max_lbda - tree->mmod->min_lbda) + tree->mmod->min_lbda; */
   /* tree->mmod->mu   = Uni()*(tree->mmod->max_mu - tree->mmod->min_mu) + tree->mmod->min_mu; */
   /* tree->mmod->rad  = Uni()*(tree->mmod->max_rad - tree->mmod->min_rad) + tree->mmod->min_rad; */
+
 
   tree->mmod->lbda            = Uni()*(0.30 - 0.05) + 0.05;
   tree->mmod->mu              = Uni()*(1.00 - 0.30) + 0.30;
@@ -2861,6 +2962,100 @@ phydbl MIGREP_Dist_Parent_To_Offspring(t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+void MIGREP_Read_Tip_Coordinates(t_ldsk **ldsk_a, t_tree *tree)
+{
+  char *s;
+  FILE *fp;
+  int i,*done,found_sw,found_ne;
+  phydbl sw_lon, sw_lat;
+
+  s    = (char *)mCalloc(T_MAX_LINE,sizeof(char));
+  fp   = tree->io->fp_in_coord;
+  done = (int *)mCalloc(tree->n_otu,sizeof(int));
+
+  found_sw = NO;
+  found_ne = NO;
+
+  For(i,tree->n_otu) done[i] = NO;
+
+  do
+    {
+      if(fscanf(fp,"%s",s) == EOF) break;
+      For(i,strlen(s)) if(s[i] == '#') break; /* skip comment */
+      if(i != strlen(s)) continue;
+      
+      For(i,tree->n_otu) if(strstr(tree->a_nodes[i]->name,s)) break;
+      
+      if(i != tree->n_otu) /* Found a match */
+        {
+          if(fscanf(fp,"%lf",&(ldsk_a[i]->coord->lonlat[0])) == EOF) break;
+          if(fscanf(fp,"%lf",&(ldsk_a[i]->coord->lonlat[1])) == EOF) break;          
+          done[i] = YES;
+        }
+      else
+        {
+          if(!strcmp(s,"|SouthWest|") || !strcmp(s,"|southwest|") || !strcmp(s,"|Southwest|"))
+            {
+              found_sw = YES;
+              if(fscanf(fp,"%lf",&(sw_lon)) == EOF) break;
+              if(fscanf(fp,"%lf",&(sw_lat)) == EOF) break;              
+            }
+          else if(!strcmp(s,"|NorthEast|") || !strcmp(s,"|northeast|") || !strcmp(s,"|Northeast|"))
+            {
+              found_ne = YES;
+              if(fscanf(fp,"%lf",&(tree->mmod->lim->lonlat[0])) == EOF) break;
+              if(fscanf(fp,"%lf",&(tree->mmod->lim->lonlat[1])) == EOF) break;
+            }
+        }
+    }
+  while(1);
+  
+  if(found_ne == NO)
+    {
+      PhyML_Printf("\n== Could not find coordinates for northernmost  point.");
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
+
+  if(found_sw == NO)
+    {
+      PhyML_Printf("\n== Could not find coordinates for southernmost point.");
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
+
+  For(i,tree->n_otu) 
+    if(done[i] == NO) 
+      {
+        PhyML_Printf("\n== Could not find coordinates for '%s'.",tree->a_nodes[i]->name);
+        Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+      }
+
+  For(i,tree->n_otu) 
+    {
+      ldsk_a[i]->coord->lonlat[0] -= sw_lon;
+      ldsk_a[i]->coord->lonlat[1] -= sw_lat;
+
+      ldsk_a[i]->coord->lonlat[0] /= (tree->mmod->lim->lonlat[0] - sw_lon);
+      ldsk_a[i]->coord->lonlat[1] /= (tree->mmod->lim->lonlat[1] - sw_lat);
+
+      ldsk_a[i]->coord->lonlat[0] *= 1.;
+      ldsk_a[i]->coord->lonlat[1] *= 1.;
+
+      PhyML_Printf("\n. Scaled coordinates of '%-20s': %12f\t %12f",
+                   tree->a_nodes[i]->name,
+                   ldsk_a[i]->coord->lonlat[0],
+                   ldsk_a[i]->coord->lonlat[1]);
+    }
+
+  tree->mmod->lim->lonlat[0] = 1.0;
+  tree->mmod->lim->lonlat[1] = 1.0;
+  /* tree->mmod->lim->lonlat[0] = 10.0; */
+  /* tree->mmod->lim->lonlat[1] = 10.0; */
+
+  Free(s);
+  Free(done);
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

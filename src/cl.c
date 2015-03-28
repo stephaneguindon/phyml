@@ -118,10 +118,11 @@ int Read_Command_Line(option *io, int argc, char **argv)
       {"xml",                 required_argument,NULL,73},
       {"l_var",               required_argument,NULL,74},
 #ifdef BEAGLE
-	  {"beagle_resource",     required_argument,NULL,75},
+      {"beagle_resource",     required_argument,NULL,75},
 #endif
-      {"ancestral",    no_argument,NULL,76},
-      {"anc",    no_argument,NULL,76},
+      {"ancestral",           no_argument,NULL,76},
+      {"anc",                 no_argument,NULL,76},
+      {"coord_file",          required_argument,NULL,77},
       {0,0,0,0}
     };
 
@@ -139,6 +140,43 @@ int Read_Command_Line(option *io, int argc, char **argv)
 
       switch(c)
 	{
+
+        case 77:
+          {
+	    char *tmp;
+	    tmp = (char *)mCalloc(T_MAX_FILE, sizeof(char));
+
+	    if(strlen(optarg) > T_MAX_FILE -11)
+	      {
+		char choix;
+		strcpy (tmp, "\n. The file name'");
+		strcat (tmp, optarg);
+		strcat (tmp, "' is too long.\n");
+		PhyML_Printf("%s",tmp);
+		PhyML_Printf("\n. Type any key to exit.\n");
+		if(!scanf("%c",&choix)) Exit("\n");
+		Exit("\n");
+	      }
+	    else if (!Filexists (optarg))
+	      {
+		char choix;
+		strcpy (tmp, "\n. The file '");
+		strcat (tmp, optarg);
+		strcat (tmp, "' doesn't exist.\n");
+		PhyML_Printf("%s",tmp);
+		PhyML_Printf("\n. Type any key to exit.\n");
+		if(!scanf("%c",&choix)) Exit("\n");
+		Exit("\n");
+	      }
+	    else
+	      {
+                strcpy(io->in_coord_file, optarg);
+                io->fp_in_coord = Openfile(io->in_coord_file,READ);
+	      }
+	    Free(tmp);
+            break;
+          }
+
 	case 76:
           {
             io->ancestral = YES;
@@ -146,10 +184,10 @@ int Read_Command_Line(option *io, int argc, char **argv)
           }
 #ifdef BEAGLE
 	case 75:
-		{
-	    	io->beagle_resource = (int)atoi(optarg);
-	    	break;
-	    }
+          {
+            io->beagle_resource = (int)atoi(optarg);
+            break;
+          }
 #endif
 	case 74:
           {
@@ -1087,6 +1125,8 @@ int Read_Command_Line(option *io, int argc, char **argv)
 		strcat(io->out_tree_file,"_phyml_tree");
 #elif M4
 		strcat(io->out_tree_file,"_m4_tree");
+#elif MIGREP
+		strcat(io->out_tree_file,"_migrep_tree");
 #endif
                 
 		strcpy(io->out_stats_file,optarg);
@@ -1094,6 +1134,8 @@ int Read_Command_Line(option *io, int argc, char **argv)
 		strcat(io->out_stats_file,"_phyml_stats");
 #elif M4
 		strcat(io->out_stats_file,"_m4_stats");
+#elif MIGREP
+		strcat(io->out_stats_file,"_migrep_stats");
 #endif
 	      }
 	    Free (tmp);
@@ -1436,20 +1478,17 @@ int Read_Command_Line(option *io, int argc, char **argv)
       Exit("\n");
     }
   
-#ifndef PHYTIME
+#if !defined(PHYTIME) 
   // Make sure you don't erase the input file...
   if(!strcmp(io->out_tree_file,io->in_align_file) ||
-     !strcmp(io->out_stats_file,io->in_align_file))
-    {
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s').\n",__FILE__,__LINE__,__FUNCTION__);
-      Exit("\n");      
-    }
+     !strcmp(io->out_stats_file,io->in_align_file)) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
 
-  writemode = 1;
+  writemode = WRITE;
 
   io->fp_out_tree  = Openfile(io->out_tree_file,writemode);
   io->fp_out_stats = Openfile(io->out_stats_file,writemode);
 #endif
+  
   writemode++; // just to silence a warning message at compilation
   
   if(io->mod->whichmodel == GTR) 

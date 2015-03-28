@@ -519,6 +519,7 @@ void Set_Defaults_Input(option* io)
   io->fp_out_boot_stats          = NULL;
   io->fp_out_stats               = NULL;
   io->fp_out_ancestral           = NULL;
+  io->fp_in_coord                = NULL;
   io->long_tax_names             = NULL;
   io->short_tax_names            = NULL;
   io->lon                        = NULL;
@@ -564,10 +565,10 @@ void Set_Defaults_Input(option* io)
   io->codpos                     = -1;
   io->mutmap                     = NO;
   io->state_len                  = 1;
+  io->ancestral                  = NO;
 #ifdef BEAGLE
   io->beagle_resource            = 0;
 #endif
-  io->ancestral                  = NO;
 
   MCMC_Init_MCMC_Struct(NULL,io,io->mcmc);
   RATES_Init_Rate_Struct(io->rates,NULL,-1);
@@ -3425,7 +3426,7 @@ void MIGREP_Init_Migrep_Mod(t_migrep_mod *t, int n_dim)
 
   t->lbda             = 0.1;
   t->min_lbda         = 1.E-6;
-  t->max_lbda         = 3.0;
+  t->max_lbda         = 1.E+3;
   t->prior_param_lbda = 1.0;
 
   t->mu               = 0.1;
