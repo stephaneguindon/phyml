@@ -1122,16 +1122,8 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   tree->mmod->mu              = Uni()*(1.00 - 0.30) + 0.30;
   tree->mmod->rad             = Uni()*(3.00 - 1.00) + 1.00;
 
-  /* disk = tree->disk; */
-  /* max_x = 0.0; */
-  /* For(i,disk->n_ldsk_a) if(disk->ldsk_a[i]->coord->lonlat[0] > max_x) max_x = disk->ldsk_a[i]->coord->lonlat[0]; */
-  /* max_y = 0.0; */
-  /* For(i,disk->n_ldsk_a) if(disk->ldsk_a[i]->coord->lonlat[1] > max_y) max_y = disk->ldsk_a[i]->coord->lonlat[1]; */
-
-  /* printf("\n. max_x = %f max_y = %f",max_x,max_y); fflush(stdout); */
-
-  /* tree->mmod->lim->lonlat[0]  = Uni()*(5.*max_x - max_x) + max_x; */
-  /* tree->mmod->lim->lonlat[1]  = Uni()*(5.*max_y - max_y) + max_y; */
+  MCMC_Randomize_Rate_Across_Sites(tree);
+  MCMC_Randomize_Kappa(tree);
 
   /* Random genealogy */
   MIGREP_Simulate_Backward_Core(NO,tree);
@@ -1153,7 +1145,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   PhyML_Fprintf(fp_stats,"\n# start mu: %f",tree->mmod->mu);
   PhyML_Fprintf(fp_stats,"\n# start rad: %f",tree->mmod->rad);
 
-  PhyML_Fprintf(fp_stats,"\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s",
+  PhyML_Fprintf(fp_stats,"\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s",
                 "run",
                 "alnL",
                 "glnL",
@@ -1168,6 +1160,8 @@ phydbl *MIGREP_MCMC(t_tree *tree)
                 "xRootLon",
                 "xRootLat",
                 "rootTime",
+                "tstv",
+                "alpha",
                 "essLbda",
                 "essMu",
                 "essRad");
@@ -1183,7 +1177,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
               tree->mcmc->adjust_tuning[i] = NO;
             }
         }
-      if(mcmc->run == 0) 
+      if(mcmc->run == 1E+6) 
         {
           For(i,mcmc->n_moves) 
             {
@@ -1236,6 +1230,15 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"migrep_scale_times"))
         MCMC_MIGREP_Scale_Times(tree);
 
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_scale_times"))
+        MCMC_MIGREP_Scale_Times(tree);
+
+      if(!strcmp(tree->mcmc->move_name[move],"kappa"))
+        MCMC_Kappa(tree);
+
+      if(!strcmp(tree->mcmc->move_name[move],"ras"))
+        MCMC_Rate_Across_Sites(tree);
+
       /* if(!strcmp(tree->mcmc->move_name[move],"migrep_ldscape_lim")) */
       /*   MCMC_MIGREP_Ldscape_Limits(tree); */
 
@@ -1245,7 +1248,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       if(!(tree->mcmc->run%tree->mcmc->sample_interval))
         {
           Lk(NULL,tree);
-          PhyML_Fprintf(fp_stats,"\n%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\t%d\t%d\t%f\t%f\t%f\t%f\t%f\t%f",
+          PhyML_Fprintf(fp_stats,"\n%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\t%d\t%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f",
                         tree->mcmc->run,
                         tree->c_lnL,
                         tree->mmod->c_lnL,
@@ -1260,6 +1263,8 @@ phydbl *MIGREP_MCMC(t_tree *tree)
                         true_root_x - disk->ldsk->coord->lonlat[0],
                         true_root_y - disk->ldsk->coord->lonlat[1],
                         disk->time,
+                        tree->mod->kappa->v,
+                        tree->mod->ras->alpha->v,
                         tree->mcmc->ess[tree->mcmc->num_move_migrep_lbda],
                         tree->mcmc->ess[tree->mcmc->num_move_migrep_mu],
                         tree->mcmc->ess[tree->mcmc->num_move_migrep_rad]);
