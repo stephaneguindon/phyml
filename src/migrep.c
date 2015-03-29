@@ -21,8 +21,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int MIGREP_Main(int argc, char *argv[])
 {
-  return(MIGREP_Main_Estimate(argc,argv));
-  /* return(MIGREP_Main_Simulate(argc,argv)); */
+  /* return(MIGREP_Main_Estimate(argc,argv)); */
+  return(MIGREP_Main_Simulate(argc,argv));
 }
 
 //////////////////////////////////////////////////////////////
@@ -156,6 +156,13 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
 
   tree = MIGREP_Simulate((int)atoi(argv[1]),(int)atoi(argv[2]),10.,10.,seed);
 
+  strcpy(s,"migrep_trees");
+  sprintf(s+strlen(s),".%d",tree->mod->io->r_seed);
+  tree->io->fp_out_tree = Openfile(s,WRITE);
+  strcpy(s,"migrep_stats");
+  sprintf(s+strlen(s),".%d",tree->mod->io->r_seed);
+  tree->io->fp_out_stats = Openfile(s,WRITE);
+
   disk = tree->disk;
   while(disk->prev) disk = disk->prev;
 
@@ -168,8 +175,6 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
   /*              MIGREP_Neigborhood_Size_Regression(tree)); */
   /* fclose(fp_out); */
   /* Exit("\n"); */
-
-
 
   PhyML_Fprintf(fp_out,"\n# SampArea\t TrueLbda\t TrueMu\t TrueRad\t TrueDist\t TrueNeigh\t RegNeigh\t TrueXroot\t TrueYroot\t Lbda5\t Lbda50\t Lbda95\t Mu5\t Mu50\t Mu95\t Rad5\t Rad50\t Rad95\t Xroot5\t Xroot50\t Xroot95\t Yroot5\t Yroot50\t Yroot95\t limXroot5\t limXroot50\t limXroot95\t limYroot5\t limYroot50\t limYroot95\t ");
 
@@ -264,7 +269,6 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   io->init_len = 500; /* sequence length */
 
   io->data = Make_Empty_Alignment(io);
-  /* Print_Seq(stdout,io->data,io->n_otu); */
 
   Make_Model_Complete(io->mod);
   Set_Model_Name(io->mod);
@@ -309,9 +313,11 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   /* mmod->rad  = 2.0; */
 
   tree->mmod = mmod;
+
+
     
-  /* MIGREP_Simulate_Backward_Core(YES,tree); */
-  mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree);
+  MIGREP_Simulate_Backward_Core(YES,tree);
+  /* mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree); */
 
   MIGREP_Ldsk_To_Tree(tree);  
 
@@ -322,8 +328,9 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   disk = tree->disk;
   while(disk->prev) disk = disk->prev;
   
+
   tree->rates->bl_from_rt = YES;
-  tree->rates->clock_r    = 0.1 / FABS(disk->time);
+  tree->rates->clock_r    = 0.005 / FABS(disk->time);
   tree->rates->model      = STRICTCLOCK;
   RATES_Update_Cur_Bl(tree);
 
@@ -1295,9 +1302,9 @@ phydbl *MIGREP_MCMC(t_tree *tree)
           /* Free(s); */
         /* } */
 
-      if(tree->mcmc->ess[tree->mcmc->num_move_migrep_lbda] > 500. &&
-         tree->mcmc->ess[tree->mcmc->num_move_migrep_mu]   > 500. &&
-         tree->mcmc->ess[tree->mcmc->num_move_migrep_rad]  > 500.) break;
+      if(tree->mcmc->ess[tree->mcmc->num_move_migrep_lbda] > 100. &&
+         tree->mcmc->ess[tree->mcmc->num_move_migrep_mu]   > 100. &&
+         tree->mcmc->ess[tree->mcmc->num_move_migrep_rad]  > 100.) break;
     }
   while(tree->mcmc->run < tree->mcmc->chain_len);
 
