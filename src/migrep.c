@@ -330,7 +330,7 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   
 
   tree->rates->bl_from_rt = YES;
-  tree->rates->clock_r    = 0.005 / FABS(disk->time);
+  tree->rates->clock_r    = 0.01 / FABS(disk->time);
   tree->rates->model      = STRICTCLOCK;
   RATES_Update_Cur_Bl(tree);
 
@@ -338,6 +338,8 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   Prepare_Tree_For_Lk(tree);
   Evolve(tree->data,tree->mod,tree);
   
+  Print_CSeq(stdout,NO,tree->data);
+
   if(tree->mod->s_opt->greedy) Init_P_Lk_Tips_Double(tree);
   else                         Init_P_Lk_Tips_Int(tree);
   Init_P_Lk_Loc(tree);
