@@ -314,8 +314,8 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
 
   tree->mmod = mmod;
     
-  MIGREP_Simulate_Backward_Core(YES,tree);
-  /* mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree); */
+  /* MIGREP_Simulate_Backward_Core(YES,tree); */
+  mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree);
 
   MIGREP_Ldsk_To_Tree(tree);  
 
@@ -388,6 +388,7 @@ void MIGREP_Simulate_Backward_Core(int new_loc, t_tree *tree)
           MIGREP_Init_Lindisk_Node(ldsk_a[i],disk,n_dim);
         }
       
+      PhyML_Printf("\n. WARNING: position of samples are not random.");
       /* Generate coordinates for the tip nodes (uniform distribution on the rectangle) */
       For(i,n_otu)
         {
