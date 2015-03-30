@@ -518,11 +518,17 @@ void MCMC_Update_Effective_Sample_Size(int move_num, t_mcmc *mcmc, t_tree *tree)
 {
   int i,N,lag;
   phydbl rho,mean,var,old_rho,act,ess; 
- 
-  N = mcmc->sample_num+1;
+  int burnin;
 
-  mean = Weighted_Mean(mcmc->sampled_val+move_num*mcmc->sample_size,NULL,N);
-  var  = Variance(mcmc->sampled_val+move_num*mcmc->sample_size,N);
+  N = mcmc->sample_num+1;
+  
+  burnin = (int)(0.1*N);
+  if(burnin < 1) return;
+
+  N -= burnin;
+
+  mean = Weighted_Mean(mcmc->sampled_val+move_num*mcmc->sample_size+burnin,NULL,N);
+  var  = Variance(mcmc->sampled_val+move_num*mcmc->sample_size+burnin,N);
   
   act = -1.0;
   old_rho = 1.0;
@@ -530,8 +536,8 @@ void MCMC_Update_Effective_Sample_Size(int move_num, t_mcmc *mcmc, t_tree *tree)
     {      
       rho = 0.0;
       For(i,N-lag) rho += 
-        (mcmc->sampled_val[move_num*mcmc->sample_size+i]     - mean) *
-        (mcmc->sampled_val[move_num*mcmc->sample_size+i+lag] - mean) ;
+        (mcmc->sampled_val[move_num*mcmc->sample_size+burnin+i]     - mean) *
+        (mcmc->sampled_val[move_num*mcmc->sample_size+burnin+i+lag] - mean) ;
       
       rho /= (N - lag)*var;
 

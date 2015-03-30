@@ -1180,6 +1180,8 @@ phydbl *MIGREP_MCMC(t_tree *tree)
                 "essRad");
 
 
+  For(i,mcmc->n_moves) tree->mcmc->start_ess[i] = YES;
+ 
   mcmc->always_yes = NO;
   do
     {
@@ -1188,13 +1190,6 @@ phydbl *MIGREP_MCMC(t_tree *tree)
           For(i,mcmc->n_moves) 
             {
               tree->mcmc->adjust_tuning[i] = NO;
-            }
-        }
-      if(mcmc->run == 1E+6) 
-        {
-          For(i,mcmc->n_moves) 
-            {
-              tree->mcmc->start_ess[i] = YES;
             }
         }
 
@@ -1293,10 +1288,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
 
           MCMC_Copy_To_New_Param_Val(tree->mcmc,tree);
           
-          For(i,tree->mcmc->n_moves)
-            {
-              if(tree->mcmc->start_ess[i] == YES) MCMC_Update_Effective_Sample_Size(i,tree->mcmc,tree);
-            }
+          For(i,tree->mcmc->n_moves) if(tree->mcmc->start_ess[i] == YES) MCMC_Update_Effective_Sample_Size(i,tree->mcmc,tree);
 
           tree->mcmc->sample_num++;
         }
