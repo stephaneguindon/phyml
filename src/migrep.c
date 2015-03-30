@@ -313,11 +313,9 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   /* mmod->rad  = 2.0; */
 
   tree->mmod = mmod;
-
-
     
-  MIGREP_Simulate_Backward_Core(YES,tree);
-  /* mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree); */
+  /* MIGREP_Simulate_Backward_Core(YES,tree); */
+  mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree);
 
   MIGREP_Ldsk_To_Tree(tree);  
 
