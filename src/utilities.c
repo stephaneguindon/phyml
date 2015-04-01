@@ -7899,31 +7899,36 @@ t_node *Find_Lca_Clade(t_node **node_list, int node_list_size, t_tree *tree)
       if(!Get_List_Of_Ancestors(node_list[i],list[i],size+i,tree))
         {
           For(i,node_list_size) PhyML_Printf("\n== %s",node_list[i]->name);
-          PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
-          Exit("\n");
+          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
         }
     }
-  do
+
+  if(node_list_size > 1)
     {
-      For(i,node_list_size-1)
-        if(list[i][size[i]] != list[i+1][size[i+1]])
-          break;
-      
-      if(i != node_list_size-1) break;
-      
-      For(i,node_list_size)
+      do
         {
-          size[i]--;
-          if(size[i] == 1) break; // We have reached the tip corresponding to node_list[i]
-        }
-      
-      if(node_list_size == 1) break;
-
-    }while(1);
-
-
-  lca = list[0][size[0]+1];
-
+          For(i,node_list_size-1)
+            if(list[i][size[i]] != list[i+1][size[i+1]])
+              break;
+          
+          if(i != node_list_size-1) break;
+          
+          For(i,node_list_size)
+            {
+              size[i]--;
+              if(size[i] == 1) break; // We have reached the tip corresponding to node_list[i]
+            }
+          
+          if(node_list_size == 1) break;
+          
+        }while(1);
+      lca = list[0][size[0]+1];
+    }
+  else
+    {
+      lca = node_list[0];
+    }
+  
   For(i,node_list_size) Free(list[i]);
   Free(list);
   Free(size);
@@ -8111,15 +8116,16 @@ int Find_Clade(char **tax_name_list, int list_size, t_tree *tree)
   For(i,list_size)
     {
       For(j,tree->n_otu)
-    {
-      if(!strcmp(tax_name_list[i],tree->a_nodes[j]->name))
         {
-          tax_num_list[i] = tree->a_nodes[j]->num;
-          tax_node_list[i] = tree->a_nodes[j];
-          n_matches++;
+          if(!strcmp(tax_name_list[i],tree->a_nodes[j]->name))
+            {
+              tax_num_list[i] = tree->a_nodes[j]->num;
+              tax_node_list[i] = tree->a_nodes[j];
+              n_matches++;
               break;
+            }
         }
-    }
+      
       if(j == tree->n_otu)
         {
           PhyML_Printf("\n== Problem with the calibration file.");
