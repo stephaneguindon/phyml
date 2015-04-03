@@ -328,7 +328,7 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   
 
   tree->rates->bl_from_rt = YES;
-  tree->rates->clock_r    = 0.01 / FABS(disk->time);
+  tree->rates->clock_r    = 0.1 / FABS(disk->time);
   tree->rates->model      = STRICTCLOCK;
   RATES_Update_Cur_Bl(tree);
 
