@@ -143,6 +143,7 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
   /* seed = 12965; */
   /* seed = 2647; */
   /* seed = 13824; */
+  /* seed = 16476; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -176,7 +177,7 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
   /* fclose(fp_out); */
   /* Exit("\n"); */
 
-  PhyML_Fprintf(fp_out,"\n# SampArea\t TrueLbda\t TrueMu\t TrueRad\t TrueDist\t TrueNeigh\t RegNeigh\t TrueXroot\t TrueYroot\t Lbda5\t Lbda50\t Lbda95\t Mu5\t Mu50\t Mu95\t Rad5\t Rad50\t Rad95\t Xroot5\t Xroot50\t Xroot95\t Yroot5\t Yroot50\t Yroot95\t limXroot5\t limXroot50\t limXroot95\t limYroot5\t limYroot50\t limYroot95\t ");
+  PhyML_Fprintf(fp_out,"\n# SampArea\t TrueLbda\t TrueMu\t TrueRad\t TrueDist\t TrueNeigh\t RegNeigh\t TrueXroot\t TrueYroot\t Lbda5\t Lbda50\t Lbda95\t Mu5\t Mu50\t Mu95\t Rad5\t Rad50\t Rad95\t Xroot5\t Xroot50\t Xroot95\t Yroot5\t Yroot50\t Yroot95\t Dist5\t Dist50\t Dist95\t Neigh5\t Neigh50\t Neigh95\t ");
 
   PhyML_Fprintf(fp_out,"\n %f\t %f\t %f\t %f\t %f\t %f\t %f\t %f\t %f\t",
                 tree->mmod->sampl_area,
@@ -259,6 +260,7 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   Set_Defaults_Input(io);
   Set_Defaults_Model(mod);
   Set_Defaults_Optimiz(s_opt);
+
 
   io->mod      = mod;
   mod->io      = io;
@@ -1234,9 +1236,6 @@ phydbl *MIGREP_MCMC(t_tree *tree)
 
       if(!strcmp(tree->mcmc->move_name[move],"migrep_spr"))
         MCMC_MIGREP_Prune_Regraft(tree);
-
-      if(!strcmp(tree->mcmc->move_name[move],"migrep_scale_times"))
-        MCMC_MIGREP_Scale_Times(tree);
 
       if(!strcmp(tree->mcmc->move_name[move],"migrep_scale_times"))
         MCMC_MIGREP_Scale_Times(tree);
