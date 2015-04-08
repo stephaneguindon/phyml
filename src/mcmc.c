@@ -5499,6 +5499,8 @@ void MCMC_MIGREP_Move_Disk_Updown(t_tree *tree)
   
   n_move_disks = Rand_Int(1,1+(int)(n_all_disks/10));
 
+  n_move_disks = 1;
+
   target_disk = (t_dsk **)mCalloc(n_all_disks,sizeof(t_dsk *));
   ori_time    = (phydbl *)mCalloc(n_all_disks,sizeof(phydbl));
 
