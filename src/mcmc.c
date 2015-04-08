@@ -5280,8 +5280,6 @@ void MCMC_MIGREP_Move_Disk_Centre(t_tree *tree)
   
   n_move_disks = Rand_Int(1,1+(int)(n_all_disks/10));
 
-  n_move_disks = 1;
-
   For(j,n_move_disks)
     {
       /* Uniform selection of a disk */
@@ -5385,8 +5383,6 @@ void MCMC_MIGREP_Move_Ldsk(t_tree *tree)
   
   n_move_ldsk = Rand_Int(1,1+(int)(n_all_disks/10));
   
-  n_move_ldsk = 1;
-
   target_disk = (t_dsk **)mCalloc(n_all_disks,sizeof(t_dsk *));
 
   For(j,n_move_ldsk)
@@ -5502,8 +5498,6 @@ void MCMC_MIGREP_Move_Disk_Updown(t_tree *tree)
   if(!n_all_disks) return;
   
   n_move_disks = Rand_Int(1,1+(int)(n_all_disks/10));
-
-  n_move_disks = 1;
 
   target_disk = (t_dsk **)mCalloc(n_all_disks,sizeof(t_dsk *));
   ori_time    = (phydbl *)mCalloc(n_all_disks,sizeof(phydbl));
