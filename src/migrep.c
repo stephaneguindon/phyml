@@ -89,9 +89,10 @@ int MIGREP_Main_Estimate(int argc, char *argv[])
   tree->disk->ldsk_a = ldsk_a;
 
   /* Initialize parameters of migrep model */
-  tree->mmod->lbda = Uni()*(0.3 - 0.05) + 0.05;
-  tree->mmod->mu   = Uni()*(1.0 - 0.3)  + 0.3;
-  tree->mmod->rad  = Uni()*(5.0 - 1.5)  + 1.5;
+  tree->mmod->lbda  = Uni()*(0.3 - 0.05) + 0.05;
+  tree->mmod->mu    = Uni()*(1.0 - 0.3)  + 0.3;
+  tree->mmod->rad   = Uni()*(5.0 - 1.5)  + 1.5;
+  tree->mmod->sigsq = MIGREP_Sigsq_From_Radius(tree);
 
   /* Random genealogy */
   MIGREP_Simulate_Backward_Core(NO,tree);
@@ -109,7 +110,6 @@ int MIGREP_Main_Estimate(int argc, char *argv[])
   tree->rates->clock_r    = 0.1 / FABS(disk->time);
   tree->rates->model      = STRICTCLOCK;
   RATES_Update_Cur_Bl(tree);
-
 
   Init_Model(tree->data,io->mod,io);
   Prepare_Tree_For_Lk(tree);
@@ -143,7 +143,7 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
   /* seed = 12965; */
   /* seed = 2647; */
   /* seed = 13824; */
-  /* seed = 16476; */
+  /* seed = 21317; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -173,7 +173,7 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
   /*              tree->mmod->mu, */
   /*              tree->mmod->rad, */
   /*              2./tree->mmod->mu, */
-  /*              MIGREP_Neigborhood_Size_Regression(tree)); */
+  /*              MIGREP_Neighborhood_Size_Regression(tree)); */
   /* fclose(fp_out); */
   /* Exit("\n"); */
 
@@ -184,9 +184,9 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
                 tree->mmod->lbda,
                 tree->mmod->mu,
                 tree->mmod->rad,
-                MIGREP_Dist_Parent_To_Offspring(tree),
-                MIGREP_Neigborhood_Size(tree),
-                MIGREP_Neigborhood_Size_Regression(tree),
+                MIGREP_Sigsq_From_Radius(tree),
+                MIGREP_Neighborhood_Size(tree),
+                MIGREP_Neighborhood_Size_Regression(tree),
                 disk->ldsk->coord->lonlat[0],
                 disk->ldsk->coord->lonlat[1]);
 
@@ -250,7 +250,8 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   t_mod *mod;
   t_opt *s_opt;
   calign *cdata;
-  
+  phydbl max_lbda, min_lbda, max_mu, min_mu, max_rad, min_rad, max_sigsq, min_sigsq;
+
   n_dim = 2; // 2-dimensional landscape
 
   io    = (option *)Make_Input();
@@ -296,28 +297,30 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
 
   /* Allocate migrep model */
   mmod = MIGREP_Make_Migrep_Model(n_dim);
+  tree->mmod = mmod;
   MIGREP_Init_Migrep_Mod(mmod,n_dim);
   mmod->lim->lonlat[0] = width;
   mmod->lim->lonlat[1] = height;
   
+  max_lbda = 0.3; min_lbda = 0.05;
+  max_mu   = 1.0; min_mu   = 0.3;
+  max_rad  = 5.0; min_rad  = 1.5;
+  max_sigsq = 4.*PI*max_lbda/(mmod->lim->lonlat[0]*mmod->lim->lonlat[1])*POW(max_rad,4)*max_mu;
+  min_sigsq = 4.*PI*min_lbda/(mmod->lim->lonlat[0]*mmod->lim->lonlat[1])*POW(min_rad,4)*min_mu;
+
   /* Initialize parameters of migrep model */
-  mmod->lbda = Uni()*(0.3 - 0.05) + 0.05;
-  mmod->mu   = Uni()*(1.0 - 0.3)  + 0.3;
-  mmod->rad  = Uni()*(5.0 - 1.5)  + 1.5;
+  mmod->lbda   = Uni()*(max_lbda - min_lbda) + min_lbda;
+  mmod->mu     = Uni()*(max_mu - min_mu)  + min_mu;
+  mmod->sigsq  = Uni()*(max_sigsq - min_sigsq) + min_sigsq;
+  mmod->rad    = MIGREP_Radius_From_Sigsq(tree);
 
-  /* mmod->lbda = 0.80; */
-  /* mmod->mu   = 0.10; */
-  /* mmod->rad  = 2.50; */
 
-  /* mmod->rho  = 100.; */
-  /* mmod->lbda = 0.1; */
-  /* mmod->mu   = 0.4; */
-  /* mmod->rad  = 2.0; */
-
-  tree->mmod = mmod;
-    
   /* MIGREP_Simulate_Backward_Core(YES,tree); */
   mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree);
+  printf("\n XYX %f %f",
+         MIGREP_Neighborhood_Size(tree),
+         mmod->sigsq);
+  Exit("\n");
 
   MIGREP_Ldsk_To_Tree(tree);  
 
@@ -390,17 +393,14 @@ void MIGREP_Simulate_Backward_Core(int new_loc, t_tree *tree)
           MIGREP_Init_Lindisk_Node(ldsk_a[i],disk,n_dim);
         }
       
-      PhyML_Printf("\n. WARNING: position of samples are not random.");
+      /* PhyML_Printf("\n. WARNING: position of samples are not random."); */
       /* Generate coordinates for the tip nodes (uniform distribution on the rectangle) */
       For(i,n_otu)
         {
-          /* ldsk_a[i]->coord->lonlat[0] = Uni()*tree->mmod->lim->lonlat[0]; // longitude */
-          /* ldsk_a[i]->coord->lonlat[1] = Uni()*tree->mmod->lim->lonlat[1]; // latitude */
-          ldsk_a[i]->coord->lonlat[0] = (i/(int)SQRT(n_otu)+1)*tree->mmod->lim->lonlat[0]/(SQRT(n_otu)+1); // longitude
-          ldsk_a[i]->coord->lonlat[1] = (i%(int)SQRT(n_otu)+1)*tree->mmod->lim->lonlat[1]/(SQRT(n_otu)+1); // latitude
-          printf("\n. (%f;%f)",
-                 ldsk_a[i]->coord->lonlat[0],
-                 ldsk_a[i]->coord->lonlat[1]);
+          ldsk_a[i]->coord->lonlat[0] = Uni()*tree->mmod->lim->lonlat[0]; // longitude
+          ldsk_a[i]->coord->lonlat[1] = Uni()*tree->mmod->lim->lonlat[1]; // latitude
+          /* ldsk_a[i]->coord->lonlat[0] = (i/(int)SQRT(n_otu)+1)*tree->mmod->lim->lonlat[0]/(SQRT(n_otu)+1); // longitude */
+          /* ldsk_a[i]->coord->lonlat[1] = (i%(int)SQRT(n_otu)+1)*tree->mmod->lim->lonlat[1]/(SQRT(n_otu)+1); // latitude */
         }
       
       disk->ldsk_a = ldsk_a;
@@ -490,6 +490,10 @@ void MIGREP_Simulate_Backward_Core(int new_loc, t_tree *tree)
                   new_ldsk->next[new_ldsk->n_next-1] = ldsk_a[i]; 
                   disk->ldsk                         = new_ldsk;
 
+                  printf("\n. %f %f",
+                         tree->mmod->sigsq,
+                         FABS(ldsk_a[i]->coord->lonlat[0] - new_ldsk->coord->lonlat[0]));
+
                   n_hit++;
 
                   if(n_hit == 1)
@@ -542,9 +546,6 @@ void MIGREP_Simulate_Backward_Core(int new_loc, t_tree *tree)
       disk = disk->prev;
     }
   while(1);
-
-  /* MIGREP_Print_Struct('#',tree); */
-
 }
 
 /*////////////////////////////////////////////////////////////
@@ -676,8 +677,6 @@ phydbl MIGREP_Simulate_Forward_Core(int n_sites, t_tree *tree)
 
             }
         }
-
-      /* if(!(n_disk%10)) { printf("\r n_disk: %8d",n_disk); fflush(NULL); } */
 
       disk->next = MIGREP_Make_Disk_Event(n_dim,n_otu);
       MIGREP_Init_Disk_Event(disk->next,n_dim,NULL);
@@ -1119,9 +1118,9 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   PhyML_Fprintf(fp_stats,"\n# true lbda: %f",tree->mmod->lbda);
   PhyML_Fprintf(fp_stats,"\n# true mu: %f",tree->mmod->mu);
   PhyML_Fprintf(fp_stats,"\n# true rad: %f",tree->mmod->rad);
-  PhyML_Fprintf(fp_stats,"\n# true dist parent-offspring: %f",MIGREP_Dist_Parent_To_Offspring(tree));
-  PhyML_Fprintf(fp_stats,"\n# true neighborhood size: %f",MIGREP_Neigborhood_Size(tree));
-  PhyML_Fprintf(fp_stats,"\n# Fst-based estimate of neighborhood size: %f",MIGREP_Neigborhood_Size_Regression(tree));
+  PhyML_Fprintf(fp_stats,"\n# true dist parent-offspring: %f",MIGREP_Sigsq_From_Radius(tree));
+  PhyML_Fprintf(fp_stats,"\n# true neighborhood size: %f",MIGREP_Neighborhood_Size(tree));
+  PhyML_Fprintf(fp_stats,"\n# Fst-based estimate of neighborhood size: %f",MIGREP_Neighborhood_Size_Regression(tree));
 
   /* s = Write_Tree(tree,NO); */
   /* PhyML_Fprintf(fp_tree,"\n%s",s); */
@@ -1262,8 +1261,8 @@ phydbl *MIGREP_MCMC(t_tree *tree)
                         tree->mmod->lbda,
                         tree->mmod->mu,
                         tree->mmod->rad,
-                        MIGREP_Dist_Parent_To_Offspring(tree),
-                        MIGREP_Neigborhood_Size(tree),
+                        MIGREP_Sigsq_From_Radius(tree),
+                        MIGREP_Neighborhood_Size(tree),
                         MIGREP_Total_Number_Of_Intervals(tree),
                         MIGREP_Total_Number_Of_Coal_Disks(tree),
                         MIGREP_Total_Number_Of_Hit_Disks(tree),
@@ -1282,8 +1281,8 @@ phydbl *MIGREP_MCMC(t_tree *tree)
           res[2 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = tree->mmod->rad; 
           res[3 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = disk->ldsk->coord->lonlat[0];
           res[4 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = disk->ldsk->coord->lonlat[1];
-          res[5 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = MIGREP_Dist_Parent_To_Offspring(tree);
-          res[6 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = MIGREP_Neigborhood_Size(tree);
+          res[5 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = MIGREP_Sigsq_From_Radius(tree);
+          res[6 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = MIGREP_Neighborhood_Size(tree);
 
           MCMC_Copy_To_New_Param_Val(tree->mcmc,tree);
           
@@ -2843,7 +2842,7 @@ phydbl MIGREP_Mean_Time_Between_Events(t_tree *tree)
    to estimate the size of the neighborhood when the population evolve
    according to a spatial Lambda-Fleming-Viot process.
 */
-phydbl MIGREP_Neigborhood_Size_Regression(t_tree *tree)
+phydbl MIGREP_Neighborhood_Size_Regression(t_tree *tree)
 {
   int i,j,pair;
   t_node *anc;
@@ -2939,7 +2938,7 @@ void MIGREP_Rand_Pairs_Coal_Times_Dist(t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-phydbl MIGREP_Neigborhood_Size(t_tree *tree)
+phydbl MIGREP_Neighborhood_Size(t_tree *tree)
 {
   switch(tree->mmod->name)
     {
@@ -2952,7 +2951,7 @@ phydbl MIGREP_Neigborhood_Size(t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-phydbl MIGREP_Dist_Parent_To_Offspring(t_tree *tree)
+phydbl MIGREP_Sigsq_From_Radius(t_tree *tree)
 {  
   switch(tree->mmod->name)
     {
@@ -2969,8 +2968,47 @@ phydbl MIGREP_Dist_Parent_To_Offspring(t_tree *tree)
   return(-1.);
 }
 
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+phydbl MIGREP_Radius_From_Sigsq(t_tree *tree)
+{
+  switch(tree->mmod->name)
+    {
+    case MIGREP_UNIFORM: { return(-1.0); break;}
+    case MIGREP_NORMAL:  
+      { 
+        return(POW(tree->mmod->sigsq*tree->mmod->lim->lonlat[0]*tree->mmod->lim->lonlat[1]/(tree->mmod->mu*tree->mmod->lbda*4.*PI),0.25)); 
+        break; 
+      }
+    }
+  return(-1.);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+phydbl MIGREP_Sample_Rad_From_Prior(t_tree *tree)
+{
+  phydbl u,h,w,lbda,mu,b,a;
+
+  h    = tree->mmod->lim->lonlat[0];
+  w    = tree->mmod->lim->lonlat[1];
+  lbda = tree->mmod->lbda;
+  mu   = tree->mmod->mu;
+  a    = tree->mmod->min_sigsq;
+  b    = tree->mmod->max_sigsq;
+
+  u = Uni();
+
+  return(POW(((b-a)*u+a)*h*w/(4.*PI*lbda*mu),0.25));
+
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
 
 void MIGREP_Read_Tip_Coordinates(t_ldsk **ldsk_a, t_tree *tree)
 {

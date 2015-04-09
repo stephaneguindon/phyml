@@ -1664,17 +1664,22 @@ typedef struct __Migrep_Model{
   phydbl                        lbda; // rate at which events occur
   phydbl                    min_lbda; // min of rate at which events occur
   phydbl                    max_lbda; // max of rate at which events occur
+  phydbl            prior_param_lbda; // parameter of the parameter for the prior on lbda
 
   phydbl                          mu; // per-capita and per event death probability
   phydbl                      min_mu; // min of per-capita and per event death probability
   phydbl                      max_mu; // max of per-capita and per event death probability
+  phydbl              prior_param_mu; // parameter of the parameter for the prior on mu
 
   phydbl                         rad; // radius of the migrep disk 
   phydbl                     min_rad; // min of radius of the migrep disk 
   phydbl                     max_rad; // max of radius of the migrep disk 
-  phydbl             prior_param_rad; // parameter of the parameter for the exponential prior on radius
-  phydbl            prior_param_lbda; // parameter of the parameter for the exponential prior on lbda
-  phydbl              prior_param_mu; // parameter of the parameter for the 'exponential' prior on mu
+  phydbl             prior_param_rad; // parameter of the parameter for the prior on radius
+
+  phydbl                       sigsq; // parent to offspring distance variance (i.e., gene flow) parameter. 
+  phydbl                   min_sigsq; // min 
+  phydbl                   max_sigsq; // max  
+  phydbl           prior_param_sigsq; // parameter of the parameter for the prior 
 
   phydbl                         rho; // intensity parameter of the Poisson point processs
 
