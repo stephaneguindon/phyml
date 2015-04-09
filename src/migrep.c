@@ -61,7 +61,7 @@ int MIGREP_Main_Estimate(int argc, char *argv[])
   
   /* Allocate migrep model */
   tree->mmod = MIGREP_Make_Migrep_Model(n_dim);
-  MIGREP_Init_Migrep_Mod(tree->mmod,n_dim);
+  MIGREP_Init_Migrep_Mod(tree->mmod,n_dim,1.0,1.0);
 
   tree->data      = cdata;
   tree->mod       = io->mod;
@@ -298,9 +298,7 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   /* Allocate migrep model */
   mmod = MIGREP_Make_Migrep_Model(n_dim);
   tree->mmod = mmod;
-  MIGREP_Init_Migrep_Mod(mmod,n_dim);
-  mmod->lim->lonlat[0] = width;
-  mmod->lim->lonlat[1] = height;
+  MIGREP_Init_Migrep_Mod(mmod,n_dim,width,height);
   
   max_lbda = 0.3; min_lbda = 0.05;
   max_mu   = 1.0; min_mu   = 0.3;
@@ -314,15 +312,8 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   mmod->sigsq  = Uni()*(max_sigsq - min_sigsq) + min_sigsq;
   mmod->rad    = MIGREP_Radius_From_Sigsq(tree);
 
-
   /* MIGREP_Simulate_Backward_Core(YES,tree); */
   mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree);
-  printf("\n XYX %f %f %f %f",
-         mmod->lbda,
-         mmod->mu,
-         MIGREP_Neighborhood_Size(tree),
-         mmod->sigsq);
-  Exit("\n");
 
   MIGREP_Ldsk_To_Tree(tree);  
 
@@ -491,10 +482,6 @@ void MIGREP_Simulate_Backward_Core(int new_loc, t_tree *tree)
                   ldsk_a[i]->prev->is_hit            = YES;
                   new_ldsk->next[new_ldsk->n_next-1] = ldsk_a[i]; 
                   disk->ldsk                         = new_ldsk;
-
-                  printf("\n. %f %f",
-                         tree->mmod->sigsq,
-                         FABS(ldsk_a[i]->coord->lonlat[0] - new_ldsk->coord->lonlat[0]));
 
                   n_hit++;
 
@@ -1047,7 +1034,12 @@ phydbl MIGREP_Lk(t_tree *tree)
   
   mmod->c_lnL = lnL;
   
-  return(lnL);
+  /* TO DO: create a proper MIGREP_LogPost() function */
+  mmod->c_lnL += MIGREP_LnPrior_Radius(tree);
+  mmod->c_lnL += MIGREP_LnPrior_Mu(tree);
+  mmod->c_lnL += MIGREP_LnPrior_Lbda(tree);
+  
+  return(mmod->c_lnL);
 }
 
 //////////////////////////////////////////////////////////////
@@ -2304,7 +2296,14 @@ phydbl MIGREP_LnPrior_Mu(t_tree *tree)
 phydbl MIGREP_LnPrior_Radius(t_tree *tree)
 {
   /* tree->mmod->c_ln_prior_rad = LOG(tree->mmod->prior_param_rad) - tree->mmod->prior_param_rad * tree->mmod->rad; */
-  tree->mmod->c_ln_prior_rad = 1.0;
+  /* tree->mmod->c_ln_prior_rad = 1.0; */
+
+  tree->mmod->c_ln_prior_rad = 
+    -LOG(tree->mmod->max_sigsq - tree->mmod->min_sigsq) 
+    +LOG(16.*PI*tree->mmod->lbda*tree->mmod->mu)
+    +3.*LOG(tree->mmod->rad)
+    -LOG(tree->mmod->lim->lonlat[0])-LOG(tree->mmod->lim->lonlat[1]);
+
   return(tree->mmod->c_ln_prior_rad);
 }
 
@@ -3095,11 +3094,6 @@ void MIGREP_Read_Tip_Coordinates(t_ldsk **ldsk_a, t_tree *tree)
                    ldsk_a[i]->coord->lonlat[0],
                    ldsk_a[i]->coord->lonlat[1]);
     }
-
-  tree->mmod->lim->lonlat[0] = 1.0;
-  tree->mmod->lim->lonlat[1] = 1.0;
-  /* tree->mmod->lim->lonlat[0] = 10.0; */
-  /* tree->mmod->lim->lonlat[1] = 10.0; */
 
   Free(s);
   Free(done);

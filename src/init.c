@@ -3419,10 +3419,15 @@ void MIGREP_Init_Disk_Event(t_dsk *t, int n_dim, t_migrep_mod *mmod)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void MIGREP_Init_Migrep_Mod(t_migrep_mod *t, int n_dim)
+void MIGREP_Init_Migrep_Mod(t_migrep_mod *t, int n_dim, phydbl max_lat, phydbl max_lon)
 {
   t->name             = MIGREP_NORMAL;
   t->n_dim            = n_dim;
+  
+  if(n_dim != 2) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  
+  t->lim->lonlat[0]   = max_lat;
+  t->lim->lonlat[1]   = max_lon;
 
   t->lbda             = 0.1;
   t->min_lbda         = 1.E-6;
