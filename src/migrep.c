@@ -317,7 +317,9 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
 
   /* MIGREP_Simulate_Backward_Core(YES,tree); */
   mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree);
-  printf("\n XYX %f %f",
+  printf("\n XYX %f %f %f %f",
+         mmod->lbda,
+         mmod->mu,
          MIGREP_Neighborhood_Size(tree),
          mmod->sigsq);
   Exit("\n");
