@@ -21,8 +21,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int MIGREP_Main(int argc, char *argv[])
 {
-  /* return(MIGREP_Main_Estimate(argc,argv)); */
-  return(MIGREP_Main_Simulate(argc,argv));
+  return(MIGREP_Main_Estimate(argc,argv));
+  /* return(MIGREP_Main_Simulate(argc,argv)); */
 }
 
 //////////////////////////////////////////////////////////////
@@ -61,7 +61,7 @@ int MIGREP_Main_Estimate(int argc, char *argv[])
   
   /* Allocate migrep model */
   tree->mmod = MIGREP_Make_Migrep_Model(n_dim);
-  MIGREP_Init_Migrep_Mod(tree->mmod,n_dim,1.0,1.0);
+  MIGREP_Init_Migrep_Mod(tree->mmod,n_dim,10.0,10.0);
 
   tree->data      = cdata;
   tree->mod       = io->mod;
@@ -3010,13 +3010,12 @@ phydbl MIGREP_Sample_Rad_From_Prior(t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-
 void MIGREP_Read_Tip_Coordinates(t_ldsk **ldsk_a, t_tree *tree)
 {
   char *s;
   FILE *fp;
   int i,*done,found_sw,found_ne;
-  phydbl sw_lon, sw_lat;
+  phydbl sw_lon, sw_lat,  ne_lon, ne_lat;
 
   s    = (char *)mCalloc(T_MAX_LINE,sizeof(char));
   fp   = tree->io->fp_in_coord;
@@ -3052,8 +3051,8 @@ void MIGREP_Read_Tip_Coordinates(t_ldsk **ldsk_a, t_tree *tree)
           else if(!strcmp(s,"|NorthEast|") || !strcmp(s,"|northeast|") || !strcmp(s,"|Northeast|"))
             {
               found_ne = YES;
-              if(fscanf(fp,"%lf",&(tree->mmod->lim->lonlat[0])) == EOF) break;
-              if(fscanf(fp,"%lf",&(tree->mmod->lim->lonlat[1])) == EOF) break;
+              if(fscanf(fp,"%lf",&(ne_lon)) == EOF) break;
+              if(fscanf(fp,"%lf",&(ne_lat)) == EOF) break;
             }
         }
     }
@@ -3083,13 +3082,13 @@ void MIGREP_Read_Tip_Coordinates(t_ldsk **ldsk_a, t_tree *tree)
       ldsk_a[i]->coord->lonlat[0] -= sw_lon;
       ldsk_a[i]->coord->lonlat[1] -= sw_lat;
 
-      ldsk_a[i]->coord->lonlat[0] /= (tree->mmod->lim->lonlat[0] - sw_lon);
-      ldsk_a[i]->coord->lonlat[1] /= (tree->mmod->lim->lonlat[1] - sw_lat);
+      ldsk_a[i]->coord->lonlat[0] /= (ne_lon - sw_lon);
+      ldsk_a[i]->coord->lonlat[1] /= (ne_lat - sw_lat);
 
-      ldsk_a[i]->coord->lonlat[0] *= 1.;
-      ldsk_a[i]->coord->lonlat[1] *= 1.;
+      ldsk_a[i]->coord->lonlat[0] *= tree->mmod->lim->lonlat[0];
+      ldsk_a[i]->coord->lonlat[1] *= tree->mmod->lim->lonlat[1];
 
-      PhyML_Printf("\n. Scaled coordinates of '%-20s': %12f\t %12f",
+      PhyML_Printf("\n. Scaled coordinates of '%-50s': %12f\t %12f",
                    tree->a_nodes[i]->name,
                    ldsk_a[i]->coord->lonlat[0],
                    ldsk_a[i]->coord->lonlat[1]);
