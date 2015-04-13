@@ -21,8 +21,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int MIGREP_Main(int argc, char *argv[])
 {
-  return(MIGREP_Main_Estimate(argc,argv));
-  /* return(MIGREP_Main_Simulate(argc,argv)); */
+  /* return(MIGREP_Main_Estimate(argc,argv)); */
+  return(MIGREP_Main_Simulate(argc,argv));
 }
 
 //////////////////////////////////////////////////////////////
@@ -107,7 +107,7 @@ int MIGREP_Main_Estimate(int argc, char *argv[])
   while(disk->prev) disk = disk->prev;
 
   tree->rates->bl_from_rt = YES;
-  tree->rates->clock_r    = 0.1 / FABS(disk->time);
+  tree->rates->clock_r    = 0.01 / FABS(disk->time);
   tree->rates->model      = STRICTCLOCK;
   RATES_Update_Cur_Bl(tree);
 
@@ -144,6 +144,7 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
   /* seed = 2647; */
   /* seed = 13824; */
   /* seed = 21317; */
+  /* seed = 21651; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -262,14 +263,16 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   Set_Defaults_Model(mod);
   Set_Defaults_Optimiz(s_opt);
 
-
   io->mod      = mod;
   mod->io      = io;
   mod->s_opt   = s_opt;
   io->r_seed   = r_seed;
 
-  io->n_otu    = n_otu;
-  io->init_len = 500; /* sequence length */
+  io->n_otu            = n_otu;
+  io->init_len         = 500; /* sequence length */
+  io->mod->ras->n_catg = 1;
+  io->mod->whichmodel  = HKY85;
+  io->mod->kappa->v    = 4.0;
 
   io->data = Make_Empty_Alignment(io);
 
@@ -301,8 +304,13 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   MIGREP_Init_Migrep_Mod(mmod,n_dim,width,height);
   
   max_lbda = 0.3; min_lbda = 0.05;
-  max_mu   = 1.0; min_mu   = 0.3;
+  max_mu   = 1.0; min_mu   = 0.2;
   max_rad  = 5.0; min_rad  = 1.5;
+
+  /* max_lbda = 0.3; min_lbda = 0.3; */
+  /* max_mu   = 0.2; min_mu   = 0.2; */
+  /* max_rad  = 1.5; min_rad  = 1.5; */
+
   max_sigsq = 4.*PI*max_lbda/(mmod->lim->lonlat[0]*mmod->lim->lonlat[1])*POW(max_rad,4)*max_mu;
   min_sigsq = 4.*PI*min_lbda/(mmod->lim->lonlat[0]*mmod->lim->lonlat[1])*POW(min_rad,4)*min_mu;
 
@@ -326,12 +334,13 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   
 
   tree->rates->bl_from_rt = YES;
-  tree->rates->clock_r    = 0.1 / FABS(disk->time);
+  tree->rates->clock_r    = 0.01 / FABS(disk->time);
   tree->rates->model      = STRICTCLOCK;
   RATES_Update_Cur_Bl(tree);
 
   Init_Model(cdata,mod,io);
   Prepare_Tree_For_Lk(tree);
+
   Evolve(tree->data,tree->mod,tree);
   
   Print_CSeq(stdout,NO,tree->data);
@@ -680,7 +689,7 @@ phydbl MIGREP_Simulate_Forward_Core(int n_sites, t_tree *tree)
       disk->time = curr_t;
       disk->mmod = mmod;
     }
-  while(n_disk < 1000);
+  while(n_disk < 5000);
 
   For(i,pop_size) ldsk_a_pop[i]->disk = disk;
 
@@ -1120,12 +1129,6 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   /* PhyML_Fprintf(fp_tree,"\n%s",s); */
   /* Free(s); */
   
-
-  /* tree->mmod->lbda = Uni()*(tree->mmod->max_lbda - tree->mmod->min_lbda) + tree->mmod->min_lbda; */
-  /* tree->mmod->mu   = Uni()*(tree->mmod->max_mu - tree->mmod->min_mu) + tree->mmod->min_mu; */
-  /* tree->mmod->rad  = Uni()*(tree->mmod->max_rad - tree->mmod->min_rad) + tree->mmod->min_rad; */
-
-
   tree->mmod->lbda            = Uni()*(0.30 - 0.05) + 0.05;
   tree->mmod->mu              = Uni()*(1.00 - 0.30) + 0.30;
   tree->mmod->rad             = Uni()*(3.00 - 1.00) + 1.00;
@@ -1180,13 +1183,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   mcmc->always_yes = NO;
   do
     {
-      if(mcmc->run == 1E+6) 
-        {
-          For(i,mcmc->n_moves) 
-            {
-              tree->mcmc->adjust_tuning[i] = NO;
-            }
-        }
+      if(mcmc->run > 1E+6) For(i,mcmc->n_moves) tree->mcmc->adjust_tuning[i] = NO;
 
       u = Uni();
 
@@ -2295,11 +2292,11 @@ phydbl MIGREP_LnPrior_Mu(t_tree *tree)
 
 phydbl MIGREP_LnPrior_Radius(t_tree *tree)
 {
-  /* tree->mmod->c_ln_prior_rad = LOG(tree->mmod->prior_param_rad) - tree->mmod->prior_param_rad * tree->mmod->rad; */
   /* tree->mmod->c_ln_prior_rad = 1.0; */
+  /* tree->mmod->c_ln_prior_rad = LOG(tree->mmod->prior_param_rad) - tree->mmod->prior_param_rad * tree->mmod->rad; */
 
-  tree->mmod->c_ln_prior_rad = 
-    -LOG(tree->mmod->max_sigsq - tree->mmod->min_sigsq) 
+  tree->mmod->c_ln_prior_rad =
+    -LOG(tree->mmod->max_sigsq - tree->mmod->min_sigsq)
     +LOG(16.*PI*tree->mmod->lbda*tree->mmod->mu)
     +3.*LOG(tree->mmod->rad)
     -LOG(tree->mmod->lim->lonlat[0])-LOG(tree->mmod->lim->lonlat[1]);
