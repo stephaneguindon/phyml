@@ -6855,6 +6855,7 @@ void Evolve(calign *data, t_mod *mod, t_tree *tree)
       switch_to_yes = YES;
       /* tree->mod->gamma_mgf_bl = NO; */
     }
+
   
   For(site,data->init_len)
     {
@@ -6887,14 +6888,14 @@ void Evolve(calign *data, t_mod *mod, t_tree *tree)
 
       /* tree->a_nodes[0] is considered as the root t_node */
       Evolve_Recur(tree->a_nodes[0],
-           tree->a_nodes[0]->v[0],
-           tree->a_nodes[0]->b[0],
-           root_state,
-           root_rate_class,
-           site,
-           data,
-           mod,
-           tree);
+                   tree->a_nodes[0]->v[0],
+                   tree->a_nodes[0]->b[0],
+                   root_state,
+                   root_rate_class,
+                   site,
+                   data,
+                   mod,
+                   tree);
 
 /*       PhyML_Printf("%s\n",Write_Tree(tree,NO)); */
 

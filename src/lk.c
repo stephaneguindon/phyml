@@ -16,13 +16,6 @@ the GNU public licence. See http://www.opensource.org for details.
 #include "beagle_utils.h"
 #endif
 
-
-int n_sec2 = 0;
-/* int    LIM_SCALE; */
-/* phydbl LIM_SCALE_VAL; */
-/* phydbl BIG; */
-/* phydbl SMALL; */
-
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 

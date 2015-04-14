@@ -1483,6 +1483,7 @@ typedef struct __Tmcmc {
   int num_move_migrep_spr;
   int num_move_migrep_scale_times;
   int num_move_migrep_ldscape_lim;
+  int num_move_migrep_sigsq;
 
   int nd_t_digits;
   int *monitor;
@@ -1684,9 +1685,10 @@ typedef struct __Migrep_Model{
   phydbl                         rho; // intensity parameter of the Poisson point processs
 
   phydbl                       c_lnL; // current value of log-likelihood 
-  phydbl              c_ln_prior_rad; // current value of log prior for the exponential prior on radius
-  phydbl             c_ln_prior_lbda; // current value of log prior for the exponential prior on lbda
-  phydbl               c_ln_prior_mu; // current value of log prior for the exponential prior on mu
+  phydbl              c_ln_prior_rad; // current value of log prior for the prior on radius
+  phydbl             c_ln_prior_lbda; // current value of log prior for the prior on lbda
+  phydbl               c_ln_prior_mu; // current value of log prior for the prior on mu
+  phydbl            c_ln_prior_sigsq; // current value of log prior for the prior on sigsq=4.pi.lbda.mu.rad^4
 
   phydbl             soft_bound_area;
 

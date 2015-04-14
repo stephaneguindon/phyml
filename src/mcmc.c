@@ -4244,6 +4244,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->num_move_migrep_spr              = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_migrep_scale_times      = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_migrep_ldscape_lim      = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_migrep_sigsq            = mcmc->n_moves; mcmc->n_moves += 1;
 
   mcmc->run_move       = (int *)mCalloc(mcmc->n_moves,sizeof(int));
   mcmc->acc_move       = (int *)mCalloc(mcmc->n_moves,sizeof(int));
@@ -4305,6 +4306,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   strcpy(mcmc->move_name[mcmc->num_move_migrep_spr],"migrep_spr");
   strcpy(mcmc->move_name[mcmc->num_move_migrep_scale_times],"migrep_scale_times");
   strcpy(mcmc->move_name[mcmc->num_move_migrep_ldscape_lim],"migrep_ldscape_lim");
+  strcpy(mcmc->move_name[mcmc->num_move_migrep_sigsq],"migrep_sigsq");
   
   if(tree->rates && tree->rates->model_log_rates == YES)
     for(i=mcmc->num_move_br_r;i<mcmc->num_move_br_r+2*tree->n_otu-2;i++) mcmc->move_type[i] = MCMC_MOVE_RANDWALK_NORMAL;
@@ -4339,6 +4341,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_type[mcmc->num_move_migrep_mu] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_migrep_rad] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_migrep_scale_times] = MCMC_MOVE_SCALE_THORNE;
+  mcmc->move_type[mcmc->num_move_migrep_sigsq] = MCMC_MOVE_SCALE_THORNE;
 
   /* We start with small tuning parameter values in order to have inflated ESS
      for clock_r */
@@ -4409,16 +4412,17 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_geo_dum]               = 1.0;
 
 # if defined (MIGREP)
-  mcmc->move_weight[mcmc->num_move_migrep_lbda]                  = 2.0;
-  mcmc->move_weight[mcmc->num_move_migrep_mu]                    = 2.0;
-  mcmc->move_weight[mcmc->num_move_migrep_rad]                   = 2.0;
-  mcmc->move_weight[mcmc->num_move_migrep_insert_disk]           = 4.0;
-  mcmc->move_weight[mcmc->num_move_migrep_delete_disk]           = 3.0;  
+  mcmc->move_weight[mcmc->num_move_migrep_lbda]                  = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_mu]                    = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_rad]                   = 0.0;
+  mcmc->move_weight[mcmc->num_move_migrep_sigsq]                 = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_insert_disk]           = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_delete_disk]           = 1.0;  
   mcmc->move_weight[mcmc->num_move_migrep_move_disk_ct]          = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_move_disk_ud]          = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_swap_disk]             = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_insert_hit]            = 3.0;
-  mcmc->move_weight[mcmc->num_move_migrep_delete_hit]            = 2.0;
+  mcmc->move_weight[mcmc->num_move_migrep_insert_hit]            = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_delete_hit]            = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_move_ldsk]             = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_spr]                   = 5.0;
   mcmc->move_weight[mcmc->num_move_migrep_scale_times]           = 1.0;
@@ -4427,6 +4431,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_migrep_lbda]                  = 0.0;
   mcmc->move_weight[mcmc->num_move_migrep_mu]                    = 0.0;
   mcmc->move_weight[mcmc->num_move_migrep_rad]                   = 0.0;
+  mcmc->move_weight[mcmc->num_move_migrep_sigsq]                 = 0.0;
   mcmc->move_weight[mcmc->num_move_migrep_insert_disk]           = 0.0;
   mcmc->move_weight[mcmc->num_move_migrep_delete_disk]           = 0.0;  
   mcmc->move_weight[mcmc->num_move_migrep_move_disk_ct]          = 0.0;
@@ -4941,20 +4946,19 @@ void MCMC_MIGREP_Radius(t_tree *tree)
   
   ori_rad  = tree->mmod->rad;
   
-  min = MAX(tree->mmod->min_rad,tree->mmod->rad - 0.1);
-  max = MIN(tree->mmod->max_rad,tree->mmod->rad + 0.08);
+  min = MAX(tree->mmod->min_rad,tree->mmod->rad - 1.0*tree->mcmc->tune_move[tree->mcmc->num_move_migrep_rad]);
+  max = MIN(tree->mmod->max_rad,tree->mmod->rad + 1.0*tree->mcmc->tune_move[tree->mcmc->num_move_migrep_rad]);
   hr  += LOG(max-min);
   
   tree->mmod->rad = Uni()*(max - min) + min;
   
-  min = MAX(tree->mmod->min_rad,tree->mmod->rad - 0.1);
-  max = MIN(tree->mmod->max_rad,tree->mmod->rad + 0.08);
+  min = MAX(tree->mmod->min_rad,tree->mmod->rad - 1.0*tree->mcmc->tune_move[tree->mcmc->num_move_migrep_rad]);
+  max = MIN(tree->mmod->max_rad,tree->mmod->rad + 1.0*tree->mcmc->tune_move[tree->mcmc->num_move_migrep_rad]);
   hr  -= LOG(max-min);
     
-  new_glnL      = MIGREP_Lk(tree);
+  new_glnL = MIGREP_Lk(tree);
   
   ratio += (new_glnL - cur_glnL);
-  
   ratio += hr;
   
   ratio = EXP(ratio);
@@ -4982,8 +4986,11 @@ void MCMC_MIGREP_Radius(t_tree *tree)
     }
   else
     {
+      tree->mcmc->acc_move[tree->mcmc->num_move_migrep_rad]++;
       /* printf("- Accept"); */
     }
+
+  tree->mcmc->run_move[tree->mcmc->num_move_migrep_rad]++;
 
   /* MCMC_Single_Param_Generic(&(tree->mmod->rad), */
   /*                           tree->mmod->min_rad, */
@@ -4993,6 +5000,82 @@ void MCMC_MIGREP_Radius(t_tree *tree)
   /*                           NULL,MIGREP_Wrap_Lk, */
   /*                           tree->mcmc->move_type[tree->mcmc->num_move_migrep_rad], */
   /*                           NO,NULL,tree,NULL); */
+
+}
+#endif 
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+#ifdef MIGREP
+void MCMC_MIGREP_Sigsq(t_tree *tree)
+{
+  /* phydbl u,alpha,ratio; */
+  /* phydbl cur_glnL, new_glnL, hr; */
+  /* phydbl ori_sigsq; */
+  /* phydbl min,max; */
+
+  /* new_glnL       = UNLIKELY; */
+  /* cur_glnL       = tree->mmod->c_lnL; */
+  /* hr            = 0.0; */
+  /* ratio         = 0.0; */
+  
+  /* ori_sigsq  = tree->mmod->sigsq; */
+  
+  /* min = MAX(tree->mmod->min_sigsq,tree->mmod->sigsq - 1.0*tree->mcmc->tune_move[tree->mcmc->num_move_migrep_sigsq]); */
+  /* max = MIN(tree->mmod->max_sigsq,tree->mmod->sigsq + 1.0*tree->mcmc->tune_move[tree->mcmc->num_move_migrep_sigsq]); */
+  /* hr  += LOG(max-min); */
+  
+  /* tree->mmod->sigsq = Uni()*(max - min) + min; */
+  
+  /* min = MAX(tree->mmod->min_sigsq,tree->mmod->sigsq - 1.0*tree->mcmc->tune_move[tree->mcmc->num_move_migrep_sigsq]); */
+  /* max = MIN(tree->mmod->max_sigsq,tree->mmod->sigsq + 1.0*tree->mcmc->tune_move[tree->mcmc->num_move_migrep_sigsq]); */
+  /* hr  -= LOG(max-min); */
+    
+  /* new_glnL = MIGREP_Lk(tree); */
+  
+  /* ratio += (new_glnL - cur_glnL); */
+  /* ratio += hr; */
+  
+  /* ratio = EXP(ratio); */
+  /* alpha = MIN(1.,ratio); */
+  
+  /* /\* Always accept move *\/ */
+  /* if(tree->mcmc->always_yes == YES && new_glnL > UNLIKELY) alpha = 1.0; */
+  
+  /* u = Uni(); */
+  
+  /* /\* printf("\n- Move disk new_glnL: %f [%f] hr: %f u:%f alpha: %f",new_glnL,cur_glnL,hr,u,alpha); *\/ */
+  
+  /* if(u > alpha) /\* Reject *\/ */
+  /*   { */
+  /*     /\* printf("- Reject"); *\/ */
+  /*     tree->mmod->sigsq  = ori_sigsq; */
+
+  /*     /\* tree->mmod->c_lnL = cur_glnL; *\/ */
+  /*     new_glnL = MIGREP_Lk(tree); */
+  /*     if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO) */
+  /*       { */
+  /*         PhyML_Printf("\n. new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL); */
+  /*         Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
+  /*       } */
+  /*   } */
+  /* else */
+  /*   { */
+  /*     tree->mcmc->acc_move[tree->mcmc->num_move_migrep_sigsq]++; */
+  /*     /\* printf("- Accept"); *\/ */
+  /*   } */
+
+  /* tree->mcmc->run_move[tree->mcmc->num_move_migrep_sigsq]++; */
+
+  MCMC_Single_Param_Generic(&(tree->mmod->sigsq),
+                            tree->mmod->min_sigsq,
+                            tree->mmod->max_sigsq,
+                            tree->mcmc->num_move_migrep_sigsq,
+                            NULL,&(tree->mmod->c_lnL),
+                            NULL,MIGREP_Wrap_Lk,
+                            tree->mcmc->move_type[tree->mcmc->num_move_migrep_sigsq],
+                            NO,NULL,tree,NULL);
 
 }
 #endif 

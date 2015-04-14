@@ -3431,7 +3431,7 @@ void MIGREP_Init_Migrep_Mod(t_migrep_mod *t, int n_dim, phydbl max_lat, phydbl m
 
   t->lbda             = 0.1;
   t->min_lbda         = 1.E-6;
-  t->max_lbda         = 1.E+3;
+  t->max_lbda         = 3.0;
   t->prior_param_lbda = 1.0;
 
   t->mu               = 0.1;
@@ -3441,7 +3441,7 @@ void MIGREP_Init_Migrep_Mod(t_migrep_mod *t, int n_dim, phydbl max_lat, phydbl m
 
   t->rad              = 2.0;
   t->min_rad          = 1.E-6;
-  t->max_rad          = 10.0;
+  t->max_rad          = 8.0;
   t->prior_param_rad  = 1.0;
 
   t->min_sigsq         = 4.*PI*t->min_lbda/(t->lim->lonlat[0]*t->lim->lonlat[1])*POW(t->min_rad,4)*t->min_mu;
@@ -3449,6 +3449,7 @@ void MIGREP_Init_Migrep_Mod(t_migrep_mod *t, int n_dim, phydbl max_lat, phydbl m
   t->sigsq             = (t->max_sigsq + t->min_sigsq)/2.;
   t->prior_param_sigsq = 1.0;
   
+
   t->c_lnL           = UNLIKELY;
   t->c_ln_prior_rad  = UNLIKELY;
   t->c_ln_prior_lbda = UNLIKELY;

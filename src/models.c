@@ -876,7 +876,10 @@ void Update_Efrq(t_mod *mod)
               if(mod->e_frq->pi->v[i] > 0.99) mod->e_frq->pi->v[i]=0.99;
               sum += mod->e_frq->pi->v[i];
             }
-          For(i,mod->ns) mod->e_frq->pi->v[i]/=sum;
+          For(i,mod->ns) 
+            {
+              mod->e_frq->pi->v[i]/=sum;
+            }
         }
       while((sum > 1.01) || (sum < 0.99));
 

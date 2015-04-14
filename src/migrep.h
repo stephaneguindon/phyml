@@ -77,10 +77,12 @@ void MIGREP_All_Pairs_Coal_Times_Dist(t_tree *tree);
 void MIGREP_Rand_Pairs_Coal_Times_Dist(t_tree *tree);
 phydbl MIGREP_Neighborhood_Size_Regression(t_tree *tree);
 phydbl MIGREP_Neighborhood_Size(t_tree *tree);
-phydbl MIGREP_Radius_From_Sigsq(t_tree *tree);
-phydbl MIGREP_Sigsq_From_Radius(t_tree *tree);
+phydbl MIGREP_Update_Radius(t_tree *tree);
+phydbl MIGREP_Update_Sigsq(t_tree *tree);
 void MIGREP_Read_Tip_Coordinates(t_ldsk **ldsk_a, t_tree *tree);
 phydbl MIGREP_Sample_Rad_From_Prior(t_tree *tree);
+void MCMC_MIGREP_Sigsq(t_tree *tree);
+phydbl MIGREP_LnPrior_Sigsq(t_tree *tree);
 
 
 #endif
