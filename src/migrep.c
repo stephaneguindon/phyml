@@ -250,7 +250,7 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   t_mod *mod;
   t_opt *s_opt;
   calign *cdata;
-  phydbl max_lbda, min_lbda, max_mu, min_mu, max_rad, min_rad, max_sigsq, min_sigsq;
+  phydbl max_lbda, min_lbda, max_mu, min_mu, max_sigsq, min_sigsq;
 
   n_dim = 2; // 2-dimensional landscape
 
@@ -299,16 +299,13 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   tree->mmod = mmod;
   MIGREP_Init_Migrep_Mod(mmod,n_dim,width,height);
   
-  max_lbda = 0.3; min_lbda = 0.05;
-  max_mu   = 1.0; min_mu   = 0.2;
-  max_rad  = 3.0; min_rad  = 1.5;
+  max_lbda  = 0.3; min_lbda  = 0.05;
+  max_mu    = 1.0; min_mu    = 0.2;
+  max_sigsq = 1.0; min_sigsq = 1.E-2;
 
   /* max_lbda = 0.23; min_lbda = 0.23; */
   /* max_mu   = 0.5; min_mu   = 0.5; */
   /* max_rad  = 5.; min_rad  = 5.; */
-
-  max_sigsq = 4.*PI*max_lbda*POW(max_rad,4)*max_mu/(mmod->lim->lonlat[0]*mmod->lim->lonlat[1]);
-  min_sigsq = 4.*PI*min_lbda*POW(min_rad,4)*min_mu/(mmod->lim->lonlat[0]*mmod->lim->lonlat[1]);
 
   /* Initialize parameters of migrep model */
   mmod->lbda   = Uni()*(max_lbda - min_lbda) + min_lbda;
@@ -1123,9 +1120,9 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   PhyML_Fprintf(fp_stats,"\n# root time: %f",disk->time);
   PhyML_Fprintf(fp_stats,"\n# true lbda: %f",tree->mmod->lbda);
   PhyML_Fprintf(fp_stats,"\n# true mu: %f",tree->mmod->mu);
-  PhyML_Fprintf(fp_stats,"\n# true rad: %f",tree->mmod->rad);
-  PhyML_Fprintf(fp_stats,"\n# true dist parent-offspring: %f",tree->mmod->sigsq);
-  PhyML_Fprintf(fp_stats,"\n# true neighborhood size: %f",MIGREP_Neighborhood_Size(tree));
+  PhyML_Fprintf(fp_stats,"\n# true rad: %f",MIGREP_Update_Radius(tree));
+  PhyML_Fprintf(fp_stats,"\n# true sigsq: %f",tree->mmod->sigsq);
+  PhyML_Fprintf(fp_stats,"\n# true neigh. size: %f",MIGREP_Neighborhood_Size(tree));
   PhyML_Fprintf(fp_stats,"\n# Fst-based estimate of neighborhood size: %f",MIGREP_Neighborhood_Size_Regression(tree));
 
   /* s = Write_Tree(tree,NO); */
@@ -1134,7 +1131,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   
   tree->mmod->lbda            = Uni()*(0.30 - 0.05) + 0.05;
   tree->mmod->mu              = Uni()*(1.00 - 0.30) + 0.30;
-  tree->mmod->rad             = Uni()*(3.00 - 1.00) + 1.00;
+  tree->mmod->sigsq           = Uni()*(1.00 - 0.01) + 0.01;
 
   MCMC_Randomize_Rate_Across_Sites(tree);
   MCMC_Randomize_Kappa(tree);

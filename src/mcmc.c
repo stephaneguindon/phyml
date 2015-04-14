@@ -4416,12 +4416,12 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_migrep_mu]                    = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_rad]                   = 0.0;
   mcmc->move_weight[mcmc->num_move_migrep_sigsq]                 = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_insert_disk]           = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_delete_disk]           = 1.0;  
+  mcmc->move_weight[mcmc->num_move_migrep_insert_disk]           = 2.0;
+  mcmc->move_weight[mcmc->num_move_migrep_delete_disk]           = 1.5;  
   mcmc->move_weight[mcmc->num_move_migrep_move_disk_ct]          = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_move_disk_ud]          = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_swap_disk]             = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_insert_hit]            = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_insert_hit]            = 1.5;
   mcmc->move_weight[mcmc->num_move_migrep_delete_hit]            = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_move_ldsk]             = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_spr]                   = 5.0;
@@ -4489,7 +4489,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
 
 void MCMC_Initialize_Param_Val(t_mcmc *mcmc, t_tree *tree)
 {
-  int i;
+  /* int i; */
 
   /* mcmc->lag_param_val[mcmc->num_move_nu]          = tree->rates->nu; */
   /* mcmc->lag_param_val[mcmc->num_move_clock_r]     = tree->rates->clock_r; */
@@ -4514,9 +4514,6 @@ void MCMC_Initialize_Param_Val(t_mcmc *mcmc, t_tree *tree)
 
 void MCMC_Copy_To_New_Param_Val(t_mcmc *mcmc, t_tree *tree)
 {
-  int i,j;
-
-
   mcmc->sampled_val[mcmc->num_move_nu*mcmc->sample_size+mcmc->sample_num]          = tree->rates->nu;
   mcmc->sampled_val[mcmc->num_move_clock_r*mcmc->sample_size+mcmc->sample_num]     = tree->rates->clock_r;
   mcmc->sampled_val[mcmc->num_move_tree_height*mcmc->sample_size+mcmc->sample_num] = tree->rates->nd_t[tree->n_root->num];
@@ -5068,6 +5065,7 @@ void MCMC_MIGREP_Sigsq(t_tree *tree)
 
   /* tree->mcmc->run_move[tree->mcmc->num_move_migrep_sigsq]++; */
 
+
   MCMC_Single_Param_Generic(&(tree->mmod->sigsq),
                             tree->mmod->min_sigsq,
                             tree->mmod->max_sigsq,
@@ -5090,7 +5088,6 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
   phydbl cur_glnL, new_glnL, hr,T, cur_lbda;
   t_dsk  *disk,**target_disk,**valid_disks;
   int i,j,block,n_valid_disks,n_delete_disks,*permut;
-  phydbl min, max;
 
   valid_disks   = NULL;
   disk          = NULL;
@@ -5207,7 +5204,6 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
   phydbl cur_glnL, new_glnL, hr, cur_lbda;
   phydbl u,alpha,ratio;
   int i,j,n_valid_disks,n_insert_disks;
-  phydbl min,max;
 
   disk           = NULL;
   new_glnL        = UNLIKELY;
