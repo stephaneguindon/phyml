@@ -303,9 +303,9 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   max_mu    = 1.0; min_mu    = 0.2;
   max_sigsq = 1.0; min_sigsq = 1.E-2;
 
-  /* max_lbda = 0.23; min_lbda = 0.23; */
-  /* max_mu   = 0.5; min_mu   = 0.5; */
-  /* max_rad  = 5.; min_rad  = 5.; */
+  /* max_lbda  = 0.16; min_lbda  = 0.16; */
+  /* max_mu    = 0.43; min_mu    = 0.43; */
+  /* max_sigsq = 0.05; min_sigsq = 0.05; */
 
   /* Initialize parameters of migrep model */
   mmod->lbda   = Uni()*(max_lbda - min_lbda) + min_lbda;
@@ -313,6 +313,9 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   mmod->sigsq  = Uni()*(max_sigsq - min_sigsq) + min_sigsq;
   mmod->rad    = MIGREP_Update_Radius(tree);
 
+
+  PhyML_Printf("\n. lbda: %f mu: %f sigsq: %f",mmod->lbda,mmod->mu,mmod->sigsq);
+  fflush(NULL);
 
   /* MIGREP_Simulate_Backward_Core(YES,tree); */
   mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree);
@@ -1156,7 +1159,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   PhyML_Fprintf(fp_stats,"\n# start mu: %f",tree->mmod->mu);
   PhyML_Fprintf(fp_stats,"\n# start rad: %f",tree->mmod->rad);
 
-  PhyML_Fprintf(fp_stats,"\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s",
+  PhyML_Fprintf(fp_stats,"\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s",
                 "run",
                 "alnL",
                 "glnL",
@@ -1178,7 +1181,11 @@ phydbl *MIGREP_MCMC(t_tree *tree)
                 "essRad",
                 "accLbda",
                 "accMu",
-                "accRad");
+                "accRad",
+                "accInsDisk",
+                "accDelDisk",
+                "accInsHit",
+                "accDelHit");
 
 
   For(i,mcmc->n_moves) tree->mcmc->start_ess[i] = YES;
@@ -1251,7 +1258,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       if(!(tree->mcmc->run%tree->mcmc->sample_interval))
         {
           Lk(NULL,tree);
-          PhyML_Fprintf(fp_stats,"\n%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\t%d\t%d\t%f\t%f\t%f\t%f\t%f\t%.2f\t%.2f\t%.2f\t%.2f\t%.2f\t%.2f",
+          PhyML_Fprintf(fp_stats,"\n%6d\t%7.1f\t%7.1f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6d\t%6d\t%6d\t%7.1f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f",
                         tree->mcmc->run,
                         tree->c_lnL,
                         tree->mmod->c_lnL,
@@ -1273,7 +1280,11 @@ phydbl *MIGREP_MCMC(t_tree *tree)
                         tree->mcmc->ess[tree->mcmc->num_move_migrep_rad],
                         tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_lbda],
                         tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_mu],
-                        tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_sigsq]);
+                        tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_sigsq],
+                        tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_insert_disk],
+                        tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_delete_disk],
+                        tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_insert_hit],
+                        tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_delete_hit]);
           fflush(fp_stats);
           
           res[0 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = tree->mmod->lbda; 
@@ -1298,9 +1309,9 @@ phydbl *MIGREP_MCMC(t_tree *tree)
           /* Free(s); */
         /* } */
 
-      if(tree->mcmc->ess[tree->mcmc->num_move_migrep_lbda] > 100. &&
-         tree->mcmc->ess[tree->mcmc->num_move_migrep_mu]   > 100. &&
-         tree->mcmc->ess[tree->mcmc->num_move_migrep_rad]  > 100.) break;
+      if(tree->mcmc->ess[tree->mcmc->num_move_migrep_lbda]  > 100. &&
+         tree->mcmc->ess[tree->mcmc->num_move_migrep_mu]    > 100. &&
+         tree->mcmc->ess[tree->mcmc->num_move_migrep_sigsq] > 100.) break;
     }
   while(tree->mcmc->run < tree->mcmc->chain_len);
 
