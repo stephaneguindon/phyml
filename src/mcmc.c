@@ -4449,12 +4449,12 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_migrep_mu]                    = 2.0;
   mcmc->move_weight[mcmc->num_move_migrep_rad]                   = 0.0;
   mcmc->move_weight[mcmc->num_move_migrep_sigsq]                 = 3.0;
-  mcmc->move_weight[mcmc->num_move_migrep_insert_disk]           = 4.0;
-  mcmc->move_weight[mcmc->num_move_migrep_delete_disk]           = 3.0;  
+  mcmc->move_weight[mcmc->num_move_migrep_insert_disk]           = 1.2;
+  mcmc->move_weight[mcmc->num_move_migrep_delete_disk]           = 1.0;  
   mcmc->move_weight[mcmc->num_move_migrep_move_disk_ct]          = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_move_disk_ud]          = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_swap_disk]             = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_insert_hit]            = 2.0;
+  mcmc->move_weight[mcmc->num_move_migrep_insert_hit]            = 1.2;
   mcmc->move_weight[mcmc->num_move_migrep_delete_hit]            = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_move_ldsk]             = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_spr]                   = 5.0;
@@ -5171,8 +5171,6 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
   hr -= LOG(CEIL(1.+(n_valid_disks - n_delete_disks)*K));
   hr += LOG(CEIL(1.+n_valid_disks*K));
 
-
-
   target_disk = (t_dsk **)mCalloc(n_delete_disks,sizeof(t_dsk *));
 
   disk = tree->disk;
@@ -5286,7 +5284,6 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
 
   n_insert_disks = Rand_Int(1,1+(int)(n_valid_disks*K));
   /* n_insert_disks = 1; */
-
 
   hr += LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_delete_disk]);
   hr -= LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_insert_disk]);
@@ -6127,7 +6124,7 @@ void MCMC_MIGREP_Insert_Hit(t_tree *tree)
 
   /* hr += LnFact(n_insert_disks); */
 
-   /* Adjust value of lambda */
+  /* Adjust value of lambda */
   tree->mmod->lbda = 1./MIGREP_Mean_Time_Between_Events(tree);
   if(tree->mmod->lbda > tree->mmod->max_lbda) tree->mmod->lbda = tree->mmod->max_lbda;
   if(tree->mmod->lbda < tree->mmod->min_lbda) tree->mmod->lbda = tree->mmod->min_lbda;
@@ -6357,7 +6354,7 @@ void MCMC_MIGREP_Delete_Hit(t_tree *tree)
 
   Free(valid_disks);
 
-   /* Adjust value of lambda */
+  /* Adjust value of lambda */
   tree->mmod->lbda = 1./MIGREP_Mean_Time_Between_Events(tree);
   if(tree->mmod->lbda > tree->mmod->max_lbda) tree->mmod->lbda = tree->mmod->max_lbda;
   if(tree->mmod->lbda < tree->mmod->min_lbda) tree->mmod->lbda = tree->mmod->min_lbda;

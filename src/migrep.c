@@ -107,7 +107,7 @@ int MIGREP_Main_Estimate(int argc, char *argv[])
   while(disk->prev) disk = disk->prev;
 
   tree->rates->bl_from_rt = YES;
-  tree->rates->clock_r    = 0.01 / FABS(disk->time);
+  tree->rates->clock_r    = 0.1 / FABS(disk->time);
   tree->rates->model      = STRICTCLOCK;
   RATES_Update_Cur_Bl(tree);
 
@@ -331,7 +331,7 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   
 
   tree->rates->bl_from_rt = YES;
-  tree->rates->clock_r    = 0.01 / FABS(disk->time);
+  tree->rates->clock_r    = 0.1 / FABS(disk->time);
   tree->rates->model      = STRICTCLOCK;
   RATES_Update_Cur_Bl(tree);
 
@@ -1258,7 +1258,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       if(!(tree->mcmc->run%tree->mcmc->sample_interval))
         {
           Lk(NULL,tree);
-          PhyML_Fprintf(fp_stats,"\n%6d\t%7.1f\t%7.1f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6d\t%6d\t%6d\t%7.1f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f",
+          PhyML_Fprintf(fp_stats,"\n%6d\t%7.1f\t%7.1f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6d\t%6d\t%6d\t%6.2f\t%6.2f\t%7.1f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f",
                         tree->mcmc->run,
                         tree->c_lnL,
                         tree->mmod->c_lnL,
