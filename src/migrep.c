@@ -319,7 +319,7 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   while(disk->prev) disk = disk->prev;
 
   tree->rates->bl_from_rt = YES;
-  tree->rates->clock_r    = 0.01 / FABS(disk->time);
+  tree->rates->clock_r    = 0.1 / FABS(disk->time);
   tree->rates->model      = STRICTCLOCK;
   RATES_Update_Cur_Bl(tree);
 
@@ -1301,9 +1301,9 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       /*     Free(s); */
       /*   } */
 
-      if(tree->mcmc->ess[tree->mcmc->num_move_migrep_lbda]  > 100. &&
-         tree->mcmc->ess[tree->mcmc->num_move_migrep_mu]    > 100. &&
-         tree->mcmc->ess[tree->mcmc->num_move_migrep_sigsq] > 100.) break;
+      if(tree->mcmc->ess[tree->mcmc->num_move_migrep_lbda]  > 5. &&
+         tree->mcmc->ess[tree->mcmc->num_move_migrep_mu]    > 5. &&
+         tree->mcmc->ess[tree->mcmc->num_move_migrep_sigsq] > 5.) break;
     }
   while(tree->mcmc->run < tree->mcmc->chain_len);
 

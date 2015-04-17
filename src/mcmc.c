@@ -4580,8 +4580,6 @@ void MCMC_Copy_To_New_Param_Val(t_mcmc *mcmc, t_tree *tree)
   mcmc->sampled_val[mcmc->num_move_migrep_lbda*mcmc->sample_size+mcmc->sample_num]  = tree->mmod ? tree->mmod->lbda   : -1.;
   mcmc->sampled_val[mcmc->num_move_migrep_mu*mcmc->sample_size+mcmc->sample_num]    = tree->mmod ? tree->mmod->mu     : -1.;
   mcmc->sampled_val[mcmc->num_move_migrep_sigsq*mcmc->sample_size+mcmc->sample_num] = tree->mmod ? tree->mmod->sigsq  : -1.;
-
-
 }
 
 //////////////////////////////////////////////////////////////
