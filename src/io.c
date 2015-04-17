@@ -601,7 +601,7 @@ char *Write_Tree(t_tree *tree, int custom)
           i = 0;
           while((!tree->a_nodes[tree->n_otu+i]->v[0]) ||
                 (!tree->a_nodes[tree->n_otu+i]->v[1]) ||
-        (!tree->a_nodes[tree->n_otu+i]->v[2])) i++;
+                (!tree->a_nodes[tree->n_otu+i]->v[2])) i++;
 
           R_wtree_Custom(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[0],&available,&s,&pos,tree);
           R_wtree_Custom(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[1],&available,&s,&pos,tree);

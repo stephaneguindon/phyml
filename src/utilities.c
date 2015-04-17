@@ -8000,7 +8000,6 @@ void Time_To_Branch(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Time_To_Branch_Pre(t_node *a, t_node *d, t_tree *tree)
 {
   int i;
@@ -8012,8 +8011,8 @@ void Time_To_Branch_Pre(t_node *a, t_node *d, t_tree *tree)
   else
     {
       For(i,3)
-    if((d->v[i] != a) && (d->b[i] != tree->e_root))
-      Time_To_Branch_Pre(d,d->v[i],tree);
+        if((d->v[i] != a) && (d->b[i] != tree->e_root))
+          Time_To_Branch_Pre(d,d->v[i],tree);
     }
 }
 
