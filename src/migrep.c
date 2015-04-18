@@ -143,7 +143,7 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
   /* seed = 12965; */
   /* seed = 2647; */
   /* seed = 13824; */
-  /* seed = 25059; */
+  seed = 10940;
 
   printf("\n. seed: %d",seed);
   srand(seed);
