@@ -296,7 +296,7 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
 
   max_lbda  = 0.12; min_lbda  = 0.12;
   max_mu    = 0.35; min_mu    = 0.35;
-  max_sigsq = 0.20; min_sigsq = 0.20;
+  max_sigsq = 0.07; min_sigsq = 0.07;
 
   /* Initialize parameters of migrep model */
   mmod->lbda   = Uni()*(max_lbda - min_lbda) + min_lbda;
@@ -307,8 +307,8 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   PhyML_Printf("\n. lbda: %f mu: %f sigsq: %f",mmod->lbda,mmod->mu,mmod->sigsq);
   fflush(NULL);
 
-  /* MIGREP_Simulate_Backward_Core(YES,tree); */
-  mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree);
+  MIGREP_Simulate_Backward_Core(YES,tree);
+  /* mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree); */
 
   MIGREP_Ldsk_To_Tree(tree);  
 

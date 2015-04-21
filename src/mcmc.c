@@ -5662,7 +5662,7 @@ void MCMC_MIGREP_Move_Disk_Updown(t_tree *tree)
     }
   
   new_glnL = MIGREP_Lk(tree);
-  new_alnL = Lk(NULL,tree);
+  if(tree->mcmc->use_data == YES) new_alnL = Lk(NULL,tree);
   
   ratio += (new_alnL - cur_alnL);
   ratio += (new_glnL - cur_glnL);
@@ -5772,7 +5772,7 @@ void MCMC_MIGREP_Scale_Times(t_tree *tree)
 
 
   new_glnL = MIGREP_Lk(tree);
-  new_alnL = Lk(NULL,tree);
+  if(tree->mcmc->use_data == YES) new_alnL = Lk(NULL,tree);
   
   ratio += (new_alnL - cur_alnL);
   ratio += (new_glnL - cur_glnL);
@@ -5802,9 +5802,9 @@ void MCMC_MIGREP_Scale_Times(t_tree *tree)
       tree->mmod->c_lnL = cur_glnL;
       tree->c_lnL       = cur_alnL;
 
-      Lk(NULL,tree); /* Not necessary. Remove once tested */
+      if(tree->mcmc->use_data == YES) Lk(NULL,tree); /* Not necessary. Remove once tested */
       new_glnL = MIGREP_Lk(tree); /* Same here */
-
+      
       if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
         {
           PhyML_Printf("\n. new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
@@ -5915,7 +5915,7 @@ void MCMC_MIGREP_Swap_Disk(t_tree *tree)
   MIGREP_Insert_Disk(target_disk);
 
   new_glnL = MIGREP_Lk(tree);
-  new_alnL = Lk(NULL,tree);
+  if(tree->mcmc->use_data == YES) new_alnL = Lk(NULL,tree);
   
   ratio += (new_alnL - cur_alnL);
   ratio += (new_glnL - cur_glnL);
@@ -5946,7 +5946,7 @@ void MCMC_MIGREP_Swap_Disk(t_tree *tree)
       tree->mmod->c_lnL = cur_glnL;
       tree->c_lnL       = cur_alnL;
 
-      Lk(NULL,tree); /* Remove once checked */
+      if(tree->mcmc->use_data == YES) Lk(NULL,tree); /* Remove once checked */
       new_glnL = MIGREP_Lk(tree); /* Same */
       if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
         {
@@ -6546,7 +6546,7 @@ void MCMC_MIGREP_Prune_Regraft(t_tree *tree)
   /* fflush(NULL); */
   /* Exit("\n"); */
   
-  new_alnL = Lk(NULL,tree);
+  if(tree->mcmc->use_data == YES) new_alnL = Lk(NULL,tree);
   new_glnL = MIGREP_Lk(tree);
 
   ratio += (new_alnL - cur_alnL);
@@ -6581,7 +6581,7 @@ void MCMC_MIGREP_Prune_Regraft(t_tree *tree)
       RATES_Update_Cur_Bl(tree);
 
       /* tree->mod->c_lnL = cur_alnL; */
-      Lk(NULL,tree);
+      if(tree->mcmc->use_data == YES) Lk(NULL,tree);
 
       /* tree->mmod->c_lnL = cur_glnL; */
       new_glnL = MIGREP_Lk(tree);
@@ -6631,7 +6631,7 @@ void MCMC_MIGREP_Ldscape_Limits(t_tree *tree)
       }
 
         
-    new_glnL    = MIGREP_Lk(tree);
+    new_glnL = MIGREP_Lk(tree);
     
     ratio += (new_glnL - cur_glnL);
     ratio += hr;
