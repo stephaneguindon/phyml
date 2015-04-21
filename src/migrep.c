@@ -143,7 +143,8 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
   /* seed = 12965; */
   /* seed = 2647; */
   /* seed = 13824; */
-  /* seed = 11702; */
+  /* seed = 19088; */
+  /* seed = 23651; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -289,13 +290,13 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   tree->mmod = mmod;
   MIGREP_Init_Migrep_Mod(mmod,n_dim,width,height);
   
-  max_lbda  = 0.3; min_lbda  = 0.05;
-  max_mu    = 1.0; min_mu    = 0.2;
-  max_sigsq = 0.5; min_sigsq = 1.E-2;
+  /* max_lbda  = 0.3; min_lbda  = 0.05; */
+  /* max_mu    = 1.0; min_mu    = 0.2; */
+  /* max_sigsq = 0.5; min_sigsq = 1.E-2; */
 
-  /* max_lbda  = 0.16; min_lbda  = 0.16; */
-  /* max_mu    = 0.43; min_mu    = 0.43; */
-  /* max_sigsq = 0.05; min_sigsq = 0.05; */
+  max_lbda  = 0.12; min_lbda  = 0.12;
+  max_mu    = 0.35; min_mu    = 0.35;
+  max_sigsq = 0.07; min_sigsq = 0.07;
 
   /* Initialize parameters of migrep model */
   mmod->lbda   = Uni()*(max_lbda - min_lbda) + min_lbda;
@@ -317,6 +318,9 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
 
   disk = tree->disk;
   while(disk->prev) disk = disk->prev;
+
+  printf("\n. ROOT: %f",disk->time);
+  Exit("\n");
 
   tree->rates->bl_from_rt = YES;
   tree->rates->clock_r    = 0.1 / FABS(disk->time);
