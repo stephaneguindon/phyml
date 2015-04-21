@@ -387,14 +387,14 @@ void MIGREP_Simulate_Backward_Core(int new_loc, t_tree *tree)
           MIGREP_Init_Lindisk_Node(ldsk_a[i],disk,n_dim);
         }
       
-      /* PhyML_Printf("\n. WARNING: position of samples are not random."); */
+      PhyML_Printf("\n. WARNING: position of samples are not random.");
       /* Generate coordinates for the tip nodes (uniform distribution on the rectangle) */
       For(i,n_otu)
         {
-          ldsk_a[i]->coord->lonlat[0] = Uni()*tree->mmod->lim->lonlat[0]; // longitude
-          ldsk_a[i]->coord->lonlat[1] = Uni()*tree->mmod->lim->lonlat[1]; // latitude
-          /* ldsk_a[i]->coord->lonlat[0] = (i/(int)SQRT(n_otu)+1)*tree->mmod->lim->lonlat[0]/(SQRT(n_otu)+1); // longitude */
-          /* ldsk_a[i]->coord->lonlat[1] = (i%(int)SQRT(n_otu)+1)*tree->mmod->lim->lonlat[1]/(SQRT(n_otu)+1); // latitude */
+          /* ldsk_a[i]->coord->lonlat[0] = Uni()*tree->mmod->lim->lonlat[0]; // longitude */
+          /* ldsk_a[i]->coord->lonlat[1] = Uni()*tree->mmod->lim->lonlat[1]; // latitude */
+          ldsk_a[i]->coord->lonlat[0] = (i/(int)SQRT(n_otu)+1)*tree->mmod->lim->lonlat[0]/(SQRT(n_otu)+1); // longitude
+          ldsk_a[i]->coord->lonlat[1] = (i%(int)SQRT(n_otu)+1)*tree->mmod->lim->lonlat[1]/(SQRT(n_otu)+1); // latitude
         }
       
       disk->ldsk_a = ldsk_a;
