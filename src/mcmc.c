@@ -5223,8 +5223,11 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
 
       tree->mmod->lbda = cur_lbda;
 
-      For(j,n_delete_disks) MIGREP_Insert_Disk(target_disk[j]);
-      
+      For(j,n_delete_disks) 
+        {
+          MIGREP_Insert_Disk(target_disk[j]);
+        }
+
       tree->mmod->c_lnL = cur_glnL;
 
       new_glnL = MIGREP_Lk(tree);
@@ -5756,8 +5759,8 @@ void MCMC_MIGREP_Scale_Times(t_tree *tree)
   if(tree->disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
   disk = tree->disk->prev;
-  do disk = disk->prev; while(disk->prev);
-  if(disk->time*scale_fact_times > -1.E-5) return;
+  do disk = disk->prev; while(disk && disk->prev);
+  if(!disk || (disk && disk->time*scale_fact_times > -1.E-5)) return;
 
   n_disks = 0;
   disk = tree->disk->prev;
