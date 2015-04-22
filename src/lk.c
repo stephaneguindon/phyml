@@ -433,9 +433,6 @@ phydbl Lk(t_edge *b, t_tree *tree)
   if((tree->rates) && (tree->rates->bl_from_rt)) RATES_Update_Cur_Bl(tree);
 #endif
 
-  
-  
-
   if(tree->rates && tree->io->lk_approx == NORMAL)
     {
 #ifdef BEAGLE

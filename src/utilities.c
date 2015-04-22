@@ -733,7 +733,8 @@ void Connect_Edges_To_Nodes_Serial(t_tree *tree)
   For(i,2*tree->n_otu-1) For(j,3) tree->a_nodes[i]->b[j] = NULL;
 
   tree->num_curr_branch_available = 0;
-  For(i,tree->n_otu) 
+  
+  For(i,tree->n_otu)
     {
       if(!tree->a_nodes[i]->tax) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
@@ -741,6 +742,7 @@ void Connect_Edges_To_Nodes_Serial(t_tree *tree)
                                     tree->a_nodes[i]->v[0],
                                     tree->a_edges[tree->num_curr_branch_available],
                                     tree);
+      if(tree->n_otu == 2) break;
     }
 
   for(i=tree->n_otu;i<2*tree->n_otu-2;i++)
@@ -6856,10 +6858,9 @@ void Evolve(calign *data, t_mod *mod, t_tree *tree)
       /* tree->mod->gamma_mgf_bl = NO; */
     }
 
-  
+
   For(site,data->init_len)
     {
-
       Set_Model_Parameters(mod);
 
       /* Pick the rate class */
@@ -6966,10 +6967,10 @@ void Evolve_Recur(t_node *a, t_node *d, t_edge *b, int a_state, int r_class, int
     {
       int i;
       For(i,3)
-    if(d->v[i] != a)
-      Evolve_Recur(d,d->v[i],d->b[i],
-               d_state,r_class,site_num,gen_data,
-               mod,tree);
+        if(d->v[i] != a)
+          Evolve_Recur(d,d->v[i],d->b[i],
+                       d_state,r_class,site_num,gen_data,
+                       mod,tree);
     }
 }
 
