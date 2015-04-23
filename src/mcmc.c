@@ -5636,7 +5636,7 @@ void MCMC_MIGREP_Move_Disk_Updown(t_tree *tree)
   n_all_disks = 0;
   do
     {
-      if(disk->ldsk)
+      if(disk->ldsk && disk->prev != NULL)
         {
           if(!n_all_disks) all_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
           else if(!(n_all_disks%block)) all_disks = (t_dsk **)mRealloc(all_disks,n_all_disks+block,sizeof(t_dsk *));
@@ -5663,16 +5663,16 @@ void MCMC_MIGREP_Move_Disk_Updown(t_tree *tree)
 
       target_disk[i] = all_disks[i];
       
-      if(target_disk[i]->prev)
-        {
+      /* if(target_disk[i]->prev) */
+      /*   { */
           max = target_disk[i]->next->time;
           min = target_disk[i]->prev->time;
-        }
-      else
-        {
-          max = target_disk[i]->next->time;
-          min = target_disk[i]->time - (target_disk[i]->next->time - target_disk[i]->time);
-        }
+        /* } */
+      /* else */
+      /*   { */
+      /*     max = target_disk[i]->next->time; */
+      /*     min = target_disk[i]->time - (target_disk[i]->next->time - target_disk[i]->time); */
+      /*   } */
       
       
       ori_time[i] = target_disk[i]->time;
@@ -5754,23 +5754,35 @@ void MCMC_MIGREP_Scale_Times(t_tree *tree)
   cur_lbda = tree->mmod->lbda;
   K        = tree->mcmc->tune_move[tree->mcmc->num_move_migrep_scale_times];
 
-  scale_fact_times = EXP(K*(Uni()-.5));
+  K = 0.4;
+
+  /* scale_fact_times = EXP(K*(Uni()-.5)); */
+  scale_fact_times = Uni()*2.-1.;
   
   if(tree->disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-
-  disk = tree->disk->prev;
-  do disk = disk->prev; while(disk && disk->prev);
-  if(!disk || (disk && disk->time*scale_fact_times > -1.E-5)) return;
 
   n_disks = 0;
   disk = tree->disk->prev;
   do
     {
-      disk->time = disk->time * scale_fact_times;
+      /* disk->time = disk->time * scale_fact_times; */
+      if(disk->time + scale_fact_times > .0) return;
       disk = disk->prev;
       n_disks++;
     }
   while(disk);
+
+  n_disks = 0;
+  disk = tree->disk->prev;
+  do
+    {
+      /* disk->time = disk->time * scale_fact_times; */
+      disk->time = disk->time + scale_fact_times;
+      disk = disk->prev;
+      n_disks++;
+    }
+  while(disk);
+
 
   
   n_disks--;
@@ -5810,6 +5822,11 @@ void MCMC_MIGREP_Scale_Times(t_tree *tree)
 
   u = Uni();
   
+  /* PhyML_Printf("\n. Scale times hr: %f new_glnL: %f cur_glnL: %f ratio: %f mult: %f", */
+  /*              hr, */
+  /*              new_glnL,cur_glnL, */
+  /*              ratio, */
+  /*              scale_fact_times); */
 
   if(u > alpha) /* Reject */
     {

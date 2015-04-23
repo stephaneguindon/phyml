@@ -509,7 +509,6 @@ phydbl Log_Dnorm(phydbl x, phydbl mean, phydbl sd, int *err)
 
   x = (x-mean)/sd;
   
-  /* dens = -(phydbl)LOG_SQRT_2_PI - x*x*0.5 - LOG(sd); */
   dens = -(phydbl)LOG(SQRT(2.*PI)) - x*x*0.5 - LOG(sd);
 
   if(dens < -BIG)
