@@ -5162,16 +5162,16 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
 
   if(!n_valid_disks) return;
   
-  n_delete_disks = Rand_Int(1,1+(int)(n_valid_disks*K));
-  /* n_delete_disks = 1; */
+  /* n_delete_disks = Rand_Int(1,1+(int)(n_valid_disks*K)); */
+  n_delete_disks = 1;
 
   /* Prob of selecting delete vs insert move */
   hr -= LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_delete_disk]);
   hr += LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_insert_disk]);
 
   /* Prob of selecting n_delete_disks */
-  hr -= LOG(CEIL(1.+(n_valid_disks - n_delete_disks)*K));
-  hr += LOG(CEIL(1.+n_valid_disks*K));
+  /* hr -= LOG(CEIL(1.+(n_valid_disks - n_delete_disks)*K)); */
+  /* hr += LOG(CEIL(1.+n_valid_disks*K)); */
 
   target_disk = (t_dsk **)mCalloc(n_delete_disks,sizeof(t_dsk *));
 
@@ -5288,14 +5288,14 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
     }
   while(disk && disk->prev);
 
-  n_insert_disks = Rand_Int(1,1+(int)(n_valid_disks*K));
-  /* n_insert_disks = 1; */
+  /* n_insert_disks = Rand_Int(1,1+(int)(n_valid_disks*K)); */
+  n_insert_disks = 1;
 
   hr += LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_delete_disk]);
   hr -= LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_insert_disk]);
 
-  hr += LOG(CEIL(1.+n_valid_disks*K));
-  hr -= LOG(CEIL(1.+(n_valid_disks + n_insert_disks)*K));
+  /* hr += LOG(CEIL(1.+n_valid_disks*K)); */
+  /* hr -= LOG(CEIL(1.+(n_valid_disks + n_insert_disks)*K)); */
 
   target_disk = (t_dsk **)mCalloc(n_insert_disks,sizeof(t_dsk *));
   new_disk    = (t_dsk **)mCalloc(n_insert_disks,sizeof(t_dsk *));
@@ -5663,16 +5663,16 @@ void MCMC_MIGREP_Move_Disk_Updown(t_tree *tree)
 
       target_disk[i] = all_disks[i];
       
-      /* if(target_disk[i]->prev) */
-      /*   { */
+      if(target_disk[i]->prev)
+        {
           max = target_disk[i]->next->time;
           min = target_disk[i]->prev->time;
-        /* } */
-      /* else */
-      /*   { */
-      /*     max = target_disk[i]->next->time; */
-      /*     min = target_disk[i]->time - (target_disk[i]->next->time - target_disk[i]->time); */
-      /*   } */
+        }
+      else
+        {
+          max = target_disk[i]->next->time;
+          min = target_disk[i]->time - (target_disk[i]->next->time - target_disk[i]->time);
+        }
       
       
       ori_time[i] = target_disk[i]->time;
@@ -5754,40 +5754,35 @@ void MCMC_MIGREP_Scale_Times(t_tree *tree)
   cur_lbda = tree->mmod->lbda;
   K        = tree->mcmc->tune_move[tree->mcmc->num_move_migrep_scale_times];
 
-  K = 0.4;
-
-  /* scale_fact_times = EXP(K*(Uni()-.5)); */
-  scale_fact_times = Uni()*2.-1.;
+  scale_fact_times = EXP(K*(Uni()-.5));
   
   if(tree->disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
-  n_disks = 0;
-  disk = tree->disk->prev;
-  do
-    {
-      /* disk->time = disk->time * scale_fact_times; */
-      if(disk->time + scale_fact_times > .0) return;
-      disk = disk->prev;
-      n_disks++;
-    }
-  while(disk);
+  /* n_disks = 0; */
+  /* disk = tree->disk->prev; */
+  /* do */
+  /*   { */
+  /*     if(disk->time*scale_fact_times > -1.E-1) return; */
+  /*     disk = disk->prev; */
+  /*     n_disks++; */
+  /*   } */
+  /* while(disk); */
 
   n_disks = 0;
   disk = tree->disk->prev;
   do
     {
-      /* disk->time = disk->time * scale_fact_times; */
-      disk->time = disk->time + scale_fact_times;
-      disk = disk->prev;
+      disk->time = disk->time * scale_fact_times;
       n_disks++;
+      disk = disk->prev;
     }
   while(disk);
-
 
   
-  n_disks--;
-  hr += (n_disks-2)*LOG(scale_fact_times);
-  /* hr += (n_disks)*LOG(scale_fact_times); */
+  /* The Hastings ratio involves (n_disk-2) when considering a uniform distrib
+     for the multiplier, which is not the case here.
+  */
+  hr += (n_disks)*LOG(scale_fact_times);
 
   /* /\* Adjust value of lambda *\/ */
   /* if(scale_fact_times > 1.0)  */
@@ -5822,11 +5817,10 @@ void MCMC_MIGREP_Scale_Times(t_tree *tree)
 
   u = Uni();
   
-  /* PhyML_Printf("\n. Scale times hr: %f new_glnL: %f cur_glnL: %f ratio: %f mult: %f", */
+  /* PhyML_Printf("\n. Scale times hr: %f new_glnL: %f cur_glnL: %f ratio: %f", */
   /*              hr, */
   /*              new_glnL,cur_glnL, */
-  /*              ratio, */
-  /*              scale_fact_times); */
+  /*              ratio) */
 
   if(u > alpha) /* Reject */
     {
