@@ -5169,7 +5169,7 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
   hr -= LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_delete_disk]-tree->mcmc->move_weight[tree->mcmc->num_move_migrep_delete_disk-1]);
   hr += LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_insert_disk]-tree->mcmc->move_weight[tree->mcmc->num_move_migrep_insert_disk-1]);
 
-  /* /\* Prob of selecting n_delete_disks *\/ */
+  /* Prob of selecting n_delete_disks */
   /* hr -= LOG(CEIL(1.+(n_valid_disks - n_delete_disks)*K)); */
   /* hr += LOG(CEIL(1.+n_valid_disks*K)); */
 
@@ -5636,7 +5636,7 @@ void MCMC_MIGREP_Move_Disk_Updown(t_tree *tree)
   n_all_disks = 0;
   do
     {
-      if(disk->ldsk && disk->prev != NULL)
+      if(disk->ldsk)
         {
           if(!n_all_disks) all_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
           else if(!(n_all_disks%block)) all_disks = (t_dsk **)mRealloc(all_disks,n_all_disks+block,sizeof(t_dsk *));
@@ -5649,7 +5649,8 @@ void MCMC_MIGREP_Move_Disk_Updown(t_tree *tree)
 
   if(!n_all_disks) return;
   
-  n_move_disks = Rand_Int(1,1+(int)(n_all_disks*K));
+  /* n_move_disks = Rand_Int(1,1+(int)(n_all_disks*K)); */
+  n_move_disks = 1;
 
   target_disk = (t_dsk **)mCalloc(n_all_disks,sizeof(t_dsk *));
   ori_time    = (phydbl *)mCalloc(n_all_disks,sizeof(phydbl));
@@ -5663,24 +5664,28 @@ void MCMC_MIGREP_Move_Disk_Updown(t_tree *tree)
 
       target_disk[i] = all_disks[i];
       
+      ori_time[i] = target_disk[i]->time;
+
       if(target_disk[i]->prev)
         {
           max = target_disk[i]->next->time;
           min = target_disk[i]->prev->time;
+          new_time = Uni()*(max - min) + min;
         }
       else
         {
-          max = target_disk[i]->next->time;
-          min = target_disk[i]->time - (target_disk[i]->next->time - target_disk[i]->time);
+          phydbl scale,K;
 
-          hr += LOG(max - target_disk[i]->time);
+          K = 2.;
+          scale = exp(K*(Uni()-0.5));
+          
+          max = target_disk[i]->next->time;
+          new_time = scale * ori_time[i] + max*(1.-scale);
+          hr += LOG(K*((new_time - max)/(ori_time[i] - max)) - max);
+          hr -= LOG(K*((ori_time[i] - max)/(new_time - max)) - max);
         }
             
-      ori_time[i] = target_disk[i]->time;
-      new_time = Uni()*(max - min) + min;
       target_disk[i]->time = new_time;
-
-      if(target_disk[i]->prev == NULL) hr -= LOG(max - new_time);
     }
   
   new_glnL = MIGREP_Lk(tree);
@@ -6154,15 +6159,15 @@ void MCMC_MIGREP_Insert_Hit(t_tree *tree)
               min = 0.0;
             }
 
-          new_disk[j]->centr->lonlat[i] = Uni()*(max - min) + min;
-          hr += LOG(max - min);
+          /* new_disk[j]->centr->lonlat[i] = Uni()*(max - min) + min; */
+          /* hr += LOG(max - min); */
 
-          /* new_disk[j]->centr->lonlat[i] = Rnorm_Trunc(.5*(young_ldsk[j]->coord->lonlat[i]+old_ldsk[j]->coord->lonlat[i]), */
-          /*                                             2.*tree->mmod->rad, */
-          /*                                             0.0,tree->mmod->lim->lonlat[i],&err); */
-          /* hr -= Log_Dnorm_Trunc(new_disk[j]->centr->lonlat[i], */
-          /*                       .5*(young_ldsk[j]->coord->lonlat[i]+old_ldsk[j]->coord->lonlat[i]), */
-          /*                       2.*tree->mmod->rad,0.0,tree->mmod->lim->lonlat[i],&err); */
+          new_disk[j]->centr->lonlat[i] = Rnorm_Trunc(.5*(young_ldsk[j]->coord->lonlat[i]+old_ldsk[j]->coord->lonlat[i]),
+                                                      2.*tree->mmod->rad,
+                                                      0.0,tree->mmod->lim->lonlat[i],&err);
+          hr -= Log_Dnorm_Trunc(new_disk[j]->centr->lonlat[i],
+                                .5*(young_ldsk[j]->coord->lonlat[i]+old_ldsk[j]->coord->lonlat[i]),
+                                2.*tree->mmod->rad,0.0,tree->mmod->lim->lonlat[i],&err);
         }
 
       /* Sample position of the displaced ldsk */
@@ -6185,15 +6190,15 @@ void MCMC_MIGREP_Insert_Hit(t_tree *tree)
               min = 0.0;
             }
           
-          new_ldsk[j]->coord->lonlat[i] = Uni()*(max - min) + min;
-          hr += LOG(max - min);
+          /* new_ldsk[j]->coord->lonlat[i] = Uni()*(max - min) + min; */
+          /* hr += LOG(max - min); */
           
-          /* new_ldsk[j]->coord->lonlat[i] = Rnorm_Trunc(new_disk[j]->centr->lonlat[i], */
-          /*                                             2.*tree->mmod->rad, */
-          /*                                             0.0,tree->mmod->lim->lonlat[i],&err); */
-          /* hr -= Log_Dnorm_Trunc(new_ldsk[j]->coord->lonlat[i], */
-          /*                       new_disk[j]->centr->lonlat[i], */
-          /*                       2.*tree->mmod->rad,0.0,tree->mmod->lim->lonlat[i],&err); */
+          new_ldsk[j]->coord->lonlat[i] = Rnorm_Trunc(new_disk[j]->centr->lonlat[i],
+                                                      2.*tree->mmod->rad,
+                                                      0.0,tree->mmod->lim->lonlat[i],&err);
+          hr -= Log_Dnorm_Trunc(new_ldsk[j]->coord->lonlat[i],
+                                new_disk[j]->centr->lonlat[i],
+                                2.*tree->mmod->rad,0.0,tree->mmod->lim->lonlat[i],&err);
         }
 
       hr -= LOG(n_valid_disks+n_insert_disks-j);
@@ -6384,10 +6389,10 @@ void MCMC_MIGREP_Delete_Hit(t_tree *tree)
               min = 0.0;
             }
           
-          hr -= LOG(max - min);
-          /* hr += Log_Dnorm_Trunc(target_disk[j]->centr->lonlat[i], */
-          /*                       .5*(young_ldsk[j]->coord->lonlat[i]+old_ldsk[j]->coord->lonlat[i]), */
-          /*                       2.*tree->mmod->rad,0.0,tree->mmod->lim->lonlat[i],&err); */
+          /* hr -= LOG(max - min); */
+          hr += Log_Dnorm_Trunc(target_disk[j]->centr->lonlat[i],
+                                .5*(young_ldsk[j]->coord->lonlat[i]+old_ldsk[j]->coord->lonlat[i]),
+                                2.*tree->mmod->rad,0.0,tree->mmod->lim->lonlat[i],&err);
         }
       
       /* Density for position of the displaced ldsk */
@@ -6410,12 +6415,12 @@ void MCMC_MIGREP_Delete_Hit(t_tree *tree)
               min = 0.0;
             }
           
-          hr -= LOG(max - min);
+          /* hr -= LOG(max - min); */
 
-          /* hr += Log_Dnorm_Trunc(target_ldsk[j]->coord->lonlat[i], */
-          /*                       target_disk[j]->centr->lonlat[i], */
-          /*                       2.*tree->mmod->rad,0.0, */
-          /*                       tree->mmod->lim->lonlat[i],&err); */
+          hr += Log_Dnorm_Trunc(target_ldsk[j]->coord->lonlat[i],
+                                target_disk[j]->centr->lonlat[i],
+                                2.*tree->mmod->rad,0.0,
+                                tree->mmod->lim->lonlat[i],&err);
         }
 
       hr += LOG(n_valid_disks-j);
