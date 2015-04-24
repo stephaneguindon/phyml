@@ -165,5 +165,7 @@ void MCMC_MIGREP_Move_Ldsk(t_tree *tree);
 void MCMC_MIGREP_Prune_Regraft(t_tree *tree);
 void MCMC_MIGREP_Scale_Times(t_tree *tree);
 void MCMC_MIGREP_Ldscape_Limits(t_tree *tree);
+void MCMC_MIGREP_Insert_Delete_Disk(t_tree *tree);
+void MCMC_MIGREP_Insert_Delete_Hit(t_tree *tree);
 
 #endif

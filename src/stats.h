@@ -117,5 +117,6 @@ phydbl Variance(phydbl *x, int l);
 phydbl Bessi0(phydbl x);
 phydbl Bessk0(phydbl x);
 phydbl Euclidean_Dist(t_geo_coord *x, t_geo_coord *y);
+int *Ranks(phydbl *x, int len);
 
 #endif

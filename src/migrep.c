@@ -333,7 +333,7 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
          MIGREP_Total_Number_Of_Intervals(tree),
          n,
          MIGREP_Total_Number_Of_Hit_Disks(tree));
-  Exit("\n");
+  /* Exit("\n"); */
 
   tree->rates->bl_from_rt = YES;
   tree->rates->clock_r    = 0.1 / FABS(disk->time);

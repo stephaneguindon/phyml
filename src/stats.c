@@ -4833,8 +4833,36 @@ phydbl Euclidean_Dist(t_geo_coord *x, t_geo_coord *y)
   return(SQRT(dist));
 }
 
-
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+/* Return the ranks of elements in x */
+int *Ranks(phydbl *x, int len)
+{
+  int *rk,tmp;
+  int i,swap;
+
+  rk = (int *)mCalloc(len,sizeof(int));
+
+  For(i,len) rk[i] = i;
+
+  do
+    {
+      swap = NO;
+      For(i,len-1) 
+        {
+          if(x[rk[i]] > x[rk[i+1]])
+            {
+              swap  = YES; 
+              tmp   = rk[i];
+              rk[i] = rk[i+1];
+              rk[i+1] = tmp;
+            }
+        }
+    }
+  while(swap == YES);
+
+  return(rk);
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/

@@ -2694,18 +2694,21 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
       PhyML_Fprintf(fp_out,"\n  - Number of classes: \t\t\t%d",tree->mod->ras->n_catg);
       PhyML_Fprintf(fp_out,"\n  - Gamma shape parameter: \t\t%.3f",tree->mod->ras->alpha->v);
       For(i,tree->mod->ras->n_catg)
-    {
-      PhyML_Fprintf(fp_out,"\n  - Relative rate in class %d: \t\t%.5f [freq=%4f] \t\t",i+1,tree->mod->ras->gamma_rr->v[i],tree->mod->ras->gamma_r_proba->v[i]);
-    }
+        {
+          PhyML_Fprintf(fp_out,"\n  - Relative rate in class %d: \t\t%.5f [freq=%4f] \t\t",i+1,tree->mod->ras->gamma_rr->v[i],tree->mod->ras->gamma_r_proba->v[i]);
+        }
     }
   else if(tree->mod->ras->free_mixt_rates == YES)
     {
+      int *rk;
+      rk = Ranks(tree->mod->ras->gamma_rr->v,tree->mod->ras->n_catg);
       PhyML_Fprintf(fp_out,"\n. FreeRate model: \t\t\t%s","Yes");
       PhyML_Fprintf(fp_out,"\n  - Number of classes: \t\t\t%d",tree->mod->ras->n_catg);
       For(i,tree->mod->ras->n_catg)
-    {
-      PhyML_Fprintf(fp_out,"\n  - Relative rate in class %d: \t\t%.5f [freq=%4f] \t\t",i+1,tree->mod->ras->gamma_rr->v[i],tree->mod->ras->gamma_r_proba->v[i]);
-    }
+        {
+          PhyML_Fprintf(fp_out,"\n  - Relative rate in class %d: \t\t%.5f [freq=%4f] \t\t",i+1,tree->mod->ras->gamma_rr->v[rk[i]],tree->mod->ras->gamma_r_proba->v[rk[i]]);
+        }
+      Free(rk);
     }
 
   if(tree->mod->ras->invar) PhyML_Fprintf(fp_out,"\n. Proportion of invariant: \t\t%.3f",tree->mod->ras->pinvar->v);

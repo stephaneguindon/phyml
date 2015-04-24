@@ -4453,12 +4453,12 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_migrep_mu]                    = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_rad]                   = 0.0;
   mcmc->move_weight[mcmc->num_move_migrep_sigsq]                 = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_insert_disk]           = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_insert_disk]           = 2.0;
   mcmc->move_weight[mcmc->num_move_migrep_delete_disk]           = 1.0;  
   mcmc->move_weight[mcmc->num_move_migrep_move_disk_ct]          = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_move_disk_ud]          = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_swap_disk]             = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_insert_hit]            = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_insert_hit]            = 2.0;
   mcmc->move_weight[mcmc->num_move_migrep_delete_hit]            = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_move_ldsk]             = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_spr]                   = 5.0;
@@ -5166,10 +5166,10 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
   n_delete_disks = 1;
 
   /* Prob of selecting delete vs insert move */
-  hr -= LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_delete_disk]);
-  hr += LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_insert_disk]);
+  hr -= LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_delete_disk]-tree->mcmc->move_weight[tree->mcmc->num_move_migrep_delete_disk-1]);
+  hr += LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_insert_disk]-tree->mcmc->move_weight[tree->mcmc->num_move_migrep_insert_disk-1]);
 
-  /* Prob of selecting n_delete_disks */
+  /* /\* Prob of selecting n_delete_disks *\/ */
   /* hr -= LOG(CEIL(1.+(n_valid_disks - n_delete_disks)*K)); */
   /* hr += LOG(CEIL(1.+n_valid_disks*K)); */
 
@@ -5291,8 +5291,8 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
   /* n_insert_disks = Rand_Int(1,1+(int)(n_valid_disks*K)); */
   n_insert_disks = 1;
 
-  hr += LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_delete_disk]);
-  hr -= LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_insert_disk]);
+  hr += LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_delete_disk]-tree->mcmc->move_weight[tree->mcmc->num_move_migrep_delete_disk-1]);
+  hr -= LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_insert_disk]-tree->mcmc->move_weight[tree->mcmc->num_move_migrep_insert_disk-1]);
 
   /* hr += LOG(CEIL(1.+n_valid_disks*K)); */
   /* hr -= LOG(CEIL(1.+(n_valid_disks + n_insert_disks)*K)); */
@@ -5672,12 +5672,15 @@ void MCMC_MIGREP_Move_Disk_Updown(t_tree *tree)
         {
           max = target_disk[i]->next->time;
           min = target_disk[i]->time - (target_disk[i]->next->time - target_disk[i]->time);
+
+          hr += LOG(max - target_disk[i]->time);
         }
-      
-      
+            
       ori_time[i] = target_disk[i]->time;
       new_time = Uni()*(max - min) + min;
       target_disk[i]->time = new_time;
+
+      if(target_disk[i]->prev == NULL) hr -= LOG(max - new_time);
     }
   
   new_glnL = MIGREP_Lk(tree);
@@ -6048,8 +6051,8 @@ void MCMC_MIGREP_Insert_Hit(t_tree *tree)
 
   /* printf("\n. n_insert: %d",n_insert_disks); */
 
-  hr += LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_delete_hit]);
-  hr -= LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_insert_hit]);
+  hr += LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_delete_hit]-tree->mcmc->move_weight[tree->mcmc->num_move_migrep_delete_hit-1]);
+  hr -= LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_insert_hit]-tree->mcmc->move_weight[tree->mcmc->num_move_migrep_insert_hit-1]);
 
   /* hr += LOG(CEIL(1.+n_valid_disks*K)); */
   /* hr -= LOG(CEIL(1.+(n_valid_disks + n_insert_disks)*K)); */
@@ -6314,8 +6317,8 @@ void MCMC_MIGREP_Delete_Hit(t_tree *tree)
 
   /* printf("\n. n_delete: %d",n_delete_disks); */
 
-  hr -= LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_delete_hit]);
-  hr += LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_insert_hit]);
+  hr -= LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_delete_hit]-tree->mcmc->move_weight[tree->mcmc->num_move_migrep_delete_hit-1]);
+  hr += LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_insert_hit]-tree->mcmc->move_weight[tree->mcmc->num_move_migrep_insert_hit-1]);
 
   /* Prob of selecting n_delete_disks */
   /* hr -= LOG(CEIL(1.+(n_valid_disks - n_delete_disks)*K)); */
