@@ -333,7 +333,7 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
          MIGREP_Total_Number_Of_Intervals(tree),
          n,
          MIGREP_Total_Number_Of_Hit_Disks(tree));
-  /* Exit("\n"); */
+  Exit("\n");
 
   tree->rates->bl_from_rt = YES;
   tree->rates->clock_r    = 0.1 / FABS(disk->time);
@@ -1243,11 +1243,11 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"migrep_swap_disk"))
         MCMC_MIGREP_Swap_Disk(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"migrep_delete_hit"))
-        MCMC_MIGREP_Delete_Hit(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_delete_hit")) */
+      /*   MCMC_MIGREP_Delete_Hit(tree); */
 
-      if(!strcmp(tree->mcmc->move_name[move],"migrep_insert_hit"))
-        MCMC_MIGREP_Insert_Hit(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_insert_hit")) */
+      /*   MCMC_MIGREP_Insert_Hit(tree); */
 
       if(!strcmp(tree->mcmc->move_name[move],"migrep_move_ldsk"))
         MCMC_MIGREP_Move_Ldsk(tree);
