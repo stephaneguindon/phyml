@@ -1500,7 +1500,7 @@ int Lnsrch(t_tree *tree, int n, phydbl *xold, phydbl fold,
         {
           x[i]=local_xold[i]+alam*p[i];
           xold[i] = x[i];
-          For(i,n) PhyML_Printf("\n. lnsrch x[i]: %f",x[i]);
+          PhyML_Printf("\n. lnsrch x[i]: %f",x[i]);
         }
       
       PhyML_Printf("\n. lnsrch loop slope: %f alam: %f alam2: %f",slope,alam,alam2);
