@@ -1496,7 +1496,7 @@ int Lnsrch(t_tree *tree, int n, phydbl *xold, phydbl fold,
   alam=1.0;
   for (;;)
     {
-      for(i=0;i<n;i++)
+      For(i,n)
         {
           x[i]=local_xold[i]+alam*p[i];
           xold[i] = x[i];
