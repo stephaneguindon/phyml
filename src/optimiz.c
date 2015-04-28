@@ -1095,7 +1095,7 @@ void BFGS(t_tree *tree,
   fp=(*func)(tree);
   if(logt == YES) For(i,n) p[i] = LOG(p[i]);
   
-  /* PhyML_Printf("\n. ENTER BFGS WITH: %f\n",fp); */
+  PhyML_Printf("\n. ENTER BFGS WITH: %f\n",fp);
   
   fp_old = fp;
   
@@ -1112,7 +1112,7 @@ void BFGS(t_tree *tree,
   stpmax=STPMX*MAX(SQRT(sum),(phydbl)n);
   for(its=1;its<=ITMAX;its++)
     {
-      /* PhyML_Printf("\n. BFGS -> %f\n",tree->c_lnL); */
+      PhyML_Printf("\n. BFGS -> %f\n",tree->c_lnL);
       
       lnsrch(tree,n,p,fp,g,xi,pnew,&fret,stpmax,&check,logt,is_positive);
       
@@ -1129,7 +1129,7 @@ void BFGS(t_tree *tree,
       for (i=0;i<n;i++)
         {
           temp=xi[i]/MAX(p[i],1.0);
-          /* printf("\n. x[i]=%f p[i]=%f",xi[i],p[i]); */
+          printf("\n. x[i]=%f p[i]=%f",xi[i],p[i]);
           if (temp > test) test=temp;
         }
       if (test < TOLX || (FABS(fp-fp_old) < difff && its > 1))
