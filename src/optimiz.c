@@ -904,93 +904,93 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
 
         }
 
-
+      
       if(tree->mod->s_opt->opt_cov_free_rates)
-    {
-      int rcat;
-
-      Switch_Eigen(YES,tree->mod);
-
-      For(rcat,tree->mod->m4mod->n_h)
         {
-/* 	      Optimize_Single_Param_Generic(tree,&(tree->mod->m4mod->multipl_unscaled[rcat]), */
-/* 					    .01,10., */
-/* 					    tree->mod->s_opt->min_diff_lk_local, */
-/* 					    tree->mod->s_opt->brent_it_max, */
-/* 					    tree->mod->s_opt->quickdirty); */
-
-          Generic_Brent_Lk(&(tree->mod->m4mod->multipl_unscaled[rcat]),
-                   0.1,100.,
-                   tree->mod->s_opt->min_diff_lk_local,
-                   tree->mod->s_opt->brent_it_max,
-                   tree->mod->s_opt->quickdirty,
-                   Wrap_Lk,NULL,tree,NULL,NO);
-
-          if(verbose)
-        {
-          Print_Lk(tree,"[Rel. subst. rate   ]");
-          PhyML_Printf("[%10f]",tree->mod->m4mod->multipl[rcat]);
+          int rcat;
+          
+          Switch_Eigen(YES,tree->mod);
+          
+          For(rcat,tree->mod->m4mod->n_h)
+            {
+              /* 	      Optimize_Single_Param_Generic(tree,&(tree->mod->m4mod->multipl_unscaled[rcat]), */
+              /* 					    .01,10., */
+              /* 					    tree->mod->s_opt->min_diff_lk_local, */
+              /* 					    tree->mod->s_opt->brent_it_max, */
+              /* 					    tree->mod->s_opt->quickdirty); */
+              
+              Generic_Brent_Lk(&(tree->mod->m4mod->multipl_unscaled[rcat]),
+                               0.1,100.,
+                               tree->mod->s_opt->min_diff_lk_local,
+                               tree->mod->s_opt->brent_it_max,
+                               tree->mod->s_opt->quickdirty,
+                               Wrap_Lk,NULL,tree,NULL,NO);
+              
+              if(verbose)
+                {
+                  Print_Lk(tree,"[Rel. subst. rate   ]");
+                  PhyML_Printf("[%10f]",tree->mod->m4mod->multipl[rcat]);
+                }
+            }
+          
+          For(rcat,tree->mod->m4mod->n_h)
+            {
+              
+              /*  	      Optimize_Single_Param_Generic(tree,&(tree->mod->m4mod->h_fq_unscaled[rcat]), */
+              /* 					    .01,100., */
+              /* 					    tree->mod->s_opt->min_diff_lk_local, */
+              /* 					    tree->mod->s_opt->brent_it_max, */
+              /* 					    tree->mod->s_opt->quickdirty); */
+              
+              Generic_Brent_Lk(&(tree->mod->m4mod->h_fq_unscaled[rcat]),
+                               0.1,100.,
+                               tree->mod->s_opt->min_diff_lk_local,
+                               tree->mod->s_opt->brent_it_max,
+                               tree->mod->s_opt->quickdirty,
+                               Wrap_Lk,NULL,tree,NULL,NO);
+              
+              
+              if(verbose)
+                {
+                  Print_Lk(tree,"[Subst. class freq  ]");
+                  PhyML_Printf("[%10f]",tree->mod->m4mod->h_fq[rcat]);
+                }
+            }
+          
+          Switch_Eigen(NO,tree->mod);
+          
         }
-        }
-
-      For(rcat,tree->mod->m4mod->n_h)
-        {
-
-/*  	      Optimize_Single_Param_Generic(tree,&(tree->mod->m4mod->h_fq_unscaled[rcat]), */
-/* 					    .01,100., */
-/* 					    tree->mod->s_opt->min_diff_lk_local, */
-/* 					    tree->mod->s_opt->brent_it_max, */
-/* 					    tree->mod->s_opt->quickdirty); */
-
-          Generic_Brent_Lk(&(tree->mod->m4mod->h_fq_unscaled[rcat]),
-                   0.1,100.,
-                   tree->mod->s_opt->min_diff_lk_local,
-                   tree->mod->s_opt->brent_it_max,
-                   tree->mod->s_opt->quickdirty,
-                   Wrap_Lk,NULL,tree,NULL,NO);
-
-
-          if(verbose)
-        {
-          Print_Lk(tree,"[Subst. class freq  ]");
-          PhyML_Printf("[%10f]",tree->mod->m4mod->h_fq[rcat]);
-        }
-        }
-
-      Switch_Eigen(NO,tree->mod);
-
-    }
-
+      
       if(tree->mod->s_opt->opt_cov_alpha)
-    {
-
-      Switch_Eigen(YES,tree->mod);
-
-/* 	  Optimize_Single_Param_Generic(tree,&(tree->mod->m4mod->ras->alpha), */
-/* 					.01,10., */
-/* 					tree->mod->s_opt->min_diff_lk_local, */
-/* 					tree->mod->s_opt->brent_it_max, */
-/* 					tree->mod->s_opt->quickdirty); */
-
-      Generic_Brent_Lk(&(tree->mod->m4mod->alpha),
-               0.01,10.,
-               tree->mod->s_opt->min_diff_lk_local,
-               tree->mod->s_opt->brent_it_max,
-               tree->mod->s_opt->quickdirty,
-               Wrap_Lk,NULL,tree,NULL,NO);
-
-
-      if(verbose)
         {
-          Print_Lk(tree,"[Alpha (covarion)   ]");
-          PhyML_Printf("[%10f]",tree->mod->m4mod->alpha);
+          
+          Switch_Eigen(YES,tree->mod);
+          
+          /* 	  Optimize_Single_Param_Generic(tree,&(tree->mod->m4mod->ras->alpha), */
+          /* 					.01,10., */
+          /* 					tree->mod->s_opt->min_diff_lk_local, */
+          /* 					tree->mod->s_opt->brent_it_max, */
+          /* 					tree->mod->s_opt->quickdirty); */
+          
+          Generic_Brent_Lk(&(tree->mod->m4mod->alpha),
+                           0.01,10.,
+                           tree->mod->s_opt->min_diff_lk_local,
+                           tree->mod->s_opt->brent_it_max,
+                           tree->mod->s_opt->quickdirty,
+                           Wrap_Lk,NULL,tree,NULL,NO);
+          
+          
+          if(verbose)
+            {
+              Print_Lk(tree,"[Alpha (covarion)   ]");
+              PhyML_Printf("[%10f]",tree->mod->m4mod->alpha);
+            }
+          
+          Switch_Eigen(NO,tree->mod);
+          
         }
-
-      Switch_Eigen(NO,tree->mod);
-
-    }
-
-
+      
+      
       /* Substitutions between nucleotides are considered to follow a
          GTR model */
       
@@ -998,21 +998,21 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
         {
           if(tree->mod->whichmodel == GTR || tree->mod->whichmodel == CUSTOM)
             {
-
+              
               Switch_Eigen(YES,tree->mod);
-
+              
               For(i,5) tree->mod->m4mod->o_rr[i] = LOG(tree->mod->m4mod->o_rr[i]);
-
+              
               failed = YES;
-
+              
               /* BFGS(tree,tree->mod->m4mod->o_rr,5,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,YES, */
               BFGS(tree,tree->mod->m4mod->o_rr,5,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,YES,NO,
                    &Return_Abs_Lk,
                    &Num_Derivative_Several_Param,
                    &Lnsrch,&failed);
-
+              
               For(i,5) tree->mod->m4mod->o_rr[i] = EXP(tree->mod->m4mod->o_rr[i]);
-
+              
               For(i,5)
                 {
                   /* 	      Optimize_Single_Param_Generic(tree,&(tree->mod->m4mod->o_rr[i]), */
@@ -2665,9 +2665,9 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
   do
     {
       if(tree->next) tree = tree->next;
-
+      
       For(i,n_r_mat) if(tree->mod->r_mat == r_mat[i]) break;
-
+      
       if(i == n_r_mat) // tree->mod->r_mat was not found before
         {
           if(!r_mat) r_mat = (t_rmat **)mCalloc(1,sizeof(t_rmat *));
@@ -2684,6 +2684,8 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
               
               For(i,tree->mod->r_mat->n_diff_rr) tree->mod->r_mat->rr_val->v[i] = LOG(tree->mod->r_mat->rr_val->v[i]);
               
+              For(i,tree->mod->r_mat->n_diff_rr) PhyML_Printf("\n. 00 %f",tree->mod->r_mat->rr_val->v[i]);
+
               failed = YES;
               
               /* BFGS(mixt_tree,tree->mod->r_mat->rr_val->v,tree->mod->r_mat->n_diff_rr,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,YES, */
@@ -2695,8 +2697,11 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
                        &Lnsrch,&failed);
                 }
 
+              For(i,tree->mod->r_mat->n_diff_rr) PhyML_Printf("\n. 11 %f",tree->mod->r_mat->rr_val->v[i]);
               For(i,tree->mod->r_mat->n_diff_rr) tree->mod->r_mat->rr_val->v[i] = EXP(tree->mod->r_mat->rr_val->v[i]);
               
+              For(i,tree->mod->r_mat->n_diff_rr) PhyML_Printf("\n. 22 %f",tree->mod->r_mat->rr_val->v[i]);
+
               if(failed == YES)
                 {
                   For(i,tree->mod->r_mat->n_diff_rr)
@@ -2711,6 +2716,8 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
                       }
                 }
               
+              For(i,tree->mod->r_mat->n_diff_rr) PhyML_Printf("\n. 33 %f",tree->mod->r_mat->rr_val->v[i]);
+
               if(verbose) Print_Lk(tree->mixt_tree?
                                    tree->mixt_tree:
                                    tree,"[GTR parameters     ]");
