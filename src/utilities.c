@@ -859,11 +859,9 @@ void *mCalloc(int nb, size_t size)
 
   if((allocated = calloc((size_t)nb,size)) != NULL)
 /*   if((allocated = malloc((size_t)nb*(size_t)size)) != NULL) */
-    {
-      return allocated;
-    }
+    return allocated;
   else
-    Exit("\n== Err: low memory\n");
+    Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
 
   return NULL;
 }
