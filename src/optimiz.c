@@ -1463,27 +1463,29 @@ void BFGS_Nonaligned(t_tree *tree,
 #define TOLX 1.0e-7
 
 int Lnsrch(t_tree *tree, int n, phydbl *xold, phydbl fold,
-       phydbl *g, phydbl *p, phydbl *x,
-       phydbl *f, phydbl stpmax, int *check, int logt, int is_positive)
+           phydbl *g, phydbl *p, phydbl *x,
+           phydbl *f, phydbl stpmax, int *check, int logt, int is_positive)
 {
   int i;
   phydbl a,alam,alam2,alamin,b,disc,f2,fold2,rhs1,rhs2,slope,sum,temp,test,tmplam;
   phydbl *local_xold,*sign;
-
+  
   alam = alam2 = f2 = fold2 = tmplam = .0;
 
   local_xold = (phydbl *)mCalloc(n,sizeof(phydbl));
   sign       = (phydbl *)mCalloc(n,sizeof(phydbl));
 
   For(i,n) local_xold[i] = xold[i];
-
+  
   *check=0;
   for(sum=0.0,i=0;i<n;i++) sum += p[i]*p[i];
   sum=SQRT(sum);
-  if(sum > stpmax)
-    for(i=0;i<n;i++) p[i] *= stpmax/sum;
-  for(slope=0.0,i=0;i<n;i++)
-    slope += g[i]*p[i];
+  PhyML_Printf("\n. lnsrch sum: %f",sum);
+  if(sum > stpmax) For(i,n) p[i] *= stpmax/sum;
+  For(i,n) PhyML_Printf("\n. lnsrch p[i]: %f",p[i]);
+  slope=0.0;
+  For(i,n) slope += g[i]*p[i];
+  PhyML_Printf("\n. lnsrch slope: %f",slope);
   test=0.0;
   for(i=0;i<n;i++)
     {
@@ -1495,60 +1497,63 @@ int Lnsrch(t_tree *tree, int n, phydbl *xold, phydbl fold,
   for (;;)
     {
       for(i=0;i<n;i++)
-    {
-      x[i]=local_xold[i]+alam*p[i];
-      xold[i] = x[i];
-    }
-
+        {
+          x[i]=local_xold[i]+alam*p[i];
+          xold[i] = x[i];
+          For(i,n) PhyML_Printf("\n. lnsrch x[i]: %f",x[i]);
+        }
+      
+      PhyML_Printf("\n. lnsrch loop slope: %f alam: %f alam2: %f",slope,alam,alam2);
+      
       if(i==n)
-    {
+        {
           if(logt == YES) For(i,n) xold[i] = EXP(MIN(1.E+2,xold[i]));
           For(i,n) sign[i] = xold[i] < .0 ? -1. : 1.;
           if(is_positive == YES) For(i,n) xold[i] = FABS(xold[i]);
-      *f=Return_Abs_Lk(tree);
+          *f=Return_Abs_Lk(tree);
           if(is_positive == YES) For(i,n) xold[i] *= sign[i];
           if(logt == YES) For(i,n) xold[i] = LOG(xold[i]);
-    }
+        }
       else *f=1.+fold+ALF*alam*slope;
       if (alam < alamin)
-    {
-      *check=1;
-      For(i,n) xold[i] = local_xold[i];
+        {
+          *check=1;
+          For(i,n) xold[i] = local_xold[i];
           if(is_positive == YES) For(i,n) xold[i] = FABS(xold[i]);
-      Free(local_xold);
-      Free(sign);
-      return 0;
-    }
-      else if (*f <= fold+ALF*alam*slope)
-    {
-      For(i,n) xold[i] = local_xold[i];
-          if(is_positive == YES) For(i,n) xold[i] = FABS(xold[i]);
-      Free(local_xold);
+          Free(local_xold);
           Free(sign);
-      return 0;
-    }
-      else
-    {
-/* 	  if (alam == 1.0) */
-      if ((alam < 1.0+SMALL) && (alam > 1.0-SMALL))
-        tmplam = -slope/(2.0*(*f-fold-slope));
+          return 0;
+        }
+      else if (*f <= fold+ALF*alam*slope)
+        {
+          For(i,n) xold[i] = local_xold[i];
+          if(is_positive == YES) For(i,n) xold[i] = FABS(xold[i]);
+          Free(local_xold);
+          Free(sign);
+          return 0;
+        }
       else
         {
-          rhs1 = *f-fold-alam*slope;
-          rhs2=f2-fold2-alam2*slope;
-          a=(rhs1/(alam*alam)-rhs2/(alam2*alam2))/(alam-alam2);
-          b=(-alam2*rhs1/(alam*alam)+alam*rhs2/(alam2*alam2))/(alam-alam2);
-          if (a < SMALL && a > -SMALL) tmplam = -slope/(2.0*b);
+          /* 	  if (alam == 1.0) */
+          if ((alam < 1.0+SMALL) && (alam > 1.0-SMALL))
+            tmplam = -slope/(2.0*(*f-fold-slope));
           else
-        {
-          disc=b*b-3.0*a*slope;
-          if (disc<0.0) tmplam = 0.5*alam;
-          else if(b <= 0.0) tmplam=(-b+SQRT(disc))/(3.0*a);
-          else tmplam = -slope/(b+SQRT(disc));
+            {
+              rhs1 = *f-fold-alam*slope;
+              rhs2=f2-fold2-alam2*slope;
+              a=(rhs1/(alam*alam)-rhs2/(alam2*alam2))/(alam-alam2);
+              b=(-alam2*rhs1/(alam*alam)+alam*rhs2/(alam2*alam2))/(alam-alam2);
+              if (a < SMALL && a > -SMALL) tmplam = -slope/(2.0*b);
+              else
+                {
+                  disc=b*b-3.0*a*slope;
+                  if (disc<0.0) tmplam = 0.5*alam;
+                  else if(b <= 0.0) tmplam=(-b+SQRT(disc))/(3.0*a);
+                  else tmplam = -slope/(b+SQRT(disc));
+                }
+              if (tmplam>0.5*alam) tmplam=0.5*alam;
+            }
         }
-          if (tmplam>0.5*alam) tmplam=0.5*alam;
-        }
-    }
       alam2=alam;
       f2 = *f;
       fold2=fold;
