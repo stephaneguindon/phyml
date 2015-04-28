@@ -909,7 +909,6 @@ phydbl MIGREP_Lk(t_tree *tree)
   short int was_hit, n_hit;
   t_migrep_mod *mmod;
   t_dsk *disk;
-  phydbl curr_T;
 
   mmod = tree->mmod;
 
@@ -1138,6 +1137,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   PhyML_Fprintf(fp_stats,"\n# true sigsq: %f",tree->mmod->sigsq);
   PhyML_Fprintf(fp_stats,"\n# true neigh. size: %f",MIGREP_Neighborhood_Size(tree));
   PhyML_Fprintf(fp_stats,"\n# Fst-based estimate of neighborhood size: %f",MIGREP_Neighborhood_Size_Regression(tree));
+  PhyML_Fprintf(fp_stats,"\n# Nucleotide diversity: %f",Nucleotide_Diversity(tree->data));
 
   /* s = Write_Tree(tree,NO); */
   /* PhyML_Fprintf(fp_tree,"\n%s",s); */

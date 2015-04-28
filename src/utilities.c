@@ -2997,8 +2997,8 @@ void Getstring_Stdin(char *s)
 //////////////////////////////////////////////////////////////
 
 phydbl Num_Derivatives_One_Param(phydbl (*func)(t_tree *tree), t_tree *tree,
-                 phydbl f0, phydbl *param, int which, int n_param, phydbl stepsize, int logt,
-                 phydbl *err, int precise, int is_positive)
+                                 phydbl f0, phydbl *param, int which, int n_param, phydbl stepsize, int logt,
+                                 phydbl *err, int precise, int is_positive)
 {
   int i,j;
   phydbl errt,fac,hh,**a,ans,*sign;
@@ -6976,58 +6976,57 @@ void Evolve_Recur(t_node *a, t_node *d, t_edge *b, int a_state, int r_class, int
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Site_Diversity(t_tree *tree)
 {
   int i,j,k,ns;
   int *div,sum;
-
+  
   ns = tree->mod->ns;
-
+  
   div = (int *)mCalloc(ns,sizeof(int));
-
+  
   Site_Diversity_Post(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree->a_nodes[0]->b[0],tree);
   Site_Diversity_Pre (tree->a_nodes[0],tree->a_nodes[0]->v[0],tree->a_nodes[0]->b[0],tree);
-
+  
   For(i,2*tree->n_otu-3)
     {
       For(j,ns)
-    {
-      tree->a_edges[i]->div_post_pred_left[j] = 0;
-      tree->a_edges[i]->div_post_pred_rght[j] = 0;
+        {
+          tree->a_edges[i]->div_post_pred_left[j] = 0;
+          tree->a_edges[i]->div_post_pred_rght[j] = 0;
+        }
     }
-    }
-
+  
   For(i,tree->n_pattern)
     {
       For(j,2*tree->n_otu-3)
-    {
-      Binary_Decomposition(tree->a_edges[j]->ui_l[i],div,ns);
-      sum = 0;
-      For(k,ns) sum += div[k];
-      tree->a_edges[j]->div_post_pred_left[sum-1] += tree->data->wght[i];
-
-      Binary_Decomposition(tree->a_edges[j]->ui_r[i],div,ns);
-      sum = 0;
-      For(k,ns) sum += div[k];
-      tree->a_edges[j]->div_post_pred_rght[sum-1] += tree->data->wght[i];
+        {
+          Binary_Decomposition(tree->a_edges[j]->ui_l[i],div,ns);
+          sum = 0;
+          For(k,ns) sum += div[k];
+          tree->a_edges[j]->div_post_pred_left[sum-1] += tree->data->wght[i];
+          
+          Binary_Decomposition(tree->a_edges[j]->ui_r[i],div,ns);
+          sum = 0;
+          For(k,ns) sum += div[k];
+          tree->a_edges[j]->div_post_pred_rght[sum-1] += tree->data->wght[i];
+        }
     }
-    }
-
-/*   For(j,2*tree->n_otu-3) */
-/*     { */
-/*       PhyML_Printf("\n. Edge %4d   div_left = %4d %4d %4d %4d -- div_rght = %4d %4d %4d %4d", */
-/* 	     j, */
-/* 	     tree->a_edges[j]->div_post_pred_left[0], */
-/* 	     tree->a_edges[j]->div_post_pred_left[1], */
-/* 	     tree->a_edges[j]->div_post_pred_left[2], */
-/* 	     tree->a_edges[j]->div_post_pred_left[3], */
-/* 	     tree->a_edges[j]->div_post_pred_rght[0], */
-/* 	     tree->a_edges[j]->div_post_pred_rght[1], */
-/* 	     tree->a_edges[j]->div_post_pred_rght[2], */
-/* 	     tree->a_edges[j]->div_post_pred_rght[3]); */
-/*     } */
-
+  
+  /*   For(j,2*tree->n_otu-3) */
+  /*     { */
+  /*       PhyML_Printf("\n. Edge %4d   div_left = %4d %4d %4d %4d -- div_rght = %4d %4d %4d %4d", */
+  /* 	     j, */
+  /* 	     tree->a_edges[j]->div_post_pred_left[0], */
+  /* 	     tree->a_edges[j]->div_post_pred_left[1], */
+  /* 	     tree->a_edges[j]->div_post_pred_left[2], */
+  /* 	     tree->a_edges[j]->div_post_pred_left[3], */
+  /* 	     tree->a_edges[j]->div_post_pred_rght[0], */
+  /* 	     tree->a_edges[j]->div_post_pred_rght[1], */
+  /* 	     tree->a_edges[j]->div_post_pred_rght[2], */
+  /* 	     tree->a_edges[j]->div_post_pred_rght[3]); */
+  /*     } */
+  
   Free(div);
 }
 
@@ -10997,4 +10996,28 @@ phydbl Fst(int i, int j, calign *data)
   Fr = Pairwise_Identity(i,j,data);
 
   return((Fr-FA)/(1-FA));
+}
+
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+phydbl Nucleotide_Diversity(calign *data)
+{
+
+  int i,j,n;
+  phydbl pair_div;
+  
+  n = data->n_otu;
+  
+  pair_div = 0.0;
+  For(i,n-1)
+    {
+      for(j=i+1; j<n; j++)
+        {
+          pair_div += 1. - Pairwise_Identity(i,j,data);
+        }
+    }
+
+  return(pair_div / (phydbl)(n*(n-1.)/2.));
 }

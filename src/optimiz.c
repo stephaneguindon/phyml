@@ -1101,18 +1101,22 @@ void BFGS(t_tree *tree,
   
   (*dfunc)(tree,p,n,step_size,logt,func,g,is_positive);
   
+  PhyML_Printf("\n. BFGS step_size: %f",step_size);
+
   for (i=0;i<n;i++)
     {
       for (j=0;j<n;j++) hessin[i][j]=0.0;
       hessin[i][i]=1.0;
       xi[i] = -g[i];
       sum += p[i]*p[i];
+      PhyML_Printf("\n. BFGS x[%d]: %f p[i]: %f",i,x[i],p[i]);
+
     }
   
   stpmax=STPMX*MAX(SQRT(sum),(phydbl)n);
   for(its=1;its<=ITMAX;its++)
     {
-      PhyML_Printf("\n. BFGS -> %f\n",tree->c_lnL);
+      PhyML_Printf("\n. BFGS -> %f stpmax: %f\n",tree->c_lnL,stpmax);
       
       lnsrch(tree,n,p,fp,g,xi,pnew,&fret,stpmax,&check,logt,is_positive);
       

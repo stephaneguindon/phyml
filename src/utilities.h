@@ -2022,6 +2022,7 @@ void Connect_Edges_To_Nodes_Serial(t_tree *tree);
 phydbl Mean_Identity(calign *data);
 phydbl Pairwise_Identity(int i, int j, calign *data);
 phydbl Fst(int i, int j, calign *data);
+phydbl Nucleotide_Diversity(calign *data);
 
 
 #include "xml.h"
