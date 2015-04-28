@@ -1109,8 +1109,7 @@ void BFGS(t_tree *tree,
       hessin[i][i]=1.0;
       xi[i] = -g[i];
       sum += p[i]*p[i];
-      PhyML_Printf("\n. BFGS x[%d]: %f p[i]: %f",i,x[i],p[i]);
-
+      PhyML_Printf("\n. BFGS x[%d]: %f p[i]: %f",i,xi[i],p[i]);
     }
   
   stpmax=STPMX*MAX(SQRT(sum),(phydbl)n);
