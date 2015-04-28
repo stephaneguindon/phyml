@@ -1422,9 +1422,8 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                                   PhyML_Printf("\n== Tree %d",tree->tree_num);
                                   PhyML_Printf("\n== catg=%d dim3=%d dim2=%d i=%d state_v1=%d",catg,dim3,dim2,i,state_v1);
                                   PhyML_Printf("\n== Pij1[0] = %G l = %G",Pij1[0],b->l->v);
-                                  PhyML_Printf("\n== q[0] = %G q[1] = %G",tree->mod->eigen->q[0],tree->mod->eigen->q[1]);
-                                  PhyML_Printf("\n== Err. in file %s at line %d (function '%s').",__FILE__,__LINE__,__FUNCTION__);
-                                  Exit("\n");
+                                  Print_Model(tree->mod);
+                                  Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
                                 }
                             }
                           else
@@ -1493,9 +1492,8 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                                   PhyML_Printf("\n== Tree %d",tree->tree_num);
                                   PhyML_Printf("\n== catg=%d dim3=%d dim2=%d i=%d state_v2=%d",catg,dim3,dim2,i,state_v2);
                                   PhyML_Printf("\n== Pij2[0] = %G l = %G",Pij2[0],b->l->v);
-                                  PhyML_Printf("\n== q[0] = %G q[1] = %G",tree->mod->eigen->q[0],tree->mod->eigen->q[1]);
-                                  PhyML_Printf("\n== Err. in file %s at line %d (function '%s').",__FILE__,__LINE__,__FUNCTION__);
-                                  Exit("\n");
+                                  Print_Model(tree->mod);
+                                  Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
                                 }
                             }
                           else

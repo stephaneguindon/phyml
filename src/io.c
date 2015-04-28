@@ -2504,15 +2504,14 @@ void Print_Model(t_mod *mod)
       PMat(0.01*mod->ras->gamma_rr->v[k],mod,mod->ns*mod->ns*k,mod->Pij_rr->v);
       PhyML_Printf("\n. l=%f\n",0.01*mod->ras->gamma_rr->v[k]);
       For(i,mod->ns)
-    {
-      PhyML_Printf("  ");
-      For(j,mod->ns)
-        PhyML_Printf("%8.5f  ",mod->Pij_rr->v[k*mod->ns*mod->ns+i*mod->ns+j]);
-      PhyML_Printf("\n");
+        {
+          PhyML_Printf("  ");
+          For(j,mod->ns)
+            PhyML_Printf("%8.5f  ",mod->Pij_rr->v[k*mod->ns*mod->ns+i*mod->ns+j]);
+          PhyML_Printf("\n");
+        }
     }
-    }
-
-
+    
   PhyML_Printf("\n");
 
   fflush(NULL);
