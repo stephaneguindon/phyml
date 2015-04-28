@@ -3028,7 +3028,7 @@ phydbl Num_Derivatives_One_Param(phydbl (*func)(t_tree *tree), t_tree *tree,
       if(is_positive == YES) For(i,n_param) param[i] *= sign[i];
       if(logt == YES) For(i,n_param) param[i] = LOG(param[i]);
 
-      /* printf("\n. f0=%f f1=%f hh=%G %f",f0,a[0][0],hh,param[which]); */
+      printf("\n. f0=%f f1=%f hh=%G %f",f0,a[0][0],hh,param[which]);
 
       a[0][0]  -= f0;
       a[0][0]  /= hh;
@@ -3057,56 +3057,56 @@ phydbl Num_Derivatives_One_Param(phydbl (*func)(t_tree *tree), t_tree *tree,
 
       *err=1e30;
       for(i=1;i<n_iter;i++)
-    {
-      hh /= 1.4;
-
-      /*       param[which]   = param[which]+hh; */
-      /*       a[0][i]  = (*func)(tree); */
-      /*       param[which]   = param[which]-2*hh; */
-      /*       a[0][i] -= (*func)(tree); */
-      /*       a[0][i] /= (2.0*hh); */
-      /*       param[which]   = param[which]+hh; */
-
-      param[which]   = param[which]+hh;
-
+        {
+          hh /= 1.4;
+          
+          /*       param[which]   = param[which]+hh; */
+          /*       a[0][i]  = (*func)(tree); */
+          /*       param[which]   = param[which]-2*hh; */
+          /*       a[0][i] -= (*func)(tree); */
+          /*       a[0][i] /= (2.0*hh); */
+          /*       param[which]   = param[which]+hh; */
+          
+          param[which]   = param[which]+hh;
+          
           if(logt == YES) For(j,n_param) param[j] = EXP(MIN(1.E+2,param[j]));
           For(i,n_param) sign[i] = param[i] > .0 ? 1. : -1.;
           if(is_positive == YES) For(i,n_param) param[i] = FABS(param[i]);
-      a[0][i]  = (*func)(tree);
+          a[0][i]  = (*func)(tree);
           if(is_positive == YES) For(i,n_param) param[i] *= sign[i];
           if(logt == YES) For(j,n_param) param[j] = LOG(param[j]);
-
-      /*   param[which]   = param[which]-2*hh; */
-      /*   a[0][i] -= (*func)(tree); */
-      /*   a[0][i] /= (2.0*hh); */
-      /*   param[which]   = param[which]+hh; */
-      a[0][i]  -= f0;
-      a[0][i]  /= hh;
-      param[which]   = param[which]-hh;
-
-
-      fac=1.4*1.4;
-      for (j=1;j<=i;j++)
-        {
-          a[j][i]=(a[j-1][i]*fac-a[j-1][i-1])/(fac-1.0);
-          fac=1.4*1.4*fac;
-
-          errt=MAX(FABS(a[j][i]-a[j-1][i]),FABS(a[j][i]-a[j-1][i-1]));
-
-          if (errt <= *err)
-        {
-          *err=errt;
-          ans=a[j][i];
+          
+          /*   param[which]   = param[which]-2*hh; */
+          /*   a[0][i] -= (*func)(tree); */
+          /*   a[0][i] /= (2.0*hh); */
+          /*   param[which]   = param[which]+hh; */
+          a[0][i]  -= f0;
+          a[0][i]  /= hh;
+          param[which]   = param[which]-hh;
+          
+          
+          fac=1.4*1.4;
+          for (j=1;j<=i;j++)
+            {
+              a[j][i]=(a[j-1][i]*fac-a[j-1][i-1])/(fac-1.0);
+              fac=1.4*1.4*fac;
+              
+              errt=MAX(FABS(a[j][i]-a[j-1][i]),FABS(a[j][i]-a[j-1][i-1]));
+              
+              if (errt <= *err)
+                {
+                  *err=errt;
+                  ans=a[j][i];
+                }
+            }
+          
+          if(FABS(a[i][i]-a[i-1][i-1]) >= 2.0*(*err)) break;
         }
-        }
-
-      if(FABS(a[i][i]-a[i-1][i-1]) >= 2.0*(*err)) break;
-    }
     }
   For(i,11) Free(a[i]);
   Free(a);
   Free(sign);
-
+  
   return ans;
 }
 
@@ -3232,7 +3232,7 @@ phydbl Num_Derivatives_One_Param_Nonaligned(phydbl (*func)(t_tree *tree), t_tree
 int Num_Derivative_Several_Param(t_tree *tree, phydbl *param, int n_param, phydbl stepsize, int logt,
                                  phydbl (*func)(t_tree *tree), phydbl *derivatives, int is_positive)
 {
-  int i;
+  int i,j;
   phydbl err,f0,*sign;
 
   sign = (phydbl *)mCalloc(n_param,sizeof(phydbl));
@@ -3246,20 +3246,21 @@ int Num_Derivative_Several_Param(t_tree *tree, phydbl *param, int n_param, phydb
 
   For(i,n_param)
     {
+      For(j,tree->mod->r_mat->n_diff_rr) PhyML_Printf("\n. 00%d %f",i,tree->mod->r_mat->rr_val->v[j]);
       derivatives[i] = Num_Derivatives_One_Param(func,
-                         tree,
-                         f0,
-                         param,
+                                                 tree,
+                                                 f0,
+                                                 param,
                                                  i,
                                                  n_param,
-                         stepsize,
+                                                 stepsize,
                                                  logt,
-                         &err,
-                         0,
+                                                 &err,
+                                                 0,
                                                  is_positive
-                         );
+                                                 );
     }
-
+  
   Free(sign);
 
   return 1;
