@@ -1513,6 +1513,7 @@ int Lnsrch(t_tree *tree, int n, phydbl *xold, phydbl fold,
           if(logt == YES) For(i,n) xold[i] = EXP(MIN(1.E+2,xold[i]));
           For(i,n) sign[i] = xold[i] < .0 ? -1. : 1.;
           if(is_positive == YES) For(i,n) xold[i] = FABS(xold[i]);
+          For(i,n) PhyML_Printf("\n. <<>> %f",xold[i]);
           *f=Return_Abs_Lk(tree);
           if(is_positive == YES) For(i,n) xold[i] *= sign[i];
           if(logt == YES) For(i,n) xold[i] = LOG(xold[i]);
