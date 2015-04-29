@@ -3028,7 +3028,7 @@ phydbl Num_Derivatives_One_Param(phydbl (*func)(t_tree *tree), t_tree *tree,
       if(is_positive == YES) For(i,n_param) param[i] *= sign[i];
       if(logt == YES) For(i,n_param) param[i] = LOG(param[i]);
 
-      printf("\n. f0=%f f1=%f hh=%G %f",f0,a[0][0],hh,param[which]);
+      /* printf("\n. f0=%f f1=%f hh=%G %f",f0,a[0][0],hh,param[which]); */
 
       a[0][0]  -= f0;
       a[0][0]  /= hh;
@@ -3232,7 +3232,7 @@ phydbl Num_Derivatives_One_Param_Nonaligned(phydbl (*func)(t_tree *tree), t_tree
 int Num_Derivative_Several_Param(t_tree *tree, phydbl *param, int n_param, phydbl stepsize, int logt,
                                  phydbl (*func)(t_tree *tree), phydbl *derivatives, int is_positive)
 {
-  int i,j;
+  int i;
   phydbl err,f0,*sign;
 
   sign = (phydbl *)mCalloc(n_param,sizeof(phydbl));
@@ -3246,7 +3246,7 @@ int Num_Derivative_Several_Param(t_tree *tree, phydbl *param, int n_param, phydb
 
   For(i,n_param)
     {
-      For(j,tree->mod->r_mat->n_diff_rr) PhyML_Printf("\n. 00%d %f",i,tree->mod->r_mat->rr_val->v[j]);
+      /* For(j,tree->mod->r_mat->n_diff_rr) PhyML_Printf("\n. 00%d %f",i,tree->mod->r_mat->rr_val->v[j]); */
       derivatives[i] = Num_Derivatives_One_Param(func,
                                                  tree,
                                                  f0,

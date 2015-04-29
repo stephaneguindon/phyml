@@ -652,6 +652,8 @@ void Update_Qmat_GTR(phydbl *rr, phydbl *rr_val, int *rr_num, phydbl *pi, phydbl
   For(i,6) if(rr[i] < RR_MIN) rr[i] = RR_MIN;
   For(i,6) if(rr[i] > RR_MAX) rr[i] = RR_MAX;
 
+  For(i,6) if(isnan(rr[i])) Generic_Exit(__FILE__,__LINE__,__FUNCTION__); 
+
   qmat[0*4+1] = (rr[0]*pi[1]);
   qmat[0*4+2] = (rr[1]*pi[2]);
   qmat[0*4+3] = (rr[2]*pi[3]);

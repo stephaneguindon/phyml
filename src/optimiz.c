@@ -1095,13 +1095,13 @@ void BFGS(t_tree *tree,
   fp=(*func)(tree);
   if(logt == YES) For(i,n) p[i] = LOG(p[i]);
   
-  PhyML_Printf("\n. ENTER BFGS WITH: %f\n",fp);
+  /* PhyML_Printf("\n. ENTER BFGS WITH: %f\n",fp); */
   
   fp_old = fp;
   
   (*dfunc)(tree,p,n,step_size,logt,func,g,is_positive);
   
-  PhyML_Printf("\n. BFGS step_size: %f",step_size);
+  /* PhyML_Printf("\n. BFGS step_size: %f",step_size); */
 
   for (i=0;i<n;i++)
     {
@@ -1109,13 +1109,13 @@ void BFGS(t_tree *tree,
       hessin[i][i]=1.0;
       xi[i] = -g[i];
       sum += p[i]*p[i];
-      PhyML_Printf("\n. BFGS x[%d]: %f p[i]: %f",i,xi[i],p[i]);
+      /* PhyML_Printf("\n. BFGS x[%d]: %f p[i]: %f",i,xi[i],p[i]); */
     }
   
   stpmax=STPMX*MAX(SQRT(sum),(phydbl)n);
   for(its=1;its<=ITMAX;its++)
     {
-      PhyML_Printf("\n. BFGS -> %f stpmax: %f\n",tree->c_lnL,stpmax);
+      /* PhyML_Printf("\n. BFGS -> %f stpmax: %f\n",tree->c_lnL,stpmax); */
       
       lnsrch(tree,n,p,fp,g,xi,pnew,&fret,stpmax,&check,logt,is_positive);
       
@@ -1132,7 +1132,7 @@ void BFGS(t_tree *tree,
       for (i=0;i<n;i++)
         {
           temp=xi[i]/MAX(p[i],1.0);
-          printf("\n. x[i]=%f p[i]=%f",xi[i],p[i]);
+          /* printf("\n. x[i]=%f p[i]=%f",xi[i],p[i]); */
           if (temp > test) test=temp;
         }
       if (test < TOLX || (FABS(fp-fp_old) < difff && its > 1))
@@ -1483,12 +1483,12 @@ int Lnsrch(t_tree *tree, int n, phydbl *xold, phydbl fold,
   *check=0;
   for(sum=0.0,i=0;i<n;i++) sum += p[i]*p[i];
   sum=SQRT(sum);
-  PhyML_Printf("\n. lnsrch sum: %f",sum);
+  /* PhyML_Printf("\n. lnsrch sum: %f",sum); */
   if(sum > stpmax) For(i,n) p[i] *= stpmax/sum;
-  For(i,n) PhyML_Printf("\n. lnsrch p[i]: %f",p[i]);
+  /* For(i,n) PhyML_Printf("\n. lnsrch p[i]: %f",p[i]); */
   slope=0.0;
   For(i,n) slope += g[i]*p[i];
-  PhyML_Printf("\n. lnsrch slope: %f",slope);
+  /* PhyML_Printf("\n. lnsrch slope: %f",slope); */
   test=0.0;
   for(i=0;i<n;i++)
     {
@@ -1503,17 +1503,17 @@ int Lnsrch(t_tree *tree, int n, phydbl *xold, phydbl fold,
         {
           x[i]=local_xold[i]+alam*p[i];
           xold[i] = x[i];
-          PhyML_Printf("\n. lnsrch x[i]: %f",x[i]);
+          /* PhyML_Printf("\n. lnsrch x[i]: %f",x[i]); */
         }
       
-      PhyML_Printf("\n. lnsrch loop slope: %f alam: %f alam2: %f",slope,alam,alam2);
+      /* PhyML_Printf("\n. lnsrch loop slope: %f alam: %f alam2: %f",slope,alam,alam2); */
       
       if(i==n)
         {
           if(logt == YES) For(i,n) xold[i] = EXP(MIN(1.E+2,xold[i]));
           For(i,n) sign[i] = xold[i] < .0 ? -1. : 1.;
           if(is_positive == YES) For(i,n) xold[i] = FABS(xold[i]);
-          For(i,n) PhyML_Printf("\n. <<>> %f",xold[i]);
+          /* For(i,n) PhyML_Printf("\n. <<>> %f",xold[i]); */
           *f=Return_Abs_Lk(tree);
           if(is_positive == YES) For(i,n) xold[i] *= sign[i];
           if(logt == YES) For(i,n) xold[i] = LOG(xold[i]);
@@ -3254,10 +3254,10 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
           failed = YES;
 
           BFGS(mixt_tree,tree->mod->e_frq->pi_unscaled->v,tree->mod->ns,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,YES,
-           &Return_Abs_Lk,
-           &Num_Derivative_Several_Param,
-           &Lnsrch,&failed);
-
+               &Return_Abs_Lk,
+               &Num_Derivative_Several_Param,
+               &Lnsrch,&failed);
+          
           if(failed == YES)
         {
           For(i,tree->mod->ns)
