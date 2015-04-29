@@ -648,7 +648,7 @@ void Update_Qmat_GTR(phydbl *rr, phydbl *rr_val, int *rr_num, phydbl *pi, phydbl
         Exit("");
       }
 
-  For(i,6) rr[i] /= rr[5];
+  For(i,6) rr[i] /= MAX(rr[5],RR_MIN);
   For(i,6) if(rr[i] < RR_MIN) rr[i] = RR_MIN;
   For(i,6) if(rr[i] > RR_MAX) rr[i] = RR_MAX;
 
