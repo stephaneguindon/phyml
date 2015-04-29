@@ -2693,8 +2693,6 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
               
               For(i,tree->mod->r_mat->n_diff_rr) tree->mod->r_mat->rr_val->v[i] = LOG(tree->mod->r_mat->rr_val->v[i]);
               
-              For(i,tree->mod->r_mat->n_diff_rr) PhyML_Printf("\n. 00 %f",tree->mod->r_mat->rr_val->v[i]);
-
               failed = YES;
               
               /* BFGS(mixt_tree,tree->mod->r_mat->rr_val->v,tree->mod->r_mat->n_diff_rr,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,YES, */
@@ -2706,10 +2704,8 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
                        &Lnsrch,&failed);
                 }
 
-              For(i,tree->mod->r_mat->n_diff_rr) PhyML_Printf("\n. 11 %f",tree->mod->r_mat->rr_val->v[i]);
               For(i,tree->mod->r_mat->n_diff_rr) tree->mod->r_mat->rr_val->v[i] = EXP(tree->mod->r_mat->rr_val->v[i]);
               
-              For(i,tree->mod->r_mat->n_diff_rr) PhyML_Printf("\n. 22 %f",tree->mod->r_mat->rr_val->v[i]);
 
               if(failed == YES)
                 {
@@ -2725,8 +2721,6 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
                       }
                 }
               
-              For(i,tree->mod->r_mat->n_diff_rr) PhyML_Printf("\n. 33 %f",tree->mod->r_mat->rr_val->v[i]);
-
               if(verbose) Print_Lk(tree->mixt_tree?
                                    tree->mixt_tree:
                                    tree,"[GTR parameters     ]");
