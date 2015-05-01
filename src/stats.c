@@ -461,6 +461,255 @@ phydbl *Rnorm_Multid_Trunc(phydbl *mean, phydbl *cov, phydbl *min, phydbl *max, 
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+/* Inversion method for sampling from Geometric distibution */
+phydbl Rgeom(phydbl p)
+{
+  phydbl x,u;
+
+  u = Uni();
+  if(u < SMALL) return(0.0);
+  x = LOG(u) / LOG(1. - p);
+  
+  return(CEIL(x));  
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl Dgeom(phydbl k, phydbl p, int logit)
+{
+  phydbl prob;
+
+  if(k < 1.) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(p > 1.-SMALL)
+    {
+      if(logit == YES) return(-INFINITY);
+      else return(0.0);
+    }
+
+  if(logit == YES)
+    prob = (k - 1.)*LOG(1. - p) + LOG(p);
+  else
+    prob = POW(1.-p,k-1.)*p;
+
+  return(prob);
+}
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl Pgeom(phydbl k, phydbl p)
+{
+
+  if(k < 1.) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(p > 1.-SMALL) return(0.0);
+
+  return(1. - POW((1. - p),k));
+
+}
+
+
+/*
+ * Random variates from the Poisson distribution. Completely stolen from R code.
+ *
+ * REFERENCE
+ *
+ * Ahrens, J.H. and Dieter, U. (1982).
+ * Computer generation of Poisson deviates
+ * from modified normal distributions.
+ * ACM Trans. Math. Software 8, 163-179.
+ */
+phydbl Rpois(phydbl mmu)
+{
+  double mu = (double)mmu;
+  
+  double a0	= -0.5;
+  double a1	= 0.3333333;
+  double a2	= -0.2500068;
+  double a3	= 0.2000118;
+  double a4	= -0.1661269;
+  double a5	= 0.1421878;
+  double a6	= -0.1384794;
+  double a7	= 0.1250060;
+  double one_7	= 0.1428571428571428571;
+  double one_12	= 0.0833333333333333333;
+  double one_24	= 0.0416666666666666667;
+
+  /* Factorial Table (0:9)! */
+  const static double fact[10] =
+    {
+      1., 1., 2., 6., 24., 120., 720., 5040., 40320., 362880.
+    };
+  /* These are static --- persistent between calls for same mu : */
+  static int l, m;
+  static double b1, b2, c, c0, c1, c2, c3;
+  static double pp[36], p0, p, q, s, d, omega;
+  static double big_l;/* integer "w/o overflow" */
+  static double muprev = 0., muprev2 = 0.;/*, muold = 0.*/
+  /* Local Vars [initialize some for -Wall]: */
+  double del, difmuk= 0., E= 0., fk= 0., fx, fy, g, px, py, t, u= 0., v, x;
+  double pois = -1.;
+  int k, kflag, big_mu, new_big_mu = FALSE;
+  
+ 
+  if (isnan(mu) || mu < 0) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if (mu <= 0.) return 0.;
+
+  big_mu = mu >= 10.;
+  if(big_mu) new_big_mu = FALSE;
+  if (!(big_mu && mu == muprev)) {/* maybe compute new persistent par.s */
+    if (big_mu) 
+      {
+        new_big_mu = TRUE;
+        /* Case A. (recalculation of s,d,l because mu has changed):
+         * The poisson probabilities pk exceed the discrete normal
+         * probabilities fk whenever k >= m(mu).
+         */
+        muprev = mu;
+        s = sqrt(mu);
+        d = 6. * mu * mu;
+        big_l = floor(mu - 1.1484);
+        /* = an upper bound to m(mu) for all mu >= 10.*/
+      }
+    else 
+      { 
+        /* Small mu ( < 10) -- not using normal approx. */
+        /* Case B. (start new table and calculate p0 if necessary) */
+        /*muprev = 0.;-* such that next time, mu != muprev ..*/
+        if (mu != muprev) 
+          {
+            muprev = mu;
+            m = MAX(1, (int) mu);
+            l = 0; /* pp[] is already ok up to pp[l] */
+            q = p0 = p = exp(-mu);
+          }
+        for(;;) 
+          {
+            /* Step U. uniform sample for inversion method */
+            u = Uni();
+            if (u <= p0) return 0.;
+            /* Step T. table comparison until the end pp[l] of the
+               pp-table of cumulative poisson probabilities
+               (0.458 > ~= pp[9](= 0.45792971447) for mu=10 ) */
+            if (l != 0) 
+              {
+                for (k = (u <= 0.458) ? 1 : MIN(l, m); k <= l; k++) if (u <= pp[k]) return((phydbl)k);
+                if (l == 35) /* u > pp[35] */
+                  continue;
+              }
+            /* Step C. creation of new poisson
+               probabilities p[l..] and their cumulatives q =: pp[k] */
+            l++;
+            for (k = l; k <= 35; k++) 
+              {
+                p *= mu / k;
+                q += p;
+                pp[k] = q;
+                if (u <= q) 
+                  {
+                    l = k;
+                    return((phydbl)k);
+                  }
+              }
+            l = 35;
+          } /* end(repeat) */
+      }/* mu < 10 */
+  } /* end {initialize persistent vars} */
+  /* Only if mu >= 10 : ----------------------- */
+  /* Step N. normal sample */
+  g = mu + s * Rnorm(0.0,1.0);/* norm_rand() ~ N(0,1), standard normal */
+  if (g >= 0.) 
+    {
+      pois = floor(g);
+      /* Step I. immediate acceptance if pois is large enough */
+      if (pois >= big_l)
+        return((phydbl)pois);
+      /* Step S. squeeze acceptance */
+      fk = pois;
+      difmuk = mu - fk;
+      u = Uni(); /* ~ U(0,1) - sample */
+      if (d * u >= difmuk * difmuk * difmuk)
+        return((phydbl)pois);
+    }
+  /* Step P. preparations for steps Q and H.
+     (recalculations of parameters if necessary) */
+  if (new_big_mu || mu != muprev2) {
+    /* Careful! muprev2 is not always == muprev
+       because one might have exited in step I or S
+    */
+    muprev2 = mu;
+    omega = M_1_SQRT_2PI / s;
+    /* The quantities b1, b2, c3, c2, c1, c0 are for the Hermite
+     * approximations to the discrete normal probabilities fk. */
+    b1 = one_24 / mu;
+    b2 = 0.3 * b1 * b1;
+    c3 = one_7 * b1 * b2;
+    c2 = b2 - 15. * c3;
+    c1 = b1 - 6. * b2 + 45. * c3;
+    c0 = 1. - b1 + 3. * b2 - 15. * c3;
+    c = 0.1069 / mu; /* guarantees majorization by the 'hat'-function. */
+  }
+  if (g >= 0.) {
+    /* 'Subroutine' F is called (kflag=0 for correct return) */
+    kflag = 0;
+    goto Step_F;
+  }
+  for(;;) 
+    {
+      /* Step E. Exponential Sample */
+      E = Rexp(1.0); /* ~ Exp(1) (standard exponential) */
+      /* sample t from the laplace 'hat'
+         (if t <= -0.6744 then pk < fk for all mu >= 10.) */
+      u = 2. * Uni() - 1.;
+      /* t = 1.8 + fsign(E, u); */
+      t = 1.8 + ((u >= 0.0) ? fabs(E) : -fabs(E));
+      if (t > -0.6744)
+        {
+          pois = floor(mu + s * t);
+          fk = pois;
+          difmuk = mu - fk;
+          /* 'subroutine' F is called (kflag=1 for correct return) */
+          kflag = 1;
+        Step_F: /* 'subroutine' F : calculation of px,py,fx,fy. */
+          if (pois < 10) { /* use factorials from table fact[] */
+            px = -mu;
+            py = pow(mu, pois) / fact[(int)pois];
+          }
+          else {
+            /* Case pois >= 10 uses polynomial approximation
+               a0-a7 for accuracy when advisable */
+            del = one_12 / fk;
+            del = del * (1. - 4.8 * del * del);
+            v = difmuk / fk;
+            if (fabs(v) <= 0.25)
+              px = fk * v * v * (((((((a7 * v + a6) * v + a5) * v + a4) *
+                                    v + a3) * v + a2) * v + a1) * v + a0)
+                - del;
+            else /* |v| > 1/4 */
+              px = fk * log(1. + v) - difmuk - del;
+            py = M_1_SQRT_2PI / sqrt(fk);
+          }
+          x = (0.5 - difmuk) / s;
+          x *= x;/* x^2 */
+          fx = -0.5 * x;
+          fy = omega * (((c3 * x + c2) * x + c1) * x + c0);
+          if (kflag > 0) {
+            /* Step H. Hat acceptance (E is repeated on rejection) */
+            if (c * fabs(u) <= py * exp(px + E) - fy * exp(fx + E))
+              break;
+          } else
+            /* Step Q. Quotient acceptance (rare case) */
+            if (fy - u * fy <= py * exp(px - fx))
+              break;
+        }/* t > -.67.. */
+    }
+  return((phydbl)pois);
+}
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
 /* DENSITIES / PROBA */
 //////////////////////////////////////////////////////////////
@@ -801,10 +1050,9 @@ phydbl Dpois(phydbl x, phydbl param, int logit)
 
   if(x < .0) 
     {
-      PhyML_Printf("\n== x = %f",x);
-      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
-      Warn_And_Exit("");
-    }
+      if(logit == YES) return(-INFINITY);
+      else return 0.0;
+   }
 
   v = x * LOG(param) - param - LnGamma(x+1);
   if(logit == YES) return v;

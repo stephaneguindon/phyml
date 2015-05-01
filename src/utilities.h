@@ -77,6 +77,12 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define CT 4
 #define GT 5
 
+#ifndef M_1_SQRT_2PI
+#define M_1_SQRT_2PI	0.398942280401432677939946059934	/* 1/sqrt(2pi) */
+#endif
+
+
+
 #define T_MAX_MCMC_MOVE_NAME 500
 
 #define WINDOW_WIDTH  800

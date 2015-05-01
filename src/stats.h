@@ -118,5 +118,9 @@ phydbl Bessi0(phydbl x);
 phydbl Bessk0(phydbl x);
 phydbl Euclidean_Dist(t_geo_coord *x, t_geo_coord *y);
 int *Ranks(phydbl *x, int len);
+phydbl Rpois(phydbl mmu);
+phydbl Rgeom(phydbl p);
+phydbl Dgeom(phydbl k, phydbl p, int logit);
+phydbl Pgeom(phydbl k, phydbl p);
 
 #endif

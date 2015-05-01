@@ -4453,12 +4453,12 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_migrep_mu]                    = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_rad]                   = 0.0;
   mcmc->move_weight[mcmc->num_move_migrep_sigsq]                 = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_insert_disk]           = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_insert_disk]           = 2.0;
   mcmc->move_weight[mcmc->num_move_migrep_delete_disk]           = 1.0;  
   mcmc->move_weight[mcmc->num_move_migrep_move_disk_ct]          = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_move_disk_ud]          = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_swap_disk]             = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_insert_hit]            = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_insert_hit]            = 2.0;
   mcmc->move_weight[mcmc->num_move_migrep_delete_hit]            = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_move_ldsk]             = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_spr]                   = 5.0;
@@ -5139,7 +5139,7 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
   cur_lbda      = tree->mmod->lbda;
   /* K             = tree->mcmc->tune_move[tree->mcmc->num_move_migrep_delete_disk]; */
   
-  K = 0.2;
+  K = 0.3;
 
   if(tree->disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   disk = tree->disk->prev;
@@ -5162,16 +5162,22 @@ void MCMC_MIGREP_Delete_Disk(t_tree *tree)
 
   if(!n_valid_disks) return;
   
-  /* n_delete_disks = Rand_Int(1,1+(int)(n_valid_disks*K)); */
-  n_delete_disks = 1;
+  /* n_delete_disks = Rand_Int(1,(int)FLOOR(1.+n_valid_disks*K)); */
+  /* n_delete_disks = 1; */
+  /* n_delete_disks = Rgeom(1./(n_valid_disks + 1.)); */
+  n_delete_disks = Rpois(n_valid_disks*K);
+  
+  if(n_delete_disks == 0) return;
+  if(n_valid_disks - n_delete_disks < 0) return;
+
+  /* hr += Dgeom((phydbl)n_delete_disks,1./(phydbl)(n_valid_disks - n_delete_disks + 1),YES); */
+  /* hr -= Dgeom((phydbl)n_delete_disks,1./(phydbl)(n_valid_disks + 1),YES); */
+  hr += Dpois(n_delete_disks,(n_valid_disks - n_delete_disks)*K,YES);
+  hr -= Dpois(n_delete_disks,n_valid_disks*K,YES);
 
   /* Prob of selecting delete vs insert move */
   hr -= LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_delete_disk]-tree->mcmc->move_weight[tree->mcmc->num_move_migrep_delete_disk-1]);
   hr += LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_insert_disk]-tree->mcmc->move_weight[tree->mcmc->num_move_migrep_insert_disk-1]);
-
-  /* Prob of selecting n_delete_disks */
-  /* hr -= LOG(CEIL(1.+(n_valid_disks - n_delete_disks)*K)); */
-  /* hr += LOG(CEIL(1.+n_valid_disks*K)); */
 
   target_disk = (t_dsk **)mCalloc(n_delete_disks,sizeof(t_dsk *));
 
@@ -5271,7 +5277,7 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
   cur_lbda       = tree->mmod->lbda;
   /* K              = tree->mcmc->tune_move[tree->mcmc->num_move_migrep_insert_disk]; */
 
-  K = 0.2;
+  K = 0.3;
 
   if(tree->disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
@@ -5288,14 +5294,15 @@ void MCMC_MIGREP_Insert_Disk(t_tree *tree)
     }
   while(disk && disk->prev);
 
-  /* n_insert_disks = Rand_Int(1,1+(int)(n_valid_disks*K)); */
-  n_insert_disks = 1;
+  n_insert_disks = Rpois(n_valid_disks*K);
+  
+  if(n_insert_disks == 0) return;
+
+  hr += Dpois((phydbl)n_insert_disks,(n_valid_disks + n_insert_disks)*K,YES);
+  hr -= Dpois((phydbl)n_insert_disks,n_valid_disks*K,YES);
 
   hr += LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_delete_disk]-tree->mcmc->move_weight[tree->mcmc->num_move_migrep_delete_disk-1]);
   hr -= LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_insert_disk]-tree->mcmc->move_weight[tree->mcmc->num_move_migrep_insert_disk-1]);
-
-  /* hr += LOG(CEIL(1.+n_valid_disks*K)); */
-  /* hr -= LOG(CEIL(1.+(n_valid_disks + n_insert_disks)*K)); */
 
   target_disk = (t_dsk **)mCalloc(n_insert_disks,sizeof(t_dsk *));
   new_disk    = (t_dsk **)mCalloc(n_insert_disks,sizeof(t_dsk *));
@@ -6038,7 +6045,7 @@ void MCMC_MIGREP_Insert_Hit(t_tree *tree)
   cur_lbda = tree->mmod->lbda;
   K        = tree->mcmc->tune_move[tree->mcmc->num_move_migrep_insert_hit];
 
-  K = 0.1;
+  K = 0.3;
 
   if(tree->disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
@@ -6051,16 +6058,15 @@ void MCMC_MIGREP_Insert_Hit(t_tree *tree)
     }
   while(disk && disk->prev);
 
-  /* n_insert_disks = Rand_Int(1,1+(int)(n_valid_disks*K)); */
-  n_insert_disks = 1;
+  n_insert_disks = Rpois(n_valid_disks*K);
+  
+  if(n_insert_disks == 0) return;
 
-  /* printf("\n. n_insert: %d",n_insert_disks); */
+  hr += Dpois((phydbl)n_insert_disks,(n_valid_disks + n_insert_disks)*K,YES);
+  hr -= Dpois((phydbl)n_insert_disks,n_valid_disks*K,YES);
 
   hr += LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_delete_hit]-tree->mcmc->move_weight[tree->mcmc->num_move_migrep_delete_hit-1]);
   hr -= LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_insert_hit]-tree->mcmc->move_weight[tree->mcmc->num_move_migrep_insert_hit-1]);
-
-  /* hr += LOG(CEIL(1.+n_valid_disks*K)); */
-  /* hr -= LOG(CEIL(1.+(n_valid_disks + n_insert_disks)*K)); */
 
   new_disk      = (t_dsk **)mCalloc(n_insert_disks,sizeof(t_dsk *));
   new_ldsk      = (t_ldsk **)mCalloc(n_insert_disks,sizeof(t_ldsk *));
@@ -6290,7 +6296,7 @@ void MCMC_MIGREP_Delete_Hit(t_tree *tree)
   cur_lbda      = tree->mmod->lbda;
   /* K             = tree->mcmc->tune_move[tree->mcmc->num_move_migrep_delete_hit]; */
 
-  K = 0.1;
+  K = 0.3;
 
   disk = tree->disk;
   while(disk && disk->prev) disk = disk->prev;
@@ -6317,17 +6323,16 @@ void MCMC_MIGREP_Delete_Hit(t_tree *tree)
 
   if(!n_valid_disks) return;
   
-  /* n_delete_disks = Rand_Int(1,1+(int)(n_valid_disks*K)); */
-  n_delete_disks = 1;
+  n_delete_disks = Rpois(n_valid_disks*K);
+  
+  if(n_delete_disks == 0) return;
+  if(n_valid_disks - n_delete_disks < 0) return;
 
-  /* printf("\n. n_delete: %d",n_delete_disks); */
+  hr += Dpois(n_delete_disks,(n_valid_disks - n_delete_disks)*K,YES);
+  hr -= Dpois(n_delete_disks,n_valid_disks*K,YES);
 
   hr -= LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_delete_hit]-tree->mcmc->move_weight[tree->mcmc->num_move_migrep_delete_hit-1]);
   hr += LOG(tree->mcmc->move_weight[tree->mcmc->num_move_migrep_insert_hit]-tree->mcmc->move_weight[tree->mcmc->num_move_migrep_insert_hit-1]);
-
-  /* Prob of selecting n_delete_disks */
-  /* hr -= LOG(CEIL(1.+(n_valid_disks - n_delete_disks)*K)); */
-  /* hr += LOG(CEIL(1.+n_valid_disks*K)); */
 
   target_disk   = (t_dsk **)mCalloc(n_delete_disks,sizeof(t_dsk *));
   target_ldsk   = (t_ldsk **)mCalloc(n_delete_disks,sizeof(t_ldsk *));
@@ -6354,7 +6359,11 @@ void MCMC_MIGREP_Delete_Hit(t_tree *tree)
 
       dir_old_young[j] = MIGREP_Get_Next_Direction(target_ldsk[j],old_ldsk[j]);
       
-      if(dir_old_young[j] == -1) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+      if(dir_old_young[j] == -1) 
+        {
+          PhyML_Printf("\n. j=%d n_delete_disks=%d",j,n_delete_disks);
+          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+        }
 
       /* Part of the Hastings ratio corresponding to the probability of selecting */
       /* one of target_disk->n_ldsk_a to be hit */ 

@@ -21,6 +21,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int MIGREP_Main(int argc, char *argv[])
 {
+  int i;
+  
   /* return(MIGREP_Main_Estimate(argc,argv)); */
   return(MIGREP_Main_Simulate(argc,argv));
 }
@@ -290,17 +292,17 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   tree->mmod = mmod;
   MIGREP_Init_Migrep_Mod(mmod,n_dim,width,height);
   
-  max_lbda  = 0.3; min_lbda  = 0.05;
-  max_mu    = 1.0; min_mu    = 0.2;
-  max_sigsq = 0.5; min_sigsq = 1.E-2;
+  /* max_lbda  = 0.3; min_lbda  = 0.05; */
+  /* max_mu    = 1.0; min_mu    = 0.2; */
+  /* max_sigsq = 0.5; min_sigsq = 1.E-2; */
 
   /* max_lbda  = 0.12; min_lbda  = 0.12; */
   /* max_mu    = 0.35; min_mu    = 0.35; */
   /* max_sigsq = 0.07; min_sigsq = 0.07; */
 
-  /* max_lbda  = 0.12; min_lbda  = 0.12; */
-  /* max_mu    = 1.00; min_mu    = 1.00; */
-  /* max_sigsq = 0.60; min_sigsq = 0.60; */
+  max_lbda  = 0.12; min_lbda  = 0.12;
+  max_mu    = 0.10; min_mu    = 0.10;
+  max_sigsq = 0.60; min_sigsq = 0.60;
 
   /* Initialize parameters of migrep model */
   mmod->lbda   = Uni()*(max_lbda - min_lbda) + min_lbda;
@@ -311,8 +313,8 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   PhyML_Printf("\n. lbda: %f mu: %f sigsq: %f",mmod->lbda,mmod->mu,mmod->sigsq);
   fflush(NULL);
 
-  /* MIGREP_Simulate_Backward_Core(YES,tree); */
-  mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree);
+  MIGREP_Simulate_Backward_Core(YES,tree);
+  /* mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree); */
 
   MIGREP_Ldsk_To_Tree(tree);  
 
@@ -333,7 +335,7 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
          MIGREP_Total_Number_Of_Intervals(tree),
          n,
          MIGREP_Total_Number_Of_Hit_Disks(tree));
-  /* Exit("\n"); */
+  Exit("\n");
 
   tree->rates->bl_from_rt = YES;
   tree->rates->clock_r    = 0.01 / FABS(disk->time);
@@ -1143,9 +1145,9 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   /* PhyML_Fprintf(fp_tree,"\n%s",s); */
   /* Free(s); */
   
-  tree->mmod->lbda            = Uni()*(0.30 - 0.05) + 0.05;
-  tree->mmod->mu              = Uni()*(1.00 - 0.30) + 0.30;
-  tree->mmod->sigsq           = Uni()*(1.00 - 0.01) + 0.01;
+  /* tree->mmod->lbda            = Uni()*(0.30 - 0.05) + 0.05; */
+  /* tree->mmod->mu              = Uni()*(1.00 - 0.30) + 0.30; */
+  /* tree->mmod->sigsq           = Uni()*(1.00 - 0.01) + 0.01; */
 
   MCMC_Randomize_Rate_Across_Sites(tree);
   MCMC_Randomize_Kappa(tree);
@@ -1201,7 +1203,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
 
   For(i,mcmc->n_moves) tree->mcmc->start_ess[i] = YES;
 
-  /* mcmc->use_data = NO; */
+  mcmc->use_data = NO;
  
   mcmc->always_yes = NO;
   do
@@ -1216,17 +1218,17 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       if(move == tree->mcmc->n_moves) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
       
 
-      if(!strcmp(tree->mcmc->move_name[move],"migrep_lbda"))
-        MCMC_MIGREP_Lbda(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_lbda")) */
+      /*   MCMC_MIGREP_Lbda(tree); */
 
-      if(!strcmp(tree->mcmc->move_name[move],"migrep_mu"))
-        MCMC_MIGREP_Mu(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_mu")) */
+      /*   MCMC_MIGREP_Mu(tree); */
 
-      if(!strcmp(tree->mcmc->move_name[move],"migrep_rad"))
-        MCMC_MIGREP_Radius(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_rad")) */
+      /*   MCMC_MIGREP_Radius(tree); */
 
-      if(!strcmp(tree->mcmc->move_name[move],"migrep_sigsq"))
-        MCMC_MIGREP_Sigsq(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_sigsq")) */
+      /*   MCMC_MIGREP_Sigsq(tree); */
 
       if(!strcmp(tree->mcmc->move_name[move],"migrep_delete_disk"))
         MCMC_MIGREP_Delete_Disk(tree);
