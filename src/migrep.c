@@ -334,13 +334,16 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
     }
 
 
-  printf("\n. XXX %f %d %d %d %f %f\n",
+  printf("\n. XXX %f %d %d %d %f %f %f %f %f\n",
          disk->time,
          MIGREP_Total_Number_Of_Intervals(tree),
          MIGREP_Total_Number_Of_Coal_Disks(tree),
          MIGREP_Total_Number_Of_Hit_Disks(tree),
          disk->ldsk->coord->lonlat[0],
-         disk->ldsk->coord->lonlat[1]);
+         disk->ldsk->coord->lonlat[1],
+         mmod->lbda,  
+         mmod->mu,    
+         mmod->sigsq);
   Exit("\n");
 
   tree->rates->bl_from_rt = YES;
@@ -374,7 +377,7 @@ void MIGREP_Simulate_Backward_Core(int new_loc, t_tree *tree)
   t_dsk *disk;
   t_ldsk *new_ldsk,**ldsk_a,**ldsk_a_tmp;
   int i,j,n_disk,n_lineages,n_dim,n_hit,n_lineages_new,n_otu;
-  phydbl dt_dsk,curr_t,prob_hit;
+  phydbl dt_dsk,curr_t,prob_hit,u;
   t_migrep_mod *mmod;
   
   mmod  = tree->mmod;
@@ -476,7 +479,11 @@ void MIGREP_Simulate_Backward_Core(int new_loc, t_tree *tree)
           prob_hit = -1.;
           switch(mmod->name)
             {
-            case MIGREP_UNIFORM: { prob_hit = mmod->mu; break; }
+            case MIGREP_UNIFORM: 
+              { 
+                prob_hit = mmod->mu; 
+                break; 
+              }
             case MIGREP_NORMAL:  
               { 
                 prob_hit = LOG(mmod->mu);
@@ -486,9 +493,11 @@ void MIGREP_Simulate_Backward_Core(int new_loc, t_tree *tree)
               }
             }
           
+
           if(MIGREP_Is_In_Disk(ldsk_a[i]->coord,disk,mmod) == YES) 
             {
-              if(Uni() < prob_hit)
+              u = Uni();
+              if(!(u > prob_hit))
                 {
                   /* printf("\n. Hit and die %s @ time %f. Center: %f %f Go to %f %f", */
                   /*        ldsk_a[i]->coord->id, */
@@ -932,14 +941,14 @@ phydbl MIGREP_Lk(t_tree *tree)
 
   MIGREP_Update_Lindisk_List(tree);
 
+  n_inter = 0;
   do
     {
-      /* Likelihood for the disk center */
-      For(i,disk->mmod->n_dim) lnL -= LOG(disk->mmod->lim->lonlat[i]);
       
       /* PhyML_Printf("\n. Likelihood - disk %s has %d lindisk nodes [%f] rad: %f",disk->id,disk->n_ldsk_a,lnL,mmod->rad); */
       /* fflush(NULL); */
       
+      n_inter++;
       was_hit = NO;
       n_hit   = 0;
       
@@ -1051,10 +1060,13 @@ phydbl MIGREP_Lk(t_tree *tree)
       disk = disk->prev;
       
       if(!disk->prev) break;
+
+      /* Likelihood for the disk center */
+      For(i,disk->mmod->n_dim) lnL -= LOG(disk->mmod->lim->lonlat[i]);
+
     }
   while(1);
   
-  n_inter = MIGREP_Total_Number_Of_Intervals(tree);  
   lnL += (n_inter)*LOG(mmod->lbda) + mmod->lbda*disk->time;
   /* lnL += LnGamma((phydbl)(n_inter)); */
   /* lnL += Dpois((phydbl)n_inter,-mmod->lbda*disk->time,YES); */
@@ -1065,9 +1077,9 @@ phydbl MIGREP_Lk(t_tree *tree)
   /* mmod->c_lnL = 0.0; */
   
   /* TO DO: create a proper MIGREP_LogPost() function */
-  mmod->c_lnL += MIGREP_LnPrior_Sigsq(tree);
-  mmod->c_lnL += MIGREP_LnPrior_Mu(tree);
-  mmod->c_lnL += MIGREP_LnPrior_Lbda(tree);
+  /* mmod->c_lnL += MIGREP_LnPrior_Sigsq(tree); */
+  /* mmod->c_lnL += MIGREP_LnPrior_Mu(tree); */
+  /* mmod->c_lnL += MIGREP_LnPrior_Lbda(tree); */
   
   return(mmod->c_lnL);
 }
@@ -1297,8 +1309,8 @@ phydbl *MIGREP_MCMC(t_tree *tree)
                         MIGREP_Total_Number_Of_Intervals(tree),
                         MIGREP_Total_Number_Of_Coal_Disks(tree),
                         MIGREP_Total_Number_Of_Hit_Disks(tree),
-                        true_root_x - disk->ldsk->coord->lonlat[0],
-                        true_root_y - disk->ldsk->coord->lonlat[1],
+                        disk->ldsk->coord->lonlat[0],
+                        disk->ldsk->coord->lonlat[1],
                         disk->time,
                         tree->mod->kappa->v,
                         tree->mod->ras->alpha->v,

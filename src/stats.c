@@ -553,7 +553,7 @@ phydbl Rpois(phydbl mmu)
   int k, kflag, big_mu, new_big_mu = FALSE;
   
  
-  if (isnan(mu) || mu < 0) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if (isnan(mu) || mu < 0.0) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   if (mu <= 0.) return 0.;
 
   big_mu = mu >= 10.;
