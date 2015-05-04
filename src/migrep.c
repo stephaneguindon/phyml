@@ -21,7 +21,6 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int MIGREP_Main(int argc, char *argv[])
 {
-  int i;
   
   /* return(MIGREP_Main_Estimate(argc,argv)); */
   return(MIGREP_Main_Simulate(argc,argv));
@@ -149,7 +148,7 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
   /* seed = 13064; */
 
   /* seed = 11858; */
-  /* seed = 11830; */
+  /* seed = 2735; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -344,7 +343,7 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
          mmod->lbda,  
          mmod->mu,    
          mmod->sigsq);
-  Exit("\n");
+  /* Exit("\n"); */
 
   tree->rates->bl_from_rt = YES;
   tree->rates->clock_r    = 0.01 / FABS(disk->time);
@@ -1232,7 +1231,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   do
     {
       
-      /* if(mcmc->run > 1E+6) For(i,mcmc->n_moves) tree->mcmc->adjust_tuning[i] = NO; */
+      if(mcmc->run > 1E+6) For(i,mcmc->n_moves) tree->mcmc->adjust_tuning[i] = NO;
 
       u = Uni();
 
@@ -1254,25 +1253,25 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       /*   MCMC_MIGREP_Sigsq(tree); */
 
       if(!strcmp(tree->mcmc->move_name[move],"migrep_delete_disk"))
-        MCMC_MIGREP_Delete_Disk(tree);
+        MCMC_MIGREP_Indel_Disk(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"migrep_insert_disk"))
-        MCMC_MIGREP_Insert_Disk(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_insert_disk")) */
+      /*   MCMC_MIGREP_Insert_Disk(tree); */
 
       if(!strcmp(tree->mcmc->move_name[move],"migrep_move_disk_ct"))
         MCMC_MIGREP_Move_Disk_Centre(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"migrep_move_disk_ud"))
-        MCMC_MIGREP_Move_Disk_Updown(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_move_disk_ud")) */
+      /*   MCMC_MIGREP_Move_Disk_Updown(tree); */
 
       if(!strcmp(tree->mcmc->move_name[move],"migrep_swap_disk"))
         MCMC_MIGREP_Swap_Disk(tree);
 
       if(!strcmp(tree->mcmc->move_name[move],"migrep_delete_hit"))
-        MCMC_MIGREP_Delete_Hit(tree);
+        MCMC_MIGREP_Indel_Hit(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"migrep_insert_hit"))
-        MCMC_MIGREP_Insert_Hit(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_insert_hit")) */
+      /*   MCMC_MIGREP_Insert_Hit(tree); */
 
       if(!strcmp(tree->mcmc->move_name[move],"migrep_move_ldsk"))
         MCMC_MIGREP_Move_Ldsk(tree);

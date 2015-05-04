@@ -360,7 +360,7 @@ phydbl Rnorm_Trunc(phydbl mean, phydbl sd, phydbl min, phydbl max, int *error)
 	  iter++;
 	  if(iter > 1000) break;
 	}
-      while(slice_max < slice_min || iter < 10);
+      while(slice_max < slice_min || iter < 100);
 
       if(iter > 1000)
 	{
@@ -552,7 +552,6 @@ phydbl Rpois(phydbl mmu)
   double pois = -1.;
   int k, kflag, big_mu, new_big_mu = FALSE;
   
- 
   if (isnan(mu) || mu < 0.0) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   if (mu <= 0.) return 0.;
 
@@ -1528,7 +1527,6 @@ phydbl Bico(int n, int k)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 phydbl Factln(int n)
 {
