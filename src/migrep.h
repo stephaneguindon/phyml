@@ -32,7 +32,7 @@ t_ldsk *MIGREP_Prev_Coal_Lindisk(t_ldsk *t);
 t_ldsk *MIGREP_Next_Coal_Lindisk(t_ldsk *t);
 int MIGREP_Get_Next_Direction(t_ldsk *young, t_ldsk *old);
 void MIGREP_Update_Lindisk_List(t_tree *tree);
-void MIGREP_Update_Lindisk_List_Pre(t_dsk *disk);
+void MIGREP_Update_Lindisk_List_Pre(t_dsk *disk, t_tree *tree);
 /* void MIGREP_Update_Lindisk_List(phydbl time, t_ldsk **list, int *pos, t_dsk *disk); */
 /* void MIGREP_Update_Lindisk_List_Pre(t_ldsk *ldsk, phydbl time, t_ldsk **list, int *pos); */
 void MIGREP_Connect_Ldsk_Given_Disk(t_dsk **disk, int n_disk, t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y);
@@ -66,12 +66,12 @@ void MIGREP_Ldsk_To_Tree(t_tree *tree);
 void MIGREP_Ldsk_To_Tree_Post(t_node *a, t_ldsk *ldsk, int *available, t_tree *tree);
 phydbl MIGREP_Rnorm_Trunc(t_ldsk *ldsk, t_dsk *disk, t_migrep_mod *mod);
 void MIGREP_Remove_Lindisk_Next(t_ldsk *ldsk, t_ldsk *rm);
-void MIGREP_Simulate_Backward_Core(int new_loc, t_tree *tree);
+void MIGREP_Simulate_Backward_Core(int new_loc, t_dsk *init_disk, t_tree *tree);
 phydbl *MIGREP_Mean_Pairwise_Distance_Between_Lineage_Locations(t_tree *tree);
 phydbl MIGREP_Random_Select_Time_Between_Jumps(t_tree *tree);
 phydbl MIGREP_Simulate_Forward_Core(int n_sites, t_tree *tree);
 int MIGREP_Is_In_Ldscape(t_ldsk *ldsk, t_migrep_mod *mmod);
-void MIGREP_Update_Lindisk_List_Core(t_dsk *disk);
+void MIGREP_Update_Lindisk_List_Core(t_dsk *disk, t_tree *tree);
 phydbl MIGREP_Mean_Time_Between_Events(t_tree *tree);
 void MIGREP_All_Pairs_Coal_Times_Dist(t_tree *tree);
 void MIGREP_Rand_Pairs_Coal_Times_Dist(t_tree *tree);

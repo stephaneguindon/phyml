@@ -167,5 +167,6 @@ void MCMC_MIGREP_Indel_Disk(t_tree *tree);
 void MCMC_MIGREP_Insert_Hit(phydbl hr, int n_insert_disks, t_tree *tree);
 void MCMC_MIGREP_Delete_Hit(phydbl hr, int n_delete_disks, t_tree *tree);
 void MCMC_MIGREP_Indel_Hit(t_tree *tree);
+void MCMC_MIGREP_Simulate_Backward(t_tree *tree);
 
 #endif
