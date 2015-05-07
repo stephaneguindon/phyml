@@ -4460,16 +4460,16 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_migrep_mu]                    = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_rad]                   = 0.0;
   mcmc->move_weight[mcmc->num_move_migrep_sigsq]                 = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_indel_disk]            = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_move_disk_ct]          = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_move_disk_ud]          = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_swap_disk]             = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_indel_hit]             = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_move_ldsk]             = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_spr]                   = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_indel_disk]            = 0.5;
+  mcmc->move_weight[mcmc->num_move_migrep_move_disk_ct]          = 0.5;
+  mcmc->move_weight[mcmc->num_move_migrep_move_disk_ud]          = 0.5;
+  mcmc->move_weight[mcmc->num_move_migrep_swap_disk]             = 0.5;
+  mcmc->move_weight[mcmc->num_move_migrep_indel_hit]             = 0.5;
+  mcmc->move_weight[mcmc->num_move_migrep_move_ldsk]             = 0.5;
+  mcmc->move_weight[mcmc->num_move_migrep_spr]                   = 2.0;
   mcmc->move_weight[mcmc->num_move_migrep_scale_times]           = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_ldscape_lim]           = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_sim]                   = 0.01;
+  mcmc->move_weight[mcmc->num_move_migrep_ldscape_lim]           = 0.0;
+  mcmc->move_weight[mcmc->num_move_migrep_sim]                   = 2.0;
 # else
   mcmc->move_weight[mcmc->num_move_migrep_lbda]                  = 0.0;
   mcmc->move_weight[mcmc->num_move_migrep_mu]                    = 0.0;
@@ -5525,8 +5525,10 @@ void MCMC_MIGREP_Move_Disk_Centre(t_tree *tree)
     }
   else
     {
-      /* printf("- Accept"); */
-    }        
+      tree->mcmc->acc_move[tree->mcmc->num_move_migrep_move_disk_ct]++;
+    }
+
+  tree->mcmc->run_move[tree->mcmc->num_move_migrep_move_disk_ct]++;
 
   Free(all_disks);
   Free(target_disk);
@@ -5571,7 +5573,7 @@ void MCMC_MIGREP_Move_Ldsk(t_tree *tree)
 
   if(!n_all_disks) return;
   
-  n_move_ldsk = Rand_Int(1,1+(int)(n_all_disks/5));
+  n_move_ldsk = Rand_Int(1,1+(int)(n_all_disks/3));
   /* n_move_ldsk = n_all_disks; */
   
   target_disk = (t_dsk **)mCalloc(n_all_disks,sizeof(t_dsk *));
@@ -5600,23 +5602,31 @@ void MCMC_MIGREP_Move_Ldsk(t_tree *tree)
         }
       else if(tree->mmod->name == MIGREP_NORMAL)
         {
-          int err;
+          /* int err; */
 
-          For(j,tree->mmod->n_dim) hr += Log_Dnorm_Trunc(target_disk[i]->ldsk->coord->lonlat[j],
-                                                         target_disk[i]->centr->lonlat[j],
-                                                         2.*tree->mmod->rad,
-                                                         0.0,
-                                                         tree->mmod->lim->lonlat[j],&err);
+          /* For(j,tree->mmod->n_dim) hr += Log_Dnorm_Trunc(target_disk[i]->ldsk->coord->lonlat[j], */
+          /*                                                target_disk[i]->centr->lonlat[j], */
+          /*                                                2.*tree->mmod->rad, */
+          /*                                                0.0, */
+          /*                                                tree->mmod->lim->lonlat[j],&err); */
           
           For(j,tree->mmod->n_dim)
-            target_disk[i]->ldsk->coord->lonlat[j] =
-            Rnorm_Trunc(target_disk[i]->centr->lonlat[j],2.*tree->mmod->rad,0.0,tree->mmod->lim->lonlat[j],&err);
+            {
+              max = tree->mmod->lim->lonlat[j];
+              min = 0.0;
+              target_disk[i]->centr->lonlat[j]       = Uni()*(max - min) + min;
+              target_disk[i]->ldsk->coord->lonlat[j] = Uni()*(max - min) + min;
+            }
 
-          For(j,tree->mmod->n_dim) hr -= Log_Dnorm_Trunc(target_disk[i]->ldsk->coord->lonlat[j],
-                                                         target_disk[i]->centr->lonlat[j],
-                                                         2.*tree->mmod->rad,
-                                                         0.0,
-                                                         tree->mmod->lim->lonlat[j],&err);
+          /* For(j,tree->mmod->n_dim) */
+          /*   target_disk[i]->ldsk->coord->lonlat[j] = */
+          /*   Rnorm_Trunc(target_disk[i]->centr->lonlat[j],2.*tree->mmod->rad,0.0,tree->mmod->lim->lonlat[j],&err); */
+
+          /* For(j,tree->mmod->n_dim) hr -= Log_Dnorm_Trunc(target_disk[i]->ldsk->coord->lonlat[j], */
+          /*                                                target_disk[i]->centr->lonlat[j], */
+          /*                                                2.*tree->mmod->rad, */
+          /*                                                0.0, */
+          /*                                                tree->mmod->lim->lonlat[j],&err); */
         }
     }
   
@@ -5657,9 +5667,11 @@ void MCMC_MIGREP_Move_Ldsk(t_tree *tree)
     }
   else
     {
-      /* printf("- Accept"); */
-    }       
-  
+      tree->mcmc->acc_move[tree->mcmc->num_move_migrep_move_ldsk]++;
+    }
+
+  tree->mcmc->run_move[tree->mcmc->num_move_migrep_move_ldsk]++;
+   
   Free(all_disks);
   Free(target_disk);
 }
@@ -6852,8 +6864,14 @@ void MCMC_MIGREP_Simulate_Backward(t_tree *tree)
   phydbl cur_glnL, new_glnL;
   phydbl cur_alnL, new_alnL;
   t_dsk  *disk,*bkp_disk,*target_disk;
+  t_ldsk **bkp_ldsk;
+  int i;
 
   disk        = NULL;
+  bkp_disk    = NULL;
+  target_disk = NULL;
+  bkp_ldsk    = NULL;
+
   new_glnL    = tree->mmod->c_lnL;
   cur_glnL    = tree->mmod->c_lnL;
   new_alnL    = tree->c_lnL;
@@ -6862,7 +6880,7 @@ void MCMC_MIGREP_Simulate_Backward(t_tree *tree)
   ratio       = 0.0;
   T           = 0.0;
   t           = 0.0;
-
+  
   disk = tree->disk;
   while(disk && disk->prev != NULL) disk = disk->prev;
   T =  disk->time;
@@ -6873,12 +6891,21 @@ void MCMC_MIGREP_Simulate_Backward(t_tree *tree)
   while(disk && disk->time > t) disk = disk->prev;
   target_disk = disk->next;
 
+  hr -= LOG(FABS((target_disk->prev->time - target_disk->time)/T));
+
   bkp_disk = target_disk->prev;
 
-  if(bkp_disk->prev == NULL) return;
-
-  MIGREP_Simulate_Backward_Core(NO,target_disk,tree);
+  bkp_ldsk = (t_ldsk **)mCalloc(target_disk->n_ldsk_a,sizeof(t_ldsk *));
+  For(i,target_disk->n_ldsk_a) bkp_ldsk[i] = target_disk->ldsk_a[i]->prev;
   
+  MIGREP_Simulate_Backward_Core(NO,target_disk,tree);
+
+  disk = tree->disk;
+  while(disk && disk->prev != NULL) disk = disk->prev;
+  T =  disk->time;
+  
+  hr += LOG(FABS((target_disk->prev->time - target_disk->time)/T));
+    
   if(tree->mcmc->use_data == YES) new_alnL = Lk(NULL,tree);
   ratio += (new_alnL - cur_alnL);
   ratio += hr;
@@ -6894,16 +6921,24 @@ void MCMC_MIGREP_Simulate_Backward(t_tree *tree)
   if(u > alpha) /* Reject */
     {
       disk = target_disk->prev;
-      while(disk)
+      while(disk->prev)
         {
-          if(disk->ldsk != NULL) Free_Ldisk(disk->ldsk);
-          Free_Disk(disk);
           disk = disk->prev;
+          if(disk)
+            {
+              if(disk->next->ldsk != NULL) Free_Ldisk(disk->next->ldsk);
+              Free_Disk(disk->next);
+            }
         }
 
+      /* Root */
+      Free_Ldisk(disk->ldsk);
+      Free_Disk(disk);
+
       target_disk->prev = bkp_disk;
+      For(i,target_disk->n_ldsk_a) target_disk->ldsk_a[i]->prev = bkp_ldsk[i];
       
-      /* tree->mod->c_lnL = cur_alnL; */
+      tree->c_lnL = cur_alnL;
       if(tree->mcmc->use_data == YES) Lk(NULL,tree);
 
       new_glnL = MIGREP_Lk(tree);
@@ -6935,7 +6970,12 @@ void MCMC_MIGREP_Simulate_Backward(t_tree *tree)
       /* Likelihood needs to be updated */
       new_glnL = MIGREP_Lk(tree);
 
+      tree->mcmc->acc_move[tree->mcmc->num_move_migrep_sim]++;
     }
+  
+  tree->mcmc->run_move[tree->mcmc->num_move_migrep_sim]++;
+
+  Free(bkp_ldsk);
 }
 #endif
 
