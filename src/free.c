@@ -1190,8 +1190,6 @@ void Free_Geo_Coord(t_geo_coord *t)
 
 void Free_Disk(t_dsk *t)
 {
-  int i;
-
   Free_Geo_Coord(t->centr);
   Free(t->ldsk_a);
   Free(t->id);

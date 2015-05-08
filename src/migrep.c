@@ -1241,8 +1241,6 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   do
     {
       
-      PhyML_Printf("\r. %12d %12d",tree->mcmc->run,tree->mcmc->sample_num); fflush(NULL);
-
       if(mcmc->run > 5E+6) For(i,mcmc->n_moves) tree->mcmc->adjust_tuning[i] = NO;
 
       u = Uni();
