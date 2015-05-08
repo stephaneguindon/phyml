@@ -1250,17 +1250,17 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       if(move == tree->mcmc->n_moves) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
       
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_lbda")) */
-      /*   MCMC_MIGREP_Lbda(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_lbda"))
+        MCMC_MIGREP_Lbda(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_mu")) */
-      /*   MCMC_MIGREP_Mu(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_mu"))
+        MCMC_MIGREP_Mu(tree);
 
-      /* /\* if(!strcmp(tree->mcmc->move_name[move],"migrep_rad")) *\/ */
-      /* /\*   MCMC_MIGREP_Radius(tree); *\/ */
+      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_rad")) */
+      /*   MCMC_MIGREP_Radius(tree); */
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_sigsq")) */
-      /*   MCMC_MIGREP_Sigsq(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_sigsq"))
+        MCMC_MIGREP_Sigsq(tree);
 
       if(!strcmp(tree->mcmc->move_name[move],"migrep_indel_disk"))
         MCMC_MIGREP_Indel_Disk(tree);
