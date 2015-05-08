@@ -1029,7 +1029,7 @@ t_rate *RATES_Make_Rate_Struct(int n_otu)
   t_rate *rates;
 
   rates = (t_rate  *)mCalloc(1,sizeof(t_rate));
-  rates->is_allocated = NO;
+  rates->is_allocated = NO;  
 
   if(n_otu > 0)
     {
@@ -1378,7 +1378,7 @@ t_dsk *MIGREP_Make_Disk_Event(int n_dim, int n_otu)
 {
   t_dsk *t;
 
-  t         = (t_dsk *)mCalloc(1,sizeof(t_dsk));
+  t         = (t_dsk *)mCalloc(1,sizeof(t_dsk));  
   t->centr  = GEO_Make_Geo_Coord(n_dim);
   t->id     = (char *)mCalloc(T_MAX_ID_DISK,sizeof(char));
   t->ldsk_a = (t_ldsk **)mCalloc(n_otu,sizeof(t_ldsk *));

@@ -131,7 +131,7 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
 {
   t_tree *tree;
   phydbl *res;
-  int seed,pid,burnin;
+  int seed,pid,burnin,i;
   FILE *fp_out;
   char *s;
   t_dsk *disk;
@@ -224,7 +224,36 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
                 /* Neigh50*/ Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
                 /* Neigh95*/ Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975));
 
+  disk = tree->disk;
+  For(i,disk->n_ldsk_a) Free_Ldisk(disk->ldsk_a[i]);
+  while(disk->prev)
+    {
+      disk = disk->prev;
+      if(disk->next->ldsk != NULL) Free_Ldisk(disk->next->ldsk);
+      Free_Disk(disk->next);
+    }
+  
+  /* Root */
+  Free_Ldisk(disk->ldsk);
+  Free_Disk(disk);
+
+  RATES_Free_Rates(tree->rates);
+  MCMC_Free_MCMC(tree->mcmc);
+  Free_Mmod(tree->mmod);
+  Free_Spr_List(tree);
+  Free_Triplet(tree->triplet_struct);
+  Free_Tree_Pars(tree);
+  Free_Tree_Lk(tree);
+  Free_Input(tree->io);
+  Free_Optimiz(tree->mod->s_opt);
+  Free_Model_Complete(tree->mod);
+  Free_Model_Basic(tree->mod);
+  Free_Cseq(tree->data);
+  Free_Tree(tree);
+
   Free(res);  
+  Free(s);
+
   fclose(fp_out);
 
   return 0;
@@ -321,7 +350,7 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
 
   /* MIGREP_Simulate_Backward_Core(YES,tree->disk,tree); */
   mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree);
-
+  
   MIGREP_Ldsk_To_Tree(tree);  
 
   Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
@@ -361,7 +390,6 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
     
   Prepare_Tree_For_Lk(tree);
   Evolve(tree->data,tree->mod,tree);
-  /* Print_CSeq(stdout,NO,tree->data); */
 
   if(tree->mod->s_opt->greedy) Init_P_Lk_Tips_Double(tree);
   else                         Init_P_Lk_Tips_Int(tree);
@@ -377,7 +405,7 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
 void MIGREP_Simulate_Backward_Core(int new_loc, t_dsk *init_disk, t_tree *tree)
 {
   t_dsk *disk;
-  t_ldsk *new_ldsk,**ldsk_a,**ldsk_a_tmp,**ldsk_a_new;
+  t_ldsk *new_ldsk,**ldsk_a,**ldsk_a_tmp;
   int i,j,n_disk,n_lineages,n_dim,n_hit,n_lineages_new;
   phydbl dt_dsk,curr_t,prob_hit,u;
   t_migrep_mod *mmod;
@@ -397,17 +425,12 @@ void MIGREP_Simulate_Backward_Core(int new_loc, t_dsk *init_disk, t_tree *tree)
       tree->disk                  = init_disk;
     }
 
-
   if(new_loc == YES)
-    {
-      
-      /* Allocate coordinates for all the tips first (will grow afterwards) */
-      ldsk_a_new = (t_ldsk **)mCalloc(tree->n_otu,sizeof(t_ldsk *));
-
+    {      
       For(i,tree->n_otu) 
         {
-          ldsk_a_new[i] = MIGREP_Make_Lindisk_Node(n_dim);
-          MIGREP_Init_Lindisk_Node(ldsk_a_new[i],init_disk,n_dim);
+          init_disk->ldsk_a[i] = MIGREP_Make_Lindisk_Node(n_dim);
+          MIGREP_Init_Lindisk_Node(init_disk->ldsk_a[i],init_disk,n_dim);
         }
 
       PhyML_Printf("\n. WARNING: position of samples are not random.");
@@ -416,12 +439,11 @@ void MIGREP_Simulate_Backward_Core(int new_loc, t_dsk *init_disk, t_tree *tree)
         {
           /* ldsk_a[i]->coord->lonlat[0] = Uni()*tree->mmod->lim->lonlat[0]; // longitude */
           /* ldsk_a[i]->coord->lonlat[1] = Uni()*tree->mmod->lim->lonlat[1]; // latitude */
-          ldsk_a_new[i]->coord->lonlat[0] = (i/(int)SQRT(tree->n_otu)+1)*tree->mmod->lim->lonlat[0]/(SQRT(tree->n_otu)+1); // longitude
-          ldsk_a_new[i]->coord->lonlat[1] = (i%(int)SQRT(tree->n_otu)+1)*tree->mmod->lim->lonlat[1]/(SQRT(tree->n_otu)+1); // latitude
+          init_disk->ldsk_a[i]->coord->lonlat[0] = (i/(int)SQRT(tree->n_otu)+1)*tree->mmod->lim->lonlat[0]/(SQRT(tree->n_otu)+1); // longitude
+          init_disk->ldsk_a[i]->coord->lonlat[1] = (i%(int)SQRT(tree->n_otu)+1)*tree->mmod->lim->lonlat[1]/(SQRT(tree->n_otu)+1); // latitude
         }
-      
-      init_disk->ldsk_a = ldsk_a_new;
     }
+
 
   /* Allocate coordinates for all the tips first (will grow afterwards) */
   ldsk_a = (t_ldsk **)mCalloc(tree->n_otu,sizeof(t_ldsk *));
@@ -1219,6 +1241,8 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   do
     {
       
+      PhyML_Printf("\r. %12d %12d",tree->mcmc->run,tree->mcmc->sample_num); fflush(NULL);
+
       if(mcmc->run > 5E+6) For(i,mcmc->n_moves) tree->mcmc->adjust_tuning[i] = NO;
 
       u = Uni();
@@ -1246,8 +1270,8 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"migrep_move_disk_ct"))
         MCMC_MIGREP_Move_Disk_Centre(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_move_disk_ud")) */
-      /*   MCMC_MIGREP_Move_Disk_Updown(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_move_disk_ud"))
+        MCMC_MIGREP_Move_Disk_Updown(tree);
 
       if(!strcmp(tree->mcmc->move_name[move],"migrep_swap_disk"))
         MCMC_MIGREP_Swap_Disk(tree);
@@ -1343,10 +1367,13 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       /*     Free(s); */
       /*   } */
 
+
       if(tree->mcmc->sample_num > 1E+2                             && 
          tree->mcmc->ess[tree->mcmc->num_move_migrep_lbda]  > 100. &&
          tree->mcmc->ess[tree->mcmc->num_move_migrep_mu]    > 100. &&
          tree->mcmc->ess[tree->mcmc->num_move_migrep_sigsq] > 100.) break;
+
+      (void)signal(SIGINT,MCMC_Terminate);
     }
   while(tree->mcmc->run < tree->mcmc->chain_len);
 
@@ -2668,12 +2695,19 @@ void MIGREP_Ldsk_To_Tree(t_tree *tree)
     }
   if(tree->e_root == NULL) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   
+  tree->n_root->b[1]  = tree->a_edges[2*tree->n_otu-3];
+  tree->n_root->b[2]  = tree->a_edges[2*tree->n_otu-2];
+
   /* For(i,2*tree->n_otu-1) */
   /*   { */
   /*     printf("\n. * Edge %d %p", */
   /*            tree->a_edges[i]->num, */
   /*            tree->a_edges[i]); */
   /*   } */
+  /* PhyML_Printf("\n. tree->n_root->b[1]: %p",tree->n_root->b[1]);  */
+  /* PhyML_Printf("\n. tree->n_root->b[2]: %p",tree->n_root->b[2]);  */
+  /* fflush(NULL); */
+  /* Exit("\n"); */
 }
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/

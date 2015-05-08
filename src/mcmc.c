@@ -5396,8 +5396,6 @@ void MCMC_MIGREP_Insert_Disk(phydbl hr, int n_insert_disks, t_tree *tree)
   tree->mcmc->run_move[tree->mcmc->num_move_migrep_indel_disk]++;
   Free(target_disk);
   Free(new_disk);
-
-
 }
 #endif
 
@@ -6924,11 +6922,8 @@ void MCMC_MIGREP_Simulate_Backward(t_tree *tree)
       while(disk->prev)
         {
           disk = disk->prev;
-          if(disk)
-            {
-              if(disk->next->ldsk != NULL) Free_Ldisk(disk->next->ldsk);
-              Free_Disk(disk->next);
-            }
+          if(disk->next->ldsk != NULL) Free_Ldisk(disk->next->ldsk);
+          Free_Disk(disk->next);            
         }
 
       /* Root */
@@ -6956,11 +6951,8 @@ void MCMC_MIGREP_Simulate_Backward(t_tree *tree)
       while(disk->prev)
         {
           disk = disk->prev;
-          if(disk) 
-            {
-              if(disk->next->ldsk != NULL) Free_Ldisk(disk->next->ldsk);
-              Free_Disk(disk->next);
-            }
+          if(disk->next->ldsk != NULL) Free_Ldisk(disk->next->ldsk);
+          Free_Disk(disk->next);
         }
       
       /* Root */

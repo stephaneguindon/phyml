@@ -6437,7 +6437,7 @@ void Add_Root(t_edge *target, t_tree *tree)
   if(tree->n_root_pos > -1.0)
     {
       if(tree->n_root_pos < 1.E-6 &&  tree->n_root_pos > -1.E-6)
-    printf("\n. WARNING: you put the root at a weird position...");
+        printf("\n. WARNING: you put the root at a weird position...");
 
 /*       tree->n_root->l[0] = tree->e_root->l->v * (tree->n_root_pos/(1.+tree->n_root_pos)); */
 /*       tree->n_root->l[1] = tree->e_root->l->v - tree->n_root->l[0]; */

@@ -325,6 +325,8 @@ void Free_Tree_Pars(t_tree *mixt_tree)
         {
           Free_Edge_Pars_Left(tree->n_root->b[1]);
           Free_Edge_Pars_Left(tree->n_root->b[2]);
+          if(tree->n_root->b[1]->pars_r) Free_Edge_Pars_Rght(tree->n_root->b[1]);
+          if(tree->n_root->b[2]->pars_r) Free_Edge_Pars_Rght(tree->n_root->b[2]);
         }
       else
         {
@@ -401,6 +403,8 @@ void Free_Tree_Lk(t_tree *mixt_tree)
           Free(tree->n_root->b[2]->Pij_rr);
           Free_Edge_Lk_Left(tree->n_root->b[1]);
           Free_Edge_Lk_Left(tree->n_root->b[2]);
+          if(tree->n_root->b[1]->p_lk_rght) Free_Edge_Lk_Rght(tree->n_root->b[1]);
+          if(tree->n_root->b[2]->p_lk_rght) Free_Edge_Lk_Rght(tree->n_root->b[2]);
         }
       else
         {
@@ -1113,8 +1117,10 @@ void RATES_Free_Rates(t_rate *rates)
       Free(rates->_2n2n_vect2);
       Free(rates->cov_l);
       Free(rates->mean_l);
+      Free(rates->mean_r);
       Free(rates->mean_t);
       Free(rates->grad_l);
+      Free(rates->reg_coeff);
       Free(rates->br_do_updt);
       Free(rates->cur_gamma_prior_mean);
       Free(rates->cur_gamma_prior_var);
@@ -1127,6 +1133,11 @@ void RATES_Free_Rates(t_rate *rates)
       Free(rates->survival_dur);
       Free(rates->calib_prob);
       Free(rates->node_height_dens_log_norm_const_update);
+      Free(rates->curr_nd_for_cal);
+      Free(rates->t_prior_min_ori);
+      Free(rates->t_prior_max_ori);
+      Free(rates->times_partial_proba);
+      Free(rates->numb_calib_chosen);
     }
   Free_Calib(rates->calib);
   Free(rates);
@@ -1179,6 +1190,8 @@ void Free_Geo_Coord(t_geo_coord *t)
 
 void Free_Disk(t_dsk *t)
 {
+  int i;
+
   Free_Geo_Coord(t->centr);
   Free(t->ldsk_a);
   Free(t->id);
@@ -1216,8 +1229,15 @@ void Free_Poly(t_poly *p)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void Free_Mmod(t_migrep_mod *mmod)
+{
+  Free_Geo_Coord(mmod->lim);
+  Free(mmod);
+}
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
