@@ -1528,6 +1528,7 @@ typedef struct __Tmcmc {
   phydbl *ess;
   int    *ess_run;
   int    *start_ess;
+  phydbl *mode;
   int always_yes; /* Always accept proposed move (as long as log-likelihood > UNLIKELY) */
   int is; /* Importance sampling? Yes or NO */
 }t_mcmc;

@@ -1042,6 +1042,7 @@ void MCMC_Free_MCMC(t_mcmc *mcmc)
   Free(mcmc->start_ess);
   Free(mcmc->ess);
   Free(mcmc->sampled_val);
+  Free(mcmc->mode);
   Free(mcmc);
 }
 
