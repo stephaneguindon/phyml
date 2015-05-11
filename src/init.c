@@ -1013,8 +1013,8 @@ void Init_Model(calign *data, t_mod *mod, option *io)
     {
       if(mod->ras->n_catg > 1)
         {
-          For(i,mod->ras->n_catg) mod->ras->gamma_rr->v[i]               = (phydbl)i;
-          For(i,mod->ras->n_catg) mod->ras->gamma_rr_unscaled->v[i]      = (phydbl)i;
+          For(i,mod->ras->n_catg) mod->ras->gamma_rr->v[i]          = (phydbl)i;
+          For(i,mod->ras->n_catg) mod->ras->gamma_rr_unscaled->v[i] = (phydbl)i;
         }
       else
         {

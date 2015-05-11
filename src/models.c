@@ -781,16 +781,15 @@ void Update_RAS(t_mod *mod)
   phydbl sum;
   int i;
 
-  if(mod->ras->free_mixt_rates == NO) DiscreteGamma(mod->ras->gamma_r_proba->v,
-                            mod->ras->gamma_rr->v,
-                            mod->ras->alpha->v,
-                            mod->ras->alpha->v,
-                            mod->ras->n_catg,
-                            mod->ras->gamma_median);
+  if(mod->ras->free_mixt_rates == NO) 
+    DiscreteGamma(mod->ras->gamma_r_proba->v,
+                  mod->ras->gamma_rr->v,
+                  mod->ras->alpha->v,
+                  mod->ras->alpha->v,
+                  mod->ras->n_catg,
+                  mod->ras->gamma_median);
   else
     {
-
-
       if(mod->ras->sort_rate_classes == YES)
         {
           Qksort(mod->ras->gamma_r_proba_unscaled->v,NULL,0,mod->ras->n_catg-1); // Unscaled class frequencies sorted in increasing order

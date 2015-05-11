@@ -21,9 +21,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int MIGREP_Main(int argc, char *argv[])
 {
-  
-  /* return(MIGREP_Main_Estimate(argc,argv)); */
-  return(MIGREP_Main_Simulate(argc,argv));
+  return(MIGREP_Main_Estimate(argc,argv));
+  /* return(MIGREP_Main_Simulate(argc,argv)); */
 }
 
 //////////////////////////////////////////////////////////////
