@@ -21,8 +21,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int MIGREP_Main(int argc, char *argv[])
 {
-  return(MIGREP_Main_Estimate(argc,argv));
-  /* return(MIGREP_Main_Simulate(argc,argv)); */
+  /* return(MIGREP_Main_Estimate(argc,argv)); */
+  return(MIGREP_Main_Simulate(argc,argv));
 }
 
 //////////////////////////////////////////////////////////////
@@ -107,7 +107,7 @@ int MIGREP_Main_Estimate(int argc, char *argv[])
   while(disk->prev) disk = disk->prev;
 
   tree->rates->bl_from_rt = YES;
-  tree->rates->clock_r    = 0.1 / FABS(disk->time);
+  tree->rates->clock_r    = 0.01 / FABS(disk->time);
   tree->rates->model      = STRICTCLOCK;
   RATES_Update_Cur_Bl(tree);
 
@@ -173,7 +173,7 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
 
   PhyML_Fprintf(fp_out,"\n# SampArea\t TrueLbda\t TrueMu\t TrueSig\t TrueNeigh\t RegNeigh\t TrueXroot\t TrueYroot\t Lbda5\t Lbda50\t Lbda95\t LbdaMod \t Mu5\t Mu50\t Mu95\t  MuMod \t Sig5\t Sig50\t Sig95\t SigMod \t Neigh5\t Neigh50\t Neigh95\t NeighMod \t Xroot5\t Xroot50\t Xroot95\t Yroot5\t Yroot50\t Yroot95\t ");
 
-  PhyML_Fprintf(fp_out,"\n %f\t %f\t %f\t %f\t %f\t %f\t %f\t %f\t %f\t",
+  PhyML_Fprintf(fp_out,"\n %f\t %f\t %f\t %f\t %f\t %f\t %f\t %f\t",
                 tree->mmod->sampl_area,
                 tree->mmod->lbda,
                 tree->mmod->mu,
@@ -206,7 +206,7 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
                 /* sig95*/   Quantile(res+2*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975),
                 /* sigMod */ tree->mcmc->mode[tree->mcmc->num_move_migrep_sigsq]);
 
-  PhyML_Fprintf(fp_out,"%f\t %f\t %f\t %f",
+  PhyML_Fprintf(fp_out,"%f\t %f\t %f\t %f\t",
                 /* Neigh5 */ Quantile(res+3*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
                 /* Neigh50*/ Quantile(res+3*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
                 /* Neigh95*/ Quantile(res+3*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975),
@@ -712,6 +712,7 @@ phydbl MIGREP_Simulate_Forward_Core(int n_sites, t_tree *tree)
       disk = disk->next;
       n_disk++;
 
+
       /* Time of next event */
       dt_dsk = Rexp(mmod->lbda);
       curr_t += dt_dsk;
@@ -719,7 +720,9 @@ phydbl MIGREP_Simulate_Forward_Core(int n_sites, t_tree *tree)
       disk->time = curr_t;
       disk->mmod = mmod;
     }
-  while(n_disk < 5000);
+  while(n_disk < 2000);
+
+
 
   For(i,pop_size) ldsk_a_pop[i]->disk = disk;
 
@@ -1290,11 +1293,11 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"migrep_sim"))
         MCMC_MIGREP_Simulate_Backward(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"kappa")) */
-      /*   MCMC_Kappa(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"kappa"))
+        MCMC_Kappa(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"ras")) */
-      /*   MCMC_Rate_Across_Sites(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"ras"))
+        MCMC_Rate_Across_Sites(tree);
 
       /* if(!strcmp(tree->mcmc->move_name[move],"migrep_ldscape_lim")) */
       /*   MCMC_MIGREP_Ldscape_Limits(tree); */
