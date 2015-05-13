@@ -1045,6 +1045,9 @@ typedef struct __Option { /*! mostly used in 'help.c' */
   char                  *out_lk_file; /*! name of the file in which the likelihood of the model is written */
   FILE                    *fp_out_lk;
 
+  char             *out_summary_file; /*! name of the file in which summary statistics are written */
+  FILE               *fp_out_summary;
+
   char                  *out_ps_file; /*! name of the file in which tree(s) is(are) written */
   FILE                    *fp_out_ps;
 

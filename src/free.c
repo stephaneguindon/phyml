@@ -713,6 +713,7 @@ void Free_Input(option *io)
       Free(io->out_boot_stats_file);
       Free(io->out_stats_file);
       Free(io->out_lk_file);
+      Free(io->out_summary_file);
       Free(io->out_ps_file);
       Free(io->out_trace_file);
       Free(io->out_ancestral_file);
