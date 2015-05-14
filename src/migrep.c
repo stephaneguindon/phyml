@@ -257,9 +257,12 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   tree->mmod = mmod;
   MIGREP_Init_Migrep_Mod(mmod,n_dim,width,height);
   
+  /* max_lbda  = 0.3; min_lbda  = 0.05; */
+  /* max_mu    = 1.0; min_mu    = 0.01; */
+  /* max_sigsq = 0.5; min_sigsq = 1.E-4; */
   max_lbda  = 0.3; min_lbda  = 0.05;
-  max_mu    = 1.0; min_mu    = 0.01;
-  max_sigsq = 0.5; min_sigsq = 1.E-4;
+  max_mu    = 0.1; min_mu    = 0.1;
+  max_sigsq = 1.E-2; min_sigsq = 1.E-2;
 
   /* max_lbda  = 0.12; min_lbda  = 0.12; */
   /* max_mu    = 0.35; min_mu    = 0.35; */
@@ -655,7 +658,7 @@ phydbl MIGREP_Simulate_Forward_Core(int n_sites, t_tree *tree)
       disk->time = curr_t;
       disk->mmod = mmod;
     }
-  while(n_disk < 5000);
+  while(n_disk < 15000);
 
   For(i,pop_size) ldsk_a_pop[i]->disk = disk;
 
@@ -797,7 +800,8 @@ phydbl MIGREP_Simulate_Forward_Core(int n_sites, t_tree *tree)
       
       if(disk->prev == NULL)
         {
-          PhyML_Printf("\n. Sample has not coalesced completely.");
+          PhyML_Printf("\n== # lineages left: %d",n_remain);
+          PhyML_Printf("\n== Sample has not coalesced completely.");
           Exit("\n");
         }
     }
