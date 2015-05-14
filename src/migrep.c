@@ -257,9 +257,9 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   tree->mmod = mmod;
   MIGREP_Init_Migrep_Mod(mmod,n_dim,width,height);
   
-  max_lbda  = 0.3; min_lbda  = 0.05;
-  max_mu    = 1.0; min_mu    = 0.1;
-  max_sigsq = 0.5; min_sigsq = 1.E-2;
+  max_lbda  = 0.30; min_lbda  = 0.05;
+  max_mu    = 0.50; min_mu    = 0.02;
+  max_sigsq = 0.08; min_sigsq = 1.E-3;
 
   /* max_lbda  = 0.12; min_lbda  = 0.12; */
   /* max_mu    = 0.35; min_mu    = 0.35; */
@@ -1371,12 +1371,12 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       /*   } */
 
 
-      /* if(tree->mcmc->sample_num > 1E+2                             &&  */
+      /* if(tree->mcmc->sample_num > 1E+2                             && */
       /*    tree->mcmc->ess[tree->mcmc->num_move_migrep_lbda]  > 100. && */
       /*    tree->mcmc->ess[tree->mcmc->num_move_migrep_mu]    > 100. && */
       /*    tree->mcmc->ess[tree->mcmc->num_move_migrep_sigsq] > 100.) break; */
 
-      if(tree->mcmc->run > tree->mcmc->sample_interval           && 
+      if(tree->mcmc->run > tree->mcmc->sample_interval           &&
          tree->mcmc->ess[tree->mcmc->num_move_migrep_lbda]  > 1. &&
          tree->mcmc->ess[tree->mcmc->num_move_migrep_mu]    > 1. &&
          tree->mcmc->ess[tree->mcmc->num_move_migrep_sigsq] > 1.) break;
