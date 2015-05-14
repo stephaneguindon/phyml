@@ -21,8 +21,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int MIGREP_Main(int argc, char *argv[])
 {
-  return(MIGREP_Main_Estimate(argc,argv));
-  /* return(MIGREP_Main_Simulate(argc,argv)); */
+  /* return(MIGREP_Main_Estimate(argc,argv)); */
+  return(MIGREP_Main_Simulate(argc,argv));
 }
 
 //////////////////////////////////////////////////////////////
@@ -282,9 +282,9 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   PhyML_Printf("\n. lbda: %f mu: %f sigsq: %f",mmod->lbda,mmod->mu,mmod->sigsq);
   fflush(NULL);
 
-  /* MIGREP_Simulate_Backward_Core(YES,tree->disk,tree); */
-  mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree);
-  
+  MIGREP_Simulate_Backward_Core(YES,tree->disk,tree);
+  /* mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree); */
+    
   MIGREP_Ldsk_To_Tree(tree);  
 
   Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
@@ -1036,12 +1036,12 @@ phydbl MIGREP_Lk(t_tree *tree)
 phydbl *MIGREP_MCMC(t_tree *tree)
 {
   t_mcmc *mcmc;
-  int move,i,n_vars,burnin;
+  int move,i,n_vars,burnin,true_ncoal;
   phydbl u;
   t_dsk *disk;
   FILE *fp_tree,*fp_stats,*fp_summary;
   phydbl *res;
-  phydbl true_root_x, true_root_y,true_lbda,true_mu,true_sigsq,true_neigh,fst_neigh;
+  phydbl true_root_x, true_root_y,true_lbda,true_mu,true_sigsq,true_neigh,fst_neigh,diversity;
 
   fp_tree    = tree->io->fp_out_tree;
   fp_stats   = tree->io->fp_out_stats;
@@ -1106,6 +1106,8 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   true_sigsq  = tree->mmod->sigsq;
   true_neigh  = MIGREP_Neighborhood_Size(tree);
   fst_neigh   = MIGREP_Neighborhood_Size_Regression(tree);
+  diversity   = Nucleotide_Diversity(tree->data);
+  true_ncoal  = MIGREP_Total_Number_Of_Coal_Disks(tree);
 
   /* Starting parameter values */
   
@@ -1294,14 +1296,16 @@ phydbl *MIGREP_MCMC(t_tree *tree)
           
           rewind(fp_summary);
 
-          PhyML_Fprintf(fp_summary,"\n# SampArea\t TrueLbda\t TrueMu\t TrueSig\t TrueNeigh\t RegNeigh\t TrueXroot\t TrueYroot\t Lbda5\t Lbda50\t Lbda95\t LbdaMod \t Mu5\t Mu50\t Mu95\t  MuMod \t Sig5\t Sig50\t Sig95\t SigMod \t Neigh5\t Neigh50\t Neigh95\t NeighMod \t Xroot5\t Xroot50\t Xroot95\t Yroot5\t Yroot50\t Yroot95\t ESSLbda \t ESSMu \t ESSSig");
+          PhyML_Fprintf(fp_summary,"\n# SampArea\t TrueLbda\t TrueMu\t TrueSig\t TrueNeigh\t Diversity\t TrueCoal\t RegNeigh\t TrueXroot\t TrueYroot\t Lbda5\t Lbda50\t Lbda95\t LbdaMod \t Mu5\t Mu50\t Mu95\t  MuMod \t Sig5\t Sig50\t Sig95\t SigMod \t Neigh5\t Neigh50\t Neigh95\t NeighMod \t Xroot5\t Xroot50\t Xroot95\t Yroot5\t Yroot50\t Yroot95\t ESSLbda \t ESSMu \t ESSSig");
           
-          PhyML_Fprintf(fp_summary,"\n %f\t %f\t %f\t %f\t %f\t %f\t %f\t %f\t",
+          PhyML_Fprintf(fp_summary,"\n %f\t %f\t %f\t %f\t %f\t %f\t %d\t %f\t %f\t %f\t",
                         tree->mmod->sampl_area,
                         true_lbda,
                         true_mu,
                         true_sigsq,
                         true_neigh,
+                        diversity,
+                        true_ncoal,
                         fst_neigh,
                         true_root_x,
                         true_root_y);
@@ -1346,6 +1350,8 @@ phydbl *MIGREP_MCMC(t_tree *tree)
                         tree->mcmc->ess[tree->mcmc->num_move_migrep_mu],  
                         tree->mcmc->ess[tree->mcmc->num_move_migrep_sigsq]);
 
+          PhyML_Fprintf(fp_summary,"\n\n");
+
           fflush(NULL);
           
           tree->mcmc->sample_num++;
@@ -1364,10 +1370,15 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       /*   } */
 
 
-      if(tree->mcmc->sample_num > 1E+2                             && 
-         tree->mcmc->ess[tree->mcmc->num_move_migrep_lbda]  > 100. &&
-         tree->mcmc->ess[tree->mcmc->num_move_migrep_mu]    > 100. &&
-         tree->mcmc->ess[tree->mcmc->num_move_migrep_sigsq] > 100.) break;
+      /* if(tree->mcmc->sample_num > 1E+2                             &&  */
+      /*    tree->mcmc->ess[tree->mcmc->num_move_migrep_lbda]  > 100. && */
+      /*    tree->mcmc->ess[tree->mcmc->num_move_migrep_mu]    > 100. && */
+      /*    tree->mcmc->ess[tree->mcmc->num_move_migrep_sigsq] > 100.) break; */
+
+      if(tree->mcmc->run > tree->mcmc->sample_interval           && 
+         tree->mcmc->ess[tree->mcmc->num_move_migrep_lbda]  > 1. &&
+         tree->mcmc->ess[tree->mcmc->num_move_migrep_mu]    > 1. &&
+         tree->mcmc->ess[tree->mcmc->num_move_migrep_sigsq] > 1.) break;
 
       (void)signal(SIGINT,MCMC_Terminate);
     }
