@@ -257,9 +257,15 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   tree->mmod = mmod;
   MIGREP_Init_Migrep_Mod(mmod,n_dim,width,height);
   
+  /* max_lbda  = 1.00; min_lbda  = 0.00; */
+  /* max_mu    = 0.50; min_mu    = 0.02; */
+  /* max_sigsq = 0.08; min_sigsq = 1.E-3; */
+
+
   max_lbda  = 1.00; min_lbda  = 0.00;
-  max_mu    = 0.50; min_mu    = 0.02;
-  max_sigsq = 0.08; min_sigsq = 1.E-3;
+  max_mu    = 0.50; min_mu    = 0.10;
+  max_sigsq = 0.08; min_sigsq = 1.E-2;
+
 
   /* max_lbda  = 0.12; min_lbda  = 0.12; */
   /* max_mu    = 0.35; min_mu    = 0.35; */
