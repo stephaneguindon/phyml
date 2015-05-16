@@ -257,7 +257,7 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   tree->mmod = mmod;
   MIGREP_Init_Migrep_Mod(mmod,n_dim,width,height);
   
-  max_lbda  = 0.30; min_lbda  = 0.05;
+  max_lbda  = 1.00; min_lbda  = 0.00;
   max_mu    = 0.50; min_mu    = 0.02;
   max_sigsq = 0.08; min_sigsq = 1.E-3;
 
@@ -3061,7 +3061,7 @@ phydbl MIGREP_Update_Sigsq(t_tree *tree)
     case MIGREP_NORMAL:  
       { 
         return(4.*PI*
-               tree->mmod->lbda/(tree->mmod->lim->lonlat[0]*tree->mmod->lim->lonlat[1])*
+               MIGREP_Rate_Per_Unit_Area(tree) *
                POW(tree->mmod->rad,4)*
                tree->mmod->mu); 
         break; 
@@ -3080,7 +3080,7 @@ phydbl MIGREP_Update_Radius(t_tree *tree)
     case MIGREP_UNIFORM: { return(-1.0); break;}
     case MIGREP_NORMAL:  
       { 
-        return(POW(tree->mmod->sigsq*tree->mmod->lim->lonlat[0]*tree->mmod->lim->lonlat[1]/(tree->mmod->mu*tree->mmod->lbda*4.*PI),0.25)); 
+        return(POW(tree->mmod->sigsq/(MIGREP_Rate_Per_Unit_Area(tree)*4.*PI),0.25));
         break; 
       }
     }
@@ -3200,8 +3200,33 @@ void MIGREP_Read_Tip_Coordinates(t_ldsk **ldsk_a, t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+phydbl MIGREP_Rate_Per_Unit_Area(t_tree *tree)
+{
+  int i;
+  phydbl denom;
+
+  denom = tree->mmod->lim->lonlat[0];
+  
+  for(i=1;i<tree->mmod->n_dim;i++) denom *= tree->mmod->lim->lonlat[i];
+  
+  return(tree->mmod->lbda / denom);
+
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+phydbl MIGREP_Tree_Height(t_tree *tree)
+{
+  t_dsk *disk;
+
+  disk = tree->disk;
+  while(disk && disk->prev) disk = disk->prev;
+
+  return(disk->time);
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

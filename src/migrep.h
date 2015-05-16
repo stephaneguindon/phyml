@@ -83,6 +83,8 @@ void MIGREP_Read_Tip_Coordinates(t_ldsk **ldsk_a, t_tree *tree);
 phydbl MIGREP_Sample_Rad_From_Prior(t_tree *tree);
 void MCMC_MIGREP_Sigsq(t_tree *tree);
 phydbl MIGREP_LnPrior_Sigsq(t_tree *tree);
+phydbl MIGREP_Rate_Per_Unit_Area(t_tree *tree);
+phydbl MIGREP_Tree_Height(t_tree *tree);
 
 
 #endif
