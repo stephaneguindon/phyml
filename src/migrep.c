@@ -262,9 +262,9 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   /* max_sigsq = 0.08; min_sigsq = 1.E-3; */
 
 
-  max_lbda  = 1.00; min_lbda  = 0.00;
-  max_mu    = 0.50; min_mu    = 0.10;
-  max_sigsq = 0.08; min_sigsq = 1.E-2;
+  max_lbda  = 1.000; min_lbda  = 0.000;
+  max_mu    = 0.4; min_mu    = 0.1;
+  max_sigsq = 0.16; min_sigsq = 0.04;
 
 
   /* max_lbda  = 0.12; min_lbda  = 0.12; */
