@@ -263,8 +263,8 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
 
 
   max_lbda  = 1.000; min_lbda  = 0.000;
-  max_mu    = 0.4; min_mu    = 0.1;
-  max_sigsq = 0.16; min_sigsq = 0.04;
+  max_mu    = 1.0;   min_mu    = 0.01;
+  max_sigsq = 0.8;   min_sigsq = 0.008;
 
 
   /* max_lbda  = 0.12; min_lbda  = 0.12; */
@@ -661,7 +661,7 @@ phydbl MIGREP_Simulate_Forward_Core(int n_sites, t_tree *tree)
       disk->time = curr_t;
       disk->mmod = mmod;
     }
-  while(n_disk < 15000);
+  while(n_disk < 50000);
 
   For(i,pop_size) ldsk_a_pop[i]->disk = disk;
 
