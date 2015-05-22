@@ -1685,6 +1685,7 @@ typedef struct __Migrep_Model{
   phydbl                     min_rad; // min of radius of the migrep disk 
   phydbl                     max_rad; // max of radius of the migrep disk 
   phydbl             prior_param_rad; // parameter of the parameter for the prior on radius
+  int                     update_rad;
 
   phydbl                       sigsq; // parent to offspring distance variance (i.e., gene flow) parameter. 
   phydbl                   min_sigsq; // min 
