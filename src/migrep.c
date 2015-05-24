@@ -142,7 +142,7 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
   /* !!!!!!!!!!!!! */
   /* seed = 9498; */
   /* seed = 27351; */
-  seed = 359;
+  /* seed = 359; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -285,8 +285,8 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   /* mmod->sigsq = 0.05; */
   /* mmod->rad = MIGREP_Update_Radius(tree); */
 
-  MIGREP_Simulate_Backward_Core(YES,tree->disk,tree);
-  /* mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree); */
+  /* MIGREP_Simulate_Backward_Core(YES,tree->disk,tree); */
+  mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree);
 
   int n = 0;
   disk = tree->disk->prev;
