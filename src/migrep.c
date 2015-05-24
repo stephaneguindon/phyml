@@ -141,7 +141,8 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
 
   /* !!!!!!!!!!!!! */
   /* seed = 9498; */
-  seed = 27351;
+  /* seed = 27351; */
+  seed = 359;
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -269,20 +270,20 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
 
   /* Initialize parameters of migrep model */
 
-  /* mmod->lbda = 1.0; */
+  mmod->lbda = 1.0;
 
-  /* max_mu = 1.00; min_mu = 0.01; */
-  /* mmod->mu = Uni()*(max_mu - min_mu)  + min_mu; */
+  max_mu = 1.00; min_mu = 0.01;
+  mmod->mu = Uni()*(max_mu - min_mu)  + min_mu;
 
-  /* max_rad = 2.0; min_rad = 2.0 + (0.1 - 2.0)/(max_mu - min_mu)*mmod->mu; */
-  /* mmod->rad = Uni()*(max_rad - min_rad) + min_rad; */
+  max_rad = 2.0; min_rad = 2.0 + (0.1 - 2.0)/(max_mu - min_mu)*mmod->mu;
+  mmod->rad = Uni()*(max_rad - min_rad) + min_rad;
 
-  /* mmod->sigsq = MIGREP_Update_Sigsq(tree); */
+  mmod->sigsq = MIGREP_Update_Sigsq(tree);
 
-  mmod->lbda  = 0.3;
-  mmod->mu    = 0.9;
-  mmod->sigsq = 0.05;
-  mmod->rad = MIGREP_Update_Radius(tree);
+  /* mmod->lbda  = 0.3; */
+  /* mmod->mu    = 0.9; */
+  /* mmod->sigsq = 0.05; */
+  /* mmod->rad = MIGREP_Update_Radius(tree); */
 
   MIGREP_Simulate_Backward_Core(YES,tree->disk,tree);
   /* mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree); */
@@ -296,18 +297,17 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
     }
   T = disk->time;
 
-  /* disk = tree->disk->prev; */
-  /* while(disk)  */
-  /*   { */
-  /*     disk->time *= 100.; */
-  /*     disk->time /= FABS(T); */
-  /*     disk = disk->prev; */
-  /*   } */
+  disk = tree->disk->prev;
+  while(disk)
+    {
+      disk->time *= 100.;
+      disk->time /= FABS(T);
+      disk = disk->prev;
+    }
   
-  /* mmod->lbda /= 100./FABS(T); */
+  mmod->lbda /= 100./FABS(T);
 
-  /* mmod->sigsq = MIGREP_Update_Sigsq(tree); */
-
+  mmod->sigsq = MIGREP_Update_Sigsq(tree);
 
   PhyML_Printf("\n. lbda: %G mu: %G sigsq: %G rad: %G neigh: %G dens: %G",
                mmod->lbda,mmod->mu,mmod->sigsq,mmod->rad,2./mmod->mu,1./(mmod->mu*PI*mmod->sigsq));
@@ -1072,7 +1072,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   t_dsk *disk;
   FILE *fp_tree,*fp_stats,*fp_summary;
   phydbl *res;
-  phydbl true_root_x, true_root_y,true_lbda,true_mu,true_sigsq,true_neigh,fst_neigh,diversity;
+  phydbl true_root_x, true_root_y,true_lbda,true_mu,true_sigsq,true_neigh,fst_neigh,diversity,true_rad;
 
   fp_tree    = tree->io->fp_out_tree;
   fp_stats   = tree->io->fp_out_stats;
@@ -1131,6 +1131,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   true_lbda  = tree->mmod->lbda;
   true_mu    = tree->mmod->mu;
   true_sigsq = tree->mmod->sigsq;
+  true_rad   = tree->mmod->rad;
   true_neigh = MIGREP_Neighborhood_Size(tree);
   fst_neigh  = MIGREP_Neighborhood_Size_Regression(tree);
   diversity  = Nucleotide_Diversity(tree->data);
@@ -1140,8 +1141,8 @@ phydbl *MIGREP_MCMC(t_tree *tree)
 
   /* Starting parameter values */
   tree->mmod->lbda = Uni()*(10. - 1.) + 1.;
-  tree->mmod->mu   = Uni()*(1.0 - 0.6) + 0.6;
-  tree->mmod->rad  = Uni()*(3.0 - 2.0) + 2.0;
+  tree->mmod->mu   = Uni()*(1.0 - 0.5) + 0.5;
+  tree->mmod->rad  = Uni()*(2.0 - 1.0) + 1.0;
   MIGREP_Update_Sigsq(tree);
 
   /* MCMC_Randomize_Rate_Across_Sites(tree); */
@@ -1167,7 +1168,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   fflush(NULL);
 
 
-  PhyML_Fprintf(fp_stats,"\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s",
+  PhyML_Fprintf(fp_stats,"\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s",
                 "sample",
                 "alnL",
                 "glnL",
@@ -1177,12 +1178,11 @@ phydbl *MIGREP_MCMC(t_tree *tree)
                 "modmu",
                 "sigsq",
                 "modsigsq",
+                "rad",
                 "neigh",
                 "nInt",
                 "nCoal",
                 "nHit",
-                "xRootLon",
-                "xRootLat",
                 "rootTime",
                 "tstv",
                 "alpha",
@@ -1280,7 +1280,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
           disk = tree->disk;
           while(disk->prev) disk = disk->prev;
 
-          PhyML_Fprintf(fp_stats,"\n%6d\t%9.1f\t%9.1f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6d\t%6d\t%6d\t%6.2f\t%6.2f\t%8.1f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f",
+          PhyML_Fprintf(fp_stats,"\n%6d\t%9.1f\t%9.1f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6d\t%6d\t%6d\t%8.1f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f",
                         tree->mcmc->run,
                         tree->c_lnL,
                         tree->mmod->c_lnL,
@@ -1290,12 +1290,11 @@ phydbl *MIGREP_MCMC(t_tree *tree)
                         tree->mcmc->mode[tree->mcmc->num_move_migrep_mu],
                         MIGREP_Update_Sigsq(tree),
                         tree->mcmc->mode[tree->mcmc->num_move_migrep_sigsq],
+                        tree->mmod->rad,
                         MIGREP_Neighborhood_Size(tree),
                         MIGREP_Total_Number_Of_Intervals(tree),
                         MIGREP_Total_Number_Of_Coal_Disks(tree),
                         MIGREP_Total_Number_Of_Hit_Disks(tree),
-                        disk->ldsk->coord->lonlat[0],
-                        disk->ldsk->coord->lonlat[1],
                         disk->time,
                         tree->mod->kappa->v,
                         tree->mod->ras->alpha->v,
@@ -1318,8 +1317,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
           res[1 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = tree->mmod->mu; 
           res[2 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = tree->mmod->sigsq; 
           res[3 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = MIGREP_Neighborhood_Size(tree);
-          res[4 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = disk->ldsk->coord->lonlat[0];
-          res[5 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = disk->ldsk->coord->lonlat[1];
+          res[4 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = tree->mmod->rad;
 
           MCMC_Copy_To_New_Param_Val(tree->mcmc,tree);
           
@@ -1331,13 +1329,14 @@ phydbl *MIGREP_MCMC(t_tree *tree)
           
           rewind(fp_summary);
 
-          PhyML_Fprintf(fp_summary,"\n# SampArea\t TrueLbda\t TrueMu\t TrueSig\t TrueNeigh\t Diversity\t TrueInt\t TrueCoal\t TrueHits\t RegNeigh\t TrueXroot\t TrueYroot\t Lbda5\t Lbda50\t Lbda95\t LbdaMod \t Mu5\t Mu50\t Mu95\t  MuMod \t Sig5\t Sig50\t Sig95\t SigMod \t Neigh5\t Neigh50\t Neigh95\t NeighMod \t Xroot5\t Xroot50\t Xroot95\t Yroot5\t Yroot50\t Yroot95\t ESSLbda \t ESSMu \t ESSSig");
+          PhyML_Fprintf(fp_summary,"\n# SampArea\t TrueLbda\t TrueMu\t TrueSig\t TrueRad\t TrueNeigh\t Diversity\t TrueInt\t TrueCoal\t TrueHits\t RegNeigh\t TrueXroot\t TrueYroot\t Lbda5\t Lbda50\t Lbda95\t LbdaMod \t Mu5\t Mu50\t Mu95\t  MuMod \t Sig5\t Sig50\t Sig95\t SigMod \t Neigh5\t Neigh50\t Neigh95\t NeighMod \t Rad5\t Rad50\t Rad95\t ESSLbda \t ESSMu \t ESSSig");
           
           PhyML_Fprintf(fp_summary,"\n %f\t %f\t %f\t %f\t %f\t %f\t %d\t %d\t %d\t %f\t %f\t %f\t",
                         tree->mmod->sampl_area,
                         true_lbda,
                         true_mu,
                         true_sigsq,
+                        true_rad,
                         true_neigh,
                         diversity,
                         true_nint,
@@ -1373,15 +1372,10 @@ phydbl *MIGREP_MCMC(t_tree *tree)
                         /* NeighMod */ 2./tree->mcmc->mode[tree->mcmc->num_move_migrep_mu]);
           
           PhyML_Fprintf(fp_summary,"%f\t %f\t %f\t",
-                        /* X5 */ Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
-                        /* X50*/ Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
-                        /* X95*/ Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975));
-          
-          PhyML_Fprintf(fp_summary,"%f\t %f\t %f\t",
-                        /* Y5 */ Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
-                        /* Y50*/ Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
-                        /* Y95*/ Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975));
-          
+                        /* Rad5 */ Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
+                        /* Rad50 */ Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
+                        /* Rad95 */ Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975));
+                    
           PhyML_Fprintf(fp_summary,"%f\t %f\t %f\t",
                         tree->mcmc->ess[tree->mcmc->num_move_migrep_lbda],
                         tree->mcmc->ess[tree->mcmc->num_move_migrep_mu],  

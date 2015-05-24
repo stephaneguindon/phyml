@@ -312,12 +312,13 @@ phydbl Rnorm_Trunc(phydbl mean, phydbl sd, phydbl min, phydbl max, int *error)
 
   phydbl ret_val,eps;
   int iter;
-  phydbl z;
+  phydbl z, q, u;
   phydbl z_min,z_max;
 
-  z      = 0.0;
-  *error = NO;
-  
+  z       = 0.0;
+  *error  = NO;
+  ret_val = INFINITY;
+
   if(sd < 1.E-100)
     {
       PhyML_Printf("\n. Small variance detected in Rnorm_Trunc.");
@@ -339,61 +340,53 @@ phydbl Rnorm_Trunc(phydbl mean, phydbl sd, phydbl min, phydbl max, int *error)
 
   eps = (z_max-z_min)/1E+6;
 
-  /* Damien and Walker (2001) method */
-  phydbl y,slice_min,slice_max;
-
-/*   if((z_min < -10.) && (z_max > +10.)) /\* cdf < 1.E-6, we should be safe. *\/ */
-/*     { */
-/*       z = Rnorm(0.0,1.0); */
-/*     } */
-/*   else */
-/*     { */
-
-
-      iter = 0;
-      do
-	{
-	  y   = Uni()*EXP(-(z*z)/2.);
-	  slice_min = MAX(z_min,-SQRT(-2.*LOG(y)));
-	  slice_max = MIN(z_max, SQRT(-2.*LOG(y)));
-	  z   = Uni()*(slice_max - slice_min) + slice_min;
-	  iter++;
-	  if(iter > 1000) break;
-	}
-      while(slice_max < slice_min || iter < 100);
-
-      if(iter > 1000)
-	{
-	  PhyML_Printf("\n. Too many iterations in Rnorm_Trunc...");
-	  *error = 1;
-	}
-
-/*     } */
-
-  /* Inverson method */
-/*   phydbl cdf_min, cdf_max; */
-/*   if((z_min < -10.) && (z_max > +10.)) /\* cdf < 1.E-6, we should be safe. *\/ */
-/*     { */
-/*       z = Rnorm(0.0,1.0); */
-/*     } */
-/*   else */
-/*     { */
-/* /\*       Simple inversion method. Seems to work well. Needs more thorough testing though... *\/ */
-/*       cdf_min = Pnorm(z_min,0.0,1.0); */
-/*       cdf_max = Pnorm(z_max,0.0,1.0); */
-/*       u = cdf_min + (cdf_max-cdf_min) * Uni(); */
-/*       z = PointNormal(u); */
-/*     } */
+  /* /\* Damien and Walker (2001) method *\/ */
+  /* phydbl y,slice_min,slice_max; */
+  /* iter = 0; */
+  /* do */
+  /*   { */
+  /*     y   = Uni()*EXP(-(z*z)/2.); */
+  /*     slice_min = MAX(z_min,-SQRT(-2.*LOG(y))); */
+  /*     slice_max = MIN(z_max, SQRT(-2.*LOG(y))); */
+  /*     z   = Uni()*(slice_max - slice_min) + slice_min; */
+  /*     iter++; */
+  /*     if(iter > 1000) break; */
+  /*   } */
+  /* while(slice_max < slice_min || iter < 100); */
+  
+  /* if(iter > 1000) */
+  /*   { */
+  /*     PhyML_Printf("\n. Too many iterations in Rnorm_Trunc..."); */
+  /*         *error = 1; */
+  /*   } */
+  
+  /*  if((z < z_min-eps) || (z > z_max+eps)) */
+  /*   { */
+  /*     *error = YES; */
+  /*     PhyML_Printf("\n. Numerical precision issue detected in Rnorm_Trunc."); */
+  /*     PhyML_Printf("\n. z = %f",z); */
+  /*     PhyML_Printf("\n. mean=%f sd=%f z_min=%f z_max=%f min=%f max=%f",mean,sd,z_min,z_max,min,max); */
+  /*     ret_val = (max - min)/2.; */
+  /*     Exit("\n"); */
+  /*   } */
 
 
-   if((z < z_min-eps) || (z > z_max+eps))
+  iter = 0;
+  do
     {
-      *error = YES;
-      PhyML_Printf("\n. Numerical precision issue detected in Rnorm_Trunc.");
-      PhyML_Printf("\n. z = %f",z);
-      PhyML_Printf("\n. mean=%f sd=%f z_min=%f z_max=%f min=%f max=%f",mean,sd,z_min,z_max,min,max);
-      ret_val = (max - min)/2.;
-      Exit("\n");
+      z = Uni()*(z_max - z_min) + z_min;
+      if(z_min < 0.0 && z_max > 0.0) q = EXP(-z*z/2.);
+      else if (z_max < 0.0) q = EXP((z_max*z_max-z*z)/2.);
+      else q = EXP((z_min*z_min-z*z)/2.);
+      u = Uni();
+      if(!(u>q)) { break; }
+      iter++;
+    }while(iter < 1000);
+
+  if(iter == 1000)
+    {
+      PhyML_Printf("\n. Too many iterations in Rnorm_Trunc...");
+      *error = 1;
     }
 
   ret_val = z*sd+mean;
@@ -1716,8 +1709,8 @@ phydbl LnFact(int n)
   int i;
   phydbl res;
 
-  res = 0;
-  for(i=2;i<=n;i++) res += LOG(i);
+  res = .0;
+  for(i=2;i<=n;i++) res += LOG((phydbl)i);
   
   return(res);
 }
@@ -1743,7 +1736,13 @@ int Choose(int n, int k)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+int LnChoose(int n, int k)
+{
+  return((int)(LnFact(n) - LnFact(k) - LnFact(n-k)));
+}
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
 phydbl *Covariance_Matrix(t_tree *tree)
 {

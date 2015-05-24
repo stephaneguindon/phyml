@@ -3440,8 +3440,8 @@ void MIGREP_Init_Migrep_Mod(t_migrep_mod *t, int n_dim, phydbl max_lat, phydbl m
   t->prior_param_mu   = 0.500;
 
   t->min_rad           = 0.0;
-  t->max_rad           = 5.0;
-  t->rad               = 2.0;
+  t->max_rad           = 2.0;
+  t->rad               = 1.0;
   t->update_rad        = NO;
 
   t->min_sigsq         = 0.0;
