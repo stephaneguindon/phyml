@@ -190,10 +190,8 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
   Free_Model_Basic(tree->mod);
   Free_Cseq(tree->data);
   Free_Tree(tree);
-
   Free(res);  
   Free(s);
-
 
   return 0;
 }
@@ -285,8 +283,8 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   /* mmod->sigsq = 0.05; */
   /* mmod->rad = MIGREP_Update_Radius(tree); */
 
-  /* MIGREP_Simulate_Backward_Core(YES,tree->disk,tree); */
-  mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree);
+  MIGREP_Simulate_Backward_Core(YES,tree->disk,tree);
+  /* mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree); */
 
   int n = 0;
   disk = tree->disk->prev;
@@ -297,15 +295,15 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
     }
   T = disk->time;
 
-  disk = tree->disk->prev;
-  while(disk)
-    {
-      disk->time *= 100.;
-      disk->time /= FABS(T);
-      disk = disk->prev;
-    }
+  /* disk = tree->disk->prev; */
+  /* while(disk) */
+  /*   { */
+  /*     disk->time *= 100.; */
+  /*     disk->time /= FABS(T); */
+  /*     disk = disk->prev; */
+  /*   } */
   
-  mmod->lbda /= 100./FABS(T);
+  /* mmod->lbda /= 100./FABS(T); */
 
   mmod->sigsq = MIGREP_Update_Sigsq(tree);
 
@@ -345,7 +343,6 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   disk = tree->disk->prev;
   while(disk->prev) disk = disk->prev;
 
-
   printf("\n. XXX %f %d %d %d %f %f %f %f %f %f\n",
          disk->time,
          MIGREP_Total_Number_Of_Intervals(tree),
@@ -366,14 +363,15 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
 ////////////////////////////////////////////////////////////*/
 // Simulate Etheridge-Barton model backwards in time, following n_otu lineages
 // on a rectangle of dimension width x height
-void MIGREP_Simulate_Backward_Core(int new_loc, t_dsk *init_disk, t_tree *tree)
+phydbl MIGREP_Simulate_Backward_Core(int new_loc, t_dsk *init_disk, t_tree *tree)
 {
   t_dsk *disk;
   t_ldsk *new_ldsk,**ldsk_a,**ldsk_a_tmp;
-  int i,j,n_disk,n_lineages,n_dim,n_hit,n_lineages_new;
+  int i,j,n_disk,n_lineages,n_dim,n_hit,n_lineages_new,err;
   phydbl dt_dsk,curr_t,prob_hit,u;
   t_migrep_mod *mmod;
-  
+  phydbl lnL;
+
   mmod  = tree->mmod;
   n_dim = tree->mmod->n_dim;
 
@@ -427,15 +425,21 @@ void MIGREP_Simulate_Backward_Core(int new_loc, t_dsk *init_disk, t_tree *tree)
   dt_dsk     = 0.0;
   n_lineages = init_disk->n_ldsk_a;
   n_disk     = 0;
+  lnL        = 0.0;
   do
     {      
       /* Time of next event */
       dt_dsk = Rexp(mmod->lbda);
       curr_t -= dt_dsk;
 
+      lnL += (LOG(mmod->lbda) - mmod->lbda*dt_dsk);
+      
       /* Coordinates of next event */
       disk->centr->lonlat[0] = Uni()*mmod->lim->lonlat[0];
       disk->centr->lonlat[1] = Uni()*mmod->lim->lonlat[1];      
+
+      lnL += LOG(1./mmod->lim->lonlat[0]);
+      lnL += LOG(1./mmod->lim->lonlat[1]);
 
       disk->time = curr_t;
       disk->mmod = mmod;
@@ -483,13 +487,7 @@ void MIGREP_Simulate_Backward_Core(int new_loc, t_dsk *init_disk, t_tree *tree)
               u = Uni();
               if(!(u > prob_hit))
                 {
-                  /* printf("\n. Hit and die %s @ time %f. Center: %f %f Go to %f %f", */
-                  /*        ldsk_a[i]->coord->id, */
-                  /*        disk->time, */
-                  /*        disk->centr->lonlat[0], */
-                  /*        disk->centr->lonlat[1], */
-                  /*        new_ldsk->coord->lonlat[0], */
-                  /*        new_ldsk->coord->lonlat[1]); */
+                  lnL += LOG(prob_hit);
                   
                   MIGREP_Make_Lindisk_Next(new_ldsk);
 
@@ -506,14 +504,30 @@ void MIGREP_Simulate_Backward_Core(int new_loc, t_dsk *init_disk, t_tree *tree)
                       n_lineages_new++;
                     }
                 }
+              else
+                {
+                  lnL += LOG(1. - prob_hit);
+                }                
             }
           
           if(ldsk_a[i]->prev == NULL) /* Lineage was not hit */
-            {
+            {              
               ldsk_a_tmp[n_lineages_new] = ldsk_a[i];
               n_lineages_new++;
             }
         }
+
+      if(n_hit >= 1)
+        {
+          phydbl log_dens_coal;
+          log_dens_coal = 0.0;
+          For(j,mmod->n_dim) log_dens_coal += Log_Dnorm_Trunc(new_ldsk->coord->lonlat[j],
+                                                              disk->centr->lonlat[j],
+                                                              mmod->rad,
+                                                              0.0,
+                                                              mmod->lim->lonlat[j],&err);
+          lnL += log_dens_coal;          
+        }      
       
       if((n_hit > 0) && (n_lineages_new != n_lineages - n_hit + 1)) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
@@ -539,6 +553,8 @@ void MIGREP_Simulate_Backward_Core(int new_loc, t_dsk *init_disk, t_tree *tree)
   while(1);
 
   Free(ldsk_a_tmp);
+
+  return(lnL);
 }
 
 /*////////////////////////////////////////////////////////////
@@ -1026,20 +1042,19 @@ phydbl MIGREP_Lk(t_tree *tree)
                                                                     mmod->rad,
                                                                     0.0,
                                                                     mmod->lim->lonlat[j],&err);
-                /* log_dens_coal = -LOG(SQRT(2.*PI*POW(mmod->rad,2))); */
-                /* For(j,mmod->n_dim) log_dens_coal += -POW(disk->prev->ldsk->coord->lonlat[j] - disk->prev->centr->lonlat[j],2)/(2.*POW(mmod->rad,2)); */
                 lnL += log_dens_coal;
                 break;
               }
             }
         }
 
+
+      /* Likelihood for the disk center */
+      For(i,disk->mmod->n_dim) lnL -= LOG(disk->prev->mmod->lim->lonlat[i]);
+
       disk = disk->prev;
       
       if(!disk->prev) break;
-
-      /* Likelihood for the disk center */
-      For(i,disk->mmod->n_dim) lnL -= LOG(disk->mmod->lim->lonlat[i]);
 
     }
   while(1);
@@ -1054,9 +1069,9 @@ phydbl MIGREP_Lk(t_tree *tree)
   /* mmod->c_lnL = 0.0; */
   
   /* TO DO: create a proper MIGREP_LogPost() function */
-  mmod->c_lnL += MIGREP_LnPrior_Sigsq(tree);
-  mmod->c_lnL += MIGREP_LnPrior_Mu(tree);
-  mmod->c_lnL += MIGREP_LnPrior_Lbda(tree);
+  /* mmod->c_lnL += MIGREP_LnPrior_Sigsq(tree); */
+  /* mmod->c_lnL += MIGREP_LnPrior_Mu(tree); */
+  /* mmod->c_lnL += MIGREP_LnPrior_Lbda(tree); */
   
   return(mmod->c_lnL);
 }
