@@ -141,8 +141,8 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
 
   /* !!!!!!!!!!!!! */
   /* seed = 9498; */
-  seed = 27351;
-  /* seed = 359; */
+  /* seed = 27351; */
+  seed = 359;
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -261,27 +261,22 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   tree->mmod = mmod;
   MIGREP_Init_Migrep_Mod(mmod,n_dim,width,height);
   
-
-  /* max_lbda  = 1.00;  min_lbda  = 1.00; */
-  /* max_mu    = 0.05;  min_mu    = 0.05; */
-  /* max_rad   = 2.00;  min_rad   = 2.00; */
-
   /* Initialize parameters of migrep model */
 
-  /* mmod->lbda = 1.0; */
+  mmod->lbda = 1.0;
 
-  /* max_mu = 1.00; min_mu = 0.01; */
-  /* mmod->mu = Uni()*(max_mu - min_mu)  + min_mu; */
+  max_mu = 1.00; min_mu = 0.01;
+  mmod->mu = Uni()*(max_mu - min_mu)  + min_mu;
 
-  /* max_rad = 2.0; min_rad = 2.0 + (0.1 - 2.0)/(max_mu - min_mu)*mmod->mu; */
-  /* mmod->rad = Uni()*(max_rad - min_rad) + min_rad; */
+  max_rad = 2.0; min_rad = 2.0 + (0.1 - 2.0)/(max_mu - min_mu)*mmod->mu;
+  mmod->rad = Uni()*(max_rad - min_rad) + min_rad;
 
-  /* mmod->sigsq = MIGREP_Update_Sigsq(tree); */
-
-  mmod->lbda  = 1.0;
-  mmod->mu    = 0.86;
-  mmod->rad   = 1.46;
   mmod->sigsq = MIGREP_Update_Sigsq(tree);
+
+  /* mmod->lbda  = 1.0; */
+  /* mmod->mu    = 0.86; */
+  /* mmod->rad   = 1.46; */
+  /* mmod->sigsq = MIGREP_Update_Sigsq(tree); */
 
   MIGREP_Simulate_Backward_Core(YES,tree->disk,tree);
   /* mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree); */
@@ -1349,7 +1344,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
           
           rewind(fp_summary);
 
-          PhyML_Fprintf(fp_summary,"\n# SampArea\t TrueLbda\t TrueMu\t TrueSig\t TrueRad\t TrueNeigh\t Diversity\t TrueInt\t TrueCoal\t TrueHits\t RegNeigh\t TrueXroot\t TrueYroot\t Lbda5\t Lbda50\t Lbda95\t LbdaMod \t Mu5\t Mu50\t Mu95\t  MuMod \t Sig5\t Sig50\t Sig95\t SigMod \t Neigh5\t Neigh50\t Neigh95\t NeighMod \t Rad5\t Rad50\t Rad95\t ESSLbda \t ESSMu \t ESSSig");
+          PhyML_Fprintf(fp_summary,"\n# SampArea\t TrueLbda\t TrueMu\t TrueSig\t TrueRad\t TrueNeigh\t Diversity\t TrueInt\t TrueCoal\t TrueHits\t RegNeigh\t TrueXroot\t TrueYroot\t TrueHeight\t Lbda5\t Lbda50\t Lbda95\t LbdaMod \t Mu5\t Mu50\t Mu95\t  MuMod \t Sig5\t Sig50\t Sig95\t SigMod \t Neigh5\t Neigh50\t Neigh95\t NeighMod \t Rad5\t Rad50\t Rad95\t ESSLbda \t ESSMu \t ESSSig");
           
           PhyML_Fprintf(fp_summary,"\n %f\t %f\t %f\t %f\t %f\t %f\t %f\t %d\t %d\t %d\t %f\t %f\t %f\t %f\t",
                         tree->mmod->sampl_area,
