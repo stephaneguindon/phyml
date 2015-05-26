@@ -4486,11 +4486,11 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_migrep_mu]                    = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_rad]                   = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_sigsq]                 = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_indel_disk]            = 0.5;
+  mcmc->move_weight[mcmc->num_move_migrep_indel_disk]            = 10.0;
   mcmc->move_weight[mcmc->num_move_migrep_move_disk_ct]          = 2.5;
   mcmc->move_weight[mcmc->num_move_migrep_move_disk_ud]          = 0.5;
   mcmc->move_weight[mcmc->num_move_migrep_swap_disk]             = 0.5;
-  mcmc->move_weight[mcmc->num_move_migrep_indel_hit]             = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_indel_hit]             = 10.0;
   mcmc->move_weight[mcmc->num_move_migrep_move_ldsk]             = 2.5;
   mcmc->move_weight[mcmc->num_move_migrep_spr]                   = 2.0;
   mcmc->move_weight[mcmc->num_move_migrep_scale_times]           = 1.0;
@@ -5179,13 +5179,13 @@ void MCMC_MIGREP_Indel_Disk(t_tree *tree)
   /* min = MAX(0.0,n_disks_cur - 1. - n_disks_cur/10.); */
   /* hr -= LOG(max - min); */
 
-  max = n_disks_cur + 5.;
-  min = MAX(0.0,n_disks_cur - 5.);
+  max = n_disks_cur + 2.;
+  min = MAX(0.0,n_disks_cur - 2.);
   n_disks_new = (int)(Uni()*(max-min) + min);
   hr += LOG(max - min);
 
-  max = n_disks_cur + 5.;
-  min = MAX(0.0,n_disks_cur - 5.);
+  max = n_disks_cur + 2.;
+  min = MAX(0.0,n_disks_cur - 2.);
   hr -= LOG(max - min);
   
   if(n_disks_new < n_disks_cur) MCMC_MIGREP_Delete_Disk(hr, n_disks_cur - n_disks_new ,tree);
