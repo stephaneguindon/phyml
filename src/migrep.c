@@ -1290,10 +1290,10 @@ phydbl *MIGREP_MCMC(t_tree *tree)
         {
           /* Lk(NULL,tree); */
 
-          char *s = Write_Tree(tree,NO);
-          PhyML_Fprintf(fp_tree,"\n[%f] %s",tree->c_lnL,s);
-          Free(s);
-          fflush(NULL);
+          /* char *s = Write_Tree(tree,NO); */
+          /* PhyML_Fprintf(fp_tree,"\n[%f] %s",tree->c_lnL,s); */
+          /* Free(s); */
+          /* fflush(NULL); */
 
           disk = tree->disk;
           while(disk->prev) disk = disk->prev;
