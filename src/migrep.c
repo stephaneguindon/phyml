@@ -142,7 +142,7 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
   /* !!!!!!!!!!!!! */
   /* seed = 9498; */
   /* seed = 27351; */
-  seed = 359;
+  /* seed = 359; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -263,20 +263,20 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   
   /* Initialize parameters of migrep model */
 
-  mmod->lbda = 1.0;
+  /* mmod->lbda = 1.0; */
 
-  max_mu = 1.00; min_mu = 0.01;
-  mmod->mu = Uni()*(max_mu - min_mu)  + min_mu;
+  /* max_mu = 1.00; min_mu = 0.01; */
+  /* mmod->mu = Uni()*(max_mu - min_mu)  + min_mu; */
 
-  max_rad = 2.0; min_rad = 2.0 + (0.1 - 2.0)/(max_mu - min_mu)*mmod->mu;
-  mmod->rad = Uni()*(max_rad - min_rad) + min_rad;
+  /* max_rad = 2.0; min_rad = 2.0 + (0.1 - 2.0)/(max_mu - min_mu)*mmod->mu; */
+  /* mmod->rad = Uni()*(max_rad - min_rad) + min_rad; */
 
-  mmod->sigsq = MIGREP_Update_Sigsq(tree);
-
-  /* mmod->lbda  = 1.0; */
-  /* mmod->mu    = 0.86; */
-  /* mmod->rad   = 1.46; */
   /* mmod->sigsq = MIGREP_Update_Sigsq(tree); */
+
+  mmod->lbda  = 1.0;
+  mmod->mu    = 0.86;
+  mmod->rad   = 1.46;
+  mmod->sigsq = MIGREP_Update_Sigsq(tree);
 
   MIGREP_Simulate_Backward_Core(YES,tree->disk,tree);
   /* mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree); */
