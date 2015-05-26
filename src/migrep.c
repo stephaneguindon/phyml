@@ -283,8 +283,8 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   /* mmod->sigsq = 0.05; */
   /* mmod->rad = MIGREP_Update_Radius(tree); */
 
-  MIGREP_Simulate_Backward_Core(YES,tree->disk,tree);
-  /* mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree); */
+  /* MIGREP_Simulate_Backward_Core(YES,tree->disk,tree); */
+  mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree);
 
   int n = 0;
   disk = tree->disk->prev;
@@ -1155,7 +1155,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   true_nhits = MIGREP_Total_Number_Of_Hit_Disks(tree);
 
   /* Starting parameter values */
-  tree->mmod->lbda = Uni()*(10. - 1.) + 1.;
+  tree->mmod->lbda = Uni()*(10. - 5.)  + 5.;
   tree->mmod->mu   = Uni()*(1.0 - 0.5) + 0.5;
   tree->mmod->rad  = Uni()*(2.0 - 1.0) + 1.0;
   MIGREP_Update_Sigsq(tree);
@@ -1183,7 +1183,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   fflush(NULL);
 
 
-  PhyML_Fprintf(fp_stats,"\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s",
+  PhyML_Fprintf(fp_stats,"\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s",
                 "sample",
                 "alnL",
                 "glnL",
@@ -1212,7 +1212,9 @@ phydbl *MIGREP_MCMC(t_tree *tree)
                 "accScaleTime",
                 "accDisk",
                 "accLdsk",
-                "accSim");
+                "accSim",
+                "accMoveLdsk",
+                "accMoveCtr");
 
 
 
@@ -1295,7 +1297,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
           disk = tree->disk;
           while(disk->prev) disk = disk->prev;
 
-          PhyML_Fprintf(fp_stats,"\n%6d\t%9.1f\t%9.1f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6d\t%6d\t%6d\t%8.1f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f",
+          PhyML_Fprintf(fp_stats,"\n%6d\t%9.1f\t%9.1f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6d\t%6d\t%6d\t%8.1f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f",
                         tree->mcmc->run,
                         tree->c_lnL,
                         tree->mmod->c_lnL,
@@ -1324,7 +1326,9 @@ phydbl *MIGREP_MCMC(t_tree *tree)
                         tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_scale_times],
                         tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_move_disk_ct],
                         tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_move_ldsk],
-                        tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_sim]);
+                        tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_sim],
+                        tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_move_ldsk],
+                        tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_move_disk_ct]);
 
           fflush(fp_stats);
           
