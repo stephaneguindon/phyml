@@ -142,7 +142,8 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
   /* !!!!!!!!!!!!! */
   /* seed = 9498; */
   /* seed = 27351; */
-  /* seed = 359; */
+  seed = 359;
+  /* seed = 1; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -263,20 +264,20 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   
   /* Initialize parameters of migrep model */
 
-  /* mmod->lbda = 1.0; */
+  mmod->lbda = 1.0;
 
-  /* max_mu = 1.00; min_mu = 0.01; */
-  /* mmod->mu = Uni()*(max_mu - min_mu)  + min_mu; */
+  max_mu = 1.00; min_mu = 0.01;
+  mmod->mu = Uni()*(max_mu - min_mu)  + min_mu;
 
-  /* max_rad = 2.0; min_rad = 2.0 + (0.1 - 2.0)/(max_mu - min_mu)*mmod->mu; */
-  /* mmod->rad = Uni()*(max_rad - min_rad) + min_rad; */
+  max_rad = 2.0; min_rad = 2.0 + (0.1 - 2.0)/(max_mu - min_mu)*mmod->mu;
+  mmod->rad = Uni()*(max_rad - min_rad) + min_rad;
 
-  /* mmod->sigsq = MIGREP_Update_Sigsq(tree); */
-
-  mmod->lbda  = 1.0;
-  mmod->mu    = 0.86;
-  mmod->rad   = 1.46;
   mmod->sigsq = MIGREP_Update_Sigsq(tree);
+
+  /* mmod->lbda  = 1.0; */
+  /* mmod->mu    = 0.86; */
+  /* mmod->rad   = 1.46; */
+  /* mmod->sigsq = MIGREP_Update_Sigsq(tree); */
 
   MIGREP_Simulate_Backward_Core(YES,tree->disk,tree);
   /* mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree); */
@@ -1044,11 +1045,12 @@ phydbl MIGREP_Lk(t_tree *tree)
         }
 
 
-      /* Likelihood for the disk center */
-      For(i,disk->mmod->n_dim) lnL -= LOG(disk->prev->mmod->lim->lonlat[i]);
 
       disk = disk->prev;
       
+      /* Likelihood for the disk center */
+      For(i,disk->mmod->n_dim) lnL -= LOG(disk->mmod->lim->lonlat[i]);
+
       if(!disk->prev) break;
 
     }
@@ -1151,13 +1153,13 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   true_height = MIGREP_Tree_Height(tree);
 
   /* Starting parameter values */
-  /* tree->mmod->lbda = Uni()*(10. - 5.)  + 5.; */
-  /* tree->mmod->mu   = Uni()*(1.0 - 0.5) + 0.5; */
-  /* tree->mmod->rad  = Uni()*(2.0 - 1.0) + 1.0; */
-  /* MIGREP_Update_Sigsq(tree); */
+  tree->mmod->lbda = Uni()*(10. - 5.)  + 5.;
+  tree->mmod->mu   = Uni()*(1.0 - 0.5) + 0.5;
+  tree->mmod->rad  = Uni()*(2.0 - 1.0) + 1.0;
+  MIGREP_Update_Sigsq(tree);
 
   /* MCMC_Randomize_Rate_Across_Sites(tree); */
-  /* MCMC_Randomize_Kappa(tree); */
+  MCMC_Randomize_Kappa(tree);
 
   /* Random genealogy */
   MIGREP_Simulate_Backward_Core(NO,tree->disk,tree);
@@ -1220,8 +1222,8 @@ phydbl *MIGREP_MCMC(t_tree *tree)
  
   mcmc->always_yes = NO;
   do
-    {
-      
+    {      
+      /* tree->mcmc->adjust_tuning[i] = NO; */
       if(mcmc->run > 5E+6) For(i,mcmc->n_moves) tree->mcmc->adjust_tuning[i] = NO;
 
       u = Uni();
@@ -1269,8 +1271,8 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       /* if(!strcmp(tree->mcmc->move_name[move],"migrep_sim")) */
       /*   MCMC_MIGREP_Simulate_Backward(tree); */
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"kappa")) */
-      /*   MCMC_Kappa(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"kappa"))
+        MCMC_Kappa(tree);
 
       /* if(!strcmp(tree->mcmc->move_name[move],"ras")) */
       /*   MCMC_Rate_Across_Sites(tree); */
@@ -3272,5 +3274,70 @@ phydbl MIGREP_Tree_Height(t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+int MIGREP_Random_Insert_Ldsk_In_Next_List(t_ldsk *ins, t_ldsk *where)
+{
+  int size, pos, i, *rk;
+  t_ldsk **next_cpy;
+
+
+  size = where->n_next;
+
+  rk = (int *)mCalloc(size,sizeof(int));
+  next_cpy = (t_ldsk **)mCalloc(size,sizeof(t_ldsk *));
+
+  For(i,size) next_cpy[i] = where->next[i];
+
+  pos  = Rand_Int(0,size);
+
+  For(i,size)
+    {
+      if(i < pos) rk[i] = i;
+      else        rk[i] = i+1;
+    }
+
+  MIGREP_Make_Lindisk_Next(where);
+  
+  For(i,size) where->next[rk[i]] = next_cpy[i];
+  
+  where->next[pos]= ins;
+
+
+  Free(rk);
+  Free(next_cpy);
+
+  return pos;
+}
+
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+void MIGREP_Insert_Ldsk_In_Next_List(t_ldsk *ins, int pos, t_ldsk *where)
+{
+  int size, i, *rk;
+  t_ldsk **next_cpy;
+
+  size = where->n_next;
+
+  rk = (int *)mCalloc(size,sizeof(int));
+  next_cpy = (t_ldsk **)mCalloc(size,sizeof(t_ldsk *));
+
+  For(i,size) next_cpy[i] = where->next[i];
+
+  For(i,size)
+    {
+      if(i < pos) rk[i] = i;
+      else        rk[i] = i+1;
+    }
+
+  MIGREP_Make_Lindisk_Next(where);
+  
+  For(i,size) where->next[rk[i]] = next_cpy[i];
+  
+  where->next[pos]= ins;
+
+  Free(rk);
+  Free(next_cpy);
+}
+

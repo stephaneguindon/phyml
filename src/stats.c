@@ -1736,9 +1736,9 @@ int Choose(int n, int k)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-int LnChoose(int n, int k)
+phydbl LnChoose(int n, int k)
 {
-  return((int)(LnFact(n) - LnFact(k) - LnFact(n-k)));
+  return(LnFact(n) - LnFact(k) - LnFact(n-k));
 }
 
 //////////////////////////////////////////////////////////////
@@ -4713,7 +4713,7 @@ phydbl Inverse_Truncated_Normal(phydbl y, phydbl mu, phydbl sigma, phydbl lim_in
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 // Returns a vector with a permutation of all the integer from 0
-// to len-1.
+// to len-1. Fisher-Yates algorithm.
 
 int *Permutate(int len)
 {
@@ -4726,7 +4726,7 @@ int *Permutate(int len)
 
   For(i,len)
     {
-      pos = Rand_Int(0,len-1);
+      pos = Rand_Int(i,len-1);
       
       tmp    = x[i];
       x[i]   = x[pos];

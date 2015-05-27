@@ -50,7 +50,7 @@ phydbl Dgamma_Moments(phydbl x, phydbl mean, phydbl var);
 phydbl Dgamma(phydbl x, phydbl shape, phydbl scale);
 phydbl LnFact(int n);
 int    Choose(int n, int k);
-int LnChoose(int n, int k);
+phydbl LnChoose(int n, int k);
 phydbl Ppois(phydbl x, phydbl param);
 phydbl Dexp(phydbl x, phydbl param);
 phydbl Dpois(phydbl x, phydbl param, int logit);

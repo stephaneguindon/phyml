@@ -85,6 +85,8 @@ void MCMC_MIGREP_Sigsq(t_tree *tree);
 phydbl MIGREP_LnPrior_Sigsq(t_tree *tree);
 phydbl MIGREP_Rate_Per_Unit_Area(t_tree *tree);
 phydbl MIGREP_Tree_Height(t_tree *tree);
+int MIGREP_Random_Insert_Ldsk_In_Next_List(t_ldsk *ins, t_ldsk *where);
+void MIGREP_Insert_Ldsk_In_Next_List(t_ldsk *ins, int pos, t_ldsk *where);
 
 
 #endif
