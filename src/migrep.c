@@ -142,7 +142,7 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
   /* !!!!!!!!!!!!! */
   /* seed = 9498; */
   /* seed = 27351; */
-  seed = 359;
+  /* seed = 359; */
   /* seed = 1; */
 
   printf("\n. seed: %d",seed);
