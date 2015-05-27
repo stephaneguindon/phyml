@@ -266,10 +266,10 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
 
   mmod->lbda = 1.0;
 
-  max_mu = 1.00; min_mu = 0.01;
+  max_mu = 1.00; min_mu = 0.05;
   mmod->mu = Uni()*(max_mu - min_mu)  + min_mu;
 
-  max_rad = 2.0; min_rad = 2.0 + (0.1 - 2.0)/(max_mu - min_mu)*mmod->mu;
+  max_rad = 2.0; min_rad = 2.0 + (0.2 - 2.0)/(max_mu - min_mu)*mmod->mu;
   mmod->rad = Uni()*(max_rad - min_rad) + min_rad;
 
   mmod->sigsq = MIGREP_Update_Sigsq(tree);
