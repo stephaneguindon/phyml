@@ -266,7 +266,7 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
 
   max_lbda = 10.00; min_lbda = 0.1;
   mmod->lbda = Uni()*(max_lbda - min_lbda)  + min_lbda;
-
+  
   max_mu = 1.00; min_mu = 0.05;
   mmod->mu = Uni()*(max_mu - min_mu)  + min_mu;
 
@@ -280,8 +280,8 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   /* mmod->rad   = 1.46; */
   /* mmod->sigsq = MIGREP_Update_Sigsq(tree); */
 
-  /* MIGREP_Simulate_Backward_Core(YES,tree->disk,tree); */
-  mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree);
+  MIGREP_Simulate_Backward_Core(YES,tree->disk,tree);
+  /* mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree); */
 
 
   PhyML_Printf("\n. lbda: %G mu: %G sigsq: %G rad: %G neigh: %G dens: %G",
@@ -1246,8 +1246,8 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"migrep_scale_times"))
         MCMC_MIGREP_Scale_Times(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"migrep_sim"))
-        MCMC_MIGREP_Simulate_Backward(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_sim")) */
+      /*   MCMC_MIGREP_Simulate_Backward(tree); */
 
       if(!strcmp(tree->mcmc->move_name[move],"kappa"))
         MCMC_Kappa(tree);
