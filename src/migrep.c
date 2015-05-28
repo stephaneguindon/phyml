@@ -144,7 +144,7 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
   /* seed = 27351; */
   /* seed = 359; */
   /* seed = 1; */
-  /* seed = 149000; */
+  /* seed = 15265; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -280,8 +280,8 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   /* mmod->rad   = 1.46; */
   /* mmod->sigsq = MIGREP_Update_Sigsq(tree); */
 
-  /* MIGREP_Simulate_Backward_Core(YES,tree->disk,tree); */
-  mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree);
+  MIGREP_Simulate_Backward_Core(YES,tree->disk,tree);
+  /* mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree); */
 
   int n = 0;
   disk = tree->disk->prev;
@@ -1152,7 +1152,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   true_height = MIGREP_Tree_Height(tree);
 
   /* Starting parameter values */
-  tree->mmod->lbda = Uni()*(10. - 5.)  + 5.;
+  tree->mmod->lbda = Uni()*(3.0 - 1.0) + 1.0;
   tree->mmod->mu   = Uni()*(1.0 - 0.5) + 0.5;
   tree->mmod->rad  = Uni()*(2.0 - 1.0) + 1.0;
   MIGREP_Update_Sigsq(tree);
@@ -1267,8 +1267,8 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"migrep_scale_times"))
         MCMC_MIGREP_Scale_Times(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"migrep_sim"))
-        MCMC_MIGREP_Simulate_Backward(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_sim")) */
+      /*   MCMC_MIGREP_Simulate_Backward(tree); */
 
       if(!strcmp(tree->mcmc->move_name[move],"kappa"))
         MCMC_Kappa(tree);
