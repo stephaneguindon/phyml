@@ -144,6 +144,7 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
   /* seed = 27351; */
   /* seed = 359; */
   /* seed = 1; */
+  /* seed = 149000; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -279,8 +280,8 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   /* mmod->rad   = 1.46; */
   /* mmod->sigsq = MIGREP_Update_Sigsq(tree); */
 
-  /* MIGREP_Simulate_Backward_Core(YES,tree->disk,tree); */
-  mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree);
+  MIGREP_Simulate_Backward_Core(YES,tree->disk,tree);
+  /* mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree); */
 
   int n = 0;
   disk = tree->disk->prev;
@@ -317,7 +318,7 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   max_rate = 1.E-4;
 
   tree->rates->bl_from_rt = YES;
-  /* tree->rates->clock_r    = Uni()*(max_rate - min_rate) + min_rate; */
+  tree->rates->clock_r    = Uni()*(max_rate - min_rate) + min_rate;
   tree->rates->clock_r    = 0.01/FABS(T);
   tree->rates->model      = STRICTCLOCK;
 
@@ -1266,8 +1267,8 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"migrep_scale_times"))
         MCMC_MIGREP_Scale_Times(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_sim")) */
-      /*   MCMC_MIGREP_Simulate_Backward(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_sim"))
+        MCMC_MIGREP_Simulate_Backward(tree);
 
       if(!strcmp(tree->mcmc->move_name[move],"kappa"))
         MCMC_Kappa(tree);
@@ -1333,6 +1334,9 @@ phydbl *MIGREP_MCMC(t_tree *tree)
           res[2 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = MIGREP_Update_Sigsq(tree); 
           res[3 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = MIGREP_Neighborhood_Size(tree);
           res[4 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = tree->mmod->rad;
+          res[5 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = MIGREP_Total_Number_Of_Intervals(tree);
+          res[6 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = MIGREP_Total_Number_Of_Coal_Disks(tree);
+          res[7 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = MIGREP_Total_Number_Of_Hit_Disks(tree);
 
           MCMC_Copy_To_New_Param_Val(tree->mcmc,tree);
           
@@ -1344,7 +1348,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
           
           rewind(fp_summary);
 
-          PhyML_Fprintf(fp_summary,"\n# SampArea\t TrueLbda\t TrueMu\t TrueSig\t TrueRad\t TrueNeigh\t Diversity\t TrueInt\t TrueCoal\t TrueHits\t RegNeigh\t TrueXroot\t TrueYroot\t TrueHeight\t Lbda5\t Lbda50\t Lbda95\t LbdaMod \t Mu5\t Mu50\t Mu95\t  MuMod \t Sig5\t Sig50\t Sig95\t SigMod \t Neigh5\t Neigh50\t Neigh95\t NeighMod \t Rad5\t Rad50\t Rad95\t ESSLbda \t ESSMu \t ESSSig");
+          PhyML_Fprintf(fp_summary,"\n# SampArea\t TrueLbda\t TrueMu\t TrueSig\t TrueRad\t TrueNeigh\t Diversity\t TrueInt\t TrueCoal\t TrueHits\t RegNeigh\t TrueXroot\t TrueYroot\t TrueHeight\t Lbda5\t Lbda50\t Lbda95\t LbdaMod \t Mu5\t Mu50\t Mu95\t  MuMod \t Sig5\t Sig50\t Sig95\t SigMod \t Neigh5\t Neigh50\t Neigh95\t NeighMod \t Rad5\t Rad50\t Rad95\t Int5\t Int50\t Int95\t Coal5\t Coal50\t Coal95\t Hit5\t Hit50\t Hit95\t ESSLbda \t ESSMu \t ESSSig");
           
           PhyML_Fprintf(fp_summary,"\n %f\t %f\t %f\t %f\t %f\t %f\t %f\t %d\t %d\t %d\t %f\t %f\t %f\t %f\t",
                         tree->mmod->sampl_area,
@@ -1388,9 +1392,25 @@ phydbl *MIGREP_MCMC(t_tree *tree)
                         /* NeighMod */ 2./tree->mcmc->mode[tree->mcmc->num_move_migrep_mu]);
           
           PhyML_Fprintf(fp_summary,"%f\t %f\t %f\t",
-                        /* Rad5 */ Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
+                        /* Rad5 */  Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
                         /* Rad50 */ Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
                         /* Rad95 */ Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975));
+
+
+          PhyML_Fprintf(fp_summary,"%f\t %f\t %f\t",
+                        /* Int5 */  Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
+                        /* Int50 */ Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
+                        /* Int95 */ Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975));
+
+          PhyML_Fprintf(fp_summary,"%f\t %f\t %f\t",
+                        /* Coal5 */  Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
+                        /* Coal50 */ Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
+                        /* Coal95 */ Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975));
+
+          PhyML_Fprintf(fp_summary,"%f\t %f\t %f\t",
+                        /* Hit5 */  Quantile(res+7*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
+                        /* Hit50 */ Quantile(res+7*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
+                        /* Hit95 */ Quantile(res+7*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975));
                     
           PhyML_Fprintf(fp_summary,"%f\t %f\t %f\t",
                         tree->mcmc->ess[tree->mcmc->num_move_migrep_lbda],

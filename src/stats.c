@@ -310,7 +310,7 @@ phydbl Rnorm_Trunc_Inverse(phydbl mean, phydbl sd, phydbl min, phydbl max, int *
 phydbl Rnorm_Trunc(phydbl mean, phydbl sd, phydbl min, phydbl max, int *error)
 {
 
-  phydbl ret_val,eps;
+  phydbl ret_val;
   int iter;
   phydbl z, q, u;
   phydbl z_min,z_max;
@@ -338,7 +338,7 @@ phydbl Rnorm_Trunc(phydbl mean, phydbl sd, phydbl min, phydbl max, int *error)
   z_min = (min - mean)/sd;
   z_max = (max - mean)/sd;
 
-  eps = (z_max-z_min)/1E+6;
+  /* eps = (z_max-z_min)/1E+6; */
 
   /* /\* Damien and Walker (2001) method *\/ */
   /* phydbl y,slice_min,slice_max; */
