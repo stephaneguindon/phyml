@@ -3431,7 +3431,7 @@ void MIGREP_Init_Migrep_Mod(t_migrep_mod *t, int n_dim, phydbl max_lat, phydbl m
 
   t->lbda             = 1.E-0;
   t->min_lbda         = 0.0;
-  t->max_lbda         = 1.E+1;
+  t->max_lbda         = 1.E+2;
   t->prior_param_lbda = 1.0;
 
   t->mu               = 0.300;

@@ -213,8 +213,7 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   t_mod *mod;
   t_opt *s_opt;
   calign *cdata;
-  phydbl max_mu, min_mu, max_rad, min_rad, min_rate, max_rate;
-  phydbl T;
+  phydbl max_mu, min_mu, max_rad, min_rad, min_rate, max_rate, min_lbda, max_lbda;
 
   n_dim = 2; // 2-dimensional landscape
 
@@ -265,7 +264,8 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   
   /* Initialize parameters of migrep model */
 
-  mmod->lbda = 1.0;
+  max_lbda = 10.00; min_lbda = 0.1;
+  mmod->lbda = Uni()*(max_lbda - min_lbda)  + min_lbda;
 
   max_mu = 1.00; min_mu = 0.05;
   mmod->mu = Uni()*(max_mu - min_mu)  + min_mu;
@@ -280,29 +280,9 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   /* mmod->rad   = 1.46; */
   /* mmod->sigsq = MIGREP_Update_Sigsq(tree); */
 
-  MIGREP_Simulate_Backward_Core(YES,tree->disk,tree);
-  /* mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree); */
+  /* MIGREP_Simulate_Backward_Core(YES,tree->disk,tree); */
+  mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree);
 
-  int n = 0;
-  disk = tree->disk->prev;
-  while(disk->prev) 
-    {
-      if(!disk->ldsk) n++;
-      disk = disk->prev;
-    }
-  T = disk->time;
-
-  /* disk = tree->disk->prev; */
-  /* while(disk) */
-  /*   { */
-  /*     disk->time *= 100.; */
-  /*     disk->time /= FABS(T); */
-  /*     disk = disk->prev; */
-  /*   } */
-  
-  /* mmod->lbda /= 100./FABS(T); */
-
-  mmod->sigsq = MIGREP_Update_Sigsq(tree);
 
   PhyML_Printf("\n. lbda: %G mu: %G sigsq: %G rad: %G neigh: %G dens: %G",
                mmod->lbda,mmod->mu,mmod->sigsq,mmod->rad,2./mmod->mu,1./(mmod->mu*PI*mmod->sigsq));
@@ -319,7 +299,6 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
 
   tree->rates->bl_from_rt = YES;
   tree->rates->clock_r    = Uni()*(max_rate - min_rate) + min_rate;
-  tree->rates->clock_r    = 0.01/FABS(T);
   tree->rates->model      = STRICTCLOCK;
 
   RATES_Update_Cur_Bl(tree);
@@ -1267,8 +1246,8 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"migrep_scale_times"))
         MCMC_MIGREP_Scale_Times(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_sim")) */
-      /*   MCMC_MIGREP_Simulate_Backward(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_sim"))
+        MCMC_MIGREP_Simulate_Backward(tree);
 
       if(!strcmp(tree->mcmc->move_name[move],"kappa"))
         MCMC_Kappa(tree);

@@ -4486,16 +4486,16 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_migrep_mu]                    = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_rad]                   = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_sigsq]                 = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_indel_disk]            = 5.0;
+  mcmc->move_weight[mcmc->num_move_migrep_indel_disk]            = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_move_disk_ct]          = 0.5;
   mcmc->move_weight[mcmc->num_move_migrep_move_disk_ud]          = 0.5;
   mcmc->move_weight[mcmc->num_move_migrep_swap_disk]             = 0.5;
-  mcmc->move_weight[mcmc->num_move_migrep_indel_hit]             = 5.0;
+  mcmc->move_weight[mcmc->num_move_migrep_indel_hit]             = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_move_ldsk]             = 0.5;
   mcmc->move_weight[mcmc->num_move_migrep_spr]                   = 5.0;
   mcmc->move_weight[mcmc->num_move_migrep_scale_times]           = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_ldscape_lim]           = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_sim]                   = 0.5;
+  mcmc->move_weight[mcmc->num_move_migrep_sim]                   = 0.1;
 # else
   mcmc->move_weight[mcmc->num_move_migrep_lbda]                  = 0.0;
   mcmc->move_weight[mcmc->num_move_migrep_mu]                    = 0.0;
