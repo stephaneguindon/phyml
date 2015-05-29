@@ -4495,7 +4495,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_migrep_spr]                   = 5.0;
   mcmc->move_weight[mcmc->num_move_migrep_scale_times]           = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_ldscape_lim]           = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_sim]                   = 0.1;
+  mcmc->move_weight[mcmc->num_move_migrep_sim]                   = 0.0;
 # else
   mcmc->move_weight[mcmc->num_move_migrep_lbda]                  = 0.0;
   mcmc->move_weight[mcmc->num_move_migrep_mu]                    = 0.0;
@@ -5545,19 +5545,19 @@ void MCMC_MIGREP_Move_Disk_Centre(t_tree *tree)
 
            For(j,tree->mmod->n_dim) hr += Log_Dnorm_Trunc(target_disk[i]->centr->lonlat[j],
                                                          target_disk[i]->ldsk->coord->lonlat[j],
-                                                         3.0*tree->mmod->rad,
+                                                         1.0*tree->mmod->rad,
                                                          0.0,
                                                          tree->mmod->lim->lonlat[j],&err);
           
           For(j,tree->mmod->n_dim)
             target_disk[i]->centr->lonlat[j] =
             Rnorm_Trunc(target_disk[i]->ldsk->coord->lonlat[j],
-                        3.0*tree->mmod->rad,0.0,
+                        1.0*tree->mmod->rad,0.0,
                         tree->mmod->lim->lonlat[j],&err);
           
           For(j,tree->mmod->n_dim) hr -= Log_Dnorm_Trunc(target_disk[i]->centr->lonlat[j],
                                                          target_disk[i]->ldsk->coord->lonlat[j],
-                                                         3.0*tree->mmod->rad,
+                                                         1.0*tree->mmod->rad,
                                                          0.0,
                                                          tree->mmod->lim->lonlat[j],&err);
 
@@ -5700,7 +5700,7 @@ void MCMC_MIGREP_Move_Ldsk(t_tree *tree)
 
           For(j,tree->mmod->n_dim) hr += Log_Dnorm_Trunc(target_disk[i]->ldsk->coord->lonlat[j],
                                                          target_disk[i]->centr->lonlat[j],
-                                                         3.0*tree->mmod->rad,
+                                                         1.0*tree->mmod->rad,
                                                          0.0,
                                                          tree->mmod->lim->lonlat[j],&err);
           
@@ -5708,13 +5708,13 @@ void MCMC_MIGREP_Move_Ldsk(t_tree *tree)
           For(j,tree->mmod->n_dim)
             target_disk[i]->ldsk->coord->lonlat[j] =
             Rnorm_Trunc(target_disk[i]->centr->lonlat[j],
-                        3.0*tree->mmod->rad,
+                        1.0*tree->mmod->rad,
                         0.0,
                         tree->mmod->lim->lonlat[j],&err);
 
           For(j,tree->mmod->n_dim) hr -= Log_Dnorm_Trunc(target_disk[i]->ldsk->coord->lonlat[j],
                                                          target_disk[i]->centr->lonlat[j],
-                                                         3.0*tree->mmod->rad,
+                                                         1.0*tree->mmod->rad,
                                                          0.0,
                                                          tree->mmod->lim->lonlat[j],&err);
 
@@ -5936,9 +5936,6 @@ void MCMC_MIGREP_Scale_Times(t_tree *tree)
   cur_lbda        = tree->mmod->lbda;
   K               = tree->mcmc->tune_move[tree->mcmc->num_move_migrep_scale_times];
   n_tot_disks     = MIGREP_Total_Number_Of_Intervals(tree);
-
-  K = 0.1;
-  
 
   Tcur = MIGREP_Tree_Height(tree);
 
@@ -6399,11 +6396,11 @@ void MCMC_MIGREP_Insert_Hit(phydbl hr, int n_insert_disks, t_tree *tree)
       For(i,tree->mmod->n_dim)
         {
           new_disk[j]->centr->lonlat[i] = Rnorm_Trunc(0.5*(young_ldsk[j]->coord->lonlat[i]+old_ldsk[j]->coord->lonlat[i]),
-                                                      2.0*tree->mmod->rad,
+                                                      3.0*tree->mmod->rad,
                                                       0.0,tree->mmod->lim->lonlat[i],&err);
           hr -= Log_Dnorm_Trunc(new_disk[j]->centr->lonlat[i],
                                 0.5*(young_ldsk[j]->coord->lonlat[i]+old_ldsk[j]->coord->lonlat[i]),
-                                2.0*tree->mmod->rad,0.0,tree->mmod->lim->lonlat[i],&err);
+                                3.0*tree->mmod->rad,0.0,tree->mmod->lim->lonlat[i],&err);
 
         }
 
@@ -6411,11 +6408,11 @@ void MCMC_MIGREP_Insert_Hit(phydbl hr, int n_insert_disks, t_tree *tree)
       For(i,tree->mmod->n_dim)
         {
           new_ldsk[j]->coord->lonlat[i] = Rnorm_Trunc(new_disk[j]->centr->lonlat[i],
-                                                      2.0*tree->mmod->rad,
+                                                      1.0*tree->mmod->rad,
                                                       0.0,tree->mmod->lim->lonlat[i],&err);
           hr -= Log_Dnorm_Trunc(new_ldsk[j]->coord->lonlat[i],
                                 new_disk[j]->centr->lonlat[i],
-                                2.0*tree->mmod->rad,0.0,tree->mmod->lim->lonlat[i],&err);
+                                1.0*tree->mmod->rad,0.0,tree->mmod->lim->lonlat[i],&err);
         }
     }
 
@@ -6599,7 +6596,7 @@ void MCMC_MIGREP_Delete_Hit(phydbl hr, int n_delete_disks, t_tree *tree)
         {
           hr += Log_Dnorm_Trunc(target_disk[j]->centr->lonlat[i],
                                 0.5*(young_ldsk[j]->coord->lonlat[i]+old_ldsk[j]->coord->lonlat[i]),
-                                2.0*tree->mmod->rad,0.0,tree->mmod->lim->lonlat[i],&err);
+                                3.0*tree->mmod->rad,0.0,tree->mmod->lim->lonlat[i],&err);
         }
       
       /* Density for position of the displaced ldsk */
@@ -6607,7 +6604,7 @@ void MCMC_MIGREP_Delete_Hit(phydbl hr, int n_delete_disks, t_tree *tree)
         {
           hr += Log_Dnorm_Trunc(target_ldsk[j]->coord->lonlat[i],
                                 target_disk[j]->centr->lonlat[i],
-                                2.0*tree->mmod->rad,0.0,
+                                1.0*tree->mmod->rad,0.0,
                                 tree->mmod->lim->lonlat[i],&err);
         }
     }
