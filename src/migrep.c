@@ -213,9 +213,16 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   t_mod *mod;
   t_opt *s_opt;
   calign *cdata;
-  phydbl max_mu, min_mu, max_rad, min_rad, min_rate, max_rate, min_lbda, max_lbda;
+  phydbl max_mu, min_mu;
+  phydbl max_rad, min_rad;
+  phydbl min_rate, max_rate;
+  phydbl min_lbda, max_lbda;
+  phydbl min_neigh, max_neigh;
+  phydbl min_sigsq, max_sigsq;
+  phydbl area, neigh;
 
   n_dim = 2; // 2-dimensional landscape
+  area  = width * height;
 
   io    = (option *)Make_Input();
   mod   = (t_mod *)Make_Model_Basic();
@@ -266,26 +273,36 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
 
   max_lbda = 10.00; min_lbda = 0.1;
   mmod->lbda = Uni()*(max_lbda - min_lbda)  + min_lbda;
+
+  /* Neighborhood size */
+  max_neigh = 50.; min_neigh = 2.;
+  neigh = Uni()*(max_neigh - min_neigh)  + min_neigh;
+
+  min_sigsq = area / (4.*PI*100.); max_sigsq = area / (4*PI*10.);
+  mmod->sigsq = Uni()*(max_sigsq - min_sigsq) + min_sigsq;
+
+  mmod->mu = 2./neigh;  
+  tree->mmod->rad = MIGREP_Update_Radius(tree);
   
-  max_mu = 1.00; min_mu = 0.05;
-  mmod->mu = Uni()*(max_mu - min_mu)  + min_mu;
+  /* max_mu = 1.00; min_mu = 0.05; */
+  /* mmod->mu = Uni()*(max_mu - min_mu)  + min_mu; */
 
-  max_rad = 2.0; min_rad = 2.0 + (0.2 - 2.0)/(max_mu - min_mu)*mmod->mu;
-  mmod->rad = Uni()*(max_rad - min_rad) + min_rad;
+  /* max_rad = 2.0; min_rad = 2.0 + (0.2 - 2.0)/(max_mu - min_mu)*mmod->mu; */
+  /* mmod->rad = Uni()*(max_rad - min_rad) + min_rad; */
 
-  mmod->sigsq = MIGREP_Update_Sigsq(tree);
+  /* mmod->sigsq = MIGREP_Update_Sigsq(tree); */
+
 
   /* mmod->lbda  = 1.0; */
   /* mmod->mu    = 0.86; */
   /* mmod->rad   = 1.46; */
   /* mmod->sigsq = MIGREP_Update_Sigsq(tree); */
 
-  MIGREP_Simulate_Backward_Core(YES,tree->disk,tree);
-  /* mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree); */
+  /* MIGREP_Simulate_Backward_Core(YES,tree->disk,tree); */
+  mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree);
 
-
-  PhyML_Printf("\n. lbda: %G mu: %G sigsq: %G rad: %G neigh: %G dens: %G",
-               mmod->lbda,mmod->mu,mmod->sigsq,mmod->rad,2./mmod->mu,1./(mmod->mu*PI*mmod->sigsq));
+  PhyML_Printf("\n. lbda: %G mu: %G sigsq: %G rad: %G neigh: %G N: %G",
+               mmod->lbda,mmod->mu,mmod->sigsq,mmod->rad,neigh,area*neigh/(4*PI*mmod->sigsq));
   fflush(NULL);
 
   MIGREP_Ldsk_To_Tree(tree);  

@@ -4486,11 +4486,11 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_migrep_mu]                    = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_rad]                   = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_sigsq]                 = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_indel_disk]            = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_indel_disk]            = 4.0;
   mcmc->move_weight[mcmc->num_move_migrep_move_disk_ct]          = 0.5;
   mcmc->move_weight[mcmc->num_move_migrep_move_disk_ud]          = 0.5;
   mcmc->move_weight[mcmc->num_move_migrep_swap_disk]             = 0.5;
-  mcmc->move_weight[mcmc->num_move_migrep_indel_hit]             = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_indel_hit]             = 4.0;
   mcmc->move_weight[mcmc->num_move_migrep_move_ldsk]             = 0.5;
   mcmc->move_weight[mcmc->num_move_migrep_spr]                   = 5.0;
   mcmc->move_weight[mcmc->num_move_migrep_scale_times]           = 1.0;
