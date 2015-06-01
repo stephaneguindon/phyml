@@ -144,7 +144,7 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
   /* seed = 27351; */
   /* seed = 359; */
   /* seed = 1; */
-  /* seed = 15265; */
+  /* seed = 10112; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -220,6 +220,7 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   phydbl min_neigh, max_neigh;
   phydbl min_sigsq, max_sigsq;
   phydbl area, neigh;
+  phydbl T;
 
   n_dim = 2; // 2-dimensional landscape
   area  = width * height;
@@ -278,7 +279,7 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   max_neigh = 50.; min_neigh = 2.;
   neigh = Uni()*(max_neigh - min_neigh)  + min_neigh;
 
-  min_sigsq = area / (4.*PI*100.); max_sigsq = area / (4*PI*10.);
+  min_sigsq = area / (4.*PI*100.); max_sigsq = area / (4.*PI*10.);
   mmod->sigsq = Uni()*(max_sigsq - min_sigsq) + min_sigsq;
 
   mmod->mu = 2./neigh;  
@@ -311,11 +312,14 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
   RATES_Fill_Lca_Table(tree);
 
-  min_rate = 1.E-5;
-  max_rate = 1.E-4;
+  /* min_rate = 1.E-5; */
+  /* max_rate = 1.E-4; */
+
+  T = MIGREP_Tree_Height(tree);
 
   tree->rates->bl_from_rt = YES;
-  tree->rates->clock_r    = Uni()*(max_rate - min_rate) + min_rate;
+  /* tree->rates->clock_r    = Uni()*(max_rate - min_rate) + min_rate; */
+  tree->rates->clock_r = 0.01/FABS(T);
   tree->rates->model      = STRICTCLOCK;
 
   RATES_Update_Cur_Bl(tree);
@@ -1213,9 +1217,9 @@ phydbl *MIGREP_MCMC(t_tree *tree)
 
   For(i,mcmc->n_moves) tree->mcmc->start_ess[i] = YES;
 
-  mcmc->use_data = YES;
- 
+  mcmc->use_data = YES; 
   mcmc->always_yes = NO;
+    
   do
     {      
       /* tree->mcmc->adjust_tuning[i] = NO; */
@@ -1385,7 +1389,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
                         /* Neigh5 */ Quantile(res+3*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
                         /* Neigh50*/ Quantile(res+3*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
                         /* Neigh95*/ Quantile(res+3*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975),
-                        /* NeighMod */ 2./tree->mcmc->mode[tree->mcmc->num_move_migrep_mu]);
+                        /* NeighMod */ 2./tree->mcmc->mode[tree->mcmc->num_move_migrep_mu]); // Approximate ?
           
           PhyML_Fprintf(fp_summary,"%f\t %f\t %f\t",
                         /* Rad5 */  Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
