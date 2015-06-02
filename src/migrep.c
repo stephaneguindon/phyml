@@ -351,7 +351,7 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   ldsk = tree->disk->ldsk_a[0];
   while(ldsk) 
     {
-      if(ldsk->disk->time < -2000) { printf("\n %f",ldsk->coord->lonlat[0]); break; }
+      if(ldsk->disk->time < -2000) { printf("\n abcd %f",ldsk->coord->lonlat[0]); break; }
       ldsk = ldsk->prev;
     }
 
