@@ -5111,3 +5111,63 @@ int *Ranks(phydbl *x, int len)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+phydbl *Brownian_Bridge_Generate(phydbl start, phydbl end, phydbl var, phydbl end_time, int n_steps, phydbl *time)
+{
+  phydbl *state;
+  int i;
+
+  if(n_steps == 0) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+
+  state = Brownian_Generate(var,n_steps,time);
+
+  For(i,n_steps)
+    {
+      state[i] = state[i] - (time[i]/end_time) * state[i];
+      state[i] = start + (end - start)/end_time * time[i] + state[i];
+    }
+
+  return(state);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+phydbl *Brownian_Generate(phydbl var, int n_steps, phydbl *time)
+{
+  phydbl *state;
+  int i;
+
+  if(n_steps == 0) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+
+  state = (phydbl *)mCalloc(n_steps,sizeof(phydbl));
+
+  state[0] = Rnorm(0.0,SQRT(time[0]*var));
+
+  for(i=1;i<n_steps;i++)
+    {
+      state[i] = Rnorm(state[i-1],SQRT((time[i]-time[i-1])*var));
+      if(time[i] < time[i-1]) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
+
+  return(state);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+phydbl Brownian_Bridge_Logdensity(phydbl start, phydbl end, phydbl *state, phydbl var, phydbl end_time, int n_steps, phydbl *time)
+{
+  phydbl lnL;
+  int i,err;
+
+  if(n_steps == 0) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+
+  lnL = Log_Dnorm(state[0],start,SQRT(var*time[0]),&err);
+  
+  for(i=1;i<n_steps;i++) lnL += Log_Dnorm(state[i],state[i-1],SQRT(var*(time[i]-time[i-1])),&err);
+  
+  lnL += Log_Dnorm(end,state[i-1],SQRT(var*(end_time-time[i-1])),&err);
+
+  return(lnL);
+}

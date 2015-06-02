@@ -7086,12 +7086,70 @@ void MCMC_MIGREP_Simulate_Backward(t_tree *tree)
 }
 #endif
 
-
-
-
-
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+/* void MIGREP_Lineage_Traj(t_tree *tree) */
+/* { */
+/*   phydbl u,alpha,ratio,hr; */
+/*   phydbl cur_glnL, new_glnL; */
+/*   phydbl cur_alnL, new_alnL; */
+/*   t_dsk  *disk,*start_disk,**valid_disks; */
+/*   t_ldsk *start_ldsk,*end_ldsk; */
+/*   int i,block,n_valid_disks,prune_next_num,regraft_next_num; */
+
+/*   valid_disks = NULL; */
+/*   disk        = NULL; */
+/*   new_glnL    = tree->mmod->c_lnL; */
+/*   cur_glnL    = tree->mmod->c_lnL; */
+/*   new_alnL    = tree->c_lnL; */
+/*   cur_alnL    = tree->c_lnL; */
+/*   hr          = 0.0; */
+/*   ratio       = 0.0; */
+/*   block       = 100; */
+
+/*   if(tree->disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
+
+/*   /\* Get a ldsk from which you can prune a lineage *\/ */
+/*   disk = tree->disk->prev; */
+/*   n_valid_disks = 0; */
+/*   do */
+/*     { */
+/*       /\* Include all disks different from root *\/ */
+/*       if(disk->prev != NULL) */
+/*         { */
+/*           if(!n_valid_disks) valid_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *)); */
+/*           else if(!(n_valid_disks%block)) valid_disks = (t_dsk **)mRealloc(valid_disks,n_valid_disks+block,sizeof(t_dsk *)); */
+/*           valid_disks[n_valid_disks] = disk; */
+/*           n_valid_disks++;         */
+/*         } */
+/*       disk = disk->prev; */
+/*     } */
+/*   while(disk); */
+
+/*   if(!n_valid_disks) return; */
+
+/*   /\* Uniform selection of a target disk *\/ */
+/*   i = Rand_Int(0,n_valid_disks-1); */
+/*   start_disk = valid_disks[i]; */
+/*   Free(valid_disks); */
+  
+  
+/*   /\* Uniform selection of a ldsk *\/ */
+/*   i = Rand_Int(0,target_disk->n_ldsk_a); */
+/*   start_ldsk = start_disk->ldsk_a[i]; */
+
+/*   /\* end_ldsk is the next coalescent node *\/ */
+/*   end_ldsk = start_ldsk->prev; */
+/*   while(end_ldsk->n_next < 2) end_ldsk = end_ldsk->prev; */
+  
+/*   if(end_ldsk == NULL) Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
+  
+
+
+
+/* } */
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

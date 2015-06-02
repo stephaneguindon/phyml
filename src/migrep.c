@@ -275,32 +275,25 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   max_lbda = 10.00; min_lbda = 0.1;
   mmod->lbda = Uni()*(max_lbda - min_lbda)  + min_lbda;
 
-  /* Neighborhood size */
-  max_neigh = 50.; min_neigh = 2.;
-  neigh = Uni()*(max_neigh - min_neigh)  + min_neigh;
+  /* /\* Neighborhood size *\/ */
+  /* max_neigh = 50.; min_neigh = 2.; */
+  /* neigh = Uni()*(max_neigh - min_neigh)  + min_neigh; */
 
-  min_sigsq = area / (4.*PI*100.); max_sigsq = area / (4.*PI*10.);
-  mmod->sigsq = Uni()*(max_sigsq - min_sigsq) + min_sigsq;
+  /* min_sigsq = area / (4.*PI*100.); max_sigsq = area / (4.*PI*10.); */
+  /* mmod->sigsq = Uni()*(max_sigsq - min_sigsq) + min_sigsq; */
 
-  mmod->mu = 2./neigh;  
-  tree->mmod->rad = MIGREP_Update_Radius(tree);
+  /* mmod->mu = 2./neigh;   */
+  /* tree->mmod->rad = MIGREP_Update_Radius(tree); */
   
-  /* max_mu = 1.00; min_mu = 0.05; */
-  /* mmod->mu = Uni()*(max_mu - min_mu)  + min_mu; */
-
-  /* max_rad = 2.0; min_rad = 2.0 + (0.2 - 2.0)/(max_mu - min_mu)*mmod->mu; */
-  /* mmod->rad = Uni()*(max_rad - min_rad) + min_rad; */
-
-  /* mmod->sigsq = MIGREP_Update_Sigsq(tree); */
 
 
-  /* mmod->lbda  = 1.0; */
-  /* mmod->mu    = 0.86; */
-  /* mmod->rad   = 1.46; */
-  /* mmod->sigsq = MIGREP_Update_Sigsq(tree); */
+  mmod->lbda  = 1.0;
+  mmod->mu    = 0.86;
+  mmod->rad   = 0.5;
+  mmod->sigsq = MIGREP_Update_Sigsq(tree);
 
-  /* MIGREP_Simulate_Backward_Core(YES,tree->disk,tree); */
-  mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree);
+  MIGREP_Simulate_Backward_Core(YES,tree->disk,tree);
+  /* mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree); */
 
   PhyML_Printf("\n. lbda: %G mu: %G sigsq: %G rad: %G neigh: %G N: %G",
                mmod->lbda,mmod->mu,mmod->sigsq,mmod->rad,neigh,area*neigh/(4*PI*mmod->sigsq));
@@ -351,7 +344,18 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
          mmod->mu,    
          mmod->sigsq,
          Nucleotide_Diversity(tree->data));
-  /* Exit("\n"); */
+
+
+
+  t_ldsk *ldsk;
+  ldsk = tree->disk->ldsk_a[0];
+  while(ldsk) 
+    {
+      if(ldsk->disk->time < -2000) { printf("\n %f",ldsk->coord->lonlat[0]); break; }
+      ldsk = ldsk->prev;
+    }
+
+  Exit("\n");
 
   return(tree);
 }
@@ -3327,7 +3331,6 @@ int MIGREP_Random_Insert_Ldsk_In_Next_List(t_ldsk *ins, t_ldsk *where)
   return pos;
 }
 
-
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
@@ -3358,4 +3361,98 @@ void MIGREP_Insert_Ldsk_In_Next_List(t_ldsk *ins, int pos, t_ldsk *where)
   Free(rk);
   Free(next_cpy);
 }
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+t_ldsk **MIGREP_Remove_Path(t_ldsk *beg, t_ldsk *end, t_tree *tree)
+{
+  t_ldsk **path, *ldsk;
+  int path_len,block,dir_end_beg;
+
+  path     = NULL;
+  ldsk     = beg->prev;
+  path_len = 0;
+  block    = 100;
+  
+  dir_end_beg = MIGREP_Get_Next_Direction(beg,end);
+
+  while(ldsk != end)
+    {
+      if(!path_len) path = (t_ldsk **)mCalloc(block,sizeof(t_ldsk *));
+      else if(!(path_len%block)) path = (t_ldsk **)mRealloc(path,path_len+block,sizeof(t_ldsk *));
+      MIGREP_Remove_Disk(ldsk->disk);
+      path_len++;
+      ldsk = ldsk->prev;
+    }
+
+  if(path_len > 0) MIGREP_Remove_Lindisk_Next(end,end->next[dir_end_beg]);
+  
+  return(path);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+void MIGREP_Insert_Path(t_ldsk *beg, t_ldsk *end, t_ldsk **path, int path_len, t_tree *tree)
+{
+  int i;
+  t_ldsk *ldsk;
+
+  if(path_len == 0) return;
+
+  beg->prev = path[0];
+
+  For(i,path_len) MIGREP_Insert_Disk(path[i]->disk);
+
+  MIGREP_Insert_Ldsk_In_Next_List(path[i-1],0,end);
+
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+/* t_ldsk **MIGREP_Generate_Path(t_ldsk *beg, t_ldsk *end, t_tree *tree) */
+/* { */
+/*   int n_evt,i; */
+/*   phydbl dt,*time,*loc; */
+/*   t_ldsk **path; */
+
+/*   dt = FABS(beg->disk->time - end->disk->time); */
+
+/*   /\* How many hit events ? *\/ */
+/*   n_evt = Rpois(dt*2.*MIGREP_Rate_Per_Unit_Area(tree)*PI*POW(tree->mmod->rad,2)*tree->mmod->mu); */
+
+/*   path = (t_ldsk **)mCalloc(n_evt,sizeof(t_ldsk *)); */
+/*   time = (phydbl *)mCalloc(n_evt,sizeof(phydbl)); */
+/*   loc  = (phydbl *)mCalloc(n_evt,sizeof(phydbl)); */
+
+/*   For(i,n_evt) time[i] =  Uni()*(end->disk->time - beg->disk->time) + beg->disk->time; */
+  
+/*   For(i,tree->mmod->n_dim) */
+/*     { */
+/*       loc = Brownian_Bridge_Generate(beg->coord->lonlat[i], */
+/*                                      end->coord->lonlat[i], */
+/*                                      2.*MIGREP_Rate_Per_Unit_Area(tree)*PI*POW(tree->mmod->rad,2)*tree->mmod->mu, */
+                                     
+/*                                      ); */
+/*     } */
+
+
+/* } */
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+
 
