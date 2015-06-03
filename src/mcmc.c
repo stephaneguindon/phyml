@@ -4576,12 +4576,6 @@ void MCMC_Copy_To_New_Param_Val(t_mcmc *mcmc, t_tree *tree)
   mcmc->sampled_val[mcmc->num_move_kappa*mcmc->sample_size+mcmc->sample_num]       = tree->mod ? tree->mod->kappa->v : -1.;
   mcmc->sampled_val[mcmc->num_move_birth_rate*mcmc->sample_size+mcmc->sample_num]  = tree->rates->birth_rate;
 
-  mcmc->sampled_val[mcmc->num_move_geo_tau*mcmc->sample_size+mcmc->sample_num]    = tree->geo ? tree->geo->tau   : -1.;
-  mcmc->sampled_val[mcmc->num_move_geo_lambda*mcmc->sample_size+mcmc->sample_num] = tree->geo ? tree->geo->lbda  : -1.;
-  mcmc->sampled_val[mcmc->num_move_geo_sigma*mcmc->sample_size+mcmc->sample_num]  = tree->geo ? tree->geo->sigma : -1.;
-  mcmc->sampled_val[mcmc->num_move_geo_dum*mcmc->sample_size+mcmc->sample_num]    = tree->geo ? tree->geo->dum   : -1.;
-
-
   /* For(i,2*tree->n_otu-2) */
   /*   mcmc->sampled_val[(mcmc->num_move_br_r+i)*mcmc->sample_size+mcmc->sample_num] = tree->rates->br_r[i]; */
   
@@ -4590,11 +4584,17 @@ void MCMC_Copy_To_New_Param_Val(t_mcmc *mcmc, t_tree *tree)
 
   /* For(i,2*tree->n_otu-1) */
   /*   mcmc->sampled_val[(mcmc->num_move_nd_r+i)*mcmc->sample_size+mcmc->sample_num] = tree->rates->nd_r[i]; */
-  
+
+  mcmc->sampled_val[mcmc->num_move_geo_tau*mcmc->sample_size+mcmc->sample_num]      = tree->geo ? tree->geo->tau   : -1.;
+  mcmc->sampled_val[mcmc->num_move_geo_lambda*mcmc->sample_size+mcmc->sample_num]   = tree->geo ? tree->geo->lbda  : -1.;
+  mcmc->sampled_val[mcmc->num_move_geo_sigma*mcmc->sample_size+mcmc->sample_num]    = tree->geo ? tree->geo->sigma : -1.;
+  mcmc->sampled_val[mcmc->num_move_geo_dum*mcmc->sample_size+mcmc->sample_num]      = tree->geo ? tree->geo->dum   : -1.;  
+  #ifdef MIGREP
   mcmc->sampled_val[mcmc->num_move_migrep_lbda*mcmc->sample_size+mcmc->sample_num]  = tree->mmod ? tree->mmod->lbda          : -1.;
   mcmc->sampled_val[mcmc->num_move_migrep_mu*mcmc->sample_size+mcmc->sample_num]    = tree->mmod ? tree->mmod->mu            : -1.;  
   mcmc->sampled_val[mcmc->num_move_migrep_sigsq*mcmc->sample_size+mcmc->sample_num] = tree->mmod ? MIGREP_Update_Sigsq(tree) : -1.;
   mcmc->sampled_val[mcmc->num_move_migrep_rad*mcmc->sample_size+mcmc->sample_num]   = tree->mmod ? tree->mmod->rad           : -1.;
+  #endif
 }
 
 //////////////////////////////////////////////////////////////
@@ -5950,13 +5950,13 @@ void MCMC_MIGREP_Scale_Times(t_tree *tree)
   hr += (n_disks)*LOG(scale_fact_times);
 
   /* Adjust value of lambda */
-  new_lbda = cur_lbda / scale_fact_times;
-  hr -= LOG(scale_fact_times); 
+  /* new_lbda = cur_lbda / scale_fact_times; */
+  /* hr -= LOG(scale_fact_times);  */
   
-  tree->mmod->lbda = new_lbda;
+  /* tree->mmod->lbda = new_lbda; */
 
-  if(tree->mmod->lbda > tree->mmod->max_lbda) tree->mmod->lbda = tree->mmod->max_lbda;
-  if(tree->mmod->lbda < tree->mmod->min_lbda) tree->mmod->lbda = tree->mmod->min_lbda;
+  /* if(tree->mmod->lbda > tree->mmod->max_lbda) tree->mmod->lbda = tree->mmod->max_lbda; */
+  /* if(tree->mmod->lbda < tree->mmod->min_lbda) tree->mmod->lbda = tree->mmod->min_lbda; */
 
       
   new_glnL = MIGREP_Lk(tree);

@@ -144,7 +144,7 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
   /* seed = 27351; */
   /* seed = 359; */
   /* seed = 1; */
-  /* seed = 10112; */
+  seed = 10112;
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -275,25 +275,25 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   max_lbda = 10.00; min_lbda = 0.1;
   mmod->lbda = Uni()*(max_lbda - min_lbda)  + min_lbda;
 
-  /* /\* Neighborhood size *\/ */
-  /* max_neigh = 50.; min_neigh = 2.; */
-  /* neigh = Uni()*(max_neigh - min_neigh)  + min_neigh; */
+  /* Neighborhood size */
+  max_neigh = 50.; min_neigh = 2.;
+  neigh = Uni()*(max_neigh - min_neigh)  + min_neigh;
 
-  /* min_sigsq = area / (4.*PI*100.); max_sigsq = area / (4.*PI*10.); */
-  /* mmod->sigsq = Uni()*(max_sigsq - min_sigsq) + min_sigsq; */
+  min_sigsq = area / (4.*PI*100.); max_sigsq = area / (4.*PI*10.);
+  mmod->sigsq = Uni()*(max_sigsq - min_sigsq) + min_sigsq;
 
-  /* mmod->mu = 2./neigh;   */
-  /* tree->mmod->rad = MIGREP_Update_Radius(tree); */
+  mmod->mu = 2./neigh;
+  tree->mmod->rad = MIGREP_Update_Radius(tree);
   
 
 
-  mmod->lbda  = 1.0;
-  mmod->mu    = 0.86;
-  mmod->rad   = 0.5;
-  mmod->sigsq = MIGREP_Update_Sigsq(tree);
+  /* mmod->lbda  = 1.0; */
+  /* mmod->mu    = 0.86; */
+  /* mmod->rad   = 0.5; */
+  /* mmod->sigsq = MIGREP_Update_Sigsq(tree); */
 
-  MIGREP_Simulate_Backward_Core(YES,tree->disk,tree);
-  /* mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree); */
+  /* MIGREP_Simulate_Backward_Core(YES,tree->disk,tree); */
+  mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree);
 
   PhyML_Printf("\n. lbda: %G mu: %G sigsq: %G rad: %G neigh: %G N: %G",
                mmod->lbda,mmod->mu,mmod->sigsq,mmod->rad,neigh,area*neigh/(4*PI*mmod->sigsq));
@@ -344,18 +344,6 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
          mmod->mu,    
          mmod->sigsq,
          Nucleotide_Diversity(tree->data));
-
-
-
-  t_ldsk *ldsk;
-  ldsk = tree->disk->ldsk_a[0];
-  while(ldsk) 
-    {
-      if(ldsk->disk->time < -2000) { printf("\n abcd %f",ldsk->coord->lonlat[0]); break; }
-      ldsk = ldsk->prev;
-    }
-
-  Exit("\n");
 
   return(tree);
 }
