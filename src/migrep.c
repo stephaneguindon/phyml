@@ -146,7 +146,7 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
   /* seed = 1; */
   /* seed = 10112; */
   /* seed = 5818; */
-  seed = 16167;
+  /* seed = 16167; */
   /* seed = 18885; */
   /* seed = 22776; */
 
@@ -295,8 +295,8 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   /* mmod->rad   = 2.5; */
   /* mmod->sigsq = MIGREP_Update_Sigsq(tree); */
 
-  MIGREP_Simulate_Backward_Core(YES,tree->disk,tree);
-  /* mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree); */
+  /* MIGREP_Simulate_Backward_Core(YES,tree->disk,tree); */
+  mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree);
 
   PhyML_Printf("\n. lbda: %G mu: %G sigsq: %G rad: %G neigh: %G N: %G",
                mmod->lbda,mmod->mu,mmod->sigsq,mmod->rad,neigh,area*neigh/(4*PI*mmod->sigsq));
@@ -1146,17 +1146,17 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   true_nhits  = MIGREP_Total_Number_Of_Hit_Disks(tree);
   true_height = MIGREP_Tree_Height(tree);
 
-  /* /\* Starting parameter values *\/ */
-  /* tree->mmod->lbda = Uni()*(3.0 - 1.0) + 1.0; */
-  /* tree->mmod->mu   = Uni()*(1.0 - 0.5) + 0.5; */
-  /* tree->mmod->rad  = Uni()*(2.0 - 1.0) + 1.0; */
-  /* MIGREP_Update_Sigsq(tree); */
+  /* Starting parameter values */
+  tree->mmod->lbda = Uni()*(3.0 - 1.0) + 1.0;
+  tree->mmod->mu   = Uni()*(1.0 - 0.5) + 0.5;
+  tree->mmod->rad  = Uni()*(2.0 - 1.0) + 1.0;
+  MIGREP_Update_Sigsq(tree);
 
-  /* /\* MCMC_Randomize_Rate_Across_Sites(tree); *\/ */
-  /* MCMC_Randomize_Kappa(tree); */
+  /* MCMC_Randomize_Rate_Across_Sites(tree); */
+  MCMC_Randomize_Kappa(tree);
 
-  /* /\* Random genealogy *\/ */
-  /* MIGREP_Simulate_Backward_Core(NO,tree->disk,tree); */
+  /* Random genealogy */
+  MIGREP_Simulate_Backward_Core(NO,tree->disk,tree);
 
   MIGREP_Lk(tree);
   Lk(NULL,tree);
