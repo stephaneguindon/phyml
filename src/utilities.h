@@ -1492,6 +1492,7 @@ typedef struct __Tmcmc {
   int num_move_migrep_ldscape_lim;
   int num_move_migrep_sigsq;
   int num_move_migrep_sim;
+  int num_move_migrep_traj;
 
   int nd_t_digits;
   int *monitor;

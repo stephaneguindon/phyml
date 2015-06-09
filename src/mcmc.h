@@ -170,5 +170,6 @@ void MCMC_MIGREP_Delete_Hit(phydbl hr, int n_delete_disks, t_tree *tree);
 void MCMC_MIGREP_Indel_Hit(t_tree *tree);
 void MCMC_MIGREP_Simulate_Backward(t_tree *tree);
 void MCMC_Update_Mode(int move_num, t_mcmc *mcmc, t_tree *tree);
+void MCMC_MIGREP_Lineage_Traj(t_tree *tree);
 
 #endif

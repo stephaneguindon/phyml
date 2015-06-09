@@ -123,8 +123,15 @@ phydbl Rpois(phydbl mmu);
 phydbl Rgeom(phydbl p);
 phydbl Dgeom(phydbl k, phydbl p, int logit);
 phydbl Pgeom(phydbl k, phydbl p);
-phydbl *Brownian_Bridge_Generate(phydbl start, phydbl end, phydbl var, phydbl end_time, int n_steps, phydbl *time);
-phydbl *Brownian_Generate(phydbl var, int n_steps, phydbl *time);
+phydbl *Brownian_Bridge_Generate(phydbl start, phydbl end, phydbl var, phydbl beg_time, phydbl end_time, int n_steps, phydbl *time);
+phydbl *Brownian_Generate(phydbl var, int n_steps, phydbl beg_time, phydbl *time);
 phydbl Brownian_Bridge_Logdensity(phydbl start, phydbl end, phydbl *state, phydbl var, phydbl end_time, int n_steps, phydbl *time);
+phydbl Reflected(phydbl x, phydbl down, phydbl up);
+phydbl *Random_Walk_Generate(phydbl var, int n_steps);
+phydbl *Random_Walk_Bridged_Generate(phydbl start, phydbl end, phydbl var, int n_steps);
+
+
+
+
 
 #endif

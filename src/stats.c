@@ -741,7 +741,6 @@ phydbl Dnorm(phydbl x, phydbl mean, phydbl sd)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 phydbl Log_Dnorm(phydbl x, phydbl mean, phydbl sd, int *err)
 {
   phydbl dens;
@@ -1046,7 +1045,7 @@ phydbl Dpois(phydbl x, phydbl param, int logit)
       else return 0.0;
    }
 
-  v = x * LOG(param) - param - LnGamma(x+1);
+  v = x * LOG(param) - param - Factln(x);
   if(logit == YES) return v;
   else
     {
@@ -1710,7 +1709,7 @@ phydbl LnFact(int n)
   phydbl res;
 
   res = .0;
-  for(i=2;i<=n;i++) res += LOG((phydbl)i);
+  for(i=2;i<n+1;i++) res += LOG((phydbl)i);
   
   return(res);
 }
@@ -5112,28 +5111,32 @@ int *Ranks(phydbl *x, int len)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-phydbl *Brownian_Bridge_Generate(phydbl start, phydbl end, phydbl var, phydbl end_time, int n_steps, phydbl *time)
+phydbl *Brownian_Bridge_Generate(phydbl start, phydbl end, phydbl var, phydbl beg_time, phydbl end_time, int n_steps, phydbl *time)
 {
-  phydbl *state;
+  phydbl *state,end_brown;
   int i;
 
   if(n_steps == 0) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(beg_time > end_time) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  For(i,n_steps-1) if(!(time[i+1] > time[i])) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
-  state = Brownian_Generate(var,n_steps,time);
+  state = Brownian_Generate(var,n_steps,beg_time,time);
+  end_brown = Rnorm(state[n_steps-1],SQRT((time[n_steps-1] - end_time)*var));
 
   For(i,n_steps)
     {
-      state[i] = state[i] - (time[i]/end_time) * state[i];
+      state[i] = state[i] - (time[i]/end_time) * end_brown;
       state[i] = start + (end - start)/end_time * time[i] + state[i];
     }
 
+  
   return(state);
 }
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-phydbl *Brownian_Generate(phydbl var, int n_steps, phydbl *time)
+phydbl *Brownian_Generate(phydbl var, int n_steps, phydbl beg_time, phydbl *time)
 {
   phydbl *state;
   int i;
@@ -5142,7 +5145,7 @@ phydbl *Brownian_Generate(phydbl var, int n_steps, phydbl *time)
 
   state = (phydbl *)mCalloc(n_steps,sizeof(phydbl));
 
-  state[0] = Rnorm(0.0,SQRT(time[0]*var));
+  state[0] = Rnorm(0.0,SQRT((time[0] - beg_time)*var));
 
   for(i=1;i<n_steps;i++)
     {
@@ -5156,18 +5159,57 @@ phydbl *Brownian_Generate(phydbl var, int n_steps, phydbl *time)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-phydbl Brownian_Bridge_Logdensity(phydbl start, phydbl end, phydbl *state, phydbl var, phydbl end_time, int n_steps, phydbl *time)
+phydbl *Random_Walk_Bridged_Generate(phydbl start, phydbl end, phydbl var, int n_steps)
 {
-  phydbl lnL;
-  int i,err;
+  phydbl *state,end_walk;
+  int i;
 
   if(n_steps == 0) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
-  lnL = Log_Dnorm(state[0],start,SQRT(var*time[0]),&err);
-  
-  for(i=1;i<n_steps;i++) lnL += Log_Dnorm(state[i],state[i-1],SQRT(var*(time[i]-time[i-1])),&err);
-  
-  lnL += Log_Dnorm(end,state[i-1],SQRT(var*(end_time-time[i-1])),&err);
+  state = Random_Walk_Generate(var,n_steps);
+  end_walk = Rnorm(state[n_steps-1],SQRT(var));
 
-  return(lnL);
+  For(i,n_steps)
+    {
+      state[i] = state[i] - ((phydbl)(i+1.)/n_steps) * end_walk;
+      state[i] = start + (end - start)/n_steps * (i+1.) + state[i];
+    }
+  
+  return(state);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+phydbl *Random_Walk_Generate(phydbl var, int n_steps)
+{
+  phydbl *state;
+  int i;
+
+  if(n_steps == 0) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+
+  state = (phydbl *)mCalloc(n_steps,sizeof(phydbl));
+
+  state[0] = Rnorm(0.0,SQRT(var));
+
+  for(i=1;i<n_steps;i++) state[i] = Rnorm(state[i-1],SQRT(var));
+
+  return(state);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+phydbl Reflected(phydbl x, phydbl down, phydbl up)
+{
+  phydbl ref;
+  
+  ref = x;
+  do
+    {
+      if(ref > up)   ref = up   - (ref  -  up);
+      if(ref < down) ref = down + (down - ref);
+    }while(!(ref < up && ref > down));
+
+  return(ref);
 }

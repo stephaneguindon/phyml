@@ -144,7 +144,11 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
   /* seed = 27351; */
   /* seed = 359; */
   /* seed = 1; */
-  seed = 10112;
+  /* seed = 10112; */
+  /* seed = 5818; */
+  /* seed = 16167; */
+  /* seed = 18885; */
+  /* seed = 22776; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -213,9 +217,9 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   t_mod *mod;
   t_opt *s_opt;
   calign *cdata;
-  phydbl max_mu, min_mu;
-  phydbl max_rad, min_rad;
-  phydbl min_rate, max_rate;
+  /* phydbl max_mu, min_mu; */
+  /* phydbl max_rad, min_rad; */
+  /* phydbl min_rate, max_rate; */
   phydbl min_lbda, max_lbda;
   phydbl min_neigh, max_neigh;
   phydbl min_sigsq, max_sigsq;
@@ -286,14 +290,13 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   tree->mmod->rad = MIGREP_Update_Radius(tree);
   
 
-
   /* mmod->lbda  = 1.0; */
-  /* mmod->mu    = 0.86; */
-  /* mmod->rad   = 0.5; */
+  /* mmod->mu    = 0.99; */
+  /* mmod->rad   = 2.5; */
   /* mmod->sigsq = MIGREP_Update_Sigsq(tree); */
 
-  /* MIGREP_Simulate_Backward_Core(YES,tree->disk,tree); */
-  mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree);
+  MIGREP_Simulate_Backward_Core(YES,tree->disk,tree);
+  /* mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree); */
 
   PhyML_Printf("\n. lbda: %G mu: %G sigsq: %G rad: %G neigh: %G N: %G",
                mmod->lbda,mmod->mu,mmod->sigsq,mmod->rad,neigh,area*neigh/(4*PI*mmod->sigsq));
@@ -946,7 +949,7 @@ phydbl MIGREP_Lk(t_tree *tree)
 
           if(was_hit == YES) n_hit++;
           
-          if(was_hit == YES && !disk->prev->ldsk)
+          if(was_hit == YES && disk->prev->ldsk == NULL)
             {
               PhyML_Printf("\n== disk: %s disk->prev: %s",disk->id,disk->prev->id);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
@@ -1261,6 +1264,9 @@ phydbl *MIGREP_MCMC(t_tree *tree)
 
       /* if(!strcmp(tree->mcmc->move_name[move],"migrep_sim")) */
       /*   MCMC_MIGREP_Simulate_Backward(tree); */
+
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_traj"))
+        MCMC_MIGREP_Lineage_Traj(tree);
 
       if(!strcmp(tree->mcmc->move_name[move],"kappa"))
         MCMC_Kappa(tree);
@@ -1632,25 +1638,23 @@ void MIGREP_Remove_Disk(t_dsk *disk)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-/* Insert disk event. disk->prev and disk->next need to be set 
-   accordingly. 
+/* Insert disk event based on its time. Insertion above the root is not permitted  
 */
-void MIGREP_Insert_Disk(t_dsk *disk)
+void MIGREP_Insert_Disk(t_dsk *ins, t_tree *tree)
 {
+  t_dsk *disk;
 
-  if(disk->prev == NULL) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
-  if(disk->next == NULL) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
-  if(disk->prev->time > disk->time) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-  if(disk->next->time < disk->time) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(ins == NULL) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  
+  disk = tree->disk;  
+  while(disk != NULL && disk->time > ins->time) disk = disk->prev;
 
-  /* printf("\n. Insert disk %s @ %f between %s and %s", */
-  /*        disk->id,disk->time, */
-  /*        disk->prev->id, */
-  /*        disk->next->id); */
-  /* fflush(NULL); */
+  if(disk == NULL) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
-  disk->prev->next = disk;
-  disk->next->prev = disk;
+  ins->prev       = disk;
+  ins->next       = disk->next;
+  disk->next      = ins;
+  ins->next->prev = ins;
 }
 
 /*////////////////////////////////////////////////////////////
@@ -1771,9 +1775,7 @@ int MIGREP_One_New_Traj(t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y, t_dsk *xtra
           if(tree->disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
           disk = tree->disk;
           while(disk->time > disk_new[i]->time) disk = disk->prev;
-          disk_new[i]->prev = disk;
-          disk_new[i]->next = disk->next;
-          MIGREP_Insert_Disk(disk_new[i]);
+          MIGREP_Insert_Disk(disk_new[i],tree);
         }
             
       /* For(i,n_new_disk) */
@@ -2074,6 +2076,7 @@ void MIGREP_Update_Lindisk_List_Core(t_dsk *disk, t_tree *tree)
       disk->n_ldsk_a++;          
     }
   
+  /* if(disk->n_ldsk_a == 0 || disk->n_ldsk_a > tree->n_otu || (!disk->prev && disk->n_ldsk_a != 1))  */
   if(disk->n_ldsk_a == 0 || disk->n_ldsk_a > tree->n_otu) 
     {
       PhyML_Printf("\n== disk %s %d %s",disk->id, disk->n_ldsk_a, disk->ldsk?disk->ldsk->coord->id:"xx");
@@ -2141,6 +2144,8 @@ void MIGREP_Print_Struct(char sign, t_tree *tree)
   int i,j;
   t_ldsk *ldisk;
 
+  MIGREP_Update_Lindisk_List(tree);
+
   disk = tree->disk;
   while(disk->prev) disk = disk->prev;
   do
@@ -2154,7 +2159,6 @@ void MIGREP_Print_Struct(char sign, t_tree *tree)
       For(j,tree->mmod->n_dim) PhyML_Printf(" %f",disk->centr->lonlat[j]);
       fflush(NULL);
 
-      MIGREP_Update_Lindisk_List(tree);
 
       For(i,disk->n_ldsk_a)
         {
@@ -2724,9 +2728,7 @@ void MIGREP_Ldsk_To_Tree(t_tree *tree)
   tree->num_curr_branch_available = 0;
   MIGREP_Ldsk_To_Tree_Post(tree->n_root,disk->ldsk,&i,tree);
 
-  For(i,tree->n_otu) 
-    if(!tree->a_nodes[i]->v[0]) 
-      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  For(i,tree->n_otu) if(tree->a_nodes[i]->v[0] == NULL) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
   For(i,3) 
     if(tree->n_root->v[2]->v[i] == tree->n_root) 
@@ -2975,7 +2977,8 @@ phydbl MIGREP_Random_Select_Time_Between_Jumps(t_tree *tree)
 int MIGREP_Is_In_Ldscape(t_ldsk *ldsk, t_migrep_mod *mmod)
 {
   int j;
-  For(j,mmod->n_dim) if(ldsk->coord->lonlat[j] > mmod->lim->lonlat[j]) return NO;
+  For(j,mmod->n_dim) if(ldsk->coord->lonlat[j] > mmod->lim->lonlat[j] ||
+                        ldsk->coord->lonlat[j] < 0.0) return NO;
   return YES;
 }
 
@@ -3353,90 +3356,313 @@ void MIGREP_Insert_Ldsk_In_Next_List(t_ldsk *ins, int pos, t_ldsk *where)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-t_ldsk **MIGREP_Remove_Path(t_ldsk *beg, t_ldsk *end, t_tree *tree)
+t_ldsk *MIGREP_Remove_Path(t_ldsk *beg, t_ldsk *end, t_tree *tree)
 {
-  t_ldsk **path, *ldsk;
-  int path_len,block,dir_end_beg;
+  t_ldsk *ldsk;
+  int dir_end_beg;
 
-  path     = NULL;
-  ldsk     = beg->prev;
-  path_len = 0;
-  block    = 100;
-  
   dir_end_beg = MIGREP_Get_Next_Direction(beg,end);
+  MIGREP_Remove_Lindisk_Next(end,end->next[dir_end_beg]);
 
-  while(ldsk != end)
+  if(beg->prev == end) return NULL;
+  
+  /* PhyML_Printf("\n- rm beg: %12f %12f %12f %s", */
+  /*              beg->coord->lonlat[0],beg->coord->lonlat[1],beg->disk->time, */
+  /*              beg->coord->id); */
+  /* PhyML_Printf("\n- rm end: %12f %12f %12f %s", */
+  /*              end->coord->lonlat[0],end->coord->lonlat[1],end->disk->time, */
+  /*              end->coord->id); */
+
+  ldsk = beg->prev;
+  while(1)
     {
-      if(!path_len) path = (t_ldsk **)mCalloc(block,sizeof(t_ldsk *));
-      else if(!(path_len%block)) path = (t_ldsk **)mRealloc(path,path_len+block,sizeof(t_ldsk *));
       MIGREP_Remove_Disk(ldsk->disk);
-      path_len++;
+      /* PhyML_Printf("\n- rm %12f %12f %s",ldsk->coord->lonlat[0],ldsk->coord->lonlat[1],ldsk->coord->id); */
+      if(ldsk->prev == end) break;
       ldsk = ldsk->prev;
     }
-
-  if(path_len > 0) MIGREP_Remove_Lindisk_Next(end,end->next[dir_end_beg]);
   
+  ldsk->prev = NULL;
+  ldsk = beg->prev;
+  beg->prev = NULL;
+
+  return(ldsk);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+void MIGREP_Insert_Path(t_ldsk *beg, t_ldsk *end, t_ldsk *path, t_tree *tree)
+{
+  t_ldsk *ldsk;
+
+  if(path == beg || path == end) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+
+  if(path == NULL) 
+    {
+      beg->prev = end;      
+      /* printf("\n. in (beg-end) %12f %12f %12f %12f %s %s", */
+      /*        beg->coord->lonlat[0], */
+      /*        beg->coord->lonlat[1], */
+      /*        end->coord->lonlat[0], */
+      /*        end->coord->lonlat[1], */
+      /*        beg->coord->id,end->coord->id); */
+      MIGREP_Insert_Ldsk_In_Next_List(beg,end->n_next,end);
+    }
+  else
+    {
+      beg->prev = path;
+
+      /* printf("\n. in beg %12f %12f %12f %s", */
+      /*        beg->coord->lonlat[0], */
+      /*        beg->coord->lonlat[1], */
+      /*        beg->disk->time, */
+      /*        beg->coord->id); */
+
+      /* printf("\n. in end %12f %12f %12f %s", */
+      /*        end->coord->lonlat[0], */
+      /*        end->coord->lonlat[1], */
+      /*        end->disk->time, */
+      /*        end->coord->id); */
+      
+      ldsk = path;
+      while(1)
+        {
+          MIGREP_Insert_Disk(ldsk->disk,tree);
+          /* printf("\n+ in %12f %12f %12f %s", */
+          /*        ldsk->coord->lonlat[0], */
+          /*        ldsk->coord->lonlat[1], */
+          /*        ldsk->disk->time, */
+          /*        ldsk->coord->id); */
+          if(ldsk->prev == NULL) break;
+          ldsk = ldsk->prev;
+        }
+      
+      ldsk->prev = end;
+      path->next[0] = beg;
+      MIGREP_Insert_Ldsk_In_Next_List(ldsk,end->n_next,end);
+    }
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+t_ldsk *MIGREP_Generate_Path(t_ldsk *beg, t_ldsk *end, phydbl cur_n_evt, t_tree *tree)
+{
+  int n_evt,i,j,swap,err;
+  phydbl dt,*time,dum,mode;
+  t_ldsk *path,**ldsk_a;
+  t_dsk *disk;
+
+  dt = FABS(beg->disk->time - end->disk->time);
+
+  /* How many hit events ? */
+  if(cur_n_evt < 0)
+    /* Not sure that rate is ok when considering landscape with boundaries... */
+    n_evt = Rpois(dt*2.*MIGREP_Rate_Per_Unit_Area(tree)*PI*POW(tree->mmod->rad,2)*tree->mmod->mu); 
+  else
+    n_evt = Rpois(cur_n_evt);
+
+  if(n_evt <= 0) return(NULL);
+
+  time   = (phydbl *)mCalloc(n_evt,sizeof(phydbl));
+  ldsk_a = (t_ldsk **)mCalloc(n_evt,sizeof(t_ldsk *));
+
+  For(i,n_evt) time[i] =  beg->disk->time - FABS(Uni()*(end->disk->time - beg->disk->time));
+
+  /* Invert time direction */
+  For(i,n_evt) time[i] = -time[i];
+  
+  /* Bubble sort time in ascending order */
+  do
+    {
+      swap = NO;
+      For(i,n_evt-1) 
+        {
+          if(time[i+1] < time[i])
+            {
+              swap = YES;
+              dum       = time[i+1];
+              time[i+1] = time[i];
+              time[i]   = dum;
+            }
+        }
+    }while(swap == YES);
+
+  
+  For(i,n_evt)
+    {
+      ldsk_a[i] = MIGREP_Make_Lindisk_Node(tree->mmod->n_dim);
+      disk = MIGREP_Make_Disk_Event(tree->mmod->n_dim,tree->n_otu);
+      MIGREP_Init_Lindisk_Node(ldsk_a[i],disk,tree->mmod->n_dim);
+      MIGREP_Make_Lindisk_Next(ldsk_a[i]);
+      MIGREP_Init_Disk_Event(disk,tree->mmod->n_dim,tree->mmod);
+      disk->ldsk = ldsk_a[i];
+      disk->time = -time[i];      
+      /* printf("\n. Generate ldsk %s",ldsk_a[i]->coord->id); */
+    }
+
+  For(i,n_evt-1) ldsk_a[i]->prev = ldsk_a[i+1];
+  ldsk_a[i]->prev = NULL;
+
+  for(i=1;i<n_evt;i++) ldsk_a[i]->next[0] = ldsk_a[i-1];
+  ldsk_a[0]->next[0] = NULL;
+
+  path = ldsk_a[0];
+
+  /* Generate path */
+  For(i,tree->mmod->n_dim)
+    {
+      For(j,n_evt)
+        {
+          if(j == 0)
+            mode = (end->coord->lonlat[i] - beg->coord->lonlat[i])/(n_evt+1.) + beg->coord->lonlat[i];          
+          else
+            mode = (end->coord->lonlat[i] - ldsk_a[j-1]->coord->lonlat[i])/(n_evt+1.-j) + ldsk_a[j-1]->coord->lonlat[i];          
+
+          ldsk_a[j]->coord->lonlat[i] = Rnorm_Trunc(mode,
+                                                    SQRT(2.0*POW(tree->mmod->rad,2)),
+                                                    0.0,
+                                                    tree->mmod->lim->lonlat[i],&err);
+          
+
+          /* ldsk_a[j]->coord->lonlat[i] = Uni()*tree->mmod->lim->lonlat[i]; */
+          /* ldsk_a[j]->coord->lonlat[i] = mode; */
+
+          ldsk_a[j]->disk->centr->lonlat[i] = Rnorm_Trunc(ldsk_a[j]->coord->lonlat[i],
+                                                          tree->mmod->rad,
+                                                          0.0,
+                                                          tree->mmod->lim->lonlat[i],&err);
+
+          /* ldsk_a[j]->disk->centr->lonlat[i] = Uni()*tree->mmod->lim->lonlat[i]; */
+          /* ldsk_a[j]->disk->centr->lonlat[i] = ldsk_a[j]->coord->lonlat[i]; */
+        }
+    }
+
+
+  /* For(j,n_evt) PhyML_Printf("\n. in %12f %12f",ldsk_a[j]->coord->lonlat[0],ldsk_a[j]->coord->lonlat[1]); */
+
+
+  Free(ldsk_a);
+  Free(time);
+
   return(path);
 }
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-void MIGREP_Insert_Path(t_ldsk *beg, t_ldsk *end, t_ldsk **path, int path_len, t_tree *tree)
+phydbl MIGREP_Path_Logdensity(t_ldsk *beg, t_ldsk *end, phydbl cur_n_evt, t_tree *tree)
 {
-  int i;
+  int i,j,err,n_evt;
   t_ldsk *ldsk;
+  phydbl lnDens,mode,rate;
 
-  if(path_len == 0) return;
+  lnDens = 0.0;
+  mode   = 0.0;
 
-  beg->prev = path[0];
+  n_evt = 0;
+  ldsk = beg->prev;
+  while(ldsk != end)
+    {
+      n_evt++;
+      ldsk = ldsk->prev;
+    }
 
-  For(i,path_len) MIGREP_Insert_Disk(path[i]->disk);
+  For(i,tree->mmod->n_dim)
+    {     
+      j    = 0;
+      ldsk = beg;
+      while(ldsk->prev != end)
+        {
+          if(ldsk == NULL) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+          
+          mode = (end->coord->lonlat[i] - ldsk->coord->lonlat[i])/(n_evt+1.-j) + ldsk->coord->lonlat[i];          
 
-  MIGREP_Insert_Ldsk_In_Next_List(path[i-1],0,end);
+          lnDens += Log_Dnorm_Trunc(ldsk->prev->coord->lonlat[i],
+                                    mode,
+                                    SQRT(2.0*POW(tree->mmod->rad,2)),
+                                    0.0,
+                                    tree->mmod->lim->lonlat[i],&err);
 
+          /* lnDens += LOG(1./tree->mmod->lim->lonlat[i]); */
+
+          lnDens += Log_Dnorm_Trunc(ldsk->prev->disk->centr->lonlat[i],
+                                    ldsk->prev->coord->lonlat[i],
+                                    tree->mmod->rad,
+                                    0.0,
+                                    tree->mmod->lim->lonlat[i],&err);
+
+          /* lnDens += LOG(1./tree->mmod->lim->lonlat[i]); */
+
+          ldsk = ldsk->prev;
+          j++;
+        }
+    }
+
+  if(cur_n_evt < 0)
+    rate = 2.*MIGREP_Rate_Per_Unit_Area(tree)*PI*POW(tree->mmod->rad,2)*tree->mmod->mu*FABS(end->disk->time - beg->disk->time);
+  else
+    rate = cur_n_evt;
+
+  lnDens += Dpois(n_evt,rate,YES);
+  lnDens += (n_evt) * LOG(1./FABS(end->disk->time - beg->disk->time));
+  lnDens += LnFact(n_evt);
+
+  return(lnDens);
 }
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-/* t_ldsk **MIGREP_Generate_Path(t_ldsk *beg, t_ldsk *end, t_tree *tree) */
-/* { */
-/*   int n_evt,i; */
-/*   phydbl dt,*time,*loc; */
-/*   t_ldsk **path; */
+phydbl MIGREP_Time_Tree_Length(t_tree *tree)
+{
+  phydbl len;
+  int i;
+  t_dsk *disk;
 
-/*   dt = FABS(beg->disk->time - end->disk->time); */
+  disk = tree->disk;
+  while(disk->prev) disk = disk->prev;
 
-/*   /\* How many hit events ? *\/ */
-/*   n_evt = Rpois(dt*2.*MIGREP_Rate_Per_Unit_Area(tree)*PI*POW(tree->mmod->rad,2)*tree->mmod->mu); */
-
-/*   path = (t_ldsk **)mCalloc(n_evt,sizeof(t_ldsk *)); */
-/*   time = (phydbl *)mCalloc(n_evt,sizeof(phydbl)); */
-/*   loc  = (phydbl *)mCalloc(n_evt,sizeof(phydbl)); */
-
-/*   For(i,n_evt) time[i] =  Uni()*(end->disk->time - beg->disk->time) + beg->disk->time; */
+  len = 0.0;
+  For(i,disk->ldsk->n_next) MIGREP_Time_Tree_Length_Pre(disk->ldsk,disk->ldsk->next[i],&len,tree);
   
-/*   For(i,tree->mmod->n_dim) */
-/*     { */
-/*       loc = Brownian_Bridge_Generate(beg->coord->lonlat[i], */
-/*                                      end->coord->lonlat[i], */
-/*                                      2.*MIGREP_Rate_Per_Unit_Area(tree)*PI*POW(tree->mmod->rad,2)*tree->mmod->mu, */
-                                     
-/*                                      ); */
-/*     } */
-
-
-/* } */
+  return(len);
+}
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+void MIGREP_Time_Tree_Length_Pre(t_ldsk *a, t_ldsk *d, phydbl *len, t_tree *tree)
+{
+  int i;
+
+  (*len) += FABS(a->disk->time - d->disk->time);
+  
+  if(!d->disk->next) return;
+  else
+    For(i,d->n_next) MIGREP_Time_Tree_Length_Pre(d,d->next[i],len,tree);
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
-/*////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////*/
-/*////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////*/
+
+int MIGREP_Is_On_Path(t_ldsk *target, t_ldsk *beg, t_ldsk *end)
+{
+  t_ldsk *ldsk;
+
+  if(beg->disk->time < end->disk->time) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+
+  ldsk = beg->prev; 
+  while(ldsk != end)
+    {
+      if(ldsk == target) return YES;
+      ldsk = ldsk->prev;
+      if(ldsk == NULL) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
+  return NO;
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

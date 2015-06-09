@@ -27,7 +27,7 @@ phydbl *MIGREP_MCMC(t_tree *tree);
 int MIGREP_Is_In_Disk(t_geo_coord *coord, t_dsk *disk, t_migrep_mod *mmod);
 void MIGREP_New_Traj(t_dsk *start, t_dsk *end, t_tree *tree);
 void MIGREP_Remove_Disk(t_dsk *disk);
-void MIGREP_Insert_Disk(t_dsk *disk);
+void MIGREP_Insert_Disk(t_dsk *ins, t_tree *tree);
 t_ldsk *MIGREP_Prev_Coal_Lindisk(t_ldsk *t);
 t_ldsk *MIGREP_Next_Coal_Lindisk(t_ldsk *t);
 int MIGREP_Get_Next_Direction(t_ldsk *young, t_ldsk *old);
@@ -87,9 +87,13 @@ phydbl MIGREP_Rate_Per_Unit_Area(t_tree *tree);
 phydbl MIGREP_Tree_Height(t_tree *tree);
 int MIGREP_Random_Insert_Ldsk_In_Next_List(t_ldsk *ins, t_ldsk *where);
 void MIGREP_Insert_Ldsk_In_Next_List(t_ldsk *ins, int pos, t_ldsk *where);
-t_ldsk **MIGREP_Remove_Path(t_ldsk *beg, t_ldsk *end, t_tree *tree);
-void MIGREP_Insert_Path(t_ldsk *beg, t_ldsk *end, t_ldsk **path, int path_len, t_tree *tree);
-t_ldsk **MIGREP_Generate_Path(t_ldsk *beg, t_ldsk *end, t_tree *tree);
+t_ldsk *MIGREP_Remove_Path(t_ldsk *beg, t_ldsk *end, t_tree *tree);
+void MIGREP_Insert_Path(t_ldsk *beg, t_ldsk *end, t_ldsk *path, t_tree *tree);
+t_ldsk *MIGREP_Generate_Path(t_ldsk *beg, t_ldsk *end, phydbl n_evt, t_tree *tree);
+phydbl MIGREP_Path_Logdensity(t_ldsk *beg, t_ldsk *end, phydbl cur_n_evt, t_tree *tree);
+phydbl MIGREP_Time_Tree_Length(t_tree *tree);
+void MIGREP_Time_Tree_Length_Pre(t_ldsk *a, t_ldsk *d, phydbl *len, t_tree *tree);
+int MIGREP_Is_On_Path(t_ldsk *target, t_ldsk *beg, t_ldsk *end);
 
 
 #endif
