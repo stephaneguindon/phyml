@@ -94,6 +94,7 @@ phydbl MIGREP_Path_Logdensity(t_ldsk *beg, t_ldsk *end, phydbl cur_n_evt, t_tree
 phydbl MIGREP_Time_Tree_Length(t_tree *tree);
 void MIGREP_Time_Tree_Length_Pre(t_ldsk *a, t_ldsk *d, phydbl *len, t_tree *tree);
 int MIGREP_Is_On_Path(t_ldsk *target, t_ldsk *beg, t_ldsk *end);
+int MIGREP_Path_Len(t_ldsk *beg, t_ldsk *end);
 
 
 #endif

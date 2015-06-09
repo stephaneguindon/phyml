@@ -6541,7 +6541,9 @@ void MCMC_MIGREP_Prune_Regraft(t_tree *tree)
   t_dsk  *disk,*prune_disk,*regraft_disk,**valid_disks;
   t_ldsk *prune_ldsk,*regraft_ldsk,*prune_daughter_ldsk,*cur_path,*new_path,*ldsk,*ldsk_dum;
   int i,block,n_valid_disks,prune_next_num;
-  phydbl rate,dt;
+  phydbl rate,dt,sizeT;
+  int cur_path_len, new_path_len;
+  int n_hits;
 
   valid_disks = NULL;
   disk        = NULL;
@@ -6636,20 +6638,26 @@ void MCMC_MIGREP_Prune_Regraft(t_tree *tree)
   /* Proba of pruning that particular lineage */
   hr += LOG(1./(phydbl)(regraft_ldsk->n_next+1));
 
-  rate = MIGREP_Total_Number_Of_Hit_Disks(tree);
-  rate /= MIGREP_Time_Tree_Length(tree);
 
+  n_hits = MIGREP_Total_Number_Of_Hit_Disks(tree);
+  sizeT  = MIGREP_Time_Tree_Length(tree);
 
   /* Prune and regraft */
+  rate = (phydbl)n_hits/sizeT; 
   dt = FABS(prune_daughter_ldsk->disk->time - regraft_ldsk->disk->time);
   new_path = MIGREP_Generate_Path(prune_daughter_ldsk,regraft_ldsk,rate*dt,tree);
 
+  cur_path_len = MIGREP_Path_Len(prune_daughter_ldsk,prune_ldsk)-2;
+  new_path_len = MIGREP_Path_Len(new_path,NULL)-1;
+
+  rate = (phydbl)(n_hits - cur_path_len + new_path_len)/sizeT;
   dt = FABS(prune_daughter_ldsk->disk->time - prune_ldsk->disk->time);
   hr += MIGREP_Path_Logdensity(prune_daughter_ldsk,prune_ldsk,rate*dt,tree);
 
   cur_path = MIGREP_Remove_Path(prune_daughter_ldsk,prune_ldsk,tree);
   MIGREP_Insert_Path(prune_daughter_ldsk,regraft_ldsk,new_path,tree);
 
+  rate = (phydbl)n_hits/sizeT;
   dt = FABS(prune_daughter_ldsk->disk->time - regraft_ldsk->disk->time);
   hr -= MIGREP_Path_Logdensity(prune_daughter_ldsk,regraft_ldsk,rate*dt,tree);
 
@@ -6964,8 +6972,10 @@ void MCMC_MIGREP_Lineage_Traj(t_tree *tree)
   phydbl cur_glnL, new_glnL;
   t_dsk  *disk,**valid_disks;
   t_ldsk *start_ldsk,*end_ldsk,*cur_path,*new_path,*ldsk,*ldsk_dum;
-  int i,block,n_valid_disks,n_evt_cur,n_evt_new;
-  phydbl rate,dt;
+  int i,block,n_valid_disks;
+  phydbl rate,dt,sizeT;
+  int cur_path_len, new_path_len;
+  int n_hits;
 
   valid_disks = NULL;
   disk        = NULL;
@@ -7007,40 +7017,24 @@ void MCMC_MIGREP_Lineage_Traj(t_tree *tree)
   if(end_ldsk == NULL)   Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   if(start_ldsk == NULL) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
-  rate = MIGREP_Total_Number_Of_Hit_Disks(tree);
-  rate /= MIGREP_Time_Tree_Length(tree);
-  dt = FABS(start_ldsk->disk->time - end_ldsk->disk->time);
+  n_hits = MIGREP_Total_Number_Of_Hit_Disks(tree);
+  sizeT  = MIGREP_Time_Tree_Length(tree);
+  dt     = FABS(start_ldsk->disk->time - end_ldsk->disk->time);
 
-  n_evt_cur = 0;
-  ldsk = start_ldsk->prev;
-  while(ldsk != end_ldsk)
-    {
-      n_evt_cur++;
-      ldsk = ldsk->prev;
-    }
-
-  /* PhyML_Printf("\n>>>>>>>>>>>>>>>>>>"); */
+  rate = (phydbl)n_hits/sizeT; 
   new_path = MIGREP_Generate_Path(start_ldsk,end_ldsk,rate*dt,tree);
-  /* new_path = MIGREP_Generate_Path(start_ldsk,end_ldsk,n_evt_cur,tree); */
-  /* new_path = MIGREP_Generate_Path(start_ldsk,end_ldsk,-1,tree); */
 
-  n_evt_new = 0;
-  ldsk = new_path;
-  while(ldsk != NULL)
-    {
-      n_evt_new++;
-      ldsk = ldsk->prev;
-    }
+  cur_path_len = MIGREP_Path_Len(start_ldsk,end_ldsk)-2;
+  new_path_len = MIGREP_Path_Len(new_path,NULL)-1;
 
+  rate = (phydbl)(n_hits - cur_path_len + new_path_len)/sizeT;
   hr += MIGREP_Path_Logdensity(start_ldsk,end_ldsk,rate*dt,tree);
-  /* hr += MIGREP_Path_Logdensity(start_ldsk,end_ldsk,n_evt_new,tree); */
-  /* hr += MIGREP_Path_Logdensity(start_ldsk,end_ldsk,-1,tree); */
+
   cur_path = MIGREP_Remove_Path(start_ldsk,end_ldsk,tree);
   MIGREP_Insert_Path(start_ldsk,end_ldsk,new_path,tree);
+
+  rate = (phydbl)n_hits/sizeT;
   hr -= MIGREP_Path_Logdensity(start_ldsk,end_ldsk,rate*dt,tree);
-  /* hr -= MIGREP_Path_Logdensity(start_ldsk,end_ldsk,n_evt_cur,tree); */
-  /* hr -= MIGREP_Path_Logdensity(start_ldsk,end_ldsk,-1,tree); */
-  /* PhyML_Printf("\n<<<<<<<<<<<<<<<<<<"); */
   
   new_glnL = MIGREP_Lk(tree);
   
