@@ -314,11 +314,12 @@ phydbl Rnorm_Trunc(phydbl mean, phydbl sd, phydbl min, phydbl max, int *error)
   int iter;
   phydbl z, q, u;
   phydbl z_min,z_max;
+  int n_max_iter;
 
-  z       = 0.0;
-  *error  = NO;
-  ret_val = INFINITY;
-
+  z          = 0.0;
+  *error     = NO;
+  ret_val    = INFINITY;
+  n_max_iter = 10000000;
   if(sd < 1.E-100)
     {
       PhyML_Printf("\n. Small variance detected in Rnorm_Trunc.");
@@ -381,9 +382,9 @@ phydbl Rnorm_Trunc(phydbl mean, phydbl sd, phydbl min, phydbl max, int *error)
       u = Uni();
       if(!(u>q)) { break; }
       iter++;
-    }while(iter < 1000);
+    }while(iter < n_max_iter);
 
-  if(iter == 1000)
+  if(iter == n_max_iter)
     {
       PhyML_Printf("\n. Too many iterations in Rnorm_Trunc...");
       *error = 1;
