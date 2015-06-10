@@ -275,7 +275,6 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   MIGREP_Init_Migrep_Mod(mmod,n_dim,width,height);
   
   /* Initialize parameters of migrep model */
-
   max_lbda = 10.00; min_lbda = 0.1;
   mmod->lbda = Uni()*(max_lbda - min_lbda)  + min_lbda;
 
@@ -291,8 +290,8 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   
 
   /* mmod->lbda  = 1.0; */
-  /* mmod->mu    = 0.99; */
-  /* mmod->rad   = 2.5; */
+  /* mmod->mu    = 0.86; */
+  /* mmod->rad   = 1.46; */
   /* mmod->sigsq = MIGREP_Update_Sigsq(tree); */
 
   /* MIGREP_Simulate_Backward_Core(YES,tree->disk,tree); */
@@ -1212,7 +1211,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
 
   For(i,mcmc->n_moves) tree->mcmc->start_ess[i] = YES;
 
-  mcmc->use_data = YES; 
+  mcmc->use_data   = YES; 
   mcmc->always_yes = NO;
     
   do
@@ -3457,7 +3456,7 @@ t_ldsk *MIGREP_Generate_Path(t_ldsk *beg, t_ldsk *end, phydbl cur_n_evt, t_tree 
   dt = FABS(beg->disk->time - end->disk->time);
 
   /* How many hit events ? */
-  if(cur_n_evt < 0)
+  if(cur_n_evt < .0)
     /* Not sure that rate is ok when considering landscape with boundaries... */
     n_evt = Rpois(dt*2.*MIGREP_Rate_Per_Unit_Area(tree)*PI*POW(tree->mmod->rad,2)*tree->mmod->mu); 
   else
@@ -3640,7 +3639,7 @@ void MIGREP_Time_Tree_Length_Pre(t_ldsk *a, t_ldsk *d, phydbl *len, t_tree *tree
 
   (*len) += FABS(a->disk->time - d->disk->time);
   
-  if(!d->disk->next) return;
+  if(d->disk->next == NULL) return;
   else
     For(i,d->n_next) MIGREP_Time_Tree_Length_Pre(d,d->next[i],len,tree);
 }
@@ -3679,8 +3678,8 @@ int MIGREP_Path_Len(t_ldsk *beg, t_ldsk *end)
       len++;
       ldsk = ldsk->prev;
     }
-  
-  return len+1;
+  len++;
+  return len;
 }
 
 /*////////////////////////////////////////////////////////////
