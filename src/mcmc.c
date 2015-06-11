@@ -4485,7 +4485,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_migrep_spr]                   = 5.0;
   mcmc->move_weight[mcmc->num_move_migrep_scale_times]           = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_ldscape_lim]           = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_sim]                   = 0.0;
+  mcmc->move_weight[mcmc->num_move_migrep_sim]                   = 0.1;
   mcmc->move_weight[mcmc->num_move_migrep_traj]                  = 2.0;
 # else
   mcmc->move_weight[mcmc->num_move_migrep_lbda]                  = 0.0;
@@ -6220,14 +6220,14 @@ void MCMC_MIGREP_Insert_Hit(phydbl hr, int n_insert_disks, t_tree *tree)
   phydbl cur_glnL, new_glnL;
   phydbl u,alpha,ratio;
   int i,j,*dir_old_young,n_valid_disks,err;
-  phydbl cur_lbda, new_lbda;
-  int n_tot_disks_new, n_tot_disks_cur;
+  /* phydbl cur_lbda, new_lbda; */
+  /* int n_tot_disks_new, n_tot_disks_cur; */
 
   disk            = NULL;
   new_glnL        = tree->mmod->c_lnL;
   cur_glnL        = tree->mmod->c_lnL;
-  cur_lbda        = tree->mmod->lbda;
-  n_tot_disks_cur = MIGREP_Total_Number_Of_Intervals(tree);
+  /* cur_lbda        = tree->mmod->lbda; */
+  /* n_tot_disks_cur = MIGREP_Total_Number_Of_Intervals(tree); */
 
   if(tree->disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
@@ -6341,35 +6341,35 @@ void MCMC_MIGREP_Insert_Hit(phydbl hr, int n_insert_disks, t_tree *tree)
   hr += n_insert_disks * LOG(-T);  
   hr -= LnFact(n_insert_disks);
 
+  /* Adjusting the value of lambda makes the acceptance frequency of that move very small */
+  /* /\* Adjust value of lambda *\/ */
+  /* n_tot_disks_new = n_tot_disks_cur + n_insert_disks; */
+  /* new_lbda = Rnorm_Trunc(n_tot_disks_new/FABS(T), */
+  /*                        0.1*n_tot_disks_new/FABS(T), */
+  /*                        /\* 0.1, *\/ */
+  /*                        tree->mmod->min_lbda, */
+  /*                        tree->mmod->max_lbda, */
+  /*                        &err); */
 
-  /* Adjust value of lambda */
-  n_tot_disks_new = n_tot_disks_cur + n_insert_disks;
-  new_lbda = Rnorm_Trunc(n_tot_disks_new/FABS(T),
-                         0.1*n_tot_disks_new/FABS(T),
-                         /* 0.1, */
-                         tree->mmod->min_lbda,
-                         tree->mmod->max_lbda,
-                         &err);
-
-  /* printf("\n +++ new_lbda: %f cur_lbda: %f mean: %f ",new_lbda,cur_lbda,n_tot_disks_new/FABS(T)); */
+  /* /\* printf("\n +++ new_lbda: %f cur_lbda: %f mean: %f ",new_lbda,cur_lbda,n_tot_disks_new/FABS(T)); *\/ */
   
-  hr += Log_Dnorm_Trunc(cur_lbda,
-                        n_tot_disks_cur/FABS(T),
-                        0.1*n_tot_disks_cur/FABS(T),
-                        /* 0.1, */
-                        tree->mmod->min_lbda,
-                        tree->mmod->max_lbda,
-                        &err);
+  /* hr += Log_Dnorm_Trunc(cur_lbda, */
+  /*                       n_tot_disks_cur/FABS(T), */
+  /*                       0.1*n_tot_disks_cur/FABS(T), */
+  /*                       /\* 0.1, *\/ */
+  /*                       tree->mmod->min_lbda, */
+  /*                       tree->mmod->max_lbda, */
+  /*                       &err); */
 
-  hr -= Log_Dnorm_Trunc(new_lbda,
-                        n_tot_disks_new/FABS(T),
-                        0.1*n_tot_disks_new/FABS(T),
-                        /* 0.1, */
-                        tree->mmod->min_lbda,
-                        tree->mmod->max_lbda,
-                        &err);
+  /* hr -= Log_Dnorm_Trunc(new_lbda, */
+  /*                       n_tot_disks_new/FABS(T), */
+  /*                       0.1*n_tot_disks_new/FABS(T), */
+  /*                       /\* 0.1, *\/ */
+  /*                       tree->mmod->min_lbda, */
+  /*                       tree->mmod->max_lbda, */
+  /*                       &err); */
 
-  tree->mmod->lbda = new_lbda;
+  /* tree->mmod->lbda = new_lbda; */
 
 
 
@@ -6392,7 +6392,7 @@ void MCMC_MIGREP_Insert_Hit(phydbl hr, int n_insert_disks, t_tree *tree)
     {
       /* printf("+ Reject"); */
 
-      tree->mmod->lbda = cur_lbda;
+      /* tree->mmod->lbda = cur_lbda; */
       
       for(j=n_insert_disks-1;j>=0;j--)
         {
@@ -6442,8 +6442,8 @@ void MCMC_MIGREP_Delete_Hit(phydbl hr, int n_delete_disks, t_tree *tree)
   t_dsk  *disk,**target_disk,**valid_disks;
   t_ldsk **target_ldsk,**old_ldsk,**young_ldsk;
   int i,j,block,n_valid_disks,*dir_old_young,*permut,err;
-  phydbl cur_lbda, new_lbda;
-  int n_tot_disks_new, n_tot_disks_cur;
+  /* phydbl cur_lbda, new_lbda; */
+  /* int n_tot_disks_new, n_tot_disks_cur; */
 
   disk            = NULL;
   valid_disks     = NULL;
@@ -6451,8 +6451,8 @@ void MCMC_MIGREP_Delete_Hit(phydbl hr, int n_delete_disks, t_tree *tree)
   cur_glnL        = tree->mmod->c_lnL;  
   ratio           = 0.0;
   block           = 100;
-  cur_lbda        = tree->mmod->lbda;
-  n_tot_disks_cur = MIGREP_Total_Number_Of_Intervals(tree);
+  /* cur_lbda        = tree->mmod->lbda; */
+  /* n_tot_disks_cur = MIGREP_Total_Number_Of_Intervals(tree); */
 
   if(tree->disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   disk = tree->disk->prev;
@@ -6545,34 +6545,34 @@ void MCMC_MIGREP_Delete_Hit(phydbl hr, int n_delete_disks, t_tree *tree)
   Free(valid_disks);
 
 
-  /* Adjust value of lambda */
-  n_tot_disks_new = n_tot_disks_cur - n_delete_disks;
-  new_lbda = Rnorm_Trunc(n_tot_disks_new/FABS(T),
-                         0.1*n_tot_disks_new/FABS(T),
-                         /* 0.1, */
-                         tree->mmod->min_lbda,
-                         tree->mmod->max_lbda,
-                         &err);
+  /* /\* Adjust value of lambda *\/ */
+  /* n_tot_disks_new = n_tot_disks_cur - n_delete_disks; */
+  /* new_lbda = Rnorm_Trunc(n_tot_disks_new/FABS(T), */
+  /*                        0.1*n_tot_disks_new/FABS(T), */
+  /*                        /\* 0.1, *\/ */
+  /*                        tree->mmod->min_lbda, */
+  /*                        tree->mmod->max_lbda, */
+  /*                        &err); */
   
-  /* printf("\n --- new_lbda: %f cur_lbda: %f",new_lbda,cur_lbda); */
+  /* /\* printf("\n --- new_lbda: %f cur_lbda: %f",new_lbda,cur_lbda); *\/ */
 
-  hr += Log_Dnorm_Trunc(cur_lbda,
-                        n_tot_disks_cur/FABS(T),
-                        0.1*n_tot_disks_cur/FABS(T),
-                        /* 0.1, */
-                        tree->mmod->min_lbda,
-                        tree->mmod->max_lbda,
-                        &err);
+  /* hr += Log_Dnorm_Trunc(cur_lbda, */
+  /*                       n_tot_disks_cur/FABS(T), */
+  /*                       0.1*n_tot_disks_cur/FABS(T), */
+  /*                       /\* 0.1, *\/ */
+  /*                       tree->mmod->min_lbda, */
+  /*                       tree->mmod->max_lbda, */
+  /*                       &err); */
 
-  hr -= Log_Dnorm_Trunc(new_lbda,
-                        n_tot_disks_new/FABS(T),
-                        0.1*n_tot_disks_new/FABS(T),
-                        /* 0.1, */
-                        tree->mmod->min_lbda,
-                        tree->mmod->max_lbda,
-                        &err);
+  /* hr -= Log_Dnorm_Trunc(new_lbda, */
+  /*                       n_tot_disks_new/FABS(T), */
+  /*                       0.1*n_tot_disks_new/FABS(T), */
+  /*                       /\* 0.1, *\/ */
+  /*                       tree->mmod->min_lbda, */
+  /*                       tree->mmod->max_lbda, */
+  /*                       &err); */
 
-  tree->mmod->lbda = new_lbda;
+  /* tree->mmod->lbda = new_lbda; */
 
 
   new_glnL = MIGREP_Lk(tree);
@@ -6593,7 +6593,7 @@ void MCMC_MIGREP_Delete_Hit(phydbl hr, int n_delete_disks, t_tree *tree)
 
   if(u > alpha) /* Reject */
     {
-      tree->mmod->lbda = cur_lbda;
+      /* tree->mmod->lbda = cur_lbda; */
 
       /* printf("- Reject"); */
       for(j=n_delete_disks-1;j>=0;j--) 

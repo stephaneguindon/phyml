@@ -1261,8 +1261,8 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"migrep_scale_times"))
         MCMC_MIGREP_Scale_Times(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_sim")) */
-      /*   MCMC_MIGREP_Simulate_Backward(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_sim"))
+        MCMC_MIGREP_Simulate_Backward(tree);
 
       if(!strcmp(tree->mcmc->move_name[move],"migrep_traj"))
         MCMC_MIGREP_Lineage_Traj(tree);
