@@ -1201,8 +1201,8 @@ phydbl *MIGREP_MCMC(t_tree *tree)
                 "accInDelDisk",
                 "accInDelHit",
                 "accScaleTime",
-                "accDisk",
-                "accLdsk",
+                "accSPR",
+                "accPath",
                 "accSim",
                 "accMoveLdsk",
                 "accMoveCtr");
@@ -1318,8 +1318,8 @@ phydbl *MIGREP_MCMC(t_tree *tree)
                         tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_indel_disk],
                         tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_indel_hit],
                         tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_scale_times],
-                        tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_move_disk_ct],
-                        tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_move_ldsk],
+                        tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_spr],
+                        tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_traj],
                         tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_sim],
                         tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_move_ldsk],
                         tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_move_disk_ct]);
