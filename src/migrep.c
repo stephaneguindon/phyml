@@ -279,10 +279,10 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   mmod->lbda = Uni()*(max_lbda - min_lbda)  + min_lbda;
 
   /* Neighborhood size */
-  max_neigh = 50.; min_neigh = 2.;
+  max_neigh = 100.; min_neigh = 5.;
   neigh = Uni()*(max_neigh - min_neigh)  + min_neigh;
 
-  min_sigsq = area / (4.*PI*100.); max_sigsq = area / (4.*PI*10.);
+  min_sigsq = area / (4.*PI*100.); max_sigsq = area / (4.*PI*2.);
   mmod->sigsq = Uni()*(max_sigsq - min_sigsq) + min_sigsq;
 
   mmod->mu = 2./neigh;
