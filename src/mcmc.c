@@ -5911,7 +5911,7 @@ void MCMC_MIGREP_Scale_Times(t_tree *tree)
   newT = curT * scale_fact_times;
 
   new_lbda = Rnorm_Trunc(n_tot_disks/FABS(newT),
-                         0.1*n_tot_disks/FABS(newT),
+                         0.2*n_tot_disks/FABS(newT),
                          /* 0.1, */
                          tree->mmod->min_lbda,
                          tree->mmod->max_lbda,
@@ -5921,7 +5921,7 @@ void MCMC_MIGREP_Scale_Times(t_tree *tree)
   
   hr += Log_Dnorm_Trunc(cur_lbda,
                         n_tot_disks/FABS(curT),
-                        0.1*n_tot_disks/FABS(curT),
+                        0.2*n_tot_disks/FABS(curT),
                         /* 0.1, */
                         tree->mmod->min_lbda,
                         tree->mmod->max_lbda,
@@ -5929,7 +5929,7 @@ void MCMC_MIGREP_Scale_Times(t_tree *tree)
 
   hr -= Log_Dnorm_Trunc(new_lbda,
                         n_tot_disks/FABS(newT),
-                        0.1*n_tot_disks/FABS(newT),
+                        0.2*n_tot_disks/FABS(newT),
                         /* 0.1, */
                         tree->mmod->min_lbda,
                         tree->mmod->max_lbda,

@@ -386,7 +386,9 @@ phydbl Rnorm_Trunc(phydbl mean, phydbl sd, phydbl min, phydbl max, int *error)
 
   if(iter == n_max_iter)
     {
-      PhyML_Printf("\n. Too many iterations in Rnorm_Trunc...");
+      PhyML_Printf("\n== %f %f %f %f",
+                   mean, sd, min, max);
+      PhyML_Printf("\n== Too many iterations in Rnorm_Trunc...");
       *error = 1;
     }
 
