@@ -276,7 +276,7 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   MIGREP_Init_Migrep_Mod(mmod,n_dim,width,height);
   
   /* Effective population size */
-  minNe = 100.; maxNe = 2000.;
+  minNe = 100.; maxNe = 5000.;
   Ne = Uni() * (maxNe - minNe) + minNe;
 
   /* Neighborhood size */
@@ -296,8 +296,8 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   /* mmod->rad   = 1.46; */
   /* mmod->sigsq = MIGREP_Update_Sigsq(tree); */
 
-  /* MIGREP_Simulate_Backward_Core(YES,tree->disk,tree); */
-  mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree);
+  MIGREP_Simulate_Backward_Core(YES,tree->disk,tree);
+  /* mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree); */
 
   PhyML_Printf("\n. lbda: %G mu: %G sigsq: %G rad: %G neigh: %G N: %G",
                mmod->lbda,mmod->mu,mmod->sigsq,mmod->rad,neigh,area*neigh/(4*PI*mmod->sigsq));
