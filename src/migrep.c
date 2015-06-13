@@ -225,6 +225,7 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   phydbl min_sigsq, max_sigsq;
   phydbl area, neigh;
   phydbl T;
+  phydbl Ne,maxNe,minNe;
 
   n_dim = 2; // 2-dimensional landscape
   area  = width * height;
@@ -274,21 +275,22 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   tree->mmod = mmod;
   MIGREP_Init_Migrep_Mod(mmod,n_dim,width,height);
   
-  /* Initialize parameters of migrep model */
-  max_lbda = 10.00; min_lbda = 0.1;
-  mmod->lbda = Uni()*(max_lbda - min_lbda)  + min_lbda;
+  /* Effective population size */
+  minNe = 100.; maxNe = 5000.;
+  Ne = Uni() * (maxNe - minNe) + minNe;
 
   /* Neighborhood size */
-  max_neigh = 100.; min_neigh = 5.;
+  max_neigh = 0.01*Ne; min_neigh = MAX(2.,0.001*Ne);
   neigh = Uni()*(max_neigh - min_neigh)  + min_neigh;
-
-  min_sigsq = area / (4.*PI*100.); max_sigsq = area / (4.*PI*2.);
-  mmod->sigsq = Uni()*(max_sigsq - min_sigsq) + min_sigsq;
-
   mmod->mu = 2./neigh;
-  tree->mmod->rad = MIGREP_Update_Radius(tree);
-  
 
+  /* Theta (radius) */
+  tree->mmod->rad = Uni()*(3.0 - 1.0) + 1.0;
+
+  mmod->sigsq = neigh / (4.*PI*Ne/area);
+
+  tree->mmod->lbda = area * mmod->sigsq / (4.*PI*tree->mmod->mu*POW(tree->mmod->rad,4)); 
+  
   /* mmod->lbda  = 1.0; */
   /* mmod->mu    = 0.86; */
   /* mmod->rad   = 1.46; */
