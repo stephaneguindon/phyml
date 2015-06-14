@@ -149,7 +149,7 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
   /* seed = 16167; */
   /* seed = 18885; */
   /* seed = 22776; */
-  /* seed = 13312; */
+  /* seed = 15859; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -277,11 +277,11 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   MIGREP_Init_Migrep_Mod(mmod,n_dim,width,height);
   
   /* Effective population size */
-  minNe = 100.; maxNe = 5000.;
+  minNe = 100.; maxNe = 10000.;
   Ne = Uni() * (maxNe - minNe) + minNe;
 
   /* Neighborhood size */
-  max_neigh = 0.01*Ne; min_neigh = MAX(2.,0.001*Ne);
+  max_neigh = MAX(2.,0.01*Ne); min_neigh = MAX(2.,0.001*Ne);
   neigh = Uni()*(max_neigh - min_neigh)  + min_neigh;
   mmod->mu = 2./neigh;
 
@@ -290,11 +290,12 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
 
   mmod->sigsq = neigh / (4.*PI*Ne/area);
 
-  tree->mmod->lbda = area * mmod->sigsq / (4.*PI*tree->mmod->mu*POW(tree->mmod->rad,4)); 
+  tree->mmod->lbda = area * mmod->sigsq / (4.*PI*tree->mmod->mu*POW(tree->mmod->rad,4));
   
-  /* mmod->lbda  = 1.0; */
-  /* mmod->mu    = 0.86; */
-  /* mmod->rad   = 1.46; */
+  /* mmod->lbda  = 8.9; */
+  /* mmod->mu    = 0.04; */
+  /* mmod->rad   = 1.08; */
+  /* neigh       = 2./mmod->mu; */
   /* mmod->sigsq = MIGREP_Update_Sigsq(tree); */
 
   MIGREP_Simulate_Backward_Core(YES,tree->disk,tree);
@@ -1264,8 +1265,8 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"migrep_scale_times"))
         MCMC_MIGREP_Scale_Times(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"migrep_sim"))
-        MCMC_MIGREP_Simulate_Backward(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_sim")) */
+      /*   MCMC_MIGREP_Simulate_Backward(tree); */
 
       if(!strcmp(tree->mcmc->move_name[move],"migrep_traj"))
         MCMC_MIGREP_Lineage_Traj(tree);

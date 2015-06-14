@@ -4485,8 +4485,8 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_migrep_spr]                   = 5.0;
   mcmc->move_weight[mcmc->num_move_migrep_scale_times]           = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_ldscape_lim]           = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_sim]                   = 0.1;
-  mcmc->move_weight[mcmc->num_move_migrep_traj]                  = 2.0;
+  mcmc->move_weight[mcmc->num_move_migrep_sim]                   = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_traj]                  = 3.0;
 # else
   mcmc->move_weight[mcmc->num_move_migrep_lbda]                  = 0.0;
   mcmc->move_weight[mcmc->num_move_migrep_mu]                    = 0.0;
@@ -6941,10 +6941,7 @@ void MCMC_MIGREP_Simulate_Backward(t_tree *tree)
   T           = 0.0;
   t           = 0.0;
 
-  disk = tree->disk;
-  while(disk && disk->prev != NULL) disk = disk->prev;
-  T =  disk->time;
-
+  T =  MIGREP_Tree_Height(tree);
   t = Uni()*T;
 
   disk = tree->disk;
@@ -6960,10 +6957,7 @@ void MCMC_MIGREP_Simulate_Backward(t_tree *tree)
   
   MIGREP_Simulate_Backward_Core(NO,target_disk,tree);
 
-  disk = tree->disk;
-  while(disk && disk->prev != NULL) disk = disk->prev;
-  T =  disk->time;
-  
+  T =  MIGREP_Tree_Height(tree);  
   hr += LOG(FABS((target_disk->prev->time - target_disk->time)/T));
     
   if(tree->mcmc->use_data == YES) new_alnL = Lk(NULL,tree);
