@@ -5907,35 +5907,35 @@ void MCMC_MIGREP_Scale_Times(t_tree *tree)
 
 
 
-  /* Adjust value of lambda */
-  newT = curT * scale_fact_times;
+  /* /\* Adjust value of lambda *\/ */
+  /* newT = curT * scale_fact_times; */
 
-  new_lbda = Rnorm_Trunc(n_tot_disks/FABS(newT),
-                         0.2*n_tot_disks/FABS(newT),
-                         /* 0.1, */
-                         tree->mmod->min_lbda,
-                         tree->mmod->max_lbda,
-                         &err);
+  /* new_lbda = Rnorm_Trunc(n_tot_disks/FABS(newT), */
+  /*                        0.2*n_tot_disks/FABS(newT), */
+  /*                        /\* 0.1, *\/ */
+  /*                        tree->mmod->min_lbda, */
+  /*                        tree->mmod->max_lbda, */
+  /*                        &err); */
 
-  /* printf("\n SCALE new_lbda: %f cur_lbda: %f",new_lbda,cur_lbda); */
+  /* /\* printf("\n SCALE new_lbda: %f cur_lbda: %f",new_lbda,cur_lbda); *\/ */
   
-  hr += Log_Dnorm_Trunc(cur_lbda,
-                        n_tot_disks/FABS(curT),
-                        0.2*n_tot_disks/FABS(curT),
-                        /* 0.1, */
-                        tree->mmod->min_lbda,
-                        tree->mmod->max_lbda,
-                        &err);
+  /* hr += Log_Dnorm_Trunc(cur_lbda, */
+  /*                       n_tot_disks/FABS(curT), */
+  /*                       0.2*n_tot_disks/FABS(curT), */
+  /*                       /\* 0.1, *\/ */
+  /*                       tree->mmod->min_lbda, */
+  /*                       tree->mmod->max_lbda, */
+  /*                       &err); */
 
-  hr -= Log_Dnorm_Trunc(new_lbda,
-                        n_tot_disks/FABS(newT),
-                        0.2*n_tot_disks/FABS(newT),
-                        /* 0.1, */
-                        tree->mmod->min_lbda,
-                        tree->mmod->max_lbda,
-                        &err);
+  /* hr -= Log_Dnorm_Trunc(new_lbda, */
+  /*                       n_tot_disks/FABS(newT), */
+  /*                       0.2*n_tot_disks/FABS(newT), */
+  /*                       /\* 0.1, *\/ */
+  /*                       tree->mmod->min_lbda, */
+  /*                       tree->mmod->max_lbda, */
+  /*                       &err); */
 
-  tree->mmod->lbda = new_lbda;
+  /* tree->mmod->lbda = new_lbda; */
 
       
   new_glnL = MIGREP_Lk(tree);
