@@ -149,7 +149,7 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
   /* seed = 16167; */
   /* seed = 18885; */
   /* seed = 22776; */
-  /* seed = 15859; */
+  seed = 29402;
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -275,14 +275,20 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   mmod = MIGREP_Make_Migrep_Model(n_dim);
   tree->mmod = mmod;
   MIGREP_Init_Migrep_Mod(mmod,n_dim,width,height);
-  
-  /* Effective population size */
-  minNe = 100.; maxNe = 10000.;
-  Ne = Uni() * (maxNe - minNe) + minNe;
 
-  /* Neighborhood size */
-  max_neigh = MAX(2.,0.01*Ne); min_neigh = MAX(2.,0.001*Ne);
-  neigh = Uni()*(max_neigh - min_neigh)  + min_neigh;
+  do
+    {
+      /* Effective population size */
+      minNe = 100.; maxNe = 10000.;
+      Ne = Uni() * (maxNe - minNe) + minNe;
+      
+      /* Neighborhood size */
+      max_neigh = 0.01*Ne; min_neigh = 0.001*Ne;
+      neigh = Uni()*(max_neigh - min_neigh)  + min_neigh;
+    }
+  while(neigh < 2.0);
+  
+  /* Death parameter */
   mmod->mu = 2./neigh;
 
   /* Theta (radius) */
