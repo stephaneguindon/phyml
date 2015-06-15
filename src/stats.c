@@ -312,14 +312,16 @@ phydbl Rnorm_Trunc(phydbl mean, phydbl sd, phydbl min, phydbl max, int *error)
 
   phydbl ret_val;
   int iter;
-  phydbl z, q, u;
+  phydbl z, q, u, a;
   phydbl z_min,z_max;
   int n_max_iter;
+  int algo;
 
   z          = 0.0;
   *error     = NO;
   ret_val    = INFINITY;
-  n_max_iter = 10000000;
+  n_max_iter = 100000;
+
   if(sd < 1.E-100)
     {
       PhyML_Printf("\n. Small variance detected in Rnorm_Trunc.");
@@ -339,57 +341,76 @@ phydbl Rnorm_Trunc(phydbl mean, phydbl sd, phydbl min, phydbl max, int *error)
   z_min = (min - mean)/sd;
   z_max = (max - mean)/sd;
 
-  /* eps = (z_max-z_min)/1E+6; */
-
-  /* /\* Damien and Walker (2001) method *\/ */
-  /* phydbl y,slice_min,slice_max; */
-  /* iter = 0; */
-  /* do */
-  /*   { */
-  /*     y   = Uni()*EXP(-(z*z)/2.); */
-  /*     slice_min = MAX(z_min,-SQRT(-2.*LOG(y))); */
-  /*     slice_max = MIN(z_max, SQRT(-2.*LOG(y))); */
-  /*     z   = Uni()*(slice_max - slice_min) + slice_min; */
-  /*     iter++; */
-  /*     if(iter > 1000) break; */
-  /*   } */
-  /* while(slice_max < slice_min || iter < 100); */
-  
-  /* if(iter > 1000) */
-  /*   { */
-  /*     PhyML_Printf("\n. Too many iterations in Rnorm_Trunc..."); */
-  /*         *error = 1; */
-  /*   } */
-  
-  /*  if((z < z_min-eps) || (z > z_max+eps)) */
-  /*   { */
-  /*     *error = YES; */
-  /*     PhyML_Printf("\n. Numerical precision issue detected in Rnorm_Trunc."); */
-  /*     PhyML_Printf("\n. z = %f",z); */
-  /*     PhyML_Printf("\n. mean=%f sd=%f z_min=%f z_max=%f min=%f max=%f",mean,sd,z_min,z_max,min,max); */
-  /*     ret_val = (max - min)/2.; */
-  /*     Exit("\n"); */
-  /*   } */
-
-
-  iter = 0;
-  do
+  if(z_min < 0.0 && z_max > 0 && (z_max - z_min > SQRT(2*PI)))
     {
-      z = Uni()*(z_max - z_min) + z_min;
-      if(z_min < 0.0 && z_max > 0.0) q = EXP(-z*z/2.);
-      else if (z_max < 0.0) q = EXP((z_max*z_max-z*z)/2.);
-      else q = EXP((z_min*z_min-z*z)/2.);
-      u = Uni();
-      if(!(u>q)) { break; }
-      iter++;
-    }while(iter < n_max_iter);
-
-  if(iter == n_max_iter)
+      algo = 0;
+    }
+  if((z_min > 0.0 || Are_Equal(z_min,0.0,1.E-10)) && z_max > z_min + 2.*SQRT(EXP(1.0))/(z_min + SQRT(z_min*z_min+4.)) * EXP((z_min*z_min - z_min*SQRT(z_min*z_min+4.))/4.))
     {
-      PhyML_Printf("\n== %f %f %f %f",
-                   mean, sd, min, max);
-      PhyML_Printf("\n== Too many iterations in Rnorm_Trunc...");
-      *error = 1;
+      algo = 1;
+    }
+  else if((z_max < 0.0 || Are_Equal(z_max,0.0,1.E-10)) && -z_min > -z_max + 2.*SQRT(EXP(1.0))/(-z_max + SQRT(z_max*z_max+4.)) * EXP((z_max*z_max - (-z_max)*SQRT(z_max*z_max+4.))/4.))
+    {
+      algo = 2;
+    }
+  else
+    {
+      algo = 3;
+    }
+
+
+  switch(algo)
+    {
+    case 0:
+      {
+        do { z = Rnorm(0.0,1.0); }
+        while(z < z_min || z > z_max);
+        break;
+      }
+    case 1:
+      {
+        do
+          {
+            a = (z_min + SQRT(z_min*z_min+4.))/2.;
+            q = Rexp(a) + z_min;
+            u = Uni();
+          }while(u > EXP(-POW(q-a,2)/2.));
+        z = q;
+        break;
+      }
+    case 2:
+      {
+        do
+          {
+            a = (-z_max + SQRT(z_max*z_max+4.))/2.;
+            q = Rexp(a) - z_max;
+            u = Uni();
+          }while(u > EXP(-POW(q-a,2)/2.));
+        z = -q;
+        break;
+      }
+    case 3:
+      {
+        n_iter = 0;
+        do
+          {
+            z = Uni()*(z_max - z_min) + z_min;
+            if(z_min < 0.0 && z_max > 0.0) q = EXP(-z*z/2.);
+            else if (z_max < 0.0) q = EXP((z_max*z_max-z*z)/2.);
+            else q = EXP((z_min*z_min-z*z)/2.);
+            u = Uni();
+            n_iter++;
+            if(n_iter > n_iter_max)
+              {
+                PhyML_Printf("\n== Too many iterations in Rnorm_Trunc()");
+                *error = YES; 
+              }
+          }while(u > q); 
+        break;
+      }
+
+    default: Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+
     }
 
   ret_val = z*sd+mean;
