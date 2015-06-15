@@ -314,7 +314,7 @@ phydbl Rnorm_Trunc(phydbl mean, phydbl sd, phydbl min, phydbl max, int *error)
   int iter;
   phydbl z, q, u, a;
   phydbl z_min,z_max;
-  int n_max_iter,n_oter;
+  int n_max_iter,n_iter;
   int algo;
 
   z          = 0.0;
