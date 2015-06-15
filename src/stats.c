@@ -400,7 +400,7 @@ phydbl Rnorm_Trunc(phydbl mean, phydbl sd, phydbl min, phydbl max, int *error)
             else q = EXP((z_min*z_min-z*z)/2.);
             u = Uni();
             n_iter++;
-            if(n_iter > n_iter_max)
+            if(n_iter > n_max_iter)
               {
                 PhyML_Printf("\n== Too many iterations in Rnorm_Trunc()");
                 *error = YES; 
