@@ -311,7 +311,6 @@ phydbl Rnorm_Trunc(phydbl mean, phydbl sd, phydbl min, phydbl max, int *error)
 {
 
   phydbl ret_val;
-  int iter;
   phydbl z, q, u, a;
   phydbl z_min,z_max;
   int n_max_iter,n_iter;
@@ -363,28 +362,52 @@ phydbl Rnorm_Trunc(phydbl mean, phydbl sd, phydbl min, phydbl max, int *error)
     {
     case 0:
       {
-        do { z = Rnorm(0.0,1.0); }
+        n_iter = 0;
+        do 
+          { 
+            z = Rnorm(0.0,1.0); 
+            n_iter++;
+            if(n_iter > n_max_iter)
+              {
+                PhyML_Printf("\n== Too many iterations in Rnorm_Trunc()");
+                *error = YES; 
+              }
+          }
         while(z < z_min || z > z_max);
         break;
       }
     case 1:
       {
+        n_iter = 0;
         do
           {
             a = (z_min + SQRT(z_min*z_min+4.))/2.;
             q = Rexp(a) + z_min;
             u = Uni();
+            n_iter++;
+            if(n_iter > n_max_iter)
+              {
+                PhyML_Printf("\n== Too many iterations in Rnorm_Trunc()");
+                *error = YES; 
+              }
           }while(u > EXP(-POW(q-a,2)/2.));
         z = q;
         break;
       }
     case 2:
       {
+        n_iter = 0;
         do
           {
             a = (-z_max + SQRT(z_max*z_max+4.))/2.;
             q = Rexp(a) - z_max;
             u = Uni();
+            n_iter++;
+            if(n_iter > n_max_iter)
+              {
+                PhyML_Printf("\n== Too many iterations in Rnorm_Trunc()");
+                *error = YES; 
+              }
           }while(u > EXP(-POW(q-a,2)/2.));
         z = -q;
         break;
@@ -791,6 +814,8 @@ phydbl Log_Dnorm_Trunc(phydbl x, phydbl mean, phydbl sd, phydbl lo, phydbl up, i
 {
   phydbl log_dens;
   phydbl cdf_up, cdf_lo;
+
+  if(x < lo || x > up) return -230.;
 
   *err = NO;
   cdf_lo = cdf_up = 0.0;

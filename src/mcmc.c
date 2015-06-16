@@ -4485,7 +4485,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_migrep_spr]                   = 5.0;
   mcmc->move_weight[mcmc->num_move_migrep_scale_times]           = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_ldscape_lim]           = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_sim]                   = 1.0;
+  mcmc->move_weight[mcmc->num_move_migrep_sim]                   = 0.1;
   mcmc->move_weight[mcmc->num_move_migrep_traj]                  = 3.0;
 # else
   mcmc->move_weight[mcmc->num_move_migrep_lbda]                  = 0.0;
@@ -5238,26 +5238,26 @@ void MCMC_MIGREP_Delete_Disk(phydbl hr, int n_delete_disks, t_tree *tree)
   n_tot_disks_new = n_tot_disks_cur - n_delete_disks;
 
   mean = n_tot_disks_new/FABS(T);
-  sd   = 0.2*n_tot_disks_new/FABS(T);
+  sd   = 0.1*n_tot_disks_new/FABS(T);
   new_lbda = Rnorm_Trunc(mean,sd,
                          tree->mmod->min_lbda,
-                         mean + 3.*sd,
+                         mean + 2.*sd,
                          &err);
   
   mean = n_tot_disks_cur/FABS(T);
-  sd   = 0.2*n_tot_disks_cur/FABS(T);
+  sd   = 0.1*n_tot_disks_cur/FABS(T);
   hr += Log_Dnorm_Trunc(cur_lbda,
                         mean,sd,
                         tree->mmod->min_lbda,
-                        mean + 3.*sd,
+                        mean + 2.*sd,
                         &err);
 
   mean = n_tot_disks_new/FABS(T);
-  sd   = 0.2*n_tot_disks_new/FABS(T);
+  sd   = 0.1*n_tot_disks_new/FABS(T);
   hr -= Log_Dnorm_Trunc(new_lbda,
                         mean,sd,
                         tree->mmod->min_lbda,
-                        mean + 3.*sd,
+                        mean + 2.*sd,
                         &err);
   
 
@@ -5385,27 +5385,27 @@ void MCMC_MIGREP_Insert_Disk(phydbl hr, int n_insert_disks, t_tree *tree)
   /* Adjust value of lambda */
   n_tot_disks_new = n_tot_disks_cur + n_insert_disks;
   mean = n_tot_disks_new/FABS(T);
-  sd   = 0.2*n_tot_disks_new/FABS(T);
+  sd   = 0.1*n_tot_disks_new/FABS(T);
   new_lbda = Rnorm_Trunc(mean,sd,
                          tree->mmod->min_lbda,
-                         mean + 3.*sd,
+                         mean + 2.*sd,
                          &err);
 
   
   mean = n_tot_disks_cur/FABS(T);
-  sd   = 0.2*n_tot_disks_cur/FABS(T);
+  sd   = 0.1*n_tot_disks_cur/FABS(T);
   hr += Log_Dnorm_Trunc(cur_lbda,
                         mean,sd,
                         tree->mmod->min_lbda,
-                        mean + 3.*sd,
+                        mean + 2.*sd,
                         &err);
 
   mean = n_tot_disks_new/FABS(T);
-  sd   = 0.2*n_tot_disks_new/FABS(T);
+  sd   = 0.1*n_tot_disks_new/FABS(T);
   hr -= Log_Dnorm_Trunc(new_lbda,
                         mean,sd,
                         tree->mmod->min_lbda,
-                        mean + 3.*sd,
+                        mean + 2.*sd,
                         &err);
 
   tree->mmod->lbda = new_lbda;
@@ -5871,6 +5871,7 @@ void MCMC_MIGREP_Scale_Times(t_tree *tree)
   phydbl cur_lbda, new_lbda;
   int n_tot_disks;
   int err;
+  phydbl mean,sd;
 
   disk            = NULL;
   new_alnL        = tree->c_lnL;
@@ -5909,35 +5910,35 @@ void MCMC_MIGREP_Scale_Times(t_tree *tree)
 
   /* /\* Adjust value of lambda *\/ */
   /* newT = curT * scale_fact_times; */
-
-  /* new_lbda = Rnorm_Trunc(n_tot_disks/FABS(newT), */
-  /*                        0.2*n_tot_disks/FABS(newT), */
-  /*                        /\* 0.1, *\/ */
+  /* mean = n_tot_disks/FABS(newT); */
+  /* sd   = 0.2*n_tot_disks/FABS(newT); */
+  /* new_lbda = Rnorm_Trunc(mean,sd, */
   /*                        tree->mmod->min_lbda, */
-  /*                        tree->mmod->max_lbda, */
+  /*                        mean + 3.*sd, */
   /*                        &err); */
-
-  /* /\* printf("\n SCALE new_lbda: %f cur_lbda: %f",new_lbda,cur_lbda); *\/ */
   
+  /* mean = n_tot_disks/FABS(curT); */
+  /* sd   = 0.2*n_tot_disks/FABS(curT); */
   /* hr += Log_Dnorm_Trunc(cur_lbda, */
-  /*                       n_tot_disks/FABS(curT), */
-  /*                       0.2*n_tot_disks/FABS(curT), */
-  /*                       /\* 0.1, *\/ */
+  /*                       mean,sd, */
   /*                       tree->mmod->min_lbda, */
-  /*                       tree->mmod->max_lbda, */
+  /*                       mean + 3.*sd, */
   /*                       &err); */
 
+  /* mean = n_tot_disks/FABS(newT); */
+  /* sd   = 0.2*n_tot_disks/FABS(newT); */
   /* hr -= Log_Dnorm_Trunc(new_lbda, */
-  /*                       n_tot_disks/FABS(newT), */
-  /*                       0.2*n_tot_disks/FABS(newT), */
-  /*                       /\* 0.1, *\/ */
+  /*                       mean,sd, */
   /*                       tree->mmod->min_lbda, */
-  /*                       tree->mmod->max_lbda, */
+  /*                       mean + 3.*sd, */
   /*                       &err); */
 
-  /* tree->mmod->lbda = new_lbda; */
 
-      
+  new_lbda = cur_lbda * (1./scale_fact_times);
+  hr += LOG(1./scale_fact_times);
+
+  tree->mmod->lbda = new_lbda;
+
   new_glnL = MIGREP_Lk(tree);
   if(tree->mcmc->use_data == YES) new_alnL = Lk(NULL,tree);
 
