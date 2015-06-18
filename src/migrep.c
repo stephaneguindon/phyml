@@ -668,6 +668,7 @@ phydbl MIGREP_Simulate_Forward_Core(int n_sites, t_tree *tree)
 
           if(dies == YES) /* Replace dead lineage with new one */
             {
+
               /* New lindisk */
               new_ldsk = MIGREP_Make_Lindisk_Node(n_dim);
               MIGREP_Init_Lindisk_Node(new_ldsk,disk,n_dim);
@@ -683,8 +684,8 @@ phydbl MIGREP_Simulate_Forward_Core(int n_sites, t_tree *tree)
               new_ldsk->prev = disk->ldsk;
 
               /* Replace dead individual (thus, number of birth == number of death) */
+              Free_Ldisk(ldsk_a_pop[i]);
               ldsk_a_pop[i] = new_ldsk;
-
             }
         }
 
