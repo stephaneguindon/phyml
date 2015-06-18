@@ -702,7 +702,7 @@ phydbl MIGREP_Simulate_Forward_Core(int n_sites, t_tree *tree)
       disk->time = curr_t;
       disk->mmod = mmod;
     }
-  while(n_disk < 50000);
+  while(n_disk < 100000);
 
   For(i,pop_size) ldsk_a_pop[i]->disk = disk;
 
