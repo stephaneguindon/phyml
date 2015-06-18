@@ -684,7 +684,7 @@ phydbl MIGREP_Simulate_Forward_Core(int n_sites, t_tree *tree)
               new_ldsk->prev = disk->ldsk;
 
               /* Replace dead individual (thus, number of birth == number of death) */
-              Free_Ldisk(ldsk_a_pop[i]);
+              if(i != parent_id) Free_Ldisk(ldsk_a_pop[i]);
               ldsk_a_pop[i] = new_ldsk;
             }
         }
@@ -826,7 +826,7 @@ phydbl MIGREP_Simulate_Forward_Core(int n_sites, t_tree *tree)
 
       if(n_lineages != n_remain+(disk->prev->ldsk && disk->prev->ldsk->n_next>0)?1:0) 
         {
-          PhyML_Printf("\n. n_lineages: %d n_remain: %d n_next: %d",
+          PhyML_Printf("\n== n_lineages: %d n_remain: %d n_next: %d",
                        n_lineages,
                        n_remain,
                        disk->prev->ldsk->n_next);
