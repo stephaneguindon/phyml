@@ -5498,7 +5498,7 @@ void MCMC_MIGREP_Move_Disk_Centre(t_tree *tree)
 
   target_disk = (t_dsk **)mCalloc(n_all_disks,sizeof(t_dsk *));
   
-  n_move_disks = Rand_Int(1,1+(int)(n_all_disks/10));
+  n_move_disks = Rand_Int(1,1+(int)(n_all_disks/20));
   /* n_move_disks = n_all_disks; */
 
   permut = Permutate(n_all_disks);
@@ -5513,15 +5513,16 @@ void MCMC_MIGREP_Move_Disk_Centre(t_tree *tree)
         {
 
            For(j,tree->mmod->n_dim) hr += Log_Dnorm_Trunc(target_disk[i]->centr->lonlat[j],
-                                                         target_disk[i]->ldsk->coord->lonlat[j],
-                                                         1.0*tree->mmod->rad,
-                                                         0.0,
-                                                         tree->mmod->lim->lonlat[j],&err);
+                                                          target_disk[i]->ldsk->coord->lonlat[j],
+                                                          1.0*tree->mmod->rad,
+                                                          0.0,
+                                                          tree->mmod->lim->lonlat[j],&err);
           
           For(j,tree->mmod->n_dim)
             target_disk[i]->centr->lonlat[j] =
             Rnorm_Trunc(target_disk[i]->ldsk->coord->lonlat[j],
-                        1.0*tree->mmod->rad,0.0,
+                        1.0*tree->mmod->rad,
+                        0.0,
                         tree->mmod->lim->lonlat[j],&err);
           
           For(j,tree->mmod->n_dim) hr -= Log_Dnorm_Trunc(target_disk[i]->centr->lonlat[j],
@@ -5623,7 +5624,7 @@ void MCMC_MIGREP_Move_Ldsk(t_tree *tree)
 
   if(!n_all_disks) return;
   
-  n_move_ldsk = Rand_Int(1,1+(int)(n_all_disks/10));
+  n_move_ldsk = Rand_Int(1,1+(int)(n_all_disks/20));
   /* n_move_ldsk = n_all_disks; */
   
   target_disk = (t_dsk **)mCalloc(n_all_disks,sizeof(t_dsk *));
@@ -6413,14 +6414,7 @@ void MCMC_MIGREP_Delete_Hit(phydbl hr, int n_delete_disks, t_tree *tree)
       /* Part of the Hastings ratio corresponding to the probability of selecting */
       /* one of target_disk->n_ldsk_a to be hit */ 
       hr -= LOG(target_disk[j]->next->n_ldsk_a);
-      
-      /* New connections between old_ldsk and young_ldsk */
-      old_ldsk[j]->next[dir_old_young[j]] = young_ldsk[j];
-      young_ldsk[j]->prev                 = old_ldsk[j];
-      
-      /* Remove target disk */
-      MIGREP_Remove_Disk(target_disk[j]);
-
+            
       /* Density for position of the displaced ldsk */
       For(i,tree->mmod->n_dim)
         {
@@ -6439,7 +6433,16 @@ void MCMC_MIGREP_Delete_Hit(phydbl hr, int n_delete_disks, t_tree *tree)
                                 1.0*tree->mmod->rad,
                                 0.0,tree->mmod->lim->lonlat[i],&err);
         }
-      
+
+      /* New connections between old_ldsk and young_ldsk */
+      old_ldsk[j]->next[dir_old_young[j]] = young_ldsk[j];
+      young_ldsk[j]->prev                 = old_ldsk[j];
+
+      /* Remove target disk */
+      MIGREP_Remove_Disk(target_disk[j]);
+
+      MIGREP_Update_Lindisk_List(tree);
+
     }
   
   T = MIGREP_Tree_Height(tree);

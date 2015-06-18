@@ -288,21 +288,21 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
     }
   while(neigh < 2.0);
   
-  /* /\* Death parameter *\/ */
-  /* mmod->mu = 2./neigh; */
+  /* Death parameter */
+  mmod->mu = 2./neigh;
 
-  /* /\* Theta (radius) *\/ */
-  /* tree->mmod->rad = Uni()*(3.0 - 1.0) + 1.0; */
+  /* Theta (radius) */
+  tree->mmod->rad = Uni()*(3.0 - 1.0) + 1.0;
 
-  /* mmod->sigsq = neigh / (4.*PI*Ne/area); */
+  mmod->sigsq = neigh / (4.*PI*Ne/area);
 
-  /* tree->mmod->lbda = area * mmod->sigsq / (4.*PI*tree->mmod->mu*POW(tree->mmod->rad,4)); */
+  tree->mmod->lbda = area * mmod->sigsq / (4.*PI*tree->mmod->mu*POW(tree->mmod->rad,4));
   
-  mmod->lbda  = 0.25;
-  mmod->mu    = 0.10;
-  mmod->rad   = 2.00;
-  neigh       = 2./mmod->mu;
-  mmod->sigsq = MIGREP_Update_Sigsq(tree);
+  /* mmod->lbda  = 0.25; */
+  /* mmod->mu    = 0.10; */
+  /* mmod->rad   = 2.00; */
+  /* neigh       = 2./mmod->mu; */
+  /* mmod->sigsq = MIGREP_Update_Sigsq(tree); */
 
   MIGREP_Simulate_Backward_Core(YES,tree->disk,tree);
   /* mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree); */
@@ -1156,10 +1156,10 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   true_height = MIGREP_Tree_Height(tree);
 
   /* Starting parameter values */
-  /* tree->mmod->lbda = Uni()*(2.0 - 0.5) + 0.5; */
-  /* tree->mmod->mu   = Uni()*(0.3 - 0.1) + 0.1; */
-  /* tree->mmod->rad  = Uni()*(3.0 - 2.0) + 2.0; */
-  /* MIGREP_Update_Sigsq(tree); */
+  tree->mmod->lbda = Uni()*(2.0 - 0.5) + 0.5;
+  tree->mmod->mu   = Uni()*(0.3 - 0.1) + 0.1;
+  tree->mmod->rad  = Uni()*(3.0 - 2.0) + 2.0;
+  MIGREP_Update_Sigsq(tree);
 
   /* MCMC_Randomize_Rate_Across_Sites(tree); */
   MCMC_Randomize_Kappa(tree);
@@ -1219,7 +1219,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
 
   For(i,mcmc->n_moves) tree->mcmc->start_ess[i] = YES;
 
-  mcmc->use_data   = NO; 
+  mcmc->use_data   = YES; 
   mcmc->always_yes = NO;
     
   do
@@ -1233,14 +1233,14 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       
       if(move == tree->mcmc->n_moves) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
       
-      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_lbda")) */
-      /*   MCMC_MIGREP_Lbda(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_lbda"))
+        MCMC_MIGREP_Lbda(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_mu")) */
-      /*   MCMC_MIGREP_Mu(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_mu"))
+        MCMC_MIGREP_Mu(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_rad")) */
-      /*   MCMC_MIGREP_Radius(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_rad"))
+        MCMC_MIGREP_Radius(tree);
 
       /* if(!strcmp(tree->mcmc->move_name[move],"migrep_sigsq")) */
       /*   MCMC_MIGREP_Sigsq(tree); */
