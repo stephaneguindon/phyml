@@ -279,7 +279,7 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   do
     {
       /* Effective population size */
-      minNe = 100.; maxNe = 10000.;
+      minNe = 100.; maxNe = 5000.;
       Ne = Uni() * (maxNe - minNe) + minNe;
       
       /* Neighborhood size */
