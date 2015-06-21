@@ -149,7 +149,7 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
   /* seed = 16167; */
   /* seed = 18885; */
   /* seed = 22776; */
-  /* seed = 12052; */
+  seed = 22378;
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -1159,9 +1159,9 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   true_height = MIGREP_Tree_Height(tree);
 
   /* Starting parameter values */
-  tree->mmod->lbda = Uni()*(2.0 - 0.5) + 0.5;
-  tree->mmod->mu   = Uni()*(0.3 - 0.1) + 0.1;
-  tree->mmod->rad  = Uni()*(3.0 - 2.0) + 2.0;
+  tree->mmod->lbda = Uni()*(1.0 - 0.1) + 0.1;
+  tree->mmod->mu   = Uni()*(0.6 - 0.3) + 0.3;
+  tree->mmod->rad  = Uni()*(4.0 - 2.0) + 2.0;
   MIGREP_Update_Sigsq(tree);
 
   /* MCMC_Randomize_Rate_Across_Sites(tree); */
