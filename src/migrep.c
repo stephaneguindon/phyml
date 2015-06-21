@@ -1167,6 +1167,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   MCMC_Randomize_Rate_Across_Sites(tree);
   MCMC_Randomize_Kappa(tree);
 
+
   /* Random genealogy */
   MIGREP_Simulate_Backward_Core(NO,tree->disk,tree);
 
@@ -1233,7 +1234,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       u = Uni();
 
       For(move,tree->mcmc->n_moves) if(tree->mcmc->move_weight[move] > u-1.E-10) break;
-      
+
       if(move == tree->mcmc->n_moves) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
       
       if(!strcmp(tree->mcmc->move_name[move],"migrep_lbda"))

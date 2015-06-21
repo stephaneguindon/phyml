@@ -1137,6 +1137,14 @@ int Read_Command_Line(option *io, int argc, char **argv)
 #elif MIGREP
 		strcat(io->out_stats_file,"_migrep_stats");
 #endif
+
+
+#ifdef MIGREP
+		strcpy(io->out_summary_file,optarg);
+		strcat(io->out_summary_file,"_migrep_summary");
+#endif
+
+
 	      }
 	    Free (tmp);
 	    break;
@@ -1489,6 +1497,11 @@ int Read_Command_Line(option *io, int argc, char **argv)
   io->fp_out_stats = Openfile(io->out_stats_file,writemode);
 #endif
   
+
+#if defined(MIGREP)
+  io->fp_out_summary = Openfile(io->out_summary_file,writemode);
+#endif
+
   writemode++; // just to silence a warning message at compilation
   
   if(io->mod->whichmodel == GTR) 
