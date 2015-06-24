@@ -21,8 +21,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int MIGREP_Main(int argc, char *argv[])
 {
-  return(MIGREP_Main_Estimate(argc,argv));
-  /* return(MIGREP_Main_Simulate(argc,argv)); */
+  /* return(MIGREP_Main_Estimate(argc,argv)); */
+  return(MIGREP_Main_Simulate(argc,argv));
 }
 
 //////////////////////////////////////////////////////////////
@@ -277,41 +277,41 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   MIGREP_Init_Migrep_Mod(mmod,n_dim,width,height);
 
 
-  do
-    {
-      /* Effective population size */
-      minNe = 100.; maxNe = 10000.;
-      Ne = Uni() * (maxNe - minNe) + minNe;
+  /* do */
+  /*   { */
+  /*     /\* Effective population size *\/ */
+  /*     minNe = 100.; maxNe = 10000.; */
+  /*     Ne = Uni() * (maxNe - minNe) + minNe; */
       
-      /* Neighborhood size */
-      max_neigh = 0.01*Ne; min_neigh = 0.001*Ne;
-      neigh = Uni()*(max_neigh - min_neigh)  + min_neigh;
-    }
-  while(neigh < 2.0);
+  /*     /\* Neighborhood size *\/ */
+  /*     max_neigh = 0.01*Ne; min_neigh = 0.001*Ne; */
+  /*     neigh = Uni()*(max_neigh - min_neigh)  + min_neigh; */
+  /*   } */
+  /* while(neigh < 2.0); */
   
-  /* Death parameter */
-  mmod->mu = 2./neigh;
+  /* /\* Death parameter *\/ */
+  /* mmod->mu = 2./neigh; */
 
-  /* Theta (radius) */
-  tree->mmod->rad = Uni()*(3.0 - 1.0) + 1.0;
+  /* /\* Theta (radius) *\/ */
+  /* tree->mmod->rad = Uni()*(3.0 - 1.0) + 1.0; */
 
-  mmod->sigsq = neigh / (4.*PI*Ne/area);
+  /* mmod->sigsq = neigh / (4.*PI*Ne/area); */
 
-  tree->mmod->lbda = area * mmod->sigsq / (4.*PI*tree->mmod->mu*POW(tree->mmod->rad,4));
+  /* tree->mmod->lbda = area * mmod->sigsq / (4.*PI*tree->mmod->mu*POW(tree->mmod->rad,4)); */
   
-  /* mmod->lbda  = 0.25; */
-  /* mmod->mu    = 0.10; */
-  /* mmod->rad   = 2.00; */
-  /* neigh       = 2./mmod->mu; */
-  /* mmod->sigsq = MIGREP_Update_Sigsq(tree); */
+  mmod->lbda  = 0.25;
+  mmod->mu    = 0.50;
+  mmod->rad   = 2.50;
+  neigh       = 2./mmod->mu;
+  mmod->sigsq = MIGREP_Update_Sigsq(tree);
 
   PhyML_Printf("\n. lbda: %G mu: %G sigsq: %G rad: %G neigh: %G N: %G",
                mmod->lbda,mmod->mu,mmod->sigsq,mmod->rad,neigh,area*neigh/(4*PI*mmod->sigsq));
   fflush(NULL);
 
-  /* MIGREP_Simulate_Backward_Core(YES,tree->disk,tree); */
-  mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree);
-
+  MIGREP_Simulate_Backward_Core(YES,tree->disk,tree);
+  /* mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree); */
+    
   MIGREP_Ldsk_To_Tree(tree);  
 
   Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
