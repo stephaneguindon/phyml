@@ -300,8 +300,8 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   /* tree->mmod->lbda = area * mmod->sigsq / (4.*PI*tree->mmod->mu*POW(tree->mmod->rad,4)); */
   
   mmod->lbda  = 0.25;
-  mmod->mu    = 0.50;
-  mmod->rad   = 2.50;
+  mmod->mu    = 0.10;
+  mmod->rad   = 2.00;
   neigh       = 2./mmod->mu;
   mmod->sigsq = MIGREP_Update_Sigsq(tree);
 
@@ -1288,8 +1288,6 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       /* if(!strcmp(tree->mcmc->move_name[move],"migrep_ldscape_lim")) */
       /*   MCMC_MIGREP_Ldscape_Limits(tree); */
 
-      tree->mcmc->run++;
-      MCMC_Get_Acc_Rates(tree->mcmc);
       
       if(!(tree->mcmc->run%tree->mcmc->sample_interval))
         {
@@ -1429,7 +1427,12 @@ phydbl *MIGREP_MCMC(t_tree *tree)
           fflush(NULL);
                 
           tree->mcmc->sample_num++;
+
+          Exit("\n");
         }
+
+      tree->mcmc->run++;
+      MCMC_Get_Acc_Rates(tree->mcmc);
 
       /* MIGREP_Print_Struct('*',tree); */
       /* disk = tree->disk; */
