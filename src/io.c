@@ -6188,39 +6188,48 @@ void Make_Topology_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
           int select;
 
           search = XML_Get_Attribute_Value(instance,"search");
-          select = XML_Validate_Attr_Int(search,4,"spr","nni","best","none");
-
-          switch(select)
-            {
-            case 0:
-              {
+          
+          if(search == NULL) 
+            { 
                 io->mod->s_opt->topo_search = SPR_MOVE;
                 io->mod->s_opt->opt_topo    = YES;
-                break;
-              }
-            case 1:
-              {
-                io->mod->s_opt->topo_search = NNI_MOVE;
-                io->mod->s_opt->opt_topo    = YES;
-                break;
-              }
-            case 2:
-              {
-                io->mod->s_opt->topo_search = BEST_OF_NNI_AND_SPR;
-                io->mod->s_opt->opt_topo    = YES;
-                break;
-              }
-            case 3:
-              {
-                io->mod->s_opt->opt_topo    = NO;
-                break;
-              }
-            default:
-              {
-                PhyML_Printf("\n== Topology search option '%s' is not valid.",search);
-                Exit("\n");
-                break;
-              }
+            }
+          else
+            {
+              select = XML_Validate_Attr_Int(search,4,"spr","nni","best","none");
+              
+              switch(select)
+                {
+                case 0:
+                  {
+                    io->mod->s_opt->topo_search = SPR_MOVE;
+                    io->mod->s_opt->opt_topo    = YES;
+                    break;
+                  }
+                case 1:
+                  {
+                    io->mod->s_opt->topo_search = NNI_MOVE;
+                    io->mod->s_opt->opt_topo    = YES;
+                    break;
+                  }
+                case 2:
+                  {
+                    io->mod->s_opt->topo_search = BEST_OF_NNI_AND_SPR;
+                    io->mod->s_opt->opt_topo    = YES;
+                    break;
+                  }
+                case 3:
+                  {
+                    io->mod->s_opt->opt_topo    = NO;
+                    break;
+                  }
+                default:
+                  {
+                    PhyML_Printf("\n== Topology search option '%s' is not valid.",search);
+                    Exit("\n");
+                    break;
+                  }
+                }
             }
         }
     }

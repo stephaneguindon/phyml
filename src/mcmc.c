@@ -4478,15 +4478,15 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_migrep_sigsq]                 = 0.0;
   mcmc->move_weight[mcmc->num_move_migrep_indel_disk]            = 4.0;
   mcmc->move_weight[mcmc->num_move_migrep_move_disk_ct]          = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_move_disk_ud]          = 0.5;
-  mcmc->move_weight[mcmc->num_move_migrep_swap_disk]             = 0.5;
-  mcmc->move_weight[mcmc->num_move_migrep_indel_hit]             = 2.0;
+  mcmc->move_weight[mcmc->num_move_migrep_move_disk_ud]          = 50.;
+  mcmc->move_weight[mcmc->num_move_migrep_swap_disk]             = 50.;
+  mcmc->move_weight[mcmc->num_move_migrep_indel_hit]             = 4.0;
   mcmc->move_weight[mcmc->num_move_migrep_move_ldsk]             = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_spr]                   = 5.0;
   mcmc->move_weight[mcmc->num_move_migrep_scale_times]           = 1.0;
   mcmc->move_weight[mcmc->num_move_migrep_ldscape_lim]           = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_sim]                   = 0.1;
-  mcmc->move_weight[mcmc->num_move_migrep_traj]                  = 3.0;
+  mcmc->move_weight[mcmc->num_move_migrep_sim]                   = 0.0;
+  mcmc->move_weight[mcmc->num_move_migrep_traj]                  = 5.0;
 # else
   mcmc->move_weight[mcmc->num_move_migrep_lbda]                  = 0.0;
   mcmc->move_weight[mcmc->num_move_migrep_mu]                    = 0.0;
@@ -5134,10 +5134,11 @@ void MCMC_MIGREP_Indel_Disk(t_tree *tree)
 {
   int n_disks_cur, n_disks_new;
   t_dsk  *disk;
-  phydbl hr;
+  phydbl hr,K;
 
+  K  = 1.0;
   hr = 0.0;
-  
+
   disk = tree->disk->prev;
   n_disks_cur = 0;
   do
@@ -5147,10 +5148,10 @@ void MCMC_MIGREP_Indel_Disk(t_tree *tree)
     }
   while(disk && disk->prev);
 
-  n_disks_new = (int)Rpois(n_disks_cur);
+  n_disks_new = (int)Rpois(K*n_disks_cur);
   
-  hr += Dpois(n_disks_cur,n_disks_new,YES);
-  hr -= Dpois(n_disks_new,n_disks_cur,YES);
+  hr += Dpois(n_disks_cur,K*n_disks_new,YES);
+  hr -= Dpois(n_disks_new,K*n_disks_cur,YES);
 
   if(n_disks_new < n_disks_cur) MCMC_MIGREP_Delete_Disk(hr, n_disks_cur - n_disks_new ,tree);
   else                          MCMC_MIGREP_Insert_Disk(hr, n_disks_new - n_disks_cur,tree);  
@@ -5753,7 +5754,8 @@ void MCMC_MIGREP_Move_Disk_Updown(t_tree *tree)
   n_all_disks = 0;
   do
     {
-      if(disk->ldsk && disk->ldsk->n_next > 1) /* Moving disks other than coalescent is pointless */ 
+      if(1)
+      /* if(disk->ldsk && disk->ldsk->n_next > 1) /\* Moving disks other than coalescent is pointless *\/  */
         {
           if(!n_all_disks) all_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
           else if(!(n_all_disks%block)) all_disks = (t_dsk **)mRealloc(all_disks,n_all_disks+block,sizeof(t_dsk *));
@@ -5768,7 +5770,7 @@ void MCMC_MIGREP_Move_Disk_Updown(t_tree *tree)
   
   n_move_disks = Rand_Int(1,1+(int)(n_all_disks/5));
   /* n_move_disks = n_all_disks; */
-
+  
   target_disk = (t_dsk **)mCalloc(n_all_disks,sizeof(t_dsk *));
   ori_time    = (phydbl *)mCalloc(n_all_disks,sizeof(phydbl));
 
@@ -5788,15 +5790,29 @@ void MCMC_MIGREP_Move_Disk_Updown(t_tree *tree)
         }
       else
         {
-          phydbl scale,K;
-
-          K = 1.;
-          scale = exp(K*(Uni()-0.5));
           
+          /* phydbl scale,K; */
+
+          /* K = 1.; */
+          /* scale = exp(K*(Uni()-0.5)); */
+          
+          /* max = target_disk[i]->next->time; */
+          /* new_time = scale * ori_time[i] + max*(1.-scale); */
+          /* hr += LOG(K*((new_time - max)/(ori_time[i] - max)) - max); */
+          /* hr -= LOG(K*((ori_time[i] - max)/(new_time - max)) - max); */
+
+          phydbl new_plusmin, cur_plusmin;
+
           max = target_disk[i]->next->time;
-          new_time = scale * ori_time[i] + max*(1.-scale);
-          hr += LOG(K*((new_time - max)/(ori_time[i] - max)) - max);
-          hr -= LOG(K*((ori_time[i] - max)/(new_time - max)) - max);
+
+          cur_plusmin = FABS(ori_time[i] - max);
+          new_plusmin = Rexp(1./cur_plusmin);
+
+          new_time = max - new_plusmin;
+
+          hr += LOG(Dexp(cur_plusmin,1./new_plusmin));
+          hr -= LOG(Dexp(new_plusmin,1./cur_plusmin));
+
         }
             
       target_disk[i]->time = new_time;
@@ -6121,8 +6137,9 @@ void MCMC_MIGREP_Indel_Hit(t_tree *tree)
 {
   int n_disks_cur, n_disks_new;
   t_dsk  *disk;
-  phydbl hr;
+  phydbl hr,K;
   
+  K  = 1.0;
   hr = 0.0;
 
   disk = tree->disk->prev;
@@ -6134,10 +6151,10 @@ void MCMC_MIGREP_Indel_Hit(t_tree *tree)
     }
   while(disk && disk->prev);
   
-  n_disks_new = (int)Rpois(n_disks_cur);
+  n_disks_new = (int)Rpois(K*n_disks_cur);
   
-  hr += Dpois(n_disks_cur,n_disks_new,YES);
-  hr -= Dpois(n_disks_new,n_disks_cur,YES);
+  hr += Dpois(n_disks_cur,K*n_disks_new,YES);
+  hr -= Dpois(n_disks_new,K*n_disks_cur,YES);
 
   if(n_disks_new < n_disks_cur) MCMC_MIGREP_Delete_Hit(hr, n_disks_cur - n_disks_new ,tree);
   else                          MCMC_MIGREP_Insert_Hit(hr, n_disks_new - n_disks_cur,tree);  
@@ -6254,7 +6271,7 @@ void MCMC_MIGREP_Insert_Hit(phydbl hr, int n_insert_disks, t_tree *tree)
                                                       0.0,tree->mmod->lim->lonlat[i],&err);
           hr -= Log_Dnorm_Trunc(new_ldsk[j]->coord->lonlat[i],
                                 0.5*(young_ldsk[j]->coord->lonlat[i]+old_ldsk[j]->coord->lonlat[i]),
-                                SQRT(2.0*POW(tree->mmod->rad,2)),
+                                2.*SQRT(2.0*POW(tree->mmod->rad,2)),
                                 0.0,tree->mmod->lim->lonlat[i],&err);
         }
 
@@ -6262,11 +6279,11 @@ void MCMC_MIGREP_Insert_Hit(phydbl hr, int n_insert_disks, t_tree *tree)
       For(i,tree->mmod->n_dim)
         {
           new_disk[j]->centr->lonlat[i] = Rnorm_Trunc(new_ldsk[j]->coord->lonlat[i],
-                                                      1.0*tree->mmod->rad,
+                                                      2.0*tree->mmod->rad,
                                                       0.0,tree->mmod->lim->lonlat[i],&err);
           hr -= Log_Dnorm_Trunc(new_disk[j]->centr->lonlat[i],
                                 new_ldsk[j]->coord->lonlat[i],
-                                1.0*tree->mmod->rad,0.0,tree->mmod->lim->lonlat[i],&err);
+                                2.0*tree->mmod->rad,0.0,tree->mmod->lim->lonlat[i],&err);
 
         }
 
@@ -6418,7 +6435,7 @@ void MCMC_MIGREP_Delete_Hit(phydbl hr, int n_delete_disks, t_tree *tree)
         {
           hr += Log_Dnorm_Trunc(target_ldsk[j]->coord->lonlat[i],
                                 0.5*(young_ldsk[j]->coord->lonlat[i]+old_ldsk[j]->coord->lonlat[i]),
-                                SQRT(2.0*POW(tree->mmod->rad,2)),
+                                2.*SQRT(2.0*POW(tree->mmod->rad,2)),
                                 0.0,
                                 tree->mmod->lim->lonlat[i],&err);
         }
@@ -6428,7 +6445,7 @@ void MCMC_MIGREP_Delete_Hit(phydbl hr, int n_delete_disks, t_tree *tree)
         {
           hr += Log_Dnorm_Trunc(target_disk[j]->centr->lonlat[i],
                                 target_ldsk[j]->coord->lonlat[i],
-                                1.0*tree->mmod->rad,
+                                2.0*tree->mmod->rad,
                                 0.0,tree->mmod->lim->lonlat[i],&err);
         }
 
@@ -6438,8 +6455,6 @@ void MCMC_MIGREP_Delete_Hit(phydbl hr, int n_delete_disks, t_tree *tree)
 
       /* Remove target disk */
       MIGREP_Remove_Disk(target_disk[j]);
-
-      MIGREP_Update_Lindisk_List(tree);
 
     }
   
@@ -6651,6 +6666,7 @@ void MCMC_MIGREP_Prune_Regraft(t_tree *tree)
   Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
   RATES_Fill_Lca_Table(tree);
   RATES_Update_Cur_Bl(tree);
+  new_glnL = MIGREP_Lk(tree);
 
   /* Get a ldsk from which you can prune a lineage */
   disk = tree->disk->prev;
@@ -6685,7 +6701,6 @@ void MCMC_MIGREP_Prune_Regraft(t_tree *tree)
 
   if(tree->mcmc->use_data == YES) new_alnL = Lk(NULL,tree);
 
-  new_glnL = MIGREP_Lk(tree);
 
   ratio += (new_alnL - cur_alnL);
   ratio += (new_glnL - cur_glnL);

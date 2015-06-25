@@ -149,7 +149,7 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
   /* seed = 16167; */
   /* seed = 18885; */
   /* seed = 22776; */
-  /* seed = 22378; */
+  /* seed = 2; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -1223,7 +1223,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
 
   For(i,mcmc->n_moves) tree->mcmc->start_ess[i] = YES;
 
-  mcmc->use_data   = YES; 
+  mcmc->use_data   = NO; 
   mcmc->always_yes = NO;
     
   do
@@ -1261,8 +1261,8 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"migrep_swap_disk"))
         MCMC_MIGREP_Swap_Disk(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"migrep_indel_hit"))
-        MCMC_MIGREP_Indel_Hit(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_indel_hit")) */
+      /*   MCMC_MIGREP_Indel_Hit(tree); */
 
       if(!strcmp(tree->mcmc->move_name[move],"migrep_move_ldsk"))
         MCMC_MIGREP_Move_Ldsk(tree);
@@ -1273,8 +1273,8 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"migrep_scale_times"))
         MCMC_MIGREP_Scale_Times(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_sim")) */
-      /*   MCMC_MIGREP_Simulate_Backward(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_sim"))
+        MCMC_MIGREP_Simulate_Backward(tree);
 
       if(!strcmp(tree->mcmc->move_name[move],"migrep_traj"))
         MCMC_MIGREP_Lineage_Traj(tree);
@@ -1296,7 +1296,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
           /* Lk(NULL,tree); */
 
           /* char *s = Write_Tree(tree,NO); */
-          /* PhyML_Fprintf(fp_tree,"\n[%f] %s",tree->c_lnL,s); */
+          /* PhyML_Fprintf(fp_tree,"\n %s",s); */
           /* Free(s); */
           /* fflush(NULL); */
 
