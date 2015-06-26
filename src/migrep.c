@@ -149,7 +149,7 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
   /* seed = 16167; */
   /* seed = 18885; */
   /* seed = 22776; */
-  /* seed = 2; */
+  /* seed = 4401; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -1165,11 +1165,11 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   /* MIGREP_Update_Sigsq(tree); */
 
   /* MCMC_Randomize_Rate_Across_Sites(tree); */
-  MCMC_Randomize_Kappa(tree);
+  /* MCMC_Randomize_Kappa(tree); */
 
 
   /* Random genealogy */
-  MIGREP_Simulate_Backward_Core(NO,tree->disk,tree);
+  /* MIGREP_Simulate_Backward_Core(NO,tree->disk,tree); */
 
   MIGREP_Lk(tree);
   Lk(NULL,tree);
@@ -1261,8 +1261,8 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"migrep_swap_disk"))
         MCMC_MIGREP_Swap_Disk(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_indel_hit")) */
-      /*   MCMC_MIGREP_Indel_Hit(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_indel_hit"))
+        MCMC_MIGREP_Indel_Hit(tree);
 
       if(!strcmp(tree->mcmc->move_name[move],"migrep_move_ldsk"))
         MCMC_MIGREP_Move_Ldsk(tree);
@@ -1273,21 +1273,23 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"migrep_scale_times"))
         MCMC_MIGREP_Scale_Times(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"migrep_sim"))
-        MCMC_MIGREP_Simulate_Backward(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_sim")) */
+      /*   MCMC_MIGREP_Simulate_Backward(tree); */
 
       if(!strcmp(tree->mcmc->move_name[move],"migrep_traj"))
         MCMC_MIGREP_Lineage_Traj(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"kappa"))
-        MCMC_Kappa(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"kappa")) */
+      /*   MCMC_Kappa(tree); */
 
-      if(!strcmp(tree->mcmc->move_name[move],"ras"))
-        MCMC_Rate_Across_Sites(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"ras")) */
+      /*   MCMC_Rate_Across_Sites(tree); */
 
       /* if(!strcmp(tree->mcmc->move_name[move],"migrep_ldscape_lim")) */
       /*   MCMC_MIGREP_Ldscape_Limits(tree); */
 
+      tree->mcmc->run++;
+      MCMC_Get_Acc_Rates(tree->mcmc);
       
       if(!(tree->mcmc->run%tree->mcmc->sample_interval))
         {
@@ -1427,12 +1429,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
           fflush(NULL);
                 
           tree->mcmc->sample_num++;
-
-          Exit("\n");
         }
-
-      tree->mcmc->run++;
-      MCMC_Get_Acc_Rates(tree->mcmc);
 
       /* MIGREP_Print_Struct('*',tree); */
       /* disk = tree->disk; */
