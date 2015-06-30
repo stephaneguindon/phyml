@@ -241,7 +241,7 @@ phydbl Generic_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol,
       (*xmin) = FABS(u);
       fu = -Lk(NULL,tree);
 
-      PhyML_Printf("\n. iter=%d/%d param=%f LOGlk=%f",iter,BRENT_IT_MAX,*xmin,tree->c_lnL);
+      PhyML_Printf("\n. iter=%d/%d param=%f loglk=%f",iter,BRENT_IT_MAX,*xmin,tree->c_lnL);
 
 /*       if(fu <= fx) */
       if(fu < fx)
@@ -1829,7 +1829,7 @@ phydbl Dist_F_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol, int n_iter_max,
       old_lnL = curr_lnL;
       fu = -Lk_Dist(F,FABS(u),mod);
       curr_lnL = -fu;
-/*       PhyML_Printf("param=%f LOGlk=%f\n",*param,fu); */
+/*       PhyML_Printf("param=%f loglk=%f\n",*param,fu); */
 
 /*       if(fu <= fx)  */
       if(fu < fx)
@@ -2018,7 +2018,7 @@ phydbl Missing_Dist_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol, int n_ite
       u=(FABS(d) >= tol1 ? xx+d : xx+SIGN(tol1,d));
       fu = Least_Square_Missing_Dist_XY(x,y,FABS(u),mat);
 
-/*       PhyML_Printf("param=%f LOGlk=%f\n",u,fu); */
+/*       PhyML_Printf("param=%f loglk=%f\n",u,fu); */
 
 /*       if(fu <= fx)  */
       if(fu < fx)
