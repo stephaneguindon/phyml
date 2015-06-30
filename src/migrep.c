@@ -294,7 +294,7 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
 
   /* Theta (radius) */
   /* tree->mmod->rad = Uni()*(3.0 - 1.0) + 1.0; */
-  tree->mmod->rad = Uni()*(5.0 - 2.0) + 2.0;
+  tree->mmod->rad = Uni()*(4.0 - 1.5) + 1.5;
 
   mmod->sigsq = neigh / (4.*PI*Ne/area);
 
