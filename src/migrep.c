@@ -1073,9 +1073,9 @@ phydbl MIGREP_Lk(t_tree *tree)
   /* mmod->c_lnL = 0.0; */
   
   /* TO DO: create a proper MIGREP_LogPost() function */
-  /* mmod->c_lnL += MIGREP_LnPrior_Sigsq(tree); */
-  /* mmod->c_lnL += MIGREP_LnPrior_Mu(tree); */
-  /* mmod->c_lnL += MIGREP_LnPrior_Lbda(tree); */
+  mmod->c_lnL += MIGREP_LnPrior_Sigsq(tree);
+  mmod->c_lnL += MIGREP_LnPrior_Mu(tree);
+  mmod->c_lnL += MIGREP_LnPrior_Lbda(tree);
   
   return(mmod->c_lnL);
 }
@@ -2466,7 +2466,9 @@ phydbl MIGREP_LnPrior_Radius(t_tree *tree)
 
 phydbl MIGREP_LnPrior_Sigsq(t_tree *tree)
 {
-  tree->mmod->c_ln_prior_sigsq = -LOG(tree->mmod->max_sigsq - tree->mmod->min_sigsq);      
+  tree->mmod->c_ln_prior_sigsq = 
+    LOG(tree->mmod->prior_param_sigsq) - 
+    tree->mmod->prior_param_sigsq*tree->mmod->sigsq; 
   return(tree->mmod->c_ln_prior_sigsq);
 }
 
