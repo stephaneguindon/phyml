@@ -21,8 +21,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int MIGREP_Main(int argc, char *argv[])
 {
-  return(MIGREP_Main_Estimate(argc,argv));
-  /* return(MIGREP_Main_Simulate(argc,argv)); */
+  /* return(MIGREP_Main_Estimate(argc,argv)); */
+  return(MIGREP_Main_Simulate(argc,argv));
 }
 
 //////////////////////////////////////////////////////////////
@@ -149,7 +149,7 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
   /* seed = 16167; */
   /* seed = 18885; */
   /* seed = 22776; */
-  /* seed = 4401; */
+  /* seed = 10445; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -1073,7 +1073,8 @@ phydbl MIGREP_Lk(t_tree *tree)
   /* mmod->c_lnL = 0.0; */
   
   /* TO DO: create a proper MIGREP_LogPost() function */
-  mmod->c_lnL += MIGREP_LnPrior_Sigsq(tree);
+  /* mmod->c_lnL += MIGREP_LnPrior_Sigsq(tree); */
+  mmod->c_lnL += MIGREP_LnPrior_Radius(tree);
   mmod->c_lnL += MIGREP_LnPrior_Mu(tree);
   mmod->c_lnL += MIGREP_LnPrior_Lbda(tree);
   
@@ -1165,7 +1166,7 @@ phydbl *MIGREP_MCMC(t_tree *tree)
   tree->mmod->rad  = Uni()*(4.0 - 2.0) + 2.0;
   MIGREP_Update_Sigsq(tree);
 
-  MCMC_Randomize_Rate_Across_Sites(tree);
+  /* MCMC_Randomize_Rate_Across_Sites(tree); */
   MCMC_Randomize_Kappa(tree);
 
   /* Random genealogy */
@@ -1282,8 +1283,8 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"kappa"))
         MCMC_Kappa(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"ras"))
-        MCMC_Rate_Across_Sites(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"ras")) */
+      /*   MCMC_Rate_Across_Sites(tree); */
 
       /* if(!strcmp(tree->mcmc->move_name[move],"migrep_ldscape_lim")) */
       /*   MCMC_MIGREP_Ldscape_Limits(tree); */
@@ -2457,7 +2458,9 @@ phydbl MIGREP_LnPrior_Mu(t_tree *tree)
 
 phydbl MIGREP_LnPrior_Radius(t_tree *tree)
 {
-  tree->mmod->c_ln_prior_rad = -LOG(tree->mmod->max_rad - tree->mmod->min_rad);      
+  tree->mmod->c_ln_prior_rad =
+    LOG(tree->mmod->prior_param_rad) - 
+    tree->mmod->prior_param_rad*tree->mmod->rad; 
   return(tree->mmod->c_ln_prior_rad);
 }
 
