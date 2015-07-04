@@ -8585,6 +8585,11 @@ void Get_Best_Root_Position(t_tree *tree)
 
   if(has_outgrp == YES)
     {
+      Free_Edge_Lk_Rght(tree->a_edges[2*tree->n_otu-3]);
+      Free_Edge_Lk_Rght(tree->a_edges[2*tree->n_otu-2]);
+      Free_Edge_Pars_Rght(tree->a_edges[2*tree->n_otu-3]);
+      Free_Edge_Pars_Rght(tree->a_edges[2*tree->n_otu-2]);
+
       eps = 1.E-10;
       s = s_max = 0.0;
       For(i,2*tree->n_otu-2)
@@ -8599,8 +8604,7 @@ void Get_Best_Root_Position(t_tree *tree)
                   best_edge = tree->a_nodes[i]->b[j];
                 }
             }
-        }
-      
+        }      
       Add_Root(best_edge,tree);
     }
 }
@@ -8618,29 +8622,29 @@ void Get_Best_Root_Position_Post(t_node *a, t_node *d, int *has_outgrp, t_tree *
   if(d->tax)
     {
       if(strstr(d->name,"*"))
-    {
-      *has_outgrp = YES;
-      /* PhyML_Printf("\n. Found outgroup taxon: %s",d->name); */
-      d->s_ingrp[0]  = 0;
-      d->s_outgrp[0] = 1;
-    }
+        {
+          *has_outgrp = YES;
+          /* PhyML_Printf("\n. Found outgroup taxon: %s",d->name); */
+          d->s_ingrp[0]  = NO;
+          d->s_outgrp[0] = YES;
+        }
       else
-    {
-      d->s_ingrp[0]  = 1;
-      d->s_outgrp[0] = 0;
-    }
+        {
+          d->s_ingrp[0]  = YES;
+          d->s_outgrp[0] = NO;
+        }
       return;
     }
   else
     {
       int i;
-
+      
       For(i,3)
-    if(d->v[i] != a && (d->b[i] != tree->e_root))
-      Get_Best_Root_Position_Post(d,d->v[i],has_outgrp,tree);
-
+        if(d->v[i] != a && (d->b[i] != tree->e_root))
+          Get_Best_Root_Position_Post(d,d->v[i],has_outgrp,tree);
+      
       Get_OutIn_Scores(a,d);
-
+      
     }
 }
 

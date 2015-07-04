@@ -319,14 +319,19 @@ void Free_Tree_Pars(t_tree *mixt_tree)
       Free(tree->step_mat);
       Free(tree->site_pars);
 
-      For(i,2*tree->n_otu-3) Free_Edge_Pars(tree->a_edges[i]);
+      For(i,2*tree->n_otu-3) 
+        {
+          /* printf("\n. FREE b->num: %d %p %p",tree->a_edges[i]->num,tree->a_edges[i]->pars_l,tree->a_edges[i]->pars_r); */
+          Free_Edge_Pars(tree->a_edges[i]);
+        }
 
       if(tree->n_root)
         {
+          /* printf("\n. FREE b1->num: %d %p %p",tree->n_root->b[1]->num,tree->n_root->b[1]->pars_l,tree->n_root->b[1]->pars_r); */
           Free_Edge_Pars_Left(tree->n_root->b[1]);
           Free_Edge_Pars_Left(tree->n_root->b[2]);
-          if(tree->n_root->b[1]->pars_r) Free_Edge_Pars_Rght(tree->n_root->b[1]);
-          if(tree->n_root->b[2]->pars_r) Free_Edge_Pars_Rght(tree->n_root->b[2]);
+          /* if(tree->n_root->b[1]->pars_r) Free_Edge_Pars_Rght(tree->n_root->b[1]); */
+          /* if(tree->n_root->b[2]->pars_r) Free_Edge_Pars_Rght(tree->n_root->b[2]); */
         }
       else
         {
@@ -403,8 +408,8 @@ void Free_Tree_Lk(t_tree *mixt_tree)
           Free(tree->n_root->b[2]->Pij_rr);
           Free_Edge_Lk_Left(tree->n_root->b[1]);
           Free_Edge_Lk_Left(tree->n_root->b[2]);
-          if(tree->n_root->b[1]->p_lk_rght) Free_Edge_Lk_Rght(tree->n_root->b[1]);
-          if(tree->n_root->b[2]->p_lk_rght) Free_Edge_Lk_Rght(tree->n_root->b[2]);
+          /* if(tree->n_root->b[1]->p_lk_rght) Free_Edge_Lk_Rght(tree->n_root->b[1]); */
+          /* if(tree->n_root->b[2]->p_lk_rght) Free_Edge_Lk_Rght(tree->n_root->b[2]); */
         }
       else
         {
