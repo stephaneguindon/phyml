@@ -1277,11 +1277,11 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"migrep_sim"))
         MCMC_MIGREP_Simulate_Backward(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_traj")) */
-      /*   MCMC_MIGREP_Lineage_Traj(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"migrep_traj"))
+        MCMC_MIGREP_Lineage_Traj(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"kappa")) */
-      /*   MCMC_Kappa(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"kappa"))
+        MCMC_Kappa(tree);
 
       /* if(!strcmp(tree->mcmc->move_name[move],"ras")) */
       /*   MCMC_Rate_Across_Sites(tree); */
