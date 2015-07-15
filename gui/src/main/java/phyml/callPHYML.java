@@ -1,7 +1,5 @@
 package phyml;
 
-import nz.org.nesi.phyml.swing.GridPanel;
-import nz.org.nesi.phyml.swing.PhyMLJobSubmit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +25,6 @@ public class callPHYML {
 	 * Method to call the program PHYML via command line. Note: if unsure of
 	 * what the parameters exactly are, please read the PHYML documentation. The
 	 * parameters are passed from the GUI.
-	 * @param nesiSubmit
 	 *
 	 * @param seqFileName
 	 *            filename of nucleotide/aa file (phylip format)
@@ -95,7 +92,7 @@ public class callPHYML {
 	 * @return void
 	 *
 	 */
-	public static void callPhyML(GridPanel gridPanel, boolean nesiSubmit, String seqFileName, String dataType,
+	public static void callPhyML(String seqFileName, String dataType,
 			String sequential, String nDataSets, String parsimony,
 			String bootstrap, String subModel, String aaRateFileName,
 			String freq, String tstvRatio, String pInvar, String nSubCat,
@@ -107,7 +104,7 @@ public class callPHYML {
 			String quiet) {
 
 		// format the parameters such that PhyML can be executed
-		String command = formatCommand(nesiSubmit, seqFileName, dataType, sequential,
+		String command = formatCommand(seqFileName, dataType, sequential,
 				nDataSets, parsimony, bootstrap, subModel, aaRateFileName,
 				freq, tstvRatio, pInvar, nSubCat, gamma, useMedian, freeRates,
 				codePos, search, treeFile, params, randStart, nRandStart,
@@ -130,28 +127,10 @@ public class callPHYML {
 
             StandardOutPanel.clearPanel();
 
-			if(!nesiSubmit){
+
 				CmdExec exec = new CmdExec(command);
 				exec.start();
-			}else{
-				final PhyMLJobSubmit job = new PhyMLJobSubmit(gridPanel.getServiceInterface(), command, seqFileName);
 
-				Thread t = new Thread() {
-					public void run() {
-						try {
-							job.submit();
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					};
-				};
-
-				t.start();
-
-
-//				SwingClient frame = new SwingClient(command,seqFileName);
-//				frame.run();
-			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -160,7 +139,6 @@ public class callPHYML {
 	/**
 	 * Method to return a correctly formated string of the PhyML program
 	 * (version) path with the parameters formatted with the correct flags
-	 * @param nesiSubmit
 	 *
 	 * @param seqFileName
 	 *            filename of nucleotide/aa file (phylip format)
@@ -228,7 +206,7 @@ public class callPHYML {
 	 * @return String to call PhyML with all flags
 	 */
 
-	private static String formatCommand(boolean nesiSubmit, String seqFileName, String dataType,
+	private static String formatCommand(String seqFileName, String dataType,
 			String sequential, String nDataSets, String parsimony,
 			String bootstrap, String subModel, String aaRateFileName,
 			String freq, String tstvRatio, String pInvar, String nSubCat,
@@ -240,14 +218,14 @@ public class callPHYML {
 			String quiet) {
 
 		String command = "";
-		if(!nesiSubmit){
+
 			command += phymlVersion();
 			if (command.equals("")) {
 				return "";
 			}
 			if (!seqFileName.equals(""))
 				command += "-i " + seqFileName + " ";
-		}
+
 
 		// if the string param is not "", add flag
 		// this of course assumes that the things passed to it are ready to use

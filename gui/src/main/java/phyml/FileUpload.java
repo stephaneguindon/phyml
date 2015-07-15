@@ -1,23 +1,17 @@
 package phyml;
 
-import grisu.jcommons.utils.PackageFileHelper;
+import nz.org.nesi.phyml.swing.PackageFileHelper;
 
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.io.File;
 
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
-
 /**
  * Implements the components to upload a file or to select an example file.
- * 
+ *
  * @author Christoph Knapp
  */
 public class FileUpload extends JPanel implements ActionListener, FocusListener {
@@ -35,7 +29,7 @@ public class FileUpload extends JPanel implements ActionListener, FocusListener 
 	/**
 	 * Constructor for instantiating all components and set there position and
 	 * size.
-	 * 
+	 *
 	 * @param exampleFilePath
 	 *            String : file path to an input file.
 	 */
@@ -52,7 +46,7 @@ public class FileUpload extends JPanel implements ActionListener, FocusListener 
 		hasChoice = false;
 		JLabel lab1;
 		lab1 = new JLabel("Sequences (Phylip Format)");
-		
+
 		CustomGridLayout layout = new CustomGridLayout();
 		setLayout(layout);
 		layout.setDimensions(1, 0.1);
@@ -97,7 +91,7 @@ public class FileUpload extends JPanel implements ActionListener, FocusListener 
 
 	/**
 	 * Returns the file path of the input data file.
-	 * 
+	 *
 	 * @return String : path to input file.
 	 */
 	public String getInputPath() {
@@ -135,7 +129,7 @@ public class FileUpload extends JPanel implements ActionListener, FocusListener 
 				PhymlPanel.UnLockInterleaved(false);
 				PhymlPanel.SetNumDS();
 				PhymlPanel.UnLockNumDS(false);
-				
+
 				String temp = PackageFileHelper.getPath("phyml_ex.txt");
 				PhymlPanel.setInputFile(temp);
 //				PhymlPanel.setInputFile(System.getProperty("user.dir")
@@ -196,7 +190,7 @@ public class FileUpload extends JPanel implements ActionListener, FocusListener 
 	/**
 	 * Returns whether an input data file is selected or the example file is
 	 * used.
-	 * 
+	 *
 	 * @return boolean : true if user defined file, false if example input file.
 	 */
 	public boolean getIsFile() {
@@ -206,7 +200,7 @@ public class FileUpload extends JPanel implements ActionListener, FocusListener 
 	/**
 	 * Changes the text inside the JTextField which stores the file path to the
 	 * input data file.
-	 * 
+	 *
 	 * @param inputPath
 	 *            String : file path where the input data is located. Note, this
 	 *            method does not check if the file is valid.
