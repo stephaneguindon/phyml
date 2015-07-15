@@ -21,8 +21,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int MIGREP_Main(int argc, char *argv[])
 {
-  /* return(MIGREP_Main_Estimate(argc,argv)); */
-  return(MIGREP_Main_Simulate(argc,argv));
+  return(MIGREP_Main_Estimate(argc,argv));
+  /* return(MIGREP_Main_Simulate(argc,argv)); */
 }
 
 //////////////////////////////////////////////////////////////
@@ -1283,8 +1283,8 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"kappa"))
         MCMC_Kappa(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"ras")) */
-      /*   MCMC_Rate_Across_Sites(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"ras"))
+        MCMC_Rate_Across_Sites(tree);
 
       /* if(!strcmp(tree->mcmc->move_name[move],"migrep_ldscape_lim")) */
       /*   MCMC_MIGREP_Ldscape_Limits(tree); */
