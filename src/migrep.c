@@ -21,8 +21,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int MIGREP_Main(int argc, char *argv[])
 {
-  return(MIGREP_Main_Estimate(argc,argv));
-  /* return(MIGREP_Main_Simulate(argc,argv)); */
+  /* return(MIGREP_Main_Estimate(argc,argv)); */
+  return(MIGREP_Main_Simulate(argc,argv));
 }
 
 //////////////////////////////////////////////////////////////
@@ -149,7 +149,7 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
   /* seed = 16167; */
   /* seed = 18885; */
   /* seed = 22776; */
-  /* seed = 10445; */
+  seed = 629;
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -310,8 +310,8 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
                mmod->lbda,mmod->mu,mmod->sigsq,mmod->rad,neigh,area*neigh/(4*PI*mmod->sigsq));
   fflush(NULL);
 
-  MIGREP_Simulate_Backward_Core(YES,tree->disk,tree);
-  /* mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree); */
+  /* MIGREP_Simulate_Backward_Core(YES,tree->disk,tree); */
+  mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree);
     
   MIGREP_Ldsk_To_Tree(tree);  
 
@@ -1274,17 +1274,17 @@ phydbl *MIGREP_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"migrep_scale_times"))
         MCMC_MIGREP_Scale_Times(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"migrep_sim"))
-        MCMC_MIGREP_Simulate_Backward(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_sim")) */
+      /*   MCMC_MIGREP_Simulate_Backward(tree); */
 
-      if(!strcmp(tree->mcmc->move_name[move],"migrep_traj"))
-        MCMC_MIGREP_Lineage_Traj(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_traj")) */
+      /*   MCMC_MIGREP_Lineage_Traj(tree); */
 
       if(!strcmp(tree->mcmc->move_name[move],"kappa"))
         MCMC_Kappa(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"ras"))
-        MCMC_Rate_Across_Sites(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"ras")) */
+      /*   MCMC_Rate_Across_Sites(tree); */
 
       /* if(!strcmp(tree->mcmc->move_name[move],"migrep_ldscape_lim")) */
       /*   MCMC_MIGREP_Ldscape_Limits(tree); */
