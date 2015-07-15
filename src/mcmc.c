@@ -4486,7 +4486,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_migrep_scale_times]           = 2.0;
   mcmc->move_weight[mcmc->num_move_migrep_ldscape_lim]           = 0.0;
   mcmc->move_weight[mcmc->num_move_migrep_sim]                   = 0.1;
-  mcmc->move_weight[mcmc->num_move_migrep_traj]                  = 5.0;
+  mcmc->move_weight[mcmc->num_move_migrep_traj]                  = 1.0;
 # else
   mcmc->move_weight[mcmc->num_move_migrep_lbda]                  = 0.0;
   mcmc->move_weight[mcmc->num_move_migrep_mu]                    = 0.0;
