@@ -805,6 +805,7 @@ option *Make_Input()
   io->in_align_file                     = (char *)mCalloc(T_MAX_FILE,sizeof(char));
   io->in_tree_file                      = (char *)mCalloc(T_MAX_FILE,sizeof(char));
   io->in_constraint_tree_file           = (char *)mCalloc(T_MAX_FILE,sizeof(char));
+  io->in_coord_file                     = (char *)mCalloc(T_MAX_FILE,sizeof(char));
   io->out_file                          = (char *)mCalloc(T_MAX_FILE,sizeof(char));
   io->out_tree_file                     = (char *)mCalloc(T_MAX_FILE,sizeof(char));
   io->out_trees_file                    = (char *)mCalloc(T_MAX_FILE,sizeof(char));
@@ -814,6 +815,7 @@ option *Make_Input()
   io->out_stats_file                    = (char *)mCalloc(T_MAX_FILE,sizeof(char));
   io->out_lk_file                       = (char *)mCalloc(T_MAX_FILE,sizeof(char));
   io->out_ps_file                       = (char *)mCalloc(T_MAX_FILE,sizeof(char));
+  io->out_summary_file                  = (char *)mCalloc(T_MAX_FILE,sizeof(char));
   io->out_trace_file                    = (char *)mCalloc(T_MAX_FILE,sizeof(char));
   io->nt_or_cd                          = (char *)mCalloc(T_MAX_FILE,sizeof(char));
   io->run_id_string                     = (char *)mCalloc(T_MAX_OPTION,sizeof(char));
@@ -1028,7 +1030,7 @@ t_rate *RATES_Make_Rate_Struct(int n_otu)
   t_rate *rates;
 
   rates = (t_rate  *)mCalloc(1,sizeof(t_rate));
-  rates->is_allocated = NO;
+  rates->is_allocated = NO;  
 
   if(n_otu > 0)
     {
@@ -1377,7 +1379,7 @@ t_dsk *MIGREP_Make_Disk_Event(int n_dim, int n_otu)
 {
   t_dsk *t;
 
-  t         = (t_dsk *)mCalloc(1,sizeof(t_dsk));
+  t         = (t_dsk *)mCalloc(1,sizeof(t_dsk));  
   t->centr  = GEO_Make_Geo_Coord(n_dim);
   t->id     = (char *)mCalloc(T_MAX_ID_DISK,sizeof(char));
   t->ldsk_a = (t_ldsk **)mCalloc(n_otu,sizeof(t_ldsk *));

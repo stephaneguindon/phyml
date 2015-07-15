@@ -519,6 +519,7 @@ void Set_Defaults_Input(option* io)
   io->fp_out_boot_stats          = NULL;
   io->fp_out_stats               = NULL;
   io->fp_out_ancestral           = NULL;
+  io->fp_in_coord                = NULL;
   io->long_tax_names             = NULL;
   io->short_tax_names            = NULL;
   io->lon                        = NULL;
@@ -564,10 +565,10 @@ void Set_Defaults_Input(option* io)
   io->codpos                     = -1;
   io->mutmap                     = NO;
   io->state_len                  = 1;
+  io->ancestral                  = NO;
 #ifdef BEAGLE
   io->beagle_resource            = 0;
 #endif
-  io->ancestral                  = NO;
 
   MCMC_Init_MCMC_Struct(NULL,io,io->mcmc);
   RATES_Init_Rate_Struct(io->rates,NULL,-1);
@@ -628,7 +629,7 @@ void Set_Defaults_Model(t_mod *mod)
 
 #if !(defined PHYTIME || defined SERGEII)
   mod->l_min = 1.E-8;
-  mod->l_max = 100.0;
+  mod->l_max = 10.0;
   /* mod->l_min = 1.E-4; */
   /* mod->l_max = 2.0; */
 #else
@@ -641,6 +642,7 @@ void Set_Defaults_Model(t_mod *mod)
 
   mod->br_len_mult->v          = 1.0;
   mod->br_len_mult_unscaled->v = 1.0;
+  mod->augmented               = NO;
 }
 
 //////////////////////////////////////////////////////////////
@@ -1011,8 +1013,8 @@ void Init_Model(calign *data, t_mod *mod, option *io)
     {
       if(mod->ras->n_catg > 1)
         {
-          For(i,mod->ras->n_catg) mod->ras->gamma_rr->v[i]               = (phydbl)i;
-          For(i,mod->ras->n_catg) mod->ras->gamma_rr_unscaled->v[i]      = (phydbl)i;
+          For(i,mod->ras->n_catg) mod->ras->gamma_rr->v[i]          = (phydbl)i;
+          For(i,mod->ras->n_catg) mod->ras->gamma_rr_unscaled->v[i] = (phydbl)i;
         }
       else
         {
@@ -3417,25 +3419,37 @@ void MIGREP_Init_Disk_Event(t_dsk *t, int n_dim, t_migrep_mod *mmod)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void MIGREP_Init_Migrep_Mod(t_migrep_mod *t, int n_dim)
+void MIGREP_Init_Migrep_Mod(t_migrep_mod *t, int n_dim, phydbl max_lat, phydbl max_lon)
 {
   t->name             = MIGREP_NORMAL;
   t->n_dim            = n_dim;
+  
+  if(n_dim != 2) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  
+  t->lim->lonlat[0]   = max_lat;
+  t->lim->lonlat[1]   = max_lon;
 
-  t->lbda             = 0.1;
-  t->min_lbda         = 1.E-6;
-  t->max_lbda         = 3.0;
+  t->lbda             = 1.E-0;
+  t->min_lbda         = 0.0;
+  t->max_lbda         = 1.E+2;
   t->prior_param_lbda = 1.0;
 
-  t->mu               = 0.1;
-  t->min_mu           = 0.0;
-  t->max_mu           = 1.0 - 1.E-10;
-  t->prior_param_mu   = 0.5;
+  t->mu               = 0.300;
+  t->min_mu           = 0.001;
+  t->max_mu           = 1.000;
+  t->prior_param_mu   = 0.500;
 
-  t->rad              = 3.0;
-  t->min_rad          = 1.E-6;
-  t->max_rad          = 10.;
-  t->prior_param_rad  = 1.0;
+  t->min_rad           = 0.0;
+  t->max_rad           = .5*(max_lat+max_lon);
+  t->rad               = .10*(max_lat+max_lon);
+  t->prior_param_rad   = 2.0;
+  t->update_rad        = NO;
+
+  t->min_sigsq         = 0.0;
+  t->max_sigsq         = 1.E+2;
+  t->sigsq             = 1.0;
+  t->prior_param_sigsq = 10.0;
+  
 
   t->c_lnL           = UNLIKELY;
   t->c_ln_prior_rad  = UNLIKELY;

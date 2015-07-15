@@ -77,6 +77,12 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define CT 4
 #define GT 5
 
+#ifndef M_1_SQRT_2PI
+#define M_1_SQRT_2PI	0.398942280401432677939946059934	/* 1/sqrt(2pi) */
+#endif
+
+
+
 #define T_MAX_MCMC_MOVE_NAME 500
 
 #define WINDOW_WIDTH  800
@@ -448,8 +454,7 @@ typedef struct __Node {
   int                                rank;
   int                            rank_max;
 
-
-  struct __Lineage_Loc       *lineage_loc; /*! Spatial coordinates */
+  struct __Geo_Coord               *coord;
 
 }t_node;
 
@@ -581,7 +586,6 @@ typedef struct __Tree{
   struct __Edge                     **a_edges; /*! array of edges */
   struct __Model                         *mod; /*! substitution model */
   struct __Calign                       *data; /*! sequences */
-  struct __Calign                   *anc_data; /*! ancestral sequences */
   struct __Tree                         *next; /*! set to NULL by default. Used for mixture models */
   struct __Tree                         *prev; /*! set to NULL by default. Used for mixture models */
   struct __Tree                    *next_mixt; /*! set to NULL by default. Used for mixture models */
@@ -807,19 +811,20 @@ typedef struct __Align {
 
 typedef struct __Calign {
   struct __Align **c_seq;             /*! compressed sequences      */
+  struct __Option    *io;             /*! input/output */
   phydbl          *b_frq;             /*! observed state frequencies */
   short int       *invar;             /*! < 0 -> polymorphism observed */
   int              *wght;             /*! # of each site in c_align */
   short int      *ambigu;             /*! ambigu[i]=1 is one or more of the sequences at site
-                    i display an ambiguous character */
+                                        i display an ambiguous character */
   phydbl      obs_pinvar;
   int              n_otu;             /*! number of taxa */
   int          clean_len;             /*! uncrunched sequences lenghts without gaps */
   int         crunch_len;             /*! crunched sequences lengths */
   int           init_len;             /*! length of the uncompressed sequences */
   int          *sitepatt;             /*! this array maps the position of the patterns in the
-                       compressed alignment to the positions in the uncompressed
-                       one */
+                                        compressed alignment to the positions in the uncompressed
+                                        one */
   int             format;             /*! 0 (default): PHYLIP. 1: NEXUS. */
 }calign;
 
@@ -933,7 +938,7 @@ typedef struct __Model {
 
   int                   whichmodel;
   int                  is_mixt_mod;
-
+  int                    augmented;
   int                           ns; /*! number of states (4 for ADN, 20 for AA) */
 
   int                    bootstrap; /*! Number of bootstrap replicates (0 : no bootstrap analysis is launched) */
@@ -1040,11 +1045,17 @@ typedef struct __Option { /*! mostly used in 'help.c' */
   char                  *out_lk_file; /*! name of the file in which the likelihood of the model is written */
   FILE                    *fp_out_lk;
 
+  char             *out_summary_file; /*! name of the file in which summary statistics are written */
+  FILE               *fp_out_summary;
+
   char                  *out_ps_file; /*! name of the file in which tree(s) is(are) written */
   FILE                    *fp_out_ps;
 
   char           *out_ancestral_file; /*! name of the file containing the ancestral sequences */
   FILE             *fp_out_ancestral; /*! pointer to the file containing the ancestral sequences */
+
+  char                *in_coord_file; /*! name of input file containing coordinates */
+  FILE                  *fp_in_coord; /*! pointer to the file containing coordinates */
 
   char                     *out_file; /*! name of the output file */
 
@@ -1470,17 +1481,18 @@ typedef struct __Tmcmc {
   int num_move_migrep_lbda;
   int num_move_migrep_mu;
   int num_move_migrep_rad;
-  int num_move_migrep_insert_disk;
-  int num_move_migrep_delete_disk;  
+  int num_move_migrep_indel_disk;
   int num_move_migrep_move_disk_ct;
   int num_move_migrep_move_disk_ud;
   int num_move_migrep_swap_disk;
-  int num_move_migrep_delete_hit;
-  int num_move_migrep_insert_hit;
+  int num_move_migrep_indel_hit;
   int num_move_migrep_move_ldsk;
   int num_move_migrep_spr;
   int num_move_migrep_scale_times;
   int num_move_migrep_ldscape_lim;
+  int num_move_migrep_sigsq;
+  int num_move_migrep_sim;
+  int num_move_migrep_traj;
 
   int nd_t_digits;
   int *monitor;
@@ -1520,6 +1532,7 @@ typedef struct __Tmcmc {
   phydbl *ess;
   int    *ess_run;
   int    *start_ess;
+  phydbl *mode;
   int always_yes; /* Always accept proposed move (as long as log-likelihood > UNLIKELY) */
   int is; /* Importance sampling? Yes or NO */
 }t_mcmc;
@@ -1662,24 +1675,31 @@ typedef struct __Migrep_Model{
   phydbl                        lbda; // rate at which events occur
   phydbl                    min_lbda; // min of rate at which events occur
   phydbl                    max_lbda; // max of rate at which events occur
+  phydbl            prior_param_lbda; // parameter of the parameter for the prior on lbda
 
   phydbl                          mu; // per-capita and per event death probability
   phydbl                      min_mu; // min of per-capita and per event death probability
   phydbl                      max_mu; // max of per-capita and per event death probability
+  phydbl              prior_param_mu; // parameter of the parameter for the prior on mu
 
   phydbl                         rad; // radius of the migrep disk 
   phydbl                     min_rad; // min of radius of the migrep disk 
   phydbl                     max_rad; // max of radius of the migrep disk 
-  phydbl             prior_param_rad; // parameter of the parameter for the exponential prior on radius
-  phydbl            prior_param_lbda; // parameter of the parameter for the exponential prior on lbda
-  phydbl              prior_param_mu; // parameter of the parameter for the 'exponential' prior on mu
+  phydbl             prior_param_rad; // parameter of the parameter for the prior on radius
+  int                     update_rad;
+
+  phydbl                       sigsq; // parent to offspring distance variance (i.e., gene flow) parameter. 
+  phydbl                   min_sigsq; // min 
+  phydbl                   max_sigsq; // max  
+  phydbl           prior_param_sigsq; // parameter of the parameter for the prior 
 
   phydbl                         rho; // intensity parameter of the Poisson point processs
 
   phydbl                       c_lnL; // current value of log-likelihood 
-  phydbl              c_ln_prior_rad; // current value of log prior for the exponential prior on radius
-  phydbl             c_ln_prior_lbda; // current value of log prior for the exponential prior on lbda
-  phydbl               c_ln_prior_mu; // current value of log prior for the exponential prior on mu
+  phydbl              c_ln_prior_rad; // current value of log prior for the prior on radius
+  phydbl             c_ln_prior_lbda; // current value of log prior for the prior on lbda
+  phydbl               c_ln_prior_mu; // current value of log prior for the prior on mu
+  phydbl            c_ln_prior_sigsq; // current value of log prior for the prior on sigsq=4.pi.lbda.mu.rad^4
 
   phydbl             soft_bound_area;
 
@@ -2010,6 +2030,10 @@ int Number_Of_Diff_States_One_Site_Core(t_node *a, t_node *d, t_edge *b, int sit
 phydbl Get_Lk(t_tree *tree);
 align **Make_Empty_Alignment(option *io);
 void Connect_Edges_To_Nodes_Serial(t_tree *tree);
+phydbl Mean_Identity(calign *data);
+phydbl Pairwise_Identity(int i, int j, calign *data);
+phydbl Fst(int i, int j, calign *data);
+phydbl Nucleotide_Diversity(calign *data);
 
 
 #include "xml.h"

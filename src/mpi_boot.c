@@ -420,7 +420,7 @@ void Print_Fp_Out_Lines_MPI(t_tree *tree, option *io, int n_data_set, char *boot
 
     strncat (s, "taxa\t", T_MAX_LINE);
 
-    strncat (s, "LOGlk     \t", T_MAX_LINE);
+    strncat (s, "loglk     \t", T_MAX_LINE);
 
     strncat (s, "gamma model\t", T_MAX_LINE);
 

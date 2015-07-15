@@ -137,8 +137,9 @@ void Usage()
   PhyML_Printf("\t\t corresponds to F81 (or JC69 provided the distribution of nucleotide frequencies is uniform).\n");
   PhyML_Printf("\t\t 012345 corresponds to GTR. This option can be used for encoding any model that is a nested within GTR.\n");
   PhyML_Printf("\n");
-  PhyML_Printf("\t\t%s- %sAmino-acid%s based models : %sLG%s (default) | %sWAG%s | %sJTT%s | %sMtREV%s | %sDayhoff%s | %sDCMut%s | %sRtREV%s | %sCpREV%s | %sVT%s | %sAB%s\n",	 
-	 FLAT,LINE,FLAT,
+  PhyML_Printf("\t\t%s- %sAmino-acid%s based models : %sLG%s (default) | %sWAG%s | %sJTT%s | %sMtREV%s | %sDayhoff%s | %sDCMut%s | %sRtREV%s | %sCpREV%s | %sVT%s | %sAB%s\n",FLAT,
+	 LINE,FLAT,
+	 LINE,FLAT,
 	 LINE,FLAT,
 	 LINE,FLAT,
 	 LINE,FLAT,

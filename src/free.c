@@ -103,6 +103,11 @@ void Free_Node(t_node *n)
   Free(n->score);
   Free(n->s_ingrp);
   Free(n->s_outgrp);
+  if(n->c_seq_anc != NULL) 
+    {
+      Free(n->c_seq_anc->state);
+      Free(n->c_seq_anc);
+    }
   if(n->ori_name) { Free(n->ori_name); n->ori_name = NULL; }
 
   /* if(n->name)     { Free(n->name);     n->name     = NULL; }  */
@@ -217,7 +222,6 @@ void Free_Bip(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Free_Cseq(calign *data)
 {
   int i;
@@ -231,11 +235,11 @@ void Free_Cseq(calign *data)
     {
       Free(data->c_seq[i]->name);
       if(data->c_seq[i]->state)
-    {
-      Free(data->c_seq[i]->state);
-      Free(data->c_seq[i]->d_state);
-      if(data->c_seq[i]->is_ambigu) Free(data->c_seq[i]->is_ambigu);
-    }
+        {
+          Free(data->c_seq[i]->state);
+          Free(data->c_seq[i]->d_state);
+          if(data->c_seq[i]->is_ambigu) Free(data->c_seq[i]->is_ambigu);
+        }
       Free(data->c_seq[i]);
     }
   Free(data->c_seq);
@@ -244,7 +248,6 @@ void Free_Cseq(calign *data)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void Free_Seq(align **d, int n_otu)
 {
@@ -316,12 +319,19 @@ void Free_Tree_Pars(t_tree *mixt_tree)
       Free(tree->step_mat);
       Free(tree->site_pars);
 
-      For(i,2*tree->n_otu-3) Free_Edge_Pars(tree->a_edges[i]);
+      For(i,2*tree->n_otu-3) 
+        {
+          /* printf("\n. FREE b->num: %d %p %p",tree->a_edges[i]->num,tree->a_edges[i]->pars_l,tree->a_edges[i]->pars_r); */
+          Free_Edge_Pars(tree->a_edges[i]);
+        }
 
       if(tree->n_root)
         {
+          /* printf("\n. FREE b1->num: %d %p %p",tree->n_root->b[1]->num,tree->n_root->b[1]->pars_l,tree->n_root->b[1]->pars_r); */
           Free_Edge_Pars_Left(tree->n_root->b[1]);
           Free_Edge_Pars_Left(tree->n_root->b[2]);
+          /* if(tree->n_root->b[1]->pars_r) Free_Edge_Pars_Rght(tree->n_root->b[1]); */
+          /* if(tree->n_root->b[2]->pars_r) Free_Edge_Pars_Rght(tree->n_root->b[2]); */
         }
       else
         {
@@ -398,6 +408,8 @@ void Free_Tree_Lk(t_tree *mixt_tree)
           Free(tree->n_root->b[2]->Pij_rr);
           Free_Edge_Lk_Left(tree->n_root->b[1]);
           Free_Edge_Lk_Left(tree->n_root->b[2]);
+          /* if(tree->n_root->b[1]->p_lk_rght) Free_Edge_Lk_Rght(tree->n_root->b[1]); */
+          /* if(tree->n_root->b[2]->p_lk_rght) Free_Edge_Lk_Rght(tree->n_root->b[2]); */
         }
       else
         {
@@ -698,6 +710,7 @@ void Free_Input(option *io)
       Free(io->in_align_file);
       Free(io->in_tree_file);
       Free(io->in_constraint_tree_file);
+      Free(io->in_coord_file);
       Free(io->out_file);
       Free(io->out_tree_file);
       Free(io->out_trees_file);
@@ -705,6 +718,7 @@ void Free_Input(option *io)
       Free(io->out_boot_stats_file);
       Free(io->out_stats_file);
       Free(io->out_lk_file);
+      Free(io->out_summary_file);
       Free(io->out_ps_file);
       Free(io->out_trace_file);
       Free(io->out_ancestral_file);
@@ -1034,6 +1048,7 @@ void MCMC_Free_MCMC(t_mcmc *mcmc)
   Free(mcmc->start_ess);
   Free(mcmc->ess);
   Free(mcmc->sampled_val);
+  Free(mcmc->mode);
   Free(mcmc);
 }
 
@@ -1109,8 +1124,10 @@ void RATES_Free_Rates(t_rate *rates)
       Free(rates->_2n2n_vect2);
       Free(rates->cov_l);
       Free(rates->mean_l);
+      Free(rates->mean_r);
       Free(rates->mean_t);
       Free(rates->grad_l);
+      Free(rates->reg_coeff);
       Free(rates->br_do_updt);
       Free(rates->cur_gamma_prior_mean);
       Free(rates->cur_gamma_prior_var);
@@ -1123,6 +1140,11 @@ void RATES_Free_Rates(t_rate *rates)
       Free(rates->survival_dur);
       Free(rates->calib_prob);
       Free(rates->node_height_dens_log_norm_const_update);
+      Free(rates->curr_nd_for_cal);
+      Free(rates->t_prior_min_ori);
+      Free(rates->t_prior_max_ori);
+      Free(rates->times_partial_proba);
+      Free(rates->numb_calib_chosen);
     }
   Free_Calib(rates->calib);
   Free(rates);
@@ -1212,8 +1234,15 @@ void Free_Poly(t_poly *p)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void Free_Mmod(t_migrep_mod *mmod)
+{
+  Free_Geo_Coord(mmod->lim);
+  Free(mmod);
+}
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

@@ -17,20 +17,22 @@ the GNU public licence. See http://www.opensource.org for details.
 
 #include "utilities.h"
 
-t_tree *MIGREP_Simulate_Backward(int n_otu, int n_sites, phydbl width, phydbl height, int r_seed);
 int MIGREP_Main(int argc, char **argv);
+int MIGREP_Main_Simulate(int argc, char **argv);
+int MIGREP_Main_Estimate(int argc, char **argv);
+t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int r_seed);
 phydbl MIGREP_Lk(t_tree *tree);
 phydbl MIGREP_Wrap_Lk(t_edge *b, t_tree *tree, supert_tree *stree);
 phydbl *MIGREP_MCMC(t_tree *tree);
 int MIGREP_Is_In_Disk(t_geo_coord *coord, t_dsk *disk, t_migrep_mod *mmod);
 void MIGREP_New_Traj(t_dsk *start, t_dsk *end, t_tree *tree);
 void MIGREP_Remove_Disk(t_dsk *disk);
-void MIGREP_Insert_Disk(t_dsk *disk);
+void MIGREP_Insert_Disk(t_dsk *ins, t_tree *tree);
 t_ldsk *MIGREP_Prev_Coal_Lindisk(t_ldsk *t);
 t_ldsk *MIGREP_Next_Coal_Lindisk(t_ldsk *t);
 int MIGREP_Get_Next_Direction(t_ldsk *young, t_ldsk *old);
 void MIGREP_Update_Lindisk_List(t_tree *tree);
-void MIGREP_Update_Lindisk_List_Pre(t_dsk *disk);
+void MIGREP_Update_Lindisk_List_Pre(t_dsk *disk, t_tree *tree);
 /* void MIGREP_Update_Lindisk_List(phydbl time, t_ldsk **list, int *pos, t_dsk *disk); */
 /* void MIGREP_Update_Lindisk_List_Pre(t_ldsk *ldsk, phydbl time, t_ldsk **list, int *pos); */
 void MIGREP_Connect_Ldsk_Given_Disk(t_dsk **disk, int n_disk, t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y);
@@ -64,12 +66,35 @@ void MIGREP_Ldsk_To_Tree(t_tree *tree);
 void MIGREP_Ldsk_To_Tree_Post(t_node *a, t_ldsk *ldsk, int *available, t_tree *tree);
 phydbl MIGREP_Rnorm_Trunc(t_ldsk *ldsk, t_dsk *disk, t_migrep_mod *mod);
 void MIGREP_Remove_Lindisk_Next(t_ldsk *ldsk, t_ldsk *rm);
-void MIGREP_Simulate_Backward_Core(int new_loc, t_tree *tree);
+phydbl MIGREP_Simulate_Backward_Core(int new_loc, t_dsk *init_disk, t_tree *tree);
 phydbl *MIGREP_Mean_Pairwise_Distance_Between_Lineage_Locations(t_tree *tree);
 phydbl MIGREP_Random_Select_Time_Between_Jumps(t_tree *tree);
 phydbl MIGREP_Simulate_Forward_Core(int n_sites, t_tree *tree);
 int MIGREP_Is_In_Ldscape(t_ldsk *ldsk, t_migrep_mod *mmod);
-void MIGREP_Update_Lindisk_List_Core(t_dsk *disk);
+void MIGREP_Update_Lindisk_List_Core(t_dsk *disk, t_tree *tree);
 phydbl MIGREP_Mean_Time_Between_Events(t_tree *tree);
+void MIGREP_All_Pairs_Coal_Times_Dist(t_tree *tree);
+void MIGREP_Rand_Pairs_Coal_Times_Dist(t_tree *tree);
+phydbl MIGREP_Neighborhood_Size_Regression(t_tree *tree);
+phydbl MIGREP_Neighborhood_Size(t_tree *tree);
+phydbl MIGREP_Update_Radius(t_tree *tree);
+phydbl MIGREP_Update_Sigsq(t_tree *tree);
+void MIGREP_Read_Tip_Coordinates(t_ldsk **ldsk_a, t_tree *tree);
+phydbl MIGREP_Sample_Rad_From_Prior(t_tree *tree);
+void MCMC_MIGREP_Sigsq(t_tree *tree);
+phydbl MIGREP_LnPrior_Sigsq(t_tree *tree);
+phydbl MIGREP_Rate_Per_Unit_Area(t_tree *tree);
+phydbl MIGREP_Tree_Height(t_tree *tree);
+int MIGREP_Random_Insert_Ldsk_In_Next_List(t_ldsk *ins, t_ldsk *where);
+void MIGREP_Insert_Ldsk_In_Next_List(t_ldsk *ins, int pos, t_ldsk *where);
+t_ldsk *MIGREP_Remove_Path(t_ldsk *beg, t_ldsk *end, t_tree *tree);
+void MIGREP_Insert_Path(t_ldsk *beg, t_ldsk *end, t_ldsk *path, t_tree *tree);
+t_ldsk *MIGREP_Generate_Path(t_ldsk *beg, t_ldsk *end, phydbl n_evt, t_tree *tree);
+phydbl MIGREP_Path_Logdensity(t_ldsk *beg, t_ldsk *end, phydbl cur_n_evt, t_tree *tree);
+phydbl MIGREP_Time_Tree_Length(t_tree *tree);
+void MIGREP_Time_Tree_Length_Pre(t_ldsk *a, t_ldsk *d, phydbl *len, t_tree *tree);
+int MIGREP_Is_On_Path(t_ldsk *target, t_ldsk *beg, t_ldsk *end);
+int MIGREP_Path_Len(t_ldsk *beg, t_ldsk *end);
+
 
 #endif

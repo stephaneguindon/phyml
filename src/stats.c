@@ -307,18 +307,20 @@ phydbl Rnorm_Trunc_Inverse(phydbl mean, phydbl sd, phydbl min, phydbl max, int *
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 phydbl Rnorm_Trunc(phydbl mean, phydbl sd, phydbl min, phydbl max, int *error)
 {
 
-  phydbl ret_val,eps;
-  int iter;
-  phydbl z;
+  phydbl ret_val;
+  phydbl z, q, u, a;
   phydbl z_min,z_max;
+  int n_max_iter,n_iter;
+  int algo;
 
-  z      = 0.0;
-  *error = NO;
-  
+  z          = 0.0;
+  *error     = NO;
+  ret_val    = INFINITY;
+  n_max_iter = 100000;
+
   if(sd < 1.E-100)
     {
       PhyML_Printf("\n. Small variance detected in Rnorm_Trunc.");
@@ -338,63 +340,100 @@ phydbl Rnorm_Trunc(phydbl mean, phydbl sd, phydbl min, phydbl max, int *error)
   z_min = (min - mean)/sd;
   z_max = (max - mean)/sd;
 
-  eps = (z_max-z_min)/1E+6;
-
-  /* Damien and Walker (2001) method */
-  phydbl y,slice_min,slice_max;
-
-/*   if((z_min < -10.) && (z_max > +10.)) /\* cdf < 1.E-6, we should be safe. *\/ */
-/*     { */
-/*       z = Rnorm(0.0,1.0); */
-/*     } */
-/*   else */
-/*     { */
-
-
-      iter = 0;
-      do
-	{
-	  y   = Uni()*EXP(-(z*z)/2.);
-	  slice_min = MAX(z_min,-SQRT(-2.*LOG(y)));
-	  slice_max = MIN(z_max, SQRT(-2.*LOG(y)));
-	  z   = Uni()*(slice_max - slice_min) + slice_min;
-	  iter++;
-	  if(iter > 1000) break;
-	}
-      while(slice_max < slice_min || iter < 10);
-
-      if(iter > 1000)
-	{
-	  PhyML_Printf("\n. Too many iterations in Rnorm_Trunc...");
-	  *error = 1;
-	}
-
-/*     } */
-
-  /* Inverson method */
-/*   phydbl cdf_min, cdf_max; */
-/*   if((z_min < -10.) && (z_max > +10.)) /\* cdf < 1.E-6, we should be safe. *\/ */
-/*     { */
-/*       z = Rnorm(0.0,1.0); */
-/*     } */
-/*   else */
-/*     { */
-/* /\*       Simple inversion method. Seems to work well. Needs more thorough testing though... *\/ */
-/*       cdf_min = Pnorm(z_min,0.0,1.0); */
-/*       cdf_max = Pnorm(z_max,0.0,1.0); */
-/*       u = cdf_min + (cdf_max-cdf_min) * Uni(); */
-/*       z = PointNormal(u); */
-/*     } */
-
-
-   if((z < z_min-eps) || (z > z_max+eps))
+  if(z_min < 0.0 && z_max > 0 && (z_max - z_min > SQRT(2*PI)))
     {
-      *error = YES;
-      PhyML_Printf("\n. Numerical precision issue detected in Rnorm_Trunc.");
-      PhyML_Printf("\n. z = %f",z);
-      PhyML_Printf("\n. mean=%f sd=%f z_min=%f z_max=%f min=%f max=%f",mean,sd,z_min,z_max,min,max);
-      ret_val = (max - min)/2.;
-      Exit("\n");
+      algo = 0;
+    }
+  if((z_min > 0.0 || Are_Equal(z_min,0.0,1.E-10)) && z_max > z_min + 2.*SQRT(EXP(1.0))/(z_min + SQRT(z_min*z_min+4.)) * EXP((z_min*z_min - z_min*SQRT(z_min*z_min+4.))/4.))
+    {
+      algo = 1;
+    }
+  else if((z_max < 0.0 || Are_Equal(z_max,0.0,1.E-10)) && -z_min > -z_max + 2.*SQRT(EXP(1.0))/(-z_max + SQRT(z_max*z_max+4.)) * EXP((z_max*z_max - (-z_max)*SQRT(z_max*z_max+4.))/4.))
+    {
+      algo = 2;
+    }
+  else
+    {
+      algo = 3;
+    }
+
+
+  switch(algo)
+    {
+    case 0:
+      {
+        n_iter = 0;
+        do 
+          { 
+            z = Rnorm(0.0,1.0); 
+            n_iter++;
+            if(n_iter > n_max_iter)
+              {
+                PhyML_Printf("\n== Too many iterations in Rnorm_Trunc()");
+                *error = YES; 
+              }
+          }
+        while(z < z_min || z > z_max);
+        break;
+      }
+    case 1:
+      {
+        n_iter = 0;
+        do
+          {
+            a = (z_min + SQRT(z_min*z_min+4.))/2.;
+            q = Rexp(a) + z_min;
+            u = Uni();
+            n_iter++;
+            if(n_iter > n_max_iter)
+              {
+                PhyML_Printf("\n== Too many iterations in Rnorm_Trunc()");
+                *error = YES; 
+              }
+          }while(u > EXP(-POW(q-a,2)/2.));
+        z = q;
+        break;
+      }
+    case 2:
+      {
+        n_iter = 0;
+        do
+          {
+            a = (-z_max + SQRT(z_max*z_max+4.))/2.;
+            q = Rexp(a) - z_max;
+            u = Uni();
+            n_iter++;
+            if(n_iter > n_max_iter)
+              {
+                PhyML_Printf("\n== Too many iterations in Rnorm_Trunc()");
+                *error = YES; 
+              }
+          }while(u > EXP(-POW(q-a,2)/2.));
+        z = -q;
+        break;
+      }
+    case 3:
+      {
+        n_iter = 0;
+        do
+          {
+            z = Uni()*(z_max - z_min) + z_min;
+            if(z_min < 0.0 && z_max > 0.0) q = EXP(-z*z/2.);
+            else if (z_max < 0.0) q = EXP((z_max*z_max-z*z)/2.);
+            else q = EXP((z_min*z_min-z*z)/2.);
+            u = Uni();
+            n_iter++;
+            if(n_iter > n_max_iter)
+              {
+                PhyML_Printf("\n== Too many iterations in Rnorm_Trunc()");
+                *error = YES; 
+              }
+          }while(u > q); 
+        break;
+      }
+
+    default: Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+
     }
 
   ret_val = z*sd+mean;
@@ -462,6 +501,254 @@ phydbl *Rnorm_Multid_Trunc(phydbl *mean, phydbl *cov, phydbl *min, phydbl *max, 
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+/* Inversion method for sampling from Geometric distibution */
+phydbl Rgeom(phydbl p)
+{
+  phydbl x,u;
+
+  u = Uni();
+  if(u < SMALL) return(0.0);
+  x = LOG(u) / LOG(1. - p);
+  
+  return(CEIL(x));  
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl Dgeom(phydbl k, phydbl p, int logit)
+{
+  phydbl prob;
+
+  if(k < 1.) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(p > 1.-SMALL)
+    {
+      if(logit == YES) return(-INFINITY);
+      else return(0.0);
+    }
+
+  if(logit == YES)
+    prob = (k - 1.)*LOG(1. - p) + LOG(p);
+  else
+    prob = POW(1.-p,k-1.)*p;
+
+  return(prob);
+}
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl Pgeom(phydbl k, phydbl p)
+{
+
+  if(k < 1.) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(p > 1.-SMALL) return(0.0);
+
+  return(1. - POW((1. - p),k));
+
+}
+
+
+/*
+ * Random variates from the Poisson distribution. Completely stolen from R code.
+ *
+ * REFERENCE
+ *
+ * Ahrens, J.H. and Dieter, U. (1982).
+ * Computer generation of Poisson deviates
+ * from modified normal distributions.
+ * ACM Trans. Math. Software 8, 163-179.
+ */
+phydbl Rpois(phydbl mmu)
+{
+  double mu = (double)mmu;
+  
+  double a0	= -0.5;
+  double a1	= 0.3333333;
+  double a2	= -0.2500068;
+  double a3	= 0.2000118;
+  double a4	= -0.1661269;
+  double a5	= 0.1421878;
+  double a6	= -0.1384794;
+  double a7	= 0.1250060;
+  double one_7	= 0.1428571428571428571;
+  double one_12	= 0.0833333333333333333;
+  double one_24	= 0.0416666666666666667;
+
+  /* Factorial Table (0:9)! */
+  const static double fact[10] =
+    {
+      1., 1., 2., 6., 24., 120., 720., 5040., 40320., 362880.
+    };
+  /* These are static --- persistent between calls for same mu : */
+  static int l, m;
+  static double b1, b2, c, c0, c1, c2, c3;
+  static double pp[36], p0, p, q, s, d, omega;
+  static double big_l;/* integer "w/o overflow" */
+  static double muprev = 0., muprev2 = 0.;/*, muold = 0.*/
+  /* Local Vars [initialize some for -Wall]: */
+  double del, difmuk= 0., E= 0., fk= 0., fx, fy, g, px, py, t, u= 0., v, x;
+  double pois = -1.;
+  int k, kflag, big_mu, new_big_mu = FALSE;
+  
+  if (isnan(mu) || mu < 0.0) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if (mu <= 0.) return 0.;
+
+  big_mu = mu >= 10.;
+  if(big_mu) new_big_mu = FALSE;
+  if (!(big_mu && mu == muprev)) {/* maybe compute new persistent par.s */
+    if (big_mu) 
+      {
+        new_big_mu = TRUE;
+        /* Case A. (recalculation of s,d,l because mu has changed):
+         * The poisson probabilities pk exceed the discrete normal
+         * probabilities fk whenever k >= m(mu).
+         */
+        muprev = mu;
+        s = sqrt(mu);
+        d = 6. * mu * mu;
+        big_l = floor(mu - 1.1484);
+        /* = an upper bound to m(mu) for all mu >= 10.*/
+      }
+    else 
+      { 
+        /* Small mu ( < 10) -- not using normal approx. */
+        /* Case B. (start new table and calculate p0 if necessary) */
+        /*muprev = 0.;-* such that next time, mu != muprev ..*/
+        if (mu != muprev) 
+          {
+            muprev = mu;
+            m = MAX(1, (int) mu);
+            l = 0; /* pp[] is already ok up to pp[l] */
+            q = p0 = p = exp(-mu);
+          }
+        for(;;) 
+          {
+            /* Step U. uniform sample for inversion method */
+            u = Uni();
+            if (u <= p0) return 0.;
+            /* Step T. table comparison until the end pp[l] of the
+               pp-table of cumulative poisson probabilities
+               (0.458 > ~= pp[9](= 0.45792971447) for mu=10 ) */
+            if (l != 0) 
+              {
+                for (k = (u <= 0.458) ? 1 : MIN(l, m); k <= l; k++) if (u <= pp[k]) return((phydbl)k);
+                if (l == 35) /* u > pp[35] */
+                  continue;
+              }
+            /* Step C. creation of new poisson
+               probabilities p[l..] and their cumulatives q =: pp[k] */
+            l++;
+            for (k = l; k <= 35; k++) 
+              {
+                p *= mu / k;
+                q += p;
+                pp[k] = q;
+                if (u <= q) 
+                  {
+                    l = k;
+                    return((phydbl)k);
+                  }
+              }
+            l = 35;
+          } /* end(repeat) */
+      }/* mu < 10 */
+  } /* end {initialize persistent vars} */
+  /* Only if mu >= 10 : ----------------------- */
+  /* Step N. normal sample */
+  g = mu + s * Rnorm(0.0,1.0);/* norm_rand() ~ N(0,1), standard normal */
+  if (g >= 0.) 
+    {
+      pois = floor(g);
+      /* Step I. immediate acceptance if pois is large enough */
+      if (pois >= big_l)
+        return((phydbl)pois);
+      /* Step S. squeeze acceptance */
+      fk = pois;
+      difmuk = mu - fk;
+      u = Uni(); /* ~ U(0,1) - sample */
+      if (d * u >= difmuk * difmuk * difmuk)
+        return((phydbl)pois);
+    }
+  /* Step P. preparations for steps Q and H.
+     (recalculations of parameters if necessary) */
+  if (new_big_mu || mu != muprev2) {
+    /* Careful! muprev2 is not always == muprev
+       because one might have exited in step I or S
+    */
+    muprev2 = mu;
+    omega = M_1_SQRT_2PI / s;
+    /* The quantities b1, b2, c3, c2, c1, c0 are for the Hermite
+     * approximations to the discrete normal probabilities fk. */
+    b1 = one_24 / mu;
+    b2 = 0.3 * b1 * b1;
+    c3 = one_7 * b1 * b2;
+    c2 = b2 - 15. * c3;
+    c1 = b1 - 6. * b2 + 45. * c3;
+    c0 = 1. - b1 + 3. * b2 - 15. * c3;
+    c = 0.1069 / mu; /* guarantees majorization by the 'hat'-function. */
+  }
+  if (g >= 0.) {
+    /* 'Subroutine' F is called (kflag=0 for correct return) */
+    kflag = 0;
+    goto Step_F;
+  }
+  for(;;) 
+    {
+      /* Step E. Exponential Sample */
+      E = Rexp(1.0); /* ~ Exp(1) (standard exponential) */
+      /* sample t from the laplace 'hat'
+         (if t <= -0.6744 then pk < fk for all mu >= 10.) */
+      u = 2. * Uni() - 1.;
+      /* t = 1.8 + fsign(E, u); */
+      t = 1.8 + ((u >= 0.0) ? fabs(E) : -fabs(E));
+      if (t > -0.6744)
+        {
+          pois = floor(mu + s * t);
+          fk = pois;
+          difmuk = mu - fk;
+          /* 'subroutine' F is called (kflag=1 for correct return) */
+          kflag = 1;
+        Step_F: /* 'subroutine' F : calculation of px,py,fx,fy. */
+          if (pois < 10) { /* use factorials from table fact[] */
+            px = -mu;
+            py = pow(mu, pois) / fact[(int)pois];
+          }
+          else {
+            /* Case pois >= 10 uses polynomial approximation
+               a0-a7 for accuracy when advisable */
+            del = one_12 / fk;
+            del = del * (1. - 4.8 * del * del);
+            v = difmuk / fk;
+            if (fabs(v) <= 0.25)
+              px = fk * v * v * (((((((a7 * v + a6) * v + a5) * v + a4) *
+                                    v + a3) * v + a2) * v + a1) * v + a0)
+                - del;
+            else /* |v| > 1/4 */
+              px = fk * log(1. + v) - difmuk - del;
+            py = M_1_SQRT_2PI / sqrt(fk);
+          }
+          x = (0.5 - difmuk) / s;
+          x *= x;/* x^2 */
+          fx = -0.5 * x;
+          fy = omega * (((c3 * x + c2) * x + c1) * x + c0);
+          if (kflag > 0) {
+            /* Step H. Hat acceptance (E is repeated on rejection) */
+            if (c * fabs(u) <= py * exp(px + E) - fy * exp(fx + E))
+              break;
+          } else
+            /* Step Q. Quotient acceptance (rare case) */
+            if (fy - u * fy <= py * exp(px - fx))
+              break;
+        }/* t > -.67.. */
+    }
+  return((phydbl)pois);
+}
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
 /* DENSITIES / PROBA */
 //////////////////////////////////////////////////////////////
@@ -501,7 +788,6 @@ phydbl Dnorm(phydbl x, phydbl mean, phydbl sd)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 phydbl Log_Dnorm(phydbl x, phydbl mean, phydbl sd, int *err)
 {
   phydbl dens;
@@ -510,7 +796,6 @@ phydbl Log_Dnorm(phydbl x, phydbl mean, phydbl sd, int *err)
 
   x = (x-mean)/sd;
   
-  /* dens = -(phydbl)LOG_SQRT_2_PI - x*x*0.5 - LOG(sd); */
   dens = -(phydbl)LOG(SQRT(2.*PI)) - x*x*0.5 - LOG(sd);
 
   if(dens < -BIG)
@@ -529,6 +814,8 @@ phydbl Log_Dnorm_Trunc(phydbl x, phydbl mean, phydbl sd, phydbl lo, phydbl up, i
 {
   phydbl log_dens;
   phydbl cdf_up, cdf_lo;
+
+  if(x < lo || x > up) return -230.;
 
   *err = NO;
   cdf_lo = cdf_up = 0.0;
@@ -803,12 +1090,11 @@ phydbl Dpois(phydbl x, phydbl param, int logit)
 
   if(x < .0) 
     {
-      PhyML_Printf("\n== x = %f",x);
-      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
-      Warn_And_Exit("");
-    }
+      if(logit == YES) return(-INFINITY);
+      else return 0.0;
+   }
 
-  v = x * LOG(param) - param - LnGamma(x+1);
+  v = x * LOG(param) - param - Factln(x);
   if(logit == YES) return v;
   else
     {
@@ -1283,7 +1569,6 @@ phydbl Bico(int n, int k)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 phydbl Factln(int n)
 {
   static phydbl a[101];
@@ -1472,8 +1757,8 @@ phydbl LnFact(int n)
   int i;
   phydbl res;
 
-  res = 0;
-  for(i=2;i<=n;i++) res += LOG(i);
+  res = .0;
+  for(i=2;i<n+1;i++) res += LOG((phydbl)i);
   
   return(res);
 }
@@ -1499,7 +1784,13 @@ int Choose(int n, int k)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+phydbl LnChoose(int n, int k)
+{
+  return(LnFact(n) - LnFact(k) - LnFact(n-k));
+}
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
 phydbl *Covariance_Matrix(t_tree *tree)
 {
@@ -4470,7 +4761,7 @@ phydbl Inverse_Truncated_Normal(phydbl y, phydbl mu, phydbl sigma, phydbl lim_in
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 // Returns a vector with a permutation of all the integer from 0
-// to len-1.
+// to len-1. Fisher-Yates algorithm.
 
 int *Permutate(int len)
 {
@@ -4483,7 +4774,7 @@ int *Permutate(int len)
 
   For(i,len)
     {
-      pos = Rand_Int(0,len-1);
+      pos = Rand_Int(i,len-1);
       
       tmp    = x[i];
       x[i]   = x[pos];
@@ -4773,11 +5064,201 @@ int Is_In_Polygon(t_geo_coord *point, t_poly *poly)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+/* Modified Bessel function of the first kind. Stolen from Numerical Recipes in C. */
+phydbl Bessi0(phydbl x)
+{
+  phydbl ax,ans;
+  phydbl y;
+
+  if ((ax=fabs(x)) < 3.75) 
+    {
+      y=x/3.75;
+      y*=y;
+      ans=1.0+y*(3.5156229+y*(3.0899424+y*(1.2067492+y*(0.2659732+y*(0.360768e-1+y*0.45813e-2)))));
+    } 
+  else 
+    {
+      y=3.75/ax;
+      ans=(exp(ax)/sqrt(ax))*(0.39894228+y*(0.1328592e-1+y*(0.225319e-2+y*(-0.157565e-2+y*(0.916281e-2+y*(-0.2057706e-1+y*(0.2635537e-1+y*(-0.1647633e-1+y*0.392377e-2))))))));
+    }
+
+  return ans;
+}
+
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+/* Modified Bessel function of the second kind (degree 0). Stolen from Numerical Recipes in C. */
+phydbl Bessk0(phydbl x)
+{
+  phydbl y,ans;
+
+  if (x <= 2.0) 
+    {
+      y=x*x/4.0;
+      ans=(-log(x/2.0)*Bessi0(x))+(-0.57721566+y*(0.42278420+y*(0.23069756+y*(0.3488590e-1+y*(0.262698e-2+y*(0.10750e-3+y*0.74e-5))))));
+    } 
+  else 
+    {
+      y=2.0/x;
+      ans=(exp(-x)/sqrt(x))*(1.25331414+y*(-0.7832358e-1+y*(0.2189568e-1+y*(-0.1062446e-1+y*(0.587872e-2+y*(-0.251540e-2+y*0.53208e-3))))));
+    }
+
+  return ans;
+}
+
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+phydbl Euclidean_Dist(t_geo_coord *x, t_geo_coord *y)
+{
+  int i;
+  phydbl dist;
+  
+  if(x->dim != y->dim) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
+  
+  dist = 0.0;
+  For(i,x->dim) dist += POW(x->lonlat[i]-y->lonlat[i],2);
+
+  return(SQRT(dist));
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+/* Return the ranks of elements in x */
+int *Ranks(phydbl *x, int len)
+{
+  int *rk,tmp;
+  int i,swap;
+
+  rk = (int *)mCalloc(len,sizeof(int));
+
+  For(i,len) rk[i] = i;
+
+  do
+    {
+      swap = NO;
+      For(i,len-1) 
+        {
+          if(x[rk[i]] > x[rk[i+1]])
+            {
+              swap  = YES; 
+              tmp   = rk[i];
+              rk[i] = rk[i+1];
+              rk[i+1] = tmp;
+            }
+        }
+    }
+  while(swap == YES);
+
+  return(rk);
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+phydbl *Brownian_Bridge_Generate(phydbl start, phydbl end, phydbl var, phydbl beg_time, phydbl end_time, int n_steps, phydbl *time)
+{
+  phydbl *state,end_brown;
+  int i;
+
+  if(n_steps == 0) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(beg_time > end_time) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  For(i,n_steps-1) if(!(time[i+1] > time[i])) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+
+  state = Brownian_Generate(var,n_steps,beg_time,time);
+  end_brown = Rnorm(state[n_steps-1],SQRT((time[n_steps-1] - end_time)*var));
+
+  For(i,n_steps)
+    {
+      state[i] = state[i] - (time[i]/end_time) * end_brown;
+      state[i] = start + (end - start)/end_time * time[i] + state[i];
+    }
+
+  
+  return(state);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+phydbl *Brownian_Generate(phydbl var, int n_steps, phydbl beg_time, phydbl *time)
+{
+  phydbl *state;
+  int i;
+
+  if(n_steps == 0) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+
+  state = (phydbl *)mCalloc(n_steps,sizeof(phydbl));
+
+  state[0] = Rnorm(0.0,SQRT((time[0] - beg_time)*var));
+
+  for(i=1;i<n_steps;i++)
+    {
+      state[i] = Rnorm(state[i-1],SQRT((time[i]-time[i-1])*var));
+      if(time[i] < time[i-1]) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
+
+  return(state);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+phydbl *Random_Walk_Bridged_Generate(phydbl start, phydbl end, phydbl var, int n_steps)
+{
+  phydbl *state,end_walk;
+  int i;
+
+  if(n_steps == 0) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+
+  state = Random_Walk_Generate(var,n_steps);
+  end_walk = Rnorm(state[n_steps-1],SQRT(var));
+
+  For(i,n_steps)
+    {
+      state[i] = state[i] - ((phydbl)(i+1.)/n_steps) * end_walk;
+      state[i] = start + (end - start)/n_steps * (i+1.) + state[i];
+    }
+  
+  return(state);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+phydbl *Random_Walk_Generate(phydbl var, int n_steps)
+{
+  phydbl *state;
+  int i;
+
+  if(n_steps == 0) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+
+  state = (phydbl *)mCalloc(n_steps,sizeof(phydbl));
+
+  state[0] = Rnorm(0.0,SQRT(var));
+
+  for(i=1;i<n_steps;i++) state[i] = Rnorm(state[i-1],SQRT(var));
+
+  return(state);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+phydbl Reflected(phydbl x, phydbl down, phydbl up)
+{
+  phydbl ref;
+  
+  ref = x;
+  do
+    {
+      if(ref > up)   ref = up   - (ref  -  up);
+      if(ref < down) ref = down + (down - ref);
+    }while(!(ref < up && ref > down));
+
+  return(ref);
+}

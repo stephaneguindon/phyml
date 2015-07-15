@@ -277,50 +277,50 @@ void PMat_Empirical(phydbl l, t_mod *mod, int pos, phydbl *Pij)
   For (i,n)
     {
       For (j,n)
-    {
-      For(k,n)
         {
-          Pij[pos+mod->ns*i+j] += (uexpt[i*n+k] * V[k*n+j]);
+          For(k,n)
+            {
+              Pij[pos+mod->ns*i+j] += (uexpt[i*n+k] * V[k*n+j]);
+            }
+          /* 	  if(Pij[pos+mod->ns*i+j] < SMALL) Pij[pos+mod->ns*i+j] = SMALL; */
+          if(Pij[pos+mod->ns*i+j] < SMALL_PIJ) Pij[pos+mod->ns*i+j] = SMALL_PIJ;
         }
-/* 	  if(Pij[pos+mod->ns*i+j] < SMALL) Pij[pos+mod->ns*i+j] = SMALL; */
-      if(Pij[pos+mod->ns*i+j] < SMALL_PIJ) Pij[pos+mod->ns*i+j] = SMALL_PIJ;
-    }
-
+      
 #ifndef PHYML
       phydbl sum;
       sum = .0;
       For (j,n) sum += Pij[pos+mod->ns*i+j];
       if((sum > 1.+.0001) || (sum < 1.-.0001))
-    {
-      PhyML_Printf("\n");
-      PhyML_Printf("\n. Q\n");
-      For(i,n) { For(j,n) PhyML_Printf("%7.3f ",mod->eigen->q[i*n+j]); PhyML_Printf("\n"); }
-      PhyML_Printf("\n. U\n");
-      For(i,n) { For(j,n) PhyML_Printf("%7.3f ",U[i*n+j]); PhyML_Printf("\n"); }
-      PhyML_Printf("\n");
-      PhyML_Printf("\n. V\n");
-      For(i,n) { For(j,n) PhyML_Printf("%7.3f ",V[i*n+j]); PhyML_Printf("\n"); }
-      PhyML_Printf("\n");
-      PhyML_Printf("\n. Eigen\n");
-      For(i,n)  PhyML_Printf("%E ",expt[i]);
-      PhyML_Printf("\n");
-      PhyML_Printf("\n. Pij\n");
-      For(i,n) { For (j,n) PhyML_Printf("%f ",Pij[pos+mod->ns*i+j]); PhyML_Printf("\n"); }
-      PhyML_Printf("\n. sum = %f",sum);
-      if(mod->m4mod)
         {
-          int i;
-          PhyML_Printf("\n. mod->m4mod->alpha = %f",mod->m4mod->alpha);
-          PhyML_Printf("\n. mod->m4mod->delta = %f",mod->m4mod->delta);
-          For(i,mod->m4mod->n_h)
-        {
-          PhyML_Printf("\n. mod->m4mod->multipl[%d] = %f",i,mod->m4mod->multipl[i]);
+          PhyML_Printf("\n");
+          PhyML_Printf("\n. Q\n");
+          For(i,n) { For(j,n) PhyML_Printf("%7.3f ",mod->eigen->q[i*n+j]); PhyML_Printf("\n"); }
+          PhyML_Printf("\n. U\n");
+          For(i,n) { For(j,n) PhyML_Printf("%7.3f ",U[i*n+j]); PhyML_Printf("\n"); }
+          PhyML_Printf("\n");
+          PhyML_Printf("\n. V\n");
+          For(i,n) { For(j,n) PhyML_Printf("%7.3f ",V[i*n+j]); PhyML_Printf("\n"); }
+          PhyML_Printf("\n");
+          PhyML_Printf("\n. Eigen\n");
+          For(i,n)  PhyML_Printf("%E ",expt[i]);
+          PhyML_Printf("\n");
+          PhyML_Printf("\n. Pij\n");
+          For(i,n) { For (j,n) PhyML_Printf("%f ",Pij[pos+mod->ns*i+j]); PhyML_Printf("\n"); }
+          PhyML_Printf("\n. sum = %f",sum);
+          if(mod->m4mod)
+            {
+              int i;
+              PhyML_Printf("\n. mod->m4mod->alpha = %f",mod->m4mod->alpha);
+              PhyML_Printf("\n. mod->m4mod->delta = %f",mod->m4mod->delta);
+              For(i,mod->m4mod->n_h)
+                {
+                  PhyML_Printf("\n. mod->m4mod->multipl[%d] = %f",i,mod->m4mod->multipl[i]);
+                }
+            }
+          PhyML_Printf("\n. l=%f",l);
+          PhyML_Printf("\n. Err in file %s at line %d\n\n",__FILE__,__LINE__);
+          Warn_And_Exit("");
         }
-        }
-      PhyML_Printf("\n. l=%f",l);
-      PhyML_Printf("\n. Err in file %s at line %d\n\n",__FILE__,__LINE__);
-      Warn_And_Exit("");
-    }
 #endif
     }
 }
@@ -648,9 +648,11 @@ void Update_Qmat_GTR(phydbl *rr, phydbl *rr_val, int *rr_num, phydbl *pi, phydbl
         Exit("");
       }
 
-  For(i,6) rr[i] /= rr[5];
+  For(i,6) rr[i] /= MAX(rr[5],RR_MIN);
   For(i,6) if(rr[i] < RR_MIN) rr[i] = RR_MIN;
   For(i,6) if(rr[i] > RR_MAX) rr[i] = RR_MAX;
+
+  For(i,6) if(isnan(rr[i])) Generic_Exit(__FILE__,__LINE__,__FUNCTION__); 
 
   qmat[0*4+1] = (rr[0]*pi[1]);
   qmat[0*4+2] = (rr[1]*pi[2]);
@@ -779,16 +781,15 @@ void Update_RAS(t_mod *mod)
   phydbl sum;
   int i;
 
-  if(mod->ras->free_mixt_rates == NO) DiscreteGamma(mod->ras->gamma_r_proba->v,
-                            mod->ras->gamma_rr->v,
-                            mod->ras->alpha->v,
-                            mod->ras->alpha->v,
-                            mod->ras->n_catg,
-                            mod->ras->gamma_median);
+  if(mod->ras->free_mixt_rates == NO) 
+    DiscreteGamma(mod->ras->gamma_r_proba->v,
+                  mod->ras->gamma_rr->v,
+                  mod->ras->alpha->v,
+                  mod->ras->alpha->v,
+                  mod->ras->n_catg,
+                  mod->ras->gamma_median);
   else
     {
-
-
       if(mod->ras->sort_rate_classes == YES)
         {
           Qksort(mod->ras->gamma_r_proba_unscaled->v,NULL,0,mod->ras->n_catg-1); // Unscaled class frequencies sorted in increasing order
@@ -876,7 +877,10 @@ void Update_Efrq(t_mod *mod)
               if(mod->e_frq->pi->v[i] > 0.99) mod->e_frq->pi->v[i]=0.99;
               sum += mod->e_frq->pi->v[i];
             }
-          For(i,mod->ns) mod->e_frq->pi->v[i]/=sum;
+          For(i,mod->ns) 
+            {
+              mod->e_frq->pi->v[i]/=sum;
+            }
         }
       while((sum > 1.01) || (sum < 0.99));
 

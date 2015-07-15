@@ -32,6 +32,7 @@ the GNU public licence. See http://www.opensource.org for details.
 #include "draw.h"
 #include "rates.h"
 #include "stats.h"
+#include "migrep.h"
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -154,16 +155,21 @@ void MCMC_MIGREP_Lbda(t_tree *mixt_tree);
 void MCMC_MIGREP_Mu(t_tree *mixt_tree);
 void MCMC_MIGREP_Radius(t_tree *mixt_tree);
 void MCMC_MIGREP_Triplet(t_tree *tree);
-void MCMC_MIGREP_Delete_Disk(t_tree *tree);
-void MCMC_MIGREP_Insert_Disk(t_tree *tree);
 void MCMC_MIGREP_Move_Disk_Centre(t_tree *tree);
 void MCMC_MIGREP_Move_Disk_Updown(t_tree *tree);
 void MCMC_MIGREP_Swap_Disk(t_tree *tree);
-void MCMC_MIGREP_Insert_Hit(t_tree *tree);
-void MCMC_MIGREP_Delete_Hit(t_tree *tree);
 void MCMC_MIGREP_Move_Ldsk(t_tree *tree);
 void MCMC_MIGREP_Prune_Regraft(t_tree *tree);
 void MCMC_MIGREP_Scale_Times(t_tree *tree);
 void MCMC_MIGREP_Ldscape_Limits(t_tree *tree);
+void MCMC_MIGREP_Insert_Disk(phydbl hr, int n_insert_disks, t_tree *tree);
+void MCMC_MIGREP_Delete_Disk(phydbl hr, int n_delete_disks, t_tree *tree);
+void MCMC_MIGREP_Indel_Disk(t_tree *tree);
+void MCMC_MIGREP_Insert_Hit(phydbl hr, int n_insert_disks, t_tree *tree);
+void MCMC_MIGREP_Delete_Hit(phydbl hr, int n_delete_disks, t_tree *tree);
+void MCMC_MIGREP_Indel_Hit(t_tree *tree);
+void MCMC_MIGREP_Simulate_Backward(t_tree *tree);
+void MCMC_Update_Mode(int move_num, t_mcmc *mcmc, t_tree *tree);
+void MCMC_MIGREP_Lineage_Traj(t_tree *tree);
 
 #endif

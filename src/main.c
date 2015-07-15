@@ -55,10 +55,11 @@ int main(int argc, char **argv)
 #ifdef MPI
   int rc;
   rc = MPI_Init(&argc,&argv);
-  if (rc != MPI_SUCCESS) {
-    PhyML_Printf("\n== Err. starting MPI program. Terminating.\n");
-    MPI_Abort(MPI_COMM_WORLD, rc);
-  }
+  if (rc != MPI_SUCCESS) 
+    {
+      PhyML_Printf("\n== Err. starting MPI program. Terminating.\n");
+      MPI_Abort(MPI_COMM_WORLD, rc);
+    }
   MPI_Comm_size(MPI_COMM_WORLD,&Global_numTask);
   MPI_Comm_rank(MPI_COMM_WORLD,&Global_myRank);
 #endif
@@ -218,7 +219,13 @@ int main(int argc, char **argv)
 
 #ifdef PHYML
                   if(io->in_tree == 1) Spr_Pars(tree);
-                  
+
+                  /* /\* ******************** *\/ */
+                  /* Sample_Ancestral_Seq(NO,YES,tree); */
+                  /* tree->mod->augmented = YES; */
+                  /* Lk(NULL,tree); */
+                  /* /\* ******************** *\/ */
+                                   
 		  if(tree->mod->s_opt->opt_topo)
 		    {
 		      if(tree->mod->s_opt->topo_search      == NNI_MOVE) Simu_Loop(tree);
@@ -267,7 +274,6 @@ int main(int argc, char **argv)
                   Evolve(tree->data,tree->mod,tree);
                   Exit("\n. Exiting 'evolve'\n");
 #endif
-
 
                   if(!tree->n_root) Get_Best_Root_Position(tree);
 
@@ -329,12 +335,11 @@ int main(int argc, char **argv)
                   PhyML_Printf("\n\n. Completed the bootstrap analysis succesfully."); fflush(NULL);
                 }
               else
-                if(io->ratio_test)
+                if(io->ratio_test == YES)
                   {
                     /* Launch aLRT */
                     most_likely_tree = aLRT_From_String(most_likely_tree,cdata,mod,io);
                   }
-
 
               /* Print the most likely tree in the output file */
               if(!io->quiet) PhyML_Printf("\n\n. Printing the most likely tree in file '%s'.", Basename(io->out_tree_file));

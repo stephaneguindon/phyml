@@ -50,6 +50,7 @@ phydbl Dgamma_Moments(phydbl x, phydbl mean, phydbl var);
 phydbl Dgamma(phydbl x, phydbl shape, phydbl scale);
 phydbl LnFact(int n);
 int    Choose(int n, int k);
+phydbl LnChoose(int n, int k);
 phydbl Ppois(phydbl x, phydbl param);
 phydbl Dexp(phydbl x, phydbl param);
 phydbl Dpois(phydbl x, phydbl param, int logit);
@@ -114,5 +115,23 @@ t_poly *Rpoly(int n);
 phydbl Area_Of_Poly_Monte_Carlo(t_poly **poly, int n_poly, t_geo_coord *lim);
 int Is_In_Polygon(t_geo_coord *point, t_poly *poly);
 phydbl Variance(phydbl *x, int l);
+phydbl Bessi0(phydbl x);
+phydbl Bessk0(phydbl x);
+phydbl Euclidean_Dist(t_geo_coord *x, t_geo_coord *y);
+int *Ranks(phydbl *x, int len);
+phydbl Rpois(phydbl mmu);
+phydbl Rgeom(phydbl p);
+phydbl Dgeom(phydbl k, phydbl p, int logit);
+phydbl Pgeom(phydbl k, phydbl p);
+phydbl *Brownian_Bridge_Generate(phydbl start, phydbl end, phydbl var, phydbl beg_time, phydbl end_time, int n_steps, phydbl *time);
+phydbl *Brownian_Generate(phydbl var, int n_steps, phydbl beg_time, phydbl *time);
+phydbl Brownian_Bridge_Logdensity(phydbl start, phydbl end, phydbl *state, phydbl var, phydbl end_time, int n_steps, phydbl *time);
+phydbl Reflected(phydbl x, phydbl down, phydbl up);
+phydbl *Random_Walk_Generate(phydbl var, int n_steps);
+phydbl *Random_Walk_Bridged_Generate(phydbl start, phydbl end, phydbl var, int n_steps);
+
+
+
+
 
 #endif

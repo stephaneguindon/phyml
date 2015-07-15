@@ -601,7 +601,7 @@ char *Write_Tree(t_tree *tree, int custom)
           i = 0;
           while((!tree->a_nodes[tree->n_otu+i]->v[0]) ||
                 (!tree->a_nodes[tree->n_otu+i]->v[1]) ||
-        (!tree->a_nodes[tree->n_otu+i]->v[2])) i++;
+                (!tree->a_nodes[tree->n_otu+i]->v[2])) i++;
 
           R_wtree_Custom(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[0],&available,&s,&pos,tree);
           R_wtree_Custom(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[1],&available,&s,&pos,tree);
@@ -2349,14 +2349,10 @@ void Print_Node(t_node *a, t_node *d, t_tree *tree)
   int dir;
   dir = -1;
   For(i,3) if(a->v[i] == d) {dir = i; break;}
-  PhyML_Printf("Node nums: %3d %3d  (dir:%3d) (anc:%3d) ta:%12f [%12f;%12f] td:%12f [%12f;%12f];",
+  PhyML_Printf("Node nums: %3d %3d  (dir:%3d) (anc:%3d) ta:%12f td:%12f;",
                a->num,d->num,dir,a->anc?a->anc->num:(-1),
                tree->rates?tree->rates->nd_t[a->num]:-1.,
-               tree->rates?tree->rates->t_prior_min[a->num]:-1.,
-               tree->rates?tree->rates->t_prior_max[a->num]:-1.,
-               tree->rates?tree->rates->nd_t[d->num]:-1.,
-               tree->rates?tree->rates->t_prior_min[d->num]:-1.,
-               tree->rates?tree->rates->t_prior_max[d->num]:-1.);
+               tree->rates?tree->rates->nd_t[d->num]:-1.);
 
   PhyML_Printf("Node names = '%10s' '%10s' ; ",a->name,d->name);
   For(i,3) if(a->v[i] == d)
@@ -2508,15 +2504,14 @@ void Print_Model(t_mod *mod)
       PMat(0.01*mod->ras->gamma_rr->v[k],mod,mod->ns*mod->ns*k,mod->Pij_rr->v);
       PhyML_Printf("\n. l=%f\n",0.01*mod->ras->gamma_rr->v[k]);
       For(i,mod->ns)
-    {
-      PhyML_Printf("  ");
-      For(j,mod->ns)
-        PhyML_Printf("%8.5f  ",mod->Pij_rr->v[k*mod->ns*mod->ns+i*mod->ns+j]);
-      PhyML_Printf("\n");
+        {
+          PhyML_Printf("  ");
+          For(j,mod->ns)
+            PhyML_Printf("%8.5f  ",mod->Pij_rr->v[k*mod->ns*mod->ns+i*mod->ns+j]);
+          PhyML_Printf("\n");
+        }
     }
-    }
-
-
+    
   PhyML_Printf("\n");
 
   fflush(NULL);
@@ -2698,18 +2693,21 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
       PhyML_Fprintf(fp_out,"\n  - Number of classes: \t\t\t%d",tree->mod->ras->n_catg);
       PhyML_Fprintf(fp_out,"\n  - Gamma shape parameter: \t\t%.3f",tree->mod->ras->alpha->v);
       For(i,tree->mod->ras->n_catg)
-    {
-      PhyML_Fprintf(fp_out,"\n  - Relative rate in class %d: \t\t%.5f [freq=%4f] \t\t",i+1,tree->mod->ras->gamma_rr->v[i],tree->mod->ras->gamma_r_proba->v[i]);
-    }
+        {
+          PhyML_Fprintf(fp_out,"\n  - Relative rate in class %d: \t\t%.5f [freq=%4f] \t\t",i+1,tree->mod->ras->gamma_rr->v[i],tree->mod->ras->gamma_r_proba->v[i]);
+        }
     }
   else if(tree->mod->ras->free_mixt_rates == YES)
     {
+      int *rk;
+      rk = Ranks(tree->mod->ras->gamma_rr->v,tree->mod->ras->n_catg);
       PhyML_Fprintf(fp_out,"\n. FreeRate model: \t\t\t%s","Yes");
       PhyML_Fprintf(fp_out,"\n  - Number of classes: \t\t\t%d",tree->mod->ras->n_catg);
       For(i,tree->mod->ras->n_catg)
-    {
-      PhyML_Fprintf(fp_out,"\n  - Relative rate in class %d: \t\t%.5f [freq=%4f] \t\t",i+1,tree->mod->ras->gamma_rr->v[i],tree->mod->ras->gamma_r_proba->v[i]);
-    }
+        {
+          PhyML_Fprintf(fp_out,"\n  - Relative rate in class %d: \t\t%.5f [freq=%4f] \t\t",i+1,tree->mod->ras->gamma_rr->v[rk[i]],tree->mod->ras->gamma_r_proba->v[rk[i]]);
+        }
+      Free(rk);
     }
 
   if(tree->mod->ras->invar) PhyML_Fprintf(fp_out,"\n. Proportion of invariant: \t\t%.3f",tree->mod->ras->pinvar->v);
@@ -6190,39 +6188,48 @@ void Make_Topology_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
           int select;
 
           search = XML_Get_Attribute_Value(instance,"search");
-          select = XML_Validate_Attr_Int(search,4,"spr","nni","best","none");
-
-          switch(select)
-            {
-            case 0:
-              {
+          
+          if(search == NULL) 
+            { 
                 io->mod->s_opt->topo_search = SPR_MOVE;
                 io->mod->s_opt->opt_topo    = YES;
-                break;
-              }
-            case 1:
-              {
-                io->mod->s_opt->topo_search = NNI_MOVE;
-                io->mod->s_opt->opt_topo    = YES;
-                break;
-              }
-            case 2:
-              {
-                io->mod->s_opt->topo_search = BEST_OF_NNI_AND_SPR;
-                io->mod->s_opt->opt_topo    = YES;
-                break;
-              }
-            case 3:
-              {
-                io->mod->s_opt->opt_topo    = NO;
-                break;
-              }
-            default:
-              {
-                PhyML_Printf("\n== Topology search option '%s' is not valid.",search);
-                Exit("\n");
-                break;
-              }
+            }
+          else
+            {
+              select = XML_Validate_Attr_Int(search,4,"spr","nni","best","none");
+              
+              switch(select)
+                {
+                case 0:
+                  {
+                    io->mod->s_opt->topo_search = SPR_MOVE;
+                    io->mod->s_opt->opt_topo    = YES;
+                    break;
+                  }
+                case 1:
+                  {
+                    io->mod->s_opt->topo_search = NNI_MOVE;
+                    io->mod->s_opt->opt_topo    = YES;
+                    break;
+                  }
+                case 2:
+                  {
+                    io->mod->s_opt->topo_search = BEST_OF_NNI_AND_SPR;
+                    io->mod->s_opt->opt_topo    = YES;
+                    break;
+                  }
+                case 3:
+                  {
+                    io->mod->s_opt->opt_topo    = NO;
+                    break;
+                  }
+                default:
+                  {
+                    PhyML_Printf("\n== Topology search option '%s' is not valid.",search);
+                    Exit("\n");
+                    break;
+                  }
+                }
             }
         }
     }
