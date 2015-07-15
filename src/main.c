@@ -23,7 +23,7 @@ the GNU public licence. See http://www.opensource.org for details.
 #include "pars.h"
 #include "alrt.h"
 #include "mixt.h"
-#include "sergeii.h"
+#include "invitee.h"
 //#include "geo.h"
 
 #ifdef MPI
@@ -540,8 +540,8 @@ int main(int argc, char **argv)
 {
 }
 
-#elif(SERGEII)
-#include "sergeii.h"
+#elif(INVITEE)
+#include "invitee.h"
 int main(int argc, char **argv)
 {
   /*My_Function(argc, argv);*/

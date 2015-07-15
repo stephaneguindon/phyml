@@ -38,9 +38,9 @@ if WANT_TEST
 bin_PROGRAMS = test
 PROG = TEST
 else
-if WANT_SERGEII
-bin_PROGRAMS = sergeii
-PROG = SERGEII
+if WANT_INVITEE
+bin_PROGRAMS = invitee
+PROG = INVITEE
 else
 if WANT_GEO
 bin_PROGRAMS = phylogeo
@@ -342,8 +342,8 @@ xml.c xml.h\
 mixt.c mixt.h
 test_LDADD = -lm
 else
-if WANT_SERGEII
-sergeii_SOURCES = main.c \
+if WANT_INVITEE
+invitee_SOURCES = main.c \
 utilities.c  utilities.h\
 optimiz.c  optimiz.h\
 lk.c  lk.h\
@@ -371,9 +371,9 @@ make.c make.h\
 nexus.c nexus.h\
 init.c init.h\
 xml.c xml.h\
-sergeii.c sergeii.h\
+invitee.c invitee.h\
 mixt.c mixt.h
-sergeii_LDADD = -lm 
+invitee_LDADD = -lm 
 else
 if WANT_EVOLVE
 evolve_SOURCES = main.c\

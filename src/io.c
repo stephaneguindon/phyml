@@ -629,7 +629,7 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
   int i,p;
   char *format;
   int last_len;
-#if !(defined PHYTIME || defined SERGEII)
+#if !(defined PHYTIME || defined INVITEE)
   phydbl mean_len;
 #endif
 
@@ -681,7 +681,7 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
         {
           (*s_tree)[(int)strlen(*s_tree)] = ':';
           
-#if !(defined PHYTIME || defined SERGEII)
+#if !(defined PHYTIME || defined INVITEE)
           if(!tree->n_root)
             {
               if(tree->is_mixt_tree == NO)
@@ -829,7 +829,7 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
           
           (*s_tree)[(int)strlen(*s_tree)] = ':';
           
-#if !(defined PHYTIME || defined SERGEII)
+#if !(defined PHYTIME || defined INVITEE)
           if(!tree->n_root)
             {
               if(tree->is_mixt_tree == NO)
@@ -965,7 +965,7 @@ void R_wtree_Custom(t_node *pere, t_node *fils, int *available, char **s_tree, i
       strcat(*s_tree,":");
       (*pos)++;
 
-#if !(defined PHYTIME || defined SERGEII)
+#if !(defined PHYTIME || defined INVITEE)
       if(!tree->n_root)
         {
           (*pos) += sprintf(*s_tree+*pos,format,fils->b[0]->l->v);
@@ -1093,7 +1093,7 @@ void R_wtree_Custom(t_node *pere, t_node *fils, int *available, char **s_tree, i
       strcat(*s_tree,":");
       (*pos)++;
 
-#if !(defined PHYTIME || defined SERGEII)
+#if !(defined PHYTIME || defined INVITEE)
       if(!tree->n_root)
         {
           (*pos) += sprintf(*s_tree+*pos,format,fils->b[p]->l->v);
@@ -3926,7 +3926,7 @@ option *Get_Input(int argc, char **argv)
 
 #ifdef MPI
   rv = Read_Command_Line(io,argc,argv);
-#elif (defined PHYTIME || defined SERGEII)
+#elif (defined PHYTIME || defined INVITEE)
   rv = Read_Command_Line(io,argc,argv);
 #else
   putchar('\n');

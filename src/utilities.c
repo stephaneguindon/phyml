@@ -6551,7 +6551,7 @@ void Update_Ancestors(t_node *a, t_node *d, t_tree *tree)
 //////////////////////////////////////////////////////////////
 
 /* Generate a random unrooted tree with 'n_otu' OTUs */
-#if (defined PHYTIME || defined SERGEII)
+#if (defined PHYTIME || defined INVITEE)
 t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
 {
   t_tree *tree;

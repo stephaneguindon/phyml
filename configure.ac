@@ -160,10 +160,10 @@ if test "$evolve" = yes; then
    AC_DEFINE([EVOLVE],[1],[EVOLVE tag on])
 fi
 
-AC_ARG_ENABLE([sergeii],[AS_HELP_STRING([--enable-sergeii],[Compile sergeii])],[sergeii=yes],[sergeii=no])
-AM_CONDITIONAL([WANT_SERGEII], [test "$sergeii" = yes])
-if test "$sergeii" = yes; then
-   AC_DEFINE([SERGEII],[1],[SERGEII tag on])
+AC_ARG_ENABLE([invitee],[AS_HELP_STRING([--enable-invitee],[Compile invitee])],[invitee=yes],[invitee=no])
+AM_CONDITIONAL([WANT_INVITEE], [test "$invitee" = yes])
+if test "$invitee" = yes; then
+   AC_DEFINE([INVITEE],[1],[INVITEE tag on])
 fi
 
 AC_ARG_ENABLE([geo],[AS_HELP_STRING([--enable-geo],[Compile geo])],[geo=yes],[geo=no])
@@ -198,7 +198,7 @@ if test "$rwrap" = no; then
 if test "$phycont" = no; then
 if test "$m4" = no; then
 if test "$test" = no; then
-if test "$sergeii" = no; then
+if test "$invitee" = no; then
 if test "$geo" = no; then
 if test "$evolve" = no; then
 if test "$checkpoint" = no; then

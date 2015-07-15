@@ -196,7 +196,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
           }
 	case 73:
 	  {
-#ifndef SERGEII
+#ifndef INVITEE
             Free_Optimiz(io->mod->s_opt);
             M4_Free_M4_Model(io->mod->m4mod);
             Free_Model_Basic(io->mod);
@@ -205,7 +205,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
             return 0;
 #endif
 
-#ifdef SERGEII            
+#ifdef INVITEE           
             Free_Optimiz(io->mod->s_opt);
             M4_Free_M4_Model(io->mod->m4mod);
             Free_Model_Basic(io->mod);

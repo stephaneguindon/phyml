@@ -43,7 +43,7 @@ void MCMC(t_tree *tree)
     {
       MCMC_Read_Param_Vals(tree);
     }
-/* #ifdef SERGEII */
+/* #ifdef INVITEE */
 /*   tree -> rates -> node_height_dens_log_norm_const_update = Norm_Constant_Prior_Times(tree); */
 /* #endif */
   Switch_Eigen(YES,tree->mod);
@@ -57,11 +57,11 @@ void MCMC(t_tree *tree)
   RATES_Update_Cur_Bl(tree);
   RATES_Lk_Rates(tree);	
 
-#ifdef SERGEII
+#ifdef INVITEE
   tree->rates->update_time_norm_const = YES;
 #endif
   TIMES_Lk_Times(tree); 
-#ifdef SERGEII
+#ifdef INVITEE
   tree->rates->update_time_norm_const = NO;
 #endif
   /* printf("\n"); */
@@ -1290,7 +1290,7 @@ void MCMC_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
 
 void MCMC_Jump_Calibration(t_tree *tree)
 {
-#ifdef SERGEII
+#ifdef INVITEE
   phydbl u;
   phydbl *calib_prior_cumprob, *calib_prior_prob, *uniform_prob; 
   phydbl cur_lnL_data, new_lnL_data;
@@ -4075,7 +4075,7 @@ void MCMC_Birth_Rate(t_tree *tree)
  
   /* printf("\n. BIRTH cur_lnL_time: %f ",tree->rates->c_lnL_times); */
 
-#ifdef SERGEII
+#ifdef INVITEE
   tree->rates->update_time_norm_const = YES;
 #endif
 
@@ -4086,7 +4086,7 @@ void MCMC_Birth_Rate(t_tree *tree)
 			    &(tree->rates->c_lnL_times),NULL,
 			    Wrap_Lk_Times,NULL,tree->mcmc->move_type[tree->mcmc->num_move_birth_rate],NO,NULL,tree,NULL); 
 
-#ifdef SERGEII
+#ifdef INVITEE
   TIMES_Lk_Times(tree); 
   tree->rates->update_time_norm_const = NO;
 #endif
@@ -4459,7 +4459,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_cov_switch]            = 1.0;
   mcmc->move_weight[mcmc->num_move_birth_rate]            = 2.0;
   mcmc->move_weight[mcmc->num_move_updown_t_br]           = 1.0;
-#if defined (SERGEII)
+#if defined (INVITEE)
   mcmc->move_weight[mcmc->num_move_jump_calibration]      = 0.1;
 #else
   mcmc->move_weight[mcmc->num_move_jump_calibration]      = 0.0;
@@ -4525,7 +4525,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
 /*   mcmc->move_weight[mcmc->num_move_cov_switch]       = 0.0; */
 /*   mcmc->move_weight[mcmc->num_move_birth_rate]       = 0.0; */
 /*   mcmc->move_weight[mcmc->num_move_updown_t_br]      = 0.0; */
-/* #if defined (SERGEII) */
+/* #if defined (INVITEE) */
 /*   mcmc->move_weight[mcmc->num_move_jump_calibration] = 1.0; */
 /* #else */
 /*   mcmc->move_weight[mcmc->num_move_jump_calibration] = 0.0; */

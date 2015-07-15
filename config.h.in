@@ -83,6 +83,9 @@
 /* Define to 1 if you have the `vprintf' function. */
 #undef HAVE_VPRINTF
 
+/* INVITEE tag on */
+#undef INVITEE
+
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
    */
 #undef LT_OBJDIR
@@ -134,9 +137,6 @@
 
 /* RWRAP tag on */
 #undef RWRAP
-
-/* SERGEII tag on */
-#undef SERGEII
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS

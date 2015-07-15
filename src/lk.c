@@ -429,7 +429,7 @@ phydbl Lk(t_edge *b, t_tree *tree)
   MIGREP_Ldsk_To_Tree(tree);
 #endif
 
-#if (defined PHYTIME || defined SERGEII || defined MIGREP)
+#if (defined PHYTIME || defined INVITEE || defined MIGREP)
   if((tree->rates) && (tree->rates->bl_from_rt)) RATES_Update_Cur_Bl(tree);
 #endif
 
