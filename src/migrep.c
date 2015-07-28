@@ -21,8 +21,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int MIGREP_Main(int argc, char *argv[])
 {
-  return(MIGREP_Main_Estimate(argc,argv));
-  /* return(MIGREP_Main_Simulate(argc,argv)); */
+  /* return(MIGREP_Main_Estimate(argc,argv)); */
+  return(MIGREP_Main_Simulate(argc,argv));
 }
 
 //////////////////////////////////////////////////////////////
@@ -150,6 +150,8 @@ int MIGREP_Main_Simulate(int argc, char *argv[])
   /* seed = 18885; */
   /* seed = 22776; */
   /* seed = 629; */
+  /* seed = 12466; */
+  seed = 17330;
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -221,9 +223,9 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   /* phydbl max_mu, min_mu; */
   /* phydbl max_rad, min_rad; */
   /* phydbl min_rate, max_rate; */
-  phydbl min_lbda, max_lbda;
+  /* phydbl min_lbda, max_lbda; */
   phydbl min_neigh, max_neigh;
-  phydbl min_sigsq, max_sigsq;
+  /* phydbl min_sigsq, max_sigsq; */
   phydbl area, neigh;
   phydbl T;
   phydbl Ne,maxNe,minNe;
@@ -310,8 +312,8 @@ t_tree *MIGREP_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
                mmod->lbda,mmod->mu,mmod->sigsq,mmod->rad,neigh,area*neigh/(4*PI*mmod->sigsq));
   fflush(NULL);
 
-  /* MIGREP_Simulate_Backward_Core(YES,tree->disk,tree); */
-  mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree);
+  MIGREP_Simulate_Backward_Core(YES,tree->disk,tree);
+  /* mmod->sampl_area = MIGREP_Simulate_Forward_Core(n_sites,tree); */
     
   MIGREP_Ldsk_To_Tree(tree);  
 
@@ -939,8 +941,7 @@ phydbl MIGREP_Lk(t_tree *tree)
 
   n_inter = 0;
   do
-    {
-      
+    {      
       /* PhyML_Printf("\n. Likelihood - disk %s has %d lindisk nodes [%f] rad: %f",disk->id,disk->n_ldsk_a,lnL,mmod->rad); */
       /* fflush(NULL); */
       
@@ -3425,7 +3426,6 @@ void MIGREP_Insert_Path(t_ldsk *beg, t_ldsk *end, t_ldsk *path, t_tree *tree)
     }
   else
     {
-      beg->prev = path;
 
       /* printf("\n. in beg %12f %12f %12f %s", */
       /*        beg->coord->lonlat[0], */
@@ -3452,6 +3452,7 @@ void MIGREP_Insert_Path(t_ldsk *beg, t_ldsk *end, t_ldsk *path, t_tree *tree)
           ldsk = ldsk->prev;
         }
       
+      beg->prev = path;
       ldsk->prev = end;
       path->next[0] = beg;
       MIGREP_Insert_Ldsk_In_Next_List(ldsk,end->n_next,end);
