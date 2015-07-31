@@ -558,11 +558,11 @@ int main(int argc, char **argv)
   return 1;
 }
 
-#elif(MIGREP)
+#elif(PHYREX)
 #include "migrep.h"
 int main(int argc, char **argv)
 {
-  MIGREP_Main(argc,argv);
+  PHYREX_Main(argc,argv);
   return 1;
 }
 

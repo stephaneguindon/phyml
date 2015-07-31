@@ -425,11 +425,11 @@ phydbl Lk(t_edge *b, t_tree *tree)
   tree->old_lnL = tree->c_lnL;
 
   
-#ifdef MIGREP
-  MIGREP_Ldsk_To_Tree(tree);
+#ifdef PHYREX
+  PHYREX_Ldsk_To_Tree(tree);
 #endif
 
-#if (defined PHYTIME || defined INVITEE || defined MIGREP)
+#if (defined PHYTIME || defined INVITEE || defined PHYREX)
   if((tree->rates) && (tree->rates->bl_from_rt)) RATES_Update_Cur_Bl(tree);
 #endif
 

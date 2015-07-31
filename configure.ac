@@ -179,14 +179,14 @@ if test "$checkpoint" = yes; then
 fi
 
 
-AC_ARG_ENABLE([migrep],[AS_HELP_STRING([--enable-migrep],[Compile migrep])],[migrep=yes],[migrep=no])
-AM_CONDITIONAL([WANT_MIGREP], [test "$migrep" = yes])
-if test "$migrep" = yes; then
-   AC_DEFINE([MIGREP],[1],[MIGREP tag on])
+AC_ARG_ENABLE([phyrex],[AS_HELP_STRING([--enable-phyrex],[Compile phyrex])],[phyrex=yes],[phyrex=no])
+AM_CONDITIONAL([WANT_PHYREX], [test "$phyrex" = yes])
+if test "$phyrex" = yes; then
+   AC_DEFINE([PHYREX],[1],[PHYREX tag on])
 fi
-dnl AS_IF([test "x$enable_migrep" = "xyes"],[PKG_CHECK_MODULES([GTK], [gtk+-3.0])])
-dnl AS_IF([test "x$enable_migrep" = "xyes"],[PKG_CHECK_MODULES([CAIRO], [cairo])])
-dnl AS_IF([test "x$enable_migrep" = "xyes"],[CFLAGS="${CFLAGS} `pkg-config --cflags --libs gtk+-3.0` ${ARCH_flag}"])
+dnl AS_IF([test "x$enable_phyrex" = "xyes"],[PKG_CHECK_MODULES([GTK], [gtk+-3.0])])
+dnl AS_IF([test "x$enable_phyrex" = "xyes"],[PKG_CHECK_MODULES([CAIRO], [cairo])])
+dnl AS_IF([test "x$enable_phyrex" = "xyes"],[CFLAGS="${CFLAGS} `pkg-config --cflags --libs gtk+-3.0` ${ARCH_flag}"])
 
 
 dnl AM_PATH_GTK_3_0(,,AC_MSG_ERROR(windoe-default needs GTK+-3))
@@ -202,7 +202,7 @@ if test "$invitee" = no; then
 if test "$geo" = no; then
 if test "$evolve" = no; then
 if test "$checkpoint" = no; then
-if test "$migrep" = no; then
+if test "$phyrex" = no; then
    AC_DEFINE([PHYML],[1],[PHYML tag on])
 fi
 fi

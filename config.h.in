@@ -93,9 +93,6 @@
 /* m4 tag on */
 #undef M4
 
-/* MIGREP tag on */
-#undef MIGREP
-
 /* MPI tag on */
 #undef MPI
 
@@ -128,6 +125,9 @@
 
 /* PHYML tag on */
 #undef PHYML
+
+/* PHYREX tag on */
+#undef PHYREX
 
 /* PHYTIME tag on */
 #undef PHYTIME

@@ -58,9 +58,9 @@ if WANT_BEAGLE
 bin_PROGRAMS = phyml-beagle
 PROG = PHYML
 else
-if WANT_MIGREP
-bin_PROGRAMS = migrep
-PROG = MIGREP
+if WANT_PHYREX
+bin_PROGRAMS = phyrex
+PROG = PHYREX
 else
 bin_PROGRAMS = phyml
 PROG = PHYML
@@ -110,7 +110,7 @@ mixt.c mixt.h\
 init.c init.h\
 nexus.c nexus.h\
 xml.c xml.h\
-migrep.c migrep.h
+phyrex.c phyrex.h
 phytime_LDADD = -lm
 else 
 if WANT_PHYCONT
@@ -473,8 +473,8 @@ mixt.c mixt.h\
 checkpoint.c checkpoint.h
 checkpoint_LDADD = -lm
 else
-if WANT_MIGREP
-migrep_SOURCES = main.c\
+if WANT_PHYREX
+phyrex_SOURCES = main.c\
 utilities.c  utilities.h\
 optimiz.c  optimiz.h\
 lk.c  lk.h\
@@ -503,7 +503,7 @@ nexus.c nexus.h\
 init.c init.h\
 xml.c xml.h\
 mixt.c mixt.h\
-migrep.c migrep.h
+phyrex.c phyrex.h
 else
 if WANT_BEAGLE
 phyml_beagle_SOURCES = main.c \

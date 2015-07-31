@@ -66,10 +66,10 @@ void Make_Rmat_Weight(t_tree *mixt_tree);
 t_geo *GEO_Make_Geo_Basic();
 void GEO_Make_Geo_Complete(int ldscape_sz,int n_dim,int n_tax,t_geo *t);
 t_geo_coord *GEO_Make_Geo_Coord(int n_dim);
-t_migrep_mod *MIGREP_Make_Migrep_Model();
-t_dsk *MIGREP_Make_Disk_Event(int n_dim, int n_otu);
-t_ldsk *MIGREP_Make_Lindisk_Node(int n_dim);
-void MIGREP_Make_Lindisk_Next(t_ldsk *t);
+t_migrep_mod *PHYREX_Make_Migrep_Model();
+t_dsk *PHYREX_Make_Disk_Event(int n_dim, int n_otu);
+t_ldsk *PHYREX_Make_Lindisk_Node(int n_dim);
+void PHYREX_Make_Lindisk_Next(t_ldsk *t);
 t_poly *Make_Poly(int n);
 
 #endif

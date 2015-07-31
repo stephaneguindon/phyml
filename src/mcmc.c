@@ -4471,7 +4471,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_geo_updown_lbda_sigma] = 1.0;
   mcmc->move_weight[mcmc->num_move_geo_dum]               = 1.0;
 
-# if defined (MIGREP)
+# if defined (PHYREX)
   mcmc->move_weight[mcmc->num_move_migrep_lbda]                  = 2.0;
   mcmc->move_weight[mcmc->num_move_migrep_mu]                    = 2.0;
   mcmc->move_weight[mcmc->num_move_migrep_rad]                   = 2.0;
@@ -4593,10 +4593,10 @@ void MCMC_Copy_To_New_Param_Val(t_mcmc *mcmc, t_tree *tree)
   mcmc->sampled_val[mcmc->num_move_geo_lambda*mcmc->sample_size+mcmc->sample_num]   = tree->geo ? tree->geo->lbda  : -1.;
   mcmc->sampled_val[mcmc->num_move_geo_sigma*mcmc->sample_size+mcmc->sample_num]    = tree->geo ? tree->geo->sigma : -1.;
   mcmc->sampled_val[mcmc->num_move_geo_dum*mcmc->sample_size+mcmc->sample_num]      = tree->geo ? tree->geo->dum   : -1.;  
-  #ifdef MIGREP
+  #ifdef PHYREX
   mcmc->sampled_val[mcmc->num_move_migrep_lbda*mcmc->sample_size+mcmc->sample_num]  = tree->mmod ? tree->mmod->lbda          : -1.;
   mcmc->sampled_val[mcmc->num_move_migrep_mu*mcmc->sample_size+mcmc->sample_num]    = tree->mmod ? tree->mmod->mu            : -1.;  
-  mcmc->sampled_val[mcmc->num_move_migrep_sigsq*mcmc->sample_size+mcmc->sample_num] = tree->mmod ? MIGREP_Update_Sigsq(tree) : -1.;
+  mcmc->sampled_val[mcmc->num_move_migrep_sigsq*mcmc->sample_size+mcmc->sample_num] = tree->mmod ? PHYREX_Update_Sigsq(tree) : -1.;
   mcmc->sampled_val[mcmc->num_move_migrep_rad*mcmc->sample_size+mcmc->sample_num]   = tree->mmod ? tree->mmod->rad           : -1.;
   #endif
 }
@@ -4832,15 +4832,15 @@ void MCMC_Read_Param_Vals(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#ifdef MIGREP
-void MCMC_MIGREP_Lbda(t_tree *tree)
+#ifdef PHYREX
+void MCMC_PHYREX_Lbda(t_tree *tree)
 {
   MCMC_Single_Param_Generic(&(tree->mmod->lbda),
                             tree->mmod->min_lbda,
                             tree->mmod->max_lbda,
                             tree->mcmc->num_move_migrep_lbda,
                             NULL,&(tree->mmod->c_lnL),
-                            NULL,MIGREP_Wrap_Lk,
+                            NULL,PHYREX_Wrap_Lk,
                             tree->mcmc->move_type[tree->mcmc->num_move_migrep_lbda],
                             NO,NULL,tree,NULL);
   
@@ -4850,15 +4850,15 @@ void MCMC_MIGREP_Lbda(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#ifdef MIGREP
-void MCMC_MIGREP_Mu(t_tree *tree)
+#ifdef PHYREX
+void MCMC_PHYREX_Mu(t_tree *tree)
 {
   MCMC_Single_Param_Generic(&(tree->mmod->mu),
                             tree->mmod->min_mu,
                             tree->mmod->max_mu,
                             tree->mcmc->num_move_migrep_mu,
                             NULL,&(tree->mmod->c_lnL),
-                            NULL,MIGREP_Wrap_Lk,
+                            NULL,PHYREX_Wrap_Lk,
                             tree->mcmc->move_type[tree->mcmc->num_move_migrep_mu],
                             NO,NULL,tree,NULL);
   
@@ -4868,15 +4868,15 @@ void MCMC_MIGREP_Mu(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#ifdef MIGREP
-void MCMC_MIGREP_Radius(t_tree *tree)
+#ifdef PHYREX
+void MCMC_PHYREX_Radius(t_tree *tree)
 {
   MCMC_Single_Param_Generic(&(tree->mmod->rad),
                             tree->mmod->min_rad,
                             tree->mmod->max_rad,
                             tree->mcmc->num_move_migrep_rad,
                             NULL,&(tree->mmod->c_lnL),
-                            NULL,MIGREP_Wrap_Lk,
+                            NULL,PHYREX_Wrap_Lk,
                             tree->mcmc->move_type[tree->mcmc->num_move_migrep_rad],
                             NO,NULL,tree,NULL);
 
@@ -4886,8 +4886,8 @@ void MCMC_MIGREP_Radius(t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-#ifdef MIGREP
-void MCMC_MIGREP_Sigsq(t_tree *tree)
+#ifdef PHYREX
+void MCMC_PHYREX_Sigsq(t_tree *tree)
 {
   tree->mmod->update_rad = YES;
   MCMC_Single_Param_Generic(&(tree->mmod->sigsq),
@@ -4895,18 +4895,18 @@ void MCMC_MIGREP_Sigsq(t_tree *tree)
                             tree->mmod->max_sigsq,
                             tree->mcmc->num_move_migrep_sigsq,
                             NULL,&(tree->mmod->c_lnL),
-                            NULL,MIGREP_Wrap_Lk,
+                            NULL,PHYREX_Wrap_Lk,
                             tree->mcmc->move_type[tree->mcmc->num_move_migrep_sigsq],
                             NO,NULL,tree,NULL);
-  tree->mmod->rad = MIGREP_Update_Radius(tree);
+  tree->mmod->rad = PHYREX_Update_Radius(tree);
   tree->mmod->update_rad = NO;
 }
 #endif 
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
-#ifdef MIGREP
-void MCMC_MIGREP_Indel_Disk(t_tree *tree)
+#ifdef PHYREX
+void MCMC_PHYREX_Indel_Disk(t_tree *tree)
 {
   int n_disks_cur, n_disks_new;
   t_dsk  *disk;
@@ -4929,16 +4929,16 @@ void MCMC_MIGREP_Indel_Disk(t_tree *tree)
   hr += Dpois(n_disks_cur,K*n_disks_new,YES);
   hr -= Dpois(n_disks_new,K*n_disks_cur,YES);
 
-  if(n_disks_new < n_disks_cur) MCMC_MIGREP_Delete_Disk(hr, n_disks_cur - n_disks_new ,tree);
-  else                          MCMC_MIGREP_Insert_Disk(hr, n_disks_new - n_disks_cur,tree);  
+  if(n_disks_new < n_disks_cur) MCMC_PHYREX_Delete_Disk(hr, n_disks_cur - n_disks_new ,tree);
+  else                          MCMC_PHYREX_Insert_Disk(hr, n_disks_new - n_disks_cur,tree);  
 }
 #endif
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /* Insert or delete a disk that does not affect any ldisk */
-#ifdef MIGREP
-void MCMC_MIGREP_Delete_Disk(phydbl hr, int n_delete_disks, t_tree *tree)
+#ifdef PHYREX
+void MCMC_PHYREX_Delete_Disk(phydbl hr, int n_delete_disks, t_tree *tree)
 {
   phydbl u,alpha,ratio;
   phydbl cur_glnL, new_glnL;
@@ -4959,7 +4959,7 @@ void MCMC_MIGREP_Delete_Disk(phydbl hr, int n_delete_disks, t_tree *tree)
   ratio           = 0.0;
   block           = 100;
   cur_lbda        = tree->mmod->lbda;
-  n_tot_disks_cur = MIGREP_Total_Number_Of_Intervals(tree);
+  n_tot_disks_cur = PHYREX_Total_Number_Of_Intervals(tree);
 
 
   if(tree->disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
@@ -4995,12 +4995,12 @@ void MCMC_MIGREP_Delete_Disk(phydbl hr, int n_delete_disks, t_tree *tree)
       /* Uniform selection of a disk where no coalescent nor 'hit' occurred */
       target_disk[j] = valid_disks[permut[j]];
   
-      MIGREP_Remove_Disk(target_disk[j]);
+      PHYREX_Remove_Disk(target_disk[j]);
   
       For(i,tree->mmod->n_dim) hr += LOG(1./tree->mmod->lim->lonlat[i]);
     }
 
-  T = MIGREP_Tree_Height(tree);
+  T = PHYREX_Tree_Height(tree);
 
   hr += LnChoose(n_valid_disks,n_delete_disks);
   hr -= n_delete_disks * LOG(-T);
@@ -5037,7 +5037,7 @@ void MCMC_MIGREP_Delete_Disk(phydbl hr, int n_delete_disks, t_tree *tree)
 
   tree->mmod->lbda = new_lbda;
 
-  new_glnL = MIGREP_Lk(tree);
+  new_glnL = PHYREX_Lk(tree);
   ratio += (new_glnL - cur_glnL);
   ratio += hr;
   
@@ -5056,11 +5056,11 @@ void MCMC_MIGREP_Delete_Disk(phydbl hr, int n_delete_disks, t_tree *tree)
       tree->mmod->lbda = cur_lbda;
 
       /* printf("\nD Reject %f",target_disk[0]->time); */
-      For(j,n_delete_disks) MIGREP_Insert_Disk(target_disk[j],tree);
+      For(j,n_delete_disks) PHYREX_Insert_Disk(target_disk[j],tree);
 
       tree->mmod->c_lnL = cur_glnL;
 
-      new_glnL = MIGREP_Lk(tree);
+      new_glnL = PHYREX_Lk(tree);
       if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
         {
           PhyML_Printf("\n. new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
@@ -5084,8 +5084,8 @@ void MCMC_MIGREP_Delete_Disk(phydbl hr, int n_delete_disks, t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-#ifdef MIGREP
-void MCMC_MIGREP_Insert_Disk(phydbl hr, int n_insert_disks, t_tree *tree)
+#ifdef PHYREX
+void MCMC_PHYREX_Insert_Disk(phydbl hr, int n_insert_disks, t_tree *tree)
 {
   t_dsk  *disk,**new_disk,**target_disk;
   phydbl T,t;
@@ -5103,12 +5103,12 @@ void MCMC_MIGREP_Insert_Disk(phydbl hr, int n_insert_disks, t_tree *tree)
   new_glnL        = tree->mmod->c_lnL;
   cur_glnL        = tree->mmod->c_lnL;
   cur_lbda        = tree->mmod->lbda;
-  n_tot_disks_cur = MIGREP_Total_Number_Of_Intervals(tree);
+  n_tot_disks_cur = PHYREX_Total_Number_Of_Intervals(tree);
 
 
   if(tree->disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
-  T = MIGREP_Tree_Height(tree);
+  T = PHYREX_Tree_Height(tree);
 
   disk = tree->disk->prev;
   n_valid_disks = 0;
@@ -5135,15 +5135,15 @@ void MCMC_MIGREP_Insert_Disk(phydbl hr, int n_insert_disks, t_tree *tree)
           PhyML_Printf("\n. run: %d",tree->mcmc->run);
           PhyML_Printf("\n. t: %f T: %f n_valid: %d n_insert: %d",t,T,n_valid_disks,n_insert_disks);
           PhyML_Printf("\n. c_lnL: %f",tree->mmod->c_lnL);
-          MIGREP_Print_Struct('=',tree);
+          PHYREX_Print_Struct('=',tree);
           Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
         }
 
-      new_disk[j] = MIGREP_Make_Disk_Event(tree->mmod->n_dim,tree->n_otu);
-      MIGREP_Init_Disk_Event(new_disk[j],tree->mmod->n_dim,tree->mmod);
+      new_disk[j] = PHYREX_Make_Disk_Event(tree->mmod->n_dim,tree->n_otu);
+      PHYREX_Init_Disk_Event(new_disk[j],tree->mmod->n_dim,tree->mmod);
       new_disk[j]->time = t;
         
-      MIGREP_Insert_Disk(new_disk[j],tree);
+      PHYREX_Insert_Disk(new_disk[j],tree);
       
       For(i,tree->mmod->n_dim) new_disk[j]->centr->lonlat[i] = Uni()*tree->mmod->lim->lonlat[i];
 
@@ -5182,7 +5182,7 @@ void MCMC_MIGREP_Insert_Disk(phydbl hr, int n_insert_disks, t_tree *tree)
 
   tree->mmod->lbda = new_lbda;
 
-  new_glnL = MIGREP_Lk(tree);
+  new_glnL = PHYREX_Lk(tree);
   ratio = (new_glnL - cur_glnL);
   ratio += hr;
   
@@ -5204,13 +5204,13 @@ void MCMC_MIGREP_Insert_Disk(phydbl hr, int n_insert_disks, t_tree *tree)
 
       For(j,n_insert_disks)
         {
-          MIGREP_Remove_Disk(new_disk[j]);      
+          PHYREX_Remove_Disk(new_disk[j]);      
           Free_Disk(new_disk[j]);
         }
 
       tree->mmod->c_lnL = cur_glnL;
 
-      new_glnL = MIGREP_Lk(tree);
+      new_glnL = PHYREX_Lk(tree);
       if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
         {
           PhyML_Printf("\n. new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
@@ -5233,8 +5233,8 @@ void MCMC_MIGREP_Insert_Disk(phydbl hr, int n_insert_disks, t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-#ifdef MIGREP
-void MCMC_MIGREP_Move_Disk_Centre(t_tree *tree)
+#ifdef PHYREX
+void MCMC_PHYREX_Move_Disk_Centre(t_tree *tree)
 {
   phydbl u,alpha,ratio;
   phydbl cur_glnL, new_glnL, hr;
@@ -5277,7 +5277,7 @@ void MCMC_MIGREP_Move_Disk_Centre(t_tree *tree)
     {
       target_disk[i] = all_disks[permut[i]];
   
-      MIGREP_Store_Geo_Coord(target_disk[i]->centr);
+      PHYREX_Store_Geo_Coord(target_disk[i]->centr);
       
       if(target_disk[i]->ldsk != NULL)
         {
@@ -5315,7 +5315,7 @@ void MCMC_MIGREP_Move_Disk_Centre(t_tree *tree)
 
   Free(permut);
 
-  new_glnL = MIGREP_Lk(tree);
+  new_glnL = PHYREX_Lk(tree);
   ratio += (new_glnL - cur_glnL);
   ratio += hr;
   
@@ -5333,11 +5333,11 @@ void MCMC_MIGREP_Move_Disk_Centre(t_tree *tree)
     {
       /* printf("- Reject"); */
       
-      For(i,n_move_disks) MIGREP_Restore_Geo_Coord(target_disk[i]->centr);
+      For(i,n_move_disks) PHYREX_Restore_Geo_Coord(target_disk[i]->centr);
       
       tree->mmod->c_lnL = cur_glnL;
 
-      new_glnL = MIGREP_Lk(tree);
+      new_glnL = PHYREX_Lk(tree);
       if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
         {
           PhyML_Printf("\n. new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
@@ -5359,8 +5359,8 @@ void MCMC_MIGREP_Move_Disk_Centre(t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /* Move ldsk on landscape */ 
-#ifdef MIGREP
-void MCMC_MIGREP_Move_Ldsk(t_tree *tree)
+#ifdef PHYREX
+void MCMC_PHYREX_Move_Ldsk(t_tree *tree)
 {
   phydbl u,alpha,ratio;
   phydbl cur_glnL, new_glnL, hr;
@@ -5405,11 +5405,11 @@ void MCMC_MIGREP_Move_Ldsk(t_tree *tree)
     {
       target_disk[i] = all_disks[permut[i]];
   
-      MIGREP_Store_Geo_Coord(target_disk[i]->ldsk->coord);
-      MIGREP_Store_Geo_Coord(target_disk[i]->centr);
+      PHYREX_Store_Geo_Coord(target_disk[i]->ldsk->coord);
+      PHYREX_Store_Geo_Coord(target_disk[i]->centr);
 
       max = min = -1.;
-      if(tree->mmod->name == MIGREP_UNIFORM)
+      if(tree->mmod->name == PHYREX_UNIFORM)
         {
           For(j,tree->mmod->n_dim)
             {
@@ -5421,7 +5421,7 @@ void MCMC_MIGREP_Move_Ldsk(t_tree *tree)
               target_disk[i]->ldsk->coord->lonlat[j] = Uni()*(max - min) + min;
             }
         }
-      else if(tree->mmod->name == MIGREP_NORMAL)
+      else if(tree->mmod->name == PHYREX_NORMAL)
         {
           int err;
 
@@ -5450,7 +5450,7 @@ void MCMC_MIGREP_Move_Ldsk(t_tree *tree)
 
   Free(permut);
 
-  new_glnL = MIGREP_Lk(tree);
+  new_glnL = PHYREX_Lk(tree);
   ratio += (new_glnL - cur_glnL);
   ratio += hr;
   
@@ -5470,13 +5470,13 @@ void MCMC_MIGREP_Move_Ldsk(t_tree *tree)
       
       For(i,n_move_ldsk) 
         {
-          MIGREP_Restore_Geo_Coord(target_disk[i]->ldsk->coord);
-          MIGREP_Restore_Geo_Coord(target_disk[i]->centr);
+          PHYREX_Restore_Geo_Coord(target_disk[i]->ldsk->coord);
+          PHYREX_Restore_Geo_Coord(target_disk[i]->centr);
         }
 
       tree->mmod->c_lnL = cur_glnL;
 
-      new_glnL = MIGREP_Lk(tree);
+      new_glnL = PHYREX_Lk(tree);
       if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
         {
           PhyML_Printf("\n. new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
@@ -5498,8 +5498,8 @@ void MCMC_MIGREP_Move_Ldsk(t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /* Update time of disk */
-#ifdef MIGREP
-void MCMC_MIGREP_Move_Disk_Updown(t_tree *tree)
+#ifdef PHYREX
+void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree)
 {
   phydbl u,alpha,ratio;
   phydbl cur_glnL, new_glnL, hr;
@@ -5593,7 +5593,7 @@ void MCMC_MIGREP_Move_Disk_Updown(t_tree *tree)
   
   Free(permut);
 
-  new_glnL = MIGREP_Lk(tree);
+  new_glnL = PHYREX_Lk(tree);
   if(tree->mcmc->use_data == YES) new_alnL = Lk(NULL,tree);
 
   ratio += (new_alnL - cur_alnL);
@@ -5621,7 +5621,7 @@ void MCMC_MIGREP_Move_Disk_Updown(t_tree *tree)
 
       /* if(tree->mcmc->use_data == YES) Lk(NULL,tree); */
 
-      new_glnL = MIGREP_Lk(tree);
+      new_glnL = PHYREX_Lk(tree);
 
       if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
         {
@@ -5646,8 +5646,8 @@ void MCMC_MIGREP_Move_Disk_Updown(t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
-#ifdef MIGREP
-void MCMC_MIGREP_Scale_Times(t_tree *tree)
+#ifdef PHYREX
+void MCMC_PHYREX_Scale_Times(t_tree *tree)
 {
   phydbl u,alpha,ratio;
   phydbl cur_glnL, new_glnL, hr;
@@ -5694,7 +5694,7 @@ void MCMC_MIGREP_Scale_Times(t_tree *tree)
   hr += LOG(1./scale_fact_times);
   tree->mmod->lbda = new_lbda;
 
-  new_glnL = MIGREP_Lk(tree);
+  new_glnL = PHYREX_Lk(tree);
   if(tree->mcmc->use_data == YES) new_alnL = Lk(NULL,tree);
 
   ratio += (new_alnL - cur_alnL);
@@ -5732,7 +5732,7 @@ void MCMC_MIGREP_Scale_Times(t_tree *tree)
 
       /* if(tree->mcmc->use_data == YES) Lk(NULL,tree); /\* Not necessary. Remove once tested *\/ */
 
-      new_glnL = MIGREP_Lk(tree); /* Same here */
+      new_glnL = PHYREX_Lk(tree); /* Same here */
       
       if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
         {
@@ -5752,8 +5752,8 @@ void MCMC_MIGREP_Scale_Times(t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-#ifdef MIGREP
-void MCMC_MIGREP_Swap_Disk(t_tree *tree)
+#ifdef PHYREX
+void MCMC_PHYREX_Swap_Disk(t_tree *tree)
 {
   phydbl u,alpha,ratio;
   phydbl cur_glnL, new_glnL;
@@ -5819,13 +5819,13 @@ void MCMC_MIGREP_Swap_Disk(t_tree *tree)
   t = Uni()*(t_max - t_min) + t_min;
   target_disk->time = t;
 
-  MIGREP_Remove_Disk(target_disk);
+  PHYREX_Remove_Disk(target_disk);
 
   disk = target_disk->ldsk->prev->disk;
   
   if(!disk) 
     {
-      MIGREP_Print_Struct('=',tree);
+      PHYREX_Print_Struct('=',tree);
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
     }
   
@@ -5843,14 +5843,14 @@ void MCMC_MIGREP_Swap_Disk(t_tree *tree)
           PhyML_Printf("\n. t_min: %G t_max: %G",t_min,t_max);
           PhyML_Printf("\n. target_t: %f",t);
           PhyML_Printf("\n. disk->time: %f t: %f start: %f",disk?disk->time:+1.,t,target_disk->ldsk->prev->disk->time);
-          MIGREP_Print_Struct('=',tree);
+          PHYREX_Print_Struct('=',tree);
           Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
         }
     }
   
-  MIGREP_Insert_Disk(target_disk,tree);
+  PHYREX_Insert_Disk(target_disk,tree);
 
-  new_glnL = MIGREP_Lk(tree);
+  new_glnL = PHYREX_Lk(tree);
   if(tree->mcmc->use_data == YES) new_alnL = Lk(NULL,tree);
 
   ratio += (new_alnL - cur_alnL);
@@ -5871,20 +5871,20 @@ void MCMC_MIGREP_Swap_Disk(t_tree *tree)
     {
       /* printf("\n- Reject %f %f",target_disk->time,ori_time); */
 
-      MIGREP_Remove_Disk(target_disk);
+      PHYREX_Remove_Disk(target_disk);
       
       target_disk->time = ori_time;
       target_disk->prev = ori_disk_old;
       target_disk->next = ori_disk_young;
 
-      MIGREP_Insert_Disk(target_disk,tree);
+      PHYREX_Insert_Disk(target_disk,tree);
 
       tree->mmod->c_lnL = cur_glnL;
       tree->c_lnL       = cur_alnL;
 
       /* if(tree->mcmc->use_data == YES) Lk(NULL,tree); /\* Remove once checked *\/ */
 
-      new_glnL = MIGREP_Lk(tree); /* Same */
+      new_glnL = PHYREX_Lk(tree); /* Same */
       if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
         {
           PhyML_Printf("\n. new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
@@ -5900,8 +5900,8 @@ void MCMC_MIGREP_Swap_Disk(t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
-#ifdef MIGREP
-void MCMC_MIGREP_Indel_Hit(t_tree *tree)
+#ifdef PHYREX
+void MCMC_PHYREX_Indel_Hit(t_tree *tree)
 {
   int n_disks_cur, n_disks_new;
   t_dsk  *disk;
@@ -5924,8 +5924,8 @@ void MCMC_MIGREP_Indel_Hit(t_tree *tree)
   hr += Dpois(n_disks_cur,K*n_disks_new,YES);
   hr -= Dpois(n_disks_new,K*n_disks_cur,YES);
 
-  if(n_disks_new < n_disks_cur) MCMC_MIGREP_Delete_Hit(hr, n_disks_cur - n_disks_new ,tree);
-  else                          MCMC_MIGREP_Insert_Hit(hr, n_disks_new - n_disks_cur,tree);  
+  if(n_disks_new < n_disks_cur) MCMC_PHYREX_Delete_Hit(hr, n_disks_cur - n_disks_new ,tree);
+  else                          MCMC_PHYREX_Insert_Hit(hr, n_disks_new - n_disks_cur,tree);  
 }
 #endif
 
@@ -5933,8 +5933,8 @@ void MCMC_MIGREP_Indel_Hit(t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /* Insert a disk with a new lineage displacement */
-#ifdef MIGREP
-void MCMC_MIGREP_Insert_Hit(phydbl hr, int n_insert_disks, t_tree *tree)
+#ifdef PHYREX
+void MCMC_PHYREX_Insert_Hit(phydbl hr, int n_insert_disks, t_tree *tree)
 {
   t_dsk  *disk,**new_disk,*young_disk;
   t_ldsk **young_ldsk, **old_ldsk, **new_ldsk;
@@ -5949,7 +5949,7 @@ void MCMC_MIGREP_Insert_Hit(phydbl hr, int n_insert_disks, t_tree *tree)
   new_glnL        = tree->mmod->c_lnL;
   cur_glnL        = tree->mmod->c_lnL;
   /* cur_lbda        = tree->mmod->lbda; */
-  /* n_tot_disks_cur = MIGREP_Total_Number_Of_Intervals(tree); */
+  /* n_tot_disks_cur = PHYREX_Total_Number_Of_Intervals(tree); */
 
   if(tree->disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
@@ -5970,7 +5970,7 @@ void MCMC_MIGREP_Insert_Hit(phydbl hr, int n_insert_disks, t_tree *tree)
   young_ldsk    = (t_ldsk **)mCalloc(n_insert_disks,sizeof(t_ldsk *));
   dir_old_young = (int *)mCalloc(n_insert_disks,sizeof(int));
 
-  T = MIGREP_Tree_Height(tree);
+  T = PHYREX_Tree_Height(tree);
 
   For(j,n_insert_disks)
     {  
@@ -5983,14 +5983,14 @@ void MCMC_MIGREP_Insert_Hit(phydbl hr, int n_insert_disks, t_tree *tree)
       young_disk = disk->next;
 
       /* Make and initialize new disk */ 
-      new_disk[j] = MIGREP_Make_Disk_Event(tree->mmod->n_dim,tree->n_otu);
-      MIGREP_Init_Disk_Event(new_disk[j],tree->mmod->n_dim,tree->mmod);
+      new_disk[j] = PHYREX_Make_Disk_Event(tree->mmod->n_dim,tree->n_otu);
+      PHYREX_Init_Disk_Event(new_disk[j],tree->mmod->n_dim,tree->mmod);
         
       /* Time of the new disk */
       new_disk[j]->time = t;
       
       /* Insert it */
-      MIGREP_Insert_Disk(new_disk[j],tree);
+      PHYREX_Insert_Disk(new_disk[j],tree);
 
       if(!young_disk->n_ldsk_a) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
@@ -6008,14 +6008,14 @@ void MCMC_MIGREP_Insert_Hit(phydbl hr, int n_insert_disks, t_tree *tree)
         }
       
       /* Direction from old to young ldsk */
-      dir_old_young[j] = MIGREP_Get_Next_Direction(young_ldsk[j],old_ldsk[j]);
+      dir_old_young[j] = PHYREX_Get_Next_Direction(young_ldsk[j],old_ldsk[j]);
   
       if(dir_old_young[j] == -1) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
       /* Make and initialize new ldsk */
-      new_ldsk[j] = MIGREP_Make_Lindisk_Node(tree->mmod->n_dim);
-      MIGREP_Init_Lindisk_Node(new_ldsk[j],new_disk[j],tree->mmod->n_dim);
-      MIGREP_Make_Lindisk_Next(new_ldsk[j]);
+      new_ldsk[j] = PHYREX_Make_Lindisk_Node(tree->mmod->n_dim);
+      PHYREX_Init_Lindisk_Node(new_ldsk[j],new_disk[j],tree->mmod->n_dim);
+      PHYREX_Make_Lindisk_Next(new_ldsk[j]);
       new_disk[j]->ldsk = new_ldsk[j];
 
       /* Connect it */
@@ -6024,11 +6024,11 @@ void MCMC_MIGREP_Insert_Hit(phydbl hr, int n_insert_disks, t_tree *tree)
       young_ldsk[j]->prev                 = new_ldsk[j];  
       old_ldsk[j]->next[dir_old_young[j]] = new_ldsk[j];
 
-      /* MIGREP_Update_Lindisk_List_Core(young_disk); */
-      /* MIGREP_Update_Lindisk_List_Core(new_disk[j]); */
-      /* MIGREP_Update_Lindisk_List_Core(old_disk); */
+      /* PHYREX_Update_Lindisk_List_Core(young_disk); */
+      /* PHYREX_Update_Lindisk_List_Core(new_disk[j]); */
+      /* PHYREX_Update_Lindisk_List_Core(old_disk); */
 
-      MIGREP_Update_Lindisk_List(tree);
+      PHYREX_Update_Lindisk_List(tree);
       
       /* Sample position of the displaced ldsk */
       For(i,tree->mmod->n_dim)
@@ -6056,13 +6056,13 @@ void MCMC_MIGREP_Insert_Hit(phydbl hr, int n_insert_disks, t_tree *tree)
 
     }
 
-  T = MIGREP_Tree_Height(tree);
+  T = PHYREX_Tree_Height(tree);
 
   hr -= LnChoose(n_valid_disks+n_insert_disks,n_insert_disks);
   hr += n_insert_disks * LOG(-T);  
   hr -= LnFact(n_insert_disks);
 
-  new_glnL = MIGREP_Lk(tree);
+  new_glnL = PHYREX_Lk(tree);
   if(new_glnL < UNLIKELY + 0.1) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   
   ratio = (new_glnL - cur_glnL);
@@ -6085,7 +6085,7 @@ void MCMC_MIGREP_Insert_Hit(phydbl hr, int n_insert_disks, t_tree *tree)
       
       for(j=n_insert_disks-1;j>=0;j--)
         {
-          MIGREP_Remove_Disk(new_disk[j]);      
+          PHYREX_Remove_Disk(new_disk[j]);      
           Free_Disk(new_disk[j]);
           Free_Ldisk(new_ldsk[j]);
 
@@ -6095,7 +6095,7 @@ void MCMC_MIGREP_Insert_Hit(phydbl hr, int n_insert_disks, t_tree *tree)
       
       tree->mmod->c_lnL = cur_glnL;
 
-      new_glnL = MIGREP_Lk(tree);
+      new_glnL = PHYREX_Lk(tree);
       if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
         {
           PhyML_Printf("\n. new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
@@ -6124,8 +6124,8 @@ void MCMC_MIGREP_Insert_Hit(phydbl hr, int n_insert_disks, t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /* Remove one or more disks with a lineage displacement */
-#ifdef MIGREP
-void MCMC_MIGREP_Delete_Hit(phydbl hr, int n_delete_disks, t_tree *tree)
+#ifdef PHYREX
+void MCMC_PHYREX_Delete_Hit(phydbl hr, int n_delete_disks, t_tree *tree)
 {
   phydbl u,alpha,ratio;
   phydbl cur_glnL,new_glnL,T;
@@ -6142,7 +6142,7 @@ void MCMC_MIGREP_Delete_Hit(phydbl hr, int n_delete_disks, t_tree *tree)
   ratio           = 0.0;
   block           = 100;
   /* cur_lbda        = tree->mmod->lbda; */
-  /* n_tot_disks_cur = MIGREP_Total_Number_Of_Intervals(tree); */
+  /* n_tot_disks_cur = PHYREX_Total_Number_Of_Intervals(tree); */
 
   if(tree->disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   disk = tree->disk->prev;
@@ -6186,7 +6186,7 @@ void MCMC_MIGREP_Delete_Hit(phydbl hr, int n_delete_disks, t_tree *tree)
       old_ldsk[j]   = target_ldsk[j]->prev;
       young_ldsk[j] = target_ldsk[j]->next[0];
             
-      dir_old_young[j] = MIGREP_Get_Next_Direction(young_ldsk[j],old_ldsk[j]);
+      dir_old_young[j] = PHYREX_Get_Next_Direction(young_ldsk[j],old_ldsk[j]);
       
       if(dir_old_young[j] == -1) 
         {
@@ -6222,10 +6222,10 @@ void MCMC_MIGREP_Delete_Hit(phydbl hr, int n_delete_disks, t_tree *tree)
       young_ldsk[j]->prev                 = old_ldsk[j];
 
       /* Remove target disk */
-      MIGREP_Remove_Disk(target_disk[j]);
+      PHYREX_Remove_Disk(target_disk[j]);
     }
   
-  T = MIGREP_Tree_Height(tree);
+  T = PHYREX_Tree_Height(tree);
   
   hr += LnChoose(n_valid_disks,n_delete_disks);
   hr -= n_delete_disks * LOG(-T);
@@ -6234,7 +6234,7 @@ void MCMC_MIGREP_Delete_Hit(phydbl hr, int n_delete_disks, t_tree *tree)
   Free(valid_disks);
 
 
-  new_glnL = MIGREP_Lk(tree);
+  new_glnL = PHYREX_Lk(tree);
   ratio += (new_glnL - cur_glnL);
   ratio += hr;
 
@@ -6257,14 +6257,14 @@ void MCMC_MIGREP_Delete_Hit(phydbl hr, int n_delete_disks, t_tree *tree)
       /* printf("- Reject"); */
       for(j=n_delete_disks-1;j>=0;j--) 
         {
-          MIGREP_Insert_Disk(target_disk[j],tree);      
+          PHYREX_Insert_Disk(target_disk[j],tree);      
           old_ldsk[j]->next[dir_old_young[j]] = target_ldsk[j];
           young_ldsk[j]->prev                 = target_ldsk[j];
         }
       
       tree->mmod->c_lnL = cur_glnL;
 
-      new_glnL = MIGREP_Lk(tree);
+      new_glnL = PHYREX_Lk(tree);
       if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
         {
           PhyML_Printf("\n. new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
@@ -6294,8 +6294,8 @@ void MCMC_MIGREP_Delete_Hit(phydbl hr, int n_delete_disks, t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-#ifdef MIGREP
-void MCMC_MIGREP_Prune_Regraft(t_tree *tree)
+#ifdef PHYREX
+void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
 {
   phydbl u,alpha,ratio,hr;
   phydbl cur_glnL, new_glnL;
@@ -6374,7 +6374,7 @@ void MCMC_MIGREP_Prune_Regraft(t_tree *tree)
       if((disk->ldsk != NULL) && 
          (disk->ldsk->n_next > 0) && 
          (disk->time < prune_daughter_ldsk->disk->time) && 
-         (MIGREP_Is_On_Path(disk->ldsk,prune_daughter_ldsk,prune_ldsk) == NO))
+         (PHYREX_Is_On_Path(disk->ldsk,prune_daughter_ldsk,prune_ldsk) == NO))
         {
           if(!n_valid_disks) valid_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
           else if(!(n_valid_disks%block)) valid_disks = (t_dsk **)mRealloc(valid_disks,n_valid_disks+block,sizeof(t_dsk *));
@@ -6404,58 +6404,58 @@ void MCMC_MIGREP_Prune_Regraft(t_tree *tree)
 
 
   /* /\* Prune and regraft *\/ */
-  /* n_hits = MIGREP_Total_Number_Of_Hit_Disks(tree); */
-  /* sizeT  = MIGREP_Time_Tree_Length(tree); */
+  /* n_hits = PHYREX_Total_Number_Of_Hit_Disks(tree); */
+  /* sizeT  = PHYREX_Time_Tree_Length(tree); */
   /* rate = (phydbl)n_hits/sizeT; */
   /* dt = FABS(prune_daughter_ldsk->disk->time - regraft_ldsk->disk->time); */
-  /* new_path = MIGREP_Generate_Path(prune_daughter_ldsk,regraft_ldsk,rate*dt,tree); */
+  /* new_path = PHYREX_Generate_Path(prune_daughter_ldsk,regraft_ldsk,rate*dt,tree); */
 
-  /* cur_path_len = MIGREP_Path_Len(prune_daughter_ldsk,prune_ldsk)-2; */
-  /* new_path_len = MIGREP_Path_Len(new_path,NULL)-1; */
+  /* cur_path_len = PHYREX_Path_Len(prune_daughter_ldsk,prune_ldsk)-2; */
+  /* new_path_len = PHYREX_Path_Len(new_path,NULL)-1; */
 
   /* rate = (phydbl)(n_hits - cur_path_len + new_path_len)/sizeT; */
   /* dt = FABS(prune_daughter_ldsk->disk->time - prune_ldsk->disk->time); */
-  /* hr += MIGREP_Path_Logdensity(prune_daughter_ldsk,prune_ldsk,rate*dt,tree); */
+  /* hr += PHYREX_Path_Logdensity(prune_daughter_ldsk,prune_ldsk,rate*dt,tree); */
 
-  /* cur_path = MIGREP_Remove_Path(prune_daughter_ldsk,prune_ldsk,tree); */
-  /* MIGREP_Insert_Path(prune_daughter_ldsk,regraft_ldsk,new_path,tree); */
+  /* cur_path = PHYREX_Remove_Path(prune_daughter_ldsk,prune_ldsk,tree); */
+  /* PHYREX_Insert_Path(prune_daughter_ldsk,regraft_ldsk,new_path,tree); */
 
   /* rate = (phydbl)n_hits/sizeT; */
   /* dt = FABS(prune_daughter_ldsk->disk->time - regraft_ldsk->disk->time); */
-  /* hr -= MIGREP_Path_Logdensity(prune_daughter_ldsk,regraft_ldsk,rate*dt,tree); */
+  /* hr -= PHYREX_Path_Logdensity(prune_daughter_ldsk,regraft_ldsk,rate*dt,tree); */
 
 
   /* Prune and regraft */
-  n_hits = MIGREP_Total_Number_Of_Hit_Disks(tree) - MIGREP_Total_Number_Of_Coal_Disks(tree);
-  sizeT  = MIGREP_Time_Tree_Length(tree);
+  n_hits = PHYREX_Total_Number_Of_Hit_Disks(tree) - PHYREX_Total_Number_Of_Coal_Disks(tree);
+  sizeT  = PHYREX_Time_Tree_Length(tree);
   dt = FABS(prune_daughter_ldsk->disk->time - prune_ldsk->disk->time);
-  cur_path_len = MIGREP_Path_Len(prune_daughter_ldsk,prune_ldsk)-2;
+  cur_path_len = PHYREX_Path_Len(prune_daughter_ldsk,prune_ldsk)-2;
   rate = (phydbl)(n_hits - cur_path_len)/(sizeT - dt);
 
-  hr += MIGREP_Path_Logdensity(prune_daughter_ldsk,prune_ldsk,rate*dt,tree);
+  hr += PHYREX_Path_Logdensity(prune_daughter_ldsk,prune_ldsk,rate*dt,tree);
 
   dt = FABS(prune_daughter_ldsk->disk->time - regraft_ldsk->disk->time);
-  new_path = MIGREP_Generate_Path(prune_daughter_ldsk,regraft_ldsk,rate*dt,tree);
-  cur_path = MIGREP_Remove_Path(prune_daughter_ldsk,prune_ldsk,tree);
-  MIGREP_Insert_Path(prune_daughter_ldsk,regraft_ldsk,new_path,tree);
+  new_path = PHYREX_Generate_Path(prune_daughter_ldsk,regraft_ldsk,rate*dt,tree);
+  cur_path = PHYREX_Remove_Path(prune_daughter_ldsk,prune_ldsk,tree);
+  PHYREX_Insert_Path(prune_daughter_ldsk,regraft_ldsk,new_path,tree);
 
-  hr -= MIGREP_Path_Logdensity(prune_daughter_ldsk,regraft_ldsk,rate*dt,tree);
+  hr -= PHYREX_Path_Logdensity(prune_daughter_ldsk,regraft_ldsk,rate*dt,tree);
 
 
 
 
   /* prune_daughter_ldsk->prev = regraft_ldsk; */
-  /* MIGREP_Remove_Lindisk_Next(prune_ldsk,prune_daughter_ldsk); */
-  /* MIGREP_Random_Insert_Ldsk_In_Next_List(prune_daughter_ldsk,regraft_ldsk); */
+  /* PHYREX_Remove_Lindisk_Next(prune_ldsk,prune_daughter_ldsk); */
+  /* PHYREX_Random_Insert_Ldsk_In_Next_List(prune_daughter_ldsk,regraft_ldsk); */
 
 
 
-  MIGREP_Ldsk_To_Tree(tree);
+  PHYREX_Ldsk_To_Tree(tree);
   Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
   Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
   RATES_Fill_Lca_Table(tree);
   RATES_Update_Cur_Bl(tree);
-  new_glnL = MIGREP_Lk(tree);
+  new_glnL = PHYREX_Lk(tree);
 
   /* Get a ldsk from which you can prune a lineage */
   disk = tree->disk->prev;
@@ -6481,7 +6481,7 @@ void MCMC_MIGREP_Prune_Regraft(t_tree *tree)
       if((disk->ldsk != NULL) && 
          (disk->ldsk->n_next > 0) && 
          (disk->time < prune_daughter_ldsk->disk->time) && 
-         (MIGREP_Is_On_Path(disk->ldsk,prune_daughter_ldsk,regraft_ldsk) == NO))
+         (PHYREX_Is_On_Path(disk->ldsk,prune_daughter_ldsk,regraft_ldsk) == NO))
         n_valid_disks++;
       disk = disk->prev;
     }
@@ -6509,7 +6509,7 @@ void MCMC_MIGREP_Prune_Regraft(t_tree *tree)
   
   if(u > alpha) /* Reject */
     {
-      new_path = MIGREP_Remove_Path(prune_daughter_ldsk,regraft_ldsk,tree);
+      new_path = PHYREX_Remove_Path(prune_daughter_ldsk,regraft_ldsk,tree);
 
       ldsk = new_path;
       while(ldsk)
@@ -6520,13 +6520,13 @@ void MCMC_MIGREP_Prune_Regraft(t_tree *tree)
           Free_Ldisk(ldsk_dum);
         }
 
-      MIGREP_Insert_Path(prune_daughter_ldsk,prune_ldsk,cur_path,tree);
+      PHYREX_Insert_Path(prune_daughter_ldsk,prune_ldsk,cur_path,tree);
 
       /* prune_daughter_ldsk->prev = prune_ldsk; */
-      /* MIGREP_Remove_Lindisk_Next(regraft_ldsk,prune_daughter_ldsk); */
-      /* MIGREP_Insert_Ldsk_In_Next_List(prune_daughter_ldsk,prune_next_num,prune_ldsk); */
+      /* PHYREX_Remove_Lindisk_Next(regraft_ldsk,prune_daughter_ldsk); */
+      /* PHYREX_Insert_Ldsk_In_Next_List(prune_daughter_ldsk,prune_next_num,prune_ldsk); */
       
-      MIGREP_Ldsk_To_Tree(tree);
+      PHYREX_Ldsk_To_Tree(tree);
       Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
       Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
       RATES_Fill_Lca_Table(tree);
@@ -6537,7 +6537,7 @@ void MCMC_MIGREP_Prune_Regraft(t_tree *tree)
 
       /* if(tree->mcmc->use_data == YES) Lk(NULL,tree); */
 
-      new_glnL = MIGREP_Lk(tree);
+      new_glnL = PHYREX_Lk(tree);
       if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
         {
           PhyML_Printf("\n. new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
@@ -6567,8 +6567,8 @@ void MCMC_MIGREP_Prune_Regraft(t_tree *tree)
 ////////////////////////////////////////////////////////////*/
 
 
-#ifdef MIGREP
-void MCMC_MIGREP_Simulate_Backward(t_tree *tree)
+#ifdef PHYREX
+void MCMC_PHYREX_Simulate_Backward(t_tree *tree)
 {
   phydbl u,alpha,ratio,hr,T,t;
   phydbl cur_glnL, new_glnL;
@@ -6592,7 +6592,7 @@ void MCMC_MIGREP_Simulate_Backward(t_tree *tree)
   T           = 0.0;
   t           = 0.0;
 
-  T =  MIGREP_Tree_Height(tree);
+  T =  PHYREX_Tree_Height(tree);
   t = Uni()*T;
 
   disk = tree->disk;
@@ -6606,9 +6606,9 @@ void MCMC_MIGREP_Simulate_Backward(t_tree *tree)
   bkp_ldsk = (t_ldsk **)mCalloc(target_disk->n_ldsk_a,sizeof(t_ldsk *));
   For(i,target_disk->n_ldsk_a) bkp_ldsk[i] = target_disk->ldsk_a[i]->prev;
   
-  MIGREP_Simulate_Backward_Core(NO,target_disk,tree);
+  PHYREX_Simulate_Backward_Core(NO,target_disk,tree);
 
-  T =  MIGREP_Tree_Height(tree);  
+  T =  PHYREX_Tree_Height(tree);  
   hr += LOG(FABS((target_disk->prev->time - target_disk->time)/T));
     
   if(tree->mcmc->use_data == YES) new_alnL = Lk(NULL,tree);
@@ -6646,7 +6646,7 @@ void MCMC_MIGREP_Simulate_Backward(t_tree *tree)
 
       /* if(tree->mcmc->use_data == YES) Lk(NULL,tree); */
 
-      new_glnL = MIGREP_Lk(tree);
+      new_glnL = PHYREX_Lk(tree);
 
       if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
         {
@@ -6670,7 +6670,7 @@ void MCMC_MIGREP_Simulate_Backward(t_tree *tree)
       Free_Disk(disk);
 
       /* Likelihood needs to be updated */
-      MIGREP_Lk(tree);
+      PHYREX_Lk(tree);
 
       tree->mcmc->acc_move[tree->mcmc->num_move_migrep_sim]++;
     }
@@ -6684,8 +6684,8 @@ void MCMC_MIGREP_Simulate_Backward(t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-#ifdef MIGREP
-void MCMC_MIGREP_Lineage_Traj(t_tree *tree)
+#ifdef PHYREX
+void MCMC_PHYREX_Lineage_Traj(t_tree *tree)
 {
   phydbl u,alpha,ratio,hr;
   phydbl cur_glnL, new_glnL;
@@ -6740,41 +6740,41 @@ void MCMC_MIGREP_Lineage_Traj(t_tree *tree)
 
 
 
-  /* n_hits = MIGREP_Total_Number_Of_Hit_Disks(tree) - MIGREP_Total_Number_Of_Coal_Disks(tree); */
-  /* sizeT  = MIGREP_Time_Tree_Length(tree); */
+  /* n_hits = PHYREX_Total_Number_Of_Hit_Disks(tree) - PHYREX_Total_Number_Of_Coal_Disks(tree); */
+  /* sizeT  = PHYREX_Time_Tree_Length(tree); */
   /* dt     = FABS(start_ldsk->disk->time - end_ldsk->disk->time); */
 
   /* rate = (phydbl)n_hits/sizeT;  */
-  /* new_path = MIGREP_Generate_Path(start_ldsk,end_ldsk,rate*dt,tree); */
+  /* new_path = PHYREX_Generate_Path(start_ldsk,end_ldsk,rate*dt,tree); */
 
-  /* cur_path_len = MIGREP_Path_Len(start_ldsk,end_ldsk)-2; */
-  /* new_path_len = MIGREP_Path_Len(new_path,NULL)-1; */
+  /* cur_path_len = PHYREX_Path_Len(start_ldsk,end_ldsk)-2; */
+  /* new_path_len = PHYREX_Path_Len(new_path,NULL)-1; */
 
   /* rate = (phydbl)(n_hits - cur_path_len + new_path_len)/sizeT; */
-  /* hr += MIGREP_Path_Logdensity(start_ldsk,end_ldsk,rate*dt,tree); */
+  /* hr += PHYREX_Path_Logdensity(start_ldsk,end_ldsk,rate*dt,tree); */
 
-  /* cur_path = MIGREP_Remove_Path(start_ldsk,end_ldsk,tree); */
-  /* MIGREP_Insert_Path(start_ldsk,end_ldsk,new_path,tree); */
+  /* cur_path = PHYREX_Remove_Path(start_ldsk,end_ldsk,tree); */
+  /* PHYREX_Insert_Path(start_ldsk,end_ldsk,new_path,tree); */
 
   /* rate = (phydbl)n_hits/sizeT; */
-  /* hr -= MIGREP_Path_Logdensity(start_ldsk,end_ldsk,rate*dt,tree); */
+  /* hr -= PHYREX_Path_Logdensity(start_ldsk,end_ldsk,rate*dt,tree); */
   
 
-  n_hits       = MIGREP_Total_Number_Of_Hit_Disks(tree) - MIGREP_Total_Number_Of_Coal_Disks(tree);
-  sizeT        = MIGREP_Time_Tree_Length(tree);
+  n_hits       = PHYREX_Total_Number_Of_Hit_Disks(tree) - PHYREX_Total_Number_Of_Coal_Disks(tree);
+  sizeT        = PHYREX_Time_Tree_Length(tree);
   dt           = FABS(start_ldsk->disk->time - end_ldsk->disk->time);
-  cur_path_len = MIGREP_Path_Len(start_ldsk,end_ldsk)-2;
+  cur_path_len = PHYREX_Path_Len(start_ldsk,end_ldsk)-2;
   rate         = (phydbl)(n_hits - cur_path_len)/(sizeT - dt);
   
-  hr += MIGREP_Path_Logdensity(start_ldsk,end_ldsk,rate*dt,tree);
+  hr += PHYREX_Path_Logdensity(start_ldsk,end_ldsk,rate*dt,tree);
 
-  new_path = MIGREP_Generate_Path(start_ldsk,end_ldsk,rate*dt,tree);
-  cur_path = MIGREP_Remove_Path(start_ldsk,end_ldsk,tree);
-  MIGREP_Insert_Path(start_ldsk,end_ldsk,new_path,tree);
+  new_path = PHYREX_Generate_Path(start_ldsk,end_ldsk,rate*dt,tree);
+  cur_path = PHYREX_Remove_Path(start_ldsk,end_ldsk,tree);
+  PHYREX_Insert_Path(start_ldsk,end_ldsk,new_path,tree);
 
-  hr -= MIGREP_Path_Logdensity(start_ldsk,end_ldsk,rate*dt,tree);
+  hr -= PHYREX_Path_Logdensity(start_ldsk,end_ldsk,rate*dt,tree);
 
-  new_glnL = MIGREP_Lk(tree);
+  new_glnL = PHYREX_Lk(tree);
   
   ratio += (new_glnL - cur_glnL);
   ratio += hr;
@@ -6790,7 +6790,7 @@ void MCMC_MIGREP_Lineage_Traj(t_tree *tree)
 
   if(u > alpha) /* Reject */
     {
-      new_path = MIGREP_Remove_Path(start_ldsk,end_ldsk,tree);
+      new_path = PHYREX_Remove_Path(start_ldsk,end_ldsk,tree);
 
       ldsk = new_path;
       while(ldsk) 
@@ -6801,11 +6801,11 @@ void MCMC_MIGREP_Lineage_Traj(t_tree *tree)
           Free_Ldisk(ldsk_dum);
         }
 
-      MIGREP_Insert_Path(start_ldsk,end_ldsk,cur_path,tree);
+      PHYREX_Insert_Path(start_ldsk,end_ldsk,cur_path,tree);
       
       tree->mmod->c_lnL = cur_glnL;
 
-      new_glnL = MIGREP_Lk(tree);
+      new_glnL = PHYREX_Lk(tree);
 
       if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
         {

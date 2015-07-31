@@ -3404,7 +3404,7 @@ void GEO_Init_Coord(t_geo_coord *t, int n_dim)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void MIGREP_Init_Disk_Event(t_dsk *t, int n_dim, t_migrep_mod *mmod)
+void PHYREX_Init_Disk_Event(t_dsk *t, int n_dim, t_migrep_mod *mmod)
 {
   t->prev         = NULL;
   t->next         = NULL;
@@ -3419,9 +3419,9 @@ void MIGREP_Init_Disk_Event(t_dsk *t, int n_dim, t_migrep_mod *mmod)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void MIGREP_Init_Migrep_Mod(t_migrep_mod *t, int n_dim, phydbl max_lat, phydbl max_lon)
+void PHYREX_Init_Migrep_Mod(t_migrep_mod *t, int n_dim, phydbl max_lat, phydbl max_lon)
 {
-  t->name             = MIGREP_NORMAL;
+  t->name             = PHYREX_NORMAL;
   t->n_dim            = n_dim;
   
   if(n_dim != 2) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
@@ -3464,7 +3464,7 @@ void MIGREP_Init_Migrep_Mod(t_migrep_mod *t, int n_dim, phydbl max_lat, phydbl m
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void MIGREP_Init_Lindisk_Node(t_ldsk *t, t_dsk *disk, int n_dim)
+void PHYREX_Init_Lindisk_Node(t_ldsk *t, t_dsk *disk, int n_dim)
 {
   t->disk    = disk;
   /* disk->ldsk = t; */

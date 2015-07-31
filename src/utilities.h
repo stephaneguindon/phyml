@@ -91,8 +91,8 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define RR_MIN 0.01
 #define RR_MAX 200.0
 
-#define MIGREP_UNIFORM 0
-#define MIGREP_NORMAL  1
+#define PHYREX_UNIFORM 0
+#define PHYREX_NORMAL  1
 
 #define MCMC_MOVE_RANDWALK_UNIFORM       0
 #define MCMC_MOVE_LOG_RANDWALK_UNIFORM   1
@@ -2059,7 +2059,7 @@ phydbl Nucleotide_Diversity(calign *data);
 #include "geo.h"
 #endif
 
-#ifdef MIGREP
+#ifdef PHYREX
 #include "migrep.h"
 #endif
 

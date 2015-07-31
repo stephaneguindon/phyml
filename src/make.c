@@ -1364,7 +1364,7 @@ t_geo_coord *GEO_Make_Geo_Coord(int dim)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-t_migrep_mod *MIGREP_Make_Migrep_Model(int dim)
+t_migrep_mod *PHYREX_Make_Migrep_Model(int dim)
 {
   t_migrep_mod *t;
   t = (t_migrep_mod *)mCalloc(1,sizeof(t_migrep_mod));
@@ -1375,7 +1375,7 @@ t_migrep_mod *MIGREP_Make_Migrep_Model(int dim)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-t_dsk *MIGREP_Make_Disk_Event(int n_dim, int n_otu)
+t_dsk *PHYREX_Make_Disk_Event(int n_dim, int n_otu)
 {
   t_dsk *t;
 
@@ -1390,7 +1390,7 @@ t_dsk *MIGREP_Make_Disk_Event(int n_dim, int n_otu)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-t_ldsk *MIGREP_Make_Lindisk_Node(int n_dim)
+t_ldsk *PHYREX_Make_Lindisk_Node(int n_dim)
 {
   t_ldsk *t;
   t = (t_ldsk *)mCalloc(1,sizeof(t_ldsk));
@@ -1401,7 +1401,7 @@ t_ldsk *MIGREP_Make_Lindisk_Node(int n_dim)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void MIGREP_Make_Lindisk_Next(t_ldsk *t)
+void PHYREX_Make_Lindisk_Next(t_ldsk *t)
 {
   if(t->n_next == 0)
     t->next = (t_ldsk **)mCalloc(NEXT_BLOCK_SIZE,sizeof(t_ldsk *));
