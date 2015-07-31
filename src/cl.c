@@ -1126,7 +1126,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
 #elif M4
 		strcat(io->out_tree_file,"_m4_tree");
 #elif PHYREX
-		strcat(io->out_tree_file,"_migrep_tree");
+		strcat(io->out_tree_file,"_phyrex_tree");
 #endif
                 
 		strcpy(io->out_stats_file,optarg);
@@ -1135,13 +1135,13 @@ int Read_Command_Line(option *io, int argc, char **argv)
 #elif M4
 		strcat(io->out_stats_file,"_m4_stats");
 #elif PHYREX
-		strcat(io->out_stats_file,"_migrep_stats");
+		strcat(io->out_stats_file,"_phyrex_stats");
 #endif
 
 
 #ifdef PHYREX
 		strcpy(io->out_summary_file,optarg);
-		strcat(io->out_summary_file,"_migrep_summary");
+		strcat(io->out_summary_file,"_phyrex_summary");
 #endif
 
 

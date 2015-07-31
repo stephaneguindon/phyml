@@ -1364,10 +1364,10 @@ t_geo_coord *GEO_Make_Geo_Coord(int dim)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-t_migrep_mod *PHYREX_Make_Migrep_Model(int dim)
+t_phyrex_mod *PHYREX_Make_Migrep_Model(int dim)
 {
-  t_migrep_mod *t;
-  t = (t_migrep_mod *)mCalloc(1,sizeof(t_migrep_mod));
+  t_phyrex_mod *t;
+  t = (t_phyrex_mod *)mCalloc(1,sizeof(t_phyrex_mod));
   t->lim = GEO_Make_Geo_Coord(dim);
   return(t);
 }

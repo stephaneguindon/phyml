@@ -530,7 +530,7 @@ void MCMC_Update_Effective_Sample_Size(int move_num, t_mcmc *mcmc, t_tree *tree)
   mean = Weighted_Mean(mcmc->sampled_val+move_num*mcmc->sample_size+burnin,NULL,N);
   var  = Variance(mcmc->sampled_val+move_num*mcmc->sample_size+burnin,N);
   
-  /* if(move_num == tree->mcmc->num_move_migrep_sigsq)  */
+  /* if(move_num == tree->mcmc->num_move_phyrex_sigsq)  */
   /*   printf("\n. %d %f %f\n",N,mean,var); */
 
 
@@ -3583,7 +3583,7 @@ void MCMC_Adjust_Tuning_Parameter(int move, t_mcmc *mcmc)
 	  rate_inf = 0.1;
 	  rate_sup = 0.1;
 	}
-      else if(!strcmp(mcmc->move_name[move],"migrep_rad"))
+      else if(!strcmp(mcmc->move_name[move],"phyrex_rad"))
 	{
 	  rate_inf = 0.1;
 	  rate_sup = 0.1;
@@ -3603,13 +3603,13 @@ void MCMC_Adjust_Tuning_Parameter(int move, t_mcmc *mcmc)
 	  rate_inf = 0.1;
 	  rate_sup = 0.1;
 	}
-      else if(!strcmp(mcmc->move_name[move],"migrep_scale_times"))
+      else if(!strcmp(mcmc->move_name[move],"phyrex_scale_times"))
 	{
 	  rate_inf = 0.1;
 	  rate_sup = 0.1;
 	}
 
-      else if(!strcmp(mcmc->move_name[move],"migrep_mu"))
+      else if(!strcmp(mcmc->move_name[move],"phyrex_mu"))
 	{
 	  rate_inf = 0.1;
 	  rate_sup = 0.1;
@@ -4290,21 +4290,21 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->num_move_geo_updown_tau_lbda     = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_geo_updown_lbda_sigma   = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_geo_dum                 = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_migrep_lbda             = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_migrep_mu               = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_migrep_rad              = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_migrep_indel_disk       = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_migrep_move_disk_ct     = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_migrep_move_disk_ud     = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_migrep_swap_disk        = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_migrep_indel_hit        = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_migrep_move_ldsk        = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_migrep_spr              = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_migrep_scale_times      = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_migrep_ldscape_lim      = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_migrep_sigsq            = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_migrep_sim              = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_migrep_traj             = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_phyrex_lbda             = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_phyrex_mu               = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_phyrex_rad              = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_phyrex_indel_disk       = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_phyrex_move_disk_ct     = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_phyrex_move_disk_ud     = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_phyrex_swap_disk        = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_phyrex_indel_hit        = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_phyrex_move_ldsk        = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_phyrex_spr              = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_phyrex_scale_times      = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_phyrex_ldscape_lim      = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_phyrex_sigsq            = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_phyrex_sim              = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_phyrex_traj             = mcmc->n_moves; mcmc->n_moves += 1;
 
   mcmc->run_move       = (int *)mCalloc(mcmc->n_moves,sizeof(int));
   mcmc->acc_move       = (int *)mCalloc(mcmc->n_moves,sizeof(int));
@@ -4353,21 +4353,21 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   strcpy(mcmc->move_name[mcmc->num_move_geo_updown_tau_lbda],"geo_updown_tau_lbda");
   strcpy(mcmc->move_name[mcmc->num_move_geo_updown_lbda_sigma],"geo_updown_lbda_sigma");
   strcpy(mcmc->move_name[mcmc->num_move_geo_dum],"geo_dum");
-  strcpy(mcmc->move_name[mcmc->num_move_migrep_lbda],"migrep_lbda");
-  strcpy(mcmc->move_name[mcmc->num_move_migrep_mu],"migrep_mu");
-  strcpy(mcmc->move_name[mcmc->num_move_migrep_rad],"migrep_rad");
-  strcpy(mcmc->move_name[mcmc->num_move_migrep_indel_disk],"migrep_indel_disk");
-  strcpy(mcmc->move_name[mcmc->num_move_migrep_move_disk_ct],"migrep_move_disk_ct");
-  strcpy(mcmc->move_name[mcmc->num_move_migrep_move_disk_ud],"migrep_move_disk_ud");
-  strcpy(mcmc->move_name[mcmc->num_move_migrep_swap_disk],"migrep_swap_disk");
-  strcpy(mcmc->move_name[mcmc->num_move_migrep_indel_hit],"migrep_indel_hit");
-  strcpy(mcmc->move_name[mcmc->num_move_migrep_move_ldsk],"migrep_move_ldsk");
-  strcpy(mcmc->move_name[mcmc->num_move_migrep_spr],"migrep_spr");
-  strcpy(mcmc->move_name[mcmc->num_move_migrep_scale_times],"migrep_scale_times");
-  strcpy(mcmc->move_name[mcmc->num_move_migrep_ldscape_lim],"migrep_ldscape_lim");
-  strcpy(mcmc->move_name[mcmc->num_move_migrep_sigsq],"migrep_sigsq");
-  strcpy(mcmc->move_name[mcmc->num_move_migrep_sim],"migrep_sim");
-  strcpy(mcmc->move_name[mcmc->num_move_migrep_traj],"migrep_traj");
+  strcpy(mcmc->move_name[mcmc->num_move_phyrex_lbda],"phyrex_lbda");
+  strcpy(mcmc->move_name[mcmc->num_move_phyrex_mu],"phyrex_mu");
+  strcpy(mcmc->move_name[mcmc->num_move_phyrex_rad],"phyrex_rad");
+  strcpy(mcmc->move_name[mcmc->num_move_phyrex_indel_disk],"phyrex_indel_disk");
+  strcpy(mcmc->move_name[mcmc->num_move_phyrex_move_disk_ct],"phyrex_move_disk_ct");
+  strcpy(mcmc->move_name[mcmc->num_move_phyrex_move_disk_ud],"phyrex_move_disk_ud");
+  strcpy(mcmc->move_name[mcmc->num_move_phyrex_swap_disk],"phyrex_swap_disk");
+  strcpy(mcmc->move_name[mcmc->num_move_phyrex_indel_hit],"phyrex_indel_hit");
+  strcpy(mcmc->move_name[mcmc->num_move_phyrex_move_ldsk],"phyrex_move_ldsk");
+  strcpy(mcmc->move_name[mcmc->num_move_phyrex_spr],"phyrex_spr");
+  strcpy(mcmc->move_name[mcmc->num_move_phyrex_scale_times],"phyrex_scale_times");
+  strcpy(mcmc->move_name[mcmc->num_move_phyrex_ldscape_lim],"phyrex_ldscape_lim");
+  strcpy(mcmc->move_name[mcmc->num_move_phyrex_sigsq],"phyrex_sigsq");
+  strcpy(mcmc->move_name[mcmc->num_move_phyrex_sim],"phyrex_sim");
+  strcpy(mcmc->move_name[mcmc->num_move_phyrex_traj],"phyrex_traj");
   
   if(tree->rates && tree->rates->model_log_rates == YES)
     for(i=mcmc->num_move_br_r;i<mcmc->num_move_br_r+2*tree->n_otu-2;i++) mcmc->move_type[i] = MCMC_MOVE_RANDWALK_NORMAL;
@@ -4398,11 +4398,11 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_type[mcmc->num_move_geo_updown_tau_lbda] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_geo_updown_lbda_sigma] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_geo_dum] = MCMC_MOVE_SCALE_THORNE;
-  mcmc->move_type[mcmc->num_move_migrep_lbda] = MCMC_MOVE_SCALE_THORNE;
-  mcmc->move_type[mcmc->num_move_migrep_mu] = MCMC_MOVE_SCALE_THORNE;
-  mcmc->move_type[mcmc->num_move_migrep_rad] = MCMC_MOVE_SCALE_THORNE;
-  mcmc->move_type[mcmc->num_move_migrep_scale_times] = MCMC_MOVE_SCALE_THORNE;
-  mcmc->move_type[mcmc->num_move_migrep_sigsq] = MCMC_MOVE_SCALE_THORNE;
+  mcmc->move_type[mcmc->num_move_phyrex_lbda] = MCMC_MOVE_SCALE_THORNE;
+  mcmc->move_type[mcmc->num_move_phyrex_mu] = MCMC_MOVE_SCALE_THORNE;
+  mcmc->move_type[mcmc->num_move_phyrex_rad] = MCMC_MOVE_SCALE_THORNE;
+  mcmc->move_type[mcmc->num_move_phyrex_scale_times] = MCMC_MOVE_SCALE_THORNE;
+  mcmc->move_type[mcmc->num_move_phyrex_sigsq] = MCMC_MOVE_SCALE_THORNE;
 
   /* We start with small tuning parameter values in order to have inflated ESS
      for clock_r */
@@ -4472,37 +4472,37 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_geo_dum]               = 1.0;
 
 # if defined (PHYREX)
-  mcmc->move_weight[mcmc->num_move_migrep_lbda]                  = 2.0;
-  mcmc->move_weight[mcmc->num_move_migrep_mu]                    = 2.0;
-  mcmc->move_weight[mcmc->num_move_migrep_rad]                   = 2.0;
-  mcmc->move_weight[mcmc->num_move_migrep_sigsq]                 = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_indel_disk]            = 4.0;
-  mcmc->move_weight[mcmc->num_move_migrep_move_disk_ct]          = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_move_disk_ud]          = 50.;
-  mcmc->move_weight[mcmc->num_move_migrep_swap_disk]             = 50.;
-  mcmc->move_weight[mcmc->num_move_migrep_indel_hit]             = 4.0;
-  mcmc->move_weight[mcmc->num_move_migrep_move_ldsk]             = 1.0;
-  mcmc->move_weight[mcmc->num_move_migrep_spr]                   = 5.0;
-  mcmc->move_weight[mcmc->num_move_migrep_scale_times]           = 2.0;
-  mcmc->move_weight[mcmc->num_move_migrep_ldscape_lim]           = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_sim]                   = 0.1;
-  mcmc->move_weight[mcmc->num_move_migrep_traj]                  = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_lbda]                  = 2.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_mu]                    = 2.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_rad]                   = 2.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_sigsq]                 = 0.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_indel_disk]            = 4.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ct]          = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ud]          = 50.;
+  mcmc->move_weight[mcmc->num_move_phyrex_swap_disk]             = 50.;
+  mcmc->move_weight[mcmc->num_move_phyrex_indel_hit]             = 4.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_move_ldsk]             = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_spr]                   = 5.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           = 2.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_ldscape_lim]           = 0.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 0.1;
+  mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 1.0;
 # else
-  mcmc->move_weight[mcmc->num_move_migrep_lbda]                  = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_mu]                    = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_rad]                   = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_sigsq]                 = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_indel_disk]            = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_move_disk_ct]          = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_move_disk_ud]          = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_swap_disk]             = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_indel_hit]             = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_move_ldsk]             = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_spr]                   = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_scale_times]           = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_ldscape_lim]           = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_sim]                   = 0.0;
-  mcmc->move_weight[mcmc->num_move_migrep_traj]                  = 0.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_lbda]                  = 0.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_mu]                    = 0.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_rad]                   = 0.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_sigsq]                 = 0.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_indel_disk]            = 0.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ct]          = 0.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ud]          = 0.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_swap_disk]             = 0.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_indel_hit]             = 0.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_move_ldsk]             = 0.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_spr]                   = 0.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           = 0.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_ldscape_lim]           = 0.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 0.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 0.0;
 #endif
 
   /* for(i=mcmc->num_move_br_r;i<mcmc->num_move_br_r+2*tree->n_otu-2;i++) mcmc->move_weight[i] = 0.0; /\* Rates *\/ */
@@ -4594,10 +4594,10 @@ void MCMC_Copy_To_New_Param_Val(t_mcmc *mcmc, t_tree *tree)
   mcmc->sampled_val[mcmc->num_move_geo_sigma*mcmc->sample_size+mcmc->sample_num]    = tree->geo ? tree->geo->sigma : -1.;
   mcmc->sampled_val[mcmc->num_move_geo_dum*mcmc->sample_size+mcmc->sample_num]      = tree->geo ? tree->geo->dum   : -1.;  
   #ifdef PHYREX
-  mcmc->sampled_val[mcmc->num_move_migrep_lbda*mcmc->sample_size+mcmc->sample_num]  = tree->mmod ? tree->mmod->lbda          : -1.;
-  mcmc->sampled_val[mcmc->num_move_migrep_mu*mcmc->sample_size+mcmc->sample_num]    = tree->mmod ? tree->mmod->mu            : -1.;  
-  mcmc->sampled_val[mcmc->num_move_migrep_sigsq*mcmc->sample_size+mcmc->sample_num] = tree->mmod ? PHYREX_Update_Sigsq(tree) : -1.;
-  mcmc->sampled_val[mcmc->num_move_migrep_rad*mcmc->sample_size+mcmc->sample_num]   = tree->mmod ? tree->mmod->rad           : -1.;
+  mcmc->sampled_val[mcmc->num_move_phyrex_lbda*mcmc->sample_size+mcmc->sample_num]  = tree->mmod ? tree->mmod->lbda          : -1.;
+  mcmc->sampled_val[mcmc->num_move_phyrex_mu*mcmc->sample_size+mcmc->sample_num]    = tree->mmod ? tree->mmod->mu            : -1.;  
+  mcmc->sampled_val[mcmc->num_move_phyrex_sigsq*mcmc->sample_size+mcmc->sample_num] = tree->mmod ? PHYREX_Update_Sigsq(tree) : -1.;
+  mcmc->sampled_val[mcmc->num_move_phyrex_rad*mcmc->sample_size+mcmc->sample_num]   = tree->mmod ? tree->mmod->rad           : -1.;
   #endif
 }
 
@@ -4838,10 +4838,10 @@ void MCMC_PHYREX_Lbda(t_tree *tree)
   MCMC_Single_Param_Generic(&(tree->mmod->lbda),
                             tree->mmod->min_lbda,
                             tree->mmod->max_lbda,
-                            tree->mcmc->num_move_migrep_lbda,
+                            tree->mcmc->num_move_phyrex_lbda,
                             NULL,&(tree->mmod->c_lnL),
                             NULL,PHYREX_Wrap_Lk,
-                            tree->mcmc->move_type[tree->mcmc->num_move_migrep_lbda],
+                            tree->mcmc->move_type[tree->mcmc->num_move_phyrex_lbda],
                             NO,NULL,tree,NULL);
   
 }
@@ -4856,10 +4856,10 @@ void MCMC_PHYREX_Mu(t_tree *tree)
   MCMC_Single_Param_Generic(&(tree->mmod->mu),
                             tree->mmod->min_mu,
                             tree->mmod->max_mu,
-                            tree->mcmc->num_move_migrep_mu,
+                            tree->mcmc->num_move_phyrex_mu,
                             NULL,&(tree->mmod->c_lnL),
                             NULL,PHYREX_Wrap_Lk,
-                            tree->mcmc->move_type[tree->mcmc->num_move_migrep_mu],
+                            tree->mcmc->move_type[tree->mcmc->num_move_phyrex_mu],
                             NO,NULL,tree,NULL);
   
 }
@@ -4874,10 +4874,10 @@ void MCMC_PHYREX_Radius(t_tree *tree)
   MCMC_Single_Param_Generic(&(tree->mmod->rad),
                             tree->mmod->min_rad,
                             tree->mmod->max_rad,
-                            tree->mcmc->num_move_migrep_rad,
+                            tree->mcmc->num_move_phyrex_rad,
                             NULL,&(tree->mmod->c_lnL),
                             NULL,PHYREX_Wrap_Lk,
-                            tree->mcmc->move_type[tree->mcmc->num_move_migrep_rad],
+                            tree->mcmc->move_type[tree->mcmc->num_move_phyrex_rad],
                             NO,NULL,tree,NULL);
 
 }
@@ -4893,10 +4893,10 @@ void MCMC_PHYREX_Sigsq(t_tree *tree)
   MCMC_Single_Param_Generic(&(tree->mmod->sigsq),
                             tree->mmod->min_sigsq,
                             tree->mmod->max_sigsq,
-                            tree->mcmc->num_move_migrep_sigsq,
+                            tree->mcmc->num_move_phyrex_sigsq,
                             NULL,&(tree->mmod->c_lnL),
                             NULL,PHYREX_Wrap_Lk,
-                            tree->mcmc->move_type[tree->mcmc->num_move_migrep_sigsq],
+                            tree->mcmc->move_type[tree->mcmc->num_move_phyrex_sigsq],
                             NO,NULL,tree,NULL);
   tree->mmod->rad = PHYREX_Update_Radius(tree);
   tree->mmod->update_rad = NO;
@@ -5071,10 +5071,10 @@ void MCMC_PHYREX_Delete_Disk(phydbl hr, int n_delete_disks, t_tree *tree)
     {
       /* printf("\nD Accept %f",target_disk[0]->time); */
       For(j,n_delete_disks) Free_Disk(target_disk[j]);
-      tree->mcmc->acc_move[tree->mcmc->num_move_migrep_indel_disk]++;
+      tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_indel_disk]++;
     }
 
-  tree->mcmc->run_move[tree->mcmc->num_move_migrep_indel_disk]++;
+  tree->mcmc->run_move[tree->mcmc->num_move_phyrex_indel_disk]++;
 
   Free(target_disk);
   Free(permut);
@@ -5221,10 +5221,10 @@ void MCMC_PHYREX_Insert_Disk(phydbl hr, int n_insert_disks, t_tree *tree)
     {
       /* printf("\nI Accept"); */
       /* if(indel > 0) printf("\n. Accept"); */
-      tree->mcmc->acc_move[tree->mcmc->num_move_migrep_indel_disk]++;
+      tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_indel_disk]++;
     }
 
-  tree->mcmc->run_move[tree->mcmc->num_move_migrep_indel_disk]++;
+  tree->mcmc->run_move[tree->mcmc->num_move_phyrex_indel_disk]++;
   Free(target_disk);
   Free(new_disk);
 }
@@ -5346,10 +5346,10 @@ void MCMC_PHYREX_Move_Disk_Centre(t_tree *tree)
     }
   else
     {
-      tree->mcmc->acc_move[tree->mcmc->num_move_migrep_move_disk_ct]++;
+      tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_move_disk_ct]++;
     }
 
-  tree->mcmc->run_move[tree->mcmc->num_move_migrep_move_disk_ct]++;
+  tree->mcmc->run_move[tree->mcmc->num_move_phyrex_move_disk_ct]++;
 
   Free(all_disks);
   Free(target_disk);
@@ -5485,10 +5485,10 @@ void MCMC_PHYREX_Move_Ldsk(t_tree *tree)
     }
   else
     {
-      tree->mcmc->acc_move[tree->mcmc->num_move_migrep_move_ldsk]++;
+      tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_move_ldsk]++;
     }
 
-  tree->mcmc->run_move[tree->mcmc->num_move_migrep_move_ldsk]++;
+  tree->mcmc->run_move[tree->mcmc->num_move_phyrex_move_ldsk]++;
    
   Free(all_disks);
   Free(target_disk);
@@ -5665,7 +5665,7 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree)
   cur_glnL        = tree->mmod->c_lnL;
   hr              = 0.0;
   ratio           = 0.0;
-  K               = tree->mcmc->tune_move[tree->mcmc->num_move_migrep_scale_times];
+  K               = tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_scale_times];
   cur_lbda        = tree->mmod->lbda;
 
   u = Uni();
@@ -5743,9 +5743,9 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree)
   else
     {
       /* printf("- Accept"); */
-      tree->mcmc->acc_move[tree->mcmc->num_move_migrep_scale_times]++;
+      tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_scale_times]++;
     }  
-  tree->mcmc->run_move[tree->mcmc->num_move_migrep_scale_times]++;
+  tree->mcmc->run_move[tree->mcmc->num_move_phyrex_scale_times]++;
 }
 #endif
 
@@ -6106,10 +6106,10 @@ void MCMC_PHYREX_Insert_Hit(phydbl hr, int n_insert_disks, t_tree *tree)
     {
       /* printf("+ Accept"); */
       /* if(indel > 0) printf("\n. Accept"); */
-      tree->mcmc->acc_move[tree->mcmc->num_move_migrep_indel_hit]++;
+      tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_indel_hit]++;
     }
 
-  tree->mcmc->run_move[tree->mcmc->num_move_migrep_indel_hit]++;
+  tree->mcmc->run_move[tree->mcmc->num_move_phyrex_indel_hit]++;
 
   Free(new_disk);
   Free(new_ldsk);
@@ -6277,10 +6277,10 @@ void MCMC_PHYREX_Delete_Hit(phydbl hr, int n_delete_disks, t_tree *tree)
 
       For(j,n_delete_disks) Free_Disk(target_disk[j]);
       For(j,n_delete_disks) Free_Ldisk(target_ldsk[j]);
-      tree->mcmc->acc_move[tree->mcmc->num_move_migrep_indel_hit]++;
+      tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_indel_hit]++;
     }
   
-  tree->mcmc->run_move[tree->mcmc->num_move_migrep_indel_hit]++;
+  tree->mcmc->run_move[tree->mcmc->num_move_phyrex_indel_hit]++;
 
   Free(target_disk);
   Free(target_ldsk);
@@ -6555,10 +6555,10 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
           Free_Ldisk(ldsk_dum);
         }
 
-      tree->mcmc->acc_move[tree->mcmc->num_move_migrep_spr]++;
+      tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_spr]++;
     }
   
-  tree->mcmc->run_move[tree->mcmc->num_move_migrep_spr]++;
+  tree->mcmc->run_move[tree->mcmc->num_move_phyrex_spr]++;
 
 }
 #endif
@@ -6672,10 +6672,10 @@ void MCMC_PHYREX_Simulate_Backward(t_tree *tree)
       /* Likelihood needs to be updated */
       PHYREX_Lk(tree);
 
-      tree->mcmc->acc_move[tree->mcmc->num_move_migrep_sim]++;
+      tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_sim]++;
     }
   
-  tree->mcmc->run_move[tree->mcmc->num_move_migrep_sim]++;
+  tree->mcmc->run_move[tree->mcmc->num_move_phyrex_sim]++;
 
   Free(bkp_ldsk);
 }
@@ -6824,10 +6824,10 @@ void MCMC_PHYREX_Lineage_Traj(t_tree *tree)
           Free_Ldisk(ldsk_dum);
         }      
       
-      tree->mcmc->acc_move[tree->mcmc->num_move_migrep_traj]++;
+      tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_traj]++;
     }
   
-  tree->mcmc->run_move[tree->mcmc->num_move_migrep_traj]++;
+  tree->mcmc->run_move[tree->mcmc->num_move_phyrex_traj]++;
 }
 #endif
 /*////////////////////////////////////////////////////////////

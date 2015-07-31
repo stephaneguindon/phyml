@@ -32,7 +32,7 @@ the GNU public licence. See http://www.opensource.org for details.
 #include "draw.h"
 #include "rates.h"
 #include "stats.h"
-#include "migrep.h"
+#include "phyrex.h"
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>

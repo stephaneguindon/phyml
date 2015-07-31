@@ -3404,7 +3404,7 @@ void GEO_Init_Coord(t_geo_coord *t, int n_dim)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void PHYREX_Init_Disk_Event(t_dsk *t, int n_dim, t_migrep_mod *mmod)
+void PHYREX_Init_Disk_Event(t_dsk *t, int n_dim, t_phyrex_mod *mmod)
 {
   t->prev         = NULL;
   t->next         = NULL;
@@ -3419,7 +3419,7 @@ void PHYREX_Init_Disk_Event(t_dsk *t, int n_dim, t_migrep_mod *mmod)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void PHYREX_Init_Migrep_Mod(t_migrep_mod *t, int n_dim, phydbl max_lat, phydbl max_lon)
+void PHYREX_Init_Migrep_Mod(t_phyrex_mod *t, int n_dim, phydbl max_lat, phydbl max_lon)
 {
   t->name             = PHYREX_NORMAL;
   t->n_dim            = n_dim;

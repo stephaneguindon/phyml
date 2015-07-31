@@ -78,6 +78,6 @@ void Free_Geo_Coord(t_geo_coord *t);
 void Free_Disk(t_dsk *t);
 void Free_Ldisk(t_ldsk *t);
 void Free_Poly(t_poly *p);
-void Free_Mmod(t_migrep_mod *mmod);
+void Free_Mmod(t_phyrex_mod *mmod);
 
 #endif

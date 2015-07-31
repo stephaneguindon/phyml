@@ -161,13 +161,13 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   disk = tree->disk;
   while(disk->prev) disk = disk->prev;
 
-  strcpy(s,"migrep_trees");
+  strcpy(s,"phyrex_trees");
   sprintf(s+strlen(s),".%d",tree->mod->io->r_seed);
   tree->io->fp_out_tree = Openfile(s,WRITE);
-  strcpy(s,"migrep_stats");
+  strcpy(s,"phyrex_stats");
   sprintf(s+strlen(s),".%d",tree->mod->io->r_seed);
   tree->io->fp_out_stats = Openfile(s,WRITE);
-  strcpy(s,"migrep_summary");
+  strcpy(s,"phyrex_summary");
   sprintf(s+strlen(s),".%d",pid);
   tree->io->fp_out_summary = Openfile(s,WRITE);
 
@@ -214,7 +214,7 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
 {  
   t_tree *tree;
   int n_dim;
-  t_migrep_mod *mmod;
+  t_phyrex_mod *mmod;
   t_dsk *disk;
   option *io;
   t_mod *mod;
@@ -374,7 +374,7 @@ phydbl PHYREX_Simulate_Backward_Core(int new_loc, t_dsk *init_disk, t_tree *tree
   t_ldsk *new_ldsk,**ldsk_a,**ldsk_a_tmp;
   int i,j,n_disk,n_lineages,n_dim,n_hit,n_lineages_new,err;
   phydbl dt_dsk,curr_t,prob_hit,u;
-  t_migrep_mod *mmod;
+  t_phyrex_mod *mmod;
   phydbl lnL;
 
   mmod  = tree->mmod;
@@ -573,7 +573,7 @@ phydbl PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree)
   int i,j,n_disk,n_dim,n_otu,pop_size,parent_id,n_lineages,sample_size,n_poly;
   phydbl dt_dsk,curr_t,sum,*parent_prob,prob_death,tree_height,max_x,max_y,trans_x,trans_y,area;
   short int dies,n_remain;
-  t_migrep_mod *mmod;
+  t_phyrex_mod *mmod;
   t_poly **poly;
 
   mmod     = tree->mmod;
@@ -888,7 +888,7 @@ phydbl PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree)
 /* Test whether coord is in disk. Will actually only works in disk */
 /* is a rectangle... */
 
-int PHYREX_Is_In_Disk(t_geo_coord *coord, t_dsk *disk, t_migrep_mod *mmod)
+int PHYREX_Is_In_Disk(t_geo_coord *coord, t_dsk *disk, t_phyrex_mod *mmod)
 {
   int i;
 
@@ -922,7 +922,7 @@ phydbl PHYREX_Lk(t_tree *tree)
   phydbl log_mu,log_one_mu,log_dens_coal;
   int i,j,n_inter,err;
   short int was_hit, n_hit;
-  t_migrep_mod *mmod;
+  t_phyrex_mod *mmod;
   t_dsk *disk;
 
   mmod = tree->mmod;
@@ -1239,46 +1239,46 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
       if(move == tree->mcmc->n_moves) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
       
-      if(!strcmp(tree->mcmc->move_name[move],"migrep_lbda"))
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_lbda"))
         MCMC_PHYREX_Lbda(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"migrep_mu"))
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_mu"))
         MCMC_PHYREX_Mu(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"migrep_rad"))
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_rad"))
         MCMC_PHYREX_Radius(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_sigsq")) */
+      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_sigsq")) */
       /*   MCMC_PHYREX_Sigsq(tree); */
 
-      if(!strcmp(tree->mcmc->move_name[move],"migrep_indel_disk"))
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_disk"))
         MCMC_PHYREX_Indel_Disk(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"migrep_move_disk_ct"))
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_move_disk_ct"))
         MCMC_PHYREX_Move_Disk_Centre(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"migrep_move_disk_ud"))
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_move_disk_ud"))
         MCMC_PHYREX_Move_Disk_Updown(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"migrep_swap_disk"))
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_swap_disk"))
         MCMC_PHYREX_Swap_Disk(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"migrep_indel_hit"))
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_hit"))
         MCMC_PHYREX_Indel_Hit(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"migrep_move_ldsk"))
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_move_ldsk"))
         MCMC_PHYREX_Move_Ldsk(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"migrep_spr"))
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr"))
         MCMC_PHYREX_Prune_Regraft(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"migrep_scale_times"))
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_scale_times"))
         MCMC_PHYREX_Scale_Times(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"migrep_sim"))
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_sim"))
         MCMC_PHYREX_Simulate_Backward(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"migrep_traj"))
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_traj"))
         MCMC_PHYREX_Lineage_Traj(tree);
 
       if(!strcmp(tree->mcmc->move_name[move],"kappa"))
@@ -1287,7 +1287,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"ras"))
         MCMC_Rate_Across_Sites(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"migrep_ldscape_lim")) */
+      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_ldscape_lim")) */
       /*   MCMC_PHYREX_Ldscape_Limits(tree); */
 
       tree->mcmc->run++;
@@ -1310,11 +1310,11 @@ phydbl *PHYREX_MCMC(t_tree *tree)
                         tree->c_lnL,
                         tree->mmod->c_lnL,
                         tree->mmod->lbda,
-                        tree->mcmc->mode[tree->mcmc->num_move_migrep_lbda],
+                        tree->mcmc->mode[tree->mcmc->num_move_phyrex_lbda],
                         tree->mmod->mu,
-                        tree->mcmc->mode[tree->mcmc->num_move_migrep_mu],
+                        tree->mcmc->mode[tree->mcmc->num_move_phyrex_mu],
                         PHYREX_Update_Sigsq(tree),
-                        tree->mcmc->mode[tree->mcmc->num_move_migrep_sigsq],
+                        tree->mcmc->mode[tree->mcmc->num_move_phyrex_sigsq],
                         tree->mmod->rad,
                         PHYREX_Neighborhood_Size(tree),
                         PHYREX_Total_Number_Of_Intervals(tree),
@@ -1323,18 +1323,18 @@ phydbl *PHYREX_MCMC(t_tree *tree)
                         disk->time,
                         tree->mod->kappa->v,
                         tree->mod->ras->alpha->v,
-                        tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_lbda],
-                        tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_mu],
-                        tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_rad],
-                        tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_indel_disk],
-                        tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_indel_hit],
-                        tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_scale_times],
-                        tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_spr],
-                        tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_traj],
-                        tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_sim],
-                        tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_move_ldsk],
-                        tree->mcmc->acc_rate[tree->mcmc->num_move_migrep_move_disk_ct],
-                        tree->mcmc->tune_move[tree->mcmc->num_move_migrep_scale_times]);
+                        tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_lbda],
+                        tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_mu],
+                        tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_rad],
+                        tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_indel_disk],
+                        tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_indel_hit],
+                        tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_scale_times],
+                        tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_spr],
+                        tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_traj],
+                        tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_sim],
+                        tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_move_ldsk],
+                        tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_move_disk_ct],
+                        tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_scale_times]);
 
           fflush(fp_stats);
           
@@ -1379,26 +1379,26 @@ phydbl *PHYREX_MCMC(t_tree *tree)
                         /* Lbda5 */  Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
                         /* Lbda50 */ Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
                         /* Lbda95 */ Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975),
-                        /* LbdaMod*/ tree->mcmc->mode[tree->mcmc->num_move_migrep_lbda]);
+                        /* LbdaMod*/ tree->mcmc->mode[tree->mcmc->num_move_phyrex_lbda]);
           
           PhyML_Fprintf(fp_summary,"%f\t %f\t %f\t %f\t",
                         /* mu5 */   Quantile(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
                         /* mu50 */  Quantile(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
                         /* mu95 */  Quantile(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975),
-                        /* muMod */ tree->mcmc->mode[tree->mcmc->num_move_migrep_mu]);
+                        /* muMod */ tree->mcmc->mode[tree->mcmc->num_move_phyrex_mu]);
           
           
           PhyML_Fprintf(fp_summary,"%f\t %f\t %f\t %f\t",
                         /* sig5 */   Quantile(res+2*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
                         /* sig50*/   Quantile(res+2*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
                         /* sig95*/   Quantile(res+2*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975),
-                        /* sigMod */ tree->mcmc->mode[tree->mcmc->num_move_migrep_sigsq]);
+                        /* sigMod */ tree->mcmc->mode[tree->mcmc->num_move_phyrex_sigsq]);
           
           PhyML_Fprintf(fp_summary,"%f\t %f\t %f\t %f\t",
                         /* Neigh5 */ Quantile(res+3*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
                         /* Neigh50*/ Quantile(res+3*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
                         /* Neigh95*/ Quantile(res+3*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975),
-                        /* NeighMod */ 2./tree->mcmc->mode[tree->mcmc->num_move_migrep_mu]); // Approximate ?
+                        /* NeighMod */ 2./tree->mcmc->mode[tree->mcmc->num_move_phyrex_mu]); // Approximate ?
           
           PhyML_Fprintf(fp_summary,"%f\t %f\t %f\t",
                         /* Rad5 */  Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
@@ -1422,9 +1422,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
                         /* Hit95 */ Quantile(res+7*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975));
                     
           PhyML_Fprintf(fp_summary,"%f\t %f\t %f\t",
-                        tree->mcmc->ess[tree->mcmc->num_move_migrep_lbda],
-                        tree->mcmc->ess[tree->mcmc->num_move_migrep_mu],  
-                        tree->mcmc->ess[tree->mcmc->num_move_migrep_sigsq]);
+                        tree->mcmc->ess[tree->mcmc->num_move_phyrex_lbda],
+                        tree->mcmc->ess[tree->mcmc->num_move_phyrex_mu],  
+                        tree->mcmc->ess[tree->mcmc->num_move_phyrex_sigsq]);
 
           PhyML_Fprintf(fp_summary,"%d\t",tree->mcmc->run);
 
@@ -1446,14 +1446,14 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
 
       if(tree->mcmc->sample_num > 1E+2                             &&
-         tree->mcmc->ess[tree->mcmc->num_move_migrep_lbda]  > 100. &&
-         tree->mcmc->ess[tree->mcmc->num_move_migrep_mu]    > 100. &&
-         tree->mcmc->ess[tree->mcmc->num_move_migrep_sigsq] > 100.) break;
+         tree->mcmc->ess[tree->mcmc->num_move_phyrex_lbda]  > 100. &&
+         tree->mcmc->ess[tree->mcmc->num_move_phyrex_mu]    > 100. &&
+         tree->mcmc->ess[tree->mcmc->num_move_phyrex_sigsq] > 100.) break;
 
       /* if(tree->mcmc->run > tree->mcmc->sample_interval           &&  */
-      /*    tree->mcmc->ess[tree->mcmc->num_move_migrep_lbda]  > 1. && */
-      /*    tree->mcmc->ess[tree->mcmc->num_move_migrep_mu]    > 1. && */
-      /*    tree->mcmc->ess[tree->mcmc->num_move_migrep_sigsq] > 1.) break; */
+      /*    tree->mcmc->ess[tree->mcmc->num_move_phyrex_lbda]  > 1. && */
+      /*    tree->mcmc->ess[tree->mcmc->num_move_phyrex_mu]    > 1. && */
+      /*    tree->mcmc->ess[tree->mcmc->num_move_phyrex_sigsq] > 1.) break; */
 
       (void)signal(SIGINT,MCMC_Terminate);
     }
@@ -1717,7 +1717,7 @@ t_ldsk *PHYREX_Next_Coal_Lindisk(t_ldsk *t)
 */
 int PHYREX_One_New_Traj(t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y, t_dsk *xtra_dsk, int n_cur_disk, t_tree *tree)
 {
-  t_migrep_mod *mmod;
+  t_phyrex_mod *mmod;
   t_dsk *disk,**disk_new;
   int i,n,K;
   int min_n_disk,n_new_disk,n_disk;
@@ -2346,7 +2346,7 @@ int PHYREX_Total_Number_Of_Coal_Disks(t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-phydbl PHYREX_Log_Dunif_Rectangle_Overlap(t_ldsk *ldsk, t_dsk *disk, t_migrep_mod *mmod)
+phydbl PHYREX_Log_Dunif_Rectangle_Overlap(t_ldsk *ldsk, t_dsk *disk, t_phyrex_mod *mmod)
 {
   phydbl up, down, left, rght;
   phydbl log_dens;
@@ -2386,7 +2386,7 @@ phydbl PHYREX_Log_Dunif_Rectangle_Overlap(t_ldsk *ldsk, t_dsk *disk, t_migrep_mo
 ////////////////////////////////////////////////////////////*/
 /* Samples uniformly within a rectangle (with truncation for border) */
 /* and returns the corresponding log density */
-phydbl PHYREX_Runif_Rectangle_Overlap(t_ldsk *ldsk, t_dsk *disk, t_migrep_mod *mmod)
+phydbl PHYREX_Runif_Rectangle_Overlap(t_ldsk *ldsk, t_dsk *disk, t_phyrex_mod *mmod)
 {
   phydbl up, down, left, rght;
 
@@ -2410,7 +2410,7 @@ phydbl PHYREX_Runif_Rectangle_Overlap(t_ldsk *ldsk, t_dsk *disk, t_migrep_mod *m
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
  
-phydbl PHYREX_Rnorm_Trunc(t_ldsk *ldsk, t_dsk *disk, t_migrep_mod *mmod)
+phydbl PHYREX_Rnorm_Trunc(t_ldsk *ldsk, t_dsk *disk, t_phyrex_mod *mmod)
 {
   phydbl up, down, left, rght;
   int err;
@@ -2991,7 +2991,7 @@ phydbl PHYREX_Random_Select_Time_Between_Jumps(t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-int PHYREX_Is_In_Ldscape(t_ldsk *ldsk, t_migrep_mod *mmod)
+int PHYREX_Is_In_Ldscape(t_ldsk *ldsk, t_phyrex_mod *mmod)
 {
   int j;
   For(j,mmod->n_dim) if(ldsk->coord->lonlat[j] > mmod->lim->lonlat[j] ||

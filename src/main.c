@@ -559,7 +559,7 @@ int main(int argc, char **argv)
 }
 
 #elif(PHYREX)
-#include "migrep.h"
+#include "phyrex.h"
 int main(int argc, char **argv)
 {
   PHYREX_Main(argc,argv);
