@@ -279,41 +279,41 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   PHYREX_Init_Migrep_Mod(mmod,n_dim,width,height);
 
 
-  do
-    {
-      /* Effective population size */
-      minNe = 100.; maxNe = 5000.;
-      Ne = Uni() * (maxNe - minNe) + minNe;
+  /* do */
+  /*   { */
+  /*     /\* Effective population size *\/ */
+  /*     minNe = 100.; maxNe = 5000.; */
+  /*     Ne = Uni() * (maxNe - minNe) + minNe; */
       
-      /* Neighborhood size */
-      max_neigh = 0.01*Ne; min_neigh = 0.001*Ne;
-      neigh = Uni()*(max_neigh - min_neigh)  + min_neigh;
-    }
-  while(neigh < 2.0);
+  /*     /\* Neighborhood size *\/ */
+  /*     max_neigh = 0.01*Ne; min_neigh = 0.001*Ne; */
+  /*     neigh = Uni()*(max_neigh - min_neigh)  + min_neigh; */
+  /*   } */
+  /* while(neigh < 2.0); */
   
-  /* Death parameter */
-  mmod->mu = 2./neigh;
+  /* /\* Death parameter *\/ */
+  /* mmod->mu = 2./neigh; */
 
-  /* Theta (radius) */
-  tree->mmod->rad = Uni()*(4.0 - 1.5) + 1.5;
+  /* /\* Theta (radius) *\/ */
+  /* tree->mmod->rad = Uni()*(4.0 - 1.5) + 1.5; */
 
-  mmod->sigsq = neigh / (4.*PI*Ne/area);
+  /* mmod->sigsq = neigh / (4.*PI*Ne/area); */
 
-  tree->mmod->lbda = area * mmod->sigsq / (4.*PI*tree->mmod->mu*POW(tree->mmod->rad,4));
+  /* tree->mmod->lbda = area * mmod->sigsq / (4.*PI*tree->mmod->mu*POW(tree->mmod->rad,4)); */
 
   
-  /* mmod->lbda  = 0.04; */
-  /* mmod->mu    = 0.16; */
-  /* mmod->rad   = 2.75; */
-  /* neigh       = 2./mmod->mu; */
-  /* mmod->sigsq = PHYREX_Update_Sigsq(tree); */
+  mmod->lbda  = 0.04;
+  mmod->mu    = 0.16;
+  mmod->rad   = 2.75;
+  neigh       = 2./mmod->mu;
+  mmod->sigsq = PHYREX_Update_Sigsq(tree);
 
   PhyML_Printf("\n. lbda: %G mu: %G sigsq: %G rad: %G neigh: %G N: %G",
                mmod->lbda,mmod->mu,mmod->sigsq,mmod->rad,neigh,area*neigh/(4*PI*mmod->sigsq));
   fflush(NULL);
 
-  /* PHYREX_Simulate_Backward_Core(YES,tree->disk,tree); */
-  mmod->sampl_area = PHYREX_Simulate_Forward_Core(n_sites,tree);
+  PHYREX_Simulate_Backward_Core(YES,tree->disk,tree);
+  /* mmod->sampl_area = PHYREX_Simulate_Forward_Core(n_sites,tree); */
     
   PHYREX_Ldsk_To_Tree(tree);  
 

@@ -4478,14 +4478,14 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_sigsq]                 = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_disk]            = 4.0;
   mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ct]          = 1.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ud]          = 50.;
-  mcmc->move_weight[mcmc->num_move_phyrex_swap_disk]             = 50.;
+  mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ud]          = 5.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_swap_disk]             = 10.;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_hit]             = 4.0;
   mcmc->move_weight[mcmc->num_move_phyrex_move_ldsk]             = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_spr]                   = 5.0;
   mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           = 2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldscape_lim]           = 0.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 0.1;
+  mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 1.0;
 # else
   mcmc->move_weight[mcmc->num_move_phyrex_lbda]                  = 0.0;
@@ -4946,6 +4946,7 @@ void MCMC_PHYREX_Delete_Disk(phydbl hr, int n_delete_disks, t_tree *tree)
   t_dsk  *disk,**target_disk,**valid_disks;
   int i,j,block,n_valid_disks,*permut;
   phydbl new_lbda, cur_lbda;
+  phydbl new_rad, cur_rad;
   phydbl mean,sd;
   int n_tot_disks_cur,n_tot_disks_new;
   int err;
@@ -4959,6 +4960,7 @@ void MCMC_PHYREX_Delete_Disk(phydbl hr, int n_delete_disks, t_tree *tree)
   ratio           = 0.0;
   block           = 100;
   cur_lbda        = tree->mmod->lbda;
+  cur_rad         = tree->mmod->rad;
   n_tot_disks_cur = PHYREX_Total_Number_Of_Intervals(tree);
 
 
@@ -5034,8 +5036,37 @@ void MCMC_PHYREX_Delete_Disk(phydbl hr, int n_delete_disks, t_tree *tree)
                         mean + 2.*sd,
                         &err);
   
-
   tree->mmod->lbda = new_lbda;
+
+
+
+  /* Adjust value of radius */
+  mean = 1.1*cur_rad;
+  sd   = 0.1*mean;
+  new_rad = Rnorm_Trunc(mean,sd,
+                        tree->mmod->min_rad,
+                        tree->mmod->max_rad,
+                        &err);
+
+  
+  mean = 1.1*new_rad;
+  sd   = 0.1*mean;
+  hr += Log_Dnorm_Trunc(cur_rad,
+                        mean,sd,
+                        tree->mmod->min_rad,
+                        tree->mmod->max_rad,
+                        &err);
+
+  mean = 1.1*cur_rad;
+  sd   = 0.1*mean;
+  hr -= Log_Dnorm_Trunc(new_rad,
+                        mean,sd,
+                        tree->mmod->min_rad,
+                        tree->mmod->max_rad,
+                        &err);
+
+  tree->mmod->rad = new_rad;
+
 
   new_glnL = PHYREX_Lk(tree);
   ratio += (new_glnL - cur_glnL);
@@ -5054,6 +5085,7 @@ void MCMC_PHYREX_Delete_Disk(phydbl hr, int n_delete_disks, t_tree *tree)
   if(u > alpha) /* Reject */
     {
       tree->mmod->lbda = cur_lbda;
+      tree->mmod->rad  = cur_rad;
 
       /* printf("\nD Reject %f",target_disk[0]->time); */
       For(j,n_delete_disks) PHYREX_Insert_Disk(target_disk[j],tree);
@@ -5093,6 +5125,7 @@ void MCMC_PHYREX_Insert_Disk(phydbl hr, int n_insert_disks, t_tree *tree)
   phydbl u,alpha,ratio;
   int i,j,n_valid_disks;
   phydbl cur_lbda, new_lbda;
+  phydbl cur_rad, new_rad;
   int n_tot_disks_cur,n_tot_disks_new;
   int err;
   phydbl mean,sd;
@@ -5103,6 +5136,7 @@ void MCMC_PHYREX_Insert_Disk(phydbl hr, int n_insert_disks, t_tree *tree)
   new_glnL        = tree->mmod->c_lnL;
   cur_glnL        = tree->mmod->c_lnL;
   cur_lbda        = tree->mmod->lbda;
+  cur_rad         = tree->mmod->rad;
   n_tot_disks_cur = PHYREX_Total_Number_Of_Intervals(tree);
 
 
@@ -5182,6 +5216,39 @@ void MCMC_PHYREX_Insert_Disk(phydbl hr, int n_insert_disks, t_tree *tree)
 
   tree->mmod->lbda = new_lbda;
 
+
+
+  /* Adjust value of radius */
+  mean = 0.9*cur_rad;
+  sd   = 0.1*mean;
+  new_rad = Rnorm_Trunc(mean,sd,
+                        tree->mmod->min_rad,
+                        tree->mmod->max_rad,
+                        &err);
+
+  
+  mean = 0.9*new_rad;
+  sd   = 0.1*mean;
+  hr += Log_Dnorm_Trunc(cur_rad,
+                        mean,sd,
+                        tree->mmod->min_rad,
+                        tree->mmod->max_rad,
+                        &err);
+
+  mean = 0.9*cur_rad;
+  sd   = 0.1*mean;
+  hr -= Log_Dnorm_Trunc(new_rad,
+                        mean,sd,
+                        tree->mmod->min_rad,
+                        tree->mmod->max_rad,
+                        &err);
+
+  tree->mmod->rad = new_rad;
+
+
+
+
+
   new_glnL = PHYREX_Lk(tree);
   ratio = (new_glnL - cur_glnL);
   ratio += hr;
@@ -5199,6 +5266,7 @@ void MCMC_PHYREX_Insert_Disk(phydbl hr, int n_insert_disks, t_tree *tree)
   if(u > alpha) /* Reject */
     {
       tree->mmod->lbda = cur_lbda;
+      tree->mmod->rad  = cur_rad;
       
       /* printf("\nI Reject"); */
 
