@@ -3583,11 +3583,6 @@ void MCMC_Adjust_Tuning_Parameter(int move, t_mcmc *mcmc)
 	  rate_inf = 0.1;
 	  rate_sup = 0.1;
 	}
-      else if(!strcmp(mcmc->move_name[move],"phyrex_rad"))
-	{
-	  rate_inf = 0.1;
-	  rate_sup = 0.1;
-	}
       else if(!strcmp(mcmc->move_name[move],"subtree_height"))
 	{
 	  rate_inf = 0.2;
@@ -3599,17 +3594,6 @@ void MCMC_Adjust_Tuning_Parameter(int move, t_mcmc *mcmc)
 	  rate_sup = 0.1;
 	}
       else if(!strcmp(mcmc->move_name[move],"clock"))
-	{
-	  rate_inf = 0.1;
-	  rate_sup = 0.1;
-	}
-      else if(!strcmp(mcmc->move_name[move],"phyrex_scale_times"))
-	{
-	  rate_inf = 0.1;
-	  rate_sup = 0.1;
-	}
-
-      else if(!strcmp(mcmc->move_name[move],"phyrex_mu"))
 	{
 	  rate_inf = 0.1;
 	  rate_sup = 0.1;
@@ -6802,11 +6786,8 @@ void MCMC_PHYREX_Lineage_Traj(t_tree *tree)
   start_ldsk = end_ldsk->next[i];
   while(start_ldsk->n_next < 2 && start_ldsk->disk->next) start_ldsk = start_ldsk->next[0];
 
-
   if(end_ldsk == NULL)   Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   if(start_ldsk == NULL) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-
-
 
   /* n_hits = PHYREX_Total_Number_Of_Hit_Disks(tree) - PHYREX_Total_Number_Of_Coal_Disks(tree); */
   /* sizeT  = PHYREX_Time_Tree_Length(tree); */
@@ -6898,6 +6879,7 @@ void MCMC_PHYREX_Lineage_Traj(t_tree *tree)
   tree->mcmc->run_move[tree->mcmc->num_move_phyrex_traj]++;
 }
 #endif
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////
