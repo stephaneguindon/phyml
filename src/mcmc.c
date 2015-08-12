@@ -5865,11 +5865,7 @@ void MCMC_PHYREX_Swap_Disk(t_tree *tree)
   t_max = t_max - 1.E-10;
   t_min = t_min + 1.E-10;
 
-  if(t_max < t_min) 
-    {
-      PhyML_Printf("\n. t_min: %f t_max: %f",t_min,t_max);
-      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-    }
+  if(t_max < t_min) return;
 
   t = Uni()*(t_max - t_min) + t_min;
   target_disk->time = t;
