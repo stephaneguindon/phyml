@@ -5861,7 +5861,10 @@ void MCMC_PHYREX_Swap_Disk(t_tree *tree)
   For(i,target_disk->ldsk->n_next)
     if(target_disk->ldsk->next[i]->disk->time < t_max) 
       t_max = target_disk->ldsk->next[i]->disk->time;
-    
+  
+  t_max = t_max - 1.E-10;
+  t_min = t_min + 1.E-10;
+
   if(t_max < t_min) 
     {
       PhyML_Printf("\n. t_min: %f t_max: %f",t_min,t_max);
@@ -5873,33 +5876,6 @@ void MCMC_PHYREX_Swap_Disk(t_tree *tree)
 
   PHYREX_Remove_Disk(target_disk);
 
-  disk = target_disk->ldsk->prev->disk;
-  
-  if(!disk) 
-    {
-      PHYREX_Print_Struct('=',tree);
-      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-    }
-  
-  while(!(disk->time < t && disk->next->time > t)) 
-    {
-      disk = disk->next;     
-      if(!disk || disk->time > t) 
-        {
-          PhyML_Printf("\n. run: %d",tree->mcmc->run);
-          PhyML_Printf("\n. n_valid: %d",n_valid_disks);
-          PhyML_Printf("\n. name: %s n_next: %d ldsk: %s",target_disk->id,target_disk->ldsk->n_next,target_disk->ldsk->coord->id);
-          PhyML_Printf("\n. prev: %s next: %s",
-                       target_disk->ldsk->prev->coord->id,
-                       target_disk->ldsk->next[0]->coord->id);
-          PhyML_Printf("\n. t_min: %G t_max: %G",t_min,t_max);
-          PhyML_Printf("\n. target_t: %f",t);
-          PhyML_Printf("\n. disk->time: %f t: %f start: %f",disk?disk->time:+1.,t,target_disk->ldsk->prev->disk->time);
-          PHYREX_Print_Struct('=',tree);
-          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-        }
-    }
-  
   PHYREX_Insert_Disk(target_disk,tree);
 
   new_glnL = PHYREX_Lk(tree);
