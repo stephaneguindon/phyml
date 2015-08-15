@@ -484,6 +484,8 @@ void MCMC_Single_Param_Generic(phydbl *val,
       ratio = EXP(ratio);
       alpha = MIN(1.,ratio);
       
+      if(new_lnLike < UNLIKELY + 0.1) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+
       /* Always accept move */
       if(tree->mcmc->always_yes == YES && new_lnLike > UNLIKELY) alpha = 1.0;
 
@@ -5056,6 +5058,13 @@ void MCMC_PHYREX_Delete_Disk(phydbl hr, int n_delete_disks, t_tree *tree)
   ratio += (new_glnL - cur_glnL);
   ratio += hr;
   
+  if(new_glnL < UNLIKELY + 0.1) 
+    {
+      PhyML_Printf("\n== %f %f ",cur_glnL,new_glnL);
+      PhyML_Printf("\n== %s ",Write_Tree(tree,NO));
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
+
   ratio = EXP(ratio);
   alpha = MIN(1.,ratio);
 
@@ -5237,6 +5246,13 @@ void MCMC_PHYREX_Insert_Disk(phydbl hr, int n_insert_disks, t_tree *tree)
   ratio = (new_glnL - cur_glnL);
   ratio += hr;
   
+  if(new_glnL < UNLIKELY + 0.1) 
+    {
+      PhyML_Printf("\n== %f %f",cur_glnL,new_glnL);
+      PhyML_Printf("\n== %s",Write_Tree(tree,NO));
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
+
   ratio = EXP(ratio);
   alpha = MIN(1.,ratio);
   
@@ -5371,6 +5387,13 @@ void MCMC_PHYREX_Move_Disk_Centre(t_tree *tree)
   ratio += (new_glnL - cur_glnL);
   ratio += hr;
   
+  if(new_glnL < UNLIKELY + 0.1) 
+    {
+      PhyML_Printf("\n== %f %f",cur_glnL,new_glnL);
+      PhyML_Printf("\n== %s",Write_Tree(tree,NO));
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
+
   ratio = EXP(ratio);
   alpha = MIN(1.,ratio);
   
@@ -5506,6 +5529,13 @@ void MCMC_PHYREX_Move_Ldsk(t_tree *tree)
   ratio += (new_glnL - cur_glnL);
   ratio += hr;
   
+  if(new_glnL < UNLIKELY + 0.1) 
+    {
+      PhyML_Printf("\n== %f %f",cur_glnL,new_glnL);
+      PhyML_Printf("\n== %s",Write_Tree(tree,NO));
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
+
   ratio = EXP(ratio);
   alpha = MIN(1.,ratio);
   
@@ -5652,6 +5682,13 @@ void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree)
   ratio += (new_glnL - cur_glnL);
   ratio += hr;
   
+  if(new_glnL < UNLIKELY + 0.1) 
+    {
+      PhyML_Printf("\n== %f %f",cur_glnL,new_glnL);
+      PhyML_Printf("\n== %s",Write_Tree(tree,NO));
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
+
   ratio = EXP(ratio);
   alpha = MIN(1.,ratio);
   
@@ -5753,6 +5790,13 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree)
   ratio += (new_glnL - cur_glnL);
   ratio += hr;
   
+  if(new_glnL < UNLIKELY + 0.1) 
+    {
+      PhyML_Printf("\n== %f %f",cur_glnL,new_glnL);
+      PhyML_Printf("\n== %s",Write_Tree(tree,NO));
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
+
   ratio = EXP(ratio);
   alpha = MIN(1.,ratio);
   
@@ -5881,6 +5925,13 @@ void MCMC_PHYREX_Swap_Disk(t_tree *tree)
   ratio += (new_glnL - cur_glnL);
   ratio += hr;
   
+  if(new_glnL < UNLIKELY + 0.1) 
+    {
+      PhyML_Printf("\n== %f %f",cur_glnL,new_glnL);
+      PhyML_Printf("\n== %s",Write_Tree(tree,NO));
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
+
   ratio = EXP(ratio);
   alpha = MIN(1.,ratio);
 
@@ -6087,8 +6138,14 @@ void MCMC_PHYREX_Insert_Hit(phydbl hr, int n_insert_disks, t_tree *tree)
   hr -= LnFact(n_insert_disks);
 
   new_glnL = PHYREX_Lk(tree);
-  if(new_glnL < UNLIKELY + 0.1) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   
+  if(new_glnL < UNLIKELY + 0.1) 
+    {
+      PhyML_Printf("\n== %f %f",cur_glnL,new_glnL);
+      PhyML_Printf("\n== %s",Write_Tree(tree,NO));
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
+
   ratio = (new_glnL - cur_glnL);
   ratio += hr;  
 
@@ -6257,12 +6314,16 @@ void MCMC_PHYREX_Delete_Hit(phydbl hr, int n_delete_disks, t_tree *tree)
 
   Free(valid_disks);
 
-
   new_glnL = PHYREX_Lk(tree);
   ratio += (new_glnL - cur_glnL);
   ratio += hr;
 
-  if(new_glnL < UNLIKELY + 0.1) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(new_glnL < UNLIKELY + 0.1) 
+    {
+      PhyML_Printf("\n== %f %f",cur_glnL,new_glnL);
+      PhyML_Printf("\n== %s",Write_Tree(tree,NO));
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
 
   ratio = EXP(ratio);
   alpha = MIN(1.,ratio);
@@ -6514,12 +6575,16 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
 
   if(tree->mcmc->use_data == YES) new_alnL = Lk(NULL,tree);
 
-
   ratio += (new_alnL - cur_alnL);
   ratio += (new_glnL - cur_glnL);
   ratio += hr;
 
-  if(new_glnL < UNLIKELY + 0.1) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(new_glnL < UNLIKELY + 0.1) 
+    {
+      PhyML_Printf("\n== %f %f",cur_glnL,new_glnL);
+      PhyML_Printf("\n== %s",Write_Tree(tree,NO));
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
 
   ratio = EXP(ratio);
   alpha = MIN(1.,ratio);
@@ -6800,6 +6865,13 @@ void MCMC_PHYREX_Lineage_Traj(t_tree *tree)
   ratio += (new_glnL - cur_glnL);
   ratio += hr;
   
+  if(new_glnL < UNLIKELY + 0.1) 
+    {
+      PhyML_Printf("\n== %f %f",cur_glnL,new_glnL);
+      PhyML_Printf("\n== %s",Write_Tree(tree,NO));
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
+
   ratio = EXP(ratio);
   alpha = MIN(1.,ratio);
   

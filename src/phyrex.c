@@ -21,8 +21,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int PHYREX_Main(int argc, char *argv[])
 {
-  /* return(PHYREX_Main_Estimate(argc,argv)); */
-  return(PHYREX_Main_Simulate(argc,argv));
+  return(PHYREX_Main_Estimate(argc,argv));
+  /* return(PHYREX_Main_Simulate(argc,argv)); */
 }
 
 //////////////////////////////////////////////////////////////
@@ -151,7 +151,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   /* seed = 22776; */
   /* seed = 629; */
   /* seed = 12466; */
-  /* seed = 16205; */
+  /* seed = 18092; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -312,8 +312,8 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
                mmod->lbda,mmod->mu,mmod->sigsq,mmod->rad,neigh,area*neigh/(4*PI*mmod->sigsq));
   fflush(NULL);
 
-  /* PHYREX_Simulate_Backward_Core(YES,tree->disk,tree); */
-  mmod->sampl_area = PHYREX_Simulate_Forward_Core(n_sites,tree);
+  PHYREX_Simulate_Backward_Core(YES,tree->disk,tree);
+  /* mmod->sampl_area = PHYREX_Simulate_Forward_Core(n_sites,tree); */
     
   PHYREX_Ldsk_To_Tree(tree);  
 
@@ -400,14 +400,14 @@ phydbl PHYREX_Simulate_Backward_Core(int new_loc, t_dsk *init_disk, t_tree *tree
           PHYREX_Init_Lindisk_Node(init_disk->ldsk_a[i],init_disk,n_dim);
         }
 
-      PhyML_Printf("\n. WARNING: position of samples are not random.");
+      /* PhyML_Printf("\n. WARNING: position of samples are not random."); */
       /* Generate coordinates for the tip nodes (uniform distribution on the rectangle) */
       For(i,tree->n_otu)
         {
-          /* init_disk->ldsk_a[i]->coord->lonlat[0] = Uni()*tree->mmod->lim->lonlat[0]; // longitude */
-          /* init_disk->ldsk_a[i]->coord->lonlat[1] = Uni()*tree->mmod->lim->lonlat[1]; // latitude */
-          init_disk->ldsk_a[i]->coord->lonlat[0] = (i/(int)SQRT(tree->n_otu)+1)*tree->mmod->lim->lonlat[0]/(SQRT(tree->n_otu)+1); // longitude
-          init_disk->ldsk_a[i]->coord->lonlat[1] = (i%(int)SQRT(tree->n_otu)+1)*tree->mmod->lim->lonlat[1]/(SQRT(tree->n_otu)+1); // latitude
+          init_disk->ldsk_a[i]->coord->lonlat[0] = Uni()*tree->mmod->lim->lonlat[0]; // longitude
+          init_disk->ldsk_a[i]->coord->lonlat[1] = Uni()*tree->mmod->lim->lonlat[1]; // latitude
+          /* init_disk->ldsk_a[i]->coord->lonlat[0] = (i/(int)SQRT(tree->n_otu)+1)*tree->mmod->lim->lonlat[0]/(SQRT(tree->n_otu)+1); // longitude */
+          /* init_disk->ldsk_a[i]->coord->lonlat[1] = (i%(int)SQRT(tree->n_otu)+1)*tree->mmod->lim->lonlat[1]/(SQRT(tree->n_otu)+1); // latitude */
         }
     }
 
@@ -1237,6 +1237,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       For(move,tree->mcmc->n_moves) if(tree->mcmc->move_weight[move] > u-1.E-10) break;
 
       if(move == tree->mcmc->n_moves) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+
+      /* PhyML_Printf("\n. %s %f",tree->mcmc->move_name[move],tree->mmod->c_lnL); */
       
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_lbda"))
         MCMC_PHYREX_Lbda(tree);
@@ -1283,8 +1285,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"kappa"))
         MCMC_Kappa(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"ras")) */
-      /*   MCMC_Rate_Across_Sites(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"ras"))
+        MCMC_Rate_Across_Sites(tree);
 
       /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_ldscape_lim")) */
       /*   MCMC_PHYREX_Ldscape_Limits(tree); */
