@@ -85,11 +85,11 @@ int Read_Nexus_Taxa(char *token, nexparm *curr_parm, option *io)
 
   do
     {
-      Get_Token(io->fp_in_tree,token);
+      Get_Token(io->fp_in_align,token);
       if(token[0] == ';') break;
     }while(strlen(token) > 0);
   
-  fseek(io->fp_in_tree,-1*sizeof(char),SEEK_CUR);
+  fseek(io->fp_in_align,-1*sizeof(char),SEEK_CUR);
 
   return 1;
 }
