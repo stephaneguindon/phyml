@@ -129,6 +129,8 @@ phydbl Brownian_Bridge_Logdensity(phydbl start, phydbl end, phydbl *state, phydb
 phydbl Reflected(phydbl x, phydbl down, phydbl up);
 phydbl *Random_Walk_Generate(phydbl var, int n_steps);
 phydbl *Random_Walk_Bridged_Generate(phydbl start, phydbl end, phydbl var, int n_steps);
+phydbl Dnbinom(phydbl x, phydbl n, phydbl p, int logit);
+phydbl Rnbinom(phydbl n, phydbl p);
 
 
 

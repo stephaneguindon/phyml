@@ -151,7 +151,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   /* seed = 22776; */
   /* seed = 629; */
   /* seed = 12466; */
-  /* seed = 18092; */
+  seed = 19057;
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -312,8 +312,8 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
                mmod->lbda,mmod->mu,mmod->sigsq,mmod->rad,neigh,area*neigh/(4*PI*mmod->sigsq));
   fflush(NULL);
 
-  PHYREX_Simulate_Backward_Core(YES,tree->disk,tree);
-  /* mmod->sampl_area = PHYREX_Simulate_Forward_Core(n_sites,tree); */
+  /* PHYREX_Simulate_Backward_Core(YES,tree->disk,tree); */
+  mmod->sampl_area = PHYREX_Simulate_Forward_Core(n_sites,tree);
     
   PHYREX_Ldsk_To_Tree(tree);  
 
@@ -1191,6 +1191,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
   PhyML_Fprintf(fp_stats,"\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t",
                 "sample",
+                "lnP",
                 "alnL",
                 "glnL",
                 "lbda",
@@ -1306,8 +1307,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           disk = tree->disk;
           while(disk->prev) disk = disk->prev;
 
-          PhyML_Fprintf(fp_stats,"\n%6d\t%9.1f\t%9.1f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6d\t%6d\t%6d\t%8.1f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%G",
+          PhyML_Fprintf(fp_stats,"\n%6d\t%9.1f\t%9.1f\t%9.1f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6d\t%6d\t%6d\t%8.1f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%G",
                         tree->mcmc->run,
+                        tree->c_lnL+tree->mmod->c_lnL,
                         tree->c_lnL,
                         tree->mmod->c_lnL,
                         tree->mmod->lbda,
@@ -1436,20 +1438,12 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           tree->mcmc->sample_num++;
         }
 
-      /* PHYREX_Print_Struct('*',tree); */
-      /* disk = tree->disk; */
-      /* while(disk && disk->prev) disk = disk->prev; */
-      /* printf("\n. T: %f %f",disk->time,tree->mmod->c_lnL); */
-      /* Exit("\n"); */
-      /* if(!(tree->mcmc->run%(20*tree->mcmc->sample_interval))) */
-      /*   { */
-      /*   } */
 
 
       if(tree->mcmc->sample_num > 1E+2                             &&
-         tree->mcmc->ess[tree->mcmc->num_move_phyrex_lbda]  > 100. &&
-         tree->mcmc->ess[tree->mcmc->num_move_phyrex_mu]    > 100. &&
-         tree->mcmc->ess[tree->mcmc->num_move_phyrex_sigsq] > 100.) break;
+         tree->mcmc->ess[tree->mcmc->num_move_phyrex_lbda]  > 300. &&
+         tree->mcmc->ess[tree->mcmc->num_move_phyrex_mu]    > 300. &&
+         tree->mcmc->ess[tree->mcmc->num_move_phyrex_sigsq] > 300.) break;
 
       /* if(tree->mcmc->run > tree->mcmc->sample_interval           &&  */
       /*    tree->mcmc->ess[tree->mcmc->num_move_phyrex_lbda]  > 1. && */
