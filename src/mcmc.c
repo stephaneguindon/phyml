@@ -4472,7 +4472,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           = 2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldscape_lim]           = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 1.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 0.1;
+  mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 10.;
 # else
   mcmc->move_weight[mcmc->num_move_phyrex_lbda]                  = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_mu]                    = 0.0;
@@ -6877,14 +6877,14 @@ void MCMC_PHYREX_Simulate_Backward(t_tree *tree)
   /*   } */
 
 
-  new_lbda = cur_lbda * EXP(2.0*(Uni()-.5));
-  hr += LOG(new_lbda/cur_lbda);
+  /* new_lbda = cur_lbda * EXP(0.2*(Uni()-.5)); */
+  /* hr += LOG(new_lbda/cur_lbda); */
   
-  new_mu = cur_mu * EXP(0.5*(Uni()-.5));
-  hr += LOG(new_mu/cur_mu);
+  /* new_mu = cur_mu * EXP(0.05*(Uni()-.5)); */
+  /* hr += LOG(new_mu/cur_mu); */
 
-  new_rad = cur_rad * EXP(2.0*(Uni()-.5));
-  hr += LOG(new_rad/cur_rad);
+  /* new_rad = cur_rad * EXP(0.2*(Uni()-.5)); */
+  /* hr += LOG(new_rad/cur_rad); */
 
 
   if(new_lbda > tree->mmod->max_lbda || new_lbda < tree->mmod->min_lbda) return;
