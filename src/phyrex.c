@@ -151,7 +151,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   /* seed = 22776; */
   /* seed = 629; */
   /* seed = 12466; */
-  /* seed = 31615; */
+  /* seed = 19057; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -1161,9 +1161,14 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   true_height = PHYREX_Tree_Height(tree);
 
   /* Starting parameter values */
-  tree->mmod->lbda = Uni()*(0.5 - 0.01) + 0.01;
-  tree->mmod->mu   = Uni()*(0.6 - 0.3) + 0.3;
-  tree->mmod->rad  = Uni()*(4.0 - 2.0) + 2.0;
+  /* tree->mmod->lbda = Uni()*(0.5 - 0.01) + 0.01; */
+  /* tree->mmod->mu   = Uni()*(0.6 - 0.3) + 0.3; */
+  /* tree->mmod->rad  = Uni()*(4.0 - 2.0) + 2.0; */
+  /* PHYREX_Update_Sigsq(tree); */
+
+  tree->mmod->lbda = Uni()*(0.5 - 0.2) + 0.2;
+  tree->mmod->mu   = Uni()*(0.3 - 0.1) + 0.1;
+  tree->mmod->rad  = Uni()*(2.0 - 1.0) + 1.0;
   PHYREX_Update_Sigsq(tree);
 
   /* MCMC_Randomize_Rate_Across_Sites(tree); */
