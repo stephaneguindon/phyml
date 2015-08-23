@@ -4471,8 +4471,8 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_spr]                   =  1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           =  2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldscape_lim]           =  0.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_sim]                   =  1.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_traj]                  =  0.5;
+  mcmc->move_weight[mcmc->num_move_phyrex_sim]                   =  0.1;
+  mcmc->move_weight[mcmc->num_move_phyrex_traj]                  =  1.0;
 # else
   mcmc->move_weight[mcmc->num_move_phyrex_lbda]                  = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_mu]                    = 0.0;
