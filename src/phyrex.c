@@ -151,7 +151,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   /* seed = 22776; */
   /* seed = 629; */
   /* seed = 12466; */
-  /* seed = 19057; */
+  /* seed = 19809; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -312,8 +312,8 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
                mmod->lbda,mmod->mu,mmod->sigsq,mmod->rad,neigh,area*neigh/(4*PI*mmod->sigsq));
   fflush(NULL);
 
-  /* PHYREX_Simulate_Backward_Core(YES,tree->disk,tree); */
-  mmod->sampl_area = PHYREX_Simulate_Forward_Core(n_sites,tree);
+  PHYREX_Simulate_Backward_Core(YES,tree->disk,tree);
+  /* mmod->sampl_area = PHYREX_Simulate_Forward_Core(n_sites,tree); */
     
   PHYREX_Ldsk_To_Tree(tree);  
 
@@ -1160,7 +1160,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   true_nhits  = PHYREX_Total_Number_Of_Hit_Disks(tree);
   true_height = PHYREX_Tree_Height(tree);
 
-  /* Starting parameter values */
+  /* /\* Starting parameter values *\/ */
   /* tree->mmod->lbda = Uni()*(0.5 - 0.01) + 0.01; */
   /* tree->mmod->mu   = Uni()*(0.6 - 0.3) + 0.3; */
   /* tree->mmod->rad  = Uni()*(4.0 - 2.0) + 2.0; */
@@ -1312,7 +1312,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           disk = tree->disk;
           while(disk->prev) disk = disk->prev;
 
-          PhyML_Fprintf(fp_stats,"\n%6d\t%9.1f\t%9.1f\t%9.1f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6d\t%6d\t%6d\t%8.1f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%G",
+          PhyML_Fprintf(fp_stats,"\n%6d\t%9.1f\t%9.1f\t%9.1f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6d\t%6d\t%6d\t%8.1f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f",
                         tree->mcmc->run,
                         tree->c_lnL+tree->mmod->c_lnL,
                         tree->c_lnL,
@@ -1341,8 +1341,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
                         tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_traj],
                         tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_sim],
                         tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_move_ldsk],
-                        tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_move_disk_ct],
-                        tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_scale_times]);
+                        tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_move_disk_ct]);
 
           fflush(fp_stats);
           
@@ -1393,9 +1392,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
                         /* mu5 */   Quantile(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
                         /* mu50 */  Quantile(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
                         /* mu95 */  Quantile(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975),
-                        /* muMod */ tree->mcmc->mode[tree->mcmc->num_move_phyrex_mu]);
-          
-          
+                        /* muMod */ 2./tree->mcmc->mode[tree->mcmc->num_move_phyrex_mu]);
+                    
           PhyML_Fprintf(fp_summary,"%f\t %f\t %f\t %f\t",
                         /* sig5 */   Quantile(res+2*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
                         /* sig50*/   Quantile(res+2*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
@@ -1403,10 +1401,10 @@ phydbl *PHYREX_MCMC(t_tree *tree)
                         /* sigMod */ tree->mcmc->mode[tree->mcmc->num_move_phyrex_sigsq]);
           
           PhyML_Fprintf(fp_summary,"%f\t %f\t %f\t %f\t",
-                        /* Neigh5 */ Quantile(res+3*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
-                        /* Neigh50*/ Quantile(res+3*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
-                        /* Neigh95*/ Quantile(res+3*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975),
-                        /* NeighMod */ 2./tree->mcmc->mode[tree->mcmc->num_move_phyrex_mu]); // Approximate ?
+                        /* Neigh5 */   Quantile(res+3*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
+                        /* Neigh50*/   Quantile(res+3*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
+                        /* Neigh95*/   Quantile(res+3*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975),
+                        /* NeighMod */ tree->mcmc->mode[tree->mcmc->num_move_phyrex_mu]);
           
           PhyML_Fprintf(fp_summary,"%f\t %f\t %f\t",
                         /* Rad5 */  Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
@@ -1446,9 +1444,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
 
       if(tree->mcmc->sample_num > 1E+2                             &&
-         tree->mcmc->ess[tree->mcmc->num_move_phyrex_lbda]  > 300. &&
-         tree->mcmc->ess[tree->mcmc->num_move_phyrex_mu]    > 300. &&
-         tree->mcmc->ess[tree->mcmc->num_move_phyrex_sigsq] > 300.) break;
+         tree->mcmc->ess[tree->mcmc->num_move_phyrex_lbda]  > 100. &&
+         tree->mcmc->ess[tree->mcmc->num_move_phyrex_mu]    > 100. &&
+         tree->mcmc->ess[tree->mcmc->num_move_phyrex_sigsq] > 100.) break;
 
       /* if(tree->mcmc->run > tree->mcmc->sample_interval           &&  */
       /*    tree->mcmc->ess[tree->mcmc->num_move_phyrex_lbda]  > 1. && */
@@ -2441,9 +2439,10 @@ phydbl PHYREX_Wrap_Prior_Radius(t_edge *e, t_tree *tree, supert_tree *st)
 
 phydbl PHYREX_LnPrior_Lbda(t_tree *tree)
 {
-  tree->mmod->c_ln_prior_lbda = 
-    LOG(tree->mmod->prior_param_lbda) - 
-    tree->mmod->prior_param_lbda*tree->mmod->lbda; 
+  /* tree->mmod->c_ln_prior_lbda =  */
+  /*   LOG(tree->mmod->prior_param_lbda) -  */
+  /*   tree->mmod->prior_param_lbda*tree->mmod->lbda;  */
+  tree->mmod->c_ln_prior_lbda = 1.0;
   return(tree->mmod->c_ln_prior_lbda);
 }
 
