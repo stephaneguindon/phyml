@@ -1720,6 +1720,7 @@ typedef struct __Disk_Event{
   struct __Lindisk_Node         *ldsk;
   struct __Migrep_Model         *mmod;
   char                            *id;
+  phydbl                        c_lnL;
 }t_dsk;
 
 /*!********************************************************/

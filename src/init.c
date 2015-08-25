@@ -3430,7 +3430,7 @@ void PHYREX_Init_Migrep_Mod(t_phyrex_mod *t, int n_dim, phydbl max_lat, phydbl m
   t->lim->lonlat[1]   = max_lon;
 
   t->lbda             = 1.E-0;
-  t->min_lbda         = 0.0;
+  t->min_lbda         = 1.E-3;
   t->max_lbda         = 1.E+2;
   t->prior_param_lbda = 1.0;
 
