@@ -151,7 +151,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   /* seed = 22776; */
   /* seed = 629; */
   /* seed = 12466; */
-  /* seed = 17429; */
+  /* seed = 24153; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -1074,10 +1074,11 @@ phydbl PHYREX_Lk(t_tree *tree)
   while(1);
   
   /* lnL += (n_inter)*LOG(mmod->lbda) + mmod->lbda*disk->time; */
-  
+  /* mmod->c_lnL = lnL; */
+  /* mmod->c_lnL = 0.0; */
+
   if(isinf(mmod->c_lnL) || isnan(mmod->c_lnL)) mmod->c_lnL = UNLIKELY;
   
-  /* mmod->c_lnL = 0.0; */
   
   /* TO DO: create a proper PHYREX_LogPost() function */
   mmod->c_lnL += PHYREX_LnPrior_Radius(tree);
@@ -1166,16 +1167,16 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   true_nhits  = PHYREX_Total_Number_Of_Hit_Disks(tree);
   true_height = PHYREX_Tree_Height(tree);
 
-  /* /\* Starting parameter values *\/ */
-  /* tree->mmod->lbda = Uni()*(0.5 - 0.01) + 0.01; */
-  /* tree->mmod->mu   = Uni()*(0.6 - 0.3) + 0.3; */
-  /* tree->mmod->rad  = Uni()*(4.0 - 2.0) + 2.0; */
-  /* PHYREX_Update_Sigsq(tree); */
-
-  tree->mmod->lbda = Uni()*(0.5 - 0.2) + 0.2;
-  tree->mmod->mu   = Uni()*(0.3 - 0.1) + 0.1;
-  tree->mmod->rad  = Uni()*(2.0 - 1.0) + 1.0;
+  /* Starting parameter values */
+  tree->mmod->lbda = Uni()*(0.5 - 0.01) + 0.01;
+  tree->mmod->mu   = Uni()*(0.6 - 0.3) + 0.3;
+  tree->mmod->rad  = Uni()*(4.0 - 2.0) + 2.0;
   PHYREX_Update_Sigsq(tree);
+
+  /* tree->mmod->lbda = Uni()*(0.5 - 0.2) + 0.2; */
+  /* tree->mmod->mu   = Uni()*(0.3 - 0.1) + 0.1; */
+  /* tree->mmod->rad  = Uni()*(2.0 - 1.0) + 1.0; */
+  /* PHYREX_Update_Sigsq(tree); */
 
   /* MCMC_Randomize_Rate_Across_Sites(tree); */
   MCMC_Randomize_Kappa(tree);
@@ -2451,10 +2452,15 @@ phydbl PHYREX_LnPrior_Lbda(t_tree *tree)
   if(tree->mmod->lbda < tree->mmod->min_lbda) return UNLIKELY;
   if(tree->mmod->lbda > tree->mmod->max_lbda) return UNLIKELY;
 
-  /* tree->mmod->c_ln_prior_lbda =  */
-  /*   LOG(tree->mmod->prior_param_lbda) -  */
-  /*   tree->mmod->prior_param_lbda*tree->mmod->lbda;  */
-  tree->mmod->c_ln_prior_lbda = -LOG(tree->mmod->max_lbda - tree->mmod->min_lbda);;
+  tree->mmod->c_ln_prior_lbda =
+    LOG(tree->mmod->prior_param_lbda) -
+    tree->mmod->prior_param_lbda*tree->mmod->lbda;
+
+  tree->mmod->c_ln_prior_lbda -= LOG(EXP(-tree->mmod->prior_param_lbda*tree->mmod->min_lbda)-
+                                     EXP(-tree->mmod->prior_param_lbda*tree->mmod->max_lbda));
+
+  /* tree->mmod->c_ln_prior_lbda = -LOG(tree->mmod->max_lbda - tree->mmod->min_lbda);; */
+
   return(tree->mmod->c_ln_prior_lbda);
 }
 
@@ -2466,8 +2472,8 @@ phydbl PHYREX_LnPrior_Mu(t_tree *tree)
   if(tree->mmod->mu < tree->mmod->min_mu) return UNLIKELY;
   if(tree->mmod->mu > tree->mmod->max_mu) return UNLIKELY;
 
-  /* tree->mmod->c_ln_prior_mu = LOG(tree->mmod->prior_param_mu) - tree->mmod->prior_param_mu * (1. - tree->mmod->mu) - LOG(1.-EXP(-tree->mmod->prior_param_mu)); */
   tree->mmod->c_ln_prior_mu = -LOG(tree->mmod->max_mu - tree->mmod->min_mu);
+
   return(tree->mmod->c_ln_prior_mu);
 }
 
@@ -2479,10 +2485,15 @@ phydbl PHYREX_LnPrior_Radius(t_tree *tree)
   if(tree->mmod->rad < tree->mmod->min_rad) return UNLIKELY;
   if(tree->mmod->rad > tree->mmod->max_rad) return UNLIKELY;
 
-  /* tree->mmod->c_ln_prior_rad = -LOG(tree->mmod->max_rad - tree->mmod->min_rad); */
   tree->mmod->c_ln_prior_rad =
     LOG(tree->mmod->prior_param_rad) -
     tree->mmod->prior_param_rad*tree->mmod->rad;
+
+  tree->mmod->c_ln_prior_rad -= LOG(EXP(-tree->mmod->prior_param_lbda*tree->mmod->min_rad)-
+                                    EXP(-tree->mmod->prior_param_lbda*tree->mmod->max_rad));
+
+  /* tree->mmod->c_ln_prior_rad = -LOG(tree->mmod->max_rad - tree->mmod->min_rad); */
+
   return(tree->mmod->c_ln_prior_rad);
 }
 

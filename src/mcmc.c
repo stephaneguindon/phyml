@@ -6826,7 +6826,6 @@ void MCMC_PHYREX_Simulate_Backward(t_tree *tree)
   t_ldsk **bkp_ldsk;
   int i;
 
-
   disk        = NULL;
   bkp_disk    = NULL;
   target_disk = NULL;
@@ -6843,7 +6842,6 @@ void MCMC_PHYREX_Simulate_Backward(t_tree *tree)
   cur_glnL_down = UNLIKELY;
   new_glnL_down = UNLIKELY;
 
-
   cur_lbda    = tree->mmod->lbda;
   cur_rad     = tree->mmod->rad;
   cur_mu      = tree->mmod->mu;
@@ -6851,12 +6849,6 @@ void MCMC_PHYREX_Simulate_Backward(t_tree *tree)
   new_lbda    = cur_lbda;
   new_rad     = cur_rad;
   new_mu      = cur_mu;
-
-
-  /* u = Uni(); */
-  /* if(u < 0.33)                  new_lbda    = cur_lbda + Rnorm(0.0,0.1); */
-  /* else if(u < 0.66 && u > 0.33) new_mu      = cur_mu   + Rnorm(0.0,0.1); */
-  /* else                          new_rad     = cur_rad  + Rnorm(0.0,0.1); */
 
 
   u = Uni();
@@ -6877,13 +6869,13 @@ void MCMC_PHYREX_Simulate_Backward(t_tree *tree)
     }
 
 
-  /* new_lbda = cur_lbda * EXP(0.2*(Uni()-.5)); */
+  /* new_lbda = cur_lbda * EXP(0.5*(Uni()-.5)); */
   /* hr += LOG(new_lbda/cur_lbda); */
   
-  /* new_mu = cur_mu * EXP(0.05*(Uni()-.5)); */
+  /* new_mu = cur_mu * EXP(0.2*(Uni()-.5)); */
   /* hr += LOG(new_mu/cur_mu); */
 
-  /* new_rad = cur_rad * EXP(0.2*(Uni()-.5)); */
+  /* new_rad = cur_rad * EXP(0.5*(Uni()-.5)); */
   /* hr += LOG(new_rad/cur_rad); */
 
 
@@ -6895,27 +6887,33 @@ void MCMC_PHYREX_Simulate_Backward(t_tree *tree)
   tree->mmod->mu   = new_mu;
   tree->mmod->rad  = new_rad;
 
-  disk = tree->disk;
-  while(disk->prev) disk = disk->prev;
-  do
-    {
-      disk = disk->next;
-      if(disk->ldsk && disk->ldsk->n_next > 1) break;
-    }
-  while(1);
-  target_disk = disk;
+  /* disk = tree->disk; */
+  /* while(disk->prev) disk = disk->prev; */
+  /* do */
+  /*   { */
+  /*     disk = disk->next; */
+  /*     if(disk->ldsk && disk->ldsk->n_next > 1) break; */
+  /*   } */
+  /* while(1); */
+  /* target_disk = disk; */
 
   /* Chop off the tree at time t and simulate upwards from here */
-  /* T =  PHYREX_Tree_Height(tree); */
-  /* t = Uni()*T; */
+  T = PHYREX_Tree_Height(tree);
+  t = Uni()*T;
 
-  /* disk = tree->disk; */
-  /* while(disk && disk->time > t) disk = disk->prev; */
-  /* target_disk = disk->next; */
+  disk = tree->disk;
+  while(disk && disk->time > t) disk = disk->prev;
+  target_disk = disk->next;
 
-  /* hr -= LOG(FABS((target_disk->prev->time - target_disk->time)/T)); */
+  hr -= LOG(FABS((target_disk->prev->time - target_disk->time)/T));
 
-  if(target_disk->next == NULL) return; 
+  if(target_disk->next == NULL) 
+    {
+      tree->mmod->lbda = cur_lbda;
+      tree->mmod->mu   = cur_mu;
+      tree->mmod->rad  = cur_rad;      
+      return; 
+    }
 
   cur_glnL_down = target_disk->c_lnL;
 
@@ -6925,9 +6923,9 @@ void MCMC_PHYREX_Simulate_Backward(t_tree *tree)
   For(i,target_disk->n_ldsk_a) bkp_ldsk[i] = target_disk->ldsk_a[i]->prev;
   
   PHYREX_Simulate_Backward_Core(NO,target_disk,tree);
-
-  /* T =  PHYREX_Tree_Height(tree); */
-  /* hr += LOG(FABS((target_disk->prev->time - target_disk->time)/T)); */
+  
+  T =  PHYREX_Tree_Height(tree);
+  hr += LOG(FABS((target_disk->prev->time - target_disk->time)/T));
     
   PHYREX_Lk(tree);
   new_glnL_down = target_disk->c_lnL;
