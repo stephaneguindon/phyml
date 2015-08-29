@@ -4470,7 +4470,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_spr]                   =  1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           =  2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldscape_lim]           =  0.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_sim]                   =  0.1;
+  mcmc->move_weight[mcmc->num_move_phyrex_sim]                   =  1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_traj]                  =  1.0;
 # else
   mcmc->move_weight[mcmc->num_move_phyrex_lbda]                  = 0.0;
@@ -4895,9 +4895,8 @@ void MCMC_PHYREX_Indel_Disk(t_tree *tree)
 {
   int n_disks_cur, n_disks_new;
   t_dsk  *disk;
-  phydbl hr,K;
+  phydbl hr;
 
-  K  = 1.0;
   hr = 0.0;
 
   disk = tree->disk->prev;
@@ -4909,20 +4908,20 @@ void MCMC_PHYREX_Indel_Disk(t_tree *tree)
     }
   while(disk && disk->prev);
 
-  /* n_disks_new = (int)Rpois(K*n_disks_cur); */
+  n_disks_new = (int)Rpois(n_disks_cur+1);
   
-  /* hr += Dpois(n_disks_cur,K*n_disks_new,YES); */
-  /* hr -= Dpois(n_disks_new,K*n_disks_cur,YES); */
+  hr += Dpois(n_disks_cur,n_disks_new+1,YES);
+  hr -= Dpois(n_disks_new,n_disks_cur+1,YES);
 
-  phydbl e,v;
+  /* phydbl e,v; */
 
-  e = (phydbl)n_disks_cur;
-  v = 1.+e*2.0;
+  /* e = (phydbl)n_disks_cur; */
+  /* v = 1.+e*2.0; */
 
-  n_disks_new = (int)Rnbinom(e*e/(v-e),e/v);
+  /* n_disks_new = (int)Rnbinom(e*e/(v-e),e/v); */
   
-  hr += Dnbinom(n_disks_cur,e*e/(v-e),e/v,YES);
-  hr -= Dnbinom(n_disks_new,e*e/(v-e),e/v,YES);
+  /* hr += Dnbinom(n_disks_cur,e*e/(v-e),e/v,YES); */
+  /* hr -= Dnbinom(n_disks_new,e*e/(v-e),e/v,YES); */
 
   if(n_disks_new < n_disks_cur) MCMC_PHYREX_Delete_Disk(hr, n_disks_cur - n_disks_new ,tree);
   else                          MCMC_PHYREX_Insert_Disk(hr, n_disks_new - n_disks_cur,tree);  
@@ -4945,6 +4944,8 @@ void MCMC_PHYREX_Delete_Disk(phydbl hr, int n_delete_disks, t_tree *tree)
   phydbl mean,sd;
   int n_tot_disks_cur,n_tot_disks_new;
   int err;
+
+  tree->mcmc->run_move[tree->mcmc->num_move_phyrex_indel_disk]++;
 
   if(n_delete_disks == 0) return;
 
@@ -5112,8 +5113,6 @@ void MCMC_PHYREX_Delete_Disk(phydbl hr, int n_delete_disks, t_tree *tree)
       tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_indel_disk]++;
     }
 
-  tree->mcmc->run_move[tree->mcmc->num_move_phyrex_indel_disk]++;
-
   Free(target_disk);
   Free(permut);
 }
@@ -5135,6 +5134,8 @@ void MCMC_PHYREX_Insert_Disk(phydbl hr, int n_insert_disks, t_tree *tree)
   int n_tot_disks_cur,n_tot_disks_new;
   int err;
   phydbl mean,sd;
+
+  tree->mcmc->run_move[tree->mcmc->num_move_phyrex_indel_disk]++;
 
   if(n_insert_disks == 0) return; 
 
@@ -5306,7 +5307,6 @@ void MCMC_PHYREX_Insert_Disk(phydbl hr, int n_insert_disks, t_tree *tree)
       tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_indel_disk]++;
     }
 
-  tree->mcmc->run_move[tree->mcmc->num_move_phyrex_indel_disk]++;
   Free(target_disk);
   Free(new_disk);
 }
@@ -5992,7 +5992,6 @@ void MCMC_PHYREX_Indel_Hit(t_tree *tree)
   t_dsk  *disk;
   phydbl hr,K;
   
-  K  = 1.0;
   hr = 0.0;
 
   disk = tree->disk->prev;
@@ -6005,22 +6004,21 @@ void MCMC_PHYREX_Indel_Hit(t_tree *tree)
   while(disk && disk->prev);
   
 
-  /* n_disks_new = (int)Rpois(K*n_disks_cur); */
+  n_disks_new = (int)Rpois(n_disks_cur+1);
   
-  /* hr += Dpois(n_disks_cur,K*n_disks_new,YES); */
-  /* hr -= Dpois(n_disks_new,K*n_disks_cur,YES); */
+  hr += Dpois(n_disks_cur,n_disks_new+1,YES);
+  hr -= Dpois(n_disks_new,n_disks_cur+1,YES);
 
 
-  phydbl e,v;
+  /* phydbl e,v; */
 
-  e = (phydbl)n_disks_cur;
-  v = 1.+e*1.5;
+  /* e = (phydbl)n_disks_cur; */
+  /* v = 1.+e*1.5; */
 
-  n_disks_new = (int)Rnbinom(e*e/(v-e),e/v);
+  /* n_disks_new = (int)Rnbinom(e*e/(v-e),e/v); */
   
-  hr += Dnbinom(n_disks_cur,e*e/(v-e),e/v,YES);
-  hr -= Dnbinom(n_disks_new,e*e/(v-e),e/v,YES);
-
+  /* hr += Dnbinom(n_disks_cur,e*e/(v-e),e/v,YES); */
+  /* hr -= Dnbinom(n_disks_new,e*e/(v-e),e/v,YES); */
 
   if(n_disks_new < n_disks_cur) MCMC_PHYREX_Delete_Hit(hr, n_disks_cur - n_disks_new ,tree);
   else                          MCMC_PHYREX_Insert_Hit(hr, n_disks_new - n_disks_cur,tree);  
@@ -6043,6 +6041,8 @@ void MCMC_PHYREX_Insert_Hit(phydbl hr, int n_insert_disks, t_tree *tree)
   /* phydbl cur_lbda, new_lbda; */
   /* int n_tot_disks_new, n_tot_disks_cur; */
 
+  tree->mcmc->run_move[tree->mcmc->num_move_phyrex_indel_hit]++;
+
   disk            = NULL;
   new_glnL        = tree->mmod->c_lnL;
   cur_glnL        = tree->mmod->c_lnL;
@@ -6060,7 +6060,7 @@ void MCMC_PHYREX_Insert_Hit(phydbl hr, int n_insert_disks, t_tree *tree)
     }
   while(disk && disk->prev);
   
-  if(n_insert_disks == 0)  { return; }
+  if(n_insert_disks == 0) return; 
 
   new_disk      = (t_dsk **)mCalloc(n_insert_disks,sizeof(t_dsk *));
   new_ldsk      = (t_ldsk **)mCalloc(n_insert_disks,sizeof(t_ldsk *));
@@ -6213,7 +6213,6 @@ void MCMC_PHYREX_Insert_Hit(phydbl hr, int n_insert_disks, t_tree *tree)
       tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_indel_hit]++;
     }
 
-  tree->mcmc->run_move[tree->mcmc->num_move_phyrex_indel_hit]++;
 
   Free(new_disk);
   Free(new_ldsk);
@@ -6238,6 +6237,8 @@ void MCMC_PHYREX_Delete_Hit(phydbl hr, int n_delete_disks, t_tree *tree)
   int i,j,block,n_valid_disks,*dir_old_young,*permut,err;
   /* phydbl cur_lbda, new_lbda; */
   /* int n_tot_disks_new, n_tot_disks_cur; */
+
+  tree->mcmc->run_move[tree->mcmc->num_move_phyrex_indel_hit]++;
 
   disk            = NULL;
   valid_disks     = NULL;
@@ -6388,7 +6389,6 @@ void MCMC_PHYREX_Delete_Hit(phydbl hr, int n_delete_disks, t_tree *tree)
       tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_indel_hit]++;
     }
   
-  tree->mcmc->run_move[tree->mcmc->num_move_phyrex_indel_hit]++;
 
   Free(target_disk);
   Free(target_ldsk);
@@ -6415,11 +6415,14 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
   int cur_path_len;
   int n_hits,n_iter;
 
+
   n_iter = MAX(1,(int)(tree->n_otu/5));
 
   while(n_iter--)
     {
 
+      tree->mcmc->run_move[tree->mcmc->num_move_phyrex_spr]++;
+  
       valid_disks = NULL;
       disk        = NULL;
       new_glnL    = tree->mmod->c_lnL;
@@ -6554,14 +6557,9 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
       
       hr -= PHYREX_Path_Logdensity(prune_daughter_ldsk,regraft_ldsk,rate*dt,tree);
       
-      
-      
-      
       /* prune_daughter_ldsk->prev = regraft_ldsk; */
       /* PHYREX_Remove_Lindisk_Next(prune_ldsk,prune_daughter_ldsk); */
       /* PHYREX_Random_Insert_Ldsk_In_Next_List(prune_daughter_ldsk,regraft_ldsk); */
-      
-      
       
       PHYREX_Ldsk_To_Tree(tree);
       Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
@@ -6673,10 +6671,7 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
             }
           
           tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_spr]++;
-        }
-      
-      tree->mcmc->run_move[tree->mcmc->num_move_phyrex_spr]++;
-      
+        }      
     }
 }
 #endif
@@ -6825,6 +6820,8 @@ void MCMC_PHYREX_Simulate_Backward(t_tree *tree)
   t_dsk  *disk,*bkp_disk,*target_disk;
   t_ldsk **bkp_ldsk;
   int i;
+
+  tree->mcmc->run_move[tree->mcmc->num_move_phyrex_sim]++;
 
   disk        = NULL;
   bkp_disk    = NULL;
@@ -6998,7 +6995,6 @@ void MCMC_PHYREX_Simulate_Backward(t_tree *tree)
       tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_sim]++;
     }
   
-  tree->mcmc->run_move[tree->mcmc->num_move_phyrex_sim]++;
 
   Free(bkp_ldsk);
 }
@@ -7027,6 +7023,8 @@ void MCMC_PHYREX_Lineage_Traj(t_tree *tree)
   while(n_iter--)
     {
       
+      tree->mcmc->run_move[tree->mcmc->num_move_phyrex_traj]++;
+
       valid_disks = NULL;
       disk        = NULL;
       new_glnL    = tree->mmod->c_lnL;
@@ -7162,7 +7160,6 @@ void MCMC_PHYREX_Lineage_Traj(t_tree *tree)
           tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_traj]++;
         }
       
-      tree->mcmc->run_move[tree->mcmc->num_move_phyrex_traj]++;
     }
 }
 #endif
