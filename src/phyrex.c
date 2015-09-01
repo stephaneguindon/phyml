@@ -151,7 +151,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   /* seed = 22776; */
   /* seed = 629; */
   /* seed = 12466; */
-  /* seed = 24153; */
+  seed = 14493;
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -1243,7 +1243,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   do
     {      
       /* tree->mcmc->adjust_tuning[i] = NO; */
-      if(mcmc->run > 1E+6) For(i,mcmc->n_moves) tree->mcmc->adjust_tuning[i] = NO;
+      if(mcmc->run > 3E+6) For(i,mcmc->n_moves) tree->mcmc->adjust_tuning[i] = NO;
 
       u = Uni();
 

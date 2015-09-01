@@ -6010,7 +6010,7 @@ void Make_Ratematrice_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
           strcpy(mod->aa_rate_mat_file->s,r_mat_file);
         }
 
-      Free(r_mat_file);
+      /* Free(r_mat_file); */
     }
 
   char *buff;
@@ -6068,7 +6068,7 @@ void Make_Efrq_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
               mod->s_opt->opt_state_freq = NO;
             }
         }
-      Free(buff);
+      /* Free(buff); */
     }
 
 
