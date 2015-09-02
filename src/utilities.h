@@ -26,6 +26,7 @@ the GNU public licence. See http://www.opensource.org for details.
 #include <limits.h>
 #include <errno.h>
 #include <float.h>
+#include <assert.h>
 #include <stdbool.h>
 
 extern int n_sec1;

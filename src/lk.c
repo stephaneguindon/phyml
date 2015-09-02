@@ -1417,14 +1417,16 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                               /* For the (non-ambiguous) state at node n_v1 */
                               p1_lk1 = Pij1[catg*dim3+i*dim2+state_v1];
 
-                              if(isnan(p1_lk1))
-                                {
-                                  PhyML_Printf("\n== Tree %d",tree->tree_num);
-                                  PhyML_Printf("\n== catg=%d dim3=%d dim2=%d i=%d state_v1=%d",catg,dim3,dim2,i,state_v1);
-                                  PhyML_Printf("\n== Pij1[0] = %G l = %G",Pij1[0],b->l->v);
-                                  Print_Model(tree->mod);
-                                  Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-                                }
+                              assert(!isnan(p1_lk1));
+
+                              /* if(isnan(p1_lk1)) */
+                              /*   { */
+                              /*     PhyML_Printf("\n== Tree %d",tree->tree_num); */
+                              /*     PhyML_Printf("\n== catg=%d dim3=%d dim2=%d i=%d state_v1=%d",catg,dim3,dim2,i,state_v1); */
+                              /*     PhyML_Printf("\n== Pij1[0] = %G l = %G",Pij1[0],b->l->v); */
+                              /*     Print_Model(tree->mod); */
+                              /*     Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
+                              /*   } */
                             }
                           else
                             {
@@ -1434,14 +1436,15 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                               p2=Pij1[catg*dim3+i*dim2+2] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+2];
                               p3=Pij1[catg*dim3+i*dim2+3] * (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+3];
                               p1_lk1 = p0+p1+p2+p3;
-                            
-                              
-                              if(isnan(p1_lk1))
-                                {
-                                  PhyML_Printf("\n== p0=%f p1=%f p2=%f p3=%f",p0,p1,p2,p3);
-                                  PhyML_Printf("\n== Err. in file %s at line %d (function '%s').",__FILE__,__LINE__,__FUNCTION__);
-                                  Exit("\n");
-                                }
+
+                              assert(!isnan(p1_lk1));
+
+                              /* if(isnan(p1_lk1)) */
+                              /*   { */
+                              /*     PhyML_Printf("\n== p0=%f p1=%f p2=%f p3=%f",p0,p1,p2,p3); */
+                              /*     PhyML_Printf("\n== Err. in file %s at line %d (function '%s').",__FILE__,__LINE__,__FUNCTION__); */
+                              /*     Exit("\n"); */
+                              /*   } */
                             }
                         }
                       /* n_v1 is an internal node */
@@ -1487,14 +1490,16 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                               /* For the (non-ambiguous) state at node n_v2 */
                               p2_lk2 = Pij2[catg*dim3+i*dim2+state_v2];
 
-                              if(isnan(p2_lk2))
-                                {
-                                  PhyML_Printf("\n== Tree %d",tree->tree_num);
-                                  PhyML_Printf("\n== catg=%d dim3=%d dim2=%d i=%d state_v2=%d",catg,dim3,dim2,i,state_v2);
-                                  PhyML_Printf("\n== Pij2[0] = %G l = %G",Pij2[0],b->l->v);
-                                  Print_Model(tree->mod);
-                                  Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-                                }
+                              assert(!isnan(p2_lk2));
+
+                              /* if(isnan(p2_lk2)) */
+                              /*   { */
+                              /*     PhyML_Printf("\n== Tree %d",tree->tree_num); */
+                              /*     PhyML_Printf("\n== catg=%d dim3=%d dim2=%d i=%d state_v2=%d",catg,dim3,dim2,i,state_v2); */
+                              /*     PhyML_Printf("\n== Pij2[0] = %G l = %G",Pij2[0],b->l->v); */
+                              /*     Print_Model(tree->mod); */
+                              /*     Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
+                              /*   } */
                             }
                           else
                             {
@@ -1504,13 +1509,15 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                               p2=Pij2[catg*dim3+i*dim2+2] * (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+2];
                               p3=Pij2[catg*dim3+i*dim2+3] * (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+3];
                               p2_lk2 = p0+p1+p2+p3;
-                                                            
-                              if(isnan(p2_lk2))
-                                {
-                                  PhyML_Printf("\n== p0=%f p1=%f p2=%f p3=%f",p0,p1,p2,p3);
-                                  PhyML_Printf("\n== Err. in file %s at line %d.",__FILE__,__LINE__);
-                                  Warn_And_Exit("\n");
-                                }                             
+
+                              assert(!isnan(p2_lk2));
+
+                              /* if(isnan(p2_lk2)) */
+                              /*   { */
+                              /*     PhyML_Printf("\n== p0=%f p1=%f p2=%f p3=%f",p0,p1,p2,p3); */
+                              /*     PhyML_Printf("\n== Err. in file %s at line %d.",__FILE__,__LINE__); */
+                              /*     Warn_And_Exit("\n"); */
+                              /*   }                              */
                             }
                         }
                       /* n_v2 is an internal node */

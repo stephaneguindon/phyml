@@ -7285,6 +7285,7 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree)
   phydbl cur_rad, new_rad;
   t_dsk  *disk;
   int j,err;
+  phydbl tune;
 
   tree->mcmc->run_move[tree->mcmc->num_move_phyrex_ldsk_given_disk]++;
 
@@ -7294,8 +7295,9 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree)
   cur_glnL    = tree->mmod->c_lnL;
   cur_rad     = tree->mmod->rad;
   new_rad     = tree->mmod->rad;
+  tune        = tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_ldsk_given_disk];
 
-  new_rad = cur_rad * EXP(0.1*(Uni()-.5));
+  new_rad = cur_rad * EXP(tune*(Uni()-.5));
   hr += LOG(new_rad/cur_rad);
 
   tree->mmod->rad = new_rad;
@@ -7311,38 +7313,37 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree)
           For(j,tree->mmod->n_dim)
             disk->ldsk->coord->lonlat[j] =
             Rnorm_Trunc(disk->ldsk->coord->lonlat[j],
-                        0.1*new_rad,
+                        tune*new_rad,
                         0.0,
                         tree->mmod->lim->lonlat[j],&err);
           
           For(j,tree->mmod->n_dim) hr += Log_Dnorm_Trunc(disk->ldsk->coord->cpy->lonlat[j],
                                                          disk->ldsk->coord->lonlat[j],
-                                                         0.1*cur_rad,
+                                                         tune*cur_rad,
                                                          0.0,
                                                          tree->mmod->lim->lonlat[j],&err);
           
           For(j,tree->mmod->n_dim) hr -= Log_Dnorm_Trunc(disk->ldsk->coord->lonlat[j],
                                                          disk->ldsk->coord->cpy->lonlat[j],
-                                                         0.1*new_rad,
+                                                         tune*new_rad,
                                                          0.0,
                                                          tree->mmod->lim->lonlat[j],&err);
         }
       disk = disk->prev;
     }
   while(disk != NULL);
-
   
   new_glnL = PHYREX_Lk(tree);
     
   ratio += (new_glnL - cur_glnL);
   ratio += hr;
-            
 
   ratio = EXP(ratio);
   alpha = MIN(1.,ratio);
 
   u = Uni();
 
+  /* PhyML_Printf("\n. ratio=%15f tune=%15f",ratio,tune); */
 
   if(u > alpha) /* Reject */
     {
