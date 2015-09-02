@@ -5009,7 +5009,7 @@ void PhyML_XML(char *xml_filename)
                           Set_Defaults_Model(this_mod);
                           this_mod->ras->n_catg = 1;
 
-                          /*! All br_len_mupltiplier point to the corresponding */
+                          /*! All br_len_multiplier point to the corresponding */
                           /*! parameter in the relevant mixt_tree */
                           Free_Scalar_Dbl(this_mod->br_len_mult);
                           this_mod->br_len_mult = iomod->br_len_mult;                          
