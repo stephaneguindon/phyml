@@ -1102,7 +1102,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   FILE *fp_tree,*fp_stats,*fp_summary;
   phydbl *res;
   phydbl true_root_x, true_root_y,true_lbda,true_mu,true_sigsq,true_neigh,fst_neigh,diversity,true_rad,true_height;
-
+  int adjust_len;
 
 
 
@@ -1134,6 +1134,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   mcmc->max_lag          = 1000;
   mcmc->sample_size      = mcmc->chain_len/mcmc->sample_interval;
   mcmc->sample_num       = 0;
+  adjust_len             = 3E+6;
 
   MCMC_Complete_MCMC(mcmc,tree);
 
@@ -1250,7 +1251,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   do
     {      
       /* tree->mcmc->adjust_tuning[i] = NO; */
-      if(mcmc->run > 3E+6) For(i,mcmc->n_moves) tree->mcmc->adjust_tuning[i] = NO;
+      if(mcmc->run > adjust_len) For(i,mcmc->n_moves) tree->mcmc->adjust_tuning[i] = NO;
 
       u = Uni();
 
@@ -1468,7 +1469,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
 
 
-      if(tree->mcmc->sample_num > 1E+2                             &&
+      if(tree->mcmc->run > 2*adjust_len                            &&
+         tree->mcmc->sample_num > 1E+2                             &&
          tree->mcmc->ess[tree->mcmc->num_move_phyrex_lbda]  > 100. &&
          tree->mcmc->ess[tree->mcmc->num_move_phyrex_mu]    > 100. &&
          tree->mcmc->ess[tree->mcmc->num_move_phyrex_sigsq] > 100.) break;
