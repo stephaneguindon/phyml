@@ -7282,10 +7282,9 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree)
 {
   phydbl u,alpha,ratio,hr;
   phydbl cur_glnL, new_glnL;
-  phydbl cur_rad, new_rad;
   t_dsk  *disk;
   int j,err;
-  phydbl tune;
+  phydbl T,t;
 
   tree->mcmc->run_move[tree->mcmc->num_move_phyrex_ldsk_given_disk]++;
 
@@ -7293,41 +7292,38 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree)
   ratio       = 0.0;
   new_glnL    = tree->mmod->c_lnL;
   cur_glnL    = tree->mmod->c_lnL;
-  cur_rad     = tree->mmod->rad;
-  new_rad     = tree->mmod->rad;
-  tune        = tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_ldsk_given_disk];
 
-  new_rad = cur_rad * EXP(tune*(Uni()-.5));
-  hr += LOG(new_rad/cur_rad);
+  T = PHYREX_Tree_Height(tree);
+  t = Uni()*T;
 
-  tree->mmod->rad = new_rad;
+  disk = tree->disk;
+  while(disk && disk->time > t) disk = disk->prev;
 
-  disk = tree->disk->prev;  
   do
     {
       if(disk->ldsk != NULL)
         {
           PHYREX_Store_Geo_Coord(disk->ldsk->coord);
-          PHYREX_Store_Geo_Coord(disk->centr);
           
           For(j,tree->mmod->n_dim)
             disk->ldsk->coord->lonlat[j] =
-            Rnorm_Trunc(disk->ldsk->coord->lonlat[j],
-                        tune*new_rad,
+            Rnorm_Trunc(disk->centr->lonlat[j],
+                        tree->mmod->rad,
                         0.0,
                         tree->mmod->lim->lonlat[j],&err);
           
           For(j,tree->mmod->n_dim) hr += Log_Dnorm_Trunc(disk->ldsk->coord->cpy->lonlat[j],
-                                                         disk->ldsk->coord->lonlat[j],
-                                                         tune*cur_rad,
+                                                         disk->centr->cpy->lonlat[j],
+                                                         tree->mmod->rad,
                                                          0.0,
                                                          tree->mmod->lim->lonlat[j],&err);
           
           For(j,tree->mmod->n_dim) hr -= Log_Dnorm_Trunc(disk->ldsk->coord->lonlat[j],
-                                                         disk->ldsk->coord->cpy->lonlat[j],
-                                                         tune*new_rad,
+                                                         disk->centr->lonlat[j],
+                                                         tree->mmod->rad,
                                                          0.0,
                                                          tree->mmod->lim->lonlat[j],&err);
+
         }
       disk = disk->prev;
     }
@@ -7343,19 +7339,20 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree)
 
   u = Uni();
 
-  /* PhyML_Printf("\n. ratio=%15f tune=%15f",ratio,tune); */
+  /* PhyML_Printf("\n. old=%15f new=%15f hr=%15f ratio=%15f", */
+  /*              cur_glnL,new_glnL, */
+  /*              hr, */
+  /*              ratio); */
 
   if(u > alpha) /* Reject */
     {
-      tree->mmod->rad = cur_rad;
-
-      disk = tree->disk->prev;  
+      disk = tree->disk;
+      while(disk && disk->time > t) disk = disk->prev;
       do
         {
           if(disk->ldsk != NULL)
             {
               PHYREX_Restore_Geo_Coord(disk->ldsk->coord);
-              PHYREX_Restore_Geo_Coord(disk->centr);
             }
           disk = disk->prev;
         }
