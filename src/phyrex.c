@@ -153,7 +153,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   /* seed = 629; */
   /* seed = 1; */
   /* seed = 14493; */
-  seed = 6103;
+  /* seed = 6103; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
