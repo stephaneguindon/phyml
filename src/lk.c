@@ -545,7 +545,9 @@ phydbl Lk(t_edge *b, t_tree *tree)
           if(tree->mod->use_m4mod) ambiguity_check = YES;
 
           Lk_Core(state,ambiguity_check,b,tree);
-//          fprintf(stdout,",%g:%d\n",tree->c_lnL,tree->data->wght[tree->curr_site]);fflush(stdout);
+
+          /* fprintf(stdout,"site %d lnL: %g:%d %g\n",tree->curr_site,tree->c_lnL_sorted[tree->curr_site],tree->data->wght[tree->curr_site],tree->c_lnL); */
+          /* fflush(stdout); */
         }
     }
 #endif
@@ -704,7 +706,7 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
   
   log_site_lk = LOG(site_lk) - (phydbl)LOG2 * fact_sum_scale; // log_site_lk =  log(site_lk_scaled / 2^(left_subtree+right_subtree))      
   
-  // Calculation of the site likelihood (using the scaling factors)...
+  // Calculation of the site likelihood (using scaling factors)...
   int piecewise_exponent;
   phydbl multiplier;
   if(fact_sum_scale >= 0)

@@ -153,7 +153,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   /* seed = 629; */
   /* seed = 1; */
   /* seed = 14493; */
-  /* seed = 19918; */
+  /* seed = 32190; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -438,15 +438,16 @@ phydbl PHYREX_Simulate_Backward_Core(int new_loc, t_dsk *init_disk, t_tree *tree
       /* Time of next event */
       dt_dsk = Rexp(mmod->lbda);
       curr_t -= dt_dsk;
-
-      lnL += (LOG(mmod->lbda) - mmod->lbda*dt_dsk);
       
       /* Coordinates of next event */
       disk->centr->lonlat[0] = Uni()*mmod->lim->lonlat[0];
       disk->centr->lonlat[1] = Uni()*mmod->lim->lonlat[1];      
 
-      lnL += LOG(1./mmod->lim->lonlat[0]);
-      lnL += LOG(1./mmod->lim->lonlat[1]);
+      /* Density for waiting time to next event */
+      lnL += (LOG(mmod->lbda) - mmod->lbda*dt_dsk);
+      
+      /* Uniform density for disk center */
+      For(j,mmod->n_dim) lnL -= LOG(mmod->lim->lonlat[j]);
 
       disk->time = curr_t;
       disk->mmod = mmod;
@@ -546,6 +547,7 @@ phydbl PHYREX_Simulate_Backward_Core(int new_loc, t_dsk *init_disk, t_tree *tree
 
       Free(ldsk_a);
 
+
       if(n_lineages == 1) break;
 
       ldsk_a = (t_ldsk **)mCalloc(tree->n_otu,sizeof(t_ldsk *));
@@ -555,6 +557,7 @@ phydbl PHYREX_Simulate_Backward_Core(int new_loc, t_dsk *init_disk, t_tree *tree
       PHYREX_Init_Disk_Event(disk->prev,n_dim,NULL);
       disk->prev->next = disk;
       
+
       disk = disk->prev;
     }
   while(1);
@@ -1066,12 +1069,12 @@ phydbl PHYREX_Lk(t_tree *tree)
 
       mmod->c_lnL += lnL;
       
-      disk->c_lnL = mmod->c_lnL;
-
       disk = disk->prev;
       
-      if(!disk->prev) break;
+      disk->c_lnL = mmod->c_lnL;
 
+
+      if(!disk->prev) break;
     }
   while(1);
   
@@ -1191,7 +1194,12 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   PHYREX_Simulate_Backward_Core(NO,tree->disk,tree);
 
   PHYREX_Lk(tree);
+
+  Switch_Eigen(YES,tree->mod);
   Lk(NULL,tree);
+  Switch_Eigen(NO,tree->mod);
+
+
   disk = tree->disk;
   while(disk->prev) disk = disk->prev;
 
@@ -1249,7 +1257,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   mcmc->always_yes = NO;
     
   do
-    {      
+    {
+
       /* tree->mcmc->adjust_tuning[i] = NO; */
       if(mcmc->run > adjust_len) For(i,mcmc->n_moves) tree->mcmc->adjust_tuning[i] = NO;
 
@@ -1258,8 +1267,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       For(move,tree->mcmc->n_moves) if(tree->mcmc->move_weight[move] > u-1.E-10) break;
 
       assert(!(move == tree->mcmc->n_moves));
-
-      /* PhyML_Printf("\n. %s %f",tree->mcmc->move_name[move],tree->mmod->c_lnL); */
       
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_lbda"))
         MCMC_PHYREX_Lbda(tree);
@@ -1312,8 +1319,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"kappa"))
         MCMC_Kappa(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"ras")) */
-      /*   MCMC_Rate_Across_Sites(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"ras"))
+        MCMC_Rate_Across_Sites(tree);
 
       /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_ldscape_lim")) */
       /*   MCMC_PHYREX_Ldscape_Limits(tree); */
@@ -1325,10 +1332,10 @@ phydbl *PHYREX_MCMC(t_tree *tree)
         {
           /* Lk(NULL,tree); */
 
-          char *s = Write_Tree(tree,NO);
-          PhyML_Fprintf(fp_tree,"\n %s",s);
-          Free(s);
-          fflush(NULL);
+          /* char *s = Write_Tree(tree,NO); */
+          /* PhyML_Fprintf(fp_tree,"\n[%f] %s",s,tree->c_lnL); */
+          /* Free(s); */
+          /* fflush(NULL); */
 
           disk = tree->disk;
           while(disk->prev) disk = disk->prev;
@@ -2494,14 +2501,14 @@ phydbl PHYREX_LnPrior_Radius(t_tree *tree)
   if(tree->mmod->rad < tree->mmod->min_rad) return UNLIKELY;
   if(tree->mmod->rad > tree->mmod->max_rad) return UNLIKELY;
 
-  tree->mmod->c_ln_prior_rad =
-    LOG(tree->mmod->prior_param_rad) -
-    tree->mmod->prior_param_rad*tree->mmod->rad;
+  /* tree->mmod->c_ln_prior_rad = */
+  /*   LOG(tree->mmod->prior_param_rad) - */
+  /*   tree->mmod->prior_param_rad*tree->mmod->rad; */
 
-  tree->mmod->c_ln_prior_rad -= LOG(EXP(-tree->mmod->prior_param_lbda*tree->mmod->min_rad)-
-                                    EXP(-tree->mmod->prior_param_lbda*tree->mmod->max_rad));
+  /* tree->mmod->c_ln_prior_rad -= LOG(EXP(-tree->mmod->prior_param_lbda*tree->mmod->min_rad)- */
+  /*                                   EXP(-tree->mmod->prior_param_lbda*tree->mmod->max_rad)); */
 
-  /* tree->mmod->c_ln_prior_rad = -LOG(tree->mmod->max_rad - tree->mmod->min_rad); */
+  tree->mmod->c_ln_prior_rad = -LOG(tree->mmod->max_rad - tree->mmod->min_rad);
 
   return(tree->mmod->c_ln_prior_rad);
 }
@@ -2857,6 +2864,14 @@ void PHYREX_Ldsk_To_Tree_Post(t_node *a, t_ldsk *ldsk, int *available, t_tree *t
       do
         {
           t = ldsk->next[n_next]; 
+
+          /* if(t == NULL) */
+          /*   { */
+          /*     PhyML_Printf("\n. ldsk:%p ldsk->next:%p n_next:%d", */
+          /*                  ldsk,ldsk?ldsk->next:NULL,n_next); */
+          /*     Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
+          /*   } */
+
           while(t->next && t->n_next == 1) t = t->next[0];
          
           if(t->nd == NULL) 
@@ -3350,7 +3365,6 @@ int PHYREX_Random_Insert_Ldsk_In_Next_List(t_ldsk *ins, t_ldsk *where)
   int size, pos, i, *rk;
   t_ldsk **next_cpy;
 
-
   size = where->n_next;
 
   rk = (int *)mCalloc(size,sizeof(int));
@@ -3413,12 +3427,13 @@ void PHYREX_Insert_Ldsk_In_Next_List(t_ldsk *ins, int pos, t_ldsk *where)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-t_ldsk *PHYREX_Remove_Path(t_ldsk *beg, t_ldsk *end, t_tree *tree)
+t_ldsk *PHYREX_Remove_Path(t_ldsk *beg, t_ldsk *end, int *pos_end, t_tree *tree)
 {
   t_ldsk *ldsk;
   int dir_end_beg;
 
   dir_end_beg = PHYREX_Get_Next_Direction(beg,end);
+  *pos_end = dir_end_beg;
   PHYREX_Remove_Lindisk_Next(end,end->next[dir_end_beg]);
 
   if(beg->prev == end) return NULL;
@@ -3449,7 +3464,7 @@ t_ldsk *PHYREX_Remove_Path(t_ldsk *beg, t_ldsk *end, t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-void PHYREX_Insert_Path(t_ldsk *beg, t_ldsk *end, t_ldsk *path, t_tree *tree)
+void PHYREX_Insert_Path(t_ldsk *beg, t_ldsk *end, t_ldsk *path, int pos, t_tree *tree)
 {
   t_ldsk *ldsk;
 
@@ -3458,13 +3473,16 @@ void PHYREX_Insert_Path(t_ldsk *beg, t_ldsk *end, t_ldsk *path, t_tree *tree)
   if(path == NULL) 
     {
       beg->prev = end;      
+
       /* printf("\n. in (beg-end) %12f %12f %12f %12f %s %s", */
       /*        beg->coord->lonlat[0], */
       /*        beg->coord->lonlat[1], */
       /*        end->coord->lonlat[0], */
       /*        end->coord->lonlat[1], */
       /*        beg->coord->id,end->coord->id); */
-      PHYREX_Insert_Ldsk_In_Next_List(beg,end->n_next,end);
+
+      /* PHYREX_Insert_Ldsk_In_Next_List(beg,end->n_next,end); */
+      PHYREX_Insert_Ldsk_In_Next_List(beg,pos,end);
     }
   else
     {
@@ -3497,7 +3515,9 @@ void PHYREX_Insert_Path(t_ldsk *beg, t_ldsk *end, t_ldsk *path, t_tree *tree)
       beg->prev = path;
       ldsk->prev = end;
       path->next[0] = beg;
-      PHYREX_Insert_Ldsk_In_Next_List(ldsk,end->n_next,end);
+
+      /* PHYREX_Insert_Ldsk_In_Next_List(ldsk,end->n_next,end); */
+      PHYREX_Insert_Ldsk_In_Next_List(ldsk,pos,end);
     }
 }
 
