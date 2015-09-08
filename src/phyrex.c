@@ -153,7 +153,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   /* seed = 629; */
   /* seed = 1; */
   /* seed = 14493; */
-  /* seed = 32190; */
+  /* seed = 18403; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -1319,8 +1319,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"kappa"))
         MCMC_Kappa(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"ras"))
-        MCMC_Rate_Across_Sites(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"ras")) */
+      /*   MCMC_Rate_Across_Sites(tree); */
 
       /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_ldscape_lim")) */
       /*   MCMC_PHYREX_Ldscape_Limits(tree); */

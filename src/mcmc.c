@@ -5595,12 +5595,15 @@ void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree)
       tree->mmod->c_lnL = cur_glnL;
       tree->c_lnL       = cur_alnL;
 
-      if(tree->mcmc->use_data == YES) new_alnL = Lk(NULL,tree);
-
-      if(Are_Equal(new_alnL,cur_alnL,1.E-3) == NO)
+      if(tree->mcmc->use_data == YES) 
         {
-          PhyML_Printf("\n== new_alnL: %f cur_alnL: %f",new_alnL,cur_alnL);
-          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+          new_alnL = Lk(NULL,tree);
+
+          if(Are_Equal(new_alnL,cur_alnL,1.E-3) == NO)
+            {
+              PhyML_Printf("\n== new_alnL: %f cur_alnL: %f",new_alnL,cur_alnL);
+              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+            }
         }
 
       new_glnL = PHYREX_Lk(tree);
@@ -5714,12 +5717,15 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree)
       tree->mmod->c_lnL = cur_glnL;
       tree->c_lnL       = cur_alnL;
 
-      if(tree->mcmc->use_data == YES) new_alnL = Lk(NULL,tree); /* Not necessary. Remove once tested */
-
-      if(Are_Equal(new_alnL,cur_alnL,1.E-3) == NO)
+      if(tree->mcmc->use_data == YES) 
         {
-          PhyML_Printf("\n== new_alnL: %f cur_alnL: %f lbda: %f",new_alnL,cur_alnL,tree->mmod->lbda);
-          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+          new_alnL = Lk(NULL,tree); /* Not necessary. Remove once tested */
+          
+          if(Are_Equal(new_alnL,cur_alnL,1.E-3) == NO)
+            {
+              PhyML_Printf("\n== new_alnL: %f cur_alnL: %f lbda: %f",new_alnL,cur_alnL,tree->mmod->lbda);
+              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+            }
         }
 
       new_glnL = PHYREX_Lk(tree); /* Same here */
@@ -5846,14 +5852,16 @@ void MCMC_PHYREX_Swap_Disk(t_tree *tree)
           tree->mmod->c_lnL = cur_glnL;
           tree->c_lnL       = cur_alnL;
           
-          if(tree->mcmc->use_data == YES) new_alnL = Lk(NULL,tree); /* Remove once checked */
-
-          if(Are_Equal(new_alnL,cur_alnL,1.E-3) == NO)
+          if(tree->mcmc->use_data == YES) 
             {
-              PhyML_Printf("\n== new_alnL: %f cur_alnL: %f",new_alnL,cur_alnL);
-              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+              new_alnL = Lk(NULL,tree); /* Remove once checked */
+              
+              if(Are_Equal(new_alnL,cur_alnL,1.E-3) == NO)
+                {
+                  PhyML_Printf("\n== new_alnL: %f cur_alnL: %f",new_alnL,cur_alnL);
+                  Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+                }
             }
-          
 
           new_glnL = PHYREX_Lk(tree); /* Same */
 
@@ -6514,13 +6522,16 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
           tree->c_lnL       = cur_alnL;
           tree->mmod->c_lnL = cur_glnL;
           
-          if(tree->mcmc->use_data == YES) new_alnL = Lk(NULL,tree);
-          if(Are_Equal(new_alnL,cur_alnL,1.E-3) == NO)
+          if(tree->mcmc->use_data == YES) 
             {
-              PhyML_Printf("\n== new_alnL: %f cur_alnL: %f",new_alnL,cur_alnL);
-              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+              new_alnL = Lk(NULL,tree);
+              if(Are_Equal(new_alnL,cur_alnL,1.E-3) == NO)
+                {
+                  PhyML_Printf("\n== new_alnL: %f cur_alnL: %f",new_alnL,cur_alnL);
+                  Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+                }
             }
-          
+
           new_glnL = PHYREX_Lk(tree);
           if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
             {
@@ -6815,11 +6826,14 @@ void MCMC_PHYREX_Simulate_Backward(t_tree *tree)
       tree->c_lnL       = cur_alnL;
       tree->mmod->c_lnL = cur_glnL;
 
-      if(tree->mcmc->use_data == YES) new_alnL = Lk(NULL,tree);
-      if(Are_Equal(new_alnL,cur_alnL,1.E-3) == NO)
+      if(tree->mcmc->use_data == YES) 
         {
-          PhyML_Printf("\n== new_alnL: %f cur_alnL: %f",new_alnL,cur_alnL);
-          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+          new_alnL = Lk(NULL,tree);
+          if(Are_Equal(new_alnL,cur_alnL,1.E-3) == NO)
+            {
+              PhyML_Printf("\n== new_alnL: %f cur_alnL: %f",new_alnL,cur_alnL);
+              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+            }
         }
 
       new_glnL = PHYREX_Lk(tree);
@@ -7096,12 +7110,15 @@ void MCMC_PHYREX_Lbda_Times(t_tree *tree)
       tree->c_lnL       = cur_alnL;
       tree->mmod->c_lnL = cur_glnL;
 
-      if(tree->mcmc->use_data == YES) new_alnL = Lk(NULL,tree);
-
-      if(Are_Equal(new_alnL,cur_alnL,1.E-3) == NO)
+      if(tree->mcmc->use_data == YES) 
         {
-          PhyML_Printf("\n== new_alnL: %f cur_alnL: %f",new_alnL,cur_alnL);
-          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+          new_alnL = Lk(NULL,tree);
+          
+          if(Are_Equal(new_alnL,cur_alnL,1.E-3) == NO)
+            {
+              PhyML_Printf("\n== new_alnL: %f cur_alnL: %f",new_alnL,cur_alnL);
+              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+            }
         }
 
       new_glnL = PHYREX_Lk(tree);
