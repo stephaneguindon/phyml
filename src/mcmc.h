@@ -174,4 +174,5 @@ void MCMC_PHYREX_Lineage_Traj(t_tree *tree);
 void MCMC_PHYREX_Lbda_Times(t_tree *tree);
 void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree);
 void MCMC_PHYREX_Multi_Traj(t_tree *tree);
+void MCMC_PHYREX_Flip_Events(t_tree *tree);
 #endif

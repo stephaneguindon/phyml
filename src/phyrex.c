@@ -153,7 +153,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   /* seed = 629; */
   /* seed = 1; */
   /* seed = 14493; */
-  /* seed = 27488; */
+  /* seed = 1302; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -930,6 +930,7 @@ phydbl PHYREX_Lk(t_tree *tree)
   t_phyrex_mod *mmod;
   t_dsk *disk;
 
+
   mmod = tree->mmod;
   
   disk = tree->disk;
@@ -942,6 +943,17 @@ phydbl PHYREX_Lk(t_tree *tree)
   log_one_mu        = LOG(1. - mmod->mu);  
   log_lbda          = LOG(mmod->lbda);
   lnL               = 0.0;
+
+  /* TO DO: create a proper PHYREX_LogPost() function */
+  mmod->c_lnL += PHYREX_LnPrior_Radius(tree);
+  mmod->c_lnL += PHYREX_LnPrior_Mu(tree);
+  mmod->c_lnL += PHYREX_LnPrior_Lbda(tree);
+ 
+  if(isinf(mmod->c_lnL) || isnan(mmod->c_lnL)) 
+    {
+      mmod->c_lnL = UNLIKELY;
+      return mmod->c_lnL;
+    }
 
   PHYREX_Update_Lindisk_List(tree);
 
@@ -1082,12 +1094,6 @@ phydbl PHYREX_Lk(t_tree *tree)
   /* mmod->c_lnL = lnL; */
   /* mmod->c_lnL = 0.0; */
 
-
-  /* TO DO: create a proper PHYREX_LogPost() function */
-  mmod->c_lnL += PHYREX_LnPrior_Radius(tree);
-  mmod->c_lnL += PHYREX_LnPrior_Mu(tree);
-  mmod->c_lnL += PHYREX_LnPrior_Lbda(tree);
- 
   if(isinf(mmod->c_lnL) || isnan(mmod->c_lnL)) mmod->c_lnL = UNLIKELY;
 
   return(mmod->c_lnL);
@@ -1326,6 +1332,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_ldsk_given_disk"))
         MCMC_PHYREX_Ldsk_Given_Disk(tree);
+
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_flip"))
+        MCMC_PHYREX_Flip_Events(tree);
 
       if(!strcmp(tree->mcmc->move_name[move],"kappa"))
         MCMC_Kappa(tree);
@@ -2009,7 +2018,7 @@ int PHYREX_Get_Next_Direction(t_ldsk *young, t_ldsk *old)
       PhyML_Printf("\n== young (%s) @ time %f; old (%s) @ time %f",
                    young->coord->id,young->disk->time,
                    old->coord->id,old->disk->time);
-      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
+      return(-1);   
     }
   
   assert(!(young == NULL));

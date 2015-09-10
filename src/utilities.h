@@ -1497,6 +1497,7 @@ typedef struct __Tmcmc {
   int num_move_phyrex_lbda_times;
   int num_move_phyrex_ldsk_given_disk;
   int num_move_phyrex_multi_traj;
+  int num_move_phyrex_flip;
 
   int nd_t_digits;
   int *monitor;
