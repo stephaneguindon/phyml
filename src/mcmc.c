@@ -4478,7 +4478,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_lbda_times]            = 1.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_ldsk_given_disk]       = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_ldsk_given_disk]       = 2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_multi_traj]            = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_flip]                  = 0.0;
 # else
@@ -6749,22 +6749,22 @@ void MCMC_PHYREX_Simulate_Backward(t_tree *tree)
   new_mu      = cur_mu;
 
 
-  /* u = Uni(); */
-  /* if(u < 0.33) */
-  /*   { */
-  /*     new_lbda = cur_lbda * EXP(0.5*(Uni()-.5)); */
-  /*     hr += LOG(new_lbda/cur_lbda); */
-  /*   } */
-  /* else if(u < 0.66 && u > 0.33) */
-  /*   { */
-  /*     new_mu = cur_mu * EXP(0.2*(Uni()-.5)); */
-  /*     hr += LOG(new_mu/cur_mu); */
-  /*   } */
-  /* else */
-  /*   { */
-  /*     new_rad = cur_rad * EXP(0.5*(Uni()-.5)); */
-  /*     hr += LOG(new_rad/cur_rad); */
-  /*   } */
+  u = Uni();
+  if(u < 0.33)
+    {
+      new_lbda = cur_lbda * EXP(0.5*(Uni()-.5));
+      hr += LOG(new_lbda/cur_lbda);
+    }
+  else if(u < 0.66 && u > 0.33)
+    {
+      new_mu = cur_mu * EXP(0.2*(Uni()-.5));
+      hr += LOG(new_mu/cur_mu);
+    }
+  else
+    {
+      new_rad = cur_rad * EXP(0.5*(Uni()-.5));
+      hr += LOG(new_rad/cur_rad);
+    }
 
   tree->mmod->lbda = new_lbda;
   tree->mmod->mu   = new_mu;
