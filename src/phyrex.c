@@ -153,7 +153,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   /* seed = 629; */
   /* seed = 1; */
   /* seed = 14493; */
-  /* seed = 1302; */
+  seed = 11734;
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -1143,7 +1143,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   mcmc->max_lag          = 1000;
   mcmc->sample_size      = mcmc->chain_len/mcmc->sample_interval;
   mcmc->sample_num       = 0;
-  adjust_len             = 3E+6;
+  adjust_len             = 1E+6;
 
   MCMC_Complete_MCMC(mcmc,tree);
 
