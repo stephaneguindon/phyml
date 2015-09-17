@@ -4708,7 +4708,24 @@ void PhyML_XML(char *xml_filename)
         }
     }
   
-  
+  s = XML_Get_Attribute_Value(p_elem,"quiet");
+  if(s)
+    {
+      select = XML_Validate_Attr_Int(s,6,
+                                     "true","yes","y",
+                                     "false","no","n");
+      if(select < 3) io->quiet = YES;
+    }
+
+  s = XML_Get_Attribute_Value(p_elem,"memory.check");
+  if(s)
+    {
+      select = XML_Validate_Attr_Int(s,6,
+                                     "true","yes","y",
+                                     "false","no","n");
+      if(select >= 3) io->mem_question = NO;
+    }
+
   /*! Read all partitionelem nodes and mixturelem nodes in each of them
    */
   do

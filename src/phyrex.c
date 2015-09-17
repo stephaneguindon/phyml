@@ -21,8 +21,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int PHYREX_Main(int argc, char *argv[])
 {
-  return(PHYREX_Main_Estimate(argc,argv));
-  /* return(PHYREX_Main_Simulate(argc,argv)); */
+  /* return(PHYREX_Main_Estimate(argc,argv)); */
+  return(PHYREX_Main_Simulate(argc,argv));
 
 }
 
@@ -153,7 +153,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   /* seed = 629; */
   /* seed = 1; */
   /* seed = 14493; */
-  /* seed = 11734; */
+  seed = 13456;
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -2522,14 +2522,14 @@ phydbl PHYREX_LnPrior_Radius(t_tree *tree)
   if(tree->mmod->rad < tree->mmod->min_rad) return UNLIKELY;
   if(tree->mmod->rad > tree->mmod->max_rad) return UNLIKELY;
 
-  tree->mmod->c_ln_prior_rad =
-    LOG(tree->mmod->prior_param_rad) -
-    tree->mmod->prior_param_rad*tree->mmod->rad;
+  /* tree->mmod->c_ln_prior_rad = */
+  /*   LOG(tree->mmod->prior_param_rad) - */
+  /*   tree->mmod->prior_param_rad*tree->mmod->rad; */
 
-  tree->mmod->c_ln_prior_rad -= LOG(EXP(-tree->mmod->prior_param_lbda*tree->mmod->min_rad)-
-                                    EXP(-tree->mmod->prior_param_lbda*tree->mmod->max_rad));
+  /* tree->mmod->c_ln_prior_rad -= LOG(EXP(-tree->mmod->prior_param_lbda*tree->mmod->min_rad)- */
+  /*                                   EXP(-tree->mmod->prior_param_lbda*tree->mmod->max_rad)); */
 
-  /* tree->mmod->c_ln_prior_rad = -LOG(tree->mmod->max_rad - tree->mmod->min_rad); */
+  tree->mmod->c_ln_prior_rad = -LOG(tree->mmod->max_rad - tree->mmod->min_rad);
 
   return(tree->mmod->c_ln_prior_rad);
 }

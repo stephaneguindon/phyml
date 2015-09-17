@@ -6241,19 +6241,19 @@ void Check_Memory_Amount(t_tree *tree)
 
       char answer;
       if((!tree->io->quiet) && (tree->io->mem_question == YES))
-    {
-      PhyML_Printf("\n. Do you really want to proceed? [Y/n] ");
-      if(scanf("%c", &answer))
         {
-          if(answer == '\n') answer = 'Y';
-          else if(answer == 'n' || answer == 'N') Warn_And_Exit("\n");
-          else getchar();
+          PhyML_Printf("\n. Do you really want to proceed? [Y/n] ");
+          if(scanf("%c", &answer))
+            {
+              if(answer == '\n') answer = 'Y';
+              else if(answer == 'n' || answer == 'N') Warn_And_Exit("\n");
+              else getchar();
+            }
+          else
+            {
+              Warn_And_Exit("\n\n");
+            }
         }
-      else
-        {
-          Warn_And_Exit("\n\n");
-        }
-    }
 #endif
     }
   else if(((phydbl)nbytes/(1.E+06)) > 100.)
