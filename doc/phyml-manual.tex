@@ -666,7 +666,7 @@ conducted.  This option  should  be used  in  conjunction with  \x{-u}  \x{file\
 
 \item \x{--quiet} \index{command-line options!\x{--quiet}}\\
 Runs PhyML in quiet mode. The program will not pause if the memory required to run the analysis
-exceeds 256MB and will not output the log-likelihood score to the output.
+exceeds 256MB and will not output the progression of the log-likelihood scores on the standard output.
 
 \item \x{--ancestral} \index{command-line options!\x{--ancestral}}\\
 PhyML calculates the marginal probabilities of each character state at each internal node and each
@@ -1599,6 +1599,14 @@ Options:
   estimates of the probabilities that the corresponding edges are correctly inferred (see Anisimova et
   al. 2011 for more precision). By default and if no bootstrap analysis is performed, branch supports
   are estimated using the aBayes approach.
+\item \x{quiet="yes|no"}. Runs PhyML in quiet mode when \x{quiet=yes}. The program will not pause if the memory required to run the analysis
+exceeds 256MB and will not output the progresssion of the log-likelihood scores on the standard output.
+\item \x{memory.check="yes|no"}. By default, when processing a large data set, PhyML will pause and ask the user to confirm that
+she/he wants to continue with the execution of the analysis despite the large amount of memory
+required. Setting \x{memory.check=no}  skips this question. It is especially useful when running
+PhyML in batch mode.
+
+
 
 \end{itemize}
 \subsubsection{{\tt topology} component}\index{XML options!{\tt topology} component}

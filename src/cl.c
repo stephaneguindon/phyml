@@ -203,9 +203,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
             Free_Input(io);
             PhyML_XML(optarg);
             return 0;
-#endif
-
-#ifdef INVITEE           
+#else
             Free_Optimiz(io->mod->s_opt);
             M4_Free_M4_Model(io->mod->m4mod);
             Free_Model_Basic(io->mod);
@@ -213,6 +211,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
             PhyTime_XML(optarg);
             return 0;
 #endif
+            break;
 	  }
 	case 72:
 	  {

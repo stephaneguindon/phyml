@@ -566,6 +566,7 @@ void Set_Defaults_Input(option* io)
   io->mutmap                     = NO;
   io->state_len                  = 1;
   io->ancestral                  = NO;
+  io->use_xml                    = NO;
 #ifdef BEAGLE
   io->beagle_resource            = 0;
 #endif

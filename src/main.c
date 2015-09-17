@@ -72,8 +72,14 @@ int main(int argc, char **argv)
   mod              = NULL;
   best_lnL         = UNLIKELY;
 
+
   io = (option *)Get_Input(argc,argv);
-  if(!io) return(-1);
+  if(!io) return(0);
+  else if(io->use_xml == YES)
+    {
+      Free(io);
+      return(0);
+    }
 
 
 #ifdef EVOLVE

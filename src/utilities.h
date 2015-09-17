@@ -1098,6 +1098,7 @@ typedef struct __Option { /*! mostly used in 'help.c' */
   char                    **alphabet;
   int                         codpos;
   int                         mutmap;
+  int                        use_xml;
 
   char              **long_tax_names;
   char             **short_tax_names;

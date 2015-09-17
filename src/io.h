@@ -75,7 +75,7 @@ option *Get_Input(int argc,char **argv);
 void Print_Data_Structure(int final, FILE *fp, t_tree *root);
 int Set_Whichmodel(int select);
 void Print_Site(calign *cdata, int num, int n_otu, char *sep, int stepsize, FILE *fp);
-void PhyML_XML(char *xml_filename);
+option *PhyML_XML(char *xml_filename);
 void Check_Taxa_Sets(t_tree *mixt_tree);
 void Make_Ratematrice_From_XML_Node(xml_node *instance, option *io, t_mod *mod);
 void Make_Efrq_From_XML_Node(xml_node *instance, option *io, t_mod *mod);
