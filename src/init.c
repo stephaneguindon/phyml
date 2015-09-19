@@ -1286,8 +1286,13 @@ void Init_Model(calign *data, t_mod *mod, option *io)
           } 
         case CUSTOMAA :
           {
+            if(mod->fp_aa_rate_mat == NULL)
+              {
+                PhyML_Printf("\n. Cannot open custom rate matrix file '%s'.\n",mod->aa_rate_mat_file->s); 
+                Exit("\n");
+              }
+
             Read_Qmat(mod->r_mat->qmat->v,mod->e_frq->pi->v,mod->fp_aa_rate_mat);
-	    Print_Qmat_AA(mod->r_mat->qmat->v,mod->e_frq->pi->v);
             if(mod->s_opt->opt_state_freq) For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
 	    break;
 	  }
