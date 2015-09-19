@@ -2522,14 +2522,14 @@ phydbl PHYREX_LnPrior_Radius(t_tree *tree)
   if(tree->mmod->rad < tree->mmod->min_rad) return UNLIKELY;
   if(tree->mmod->rad > tree->mmod->max_rad) return UNLIKELY;
 
-  tree->mmod->c_ln_prior_rad =
-    LOG(tree->mmod->prior_param_rad) -
-    tree->mmod->prior_param_rad*tree->mmod->rad;
+  /* tree->mmod->c_ln_prior_rad = */
+  /*   LOG(tree->mmod->prior_param_rad) - */
+  /*   tree->mmod->prior_param_rad*tree->mmod->rad; */
 
-  tree->mmod->c_ln_prior_rad -= LOG(EXP(-tree->mmod->prior_param_lbda*tree->mmod->min_rad)-
-                                    EXP(-tree->mmod->prior_param_lbda*tree->mmod->max_rad));
+  /* tree->mmod->c_ln_prior_rad -= LOG(EXP(-tree->mmod->prior_param_lbda*tree->mmod->min_rad)- */
+  /*                                   EXP(-tree->mmod->prior_param_lbda*tree->mmod->max_rad)); */
 
-  /* tree->mmod->c_ln_prior_rad = -LOG(tree->mmod->max_rad - tree->mmod->min_rad); */
+  tree->mmod->c_ln_prior_rad = -LOG(tree->mmod->max_rad - tree->mmod->min_rad);
 
   return(tree->mmod->c_ln_prior_rad);
 }
