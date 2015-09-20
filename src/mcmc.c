@@ -4473,12 +4473,12 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_indel_hit]             = 4.0;
   mcmc->move_weight[mcmc->num_move_phyrex_move_ldsk]             = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_spr]                   = 1.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           = 2.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldscape_lim]           = 0.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 0.1;
+  mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 1.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_lbda_times]            = 0.1;
-  mcmc->move_weight[mcmc->num_move_phyrex_ldsk_given_disk]       = 0.1;
+  mcmc->move_weight[mcmc->num_move_phyrex_lbda_times]            = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_ldsk_given_disk]       = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_multi_traj]            = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_flip]                  = 0.0;
 # else
@@ -5280,7 +5280,7 @@ void MCMC_PHYREX_Move_Disk_Centre(t_tree *tree)
 
   target_disk = (t_dsk **)mCalloc(n_all_disks,sizeof(t_dsk *));
   
-  n_move_disks = Rand_Int(1,1+(int)(n_all_disks/10));
+  n_move_disks = Rand_Int(1,1+(int)(n_all_disks/5));
   /* n_move_disks = n_all_disks; */
 
   permut = Permutate(n_all_disks);
@@ -5405,7 +5405,7 @@ void MCMC_PHYREX_Move_Ldsk(t_tree *tree)
 
   if(!n_all_disks) return;
   
-  n_move_ldsk = Rand_Int(1,1+(int)(n_all_disks/10));
+  n_move_ldsk = Rand_Int(1,1+(int)(n_all_disks/5));
   /* n_move_ldsk = n_all_disks; */
   
   target_disk = (t_dsk **)mCalloc(n_all_disks,sizeof(t_dsk *));
@@ -5550,7 +5550,7 @@ void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree)
 
   if(!n_all_disks) return;
   
-  n_move_disks = Rand_Int(1,1+(int)(n_all_disks/10));
+  n_move_disks = Rand_Int(1,1+(int)(n_all_disks/5));
   /* n_move_disks = n_all_disks; */
   /* n_move_disks = 1; */
   
