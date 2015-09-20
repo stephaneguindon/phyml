@@ -2489,14 +2489,14 @@ phydbl PHYREX_LnPrior_Lbda(t_tree *tree)
   if(tree->mmod->lbda < tree->mmod->min_lbda) return UNLIKELY;
   if(tree->mmod->lbda > tree->mmod->max_lbda) return UNLIKELY;
 
-  tree->mmod->c_ln_prior_lbda =
-    LOG(tree->mmod->prior_param_lbda) -
-    tree->mmod->prior_param_lbda*tree->mmod->lbda;
+  /* tree->mmod->c_ln_prior_lbda = */
+  /*   LOG(tree->mmod->prior_param_lbda) - */
+  /*   tree->mmod->prior_param_lbda*tree->mmod->lbda; */
 
-  tree->mmod->c_ln_prior_lbda -= LOG(EXP(-tree->mmod->prior_param_lbda*tree->mmod->min_lbda)-
-                                     EXP(-tree->mmod->prior_param_lbda*tree->mmod->max_lbda));
+  /* tree->mmod->c_ln_prior_lbda -= LOG(EXP(-tree->mmod->prior_param_lbda*tree->mmod->min_lbda)- */
+  /*                                    EXP(-tree->mmod->prior_param_lbda*tree->mmod->max_lbda)); */
 
-  /* tree->mmod->c_ln_prior_lbda = -LOG(tree->mmod->max_lbda - tree->mmod->min_lbda);; */
+  tree->mmod->c_ln_prior_lbda = -LOG(tree->mmod->max_lbda - tree->mmod->min_lbda);;
 
   return(tree->mmod->c_ln_prior_lbda);
 }
