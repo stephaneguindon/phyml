@@ -4477,8 +4477,8 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_ldscape_lim]           = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 1.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_lbda_times]            = 0.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_ldsk_given_disk]       = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_lbda_times]            = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_ldsk_given_disk]       = 0.1;
   mcmc->move_weight[mcmc->num_move_phyrex_multi_traj]            = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_flip]                  = 0.0;
 # else
@@ -7182,7 +7182,17 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree)
           cur_glnL    = tree->mmod->c_lnL;
 
           PHYREX_Store_Geo_Coord(disk->ldsk->coord);
+          PHYREX_Store_Geo_Coord(disk->centr);
           
+
+
+          For(j,tree->mmod->n_dim)
+            disk->centr->lonlat[j] =
+            Rnorm_Trunc(disk->ldsk->coord->lonlat[j],
+                        tree->mmod->rad,
+                        0.0,
+                        tree->mmod->lim->lonlat[j],&err);
+
           For(j,tree->mmod->n_dim)
             disk->ldsk->coord->lonlat[j] =
             Rnorm_Trunc(disk->centr->lonlat[j],
@@ -7190,6 +7200,18 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree)
                         0.0,
                         tree->mmod->lim->lonlat[j],&err);
           
+          For(j,tree->mmod->n_dim) hr += Log_Dnorm_Trunc(disk->centr->cpy->lonlat[j],
+                                                         disk->ldsk->coord->lonlat[j],
+                                                         tree->mmod->rad,
+                                                         0.0,
+                                                         tree->mmod->lim->lonlat[j],&err);
+          
+          For(j,tree->mmod->n_dim) hr -= Log_Dnorm_Trunc(disk->centr->lonlat[j],
+                                                         disk->ldsk->coord->cpy->lonlat[j],
+                                                         tree->mmod->rad,
+                                                         0.0,
+                                                         tree->mmod->lim->lonlat[j],&err);
+
           For(j,tree->mmod->n_dim) hr += Log_Dnorm_Trunc(disk->ldsk->coord->cpy->lonlat[j],
                                                          disk->centr->cpy->lonlat[j],
                                                          tree->mmod->rad,
@@ -7217,6 +7239,7 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree)
           if(u > alpha) /* Reject */
             {
               PHYREX_Restore_Geo_Coord(disk->ldsk->coord);
+              PHYREX_Restore_Geo_Coord(disk->centr);
           
               tree->mmod->c_lnL = cur_glnL;
           
