@@ -3288,41 +3288,34 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
 
 void Optimize_Rmat_Weights(t_tree *mixt_tree, int verbose)
 {
-  t_tree *tree;
   scalar_dbl *r_mat_weight;
 
   Switch_Eigen(NO,mixt_tree->mod);
 
   if(mixt_tree->is_mixt_tree == NO) return;
 
-  tree = mixt_tree;
-  do
+  r_mat_weight = mixt_tree->next->mod->r_mat_weight;
+  
+  if(mixt_tree->next->mod->s_opt->opt_rmat_weight == YES)
     {
-      if(tree->next && tree->next->mod->s_opt->opt_rmat_weight == YES)
+      do
         {
-          r_mat_weight = tree->next->mod->r_mat_weight;
-          do
+          Generic_Brent_Lk(&(r_mat_weight->v),
+                           0.,100.,
+                           mixt_tree->mod->s_opt->min_diff_lk_local,
+                           mixt_tree->mod->s_opt->brent_it_max,
+                           mixt_tree->mod->s_opt->quickdirty,
+                           Wrap_Lk,NULL,mixt_tree,NULL,NO);
+          
+          if(verbose)
             {
-              Generic_Brent_Lk(&(r_mat_weight->v),
-                               0.,100.,
-                               tree->mod->s_opt->min_diff_lk_local,
-                               tree->mod->s_opt->brent_it_max,
-                               tree->mod->s_opt->quickdirty,
-                               Wrap_Lk,NULL,mixt_tree,NULL,NO);
-
-              if(verbose)
-                {
-                  Print_Lk(mixt_tree,"[Rate mat. weights  ]");
-                }
-
-              r_mat_weight = r_mat_weight->next;
+              Print_Lk(mixt_tree,"[Rate mat. weights  ]");
             }
-          while(r_mat_weight);
+          
+          r_mat_weight = r_mat_weight->next;
         }
-      tree = tree->next_mixt;
-
+      while(r_mat_weight);
     }
-  while(tree);
 
   Switch_Eigen(NO,mixt_tree->mod);
 
@@ -3333,43 +3326,35 @@ void Optimize_Rmat_Weights(t_tree *mixt_tree, int verbose)
 
 void Optimize_Efrq_Weights(t_tree *mixt_tree, int verbose)
 {
-  t_tree *tree;
   scalar_dbl *e_frq_weight;
 
   Switch_Eigen(NO,mixt_tree->mod);
 
   if(mixt_tree->is_mixt_tree == NO) return;
 
-  tree = mixt_tree;
-  do
+  e_frq_weight = mixt_tree->next->mod->e_frq_weight;
+
+
+  if(mixt_tree->next->mod->s_opt->opt_efrq_weight == YES)
     {
-      if(tree->next && tree->next->mod->s_opt->opt_efrq_weight == YES)
+      do
         {
-
-          e_frq_weight = tree->next->mod->e_frq_weight;
-          do
+          Generic_Brent_Lk(&(e_frq_weight->v),
+                           0.,100.,
+                           mixt_tree->mod->s_opt->min_diff_lk_local,
+                           mixt_tree->mod->s_opt->brent_it_max,
+                           mixt_tree->mod->s_opt->quickdirty,
+                           Wrap_Lk,NULL,mixt_tree,NULL,NO);
+          
+          if(verbose)
             {
-              Generic_Brent_Lk(&(e_frq_weight->v),
-                               0.,100.,
-                               tree->mod->s_opt->min_diff_lk_local,
-                               tree->mod->s_opt->brent_it_max,
-                               tree->mod->s_opt->quickdirty,
-                               Wrap_Lk,NULL,mixt_tree,NULL,NO);
-
-              if(verbose)
-                {
-                  Print_Lk(mixt_tree,"[Equ. frq. weights  ]");
-                }
-
-              e_frq_weight = e_frq_weight->next;
+              Print_Lk(mixt_tree,"[Equ. frq. weights  ]");
             }
-          while(e_frq_weight);
+          
+          e_frq_weight = e_frq_weight->next;
         }
-
-      tree = tree->next_mixt;
-
+      while(e_frq_weight);
     }
-  while(tree);
 
   Switch_Eigen(NO,mixt_tree->mod);
 

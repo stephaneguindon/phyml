@@ -153,7 +153,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   /* seed = 629; */
   /* seed = 1; */
   /* seed = 14493; */
-  /* seed = 28513; */
+  /* seed = 17541; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -314,8 +314,8 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
                mmod->lbda,mmod->mu,mmod->sigsq,mmod->rad,neigh,area*neigh/(4*PI*mmod->sigsq));
   fflush(NULL);
 
-  /* PHYREX_Simulate_Backward_Core(YES,tree->disk,tree); */
-  mmod->sampl_area = PHYREX_Simulate_Forward_Core(n_sites,tree);
+  PHYREX_Simulate_Backward_Core(YES,tree->disk,tree);
+  /* mmod->sampl_area = PHYREX_Simulate_Forward_Core(n_sites,tree); */
     
   PHYREX_Ldsk_To_Tree(tree);  
 
@@ -924,179 +924,166 @@ int PHYREX_Is_In_Disk(t_geo_coord *coord, t_dsk *disk, t_phyrex_mod *mmod)
 phydbl PHYREX_Lk(t_tree *tree)
 {
   phydbl lnL;
-  phydbl log_mu,log_one_mu,log_dens_coal,log_lbda;
-  int i,j,n_inter,err;
-  short int was_hit, n_hit;
-  t_phyrex_mod *mmod;
+  phydbl log_lbda;
   t_dsk *disk;
-
-
-  mmod = tree->mmod;
   
-  disk = tree->disk;
-
-  assert(!disk->next);
-  assert(disk->prev);
+  assert(!tree->disk->next);
+  assert(tree->disk->prev);
   
   tree->mmod->c_lnL = 0.0;
-  log_mu            = LOG(mmod->mu);
-  log_one_mu        = LOG(1. - mmod->mu);  
-  log_lbda          = LOG(mmod->lbda);
-  lnL               = 0.0;
+  log_lbda          = LOG(tree->mmod->lbda);
 
   /* TO DO: create a proper PHYREX_LogPost() function */
-  mmod->c_lnL += PHYREX_LnPrior_Radius(tree);
-  mmod->c_lnL += PHYREX_LnPrior_Mu(tree);
-  mmod->c_lnL += PHYREX_LnPrior_Lbda(tree);
+  tree->mmod->c_lnL += PHYREX_LnPrior_Radius(tree);
+  tree->mmod->c_lnL += PHYREX_LnPrior_Mu(tree);
+  tree->mmod->c_lnL += PHYREX_LnPrior_Lbda(tree);
  
-  if(isinf(mmod->c_lnL) || isnan(mmod->c_lnL)) 
+  if(isinf(tree->mmod->c_lnL) || isnan(tree->mmod->c_lnL)) 
     {
-      mmod->c_lnL = UNLIKELY;
-      return mmod->c_lnL;
+      tree->mmod->c_lnL = UNLIKELY;
+      return tree->mmod->c_lnL;
     }
 
   PHYREX_Update_Lindisk_List(tree);
 
-  n_inter = 0;
+  /* disk = tree->disk; */
+  /* assert(disk); */
+  /* do */
+  /*   { */
+  /*     lnL = PHYREX_Lk_Core(disk,tree); */
+  /*     lnL += log_lbda - tree->mmod->lbda * FABS(disk->time - disk->prev->time); */
+  /*     tree->mmod->c_lnL += lnL; */
+  /*     disk = disk->prev; */
+  /*     disk->c_lnL = tree->mmod->c_lnL; */
+  /*   } */
+  /* while(disk->prev); */
+
+
+  disk = tree->disk->prev;
+  assert(disk);
   do
-    {      
-      /* PhyML_Printf("\n. Likelihood - disk %s has %d lindisk nodes [%f] rad: %f",disk->id,disk->n_ldsk_a,lnL,mmod->rad); */
-      /* fflush(NULL); */
-      
-      n_inter++;
-
-      lnL     = 0.0;
-      was_hit = NO;
-      n_hit   = 0;
-      
-      For(i,disk->n_ldsk_a)
-        {
-          /* printf("\n. %p %p %p %p %p %d",disk,disk->prev,disk->ldsk_a,disk->ldsk_a[i],disk->ldsk_a[i]->prev,disk->n_ldsk_a); fflush(NULL); */
-
-          was_hit = disk->ldsk_a[i]->prev->disk == disk->prev;
-          
-          if(PHYREX_Is_In_Ldscape(disk->ldsk_a[i],tree->mmod) == NO)
-            {
-              mmod->c_lnL = UNLIKELY;
-              return(UNLIKELY);
-            }
-
-          if(was_hit == YES) n_hit++;
-          
-          if(was_hit == YES && disk->prev->ldsk == NULL)
-            {
-              PhyML_Printf("\n== disk: %s disk->prev: %s",disk->id,disk->prev->id);
-              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-            }
-          
-          switch(mmod->name)
-            {
-            case PHYREX_UNIFORM:
-              {
-                if(PHYREX_Is_In_Disk(disk->ldsk_a[i]->coord,disk->prev,mmod) == YES) /* 'Departure' point is in disk */
-                  {
-                    if(was_hit == YES) /* was hit */
-                      {
-                        if(PHYREX_Is_In_Disk(disk->prev->ldsk->coord,disk->prev,mmod) == YES) /* 'Arrival' point is in disk */
-                          {
-                            lnL += log_mu;
-                          }
-                        else /* Landed outside the disk */
-                          {
-                            mmod->c_lnL = UNLIKELY;
-                            return UNLIKELY;
-                          }
-                      }
-                    else /* was not hit */
-                      {
-                        lnL += log_one_mu;
-                      }
-                  }
-                else
-                  {
-                    if(was_hit == YES)
-                      {
-                        mmod->c_lnL = UNLIKELY;
-                        return UNLIKELY;
-                      }
-                  }                                
-                break;
-              }
-              
-            case PHYREX_NORMAL:
-              {
-                phydbl log_prob_hit;
-                
-                log_prob_hit = log_mu;
-                For(j,mmod->n_dim) log_prob_hit += -POW(disk->ldsk_a[i]->coord->lonlat[j] - disk->prev->centr->lonlat[j],2)/(2.*POW(mmod->rad,2));
-                
-                if(was_hit == YES)
-                  {
-                    lnL += log_prob_hit;
-                  }
-                else
-                  {
-                    lnL += LOG(1. - EXP(log_prob_hit));
-                  }
-                break;
-              }
-              
-            default:
-              {
-                Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-              }
-            }
-        }
-
-      /* a hit occurred */
-      if(n_hit >= 1) 
-        {
-          switch(mmod->name)
-            {
-            case PHYREX_UNIFORM: 
-              {
-                log_dens_coal = PHYREX_Log_Dunif_Rectangle_Overlap(disk->prev->ldsk,disk->prev,mmod);
-                lnL += log_dens_coal;
-                break;
-              }
-            case PHYREX_NORMAL:
-              {
-                err = NO;
-                log_dens_coal = 0.0;
-                For(j,mmod->n_dim) log_dens_coal += Log_Dnorm_Trunc(disk->prev->ldsk->coord->lonlat[j],
-                                                                    disk->prev->centr->lonlat[j],
-                                                                    mmod->rad,
-                                                                    0.0,
-                                                                    mmod->lim->lonlat[j],&err);
-                lnL += log_dens_coal;
-                break;
-              }
-            }
-        }
-
-      /* Likelihood for the disk center */
-      For(i,disk->mmod->n_dim) lnL -= LOG(disk->prev->mmod->lim->lonlat[i]);
-
-      lnL += log_lbda - mmod->lbda * FABS(disk->time - disk->prev->time);
-
-      mmod->c_lnL += lnL;
-      
+    {
+      lnL = PHYREX_Lk_Core_Bis(disk,tree);
+      lnL += log_lbda - tree->mmod->lbda * FABS(disk->time - disk->next->time);
+      tree->mmod->c_lnL += lnL;
+      disk->c_lnL = tree->mmod->c_lnL;
       disk = disk->prev;
-      
-      disk->c_lnL = mmod->c_lnL;
-
-
-      if(!disk->prev) break;
     }
-  while(1);
+  while(disk);
+
+  if(isinf(tree->mmod->c_lnL) || isnan(tree->mmod->c_lnL)) tree->mmod->c_lnL = UNLIKELY;
+
+  return(tree->mmod->c_lnL);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl PHYREX_Lk_Core(t_dsk *disk, t_tree *tree)
+{
+  phydbl lnL,log_prob_hit,log_mu,log_dens_coal;
+  int was_hit,n_hit,i,j,err;
   
-  /* lnL += (n_inter)*LOG(mmod->lbda) + mmod->lbda*disk->time; */
-  /* mmod->c_lnL = lnL; */
-  /* mmod->c_lnL = 0.0; */
+  lnL     = 0.0;
+  was_hit = NO;
+  n_hit   = 0;
+  log_mu  = LOG(tree->mmod->mu);
+  
+  For(i,disk->n_ldsk_a)
+    {
+      was_hit = disk->ldsk_a[i]->prev->disk == disk->prev;
+      if(was_hit == YES) n_hit++;
+          
+      if(was_hit == YES && disk->prev->ldsk == NULL)
+        {
+          PhyML_Printf("\n== disk: %s disk->prev: %s",disk->id,disk->prev->id);
+          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+        }
+      
+      if(PHYREX_Is_In_Ldscape(disk->ldsk_a[i],tree->mmod) == NO) return(UNLIKELY);
+     
+      log_prob_hit = log_mu;
+      For(j,tree->mmod->n_dim) log_prob_hit += -POW(disk->ldsk_a[i]->coord->lonlat[j] - disk->prev->centr->lonlat[j],2)/(2.*POW(tree->mmod->rad,2));
+      
 
-  if(isinf(mmod->c_lnL) || isnan(mmod->c_lnL)) mmod->c_lnL = UNLIKELY;
+      if(was_hit == YES) lnL += log_prob_hit;
+      else               lnL += LOG(1. - EXP(log_prob_hit));
+    }
 
-  return(mmod->c_lnL);
+
+  /* a hit occurred */
+  if(n_hit >= 1)
+    {
+      err = NO;
+      log_dens_coal = 0.0;
+      For(j,tree->mmod->n_dim) log_dens_coal += Log_Dnorm_Trunc(disk->prev->ldsk->coord->lonlat[j],
+                                                                disk->prev->centr->lonlat[j],
+                                                                tree->mmod->rad,
+                                                                0.0,
+                                                                tree->mmod->lim->lonlat[j],&err);
+      lnL += log_dens_coal;
+    }
+
+  /* Likelihood for the disk center */
+  For(i,disk->mmod->n_dim) lnL -= LOG(tree->mmod->lim->lonlat[i]);
+  
+  return(lnL);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl PHYREX_Lk_Core_Bis(t_dsk *disk, t_tree *tree)
+{
+  phydbl lnL,log_prob_hit,log_mu,log_dens_coal;
+  int was_hit,i,j,k,err;
+  
+  lnL     = 0.0;
+  log_mu  = LOG(tree->mmod->mu);
+  was_hit = (disk->ldsk != NULL);
+
+  For(i,disk->n_ldsk_a)
+    {
+      if(PHYREX_Is_In_Ldscape(disk->ldsk_a[i],tree->mmod) == NO) return(UNLIKELY);     
+
+      if(was_hit && disk->ldsk_a[i] == disk->ldsk)
+        {
+          For(k,disk->ldsk->n_next)
+            {              
+              log_prob_hit = log_mu;
+              For(j,tree->mmod->n_dim)
+                log_prob_hit += -POW(disk->ldsk->next[k]->coord->lonlat[j] - disk->centr->lonlat[j],2)/(2.*POW(tree->mmod->rad,2));
+
+              lnL += log_prob_hit;
+            }
+        }
+      else
+        {
+          log_prob_hit = log_mu;
+          For(j,tree->mmod->n_dim)
+            log_prob_hit += -POW(disk->ldsk_a[i]->coord->lonlat[j] - disk->centr->lonlat[j],2)/(2.*POW(tree->mmod->rad,2));
+          
+          lnL += LOG(1. - EXP(log_prob_hit));
+        }
+    }
+
+  /* a hit occurred */
+  if(was_hit == TRUE)
+    {
+      err = NO;
+      log_dens_coal = 0.0;
+      For(j,tree->mmod->n_dim) log_dens_coal += Log_Dnorm_Trunc(disk->ldsk->coord->lonlat[j],
+                                                                disk->centr->lonlat[j],
+                                                                tree->mmod->rad,
+                                                                0.0,
+                                                                tree->mmod->lim->lonlat[j],&err);
+      lnL += log_dens_coal;
+    }
+
+  /* Likelihood for the disk center */
+  For(i,disk->mmod->n_dim) lnL -= LOG(tree->mmod->lim->lonlat[i]);
+  
+  return(lnL);
 }
 
 //////////////////////////////////////////////////////////////
@@ -3786,3 +3773,46 @@ int PHYREX_Path_Len(t_ldsk *beg, t_ldsk *end)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
+void PHYREX_Print_Disk_Lk(t_tree *tree)
+{
+  t_dsk *disk;
+
+  PHYREX_Update_Lindisk_List(tree);
+
+  disk = tree->disk->prev;
+
+  do
+    {
+      PhyML_Printf("\n. Disk: %p time: %12f lk: %12f cumlk: %12f",
+                   disk,
+                   disk->time,
+                   PHYREX_Lk_Core_Bis(disk,tree),
+                   disk->c_lnL);
+      
+      disk = disk->prev;
+    }
+  while(disk->prev);
+  
+}
+
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/

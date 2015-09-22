@@ -1918,7 +1918,13 @@ phydbl MIXT_Get_Mean_Edge_Len(t_edge *mixt_b, t_tree *mixt_tree)
   n    = 0 ;
   do
     {
-      sum += b->l->v;
+      if(tree->is_mixt_tree == YES)
+        {
+          tree = tree->next;
+          b    = b->next;
+        }
+
+      sum += b->l->v * tree->mixt_tree->mod->br_len_mult->v;
       n++;
       b    = b->next;
       tree = tree->next;
@@ -1926,7 +1932,6 @@ phydbl MIXT_Get_Mean_Edge_Len(t_edge *mixt_b, t_tree *mixt_tree)
   while(b);
 
   return(sum / (phydbl)n);
-
 }
 
 //////////////////////////////////////////////////////////////

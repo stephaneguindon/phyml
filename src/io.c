@@ -4158,6 +4158,9 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
   if(final == YES)
     PhyML_Fprintf(fp,"\n. Final log-likelihood: %f",mixt_tree->c_lnL);
 
+  r_mat_weight_sum = MIXT_Get_Sum_Chained_Scalar_Dbl(mixt_tree->next->mod->r_mat_weight);
+  e_frq_weight_sum = MIXT_Get_Sum_Chained_Scalar_Dbl(mixt_tree->next->mod->e_frq_weight);
+
   do
     {
       int class = 0;
@@ -4188,15 +4191,12 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
         }
       PhyML_Fprintf(fp,"\n. Relative average rate:\t\t%12f",mixt_tree->mod->br_len_mult->v);
 
-      
-      r_mat_weight_sum = MIXT_Get_Sum_Chained_Scalar_Dbl(mixt_tree->next->mod->r_mat_weight);
-      e_frq_weight_sum = MIXT_Get_Sum_Chained_Scalar_Dbl(mixt_tree->next->mod->e_frq_weight);
-
+     
       tree = mixt_tree;
       do
         {
           if(tree->is_mixt_tree) tree = tree->next;
-          
+
           PhyML_Fprintf(fp,"\n");
           PhyML_Fprintf(fp,"\n. Mixture class %d",class+1);
           
@@ -4274,9 +4274,9 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
                 {
                   strcpy(s,"Model");
                 }
-
-          PhyML_Fprintf(fp,"\n   Amino-acid freq.:\t\t%12s",s);
-
+              
+              PhyML_Fprintf(fp,"\n   Amino-acid freq.:\t\t%12s",s);
+              
               Free(s);
             }
 

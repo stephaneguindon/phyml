@@ -1118,7 +1118,7 @@ t_cal *Make_Calib(int n_otu)
 void Make_Rmat_Weight(t_tree *mixt_tree)
 {
   t_tree *tree, *buff_tree;
-
+  scalar_dbl *curr_weight;
 
   tree = mixt_tree;
   do
@@ -1142,7 +1142,7 @@ void Make_Rmat_Weight(t_tree *mixt_tree)
 
   tree = mixt_tree;
   do
-            {
+    {
       if(tree->is_mixt_tree == YES) tree = tree->next;
       tree->mod->r_mat_weight = NULL;
       tree = tree->next;
@@ -1154,52 +1154,39 @@ void Make_Rmat_Weight(t_tree *mixt_tree)
   tree->mod->r_mat_weight = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
   Init_Scalar_Dbl(tree->mod->r_mat_weight);
   tree->mod->r_mat_weight->v = 1.0;
+  curr_weight = tree->mod->r_mat_weight;
 
   buff_tree = tree = mixt_tree;
   do // For each mixt_tree
-                {
+    {
       if(tree->is_mixt_tree == YES) tree = tree->next;
-
+      
       buff_tree = mixt_tree->next;
       do
-                    {
+        {
           if(buff_tree->mod->r_mat == tree->mod->r_mat)
             {
               tree->mod->r_mat_weight = buff_tree->mod->r_mat_weight;
-                      break;
-                    }
-                  buff_tree = buff_tree->next;
-                }
+              break;
+            }
+          buff_tree = buff_tree->next;
+        }
       while(buff_tree != tree);
-
+      
       if(!tree->mod->r_mat_weight)
-                {
+        {
           tree->mod->r_mat_weight = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
           Init_Scalar_Dbl(tree->mod->r_mat_weight);
           tree->mod->r_mat_weight->v = 1.0;
-                }
-
-          tree = tree->next;
-
+          curr_weight->next = tree->mod->r_mat_weight;
+          tree->mod->r_mat_weight->prev = curr_weight;
+          curr_weight = tree->mod->r_mat_weight;
         }
-  while(tree);
-
-  tree = mixt_tree;
-  do
-        {
-      if(tree->next)
-        {
-          tree->mod->r_mat_weight->next = tree->next->mod->r_mat_weight;
-          tree->next->mod->r_mat_weight->prev = tree->mod->r_mat_weight;
-        }
-      else
-        {
-          tree->mod->r_mat_weight->next = NULL;
-        }
+      
       tree = tree->next;
+      
     }
   while(tree);
-
 
 }
 
@@ -1209,6 +1196,7 @@ void Make_Rmat_Weight(t_tree *mixt_tree)
 void Make_Efrq_Weight(t_tree *mixt_tree)
 {
   t_tree *tree, *buff_tree;
+  scalar_dbl *curr_weight;
 
 
   tree = mixt_tree;
@@ -1249,54 +1237,41 @@ void Make_Efrq_Weight(t_tree *mixt_tree)
   tree->mod->e_frq_weight = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
   Init_Scalar_Dbl(tree->mod->e_frq_weight);
   tree->mod->e_frq_weight->v = 1.0;
+  curr_weight = tree->mod->e_frq_weight;
 
 
   buff_tree = tree = mixt_tree;
   do // For each mixt_tree
-                    {
+    {
       if(tree->is_mixt_tree == YES) tree = tree->next;
-
+      
       buff_tree = mixt_tree->next;
       do
         {
           if(buff_tree->mod->e_frq == tree->mod->e_frq)
             {
               tree->mod->e_frq_weight = buff_tree->mod->e_frq_weight;
-                      break;
-                    }
-                  buff_tree = buff_tree->next;
-                }
+              break;
+            }
+          buff_tree = buff_tree->next;
+        }
       while(buff_tree != tree);
-
+      
       if(!tree->mod->e_frq_weight)
-                {
+        {
           tree->mod->e_frq_weight = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
           Init_Scalar_Dbl(tree->mod->e_frq_weight);
           tree->mod->e_frq_weight->v = 1.0;
-                }
-
-          tree = tree->next;
-
+          curr_weight->next = tree->mod->e_frq_weight;
+          tree->mod->e_frq_weight->prev = curr_weight;
+          curr_weight = tree->mod->e_frq_weight;
         }
-  while(tree);
-
-
-  tree = mixt_tree;
-  do
-    {
-      if(tree->next)
-        {
-          tree->mod->e_frq_weight->next = tree->next->mod->e_frq_weight;
-          tree->next->mod->e_frq_weight->prev = tree->mod->e_frq_weight;
-    }
-      else
-        {
-          tree->mod->e_frq_weight->next = NULL;
-        }
+      
       tree = tree->next;
+      
     }
   while(tree);
-}
+  }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
