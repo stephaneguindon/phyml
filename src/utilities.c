@@ -7853,7 +7853,6 @@ t_node *Find_Lca_Pair_Of_Nodes(t_node *n1, t_node *n2, t_tree *tree)
 
   while(list1[size1] == list2[size2])
     {
-
       size1--;
       size2--;
 

@@ -153,7 +153,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   /* seed = 629; */
   /* seed = 1; */
   /* seed = 14493; */
-  /* seed = 24666; */
+  /* seed = 9909; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -3795,13 +3795,104 @@ void PHYREX_Print_Disk_Lk(t_tree *tree)
   
 }
 
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+t_ldsk *PHYREX_Find_Lca_Pair_Of_Ldsk(t_ldsk *n1, t_ldsk *n2, t_tree *tree)
+{
+  t_ldsk **list1, **list2, *lca;
+  int len1, len2;
+
+  assert(n1);
+  assert(n2);
+
+  if(n1 == n2) return(n1);
+
+  PHYREX_Get_List_Of_Ancestors(n1,&list1,&len1,tree);
+  PHYREX_Get_List_Of_Ancestors(n2,&list2,&len2,tree);
+  
+  len1 = len1-1;
+  len2 = len2-1;
+
+  /* printf("\n. len1: %d len2: %d",len1,len2); fflush(NULL); */
+  /* printf("\n. %f %f %d %d [%f %f]", */
+  /*        list1[1]->disk->time, */
+  /*        list2[1]->disk->time, */
+  /*        len1,len2, */
+  /*        n1->disk->time, */
+  /*        n2->disk->time); */
+         
+  assert(list1[len1] == list2[len2]);
+
+
+  do
+    {
+      if((list1[len1] != list2[len2]) || (len1 < 0 || len2 < 0)) break;
+      len1--;
+      len2--;
+    }
+  while(len1 && len2);
+  
+
+  lca = list1[len1+1];
+
+  Free(list1);
+  Free(list2);
+  
+  assert(lca);
+
+  return(lca);
+  
+} 
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+void PHYREX_Get_List_Of_Ancestors(t_ldsk *start, t_ldsk ***list, int *len, t_tree *tree)
+{
+  int block,i;
+  t_ldsk *ldsk;
+
+  assert(start);
+  block = 100;
+
+  *list = (t_ldsk **)mCalloc(block,sizeof(t_ldsk *));
+  
+  ldsk = start;
+  i = 0;
+  do
+    {
+      (*list)[i] = ldsk;
+      if(!(i%block)) *list = (t_ldsk **)mRealloc(*list,i+block,sizeof(t_ldsk *));
+      i++;
+      ldsk = ldsk->prev;
+    }
+  while(ldsk);
+
+  (*len) = i;
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+phydbl PHYREX_Dist_To_Lca(t_ldsk *d, t_ldsk *lca)
+{
+  return(FABS(d->disk->time - lca->disk->time));      
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+phydbl PHYREX_Dist_Between_Two_Ldsk(t_ldsk *n1,  t_ldsk *n2, t_tree *tree)
+{
+  t_ldsk *lca;
+
+  lca = PHYREX_Find_Lca_Pair_Of_Ldsk(n1,n2,tree);
+
+  return(PHYREX_Dist_To_Lca(n1,lca)+PHYREX_Dist_To_Lca(n2,lca));
+}
+
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

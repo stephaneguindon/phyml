@@ -4475,7 +4475,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_spr]                   = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldscape_lim]           = 0.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 0.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_lbda_times]            = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldsk_given_disk]       = 1.0;
@@ -6316,8 +6316,10 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
   phydbl cur_alnL, new_alnL;
   t_dsk  *disk,*prune_disk,*regraft_disk,**valid_disks;
   t_ldsk *prune_ldsk,*regraft_ldsk,*prune_daughter_ldsk,*cur_path,*new_path,*ldsk,*ldsk_dum;
-  int i,block,n_valid_disks,prune_next_num;
-  phydbl rate,dt,sizeT;
+  phydbl *prob_disks;
+  int i,block,n_valid_disks,prune_next_num,num_prune_disk;
+  phydbl rate,dt,sizeT,sum;
+  phydbl max_dist, param_exp;
   int cur_path_len;
   int n_hits,n_iter;
   int cur_pos,new_pos;
@@ -6329,17 +6331,19 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
 
       tree->mcmc->run_move[tree->mcmc->num_move_phyrex_spr]++;
   
-      valid_disks = NULL;
-      disk        = NULL;
-      new_glnL    = tree->mmod->c_lnL;
-      cur_glnL    = tree->mmod->c_lnL;
-      new_alnL    = tree->c_lnL;
-      cur_alnL    = tree->c_lnL;
-      hr          = 0.0;
-      ratio       = 0.0;
-      block       = 100;
-      cur_pos     = -1;
-      new_pos     = -1;
+      valid_disks    = NULL;
+      disk           = NULL;
+      new_glnL       = tree->mmod->c_lnL;
+      cur_glnL       = tree->mmod->c_lnL;
+      new_alnL       = tree->c_lnL;
+      cur_alnL       = tree->c_lnL;
+      hr             = 0.0;
+      ratio          = 0.0;
+      block          = 100;
+      cur_pos        = -1;
+      new_pos        = -1;
+      num_prune_disk = -1;
+      sizeT          = PHYREX_Time_Tree_Length(tree);
 
       if(tree->disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
       
@@ -6377,7 +6381,7 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
       /* Which daughter lineage are we pruning? */
       prune_next_num = Rand_Int(0,prune_ldsk->n_next-1);
       prune_daughter_ldsk = prune_ldsk->next[prune_next_num];
-      while(prune_daughter_ldsk->n_next < 2 &&
+      while(prune_daughter_ldsk->n_next < 2 && /* prune_daughter is a coalescent node */
             prune_daughter_ldsk->disk->next) prune_daughter_ldsk = prune_daughter_ldsk->next[0];
       
       /* prune_daughter_ldsk has to be the next coalescent node under prune_ldsk for this move to work */
@@ -6393,16 +6397,33 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
       n_valid_disks = 0;
       do
         {
-          /* Include only disks with displacement that are coalescent that are not younger
+          /* Include only disks with displacement that are not younger
              than prune_daughter_ldsk */
           if((disk->ldsk != NULL) && 
              (disk->ldsk->n_next > 0) && 
              (disk->time < prune_daughter_ldsk->disk->time) && 
              (PHYREX_Is_On_Path(disk->ldsk,prune_daughter_ldsk,prune_ldsk) == NO))
             {
-              if(!n_valid_disks) valid_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
-              else if(!(n_valid_disks%block)) valid_disks = (t_dsk **)mRealloc(valid_disks,n_valid_disks+block,sizeof(t_dsk *));
+              if(!n_valid_disks) 
+                {
+                  valid_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
+                  prob_disks  = (phydbl *)mCalloc(block,sizeof(phydbl));
+                }
+              else if(!(n_valid_disks%block)) 
+                {
+                  valid_disks = (t_dsk **)mRealloc(valid_disks,n_valid_disks+block,sizeof(t_dsk *));
+                  prob_disks  = (phydbl *)mRealloc(prob_disks,n_valid_disks+block,sizeof(phydbl));
+                }
+
               valid_disks[n_valid_disks] = disk;
+
+              prob_disks[n_valid_disks] = PHYREX_Dist_Between_Two_Ldsk(disk->ldsk,
+                                                                       prune_daughter_ldsk,
+                                                                       tree);
+
+
+              if(disk == prune_disk) num_prune_disk = n_valid_disks;
+
               n_valid_disks++;
             }
           disk = disk->prev;
@@ -6410,9 +6431,36 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
       while(disk && disk->prev);
       
       if(!n_valid_disks) return;
-      
+
+      if(n_valid_disks > 1)
+        {
+          max_dist = -INFINITY;
+          For(i,n_valid_disks) if(prob_disks[i] > max_dist) max_dist = prob_disks[i];
+          
+          sum = 0.0;
+          For(i,n_valid_disks) prob_disks[i] /= max_dist;
+
+          param_exp = 2.0;
+          For(i,n_valid_disks) prob_disks[i] = Dexp(prob_disks[i],param_exp);
+
+          sum = 0.0;
+          For(i,n_valid_disks) sum += prob_disks[i];
+          For(i,n_valid_disks) prob_disks[i] /= sum;
+          
+          i = Sample_i_With_Proba_pi(prob_disks,n_valid_disks);
+          hr -= LOG(prob_disks[i]);
+          hr += LOG(prob_disks[num_prune_disk]);
+        }
+      else
+        {
+          i = 0;
+        }
+
+      Free(prob_disks);
+
       /* Uniform selection of a disk among the list of valid ones */
-      i = Rand_Int(0,n_valid_disks-1);
+      /* i = Rand_Int(0,n_valid_disks-1); */      
+
       regraft_disk = valid_disks[i];
       Free(valid_disks);
       
@@ -6451,7 +6499,6 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
       
       /* Prune and regraft */
       n_hits = PHYREX_Total_Number_Of_Hit_Disks(tree) - PHYREX_Total_Number_Of_Coal_Disks(tree);
-      sizeT  = PHYREX_Time_Tree_Length(tree);
       dt = FABS(prune_daughter_ldsk->disk->time - prune_ldsk->disk->time);
       cur_path_len = PHYREX_Path_Len(prune_daughter_ldsk,prune_ldsk)-2;
       rate = (phydbl)(n_hits - cur_path_len)/(sizeT - dt);
@@ -6495,13 +6542,16 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
       
       disk = tree->disk->prev;
       n_valid_disks = 0;
+      sum = 0.0;
       do
         {
           if((disk->ldsk != NULL) && 
              (disk->ldsk->n_next > 0) && 
              (disk->time < prune_daughter_ldsk->disk->time) && 
              (PHYREX_Is_On_Path(disk->ldsk,prune_daughter_ldsk,regraft_ldsk) == NO))
-            n_valid_disks++;
+            {
+              n_valid_disks++;
+            }
           disk = disk->prev;
         }
       while(disk && disk->prev);

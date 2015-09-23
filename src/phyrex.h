@@ -98,6 +98,12 @@ int PHYREX_Path_Len(t_ldsk *beg, t_ldsk *end);
 phydbl PHYREX_Lk_Core(t_dsk *disk, t_tree *tree);
 void PHYREX_Print_Disk_Lk(t_tree *tree);
 phydbl PHYREX_Lk_Core_Bis(t_dsk *disk, t_tree *tree);
+t_ldsk *PHYREX_Find_Lca_Pair_Of_Ldsk(t_ldsk *n1, t_ldsk *n2, t_tree *tree);
+void PHYREX_Get_List_Of_Ancestors(t_ldsk *start, t_ldsk ***list, int *len, t_tree *tree);
+phydbl PHYREX_Dist_To_Lca(t_ldsk *d, t_ldsk *lca);
+phydbl PHYREX_Dist_Between_Two_Ldsk(t_ldsk *n1,  t_ldsk *n2, t_tree *tree);
+
+
 
 
 #endif

@@ -4873,6 +4873,7 @@ int Sample_i_With_Proba_pi(phydbl *pi, int len)
 
   if(i == len)
     {
+      For(i,len) printf("\n== idx:%d prob:%g",i,pi[i]);
       PhyML_Printf("\n== Len = %d",len);
       PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
