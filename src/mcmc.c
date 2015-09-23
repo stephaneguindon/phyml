@@ -6638,17 +6638,17 @@ void MCMC_PHYREX_Simulate_Backward(t_tree *tree)
   u = Uni();
   if(u < 0.33)
     {
-      new_lbda = cur_lbda * EXP(0.5*(Uni()-.5));
+      new_lbda = cur_lbda * EXP(0.1*(Uni()-.5));
       hr += LOG(new_lbda/cur_lbda);
     }
   else if(u < 0.66 && u > 0.33)
     {
-      new_mu = cur_mu * EXP(0.2*(Uni()-.5));
+      new_mu = cur_mu * EXP(0.1*(Uni()-.5));
       hr += LOG(new_mu/cur_mu);
     }
   else
     {
-      new_rad = cur_rad * EXP(0.5*(Uni()-.5));
+      new_rad = cur_rad * EXP(0.1*(Uni()-.5));
       hr += LOG(new_rad/cur_rad);
     }
 
@@ -6970,7 +6970,7 @@ void MCMC_PHYREX_Lbda_Times(t_tree *tree)
   new_glnL = cur_glnL - (n_inter)*LOG(tree->mmod->lbda) + tree->mmod->lbda*disk->time;
 
 
-  new_lbda = cur_lbda * EXP(1.0*(Uni()-.5));
+  new_lbda = cur_lbda * EXP(0.1*(Uni()-.5));
   hr += LOG(new_lbda/cur_lbda);
 
   tree->mmod->lbda = new_lbda;
