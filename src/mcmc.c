@@ -6640,10 +6640,6 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
 /*////////////////////////////////////////////////////////////l
 ////////////////////////////////////////////////////////////*/
 
-
-
-
-
 #ifdef PHYREX
 void MCMC_PHYREX_Simulate_Backward(t_tree *tree)
 {
@@ -6685,22 +6681,22 @@ void MCMC_PHYREX_Simulate_Backward(t_tree *tree)
   new_mu      = cur_mu;
 
 
-  u = Uni();
-  if(u < 0.33)
-    {
-      new_lbda = cur_lbda * EXP(0.1*(Uni()-.5));
-      hr += LOG(new_lbda/cur_lbda);
-    }
-  else if(u < 0.66 && u > 0.33)
-    {
-      new_mu = cur_mu * EXP(0.1*(Uni()-.5));
-      hr += LOG(new_mu/cur_mu);
-    }
-  else
-    {
-      new_rad = cur_rad * EXP(0.1*(Uni()-.5));
-      hr += LOG(new_rad/cur_rad);
-    }
+  /* u = Uni(); */
+  /* if(u < 0.33) */
+  /*   { */
+  /*     new_lbda = cur_lbda * EXP(0.1*(Uni()-.5)); */
+  /*     hr += LOG(new_lbda/cur_lbda); */
+  /*   } */
+  /* else if(u < 0.66 && u > 0.33) */
+  /*   { */
+  /*     new_mu = cur_mu * EXP(0.1*(Uni()-.5)); */
+  /*     hr += LOG(new_mu/cur_mu); */
+  /*   } */
+  /* else */
+  /*   { */
+  /*     new_rad = cur_rad * EXP(0.1*(Uni()-.5)); */
+  /*     hr += LOG(new_rad/cur_rad); */
+  /*   } */
 
   tree->mmod->lbda = new_lbda;
   tree->mmod->mu   = new_mu;
