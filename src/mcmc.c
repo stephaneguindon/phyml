@@ -4966,8 +4966,8 @@ void MCMC_PHYREX_Indel_Disk(t_tree *tree)
   new_lbda = tree->mmod->lbda;
   cur_lbda = tree->mmod->lbda;
 
-  new_lbda = cur_lbda * EXP(0.5*(Uni()-.5));
-  hr += LOG(new_lbda/cur_lbda);
+  /* new_lbda = cur_lbda * EXP(0.5*(Uni()-.5)); */
+  /* hr += LOG(new_lbda/cur_lbda); */
 
   tree->mmod->lbda = new_lbda;
   
@@ -5715,9 +5715,9 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree)
   hr += (n_disks)*LOG(scale_fact_times);
 
   /* Adjust the value of lambda */
-  new_lbda = cur_lbda * (1./scale_fact_times);
-  hr += LOG(1./scale_fact_times);
-  tree->mmod->lbda = new_lbda;
+  /* new_lbda = cur_lbda * (1./scale_fact_times); */
+  /* hr += LOG(1./scale_fact_times); */
+  /* tree->mmod->lbda = new_lbda; */
 
   new_glnL = PHYREX_Lk(tree);
   if(tree->mcmc->use_data == YES) new_alnL = Lk(NULL,tree);
@@ -6966,7 +6966,7 @@ void MCMC_PHYREX_Lbda_Times(t_tree *tree)
   new_glnL = cur_glnL - (n_inter)*LOG(tree->mmod->lbda) + tree->mmod->lbda*disk->time;
 
 
-  new_lbda = cur_lbda * EXP(0.1*(Uni()-.5));
+  /* new_lbda = cur_lbda * EXP(0.1*(Uni()-.5)); */
   hr += LOG(new_lbda/cur_lbda);
 
   tree->mmod->lbda = new_lbda;
