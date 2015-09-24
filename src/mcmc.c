@@ -6477,6 +6477,7 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
          (i.e., regraft ldsk in the proposed move) has n_next = 1 
       */
       if(regraft_ldsk->n_next == 1) n_prune_disks += 1;
+      if(prune_ldsk->n_next == 2) n_prune_disks   -= 1;
       hr += LOG(1./n_prune_disks);
 
 
