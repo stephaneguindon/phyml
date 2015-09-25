@@ -153,7 +153,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   /* seed = 629; */
   /* seed = 1; */
   /* seed = 14493; */
-  /* seed = 13667; */
+  /* seed = 15364; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -1169,14 +1169,14 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   true_height = PHYREX_Tree_Height(tree);
 
   /* Starting parameter values */
-  tree->mmod->lbda = Uni()*(0.5 - 0.01) + 0.01;
+  tree->mmod->lbda = Uni()*(0.5 - 0.2) + 0.2;
   tree->mmod->mu   = Uni()*(0.6 - 0.3) + 0.3;
   tree->mmod->rad  = Uni()*(4.0 - 2.0) + 2.0;
   PHYREX_Update_Sigsq(tree);
 
-  /* tree->mmod->lbda = Uni()*(0.5 - 0.2) + 0.2; */
-  /* tree->mmod->mu   = Uni()*(0.3 - 0.1) + 0.1; */
-  /* tree->mmod->rad  = Uni()*(2.0 - 1.0) + 1.0; */
+  /* tree->mmod->lbda = Uni()*(0.50 - 0.20) + 0.20; */
+  /* tree->mmod->mu   = Uni()*(0.30 - 0.05) + 0.05; */
+  /* tree->mmod->rad  = Uni()*(3.00 - 1.00) + 1.00; */
   /* PHYREX_Update_Sigsq(tree); */
 
   /* MCMC_Randomize_Rate_Across_Sites(tree); */
@@ -1283,6 +1283,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_disk"))
         MCMC_PHYREX_Indel_Disk(tree);
 
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_hit"))
+        MCMC_PHYREX_Indel_Hit(tree);
+
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_move_disk_ct"))
         MCMC_PHYREX_Move_Disk_Centre(tree);
 
@@ -1292,8 +1295,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_swap_disk"))
         MCMC_PHYREX_Swap_Disk(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_hit"))
-        MCMC_PHYREX_Indel_Hit(tree);
 
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_move_ldsk"))
         MCMC_PHYREX_Move_Ldsk(tree);
@@ -1310,17 +1311,12 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_traj"))
         MCMC_PHYREX_Lineage_Traj(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"phyrex_multi_traj"))
-        MCMC_PHYREX_Multi_Traj(tree);
-
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_lbda_times"))
         MCMC_PHYREX_Lbda_Times(tree);
 
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_ldsk_given_disk"))
         MCMC_PHYREX_Ldsk_Given_Disk(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"phyrex_flip"))
-        MCMC_PHYREX_Flip_Events(tree);
 
       if(!strcmp(tree->mcmc->move_name[move],"kappa"))
         MCMC_Kappa(tree);
@@ -2475,14 +2471,14 @@ phydbl PHYREX_LnPrior_Lbda(t_tree *tree)
   if(tree->mmod->lbda < tree->mmod->min_lbda) return UNLIKELY;
   if(tree->mmod->lbda > tree->mmod->max_lbda) return UNLIKELY;
 
-  /* tree->mmod->c_ln_prior_lbda = */
-  /*   LOG(tree->mmod->prior_param_lbda) - */
-  /*   tree->mmod->prior_param_lbda*tree->mmod->lbda; */
+  tree->mmod->c_ln_prior_lbda =
+    LOG(tree->mmod->prior_param_lbda) -
+    tree->mmod->prior_param_lbda*tree->mmod->lbda;
 
-  /* tree->mmod->c_ln_prior_lbda -= LOG(EXP(-tree->mmod->prior_param_lbda*tree->mmod->min_lbda)- */
-  /*                                    EXP(-tree->mmod->prior_param_lbda*tree->mmod->max_lbda)); */
+  tree->mmod->c_ln_prior_lbda -= LOG(EXP(-tree->mmod->prior_param_lbda*tree->mmod->min_lbda)-
+                                     EXP(-tree->mmod->prior_param_lbda*tree->mmod->max_lbda));
 
-  tree->mmod->c_ln_prior_lbda = -LOG(tree->mmod->max_lbda - tree->mmod->min_lbda);;
+  /* tree->mmod->c_ln_prior_lbda = -LOG(tree->mmod->max_lbda - tree->mmod->min_lbda);; */
 
   return(tree->mmod->c_ln_prior_lbda);
 }

@@ -4462,20 +4462,20 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_geo_dum]               = 1.0;
 
 # if defined (PHYREX)
-  mcmc->move_weight[mcmc->num_move_phyrex_lbda]                  = 2.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_mu]                    = 2.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_rad]                   = 2.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_lbda]                  = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_mu]                    = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_rad]                   = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_sigsq]                 = 0.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_indel_disk]            = 4.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_indel_disk]            = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ct]          = 1.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ud]          = 5.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_swap_disk]             = 3.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_indel_hit]             = 4.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ud]          = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_swap_disk]             = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_indel_hit]             = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_move_ldsk]             = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_spr]                   = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldscape_lim]           = 0.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_lbda_times]            = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldsk_given_disk]       = 1.0;
@@ -5796,7 +5796,7 @@ void MCMC_PHYREX_Swap_Disk(t_tree *tree)
   t_dsk  *disk,*target_disk,*ori_disk_old,*ori_disk_young,**valid_disks;
   int i,j,block,n_valid_disks;
 
-  For(j,tree->n_otu)
+  For(j,1+(int)(tree->n_otu/5))
     {
       disk           = NULL;
       target_disk    = NULL;
@@ -6789,7 +6789,7 @@ void MCMC_PHYREX_Lineage_Traj(t_tree *tree)
 
   /* n_hits = PHYREX_Total_Number_Of_Hit_Disks(tree); */
   /* n_iter = MAX(tree->n_otu,(int)(n_hits/5)); */
-  n_iter = tree->n_otu;
+  n_iter = 1+(int)tree->n_otu/5;
 
   while(n_iter--)
     {
