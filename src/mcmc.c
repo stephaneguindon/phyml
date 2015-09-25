@@ -6437,7 +6437,7 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
           sum = 0.0;
           For(i,n_valid_disks) prob_disks[i] /= max_dist;
 
-          param_exp = 2.0;
+          param_exp = 0.5;
           For(i,n_valid_disks) prob_disks[i] = Dexp(prob_disks[i],param_exp);
 
           sum = 0.0;
