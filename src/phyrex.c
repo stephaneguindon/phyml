@@ -934,9 +934,9 @@ phydbl PHYREX_Lk(t_tree *tree)
   log_lbda          = LOG(tree->mmod->lbda);
 
   /* TO DO: create a proper PHYREX_LogPost() function */
-  tree->mmod->c_lnL += PHYREX_LnPrior_Radius(tree);
-  tree->mmod->c_lnL += PHYREX_LnPrior_Mu(tree);
-  tree->mmod->c_lnL += PHYREX_LnPrior_Lbda(tree);
+  /* tree->mmod->c_lnL += PHYREX_LnPrior_Radius(tree); */
+  /* tree->mmod->c_lnL += PHYREX_LnPrior_Mu(tree); */
+  /* tree->mmod->c_lnL += PHYREX_LnPrior_Lbda(tree); */
  
   if(isinf(tree->mmod->c_lnL) || isnan(tree->mmod->c_lnL)) 
     {
@@ -1330,6 +1330,10 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       tree->mcmc->run++;
       MCMC_Get_Acc_Rates(tree->mcmc);
       
+
+      /* printf("\n. %10d %30s %f",tree->mcmc->run,tree->mcmc->move_name[move],tree->mmod->c_lnL); */
+
+
       if(!(tree->mcmc->run%tree->mcmc->sample_interval))
         {
           /* Lk(NULL,tree); */
