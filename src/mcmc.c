@@ -4470,12 +4470,12 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ct]          = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ud]          = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_swap_disk]             = 1.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_indel_hit]             = 0.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_indel_hit]             = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_move_ldsk]             = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_spr]                   = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldscape_lim]           = 0.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 0.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_lbda_times]            = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldsk_given_disk]       = 1.0;
@@ -6437,7 +6437,7 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
           sum = 0.0;
           For(i,n_valid_disks) prob_disks[i] /= max_dist;
 
-          param_exp = 0.5;
+          param_exp = 2.0;
           For(i,n_valid_disks) prob_disks[i] = Dexp(prob_disks[i],param_exp);
 
           sum = 0.0;
