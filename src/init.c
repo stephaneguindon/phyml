@@ -3427,10 +3427,11 @@ void PHYREX_Init_Disk_Event(t_dsk *t, int n_dim, t_phyrex_mod *mmod)
 
 void PHYREX_Init_Migrep_Mod(t_phyrex_mod *t, int n_dim, phydbl max_lat, phydbl max_lon)
 {
+  assert(n_dim == 2);
+
   t->name             = PHYREX_NORMAL;
   t->n_dim            = n_dim;
-  
-  if(n_dim != 2) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  t->safe_phyrex      = YES;
   
   t->lim->lonlat[0]   = max_lat;
   t->lim->lonlat[1]   = max_lon;

@@ -1669,7 +1669,7 @@ typedef struct __Phylogeo{
   phydbl            min_dum;
   phydbl            max_dum;
 
-
+  
 }t_geo;
 
 /*!********************************************************/
@@ -1707,6 +1707,7 @@ typedef struct __Migrep_Model{
   phydbl               c_ln_prior_mu; // current value of log prior for the prior on mu
   phydbl            c_ln_prior_sigsq; // current value of log prior for the prior on sigsq=4.pi.lbda.mu.rad^4
 
+  int                    safe_phyrex;
   phydbl             soft_bound_area;
 
   struct __Geo_Coord            *lim; // max longitude and lattitude (the min are both set to zero)                       

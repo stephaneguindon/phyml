@@ -934,9 +934,9 @@ phydbl PHYREX_Lk(t_tree *tree)
   log_lbda          = LOG(tree->mmod->lbda);
 
   /* TO DO: create a proper PHYREX_LogPost() function */
-  /* tree->mmod->c_lnL += PHYREX_LnPrior_Radius(tree); */
-  /* tree->mmod->c_lnL += PHYREX_LnPrior_Mu(tree); */
-  /* tree->mmod->c_lnL += PHYREX_LnPrior_Lbda(tree); */
+  tree->mmod->c_lnL += PHYREX_LnPrior_Radius(tree);
+  tree->mmod->c_lnL += PHYREX_LnPrior_Mu(tree);
+  tree->mmod->c_lnL += PHYREX_LnPrior_Lbda(tree);
  
   if(isinf(tree->mmod->c_lnL) || isnan(tree->mmod->c_lnL)) 
     {
@@ -946,23 +946,11 @@ phydbl PHYREX_Lk(t_tree *tree)
 
   PHYREX_Update_Lindisk_List(tree);
 
-  /* disk = tree->disk; */
-  /* assert(disk); */
-  /* do */
-  /*   { */
-  /*     lnL = PHYREX_Lk_Core(disk,tree); */
-  /*     lnL += log_lbda - tree->mmod->lbda * FABS(disk->time - disk->prev->time); */
-  /*     tree->mmod->c_lnL += lnL; */
-  /*     disk = disk->prev; */
-  /*     disk->c_lnL = tree->mmod->c_lnL; */
-  /*   } */
-  /* while(disk->prev); */
-
   disk = tree->disk->prev;
   assert(disk);
   do
     {
-      lnL = PHYREX_Lk_Core_Bis(disk,tree);
+      lnL = PHYREX_Lk_Core(disk,tree);
       lnL += log_lbda - tree->mmod->lbda * FABS(disk->time - disk->next->time);
       tree->mmod->c_lnL += lnL;
       disk->c_lnL = tree->mmod->c_lnL;
@@ -979,60 +967,6 @@ phydbl PHYREX_Lk(t_tree *tree)
 //////////////////////////////////////////////////////////////
 
 phydbl PHYREX_Lk_Core(t_dsk *disk, t_tree *tree)
-{
-  phydbl lnL,log_prob_hit,log_mu,log_dens_coal;
-  int was_hit,n_hit,i,j,err;
-  
-  lnL     = 0.0;
-  was_hit = NO;
-  n_hit   = 0;
-  log_mu  = LOG(tree->mmod->mu);
-  
-  For(i,disk->n_ldsk_a)
-    {
-      was_hit = disk->ldsk_a[i]->prev->disk == disk->prev;
-      if(was_hit == YES) n_hit++;
-          
-      if(was_hit == YES && disk->prev->ldsk == NULL)
-        {
-          PhyML_Printf("\n== disk: %s disk->prev: %s",disk->id,disk->prev->id);
-          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-        }
-      
-      if(PHYREX_Is_In_Ldscape(disk->ldsk_a[i],tree->mmod) == NO) return(UNLIKELY);
-     
-      log_prob_hit = log_mu;
-      For(j,tree->mmod->n_dim) log_prob_hit += -POW(disk->ldsk_a[i]->coord->lonlat[j] - disk->prev->centr->lonlat[j],2)/(2.*POW(tree->mmod->rad,2));
-      
-
-      if(was_hit == YES) lnL += log_prob_hit;
-      else               lnL += LOG(1. - EXP(log_prob_hit));
-    }
-
-
-  /* a hit occurred */
-  if(n_hit >= 1)
-    {
-      err = NO;
-      log_dens_coal = 0.0;
-      For(j,tree->mmod->n_dim) log_dens_coal += Log_Dnorm_Trunc(disk->prev->ldsk->coord->lonlat[j],
-                                                                disk->prev->centr->lonlat[j],
-                                                                tree->mmod->rad,
-                                                                0.0,
-                                                                tree->mmod->lim->lonlat[j],&err);
-      lnL += log_dens_coal;
-    }
-
-  /* Likelihood for the disk center */
-  For(i,disk->mmod->n_dim) lnL -= LOG(tree->mmod->lim->lonlat[i]);
-  
-  return(lnL);
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-phydbl PHYREX_Lk_Core_Bis(t_dsk *disk, t_tree *tree)
 {
   phydbl lnL,log_prob_hit,log_mu,log_dens_coal;
   int was_hit,i,j,k,err;
@@ -1085,6 +1019,33 @@ phydbl PHYREX_Lk_Core_Bis(t_dsk *disk, t_tree *tree)
   return(lnL);
 }
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl PHYREX_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
+{
+  t_dsk *disk;
+  phydbl lnL,log_lbda;
+  
+  assert(young);
+  
+  log_lbda = LOG(tree->mmod->lbda);
+
+  lnL  = 0.0;
+  disk = young;
+  assert(disk);
+  do
+    {
+      PHYREX_Update_Lindisk_List_Core(disk,tree);
+      lnL += PHYREX_Lk_Core(disk,tree);
+      lnL += log_lbda - tree->mmod->lbda * FABS(disk->time - disk->next->time);
+      if(disk == old) break;
+      disk = disk->prev;
+    }
+  while(disk);
+
+  return(lnL);
+}
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
@@ -3785,7 +3746,7 @@ void PHYREX_Print_Disk_Lk(t_tree *tree)
       PhyML_Printf("\n. Disk: %p time: %12f lk: %12f cumlk: %12f",
                    disk,
                    disk->time,
-                   PHYREX_Lk_Core_Bis(disk,tree),
+                   PHYREX_Lk_Core(disk,tree),
                    disk->c_lnL);
       
       disk = disk->prev;
