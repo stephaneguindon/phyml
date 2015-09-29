@@ -1028,6 +1028,7 @@ phydbl PHYREX_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
   phydbl lnL,log_lbda;
   
   assert(young);
+  assert(young->next);
   
   log_lbda = LOG(tree->mmod->lbda);
 
@@ -1168,7 +1169,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   fflush(NULL);
 
 
-  PhyML_Fprintf(fp_stats,"\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s",
+  PhyML_Fprintf(fp_stats,"\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s",
                 "sample",
                 "lnP",
                 "alnL",
@@ -1200,7 +1201,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
                 "accMoveCtr",
                 "accLbdaTimes",
                 "accLdskDisk",
-                "accMultiTraj",
                 "tuneLbda",
                 "tuneRad",
                 "tuneMu");
@@ -1278,6 +1278,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_ldsk_given_disk"))
         MCMC_PHYREX_Ldsk_Given_Disk(tree);
 
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_disk_serial"))
+        MCMC_PHYREX_Indel_Disk_Serial(tree);
 
       if(!strcmp(tree->mcmc->move_name[move],"kappa"))
         MCMC_Kappa(tree);
@@ -1307,7 +1309,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           disk = tree->disk;
           while(disk->prev) disk = disk->prev;
 
-          PhyML_Fprintf(fp_stats,"\n%6d\t%9.1f\t%9.1f\t%9.1f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6d\t%6d\t%6d\t%8.1f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%G\t%G\t%G",
+          PhyML_Fprintf(fp_stats,"\n%6d\t%9.1f\t%9.1f\t%9.1f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6d\t%6d\t%6d\t%8.1f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%G\t%G\t%G",
                         tree->mcmc->run,
                         tree->c_lnL+tree->mmod->c_lnL,
                         tree->c_lnL,
@@ -1339,7 +1341,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
                         tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_move_disk_ct],
                         tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_lbda_times],
                         tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_ldsk_given_disk],
-                        tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_multi_traj],
                         tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_lbda],
                         tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_rad],
                         tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_mu]);
