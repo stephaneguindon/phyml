@@ -21,8 +21,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int PHYREX_Main(int argc, char *argv[])
 {
-  return(PHYREX_Main_Estimate(argc,argv));
-  /* return(PHYREX_Main_Simulate(argc,argv)); */
+  /* return(PHYREX_Main_Estimate(argc,argv)); */
+  return(PHYREX_Main_Simulate(argc,argv));
 
 }
 
@@ -971,10 +971,12 @@ phydbl PHYREX_Lk_Core(t_dsk *disk, t_tree *tree)
 {
   phydbl lnL,log_prob_hit,log_mu,log_dens_coal;
   int was_hit,i,j,k,err;
-  
-  lnL     = 0.0;
-  log_mu  = LOG(tree->mmod->mu);
-  was_hit = (disk->ldsk != NULL);
+  phydbl two_theta_two;
+
+  two_theta_two = 2.*POW(tree->mmod->rad,2);
+  lnL           = 0.0;
+  log_mu        = LOG(tree->mmod->mu);
+  was_hit       = (disk->ldsk != NULL);
 
   For(i,disk->n_ldsk_a)
     {
@@ -986,7 +988,7 @@ phydbl PHYREX_Lk_Core(t_dsk *disk, t_tree *tree)
             {              
               log_prob_hit = log_mu;
               For(j,tree->mmod->n_dim)
-                log_prob_hit += -POW(disk->ldsk->next[k]->coord->lonlat[j] - disk->centr->lonlat[j],2)/(2.*POW(tree->mmod->rad,2));
+                log_prob_hit += -POW(disk->ldsk->next[k]->coord->lonlat[j] - disk->centr->lonlat[j],2)/two_theta_two;
 
               lnL += log_prob_hit;
             }
@@ -995,7 +997,7 @@ phydbl PHYREX_Lk_Core(t_dsk *disk, t_tree *tree)
         {
           log_prob_hit = log_mu;
           For(j,tree->mmod->n_dim)
-            log_prob_hit += -POW(disk->ldsk_a[i]->coord->lonlat[j] - disk->centr->lonlat[j],2)/(2.*POW(tree->mmod->rad,2));
+            log_prob_hit += -POW(disk->ldsk_a[i]->coord->lonlat[j] - disk->centr->lonlat[j],2)/two_theta_two;
           
           lnL += LOG(1. - EXP(log_prob_hit));
         }

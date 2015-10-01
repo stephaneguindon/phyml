@@ -10953,17 +10953,12 @@ phydbl Pairwise_Identity(int i, int j, calign *data)
   phydbl div,p,d;
   
   div = 0.0;
-  For(k,data->crunch_len)
-    {
-      if(data->c_seq[i]->state[k] == data->c_seq[j]->state[k]) div += (phydbl)data->wght[k];
-    }
+  For(k,data->crunch_len) if(data->c_seq[i]->state[k] == data->c_seq[j]->state[k]) div += (phydbl)data->wght[k];
 
-  /* proportion of observed identity */
+  /* observed proportion of identity */
   p = 1. - div / (phydbl)data->init_len;
 
-
   d = 0.0;
-
   if(data->io->datatype == NT)
     {
       if(p > 3./4.) return 0.25;
