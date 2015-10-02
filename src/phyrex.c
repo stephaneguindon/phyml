@@ -21,8 +21,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int PHYREX_Main(int argc, char *argv[])
 {
-  return(PHYREX_Main_Estimate(argc,argv));
-  /* return(PHYREX_Main_Simulate(argc,argv)); */
+  /* return(PHYREX_Main_Estimate(argc,argv)); */
+  return(PHYREX_Main_Simulate(argc,argv));
 
 }
 
@@ -154,7 +154,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   /* seed = 1; */
   /* seed = 14493; */
   /* seed = 15364; */
-  /* seed = 23860; */
+  /* seed = 31838; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -315,8 +315,8 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
                mmod->lbda,mmod->mu,mmod->sigsq,mmod->rad,neigh,area*neigh/(4*PI*mmod->sigsq));
   fflush(NULL);
 
-  /* PHYREX_Simulate_Backward_Core(YES,tree->disk,tree); */
-  mmod->sampl_area = PHYREX_Simulate_Forward_Core(n_sites,tree);
+  PHYREX_Simulate_Backward_Core(YES,tree->disk,tree);
+  /* mmod->sampl_area = PHYREX_Simulate_Forward_Core(n_sites,tree); */
     
   PHYREX_Ldsk_To_Tree(tree);  
 
@@ -1298,6 +1298,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       
 
       /* printf("\n. %10d %30s %f",tree->mcmc->run,tree->mcmc->move_name[move],tree->mmod->c_lnL); */
+      /* printf("\n. %10d %30s %f",tree->mcmc->run,tree->mcmc->move_name[move],PHYREX_Lk(tree)); */
 
 
       if(!(tree->mcmc->run%tree->mcmc->sample_interval))
