@@ -4477,7 +4477,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_lbda_times]            = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldsk_given_disk]       = 1.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_indel_disk_serial]     = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_indel_disk_serial]     = 0.0;
 # else
   mcmc->move_weight[mcmc->num_move_phyrex_lbda]                  = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_mu]                    = 0.0;
@@ -7202,8 +7202,8 @@ void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree)
   ratio       = 0.0;
   log_one_two = LOG(1./2.);
   type        = -1.0;
-  n_trials    = (int)(PHYREX_Total_Number_Of_Intervals(tree)/2);
-  /* n_trials    = (int)(PHYREX_Total_Number_Of_Intervals(tree)/10); */
+  /* n_trials    = (int)(PHYREX_Total_Number_Of_Intervals(tree)/2); */
+  n_trials    = (int)(PHYREX_Total_Number_Of_Intervals(tree)/10);
 
   T = PHYREX_Tree_Height(tree);
 
