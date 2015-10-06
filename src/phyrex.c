@@ -21,8 +21,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int PHYREX_Main(int argc, char *argv[])
 {
-  return(PHYREX_Main_Estimate(argc,argv));
-  /* return(PHYREX_Main_Simulate(argc,argv)); */
+  /* return(PHYREX_Main_Estimate(argc,argv)); */
+  return(PHYREX_Main_Simulate(argc,argv));
 
 }
 
@@ -155,7 +155,6 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   /* seed = 14493; */
   /* seed = 15364; */
   /* seed = 21414; */
-
 
   printf("\n. seed: %d",seed);
   srand(seed);
