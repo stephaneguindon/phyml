@@ -4464,20 +4464,20 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_mu]                    = 2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_rad]                   = 2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_sigsq]                 = 0.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_indel_disk]            = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_indel_disk]            = 0.5;
+  mcmc->move_weight[mcmc->num_move_phyrex_indel_hit]             = 0.5;
   mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ct]          = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ud]          = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_swap_disk]             = 1.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_indel_hit]             = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_move_ldsk]             = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_spr]                   = 5.0;
   mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldscape_lim]           = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 1.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_lbda_times]            = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldsk_given_disk]       = 1.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_indel_disk_serial]     = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_indel_disk_serial]     = 2.0;
 # else
   mcmc->move_weight[mcmc->num_move_phyrex_lbda]                  = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_mu]                    = 0.0;
@@ -7315,19 +7315,19 @@ void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree)
   int i,j,n_trials;
   phydbl ratio, u, alpha, hr, type;
   phydbl cur_glnL, new_glnL;
-  phydbl log_lk_centr,log_one_two;
+  phydbl log_lk_centr,log_one_two, log_one_on_T;
   phydbl T,t;
 
-  cur_glnL    = tree->mmod->c_lnL;
-  new_glnL    = tree->mmod->c_lnL;
-  hr          = 0.0;
-  ratio       = 0.0;
-  log_one_two = LOG(1./2.);
-  type        = -1.0;
+  cur_glnL     = tree->mmod->c_lnL;
+  new_glnL     = tree->mmod->c_lnL;
+  hr           = 0.0;
+  ratio        = 0.0;
+  log_one_two  = LOG(1./2.);
+  type         = -1.0;
   /* n_trials    = (int)(PHYREX_Total_Number_Of_Intervals(tree)/2); */
-  n_trials    = (int)(PHYREX_Total_Number_Of_Intervals(tree));
-
-  T = PHYREX_Tree_Height(tree);
+  n_trials     = (int)(PHYREX_Total_Number_Of_Intervals(tree));
+  T            = PHYREX_Tree_Height(tree);
+  log_one_on_T = -LOG(FABS(T));
 
   log_lk_centr = 0.0;
   For(j,tree->mmod->n_dim) log_lk_centr += LOG(1./tree->mmod->lim->lonlat[j]);
@@ -7353,8 +7353,7 @@ void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree)
       if(type < 0.5) /* Insert */
         {
           if(disk->ldsk != NULL) hr += log_one_two;
-          hr -= LOG(FABS((disk->time - disk->next->time)/T));
-          hr -= LOG(1./FABS(disk->time - disk->next->time));
+          hr -= log_one_on_T;
           hr -= log_lk_centr;
           
           new_glnL -= PHYREX_Lk_Range(disk,disk,tree);
@@ -7406,8 +7405,7 @@ void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree)
         {
           if(disk->ldsk == NULL)
             {
-              hr += LOG(FABS((disk->next->time - disk->prev->time)/T));
-              hr += LOG(1./FABS(disk->next->time - disk->prev->time));
+              hr += log_one_on_T;
               hr += log_lk_centr;
               
               new_glnL -= PHYREX_Lk_Range(disk,disk->prev,tree);
