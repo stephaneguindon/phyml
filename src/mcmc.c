@@ -7164,17 +7164,17 @@ void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree)
   phydbl ratio, u, alpha, hr, type;
   phydbl cur_glnL, new_glnL;
   phydbl log_lk_centr,log_one_two, log_one_on_T;
-  phydbl T,t;
+  phydbl T,t,pindel;
 
   cur_glnL     = tree->mmod->c_lnL;
   new_glnL     = tree->mmod->c_lnL;
   hr           = 0.0;
   ratio        = 0.0;
-  log_one_two  = LOG(1./2.);
   type         = -1.0;
   n_trials     = (int)(PHYREX_Total_Number_Of_Intervals(tree)/2);
   T            = PHYREX_Tree_Height(tree);
   log_one_on_T = -LOG(FABS(T));
+  pindel       = 0.5;
 
   log_lk_centr = 0.0;
   For(j,tree->mmod->n_dim) log_lk_centr += LOG(1./tree->mmod->lim->lonlat[j]);
@@ -7197,9 +7197,9 @@ void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree)
 
       type = Uni();
       
-      if(type < 0.5) /* Insert */
+      if(type < pindel) /* Insert */
         {
-          if(disk->ldsk != NULL) hr += log_one_two;
+          hr += LOG(FABS((t - disk->next->time)/T));
           hr -= log_one_on_T;
           hr -= log_lk_centr;
           
@@ -7215,7 +7215,6 @@ void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree)
           
           /* new_glnL = PHYREX_Lk(tree); */
           
-          hr += LOG(FABS((disk->time - disk->next->time)/T));
           
           ratio  = (new_glnL - cur_glnL);
           ratio += hr;
@@ -7250,55 +7249,55 @@ void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree)
         }
       else /* Remove disk */
         {
-          if(disk->ldsk == NULL)
+          if(disk->ldsk != NULL) continue; /* Reject */
+
+          hr -= LOG(FABS((disk->time - disk->next->time)/T));
+          hr += log_one_on_T;
+          hr += log_lk_centr;
+          
+          new_glnL -= PHYREX_Lk_Range(disk,disk->prev,tree);
+          PHYREX_Remove_Disk(disk);
+          new_glnL += PHYREX_Lk_Range(disk->prev,disk->prev,tree);
+          tree->mmod->c_lnL = new_glnL;
+          
+          
+          /* new_glnL = PHYREX_Lk(tree); */
+          
+          ratio  = (new_glnL - cur_glnL);
+          ratio += hr;
+          
+          ratio = EXP(ratio);
+          alpha = MIN(1.,ratio);
+          
+          /* Always accept move */
+          if(tree->mcmc->always_yes == YES && new_glnL > UNLIKELY) alpha = 1.0;
+          
+          u = Uni();
+          
+          if(u > alpha) /* Reject */
             {
-              hr += log_one_on_T;
-              hr += log_lk_centr;
+              PHYREX_Insert_Disk(disk,tree);
               
-              new_glnL -= PHYREX_Lk_Range(disk,disk->prev,tree);
-              PHYREX_Remove_Disk(disk);
-              new_glnL += PHYREX_Lk_Range(disk->prev,disk->prev,tree);
-              tree->mmod->c_lnL = new_glnL;
-                            
-              hr -= LOG(FABS((disk->time - disk->next->time)/T));
-
-              /* new_glnL = PHYREX_Lk(tree); */
-
-              ratio  = (new_glnL - cur_glnL);
-              ratio += hr;
-              
-              ratio = EXP(ratio);
-              alpha = MIN(1.,ratio);
-              
-              /* Always accept move */
-              if(tree->mcmc->always_yes == YES && new_glnL > UNLIKELY) alpha = 1.0;
-              
-              u = Uni();
-              
-              if(u > alpha) /* Reject */
+              if(tree->mmod->safe_phyrex == YES)
                 {
-                  PHYREX_Insert_Disk(disk,tree);
-                  
-                  if(tree->mmod->safe_phyrex == YES)
+                  new_glnL = PHYREX_Lk(tree);
+                  if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
                     {
-                      new_glnL = PHYREX_Lk(tree);
-                      if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
-                        {
-                          PhyML_Printf("\n== new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
-                          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-                        }
-                    }
-                  else
-                    {
-                      tree->mmod->c_lnL = cur_glnL;
+                      PhyML_Printf("\n== new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
+                      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
                     }
                 }
               else
                 {
-                  Free_Disk(disk);
+                  tree->mmod->c_lnL = cur_glnL;
                 }
             }
+          else
+            {
+              Free_Disk(disk);
+            }
         }
+    
       /* disk = prev_disk; */
     }
   
