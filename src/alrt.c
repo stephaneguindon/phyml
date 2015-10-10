@@ -925,7 +925,7 @@ void Make_Target_Swap(t_tree *tree, t_edge *b_fcus, int swaptodo)
 //////////////////////////////////////////////////////////////
 
 /**
-* Convert an aLRT statistic to a none parametric support
+* Convert an aLRT statistic to a non-parametric support
 * param in: the statistic
 */
 
