@@ -3861,6 +3861,86 @@ phydbl PHYREX_Dist_Between_Two_Ldsk(t_ldsk *n1,  t_ldsk *n2, t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+void PHYREX_Print_MultiTypeTree_Config_File(t_tree *tree)
+{
+
+  PhyML_Printf("\n<map name=\"Uniform\" >beast.math.distributions.Uniform</map>");
+  PhyML_Printf("\n<map name=\"Exponential\" >beast.math.distributions.Exponential</map>");
+  PhyML_Printf("\n<map name=\"LogNormal\" >beast.math.distributions.LogNormalDistributionModel</map>");
+  PhyML_Printf("\n<map name=\"Normal\" >beast.math.distributions.Normal</map>");
+  PhyML_Printf("\n<map name=\"Beta\" >beast.math.distributions.Beta</map>");
+  PhyML_Printf("\n<map name=\"Gamma\" >beast.math.distributions.Gamma</map>");
+  PhyML_Printf("\n<map name=\"LaplaceDistribution\" >beast.math.distributions.LaplaceDistribution</map>");
+  PhyML_Printf("\n<map name=\"prior\" >beast.math.distributions.Prior</map>");
+  PhyML_Printf("\n<map name=\"InverseGamma\" >beast.math.distributions.InverseGamma</map>");
+  PhyML_Printf("\n<map name=\"OneOnX\" >beast.math.distributions.OneOnX</map>");
+
+
+  PhyML_Printf("\n<run id=\"mcmc\" spec=\"MCMC\" chainLength=\"10000000\">");
+  PhyML_Printf("\n\t<state id=\"state\" storeEvery=\"10000\">");
+  PhyML_Printf("\n\t\t<stateNode id=\"Tree.t:h3n2\" spec=\"beast.evolution.tree.StructuredCoalescentMultiTypeTree\">");
+  PhyML_Printf("\n\t\t\t<migrationModel id=\"migModelInit.t:h3n2\" spec=\"beast.evolution.tree.MigrationModel\">");
+  PhyML_Printf("\n\t\t\t\t<parameter id=\"RealParameter.0\" dimension=\"6\" estimate=\"false\" name=\"rateMatrix\">1.0 1.0 1.0 1.0 1.0 1.0</parameter>");
+  PhyML_Printf("\n\t\t\t\t<parameter id=\"RealParameter.01\" dimension=\"3\" estimate=\"false\" name=\"popSizes\">1.0 1.0 1.0</parameter>");
+  PhyML_Printf("\n\t\t\t</migrationModel>");
+
+
+  PhyML_Printf("\n\t\t\t<typeTrait id=\"typeTraitSet.t:h3n2\" spec=\"beast.evolution.tree.TraitSet\" traitname=\"type\" value=\"");
+
+
+  PhyML_Printf("\n<distribution id=\"posterior\" spec=\"util.CompoundDistribution\">");
+  PhyML_Printf("\n<distribution id=\"prior\" spec=\"util.CompoundDistribution\">");
+  PhyML_Printf("\n<prior id=\"KappaPrior.s:h3n2\" name=\"distribution\" x=\"@kappa.s:h3n2\">");
+  PhyML_Printf("\n<LogNormal id=\"LogNormalDistributionModel.0\" name=\"distr\">");
+  PhyML_Printf("\n<parameter id=\"RealParameter.02\" estimate=\"false\" name=\"M\">1.0</parameter>");
+  PhyML_Printf("\n<parameter id=\"RealParameter.03\" estimate=\"false\" name=\"S\">1.25</parameter>");
+  PhyML_Printf("\n</LogNormal>");
+  PhyML_Printf("\n</prior>");
+  PhyML_Printf("\n<prior id=\"popSizesPrior.t:h3n2\" name=\"distribution\" x=\"@popSizes.t:h3n2\">");
+  PhyML_Printf("\n<LogNormal id=\"LogNormalDistributionModel.01\" name=\"distr\">");
+  PhyML_Printf("\n<parameter id=\"RealParameter.04\" estimate=\"false\" name=\"M\">1.0</parameter>");
+  PhyML_Printf("\n<parameter id=\"RealParameter.05\" estimate=\"false\" lower=\"0.0\" name=\"S\" upper=\"5.0\">1.25</parameter>");
+  PhyML_Printf("\n</LogNormal>");
+  PhyML_Printf("\n</prior>");
+  PhyML_Printf("\n<distribution id=\"structuredCoalescent.t:h3n2\" spec=\"multitypetree.distributions.StructuredCoalescentTreeDensity\" multiTypeTree=\"@Tree.t:h3n2\">");
+  PhyML_Printf("\n<migrationModel id=\"migModel.t:h3n2\" spec=\"beast.evolution.tree.MigrationModel\" popSizes=\"@popSizes.t:h3n2\">");
+  PhyML_Printf("\n<parameter id=\"rateMatrix.t:h3n2\" dimension=\"6\" estimate=\"false\" name=\"rateMatrix\">1.0 1.0 1.0 1.0 1.0 1.0</parameter>");
+  PhyML_Printf("\n</migrationModel>");
+  PhyML_Printf("\n</distribution>");
+  PhyML_Printf("\n</distribution>");
+  PhyML_Printf("\n<distribution id=\"likelihood\" spec=\"util.CompoundDistribution\">");
+  PhyML_Printf("\n");
+  PhyML_Printf("\n");
+  PhyML_Printf("\n");
+  PhyML_Printf("\n");
+  PhyML_Printf("\n");
+  PhyML_Printf("\n");
+  PhyML_Printf("\n");
+  PhyML_Printf("\n");
+  PhyML_Printf("\n");
+  PhyML_Printf("\n");
+  PhyML_Printf("\n");
+  PhyML_Printf("\n");
+  PhyML_Printf("\n");
+  PhyML_Printf("\n");
+  PhyML_Printf("\n");
+  PhyML_Printf("\n");
+  PhyML_Printf("\n");
+  PhyML_Printf("\n");
+  PhyML_Printf("\n");
+  PhyML_Printf("\n");
+  PhyML_Printf("\n");
+  PhyML_Printf("\n");
+  PhyML_Printf("\n");
+  PhyML_Printf("\n");
+  PhyML_Printf("\n");
+  PhyML_Printf("\n");
+  PhyML_Printf("\n");
+
+}
+
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////
