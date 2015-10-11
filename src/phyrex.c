@@ -155,7 +155,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   /* seed = 14493; */
   /* seed = 15364; */
   /* seed = 21414; */
-  /* seed = 14001; */
+  /* seed = 20794; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -1135,15 +1135,15 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   true_height = PHYREX_Tree_Height(tree);
 
   /* Starting parameter values */
-  tree->mmod->lbda = Uni()*(0.5 - 0.2) + 0.2;
-  tree->mmod->mu   = Uni()*(0.6 - 0.3) + 0.3;
-  tree->mmod->rad  = Uni()*(4.0 - 2.0) + 2.0;
-  PHYREX_Update_Sigsq(tree);
-
-  /* tree->mmod->lbda = Uni()*(0.50 - 0.20) + 0.20; */
-  /* tree->mmod->mu   = Uni()*(0.30 - 0.05) + 0.05; */
-  /* tree->mmod->rad  = Uni()*(3.00 - 1.00) + 1.00; */
+  /* tree->mmod->lbda = Uni()*(0.5 - 0.2) + 0.2; */
+  /* tree->mmod->mu   = Uni()*(0.6 - 0.3) + 0.3; */
+  /* tree->mmod->rad  = Uni()*(4.0 - 2.0) + 2.0; */
   /* PHYREX_Update_Sigsq(tree); */
+
+  tree->mmod->lbda = Uni()*(0.50 - 0.20) + 0.20;
+  tree->mmod->mu   = Uni()*(0.30 - 0.05) + 0.05;
+  tree->mmod->rad  = Uni()*(3.00 - 1.00) + 1.00;
+  PHYREX_Update_Sigsq(tree);
 
   /* MCMC_Randomize_Rate_Across_Sites(tree); */
   MCMC_Randomize_Kappa(tree);
@@ -3910,17 +3910,17 @@ void PHYREX_Print_MultiTypeTree_Config_File(t_tree *tree)
   PhyML_Printf("\n</distribution>");
   PhyML_Printf("\n</distribution>");
   PhyML_Printf("\n<distribution id=\"likelihood\" spec=\"util.CompoundDistribution\">");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
+  PhyML_Printf("\n<distribution id=\"treeLikelihood.h3n2\" spec=\"TreeLikelihood\" data=\"@h3n2\" tree=\"@Tree.t:h3n2\">");
+  PhyML_Printf("\n<siteModel id=\"SiteModel.s:h3n2\" spec=\"SiteModel\">");
+  PhyML_Printf("\n<parameter id=\"mutationRate.s:h3n2\" estimate=\"false\" name=\"mutationRate\">1.0</parameter>");
+  PhyML_Printf("\n<parameter id=\"gammaShape.s:h3n2\" estimate=\"false\" name=\"shape\">1.0</parameter>");
+  PhyML_Printf("\n<parameter id=\"proportionInvariant.s:h3n2\" estimate=\"false\" lower=\"0.0\" name=\"proportionInvariant\" upper=\"1.0\">0.0</parameter>");
+  PhyML_Printf("\n<substModel id=\"hky.s:h3n2\" spec=\"HKY\" kappa=\"@kappa.s:h3n2\">");
+  PhyML_Printf("\n<frequencies id=\"estimatedFreqs.s:h3n2\" spec=\"Frequencies\" frequencies=\"@freqParameter.s:h3n2\"/>");
+  PhyML_Printf("\n</substModel>");
+  PhyML_Printf("\n</siteModel>");
+  PhyML_Printf("\n<branchRateModel id=\"StrictClock.c:h3n2\" spec=\"beast.evolution.branchratemodel.StrictClockModel\">");
+  PhyML_Printf("\n<parameter id=\"clockRate.c:h3n2\" estimate=\"false\" name=\"clock.rate\">1.0</parameter>");
   PhyML_Printf("\n");
   PhyML_Printf("\n");
   PhyML_Printf("\n");
