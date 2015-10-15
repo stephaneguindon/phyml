@@ -1135,15 +1135,15 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   true_height = PHYREX_Tree_Height(tree);
 
   /* Starting parameter values */
-  /* tree->mmod->lbda = Uni()*(0.5 - 0.2) + 0.2; */
-  /* tree->mmod->mu   = Uni()*(0.6 - 0.3) + 0.3; */
-  /* tree->mmod->rad  = Uni()*(4.0 - 2.0) + 2.0; */
-  /* PHYREX_Update_Sigsq(tree); */
-
-  tree->mmod->lbda = Uni()*(0.50 - 0.20) + 0.20;
-  tree->mmod->mu   = Uni()*(0.30 - 0.05) + 0.05;
-  tree->mmod->rad  = Uni()*(3.00 - 1.00) + 1.00;
+  tree->mmod->lbda = Uni()*(0.5 - 0.2) + 0.2;
+  tree->mmod->mu   = Uni()*(0.6 - 0.3) + 0.3;
+  tree->mmod->rad  = Uni()*(4.0 - 2.0) + 2.0;
   PHYREX_Update_Sigsq(tree);
+
+  /* tree->mmod->lbda = Uni()*(0.50 - 0.20) + 0.20; */
+  /* tree->mmod->mu   = Uni()*(0.30 - 0.05) + 0.05; */
+  /* tree->mmod->rad  = Uni()*(3.00 - 1.00) + 1.00; */
+  /* PHYREX_Update_Sigsq(tree); */
 
   /* MCMC_Randomize_Rate_Across_Sites(tree); */
   MCMC_Randomize_Kappa(tree);

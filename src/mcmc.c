@@ -4477,7 +4477,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_lbda_times]            = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldsk_given_disk]       = 2.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_indel_disk_serial]     = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_indel_disk_serial]     = 3.0;
 # else
   mcmc->move_weight[mcmc->num_move_phyrex_lbda]                  = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_mu]                    = 0.0;
@@ -6952,7 +6952,6 @@ void MCMC_PHYREX_Lbda_Times(t_tree *tree)
 
   tree->mcmc->run_move[tree->mcmc->num_move_phyrex_lbda_times]++;
 
-
   dt          = 0.0;
   hr          = 0.0;
   ratio       = 0.0;
@@ -6995,7 +6994,6 @@ void MCMC_PHYREX_Lbda_Times(t_tree *tree)
   
   new_glnL += n_inter*LOG(tree->mmod->lbda) + tree->mmod->lbda*disk->time;;
   tree->mmod->c_lnL = new_glnL;
-
 
   if(tree->mcmc->use_data == YES) new_alnL = Lk(NULL,tree);
     
