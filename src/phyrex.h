@@ -103,6 +103,8 @@ void PHYREX_Get_List_Of_Ancestors(t_ldsk *start, t_ldsk ***list, int *len, t_tre
 phydbl PHYREX_Dist_To_Lca(t_ldsk *d, t_ldsk *lca);
 phydbl PHYREX_Dist_Between_Two_Ldsk(t_ldsk *n1,  t_ldsk *n2, t_tree *tree);
 phydbl PHYREX_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree);
+void PHYREX_Print_MultiTypeTree_Config_File(int n_sites, char *filename, t_tree *tree);
+phydbl PHYREX_Effective_Density(t_tree *tree);
 
 
 

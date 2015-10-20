@@ -134,11 +134,14 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   int seed,pid,i;
   char *s;
   t_dsk *disk;
+  int n_otus, n_sites;
 
   s = (char *)mCalloc(T_MAX_NAME,sizeof(char));
 
-  pid = getpid();
-  seed = pid;
+  pid     = getpid();
+  seed    = pid;
+  n_otus  = (int)atoi(argv[1]);
+  n_sites = (int)atoi(argv[2]);
 
   /* !!!!!!!!!!!!! */
   /* seed = 9498; */
@@ -165,6 +168,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   disk = tree->disk;
   while(disk->prev) disk = disk->prev;
 
+
   strcpy(s,"phyrex_trees");
   sprintf(s+strlen(s),".%d",tree->mod->io->r_seed);
   tree->io->fp_out_tree = Openfile(s,WRITE);
@@ -174,6 +178,9 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   strcpy(s,"phyrex_summary");
   sprintf(s+strlen(s),".%d",pid);
   tree->io->fp_out_summary = Openfile(s,WRITE);
+  strcpy(s,"phyrex_mtt");
+  sprintf(s+strlen(s),".%d.xml",pid);
+  PHYREX_Print_MultiTypeTree_Config_File(n_sites,s,tree);
 
   res = PHYREX_MCMC(tree);
 
@@ -772,7 +779,8 @@ phydbl PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree)
           if(Is_In_Polygon(ldsk_a_pop[i]->coord,poly[j]) == YES)
             {
               ldsk_a_samp[sample_size] = ldsk_a_pop[i];
-              PhyML_Printf("\n@ Coord: %f %f",ldsk_a_samp[sample_size]->coord->lonlat[0],ldsk_a_samp[sample_size]->coord->lonlat[1]);
+              sprintf(ldsk_a_pop[i]->coord->id+strlen(ldsk_a_pop[i]->coord->id),"_deme%d",j);
+              PhyML_Printf("\n@ Coord: %f %f %s",ldsk_a_samp[sample_size]->coord->lonlat[0],ldsk_a_samp[sample_size]->coord->lonlat[1],ldsk_a_pop[i]->coord->id);
               sample_size++;
               if(sample_size == n_otu) break;        
             }
@@ -1062,7 +1070,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   t_dsk *disk;
   FILE *fp_tree,*fp_stats,*fp_summary;
   phydbl *res;
-  phydbl true_root_x, true_root_y,true_lbda,true_mu,true_sigsq,true_neigh,fst_neigh,diversity,true_rad,true_height;
+  phydbl true_root_x, true_root_y,true_lbda,true_mu,true_sigsq,true_neigh,fst_neigh,diversity,true_rad,true_height,true_rhoe;
   int adjust_len;
 
 
@@ -1108,20 +1116,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   PHYREX_Lk(tree);
   Lk(NULL,tree);
 
-  PhyML_Fprintf(fp_stats,"\n# before rand glnL: %f alnL: %f",tree->mmod->c_lnL,tree->c_lnL);
-  PhyML_Fprintf(fp_stats,"\n# ninter: %d",PHYREX_Total_Number_Of_Intervals(tree));
-  PhyML_Fprintf(fp_stats,"\n# ncoal: %d",PHYREX_Total_Number_Of_Coal_Disks(tree));
-  PhyML_Fprintf(fp_stats,"\n# nhits: %d",PHYREX_Total_Number_Of_Hit_Disks(tree));
-  PhyML_Fprintf(fp_stats,"\n# root pos: %f %f",true_root_x,true_root_y);
-  PhyML_Fprintf(fp_stats,"\n# root time: %f",disk->time);
-  PhyML_Fprintf(fp_stats,"\n# true lbda: %f",tree->mmod->lbda);
-  PhyML_Fprintf(fp_stats,"\n# true mu: %f",tree->mmod->mu);
-  PhyML_Fprintf(fp_stats,"\n# true rad: %f",PHYREX_Update_Radius(tree));
-  PhyML_Fprintf(fp_stats,"\n# true sigsq: %f",tree->mmod->sigsq);
-  PhyML_Fprintf(fp_stats,"\n# true neigh. size: %f",PHYREX_Neighborhood_Size(tree));
-  PhyML_Fprintf(fp_stats,"\n# Fst-based estimate of neighborhood size: %f",PHYREX_Neighborhood_Size_Regression(tree));
-  PhyML_Fprintf(fp_stats,"\n# Nucleotide diversity: %f",Nucleotide_Diversity(tree->data));
-
   true_lbda   = tree->mmod->lbda;
   true_mu     = tree->mmod->mu;
   true_sigsq  = tree->mmod->sigsq;
@@ -1133,6 +1127,22 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   true_nint   = PHYREX_Total_Number_Of_Intervals(tree);
   true_nhits  = PHYREX_Total_Number_Of_Hit_Disks(tree);
   true_height = PHYREX_Tree_Height(tree);
+  true_rhoe   = PHYREX_Effective_Density(tree);
+
+  PhyML_Fprintf(fp_stats,"\n# before rand glnL: %f alnL: %f",tree->mmod->c_lnL,tree->c_lnL);
+  PhyML_Fprintf(fp_stats,"\n# ninter: %d",PHYREX_Total_Number_Of_Intervals(tree));
+  PhyML_Fprintf(fp_stats,"\n# ncoal: %d",PHYREX_Total_Number_Of_Coal_Disks(tree));
+  PhyML_Fprintf(fp_stats,"\n# nhits: %d",PHYREX_Total_Number_Of_Hit_Disks(tree));
+  PhyML_Fprintf(fp_stats,"\n# root pos: %f %f",true_root_x,true_root_y);
+  PhyML_Fprintf(fp_stats,"\n# root time: %f",disk->time);
+  PhyML_Fprintf(fp_stats,"\n# true lbda: %f",tree->mmod->lbda);
+  PhyML_Fprintf(fp_stats,"\n# true mu: %f",tree->mmod->mu);
+  PhyML_Fprintf(fp_stats,"\n# true rad: %f",PHYREX_Update_Radius(tree));
+  PhyML_Fprintf(fp_stats,"\n# true sigsq: %f",tree->mmod->sigsq);
+  PhyML_Fprintf(fp_stats,"\n# true neigh. size: %f",PHYREX_Neighborhood_Size(tree));
+  PhyML_Fprintf(fp_stats,"\n# fst-based estimate of neighborhood size: %f",PHYREX_Neighborhood_Size_Regression(tree));
+  PhyML_Fprintf(fp_stats,"\n# true pop. density: %f",true_rhoe);
+  PhyML_Fprintf(fp_stats,"\n# nucleotide diversity: %f",Nucleotide_Diversity(tree->data));
 
   /* Starting parameter values */
   tree->mmod->lbda = Uni()*(0.5 - 0.2) + 0.2;
@@ -1173,7 +1183,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   fflush(NULL);
 
 
-  PhyML_Fprintf(fp_stats,"\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s",
+  PhyML_Fprintf(fp_stats,"\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s",
                 "sample",
                 "lnP",
                 "alnL",
@@ -1186,6 +1196,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
                 "modSigsq",
                 "rad",
                 "neigh",
+                "rhoe",
                 "nInt",
                 "nCoal",
                 "nHit",
@@ -1314,7 +1325,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           disk = tree->disk;
           while(disk->prev) disk = disk->prev;
 
-          PhyML_Fprintf(fp_stats,"\n%6d\t%9.1f\t%9.1f\t%9.1f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6d\t%6d\t%6d\t%8.1f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%G\t%G\t%G",
+          PhyML_Fprintf(fp_stats,"\n%6d\t%9.1f\t%9.1f\t%9.1f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%G\t%6d\t%6d\t%6d\t%8.1f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%G\t%G\t%G",
                         tree->mcmc->run,
                         tree->c_lnL+tree->mmod->c_lnL,
                         tree->c_lnL,
@@ -1327,6 +1338,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
                         tree->mcmc->mode[tree->mcmc->num_move_phyrex_sigsq],
                         tree->mmod->rad,
                         PHYREX_Neighborhood_Size(tree),
+                        PHYREX_Effective_Density(tree),
                         PHYREX_Total_Number_Of_Intervals(tree),
                         PHYREX_Total_Number_Of_Coal_Disks(tree),
                         PHYREX_Total_Number_Of_Hit_Disks(tree),
@@ -1360,6 +1372,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           res[5 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = PHYREX_Total_Number_Of_Intervals(tree);
           res[6 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = PHYREX_Total_Number_Of_Coal_Disks(tree);
           res[7 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = PHYREX_Total_Number_Of_Hit_Disks(tree);
+          res[8 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = PHYREX_Effective_Density(tree);
 
           MCMC_Copy_To_New_Param_Val(tree->mcmc,tree);
           
@@ -1371,7 +1384,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           
           rewind(fp_summary);
 
-          PhyML_Fprintf(fp_summary,"\n# SampArea\t TrueLbda\t TrueMu\t TrueSig\t TrueRad\t TrueNeigh\t Diversity\t TrueInt\t TrueCoal\t TrueHits\t RegNeigh\t TrueXroot\t TrueYroot\t TrueHeight\t Lbda5\t Lbda50\t Lbda95\t LbdaMod \t Mu5\t Mu50\t Mu95\t  MuMod \t Sig5\t Sig50\t Sig95\t SigMod \t Neigh5\t Neigh50\t Neigh95\t NeighMod \t Rad5\t Rad50\t Rad95\t Int5\t Int50\t Int95\t Coal5\t Coal50\t Coal95\t Hit5\t Hit50\t Hit95\t ESSLbda \t ESSMu \t ESSSig \t Run");
+          PhyML_Fprintf(fp_summary,"\n# SampArea\t TrueLbda\t TrueMu\t TrueSig\t TrueRad\t TrueNeigh\t TrueRhoe\t Diversity\t TrueInt\t TrueCoal\t TrueHits\t RegNeigh\t TrueXroot\t TrueYroot\t TrueHeight\t Lbda5\t Lbda50\t Lbda95\t LbdaMod \t Mu5\t Mu50\t Mu95\t  MuMod \t Sig5\t Sig50\t Sig95\t SigMod \t Neigh5\t Neigh50\t Neigh95\t NeighMod \t Rad5\t Rad50\t Rad95\t Int5\t Int50\t Int95\t Coal5\t Coal50\t Coal95\t Hit5\t Hit50\t Hit95\t Rhoe5\t Rhoe50\t Rhoe95\t ESSLbda \t ESSMu \t ESSSig \t Run");
           
           PhyML_Fprintf(fp_summary,"\n %f\t %f\t %f\t %f\t %f\t %f\t %f\t %d\t %d\t %d\t %f\t %f\t %f\t %f\t ",
                         tree->mmod->sampl_area,
@@ -1380,6 +1393,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
                         true_sigsq,
                         true_rad,
                         true_neigh,
+                        true_rhoe,
                         diversity,
                         true_nint,
                         true_ncoal,
@@ -1412,6 +1426,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
                         /* Neigh50*/   Quantile(res+3*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
                         /* Neigh95*/   Quantile(res+3*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975),
                         /* NeighMod */ tree->mcmc->mode[tree->mcmc->num_move_phyrex_mu]);
+
           
           PhyML_Fprintf(fp_summary,"%f\t %f\t %f\t",
                         /* Rad5 */  Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
@@ -1434,6 +1449,11 @@ phydbl *PHYREX_MCMC(t_tree *tree)
                         /* Hit50 */ Quantile(res+7*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
                         /* Hit95 */ Quantile(res+7*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975));
                     
+          PhyML_Fprintf(fp_summary,"%f\t %f\t %f\t",
+                        /* rhoe5 */  Quantile(res+8*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
+                        /* rhoe50 */ Quantile(res+8*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
+                        /* rhoe95 */ Quantile(res+8*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975));
+
           PhyML_Fprintf(fp_summary,"%f\t %f\t %f\t",
                         tree->mcmc->ess[tree->mcmc->num_move_phyrex_lbda],
                         tree->mcmc->ess[tree->mcmc->num_move_phyrex_mu],  
@@ -3498,6 +3518,14 @@ void PHYREX_Insert_Path(t_ldsk *beg, t_ldsk *end, t_ldsk *path, int pos, t_tree 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
+phydbl PHYREX_Effective_Density(t_tree *tree)
+{
+  return(PHYREX_Neighborhood_Size(tree)/(4.*PI*PHYREX_Update_Sigsq(tree)));
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
 t_ldsk *PHYREX_Generate_Path(t_ldsk *beg, t_ldsk *end, phydbl cur_n_evt, t_tree *tree)
 {
   int n_evt,i,j,swap,err;
@@ -3862,146 +3890,209 @@ phydbl PHYREX_Dist_Between_Two_Ldsk(t_ldsk *n1,  t_ldsk *n2, t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-void PHYREX_Print_MultiTypeTree_Config_File(t_tree *tree)
+void PHYREX_Print_MultiTypeTree_Config_File(int n_sites, char *filename, t_tree *tree)
 {
-
-  PhyML_Printf("\n<map name=\"Uniform\" >beast.math.distributions.Uniform</map>");
-  PhyML_Printf("\n<map name=\"Exponential\" >beast.math.distributions.Exponential</map>");
-  PhyML_Printf("\n<map name=\"LogNormal\" >beast.math.distributions.LogNormalDistributionModel</map>");
-  PhyML_Printf("\n<map name=\"Normal\" >beast.math.distributions.Normal</map>");
-  PhyML_Printf("\n<map name=\"Beta\" >beast.math.distributions.Beta</map>");
-  PhyML_Printf("\n<map name=\"Gamma\" >beast.math.distributions.Gamma</map>");
-  PhyML_Printf("\n<map name=\"LaplaceDistribution\" >beast.math.distributions.LaplaceDistribution</map>");
-  PhyML_Printf("\n<map name=\"prior\" >beast.math.distributions.Prior</map>");
-  PhyML_Printf("\n<map name=\"InverseGamma\" >beast.math.distributions.InverseGamma</map>");
-  PhyML_Printf("\n<map name=\"OneOnX\" >beast.math.distributions.OneOnX</map>");
+  int i, j, n_demes;
+  char *s,**deme_names;
+  FILE *fp;
 
 
-  PhyML_Printf("\n<run id=\"mcmc\" spec=\"MCMC\" chainLength=\"10000000\">");
-  PhyML_Printf("\n\t<state id=\"state\" storeEvery=\"10000\">");
-  PhyML_Printf("\n\t\t<stateNode id=\"Tree.t:h3n2\" spec=\"beast.evolution.tree.StructuredCoalescentMultiTypeTree\">");
-  PhyML_Printf("\n\t\t\t<migrationModel id=\"migModelInit.t:h3n2\" spec=\"beast.evolution.tree.MigrationModel\">");
-  PhyML_Printf("\n\t\t\t\t<parameter id=\"RealParameter.0\" dimension=\"6\" estimate=\"false\" name=\"rateMatrix\">1.0 1.0 1.0 1.0 1.0 1.0</parameter>");
-  PhyML_Printf("\n\t\t\t\t<parameter id=\"RealParameter.01\" dimension=\"3\" estimate=\"false\" name=\"popSizes\">1.0 1.0 1.0</parameter>");
-  PhyML_Printf("\n\t\t\t</migrationModel>");
+  fp = Openfile(filename,WRITE);
+  assert(fp);
+
+  deme_names = (char **)mCalloc(n_sites,sizeof(char *));
+
+  n_demes = 0;
+  For(i,tree->n_otu)
+    {
+      s = strchr(tree->a_nodes[i]->coord->id,'_');
+      For(j,n_demes) if(!strcmp(s+1,deme_names[j])) break;
+      if(j == n_demes)
+        {
+          deme_names[n_demes] = (char *)mCalloc(strlen(s+1)+1,sizeof(char));
+          strcpy(deme_names[n_demes],s+1);
+          n_demes++;
+        }
+    }
+
+  // n_demes is the number of non-empty sampling sites 
 
 
-  PhyML_Printf("\n\t\t\t<typeTrait id=\"typeTraitSet.t:h3n2\" spec=\"beast.evolution.tree.TraitSet\" traitname=\"type\" value=\"");
+  PhyML_Fprintf(fp,"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>");
+  PhyML_Fprintf(fp,"\n<beast beautitemplate='MultiTypeTree' beautistatus='' namespace=\"beast.core:beast.evolution.alignment:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood\" version=\"2.0\">");
+
+  PhyML_Fprintf(fp,"\n<data id=\"h3n2\" name=\"alignment\">");
 
 
-  PhyML_Printf("\n<distribution id=\"posterior\" spec=\"util.CompoundDistribution\">");
-  PhyML_Printf("\n<distribution id=\"prior\" spec=\"util.CompoundDistribution\">");
-  PhyML_Printf("\n<prior id=\"KappaPrior.s:h3n2\" name=\"distribution\" x=\"@kappa.s:h3n2\">");
-  PhyML_Printf("\n<LogNormal id=\"LogNormalDistributionModel.0\" name=\"distr\">");
-  PhyML_Printf("\n<parameter id=\"RealParameter.02\" estimate=\"false\" name=\"M\">1.0</parameter>");
-  PhyML_Printf("\n<parameter id=\"RealParameter.03\" estimate=\"false\" name=\"S\">1.25</parameter>");
-  PhyML_Printf("\n</LogNormal>");
-  PhyML_Printf("\n</prior>");
-  PhyML_Printf("\n<prior id=\"popSizesPrior.t:h3n2\" name=\"distribution\" x=\"@popSizes.t:h3n2\">");
-  PhyML_Printf("\n<LogNormal id=\"LogNormalDistributionModel.01\" name=\"distr\">");
-  PhyML_Printf("\n<parameter id=\"RealParameter.04\" estimate=\"false\" name=\"M\">1.0</parameter>");
-  PhyML_Printf("\n<parameter id=\"RealParameter.05\" estimate=\"false\" lower=\"0.0\" name=\"S\" upper=\"5.0\">1.25</parameter>");
-  PhyML_Printf("\n</LogNormal>");
-  PhyML_Printf("\n</prior>");
-  PhyML_Printf("\n<distribution id=\"structuredCoalescent.t:h3n2\" spec=\"multitypetree.distributions.StructuredCoalescentTreeDensity\" multiTypeTree=\"@Tree.t:h3n2\">");
-  PhyML_Printf("\n<migrationModel id=\"migModel.t:h3n2\" spec=\"beast.evolution.tree.MigrationModel\" popSizes=\"@popSizes.t:h3n2\">");
-  PhyML_Printf("\n<parameter id=\"rateMatrix.t:h3n2\" dimension=\"6\" estimate=\"false\" name=\"rateMatrix\">1.0 1.0 1.0 1.0 1.0 1.0</parameter>");
-  PhyML_Printf("\n</migrationModel>");
-  PhyML_Printf("\n</distribution>");
-  PhyML_Printf("\n</distribution>");
-  PhyML_Printf("\n<distribution id=\"likelihood\" spec=\"util.CompoundDistribution\">");
-  PhyML_Printf("\n<distribution id=\"treeLikelihood.h3n2\" spec=\"TreeLikelihood\" data=\"@h3n2\" tree=\"@Tree.t:h3n2\">");
-  PhyML_Printf("\n<siteModel id=\"SiteModel.s:h3n2\" spec=\"SiteModel\">");
-  PhyML_Printf("\n<parameter id=\"mutationRate.s:h3n2\" estimate=\"false\" name=\"mutationRate\">1.0</parameter>");
-  PhyML_Printf("\n<parameter id=\"gammaShape.s:h3n2\" estimate=\"false\" name=\"shape\">1.0</parameter>");
-  PhyML_Printf("\n<parameter id=\"proportionInvariant.s:h3n2\" estimate=\"false\" lower=\"0.0\" name=\"proportionInvariant\" upper=\"1.0\">0.0</parameter>");
-  PhyML_Printf("\n<substModel id=\"hky.s:h3n2\" spec=\"HKY\" kappa=\"@kappa.s:h3n2\">");
-  PhyML_Printf("\n<frequencies id=\"estimatedFreqs.s:h3n2\" spec=\"Frequencies\" frequencies=\"@freqParameter.s:h3n2\"/>");
-  PhyML_Printf("\n</substModel>");
-  PhyML_Printf("\n</siteModel>");
-  PhyML_Printf("\n<branchRateModel id=\"StrictClock.c:h3n2\" spec=\"beast.evolution.branchratemodel.StrictClockModel\">");
-  PhyML_Printf("\n<parameter id=\"clockRate.c:h3n2\" estimate=\"false\" name=\"clock.rate\">1.0</parameter>");
-  PhyML_Printf("\n</branchRateModel>");
-  PhyML_Printf("\n</distribution>");
-  PhyML_Printf("\n</distribution>");
-  PhyML_Printf("\n</distribution>");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n<operator id=\"STX.t:h3n2\" spec=\"multitypetree.operators.TypedSubtreeExchange\" migrationModel=\"@migModel.t:h3n2\" multiTypeTree=\"@Tree.t:h3n2\" weight=\"10.0\"/>");
-  PhyML_Printf("\n<operator id=\"NR.t:h3n2\" spec=\"multitypetree.operators.NodeRetype\" migrationModel=\"@migModel.t:h3n2\" multiTypeTree=\"@Tree.t:h3n2\" weight=\"10.0\"/>");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
-  PhyML_Printf("\n");
+  For(i,tree->n_otu)
+    {
+      PhyML_Fprintf(fp,"\n<sequence id=\"%s\" taxon=\"%s\" totalcount=\"4\" value=\"%s\"/>",
+                   tree->a_nodes[i]->coord->id,
+                   tree->a_nodes[i]->coord->id,
+                   tree->a_nodes[i]->c_seq->state);
+    }
 
+  PhyML_Fprintf(fp,"\n</data>");
+
+  PhyML_Fprintf(fp,"\n<map name=\"Uniform\" >beast.math.distributions.Uniform</map>");
+  PhyML_Fprintf(fp,"\n<map name=\"Exponential\" >beast.math.distributions.Exponential</map>");
+  PhyML_Fprintf(fp,"\n<map name=\"LogNormal\" >beast.math.distributions.LogNormalDistributionModel</map>");
+  PhyML_Fprintf(fp,"\n<map name=\"Normal\" >beast.math.distributions.Normal</map>");
+  PhyML_Fprintf(fp,"\n<map name=\"Beta\" >beast.math.distributions.Beta</map>");
+  PhyML_Fprintf(fp,"\n<map name=\"Gamma\" >beast.math.distributions.Gamma</map>");
+  PhyML_Fprintf(fp,"\n<map name=\"LaplaceDistribution\" >beast.math.distributions.LaplaceDistribution</map>");
+  PhyML_Fprintf(fp,"\n<map name=\"prior\" >beast.math.distributions.Prior</map>");
+  PhyML_Fprintf(fp,"\n<map name=\"InverseGamma\" >beast.math.distributions.InverseGamma</map>");
+  PhyML_Fprintf(fp,"\n<map name=\"OneOnX\" >beast.math.distributions.OneOnX</map>");
+
+
+  PhyML_Fprintf(fp,"\n<run id=\"mcmc\" spec=\"MCMC\" chainLength=\"1000000000\">");
+  PhyML_Fprintf(fp,"\n<state id=\"state\" storeEvery=\"10000\">");
+  PhyML_Fprintf(fp,"\n<stateNode id=\"Tree.t:h3n2\" spec=\"beast.evolution.tree.StructuredCoalescentMultiTypeTree\">");
+  PhyML_Fprintf(fp,"\n<migrationModel id=\"migModelInit.t:h3n2\" spec=\"beast.evolution.tree.MigrationModel\">");
+
+
+  s = (char *)mCalloc(T_MAX_LINE,sizeof(char));
+  For(i,n_demes*(n_demes-1)) strcat(s,"1.0 ");
+  PhyML_Fprintf(fp,"\n<parameter id=\"RealParameter.0\" dimension=\"%d\" estimate=\"false\" name=\"rateMatrix\">%s</parameter>",n_demes*(n_demes-1),s);
+  Free(s);
+
+  s = (char *)mCalloc(T_MAX_LINE,sizeof(char));
+  For(i,n_demes) strcat(s,"1.0 ");
+  PhyML_Fprintf(fp,"\n<parameter id=\"RealParameter.01\" dimension=\"%d\" estimate=\"false\" name=\"popSizes\">%s</parameter>",n_demes,s);
+  Free(s);
+
+  PhyML_Fprintf(fp,"\n</migrationModel>");
+
+  PhyML_Fprintf(fp,"\n<typeTrait id=\"typeTraitSet.t:h3n2\" spec=\"beast.evolution.tree.TraitSet\" traitname=\"type\" value=\"");
+
+  For(i,tree->n_otu)
+    {
+      s = strchr(tree->a_nodes[i]->coord->id,'_');
+      PhyML_Fprintf(fp,"%s=%s",
+                   tree->a_nodes[i]->coord->id,
+                   s+1);
+
+      if(i < tree->n_otu-1) PhyML_Fprintf(fp,",");
+      else PhyML_Fprintf(fp,"\">");
+    }
+
+  PhyML_Fprintf(fp,"\n<taxa id=\"TaxonSet.0\" spec=\"TaxonSet\">");
+  PhyML_Fprintf(fp,"\n<alignment idref=\"h3n2\"/>");
+  PhyML_Fprintf(fp,"\n</taxa>");
+  PhyML_Fprintf(fp,"\n</typeTrait>");
+  PhyML_Fprintf(fp,"\n<taxonset idref=\"TaxonSet.0\"/>");
+  PhyML_Fprintf(fp,"\n</stateNode>");
+  PhyML_Fprintf(fp,"\n<parameter id=\"kappa.s:h3n2\" lower=\"0.0\" name=\"stateNode\">2.0</parameter>");
+
+  s = (char *)mCalloc(T_MAX_LINE,sizeof(char));
+  For(i,n_demes) strcat(s,"1.0 ");
+  PhyML_Fprintf(fp,"\n<parameter id=\"popSizes.t:h3n2\" dimension=\"%d\" name=\"stateNode\">%s</parameter>",n_demes,s);
+  Free(s);
+
+  s = (char *)mCalloc(T_MAX_LINE,sizeof(char));
+  For(i,n_demes*(n_demes-1)) strcat(s,"1.0 ");
+  PhyML_Fprintf(fp,"\n<parameter id=\"rateMatrix.t:h3n2\" dimension=\"%d\" name=\"stateNode\">%s</parameter>",n_demes*(n_demes-1),s);
+  Free(s);
+
+
+  PhyML_Fprintf(fp,"\n<parameter id=\"freqParameter.s:h3n2\" dimension=\"4\" lower=\"0.0\" name=\"stateNode\" upper=\"1.0\">0.25</parameter>");
+  PhyML_Fprintf(fp,"\n</state>");
+
+
+  PhyML_Fprintf(fp,"\n<distribution id=\"posterior\" spec=\"util.CompoundDistribution\">");
+  PhyML_Fprintf(fp,"\n<distribution id=\"prior\" spec=\"util.CompoundDistribution\">");
+  PhyML_Fprintf(fp,"\n<prior id=\"KappaPrior.s:h3n2\" name=\"distribution\" x=\"@kappa.s:h3n2\">");
+  PhyML_Fprintf(fp,"\n<LogNormal id=\"LogNormalDistributionModel.0\" name=\"distr\">");
+  PhyML_Fprintf(fp,"\n<parameter id=\"RealParameter.02\" estimate=\"false\" name=\"M\">1.0</parameter>");
+  PhyML_Fprintf(fp,"\n<parameter id=\"RealParameter.03\" estimate=\"false\" name=\"S\">1.25</parameter>");
+  PhyML_Fprintf(fp,"\n</LogNormal>");
+  PhyML_Fprintf(fp,"\n</prior>");
+  PhyML_Fprintf(fp,"\n<prior id=\"popSizesPrior.t:h3n2\" name=\"distribution\" x=\"@popSizes.t:h3n2\">");
+  PhyML_Fprintf(fp,"\n<LogNormal id=\"LogNormalDistributionModel.01\" name=\"distr\">");
+  PhyML_Fprintf(fp,"\n<parameter id=\"RealParameter.04\" estimate=\"false\" name=\"M\">1.0</parameter>");
+  PhyML_Fprintf(fp,"\n<parameter id=\"RealParameter.05\" estimate=\"false\" lower=\"0.0\" name=\"S\" upper=\"5.0\">1.25</parameter>");
+  PhyML_Fprintf(fp,"\n</LogNormal>");
+  PhyML_Fprintf(fp,"\n</prior>");
+
+  PhyML_Fprintf(fp,"\n<distribution id=\"structuredCoalescent.t:h3n2\" spec=\"multitypetree.distributions.StructuredCoalescentTreeDensity\" multiTypeTree=\"@Tree.t:h3n2\">");
+  PhyML_Fprintf(fp,"\n<migrationModel id=\"migModel.t:h3n2\" spec=\"beast.evolution.tree.MigrationModel\" popSizes=\"@popSizes.t:h3n2\" rateMatrix=\"@rateMatrix.t:h3n2\">");
+  PhyML_Fprintf(fp,"\n</migrationModel>");
+  PhyML_Fprintf(fp,"\n</distribution>");
+
+  PhyML_Fprintf(fp,"\n<distribution id=\"likelihood\" spec=\"util.CompoundDistribution\">");
+  PhyML_Fprintf(fp,"\n<distribution id=\"treeLikelihood.h3n2\" spec=\"TreeLikelihood\" data=\"@h3n2\" tree=\"@Tree.t:h3n2\">");
+  PhyML_Fprintf(fp,"\n<siteModel id=\"SiteModel.s:h3n2\" spec=\"SiteModel\">");
+  PhyML_Fprintf(fp,"\n<parameter id=\"mutationRate.s:h3n2\" estimate=\"false\" name=\"mutationRate\">1.0</parameter>");
+  PhyML_Fprintf(fp,"\n<parameter id=\"gammaShape.s:h3n2\" estimate=\"false\" name=\"shape\">1.0</parameter>");
+  PhyML_Fprintf(fp,"\n<parameter id=\"proportionInvariant.s:h3n2\" estimate=\"false\" lower=\"0.0\" name=\"proportionInvariant\" upper=\"1.0\">0.0</parameter>");
+  PhyML_Fprintf(fp,"\n<substModel id=\"hky.s:h3n2\" spec=\"HKY\" kappa=\"@kappa.s:h3n2\">");
+  PhyML_Fprintf(fp,"\n<frequencies id=\"estimatedFreqs.s:h3n2\" spec=\"Frequencies\" frequencies=\"@freqParameter.s:h3n2\"/>");
+  PhyML_Fprintf(fp,"\n</substModel>");
+  PhyML_Fprintf(fp,"\n</siteModel>");
+  PhyML_Fprintf(fp,"\n<branchRateModel id=\"StrictClock.c:h3n2\" spec=\"beast.evolution.branchratemodel.StrictClockModel\">");
+  PhyML_Fprintf(fp,"\n<parameter id=\"clockRate.c:h3n2\" estimate=\"false\" name=\"clock.rate\">%G</parameter>",tree->rates->clock_r);
+  PhyML_Fprintf(fp,"\n</branchRateModel>");
+  PhyML_Fprintf(fp,"\n</distribution>");
+  PhyML_Fprintf(fp,"\n</distribution>");
+  PhyML_Fprintf(fp,"\n</distribution>");
+  PhyML_Fprintf(fp,"\n</distribution>");
+  PhyML_Fprintf(fp,"\n");
+  PhyML_Fprintf(fp,"\n<operator id=\"STX.t:h3n2\" spec=\"multitypetree.operators.TypedSubtreeExchange\" migrationModel=\"@migModel.t:h3n2\" multiTypeTree=\"@Tree.t:h3n2\" weight=\"10.0\"/>");
+  PhyML_Fprintf(fp,"\n<operator id=\"TWB.t:h3n2\" spec=\"multitypetree.operators.TypedWilsonBalding\" alpha=\"0.2\" migrationModel=\"@migModel.t:h3n2\" multiTypeTree=\"@Tree.t:h3n2\" weight=\"10.0\"/>");
+  PhyML_Fprintf(fp,"\n<operator id=\"NR.t:h3n2\" spec=\"multitypetree.operators.NodeRetype\" migrationModel=\"@migModel.t:h3n2\" multiTypeTree=\"@Tree.t:h3n2\" weight=\"10.0\"/>");
+  PhyML_Fprintf(fp,"\n<operator id=\"NSR1.t:h3n2\" spec=\"multitypetree.operators.NodeShiftRetype\" migrationModel=\"@migModel.t:h3n2\" multiTypeTree=\"@Tree.t:h3n2\" rootOnly=\"true\" weight=\"10.0\"/>");
+  PhyML_Fprintf(fp,"\n<operator id=\"NSR2.t:h3n2\" spec=\"multitypetree.operators.NodeShiftRetype\" migrationModel=\"@migModel.t:h3n2\" multiTypeTree=\"@Tree.t:h3n2\" noRoot=\"true\" weight=\"10.0\"/>");
+  PhyML_Fprintf(fp,"<operator id=\"MTU.t:h3n2\" spec=\"multitypetree.operators.MultiTypeUniform\" includeRoot=\"true\" migrationModel=\"@migModel.t:h3n2\" multiTypeTree=\"@Tree.t:h3n2\" weight=\"10.0\"/>\n");
+  PhyML_Fprintf(fp,"<operator id=\"MTTS.t:h3n2\" spec=\"multitypetree.operators.MultiTypeTreeScale\" migrationModel=\"@migModel.t:h3n2\" multiTypeTree=\"@Tree.t:h3n2\" scaleFactor=\"0.98\" useOldTreeScaler=\"true\" weight=\"10.0\"/>\n");
+  PhyML_Fprintf(fp,"\n<operator id=\"MTTUpDown.t:h3n2\" spec=\"multitypetree.operators.MultiTypeTreeScale\" migrationModel=\"@migModel.t:h3n2\" multiTypeTree=\"@Tree.t:h3n2\" scaleFactor=\"0.98\" useOldTreeScaler=\"true\" weight=\"10.0\">");
+  PhyML_Fprintf(fp,"\n<parameter idref=\"popSizes.t:h3n2\"/>");
+  PhyML_Fprintf(fp,"\n</operator>");
+  PhyML_Fprintf(fp,"\n<operator id=\"KappaScaler.s:h3n2\" spec=\"ScaleOperator\" parameter=\"@kappa.s:h3n2\" scaleFactor=\"0.5\" weight=\"0.1\"/>");
+  PhyML_Fprintf(fp,"\n<operator id=\"popSizesScaler.t:h3n2\" spec=\"ScaleOperator\" parameter=\"@popSizes.t:h3n2\" scaleFactor=\"0.8\" weight=\"1.0\"/>");
+  PhyML_Fprintf(fp,"\n<operator id=\"rateMatrixScaler.t:h3n2\" spec=\"ScaleOperator\" parameter=\"@rateMatrix.t:h3n2\" scaleFactor=\"0.8\" weight=\"1.0\"/>");
+  PhyML_Fprintf(fp,"\n<operator id=\"FrequenciesExchanger.s:h3n2\" spec=\"DeltaExchangeOperator\" delta=\"0.01\" weight=\"0.1\">");
+  PhyML_Fprintf(fp,"\n<parameter idref=\"freqParameter.s:h3n2\"/>");
+  PhyML_Fprintf(fp,"\n</operator>");
+  PhyML_Fprintf(fp,"\n");
+  PhyML_Fprintf(fp,"\n<logger id=\"tracelog\" fileName=\"$(filebase).log\" logEvery=\"1000\">");
+  PhyML_Fprintf(fp,"\n<log idref=\"posterior\"/>");
+  PhyML_Fprintf(fp,"\n<log idref=\"likelihood\"/>");
+  PhyML_Fprintf(fp,"\n<log idref=\"prior\"/>");
+  PhyML_Fprintf(fp,"\n<log idref=\"treeLikelihood.h3n2\"/>");
+  PhyML_Fprintf(fp,"\n<log id=\"treeHeight.t:h3n2\" spec=\"beast.evolution.tree.TreeHeightLogger\" tree=\"@Tree.t:h3n2\"/>");
+  /* PhyML_Fprintf(fp,"\n<log id=\"treeLength.t:h3n2\" spec=\"multitypetree.util.TreeLengthLogger\" tree=\"@Tree.t:h3n2\"/>"); */
+  /* PhyML_Fprintf(fp,"\n<log id=\"changeCounts.t:h3n2\" spec=\"multitypetree.util.TypeChangeCounts\" migrationModel=\"@migModel.t:h3n2\" multiTypeTree=\"@Tree.t:h3n2\"/>"); */
+  /* PhyML_Fprintf(fp,"\n<log id=\"rootTypeLogger.t:h3n2\" spec=\"multitypetree.util.TreeRootTypeLogger\" multiTypeTree=\"@Tree.t:h3n2\"/>"); */
+  PhyML_Fprintf(fp,"\n<log id=\"migModelLogger.t:h3n2\" spec=\"multitypetree.util.MigrationModelLogger\" migrationModel=\"@migModel.t:h3n2\" multiTypeTree=\"@Tree.t:h3n2\"/>");
+  PhyML_Fprintf(fp,"\n<log idref=\"kappa.s:h3n2\"/>");
+  PhyML_Fprintf(fp,"\n<log idref=\"freqParameter.s:h3n2\"/>");
+  PhyML_Fprintf(fp,"\n</logger>");
+  PhyML_Fprintf(fp,"\n");
+  PhyML_Fprintf(fp,"\n<logger id=\"screenlog\" logEvery=\"10000\">");
+  PhyML_Fprintf(fp,"\n<log idref=\"posterior\"/>");
+  PhyML_Fprintf(fp,"\n<log id=\"ESS.0\" spec=\"util.ESS\" arg=\"@posterior\"/>");
+  PhyML_Fprintf(fp,"\n<log idref=\"likelihood\"/>");
+  PhyML_Fprintf(fp,"\n<log idref=\"prior\"/>");
+  PhyML_Fprintf(fp,"\n</logger>");
+  PhyML_Fprintf(fp,"\n");
+  /* PhyML_Fprintf(fp,"\n<logger id=\"treelog.t:h3n2\" fileName=\"$(filebase).$(tree).trees\" logEvery=\"10000\" mode=\"tree\">"); */
+  /* PhyML_Fprintf(fp,"\n<log idref=\"Tree.t:h3n2\"/>"); */
+  /* PhyML_Fprintf(fp,"\n</logger>"); */
+  /* PhyML_Fprintf(fp,"\n"); */
+  /* PhyML_Fprintf(fp,"\n<logger id=\"maptreelog.t:h3n2\" fileName=\"$(filebase).h3n2.map.trees\" logEvery=\"10000\" mode=\"tree\">"); */
+  /* PhyML_Fprintf(fp,"\n<log id=\"MAPTreeLogger.0\" spec=\"multitypetree.util.MAPTreeLogger\" estimate=\"false\" multiTypeTree=\"@Tree.t:h3n2\" posterior=\"@posterior\"/>"); */
+  /* PhyML_Fprintf(fp,"\n</logger>"); */
+  /* PhyML_Fprintf(fp,"\n<logger id=\"typednodetreelog.t:h3n2\" fileName=\"$(filebase).h3n2.typedNode.trees\" logEvery=\"10000\" mode=\"tree\">"); */
+  /* PhyML_Fprintf(fp,"\n<log id=\"TypedNodeTreeLogger.0\" spec=\"multitypetree.util.TypedNodeTreeLogger\" multiTypeTree=\"@Tree.t:h3n2\"/>"); */
+  /* PhyML_Fprintf(fp,"\n</logger>"); */
+  PhyML_Fprintf(fp,"\n</run>");
+  PhyML_Fprintf(fp,"\n</beast>");
+  
+  For(i,n_demes) Free(deme_names[i]);
+  Free(deme_names);
+
+  fclose(fp);
 }
 
 
