@@ -1073,8 +1073,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   phydbl true_root_x, true_root_y,true_lbda,true_mu,true_sigsq,true_neigh,fst_neigh,diversity,true_rad,true_height,true_rhoe;
   int adjust_len;
 
-
-
   fp_tree    = tree->io->fp_out_tree;
   fp_stats   = tree->io->fp_out_stats;
   fp_summary = tree->io->fp_out_summary;
@@ -1143,6 +1141,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   PhyML_Fprintf(fp_stats,"\n# fst-based estimate of neighborhood size: %f",PHYREX_Neighborhood_Size_Regression(tree));
   PhyML_Fprintf(fp_stats,"\n# true pop. density: %f",true_rhoe);
   PhyML_Fprintf(fp_stats,"\n# nucleotide diversity: %f",Nucleotide_Diversity(tree->data));
+  PhyML_Fprintf(fp_stats,"\n# length of a generation: %G time units",PHYREX_Generation_Length(tree));
+  PhyML_Fprintf(fp_stats,"\n# clock rate: %G subst. per time unit",tree->rates->clock_r);
+  PhyML_Fprintf(fp_stats,"\n# proportion of sampled area: %f",tree->mmod->sampl_area);
 
   /* Starting parameter values */
   tree->mmod->lbda = Uni()*(0.5 - 0.2) + 0.2;
@@ -1386,7 +1387,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
           PhyML_Fprintf(fp_summary,"\n# SampArea\t TrueLbda\t TrueMu\t TrueSig\t TrueRad\t TrueNeigh\t TrueRhoe\t Diversity\t TrueInt\t TrueCoal\t TrueHits\t RegNeigh\t TrueXroot\t TrueYroot\t TrueHeight\t Lbda5\t Lbda50\t Lbda95\t LbdaMod \t Mu5\t Mu50\t Mu95\t  MuMod \t Sig5\t Sig50\t Sig95\t SigMod \t Neigh5\t Neigh50\t Neigh95\t NeighMod \t Rad5\t Rad50\t Rad95\t Int5\t Int50\t Int95\t Coal5\t Coal50\t Coal95\t Hit5\t Hit50\t Hit95\t Rhoe5\t Rhoe50\t Rhoe95\t ESSLbda \t ESSMu \t ESSSig \t Run");
           
-          PhyML_Fprintf(fp_summary,"\n %f\t %f\t %f\t %f\t %f\t %f\t %f\t %d\t %d\t %d\t %f\t %f\t %f\t %f\t ",
+          PhyML_Fprintf(fp_summary,"\n %f\t %f\t %f\t %f\t %f\t %f\t %f\t %f\t %d\t %d\t %d\t %f\t %f\t %f\t %f\t ",
                         tree->mmod->sampl_area,
                         true_lbda,
                         true_mu,
@@ -3160,6 +3161,13 @@ void PHYREX_Rand_Pairs_Coal_Times_Dist(t_tree *tree)
     }
 }
 
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+phydbl PHYREX_Generation_Length(t_tree *tree)
+{
+  return(1./(2.*tree->mmod->mu*POW(tree->mmod->rad,2)*PI*PHYREX_Rate_Per_Unit_Area(tree)));
+}
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
@@ -4031,7 +4039,7 @@ void PHYREX_Print_MultiTypeTree_Config_File(int n_sites, char *filename, t_tree 
   PhyML_Fprintf(fp,"\n</substModel>");
   PhyML_Fprintf(fp,"\n</siteModel>");
   PhyML_Fprintf(fp,"\n<branchRateModel id=\"StrictClock.c:h3n2\" spec=\"beast.evolution.branchratemodel.StrictClockModel\">");
-  PhyML_Fprintf(fp,"\n<parameter id=\"clockRate.c:h3n2\" estimate=\"false\" name=\"clock.rate\">%G</parameter>",tree->rates->clock_r);
+  PhyML_Fprintf(fp,"\n<parameter id=\"clockRate.c:h3n2\" estimate=\"false\" name=\"clock.rate\">%G</parameter>",1.0);
   PhyML_Fprintf(fp,"\n</branchRateModel>");
   PhyML_Fprintf(fp,"\n</distribution>");
   PhyML_Fprintf(fp,"\n</distribution>");
