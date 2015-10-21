@@ -323,8 +323,9 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
                mmod->lbda,mmod->mu,mmod->sigsq,mmod->rad,neigh,area*neigh/(4*PI*mmod->sigsq));
   fflush(NULL);
 
-  /* PHYREX_Simulate_Backward_Core(YES,tree->disk,tree); */
-  mmod->sampl_area = PHYREX_Simulate_Forward_Core(n_sites,tree);
+
+  PHYREX_Simulate_Backward_Core(YES,tree->disk,tree);
+  /* mmod->sampl_area = PHYREX_Simulate_Forward_Core(n_sites,tree); */
     
   PHYREX_Ldsk_To_Tree(tree);  
 
@@ -409,6 +410,7 @@ phydbl PHYREX_Simulate_Backward_Core(int new_loc, t_dsk *init_disk, t_tree *tree
         {
           init_disk->ldsk_a[i] = PHYREX_Make_Lindisk_Node(n_dim);
           PHYREX_Init_Lindisk_Node(init_disk->ldsk_a[i],init_disk,n_dim);
+          strcat(init_disk->ldsk_a[i]->coord->id,"_deme0");
         }
 
       /* PhyML_Printf("\n. WARNING: position of samples are not random."); */
