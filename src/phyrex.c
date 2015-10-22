@@ -158,7 +158,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   /* seed = 14493; */
   /* seed = 15364; */
   /* seed = 21414; */
-  /* seed = 4566; */
+  seed = 13536;
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -3742,6 +3742,8 @@ void PHYREX_Time_Tree_Length_Pre(t_ldsk *a, t_ldsk *d, phydbl *len, t_tree *tree
 int PHYREX_Is_On_Path(t_ldsk *target, t_ldsk *beg, t_ldsk *end)
 {
   t_ldsk *ldsk;
+
+  if(target == beg || target == end) return NO;
 
   assert(!(beg->disk->time < end->disk->time));
 

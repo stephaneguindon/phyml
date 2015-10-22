@@ -4460,33 +4460,14 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_geo_dum]               = 1.0;
 
 # if defined (PHYREX)
-  /* mcmc->move_weight[mcmc->num_move_phyrex_lbda]                  = 2.0; */
-  /* mcmc->move_weight[mcmc->num_move_phyrex_mu]                    = 2.0; */
-  /* mcmc->move_weight[mcmc->num_move_phyrex_rad]                   = 2.0; */
-  /* mcmc->move_weight[mcmc->num_move_phyrex_sigsq]                 = 0.0; */
-  /* mcmc->move_weight[mcmc->num_move_phyrex_indel_disk]            = 5.0; */
-  /* mcmc->move_weight[mcmc->num_move_phyrex_indel_hit]             = 4.0; */
-  /* mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ct]          = 1.0; */
-  /* mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ud]          = 5.0; */
-  /* mcmc->move_weight[mcmc->num_move_phyrex_swap_disk]             = 1.0; */
-  /* mcmc->move_weight[mcmc->num_move_phyrex_move_ldsk]             = 1.0; */
-  /* mcmc->move_weight[mcmc->num_move_phyrex_spr]                   = 1.0; */
-  /* mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           = 1.0; */
-  /* mcmc->move_weight[mcmc->num_move_phyrex_ldscape_lim]           = 0.0; */
-  /* mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 1.0; */
-  /* mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 1.0; */
-  /* mcmc->move_weight[mcmc->num_move_phyrex_lbda_times]            = 1.0; */
-  /* mcmc->move_weight[mcmc->num_move_phyrex_ldsk_given_disk]       = 2.0; */
-  /* mcmc->move_weight[mcmc->num_move_phyrex_indel_disk_serial]     = 2.0; */
-
   mcmc->move_weight[mcmc->num_move_phyrex_lbda]                  = 2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_mu]                    = 2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_rad]                   = 2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_sigsq]                 = 0.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_indel_disk]            = 1.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_indel_hit]             = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_indel_disk]            = 5.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_indel_hit]             = 4.0;
   mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ct]          = 1.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ud]          = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ud]          = 5.0;
   mcmc->move_weight[mcmc->num_move_phyrex_swap_disk]             = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_move_ldsk]             = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_spr]                   = 1.0;
@@ -4497,6 +4478,25 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_lbda_times]            = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldsk_given_disk]       = 2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_disk_serial]     = 2.0;
+
+  /* mcmc->move_weight[mcmc->num_move_phyrex_lbda]                  = 2.0; */
+  /* mcmc->move_weight[mcmc->num_move_phyrex_mu]                    = 2.0; */
+  /* mcmc->move_weight[mcmc->num_move_phyrex_rad]                   = 2.0; */
+  /* mcmc->move_weight[mcmc->num_move_phyrex_sigsq]                 = 0.0; */
+  /* mcmc->move_weight[mcmc->num_move_phyrex_indel_disk]            = 1.0; */
+  /* mcmc->move_weight[mcmc->num_move_phyrex_indel_hit]             = 1.0; */
+  /* mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ct]          = 1.0; */
+  /* mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ud]          = 1.0; */
+  /* mcmc->move_weight[mcmc->num_move_phyrex_swap_disk]             = 1.0; */
+  /* mcmc->move_weight[mcmc->num_move_phyrex_move_ldsk]             = 1.0; */
+  /* mcmc->move_weight[mcmc->num_move_phyrex_spr]                   = 1.0; */
+  /* mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           = 1.0; */
+  /* mcmc->move_weight[mcmc->num_move_phyrex_ldscape_lim]           = 0.0; */
+  /* mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 1.0; */
+  /* mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 1.0; */
+  /* mcmc->move_weight[mcmc->num_move_phyrex_lbda_times]            = 1.0; */
+  /* mcmc->move_weight[mcmc->num_move_phyrex_ldsk_given_disk]       = 2.0; */
+  /* mcmc->move_weight[mcmc->num_move_phyrex_indel_disk_serial]     = 2.0; */
 # else
   mcmc->move_weight[mcmc->num_move_phyrex_lbda]                  = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_mu]                    = 0.0;
@@ -6470,13 +6470,17 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
                                                                        prune_daughter_ldsk,
                                                                        tree);
 
-              if(disk == prune_disk) num_prune_disk = n_valid_disks;
+              if(disk == prune_disk) 
+                {
+                  num_prune_disk = n_valid_disks;
+                }
 
               n_valid_disks++;
             }
           disk = disk->prev;
         }
-      while(disk && disk->prev);
+      /* while(disk && disk->prev); */
+      while(disk);
       
       if(!n_valid_disks) return;
 
@@ -6500,6 +6504,7 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
           /* Prob of selecting this node as regraft site */
           hr -= LOG(prob_disks[i]);
 
+          assert(num_prune_disk > -1);
 
           /* Prob of selecting this node as regraft site (opposite move) */
           hr += LOG(prob_disks[num_prune_disk]);
