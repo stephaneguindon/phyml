@@ -6479,7 +6479,6 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
             }
           disk = disk->prev;
         }
-      /* while(disk && disk->prev); */
       while(disk);
       
       if(!n_valid_disks) return;
