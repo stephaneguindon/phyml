@@ -159,6 +159,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   /* seed = 15364; */
   /* seed = 21414; */
   /* seed = 13536; */
+  /* seed = 16814; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -319,8 +320,14 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   /* neigh       = 2./mmod->mu; */
   /* mmod->sigsq = PHYREX_Update_Sigsq(tree); */
 
-  PhyML_Printf("\n. lbda: %G mu: %G sigsq: %G rad: %G neigh: %G N: %G",
-               mmod->lbda,mmod->mu,mmod->sigsq,mmod->rad,neigh,area*neigh/(4*PI*mmod->sigsq));
+  PhyML_Printf("\n. lbda: %G mu: %G sigsq: %G rad: %G neigh: %G N: %G rhoe: %G",
+               mmod->lbda,
+               mmod->mu,
+               mmod->sigsq,
+               mmod->rad,
+               neigh,
+               area*neigh/(4*PI*mmod->sigsq),
+               neigh/(4.*PI*mmod->sigsq));
   fflush(NULL);
 
 
@@ -408,9 +415,14 @@ phydbl PHYREX_Simulate_Backward_Core(int new_loc, t_dsk *init_disk, t_tree *tree
     {      
       For(i,tree->n_otu) 
         {
+          char *s;
           init_disk->ldsk_a[i] = PHYREX_Make_Lindisk_Node(n_dim);
           PHYREX_Init_Lindisk_Node(init_disk->ldsk_a[i],init_disk,n_dim);
-          strcat(init_disk->ldsk_a[i]->coord->id,"_deme0");
+          s = (char *)mCalloc(strlen(init_disk->ldsk_a[i]->coord->id)+1+20,sizeof(char));
+          strcpy(s,init_disk->ldsk_a[i]->coord->id);
+          strcat(s,"_deme0");
+          Free(init_disk->ldsk_a[i]->coord->id);
+          init_disk->ldsk_a[i]->coord->id = s;
         }
 
       /* PhyML_Printf("\n. WARNING: position of samples are not random."); */
@@ -780,8 +792,13 @@ phydbl PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree)
           
           if(Is_In_Polygon(ldsk_a_pop[i]->coord,poly[j]) == YES)
             {
+              char *s;
               ldsk_a_samp[sample_size] = ldsk_a_pop[i];
-              sprintf(ldsk_a_pop[i]->coord->id+strlen(ldsk_a_pop[i]->coord->id),"_deme%d",j);
+              s = (char *)mCalloc((int)strlen(ldsk_a_pop[i]->coord->id)+1+20,sizeof(char));
+              strcpy(s,ldsk_a_pop[i]->coord->id);
+              Free(ldsk_a_pop[i]->coord->id);
+              sprintf(s+strlen(s),"_deme%d",j);
+              ldsk_a_pop[i]->coord->id = s;
               PhyML_Printf("\n@ Coord: %f %f %s",ldsk_a_samp[sample_size]->coord->lonlat[0],ldsk_a_samp[sample_size]->coord->lonlat[1],ldsk_a_pop[i]->coord->id);
               sample_size++;
               if(sample_size == n_otu) break;        
@@ -3833,7 +3850,7 @@ t_ldsk *PHYREX_Find_Lca_Pair_Of_Ldsk(t_ldsk *n1, t_ldsk *n2, t_tree *tree)
 
   do
     {
-      if((list1[len1] != list2[len2]) || (len1 < 0 || len2 < 0)) break;
+      if((len1 < 0 || len2 < 0) || (list1[len1] != list2[len2])) break;
       len1--;
       len2--;
     }
