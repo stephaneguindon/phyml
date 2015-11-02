@@ -21,8 +21,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int PHYREX_Main(int argc, char *argv[])
 {
-  /* return(PHYREX_Main_Estimate(argc,argv)); */
-  return(PHYREX_Main_Simulate(argc,argv));
+  return(PHYREX_Main_Estimate(argc,argv));
+  /* return(PHYREX_Main_Simulate(argc,argv)); */
 
 }
 
