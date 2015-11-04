@@ -4469,7 +4469,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ct]          = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ud]          = 5.0;
   mcmc->move_weight[mcmc->num_move_phyrex_swap_disk]             = 1.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_move_ldsk]             = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_move_ldsk]             = 3.0;
   mcmc->move_weight[mcmc->num_move_phyrex_spr]                   = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldscape_lim]           = 0.0;
@@ -4865,14 +4865,65 @@ void MCMC_PHYREX_Lbda(t_tree *tree)
 #ifdef PHYREX
 void MCMC_PHYREX_Mu(t_tree *tree)
 {
-  MCMC_Single_Param_Generic(&(tree->mmod->mu),
-                            tree->mmod->min_mu,
-                            tree->mmod->max_mu,
-                            tree->mcmc->num_move_phyrex_mu,
-                            NULL,&(tree->mmod->c_lnL),
-                            NULL,PHYREX_Wrap_Lk,
-                            tree->mcmc->move_type[tree->mcmc->num_move_phyrex_mu],
-                            NO,NULL,tree,NULL);
+  phydbl u,alpha,ratio;
+  phydbl cur_glnL, new_glnL, hr;
+  phydbl ori_mu;
+  phydbl ori_beta,new_beta;
+  phydbl min,max;
+  
+  new_glnL       = UNLIKELY;
+  cur_glnL       = tree->mmod->c_lnL;
+  hr             = 0.0;
+  ratio          = 0.0;
+  ori_mu         = tree->mmod->mu;
+  ori_beta       = (1./tree->mmod->mu)-1.;
+  
+  u = Uni();
+  new_beta = ori_beta * EXP(1.0*(u-.5));
+  hr += LOG(new_beta/ori_beta);
+
+  tree->mmod->mu = 1./(new_beta+1.);
+
+  new_glnL = PHYREX_Lk(tree);
+  
+  ratio += (new_glnL - cur_glnL);
+  ratio += hr;
+  
+  ratio = EXP(ratio);
+  alpha = MIN(1.,ratio);
+  
+  /* Always accept move */
+  if(tree->mcmc->always_yes == YES && new_glnL > UNLIKELY) alpha = 1.0;
+
+  u = Uni();
+  
+
+  if(u > alpha) /* Reject */
+    {
+      tree->mmod->mu = ori_mu;
+
+      tree->mmod->c_lnL = cur_glnL;
+
+      /* new_glnL = MIGREP_Lk(tree); */
+      /* if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO) */
+      /*   { */
+      /*     PhyML_Printf("\n. new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL); */
+      /*     Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
+      /*   } */
+    }
+  else
+    {
+      /* printf("- Accept"); */
+    }
+
+  /* MCMC_Single_Param_Generic(&(tree->mmod->mu), */
+  /*                           tree->mmod->min_mu, */
+  /*                           tree->mmod->max_mu, */
+  /*                           tree->mcmc->num_move_phyrex_mu, */
+  /*                           NULL,&(tree->mmod->c_lnL), */
+  /*                           NULL,PHYREX_Wrap_Lk, */
+  /*                           tree->mcmc->move_type[tree->mcmc->num_move_phyrex_mu], */
+  /*                           NO,NULL,tree,NULL); */
 }
 #endif
 

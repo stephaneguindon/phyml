@@ -21,8 +21,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int PHYREX_Main(int argc, char *argv[])
 {
-  return(PHYREX_Main_Estimate(argc,argv));
-  /* return(PHYREX_Main_Simulate(argc,argv)); */
+  /* return(PHYREX_Main_Estimate(argc,argv)); */
+  return(PHYREX_Main_Simulate(argc,argv));
 
 }
 
@@ -159,7 +159,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   /* seed = 15364; */
   /* seed = 21414; */
   /* seed = 13536; */
-  /* seed = 16814; */
+  /* seed = 28366; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -1273,8 +1273,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_rad"))
         MCMC_PHYREX_Radius(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_sigsq")) */
-      /*   MCMC_PHYREX_Sigsq(tree); */
+      /* /\* if(!strcmp(tree->mcmc->move_name[move],"phyrex_sigsq")) *\/ */
+      /* /\*   MCMC_PHYREX_Sigsq(tree); *\/ */
 
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_disk"))
         MCMC_PHYREX_Indel_Disk(tree);
@@ -1322,8 +1322,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"ras"))
         MCMC_Rate_Across_Sites(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_ldscape_lim")) */
-      /*   MCMC_PHYREX_Ldscape_Limits(tree); */
+      /* /\* if(!strcmp(tree->mcmc->move_name[move],"phyrex_ldscape_lim")) *\/ */
+      /* /\*   MCMC_PHYREX_Ldscape_Limits(tree); *\/ */
 
       tree->mcmc->run++;
       MCMC_Get_Acc_Rates(tree->mcmc);
@@ -2503,6 +2503,8 @@ phydbl PHYREX_LnPrior_Mu(t_tree *tree)
   if(tree->mmod->mu > tree->mmod->max_mu) return UNLIKELY;
 
   tree->mmod->c_ln_prior_mu = -LOG(tree->mmod->max_mu - tree->mmod->min_mu);
+
+  /* tree->mmod->c_ln_prior_mu = -2.*LOG(tree->mmod->mu); */
 
   return(tree->mmod->c_ln_prior_mu);
 }
