@@ -4039,10 +4039,18 @@ void PHYREX_Print_MultiTypeTree_Config_File(int n_sites, char *filename, t_tree 
   PhyML_Fprintf(fp,"\n<parameter id=\"RealParameter.03\" estimate=\"false\" name=\"S\">1.25</parameter>");
   PhyML_Fprintf(fp,"\n</LogNormal>");
   PhyML_Fprintf(fp,"\n</prior>");
+
   PhyML_Fprintf(fp,"\n<prior id=\"popSizesPrior.t:h3n2\" name=\"distribution\" x=\"@popSizes.t:h3n2\">");
   PhyML_Fprintf(fp,"\n<LogNormal id=\"LogNormalDistributionModel.01\" name=\"distr\">");
   PhyML_Fprintf(fp,"\n<parameter id=\"RealParameter.04\" estimate=\"false\" name=\"M\">1.0</parameter>");
   PhyML_Fprintf(fp,"\n<parameter id=\"RealParameter.05\" estimate=\"false\" lower=\"0.0\" name=\"S\" upper=\"5.0\">1.25</parameter>");
+  PhyML_Fprintf(fp,"\n</LogNormal>");
+  PhyML_Fprintf(fp,"\n</prior>");
+
+  PhyML_Fprintf(fp,"\n<prior id=\"rateMatrixPrior.t:h3n2\" name=\"distribution\" x=\"@rateMatrix.t:h3n2\">");
+  PhyML_Fprintf(fp,"\n<LogNormal id=\"LogNormalDistributionModel.02\" name=\"distr\">");
+  PhyML_Fprintf(fp,"\n<parameter id=\"RealParameter.06\" estimate=\"false\" name=\"M\">1.0</parameter>");
+  PhyML_Fprintf(fp,"\n<parameter id=\"RealParameter.07\" estimate=\"false\" lower=\"0.0\" name=\"S\" upper=\"5.0\">1.25</parameter>");
   PhyML_Fprintf(fp,"\n</LogNormal>");
   PhyML_Fprintf(fp,"\n</prior>");
 
