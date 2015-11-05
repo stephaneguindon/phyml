@@ -160,6 +160,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   /* seed = 21414; */
   /* seed = 13536; */
   /* seed = 28366; */
+  /* seed = 22477; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -420,7 +421,7 @@ phydbl PHYREX_Simulate_Backward_Core(int new_loc, t_dsk *init_disk, t_tree *tree
           PHYREX_Init_Lindisk_Node(init_disk->ldsk_a[i],init_disk,n_dim);
           s = (char *)mCalloc(strlen(init_disk->ldsk_a[i]->coord->id)+1+20,sizeof(char));
           strcpy(s,init_disk->ldsk_a[i]->coord->id);
-          strcat(s,"_deme0");
+          strcat(s,"_deme0\0");
           Free(init_disk->ldsk_a[i]->coord->id);
           init_disk->ldsk_a[i]->coord->id = s;
         }
@@ -598,7 +599,7 @@ phydbl PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree)
 {
   t_dsk *disk;
   t_ldsk *new_ldsk,**ldsk_a_pop,**ldsk_a_samp,**ldsk_a_tmp,**ldsk_a_tips;
-  int i,j,n_disk,n_dim,n_otu,pop_size,parent_id,n_lineages,sample_size,n_poly;
+  int i,j,n_disk,n_dim,n_otu,pop_size,parent_id,n_lineages,sample_size,n_poly,*permut;
   phydbl dt_dsk,curr_t,sum,*parent_prob,prob_death,tree_height,max_x,max_y,trans_x,trans_y,area;
   short int dies,n_remain;
   t_phyrex_mod *mmod;
@@ -785,26 +786,37 @@ phydbl PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree)
       
       For(i,n_otu) ldsk_a_samp[i] = NULL;
 
+      permut = Permutate(n_poly);
+
       sample_size = 0;
       For(i,pop_size)
         {
-          j = Rand_Int(0,n_poly-1);
-          
-          if(Is_In_Polygon(ldsk_a_pop[i]->coord,poly[j]) == YES)
+          For(j,n_poly)
             {
-              char *s;
-              ldsk_a_samp[sample_size] = ldsk_a_pop[i];
-              s = (char *)mCalloc((int)strlen(ldsk_a_pop[i]->coord->id)+1+20,sizeof(char));
-              strcpy(s,ldsk_a_pop[i]->coord->id);
-              Free(ldsk_a_pop[i]->coord->id);
-              sprintf(s+strlen(s),"_deme%d",j);
-              ldsk_a_pop[i]->coord->id = s;
-              PhyML_Printf("\n@ Coord: %f %f %s",ldsk_a_samp[sample_size]->coord->lonlat[0],ldsk_a_samp[sample_size]->coord->lonlat[1],ldsk_a_pop[i]->coord->id);
-              sample_size++;
-              if(sample_size == n_otu) break;        
+              if(Is_In_Polygon(ldsk_a_pop[i]->coord,poly[permut[j]]) == YES)
+                {
+                  char *s;
+                  int k;
+                  s = (char *)mCalloc((int)strlen(ldsk_a_pop[i]->coord->id)+1+20,sizeof(char));
+                  For(k,(int)strlen(ldsk_a_pop[i]->coord->id)+1+20) s[k]='\0';
+                  strcpy(s,ldsk_a_pop[i]->coord->id);
+                  Free(ldsk_a_pop[i]->coord->id);
+                  strcat(s,"_deme");
+                  sprintf(s+strlen(s),"%d",permut[j]);
+                  ldsk_a_pop[i]->coord->id = s;
+
+                  ldsk_a_samp[sample_size] = ldsk_a_pop[i];
+                  sample_size++;
+                  PhyML_Printf("\n@ Coord: %f %f %s",ldsk_a_samp[sample_size-1]->coord->lonlat[0],ldsk_a_samp[sample_size-1]->coord->lonlat[1],ldsk_a_pop[i]->coord->id);
+                  
+                  break;
+                }
             }
+          if(sample_size == n_otu) break;
         }
-      
+
+      Free(permut);
+
       area = Area_Of_Poly_Monte_Carlo(poly,n_poly,mmod->lim);
       
       For(j,n_poly) Free_Poly(poly[j]);
@@ -3936,7 +3948,7 @@ void PHYREX_Print_MultiTypeTree_Config_File(int n_sites, char *filename, t_tree 
   n_demes = 0;
   For(i,tree->n_otu)
     {
-      s = strchr(tree->a_nodes[i]->coord->id,'_');
+      s = strrchr(tree->a_nodes[i]->coord->id,'_');
       For(j,n_demes) if(!strcmp(s+1,deme_names[j])) break;
       if(j == n_demes)
         {
