@@ -4106,7 +4106,7 @@ void PHYREX_Print_MultiTypeTree_Config_File(int n_sites, char *filename, t_tree 
   PhyML_Fprintf(fp,"\n<parameter idref=\"freqParameter.s:h3n2\"/>");
   PhyML_Fprintf(fp,"\n</operator>");
   PhyML_Fprintf(fp,"\n");
-  PhyML_Fprintf(fp,"\n<logger id=\"tracelog\" fileName=\"$(filebase).log\" logEvery=\"1000\">");
+  PhyML_Fprintf(fp,"\n<logger id=\"tracelog\" fileName=\"$(filebase).log\" logEvery=\"10000\">");
   PhyML_Fprintf(fp,"\n<log idref=\"posterior\"/>");
   PhyML_Fprintf(fp,"\n<log idref=\"likelihood\"/>");
   PhyML_Fprintf(fp,"\n<log idref=\"prior\"/>");
@@ -4120,7 +4120,7 @@ void PHYREX_Print_MultiTypeTree_Config_File(int n_sites, char *filename, t_tree 
   PhyML_Fprintf(fp,"\n<log idref=\"freqParameter.s:h3n2\"/>");
   PhyML_Fprintf(fp,"\n</logger>");
   PhyML_Fprintf(fp,"\n");
-  PhyML_Fprintf(fp,"\n<logger id=\"screenlog\" logEvery=\"10000\">");
+  PhyML_Fprintf(fp,"\n<logger id=\"screenlog\" logEvery=\"50000\">");
   PhyML_Fprintf(fp,"\n<log idref=\"posterior\"/>");
   PhyML_Fprintf(fp,"\n<log id=\"ESS.0\" spec=\"util.ESS\" arg=\"@posterior\"/>");
   PhyML_Fprintf(fp,"\n<log idref=\"likelihood\"/>");
