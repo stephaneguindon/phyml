@@ -4107,7 +4107,6 @@ void PHYREX_Print_MultiTypeTree_Config_File(int n_sites, char *filename, t_tree 
   PhyML_Fprintf(fp,"\n</operator>");
   PhyML_Fprintf(fp,"\n");
   PhyML_Fprintf(fp,"\n<logger id=\"tracelog\" fileName=\"$(filebase).log\" logEvery=\"10000\">");
-  PhyML_Fprintf(fp,"\n<log idref=\"posterior\"/>");
   PhyML_Fprintf(fp,"\n<log idref=\"likelihood\"/>");
   PhyML_Fprintf(fp,"\n<log idref=\"prior\"/>");
   PhyML_Fprintf(fp,"\n<log idref=\"treeLikelihood.h3n2\"/>");
@@ -4116,27 +4115,13 @@ void PHYREX_Print_MultiTypeTree_Config_File(int n_sites, char *filename, t_tree 
   /* PhyML_Fprintf(fp,"\n<log id=\"changeCounts.t:h3n2\" spec=\"multitypetree.util.TypeChangeCounts\" migrationModel=\"@migModel.t:h3n2\" multiTypeTree=\"@Tree.t:h3n2\"/>"); */
   /* PhyML_Fprintf(fp,"\n<log id=\"rootTypeLogger.t:h3n2\" spec=\"multitypetree.util.TreeRootTypeLogger\" multiTypeTree=\"@Tree.t:h3n2\"/>"); */
   PhyML_Fprintf(fp,"\n<log id=\"migModelLogger.t:h3n2\" spec=\"multitypetree.util.MigrationModelLogger\" migrationModel=\"@migModel.t:h3n2\" multiTypeTree=\"@Tree.t:h3n2\"/>");
-  PhyML_Fprintf(fp,"\n<log idref=\"kappa.s:h3n2\"/>");
-  PhyML_Fprintf(fp,"\n<log idref=\"freqParameter.s:h3n2\"/>");
   PhyML_Fprintf(fp,"\n</logger>");
   PhyML_Fprintf(fp,"\n");
   PhyML_Fprintf(fp,"\n<logger id=\"screenlog\" logEvery=\"50000\">");
-  PhyML_Fprintf(fp,"\n<log idref=\"posterior\"/>");
   PhyML_Fprintf(fp,"\n<log id=\"ESS.0\" spec=\"util.ESS\" arg=\"@posterior\"/>");
   PhyML_Fprintf(fp,"\n<log idref=\"likelihood\"/>");
-  PhyML_Fprintf(fp,"\n<log idref=\"prior\"/>");
   PhyML_Fprintf(fp,"\n</logger>");
   PhyML_Fprintf(fp,"\n");
-  /* PhyML_Fprintf(fp,"\n<logger id=\"treelog.t:h3n2\" fileName=\"$(filebase).$(tree).trees\" logEvery=\"10000\" mode=\"tree\">"); */
-  /* PhyML_Fprintf(fp,"\n<log idref=\"Tree.t:h3n2\"/>"); */
-  /* PhyML_Fprintf(fp,"\n</logger>"); */
-  /* PhyML_Fprintf(fp,"\n"); */
-  /* PhyML_Fprintf(fp,"\n<logger id=\"maptreelog.t:h3n2\" fileName=\"$(filebase).h3n2.map.trees\" logEvery=\"10000\" mode=\"tree\">"); */
-  /* PhyML_Fprintf(fp,"\n<log id=\"MAPTreeLogger.0\" spec=\"multitypetree.util.MAPTreeLogger\" estimate=\"false\" multiTypeTree=\"@Tree.t:h3n2\" posterior=\"@posterior\"/>"); */
-  /* PhyML_Fprintf(fp,"\n</logger>"); */
-  /* PhyML_Fprintf(fp,"\n<logger id=\"typednodetreelog.t:h3n2\" fileName=\"$(filebase).h3n2.typedNode.trees\" logEvery=\"10000\" mode=\"tree\">"); */
-  /* PhyML_Fprintf(fp,"\n<log id=\"TypedNodeTreeLogger.0\" spec=\"multitypetree.util.TypedNodeTreeLogger\" multiTypeTree=\"@Tree.t:h3n2\"/>"); */
-  /* PhyML_Fprintf(fp,"\n</logger>"); */
   PhyML_Fprintf(fp,"\n</run>");
   PhyML_Fprintf(fp,"\n</beast>");
   
