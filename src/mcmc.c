@@ -5235,20 +5235,11 @@ void MCMC_PHYREX_Insert_Disk(phydbl hr, int n_insert_disks, phydbl cur_lbda, t_t
   For(j,n_insert_disks)
     {
       t = Uni()*T;
-      disk = tree->disk;
+      disk = tree->disk->prev;
       while(disk && disk->time > t) disk = disk->prev;
+      assert(disk->next);
       target_disk[j] = disk->next;
       
-      if(disk->next == NULL) 
-        {
-          target_disk[j] = tree->disk;
-          PhyML_Printf("\n. run: %d",tree->mcmc->run);
-          PhyML_Printf("\n. t: %f T: %f n_valid: %d n_insert: %d",t,T,n_valid_disks,n_insert_disks);
-          PhyML_Printf("\n. c_lnL: %f",tree->mmod->c_lnL);
-          PHYREX_Print_Struct('=',tree);
-          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-        }
-
       new_disk[j] = PHYREX_Make_Disk_Event(tree->mmod->n_dim,tree->n_otu);
       PHYREX_Init_Disk_Event(new_disk[j],tree->mmod->n_dim,tree->mmod);
       new_disk[j]->time = t;
@@ -7257,9 +7248,11 @@ void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree)
   /* do */
     {
       t = Uni()*T;
-      disk = tree->disk;
+      disk = tree->disk->prev;
       while(disk && disk->time > t) disk = disk->prev;
-      
+                                                
+      assert(disk->next);
+
       /* prev_disk = disk->prev; */
 
       cur_glnL = tree->mmod->c_lnL;

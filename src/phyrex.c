@@ -160,7 +160,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   /* seed = 21414; */
   /* seed = 13536; */
   /* seed = 28366; */
-  /* seed = 21489; */
+  seed = 21990;
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -332,8 +332,8 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   fflush(NULL);
 
 
-  PHYREX_Simulate_Backward_Core(YES,tree->disk,tree);
-  /* mmod->sampl_area = PHYREX_Simulate_Forward_Core(n_sites,tree); */
+  /* PHYREX_Simulate_Backward_Core(YES,tree->disk,tree); */
+  mmod->sampl_area = PHYREX_Simulate_Forward_Core(n_sites,tree);
     
   PHYREX_Ldsk_To_Tree(tree);  
 
@@ -1275,6 +1275,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
       assert(!(move == tree->mcmc->n_moves));
 
+      /* printf("\n. %10d %30s %f",tree->mcmc->run,tree->mcmc->move_name[move],tree->mmod->c_lnL); fflush(NULL); */
+      /* printf("\n. %10d %30s %f",tree->mcmc->run,tree->mcmc->move_name[move],PHYREX_Lk(tree)); */
       
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_lbda"))
         MCMC_PHYREX_Lbda(tree);
@@ -1341,8 +1343,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       MCMC_Get_Acc_Rates(tree->mcmc);
       
 
-      /* printf("\n. %10d %30s %f",tree->mcmc->run,tree->mcmc->move_name[move],tree->mmod->c_lnL); */
-      /* printf("\n. %10d %30s %f",tree->mcmc->run,tree->mcmc->move_name[move],PHYREX_Lk(tree)); */
 
 
       if(!(tree->mcmc->run%tree->mcmc->sample_interval))
