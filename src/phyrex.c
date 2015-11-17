@@ -160,7 +160,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   /* seed = 21414; */
   /* seed = 13536; */
   /* seed = 28366; */
-  /* seed = 21990; */
+  /* seed = 6544; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -1708,7 +1708,7 @@ void PHYREX_Insert_Disk(t_dsk *ins, t_tree *tree)
 
   assert(!(ins == NULL));
   
-  disk = tree->disk;  
+  disk = tree->disk->prev;  
   while(disk != NULL && disk->time > ins->time) disk = disk->prev;
 
   assert(!(disk == NULL));
