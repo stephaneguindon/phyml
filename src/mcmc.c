@@ -6012,13 +6012,14 @@ void MCMC_PHYREX_Indel_Hit(t_tree *tree)
   phydbl hr;
   phydbl cur_rad,new_rad;
   phydbl T;
+  phydbl K;
 
   hr = 0.0;
 
   new_rad = tree->mmod->rad;
   cur_rad = tree->mmod->rad;
 
-  new_rad = cur_rad * EXP(0.5*(Uni()-.5));
+  new_rad = cur_rad * EXP(0.2*(Uni()-.5));
   hr += LOG(new_rad/cur_rad);
 
   tree->mmod->rad = new_rad;
@@ -6032,10 +6033,16 @@ void MCMC_PHYREX_Indel_Hit(t_tree *tree)
     }
   while(disk && disk->prev);
   
-  n_disks_new = (int)Rpois(n_disks_cur+1);
+  /* n_disks_new = (int)Rpois(n_disks_cur+1); */
   
-  hr += Dpois(n_disks_cur,n_disks_new+1,YES);
-  hr -= Dpois(n_disks_new,n_disks_cur+1,YES);
+  /* hr += Dpois(n_disks_cur,n_disks_new+1,YES); */
+  /* hr -= Dpois(n_disks_new,n_disks_cur+1,YES); */
+
+  K = 0.2;
+  n_disks_new = (int)Rgamma((phydbl)n_disks_cur/K,K);
+
+  hr += LOG(Pgamma(n_disks_cur+1,(phydbl)n_disks_new/K,K) - Pgamma(n_disks_cur,(phydbl)n_disks_new/K,K));
+  hr -= LOG(Pgamma(n_disks_new+1,(phydbl)n_disks_cur/K,K) - Pgamma(n_disks_new,(phydbl)n_disks_cur/K,K));
 
   if(n_disks_new < n_disks_cur) MCMC_PHYREX_Delete_Hit(hr, n_disks_cur - n_disks_new, cur_rad, tree);
   else                          MCMC_PHYREX_Insert_Hit(hr, n_disks_new - n_disks_cur, cur_rad, tree);  
