@@ -259,8 +259,6 @@ int main(int argc, char **argv)
 
                   Set_Both_Sides(YES,tree);
                   Lk(NULL,tree);
-//                  Print_Model(tree->mod);
-//                  Print_All_Edge_Likelihoods(tree);
                   Pars(NULL,tree);
                   Get_Tree_Size(tree);
                   PhyML_Printf("\n\n. Log likelihood of the current tree: %f.",tree->c_lnL);

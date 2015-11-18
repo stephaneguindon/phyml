@@ -1254,6 +1254,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
   For(i,mcmc->n_moves) tree->mcmc->start_ess[i] = YES;
 
+  Set_Both_Sides(NO,tree);
   mcmc->use_data   = YES; 
   mcmc->always_yes = NO;
   move             = -1;
