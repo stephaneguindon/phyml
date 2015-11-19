@@ -4475,12 +4475,12 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_spr]                   = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           = 2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldscape_lim]           = 0.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 0.5;
+  mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_lbda_times]            = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldsk_given_disk]       = 2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_disk_serial]     = 3.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_sim_plus]              = 0.5;
+  mcmc->move_weight[mcmc->num_move_phyrex_sim_plus]              = 0.0;
 
   /* mcmc->move_weight[mcmc->num_move_phyrex_lbda]                  = 2.0; */
   /* mcmc->move_weight[mcmc->num_move_phyrex_mu]                    = 2.0; */
@@ -6033,16 +6033,16 @@ void MCMC_PHYREX_Indel_Hit(t_tree *tree)
     }
   while(disk && disk->prev);
   
-  /* n_disks_new = (int)Rpois(n_disks_cur+1); */
+  n_disks_new = (int)Rpois(n_disks_cur+1);
   
-  /* hr += Dpois(n_disks_cur,n_disks_new+1,YES); */
-  /* hr -= Dpois(n_disks_new,n_disks_cur+1,YES); */
+  hr += Dpois(n_disks_cur,n_disks_new+1,YES);
+  hr -= Dpois(n_disks_new,n_disks_cur+1,YES);
 
-  K = 0.2;
-  n_disks_new = (int)Rgamma((phydbl)n_disks_cur/K,K);
+  /* K = 0.2; */
+  /* n_disks_new = (int)Rgamma((phydbl)n_disks_cur/K,K); */
 
-  hr += LOG(Pgamma(n_disks_cur+1,(phydbl)n_disks_new/K,K) - Pgamma(n_disks_cur,(phydbl)n_disks_new/K,K));
-  hr -= LOG(Pgamma(n_disks_new+1,(phydbl)n_disks_cur/K,K) - Pgamma(n_disks_new,(phydbl)n_disks_cur/K,K));
+  /* hr += LOG(Pgamma(n_disks_cur+1,(phydbl)n_disks_new/K,K) - Pgamma(n_disks_cur,(phydbl)n_disks_new/K,K)); */
+  /* hr -= LOG(Pgamma(n_disks_new+1,(phydbl)n_disks_cur/K,K) - Pgamma(n_disks_new,(phydbl)n_disks_cur/K,K)); */
 
   if(n_disks_new < n_disks_cur) MCMC_PHYREX_Delete_Hit(hr, n_disks_cur - n_disks_new, cur_rad, tree);
   else                          MCMC_PHYREX_Insert_Hit(hr, n_disks_new - n_disks_cur, cur_rad, tree);  
