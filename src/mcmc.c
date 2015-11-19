@@ -4475,7 +4475,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_spr]                   = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldscape_lim]           = 0.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 0.5;
   mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_lbda_times]            = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldsk_given_disk]       = 2.0;
@@ -6019,7 +6019,7 @@ void MCMC_PHYREX_Indel_Hit(t_tree *tree)
   new_rad = tree->mmod->rad;
   cur_rad = tree->mmod->rad;
 
-  new_rad = cur_rad * EXP(0.2*(Uni()-.5));
+  new_rad = cur_rad * EXP(1.0*(Uni()-.5));
   hr += LOG(new_rad/cur_rad);
 
   tree->mmod->rad = new_rad;
@@ -6038,7 +6038,7 @@ void MCMC_PHYREX_Indel_Hit(t_tree *tree)
   /* hr += Dpois(n_disks_cur,n_disks_new+1,YES); */
   /* hr -= Dpois(n_disks_new,n_disks_cur+1,YES); */
 
-  K = 0.2;
+  K = 0.5;
   n_disks_new = (int)Rgamma((phydbl)n_disks_cur/K,K);
 
   hr += LOG(Pgamma(n_disks_cur+1,(phydbl)n_disks_new/K,K) - Pgamma(n_disks_cur,(phydbl)n_disks_new/K,K));
