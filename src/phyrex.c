@@ -1334,6 +1334,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_disk_serial"))
         MCMC_PHYREX_Indel_Disk_Serial(tree);
 
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_hit_serial"))
+        MCMC_PHYREX_Indel_Hit_Serial(tree);
+
       if(!strcmp(tree->mcmc->move_name[move],"kappa"))
         MCMC_Kappa(tree);
 
@@ -2028,6 +2031,7 @@ int PHYREX_Get_Next_Direction(t_ldsk *young, t_ldsk *old)
       PhyML_Printf("\n== young (%s) @ time %f; old (%s) @ time %f",
                    young->coord->id,young->disk->time,
                    old->coord->id,old->disk->time);
+      fflush(NULL);
       return(-1);   
     }
   
