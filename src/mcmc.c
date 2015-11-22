@@ -3605,8 +3605,10 @@ void MCMC_Adjust_Tuning_Parameter(int move, t_mcmc *mcmc)
       /* 	} */
       else
 	{
-	  rate_inf = 0.234; // Gareth Robert's magic number !
-	  rate_sup = 0.234;
+	  /* rate_inf = 0.234; // Gareth Robert's magic number ! */
+	  /* rate_sup = 0.234; */
+	  rate_inf = 0.1;
+	  rate_sup = 0.1;
 	}
 
 
@@ -4360,6 +4362,8 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   strcpy(mcmc->move_name[mcmc->num_move_phyrex_indel_disk_serial],"phyrex_indel_disk_serial");
   strcpy(mcmc->move_name[mcmc->num_move_phyrex_sim_plus],"phyrex_sim_plus");
   strcpy(mcmc->move_name[mcmc->num_move_phyrex_indel_hit_serial],"phyrex_indel_hit_serial");
+
+  For(i,mcmc->n_moves) mcmc->move_type[i] = -1;
   
   if(tree->rates && tree->rates->model_log_rates == YES)
     for(i=mcmc->num_move_br_r;i<mcmc->num_move_br_r+2*tree->n_otu-2;i++) mcmc->move_type[i] = MCMC_MOVE_RANDWALK_NORMAL;
@@ -4464,9 +4468,9 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_geo_dum]               = 1.0;
 
 # if defined (PHYREX)
-  mcmc->move_weight[mcmc->num_move_phyrex_lbda]                  = 3.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_mu]                    = 4.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_rad]                   = 3.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_lbda]                  = 5.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_mu]                    = 8.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_rad]                   = 5.0;
   mcmc->move_weight[mcmc->num_move_phyrex_sigsq]                 = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_disk]            = 5.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_hit]             = 3.0;
@@ -4877,16 +4881,20 @@ void MCMC_PHYREX_Mu(t_tree *tree)
   phydbl cur_glnL, new_glnL, hr;
   phydbl ori_mu;
   phydbl ori_beta,new_beta;
-  
+  phydbl K;
+
+  tree->mcmc->run_move[tree->mcmc->num_move_phyrex_mu]++;
+
   new_glnL       = UNLIKELY;
   cur_glnL       = tree->mmod->c_lnL;
   hr             = 0.0;
   ratio          = 0.0;
   ori_mu         = tree->mmod->mu;
   ori_beta       = (1./tree->mmod->mu)-1.;
-  
+  K              = tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_mu];
+
   u = Uni();
-  new_beta = ori_beta * EXP(1.0*(u-.5));
+  new_beta = ori_beta * EXP(K*(u-.5));
   hr += LOG(new_beta/ori_beta);
 
   tree->mmod->mu = 1./(new_beta+1.);
@@ -4920,6 +4928,7 @@ void MCMC_PHYREX_Mu(t_tree *tree)
     }
   else
     {
+      tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_mu]++;
       /* printf("- Accept"); */
     }
 
@@ -5029,8 +5038,9 @@ void MCMC_PHYREX_Indel_Disk(t_tree *tree)
   int cur_n_hit;
   phydbl hr;
   phydbl cur_lbda,new_lbda;
-  phydbl T;
-
+  phydbl T,K;
+  
+  K = tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_indel_disk];
   T = PHYREX_Tree_Height(tree);
   T = FABS(T);
 
@@ -5039,7 +5049,7 @@ void MCMC_PHYREX_Indel_Disk(t_tree *tree)
   new_lbda = tree->mmod->lbda;
   cur_lbda = tree->mmod->lbda;
 
-  new_lbda = cur_lbda * EXP(0.5*(Uni()-.5));
+  new_lbda = cur_lbda * EXP(K*(Uni()-.5));
   hr += LOG(new_lbda/cur_lbda);
 
   tree->mmod->lbda = new_lbda;
@@ -6014,13 +6024,15 @@ void MCMC_PHYREX_Indel_Hit(t_tree *tree)
   t_dsk  *disk;
   phydbl hr;
   phydbl cur_rad,new_rad;
+  phydbl K;
 
+  K = tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_indel_hit];
   hr = 0.0;
 
   new_rad = tree->mmod->rad;
   cur_rad = tree->mmod->rad;
 
-  new_rad = cur_rad * EXP(0.1*(Uni()-.5));
+  new_rad = cur_rad * EXP(K*(Uni()-.5));
   hr += LOG(new_rad/cur_rad);
 
   tree->mmod->rad = new_rad;
