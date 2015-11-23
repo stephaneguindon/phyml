@@ -4468,9 +4468,9 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_geo_dum]               = 1.0;
 
 # if defined (PHYREX)
-  mcmc->move_weight[mcmc->num_move_phyrex_lbda]                  = 5.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_mu]                    = 8.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_rad]                   = 5.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_lbda]                  = 8.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_mu]                    = 10.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_rad]                   = 8.0;
   mcmc->move_weight[mcmc->num_move_phyrex_sigsq]                 = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_disk]            = 5.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_hit]             = 3.0;
