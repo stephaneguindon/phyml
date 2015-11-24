@@ -4484,7 +4484,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_lbda_times]            = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldsk_given_disk]       = 2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_disk_serial]     = 1.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_sim_plus]              = 0.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_sim_plus]              = 5.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_hit_serial]      = 0.0;
 
   /* mcmc->move_weight[mcmc->num_move_phyrex_lbda]                  = 2.0; */
@@ -6883,33 +6883,18 @@ void MCMC_PHYREX_Simulate_Backward(t_tree *tree)
 #ifdef PHYREX
 void MCMC_PHYREX_Simulate_Backward_Plus(t_tree *tree)
 {
-  phydbl u,alpha,ratio,hr,T,t;
-  phydbl cur_alnL, new_alnL;
-  phydbl cur_glnL_do, new_glnL_do;
+  phydbl u,alpha,ratio,hr;
   phydbl cur_glnL, new_glnL;
   phydbl cur_lbda, new_lbda;
   phydbl cur_rad, new_rad;
   phydbl cur_mu, new_mu;
-  t_dsk  *disk,*bkp_disk,*target_disk;
-  t_ldsk **bkp_ldsk;
-  int i;
 
   tree->mcmc->run_move[tree->mcmc->num_move_phyrex_sim_plus]++;
 
-  disk          = NULL;
-  bkp_disk      = NULL;
-  target_disk   = NULL;
-  bkp_ldsk      = NULL;
-  new_alnL      = tree->c_lnL;
-  cur_alnL      = tree->c_lnL;
   cur_glnL      = tree->mmod->c_lnL;
   new_glnL      = tree->mmod->c_lnL;
-  cur_glnL_do   = UNLIKELY;
-  new_glnL_do   = UNLIKELY;
   hr            = 0.0;
   ratio         = 0.0;
-  T             = 0.0;
-  t             = 0.0;
   cur_lbda      = tree->mmod->lbda;
   cur_rad       = tree->mmod->rad;
   cur_mu        = tree->mmod->mu;
@@ -6918,30 +6903,13 @@ void MCMC_PHYREX_Simulate_Backward_Plus(t_tree *tree)
   new_mu        = cur_mu;
 
   
-  /* u = Uni(); */
-  /* if(u < 0.33) */
-  /*   { */
-  /*     new_lbda = cur_lbda * EXP(0.2*(Uni()-.5)); */
-  /*     hr += LOG(new_lbda/cur_lbda); */
-  /*   } */
-  /* else if(u < 0.66 && u > 0.33) */
-  /*   { */
-  /*     new_mu = cur_mu * EXP(0.2*(Uni()-.5)); */
-  /*     hr += LOG(new_mu/cur_mu); */
-  /*   } */
-  /* else */
-  /*   { */
-  /*     new_rad = cur_rad * EXP(0.2*(Uni()-.5)); */
-  /*     hr += LOG(new_rad/cur_rad); */
-  /*   } */
+  /* new_lbda = cur_lbda * EXP(0.2*(Uni()-.5)); */
+  /* hr += LOG(new_lbda/cur_lbda); */
 
-  new_lbda = cur_lbda * EXP(0.2*(Uni()-.5));
-  hr += LOG(new_lbda/cur_lbda);
-
-  new_mu = cur_mu * EXP(0.2*(Uni()-.5));
+  new_mu = cur_mu * EXP(0.5*(Uni()-.5));
   hr += LOG(new_mu/cur_mu);
 
-  new_rad = cur_rad * EXP(0.2*(Uni()-.5));
+  new_rad = cur_rad * EXP(1.*(Uni()-.5));
   hr += LOG(new_rad/cur_rad);
 
   if(new_lbda < tree->mmod->min_lbda) return;
@@ -6951,46 +6919,13 @@ void MCMC_PHYREX_Simulate_Backward_Plus(t_tree *tree)
   if(new_rad  < tree->mmod->min_rad)  return;
   if(new_rad  > tree->mmod->max_rad)  return;
 
-
-  hr += PHYREX_LnPrior_Lbda(tree);
-  hr += PHYREX_LnPrior_Mu(tree);
-  hr += PHYREX_LnPrior_Radius(tree);
-
-  /* Chop off the tree at time t and simulate upwards from here */
-  T = PHYREX_Tree_Height(tree);
-  t = Uni()*T;
-  
-  disk = tree->disk->prev;
-  while(disk && disk->time > t) disk = disk->prev;
-  target_disk = disk->next;
-
-  hr -= LOG(FABS((target_disk->prev->time - target_disk->time)/T));
-
-  bkp_disk = target_disk->prev;
-
-  bkp_ldsk = (t_ldsk **)mCalloc(target_disk->n_ldsk_a,sizeof(t_ldsk *));
-  For(i,target_disk->n_ldsk_a) bkp_ldsk[i] = target_disk->ldsk_a[i]->prev;
-
-  cur_glnL_do = PHYREX_Lk_Range(tree->disk->prev,target_disk,tree);
-
   tree->mmod->lbda = new_lbda;
   tree->mmod->mu   = new_mu;
   tree->mmod->rad  = new_rad;
 
-  new_glnL_do = PHYREX_Lk_Range(tree->disk->prev,target_disk,tree);
+  new_glnL = PHYREX_Lk(tree);
 
-  hr -= PHYREX_LnPrior_Lbda(tree);
-  hr -= PHYREX_LnPrior_Mu(tree);
-  hr -= PHYREX_LnPrior_Radius(tree);
-
-  PHYREX_Simulate_Backward_Core(NO,target_disk,tree);
-  
-  T =  PHYREX_Tree_Height(tree);
-  hr += LOG(FABS((target_disk->prev->time - target_disk->time)/T));
-
-  if(tree->mcmc->use_data == YES) new_alnL = Lk(NULL,tree);
-  ratio += (new_alnL - cur_alnL);
-  ratio += (new_glnL_do - cur_glnL_do);
+  ratio += (new_glnL - cur_glnL);
   ratio += hr;
   
   ratio = EXP(ratio);
@@ -7006,35 +6941,9 @@ void MCMC_PHYREX_Simulate_Backward_Plus(t_tree *tree)
       tree->mmod->lbda = cur_lbda;
       tree->mmod->mu   = cur_mu;
       tree->mmod->rad  = cur_rad;
-
-
-      disk = target_disk->prev;
-      while(disk->prev)
-        {
-          disk = disk->prev;
-          if(disk->next->ldsk != NULL) Free_Ldisk(disk->next->ldsk);
-          Free_Disk(disk->next);
-        }
-
-      /* Root */
-      Free_Ldisk(disk->ldsk);
-      Free_Disk(disk);
-
-      target_disk->prev = bkp_disk;
-      For(i,target_disk->n_ldsk_a) target_disk->ldsk_a[i]->prev = bkp_ldsk[i];
       
       if(tree->mmod->safe_phyrex == YES)
         {
-          if(tree->mcmc->use_data == YES)
-            {
-              new_alnL = Lk(NULL,tree);
-              if(Are_Equal(new_alnL,cur_alnL,1.E-3) == NO)
-                {
-                  PhyML_Printf("\n== new_alnL: %f cur_alnL: %f",new_alnL,cur_alnL);
-                  Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-                }
-            }
-          
           new_glnL = PHYREX_Lk(tree);
           
           if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
@@ -7045,33 +6954,14 @@ void MCMC_PHYREX_Simulate_Backward_Plus(t_tree *tree)
         }
       else
         {
-          PHYREX_Lk(tree);
-          tree->c_lnL = cur_alnL;
+          tree->mmod->c_lnL = cur_glnL;
         }
     }
   else
     {
-      /* Accept */
-      disk = bkp_disk;
-      while(disk->prev)
-        {
-          disk = disk->prev;
-          if(disk->next->ldsk != NULL) Free_Ldisk(disk->next->ldsk);
-          Free_Disk(disk->next);
-        }
-      
-      /* Root */
-      Free_Ldisk(disk->ldsk);
-      Free_Disk(disk);
-
-      /* Likelihood needs to be updated */
-      PHYREX_Lk(tree);
-
       tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_sim_plus]++;
     }
   
-
-  Free(bkp_ldsk);
 }
 #endif
 
