@@ -5036,9 +5036,10 @@ void MCMC_PHYREX_Indel_Disk(t_tree *tree)
   int cur_n_hit;
   phydbl hr;
   phydbl cur_lbda,new_lbda;
-  phydbl T,K;
+  phydbl cur_mu,new_mu;
+  phydbl cur_rad,new_rad;
+  phydbl T;
   
-  K = tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_indel_disk];
   T = PHYREX_Tree_Height(tree);
   T = FABS(T);
 
@@ -5046,11 +5047,27 @@ void MCMC_PHYREX_Indel_Disk(t_tree *tree)
 
   new_lbda = tree->mmod->lbda;
   cur_lbda = tree->mmod->lbda;
+  new_mu = tree->mmod->mu;
+  cur_mu = tree->mmod->mu;
+  new_rad = tree->mmod->rad;
+  cur_rad = tree->mmod->rad;
 
-  new_lbda = cur_lbda * EXP(K*(Uni()-.5));
+  new_lbda = cur_lbda * EXP(0.5*(Uni()-.5));
   hr += LOG(new_lbda/cur_lbda);
 
+  new_mu = cur_mu * EXP(0.5*(Uni()-.5));
+  hr += LOG(new_mu/cur_mu);
+
+  new_rad = cur_rad * EXP(0.5*(Uni()-.5));
+  hr += LOG(new_rad/cur_rad);
+
+  if(new_rad > tree->mmod->max_rad || new_rad < tree->mmod->min_rad)    return; 
+  if(new_mu > tree->mmod->max_mu || new_mu < tree->mmod->min_mu)         return; 
+  if(new_lbda > tree->mmod->max_lbda || new_lbda < tree->mmod->min_lbda) return; 
+
   tree->mmod->lbda = new_lbda;
+  tree->mmod->mu   = new_mu;
+  tree->mmod->rad  = new_rad;
   
   cur_n_hit = PHYREX_Total_Number_Of_Hit_Disks(tree);
   cur_n_int = PHYREX_Total_Number_Of_Intervals(tree);
@@ -5072,8 +5089,8 @@ void MCMC_PHYREX_Indel_Disk(t_tree *tree)
       hr -= Dpois(new_n_disk,T*new_lbda*(phydbl)cur_n_disk/(cur_n_hit+cur_n_disk),YES);
     }
 
-  if(new_n_disk < cur_n_disk) MCMC_PHYREX_Delete_Disk(hr, cur_n_disk - new_n_disk , cur_lbda, tree);
-  else                        MCMC_PHYREX_Insert_Disk(hr, new_n_disk - cur_n_disk,  cur_lbda, tree);  
+  if(new_n_disk < cur_n_disk) MCMC_PHYREX_Delete_Disk(hr, cur_n_disk - new_n_disk , cur_lbda, cur_mu, cur_rad, tree);
+  else                        MCMC_PHYREX_Insert_Disk(hr, new_n_disk - cur_n_disk,  cur_lbda, cur_mu, cur_rad, tree);  
 }
 #endif
 
@@ -5081,7 +5098,7 @@ void MCMC_PHYREX_Indel_Disk(t_tree *tree)
 ////////////////////////////////////////////////////////////*/
 /* Insert or delete a disk that does not affect any ldisk */
 #ifdef PHYREX
-void MCMC_PHYREX_Delete_Disk(phydbl hr, int n_delete_disks, phydbl cur_lbda, t_tree *tree)
+void MCMC_PHYREX_Delete_Disk(phydbl hr, int n_delete_disks, phydbl cur_lbda, phydbl cur_mu, phydbl cur_rad, t_tree *tree)
 {
   phydbl u,alpha,ratio;
   phydbl cur_glnL, new_glnL;
@@ -5094,6 +5111,8 @@ void MCMC_PHYREX_Delete_Disk(phydbl hr, int n_delete_disks, phydbl cur_lbda, t_t
   if(n_delete_disks == 0) 
     {
       tree->mmod->lbda = cur_lbda;
+      tree->mmod->rad = cur_rad;
+      tree->mmod->mu = cur_mu;
       return; 
     }
 
@@ -5109,6 +5128,8 @@ void MCMC_PHYREX_Delete_Disk(phydbl hr, int n_delete_disks, phydbl cur_lbda, t_t
   if(!disk->prev) 
     {
       tree->mmod->lbda = cur_lbda;
+      tree->mmod->rad = cur_rad;
+      tree->mmod->mu = cur_mu;
       return; 
     }
 
@@ -5129,6 +5150,8 @@ void MCMC_PHYREX_Delete_Disk(phydbl hr, int n_delete_disks, phydbl cur_lbda, t_t
   if(!n_valid_disks)
     {
       tree->mmod->lbda = cur_lbda;
+      tree->mmod->rad = cur_rad;
+      tree->mmod->mu = cur_mu;
       return; 
     }
 
@@ -5136,6 +5159,8 @@ void MCMC_PHYREX_Delete_Disk(phydbl hr, int n_delete_disks, phydbl cur_lbda, t_t
   if(n_valid_disks - n_delete_disks < 0) 
     {
       tree->mmod->lbda = cur_lbda;
+      tree->mmod->rad = cur_rad;
+      tree->mmod->mu = cur_mu;
       return; 
     }
 
@@ -5178,6 +5203,8 @@ void MCMC_PHYREX_Delete_Disk(phydbl hr, int n_delete_disks, phydbl cur_lbda, t_t
   if(u > alpha) /* Reject */
     {
       tree->mmod->lbda = cur_lbda;
+      tree->mmod->rad = cur_rad;
+      tree->mmod->mu = cur_mu;
 
       For(j,n_delete_disks) PHYREX_Insert_Disk(target_disk[j],tree);
 
@@ -5211,7 +5238,7 @@ void MCMC_PHYREX_Delete_Disk(phydbl hr, int n_delete_disks, phydbl cur_lbda, t_t
 ////////////////////////////////////////////////////////////*/
 
 #ifdef PHYREX
-void MCMC_PHYREX_Insert_Disk(phydbl hr, int n_insert_disks, phydbl cur_lbda, t_tree *tree)
+void MCMC_PHYREX_Insert_Disk(phydbl hr, int n_insert_disks, phydbl cur_lbda, phydbl cur_mu, phydbl cur_rad, t_tree *tree)
 {
   t_dsk  *disk,**new_disk,**target_disk;
   phydbl T,t;
@@ -5224,6 +5251,8 @@ void MCMC_PHYREX_Insert_Disk(phydbl hr, int n_insert_disks, phydbl cur_lbda, t_t
   if(n_insert_disks == 0) 
     {
       tree->mmod->lbda = cur_lbda;
+      tree->mmod->rad = cur_rad;
+      tree->mmod->mu = cur_mu;
       return; 
     }
 
@@ -5287,6 +5316,8 @@ void MCMC_PHYREX_Insert_Disk(phydbl hr, int n_insert_disks, phydbl cur_lbda, t_t
   if(u > alpha) /* Reject */
     {
       tree->mmod->lbda = cur_lbda;
+      tree->mmod->rad = cur_rad;
+      tree->mmod->mu = cur_mu;
       
       /* printf("\nI Reject"); */
 
