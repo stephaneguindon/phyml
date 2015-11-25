@@ -1356,8 +1356,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
         {
           /* Lk(NULL,tree); */
 
+          /* RATES_Update_Cur_Bl(tree); */
           /* char *s = Write_Tree(tree,NO); */
-          /* PhyML_Fprintf(fp_tree,"\n[%f] %s",s,tree->c_lnL); */
+          /* PhyML_Fprintf(fp_tree,"\n[%f %f] %s",s,tree->rates->nd_t[tree->n_root->num],tree->c_lnL); */
           /* Free(s); */
           /* fflush(NULL); */
 

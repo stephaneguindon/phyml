@@ -4473,38 +4473,42 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_indel_disk]            = 5.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_hit]             = 3.0;
   mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ct]          = 1.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ud]          = 5.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_swap_disk]             = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ud]          = 0.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_swap_disk]             = 3.0;
   mcmc->move_weight[mcmc->num_move_phyrex_move_ldsk]             = 1.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_spr]                   = 0.5;
+  mcmc->move_weight[mcmc->num_move_phyrex_spr]                   = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           = 2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldscape_lim]           = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 1.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 0.5;
+  mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 3.0;
   mcmc->move_weight[mcmc->num_move_phyrex_lbda_times]            = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldsk_given_disk]       = 2.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_indel_disk_serial]     = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_indel_disk_serial]     = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_sim_plus]              = 5.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_hit_serial]      = 0.0;
 
-  /* mcmc->move_weight[mcmc->num_move_phyrex_lbda]                  = 2.0; */
-  /* mcmc->move_weight[mcmc->num_move_phyrex_mu]                    = 2.0; */
-  /* mcmc->move_weight[mcmc->num_move_phyrex_rad]                   = 2.0; */
+
+  /* mcmc->move_weight[mcmc->num_move_phyrex_lbda]                  = 5.0; */
+  /* mcmc->move_weight[mcmc->num_move_phyrex_mu]                    = 8.0; */
+  /* mcmc->move_weight[mcmc->num_move_phyrex_rad]                   = 5.0; */
   /* mcmc->move_weight[mcmc->num_move_phyrex_sigsq]                 = 0.0; */
-  /* mcmc->move_weight[mcmc->num_move_phyrex_indel_disk]            = 1.0; */
-  /* mcmc->move_weight[mcmc->num_move_phyrex_indel_hit]             = 1.0; */
+  /* mcmc->move_weight[mcmc->num_move_phyrex_indel_disk]            = 5.0; */
+  /* mcmc->move_weight[mcmc->num_move_phyrex_indel_hit]             = 3.0; */
   /* mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ct]          = 1.0; */
-  /* mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ud]          = 1.0; */
+  /* mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ud]          = 5.0; */
   /* mcmc->move_weight[mcmc->num_move_phyrex_swap_disk]             = 1.0; */
   /* mcmc->move_weight[mcmc->num_move_phyrex_move_ldsk]             = 1.0; */
-  /* mcmc->move_weight[mcmc->num_move_phyrex_spr]                   = 1.0; */
-  /* mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           = 1.0; */
+  /* mcmc->move_weight[mcmc->num_move_phyrex_spr]                   = 0.5; */
+  /* mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           = 2.0; */
   /* mcmc->move_weight[mcmc->num_move_phyrex_ldscape_lim]           = 0.0; */
   /* mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 1.0; */
-  /* mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 1.0; */
+  /* mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 0.5; */
   /* mcmc->move_weight[mcmc->num_move_phyrex_lbda_times]            = 1.0; */
   /* mcmc->move_weight[mcmc->num_move_phyrex_ldsk_given_disk]       = 2.0; */
-  /* mcmc->move_weight[mcmc->num_move_phyrex_indel_disk_serial]     = 2.0; */
+  /* mcmc->move_weight[mcmc->num_move_phyrex_indel_disk_serial]     = 1.0; */
+  /* mcmc->move_weight[mcmc->num_move_phyrex_sim_plus]              = 5.0; */
+  /* mcmc->move_weight[mcmc->num_move_phyrex_indel_hit_serial]      = 0.0; */
+
 # else
   mcmc->move_weight[mcmc->num_move_phyrex_lbda]                  = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_mu]                    = 0.0;
@@ -5052,13 +5056,13 @@ void MCMC_PHYREX_Indel_Disk(t_tree *tree)
   new_rad = tree->mmod->rad;
   cur_rad = tree->mmod->rad;
 
-  new_lbda = cur_lbda * EXP(0.5*(Uni()-.5));
+  new_lbda = cur_lbda * EXP(0.2*(Uni()-.5));
   hr += LOG(new_lbda/cur_lbda);
 
-  new_mu = cur_mu * EXP(0.5*(Uni()-.5));
+  new_mu = cur_mu * EXP(0.2*(Uni()-.5));
   hr += LOG(new_mu/cur_mu);
 
-  new_rad = cur_rad * EXP(0.5*(Uni()-.5));
+  new_rad = cur_rad * EXP(0.2*(Uni()-.5));
   hr += LOG(new_rad/cur_rad);
 
   if(new_rad > tree->mmod->max_rad || new_rad < tree->mmod->min_rad)    return; 
@@ -5647,8 +5651,8 @@ void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree)
   n_all_disks = 0;
   do
     {
-      if(1)
-      /* if(disk->ldsk && disk->ldsk->n_next > 1) /\* Moving disks other than coalescent is pointless *\/  */
+      /* if(1) */
+      if(disk->ldsk && disk->ldsk->n_next > 1) /* Moving disks other than coalescent is pointless */
         {
           if(!n_all_disks) all_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
           else if(!(n_all_disks%block)) all_disks = (t_dsk **)mRealloc(all_disks,n_all_disks+block,sizeof(t_dsk *));
@@ -5661,9 +5665,7 @@ void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree)
 
   if(!n_all_disks) return;
   
-  n_move_disks = Rand_Int(1,1+(int)(n_all_disks/10));
-  /* n_move_disks = n_all_disks; */
-  /* n_move_disks = 1; */
+  n_move_disks = Rand_Int(1,(int)(n_all_disks));
   
   target_disk = (t_dsk **)mCalloc(n_all_disks,sizeof(t_dsk *));
   ori_time    = (phydbl *)mCalloc(n_all_disks,sizeof(phydbl));
@@ -5684,18 +5686,6 @@ void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree)
         }
       else
         {
-          
-          /* phydbl scale,K; */
-
-          /* K = 1.; */
-          /* scale = exp(K*(Uni()-0.5)); */
-          
-          /* max = target_disk[i]->next->time; */
-          /* new_time = scale * ori_time[i] + max*(1.-scale); */
-          /* hr += LOG(K*((new_time - max)/(ori_time[i] - max)) - max); */
-          /* hr -= LOG(K*((ori_time[i] - max)/(new_time - max)) - max); */
-
-
           phydbl new_plusmin, cur_plusmin;
 
           max = target_disk[i]->next->time;
@@ -5917,7 +5907,8 @@ void MCMC_PHYREX_Swap_Disk(t_tree *tree)
   t_dsk  *disk,*target_disk,*ori_disk_old,*ori_disk_young,**valid_disks;
   int i,j,block,n_valid_disks;
 
-  For(j,1+(int)(tree->n_otu/5))
+  /* For(j,1+(int)(tree->n_otu/5)) */
+  For(j,1+tree->n_otu)
     {
       disk           = NULL;
       target_disk    = NULL;
@@ -7070,6 +7061,7 @@ void MCMC_PHYREX_Lineage_Traj(t_tree *tree)
       new_glnL -= PHYREX_Lk_Range(start_ldsk->disk->prev,end_ldsk->disk,tree);
 
       n_hits       = PHYREX_Total_Number_Of_Hit_Disks(tree) - PHYREX_Total_Number_Of_Coal_Disks(tree);
+      n_hits       = PHYREX_Total_Number_Of_Hit_Disks(tree);
       sizeT        = PHYREX_Time_Tree_Length(tree);
       dt           = FABS(start_ldsk->disk->time - end_ldsk->disk->time);
       cur_path_len = PHYREX_Path_Len(start_ldsk,end_ldsk)-2;

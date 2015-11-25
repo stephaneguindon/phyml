@@ -7992,7 +7992,6 @@ void Time_To_Branch(t_tree *tree)
   tree->n_root->l[1] = tree->rates->nd_t[tree->n_root->v[1]->num] - tree->rates->nd_t[tree->n_root->num];
   tree->n_root->l[2] = tree->rates->nd_t[tree->n_root->v[1]->num] - tree->rates->nd_t[tree->n_root->num];
   tree->e_root->l->v = tree->n_root->l[1] + tree->n_root->l[2];
-
 }
 
 //////////////////////////////////////////////////////////////
