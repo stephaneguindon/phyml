@@ -1190,7 +1190,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   MCMC_Randomize_Kappa(tree);
 
   /* Random genealogy */
-  /* PHYREX_Simulate_Backward_Core(NO,tree->disk,tree); */
+  PHYREX_Simulate_Backward_Core(NO,tree->disk,tree);
 
   PHYREX_Lk(tree);
 
