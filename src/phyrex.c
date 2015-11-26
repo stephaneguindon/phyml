@@ -2524,9 +2524,9 @@ phydbl PHYREX_LnPrior_Mu(t_tree *tree)
   if(tree->mmod->mu < tree->mmod->min_mu) return UNLIKELY;
   if(tree->mmod->mu > tree->mmod->max_mu) return UNLIKELY;
 
-  /* tree->mmod->c_ln_prior_mu = -LOG(tree->mmod->max_mu - tree->mmod->min_mu); */
+  tree->mmod->c_ln_prior_mu = -LOG(tree->mmod->max_mu - tree->mmod->min_mu);
 
-  tree->mmod->c_ln_prior_mu = -2.*LOG(tree->mmod->mu);
+  /* tree->mmod->c_ln_prior_mu = -2.*LOG(tree->mmod->mu); */
 
   return(tree->mmod->c_ln_prior_mu);
 }
