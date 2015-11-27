@@ -5056,16 +5056,16 @@ void MCMC_PHYREX_Indel_Disk(t_tree *tree)
   new_rad = tree->mmod->rad;
   cur_rad = tree->mmod->rad;
 
-  new_lbda = cur_lbda * EXP(0.2*(Uni()-.5));
-  hr += LOG(new_lbda/cur_lbda);
+  /* new_lbda = cur_lbda * EXP(0.2*(Uni()-.5)); */
+  /* hr += LOG(new_lbda/cur_lbda); */
 
-  new_mu = cur_mu * EXP(0.2*(Uni()-.5));
-  hr += LOG(new_mu/cur_mu);
+  /* new_mu = cur_mu * EXP(0.2*(Uni()-.5)); */
+  /* hr += LOG(new_mu/cur_mu); */
 
-  new_rad = cur_rad * EXP(0.2*(Uni()-.5));
-  hr += LOG(new_rad/cur_rad);
+  /* new_rad = cur_rad * EXP(0.2*(Uni()-.5)); */
+  /* hr += LOG(new_rad/cur_rad); */
 
-  if(new_rad > tree->mmod->max_rad || new_rad < tree->mmod->min_rad)    return; 
+  if(new_rad > tree->mmod->max_rad || new_rad < tree->mmod->min_rad)     return; 
   if(new_mu > tree->mmod->max_mu || new_mu < tree->mmod->min_mu)         return; 
   if(new_lbda > tree->mmod->max_lbda || new_lbda < tree->mmod->min_lbda) return; 
 
@@ -5397,7 +5397,7 @@ void MCMC_PHYREX_Move_Disk_Centre(t_tree *tree)
 
   target_disk = (t_dsk **)mCalloc(n_all_disks,sizeof(t_dsk *));
   
-  n_move_disks = Rand_Int(1,1+(int)(n_all_disks/10));
+  n_move_disks = Rand_Int(1,1+(int)(n_all_disks/20));
   /* n_move_disks = n_all_disks; */
 
   permut = Permutate(n_all_disks);
@@ -5535,7 +5535,7 @@ void MCMC_PHYREX_Move_Ldsk(t_tree *tree)
 
   if(!n_all_disks) return;
   
-  n_move_ldsk = Rand_Int(1,1+(int)(n_all_disks/10));
+  n_move_ldsk = Rand_Int(1,1+(int)(n_all_disks/20));
   /* n_move_ldsk = n_all_disks; */
   
   target_disk = (t_dsk **)mCalloc(n_all_disks,sizeof(t_dsk *));
@@ -6052,11 +6052,11 @@ void MCMC_PHYREX_Indel_Hit(t_tree *tree)
   new_mu  = tree->mmod->mu;
   cur_mu  = tree->mmod->mu;
 
-  new_rad = cur_rad * EXP(0.2*(Uni()-.5));
-  hr += LOG(new_rad/cur_rad);
+  /* new_rad = cur_rad * EXP(0.2*(Uni()-.5)); */
+  /* hr += LOG(new_rad/cur_rad); */
 
-  new_mu = cur_mu * EXP(0.2*(Uni()-.5));
-  hr += LOG(new_mu/cur_mu);
+  /* new_mu = cur_mu * EXP(0.2*(Uni()-.5)); */
+  /* hr += LOG(new_mu/cur_mu); */
 
   if(new_rad > tree->mmod->max_rad || new_rad < tree->mmod->min_rad) return; 
   if(new_mu > tree->mmod->max_mu || new_mu < tree->mmod->min_mu)     return; 
