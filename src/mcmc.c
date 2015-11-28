@@ -4473,18 +4473,18 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_indel_disk]            = 5.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_hit]             = 3.0;
   mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ct]          = 1.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ud]          = 0.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_swap_disk]             = 3.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ud]          = 5.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_swap_disk]             = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_move_ldsk]             = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_spr]                   = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           = 2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldscape_lim]           = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 1.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 3.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_lbda_times]            = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldsk_given_disk]       = 2.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_indel_disk_serial]     = 0.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_sim_plus]              = 5.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_indel_disk_serial]     = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_sim_plus]              = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_hit_serial]      = 0.0;
 
 
@@ -5062,8 +5062,8 @@ void MCMC_PHYREX_Indel_Disk(t_tree *tree)
   new_mu = cur_mu * EXP(0.1*(Uni()-.5));
   hr += LOG(new_mu/cur_mu);
 
-  /* new_rad = cur_rad * EXP(0.2*(Uni()-.5)); */
-  /* hr += LOG(new_rad/cur_rad); */
+  new_rad = cur_rad * EXP(0.1*(Uni()-.5));
+  hr += LOG(new_rad/cur_rad);
 
   if(new_rad > tree->mmod->max_rad || new_rad < tree->mmod->min_rad)     return; 
   if(new_mu > tree->mmod->max_mu || new_mu < tree->mmod->min_mu)         return; 
@@ -5397,7 +5397,7 @@ void MCMC_PHYREX_Move_Disk_Centre(t_tree *tree)
 
   target_disk = (t_dsk **)mCalloc(n_all_disks,sizeof(t_dsk *));
   
-  n_move_disks = Rand_Int(1,1+(int)(n_all_disks/5));
+  n_move_disks = Rand_Int(1,1+(int)(n_all_disks/10));
   /* n_move_disks = n_all_disks; */
 
   permut = Permutate(n_all_disks);
@@ -5535,7 +5535,7 @@ void MCMC_PHYREX_Move_Ldsk(t_tree *tree)
 
   if(!n_all_disks) return;
   
-  n_move_ldsk = Rand_Int(1,1+(int)(n_all_disks/5));
+  n_move_ldsk = Rand_Int(1,1+(int)(n_all_disks/10));
   /* n_move_ldsk = n_all_disks; */
   
   target_disk = (t_dsk **)mCalloc(n_all_disks,sizeof(t_dsk *));
@@ -6052,10 +6052,10 @@ void MCMC_PHYREX_Indel_Hit(t_tree *tree)
   new_mu  = tree->mmod->mu;
   cur_mu  = tree->mmod->mu;
 
-  new_rad = cur_rad * EXP(0.1*(Uni()-.5));
+  new_rad = cur_rad * EXP(0.2*(Uni()-.5));
   hr += LOG(new_rad/cur_rad);
 
-  new_mu = cur_mu * EXP(0.1*(Uni()-.5));
+  new_mu = cur_mu * EXP(0.2*(Uni()-.5));
   hr += LOG(new_mu/cur_mu);
 
   if(new_rad > tree->mmod->max_rad || new_rad < tree->mmod->min_rad) return; 
