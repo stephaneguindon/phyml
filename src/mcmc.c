@@ -5397,7 +5397,7 @@ void MCMC_PHYREX_Move_Disk_Centre(t_tree *tree)
 
   target_disk = (t_dsk **)mCalloc(n_all_disks,sizeof(t_dsk *));
   
-  n_move_disks = Rand_Int(1,1+(int)(n_all_disks/20));
+  n_move_disks = Rand_Int(1,1+(int)(n_all_disks/5));
   /* n_move_disks = n_all_disks; */
 
   permut = Permutate(n_all_disks);
@@ -5535,7 +5535,7 @@ void MCMC_PHYREX_Move_Ldsk(t_tree *tree)
 
   if(!n_all_disks) return;
   
-  n_move_ldsk = Rand_Int(1,1+(int)(n_all_disks/20));
+  n_move_ldsk = Rand_Int(1,1+(int)(n_all_disks/5));
   /* n_move_ldsk = n_all_disks; */
   
   target_disk = (t_dsk **)mCalloc(n_all_disks,sizeof(t_dsk *));
