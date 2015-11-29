@@ -7372,7 +7372,7 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
   hr           = 0.0;
   ratio        = 0.0;
   type         = -1.0;
-  n_trials     = (int)(PHYREX_Total_Number_Of_Intervals(tree)/2);
+  n_trials     = (int)(PHYREX_Total_Number_Of_Hit_Disks(tree)/2);
   T            = PHYREX_Tree_Height(tree);
   log_one_on_T = -LOG(FABS(T));
   pindel       = 0.5;
@@ -7447,12 +7447,12 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
           For(j,tree->mmod->n_dim)
             {
               new_ldsk->coord->lonlat[j] = Rnorm_Trunc(0.5*(young_ldsk->coord->lonlat[j]+old_ldsk->coord->lonlat[j]),
-                                                      SQRT(2.0*POW(tree->mmod->rad,2)),
+                                                      SQRT(4.0*POW(tree->mmod->rad,2)),
                                                       0.0,tree->mmod->lim->lonlat[j],&err);
 
               hr -= Log_Dnorm_Trunc(new_ldsk->coord->lonlat[j],
                                     0.5*(young_ldsk->coord->lonlat[j]+old_ldsk->coord->lonlat[j]),
-                                    SQRT(2.0*POW(tree->mmod->rad,2)),
+                                    SQRT(4.0*POW(tree->mmod->rad,2)),
                                     0.0,tree->mmod->lim->lonlat[j],&err);
             }
           
@@ -7529,7 +7529,7 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
             {
               hr += Log_Dnorm_Trunc(target_disk->ldsk->coord->lonlat[j],
                                     0.5*(young_ldsk->coord->lonlat[j]+old_ldsk->coord->lonlat[j]),
-                                    SQRT(2.0*POW(tree->mmod->rad,2)),
+                                    SQRT(4.0*POW(tree->mmod->rad,2)),
                                     0.0,
                                     tree->mmod->lim->lonlat[j],&err);
             }
