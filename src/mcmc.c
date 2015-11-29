@@ -4483,7 +4483,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_lbda_times]            = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldsk_given_disk]       = 1.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_sim_plus]              = 0.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_sim_plus]              = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_disk_serial]     = 2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_hit_serial]      = 2.0;
 
@@ -5056,14 +5056,14 @@ void MCMC_PHYREX_Indel_Disk(t_tree *tree)
   new_rad = tree->mmod->rad;
   cur_rad = tree->mmod->rad;
 
-  new_lbda = cur_lbda * EXP(0.5*(Uni()-.5));
-  hr += LOG(new_lbda/cur_lbda);
+  /* new_lbda = cur_lbda * EXP(0.5*(Uni()-.5)); */
+  /* hr += LOG(new_lbda/cur_lbda); */
 
-  new_mu = cur_mu * EXP(0.5*(Uni()-.5));
-  hr += LOG(new_mu/cur_mu);
+  /* new_mu = cur_mu * EXP(0.5*(Uni()-.5)); */
+  /* hr += LOG(new_mu/cur_mu); */
 
-  new_rad = cur_rad * EXP(0.5*(Uni()-.5));
-  hr += LOG(new_rad/cur_rad);
+  /* new_rad = cur_rad * EXP(0.5*(Uni()-.5)); */
+  /* hr += LOG(new_rad/cur_rad); */
 
   if(new_rad > tree->mmod->max_rad || new_rad < tree->mmod->min_rad)     return; 
   if(new_mu > tree->mmod->max_mu || new_mu < tree->mmod->min_mu)         return; 
@@ -6052,11 +6052,11 @@ void MCMC_PHYREX_Indel_Hit(t_tree *tree)
   new_mu  = tree->mmod->mu;
   cur_mu  = tree->mmod->mu;
 
-  new_rad = cur_rad * EXP(0.5*(Uni()-.5));
-  hr += LOG(new_rad/cur_rad);
+  /* new_rad = cur_rad * EXP(0.5*(Uni()-.5)); */
+  /* hr += LOG(new_rad/cur_rad); */
 
-  new_mu = cur_mu * EXP(0.5*(Uni()-.5));
-  hr += LOG(new_mu/cur_mu);
+  /* new_mu = cur_mu * EXP(0.5*(Uni()-.5)); */
+  /* hr += LOG(new_mu/cur_mu); */
 
   if(new_rad > tree->mmod->max_rad || new_rad < tree->mmod->min_rad) return; 
   if(new_mu > tree->mmod->max_mu || new_mu < tree->mmod->min_mu)     return; 
@@ -6930,14 +6930,14 @@ void MCMC_PHYREX_Simulate_Backward_Plus(t_tree *tree)
   new_mu        = cur_mu;
 
   
-  new_lbda = cur_lbda * EXP(0.2*(Uni()-.5));
+  new_lbda = cur_lbda * EXP(0.5*(Uni()-.5));
   hr += LOG(new_lbda/cur_lbda);
 
   new_mu = cur_mu * EXP(0.5*(Uni()-.5));
   hr += LOG(new_mu/cur_mu);
 
-  /* new_rad = cur_rad * EXP(1.*(Uni()-.5)); */
-  /* hr += LOG(new_rad/cur_rad); */
+  new_rad = cur_rad * EXP(0.5*(Uni()-.5));
+  hr += LOG(new_rad/cur_rad);
 
   if(new_lbda < tree->mmod->min_lbda) return;
   if(new_lbda > tree->mmod->max_lbda) return;
