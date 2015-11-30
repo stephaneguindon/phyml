@@ -3580,7 +3580,7 @@ phydbl PHYREX_Effective_Density(t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-t_ldsk *PHYREX_Generate_Path(t_ldsk *beg, t_ldsk *end, phydbl cur_n_evt, t_tree *tree)
+t_ldsk *PHYREX_Generate_Path(t_ldsk *beg, t_ldsk *end, phydbl cur_n_evt, phydbl sd, t_tree *tree)
 {
   int n_evt,i,j,swap,err;
   phydbl dt,*time,dum,mode;
@@ -3592,7 +3592,7 @@ t_ldsk *PHYREX_Generate_Path(t_ldsk *beg, t_ldsk *end, phydbl cur_n_evt, t_tree 
   /* How many hit events ? */
   if(cur_n_evt < .0)
     /* Not sure that rate is ok when considering landscape with boundaries... */
-    n_evt = Rpois(dt*2.*PHYREX_Rate_Per_Unit_Area(tree)*PI*POW(tree->mmod->rad,2)*tree->mmod->mu); 
+    n_evt = Rpois(dt*2.*PHYREX_Rate_Per_Unit_Area(tree)*PI*POW(sd,2)*tree->mmod->mu); 
   else
     n_evt = Rpois(cur_n_evt);
 
@@ -3655,7 +3655,7 @@ t_ldsk *PHYREX_Generate_Path(t_ldsk *beg, t_ldsk *end, phydbl cur_n_evt, t_tree 
             mode = (end->coord->lonlat[i] - ldsk_a[j-1]->coord->lonlat[i])/(n_evt+1.-j) + ldsk_a[j-1]->coord->lonlat[i];          
 
           ldsk_a[j]->coord->lonlat[i] = Rnorm_Trunc(mode,
-                                                    SQRT(2.0*POW(tree->mmod->rad,2)),
+                                                    SQRT(2.0*POW(sd,2)),
                                                     0.0,
                                                     tree->mmod->lim->lonlat[i],&err);
           
@@ -3664,7 +3664,7 @@ t_ldsk *PHYREX_Generate_Path(t_ldsk *beg, t_ldsk *end, phydbl cur_n_evt, t_tree 
           /* ldsk_a[j]->coord->lonlat[i] = mode; */
 
           ldsk_a[j]->disk->centr->lonlat[i] = Rnorm_Trunc(ldsk_a[j]->coord->lonlat[i],
-                                                          tree->mmod->rad,
+                                                          sd,
                                                           0.0,
                                                           tree->mmod->lim->lonlat[i],&err);
 
@@ -3686,7 +3686,7 @@ t_ldsk *PHYREX_Generate_Path(t_ldsk *beg, t_ldsk *end, phydbl cur_n_evt, t_tree 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-phydbl PHYREX_Path_Logdensity(t_ldsk *beg, t_ldsk *end, phydbl cur_n_evt, t_tree *tree)
+phydbl PHYREX_Path_Logdensity(t_ldsk *beg, t_ldsk *end, phydbl cur_n_evt, phydbl sd, t_tree *tree)
 {
   int i,j,err,n_evt;
   t_ldsk *ldsk;
@@ -3715,7 +3715,7 @@ phydbl PHYREX_Path_Logdensity(t_ldsk *beg, t_ldsk *end, phydbl cur_n_evt, t_tree
 
           lnDens += Log_Dnorm_Trunc(ldsk->prev->coord->lonlat[i],
                                     mode,
-                                    SQRT(2.0*POW(tree->mmod->rad,2)),
+                                    SQRT(2.0*POW(sd,2)),
                                     0.0,
                                     tree->mmod->lim->lonlat[i],&err);
 
@@ -3723,7 +3723,7 @@ phydbl PHYREX_Path_Logdensity(t_ldsk *beg, t_ldsk *end, phydbl cur_n_evt, t_tree
 
           lnDens += Log_Dnorm_Trunc(ldsk->prev->disk->centr->lonlat[i],
                                     ldsk->prev->coord->lonlat[i],
-                                    tree->mmod->rad,
+                                    sd,
                                     0.0,
                                     tree->mmod->lim->lonlat[i],&err);
 
@@ -3735,7 +3735,7 @@ phydbl PHYREX_Path_Logdensity(t_ldsk *beg, t_ldsk *end, phydbl cur_n_evt, t_tree
     }
 
   if(cur_n_evt < 0)
-    rate = 2.*PHYREX_Rate_Per_Unit_Area(tree)*PI*POW(tree->mmod->rad,2)*tree->mmod->mu*FABS(end->disk->time - beg->disk->time);
+    rate = 2.*PHYREX_Rate_Per_Unit_Area(tree)*PI*POW(sd,2)*tree->mmod->mu*FABS(end->disk->time - beg->disk->time);
   else
     rate = cur_n_evt;
 
