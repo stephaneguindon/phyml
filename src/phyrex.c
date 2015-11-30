@@ -1250,7 +1250,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
                 "accLdskDisk",
                 "accSimPlus",
                 "accIndelSerial",
-                "tuneLbda",
+                "tuneLdsk",
                 "tuneRad",
                 "tuneMu");
 
@@ -1402,7 +1402,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
                         tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_ldsk_given_disk],
                         tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_sim_plus],
                         tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_indel_hit_serial],
-                        tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_lbda],
+                        tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_ldsk_given_disk],
                         tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_rad],
                         tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_mu]);
 
