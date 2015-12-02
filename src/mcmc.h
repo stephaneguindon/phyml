@@ -178,4 +178,5 @@ void MCMC_PHYREX_Insert_Disk_Serial(t_tree *tree);
 void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree);
 void MCMC_PHYREX_Simulate_Backward_Plus(t_tree *tree);
 void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree);
+void MCMC_PHYREX_Disk_Given_Ldsk(t_tree *tree);
 #endif
