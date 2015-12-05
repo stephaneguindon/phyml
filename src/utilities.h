@@ -1488,7 +1488,6 @@ typedef struct __Tmcmc {
   int num_move_phyrex_move_disk_ud;
   int num_move_phyrex_swap_disk;
   int num_move_phyrex_indel_hit;
-  int num_move_phyrex_move_ldsk;
   int num_move_phyrex_spr;
   int num_move_phyrex_scale_times;
   int num_move_phyrex_ldscape_lim;
@@ -1496,11 +1495,14 @@ typedef struct __Tmcmc {
   int num_move_phyrex_sim;
   int num_move_phyrex_traj;
   int num_move_phyrex_lbda_times;
-  int num_move_phyrex_ldsk_given_disk;
-  int num_move_phyrex_disk_given_ldsk;
   int num_move_phyrex_indel_disk_serial;
   int num_move_phyrex_sim_plus;
   int num_move_phyrex_indel_hit_serial;
+  int num_move_phyrex_ldsk_and_disk;
+  int num_move_phyrex_ldsk_multi;
+  int num_move_phyrex_disk_multi;
+  int num_move_phyrex_ldsk_given_disk;
+  int num_move_phyrex_disk_given_ldsk;
 
   int nd_t_digits;
   int *monitor;

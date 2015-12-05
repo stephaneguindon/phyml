@@ -1215,7 +1215,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   fflush(NULL);
 
 
-  PhyML_Fprintf(fp_stats,"\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s",
+  PhyML_Fprintf(fp_stats,"\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s",
                 "sample",
                 "lnP",
                 "alnL",
@@ -1244,14 +1244,17 @@ phydbl *PHYREX_MCMC(t_tree *tree)
                 "accSPR",
                 "accPath",
                 "accSim",
-                "accMoveLdsk",
-                "accMoveCtr",
                 "accLbdaTimes",
-                "accLdskDisk",
                 "accSimPlus",
                 "accIndelSerial",
-                "accDiskLdsk",
-                "tuneLdsk",
+
+                "accLdskGivenDisk",
+                "accDiskGivenLdsk",
+                "accDiskAndLdsk",
+                "accLdskMulti",
+                "accDiskMulti",
+
+                "tuneLbda",
                 "tuneRad",
                 "tuneMu");
 
@@ -1300,18 +1303,11 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_hit"))
         MCMC_PHYREX_Indel_Hit(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"phyrex_move_disk_ct"))
-        MCMC_PHYREX_Move_Disk_Centre(tree);
-
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_move_disk_ud"))
         MCMC_PHYREX_Move_Disk_Updown(tree);
 
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_swap_disk"))
         MCMC_PHYREX_Swap_Disk(tree);
-
-
-      if(!strcmp(tree->mcmc->move_name[move],"phyrex_move_ldsk"))
-        MCMC_PHYREX_Move_Ldsk(tree);
 
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr"))
         MCMC_PHYREX_Prune_Regraft(tree);
@@ -1330,6 +1326,15 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_lbda_times"))
         MCMC_PHYREX_Lbda_Times(tree);
+
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_disk_multi"))
+        MCMC_PHYREX_Disk_Multi(tree);
+
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_ldsk_multi"))
+        MCMC_PHYREX_Ldsk_Multi(tree);
+
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_ldsk_and_disk"))
+        MCMC_PHYREX_Ldsk_And_Disk(tree);
 
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_ldsk_given_disk"))
         MCMC_PHYREX_Ldsk_Given_Disk(tree);
@@ -1371,7 +1376,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           disk = tree->disk;
           while(disk->prev) disk = disk->prev;
 
-          PhyML_Fprintf(fp_stats,"\n%6d\t%9.1f\t%9.1f\t%9.1f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%G\t%6d\t%6d\t%6d\t%8.1f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%G\t%G\t%G",
+          PhyML_Fprintf(fp_stats,"\n%6d\t%9.1f\t%9.1f\t%9.1f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%G\t%6d\t%6d\t%6d\t%8.1f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%G\t%G\t%G",
                         tree->mcmc->run,
                         tree->c_lnL+tree->mmod->c_lnL,
                         tree->c_lnL,
@@ -1400,14 +1405,17 @@ phydbl *PHYREX_MCMC(t_tree *tree)
                         tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_spr],
                         tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_traj],
                         tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_sim],
-                        tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_move_ldsk],
-                        tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_move_disk_ct],
                         tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_lbda_times],
-                        tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_ldsk_given_disk],
                         tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_sim_plus],
                         tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_indel_hit_serial],
+
+                        tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_ldsk_given_disk],
                         tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_disk_given_ldsk],
-                        tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_ldsk_given_disk],
+                        tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_ldsk_and_disk],
+                        tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_ldsk_multi],
+                        tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_disk_multi],
+
+                        tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_lbda],
                         tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_rad],
                         tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_mu]);
 
