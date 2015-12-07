@@ -6409,14 +6409,14 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
       cur_path_len = PHYREX_Path_Len(prune_daughter_ldsk,prune_ldsk)-2;
       rate = (phydbl)(n_hits - cur_path_len)/(sizeT - dt);
       
-      hr += PHYREX_Path_Logdensity(prune_daughter_ldsk,prune_ldsk,rate*dt,1.5*tree->mmod->rad,tree);
+      hr += PHYREX_Path_Logdensity(prune_daughter_ldsk,prune_ldsk,rate*dt,1.0*tree->mmod->rad,tree);
       
       dt = FABS(prune_daughter_ldsk->disk->time - regraft_ldsk->disk->time);
-      new_path = PHYREX_Generate_Path(prune_daughter_ldsk,regraft_ldsk,rate*dt,1.5*tree->mmod->rad,tree);
+      new_path = PHYREX_Generate_Path(prune_daughter_ldsk,regraft_ldsk,rate*dt,1.0*tree->mmod->rad,tree);
       cur_path = PHYREX_Remove_Path(prune_daughter_ldsk,prune_ldsk,&cur_pos,tree);
       PHYREX_Insert_Path(prune_daughter_ldsk,regraft_ldsk,new_path,regraft_ldsk->n_next,tree);
       
-      hr -= PHYREX_Path_Logdensity(prune_daughter_ldsk,regraft_ldsk,rate*dt,1.5*tree->mmod->rad,tree);
+      hr -= PHYREX_Path_Logdensity(prune_daughter_ldsk,regraft_ldsk,rate*dt,1.0*tree->mmod->rad,tree);
       
       /* prune_daughter_ldsk->prev = regraft_ldsk; */
       /* PHYREX_Remove_Lindisk_Next(prune_ldsk,prune_daughter_ldsk); */
@@ -6842,75 +6842,78 @@ void MCMC_PHYREX_Lineage_Traj(t_tree *tree)
   phydbl cur_glnL, new_glnL;
   t_dsk  *disk,**valid_disks;
   t_ldsk *start_ldsk,*end_ldsk,*cur_path,*new_path,*ldsk,*ldsk_dum;
-  int i,block,n_valid_disks;
+  int i,j,block,n_valid_disks;
   phydbl rate,dt,sizeT;
   int n_hits,n_iter,cur_path_len;
-  int pos;
+  int pos,*permut;
 
-  n_iter = (int)(2.*tree->n_otu);
+  n_iter      = 0;
+  valid_disks = NULL;
+  disk        = NULL;
+  new_glnL    = tree->mmod->c_lnL;
+  cur_glnL    = tree->mmod->c_lnL;
+  hr          = 0.0;
+  ratio       = 0.0;
+  block       = 100;
+  pos         = -1;
+  
+      
+  /* Get a ldsk from which you can prune a lineage */
+  disk = tree->disk->prev;
+  n_valid_disks = 0;
+  do
+    {
+      if(disk->ldsk && disk->ldsk->prev && disk->ldsk->n_next > 1)
+        /* if(disk->ldsk) */
+        {
+          if(!n_valid_disks) valid_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
+          else if(!(n_valid_disks%block)) valid_disks = (t_dsk **)mRealloc(valid_disks,n_valid_disks+block,sizeof(t_dsk *));
+          valid_disks[n_valid_disks] = disk;
+          n_valid_disks++;
+        }
+      disk = disk->prev;
+    }
+  while(disk);
+  
+  if(!n_valid_disks) return;
+      
+  permut = Permutate(n_valid_disks);
+  n_iter = n_valid_disks;
 
-  while(n_iter--)
-    {      
+  
+  For(j,n_iter)
+    {
       tree->mcmc->run_move[tree->mcmc->num_move_phyrex_traj]++;
 
-      valid_disks = NULL;
-      disk        = NULL;
       new_glnL    = tree->mmod->c_lnL;
       cur_glnL    = tree->mmod->c_lnL;
       hr          = 0.0;
       ratio       = 0.0;
-      block       = 100;
-      pos         = -1;
 
-      if(tree->disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-      
-      /* Get a ldsk from which you can prune a lineage */
-      disk = tree->disk->prev;
-      n_valid_disks = 0;
-      do
-        {
-          if(disk->ldsk && disk->ldsk->n_next > 1)
-            /* if(disk->ldsk) */
-            {
-              if(!n_valid_disks) valid_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
-              else if(!(n_valid_disks%block)) valid_disks = (t_dsk **)mRealloc(valid_disks,n_valid_disks+block,sizeof(t_dsk *));
-              valid_disks[n_valid_disks] = disk;
-              n_valid_disks++;
-            }
-          disk = disk->prev;
-        }
-      while(disk);
-      
-      if(!n_valid_disks) return;
-      
-      /* Uniform selection of a target disk */
-      i = Rand_Int(0,n_valid_disks-1);
-      end_ldsk = valid_disks[i]->ldsk;
-      Free(valid_disks);
-      
-      i = Rand_Int(0,end_ldsk->n_next-1);
-      start_ldsk = end_ldsk->next[i];
-      while(start_ldsk->n_next < 2 && start_ldsk->disk->next) start_ldsk = start_ldsk->next[0];
-      
-      assert(end_ldsk != NULL); 
+      start_ldsk = valid_disks[permut[j]]->ldsk;
       assert(start_ldsk != NULL);
+
+      end_ldsk = start_ldsk->prev;
+      while(end_ldsk->n_next < 2) end_ldsk = end_ldsk->prev;
+
+      assert(end_ldsk != NULL); 
 
       new_glnL = cur_glnL;
       new_glnL -= PHYREX_Lk_Range(start_ldsk->disk->prev,end_ldsk->disk,tree);
-
+      
       n_hits       = PHYREX_Total_Number_Of_Hit_Disks(tree) - PHYREX_Total_Number_Of_Coal_Disks(tree);
       sizeT        = PHYREX_Time_Tree_Length(tree);
       dt           = FABS(start_ldsk->disk->time - end_ldsk->disk->time);
       cur_path_len = PHYREX_Path_Len(start_ldsk,end_ldsk)-2;
       rate         = (phydbl)(n_hits - cur_path_len)/(sizeT - dt);
       
-      hr += PHYREX_Path_Logdensity(start_ldsk,end_ldsk,rate*dt,3.0*tree->mmod->rad,tree);
+      hr += PHYREX_Path_Logdensity(start_ldsk,end_ldsk,rate*dt,5.0*tree->mmod->rad,tree);
       
-      new_path = PHYREX_Generate_Path(start_ldsk,end_ldsk,rate*dt,3.0*tree->mmod->rad,tree);
+      new_path = PHYREX_Generate_Path(start_ldsk,end_ldsk,rate*dt,5.0*tree->mmod->rad,tree);
       cur_path = PHYREX_Remove_Path(start_ldsk,end_ldsk,&pos,tree);
       PHYREX_Insert_Path(start_ldsk,end_ldsk,new_path,pos,tree);
       
-      hr -= PHYREX_Path_Logdensity(start_ldsk,end_ldsk,rate*dt,3.0*tree->mmod->rad,tree);
+      hr -= PHYREX_Path_Logdensity(start_ldsk,end_ldsk,rate*dt,5.0*tree->mmod->rad,tree);
       
       /* new_glnL = PHYREX_Lk(tree); */
 
@@ -6974,6 +6977,9 @@ void MCMC_PHYREX_Lineage_Traj(t_tree *tree)
           tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_traj]++;
         }      
     }
+  
+  Free(valid_disks);
+  Free(permut);
 }
 #endif
 

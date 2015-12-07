@@ -3714,6 +3714,7 @@ phydbl PHYREX_Path_Logdensity(t_ldsk *beg, t_ldsk *end, phydbl cur_n_evt, phydbl
     {
       n_evt++;
       ldsk = ldsk->prev;
+      assert(ldsk != NULL);
     }
 
   For(i,tree->mmod->n_dim)
