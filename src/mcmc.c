@@ -4493,23 +4493,23 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_sigsq]                 = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_disk]            = 2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_hit]             = 2.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ud]          = 5.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_swap_disk]             = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ud]          = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_swap_disk]             = 5.0;
   mcmc->move_weight[mcmc->num_move_phyrex_spr]                   = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           = 2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldscape_lim]           = 0.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 2.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 3.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 5.0;
   mcmc->move_weight[mcmc->num_move_phyrex_lbda_times]            = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_sim_plus]              = 1.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_indel_disk_serial]     = 2.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_indel_hit_serial]      = 2.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_indel_disk_serial]     = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_indel_hit_serial]      = 1.0;
 
   mcmc->move_weight[mcmc->num_move_phyrex_ldsk_given_disk]       = 0.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_disk_given_ldsk]       = 0.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_disk_given_ldsk]       = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldsk_and_disk]         = 0.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_ldsk_multi]            = 1.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_disk_multi]            = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_ldsk_multi]            = 2.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_disk_multi]            = 2.0;
 
 # else
 
@@ -5942,11 +5942,11 @@ void MCMC_PHYREX_Insert_Hit(phydbl hr, int n_insert_disks, phydbl cur_rad, phydb
       For(i,tree->mmod->n_dim)
         {
           new_ldsk[j]->coord->lonlat[i] = Rnorm_Trunc(0.5*(young_ldsk[j]->coord->lonlat[i]+old_ldsk[j]->coord->lonlat[i]),
-                                                      1.0*tree->mmod->rad,
+                                                      2.0*tree->mmod->rad,
                                                       0.0,tree->mmod->lim->lonlat[i],&err);
           hr -= Log_Dnorm_Trunc(new_ldsk[j]->coord->lonlat[i],
                                 0.5*(young_ldsk[j]->coord->lonlat[i]+old_ldsk[j]->coord->lonlat[i]),
-                                1.0*tree->mmod->rad,
+                                2.0*tree->mmod->rad,
                                 0.0,tree->mmod->lim->lonlat[i],&err);
         }
 
@@ -5954,11 +5954,11 @@ void MCMC_PHYREX_Insert_Hit(phydbl hr, int n_insert_disks, phydbl cur_rad, phydb
       For(i,tree->mmod->n_dim)
         {
           new_disk[j]->centr->lonlat[i] = Rnorm_Trunc(new_ldsk[j]->coord->lonlat[i],
-                                                      1.0*tree->mmod->rad,
+                                                      2.0*tree->mmod->rad,
                                                       0.0,tree->mmod->lim->lonlat[i],&err);
           hr -= Log_Dnorm_Trunc(new_disk[j]->centr->lonlat[i],
                                 new_ldsk[j]->coord->lonlat[i],
-                                1.0*tree->mmod->rad,0.0,tree->mmod->lim->lonlat[i],&err);
+                                2.0*tree->mmod->rad,0.0,tree->mmod->lim->lonlat[i],&err);
 
         }
 
@@ -6126,7 +6126,7 @@ void MCMC_PHYREX_Delete_Hit(phydbl hr, int n_delete_disks, phydbl cur_rad, phydb
         {
           hr += Log_Dnorm_Trunc(target_ldsk[j]->coord->lonlat[i],
                                 0.5*(young_ldsk[j]->coord->lonlat[i]+old_ldsk[j]->coord->lonlat[i]),
-                                1.5*tree->mmod->rad,
+                                2.0*tree->mmod->rad,
                                 0.0,
                                 tree->mmod->lim->lonlat[i],&err);
         }
@@ -6136,7 +6136,7 @@ void MCMC_PHYREX_Delete_Hit(phydbl hr, int n_delete_disks, phydbl cur_rad, phydb
         {
           hr += Log_Dnorm_Trunc(target_disk[j]->centr->lonlat[i],
                                 target_ldsk[j]->coord->lonlat[i],
-                                1.5*tree->mmod->rad,
+                                2.0*tree->mmod->rad,
                                 0.0,tree->mmod->lim->lonlat[i],&err);
         }
 
@@ -6691,6 +6691,7 @@ void MCMC_PHYREX_Simulate_Backward_Plus(t_tree *tree)
   new_rad       = cur_rad;
   new_mu        = cur_mu;
 
+  
   new_lbda = cur_lbda * EXP(0.2*(Uni()-.5));
   hr += LOG(new_lbda/cur_lbda);
 
@@ -6843,15 +6844,13 @@ void MCMC_PHYREX_Lineage_Traj(t_tree *tree)
   t_ldsk *start_ldsk,*end_ldsk,*cur_path,*new_path,*ldsk,*ldsk_dum;
   int i,block,n_valid_disks;
   phydbl rate,dt,sizeT;
-  int cur_path_len;
-  int n_hits,n_iter;
+  int n_hits,n_iter,cur_path_len;
   int pos;
 
   n_iter = (int)(2.*tree->n_otu);
 
   while(n_iter--)
-    {
-      
+    {      
       tree->mcmc->run_move[tree->mcmc->num_move_phyrex_traj]++;
 
       valid_disks = NULL;
@@ -6900,19 +6899,18 @@ void MCMC_PHYREX_Lineage_Traj(t_tree *tree)
       new_glnL -= PHYREX_Lk_Range(start_ldsk->disk->prev,end_ldsk->disk,tree);
 
       n_hits       = PHYREX_Total_Number_Of_Hit_Disks(tree) - PHYREX_Total_Number_Of_Coal_Disks(tree);
-      n_hits       = PHYREX_Total_Number_Of_Hit_Disks(tree);
       sizeT        = PHYREX_Time_Tree_Length(tree);
       dt           = FABS(start_ldsk->disk->time - end_ldsk->disk->time);
       cur_path_len = PHYREX_Path_Len(start_ldsk,end_ldsk)-2;
       rate         = (phydbl)(n_hits - cur_path_len)/(sizeT - dt);
       
-      hr += PHYREX_Path_Logdensity(start_ldsk,end_ldsk,rate*dt,4.0*tree->mmod->rad,tree);
+      hr += PHYREX_Path_Logdensity(start_ldsk,end_ldsk,rate*dt,3.0*tree->mmod->rad,tree);
       
-      new_path = PHYREX_Generate_Path(start_ldsk,end_ldsk,rate*dt,4.0*tree->mmod->rad,tree);
+      new_path = PHYREX_Generate_Path(start_ldsk,end_ldsk,rate*dt,3.0*tree->mmod->rad,tree);
       cur_path = PHYREX_Remove_Path(start_ldsk,end_ldsk,&pos,tree);
       PHYREX_Insert_Path(start_ldsk,end_ldsk,new_path,pos,tree);
       
-      hr -= PHYREX_Path_Logdensity(start_ldsk,end_ldsk,rate*dt,4.0*tree->mmod->rad,tree);
+      hr -= PHYREX_Path_Logdensity(start_ldsk,end_ldsk,rate*dt,3.0*tree->mmod->rad,tree);
       
       /* new_glnL = PHYREX_Lk(tree); */
 
@@ -7117,7 +7115,7 @@ void MCMC_PHYREX_Disk_Multi(t_tree *tree)
   ratio         = 0.0;
   block         = 100;
   all_disks     = NULL;
-  p             = 0.8;
+  p             = 1.0;
 
   tree->mcmc->run_move[tree->mcmc->num_move_phyrex_disk_multi]++;
 
@@ -7138,7 +7136,8 @@ void MCMC_PHYREX_Disk_Multi(t_tree *tree)
 
   target_disk = (t_dsk **)mCalloc(n_all_disks,sizeof(t_dsk *));
   
-  n_move_disks = Rand_Int(1,1+(int)(n_all_disks/20));
+  n_move_disks = Rand_Int(1,1+(int)(n_all_disks/5));
+  /* n_move_disks = n_all_disks; */
 
   permut = Permutate(n_all_disks);
 
@@ -7151,42 +7150,43 @@ void MCMC_PHYREX_Disk_Multi(t_tree *tree)
       if(target_disk[i]->ldsk != NULL)
         {
           For(j,tree->mmod->n_dim)
-            target_disk[i]->centr->lonlat[j] =
+            target_disk[i]->centr->lonlat[j] = 
+            /* Uni()*tree->mmod->lim->lonlat[j]; */
             Rnorm_Trunc(p*target_disk[i]->centr->lonlat[j]+(1.-p)*target_disk[i]->ldsk->coord->lonlat[j],
-                        3.0*tree->mmod->rad,
+                        2.0*tree->mmod->rad,
                         0.0,
                         tree->mmod->lim->lonlat[j],&err);
           
           For(j,tree->mmod->n_dim) hr -= Log_Dnorm_Trunc(target_disk[i]->centr->lonlat[j],
                                                          p*target_disk[i]->centr->cpy->lonlat[j]+(1.-p)*target_disk[i]->ldsk->coord->lonlat[j],
-                                                         3.0*tree->mmod->rad,
+                                                         2.0*tree->mmod->rad,
                                                          0.0,
                                                          tree->mmod->lim->lonlat[j],&err);
           
           For(j,tree->mmod->n_dim) hr += Log_Dnorm_Trunc(target_disk[i]->centr->cpy->lonlat[j],
                                                          p*target_disk[i]->centr->lonlat[j]+(1.-p)*target_disk[i]->ldsk->coord->lonlat[j],
-                                                         3.0*tree->mmod->rad,
+                                                         2.0*tree->mmod->rad,
                                                          0.0,
                                                          tree->mmod->lim->lonlat[j],&err);
         }
       else
         {
           For(j,tree->mmod->n_dim)
-            target_disk[i]->centr->lonlat[j] =
+            target_disk[i]->centr->lonlat[j] = 
             Rnorm_Trunc(target_disk[i]->centr->lonlat[j],
-                        4.0*tree->mmod->rad,
+                        2.0*tree->mmod->rad,
                         0.0,
                         tree->mmod->lim->lonlat[j],&err);
           
           For(j,tree->mmod->n_dim) hr -= Log_Dnorm_Trunc(target_disk[i]->centr->lonlat[j],
                                                          target_disk[i]->centr->cpy->lonlat[j],
-                                                         4.0*tree->mmod->rad,
+                                                         2.0*tree->mmod->rad,
                                                          0.0,
                                                          tree->mmod->lim->lonlat[j],&err);
           
           For(j,tree->mmod->n_dim) hr += Log_Dnorm_Trunc(target_disk[i]->centr->cpy->lonlat[j],
                                                          target_disk[i]->centr->lonlat[j],
-                                                         4.0*tree->mmod->rad,
+                                                         2.0*tree->mmod->rad,
                                                          0.0,
                                                          tree->mmod->lim->lonlat[j],&err);
         }
@@ -7283,7 +7283,7 @@ void MCMC_PHYREX_Ldsk_Multi(t_tree *tree)
 
   if(!n_all_disks) return;
   
-  n_move_ldsk = Rand_Int(1,1+(int)(n_all_disks/20));
+  n_move_ldsk = Rand_Int(1,1+(int)(n_all_disks/5));
   /* n_move_ldsk = n_all_disks; */
   
   target_disk = (t_dsk **)mCalloc(n_all_disks,sizeof(t_dsk *));
@@ -7296,50 +7296,54 @@ void MCMC_PHYREX_Ldsk_Multi(t_tree *tree)
       
       PHYREX_Store_Geo_Coord(target_disk[i]->ldsk->coord);
 
+      /* For(j,tree->mmod->n_dim) */
+      /*   { */
+      /*     prev_pos = target_disk[i]->ldsk->prev ? target_disk[i]->ldsk->prev->coord->lonlat[j] : target_disk[i]->ldsk->coord->lonlat[j]; */
+          
+      /*     target_disk[i]->ldsk->coord->lonlat[j] = */
+      /*       Rnorm_Trunc(p*target_disk[i]->ldsk->coord->lonlat[j]+(1.-p)*prev_pos, */
+      /*                   SQRT(2.*POW(tree->mmod->rad,2)), */
+      /*                   0.0, */
+      /*                   tree->mmod->lim->lonlat[j],&err); */
+
+      /*     hr -= Log_Dnorm_Trunc(target_disk[i]->ldsk->coord->lonlat[j], */
+      /*                           p*target_disk[i]->ldsk->coord->cpy->lonlat[j]+(1.-p)*prev_pos, */
+      /*                           SQRT(2.*POW(tree->mmod->rad,2)), */
+      /*                           0.0, */
+      /*                           tree->mmod->lim->lonlat[j],&err); */
+          
+      /*     hr += Log_Dnorm_Trunc(target_disk[i]->ldsk->coord->cpy->lonlat[j], */
+      /*                           p*target_disk[i]->ldsk->coord->lonlat[j]+(1.-p)*prev_pos, */
+      /*                           SQRT(2.*POW(tree->mmod->rad,2)), */
+      /*                           0.0, */
+      /*                           tree->mmod->lim->lonlat[j],&err); */
+      /*   } */
+
       For(j,tree->mmod->n_dim)
         {
-          prev_pos = target_disk[i]->ldsk->prev ? target_disk[i]->ldsk->prev->coord->lonlat[j] : target_disk[i]->ldsk->coord->lonlat[j];
-          
           target_disk[i]->ldsk->coord->lonlat[j] =
-            Rnorm_Trunc(p*target_disk[i]->ldsk->coord->lonlat[j]+(1.-p)*prev_pos,
+            Rnorm_Trunc(target_disk[i]->ldsk->coord->lonlat[j],
+                        /* target_disk[i]->centr->lonlat[j], */
                         2.0*tree->mmod->rad,
                         0.0,
                         tree->mmod->lim->lonlat[j],&err);
-
-          hr -= Log_Dnorm_Trunc(target_disk[i]->ldsk->coord->lonlat[j],
-                                p*target_disk[i]->ldsk->coord->cpy->lonlat[j]+(1.-p)*prev_pos,
-                                2.0*tree->mmod->rad,
-                                0.0,
-                                tree->mmod->lim->lonlat[j],&err);
           
-          hr += Log_Dnorm_Trunc(target_disk[i]->ldsk->coord->cpy->lonlat[j],
-                                p*target_disk[i]->ldsk->coord->lonlat[j]+(1.-p)*prev_pos,
-                                2.0*tree->mmod->rad,
-                                0.0,
-                                tree->mmod->lim->lonlat[j],&err);
+          
+          For(j,tree->mmod->n_dim) hr -= Log_Dnorm_Trunc(target_disk[i]->ldsk->coord->lonlat[j],
+                                                         target_disk[i]->ldsk->coord->cpy->lonlat[j],
+                                                         /* target_disk[i]->centr->lonlat[j], */
+                                                         2.0*tree->mmod->rad,
+                                                         0.0,
+                                                         tree->mmod->lim->lonlat[j],&err);
+          
+          For(j,tree->mmod->n_dim) hr += Log_Dnorm_Trunc(target_disk[i]->ldsk->coord->cpy->lonlat[j],
+                                                         target_disk[i]->ldsk->coord->lonlat[j],
+                                                         /* target_disk[i]->centr->lonlat[j], */
+                                                         2.0*tree->mmod->rad,
+                                                         0.0,
+                                                         tree->mmod->lim->lonlat[j],&err);
         }
-
-      /* For(j,tree->mmod->n_dim) */
-      /*   target_disk[i]->ldsk->coord->lonlat[j] = */
-      /*   Rnorm_Trunc(p*target_disk[i]->ldsk->coord->lonlat[j]+(1.-p)*target_disk[i]->centr->lonlat[j], */
-      /*               3.0*tree->mmod->rad, */
-      /*               0.0, */
-      /*               tree->mmod->lim->lonlat[j],&err); */
-      
-
-      /* For(j,tree->mmod->n_dim) hr -= Log_Dnorm_Trunc(target_disk[i]->ldsk->coord->lonlat[j], */
-      /*                                                p*target_disk[i]->ldsk->coord->cpy->lonlat[j]+(1.-p)*target_disk[i]->centr->lonlat[j], */
-      /*                                                3.0*tree->mmod->rad, */
-      /*                                                0.0, */
-      /*                                                tree->mmod->lim->lonlat[j],&err); */
-      
-      /* For(j,tree->mmod->n_dim) hr += Log_Dnorm_Trunc(target_disk[i]->ldsk->coord->cpy->lonlat[j], */
-      /*                                                p*target_disk[i]->ldsk->coord->lonlat[j]+(1.-p)*target_disk[i]->centr->lonlat[j], */
-      /*                                                3.0*tree->mmod->rad, */
-      /*                                                0.0, */
-      /*                                                tree->mmod->lim->lonlat[j],&err); */
     }
-
 
   Free(permut);
 
@@ -7445,41 +7449,41 @@ void MCMC_PHYREX_Ldsk_And_Disk(t_tree *tree)
       For(j,tree->mmod->n_dim)
         target_disk[i]->ldsk->coord->lonlat[j] =
         Rnorm_Trunc(target_disk[i]->centr->lonlat[j],
-                    4.0*tree->mmod->rad,
+                    SQRT(2.0*POW(tree->mmod->rad,2)),
                     0.0,
                     tree->mmod->lim->lonlat[j],&err);
       
-      /* For(j,tree->mmod->n_dim) */
-      /*   target_disk[i]->centr->lonlat[j] = */
-      /*   Rnorm_Trunc(target_disk[i]->ldsk->coord->lonlat[j], */
-      /*               4.0*tree->mmod->rad, */
-      /*               0.0, */
-      /*               tree->mmod->lim->lonlat[j],&err); */
+      For(j,tree->mmod->n_dim)
+        target_disk[i]->centr->lonlat[j] =
+        Rnorm_Trunc(target_disk[i]->ldsk->coord->lonlat[j],
+                    1.0*tree->mmod->rad,
+                    0.0,
+                    tree->mmod->lim->lonlat[j],&err);
 
 
       For(j,tree->mmod->n_dim) hr -= Log_Dnorm_Trunc(target_disk[i]->ldsk->coord->lonlat[j],
                                                      target_disk[i]->centr->cpy->lonlat[j],
-                                                     4.0*tree->mmod->rad,
+                                                     SQRT(2.0*POW(tree->mmod->rad,2)),
                                                      0.0,
                                                      tree->mmod->lim->lonlat[j],&err);
       
       For(j,tree->mmod->n_dim) hr += Log_Dnorm_Trunc(target_disk[i]->ldsk->coord->cpy->lonlat[j],
                                                      target_disk[i]->centr->lonlat[j],
-                                                     4.0*tree->mmod->rad,
+                                                     SQRT(2.0*POW(tree->mmod->rad,2)),
                                                      0.0,
                                                      tree->mmod->lim->lonlat[j],&err);
 
-      /* For(j,tree->mmod->n_dim) hr -= Log_Dnorm_Trunc(target_disk[i]->centr->lonlat[j], */
-      /*                                                target_disk[i]->ldsk->coord->lonlat[j], */
-      /*                                                4.0*tree->mmod->rad, */
-      /*                                                0.0, */
-      /*                                                tree->mmod->lim->lonlat[j],&err); */
+      For(j,tree->mmod->n_dim) hr -= Log_Dnorm_Trunc(target_disk[i]->centr->lonlat[j],
+                                                     target_disk[i]->ldsk->coord->lonlat[j],
+                                                     1.0*tree->mmod->rad,
+                                                     0.0,
+                                                     tree->mmod->lim->lonlat[j],&err);
       
-      /* For(j,tree->mmod->n_dim) hr += Log_Dnorm_Trunc(target_disk[i]->centr->cpy->lonlat[j], */
-      /*                                                target_disk[i]->ldsk->coord->cpy->lonlat[j], */
-      /*                                                4.0*tree->mmod->rad, */
-      /*                                                0.0, */
-      /*                                                tree->mmod->lim->lonlat[j],&err); */
+      For(j,tree->mmod->n_dim) hr += Log_Dnorm_Trunc(target_disk[i]->centr->cpy->lonlat[j],
+                                                     target_disk[i]->ldsk->coord->cpy->lonlat[j],
+                                                     1.0*tree->mmod->rad,
+                                                     0.0,
+                                                     tree->mmod->lim->lonlat[j],&err);
     }
 
 
@@ -7546,7 +7550,7 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree)
   block       = 100;
   all_disks   = NULL;
   n_all_disks = 0;
-  p           = 0.8;
+  p           = 0.0;
 
   disk = tree->disk->prev;
   do
@@ -7613,20 +7617,20 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree)
       For(j,tree->mmod->n_dim)
         disk->ldsk->coord->lonlat[j] =
         Rnorm_Trunc(p*disk->ldsk->coord->lonlat[j]+(1.-p)*disk->centr->lonlat[j],
-                    5.0*tree->mmod->rad,
+                    1.0*tree->mmod->rad,
                     0.0,
                     tree->mmod->lim->lonlat[j],&err);
       
 
       For(j,tree->mmod->n_dim) hr -= Log_Dnorm_Trunc(disk->ldsk->coord->lonlat[j],
-                                                     p*disk->ldsk->coord->cpy->lonlat[j]+(1.-p)*disk->centr->lonlat[j],
-                                                     5.0*tree->mmod->rad,
+                                                     p*disk->ldsk->coord->cpy->lonlat[j]+(1-p)*disk->centr->lonlat[j],
+                                                     1.0*tree->mmod->rad,
                                                      0.0,
                                                      tree->mmod->lim->lonlat[j],&err);
       
       For(j,tree->mmod->n_dim) hr += Log_Dnorm_Trunc(disk->ldsk->coord->cpy->lonlat[j],
                                                      p*disk->ldsk->coord->lonlat[j]+(1.-p)*disk->centr->lonlat[j],
-                                                     5.0*tree->mmod->rad,
+                                                     1.0*tree->mmod->rad,
                                                      0.0,
                                                      tree->mmod->lim->lonlat[j],&err);
 
@@ -7725,27 +7729,27 @@ void MCMC_PHYREX_Disk_Given_Ldsk(t_tree *tree)
 
       PHYREX_Store_Geo_Coord(disk->centr);
 
-      /* For(j,tree->mmod->n_dim) disk->centr->lonlat[j] = Uni()*tree->mmod->lim->lonlat[j]; */
+      For(j,tree->mmod->n_dim) disk->centr->lonlat[j] = Uni()*tree->mmod->lim->lonlat[j];
 
-      For(j,tree->mmod->n_dim)
-        disk->centr->lonlat[j] =
-        Rnorm_Trunc(disk->centr->lonlat[j],
-                    5.0*tree->mmod->rad,
-                    0.0,
-                    tree->mmod->lim->lonlat[j],&err);
+      /* For(j,tree->mmod->n_dim) */
+      /*   disk->centr->lonlat[j] = */
+      /*   Rnorm_Trunc(disk->centr->lonlat[j], */
+      /*               3.0*tree->mmod->rad, */
+      /*               0.0, */
+      /*               tree->mmod->lim->lonlat[j],&err); */
       
 
-      For(j,tree->mmod->n_dim) hr -= Log_Dnorm_Trunc(disk->centr->lonlat[j],
-                                                     disk->centr->cpy->lonlat[j],
-                                                     5.0*tree->mmod->rad,
-                                                     0.0,
-                                                     tree->mmod->lim->lonlat[j],&err);
+      /* For(j,tree->mmod->n_dim) hr -= Log_Dnorm_Trunc(disk->centr->lonlat[j], */
+      /*                                                disk->centr->cpy->lonlat[j], */
+      /*                                                3.0*tree->mmod->rad, */
+      /*                                                0.0, */
+      /*                                                tree->mmod->lim->lonlat[j],&err); */
       
-      For(j,tree->mmod->n_dim) hr += Log_Dnorm_Trunc(disk->centr->cpy->lonlat[j],
-                                                     disk->centr->lonlat[j],
-                                                     5.0*tree->mmod->rad,
-                                                     0.0,
-                                                     tree->mmod->lim->lonlat[j],&err);
+      /* For(j,tree->mmod->n_dim) hr += Log_Dnorm_Trunc(disk->centr->cpy->lonlat[j], */
+      /*                                                disk->centr->lonlat[j], */
+      /*                                                3.0*tree->mmod->rad, */
+      /*                                                0.0, */
+      /*                                                tree->mmod->lim->lonlat[j],&err); */
 
       if(disk->ldsk != NULL)
         new_glnL += PHYREX_Lk_Range(disk,disk->ldsk->prev ? disk->ldsk->prev->disk : NULL,tree);
@@ -7885,12 +7889,12 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
           For(j,tree->mmod->n_dim)
             {
               new_ldsk->coord->lonlat[j] = Rnorm_Trunc(0.5*(young_ldsk->coord->lonlat[j]+old_ldsk->coord->lonlat[j]),
-                                                       4.0*tree->mmod->rad,
+                                                       SQRT(2.*POW(tree->mmod->rad,2)),
                                                        0.0,tree->mmod->lim->lonlat[j],&err);
 
               hr -= Log_Dnorm_Trunc(new_ldsk->coord->lonlat[j],
                                     0.5*(young_ldsk->coord->lonlat[j]+old_ldsk->coord->lonlat[j]),
-                                    4.0*tree->mmod->rad,
+                                    SQRT(2.*POW(tree->mmod->rad,2)),
                                     0.0,tree->mmod->lim->lonlat[j],&err);
             }
           
@@ -7898,12 +7902,12 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
           For(j,tree->mmod->n_dim)
             {
               new_disk->centr->lonlat[j] = Rnorm_Trunc(new_ldsk->coord->lonlat[j],
-                                                       4.0*tree->mmod->rad,
+                                                       1.0*tree->mmod->rad,
                                                        0.0,tree->mmod->lim->lonlat[j],&err);
 
               hr -= Log_Dnorm_Trunc(new_disk->centr->lonlat[j],
                                     new_ldsk->coord->lonlat[j],
-                                    4.0*tree->mmod->rad,
+                                    1.0*tree->mmod->rad,
                                     0.0,tree->mmod->lim->lonlat[j],&err);
             }
           
@@ -7972,7 +7976,7 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
             {
               hr += Log_Dnorm_Trunc(target_disk->ldsk->coord->lonlat[j],
                                     0.5*(young_ldsk->coord->lonlat[j]+old_ldsk->coord->lonlat[j]),
-                                    2.0*tree->mmod->rad,
+                                    SQRT(2.*POW(tree->mmod->rad,2)),
                                     0.0,
                                     tree->mmod->lim->lonlat[j],&err);
             }
@@ -7982,7 +7986,7 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
             {
               hr += Log_Dnorm_Trunc(target_disk->centr->lonlat[j],
                                     target_disk->ldsk->coord->lonlat[j],
-                                    2.0*tree->mmod->rad,
+                                    1.0*tree->mmod->rad,
                                     0.0,tree->mmod->lim->lonlat[j],&err);
             }
 
@@ -8101,6 +8105,7 @@ void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree)
           PHYREX_Init_Disk_Event(new_disk,tree->mmod->n_dim,tree->mmod);
           new_disk->time = t;
           PHYREX_Insert_Disk(new_disk,tree);
+
           For(j,tree->mmod->n_dim) new_disk->centr->lonlat[j] = Uni()*tree->mmod->lim->lonlat[j];
           
           new_glnL += PHYREX_Lk_Range(new_disk,disk,tree);
