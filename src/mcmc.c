@@ -7562,7 +7562,8 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree)
 
   if(!n_all_disks) return;
   
-  n_move_ldsk = Rand_Int(1,1+(int)(n_all_disks/5));
+  /* n_move_ldsk = Rand_Int(1,1+(int)(n_all_disks/5)); */
+  n_move_ldsk = n_all_disks;
   
   permut = Permutate(n_all_disks);
 

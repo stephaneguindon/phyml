@@ -1289,7 +1289,8 @@ align **Get_Seq(option *io)
 
 void Post_Process_Data(option *io)
 {
-  int i,j;
+  int i,j,swap;
+  align *data_buff;
 
   For(i,io->data[0]->len)
     {
@@ -1302,7 +1303,31 @@ void Post_Process_Data(option *io)
     }
 
   For(i,io->n_otu) io->data[i]->len = io->data[0]->len;
+
+  /* Sequences are ordered alphabetically */
+  data_buff = NULL;
+  swap = TRUE;
+  while(swap == TRUE)
+    {
+      swap = FALSE;
+      For(i,io->n_otu-1)
+        {
+          for(j=i+1;j<io->n_otu;j++)
+            {
+              if(strcmp(io->data[i]->name,io->data[j]->name) < 0)
+                {
+                  swap = TRUE;
+                  data_buff = io->data[i]->name;
+                  io->data[i]->name = io->data[j]->name;
+                  io->data[j]->name = data_buff;
+                }
+            }
+        }
+    }
 }
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
 /* align **Get_Seq_Nexus(option *io) */
 /* { */

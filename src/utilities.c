@@ -947,48 +947,46 @@ void Qksort_Int(int *A, int *B, int ilo, int ihi)
 
         if(B)
           {
-        tempEntry = B[ulo];
-        B[ulo]    = B[uhi];
-        B[uhi]    = tempEntry;
+            tempEntry = B[ulo];
+            B[ulo]    = B[uhi];
+            B[uhi]    = tempEntry;
           }
-
-
-
+        
         // After the swap, A[ulo] <= pivot.
-        if (A[ulo] < pivot) {
-        // Swap entries at indices ieq and ulo.
-        tempEntry = A[ieq];
-        A[ieq] = A[ulo];
-        A[ulo] = tempEntry;
-
-
-        if(B)
+        if (A[ulo] < pivot) 
           {
-            tempEntry = B[ieq];
-            B[ieq] = B[ulo];
-            B[ulo] = tempEntry;
+            // Swap entries at indices ieq and ulo.
+            tempEntry = A[ieq];
+            A[ieq] = A[ulo];
+            A[ulo] = tempEntry;
+            
+
+            if(B)
+              {
+                tempEntry = B[ieq];
+                B[ieq] = B[ulo];
+                B[ulo] = tempEntry;
+              }
+            
+            
+            // After the swap, A[ieq] < pivot, so we need to change
+            // ieq.
+            ieq++;
+            // We also need to change ulo, but we also need to do
+            // that when A[ulo] = pivot, so we do it after this if
+            // statement.
           }
-
-
-        // After the swap, A[ieq] < pivot, so we need to change
-        // ieq.
-        ieq++;
-        // We also need to change ulo, but we also need to do
-        // that when A[ulo] = pivot, so we do it after this if
-        // statement.
-        }
         // Once again, we can reduce the size of the unpartitioned
         // region and try again.
         ulo++;
-    }
+      }
     }
     // Now, all entries from index ilo to ieq - 1 are less than the pivot
     // and all entries from index uhi to ihi + 1 are greater than the
     // pivot.  So we have two regions of the array that can be sorted
     // recursively to put all of the entries in order.
     Qksort_Int(A, B, ilo, ieq - 1);
-    Qksort_Int(A, B, uhi + 1, ihi);
-
+    Qksort_Int(A, B, uhi + 1, ihi);    
 }
 
 //////////////////////////////////////////////////////////////
