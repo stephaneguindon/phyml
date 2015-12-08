@@ -3620,18 +3620,18 @@ void MCMC_Adjust_Tuning_Parameter(int move, t_mcmc *mcmc)
 	}
       else if(!strcmp(mcmc->move_name[move],"phyrex_ldsk_and_disk"))
 	{
-	  rate_inf = 0.3;
-	  rate_sup = 0.3;
+	  rate_inf = 0.234;
+	  rate_sup = 0.234;
 	}
       else if(!strcmp(mcmc->move_name[move],"phyrex_ldsk_multi"))
 	{
-	  rate_inf = 0.3;
-	  rate_sup = 0.3;
+	  rate_inf = 0.234;
+	  rate_sup = 0.234;
 	}
       else if(!strcmp(mcmc->move_name[move],"phyrex_disk_multi"))
 	{
-	  rate_inf = 0.3;
-	  rate_sup = 0.3;
+	  rate_inf = 0.234;
+	  rate_sup = 0.234;
 	}
       else
 	{
@@ -6922,13 +6922,13 @@ void MCMC_PHYREX_Lineage_Traj(t_tree *tree)
       cur_path_len = PHYREX_Path_Len(start_ldsk,end_ldsk)-2;
       rate         = (phydbl)(n_hits - cur_path_len)/(sizeT - dt);
       
-      hr += PHYREX_Path_Logdensity(start_ldsk,end_ldsk,rate*dt,5.0*tree->mmod->rad,tree);
+      hr += PHYREX_Path_Logdensity(start_ldsk,end_ldsk,rate*dt,1.0*tree->mmod->rad,tree);
       
-      new_path = PHYREX_Generate_Path(start_ldsk,end_ldsk,rate*dt,5.0*tree->mmod->rad,tree);
+      new_path = PHYREX_Generate_Path(start_ldsk,end_ldsk,rate*dt,1.0*tree->mmod->rad,tree);
       cur_path = PHYREX_Remove_Path(start_ldsk,end_ldsk,&pos,tree);
       PHYREX_Insert_Path(start_ldsk,end_ldsk,new_path,pos,tree);
       
-      hr -= PHYREX_Path_Logdensity(start_ldsk,end_ldsk,rate*dt,5.0*tree->mmod->rad,tree);
+      hr -= PHYREX_Path_Logdensity(start_ldsk,end_ldsk,rate*dt,1.0*tree->mmod->rad,tree);
       
       /* new_glnL = PHYREX_Lk(tree); */
 
@@ -7034,7 +7034,7 @@ void MCMC_PHYREX_Lbda_Times(t_tree *tree)
 
   new_glnL  = cur_glnL;
   new_glnL -= (n_inter)*LOG(tree->mmod->lbda) + tree->mmod->lbda*disk->time;
-  new_lbda = cur_lbda * EXP(0.1*(Uni()-.5));
+  new_lbda = cur_lbda * EXP(0.3*(Uni()-.5));
   hr += LOG(new_lbda/cur_lbda);
 
   tree->mmod->lbda = new_lbda;
