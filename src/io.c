@@ -5873,7 +5873,7 @@ void Check_Taxa_Sets(t_tree *mixt_tree)
               if(strcmp(tree->a_nodes[i]->name,tree->next->a_nodes[i]->name))
                 {
                   PhyML_Printf("\n== There seems to be a problem in one (or more) of your");
-                  PhyML_Printf("\n== sequence alignment. PhyML could not match taxon");
+                  PhyML_Printf("\n== sequence alignments. PhyML could not match taxon");
                   PhyML_Printf("\n== '%s' found in file '%s' with any of the taxa",tree->a_nodes[i]->name,tree->io->in_align_file);
                   PhyML_Printf("\n== listed in file '%s'.",tree->next->io->in_align_file);
                   Exit("\n");

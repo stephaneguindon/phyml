@@ -160,7 +160,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   /* seed = 21414; */
   /* seed = 13536; */
   /* seed = 28366; */
-  /* seed = 20679; */
+  seed = 20679;
   /* seed = 11613; */
 
   printf("\n. seed: %d",seed);
@@ -3668,7 +3668,7 @@ t_ldsk *PHYREX_Generate_Path(t_ldsk *beg, t_ldsk *end, phydbl cur_n_evt, phydbl 
             mode = (end->coord->lonlat[i] - ldsk_a[j-1]->coord->lonlat[i])/(n_evt+1.-j) + ldsk_a[j-1]->coord->lonlat[i];          
 
           ldsk_a[j]->coord->lonlat[i] = Rnorm_Trunc(mode,
-                                                    SQRT(2.0*POW(sd,2)),
+                                                    sd,
                                                     0.0,
                                                     tree->mmod->lim->lonlat[i],&err);
           
@@ -3729,7 +3729,7 @@ phydbl PHYREX_Path_Logdensity(t_ldsk *beg, t_ldsk *end, phydbl cur_n_evt, phydbl
 
           lnDens += Log_Dnorm_Trunc(ldsk->prev->coord->lonlat[i],
                                     mode,
-                                    SQRT(2.0*POW(sd,2)),
+                                    sd,
                                     0.0,
                                     tree->mmod->lim->lonlat[i],&err);
 
