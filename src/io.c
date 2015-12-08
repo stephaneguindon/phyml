@@ -1317,9 +1317,9 @@ void Post_Process_Data(option *io)
               if(strcmp(io->data[i]->name,io->data[j]->name) < 0)
                 {
                   swap = TRUE;
-                  data_buff = io->data[i]->name;
-                  io->data[i]->name = io->data[j]->name;
-                  io->data[j]->name = data_buff;
+                  data_buff = io->data[i];
+                  io->data[i] = io->data[j];
+                  io->data[j] = data_buff;
                 }
             }
         }
