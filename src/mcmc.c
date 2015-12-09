@@ -4502,9 +4502,9 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_geo_dum]               = 1.0;
 
 # if defined (PHYREX)
-  mcmc->move_weight[mcmc->num_move_phyrex_lbda]                  = 5.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_mu]                    = 8.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_rad]                   = 5.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_lbda]                  = 2.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_mu]                    = 3.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_rad]                   = 2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_sigsq]                 = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_disk]            = 2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_hit]             = 2.0;
@@ -5209,8 +5209,6 @@ void MCMC_PHYREX_Delete_Disk(phydbl hr, int n_delete_disks, phydbl cur_lbda, phy
   hr -= n_delete_disks * LOG(-T);
   hr += LnFact(n_delete_disks);
 
-  Free(valid_disks);
-
   new_glnL = PHYREX_Lk(tree);
   ratio += (new_glnL - cur_glnL);
   ratio += hr;
@@ -5254,6 +5252,7 @@ void MCMC_PHYREX_Delete_Disk(phydbl hr, int n_delete_disks, phydbl cur_lbda, phy
       tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_indel_disk]++;
     }
 
+  Free(valid_disks);
   Free(target_disk);
   Free(permut);
 }
@@ -5467,7 +5466,6 @@ void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree)
       target_disk[i]->time = new_time;
     }
   
-  Free(permut);
 
   tree->mmod->c_lnL = new_glnL;
 
@@ -5528,6 +5526,7 @@ void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree)
   Free(target_disk);
   Free(all_disks);
   Free(ori_time);
+  Free(permut);
 
 }
 #endif
@@ -6256,7 +6255,6 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
 
   while(n_iter--)
     {
-
       tree->mcmc->run_move[tree->mcmc->num_move_phyrex_spr]++;
   
       valid_disks    = NULL;
@@ -7646,6 +7644,7 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree)
         }
     }
 
+  Free(permut);
   Free(all_disks);
 }
 #endif
@@ -7748,6 +7747,7 @@ void MCMC_PHYREX_Disk_Given_Ldsk(t_tree *tree)
         }
     }
 
+  Free(permut);
   Free(all_disks);
 }
 #endif
