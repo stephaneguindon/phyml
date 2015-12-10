@@ -4502,9 +4502,9 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_geo_dum]               = 1.0;
 
 # if defined (PHYREX)
-  mcmc->move_weight[mcmc->num_move_phyrex_lbda]                  = 2.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_mu]                    = 3.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_rad]                   = 2.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_lbda]                  = 4.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_mu]                    = 6.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_rad]                   = 4.0;
   mcmc->move_weight[mcmc->num_move_phyrex_sigsq]                 = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_disk]            = 2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_hit]             = 2.0;
@@ -4513,7 +4513,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_spr]                   = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           = 2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldscape_lim]           = 0.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 3.0;
   mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 5.0;
   mcmc->move_weight[mcmc->num_move_phyrex_lbda_times]            = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_sim_plus]              = 1.0;
