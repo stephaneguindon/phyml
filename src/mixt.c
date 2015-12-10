@@ -1760,7 +1760,8 @@ void MIXT_Bootstrap(char *best_tree, xml_node *root)
       sprintf(xml_boot_file_name+strlen(xml_boot_file_name),"%d",pid);
       strcat(xml_boot_file_name,".xml");
 
-      out_attr = XML_Search_Attribute(root,"outputfile");
+      out_attr = XML_Search_Attribute(root,"output.file");
+      assert(out_attr);
       boot_out_file_name = (char *)mCalloc(T_MAX_NAME,sizeof(char));
       strcpy(boot_out_file_name,out_attr->value);
       s = XML_Get_Attribute_Value(root,"run.id");
@@ -1780,10 +1781,12 @@ void MIXT_Bootstrap(char *best_tree, xml_node *root)
           /*! Set the number of bootstrap repeats to 0
             in each generated XML file */
           boot_attr = XML_Search_Attribute(boot_root,"bootstrap");
+          assert(boot_attr);
           strcpy(boot_attr->value,"0");
 
           /*! Set the output file name for each bootstrap analysis */
-          boot_out_attr = XML_Search_Attribute(boot_root,"outputfile");
+          boot_out_attr = XML_Search_Attribute(boot_root,"output.file");
+          assert(boot_out_attr);
           buff = (char *)mCalloc(T_MAX_NAME,sizeof(char));
           strcpy(buff,boot_out_attr->value);
           Free(boot_out_attr->value);
@@ -1803,8 +1806,9 @@ void MIXT_Bootstrap(char *best_tree, xml_node *root)
               /*! Get the original sequence file name and the corresponding
                 attribute in the XML graph
               */
-              seqfile_attr    = NULL;
-              seqfile_attr    = XML_Search_Attribute(p_elem,"filename");
+              seqfile_attr = NULL;
+              seqfile_attr = XML_Search_Attribute(p_elem,"file.name");
+              assert(seqfile_attr);
 
               strcpy(orig_align,seqfile_attr->value);
 
@@ -1871,7 +1875,7 @@ void MIXT_Bootstrap(char *best_tree, xml_node *root)
             {
               p_elem = XML_Search_Node_Name("partitionelem",YES,p_elem);
               if(!p_elem) break;
-              seqfile_attr = XML_Search_Attribute(p_elem,"filename");
+              seqfile_attr = XML_Search_Attribute(p_elem,"file.name");
               /* unlink(seqfile_attr->value); */
             }
           while(p_elem);
