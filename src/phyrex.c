@@ -179,10 +179,10 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   sprintf(s+strlen(s),".%d",tree->mod->io->r_seed);
   tree->io->fp_out_stats = Openfile(s,WRITE);
   strcpy(s,"phyrex_summary");
-  sprintf(s+strlen(s),".%d",pid);
+  sprintf(s+strlen(s),".%d",tree->mod->io->r_seed);
   tree->io->fp_out_summary = Openfile(s,WRITE);
   strcpy(s,"phyrex_mtt");
-  sprintf(s+strlen(s),".%d.xml",pid);
+  sprintf(s+strlen(s),".%d.xml",tree->mod->io->r_seed);
   PHYREX_Print_MultiTypeTree_Config_File(n_sites,s,tree);
 
   res = PHYREX_MCMC(tree);
