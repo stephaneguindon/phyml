@@ -4520,8 +4520,8 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_indel_disk_serial]     = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_hit_serial]      = 1.0;
 
-  mcmc->move_weight[mcmc->num_move_phyrex_ldsk_given_disk]       = 0.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_disk_given_ldsk]       = 0.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_ldsk_given_disk]       = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_disk_given_ldsk]       = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldsk_and_disk]         = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldsk_multi]            = 2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_disk_multi]            = 2.0;
@@ -7942,7 +7942,7 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
             {
               hr += Log_Dnorm_Trunc(target_disk->ldsk->coord->lonlat[j],
                                     0.5*(young_ldsk->coord->lonlat[j]+old_ldsk->coord->lonlat[j]),
-                                    tree->mmod->rad,
+                                    2.0*tree->mmod->rad,
                                     0.0,
                                     tree->mmod->lim->lonlat[j],&err);
             }
@@ -7952,7 +7952,7 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
             {
               hr += Log_Dnorm_Trunc(target_disk->centr->lonlat[j],
                                     target_disk->ldsk->coord->lonlat[j],
-                                    tree->mmod->rad,
+                                    2.0*tree->mmod->rad,
                                     0.0,tree->mmod->lim->lonlat[j],&err);
             }
 
@@ -8072,8 +8072,12 @@ void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree)
           new_disk->time = t;
           PHYREX_Insert_Disk(new_disk,tree);
 
-          For(j,tree->mmod->n_dim) new_disk->centr->lonlat[j] = Uni()*tree->mmod->lim->lonlat[j];
-          
+          For(j,tree->mmod->n_dim) 
+            {
+              new_disk->centr->lonlat[j] = Uni()*tree->mmod->lim->lonlat[j];
+              hr -= LOG(1./tree->mmod->lim->lonlat[j]);
+            }
+
           new_glnL += PHYREX_Lk_Range(new_disk,disk,tree);
           tree->mmod->c_lnL = new_glnL;
           
@@ -8124,6 +8128,11 @@ void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree)
           new_glnL += PHYREX_Lk_Range(disk->prev,disk->prev,tree);
           tree->mmod->c_lnL = new_glnL;
                     
+          For(j,tree->mmod->n_dim) 
+            {
+              hr += LOG(1./tree->mmod->lim->lonlat[j]);
+            }
+
           ratio  = (new_glnL - cur_glnL);
           ratio += hr;
           
