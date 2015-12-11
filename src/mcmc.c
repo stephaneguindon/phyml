@@ -7737,7 +7737,7 @@ void MCMC_PHYREX_Disk_Given_Ldsk(t_tree *tree)
               
               if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
                 {
-                  PhyML_Printf("\n. disk->ldsk->prev: %p",disk->ldsk->prev);
+                  PhyML_Printf("\n== disk->ldsk->prev: %p",disk->ldsk->prev);
                   PhyML_Printf("\n== new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
                   Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
                 }
@@ -8082,8 +8082,7 @@ void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree)
           tree->mmod->c_lnL = new_glnL;
           
           /* new_glnL = PHYREX_Lk(tree); */
-          
-          
+                    
           ratio  = (new_glnL - cur_glnL);
           ratio += hr;
           
@@ -8122,16 +8121,12 @@ void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree)
           hr -= LOG(FABS((disk->time - disk->next->time)/T));
           hr += log_one_on_T;
           hr += log_lk_centr;
-          
+
           new_glnL -= PHYREX_Lk_Range(disk,disk->prev,tree);
           PHYREX_Remove_Disk(disk);
           new_glnL += PHYREX_Lk_Range(disk->prev,disk->prev,tree);
           tree->mmod->c_lnL = new_glnL;
                     
-          For(j,tree->mmod->n_dim) 
-            {
-              hr += LOG(1./tree->mmod->lim->lonlat[j]);
-            }
 
           ratio  = (new_glnL - cur_glnL);
           ratio += hr;
