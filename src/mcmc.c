@@ -4513,10 +4513,10 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_spr]                   = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           = 2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldscape_lim]           = 0.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 3.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 5.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 0.1;
+  mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_lbda_times]            = 1.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_sim_plus]              = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_sim_plus]              = 0.1;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_disk_serial]     = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_hit_serial]      = 1.0;
 
@@ -6891,8 +6891,7 @@ void MCMC_PHYREX_Lineage_Traj(t_tree *tree)
   if(!n_valid_disks) return;
       
   permut = Permutate(n_valid_disks);
-  n_iter = n_valid_disks;
-
+  n_iter = Rand_Int(1,1+(int)(n_valid_disks/5));
   
   For(j,n_iter)
     {
@@ -7595,20 +7594,20 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree)
 
           disk->ldsk->coord->lonlat[j] =
             Rnorm_Trunc((o+2.*c)/3.,
-                        2.*SQRT(f*tree->mmod->rad*tree->mmod->rad),
+                        1.*SQRT(f*tree->mmod->rad*tree->mmod->rad),
                         0.0,
                         tree->mmod->lim->lonlat[j],&err);
         
 
           hr -= Log_Dnorm_Trunc(disk->ldsk->coord->lonlat[j],
                                 (o+2.*c)/3.,
-                                2.*SQRT(f*tree->mmod->rad*tree->mmod->rad),
+                                1.*SQRT(f*tree->mmod->rad*tree->mmod->rad),
                                 0.0,
                                 tree->mmod->lim->lonlat[j],&err);
           
           hr += Log_Dnorm_Trunc(disk->ldsk->coord->cpy->lonlat[j],
                                 (o+2.*c)/3.,
-                                2.*SQRT(f*tree->mmod->rad*tree->mmod->rad),
+                                1.*SQRT(f*tree->mmod->rad*tree->mmod->rad),
                                 0.0,
                                 tree->mmod->lim->lonlat[j],&err);
         }
@@ -8072,11 +8071,7 @@ void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree)
           new_disk->time = t;
           PHYREX_Insert_Disk(new_disk,tree);
 
-          For(j,tree->mmod->n_dim) 
-            {
-              new_disk->centr->lonlat[j] = Uni()*tree->mmod->lim->lonlat[j];
-              hr -= LOG(1./tree->mmod->lim->lonlat[j]);
-            }
+          For(j,tree->mmod->n_dim) new_disk->centr->lonlat[j] = Uni()*tree->mmod->lim->lonlat[j];
 
           new_glnL += PHYREX_Lk_Range(new_disk,disk,tree);
           tree->mmod->c_lnL = new_glnL;
