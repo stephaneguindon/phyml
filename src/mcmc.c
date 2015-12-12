@@ -5956,11 +5956,11 @@ void MCMC_PHYREX_Insert_Hit(phydbl hr, int n_insert_disks, phydbl cur_rad, phydb
       For(i,tree->mmod->n_dim)
         {
           new_ldsk[j]->coord->lonlat[i] = Rnorm_Trunc(0.5*(young_ldsk[j]->coord->lonlat[i]+old_ldsk[j]->coord->lonlat[i]),
-                                                      2.0*tree->mmod->rad,
+                                                      1.0*tree->mmod->rad,
                                                       0.0,tree->mmod->lim->lonlat[i],&err);
           hr -= Log_Dnorm_Trunc(new_ldsk[j]->coord->lonlat[i],
                                 0.5*(young_ldsk[j]->coord->lonlat[i]+old_ldsk[j]->coord->lonlat[i]),
-                                2.0*tree->mmod->rad,
+                                1.0*tree->mmod->rad,
                                 0.0,tree->mmod->lim->lonlat[i],&err);
         }
 
@@ -5968,11 +5968,12 @@ void MCMC_PHYREX_Insert_Hit(phydbl hr, int n_insert_disks, phydbl cur_rad, phydb
       For(i,tree->mmod->n_dim)
         {
           new_disk[j]->centr->lonlat[i] = Rnorm_Trunc(new_ldsk[j]->coord->lonlat[i],
-                                                      2.0*tree->mmod->rad,
+                                                      1.0*tree->mmod->rad,
                                                       0.0,tree->mmod->lim->lonlat[i],&err);
           hr -= Log_Dnorm_Trunc(new_disk[j]->centr->lonlat[i],
                                 new_ldsk[j]->coord->lonlat[i],
-                                2.0*tree->mmod->rad,0.0,tree->mmod->lim->lonlat[i],&err);
+                                1.0*tree->mmod->rad,
+                                0.0,tree->mmod->lim->lonlat[i],&err);
 
         }
 
