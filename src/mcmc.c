@@ -4502,23 +4502,23 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_geo_dum]               = 1.0;
 
 # if defined (PHYREX)
-  mcmc->move_weight[mcmc->num_move_phyrex_lbda]                  = 4.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_mu]                    = 6.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_rad]                   = 4.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_lbda]                  = 5.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_mu]                    = 8.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_rad]                   = 5.0;
   mcmc->move_weight[mcmc->num_move_phyrex_sigsq]                 = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_disk]            = 2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_hit]             = 2.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ud]          = 3.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_swap_disk]             = 5.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ud]          = 5.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_swap_disk]             = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_spr]                   = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           = 2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldscape_lim]           = 0.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 0.1;
-  mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 2.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 2.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 3.0;
   mcmc->move_weight[mcmc->num_move_phyrex_lbda_times]            = 1.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_sim_plus]              = 0.1;
-  mcmc->move_weight[mcmc->num_move_phyrex_indel_disk_serial]     = 1.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_indel_hit_serial]      = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_sim_plus]              = 0.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_indel_disk_serial]     = 2.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_indel_hit_serial]      = 2.0;
 
   mcmc->move_weight[mcmc->num_move_phyrex_ldsk_given_disk]       = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_disk_given_ldsk]       = 1.0;
