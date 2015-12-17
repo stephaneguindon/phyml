@@ -1100,7 +1100,7 @@ void RATES_Free_Rates(t_rate *rates)
       Free(rates->t_prior_max);
       Free(rates->t_floor);
       Free(rates->t_has_prior);
-      Free(rates->t_ranked);
+      Free(rates->t_rank);
       Free(rates->dens);
       Free(rates->triplet);
       Free(rates->n_jps);

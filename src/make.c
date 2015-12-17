@@ -1047,7 +1047,7 @@ t_rate *RATES_Make_Rate_Struct(int n_otu)
       rates->t_prior_min          = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
       rates->t_prior_max          = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
       rates->t_floor              = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
-      rates->t_ranked             = (int *)mCalloc(2*n_otu-1,sizeof(int));
+      rates->t_rank               = (int *)mCalloc(2*n_otu-1,sizeof(int));
       rates->t_has_prior          = (short int *)mCalloc(2*n_otu-1,sizeof(short int));
       rates->dens                 = (phydbl *)mCalloc(2*n_otu-2,sizeof(phydbl));
       rates->triplet              = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));

@@ -930,7 +930,7 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
           rates->br_do_updt[i] = YES;
           rates->has_survived[i] = NO;
           
-          rates->t_ranked[i] = i;
+          rates->t_rank[i] = i;
         }
     }
   

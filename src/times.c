@@ -792,7 +792,7 @@ phydbl TIMES_Lk_Yule_Joint(t_tree *tree)
 
   t = tree->rates->nd_t;
   ts = tree->rates->time_slice_lims;
-  tr = tree->rates->t_ranked;
+  tr = tree->rates->t_rank;
   lbda = tree->rates->birth_rate;
 
   TIMES_Update_Node_Ordering(tree);
@@ -803,7 +803,7 @@ phydbl TIMES_Lk_Yule_Joint(t_tree *tree)
 
   sumdt = .0;
   n = 1;
-  For(i,2*tree->n_otu-2) // t[tr[0]] is the oldest node, t[tr[1]], the second oldest and so on...
+  For(i,2*tree->n_otu-2) // t[tr[0]] is the time of the oldest node, t[tr[1]], the second oldest and so on...
     {
 
       For(j,tree->n_otu)
@@ -821,8 +821,8 @@ phydbl TIMES_Lk_Yule_Joint(t_tree *tree)
 
       if(n<1)
 	{
-	  PhyML_Printf("\n. i=%d tr[i]=%f",i,t[tr[i]]);
-	  PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+	  PhyML_Printf("\n== i=%d tr[i]=%f",i,t[tr[i]]);
+	  PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
 	  Exit("\n");
 	}
 
@@ -1435,12 +1435,12 @@ void TIMES_Update_Node_Ordering(t_tree *tree)
       swap = NO;
       For(i,2*tree->n_otu-2)
 	{
-	  if(t[tree->rates->t_ranked[i]] > t[tree->rates->t_ranked[i+1]]) // Sort in ascending order
+	  if(t[tree->rates->t_rank[i]] > t[tree->rates->t_rank[i+1]]) // Sort in ascending order
 	    {
 	      swap = YES;
-	      buff                       = tree->rates->t_ranked[i];
-	      tree->rates->t_ranked[i]   = tree->rates->t_ranked[i+1];
-	      tree->rates->t_ranked[i+1] = buff;
+	      buff                       = tree->rates->t_rank[i];
+	      tree->rates->t_rank[i]   = tree->rates->t_rank[i+1];
+	      tree->rates->t_rank[i+1] = buff;
 	    }	    
 	}
     }
@@ -1448,7 +1448,7 @@ void TIMES_Update_Node_Ordering(t_tree *tree)
 
   /* For(i,2*tree->n_otu-1) */
   /*   { */
-  /*     printf("\n. ..... %f",t[tree->rates->t_ranked[i]]); */
+  /*     printf("\n. ..... %f",t[tree->rates->t_rank[i]]); */
   /*   } */
 }
 
@@ -1632,8 +1632,4 @@ phydbl TIMES_Lk_Yule_Order_Root_Cond(t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
-/* void TIMES_(t_tree *tree) */
-/* { */
-/* } */
 
