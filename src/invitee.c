@@ -341,7 +341,7 @@ void PhyTime_XML(char *xml_file)
                           i = 0;
                           xml_node *nd;
                           nd = n_clade -> child;
-                          clade = XML_Reading_Clade(nd, tree);
+                          clade = XML_Read_Clade(nd, tree);
                           clade_size = XML_Number_Of_Taxa_In_Clade(nd);
                           node_num = Find_Clade(clade, clade_size, io -> tree);
                         }
@@ -417,7 +417,7 @@ void PhyTime_XML(char *xml_file)
 
           tree -> rates -> calib = tree -> rates -> calib -> next;	   
           n_r = n_r -> next;
-        }      
+        }
       else if(!strcmp(n_r -> name, "ratematrices"))//initializing rate matrix:
         {
           if(n_r -> child) 
@@ -445,6 +445,7 @@ void PhyTime_XML(char *xml_file)
             }
           else n_r = n_r -> next;
         }
+
       else if (n_r -> next) n_r = n_r -> next;
       else break;
     }
@@ -2317,65 +2318,10 @@ xml_node *XML_Search_Node_Attribute_Value_Clade(char *attr_name, char *value, in
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-char **XML_Reading_Clade(xml_node *n_clade, t_tree *tree)
-{
-  int i, /* j, */ n_otu;
-  char **clade;
 
-  i = 0;
-  n_otu = tree -> n_otu;
-
-  clade = (char **)mCalloc(n_otu, sizeof(char *));
-  /* For(j, n_otu) */
-  /*   { */
-  /*     clade[j] = (char *)mCalloc(T_MAX_NAME,sizeof(char)); */
-  /*   } */
-
-  if(n_clade)
-    {
-      do
-        {
-          clade[i] =  n_clade -> attr -> value; 
-          i++;
-          if(n_clade -> next) n_clade = n_clade -> next;
-          else break;
-        }
-      while(n_clade);
-    }
-  else
-    {
-      PhyML_Printf("== Clade is empty. \n");
-      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
-      Exit("\n");
-    }
-
-  return(clade);                          
-}
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-int XML_Number_Of_Taxa_In_Clade(xml_node *n_clade)
-{
-  int clade_size = 0;
-  if(n_clade)
-    {
-      do
-        {
-          clade_size++; 
-          if(n_clade -> next) n_clade = n_clade -> next;
-          else break;
-        }
-      while(n_clade);
-    }
-  else
-    {
-      PhyML_Printf("==Clade is empty. \n");
-      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
-      Exit("\n");
-    }
-  return(clade_size);
-}
-
 
 
 //////////////////////////////////////////////////////////////

@@ -36,6 +36,9 @@ xml_node *XML_Copy_XML_Graph(xml_node *root);
 void XML_Copy_XML_Node(xml_node *cpy_root, xml_node *root);
 void Check_Mandatory_XML_Node(xml_node *root, char *name);
 xml_node *XML_Search_Node_Generic(char *nd_name, char *attr_name, char *attr_val, int skip, xml_node *node);
+t_tree *XML_Process_Base(char *xml_filename);
+int XML_Number_Of_Taxa_In_Clade(xml_node *n_clade);
+char **XML_Read_Clade(xml_node *n_clade, t_tree *tree);
 
 
 #endif

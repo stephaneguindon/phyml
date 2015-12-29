@@ -60,7 +60,7 @@ t_string *Make_String(int len);
 t_mcmc *MCMC_Make_MCMC_Struct();
 void Make_Tree_4_Lk(t_tree *tree,calign *cdata,int n_site);
 t_rate *RATES_Make_Rate_Struct(int n_otu);
-t_cal *Make_Calib();
+t_cal *Make_Calibration();
 void Make_Efrq_Weight(t_tree *mixt_tree);
 void Make_Rmat_Weight(t_tree *mixt_tree);
 t_geo *GEO_Make_Geo_Basic();

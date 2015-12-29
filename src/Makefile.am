@@ -34,6 +34,10 @@ if WANT_MPI
 bin_PROGRAMS = phyml-mpi
 PROG = PHYML
 else
+if WANT_WIN
+bin_PROGRAMS = phyml-windows
+PROG = PHYML
+else
 if WANT_TEST
 bin_PROGRAMS = test
 PROG = TEST
@@ -62,8 +66,14 @@ if WANT_PHYREX
 bin_PROGRAMS = phyrex
 PROG = PHYREX
 else
+if WANT_DATE
+bin_PROGRAMS = date
+PROG = DATE
+else
 bin_PROGRAMS = phyml
 PROG = PHYML
+endif
+endif
 endif
 endif
 endif
@@ -310,6 +320,38 @@ mixt.c mixt.h\
 mpi_boot.c mpi_boot.h
 phyml_mpi_LDADD = -lm
 else
+if WANT_WIN
+phyml_windows_SOURCES = main.c \
+utilities.c  utilities.h\
+optimiz.c  optimiz.h\
+lk.c  lk.h\
+bionj.c bionj.h\
+models.c  models.h\
+free.c  free.h\
+help.c  help.h\
+simu.c  simu.h\
+eigen.c  eigen.h\
+pars.c  pars.h\
+alrt.c  alrt.h\
+interface.c  interface.h\
+cl.c  cl.h\
+spr.c spr.h\
+draw.c  draw.h\
+stats.c stats.h\
+rates.c rates.h\
+mcmc.c mcmc.h\
+times.c times.h\
+tiporder.c tiporder.h\
+mg.c mg.h\
+m4.c m4.h\
+io.c io.h\
+make.c make.h\
+nexus.c nexus.h\
+init.c init.h\
+xml.c xml.h\
+mixt.c mixt.h
+phyml_windows_LDADD = -lm
+else
 if WANT_TEST
 test_SOURCES = main.c \
 utilities.c  utilities.h\
@@ -538,6 +580,39 @@ mixt.c mixt.h\
 beagle_utils.c beagle_utils.h
 phyml_beagle_LDADD = -lm -lhmsbeagle
 else
+if WANT_DATE
+date_SOURCES = main.c \
+utilities.c  utilities.h\
+optimiz.c  optimiz.h\
+lk.c  lk.h\
+bionj.c bionj.h\
+models.c  models.h\
+free.c  free.h\
+help.c  help.h\
+simu.c  simu.h\
+eigen.c  eigen.h\
+pars.c  pars.h\
+alrt.c  alrt.h\
+interface.c  interface.h\
+cl.c  cl.h\
+spr.c spr.h\
+draw.c  draw.h\
+stats.c stats.h\
+rates.c rates.h\
+mcmc.c mcmc.h\
+times.c times.h\
+tiporder.c tiporder.h\
+mg.c mg.h\
+m4.c m4.h\
+io.c io.h\
+make.c make.h\
+nexus.c nexus.h\
+init.c init.h\
+xml.c xml.h\
+mixt.c mixt.h\
+date.c date.h
+date_LDADD = -lm
+else
 phyml_SOURCES = main.c \
 utilities.c  utilities.h\
 optimiz.c  optimiz.h\
@@ -568,6 +643,8 @@ init.c init.h\
 xml.c xml.h\
 mixt.c mixt.h
 phyml_LDADD = -lm
+endif
+endif
 endif
 endif
 endif

@@ -21,8 +21,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int PHYREX_Main(int argc, char *argv[])
 {
-  return(PHYREX_Main_Estimate(argc,argv));
-  /* return(PHYREX_Main_Simulate(argc,argv)); */
+  /* return(PHYREX_Main_Estimate(argc,argv)); */
+  return(PHYREX_Main_Simulate(argc,argv));
 
 }
 
@@ -333,8 +333,8 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   fflush(NULL);
 
 
-  /* PHYREX_Simulate_Backward_Core(YES,tree->disk,tree); */
-  mmod->sampl_area = PHYREX_Simulate_Forward_Core(n_sites,tree);
+  PHYREX_Simulate_Backward_Core(YES,tree->disk,tree);
+  /* mmod->sampl_area = PHYREX_Simulate_Forward_Core(n_sites,tree); */
     
   PHYREX_Ldsk_To_Tree(tree);  
 

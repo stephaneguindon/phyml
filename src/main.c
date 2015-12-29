@@ -569,6 +569,14 @@ int main(int argc, char **argv)
   return 1;
 }
 
+#elif(DATE)
+#include "date.h"
+int main(int argc, char **argv)
+{
+  DATE_Main(argc,argv);
+  return 1;
+}
+
 #elif(CHECKPOINT)
 #include "checkpoint.h"
 int main(int argc, char **argv)

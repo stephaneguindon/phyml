@@ -6,6 +6,9 @@
 /* CHECKPOINT tag on */
 #undef CHECKPOINT
 
+/* DATE tag on */
+#undef DATE
+
 /* Debug tag on */
 #undef DEBUG
 

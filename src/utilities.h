@@ -426,10 +426,7 @@ typedef struct __Node {
   struct __Node                   *prev; /*! See above */
   struct __Node                *next_mixt; /*! Next mixture tree*/
   struct __Node                *prev_mixt; /*! Parent mixture tree */
-
-  struct __Calibration            **calib;
-  short int             *calib_applies_to;
-  int                             n_calib;
+  struct __Calibration               *cal; /*! Calibration information */
 
   int                           *bip_size; /*! Size of each of the three lists from bip_node */
   int                                 num; /*! t_node number */
@@ -604,6 +601,7 @@ typedef struct __Tree{
   struct __Phylogeo                      *geo;
   struct __Migrep_Model                 *mmod;
   struct __Disk_Event                   *disk;
+  struct __XML_node                 *xml_root;
 
   int                            is_mixt_tree;
   int                                tree_num; /*! tree number. Used for mixture models */
@@ -979,8 +977,6 @@ typedef struct __Model {
 #endif
 
 }t_mod;
-
-
 
 /*!********************************************************/
 
@@ -1422,10 +1418,8 @@ typedef struct __T_Rate {
 
   int *has_survived;
 
-  struct __Calibration *calib;
-  int tot_num_cal;
-  int *curr_nd_for_cal;
-  phydbl c_lnL_Hastings_ratio;
+  struct __Calibration **a_cal; /* array of calibration data */
+  int                    n_cal; /* number of elements in a_cal */
 
   phydbl     *t_prior_min_ori;
   phydbl     *t_prior_max_ori;
@@ -1627,15 +1621,17 @@ typedef struct __XML_attr {
 /*!********************************************************/
 
 typedef struct __Calibration {
-  phydbl *proba; // Probability of this calibration (set by the user and fixed throughout)
+  struct __Node *target_nd; // The node this calibration applies to
+  struct __Calibration *next; // Next calibration
+  struct __Calibration *prev; // Previous calibration
+
   phydbl lower; // lower bound
   phydbl upper; // upper bound
-  int cur_applies_to;
-  phydbl calib_proba;
-  struct __Node **all_applies_to;
-  int n_all_applies_to;
-  struct __Calibration *next;
-  struct __Calibration *prev;
+
+  short int is_primary; // Is is a primary or secondary calibration interval?
+  
+  char **target_tax;
+  int  n_target_tax;
 }t_cal;
 
 /*!********************************************************/

@@ -64,5 +64,6 @@ void PHYREX_Init_Disk_Event(t_dsk *t, int n_dim, t_phyrex_mod *mod);
 void PHYREX_Init_Lindisk_Node(t_ldsk *t, t_dsk *devt, int n_dim);
 void PHYREX_Init_Migrep_Mod(t_phyrex_mod *t, int n_dim, phydbl max_lat, phydbl max_lon);
 void MCMC_Init_MCMC_Struct(char *filename, option *io, t_mcmc *mcmc);
+void Init_Calibration(t_cal *cal);
 
 #endif

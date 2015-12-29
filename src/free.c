@@ -1087,6 +1087,8 @@ void RATES_Free_Rates(t_rate *rates)
 {
   if(rates->is_allocated == YES)
     {
+      int i;
+
       Free(rates->nd_r);
       Free(rates->br_r);
       Free(rates->buff_r);
@@ -1138,15 +1140,14 @@ void RATES_Free_Rates(t_rate *rates)
       Free(rates->has_survived);
       Free(rates->survival_rank);
       Free(rates->survival_dur);
-      Free(rates->calib_prob);
       Free(rates->node_height_dens_log_norm_const_update);
-      Free(rates->curr_nd_for_cal);
       Free(rates->t_prior_min_ori);
       Free(rates->t_prior_max_ori);
       Free(rates->times_partial_proba);
       Free(rates->numb_calib_chosen);
+      For(i,rates->n_cal) Free_Calib(rates->a_cal[i]);
+      Free(rates->a_cal);
     }
-  Free_Calib(rates->calib);
   Free(rates);
 }
 
@@ -1155,9 +1156,19 @@ void RATES_Free_Rates(t_rate *rates)
 
 void Free_Calib(t_cal *cal)
 {
+  
   if(!cal) return;
-  else Free_Calib(cal->next);
-  Free(cal);
+  else 
+    {      
+      Free_Calib(cal->next);
+      if(cal->target_tax != NULL)
+        {
+          int i;
+          For(i,cal->n_target_tax) Free(cal->target_tax[i]);
+          Free(cal->target_tax);
+        }
+      Free(cal);
+    }
 }
 
 /*////////////////////////////////////////////////////////////

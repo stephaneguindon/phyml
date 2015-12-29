@@ -88,13 +88,14 @@ AC_ARG_ENABLE([mpi],
                               [Compile with mpicc instead of gcc.])])
 AS_IF([test "x$enable_mpi" = "xyes"],[CC="mpicc"])
 AS_IF([test "x$enable_mpi" = "xyes"],AC_DEFINE([MPI],[1],[MPI tag on]))
-AM_CONDITIONAL([WANT_MPI], [test "x$enable_mpi" = "xyes"])
+AM_CONDITIONAL([WANT_MPI], [test "$enable_mpi" = yes])
 
 
 AC_ARG_ENABLE([win],
               [AS_HELP_STRING([--enable-win],
                               [Compile with mingw instead of gcc.])])
 AS_IF([test "x$enable_win" = "xyes"],[CC="i686-w64-mingw32-gcc"])
+AM_CONDITIONAL([WANT_WIN], [test "$enable_win" = yes])
 
 
 AC_ARG_ENABLE([beagle], [AS_HELP_STRING([--enable-beagle], [Compute likelihoods using BEAGLE library.])], [beagle=yes],[beagle=no])
@@ -184,12 +185,21 @@ AM_CONDITIONAL([WANT_PHYREX], [test "$phyrex" = yes])
 if test "$phyrex" = yes; then
    AC_DEFINE([PHYREX],[1],[PHYREX tag on])
 fi
+
 dnl AS_IF([test "x$enable_phyrex" = "xyes"],[PKG_CHECK_MODULES([GTK], [gtk+-3.0])])
 dnl AS_IF([test "x$enable_phyrex" = "xyes"],[PKG_CHECK_MODULES([CAIRO], [cairo])])
 dnl AS_IF([test "x$enable_phyrex" = "xyes"],[CFLAGS="${CFLAGS} `pkg-config --cflags --libs gtk+-3.0` ${ARCH_flag}"])
 
 
 dnl AM_PATH_GTK_3_0(,,AC_MSG_ERROR(windoe-default needs GTK+-3))
+
+AC_ARG_ENABLE([date],[AS_HELP_STRING([--enable-date],[Compile date])],[date=yes],[date=no])
+AM_CONDITIONAL([WANT_DATE], [test "$date" = yes])
+if test "$date" = yes; then
+   AC_DEFINE([DATE],[1],[DATE tag on])
+fi
+
+
 
 if test "$phytime" = no; then
 if test "$tiporder" = no; then
@@ -203,7 +213,9 @@ if test "$geo" = no; then
 if test "$evolve" = no; then
 if test "$checkpoint" = no; then
 if test "$phyrex" = no; then
+if test "$date" = no; then
    AC_DEFINE([PHYML],[1],[PHYML tag on])
+fi
 fi
 fi
 fi

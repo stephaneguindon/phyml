@@ -4880,7 +4880,7 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
   if(b1->left->tax == YES && b1->rght->tax == NO)
     {
       PhyML_Printf("\n== b1->left->num = %d",b1->left->num);
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 #endif
@@ -7883,7 +7883,7 @@ t_node *Find_Lca_Clade(t_node **node_list, int node_list_size, t_tree *tree)
   if(!tree->n_root)
     {
       PhyML_Printf("\n== The tree must be rooted in this function.");
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 

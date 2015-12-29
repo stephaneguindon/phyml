@@ -39,10 +39,11 @@ int TIMES_main(int argc, char **argv)
 #ifdef MPI
   int rc;
   rc = MPI_Init(&argc,&argv);
-  if (rc != MPI_SUCCESS) {
-    PhyML_Printf("\n. Error starting MPI program. Terminating.\n");
-    MPI_Abort(MPI_COMM_WORLD, rc);
-  }
+  if (rc != MPI_SUCCESS) 
+    {
+      PhyML_Printf("\n== Error starting MPI program. Terminating.\n");
+      MPI_Abort(MPI_COMM_WORLD, rc);
+    }
   MPI_Comm_size(MPI_COMM_WORLD,&Global_numTask);
   MPI_Comm_rank(MPI_COMM_WORLD,&Global_myRank);
 #endif
@@ -511,7 +512,6 @@ void TIMES_Print_Node_Times(t_node *a, t_node *d, t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void TIMES_Set_All_Node_Priors(t_tree *tree)
 {
@@ -1309,7 +1309,6 @@ void TIMES_Lk_Uniform_Post(t_node *a, t_node *d, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 /* Set the root position so that most of the taxa in the outgroup 
    correspond to the most ancient time point.
 */
@@ -1498,7 +1497,7 @@ void TIMES_Set_Calibration(t_tree *tree)
       tree->rates->t_prior_max[i] = BIG; 
    }
 
-  cal = tree->rates->calib;
+  cal = tree->rates->a_cal[0];
   while(cal)
     {
       /* if(cal->is_active == YES) */

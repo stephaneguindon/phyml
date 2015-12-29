@@ -196,19 +196,30 @@ int Read_Command_Line(option *io, int argc, char **argv)
           }
 	case 73:
 	  {
-#ifndef INVITEE
+#ifdef INVITEE
+            Free_Optimiz(io->mod->s_opt);
+            M4_Free_M4_Model(io->mod->m4mod);
+            Free_Model_Basic(io->mod);
+            Free_Input(io);
+            PhyTime_XML(optarg);
+            return 0;
+
+#elif defined(PHYML)
+
             Free_Optimiz(io->mod->s_opt);
             M4_Free_M4_Model(io->mod->m4mod);
             Free_Model_Basic(io->mod);
             Free_Input(io);
             PhyML_XML(optarg);
             return 0;
-#else
+
+#elif defined(DATE)
+
             Free_Optimiz(io->mod->s_opt);
             M4_Free_M4_Model(io->mod->m4mod);
             Free_Model_Basic(io->mod);
             Free_Input(io);
-            PhyTime_XML(optarg);
+            DATE_XML(optarg);
             return 0;
 #endif
             break;

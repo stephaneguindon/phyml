@@ -447,7 +447,24 @@ void MIXT_Chain_RAS(t_ras *curr, t_ras *next)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void MIXT_Turn_Branches_OnOff(int onoff, t_tree *mixt_tree)
+void MIXT_Turn_Branches_OnOff_In_All_Elem(int onoff, t_tree *mixt_tree)
+{
+  t_tree *tree;
+
+  /*! Turn all branches to ON state */
+  tree = mixt_tree;
+  do
+    {
+      MIXT_Turn_Branches_OnOff_In_One_Elem(ON,tree);
+      tree = tree->next_mixt;
+    }
+  while(tree);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void MIXT_Turn_Branches_OnOff_In_One_Elem(int onoff, t_tree *mixt_tree)
 {
   int i;
   t_tree *tree;
@@ -1397,7 +1414,7 @@ void MIXT_Prune_Subtree(t_node *mixt_a, t_node *mixt_d, t_edge **mixt_target, t_
   t_edge *target, *residual;
   t_tree *tree;
 
-  MIXT_Turn_Branches_OnOff(OFF,mixt_tree);
+  MIXT_Turn_Branches_OnOff_In_One_Elem(OFF,mixt_tree);
 
   tree     = mixt_tree;
   a        = mixt_a;
@@ -1432,7 +1449,7 @@ void MIXT_Prune_Subtree(t_node *mixt_a, t_node *mixt_d, t_edge **mixt_target, t_
     to Prune_Subtree such that, if branches of mixt_tree->next
     point to those of mixt_tree, they are set to OFF when calling
     Prune */
-  MIXT_Turn_Branches_OnOff(ON,mixt_tree);
+  MIXT_Turn_Branches_OnOff_In_One_Elem(ON,mixt_tree);
 
 }
 
@@ -1445,7 +1462,7 @@ void MIXT_Graft_Subtree(t_edge *mixt_target, t_node *mixt_link, t_edge *mixt_res
   t_node *link;
   t_tree *tree;
 
-  MIXT_Turn_Branches_OnOff(OFF,mixt_tree);
+  MIXT_Turn_Branches_OnOff_In_One_Elem(OFF,mixt_tree);
 
   tree     = mixt_tree;
   target   = mixt_target;
@@ -1477,7 +1494,7 @@ void MIXT_Graft_Subtree(t_edge *mixt_target, t_node *mixt_link, t_edge *mixt_res
     to Graft_Subtree such that, if branches of mixt_tree->next
     point to those of mixt_tree, they are set to OFF when calling
     Graft */
-  MIXT_Turn_Branches_OnOff(ON,mixt_tree);
+  MIXT_Turn_Branches_OnOff_In_One_Elem(ON,mixt_tree);
 }
 
 //////////////////////////////////////////////////////////////
@@ -1510,13 +1527,8 @@ void MIXT_Br_Len_Brent(phydbl prop_min,
     }
   while(tree);
 
-  tree = mixt_tree;
-  do
-    {
-      MIXT_Turn_Branches_OnOff(ON,tree);
-      tree = tree->next_mixt;
-    }
-  while(tree);
+
+  MIXT_Turn_Branches_OnOff_In_All_Elem(ON,mixt_tree);
 }
 
 /*////////////////////////////////////////////////////////////
@@ -1665,7 +1677,26 @@ void MIXT_Set_Alias_Subpatt(int onoff, t_tree *mixt_tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void MIXT_Check_Single_Edge_Lens(t_tree *mixt_tree)
+void MIXT_Check_Edge_Lens_In_All_Elem(t_tree *mixt_tree)
+{
+  t_tree *tree;
+
+  /*! Check that all the edges in a mixt_tree at pointing
+    to a single set of lengths
+  */
+  tree = mixt_tree;
+  do
+    {
+      MIXT_Check_Edge_Lens_In_One_Elem(tree);
+      tree = tree->next_mixt;
+    }
+  while(tree);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void MIXT_Check_Edge_Lens_In_One_Elem(t_tree *mixt_tree)
 {
   t_tree *tree;
   int i;
@@ -2042,18 +2073,151 @@ void MIXT_Update_Br_Len_Multipliers(t_mod *mod)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+void MIXT_Init_Model(t_tree *mixt_tree)
+{
+  t_mod *mod,*mixt_mod;
+  option *io;
+  t_tree *tree;
+
+  assert(mixt_tree);
+
+  mixt_mod = mixt_tree->mod;
+  io       = mixt_tree->io;
+
+  mod = mixt_mod;
+  do
+    {
+      Init_Model(mod->io->cdata,mod,io);
+      mod = mod->next;
+    }
+  while(mod);
+
+  tree = mixt_tree;
+  do
+    {
+      if(tree->next_mixt)
+        {
+          tree->mod->next_mixt = tree->next_mixt->mod;
+          tree->next_mixt->mod->prev_mixt = tree->mod;
+        }
+      tree = tree->next_mixt;
+    }
+  while(tree);
+}
+
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
+t_tree *MIXT_Starting_Tree(t_tree *mixt_tree)
+{
+  t_tree *tree;
+ 
+  switch(mixt_tree->io->in_tree)
+    {
+    case 2: // user-defined input tree 
+      {
+        assert(mixt_tree->io->fp_in_tree);
+        
+        // Copy user tree to all tree structures
+        tree = Read_User_Tree(mixt_tree->io->cdata,
+                              mixt_tree->mod,
+                              mixt_tree->io);
+        break;
+      }
+    case 1: case 0:
+      {
+        // Build a BioNJ tree from the analysis of
+        // the first partition element
+        tree = Dist_And_BioNJ(mixt_tree->data,
+                              mixt_tree->mod,
+                              mixt_tree->io);
+        break;
+      }
+    default : assert(FALSE);
+   }
+  
+  return tree;
+}
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+void MIXT_Connect_Cseqs_To_Nodes(t_tree *mixt_tree)
+{
+  t_tree *tree;
+  
+  tree = mixt_tree;
+  do
+    {
+      if(tree != mixt_tree) Copy_Tree(mixt_tree,tree);
+      Connect_CSeqs_To_Nodes(tree->data,mixt_tree->io,tree);
+      tree = tree->next;
+    }
+  while(tree);
+  
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+void MIXT_Init_T_Beg(t_tree *mixt_tree)
+{
+  t_tree *tree;
 
+  /*! Initialize t_beg in each mixture tree */
+  tree = mixt_tree;
+  do
+    {
+      time(&(tree->t_beg));
+      tree = tree->next_mixt;
+    }
+  while(tree);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void MIXT_Init_T_End(t_tree *mixt_tree)
+{
+  t_tree *tree;
+
+  /*! Initialize t_beg in each mixture tree */
+  tree = mixt_tree;
+  do
+    {
+      time(&(tree->t_current));
+      tree = tree->next_mixt;
+    }
+  while(tree);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void MIXT_Prepare_All(int num_rand_tree, t_tree *mixt_tree)
+{
+  t_tree *tree;
+
+  MIXT_Init_Model(mixt_tree);
+  Print_Data_Structure(NO,stdout,mixt_tree);
+  tree = MIXT_Starting_Tree(mixt_tree);
+  Copy_Tree(tree,mixt_tree);
+  Free_Tree(tree);
+  
+  if(mixt_tree->io->mod->s_opt->random_input_tree)
+    {
+      PhyML_Printf("\n\n. [%3d/%3d]",num_rand_tree+1,mixt_tree->io->mod->s_opt->n_rand_starts);
+      Random_Tree(mixt_tree);
+    }
+  
+  MIXT_Connect_Cseqs_To_Nodes(mixt_tree);
+  MIXT_Init_T_Beg(mixt_tree);
+  Prepare_Tree_For_Lk(mixt_tree);
+  MIXT_Chain_All(mixt_tree);
+  MIXT_Check_Edge_Lens_In_All_Elem(mixt_tree);
+  MIXT_Turn_Branches_OnOff_In_All_Elem(ON,mixt_tree);
+  MIXT_Check_Invar_Struct_In_Each_Partition_Elem(mixt_tree);
+  MIXT_Check_RAS_Struct_In_Each_Partition_Elem(mixt_tree);
+}
 

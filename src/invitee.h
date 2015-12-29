@@ -28,7 +28,7 @@ int Factorial(int base);
 phydbl *Norm_Constant_Prior_Times(t_tree *tree);
 void TIMES_Calib_Partial_Proba(t_tree *tree);
 xml_node *XML_Search_Node_Attribute_Value_Clade(char *attr_name, char *value, int skip, xml_node *node);
-char **XML_Reading_Clade(xml_node *n_clade, t_tree *tree);
+char **XML_Read_Clade(xml_node *n_clade, t_tree *tree);
 int XML_Number_Of_Taxa_In_Clade(xml_node *n_clade);
 void TIMES_Set_All_Node_Priors_S(int *result, t_tree *tree);
 void TIMES_Set_All_Node_Priors_Bottom_Up_S(t_node *a, t_node *d, int *result, t_tree *tree);

@@ -110,6 +110,7 @@ void Init_Tree(t_tree *tree, int n_otu)
   tree->prev                      = NULL;
   tree->mixt_tree                 = NULL;
   tree->geo                       = NULL;
+  tree->xml_root                  = NULL;
 
   tree->is_mixt_tree              = NO;
   tree->tree_num                  = 0;
@@ -225,7 +226,8 @@ void Init_Node_Light(t_node *n, int num)
   n->id_rank                = 0;
   n->next                   = NULL;
   n->prev                   = NULL;
-  /* n->next                  = NULL; */
+  n->cal                    = NULL;
+  /* n->next                 = NULL; */
   /* n->prev                 = NULL; */
 }
 
@@ -880,6 +882,7 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
 
   rates->update_mean_l = NO;
   rates->update_cov_l  = NO;
+  rates->n_cal         = 0;
 
   rates->p_max         = 0.01;
 
@@ -934,7 +937,6 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
         }
     }
   
-  rates->calib = NULL;
   rates->update_time_norm_const = NO;
 }
 
@@ -3557,7 +3559,16 @@ void MCMC_Init_MCMC_Struct(char *filename, option *io, t_mcmc *mcmc)
     }
 }
 
-
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+void Init_Calibration(t_cal *cal)
+{
+  cal->target_nd  = NULL;
+  cal->next       = NULL;
+  cal->prev       = NULL;
+  cal->target_tax = NULL;
+  cal->lower      = -1.;
+  cal->upper      = -1.;
+  cal->is_primary = FALSE;
+}

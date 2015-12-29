@@ -1086,7 +1086,6 @@ t_rate *RATES_Make_Rate_Struct(int n_otu)
       rates->survival_rank        = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
       rates->survival_dur         = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
       rates->calib_prob           = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
-      rates->curr_nd_for_cal      = (int *)mCalloc(2*n_otu-1,sizeof(int));
       rates->t_prior_min_ori      = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
       rates->t_prior_max_ori      = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
       rates->times_partial_proba  = (phydbl *)mCalloc(n_otu*n_otu,sizeof(phydbl));
@@ -1099,16 +1098,12 @@ t_rate *RATES_Make_Rate_Struct(int n_otu)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-t_cal *Make_Calib(int n_otu)
+t_cal *Make_Calibration()
 {
   t_cal *calib;
-  int i;
-  i = 0;
-  calib                        = (t_cal *)mCalloc(1, sizeof(t_cal));
-  calib -> proba               = (phydbl *)mCalloc(2 * n_otu, sizeof(phydbl));
-  calib -> all_applies_to      = (t_node **)mCalloc(2 * n_otu - 1, sizeof(t_node *));
-  For(i, 2 * n_otu - 1)
-  calib -> all_applies_to[i]   = (t_node *)mCalloc(1, sizeof(t_node));
+
+  calib = (t_cal *)mCalloc(1, sizeof(t_cal));
+
   return(calib);
 }
 

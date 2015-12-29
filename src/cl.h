@@ -24,6 +24,7 @@ the GNU public licence.  See http://www.opensource.org for details.
 #include "free.h"
 #include "interface.h"
 #include "invitee.h"
+#include "date.h"
 
 
 int Read_Command_Line(option *input, int argc, char **argv);
