@@ -106,6 +106,7 @@ phydbl PHYREX_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree);
 void PHYREX_Print_MultiTypeTree_Config_File(int n_sites, char *filename, t_tree *tree);
 phydbl PHYREX_Effective_Density(t_tree *tree);
 phydbl PHYREX_Generation_Length(t_tree *tree);
+int PHYREX_Number_Of_Sampled_Demes(t_tree *tree);
 
 
 

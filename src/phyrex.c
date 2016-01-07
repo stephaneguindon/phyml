@@ -134,7 +134,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   int seed,pid,i;
   char *s;
   t_dsk *disk;
-  int n_otus, n_sites;
+  int n_sites,n_otus;
 
   s = (char *)mCalloc(T_MAX_NAME,sizeof(char));
 
@@ -166,7 +166,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   printf("\n. seed: %d",seed);
   srand(seed);
   
-  tree = PHYREX_Simulate((int)atoi(argv[1]),(int)atoi(argv[2]),10.,10.,seed);
+  tree = PHYREX_Simulate(n_otus,n_sites,10.,10.,seed);
 
   disk = tree->disk;
   while(disk->prev) disk = disk->prev;
@@ -1098,7 +1098,7 @@ phydbl PHYREX_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
 phydbl *PHYREX_MCMC(t_tree *tree)
 {
   t_mcmc *mcmc;
-  int move,i,n_vars,burnin,true_ncoal,true_nint,true_nhits;
+  int move,i,n_vars,burnin,true_ncoal,true_nint,true_nhits,n_demes;
   phydbl u;
   t_dsk *disk;
   FILE *fp_tree,*fp_stats,*fp_summary;
@@ -1159,6 +1159,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   true_nhits  = PHYREX_Total_Number_Of_Hit_Disks(tree);
   true_height = PHYREX_Tree_Height(tree);
   true_rhoe   = PHYREX_Effective_Density(tree);
+  n_demes     = PHYREX_Number_Of_Sampled_Demes(tree);
 
   PhyML_Fprintf(fp_stats,"\n# before rand glnL: %f alnL: %f",tree->mmod->c_lnL,tree->c_lnL);
   PhyML_Fprintf(fp_stats,"\n# ninter: %d",PHYREX_Total_Number_Of_Intervals(tree));
@@ -1177,6 +1178,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   PhyML_Fprintf(fp_stats,"\n# length of a generation: %G time units",PHYREX_Generation_Length(tree));
   PhyML_Fprintf(fp_stats,"\n# clock rate: %G subst. per time unit",tree->rates->clock_r);
   PhyML_Fprintf(fp_stats,"\n# proportion of sampled area: %f",tree->mmod->sampl_area);
+  PhyML_Fprintf(fp_stats,"\n# of sampled demes: %d",n_demes);
 
   /* Starting parameter values */
   tree->mmod->lbda = Uni()*(0.5 - 0.2) + 0.2;
@@ -1443,10 +1445,11 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           
           rewind(fp_summary);
 
-          PhyML_Fprintf(fp_summary,"\n# SampArea\t TrueLbda\t TrueMu\t TrueSig\t TrueRad\t TrueNeigh\t TrueRhoe\t Diversity\t TrueInt\t TrueCoal\t TrueHits\t RegNeigh\t TrueXroot\t TrueYroot\t TrueHeight\t Lbda5\t Lbda50\t Lbda95\t LbdaMod \t Mu5\t Mu50\t Mu95\t  MuMod \t Sig5\t Sig50\t Sig95\t SigMod \t Neigh5\t Neigh50\t Neigh95\t NeighMod \t Rad5\t Rad50\t Rad95\t Int5\t Int50\t Int95\t Coal5\t Coal50\t Coal95\t Hit5\t Hit50\t Hit95\t Rhoe5\t Rhoe50\t Rhoe95\t ESSLbda \t ESSMu \t ESSSig \t Run");
+          PhyML_Fprintf(fp_summary,"\n# SampArea\t NDemes\t TrueLbda\t TrueMu\t TrueSig\t TrueRad\t TrueNeigh\t TrueRhoe\t Diversity\t TrueInt\t TrueCoal\t TrueHits\t RegNeigh\t TrueXroot\t TrueYroot\t TrueHeight\t Lbda5\t Lbda50\t Lbda95\t LbdaMod \t Mu5\t Mu50\t Mu95\t  MuMod \t Sig5\t Sig50\t Sig95\t SigMod \t Neigh5\t Neigh50\t Neigh95\t NeighMod \t Rad5\t Rad50\t Rad95\t Int5\t Int50\t Int95\t Coal5\t Coal50\t Coal95\t Hit5\t Hit50\t Hit95\t Rhoe5\t Rhoe50\t Rhoe95\t ESSLbda \t ESSMu \t ESSSig \t Run");
           
-          PhyML_Fprintf(fp_summary,"\n %f\t %f\t %f\t %f\t %f\t %f\t %f\t %f\t %d\t %d\t %d\t %f\t %f\t %f\t %f\t ",
+          PhyML_Fprintf(fp_summary,"\n %f\t %d\t %f\t %f\t %f\t %f\t %f\t %f\t %f\t %d\t %d\t %d\t %f\t %f\t %f\t %f\t ",
                         tree->mmod->sampl_area,
+                        n_demes,
                         true_lbda,
                         true_mu,
                         true_sigsq,
@@ -4160,9 +4163,42 @@ void PHYREX_Print_MultiTypeTree_Config_File(int n_sites, char *filename, t_tree 
   fclose(fp);
 }
 
-
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+int PHYREX_Number_Of_Sampled_Demes(t_tree *tree)
+{
+  int i,j,n_demes;
+  t_dsk *disk;
+  char **deme_list;
+
+  deme_list = (char **)mCalloc(tree->n_otu,sizeof(char *));
+
+  disk = tree->disk;
+
+  n_demes = 0;
+  For(i,tree->n_otu)
+    {
+      For(j,n_demes)
+        {
+          if(!strcmp(strstr(disk->ldsk_a[i]->coord->id,"_deme"),deme_list[j]))
+            {
+              break;
+            }
+        }
+
+      if(j == n_demes)
+        {
+          deme_list[j] = strstr(disk->ldsk_a[i]->coord->id,"_deme");
+          n_demes++;
+        }
+    }
+
+  Free(deme_list);
+
+  return(n_demes);
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////
