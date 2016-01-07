@@ -1090,6 +1090,7 @@ t_rate *RATES_Make_Rate_Struct(int n_otu)
       rates->t_prior_max_ori      = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
       rates->times_partial_proba  = (phydbl *)mCalloc(n_otu*n_otu,sizeof(phydbl));
       rates->numb_calib_chosen    = (int *)mCalloc(n_otu*n_otu,sizeof(phydbl));
+      rates->a_cal                = (t_cal **)mCalloc(n_otu-1,sizeof(t_cal *));
     }
 
   return rates;
@@ -1105,6 +1106,24 @@ t_cal *Make_Calibration()
   calib = (t_cal *)mCalloc(1, sizeof(t_cal));
 
   return(calib);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Make_All_Calibration(t_tree *tree)
+{
+  int i;
+  t_cal **all_cal;
+
+  assert(tree->rates);
+
+  all_cal = (t_cal **)mCalloc(2*tree->n_otu-1,sizeof(t_cal *));
+
+  For(i,2*tree->n_otu-1) all_cal[i] = Make_Calibration();
+
+  tree->rates->a_cal = all_cal;
+
 }
 
 //////////////////////////////////////////////////////////////

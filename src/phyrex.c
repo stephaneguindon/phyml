@@ -161,7 +161,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   /* seed = 13536; */
   /* seed = 28366; */
   /* seed = 20679; */
-  /* seed = 23661; */
+  /* seed = 715; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -333,8 +333,8 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   fflush(NULL);
 
 
-  PHYREX_Simulate_Backward_Core(YES,tree->disk,tree);
-  /* mmod->sampl_area = PHYREX_Simulate_Forward_Core(n_sites,tree); */
+  /* PHYREX_Simulate_Backward_Core(YES,tree->disk,tree); */
+  mmod->sampl_area = PHYREX_Simulate_Forward_Core(n_sites,tree);
     
   PHYREX_Ldsk_To_Tree(tree);  
 
@@ -798,6 +798,7 @@ phydbl PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree)
                 {
                   char *s;
                   int k;
+                                   
                   s = (char *)mCalloc((int)strlen(ldsk_a_pop[i]->coord->id)+1+20,sizeof(char));
                   For(k,(int)strlen(ldsk_a_pop[i]->coord->id)+1+20) s[k]='\0';
                   strcpy(s,ldsk_a_pop[i]->coord->id);
@@ -806,9 +807,10 @@ phydbl PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree)
                   sprintf(s+strlen(s),"%d",permut[j]);
                   ldsk_a_pop[i]->coord->id = s;
 
+
                   ldsk_a_samp[sample_size] = ldsk_a_pop[i];
                   sample_size++;
-                  PhyML_Printf("\n@ Coord: %f %f %s",ldsk_a_samp[sample_size-1]->coord->lonlat[0],ldsk_a_samp[sample_size-1]->coord->lonlat[1],ldsk_a_pop[i]->coord->id);
+                  PhyML_Printf("\n@ Coord: %f %f %s %p",ldsk_a_samp[sample_size-1]->coord->lonlat[0],ldsk_a_samp[sample_size-1]->coord->lonlat[1],ldsk_a_pop[i]->coord->id,ldsk_a_pop[i]);
                   
                   break;
                 }

@@ -1437,7 +1437,7 @@ void TIMES_Update_Node_Ordering(t_tree *tree)
 	  if(t[tree->rates->t_rank[i]] > t[tree->rates->t_rank[i+1]]) // Sort in ascending order
 	    {
 	      swap = YES;
-	      buff                       = tree->rates->t_rank[i];
+	      buff                     = tree->rates->t_rank[i];
 	      tree->rates->t_rank[i]   = tree->rates->t_rank[i+1];
 	      tree->rates->t_rank[i+1] = buff;
 	    }	    

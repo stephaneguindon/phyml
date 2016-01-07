@@ -71,5 +71,6 @@ t_dsk *PHYREX_Make_Disk_Event(int n_dim, int n_otu);
 t_ldsk *PHYREX_Make_Lindisk_Node(int n_dim);
 void PHYREX_Make_Lindisk_Next(t_ldsk *t);
 t_poly *Make_Poly(int n);
+void Make_All_Calibration(t_tree *tree);
 
 #endif

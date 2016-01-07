@@ -3390,9 +3390,11 @@ void MCMC_Randomize_Node_Times(t_tree *tree)
   
   tree->rates->nd_t[tree->n_root->num] = u;
 
+  printf("\n. ROOT: %f %f %d",t_inf,t_sup,tree->n_root->num);
+  printf("\n. ROOT: %f",u);
+
   MCMC_Randomize_Node_Times_Top_Down(tree->n_root,tree->n_root->v[2],tree);
   MCMC_Randomize_Node_Times_Top_Down(tree->n_root,tree->n_root->v[1],tree);
-
 
   min_node = -1;
   iter = 0;
@@ -3428,7 +3430,6 @@ void MCMC_Randomize_Node_Times(t_tree *tree)
       MCMC_Randomize_Node_Times_Bottom_Up(tree->n_root,tree->n_root->v[2],tree);
       MCMC_Randomize_Node_Times_Bottom_Up(tree->n_root,tree->n_root->v[1],tree);
       
-
       iter++;
     }
   while(iter < 1000);

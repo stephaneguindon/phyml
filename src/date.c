@@ -42,6 +42,9 @@ void DATE_XML(char *xml_filename)
   mixt_tree = XML_Process_Base(xml_filename);
   assert(mixt_tree);
 
+  mixt_tree->rates = RATES_Make_Rate_Struct(mixt_tree->n_otu);
+  RATES_Init_Rate_Struct(mixt_tree->rates,NULL,mixt_tree->n_otu);
+
   fp_xml_in = fopen(xml_filename,"r");
   if(!fp_xml_in)
     {
@@ -80,6 +83,7 @@ void DATE_XML(char *xml_filename)
   MIXT_Prepare_All(-1,mixt_tree);
 
   clade_name = (char *)mCalloc(T_MAX_NAME,sizeof(char));
+
 
   xnd = xroot->child;
   assert(xnd);
@@ -123,7 +127,7 @@ void DATE_XML(char *xml_filename)
                   else
                     {
                       xml_node *xnd_clade;
-                      
+                        
                       node_num = -1;
                       xnd_clade = XML_Search_Node_Generic("clade","id",clade_name,YES,xroot);
                       
@@ -133,29 +137,37 @@ void DATE_XML(char *xml_filename)
                           int clade_size;
                           t_cal *cal;
 
-                          clade             = XML_Read_Clade(xnd_clade->child,mixt_tree);
-                          clade_size        = XML_Number_Of_Taxa_In_Clade(xnd_clade->child);
+                          clade      = XML_Read_Clade(xnd_clade->child,mixt_tree);
+                          clade_size = XML_Number_Of_Taxa_In_Clade(xnd_clade->child);
                           // TO DO: chain all calibrations
-                          cal               = Make_Calibration();
+                          cal        = Make_Calibration();
+                          
+                          Init_Calibration(cal);
 
                           mixt_tree->rates->a_cal[mixt_tree->rates->n_cal] = cal;
                           mixt_tree->rates->n_cal++;
 
-                          cal->is_primary                   = YES;
-                          cal->target_tax                   = clade;
-                          cal->n_target_tax                 = clade_size;
+                          cal->is_primary   = YES;
+                          cal->target_tax   = clade;
+                          cal->n_target_tax = clade_size;
+
+
+                          PhyML_Printf("\n. Node number to which calibration [%s] applies to is [%d]",
+                                       clade_name,
+                                       Find_Clade(clade,
+                                                  clade_size,
+                                                  mixt_tree));
+                          
+                          PhyML_Printf("\n. Lower bound set to: %15f time units.", low);
+                          PhyML_Printf("\n. Upper bound set to: %15f time units.", up);
+                          PhyML_Printf("\n. .......................................................................");
                         }
                       else
                         {
                           PhyML_Printf("\n== Calibration information for clade [%s] was not found.", clade_name);
                           PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
                           Exit("\n");
-                        }
-                      
-                      PhyML_Printf("\n. Node number to which calibration [%s] applies to is [%d]",clade_name,node_num);
-                      PhyML_Printf("\n. Lower bound set to: %15f time units.", low);
-                      PhyML_Printf("\n. Upper bound set to: %15f time units.", up);
-                      PhyML_Printf("\n. .......................................................................");
+                        }                      
                     }
                 }
               xnd_cal->child = xnd_cal->child->next;
@@ -167,111 +179,72 @@ void DATE_XML(char *xml_filename)
     }
   while(xnd != NULL);
 
+  fflush(NULL);
 
   DATE_Assign_Primary_Calibration(mixt_tree);
-  DATE_Update_Secondary_Cal(mixt_tree);
   DATE_Update_T_Prior_MinMax(mixt_tree);
 
+  Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree);
+  Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);		  
+  MCMC_Randomize_Node_Times(mixt_tree);
+  
+
+  PhyML_Printf("\n. K=%f",DATE_J_Sum_Product(mixt_tree));
+
   Free(clade_name);
-}
-
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-// Update secondary calibration on all internal nodes. Requires two tree traversals.
-void DATE_Update_Secondary_Cal(t_tree *tree)
-{
-  DATE_Update_Secondary_Cal_Post(tree->n_root,tree->n_root->v[1],tree);
-  DATE_Update_Secondary_Cal_Post(tree->n_root,tree->n_root->v[2],tree);
-  DATE_Update_Secondary_Cal_Pre(tree->n_root,tree->n_root->v[1],tree);
-  DATE_Update_Secondary_Cal_Pre(tree->n_root,tree->n_root->v[2],tree);
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-// Updates upper bounds
-void DATE_Update_Secondary_Cal_Post(t_node *a, t_node *d, t_tree *tree)
-{
-  if(d->tax == YES) return;
-  else
-    {
-      int i;
-      phydbl max;
-
-      For(i,3)
-        {
-          if(d->v[i] != a && d->b[i] != tree->e_root)
-            {
-              DATE_Update_Secondary_Cal_Post(d,d->v[i],tree);
-            }
-        }
-
-      if(d->cal->is_primary == NO)
-        {
-          max = -DBL_MIN;
-          For(i,3) 
-            if(d->v[i] != a && d->v[i]->cal->upper > max) 
-              max = d->v[i]->cal->upper;
-          d->cal->upper = max;
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-// Updates lower bounds
-void DATE_Update_Secondary_Cal_Pre(t_node *a, t_node *d, t_tree *tree)
-{
-  if(d->tax == YES) return;
-  else
-    {
-      int i;
-      phydbl t_root;
-
-      t_root = tree->rates->nd_t[tree->n_root->num];
-      
-      if(d->cal->is_primary == NO)
-        For(i,3) 
-          if(d->v[i] == a) 
-            d->cal->lower = MAX(t_root,a->cal->lower);
-
-      For(i,3)
-        {
-          if(d->v[i] != a && d->b[i] != tree->e_root)
-            {
-              DATE_Update_Secondary_Cal_Pre(d,d->v[i],tree);
-            }
-        }
-    }
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 // Update t_prior_min and t_prior_max on a given ranked tree
 // given (primary and secondary) calibration information.
-// Make sure secondary and primary calibration is up-to-date
+// Make sure secondary and primary calibration are up-to-date
 void DATE_Update_T_Prior_MinMax(t_tree *tree)
 {
-  int i,j;
+  int i,j,*rk;
 
-  for(i=tree->n_otu;i<2*tree->n_otu-1;i++)
+  rk = tree->rates->t_rank;
+
+  for(i=tree->n_otu;i<2*tree->n_otu-1;i++) // All internal nodes except the root 
     {
-      tree->rates->t_prior_max[i] = tree->a_nodes[i]->cal->upper;;
-      tree->rates->t_prior_min[i] = tree->a_nodes[i]->cal->lower;
+      if(tree->a_nodes[i] != tree->n_root)
+        {
+          if(tree->a_nodes[i]->cal != NULL) // Primary calibration found on that node
+            {
+              tree->rates->t_prior_max[i] =     tree->a_nodes[i]->cal->upper;
+              tree->rates->t_prior_min[i] = MAX(tree->a_nodes[i]->cal->lower,tree->rates->nd_t[tree->n_root->num]);
+            }
+          else
+            {
+              tree->rates->t_prior_max[i] = 0.0;
+              tree->rates->t_prior_min[i] = tree->rates->nd_t[tree->n_root->num];
+            }
+        }
     }
 
+  // TO DO: chain t_rank
   TIMES_Update_Node_Ordering(tree);
 
-  for(i=tree->n_otu;i<2*tree->n_otu-2;i++)
+  For(i,tree->n_otu-2)
     {
-      for(j=i+1;j<2*tree->n_otu-1;j++)
+      for(j=i+1;j<tree->n_otu-1;j++)
         {
-          if(tree->rates->t_prior_min[j] < tree->rates->t_prior_min[i])
-            tree->rates->t_prior_min[j] = tree->rates->t_prior_min[i];
+          if(tree->rates->t_prior_min[rk[j]] < tree->rates->t_prior_min[rk[i]])
+            tree->rates->t_prior_min[rk[j]] = tree->rates->t_prior_min[rk[i]];
 
-          if(tree->rates->t_prior_max[i] > tree->rates->t_prior_max[j])
-            tree->rates->t_prior_max[i] = tree->rates->t_prior_max[j];
+          if(tree->rates->t_prior_max[rk[i]] > tree->rates->t_prior_max[rk[j]])
+            tree->rates->t_prior_max[rk[i]] = tree->rates->t_prior_max[rk[j]];
         }
+    }
+
+
+  For(i,tree->n_otu-1)
+    {
+      PhyML_Printf("\n. Node %d age: %f t_prior_min: %f t_prior_max: %f",
+                   rk[i],
+                   tree->rates->nd_t[rk[i]],
+                   tree->rates->t_prior_min[rk[i]],
+                   tree->rates->t_prior_max[rk[i]]);
     }
 }
 
@@ -306,6 +279,7 @@ phydbl *DATE_Splitted_Calibration(t_tree *tree)
   // One t_prior_min and one t_prior_max per internal nodes, so 
   // 2 x # of internal nodes boundaries in total at most.
   splitted_cal = (phydbl *)mCalloc(2*(tree->n_otu-1),sizeof(phydbl));
+  For(i,2*(tree->n_otu-1)) splitted_cal[i] = -INFINITY;
 
   len = 0;
   for(i = tree->n_otu; i < 2*tree->n_otu-1; i++)
@@ -334,8 +308,6 @@ phydbl *DATE_Splitted_Calibration(t_tree *tree)
     }
   while(done == NO);
 
-
-
   For(i,len-1) assert(!(splitted_cal[len] > splitted_cal[len+1]));
 
   return splitted_cal;
@@ -344,11 +316,106 @@ phydbl *DATE_Splitted_Calibration(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
+phydbl DATE_J_Sum_Product(t_tree *tree)
+{
+  phydbl prod, total,*splitted_cal;
+  int fact,idx,ans;
+  
+  DATE_Assign_Primary_Calibration(tree);
+  DATE_Update_T_Prior_MinMax(tree);
+
+  splitted_cal = DATE_Splitted_Calibration(tree);
+  
+  ans   = 0;
+  total = 0.0;
+  idx   = 0;
+  do
+    {
+      prod = 0.0;
+      fact = 0;
+      ans = DATE_J_Sum_Product_Pre(tree->n_root,
+                                   idx,
+                                   -1,
+                                   &prod,&fact,&total,splitted_cal,tree);
+      idx++;
+      if(ans == 1) break;
+    }
+  while(ans <= 0);
+
+  return(total);
+}
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+int DATE_J_Sum_Product_Pre(t_node *d, int split_idx_d, int split_idx_a, phydbl *prod, int *fact, phydbl *total, phydbl *splitted_cal, t_tree *tree)
+{
+  int ans,idx;
+
+  ans = DATE_Is_Split_Accessible(d,split_idx_d,splitted_cal,tree);
+  if(ans != 0) return ans;
+
+  // Calulate J for this time interval
+  (*prod) *= DATE_J(tree->rates->birth_rate, 
+                    tree->rates->death_rate,
+                    splitted_cal[split_idx_d],
+                    splitted_cal[split_idx_d+1]);
+  
+  // Remove factorial term from current product
+  (*prod) *= (*fact);
+
+  if(split_idx_d == split_idx_a) (*fact)++;
+  else *fact = 1;
+
+  (*prod) /= (*fact);
+
+  if(d->tax) 
+    {
+      (*total) += (*prod);
+      return 0;
+    }
+  else
+    {
+      idx = split_idx_d;
+      do
+        {
+          ans = DATE_J_Sum_Product_Pre(tree->a_nodes[tree->rates->t_rank[d->num+1]],
+                                       idx,
+                                       split_idx_d,
+                                       prod,fact,total,splitted_cal,tree);
+          idx++;
+          if(ans == 1) return ans;
+        }
+      while(ans <= 0);
+    }
+  assert(FALSE);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+int DATE_Is_Split_Accessible(t_node *d, int which, phydbl *splitted_cal, t_tree *tree)
+{
+  if(tree->rates->t_prior_min[d->num] < splitted_cal[which] &&
+     tree->rates->t_prior_max[d->num] > splitted_cal[which+1]) return 0; // splitted interval is within [t_prior_min,t_prior_max]
+  else if(splitted_cal[which] > tree->rates->t_prior_max[d->num]) return 1; // splitted interval is younger than [t_prior_min,t_prior_max]
+  else if(splitted_cal[which+1] < tree->rates->t_prior_min[d->num]) return -1; // splitted interval is older than [t_prior_min,t_prior_max]
+  else assert(FALSE); // splitted interval cannot be partially overlapping [t_prior_min,t_prior_max]
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl DATE_J(phydbl birth_r, phydbl death_r, phydbl t_min, phydbl t_pls)
+{
+  phydbl d,b,J;
+  assert(t_pls > t_min);
+  d = death_r;
+  b = birth_r;
+  J = (d-b)*(EXP(t_pls*d + t_min*b) - EXP(t_pls*b + t_min*d));
+  J /= (b*EXP(t_min*b) - d*EXP(t_min*d)) * (b*EXP(t_pls*b) - d*EXP(t_pls*d));
+  return(J);
+}
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

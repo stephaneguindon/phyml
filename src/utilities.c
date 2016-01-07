@@ -6562,15 +6562,15 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
 
   tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
   RATES_Init_Rate_Struct(tree->rates,tree->io->rates,tree->n_otu);
-
+  
   For(i,2*tree->n_otu-2)
     {
       tree->a_nodes[i]->v[1] = NULL;
       tree->a_nodes[i]->v[2] = NULL;
     }
-
+  
   root = (t_node *)Make_Node_Light(2*tree->n_otu-2);
-
+  
   connected       = (int *)mCalloc(2*tree->n_otu-2,sizeof(int));
   nonconnected    = (int *)mCalloc(2*tree->n_otu-2,sizeof(int));
   available_nodes = (int *)mCalloc(2*tree->n_otu-2,sizeof(int));
@@ -6578,13 +6578,13 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
   external_nodes  = (t_node **)mCalloc(tree->n_otu,  sizeof(t_node *));
   t               = (phydbl *)mCalloc(tree->n_otu-1,sizeof(phydbl ));
   tmp             = (phydbl *)mCalloc(2*tree->n_otu-2,sizeof(phydbl ));
-
+  
   n_nonconnected = 2*n_otu-2;
-
+  
   For(i,2*tree->n_otu-2) nonconnected[i] = i;
-
+  
   available_nodes[0] = 2*n_otu-2;
-
+  
   /* Node times are generated according to a Birth-death process.
      Formulae are as described by Yang and Rannala (1997) */
   phydbl    phi;
@@ -6593,33 +6593,33 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
   phydbl lambda; /* death rate */
   phydbl      u; /* random U[0,1] */
   phydbl expval;
-
+  
   /* rho = 1.0 and mu = 0.0 correspond to the Yule process */
-
+  
   lambda = 6.7;
   mu     = 2.5;
   rho    = 9./150.;
-
+  
   expval = EXP(MIN(1.E+2,mu-lambda));
   phi = (rho*lambda*(expval-1.) + (mu-lambda)*expval)/(expval-1.); /* Equation 16 */
-
+  
   For(i,tree->n_otu-1)
     {
       u = rand();
       u /= RAND_MAX;
-
+      
       if(FABS(lambda - mu) > 1.E-4)
-    t[i] = (LOG(phi-u*rho*lambda) - LOG(phi-u*rho*lambda + u*(lambda-mu)))/(mu-lambda); /* Equation 15 */
+        t[i] = (LOG(phi-u*rho*lambda) - LOG(phi-u*rho*lambda + u*(lambda-mu)))/(mu-lambda); /* Equation 15 */
       else
-    t[i] = u / (1.+lambda*rho*(1-u)); /* Equation 17 */
+        t[i] = u / (1.+lambda*rho*(1-u)); /* Equation 17 */
     }
-
+  
   Qksort(t,NULL,0,tree->n_otu-2); /* Node times ordering in ascending order */
-
+  
   For(i,tree->n_otu-1) tmp[i] =  t[tree->n_otu-2-i];
   For(i,tree->n_otu-1) t[i]   = -tmp[i];
-
-
+  
+  
   /* Rescale t_node times such that the time at the root t_node is -100 */
   for(i=1;i<tree->n_otu-1;i++)
     {
@@ -6627,8 +6627,8 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
       t[i] *= 1.E+02;
     }
   t[0] = -1.E+02;
-
-
+  
+  
   n_available = 1;
   curr_n = root;
   n_connected = 0;
@@ -6637,87 +6637,87 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
       n1 = Rand_Int(0,n_nonconnected-1);
       n1 = nonconnected[n1];
       connected[n1] = 1;
-
+      
       n_nonconnected = 0;
       For(i,2*tree->n_otu-2) if(!connected[i]) {nonconnected[n_nonconnected++] = i;}
-
+      
       n2 = Rand_Int(0,n_nonconnected-1);
       n2 = nonconnected[n2];
       connected[n2] = 1;
-
+      
       n_nonconnected = 0;
       For(i,2*tree->n_otu-2) if(!connected[i]) {nonconnected[n_nonconnected++] = i;}
-
+      
       curr_n->v[1] = tree->a_nodes[n1];
       curr_n->v[2] = tree->a_nodes[n2];
       tree->a_nodes[n1]->v[0] = curr_n;
       tree->a_nodes[n2]->v[0] = curr_n;
-
+      
       tree->rates->nd_t[curr_n->num] = t[n_connected/2];
-
+      
       available_nodes[n_available] = tree->a_nodes[n1]->num;
       For(i,n_available)
-    if(available_nodes[i] == curr_n->num)
-      {
-        available_nodes[i] = tree->a_nodes[n2]->num;
-        break;
-      }
+        if(available_nodes[i] == curr_n->num)
+          {
+            available_nodes[i] = tree->a_nodes[n2]->num;
+            break;
+          }
       n_available++;
-
+      
       new_n = Rand_Int(0,n_available-1);
       curr_n = tree->a_nodes[available_nodes[new_n]];
-
+      
       n_connected+=2;
-
+      
     }while(n_connected < 2*tree->n_otu-2);
-
+  
   For(i,2*tree->n_otu-2) tmp[i] = tree->rates->nd_t[i];
-
+  
   /* Unroot the tree */
   root->v[2]->v[0] = root->v[2];
   root->v[1]->v[0] = root->v[1];
-
+  
   n_internal = n_external = 0;
   For(i,2*tree->n_otu-2)
     {
       if(tree->a_nodes[i]->v[1]) internal_nodes[n_internal++] = tree->a_nodes[i];
       else                     external_nodes[n_external++] = tree->a_nodes[i];
     }
-
-
+  
+  
   n_internal = n_external = 0;
   For(i,2*tree->n_otu-2)
     {
       if(i < tree->n_otu)
-    {
-      tree->a_nodes[i]      = external_nodes[n_external++];
-      tree->a_nodes[i]->tax = 1;
-    }
+        {
+          tree->a_nodes[i]      = external_nodes[n_external++];
+          tree->a_nodes[i]->tax = 1;
+        }
       else
-    {
-      tree->rates->nd_t[i] = tmp[internal_nodes[n_internal]->num];
-      tree->a_nodes[i]        = internal_nodes[n_internal++];
-      tree->a_nodes[i]->tax   = 0;
-    }
-
+        {
+          tree->rates->nd_t[i] = tmp[internal_nodes[n_internal]->num];
+          tree->a_nodes[i]        = internal_nodes[n_internal++];
+          tree->a_nodes[i]->tax   = 0;
+        }
+      
       tree->a_nodes[i]->num = i;
     }
-
+  
   For(i,tree->n_otu) tree->rates->nd_t[i] = 0.0;
-
+  
   For(i,tree->n_otu)
     {
       if(!tree->a_nodes[i]->name) tree->a_nodes[i]->name = (char *)mCalloc(T_MAX_NAME,sizeof(char));
       strcpy(tree->a_nodes[i]->name,"x");
       sprintf(tree->a_nodes[i]->name+1,"%d",i);
     }
-
-
+  
+  
   tree->num_curr_branch_available = 0;
   Connect_Edges_To_Nodes_Recur(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree);
   Fill_Dir_Table(tree);
   Update_Dirs(tree);
-
+  
   
   /* Add root */
   if(rooted)
@@ -6747,7 +6747,7 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
   Free(internal_nodes);
   Free(t);
   Free(tmp);
-
+  
   return tree;
 }
 #endif
@@ -7890,7 +7890,7 @@ t_node *Find_Lca_Clade(t_node **node_list, int node_list_size, t_tree *tree)
   list = (t_node ***)mCalloc(node_list_size,sizeof(t_node **));
   For(i,node_list_size) list[i] = (t_node **)mCalloc(2*tree->n_otu-1,sizeof(t_node *));
   size = (int *)mCalloc(node_list_size,sizeof(int));
-
+  
   For(i,node_list_size)
     {
       if(!Get_List_Of_Ancestors(node_list[i],list[i],size+i,tree))
@@ -7900,26 +7900,43 @@ t_node *Find_Lca_Clade(t_node **node_list, int node_list_size, t_tree *tree)
         }
     }
 
+  /* For(i,node_list_size) */
+  /*   { */
+  /*     int j; */
+  /*     PhyML_Printf("\n. Listing all ancestors of node number %d [%s]", */
+  /*                  node_list[i]->num, */
+  /*                  node_list[i]->tax ? node_list[i]->name : NULL); */
+  /*     For(j,size[i]) PhyML_Printf("\n.  > %d <",list[i][j]->num); */
+  /*   } */
+
   if(node_list_size > 1)
     {
       do
         {
           For(i,node_list_size-1)
-            if(list[i][size[i]] != list[i+1][size[i+1]])
-              break;
-          
+            {
+              assert(list[i][size[i]-1]);
+              assert(list[i+1][size[i+1]-1]);
+              /* PhyML_Printf("\n. %d %d %d %d",list[i][size[i]-1]->num,size[i],list[i+1][size[i+1]-1]->num,size[i+1]); */
+              if(list[i][size[i]-1] != list[i+1][size[i+1]-1])
+                {
+                  /* PhyML_Printf("\n. Break at %d %d",list[i][size[i]]->num,list[i+1][size[i+1]]->num); */
+                  break;
+                }
+            }
+
           if(i != node_list_size-1) break;
           
           For(i,node_list_size)
             {
               size[i]--;
-              if(size[i] == 1) break; // We have reached the tip corresponding to node_list[i]
+              assert(size[i] > 0);
             }
           
           if(node_list_size == 1) break;
           
         }while(1);
-      lca = list[0][size[0]+1];
+      lca = list[0][size[0]];
     }
   else
     {
@@ -7929,6 +7946,8 @@ t_node *Find_Lca_Clade(t_node **node_list, int node_list_size, t_tree *tree)
   For(i,node_list_size) Free(list[i]);
   Free(list);
   Free(size);
+
+  /* PhyML_Printf("\n. LCA: %d",lca->num); */
 
   return lca;
 }

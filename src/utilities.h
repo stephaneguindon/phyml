@@ -1319,6 +1319,9 @@ typedef struct __T_Rate {
   phydbl birth_rate;
   phydbl birth_rate_min;
   phydbl birth_rate_max;
+  phydbl death_rate;
+  phydbl death_rate_min;
+  phydbl death_rate_max;
   phydbl min_rate;
   phydbl max_rate;
   phydbl c_lnL1;
