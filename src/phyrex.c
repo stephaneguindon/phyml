@@ -4190,6 +4190,7 @@ int PHYREX_Number_Of_Sampled_Demes(t_tree *tree)
       if(j == n_demes)
         {
           deme_list[j] = strstr(disk->ldsk_a[i]->coord->id,"_deme");
+          /* printf("\n. deme_list[%d]: %s",j,deme_list[j]); */
           n_demes++;
         }
     }
