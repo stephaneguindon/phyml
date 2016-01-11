@@ -112,7 +112,7 @@ int *Random_Permut(int n);
 phydbl Dexp_Trunc(phydbl x, phydbl lambda, phydbl left, phydbl rght);
 phydbl Rexp_Trunc(phydbl lambda, phydbl left, phydbl rght);
 t_poly *Rpoly(int n);
-phydbl Area_Of_Poly_Monte_Carlo(t_poly **poly, int n_poly, t_geo_coord *lim);
+phydbl Area_Of_Poly_Monte_Carlo(t_poly *poly, t_geo_coord *lim);
 int Is_In_Polygon(t_geo_coord *point, t_poly *poly);
 phydbl Variance(phydbl *x, int l);
 phydbl Bessi0(phydbl x);

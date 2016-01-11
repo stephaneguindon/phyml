@@ -5196,9 +5196,9 @@ t_poly *Rpoly(int n)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-phydbl Area_Of_Poly_Monte_Carlo(t_poly **poly, int n_poly, t_geo_coord *lim)
+phydbl Area_Of_Poly_Monte_Carlo(t_poly *poly, t_geo_coord *lim)
 {
-  int n_hit,n_trials,trial,i;
+  int n_hit,n_trials,trial;
   t_geo_coord *point;
 
   point = (t_geo_coord *)GEO_Make_Geo_Coord(2);
@@ -5210,14 +5210,15 @@ phydbl Area_Of_Poly_Monte_Carlo(t_poly **poly, int n_poly, t_geo_coord *lim)
     {
       point->lonlat[0] = Uni()*lim->lonlat[0];
       point->lonlat[1] = Uni()*lim->lonlat[1];
-      For(i,n_poly) if(Is_In_Polygon(point,poly[i]) == YES) { n_hit++; break; }
+      if(Is_In_Polygon(point,poly) == YES) n_hit++;
       trial++;
     }
   while(trial < n_trials);
 
+
   Free_Geo_Coord(point);
 
-  return((phydbl)(n_hit)/n_trials);
+  return((phydbl)(n_hit)/n_trials*lim->lonlat[0]*lim->lonlat[1]);
 }
 
 /*////////////////////////////////////////////////////////////
@@ -5229,6 +5230,9 @@ int Is_In_Polygon(t_geo_coord *point, t_poly *poly)
   phydbl x,y,x1,y1,x2,y2;
   phydbl x_intersect;
   short int is_in;
+
+  assert(point);
+  assert(poly);
 
   /* Coordinates of the point to test */
   x = point->lonlat[0];

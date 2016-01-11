@@ -66,5 +66,6 @@ void PHYREX_Init_Migrep_Mod(t_phyrex_mod *t, int n_dim, phydbl max_lat, phydbl m
 void MCMC_Init_MCMC_Struct(char *filename, option *io, t_mcmc *mcmc);
 void Init_Calibration(t_cal *cal);
 void Init_All_Calibration(t_tree *tree);
+void Init_Sarea(t_sarea *s);
 
 #endif

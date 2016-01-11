@@ -69,7 +69,7 @@ void PHYREX_Remove_Lindisk_Next(t_ldsk *ldsk, t_ldsk *rm);
 phydbl PHYREX_Simulate_Backward_Core(int new_loc, t_dsk *init_disk, t_tree *tree);
 phydbl *PHYREX_Mean_Pairwise_Distance_Between_Lineage_Locations(t_tree *tree);
 phydbl PHYREX_Random_Select_Time_Between_Jumps(t_tree *tree);
-phydbl PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree);
+t_sarea *PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree);
 int PHYREX_Is_In_Ldscape(t_ldsk *ldsk, t_phyrex_mod *mmod);
 void PHYREX_Update_Lindisk_List_Core(t_dsk *disk, t_tree *tree);
 phydbl PHYREX_Mean_Time_Between_Events(t_tree *tree);

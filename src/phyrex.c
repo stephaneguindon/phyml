@@ -334,7 +334,7 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
 
 
   /* PHYREX_Simulate_Backward_Core(YES,tree->disk,tree); */
-  mmod->sampl_area = PHYREX_Simulate_Forward_Core(n_sites,tree);
+  mmod->samp_area = PHYREX_Simulate_Forward_Core(n_sites,tree);
     
   PHYREX_Ldsk_To_Tree(tree);  
 
@@ -596,16 +596,17 @@ phydbl PHYREX_Simulate_Backward_Core(int new_loc, t_dsk *init_disk, t_tree *tree
 ////////////////////////////////////////////////////////////*/
 // Simulate Etheridge-Barton model forwards in time, following n_otu lineages
 // on a rectangle of dimension width x height
-phydbl PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree)
+t_sarea *PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree)
 {
   t_dsk *disk;
   t_ldsk *new_ldsk,**ldsk_a_pop,**ldsk_a_samp,**ldsk_a_tmp,**ldsk_a_tips;
   int i,j,n_disk,n_dim,n_otu,pop_size,parent_id,n_lineages,sample_size,n_poly,*permut;
-  phydbl dt_dsk,curr_t,sum,*parent_prob,prob_death,tree_height,max_x,max_y,trans_x,trans_y,area;
+  phydbl dt_dsk,curr_t,sum,*parent_prob,prob_death,tree_height,max_x,max_y,trans_x,trans_y;
   short int dies,n_remain;
   t_phyrex_mod *mmod;
   t_poly **poly;
-
+  t_sarea *area;
+  
   mmod     = tree->mmod;
   n_dim    = tree->mmod->n_dim;
   n_otu    = tree->n_otu;
@@ -778,10 +779,6 @@ phydbl PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree)
             {
               poly[i]->poly_vert[j]->lonlat[0] += trans_x;
               poly[i]->poly_vert[j]->lonlat[1] += trans_y;
-              PhyML_Printf("\n# Sampling == polygon %d vertex @ (%f; %f)",
-                           i,
-                           poly[i]->poly_vert[j]->lonlat[0],
-                           poly[i]->poly_vert[j]->lonlat[1]);
             }
         }
       
@@ -810,8 +807,11 @@ phydbl PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree)
 
                   ldsk_a_samp[sample_size] = ldsk_a_pop[i];
                   sample_size++;
-                  PhyML_Printf("\n@ Coord: %f %f %s %p",ldsk_a_samp[sample_size-1]->coord->lonlat[0],ldsk_a_samp[sample_size-1]->coord->lonlat[1],ldsk_a_pop[i]->coord->id,ldsk_a_pop[i]);
-                  
+                  PhyML_Printf("\n@ Coord: %f %f %s %p",
+                               ldsk_a_samp[sample_size-1]->coord->lonlat[0],
+                               ldsk_a_samp[sample_size-1]->coord->lonlat[1],
+                               ldsk_a_pop[i]->coord->id,ldsk_a_pop[i]);
+
                   break;
                 }
             }
@@ -819,14 +819,11 @@ phydbl PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree)
         }
 
       Free(permut);
-
-      area = Area_Of_Poly_Monte_Carlo(poly,n_poly,mmod->lim);
       
-      For(j,n_poly) Free_Poly(poly[j]);
-      Free(poly);
-
       if(i == pop_size)
         {
+          For(j,n_poly) Free_Poly(poly[j]);
+          Free(poly);
           PhyML_Printf("\n== Not enough individuals in polygon(s) (only %d found).",sample_size);
           /* Generic_Exit(__FILE__,__LINE__,__FUNCTION__);       */
         }
@@ -836,6 +833,24 @@ phydbl PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree)
       
   For(i,n_otu) ldsk_a_tips[i] = ldsk_a_samp[i];
   
+  area = Make_Sarea(n_poly);
+  area->n_poly = n_poly;
+  For(i,n_poly) area->a_poly[i] = poly[i];
+
+
+  For(i,n_poly) 
+    {
+      PhyML_Printf("\n@ Poly %3d area = %f",i,Area_Of_Poly_Monte_Carlo(area->a_poly[i],mmod->lim));
+      For(j,area->a_poly[i]->n_poly_vert)
+        {
+          PhyML_Printf("\n@ Poly %3d point %d (x,y) = (%f,%f)",
+                       i,
+                       j,
+                       area->a_poly[i]->poly_vert[j]->lonlat[0],
+                       area->a_poly[i]->poly_vert[j]->lonlat[1]);
+        }
+    }
+
   tree->disk             = disk;
   disk->ldsk_a           = ldsk_a_tips;
   disk->mmod             = tree->mmod;
@@ -1103,7 +1118,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   t_dsk *disk;
   FILE *fp_tree,*fp_stats,*fp_summary;
   phydbl *res;
-  phydbl true_root_x, true_root_y,true_lbda,true_mu,true_sigsq,true_neigh,fst_neigh,diversity,true_rad,true_height,true_rhoe;
+  phydbl true_root_x, true_root_y,true_lbda,true_mu,true_sigsq,true_neigh,fst_neigh,diversity,true_rad,true_height,true_rhoe,tot_samp_area;
   int adjust_len;
 
   fp_tree    = tree->io->fp_out_tree;
@@ -1136,6 +1151,10 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   mcmc->sample_num       = 0;
   adjust_len             = 1E+6;
 
+  tot_samp_area = 0.0;
+  For(i,tree->mmod->samp_area->n_poly) tot_samp_area += Area_Of_Poly_Monte_Carlo(tree->mmod->samp_area->a_poly[i],tree->mmod->lim);
+
+
   MCMC_Complete_MCMC(mcmc,tree);
 
   n_vars                 = 12;
@@ -1160,6 +1179,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   true_height = PHYREX_Tree_Height(tree);
   true_rhoe   = PHYREX_Effective_Density(tree);
   n_demes     = PHYREX_Number_Of_Sampled_Demes(tree);
+  
+
 
   PhyML_Fprintf(fp_stats,"\n# before rand glnL: %f alnL: %f",tree->mmod->c_lnL,tree->c_lnL);
   PhyML_Fprintf(fp_stats,"\n# ninter: %d",PHYREX_Total_Number_Of_Intervals(tree));
@@ -1177,9 +1198,11 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   PhyML_Fprintf(fp_stats,"\n# nucleotide diversity: %f",Nucleotide_Diversity(tree->data));
   PhyML_Fprintf(fp_stats,"\n# length of a generation: %G time units",PHYREX_Generation_Length(tree));
   PhyML_Fprintf(fp_stats,"\n# clock rate: %G subst. per time unit",tree->rates->clock_r);
-  PhyML_Fprintf(fp_stats,"\n# proportion of sampled area: %f",tree->mmod->sampl_area);
   PhyML_Fprintf(fp_stats,"\n# of sampled demes: %d",n_demes);
-
+  For(i,tree->mmod->samp_area->n_poly) PhyML_Fprintf(fp_stats,"\n# area of deme%d: %f",
+                                                     i,
+                                                     Area_Of_Poly_Monte_Carlo(tree->mmod->samp_area->a_poly[i],tree->mmod->lim));
+ 
   /* Starting parameter values */
   tree->mmod->lbda = Uni()*(0.5 - 0.2) + 0.2;
   tree->mmod->mu   = Uni()*(0.6 - 0.3) + 0.3;
@@ -1448,7 +1471,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           PhyML_Fprintf(fp_summary,"\n# SampArea\t NDemes\t TrueLbda\t TrueMu\t TrueSig\t TrueRad\t TrueNeigh\t TrueRhoe\t Diversity\t TrueInt\t TrueCoal\t TrueHits\t RegNeigh\t TrueXroot\t TrueYroot\t TrueHeight\t Lbda5\t Lbda50\t Lbda95\t LbdaMod \t Mu5\t Mu50\t Mu95\t  MuMod \t Sig5\t Sig50\t Sig95\t SigMod \t Neigh5\t Neigh50\t Neigh95\t NeighMod \t Rad5\t Rad50\t Rad95\t Int5\t Int50\t Int95\t Coal5\t Coal50\t Coal95\t Hit5\t Hit50\t Hit95\t Rhoe5\t Rhoe50\t Rhoe95\t ESSLbda \t ESSMu \t ESSSig \t Run");
           
           PhyML_Fprintf(fp_summary,"\n %f\t %d\t %f\t %f\t %f\t %f\t %f\t %f\t %f\t %d\t %d\t %d\t %f\t %f\t %f\t %f\t ",
-                        tree->mmod->sampl_area,
+                        tot_samp_area,
                         n_demes,
                         true_lbda,
                         true_mu,

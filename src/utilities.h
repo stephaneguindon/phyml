@@ -108,8 +108,8 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define T_MAX_NEX_COM   100
 #define N_MAX_NEX_PARM  50
 #define T_MAX_TOKEN     200
-#define T_MAX_ID_COORD  5
-#define T_MAX_ID_DISK   5
+#define T_MAX_ID_COORD  10
+#define T_MAX_ID_DISK   10
 
 #define N_MAX_MIXT_CLASSES 1000
 
@@ -1715,7 +1715,7 @@ typedef struct __Migrep_Model{
 
   struct __Geo_Coord            *lim; // max longitude and lattitude (the min are both set to zero)                       
 
-  phydbl                  sampl_area;
+  struct __SampArea       *samp_area;
 }t_phyrex_mod;
 
 /*!********************************************************/
@@ -1764,6 +1764,13 @@ typedef struct __Polygon{
 }t_poly;
 
 /*!********************************************************/
+
+typedef struct __SampArea {
+  int n_poly; /* Number of polygons making the sampling area */
+  t_poly **a_poly; /* Polygons making the sampling area */
+}t_sarea;
+
+
 /*!********************************************************/
 /*!********************************************************/
 /*!********************************************************/
