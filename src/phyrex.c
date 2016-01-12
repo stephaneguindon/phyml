@@ -334,7 +334,7 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
 
 
   PHYREX_Simulate_Backward_Core(YES,tree->disk,tree);
-  mmod->samp_area = PHYREX_Simulate_Forward_Core(n_sites,tree);
+  /* mmod->samp_area = PHYREX_Simulate_Forward_Core(n_sites,tree); */
     
   PHYREX_Ldsk_To_Tree(tree);  
 
@@ -779,11 +779,6 @@ t_sarea *PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree)
             {
               poly[i]->poly_vert[j]->lonlat[0] += trans_x;
               poly[i]->poly_vert[j]->lonlat[1] += trans_y;
-
-              PhyML_Printf("\n# Sampling == polygon %d vertex @ (%f; %f)",
-                           i,
-                           poly[i]->poly_vert[j]->lonlat[0],
-                           poly[i]->poly_vert[j]->lonlat[1]);
             }
         }
       
@@ -1157,7 +1152,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   adjust_len             = 1E+6;
 
   tot_samp_area = 0.0;
-  For(i,tree->mmod->samp_area->n_poly) tot_samp_area += Area_Of_Poly_Monte_Carlo(tree->mmod->samp_area->a_poly[i],tree->mmod->lim);
+  /* For(i,tree->mmod->samp_area->n_poly) tot_samp_area += Area_Of_Poly_Monte_Carlo(tree->mmod->samp_area->a_poly[i],tree->mmod->lim); */
 
 
   MCMC_Complete_MCMC(mcmc,tree);
@@ -1204,9 +1199,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   PhyML_Fprintf(fp_stats,"\n# length of a generation: %G time units",PHYREX_Generation_Length(tree));
   PhyML_Fprintf(fp_stats,"\n# clock rate: %G subst. per time unit",tree->rates->clock_r);
   PhyML_Fprintf(fp_stats,"\n# of sampled demes: %d",n_demes);
-  For(i,tree->mmod->samp_area->n_poly) PhyML_Fprintf(fp_stats,"\n# area of deme%d: %f",
-                                                     i,
-                                                     Area_Of_Poly_Monte_Carlo(tree->mmod->samp_area->a_poly[i],tree->mmod->lim));
+  /* For(i,tree->mmod->samp_area->n_poly) PhyML_Fprintf(fp_stats,"\n# area of deme%d: %f", */
+  /*                                                    i, */
+  /*                                                    Area_Of_Poly_Monte_Carlo(tree->mmod->samp_area->a_poly[i],tree->mmod->lim)); */
  
   /* Starting parameter values */
   tree->mmod->lbda = Uni()*(0.5 - 0.2) + 0.2;
