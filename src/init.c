@@ -3411,7 +3411,7 @@ void M4_Init_Model(m4 *m4mod, calign *data, t_mod *mod)
 void GEO_Init_Coord(t_geo_coord *t, int n_dim)
 {
   t->dim = n_dim;
-  Random_String(t->id,6);
+  Random_String(t->id,3);
 }
 
 //////////////////////////////////////////////////////////////

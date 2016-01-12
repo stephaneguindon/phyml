@@ -161,7 +161,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   /* seed = 13536; */
   /* seed = 28366; */
   /* seed = 20679; */
-  seed = 24365;
+  /* seed = 24365; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -779,6 +779,11 @@ t_sarea *PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree)
             {
               poly[i]->poly_vert[j]->lonlat[0] += trans_x;
               poly[i]->poly_vert[j]->lonlat[1] += trans_y;
+
+              PhyML_Printf("\n# Sampling == polygon %d vertex @ (%f; %f)",
+                           i,
+                           poly[i]->poly_vert[j]->lonlat[0],
+                           poly[i]->poly_vert[j]->lonlat[1]);
             }
         }
       
