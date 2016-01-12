@@ -3411,7 +3411,7 @@ void M4_Init_Model(m4 *m4mod, calign *data, t_mod *mod)
 void GEO_Init_Coord(t_geo_coord *t, int n_dim)
 {
   t->dim = n_dim;
-  Random_String(t->id,3);
+  Random_String(t->id,6);
 }
 
 //////////////////////////////////////////////////////////////
@@ -3422,7 +3422,7 @@ void PHYREX_Init_Disk_Event(t_dsk *t, int n_dim, t_phyrex_mod *mmod)
   t->prev         = NULL;
   t->next         = NULL;
   t->mmod         = NULL;
-  Random_String(t->id,3);
+  Random_String(t->id,6);
 
   GEO_Init_Coord(t->centr,n_dim);
 
