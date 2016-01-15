@@ -1409,9 +1409,6 @@ int Read_Command_Line(option *io, int argc, char **argv)
       Exit("\n");
     }
   
-
-  
-
   if(io->mod->use_m4mod == NO)
     {
       io->mod->s_opt->opt_cov_delta      = 0;

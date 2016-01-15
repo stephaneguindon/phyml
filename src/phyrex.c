@@ -316,25 +316,18 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   tree->mmod->lbda = area * mmod->sigsq / (4.*PI*tree->mmod->mu*POW(tree->mmod->rad,4));
 
   
-  /* mmod->lbda  = 0.04; */
-  /* mmod->mu    = 0.16; */
-  /* mmod->rad   = 2.75; */
-  /* neigh       = 2./mmod->mu; */
-  /* mmod->sigsq = PHYREX_Update_Sigsq(tree); */
 
-  PhyML_Printf("\n. lbda: %G mu: %G sigsq: %G rad: %G neigh: %G N: %G rhoe: %G",
-               mmod->lbda,
-               mmod->mu,
-               mmod->sigsq,
-               mmod->rad,
-               neigh,
-               area*neigh/(4*PI*mmod->sigsq),
-               neigh/(4.*PI*mmod->sigsq));
-  fflush(NULL);
+  /* !!!!!!!!!!!!! */
+  mmod->lbda  = 1.00;
+  mmod->mu    = 0.9;
+  mmod->rad   = 10.00;
+  neigh       = 2./mmod->mu;
+  mmod->sigsq = PHYREX_Update_Sigsq(tree);
 
 
-  /* PHYREX_Simulate_Backward_Core(YES,tree->disk,tree); */
-  mmod->samp_area = PHYREX_Simulate_Forward_Core(n_sites,tree);
+
+  PHYREX_Simulate_Backward_Core(YES,tree->disk,tree);
+  /* mmod->samp_area = PHYREX_Simulate_Forward_Core(n_sites,tree); */
     
   PHYREX_Ldsk_To_Tree(tree);  
 
@@ -369,6 +362,17 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
 
   disk = tree->disk->prev;
   while(disk->prev) disk = disk->prev;
+
+  PhyML_Printf("\n. lambda=%G; mu=%G; rad=%G; clockr=%G; sigsq=%G; neigh=%G; N=%G; rhoe=%G",
+               mmod->lbda,
+               mmod->mu,
+               mmod->rad,
+               tree->rates->clock_r,
+               mmod->sigsq,
+               neigh,
+               area*neigh/(4*PI*mmod->sigsq),
+               neigh/(4.*PI*mmod->sigsq));
+  fflush(NULL);
 
   printf("\n. XXX %f %d %d %d %f %f %f %f %f %f\n",
          disk->time,
@@ -426,7 +430,7 @@ phydbl PHYREX_Simulate_Backward_Core(int new_loc, t_dsk *init_disk, t_tree *tree
           Free(init_disk->ldsk_a[i]->coord->id);
           init_disk->ldsk_a[i]->coord->id = s;
         }
-
+      
       /* PhyML_Printf("\n. WARNING: position of samples are not random."); */
       /* Generate coordinates for the tip nodes (uniform distribution on the rectangle) */
       For(i,tree->n_otu)
@@ -841,6 +845,7 @@ t_sarea *PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree)
   For(i,n_poly) 
     {
       PhyML_Printf("\n@ Poly %3d area = %f",i,Area_Of_Poly_Monte_Carlo(area->a_poly[i],mmod->lim));
+
       For(j,area->a_poly[i]->n_poly_vert)
         {
           PhyML_Printf("\n@ Poly %3d point %d (x,y) = (%f,%f)",
@@ -1152,7 +1157,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   adjust_len             = 1E+6;
 
   tot_samp_area = 0.0;
-  For(i,tree->mmod->samp_area->n_poly) tot_samp_area += Area_Of_Poly_Monte_Carlo(tree->mmod->samp_area->a_poly[i],tree->mmod->lim);
+  /* For(i,tree->mmod->samp_area->n_poly) tot_samp_area += Area_Of_Poly_Monte_Carlo(tree->mmod->samp_area->a_poly[i],tree->mmod->lim); */
 
 
   MCMC_Complete_MCMC(mcmc,tree);
@@ -1199,9 +1204,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   PhyML_Fprintf(fp_stats,"\n# length of a generation: %G time units",PHYREX_Generation_Length(tree));
   PhyML_Fprintf(fp_stats,"\n# clock rate: %G subst. per time unit",tree->rates->clock_r);
   PhyML_Fprintf(fp_stats,"\n# of sampled demes: %d",n_demes);
-  For(i,tree->mmod->samp_area->n_poly) PhyML_Fprintf(fp_stats,"\n# area of deme%d: %f",
-                                                     i,
-                                                     Area_Of_Poly_Monte_Carlo(tree->mmod->samp_area->a_poly[i],tree->mmod->lim));
+  /* For(i,tree->mmod->samp_area->n_poly) PhyML_Fprintf(fp_stats,"\n# area of deme%d: %f", */
+  /*                                                    i, */
+  /*                                                    Area_Of_Poly_Monte_Carlo(tree->mmod->samp_area->a_poly[i],tree->mmod->lim)); */
  
   /* Starting parameter values */
   tree->mmod->lbda = Uni()*(0.5 - 0.2) + 0.2;
