@@ -6256,11 +6256,11 @@ void Check_Memory_Amount(t_tree *tree)
     }
   else if(((phydbl)nbytes/(1.E+06)) > 100.)
     {
-      if(!tree->io->quiet) PhyML_Printf("\n\n. WARNING: this analysis will use at least %.0f Mo of memory space...\n",(phydbl)nbytes/(1.E+06));
+      if(!tree->io->quiet) PhyML_Printf("\n\n. WARNING: this analysis will use at least %.0f MB of memory space...\n",(phydbl)nbytes/(1.E+06));
     }
   else if(((phydbl)nbytes/(1.E+06)) > 1.)
     {
-      if(!tree->io->quiet) PhyML_Printf("\n\n. This analysis requires at least %.0f Mo of memory space.\n",(phydbl)nbytes/(1.E+06));
+      if(!tree->io->quiet) PhyML_Printf("\n\n. This analysis requires at least %.0f MB of memory space.\n",(phydbl)nbytes/(1.E+06));
     }
 }
 
