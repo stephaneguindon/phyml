@@ -4073,7 +4073,7 @@ void PHYREX_Print_MultiTypeTree_Config_File(int n_sites, char *filename, t_tree 
 
   For(i,tree->n_otu)
     {
-      s = strchr(tree->a_nodes[i]->coord->id,'_');
+      s = strrchr(tree->a_nodes[i]->coord->id,'_');
       PhyML_Fprintf(fp,"%s=%s",
                    tree->a_nodes[i]->coord->id,
                    s+1);
