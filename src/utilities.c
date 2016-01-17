@@ -6884,6 +6884,15 @@ void Evolve(calign *data, t_mod *mod, t_tree *tree)
       root_state = Pick_State(mod->ns,mod->e_frq->pi->v);
       data->c_seq[0]->state[site] = Reciproc_Assign_State(root_state,tree->io->datatype);
 
+      /* printf("\n. root_state: %d root_rate_class: %d [%f %f %f %f]", */
+      /*        root_state, */
+      /*        root_rate_class, */
+      /*        mod->e_frq->pi->v[0], */
+      /*        mod->e_frq->pi->v[1], */
+      /*        mod->e_frq->pi->v[2], */
+      /*        mod->e_frq->pi->v[3]); */
+      /* Exit("\n"); */
+
       /* tree->a_nodes[0] is considered as the root t_node */
       Evolve_Recur(tree->a_nodes[0],
                    tree->a_nodes[0]->v[0],

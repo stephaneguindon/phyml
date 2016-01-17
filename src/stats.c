@@ -5140,6 +5140,7 @@ void Random_String(char *s, int len)
 {
   int i;
   For(i,len) s[i] = Rand_Int(97,121);
+  s[i] = '\0';
 }
 
 //////////////////////////////////////////////////////////////

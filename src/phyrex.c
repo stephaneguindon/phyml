@@ -162,6 +162,8 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   /* seed = 28366; */
   /* seed = 20679; */
   /* seed = 24365; */
+  /* seed = 17172; */
+  seed = 18398;
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -328,7 +330,7 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
 
   /* PHYREX_Simulate_Backward_Core(YES,tree->disk,tree); */
   mmod->samp_area = PHYREX_Simulate_Forward_Core(n_sites,tree);
-    
+  
   PHYREX_Ldsk_To_Tree(tree);  
 
   Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
