@@ -8111,7 +8111,6 @@ void Branch_Lengths_To_Rate_Lengths_Pre(t_node *a, t_node *d, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 int Find_Clade(char **tax_name_list, int list_size, t_tree *tree)
 {
   int *tax_num_list;
@@ -8225,7 +8224,7 @@ void Find_Clade_Pre(t_node *a, t_node *d, int *tax_num_list, int list_size, int 
   else
     For(i,3)
       if((d->v[i] != a) && (d->b[i] != tree->e_root))
-    Find_Clade_Pre(d,d->v[i],tax_num_list,list_size,num,tree);
+        Find_Clade_Pre(d,d->v[i],tax_num_list,list_size,num,tree);
 }
 
 //////////////////////////////////////////////////////////////

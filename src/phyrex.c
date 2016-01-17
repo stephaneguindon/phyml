@@ -317,17 +317,17 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
 
   
 
-  /* !!!!!!!!!!!!! */
-  mmod->lbda  = 1.00;
-  mmod->mu    = 0.9;
-  mmod->rad   = 10.00;
-  neigh       = 2./mmod->mu;
-  mmod->sigsq = PHYREX_Update_Sigsq(tree);
+  /* /\* !!!!!!!!!!!!! *\/ */
+  /* mmod->lbda  = 1.00; */
+  /* mmod->mu    = 0.9; */
+  /* mmod->rad   = 10.00; */
+  /* neigh       = 2./mmod->mu; */
+  /* mmod->sigsq = PHYREX_Update_Sigsq(tree); */
 
 
 
-  PHYREX_Simulate_Backward_Core(YES,tree->disk,tree);
-  /* mmod->samp_area = PHYREX_Simulate_Forward_Core(n_sites,tree); */
+  /* PHYREX_Simulate_Backward_Core(YES,tree->disk,tree); */
+  mmod->samp_area = PHYREX_Simulate_Forward_Core(n_sites,tree);
     
   PHYREX_Ldsk_To_Tree(tree);  
 
@@ -800,9 +800,10 @@ t_sarea *PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree)
                   char *s;
                   int k;
                                    
-                  s = (char *)mCalloc((int)strlen(ldsk_a_pop[i]->coord->id)+1+20,sizeof(char));
+                  s = (char *)mCalloc((int)strlen(ldsk_a_pop[i]->coord->id)+1+50,sizeof(char));
                   For(k,(int)strlen(ldsk_a_pop[i]->coord->id)+1+20) s[k]='\0';
-                  strcpy(s,ldsk_a_pop[i]->coord->id);
+                  sprintf(s,"%d_",i);
+                  strcat(s,ldsk_a_pop[i]->coord->id);
                   Free(ldsk_a_pop[i]->coord->id);
                   strcat(s,"_deme");
                   sprintf(s+strlen(s),"%d",permut[j]);
@@ -1473,9 +1474,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           
           rewind(fp_summary);
 
-          PhyML_Fprintf(fp_summary,"\n# SampArea\t NDemes\t TrueLbda\t TrueMu\t TrueSig\t TrueRad\t TrueNeigh\t TrueRhoe\t Diversity\t TrueInt\t TrueCoal\t TrueHits\t RegNeigh\t TrueXroot\t TrueYroot\t TrueHeight\t Lbda5\t Lbda50\t Lbda95\t LbdaMod \t Mu5\t Mu50\t Mu95\t  MuMod \t Sig5\t Sig50\t Sig95\t SigMod \t Neigh5\t Neigh50\t Neigh95\t NeighMod \t Rad5\t Rad50\t Rad95\t Int5\t Int50\t Int95\t Coal5\t Coal50\t Coal95\t Hit5\t Hit50\t Hit95\t Rhoe5\t Rhoe50\t Rhoe95\t ESSLbda \t ESSMu \t ESSSig \t Run");
+          PhyML_Fprintf(fp_summary,"\n# SampArea\t NDemes\t TrueLbda\t TrueMu\t TrueSig\t TrueRad\t TrueNeigh\t TrueRhoe\t \t ClockRate\t Diversity\t TrueInt\t TrueCoal\t TrueHits\t RegNeigh\t TrueXroot\t TrueYroot\t TrueHeight\t Lbda5\t Lbda50\t Lbda95\t LbdaMod \t Mu5\t Mu50\t Mu95\t  MuMod \t Sig5\t Sig50\t Sig95\t SigMod \t Neigh5\t Neigh50\t Neigh95\t NeighMod \t Rad5\t Rad50\t Rad95\t Int5\t Int50\t Int95\t Coal5\t Coal50\t Coal95\t Hit5\t Hit50\t Hit95\t Rhoe5\t Rhoe50\t Rhoe95\t ESSLbda \t ESSMu \t ESSSig \t Run");
           
-          PhyML_Fprintf(fp_summary,"\n %f\t %d\t %f\t %f\t %f\t %f\t %f\t %f\t %f\t %d\t %d\t %d\t %f\t %f\t %f\t %f\t ",
+          PhyML_Fprintf(fp_summary,"\n %f\t %d\t %f\t %f\t %f\t %f\t %f\t %f\t %f\t %f\t %d\t %d\t %d\t %f\t %f\t %f\t %f\t ",
                         tot_samp_area,
                         n_demes,
                         true_lbda,
@@ -1484,6 +1485,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
                         true_rad,
                         true_neigh,
                         true_rhoe,
+                        tree->rates->clock_r,
                         diversity,
                         true_nint,
                         true_ncoal,
