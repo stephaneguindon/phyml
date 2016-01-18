@@ -21,8 +21,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int PHYREX_Main(int argc, char *argv[])
 {
-  /* return(PHYREX_Main_Estimate(argc,argv)); */
-  return(PHYREX_Main_Simulate(argc,argv));
+  return(PHYREX_Main_Estimate(argc,argv));
+  /* return(PHYREX_Main_Simulate(argc,argv)); */
 
 }
 
@@ -97,6 +97,7 @@ int PHYREX_Main_Estimate(int argc, char *argv[])
 
   /* Random genealogy */
   PHYREX_Simulate_Backward_Core(NO,tree->disk,tree);
+
 
   PHYREX_Ldsk_To_Tree(tree);  
 
@@ -1159,8 +1160,10 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   mcmc->sample_num       = 0;
   adjust_len             = 1E+6;
 
+  
   tot_samp_area = 0.0;
-  For(i,tree->mmod->samp_area->n_poly) tot_samp_area += Area_Of_Poly_Monte_Carlo(tree->mmod->samp_area->a_poly[i],tree->mmod->lim);
+  if(tree->mmod->samp_area != NULL)
+    For(i,tree->mmod->samp_area->n_poly) tot_samp_area += Area_Of_Poly_Monte_Carlo(tree->mmod->samp_area->a_poly[i],tree->mmod->lim);
 
 
   MCMC_Complete_MCMC(mcmc,tree);
@@ -1188,8 +1191,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   true_rhoe   = PHYREX_Effective_Density(tree);
   n_demes     = PHYREX_Number_Of_Sampled_Demes(tree);
   
-
-
   PhyML_Fprintf(fp_stats,"\n# before rand glnL: %f alnL: %f",tree->mmod->c_lnL,tree->c_lnL);
   PhyML_Fprintf(fp_stats,"\n# ninter: %d",PHYREX_Total_Number_Of_Intervals(tree));
   PhyML_Fprintf(fp_stats,"\n# ncoal: %d",PHYREX_Total_Number_Of_Coal_Disks(tree));
@@ -1207,9 +1208,10 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   PhyML_Fprintf(fp_stats,"\n# length of a generation: %G time units",PHYREX_Generation_Length(tree));
   PhyML_Fprintf(fp_stats,"\n# clock rate: %G subst. per time unit",tree->rates->clock_r);
   PhyML_Fprintf(fp_stats,"\n# of sampled demes: %d",n_demes);
-  For(i,tree->mmod->samp_area->n_poly) PhyML_Fprintf(fp_stats,"\n# area of deme%d: %f",
-                                                     i,
-                                                     Area_Of_Poly_Monte_Carlo(tree->mmod->samp_area->a_poly[i],tree->mmod->lim));
+  if(tree->mmod->samp_area != NULL)
+    For(i,tree->mmod->samp_area->n_poly) PhyML_Fprintf(fp_stats,"\n# area of deme%d: %f",
+                                                       i,
+                                                       Area_Of_Poly_Monte_Carlo(tree->mmod->samp_area->a_poly[i],tree->mmod->lim));
  
   /* Starting parameter values */
   tree->mmod->lbda = Uni()*(0.5 - 0.2) + 0.2;
@@ -3361,7 +3363,7 @@ void PHYREX_Read_Tip_Coordinates(t_ldsk **ldsk_a, t_tree *tree)
       if(i != strlen(s)) continue;
       
       For(i,tree->n_otu) if(strstr(tree->a_nodes[i]->name,s)) break;
-      
+
       if(i != tree->n_otu) /* Found a match */
         {
           if(fscanf(fp,"%lf",&(ldsk_a[i]->coord->lonlat[0])) == EOF) break;
@@ -4053,7 +4055,7 @@ void PHYREX_Print_MultiTypeTree_Config_File(int n_sites, char *filename, t_tree 
   PhyML_Fprintf(fp,"\n<map name=\"OneOnX\" >beast.math.distributions.OneOnX</map>");
 
 
-  PhyML_Fprintf(fp,"\n<run id=\"mcmc\" spec=\"MCMC\" chainLength=\"100000000000\">");
+  PhyML_Fprintf(fp,"\n<run id=\"mcmc\" spec=\"MCMC\" chainLength=\"10000000000\">");
   PhyML_Fprintf(fp,"\n<state id=\"state\" storeEvery=\"10000\">");
   PhyML_Fprintf(fp,"\n<stateNode id=\"Tree.t:data\" spec=\"beast.evolution.tree.StructuredCoalescentMultiTypeTree\">");
   PhyML_Fprintf(fp,"\n<migrationModel id=\"migModelInit.t:data\" spec=\"beast.evolution.tree.MigrationModel\">");
@@ -4213,7 +4215,7 @@ int PHYREX_Number_Of_Sampled_Demes(t_tree *tree)
     {
       For(j,n_demes)
         {
-          if(!strcmp(strstr(disk->ldsk_a[i]->coord->id,"_deme"),deme_list[j]))
+          if(deme_list[j] != NULL && !strcmp(strstr(disk->ldsk_a[i]->coord->id,"_deme"),deme_list[j]))
             {
               break;
             }
@@ -4228,6 +4230,7 @@ int PHYREX_Number_Of_Sampled_Demes(t_tree *tree)
     }
 
   Free(deme_list);
+
 
   return(n_demes);
 }
