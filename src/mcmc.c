@@ -7919,9 +7919,7 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
             }
         }
 
-
       else /* Remove disk */
-
 
         {
           if(disk->ldsk == NULL || (disk->ldsk != NULL && disk->ldsk->n_next > 1)) continue;
