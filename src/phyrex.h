@@ -107,6 +107,7 @@ void PHYREX_Print_MultiTypeTree_Config_File(int n_sites, char *filename, t_tree 
 phydbl PHYREX_Effective_Density(t_tree *tree);
 phydbl PHYREX_Generation_Length(t_tree *tree);
 int PHYREX_Number_Of_Sampled_Demes(t_tree *tree);
+phydbl PHYREX_Coalescence_Rate(t_tree *tree);
 
 
 
