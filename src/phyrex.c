@@ -607,13 +607,14 @@ t_sarea *PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree)
 {
   t_dsk *disk;
   t_ldsk *new_ldsk,**ldsk_a_pop,**ldsk_a_samp,**ldsk_a_tmp,**ldsk_a_tips;
-  int i,j,n_disk,n_dim,n_otu,pop_size,parent_id,n_lineages,sample_size,n_poly,*permut;
+  int i,j,n_disk,n_dim,n_otu,pop_size,parent_id,n_lineages,sample_size,n_poly,*permut,n_sampled_demes;
   phydbl dt_dsk,curr_t,sum,*parent_prob,prob_death,tree_height,max_x,max_y,trans_x,trans_y;
   short int dies,n_remain;
   t_phyrex_mod *mmod;
   t_poly **poly;
   t_sarea *area;
-  
+  short int *is_sampled;
+
   mmod     = tree->mmod;
   n_dim    = tree->mmod->n_dim;
   n_otu    = tree->n_otu;
@@ -759,6 +760,8 @@ t_sarea *PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree)
 
   n_poly = n_sites;
 
+  is_sampled = (short int *)mCalloc(n_poly,sizeof(short int));
+
   do
     {
       poly = (t_poly **)mCalloc(n_poly,sizeof(t_poly *));
@@ -791,6 +794,8 @@ t_sarea *PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree)
       
       For(i,n_otu) ldsk_a_samp[i] = NULL;
 
+      For(i,n_poly) is_sampled[i] = NO;
+
       permut = Permutate(n_poly);
 
       sample_size = 0;
@@ -820,6 +825,7 @@ t_sarea *PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree)
                                ldsk_a_samp[sample_size-1]->coord->lonlat[1],
                                ldsk_a_pop[i]->coord->id,ldsk_a_pop[i]);
 
+                  is_sampled[permut[j]] = YES;
                   break;
                 }
             }
@@ -840,13 +846,18 @@ t_sarea *PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree)
   while(1);
       
   For(i,n_otu) ldsk_a_tips[i] = ldsk_a_samp[i];
-  
-  area = Make_Sarea(n_poly);
-  area->n_poly = n_poly;
-  For(i,n_poly) area->a_poly[i] = poly[i];
+
+  n_sampled_demes = 0;
+  For(i,n_poly) if(is_sampled[i] == YES) n_sampled_demes++;
+
+  area = Make_Sarea(n_sampled_demes);
+  area->n_poly = n_sampled_demes;
+
+  n_sampled_demes = 0;
+  For(i,n_poly) if(is_sampled[i] == YES) area->a_poly[n_sampled_demes++] = poly[i];
 
 
-  For(i,n_poly) 
+  For(i,area->n_poly) 
     {
       /* PhyML_Printf("\n@ Poly %3d area = %f",i,Area_Of_Poly_Monte_Carlo(area->a_poly[i],mmod->lim)); */
 
@@ -948,6 +959,7 @@ t_sarea *PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree)
   Free(ldsk_a_samp);
   Free(ldsk_a_pop);
   Free(parent_prob);
+  Free(is_sampled);
   
   /* PHYREX_Print_Struct('#',tree); */
   /* Exit("\n"); */
@@ -1189,7 +1201,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   true_nhits  = PHYREX_Total_Number_Of_Hit_Disks(tree);
   true_height = PHYREX_Tree_Height(tree);
   true_rhoe   = PHYREX_Effective_Density(tree);
-  n_demes     = PHYREX_Number_Of_Sampled_Demes(tree);
+  n_demes     = tree->mmod->samp_area->n_poly;
   
   PhyML_Fprintf(fp_stats,"\n# before rand glnL: %f alnL: %f",tree->mmod->c_lnL,tree->c_lnL);
   PhyML_Fprintf(fp_stats,"\n# ninter: %d",PHYREX_Total_Number_Of_Intervals(tree));
