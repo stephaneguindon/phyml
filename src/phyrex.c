@@ -1586,9 +1586,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
       if(tree->mcmc->run > 2*adjust_len                            &&
          tree->mcmc->sample_num > 1E+2                             &&
-         tree->mcmc->ess[tree->mcmc->num_move_phyrex_lbda]  > 100. &&
-         tree->mcmc->ess[tree->mcmc->num_move_phyrex_mu]    > 100. &&
-         tree->mcmc->ess[tree->mcmc->num_move_phyrex_sigsq] > 100.) break;
+         tree->mcmc->ess[tree->mcmc->num_move_phyrex_lbda]  > 10000. &&
+         tree->mcmc->ess[tree->mcmc->num_move_phyrex_mu]    > 10000. &&
+         tree->mcmc->ess[tree->mcmc->num_move_phyrex_sigsq] > 10000.) break;
 
       /* if(tree->mcmc->run > tree->mcmc->sample_interval           &&  */
       /*    tree->mcmc->ess[tree->mcmc->num_move_phyrex_lbda]  > 1. && */
