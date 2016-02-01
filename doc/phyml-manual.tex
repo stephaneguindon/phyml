@@ -26,6 +26,7 @@
   \psfrag{#2}[c][c][#1]{#3}
 }
 \newcommand{\x}[1]{\texttt{#1}}
+\newcommand{\sfv}{$\Lambda$V}
 
 % \setpapersize{A4}
 % \hypersetup{colorlinks=true,linkcolor=blue,urlcolor=red,linkbordercolor=000}
@@ -2448,7 +2449,7 @@ make;
 \end{verbatim} } This set of commands generates  a binary file called \x{phylogeo} which can be found
   in the `src/' directory.
 
-\subsubsection{Running PhyloGeo} PhyloGeo takes as input a rooted tree file in Newick format and a tree
+\subsubsection{Running PhyloGeo} PhyloGeo takes as input a rooted tree file in Newick format and a file
 with geographical locations for all the tips of the phylogeny. Here is an example of valid tree and
 the corresponding spatial locations just below:
 
@@ -2502,6 +2503,80 @@ parameters.
 
 Ranjard, L., Welch D., Paturel M. and Guindon S. ``Modelling competition  and  dispersal in a
 statistical phylogeographic framework''. 2014. Systematic Biology.
+
+
+
+\subsection{PhyREX}\index{PhyRex} PhyREX is a program that implements the spatial
+$\Lambda$-Fleming-Viot model
+\cite{etheridge2008,berestycki2009,barton2010,barton2010b,veber2012,barton2013} or \sfv\ for short. 
+According to this model, the spatial distribution of individuals in a population is uniform and does
+not change during the course of evolution, as opposed to other models such as the very popular
+isolation by distance model proposed by Wright and Mal\'ecot. The \sfv\ model  does not
+suffer from the ``pain in the torus'' \cite{felsenstein1975} and clumps of individuals with
+increasing densities do not arise. Also, estimates of migration parameters are not sensitive to
+variation in sampling intensities across regions, unlike ``mugration'' or ``discrete trait
+analysis'' models \cite{lemey2009}.
+
+PhyREX implements an original data augmentation technique embedded in a Bayesian sampler to
+estimate two important biological parameters: the neighorhood size ($\mathcal{N}$) and the dispersal
+intensity ($\sigma^2$). These two parameters are closely related to the effective size of the
+population of interest per unit area since $\mathcal{N}$ is defined as follows: $\mathcal{N} := 4\pi
+\rho_e \sigma^2$, where $\rho_e$ is the effective population density.
+
+\subsubsection{Installing PhyREX}
+
+Compiling PhyREX is straightforward on Unix-like  machines (i.e., linux and MacOS systems). PhyREX
+is not readily available for Windows machines but  compilation should be easy on this system too. In
+the `phyml' directory, where the `src/'  and `doc/' directories stand, enter the following commands:
+{\setlength{\baselineskip}{0.5\baselineskip}
+\begin{verbatim}
+./configure --enable-phyrex;
+make clean;
+make;
+\end{verbatim} } This set of commands generates  a binary file called \x{phyrex} which can be found
+  in the `src/' directory.
+
+
+\subsubsection{Running PhyRex}
+
+PhyRex takes as input a sequence alignment, in a PhyML-compatible format as well as a text file
+giving the spatial coordinates of each taxon in two dimension. A example of the coordinates file is given
+below:
+\begin{Verbatim}[frame=single, label=Valid PhyRex spatial location file, samepage=true, baselinestretch=0.5]
+# state.name lon lat
+|SouthWest| 0 0
+|NorthEast| 10 10 
+levosl 5.082206 4.133893 
+kmgcwv 5.914294 4.603446 
+uhfwja 4.990937 4.445124 
+ndmwkc 5.178017 4.442268 
+jpadex 3.747484 4.571090 
+lqcdcw 7.081925 5.133123 
+wnsbtg 4.164588 4.720346 
+ptwgnn 5.711159 4.462993 
+jhqdsm 3.539525 4.537706 
+vlnoes 4.613251 4.470530 
+pfrnpk 4.117791 4.489819 
+elwdvr 5.649958 4.824092 
+lptxiv 4.563302 4.005124 
+\end{Verbatim}
+The first row in this file gives the names of the columns. It starts with the `\#' character signaling a
+comment. The second and third rows define the limits of the population's habitat. At the
+moment, this habitat is assumed to be a rectangle. The position in space of that rectangle are
+determined by the coordinates of the bottom-left corner (\x{|SouthWest| 0 0}) and the top-right
+one (\x{|NorthEast| 10 10}). The `\x{|}' characters help  identify the terms in the list of coordinate
+corresponding indeed to these two particular points and should thus not be omitted. The remaining
+row give the coordinates of each taxon. Every taxon in the sequence file should also be listed in
+the coordinate file.
+
+PhyRex uses the same command-line arguments as that used with PhyML. The only exception being the
+mandatory argument corresponding to the coordinate file. A typical command-line will this look as
+follows: \x{./phyrex -i sequence\_file --coord\_file=./spatial\_location\_file -c 3 --freerates
+  --il}. With this particular set of options, the sequence alignment will be analysed under a
+FreeRate  model \cite{soubrier12} with three rate classes and a covarion-like model of rate variation
+across lineaged \cite{guindon13}. Please note that the command-line option \x{--coord\_file} is mandatory.
+
+
 
 \section{Recommendations on program usage}\label{sec:progusage}
 
@@ -2668,8 +2743,8 @@ algorithms to search the space of tree topologies for this type of data.
 The development of PhyML since 2000 has been supported by the Centre National de la Recherche
 Scientifique (CNRS) and the Minist\`ere de l'\'Education Nationale.
 
-\bibliographystyle{/home/guindon/latex/biblio/nature/naturemag}
-\bibliography{/home/guindon/latex/biblio/ref}
+\bibliographystyle{./naturemag}
+\bibliography{./ref.bib}
 
 \printindex
 \end{document}
