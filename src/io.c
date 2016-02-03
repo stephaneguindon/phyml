@@ -1627,7 +1627,6 @@ align **Get_Seq_Phylip(option *io)
       Exit("\n");
     }
   
-
   if(io->interleaved) io->data = Read_Seq_Interleaved(io);
   else                io->data = Read_Seq_Sequential(io);
 
@@ -1693,6 +1692,7 @@ align **Read_Seq_Sequential(option *io)
   
   sprintf(format, "%%%ds", T_MAX_NAME);
 
+
   For(i,io->n_otu)
     {
       data[i]        = (align *)mCalloc(1,sizeof(align));
@@ -1706,7 +1706,7 @@ align **Read_Seq_Sequential(option *io)
 
       Check_Sequence_Name(data[i]->name);
 
-      while(data[i]->len < io->init_len * io->state_len) Read_One_Line_Seq(&data,i,io->fp_in_align);
+      while(data[i]->len < io->init_len * io->state_len) assert(Read_One_Line_Seq(&data,i,io->fp_in_align));
 
       if(data[i]->len != io->init_len * io->state_len)
         {
@@ -1863,7 +1863,7 @@ int Read_One_Line_Seq(align ***data, int num_otu, FILE *in)
 
       if((c == 13) || (c == 10))
         {
-          /* 	  PhyML_Printf("[%d %d]\n",c,nchar); fflush(NULL); */
+          /* PhyML_Printf("[%d %d]\n",c,nchar); fflush(NULL); */
           if(!nchar)
             {
               c=(char)fgetc(in);
@@ -1871,18 +1871,18 @@ int Read_One_Line_Seq(align ***data, int num_otu, FILE *in)
             }
           else
             {
-              /* 	      PhyML_Printf("break\n");  */
+              /* PhyML_Printf("break\n"); */
               break;
             }
         }
       else if(c == EOF)
         {
-          /* 	  PhyML_Printf("EOL\n"); */
+          /* PhyML_Printf("EOL\n"); */
           break;
         }
       else if((c == ' ') || (c == '\t') || (c == 32))
         {
-          /* 	  PhyML_Printf("[%d]",c); */
+          /* PhyML_Printf("[%d]",c); */
           c=(char)fgetc(in);
           continue;
         }
@@ -1899,7 +1899,7 @@ int Read_One_Line_Seq(align ***data, int num_otu, FILE *in)
       (*data)[num_otu]->state[(*data)[num_otu]->len]=c;
       (*data)[num_otu]->len++;
       c = (char)fgetc(in);
-      /* PhyML_Printf("[%c %d]",c,c); */
+      /* PhyML_Printf("[%c %d]",c,c); fflush(NULL); */
       if(c == ';') break;
     }
 
@@ -3761,7 +3761,7 @@ void PhyML_Printf(char *format, ...)
       va_end(ptr);
 #endif
 
-  /* fflush (NULL); */
+  fflush (NULL);
 }
 
 //////////////////////////////////////////////////////////////

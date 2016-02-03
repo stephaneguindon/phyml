@@ -26,7 +26,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
 
   PhyML_Printf("\n. command-line: ");
   For(i,argc) PhyML_Printf("%s ",argv[i]);
-
+  PhyML_Printf("\n");
 
   if(argc == 1) Exit("\n. No argument was passed to the program. Please check the documentation. \n");
 
