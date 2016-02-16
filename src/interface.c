@@ -631,7 +631,7 @@ void Launch_Interface_Model(option *io)
 		  PhyML_Printf("                [E] "
 			 "......... Equilibrium frequencies (empirical/user) "
 			 " %-15s \n",
-			 (io->mod->s_opt->user_state_freq)?("user defined"):("empirical"));
+			 (io->mod->e_frq->user_state_freq)?("user defined"):("empirical"));
 		}
 	      PhyML_Printf("                [K] "
 		     "............................. Current custom model "
@@ -885,9 +885,9 @@ void Launch_Interface_Model(option *io)
 
 	if(io->mod->whichmodel == CUSTOM)
 	  {
-	    io->mod->s_opt->user_state_freq = (io->mod->s_opt->user_state_freq)?(0):(1);
+	    io->mod->e_frq->user_state_freq = (io->mod->e_frq->user_state_freq)?(0):(1);
 
-	    if(io->mod->s_opt->user_state_freq)
+	    if(io->mod->e_frq->user_state_freq)
 	      {
 		if(!io->mod->s_opt->opt_state_freq)
 		  {
@@ -921,20 +921,20 @@ void Launch_Interface_Model(option *io)
 			    PhyML_Printf("\n. Enter a new value > ");
 			    Getstring_Stdin(bs);
 			  }
-			io->mod->user_b_freq->v[i] = (phydbl)atof(bs);
-			sum += io->mod->user_b_freq->v[i];
+			io->mod->e_frq->user_b_freq->v[i] = (phydbl)atof(bs);
+			sum += io->mod->e_frq->user_b_freq->v[i];
 		      }
 		
-		    For(i,4) io->mod->user_b_freq->v[i] /= sum;
+		    For(i,4) io->mod->e_frq->user_b_freq->v[i] /= sum;
 
 		    if(sum > 1.0 || sum < 1.0)
 		      {
 			PhyML_Printf("\n. The nucleotide frequencies have to be normalised in order to sum to 1.0.\n");
 			PhyML_Printf("\n. The frequencies are now : f(A)=%f, f(C)=%f, f(G)=%f, f(T)=%f.\n",
-			       io->mod->user_b_freq->v[0],
-			       io->mod->user_b_freq->v[1],
-			       io->mod->user_b_freq->v[2],
-			       io->mod->user_b_freq->v[3]);			  
+			       io->mod->e_frq->user_b_freq->v[0],
+			       io->mod->e_frq->user_b_freq->v[1],
+			       io->mod->e_frq->user_b_freq->v[2],
+			       io->mod->e_frq->user_b_freq->v[3]);			  
 			PhyML_Printf("\n. Enter any key to continue.\n");
 			if(!scanf("%c",bs)) Exit("\n");
 		      }

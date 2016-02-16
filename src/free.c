@@ -319,24 +319,16 @@ void Free_Tree_Pars(t_tree *mixt_tree)
       Free(tree->step_mat);
       Free(tree->site_pars);
 
-      For(i,2*tree->n_otu-3) 
+      For(i,2*tree->n_otu-1) 
         {
           /* printf("\n. FREE b->num: %d %p %p",tree->a_edges[i]->num,tree->a_edges[i]->pars_l,tree->a_edges[i]->pars_r); */
           Free_Edge_Pars(tree->a_edges[i]);
         }
 
-      if(tree->n_root)
+      if(tree->n_root && tree->ignore_root == NO)
         {
-          /* printf("\n. FREE b1->num: %d %p %p",tree->n_root->b[1]->num,tree->n_root->b[1]->pars_l,tree->n_root->b[1]->pars_r); */
           Free_Edge_Pars_Left(tree->n_root->b[1]);
           Free_Edge_Pars_Left(tree->n_root->b[2]);
-          /* if(tree->n_root->b[1]->pars_r) Free_Edge_Pars_Rght(tree->n_root->b[1]); */
-          /* if(tree->n_root->b[2]->pars_r) Free_Edge_Pars_Rght(tree->n_root->b[2]); */
-        }
-      else
-        {
-          Free_Edge_Pars(tree->a_edges[2*tree->n_otu-3]);
-          Free_Edge_Pars(tree->a_edges[2*tree->n_otu-2]);
         }
 
       tree = tree->next;
@@ -398,9 +390,9 @@ void Free_Tree_Lk(t_tree *mixt_tree)
 
       Free(tree->unscaled_site_lk_cat);
 
-      For(i,2*tree->n_otu-3) Free_Edge_Lk(tree->a_edges[i]);
+      For(i,2*tree->n_otu-1) Free_Edge_Lk(tree->a_edges[i]);
 
-      if(tree->n_root)
+      if(tree->n_root && tree->ignore_root == NO)
         {
           Free(tree->n_root->b[1]->nni);
           Free(tree->n_root->b[2]->nni);
@@ -408,15 +400,10 @@ void Free_Tree_Lk(t_tree *mixt_tree)
           Free(tree->n_root->b[2]->Pij_rr);
           Free_Edge_Lk_Left(tree->n_root->b[1]);
           Free_Edge_Lk_Left(tree->n_root->b[2]);
-          /* if(tree->n_root->b[1]->p_lk_rght) Free_Edge_Lk_Rght(tree->n_root->b[1]); */
-          /* if(tree->n_root->b[2]->p_lk_rght) Free_Edge_Lk_Rght(tree->n_root->b[2]); */
         }
-      else
-        {
-          Free_Edge_Lk(tree->a_edges[2*tree->n_otu-3]);
-          Free_Edge_Lk(tree->a_edges[2*tree->n_otu-2]);
-        }
+
       tree = tree->next;
+
     }
   while(tree);
 
@@ -506,7 +493,6 @@ void Free_Model_Basic(t_mod *mixt_mod)
   t_mod *mod;
 
   Free_RAS(mixt_mod->ras);
-  Free_Vect_Dbl(mixt_mod->user_b_freq);
   Free_Scalar_Dbl(mixt_mod->mr);
   Free_Scalar_Dbl(mixt_mod->kappa);
   Free_Scalar_Dbl(mixt_mod->lambda);
@@ -542,6 +528,8 @@ void Free_Model_Basic(t_mod *mixt_mod)
 void Free_Vect_Dbl(vect_dbl *v)
 {
   vect_dbl *next;
+
+  assert(v);
 
   next = v->next;
   do
@@ -608,6 +596,9 @@ void Free_Efrq(t_efrq *e_frq)
 
   Free(e_frq->pi_unscaled->v);
   Free(e_frq->pi_unscaled);
+
+  Free(e_frq->user_b_freq->v);
+  Free(e_frq->user_b_freq);
 
   if(e_frq->next) Free_Efrq(e_frq->next);
 

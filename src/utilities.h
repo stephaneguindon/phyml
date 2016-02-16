@@ -901,11 +901,16 @@ typedef struct __RAS {
 
 typedef struct __EquFreq {
   /*! Equilibrium frequencies */
-  vect_dbl             *pi; /*! states frequencies */
-  vect_dbl    *pi_unscaled; /*! states frequencies (unscaled) */
+  vect_dbl              *pi; /*! states frequencies */
+  vect_dbl     *pi_unscaled; /*! states frequencies (unscaled) */
 
-  struct __EquFreq   *next;
-  struct __EquFreq   *prev;
+  phydbl             *b_frq; /*! vector of empirical state frequencies */
+  
+  short int user_state_freq;
+  vect_dbl     *user_b_freq; /*! user-defined nucleotide frequencies */
+
+  struct __EquFreq    *next;
+  struct __EquFreq    *prev;
 
 }t_efrq;
 
@@ -927,7 +932,6 @@ typedef struct __Model {
   t_string       *aa_rate_mat_file;
   FILE             *fp_aa_rate_mat;
 
-  vect_dbl            *user_b_freq; /*! user-defined nucleotide frequencies */
   t_string              *modelname;
   t_string      *custom_mod_string; /*! string of characters used to define custom models of substitution */
 
@@ -1148,7 +1152,6 @@ typedef struct __Optimiz { /*! parameters to be optimised (mostly used in 'optim
   int            n_rand_starts; /*! number of random starting points */
   int             brent_it_max;
   int                steph_spr;
-  int          user_state_freq;
   int          opt_five_branch;
   int              pars_thresh;
   int            hybrid_thresh;

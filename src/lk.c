@@ -1640,6 +1640,10 @@ void Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
   phydbl p0,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15,p16,p17,p18,p19;
   int *p_lk_loc;
 
+  assert(tree);
+  assert(b);
+  assert(d);
+
   p_lk_lim_inf = (phydbl)P_LK_LIM_INF;
 
   dim1 = tree->mod->ras->n_catg * tree->mod->ns;
@@ -1671,6 +1675,8 @@ void Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
                &Pij1,&p_lk_v1,&sum_scale_v1,
                &Pij2,&p_lk_v2,&sum_scale_v2,
                d,b,tree);
+
+
 
 
   /* For every site in the alignment */
@@ -2337,6 +2343,9 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
   phydbl len;
   phydbl l_min, l_max;
   phydbl shape, scale, mean, var;
+
+  assert(b_fcus);
+  assert(tree);
 
   if(tree->is_mixt_tree)
     {

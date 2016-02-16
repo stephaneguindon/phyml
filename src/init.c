@@ -86,10 +86,11 @@ void Init_Triplet_Struct(triplet *t)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Init_Efrq(t_efrq *f)
+void Init_Efrq(phydbl *b_frq, t_efrq *f)
 {
-  f->next = NULL;
-  f->prev = NULL;
+  f->user_state_freq = NO;
+  f->next  = NULL;
+  f->prev  = NULL;
 }
 
 //////////////////////////////////////////////////////////////
@@ -691,7 +692,6 @@ void Set_Defaults_Optimiz(t_opt *s_opt)
   s_opt->n_rand_starts        = 5;
   s_opt->brent_it_max         = BRENT_IT_MAX;
   s_opt->steph_spr            = YES;
-  s_opt->user_state_freq      = NO;
   s_opt->opt_br_len_mult      = NO;
 
   /* s_opt->min_diff_lk_local    = 1.E-04; */
@@ -991,8 +991,6 @@ void Init_Model(calign *data, t_mod *mod, option *io)
 
   if(io->datatype == GENERIC) mod->whichmodel = JC69;
 
-  /* if(!mod->ras->invar) For(i,data->crunch_len) data->invar[i] = 0; */
-
   dr      = (phydbl *)mCalloc(  mod->ns,sizeof(phydbl));
   di      = (phydbl *)mCalloc(  mod->ns,sizeof(phydbl));
   space   = (phydbl *)mCalloc(2*mod->ns,sizeof(phydbl));
@@ -1031,14 +1029,8 @@ void Init_Model(calign *data, t_mod *mod, option *io)
         }
     }
   
-  /* mod->br_len_mult->v          = 1.0; */
-  /* mod->br_len_mult_unscaled->v = 1.0; */
-  
-  For(i,mod->ns)
-    {
-      mod->e_frq->pi->v[i] = data->b_frq[i];
-      mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
-    }
+  if(mod->e_frq->user_state_freq == NO) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->b_frq,mod->ns);
+  For(i,mod->ns) mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
 
 
   if(io->datatype == NT)
@@ -1055,7 +1047,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
         {
           For(i,6) mod->r_mat->rr_val->v[i] = 1.0;
 
-          /* Condition below is true for if custom model corresponds to TN93 or K80 */
+          /* Condition below is true if custom model corresponds to TN93 or K80 */
           if(mod->r_mat->rr_num->v[AC] == mod->r_mat->rr_num->v[AT] &&
              mod->r_mat->rr_num->v[AT] == mod->r_mat->rr_num->v[CG] &&
              mod->r_mat->rr_num->v[CG] == mod->r_mat->rr_num->v[GT] &&
@@ -1150,11 +1142,11 @@ void Init_Model(calign *data, t_mod *mod, option *io)
           Translate_Custom_Mod_String(mod);
         }
       
-      if(mod->s_opt->user_state_freq == YES && mod->whichmodel != JC69 && mod->whichmodel != K80)
+      if(mod->e_frq->user_state_freq == YES && mod->whichmodel != JC69 && mod->whichmodel != K80)
         {
           For(i,4)
             {
-              mod->e_frq->pi->v[i] = mod->user_b_freq->v[i];
+              mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
             }
         }
       
@@ -1189,136 +1181,102 @@ void Init_Model(calign *data, t_mod *mod, option *io)
         case DAYHOFF :
           {
             Init_Qmat_Dayhoff(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-            if(mod->s_opt->opt_state_freq)
-              For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
             break;
           }
         case JTT :
           {
             Init_Qmat_JTT(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-            if(mod->s_opt->opt_state_freq)
-              For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
             break;
           }
         case MTREV :
           {
             Init_Qmat_MtREV(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-            if(mod->s_opt->opt_state_freq)
-              For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
             break;
           }
         case LG :
           {
             Init_Qmat_LG(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-            if(mod->s_opt->opt_state_freq)
-              For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
             break;
           }
         case WAG :
           {
             Init_Qmat_WAG(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-            if(mod->s_opt->opt_state_freq)
-              For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
             break;
           }
         case DCMUT :
           {
             Init_Qmat_DCMut(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-            if(mod->s_opt->opt_state_freq)
-              For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
             break;
           }
         case RTREV :
           {
             Init_Qmat_RtREV(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-            if(mod->s_opt->opt_state_freq)
-              For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
             break;
           }
         case CPREV :
           {
             Init_Qmat_CpREV(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-            if(mod->s_opt->opt_state_freq)
-              For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
             break;
           }
         case VT :
           {
             Init_Qmat_VT(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-            if(mod->s_opt->opt_state_freq)
-              For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
             break;
           }
         case BLOSUM62 :
           {
             Init_Qmat_Blosum62(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-            if(mod->s_opt->opt_state_freq)
-              For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
             break;
           }
         case MTMAM :
           {
             Init_Qmat_MtMam(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-            if(mod->s_opt->opt_state_freq)
-              For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
             break;
           }
         case MTART :
           {
             Init_Qmat_MtArt(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-            if(mod->s_opt->opt_state_freq)
-              For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
             break;
           }
         case HIVW :
           {
             Init_Qmat_HIVw(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-            if(mod->s_opt->opt_state_freq)
-              For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
             break;
           }
         case HIVB :
           {
             Init_Qmat_HIVb(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-            if(mod->s_opt->opt_state_freq)
-              For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
             break;
           }
          case AB :
           {
             Init_Qmat_AB(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-            if(mod->s_opt->opt_state_freq)
-              For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
             break;
           } 
         case CUSTOMAA :
           {
             if(mod->fp_aa_rate_mat == NULL)
               {
-                PhyML_Printf("\n. Cannot open custom rate matrix file '%s'.\n",mod->aa_rate_mat_file->s); 
+                PhyML_Printf("\n== Cannot open custom rate matrix file '%s'.\n",mod->aa_rate_mat_file->s); 
                 Exit("\n");
               }
 
             Read_Qmat(mod->r_mat->qmat->v,mod->e_frq->pi->v,mod->fp_aa_rate_mat);
-            if(mod->s_opt->opt_state_freq) For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
 	    break;
 	  }
 	case FLU : 
 	  {
 	    Init_Qmat_FLU(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-	    if(mod->s_opt->opt_state_freq)
-	      For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
             break;
           }
         default :
           {
             Init_Qmat_LG(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-            if(mod->s_opt->opt_state_freq)
-              For(i,mod->ns) mod->e_frq->pi->v[i] = data->b_frq[i];
             break;
           }
         }
       
+      if(mod->s_opt->opt_state_freq) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->b_frq,mod->ns);
 
       For(i,mod->ns) if(mod->e_frq->pi->v[i] < 1.E-10)
         {
@@ -1328,7 +1286,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
         }
                        
 
-      /*       /\* multiply the nth col of Q by the nth term of pi/100 just as in PAML *\/ */
+      /* multiply the nth col of Q by the nth term of pi/100 just as in PAML */
       For(i,mod->ns) For(j,mod->ns) mod->r_mat->qmat->v[i*mod->ns+j] *= mod->e_frq->pi->v[j] / 100.0;
       
       /* compute diagonal terms of Q and mean rate mr = l/t */
@@ -1392,6 +1350,29 @@ void Init_Model(calign *data, t_mod *mod, option *io)
   Init_Eigen_Struct(mod->eigen);
 
   free(dr);free(di);free(space);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Init_Efrqs_Using_Observed_Freqs(t_efrq *f, phydbl *o, int ns)
+{
+  int i;
+
+  assert(f);
+  assert(o);
+
+  For(i,ns) 
+    {
+      if(f->pi->v[i] > 1.E-3 && Are_Equal(f->pi->v[i],o[i],1.E-3) == NO)
+        {
+          PhyML_Printf("\n== A vector of observed character frequencies should correspond ");
+          PhyML_Printf("\n== to one data set only. If you are using the XML interface, ");
+          PhyML_Printf("\n== please amend your file accordingly.");          
+          Exit("\n");
+        }
+      f->pi->v[i] = o[i];
+    }
 }
 
 //////////////////////////////////////////////////////////////

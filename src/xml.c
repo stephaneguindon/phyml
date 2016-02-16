@@ -657,7 +657,6 @@ t_tree *XML_Process_Base(char *xml_filename)
                       
                       else if(!strcmp(parent->name,"equfreqs"))
                         {
-                          
                           /* If n->ds == NULL, the corrresponding node data structure, n->ds, has not */
                           /* been initialized. If not, do nothing. */
                           if(instance->ds->obj == NULL)
@@ -675,11 +674,11 @@ t_tree *XML_Process_Base(char *xml_filename)
                               
                               ds->next = (t_ds *)mCalloc(1,sizeof(t_ds));
                               ds = ds->next;
-                              ds->obj = (int *)(&mod->s_opt->user_state_freq);
+                              ds->obj = (int *)(&mod->e_frq->user_state_freq);
                               
                               ds->next = (t_ds *)mCalloc(1,sizeof(t_ds));
                               ds = ds->next;
-                              ds->obj = (vect_dbl *)(mod->user_b_freq);
+                              ds->obj = (vect_dbl *)(mod->e_frq->user_b_freq);                              
                             }
                           else
                             {
@@ -692,11 +691,10 @@ t_tree *XML_Process_Base(char *xml_filename)
                               mod->s_opt->opt_state_freq = *((int *)ds->obj);
                               
                               ds = ds->next;
-                              mod->s_opt->user_state_freq = *((int *)ds->obj);
+                              mod->e_frq->user_state_freq = *((int *)ds->obj);
                               
                               ds = ds->next;
-                              Free_Vect_Dbl(mod->user_b_freq);
-                              mod->user_b_freq = (vect_dbl *)ds->obj;
+                              mod->e_frq->user_b_freq = (vect_dbl *)ds->obj;
                             }
                         }
                       

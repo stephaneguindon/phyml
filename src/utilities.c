@@ -3414,7 +3414,7 @@ void Record_Model(t_mod *ori, t_mod *cpy)
     {
       cpy->e_frq->pi->v[i]          = ori->e_frq->pi->v[i];
       cpy->e_frq->pi_unscaled->v[i] = ori->e_frq->pi_unscaled->v[i];
-      cpy->user_b_freq->v[i] = ori->user_b_freq->v[i];
+      cpy->e_frq->user_b_freq->v[i] = ori->e_frq->user_b_freq->v[i];
     }
   
   For(i,cpy->ns*cpy->ns) cpy->r_mat->qmat->v[i] = ori->r_mat->qmat->v[i];
@@ -10033,7 +10033,7 @@ void Set_P_Lk_One_Side(phydbl **Pij, phydbl **p_lk,  int **sum_scale, t_node *d,
 */
 
 void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
-                  phydbl **p_lk   , int **sum_scale   , int **p_lk_loc,
+                  phydbl **p_lk, int **sum_scale, int **p_lk_loc,
                   phydbl **Pij1, phydbl **p_lk_v1, int **sum_scale_v1,
                   phydbl **Pij2, phydbl **p_lk_v2, int **sum_scale_v2,
                   t_node *d, t_edge *b, t_tree *tree
@@ -10045,7 +10045,7 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
   int i;
   
 
-  if(!tree->n_root || tree->ignore_root == YES)
+  if(tree->n_root == NULL || tree->ignore_root == YES)
     {
       if(tree->n_root && (b == tree->n_root->b[1] || b == tree->n_root->b[2])) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 

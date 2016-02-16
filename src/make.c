@@ -619,10 +619,6 @@ t_mod *Make_Model_Basic()
   mod->mr                     = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
   Init_Scalar_Dbl(mod->mr);
 
-  mod->user_b_freq            = (vect_dbl *)mCalloc(1,sizeof(vect_dbl));
-  Init_Vect_Dbl(0,mod->user_b_freq);
-  mod->user_b_freq->v         = (phydbl *)mCalloc(T_MAX_OPTION,sizeof(phydbl));
-
   mod->e_frq_weight           = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
   Init_Scalar_Dbl(mod->e_frq_weight);
 
@@ -663,12 +659,12 @@ void Make_Model_Complete(t_mod *mod)
   if(!mod->e_frq)
     {
       mod->e_frq = (t_efrq *)Make_Efrq(mod->ns);
-      Init_Efrq(mod->e_frq);
+      Init_Efrq(NULL,mod->e_frq);
     }
 
   Make_RAS_Complete(mod->ras);
 
-  mod->user_b_freq->len = mod->ns;
+  mod->e_frq->user_b_freq->len = mod->ns;
 
   if(mod->whichmodel < 0)
     {
@@ -756,6 +752,10 @@ t_efrq *Make_Efrq(int ns)
   e_frq->pi_unscaled      = (vect_dbl *)mCalloc(1,sizeof(vect_dbl));
   e_frq->pi_unscaled->v   = (phydbl *)mCalloc(ns,sizeof(phydbl));
   e_frq->pi_unscaled->len = ns;
+
+  e_frq->user_b_freq      = (vect_dbl *)mCalloc(1,sizeof(vect_dbl));
+  Init_Vect_Dbl(0,e_frq->user_b_freq);
+  e_frq->user_b_freq->v   = (phydbl *)mCalloc(T_MAX_OPTION,sizeof(phydbl));
 
   return e_frq;
 }

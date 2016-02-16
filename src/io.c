@@ -2499,7 +2499,7 @@ void Print_Model(t_mod *mod)
 
   PhyML_Printf("\n. Freqs");
   PhyML_Printf("\n");
-  For(i,mod->ns) PhyML_Printf(" %12f ",mod->user_b_freq->v[i]);
+  For(i,mod->ns) PhyML_Printf(" %12f ",mod->e_frq->user_b_freq->v[i]);
   PhyML_Printf("\n");
   For(i,mod->ns) PhyML_Printf(" %12f ",mod->e_frq->pi->v[i]);
   PhyML_Printf("\n");
@@ -3179,7 +3179,7 @@ void Print_Settings(option *io)
          (io->mod->whichmodel != K80)  &&
          (io->mod->whichmodel != F81))
         {
-          if(io->mod->s_opt && !io->mod->s_opt->user_state_freq)
+          if(io->mod->s_opt && !io->mod->e_frq->user_state_freq)
             {
               PhyML_Printf("\n                . Nucleotide equilibrium frequencies:\t\t %s", (io->mod->s_opt->opt_state_freq) ? ("ML"):("empirical"));
             }
@@ -4918,7 +4918,7 @@ void Make_Efrq_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
   char *buff;
 
   mod->e_frq = (t_efrq *)Make_Efrq(mod->ns);
-  Init_Efrq(mod->e_frq);
+  Init_Efrq(NULL,mod->e_frq);
 
   buff = XML_Get_Attribute_Value(instance,"optimise.freqs");
 
@@ -4969,11 +4969,11 @@ void Make_Efrq_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
         {
           phydbl A,C,G,T;
           sscanf(buff,"%lf,%lf,%lf,%lf",&A,&C,&G,&T);
-          mod->user_b_freq->v[0] = (phydbl)A;
-          mod->user_b_freq->v[1] = (phydbl)C;
-          mod->user_b_freq->v[2] = (phydbl)G;
-          mod->user_b_freq->v[3] = (phydbl)T;
-          mod->s_opt->user_state_freq = YES;
+          mod->e_frq->user_b_freq->v[0] = (phydbl)A;
+          mod->e_frq->user_b_freq->v[1] = (phydbl)C;
+          mod->e_frq->user_b_freq->v[2] = (phydbl)G;
+          mod->e_frq->user_b_freq->v[3] = (phydbl)T;
+          mod->e_frq->user_state_freq = YES;
           mod->s_opt->opt_state_freq  = NO;
         }
     }

@@ -35,7 +35,7 @@ void MIXT_Chain_All(t_tree *mixt_tree)
       MIXT_Chain_Scalar_Dbl(curr->mod->br_len_mult,next->mod->br_len_mult);
       MIXT_Chain_Scalar_Dbl(curr->mod->mr,next->mod->mr);
       MIXT_Chain_Vector_Dbl(curr->mod->Pij_rr,next->mod->Pij_rr);
-      MIXT_Chain_Vector_Dbl(curr->mod->user_b_freq,next->mod->user_b_freq);
+      MIXT_Chain_Vector_Dbl(curr->mod->e_frq->user_b_freq,next->mod->e_frq->user_b_freq);
       For(i,2*mixt_tree->n_otu-1) MIXT_Chain_Scalar_Dbl(curr->a_edges[i]->l,next->a_edges[i]->l);
       For(i,2*mixt_tree->n_otu-1) MIXT_Chain_Scalar_Dbl(curr->a_edges[i]->l_old,next->a_edges[i]->l_old);
       For(i,2*mixt_tree->n_otu-1) MIXT_Chain_Scalar_Dbl(curr->a_edges[i]->l_var,next->a_edges[i]->l_var);
@@ -84,6 +84,18 @@ void MIXT_Chain_Edges(t_tree *tree)
       if(tree->next_mixt) b->next_mixt  = tree->next_mixt->a_edges[i];
       if(tree->prev_mixt) b->prev_mixt  = tree->prev_mixt->a_edges[i];
     }
+
+  if(tree->e_root != NULL)
+    {
+      b = tree->e_root;
+
+      if(tree->next)      b->next       = tree->next->e_root;
+      if(tree->prev)      b->prev       = tree->prev->e_root;
+      if(tree->next_mixt) b->next_mixt  = tree->next_mixt->e_root;
+      if(tree->prev_mixt) b->prev_mixt  = tree->prev_mixt->e_root;
+    }
+
+
 }
 
 //////////////////////////////////////////////////////////////
@@ -103,6 +115,18 @@ void MIXT_Chain_Nodes(t_tree *tree)
       if(tree->next_mixt) n->next_mixt  = tree->next_mixt->a_nodes[i];
       if(tree->prev_mixt) n->prev_mixt  = tree->prev_mixt->a_nodes[i];
     }
+
+
+  if(tree->n_root != NULL)
+    {
+      n = tree->n_root;
+
+      if(tree->next)      n->next       = tree->next->n_root;
+      if(tree->prev)      n->prev       = tree->prev->n_root;
+      if(tree->next_mixt) n->next_mixt  = tree->next_mixt->n_root;
+      if(tree->prev_mixt) n->prev_mixt  = tree->prev_mixt->n_root;
+    }
+
 }
 
 //////////////////////////////////////////////////////////////
@@ -555,14 +579,23 @@ void MIXT_Post_Order_Lk(t_node *mixt_a, t_node *mixt_d, t_tree *mixt_tree)
   a    = mixt_a;
   d    = mixt_d;
 
+  assert(a);
+  assert(d);
+  assert(tree);
+
   do
     {
+
       if(tree->is_mixt_tree)
         {
           tree = tree->next;
           a    = a->next;
           d    = d->next;
         }
+
+      assert(a);
+      assert(d);
+      assert(tree);
 
       if(tree->mod->ras->invar == NO) Post_Order_Lk(a,d,tree);
 
@@ -586,6 +619,10 @@ void MIXT_Pre_Order_Lk(t_node *mixt_a, t_node *mixt_d, t_tree *mixt_tree)
   a    = mixt_a;
   d    = mixt_d;
 
+  assert(a);
+  assert(d);
+  assert(tree);
+
   do
     {
       if(tree->is_mixt_tree)
@@ -594,6 +631,11 @@ void MIXT_Pre_Order_Lk(t_node *mixt_a, t_node *mixt_d, t_tree *mixt_tree)
           a    = a->next;
           d    = d->next;
         }
+
+
+      assert(a);
+      assert(d);
+      assert(tree);
 
       if(tree->mod->ras->invar == NO) Pre_Order_Lk(a,d,tree);
 
@@ -641,10 +683,10 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
       if(!cpy_mixt_b)
         {
           For(br,2*mixt_tree->n_otu-3) Update_PMat_At_Given_Edge(mixt_tree->a_edges[br],mixt_tree);
-          if(mixt_tree->n_root)
+          if(mixt_tree->n_root && mixt_tree->ignore_root == NO)
             {
-              Update_PMat_At_Given_Edge(mixt_tree->n_root->b[1],tree);
-              Update_PMat_At_Given_Edge(mixt_tree->n_root->b[2],tree);
+              Update_PMat_At_Given_Edge(mixt_tree->n_root->b[1],mixt_tree);
+              Update_PMat_At_Given_Edge(mixt_tree->n_root->b[2],mixt_tree);
             }
         }
       else
@@ -656,32 +698,64 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
         {
           if(mixt_tree->n_root)
             {
-              MIXT_Post_Order_Lk(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);
-              MIXT_Post_Order_Lk(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree);
-
-              MIXT_Update_P_Lk(mixt_tree,mixt_tree->n_root->b[1],mixt_tree->n_root);
-              MIXT_Update_P_Lk(mixt_tree,mixt_tree->n_root->b[2],mixt_tree->n_root);
-
-              if(tree->both_sides == YES)
+              if(mixt_tree->ignore_root == NO)
                 {
-                  MIXT_Pre_Order_Lk(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);              
-                  MIXT_Pre_Order_Lk(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree);
+                  MIXT_Post_Order_Lk(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);
+                  MIXT_Post_Order_Lk(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree);
+                  
+                  MIXT_Update_P_Lk(mixt_tree,mixt_tree->n_root->b[1],mixt_tree->n_root);
+                  MIXT_Update_P_Lk(mixt_tree,mixt_tree->n_root->b[2],mixt_tree->n_root);
+                
+                  if(mixt_tree->both_sides == YES)
+                    {
+                      MIXT_Pre_Order_Lk(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);              
+                      MIXT_Pre_Order_Lk(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree);
+                    }
+                }
+              else
+                {
+                  MIXT_Post_Order_Lk(mixt_tree->e_root->rght,
+                                     mixt_tree->e_root->left,
+                                     mixt_tree);
+                  MIXT_Post_Order_Lk(mixt_tree->e_root->left,
+                                     mixt_tree->e_root->rght,
+                                     mixt_tree);
+                  if(mixt_tree->both_sides == YES)
+                    { 
+                      MIXT_Pre_Order_Lk(mixt_tree->e_root->rght,
+                                         mixt_tree->e_root->left,
+                                         mixt_tree);
+                      MIXT_Pre_Order_Lk(mixt_tree->e_root->left,
+                                         mixt_tree->e_root->rght,
+                                         mixt_tree);
+                    }
                 }
             }
           else
             {
               MIXT_Post_Order_Lk(mixt_tree->a_nodes[0],mixt_tree->a_nodes[0]->v[0],mixt_tree);
               if(mixt_tree->both_sides == YES)
-                MIXT_Pre_Order_Lk(mixt_tree->a_nodes[0],
-                                  mixt_tree->a_nodes[0]->v[0],
-                                  mixt_tree);
+                {
+                  MIXT_Pre_Order_Lk(mixt_tree->a_nodes[0],
+                                    mixt_tree->a_nodes[0]->v[0],
+                                    mixt_tree);
+                }
             }
         }
 
       if(!cpy_mixt_b) 
         {
-          if(mixt_tree->n_root) mixt_b = (mixt_tree->n_root->v[1]->tax == NO)?(mixt_tree->n_root->b[2]):(mixt_tree->n_root->b[1]);
-          else                  mixt_b = mixt_tree->a_nodes[0]->b[0];
+          if(mixt_tree->n_root) 
+            {
+              if(mixt_tree->ignore_root == NO)
+                mixt_b = (mixt_tree->n_root->v[1]->tax == NO)?(mixt_tree->n_root->b[2]):(mixt_tree->n_root->b[1]);
+              else
+                mixt_b = mixt_tree->e_root;
+            }          
+          else                  
+            {
+              mixt_b = mixt_tree->a_nodes[0]->b[0];
+            }
         }
 
       sum_scale_left_cat = (phydbl *)mCalloc(MAX(mixt_tree->mod->ras->n_catg,mixt_tree->mod->n_mixt_classes),sizeof(phydbl));
@@ -694,6 +768,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
       mixt_tree->c_lnL = .0;
       dim1 = mixt_tree->mod->ns;
       dim2 = mixt_tree->mod->ns;
+      
 
       For(site,mixt_tree->n_pattern)
         {
@@ -733,8 +808,6 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                   tree = tree->next;
                   b    = b->next;
                 }
-
-
 
               tree->curr_site        = site;
               tree->apply_lk_scaling = NO;
@@ -993,7 +1066,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
               PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
               Exit("\n");
             }
-
+          
           mixt_tree->cur_site_lk[site] = log_site_lk;
 
           /* printf("\n. site: %d log_site_lk: %f",site,log_site_lk); */
@@ -1779,7 +1852,7 @@ void MIXT_Bootstrap(char *best_tree, xml_node *root)
       xml_attr *boot_attr,*seqfile_attr,*out_attr,*boot_out_attr;
       char *orig_align,*boot_out_file_name,*xml_boot_file_name,*buff;
       FILE *boot_fp_in_align,*xml_boot_file_fp;
-      option *io;
+      option *io,*dum;
       align **boot_data,**orig_data;
       int position,elem;
       xml_node *boot_root;
@@ -1901,7 +1974,8 @@ void MIXT_Bootstrap(char *best_tree, xml_node *root)
           fclose(xml_boot_file_fp);
 
           /*! Reconstruct the tree */
-          PhyML_XML(xml_boot_file_name);
+          dum = PhyML_XML(xml_boot_file_name);
+          Free(dum);
 
           /*! Remove the bootstrap alignment files */
           p_elem = boot_root;
@@ -2072,6 +2146,10 @@ void MIXT_Update_Br_Len_Multipliers(t_mod *mod)
     }
   while(loc);
 }
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
