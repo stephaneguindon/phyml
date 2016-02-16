@@ -601,8 +601,7 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
   site_lk_cat     = .0;
   site            = tree->curr_site;
   ns              = tree->mod->ns;
-  
-  
+    
   /* Skip this if no tree traveral was required, i.e. likelihood in each class of the mixture is already up to date */
   if(tree->mod->s_opt->skip_tree_traversal == NO)
     {
@@ -2350,7 +2349,7 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
 
   len = -1.0;
 
-  if(tree->mod->log_l == YES) {b_fcus->l->v = EXP(b_fcus->l->v);}
+  if(tree->mod->log_l == YES) b_fcus->l->v = EXP(b_fcus->l->v);
 
   For(i,tree->mod->ras->n_catg)
     {
@@ -2398,7 +2397,6 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
             
             shape = mean*mean/var;
             scale = var/mean;
-            
             PMat_MGF_Gamma(b_fcus->Pij_rr+tree->mod->ns*tree->mod->ns*i,shape,scale,1.0,tree->mod);
           }
     }
@@ -2408,40 +2406,43 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
   //Only for some models we use Beagle to compute/update the P-matrices, for other models
   //we compute them in PhyML and explicitly set the P-matrices in BEAGLE
   if((tree->mod->io->datatype == AA || whichmodel==GTR || whichmodel==CUSTOM) && tree->mod->use_m4mod == NO)
-  {
+    {
       if(b_fcus->has_zero_br_len == YES)
         Warn_And_Exit(TODO_BEAGLE);
-
+      
       //
       update_beagle_eigen(tree->mod);
       update_beagle_ras(tree->mod);
-
+      
       //
       len = MAX(0.0, b_fcus->l->v) * tree->mod->br_len_mult->v;
-      int p_matrices[1]     = {b_fcus->Pij_rr_idx};
-      double branch_lens[1] = {len};
+      int p_matrices[1]     = b_fcus->Pij_rr_idx;
+      double branch_lens[1] = len;
       int ret = beagleUpdateTransitionMatrices(tree->b_inst,0,p_matrices,NULL,NULL,branch_lens,1);
-      if(ret<0){
+      if(ret<0)
+        {
           fprintf(stderr, "beagleUpdateTransitionMatrices() on instance %i failed:%i\n\n",tree->b_inst,ret);
           Exit("");
-      }
+        }
       //Retrieve a "local" copy of the P-matrix
       ret = beagleGetTransitionMatrix(tree->b_inst, b_fcus->Pij_rr_idx, b_fcus->Pij_rr);
-      if(ret<0){
+      if(ret<0)
+        {
           fprintf(stderr, "beagleGetTransitionMatrix() on instance %i failed:%i\n\n",tree->b_inst,ret);
           Exit("");
-      }
-  }
+        }
+    }
   else
-  {
+    {
       int ret = beagleSetTransitionMatrix(tree->b_inst, b_fcus->Pij_rr_idx, b_fcus->Pij_rr, -1);
-      if(ret<0){
+      if(ret<0)
+        {
           fprintf(stderr, "beagleSetTransitionMatrix() on instance %i failed:%i\n\n",tree->b_inst,ret);
           Exit("");
-      }
+        }
   }
 #endif
-    if(tree->mod->log_l == YES) {b_fcus->l->v = LOG(b_fcus->l->v);}
+    if(tree->mod->log_l == YES) b_fcus->l->v = LOG(b_fcus->l->v);
 
 //      Print_Model(tree->mod);
 //      Dump_Arr_D(tree->cur_site_lk, tree->n_pattern);
@@ -3501,6 +3502,7 @@ int Check_Lk_At_Given_Edge(int verbose, t_tree *tree)
       if(verbose == YES) PhyML_Printf("\n. Edge %3d %13G %f %13G",
                                       tree->a_edges[i]->num,tree->a_edges[i]->l->v,lk[i],
                                       tree->a_edges[i]->l_var->v);
+            
     }
 
   if(tree->n_root && tree->ignore_root == NO)

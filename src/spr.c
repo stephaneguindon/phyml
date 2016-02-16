@@ -3603,9 +3603,9 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
 
       if(tree->mod->gamma_mgf_bl == YES)
         {
-          move->v0            = l0[i+1];
-          move->v1            = l1[i+1];
-          move->v2            = l2[i+1];
+          move->v0 = l0[i+1];
+          move->v1 = l1[i+1];
+          move->v2 = l2[i+1];
         }
 
       move->b_target      = b_target;
@@ -3685,6 +3685,7 @@ void Speed_Spr_Loop(t_tree *tree)
   tree->mod->s_opt->quickdirty     = 0;
 
   if((tree->mod->s_opt->print) && (!tree->io->quiet)) PhyML_Printf("\n\n. Maximizing likelihood (using SPR moves)...\n");
+
 
   SPR_Shuffle(tree);
   Set_Both_Sides(YES,tree);
@@ -3835,14 +3836,14 @@ void Speed_Spr(t_tree *tree, int max_cycles)
 
 int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree *tree)
 {
-  t_spr *move,*orig_move;
+  t_spr *move,*focal_move;
+  t_tree *focal_tree;
   t_edge *init_target, *b_residual;
   int i,j,best_move,n;
   int dir_v0, dir_v1, dir_v2;
   phydbl *recorded_l;
   phydbl best_lnL,init_lnL;
   int recorded;
-  t_tree *orig_tree;
 
   if(tree->mixt_tree != NULL)
     {
@@ -3855,6 +3856,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
   best_move = -1;
   init_lnL = tree->c_lnL;
   recorded_l = NULL;
+
 
   if(!list_size && !tree->io->fp_in_constraint_tree)
     {
@@ -3881,6 +3883,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
           /* Record t_edge lengths */
           Record_Br_Len(tree);
           
+
           /* Prune subtree */
           Prune_Subtree(move->n_link,move->n_opp_to_link,&init_target,&b_residual,tree);
           
@@ -3900,58 +3903,45 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
               recorded_l = MIXT_Get_Lengths_Of_This_Edge(init_target,tree);
               
               /*! Make sure recorded_l has been updated beforehand */
-              orig_move = move;
-              orig_tree = tree;
+              focal_move = move;
+              focal_tree = tree;
               n = 0;
               do
                 {
-                  move->init_target_l = recorded_l[n];
-                  move->init_target_v = recorded_l[n+1];
+                  if(focal_tree != NULL && focal_tree->is_mixt_tree == YES)
+                    {
+                      focal_move = focal_move->next;
+                      focal_tree = focal_tree->next;
+                    }
+                  focal_move->init_target_l = recorded_l[n];
+                  focal_move->init_target_v = recorded_l[n+1];
                   n+=2;
-                  
-                  
-                  if(tree->next)
-                    {
-                      move = move->next;
-                      tree = tree->next;
-                    }
-                  else
-                    {
-                      move = move->next;
-                      tree = tree->next;
-                    }
+                  focal_move = focal_move->next;
+                  focal_tree = focal_tree->next;
                 }
-              while(tree);
-              move = orig_move;
-              tree = orig_tree;
+              while(focal_tree);
             }
           else
             {
               MIXT_Set_Lengths_Of_This_Edge(recorded_l,init_target,tree);
               
-              orig_move = move;
-              orig_tree = tree;
+              focal_move = move;
+              focal_tree = tree;
               n = 0;
               do
                 {
-                  move->init_target_l = recorded_l[n];
-                  move->init_target_v = recorded_l[n+1];
-                  n+=2;
-                  
-                  if(tree->next)
+                  if(focal_tree != NULL && focal_tree->is_mixt_tree == YES)
                     {
-                      move = move->next;
-                      tree = tree->next;
+                      focal_move = focal_move->next;
+                      focal_tree = focal_tree->next;
                     }
-                  else
-                    {
-                      move = move->next;
-                      tree = tree->next;
-                    }
+                  focal_move->init_target_l = recorded_l[n];
+                  focal_move->init_target_v = recorded_l[n+1];
+                  n+=2;                  
+                  focal_move = focal_move->next;
+                  focal_tree = focal_tree->next;
                 }
-              while(tree);
-              move = orig_move;
-              tree = orig_tree;
+              while(focal_tree);
             }
           
           /* Update the change proba matrix at prune position */
@@ -3974,114 +3964,109 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
               else                                          dir_v2 = j;
             }
           
-          orig_tree = tree;
-          orig_move = move;
+          focal_tree = tree;
+          focal_move = move;
           do
             {
-              move->n_link->b[dir_v0]->l->v = move->l0;
-              move->n_link->b[dir_v0]->l_var->v = move->v0;
-              
-              if(move->n_link->v[dir_v1]->num > move->n_link->v[dir_v2]->num)
+              if(focal_tree != NULL && focal_tree->is_mixt_tree == YES)
                 {
-                  move->n_link->b[dir_v2]->l->v = move->l1;
-                  move->n_link->b[dir_v1]->l->v = move->l2;
+                  focal_move = focal_move->next;
+                  focal_tree = focal_tree->next;
+                }
+
+              focal_move->n_link->b[dir_v0]->l->v     = focal_move->l0;
+              focal_move->n_link->b[dir_v0]->l_var->v = focal_move->v0;
+              
+              if(focal_move->n_link->v[dir_v1]->num > focal_move->n_link->v[dir_v2]->num)
+                {
+                  focal_move->n_link->b[dir_v2]->l->v = focal_move->l1;
+                  focal_move->n_link->b[dir_v1]->l->v = focal_move->l2;
                   
-                  if(tree->io->mod->gamma_mgf_bl == YES)
+                  if(focal_tree->io->mod->gamma_mgf_bl == YES)
                     {
-                      move->n_link->b[dir_v2]->l_var->v = move->v1;
-                      move->n_link->b[dir_v1]->l_var->v = move->v2;
+                      focal_move->n_link->b[dir_v2]->l_var->v = focal_move->v1;
+                      focal_move->n_link->b[dir_v1]->l_var->v = focal_move->v2;
                     }
                 }
               else
                 {
-                  move->n_link->b[dir_v1]->l->v = move->l1;
-                  move->n_link->b[dir_v2]->l->v = move->l2;
+                  focal_move->n_link->b[dir_v1]->l->v = focal_move->l1;
+                  focal_move->n_link->b[dir_v2]->l->v = focal_move->l2;
                   
-                  if(tree->io->mod->gamma_mgf_bl == YES)
+                  if(focal_tree->io->mod->gamma_mgf_bl == YES)
                     {
-                      move->n_link->b[dir_v1]->l_var->v = move->v1;
-                      move->n_link->b[dir_v2]->l_var->v = move->v2;
+                      focal_move->n_link->b[dir_v1]->l_var->v = focal_move->v1;
+                      focal_move->n_link->b[dir_v2]->l_var->v = focal_move->v2;
                     }
                 }
               
-              if(tree->next)
-                {
-                  move = move->next;
-                  tree = tree->next;
-                }
-              else
-                {
-                  move = move->next;
-                  tree = tree->next;
-                }
-              
+              focal_move = focal_move->next;
+              focal_tree = focal_tree->next;                
             }
-          while(tree);
-          move = orig_move;
-          tree = orig_tree;
+          while(focal_tree);
           
           MIXT_Set_Alias_Subpatt(YES,tree);
           move->lnL = Triple_Dist(move->n_link,tree,YES);
           MIXT_Set_Alias_Subpatt(NO,tree);
-          
+
+
+
           if((move->lnL < best_lnL) && (move->lnL > best_lnL - tree->mod->s_opt->max_delta_lnL_spr))
             {
               /* Estimate the three t_edge lengths at the regraft site */
               move->lnL = Triple_Dist(move->n_link,tree,NO);
             }
+
           
           /* Record updated branch lengths for this move */
-          orig_move = move;
-          orig_tree = tree;
+          focal_move = move;
+          focal_tree = tree;
           do
             {
-              move->l0 = move->n_link->b[dir_v0]->l->v;
-              move->v0 = move->n_link->b[dir_v0]->l_var->v;
-              
-              if(move->n_link->v[dir_v1]->num > move->n_link->v[dir_v2]->num)
+              if(focal_tree != NULL && focal_tree->is_mixt_tree == YES)
                 {
-                  move->l1 = move->n_link->b[dir_v2]->l->v;
-                  move->l2 = move->n_link->b[dir_v1]->l->v;
+                  focal_move = focal_move->next;
+                  focal_tree = focal_tree->next;
+                }
+
+              focal_move->l0 = focal_move->n_link->b[dir_v0]->l->v;
+              focal_move->v0 = focal_move->n_link->b[dir_v0]->l_var->v;
+              
+              if(focal_move->n_link->v[dir_v1]->num > focal_move->n_link->v[dir_v2]->num)
+                {
+                  focal_move->l1 = focal_move->n_link->b[dir_v2]->l->v;
+                  focal_move->l2 = focal_move->n_link->b[dir_v1]->l->v;
                   
-                  if(tree->io->mod->gamma_mgf_bl == YES)
+                  if(focal_tree->io->mod->gamma_mgf_bl == YES)
                     {
-                      move->v1 = move->n_link->b[dir_v2]->l_var->v;
-                      move->v2 = move->n_link->b[dir_v1]->l_var->v;
+                      focal_move->v1 = focal_move->n_link->b[dir_v2]->l_var->v;
+                      focal_move->v2 = focal_move->n_link->b[dir_v1]->l_var->v;
                     }
                 }
               else
                 {
-                  move->l1 = move->n_link->b[dir_v1]->l->v;
-                  move->l2 = move->n_link->b[dir_v2]->l->v;
+                  focal_move->l1 = focal_move->n_link->b[dir_v1]->l->v;
+                  focal_move->l2 = focal_move->n_link->b[dir_v2]->l->v;
                   
-                  if(tree->io->mod->gamma_mgf_bl == YES)
+                  if(focal_tree->io->mod->gamma_mgf_bl == YES)
                     {
-                      move->v1 = move->n_link->b[dir_v1]->l_var->v;
-                      move->v2 = move->n_link->b[dir_v2]->l_var->v;
+                      focal_move->v1 = focal_move->n_link->b[dir_v1]->l_var->v;
+                      focal_move->v2 = focal_move->n_link->b[dir_v2]->l_var->v;
                     }
                 }
               
-              /* printf("\n. %f %f %f %f",move->l0,move->l1,move->l2,move->lnL); */
+              /* printf("\n. %f %f %f %f",focal_move->l0,focal_move->l1,focal_move->l2,focal_move->lnL); */
               /* For(j,2*tree->n_otu-3) */
-              /*   printf("\n== %d %f %f", */
+              /*   printf("\nXX %d %f %f", */
               /*          j, */
-              /*          tree->a_edges[j]->gamma_prior_mean, */
-              /*          tree->a_edges[j]->l_var->v); */
-              
-              if(tree->next)
-                {
-                  move = move->next;
-                  tree = tree->next;
-                }
-              else
-                {
-                  move = move->next;
-                  tree = tree->next;
-                }
+              /*          focal_tree->a_edges[j]->l->v, */
+              /*          focal_tree->a_edges[j]->l_var->v); */
+              /* Exit("\n"); */
+
+              focal_move = focal_move->next;
+              focal_tree = focal_tree->next;
             }
-          while(tree);
-          move = orig_move;
-          tree = orig_tree;
+          while(focal_tree);
           
           if(move->lnL > best_lnL + tree->mod->s_opt->min_diff_lk_move)
             {
@@ -4125,7 +4110,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
       if(move->lnL > tree->best_lnL + tree->mod->s_opt->min_diff_lk_move) break;
     }
   
-  /*   PhyML_Printf("\n. [ %4d/%4d ]",i,list_size); */
+  /* PhyML_Printf("\n. [ %4d/%4d ] %f",i,list_size,tree->best_lnL); */
   /*   PhyML_Printf("\n. max_improv = %f",max_improv); */
   
   
@@ -4181,9 +4166,9 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
   int j;
   int dir_v0, dir_v1, dir_v2;
   int accept;
-  t_edge *orig_b;
-  t_spr *orig_move;
-  t_tree *orig_tree;
+  t_edge *focus_b;
+  t_spr *focus_move;
+  t_tree *focus_tree;
 
   if(tree->mixt_tree != NULL)
     {
@@ -4194,36 +4179,32 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
   Record_Br_Len(tree);
 
   Prune_Subtree(move->n_link,
-        move->n_opp_to_link,
-        &init_target,
-        &b_residual,
-        tree);
+                move->n_opp_to_link,
+                &init_target,
+                &b_residual,
+                tree);
 
-  orig_tree = tree;
-  orig_b    = init_target;
-  orig_move = move;
+  focus_tree = tree;
+  focus_b    = init_target;
+  focus_move = move;
   do
     {
-      init_target->l->v             = move->init_target_l;
-      init_target->l_var->v = move->init_target_v;
+      if(focus_tree != NULL && focus_tree->is_mixt_tree == YES)
+        {
+          focus_b    = focus_b->next;
+          focus_move = focus_move->next;
+          focus_tree = focus_tree->next;
+        }
 
-      if(tree->next)
-        {
-          init_target = init_target->next;
-          move        = move->next;
-          tree        = tree->next;
-        }
-      else
-        {
-          init_target = init_target->next;
-          move        = move->next;
-          tree        = tree->next;
-        }
+      focus_b->l->v     = focus_move->init_target_l;
+      focus_b->l_var->v = focus_move->init_target_v;
+
+      focus_b    = focus_b->next;
+      focus_move = focus_move->next;
+      focus_tree = focus_tree->next;
+      
     }
-  while(tree);
-  init_target = orig_b;
-  move        = orig_move;
-  tree        = orig_tree;
+  while(focus_tree);
 
   Graft_Subtree(move->b_target,move->n_link,b_residual,tree);
 
@@ -4235,51 +4216,46 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
       else                                          dir_v2 = j;
     }
 
-  orig_move = move;
-  orig_tree = tree;
+  focus_move = move;
+  focus_tree = tree;
   do
     {
-      move->n_link->b[dir_v0]->l->v = move->l0;
-      move->n_link->b[dir_v0]->l_var->v = move->v0;
-
-      if(move->n_link->v[dir_v1]->num > move->n_link->v[dir_v2]->num)
+      if(focus_tree != NULL && focus_tree->is_mixt_tree == YES)
         {
-          move->n_link->b[dir_v2]->l->v = move->l1;
-          move->n_link->b[dir_v1]->l->v = move->l2;
+          focus_move = focus_move->next;
+          focus_tree = focus_tree->next;
+        }
 
-              if(tree->io->mod->gamma_mgf_bl == YES)
-                {
-                  move->n_link->b[dir_v2]->l_var->v = move->v1;
-                  move->n_link->b[dir_v1]->l_var->v = move->v2;
-                }
+      focus_move->n_link->b[dir_v0]->l->v = focus_move->l0;
+      focus_move->n_link->b[dir_v0]->l_var->v = focus_move->v0;
+
+      if(focus_move->n_link->v[dir_v1]->num > focus_move->n_link->v[dir_v2]->num)
+        {
+          focus_move->n_link->b[dir_v2]->l->v = focus_move->l1;
+          focus_move->n_link->b[dir_v1]->l->v = focus_move->l2;
+
+          if(focus_tree->io->mod->gamma_mgf_bl == YES)
+            {
+              focus_move->n_link->b[dir_v2]->l_var->v = focus_move->v1;
+              focus_move->n_link->b[dir_v1]->l_var->v = focus_move->v2;
+            }
         }
       else
         {
-          move->n_link->b[dir_v1]->l->v = move->l1;
-          move->n_link->b[dir_v2]->l->v = move->l2;
-
-              if(tree->io->mod->gamma_mgf_bl == YES)
-                {
-                  move->n_link->b[dir_v1]->l_var->v = move->v1;
-                  move->n_link->b[dir_v2]->l_var->v = move->v2;
-                }
+          focus_move->n_link->b[dir_v1]->l->v = focus_move->l1;
+          focus_move->n_link->b[dir_v2]->l->v = focus_move->l2;
+          
+          if(focus_tree->io->mod->gamma_mgf_bl == YES)
+            {
+              focus_move->n_link->b[dir_v1]->l_var->v = focus_move->v1;
+              focus_move->n_link->b[dir_v2]->l_var->v = focus_move->v2;
+            }
         }
 
-      if(tree->next)
-        {
-          move = move->next;
-          tree = tree->next;
-        }
-      else
-        {
-          move = move->next;
-          tree = tree->next;
-        }
-
+      focus_move = focus_move->next;
+      focus_tree = focus_tree->next;
     }
-  while(tree);
-  move = orig_move;
-  tree = orig_tree;
+  while(focus_tree);
 
   accept = YES;
   if(!Check_Topo_Constraints(tree,tree->io->cstr_tree)) accept = NO;
@@ -4297,7 +4273,9 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
         {
           int i;
           PhyML_Printf("\n== c_lnL = %f move_lnL = %f", tree->c_lnL,move->lnL);
-          printf("\n== l0=%f l1=%f l2=%f v0=%f v1=%f v2=%f",move->l0,move->l1,move->l2,move->v0,move->v1,move->v2);
+          PhyML_Printf("\n== l0=%f l1=%f l2=%f v0=%f v1=%f v2=%f",move->l0,move->l1,move->l2,move->v0,move->v1,move->v2);
+          PhyML_Printf("\n== Gamma MGF? %d",tree->io->mod->gamma_mgf_bl);
+
           For(i,2*tree->n_otu-3)
             printf("\n== %d %f %f",
                    i,
@@ -4691,7 +4669,6 @@ void SPR_Shuffle(t_tree *mixt_tree)
 
   Set_Both_Sides(YES,mixt_tree);
   Lk(NULL,mixt_tree);
-
 
   /* mixt_tree->mod->s_opt->print             = YES; */
   mixt_tree->best_pars                     = 1E+8;

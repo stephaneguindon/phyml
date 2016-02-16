@@ -269,8 +269,10 @@ void PMat_Empirical(phydbl l, t_mod *mod, int pos, phydbl *Pij)
   For(i,n) For(k,n) Pij[pos+mod->ns*i+k] = .0;
 
   /* compute POW(EXP(D/mr),l) into mat_eDmrl */
-  For(k,n) expt[k] = (phydbl)POW(R[k],l);
-
+  For(k,n) 
+    {
+      expt[k] = (phydbl)POW(R[k],l);
+    }
   /* multiply Vr*POW(EXP(D/mr),l)*Vi into Pij */
   For (i,n) For (k,n) uexpt[i*n+k] = U[i*n+k] * expt[k];
 
@@ -482,9 +484,10 @@ void PMat(phydbl l, t_mod *mod, int pos, phydbl *Pij)
                       {
 #ifdef BEAGLE
                         //when there is no active instance (i.e. when we are building the initial tree)
-                        if(UNINITIALIZED == mod->b_inst) {
+                        if(UNINITIALIZED == mod->b_inst) 
+                          {
                             PMat_Empirical(l,mod,pos,Pij);
-                        }
+                          }
 #else
                         PMat_Empirical(l,mod,pos,Pij);
 #endif
@@ -984,12 +987,11 @@ void Update_Eigen(t_mod *mod)
                   PhyML_Printf("\n== Cannot work out eigen vectors.");
                   Exit("\n");
                 }
-            };
+            }
           For(i,mod->eigen->size) mod->eigen->e_val[i] /= scalar;
-
+          
           /* compute the diagonal terms of EXP(D) */
           For(i,mod->ns) mod->eigen->e_val[i] = (phydbl)EXP(mod->eigen->e_val[i]);
-
 
       /* int j; */
       /* double *U,*V,*R; */

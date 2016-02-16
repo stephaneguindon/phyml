@@ -5478,7 +5478,6 @@ phydbl Triple_Dist(t_node *a, t_tree *tree, int approx)
   if(a->tax) return UNLIKELY;
   else
     {
-
       Update_PMat_At_Given_Edge(a->b[1],tree);
       Update_PMat_At_Given_Edge(a->b[2],tree);
 
@@ -5494,6 +5493,7 @@ phydbl Triple_Dist(t_node *a, t_tree *tree, int approx)
       Update_P_Lk(tree,a->b[1],a);
       Update_P_Lk(tree,a->b[0],a);
     }
+  
 
   return tree->c_lnL;
 
@@ -9723,8 +9723,9 @@ void Set_Both_Sides(int yesno, t_tree *mixt_tree)
 {
   t_tree *tree;
 
-  tree = mixt_tree;
+  assert(!mixt_tree->prev);
 
+  tree = mixt_tree;
   do
     {
       tree->both_sides = yesno;
@@ -10384,7 +10385,7 @@ void Set_Br_Len_Var(t_tree *tree)
       return;
     }
 
-  if(!tree->rates)
+  if(!tree->rates && tree->mod->gamma_mgf_bl == YES)
     {
       int i;
       phydbl len;

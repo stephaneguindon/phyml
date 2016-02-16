@@ -745,7 +745,7 @@ t_tree *XML_Process_Base(char *xml_filename)
                               ds = ds->next;
                               ds->obj = (int *)(&iomod->s_opt->opt_free_mixt_rates);
                             }
-                          else /*! Connect ras struct to already defined one. Same for opt_alpha & opt_free_mixt_rates */
+                          else /*! Connect ras struct to an already defined one. Same for opt_alpha & opt_free_mixt_rates */
                             {
                               if(iomod->ras != (t_ras *)parent->ds->obj) Free_RAS(iomod->ras);
                               iomod->ras = (t_ras *)parent->ds->obj;

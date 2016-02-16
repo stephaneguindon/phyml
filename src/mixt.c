@@ -678,7 +678,6 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
             }
         }
 
-
       if(!cpy_mixt_b) 
         {
           if(mixt_tree->n_root) mixt_b = (mixt_tree->n_root->v[1]->tax == NO)?(mixt_tree->n_root->b[2]):(mixt_tree->n_root->b[1]);
@@ -700,7 +699,6 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
         {
           b    = mixt_b->next;
           tree = mixt_tree->next;
-
 
           /*! Skip calculations if model has zero rate */
           while(tree->mod->ras->invar == YES)
@@ -735,6 +733,8 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                   tree = tree->next;
                   b    = b->next;
                 }
+
+
 
               tree->curr_site        = site;
               tree->apply_lk_scaling = NO;
@@ -862,7 +862,6 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
 
           fact_sum_scale = (int)((max_sum_scale + min_sum_scale) / 2);
 
-
           /*! Populate the mixt_tree->site_lk_cat[class] table after
             scaling */
 
@@ -915,7 +914,8 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                 /* mixt_tree->site_lk_cat[class] * */
                 /* mixt_tree->mod->ras->gamma_r_proba->v[tree->mod->ras->parent_class_number]; */
 
-              /* printf("\n. %f %f %f %f ", */
+              /* printf("\n. %d %f %f %f %f ", */
+              /*        site, */
               /*        tree->mod->r_mat_weight->v,r_mat_weight_sum, */
               /*        tree->mod->e_frq_weight->v,e_frq_weight_sum); */
 
@@ -959,7 +959,6 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
 
           log_site_lk = LOG(site_lk) - (phydbl)LOG2 * fact_sum_scale;
 
-
           int mixt_class = 0;
           int rate_class = 0;
           For(rate_class,mixt_tree->mod->ras->n_catg)
@@ -997,6 +996,8 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
 
           mixt_tree->cur_site_lk[site] = log_site_lk;
 
+          /* printf("\n. site: %d log_site_lk: %f",site,log_site_lk); */
+
           /* Multiply log likelihood by the number of times this site pattern is found in the data */
           mixt_tree->c_lnL_sorted[site] = mixt_tree->data->wght[site]*log_site_lk;
 
@@ -1007,6 +1008,8 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
 
       Free(sum_scale_left_cat);
       Free(sum_scale_rght_cat);
+
+      /* printf("\n. <><><> LNL %f",mixt_tree->c_lnL); */
 
       mixt_tree = mixt_tree->next_mixt;
       mixt_b    = mixt_b->next_mixt;

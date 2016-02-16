@@ -4252,7 +4252,7 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
              tree->mod->whichmodel == HKY85 ||
              tree->mod->whichmodel == TN93)
             {
-              PhyML_Fprintf(fp,"\n   Value of the ts/tv raqtio:\t%12f",tree->mod->kappa->v);
+              PhyML_Fprintf(fp,"\n   Value of the ts/tv ratio:\t%12f",tree->mod->kappa->v);
               PhyML_Fprintf(fp,"\n   Optimise ts/tv ratio:\t%12s",tree->mod->s_opt->opt_kappa?"yes":"no");
             }
           else if(tree->mod->whichmodel == GTR ||
@@ -4593,7 +4593,7 @@ option *PhyML_XML(char *xml_filename)
     {
       MIXT_Prepare_All(num_rand_tree,mixt_tree);
       Set_Both_Sides(YES,mixt_tree);
-
+      
       if(mixt_tree->mod->s_opt->opt_topo)
         {
           if(mixt_tree->mod->s_opt->topo_search      == NNI_MOVE) Simu_Loop(mixt_tree);
@@ -5129,6 +5129,7 @@ void Make_RAS_From_XML_Node(xml_node *parent, t_mod *mod)
   char *family;
   int select;
 
+  family = NULL;
   mod->ras->n_catg = 0;
 
   XML_Check_Siterates_Node(parent);
@@ -5137,7 +5138,8 @@ void Make_RAS_From_XML_Node(xml_node *parent, t_mod *mod)
   if(w)
     {
       family = XML_Get_Attribute_Value(w,"family");
-      select = XML_Validate_Attr_Int(family,3,"gamma","gamma+inv","freerates");
+      if(family == NULL) select = -1;
+      else               select = XML_Validate_Attr_Int(family,3,"gamma","gamma+inv","freerates");
       switch(select)
         {
         case 0:// Gamma model
@@ -5281,7 +5283,16 @@ void Make_RAS_From_XML_Node(xml_node *parent, t_mod *mod)
           }
         default:
           {
-            PhyML_Printf("\n== family: %s",family);
+            if(family != NULL) PhyML_Printf("\n== family: %s",family);
+            else 
+              {
+                PhyML_Printf("\n== Please specify a model family (\"gamma\", \"gamma+inv\" or \"freerate\")");
+                PhyML_Printf("\n== for every 'weights' element in every 'siterate' element. Note that " );
+                PhyML_Printf("\n== a \"gamma\" or a \"freerate\" model with a single rate class amounts");
+                PhyML_Printf("\n== to no variation of rates across sites, if this is the model you'd");
+                PhyML_Printf("\n== like to implement...");
+              }
+
             PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
             Exit("\n");
           }
