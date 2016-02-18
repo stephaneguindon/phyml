@@ -319,16 +319,20 @@ void Free_Tree_Pars(t_tree *mixt_tree)
       Free(tree->step_mat);
       Free(tree->site_pars);
 
-      For(i,2*tree->n_otu-1) 
+      For(i,2*tree->n_otu-3) 
         {
-          /* printf("\n. FREE b->num: %d %p %p",tree->a_edges[i]->num,tree->a_edges[i]->pars_l,tree->a_edges[i]->pars_r); */
           Free_Edge_Pars(tree->a_edges[i]);
         }
 
-      if(tree->n_root && tree->ignore_root == NO)
+      if(tree->n_root)
         {
           Free_Edge_Pars_Left(tree->n_root->b[1]);
           Free_Edge_Pars_Left(tree->n_root->b[2]);
+        }
+      else
+        {
+          Free_Edge_Pars(tree->a_edges[2*tree->n_otu-3]);
+          Free_Edge_Pars(tree->a_edges[2*tree->n_otu-2]);
         }
 
       tree = tree->next;
@@ -390,9 +394,9 @@ void Free_Tree_Lk(t_tree *mixt_tree)
 
       Free(tree->unscaled_site_lk_cat);
 
-      For(i,2*tree->n_otu-1) Free_Edge_Lk(tree->a_edges[i]);
+      For(i,2*tree->n_otu-3) Free_Edge_Lk(tree->a_edges[i]);
 
-      if(tree->n_root && tree->ignore_root == NO)
+      if(tree->n_root)
         {
           Free(tree->n_root->b[1]->nni);
           Free(tree->n_root->b[2]->nni);
@@ -400,6 +404,11 @@ void Free_Tree_Lk(t_tree *mixt_tree)
           Free(tree->n_root->b[2]->Pij_rr);
           Free_Edge_Lk_Left(tree->n_root->b[1]);
           Free_Edge_Lk_Left(tree->n_root->b[2]);
+        }
+      else
+        {
+          Free_Edge_Lk(tree->a_edges[2*tree->n_otu-3]);
+          Free_Edge_Lk(tree->a_edges[2*tree->n_otu-2]);
         }
 
       tree = tree->next;
@@ -488,6 +497,46 @@ void Free_Model_Complete(t_mod *mixt_mod)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+void Free_Rmat_Weights(t_mod *mixt_mod)
+{
+  t_mod *mod;
+
+  mod = mixt_mod;
+
+  do
+    {
+      Free(mod->r_mat_weight);
+      mod = mod->next_mixt;
+    }
+  while(mod);
+
+  if(mixt_mod->next) Free_Scalar_Dbl(mixt_mod->next->r_mat_weight);
+
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Free_Efrq_Weights(t_mod *mixt_mod)
+{
+  t_mod *mod;
+
+  mod = mixt_mod;
+
+  do
+    {
+      Free(mod->e_frq_weight);
+      mod = mod->next_mixt;
+    }
+  while(mod);
+
+  if(mixt_mod->next) Free_Scalar_Dbl(mixt_mod->next->e_frq_weight);
+
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 void Free_Model_Basic(t_mod *mixt_mod)
 {
   t_mod *mod;
@@ -498,8 +547,10 @@ void Free_Model_Basic(t_mod *mixt_mod)
   Free_Scalar_Dbl(mixt_mod->lambda);
   Free_Scalar_Dbl(mixt_mod->br_len_mult);
   Free_Scalar_Dbl(mixt_mod->br_len_mult_unscaled);
-  Free_Scalar_Dbl(mixt_mod->e_frq_weight);
-  Free_Scalar_Dbl(mixt_mod->r_mat_weight);
+
+  Free_Rmat_Weights(mixt_mod);
+  Free_Efrq_Weights(mixt_mod);
+
   Free_String(mixt_mod->modelname);
   Free_String(mixt_mod->custom_mod_string);
   Free_String(mixt_mod->aa_rate_mat_file);
@@ -549,6 +600,8 @@ void Free_Vect_Dbl(vect_dbl *v)
 void Free_Scalar_Dbl(scalar_dbl *v)
 {
   scalar_dbl *next;
+  
+  assert(v);
 
   next = v->next;
   do

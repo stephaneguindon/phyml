@@ -41,6 +41,12 @@ void Make_Tree_4_Lk(t_tree *tree, calign *cdata, int n_site)
         Init_P_Lk_Tips_Int(tree);
 
       Init_P_Lk_Loc(tree);
+
+      if(tree->n_root)
+        {
+          Free_Edge_Lk_Rght(tree->a_edges[2*tree->n_otu-3]);
+          Free_Edge_Lk_Rght(tree->a_edges[2*tree->n_otu-2]);
+        }
     }
 }
 
@@ -53,9 +59,17 @@ void Make_Tree_4_Pars(t_tree *tree, calign *cdata, int n_site)
   int i;
   tree->site_pars = (int *)mCalloc(tree->n_pattern,sizeof(int));
   tree->step_mat = (int *)mCalloc(tree->mod->ns * tree->mod->ns,sizeof(int));
+
   For(i,2*tree->n_otu-1) Make_Edge_Pars(tree->a_edges[i],tree);
   Init_Ui_Tips(tree);
   Init_P_Pars_Tips(tree); /* Must be called after Init_Ui_Tips is called */
+
+  if(tree->n_root)
+    {
+      Free_Edge_Pars_Rght(tree->a_edges[2*tree->n_otu-3]);
+      Free_Edge_Pars_Rght(tree->a_edges[2*tree->n_otu-2]);
+    }
+
   Get_Step_Mat(tree);
 }
 
@@ -1163,18 +1177,22 @@ void Make_Rmat_Weight(t_tree *mixt_tree)
     }
   while(tree);
 
-
+  
   tree = mixt_tree->next;
   tree->mod->r_mat_weight = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
   Init_Scalar_Dbl(tree->mod->r_mat_weight);
   tree->mod->r_mat_weight->v = 1.0;
   curr_weight = tree->mod->r_mat_weight;
 
+
   buff_tree = tree = mixt_tree;
   do // For each mixt_tree
     {
-      if(tree->is_mixt_tree == YES) tree = tree->next;
-      
+      if(tree->is_mixt_tree == YES) 
+        {
+          tree = tree->next;
+        }
+
       buff_tree = mixt_tree->next;
       do
         {
@@ -1244,7 +1262,6 @@ void Make_Efrq_Weight(t_tree *mixt_tree)
       tree = tree->next;
     }
   while(tree);
-
 
 
   tree = mixt_tree->next;

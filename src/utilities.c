@@ -1834,9 +1834,9 @@ void Swap(t_node *a, t_node *b, t_node *c, t_node *d, t_tree *tree)
   /* \             /d      \             /a
    *  \           /         \           /
    *   \b__...__c/    ->     \b__...__c/
-   *   /         \	         /  		\
-   *  /           \	        /   	   	 \
-   * /a            \  	   /d             \
+   *   /         \	     /         \
+   *  /           \	    /   	\
+   * /a            \  	   /d            \
    *
    * nodes b and c are not necessarily on the same branch
    */
@@ -1848,13 +1848,13 @@ void Swap(t_node *a, t_node *b, t_node *c, t_node *d, t_tree *tree)
 #endif
 
   ab = ba = cd = dc = bc = -1;
-
+  
   For(i,3) if(a->v[i] == b) { ab = i; break; }
   For(i,3) if(b->v[i] == a) { ba = i; break; }
   For(i,3) if(c->v[i] == d) { cd = i; break; }
   For(i,3) if(d->v[i] == c) { dc = i; break; }
   For(i,3) if(b->v[i] == c) { bc = i; break; }
-
+  
 #ifdef DEBUG
   if(ab < 0 || ba < 0 || cd < 0 || dc < 0)
     {
@@ -1862,6 +1862,8 @@ void Swap(t_node *a, t_node *b, t_node *c, t_node *d, t_tree *tree)
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
     }
 #endif
+  
+
 
   a->v[ab] = c;
   d->v[dc] = b;
@@ -1869,15 +1871,15 @@ void Swap(t_node *a, t_node *b, t_node *c, t_node *d, t_tree *tree)
   c->v[cd] = a;
   b->b[ba] = d->b[dc];
   c->b[cd] = a->b[ab];
-
+  
   (a->b[ab]->left == b)?
-  (a->b[ab]->left = c):
-  (a->b[ab]->rght = c);
-
+    (a->b[ab]->left = c):
+    (a->b[ab]->rght = c);
+  
   (d->b[dc]->left == c)?
-  (d->b[dc]->left = b):
-  (d->b[dc]->rght = b);
-
+    (d->b[dc]->left = b):
+    (d->b[dc]->rght = b);
+  
   For(i,3)
     {
       if(a->b[ab]->left->v[i] == a->b[ab]->rght) a->b[ab]->l_r = i;
@@ -1885,36 +1887,44 @@ void Swap(t_node *a, t_node *b, t_node *c, t_node *d, t_tree *tree)
       if(d->b[dc]->left->v[i] == d->b[dc]->rght) d->b[dc]->l_r = i;
       if(d->b[dc]->rght->v[i] == d->b[dc]->left) d->b[dc]->r_l = i;
     }
-
+  
   a->b[ab]->l_v1 = a->b[ab]->l_v2 =
-  a->b[ab]->r_v1 = a->b[ab]->r_v2 =
-  d->b[dc]->l_v1 = d->b[dc]->l_v2 =
-  d->b[dc]->r_v1 = d->b[dc]->r_v2 = -1;
-
+    a->b[ab]->r_v1 = a->b[ab]->r_v2 =
+    d->b[dc]->l_v1 = d->b[dc]->l_v2 =
+    d->b[dc]->r_v1 = d->b[dc]->r_v2 = -1;
+  
   For(i,3)
     {
       if(i != a->b[ab]->l_r)
-    {
-      if(a->b[ab]->l_v1 < 0) a->b[ab]->l_v1 = i;
-      else a->b[ab]->l_v2 = i;
-    }
+        {
+          if(a->b[ab]->l_v1 < 0) a->b[ab]->l_v1 = i;
+          else a->b[ab]->l_v2 = i;
+        }
       if(i != a->b[ab]->r_l)
-    {
-      if(a->b[ab]->r_v1 < 0) a->b[ab]->r_v1 = i;
-      else a->b[ab]->r_v2 = i;
-    }
+        {
+          if(a->b[ab]->r_v1 < 0) a->b[ab]->r_v1 = i;
+          else a->b[ab]->r_v2 = i;
+        }
       if(i != d->b[dc]->l_r)
-    {
-      if(d->b[dc]->l_v1 < 0) d->b[dc]->l_v1 = i;
-      else d->b[dc]->l_v2 = i;
-    }
+        {
+          if(d->b[dc]->l_v1 < 0) d->b[dc]->l_v1 = i;
+          else d->b[dc]->l_v2 = i;
+        }
       if(i != d->b[dc]->r_l)
-    {
-      if(d->b[dc]->r_v1 < 0) d->b[dc]->r_v1 = i;
-      else d->b[dc]->r_v2 = i;
-    }
+        {
+          if(d->b[dc]->r_v1 < 0) d->b[dc]->r_v1 = i;
+          else d->b[dc]->r_v2 = i;
+        }
     }
   Update_Dirs(tree);
+  
+  if(tree->n_root != NULL)
+    {
+      tree->n_root->v[1] = tree->e_root->left;
+      tree->n_root->v[2] = tree->e_root->rght;
+      tree->n_root->b[1]->rght = tree->e_root->left;
+      tree->n_root->b[2]->rght = tree->e_root->rght;
+    }
 
   if(tree->next)
     Swap(a->next,b->next,c->next,d->next,tree->next);
@@ -4535,8 +4545,6 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
     }
 
 
-
-
   For(i,ori->n_otu)
     {
       cpy->a_nodes[i]->tax = YES;
@@ -4589,7 +4597,6 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
   t_edge *b1, *b2;
   int dir_v1, dir_v2;
   int i;
-/*   phydbl ***buff_p_lk; */
   phydbl *buff_p_lk;
   int *buff_scale;
   int *buff_p_pars, *buff_pars, *buff_p_lk_loc, *buff_patt_id;
@@ -4622,9 +4629,8 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
       b1 = a->b[dir_v2];
       b2 = a->b[dir_v1];
     }
-  assert(NULL != b1 && NULL != b2);
 
-  /* if(v1->tax && v2->tax) PhyML_Printf("\n. Pruning is meaningless here.\n"); */
+  assert(NULL != b1 && NULL != b2);
 
   a->v[dir_v1] = NULL;
   a->v[dir_v2] = NULL;
@@ -4641,88 +4647,92 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
 
       if(v2 == b2->left)
         {
-          buff_p_lk            = b1->p_lk_rght;
-          b1->p_lk_rght        = b2->p_lk_left;
-          b2->p_lk_left        = buff_p_lk;
-
-          buff_p_lk_tip        = b1->p_lk_tip_r;
-          b1->p_lk_tip_r       = b2->p_lk_tip_l;
-          b2->p_lk_tip_l       = buff_p_lk_tip;
-
+          if(tree->is_mixt_tree == NO)
+            {
+              buff_p_lk            = b1->p_lk_rght;
+              b1->p_lk_rght        = b2->p_lk_left;
+              b2->p_lk_left        = buff_p_lk;
+              
+              buff_p_lk_tip        = b1->p_lk_tip_r;
+              b1->p_lk_tip_r       = b2->p_lk_tip_l;
+              b2->p_lk_tip_l       = buff_p_lk_tip;
+              
 #ifdef BEAGLE
-          temp                 = b1->p_lk_rght_idx;
-          b1->p_lk_rght_idx    = b2->p_lk_left_idx;
-          b2->p_lk_left_idx    = temp;
+              temp                 = b1->p_lk_rght_idx;
+              b1->p_lk_rght_idx    = b2->p_lk_left_idx;
+              b2->p_lk_left_idx    = temp;
 #endif
-          buff_scale           = b1->sum_scale_rght;
-          b1->sum_scale_rght   = b2->sum_scale_left;
-          b2->sum_scale_left   = buff_scale;
-
-          buff_scale             = b1->sum_scale_rght_cat;
-          b1->sum_scale_rght_cat = b2->sum_scale_left_cat;
-          b2->sum_scale_left_cat = buff_scale;
-
-          buff_pars            = b1->pars_r;
-          b1->pars_r           = b2->pars_l;
-          b2->pars_l           = buff_pars;
-
-          buff_ui              = b1->ui_r;
-          b1->ui_r             = b2->ui_l;
-          b2->ui_l             = buff_ui;
-
-          buff_p_pars          = b1->p_pars_r;
-          b1->p_pars_r         = b2->p_pars_l;
-          b2->p_pars_l         = buff_p_pars;
-
-          buff_p_lk_loc        = b1->p_lk_loc_rght;
-          b1->p_lk_loc_rght    = b2->p_lk_loc_left;
-          b2->p_lk_loc_left    = buff_p_lk_loc;
-
-          buff_patt_id         = b1->patt_id_rght;
-          b1->patt_id_rght     = b2->patt_id_left;
-          b2->patt_id_left     = buff_patt_id;
-
+              buff_scale           = b1->sum_scale_rght;
+              b1->sum_scale_rght   = b2->sum_scale_left;
+              b2->sum_scale_left   = buff_scale;
+              
+              buff_scale             = b1->sum_scale_rght_cat;
+              b1->sum_scale_rght_cat = b2->sum_scale_left_cat;
+              b2->sum_scale_left_cat = buff_scale;
+              
+              buff_pars            = b1->pars_r;
+              b1->pars_r           = b2->pars_l;
+              b2->pars_l           = buff_pars;
+              
+              buff_ui              = b1->ui_r;
+              b1->ui_r             = b2->ui_l;
+              b2->ui_l             = buff_ui;
+              
+              buff_p_pars          = b1->p_pars_r;
+              b1->p_pars_r         = b2->p_pars_l;
+              b2->p_pars_l         = buff_p_pars;
+              
+              buff_p_lk_loc        = b1->p_lk_loc_rght;
+              b1->p_lk_loc_rght    = b2->p_lk_loc_left;
+              b2->p_lk_loc_left    = buff_p_lk_loc;
+              
+              buff_patt_id         = b1->patt_id_rght;
+              b1->patt_id_rght     = b2->patt_id_left;
+              b2->patt_id_left     = buff_patt_id;
+            }
         }
       else
         {
-          buff_p_lk            = b1->p_lk_rght; /* b1->p_lk_rght = NULL if b1->rght->tax */
-          b1->p_lk_rght        = b2->p_lk_rght; /* b2->p_lk_rght = NULL if b2->rght->tax */
-          b2->p_lk_rght        = buff_p_lk;
-
-          buff_p_lk_tip        = b1->p_lk_tip_r;
-          b1->p_lk_tip_r       = b2->p_lk_tip_r;
-          b2->p_lk_tip_r       = buff_p_lk_tip;
+          if(tree->is_mixt_tree == NO)
+            {
+              buff_p_lk            = b1->p_lk_rght; /* b1->p_lk_rght = NULL if b1->rght->tax */
+              b1->p_lk_rght        = b2->p_lk_rght; /* b2->p_lk_rght = NULL if b2->rght->tax */
+              b2->p_lk_rght        = buff_p_lk;
+              
+              buff_p_lk_tip        = b1->p_lk_tip_r;
+              b1->p_lk_tip_r       = b2->p_lk_tip_r;
+              b2->p_lk_tip_r       = buff_p_lk_tip;
 #ifdef BEAGLE
-          temp                 = b1->p_lk_rght_idx;
-          b1->p_lk_rght_idx    = b2->p_lk_rght_idx;
-          b2->p_lk_rght_idx    = temp;
-
-          b2->p_lk_tip_idx     = b1->p_lk_tip_idx;
+              temp                 = b1->p_lk_rght_idx;
+              b1->p_lk_rght_idx    = b2->p_lk_rght_idx;
+              b2->p_lk_rght_idx    = temp;
+              
+              b2->p_lk_tip_idx     = b1->p_lk_tip_idx;
 #endif
-          buff_scale           = b1->sum_scale_rght;
-          b1->sum_scale_rght   = b2->sum_scale_rght;
-          b2->sum_scale_rght   = buff_scale;
-
-          buff_pars            = b1->pars_r;
-          b1->pars_r           = b2->pars_r;
-          b2->pars_r           = buff_pars;
-
-          buff_ui              = b1->ui_r;
-          b1->ui_r             = b2->ui_r;
-          b2->ui_r             = buff_ui;
-
-          buff_p_pars          = b1->p_pars_r;
-          b1->p_pars_r         = b2->p_pars_r;
-          b2->p_pars_r         = buff_p_pars;
-
-          buff_p_lk_loc        = b1->p_lk_loc_rght;
-          b1->p_lk_loc_rght    = b2->p_lk_loc_rght;
-          b2->p_lk_loc_rght    = buff_p_lk_loc;
-
-          buff_patt_id         = b1->patt_id_rght;
-          b1->patt_id_rght     = b2->patt_id_rght;
-          b2->patt_id_rght     = buff_patt_id;
-
+              buff_scale           = b1->sum_scale_rght;
+              b1->sum_scale_rght   = b2->sum_scale_rght;
+              b2->sum_scale_rght   = buff_scale;
+              
+              buff_pars            = b1->pars_r;
+              b1->pars_r           = b2->pars_r;
+              b2->pars_r           = buff_pars;
+              
+              buff_ui              = b1->ui_r;
+              b1->ui_r             = b2->ui_r;
+              b2->ui_r             = buff_ui;
+              
+              buff_p_pars          = b1->p_pars_r;
+              b1->p_pars_r         = b2->p_pars_r;
+              b2->p_pars_r         = buff_p_pars;
+              
+              buff_p_lk_loc        = b1->p_lk_loc_rght;
+              b1->p_lk_loc_rght    = b2->p_lk_loc_rght;
+              b2->p_lk_loc_rght    = buff_p_lk_loc;
+              
+              buff_patt_id         = b1->patt_id_rght;
+              b1->patt_id_rght     = b2->patt_id_rght;
+              b2->patt_id_rght     = buff_patt_id;
+            }
         }
     }
   else
@@ -4731,90 +4741,95 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
 
       if(v2 == b2->left)
         {
-          buff_p_lk            = b1->p_lk_left;
-          b1->p_lk_left        = b2->p_lk_left;
-          b2->p_lk_left        = buff_p_lk;
-
-          buff_p_lk_tip        = b1->p_lk_tip_l;
-          b1->p_lk_tip_l       = b2->p_lk_tip_l;
-          b2->p_lk_tip_l       = buff_p_lk_tip;
+          if(tree->is_mixt_tree == NO)
+            {
+              buff_p_lk            = b1->p_lk_left;
+              b1->p_lk_left        = b2->p_lk_left;
+              b2->p_lk_left        = buff_p_lk;
+              
+              buff_p_lk_tip        = b1->p_lk_tip_l;
+              b1->p_lk_tip_l       = b2->p_lk_tip_l;
+              b2->p_lk_tip_l       = buff_p_lk_tip;
 #ifdef BEAGLE
-          temp                 = b1->p_lk_left_idx;
-          b1->p_lk_left_idx    = b2->p_lk_left_idx;
-          b2->p_lk_left_idx    = temp;
+              temp                 = b1->p_lk_left_idx;
+              b1->p_lk_left_idx    = b2->p_lk_left_idx;
+              b2->p_lk_left_idx    = temp;
 #endif
-          buff_scale           = b1->sum_scale_left;
-          b1->sum_scale_left   = b2->sum_scale_left;
-          b2->sum_scale_left   = buff_scale;
-
-          buff_scale             = b1->sum_scale_left_cat;
-          b1->sum_scale_left_cat = b2->sum_scale_left_cat;
-          b2->sum_scale_left_cat = buff_scale;
-
-          buff_pars            = b1->pars_l;
-          b1->pars_l           = b2->pars_l;
-          b2->pars_l           = buff_pars;
-
-          buff_ui              = b1->ui_l;
-          b1->ui_l             = b2->ui_l;
-          b2->ui_l             = buff_ui;
-
-          buff_p_pars          = b1->p_pars_l;
-          b1->p_pars_l         = b2->p_pars_l;
-          b2->p_pars_l         = buff_p_pars;
-
-          buff_p_lk_loc        = b1->p_lk_loc_left;
-          b1->p_lk_loc_left    = b2->p_lk_loc_left;
-          b2->p_lk_loc_left    = buff_p_lk_loc;
-
-          buff_patt_id         = b1->patt_id_left;
-          b1->patt_id_left     = b2->patt_id_left;
-          b2->patt_id_left     = buff_patt_id;
-
+              buff_scale           = b1->sum_scale_left;
+              b1->sum_scale_left   = b2->sum_scale_left;
+              b2->sum_scale_left   = buff_scale;
+              
+              buff_scale             = b1->sum_scale_left_cat;
+              b1->sum_scale_left_cat = b2->sum_scale_left_cat;
+              b2->sum_scale_left_cat = buff_scale;
+              
+              buff_pars            = b1->pars_l;
+              b1->pars_l           = b2->pars_l;
+              b2->pars_l           = buff_pars;
+              
+              buff_ui              = b1->ui_l;
+              b1->ui_l             = b2->ui_l;
+              b2->ui_l             = buff_ui;
+              
+              buff_p_pars          = b1->p_pars_l;
+              b1->p_pars_l         = b2->p_pars_l;
+              b2->p_pars_l         = buff_p_pars;
+              
+              buff_p_lk_loc        = b1->p_lk_loc_left;
+              b1->p_lk_loc_left    = b2->p_lk_loc_left;
+              b2->p_lk_loc_left    = buff_p_lk_loc;
+              
+              buff_patt_id         = b1->patt_id_left;
+              b1->patt_id_left     = b2->patt_id_left;
+              b2->patt_id_left     = buff_patt_id;
+            }
         }
       else
         {
-          buff_p_lk            = b1->p_lk_left;
-          b1->p_lk_left        = b2->p_lk_rght; /* b2->p_lk_rght = NULL if b2->rght->tax */
-          b2->p_lk_rght        = buff_p_lk;
-
-          buff_p_lk_tip        = b1->p_lk_tip_l;
-          b1->p_lk_tip_l       = b2->p_lk_tip_r;
-          b2->p_lk_tip_r       = buff_p_lk_tip;
+          if(tree->is_mixt_tree == NO)
+            {
+              buff_p_lk            = b1->p_lk_left;
+              b1->p_lk_left        = b2->p_lk_rght; /* b2->p_lk_rght = NULL if b2->rght->tax */
+              b2->p_lk_rght        = buff_p_lk;
+              
+              buff_p_lk_tip        = b1->p_lk_tip_l;
+              b1->p_lk_tip_l       = b2->p_lk_tip_r;
+              b2->p_lk_tip_r       = buff_p_lk_tip;
 #ifdef BEAGLE
-          temp                 = b1->p_lk_left_idx;
-          b1->p_lk_left_idx    = b2->p_lk_rght_idx;
-          b2->p_lk_rght_idx    = temp;
-
-          b2->p_lk_tip_idx     = b1->p_lk_tip_idx;
+              temp                 = b1->p_lk_left_idx;
+              b1->p_lk_left_idx    = b2->p_lk_rght_idx;
+              b2->p_lk_rght_idx    = temp;
+              
+              b2->p_lk_tip_idx     = b1->p_lk_tip_idx;
 #endif
-          buff_scale           = b1->sum_scale_left;
-          b1->sum_scale_left   = b2->sum_scale_rght;
-          b2->sum_scale_rght   = buff_scale;
-
-          buff_scale             = b1->sum_scale_left_cat;
-          b1->sum_scale_left_cat = b2->sum_scale_rght_cat;
-          b2->sum_scale_rght_cat = buff_scale;
-
-          buff_pars            = b1->pars_l;
-          b1->pars_l           = b2->pars_r;
-          b2->pars_r           = buff_pars;
-
-          buff_ui              = b1->ui_l;
-          b1->ui_l             = b2->ui_r;
-          b2->ui_r             = buff_ui;
-
-          buff_p_pars          = b1->p_pars_l;
-          b1->p_pars_l         = b2->p_pars_r;
-          b2->p_pars_r         = buff_p_pars;
-
-          buff_p_lk_loc        = b1->p_lk_loc_left;
-          b1->p_lk_loc_left    = b2->p_lk_loc_rght;
-          b2->p_lk_loc_rght    = buff_p_lk_loc;
-
-          buff_patt_id         = b1->patt_id_left;
-          b1->patt_id_left     = b2->patt_id_rght;
-          b2->patt_id_rght     = buff_patt_id;
+              buff_scale           = b1->sum_scale_left;
+              b1->sum_scale_left   = b2->sum_scale_rght;
+              b2->sum_scale_rght   = buff_scale;
+              
+              buff_scale             = b1->sum_scale_left_cat;
+              b1->sum_scale_left_cat = b2->sum_scale_rght_cat;
+              b2->sum_scale_rght_cat = buff_scale;
+              
+              buff_pars            = b1->pars_l;
+              b1->pars_l           = b2->pars_r;
+              b2->pars_r           = buff_pars;
+              
+              buff_ui              = b1->ui_l;
+              b1->ui_l             = b2->ui_r;
+              b2->ui_r             = buff_ui;
+              
+              buff_p_pars          = b1->p_pars_l;
+              b1->p_pars_l         = b2->p_pars_r;
+              b2->p_pars_r         = buff_p_pars;
+              
+              buff_p_lk_loc        = b1->p_lk_loc_left;
+              b1->p_lk_loc_left    = b2->p_lk_loc_rght;
+              b2->p_lk_loc_rght    = buff_p_lk_loc;
+              
+              buff_patt_id         = b1->patt_id_left;
+              b1->patt_id_left     = b2->patt_id_rght;
+              b2->patt_id_rght     = buff_patt_id;
+            }
         }
     }
 
@@ -4837,8 +4852,8 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
   For(i,3)
     if(v1->v[i] == a)
       {
-    v1->v[i] = v2;
-    break;
+        v1->v[i] = v2;
+        break;
       }
 
 #ifdef DEBUG
@@ -4862,19 +4877,17 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
   if(residual) (*residual) = b2;
 
 
-  if(tree->n_root)
+  if(tree->n_root && tree->n_root->v[1] == a) tree->n_root->v[1] = NULL;
+  if(tree->n_root && tree->n_root->v[2] == a) tree->n_root->v[2] = NULL;
+
+  if((*target) == tree->e_root)
     {
-      if(tree->n_root->v[1] == a) tree->n_root->v[1] = NULL;
-      if(tree->n_root->v[2] == a) tree->n_root->v[2] = NULL;
+      tree->n_root->v[1]       = (*target)->left;
+      tree->n_root->v[2]       = (*target)->rght;
+      tree->n_root->b[1]->rght = (*target)->left;
+      tree->n_root->b[2]->rght = (*target)->rght;
     }
 
-  /* if(tree->n_root) */
-  /*   { */
-  /*     tree->n_root->v[1]       = tree->e_root->left; */
-  /*     tree->n_root->v[2]       = tree->e_root->rght; */
-  /*     tree->n_root->b[1]->rght = tree->e_root->left; */
-  /*     tree->n_root->b[2]->rght = tree->e_root->rght; */
-  /*   } */
 
 #ifdef DEBUG
   if(b1->left->tax == YES && b1->rght->tax == NO)
@@ -4926,96 +4939,102 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
       v1                           = target->left;
       v2                           = target->rght;
 
-      buff_p_lk                    = residual->p_lk_rght;
-      residual->p_lk_rght          = target->p_lk_rght;
-      target->p_lk_rght            = buff_p_lk;
-
-      buff_p_lk_tip                = residual->p_lk_tip_r;
-      residual->p_lk_tip_r         = target->p_lk_tip_r;
-      target->p_lk_tip_r           = buff_p_lk_tip;
-
+      if(tree->is_mixt_tree == NO)
+        {
+          buff_p_lk                    = residual->p_lk_rght;
+          residual->p_lk_rght          = target->p_lk_rght;
+          target->p_lk_rght            = buff_p_lk;
+          
+          buff_p_lk_tip                = residual->p_lk_tip_r;
+          residual->p_lk_tip_r         = target->p_lk_tip_r;
+          target->p_lk_tip_r           = buff_p_lk_tip;
+          
 #ifdef BEAGLE
-      temp                         = residual->p_lk_rght_idx;
-      residual->p_lk_rght_idx      = target->p_lk_rght_idx;
-      target->p_lk_rght_idx        = temp;
-
-      temp                         = residual->p_lk_tip_idx;
-      residual->p_lk_tip_idx       = target->p_lk_tip_idx;
-      target->p_lk_tip_idx         = temp;
+          temp                         = residual->p_lk_rght_idx;
+          residual->p_lk_rght_idx      = target->p_lk_rght_idx;
+          target->p_lk_rght_idx        = temp;
+          
+          temp                         = residual->p_lk_tip_idx;
+          residual->p_lk_tip_idx       = target->p_lk_tip_idx;
+          target->p_lk_tip_idx         = temp;
 #endif
-
-      buff_scale                   = residual->sum_scale_rght;
-      residual->sum_scale_rght     = target->sum_scale_rght;
-      target->sum_scale_rght       = buff_scale;
-
-      buff_pars                    = residual->pars_r;
-      residual->pars_r             = target->pars_r;
-      target->pars_r               = buff_pars;
-
-      buff_ui                      = residual->ui_r;
-      residual->ui_r               = target->ui_r;
-      target->ui_r                 = buff_ui;
-
-      buff_p_pars                  = residual->p_pars_r;
-      residual->p_pars_r           = target->p_pars_r;
-      target->p_pars_r             = buff_p_pars;
-
-      buff_p_lk_loc                = residual->p_lk_loc_rght;
-      residual->p_lk_loc_rght      = target->p_lk_loc_rght;
-      target->p_lk_loc_rght        = buff_p_lk_loc;
-
-      buff_patt_id                 = residual->patt_id_rght;
-      residual->patt_id_rght       = target->patt_id_rght;
-      target->patt_id_rght         = buff_patt_id;
+          
+          buff_scale                   = residual->sum_scale_rght;
+          residual->sum_scale_rght     = target->sum_scale_rght;
+          target->sum_scale_rght       = buff_scale;
+          
+          buff_pars                    = residual->pars_r;
+          residual->pars_r             = target->pars_r;
+          target->pars_r               = buff_pars;
+          
+          buff_ui                      = residual->ui_r;
+          residual->ui_r               = target->ui_r;
+          target->ui_r                 = buff_ui;
+          
+          buff_p_pars                  = residual->p_pars_r;
+          residual->p_pars_r           = target->p_pars_r;
+          target->p_pars_r             = buff_p_pars;
+          
+          buff_p_lk_loc                = residual->p_lk_loc_rght;
+          residual->p_lk_loc_rght      = target->p_lk_loc_rght;
+          target->p_lk_loc_rght        = buff_p_lk_loc;
+          
+          buff_patt_id                 = residual->patt_id_rght;
+          residual->patt_id_rght       = target->patt_id_rght;
+          target->patt_id_rght         = buff_patt_id;
+        }
     }
   else
     {
       v1                           = target->rght;
       v2                           = target->left;
 
-      buff_p_lk                    = residual->p_lk_rght;
-      residual->p_lk_rght          = target->p_lk_left;
-      target->p_lk_left            = buff_p_lk;
-
-      buff_p_lk_tip                = residual->p_lk_tip_r;
-      residual->p_lk_tip_r         = target->p_lk_tip_l;
-      target->p_lk_tip_l           = buff_p_lk_tip;
-
+      if(tree->is_mixt_tree == NO)
+        {
+          buff_p_lk                    = residual->p_lk_rght;
+          residual->p_lk_rght          = target->p_lk_left;
+          target->p_lk_left            = buff_p_lk;
+          
+          buff_p_lk_tip                = residual->p_lk_tip_r;
+          residual->p_lk_tip_r         = target->p_lk_tip_l;
+          target->p_lk_tip_l           = buff_p_lk_tip;
+          
 #ifdef BEAGLE
-      temp                         = residual->p_lk_rght_idx;
-      residual->p_lk_rght_idx      = target->p_lk_left_idx;
-      target->p_lk_left_idx        = temp;
+          temp                         = residual->p_lk_rght_idx;
+          residual->p_lk_rght_idx      = target->p_lk_left_idx;
+          target->p_lk_left_idx        = temp;
 #endif
-
-      buff_scale                   = residual->sum_scale_rght;
-      residual->sum_scale_rght     = target->sum_scale_left;
-      target->sum_scale_left       = buff_scale;
-
-      buff_scale                   = residual->sum_scale_rght_cat;
-      residual->sum_scale_rght_cat = target->sum_scale_left_cat;
-      target->sum_scale_left_cat   = buff_scale;
-
-      buff_pars                    = residual->pars_r;
-      residual->pars_r             = target->pars_l;
-      target->pars_l               = buff_pars;
-
-      buff_ui                      = residual->ui_r;
-      residual->ui_r               = target->ui_l;
-      target->ui_l                 = buff_ui;
-
-      buff_p_pars                  = residual->p_pars_r;
-      residual->p_pars_r           = target->p_pars_l;
-      target->p_pars_l             = buff_p_pars;
-
-      buff_p_lk_loc                = residual->p_lk_loc_rght;
-      residual->p_lk_loc_rght      = target->p_lk_loc_left;
-      target->p_lk_loc_left        = buff_p_lk_loc;
-
-      buff_patt_id                 = residual->patt_id_rght;
-      residual->patt_id_rght       = target->patt_id_left;
-      target->patt_id_left         = buff_patt_id;
+          
+          buff_scale                   = residual->sum_scale_rght;
+          residual->sum_scale_rght     = target->sum_scale_left;
+          target->sum_scale_left       = buff_scale;
+          
+          buff_scale                   = residual->sum_scale_rght_cat;
+          residual->sum_scale_rght_cat = target->sum_scale_left_cat;
+          target->sum_scale_left_cat   = buff_scale;
+          
+          buff_pars                    = residual->pars_r;
+          residual->pars_r             = target->pars_l;
+          target->pars_l               = buff_pars;
+          
+          buff_ui                      = residual->ui_r;
+          residual->ui_r               = target->ui_l;
+          target->ui_l                 = buff_ui;
+          
+          buff_p_pars                  = residual->p_pars_r;
+          residual->p_pars_r           = target->p_pars_l;
+          target->p_pars_l             = buff_p_pars;
+          
+          buff_p_lk_loc                = residual->p_lk_loc_rght;
+          residual->p_lk_loc_rght      = target->p_lk_loc_left;
+          target->p_lk_loc_left        = buff_p_lk_loc;
+          
+          buff_patt_id                 = residual->patt_id_rght;
+          residual->patt_id_rght       = target->patt_id_left;
+          target->patt_id_left         = buff_patt_id;
+        }
     }
-
+  
 
   For(i,3)
     if(v2->b[i] == target)
@@ -5057,13 +5076,22 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
   Set_Edge_Dirs(residual,residual->left,residual->rght,tree);
   Set_Edge_Dirs(b_up,b_up->left,b_up->rght,tree);
 
-  /* if(tree->n_root) */
-  /*   { */
-  /*     tree->n_root->v[1]       = tree->e_root->left; */
-  /*     tree->n_root->v[2]       = tree->e_root->rght; */
-  /*     tree->n_root->b[1]->rght = tree->e_root->left; */
-  /*     tree->n_root->b[2]->rght = tree->e_root->rght; */
-  /*   } */
+
+  if(tree->n_root && b_up == tree->e_root)
+    {
+      assert((tree->n_root->v[1] == NULL && tree->n_root->v[2] != NULL) ||
+             (tree->n_root->v[1] != NULL && tree->n_root->v[2] == NULL));
+      if(tree->n_root->v[1] == NULL) tree->n_root->v[1] = link;      
+      if(tree->n_root->v[2] == NULL) tree->n_root->v[2] = link;      
+    }
+
+  if(target == tree->e_root)
+    {
+      tree->n_root->v[1]       = target->left;
+      tree->n_root->v[2]       = target->rght;
+      tree->n_root->b[1]->rght = target->left;
+      tree->n_root->b[2]->rght = target->rght;
+    }
 
 
   if(tree->is_mixt_tree == YES) MIXT_Graft_Subtree(target,link,residual,tree);
@@ -5132,7 +5160,7 @@ void Reassign_Edge_Nums(t_node *a, t_node *d, int *curr_br, t_tree *tree)
         For(j,2*N_MAX_OTU-3) if(tree->a_edges[j] == a->b[i]) break;
         if(j == 2*N_MAX_OTU-3)
           {
-            PhyML_Printf("\n. Err. in file %s at line %d (function '%s').\n",__FILE__,__LINE__,__FUNCTION__);
+            PhyML_Printf("\n== Err. in file %s at line %d (function '%s').\n",__FILE__,__LINE__,__FUNCTION__);
             Exit("\n");
           }
         tree->a_edges[*curr_br] = a->b[i];
@@ -6404,6 +6432,9 @@ void Add_Root(t_edge *target, t_tree *tree)
 {
   t_edge *b1, *b2;
 
+  assert(target);
+  assert(tree);
+
   #ifndef PHYML
   PhyML_Printf("\n. Adding root on t_edge %d left = %d right = %d\n.",target->num,target->left->num,target->rght->num); fflush(NULL);
   #endif
@@ -6487,42 +6518,45 @@ void Add_Root(t_edge *target, t_tree *tree)
   b2->r_v1 = 1;
   b2->r_v2 = 2;
 
-
   /* WARNING: make sure you have freed the memory for p_lk_rght on b1 and b2 */
-
-  b1->p_lk_rght = tree->e_root->p_lk_left;
-  b2->p_lk_rght = tree->e_root->p_lk_rght;
-
-  b1->p_lk_tip_r = tree->e_root->p_lk_tip_l;
-  b2->p_lk_tip_r = tree->e_root->p_lk_tip_r;
-
-  b1->sum_scale_rght = tree->e_root->sum_scale_left;
-  b2->sum_scale_rght = tree->e_root->sum_scale_rght;
-
-  b1->sum_scale_rght_cat = tree->e_root->sum_scale_left_cat;
-  b2->sum_scale_rght_cat = tree->e_root->sum_scale_rght_cat;
-
-  b1->p_lk_loc_rght = tree->e_root->p_lk_loc_left;
-  b2->p_lk_loc_rght = tree->e_root->p_lk_loc_rght;
-
-  b1->pars_r = tree->e_root->pars_l;
-  b2->pars_r = tree->e_root->pars_r;
-
-  b1->ui_r = tree->e_root->ui_l;
-  b2->ui_r = tree->e_root->ui_r;
-
-  b1->p_pars_r = tree->e_root->p_pars_l;
-  b2->p_pars_r = tree->e_root->p_pars_r;
-
-  b1->p_lk_loc_rght = tree->e_root->p_lk_loc_left;
-  b2->p_lk_loc_rght = tree->e_root->p_lk_loc_rght;
-
-  b1->patt_id_rght = tree->e_root->patt_id_left;
-  b2->patt_id_rght = tree->e_root->patt_id_rght;
+  if(tree->is_mixt_tree == NO)
+    {
+      b1->p_lk_rght = tree->e_root->p_lk_left;
+      b2->p_lk_rght = tree->e_root->p_lk_rght;
+      
+      b1->p_lk_tip_r = tree->e_root->p_lk_tip_l;
+      b2->p_lk_tip_r = tree->e_root->p_lk_tip_r;
+      
+      b1->sum_scale_rght = tree->e_root->sum_scale_left;
+      b2->sum_scale_rght = tree->e_root->sum_scale_rght;
+      
+      b1->sum_scale_rght_cat = tree->e_root->sum_scale_left_cat;
+      b2->sum_scale_rght_cat = tree->e_root->sum_scale_rght_cat;
+      
+      b1->p_lk_loc_rght = tree->e_root->p_lk_loc_left;
+      b2->p_lk_loc_rght = tree->e_root->p_lk_loc_rght;
+      
+      b1->pars_r = tree->e_root->pars_l;
+      b2->pars_r = tree->e_root->pars_r;
+      
+      b1->ui_r = tree->e_root->ui_l;
+      b2->ui_r = tree->e_root->ui_r;
+      
+      b1->p_pars_r = tree->e_root->p_pars_l;
+      b2->p_pars_r = tree->e_root->p_pars_r;
+      
+      b1->p_lk_loc_rght = tree->e_root->p_lk_loc_left;
+      b2->p_lk_loc_rght = tree->e_root->p_lk_loc_rght;
+      
+      b1->patt_id_rght = tree->e_root->patt_id_left;
+      b2->patt_id_rght = tree->e_root->patt_id_rght;
+    }
 
   Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
   Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
   tree->n_root->anc = NULL;
+
+  if(tree->is_mixt_tree == YES) MIXT_Add_Root(target,tree);
 }
 
 //////////////////////////////////////////////////////////////
@@ -8608,10 +8642,6 @@ void Get_Best_Root_Position(t_tree *tree)
 
   if(has_outgrp == YES)
     {
-      Free_Edge_Lk_Rght(tree->a_edges[2*tree->n_otu-3]);
-      Free_Edge_Lk_Rght(tree->a_edges[2*tree->n_otu-2]);
-      Free_Edge_Pars_Rght(tree->a_edges[2*tree->n_otu-3]);
-      Free_Edge_Pars_Rght(tree->a_edges[2*tree->n_otu-2]);
 
       eps = 1.E-10;
       s = s_max = 0.0;
@@ -9737,6 +9767,8 @@ void Set_Both_Sides(int yesno, t_tree *mixt_tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 // Returns the matrix of pairwise distances between tips
 phydbl *Dist_Btw_Tips(t_tree *tree)
 {
@@ -10332,11 +10364,6 @@ void Optimum_Root_Position_IL_Model(t_tree *tree)
       int i;
       t_edge *best_edge;
       phydbl best_lnL;
-
-      Free_Edge_Lk_Rght(tree->a_edges[2*tree->n_otu-3]);
-      Free_Edge_Lk_Rght(tree->a_edges[2*tree->n_otu-2]);
-      Free_Edge_Pars_Rght(tree->a_edges[2*tree->n_otu-3]);
-      Free_Edge_Pars_Rght(tree->a_edges[2*tree->n_otu-2]);
 
       best_edge = NULL;
       best_lnL  = UNLIKELY;

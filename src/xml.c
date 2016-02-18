@@ -492,6 +492,9 @@ t_tree *XML_Process_Base(char *xml_filename)
                           /*! parameter in the relevant mixt_tree */
                           Free_Scalar_Dbl(this_mod->br_len_mult);
                           this_mod->br_len_mult = iomod->br_len_mult;                          
+
+                          Free_Scalar_Dbl(this_mod->br_len_mult_unscaled);
+                          this_mod->br_len_mult_unscaled = iomod->br_len_mult_unscaled;                          
                           
                           if(mod)
                             {

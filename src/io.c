@@ -568,12 +568,11 @@ char *Write_Tree(t_tree *tree, int custom)
   s=(char *)mCalloc(T_MAX_LINE,sizeof(char));
 #endif
 
-
   s[0]='(';
 
   if(custom == NO)
     {
-      if(!tree->n_root)
+      if(tree->n_root == NO)
         {
           i = 0;
           while((!tree->a_nodes[tree->n_otu+i]->v[0]) ||
@@ -782,7 +781,7 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
       /* 	} */
       
       
-      if(tree->n_root)
+      if(tree->n_root != NULL)
         {
           For(i,3)
             {
@@ -1915,12 +1914,7 @@ t_tree *Read_Tree_File(option *io)
 {
   t_tree *tree;
 
-  if(!io->fp_in_tree)
-    {
-      PhyML_Printf("\n== Filehandle to '%s' seems to be closed.",io->in_tree_file);
-      Exit("\n");
-    }
-
+  assert(io->fp_in_tree);
 
   Detect_Tree_File_Format(io);
 
@@ -1934,6 +1928,7 @@ t_tree *Read_Tree_File(option *io)
       {
         io->treelist->tree = (t_tree **)realloc(io->treelist->tree,(io->treelist->list_size+1)*sizeof(t_tree *));
         io->tree = Read_Tree_File_Phylip(io->fp_in_tree);
+        fclose(io->fp_in_tree);
         if(!io->tree) break;
         if(io->treelist->list_size > 1) PhyML_Printf("\n. Reading tree %d",io->treelist->list_size+1);
         io->treelist->tree[io->treelist->list_size] = io->tree;
@@ -1943,11 +1938,12 @@ t_tree *Read_Tree_File(option *io)
       }
     case NEXUS:
       {
-    io->nex_com_list = Make_Nexus_Com();
-    Init_Nexus_Format(io->nex_com_list);
-    Get_Nexus_Data(io->fp_in_tree,io);
-    Free_Nexus(io);
-    break;
+        io->nex_com_list = Make_Nexus_Com();
+        Init_Nexus_Format(io->nex_com_list);
+        Get_Nexus_Data(io->fp_in_tree,io);
+        fclose(io->fp_in_tree);
+        Free_Nexus(io);
+        break;
       }
     default:
       {
@@ -3719,6 +3715,7 @@ t_tree *Read_User_Tree(calign *cdata, t_mod *mod, option *io)
   PhyML_Printf("\n. Reading tree..."); fflush(NULL);
   if(io->n_trees == 1) rewind(io->fp_in_tree);
   tree = Read_Tree_File_Phylip(io->fp_in_tree);
+  fclose(io->fp_in_tree);
   if(!tree) Exit("\n== Input tree not found...");
   /* Add branch lengths if necessary */
   if(!tree->has_branch_lengths) Add_BioNJ_Branch_Lengths(tree,cdata,mod);
@@ -4616,6 +4613,7 @@ option *PhyML_XML(char *xml_filename)
 
 
       PhyML_Printf("\n\n. Log-likelihood = %f",mixt_tree->c_lnL);
+
 
       if((num_rand_tree == io->mod->s_opt->n_rand_starts-1) && (io->mod->s_opt->random_input_tree))
         {

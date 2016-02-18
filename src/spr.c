@@ -3167,7 +3167,7 @@ int Spr(phydbl init_lnL, t_tree *tree)
   For(br,2*tree->n_otu-3)
     {
       b = tree->a_edges[br];
-
+      
       old_pars = tree->c_pars;
       Spr_Subtree(b,b->left,tree);
       new_pars = tree->c_pars;
@@ -3706,6 +3706,7 @@ void Speed_Spr_Loop(t_tree *tree)
     }
   while(1);
   /*****************************/
+  
 
 
   /*****************************/
@@ -3720,6 +3721,7 @@ void Speed_Spr_Loop(t_tree *tree)
   /*****************************/
 
 
+
   /*****************************/
   do
     {
@@ -3728,6 +3730,14 @@ void Speed_Spr_Loop(t_tree *tree)
     }
   while(1);
   /*****************************/
+
+  {
+    int i;
+    For(i,3) if(tree->n_root->v[1]->b[i] == tree->e_root) break;
+    assert(i<3);
+    For(i,3) if(tree->n_root->v[2]->b[i] == tree->e_root) break;
+    assert(i<3);
+  }
 
 /*   if((tree->mod->s_opt->print) && (!tree->io->quiet)) PhyML_Printf("\n"); */
 

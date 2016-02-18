@@ -268,122 +268,120 @@ void Update_P_Pars(t_tree *tree, t_edge *b_fcus, t_node *n)
   pars = pars_v1 = pars_v2 = NULL;
 
   n_patterns = tree->n_pattern;
-
-
+    
   if(n == b_fcus->left)
     {
       ui = b_fcus->ui_l;
-
+      
       pars = b_fcus->pars_l;
       p_pars = b_fcus->p_pars_l;
-
+      
       ui_v1 =
-      (n == n->b[b_fcus->l_v1]->left)?
-      (n->b[b_fcus->l_v1]->ui_r):
-      (n->b[b_fcus->l_v1]->ui_l);
-
+        (n == n->b[b_fcus->l_v1]->left)?
+        (n->b[b_fcus->l_v1]->ui_r):
+        (n->b[b_fcus->l_v1]->ui_l);
+      
       ui_v2 =
-      (n == n->b[b_fcus->l_v2]->left)?
-      (n->b[b_fcus->l_v2]->ui_r):
-      (n->b[b_fcus->l_v2]->ui_l);
-
+        (n == n->b[b_fcus->l_v2]->left)?
+        (n->b[b_fcus->l_v2]->ui_r):
+        (n->b[b_fcus->l_v2]->ui_l);
+      
       p_pars_v1 =
-      (n == n->b[b_fcus->l_v1]->left)?
-      (n->b[b_fcus->l_v1]->p_pars_r):
-      (n->b[b_fcus->l_v1]->p_pars_l);
-
+        (n == n->b[b_fcus->l_v1]->left)?
+        (n->b[b_fcus->l_v1]->p_pars_r):
+        (n->b[b_fcus->l_v1]->p_pars_l);
+      
       p_pars_v2 =
-      (n == n->b[b_fcus->l_v2]->left)?
-      (n->b[b_fcus->l_v2]->p_pars_r):
-      (n->b[b_fcus->l_v2]->p_pars_l);
-
+        (n == n->b[b_fcus->l_v2]->left)?
+        (n->b[b_fcus->l_v2]->p_pars_r):
+        (n->b[b_fcus->l_v2]->p_pars_l);
+      
       pars_v1 =
-      (n == n->b[b_fcus->l_v1]->left)?
-      (n->b[b_fcus->l_v1]->pars_r):
-      (n->b[b_fcus->l_v1]->pars_l);
-
+        (n == n->b[b_fcus->l_v1]->left)?
+        (n->b[b_fcus->l_v1]->pars_r):
+        (n->b[b_fcus->l_v1]->pars_l);
+      
       pars_v2 =
-      (n == n->b[b_fcus->l_v2]->left)?
-      (n->b[b_fcus->l_v2]->pars_r):
-      (n->b[b_fcus->l_v2]->pars_l);
+        (n == n->b[b_fcus->l_v2]->left)?
+        (n->b[b_fcus->l_v2]->pars_r):
+        (n->b[b_fcus->l_v2]->pars_l);
     }
   else
     {
       ui = b_fcus->ui_r;
-
+      
       pars = b_fcus->pars_r;
       p_pars = b_fcus->p_pars_r;
-
+      
       ui_v1 =
-      (n == n->b[b_fcus->r_v1]->left)?
-      (n->b[b_fcus->r_v1]->ui_r):
-      (n->b[b_fcus->r_v1]->ui_l);
-
+        (n == n->b[b_fcus->r_v1]->left)?
+        (n->b[b_fcus->r_v1]->ui_r):
+        (n->b[b_fcus->r_v1]->ui_l);
+      
       ui_v2 =
-      (n == n->b[b_fcus->r_v2]->left)?
-      (n->b[b_fcus->r_v2]->ui_r):
-      (n->b[b_fcus->r_v2]->ui_l);
-
+        (n == n->b[b_fcus->r_v2]->left)?
+        (n->b[b_fcus->r_v2]->ui_r):
+        (n->b[b_fcus->r_v2]->ui_l);
+      
       p_pars_v1 =
-      (n == n->b[b_fcus->r_v1]->left)?
-      (n->b[b_fcus->r_v1]->p_pars_r):
-      (n->b[b_fcus->r_v1]->p_pars_l);
-
+        (n == n->b[b_fcus->r_v1]->left)?
+        (n->b[b_fcus->r_v1]->p_pars_r):
+        (n->b[b_fcus->r_v1]->p_pars_l);
+      
       p_pars_v2 =
-      (n == n->b[b_fcus->r_v2]->left)?
-      (n->b[b_fcus->r_v2]->p_pars_r):
-      (n->b[b_fcus->r_v2]->p_pars_l);
-
+        (n == n->b[b_fcus->r_v2]->left)?
+        (n->b[b_fcus->r_v2]->p_pars_r):
+        (n->b[b_fcus->r_v2]->p_pars_l);
+      
       pars_v1 =
-      (n == n->b[b_fcus->r_v1]->left)?
-      (n->b[b_fcus->r_v1]->pars_r):
-      (n->b[b_fcus->r_v1]->pars_l);
-
+        (n == n->b[b_fcus->r_v1]->left)?
+        (n->b[b_fcus->r_v1]->pars_r):
+        (n->b[b_fcus->r_v1]->pars_l);
+      
       pars_v2 =
-      (n == n->b[b_fcus->r_v2]->left)?
-      (n->b[b_fcus->r_v2]->pars_r):
-      (n->b[b_fcus->r_v2]->pars_l);
+        (n == n->b[b_fcus->r_v2]->left)?
+        (n->b[b_fcus->r_v2]->pars_r):
+        (n->b[b_fcus->r_v2]->pars_l);
     }
-
-
+  
+  
   if(tree->mod->s_opt->general_pars)
     {
       For(site,n_patterns)
-    {
-      For(i,tree->mod->ns)
         {
-          min_v1 = MAX_PARS;
-          For(j,tree->mod->ns)
-        {
-          v = p_pars_v1[site*dim1+j] + tree->step_mat[i*tree->mod->ns+j];
-          if(v < min_v1) min_v1 = v;
+          For(i,tree->mod->ns)
+            {
+              min_v1 = MAX_PARS;
+              For(j,tree->mod->ns)
+                {
+                  v = p_pars_v1[site*dim1+j] + tree->step_mat[i*tree->mod->ns+j];
+                  if(v < min_v1) min_v1 = v;
+                }
+              
+              min_v2 = MAX_PARS;
+              For(j,tree->mod->ns)
+                {
+                  v = p_pars_v2[site*dim1+j] + tree->step_mat[i*tree->mod->ns+j];
+                  if(v < min_v2) min_v2 = v;
+                }
+              p_pars[site*dim1+i] = min_v1 + min_v2;
+            }
         }
-
-          min_v2 = MAX_PARS;
-          For(j,tree->mod->ns)
-        {
-          v = p_pars_v2[site*dim1+j] + tree->step_mat[i*tree->mod->ns+j];
-          if(v < min_v2) min_v2 = v;
-        }
-          p_pars[site*dim1+i] = min_v1 + min_v2;
-        }
-    }
     }
   else
     {
       For(site,n_patterns)
-    {
-      pars[site] = pars_v1[site] + pars_v2[site];
-
-      ui[site] = ui_v1[site] & ui_v2[site];
-
-      if(!ui[site])
         {
-          pars[site]++;
-          ui[site] = ui_v1[site] | ui_v2[site];
+          pars[site] = pars_v1[site] + pars_v2[site];
+          
+          ui[site] = ui_v1[site] & ui_v2[site];
+          
+          if(!ui[site])
+            {
+              pars[site]++;
+              ui[site] = ui_v1[site] | ui_v2[site];
+            }          
         }
-
-    }
     }
 }
 

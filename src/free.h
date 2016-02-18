@@ -79,5 +79,7 @@ void Free_Disk(t_dsk *t);
 void Free_Ldisk(t_ldsk *t);
 void Free_Poly(t_poly *p);
 void Free_Mmod(t_phyrex_mod *mmod);
+void Free_Efrq_Weights(t_mod *mixt_mod);
+void Free_Rmat_Weights(t_mod *mixt_mod);
 
 #endif

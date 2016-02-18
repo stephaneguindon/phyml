@@ -1262,6 +1262,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
               }
 
             Read_Qmat(mod->r_mat->qmat->v,mod->e_frq->pi->v,mod->fp_aa_rate_mat);
+            fclose(mod->fp_aa_rate_mat);
 	    break;
 	  }
 	case FLU : 

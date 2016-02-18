@@ -33,6 +33,7 @@ void MIXT_Chain_All(t_tree *mixt_tree)
       MIXT_Chain_Scalar_Dbl(curr->mod->kappa,next->mod->kappa);
       MIXT_Chain_Scalar_Dbl(curr->mod->lambda,next->mod->lambda);
       MIXT_Chain_Scalar_Dbl(curr->mod->br_len_mult,next->mod->br_len_mult);
+      MIXT_Chain_Scalar_Dbl(curr->mod->br_len_mult_unscaled,next->mod->br_len_mult_unscaled);
       MIXT_Chain_Scalar_Dbl(curr->mod->mr,next->mod->mr);
       MIXT_Chain_Vector_Dbl(curr->mod->Pij_rr,next->mod->Pij_rr);
       MIXT_Chain_Vector_Dbl(curr->mod->e_frq->user_b_freq,next->mod->e_frq->user_b_freq);
@@ -64,7 +65,6 @@ void MIXT_Chain_All(t_tree *mixt_tree)
 
   Make_Rmat_Weight(mixt_tree);
   Make_Efrq_Weight(mixt_tree);
-
 }
 
 //////////////////////////////////////////////////////////////
@@ -74,6 +74,7 @@ void MIXT_Chain_Edges(t_tree *tree)
 {
   int i;
   t_edge *b;
+
 
   For(i,2*tree->n_otu-1)
     {
@@ -94,8 +95,6 @@ void MIXT_Chain_Edges(t_tree *tree)
       if(tree->next_mixt) b->next_mixt  = tree->next_mixt->e_root;
       if(tree->prev_mixt) b->prev_mixt  = tree->prev_mixt->e_root;
     }
-
-
 }
 
 //////////////////////////////////////////////////////////////
@@ -2107,6 +2106,35 @@ void MIXT_Set_Br_Len_Var(t_tree *mixt_tree)
       tree = tree->next;
     }
   while(tree);
+  
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void MIXT_Add_Root(t_edge *mixt_b, t_tree *mixt_tree)
+{
+  t_tree *tree;
+  t_edge *b;
+
+  tree = mixt_tree;
+  b    = mixt_b;
+  do
+    {
+      if(tree->is_mixt_tree) 
+        {
+          tree = tree->next;
+          b    = b->next;
+        }
+
+      // Condition is true when tree is not chained
+      if(b == NULL) break; 
+
+      Add_Root(b,tree);
+      tree = tree->next;
+      b    = b->next;
+    }
+  while(tree && tree->is_mixt_tree == NO);
   
 }
 

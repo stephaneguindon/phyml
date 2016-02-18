@@ -2890,16 +2890,18 @@ void Init_P_Lk_Loc(t_tree *tree)
           tree->a_edges[i]->p_lk_loc_rght[j] = j;
         }
     }
+
+
   
   For(i,tree->n_otu)
     {
       d = tree->a_nodes[i];
       patt_id_d = (d == d->b[0]->left)?(d->b[0]->patt_id_left):(d->b[0]->patt_id_rght);
       For(j,tree->n_pattern)
-    {
-      patt_id_d[j] = (int)tree->a_nodes[d->num]->c_seq->state[j];
-      /* patt_id_d[j] = (int)tree->data->c_seq[d->num]->state[j]; */
-    }
+        {
+          patt_id_d[j] = (int)tree->a_nodes[d->num]->c_seq->state[j];
+          /* patt_id_d[j] = (int)tree->data->c_seq[d->num]->state[j]; */
+        }
     }
 }
 
