@@ -3731,14 +3731,6 @@ void Speed_Spr_Loop(t_tree *tree)
   while(1);
   /*****************************/
 
-  {
-    int i;
-    For(i,3) if(tree->n_root->v[1]->b[i] == tree->e_root) break;
-    assert(i<3);
-    For(i,3) if(tree->n_root->v[2]->b[i] == tree->e_root) break;
-    assert(i<3);
-  }
-
 /*   if((tree->mod->s_opt->print) && (!tree->io->quiet)) PhyML_Printf("\n"); */
 
 }
