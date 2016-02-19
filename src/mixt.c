@@ -665,6 +665,8 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
   int k,l;
   int dim1,dim2;
   phydbl r_mat_weight_sum, e_frq_weight_sum, sum_probas;
+  int piecewise_exponent;
+  phydbl multiplier;
 
   tree            = NULL;
   b               = NULL;
@@ -881,6 +883,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
           while(tree && tree->is_mixt_tree == NO);
 
 
+
           max_sum_scale =  (phydbl)BIG;
           min_sum_scale = -(phydbl)BIG;
 
@@ -933,9 +936,11 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
           if(min_sum_scale > max_sum_scale) min_sum_scale = max_sum_scale;
 
           fact_sum_scale = (int)((max_sum_scale + min_sum_scale) / 2);
+          mixt_tree->fact_sum_scale[site] = fact_sum_scale;
 
           /*! Populate the mixt_tree->site_lk_cat[class] table after
             scaling */
+
 
           tree  = mixt_tree->next;
           b     = mixt_b->next;
@@ -962,6 +967,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
             }
           while(tree && tree->is_mixt_tree == NO);
 
+          
           tree    = mixt_tree->next;
           b       = mixt_b->next;
           class   = 0;
@@ -982,20 +988,13 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                 tree->mod->r_mat_weight->v / r_mat_weight_sum *
                 tree->mod->e_frq_weight->v / e_frq_weight_sum /
                 sum_probas;
-
-                /* mixt_tree->site_lk_cat[class] * */
-                /* mixt_tree->mod->ras->gamma_r_proba->v[tree->mod->ras->parent_class_number]; */
-
-              /* printf("\n. %d %f %f %f %f ", */
-              /*        site, */
-              /*        tree->mod->r_mat_weight->v,r_mat_weight_sum, */
-              /*        tree->mod->e_frq_weight->v,e_frq_weight_sum); */
-
+              
               tree = tree->next;
               b    = b->next;
               class++;
             }
           while(tree && tree->is_mixt_tree == NO);
+
 
           /* Scaling for invariants */
           if(mixt_tree->mod->ras->invar == YES)
@@ -1035,6 +1034,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
           int rate_class = 0;
           For(rate_class,mixt_tree->mod->ras->n_catg)
             {
+              mixt_tree->unscaled_site_lk_cat[rate_class*mixt_tree->n_pattern + site] = 0.0;
               mixt_class = 0;
               tree = mixt_tree->next;
               do
@@ -1042,15 +1042,16 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                   if(tree->mod->ras->parent_class_number == rate_class)
                     {
                       mixt_tree->unscaled_site_lk_cat[rate_class*mixt_tree->n_pattern + site] +=
-                        // TO DO: add correct weight here
-                        LOG(mixt_tree->site_lk_cat[mixt_class]) -
-                        (phydbl)LOG2 * fact_sum_scale;
+                        LOG(mixt_tree->site_lk_cat[rate_class]);
                       break;
                     }
                   mixt_class++;
                   tree = tree->next;
                 }
               while(tree && tree->is_mixt_tree == NO);
+
+              mixt_tree->unscaled_site_lk_cat[rate_class*mixt_tree->n_pattern + site] = 
+                EXP(mixt_tree->unscaled_site_lk_cat[rate_class*mixt_tree->n_pattern + site]);
             }
 
           if(isinf(log_site_lk) || isnan(log_site_lk))
@@ -1066,9 +1067,38 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
               Exit("\n");
             }
           
-          mixt_tree->cur_site_lk[site] = log_site_lk;
-
-          /* printf("\n. site: %d log_site_lk: %f",site,log_site_lk); */
+          if(fact_sum_scale >= 0)
+            {
+              mixt_tree->cur_site_lk[site] = site_lk;
+              exponent = -fact_sum_scale;
+              do
+                {
+                  piecewise_exponent = MAX(exponent,-63);
+                  multiplier = 1. / (phydbl)((unsigned long long)(1) << -piecewise_exponent);
+                  mixt_tree->cur_site_lk[site] *= multiplier;
+                  exponent -= piecewise_exponent;
+                }
+              while(exponent != 0);
+            }
+          else
+            {
+              mixt_tree->cur_site_lk[site] = site_lk;
+              exponent = fact_sum_scale;
+              do
+                {
+                  piecewise_exponent = MIN(exponent,63);
+                  multiplier = (phydbl)((unsigned long long)(1) << piecewise_exponent);
+                  mixt_tree->cur_site_lk[site] *= multiplier;
+                  exponent -= piecewise_exponent;
+                }
+              while(exponent != 0);
+            }
+          
+          // ... or using the log-likelihood
+          if(isinf(site_lk) || isnan(site_lk))
+            {
+              mixt_tree->cur_site_lk[site] = EXP(log_site_lk);
+            }
 
           /* Multiply log likelihood by the number of times this site pattern is found in the data */
           mixt_tree->c_lnL_sorted[site] = mixt_tree->data->wght[site]*log_site_lk;
@@ -1203,14 +1233,14 @@ int *MIXT_Get_Number_Of_Classes_In_All_Mixtures(t_tree *mixt_tree)
 
   if(mixt_tree->is_mixt_tree == YES)
     {
-  n_catg = NULL;
-  tree = mixt_tree;
-  class = 0;
-  do
-    {
-      if(!class) n_catg = (int *)mCalloc(1,sizeof(int));
-      else       n_catg = (int *)realloc(n_catg,(class+1)*sizeof(int));
-
+      n_catg = NULL;
+      tree = mixt_tree;
+      class = 0;
+      do
+        {
+          if(!class) n_catg = (int *)mCalloc(1,sizeof(int));
+          else       n_catg = (int *)realloc(n_catg,(class+1)*sizeof(int));
+          
           tree = tree->next;
           
           n_catg[class]=0;
@@ -2078,10 +2108,15 @@ phydbl MIXT_Get_Sum_Of_Probas_Across_Mixtures(phydbl r_mat_weight_sum, phydbl e_
   tree = mixt_tree->next;
   do
     {
+      // e.g., if mixture has two classes, one of these 
+      // corresponding to invariable sites. We need to skip it.
+      if(tree->mod->ras->invar == YES) tree = tree->next;
+          
       sum +=
         mixt_tree->mod->ras->gamma_r_proba->v[tree->mod->ras->parent_class_number] *
         tree->mod->r_mat_weight->v / r_mat_weight_sum *
         tree->mod->e_frq_weight->v / e_frq_weight_sum;
+      
 
       tree = tree->next;
 

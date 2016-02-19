@@ -4588,7 +4588,10 @@ option *PhyML_XML(char *xml_filename)
 
   For(num_rand_tree,io->mod->s_opt->n_rand_starts)
     {
+
       MIXT_Prepare_All(num_rand_tree,mixt_tree);
+      Br_Len_Not_Involving_Invar(mixt_tree);
+      Unscale_Br_Len_Multiplier_Tree(mixt_tree);
       Set_Both_Sides(YES,mixt_tree);
       
       if(mixt_tree->mod->s_opt->opt_topo)
@@ -4602,7 +4605,6 @@ option *PhyML_XML(char *xml_filename)
           if(mixt_tree->mod->s_opt->opt_subst_param ||
              mixt_tree->mod->s_opt->opt_bl)
             {
-
               Round_Optimize(mixt_tree,mixt_tree->data,ROUND_MAX);
             }
           else
@@ -4639,6 +4641,14 @@ option *PhyML_XML(char *xml_filename)
           most_likely_tree = Write_Tree(mixt_tree,NO);
           mixt_tree->lock_topo = NO;
         }
+
+      tree = mixt_tree;
+      do
+        {
+          if(tree->io->print_site_lnl == YES) Print_Site_Lk(tree,tree->io->fp_out_lk);
+          tree = tree->next_mixt;
+        }
+      while(tree);
 
       MIXT_Init_T_End(mixt_tree);
       Print_Data_Structure(YES,mixt_tree->io->fp_out_stats,mixt_tree);
@@ -4888,7 +4898,6 @@ void Make_Ratematrice_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
         }
       else
         {
-          mod->fp_aa_rate_mat = Openfile(r_mat_file,0);
           strcpy(mod->aa_rate_mat_file->s,r_mat_file);
         }
 
@@ -4943,14 +4952,14 @@ void Make_Efrq_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
         {
           if(io->datatype == AA)
             {
-              mod->s_opt->opt_state_freq = YES;
+              mod->s_opt->opt_state_freq       = YES;
+              mod->e_frq->empirical_state_freq = YES;
             }
           else if(io->datatype == NT)
             {
               mod->s_opt->opt_state_freq = NO;
             }
         }
-      /* Free(buff); */
     }
 
 

@@ -576,6 +576,7 @@ void Round_Optimize(t_tree *tree, calign *data, int n_round_max)
   Set_Both_Sides(NO,tree); /* Only the down partial likelihoods need to be up-to-date here */
   Lk(NULL,tree);
 
+
   while(n_round < n_round_max)
     {
       if(tree->mod->s_opt->opt_bl || tree->mod->s_opt->constrained_br_len)
@@ -2882,7 +2883,6 @@ void Optimize_Pinv(t_tree *mixt_tree, int verbose)
 
   do
     {
-
       For(i,n_pinv) if(tree->mod->ras->pinvar == pinv[i]) break;
 
       if(i == n_pinv)
@@ -2891,8 +2891,8 @@ void Optimize_Pinv(t_tree *mixt_tree, int verbose)
           else      pinv = (scalar_dbl **)mRealloc(pinv,n_pinv+1,sizeof(scalar_dbl *));
           pinv[n_pinv] = tree->mod->ras->pinvar;
           n_pinv++;
-          
-          if(tree->mod->s_opt->opt_pinvar == YES && tree->mod->s_opt->opt_alpha == NO)
+           
+          if(tree->mod->s_opt->opt_pinvar == YES && (tree->mod->s_opt->opt_alpha == NO || tree->mod->ras->n_catg == 1))
             {
               Generic_Brent_Lk(&(tree->mod->ras->pinvar->v),
                                0.0001,0.9999,
@@ -2903,13 +2903,13 @@ void Optimize_Pinv(t_tree *mixt_tree, int verbose)
               
               if(verbose)
                 {
-                  Print_Lk(mixt_tree,"[P-inv              ]");
+                  Print_Lk(tree,"[P-inv              ]");
                   PhyML_Printf("[%10f]",tree->mod->ras->pinvar->v);
                 }
             }
         }
       
-      tree = tree->next;
+      tree = tree->next_mixt;
 
     }
   while(tree);

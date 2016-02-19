@@ -901,16 +901,17 @@ typedef struct __RAS {
 
 typedef struct __EquFreq {
   /*! Equilibrium frequencies */
-  vect_dbl              *pi; /*! states frequencies */
-  vect_dbl     *pi_unscaled; /*! states frequencies (unscaled) */
+  vect_dbl                   *pi; /*! states frequencies */
+  vect_dbl          *pi_unscaled; /*! states frequencies (unscaled) */
 
-  phydbl             *b_frq; /*! vector of empirical state frequencies */
+  phydbl                  *b_frq; /*! vector of empirical state frequencies */
   
-  short int user_state_freq;
-  vect_dbl     *user_b_freq; /*! user-defined nucleotide frequencies */
+  short int empirical_state_freq;
+  short int      user_state_freq;
+  vect_dbl          *user_b_freq; /*! user-defined nucleotide frequencies */
 
-  struct __EquFreq    *next;
-  struct __EquFreq    *prev;
+  struct __EquFreq         *next;
+  struct __EquFreq         *prev;
 
 }t_efrq;
 

@@ -88,9 +88,10 @@ void Init_Triplet_Struct(triplet *t)
 
 void Init_Efrq(phydbl *b_frq, t_efrq *f)
 {
-  f->user_state_freq = NO;
-  f->next  = NULL;
-  f->prev  = NULL;
+  f->user_state_freq      = NO;
+  f->empirical_state_freq = NO;
+  f->next                 = NULL;
+  f->prev                 = NULL;
 }
 
 //////////////////////////////////////////////////////////////
@@ -1029,7 +1030,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
         }
     }
   
-  if(mod->e_frq->user_state_freq == NO) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->b_frq,mod->ns);
+  if(mod->e_frq->empirical_state_freq == YES) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->b_frq,mod->ns);
   For(i,mod->ns) mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
 
 
@@ -1255,12 +1256,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
           } 
         case CUSTOMAA :
           {
-            if(mod->fp_aa_rate_mat == NULL)
-              {
-                PhyML_Printf("\n== Cannot open custom rate matrix file '%s'.\n",mod->aa_rate_mat_file->s); 
-                Exit("\n");
-              }
-
+            mod->fp_aa_rate_mat = Openfile(mod->aa_rate_mat_file->s,READ);
             Read_Qmat(mod->r_mat->qmat->v,mod->e_frq->pi->v,mod->fp_aa_rate_mat);
             fclose(mod->fp_aa_rate_mat);
 	    break;

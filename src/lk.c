@@ -676,10 +676,11 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
       Pull_Scaling_Factors(site,b,tree);
     }
 
+  
   fact_sum_scale = tree->fact_sum_scale[site];
+  
 
-
-  //Likelihood of the site; is the sum of the individual rate specific likelihoods
+  //Likelihood of the site is the sum of the individual rate specific likelihoods
   site_lk = .0;
   For(catg,tree->mod->ras->n_catg)
     {
@@ -688,6 +689,7 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
         tree->mod->ras->gamma_r_proba->v[catg]; //density
     }
   
+
   if(tree->mod->ras->invar == YES)
     {
       num_prec_issue = NO;
@@ -700,7 +702,7 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
       else
         {
           site_lk = site_lk * (1. - tree->mod->ras->pinvar->v) + inv_site_lk * tree->mod->ras->pinvar->v;
-        }          
+        }
     }
   
   log_site_lk = LOG(site_lk) - (phydbl)LOG2 * fact_sum_scale; // log_site_lk =  log(site_lk_scaled / 2^(left_subtree+right_subtree))      

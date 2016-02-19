@@ -239,6 +239,7 @@ t_tree *XML_Process_Base(char *xml_filename)
           }
         }
       
+
       char *format = NULL;
       format = XML_Get_Attribute_Value(p_elem,"format");
       if(format)
@@ -289,6 +290,21 @@ t_tree *XML_Process_Base(char *xml_filename)
        */
       io->fp_in_align = Openfile(io->in_align_file,0);
       
+
+      s = XML_Get_Attribute_Value(p_elem,"print.site.lk");
+      if(s)
+        {
+          select = XML_Validate_Attr_Int(s,6,
+                                         "true","yes","y",
+                                         "false","no","n");
+          if(select < 3) io->print_site_lnl = YES;
+
+          strcpy(io->out_lk_file,io->in_align_file);
+          strcat(io->out_lk_file, "_phyml_lk");
+          io->fp_out_lk = Openfile(io->out_lk_file,1);
+        }
+
+
       /*! Load sequence file
        */
       io->data  = Get_Seq(io);
