@@ -255,7 +255,7 @@ int main(int argc, char **argv)
                     }
 
 
-                  if(tree->mod->gamma_mgf_bl) Optimum_Root_Position_IL_Model(tree);
+                  if(tree->mod->gamma_mgf_bl) Best_Root_Position_IL_Model(tree);
 
                   Set_Both_Sides(YES,tree);
                   Lk(NULL,tree);

@@ -8643,6 +8643,11 @@ void Get_Best_Root_Position(t_tree *tree)
   if(has_outgrp == YES)
     {
 
+      Free_Edge_Lk_Rght(tree->a_edges[2*tree->n_otu-3]);
+      Free_Edge_Lk_Rght(tree->a_edges[2*tree->n_otu-2]);
+      Free_Edge_Pars_Rght(tree->a_edges[2*tree->n_otu-3]);
+      Free_Edge_Pars_Rght(tree->a_edges[2*tree->n_otu-2]);
+
       eps = 1.E-10;
       s = s_max = 0.0;
       For(i,2*tree->n_otu-2)
@@ -10351,7 +10356,7 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Optimum_Root_Position_IL_Model(t_tree *tree)
+void Best_Root_Position_IL_Model(t_tree *tree)
 {
 
   if(tree->n_root)
@@ -10364,6 +10369,13 @@ void Optimum_Root_Position_IL_Model(t_tree *tree)
       int i;
       t_edge *best_edge;
       phydbl best_lnL;
+
+
+      Free_Edge_Lk_Rght(tree->a_edges[2*tree->n_otu-3]);
+      Free_Edge_Lk_Rght(tree->a_edges[2*tree->n_otu-2]);
+      Free_Edge_Pars_Rght(tree->a_edges[2*tree->n_otu-3]);
+      Free_Edge_Pars_Rght(tree->a_edges[2*tree->n_otu-2]);
+
 
       best_edge = NULL;
       best_lnL  = UNLIKELY;

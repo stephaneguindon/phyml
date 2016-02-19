@@ -581,9 +581,6 @@ correspond to the frequencies of A, C, G and T respectively.
 \item \x{-c} (or \x{--nclasses}) \x{nb\_subst\_cat}\index{gamma distribution (discrete)!number of categories} \index{command-line options!\x{--nclasses}}\\
 \x{nb\_subst\_cat}: number of relative substitution rate categories. Default: \x{nb\_subst\_cat=4}. Must be a positive integer.
 
-\item \x{--freerates} (or \x{--free\_rates} or \x{--free\_rate} or \x{--freerate}) \index{FreeRate} \index{command-line options!\x{--freerates}}\\
-FreeRate model of substitution rate variation across sites.
-
 \item \x{-a} (or \x{--alpha}) \x{gamma} \index{gamma distribution (discrete)!shape parameter}\index{command-line options!\x{--alpha}} \\
 \x{gamma}: value of the gamma shape parameter. Can be a fixed positive value or e to get the maximum
 likelihood estimate. The value of this parameter is estimated in the maximum likelihood framework by default.
@@ -592,12 +589,28 @@ likelihood estimate. The value of this parameter is estimated in the maximum lik
 The middle of each substitution rate class in the discrete gamma distribution is taken as the
 median. The mean is used by default.
 
-\item \x{--free\_rates} \index{command-line options!\x{--free\_rates}}\\
+\item \x{--free\_rates} or \x{--freerates} \index{command-line options!\x{--free\_rates}}\\
 As an alternative to the discrete gamma model, it is possible to estimate the (relative) rate in
 each class of the (mixture) model and the corresponding frequencies directly from the data. This
 model, called the FreeRate model, has more parameters
 than the discrete gamma one but usually provides a significantly better fit to the data. See
 \cite{soubrier12} for more information about this model and an illustration of its use.
+
+\item \x{--il} \index{command-line options!\x{--il}}\\ \x{il} stands here for integrated (branch)
+  length. This model, described in \cite{guindon13} in the context of molecular dating, provides an
+  efficient way to implement the covarion model \index{covarion}. Under the integrated length (IL) model, the length
+  of each edge is described by a distribution of values, instead of a single value corresponding to
+  the expected number of substitutions per position along the sequence. Let $l_{a,s}$ and $l_{b,s}$
+  be the number of substitutions at site $s$ along edges $a$ and $b$, and $l_{a,t}$ and $l_{b,t}$,
+  the number of substitutions at site $t$. Standard models have $l_{a,s}=l_{a,t}$ and $l_{b,s}=l_{b,t}$,
+  or $l_{a,s}=\alpha l_{a,t}$ and $l_{b,s}=\alpha l_{b,t}$ if rates vary across sites. The IL model
+  has instead $l_{a,s}= \alpha l_{a,t}$ and $l_{b,s}= \beta l_{b,t}$ with $\alpha \neq \beta$,
+  i.e. substitution rates vary across sites and edges. The IL approach is somehow an analytical
+  approximation to the covarion model that, unlike the covarion model, does not incur any computational overhead compared to the
+  traditional models. A notable difference with the plain vanilla covarion model and the IL model however is that
+  substitution rates are not autocorrelated along the phylogeny under the IL model.
+
+
 
 \item \x{--codpos} \x{1,2 or 3} \index{command-line options!\x{--codpos}}\\
 When analysing an alignment of coding sequences, use this option to consider only the first, second
