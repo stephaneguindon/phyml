@@ -2016,7 +2016,6 @@ matrix *ML_Dist(calign *data, t_mod *mod)
           sum = 0.;
           For(i,mod->ns*mod->ns) sum += F[i];
           
-          
           /* if(sum < .001) d_max = -1.; */
           if(sum < .001) d_max = init;
           else if((sum > 1. - .001) && (sum < 1. + .001)) Opt_Dist_F(&(d_max),F,mod);
@@ -2546,6 +2545,11 @@ phydbl Lk_Dist(phydbl *F, phydbl dist, t_mod *mod)
   phydbl lnL,len;
   int dim1,dim2;
 
+  // Compute likelihood of the model made of the
+  // first class of the mixture.
+  if(mod->is_mixt_mod == YES) mod = mod->next;
+  assert(mod);
+
   if(mod->log_l == YES) dist = EXP(dist);
 
   For(k,mod->ras->n_catg)
@@ -2560,19 +2564,6 @@ phydbl Lk_Dist(phydbl *F, phydbl dist, t_mod *mod)
   dim2 = mod->ns;
   lnL = .0;
 
-/*   For(i,mod->ns) */
-/*     { */
-/*       For(j,mod->ns) */
-/* 	{ */
-/* 	  For(k,mod->ras->n_catg) */
-/* 	    { */
-/*  	      lnL += */
-/* 		F[dim1*k+dim2*i+j] * */
-/* 		LOG(mod->pi[i] * mod->Pij_rr[dim1*k+dim2*i+j]); */
-/* 	    } */
-/* 	} */
-/*     } */
-
   For(i,mod->ns-1)
     {
       for(j=i+1;j<mod->ns;j++)
@@ -2583,7 +2574,7 @@ phydbl Lk_Dist(phydbl *F, phydbl dist, t_mod *mod)
                 (F[dim1*k+dim2*i+j] + F[dim1*k+dim2*j+i])*
                 LOG(mod->e_frq->pi->v[i] * mod->Pij_rr->v[dim1*k+dim2*i+j]);
               /* printf("\n. f: %f Pij:%f F:%f", */
-              /*        mod->e_frq->pi->v[i],  */
+              /*        mod->e_frq->pi->v[i], */
               /*        mod->Pij_rr->v[dim1*k+dim2*i+j], */
               /*        F[dim1*k+dim2*j+i]); */
             }
