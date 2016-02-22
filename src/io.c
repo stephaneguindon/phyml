@@ -1929,6 +1929,7 @@ t_tree *Read_Tree_File(option *io)
         io->treelist->tree = (t_tree **)realloc(io->treelist->tree,(io->treelist->list_size+1)*sizeof(t_tree *));
         io->tree = Read_Tree_File_Phylip(io->fp_in_tree);
         fclose(io->fp_in_tree);
+        io->fp_in_tree = NULL;
         if(!io->tree) break;
         if(io->treelist->list_size > 1) PhyML_Printf("\n. Reading tree %d",io->treelist->list_size+1);
         io->treelist->tree[io->treelist->list_size] = io->tree;
@@ -1942,6 +1943,7 @@ t_tree *Read_Tree_File(option *io)
         Init_Nexus_Format(io->nex_com_list);
         Get_Nexus_Data(io->fp_in_tree,io);
         fclose(io->fp_in_tree);
+        io->fp_in_tree = NULL;
         Free_Nexus(io);
         break;
       }
@@ -3716,6 +3718,7 @@ t_tree *Read_User_Tree(calign *cdata, t_mod *mod, option *io)
   if(io->n_trees == 1) rewind(io->fp_in_tree);
   tree = Read_Tree_File_Phylip(io->fp_in_tree);
   fclose(io->fp_in_tree);
+  io->fp_in_tree = NULL;
   if(!tree) Exit("\n== Input tree not found...");
   /* Add branch lengths if necessary */
   if(!tree->has_branch_lengths) Add_BioNJ_Branch_Lengths(tree,cdata,mod);
