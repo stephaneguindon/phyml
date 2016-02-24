@@ -1444,11 +1444,6 @@ void TIMES_Update_Node_Ordering(t_tree *tree)
 	}
     }
   while(swap == YES);
-
-  /* For(i,2*tree->n_otu-1) */
-  /*   { */
-  /*     printf("\n. ..... %f",t[tree->rates->t_rank[i]]); */
-  /*   } */
 }
 
 //////////////////////////////////////////////////////////////
@@ -1632,3 +1627,337 @@ phydbl TIMES_Lk_Yule_Order_Root_Cond(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+// Generate a subtree including all taxa in tax_list. The age of the root of that
+// subtree is t_mrca. All nodes in the subtree are thus younger than that.
+void TIMES_Connect_List_Of_Taxa(t_node **tax_list, int list_size, phydbl t_mrca, phydbl *times, int *nd_num, t_tree *mixt_tree)
+{
+  phydbl t_upper_bound, t_lower_bound;
+  int i,j,n_anc,*permut;
+  t_node *n,**anc,*new_mrca;
+
+  t_lower_bound = t_mrca;
+  t_upper_bound = 0.0;
+  n             = NULL;
+  anc           = NULL;
+  new_mrca      = NULL;
+  permut        = NULL;
+  
+  
+  // Find the upper bound for all the new node ages that 
+  // will be created in this function
+  For(i,list_size)
+    {
+      n = tax_list[i];
+      while(n->v[0] != NULL) n = n->v[0];
+      if(times[n->num] < t_upper_bound) t_upper_bound = times[n->num];
+    }
+  
+  assert(t_upper_bound > t_lower_bound);
+  
+  // Get the list of current mrcas to all taxa in tax_list. There should be
+  // at least one of these
+  n_anc = 0;
+  For(i,list_size)
+    {
+      n = tax_list[i];
+      while(n->v[0] != NULL) n = n->v[0];
+      For(j,n_anc) if(anc[j] == n) break;
+      if(j == n_anc)
+        {
+          if(n_anc == 0) anc = (t_node **)mCalloc(1,sizeof(t_node *));
+          else           anc = (t_node **)mRealloc(anc,n_anc+1,sizeof(t_node *));
+          anc[n_anc] = n;
+          n_anc++;
+        }
+    }
+
+  /* printf("\n. n_anc: %d",n_anc); */
+  /* For(i,n_anc) PhyML_Printf("\n. anc: %d",anc[i]->num); */
+  
+  if(n_anc == 1) // All the nodes in tax_list are already connected. Bail out.
+    {
+      Free(anc);
+      return;
+    }
+  
+  // Connect randomly and set ages
+  permut = Permutate(n_anc);
+  i = 0;
+  do
+    {
+      new_mrca               = mixt_tree->a_nodes[*nd_num];
+      anc[permut[i]]->v[0]   = new_mrca;
+      anc[permut[i+1]]->v[0] = new_mrca;
+      new_mrca->v[1]         = anc[permut[i]];
+      new_mrca->v[2]         = anc[permut[i+1]];
+      new_mrca->v[0]         = NULL;
+      times[new_mrca->num]   = Uni()*(t_upper_bound - t_lower_bound) + t_lower_bound;
+      t_lower_bound          = times[new_mrca->num]; // Might give a funny distribution of node ages, but should work nonetheless...
+      anc[permut[i+1]]       = new_mrca;
+      n_anc--;
+      i++;
+      (*nd_num) += 1;
+      if(n_anc == 1) times[new_mrca->num] = t_mrca;
+      /* printf("\n. new_mrca->num: %d time: %f [%f %f] t_mrca: %f %p connect to %d %d [%d %d]", */
+      /*        new_mrca->num,times[new_mrca->num], */
+      /*        t_lower_bound, */
+      /*        t_upper_bound, */
+      /*        t_mrca, */
+      /*        new_mrca, */
+      /*        new_mrca->v[1]->num, */
+      /*        new_mrca->v[2]->num, */
+      /*        new_mrca->v[1]->v[0]->num, */
+      /*        new_mrca->v[2]->v[0]->num */
+      /*        );  */
+      /* fflush(NULL); */
+    }
+  while(n_anc != 1);
+  
+  Free(permut);
+  Free(anc);
+}
+  
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+// Generate a  random rooted tree with node ages fullfiling the
+// time constraints defined in the list of calibration cal_list 
+void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tree)
+{
+  t_node **tips,**nd_list;
+  phydbl *times,*cal_times,time_oldest_cal;
+  int i,j,k,nd_num,*cal_ordering,n_cal,swap,list_size,tmp,orig_is_mixt_tree,repeat,n_max_repeats;
+  t_cal *cal;
+  
+  assert(mixt_tree->rates);
+  
+  tips    = (t_node **)mCalloc(mixt_tree->n_otu,sizeof(t_node *));
+  nd_list = (t_node **)mCalloc(mixt_tree->n_otu,sizeof(t_node *));
+  
+  times                   = mixt_tree->rates->nd_t;
+  orig_is_mixt_tree       = mixt_tree->is_mixt_tree;
+  mixt_tree->is_mixt_tree = NO;
+  n_max_repeats           = 10;
+
+
+  For(repeat,n_max_repeats)
+    {
+      nd_num = mixt_tree->n_otu;
+  
+      PhyML_Printf("\n\n. Repeat %d",repeat);
+
+      For(i,mixt_tree->n_otu) tips[i] = mixt_tree->a_nodes[i];
+      For(i,mixt_tree->n_otu) mixt_tree->a_nodes[i]->v[0] = NULL; 
+
+
+      // Set a time for each calibration 
+      time_oldest_cal = 0.0;
+      n_cal = 0;
+      cal = cal_list;
+      while(cal != NULL)
+        {
+          if(cal->is_primary == YES)
+            {
+              if(!n_cal) cal_times = (phydbl *)mCalloc(1,sizeof(phydbl));
+              else       cal_times = (phydbl *)mRealloc(cal_times,n_cal+1,sizeof(phydbl));
+              
+              cal_times[n_cal] = Uni()*(cal->upper - cal->lower) + cal->lower;
+              
+              /* printf("\n. [%f %f] -> %f", */
+              /*        cal->lower, */
+              /*        cal->upper, */
+              /*        cal_times[n_cal]); fflush(NULL); */
+              
+              if(cal_times[n_cal] < time_oldest_cal) time_oldest_cal = cal_times[n_cal];
+              
+              n_cal++;
+            }
+          cal = cal->next;
+        }
+      
+      cal_ordering = (int *)mCalloc(n_cal,sizeof(int));
+      For(i,n_cal) cal_ordering[i] = i;
+      
+      // Find the ordering of calibration times from youngest to oldest
+      do
+        {
+          swap = NO;
+          For(i,n_cal-1) 
+            {
+              if(cal_times[cal_ordering[i]] < cal_times[cal_ordering[i+1]])
+                {
+                  tmp               = cal_ordering[i+1];
+                  cal_ordering[i+1] = cal_ordering[i];
+                  cal_ordering[i]   = tmp;
+                  swap = YES;
+                }
+            }
+        }
+      while(swap == YES);
+      
+      For(i,n_cal-1) assert(cal_times[cal_ordering[i]] > cal_times[cal_ordering[i+1]]);
+      
+      // Connect all taxa that appear in all primary calibrations
+      For(i,n_cal)
+        {
+          cal = cal_list;
+          j = 0;
+          while(j!=cal_ordering[i]) 
+            { 
+              if(cal->is_primary == YES) j++; 
+              cal = cal->next; 
+              assert(cal); 
+            }
+          
+          list_size = 0;
+          For(j,cal->n_target_tax) 
+            {
+              For(k,mixt_tree->n_otu)  
+                {
+                  if(!strcmp(cal->target_tax[j],tips[k]->name))
+                    {
+                      nd_list[list_size] = tips[k];
+                      list_size++;
+                      break;
+                    }
+                }
+            }
+          
+          assert(list_size == cal->n_target_tax);
+          
+          /* For(j,cal->n_target_tax) PhyML_Printf("\n. %s [%d]",nd_list[j]->name,nd_list[j]->num); */
+          /* PhyML_Printf("\n. Time: %f [%f %f]", */
+          /*              cal_times[cal_ordering[i]], */
+          /*              cal->lower, */
+          /*              cal->upper); */
+          
+          TIMES_Connect_List_Of_Taxa(nd_list, 
+                                     cal->n_target_tax, 
+                                     cal_times[cal_ordering[i]], 
+                                     times, 
+                                     &nd_num,
+                                     mixt_tree);
+        }
+      
+      
+      // Connect all remaining taxa
+      For(i,mixt_tree->n_otu) nd_list[i] = NULL;
+      list_size = 0;
+      For(i,mixt_tree->n_otu) 
+        if(tips[i]->v[0] == NULL) // Tip is not connected yet
+          {
+            nd_list[list_size] = tips[i];
+            list_size++;
+          }
+      
+      if(list_size > 0)
+        {
+          For(i,mixt_tree->n_otu) 
+            if(tips[i]->v[0] != NULL) // Add one connected tip to the list
+              {
+                nd_list[list_size] = tips[i];
+                list_size++;
+                break;
+              }
+          
+          TIMES_Connect_List_Of_Taxa(nd_list, 
+                                     list_size,
+                                     Uni()*time_oldest_cal + time_oldest_cal, 
+                                     times, 
+                                     &nd_num,
+                                     mixt_tree);
+          
+        }
+      
+      /* For(j,mixt_tree->n_otu) printf("\n. %s",mixt_tree->a_nodes[j]->name);                                 */
+      
+      /* For(j,2*mixt_tree->n_otu-1) */
+      /*   printf("\n. Node %3d v0: %3d v1: %3d v2: %3d time: %f", */
+      /*          mixt_tree->a_nodes[j]->num, */
+      /*          mixt_tree->a_nodes[j]->v[0]?mixt_tree->a_nodes[j]->v[0]->num:-1, */
+      /*          mixt_tree->a_nodes[j]->v[1]?mixt_tree->a_nodes[j]->v[1]->num:-1, */
+      /*          mixt_tree->a_nodes[j]->v[2]?mixt_tree->a_nodes[j]->v[2]->num:-1, */
+      /*          mixt_tree->rates->nd_t[j]); */
+      
+      Free(cal_times);
+      Free(cal_ordering);
+
+      Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree);
+      Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);
+      mixt_tree->n_root->anc = NULL;
+      DATE_Assign_Primary_Calibration(mixt_tree);
+      DATE_Update_T_Prior_MinMax(mixt_tree);
+      if(!DATE_Check_Calibration_Constraints(mixt_tree) ||
+         !DATE_Check_Time_Constraints(mixt_tree))
+        {
+          PhyML_Printf("\n. Could not generate tree");
+        }
+      else break; // Tree successfully generated
+    }
+
+
+  For(j,mixt_tree->n_otu) printf("\n. %s",mixt_tree->a_nodes[j]->name);
+      
+  For(j,2*mixt_tree->n_otu-1)
+    printf("\n. Node %3d v0: %3d v1: %3d v2: %3d time: %f",
+           mixt_tree->a_nodes[j]->num,
+           mixt_tree->a_nodes[j]->v[0]?mixt_tree->a_nodes[j]->v[0]->num:-1,
+           mixt_tree->a_nodes[j]->v[1]?mixt_tree->a_nodes[j]->v[1]->num:-1,
+           mixt_tree->a_nodes[j]->v[2]?mixt_tree->a_nodes[j]->v[2]->num:-1,
+           mixt_tree->rates->nd_t[j]);
+
+  
+  // Root node 
+  mixt_tree->n_root = mixt_tree->a_nodes[2*mixt_tree->n_otu-2];
+  
+  mixt_tree->n_root->v[1]->v[0] = mixt_tree->n_root->v[2];
+  mixt_tree->n_root->v[2]->v[0] = mixt_tree->n_root->v[1];
+
+  mixt_tree->num_curr_branch_available = 0;
+  Connect_Edges_To_Nodes_Recur(mixt_tree->a_nodes[0],mixt_tree->a_nodes[0]->v[0],mixt_tree);
+  Fill_Dir_Table(mixt_tree);
+  Update_Dirs(mixt_tree);
+
+  For(i,2*mixt_tree->n_otu-3)
+    {
+      if(((mixt_tree->a_edges[i]->left == mixt_tree->n_root->v[1]) || (mixt_tree->a_edges[i]->rght == mixt_tree->n_root->v[1])) &&
+         ((mixt_tree->a_edges[i]->left == mixt_tree->n_root->v[2]) || (mixt_tree->a_edges[i]->rght == mixt_tree->n_root->v[2])))
+        {
+          Add_Root(mixt_tree->a_edges[i],mixt_tree);
+          break;
+        }
+    }
+
+  assert(i != 2*mixt_tree->n_otu-3);
+
+
+  mixt_tree->is_mixt_tree = orig_is_mixt_tree;
+
+  if(mixt_tree->is_mixt_tree == YES)
+    {
+      t_tree *tree;
+      
+      tree = mixt_tree->next;
+      do
+        {
+          For(i,2*tree->n_otu-1)
+            {
+              tree->a_nodes[i]->v[0] = tree->prev->a_nodes[i]->v[0];
+              tree->a_nodes[i]->v[1] = tree->prev->a_nodes[i]->v[1];
+              tree->a_nodes[i]->v[2] = tree->prev->a_nodes[i]->v[2];
+            }
+          For(i,2*tree->n_otu-1)
+            {
+              tree->a_nodes[i]->b[0] = tree->prev->a_nodes[i]->b[0];
+              tree->a_nodes[i]->b[1] = tree->prev->a_nodes[i]->b[1];
+              tree->a_nodes[i]->b[2] = tree->prev->a_nodes[i]->b[2];
+            }
+          tree = tree->next;
+        }
+      while(tree);
+    }
+  
+  PhyML_Printf("\n. %s \n",Write_Tree(mixt_tree,NO));
+
+  Free(tips);
+  Free(nd_list);
+}

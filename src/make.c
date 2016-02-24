@@ -341,7 +341,8 @@ t_node *Make_Node_Light(int num)
   n->score    = (phydbl *)mCalloc(3,sizeof(phydbl));
   n->s_ingrp  = (int *)mCalloc(3,sizeof(int));
   n->s_outgrp = (int *)mCalloc(3,sizeof(int));
-
+  n->cal      = (t_cal **)mCalloc(MAX_N_CAL,sizeof(t_cal *));
+ 
   Init_Node_Light(n,num);
 
   return n;

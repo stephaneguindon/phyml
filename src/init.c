@@ -228,7 +228,7 @@ void Init_Node_Light(t_node *n, int num)
   n->id_rank                = 0;
   n->next                   = NULL;
   n->prev                   = NULL;
-  n->cal                    = NULL;
+  n->n_cal                  = 0;
   /* n->next                 = NULL; */
   /* n->prev                 = NULL; */
 }
@@ -3585,11 +3585,7 @@ void Init_All_Calibration(t_tree *tree)
 {
   int i;
   assert(tree->rates && tree->rates->a_cal);
-  For(i,2*tree->n_otu-1) 
-    {
-      Init_Calibration(tree->rates->a_cal[i]);
-      tree->a_nodes[i]->cal = tree->rates->a_cal[i];
-    }
+  For(i,2*tree->n_otu-1) Init_Calibration(tree->rates->a_cal[i]);
 }
 
 //////////////////////////////////////////////////////////////

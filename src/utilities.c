@@ -723,7 +723,7 @@ void Swap_Nodes_On_Edges(t_edge *e1, t_edge *e2, int swap, t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /* As opposed to Connect_Edges_To_Nodes_Recur, the ordering of 
-   edges connected to tips changes does not depend on the topology
+   edges connected to tips does not depend on the topology
 */
 void Connect_Edges_To_Nodes_Serial(t_tree *tree)
 {
@@ -796,7 +796,7 @@ void Connect_One_Edge_To_Two_Nodes(t_node *a, t_node *d, t_edge *b, t_tree *tree
   b->left       = a;
   b->rght       = d;
   if(a->tax) {b->rght = a; b->left = d;} /* root */
-  /* a tip is necessary on the right hand side of the t_edge */
+  /* a tip is necessarily on the righthand side of the t_edge */
 
   tree->num_curr_branch_available += 1;
 
@@ -804,9 +804,9 @@ void Connect_One_Edge_To_Two_Nodes(t_node *a, t_node *d, t_edge *b, t_tree *tree
     (Set_Edge_Dirs(b,a,d,tree)):
     (Set_Edge_Dirs(b,d,a,tree));
 
-  b->l->v                    = a->l[b->l_r];
-  if(a->tax) b->l->v         = a->l[b->r_l];
-  b->l_old->v                = b->l->v;
+  b->l->v            = a->l[b->l_r];
+  if(a->tax) b->l->v = a->l[b->r_l];
+  b->l_old->v        = b->l->v;
 }
 
 //////////////////////////////////////////////////////////////
@@ -6715,7 +6715,7 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
   For(i,2*tree->n_otu-2)
     {
       if(tree->a_nodes[i]->v[1]) internal_nodes[n_internal++] = tree->a_nodes[i];
-      else                     external_nodes[n_external++] = tree->a_nodes[i];
+      else                       external_nodes[n_external++] = tree->a_nodes[i];
     }
   
   
@@ -6729,9 +6729,9 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
         }
       else
         {
-          tree->rates->nd_t[i] = tmp[internal_nodes[n_internal]->num];
-          tree->a_nodes[i]        = internal_nodes[n_internal++];
-          tree->a_nodes[i]->tax   = 0;
+          tree->rates->nd_t[i]  = tmp[internal_nodes[n_internal]->num];
+          tree->a_nodes[i]      = internal_nodes[n_internal++];
+          tree->a_nodes[i]->tax = 0;
         }
       
       tree->a_nodes[i]->num = i;
@@ -6765,6 +6765,7 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
               break;
             }
         }
+
     }
   /* Or not... */
   else

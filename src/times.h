@@ -70,5 +70,7 @@ void TIMES_Label_Edges_With_Calibration_Intervals(t_tree *tree);
 void TIMES_Record_Prior_Times(t_tree *tree);
 void TIMES_Reset_Prior_Times(t_tree *tree);
 phydbl TIMES_Lk_Yule_Order_Root_Cond(t_tree *tree);
+void TIMES_Connect_List_Of_Taxa(t_node **tax_list, int list_size, phydbl t_mrca, phydbl *times, int *nd_num, t_tree *mixt_tree);
+void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *tree);
 
 #endif

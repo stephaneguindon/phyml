@@ -103,6 +103,8 @@ void Free_Node(t_node *n)
   Free(n->score);
   Free(n->s_ingrp);
   Free(n->s_outgrp);
+  Free(n->cal);
+
   if(n->c_seq_anc != NULL) 
     {
       Free(n->c_seq_anc->state);

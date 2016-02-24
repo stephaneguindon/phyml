@@ -22,6 +22,12 @@ the GNU public licence. See http://www.opensource.org for details.
 int DATE_Main(int argc, char **argv)
 {
   option *io;
+  int seed;
+
+  seed = getpid();
+  printf("\n. seed: %d",seed);
+  srand(seed);
+
   io = Get_Input(argc,argv);
   Free(io);
   return(0);
@@ -36,7 +42,6 @@ void DATE_XML(char *xml_filename)
   xml_node *xnd,*xnd_dum,*xnd_cal,*xroot;
   t_tree *mixt_tree;
   phydbl low,up;
-  int node_num;
   char *clade_name;
 
   mixt_tree = XML_Process_Base(xml_filename);
@@ -81,9 +86,9 @@ void DATE_XML(char *xml_filename)
 
 
   MIXT_Prepare_All(-1,mixt_tree);
+  if(mixt_tree->n_root == NULL) Add_Root(mixt_tree->a_edges[0],mixt_tree);
 
   clade_name = (char *)mCalloc(T_MAX_NAME,sizeof(char));
-
 
   xnd = xroot->child;
   assert(xnd);
@@ -120,21 +125,16 @@ void DATE_XML(char *xml_filename)
                       Exit("\n");
                     }
                   
-                  if(!strcmp("root",clade_name))
-                    {
-                      node_num = mixt_tree->n_root->num;
-                    }
-                  else
+                  if(strcmp("root",clade_name))
                     {
                       xml_node *xnd_clade;
                         
-                      node_num = -1;
                       xnd_clade = XML_Search_Node_Generic("clade","id",clade_name,YES,xroot);
                       
                       if(xnd_clade != NULL) // found clade with a given name
                         {
                           char **clade;
-                          int clade_size;
+                          int clade_size,nd_num;
                           t_cal *cal;
 
                           clade      = XML_Read_Clade(xnd_clade->child,mixt_tree);
@@ -150,13 +150,12 @@ void DATE_XML(char *xml_filename)
                           cal->is_primary   = YES;
                           cal->target_tax   = clade;
                           cal->n_target_tax = clade_size;
+                          cal->lower        = low;
+                          cal->upper        = up;
 
+                          nd_num = Find_Clade(clade,clade_size,mixt_tree);
 
-                          PhyML_Printf("\n. Node number to which calibration [%s] applies to is [%d]",
-                                       clade_name,
-                                       Find_Clade(clade,
-                                                  clade_size,
-                                                  mixt_tree));
+                          PhyML_Printf("\n. Node number to which calibration [%s] applies to is [%d]",clade_name,nd_num);
                           
                           PhyML_Printf("\n. Lower bound set to: %15f time units.", low);
                           PhyML_Printf("\n. Upper bound set to: %15f time units.", up);
@@ -179,16 +178,15 @@ void DATE_XML(char *xml_filename)
     }
   while(xnd != NULL);
 
-  fflush(NULL);
-
   DATE_Assign_Primary_Calibration(mixt_tree);
   DATE_Update_T_Prior_MinMax(mixt_tree);
+  DATE_Chain_Cal(mixt_tree);
 
   Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree);
   Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);		  
-  MCMC_Randomize_Node_Times(mixt_tree);
+ 
+  TIMES_Randomize_Tree_With_Time_Constraints(mixt_tree->rates->a_cal[0], mixt_tree);
   
-
   PhyML_Printf("\n. K=%f",DATE_J_Sum_Product(mixt_tree));
 
   Free(clade_name);
@@ -208,11 +206,16 @@ void DATE_Update_T_Prior_MinMax(t_tree *tree)
   for(i=tree->n_otu;i<2*tree->n_otu-1;i++) // All internal nodes except the root 
     {
       if(tree->a_nodes[i] != tree->n_root)
-        {
-          if(tree->a_nodes[i]->cal != NULL) // Primary calibration found on that node
+        {          
+          if(tree->a_nodes[i]->n_cal > 0) // Primary calibration found on that node
             {
-              tree->rates->t_prior_max[i] =     tree->a_nodes[i]->cal->upper;
-              tree->rates->t_prior_min[i] = MAX(tree->a_nodes[i]->cal->lower,tree->rates->nd_t[tree->n_root->num]);
+              tree->rates->t_prior_max[i] = 0.0;
+              tree->rates->t_prior_min[i] = -INFINITY;
+              For(j,tree->a_nodes[i]->n_cal)
+                {
+                  tree->rates->t_prior_max[i] = MIN(tree->rates->t_prior_max[i],tree->a_nodes[i]->cal[j]->upper);
+                  tree->rates->t_prior_min[i] = MAX(tree->rates->t_prior_min[i],MAX(tree->a_nodes[i]->cal[j]->lower,tree->rates->nd_t[tree->n_root->num]));
+                }
             }
           else
             {
@@ -236,16 +239,6 @@ void DATE_Update_T_Prior_MinMax(t_tree *tree)
             tree->rates->t_prior_max[rk[i]] = tree->rates->t_prior_max[rk[j]];
         }
     }
-
-
-  For(i,tree->n_otu-1)
-    {
-      PhyML_Printf("\n. Node %d age: %f t_prior_min: %f t_prior_max: %f",
-                   rk[i],
-                   tree->rates->nd_t[rk[i]],
-                   tree->rates->t_prior_min[rk[i]],
-                   tree->rates->t_prior_max[rk[i]]);
-    }
 }
 
 //////////////////////////////////////////////////////////////
@@ -253,17 +246,42 @@ void DATE_Update_T_Prior_MinMax(t_tree *tree)
 
 void DATE_Assign_Primary_Calibration(t_tree *tree)
 {
-  int i,node_num;
+  int i,j,idx,node_num;
   
-  For(i,2*tree->n_otu-1) tree->a_nodes[i]->cal = NULL;
+  For(i,2*tree->n_otu-1) 
+    For(j,MAX_N_CAL) 
+    {
+      tree->a_nodes[i]->cal[j] = NULL;
+      tree->a_nodes[i]->n_cal  = 0;
+    }
 
   For(i,tree->rates->n_cal)
     {
       node_num = Find_Clade(tree->rates->a_cal[i]->target_tax,
                             tree->rates->a_cal[i]->n_target_tax,
                             tree);
+      
+      idx = tree->a_nodes[node_num]->n_cal;
+      tree->a_nodes[node_num]->cal[idx] = tree->rates->a_cal[i];
+      tree->a_nodes[node_num]->n_cal++;
 
-      tree->a_nodes[node_num]->cal = tree->rates->a_cal[i];
+      if(tree->a_nodes[node_num]->n_cal == MAX_N_CAL)
+        {
+          PhyML_Printf("\n== A node cannot have more than %d calibration",MAX_N_CAL); 
+          PhyML_Printf("\n== constraints attached to it. Feel free to increase the"); 
+          PhyML_Printf("\n== value of the variable MAX_N_CAL in utilities.h if");
+          PhyML_Printf("\n== necessary.");
+          Exit("\n");
+        }
+
+      /* printf("\n. Assign cal [%f %f] to %d (%d)", */
+      /*        tree->rates->a_cal[i]->lower, */
+      /*        tree->rates->a_cal[i]->upper, */
+      /*        node_num, */
+      /*        tree->a_nodes[node_num]->n_cal); */
+      /* int j; */
+      /* For(j,tree->rates->a_cal[i]->n_target_tax) */
+      /*   printf("\n> %s",tree->rates->a_cal[i]->target_tax[j]); */
     }
 }
 
@@ -420,11 +438,67 @@ phydbl DATE_J(phydbl birth_r, phydbl death_r, phydbl t_min, phydbl t_pls)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
+void DATE_Chain_Cal(t_tree *mixt_tree)
+{
+  int i;
+  For(i,mixt_tree->rates->n_cal-1) 
+    {
+      mixt_tree->rates->a_cal[i]->next   = mixt_tree->rates->a_cal[i+1];
+      mixt_tree->rates->a_cal[i+1]->prev = mixt_tree->rates->a_cal[i];
+    }
+}
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+int DATE_Check_Calibration_Constraints(t_tree *tree)
+{
+  int i,j;
+  phydbl lower,upper;
+
+  lower = upper = -1.;
+
+  For(i,2*tree->n_otu-1)
+    {
+      if(tree->a_nodes[i]->n_cal > 1)
+        {
+          lower = tree->a_nodes[i]->cal[0]->lower;
+          upper = tree->a_nodes[i]->cal[0]->upper;
+          for(j=1; j < tree->a_nodes[i]->n_cal; j++)
+            {
+              lower = MAX(lower,tree->a_nodes[i]->cal[j]->lower);
+              upper = MIN(upper,tree->a_nodes[i]->cal[j]->upper);
+              if(upper < lower) 
+                {
+                  PhyML_Printf("\n. Inconsistency detected on node %d",i);
+                  return 0; 
+                }
+            }
+        }
+    }
+  return 1;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+int DATE_Check_Time_Constraints(t_tree *tree)
+{
+  int i;
+
+  For(i,2*tree->n_otu-1)
+    {
+      if(tree->a_nodes[i] != tree->n_root && tree->a_nodes[i]->tax == NO)
+        {
+          if(tree->rates->nd_t[i] > tree->rates->t_prior_max[i] ||
+             tree->rates->nd_t[i] < tree->rates->t_prior_min[i])
+            {
+              return 0;
+            }
+        }
+    }
+  return 1;
+}
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

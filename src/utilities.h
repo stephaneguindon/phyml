@@ -180,7 +180,8 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define INFINITY HUGE
 #endif
 
-#define  N_MAX_OPTIONS        100
+#define MAX_N_CAL              10
+#define N_MAX_OPTIONS         100
 
 #define NEXT_BLOCK_SIZE        50
 
@@ -426,7 +427,7 @@ typedef struct __Node {
   struct __Node                   *prev; /*! See above */
   struct __Node                *next_mixt; /*! Next mixture tree*/
   struct __Node                *prev_mixt; /*! Parent mixture tree */
-  struct __Calibration               *cal; /*! Calibration information */
+  struct __Calibration              **cal; /*! List of calibration constraints attached to this node */
 
   int                           *bip_size; /*! Size of each of the three lists from bip_node */
   int                                 num; /*! t_node number */
@@ -434,6 +435,7 @@ typedef struct __Node {
   int                        check_branch; /*! check_branch=1 is the corresponding branch is labelled with '*' */
   char                              *name; /*! taxon name (if exists) */
   char                          *ori_name; /*! taxon name (if exists) */
+  int                               n_cal; /*! Number of calibration constraints */
 
   phydbl                           *score; /*! score used in BioNJ to determine the best pair of nodes to agglomerate */
   phydbl                               *l; /*! lengths of the (three or one) branche(s) connected this t_node */
