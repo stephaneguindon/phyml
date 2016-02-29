@@ -119,6 +119,7 @@ make.c make.h\
 mixt.c mixt.h\
 init.c init.h\
 nexus.c nexus.h\
+date.c date.h\
 xml.c xml.h
 phytime_LDADD = -lm
 else 
@@ -545,6 +546,7 @@ nexus.c nexus.h\
 init.c init.h\
 xml.c xml.h\
 mixt.c mixt.h\
+date.c date.h\
 phyrex.c phyrex.h
 else
 if WANT_BEAGLE
