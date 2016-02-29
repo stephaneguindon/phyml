@@ -316,6 +316,7 @@ nexus.c nexus.h\
 init.c init.h\
 xml.c xml.h\
 mixt.c mixt.h\
+date.c date.h\
 mpi_boot.c mpi_boot.h
 phyml_mpi_LDADD = -lm
 else
