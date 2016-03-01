@@ -4528,8 +4528,8 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
       cpy->a_edges[i]->l_old->v         = ori->a_edges[i]->l_old->v;
       cpy->a_edges[i]->l_var->v         = ori->a_edges[i]->l_var->v;
       cpy->a_edges[i]->l_var_old->v     = ori->a_edges[i]->l_var_old->v;
-      cpy->a_edges[i]->left             = cpy->a_nodes[ori->a_edges[i]->left->num];
-      cpy->a_edges[i]->rght             = cpy->a_nodes[ori->a_edges[i]->rght->num];
+      cpy->a_edges[i]->left             = ori->a_edges[i]->left ? cpy->a_nodes[ori->a_edges[i]->left->num] : NULL;
+      cpy->a_edges[i]->rght             = ori->a_edges[i]->rght ? cpy->a_nodes[ori->a_edges[i]->rght->num] : NULL;
       cpy->a_edges[i]->l_v1             = ori->a_edges[i]->l_v1;
       cpy->a_edges[i]->l_v2             = ori->a_edges[i]->l_v2;
       cpy->a_edges[i]->r_v1             = ori->a_edges[i]->r_v1;

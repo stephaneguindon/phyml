@@ -2372,12 +2372,14 @@ void Print_Node(t_node *a, t_node *d, t_tree *tree)
   int dir;
   dir = -1;
   For(i,3) if(a->v[i] == d) {dir = i; break;}
-  PhyML_Printf("Node nums: %3d %3d  (dir:%3d) (anc:%3d) ta:%12f td:%12f;",
+  PhyML_Printf("Node nums: %3d %3d  (dir:%3d) (anc:%3d) ta:%6.2f td:%6.2f t_min:%6.2f t_max:%6.2f",
                a->num,d->num,dir,a->anc?a->anc->num:(-1),
                tree->rates?tree->rates->nd_t[a->num]:-1.,
-               tree->rates?tree->rates->nd_t[d->num]:-1.);
+               tree->rates?tree->rates->nd_t[d->num]:-1.,
+               tree->rates?tree->rates->t_prior_min[a->num]:-1.,
+               tree->rates?tree->rates->t_prior_max[a->num]:-1.);
 
-  PhyML_Printf("Node names = '%10s' '%10s' ; ",a->name,d->name);
+  PhyML_Printf(" names = '%10s' '%10s' ; ",a->name,d->name);
   For(i,3) if(a->v[i] == d)
     {
       if(a->b[i])

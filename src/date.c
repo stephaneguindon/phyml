@@ -25,6 +25,9 @@ int DATE_Main(int argc, char **argv)
   int seed;
 
   seed = getpid();
+
+  seed = 1;
+
   printf("\n. seed: %d",seed);
   srand(seed);
 
@@ -187,6 +190,11 @@ void DATE_XML(char *xml_filename)
  
   TIMES_Randomize_Tree_With_Time_Constraints(mixt_tree->rates->a_cal[0], mixt_tree);
   
+  {
+    Print_Node(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);
+    Print_Node(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree);
+  }
+
   PhyML_Printf("\n. K=%f",DATE_J_Sum_Product(mixt_tree));
 
   Free(clade_name);
@@ -294,22 +302,22 @@ phydbl *DATE_Splitted_Calibration(t_tree *tree)
   phydbl *splitted_cal,buff;
   int i,len,done;
 
-  // One t_prior_min and one t_prior_max per internal nodes, so 
+  // One t_prior_min and one t_prior_max per internal nodes except root, so 
   // 2 x # of internal nodes boundaries in total at most.
-  splitted_cal = (phydbl *)mCalloc(2*(tree->n_otu-1),sizeof(phydbl));
-  For(i,2*(tree->n_otu-1)) splitted_cal[i] = -INFINITY;
+  splitted_cal = (phydbl *)mCalloc(2*(tree->n_otu-2),sizeof(phydbl));
+  For(i,2*(tree->n_otu-2)) splitted_cal[i] = -INFINITY;
 
   len = 0;
-  for(i = tree->n_otu; i < 2*tree->n_otu-1; i++)
+  for(i = tree->n_otu; i < 2*tree->n_otu-2; i++)
     {
       splitted_cal[len]   = tree->rates->t_prior_min[i];
       splitted_cal[len+1] = tree->rates->t_prior_max[i];        
+      PhyML_Printf("\n0 split -- %d %f %f",i,splitted_cal[len],splitted_cal[len+1]);
       len++;
     }
 
   
   // Bubble sort of all these times in increasing order
-  done = YES;
   do
     {
       done = YES;
@@ -326,7 +334,10 @@ phydbl *DATE_Splitted_Calibration(t_tree *tree)
     }
   while(done == NO);
 
-  For(i,len-1) assert(!(splitted_cal[len] > splitted_cal[len+1]));
+  For(i,len-1) assert(!(splitted_cal[i] > splitted_cal[i+1]));
+
+  For(i,len) PhyML_Printf("\n. split -- %d %f",i,splitted_cal[i]);
+    
 
   return splitted_cal;
 }
@@ -418,7 +429,16 @@ int DATE_Is_Split_Accessible(t_node *d, int which, phydbl *splitted_cal, t_tree 
      tree->rates->t_prior_max[d->num] > splitted_cal[which+1]) return 0; // splitted interval is within [t_prior_min,t_prior_max]
   else if(splitted_cal[which] > tree->rates->t_prior_max[d->num]) return 1; // splitted interval is younger than [t_prior_min,t_prior_max]
   else if(splitted_cal[which+1] < tree->rates->t_prior_min[d->num]) return -1; // splitted interval is older than [t_prior_min,t_prior_max]
-  else assert(FALSE); // splitted interval cannot be partially overlapping [t_prior_min,t_prior_max]
+  else 
+    {
+      PhyML_Printf("\n. t_prior_min: %f t_prior_max: %f",
+                   tree->rates->t_prior_min[d->num],
+                   tree->rates->t_prior_max[d->num]);
+      PhyML_Printf("\n. splitted_cal_min: %f splitted_cal_max: %f",
+                   splitted_cal[which],
+                   splitted_cal[which+1]);
+      assert(FALSE); // splitted interval cannot be partially overlapping [t_prior_min,t_prior_max]
+    }
 }
 
 //////////////////////////////////////////////////////////////

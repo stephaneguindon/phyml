@@ -1897,14 +1897,6 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
 
   For(j,mixt_tree->n_otu) printf("\n. %s",mixt_tree->a_nodes[j]->name);
       
-  For(j,2*mixt_tree->n_otu-1)
-    printf("\n. Node %3d v0: %3d v1: %3d v2: %3d time: %f",
-           mixt_tree->a_nodes[j]->num,
-           mixt_tree->a_nodes[j]->v[0]?mixt_tree->a_nodes[j]->v[0]->num:-1,
-           mixt_tree->a_nodes[j]->v[1]?mixt_tree->a_nodes[j]->v[1]->num:-1,
-           mixt_tree->a_nodes[j]->v[2]?mixt_tree->a_nodes[j]->v[2]->num:-1,
-           mixt_tree->rates->nd_t[j]);
-
   
   // Root node 
   mixt_tree->n_root = mixt_tree->a_nodes[2*mixt_tree->n_otu-2];
