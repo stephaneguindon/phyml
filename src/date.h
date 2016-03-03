@@ -29,7 +29,7 @@ phydbl DATE_J(phydbl birth_r, phydbl death_r, phydbl t_min, phydbl t_pls);
 int DATE_Is_Split_Accessible(t_node *d, int which, phydbl *splitted_cal, t_tree *tree);
 phydbl *DATE_Splitted_Calibration(t_tree *tree);
 phydbl DATE_J_Sum_Product(t_tree *tree);
-int DATE_J_Sum_Product_Pre(t_node *d, int split_idx_d, int split_idx_a, phydbl *prod, int *fact, phydbl *total, phydbl *splitted_cal, t_tree *tree);
+int DATE_J_Sum_Product_Pre(t_node *d, int split_idx_d, int split_idx_a, phydbl prod, int fact, phydbl *total, phydbl *splitted_cal, int rk, t_tree *tree);
 void DATE_Chain_Cal(t_tree *mixt_tree);
 int DATE_Check_Calibration_Constraints(t_tree *tree);
 int DATE_Check_Time_Constraints(t_tree *tree);

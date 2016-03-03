@@ -631,9 +631,9 @@ void TIMES_Set_All_Node_Priors_Top_Down(t_node *a, t_node *d, t_tree *tree)
 	  
 	  if(tree->rates->t_prior_max[d->num] < tree->rates->t_prior_min[d->num])
 	    {
-	      PhyML_Printf("\n. prior_min=%f prior_max=%f",tree->rates->t_prior_min[d->num],tree->rates->t_prior_max[d->num]);
-	      PhyML_Printf("\n. Inconsistency in the prior settings detected at t_node %d",d->num);
-	      PhyML_Printf("\n. Err in file %s at line %d\n\n",__FILE__,__LINE__);
+	      PhyML_Printf("\n== prior_min=%f prior_max=%f",tree->rates->t_prior_min[d->num],tree->rates->t_prior_max[d->num]);
+	      PhyML_Printf("\n== Inconsistency in the prior settings detected at t_node %d",d->num);
+	      PhyML_Printf("\n== Err. in file %s at line %d (function %s)\n\n",__FILE__,__LINE__,__FUNCTION__);
 	      Warn_And_Exit("\n");
 	    }
 	}
@@ -1427,12 +1427,14 @@ void TIMES_Update_Node_Ordering(t_tree *tree)
   phydbl *t;
   int swap = NO;
 
+  For(i,2*tree->n_otu-1) tree->rates->t_rank[i] = i;
+
   t = tree->rates->nd_t;
 
   do
     {
       swap = NO;
-      For(i,2*tree->n_otu-2)
+      For(i,2*tree->n_otu-1)
 	{
 	  if(t[tree->rates->t_rank[i]] > t[tree->rates->t_rank[i+1]]) // Sort in ascending order
 	    {
@@ -1444,6 +1446,10 @@ void TIMES_Update_Node_Ordering(t_tree *tree)
 	}
     }
   while(swap == YES);
+
+  /* For(i,2*tree->n_otu-1) PhyML_Printf("\n. Node %3d time: %12f", */
+  /*                                     tree->rates->t_rank[i], */
+  /*                                     tree->rates->nd_t[tree->rates->t_rank[i]]); */
 }
 
 //////////////////////////////////////////////////////////////
@@ -1736,7 +1742,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
   times                   = mixt_tree->rates->nd_t;
   orig_is_mixt_tree       = mixt_tree->is_mixt_tree;
   mixt_tree->is_mixt_tree = NO;
-  n_max_repeats           = 10;
+  n_max_repeats           = 1000;
 
 
   For(repeat,n_max_repeats)
@@ -1868,24 +1874,54 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
           
         }
       
-      /* For(j,mixt_tree->n_otu) printf("\n. %s",mixt_tree->a_nodes[j]->name);                                 */
-      
-      /* For(j,2*mixt_tree->n_otu-1) */
-      /*   printf("\n. Node %3d v0: %3d v1: %3d v2: %3d time: %f", */
-      /*          mixt_tree->a_nodes[j]->num, */
-      /*          mixt_tree->a_nodes[j]->v[0]?mixt_tree->a_nodes[j]->v[0]->num:-1, */
-      /*          mixt_tree->a_nodes[j]->v[1]?mixt_tree->a_nodes[j]->v[1]->num:-1, */
-      /*          mixt_tree->a_nodes[j]->v[2]?mixt_tree->a_nodes[j]->v[2]->num:-1, */
-      /*          mixt_tree->rates->nd_t[j]); */
-      
+            
       Free(cal_times);
       Free(cal_ordering);
 
+      // Adding root node 
+      mixt_tree->n_root = mixt_tree->a_nodes[2*mixt_tree->n_otu-2];
+      mixt_tree->n_root->v[1]->v[0] = mixt_tree->n_root->v[2];
+      mixt_tree->n_root->v[2]->v[0] = mixt_tree->n_root->v[1];
       Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree);
       Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);
       mixt_tree->n_root->anc = NULL;
+
+      // Adding root edge
+      mixt_tree->num_curr_branch_available = 0;
+      Connect_Edges_To_Nodes_Recur(mixt_tree->a_nodes[0],mixt_tree->a_nodes[0]->v[0],mixt_tree);
+      Fill_Dir_Table(mixt_tree);
+      Update_Dirs(mixt_tree);
+      
+      For(i,2*mixt_tree->n_otu-3)
+        {
+          if(((mixt_tree->a_edges[i]->left == mixt_tree->n_root->v[1]) || (mixt_tree->a_edges[i]->rght == mixt_tree->n_root->v[1])) &&
+             ((mixt_tree->a_edges[i]->left == mixt_tree->n_root->v[2]) || (mixt_tree->a_edges[i]->rght == mixt_tree->n_root->v[2])))
+            {
+              Add_Root(mixt_tree->a_edges[i],mixt_tree);
+              break;
+            }
+        }
+      
       DATE_Assign_Primary_Calibration(mixt_tree);
       DATE_Update_T_Prior_MinMax(mixt_tree);
+
+      /* { */
+      /*   Print_Node(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree); */
+      /*   Print_Node(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree); */
+
+      /*   int i; */
+      /*   For(i,mixt_tree->rates->n_cal) */
+      /*     { */
+      /*       PhyML_Printf("\n. Node number to which calibration [%d] applies to is [%d]",i,Find_Clade(mixt_tree->rates->a_cal[i]->target_tax, */
+      /*                                                                                                mixt_tree->rates->a_cal[i]->n_target_tax, */
+      /*                                                                                                mixt_tree));                           */
+      /*       PhyML_Printf("\n. Lower bound set to: %15f time units.",mixt_tree->rates->a_cal[i]->lower); */
+      /*       PhyML_Printf("\n. Upper bound set to: %15f time units.",mixt_tree->rates->a_cal[i]->upper); */
+      /*     } */
+      /* } */
+
+
+
       if(!DATE_Check_Calibration_Constraints(mixt_tree) ||
          !DATE_Check_Time_Constraints(mixt_tree))
         {
@@ -1894,33 +1930,23 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       else break; // Tree successfully generated
     }
 
-
-  For(j,mixt_tree->n_otu) printf("\n. %s",mixt_tree->a_nodes[j]->name);
-      
-  
-  // Root node 
-  mixt_tree->n_root = mixt_tree->a_nodes[2*mixt_tree->n_otu-2];
-  
-  mixt_tree->n_root->v[1]->v[0] = mixt_tree->n_root->v[2];
-  mixt_tree->n_root->v[2]->v[0] = mixt_tree->n_root->v[1];
-
-  mixt_tree->num_curr_branch_available = 0;
-  Connect_Edges_To_Nodes_Recur(mixt_tree->a_nodes[0],mixt_tree->a_nodes[0]->v[0],mixt_tree);
-  Fill_Dir_Table(mixt_tree);
-  Update_Dirs(mixt_tree);
-
-  For(i,2*mixt_tree->n_otu-3)
+  if(repeat == n_max_repeats)
     {
-      if(((mixt_tree->a_edges[i]->left == mixt_tree->n_root->v[1]) || (mixt_tree->a_edges[i]->rght == mixt_tree->n_root->v[1])) &&
-         ((mixt_tree->a_edges[i]->left == mixt_tree->n_root->v[2]) || (mixt_tree->a_edges[i]->rght == mixt_tree->n_root->v[2])))
-        {
-          Add_Root(mixt_tree->a_edges[i],mixt_tree);
-          break;
-        }
+      PhyML_Printf("\n\n");
+      PhyML_Printf("\n== A random tree satisfying the calibration constraints provided");
+      PhyML_Printf("\n== could not be generated. It probably means that there are some");
+      PhyML_Printf("\n== inconsistencies in the calibration data. For instance, the calibration");
+      PhyML_Printf("\n== time interval for the MRCA of a clade with taxa {X,Y} (noted as [a,b])");
+      PhyML_Printf("\n== cannot be strictly older than the interval corresponding to taxa ");
+      PhyML_Printf("\n== {X,Z,Y} (noted as [c,d]), i.e., b cannot be smaller (older) than c. ");
+      PhyML_Printf("\n== Also, please remember that the present time corresponds to a time");
+      PhyML_Printf("\n== value equal to zero and past events have negative time values.");
+      Exit("\n");
     }
 
+  For(j,mixt_tree->n_otu) printf("\n. %s",mixt_tree->a_nodes[j]->name);
+        
   assert(i != 2*mixt_tree->n_otu-3);
-
 
   mixt_tree->is_mixt_tree = orig_is_mixt_tree;
 
