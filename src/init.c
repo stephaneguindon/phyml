@@ -1122,6 +1122,14 @@ void Init_Model(calign *data, t_mod *mod, option *io)
           mod->update_eigen = NO;
           if(io->mod->s_opt->opt_kappa) io->mod->s_opt->opt_lambda = YES;
         }
+
+      if(mod->whichmodel == HKY85)
+        {
+          if(mod->e_frq->user_state_freq == NO) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->b_frq,mod->ns);  
+          else For(i,4) mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
+          For(i,mod->ns) mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
+          mod->update_eigen = NO;
+        }
       
       if(mod->whichmodel == GTR)
         {

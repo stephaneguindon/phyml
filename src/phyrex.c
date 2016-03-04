@@ -21,8 +21,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int PHYREX_Main(int argc, char *argv[])
 {
-  /* return(PHYREX_Main_Estimate(argc,argv)); */
-  return(PHYREX_Main_Simulate(argc,argv));
+  return(PHYREX_Main_Estimate(argc,argv));
+  /* return(PHYREX_Main_Simulate(argc,argv)); */
 
 }
 
@@ -98,7 +98,6 @@ int PHYREX_Main_Estimate(int argc, char *argv[])
   /* Random genealogy */
   PHYREX_Simulate_Backward_Core(NO,tree->disk,tree);
 
-
   PHYREX_Ldsk_To_Tree(tree);  
 
   Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
@@ -115,8 +114,6 @@ int PHYREX_Main_Estimate(int argc, char *argv[])
 
   Init_Model(tree->data,io->mod,io);
   Prepare_Tree_For_Lk(tree);
-  Init_P_Lk_Tips_Int(tree);
-  Init_P_Lk_Loc(tree);
 
   res = PHYREX_MCMC(tree);
 
@@ -1174,8 +1171,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
   
   tot_samp_area = 0.0;
-  if(tree->mmod->samp_area != NULL)
-    For(i,tree->mmod->samp_area->n_poly) tot_samp_area += Area_Of_Poly_Monte_Carlo(tree->mmod->samp_area->a_poly[i],tree->mmod->lim);
+  /* if(tree->mmod->samp_area != NULL) */
+  /*   For(i,tree->mmod->samp_area->n_poly) tot_samp_area += Area_Of_Poly_Monte_Carlo(tree->mmod->samp_area->a_poly[i],tree->mmod->lim); */
 
 
   MCMC_Complete_MCMC(mcmc,tree);
@@ -1201,7 +1198,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   true_nhits  = PHYREX_Total_Number_Of_Hit_Disks(tree);
   true_height = PHYREX_Tree_Height(tree);
   true_rhoe   = PHYREX_Effective_Density(tree);
-  n_demes     = tree->mmod->samp_area->n_poly;
+  n_demes     = 0;
+  /* n_demes     = tree->mmod->samp_area->n_poly; */
   
   PhyML_Fprintf(fp_stats,"\n# before rand glnL: %f alnL: %f",tree->mmod->c_lnL,tree->c_lnL);
   PhyML_Fprintf(fp_stats,"\n# ninter: %d",PHYREX_Total_Number_Of_Intervals(tree));
@@ -1219,11 +1217,11 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   PhyML_Fprintf(fp_stats,"\n# nucleotide diversity: %f",Nucleotide_Diversity(tree->data));
   PhyML_Fprintf(fp_stats,"\n# length of a generation: %G time units",PHYREX_Generation_Length(tree));
   PhyML_Fprintf(fp_stats,"\n# clock rate: %G subst. per time unit",tree->rates->clock_r);
-  PhyML_Fprintf(fp_stats,"\n# of sampled demes: %d",n_demes);
-  if(tree->mmod->samp_area != NULL)
-    For(i,tree->mmod->samp_area->n_poly) PhyML_Fprintf(fp_stats,"\n# area of deme%d: %f",
-                                                       i,
-                                                       Area_Of_Poly_Monte_Carlo(tree->mmod->samp_area->a_poly[i],tree->mmod->lim));
+  /* PhyML_Fprintf(fp_stats,"\n# of sampled demes: %d",n_demes); */
+  /* if(tree->mmod->samp_area != NULL) */
+  /*   For(i,tree->mmod->samp_area->n_poly) PhyML_Fprintf(fp_stats,"\n# area of deme%d: %f", */
+  /*                                                      i, */
+  /*                                                      Area_Of_Poly_Monte_Carlo(tree->mmod->samp_area->a_poly[i],tree->mmod->lim)); */
  
   /* Starting parameter values */
   tree->mmod->lbda = Uni()*(0.5 - 0.2) + 0.2;

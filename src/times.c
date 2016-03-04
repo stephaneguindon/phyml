@@ -1756,6 +1756,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
 
 
       // Set a time for each calibration 
+      cal_times = (phydbl *)mCalloc(1,sizeof(phydbl));
       time_oldest_cal = 0.0;
       n_cal = 0;
       cal = cal_list;
@@ -1763,8 +1764,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
         {
           if(cal->is_primary == YES)
             {
-              if(!n_cal) cal_times = (phydbl *)mCalloc(1,sizeof(phydbl));
-              else       cal_times = (phydbl *)mRealloc(cal_times,n_cal+1,sizeof(phydbl));
+              if(n_cal > 0) cal_times = (phydbl *)mRealloc(cal_times,n_cal+1,sizeof(phydbl));
               
               cal_times[n_cal] = Uni()*(cal->upper - cal->lower) + cal->lower;
               
@@ -1842,6 +1842,9 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
                                      times, 
                                      &nd_num,
                                      mixt_tree);
+
+          Free(cal_times);
+          Free(cal_ordering);
         }
       
       
@@ -1875,8 +1878,6 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
         }
       
             
-      Free(cal_times);
-      Free(cal_ordering);
 
       // Adding root node 
       mixt_tree->n_root = mixt_tree->a_nodes[2*mixt_tree->n_otu-2];

@@ -8003,8 +8003,8 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
             }
           else
             {
-              Free_Disk(disk);
               Free_Ldisk(disk->ldsk);
+              Free_Disk(disk);
               tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_indel_hit_serial]++;
             }
         }

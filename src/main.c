@@ -225,12 +225,6 @@ int main(int argc, char **argv)
 
 #ifdef PHYML
                   if(io->in_tree == 1) Spr_Pars(tree);
-
-                  /* /\* ******************** *\/ */
-                  /* Sample_Ancestral_Seq(NO,YES,tree); */
-                  /* tree->mod->augmented = YES; */
-                  /* Lk(NULL,tree); */
-                  /* /\* ******************** *\/ */
                                    
 		  if(tree->mod->s_opt->opt_topo)
 		    {

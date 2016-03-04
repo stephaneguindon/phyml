@@ -1420,16 +1420,16 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                               /* For the (non-ambiguous) state at node n_v1 */
                               p1_lk1 = Pij1[catg*dim3+i*dim2+state_v1];
 
-                              assert(!isnan(p1_lk1));
+                              /* assert(!isnan(p1_lk1)); */
 
-                              /* if(isnan(p1_lk1)) */
-                              /*   { */
-                              /*     PhyML_Printf("\n== Tree %d",tree->tree_num); */
-                              /*     PhyML_Printf("\n== catg=%d dim3=%d dim2=%d i=%d state_v1=%d",catg,dim3,dim2,i,state_v1); */
-                              /*     PhyML_Printf("\n== Pij1[0] = %G l = %G",Pij1[0],b->l->v); */
-                              /*     Print_Model(tree->mod); */
-                              /*     Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
-                              /*   } */
+                              if(isnan(p1_lk1))
+                                {
+                                  PhyML_Printf("\n== Tree %d",tree->tree_num);
+                                  PhyML_Printf("\n== catg=%d dim3=%d dim2=%d i=%d state_v1=%d",catg,dim3,dim2,i,state_v1);
+                                  PhyML_Printf("\n== Pij1[0] = %G l = %G",Pij1[0],b->l->v);
+                                  Print_Model(tree->mod);
+                                  Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+                                }
                             }
                           else
                             {
@@ -2397,6 +2397,8 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
 #ifdef BEAGLE
             assert(UNINITIALIZED != tree->mod->b_inst);
 #endif
+            
+
             PMat(len,tree->mod,i*tree->mod->ns*tree->mod->ns,b_fcus->Pij_rr);
           }
       else
@@ -2883,8 +2885,6 @@ void Init_P_Lk_Loc(t_tree *tree)
           tree->a_edges[i]->p_lk_loc_rght[j] = j;
         }
     }
-
-
   
   For(i,tree->n_otu)
     {
@@ -2893,7 +2893,6 @@ void Init_P_Lk_Loc(t_tree *tree)
       For(j,tree->n_pattern)
         {
           patt_id_d[j] = (int)tree->a_nodes[d->num]->c_seq->state[j];
-          /* patt_id_d[j] = (int)tree->data->c_seq[d->num]->state[j]; */
         }
     }
 }
