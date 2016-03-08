@@ -1434,7 +1434,7 @@ void TIMES_Update_Node_Ordering(t_tree *tree)
   do
     {
       swap = NO;
-      For(i,2*tree->n_otu-1)
+      For(i,2*tree->n_otu-2)
 	{
 	  if(t[tree->rates->t_rank[i]] > t[tree->rates->t_rank[i+1]]) // Sort in ascending order
 	    {
@@ -1551,7 +1551,6 @@ void TIMES_Reset_Prior_Times(t_tree *tree)
 // statistics 'simplification' as described in Yang and Rannala, 2005. 
 phydbl TIMES_Lk_Yule_Order_Root_Cond(t_tree *tree)
 {
-
   int j;
   phydbl *t,*tf;
   t_node *n;
@@ -1632,6 +1631,61 @@ phydbl TIMES_Lk_Yule_Order_Root_Cond(t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+// Log of prob density of internal node ages conditional on tree height, under
+// the birth death process with complete sampling.
+phydbl TIMES_Lk_Birth_Death(t_tree *tree)
+{
+  int i;
+  phydbl lnL;
+  phydbl p0t1,p0t,p1t,gt,vt1;
+  phydbl b,d;
+  phydbl t1,t;
+
+  lnL = 0.0;
+  b   = tree->rates->birth_rate;
+  d   = tree->rates->death_rate;
+  t1  = FABS(tree->rates->nd_t[tree->n_root->num]);
+
+  if(Are_Equal(b,d,1.E-6) == NO)
+    {
+      
+      p0t1 = (b-d)/(b-d*EXP((d-b)*t1));
+      vt1  = 1. - p0t1*EXP((d-b)*t1);
+      
+      // Equation 4, 5, 6, 7 in Yang and Rannala (2006)
+      For(i,2*tree->n_otu-1)
+        {
+          if(tree->a_nodes[i]->tax == NO && tree->a_nodes[i] != tree->n_root)
+            {
+              t   = FABS(tree->rates->nd_t[i]);
+              p0t = (b-d)/(b-d*EXP((d-b)*t));
+              p1t = p0t*p0t*EXP((d-b)*t);
+              gt  = b*p1t/vt1;
+              lnL += LOG(gt);
+            }
+        }
+    }
+  else
+    {
+      // Equation 8 in Yang and Rannala (2006)
+      For(i,2*tree->n_otu-1)
+        {
+          if(tree->a_nodes[i]->tax == NO && tree->a_nodes[i] != tree->n_root)
+            {
+              t   = FABS(tree->rates->nd_t[i]);
+              gt = (1.+b*t1)/(t1*(1.+b*t)*(1.+b*t));
+              lnL += LOG(gt);
+            }
+        }
+    }
+  
+  tree->rates->c_lnL_times = lnL;
+
+  return(lnL);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
 // Generate a subtree including all taxa in tax_list. The age of the root of that
 // subtree is t_mrca. All nodes in the subtree are thus younger than that.
@@ -1658,6 +1712,7 @@ void TIMES_Connect_List_Of_Taxa(t_node **tax_list, int list_size, phydbl t_mrca,
       if(times[n->num] < t_upper_bound) t_upper_bound = times[n->num];
     }
   
+  /* printf("\n. upper: %f lower: %f t_mrca: %f",t_upper_bound,t_lower_bound,t_mrca); */
   assert(t_upper_bound > t_lower_bound);
   
   // Get the list of current mrcas to all taxa in tax_list. There should be
@@ -1714,7 +1769,7 @@ void TIMES_Connect_List_Of_Taxa(t_node **tax_list, int list_size, phydbl t_mrca,
       /*        new_mrca->v[2]->num, */
       /*        new_mrca->v[1]->v[0]->num, */
       /*        new_mrca->v[2]->v[0]->num */
-      /*        );  */
+      /*        ); */
       /* fflush(NULL); */
     }
   while(n_anc != 1);
@@ -1768,10 +1823,6 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
               
               cal_times[n_cal] = Uni()*(cal->upper - cal->lower) + cal->lower;
               
-              /* printf("\n. [%f %f] -> %f", */
-              /*        cal->lower, */
-              /*        cal->upper, */
-              /*        cal_times[n_cal]); fflush(NULL); */
               
               if(cal_times[n_cal] < time_oldest_cal) time_oldest_cal = cal_times[n_cal];
               
@@ -1802,6 +1853,13 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       
       For(i,n_cal-1) assert(cal_times[cal_ordering[i]] > cal_times[cal_ordering[i+1]]);
       
+      /* For(i,n_cal) */
+      /*   { */
+      /*     printf("\n. %d -> %f", */
+      /*            cal_ordering[i], */
+      /*            cal_times[cal_ordering[i]]); fflush(NULL); */
+      /*   } */
+        
       // Connect all taxa that appear in all primary calibrations
       For(i,n_cal)
         {
@@ -1830,12 +1888,23 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
           
           assert(list_size == cal->n_target_tax);
           
+          /* For(j,n_cal) */
+          /*   { */
+          /*     printf("\n. %d -> %f", */
+          /*            cal_ordering[j], */
+          /*            cal_times[cal_ordering[j]]);  */
+          /*     fflush(NULL); */
+          /*   } */
+
           /* For(j,cal->n_target_tax) PhyML_Printf("\n. %s [%d]",nd_list[j]->name,nd_list[j]->num); */
           /* PhyML_Printf("\n. Time: %f [%f %f]", */
           /*              cal_times[cal_ordering[i]], */
           /*              cal->lower, */
           /*              cal->upper); */
           
+          /* For(k,list_size) printf("\n@ %s",nd_list[k]->name); */
+          /* printf("\n"); */
+
           TIMES_Connect_List_Of_Taxa(nd_list, 
                                      cal->n_target_tax, 
                                      cal_times[cal_ordering[i]], 
@@ -1843,9 +1912,10 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
                                      &nd_num,
                                      mixt_tree);
 
-          Free(cal_times);
-          Free(cal_ordering);
         }
+      
+      Free(cal_times);
+      Free(cal_ordering);
       
       
       // Connect all remaining taxa
@@ -1955,26 +2025,78 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
     {
       t_tree *tree;
       
+      // Propagate tree topology
       tree = mixt_tree->next;
       do
         {
           For(i,2*tree->n_otu-1)
             {
-              tree->a_nodes[i]->v[0] = tree->prev->a_nodes[i]->v[0];
-              tree->a_nodes[i]->v[1] = tree->prev->a_nodes[i]->v[1];
-              tree->a_nodes[i]->v[2] = tree->prev->a_nodes[i]->v[2];
+              tree->a_nodes[i]->v[0] = tree->prev->a_nodes[i]->v[0] ? tree->a_nodes[tree->prev->a_nodes[i]->v[0]->num] : NULL;
+              tree->a_nodes[i]->v[1] = tree->prev->a_nodes[i]->v[1] ? tree->a_nodes[tree->prev->a_nodes[i]->v[1]->num] : NULL;
+              tree->a_nodes[i]->v[2] = tree->prev->a_nodes[i]->v[2] ? tree->a_nodes[tree->prev->a_nodes[i]->v[2]->num] : NULL;
             }
           For(i,2*tree->n_otu-1)
             {
-              tree->a_nodes[i]->b[0] = tree->prev->a_nodes[i]->b[0];
-              tree->a_nodes[i]->b[1] = tree->prev->a_nodes[i]->b[1];
-              tree->a_nodes[i]->b[2] = tree->prev->a_nodes[i]->b[2];
+              tree->a_nodes[i]->b[0] = tree->prev->a_nodes[i]->b[0] ? tree->a_edges[tree->prev->a_nodes[i]->b[0]->num] : NULL;
+              tree->a_nodes[i]->b[1] = tree->prev->a_nodes[i]->b[1] ? tree->a_edges[tree->prev->a_nodes[i]->b[1]->num] : NULL;
+              tree->a_nodes[i]->b[2] = tree->prev->a_nodes[i]->b[2] ? tree->a_edges[tree->prev->a_nodes[i]->b[2]->num] : NULL;
             }
+          For(i,2*tree->n_otu-2)
+            {
+              tree->a_edges[i]->left = tree->a_nodes[tree->prev->a_edges[i]->left->num];
+              tree->a_edges[i]->rght = tree->a_nodes[tree->prev->a_edges[i]->rght->num];
+            }
+
+          if(tree == mixt_tree->next)
+            {
+              For(i,2*tree->n_otu-2)
+                {
+                  if(tree->a_edges[i] != tree->n_root->b[1] &&
+                     tree->a_edges[i] != tree->n_root->b[2])
+                    printf("\nB %d [%d %d] %p %p %p",
+                           i,
+                           tree->a_edges[i]->left->num,
+                           tree->a_edges[i]->rght->num,
+                           tree->a_edges[i],
+                           tree->a_edges[i]->p_lk_left,tree->a_edges[i]->p_lk_rght);
+                }
+            }
+
+          Reorganize_Edges_Given_Lk_Struct(tree);
           tree = tree->next;
         }
       while(tree);
+
+
+      int i;
+      tree = mixt_tree->next;
+      For(i,2*tree->n_otu-2)
+        {
+          if(tree->a_edges[i] != tree->n_root->b[1] &&
+             tree->a_edges[i] != tree->n_root->b[2])
+            printf("\n. %d [%d %d] %p %p %p",
+                   i,
+                   tree->a_edges[i]->left->num,
+                   tree->a_edges[i]->rght->num,
+                   tree->a_edges[i],
+                   tree->a_edges[i]->p_lk_left,tree->a_edges[i]->p_lk_rght);
+        }
     }
   
+  For(i,2*mixt_tree->n_otu-2)
+    {
+      if(mixt_tree->a_edges[i] != mixt_tree->n_root->b[1] &&
+         mixt_tree->a_edges[i] != mixt_tree->n_root->b[2])
+        printf("\n. mixt_ %d [%d %d] %p %p %p",
+               i,
+               mixt_tree->a_edges[i]->left->num,
+               mixt_tree->a_edges[i]->rght->num,
+               mixt_tree->a_edges[i],
+               mixt_tree->a_edges[i]->p_lk_left,
+               mixt_tree->a_edges[i]->p_lk_rght);
+    }
+  /* Exit("\n"); */
+
   PhyML_Printf("\n. %s \n",Write_Tree(mixt_tree,NO));
 
   Free(tips);

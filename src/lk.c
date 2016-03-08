@@ -993,11 +993,14 @@ void Update_P_Lk(t_tree *tree, t_edge *b, t_node *d)
       return;
     }
   
+  assert(tree->is_mixt_tree == NO);
+
   if((tree->io->do_alias_subpatt == YES) &&
      (tree->update_alias_subpatt == YES))
     Alias_One_Subpatt((d==b->left)?(b->rght):(b->left),d,tree);
 
   if(d->tax) return;
+
 
 #ifdef BEAGLE
   update_beagle_partials(tree, b, d);
@@ -1058,6 +1061,14 @@ void Update_P_Lk_Generic(t_tree *tree, t_edge *b, t_node *d)
   phydbl p_lk_lim_inf;
   phydbl smallest_p_lk;
   int *p_lk_loc;
+
+
+  if(tree->n_root && tree->ignore_root == YES &&
+     (d == tree->n_root->v[1] || d == tree->n_root->v[2]) &&
+     (b == tree->n_root->b[1] || b == tree->n_root->b[2]))
+    {
+      assert(FALSE);
+    }
 
   p_lk_lim_inf = (phydbl)P_LK_LIM_INF;
 
@@ -1305,6 +1316,13 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
   phydbl p0,p1,p2,p3;
   int *p_lk_loc;//Suppose site j, of a certain subtree, has "A" on one tip, and "C" on the other. If you come across this pattern again at site i<j, then you can simply copy the partial likelihoods
 
+
+  if(tree->n_root && tree->ignore_root == YES &&
+     (d == tree->n_root->v[1] || d == tree->n_root->v[2]) &&
+     (b == tree->n_root->b[1] || b == tree->n_root->b[2]))
+    {
+      assert(FALSE);
+    }
 
   p_lk_lim_inf = (phydbl)P_LK_LIM_INF;
 
@@ -1646,6 +1664,13 @@ void Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
   assert(b);
   assert(d);
 
+  if(tree->n_root && tree->ignore_root == YES &&
+     (d == tree->n_root->v[1] || d == tree->n_root->v[2]) &&
+     (b == tree->n_root->b[1] || b == tree->n_root->b[2]))
+    {
+      assert(FALSE);
+    }
+
   p_lk_lim_inf = (phydbl)P_LK_LIM_INF;
 
   dim1 = tree->mod->ras->n_catg * tree->mod->ns;
@@ -1678,9 +1703,6 @@ void Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
                &Pij2,&p_lk_v2,&sum_scale_v2,
                d,b,tree);
 
-
-
-
   /* For every site in the alignment */
   For(site,n_patterns)
     {
@@ -1712,7 +1734,7 @@ void Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
           ambiguity_check_v1 = YES;
           ambiguity_check_v2 = YES;
         }
-
+      
       if(p_lk_loc[site] < site)
         {
           Copy_P_Lk(p_lk,p_lk_loc[site],site,tree);

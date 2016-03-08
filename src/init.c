@@ -3507,6 +3507,8 @@ void MCMC_Init_MCMC_Struct(char *filename, option *io, t_mcmc *mcmc)
 {
   int pid;
 
+  assert(mcmc);
+
   mcmc->io               = io;
   mcmc->is               = NO;
   mcmc->use_data         = YES;

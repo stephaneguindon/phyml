@@ -28,7 +28,8 @@ int DATE_Main(int argc, char **argv)
 
   /* seed = 1; */
   /* seed = 8596; */
-  seed = 23595;
+  /* seed = 23595; */
+  seed = 10868;
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -46,7 +47,7 @@ void DATE_XML(char *xml_filename)
   FILE *fp_xml_in;
   xml_node *xnd,*xnd_dum,*xnd_cal,*xroot;
   t_tree *mixt_tree;
-  phydbl low,up;
+  phydbl low,up,*res;
   char *clade_name;
 
   mixt_tree = XML_Process_Base(xml_filename);
@@ -191,14 +192,22 @@ void DATE_XML(char *xml_filename)
  
   TIMES_Randomize_Tree_With_Time_Constraints(mixt_tree->rates->a_cal[0], mixt_tree);
   
-  {
-    Print_Node(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);
-    Print_Node(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree);
-  }
+  /* { */
+  /*   Print_Node(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree); */
+  /*   Print_Node(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree); */
+  /* } */
 
   mixt_tree->rates->birth_rate = 0.10;
   mixt_tree->rates->death_rate = 0.05;
+  mixt_tree->rates->bl_from_rt = YES;
+  mixt_tree->rates->clock_r    = 0.01 / FABS(mixt_tree->rates->nd_t[mixt_tree->n_root->num]);
+  mixt_tree->rates->model      = BIRTHDEATH;
+
+  RATES_Update_Cur_Bl(mixt_tree);
+
   PhyML_Printf("\n. K=%f",DATE_J_Sum_Product(mixt_tree));
+
+  res = DATE_MCMC(mixt_tree);
 
   Free(clade_name);
 }
@@ -309,7 +318,7 @@ phydbl *DATE_Splitted_Calibration(t_tree *tree)
   // 2 x # of internal nodes boundaries in total at most.
   minmax = (phydbl *)mCalloc(2*(tree->n_otu-2),sizeof(phydbl));
   For(i,2*(tree->n_otu-2)) minmax[i] = +INFINITY;
-  splitted_cal = (phydbl *)mCalloc((int)((4*(tree->n_otu-2)-2)/2),sizeof(phydbl));
+  splitted_cal = (phydbl *)mCalloc((int)(4*tree->n_otu-10),sizeof(phydbl));
 
 
   len = 0;
@@ -365,17 +374,16 @@ phydbl *DATE_Splitted_Calibration(t_tree *tree)
     }
   while(done == NO);
 
-  
   splitted_cal[0] = minmax[0];
   len = 1;
   for(i = 1; i < 2*(tree->n_otu-2); i++)                                        
     {
       splitted_cal[len]   = minmax[i];
-      splitted_cal[len+1] = minmax[i];
+      if(len+1 < 4*tree->n_otu-10) splitted_cal[len+1] = minmax[i];
       len+=2;
     }
 
-  For(i,len) PhyML_Printf("\n. split -- %3d %12f",i,splitted_cal[i]);
+  /* For(i,4*tree->n_otu-10) PhyML_Printf("\n. split -- %3d %12f",i,splitted_cal[i]); */
 
   Free(minmax);
    
@@ -423,11 +431,11 @@ int DATE_J_Sum_Product_Pre(t_node *d, int split_idx_d, int split_idx_a, phydbl p
 
   ans = DATE_Is_Split_Accessible(d,split_idx_d,splitted_cal,tree);
 
-  printf("\n. IN d: %d [%12f %12f] %d ans: %d prod: %f fact: %d",
-         d->num,
-         splitted_cal[split_idx_d],
-         splitted_cal[split_idx_d+1],
-         tree->rates->t_rank[d->num],ans,prod,fact);
+  /* printf("\n. IN d: %d [%12f %12f] %d ans: %d prod: %f fact: %d", */
+  /*        d->num, */
+  /*        splitted_cal[split_idx_d], */
+  /*        splitted_cal[split_idx_d+1], */
+  /*        tree->rates->t_rank[d->num],ans,prod,fact); */
 
   switch(ans)
     {
@@ -454,20 +462,20 @@ int DATE_J_Sum_Product_Pre(t_node *d, int split_idx_d, int split_idx_a, phydbl p
         
         prod /= fact;
         
-        PhyML_Printf("\n. Node: %d [%12f %12f] %4d %4d [%12G %12G] %4d",
-                     d->num,
-                     splitted_cal[split_idx_d],
-                     splitted_cal[split_idx_d+1],
-                     split_idx_a,
-                     split_idx_d,
-                     prod,*total,fact);
+        /* PhyML_Printf("\n. Node: %d [%12f %12f] %4d %4d [%12G %12G] %4d", */
+        /*              d->num, */
+        /*              splitted_cal[split_idx_d], */
+        /*              splitted_cal[split_idx_d+1], */
+        /*              split_idx_a, */
+        /*              split_idx_d, */
+        /*              prod,*total,fact); */
         
-        fflush(NULL);
+        /* fflush(NULL); */
         
         if(tree->rates->t_rank[tree->n_otu-2] == d->num) // Youngest internal node 
           {
             (*total) += prod;
-            printf(" == total: %f",*total);
+            /* printf(" == total: %f",*total); */
             return 0;
           }
 
@@ -502,11 +510,11 @@ int DATE_J_Sum_Product_Pre(t_node *d, int split_idx_d, int split_idx_a, phydbl p
       }
     }
 
-  printf("\n. OUT d: %d [%12f %12f] %d ans: %d",
-         d->num,
-         splitted_cal[split_idx_d],
-         splitted_cal[split_idx_d+1],
-         tree->rates->t_rank[d->num],ans);
+  /* printf("\n. OUT d: %d [%12f %12f] %d ans: %d", */
+  /*        d->num, */
+  /*        splitted_cal[split_idx_d], */
+  /*        splitted_cal[split_idx_d+1], */
+  /*        tree->rates->t_rank[d->num],ans); */
 
   return ans;
 }
@@ -560,7 +568,7 @@ phydbl DATE_J(phydbl birth_r, phydbl death_r, phydbl t_min, phydbl t_pls)
   b = birth_r;
   J = (b-d)*(EXP(t_min*d+t_pls*b) - EXP(t_min*b+t_pls*d));
   J /= ((b*EXP(t_min*b)-d*EXP(t_min*d)) * (b*EXP(t_pls*b)-d*EXP(t_pls*d)));
-  printf("  J : %f",J);
+  /* printf("  J : %f",J); */
   return(J);
 }
 
@@ -631,6 +639,36 @@ int DATE_Check_Time_Constraints(t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+phydbl *DATE_MCMC(t_tree *tree)
+{
+  t_mcmc *mcmc;
+  int move, n_vars;
+  phydbl u;
+  phydbl *res;
+
+  mcmc = MCMC_Make_MCMC_Struct();
+
+  tree->mcmc = mcmc;
+
+  MCMC_Init_MCMC_Struct(NULL,NULL,mcmc);
+
+  MCMC_Complete_MCMC(mcmc,tree);
+
+  n_vars = 10;
+
+  res = (phydbl *)mCalloc(tree->mcmc->chain_len / tree->mcmc->sample_interval * n_vars,sizeof(phydbl));
+  
+  Lk(NULL,tree);
+  TIMES_Lk_Birth_Death(tree);
+  
+  PhyML_Printf("\n. log(Pr(Seq|Tree)) = %f",tree->c_lnL);
+  PhyML_Printf("\n. log(Pr(Tree)) = %f",tree->rates->c_lnL_times);
+  
+  Exit("\n");
+
+  return(res);
+}
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

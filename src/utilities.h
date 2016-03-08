@@ -271,6 +271,7 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define THORNE         4
 #define GUINDON        5
 #define STRICTCLOCK    6
+#define BIRTHDEATH     7
 #define NONE          -1
 
 #define ALRTSTAT       1
@@ -501,11 +502,12 @@ typedef struct __Edge {
                           bip_score = 1 iif the branch is found in both trees to be compared,
                           bip_score = 0 otherwise. */
 
-  phydbl            *p_lk_left,*p_lk_rght; /*! likelihoods of the subtree on the left and right side (for each site and each relative rate category) */
-  short int      *p_lk_tip_r, *p_lk_tip_l;
+  int                         num_st_left; /*! number of the subtree on the left side */
+  int                         num_st_rght; /*! number of the subtree on the right side */
+
+  phydbl                          *Pij_rr; /*! matrix of change probabilities and its first and secnd derivates (rate*state*state) */
 #ifdef BEAGLE
-  int        p_lk_left_idx, p_lk_rght_idx;
-  int                        p_lk_tip_idx;
+  int                          Pij_rr_idx;
 #endif
 
   short int           *div_post_pred_left; /*! posterior prediction of nucleotide/aa diversity (left-hand subtree) */
@@ -513,23 +515,22 @@ typedef struct __Edge {
   short int                    does_exist;
 
 
+
+  phydbl            *p_lk_left,*p_lk_rght; /*! likelihoods of the subtree on the left and right side (for each site and each relative rate category) */
+  short int      *p_lk_tip_r, *p_lk_tip_l;
+#ifdef BEAGLE
+  int        p_lk_left_idx, p_lk_rght_idx;
+  int                        p_lk_tip_idx;
+#endif
+
   int                       *patt_id_left;
   int                       *patt_id_rght;
   int                      *p_lk_loc_left;
   int                      *p_lk_loc_rght;
 
-
-  phydbl                          *Pij_rr; /*! matrix of change probabilities and its first and secnd derivates (rate*state*state) */
-#ifdef BEAGLE
-  int                          Pij_rr_idx;
-#endif
   int                     *pars_l,*pars_r; /*! parsimony of the subtree on the left and right sides (for each site) */
   unsigned int               *ui_l, *ui_r; /*! union - intersection vectors used in Fitch's parsimony algorithm */
   int                *p_pars_l, *p_pars_r; /*! conditional parsimony vectors */
-
-  int                         num_st_left; /*! number of the subtree on the left side */
-  int                         num_st_rght; /*! number of the subtree on the right side */
-
 
   /*! Below are the likelihood scaling factors (used in functions
      `Get_All_Partial_Lk_Scale' in lk.c. */
@@ -2058,6 +2059,7 @@ phydbl Mean_Identity(calign *data);
 phydbl Pairwise_Identity(int i, int j, calign *data);
 phydbl Fst(int i, int j, calign *data);
 phydbl Nucleotide_Diversity(calign *data);
+void Swap_Partial_Lk(t_edge *a, t_edge *b, int side_a, int side_b, t_tree *tree);
 
 
 #include "xml.h"

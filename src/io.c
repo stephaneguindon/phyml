@@ -4593,7 +4593,6 @@ option *PhyML_XML(char *xml_filename)
 
   For(num_rand_tree,io->mod->s_opt->n_rand_starts)
     {
-
       MIXT_Prepare_All(num_rand_tree,mixt_tree);
       Br_Len_Not_Involving_Invar(mixt_tree);
       Unscale_Br_Len_Multiplier_Tree(mixt_tree);
