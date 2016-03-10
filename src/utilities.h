@@ -1477,6 +1477,7 @@ typedef struct __Tmcmc {
   int num_move_cov_rates;
   int num_move_cov_switch;
   int num_move_birth_rate;
+  int num_move_death_rate;
   int num_move_jump_calibration;
   int num_move_geo_lambda;
   int num_move_geo_sigma;

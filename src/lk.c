@@ -1665,10 +1665,11 @@ void Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
   assert(d);
 
   if(tree->n_root && tree->ignore_root == YES &&
-     (d == tree->n_root->v[1] || d == tree->n_root->v[2]) &&
      (b == tree->n_root->b[1] || b == tree->n_root->b[2]))
     {
-      assert(FALSE);
+      PhyML_Printf("\n== Invalid call to Update_P_Lk_AA function");
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
+      Exit("");
     }
 
   p_lk_lim_inf = (phydbl)P_LK_LIM_INF;
@@ -2419,8 +2420,6 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
 #ifdef BEAGLE
             assert(UNINITIALIZED != tree->mod->b_inst);
 #endif
-            
-
             PMat(len,tree->mod,i*tree->mod->ns*tree->mod->ns,b_fcus->Pij_rr);
           }
       else
@@ -2544,8 +2543,8 @@ void Update_P_Lk_Along_A_Path(t_node **path, int path_length, t_tree *tree)
           }
         else
           {
-        PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
-        Exit("");
+            PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
+            Exit("");
           }
         break;
       }

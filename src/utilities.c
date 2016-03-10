@@ -6046,23 +6046,11 @@ void Reorganize_Edges_Given_Lk_Struct(t_tree *tree)
             {
               if(!tree->a_edges[j]->p_lk_left && tree->a_edges[j]->left->tax == NO)
                 {
-                  printf("\nA Swap %d [%p] with %d [%p]",
-                         tree->a_edges[i]->left->num,
-                         tree->a_edges[i]->p_lk_left,
-                         tree->a_edges[j]->left->num,
-                         tree->a_edges[j]->p_lk_left);
-                         
                   Swap_Partial_Lk(tree->a_edges[i],tree->a_edges[j],LEFT,LEFT,tree);
                   break;
                 }
               if(!tree->a_edges[j]->p_lk_rght && tree->a_edges[j]->rght->tax == NO)
                 {
-                  printf("\nB Swap %d [%p] with %d [%p]",
-                         tree->a_edges[i]->left->num,
-                         tree->a_edges[i]->p_lk_left,
-                         tree->a_edges[j]->rght->num,
-                         tree->a_edges[j]->p_lk_rght);
-
                   Swap_Partial_Lk(tree->a_edges[i],tree->a_edges[j],LEFT,RGHT,tree);
                   break;
                 }
@@ -6075,31 +6063,12 @@ void Reorganize_Edges_Given_Lk_Struct(t_tree *tree)
             {
               if(!tree->a_edges[j]->p_lk_left && tree->a_edges[j]->left->tax == NO)
                 {
-                  printf("\nC Swap %d [%p] with %d [%p]",
-                         tree->a_edges[i]->rght->num,
-                         tree->a_edges[i]->p_lk_rght,
-                         tree->a_edges[j]->left->num,
-                         tree->a_edges[j]->p_lk_left);
-
                   Swap_Partial_Lk(tree->a_edges[i],tree->a_edges[j],RGHT,LEFT,tree);
                   break;
                 }
               if(!tree->a_edges[j]->p_lk_rght && tree->a_edges[j]->rght->tax == NO)
                 {
-                  printf("\nD Swap %d [%p] with %d [%p]",
-                         tree->a_edges[i]->rght->num,
-                         tree->a_edges[i]->p_lk_rght,
-                         tree->a_edges[j]->rght->num,
-                         tree->a_edges[j]->p_lk_rght);
-
                   Swap_Partial_Lk(tree->a_edges[i],tree->a_edges[j],RGHT,RGHT,tree);
-
-                  printf("\nDD Swap %d [%p] with %d [%p]",
-                         tree->a_edges[i]->rght->num,
-                         tree->a_edges[i]->p_lk_rght,
-                         tree->a_edges[j]->rght->num,
-                         tree->a_edges[j]->p_lk_rght);
-
                   break;
                 }
             }
@@ -10599,14 +10568,14 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
     }
 
 
-  assert(*n_v1);
-  assert(*n_v2);
-  assert(*sum_scale);
-  assert(*sum_scale_v1);
-  assert(*sum_scale_v2);
-  assert(*p_lk);
-  assert(*p_lk_v1);
-  assert(*p_lk_v2);
+  /* assert(*n_v1); */
+  /* assert(*n_v2); */
+  /* assert(*sum_scale); */
+  /* assert(*sum_scale_v1); */
+  /* assert(*sum_scale_v2); */
+  /* assert(*p_lk); */
+  /* assert(*p_lk_v1); */
+  /* assert(*p_lk_v2); */
 
 }
 
@@ -10626,7 +10595,6 @@ void Best_Root_Position_IL_Model(t_tree *tree)
       int i;
       t_edge *best_edge;
       phydbl best_lnL;
-
 
       Free_Edge_Lk_Rght(tree->a_edges[2*tree->n_otu-3]);
       Free_Edge_Lk_Rght(tree->a_edges[2*tree->n_otu-2]);

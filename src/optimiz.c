@@ -2090,7 +2090,7 @@ int Optimiz_Alpha_And_Pinv(t_tree *mixt_tree, int verbose)
 
   do
     {
-      if(tree->mod->s_opt->opt_alpha == YES && tree->mod->ras->n_catg > 1)
+      if(tree->mod->s_opt->opt_alpha == YES && tree->mod->ras->n_catg > 1 && tree->mod->s_opt->opt_pinvar == YES)
         {
           For(i,n_alpha) if(tree->mod->ras->alpha == alpha[i]) break;
 

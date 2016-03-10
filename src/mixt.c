@@ -594,23 +594,6 @@ void MIXT_Post_Order_Lk(t_node *mixt_a, t_node *mixt_d, t_tree *mixt_tree)
       assert(d);
       assert(tree);
 
-      {
-        int i;
-        For(i,2*tree->n_otu-2)
-          {
-            if(tree->a_edges[i] != tree->n_root->b[1] &&
-               tree->a_edges[i] != tree->n_root->b[2])
-              printf("\nMIXT  %d [%d %d] %p %p %p",
-                     i,
-                     tree->a_edges[i]->left->num,
-                     tree->a_edges[i]->rght->num,
-                     tree->a_edges[i],
-                     tree->a_edges[i]->sum_scale_left,tree->a_edges[i]->sum_scale_rght);
-          }        
-      }
-      
-      printf("\n. Call with nodes %d %d [%d %d]",a->num,d->num,mixt_a->num,mixt_d->num);
-
       if(tree->mod->ras->invar == NO) Post_Order_Lk(a,d,tree);
 
       tree = tree->next;
@@ -730,11 +713,6 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                 }
               else
                 {
-                  printf("\n. mixt_tree->e_root->rght : %p mixt_tree->e_root->left : %p",
-                         mixt_tree->e_root->rght,
-                         mixt_tree->e_root->left);
-                                     
-                         
                   MIXT_Post_Order_Lk(mixt_tree->e_root->rght,
                                      mixt_tree->e_root->left,
                                      mixt_tree);
@@ -742,7 +720,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                                      mixt_tree->e_root->rght,
                                      mixt_tree);
                   if(mixt_tree->both_sides == YES)
-                    { 
+                    {
                       MIXT_Pre_Order_Lk(mixt_tree->e_root->rght,
                                          mixt_tree->e_root->left,
                                          mixt_tree);

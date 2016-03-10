@@ -963,20 +963,12 @@ phydbl TIMES_Lk_Yule_Order(t_tree *tree)
 phydbl TIMES_Lk_Times(t_tree *tree)
 {
   
-  #ifdef PHYTIME
+#ifdef PHYTIME
   tree->rates->c_lnL_times =  TIMES_Lk_Yule_Order(tree);
-  #elif INVITEE
-  /* tree->rates->c_lnL_times = TIMES_Calib_Cond_Prob(tree); */
-  /* tree->rates->c_lnL_times =  TIMES_Lk_Yule_Order(tree); */
+#elif defined(DATE)
+  tree->rates->c_lnL_times =  TIMES_Lk_Birth_Death(tree);
 
-  tree->rates->c_lnL_times =  TIMES_Lk_Yule_Order_Root_Cond(tree);
-  if(isinf(tree->rates->c_lnL_times)) return(tree->rates->c_lnL_times);
-  else
-    {
-      if(tree->rates->update_time_norm_const == YES) tree->rates->log_K_cur = K_Constant_Prior_Times_Log(tree);
-      tree->rates->c_lnL_times += tree->rates->log_K_cur;
-    }
-  #endif
+#endif
 
   return(tree->rates->c_lnL_times);
 }
@@ -1679,7 +1671,11 @@ phydbl TIMES_Lk_Birth_Death(t_tree *tree)
         }
     }
   
+  
   tree->rates->c_lnL_times = lnL;
+
+  // Normalizing factor
+  tree->rates->c_lnL_times -= LOG(DATE_J_Sum_Product(tree));
 
   return(lnL);
 }
@@ -2025,7 +2021,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
     {
       t_tree *tree;
       
-      // Propagate tree topology
+      // Propagate tree topology and reorganize partial lk struct along edges
       tree = mixt_tree->next;
       do
         {
@@ -2035,69 +2031,29 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
               tree->a_nodes[i]->v[1] = tree->prev->a_nodes[i]->v[1] ? tree->a_nodes[tree->prev->a_nodes[i]->v[1]->num] : NULL;
               tree->a_nodes[i]->v[2] = tree->prev->a_nodes[i]->v[2] ? tree->a_nodes[tree->prev->a_nodes[i]->v[2]->num] : NULL;
             }
-          For(i,2*tree->n_otu-1)
-            {
-              tree->a_nodes[i]->b[0] = tree->prev->a_nodes[i]->b[0] ? tree->a_edges[tree->prev->a_nodes[i]->b[0]->num] : NULL;
-              tree->a_nodes[i]->b[1] = tree->prev->a_nodes[i]->b[1] ? tree->a_edges[tree->prev->a_nodes[i]->b[1]->num] : NULL;
-              tree->a_nodes[i]->b[2] = tree->prev->a_nodes[i]->b[2] ? tree->a_edges[tree->prev->a_nodes[i]->b[2]->num] : NULL;
-            }
-          For(i,2*tree->n_otu-2)
-            {
-              tree->a_edges[i]->left = tree->a_nodes[tree->prev->a_edges[i]->left->num];
-              tree->a_edges[i]->rght = tree->a_nodes[tree->prev->a_edges[i]->rght->num];
-            }
-
-          if(tree == mixt_tree->next)
-            {
-              For(i,2*tree->n_otu-2)
-                {
-                  if(tree->a_edges[i] != tree->n_root->b[1] &&
-                     tree->a_edges[i] != tree->n_root->b[2])
-                    printf("\nB %d [%d %d] %p %p %p",
-                           i,
-                           tree->a_edges[i]->left->num,
-                           tree->a_edges[i]->rght->num,
-                           tree->a_edges[i],
-                           tree->a_edges[i]->p_lk_left,tree->a_edges[i]->p_lk_rght);
-                }
-            }
-
+          tree->num_curr_branch_available = 0;
+          Connect_Edges_To_Nodes_Recur(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree);
+          Fill_Dir_Table(tree);
+          Update_Dirs(tree);
+          Add_Root(tree->a_edges[tree->prev->e_root->num],tree);
           Reorganize_Edges_Given_Lk_Struct(tree);
+          
+          /* { */
+          /*   printf("\n === \n"); */
+          /*   Print_Node(tree->n_root,tree->n_root->v[1],tree); */
+          /*   Print_Node(tree->n_root,tree->n_root->v[2],tree); */
+          /* } */
+          
           tree = tree->next;
         }
       while(tree);
-
-
-      int i;
-      tree = mixt_tree->next;
-      For(i,2*tree->n_otu-2)
-        {
-          if(tree->a_edges[i] != tree->n_root->b[1] &&
-             tree->a_edges[i] != tree->n_root->b[2])
-            printf("\n. %d [%d %d] %p %p %p",
-                   i,
-                   tree->a_edges[i]->left->num,
-                   tree->a_edges[i]->rght->num,
-                   tree->a_edges[i],
-                   tree->a_edges[i]->p_lk_left,tree->a_edges[i]->p_lk_rght);
-        }
     }
   
-  For(i,2*mixt_tree->n_otu-2)
-    {
-      if(mixt_tree->a_edges[i] != mixt_tree->n_root->b[1] &&
-         mixt_tree->a_edges[i] != mixt_tree->n_root->b[2])
-        printf("\n. mixt_ %d [%d %d] %p %p %p",
-               i,
-               mixt_tree->a_edges[i]->left->num,
-               mixt_tree->a_edges[i]->rght->num,
-               mixt_tree->a_edges[i],
-               mixt_tree->a_edges[i]->p_lk_left,
-               mixt_tree->a_edges[i]->p_lk_rght);
-    }
-  /* Exit("\n"); */
+  /* printf("\n >>> \n"); */
+  /* Print_Node(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree); */
+  /* Print_Node(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree); */
 
-  PhyML_Printf("\n. %s \n",Write_Tree(mixt_tree,NO));
+  /* PhyML_Printf("\n. %s \n",Write_Tree(mixt_tree,NO)); */
 
   Free(tips);
   Free(nd_list);

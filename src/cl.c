@@ -520,9 +520,9 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	  }
 	case 36 :
 	  {
-	    #ifndef PHYML
+#ifndef PHYML
             open_ps_file = 1;
-            #endif
+#endif
 	    break;
 	  }
 	case 35 :

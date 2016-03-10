@@ -4085,24 +4085,25 @@ void MCMC_Covarion_Switch(t_tree *tree)
 
 void MCMC_Birth_Rate(t_tree *tree)
 {
- 
-  /* printf("\n. BIRTH cur_lnL_time: %f ",tree->rates->c_lnL_times); */
-
-#ifdef INVITEE
-  tree->rates->update_time_norm_const = YES;
-#endif
-
   MCMC_Single_Param_Generic(&(tree->rates->birth_rate),
 			    tree->rates->birth_rate_min,
 			    tree->rates->birth_rate_max,
 			    tree->mcmc->num_move_birth_rate,
 			    &(tree->rates->c_lnL_times),NULL,
 			    Wrap_Lk_Times,NULL,tree->mcmc->move_type[tree->mcmc->num_move_birth_rate],NO,NULL,tree,NULL); 
+}
 
-#ifdef INVITEE
-  TIMES_Lk_Times(tree); 
-  tree->rates->update_time_norm_const = NO;
-#endif
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void MCMC_Death_Rate(t_tree *tree)
+{
+  MCMC_Single_Param_Generic(&(tree->rates->death_rate),
+			    tree->rates->death_rate_min,
+			    tree->rates->death_rate_max,
+			    tree->mcmc->num_move_death_rate,
+			    &(tree->rates->c_lnL_times),NULL,
+			    Wrap_Lk_Times,NULL,tree->mcmc->move_type[tree->mcmc->num_move_death_rate],NO,NULL,tree,NULL); 
 }
 
 //////////////////////////////////////////////////////////////
@@ -4295,6 +4296,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->num_move_cov_rates                = mcmc->n_moves; mcmc->n_moves += (tree->mod->m4mod ? 2*tree->mod->m4mod->n_h : 1);
   mcmc->num_move_cov_switch               = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_birth_rate               = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_death_rate               = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_updown_t_br              = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_jump_calibration         = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_geo_lambda               = mcmc->n_moves; mcmc->n_moves += 1;
@@ -4366,6 +4368,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
     strcpy(mcmc->move_name[i],"cov_rates");  
   strcpy(mcmc->move_name[mcmc->num_move_cov_switch],"cov_switch");
   strcpy(mcmc->move_name[mcmc->num_move_birth_rate],"birth_rate");
+  strcpy(mcmc->move_name[mcmc->num_move_death_rate],"death_rate");
   strcpy(mcmc->move_name[mcmc->num_move_updown_t_br],"updown_t_br");
   strcpy(mcmc->move_name[mcmc->num_move_jump_calibration],"jump_calibration");
   strcpy(mcmc->move_name[mcmc->num_move_geo_lambda],"geo_lambda");
@@ -4421,6 +4424,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   for(i=mcmc->num_move_cov_rates;i<mcmc->num_move_cov_rates+(tree->mod->m4mod ? 2*tree->mod->m4mod->n_h : 1);i++) mcmc->move_type[i] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_cov_switch] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_birth_rate] = MCMC_MOVE_SCALE_THORNE;
+  mcmc->move_type[mcmc->num_move_death_rate] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_updown_t_br] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_jump_calibration] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_geo_lambda] = MCMC_MOVE_SCALE_THORNE;
@@ -4489,6 +4493,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   for(i=mcmc->num_move_cov_rates;i<mcmc->num_move_cov_rates+(tree->mod->m4mod ? 2*tree->mod->m4mod->n_h : 1);i++) mcmc->move_weight[i] = 0.5*(1./(tree->mod->m4mod ? (phydbl)tree->mod->m4mod->n_h : 1));
   mcmc->move_weight[mcmc->num_move_cov_switch]            = 1.0;
   mcmc->move_weight[mcmc->num_move_birth_rate]            = 2.0;
+  mcmc->move_weight[mcmc->num_move_death_rate]            = 2.0;
   mcmc->move_weight[mcmc->num_move_updown_t_br]           = 1.0;
 #if defined (INVITEE)
   mcmc->move_weight[mcmc->num_move_jump_calibration]      = 0.1;
@@ -4628,6 +4633,7 @@ void MCMC_Copy_To_New_Param_Val(t_mcmc *mcmc, t_tree *tree)
   mcmc->sampled_val[mcmc->num_move_tree_height*mcmc->sample_size+mcmc->sample_num] = tree->rates->nd_t[tree->n_root->num];
   mcmc->sampled_val[mcmc->num_move_kappa*mcmc->sample_size+mcmc->sample_num]       = tree->mod ? tree->mod->kappa->v : -1.;
   mcmc->sampled_val[mcmc->num_move_birth_rate*mcmc->sample_size+mcmc->sample_num]  = tree->rates->birth_rate;
+  mcmc->sampled_val[mcmc->num_move_death_rate*mcmc->sample_size+mcmc->sample_num]  = tree->rates->death_rate;
 
   /* For(i,2*tree->n_otu-2) */
   /*   mcmc->sampled_val[(mcmc->num_move_br_r+i)*mcmc->sample_size+mcmc->sample_num] = tree->rates->br_r[i]; */

@@ -29,7 +29,7 @@ int DATE_Main(int argc, char **argv)
   /* seed = 1; */
   /* seed = 8596; */
   /* seed = 23595; */
-  seed = 10868;
+  /* seed = 10868; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -205,10 +205,9 @@ void DATE_XML(char *xml_filename)
 
   RATES_Update_Cur_Bl(mixt_tree);
 
-  PhyML_Printf("\n. K=%f",DATE_J_Sum_Product(mixt_tree));
-
   res = DATE_MCMC(mixt_tree);
 
+  Free(res);
   Free(clade_name);
 }
 
@@ -643,9 +642,13 @@ int DATE_Check_Time_Constraints(t_tree *tree)
 phydbl *DATE_MCMC(t_tree *tree)
 {
   t_mcmc *mcmc;
-  int move, n_vars;
+  int move, n_vars, i, adjust_len;
   phydbl u;
   phydbl *res;
+  FILE *fp_stats;
+
+
+  fp_stats = tree->io->fp_out_stats;
 
   mcmc = MCMC_Make_MCMC_Struct();
 
@@ -655,7 +658,8 @@ phydbl *DATE_MCMC(t_tree *tree)
 
   MCMC_Complete_MCMC(mcmc,tree);
 
-  n_vars = 10;
+  n_vars      = 10;
+  adjust_len  = 1E+6;
 
   res = (phydbl *)mCalloc(tree->mcmc->chain_len / tree->mcmc->sample_interval * n_vars,sizeof(phydbl));
   
@@ -665,7 +669,53 @@ phydbl *DATE_MCMC(t_tree *tree)
   PhyML_Printf("\n. log(Pr(Seq|Tree)) = %f",tree->c_lnL);
   PhyML_Printf("\n. log(Pr(Tree)) = %f",tree->rates->c_lnL_times);
   
-  Exit("\n");
+
+  For(i,mcmc->n_moves) tree->mcmc->start_ess[i] = YES;
+
+  Set_Both_Sides(NO,tree);
+  mcmc->use_data   = YES; 
+  mcmc->always_yes = NO;
+  move             = -1;
+  do
+    {
+
+      /* tree->mcmc->adjust_tuning[i] = NO; */
+      if(mcmc->run > adjust_len) For(i,mcmc->n_moves) tree->mcmc->adjust_tuning[i] = NO;
+
+      if(tree->c_lnL < UNLIKELY + 0.1)
+        {
+          PhyML_Printf("\n== Move '%s' failed\n",tree->mcmc->move_name[move]);
+          assert(FALSE);
+        }
+
+      u = Uni();
+
+      For(move,tree->mcmc->n_moves) if(tree->mcmc->move_weight[move] > u-1.E-10) break;
+
+      assert(!(move == tree->mcmc->n_moves));
+      
+      if(!strcmp(tree->mcmc->move_name[move],"birth_rate"))
+        MCMC_Birth_Rate(tree);
+
+      if(!strcmp(tree->mcmc->move_name[move],"death_rate"))
+        MCMC_Death_Rate(tree);
+      
+      tree->mcmc->run++;
+      MCMC_Get_Acc_Rates(tree->mcmc);
+
+      if(!(tree->mcmc->run%tree->mcmc->sample_interval))
+        {
+          PhyML_Fprintf(fp_stats,"\n%6d\t%9.1f\t%9.1f\t%10G\t%10G",
+                        tree->mcmc->run,
+                        tree->c_lnL,
+                        tree->rates->c_lnL_times,
+                        tree->rates->birth_rate,
+                        tree->rates->death_rate);
+          tree->mcmc->sample_num++;
+        }
+    }
+  while(tree->mcmc->run < tree->mcmc->chain_len);
+
 
   return(res);
 }
