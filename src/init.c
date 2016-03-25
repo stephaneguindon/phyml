@@ -789,7 +789,7 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
 {
   int i;
 
-  if(existing_rates && (existing_rates->model != -1))
+  if(existing_rates && existing_rates->model != -1)
     {
       rates->model = existing_rates->model;
     }

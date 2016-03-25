@@ -3041,8 +3041,6 @@ phydbl Wrap_Lk_Times(t_edge *b, t_tree *tree, supert_tree *stree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-
 phydbl Wrap_Lk_Linreg(t_edge *b, t_tree *tree, supert_tree *stree)
 {
   /* RATES_Lk_Linreg(tree); */

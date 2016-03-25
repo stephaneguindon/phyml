@@ -1128,7 +1128,7 @@ be considered  as conflicting since  branch lengths depend  on the proportion of
 changing the proportion  of invariants implies that branch lengths are  changing too. More formally,
 let $l$ denote the length of a branch,  i.e., the expected number of substitutions per site, and $p$
 be  the proportion  of invariants.  We have  $l =  (1-p)l'$, where  $l'$ is  the expected  number of
-substitutions per  \_variable\_ sites.  When  asked to optimize  $p$ but leave $l$  unchanged, PhyML
+substitutions {\em at  variable sites}.  When  asked to optimize  $p$ but leave $l$  unchanged, PhyML
 does the following:
 \begin{enumerate}
 \item Calculate $l' = l/(1-p)$ and leave $l'$ unchanged throughout the optimization.
@@ -1136,7 +1136,7 @@ does the following:
 \item Set $l^{*} = (1-p^{*})l'$ and print out the tree with $l^{*}$ (instead of $l$).
 \end{enumerate}
 
-PhyML therefore  assumes that the  users wants  to fix the  branch lengths measured  at \_variable\_
+PhyML therefore  assumes that the  users wants  to fix the  branch lengths measured  at {\em variable}
 sites only  (i.e., $l^{*}$ is  fixed). This is the  reason why the  branch lengths in the  input and
 output trees  do differ  despite the  use of the  the \x{-o  r} option. While  we believe  that this
 approach relies on a sound rationale, it  is not perfect. In particular, the original transformation

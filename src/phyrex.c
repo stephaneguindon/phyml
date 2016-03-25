@@ -1407,7 +1407,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       tree->mcmc->run++;
       MCMC_Get_Acc_Rates(tree->mcmc);
       
-
       if(!(tree->mcmc->run%tree->mcmc->sample_interval))
         {
           /* Lk(NULL,tree); */

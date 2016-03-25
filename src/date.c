@@ -30,6 +30,9 @@ int DATE_Main(int argc, char **argv)
   /* seed = 8596; */
   /* seed = 23595; */
   /* seed = 10868; */
+  /* seed = 14848; */
+  /* seed = 22609; */
+  seed = 28079;
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -182,26 +185,18 @@ void DATE_XML(char *xml_filename)
       xnd = xnd->next;
     }
   while(xnd != NULL);
-
-  DATE_Assign_Primary_Calibration(mixt_tree);
-  DATE_Update_T_Prior_MinMax(mixt_tree);
-  DATE_Chain_Cal(mixt_tree);
-
-  Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree);
-  Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);		  
  
+  DATE_Chain_Cal(mixt_tree);
   TIMES_Randomize_Tree_With_Time_Constraints(mixt_tree->rates->a_cal[0], mixt_tree);
   
-  /* { */
-  /*   Print_Node(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree); */
-  /*   Print_Node(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree); */
-  /* } */
+  Print_Node(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);
+  Print_Node(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree);
 
   mixt_tree->rates->birth_rate = 0.10;
   mixt_tree->rates->death_rate = 0.05;
   mixt_tree->rates->bl_from_rt = YES;
   mixt_tree->rates->clock_r    = 0.01 / FABS(mixt_tree->rates->nd_t[mixt_tree->n_root->num]);
-  mixt_tree->rates->model      = BIRTHDEATH;
+  mixt_tree->rates->model      = STRICTCLOCK;
 
   RATES_Update_Cur_Bl(mixt_tree);
 
@@ -222,32 +217,33 @@ void DATE_Update_T_Prior_MinMax(t_tree *tree)
 
   rk = tree->rates->t_rank;
 
-  for(i=tree->n_otu;i<2*tree->n_otu-1;i++) // All internal nodes except the root 
+  for(i=tree->n_otu;i<2*tree->n_otu-1;i++) // All internal nodes 
     {
-      if(tree->a_nodes[i] != tree->n_root)
-        {          
-          if(tree->a_nodes[i]->n_cal > 0) // Primary calibration found on that node
+      tree->rates->t_prior_max[i] = 0.0;
+      tree->rates->t_prior_min[i] = -INFINITY;
+
+      if(tree->a_nodes[i]->n_cal > 0) // Primary calibration found on that node
+        {
+          For(j,tree->a_nodes[i]->n_cal)
             {
-              tree->rates->t_prior_max[i] = 0.0;
-              tree->rates->t_prior_min[i] = -INFINITY;
-              For(j,tree->a_nodes[i]->n_cal)
-                {
-                  tree->rates->t_prior_max[i] = MIN(tree->rates->t_prior_max[i],tree->a_nodes[i]->cal[j]->upper);
-                  tree->rates->t_prior_min[i] = MAX(tree->rates->t_prior_min[i],MAX(tree->a_nodes[i]->cal[j]->lower,tree->rates->nd_t[tree->n_root->num]));
-                }
+              tree->rates->t_prior_max[i] = MIN(tree->rates->t_prior_max[i],tree->a_nodes[i]->cal[j]->upper);
+              tree->rates->t_prior_min[i] = MAX(tree->rates->t_prior_min[i],MAX(tree->a_nodes[i]->cal[j]->lower,tree->rates->nd_t[tree->n_root->num]));
             }
-          else
-            {
+        }
+      else
+        {
+          if(tree->a_nodes[i] != tree->n_root)
+            {                        
               tree->rates->t_prior_max[i] = 0.0;
               tree->rates->t_prior_min[i] = tree->rates->nd_t[tree->n_root->num];
-            }
+            }        
         }
     }
 
   // TO DO: chain t_rank
   TIMES_Update_Node_Ordering(tree);
 
-  For(i,tree->n_otu-2)
+  For(i,tree->n_otu-1)
     {
       for(j=i+1;j<tree->n_otu-1;j++)
         {
@@ -258,6 +254,19 @@ void DATE_Update_T_Prior_MinMax(t_tree *tree)
             tree->rates->t_prior_max[rk[i]] = tree->rates->t_prior_max[rk[j]];
         }
     }
+  
+  /* For(i,tree->n_otu-1)  */
+  /*   { */
+  /*     PhyML_Printf("\n. node: %3d t: %12f min: %13G max: %13G %f", */
+  /*                  rk[i], */
+  /*                  tree->rates->nd_t[rk[i]], */
+  /*                  tree->rates->t_prior_min[rk[i]], */
+  /*                  tree->rates->t_prior_max[rk[i]], */
+  /*                  tree->rates->c_lnL_times); */
+  /*     fflush(NULL); */
+  /*     assert(tree->rates->t_prior_min[rk[i]] < tree->rates->t_prior_max[rk[i]]);  */
+  /*   } */
+
 }
 
 //////////////////////////////////////////////////////////////
@@ -273,7 +282,7 @@ void DATE_Assign_Primary_Calibration(t_tree *tree)
       tree->a_nodes[i]->cal[j] = NULL;
       tree->a_nodes[i]->n_cal  = 0;
     }
-
+  
   For(i,tree->rates->n_cal)
     {
       node_num = Find_Clade(tree->rates->a_cal[i]->target_tax,
@@ -665,10 +674,28 @@ phydbl *DATE_MCMC(t_tree *tree)
   
   Lk(NULL,tree);
   TIMES_Lk_Birth_Death(tree);
-  
+  RATES_Lk_Rates(tree);
+
   PhyML_Printf("\n. log(Pr(Seq|Tree)) = %f",tree->c_lnL);
   PhyML_Printf("\n. log(Pr(Tree)) = %f",tree->rates->c_lnL_times);
   
+  PhyML_Fprintf(fp_stats,"\n%s\t%s\t%s\t%s\t%s",
+                "sample",
+                "lnL(seq)",
+                "lnL(times)",
+                "birth",
+                "death");
+  
+  For(i,2*tree->n_otu-1)
+    {
+      if(tree->a_nodes[i]->tax == NO)
+        {
+          PhyML_Fprintf(fp_stats,"\t%s%d",
+                        "t",i);
+        }
+    }
+
+
 
   For(i,mcmc->n_moves) tree->mcmc->start_ess[i] = YES;
 
@@ -694,23 +721,53 @@ phydbl *DATE_MCMC(t_tree *tree)
 
       assert(!(move == tree->mcmc->n_moves));
       
+
       if(!strcmp(tree->mcmc->move_name[move],"birth_rate"))
         MCMC_Birth_Rate(tree);
 
       if(!strcmp(tree->mcmc->move_name[move],"death_rate"))
         MCMC_Death_Rate(tree);
       
+      if(!strcmp(tree->mcmc->move_name[move],"tree_height"))
+        MCMC_Tree_Height(tree);
+
+      /* Times */
+      else if(!strcmp(tree->mcmc->move_name[move],"time"))
+      	{
+          Set_Both_Sides(YES,tree);     
+      	  if(tree->mcmc->use_data == YES) Lk(NULL,tree);
+          Set_Both_Sides(NO,tree);     
+
+          MCMC_Root_Time(tree);
+          MCMC_One_Time(tree->n_root,tree->n_root->v[1],YES,tree);
+          MCMC_One_Time(tree->n_root,tree->n_root->v[2],YES,tree);
+      	}
+
+
+
+
       tree->mcmc->run++;
       MCMC_Get_Acc_Rates(tree->mcmc);
 
       if(!(tree->mcmc->run%tree->mcmc->sample_interval))
         {
-          PhyML_Fprintf(fp_stats,"\n%6d\t%9.1f\t%9.1f\t%10G\t%10G",
+          PhyML_Fprintf(fp_stats,"\n%6d\t%9.1f\t%9.1f\t%12G\t%12G",
                         tree->mcmc->run,
                         tree->c_lnL,
                         tree->rates->c_lnL_times,
                         tree->rates->birth_rate,
                         tree->rates->death_rate);
+
+          For(i,2*tree->n_otu-1)
+            {
+              if(tree->a_nodes[i]->tax == NO)
+                {
+                  PhyML_Fprintf(fp_stats,"\t%12G",
+                                tree->rates->nd_t[i]);
+                }
+            }
+
+
           tree->mcmc->sample_num++;
         }
     }
