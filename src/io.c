@@ -5339,10 +5339,251 @@ void Generic_Exit(const char *file, int line, const char *function)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+void JSON_Write_Object(json_o *obj, FILE *where)
+{
+  json_sv *sv;
+  
+  assert(obj);
+  assert(where);
+  
+  sv = obj->sv;
+  assert(sv);
+
+  PhyML_Fprintf(where,"{");
+
+  do
+    {
+      PhyML_Fprintf(where,"\"%s\":",sv->string);
+
+      if(sv->value != NULL) PhyML_Fprintf(where,"\"%s\":",sv->value);
+      else if(sv->array != NULL) JSON_Write_Array(sv->array,where);
+      else if(sv->object != NULL) JSON_Write_Object(sv->object,where);
+      sv = sv->next;
+      if(sv) PhyML_Fprintf(where,",");      
+    }
+  while(sv);
+
+  PhyML_Fprintf(where,"}");
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+void JSON_Write_Array(json_a *array, FILE *where)
+{
+  json_o *o;
+
+  assert(where);
+  assert(array);
+
+  o = array->object;
+  
+  assert(o);
+
+  PhyML_Fprintf(where,"[");
+
+  do
+    {      
+      JSON_Write_Object(o,where);      
+      o = o->next;
+      if(o) PhyML_Fprintf(where,",");
+    }
+  while(o);
+  
+  PhyML_Fprintf(where,"]");
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+json_o *JSON_Tree_To_Obj(t_tree *tree)
+{
+  json_sv *state,*sv;
+  json_o *obj,*o;
+  json_a *a;
+  int string_len;
+  char *s;
+  time_t t_end;
+
+  string_len = 20;
+
+  obj = (json_o *)mCalloc(1,sizeof(json_o));
+  obj->next = NULL;
+
+  state = (json_sv *)mCalloc(1,sizeof(json_sv));
+  obj->sv = state;
+
+  state->string = (char *)mCalloc(string_len,sizeof(char));
+  strcpy(state->string,"\"state\"");
+  
+  state->value = NULL; state->array = NULL; state->object = NULL; state->next = NULL;
+
+  state->array = (json_a *)mCalloc(1,sizeof(json_a));
+  a = state->array;
+
+  a->object = (json_o *)mCalloc(1,sizeof(json_o));
+  o = a->object;
+
+  // State num
+  o->sv = (json_sv *)mCalloc(1,sizeof(json_sv));
+  sv = o->sv;
+  sv->value = NULL; sv->array = NULL; sv->object = NULL; sv->next = NULL;
+  sv->string = (char *)mCalloc(string_len,sizeof(char));
+  strcpy(sv->string,"\"type\"");
+  sv->value = (char *)mCalloc(string_len,sizeof(char));
+  strcpy(sv->value,"\"t_num\"");
+  
+  sv->next = (json_sv *)mCalloc(1,sizeof(json_sv));
+  sv = sv->next;
+
+  sv->value = NULL; sv->array = NULL; sv->object = NULL; sv->next = NULL;
+  sv->string = (char *)mCalloc(string_len,sizeof(char));
+  strcpy(sv->string,"\"id\"");
+  sv->value = (char *)mCalloc(string_len,sizeof(char));
+  strcpy(sv->value,"\"state_num\"");
+
+  sv->next = (json_sv *)mCalloc(1,sizeof(json_sv));
+  sv = sv->next;
+
+  sv->value = NULL; sv->array = NULL; sv->object = NULL; sv->next = NULL;
+  sv->string = (char *)mCalloc(string_len,sizeof(char));
+  strcpy(sv->string,"\"value\"");
+  sv->value = (char *)mCalloc(string_len,sizeof(char));
+  sprintf(sv->value,"\"%d\"",tree->json_num);
+  tree->json_num++;
+  
+  sv->next = NULL;
+
+
+
+  
+  // Time
+  o->next = (json_o *)mCalloc(1,sizeof(json_o));
+  o = o->next;
+
+  o->sv = (json_sv *)mCalloc(1,sizeof(json_sv));
+  sv = o->sv;
+  
+  sv->value  = NULL; sv->array  = NULL; sv->object = NULL; sv->next = NULL;
+  sv->string = (char *)mCalloc(string_len,sizeof(char));
+  strcpy(sv->string,"\"type\"");
+  sv->value = (char *)mCalloc(string_len,sizeof(char));
+  strcpy(sv->value,"\"t_time\"");
+  
+  sv->next = (json_sv *)mCalloc(1,sizeof(json_sv));
+  sv = sv->next;
+  sv->value  = NULL; sv->array  = NULL; sv->object = NULL; sv->next = NULL;
+  sv->string = (char *)mCalloc(string_len,sizeof(char));
+  strcpy(sv->string,"\"id\"");
+  sv->value = (char *)mCalloc(string_len,sizeof(char));
+  strcpy(sv->value,"\"time\"");
+
+
+  sv->next = (json_sv *)mCalloc(1,sizeof(json_sv));
+  sv = sv->next;
+  sv->value = NULL; sv->array = NULL; sv->object = NULL; sv->next = NULL;
+  sv->string = (char *)mCalloc(string_len,sizeof(char));
+  strcpy(sv->string,"\"value\"");
+  sv->value = (char *)mCalloc(string_len,sizeof(char));
+  time(&t_end);
+  sprintf(sv->value,"\"%d\"",(int)(t_end-tree->t_beg));
+  
+  sv->next = NULL;
+
+
+  // Tree
+  o->next = (json_o *)mCalloc(1,sizeof(json_o));
+  o = o->next;
+
+  o->sv = (json_sv *)mCalloc(1,sizeof(json_sv));
+  sv = o->sv;
+
+  sv->value  = NULL; sv->array = NULL; sv->object = NULL; sv->next = NULL;
+  sv->string = (char *)mCalloc(string_len,sizeof(char));
+  strcpy(sv->string,"\"type\"");
+  sv->value = (char *)mCalloc(string_len,sizeof(char));
+  strcpy(sv->value,"\"t_tree\"");
+  
+  sv->next = (json_sv *)mCalloc(1,sizeof(json_sv));
+  sv = sv->next;
+  sv->value = NULL; sv->array = NULL; sv->object = NULL; sv->next = NULL;
+  sv->string = (char *)mCalloc(string_len,sizeof(char));
+  strcpy(sv->string,"\"id\"");
+  sv->value = (char *)mCalloc(string_len,sizeof(char));
+  strcpy(sv->value,"\"tree\"");
+
+
+  sv->next = (json_sv *)mCalloc(1,sizeof(json_sv));
+  sv = sv->next;
+  sv->value = NULL; sv->array = NULL; sv->object = NULL; sv->next = NULL;
+  sv->string = (char *)mCalloc(string_len,sizeof(char));
+  strcpy(sv->string,"\"value\"");
+  sv->value = (char *)mCalloc(string_len,sizeof(char));
+  s = Write_Tree(tree,NO);
+  sprintf(sv->value,"\"%s\"",s);
+  Free(s);
+
+  sv->next = NULL;
+
+
+
+  // Likelihood
+  o->next = (json_o *)mCalloc(1,sizeof(json_o));
+  o = o->next;
+
+  o->sv = (json_sv *)mCalloc(1,sizeof(json_sv));
+  sv = o->sv;
+
+  sv->value = NULL; sv->array = NULL; sv->object = NULL; o->next = NULL;
+  sv->string = (char *)mCalloc(string_len,sizeof(char));
+  strcpy(sv->string,"\"type\"");
+  sv->value = (char *)mCalloc(string_len,sizeof(char));
+  strcpy(sv->value,"\"t_param\"");
+  
+  sv->next = (json_sv *)mCalloc(1,sizeof(json_sv));
+  sv = sv->next;
+  sv->value = NULL; sv->array = NULL; sv->object = NULL; sv->next = NULL;
+  sv->string = (char *)mCalloc(string_len,sizeof(char));
+  strcpy(sv->string,"\"id\"");
+  sv->value = (char *)mCalloc(string_len,sizeof(char));
+  strcpy(sv->value,"\"likelihood\"");
+
+
+  sv->next = (json_sv *)mCalloc(1,sizeof(json_sv));
+  sv = sv->next;
+  sv->value = NULL; sv->array = NULL; sv->object = NULL; sv->next = NULL;
+  sv->string = (char *)mCalloc(string_len,sizeof(char));
+  strcpy(sv->string,"\"value\"");
+  sv->value = (char *)mCalloc(string_len,sizeof(char));
+  sprintf(sv->value,"\"%G\"",tree->c_lnL);
+
+  sv->next = NULL;
+
+  return(obj);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+json_a *JSON_Continuous_IO(json_a *a, t_tree *tree)
+{
+  
+  if(a == NULL)
+    {
+      a = (json_a *)mCalloc(1,sizeof(json_a));
+      a->object = NULL; 
+    }
+  else
+    {
+      /* json_o *o; */
+      /* o = JSON_Tree_To_Obj(tree);       */
+    }
+    
+  return(a);
+}
+
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

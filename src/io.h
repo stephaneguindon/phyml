@@ -94,4 +94,8 @@ void Dump_Arr_I(int* arr, int num);
 void Print_Tree_Structure(t_tree* tree);
 void Print_Node_Brief(t_node *a, t_node *d, t_tree *tree, FILE *fp);
 void Generic_Exit(const char *file, int line, const char *function);
+void JSON_Write_Object(json_o *obj, FILE *where);
+void JSON_Write_Array(json_a *array, FILE *where);
+json_sv *JSON_Tree_To_StringVal(t_tree *tree);
+
 #endif

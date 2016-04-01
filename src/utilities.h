@@ -634,6 +634,7 @@ typedef struct __Tree{
   int                            write_labels;
   int                           write_br_lens;
   int                                 *mutmap; /*! Mutational map */
+  int                                json_num;
 
   phydbl                             init_lnL;
   phydbl                             best_lnL; /*! highest value of the loglikelihood found so far */
@@ -1774,20 +1775,38 @@ typedef struct __Polygon{
 /*!********************************************************/
 
 typedef struct __SampArea {
-  int n_poly; /* Number of polygons making the sampling area */
+  int n_poly;      /* Number of polygons making the sampling area */
   t_poly **a_poly; /* Polygons making the sampling area */
 }t_sarea;
 
 
 /*!********************************************************/
+
+typedef struct __JSON_StringVal {
+  char *string;
+  char *value;
+  struct __JSON_Object *object;
+  struct __JSON_Array *array;
+  struct __JSON_StringVal *next;
+}json_sv;
+
+/*!********************************************************/
+
+typedef struct __JSON_Object {
+  struct __JSON_StringVal *sv;
+  struct __JSON_Object *next;
+}json_o;
+
+/*!********************************************************/
+
+typedef struct __JSON_Array {
+  struct __JSON_Object *object;
+}json_a;
+
 /*!********************************************************/
 /*!********************************************************/
 /*!********************************************************/
 /*!********************************************************/
-
-
-
-
 
 void Unroot_Tree(char **subtrees);
 void Init_Tree(t_tree *tree,int n_otu);

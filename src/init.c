@@ -150,6 +150,7 @@ void Init_Tree(t_tree *tree, int n_otu)
   tree->ignore_root               = YES;
   tree->annealing_temp            = 0.;
   tree->both_sides                = NO;
+  tree->json_num                  = 0;
 #ifdef BEAGLE
   tree->b_inst                    = UNINITIALIZED;
 #endif
