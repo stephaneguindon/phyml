@@ -2843,15 +2843,16 @@ void Bootstrap(t_tree *tree)
           boot_tree->mat = boot_mat;
         }
 
-      boot_tree->mod                = boot_mod;
-      boot_tree->io                 = tree->io;
-      boot_tree->data               = boot_data;
-      boot_tree->mod->s_opt->print  = NO;
-      boot_tree->n_pattern          = boot_tree->data->crunch_len;
-      boot_tree->io->print_site_lnl = 0;
-      boot_tree->io->print_trace    = 0;
-      boot_tree->n_root             = NULL;
-      boot_tree->e_root             = NULL;
+      boot_tree->mod                  = boot_mod;
+      boot_tree->io                   = tree->io;
+      boot_tree->data                 = boot_data;
+      boot_tree->mod->s_opt->print    = NO;
+      boot_tree->n_pattern            = boot_tree->data->crunch_len;
+      boot_tree->io->print_site_lnl   = NO;
+      boot_tree->io->print_trace      = NO;
+      boot_tree->io->print_json_trace = NO;
+      boot_tree->n_root               = NULL;
+      boot_tree->e_root               = NULL;
 
 
       Set_Both_Sides(YES,boot_tree);

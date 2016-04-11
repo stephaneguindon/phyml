@@ -123,6 +123,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
       {"ancestral",           no_argument,NULL,76},
       {"anc",                 no_argument,NULL,76},
       {"coord_file",          required_argument,NULL,77},
+      {"json_trace",          no_argument,NULL,78},
       {0,0,0,0}
     };
 
@@ -140,6 +141,12 @@ int Read_Command_Line(option *io, int argc, char **argv)
 
       switch(c)
 	{
+
+        case 78:
+          {
+	    io->print_json_trace = YES;
+	    break;            
+          }
 
         case 77:
           {
@@ -1432,8 +1439,17 @@ int Read_Command_Line(option *io, int argc, char **argv)
       strcpy(io->out_trace_file,io->in_align_file);
       strcat(io->out_trace_file,"_phyml_trace");
       if(io->append_run_ID) { strcat(io->out_trace_file,"_"); strcat(io->out_trace_file,io->run_id_string); }
-      io->fp_out_trace = Openfile(io->out_trace_file,1);
+      io->fp_out_trace = Openfile(io->out_trace_file,WRITE);
     }
+
+  if(io->print_json_trace)
+    {
+      strcpy(io->out_json_trace_file,io->in_align_file);
+      strcat(io->out_json_trace_file,"_phyml_trace.json");
+      if(io->append_run_ID) { strcat(io->out_json_trace_file,"_"); strcat(io->out_json_trace_file,io->run_id_string); }
+      io->fp_out_json_trace = Openfile(io->out_json_trace_file,READWRITE);
+    }
+
   
   if(io->mod->s_opt->random_input_tree)
     {

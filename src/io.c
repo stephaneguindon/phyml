@@ -2577,17 +2577,9 @@ void Print_Mat(matrix *mat)
 
 FILE *Openfile(char *filename, int mode)
 {
-  /* mode = 0 -> read */
-  /* mode = 1 -> write */
-  /* mode = 2 -> append */
-
   FILE *fp;
   char *s;
   int open_test=0;
-
-/*   s = (char *)mCalloc(T_MAX_FILE,sizeof(char)); */
-
-/*   strcpy(s,filename); */
 
   s = filename;
 
@@ -2595,24 +2587,29 @@ FILE *Openfile(char *filename, int mode)
 
   switch(mode)
     {
-    case 0 :
+    case READ :
       {
-    while(!(fp = (FILE *)fopen(s,"r")) && ++open_test<10)
-      {
-        PhyML_Printf("\n. Can't open file '%s', enter a new name : ",s);
-        Getstring_Stdin(s);
+        while(!(fp = (FILE *)fopen(s,"r")) && ++open_test<10)
+          {
+            PhyML_Printf("\n. Can't open file '%s', enter a new name : ",s);
+            Getstring_Stdin(s);
+          }
+        break;
       }
-    break;
-      }
-    case 1 :
+    case WRITE :
       {
-    fp = (FILE *)fopen(s,"w");
-    break;
+        fp = (FILE *)fopen(s,"w");
+        break;
       }
-    case 2 :
+    case APPEND :
       {
-    fp = (FILE *)fopen(s,"a");
-    break;
+        fp = (FILE *)fopen(s,"a");
+        break;
+      }
+    case READWRITE :
+      {
+        fp = (FILE *)fopen(s,"w+");
+        break;
       }
 
     default : break;
@@ -5355,8 +5352,7 @@ void JSON_Write_Object(json_o *obj, FILE *where)
   do
     {
       PhyML_Fprintf(where,"\"%s\":",sv->string);
-
-      if(sv->value != NULL) PhyML_Fprintf(where,"\"%s\":",sv->value);
+      if(sv->value != NULL) PhyML_Fprintf(where,"\"%s\"",sv->value);
       else if(sv->array != NULL) JSON_Write_Array(sv->array,where);
       else if(sv->object != NULL) JSON_Write_Object(sv->object,where);
       sv = sv->next;
@@ -5391,16 +5387,24 @@ void JSON_Write_Array(json_a *array, FILE *where)
     }
   while(o);
   
-  PhyML_Fprintf(where,"]");
+  PhyML_Fprintf(where,"]\n");
 }
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-json_o *JSON_Tree_To_Obj(t_tree *tree)
+void JSON_Write_All(json_a *array, FILE *where)
+{
+  JSON_Write_Array(array,where);  
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+json_o *JSON_Tree_To_Object(t_tree *tree)
 {
   json_sv *state,*sv;
-  json_o *obj,*o;
+  json_o *ret,*o;
   json_a *a;
   int string_len;
   char *s;
@@ -5408,14 +5412,14 @@ json_o *JSON_Tree_To_Obj(t_tree *tree)
 
   string_len = 20;
 
-  obj = (json_o *)mCalloc(1,sizeof(json_o));
-  obj->next = NULL;
-
+  ret = (json_o *)mCalloc(1,sizeof(json_o));
+  ret->next = NULL;
+  
   state = (json_sv *)mCalloc(1,sizeof(json_sv));
-  obj->sv = state;
+  ret->sv = state;
 
   state->string = (char *)mCalloc(string_len,sizeof(char));
-  strcpy(state->string,"\"state\"");
+  strcpy(state->string,"state");
   
   state->value = NULL; state->array = NULL; state->object = NULL; state->next = NULL;
 
@@ -5430,27 +5434,27 @@ json_o *JSON_Tree_To_Obj(t_tree *tree)
   sv = o->sv;
   sv->value = NULL; sv->array = NULL; sv->object = NULL; sv->next = NULL;
   sv->string = (char *)mCalloc(string_len,sizeof(char));
-  strcpy(sv->string,"\"type\"");
+  strcpy(sv->string,"type");
   sv->value = (char *)mCalloc(string_len,sizeof(char));
-  strcpy(sv->value,"\"t_num\"");
+  strcpy(sv->value,"t_num");
   
   sv->next = (json_sv *)mCalloc(1,sizeof(json_sv));
   sv = sv->next;
 
   sv->value = NULL; sv->array = NULL; sv->object = NULL; sv->next = NULL;
   sv->string = (char *)mCalloc(string_len,sizeof(char));
-  strcpy(sv->string,"\"id\"");
+  strcpy(sv->string,"id");
   sv->value = (char *)mCalloc(string_len,sizeof(char));
-  strcpy(sv->value,"\"state_num\"");
+  strcpy(sv->value,"state_num");
 
   sv->next = (json_sv *)mCalloc(1,sizeof(json_sv));
   sv = sv->next;
 
   sv->value = NULL; sv->array = NULL; sv->object = NULL; sv->next = NULL;
   sv->string = (char *)mCalloc(string_len,sizeof(char));
-  strcpy(sv->string,"\"value\"");
+  strcpy(sv->string,"value");
   sv->value = (char *)mCalloc(string_len,sizeof(char));
-  sprintf(sv->value,"\"%d\"",tree->json_num);
+  sprintf(sv->value,"%d",tree->json_num);
   tree->json_num++;
   
   sv->next = NULL;
@@ -5467,27 +5471,27 @@ json_o *JSON_Tree_To_Obj(t_tree *tree)
   
   sv->value  = NULL; sv->array  = NULL; sv->object = NULL; sv->next = NULL;
   sv->string = (char *)mCalloc(string_len,sizeof(char));
-  strcpy(sv->string,"\"type\"");
+  strcpy(sv->string,"type");
   sv->value = (char *)mCalloc(string_len,sizeof(char));
-  strcpy(sv->value,"\"t_time\"");
+  strcpy(sv->value,"t_time");
   
   sv->next = (json_sv *)mCalloc(1,sizeof(json_sv));
   sv = sv->next;
   sv->value  = NULL; sv->array  = NULL; sv->object = NULL; sv->next = NULL;
   sv->string = (char *)mCalloc(string_len,sizeof(char));
-  strcpy(sv->string,"\"id\"");
+  strcpy(sv->string,"id");
   sv->value = (char *)mCalloc(string_len,sizeof(char));
-  strcpy(sv->value,"\"time\"");
+  strcpy(sv->value,"time");
 
 
   sv->next = (json_sv *)mCalloc(1,sizeof(json_sv));
   sv = sv->next;
   sv->value = NULL; sv->array = NULL; sv->object = NULL; sv->next = NULL;
   sv->string = (char *)mCalloc(string_len,sizeof(char));
-  strcpy(sv->string,"\"value\"");
+  strcpy(sv->string,"value");
   sv->value = (char *)mCalloc(string_len,sizeof(char));
   time(&t_end);
-  sprintf(sv->value,"\"%d\"",(int)(t_end-tree->t_beg));
+  sprintf(sv->value,"%d",(int)(t_end-tree->t_beg));
   
   sv->next = NULL;
 
@@ -5501,27 +5505,27 @@ json_o *JSON_Tree_To_Obj(t_tree *tree)
 
   sv->value  = NULL; sv->array = NULL; sv->object = NULL; sv->next = NULL;
   sv->string = (char *)mCalloc(string_len,sizeof(char));
-  strcpy(sv->string,"\"type\"");
+  strcpy(sv->string,"type");
   sv->value = (char *)mCalloc(string_len,sizeof(char));
-  strcpy(sv->value,"\"t_tree\"");
+  strcpy(sv->value,"t_tree");
   
   sv->next = (json_sv *)mCalloc(1,sizeof(json_sv));
   sv = sv->next;
   sv->value = NULL; sv->array = NULL; sv->object = NULL; sv->next = NULL;
   sv->string = (char *)mCalloc(string_len,sizeof(char));
-  strcpy(sv->string,"\"id\"");
+  strcpy(sv->string,"id");
   sv->value = (char *)mCalloc(string_len,sizeof(char));
-  strcpy(sv->value,"\"tree\"");
+  strcpy(sv->value,"tree");
 
 
   sv->next = (json_sv *)mCalloc(1,sizeof(json_sv));
   sv = sv->next;
   sv->value = NULL; sv->array = NULL; sv->object = NULL; sv->next = NULL;
   sv->string = (char *)mCalloc(string_len,sizeof(char));
-  strcpy(sv->string,"\"value\"");
-  sv->value = (char *)mCalloc(string_len,sizeof(char));
+  strcpy(sv->string,"value");
   s = Write_Tree(tree,NO);
-  sprintf(sv->value,"\"%s\"",s);
+  sv->value = (char *)mCalloc((int)strlen(s)+1,sizeof(char));
+  sprintf(sv->value,"%s",s);
   Free(s);
 
   sv->next = NULL;
@@ -5537,52 +5541,63 @@ json_o *JSON_Tree_To_Obj(t_tree *tree)
 
   sv->value = NULL; sv->array = NULL; sv->object = NULL; o->next = NULL;
   sv->string = (char *)mCalloc(string_len,sizeof(char));
-  strcpy(sv->string,"\"type\"");
+  strcpy(sv->string,"type");
   sv->value = (char *)mCalloc(string_len,sizeof(char));
-  strcpy(sv->value,"\"t_param\"");
+  strcpy(sv->value,"t_param");
   
   sv->next = (json_sv *)mCalloc(1,sizeof(json_sv));
   sv = sv->next;
   sv->value = NULL; sv->array = NULL; sv->object = NULL; sv->next = NULL;
   sv->string = (char *)mCalloc(string_len,sizeof(char));
-  strcpy(sv->string,"\"id\"");
+  strcpy(sv->string,"id");
   sv->value = (char *)mCalloc(string_len,sizeof(char));
-  strcpy(sv->value,"\"likelihood\"");
+  strcpy(sv->value,"likelihood");
 
 
   sv->next = (json_sv *)mCalloc(1,sizeof(json_sv));
   sv = sv->next;
   sv->value = NULL; sv->array = NULL; sv->object = NULL; sv->next = NULL;
   sv->string = (char *)mCalloc(string_len,sizeof(char));
-  strcpy(sv->string,"\"value\"");
+  strcpy(sv->string,"value");
   sv->value = (char *)mCalloc(string_len,sizeof(char));
-  sprintf(sv->value,"\"%G\"",tree->c_lnL);
+  sprintf(sv->value,"%G",tree->c_lnL);
 
   sv->next = NULL;
 
-  return(obj);
+  return(ret);
 }
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-json_a *JSON_Continuous_IO(json_a *a, t_tree *tree)
+void JSON_Tree_Io(t_tree *tree, FILE *where)
 {
-  
-  if(a == NULL)
+  json_o *o;
+  fpos_t pos;
+  char c;
+
+  fgetpos(where,&pos);
+
+  rewind(where);
+  c = fgetc(where);
+
+  if(c != '[')
     {
-      a = (json_a *)mCalloc(1,sizeof(json_a));
-      a->object = NULL; 
+      PhyML_Fprintf(where,"[");
     }
   else
     {
-      /* json_o *o; */
-      /* o = JSON_Tree_To_Obj(tree);       */
+      fsetpos(where,&pos);
+      fseek(where,-1,SEEK_CUR);
+      PhyML_Fprintf(where,",");
     }
-    
-  return(a);
-}
 
+  o = JSON_Tree_To_Object(tree);
+  JSON_Write_Object(o,where);
+  JSON_Free_Object(o);
+  PhyML_Fprintf(where,"]");
+  fflush(where);
+}
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/

@@ -526,6 +526,8 @@ void Set_Defaults_Input(option* io)
   io->fp_out_stats               = NULL;
   io->fp_out_ancestral           = NULL;
   io->fp_in_coord                = NULL;
+  io->fp_out_trace               = NULL;
+  io->fp_out_json_trace          = NULL;
   io->long_tax_names             = NULL;
   io->short_tax_names            = NULL;
   io->lon                        = NULL;
@@ -554,7 +556,8 @@ void Set_Defaults_Input(option* io)
   io->r_seed                     = -1;
   io->collapse_boot              = 0;
   io->random_boot_seq_order      = YES;
-  io->print_trace                = 0;
+  io->print_trace                = NO;
+  io->print_json_trace           = NO;
   io->print_site_lnl             = 0;
   io->m4_model                   = NO;
   io->rm_ambigu                  = 0;

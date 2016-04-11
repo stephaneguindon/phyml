@@ -114,6 +114,8 @@ int Simu(t_tree *tree, int n_step_max)
           Free(s);
         }
 
+      if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
+
       if((tree->mod->s_opt->print) && (!tree->io->quiet)) Print_Lk(tree,"[Topology           ]");
 
 /*       if(((tree->c_lnL > old_loglk) && (FABS(old_loglk-tree->c_lnL) < tree->mod->s_opt->min_diff_lk_local)) || (n_without_swap > it_lim_without_swap)) break; */

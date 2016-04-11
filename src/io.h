@@ -96,6 +96,8 @@ void Print_Node_Brief(t_node *a, t_node *d, t_tree *tree, FILE *fp);
 void Generic_Exit(const char *file, int line, const char *function);
 void JSON_Write_Object(json_o *obj, FILE *where);
 void JSON_Write_Array(json_a *array, FILE *where);
-json_sv *JSON_Tree_To_StringVal(t_tree *tree);
+void JSON_Write_All(json_a *array, FILE *where);
+void JSON_Tree_Io(t_tree *tree, FILE *where);
+json_o *JSON_Tree_To_Object(t_tree *tree);
 
 #endif

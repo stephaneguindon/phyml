@@ -1770,13 +1770,13 @@ void TIMES_Connect_List_Of_Taxa(t_node **tax_list, int list_size, phydbl t_mrca,
       new_mrca->v[2]         = anc[permut[i+1]];
       new_mrca->v[0]         = NULL;
       times[new_mrca->num]   = Uni()*(t_upper_bound - t_lower_bound) + t_lower_bound;
-      printf("\n. new_mrca->num: %d time: %f [%f %f] t_mrca: %f %p connect to %d %d [%f %f]",
+      printf("\n. new_mrca->num: %d time: %f [%f %f] t_mrca: %f %d connect to %d %d [%f %f]",
              new_mrca->num,
              times[new_mrca->num],
              t_lower_bound,
              t_upper_bound,
              t_mrca,
-             new_mrca,
+             new_mrca->num,
              new_mrca->v[1]->num,
              new_mrca->v[2]->num,
              times[new_mrca->v[1]->num],

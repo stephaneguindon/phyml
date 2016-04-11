@@ -767,6 +767,7 @@ void Free_Input(option *io)
       Free(io->out_summary_file);
       Free(io->out_ps_file);
       Free(io->out_trace_file);
+      Free(io->out_json_trace_file);
       Free(io->out_ancestral_file);
       Free(io->nt_or_cd);
       Free(io->run_id_string);
@@ -1297,8 +1298,35 @@ void Free_Mmod(t_phyrex_mod *mmod)
   Free_Geo_Coord(mmod->lim);
   Free(mmod);
 }
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void JSON_Free_Array(json_a *a)
+{
+  if(a->object) JSON_Free_Object(a->object);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void JSON_Free_Object(json_o *o)
+{
+  if(o->sv) JSON_Free_StringVal(o->sv);
+  if(o->next) JSON_Free_Object(o->next);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void JSON_Free_StringVal(json_sv *sv)
+{
+  if(sv->string) Free(sv->string);
+  if(sv->value) Free(sv->value);
+  if(sv->object) JSON_Free_Object(sv->object);
+  if(sv->array) JSON_Free_Array(sv->array);
+  if(sv->next) JSON_Free_StringVal(sv->next);
+}
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

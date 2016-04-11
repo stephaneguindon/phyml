@@ -223,7 +223,10 @@ int main(int argc, char **argv)
                     }
 #endif
 
+
 #ifdef PHYML
+                  if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
+
                   if(io->in_tree == 1) Spr_Pars(tree);
                                    
 		  if(tree->mod->s_opt->opt_topo)
@@ -373,6 +376,7 @@ int main(int argc, char **argv)
   if(io->fp_out_trees)          fclose(io->fp_out_trees);
   if(io->fp_out_stats)          fclose(io->fp_out_stats);
   if(io->fp_out_trace)          fclose(io->fp_out_trace);
+  if(io->fp_out_json_trace)     fclose(io->fp_out_json_trace);
 
   if(io->fp_in_constraint_tree != NULL) Free_Tree(io->cstr_tree);
   Free_Input(io);

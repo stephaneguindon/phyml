@@ -48,8 +48,10 @@ extern int n_sec2;
 #define MIN(a,b)                     ((a)<(b)?(a):(b))
 #endif
 
-#define READ  0
-#define WRITE 1
+#define READ      0
+#define WRITE     1
+#define APPEND    2
+#define READWRITE 3
 
 #ifndef isnan
 # define isnan(x)						 \
@@ -1045,8 +1047,11 @@ typedef struct __Option { /*! mostly used in 'help.c' */
   char               *out_stats_file; /*! name of the statistics file */
   FILE                 *fp_out_stats;
 
-  char               *out_trace_file; /*! name of the file in which the likelihood of the model is written */
+  char               *out_trace_file; /*! name of the file in which the trace is written */
   FILE                 *fp_out_trace;
+
+  char          *out_json_trace_file; /*! name of the file in which json trace is written */
+  FILE           *fp_out_json_trace;
 
   char                  *out_lk_file; /*! name of the file in which the likelihood of the model is written */
   FILE                    *fp_out_lk;
@@ -1092,6 +1097,7 @@ typedef struct __Option { /*! mostly used in 'help.c' */
   int                  collapse_boot; /*! 0 -> branch length on bootstrap trees are not collapsed if too small */
   int          random_boot_seq_order; /*! !0 -> sequence order in bootstrapped data set is random */
   int                    print_trace;
+  int               print_json_trace;
   int                 print_site_lnl;
   int                       m4_model;
   int                      rm_ambigu; /*! 0 is the default. 1: columns with ambiguous characters are discarded prior further analysis */

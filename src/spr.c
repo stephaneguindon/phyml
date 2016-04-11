@@ -3166,6 +3166,9 @@ int Spr(phydbl init_lnL, t_tree *tree)
 
   For(br,2*tree->n_otu-3)
     {
+      if(!(br%10)) if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
+
+
       b = tree->a_edges[br];
       
       old_pars = tree->c_pars;
@@ -3798,6 +3801,11 @@ void Speed_Spr(t_tree *tree, int max_cycles)
           if((tree->io->print_site_lnl) && (!tree->mod->s_opt->spr_pars)) Print_Site_Lk(tree,tree->io->fp_out_lk); fflush(tree->io->fp_out_lk);
           Free(s);
         }
+
+
+      if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
+
+
       
       /* Record the current best log-likelihood and parsimony */
       tree->best_lnL  = tree->c_lnL;
