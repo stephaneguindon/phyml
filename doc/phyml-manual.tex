@@ -1610,8 +1610,11 @@ Options:
   \x{filename\_phyml\_tree} and \x{filename\_phyml\_stats}.
 \item \x{bootstrap="nreplicates"}. Run \x{nreplicates} replicates for the non-parametric bootstrap analysis.
 \item \x{run.id="idstring"}. PhyML will append the string \x{idstring} to each output file.
+\item \x{print.json.trace="yes|true|no|false"}. PhyML will print the estimated trees, the
+  corresponding loglikelihoods and various model parameters at multiple stages of the estimation process. This option is useful
+  for monitoring the progress of the analysis when processing large data sets.
 \item \x{print.trace="yes|true|no|false"}. PhyML will print the estimated trees (and the
-  corresponding loglikelihoods) at multiple stages of the estimation process. This option is useful
+  corresponding loglikelihoods) at multiple stages of the estimation process. This option is also useful
   for monitoring the progress of the analysis when processing large data sets.
 \item \x{branch.test="aBayes|aLRT|SH|no"}. Calculate fast branch support using the aBayes method
   \cite{anisimova11}, aLRT \cite{anisimova06} or SH \cite{shimodaira99} tests. These branch

@@ -137,6 +137,28 @@ t_tree *XML_Process_Base(char *xml_filename)
           io->fp_out_trace = Openfile(io->out_trace_file,1);
         }
     }
+
+
+  s = XML_Get_Attribute_Value(p_elem,"print.json.trace");
+
+  if(s)
+    {
+      select = XML_Validate_Attr_Int(s,6,
+                                     "true","yes","y",
+                                     "false","no","n");
+      
+      if(select < 3)
+        {
+          io->print_json_trace = YES;
+          strcpy(io->out_json_trace_file,outputfile);
+          if(io->append_run_ID) { strcat(io->out_json_trace_file,"_"); strcat(io->out_json_trace_file,io->run_id_string); }
+          strcat(io->out_json_trace_file,"_phyml_trace.json");
+          io->fp_out_json_trace = Openfile(io->out_json_trace_file,READWRITE);
+        }
+    }
+
+
+
   
   
   s = XML_Get_Attribute_Value(p_elem,"branch.test");
