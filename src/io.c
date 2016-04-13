@@ -4782,10 +4782,8 @@ void Make_Ratematrice_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
                                  "LG",       //26
                                  "AB" );     //27
 
-
   if(select < 9)
     {
-      mod->ns = 4;
       if(io->datatype != NT)
         {
           PhyML_Printf("\n== Data type and selected model are incompatible");
@@ -4794,15 +4792,12 @@ void Make_Ratematrice_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
     }
   else
     {
-      mod->ns = 20;
       if(io->datatype != AA)
         {
           PhyML_Printf("\n== Data type and selected model are incompatible");
           Exit("\n");
         }
     }
-
-  io->mod->ns = mod->ns;
 
   mod->r_mat = (t_rmat *)Make_Rmat(mod->ns);
   Init_Rmat(mod->r_mat);

@@ -987,6 +987,10 @@ void Init_Model(calign *data, t_mod *mod, option *io)
   int result;
   phydbl *dr, *di, *space;
 
+  assert(data);
+  assert(mod);
+  assert(io);
+
 #ifdef BEAGLE
   mod->b_inst = UNINITIALIZED; //prevents calling an uninitialized BEAGLE instance (for ex: prevents Update_Eigen(), Update_RAS(), from calling BEAGLE)
   mod->optimizing_topology = false;
@@ -1100,7 +1104,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
         }
       
       if(mod->whichmodel == F81)
-        { 
+        {
           if(mod->e_frq->user_state_freq == NO) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->b_frq,mod->ns);  
           else For(i,4) mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
           For(i,mod->ns) mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
@@ -1394,17 +1398,7 @@ void Init_Efrqs_Using_Observed_Freqs(t_efrq *f, phydbl *o, int ns)
   assert(f);
   assert(o);
 
-  For(i,ns) 
-    {
-      if(f->pi->v[i] > 1.E-3 && Are_Equal(f->pi->v[i],o[i],1.E-3) == NO)
-        {
-          PhyML_Printf("\n== A vector of observed character frequencies should correspond ");
-          PhyML_Printf("\n== to one data set only. If you are using the XML interface, ");
-          PhyML_Printf("\n== please amend your file accordingly.");          
-          Exit("\n");
-        }
-      f->pi->v[i] = o[i];
-    }
+  For(i,ns)  f->pi->v[i] = o[i];
 }
 
 //////////////////////////////////////////////////////////////

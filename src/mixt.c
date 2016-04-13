@@ -2247,6 +2247,52 @@ void MIXT_Init_Model(t_tree *mixt_tree)
   while(tree);
 }
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void MIXT_Check_Model_Validity(t_tree *mixt_tree)
+{
+  // Verify that models associated to distinct data partition elements do not 
+  // share the same empirical character frequencies.
+  
+  t_mod *mod_in, *mod_out;
+
+  mod_out = mixt_tree->mod;
+
+  do
+    {
+      mod_in = mod_out;
+      do
+        {
+          if(mod_in->io->cdata != mod_out->io->cdata)
+            {
+              if(mod_in->e_frq == mod_out->e_frq)
+                {
+                  if(mod_in->io->datatype == NT && mod_in->e_frq->user_state_freq == NO)
+                    {
+                      PhyML_Printf("\n== A vector of observed nucleotide frequencies should correspond ");
+                      PhyML_Printf("\n== to one data set only. If you are using the XML interface, ");
+                      PhyML_Printf("\n== please amend your file accordingly.");          
+                      Exit("\n");
+                    }
+                  else if(mod_in->io->datatype == AA && mod_in->e_frq->empirical_state_freq == YES)
+                    {
+                      PhyML_Printf("\n== A vector of observed amino-acid frequencies should correspond ");
+                      PhyML_Printf("\n== to one data set only. If you are using the XML interface, ");
+                      PhyML_Printf("\n== please amend your file accordingly.");          
+                      Exit("\n");
+                    }
+                }
+            }
+          mod_in = mod_in->next;
+        }
+      while(mod_in);      
+      mod_out = mod_out->next;
+    }
+  while(mod_out);
+
+
+}
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -2341,6 +2387,7 @@ void MIXT_Prepare_All(int num_rand_tree, t_tree *mixt_tree)
 {
   t_tree *tree;
 
+  MIXT_Check_Model_Validity(mixt_tree);
   MIXT_Init_Model(mixt_tree);
   Print_Data_Structure(NO,stdout,mixt_tree);
   tree = MIXT_Starting_Tree(mixt_tree);

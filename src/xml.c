@@ -156,10 +156,6 @@ t_tree *XML_Process_Base(char *xml_filename)
           io->fp_out_json_trace = Openfile(io->out_json_trace_file,READWRITE);
         }
     }
-
-
-
-  
   
   s = XML_Get_Attribute_Value(p_elem,"branch.test");
   if(s)
@@ -285,6 +281,11 @@ t_tree *XML_Process_Base(char *xml_filename)
       io->mod->ras->n_catg = 1;
       io->mod->io = io;
       iomod = io->mod;
+
+      if(io->datatype == AA)      io->mod->ns = 20;
+      else if(io->datatype == NT) io->mod->ns = 4;
+      else assert(FALSE);
+
       
       /*! Attach an optimization structure to this model
        */
@@ -329,7 +330,7 @@ t_tree *XML_Process_Base(char *xml_filename)
 
       /*! Load sequence file
        */
-      io->data  = Get_Seq(io);
+      io->data = Get_Seq(io);
       
       /*! Close pointer to alignment
        */
@@ -456,6 +457,7 @@ t_tree *XML_Process_Base(char *xml_filename)
           m_elem = XML_Search_Node_Name("mixtureelem",YES,m_elem);
           if(m_elem == NULL) break;
           
+
           if(!strcmp(m_elem->name,"mixtureelem"))
             {
               first_m_elem++;
@@ -525,6 +527,7 @@ t_tree *XML_Process_Base(char *xml_filename)
                           this_mod = (t_mod *)Make_Model_Basic();
                           Set_Defaults_Model(this_mod);
                           this_mod->ras->n_catg = 1;
+                          this_mod->ns = iomod->ns;
 
                           /*! All br_len_multiplier point to the corresponding */
                           /*! parameter in the relevant mixt_tree */
@@ -595,7 +598,7 @@ t_tree *XML_Process_Base(char *xml_filename)
                           /* ! First time we process this 'instance' node which has this 'ratematrices' parent */
                           if(instance->ds->obj == NULL)
                             {
-                              Make_Ratematrice_From_XML_Node(instance, io, mod);
+                              Make_Ratematrice_From_XML_Node(instance,io,mod);
                               
                               ds = instance->ds;
                               
@@ -763,6 +766,7 @@ t_tree *XML_Process_Base(char *xml_filename)
                           /* scalar_dbl *r; */
                           phydbl val;
                           
+
                           /*! First time we process this 'siterates' node, check that its format is valid.
                             and process it afterwards.
                           */
