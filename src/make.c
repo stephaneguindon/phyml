@@ -668,7 +668,6 @@ void Make_Model_Complete(t_mod *mod)
   // If r_mat (e_frq) are not NULL, then they have been created elsewhere and affected.
   if(!mod->r_mat)
     {
-      printf("\n. NS: %d %d",mod->ns,mod->io->datatype);
       mod->r_mat = (t_rmat *)Make_Rmat(mod->ns);
       Init_Rmat(mod->r_mat);
     }
