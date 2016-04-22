@@ -3168,7 +3168,6 @@ int Spr(phydbl init_lnL, t_tree *tree)
     {
       if(!(br%10)) if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
 
-
       b = tree->a_edges[br];
       
       old_pars = tree->c_pars;
