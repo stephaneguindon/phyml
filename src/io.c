@@ -2630,9 +2630,7 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
   div_t hour,min;
   int i;
 
-/*   For(i,2*tree->n_otu-3) fprintf(fp_out,"\n. * Edge %3d: %f",i,tree->a_edges[i]->l); */
-
-  if((!n_data_set) || (!num_tree))
+  if(n_data_set == 1)
     {
       rewind(fp_out);
       Print_Banner_Small(fp_out);

@@ -124,7 +124,7 @@ int main(int argc, char **argv)
 
           for(num_tree=(io->n_trees == 1)?(0):(num_data_set);num_tree < io->n_trees;num_tree++)
             {
-              if(!io->mod->s_opt->random_input_tree) io->mod->s_opt->n_rand_starts = 1;
+              if(io->mod->s_opt->random_input_tree == NO) io->mod->s_opt->n_rand_starts = 1;
 
               if(orig_random_input_tree == YES && io->n_trees > 1)
                 {
