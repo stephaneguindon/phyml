@@ -33,7 +33,6 @@ t_tree *XML_Process_Base(char *xml_filename)
       Exit("\n");
     }
 
-
   root = XML_Load_File(fp);
 
   if(!root)
@@ -113,10 +112,24 @@ t_tree *XML_Process_Base(char *xml_filename)
   strcpy(io->out_file,outputfile);
   strcpy(io->out_tree_file,outputfile);
   if(io->append_run_ID) { strcat(io->out_tree_file,"_"); strcat(io->out_tree_file,io->run_id_string); }
+
+# if defined(DATE)
+  strcat(io->out_tree_file,"_date_tree");
+# else
   strcat(io->out_tree_file,"_phyml_tree");
+#endif
+
   strcpy(io->out_stats_file,outputfile);
   if(io->append_run_ID) { strcat(io->out_stats_file,"_"); strcat(io->out_stats_file,io->run_id_string); }
+
+
+# if defined(DATE)
+  strcat(io->out_stats_file,"_date_stats");
+# else
   strcat(io->out_stats_file,"_phyml_stats");
+#endif
+
+
   io->fp_out_tree  = Openfile(io->out_tree_file,1);
   io->fp_out_stats = Openfile(io->out_stats_file,1);
 

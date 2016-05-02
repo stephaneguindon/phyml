@@ -32,7 +32,7 @@ int DATE_Main(int argc, char **argv)
   /* seed = 10868; */
   /* seed = 14848; */
   /* seed = 22609; */
-  seed = 28079;
+  /* seed = 28079; */
 
   printf("\n. seed: %d",seed);
   srand(seed);
@@ -656,7 +656,6 @@ phydbl *DATE_MCMC(t_tree *tree)
   phydbl *res;
   FILE *fp_stats;
 
-
   fp_stats = tree->io->fp_out_stats;
 
   mcmc = MCMC_Make_MCMC_Struct();
@@ -667,8 +666,9 @@ phydbl *DATE_MCMC(t_tree *tree)
 
   MCMC_Complete_MCMC(mcmc,tree);
 
-  n_vars      = 10;
-  adjust_len  = 1E+6;
+  n_vars                = 10;
+  adjust_len            = 1E+6;
+  mcmc->sample_interval = 500;
 
   res = (phydbl *)mCalloc(tree->mcmc->chain_len / tree->mcmc->sample_interval * n_vars,sizeof(phydbl));
   
@@ -685,7 +685,8 @@ phydbl *DATE_MCMC(t_tree *tree)
                 "lnL(times)",
                 "birth",
                 "death");
-  
+  fflush(NULL);
+
   For(i,2*tree->n_otu-1)
     {
       if(tree->a_nodes[i]->tax == NO)
@@ -694,6 +695,7 @@ phydbl *DATE_MCMC(t_tree *tree)
                         "t",i);
         }
     }
+  fflush(NULL);
 
 
 
@@ -719,31 +721,12 @@ phydbl *DATE_MCMC(t_tree *tree)
 
       For(move,tree->mcmc->n_moves) if(tree->mcmc->move_weight[move] > u-1.E-10) break;
 
-      assert(!(move == tree->mcmc->n_moves));
-      
+      assert(!(move == tree->mcmc->n_moves));      
 
-      if(!strcmp(tree->mcmc->move_name[move],"birth_rate"))
-        MCMC_Birth_Rate(tree);
-
-      if(!strcmp(tree->mcmc->move_name[move],"death_rate"))
-        MCMC_Death_Rate(tree);
-      
-      if(!strcmp(tree->mcmc->move_name[move],"tree_height"))
-        MCMC_Tree_Height(tree);
-
-      /* Times */
-      else if(!strcmp(tree->mcmc->move_name[move],"time"))
-      	{
-          Set_Both_Sides(YES,tree);     
-      	  if(tree->mcmc->use_data == YES) Lk(NULL,tree);
-          Set_Both_Sides(NO,tree);     
-
-          MCMC_Root_Time(tree);
-          MCMC_One_Time(tree->n_root,tree->n_root->v[1],YES,tree);
-          MCMC_One_Time(tree->n_root,tree->n_root->v[2],YES,tree);
-      	}
-
-
+      if(!strcmp(tree->mcmc->move_name[move],"birth_rate"))  MCMC_Birth_Rate(tree);
+      if(!strcmp(tree->mcmc->move_name[move],"death_rate"))  MCMC_Death_Rate(tree);
+      if(!strcmp(tree->mcmc->move_name[move],"tree_height")) MCMC_Tree_Height(tree);
+      if(!strcmp(tree->mcmc->move_name[move],"time"))        MCMC_Time_All(tree);
 
 
       tree->mcmc->run++;
@@ -757,6 +740,7 @@ phydbl *DATE_MCMC(t_tree *tree)
                         tree->rates->c_lnL_times,
                         tree->rates->birth_rate,
                         tree->rates->death_rate);
+          fflush(NULL);
 
           For(i,2*tree->n_otu-1)
             {
@@ -766,7 +750,7 @@ phydbl *DATE_MCMC(t_tree *tree)
                                 tree->rates->nd_t[i]);
                 }
             }
-
+          fflush(NULL);
 
           tree->mcmc->sample_num++;
         }

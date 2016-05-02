@@ -62,7 +62,7 @@ void MCMC_Stick_Rates(t_tree *tree);
 void MCMC_Stick_Rates_Pre(t_node *a, t_node *d, t_tree *tree);
 void MCMC_Times_Global(t_tree *tree);
 void MCMC_Times_Local(t_tree *tree);
-void MCMC_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree);
+void MCMC_Time_Recur(t_node *a, t_node *d, int traversal, t_tree *tree);
 void MCMC_Rates_Global(t_tree *tree);
 void MCMC_Rates_Local(t_tree *tree);
 void MCMC_Rates_Pre(t_node *a, t_node *d, t_tree *tree);
@@ -181,4 +181,6 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree);
 void MCMC_PHYREX_Disk_Given_Ldsk(t_tree *tree);
 void MCMC_PHYREX_Ldsk_And_Disk(t_tree *tree);
 void MCMC_Death_Rate(t_tree *tree);
+void MCMC_Time_All(t_tree *tree);
+void MCMC_Prune_Regraft(t_tree *tree);
 #endif
