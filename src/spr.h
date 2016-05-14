@@ -55,12 +55,12 @@ void PostOrder_w      (t_tree *tree, t_node *v, t_edge *v_e, t_node *w, t_edge *
 
 
 
-void Speed_Spr(t_tree *tree, int max_cycles);
+void Speed_Spr(t_tree *tree, phydbl prop_spr, int max_cycles);
 void Speed_Spr_Loop(t_tree *tree);
 void Make_Spr_List(t_tree *tree);
 void Init_One_Spr(t_spr *a_spr);
 t_spr *Make_One_Spr(t_tree *tree);
-int Spr(phydbl init_lnL, t_tree *tree);
+int Spr(phydbl init_lnL, phydbl prop_spr, t_tree *tree);
 int Spr_Recur(t_node *a, t_node *d, t_tree *tree);
 int Test_All_Spr_Targets(t_edge *pulled, t_node *link, t_tree *tree);
 void Randomize_Spr_List(t_tree *tree);
@@ -78,9 +78,10 @@ void Best_Spr(t_tree *tree);
 int Check_Spr_Move_Validity(t_spr *this_spr_move, t_tree *tree);
 void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree);
 void Spr_Pars(t_tree *tree);
-void SPR_Shuffle(t_tree *tree);
+void Spr_Shuffle(t_tree *tree);
 void Sort_Spr_List_Depth(t_tree *tree);
 void Sort_Spr_List_LnL(t_tree *tree);
+void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int max_cycles);
 
 
 

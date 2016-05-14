@@ -41,10 +41,10 @@ int Check_NNI_Five_Branches(t_tree *tree)
   phydbl init_lnL;
 
   init_lnL     = UNLIKELY;
-  better_found = 1;
+  better_found = YES;
   
   //While there is at least one NNI to do...
-  while(better_found)
+  while(better_found == YES)
     {
       Update_Dirs(tree);
       
@@ -80,7 +80,7 @@ int Check_NNI_Five_Branches(t_tree *tree)
                   {
                     if((tree->a_edges[i]->nni->lk0 - tree->a_edges[i]->nni->lk1) < best_gain)
                       {
-                        better_found = 1;
+                        better_found = YES;
                         best_edge    = i;
                         best_gain    = tree->a_edges[i]->nni->lk0-tree->a_edges[i]->nni->lk1;
                         best_config  = 1;
@@ -91,7 +91,7 @@ int Check_NNI_Five_Branches(t_tree *tree)
                   {
                     if((tree->a_edges[i]->nni->lk0 - tree->a_edges[i]->nni->lk2) < best_gain)
                       {
-                        better_found = 1;
+                        better_found = YES;
                         best_edge    = i;
                         best_gain    = tree->a_edges[i]->nni->lk0-tree->a_edges[i]->nni->lk2;
                         best_config  = 2;
@@ -102,7 +102,7 @@ int Check_NNI_Five_Branches(t_tree *tree)
                   {
                     if((tree->a_edges[i]->nni->lk2 - tree->a_edges[i]->nni->lk1) < best_gain)
                       {
-                        better_found = 1;
+                        better_found = YES;
                         best_edge    = i;
                         best_gain    = tree->a_edges[i]->nni->lk2-tree->a_edges[i]->nni->lk1;
                         best_config  = 1;
@@ -113,7 +113,7 @@ int Check_NNI_Five_Branches(t_tree *tree)
                   {
                     if((tree->a_edges[i]->nni->lk1 - tree->a_edges[i]->nni->lk2) < best_gain)
                       {
-                        better_found = 1;
+                        better_found = YES;
                         best_edge    = i;
                         best_gain    = tree->a_edges[i]->nni->lk1-tree->a_edges[i]->nni->lk2;
                         best_config  = 2;
@@ -137,7 +137,7 @@ int Check_NNI_Five_Branches(t_tree *tree)
         }
       
       //Don't do any NNI if the user doesn't want to optimize topology
-      if(!tree->mod->s_opt->opt_topo) better_found = 0;
+      if(!tree->mod->s_opt->opt_topo) better_found = NO;
 /*       if(FABS(best_gain) <= tree->mod->s_opt->min_diff_lk_move) better_found = 0; */
 
       //If there is one swap to do, make the best one.
@@ -205,6 +205,7 @@ void aLRT(t_tree *tree)
   Lk(NULL,tree);
   //  Print_All_Edge_Likelihoods(tree);
   MIXT_Set_Alias_Subpatt(NO,tree);
+  Update_Dirs(tree);
   
   For(i,2*tree->n_otu-3)
     if((!tree->a_edges[i]->left->tax) && (!tree->a_edges[i]->rght->tax))

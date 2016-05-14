@@ -87,8 +87,12 @@ int main(int argc, char **argv)
 #endif
 
   r_seed = (io->r_seed < 0)?(time(NULL)):(io->r_seed);
+  PhyML_Printf("\n. Random seed: %d",r_seed);
+
   srand(r_seed);
   io->r_seed = r_seed;
+
+
 
   if(io->in_tree == 2) Test_Multiple_Data_Set_Format(io);
   else io->n_trees = 1;
@@ -147,6 +151,7 @@ int main(int argc, char **argv)
                     case 0 : case 1 : { tree = Dist_And_BioNJ(cdata,mod,io); break; }
                     case 2 :          { tree = Read_User_Tree(cdata,mod,io); break; }
                     }
+
 
                   if(io->fp_in_constraint_tree != NULL)
                     {
@@ -222,7 +227,6 @@ int main(int argc, char **argv)
                       Exit("\n");
                     }
 #endif
-
 
 #ifdef PHYML
                   if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 

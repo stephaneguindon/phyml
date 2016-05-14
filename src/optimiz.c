@@ -794,9 +794,11 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
             }
         }
       
-      For(i,3) 
-        if(d->v[i] == a) 
-          Update_P_Lk(tree,d->b[i],d);
+      /* For(i,3)  */
+      /*   if(d->v[i] == a)  */
+      /*     Update_P_Lk(tree,d->b[i],d); */
+
+      Update_P_Lk(tree,b_fcus,d);
     }
 }
 

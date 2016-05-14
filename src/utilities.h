@@ -1202,6 +1202,8 @@ typedef struct __Optimiz { /*! parameters to be optimised (mostly used in 'optim
   int        serial_free_rates;
 
   int      curr_opt_free_rates;
+
+  int          nni_br_len_opt;
 }t_opt;
 
 /*!********************************************************/
@@ -1931,7 +1933,7 @@ void Detect_Polytomies(t_edge *b,phydbl l_thresh,t_tree *tree);
 void Get_List_Of_Nodes_In_Polytomy(t_node *a,t_node *d,t_node ***list,int *size_list);
 void Check_Path(t_node *a,t_node *d,t_node *target,t_tree *tree);
 void Connect_Two_Nodes(t_node *a,t_node *d);
-void Get_List_Of_Adjacent_Targets(t_node *a,t_node *d,t_node ***node_list,t_edge ***edge_list,int *list_size);
+void Get_List_Of_Adjacent_Targets(t_node *a, t_node *d, t_node ***node_list, t_edge ***edge_list, int *list_size, int curr_depth, int max_depth);
 void Sort_List_Of_Adjacent_Targets(t_edge ***list,int list_size);
 t_node *Common_Nodes_Btw_Two_Edges(t_edge *a,t_edge *b);
 int KH_Test(phydbl *site_lk_M1,phydbl *site_lk_M2,t_tree *tree);
@@ -2087,6 +2089,9 @@ phydbl Pairwise_Identity(int i, int j, calign *data);
 phydbl Fst(int i, int j, calign *data);
 phydbl Nucleotide_Diversity(calign *data);
 void Swap_Partial_Lk(t_edge *a, t_edge *b, int side_a, int side_b, t_tree *tree);
+scalar_dbl **Copy_Br_Len_Var(t_tree *mixt_tree);
+scalar_dbl **Copy_Br_Len(t_tree *mixt_tree);
+void Transfer_Br_Len_To_Tree(scalar_dbl **bl, t_tree *tree);
 
 
 #include "xml.h"

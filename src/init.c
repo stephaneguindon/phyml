@@ -712,6 +712,7 @@ void Set_Defaults_Optimiz(t_opt *s_opt)
   s_opt->general_pars         = NO;
   s_opt->tree_size_mult       = 1;
   s_opt->opt_five_branch      = YES;
+  s_opt->nni_br_len_opt       = YES;
 
   s_opt->pars_thresh          = 5;
 

@@ -1329,7 +1329,6 @@ void Share_Spr_Struct(t_tree *t_full, t_tree *t_empt)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Share_Pars_Struct(t_tree *t_full, t_tree *t_empt)
 {
   int i;
@@ -1352,8 +1351,6 @@ void Share_Pars_Struct(t_tree *t_full, t_tree *t_empt)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
-
 
 int Sort_Edges_NNI_Score(t_tree *tree, t_edge **sorted_edges, int n_elem)
 {
@@ -1438,7 +1435,6 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
   lk0 = lk1 = lk2        = UNLIKELY;
   v1 = v2 = v3 = v4      = NULL;
 
-
   v1                     = b_fcus->left->v[b_fcus->l_v1];
   v2                     = b_fcus->left->v[b_fcus->l_v2];
   v3                     = b_fcus->rght->v[b_fcus->r_v1];
@@ -1450,7 +1446,7 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
   if(v3->num < v4->num) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
 
-  /***********/
+  /************************************************************/
   Swap(v2,b_fcus->left,b_fcus->rght,v3,tree);
   Set_Both_Sides(YES,tree);
 
@@ -1460,15 +1456,19 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
 
   l_infa = 10.;
   l_infb = tree->mod->l_min/b_fcus->l->v;
+  lk1    = lk1_init;
 
-  if(tree->mod->s_opt->fast_nni)
+  if(tree->mod->s_opt->nni_br_len_opt == YES)
     {
-      Fast_Br_Len(b_fcus,tree,1);
-      lk1 = Lk(b_fcus,tree);
-    }
-  else
-    {
-      lk1 = Br_Len_Brent(l_infb,l_infa,b_fcus,tree);
+      if(tree->mod->s_opt->fast_nni)
+        {
+          Fast_Br_Len(b_fcus,tree,1);
+          lk1 = Lk(b_fcus,tree);
+        }
+      else 
+        {
+          lk1 = Br_Len_Brent(l_infb,l_infa,b_fcus,tree);
+        }
     }
 
   if(lk1 < lk1_init - tree->mod->s_opt->min_diff_lk_local)
@@ -1478,13 +1478,12 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
       PhyML_Printf("\n== Err. in NNI (1)");
     }
 
-  /* l1  = b_fcus->l->v; */
   l1  = MIXT_Get_Lengths_Of_This_Edge(b_fcus,tree);
   Swap(v3,b_fcus->left,b_fcus->rght,v2,tree);
-  /***********/
+  /************************************************************/
 
 
-  /***********/
+  /************************************************************/
   Swap(v2,b_fcus->left,b_fcus->rght,v4,tree);
   Restore_Br_Len(tree);
   Set_Both_Sides(YES,tree);
@@ -1495,15 +1494,20 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
 
   l_infa = 10.;
   l_infb = tree->mod->l_min/b_fcus->l->v;
+ 
+  lk2    = lk2_init;
 
-  if(tree->mod->s_opt->fast_nni)
+  if(tree->mod->s_opt->nni_br_len_opt == YES)
     {
-      Fast_Br_Len(b_fcus,tree,1);
-      lk2 = Lk(b_fcus,tree);
-    }
-  else
-    {
-      lk2 = Br_Len_Brent(l_infb,l_infa,b_fcus,tree);
+      if(tree->mod->s_opt->fast_nni)
+        {
+          Fast_Br_Len(b_fcus,tree,1);
+          lk2 = Lk(b_fcus,tree);
+        }
+      else 
+        {
+          lk2 = Br_Len_Brent(l_infb,l_infa,b_fcus,tree);
+        }
     }
 
   if(lk2 < lk2_init - tree->mod->s_opt->min_diff_lk_local)
@@ -1513,14 +1517,13 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
       PhyML_Printf("\n== Err. in NNI (2)");
    }
 
-  /* l2  = b_fcus->l->v; */
   l2  = MIXT_Get_Lengths_Of_This_Edge(b_fcus,tree);
   Swap(v4,b_fcus->left,b_fcus->rght,v2,tree);
-  /***********/
+  /************************************************************/
 
 
 
-  /***********/
+  /************************************************************/
   Restore_Br_Len(tree);
   Set_Both_Sides(YES,tree);
 
@@ -1528,28 +1531,33 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
   lk0_init = Update_Lk_At_Given_Edge(b_fcus,tree);
   MIXT_Set_Alias_Subpatt(NO,tree);
 
+
   if(FABS(lk0_init - lk_init) > tree->mod->s_opt->min_diff_lk_local)
     {
       PhyML_Printf("\n== lk_init = %f; lk = %f diff = %f l = %G",
-           lk_init,
-           lk0_init,
-           lk_init-lk0_init,
-           b_fcus->l->v);
+                   lk_init,
+                   lk0_init,
+                   lk_init-lk0_init,
+                   b_fcus->l->v);
       PhyML_Printf("\n== Curr_lnL = %f",Lk(NULL,tree));
       Exit("\n== Err. in NNI (3)");
     }
 
   l_infa = 10.;
   l_infb = tree->mod->l_min/b_fcus->l->v;
+  lk0    = lk0_init;
 
-  if(tree->mod->s_opt->fast_nni)
+  if(tree->mod->s_opt->nni_br_len_opt == YES)
     {
-      Fast_Br_Len(b_fcus,tree,1);
-      lk0 = Lk(b_fcus,tree);
-    }
-  else
-    {
-      lk0 = Br_Len_Brent(l_infb,l_infa,b_fcus,tree);
+      if(tree->mod->s_opt->fast_nni)
+        {
+          Fast_Br_Len(b_fcus,tree,1);
+          lk0 = Lk(b_fcus,tree);
+        }
+      else 
+        {
+          lk0 = Br_Len_Brent(l_infb,l_infa,b_fcus,tree);
+        }
     }
 
   if(lk0 < lk_init - tree->mod->s_opt->min_diff_lk_local)
@@ -1560,9 +1568,8 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
       Exit("\n");
     }
 
-  /* l0 = b_fcus->l->v; */
   l0  = MIXT_Get_Lengths_Of_This_Edge(b_fcus,tree);
-  /***********/
+  /************************************************************/
 
   b_fcus->nni->lk0 = lk0;
   b_fcus->nni->lk1 = lk1;
@@ -1601,14 +1608,12 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
       b = b_fcus;
       i = 0;
       do
-    {
-      b->nni->best_l = l0[i];
+        {
+          b->nni->best_l = l0[i];
           b = b->next;
-      i++;
-    }
+          i++;
+        }
       while(b);
-
-
     }
   else if(lk1 > MAX(lk0,lk2))
     {
@@ -1617,18 +1622,16 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
       b_fcus->nni->swap_node_v2 = b_fcus->left;
       b_fcus->nni->swap_node_v3 = b_fcus->rght;
       b_fcus->nni->swap_node_v4 = v3;
-
+      
       b = b_fcus;
       i = 0;
       do
-    {
-      b->nni->best_l = l1[i];
+        {
+          b->nni->best_l = l1[i];
           b = b->next;
-      i++;
-    }
+          i++;
+        }
       while(b);
-
-
     }
   else if(lk2 > MAX(lk0,lk1))
     {
@@ -1641,15 +1644,12 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
       b = b_fcus;
       i = 0;
       do
-    {
-      b->nni->best_l = l2[i];
+        {
+          b->nni->best_l = l2[i];
           b = b->next;
-      i++;
-    }
+          i++;
+        }
       while(b);
-
-
-
     }
   else
     {
@@ -1664,57 +1664,62 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
       b = b_fcus;
       i = 0;
       do
-    {
-      b->nni->best_l = l0[i];
+        {
+          b->nni->best_l = l0[i];
           b = b->next;
-      i++;
-    }
-      while(b);
-
-
-    }
-
-  if((do_swap) && ((lk1 > lk0) || (lk2 > lk0)))
-    {
-      tree->n_swap++;
-      PhyML_Printf("\n. Swap t_edge %d -> %f",b_fcus->num,MAX(lk1,lk2));
-
-      if(lk1 > lk2)
-    {
-      tree->best_lnL = lk1;
-      Swap(v2,b_fcus->left,b_fcus->rght,v3,tree);
-
-      b = b_fcus;
-      i = 0;
-      do
-        {
-          b->l->v = l1[i];
-              b = b->next;
           i++;
         }
       while(b);
-
-          Set_Both_Sides(YES,tree);
-      Lk(NULL,tree);
     }
+
+
+  if(do_swap == YES)
+    {
+      if((lk1 > lk0) || (lk2 > lk0))
+        {
+          tree->n_swap++;
+
+          if(lk1 > lk2)
+            {
+              tree->best_lnL = lk1;
+              Swap(v2,b_fcus->left,b_fcus->rght,v3,tree);
+              
+              b = b_fcus;
+              i = 0;
+              do
+                {
+                  b->l->v = l1[i];
+                  b = b->next;
+                  i++;
+                }
+              while(b);
+            }
+          else
+            {
+              tree->best_lnL = lk2;
+              Swap(v2,b_fcus->left,b_fcus->rght,v4,tree);
+              
+              b = b_fcus;
+              i = 0;
+              do
+                {
+                  b->l->v = l2[i];
+                  b = b->next;
+                  i++;
+                }
+              while(b);
+            }
+          
+          Update_Lk_At_Given_Edge(b_fcus,tree);
+          /* Set_Both_Sides(YES,tree); */
+          /* Lk(NULL,tree); */
+        }
       else
-    {
-      tree->best_lnL = lk2;
-      Swap(v2,b_fcus->left,b_fcus->rght,v4,tree);
-
-      b = b_fcus;
-      i = 0;
-      do
         {
-          b->l->v = l2[i];
-              b = b->next;
-          i++;
+          tree->best_lnL = lk0;
+          // No change of topology done but length of central
+          // edge is optimal.
         }
-      while(b);
-
-          Set_Both_Sides(YES,tree);
-      Lk(NULL,tree);
-    }
     }
   else
     {
@@ -1857,7 +1862,7 @@ void Swap(t_node *a, t_node *b, t_node *c, t_node *d, t_tree *tree)
 #ifdef DEBUG
   if(ab < 0 || ba < 0 || cd < 0 || dc < 0)
     {
-      PhyML_Printf("\n== Nodes %d %d %d %d\n",a->num,b->num,c->num,d->num);
+      PhyML_Printf("\n== Nodes %d %d %d %d.",a->num,b->num,c->num,d->num);
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
     }
 #endif
@@ -2865,7 +2870,6 @@ void Bootstrap(t_tree *tree)
       Share_Lk_Struct(tree,boot_tree);
       Share_Spr_Struct(tree,boot_tree);
       Share_Pars_Struct(tree,boot_tree);
-      Fill_Dir_Table(boot_tree);
       Update_Dirs(boot_tree);
 
       if(tree->mod->s_opt->greedy) Init_P_Lk_Tips_Double(boot_tree);
@@ -5185,12 +5189,11 @@ void Reassign_Edge_Nums(t_node *a, t_node *d, int *curr_br, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Find_Mutual_Direction(t_node *n1, t_node *n2, short int *dir_n1_to_n2, short int *dir_n2_to_n1)
 {
   int scores[3][3];
   int i,j,k,l;
-
+  
   if(n1 == n2) return;
 
 
@@ -5259,7 +5262,6 @@ void Find_Mutual_Direction(t_node *n1, t_node *n2, short int *dir_n1_to_n2, shor
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Update_Dir_To_Tips(t_node *a, t_node *d, t_tree *tree)
 {
   int i,j,k;
@@ -5270,42 +5272,38 @@ void Update_Dir_To_Tips(t_node *a, t_node *d, t_tree *tree)
   dim = 2*tree->n_otu-2;
 
   inout = (short int *)mCalloc(tree->n_otu,sizeof(short int));
-
+  
   For(i,3)
     {
       if(a->v[i] == d)
-    {
-      For(j,tree->n_otu) inout[j] = 1;
-      For(k,a->bip_size[i]) inout[a->bip_node[i][k]->num] = 0;
-      For(j,tree->n_otu) if(inout[tree->a_nodes[j]->num]) tree->t_dir[a->num*dim+tree->a_nodes[j]->num] = i;
-      break;
+        {
+          For(j,tree->n_otu) inout[j] = 1;
+          For(k,a->bip_size[i]) inout[a->bip_node[i][k]->num] = 0;
+          For(j,tree->n_otu) if(inout[tree->a_nodes[j]->num]) tree->t_dir[a->num*dim+tree->a_nodes[j]->num] = i;
+          break;
+        }
     }
-    }
-
-
+  
+  
   if(!d->tax)
-    {
-
+    {      
       d_a = -1;
-
+      
       For(i,3)
-    {
-      if(d->v[i] != a) Update_Dir_To_Tips(d,d->v[i],tree);
-      else if(d->v[i] == a) d_a = i;
-    }
-
+        {
+          if(d->v[i] != a) Update_Dir_To_Tips(d,d->v[i],tree);
+          else if(d->v[i] == a) d_a = i;
+        }
+      
       For(j,tree->n_otu) inout[j] = 1;
       For(k,d->bip_size[d_a]) inout[d->bip_node[d_a][k]->num] = 0;
       For(j,tree->n_otu) if(inout[tree->a_nodes[j]->num]) tree->t_dir[d->num*dim+tree->a_nodes[j]->num] = d_a;
     }
-
-  Free(inout);
-
+  Free(inout);  
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void Fill_Dir_Table(t_tree *tree)
 {
@@ -5319,24 +5317,14 @@ void Fill_Dir_Table(t_tree *tree)
   Get_Bip(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree);
   Update_Dir_To_Tips(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree);
 
-
   for(i=tree->n_otu;i<2*tree->n_otu-2;i++)
     for(j=i;j<2*tree->n_otu-2;j++)
       {
-    Find_Mutual_Direction(tree->a_nodes[i],tree->a_nodes[j],
-                  &(tree->t_dir[i*dim+j]),
-                  &(tree->t_dir[j*dim+i]));
+        Find_Mutual_Direction(tree->a_nodes[i],tree->a_nodes[j],
+                              &(tree->t_dir[i*dim+j]),
+                              &(tree->t_dir[j*dim+i]));
       }
 }
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -5686,7 +5674,6 @@ void Fix_All(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Record_Br_Len(t_tree *mixt_tree)
 {
   int i;
@@ -5711,6 +5698,103 @@ void Record_Br_Len(t_tree *mixt_tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+scalar_dbl **Copy_Br_Len(t_tree *mixt_tree)
+{
+  int i;
+  scalar_dbl **bl, *new_l;
+  t_edge *e;
+
+  bl = (scalar_dbl **)mCalloc(2*mixt_tree->n_otu-1,sizeof(scalar_dbl *));
+  
+  For(i,2*mixt_tree->n_otu-1) 
+    {
+      e = mixt_tree->a_edges[i];
+      bl[i] = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+      do
+        {
+          bl[i]->v = e->l->v;
+          e = e->next;
+          if(e) 
+            {
+              new_l = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+              bl[i]->next       = new_l;
+              bl[i]->next->prev = bl[i];
+              bl[i]             = bl[i]->next;
+            }
+        }
+      while(e);
+    }
+
+  return(bl);
+}
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+scalar_dbl **Copy_Br_Len_Var(t_tree *mixt_tree)
+{
+  int i;
+  scalar_dbl **bl_var, *new_l_var;
+  t_edge *e;
+
+  bl_var = (scalar_dbl **)mCalloc(2*mixt_tree->n_otu-1,sizeof(scalar_dbl *));
+  
+  For(i,2*mixt_tree->n_otu-1) 
+    {
+      e = mixt_tree->a_edges[i];
+      bl_var[i] = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+      do
+        {
+          bl_var[i]->v = e->l_var->v;
+          e = e->next;
+          if(e) 
+            {
+              new_l_var = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+              bl_var[i]->next       = new_l_var;
+              bl_var[i]->next->prev = bl_var[i];
+              bl_var[i]             = bl_var[i]->next;
+            }
+        }
+      while(e);
+    }
+
+  return(bl_var);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Transfer_Br_Len_To_Tree(scalar_dbl **bl, t_tree *tree)
+{
+  int i;
+  scalar_dbl *la, *lb;
+
+  For(i,2*tree->n_otu-1) 
+    {
+      if(tree->a_edges[i]->l != NULL)
+        {
+          la = bl[i];
+          lb = tree->a_edges[i]->l;
+          if(lb != NULL && la != NULL)
+            {
+              do 
+                { 
+                  lb->v = la->v;
+                  if(la) la = la->next;
+                  if(lb) lb = lb->next;
+                }
+              while(la != NULL && lb != NULL);
+              assert(la == NULL && lb == NULL);
+            }
+        }
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 
 
 void Restore_Br_Len(t_tree *mixt_tree)
@@ -5853,22 +5937,24 @@ void Connect_Two_Nodes(t_node *a, t_node *d)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-void Get_List_Of_Adjacent_Targets(t_node *a, t_node *d, t_node ***node_list, t_edge ***edge_list, int *list_size)
+void Get_List_Of_Adjacent_Targets(t_node *a, t_node *d, t_node ***node_list, t_edge ***edge_list, int *list_size, int curr_depth, int max_depth)
 {
   int i;
-
+  
+  if(a->tax) return;
+  
   For(i,3)
     if(a->v[i] == d)
       {
-    (*node_list)[*list_size] = a;
-    (*edge_list)[*list_size] = a->b[i];
-    (*list_size)++;
+        if(node_list != NULL) (*node_list)[*list_size] = a;
+        if(edge_list != NULL) (*edge_list)[*list_size] = a->b[i];
+        (*list_size)++;
       }
+  if(curr_depth == max_depth) return;
   if(d->tax) return;
   else
     For(i,3)
-      if(d->v[i] != a) Get_List_Of_Adjacent_Targets(d,d->v[i],node_list,edge_list,list_size);
+      if(d->v[i] != a) Get_List_Of_Adjacent_Targets(d,d->v[i],node_list,edge_list,list_size,curr_depth+1,max_depth);
 }
 
 //////////////////////////////////////////////////////////////
@@ -5957,11 +6043,6 @@ int KH_Test(phydbl *site_lk_M1, phydbl *site_lk_M2, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-
 void Random_Tree(t_tree *tree)
 {
   int *is_available,*list_of_nodes;
@@ -5970,8 +6051,7 @@ void Random_Tree(t_tree *tree)
 
   min_edge_len = 1.E-3;
 
-  if(tree->mod->s_opt && tree->mod->s_opt->print == YES)
-    PhyML_Printf("\n\n. Randomising the tree...\n");
+  if(tree->mod->s_opt && tree->mod->s_opt->print == YES) PhyML_Printf("\n\n. Randomising the tree...\n");
 
   is_available  = (int *)mCalloc(2*tree->n_otu-2,sizeof(int));
   list_of_nodes = (int *)mCalloc(tree->n_otu,    sizeof(int));
@@ -6019,9 +6099,6 @@ void Random_Tree(t_tree *tree)
   Connect_Edges_To_Nodes_Recur(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree);
 
   For(i,2*tree->n_otu-3) if(tree->a_edges[i]->l->v < min_edge_len) tree->a_edges[i]->l->v = min_edge_len;
-
-  Fill_Dir_Table(tree);
-  Update_Dirs(tree);
 
   Free(is_available);
   Free(list_of_nodes);
@@ -6963,9 +7040,6 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
   
   tree->num_curr_branch_available = 0;
   Connect_Edges_To_Nodes_Recur(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree);
-  Fill_Dir_Table(tree);
-  Update_Dirs(tree);
-  
   
   /* Add root */
   if(rooted)
@@ -7546,35 +7620,22 @@ void Best_Of_NNI_And_SPR(t_tree *tree)
     {
       t_tree *ori_tree,*best_tree;
       t_mod *ori_mod,*best_mod;
-      phydbl *ori_bl,*best_bl;
+      scalar_dbl  **ori_bl,**best_bl;
       phydbl best_lnL,ori_lnL,nni_lnL,spr_lnL;
       int i;
 #ifdef BEAGLE
       tree->b_inst = create_beagle_instance(tree, tree->io->quiet, tree->io);
 #endif
-      ori_bl = (phydbl *)mCalloc(2*tree->n_otu-3,sizeof(phydbl));
-      best_bl = (phydbl *)mCalloc(2*tree->n_otu-3,sizeof(phydbl));
 
       ori_mod   = Copy_Model(tree->mod);
       best_mod  = Copy_Model(tree->mod);
 
-      ori_tree = Make_Tree_From_Scratch(tree->n_otu,tree->data);
-
-/*       ori_tree = Make_Tree(tree->n_otu); */
-/*       Init_Tree(ori_tree,ori_tree->n_otu); */
-/*       Make_All_Tree_Nodes(ori_tree); */
-/*       Make_All_Tree_Edges(ori_tree); */
-
+      ori_tree  = Make_Tree_From_Scratch(tree->n_otu,tree->data);
       best_tree = Make_Tree_From_Scratch(tree->n_otu,tree->data);
-
-/*       best_tree = Make_Tree(tree->n_otu); */
-/*       Init_Tree(best_tree,best_tree->n_otu); */
-/*       Make_All_Tree_Nodes(best_tree); */
-/*       Make_All_Tree_Edges(best_tree); */
 
       Copy_Tree(tree,ori_tree);//Save a backup of the original tree in ori_tree
       Record_Br_Len(tree);
-      For(i,2*tree->n_otu-3) ori_bl[i] = tree->a_edges[i]->l->v;
+      ori_bl = Copy_Br_Len(tree);
 
 
       best_lnL = UNLIKELY;
@@ -7589,12 +7650,12 @@ void Best_Of_NNI_And_SPR(t_tree *tree)
       //Mark the NNI tree as the "best" tree
       Copy_Tree(tree,best_tree); /* Record the tree topology and branch lengths */
       Record_Br_Len(tree);
-      For(i,2*tree->n_otu-3) best_bl[i] = tree->a_edges[i]->l->v;
-      For(i,2*tree->n_otu-3) best_tree->a_edges[i]->l->v = best_bl[i];
+      best_bl = Copy_Br_Len(tree);
+      Transfer_Br_Len_To_Tree(best_bl,best_tree);
       Record_Model(tree->mod,best_mod);
 
       Copy_Tree(ori_tree,tree); /* Back to the original tree topology */
-      For(i,2*tree->n_otu-3) tree->a_edges[i]->l->v = ori_bl[i]; /* Back to the original branch lengths */
+      Transfer_Br_Len_To_Tree(ori_bl,tree); /* Back to the original branch lengths */
       Record_Model(ori_mod,tree->mod); /* Back to the original model */
 
       /* Make sure the tree is in its original form */
@@ -7621,18 +7682,18 @@ void Best_Of_NNI_And_SPR(t_tree *tree)
           best_lnL = spr_lnL;
           Copy_Tree(tree,best_tree); /* Record tree topology, branch lengths and model parameters */
           Record_Br_Len(tree);
-          For(i,2*tree->n_otu-3) best_bl[i] = tree->a_edges[i]->l->v;
-          For(i,2*tree->n_otu-3) best_tree->a_edges[i]->l->v = best_bl[i];
+          For(i,2*tree->n_otu-1) Free_Scalar_Dbl(best_bl[i]);
+          Free(best_bl);
+          best_bl = Copy_Br_Len(tree);
+          Transfer_Br_Len_To_Tree(best_bl,best_tree);
           Record_Model(tree->mod,best_mod);
         }
 
       Copy_Tree(best_tree,tree);
-      Fill_Dir_Table(tree);
-      Update_Dirs(tree);
       Init_P_Lk_Tips_Int(tree);
       Init_Ui_Tips(tree);
       Init_P_Pars_Tips(tree);
-      For(i,2*tree->n_otu-3) tree->a_edges[i]->l->v = best_bl[i];
+      Transfer_Br_Len_To_Tree(best_bl,tree);
       Record_Model(best_mod,tree->mod);
 
       /* Make sure the current tree has the best topology, branch lengths and model parameters */
@@ -7650,7 +7711,10 @@ void Best_Of_NNI_And_SPR(t_tree *tree)
           PhyML_Printf("\n. Log likelihood obtained after SPR moves : %f",spr_lnL);
         }
 
+      For(i,2*tree->n_otu-1) Free_Scalar_Dbl(ori_bl[i]);
       Free(ori_bl);
+
+      For(i,2*tree->n_otu-1) Free_Scalar_Dbl(best_bl[i]);
       Free(best_bl);
 
       Free_Tree(ori_tree);
@@ -7783,7 +7847,6 @@ void JF(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 t_tree *Dist_And_BioNJ(calign *cdata, t_mod *mod, option *io)
 {
   t_tree *tree;
@@ -7858,8 +7921,6 @@ char *Bootstrap_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
 
   Connect_CSeqs_To_Nodes(cdata,io,tree);
   if(tree->mod->s_opt->random_input_tree) Random_Tree(tree);
-  Fill_Dir_Table(tree);
-  Update_Dirs(tree);
   Make_Tree_4_Pars(tree,cdata,cdata->init_len);
   Make_Tree_4_Lk(tree,cdata,cdata->init_len);
   tree->triplet_struct = Make_Triplet_Struct(mod);
@@ -7920,8 +7981,6 @@ char *aLRT_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
 
   Connect_CSeqs_To_Nodes(cdata,io,tree);
   if(tree->mod->s_opt->random_input_tree) Random_Tree(tree);
-  Fill_Dir_Table(tree);
-  Update_Dirs(tree);
   Make_Tree_4_Pars(tree,cdata,cdata->init_len);
   Make_Tree_4_Lk(tree,cdata,cdata->init_len);
   tree->triplet_struct = Make_Triplet_Struct(mod);
@@ -7964,8 +8023,6 @@ char *aLRT_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
 void Prepare_Tree_For_Lk(t_tree *tree)
 {
   Connect_CSeqs_To_Nodes(tree->data,tree->io,tree);
-  Fill_Dir_Table(tree);
-  Update_Dirs(tree);
   Make_Tree_4_Pars(tree,tree->data,tree->data->init_len);
   Make_Tree_4_Lk(tree,tree->data,tree->data->init_len);
   tree->triplet_struct = Make_Triplet_Struct(tree->mod);
@@ -9996,9 +10053,6 @@ phydbl *Dist_Btw_Tips(t_tree *tree)
 
   dist = (phydbl *)mCalloc(tree->n_otu*tree->n_otu,sizeof(phydbl));
 
-  Fill_Dir_Table(tree);
-  Update_Dirs(tree);
-
   For(i,tree->n_otu-1)
     {
       for(j=i+1;j<tree->n_otu;j++)
@@ -11285,7 +11339,6 @@ phydbl Fst(int i, int j, calign *data)
   return((Fr-FA)/(1-FA));
 }
 
-
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
@@ -11308,3 +11361,7 @@ phydbl Nucleotide_Diversity(calign *data)
 
   return(pair_div / (phydbl)(n*(n-1.)/2.));
 }
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
