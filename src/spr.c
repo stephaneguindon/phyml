@@ -3230,7 +3230,7 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
         {
           /* n_moves_pars = 10; */
           /* n_moves      =  5; */
-          n_moves_pars = 15;
+          n_moves_pars = 10;
           n_moves      =  5;
 
           if(tree->mod->s_opt->spr_lnL == NO) n_moves = n_moves_pars;
@@ -3685,7 +3685,7 @@ void Speed_Spr_Loop(t_tree *tree)
   tree->mod->s_opt->nni_br_len_opt = NO;
   Simu(tree,5);
   tree->mod->s_opt->nni_br_len_opt = YES;
-  Spr_Random_Explore(tree,0.0,1.0,5);
+  Spr_Random_Explore(tree,4.0,1.0,5);
 
   /* /\*****************************\/ */
   /* lk_old = UNLIKELY; */
@@ -4651,7 +4651,7 @@ void Spr_Shuffle(t_tree *mixt_tree)
           tree->mod->optimizing_topology = true;
       }
 #endif
-      tree->mod->ras->n_catg = MIN(1,orig_catg[n]);
+      tree->mod->ras->n_catg = MIN(2,orig_catg[n]);
       if(tree->mod->ras->invar == YES) tree->mod->ras->n_catg--;
       tree = tree->next_mixt;
       n++;
