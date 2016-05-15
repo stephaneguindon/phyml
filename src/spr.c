@@ -3230,7 +3230,7 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
         {
           /* n_moves_pars = 10; */
           /* n_moves      =  5; */
-          n_moves_pars = 10;
+          n_moves_pars = 15;
           n_moves      =  5;
 
           if(tree->mod->s_opt->spr_lnL == NO) n_moves = n_moves_pars;
@@ -3676,7 +3676,7 @@ void Speed_Spr_Loop(t_tree *tree)
   tree->mod->s_opt->quickdirty     = NO;
 
   if((tree->mod->s_opt->print) && (!tree->io->quiet)) PhyML_Printf("\n\n. Maximizing likelihood (using SPR moves)...\n");
-  
+
   Spr_Pars(tree);
   Set_Both_Sides(YES,tree);
   Lk(NULL,tree);
@@ -3711,7 +3711,7 @@ void Speed_Spr_Loop(t_tree *tree)
   do
     {
       lk_old = tree->c_lnL;
-      if(!Simu(tree,10)) break;
+      if(!Simu(tree,5)) break;
       Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
     }
   while(FABS(lk_old - tree->c_lnL) > tree->mod->s_opt->min_diff_lk_local);
@@ -4880,7 +4880,7 @@ void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int m
         {
           no_improvement = 0;
           true_best_lnL = tree->c_lnL;
-          PhyML_Printf("\n. Better tree found: %f",tree->c_lnL);
+          /* PhyML_Printf("\n. Better tree found: %f",tree->c_lnL); */
           For(i,2*tree->n_otu-1) Free_Scalar_Dbl(best_bl[i]);
           Free(best_bl);
           best_bl = Copy_Br_Len(tree);
