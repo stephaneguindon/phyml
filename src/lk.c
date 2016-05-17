@@ -3606,224 +3606,189 @@ void ML_Ancestral_Sequences(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void ML_Ancestral_Sequences_One_Node(t_node *mixt_d, t_tree *mixt_tree)
+void ML_Ancestral_Sequences_One_Node(t_node *d, t_tree *tree)
 {
-  if(mixt_d->tax) return;
+  if(d->tax) return;
   else
     {
-      t_node *v0,*v1,*v2; // three neighbours of d
-      t_edge *b0,*b1,*b2;
-      int i,j;
-      int catg;
-      phydbl p0, p1, p2;
-      phydbl *p;
-      t_node *d,*curr_mixt_d;
-      t_tree *tree, *curr_mixt_tree;
-      int site,csite;
-      phydbl *p_lk0, *p_lk1, *p_lk2;
-      int *sum_scale0, *sum_scale1, *sum_scale2;
-      phydbl r_mat_weight_sum, e_frq_weight_sum, sum_probas;
-      phydbl *Pij0, *Pij1, *Pij2;
-      int NsNs, Ns, NsNg;
-      FILE *fp;
-
-      if(!mixt_d) return;
-
-      curr_mixt_tree = mixt_tree;
-      curr_mixt_d    = mixt_d;
-      fp             = mixt_tree->io->fp_out_ancestral;
-
-
-      do /* For each partition element */
+      if(tree->is_mixt_tree) 
         {
-          if(curr_mixt_tree->next)
-            {
-              r_mat_weight_sum = MIXT_Get_Sum_Chained_Scalar_Dbl(curr_mixt_tree->next->mod->r_mat_weight);
-              e_frq_weight_sum = MIXT_Get_Sum_Chained_Scalar_Dbl(curr_mixt_tree->next->mod->e_frq_weight);
-              sum_probas       = MIXT_Get_Sum_Of_Probas_Across_Mixtures(r_mat_weight_sum, e_frq_weight_sum, curr_mixt_tree);
-            }
-          else
-            {
-              r_mat_weight_sum = 1.;
-              e_frq_weight_sum = 1.;
-              sum_probas       = 1.;
-            }
-
-          Ns   = curr_mixt_tree->next ? curr_mixt_tree->next->mod->ns : curr_mixt_tree->mod->ns;
+          MIXT_ML_Ancestral_Sequences_One_Node(d,tree);
+          return;
+        }
+      else
+        {
+          t_node *v0,*v1,*v2; // three neighbours of d
+          t_edge *b0,*b1,*b2;
+          int i,j;
+          int catg;
+          phydbl p0, p1, p2;
+          phydbl *p;
+          int site,csite;
+          phydbl *p_lk0, *p_lk1, *p_lk2;
+          int *sum_scale0, *sum_scale1, *sum_scale2;
+          phydbl sum_probas;
+          phydbl *Pij0, *Pij1, *Pij2;
+          int NsNs, Ns, NsNg;
+          FILE *fp;
+          
+          if(!d) return;
+          
+          fp = tree->io->fp_out_ancestral;
+          assert(fp != NULL);
+                        
+          Ns   = tree->mod->ns;
           NsNs = Ns*Ns;
-          NsNg = Ns*curr_mixt_tree->mod->ras->n_catg;
-
+          NsNg = Ns*tree->mod->ras->n_catg;
+          
           p = (phydbl *)mCalloc(Ns,sizeof(phydbl));
-
-          /* For(site,curr_mixt_tree->n_pattern) // For each site in the current partition element */
-          For(site,curr_mixt_tree->data->init_len) // For each site in the current partition element
+              
+          For(site,tree->data->init_len) // For each site in the current partition element
             {
-              csite = curr_mixt_tree->data->sitepatt[site];
-
-              d    = curr_mixt_d->next ? curr_mixt_d->next : curr_mixt_d;
-              tree = curr_mixt_tree->next ? curr_mixt_tree->next : curr_mixt_tree;
-
-              For(i,tree->mod->ns) p[i] = .0;
-
-              do // For each class of the mixture model that applies to the current partition element
+              csite = tree->data->sitepatt[site];
+                                    
+              For(i,Ns) p[i] = .0;
+                  
+              v0 = d->v[0];
+              v1 = d->v[1];
+              v2 = d->v[2];
+              
+              b0 = d->b[0];
+              b1 = d->b[1];
+              b2 = d->b[2];
+              
+              Pij0 = b0->Pij_rr;
+              Pij1 = b1->Pij_rr;
+              Pij2 = b2->Pij_rr;
+              
+              if(v0 == b0->left)
                 {
-                  if(tree->is_mixt_tree == YES)
-                    {
-                      tree = tree->next;
-                      d    = d->next;
-                    }
-
-                  v0 = d->v[0];
-                  v1 = d->v[1];
-                  v2 = d->v[2];
-
-                  b0 = d->b[0];
-                  b1 = d->b[1];
-                  b2 = d->b[2];
-
-                  Pij0 = b0->Pij_rr;
-                  Pij1 = b1->Pij_rr;
-                  Pij2 = b2->Pij_rr;
-
-                  if(v0 == b0->left)
-                    {
-                      p_lk0 = b0->p_lk_left;
-                      sum_scale0 = b0->sum_scale_left;
-                    }
-                  else
-                    {
-                      p_lk0 = b0->p_lk_rght;
-                      sum_scale0 = b0->sum_scale_rght;
-                    }
-
-                  if(v1 == b1->left)
-                    {
-                      p_lk1 = b1->p_lk_left;
-                      sum_scale1 = b1->sum_scale_left;
-                    }
-                  else
-                    {
-                      p_lk1 = b1->p_lk_rght;
-                      sum_scale1 = b1->sum_scale_rght;
-                    }
-
-                  if(v2 == b2->left)
-                    {
-                      p_lk2 = b2->p_lk_left;
-                      sum_scale2 = b2->sum_scale_left;
-                    }
-                  else
-                    {
-                      p_lk2 = b2->p_lk_rght;
-                      sum_scale2 = b2->sum_scale_rght;
-                    }
-
-
-                  For(catg,tree->mod->ras->n_catg)
-                    {
-                      For(i,Ns)
-                        {
-                          p0 = .0;
-                          if(v0->tax)
-                            For(j,tree->mod->ns)
-                              {
-                                p0 += v0->b[0]->p_lk_tip_r[csite*Ns+j] * Pij0[catg*NsNs+i*Ns+j];
-
-                                /* printf("\n. p0 %d %f", */
-                                /*        v0->b[0]->p_lk_tip_r[site*Ns+j], */
-                                /*        Pij0[catg*NsNs+i*Ns+j]); */
-                              }
-                          else
-                            For(j,tree->mod->ns)
-                              {
-                                p0 += p_lk0[csite*NsNg+catg*Ns+j] * Pij0[catg*NsNs+i*Ns+j] / (phydbl)POW(2,sum_scale0[catg*curr_mixt_tree->n_pattern+csite]);
-
-                                /* p0 += p_lk0[site*NsNg+catg*Ns+j] * Pij0[catg*NsNs+i*Ns+j]; */
-
-                                /* printf("\n. p0 %f %f", */
-                                /*        p_lk0[site*NsNg+catg*Ns+j], */
-                                /*        Pij0[catg*NsNs+i*Ns+j]); */
-                              }
-                          p1 = .0;
-                          if(v1->tax)
-                            For(j,tree->mod->ns)
-                              {
-                                p1 += v1->b[0]->p_lk_tip_r[csite*Ns+j] * Pij1[catg*NsNs+i*Ns+j];
-
-                                /* printf("\n. p1 %d %f", */
-                                /*        v1->b[0]->p_lk_tip_r[site*Ns+j], */
-                                /*        Pij1[catg*NsNs+i*Ns+j]); */
-                              }
-
-                          else
-                            For(j,tree->mod->ns)
-                              {
-                                p1 += p_lk1[csite*NsNg+catg*Ns+j] * Pij1[catg*NsNs+i*Ns+j] / (phydbl)POW(2,sum_scale1[catg*curr_mixt_tree->n_pattern+csite]);
-
-                                /* p1 += p_lk1[site*NsNg+catg*Ns+j] * Pij1[catg*NsNs+i*Ns+j];  */
-
-                                /* printf("\n. p1 %f %f", */
-                                /*        p_lk1[site*NsNg+catg*Ns+j], */
-                                /*        Pij1[catg*NsNs+i*Ns+j]); */
-                             }
-
-
-                          p2 = .0;
-                          if(v2->tax)
-                            For(j,tree->mod->ns)
-                              {
-                                p2 += v2->b[0]->p_lk_tip_r[csite*Ns+j] * Pij2[catg*NsNs+i*Ns+j];
-                                /* printf("\n. p2 %d %f", */
-                                /*        v2->b[0]->p_lk_tip_r[site*Ns+j], */
-                                /*        Pij2[catg*NsNs+i*Ns+j]); */
-                              }
-                          else
-                            For(j,tree->mod->ns)
-                              {
-                                p2 += p_lk2[csite*NsNg+catg*Ns+j] * Pij2[catg*NsNs+i*Ns+j] / (phydbl)POW(2,sum_scale2[catg*curr_mixt_tree->n_pattern+csite]);
-
-                                /* p2 += p_lk2[site*NsNg+catg*Ns+j] * Pij2[catg*NsNs+i*Ns+j]; */
-
-                                /* printf("\n. p2 %f %f", */
-                                /*        p_lk2[site*NsNg+catg*Ns+j], */
-                                /*        Pij2[catg*NsNs+i*Ns+j]);  */
-                             }
-
-                          p[i] +=
-                            p0*p1*p2*
-                            tree->mod->e_frq->pi->v[i] /
-                            tree->cur_site_lk[csite] *
-                            curr_mixt_tree->mod->ras->gamma_r_proba->v[tree->mod->ras->parent_class_number] *
-                            tree->mod->r_mat_weight->v / r_mat_weight_sum *
-                            tree->mod->e_frq_weight->v / e_frq_weight_sum /
-                            sum_probas;
-
-                        }
-                    }
-
-                  PhyML_Fprintf(fp,"%4d\t%4d\t",site+1,d->num);
+                  p_lk0 = b0->p_lk_left;
+                  sum_scale0 = b0->sum_scale_left;
+                }
+              else
+                {
+                  p_lk0 = b0->p_lk_rght;
+                  sum_scale0 = b0->sum_scale_rght;
+                }
+              
+              if(v1 == b1->left)
+                {
+                  p_lk1 = b1->p_lk_left;
+                  sum_scale1 = b1->sum_scale_left;
+                }
+              else
+                {
+                  p_lk1 = b1->p_lk_rght;
+                  sum_scale1 = b1->sum_scale_rght;
+                }
+              
+              if(v2 == b2->left)
+                {
+                  p_lk2 = b2->p_lk_left;
+                  sum_scale2 = b2->sum_scale_left;
+                }
+              else
+                {
+                  p_lk2 = b2->p_lk_rght;
+                  sum_scale2 = b2->sum_scale_rght;
+                }
+              
+              
+              For(catg,tree->mod->ras->n_catg)
+                {
                   For(i,Ns)
                     {
-                      PhyML_Fprintf(fp,"%.4f\t",p[i]);
+                      p0 = .0;
+                      if(v0->tax)
+                        For(j,tree->mod->ns)
+                          {
+                            p0 += v0->b[0]->p_lk_tip_r[csite*Ns+j] * Pij0[catg*NsNs+i*Ns+j];
+                            
+                            /* printf("\n. p0 %d %f", */
+                            /*        v0->b[0]->p_lk_tip_r[site*Ns+j], */
+                            /*        Pij0[catg*NsNs+i*Ns+j]); */
+                          }
+                      else
+                        For(j,tree->mod->ns)
+                          {
+                            p0 += p_lk0[csite*NsNg+catg*Ns+j] * Pij0[catg*NsNs+i*Ns+j] / (phydbl)POW(2,sum_scale0[catg*tree->n_pattern+csite]);
+                            
+                            /* p0 += p_lk0[site*NsNg+catg*Ns+j] * Pij0[catg*NsNs+i*Ns+j]; */
+                            
+                            /* printf("\n. p0 %f %f", */
+                                    /*        p_lk0[site*NsNg+catg*Ns+j], */
+                                    /*        Pij0[catg*NsNs+i*Ns+j]); */
+                          }
+                      p1 = .0;
+                      if(v1->tax)
+                        For(j,tree->mod->ns)
+                          {
+                            p1 += v1->b[0]->p_lk_tip_r[csite*Ns+j] * Pij1[catg*NsNs+i*Ns+j];
+                            
+                            /* printf("\n. p1 %d %f", */
+                            /*        v1->b[0]->p_lk_tip_r[site*Ns+j], */
+                            /*        Pij1[catg*NsNs+i*Ns+j]); */
+                                  }
+                      
+                      else
+                        For(j,tree->mod->ns)
+                          {
+                            p1 += p_lk1[csite*NsNg+catg*Ns+j] * Pij1[catg*NsNs+i*Ns+j] / (phydbl)POW(2,sum_scale1[catg*tree->n_pattern+csite]);
+                            
+                            /* p1 += p_lk1[site*NsNg+catg*Ns+j] * Pij1[catg*NsNs+i*Ns+j];  */
+                            
+                            /* printf("\n. p1 %f %f", */
+                                    /*        p_lk1[site*NsNg+catg*Ns+j], */
+                                    /*        Pij1[catg*NsNs+i*Ns+j]); */
+                          }
+                      
+                      
+                      p2 = .0;
+                      if(v2->tax)
+                        For(j,tree->mod->ns)
+                          {
+                            p2 += v2->b[0]->p_lk_tip_r[csite*Ns+j] * Pij2[catg*NsNs+i*Ns+j];
+                            /* printf("\n. p2 %d %f", */
+                                    /*        v2->b[0]->p_lk_tip_r[site*Ns+j], */
+                                    /*        Pij2[catg*NsNs+i*Ns+j]); */
+                          }
+                      else
+                        For(j,tree->mod->ns)
+                          {
+                            p2 += p_lk2[csite*NsNg+catg*Ns+j] * Pij2[catg*NsNs+i*Ns+j] / (phydbl)POW(2,sum_scale2[catg*tree->n_pattern+csite]);
+                            
+                            /* p2 += p_lk2[site*NsNg+catg*Ns+j] * Pij2[catg*NsNs+i*Ns+j]; */
+                            
+                            /* printf("\n. p2 %f %f", */
+                            /*        p_lk2[site*NsNg+catg*Ns+j], */
+                            /*        Pij2[catg*NsNs+i*Ns+j]);  */
+                          }
+                      
+                      p[i] +=
+                        p0*p1*p2*
+                        tree->mod->e_frq->pi->v[i] /
+                        tree->cur_site_lk[csite] *
+                        tree->mod->ras->gamma_r_proba->v[catg];
+                      
                     }
-                  PhyML_Fprintf(fp,"\n");
-                  fflush(NULL);
-                  /* Exit("\n"); */
-                  
-
-                  tree = tree->next;
-                  d    = d->next;
-
-
                 }
-              while(tree && d && tree->is_mixt_tree == NO);
+              
+              PhyML_Fprintf(fp,"%4d\t%4d\t",site+1,d->num);
+              sum_probas = .0;
+              For(i,Ns)
+                {
+                  PhyML_Fprintf(fp,"%.4f\t",p[i]);
+                  sum_probas += p[i];
+                }
+              PhyML_Fprintf(fp,"\n");
+              assert(Are_Equal(sum_probas,1.0,0.01));
+              fflush(NULL);
+              /* Exit("\n"); */
             }
-
+          
           Free(p);
-          curr_mixt_tree = curr_mixt_tree->next_mixt;
-          curr_mixt_d    = curr_mixt_d->next_mixt;
         }
-      while(curr_mixt_tree != NULL);
     }
 }
 
@@ -3838,10 +3803,10 @@ void Pull_Scaling_Factors(int site,
                           t_edge *b,
                           t_tree *tree)
 {
-  int catg;
-  int *sum_scale_left_cat,*sum_scale_rght_cat;
-  int exponent;
-  phydbl max_sum_scale,min_sum_scale;
+    int catg;
+    int *sum_scale_left_cat,*sum_scale_rght_cat;
+    int exponent;
+    phydbl max_sum_scale,min_sum_scale;
   phydbl sum,tmp;
   phydbl site_lk_cat;
 
