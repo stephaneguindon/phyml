@@ -3681,7 +3681,7 @@ void Speed_Spr_Loop(t_tree *tree)
   Lk(NULL,tree);
   Optimiz_All_Free_Param(tree,(tree->io->quiet)?(NO):(tree->mod->s_opt->print));
   Optimize_Br_Len_Serie(tree);
-  Spr_Random_Explore(tree,0.0,1.0,NO,10);
+  Spr_Random_Explore(tree,2.0,0.3,NO,10);
 
   
   /*****************************/
@@ -4778,10 +4778,11 @@ void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int d
 
   do
     {
-      /* PhyML_Printf("\n[Random explore   %f]",prop_spr); */
 
       if(do_rnd == YES)
         {
+          PhyML_Printf("\n[Random pertub]");
+
           n_rand = 0;
           do
             {
@@ -4813,7 +4814,7 @@ void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int d
               
               n_rand++;
             }
-          while(n_rand != 1);
+          while(n_rand != 3);
         }
           
       Set_Both_Sides(YES,tree);
@@ -4821,19 +4822,18 @@ void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int d
       Pars(NULL,tree);
       
       Print_Lk_And_Pars(tree);
-      
-      tree->best_lnL  = tree->c_lnL;
-      tree->best_pars = tree->c_pars;
-      
+            
       if(tree->annealing_temp < 0.0) tree->annealing_temp = 0.0;
       if(prop_spr > 1.0)             prop_spr = 1.0;
       
+      tree->best_lnL       = tree->c_lnL;
+      tree->best_pars      = tree->c_pars;
       tree->n_improvements = 0;
       tree->max_spr_depth  = 0;
       Spr(UNLIKELY,prop_spr,tree);
       /* Simu(tree,5); */
       
-      tree->annealing_temp -= 1.;
+      tree->annealing_temp -= 0.5;
       prop_spr+=0.2;
 
       Set_Both_Sides(YES,tree);
