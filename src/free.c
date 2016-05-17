@@ -442,12 +442,9 @@ void Free_Edge_Lk_Rght(t_edge *b)
       if(b->sum_scale_rght) Free(b->sum_scale_rght);
     }
 
-  if(b->p_lk_tip_r) Free(b->p_lk_tip_r);
-
-  Free(b->sum_scale_rght_cat);
-  Free(b->patt_id_rght);
-  Free(b->p_lk_loc_rght);
-
+  if(b->p_lk_tip_r)         Free(b->p_lk_tip_r);
+  if(b->sum_scale_rght_cat) Free(b->sum_scale_rght_cat);
+  if(b->patt_id_rght)       Free(b->patt_id_rght);
 }
 
 //////////////////////////////////////////////////////////////
@@ -464,12 +461,9 @@ void Free_Edge_Lk_Left(t_edge *b)
       if(b->sum_scale_left) Free(b->sum_scale_left);
     }
 
-  if(b->p_lk_tip_l) Free(b->p_lk_tip_l);
-
-  Free(b->sum_scale_left_cat);
-  Free(b->patt_id_left);
-  Free(b->p_lk_loc_left);
-
+  if(b->p_lk_tip_l)         Free(b->p_lk_tip_l);
+  if(b->sum_scale_left_cat) Free(b->sum_scale_left_cat);
+  if(b->patt_id_left)       Free(b->patt_id_left);
 }
 
 //////////////////////////////////////////////////////////////
@@ -481,6 +475,31 @@ void Free_Edge_Lk(t_edge *b)
   Free(b->Pij_rr);
   Free_Edge_Lk_Left(b);
   Free_Edge_Lk_Rght(b);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Free_Edge_Loc_Rght(t_edge *b)
+{
+  if(b->p_lk_loc_rght) Free(b->p_lk_loc_rght);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Free_Edge_Loc_Left(t_edge *b)
+{
+  if(b->p_lk_loc_left) Free(b->p_lk_loc_left);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Free_Edge_Loc(t_edge *b)
+{
+  Free_Edge_Loc_Left(b);
+  Free_Edge_Loc_Rght(b);
 }
 
 //////////////////////////////////////////////////////////////

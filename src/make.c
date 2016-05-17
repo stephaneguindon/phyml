@@ -35,6 +35,10 @@ void Make_Tree_4_Lk(t_tree *tree, calign *cdata, int n_site)
       For(i,2*tree->n_otu-1) Make_Edge_Lk(tree->a_edges[i],tree);
       For(i,2*tree->n_otu-2) Make_Node_Lk(tree->a_nodes[i]);
 
+#ifndef PHYML
+      For(i,2*tree->n_otu-1) Make_Edge_Loc(tree->a_edges[i],tree);
+#endif
+
       if(tree->mod->s_opt->greedy)
         Init_P_Lk_Tips_Double(tree);
       else
@@ -42,10 +46,10 @@ void Make_Tree_4_Lk(t_tree *tree, calign *cdata, int n_site)
 
       Init_P_Lk_Loc(tree);
 
-      if(tree->n_root)
+      if(tree->n_root != NULL)
         {
-          Free_Edge_Lk_Rght(tree->a_edges[2*tree->n_otu-3]);
-          Free_Edge_Lk_Rght(tree->a_edges[2*tree->n_otu-2]);
+          Free_Edge_Lk_Rght(tree->n_root->b[1]);
+          Free_Edge_Lk_Rght(tree->n_root->b[2]);
         }
     }
 }
@@ -253,9 +257,7 @@ void Make_Edge_Lk_Left(t_edge *b, t_tree *tree)
       b->p_lk_left      = (phydbl *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns,sizeof(phydbl));
     }
 
-
   b->patt_id_left  = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
-  b->p_lk_loc_left = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
 }
 
 //////////////////////////////////////////////////////////////
@@ -301,7 +303,31 @@ void Make_Edge_Lk_Rght(t_edge *b, t_tree *tree)
     }
 
   b->patt_id_rght  = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Make_Edge_Loc(t_edge *b, t_tree *tree)
+{
+  Make_Edge_Loc_Left(b,tree);
+  Make_Edge_Loc_Rght(b,tree);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Make_Edge_Loc_Rght(t_edge *b, t_tree *tree)
+{
   b->p_lk_loc_rght = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Make_Edge_Loc_Left(t_edge *b, t_tree *tree)
+{
+  b->p_lk_loc_left = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
 }
 
 //////////////////////////////////////////////////////////////

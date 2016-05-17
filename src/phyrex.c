@@ -21,9 +21,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int PHYREX_Main(int argc, char *argv[])
 {
-  return(PHYREX_Main_Estimate(argc,argv));
-  /* return(PHYREX_Main_Simulate(argc,argv)); */
-
+  /* return(PHYREX_Main_Estimate(argc,argv)); */
+  return(PHYREX_Main_Simulate(argc,argv));
 }
 
 //////////////////////////////////////////////////////////////
@@ -116,8 +115,7 @@ int PHYREX_Main_Estimate(int argc, char *argv[])
   Prepare_Tree_For_Lk(tree);
 
   res = PHYREX_MCMC(tree);
-
-  Free(res);  
+  Free(res);
 
   return 0;
 }
@@ -141,28 +139,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   n_otus  = (int)atoi(argv[1]);
   n_sites = (int)atoi(argv[2]);
 
-  /* !!!!!!!!!!!!! */
-  /* seed = 9498; */
-  /* seed = 27351; */
-  /* seed = 359; */
-  /* seed = 1; */
-  /* seed = 10112; */
-  /* seed = 5818; */
-  /* seed = 16167; */
-  /* seed = 18885; */
-  /* seed = 22776; */
-  /* seed = 629; */
-  /* seed = 1; */
-  /* seed = 14493; */
-  /* seed = 15364; */
-  /* seed = 21414; */
-  /* seed = 13536; */
-  /* seed = 28366; */
-  /* seed = 20679; */
-  /* seed = 24365; */
-  /* seed = 17172; */
-  /* seed = 18398; */
-
+  /* seed = 28387; */
   printf("\n. seed: %d",seed);
   srand(seed);
   
@@ -170,7 +147,6 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
 
   disk = tree->disk;
   while(disk->prev) disk = disk->prev;
-
 
   strcpy(s,"phyrex_trees");
   sprintf(s+strlen(s),".%d",tree->mod->io->r_seed);
@@ -184,7 +160,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   strcpy(s,"phyrex_mtt");
   sprintf(s+strlen(s),".%d.xml",tree->mod->io->r_seed);
   PHYREX_Print_MultiTypeTree_Config_File(n_sites,s,tree);
-
+  
   res = PHYREX_MCMC(tree);
 
   disk = tree->disk;
@@ -213,8 +189,8 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   Free_Model_Basic(tree->mod);
   Free_Cseq(tree->data);
   Free_Tree(tree);
-  Free(res);  
   Free(s);
+  Free(res);
 
   return 0;
 }
@@ -227,7 +203,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
 t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int r_seed)
 {  
   t_tree *tree;
-  int n_dim;
+  int n_dim,i;
   t_phyrex_mod *mmod;
   t_dsk *disk;
   option *io;
@@ -317,14 +293,12 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
 
   
 
-  /* /\* !!!!!!!!!!!!! *\/ */
+  /* !!!!!!!!!!!!! */
   /* mmod->lbda  = 1.00; */
   /* mmod->mu    = 0.9; */
   /* mmod->rad   = 10.00; */
   /* neigh       = 2./mmod->mu; */
   /* mmod->sigsq = PHYREX_Update_Sigsq(tree); */
-
-
 
   /* PHYREX_Simulate_Backward_Core(YES,tree->disk,tree); */
   mmod->samp_area = PHYREX_Simulate_Forward_Core(n_sites,tree);
@@ -362,8 +336,8 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
 
   disk = tree->disk->prev;
   while(disk->prev) disk = disk->prev;
-
-  PhyML_Printf("\n. lambda=%G; mu=%G; rad=%G; clockr=%G; sigsq=%G; neigh=%G; N=%G; rhoe=%G",
+  
+  PhyML_Printf("\n. Useful parameters: lambda=%G; mu=%G; rad=%G; clockr=%G; sigsq=%G; neigh=%G; N=%G; rhoe=%G",
                mmod->lbda,
                mmod->mu,
                mmod->rad,
@@ -374,17 +348,31 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
                neigh/(4.*PI*mmod->sigsq));
   fflush(NULL);
 
-  printf("\n. XXX %f %d %d %d %f %f %f %f %f %f\n",
-         disk->time,
-         PHYREX_Total_Number_Of_Intervals(tree),
-         PHYREX_Total_Number_Of_Coal_Disks(tree),
-         PHYREX_Total_Number_Of_Hit_Disks(tree),
-         disk->ldsk->coord->lonlat[0],
-         disk->ldsk->coord->lonlat[1],
-         mmod->lbda,  
-         mmod->mu,    
-         mmod->sigsq,
-         Nucleotide_Diversity(tree->data));
+  PhyML_Printf("\n. Useful statistics: %f %d %d %d %f %f %f %f %f %f\n",
+               disk->time,
+               PHYREX_Total_Number_Of_Intervals(tree),
+               PHYREX_Total_Number_Of_Coal_Disks(tree),
+               PHYREX_Total_Number_Of_Hit_Disks(tree),
+               disk->ldsk->coord->lonlat[0],
+               disk->ldsk->coord->lonlat[1],
+               mmod->lbda,  
+               mmod->mu,    
+               mmod->sigsq,
+               Nucleotide_Diversity(tree->data));
+  
+  
+  PhyML_Printf("\n. Tree: ");
+  PhyML_Printf("\n. %s \n",Write_Tree(tree,NO));
+
+  PhyML_Printf("\n. Spatial coordinates: ");
+  For(i,tree->n_otu)
+    {
+      PhyML_Printf("\n. %15s: [%12f ; %12f]",
+                   tree->disk->ldsk_a[i]->nd->name,
+                   tree->disk->ldsk_a[i]->coord->lonlat[0],                   
+                   tree->disk->ldsk_a[i]->coord->lonlat[1]);
+    }
+  PhyML_Printf("\n");
 
   return(tree);
 }
@@ -4050,7 +4038,8 @@ void PHYREX_Print_MultiTypeTree_Config_File(int n_sites, char *filename, t_tree 
     {
       PhyML_Fprintf(fp,"\n<sequence id=\"%s\" taxon=\"%s\" totalcount=\"4\" value=\"%s\"/>",
                    tree->a_nodes[i]->coord->id,
-                   tree->a_nodes[i]->coord->id,
+                   /* tree->a_nodes[i]->coord->id, */
+                   tree->a_nodes[i]->name,
                    tree->a_nodes[i]->c_seq->state);
     }
 

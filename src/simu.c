@@ -697,11 +697,8 @@ void Unswap_N_Branch(t_tree *tree, t_edge **b, int beg, int end)
 void Swap_N_Branch(t_tree *tree,t_edge **b, int beg, int end)
 {
   int i;
-  int dim;
   t_edge *orig;
   t_node *n1,*n2,*n3,*n4;
-
-  dim = 2*tree->n_otu-2;
 
   n1 = n2 = n3 = n4 = NULL;
 

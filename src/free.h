@@ -84,5 +84,8 @@ void Free_Rmat_Weights(t_mod *mixt_mod);
 void JSON_Free_StringVal(json_sv *sv);
 void JSON_Free_Object(json_o *o);
 void JSON_Free_Array(json_a *a);
+void Free_Edge_Loc_Rght(t_edge *b);
+void Free_Edge_Loc_Left(t_edge *b);
+void Free_Edge_Loc(t_edge *b);
 
 #endif

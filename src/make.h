@@ -73,5 +73,8 @@ void PHYREX_Make_Lindisk_Next(t_ldsk *t);
 t_poly *Make_Poly(int n);
 void Make_All_Calibration(t_tree *tree);
 t_sarea *Make_Sarea(int n_poly);
+void Make_Edge_Loc(t_edge *b, t_tree *tree);
+void Make_Edge_Loc_Rght(t_edge *b, t_tree *tree);
+void Make_Edge_Loc_Left(t_edge *b, t_tree *tree);
 
 #endif
