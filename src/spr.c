@@ -3677,7 +3677,53 @@ void Speed_Spr_Loop(t_tree *tree)
 
   if((tree->mod->s_opt->print) && (!tree->io->quiet)) PhyML_Printf("\n\n. Maximizing likelihood (using SPR moves)...\n");
 
-  /* Spr_Pars(tree); */
+
+  {
+    int n_rand, n_targets, i;
+    t_node *rnd_node;
+    t_edge *b_target,*b_residual,**target_list,*rnd_edge;
+
+    target_list = (t_edge **)mCalloc(2*tree->n_otu-3,sizeof(t_edge *));
+
+    n_rand = 0;
+    do
+      {
+        rnd_node = tree->a_nodes[Rand_Int(tree->n_otu,2*tree->n_otu-3)];
+        assert(rnd_node != tree->n_root && rnd_node->tax == NO);
+        
+        rnd_edge = rnd_node->b[Rand_Int(0,2)];
+        
+        Prune_Subtree(rnd_node,
+                      rnd_node == rnd_edge->left ? rnd_edge->rght : rnd_edge->left,
+                      &b_target,
+                      &b_residual,
+                      tree);
+        
+        n_targets = 0;
+        For(i,3)
+          if(b_target->left->v[i] != b_target->rght)
+            Get_List_Of_Adjacent_Targets(b_target->left,b_target->left->v[i],NULL,&target_list,&n_targets,0,5);
+        
+        For(i,3)
+          if(b_target->rght->v[i] != b_target->left)
+            Get_List_Of_Adjacent_Targets(b_target->rght,b_target->rght->v[i],NULL,&target_list,&n_targets,0,5);
+        
+        if(n_targets > 0) b_target = target_list[Rand_Int(0,n_targets-1)];
+        
+        assert(b_target != NULL);
+        
+        Graft_Subtree(b_target,rnd_node,b_residual,tree);
+        
+        n_rand++;
+      }
+    while(n_rand != 10);
+
+    Free(target_list);
+  }
+    
+
+
+  Spr_Pars(tree);
   Set_Both_Sides(YES,tree);
   Lk(NULL,tree);
   Optimiz_All_Free_Param(tree,(tree->io->quiet)?(NO):(tree->mod->s_opt->print));
@@ -3685,7 +3731,7 @@ void Speed_Spr_Loop(t_tree *tree)
   /* tree->mod->s_opt->nni_br_len_opt = NO; */
   /* Simu(tree,5); */
   /* tree->mod->s_opt->nni_br_len_opt = YES; */
-  Spr_Random_Explore(tree,4.0,1.0,NO,10);
+  Spr_Random_Explore(tree,0.0,1.0,NO,10);
   /* Spr_Random_Explore(tree,0.0,1.0,YES,3); */
 
   /* /\*****************************\/ */
