@@ -21,8 +21,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int PHYREX_Main(int argc, char *argv[])
 {
-  /* return(PHYREX_Main_Estimate(argc,argv)); */
-  return(PHYREX_Main_Simulate(argc,argv));
+  return(PHYREX_Main_Estimate(argc,argv));
+  /* return(PHYREX_Main_Simulate(argc,argv)); */
 }
 
 //////////////////////////////////////////////////////////////
@@ -115,7 +115,8 @@ int PHYREX_Main_Estimate(int argc, char *argv[])
   Prepare_Tree_For_Lk(tree);
 
   res = PHYREX_MCMC(tree);
-  Free(res);
+
+  Free(res);  
 
   return 0;
 }
@@ -139,7 +140,6 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   n_otus  = (int)atoi(argv[1]);
   n_sites = (int)atoi(argv[2]);
 
-  /* seed = 28387; */
   printf("\n. seed: %d",seed);
   srand(seed);
   
@@ -160,7 +160,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   strcpy(s,"phyrex_mtt");
   sprintf(s+strlen(s),".%d.xml",tree->mod->io->r_seed);
   PHYREX_Print_MultiTypeTree_Config_File(n_sites,s,tree);
-  
+
   res = PHYREX_MCMC(tree);
 
   disk = tree->disk;
@@ -189,8 +189,8 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   Free_Model_Basic(tree->mod);
   Free_Cseq(tree->data);
   Free_Tree(tree);
+  Free(res);  
   Free(s);
-  Free(res);
 
   return 0;
 }

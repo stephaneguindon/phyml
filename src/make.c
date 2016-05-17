@@ -34,10 +34,7 @@ void Make_Tree_4_Lk(t_tree *tree, calign *cdata, int n_site)
     {
       For(i,2*tree->n_otu-1) Make_Edge_Lk(tree->a_edges[i],tree);
       For(i,2*tree->n_otu-2) Make_Node_Lk(tree->a_nodes[i]);
-
-#ifndef PHYML
       For(i,2*tree->n_otu-1) Make_Edge_Loc(tree->a_edges[i],tree);
-#endif
 
       if(tree->mod->s_opt->greedy)
         Init_P_Lk_Tips_Double(tree);

@@ -28,5 +28,7 @@ make;
 
 To install PhyML, type the following command:
 sh ./autogen.sh;
+If you are using a Mac computer, you may need to install the following packages 
+first: autoconf automake libtool gettext.
 
 
