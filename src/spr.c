@@ -4855,10 +4855,10 @@ void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int m
       Spr(UNLIKELY,prop_spr,tree);
       /* Simu(tree,5); */
       
-      /* tree->mod->s_opt->max_depth_path = 2*tree->max_spr_depth; */
+      tree->mod->s_opt->max_depth_path = (int)(1.5*tree->max_spr_depth);
 
       tree->annealing_temp -= 1.;
-      /* prop_spr+=0.2; */
+      prop_spr+=0.2;
 
       Set_Both_Sides(YES,tree);
       Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
