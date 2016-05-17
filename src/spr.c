@@ -3706,7 +3706,7 @@ void Speed_Spr_Loop(t_tree *tree)
   
 
   /*****************************/
-  tree->mod->s_opt->min_diff_lk_move  = 0.1;
+  tree->mod->s_opt->min_diff_lk_move  = 0.01;
   lk_old = UNLIKELY;
   do
     {
