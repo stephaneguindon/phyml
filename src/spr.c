@@ -3685,7 +3685,7 @@ void Speed_Spr_Loop(t_tree *tree)
   /* tree->mod->s_opt->nni_br_len_opt = NO; */
   /* Simu(tree,5); */
   /* tree->mod->s_opt->nni_br_len_opt = YES; */
-  Spr_Random_Explore(tree,0.0,1.0,NO,10);
+  Spr_Random_Explore(tree,4.0,1.0,NO,10);
   /* Spr_Random_Explore(tree,0.0,1.0,YES,3); */
 
   /* /\*****************************\/ */
