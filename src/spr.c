@@ -3228,9 +3228,7 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
 
       if(tree->n_moves)
         {
-          /* n_moves_pars = 10; */
-          /* n_moves      =  5; */
-          n_moves_pars = 30;
+          n_moves_pars = 10;
           n_moves      = 5;
 
           if(tree->mod->s_opt->spr_lnL == NO) n_moves = n_moves_pars;
@@ -3687,7 +3685,7 @@ void Speed_Spr_Loop(t_tree *tree)
   /* Simu(tree,5); */
   /* tree->mod->s_opt->nni_br_len_opt = YES; */
   Spr_Random_Explore(tree,0.0,1.0,NO,10);
-  /* Spr_Random_Explore(tree,0.0,1.0,YES,3); */
+  Spr_Random_Explore(tree,5.0,1.0,YES,5);
 
   /* /\*****************************\/ */
   /* lk_old = UNLIKELY; */
