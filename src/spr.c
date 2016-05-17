@@ -3681,7 +3681,7 @@ void Speed_Spr_Loop(t_tree *tree)
   Lk(NULL,tree);
   Optimiz_All_Free_Param(tree,(tree->io->quiet)?(NO):(tree->mod->s_opt->print));
   Optimize_Br_Len_Serie(tree);
-  Spr_Random_Explore(tree,2.0,0.3,NO,10);
+  Spr_Random_Explore(tree,2.0,1.0,NO,10);
 
   
   /*****************************/
