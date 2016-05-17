@@ -4758,10 +4758,10 @@ void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int d
   Pars(NULL,tree);
   Lk(NULL,tree);
 
-  /* tree->mod->s_opt->max_depth_path    = 25; */
-  tree->mod->s_opt->max_depth_path    = (int)(tree->n_otu);
+  tree->mod->s_opt->max_depth_path    = 20;
+  /* tree->mod->s_opt->max_depth_path    = (int)(tree->n_otu); */
   tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(0.):(0.);
-  tree->mod->s_opt->min_diff_lk_move  = 0.01;
+  tree->mod->s_opt->min_diff_lk_move  = 0.1;
   tree->mod->s_opt->spr_lnL           = NO;
   tree->mod->s_opt->spr_pars          = NO;
   tree->mod->s_opt->deepest_path      = 0;
@@ -4833,8 +4833,6 @@ void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int d
       Spr(UNLIKELY,prop_spr,tree);
       /* Simu(tree,5); */
       
-      tree->mod->s_opt->max_depth_path = (int)(1.5*tree->max_spr_depth);
-
       tree->annealing_temp -= 1.;
       prop_spr+=0.2;
 
