@@ -3230,8 +3230,8 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
         {
           /* n_moves_pars = 10; */
           /* n_moves      =  5; */
-          n_moves_pars = 20;
-          n_moves      =  5;
+          n_moves_pars = 5;
+          n_moves      = 5;
 
           if(tree->mod->s_opt->spr_lnL == NO) n_moves = n_moves_pars;
 
