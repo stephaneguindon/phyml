@@ -3677,7 +3677,7 @@ void Speed_Spr_Loop(t_tree *tree)
 
   if((tree->mod->s_opt->print) && (!tree->io->quiet)) PhyML_Printf("\n\n. Maximizing likelihood (using SPR moves)...\n");
 
-  Spr_Pars(tree);
+  /* Spr_Pars(tree); */
   Set_Both_Sides(YES,tree);
   Lk(NULL,tree);
   Optimiz_All_Free_Param(tree,(tree->io->quiet)?(NO):(tree->mod->s_opt->print));
@@ -3686,7 +3686,7 @@ void Speed_Spr_Loop(t_tree *tree)
   /* Simu(tree,5); */
   /* tree->mod->s_opt->nni_br_len_opt = YES; */
   Spr_Random_Explore(tree,0.0,1.0,NO,10);
-  Spr_Random_Explore(tree,0.0,1.0,YES,3);
+  /* Spr_Random_Explore(tree,0.0,1.0,YES,3); */
 
   /* /\*****************************\/ */
   /* lk_old = UNLIKELY; */
