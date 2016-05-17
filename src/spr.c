@@ -3685,7 +3685,8 @@ void Speed_Spr_Loop(t_tree *tree)
   /* tree->mod->s_opt->nni_br_len_opt = NO; */
   /* Simu(tree,5); */
   /* tree->mod->s_opt->nni_br_len_opt = YES; */
-  Spr_Random_Explore(tree,0.0,1.0,10);
+  Spr_Random_Explore(tree,0.0,1.0,NO,10);
+  Spr_Random_Explore(tree,0.0,1.0,YES,3);
 
   /* /\*****************************\/ */
   /* lk_old = UNLIKELY; */
@@ -4759,9 +4760,9 @@ void Spr_Shuffle(t_tree *mixt_tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int max_cycles)
+void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int do_rnd, int max_cycles)
 {
-  int step,i,n_targets,n_rand,no_improvement,do_rnd;
+  int step,i,n_targets,n_rand,no_improvement;
   t_tree *best_tree;
   scalar_dbl **best_bl;
   t_node *rnd_node;
@@ -4795,7 +4796,6 @@ void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int m
   n_targets                           = 0;
   no_improvement                      = 0;
   tree->annealing_temp                = anneal_temp;
-  do_rnd                              = NO;
   Copy_Tree(tree,best_tree);
 
   do
@@ -4821,11 +4821,11 @@ void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int m
               n_targets = 0;
               For(i,3)
                 if(b_target->left->v[i] != b_target->rght)
-                  Get_List_Of_Adjacent_Targets(b_target->left,b_target->left->v[i],NULL,&target_list,&n_targets,0,6);
+                  Get_List_Of_Adjacent_Targets(b_target->left,b_target->left->v[i],NULL,&target_list,&n_targets,0,5);
               
               For(i,3)
                 if(b_target->rght->v[i] != b_target->left)
-                  Get_List_Of_Adjacent_Targets(b_target->rght,b_target->rght->v[i],NULL,&target_list,&n_targets,0,6);
+                  Get_List_Of_Adjacent_Targets(b_target->rght,b_target->rght->v[i],NULL,&target_list,&n_targets,0,5);
               
               if(n_targets > 0) b_target = target_list[Rand_Int(0,n_targets-1)];
               
