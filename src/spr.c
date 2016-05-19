@@ -3279,7 +3279,8 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
 
               Sort_Spr_List_LnL(tree);
 
-              best_move = Evaluate_List_Of_Regraft_Pos_Triple(tree->spr_list,n_moves,tree);
+              if(tree->mod->s_opt->spr_lnL == YES && tree->spr_list[0]->lnL < tree->best_lnL - 5.0) best_move = -1;
+              else best_move = Evaluate_List_Of_Regraft_Pos_Triple(tree->spr_list,n_moves,tree);
 
               if(best_move > -1)
                 {
@@ -3303,13 +3304,7 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
               else
                 {
                   Pars(NULL,tree);
-                  /* tree->both_sides = YES; */
-                  /* Lk(tree); */
-                  /* tree->both_sides = NO; */
                 }
-
-              /* printf("\n. 3"); fflush(NULL); */
-              /* if(!Check_Lk_At_Given_Edge(tree)) Exit("\n"); */
             }
         }
       Reset_Spr_List(tree);
@@ -4246,31 +4241,9 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
                    tree->a_edges[i]->l->v,
                    tree->a_edges[i]->l_var->v);
 
-          /* printf("\n. %f %f  %f %f", */
-          /*        tree->next->c_lnL, */
-          /*        tree->next->next->c_lnL, */
-          /*        tree->next->next->c_lnL, */
-          /*        tree->next->next->next->c_lnL); */
           PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
           Exit("\n");
         }
-
-      //
-/*       if(!(tree->n_improvements % tree->mod->s_opt->br_len_in_spr)) */
-/* 	{ */
-/* 	  tree->mod->s_opt->brent_it_max = 10; */
-/* 	  Optimize_Br_Len_Serie(tree->a_nodes[0], */
-/* 				tree->a_nodes[0]->v[0], */
-/* 				tree->a_nodes[0]->b[0], */
-/* 				tree, */
-/* 				tree->data); */
-/* 	  tree->mod->s_opt->brent_it_max = 500; */
-
-/* 	  tree->both_sides = 1; */
-/* 	  Lk(tree); */
-/* 	} */
-      //
-
 
       if((tree->mod->s_opt->print) && (!tree->io->quiet))
         {
