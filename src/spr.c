@@ -3219,13 +3219,8 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
     }
   else
     {
-      /* printf("\n. -1"); fflush(NULL); */
-      /* if(!Check_Lk_At_Given_Edge(NO,tree)) Exit("\n"); */
 
       if(!link->tax) Test_All_Spr_Targets(b,link,tree);
-
-      /* printf("\n. 0"); fflush(NULL); */
-      /* if(!Check_Lk_At_Given_Edge(NO,tree)) Exit("\n"); */
 
       if(tree->n_moves)
         {
@@ -3696,7 +3691,7 @@ void Speed_Spr_Loop(t_tree *tree)
   /* Optimiz_All_Free_Param(tree,(tree->io->quiet)?(NO):(tree->mod->s_opt->print)); */
 
   /*****************************/
-  if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. Second round of SPR moves...\n");
+  if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. Stating round of SPR moves...\n");
   lk_old = tree->c_lnL;
   tree->mod->s_opt->max_depth_path    = (int)(tree->n_otu/3);
   tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(5.):(0.);
@@ -3707,7 +3702,7 @@ void Speed_Spr_Loop(t_tree *tree)
   do
     {
       lk_old = tree->c_lnL;
-      Speed_Spr(tree,1.0,20,delta_lnL);
+      Speed_Spr(tree,0.5,20,delta_lnL);
     }
   while(FABS(tree->c_lnL - lk_old) > delta_lnL);
   /*****************************/
