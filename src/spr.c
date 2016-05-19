@@ -3229,8 +3229,10 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
 
       if(tree->n_moves)
         {
-          n_moves_pars = MAX(5,(int)(0.1*tree->n_moves));
-          n_moves      = MAX(5,(int)(0.1*tree->n_moves));
+          /* n_moves_pars = MAX(5,(int)(0.1*tree->n_moves)); */
+          /* n_moves      = MAX(5,(int)(0.1*tree->n_moves)); */
+          n_moves_pars = MIN(5,tree->n_moves);
+          n_moves      = MIN(5,tree->n_moves);
 
           if(tree->mod->s_opt->spr_lnL == NO)       n_moves = n_moves_pars;
           if(tree->io->fp_in_constraint_tree == NO) n_moves = MAX(1,n_moves);
@@ -3682,8 +3684,8 @@ void Speed_Spr_Loop(t_tree *tree)
   if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. Round of SPR moves...\n");
   lk_old = tree->c_lnL;
   tree->mod->s_opt->max_depth_path    = 1+(int)(tree->n_otu/3);
-  tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(0.):(0.);
-  tree->mod->s_opt->spr_lnL           = NO;
+  tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(5.):(0.);
+  tree->mod->s_opt->spr_lnL           = YES;
   tree->mod->s_opt->spr_pars          = NO;
   tree->mod->s_opt->min_diff_lk_move  = 0.1;
   delta_lnL                           = 1;
@@ -3698,18 +3700,18 @@ void Speed_Spr_Loop(t_tree *tree)
   Optimiz_All_Free_Param(tree,(tree->io->quiet)?(NO):(tree->mod->s_opt->print));
 
 
-  /*****************************/
-  if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. Last round of SPR moves...\n");
-  lk_old = tree->c_lnL;
-  tree->mod->s_opt->max_depth_path    = 20;
-  tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(5.):(0.);
-  tree->mod->s_opt->spr_lnL           = YES;
-  tree->mod->s_opt->spr_pars          = NO;
-  tree->mod->s_opt->min_diff_lk_move  = 0.1;
-  delta_lnL                           = 1.0;
-  Speed_Spr(tree,1.0,20,delta_lnL);
+  /* /\*****************************\/ */
+  /* if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. Last round of SPR moves...\n"); */
+  /* lk_old = tree->c_lnL; */
+  /* tree->mod->s_opt->max_depth_path    = 20; */
+  /* tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(5.):(0.); */
+  /* tree->mod->s_opt->spr_lnL           = YES; */
+  /* tree->mod->s_opt->spr_pars          = NO; */
+  /* tree->mod->s_opt->min_diff_lk_move  = 0.1; */
+  /* delta_lnL                           = 1.0; */
+  /* Speed_Spr(tree,1.0,20,delta_lnL); */
 
-  Optimiz_All_Free_Param(tree,(tree->io->quiet)?(NO):(tree->mod->s_opt->print));
+  /* Optimiz_All_Free_Param(tree,(tree->io->quiet)?(NO):(tree->mod->s_opt->print)); */
 
   /*****************************/
   tree->mod->s_opt->min_diff_lk_move  = 0.01;
