@@ -5597,11 +5597,11 @@ void JSON_Tree_Io(t_tree *tree, FILE *where)
   json_o *o;
 
   rewind(where);
-  PhyML_Fprintf(where,"[");
+  /* PhyML_Fprintf(where,"["); */
   o = JSON_Tree_To_Object(tree);
   JSON_Write_Object(o,where);
   JSON_Free_Object(o);
-  PhyML_Fprintf(where,"]");
+  /* PhyML_Fprintf(where,"]"); */
   fflush(where);
 
 
