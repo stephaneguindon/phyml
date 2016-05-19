@@ -3091,9 +3091,9 @@ void Sort_Spr_List_Depth(t_tree *tree)
   int i,j;
   t_spr *buff;
 
-  For(i,tree->size_spr_list-1)
+  For(i,tree->n_moves-1)
     {
-      for(j=i+1;j<tree->size_spr_list;j++)
+      for(j=i+1;j<tree->n_moves;j++)
         {
           if(tree->spr_list[j]->depth_path < tree->spr_list[i]->depth_path)
             {
