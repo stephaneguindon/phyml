@@ -3229,8 +3229,8 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
 
       if(tree->n_moves)
         {
-          n_moves_pars = 0;
-          n_moves      = 5;
+          n_moves_pars = 20;
+          n_moves      =  5;
 
           /* For(i,tree->n_moves) */
           /*   if(curr_pars - tree->spr_list[i]->pars >= -tree->mod->s_opt->pars_thresh) */
