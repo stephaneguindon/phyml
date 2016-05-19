@@ -3152,14 +3152,10 @@ void Randomize_Spr_List(t_tree *tree)
 int Spr(phydbl init_lnL, phydbl prop_spr, t_tree *tree)
 {
   int i,br;
-  int pars_diff, max_pars_diff, new_pars, old_pars, *br_idx;
+  int *br_idx;
   t_edge *b;
 
   Set_Both_Sides(YES,tree);
-  pars_diff        = -1;
-  max_pars_diff    = -1;
-  new_pars         = -1;
-  old_pars         = -1;
 
   Reset_Spr_List(tree);
 
@@ -3173,20 +3169,8 @@ int Spr(phydbl init_lnL, phydbl prop_spr, t_tree *tree)
       if(!(br%10)) if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
 
       b = tree->a_edges[br];
-      
-      old_pars = tree->c_pars;
       Spr_Subtree(b,b->left,tree);
-      new_pars = tree->c_pars;
-
-      pars_diff =  new_pars - old_pars;
-      if(pars_diff > max_pars_diff) max_pars_diff = pars_diff;
-
-      old_pars = tree->c_pars;
       Spr_Subtree(b,b->rght,tree);
-      new_pars = tree->c_pars;
-
-      pars_diff = new_pars - old_pars;
-      if(pars_diff > max_pars_diff) max_pars_diff = pars_diff;
     }
 
 /*   tree->mod->s_opt->pars_thresh = MAX(5,max_pars_diff); */
@@ -3680,7 +3664,7 @@ void Speed_Spr_Loop(t_tree *tree)
   tree->mod->s_opt->spr_lnL           = NO;
   tree->mod->s_opt->spr_pars          = NO;
   tree->mod->s_opt->min_diff_lk_move  = 0.1;
-  delta_lnL                           = 10;
+  delta_lnL                           = 1;
   do
     {
       lk_old = tree->c_lnL;
