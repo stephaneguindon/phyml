@@ -3675,12 +3675,12 @@ void Speed_Spr_Loop(t_tree *tree)
   /*****************************/
   if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. First round of SPR moves...\n");
   lk_old = tree->c_lnL;
-  tree->mod->s_opt->max_depth_path    = 3;
+  tree->mod->s_opt->max_depth_path    = (int)(tree->n_otu/3);
   tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(0.):(0.);
   tree->mod->s_opt->spr_lnL           = NO;
   tree->mod->s_opt->spr_pars          = NO;
   tree->mod->s_opt->min_diff_lk_move  = 0.1;
-  delta_lnL                           = 1.0;
+  delta_lnL                           = 10;
   do
     {
       lk_old = tree->c_lnL;
@@ -3694,7 +3694,7 @@ void Speed_Spr_Loop(t_tree *tree)
 
   if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. Second round of SPR moves...\n");
   lk_old = tree->c_lnL;
-  tree->mod->s_opt->max_depth_path    = (int)(tree->n_otu/3);
+  tree->mod->s_opt->max_depth_path    = 5;
   tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(5.):(0.);
   tree->mod->s_opt->spr_lnL           = NO;
   tree->mod->s_opt->spr_pars          = NO;
