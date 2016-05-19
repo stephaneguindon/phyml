@@ -3229,7 +3229,7 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
 
       if(tree->n_moves)
         {
-          n_moves_pars = 20;
+          n_moves_pars = 10;
           n_moves      =  5;
 
           if(tree->mod->s_opt->spr_lnL == NO)       n_moves = n_moves_pars;
@@ -3279,8 +3279,7 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
 
               Sort_Spr_List_LnL(tree);
 
-              if(tree->mod->s_opt->spr_lnL == YES && tree->spr_list[0]->lnL < tree->best_lnL - 5.0) best_move = -1;
-              else best_move = Evaluate_List_Of_Regraft_Pos_Triple(tree->spr_list,n_moves,tree);
+              best_move = Evaluate_List_Of_Regraft_Pos_Triple(tree->spr_list,n_moves,tree);
 
               if(best_move > -1)
                 {
@@ -3310,7 +3309,6 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
       Reset_Spr_List(tree);
     }
 }
-
 
 /*********************************************************/
 
@@ -3651,7 +3649,7 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
 
 void Speed_Spr_Loop(t_tree *tree)
 {
-  phydbl lk_old;
+  phydbl lk_old,delta_lnL;
 
   tree->best_pars                  = 1E+8;
   tree->mod->s_opt->spr_lnL        = NO;
@@ -3665,8 +3663,49 @@ void Speed_Spr_Loop(t_tree *tree)
   Lk(NULL,tree);
   Optimiz_All_Free_Param(tree,(tree->io->quiet)?(NO):(tree->mod->s_opt->print));
   Optimize_Br_Len_Serie(tree);
-  Spr_Random_Explore(tree,0.0,1.0,NO,20);
   
+  tree->best_pars = tree->c_pars;
+  tree->best_lnL  = tree->c_lnL;
+
+
+  /*****************************/
+  if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. First round of SPR moves...\n");
+  lk_old = tree->c_lnL;
+  tree->mod->s_opt->max_depth_path    = (int)(tree->n_otu/3);
+  tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(0.):(0.);
+  tree->mod->s_opt->spr_lnL           = NO;
+  tree->mod->s_opt->spr_pars          = NO;
+  tree->mod->s_opt->min_diff_lk_move  = 0.5;
+  delta_lnL                           = 3.0;
+  do
+    {
+      lk_old = tree->c_lnL;
+      Speed_Spr(tree,1.0,20,delta_lnL);
+    }
+  while(FABS(tree->c_lnL - lk_old) > delta_lnL);
+  /*****************************/
+
+  Optimiz_All_Free_Param(tree,(tree->io->quiet)?(NO):(tree->mod->s_opt->print));
+
+  /*****************************/
+  if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. Second round of SPR moves...\n");
+  lk_old = tree->c_lnL;
+  tree->mod->s_opt->max_depth_path    = 5;
+  tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(5.):(0.);
+  tree->mod->s_opt->spr_lnL           = YES;
+  tree->mod->s_opt->spr_pars          = NO;
+  tree->mod->s_opt->min_diff_lk_move  = 0.1;
+  delta_lnL                           = 1.0;
+  do
+    {
+      lk_old = tree->c_lnL;
+      Speed_Spr(tree,1.0,20,delta_lnL);
+    }
+  while(FABS(tree->c_lnL - lk_old) > delta_lnL);
+  /*****************************/
+
+  Optimiz_All_Free_Param(tree,(tree->io->quiet)?(NO):(tree->mod->s_opt->print));
+
   /*****************************/
   tree->mod->s_opt->min_diff_lk_move  = 0.01;
   lk_old = UNLIKELY;
@@ -3674,11 +3713,11 @@ void Speed_Spr_Loop(t_tree *tree)
     {
       lk_old = tree->c_lnL;
       if(!Simu(tree,5)) break;
-      Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
     }
   while(FABS(lk_old - tree->c_lnL) > tree->mod->s_opt->min_diff_lk_local);
   /*****************************/
 
+  Optimiz_All_Free_Param(tree,(tree->io->quiet)?(NO):(tree->mod->s_opt->print));
 
   /*****************************/
   do
@@ -3696,7 +3735,7 @@ void Speed_Spr_Loop(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Speed_Spr(t_tree *tree, phydbl prop_spr, int max_cycles)
+void Speed_Spr(t_tree *tree, phydbl prop_spr, int max_cycles, phydbl delta_lnL)
 {
   int step,old_pars;
   phydbl old_lnL;
@@ -3726,20 +3765,22 @@ void Speed_Spr(t_tree *tree, phydbl prop_spr, int max_cycles)
       old_lnL  = tree->c_lnL;
       old_pars = tree->c_pars;
 
-      tree->max_spr_depth          = 0;
-      tree->n_improvements         = 0;
+      tree->max_spr_depth  = 0;
+      tree->n_improvements = 0;
       Spr(UNLIKELY,prop_spr,tree);
 
       if(tree->mod->s_opt->spr_pars == NO)
         {
-          /* Optimise branch lengths */
-          Optimize_Br_Len_Serie(tree);
-          /* Update partial likelihoods */
-          Set_Both_Sides(YES,tree);
-          Lk(NULL,tree);
-        
-          /* Print log-likelihood and parsimony scores */
-          if((tree->mod->s_opt->print) && (!tree->io->quiet)) Print_Lk(tree,"[Branch lengths     ]");
+          if(tree->n_improvements > 0)
+            {
+              /* Optimise branch lengths */
+              Optimize_Br_Len_Serie(tree);
+              /* Update partial likelihoods */
+              Set_Both_Sides(YES,tree);
+              Lk(NULL,tree);
+              /* Print log-likelihood and parsimony scores */
+              if((tree->mod->s_opt->print) && (!tree->io->quiet)) Print_Lk(tree,"[Branch lengths     ]");
+            }
         }
       else
         {
@@ -3755,7 +3796,6 @@ void Speed_Spr(t_tree *tree, phydbl prop_spr, int max_cycles)
           if((tree->io->print_site_lnl) && (!tree->mod->s_opt->spr_pars)) Print_Site_Lk(tree,tree->io->fp_out_lk); fflush(tree->io->fp_out_lk);
           Free(s);
         }
-
 
       if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
       
@@ -3787,10 +3827,9 @@ void Speed_Spr(t_tree *tree, phydbl prop_spr, int max_cycles)
 
       /* Exit if no improvements after complete optimization */
       if(step+1 > max_cycles) break;
-      if((tree->mod->s_opt->spr_pars == NO)  && (FABS(old_lnL-tree->c_lnL) < tree->mod->s_opt->min_diff_lk_global)) break;
-      if((tree->mod->s_opt->spr_pars == YES) && (FABS(old_pars-tree->c_pars) < 1.)) break;
+      if((tree->mod->s_opt->spr_pars == NO)  && (FABS(old_lnL-tree->c_lnL)   < delta_lnL)) break;
+      if((tree->mod->s_opt->spr_pars == YES) && (FABS(old_pars-tree->c_pars) < 1)) break;
       if(!tree->n_improvements) break;
-
     }
   while(1);
 }
@@ -4546,7 +4585,7 @@ void Spr_Pars(int threshold, int n_round_max, t_tree *tree)
   do
     {
       curr_pars = tree->c_pars;
-      Speed_Spr(tree,1.0,1);
+      Speed_Spr(tree,1.0,1,0.0);
     }
   while(tree->n_improvements && FABS(tree->c_pars - curr_pars) > threshold);
 
