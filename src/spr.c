@@ -3232,9 +3232,9 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
           n_moves_pars = 0;
           n_moves      = 5;
 
-          For(i,tree->n_moves)
-            if(curr_pars - tree->spr_list[i]->pars >= -tree->mod->s_opt->pars_thresh)
-              n_moves_pars++;
+          /* For(i,tree->n_moves) */
+          /*   if(curr_pars - tree->spr_list[i]->pars >= -tree->mod->s_opt->pars_thresh) */
+          /*     n_moves_pars++; */
 
           if(tree->mod->s_opt->spr_lnL == NO) n_moves = n_moves_pars;
 
@@ -4765,8 +4765,8 @@ void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int d
   Lk(NULL,tree);
 
   tree->mod->s_opt->max_depth_path    = (int)(tree->n_otu/3);
-  tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(10.):(5.);
-  tree->mod->s_opt->min_diff_lk_move  = 0.01;
+  tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(5.):(0.);
+  tree->mod->s_opt->min_diff_lk_move  = 0.1;
   tree->mod->s_opt->spr_lnL           = NO;
   tree->mod->s_opt->spr_pars          = NO;
   tree->mod->s_opt->deepest_path      = 0;
