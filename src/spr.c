@@ -3202,12 +3202,13 @@ int Spr(phydbl init_lnL, phydbl prop_spr, t_tree *tree)
 void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
 {
   int i;
-  int n_moves_pars, n_moves, min_pars, best_move;
+  int n_moves_pars, n_moves, min_pars, best_move, curr_pars;
   t_spr *best_pars_move;
   t_edge *target, *residual;
-
+  
   best_move     = -1;
   tree->n_moves = 0;
+  curr_pars     = tree->c_pars;
 
   MIXT_Set_Pars_Thresh(tree);
 
@@ -3228,8 +3229,12 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
 
       if(tree->n_moves)
         {
-          n_moves_pars = 10;
-          n_moves      =  5;
+          n_moves_pars = 0;
+          n_moves      = 5;
+
+          For(i,tree->n_moves)
+            if(curr_pars - tree->spr_list[i]->pars >= -tree->mod->s_opt->pars_thresh)
+              n_moves_pars++;
 
           if(tree->mod->s_opt->spr_lnL == NO) n_moves = n_moves_pars;
 
@@ -3752,7 +3757,7 @@ void Speed_Spr(t_tree *tree, phydbl prop_spr, int max_cycles)
           /* Update partial likelihoods */
           Set_Both_Sides(YES,tree);
           Lk(NULL,tree);
-          
+        
           /* Print log-likelihood and parsimony scores */
           if((tree->mod->s_opt->print) && (!tree->io->quiet)) Print_Lk(tree,"[Branch lengths     ]");
         }
