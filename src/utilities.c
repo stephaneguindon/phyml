@@ -5350,14 +5350,6 @@ int Get_Subtree_Size(t_node *a, t_node *d)
 
 void Fast_Br_Len(t_edge *b, t_tree *tree, int approx)
 {
-  /* phydbl sum; */
-  /* phydbl *prob, *F; */
-  /* int i, j, k, site; */
-  /* phydbl *v_rght; */
-  /* int dim1,dim2,dim3; */
-  /* int n_iter; */
-  /* phydbl scale_rght; */
-
   if(tree->is_mixt_tree)
     {
       if(approx == NO)
@@ -5365,72 +5357,19 @@ void Fast_Br_Len(t_edge *b, t_tree *tree, int approx)
       else
         {
           tree->mod->s_opt->brent_it_max = 5;
-          MIXT_Br_Len_Brent(0.001,1.,b,tree);
+          MIXT_Br_Len_Brent(0.001,2.,b,tree);
           tree->mod->s_opt->brent_it_max = BRENT_IT_MAX;
         }
       return;
     }
 
-  /* n_iter = 0; */
-  /* dim1   = tree->mod->ns * tree->mod->ras->n_catg; */
-  /* dim2   = tree->mod->ns ; */
-  /* dim3   = tree->mod->ns * tree->mod->ns; */
-
-  /* F    = tree->triplet_struct->F_bc; */
-  /* prob = tree->triplet_struct->F_cd; */
-
-  /* Update_PMat_At_Given_Edge(b,tree); */
-
-  /* For(i,dim1*dim2) F[i] = .0; */
-
-  /* v_rght = (phydbl *)mCalloc(tree->mod->ns,sizeof(phydbl)); */
-
-  /* For(site,tree->n_pattern) */
-  /*   { */
-  /*     /\* Joint probabilities of the states at the two ends of the t_edge *\/ */
-
-  /*     For(k,tree->mod->ras->n_catg) */
-  /*       { */
-  /*         if(b->rght->tax == YES) */
-  /*           For(i,tree->mod->ns) v_rght[i] = (phydbl)(b->p_lk_tip_r[site*dim2+i]); */
-  /*         else */
-  /*           For(i,tree->mod->ns) v_rght[i] = (phydbl)(b->p_lk_rght[site*dim1+k*dim2+i]); */
-
-  /*         scale_rght = (b->rght->tax)?(0.0):(b->sum_scale_rght[k*tree->n_pattern+site]); */
-
-  /*         Joint_Proba_States_Left_Right(b->Pij_rr + k*dim3, */
-  /*       				b->p_lk_left + site*dim1+k*dim2, */
-  /*       				v_rght, */
-  /*       				tree->mod->e_frq->pi, */
-  /*       				b->sum_scale_left[k*tree->n_pattern+site], */
-  /*       				scale_rght, */
-  /*       				prob + dim3*k, */
-  /*       				tree->mod->ns,site,tree); */
-
-  /*         /\* Scaling *\/ */
-  /*         sum = .0; */
-  /*         For(i,tree->mod->ns) For(j,tree->mod->ns) sum += prob[dim3*k+dim2*i+j]; */
-  /*         For(i,tree->mod->ns) For(j,tree->mod->ns) prob[dim3*k+dim2*i+j] /= sum; */
-  /*         For(i,tree->mod->ns) For(j,tree->mod->ns) prob[dim3*k+dim2*i+j] *= tree->mod->ras->gamma_r_proba->v[k]; */
-  /*       } */
-
-  /*     /\* Expected number of each pair of states *\/ */
-  /*     For(i,tree->mod->ns) For(j,tree->mod->ns) For(k,tree->mod->ras->n_catg) */
-  /*       F[dim3*k+dim2*i+j] += tree->data->wght[site] * prob[dim3*k+dim2*i+j]; */
-
-  /* } */
-
-  /* Free(v_rght); */
-
-  /* Opt_Dist_F(&(b->l->v),F,tree->mod); */
-  /* n_iter++; */
 
   if(approx == NO)
     Br_Len_Brent(0.001,100.,b,tree);
   else
     {
-      tree->mod->s_opt->brent_it_max = 10;
-      Br_Len_Brent(0.001,1000.,b,tree);
+      tree->mod->s_opt->brent_it_max = 5;
+      Br_Len_Brent(0.001,2.,b,tree);
       tree->mod->s_opt->brent_it_max = BRENT_IT_MAX;
     }
 }

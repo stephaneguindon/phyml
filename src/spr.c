@@ -3128,6 +3128,28 @@ void Sort_Spr_List_LnL(t_tree *tree)
 }
 
 
+/*********************************************************/
+/*********************************************************/
+/* Sort list of SPR move by putting the more parsimonious moves first */
+void Sort_Spr_List_Pars(t_tree *tree)
+{
+  int i,j;
+  t_spr *buff;
+
+  For(i,tree->size_spr_list-1)
+    {
+      for(j=i+1;j<tree->size_spr_list;j++)
+        {
+          if(tree->spr_list[j]->pars < tree->spr_list[i]->pars)
+            {
+              buff              = tree->spr_list[i];
+              tree->spr_list[i] = tree->spr_list[j];
+              tree->spr_list[j] = buff;
+            }
+        }
+    }
+}
+
 
 /*********************************************************/
 /*********************************************************/
@@ -3256,9 +3278,13 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
               int i;
 
               if(tree->mod->s_opt->spr_lnL == YES) Sort_Spr_List_LnL(tree);
-              /* else                                 Randomize_Spr_List(tree); */
+              /* else                                 Sort_Spr_List_Pars(tree); */
 
               best_move = Evaluate_List_Of_Regraft_Pos_Triple(tree->spr_list,n_moves,tree);
+
+              /* For(i,n_moves) printf("\n. %d %f %d",i,tree->spr_list[i]->lnL,tree->spr_list[i]->pars); */
+
+
 
               if(best_move > -1)
                 {
@@ -3341,7 +3367,7 @@ int Test_All_Spr_Targets(t_edge *b_pulled, t_node *n_link, t_tree *tree)
 
       /* if(tree->mod->s_opt->spr_lnL) */
       /*   { */
-      /*     Fast_Br_Len(b_target,tree,NO); */
+      /*     Fast_Br_Len(b_target,tree,YES); */
       /*     Update_PMat_At_Given_Edge(b_target,tree); */
       /*   } */
 
@@ -3363,10 +3389,6 @@ int Test_All_Spr_Targets(t_edge *b_pulled, t_node *n_link, t_tree *tree)
 
       if((n_link->v[dir1] != n_v1) || (n_link->v[dir2] != n_v2))
         PhyML_Printf("\n. Warning: -- SWITCH NEEDED -- ! \n");
-
-      /* n_link->b[dir1]->l->v = init_len_v1; */
-      /* n_link->b[dir2]->l->v = init_len_v2;  */
-      /* b_pulled->l->v = init_len_pulled; */
 
       MIXT_Set_Lengths_Of_This_Edge(init_len_v1,n_link->b[dir1],tree);
       MIXT_Set_Lengths_Of_This_Edge(init_len_v2,n_link->b[dir2],tree);
@@ -3659,9 +3681,9 @@ void Speed_Spr_Loop(t_tree *tree)
   /*****************************/
   if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. Round of SPR moves...\n");
   lk_old = tree->c_lnL;
-  tree->mod->s_opt->max_depth_path    = 1+(int)(tree->n_otu/5);
+  tree->mod->s_opt->max_depth_path    = 1+(int)(tree->n_otu/3);
   tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(5.):(0.);
-  tree->mod->s_opt->spr_lnL           = YES;
+  tree->mod->s_opt->spr_lnL           = NO;
   tree->mod->s_opt->spr_pars          = NO;
   tree->mod->s_opt->min_diff_lk_move  = 0.1;
   delta_lnL                           = 1;
@@ -3977,6 +3999,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
           move->lnL = Triple_Dist(move->n_link,tree,YES);
           MIXT_Set_Alias_Subpatt(NO,tree);
 
+
           if((move->lnL < best_lnL) && (move->lnL > best_lnL - tree->mod->s_opt->max_delta_lnL_spr))
             {
               /* Estimate the three t_edge lengths at the regraft site */
@@ -3985,6 +4008,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
               MIXT_Set_Alias_Subpatt(NO,tree);
             }
 
+          /* printf("\n. %d/%d move->lnL= %f best_lnL=%f absolute_best=%f",i,list_size,move->lnL,best_lnL,tree->best_lnL); */
           
           /* Record updated branch lengths for this move */
           focal_move = move;
@@ -4077,6 +4101,8 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
       /* Bail out as soon as you've found a true improvement */
       /* if(move->lnL > tree->best_lnL + 1.0) break; */
       if(move->lnL > tree->best_lnL + tree->mod->s_opt->min_diff_lk_move) break;
+      
+      if(move->lnL < tree->best_lnL - 10.) break;
     }
   
   /* PhyML_Printf("\n. [ %4d/%4d ] %f",i,list_size,tree->best_lnL); */
