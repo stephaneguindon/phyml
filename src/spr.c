@@ -4099,14 +4099,14 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
           tree->c_lnL = init_lnL;
         }
       
-      /* if(move->lnL > tree->best_lnL - 10.) closer_found = YES; */
+      if(move->lnL > tree->best_lnL - 20.) closer_found = YES;
 
       /* Bail out as soon as you've found a true improvement */
-      /* if(move->lnL > tree->best_lnL + 1.0) break; */
-      if(move->lnL > tree->best_lnL + tree->mod->s_opt->min_diff_lk_move) break;
+      if(move->lnL > tree->best_lnL + 1.0) break;
+      /* if(move->lnL > tree->best_lnL + tree->mod->s_opt->min_diff_lk_move) break; */
       
       /* or when really bad one was found */
-      /* if(move->lnL < tree->best_lnL - 10. && closer_found == YES) break; */
+      if(move->lnL < tree->best_lnL - 20. && closer_found == YES) break;
     }
   
   /* PhyML_Printf("\n. [ %4d/%4d ] %f",i,list_size,tree->best_lnL); */
