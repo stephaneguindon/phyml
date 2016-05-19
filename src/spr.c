@@ -3675,8 +3675,7 @@ void Speed_Spr_Loop(t_tree *tree)
 
   if((tree->mod->s_opt->print) && (!tree->io->quiet)) PhyML_Printf("\n\n. Maximizing likelihood (using SPR moves)...\n");
 
-
-  Spr_Pars(tree);
+  Spr_Pars(0,3,tree);
   Set_Both_Sides(YES,tree);
   Lk(NULL,tree);
   Optimiz_All_Free_Param(tree,(tree->io->quiet)?(NO):(tree->mod->s_opt->print));
@@ -4568,22 +4567,25 @@ int Check_Spr_Move_Validity(t_spr *this_spr_move, t_tree *tree)
 
 /*********************************************************/
 
-void Spr_Pars(t_tree *tree)
-{
+void Spr_Pars(int threshold, int n_round_max, t_tree *tree)
+{  
+  int curr_pars,curr_round;
+
   PhyML_Printf("\n. Minimizing parsimony...\n");
 
   tree->best_pars           = 1E+8;
   tree->best_lnL            = UNLIKELY;
   tree->mod->s_opt->spr_lnL = NO;
+  curr_pars                 = tree->c_pars;
+  curr_round                = 0;
 
   tree->mod->s_opt->spr_pars = YES;
   do
     {
-  Speed_Spr(tree,1.0,1);
+      curr_pars = tree->c_pars;
+      Speed_Spr(tree,1.0,1);
     }
-  while(tree->n_improvements);
-
-  tree->mod->s_opt->spr_pars = NO;
+  while(tree->n_improvements && FABS(tree->c_pars - curr_pars) > threshold);
 
   PhyML_Printf("\n");
 }
@@ -4757,7 +4759,6 @@ void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int d
   Pars(NULL,tree);
   Lk(NULL,tree);
 
-  /* tree->mod->s_opt->max_depth_path    = 20; */
   tree->mod->s_opt->max_depth_path    = (int)(tree->n_otu/3);
   tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(10.):(5.);
   tree->mod->s_opt->min_diff_lk_move  = 0.01;

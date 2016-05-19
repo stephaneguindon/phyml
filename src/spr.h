@@ -77,7 +77,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
 void Best_Spr(t_tree *tree);
 int Check_Spr_Move_Validity(t_spr *this_spr_move, t_tree *tree);
 void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree);
-void Spr_Pars(t_tree *tree);
+void Spr_Pars(int threshold, int n_round_max, t_tree *tree);
 void Spr_Shuffle(t_tree *tree);
 void Sort_Spr_List_Depth(t_tree *tree);
 void Sort_Spr_List_LnL(t_tree *tree);
