@@ -3681,8 +3681,7 @@ void Speed_Spr_Loop(t_tree *tree)
   Lk(NULL,tree);
   Optimiz_All_Free_Param(tree,(tree->io->quiet)?(NO):(tree->mod->s_opt->print));
   Optimize_Br_Len_Serie(tree);
-  Spr_Random_Explore(tree,0.0,1.0,NO,10);
-
+  Spr_Random_Explore(tree,0.0,1.0,NO,20);
   
   /*****************************/
   tree->mod->s_opt->min_diff_lk_move  = 0.01;
@@ -4761,7 +4760,7 @@ void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int d
   /* tree->mod->s_opt->max_depth_path    = 20; */
   tree->mod->s_opt->max_depth_path    = (int)(tree->n_otu/3);
   tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(0.):(0.);
-  tree->mod->s_opt->min_diff_lk_move  = 0.1;
+  tree->mod->s_opt->min_diff_lk_move  = 0.01;
   tree->mod->s_opt->spr_lnL           = NO;
   tree->mod->s_opt->spr_pars          = NO;
   tree->mod->s_opt->deepest_path      = 0;
@@ -4781,8 +4780,6 @@ void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int d
 
       if(do_rnd == YES)
         {
-          PhyML_Printf("\n[Random pertub]");
-
           n_rand = 0;
           do
             {
@@ -4870,7 +4867,6 @@ void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int d
       Copy_Tree(best_tree,tree);
 
     }
-  /* while(no_improvement < 5 && tree->n_improvements > 0); */
   while(++step <= max_cycles && tree->n_improvements > 0 && tree->max_spr_depth  > 1);
 
   Free(target_list);

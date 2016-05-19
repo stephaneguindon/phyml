@@ -88,11 +88,8 @@ int main(int argc, char **argv)
 
   r_seed = (io->r_seed < 0)?(time(NULL)):(io->r_seed);
   PhyML_Printf("\n. Random seed: %d",r_seed);
-
   srand(r_seed);
   io->r_seed = r_seed;
-
-
 
   if(io->in_tree == 2) Test_Multiple_Data_Set_Format(io);
   else io->n_trees = 1;
