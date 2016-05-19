@@ -3665,7 +3665,7 @@ void Speed_Spr_Loop(t_tree *tree)
       Optimiz_All_Free_Param(tree,(tree->io->quiet)?(NO):(tree->mod->s_opt->print));
       Optimize_Br_Len_Serie(tree);
     }
-  while(++n_round != 2); 
+  while(++n_round != 3); 
 
   tree->best_pars = tree->c_pars;
   tree->best_lnL  = tree->c_lnL;
@@ -3674,8 +3674,8 @@ void Speed_Spr_Loop(t_tree *tree)
   /*****************************/
   if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. First round of SPR moves...\n");
   lk_old = tree->c_lnL;
-  tree->mod->s_opt->max_depth_path    = (int)(tree->n_otu/2);
-  tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(0.):(0.);
+  tree->mod->s_opt->max_depth_path    = (int)(tree->n_otu/3);
+  tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(5.):(0.);
   tree->mod->s_opt->spr_lnL           = NO;
   tree->mod->s_opt->spr_pars          = NO;
   tree->mod->s_opt->min_diff_lk_move  = 0.1;
@@ -3689,26 +3689,7 @@ void Speed_Spr_Loop(t_tree *tree)
   /*****************************/
 
   Optimiz_All_Free_Param(tree,(tree->io->quiet)?(NO):(tree->mod->s_opt->print));
-
-  /* /\*****************************\/ */
-  /* if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. Stating round of SPR moves...\n"); */
-  /* lk_old = tree->c_lnL; */
-  /* tree->mod->s_opt->max_depth_path    = (int)(tree->n_otu/3); */
-  /* tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(5.):(0.); */
-  /* tree->mod->s_opt->spr_lnL           = YES; */
-  /* tree->mod->s_opt->spr_pars          = NO; */
-  /* tree->mod->s_opt->min_diff_lk_move  = 0.1; */
-  /* delta_lnL                           = 1.0; */
-  /* do */
-  /*   { */
-  /*     lk_old = tree->c_lnL; */
-  /*     Speed_Spr(tree,1.0,20,delta_lnL); */
-  /*   } */
-  /* while(FABS(tree->c_lnL - lk_old) > delta_lnL); */
-  /* /\*****************************\/ */
-
-  Optimiz_All_Free_Param(tree,(tree->io->quiet)?(NO):(tree->mod->s_opt->print));
-
+ 
   /*****************************/
   tree->mod->s_opt->min_diff_lk_move  = 0.01;
   lk_old = UNLIKELY;
@@ -4014,7 +3995,9 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
           if((move->lnL < best_lnL) && (move->lnL > best_lnL - tree->mod->s_opt->max_delta_lnL_spr))
             {
               /* Estimate the three t_edge lengths at the regraft site */
+              MIXT_Set_Alias_Subpatt(YES,tree);
               move->lnL = Triple_Dist(move->n_link,tree,NO);
+              MIXT_Set_Alias_Subpatt(NO,tree);
             }
 
           
