@@ -5365,7 +5365,7 @@ void Fast_Br_Len(t_edge *b, t_tree *tree, int approx)
 
 
   if(approx == NO)
-    Br_Len_Brent(0.001,100.,b,tree);
+    Br_Len_Brent(0.001,2.,b,tree);
   else
     {
       tree->mod->s_opt->brent_it_max = 8;
