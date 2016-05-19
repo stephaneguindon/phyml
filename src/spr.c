@@ -3836,7 +3836,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
   int dir_v0, dir_v1, dir_v2;
   phydbl *recorded_l;
   phydbl best_lnL,init_lnL;
-  int recorded;
+  int recorded,closer_found;
 
   if(tree->mixt_tree != NULL)
     {
@@ -3849,6 +3849,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
   best_move = -1;
   init_lnL = tree->c_lnL;
   recorded_l = NULL;
+  closer_found = NO;
 
   if(!list_size && !tree->io->fp_in_constraint_tree)
     {
@@ -4098,11 +4099,14 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
           tree->c_lnL = init_lnL;
         }
       
+      if(move->lnL > tree->best_lnL - 10.) closer_found = YES;
+
       /* Bail out as soon as you've found a true improvement */
       /* if(move->lnL > tree->best_lnL + 1.0) break; */
       if(move->lnL > tree->best_lnL + tree->mod->s_opt->min_diff_lk_move) break;
       
-      if(move->lnL < tree->best_lnL - 10.) break;
+      /* or when really bad one was found */
+      if(move->lnL < tree->best_lnL - 10. && closer_found == YES) break;
     }
   
   /* PhyML_Printf("\n. [ %4d/%4d ] %f",i,list_size,tree->best_lnL); */
