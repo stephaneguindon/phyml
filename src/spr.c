@@ -3085,7 +3085,7 @@ void PostOrder_w (t_tree *tree, t_node *v, t_edge *v_e, t_node *w, t_edge *e)
 
 /*********************************************************/
 /*********************************************************/
-/* Sort list of SPR move by putting the deepest moves first */
+/* Sort list of SPR move by putting the shallowest moves first */
 void Sort_Spr_List_Depth(t_tree *tree)
 {
   int i,j;
@@ -3095,7 +3095,7 @@ void Sort_Spr_List_Depth(t_tree *tree)
     {
       for(j=i+1;j<tree->size_spr_list;j++)
         {
-          if(tree->spr_list[j]->depth_path > tree->spr_list[i]->depth_path)
+          if(tree->spr_list[j]->depth_path < tree->spr_list[i]->depth_path)
             {
               buff              = tree->spr_list[i];
               tree->spr_list[i] = tree->spr_list[j];
@@ -3278,7 +3278,7 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
               int i;
 
               if(tree->mod->s_opt->spr_lnL == YES) Sort_Spr_List_LnL(tree);
-              /* else                                 Sort_Spr_List_Pars(tree); */
+              else                                 Sort_Spr_List_Depth(tree);
 
               best_move = Evaluate_List_Of_Regraft_Pos_Triple(tree->spr_list,n_moves,tree);
 
