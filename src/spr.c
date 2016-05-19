@@ -3228,8 +3228,8 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
 
       if(tree->n_moves)
         {
-          n_moves_pars = 5;
-          n_moves      = 5;
+          n_moves_pars = 10;
+          n_moves      =  5;
 
           if(tree->mod->s_opt->spr_lnL == NO) n_moves = n_moves_pars;
 
@@ -3675,7 +3675,7 @@ void Speed_Spr_Loop(t_tree *tree)
 
   if((tree->mod->s_opt->print) && (!tree->io->quiet)) PhyML_Printf("\n\n. Maximizing likelihood (using SPR moves)...\n");
 
-  Spr_Pars(0,3,tree);
+  Spr_Pars(0,10,tree);
   Set_Both_Sides(YES,tree);
   Lk(NULL,tree);
   Optimiz_All_Free_Param(tree,(tree->io->quiet)?(NO):(tree->mod->s_opt->print));
