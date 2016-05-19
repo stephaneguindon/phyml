@@ -3702,7 +3702,7 @@ void Speed_Spr_Loop(t_tree *tree)
   do
     {
       lk_old = tree->c_lnL;
-      Speed_Spr(tree,0.5,20,delta_lnL);
+      Speed_Spr(tree,1.0,20,delta_lnL);
     }
   while(FABS(tree->c_lnL - lk_old) > delta_lnL);
   /*****************************/
