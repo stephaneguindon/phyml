@@ -5566,14 +5566,14 @@ json_o *JSON_Tree_To_Object(t_tree *tree)
 void JSON_Tree_Io(t_tree *tree, FILE *where)
 {
   // Append
-  /* json_o *o; */
-  /* fpos_t pos; */
-  /* char c; */
+  json_o *o;
+  fpos_t pos;
+  char c;
 
-  /* fgetpos(where,&pos); */
+  fgetpos(where,&pos);
 
-  /* rewind(where); */
-  /* c = fgetc(where); */
+  rewind(where);
+  c = fgetc(where);
 
   /* if(c != '[') */
   /*   { */
@@ -5586,23 +5586,24 @@ void JSON_Tree_Io(t_tree *tree, FILE *where)
   /*     PhyML_Fprintf(where,","); */
   /*   } */
 
-  /* o = JSON_Tree_To_Object(tree); */
-  /* JSON_Write_Object(o,where); */
-  /* JSON_Free_Object(o); */
-  /* PhyML_Fprintf(where,"]"); */
-  /* fflush(where); */
-
-
-  // Print out latest tree + info
-  json_o *o;
-
-  rewind(where);
-  /* PhyML_Fprintf(where,"["); */
+  PhyML_Fprintf(where,"\n");
   o = JSON_Tree_To_Object(tree);
   JSON_Write_Object(o,where);
   JSON_Free_Object(o);
   /* PhyML_Fprintf(where,"]"); */
   fflush(where);
+
+
+  // Print out latest tree + info
+  /* json_o *o; */
+
+  /* rewind(where); */
+  /* /\* PhyML_Fprintf(where,"["); *\/ */
+  /* o = JSON_Tree_To_Object(tree); */
+  /* JSON_Write_Object(o,where); */
+  /* JSON_Free_Object(o); */
+  /* /\* PhyML_Fprintf(where,"]"); *\/ */
+  /* fflush(where); */
 
 
 }
