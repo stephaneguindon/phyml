@@ -1423,8 +1423,7 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
   scalar_dbl *var0,*var1,*var2;
   phydbl l_infa, l_infb;
   phydbl lk_init;
-  t_edge *b;
-
+  
   if(tree->prev) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
 
   lk_init                = tree->c_lnL;
@@ -5440,7 +5439,7 @@ void Fast_Br_Len(t_edge *b, t_tree *tree, int approx)
     Br_Len_Brent(0.001,2.,b,tree);
   else
     {
-      tree->mod->s_opt->brent_it_max = 8;
+      tree->mod->s_opt->brent_it_max = 6;
       Br_Len_Brent(0.001,2.,b,tree);
       tree->mod->s_opt->brent_it_max = BRENT_IT_MAX;
     }

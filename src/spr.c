@@ -3207,13 +3207,12 @@ int Spr(phydbl init_lnL, phydbl prop_spr, t_tree *tree)
 void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
 {
   int i;
-  int n_moves_pars, n_moves, min_pars, best_move_idx, curr_pars;
+  int n_moves_pars, n_moves, min_pars, best_move_idx;
   t_spr *best_pars_move;
   t_edge *target, *residual;
   
-  best_move_idx     = -1;
+  best_move_idx = -1;
   tree->n_moves = 0;
-  curr_pars     = tree->c_pars;
 
   MIXT_Set_Pars_Thresh(tree);
 
@@ -3277,7 +3276,6 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
             {
               int apply_move = NO;
               phydbl accept_prob,u;
-              int i;
 
               if(tree->mod->s_opt->spr_lnL == YES) 
                 {
@@ -3522,10 +3520,7 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
   t_node *n1,*n2;
   phydbl init_lnL, move_lnL;
   int init_pars;
-  t_tree *orig_tree;
-  t_edge *orig_target, *orig_arrow, *orig_init_target;
-  t_node *orig_link;
-  t_spr *orig_move,*move;
+  t_spr *move;
 
   if(tree->mixt_tree != NULL)
     {
@@ -3634,51 +3629,6 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
   move->dist          = b_target->topo_dist_btw_edges;
   move->n_opp_to_link = (n_link==b_arrow->left)?(b_arrow->rght):(b_arrow->left);
   
-
-  /* orig_target = b_target; */
-  /* orig_link   = n_link; */
-  /* orig_arrow  = b_arrow; */
-  /* orig_tree   = tree; */
-  /* orig_move   = move; */
-  /* i = 0; */
-  /* do */
-  /*   { */
-  /*     move->l0->v = l0[i]; */
-  /*     move->l1->v = l1[i]; */
-  /*     move->l2->v = l2[i]; */
-
-  /*     if(tree->mod->gamma_mgf_bl == YES) */
-  /*       { */
-  /*         move->v0->v = l0[i+1]; */
-  /*         move->v1->v = l1[i+1]; */
-  /*         move->v2->v = l2[i+1]; */
-  /*       } */
-
-  /*     move->b_target      = b_target; */
-  /*     move->n_link        = n_link; */
-  /*     move->b_opp_to_link = b_arrow; */
-  /*     move->b_init_target = init_target; */
-  /*     move->dist          = b_target->topo_dist_btw_edges; */
-  /*     move->n_opp_to_link = (n_link==b_arrow->left)?(b_arrow->rght):(b_arrow->left); */
-      
-  /*     tree        = tree->next; */
-  /*     b_target    = b_target->next; */
-  /*     init_target = init_target->next; */
-  /*     b_arrow     = b_arrow->next; */
-  /*     n_link      = n_link->next; */
-  /*     move        = move->next; */
-
-  /*     i+=2; */
-  /*   } */
-  /* while(tree); */
-
-  /* init_target = orig_init_target; */
-  /* b_target    = orig_target; */
-  /* n_link      = orig_link; */
-  /* b_arrow     = orig_arrow; */
-  /* tree        = orig_tree; */
-  /* move        = orig_move; */
-
   Include_One_Spr_To_List_Of_Spr(move,tree);
 
   /* b_target->l->v   = init_target_len; */
@@ -3691,10 +3641,6 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
   Copy_Scalar_Dbl(init_target_v,b_target->l_var);
   Copy_Scalar_Dbl(init_arrow_v,b_arrow->l_var);
   Copy_Scalar_Dbl(init_residual_v,b_residual->l_var);
-
-  /* MIXT_Set_Lengths_Of_This_Edge(init_target_len,b_target,tree); */
-  /* MIXT_Set_Lengths_Of_This_Edge(init_arrow_len,b_arrow,tree); */
-  /* MIXT_Set_Lengths_Of_This_Edge(init_residual_len,b_residual,tree); */
 
   Prune_Subtree(n_link,
                 (n_link==b_arrow->left)?(b_arrow->rght):(b_arrow->left),
@@ -3777,15 +3723,15 @@ void Speed_Spr_Loop(t_tree *tree)
   tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(0.):(0.);
   tree->mod->s_opt->spr_lnL           = YES;
   tree->mod->s_opt->spr_pars          = NO;
-  tree->mod->s_opt->min_diff_lk_move  = 0.1;
-  delta_lnL                           = 1;
+  tree->mod->s_opt->min_diff_lk_move  = 0.01;
+  delta_lnL                           = 1.0;
   Speed_Spr(tree,1.0,20,delta_lnL);
   Optimiz_All_Free_Param(tree,(tree->io->quiet)?(NO):(tree->mod->s_opt->print));
   /*****************************/
 
 
   /*****************************/
-  tree->mod->s_opt->min_diff_lk_move  = 0.01;
+  tree->mod->s_opt->min_diff_lk_move  = 0.001;
   lk_old = UNLIKELY;
   do
     {
@@ -3916,14 +3862,13 @@ void Speed_Spr(t_tree *tree, phydbl prop_spr, int max_cycles, phydbl delta_lnL)
 
 int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree *tree)
 {
-  t_spr *move,*focal_move;
-  t_tree *focal_tree;
+  t_spr *move;
   t_edge *init_target, *b_residual;
-  int i,j,best_move,n;
+  int i,j,best_move;
   int dir_v0, dir_v1, dir_v2;
   scalar_dbl *recorded_l,*recorded_v;
   phydbl best_lnL,init_lnL;
-  int recorded,closer_found;
+  int recorded;
 
   if(tree->mixt_tree != NULL)
     {
@@ -3936,7 +3881,6 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
   best_move = -1;
   init_lnL = tree->c_lnL;
   recorded_v = recorded_l = NULL;
-  closer_found = NO;
 
   if(!list_size && !tree->io->fp_in_constraint_tree)
     {
@@ -4111,14 +4055,11 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
           tree->c_lnL = init_lnL;
         }
       
-      /* if(move->lnL > tree->best_lnL - 5.) closer_found = YES; */
 
       /* Bail out as soon as you've found a true improvement */
       /* if(move->lnL > tree->best_lnL + 1.0) break; */
       if(move->lnL > tree->best_lnL + tree->mod->s_opt->min_diff_lk_move) break;
       
-      /* or when really bad one was found */
-      /* if(move->lnL < tree->best_lnL - 5. && closer_found == YES) break; */
     }
   
   /* PhyML_Printf("\n. [ %4d/%4d ] %f",i,list_size,tree->best_lnL); */
@@ -4178,9 +4119,6 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
   int j;
   int dir_v0, dir_v1, dir_v2;
   int accept;
-  t_edge *focus_b;
-  t_spr *focus_move;
-  t_tree *focus_tree;
 
   if(tree->mixt_tree != NULL)
     {
@@ -4285,7 +4223,6 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
 
       if(FABS(tree->c_lnL - move->lnL) > tree->mod->s_opt->min_diff_lk_move)
         {
-          int i;
           PhyML_Printf("\n== c_lnL = %f move_lnL = %f", tree->c_lnL,move->lnL);
           PhyML_Printf("\n== l0=%f l1=%f l2=%f v0=%f v1=%f v2=%f",move->l0->v,move->l1->v,move->l2->v,move->v0->v,move->v1->v,move->v2->v);
           PhyML_Printf("\n== Gamma MGF? %d",tree->io->mod->gamma_mgf_bl);
@@ -4595,7 +4532,7 @@ int Check_Spr_Move_Validity(t_spr *this_spr_move, t_tree *tree)
 
 void Spr_Pars(int threshold, int n_round_max, t_tree *tree)
 {  
-  int curr_pars,curr_round;
+  int curr_pars;
 
   PhyML_Printf("\n. Minimizing parsimony...\n");
 
@@ -4603,7 +4540,6 @@ void Spr_Pars(int threshold, int n_round_max, t_tree *tree)
   tree->best_lnL            = UNLIKELY;
   tree->mod->s_opt->spr_lnL = NO;
   curr_pars                 = tree->c_pars;
-  curr_round                = 0;
 
   tree->mod->s_opt->spr_pars = YES;
   do

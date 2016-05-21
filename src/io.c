@@ -5568,12 +5568,12 @@ void JSON_Tree_Io(t_tree *tree, FILE *where)
   // Append
   json_o *o;
   fpos_t pos;
-  char c;
+  /* char c; */
 
   fgetpos(where,&pos);
 
   rewind(where);
-  c = fgetc(where);
+  /* c = fgetc(where); */
 
   /* if(c != '[') */
   /*   { */

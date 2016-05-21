@@ -456,7 +456,7 @@ int Make_Best_Swap(t_tree *tree)
 int Mov_Backward_Topo_Bl(t_tree *tree, phydbl lk_old, t_edge **tested_b, int n_tested)
 {
   scalar_dbl **l_init,**v_init;
-  int i,j,step,beg,end;
+  int i,step,beg,end;
   t_edge *b,*orig;
 
   l_init = (scalar_dbl **)mCalloc(2*tree->n_otu-3,sizeof(scalar_dbl *));
@@ -478,7 +478,6 @@ int Mov_Backward_Topo_Bl(t_tree *tree, phydbl lk_old, t_edge **tested_b, int n_t
           
           /* b->l->v = b->l_old->v + (1./step) * (l_init[i] - b->l_old->v); */
           
-          j = 0;
           orig = b;
           do
             {
