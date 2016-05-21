@@ -397,20 +397,25 @@ void Free_Tree_Lk(t_tree *mixt_tree)
       Free(tree->unscaled_site_lk_cat);
 
       For(i,2*tree->n_otu-3) Free_Edge_Lk(tree->a_edges[i]);
+      For(i,2*tree->n_otu-3) Free_Edge_Loc(tree->a_edges[i]);
 
       if(tree->n_root)
         {
-          Free(tree->n_root->b[1]->nni);
-          Free(tree->n_root->b[2]->nni);
+          Free_NNI(tree->n_root->b[1]->nni);
+          Free_NNI(tree->n_root->b[2]->nni);
           Free(tree->n_root->b[1]->Pij_rr);
           Free(tree->n_root->b[2]->Pij_rr);
           Free_Edge_Lk_Left(tree->n_root->b[1]);
           Free_Edge_Lk_Left(tree->n_root->b[2]);
+          Free_Edge_Loc_Left(tree->n_root->b[1]);
+          Free_Edge_Loc_Left(tree->n_root->b[2]);
         }
       else
         {
           Free_Edge_Lk(tree->a_edges[2*tree->n_otu-3]);
           Free_Edge_Lk(tree->a_edges[2*tree->n_otu-2]);
+          Free_Edge_Loc(tree->a_edges[2*tree->n_otu-3]);
+          Free_Edge_Loc(tree->a_edges[2*tree->n_otu-2]);
         }
 
       tree = tree->next;
@@ -471,7 +476,7 @@ void Free_Edge_Lk_Left(t_edge *b)
 
 void Free_Edge_Lk(t_edge *b)
 {
-  Free(b->nni);
+  Free_NNI(b->nni);
   Free(b->Pij_rr);
   Free_Edge_Lk_Left(b);
   Free_Edge_Lk_Rght(b);
@@ -840,7 +845,7 @@ void Free_St(supert_tree *st)
   int i;
 
   For(i,2*st->tree->n_otu-1)
-    Free(st->tree->a_edges[i]->nni);
+    Free_NNI(st->tree->a_edges[i]->nni);
 
   For(i,st->n_part) Free(st->match_st_node_in_gt[i]);
 
@@ -878,7 +883,17 @@ void Free_Eigen(eigen *eigen_struct)
 void Free_One_Spr(t_spr *this_spr)
 {
   Free(this_spr->path);
-  Free(this_spr);
+  Free_Scalar_Dbl(this_spr->l0);
+  Free_Scalar_Dbl(this_spr->l1);
+  Free_Scalar_Dbl(this_spr->l2);
+  Free_Scalar_Dbl(this_spr->v0);
+  Free_Scalar_Dbl(this_spr->v1);
+  Free_Scalar_Dbl(this_spr->v2);
+  
+  if(this_spr->init_target_l) Free_Scalar_Dbl(this_spr->init_target_l);
+  if(this_spr->init_target_v) Free_Scalar_Dbl(this_spr->init_target_v);
+  
+  Free(this_spr);  
 }
 
 //////////////////////////////////////////////////////////////
@@ -1349,5 +1364,26 @@ void JSON_Free_StringVal(json_sv *sv)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void Free_NNI(t_nni *t)
+{
+  if(t->init_l) Free_Scalar_Dbl(t->init_l);
+  if(t->init_v) Free_Scalar_Dbl(t->init_v);
+
+  if(t->best_l) Free_Scalar_Dbl(t->best_l);
+  if(t->best_v) Free_Scalar_Dbl(t->best_v);
+  
+  if(t->l0) Free_Scalar_Dbl(t->l0);
+  if(t->v0) Free_Scalar_Dbl(t->v0);
+
+  if(t->l1) Free_Scalar_Dbl(t->l1);
+  if(t->v1) Free_Scalar_Dbl(t->v1);
+
+  if(t->l2) Free_Scalar_Dbl(t->l2);
+  if(t->v2) Free_Scalar_Dbl(t->v2);
+  
+  Free(t);
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

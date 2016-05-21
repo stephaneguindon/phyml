@@ -237,16 +237,17 @@ void Init_Node_Light(t_node *n, int num)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-void Init_NNI(nni *a_nni)
+void Init_NNI(t_nni *a_nni)
 {
   a_nni->left         = NULL;
   a_nni->rght         = NULL;
   a_nni->b            = NULL;
-  a_nni->init_l       = -1.;
+  a_nni->init_l       = NULL;
+  a_nni->init_v       = NULL;
   a_nni->init_lk      = .0;
   a_nni->score        = +1.0;
-  a_nni->best_l       = -1.;
+  a_nni->best_l       = NULL;
+  a_nni->best_v       = NULL;
   a_nni->swap_node_v1 = NULL;
   a_nni->swap_node_v2 = NULL;
   a_nni->swap_node_v3 = NULL;
@@ -254,9 +255,12 @@ void Init_NNI(nni *a_nni)
   a_nni->lk0          = UNLIKELY;
   a_nni->lk1          = UNLIKELY;
   a_nni->lk2          = UNLIKELY;
-  a_nni->l0           = -1.0;
-  a_nni->l1           = -1.0;
-  a_nni->l2           = -1.0;
+  a_nni->l0           = NULL;
+  a_nni->l1           = NULL;
+  a_nni->l2           = NULL;
+  a_nni->v0           = NULL;
+  a_nni->v1           = NULL;
+  a_nni->v2           = NULL;
 }
 
 //////////////////////////////////////////////////////////////
@@ -955,27 +959,27 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
 
 void Init_One_Spr(t_spr *a_spr)
 {
-  a_spr->lnL             = UNLIKELY;
-  a_spr->pars            = 1E+5;
-  a_spr->depth_path      = 0;
-  a_spr->dist            = 0;
-  a_spr->init_target_l   = -1.;
-  a_spr->init_target_v   = -1.;
-  a_spr->l0              = -1.;
-  a_spr->l1              = -1.;
-  a_spr->l2              = -1.;
-  a_spr->v0              = -1.;
-  a_spr->v1              = -1.;
-  a_spr->v2              = -1.;
-  a_spr->n_link          = NULL;
-  a_spr->n_opp_to_link   = NULL;
-  a_spr->b_opp_to_link   = NULL;
-  a_spr->b_target        = NULL;
-  a_spr->b_init_target   = NULL;
-  a_spr->next            = NULL;
-  a_spr->prev            = NULL;
-  a_spr->next           = NULL;
-  a_spr->prev          = NULL;
+  a_spr->lnL              = UNLIKELY;
+  a_spr->pars             = 1E+5;
+  a_spr->depth_path       = 0;
+  a_spr->dist             = 0;
+  a_spr->init_target_l    = NULL;
+  a_spr->init_target_v    = NULL;
+  a_spr->l0->v            = -1.;
+  a_spr->l1->v            = -1.;
+  a_spr->l2->v            = -1.;
+  a_spr->v0->v            = -1.;
+  a_spr->v1->v            = -1.;
+  a_spr->v2->v            = -1.;
+  a_spr->n_link           = NULL;
+  a_spr->n_opp_to_link    = NULL;
+  a_spr->b_opp_to_link    = NULL;
+  a_spr->b_target         = NULL;
+  a_spr->b_init_target    = NULL;
+  a_spr->next             = NULL;
+  a_spr->prev             = NULL;
+  a_spr->next             = NULL;
+  a_spr->prev             = NULL;
 }
 
 //////////////////////////////////////////////////////////////

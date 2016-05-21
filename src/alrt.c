@@ -348,9 +348,10 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   int site;
   t_node *v1,*v2,*v3,*v4;
   t_edge *e1,*e2,*e3,*e4;
-  phydbl *len_e1,*len_e2,*len_e3,*len_e4;
+  scalar_dbl *len_e1,*len_e2,*len_e3,*len_e4;
+  scalar_dbl *var_e1,*var_e2,*var_e3,*var_e4;
   phydbl lk0, lk1, lk2;
-  phydbl *bl_init;
+  scalar_dbl *l_init,*v_init;
   phydbl l_infa, l_infb;
   phydbl lk_init, lk_temp;
   int i;
@@ -360,7 +361,9 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   result = 0;
 
   /*! Initialization */
-  bl_init            = MIXT_Get_Lengths_Of_This_Edge(b_fcus,tree);
+  l_init             = Duplicate_Scalar_Dbl(b_fcus->l);
+  v_init             = Duplicate_Scalar_Dbl(b_fcus->l_var);
+  /* bl_init            = MIXT_Get_Lengths_Of_This_Edge(b_fcus,tree); */
   lk_init            = tree->c_lnL;
   lk_temp            = UNLIKELY;
   b_fcus->nni->score = .0;
@@ -392,10 +395,18 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   e4 = b_fcus->rght->b[b_fcus->r_v2];
 
   /*! record initial branch lengths */
-  len_e1 = MIXT_Get_Lengths_Of_This_Edge(e1,tree);
-  len_e2 = MIXT_Get_Lengths_Of_This_Edge(e2,tree);
-  len_e3 = MIXT_Get_Lengths_Of_This_Edge(e3,tree);
-  len_e4 = MIXT_Get_Lengths_Of_This_Edge(e4,tree);
+  len_e1 = Duplicate_Scalar_Dbl(e1->l);
+  len_e2 = Duplicate_Scalar_Dbl(e2->l);
+  len_e3 = Duplicate_Scalar_Dbl(e3->l);
+  len_e4 = Duplicate_Scalar_Dbl(e4->l);
+  var_e1 = Duplicate_Scalar_Dbl(e1->l_var);
+  var_e2 = Duplicate_Scalar_Dbl(e2->l_var);
+  var_e3 = Duplicate_Scalar_Dbl(e3->l_var);
+  var_e4 = Duplicate_Scalar_Dbl(e4->l_var);
+  /* len_e1 = MIXT_Get_Lengths_Of_This_Edge(e1,tree); */
+  /* len_e2 = MIXT_Get_Lengths_Of_This_Edge(e2,tree); */
+  /* len_e3 = MIXT_Get_Lengths_Of_This_Edge(e3,tree); */
+  /* len_e4 = MIXT_Get_Lengths_Of_This_Edge(e4,tree); */
 
   /*! Optimize branch lengths and update likelihoods for
     the original configuration.
@@ -409,22 +420,22 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
           {
             Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
             l_infa  = 10.;
-            l_infb  = MAX(0.0,tree->mod->l_min/b_fcus->left->b[i]->l->v);
+            l_infb  = 1.E-4;
             lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus->left->b[i],tree);
           }
 
       Update_P_Lk(tree,b_fcus,b_fcus->left);
 
-      l_infa  = 10.;
-      l_infb  = MAX(0.0,tree->mod->l_min/b_fcus->l->v);
+      l_infa  = 2.;
+      l_infb  = 1.E-4;
       lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus,tree);
 
       For(i,3)
         if(b_fcus->rght->v[i] != b_fcus->left)//Only consider right_1 and right_2
           {
             Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
-            l_infa  = 10.;
-            l_infb  = MAX(0.0,tree->mod->l_min/b_fcus->rght->b[i]->l->v);
+            l_infa  = 2.;
+            l_infb  = 1.E-4;
             lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus->rght->b[i],tree);
           }
       Update_P_Lk(tree,b_fcus,b_fcus->rght);
@@ -459,12 +470,25 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   while(tree);
 
   tree = (t_tree *)buff;
+
   /*! Go back to initial branch lengths */
-  MIXT_Set_Lengths_Of_This_Edge(len_e1,e1,tree);
-  MIXT_Set_Lengths_Of_This_Edge(len_e2,e2,tree);
-  MIXT_Set_Lengths_Of_This_Edge(len_e3,e3,tree);
-  MIXT_Set_Lengths_Of_This_Edge(len_e4,e4,tree);
-  MIXT_Set_Lengths_Of_This_Edge(bl_init,b_fcus,tree);
+  Copy_Scalar_Dbl(len_e1,e1->l);
+  Copy_Scalar_Dbl(len_e2,e2->l);
+  Copy_Scalar_Dbl(len_e3,e3->l);
+  Copy_Scalar_Dbl(len_e4,e4->l);
+  Copy_Scalar_Dbl(l_init,b_fcus->l);
+  Copy_Scalar_Dbl(var_e1,e1->l_var);
+  Copy_Scalar_Dbl(var_e2,e2->l_var);
+  Copy_Scalar_Dbl(var_e3,e3->l_var);
+  Copy_Scalar_Dbl(var_e4,e4->l_var);
+  Copy_Scalar_Dbl(v_init,b_fcus->l_var);
+
+  /* MIXT_Set_Lengths_Of_This_Edge(len_e1,e1,tree); */
+  /* MIXT_Set_Lengths_Of_This_Edge(len_e2,e2,tree); */
+  /* MIXT_Set_Lengths_Of_This_Edge(len_e3,e3,tree); */
+  /* MIXT_Set_Lengths_Of_This_Edge(len_e4,e4,tree); */
+  /* MIXT_Set_Lengths_Of_This_Edge(bl_init,b_fcus,tree); */
+
   Update_PMat_At_Given_Edge(e1,tree);
   Update_PMat_At_Given_Edge(e2,tree);
   Update_PMat_At_Given_Edge(e3,tree);
@@ -515,15 +539,15 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
           {
             Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
             
-            l_infa  = 10.;
-            l_infb  = MAX(0.0,tree->mod->l_min/b_fcus->left->b[i]->l->v);
+            l_infa  = 2.;
+            l_infb  = 1.E-4;
             lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus->left->b[i],tree);
           }
       
       Update_P_Lk(tree,b_fcus,b_fcus->left);
       
-      l_infa  = 10.;
-      l_infb  = MAX(0.0,tree->mod->l_min/b_fcus->l->v);
+      l_infa  = 2.;
+      l_infb  = 1.E-4;
       lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus,tree);
       
       For(i,3)
@@ -531,8 +555,8 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
           {
             Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
             
-            l_infa  = 10.;
-            l_infb  = MAX(0.0,tree->mod->l_min/b_fcus->rght->b[i]->l->v);
+            l_infa  = 2;
+            l_infb  = 1.E-4;
             lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus->rght->b[i],tree);
           }
       
@@ -570,14 +594,25 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   while(tree);
   tree = (t_tree *)buff;
       
-
   Swap(v3,b_fcus->left,b_fcus->rght,v2,tree);
+
   /*! Go back to initial branch lengths */
-  MIXT_Set_Lengths_Of_This_Edge(len_e1,e1,tree);
-  MIXT_Set_Lengths_Of_This_Edge(len_e2,e2,tree);
-  MIXT_Set_Lengths_Of_This_Edge(len_e3,e3,tree);
-  MIXT_Set_Lengths_Of_This_Edge(len_e4,e4,tree);
-  MIXT_Set_Lengths_Of_This_Edge(bl_init,b_fcus,tree);
+  Copy_Scalar_Dbl(len_e1,e1->l);
+  Copy_Scalar_Dbl(len_e2,e2->l);
+  Copy_Scalar_Dbl(len_e3,e3->l);
+  Copy_Scalar_Dbl(len_e4,e4->l);
+  Copy_Scalar_Dbl(l_init,b_fcus->l);
+  Copy_Scalar_Dbl(var_e1,e1->l_var);
+  Copy_Scalar_Dbl(var_e2,e2->l_var);
+  Copy_Scalar_Dbl(var_e3,e3->l_var);
+  Copy_Scalar_Dbl(var_e4,e4->l_var);
+  Copy_Scalar_Dbl(v_init,b_fcus->l_var);
+
+  /* MIXT_Set_Lengths_Of_This_Edge(len_e1,e1,tree); */
+  /* MIXT_Set_Lengths_Of_This_Edge(len_e2,e2,tree); */
+  /* MIXT_Set_Lengths_Of_This_Edge(len_e3,e3,tree); */
+  /* MIXT_Set_Lengths_Of_This_Edge(len_e4,e4,tree); */
+  /* MIXT_Set_Lengths_Of_This_Edge(bl_init,b_fcus,tree); */
   
   Update_PMat_At_Given_Edge(e1,tree);
   Update_PMat_At_Given_Edge(e2,tree);
@@ -627,8 +662,8 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
           {
             Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
             
-            l_infa  = 10.;
-            l_infb  = MAX(0.0,tree->mod->l_min/b_fcus->left->b[i]->l->v);
+            l_infa  = 2.;
+            l_infb  = 1.E-4;
             lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus->left->b[i],tree);
             
             if(lk_temp < lk2 - tree->mod->s_opt->min_diff_lk_local)
@@ -641,8 +676,8 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
           }
       Update_P_Lk(tree,b_fcus,b_fcus->left);
       
-      l_infa  = 10.;
-      l_infb  = MAX(0.0,tree->mod->l_min/b_fcus->l->v);
+      l_infa  = 2.;
+      l_infb  = 1.E-4;
       lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus,tree);
       
       if(lk_temp < lk2 - tree->mod->s_opt->min_diff_lk_local)
@@ -658,8 +693,8 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
           {
             Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
             
-            l_infa  = 10.;
-            l_infb  = MAX(0.0,tree->mod->l_min/b_fcus->rght->b[i]->l->v);
+            l_infa  = 2.;
+            l_infb  = 1.E-4;
             lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus->rght->b[i],tree);
             
             if(lk_temp < lk2 - tree->mod->s_opt->min_diff_lk_local)
@@ -707,11 +742,22 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   /***********/
 
   /*! restore the initial branch length values */
-  MIXT_Set_Lengths_Of_This_Edge(len_e1,e1,tree);
-  MIXT_Set_Lengths_Of_This_Edge(len_e2,e2,tree);
-  MIXT_Set_Lengths_Of_This_Edge(len_e3,e3,tree);
-  MIXT_Set_Lengths_Of_This_Edge(len_e4,e4,tree);
-  MIXT_Set_Lengths_Of_This_Edge(bl_init,b_fcus,tree);
+  Copy_Scalar_Dbl(len_e1,e1->l);
+  Copy_Scalar_Dbl(len_e2,e2->l);
+  Copy_Scalar_Dbl(len_e3,e3->l);
+  Copy_Scalar_Dbl(len_e4,e4->l);
+  Copy_Scalar_Dbl(l_init,b_fcus->l);
+  Copy_Scalar_Dbl(var_e1,e1->l_var);
+  Copy_Scalar_Dbl(var_e2,e2->l_var);
+  Copy_Scalar_Dbl(var_e3,e3->l_var);
+  Copy_Scalar_Dbl(var_e4,e4->l_var);
+  Copy_Scalar_Dbl(v_init,b_fcus->l_var);
+
+  /* MIXT_Set_Lengths_Of_This_Edge(len_e1,e1,tree); */
+  /* MIXT_Set_Lengths_Of_This_Edge(len_e2,e2,tree); */
+  /* MIXT_Set_Lengths_Of_This_Edge(len_e3,e3,tree); */
+  /* MIXT_Set_Lengths_Of_This_Edge(len_e4,e4,tree); */
+  /* MIXT_Set_Lengths_Of_This_Edge(bl_init,b_fcus,tree); */
 
   /*! recompute likelihoods */
   Update_PMat_At_Given_Edge(e1,tree);
@@ -771,11 +817,16 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
     }
 
 
-  Free(len_e1);
-  Free(len_e2);
-  Free(len_e3);
-  Free(len_e4);
-  Free(bl_init);
+  Free_Scalar_Dbl(len_e1);
+  Free_Scalar_Dbl(len_e2);
+  Free_Scalar_Dbl(len_e3);
+  Free_Scalar_Dbl(len_e4);
+  Free_Scalar_Dbl(l_init);
+  Free_Scalar_Dbl(var_e1);
+  Free_Scalar_Dbl(var_e2);
+  Free_Scalar_Dbl(var_e3);
+  Free_Scalar_Dbl(var_e4);
+  Free_Scalar_Dbl(v_init);
 
   return result;
 }

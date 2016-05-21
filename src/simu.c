@@ -299,9 +299,9 @@ void Update_Bl(t_tree *tree, phydbl fact)
       orig = b;
       do
         {
-          b->l->v = b->l_old->v + (b->nni->l0 - b->l_old->v)*fact;
+          b->l->v = b->l_old->v + (b->nni->l0->v - b->l_old->v)*fact;
           if(b->next) b = b->next;
-          else         b = b->next;
+          else        b = b->next;
         }
       while(b);
       b = orig;
@@ -315,7 +315,7 @@ void Update_Bl(t_tree *tree, phydbl fact)
 void Make_N_Swap(t_tree *tree,t_edge **b, int beg, int end)
 {
   int i;
-  t_edge *orig;
+  /* t_edge *orig; */
   t_node *n1,*n2,*n3,*n4;
 
   n1 = n2 = n3 = n4 = NULL;
@@ -356,14 +356,17 @@ void Make_N_Swap(t_tree *tree,t_edge **b, int beg, int end)
           tree->n_root->v[1] = tree->e_root->rght;
         }
       
-      orig = b[i];
-      do
-        {
-          b[i]->l->v = b[i]->nni->best_l;
-          b[i] = b[i]->next;
-        }
-      while(b[i]);
-      b[i] = orig;
+      Copy_Scalar_Dbl(b[i]->nni->best_l,b[i]->l);
+      Copy_Scalar_Dbl(b[i]->nni->best_v,b[i]->l_var);
+
+      /* orig = b[i]; */
+      /* do */
+      /*   { */
+      /*     b[i]->l->v = b[i]->nni->best_l; */
+      /*     b[i] = b[i]->next; */
+      /*   } */
+      /* while(b[i]); */
+      /* b[i] = orig; */
 
       tree->n_swap++;
     }
@@ -380,7 +383,7 @@ int Make_Best_Swap(t_tree *tree)
 {
   int i,j,return_value;
   t_edge *b,**sorted_b;
-  t_edge *orig;
+  /* t_edge *orig; */
   t_node *n1,*n2,*n3,*n4;
 
 
@@ -428,14 +431,17 @@ int Make_Best_Swap(t_tree *tree)
       
       /* b->l->v = b->nni->best_l; */
       
-      orig = b;
-      do
-        {
-          b->l->v = b->nni->best_l;
-          b = b->next;
-        }
-      while(b);
-      b = orig;
+      Copy_Scalar_Dbl(b->nni->best_l,b->l);
+      Copy_Scalar_Dbl(b->nni->best_v,b->l_var);
+
+      /* orig = b; */
+      /* do */
+      /*   { */
+      /*     b->l->v = b->nni->best_l; */
+      /*     b = b->next; */
+      /*   } */
+      /* while(b); */
+      /* b = orig; */
     }
   else return_value = 0;
   
@@ -449,13 +455,19 @@ int Make_Best_Swap(t_tree *tree)
 
 int Mov_Backward_Topo_Bl(t_tree *tree, phydbl lk_old, t_edge **tested_b, int n_tested)
 {
-  phydbl **l_init;
+  scalar_dbl **l_init,**v_init;
   int i,j,step,beg,end;
   t_edge *b,*orig;
 
-  l_init = (phydbl **)mCalloc(2*tree->n_otu-3,sizeof(phydbl *));
+  l_init = (scalar_dbl **)mCalloc(2*tree->n_otu-3,sizeof(scalar_dbl *));
+  v_init = (scalar_dbl **)mCalloc(2*tree->n_otu-3,sizeof(scalar_dbl *));
 
-  For(i,2*tree->n_otu-3) l_init[i] = MIXT_Get_Lengths_Of_This_Edge(tree->a_edges[i],tree);
+  For(i,2*tree->n_otu-3) 
+    {
+      l_init[i] = Duplicate_Scalar_Dbl(tree->a_edges[i]->l);
+      v_init[i] = Duplicate_Scalar_Dbl(tree->a_edges[i]->l_var);
+      /* l_init[i] = MIXT_Get_Lengths_Of_This_Edge(tree->a_edges[i],tree); */
+    }
 
   step = 2;
   do
@@ -470,9 +482,9 @@ int Mov_Backward_Topo_Bl(t_tree *tree, phydbl lk_old, t_edge **tested_b, int n_t
           orig = b;
           do
             {
-              b->l->v = b->l_old->v + (1./step) * (l_init[i][j] - b->l_old->v);
+              b->l->v = b->l_old->v + (1./step) * (l_init[i]->v - b->l_old->v);
               b = b->next;
-              j++;
+              l_init[i] = l_init[i]->next;
             }
           while(b);
           b = orig;
@@ -499,27 +511,32 @@ int Mov_Backward_Topo_Bl(t_tree *tree, phydbl lk_old, t_edge **tested_b, int n_t
     {
       if(tree->n_swap)  Exit("\n== Err. in Mov_Backward_Topo_Bl (n_swap > 0)\n");
       
-      For(i,2*tree->n_otu-3)
-        {
-          b = tree->a_edges[i];
+      Restore_Br_Len(tree);
+
+      /* For(i,2*tree->n_otu-3) */
+      /*   { */
+      /*     b = tree->a_edges[i]; */
           
-          orig = b;
-          do
-            {
-              b->l->v = b->l_old->v;
-              b = b->next;
-            }
-          while(b);
-          b = orig;
-        }
+      /*     orig = b; */
+      /*     do */
+      /*       { */
+      /*         b->l->v = b->l_old->v; */
+      /*         b = b->next; */
+      /*       } */
+      /*     while(b); */
+      /*     b = orig; */
+      /*   } */
       
       
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
     }
 
-  For(i,2*tree->n_otu-3) Free(l_init[i]);
+  For(i,2*tree->n_otu-3) Free_Scalar_Dbl(l_init[i]);
   Free(l_init);
+
+  For(i,2*tree->n_otu-3) Free_Scalar_Dbl(v_init[i]);
+  Free(v_init);
 
   tree->n_swap = 0;
   For(i,2*tree->n_otu-3)
@@ -590,7 +607,7 @@ int Mov_Backward_Topo_Pars(t_tree *tree, int pars_old, t_edge **tested_b, int n_
 void Unswap_N_Branch(t_tree *tree, t_edge **b, int beg, int end)
 {
   int i;
-  t_edge *orig;
+  /* t_edge *orig; */
   t_node *n1,*n2,*n3,*n4;
 
   n1 = n2 = n3 = n4 = NULL;
@@ -633,15 +650,17 @@ void Unswap_N_Branch(t_tree *tree, t_edge **b, int beg, int end)
           
           /* b[i]->l->v = b[i]->l_old->v; */
           
+          Copy_Scalar_Dbl(b[i]->l_old,b[i]->l);
+          Copy_Scalar_Dbl(b[i]->l_var_old,b[i]->l_var);
           
-          orig = b[i];
-          do
-            {
-              b[i]->l->v = b[i]->l_old->v;
-              b[i] = b[i]->next;
-            }
-          while(b[i]);
-          b[i] = orig;
+          /* orig = b[i]; */
+          /* do */
+          /*   { */
+          /*     b[i]->l->v = b[i]->l_old->v; */
+          /*     b[i] = b[i]->next; */
+          /*   } */
+          /* while(b[i]); */
+          /* b[i] = orig; */
         }
     }
   else
@@ -677,15 +696,17 @@ void Unswap_N_Branch(t_tree *tree, t_edge **b, int beg, int end)
           
           
           /* b[i]->l->v = b[i]->l_old->v; */
+          Copy_Scalar_Dbl(b[i]->l_old,b[i]->l);
+          Copy_Scalar_Dbl(b[i]->l_var_old,b[i]->l_var);
           
-          orig = b[i];
-          do
-            {
-              b[i]->l->v = b[i]->l_old->v;
-              b[i] = b[i]->next;
-            }
-          while(b[i]);
-          b[i] = orig;
+          /* orig = b[i]; */
+          /* do */
+          /*   { */
+          /*     b[i]->l->v = b[i]->l_old->v; */
+          /*     b[i] = b[i]->next; */
+          /*   } */
+          /* while(b[i]); */
+          /* b[i] = orig; */
           
         }
     }
@@ -697,7 +718,7 @@ void Unswap_N_Branch(t_tree *tree, t_edge **b, int beg, int end)
 void Swap_N_Branch(t_tree *tree,t_edge **b, int beg, int end)
 {
   int i;
-  t_edge *orig;
+  /* t_edge *orig; */
   t_node *n1,*n2,*n3,*n4;
 
   n1 = n2 = n3 = n4 = NULL;
@@ -735,14 +756,17 @@ void Swap_N_Branch(t_tree *tree,t_edge **b, int beg, int end)
           
           /* b[i]->l->v = b[i]->nni->best_l; */
 
-          orig = b[i];
-          do
-            {
-              b[i]->l->v = b[i]->nni->best_l;
-              b[i] = b[i]->next;
-            }
-          while(b[i]);
-          b[i] = orig;
+          Copy_Scalar_Dbl(b[i]->nni->best_l,b[i]->l);
+          Copy_Scalar_Dbl(b[i]->nni->best_v,b[i]->l_var);
+
+          /* orig = b[i]; */
+          /* do */
+          /*   { */
+          /*     b[i]->l->v = b[i]->nni->best_l; */
+          /*     b[i] = b[i]->next; */
+          /*   } */
+          /* while(b[i]); */
+          /* b[i] = orig; */
         }
     }
   else
@@ -779,14 +803,17 @@ void Swap_N_Branch(t_tree *tree,t_edge **b, int beg, int end)
           
           /* b[i]->l->v = b[i]->nni->best_l; */
           
-          orig = b[i];
-          do
-            {
-              b[i]->l->v = b[i]->nni->best_l;
-              b[i] = b[i]->next;
-            }
-          while(b[i]);
-          b[i] = orig;
+          Copy_Scalar_Dbl(b[i]->nni->best_l,b[i]->l);
+          Copy_Scalar_Dbl(b[i]->nni->best_v,b[i]->l_var);
+
+          /* orig = b[i]; */
+          /* do */
+          /*   { */
+          /*     b[i]->l->v = b[i]->nni->best_l; */
+          /*     b[i] = b[i]->next; */
+          /*   } */
+          /* while(b[i]); */
+          /* b[i] = orig; */
         }
     }
 }

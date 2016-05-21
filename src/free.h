@@ -87,5 +87,6 @@ void JSON_Free_Array(json_a *a);
 void Free_Edge_Loc_Rght(t_edge *b);
 void Free_Edge_Loc_Left(t_edge *b);
 void Free_Edge_Loc(t_edge *b);
+void Free_NNI(t_nni *t);
 
 #endif

@@ -27,7 +27,7 @@ void Make_Edge_Lk(t_edge *b,t_tree *tree);
 void Make_Edge_Lk_Left(t_edge *b,t_tree *tree);
 void Make_Edge_Lk_Rght(t_edge *b,t_tree *tree);
 void Make_Edge_NNI(t_edge *b);
-nni *Make_NNI();
+t_nni *Make_NNI();
 t_node *Make_Node_Light(int num);
 void Make_Node_Lk(t_node *n);
 nexcom **Make_Nexus_Com();

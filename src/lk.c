@@ -2976,7 +2976,8 @@ phydbl Lk_Normal_Approx(t_tree *tree)
 
 phydbl Wrap_Part_Lk_At_Given_Edge(t_edge *b, t_tree *tree, supert_tree *stree)
 {
-  return PART_Lk_At_Given_Edge(b,stree);;
+  return -1.0;
+  /* return PART_Lk_At_Given_Edge(b,stree);; */
 }
 
 //////////////////////////////////////////////////////////////
@@ -2985,7 +2986,8 @@ phydbl Wrap_Part_Lk_At_Given_Edge(t_edge *b, t_tree *tree, supert_tree *stree)
 
 phydbl Wrap_Part_Lk(t_edge *b, t_tree *tree, supert_tree *stree)
 {
-  return PART_Lk(stree);
+  return -1.0;
+  /* return PART_Lk(stree); */
 }
 
 //////////////////////////////////////////////////////////////

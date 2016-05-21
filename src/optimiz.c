@@ -811,7 +811,8 @@ void Optimiz_Ext_Br(t_tree *tree)
   int i;
   t_edge *b,*ori;
   phydbl l_infa,l_infb;
-  phydbl lk_init,l_init;
+  phydbl lk_init;
+  scalar_dbl *l_init,*v_init;
 
   lk_init = tree->c_lnL;
 
@@ -819,30 +820,57 @@ void Optimiz_Ext_Br(t_tree *tree)
     {
       b = tree->a_edges[i];
       if((b->left->tax) || (b->rght->tax))
-    {
-
-      l_init = b->l->v;
-
-/* 	  Fast_Br_Len(b,tree); */
-/* 	  lk = Lk(NULL,tree,b); */
-
-      l_infb = tree->mod->l_min/b->l->v;
-      l_infa = 10.;
-
-      Br_Len_Brent(l_infb,l_infa,b,tree);
-
-      ori = b;
-      do
         {
-          b->nni->best_l    = b->l->v;
-          b->nni->l0        = b->l->v;
-          b->nni->best_conf = 0;
-          b->l->v              = l_init;
-              b = b->next;
+          
+          l_init = Duplicate_Scalar_Dbl(b->l);          
+          v_init = Duplicate_Scalar_Dbl(b->l_var);          
+
+          l_infb = tree->mod->l_min/b->l->v;
+          l_infa = 10.;
+          
+          Br_Len_Brent(l_infb,l_infa,b,tree);
+          
+          if(b->nni->best_l == NULL)
+            {
+              b->nni->best_l = Duplicate_Scalar_Dbl(b->l);
+              b->nni->best_v = Duplicate_Scalar_Dbl(b->l_var);
+            }
+          else
+            {
+              Copy_Scalar_Dbl(b->l,b->nni->best_l);
+              Copy_Scalar_Dbl(b->l_var,b->nni->best_v);
+            }
+
+          if(b->nni->l0 == NULL)
+            {
+              b->nni->l0 = Duplicate_Scalar_Dbl(b->l);
+              b->nni->v0 = Duplicate_Scalar_Dbl(b->l_var);
+            }
+          else
+            {
+              Copy_Scalar_Dbl(b->l,b->nni->l0);
+              Copy_Scalar_Dbl(b->l_var,b->nni->v0);
+            }
+
+          // Revert of original edge lengths
+          Copy_Scalar_Dbl(l_init,b->l);
+          Copy_Scalar_Dbl(v_init,b->l_var);
+
+          Free_Scalar_Dbl(l_init);
+          Free_Scalar_Dbl(v_init);
+
+          /* ori = b; */
+          /* do */
+          /*   { */
+          /*     b->nni->best_l->v = b->l->v; */
+          /*     b->nni->l0->v     = b->l->v; */
+          /*     b->nni->best_conf = 0; */
+          /*     b->l->v           = l_init; */
+          /*     b = b->next; */
+          /*   } */
+          /* while(b); */
+          /* b = ori; */
         }
-      while(b);
-      b = ori;
-    }
     }
   tree->c_lnL = lk_init;
 }

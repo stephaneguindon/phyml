@@ -1215,11 +1215,14 @@ typedef struct __NNI{
   struct __Edge            *b;
 
   phydbl                score;
-  phydbl               init_l;
+  scalar_dbl          *init_l;
+  scalar_dbl          *init_v;
   phydbl              init_lk;
-  phydbl               best_l;
+  scalar_dbl          *best_l;
+  scalar_dbl          *best_v;
   phydbl          lk0,lk1,lk2;
-  phydbl             l0,l1,l2;
+  scalar_dbl      *l0,*l1,*l2;
+  scalar_dbl      *v0,*v1,*v2;
 
   struct __Node *swap_node_v1;
   struct __Node *swap_node_v2;
@@ -1230,7 +1233,7 @@ typedef struct __NNI{
                 ((left_1,left_2),right_1,right_2) or
                 ((left_1,right_2),right_1,left_2) or
                 ((left_1,right_1),right_1,left_2)  */
-}nni;
+}t_nni;
 
 /*!********************************************************/
 
@@ -1241,10 +1244,13 @@ typedef struct __SPR{
   struct __Edge       *b_target;
   struct __Edge  *b_init_target;
   struct __Node          **path;
-  phydbl          init_target_l;
-  phydbl          init_target_v;
-  phydbl               l0,l1,l2;
-  phydbl               v0,v1,v2;
+
+  scalar_dbl     *init_target_l;
+  scalar_dbl     *init_target_v;
+
+  scalar_dbl        *l0,*l1,*l2;
+  scalar_dbl        *v0,*v1,*v2;
+
   phydbl                    lnL;
   int                depth_path;
   int                      pars;
@@ -1822,7 +1828,6 @@ void Init_Tree(t_tree *tree,int n_otu);
 void Init_Edge_Light(t_edge *b,int num);
 void Init_Node_Light(t_node *n,int num);
 void Set_Edge_Dirs(t_edge *b,t_node *a,t_node *d,t_tree *tree);
-void Init_NNI(nni *a_nni);
 void Init_Nexus_Format(nexcom **com);
 void Restrict_To_Coding_Position(align **data,option *io);
 void Uppercase(char *ch);
@@ -2092,6 +2097,8 @@ void Swap_Partial_Lk(t_edge *a, t_edge *b, int side_a, int side_b, t_tree *tree)
 scalar_dbl **Copy_Br_Len_Var(t_tree *mixt_tree);
 scalar_dbl **Copy_Br_Len(t_tree *mixt_tree);
 void Transfer_Br_Len_To_Tree(scalar_dbl **bl, t_tree *tree);
+void Copy_Scalar_Dbl(scalar_dbl *from, scalar_dbl *to);
+scalar_dbl *Duplicate_Scalar_Dbl(scalar_dbl *from);
 
 
 #include "xml.h"

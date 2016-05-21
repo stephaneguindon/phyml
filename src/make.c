@@ -47,6 +47,8 @@ void Make_Tree_4_Lk(t_tree *tree, calign *cdata, int n_site)
         {
           Free_Edge_Lk_Rght(tree->n_root->b[1]);
           Free_Edge_Lk_Rght(tree->n_root->b[2]);
+          Free_Edge_Loc_Rght(tree->n_root->b[1]);
+          Free_Edge_Loc_Rght(tree->n_root->b[2]);
         }
     }
 }
@@ -341,11 +343,12 @@ void Make_Edge_NNI(t_edge *b)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-nni *Make_NNI()
+t_nni *Make_NNI()
 {
-  nni *a_nni;
-  a_nni = (nni *)mCalloc(1,sizeof(nni ));
+  t_nni *a_nni;
+
+  a_nni = (t_nni *)mCalloc(1,sizeof(t_nni));
+  
   Init_NNI(a_nni);
   return a_nni;
 }
@@ -1059,6 +1062,15 @@ t_spr *Make_One_Spr(t_tree *tree)
   t_spr *a_spr;
   a_spr         = (t_spr *)mCalloc(1,sizeof(t_spr));
   a_spr->path   = (t_node **)mCalloc(tree->n_otu,sizeof(t_node *));
+  
+  a_spr->l0 = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+  a_spr->l1 = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+  a_spr->l2 = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+
+  a_spr->v0 = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+  a_spr->v1 = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+  a_spr->v2 = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+
   return a_spr;
 }
 
