@@ -3756,38 +3756,33 @@ void Speed_Spr_Loop(t_tree *tree)
   tree->best_lnL  = tree->c_lnL;
 
 
+
   /*****************************/
-  if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. Round of SPR moves...\n");
+  if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. First round of SPR moves...\n");
   lk_old = tree->c_lnL;
-  tree->mod->s_opt->max_depth_path    = 15;
+  tree->mod->s_opt->max_depth_path    = tree->n_otu;
+  tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(0.):(0.);
+  tree->mod->s_opt->spr_lnL           = NO;
+  tree->mod->s_opt->spr_pars          = NO;
+  tree->mod->s_opt->min_diff_lk_move  = 0.1;
+  delta_lnL                           = 3.0;
+  Speed_Spr(tree,1.0,20,delta_lnL);
+  Optimiz_All_Free_Param(tree,(tree->io->quiet)?(NO):(tree->mod->s_opt->print));
+
+
+  /*****************************/
+  if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. Second round of SPR moves...\n");
+  lk_old = tree->c_lnL;
+  tree->mod->s_opt->max_depth_path    = 10;
   tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(0.):(0.);
   tree->mod->s_opt->spr_lnL           = YES;
   tree->mod->s_opt->spr_pars          = NO;
   tree->mod->s_opt->min_diff_lk_move  = 0.1;
   delta_lnL                           = 1;
-  do
-    {
-      lk_old = tree->c_lnL;
-      Speed_Spr(tree,1.0,20,delta_lnL);
-    }
-  while(FABS(tree->c_lnL - lk_old) > delta_lnL);
+  Speed_Spr(tree,1.0,20,delta_lnL);
+  Optimiz_All_Free_Param(tree,(tree->io->quiet)?(NO):(tree->mod->s_opt->print));
   /*****************************/
 
-  Optimiz_All_Free_Param(tree,(tree->io->quiet)?(NO):(tree->mod->s_opt->print));
-
-
-  /* /\*****************************\/ */
-  /* if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. Last round of SPR moves...\n"); */
-  /* lk_old = tree->c_lnL; */
-  /* tree->mod->s_opt->max_depth_path    = 20; */
-  /* tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(5.):(0.); */
-  /* tree->mod->s_opt->spr_lnL           = YES; */
-  /* tree->mod->s_opt->spr_pars          = NO; */
-  /* tree->mod->s_opt->min_diff_lk_move  = 0.1; */
-  /* delta_lnL                           = 1.0; */
-  /* Speed_Spr(tree,1.0,20,delta_lnL); */
-
-  /* Optimiz_All_Free_Param(tree,(tree->io->quiet)?(NO):(tree->mod->s_opt->print)); */
 
   /*****************************/
   tree->mod->s_opt->min_diff_lk_move  = 0.01;
