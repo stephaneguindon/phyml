@@ -1,9 +1,10 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT([PhyML],esyscmd([sh -c "echo "3.2." | tr -d '\n' ; date \"+%Y%m%d\" | tr -d '\n'"]),[s.guindon@auckland.ac.nz])
+AC_INIT([PhyML],esyscmd([sh -c "echo "3.2." | tr -d '\n' ; date \"+%Y%m%d\" | tr -d '\n'"]),[guindon@lirmm.fr])
 AM_INIT_AUTOMAKE([foreign])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
+AC_CONFIG_MACRO_DIR([m4])
 
 AC_CONFIG_SRCDIR([src/simu.c],[doc/phyml-manual.tex])
 AC_CONFIG_HEADERS([config.h])
