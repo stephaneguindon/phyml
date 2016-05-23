@@ -442,10 +442,8 @@ phydbl Lk(t_edge *b, t_tree *tree)
       return tree->c_lnL;
     }
   
-  if(!b) Set_Model_Parameters(tree->mod);
-  
-  Set_Br_Len_Var(tree);
-  
+  if(b == NULL) Set_Model_Parameters(tree->mod);
+    
   if(tree->mod->s_opt->skip_tree_traversal == NO)
     {
       if(!b)//Update the PMat for all edges
@@ -974,11 +972,8 @@ phydbl Invariant_Lk(int fact_sum_scale, int site, int *num_prec_issue, t_tree *t
 
 }
 
-
-
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 /* Update partial likelihood on edge b on the side of b where
    node d lies.
@@ -2377,6 +2372,8 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
       return;
     }
 
+  if(tree->io->mod->gamma_mgf_bl == YES) Set_Br_Len_Var(b_fcus,tree);
+
   l_min = tree->mod->l_min;
   l_max = tree->mod->l_max;
 
@@ -2408,7 +2405,9 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
           
           mean = len;
           var  = MAX(0.0,b_fcus->l_var->v) * POW(tree->mod->ras->gamma_rr->v[i]*tree->mod->br_len_mult->v,2);
-          if(tree->mixt_tree)  var *= POW(tree->mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number],2);
+          if(tree->mixt_tree) var *= POW(tree->mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number],2);
+
+          /* var = 1.E-10; */
 
           if(var > tree->mod->l_var_max) var = tree->mod->l_var_max;
           if(var < tree->mod->l_var_min) var = tree->mod->l_var_min;
@@ -2527,33 +2526,33 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
 void Update_P_Lk_Along_A_Path(t_node **path, int path_length, t_tree *tree)
 {
   int i,j;
-
+  
   For(i,path_length-1)
     {
       For(j,3)
-    if(path[i]->v[j] == path[i+1])
-      {
-        if(path[i] == path[i]->b[j]->left)
+        if(path[i]->v[j] == path[i+1])
           {
-        Update_P_Lk(tree,path[i]->b[j],path[i]->b[j]->left);
+            if(path[i] == path[i]->b[j]->left)
+              {
+                Update_P_Lk(tree,path[i]->b[j],path[i]->b[j]->left);
+              }
+            else if(path[i] == path[i]->b[j]->rght)
+              {
+                Update_P_Lk(tree,path[i]->b[j],path[i]->b[j]->rght);
+              }
+            else
+              {
+                PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
+                Exit("");
+              }
+            break;
           }
-        else if(path[i] == path[i]->b[j]->rght)
-          {
-        Update_P_Lk(tree,path[i]->b[j],path[i]->b[j]->rght);
-          }
-        else
-          {
-            PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
-            Exit("");
-          }
-        break;
-      }
 #ifdef DEBUG
       if(j == 3)
-    {
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
-      Exit("");
-    }
+        {
+          PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
+          Exit("");
+        }
 #endif
     }
 }
@@ -2611,7 +2610,6 @@ phydbl Lk_Dist(phydbl *F, phydbl dist, t_mod *mod)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 phydbl Update_Lk_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
 {

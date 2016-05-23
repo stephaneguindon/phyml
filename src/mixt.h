@@ -70,7 +70,7 @@ phydbl MIXT_Get_Mean_Edge_Len(t_edge *mixt_b, t_tree *tree);
 phydbl MIXT_Get_Sum_Chained_Scalar_Dbl(scalar_dbl *s);
 phydbl MIXT_Get_Sum_Of_Probas_Across_Mixtures(phydbl r_mat_weight_sum, phydbl e_frq_weight_sum, t_tree *mixt_tree);
 phydbl MIXT_Rescale_Free_Rate_Tree(t_tree *mixt_tree);
-void MIXT_Set_Br_Len_Var(t_tree *mixt_tree);
+void MIXT_Set_Br_Len_Var(t_edge *mixt_b, t_tree *mixt_tree);
 void MIXT_Optimize_Br_Len_Multiplier(t_tree *mixt_tree);
 void MIXT_Update_Br_Len_Multipliers(t_mod *mod);
 void MIXT_Init_Model(t_tree *mixt_tree);

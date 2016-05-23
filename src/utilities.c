@@ -4940,7 +4940,8 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
 
   if(b1->l->onoff == ON)
     {
-      b1->l->v += b2->l->v;
+      b1->l->v     += b2->l->v;
+      b1->l_var->v += b2->l_var->v;
     }
 
   (v1 == b1->left)?
@@ -4973,7 +4974,6 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
 #endif
 
   if(tree->is_mixt_tree == YES) MIXT_Prune_Subtree(a,d,target,residual,tree);
-
 }
 
 //////////////////////////////////////////////////////////////
@@ -5145,10 +5145,16 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
       }
 
   if(target->l->onoff == ON)
-    target->l->v /= 2.;
+    {
+      target->l->v     /= 2.;
+      target->l_var->v /= 2.;
+    }
 
   if(residual->l->onoff == ON)
-    residual->l->v = target->l->v;
+    {
+      residual->l->v     = target->l->v;
+      residual->l_var->v = target->l_var->v;
+    }
 
   Set_Edge_Dirs(target,target->left,target->rght,tree);
   Set_Edge_Dirs(residual,residual->left,residual->rght,tree);
@@ -5170,7 +5176,6 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
       tree->n_root->b[1]->rght = target->left;
       tree->n_root->b[2]->rght = target->rght;
     }
-
 
   if(tree->is_mixt_tree == YES) MIXT_Graft_Subtree(target,link,residual,tree);
 
@@ -7177,7 +7182,7 @@ void Evolve(calign *data, t_mod *mod, t_tree *tree)
 
   if(mod->use_m4mod) tree->write_labels = YES;
 
-  Set_Br_Len_Var(tree);
+  Set_Br_Len_Var(NULL,tree);
 
   switch_to_yes = NO;
   if(tree->mod->gamma_mgf_bl == YES) 
@@ -7819,10 +7824,10 @@ void JF(t_tree *tree)
   For(i,2*tree->n_otu-3)
     {
       if((!tree->a_edges[i]->left->tax) && (!tree->a_edges[i]->rght->tax))
-    {
-      PhyML_Printf("%3d %f %f %f\n",
-         tree->a_edges[i]->bip_score,tree->a_edges[i]->alrt_statistic, tree->a_edges[i]->ratio_test,tree->a_edges[i]->l->v);
-    }
+        {
+          PhyML_Printf("%3d %f %f %f\n",
+                       tree->a_edges[i]->bip_score,tree->a_edges[i]->alrt_statistic, tree->a_edges[i]->ratio_test,tree->a_edges[i]->l->v);
+        }
     }
 
 
@@ -9352,44 +9357,44 @@ void Adjust_Variances(t_tree *tree)
   For(i,2*tree->n_otu-3)
     {
       if(tree->a_edges[i]->l->v < 1.1*tree->mod->l_min)
-    {
-      tree->rates->mean_l[i]                     = -1.00;
-      tree->rates->cov_l[i*(2*tree->n_otu-3)+i]  =  0.1;
-      tree->norm_scale                           = -100;
-
-
-      new_diff = curr_diff = 10.0;
-      do
         {
-          curr_diff = new_diff;
-
-          Generic_Brent_Lk(&(tree->norm_scale),
-                   -1E+6,
-                   0.0,
-                   1.E-10,
-                   10000,
-                   NO,
-                   Wrap_Diff_Lk_Norm_At_Given_Edge,tree->a_edges[i],tree,NULL,NO);
-
-          /* 		      Generic_Brent_Lk(&(tree->rates->mean_l[0]), */
-          /* 				       -100., */
-          /* 				       10*tree->mod->l_min, */
-          /* 				       1.E-3, */
-          /* 				       10000, */
-          /* 				       NO, */
-          /* 				       Wrap_Diff_Lk_Norm_At_Given_Edge,tree->a_edges[0],tree,NULL); */
-
-          Generic_Brent_Lk(&(tree->rates->cov_l[i*(2*tree->n_otu-3)+i]),
-                   0.0,
-                   10.0,
-                   1.E-10,
-                   10000,
-                   NO,
-                   Wrap_Diff_Lk_Norm_At_Given_Edge,tree->a_edges[i],tree,NULL,NO);
-
-          new_diff = Diff_Lk_Norm_At_Given_Edge(tree->a_edges[i],tree);
-        }while(FABS(new_diff-curr_diff) > 1.E-3);
-    }
+          tree->rates->mean_l[i]                     = -1.00;
+          tree->rates->cov_l[i*(2*tree->n_otu-3)+i]  =  0.1;
+          tree->norm_scale                           = -100;
+          
+          
+          new_diff = curr_diff = 10.0;
+          do
+            {
+              curr_diff = new_diff;
+              
+              Generic_Brent_Lk(&(tree->norm_scale),
+                               -1E+6,
+                               0.0,
+                               1.E-10,
+                               10000,
+                               NO,
+                               Wrap_Diff_Lk_Norm_At_Given_Edge,tree->a_edges[i],tree,NULL,NO);
+              
+              /* 		      Generic_Brent_Lk(&(tree->rates->mean_l[0]), */
+              /* 				       -100., */
+              /* 				       10*tree->mod->l_min, */
+              /* 				       1.E-3, */
+              /* 				       10000, */
+              /* 				       NO, */
+              /* 				       Wrap_Diff_Lk_Norm_At_Given_Edge,tree->a_edges[0],tree,NULL); */
+              
+              Generic_Brent_Lk(&(tree->rates->cov_l[i*(2*tree->n_otu-3)+i]),
+                               0.0,
+                               10.0,
+                               1.E-10,
+                               10000,
+                               NO,
+                               Wrap_Diff_Lk_Norm_At_Given_Edge,tree->a_edges[i],tree,NULL,NO);
+              
+              new_diff = Diff_Lk_Norm_At_Given_Edge(tree->a_edges[i],tree);
+            }while(FABS(new_diff-curr_diff) > 1.E-3);
+        }
     }
 }
 
@@ -10703,25 +10708,32 @@ void Best_Root_Position_IL_Model(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Set_Br_Len_Var(t_tree *tree)
+void Set_Br_Len_Var(t_edge *b, t_tree *tree)
 {
   if(tree->is_mixt_tree)
     {
-      MIXT_Set_Br_Len_Var(tree);
+      MIXT_Set_Br_Len_Var(b,tree);
       return;
     }
 
-  if(!tree->rates && tree->mod->gamma_mgf_bl == YES)
+  if(tree->rates == NO && tree->mod->gamma_mgf_bl == YES)
     {
-      int i;
-      phydbl len;
 
-      For(i,2*tree->n_otu-1)
+      phydbl len;
+      if(b == NULL)
         {
-          /* len = MAX(tree->mod->l_min,tree->a_edges[i]->l->v); */
-          /* len = MIN(tree->mod->l_max,len); */
-          len = MAX(0.0,tree->a_edges[i]->l->v);
-          tree->a_edges[i]->l_var->v = POW(len,2)*tree->mod->l_var_sigma;
+          int i;
+          
+          For(i,2*tree->n_otu-1)
+            {
+              len = MAX(0.0,tree->a_edges[i]->l->v);
+              tree->a_edges[i]->l_var->v = POW(len,2)*tree->mod->l_var_sigma;
+            }
+        }
+      else
+        {
+          len = MAX(0.0,b->l->v);
+          b->l_var->v = POW(len,2)*tree->mod->l_var_sigma;
         }
     }
 }

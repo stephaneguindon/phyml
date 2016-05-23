@@ -3223,7 +3223,6 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
     }
   else
     {
-
       if(!link->tax) Test_All_Spr_Targets(b,link,tree);
 
       if(tree->n_moves)
@@ -3397,7 +3396,7 @@ int Test_All_Spr_Targets(t_edge *b_pulled, t_node *n_link, t_tree *tree)
                                 b_target->left,
                                 b_pulled,n_link,b_residual,b_target,&best_found,tree);
       
-      if(best_found == NO)
+      if(best_found == NO || tree->mod->s_opt->spr_lnL == NO)
         {
           tree->depth_curr_path = 0;
           tree->curr_path[0] = b_target->rght;
@@ -3411,10 +3410,12 @@ int Test_All_Spr_Targets(t_edge *b_pulled, t_node *n_link, t_tree *tree)
       if((n_link->v[dir1] != n_v1) || (n_link->v[dir2] != n_v2)) PhyML_Printf("\n== Warning: -- SWITCH NEEDED -- ! \n");
 
       Copy_Scalar_Dbl(init_l_v1,n_link->b[dir1]->l);
-      Copy_Scalar_Dbl(init_l_v2,n_link->b[dir2]->l);
-      Copy_Scalar_Dbl(init_l_pulled,b_pulled->l);
       Copy_Scalar_Dbl(init_v_v1,n_link->b[dir1]->l_var);
+
+      Copy_Scalar_Dbl(init_l_v2,n_link->b[dir2]->l);
       Copy_Scalar_Dbl(init_v_v2,n_link->b[dir2]->l_var);
+
+      Copy_Scalar_Dbl(init_l_pulled,b_pulled->l);
       Copy_Scalar_Dbl(init_v_pulled,b_pulled->l_var);
 
       Update_PMat_At_Given_Edge(n_link->b[dir1],tree);
@@ -3468,8 +3469,8 @@ int Test_All_Spr_Targets(t_edge *b_pulled, t_node *n_link, t_tree *tree)
 void Test_One_Spr_Target_Recur(t_node *a, t_node *d, t_edge *pulled, t_node *link, t_edge *residual, t_edge *init_target, int *best_found, t_tree *tree)
 {
   int i;
-
-  if(*best_found) return;
+  
+  if(*best_found == YES) return;
   
   if(d->tax) return;
   else
@@ -3496,9 +3497,13 @@ void Test_One_Spr_Target_Recur(t_node *a, t_node *d, t_edge *pulled, t_node *lin
                  (tree->depth_curr_path >= tree->mod->s_opt->min_depth_path))
                 {
                   move_lnL = Test_One_Spr_Target(d->b[i],pulled,link,residual,init_target,tree);
-                  if(move_lnL > tree->best_lnL + tree->mod->s_opt->min_diff_lk_move) *best_found = YES;
+                  if(move_lnL > tree->best_lnL + tree->mod->s_opt->min_diff_lk_move) 
+                    {
+                      *best_found = YES;
+                      return;
+                    }
                 }
-              
+                            
               if(tree->depth_curr_path < tree->mod->s_opt->max_depth_path)
                 Test_One_Spr_Target_Recur(d,d->v[i],pulled,link,residual,init_target,best_found,tree);
               
@@ -3547,16 +3552,16 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
       Copy_Scalar_Dbl(init_target->l_var,move->init_target_v);
     }
 
-
   Graft_Subtree(b_target,n_link,b_residual,tree);
 
   // Save edge lengths so that they can be recovered in the end
   init_target_l   = Duplicate_Scalar_Dbl(b_target->l);
-  init_arrow_l    = Duplicate_Scalar_Dbl(b_arrow->l);
-  init_residual_l = Duplicate_Scalar_Dbl(b_residual->l);
-
   init_target_v   = Duplicate_Scalar_Dbl(b_target->l_var);
+
+  init_arrow_l    = Duplicate_Scalar_Dbl(b_arrow->l);
   init_arrow_v    = Duplicate_Scalar_Dbl(b_arrow->l_var);
+
+  init_residual_l = Duplicate_Scalar_Dbl(b_residual->l);
   init_residual_v = Duplicate_Scalar_Dbl(b_residual->l_var);
 
   if(tree->mod->s_opt->spr_lnL == YES)
@@ -3567,7 +3572,6 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
       Update_P_Lk(tree,b_residual,n_link);
       move_lnL = Lk(b_residual,tree);
       MIXT_Set_Alias_Subpatt(NO,tree);
-
 
       /* if(FABS(move_lnL - tree->best_lnL < 10.)) */
       /*   { */
@@ -3612,10 +3616,12 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
 
   For(i,tree->depth_curr_path+1) move->path[i] = tree->curr_path[i];
   
+
+
   Copy_Scalar_Dbl(l0,move->l0);
   Copy_Scalar_Dbl(l1,move->l1);
   Copy_Scalar_Dbl(l2,move->l2);
-  Copy_Scalar_Dbl(l0,move->v0);
+  Copy_Scalar_Dbl(v0,move->v0);
   Copy_Scalar_Dbl(v1,move->v1);
   Copy_Scalar_Dbl(v2,move->v2);
 
@@ -3629,6 +3635,8 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
   move->dist          = b_target->topo_dist_btw_edges;
   move->n_opp_to_link = (n_link==b_arrow->left)?(b_arrow->rght):(b_arrow->left);
   
+  /* PhyML_Printf("\nXX %d l0=%G l1=%G l2=%G v0=%G v1=%G v2=%G lnL:%f",move->n_link->num,move->l0->v,move->l1->v,move->l2->v,move->v0->v,move->v1->v,move->v2->v,move_lnL); */
+
   Include_One_Spr_To_List_Of_Spr(move,tree);
 
   /* b_target->l->v   = init_target_len; */
@@ -3636,10 +3644,12 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
   /* b_residual->l->v = init_residual_len; */
 
   Copy_Scalar_Dbl(init_target_l,b_target->l);
-  Copy_Scalar_Dbl(init_arrow_l,b_arrow->l);
-  Copy_Scalar_Dbl(init_residual_l,b_residual->l);
   Copy_Scalar_Dbl(init_target_v,b_target->l_var);
+
+  Copy_Scalar_Dbl(init_arrow_l,b_arrow->l);
   Copy_Scalar_Dbl(init_arrow_v,b_arrow->l_var);
+
+  Copy_Scalar_Dbl(init_residual_l,b_residual->l);
   Copy_Scalar_Dbl(init_residual_v,b_residual->l_var);
 
   Prune_Subtree(n_link,
@@ -3648,7 +3658,7 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
                 &b_residual,
                 tree);
 
-  if(tree->mod->s_opt->spr_lnL) Update_PMat_At_Given_Edge(b_target,tree);
+  if(tree->mod->s_opt->spr_lnL == YES) Update_PMat_At_Given_Edge(b_target,tree);
 
   tree->c_lnL   = init_lnL;
   tree->c_pars  = init_pars;
@@ -3720,6 +3730,7 @@ void Speed_Spr_Loop(t_tree *tree)
   if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. Second round of SPR moves...\n");
   lk_old = tree->c_lnL;
   tree->mod->s_opt->max_depth_path    = 15;
+  /* tree->mod->s_opt->max_depth_path    = tree->n_otu; */
   tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(0.):(0.);
   tree->mod->s_opt->spr_lnL           = YES;
   tree->mod->s_opt->spr_pars          = NO;
@@ -3907,7 +3918,11 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
           Record_Br_Len(tree);
           
           /* Prune subtree */
-          Prune_Subtree(move->n_link,move->n_opp_to_link,&init_target,&b_residual,tree);
+          Prune_Subtree(move->n_link,
+                        move->n_opp_to_link,
+                        &init_target,
+                        &b_residual,
+                        tree);
           
           if(recorded == NO)
             {
@@ -3920,7 +3935,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
               recorded = YES;
               
               Fast_Br_Len(init_target,tree,NO);
-              
+
               /*! Record branch length at prune site */
               if(recorded_l == NULL)
                 {
@@ -3933,33 +3948,16 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
                   Copy_Scalar_Dbl(init_target->l_var,recorded_v);
                 }
 
-              /*! Make sure recorded_l has been updated beforehand */              
-              if(move->init_target_l == NULL)
-                {
-                  move->init_target_l = Duplicate_Scalar_Dbl(recorded_l);
-                  move->init_target_v = Duplicate_Scalar_Dbl(recorded_v);
-                }
-              else
-                {
-                  Copy_Scalar_Dbl(recorded_l,move->init_target_l);
-                  Copy_Scalar_Dbl(recorded_v,move->init_target_v);
-                }
+              Copy_Scalar_Dbl(recorded_l,move->init_target_l);
+              Copy_Scalar_Dbl(recorded_v,move->init_target_v);
             }
           else
             {
               Copy_Scalar_Dbl(recorded_l,move->b_init_target->l);
               Copy_Scalar_Dbl(recorded_v,move->b_init_target->l_var);
 
-              if(move->init_target_l == NULL)
-                {
-                  move->init_target_l = Duplicate_Scalar_Dbl(recorded_l);
-                  move->init_target_v = Duplicate_Scalar_Dbl(recorded_v);
-                }
-              else
-                {
-                  Copy_Scalar_Dbl(recorded_l,move->init_target_l);
-                  Copy_Scalar_Dbl(recorded_v,move->init_target_v);
-                }
+              Copy_Scalar_Dbl(recorded_l,move->init_target_l);
+              Copy_Scalar_Dbl(recorded_v,move->init_target_v);
             }
           
           /* Update the change proba matrix at prune position */
@@ -3976,6 +3974,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
                     
           MIXT_Set_Alias_Subpatt(YES,tree);
           move->lnL = Triple_Dist(move->n_link,tree,YES);
+
           MIXT_Set_Alias_Subpatt(NO,tree);
 
           if((move->lnL < best_lnL) && (move->lnL > best_lnL - tree->mod->s_opt->max_delta_lnL_spr))
@@ -4147,7 +4146,6 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
       else                                          dir_v2 = j;
     }
 
-
   Copy_Scalar_Dbl(move->l0,move->n_link->b[dir_v0]->l);
   Copy_Scalar_Dbl(move->v0,move->n_link->b[dir_v0]->l_var);
 
@@ -4168,47 +4166,6 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
       Copy_Scalar_Dbl(move->v2,move->n_link->b[dir_v2]->l_var);
     }
 
-  /* focus_move = move; */
-  /* focus_tree = tree; */
-  /* do */
-  /*   { */
-  /*     if(focus_tree != NULL && focus_tree->is_mixt_tree == YES) */
-  /*       { */
-  /*         focus_move = focus_move->next; */
-  /*         focus_tree = focus_tree->next; */
-  /*       } */
-
-  /*     focus_move->n_link->b[dir_v0]->l->v     = focus_move->l0->v; */
-  /*     focus_move->n_link->b[dir_v0]->l_var->v = focus_move->v0->v; */
-
-  /*     if(focus_move->n_link->v[dir_v1]->num > focus_move->n_link->v[dir_v2]->num) */
-  /*       { */
-  /*         focus_move->n_link->b[dir_v2]->l->v = focus_move->l1->v; */
-  /*         focus_move->n_link->b[dir_v1]->l->v = focus_move->l2->v; */
-
-  /*         if(focus_tree->io->mod->gamma_mgf_bl == YES) */
-  /*           { */
-  /*             focus_move->n_link->b[dir_v2]->l_var->v = focus_move->v1->v; */
-  /*             focus_move->n_link->b[dir_v1]->l_var->v = focus_move->v2->v; */
-  /*           } */
-  /*       } */
-  /*     else */
-  /*       { */
-  /*         focus_move->n_link->b[dir_v1]->l->v = focus_move->l1->v; */
-  /*         focus_move->n_link->b[dir_v2]->l->v = focus_move->l2->v; */
-          
-  /*         if(focus_tree->io->mod->gamma_mgf_bl == YES) */
-  /*           { */
-  /*             focus_move->n_link->b[dir_v1]->l_var->v = focus_move->v1->v; */
-  /*             focus_move->n_link->b[dir_v2]->l_var->v = focus_move->v2->v; */
-  /*           } */
-  /*       } */
-
-  /*     focus_move = focus_move->next; */
-  /*     focus_tree = focus_tree->next; */
-  /*   } */
-  /* while(focus_tree); */
-
   accept = YES;
   if(!Check_Topo_Constraints(tree,tree->io->cstr_tree)) accept = NO;
 
@@ -4224,9 +4181,18 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
       if(FABS(tree->c_lnL - move->lnL) > tree->mod->s_opt->min_diff_lk_move)
         {
           PhyML_Printf("\n== c_lnL = %f move_lnL = %f", tree->c_lnL,move->lnL);
-          PhyML_Printf("\n== l0=%f l1=%f l2=%f v0=%f v1=%f v2=%f",move->l0->v,move->l1->v,move->l2->v,move->v0->v,move->v1->v,move->v2->v);
+          PhyML_Printf("\n== %d l0=%G l1=%G l2=%G v0=%G v1=%G v2=%G",move->n_link->num,move->l0->v,move->l1->v,move->l2->v,move->v0->v,move->v1->v,move->v2->v);
           PhyML_Printf("\n== Gamma MGF? %d",tree->io->mod->gamma_mgf_bl);
           PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
+          Check_Lk_At_Given_Edge(YES,tree);
+          /* { */
+          /*   int i; */
+          /*   For(i,2*tree->n_otu-1) */
+          /*     printf("\n. Edge %d %G %G", */
+          /*            i, */
+          /*            tree->a_edges[i]->l->v, */
+          /*            tree->a_edges[i]->l_var->v); */
+          /* } */
           Exit("\n");
         }
 

@@ -622,7 +622,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
     {
       if(!cpy_mixt_b) Set_Model_Parameters(mixt_tree->mod);      
       
-      Set_Br_Len_Var(mixt_tree);
+      Set_Br_Len_Var(mixt_b,mixt_tree);
 
       if(!cpy_mixt_b)
         {
@@ -2072,19 +2072,37 @@ phydbl MIXT_Get_Sum_Of_Probas_Across_Mixtures(phydbl r_mat_weight_sum, phydbl e_
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void MIXT_Set_Br_Len_Var(t_tree *mixt_tree)
+void MIXT_Set_Br_Len_Var(t_edge *mixt_b, t_tree *mixt_tree)
 {
   t_tree *tree;
-
-  tree = mixt_tree->next;
   
-  do
+  if(mixt_b != NULL)
     {
-      Set_Br_Len_Var(tree);
-      tree = tree->next;
-    }
-  while(tree);
+      t_edge *b;
   
+      tree = mixt_tree->next;
+      b    = mixt_b->next;
+
+      do
+        {
+          Set_Br_Len_Var(b,tree);
+          tree = tree->next;
+          b    = b->next;
+        }
+      while(tree);
+    }
+  else
+    {
+      tree = mixt_tree->next;
+
+      do
+        {
+          Set_Br_Len_Var(NULL,tree);
+          tree = tree->next;
+        }
+      while(tree);
+
+    }
 }
 
 //////////////////////////////////////////////////////////////

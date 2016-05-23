@@ -2076,7 +2076,7 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
                   );
 
 void Best_Root_Position_IL_Model(t_tree *tree);
-void Set_Br_Len_Var(t_tree *tree);
+void Set_Br_Len_Var(t_edge *b, t_tree *tree);
 void Check_Br_Lens(t_tree *tree);
 void Calculate_Number_Of_Diff_States_Post(t_node *a, t_node *d, t_edge *b, t_tree *tree);
 void Calculate_Number_Of_Diff_States_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree);

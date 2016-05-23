@@ -81,7 +81,6 @@ int main(int argc, char **argv)
       return(0);
     }
 
-
 #ifdef EVOLVE
   io->colalias = NO;
 #endif
