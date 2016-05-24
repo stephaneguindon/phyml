@@ -348,16 +348,13 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
                neigh/(4.*PI*mmod->sigsq));
   fflush(NULL);
 
-  PhyML_Printf("\n. Useful statistics: %f %d %d %d %f %f %f %f %f %f\n",
+  PhyML_Printf("\n. Useful statistics: t.root=%f n.int=%d n.coal=%d n.hit=%d root.x=%f root.y=%f nt.div=%f\n",
                disk->time,
                PHYREX_Total_Number_Of_Intervals(tree),
                PHYREX_Total_Number_Of_Coal_Disks(tree),
                PHYREX_Total_Number_Of_Hit_Disks(tree),
                disk->ldsk->coord->lonlat[0],
                disk->ldsk->coord->lonlat[1],
-               mmod->lbda,  
-               mmod->mu,    
-               mmod->sigsq,
                Nucleotide_Diversity(tree->data));
   
   
