@@ -124,6 +124,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
       {"anc",                 no_argument,NULL,76},
       {"coord_file",          required_argument,NULL,77},
       {"json_trace",          no_argument,NULL,78},
+      {"weights",             required_argument,NULL,79},
       {0,0,0,0}
     };
 
@@ -142,6 +143,12 @@ int Read_Command_Line(option *io, int argc, char **argv)
       switch(c)
 	{
 
+        case 79:
+          {
+            io->has_io_weights = YES;
+            strcpy(io->weight_file, optarg);
+            break;
+          }
         case 78:
           {
 	    io->print_json_trace = YES;

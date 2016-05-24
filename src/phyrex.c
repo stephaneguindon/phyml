@@ -187,7 +187,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   Free_Optimiz(tree->mod->s_opt);
   Free_Model_Complete(tree->mod);
   Free_Model_Basic(tree->mod);
-  Free_Cseq(tree->data);
+  Free_Calign(tree->data);
   Free_Tree(tree);
   Free(res);  
   Free(s);

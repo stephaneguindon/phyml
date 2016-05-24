@@ -1978,6 +1978,37 @@ t_tree *Read_Tree_File(option *io)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+scalar_dbl *Read_Io_Weights(option *io)
+{
+  scalar_dbl *w,*ori;
+  double val;
+
+  assert(io->weight_file);
+  
+  io->fp_weight_file = Openfile(io->weight_file,READ);
+
+  w = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+  ori = w;
+
+  do
+    {
+      if(fscanf(io->fp_weight_file,"%lf,",&val) == EOF) break;      
+      w->v = (phydbl)val;
+      w->next = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+      w = w->next;
+    }
+  while(1);
+
+  w->next = NULL;
+
+  fclose(io->fp_weight_file);
+  
+  return(ori);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 char *Return_Tree_String_Phylip(FILE *fp_input_tree)
 {
   char *line;
@@ -4672,7 +4703,7 @@ option *PhyML_XML(char *xml_filename)
   tree = mixt_tree;
   do
     {
-      Free_Cseq(tree->data);
+      Free_Calign(tree->data);
       tree = tree->next_mixt;
     }
   while(tree);

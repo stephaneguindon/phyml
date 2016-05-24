@@ -236,7 +236,7 @@ int M4_main(int argc, char **argv)
 
 	      if(io->n_trees > 1 && io->n_data_sets > 1) break;
 	    }
-	  Free_Cseq(cdata);
+	  Free_Calign(cdata);
 	}
       else
 	{
@@ -1453,7 +1453,7 @@ void M4_Detect_Site_Switches_Experiment(t_tree *tree)
   Free(site_lnl_cov);
   Free(site_lnl_nocov);
 
-  Free_Cseq(cpy_data);
+  Free_Calign(cpy_data);
   Free(nocov_bl);
   Free(cov_bl);
 }

@@ -179,12 +179,15 @@ calign *Compact_Data(align **data, option *io)
 {
   calign *cdata_tmp,*cdata;
   int i,j,k,site;
-  int n_patt,which_patt,n_invar;
+  int n_patt,which_patt;
   char **sp_names;
   int n_otu, n_sites;
   pnode *proot;
   int compress;
   int n_ambigu,is_ambigu;
+  scalar_dbl *io_wght;
+  phydbl len,inc,n_invar;
+
 
   n_otu      = io->n_otu;
   n_patt     = 0;
@@ -197,8 +200,10 @@ calign *Compact_Data(align **data, option *io)
       strcpy(sp_names[i],data[i]->name);
     }
 
-  cdata_tmp = Make_Cseq(n_otu,data[0]->len,io->state_len,data[0]->len,sp_names);
-  proot     = (pnode *)Create_Pnode(T_MAX_ALPHABET);
+  cdata_tmp = Make_Calign(n_otu,data[0]->len,io->state_len,data[0]->len,sp_names);
+  Init_Calign(n_otu,data[0]->len,data[0]->len,cdata_tmp);
+
+  proot = (pnode *)Create_Pnode(T_MAX_ALPHABET);
 
   For(i,n_otu) Free(sp_names[i]);
   Free(sp_names);
@@ -209,24 +214,45 @@ calign *Compact_Data(align **data, option *io)
       Exit("\n");
     }
 
-  compress = io->colalias;
-  n_ambigu = 0;
-  is_ambigu = 0;
-
-  if(!io->quiet && !compress)
+  // Read in weights given in input file
+  io_wght = NULL;
+  if(io->has_io_weights == YES) 
     {
-      PhyML_Printf("\n== WARNING: sequences are not compressed !\n");
+      io_wght = Read_Io_Weights(io);
+      if(Scalar_Len(io_wght) - data[0]->len > 0)
+        {
+          PhyML_Printf("\n== Sequence length (%d) differs from number of weights (%d).\n",
+                       data[0]->len,
+                       Scalar_Len(io_wght));
+          Exit("\n");
+        }
     }
 
+  compress = io->colalias;
+  n_ambigu = 0;
+  is_ambigu = NO;
+
+  if(!io->quiet && !compress) PhyML_Printf("\n== WARNING: sequences are not compressed !\n");
+
+  inc = -1.0;
+  len = 0.0;
   Fors(site,data[0]->len,io->state_len)
-    {
-      if(io->rm_ambigu)
+    {      
+      if(io->has_io_weights == YES)
+        inc = Scalar_Elem(site,io_wght);
+      else                
+        inc = 1.;
+      
+      // Sequence length taking into account input weights, if any
+      len += inc;
+
+      if(io->rm_ambigu == YES)
         {
-          is_ambigu = 0;
+          is_ambigu = NO;
           For(j,n_otu) if(Is_Ambigu(data[j]->state+site,io->datatype,io->state_len)) break;
           if(j != n_otu)
             {
-              is_ambigu = 1;
+              is_ambigu = YES;
               n_ambigu++;
             }
         }
@@ -287,13 +313,13 @@ calign *Compact_Data(align **data, option *io)
               else cdata_tmp->invar[n_patt] = -1;
               
               cdata_tmp->sitepatt[site] = n_patt;
-              cdata_tmp->wght[n_patt]  += 1;
-              n_patt                   += 1;
+              cdata_tmp->wght[n_patt] += inc;
+              n_patt += 1;
             }
           else
             {
-              cdata_tmp->sitepatt[site]    = which_patt;
-              cdata_tmp->wght[which_patt] += 1;
+              cdata_tmp->sitepatt[site] = which_patt;
+              cdata_tmp->wght[which_patt] += inc;
             }
         }
     }
@@ -306,32 +332,26 @@ calign *Compact_Data(align **data, option *io)
   
   if(!io->quiet) PhyML_Printf("\n. %d patterns found (out of a total of %d sites). \n",n_patt,data[0]->len);
 
-  if((io->rm_ambigu) && (n_ambigu)) PhyML_Printf("\n. Removed %d columns of the alignment as they contain ambiguous characters (e.g., gaps) \n",n_ambigu);
+  if((io->rm_ambigu == YES) && (n_ambigu > 0)) PhyML_Printf("\n. Removed %d columns of the alignment as they contain ambiguous characters (e.g., gaps) \n",n_ambigu);
 
-/*   For(i,n_otu) */
-/*     { */
-/*       For(j,cdata_tmp->crunch_len) */
-/* 	{ */
-/* 	  printf("%c",cdata_tmp->c_seq[i]->state[j*io->state_len+1]); */
-/* 	} */
-/*       printf("\n"); */
-/*     } */
+  n_invar=0.0;
+  For(i,cdata_tmp->crunch_len) if(cdata_tmp->invar[i] > -1.) n_invar+=cdata_tmp->wght[i];
 
-  n_invar=0;
-  For(i,cdata_tmp->crunch_len)
+  if(io->quiet == NO) 
     {
-      if(cdata_tmp->invar[i] > -1.) n_invar+=(int)cdata_tmp->wght[i];
+      if((n_invar - ceil(n_invar)) < 1.E-10)     
+        PhyML_Printf("\n. %d sites without polymorphism (%.2f%c).\n",(int)n_invar,100.*(phydbl)n_invar/len,'%');
+      else
+        PhyML_Printf("\n. %f sites without polymorphism (%.2f%c).\n",n_invar,100.*(phydbl)n_invar/len,'%');
     }
 
-  if(!io->quiet) PhyML_Printf("\n. %d sites without polymorphism (%.2f%c).\n",n_invar,100.*(phydbl)n_invar/data[0]->len,'%');
-
-  cdata_tmp->obs_pinvar = (phydbl)n_invar/data[0]->len;
+  cdata_tmp->obs_pinvar = (phydbl)n_invar/len;
 
   cdata_tmp->io = io;
 
   n_sites = 0;
-  For(i,cdata_tmp->crunch_len) n_sites += cdata_tmp->wght[i];
-  if(n_sites != data[0]->len / io->state_len) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
+  For(i,cdata_tmp->crunch_len) n_sites += (int)cdata_tmp->wght[i];
+  if(n_sites != len / io->state_len) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
 
   if(io->datatype == NT)      Get_Base_Freqs(cdata_tmp);
   else if(io->datatype == AA) Get_AA_Freqs(cdata_tmp);
@@ -339,11 +359,13 @@ calign *Compact_Data(align **data, option *io)
 
   cdata = Copy_Cseq(cdata_tmp,io);
 
-  Free_Cseq(cdata_tmp);
+  Free_Calign(cdata_tmp);
   Free_Prefix_Tree(proot,T_MAX_ALPHABET);
 
   Check_Ambiguities(cdata,io->datatype,io->state_len);
   Set_D_States(cdata,io->datatype,io->state_len);
+
+  if(io_wght != NULL) Free_Scalar_Dbl(io_wght);
 
   return cdata;
 }
@@ -364,7 +386,7 @@ calign *Compact_Cdata(calign *data, option *io)
   cdata         = (calign *)mCalloc(1,sizeof(calign));
   cdata->n_otu  = n_otu;
   cdata->c_seq  = (align **)mCalloc(n_otu,sizeof(align *));
-  cdata->wght   = (int *)mCalloc(data->crunch_len,sizeof(int));
+  cdata->wght   = (phydbl *)mCalloc(data->crunch_len,sizeof(phydbl));
   cdata->b_frq  = (phydbl *)mCalloc(io->mod->ns,sizeof(phydbl));
   cdata->ambigu = (short int *)mCalloc(data->crunch_len,sizeof(short int));
   cdata->invar  = (short int *)mCalloc(data->crunch_len,sizeof(short int));
@@ -510,13 +532,12 @@ pnode *Create_Pnode(int size)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Get_Base_Freqs(calign *data)
 {
   int i,j,k;
   phydbl A,C,G,T;
   phydbl fA,fC,fG,fT;
-  int w;
+  phydbl w;
 
   fA = fC = fG = fT = .25;
 
@@ -524,57 +545,57 @@ void Get_Base_Freqs(calign *data)
     {
       A = C = G = T = .0;
       For(i,data->n_otu)
-    {
-      For(j,data->crunch_len)
         {
-          w = data->wght[j];
-          if(w)
-        {
-          switch(data->c_seq[i]->state[j])
+          For(j,data->crunch_len)
             {
-            case 'A' : A+=w;
-              break;
-            case 'C' : C+=w;
-              break;
-            case 'G' : G+=w;
-              break;
-            case 'T' : T+=w;
-              break;
-            case 'U' : T+=w;
-              break;
-            case 'M' : C+=w*fC/(fC+fA); A+=w*fA/(fA+fC);
-              break;
-            case 'R' : G+=w*fG/(fA+fG); A+=w*fA/(fA+fG);
-              break;
-            case 'W' : T+=w*fT/(fA+fT); A+=w*fA/(fA+fT);
-              break;
-            case 'S' : C+=w*fC/(fC+fG); G+=w*fG/(fC+fG);
-              break;
-            case 'Y' : C+=w*fC/(fC+fT); T+=w*fT/(fT+fC);
-              break;
-            case 'K' : G+=w*fG/(fG+fT); T+=w*fT/(fT+fG);
-              break;
-            case 'B' : C+=w*fC/(fC+fG+fT); G+=w*fG/(fC+fG+fT); T+=w*fT/(fC+fG+fT);
-              break;
-            case 'D' : A+=w*fA/(fA+fG+fT); G+=w*fG/(fA+fG+fT); T+=w*fT/(fA+fG+fT);
-              break;
-            case 'H' : A+=w*fA/(fA+fC+fT); C+=w*fC/(fA+fC+fT); T+=w*fT/(fA+fC+fT);
-              break;
-            case 'V' : A+=w*fA/(fA+fC+fG); C+=w*fC/(fA+fC+fG); G+=w*fG/(fA+fC+fG);
-              break;
-            case 'N' : case 'X' : case '?' : case 'O' : case '-' :
-              A+=w*fA; C+=w*fC; G+=w*fG; T+=w*fT; break;
-            default : break;
+              w = data->wght[j];
+              if(w)
+                {
+                  switch(data->c_seq[i]->state[j])
+                    {
+                    case 'A' : A+=w;
+                      break;
+                    case 'C' : C+=w;
+                      break;
+                    case 'G' : G+=w;
+                      break;
+                    case 'T' : T+=w;
+                      break;
+                    case 'U' : T+=w;
+                      break;
+                    case 'M' : C+=w*fC/(fC+fA); A+=w*fA/(fA+fC);
+                      break;
+                    case 'R' : G+=w*fG/(fA+fG); A+=w*fA/(fA+fG);
+                      break;
+                    case 'W' : T+=w*fT/(fA+fT); A+=w*fA/(fA+fT);
+                      break;
+                    case 'S' : C+=w*fC/(fC+fG); G+=w*fG/(fC+fG);
+                      break;
+                    case 'Y' : C+=w*fC/(fC+fT); T+=w*fT/(fT+fC);
+                      break;
+                    case 'K' : G+=w*fG/(fG+fT); T+=w*fT/(fT+fG);
+                      break;
+                    case 'B' : C+=w*fC/(fC+fG+fT); G+=w*fG/(fC+fG+fT); T+=w*fT/(fC+fG+fT);
+                      break;
+                    case 'D' : A+=w*fA/(fA+fG+fT); G+=w*fG/(fA+fG+fT); T+=w*fT/(fA+fG+fT);
+                      break;
+                    case 'H' : A+=w*fA/(fA+fC+fT); C+=w*fC/(fA+fC+fT); T+=w*fT/(fA+fC+fT);
+                      break;
+                    case 'V' : A+=w*fA/(fA+fC+fG); C+=w*fC/(fA+fC+fG); G+=w*fG/(fA+fC+fG);
+                      break;
+                    case 'N' : case 'X' : case '?' : case 'O' : case '-' :
+                      A+=w*fA; C+=w*fC; G+=w*fG; T+=w*fT; break;
+                    default : break;
+                    }
+                }
             }
         }
-        }
-    }
       fA = A/(A+C+G+T);
       fC = C/(A+C+G+T);
       fG = G/(A+C+G+T);
       fT = T/(A+C+G+T);
     }
-
+  
   data->b_frq[0] = fA;
   data->b_frq[1] = fC;
   data->b_frq[2] = fG;
@@ -850,7 +871,6 @@ void Exit(char *message)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void *mCalloc(int nb, size_t size)
 {
@@ -2077,7 +2097,6 @@ calign *Copy_Cseq(calign *ori, option *io)
   n_otu = ori->n_otu;
   c_len = ori->crunch_len;
 
-
   sp_names = (char **)mCalloc(n_otu,sizeof(char *));
   For(i,n_otu)
     {
@@ -2085,7 +2104,8 @@ calign *Copy_Cseq(calign *ori, option *io)
       strcpy(sp_names[i],ori->c_seq[i]->name);
     }
 
-  new = Make_Cseq(n_otu,c_len+1,io->state_len,ori->init_len,sp_names);
+  new = Make_Calign(n_otu,c_len+1,io->state_len,ori->init_len,sp_names);
+  Init_Calign(n_otu,c_len+1,ori->init_len,new);
 
   new->obs_pinvar = ori->obs_pinvar;
 
@@ -3029,7 +3049,7 @@ void Bootstrap(t_tree *tree)
       fclose(tree->io->fp_out_boot_stats);
     }
 
-  Free_Cseq(boot_data);
+  Free_Calign(boot_data);
   Free(site_num);
 }
 
@@ -6014,7 +6034,6 @@ t_node *Common_Nodes_Btw_Two_Edges(t_edge *a, t_edge *b)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 int KH_Test(phydbl *site_lk_M1, phydbl *site_lk_M2, t_tree *tree)
 {
@@ -10823,7 +10842,7 @@ void Build_Distrib_Number_Of_Diff_States_Under_Model(t_tree *tree)
         }
 
 
-      Free_Cseq(tree->data);
+      Free_Calign(tree->data);
       Free_Model_Complete(tree->mod);
       Free_Model_Basic(tree->mod);
       
@@ -11424,3 +11443,51 @@ scalar_dbl *Duplicate_Scalar_Dbl(scalar_dbl *from)
   return(to);
 }
 
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+phydbl Scalar_Elem(int pos, scalar_dbl *scl)
+{
+  scalar_dbl *loc;
+  loc = scl;
+  while(--pos >= 0) loc = loc->next;
+  assert(loc);
+  return(loc->v);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+int Scalar_Len(scalar_dbl *scl)
+{
+  int len;
+  scalar_dbl *loc;
+
+  if(!scl) return 0;
+
+  loc = scl;
+  len = 0;
+  do 
+    {
+      len++;
+      loc = loc->next;
+    }
+  while(loc != NULL);
+
+  return(len);
+
+}
+
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/

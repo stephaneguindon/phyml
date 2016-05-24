@@ -534,24 +534,18 @@ void Make_All_Tree_Edges(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-calign *Make_Cseq(int n_otu, int crunch_len, int state_len, int init_len, char **sp_names)
+calign *Make_Calign(int n_otu, int crunch_len, int state_len, int init_len, char **sp_names)
 {
   calign *cdata;
   int j;
 
   cdata           = (calign *)mCalloc(1,sizeof(calign));
-  cdata->n_otu    = n_otu;
   cdata->c_seq    = (align **)mCalloc(n_otu,sizeof(align *));
   cdata->b_frq    = (phydbl *)mCalloc(T_MAX_ALPHABET,sizeof(phydbl));
-  cdata->wght     = (int *)mCalloc(crunch_len,sizeof(int));
+  cdata->wght     = (phydbl *)mCalloc(crunch_len,sizeof(phydbl));
   cdata->ambigu   = (short int *)mCalloc(crunch_len,sizeof(short int));
   cdata->invar    = (short int *)mCalloc(crunch_len,sizeof(short int));
   cdata->sitepatt = (int *)mCalloc(init_len,sizeof(int ));
-  cdata->format   = 0;
-
-  cdata->crunch_len = crunch_len;
-  cdata->init_len   = init_len;
-  cdata->obs_pinvar = .0;
 
   For(j,n_otu)
     {
@@ -856,6 +850,7 @@ option *Make_Input()
   io->out_boot_stats_file               = (char *)mCalloc(T_MAX_FILE,sizeof(char));
   io->out_stats_file                    = (char *)mCalloc(T_MAX_FILE,sizeof(char));
   io->out_lk_file                       = (char *)mCalloc(T_MAX_FILE,sizeof(char));
+  io->weight_file                       = (char *)mCalloc(T_MAX_FILE,sizeof(char));
   io->out_ps_file                       = (char *)mCalloc(T_MAX_FILE,sizeof(char));
   io->out_summary_file                  = (char *)mCalloc(T_MAX_FILE,sizeof(char));
   io->out_trace_file                    = (char *)mCalloc(T_MAX_FILE,sizeof(char));

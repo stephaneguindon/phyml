@@ -347,7 +347,7 @@ int main(int argc, char **argv)
 
               if(io->n_trees > 1 && io->n_data_sets > 1) break;
             }
-            Free_Cseq(cdata);
+            Free_Calign(cdata);
         }
     else
         {

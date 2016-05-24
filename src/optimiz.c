@@ -809,7 +809,7 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
 void Optimiz_Ext_Br(t_tree *tree)
 {
   int i;
-  t_edge *b,*ori;
+  t_edge *b;
   phydbl l_infa,l_infb;
   phydbl lk_init;
   scalar_dbl *l_init,*v_init;

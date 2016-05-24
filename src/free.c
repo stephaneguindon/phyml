@@ -224,10 +224,11 @@ void Free_Bip(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Free_Cseq(calign *data)
+void Free_Calign(calign *data)
 {
   int i;
 
+  if(data->io_wght) Free_Scalar_Dbl(data->io_wght);
   Free(data->invar);
   Free(data->wght);
   Free(data->ambigu);
@@ -272,7 +273,7 @@ void Free_Seq(align **d, int n_otu)
 
 void Free_All(align **d, calign *cdata, t_tree *tree)
 {
-  Free_Cseq(cdata);
+  Free_Calign(cdata);
   Free_Seq(d,tree->n_otu);
   Free_Tree(tree);
 }
@@ -787,6 +788,7 @@ void Free_Input(option *io)
       Free(io->out_boot_tree_file);
       Free(io->out_boot_stats_file);
       Free(io->out_stats_file);
+      Free(io->weight_file);
       Free(io->out_lk_file);
       Free(io->out_summary_file);
       Free(io->out_ps_file);

@@ -26,7 +26,7 @@ void Free_Bip(t_tree *tree);
 void Free_Edge_Labels(t_edge *b);
 void Free_Edge(t_edge *b);
 void Free_Node(t_node *n);
-void Free_Cseq(calign *data);
+void Free_Calign(calign *data);
 void Free_Seq(align **d,int n_otu);
 void Free_All(align **d,calign *cdata,t_tree *tree);
 void Free_SubTree(t_edge *b_fcus,t_node *a,t_node *d,t_tree *tree);

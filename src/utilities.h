@@ -819,7 +819,7 @@ typedef struct __Calign {
   struct __Option    *io;             /*! input/output */
   phydbl          *b_frq;             /*! observed state frequencies */
   short int       *invar;             /*! < 0 -> polymorphism observed */
-  int              *wght;             /*! # of each site in c_align */
+  phydbl           *wght;             /*! # of each site in c_align */
   short int      *ambigu;             /*! ambigu[i]=1 is one or more of the sequences at site
                                         i display an ambiguous character */
   phydbl      obs_pinvar;
@@ -831,6 +831,7 @@ typedef struct __Calign {
                                         compressed alignment to the positions in the uncompressed
                                         one */
   int             format;             /*! 0 (default): PHYLIP. 1: NEXUS. */
+  scalar_dbl    *io_wght;             /*! weight of each *site* (not pattern) given as input */
 }calign;
 
 /*!********************************************************/
@@ -1035,6 +1036,9 @@ typedef struct __Option { /*! mostly used in 'help.c' */
   char                *out_tree_file; /*! name of the tree file */
   FILE                  *fp_out_tree;
 
+  char                  *weight_file; /*! name of the file containing site weights */
+  FILE               *fp_weight_file;
+
   char               *out_trees_file; /*! name of the tree file */
   FILE                 *fp_out_trees; /*! pointer to the tree file containing all the trees estimated using random starting trees */
 
@@ -1131,6 +1135,7 @@ typedef struct __Option { /*! mostly used in 'help.c' */
 #endif
 
   int                       ancestral;
+  int                  has_io_weights;
 }option;
 
 /*!********************************************************/
@@ -2099,7 +2104,9 @@ scalar_dbl **Copy_Br_Len(t_tree *mixt_tree);
 void Transfer_Br_Len_To_Tree(scalar_dbl **bl, t_tree *tree);
 void Copy_Scalar_Dbl(scalar_dbl *from, scalar_dbl *to);
 scalar_dbl *Duplicate_Scalar_Dbl(scalar_dbl *from);
-
+scalar_dbl *Read_Weights(option *io);
+phydbl Scalar_Elem(int pos, scalar_dbl *scl);
+int Scalar_Len(scalar_dbl *scl);
 
 #include "xml.h"
 #include "free.h"

@@ -99,5 +99,6 @@ void JSON_Write_Array(json_a *array, FILE *where);
 void JSON_Write_All(json_a *array, FILE *where);
 void JSON_Tree_Io(t_tree *tree, FILE *where);
 json_o *JSON_Tree_To_Object(t_tree *tree);
+scalar_dbl *Read_Io_Weights(option *io);
 
 #endif

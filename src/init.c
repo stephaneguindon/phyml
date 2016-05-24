@@ -531,6 +531,7 @@ void Set_Defaults_Input(option* io)
   io->fp_out_ancestral           = NULL;
   io->fp_in_coord                = NULL;
   io->fp_out_trace               = NULL;
+  io->fp_weight_file             = NULL;
   io->fp_out_json_trace          = NULL;
   io->long_tax_names             = NULL;
   io->short_tax_names            = NULL;
@@ -580,6 +581,7 @@ void Set_Defaults_Input(option* io)
   io->state_len                  = 1;
   io->ancestral                  = NO;
   io->use_xml                    = NO;
+  io->has_io_weights             = NO;
 #ifdef BEAGLE
   io->beagle_resource            = 0;
 #endif
@@ -3612,6 +3614,17 @@ void Init_Sarea(t_sarea *s)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void Init_Calign(int n_otu, int crunch_len, int init_len, calign *this)
+{
+  this->obs_pinvar  = .0;
+  this->n_otu       = n_otu;
+  this->clean_len   = -1;
+  this->crunch_len  = crunch_len;
+  this->init_len    = init_len;
+  this->format      = 0;
+  this->io_wght     = NULL;
+}
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

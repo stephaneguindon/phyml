@@ -38,7 +38,7 @@ t_tree *Make_Tree(int n_otu);
 void Make_Tree_Path(t_tree *tree);
 void Make_All_Tree_Nodes(t_tree *tree);
 void Make_All_Tree_Edges(t_tree *tree);
-calign *Make_Cseq(int n_otu,int crunch_len,int state_len,int init_len,char **sp_names);
+calign *Make_Calign(int n_otu,int crunch_len,int state_len,int init_len,char **sp_names);
 t_treelist *Make_Treelist(int list_size);
 t_opt *Make_Optimiz();
 void Make_Custom_Model(t_mod *mod);

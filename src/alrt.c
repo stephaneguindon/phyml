@@ -355,7 +355,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   phydbl l_infa, l_infb;
   phydbl lk_init, lk_temp;
   int i;
-  int result,counter,wei;
+  int result;
   void *buff;
 
   result = 0;
@@ -451,20 +451,11 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   //until no significative improvement is detected
   
   lk0 = tree->c_lnL;
-
+ 
   buff = (t_tree *)tree;
   do
     {
-      counter=0;
-      For(site,tree->n_pattern)
-        {
-          wei=0;
-          For(wei,tree->data->wght[site])
-            {
-              tree->log_lks_aLRT[0][counter]= tree->c_lnL_sorted[site] / tree->data->wght[site];
-              counter++;
-            }
-        }
+      For(site,tree->n_pattern) tree->log_lks_aLRT[0][site] = tree->c_lnL_sorted[site];
       tree = tree->next_mixt;
     }
   while(tree);
@@ -579,16 +570,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   buff = (t_tree *)tree;
   do
     {
-      counter=0;
-      For(site,tree->n_pattern)
-        {
-          wei=0;
-          For(wei,tree->data->wght[site])
-            {
-              tree->log_lks_aLRT[1][counter]= tree->c_lnL_sorted[site] / tree->data->wght[site];
-              counter++;
-            }
-        }
+      For(site,tree->n_pattern) tree->log_lks_aLRT[1][site]= tree->c_lnL_sorted[site];
       tree = tree->next_mixt;
     }
   while(tree);
@@ -721,16 +703,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   buff = (t_tree *)tree;
   do
     {
-      counter=0;
-      For(site,tree->n_pattern)
-        {
-          wei=0;
-          For(wei,tree->data->wght[site])
-            {
-              tree->log_lks_aLRT[2][counter]= tree->c_lnL_sorted[site] / tree->data->wght[site];
-              counter++;
-            }
-        }
+      For(site,tree->n_pattern) tree->log_lks_aLRT[2][site]= tree->c_lnL_sorted[site];
       tree = tree->next_mixt;
     }
   while(tree);
@@ -1159,12 +1132,11 @@ phydbl Statistics_to_RELL(t_tree *tree)
   int i;
   int occurence=1000;
   phydbl nb=0.0;
-  phydbl res;
+  phydbl res,*pi;
   int site;
   phydbl lk0=0.0;
   phydbl lk1=0.0;
   phydbl lk2=0.0;
-  phydbl buff = -1.;
   int position = -1;
   t_tree *buff_tree;
 
@@ -1179,19 +1151,19 @@ phydbl Statistics_to_RELL(t_tree *tree)
       buff_tree = tree;
       do
         {
+          pi = (phydbl *)mCalloc(tree->data->crunch_len,sizeof(phydbl));
+          For(site,tree->n_pattern) pi[site] = tree->data->wght[site] / (phydbl)tree->data->init_len;
+
           For(site, tree->data->init_len)
             {
-              buff  = rand();
-              buff /= (RAND_MAX+1.);
-              buff *= tree->data->init_len;
-              position = (int)FLOOR(buff);
-
+              position = Sample_i_With_Proba_pi(pi,tree->n_pattern);
               lk0+=tree->log_lks_aLRT[0][position];
               lk1+=tree->log_lks_aLRT[1][position];
               lk2+=tree->log_lks_aLRT[2][position];
             }
           if (lk0>=lk1 && lk0>=lk2) nb++;
           tree = tree->next_mixt;
+          Free(pi);
         }
       while(tree);
       tree = buff_tree;
@@ -1221,22 +1193,22 @@ phydbl Statistics_To_SH(t_tree *tree)
   phydbl c0=0.0;
   phydbl c1=0.0;
   phydbl c2=0.0;
-  phydbl buff=-1.;
   int position=-1;
   phydbl delta_local=-1.;
   phydbl delta=0.0;
   t_tree *buff_tree;
+  phydbl *pi;
 
 
   /*! Compute the total log-lk of each NNI position */
   buff_tree = tree;
   do
     {
-      For(site, tree->data->init_len)
+      For(site, tree->n_pattern)
         {
-          c0+=tree->log_lks_aLRT[0][site];
-          c1+=tree->log_lks_aLRT[1][site];
-          c2+=tree->log_lks_aLRT[2][site];
+          c0+=tree->log_lks_aLRT[0][site] * tree->data->wght[site];
+          c1+=tree->log_lks_aLRT[1][site] * tree->data->wght[site];
+          c2+=tree->log_lks_aLRT[2][site] * tree->data->wght[site];
         }
       tree = tree->next_mixt;
     }
@@ -1288,20 +1260,20 @@ phydbl Statistics_To_SH(t_tree *tree)
       buff_tree = tree;
       do
         {
+          pi = (phydbl *)mCalloc(tree->data->crunch_len,sizeof(phydbl));
+          For(site,tree->n_pattern) pi[site] = tree->data->wght[site] / (phydbl)tree->data->init_len;
+
           /*! Shuffle the data */
           For(site, tree->data->init_len)
             {
-              buff  = rand();
-              buff /= (RAND_MAX+1.);
-              buff *= tree->data->init_len;
-              position = (int)FLOOR(buff);
-
+              position = Sample_i_With_Proba_pi(pi,tree->n_pattern);
               lk0+=tree->log_lks_aLRT[0][position];
               lk1+=tree->log_lks_aLRT[1][position];
               lk2+=tree->log_lks_aLRT[2][position];
             }
 
           tree = tree->next_mixt;
+          Free(pi);
         }
       while(tree);
       tree = buff_tree;
