@@ -1962,8 +1962,8 @@ matrix *ML_Dist(calign *data, t_mod *mod)
   phydbl d_max,sum;
   matrix *mat;
   calign *twodata,*tmpdata;
-  int state0, state1,len;
-  phydbl *F;
+  int state0, state1;
+  phydbl *F,len;
   eigen *eigen_struct;
 
   tmpdata         = (calign *)mCalloc(1,sizeof(calign));
@@ -2001,7 +2001,6 @@ matrix *ML_Dist(calign *data, t_mod *mod)
 
       for(k=j+1;k<data->n_otu;k++)
         {
-
           tmpdata->c_seq[1]       = data->c_seq[k];
           tmpdata->c_seq[1]->name = data->c_seq[k]->name;
           
@@ -2018,7 +2017,7 @@ matrix *ML_Dist(calign *data, t_mod *mod)
           d_max = init;
           
           For(i,mod->ns*mod->ns) F[i]=.0;
-          len = 0;
+          len = 0.0;
           For(l,twodata->c_seq[0]->len)
             {
               state0 = Assign_State(twodata->c_seq[0]->state+l*mod->io->state_len,mod->io->datatype,mod->io->state_len);
@@ -2027,10 +2026,14 @@ matrix *ML_Dist(calign *data, t_mod *mod)
               if((state0 > -1) && (state1 > -1))
                 {
                   F[mod->ns*state0+state1] += twodata->wght[l];
-                  len += (int)twodata->wght[l];
+                  len += twodata->wght[l];
                 }
             }
-          if(len > .0) {For(i,mod->ns*mod->ns) F[i] /= (phydbl)len;}
+          
+          if(len > .0) 
+            {
+              For(i,mod->ns*mod->ns) F[i] /= len;
+            }
           
           sum = 0.;
           For(i,mod->ns*mod->ns) sum += F[i];
@@ -2040,7 +2043,7 @@ matrix *ML_Dist(calign *data, t_mod *mod)
           else if((sum > 1. - .001) && (sum < 1. + .001)) Opt_Dist_F(&(d_max),F,mod);
           else
             {
-              PhyML_Printf("\n== sum = %f\n",sum);
+              PhyML_Printf("\n\n== sum = %f",sum);
               PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
               Exit("");
             }
@@ -2105,81 +2108,81 @@ phydbl Lk_Given_Two_Seq(calign *data, int numseq1, int numseq2, phydbl dist, t_m
       else if(len > mod->l_max) len = mod->l_max;
       PMat(len,mod,dim2*i,mod->Pij_rr->v);
     }
-
+  
   if(mod->io->datatype == NT)
     {
       For(i,data->c_seq[0]->len)
-    {
-      Init_Tips_At_One_Site_Nucleotides_Float(seq1->state[i],i*mod->ns,p_lk_l);
-      Init_Tips_At_One_Site_Nucleotides_Float(seq2->state[i],i*mod->ns,p_lk_r);
-    }
+        {
+          Init_Tips_At_One_Site_Nucleotides_Float(seq1->state[i],i*mod->ns,p_lk_l);
+          Init_Tips_At_One_Site_Nucleotides_Float(seq2->state[i],i*mod->ns,p_lk_r);
+        }
     }
   else if(mod->io->datatype == AA)
     {
       For(i,data->c_seq[0]->len)
-    {
-      Init_Tips_At_One_Site_AA_Float(seq1->state[i],i*mod->ns,p_lk_l);
-      Init_Tips_At_One_Site_AA_Float(seq2->state[i],i*mod->ns,p_lk_r);
-    }
+        {
+          Init_Tips_At_One_Site_AA_Float(seq1->state[i],i*mod->ns,p_lk_l);
+          Init_Tips_At_One_Site_AA_Float(seq2->state[i],i*mod->ns,p_lk_r);
+        }
     }
   else
     {
-      PhyML_Printf("\n. Not implemented yet...");
-      PhyML_Printf("\n. Err in file %s at line %d\n\n",__FILE__,__LINE__);
+      PhyML_Printf("\n\n== Not implemented yet...");
+      PhyML_Printf("\n== Err in file %s at line %d\n\n",__FILE__,__LINE__);
       Warn_And_Exit("\n");
     }
-
-
+  
+  
   site_lk = .0;
   *loglk = 0;
-
+  
   For(i,data->c_seq[0]->len)
     {
-      if(data->wght[i])
-    {
-      site_lk = log_site_lk = .0;
-      if(!data->ambigu[i])
+      if(data->wght[i] > 0.0)
         {
-          For(k,mod->ns) {if(p_lk_l[i*mod->ns+k] > .0001) break;}
-          For(l,mod->ns) {if(p_lk_r[i*mod->ns+l] > .0001) break;}
-          For(j,mod->ras->n_catg)
-        {
-          site_lk +=
-            mod->ras->gamma_r_proba->v[j] *
-            mod->e_frq->pi->v[k] *
-            p_lk_l[i*dim1+k] *
-            mod->Pij_rr->v[j*dim2+k*dim1+l] *
-            p_lk_r[i*dim1+l];
-        }
-        }
-      else
-        {
-          For(j,mod->ras->n_catg)
-        {
-          For(k,mod->ns) /*sort sum terms ? No global effect*/
+          site_lk = log_site_lk = .0;
+          if(!data->ambigu[i])
             {
-              For(l,mod->ns)
+              For(k,mod->ns) {if(p_lk_l[i*mod->ns+k] > .0001) break;}
+              For(l,mod->ns) {if(p_lk_r[i*mod->ns+l] > .0001) break;}
+              For(j,mod->ras->n_catg)
+                {
+                  site_lk +=
+                    mod->ras->gamma_r_proba->v[j] *
+                    mod->e_frq->pi->v[k] *
+                    p_lk_l[i*dim1+k] *
+                    mod->Pij_rr->v[j*dim2+k*dim1+l] *
+                    p_lk_r[i*dim1+l];
+                }
+            }
+          else
             {
-              site_lk +=
-                mod->ras->gamma_r_proba->v[j] *
-                mod->e_frq->pi->v[k] *
-                p_lk_l[i*dim1+k] *
-                mod->Pij_rr->v[j*dim2+k*dim1+l] *
-                p_lk_r[i*dim1+l];
+              For(j,mod->ras->n_catg)
+                {
+                  For(k,mod->ns) /*sort sum terms ? No global effect*/
+                    {
+                      For(l,mod->ns)
+                        {
+                          site_lk +=
+                            mod->ras->gamma_r_proba->v[j] *
+                            mod->e_frq->pi->v[k] *
+                            p_lk_l[i*dim1+k] *
+                            mod->Pij_rr->v[j*dim2+k*dim1+l] *
+                            p_lk_r[i*dim1+l];
+                        }
+                    }
+                }
             }
+          
+          if(site_lk <= .0)
+            {
+              PhyML_Printf("\n\n== '%c' '%c'\n",seq1->state[i],seq2->state[i]);
+              Exit("\n== Err: site lk <= 0\n");
             }
-        }
-        }
-
-      if(site_lk <= .0)
-        {
-          PhyML_Printf("'%c' '%c'\n",seq1->state[i],seq2->state[i]);
-          Exit("\n. Err: site lk <= 0\n");
-        }
-
-      log_site_lk += (phydbl)LOG(site_lk);
-
-      *loglk += data->wght[i] * log_site_lk;/* sort sum terms ? No global effect*/
+          
+          log_site_lk += (phydbl)LOG(site_lk);
+          
+          *loglk += data->wght[i] * log_site_lk;/* sort sum terms ? No global effect*/
     }
     }
 
@@ -2202,14 +2205,8 @@ void Unconstraint_Lk(t_tree *tree)
   int i;
 
   tree->unconstraint_lk = .0;
-
-  For(i,tree->data->crunch_len)
-    {
-      tree->unconstraint_lk +=
-    tree->data->wght[i]*(phydbl)LOG(tree->data->wght[i]);
-    }
-  tree->unconstraint_lk -=
-    tree->data->init_len*(phydbl)LOG(tree->data->init_len);
+  For(i,tree->data->crunch_len) tree->unconstraint_lk += tree->data->wght[i]*(phydbl)LOG(tree->data->wght[i]);
+  tree->unconstraint_lk -= tree->data->init_len*(phydbl)LOG(tree->data->init_len);
 }
 
 //////////////////////////////////////////////////////////////

@@ -368,6 +368,15 @@ typedef	double phydbl;
 #define DUMP_E(...) FOR_EACH(DUMP_EACH_SCI, __VA_ARGS__)
 
 /*!********************************************************/
+// Generic linked list
+typedef struct __Generic_LL {
+  void                    *v;
+  struct __Generic_LL  *next;
+  struct __Generic_LL  *tail;
+  struct __Generic_LL  *head;
+}t_ll;
+
+/*!********************************************************/
 
 typedef struct __Scalar_Int {
   int                      v;
@@ -2107,6 +2116,10 @@ scalar_dbl *Duplicate_Scalar_Dbl(scalar_dbl *from);
 scalar_dbl *Read_Weights(option *io);
 phydbl Scalar_Elem(int pos, scalar_dbl *scl);
 int Scalar_Len(scalar_dbl *scl);
+void List_Of_Regraft_Nodes(t_node *a, t_node *d, phydbl time_thresh, t_ll *list, t_tree *tree);
+void Push_Bottom_Linked_List(void *what, t_ll *list);
+int Linked_List_Len(t_ll *list);
+void *Linked_List_Elem(int pos, t_ll *ll);
 
 #include "xml.h"
 #include "free.h"

@@ -181,7 +181,7 @@ calign *Compact_Data(align **data, option *io)
   int i,j,k,site;
   int n_patt,which_patt;
   char **sp_names;
-  int n_otu, n_sites;
+  int n_otu;
   pnode *proot;
   int compress;
   int n_ambigu,is_ambigu;
@@ -349,10 +349,7 @@ calign *Compact_Data(align **data, option *io)
 
   cdata_tmp->io = io;
 
-  n_sites = 0;
-  For(i,cdata_tmp->crunch_len) n_sites += (int)cdata_tmp->wght[i];
-  if(n_sites != len / io->state_len) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
-
+  
   if(io->datatype == NT)      Get_Base_Freqs(cdata_tmp);
   else if(io->datatype == AA) Get_AA_Freqs(cdata_tmp);
   else {/* Uniform state frequency distribution.*/}
@@ -407,7 +404,7 @@ calign *Compact_Cdata(calign *data, option *io)
 
   For(site,data->crunch_len)
     {
-      if(data->wght[site])
+      if(data->wght[site] > 0.0)
         {
           For(k,n_patt)
             {
@@ -425,10 +422,7 @@ calign *Compact_Cdata(calign *data, option *io)
                   break;
                 }
             }
-          
-          /*       /\* TO DO *\/ */
-          /*       k = n_patt; */
-          
+                    
           if(k == n_patt)
             {
               For(j,n_otu) Copy_One_State(data->c_seq[j]->state+site*io->state_len,
@@ -2011,6 +2005,7 @@ void Swap(t_node *a, t_node *b, t_node *c, t_node *d, t_tree *tree)
           else d->b[dc]->r_v2 = i;
         }
     }
+
   Update_Dirs(tree);
   
   if(tree->n_root != NULL)
@@ -5673,26 +5668,25 @@ void Get_List_Of_Target_Edges(t_node *a, t_node *d, t_edge **list, int *list_siz
   For(i,3)
     {
       if(a->v[i] && a->v[i] == d)
-    {
-      list[*list_size] = a->b[i];
-      (*list_size)++;
+        {
+          list[*list_size] = a->b[i];
+          (*list_size)++;
+        }
     }
-    }
-
+  
   if(d->tax) return;
   else
     {
       For(i,3)
-    {
-      if(d->v[i] != a)
-        Get_List_Of_Target_Edges(d,d->v[i],list,list_size,tree);
-    }
+        {
+          if(d->v[i] != a)
+            Get_List_Of_Target_Edges(d,d->v[i],list,list_size,tree);
+        }
     }
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void Fix_All(t_tree *tree)
 {
@@ -5891,7 +5885,6 @@ void Detect_Polytomies(t_edge *b, phydbl l_thresh, t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void Get_List_Of_Nodes_In_Polytomy(t_node *a, t_node *d, t_node ***list, int *size_list)
 {
@@ -11458,6 +11451,18 @@ phydbl Scalar_Elem(int pos, scalar_dbl *scl)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
+void *Linked_List_Elem(int pos, t_ll *ll)
+{
+  t_ll *loc;
+  loc = ll;
+  while(--pos >= 0) loc = loc->next;
+  assert(loc);
+  return(loc->v);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
 int Scalar_Len(scalar_dbl *scl)
 {
   int len;
@@ -11478,6 +11483,71 @@ int Scalar_Len(scalar_dbl *scl)
 
 }
 
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+int Linked_List_Len(t_ll *list)
+{
+  int len;
+  t_ll *loc;
+
+  if(!list) return 0;
+
+  loc = list;
+  len = 0;
+  do 
+    {
+      len++;
+      loc = loc->next;
+    }
+  while(loc != NULL);
+
+  return(len);
+
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+void List_Of_Regraft_Nodes(t_node *a, t_node *d, phydbl time_thresh, t_ll *list, t_tree *tree)
+{
+
+  if(d->tax || tree->rates->nd_t[d->num] > time_thresh) return;
+  else
+    {
+      int i;
+
+      Push_Bottom_Linked_List(d,list);
+
+      For(i,3)
+        if(d->v[i] != a) 
+          List_Of_Regraft_Nodes(d,d->v[i],time_thresh,list,tree);
+    }
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+void Push_Bottom_Linked_List(void *what, t_ll *list)
+{
+  if(list == NULL) 
+    {
+      // Create list if non-existing and add
+      list = (t_ll *)mCalloc(1,sizeof(t_ll));
+      list->head = list;
+      list->tail = list;
+      list->next = NULL;
+      list->v = (void *)what;
+    }
+  else
+    {
+      // Add one elem in list and add 
+      list->tail->next = (t_ll *)mCalloc(1,sizeof(t_ll));
+      list->tail->next->v = (void *)what;
+      list->tail = list->next;
+      list->tail->next = NULL;
+    }
+}
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
@@ -11487,7 +11557,4 @@ int Scalar_Len(scalar_dbl *scl)
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
-/*////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////*/
-/*////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////*/
+

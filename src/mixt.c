@@ -2263,7 +2263,9 @@ void MIXT_Check_Model_Validity(t_tree *mixt_tree)
 t_tree *MIXT_Starting_Tree(t_tree *mixt_tree)
 {
   t_tree *tree;
- 
+
+  tree = NULL;
+
   switch(mixt_tree->io->in_tree)
     {
     case 2: // user-defined input tree 

@@ -358,7 +358,7 @@ PhyML_Printf("\n\n. Exiting bootstrap function normally."); fflush(NULL);
       fclose(tree->io->fp_out_boot_stats);
     }
 
-  Free_Cseq(boot_data);
+  Free_Calign(boot_data);
   Free(site_num);
 }
 

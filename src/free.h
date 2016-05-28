@@ -67,6 +67,7 @@ void XML_Free_XML_Ds(t_ds *ds);
 void Free_String(t_string *ts);
 void Free_Vect_Dbl(vect_dbl *v);
 void Free_Scalar_Dbl(scalar_dbl *v);
+void Free_Gen_LL(t_ll *t);
 void Free_Edge_Core(t_edge *b);
 void M4_Free_M4_Model(m4 *m4mod);
 void RATES_Free_Rates(t_rate *rates);

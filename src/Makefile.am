@@ -350,7 +350,8 @@ make.c make.h\
 nexus.c nexus.h\
 init.c init.h\
 xml.c xml.h\
-mixt.c mixt.h
+mixt.c mixt.h\
+date.c date.h
 phyml_windows_LDADD = -lm
 else
 if WANT_TEST
@@ -643,8 +644,8 @@ make.c make.h\
 nexus.c nexus.h\
 init.c init.h\
 xml.c xml.h\
-mixt.c mixt.h\
-date.c date.h
+date.c date.h\
+mixt.c mixt.h
 phyml_LDADD = -lm
 endif
 endif

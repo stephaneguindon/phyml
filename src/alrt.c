@@ -363,7 +363,6 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   /*! Initialization */
   l_init             = Duplicate_Scalar_Dbl(b_fcus->l);
   v_init             = Duplicate_Scalar_Dbl(b_fcus->l_var);
-  /* bl_init            = MIXT_Get_Lengths_Of_This_Edge(b_fcus,tree); */
   lk_init            = tree->c_lnL;
   lk_temp            = UNLIKELY;
   b_fcus->nni->score = .0;
@@ -403,10 +402,6 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   var_e2 = Duplicate_Scalar_Dbl(e2->l_var);
   var_e3 = Duplicate_Scalar_Dbl(e3->l_var);
   var_e4 = Duplicate_Scalar_Dbl(e4->l_var);
-  /* len_e1 = MIXT_Get_Lengths_Of_This_Edge(e1,tree); */
-  /* len_e2 = MIXT_Get_Lengths_Of_This_Edge(e2,tree); */
-  /* len_e3 = MIXT_Get_Lengths_Of_This_Edge(e3,tree); */
-  /* len_e4 = MIXT_Get_Lengths_Of_This_Edge(e4,tree); */
 
   /*! Optimize branch lengths and update likelihoods for
     the original configuration.
@@ -419,7 +414,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
         if(b_fcus->left->v[i] != b_fcus->rght)//Only consider left_1 and left_2
           {
             Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
-            l_infa  = 10.;
+            l_infa  = 2.;
             l_infb  = 1.E-4;
             lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus->left->b[i],tree);
           }
@@ -473,12 +468,6 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   Copy_Scalar_Dbl(var_e3,e3->l_var);
   Copy_Scalar_Dbl(var_e4,e4->l_var);
   Copy_Scalar_Dbl(v_init,b_fcus->l_var);
-
-  /* MIXT_Set_Lengths_Of_This_Edge(len_e1,e1,tree); */
-  /* MIXT_Set_Lengths_Of_This_Edge(len_e2,e2,tree); */
-  /* MIXT_Set_Lengths_Of_This_Edge(len_e3,e3,tree); */
-  /* MIXT_Set_Lengths_Of_This_Edge(len_e4,e4,tree); */
-  /* MIXT_Set_Lengths_Of_This_Edge(bl_init,b_fcus,tree); */
 
   Update_PMat_At_Given_Edge(e1,tree);
   Update_PMat_At_Given_Edge(e2,tree);
@@ -589,12 +578,6 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   Copy_Scalar_Dbl(var_e3,e3->l_var);
   Copy_Scalar_Dbl(var_e4,e4->l_var);
   Copy_Scalar_Dbl(v_init,b_fcus->l_var);
-
-  /* MIXT_Set_Lengths_Of_This_Edge(len_e1,e1,tree); */
-  /* MIXT_Set_Lengths_Of_This_Edge(len_e2,e2,tree); */
-  /* MIXT_Set_Lengths_Of_This_Edge(len_e3,e3,tree); */
-  /* MIXT_Set_Lengths_Of_This_Edge(len_e4,e4,tree); */
-  /* MIXT_Set_Lengths_Of_This_Edge(bl_init,b_fcus,tree); */
   
   Update_PMat_At_Given_Edge(e1,tree);
   Update_PMat_At_Given_Edge(e2,tree);
@@ -726,11 +709,6 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   Copy_Scalar_Dbl(var_e4,e4->l_var);
   Copy_Scalar_Dbl(v_init,b_fcus->l_var);
 
-  /* MIXT_Set_Lengths_Of_This_Edge(len_e1,e1,tree); */
-  /* MIXT_Set_Lengths_Of_This_Edge(len_e2,e2,tree); */
-  /* MIXT_Set_Lengths_Of_This_Edge(len_e3,e3,tree); */
-  /* MIXT_Set_Lengths_Of_This_Edge(len_e4,e4,tree); */
-  /* MIXT_Set_Lengths_Of_This_Edge(bl_init,b_fcus,tree); */
 
   /*! recompute likelihoods */
   Update_PMat_At_Given_Edge(e1,tree);
@@ -869,11 +847,11 @@ void Make_Target_Swap(t_tree *tree, t_edge *b_fcus, int swaptodo)
   MIXT_Set_Alias_Subpatt(YES,tree);
   Set_Both_Sides(YES,tree);
   lktodo = Update_Lk_At_Given_Edge(b_fcus,tree);
-
+  
   For(i,3)
     if(b_fcus->left->v[i] != b_fcus->rght)
       Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
-
+  
   For(i,3)
     if(b_fcus->rght->v[i] != b_fcus->left)
       Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
@@ -887,42 +865,40 @@ void Make_Target_Swap(t_tree *tree, t_edge *b_fcus, int swaptodo)
       lktodo = lk_temp;
 
       For(i,3)
-    if(b_fcus->left->v[i] != b_fcus->rght)
-      {
-        Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
-
-        l_infa  = 10.;
-        l_infb  = tree->mod->l_min/b_fcus->left->b[i]->l->v;
-        lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus->left->b[i],tree);
-      }
+        if(b_fcus->left->v[i] != b_fcus->rght)
+          {
+            Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
+            
+            l_infa  = 2.;
+            l_infb  = 1.E-4;
+            lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus->left->b[i],tree);
+          }
 
 
       Update_P_Lk(tree,b_fcus,b_fcus->left);
 
-      l_infa  = 10.;
-      l_infb  = tree->mod->l_min/b_fcus->l->v;
+      l_infa  = 2.;
+      l_infb  = 1.E-4;
       lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus,tree);
 
-
-
       For(i,3)
-    if(b_fcus->rght->v[i] != b_fcus->left)
-      {
-        Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
-
-        l_infa  = 10.;
-        l_infb  = tree->mod->l_min/b_fcus->rght->b[i]->l->v;
-        lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus->rght->b[i],tree);
-      }
+        if(b_fcus->rght->v[i] != b_fcus->left)
+          {
+            Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
+            
+            l_infa  = 2.;
+            l_infb  = 1.E-4;
+            lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus->rght->b[i],tree);
+          }
 
       Update_P_Lk(tree,b_fcus,b_fcus->rght);
 
       if(lk_temp < lktodo - tree->mod->s_opt->min_diff_lk_local)
-    {
-      PhyML_Printf("\n. Edge %3d lk_temp = %f lktodo = %f\n",b_fcus->num,lk_temp,lktodo);
-      PhyML_Printf("\n. Err in file %s at line %d\n\n",__FILE__,__LINE__);
-      Warn_And_Exit("");
-    }
+        {
+          PhyML_Printf("\n== Edge %3d lk_temp = %f lktodo = %f\n",b_fcus->num,lk_temp,lktodo);
+          PhyML_Printf("\n== Err. in file %s at line %d\n\n",__FILE__,__LINE__);
+          Warn_And_Exit("");
+        }
     }
   while(FABS(lk_temp-lktodo) > tree->mod->s_opt->min_diff_lk_global);
   //until no significative improvement is detected

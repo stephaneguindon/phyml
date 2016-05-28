@@ -34,6 +34,7 @@ int DATE_Main(int argc, char **argv)
   /* seed = 22609; */
   /* seed = 28079; */
 
+  seed = 28513;
   printf("\n. seed: %d",seed);
   srand(seed);
 
@@ -563,6 +564,7 @@ int DATE_Is_Split_Accessible(t_node *d, int which, phydbl *splitted_cal, t_tree 
       PhyML_Printf("\n");
       assert(FALSE); // splitted interval cannot be partially overlapping [t_prior_min,t_prior_max]
     }
+  return(0);
 }
 
 //////////////////////////////////////////////////////////////
@@ -727,7 +729,7 @@ phydbl *DATE_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"death_rate"))  MCMC_Death_Rate(tree);
       if(!strcmp(tree->mcmc->move_name[move],"tree_height")) MCMC_Tree_Height(tree);
       if(!strcmp(tree->mcmc->move_name[move],"time"))        MCMC_Time_All(tree);
-
+      if(!strcmp(tree->mcmc->move_name[move],"spr"))         MCMC_Prune_Regraft(tree);
 
       tree->mcmc->run++;
       MCMC_Get_Acc_Rates(tree->mcmc);
