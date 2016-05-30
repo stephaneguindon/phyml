@@ -114,6 +114,13 @@ if test "$phytime" = yes; then
    AC_DEFINE([PHYTIME],[1],[PHYTIME tag on])
 fi
 
+AC_ARG_ENABLE([phyml],[AS_HELP_STRING([--enable-phyml],[Compile PhyML])],[phyml=yes],[phyml=no])
+AM_CONDITIONAL([WANT_PHYML], [test "$phyml" = yes])
+if test "$phyml" = yes; then
+   AC_DEFINE([PHYML],[1],[PHYML tag on])
+fi
+
+
 AC_ARG_ENABLE([tiporder],[AS_HELP_STRING([--enable-tiporder],[Compile tiporder])],[tiporder=yes],[tiporder=no])
 AM_CONDITIONAL([WANT_TIPORDER], [test "$tiporder" = yes])
 if test "$tiporder" = yes; then

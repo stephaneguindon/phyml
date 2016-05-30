@@ -3,24 +3,25 @@
 // You have downloaded the Stable or the Development version of PhyML   //
 //////////////////////////////////////////////////////////////////////////
 
-To install PhyML, type the following commands:
-./configure;
+To install any program that is part of the PhyML package, type the following commands:
+./configure --enable-XXXX;
 make;
+where XXXX is phyml or phyrex or phytime.
 
 To install the MPI version of PhyML, type the following commands:
-./configure --enable-mpi;
+./configure --enable-mpi --enable-XXXX;
 make;
 
 
 To compile a Windows executable, install MinGW and run:
-ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes mingw64-configure;
+./configure --enable-win --enable-XXXX;
 make;
 
 
 If you are using a Mac computer, you will need to install the package pkg-config. The
 following command should set you up (provided Homebrew is installed on your Mac...):
-brew install pkg-config; Next, typing './configure; make;' should generate the phyml
-binary in the src/ directory.
+brew install pkg-config; Next, typing './configure --enable-XXXX; make;' should generate
+the phyml binary in the src/ directory.
 
 
 
@@ -28,14 +29,14 @@ binary in the src/ directory.
 //                    You have cloned PhyML from GitHub                 //
 //////////////////////////////////////////////////////////////////////////
 
-To install PhyML, type the following command:
+To install any program that is part of the PhyML package, type the following command:
 sh ./autogen.sh;
 
 If you are using a Mac computer, you will need to install the packages autoconf automake libtool 
 and pkg-config. The following command should set you up (provided Homebrew is installed on your Mac...):
 brew install pkg-config autoconf automake libtool;
 
-Next, typing './configure; make;' should generate the phyml binary in the src/
-directory.
+Next, typing './configure --enable-XXXX; make;' should generate the phyml binary in the src/
+directory, where XXXX is phyml or phyrex or phytime.
 
 

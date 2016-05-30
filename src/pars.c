@@ -21,15 +21,22 @@ int Pars(t_edge *b, t_tree *tree)
 {
   int site,n_patterns;
 
+  if(tree->is_mixt_tree == YES) 
+    {
+      MIXT_Pars(b,tree);
+      return tree->c_pars;
+    }
+
   n_patterns = tree->n_pattern;
 
-  if(!b)
+  
+  if(b == NULL)
     {
       Post_Order_Pars(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree);
       if(tree->both_sides == YES) Pre_Order_Pars(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree);
     }
 
-  if(!b) b = tree->a_nodes[0]->b[0];
+  if(b == NULL) b = tree->a_nodes[0]->b[0];
 
   tree->c_pars = 0;
   For(site,n_patterns)
@@ -39,11 +46,6 @@ int Pars(t_edge *b, t_tree *tree)
       tree->site_pars[site] = Pars_Core(b,tree);
       tree->c_pars += tree->site_pars[site] * tree->data->wght[site];
       /* printf("\n. site %d pars: %d",site,tree->c_pars); */
-    }
-
-  if(tree->is_mixt_tree)
-    {
-      MIXT_Pars(b,tree);
     }
 
   return tree->c_pars;
@@ -255,6 +257,12 @@ void Update_P_Pars(t_tree *tree, t_edge *b_fcus, t_node *n)
   int min_v1,min_v2;
   int v;
   int dim1;
+
+  if(tree->is_mixt_tree)
+    {
+      MIXT_Update_P_Pars(tree,b_fcus,n);
+      return;
+    }
 
   if((tree->io->do_alias_subpatt == YES) &&
      (tree->update_alias_subpatt == YES))

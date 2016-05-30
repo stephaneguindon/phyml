@@ -69,5 +69,6 @@ void Init_All_Calibration(t_tree *tree);
 void Init_Sarea(t_sarea *s);
 void Init_Efrqs_Using_Observed_Freqs(t_efrq *f, phydbl *o, int ns);
 void Init_Calign(int n_otu, int crunch_len, int init_len, calign *this);
+void Init_Linked_List(t_ll *list);
 
 #endif

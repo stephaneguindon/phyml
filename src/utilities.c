@@ -11404,8 +11404,9 @@ void Copy_Scalar_Dbl(scalar_dbl *from, scalar_dbl *to)
   t = to;
   do
     {
+      assert(t);
+      assert(f);
       t->v = f->v;
-      assert(t && f);
       t = t->next;
       f = f->next;
     }
@@ -11512,6 +11513,7 @@ int Linked_List_Len(t_ll *list)
 void List_Of_Regraft_Nodes(t_node *a, t_node *d, phydbl time_thresh, t_ll *list, t_tree *tree)
 {
 
+  /* printf("\n. d: %d t: %f t_thresh: %f",d->num,tree->rates->nd_t[d->num],time_thresh); */
   if(d->tax || tree->rates->nd_t[d->num] > time_thresh) return;
   else
     {
@@ -11530,13 +11532,9 @@ void List_Of_Regraft_Nodes(t_node *a, t_node *d, phydbl time_thresh, t_ll *list,
 
 void Push_Bottom_Linked_List(void *what, t_ll *list)
 {
-  if(list == NULL) 
+  if(list->v == NULL) 
     {
-      // Create list if non-existing and add
-      list = (t_ll *)mCalloc(1,sizeof(t_ll));
-      list->head = list;
-      list->tail = list;
-      list->next = NULL;
+      // First elem is empty
       list->v = (void *)what;
     }
   else

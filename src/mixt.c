@@ -1140,6 +1140,39 @@ void MIXT_Update_P_Lk(t_tree *mixt_tree, t_edge *mixt_b, t_node *mixt_d)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+void MIXT_Update_P_Pars(t_tree *mixt_tree, t_edge *mixt_b, t_node *mixt_d)
+{
+  t_tree *tree;
+  t_edge *b;
+  t_node *d;
+
+  tree = mixt_tree;
+  b    = mixt_b;
+  d    = mixt_d;
+
+  do
+    {
+      if(tree->is_mixt_tree)
+        {
+          tree = tree->next;
+          b    = b->next;
+          d    = d->next;
+        }
+
+      Update_P_Pars(tree,b,d);
+
+      tree = tree->next;
+      b    = b->next;
+      d    = d->next;
+
+    }
+  while(tree);
+
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 void MIXT_Update_PMat_At_Given_Edge(t_edge *mixt_b, t_tree *mixt_tree)
 {
   t_tree *tree;
@@ -1778,19 +1811,20 @@ int MIXT_Pars(t_edge *mixt_b, t_tree *mixt_tree)
   t_edge *b;
   t_tree *tree;
 
-  b    = mixt_b;
-  tree = mixt_tree;
+  b                 = mixt_b;
+  tree              = mixt_tree;
+  mixt_tree->c_pars = 0;
 
   do
     {
-      b    = b->next_mixt;
-      tree = tree->next_mixt;
-
-      if(tree)
+      if(tree->next)
         {
-          Pars(b,tree);
-          mixt_tree->c_pars += tree->c_pars;
+          Pars(b?b->next:NULL,tree->next);
+          mixt_tree->c_pars += tree->next->c_pars;      
         }
+      
+      if(mixt_b != NULL) b = b->next_mixt;
+      tree = tree->next_mixt;
     }
   while(tree);
 

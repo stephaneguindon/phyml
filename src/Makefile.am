@@ -7,6 +7,10 @@ if WANT_PHYTIME
 bin_PROGRAMS = phytime
 PROG = PHYTIME
 else
+if WANT_PHYTIME
+bin_PROGRAMS = phyml
+PROG = PHYML
+else
 if WANT_PHYCONT
 bin_PROGRAMS = phycont
 PROG = PHYCONT
@@ -72,6 +76,7 @@ PROG = DATE
 else
 bin_PROGRAMS = phyml
 PROG = PHYML
+endif
 endif
 endif
 endif

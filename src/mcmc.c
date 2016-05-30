@@ -4346,11 +4346,14 @@ void MCMC_Prune_Regraft(t_tree *tree)
       cur_alnL       = tree->c_lnL;
       ratio          = 0.0;
 
+      /* Record edge lengths */
+      Record_Br_Len(tree);
+
       // Select prune node (any internal node except the root)
       i = 0;
       do
         {
-          prune_idx = Rand_Int(0,2*tree->n_otu-2);
+          prune_idx = Rand_Int(tree->n_otu,2*tree->n_otu-2);
           i++;
           assert(i<1000);
         }
@@ -4358,6 +4361,7 @@ void MCMC_Prune_Regraft(t_tree *tree)
 
       prune = tree->a_nodes[prune_idx];
 
+      assert(prune && prune->tax == NO);
 
       // Select a daughter of prune node
       dir_v1 = dir_v2 = -1;
@@ -4372,28 +4376,36 @@ void MCMC_Prune_Regraft(t_tree *tree)
       if(u < 0.5) rnd_dir = dir_v1;
       else        rnd_dir = dir_v2;
       
-      printf("\n. rnd_dir: %d\n",rnd_dir);
-
       prune_daughter = prune->v[rnd_dir];
       time_daughter  = tree->rates->nd_t[prune_daughter->num];
 
 
+
       // Get the list of potential regraft nodes (oldest node on regraft edge)
-      regraft_nd_list = NULL;
-      For(i,3) if(i != rnd_dir) List_Of_Regraft_Nodes(prune,
-                                                      prune->v[i],
-                                                      time_daughter,
-                                                      regraft_nd_list,
-                                                      tree);
+      regraft_nd_list = Make_Linked_List();
+      Init_Linked_List(regraft_nd_list);
+      For(i,3) 
+        if(i != rnd_dir) 
+          {
+            List_Of_Regraft_Nodes(prune,
+                                  prune->v[i],
+                                  time_daughter,
+                                  regraft_nd_list,
+                                  tree);
+          }
       
+
       // Number of regraft nodes
       n_regraft_nd = Linked_List_Len(regraft_nd_list);
       
+
       // Randomly select one (uniform)
       regraft_idx = Rand_Int(0,n_regraft_nd-1);
 
-
       regraft_nd = Linked_List_Elem(regraft_idx,regraft_nd_list);
+
+      Free_Linked_List(regraft_nd_list);
+
 
       // Select a daughter of selected regraft node
       dir_v1 = dir_v2 = -1;
@@ -4410,6 +4422,15 @@ void MCMC_Prune_Regraft(t_tree *tree)
 
       regraft_edge = regraft_nd->b[rnd_dir];
 
+      printf("\n. prune: %d prune_daughter: %d regraft: %d %d root: %d root->v[1]: %d root->v[2]: %d\n",
+             prune->num,
+             prune_daughter->num,
+             regraft_edge->left->num,
+             regraft_edge->rght->num,
+             tree->n_root->num,
+             tree->n_root->v[1]->num,
+             tree->n_root->v[2]->num);
+      
 
       // Prune
       target = residual = NULL;
@@ -4424,7 +4445,6 @@ void MCMC_Prune_Regraft(t_tree *tree)
           new_alnL = Lk(NULL,tree);
         }
 
-
       new_glnL = TIMES_Lk_Times(tree); 
       
       ratio += (new_alnL - cur_alnL);
@@ -4433,6 +4453,11 @@ void MCMC_Prune_Regraft(t_tree *tree)
       ratio = EXP(ratio);
       alpha = MIN(1.,ratio);
   
+      printf("\n. new_alnL: %f cur_alnL: %f new_glnL: %f cur_glnL: %f len: %d\n",
+             new_alnL,cur_alnL,
+             new_glnL,cur_glnL,
+             n_regraft_nd);
+
       /* Always accept move */
       if(tree->mcmc->always_yes == YES && new_glnL > UNLIKELY) alpha = 1.0;
       
@@ -4443,8 +4468,19 @@ void MCMC_Prune_Regraft(t_tree *tree)
           // Reject
           Prune_Subtree(prune,prune_daughter,&target,&residual,tree);
           Graft_Subtree(ori_target,prune,residual,tree);
-          tree->mmod->c_lnL = cur_alnL;
+          // Restore edge lengths
+          Restore_Br_Len(tree);
+          tree->c_lnL = cur_alnL;
           tree->rates->c_lnL_times = cur_glnL;
+
+          printf("\n. reject");
+          /* !!!!!!!!!!!!!! */
+          new_alnL = Lk(NULL,tree); /* Not necessary. Remove once tested */
+          if(Are_Equal(new_alnL,cur_alnL,1.E-3) == NO)
+            {
+              PhyML_Printf("\n== new_alnL: %f cur_alnL: %f",new_alnL,cur_alnL);
+              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+            }
         }
       else
         {

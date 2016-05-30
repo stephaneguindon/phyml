@@ -3418,6 +3418,7 @@ int Test_All_Spr_Targets(t_edge *b_pulled, t_node *n_link, t_tree *tree)
       Copy_Scalar_Dbl(init_l_pulled,b_pulled->l);
       Copy_Scalar_Dbl(init_v_pulled,b_pulled->l_var);
 
+      // really useful if spr_lnL == No ?
       Update_PMat_At_Given_Edge(n_link->b[dir1],tree);
       Update_PMat_At_Given_Edge(n_link->b[dir2],tree);
       Update_PMat_At_Given_Edge(b_pulled,tree);
@@ -3492,7 +3493,7 @@ void Test_One_Spr_Target_Recur(t_node *a, t_node *d, t_edge *pulled, t_node *lin
               
               tree->depth_curr_path++;
               tree->curr_path[tree->depth_curr_path] = d->v[i];
-              
+
               if((tree->depth_curr_path <= tree->mod->s_opt->max_depth_path) &&
                  (tree->depth_curr_path >= tree->mod->s_opt->min_depth_path))
                 {
@@ -3615,15 +3616,33 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
     }
 
   For(i,tree->depth_curr_path+1) move->path[i] = tree->curr_path[i];
-  
 
+  if(move->l0 != NULL)
+    {
+      Free_Scalar_Dbl(move->l0);
+      Free_Scalar_Dbl(move->v0);
+    }
 
-  Copy_Scalar_Dbl(l0,move->l0);
-  Copy_Scalar_Dbl(l1,move->l1);
-  Copy_Scalar_Dbl(l2,move->l2);
-  Copy_Scalar_Dbl(v0,move->v0);
-  Copy_Scalar_Dbl(v1,move->v1);
-  Copy_Scalar_Dbl(v2,move->v2);
+  if(move->l1 != NULL)
+    {
+      Free_Scalar_Dbl(move->l1);
+      Free_Scalar_Dbl(move->v1);
+    }
+
+  if(move->l2 != NULL)
+    {
+      Free_Scalar_Dbl(move->l2);
+      Free_Scalar_Dbl(move->v2);
+    }
+
+  move->l0 = l0;
+  move->v0 = v0;
+
+  move->l1 = l1;
+  move->v1 = v1;
+
+  move->l2 = l2;
+  move->v2 = v2;
 
   move->depth_path    = tree->depth_curr_path;
   move->pars          = tree->c_pars;
@@ -3635,13 +3654,7 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
   move->dist          = b_target->topo_dist_btw_edges;
   move->n_opp_to_link = (n_link==b_arrow->left)?(b_arrow->rght):(b_arrow->left);
   
-  /* PhyML_Printf("\nXX %d l0=%G l1=%G l2=%G v0=%G v1=%G v2=%G lnL:%f",move->n_link->num,move->l0->v,move->l1->v,move->l2->v,move->v0->v,move->v1->v,move->v2->v,move_lnL); */
-
   Include_One_Spr_To_List_Of_Spr(move,tree);
-
-  /* b_target->l->v   = init_target_len; */
-  /* b_arrow->l->v    = init_arrow_len; */
-  /* b_residual->l->v = init_residual_len; */
 
   Copy_Scalar_Dbl(init_target_l,b_target->l);
   Copy_Scalar_Dbl(init_target_v,b_target->l_var);
@@ -3663,13 +3676,6 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
   tree->c_lnL   = init_lnL;
   tree->c_pars  = init_pars;
 
-  Free_Scalar_Dbl(l0);
-  Free_Scalar_Dbl(l1);
-  Free_Scalar_Dbl(l2);
-
-  Free_Scalar_Dbl(v0);
-  Free_Scalar_Dbl(v1);
-  Free_Scalar_Dbl(v2);
 
   Free_Scalar_Dbl(init_target_l);
   Free_Scalar_Dbl(init_arrow_l);
@@ -4319,14 +4325,40 @@ void Include_One_Spr_To_List_Of_Spr(t_spr *move, t_tree *tree)
       move_list->lnL           = move->lnL;
       move_list->dist          = move->dist;
 
-      Copy_Scalar_Dbl(move->l0,move_list->l0);
-      Copy_Scalar_Dbl(move->v0,move_list->v0);
 
-      Copy_Scalar_Dbl(move->l1,move_list->l1);
-      Copy_Scalar_Dbl(move->v1,move_list->v1);
+      if(move_list->l0 == NULL)
+        {
+          move_list->l0 = Duplicate_Scalar_Dbl(move->l0);
+          move_list->v0 = Duplicate_Scalar_Dbl(move->v0);
+        }
+      else
+        {
+          Copy_Scalar_Dbl(move->l0,move_list->l0);
+          Copy_Scalar_Dbl(move->v0,move_list->v0);
+        }
 
-      Copy_Scalar_Dbl(move->l2,move_list->l2);
-      Copy_Scalar_Dbl(move->v2,move_list->v2);
+      if(move_list->l1 == NULL)
+        {
+          move_list->l1 = Duplicate_Scalar_Dbl(move->l1);
+          move_list->v1 = Duplicate_Scalar_Dbl(move->v1);
+        }
+      else
+        {
+          Copy_Scalar_Dbl(move->l1,move_list->l1);
+          Copy_Scalar_Dbl(move->v1,move_list->v1);
+        }
+
+      if(move_list->l2 == NULL)
+        {
+          move_list->l2 = Duplicate_Scalar_Dbl(move->l2);
+          move_list->v2 = Duplicate_Scalar_Dbl(move->v2);
+        }
+      else
+        {
+          Copy_Scalar_Dbl(move->l2,move_list->l2);
+          Copy_Scalar_Dbl(move->v2,move_list->v2);
+        }
+
 
       if(move_list->init_target_l == NULL)
         {
@@ -4573,6 +4605,7 @@ void Spr_Shuffle(t_tree *mixt_tree)
 
   Set_Both_Sides(YES,mixt_tree);
   Lk(NULL,mixt_tree);
+
 
   mixt_tree->best_pars                     = 1E+8;
   mixt_tree->mod->s_opt->spr_lnL           = NO;

@@ -1057,15 +1057,6 @@ t_spr *Make_One_Spr(t_tree *tree)
   t_spr *a_spr;
   a_spr         = (t_spr *)mCalloc(1,sizeof(t_spr));
   a_spr->path   = (t_node **)mCalloc(tree->n_otu,sizeof(t_node *));
-  
-  a_spr->l0 = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
-  a_spr->l1 = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
-  a_spr->l2 = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
-
-  a_spr->v0 = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
-  a_spr->v1 = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
-  a_spr->v2 = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
-
   return a_spr;
 }
 
@@ -1478,5 +1469,16 @@ t_sarea *Make_Sarea(int n_poly)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+t_ll *Make_Linked_List()
+{
+  t_ll *list;
+
+  // Create list if non-existing and add
+  list = (t_ll *)mCalloc(1,sizeof(t_ll));
+
+  return list;
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

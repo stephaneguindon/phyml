@@ -76,5 +76,6 @@ t_sarea *Make_Sarea(int n_poly);
 void Make_Edge_Loc(t_edge *b, t_tree *tree);
 void Make_Edge_Loc_Rght(t_edge *b, t_tree *tree);
 void Make_Edge_Loc_Left(t_edge *b, t_tree *tree);
+t_ll *Make_Linked_List();
 
 #endif

@@ -643,7 +643,7 @@ void Free_Scalar_Dbl(scalar_dbl *v)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Free_Gen_LL(t_ll *t)
+void Free_Linked_List(t_ll *t)
 {
   t_ll *next;
 
@@ -904,12 +904,12 @@ void Free_Eigen(eigen *eigen_struct)
 void Free_One_Spr(t_spr *this_spr)
 {
   Free(this_spr->path);
-  Free_Scalar_Dbl(this_spr->l0);
-  Free_Scalar_Dbl(this_spr->l1);
-  Free_Scalar_Dbl(this_spr->l2);
-  Free_Scalar_Dbl(this_spr->v0);
-  Free_Scalar_Dbl(this_spr->v1);
-  Free_Scalar_Dbl(this_spr->v2);
+  if(this_spr->l0) Free_Scalar_Dbl(this_spr->l0);
+  if(this_spr->l1) Free_Scalar_Dbl(this_spr->l1);
+  if(this_spr->l2) Free_Scalar_Dbl(this_spr->l2);
+  if(this_spr->v0) Free_Scalar_Dbl(this_spr->v0);
+  if(this_spr->v1) Free_Scalar_Dbl(this_spr->v1);
+  if(this_spr->v2) Free_Scalar_Dbl(this_spr->v2);
   
   if(this_spr->init_target_l) Free_Scalar_Dbl(this_spr->init_target_l);
   if(this_spr->init_target_v) Free_Scalar_Dbl(this_spr->init_target_v);
@@ -1360,6 +1360,7 @@ void Free_Mmod(t_phyrex_mod *mmod)
 void JSON_Free_Array(json_a *a)
 {
   if(a->object) JSON_Free_Object(a->object);
+  Free(a);
 }
 
 //////////////////////////////////////////////////////////////
@@ -1369,6 +1370,7 @@ void JSON_Free_Object(json_o *o)
 {
   if(o->sv) JSON_Free_StringVal(o->sv);
   if(o->next) JSON_Free_Object(o->next);
+  Free(o);
 }
 
 //////////////////////////////////////////////////////////////
@@ -1381,6 +1383,7 @@ void JSON_Free_StringVal(json_sv *sv)
   if(sv->object) JSON_Free_Object(sv->object);
   if(sv->array) JSON_Free_Array(sv->array);
   if(sv->next) JSON_Free_StringVal(sv->next);
+  Free(sv);
 }
 
 //////////////////////////////////////////////////////////////

@@ -19,36 +19,72 @@ the GNU public licence.  See http://www.opensource.org for details.
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Simu_Loop(t_tree *mixt_tree)
+void Simu_Loop(t_tree *tree)
 {
-  phydbl lk_old;
+  phydbl lk_old,delta_lnL;
+  int n_round;
 
-  Spr_Shuffle(mixt_tree);
+  tree->best_pars                  = 1E+8;
+  tree->mod->s_opt->spr_lnL        = NO;
+  tree->mod->s_opt->spr_pars       = NO;
+  tree->mod->s_opt->quickdirty     = NO;
 
-  Set_Both_Sides(YES,mixt_tree);
-  Lk(NULL,mixt_tree);
-  mixt_tree->best_lnL = mixt_tree->c_lnL;
-  if(mixt_tree->mod->s_opt->print) PhyML_Printf("\n. Current value of log-likelihood: %f",mixt_tree->c_lnL);
+  if((tree->mod->s_opt->print) && (!tree->io->quiet)) PhyML_Printf("\n\n. Maximizing likelihood (using SPR moves)...\n");
 
-  int n_tot_moves = 0;
+  tree->mod->s_opt->max_depth_path = tree->n_otu;
+  Spr_Pars(0,10,tree);
+  Set_Both_Sides(YES,tree);
+  Lk(NULL,tree);
+
+  n_round = 0;
   do
     {
-      lk_old = mixt_tree->c_lnL;
-      Optimiz_All_Free_Param(mixt_tree,(mixt_tree->io->quiet)?(0):(mixt_tree->mod->s_opt->print));
-      n_tot_moves = Simu(mixt_tree,10);
-      if(!n_tot_moves) break;
+      Optimiz_All_Free_Param(tree,(tree->io->quiet)?(NO):(tree->mod->s_opt->print));
+      Optimize_Br_Len_Serie(tree);
     }
-  while(mixt_tree->c_lnL > lk_old + mixt_tree->mod->s_opt->min_diff_lk_local);
+  while(++n_round != 3); 
 
+  tree->best_pars = tree->c_pars;
+  tree->best_lnL  = tree->c_lnL;
+
+
+
+  /*****************************/
+  if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. First round of SPR moves...\n");
+  lk_old = tree->c_lnL;
+  tree->mod->s_opt->max_depth_path    = tree->n_otu;
+  tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(0.):(0.);
+  tree->mod->s_opt->spr_lnL           = NO;
+  tree->mod->s_opt->spr_pars          = NO;
+  tree->mod->s_opt->min_diff_lk_move  = 0.1;
+  delta_lnL                           = 3.0;
+  Speed_Spr(tree,1.0,20,delta_lnL);
+  Optimiz_All_Free_Param(tree,(tree->io->quiet)?(NO):(tree->mod->s_opt->print));
+
+  /*****************************/
+  tree->mod->s_opt->min_diff_lk_move  = 0.001;
+  lk_old = UNLIKELY;
   do
     {
-      Round_Optimize(mixt_tree,mixt_tree->data,ROUND_MAX);
-      if(!Check_NNI_Five_Branches(mixt_tree)) break;
+      lk_old = tree->c_lnL;
+      if(!Simu(tree,5)) break;
+    }
+  while(FABS(lk_old - tree->c_lnL) > tree->mod->s_opt->min_diff_lk_local);
+  /*****************************/
+
+  Optimiz_All_Free_Param(tree,(tree->io->quiet)?(NO):(tree->mod->s_opt->print));
+
+  /*****************************/
+  do
+    {
+      Round_Optimize(tree,tree->data,ROUND_MAX);
+      if(!Check_NNI_Five_Branches(tree)) break;
     }
   while(1);
+  /*****************************/
 
-  if((mixt_tree->mod->s_opt->print) &&
-     (!mixt_tree->io->quiet)) PhyML_Printf("\n");
+/*   if((tree->mod->s_opt->print) && (!tree->io->quiet)) PhyML_Printf("\n"); */
+
 }
 
 //////////////////////////////////////////////////////////////
@@ -133,6 +169,7 @@ int Simu(t_tree *tree, int n_step_max)
         if((!tree->a_edges[i]->left->tax) &&
            (!tree->a_edges[i]->rght->tax))
           NNI(tree,tree->a_edges[i],0);
+
 
       Select_Edges_To_Swap(tree,sorted_b,&n_neg);
       Sort_Edges_NNI_Score(tree,sorted_b,n_neg);
@@ -289,23 +326,22 @@ void Select_Edges_To_Swap(t_tree *tree, t_edge **sorted_b, int *n_neg)
 void Update_Bl(t_tree *tree, phydbl fact)
 {
   int i;
-  t_edge *b,*orig;
+  scalar_dbl *l,*l_old,*l0;
 
   For(i,2*tree->n_otu-3)
     {
-      b = tree->a_edges[i];
-      /* b->l->v = b->l_old->v + (b->nni->l0 - b->l_old->v)*fact;       */
+      l     = tree->a_edges[i]->l;
+      l_old = tree->a_edges[i]->l_old;
+      l0    = tree->a_edges[i]->nni->l0;
 
-      orig = b;
       do
         {
-          b->l->v = b->l_old->v + (b->nni->l0->v - b->l_old->v)*fact;
-          if(b->next) b = b->next;
-          else        b = b->next;
+          l->v  = l_old->v + (l0->v - l_old->v)*fact;
+          l     = l->next;
+          l_old = l_old->next;
+          l0    = l0->next;
         }
-      while(b);
-      b = orig;
-      
+      while(l);
     }
 }
 

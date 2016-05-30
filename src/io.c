@@ -4720,9 +4720,10 @@ option *PhyML_XML(char *xml_filename)
   Free_Model_Basic(mixt_tree->mod);
   Free_Tree(mixt_tree);
 
-  if(io->fp_out_trees) fclose(io->fp_out_trees);
-  if(io->fp_out_tree)  fclose(io->fp_out_tree);
-  if(io->fp_out_stats) fclose(io->fp_out_stats);
+  if(io->fp_out_trees)      fclose(io->fp_out_trees);
+  if(io->fp_out_tree)       fclose(io->fp_out_tree);
+  if(io->fp_out_stats)      fclose(io->fp_out_stats);
+  if(io->fp_out_json_trace) fclose(io->fp_out_json_trace);
   Free_Input(io);
 
   XML_Free_XML_Tree(xml_root);
