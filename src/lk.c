@@ -407,6 +407,7 @@ phydbl Lk(t_edge *b, t_tree *tree)
 {
   int br;
   
+
   if(b == NULL && tree->mod->s_opt->curr_opt_free_rates == YES)
     {
       tree->mod->s_opt->curr_opt_free_rates = NO;
@@ -415,12 +416,13 @@ phydbl Lk(t_edge *b, t_tree *tree)
     }
   
   
-  if(tree->is_mixt_tree) {
+  if(tree->is_mixt_tree == YES) 
+    {
 #ifdef BEAGLE
-    Warn_And_Exit(TODO_BEAGLE);
+      Warn_And_Exit(TODO_BEAGLE);
 #endif
-    return MIXT_Lk(b,tree);
-  }
+      return MIXT_Lk(b,tree);
+    }
   
   tree->old_lnL = tree->c_lnL;
 
@@ -429,7 +431,8 @@ phydbl Lk(t_edge *b, t_tree *tree)
   PHYREX_Ldsk_To_Tree(tree);
 #endif
 
-#if (defined PHYTIME || defined INVITEE || defined PHYREX)
+
+#if (defined PHYTIME || defined INVITEE || defined PHYREX || defined DATE)
   if((tree->rates) && (tree->rates->bl_from_rt)) RATES_Update_Cur_Bl(tree);
 #endif
 
@@ -704,6 +707,8 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
     }
   
   log_site_lk = LOG(site_lk) - (phydbl)LOG2 * fact_sum_scale; // log_site_lk =  log(site_lk_scaled / 2^(left_subtree+right_subtree))      
+
+  /* printf("\n. site_lk: %g fact_sum_scale: %d",site_lk,fact_sum_scale); */
   
   // Calculation of the site likelihood (using scaling factors)...
   int piecewise_exponent;
@@ -1053,7 +1058,6 @@ void Update_P_Lk_Generic(t_tree *tree, t_edge *b, t_node *d)
   int NsNg, Ns, NsNs;
   phydbl curr_scaler;
   int curr_scaler_pow, piecewise_scaler_pow;
-  phydbl p_lk_lim_inf;
   phydbl smallest_p_lk;
   int *p_lk_loc;
 
@@ -1064,8 +1068,6 @@ void Update_P_Lk_Generic(t_tree *tree, t_edge *b, t_node *d)
     {
       assert(FALSE);
     }
-
-  p_lk_lim_inf = (phydbl)P_LK_LIM_INF;
 
   NsNg = tree->mod->ras->n_catg * tree->mod->ns;
   Ns = tree->mod->ns;
@@ -1232,22 +1234,16 @@ void Update_P_Lk_Generic(t_tree *tree, t_edge *b, t_node *d)
               sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[catg*n_patterns+site]):(0);
 
               sum_scale[catg*n_patterns+site] = sum_scale_v1_val + sum_scale_v2_val;
+              
 
-              /* 	  PhyML_Printf("\n@ %d",sum_scale[catg*n_patterns+site]); */
-
-              /* Scaling. For details read utilities.h */
-              if(smallest_p_lk < p_lk_lim_inf)
+              /* Scaling. We have p_lk_lim_inf = 2^-500. Consider for instance that 
+                 smallest_p_lk = 2^-600, then curr_scaler_pow will be equal to 100, and
+                 each element in the partial likelihood vector will be multiplied by
+                 2^100. */
+              if(smallest_p_lk < (phydbl)P_LK_LIM_INF)
                 {
-                  curr_scaler_pow = (int)(LOG(p_lk_lim_inf)-LOG(smallest_p_lk))/LOG2;
+                  curr_scaler_pow = (int)(-500.*LOG2-LOG(smallest_p_lk))/LOG2;
                   curr_scaler     = (phydbl)((unsigned long long)(1) << curr_scaler_pow);
-
-                  /* 	      if(fabs(curr_scaler_pow) > 63 || fabs(curr_scaler_pow) > 63) */
-                  /* 		{ */
-                  /* 		  PhyML_Printf("\n. p_lk_lim_inf = %G smallest_p_lk = %G",p_lk_lim_inf,smallest_p_lk); */
-                  /* 		  PhyML_Printf("\n. curr_scaler_pow = %d",curr_scaler_pow); */
-                  /* 		  PhyML_Printf("\n. Err in file %s at line %d.",__FILE__,__LINE__); */
-                  /* 		  Warn_And_Exit("\n"); */
-                  /* 		} */
 
                   sum_scale[catg*n_patterns+site] += curr_scaler_pow;
 
@@ -1261,7 +1257,6 @@ void Update_P_Lk_Generic(t_tree *tree, t_edge *b, t_node *d)
 
                           if(p_lk[site*NsNg+catg*Ns+i] > BIG)
                             {
-                              PhyML_Printf("\n. p_lk_lim_inf = %G smallest_p_lk = %G",p_lk_lim_inf,smallest_p_lk);
                               PhyML_Printf("\n. curr_scaler_pow = %d",curr_scaler_pow);
                               PhyML_Printf("\n. Err. in file %s at line %d (function '%s').",__FILE__,__LINE__,__FUNCTION__);
                               Warn_And_Exit("\n");
@@ -1306,8 +1301,8 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
   int dim1, dim2, dim3;
   phydbl curr_scaler;
   int curr_scaler_pow, piecewise_scaler_pow;
-  phydbl p_lk_lim_inf;
   phydbl smallest_p_lk;
+  phydbl p_lk_lim_inf;
   phydbl p0,p1,p2,p3;
   int *p_lk_loc;//Suppose site j, of a certain subtree, has "A" on one tip, and "C" on the other. If you come across this pattern again at site i<j, then you can simply copy the partial likelihoods
 
@@ -1319,7 +1314,6 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
       assert(FALSE);
     }
 
-  p_lk_lim_inf = (phydbl)P_LK_LIM_INF;
 
   dim1 = tree->mod->ras->n_catg * tree->mod->ns;//Dimension of a matrix L that holds rate-specific character likelihoods. IOW, L[ij] is the likelihood of character j in rate class i
   dim2 = tree->mod->ns;
@@ -1341,6 +1335,7 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
 
   n_patterns = tree->n_pattern;
 
+  p_lk_lim_inf                = (phydbl)P_LK_LIM_INF;
   n_v1 = n_v2                 = NULL;
   p_lk = p_lk_v1 = p_lk_v2    = NULL;
   Pij1 = Pij2                 = NULL;
@@ -1583,14 +1578,16 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
               
               sum_scale[catg*n_patterns+site] = sum_scale_v1_val + sum_scale_v2_val;
               
-              /* Scaling */
+              /* Scaling. We have p_lk_lim_inf = 2^-500. Consider for instance that 
+                 smallest_p_lk = 2^-600, then curr_scaler_pow will be equal to 100, and
+                 each element in the partial likelihood vector will be multiplied by
+                 2^100. */
               if(smallest_p_lk < p_lk_lim_inf && tree->mod->augmented == NO)
                 {
-                  curr_scaler_pow = (int)(LOG(p_lk_lim_inf)-LOG(smallest_p_lk))/LOG2;
+                  curr_scaler_pow = (int)(-500.*LOG2-LOG(smallest_p_lk))/LOG2;
                   curr_scaler     = (phydbl)((unsigned long long)(1) << curr_scaler_pow);
                   
                   sum_scale[catg*n_patterns+site] += curr_scaler_pow;
-                  //                  fprintf(stderr,"\n%d",sum_scale[catg*n_patterns+site]);
                                         
                   do
                     {
@@ -1602,7 +1599,6 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
 
                           if(p_lk[site*dim1+catg*dim2+i] > BIG)
                             {
-                              PhyML_Printf("\n== p_lk_lim_inf = %G smallest_p_lk = %G",p_lk_lim_inf,smallest_p_lk);
                               PhyML_Printf("\n== curr_scaler_pow = %d",curr_scaler_pow);
                               PhyML_Printf("\n== Err. in file %s at line %d (function '%s').",__FILE__,__LINE__,__FUNCTION__);
                               Exit("\n");
@@ -1650,7 +1646,6 @@ void Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
   int dim1, dim2, dim3;
   phydbl curr_scaler;
   int curr_scaler_pow, piecewise_scaler_pow;
-  phydbl p_lk_lim_inf;
   phydbl smallest_p_lk;
   phydbl p0,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15,p16,p17,p18,p19;
   int *p_lk_loc;
@@ -1666,8 +1661,6 @@ void Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
       PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Exit("");
     }
-
-  p_lk_lim_inf = (phydbl)P_LK_LIM_INF;
 
   dim1 = tree->mod->ras->n_catg * tree->mod->ns;
   dim2 = tree->mod->ns;
@@ -1899,20 +1892,15 @@ void Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
               
               sum_scale[catg*n_patterns+site] = sum_scale_v1_val + sum_scale_v2_val;
               
-              /* Scaling */
-              if(smallest_p_lk < p_lk_lim_inf)
+              /* Scaling. We have p_lk_lim_inf = 2^-500. Consider for instance that 
+                 smallest_p_lk = 2^-600, then curr_scaler_pow will be equal to 100, and
+                 each element in the partial likelihood vector will be multiplied by
+                 2^100. */
+              if(smallest_p_lk < (phydbl)P_LK_LIM_INF)
                 {
-                  curr_scaler_pow = (int)(LOG(p_lk_lim_inf)-LOG(smallest_p_lk))/LOG2;
+                  curr_scaler_pow = (int)(-500.*LOG2-LOG(smallest_p_lk))/LOG2;
                   curr_scaler     = (phydbl)((unsigned long long)(1) << curr_scaler_pow);
-                  
-                  /* 	      if(fabs(curr_scaler_pow) > 63 || fabs(curr_scaler_pow) > 63) */
-                  /* 		{ */
-                  /* 		  PhyML_Printf("\n. p_lk_lim_inf = %G smallest_p_lk = %G",p_lk_lim_inf,smallest_p_lk); */
-                  /* 		  PhyML_Printf("\n. curr_scaler_pow = %d",curr_scaler_pow); */
-                  /* 		  PhyML_Printf("\n. Err in file %s at line %d.",__FILE__,__LINE__); */
-                  /* 		  Warn_And_Exit("\n"); */
-                  /* 		} */
-                  
+                                    
                   sum_scale[catg*n_patterns+site] += curr_scaler_pow;
                   
                   do
@@ -1925,7 +1913,6 @@ void Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
                           
                           if(p_lk[site*dim1+catg*dim2+i] > BIG)
                             {
-                              PhyML_Printf("\n. p_lk_lim_inf = %G smallest_p_lk = %G",p_lk_lim_inf,smallest_p_lk);
                               PhyML_Printf("\n. curr_scaler_pow = %d",curr_scaler_pow);
                               PhyML_Printf("\n. Err in file %s at line %d.",__FILE__,__LINE__);
                               Warn_And_Exit("\n");
@@ -3800,10 +3787,10 @@ void Pull_Scaling_Factors(int site,
                           t_edge *b,
                           t_tree *tree)
 {
-    int catg;
-    int *sum_scale_left_cat,*sum_scale_rght_cat;
-    int exponent;
-    phydbl max_sum_scale,min_sum_scale;
+  int catg;
+  int *sum_scale_left_cat,*sum_scale_rght_cat;
+  int exponent;
+  phydbl max_sum_scale,min_sum_scale;
   phydbl sum,tmp;
   phydbl site_lk_cat;
 

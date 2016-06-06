@@ -27,6 +27,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
   PhyML_Printf("\n. command-line: ");
   For(i,argc) PhyML_Printf("%s ",argv[i]);
   PhyML_Printf("\n");
+  writemode = WRITE;
 
   if(argc == 1) Exit("\n. No argument was passed to the program. Please check the documentation. \n");
 
@@ -513,7 +514,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	  }
 	case 40 :
 	  {
-	    writemode = 2;
+	    writemode = APPEND;
 	    break;
 	  }
 	case 39 :
@@ -1515,9 +1516,8 @@ int Read_Command_Line(option *io, int argc, char **argv)
 #if !defined(PHYTIME) 
   // Make sure you don't erase the input file...
   if(!strcmp(io->out_tree_file,io->in_align_file) ||
-     !strcmp(io->out_stats_file,io->in_align_file)) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
-
-  writemode = WRITE;
+     !strcmp(io->out_stats_file,io->in_align_file)) 
+    Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
 
   io->fp_out_tree  = Openfile(io->out_tree_file,writemode);
   io->fp_out_stats = Openfile(io->out_stats_file,writemode);
@@ -1527,8 +1527,6 @@ int Read_Command_Line(option *io, int argc, char **argv)
 #if defined(PHYREX)
   io->fp_out_summary = Openfile(io->out_summary_file,writemode);
 #endif
-
-  writemode++; // just to silence a warning message at compilation
   
   if(io->mod->whichmodel == GTR) 
     {

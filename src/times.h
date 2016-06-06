@@ -73,5 +73,8 @@ phydbl TIMES_Lk_Yule_Order_Root_Cond(t_tree *tree);
 void TIMES_Connect_List_Of_Taxa(t_node **tax_list, int list_size, phydbl t_mrca, phydbl *times, int *nd_num, t_tree *mixt_tree);
 void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *tree);
 phydbl TIMES_Lk_Birth_Death(t_tree *tree);
+int TIMES_Check_Node_Height_Ordering(t_tree *tree);
+int TIMES_Check_Node_Height_Ordering_Post(t_node *a, t_node *d, t_tree *tree);
+phydbl TIMES_Lk_Birth_Death_One_Node(phydbl t, phydbl min, phydbl max, t_tree *tree);
 
 #endif

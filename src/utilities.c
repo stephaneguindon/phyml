@@ -795,11 +795,17 @@ void Connect_One_Edge_To_Two_Nodes(t_node *a, t_node *d, t_edge *b, t_tree *tree
 {
   int i,dir_a_d,dir_d_a;
     
+  if(a == NULL || d == NULL) 
+    {
+      PhyML_Printf("\n. a: %d d: %d",a?a->num:-1,d?d->num:-1);
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
+
   dir_a_d = -1;
-  For(i,3) if(a->v[i] == d) {dir_a_d = i; break;}
+  For(i,3) if(a->v[i] == d) { dir_a_d = i; break; }
 
   dir_d_a = -1;
-  For(i,3) if(d->v[i] == a) {dir_d_a = i; break;}
+  For(i,3) if(d->v[i] == a) { dir_d_a = i; break; }
 
   if(dir_a_d == -1) Generic_Exit(__FILE__,__LINE__,__FUNCTION__); 
   if(dir_d_a == -1) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
@@ -4967,17 +4973,14 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
   if(residual) (*residual) = b2;
 
 
-  if(tree->n_root && tree->n_root->v[1] == a) tree->n_root->v[1] = NULL;
-  if(tree->n_root && tree->n_root->v[2] == a) tree->n_root->v[2] = NULL;
-
-  if((*target) == tree->e_root)
+  if(tree->n_root && (a == tree->n_root->v[1] || a == tree->n_root->v[2]))
     {
-      tree->n_root->v[1]       = (*target)->left;
-      tree->n_root->v[2]       = (*target)->rght;
-      tree->n_root->b[1]->rght = (*target)->left;
-      tree->n_root->b[2]->rght = (*target)->rght;
+      tree->e_root             = b1;
+      tree->n_root->v[1]       = b1->left;
+      tree->n_root->v[2]       = b1->rght;
+      tree->n_root->b[1]->rght = b1->left;
+      tree->n_root->b[2]->rght = b1->rght;
     }
-
 
 #ifdef DEBUG
   if(b1->left->tax == YES && b1->rght->tax == NO)
@@ -5192,8 +5195,14 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
       tree->n_root->b[2]->rght = target->rght;
     }
 
-  if(tree->is_mixt_tree == YES) MIXT_Graft_Subtree(target,link,residual,tree);
+  if(tree->n_root)
+    {
+      Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
+      Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
+      tree->n_root->anc = NULL;
+    }
 
+  if(tree->is_mixt_tree == YES) MIXT_Graft_Subtree(target,link,residual,tree);
 }
 
 //////////////////////////////////////////////////////////////
@@ -11455,8 +11464,13 @@ phydbl Scalar_Elem(int pos, scalar_dbl *scl)
 void *Linked_List_Elem(int pos, t_ll *ll)
 {
   t_ll *loc;
-  loc = ll;
-  while(--pos >= 0) loc = loc->next;
+  assert(ll);
+  loc = ll->head;
+  while(--pos >= 0) 
+    {
+      assert(loc);
+      loc = loc->next;
+    }
   assert(loc);
   return(loc->v);
 }
@@ -11494,7 +11508,7 @@ int Linked_List_Len(t_ll *list)
 
   if(!list) return 0;
 
-  loc = list;
+  loc = list->head;
   len = 0;
   do 
     {
@@ -11513,13 +11527,12 @@ int Linked_List_Len(t_ll *list)
 void List_Of_Regraft_Nodes(t_node *a, t_node *d, phydbl time_thresh, t_ll *list, t_tree *tree)
 {
 
-  /* printf("\n. d: %d t: %f t_thresh: %f",d->num,tree->rates->nd_t[d->num],time_thresh); */
   if(d->tax || tree->rates->nd_t[d->num] > time_thresh) return;
   else
     {
       int i;
 
-      Push_Bottom_Linked_List(d,list);
+      Push_Bottom_Linked_List(a,list);
 
       For(i,3)
         if(d->v[i] != a) 
@@ -11542,7 +11555,7 @@ void Push_Bottom_Linked_List(void *what, t_ll *list)
       // Add one elem in list and add 
       list->tail->next = (t_ll *)mCalloc(1,sizeof(t_ll));
       list->tail->next->v = (void *)what;
-      list->tail = list->next;
+      list->tail = list->tail->next;
       list->tail->next = NULL;
     }
 }

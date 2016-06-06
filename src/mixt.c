@@ -469,6 +469,60 @@ void MIXT_Chain_RAS(t_ras *curr, t_ras *next)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+void MIXT_Chain_Rates(t_rate *curr, t_rate *next)
+{
+  if(!next) return;
+  else
+    {
+      t_rate *buff,*last;
+
+      last = NULL;
+
+      buff = curr;
+      while(buff)
+        {
+          if(buff == next) break;
+          buff = buff->prev;
+        }
+
+      /*! Search forward */
+      if(!buff)
+        {
+          buff = curr;
+          while(buff)
+            {
+              if(buff == next) break;
+              buff = buff->next;
+            }
+        }
+
+      if(!buff)
+        {
+          last = curr;
+          while(last->next) { last = last->next; }
+
+          last->next = next;
+          next->prev = last;
+        }
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void MIXT_Chain_Cal(t_tree *mixt_tree)
+{
+  int i;
+  For(i,mixt_tree->rates->n_cal-1) 
+    {
+      mixt_tree->rates->a_cal[i]->next   = mixt_tree->rates->a_cal[i+1];
+      mixt_tree->rates->a_cal[i+1]->prev = mixt_tree->rates->a_cal[i];
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 void MIXT_Turn_Branches_OnOff_In_All_Elem(int onoff, t_tree *mixt_tree)
 {
   t_tree *tree;
@@ -618,10 +672,15 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
 
   MIXT_Update_Br_Len_Multipliers(mixt_tree->mod);
 
+#if (defined PHYTIME || defined INVITEE || defined PHYREX || defined DATE)
+  if((mixt_tree->rates) && (mixt_tree->rates->bl_from_rt)) MIXT_RATES_Update_Cur_Bl(mixt_tree);
+#endif
+
+
   do /*! Consider each element of the data partition */
     {
       if(!cpy_mixt_b) Set_Model_Parameters(mixt_tree->mod);      
-      
+
       Set_Br_Len_Var(mixt_b,mixt_tree);
 
       if(!cpy_mixt_b)
@@ -637,7 +696,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
         {
           Update_PMat_At_Given_Edge(mixt_b,mixt_tree);
         }
-      
+            
       if(!cpy_mixt_b)
         {
           if(mixt_tree->n_root)
@@ -661,9 +720,11 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                   MIXT_Post_Order_Lk(mixt_tree->e_root->rght,
                                      mixt_tree->e_root->left,
                                      mixt_tree);
+
                   MIXT_Post_Order_Lk(mixt_tree->e_root->left,
                                      mixt_tree->e_root->rght,
                                      mixt_tree);
+
                   if(mixt_tree->both_sides == YES)
                     {
                       MIXT_Pre_Order_Lk(mixt_tree->e_root->rght,
@@ -677,7 +738,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
             }
           else
             {
-              MIXT_Post_Order_Lk(mixt_tree->a_nodes[0],mixt_tree->a_nodes[0]->v[0],mixt_tree);
+             MIXT_Post_Order_Lk(mixt_tree->a_nodes[0],mixt_tree->a_nodes[0]->v[0],mixt_tree);
               if(mixt_tree->both_sides == YES)
                 {
                   MIXT_Pre_Order_Lk(mixt_tree->a_nodes[0],
@@ -742,8 +803,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
               ambiguity_check = b->rght->c_seq->is_ambigu[site];
               if(!ambiguity_check) state = b->rght->c_seq->d_state[site];
             }
-          
-          
+                    
           /*! For all classes in the mixture */
           do
             {
@@ -1051,10 +1111,11 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
 
         }
 
+
       Free(sum_scale_left_cat);
       Free(sum_scale_rght_cat);
 
-      /* printf("\n. <><><> LNL %f",mixt_tree->c_lnL); */
+      /* printf("\n. <><><> LNL %f",mixt_tree->c_lnL); fflush(NULL); */
 
       mixt_tree = mixt_tree->next_mixt;
       mixt_b    = mixt_b->next_mixt;
@@ -2170,6 +2231,19 @@ void MIXT_Add_Root(t_edge *mixt_b, t_tree *mixt_tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void MIXT_RATES_Update_Cur_Bl(t_tree *mixt_tree)
+{
+  t_tree *tree;
+
+  tree = mixt_tree->next;
+  do
+    {
+      RATES_Update_Cur_Bl(tree);
+      tree = tree->next;
+    }
+  while(tree);
+}
 
 void MIXT_Update_Br_Len_Multipliers(t_mod *mod)
 {

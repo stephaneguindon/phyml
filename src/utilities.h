@@ -335,13 +335,12 @@ typedef	double phydbl;
 #define BL_MAX 1.
 #endif
 
-/* #define P_LK_LIM_INF 7.888609052e-31 */
-/* #define P_LK_LIM_MAX 1.267650600e+30 */
-/* #define P_LK_LIM_INF 4.909093465e-91 /\* R: format(2^(-300),digits=10) *\/ */
-/* #define P_LK_LIM_SUP 2.037035976e+90 /\* R: format(2^(+300),digits=10) *\/ */
+// Do *not* change the values below and leave the lines with
+// curr_scaler_pow = (int)(-XXX.-LOG(smallest_p_lk))/LOG2;
+// as XXX depend on what the value of P_LK_LIM_INF 
 #define  P_LK_LIM_INF   3.054936e-151 /* 2^-500 */
 #define  P_LK_LIM_SUP   3.273391e+150 /* 2^500 */
-//#define  P_LK_LIM_INF   4.656612873e-10 /*2^-31 */
+
 
 #define T_MAX_XML_TAG 64
 
@@ -1470,6 +1469,9 @@ typedef struct __T_Rate {
   phydbl *node_height_dens_log_norm_const_update;
   int update_time_norm_const;
 
+  struct __T_Rate *next;
+  struct __T_Rate *prev;
+
 }t_rate;
 
 /*!********************************************************/
@@ -1491,7 +1493,7 @@ typedef struct __Tmcmc {
 
   int num_move_nd_r;
   int num_move_br_r;
-  int num_move_nd_t;
+  int num_move_times;
   int num_move_nu;
   int num_move_clock_r;
   int num_move_tree_height;

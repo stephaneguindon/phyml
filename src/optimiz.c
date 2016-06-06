@@ -785,6 +785,7 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
     }
   else
     {
+      // Ok if root exists but require traversal to be initiated from a node != root
       For(i,3)
         {
           if(d->v[i] != a)
@@ -793,10 +794,6 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
               Optimize_Br_Len_Serie_Post(d,d->v[i],d->b[i],tree);
             }
         }
-      
-      /* For(i,3)  */
-      /*   if(d->v[i] == a)  */
-      /*     Update_P_Lk(tree,d->b[i],d); */
 
       Update_P_Lk(tree,b_fcus,d);
     }

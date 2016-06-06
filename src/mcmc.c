@@ -1066,10 +1066,9 @@ void MCMC_One_Node_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
 
 void MCMC_Time_All(t_tree *tree)
 {
-  Set_Both_Sides(YES,tree);     
-  if(tree->mcmc->use_data == YES) Lk(NULL,tree);
-  Set_Both_Sides(NO,tree);     
-  
+  // Down partials may not be up to date.
+  Set_Both_Sides(NO,tree);
+  Lk(NULL,tree);
   MCMC_Root_Time(tree);
   MCMC_Time_Recur(tree->n_root,tree->n_root->v[1],YES,tree);
   MCMC_Time_Recur(tree->n_root,tree->n_root->v[2],YES,tree);
@@ -1094,17 +1093,9 @@ void MCMC_Time_Recur(t_node *a, t_node *d, int traversal, t_tree *tree)
   phydbl K;
   int move_num;
   
-  /* printf("\n IN ONE: %f",tree->rates->c_lnL_times); */
-
   if(d->tax) return; /* Won't change time at tip */
-
-  /* if(FABS(tree->rates->t_prior_min[d->num] - tree->rates->t_prior_max[d->num]) < 1.E-10) return; */
-
-  Record_Br_Len(tree);
-  RATES_Record_Rates(tree);
-  RATES_Record_Times(tree);
   
-  move_num       = d->num-tree->n_otu+tree->mcmc->num_move_nd_t;
+  move_num       = tree->mcmc->num_move_times;
   K              = tree->mcmc->tune_move[move_num];
   cur_lnL_data   = tree->c_lnL;
   cur_lnL_rate   = tree->rates->c_lnL_rates;
@@ -1145,34 +1136,31 @@ void MCMC_Time_Recur(t_node *a, t_node *d, int traversal, t_tree *tree)
 
   t_min += tree->rates->min_dt;
   t_max -= tree->rates->min_dt;
-
-  assert(t_min < t_max);
+  
      
   MCMC_Make_Move(&t1_cur,&t1_new,t_min,t_max,&ratio,K,tree->mcmc->move_type[move_num]);  
 
+  /* printf("\n. t1_new: %f d: %d v2: %d v3: %d b1: %d eroot: %d", */
+  /*        t1_new,d->num,v2->num,v3->num,b1->num,tree->e_root->num); */
+
   if(t1_new > t_min && t1_new < t_max) 
     {
+      RATES_Record_Times(tree);
+
       tree->rates->nd_t[d->num] = t1_new;
 
       new_lnL_time = TIMES_Lk_Times(tree);
+
       ratio += (new_lnL_time - cur_lnL_time);
 
       if(!(isinf(FABS(new_lnL_time)) == YES || isnan(new_lnL_time) == YES))
         {
-          /* Update branch lengths */
-          tree->rates->br_do_updt[d->num]  = YES;
-          tree->rates->br_do_updt[v2->num] = YES;
-          tree->rates->br_do_updt[v3->num] = YES;
           RATES_Update_Cur_Bl(tree);
           
           new_lnL_rate = RATES_Lk_Rates(tree);
           ratio += (new_lnL_rate - cur_lnL_rate);
-
-          /* printf("\nONE cur_lnL_time: %f new_lnL_time: %f cur_t: %f new_t: %f\n",cur_lnL_time,new_lnL_time,t1_cur,t1_new); */
-          /* Print_Node(tree->n_root,tree->n_root->v[1],tree); */
-          /* Print_Node(tree->n_root,tree->n_root->v[2],tree); */
           
-          if(tree->mcmc->use_data)
+          if(tree->mcmc->use_data == YES)
             {
               if(tree->io->lk_approx == EXACT)
                 {
@@ -1182,69 +1170,42 @@ void MCMC_Time_Recur(t_node *a, t_node *d, int traversal, t_tree *tree)
                   Update_P_Lk(tree,b1,d);
                 }
               new_lnL_data = Lk(b1,tree);
-              
-              /* /\* !!!!!!!!!!!!!!!!!!!!1 *\/ */
-              /* if(FABS(Lk(tree) - new_lnL_data) > 1.E-5) */
-              /*   { */
-              /*     PhyML_Printf("\n. b1->l->v=%f b2->l->v=%f b3->l->v=%f",b1->l->v,b2->l->v,b3->l->v); */
-              /*     PhyML_Printf("\n. a->num=%d d->num=%d root=%d (%d %d)",a->num,d->num,a==tree->n_root,tree->n_root->v[2]->num,tree->n_root->v[1]->num); */
-              /*     PhyML_Printf("\n. t_min=%f t_max=%f",t_min,t_max); */
-              /*     PhyML_Printf("\n. t1_new=%f t1_cur=%f",t1_new,t1_cur); */
-              /*     PhyML_Printf("\n. %f %f",cur_lnL_data,tree->c_lnL); */
-              /*     PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__); */
-              /*     Warn_And_Exit(""); */
-              /*   } */
             }
           
           if(tree->mcmc->use_data) ratio += (new_lnL_data - cur_lnL_data);
         }
       
-      /* if(d->num == 7) */
-      /*   { */
-      /*     printf("\n. nd_t: %f %f new_lnL_rate: %f cur_lnL_rate: %f new_lnL_time: %f cur_lnL_time: %f ratio: %f", */
-      /*            t1_cur, */
-      /*            tree->rates->nd_t[d->num], */
-      /*            new_lnL_rate, */
-      /*            cur_lnL_rate, */
-      /*            new_lnL_time, */
-      /*            cur_lnL_time, */
-      /*            ratio); */
-      /*   } */
-
-          
       ratio = EXP(ratio);
       alpha = MIN(1.,ratio);
       u = Uni();
 	           
       if(u > alpha) /* Reject */
 	{
-	  tree->rates->nd_t[d->num] = t1_cur;
-	  tree->c_lnL               = cur_lnL_data;
-	  tree->rates->c_lnL_rates  = cur_lnL_rate;
-	  tree->rates->c_lnL_times  = TIMES_Lk_Times(tree);
-          
-          if(!(isinf(FABS(new_lnL_time)) == YES || isnan(new_lnL_time) == YES))
-            {
-              Restore_Br_Len(tree);
-              RATES_Reset_Rates(tree);
-              RATES_Reset_Times(tree);
+          /* printf("\n. rej"); */
+          RATES_Reset_Times(tree);
+          RATES_Update_Cur_Bl(tree);
               
-              if(tree->io->lk_approx == EXACT && tree->mcmc->use_data) 
-                {
-                  Update_PMat_At_Given_Edge(b1,tree);
-                  Update_PMat_At_Given_Edge(b2,tree);
-                  Update_PMat_At_Given_Edge(b3,tree);
-                  Update_P_Lk(tree,b1,d);
-                }
+          if(tree->io->lk_approx == EXACT && tree->mcmc->use_data) 
+            {
+              Update_PMat_At_Given_Edge(b1,tree);
+              Update_PMat_At_Given_Edge(b2,tree);
+              Update_PMat_At_Given_Edge(b3,tree);
+              Update_P_Lk(tree,b1,d);
             }
-          else
+
+          if(isinf(FABS(new_lnL_time)) == YES || isnan(new_lnL_time) == YES)
             {
               Print_Node(tree->n_root,tree->n_root->v[1],tree);
               Print_Node(tree->n_root,tree->n_root->v[2],tree);              
               assert(FALSE);
             }
 
-          
+	  tree->c_lnL               = cur_lnL_data;
+	  tree->rates->c_lnL_rates  = cur_lnL_rate;
+          tree->rates->c_lnL_times  = cur_lnL_time;
+          DATE_Update_T_Prior_MinMax(tree);
+
+
           if(Are_Equal(tree->rates->c_lnL_times,cur_lnL_time,1.E-3) == NO)
             {
               PhyML_Printf("\n\n");
@@ -1254,13 +1215,34 @@ void MCMC_Time_Recur(t_node *a, t_node *d, int traversal, t_tree *tree)
               PhyML_Printf("\n== new_glnL: %f cur_glnL: %f",tree->rates->c_lnL_times,cur_lnL_time);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
+          
+          /* /\* !!!!!!!!!!!!!! *\/ */
+          /* new_lnL_data = Lk(NULL,tree); /\* Not necessary. Remove once tested *\/ */
+          /* if(Are_Equal(new_lnL_data,cur_lnL_data,1.E-3) == NO) */
+          /*   { */
+          /*     PhyML_Printf("\n== a: %d d: %d v2: %d v3: %d",a->num,d->num,v2->num,v3->num); */
+          /*     PhyML_Printf("\n== t1_cur: %f t1_new: %f",t1_cur,t1_new); */
+          /*     PhyML_Printf("\n== new_alnL: %f cur_alnL: %f",new_lnL_data,cur_lnL_data); */
+          /*     Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
+          /*   } */
 	}
       else
 	{
-	  /* printf("\n. A new_lnL_data = %f cur_lnL_data = %f t_new=%f t_cur=%f tmin=%f tmax=%f", */
-	  /* 	 new_lnL_data,cur_lnL_data,t1_new,t1_cur,t_min,t_max); */
+          /* /\* printf("\n. acc"); *\/ */
+          /* /\* !!!!!!!!!!!!!! *\/ */
+          /* cur_lnL_data = Lk(NULL,tree); /\* Not necessary. Remove once tested *\/ */
+          /* if(Are_Equal(new_lnL_data,cur_lnL_data,1.E-3) == NO) */
+          /*   { */
+          /*     PhyML_Printf("\n== a: %d d: %d v2: %d v3: %d",a->num,d->num,v2->num,v3->num); */
+          /*     PhyML_Printf("\n== t1_cur: %f t1_new: %f",t1_cur,t1_new); */
+          /*     PhyML_Printf("\n== new_alnL: %f cur_alnL: %f",new_lnL_data,cur_lnL_data); */
+          /*     Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
+          /*   } */
 	  tree->mcmc->acc_move[move_num]++;
 	}
+
+      /* printf("\n. %f",new_lnL_data); fflush(NULL); */
+
       if(t1_new < t0)
 	{
 	  t1_new = t0+1.E-4;
@@ -1286,28 +1268,26 @@ void MCMC_Time_Recur(t_node *a, t_node *d, int traversal, t_tree *tree)
       if(isnan(t1_new))
 	{
 	  PhyML_Printf("\n== run=%d",tree->mcmc->run);
-	  PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
-	  /*       Exit("\n"); */
+	  PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
 	}
     }
   
   tree->mcmc->run_move[move_num]++;
 
-  /* printf("\n OUT ONE: %f",tree->rates->c_lnL_times); */
-
+  /* !!!!!!! not ready for IL model !!!!!!!!!!!!! */
   if(traversal == YES)
     {
       if(d->tax == YES) return;
       else
-	For(i,3)
-	  if(d->v[i] != a && d->b[i] != tree->e_root)
-	    {
-	      if(tree->io->lk_approx == EXACT && tree->mcmc->use_data) Update_P_Lk(tree,d->b[i],d);
-	      /* if(tree->io->lk_approx == EXACT && tree->mcmc->use_data) {tree->both_sides = YES; Lk(tree); } */
-	      MCMC_Time_Recur(d,d->v[i],YES,tree);
-	    }
-      if(tree->io->lk_approx == EXACT && tree->mcmc->use_data) Update_P_Lk(tree,b1,d);
-      /* if(tree->io->lk_approx == EXACT && tree->mcmc->use_data) {tree->both_sides = YES; Lk(tree); } */
+	{
+          For(i,3)
+            if(d->v[i] != a && d->b[i] != tree->e_root)
+              {
+                Update_P_Lk(tree,d->b[i],d);
+                MCMC_Time_Recur(d,d->v[i],YES,tree);
+              }
+          Update_P_Lk(tree,b1,d);
+        }
     }	    
 }
 
@@ -1542,8 +1522,8 @@ void MCMC_Jump_Calibration(t_tree *tree)
 
 #endif
 }
-//////////////////////////////////////////////////////////////
 
+//////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
 void MCMC_Root_Time(t_tree *tree)
@@ -1567,12 +1547,8 @@ void MCMC_Root_Time(t_tree *tree)
   root = tree->n_root;
 
   if(FABS(tree->rates->t_prior_min[root->num] - tree->rates->t_prior_max[root->num]) < 1.E-10) return;
-
-  Record_Br_Len(tree);
-  RATES_Record_Rates(tree);
-  RATES_Record_Times(tree);
   
-  move_num       = root->num-tree->n_otu+tree->mcmc->num_move_nd_t;
+  move_num       = tree->mcmc->num_move_times;
   K              = tree->mcmc->tune_move[move_num];
   cur_lnL_data   = tree->c_lnL;
   cur_lnL_rate   = tree->rates->c_lnL_rates;
@@ -1592,10 +1568,8 @@ void MCMC_Root_Time(t_tree *tree)
   t0 = tree->rates->t_prior_min[root->num];
   t2 = tree->rates->nd_t[v2->num];
   t3 = tree->rates->nd_t[v3->num];
-  /* printf("\n %d t0= %f %d t2= %f %d t3= %f \n", root -> num, t0, v2 -> num, t2, v3 -> num, t3);  */
 
   t_min = t0;
-  /* t_max = MIN(MIN(t2,t3),tree->rates->t_prior_max[root->num]); */
   t_max = MIN(t2,t3);
 
   t_min += tree->rates->min_dt;
@@ -1613,19 +1587,16 @@ void MCMC_Root_Time(t_tree *tree)
  
   if(t1_new > t_min && t1_new < t_max) 
     {
+      RATES_Record_Times(tree);
+
       tree->rates->nd_t[root->num] = t1_new;
 
-      /* Update branch lengths */
       RATES_Update_Cur_Bl(tree);
 
-      if(tree->mcmc->use_data) new_lnL_data = Lk(b1,tree);
+      if(tree->mcmc->use_data == YES) new_lnL_data = Lk(b1,tree);
 
       new_lnL_rate = RATES_Lk_Rates(tree);
       new_lnL_time = TIMES_Lk_Times(tree); 
-
-      /* printf("\nROOT cur_lnL_time: %f new_lnL_time: %f\n",cur_lnL_time,new_lnL_time); */
-      /* Print_Node(tree->n_root,tree->n_root->v[1],tree); */
-      /* Print_Node(tree->n_root,tree->n_root->v[2],tree); */
 
       if(tree->mcmc->use_data) ratio += (new_lnL_data - cur_lnL_data);
       ratio += (new_lnL_rate - cur_lnL_rate);
@@ -1637,13 +1608,14 @@ void MCMC_Root_Time(t_tree *tree)
          
       if(u > alpha) /* Reject */
 	{
-	  tree->rates->nd_t[root->num] = t1_cur;
+	  RATES_Reset_Times(tree);
+          RATES_Update_Cur_Bl(tree);
+          Update_PMat_At_Given_Edge(b1,tree);
+
 	  tree->c_lnL                  = cur_lnL_data;
 	  tree->rates->c_lnL_rates     = cur_lnL_rate;
+          /* !!!!!!!!!!!!!!!!! */
 	  tree->rates->c_lnL_times     = TIMES_Lk_Times(tree); // required as some t_prior_min/max have been modified 
-	  Restore_Br_Len(tree);
-	  RATES_Reset_Rates(tree);
-	  RATES_Reset_Times(tree);
           
           if(Are_Equal(tree->rates->c_lnL_times,cur_lnL_time,1.E-3) == NO)
             {
@@ -1687,7 +1659,6 @@ void MCMC_Root_Time(t_tree *tree)
 	}
     }
     
-  /* printf("\n OUT ROOT: %f",tree->rates->c_lnL_times); */
   tree->mcmc->run_move[move_num]++;
 
 }
@@ -1710,7 +1681,6 @@ void MCMC_Tree_Height(t_tree *tree)
   if(FABS(tree->rates->t_prior_max[tree->n_root->num] - tree->rates->t_prior_min[tree->n_root->num]) < 1.E-10) return;
 
   RATES_Record_Times(tree);
-  Record_Br_Len(tree);
 
   K            = tree->mcmc->tune_move[tree->mcmc->num_move_tree_height];
   cur_lnL_data = tree->c_lnL;
@@ -1727,24 +1697,17 @@ void MCMC_Tree_Height(t_tree *tree)
      floor is the maximum value a node height can take when one ignores the 
      calibration nodes, i.e., floor is set by the height of the tips
   */
-  /* floor = 0.0; */
   floor = tree->rates->t_floor[tree->n_root->num];
-  /* floor = tree->rates->t_prior_max[tree->n_root->num]; */
 
   Scale_Subtree_Height(tree->n_root,mult,floor,&n_nodes,tree);
   
   For(i,2*tree->n_otu-2) tree->rates->br_do_updt[i] = YES;
   RATES_Update_Cur_Bl(tree);
-  if(tree->mcmc->use_data) new_lnL_data = Lk(NULL,tree);
+  if(tree->mcmc->use_data == YES) new_lnL_data = Lk(NULL,tree);
 
   new_lnL_rate = RATES_Lk_Rates(tree);
   new_lnL_time = TIMES_Lk_Times(tree);
  
-  /* The Hastings ratio is actually mult^(n) when changing the absolute
-     node heights. When considering the relative heights, this ratio combined
-     to the Jacobian for the change of variable ends up to being equal to mult. 
-  */
-  /* ratio += LOG(mult); */
   ratio += (phydbl)(n_nodes)*LOG(mult);
 
   /* Likelihood ratio */
@@ -1754,38 +1717,13 @@ void MCMC_Tree_Height(t_tree *tree)
   ratio += (new_lnL_rate - cur_lnL_rate);
   ratio += (new_lnL_time - cur_lnL_time);
 
-  /* phydbl diff = (new_lnL_time - cur_lnL_time)+(phydbl)(n_nodes-1.)*LOG(mult); */
-  /* printf("\n. diff_lk = %12f -(n-1)*log(mult) = %12f n_nodes=%d [%12f] log(mult)=%f", */
-  /* 	 (new_lnL_time - cur_lnL_time), */
-  /* 	 -(phydbl)(n_nodes-1.)*LOG(mult), */
-  /* 	 n_nodes, */
-  /* 	 diff, */
-  /* 	 LOG(mult)); */
-
-  /* !!!!!!!!!!!! */
-  /* ratio += LOG(Dexp(FABS(new_height-floor),1./10.) / Dexp(FABS(cur_height-floor),1./10.)); */
-  
-  /* printf("\nSCALE cur_lnL_time: %f new_lnL_time: %f cur_lnL_rate: %f new_lnL_rate: %f cur_lnL_data: %f new_lnL_data: %f  ratio: %f\n", */
-  /*        cur_lnL_time,new_lnL_time, */
-  /*        cur_lnL_rate,new_lnL_rate, */
-  /*        cur_lnL_data,new_lnL_data,          */
-  /*        EXP(ratio)); */
-  /* Print_Node(tree->n_root,tree->n_root->v[1],tree); */
-  /* Print_Node(tree->n_root,tree->n_root->v[2],tree); */
-
-
   ratio = EXP(ratio);
   alpha = MIN(1.,ratio);
   u = Uni();
-
-  /* printf("\n. cur_lnL_time: %f new_lnL_time: %f",cur_lnL_time,new_lnL_time); */
-  /* Print_Node(tree->n_root,tree->n_root->v[1],tree); */
-  /* Print_Node(tree->n_root,tree->n_root->v[2],tree); */
   
   if(u > alpha)
     {
       RATES_Reset_Times(tree);
-      Restore_Br_Len(tree);
       tree->rates->c_lnL_times = TIMES_Lk_Times(tree); // Required in order to set t_prior_min/max to their original values
       tree->c_lnL              = cur_lnL_data;
       tree->rates->c_lnL_rates = cur_lnL_rate;
@@ -1795,19 +1733,13 @@ void MCMC_Tree_Height(t_tree *tree)
           PhyML_Printf("\n== new_glnL: %f cur_glnL: %f",tree->rates->c_lnL_times,cur_lnL_time);
           Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
         }
-      /* printf("\n. REJECT\n"); */
     }
   else
     {
       tree->mcmc->acc_move[tree->mcmc->num_move_tree_height]++;
-      tree->mcmc->acc_move[tree->mcmc->num_move_nd_t+tree->n_root->num-tree->n_otu]++;
-      /* printf("\n. ACCEPT\n"); */
     }
 
-  /* printf("\n OUT SCALE: %f",tree->rates->c_lnL_times); */
-
   tree->mcmc->run_move[tree->mcmc->num_move_tree_height]++;
-  tree->mcmc->run_move[tree->mcmc->num_move_nd_t+tree->n_root->num-tree->n_otu]++;
 }
 
 //////////////////////////////////////////////////////////////
@@ -2498,22 +2430,10 @@ void MCMC_Updown_Nu_Cr(t_tree *tree)
 void MCMC_Print_Param_Stdin(t_mcmc *mcmc, t_tree *tree)
 {
   time_t cur_time;
-  phydbl min;
   int i;
+
   time(&cur_time);
   
-  min = MDBL_MAX;
-  For(i,tree->n_otu-1)
-    {
-      /*       printf("\n. %d %f %f %f %f",i, */
-      /* 	     tree->mcmc->new_param_val[tree->mcmc->num_move_nd_t+i], */
-      /* 	     tree->mcmc->old_param_val[tree->mcmc->num_move_nd_t+i], */
-      /* 	     tree->mcmc->ess[tree->mcmc->num_move_nd_t+i], */
-      /* 	     tree->mcmc->sum_val[tree->mcmc->num_move_nd_t+i]); */
-
-      if(tree->mcmc->ess[tree->mcmc->num_move_nd_t+i] < min)
-	min = tree->mcmc->ess[tree->mcmc->num_move_nd_t+i];
-    }
 
 
   if(mcmc->run == 1)
@@ -2541,16 +2461,12 @@ void MCMC_Print_Param_Stdin(t_mcmc *mcmc, t_tree *tree)
       PhyML_Printf("  %10.2f",(tree->rates ? tree->rates->c_lnL_rates+tree->rates->c_lnL_times : +1));
       PhyML_Printf("  %12.6f[%5.0f]",RATES_Average_Substitution_Rate(tree),tree->mcmc->ess[tree->mcmc->num_move_clock_r]);
       /* PhyML_Printf("\t%12.6f[%5.0f]",tree->rates->clock_r,tree->mcmc->ess[tree->mcmc->num_move_clock_r]); */
-      PhyML_Printf("  %10.1f[%5.0f]",
-                   (tree->rates ? tree->rates->nd_t[tree->n_root->num] : -1.),
-                   tree->mcmc->ess[tree->mcmc->num_move_nd_t+tree->n_root->num-tree->n_otu]);
       PhyML_Printf("  %9f[%5.0f]",
                    (tree->rates ? tree->rates->nu : -1.),
                    tree->mcmc->ess[tree->mcmc->num_move_nu]);
       PhyML_Printf("  %8f[%5.0f]",
                    (tree->rates ? tree->rates->birth_rate : -1.),
                    tree->mcmc->ess[tree->mcmc->num_move_birth_rate]);
-      PhyML_Printf("  %8.0f",min);
     }
 }
 
@@ -4323,11 +4239,12 @@ void MCMC_Sim_Rate(t_node *a, t_node *d, t_tree *tree)
 
 void MCMC_Prune_Regraft(t_tree *tree)
 {
-  phydbl u,alpha,ratio;
+  phydbl u,alpha,ratio,hr;
+  phydbl t_min,t_max;
   phydbl cur_glnL, new_glnL;
   phydbl cur_alnL, new_alnL;
   int i,prune_idx,n_iter,n_regraft_nd,regraft_idx;
-  phydbl time_daughter;
+  phydbl time_daughter,*times;
   int rnd_dir,dir_v1,dir_v2;
   t_node *prune,*prune_daughter,*regraft_nd;
   t_ll *regraft_nd_list;
@@ -4335,19 +4252,22 @@ void MCMC_Prune_Regraft(t_tree *tree)
 
   n_iter = MAX(1,(int)(tree->n_otu/5));
   regraft_nd_list = NULL;
+  times = tree->rates->nd_t;
+
 
   while(n_iter--)
     {
+
       tree->mcmc->run_move[tree->mcmc->num_move_spr]++;
+      
+      RATES_Record_Times(tree);
   
       new_glnL       = tree->rates->c_lnL_times;
       cur_glnL       = tree->rates->c_lnL_times;
       new_alnL       = tree->c_lnL;
       cur_alnL       = tree->c_lnL;
       ratio          = 0.0;
-
-      /* Record edge lengths */
-      Record_Br_Len(tree);
+      hr             = 0.0;
 
       // Select prune node (any internal node except the root)
       i = 0;
@@ -4366,7 +4286,7 @@ void MCMC_Prune_Regraft(t_tree *tree)
       // Select a daughter of prune node
       dir_v1 = dir_v2 = -1;
       For(i,3) 
-        if(prune->v[i] != prune->anc)
+        if(prune->v[i] != prune->anc && prune->b[i] != tree->e_root)
           {
             if(dir_v1 < 0) dir_v1 = i;
             else           dir_v2 = i;
@@ -4380,65 +4300,94 @@ void MCMC_Prune_Regraft(t_tree *tree)
       time_daughter  = tree->rates->nd_t[prune_daughter->num];
 
 
-
-      // Get the list of potential regraft nodes (oldest node on regraft edge)
-      regraft_nd_list = Make_Linked_List();
-      Init_Linked_List(regraft_nd_list);
-      For(i,3) 
-        if(i != rnd_dir) 
-          {
-            List_Of_Regraft_Nodes(prune,
-                                  prune->v[i],
-                                  time_daughter,
-                                  regraft_nd_list,
-                                  tree);
-          }
-      
-
-      // Number of regraft nodes
-      n_regraft_nd = Linked_List_Len(regraft_nd_list);
-      
-
-      // Randomly select one (uniform)
-      regraft_idx = Rand_Int(0,n_regraft_nd-1);
-
-      regraft_nd = Linked_List_Elem(regraft_idx,regraft_nd_list);
-
-      Free_Linked_List(regraft_nd_list);
-
-
-      // Select a daughter of selected regraft node
+      // Time and corresponding (partial) Hastings ratio
       dir_v1 = dir_v2 = -1;
-      For(i,3)
-        if(regraft_nd->v[i] != regraft_nd->anc)
+      For(i,3) 
+        if(prune->v[i] != prune->anc && prune->b[i] != tree->e_root)
           {
             if(dir_v1 < 0) dir_v1 = i;
             else           dir_v2 = i;
           }
       
-      u = Uni();
-      if(u < 0.5) rnd_dir = dir_v1;
-      else        rnd_dir = dir_v2;
-
-      regraft_edge = regraft_nd->b[rnd_dir];
-
-      printf("\n. prune: %d prune_daughter: %d regraft: %d %d root: %d root->v[1]: %d root->v[2]: %d\n",
-             prune->num,
-             prune_daughter->num,
-             regraft_edge->left->num,
-             regraft_edge->rght->num,
-             tree->n_root->num,
-             tree->n_root->v[1]->num,
-             tree->n_root->v[2]->num);
+      t_max = MIN(times[prune->v[dir_v1]->num],times[prune->v[dir_v2]->num]);
+      t_min = times[prune->anc->num];
       
+      hr += LOG(1./(t_max - t_min));
+
+
 
       // Prune
       target = residual = NULL;
       Prune_Subtree(prune,prune_daughter,&target,&residual,tree);
       ori_target = target;
+
+      // Get the list of potential regraft nodes (oldest node on regraft edge)
+      regraft_nd_list = Make_Linked_List();
+      Init_Linked_List(regraft_nd_list);
+
+      For(i,3)
+        if(target->left->v[i] && target->left->v[i] != target->rght) 
+          List_Of_Regraft_Nodes(target->left,target->left->v[i],time_daughter,regraft_nd_list,tree);
+      For(i,3)
+        if(target->rght->v[i] && target->rght->v[i] != target->left) 
+          List_Of_Regraft_Nodes(target->rght,target->rght->v[i],time_daughter,regraft_nd_list,tree);
+      
+
+      // Number of regraft nodes
+      n_regraft_nd = Linked_List_Len(regraft_nd_list);
+      n_regraft_nd--;
+
+      if(n_regraft_nd == 0) 
+        {
+          Free_Linked_List(regraft_nd_list);          
+          regraft_edge = ori_target;
+        }
+      else
+        {
+          // Randomly select one (uniform)
+          regraft_idx = Rand_Int(0,n_regraft_nd-1);
+          
+          regraft_nd = Linked_List_Elem(regraft_idx,regraft_nd_list);
+          
+          Free_Linked_List(regraft_nd_list);
+                    
+          // Select a daughter of selected regraft node
+          dir_v1 = dir_v2 = -1;
+          For(i,3)
+            if(regraft_nd->v[i] != regraft_nd->anc)
+              {
+                if(dir_v1 < 0) dir_v1 = i;
+                else           dir_v2 = i;
+              }
+          
+          u = Uni();
+          if(u < 0.5) rnd_dir = dir_v1;
+          else        rnd_dir = dir_v2;
+          
+
+          regraft_edge = regraft_nd->b[rnd_dir];
+        }
+      
+
       // Regraft
       Graft_Subtree(regraft_edge,prune,residual,tree);
       
+      // Time and corresponding (partial) Hastings ratio
+      dir_v1 = dir_v2 = -1;
+      For(i,3) 
+        if(prune->v[i] != prune->anc && prune->b[i] != tree->e_root)
+          {
+            if(dir_v1 < 0) dir_v1 = i;
+            else           dir_v2 = i;
+          }
+      
+      t_max = MIN(times[prune->v[dir_v1]->num],times[prune->v[dir_v2]->num]);
+      t_min = times[prune->anc->num];
+
+      times[prune->num] = Uni() * (t_max - t_min) + t_min;
+            
+      hr -= LOG(1./(t_max - t_min));
+
       if(tree->mcmc->use_data == YES)      
         {
           Set_Both_Sides(NO,tree);
@@ -4452,11 +4401,6 @@ void MCMC_Prune_Regraft(t_tree *tree)
 
       ratio = EXP(ratio);
       alpha = MIN(1.,ratio);
-  
-      printf("\n. new_alnL: %f cur_alnL: %f new_glnL: %f cur_glnL: %f len: %d\n",
-             new_alnL,cur_alnL,
-             new_glnL,cur_glnL,
-             n_regraft_nd);
 
       /* Always accept move */
       if(tree->mcmc->always_yes == YES && new_glnL > UNLIKELY) alpha = 1.0;
@@ -4468,19 +4412,25 @@ void MCMC_Prune_Regraft(t_tree *tree)
           // Reject
           Prune_Subtree(prune,prune_daughter,&target,&residual,tree);
           Graft_Subtree(ori_target,prune,residual,tree);
-          // Restore edge lengths
-          Restore_Br_Len(tree);
+          RATES_Reset_Times(tree);
           tree->c_lnL = cur_alnL;
           tree->rates->c_lnL_times = cur_glnL;
 
-          printf("\n. reject");
-          /* !!!!!!!!!!!!!! */
-          new_alnL = Lk(NULL,tree); /* Not necessary. Remove once tested */
-          if(Are_Equal(new_alnL,cur_alnL,1.E-3) == NO)
-            {
-              PhyML_Printf("\n== new_alnL: %f cur_alnL: %f",new_alnL,cur_alnL);
-              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-            }
+          /* /\* !!!!!!!!!!!!!! *\/ */
+          /* new_alnL = Lk(NULL,tree); /\* Not necessary. Remove once tested *\/ */
+          /* if(Are_Equal(new_alnL,cur_alnL,1.E-3) == NO) */
+          /*   { */
+          /*     PhyML_Printf("\n== new_alnL: %f cur_alnL: %f",new_alnL,cur_alnL); */
+          /*     Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
+          /*   } */
+
+          /* /\* !!!!!!!!!!!!!! *\/ */
+          /* new_glnL = TIMES_Lk_Times(tree); /\* Not necessary. Remove once tested *\/ */
+          /* if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO) */
+          /*   { */
+          /*     PhyML_Printf("\n== new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL); */
+          /*     Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
+          /*   } */
         }
       else
         {
@@ -4506,9 +4456,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->num_move_br_r = mcmc->n_moves;
   mcmc->n_moves += 2*tree->n_otu-2;
 
-  mcmc->num_move_nd_t = mcmc->n_moves;
-  mcmc->n_moves += tree->n_otu-1;
-
+  mcmc->num_move_times                    = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_nu                       = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_clock_r                  = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_tree_height              = mcmc->n_moves; mcmc->n_moves += 1;
@@ -4579,7 +4527,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
 
   for(i=mcmc->num_move_br_r;i<mcmc->num_move_br_r+2*tree->n_otu-2;i++) strcpy(mcmc->move_name[i],"br_rate");
   for(i=mcmc->num_move_nd_r;i<mcmc->num_move_nd_r+2*tree->n_otu-1;i++) strcpy(mcmc->move_name[i],"nd_rate");
-  for(i=mcmc->num_move_nd_t;i<mcmc->num_move_nd_t+tree->n_otu-1;i++)   strcpy(mcmc->move_name[i],"time");
+  strcpy(mcmc->move_name[mcmc->num_move_times],"times");
   strcpy(mcmc->move_name[mcmc->num_move_nu],"nu");
   strcpy(mcmc->move_name[mcmc->num_move_clock_r],"clock");
   strcpy(mcmc->move_name[mcmc->num_move_tree_height],"tree_height");
@@ -4637,8 +4585,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
     for(i=mcmc->num_move_br_r;i<mcmc->num_move_br_r+2*tree->n_otu-2;i++) mcmc->move_type[i] = MCMC_MOVE_SCALE_THORNE;
 
   for(i=mcmc->num_move_nd_r;i<mcmc->num_move_nd_r+2*tree->n_otu-1;i++) mcmc->move_type[i] = MCMC_MOVE_SCALE_THORNE;
-  /* for(i=mcmc->num_move_nd_t;i<mcmc->num_move_nd_t+tree->n_otu-1;i++)   mcmc->move_type[i] = MCMC_MOVE_RANDWALK_UNIFORM; */
-  for(i=mcmc->num_move_nd_t;i<mcmc->num_move_nd_t+tree->n_otu-1;i++)   mcmc->move_type[i] = MCMC_MOVE_SCALE_THORNE;
+  mcmc->move_type[mcmc->num_move_times] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_nu] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_clock_r] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_tree_height] = MCMC_MOVE_SCALE_THORNE;
@@ -4706,7 +4653,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   
   for(i=mcmc->num_move_br_r;i<mcmc->num_move_br_r+2*tree->n_otu-2;i++) mcmc->move_weight[i] = (phydbl)(1./(2.*tree->n_otu-2)); /* Rates */
   for(i=mcmc->num_move_nd_r;i<mcmc->num_move_nd_r+2*tree->n_otu-1;i++) mcmc->move_weight[i] = 0.0; /* Node rates */
-  for(i=mcmc->num_move_nd_t;i<mcmc->num_move_nd_t+tree->n_otu-1;i++)   mcmc->move_weight[i] = (phydbl)(1./(tree->n_otu-1));  /* Times */
+  mcmc->move_weight[mcmc->num_move_times]            = 1.0;
   mcmc->move_weight[mcmc->num_move_clock_r]          = 1.0;
   mcmc->move_weight[mcmc->num_move_tree_height]      = 2.0;
   mcmc->move_weight[mcmc->num_move_subtree_height]   = 0.0;
@@ -4866,8 +4813,6 @@ void MCMC_Copy_To_New_Param_Val(t_mcmc *mcmc, t_tree *tree)
   /* For(i,2*tree->n_otu-2) */
   /*   mcmc->sampled_val[(mcmc->num_move_br_r+i)*mcmc->sample_size+mcmc->sample_num] = tree->rates->br_r[i]; */
   
-  /* For(i,tree->n_otu-1) */
-  /*   mcmc->sampled_val[(mcmc->num_move_nd_t+i)*mcmc->sample_size+mcmc->sample_num] = tree->rates->nd_t[tree->n_otu+i]; */
 
   /* For(i,2*tree->n_otu-1) */
   /*   mcmc->sampled_val[(mcmc->num_move_nd_r+i)*mcmc->sample_size+mcmc->sample_num] = tree->rates->nd_r[i]; */

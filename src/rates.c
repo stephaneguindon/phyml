@@ -39,7 +39,8 @@ phydbl RATES_Lk_Rates(t_tree *tree)
       Exit("\n");
     }
 
-  return tree->rates->c_lnL_rates;
+  /* return tree->rates->c_lnL_rates; */
+  return -1.0;
 }
 
 //////////////////////////////////////////////////////////////
@@ -1805,7 +1806,7 @@ void RATES_Posterior_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
   phydbl inflate_var;
 
   dim = 2*tree->n_otu-3;
-  num_move = tree->mcmc->num_move_nd_t+d->num-tree->n_otu;
+  num_move = tree->mcmc->num_move_times;
   inflate_var = tree->rates->inflate_var;
 
   if(d->tax) return;
@@ -2358,25 +2359,25 @@ void RATES_Posterior_Time_Root(t_tree *tree)
     }
   else
     {
-      tree->mcmc->acc_move[tree->mcmc->num_move_nd_t]++;
+      tree->mcmc->acc_move[tree->mcmc->num_move_times]++;
     }
 
   RATES_Update_Norm_Fact(tree);
   RATES_Update_Cur_Bl(tree);
 
-  tree->mcmc->run_move[tree->mcmc->num_move_nd_t]++;
-  tree->mcmc->acc_rate[tree->mcmc->num_move_nd_t] = 
-    (tree->mcmc->acc_move[tree->mcmc->num_move_nd_t]+1.E-6)/ 
-    (tree->mcmc->run_move[tree->mcmc->num_move_nd_t]+1.E+6);
+  tree->mcmc->run_move[tree->mcmc->num_move_times]++;
+  tree->mcmc->acc_rate[tree->mcmc->num_move_times] = 
+    (tree->mcmc->acc_move[tree->mcmc->num_move_times]+1.E-6)/ 
+    (tree->mcmc->run_move[tree->mcmc->num_move_times]+1.E-6);
 
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void RATES_Update_Cur_Bl(t_tree *tree)
 {
+
   RATES_Update_Norm_Fact(tree);
   RATES_Update_Cur_Bl_Pre(tree->n_root,tree->n_root->v[2],NULL,tree);
   RATES_Update_Cur_Bl_Pre(tree->n_root,tree->n_root->v[1],NULL,tree);
@@ -2423,6 +2424,9 @@ void RATES_Update_Cur_Bl(t_tree *tree)
       /* 	     tree->rates->cur_gamma_prior_mean[n1->num], */
       /* 	     tree->rates->cur_gamma_prior_var[n1->num]); */
     }
+
+
+  if(tree->is_mixt_tree == YES) MIXT_RATES_Update_Cur_Bl(tree);
 }
 
 //////////////////////////////////////////////////////////////
@@ -2431,6 +2435,9 @@ void RATES_Update_Cur_Bl(t_tree *tree)
 void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 {
   phydbl dt,rr,cr,ra,rd,ta,td,nu;
+
+  assert(a);
+  assert(d);
 
   tree->rates->br_do_updt[d->num] = YES;
 
@@ -2445,7 +2452,6 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
       td = tree->rates->nd_t[d->num];
       ta = tree->rates->nd_t[a->num];
       nu = tree->rates->nu;
-
 
       if(tree->rates->model_log_rates == YES)
 	{
@@ -3002,7 +3008,6 @@ void RATES_Expected_Tree_Length_Pre(t_node *a, t_node *d, phydbl eranc, phydbl *
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void RATES_Update_Norm_Fact(t_tree *tree)
 {
   int i;
@@ -3019,7 +3024,6 @@ void RATES_Update_Norm_Fact(t_tree *tree)
 
       num   += (t-t_anc);
       denom += (t-t_anc) * r;
-
     }
   tree->rates->norm_fact = num/denom;
 
@@ -3407,30 +3411,44 @@ void RATES_Set_Mean_L(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-void RATES_Record_Times(t_tree *tree)
+void RATES_Record_Times(t_tree *mixt_tree)
 {
   int i;
+  t_tree *tree;
 
-  if(tree->rates->nd_t_recorded == YES)
+  tree = mixt_tree;
+  do
     {
-      PhyML_Printf("\n. Overwriting recorded times is forbidden.\n");
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-      Exit("\n");
-    }
+      if(tree->rates->nd_t_recorded == YES)
+        {
+          PhyML_Printf("\n== Overwriting recorded times is forbidden.\n");
+          PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+          Exit("\n");
+        }
 
-  For(i,2*tree->n_otu-1) tree->rates->buff_t[i] = tree->rates->nd_t[i];
+      For(i,2*tree->n_otu-1) tree->rates->buff_t[i] = tree->rates->nd_t[i];
+      tree = tree->next;
+    }
+  while(tree);
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
 
-void RATES_Reset_Times(t_tree *tree)
+void RATES_Reset_Times(t_tree *mixt_tree)
 {
   int i;
-  tree->rates->nd_t_recorded = NO;
-  For(i,2*tree->n_otu-1) tree->rates->nd_t[i] = tree->rates->buff_t[i];
+  t_tree *tree;
+
+  tree = mixt_tree;
+  do
+    {
+      tree->rates->nd_t_recorded = NO;
+      For(i,2*tree->n_otu-1) tree->rates->nd_t[i] = tree->rates->buff_t[i];
+      tree = tree->next;
+    }
+  while(tree);
 }
 
 //////////////////////////////////////////////////////////////

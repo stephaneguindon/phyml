@@ -3703,7 +3703,7 @@ void Speed_Spr_Loop(t_tree *tree)
 
   tree->mod->s_opt->max_depth_path = tree->n_otu;
   Spr_Pars(0,10,tree);
-  Set_Both_Sides(YES,tree);
+  Set_Both_Sides(NO,tree);
   Lk(NULL,tree);
 
   n_round = 0;
@@ -4260,7 +4260,6 @@ int Try_One_Spr_Move_Full(t_spr *move, t_tree *tree)
   Set_Both_Sides(YES,tree);
   Lk(NULL,tree);
   MIXT_Set_Alias_Subpatt(NO,tree);
-
   Optimize_Br_Len_Serie(tree);
 
   Set_Both_Sides(YES,tree);

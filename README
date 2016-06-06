@@ -8,15 +8,13 @@ To install any program that is part of the PhyML package, type the following com
 make;
 where XXXX is phyml or phyrex or phytime.
 
-To install the MPI version of PhyML, type the following commands:
-./configure --enable-mpi --enable-XXXX;
-make;
-
-
 To compile a Windows executable, install MinGW and run:
 ./configure --enable-win --enable-XXXX;
 make;
 
+To install the MPI version of PhyML, type the following commands:
+./configure --enable-mpi --enable-phyml;
+make;
 
 If you are using a Mac computer, you will need to install the package pkg-config. The
 following command should set you up (provided Homebrew is installed on your Mac...):

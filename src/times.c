@@ -483,7 +483,6 @@ void TIMES_Mult_Time_Stamps(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void TIMES_Print_Node_Times(t_node *a, t_node *d, t_tree *tree)
 {
   t_edge *b;
@@ -1628,68 +1627,23 @@ phydbl TIMES_Lk_Birth_Death(t_tree *tree)
 {
   int i;
   phydbl lnL;
-  phydbl p0t1,p0t,p1t,gt,vt1;
-  phydbl b,d;
-  phydbl t1,t;
 
   lnL = 0.0;
-  b   = tree->rates->birth_rate;
-  d   = tree->rates->death_rate;
-  t1  = FABS(tree->rates->nd_t[tree->n_root->num]);
 
   // Normalizing factor. Need to call this function first
   // so that t_prior_min/max are up to date for what's next
   lnL -= LOG(DATE_J_Sum_Product(tree));
 
-  if(Are_Equal(b,d,1.E-6) == NO)
-    {
-      p0t1 = (b-d)/(b-d*EXP((d-b)*t1));
-      vt1  = 1. - p0t1*EXP((d-b)*t1);
-      
-      // Equation 4, 5, 6, 7 in Yang and Rannala (2006)
-      For(i,2*tree->n_otu-1)
-        {
-          // Node age outside its calibration boundaries
-          if(tree->rates->nd_t[i] > tree->rates->t_prior_max[i] ||
-             tree->rates->nd_t[i] < tree->rates->t_prior_min[i]) 
-            {
-              tree->rates->c_lnL_times = UNLIKELY;
-              return UNLIKELY;
-            }
-
-          if(tree->a_nodes[i]->tax == NO && tree->a_nodes[i] != tree->n_root)
-            {
-              t   = FABS(tree->rates->nd_t[i]);              
-              p0t = (b-d)/(b-d*EXP((d-b)*t));
-              p1t = p0t*p0t*EXP((d-b)*t);
-              gt  = b*p1t/vt1;
-              lnL += LOG(gt);
-            }
-        }
-    }
-  else
-    {
-      // Equation 8 in Yang and Rannala (2006)
-      For(i,2*tree->n_otu-1)
-        {
-          // Node age outside its calibration boundaries
-          if(tree->rates->nd_t[i] > tree->rates->t_prior_max[i] ||
-             tree->rates->nd_t[i] < tree->rates->t_prior_min[i]) 
-            {
-              tree->rates->c_lnL_times = UNLIKELY;
-              return UNLIKELY;
-            }
-
-          if(tree->a_nodes[i]->tax == NO && tree->a_nodes[i] != tree->n_root)
-            {
-              t   = FABS(tree->rates->nd_t[i]);
-              gt = (1.+b*t1)/(t1*(1.+b*t)*(1.+b*t));
-              lnL += LOG(gt);
-            }
-        }
-    }
+  For(i,2*tree->n_otu-1)
+    if(tree->a_nodes[i]->tax == NO && tree->a_nodes[i] != tree->n_root)
+      {
+        lnL += TIMES_Lk_Birth_Death_One_Node(tree->rates->nd_t[i],
+                                             tree->rates->t_prior_min[i],
+                                             tree->rates->t_prior_max[i],
+                                             tree);
+        if(isnan(lnL)) break;
+      }
     
-  tree->rates->c_lnL_times = lnL;
 
   if(isnan(lnL) || isinf(FABS(lnL)))
     {
@@ -1697,8 +1651,51 @@ phydbl TIMES_Lk_Birth_Death(t_tree *tree)
       return UNLIKELY;
     }
 
-
+  tree->rates->c_lnL_times = lnL;
   return(lnL);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl TIMES_Lk_Birth_Death_One_Node(phydbl t, phydbl min, phydbl max, t_tree *tree)
+{
+  phydbl lnL;
+  phydbl p0t1,p0t,p1t,gt,vt1;
+  phydbl b,d;
+  phydbl t1;
+
+  if(t > max || t < min) return NAN;
+
+  t = FABS(t);
+
+  lnL = 0.0;
+  b   = tree->rates->birth_rate;
+  d   = tree->rates->death_rate;
+  t1  = FABS(tree->rates->nd_t[tree->n_root->num]);
+
+
+  if(Are_Equal(b,d,1.E-6) == NO)
+    {
+      p0t1 = (b-d)/(b-d*EXP((d-b)*t1));
+      vt1  = 1. - p0t1*EXP((d-b)*t1);
+      
+      p0t = (b-d)/(b-d*EXP((d-b)*t));
+      p1t = p0t*p0t*EXP((d-b)*t);
+      gt  = b*p1t/vt1;
+      lnL = LOG(gt);
+      return lnL;
+    }
+  else
+    {
+      // Equation 8 in Yang and Rannala (2006)
+      // Node age outside its calibration boundaries
+      
+      gt  = (1.+b*t1)/(t1*(1.+b*t)*(1.+b*t));
+      lnL = LOG(gt);
+      return lnL;        
+    }
+  return NAN;
 }
 
 //////////////////////////////////////////////////////////////
@@ -1770,15 +1767,18 @@ void TIMES_Connect_List_Of_Taxa(t_node **tax_list, int list_size, phydbl t_mrca,
       new_mrca->v[2]         = anc[permut[i+1]];
       new_mrca->v[0]         = NULL;
       times[new_mrca->num]   = Uni()*(t_upper_bound - t_lower_bound) + t_lower_bound;
-      printf("\n. new_mrca->num: %d time: %f [%f %f] t_mrca: %f %d connect to %d %d [%f %f]",
+
+
+      printf("\n. new_mrca->num: %d time: %f [%f %f] t_mrca: %f %d connect to %d %d %d [%f %f]",
              new_mrca->num,
              times[new_mrca->num],
              t_lower_bound,
              t_upper_bound,
              t_mrca,
              new_mrca->num,
-             new_mrca->v[1]->num,
-             new_mrca->v[2]->num,
+             new_mrca->v[0] ? new_mrca->v[0]->num : -1,
+             new_mrca->v[1] ? new_mrca->v[1]->num : -1,
+             new_mrca->v[2] ? new_mrca->v[2]->num : -1,
              times[new_mrca->v[1]->num],
              times[new_mrca->v[2]->num]
              );
@@ -1822,7 +1822,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
     {
       nd_num = mixt_tree->n_otu;
   
-      PhyML_Printf("\n\n. Repeat %d",repeat);
+      /* PhyML_Printf("\n\n. Repeat %d",repeat); */
 
       For(i,mixt_tree->n_otu) tips[i] = mixt_tree->a_nodes[i];
       For(i,mixt_tree->n_otu) mixt_tree->a_nodes[i]->v[0] = NULL; 
@@ -1873,12 +1873,6 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       
       For(i,n_cal-1) assert(cal_times[cal_ordering[i]] > cal_times[cal_ordering[i+1]]);
       
-      /* For(i,n_cal) */
-      /*   { */
-      /*     printf("\n. %d -> %f", */
-      /*            cal_ordering[i], */
-      /*            cal_times[cal_ordering[i]]); fflush(NULL); */
-      /*   } */
         
       // Connect all taxa that appear in all primary calibrations
       For(i,n_cal)
@@ -1925,6 +1919,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
           /* For(k,list_size) printf("\n@ %s",nd_list[k]->name); */
           /* printf("\n"); */
 
+          printf("\n >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ");
           TIMES_Connect_List_Of_Taxa(nd_list, 
                                      cal->n_target_tax, 
                                      cal_times[cal_ordering[i]], 
@@ -1942,31 +1937,45 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       For(i,mixt_tree->n_otu) nd_list[i] = NULL;
       list_size = 0;
       For(i,mixt_tree->n_otu) 
-        if(tips[i]->v[0] == NULL) // Tip is not connected yet
-          {
-            nd_list[list_size] = tips[i];
-            list_size++;
-          }
-      
-      if(list_size > 0)
         {
-          For(i,mixt_tree->n_otu) 
-            if(tips[i]->v[0] != NULL) // Add one connected tip to the list
-              {
-                nd_list[list_size] = tips[i];
-                list_size++;
-                break;
-              }
-          
-          TIMES_Connect_List_Of_Taxa(nd_list, 
-                                     list_size,
-                                     Uni()*time_oldest_cal + time_oldest_cal, 
-                                     times, 
-                                     &nd_num,
-                                     mixt_tree);
-          
+          if(tips[i]->v[0] == NULL) // Tip is not connected yet
+            {
+              nd_list[list_size] = tips[i];
+              list_size++;
+            }
         }
+
+      cal = cal_list;
+      do
+        {
+          For(k,mixt_tree->n_otu)  
+            {
+              if(!strcmp(cal->target_tax[0],tips[k]->name))
+                {
+                  nd_list[list_size] = tips[k];
+                  list_size++;
+                  break;
+                }
+            }
+          cal = cal->next;
+        }
+      while(cal);
+
+      /* For(i,list_size) printf("\n# To connect: %d",nd_list[i]->num); */
       
+      /* printf("\n >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> "); fflush(NULL); */
+      TIMES_Connect_List_Of_Taxa(nd_list, 
+                                 list_size,
+                                 Uni()*time_oldest_cal + time_oldest_cal, 
+                                 times, 
+                                 &nd_num,
+                                 mixt_tree);
+      
+      /* For(i,2*mixt_tree->n_otu-2) printf("\n. i:%d -> %d %d %d", */
+      /*                                    i, */
+      /*                                    mixt_tree->a_nodes[i]->v[0] ? mixt_tree->a_nodes[i]->v[0]->num : -1, */
+      /*                                    mixt_tree->a_nodes[i]->v[1] ? mixt_tree->a_nodes[i]->v[1]->num : -1, */
+      /*                                    mixt_tree->a_nodes[i]->v[2] ? mixt_tree->a_nodes[i]->v[2]->num : -1); */
             
 
       // Adding root node 
@@ -1996,22 +2005,21 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       DATE_Assign_Primary_Calibration(mixt_tree);
       DATE_Update_T_Prior_MinMax(mixt_tree);
 
-      {
-        Print_Node(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);
-        Print_Node(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree);
+      /* { */
+      /*   Print_Node(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree); */
+      /*   Print_Node(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree); */
+      /*   fflush(NULL); */
 
-        int i;
-        For(i,mixt_tree->rates->n_cal)
-          {
-            PhyML_Printf("\n. Node number to which calibration [%d] applies to is [%d]",i,Find_Clade(mixt_tree->rates->a_cal[i]->target_tax,
-                                                                                                     mixt_tree->rates->a_cal[i]->n_target_tax,
-                                                                                                     mixt_tree));
-            PhyML_Printf("\n. Lower bound set to: %15f time units.",mixt_tree->rates->a_cal[i]->lower);
-            PhyML_Printf("\n. Upper bound set to: %15f time units.",mixt_tree->rates->a_cal[i]->upper);
-          }
-      }
-
-
+      /*   int i; */
+      /*   For(i,mixt_tree->rates->n_cal) */
+      /*     { */
+      /*       PhyML_Printf("\n. Node number to which calibration [%d] applies to is [%d]",i,Find_Clade(mixt_tree->rates->a_cal[i]->target_tax, */
+      /*                                                                                                mixt_tree->rates->a_cal[i]->n_target_tax, */
+      /*                                                                                                mixt_tree)); */
+      /*       PhyML_Printf("\n. Lower bound set to: %15f time units.",mixt_tree->rates->a_cal[i]->lower); */
+      /*       PhyML_Printf("\n. Upper bound set to: %15f time units.",mixt_tree->rates->a_cal[i]->upper); */
+      /*     } */
+      /* } */
 
       if(!DATE_Check_Calibration_Constraints(mixt_tree) ||
          !DATE_Check_Time_Constraints(mixt_tree))
@@ -2035,7 +2043,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       Exit("\n");
     }
 
-  For(j,mixt_tree->n_otu) printf("\n. %s",mixt_tree->a_nodes[j]->name);
+  /* For(j,mixt_tree->n_otu) printf("\n. %s",mixt_tree->a_nodes[j]->name); */
         
   assert(i != 2*mixt_tree->n_otu-3);
 
@@ -2082,3 +2090,55 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
   Free(tips);
   Free(nd_list);
 }
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+int TIMES_Check_Node_Height_Ordering(t_tree *tree)
+{
+  if(!TIMES_Check_Node_Height_Ordering_Post(tree->n_root,tree->n_root->v[1],tree)) return NO;
+  if(!TIMES_Check_Node_Height_Ordering_Post(tree->n_root,tree->n_root->v[2],tree)) return NO;
+  return YES;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+int TIMES_Check_Node_Height_Ordering_Post(t_node *a, t_node *d, t_tree *tree)
+{
+
+  if(tree->rates->nd_t[d->num] < tree->rates->nd_t[a->num])
+    {
+      PhyML_Printf("\n== a->t = %f[%d] d->t %f[%d]",
+                   tree->rates->nd_t[a->num],
+                   a->num,
+                   tree->rates->nd_t[d->num],
+                   d->num);
+      return NO;
+    }
+  if(d->tax == YES) return YES;
+  else
+    {
+      int i;
+      For(i,3)
+        {
+          if(d->v[i] != a && d->b[i] != tree->e_root)
+            if(!TIMES_Check_Node_Height_Ordering_Post(d,d->v[i],tree))
+              return NO;
+        }
+    }
+  return YES;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
