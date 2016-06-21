@@ -3747,15 +3747,16 @@ void Speed_Spr_Loop(t_tree *tree)
   /*****************************/
 
   For(i,2*tree->n_otu-3) if(tree->a_edges[i]->l->v < 1.E-4) tree->a_edges[i]->l->v = 1.E-4;
+  Round_Optimize(tree,tree->data,ROUND_MAX);
 
-  /*****************************/
-  do
-    {
-      Round_Optimize(tree,tree->data,ROUND_MAX);
-      if(!Check_NNI_Five_Branches(tree)) break;
-    }
-  while(1);
-  /*****************************/
+  /* /\*****************************\/ */
+  /* do */
+  /*   { */
+  /*     Round_Optimize(tree,tree->data,ROUND_MAX); */
+  /*     if(!Check_NNI_Five_Branches(tree)) break; */
+  /*   } */
+  /* while(1); */
+  /* /\*****************************\/ */
 
 }
 
