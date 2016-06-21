@@ -3704,7 +3704,7 @@ void Speed_Spr_Loop(t_tree *tree)
   Set_Both_Sides(NO,tree);
   Lk(NULL,tree);
 
-  Round_Optimize(tree,tree->data,3);
+  Round_Optimize(tree,tree->data,1);
 
   tree->best_pars = tree->c_pars;
   tree->best_lnL  = tree->c_lnL;
@@ -3719,7 +3719,6 @@ void Speed_Spr_Loop(t_tree *tree)
   tree->mod->s_opt->min_diff_lk_move  = 0.1;
   delta_lnL                           = 3.0;
   Speed_Spr(tree,1.0,tree->n_otu,delta_lnL);
-  Round_Optimize(tree,tree->data,1);
 
 
   /*****************************/
@@ -3732,7 +3731,6 @@ void Speed_Spr_Loop(t_tree *tree)
   tree->mod->s_opt->min_diff_lk_move  = 0.01;
   delta_lnL                           = 1.0;
   Speed_Spr(tree,1.0,20,delta_lnL);
-  Round_Optimize(tree,tree->data,1);
   /*****************************/
 
 
