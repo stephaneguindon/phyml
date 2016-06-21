@@ -8497,44 +8497,12 @@ int Find_Clade(char **tax_name_list, int list_size, t_tree *tree)
     }
 
   lca = Find_Lca_Clade(tax_node_list,n_matches,tree);
+
+  Free(tax_num_list);
+  Free(tax_node_list);
+
   if(lca) return lca->num;
   else    return -1;
-
-/*   if(list_size == tree->n_otu) /\* Root node *\/ */
-/*     { */
-/*       int i,j; */
-/*       int score; */
-
-/*       score = 0; */
-/*       For(i,list_size) */
-/* 	{ */
-/* 	  For(j,tree->n_otu) */
-/* 	    { */
-/* /\* 	      if(!strcmp(tax_name_list[i],tree->a_nodes[j]->name)) score++; *\/ */
-/* 	      if(tax_num_list[i] == tree->a_nodes[j]->num) score++; */
-/* 	    } */
-/* 	} */
-
-/*       Free(tax_num_list); */
-/*       if(score == tree->n_otu) return tree->n_root->num; */
-/*       else return -1; */
-/*     } */
-/*   else */
-/*     { */
-/*       int num; */
-/*       num = -1; */
-/*       Free_Bip(tree); */
-/*       Alloc_Bip(tree); */
-/*       Get_Bip(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree); */
-/*       Find_Clade_Pre(tree->n_root,tree->n_root->v[2],tax_num_list,list_size,&num,tree); */
-/*       Find_Clade_Pre(tree->n_root,tree->n_root->v[1],tax_num_list,list_size,&num,tree); */
-/*       Free(tax_num_list); */
-/*       return num; */
-/*     } */
-
-  Free(tax_node_list);
-  Free(tax_num_list);
-  return -1;
 }
 
 //////////////////////////////////////////////////////////////

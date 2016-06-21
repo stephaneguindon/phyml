@@ -1632,7 +1632,7 @@ phydbl TIMES_Lk_Birth_Death(t_tree *tree)
 
   // Normalizing factor. Need to call this function first
   // so that t_prior_min/max are up to date for what's next
-  lnL -= LOG(DATE_J_Sum_Product(tree));
+  /* lnL -= LOG(DATE_J_Sum_Product(tree)); */
 
   For(i,2*tree->n_otu-1)
     if(tree->a_nodes[i]->tax == NO && tree->a_nodes[i] != tree->n_root)

@@ -272,19 +272,6 @@ void DATE_Update_T_Prior_MinMax(t_tree *tree)
             tree->rates->t_prior_max[rk[i]] = tree->rates->t_prior_max[rk[j]];
         }
     }
-  
-  /* For(i,tree->n_otu-1)  */
-  /*   { */
-  /*     PhyML_Printf("\n. node: %3d t: %12f min: %13G max: %13G %f", */
-  /*                  rk[i], */
-  /*                  tree->rates->nd_t[rk[i]], */
-  /*                  tree->rates->t_prior_min[rk[i]], */
-  /*                  tree->rates->t_prior_max[rk[i]], */
-  /*                  tree->rates->c_lnL_times); */
-  /*     fflush(NULL); */
-  /*     assert(tree->rates->t_prior_min[rk[i]] < tree->rates->t_prior_max[rk[i]]);  */
-  /*   } */
-
 }
 
 //////////////////////////////////////////////////////////////
@@ -319,15 +306,6 @@ void DATE_Assign_Primary_Calibration(t_tree *tree)
           PhyML_Printf("\n== necessary.");
           Exit("\n");
         }
-
-      /* printf("\n. Assign cal [%f %f] to %d (%d)", */
-      /*        tree->rates->a_cal[i]->lower, */
-      /*        tree->rates->a_cal[i]->upper, */
-      /*        node_num, */
-      /*        tree->a_nodes[node_num]->n_cal); */
-      /* int j; */
-      /* For(j,tree->rates->a_cal[i]->n_target_tax) */
-      /*   printf("\n> %s",tree->rates->a_cal[i]->target_tax[j]); */
     }
 }
 
@@ -444,6 +422,8 @@ phydbl DATE_J_Sum_Product(t_tree *tree)
       idx+=2;
     }
   while(ans != 1);
+
+  Free(splitted_cal);
 
   return(total);
 }
@@ -738,7 +718,7 @@ phydbl *DATE_MCMC(t_tree *tree)
                         tree->rates->birth_rate,
                         tree->rates->death_rate);
 
-          PhyML_Fprintf(fp_tree,"\n%s",Write_Tree(tree,NO));
+          /* PhyML_Fprintf(fp_tree,"\n%s",Write_Tree(tree,NO)); */
           fflush(NULL);
 
           For(i,2*tree->n_otu-1)
