@@ -3720,6 +3720,7 @@ void Speed_Spr_Loop(t_tree *tree)
   delta_lnL                           = 3.0;
   Speed_Spr(tree,1.0,tree->n_otu,delta_lnL);
 
+  For(i,2*tree->n_otu-3) if(tree->a_edges[i]->l->v < 1.E-3) tree->a_edges[i]->l->v = 1.E-3;
 
   /*****************************/
   if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. Second round of SPR moves...\n");
