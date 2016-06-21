@@ -3692,7 +3692,7 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
 void Speed_Spr_Loop(t_tree *tree)
 {
   phydbl lk_old,delta_lnL;
-  int n_round;
+  int i;
 
   tree->best_pars                  = 1E+8;
   tree->mod->s_opt->spr_lnL        = NO;
@@ -3726,7 +3726,7 @@ void Speed_Spr_Loop(t_tree *tree)
   /*****************************/
   if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. Second round of SPR moves...\n");
   lk_old = tree->c_lnL;
-  tree->mod->s_opt->max_depth_path    = 1 + (int)(tree->n_otu/3);
+  tree->mod->s_opt->max_depth_path    = 10;
   tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(2.):(0.);
   tree->mod->s_opt->spr_lnL           = YES;
   tree->mod->s_opt->spr_pars          = NO;
@@ -3748,9 +3748,7 @@ void Speed_Spr_Loop(t_tree *tree)
   while(FABS(lk_old - tree->c_lnL) > tree->mod->s_opt->min_diff_lk_local);
   /*****************************/
 
-  int i;
-  For(i,2*tree->n_otu-3) if(tree->a_edges[i]->l->v < 1.E-3) tree->a_edges[i]->l->v = 1.E-1;
-
+  For(i,2*tree->n_otu-3) if(tree->a_edges[i]->l->v < 1.E-4) tree->a_edges[i]->l->v = 1.E-4;
 
   /*****************************/
   do
