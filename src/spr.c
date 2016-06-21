@@ -3712,7 +3712,7 @@ void Speed_Spr_Loop(t_tree *tree)
   /*****************************/
   if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. First round of SPR moves...\n");
   lk_old = tree->c_lnL;
-  tree->mod->s_opt->max_depth_path    = 10;
+  tree->mod->s_opt->max_depth_path    = tree->n_otu;
   tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(-1.):(-1.);
   tree->mod->s_opt->spr_lnL           = NO;
   tree->mod->s_opt->spr_pars          = NO;
@@ -3724,7 +3724,7 @@ void Speed_Spr_Loop(t_tree *tree)
   /*****************************/
   if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. Second round of SPR moves...\n");
   lk_old = tree->c_lnL;
-  tree->mod->s_opt->max_depth_path    = 5;
+  tree->mod->s_opt->max_depth_path    = tree->n_otu;
   tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(2.):(0.);
   tree->mod->s_opt->spr_lnL           = YES;
   tree->mod->s_opt->spr_pars          = NO;
@@ -3795,6 +3795,10 @@ void Speed_Spr(t_tree *tree, phydbl prop_spr, int max_cycles, phydbl delta_lnL)
       tree->max_spr_depth  = 0;
       tree->n_improvements = 0;
       Spr(UNLIKELY,prop_spr,tree);
+
+      // Set maximum depth for future spr rounds to deepest spr found so far
+      tree->mod->s_opt->max_depth_path = tree->max_spr_depth;
+
 
       if(tree->mod->s_opt->spr_pars == NO)
         {
