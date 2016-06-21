@@ -576,24 +576,24 @@ void Round_Optimize(t_tree *tree, calign *data, int n_round_max)
   Set_Both_Sides(NO,tree); /* Only the down partial likelihoods need to be up-to-date here */
   Lk(NULL,tree);
 
-
+  
   while(n_round < n_round_max)
     {
       if(tree->mod->s_opt->opt_bl || tree->mod->s_opt->constrained_br_len)
         Optimize_Br_Len_Serie(tree);
-
+      
       if((tree->mod->s_opt->opt_bl || tree->mod->s_opt->constrained_br_len) &&
          (tree->mod->s_opt->print) &&
          (!tree->io->quiet)) Print_Lk(tree,"[Branch lengths     ]");
-
-      Set_Both_Sides(YES,tree);
+      
+      Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
-
+      
       if(!each)
         {
           each = 1;
           Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
-          Set_Both_Sides(YES,tree);
+          Set_Both_Sides(NO,tree);
           Lk(NULL,tree);
         }
 
@@ -603,18 +603,15 @@ void Round_Optimize(t_tree *tree, calign *data, int n_round_max)
           PhyML_Printf("\n== lk_new = %f lk_old = %f diff = %f",lk_new,lk_old,lk_new-lk_old);
           Exit("\n== Optimisation failed ! (Round_Optimize)\n");
         }
-      if(FABS(lk_new - lk_old) < tree->mod->s_opt->min_diff_lk_local) {
-//          DUMP_D(FABS(lk_new - lk_old));
-//          DUMP_I(n_round);
-          break;
-      }
-      else {
+      if(FABS(lk_new - lk_old) < tree->mod->s_opt->min_diff_lk_local) break;
+      else 
+        {
           lk_old  = lk_new;
-      }
+        }
       n_round++;
       each--;
     }
-
+  
   Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
 
 }

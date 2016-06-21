@@ -3706,18 +3706,10 @@ void Speed_Spr_Loop(t_tree *tree)
   Set_Both_Sides(NO,tree);
   Lk(NULL,tree);
 
-  n_round = 0;
-  do
-    {
-      Optimiz_All_Free_Param(tree,(tree->io->quiet)?(NO):(tree->mod->s_opt->print));
-      Optimize_Br_Len_Serie(tree);
-    }
-  while(++n_round != 3); 
+  Round_Optimize(tree,tree->data,3);
 
   tree->best_pars = tree->c_pars;
   tree->best_lnL  = tree->c_lnL;
-
-
 
   /*****************************/
   if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. First round of SPR moves...\n");
@@ -3729,7 +3721,6 @@ void Speed_Spr_Loop(t_tree *tree)
   tree->mod->s_opt->min_diff_lk_move  = 0.1;
   delta_lnL                           = 3.0;
   Speed_Spr(tree,1.0,tree->n_otu,delta_lnL);
-  Optimiz_All_Free_Param(tree,(tree->io->quiet)?(NO):(tree->mod->s_opt->print));
 
 
   /*****************************/
@@ -3742,11 +3733,11 @@ void Speed_Spr_Loop(t_tree *tree)
   tree->mod->s_opt->min_diff_lk_move  = 0.01;
   delta_lnL                           = 1.0;
   Speed_Spr(tree,1.0,20,delta_lnL);
-  Optimiz_All_Free_Param(tree,(tree->io->quiet)?(NO):(tree->mod->s_opt->print));
   /*****************************/
 
 
   /*****************************/
+  if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. NNI moves...\n");
   tree->mod->s_opt->min_diff_lk_move  = 0.001;
   lk_old = UNLIKELY;
   do
@@ -3757,7 +3748,9 @@ void Speed_Spr_Loop(t_tree *tree)
   while(FABS(lk_old - tree->c_lnL) > tree->mod->s_opt->min_diff_lk_local);
   /*****************************/
 
-  Optimiz_All_Free_Param(tree,(tree->io->quiet)?(NO):(tree->mod->s_opt->print));
+  int i;
+  For(i,2*tree->n_otu-3) if(tree->a_edges[i]->l->v < 1.E-3) tree->a_edges[i]->l->v = 1.E-1;
+
 
   /*****************************/
   do
@@ -3767,8 +3760,6 @@ void Speed_Spr_Loop(t_tree *tree)
     }
   while(1);
   /*****************************/
-
-/*   if((tree->mod->s_opt->print) && (!tree->io->quiet)) PhyML_Printf("\n"); */
 
 }
 
