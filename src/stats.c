@@ -5331,7 +5331,7 @@ phydbl Euclidean_Dist(t_geo_coord *x, t_geo_coord *y)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
-/* Return the ranks of elements in x */
+/* Return a vector rk such that rk[i] gives the index of the i-th largest element in x */
 int *Ranks(phydbl *x, int len)
 {
   int *rk,tmp;
@@ -5346,7 +5346,7 @@ int *Ranks(phydbl *x, int len)
       swap = NO;
       For(i,len-1) 
         {
-          if(x[rk[i]] > x[rk[i+1]])
+          if(x[rk[i]] < x[rk[i+1]])
             {
               swap  = YES; 
               tmp   = rk[i];

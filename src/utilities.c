@@ -5468,7 +5468,7 @@ void Fast_Br_Len(t_edge *b, t_tree *tree, int approx)
     Br_Len_Brent(0.001,2.,b,tree);
   else
     {
-      tree->mod->s_opt->brent_it_max = 5;
+      tree->mod->s_opt->brent_it_max = 10;
       Br_Len_Brent(0.0001,1.,b,tree);
       tree->mod->s_opt->brent_it_max = BRENT_IT_MAX;
     }
@@ -6699,6 +6699,55 @@ void Warn_And_Exit(const char *s)
   /* } */
 #endif
   Exit("\n");
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+// Apply random prune and regraft moves to an existing tree. As opposed to Random_Tree, using this 
+// function does not break the likelihood structure.
+void Randomize_Tree(t_tree *tree)
+{
+  t_node *rnd_node;
+  t_edge *rnd_edge,*b_target,*b_residual,**target_list;
+  int n_targets,n_rand,i;
+
+  target_list = (t_edge **)mCalloc(2*tree->n_otu-3,sizeof(t_edge *));
+
+  n_rand = tree->n_otu;
+  do
+    {
+      rnd_node = tree->a_nodes[Rand_Int(tree->n_otu,2*tree->n_otu-3)];
+      assert(rnd_node != tree->n_root && rnd_node->tax == NO);
+      
+      rnd_edge = rnd_node->b[Rand_Int(0,2)];
+      
+      Prune_Subtree(rnd_node,
+                    rnd_node == rnd_edge->left ? rnd_edge->rght : rnd_edge->left,
+                    &b_target,
+                    &b_residual,
+                    tree);
+      
+      n_targets = 0;
+      For(i,3)
+        if(b_target->left->v[i] != b_target->rght)
+          Get_List_Of_Adjacent_Targets(b_target->left,b_target->left->v[i],NULL,&target_list,&n_targets,0,tree->n_otu);
+      
+      For(i,3)
+        if(b_target->rght->v[i] != b_target->left)
+          Get_List_Of_Adjacent_Targets(b_target->rght,b_target->rght->v[i],NULL,&target_list,&n_targets,0,tree->n_otu);
+      
+      if(n_targets > 0) b_target = target_list[Rand_Int(0,n_targets-1)];
+      
+      assert(b_target != NULL);
+      
+      Graft_Subtree(b_target,rnd_node,b_residual,tree);
+      
+      n_rand--;
+    }
+  while(n_rand > 0);
+
+  Free(target_list);
 }
 
 //////////////////////////////////////////////////////////////
