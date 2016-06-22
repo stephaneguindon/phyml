@@ -3799,7 +3799,6 @@ void Speed_Spr(t_tree *tree, phydbl prop_spr, int max_cycles, phydbl delta_lnL)
       // Set maximum depth for future spr rounds to deepest spr found so far
       tree->mod->s_opt->max_depth_path = tree->max_spr_depth;
 
-
       if(tree->mod->s_opt->spr_pars == NO)
         {
           if(tree->n_improvements > 0)
