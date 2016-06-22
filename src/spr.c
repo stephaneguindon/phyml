@@ -4848,24 +4848,25 @@ void Spr_List_Of_Trees(t_tree *tree)
   list_size = 20;
   For(i,list_size)
     {
-      /* Randomize_Tree(tree); */
+      Randomize_Tree(tree);
       Spr_Pars(0,100,tree);
-      /* Set_Both_Sides(NO,tree); */
-      /* Lk(NULL,tree); */
-      /* Optimize_Br_Len_Serie(tree); */
-      /* tree_list[i] = Make_Tree_From_Scratch(tree->n_otu,tree->data); */
-      /* Copy_Tree(tree,tree_list[i]); */
-      /* lnL_list[i] = tree->c_lnL; */
-      tree->mod->s_opt->max_depth_path    = 10;
-      tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(-1.):(-1.);
-      tree->mod->s_opt->spr_lnL           = NO;
-      tree->mod->s_opt->spr_pars          = NO;
-      tree->mod->s_opt->min_diff_lk_move  = 0.1;
-      delta_lnL                           = 5.0;
-      Speed_Spr(tree,0.1,tree->n_otu,delta_lnL);
+      Set_Both_Sides(NO,tree);
+      Lk(NULL,tree);
+      Optimize_Br_Len_Serie(tree);
       tree_list[i] = Make_Tree_From_Scratch(tree->n_otu,tree->data);
       Copy_Tree(tree,tree_list[i]);
       lnL_list[i] = tree->c_lnL;
+
+      /* tree->mod->s_opt->max_depth_path    = 10; */
+      /* tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(-1.):(-1.); */
+      /* tree->mod->s_opt->spr_lnL           = NO; */
+      /* tree->mod->s_opt->spr_pars          = NO; */
+      /* tree->mod->s_opt->min_diff_lk_move  = 0.1; */
+      /* delta_lnL                           = 5.0; */
+      /* Speed_Spr(tree,0.1,tree->n_otu,delta_lnL); */
+      /* tree_list[i] = Make_Tree_From_Scratch(tree->n_otu,tree->data); */
+      /* Copy_Tree(tree,tree_list[i]); */
+      /* lnL_list[i] = tree->c_lnL; */
     }
   
   rk = Ranks(lnL_list,max_list_size);
