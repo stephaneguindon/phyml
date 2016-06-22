@@ -3729,7 +3729,7 @@ void Speed_Spr_Loop(t_tree *tree)
   tree->mod->s_opt->spr_pars          = NO;
   tree->mod->s_opt->min_diff_lk_move  = 0.01;
   delta_lnL                           = 1.0;
-  Speed_Spr(tree,1.0,20,delta_lnL);
+  Speed_Spr(tree,0.5,20,delta_lnL);
   /*****************************/
 
 
@@ -4702,7 +4702,7 @@ void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int d
       Exit("\n");
     }
 
-  Set_Both_Sides(YES,tree);
+  Set_Both_Sides(NO,tree);
   Pars(NULL,tree);
   Lk(NULL,tree);
 
@@ -4776,7 +4776,6 @@ void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int d
       tree->n_improvements = 0;
       tree->max_spr_depth  = 0;
       Spr(UNLIKELY,prop_spr,tree);
-      /* Simu(tree,5); */
       
       tree->annealing_temp -= 0.5;
       prop_spr+=0.2;
