@@ -4854,7 +4854,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       tree->mod->s_opt->spr_pars          = NO;
       tree->mod->s_opt->min_diff_lk_move  = 0.1;
       Set_Both_Sides(YES,tree);
-      Speed_Spr(tree,1.0,20,delta_lnL);
+      Speed_Spr(tree,0.2,20,delta_lnL);
       tree_list[list_size] = Make_Tree_From_Scratch(tree->n_otu,tree->data);
       Copy_Tree(tree,tree_list[list_size]);
       lnL_list[list_size] = tree->c_lnL;
