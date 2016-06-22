@@ -4844,14 +4844,15 @@ void Spr_List_Of_Trees(t_tree *tree)
   Spr_Pars(0,100,tree);
   Round_Optimize(tree,tree->data,10);
 
-  list_size = (int)(tree->n_otu/5);
+  list_size = 10;
   For(i,list_size)
     {
       Randomize_Tree(tree);
       Spr_Pars(0,100,tree);
       Set_Both_Sides(NO,tree);
-      Lk(NULL,tree);
-      Optimize_Br_Len_Serie(tree);
+      Simu(tree,5);
+      /* Lk(NULL,tree); */
+      /* Optimize_Br_Len_Serie(tree); */
       tree_list[i] = Make_Tree_From_Scratch(tree->n_otu,tree->data);
       Copy_Tree(tree,tree_list[i]);
       lnL_list[i] = tree->c_lnL;
