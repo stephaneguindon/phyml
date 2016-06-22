@@ -4842,7 +4842,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   For(i,max_list_size) lnL_list[i] = UNLIKELY;
 
   Spr_Pars(0,100,tree);
-  Round_Optimize(tree,tree->data,10);
+  Round_Optimize(tree,tree->data,5);
 
   list_size = 10;
   For(i,list_size)
@@ -4850,7 +4850,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       Randomize_Tree(tree);
       Spr_Pars(0,100,tree);
       Set_Both_Sides(NO,tree);
-      Simu(tree,5);
+      Simu(tree,3);
       /* Lk(NULL,tree); */
       /* Optimize_Br_Len_Serie(tree); */
       tree_list[i] = Make_Tree_From_Scratch(tree->n_otu,tree->data);
