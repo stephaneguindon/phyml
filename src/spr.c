@@ -4844,7 +4844,6 @@ void Spr_List_Of_Trees(t_tree *tree)
   Spr_Pars(0,100,tree);
   Round_Optimize(tree,tree->data,10);
 
-
   list_size = (int)(tree->n_otu/5);
   For(i,list_size)
     {
@@ -4860,7 +4859,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   
   rk = Ranks(lnL_list,max_list_size);
 
-  list_size = 1+(int)(tree->n_otu/10);
+  list_size = 5;
   For(i,list_size)
     {      
       Copy_Tree(tree_list[rk[i]],tree);
@@ -4871,14 +4870,14 @@ void Spr_List_Of_Trees(t_tree *tree)
       tree->mod->s_opt->spr_pars          = NO;
       tree->mod->s_opt->min_diff_lk_move  = 0.1;
       delta_lnL                           = 5.0;
-      Speed_Spr(tree,0.2,tree->n_otu,delta_lnL);
+      Speed_Spr(tree,0.5,tree->n_otu,delta_lnL);
       Copy_Tree(tree,tree_list[rk[i]]);
       lnL_list[rk[i]] = tree->c_lnL;
     }
 
   rk = Ranks(lnL_list,max_list_size);
 
-  list_size = 3;
+  list_size = 2;
   For(i,list_size)
     {      
       Copy_Tree(tree_list[rk[i]],tree);
