@@ -4845,10 +4845,11 @@ void Spr_List_Of_Trees(t_tree *tree)
   Round_Optimize(tree,tree->data,5);
 
   if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. First round of SPR moves...\n");
-  list_size = 20;
+  list_size = 1 + (int)tree->n_otu/3;
   For(i,list_size)
     {
-      Randomize_Tree(tree);
+      printf("\n");
+      Randomize_Tree(tree,1);
       Spr_Pars(0,100,tree);
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
@@ -4856,25 +4857,15 @@ void Spr_List_Of_Trees(t_tree *tree)
       tree_list[i] = Make_Tree_From_Scratch(tree->n_otu,tree->data);
       Copy_Tree(tree,tree_list[i]);
       lnL_list[i] = tree->c_lnL;
-
-      /* tree->mod->s_opt->max_depth_path    = 10; */
-      /* tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(-1.):(-1.); */
-      /* tree->mod->s_opt->spr_lnL           = NO; */
-      /* tree->mod->s_opt->spr_pars          = NO; */
-      /* tree->mod->s_opt->min_diff_lk_move  = 0.1; */
-      /* delta_lnL                           = 5.0; */
-      /* Speed_Spr(tree,0.1,tree->n_otu,delta_lnL); */
-      /* tree_list[i] = Make_Tree_From_Scratch(tree->n_otu,tree->data); */
-      /* Copy_Tree(tree,tree_list[i]); */
-      /* lnL_list[i] = tree->c_lnL; */
     }
   
   rk = Ranks(lnL_list,max_list_size);
 
   if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. Second round of SPR moves...\n");
-  list_size = 10;
+  list_size = 1 + (int)tree->n_otu/5;
   For(i,list_size)
     {      
+      printf("\n");
       Copy_Tree(tree_list[rk[i]],tree);
       tree->mod->s_opt->max_depth_path    = 10;
       tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(-1.):(-1.);
@@ -4882,14 +4873,31 @@ void Spr_List_Of_Trees(t_tree *tree)
       tree->mod->s_opt->spr_pars          = NO;
       tree->mod->s_opt->min_diff_lk_move  = 0.1;
       delta_lnL                           = 5.0;
-      Speed_Spr(tree,0.5,tree->n_otu,delta_lnL);
+      Speed_Spr(tree,0.2,tree->n_otu,delta_lnL);
+      Copy_Tree(tree,tree_list[rk[i]]);
+      lnL_list[rk[i]] = tree->c_lnL;
+    }
+
+  if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. Third round of SPR moves...\n");
+  list_size = 5;
+  For(i,list_size)
+    {      
+      printf("\n");
+      Copy_Tree(tree_list[rk[i]],tree);
+      tree->mod->s_opt->max_depth_path    = 10;
+      tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(-1.):(-1.);
+      tree->mod->s_opt->spr_lnL           = NO;
+      tree->mod->s_opt->spr_pars          = NO;
+      tree->mod->s_opt->min_diff_lk_move  = 0.1;
+      delta_lnL                           = 2.0;
+      Speed_Spr(tree,0.8,tree->n_otu,delta_lnL);
       Copy_Tree(tree,tree_list[rk[i]]);
       lnL_list[rk[i]] = tree->c_lnL;
     }
 
   rk = Ranks(lnL_list,max_list_size);
 
-  if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. Third round of SPR moves...\n");
+  if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. Fourth round of SPR moves...\n");
   list_size = 1;
   For(i,list_size)
     {      

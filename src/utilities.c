@@ -6706,7 +6706,7 @@ void Warn_And_Exit(const char *s)
 
 // Apply random prune and regraft moves to an existing tree. As opposed to Random_Tree, using this 
 // function does not break the likelihood structure.
-void Randomize_Tree(t_tree *tree)
+void Randomize_Tree(t_tree *tree, int n_prune_regraft)
 {
   t_node *rnd_node;
   t_edge *rnd_edge,*b_target,*b_residual,**target_list;
@@ -6714,7 +6714,7 @@ void Randomize_Tree(t_tree *tree)
 
   target_list = (t_edge **)mCalloc(2*tree->n_otu-3,sizeof(t_edge *));
 
-  n_rand = tree->n_otu;
+  n_rand = n_prune_regraft;
   do
     {
       rnd_node = tree->a_nodes[Rand_Int(tree->n_otu,2*tree->n_otu-3)];

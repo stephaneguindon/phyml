@@ -2122,7 +2122,7 @@ void List_Of_Regraft_Nodes(t_node *a, t_node *d, phydbl time_thresh, t_ll *list,
 void Push_Bottom_Linked_List(void *what, t_ll *list);
 int Linked_List_Len(t_ll *list);
 void *Linked_List_Elem(int pos, t_ll *ll);
-void Randomize_Tree(t_tree *tree);
+void Randomize_Tree(t_tree *tree, int n_prune_regraft);
 
 #include "xml.h"
 #include "free.h"
