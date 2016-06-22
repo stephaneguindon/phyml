@@ -4827,7 +4827,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   
   max_list_size                    = tree->n_otu;
   tree->mod->s_opt->max_depth_path = tree->n_otu;
-  anneal_temp                      = 2.0;
+  anneal_temp                      = 4.0;
 
   tree_list = (t_tree **)mCalloc(max_list_size,sizeof(t_tree *));
   lnL_list  = (phydbl *)mCalloc(max_list_size,sizeof(phydbl));
