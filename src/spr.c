@@ -4835,7 +4835,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   
   max_list_size                    = tree->n_otu;
   tree->mod->s_opt->max_depth_path = tree->n_otu;
-  anneal_temp                      = 5.0;
+  anneal_temp                      = 4.0;
 
   tree_list = (t_tree **)mCalloc(max_list_size,sizeof(t_tree *));
   lnL_list  = (phydbl *)mCalloc(max_list_size,sizeof(phydbl));
@@ -4858,7 +4858,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       tree->mod->s_opt->min_diff_lk_move  = 0.1;
       Set_Both_Sides(YES,tree);
       Lk(NULL,tree);
-      Spr(UNLIKELY,0.2,tree);
+      Spr(UNLIKELY,1.0,tree);
       Optimize_Br_Len_Serie (tree);
       tree_list[i] = Make_Tree_From_Scratch(tree->n_otu,tree->data);
       Copy_Tree(tree,tree_list[i]);
