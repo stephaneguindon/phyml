@@ -6083,15 +6083,16 @@ void Random_Tree(t_tree *tree)
   int i,node_num,step,n_available;
   phydbl min_edge_len;
 
-  min_edge_len = 1.E-3;
+  assert(tree);
 
-  if(tree->mod->s_opt && tree->mod->s_opt->print == YES) PhyML_Printf("\n\n. Randomising the tree...\n");
+  min_edge_len = 1.E-3;
 
   is_available  = (int *)mCalloc(2*tree->n_otu-2,sizeof(int));
   list_of_nodes = (int *)mCalloc(tree->n_otu,    sizeof(int));
 
   For(i,tree->n_otu) is_available[i]  = 1;
   For(i,tree->n_otu) list_of_nodes[i] = i;
+
 
   step = 0;
   do
