@@ -4898,9 +4898,7 @@ void Spr_List_Of_Trees(t_tree *tree)
     }
   while(delta_lnL > 1.0);
 
-
-
-
+  Copy_Tree(tree_list[rk[0]],tree);
 
 
   /* if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. First round of SPR moves...\n"); */
