@@ -746,8 +746,12 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
       return;
     }
 
-  l_infa = tree->mod->l_max/b_fcus->l->v;
-  l_infb = tree->mod->l_min/b_fcus->l->v;
+  /* l_infa = tree->mod->l_max/b_fcus->l->v; */
+  /* l_infb = tree->mod->l_min/b_fcus->l->v; */
+  /* l_infa = MAX(b_fcus->l->v,1.E-0); */
+  /* l_infb = MIN(b_fcus->l->v,1.E-5); */
+  l_infa = tree->mod->l_max;
+  l_infb = tree->mod->l_min;
 
   Set_Both_Sides(YES,tree);
 

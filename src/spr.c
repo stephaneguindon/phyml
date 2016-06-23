@@ -4904,7 +4904,7 @@ void Spr_List_Of_Trees(t_tree *tree)
           tree->mod->s_opt->min_diff_lk_move  = 0.01;
           tree->best_lnL                      = tree->c_lnL;
           Spr(UNLIKELY,1.0,tree);
-          For(j,2*tree->n_otu-3) if(tree->a_edges[j]->l->v < 1.E-3) tree->a_edges[j]->l->v = 1.E-3;
+          /* For(j,2*tree->n_otu-3) if(tree->a_edges[j]->l->v < 1.E-5) tree->a_edges[j]->l->v = 1.E-5; */
           Set_Both_Sides(NO,tree);
           Lk(NULL,tree);
           Optimize_Br_Len_Serie (tree);
@@ -4927,12 +4927,12 @@ void Spr_List_Of_Trees(t_tree *tree)
 
       Copy_Tree(tree_list[rk[0]],tree);
       Round_Optimize(tree,tree->data,5);
+      printf("\n. final lk: %f",Lk(NULL,tree));
 
     }
   while(delta_lnL > 1.0);
 
-  Copy_Tree(tree_list[rk[0]],tree);
-
+  printf("\n. final final lk: %f",Lk(NULL,tree));
 
   /* if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. First round of SPR moves...\n"); */
   /* list_size = 0; */
