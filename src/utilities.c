@@ -1456,10 +1456,10 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
   if(b_fcus->nni->init_l != NULL)  Copy_Scalar_Dbl(b_fcus->l,b_fcus->nni->init_l);
   else                             b_fcus->nni->init_l = Duplicate_Scalar_Dbl(b_fcus->l);
 
-  v1                     = b_fcus->left->v[b_fcus->l_v1];
-  v2                     = b_fcus->left->v[b_fcus->l_v2];
-  v3                     = b_fcus->rght->v[b_fcus->r_v1];
-  v4                     = b_fcus->rght->v[b_fcus->r_v2];
+  v1 = b_fcus->left->v[b_fcus->l_v1];
+  v2 = b_fcus->left->v[b_fcus->l_v2];
+  v3 = b_fcus->rght->v[b_fcus->r_v1];
+  v4 = b_fcus->rght->v[b_fcus->r_v2];
 
   Record_Br_Len(tree);
 
@@ -1475,8 +1475,8 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
   lk1_init = Update_Lk_At_Given_Edge(b_fcus,tree);
   MIXT_Set_Alias_Subpatt(NO,tree);
 
-  l_infa = 10.;
-  l_infb = tree->mod->l_min/b_fcus->l->v;
+  l_infa = 1.;
+  l_infb = 1.E-4;
   lk1    = lk1_init;
 
   if(tree->mod->s_opt->nni_br_len_opt == YES)
@@ -1514,8 +1514,8 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
   lk2_init = Update_Lk_At_Given_Edge(b_fcus,tree);
   MIXT_Set_Alias_Subpatt(NO,tree);
 
-  l_infa = 10.;
-  l_infb = tree->mod->l_min/b_fcus->l->v;
+  l_infa = 1.;
+  l_infb = 1.E-4;
  
   lk2    = lk2_init;
 
@@ -1566,8 +1566,8 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
       Exit("\n== Err. in NNI (3)");
     }
 
-  l_infa = 10.;
-  l_infb = tree->mod->l_min/b_fcus->l->v;
+  l_infa = 1.;
+  l_infb = 1.E-4;
   lk0    = lk0_init;
 
   if(tree->mod->s_opt->nni_br_len_opt == YES)
@@ -5468,8 +5468,8 @@ void Fast_Br_Len(t_edge *b, t_tree *tree, int approx)
     Br_Len_Brent(0.001,2.,b,tree);
   else
     {
-      tree->mod->s_opt->brent_it_max = 5;
-      Br_Len_Brent(0.0001,1.,b,tree);
+      tree->mod->s_opt->brent_it_max = 10;
+      Br_Len_Brent(1.E-4,2.E+0,b,tree);
       tree->mod->s_opt->brent_it_max = BRENT_IT_MAX;
     }
 }
