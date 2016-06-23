@@ -4821,7 +4821,7 @@ void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int d
 
 void Spr_List_Of_Trees(t_tree *tree)
 {
-  int i,list_size,max_list_size,*rk;
+  int i,j,list_size,max_list_size,*rk;
   t_tree **tree_list;
   phydbl delta_lnL,*lnL_list,anneal_temp,best_lnL,worst_lnL;
   
@@ -4904,6 +4904,7 @@ void Spr_List_Of_Trees(t_tree *tree)
           tree->mod->s_opt->min_diff_lk_move  = 0.01;
           tree->best_lnL                      = tree->c_lnL;
           Spr(UNLIKELY,1.0,tree);
+          For(j,2*tree->n_otu-3) if(tree->a_edges[j]->l->v < 1.E-3) tree->a_edges[j]->l->v = 1.E-3;
           Set_Both_Sides(NO,tree);
           Lk(NULL,tree);
           Optimize_Br_Len_Serie (tree);
