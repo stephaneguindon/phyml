@@ -4864,10 +4864,13 @@ void Spr_List_Of_Trees(t_tree *tree)
       tree->mod->s_opt->spr_pars          = NO;
       tree->mod->s_opt->min_diff_lk_move  = 0.1;
       tree->best_lnL                      = tree->c_lnL;
+
       Spr(UNLIKELY,0.5,tree);
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
       Optimize_Br_Len_Serie (tree);
+
+      printf("\n>> lnL: %f",tree->c_lnL);
 
       tree_list[list_size] = Make_Tree_From_Scratch(tree->n_otu,tree->data);
       Copy_Tree(tree,tree_list[list_size]);
@@ -4898,14 +4901,14 @@ void Spr_List_Of_Trees(t_tree *tree)
           tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(-1.0):(-1.);
           tree->mod->s_opt->spr_lnL           = YES;
           tree->mod->s_opt->spr_pars          = NO;
-          tree->mod->s_opt->min_diff_lk_move  = 0.1;
+          tree->mod->s_opt->min_diff_lk_move  = 0.01;
           tree->best_lnL                      = tree->c_lnL;
-          /* Spr(UNLIKELY,1.0,tree); */
-          /* Set_Both_Sides(NO,tree); */
-          /* Lk(NULL,tree); */
-          /* Optimize_Br_Len_Serie (tree); */
-          tree->mod->s_opt->fast_nni = YES;
-          Simu(tree,10);
+          Spr(UNLIKELY,1.0,tree);
+          Set_Both_Sides(NO,tree);
+          Lk(NULL,tree);
+          Optimize_Br_Len_Serie (tree);
+          /* tree->mod->s_opt->fast_nni = YES; */
+          /* Simu(tree,10); */
           printf("\n>> lnL: %f",tree->c_lnL);
           Copy_Tree(tree,tree_list[rk[i]]);
           lnL_list[rk[i]] = tree->c_lnL;          
