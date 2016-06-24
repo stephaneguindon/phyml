@@ -4527,7 +4527,7 @@ int Check_Spr_Move_Validity(t_spr *this_spr_move, t_tree *tree)
 
 void Spr_Pars(int threshold, int n_round_max, t_tree *tree)
 {  
-  int curr_pars;
+  int curr_pars,round;
 
   if((tree->mod->s_opt->print) && (!tree->io->quiet)) PhyML_Printf("\n. Minimizing parsimony...\n");
 
@@ -4537,12 +4537,13 @@ void Spr_Pars(int threshold, int n_round_max, t_tree *tree)
   tree->mod->s_opt->spr_pars       = YES;
   curr_pars                        = tree->c_pars;
   tree->mod->s_opt->max_depth_path = tree->n_otu;
+  round                            = 1;
   do
     {
       curr_pars = tree->c_pars;
-      Speed_Spr(tree,1.0,1,0.0);
+      Speed_Spr(tree,1.0,1,0.0);      
     }
-  while(tree->n_improvements && FABS(tree->c_pars - curr_pars) > threshold);
+  while(tree->n_improvements && FABS(tree->c_pars - curr_pars) > threshold && round++ < n_round_max);
 }
 
 //////////////////////////////////////////////////////////////
@@ -4853,25 +4854,25 @@ void Spr_List_Of_Trees(t_tree *tree)
     {
       /* Randomize_Tree(tree,1); */
       Randomize_Tree(tree,tree->n_otu);
-      Spr_Pars(0,100,tree);
+      Spr_Pars(0,20,tree);
             
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
       Optimize_Br_Len_Serie (tree);
       
-      /* tree->annealing_temp                = anneal_temp; */
-      /* tree->mod->s_opt->max_depth_path    = tree->n_otu; */
-      /* tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(-1.0):(-1.); */
-      /* tree->mod->s_opt->spr_lnL           = YES; */
-      /* tree->mod->s_opt->spr_pars          = NO; */
-      /* tree->mod->s_opt->min_diff_lk_move  = 1.0; */
-      /* tree->best_lnL                      = tree->c_lnL; */
+      tree->annealing_temp                = anneal_temp;
+      tree->mod->s_opt->max_depth_path    = tree->n_otu;
+      tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(-1.0):(-1.);
+      tree->mod->s_opt->spr_lnL           = NO;
+      tree->mod->s_opt->spr_pars          = NO;
+      tree->mod->s_opt->min_diff_lk_move  = 1.0;
+      tree->best_lnL                      = tree->c_lnL;
 
       Set_Both_Sides(YES,tree);
       Lk(NULL,tree);
-      /* Spr(UNLIKELY,1.0,tree); */
+      Spr(UNLIKELY,0.5,tree);
 
-      Simu(tree,1);
+      /* Simu(tree,5); */
 
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
