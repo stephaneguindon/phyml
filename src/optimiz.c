@@ -490,7 +490,7 @@ int Br_Len_Brak(phydbl *ax, phydbl *bx, phydbl *cx,
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-phydbl Br_Len_Brent(phydbl prop_min, phydbl prop_max, t_edge *b_fcus, t_tree *tree)
+phydbl Br_Len_Brent(phydbl l_min, phydbl l_max, t_edge *b_fcus, t_tree *tree)
 {
   t_tree *loc_tree;
   t_edge *loc_b;
@@ -501,7 +501,6 @@ phydbl Br_Len_Brent(phydbl prop_min, phydbl prop_max, t_edge *b_fcus, t_tree *tr
   loc_tree = tree;
   loc_b    = b_fcus;
 
-
   /*! Rewind back to the first mixt_tree */
   while(loc_tree->prev)
     {
@@ -511,46 +510,28 @@ phydbl Br_Len_Brent(phydbl prop_min, phydbl prop_max, t_edge *b_fcus, t_tree *tr
 
   if(tree->is_mixt_tree)
     {
-      MIXT_Br_Len_Brent(prop_min,prop_max,b_fcus,tree);
+      MIXT_Br_Len_Brent(l_min,l_max,b_fcus,tree);
       return loc_tree->c_lnL;
     }
 
   if(b_fcus->l->onoff == OFF) return loc_tree->c_lnL;
 
-  if(isinf(prop_min) || isnan(prop_min)) prop_min = 1.E-04;
-  if(isinf(prop_max) || isnan(prop_max)) prop_max = 1.E+04;
-
   lk_begin = Lk(loc_b,loc_tree); /*! We can't assume that the log-lk value is up-to-date */
 
   Generic_Brent_Lk(&(b_fcus->l->v),
-                   MAX(tree->mod->l_min,MIN(tree->mod->l_max,b_fcus->l->v))*MAX(1.E-04,prop_min),
-                   MAX(tree->mod->l_min,MIN(tree->mod->l_max,b_fcus->l->v))*MIN(1.E+04,prop_max),
+                   l_min,
+                   l_max,
                    tree->mod->s_opt->min_diff_lk_local,
                    tree->mod->s_opt->brent_it_max,
                    tree->mod->s_opt->quickdirty,
                    Wrap_Lk_At_Given_Edge,
                    loc_b,loc_tree,NULL,NO);
 
-  /* if(tree->mod->gamma_mgf_bl == YES) */
-  /*   { */
-  /*     if(b_fcus->num == 0) */
-  /*       { */
-  /*         Generic_Brent_Lk(&(b_fcus->l_var), */
-  /*                          1.E-4,100., */
-  /*                          tree->mod->s_opt->min_diff_lk_local, */
-  /*                          tree->mod->s_opt->brent_it_max, */
-  /*                          tree->mod->s_opt->quickdirty, */
-  /*                          Wrap_Lk_At_Given_Edge,loc_b,loc_tree,NULL); */
-  /*                          /\* Wrap_Lk,NULL,loc_tree,NULL); *\/ */
-  /*       } */
-  /*   } */
-
   lk_end = loc_tree->c_lnL;
-
 
   if(lk_end < lk_begin - tree->mod->s_opt->min_diff_lk_local)
     {
-      PhyML_Printf("\n== prop_min: %f prop_max: %f l: %f var:%f",prop_min,prop_max,b_fcus->l->v,b_fcus->l_var->v);
+      PhyML_Printf("\n== l_min: %f l_max: %f l: %f var:%f",l_min,l_max,b_fcus->l->v,b_fcus->l_var->v);
       PhyML_Printf("\n== lk_beg = %f lk_end = %f",lk_begin, lk_end);
       PhyML_Printf("\n== Err. in file %s at line %d",__FILE__,__LINE__);
       Exit("\n");
@@ -823,8 +804,8 @@ void Optimiz_Ext_Br(t_tree *tree)
           l_init = Duplicate_Scalar_Dbl(b->l);          
           v_init = Duplicate_Scalar_Dbl(b->l_var);          
 
-          l_infb = tree->mod->l_min/b->l->v;
-          l_infa = 10.;
+          l_infb = tree->mod->l_min;
+          l_infa = tree->mod->l_max;
           
           Br_Len_Brent(l_infb,l_infa,b,tree);
           
