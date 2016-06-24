@@ -4834,8 +4834,7 @@ void Spr_List_Of_Trees(t_tree *tree)
 
   For(i,max_list_size) lnL_list[i] = UNLIKELY;
 
-  Spr_Pars(0,100,tree);
-  Round_Optimize(tree,tree->data,5);
+  Round_Optimize(tree,tree->data,2);
   tree_list[0] = Make_Tree_From_Scratch(tree->n_otu,tree->data);
   Copy_Tree(tree,tree_list[0]);
   lnL_list[0] = tree->c_lnL;
@@ -4847,7 +4846,6 @@ void Spr_List_Of_Trees(t_tree *tree)
   worst_lnL = -UNLIKELY;
   do
     {
-      printf("\n");
       Randomize_Tree(tree,1);
 
       Set_Both_Sides(NO,tree);
@@ -4858,7 +4856,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       Lk(NULL,tree);
 
       tree->annealing_temp                = anneal_temp;
-      tree->mod->s_opt->max_depth_path    = 10;
+      tree->mod->s_opt->max_depth_path    = tree->n_otu;
       tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(-1.0):(-1.);
       tree->mod->s_opt->spr_lnL           = NO;
       tree->mod->s_opt->spr_pars          = NO;
@@ -4878,13 +4876,12 @@ void Spr_List_Of_Trees(t_tree *tree)
       if(tree->c_lnL > best_lnL) best_lnL   = tree->c_lnL;
       if(tree->c_lnL < worst_lnL) worst_lnL = tree->c_lnL;
     }
-  while(list_size++ < 1 + (int)tree->n_otu/10);
+  while(list_size++ < 5);
 
-  delta_lnL = (best_lnL - worst_lnL) / 4.;
+  delta_lnL = (best_lnL - worst_lnL) / 5.;
+  printf("\n"); printf("\n. Delta = %f",delta_lnL); fflush(NULL);
   
   rk = Ranks(lnL_list,max_list_size);
-
-  printf("\n. delta_lnL = %f",delta_lnL);
 
   do
     {
@@ -4892,12 +4889,12 @@ void Spr_List_Of_Trees(t_tree *tree)
       worst_lnL = -UNLIKELY;
       For(i,list_size)
         {
-          printf("\n"); printf("\n. current delta: %f [%f]",best_lnL-worst_lnL,delta_lnL);
           Copy_Tree(tree_list[rk[i]],tree);
           Set_Both_Sides(YES,tree);
           Lk(NULL,tree);
+          printf("\n. [%d/%d] %f",i,list_size,tree->c_lnL);
           tree->annealing_temp                = anneal_temp;
-          tree->mod->s_opt->max_depth_path    = 10;
+          tree->mod->s_opt->max_depth_path    = 5;
           tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(-1.0):(-1.);
           tree->mod->s_opt->spr_lnL           = YES;
           tree->mod->s_opt->spr_pars          = NO;
@@ -4907,27 +4904,24 @@ void Spr_List_Of_Trees(t_tree *tree)
           Set_Both_Sides(NO,tree);
           Lk(NULL,tree);
           Optimize_Br_Len_Serie (tree);
-          /* tree->mod->s_opt->fast_nni = YES; */
-          /* Simu(tree,10); */
-          printf("\n>> lnL: %f",tree->c_lnL);
           Copy_Tree(tree,tree_list[rk[i]]);
           lnL_list[rk[i]] = tree->c_lnL;          
-          if(tree->c_lnL > best_lnL) best_lnL   = tree->c_lnL;
+          if(tree->c_lnL > best_lnL)  best_lnL  = tree->c_lnL;
           if(tree->c_lnL < worst_lnL) worst_lnL = tree->c_lnL;
-          if(tree->c_lnL < best_lnL - delta_lnL) { list_size = i; break; }
         }
 
-      delta_lnL = (best_lnL - worst_lnL) / 2.;
+      list_size = (int)list_size/2;
       anneal_temp *= 0.5;
 
       rk = Ranks(lnL_list,max_list_size);
       delta_lnL *= 0.7;
+
       printf("\n. delta_lnL: %f best_lnL: %f list_size: %d anneal: %f",delta_lnL,best_lnL,list_size,anneal_temp); fflush(NULL);
 
       Copy_Tree(tree_list[rk[0]],tree);
       Round_Optimize(tree,tree->data,100);
     }
-  while(delta_lnL > 1.0);
+  while(list_size > 1);
 
 
   /* if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. First round of SPR moves...\n"); */
