@@ -3420,9 +3420,12 @@ int Test_All_Spr_Targets(t_edge *b_pulled, t_node *n_link, t_tree *tree)
       Copy_Scalar_Dbl(init_v_pulled,b_pulled->l_var);
 
       // really useful if spr_lnL == No ?
-      Update_PMat_At_Given_Edge(n_link->b[dir1],tree);
-      Update_PMat_At_Given_Edge(n_link->b[dir2],tree);
-      Update_PMat_At_Given_Edge(b_pulled,tree);
+      if(tree->mod->s_opt->spr_lnL == YES)      
+        {
+          Update_PMat_At_Given_Edge(n_link->b[dir1],tree);
+          Update_PMat_At_Given_Edge(n_link->b[dir2],tree);
+          Update_PMat_At_Given_Edge(b_pulled,tree);
+        }
 
       if(tree->mod->s_opt->spr_lnL == YES)
       	{
@@ -3477,7 +3480,7 @@ void Test_One_Spr_Target_Recur(t_node *a, t_node *d, t_edge *pulled, t_node *lin
   if(d->tax) return;
   else
     {
-      phydbl move_lnL;
+      phydbl move_score;
       
       For(i,3)
         {
@@ -3498,8 +3501,9 @@ void Test_One_Spr_Target_Recur(t_node *a, t_node *d, t_edge *pulled, t_node *lin
               if((tree->depth_curr_path <= tree->mod->s_opt->max_depth_path) &&
                  (tree->depth_curr_path >= tree->mod->s_opt->min_depth_path))
                 {
-                  move_lnL = Test_One_Spr_Target(d->b[i],pulled,link,residual,init_target,tree);
-                  if(move_lnL > tree->best_lnL + tree->mod->s_opt->min_diff_lk_move) 
+                  move_score = Test_One_Spr_Target(d->b[i],pulled,link,residual,init_target,tree);
+                  if((tree->mod->s_opt->spr_pars == NO  && move_score > tree->best_lnL + tree->mod->s_opt->min_diff_lk_move) ||
+                     (tree->mod->s_opt->spr_pars == YES && move_score < tree->best_pars)) 
                     {
                       *best_found = YES;
                       return;
@@ -3684,7 +3688,8 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
   Free_Scalar_Dbl(init_arrow_v);
   Free_Scalar_Dbl(init_residual_v);
 
-  return move_lnL;
+  if(tree->mod->s_opt->spr_pars == NO) return move->lnL;
+  else                                 return move->pars;
 }
 
 /*********************************************************/
@@ -4903,7 +4908,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       Lk(NULL,tree);
 
       tree->annealing_temp                = anneal_temp;
-      tree->mod->s_opt->max_depth_path    = tree->n_otu;
+      tree->mod->s_opt->max_depth_path    = tree->n_otu/2;
       tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(-1.0):(-1.);
       tree->mod->s_opt->spr_lnL           = NO;
       tree->mod->s_opt->spr_pars          = NO;
@@ -4933,6 +4938,9 @@ void Spr_List_Of_Trees(t_tree *tree)
 
   rk = Ranks(lnL_list,max_list_size);
 
+  Copy_Tree(tree_list[rk[0]],tree);
+  Round_Optimize(tree,tree->data,100);
+
   if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. Third type of SPR moves...\n");
   list_size = 0;
   best_lnL  =  UNLIKELY;
@@ -4941,7 +4949,7 @@ void Spr_List_Of_Trees(t_tree *tree)
     {
       Copy_Tree(tree_list[rk[list_size]],tree);
 
-      Randomize_Tree(tree,1);
+      /* Randomize_Tree(tree,1); */
 
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
@@ -4952,7 +4960,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(-1.0):(-1.);
       tree->mod->s_opt->spr_lnL           = YES;
       tree->mod->s_opt->spr_pars          = NO;
-      tree->mod->s_opt->min_diff_lk_move  = 0.1;
+      tree->mod->s_opt->min_diff_lk_move  = 0.01;
       tree->best_lnL                      = tree->c_lnL;
 
       do
