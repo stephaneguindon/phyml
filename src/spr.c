@@ -4884,7 +4884,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       if(tree->c_lnL > best_lnL)  best_lnL  = tree->c_lnL;
       if(tree->c_lnL < worst_lnL) worst_lnL = tree->c_lnL;
     }
-  while(list_size++ < 50);
+  while(list_size++ < 80);
   
   rk = Ranks(lnL_list,max_list_size);
 
@@ -4929,7 +4929,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       if(tree->c_lnL > best_lnL)  best_lnL  = tree->c_lnL;
       if(tree->c_lnL < worst_lnL) worst_lnL = tree->c_lnL;
     }
-  while(list_size++ < 10);
+  while(list_size++ < 15);
 
   rk = Ranks(lnL_list,max_list_size);
 
