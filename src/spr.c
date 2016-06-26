@@ -4884,7 +4884,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       if(tree->c_lnL > best_lnL)  best_lnL  = tree->c_lnL;
       if(tree->c_lnL < worst_lnL) worst_lnL = tree->c_lnL;
     }
-  while(list_size++ < 20);
+  while(list_size++ < 50);
   
   rk = Ranks(lnL_list,max_list_size);
 
@@ -4914,7 +4914,7 @@ void Spr_List_Of_Trees(t_tree *tree)
         {          
           Set_Both_Sides(YES,tree);
           Lk(NULL,tree);
-          Spr(UNLIKELY,0.8,tree);
+          Spr(UNLIKELY,0.5,tree);
           printf("\n. n_improvements: %d",tree->n_improvements); fflush(NULL);
           Set_Both_Sides(NO,tree);
           Lk(NULL,tree);
@@ -4948,9 +4948,9 @@ void Spr_List_Of_Trees(t_tree *tree)
       Optimize_Br_Len_Serie (tree);
       
       tree->annealing_temp                = anneal_temp;
-      tree->mod->s_opt->max_depth_path    = (int)tree->n_otu/5;
+      tree->mod->s_opt->max_depth_path    = 10;
       tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(-1.0):(-1.);
-      tree->mod->s_opt->spr_lnL           = NO;
+      tree->mod->s_opt->spr_lnL           = YES;
       tree->mod->s_opt->spr_pars          = NO;
       tree->mod->s_opt->min_diff_lk_move  = 0.1;
       tree->best_lnL                      = tree->c_lnL;
