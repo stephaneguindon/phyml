@@ -4890,11 +4890,12 @@ void Spr_List_Of_Trees(t_tree *tree)
       Lk(NULL,tree);
 
       tree->annealing_temp                = anneal_temp;
-      tree->mod->s_opt->max_depth_path    = tree->n_otu/2;
+      tree->mod->s_opt->max_depth_path    = 10;
       tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(-1.0):(-1.);
       tree->mod->s_opt->spr_lnL           = NO;
       tree->mod->s_opt->spr_pars          = NO;
-      tree->mod->s_opt->min_diff_lk_move  = 0.5;
+      /* tree->mod->s_opt->min_diff_lk_move  = 0.5; */
+      tree->mod->s_opt->min_diff_lk_move  = 0.1;
       tree->best_lnL                      = tree->c_lnL;
       
       do
