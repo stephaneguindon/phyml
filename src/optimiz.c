@@ -12,10 +12,8 @@ the GNU public licence.  See http://www.opensource.org for details.
 
 #include "optimiz.h"
 
-
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void Optimize_Single_Param_Generic(t_tree *tree, phydbl *param, phydbl lim_inf, phydbl lim_sup, phydbl tol, int n_max_iter, int quickdirty)
 {
@@ -38,10 +36,7 @@ void Optimize_Single_Param_Generic(t_tree *tree, phydbl *param, phydbl lim_inf, 
 
   if(tree->c_lnL < lk_init - tree->mod->s_opt->min_diff_lk_global)
     {
-      PhyML_Printf("\n== %.10f < %.10f --> diff=%.10f param value = %f\n",
-         tree->c_lnL,lk_init,
-         tree->c_lnL-lk_init,
-         *param);
+      PhyML_Printf("\n== %.10f < %.10f --> diff=%.10f param value = %f\n",tree->c_lnL,lk_init,tree->c_lnL-lk_init,*param);
       Exit("\n== Optimisation failed !\n");
     }
 }
@@ -50,10 +45,10 @@ void Optimize_Single_Param_Generic(t_tree *tree, phydbl *param, phydbl lim_inf, 
 //////////////////////////////////////////////////////////////
 
 int Generic_Brak(phydbl *param,
-         phydbl *ax, phydbl *bx, phydbl *cx,
-         phydbl *fa, phydbl *fb, phydbl *fc,
-         phydbl lim_inf, phydbl lim_sup,
-         t_tree *tree)
+                 phydbl *ax, phydbl *bx, phydbl *cx,
+                 phydbl *fa, phydbl *fb, phydbl *fc,
+                 phydbl lim_inf, phydbl lim_sup,
+                 t_tree *tree)
 {
    phydbl ulim,u,r,q,fu,dum;
 
@@ -68,9 +63,9 @@ int Generic_Brak(phydbl *param,
    if(*param < lim_inf) *param = lim_inf;
    *fb=-Lk(NULL,tree);
    if (*fb > *fa) {
-      SHFT(dum,*ax,*bx,dum)
-      SHFT(dum,*fb,*fa,dum)
-   }
+     SHFT(dum,*ax,*bx,dum)
+       SHFT(dum,*fb,*fa,dum)
+       }
    *cx=(*bx)+MNBRAK_GOLD*(*bx-*ax);
    *param = FABS(*cx);
    if(*param > lim_sup) *param = lim_sup;
@@ -78,7 +73,7 @@ int Generic_Brak(phydbl *param,
    *fc=-Lk(NULL,tree);
    while (*fb > *fc)
      {
-
+       
        if(*ax > lim_sup) *ax = lim_sup;
        if(*ax < lim_inf) *ax = lim_inf;
        if(*bx > lim_sup) *bx = lim_sup;
@@ -87,79 +82,79 @@ int Generic_Brak(phydbl *param,
        if(*cx < lim_inf) *cx = lim_inf;
        if(u   > lim_sup) u   = lim_sup;
        if(u   < lim_inf) u   = lim_inf;
-
+       
        r=(*bx-*ax)*(*fb-*fc);
        q=(*bx-*cx)*(*fb-*fa);
        u=(*bx)-((*bx-*cx)*q-(*bx-*ax)*r)/
-               (2.0*SIGN(MAX(FABS(q-r),MNBRAK_TINY),q-r));
+         (2.0*SIGN(MAX(FABS(q-r),MNBRAK_TINY),q-r));
        ulim=(*bx)+MNBRAK_GLIMIT*(*cx-*bx);
-
+       
        if ((*bx-u)*(u-*cx) > lim_inf)
-     {
-       *param = FABS(u);
-       if(*param > lim_sup) {*param = u = lim_sup;}
-       if(*param < lim_inf) {*param = u = lim_inf;}
-       fu=-Lk(NULL,tree);
-       if (fu < *fc)
          {
-           *ax=(*bx);
-           *bx=u;
-           *fa=(*fb);
-           *fb=fu;
-           (*ax)=FABS(*ax);
-           (*bx)=FABS(*bx);
-           (*cx)=FABS(*cx);
-           return(0);
-         }
-       else if (fu > *fb)
-         {
-           *cx=u;
-           *fc=fu;
-           (*ax)=FABS(*ax);
-           (*bx)=FABS(*bx);
-           (*cx)=FABS(*cx);
-           return(0);
-         }
-       u=(*cx)+MNBRAK_GOLD*(*cx-*bx);
-       *param = FABS(u);
-       if(*param > lim_sup) {*param = u = lim_sup;}
-       if(*param < lim_inf) {*param = u = lim_inf;}
-       fu=-Lk(NULL,tree);
-     }
-       else if ((*cx-u)*(u-ulim) > lim_inf)
-     {
-       *param = FABS(u);
-       if(*param > lim_sup) {*param = u = lim_sup;}
-       if(*param < lim_inf) {*param = u = lim_inf;}
-       fu=-Lk(NULL,tree);
-       if (fu < *fc)
-         {
-           SHFT(*bx,*cx,u,*cx+MNBRAK_GOLD*(*cx-*bx))
            *param = FABS(u);
-           SHFT(*fb,*fc,fu,-Lk(NULL,tree))
+           if(*param > lim_sup) {*param = u = lim_sup;}
+           if(*param < lim_inf) {*param = u = lim_inf;}
+           fu=-Lk(NULL,tree);
+           if (fu < *fc)
+             {
+               *ax=(*bx);
+               *bx=u;
+               *fa=(*fb);
+               *fb=fu;
+               (*ax)=FABS(*ax);
+               (*bx)=FABS(*bx);
+               (*cx)=FABS(*cx);
+               return(0);
+             }
+           else if (fu > *fb)
+             {
+               *cx=u;
+               *fc=fu;
+               (*ax)=FABS(*ax);
+               (*bx)=FABS(*bx);
+               (*cx)=FABS(*cx);
+               return(0);
+             }
+           u=(*cx)+MNBRAK_GOLD*(*cx-*bx);
+           *param = FABS(u);
+           if(*param > lim_sup) {*param = u = lim_sup;}
+           if(*param < lim_inf) {*param = u = lim_inf;}
+           fu=-Lk(NULL,tree);
          }
-     }
+       else if ((*cx-u)*(u-ulim) > lim_inf)
+         {
+           *param = FABS(u);
+           if(*param > lim_sup) {*param = u = lim_sup;}
+           if(*param < lim_inf) {*param = u = lim_inf;}
+           fu=-Lk(NULL,tree);
+           if (fu < *fc)
+             {
+               SHFT(*bx,*cx,u,*cx+MNBRAK_GOLD*(*cx-*bx))
+                 *param = FABS(u);
+               SHFT(*fb,*fc,fu,-Lk(NULL,tree))
+                 }
+         }
        else if ((u-ulim)*(ulim-*cx) >= lim_inf)
-     {
-       u=ulim;
-       *param = FABS(u);
-       if(*param > lim_sup) {*param = u = lim_sup;}
-       if(*param < lim_inf) {*param = u = lim_inf;}
-       fu=-Lk(NULL,tree);
-     }
+         {
+           u=ulim;
+           *param = FABS(u);
+           if(*param > lim_sup) {*param = u = lim_sup;}
+           if(*param < lim_inf) {*param = u = lim_inf;}
+           fu=-Lk(NULL,tree);
+         }
        else
-     {
-       u=(*cx)+MNBRAK_GOLD*(*cx-*bx);
-       *param = FABS(u);
-       if(*param > lim_sup) {*param = u = lim_sup;}
-       if(*param < lim_inf) {*param = u = lim_inf;}
-       fu=-Lk(NULL,tree);
-     }
+         {
+           u=(*cx)+MNBRAK_GOLD*(*cx-*bx);
+           *param = FABS(u);
+           if(*param > lim_sup) {*param = u = lim_sup;}
+           if(*param < lim_inf) {*param = u = lim_inf;}
+           fu=-Lk(NULL,tree);
+         }
        SHFT(*ax,*bx,*cx,u)
-       SHFT(*fa,*fb,*fc,fu)
-
-
-     }
+         SHFT(*fa,*fb,*fc,fu)
+         
+         
+         }
    (*ax)=FABS(*ax);
    (*bx)=FABS(*bx);
    (*cx)=FABS(*cx);
@@ -168,6 +163,94 @@ int Generic_Brak(phydbl *param,
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+int Generic_Brak_Lk(phydbl *param,
+                    phydbl *ax, phydbl *bx, phydbl *cx,
+                    phydbl *fa, phydbl *fb, phydbl *fc,
+                    phydbl (*obj_func)(t_edge *,t_tree *,supert_tree *),
+                    t_edge *branch, t_tree *tree, supert_tree *stree)
+{
+   phydbl ulim,u,r,q,fu,dum;
+
+   *param = *ax;
+   *fa = -(*obj_func)(branch,tree,stree);
+
+   *param = *bx;
+   *fb = -(*obj_func)(branch,tree,stree);
+
+   if (*fb > *fa) 
+     {
+       SHFT(dum,*ax,*bx,dum)
+       SHFT(dum,*fb,*fa,dum)
+     }
+
+   *cx=(*bx)+MNBRAK_GOLD*(*bx-*ax);
+   *param = *cx;
+   *fc = -(*obj_func)(branch,tree,stree);
+
+   /* printf("\nx la: %f lb: %f lc: %f fa: %f fb: %f fc: %f",*ax,*bx,*cx,*fa,*fb,*fc); */
+   while (*fb > *fc)
+     {       
+       /* printf("\nx la: %f lb: %f lc: %f fa: %f fb: %f fc: %f",*ax,*bx,*cx,*fa,*fb,*fc); */
+       r=(*bx-*ax)*(*fb-*fc);
+       q=(*bx-*cx)*(*fb-*fa);
+       u=(*bx)-((*bx-*cx)*q-(*bx-*ax)*r)/
+         (2.0*SIGN(MAX(FABS(q-r),MNBRAK_TINY),q-r));
+       ulim=(*bx)+MNBRAK_GLIMIT*(*cx-*bx);
+       
+       if((*bx-u)*(u-*cx) > 0.0)
+         {
+           *param = u;
+           fu = -(*obj_func)(branch,tree,stree);
+
+           if (fu < *fc)
+             {
+               *ax=(*bx);
+               *bx=u;
+               *fa=(*fb);
+               *fb=fu;
+               return(0);
+             }
+           else if (fu > *fb)
+             {
+               *cx=u;
+               *fc=fu;
+               return(0);
+             }
+           u=(*cx)+MNBRAK_GOLD*(*cx-*bx);
+           *param = u;
+           fu = -(*obj_func)(branch,tree,stree);
+         }
+       else if ((*cx-u)*(u-ulim) > 0.0)
+         {
+           *param = u;
+           fu = -(*obj_func)(branch,tree,stree);
+
+           if (fu < *fc)
+             {
+               SHFT(*bx,*cx,u,*cx+MNBRAK_GOLD*(*cx-*bx))
+               *param = u;
+               SHFT(*fb,*fc,fu,-(*obj_func)(branch,tree,stree))
+             }
+         }
+       else if ((u-ulim)*(ulim-*cx) >= 0.0)
+         {
+           u=ulim;
+           *param = u;
+           fu = -(*obj_func)(branch,tree,stree);
+         }
+       else
+         {
+           u=(*cx)+MNBRAK_GOLD*(*cx-*bx);
+           *param = FABS(u);
+           fu = -(*obj_func)(branch,tree,stree);
+         }
+       SHFT(*ax,*bx,*cx,u)
+       SHFT(*fa,*fb,*fc,fu)
+         }
+   
+   return(0);
+}
 
 
 phydbl Generic_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol,
@@ -495,6 +578,8 @@ phydbl Br_Len_Brent(phydbl l_min, phydbl l_max, t_edge *b_fcus, t_tree *tree)
   t_tree *loc_tree;
   t_edge *loc_b;
   phydbl lk_begin, lk_end;
+  phydbl la,lb,lc;
+  phydbl fa,fb,fc;
 
   lk_begin = UNLIKELY;
   lk_end   = UNLIKELY;
@@ -518,9 +603,22 @@ phydbl Br_Len_Brent(phydbl l_min, phydbl l_max, t_edge *b_fcus, t_tree *tree)
 
   lk_begin = Lk(loc_b,loc_tree); /*! We can't assume that the log-lk value is up-to-date */
 
+  la = b_fcus->l->v * .1;
+  lb = b_fcus->l->v;
+  lc = b_fcus->l->v * 10.;
+  /* printf("\nxx l: %f la: %f lb: %f lc: %f fa: %f fb: %f fc: %f",b_fcus->l->v,la,lb,lc,fa,fb,fc); */
+  Generic_Brak_Lk(&(b_fcus->l->v),
+                  &la,&lb,&lc,
+                  &fa,&fb,&fc,
+                  Wrap_Lk_At_Given_Edge,
+                  loc_b,loc_tree,NULL);
+
+  b_fcus->l->v = lb;
+  tree->c_lnL = fb;
+  /* printf("\n. l: %f la: %f lb: %f lc: %f fa: %f fb: %f fc: %f",b_fcus->l->v,la,lb,lc,fa,fb,fc); */
   Generic_Brent_Lk(&(b_fcus->l->v),
-                   l_min,
-                   l_max,
+                   la,
+                   lc,
                    tree->mod->s_opt->min_diff_lk_local,
                    tree->mod->s_opt->brent_it_max,
                    tree->mod->s_opt->quickdirty,
@@ -727,14 +825,8 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
       return;
     }
 
-  /* l_infa = tree->mod->l_max/b_fcus->l->v; */
-  /* l_infb = tree->mod->l_min/b_fcus->l->v; */
-  /* l_infa = MAX(b_fcus->l->v,1.E-0); */
-  /* l_infb = MIN(b_fcus->l->v,1.E-5); */
   l_infa = tree->mod->l_max;
   l_infb = tree->mod->l_min;
-
-  Set_Both_Sides(YES,tree);
 
   if(tree->io->mod->s_opt->opt_bl == YES) Br_Len_Brent(l_infb,l_infa,b_fcus,tree);
 
@@ -2503,23 +2595,58 @@ phydbl Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
                         t_edge *branch, t_tree *tree, supert_tree *stree, int logt)
 {
   int iter;
-  phydbl a,b,d,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm;
+  phydbl a,b,d,etemp,fu,fv,fw,fx,fa,fb,p,q,r,tol1,tol2,u,v,w,x,xm;
   phydbl e=0.0;
   phydbl old_lnL,init_lnL;
-  phydbl bx = *param;
+  phydbl bx;
 
-  d=0.0;
-  a=((ax < cx) ? ax : cx);
-  b=((ax > cx) ? ax : cx);
-  x=w=v=bx;
-  old_lnL = UNLIKELY;
+  bx = *param;
+
+  a = (*param)*0.1;
+  b = (*param)*10.0;
+
+  (*param) = a;
+  if(logt == YES) (*param) = EXP(MIN(1.E+2,*param));
+  fa=-(*obj_func)(branch,tree,stree);
+  if(logt == YES) (*param) = LOG(*param);
+
+  (*param) = b;
+  if(logt == YES) (*param) = EXP(MIN(1.E+2,*param));
+  fb=-(*obj_func)(branch,tree,stree);
+  if(logt == YES) (*param) = LOG(*param);
+
   (*param) = bx;
   if(logt == YES) (*param) = EXP(MIN(1.E+2,*param));
   fw=fv=fx=fu=-(*obj_func)(branch,tree,stree);
   if(logt == YES) (*param) = LOG(*param);
-  init_lnL = -fw;
+  init_lnL = fw;
 
-  /* PhyML_Printf("\n. %p %p %p init_lnL = %f a=%f b=%f c=%f",branch,tree,stree,init_lnL,ax,bx,cx); */
+  /* PhyML_Printf("\n. a=%f bx=%f b=%f fa: %f fu: %f fb: %f",a,bx,b,fa,fu,fb); */
+
+  // Bracketing didn't work, revert to bounds given as arguments 
+  if(!(fu < fa && fu < fb))
+    {
+      if(fa < fb) 
+        { 
+          fw=fv=fx=fu=fa;
+          (*param) = a;
+          bx = a;
+        }
+      else
+        {
+          fw=fv=fx=fu=fb;
+          (*param) = b;
+          bx = b;
+        }
+      a=((ax < cx) ? ax : cx);
+      b=((ax > cx) ? ax : cx);
+    }
+
+  d=0.0;
+  x=w=v=bx;
+  old_lnL = UNLIKELY;
+
+  /* PhyML_Printf("\n. %p %p %p init_lnL = %f a=%f b=%f c=%f",branch,tree,stree,init_lnL,a,bx,b); */
   
   for(iter=1;iter<=BRENT_IT_MAX;iter++)
     {
@@ -2535,14 +2662,13 @@ phydbl Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
           return fu;
         }
 
-/*       if(((FABS(cur_lnL-old_lnL) < tol) && (cur_lnL > init_lnL - tol)) || (iter > n_iter_max - 1)) */
       if((FABS(fu-old_lnL) < tol) || (iter > n_iter_max - 1))
         {
           (*param) = x;
           if(logt == YES) (*param) = EXP(MIN(1.E+2,*param));
           fu = (*obj_func)(branch,tree,stree);
           if(logt == YES) (*param) = LOG(*param);
-    /* 	  Exit("\n"); */
+          /* printf("\n. return %f [%f]",fu,*param); */
           return fu;
         }
 
@@ -2593,7 +2719,6 @@ phydbl Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
       else
         {
           if (u < x) a=u; else b=u;
-    /* 	  if (fu <= fw || w == x) */
           if (fu < fw || FABS(w-x) < SMALL)
             {
               v=w;
@@ -2601,7 +2726,7 @@ phydbl Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
               fv=fw;
               fw=fu;
             }
-    /* 	  else if (fu <= fv || v == x || v == w) */
+          /* 	  else if (fu <= fv || v == x || v == w) */
           else if (fu < fv || FABS(v-x) < SMALL || FABS(v-w) < SMALL)
             {
               v=u;
@@ -2644,12 +2769,12 @@ void Round_Optimize_Node_Heights(t_tree *tree)
       Opt_Node_Heights_Recurr(tree);
 
       Generic_Brent_Lk(&(tree->rates->clock_r),
-                   tree->rates->min_clock,
-                   tree->rates->max_clock,
-                   tree->mod->s_opt->min_diff_lk_local,
-                   tree->mod->s_opt->brent_it_max,
-                   tree->mod->s_opt->quickdirty,
-                   Wrap_Lk,NULL,tree,NULL,NO);
+                       tree->rates->min_clock,
+                       tree->rates->max_clock,
+                       tree->mod->s_opt->min_diff_lk_local,
+                       tree->mod->s_opt->brent_it_max,
+                       tree->mod->s_opt->quickdirty,
+                       Wrap_Lk,NULL,tree,NULL,NO);
 
       printf("\n. cur_lnL=%f new_lnL=%f clock_r=%G root height=%f",
          cur_lnL,new_lnL,tree->rates->clock_r,tree->rates->nd_t[tree->n_root->num]);

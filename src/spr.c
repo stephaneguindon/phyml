@@ -4832,7 +4832,7 @@ void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int d
 
 void Spr_List_Of_Trees(t_tree *tree)
 {
-  int i,j,list_size,max_list_size,*rk;
+  int i,j,list_size,max_list_size,*rk,n_opt;
   t_tree **tree_list;
   phydbl delta_lnL,*lnL_list,anneal_temp,best_lnL,worst_lnL;
   
@@ -4857,22 +4857,24 @@ void Spr_List_Of_Trees(t_tree *tree)
   worst_lnL = -UNLIKELY;
   do
     {
-      Randomize_Tree(tree,tree->n_otu);
+      Randomize_Tree(tree,5);
       Spr_Pars(0,20,tree);
             
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
-      Optimize_Br_Len_Serie (tree);
-      
+      n_opt = 0;
+      do Optimize_Br_Len_Serie (tree); while(n_opt++ < 3);
+
       printf("\n>> lnL: %f pars: %d",tree->c_lnL,tree->c_pars);
 
       tree_list[list_size] = Make_Tree_From_Scratch(tree->n_otu,tree->data);
       Copy_Tree(tree,tree_list[list_size]);
       lnL_list[list_size] = tree->c_lnL;
+
       if(tree->c_lnL > best_lnL)  best_lnL  = tree->c_lnL;
       if(tree->c_lnL < worst_lnL) worst_lnL = tree->c_lnL;
     }
-  while(list_size++ < 1 + (int)tree->n_otu/2);
+  while(list_size++ < 1 + (int)tree->n_otu/10);
   
   rk = Ranks(lnL_list,max_list_size);
     
@@ -4890,22 +4892,21 @@ void Spr_List_Of_Trees(t_tree *tree)
       Lk(NULL,tree);
 
       tree->annealing_temp                = anneal_temp;
-      tree->mod->s_opt->max_depth_path    = 10;
-      tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(-1.0):(-1.);
+      tree->mod->s_opt->max_depth_path    = 5;
+      tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(-1.0):(-1.0);
       tree->mod->s_opt->spr_lnL           = NO;
       tree->mod->s_opt->spr_pars          = NO;
-      /* tree->mod->s_opt->min_diff_lk_move  = 0.5; */
       tree->mod->s_opt->min_diff_lk_move  = 0.1;
       tree->best_lnL                      = tree->c_lnL;
       
       do
-        {          
+        {
           Set_Both_Sides(YES,tree);
           Lk(NULL,tree);
-          Spr(UNLIKELY,0.5,tree);
+          Spr(UNLIKELY,1.0,tree);
         }
       while(tree->n_improvements > 5);
-  
+
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
       Optimize_Br_Len_Serie (tree);
@@ -4918,7 +4919,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       if(tree->c_lnL > best_lnL)  best_lnL  = tree->c_lnL;
       if(tree->c_lnL < worst_lnL) worst_lnL = tree->c_lnL;
     }
-  while(list_size++ < 1 + (int)tree->n_otu/4);
+  while(list_size++ < 1 + (int)tree->n_otu/20);
 
   rk = Ranks(lnL_list,max_list_size);
 

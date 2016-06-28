@@ -116,6 +116,11 @@ void BFGS_Nonaligned(t_tree *tree,
 
 
 void Optimize_Single_Param_Generic(t_tree *tree, phydbl *param, phydbl lim_inf, phydbl lim_sup, phydbl tol, int n_max_iter, int quickdirty);
+int Generic_Brak_Lk(phydbl *param,
+                    phydbl *ax, phydbl *bx, phydbl *cx,
+                    phydbl *fa, phydbl *fb, phydbl *fc,
+                    phydbl (*obj_func)(t_edge *,t_tree *,supert_tree *),
+                    t_edge *branch, t_tree *tree, supert_tree *stree);
 int Generic_Brak(phydbl *param,
 		 phydbl *ax, phydbl *bx, phydbl *cx, 
 		 phydbl *fa, phydbl *fb, phydbl *fc,

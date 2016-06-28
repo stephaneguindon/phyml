@@ -2366,6 +2366,9 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
 
   if(tree->mod->log_l == YES) b_fcus->l->v = EXP(b_fcus->l->v);
 
+  if(b_fcus->l->v < l_min) b_fcus->l->v = l_min;
+  if(b_fcus->l->v > l_max) b_fcus->l->v = l_max;
+
   For(i,tree->mod->ras->n_catg)
     {
       if(tree->mod->ras->skip_rate_cat[i] == YES) continue;

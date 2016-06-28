@@ -4670,7 +4670,6 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
       cpy->a_edges[2*cpy->n_otu-2]->l_var_old->v   = ori->a_edges[2*cpy->n_otu-2]->l_var_old->v;
     }
 
-
   cpy->num_curr_branch_available = 0;
   cpy->t_beg = ori->t_beg;
 
