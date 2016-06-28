@@ -3290,7 +3290,8 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
                     }
                   else
                     {
-                      best_move_idx = Evaluate_List_Of_Regraft_Pos_Triple(tree->spr_list,n_moves,tree);
+                      /* best_move_idx = Evaluate_List_Of_Regraft_Pos_Triple(tree->spr_list,n_moves,tree); */
+                      best_move_idx = -1;
                     }
                 }
               else
@@ -4862,8 +4863,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   worst_lnL = -UNLIKELY;
   do
     {
-      /* Randomize_Tree(tree,tree->n_otu); */
-      Randomize_Tree(tree,1);
+      Randomize_Tree(tree,tree->n_otu);
       Spr_Pars(0,20,tree);
             
       Set_Both_Sides(NO,tree);
