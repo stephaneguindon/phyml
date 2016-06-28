@@ -3190,12 +3190,14 @@ int Spr(phydbl init_lnL, phydbl prop_spr, t_tree *tree)
     {
       br = br_idx[i];
 
-      if(!(br%10)) if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
+      if(!(br%10)) if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace);
 
       b = tree->a_edges[br];
       Spr_Subtree(b,b->left,tree);
       Spr_Subtree(b,b->rght,tree);
     }
+
+
 
   Free(br_idx);
 
@@ -3515,9 +3517,6 @@ void Test_One_Spr_Target_Recur(t_node *a, t_node *d, t_edge *pulled, t_node *lin
               curr_score = (tree->mod->s_opt->spr_pars == NO) ? tree->best_lnL : tree->best_pars;
 
               if(tree->depth_curr_path < tree->mod->s_opt->max_depth_path)
-              /* if(tree->depth_curr_path < tree->mod->s_opt->max_depth_path &&  */
-              /*    *best_found == NO &&  */
-              /*    FABS(move_score - curr_score) < 20.) */
                 Test_One_Spr_Target_Recur(d,d->v[i],pulled,link,residual,init_target,best_found,tree);
               
               tree->depth_curr_path--;
@@ -4863,7 +4862,8 @@ void Spr_List_Of_Trees(t_tree *tree)
   worst_lnL = -UNLIKELY;
   do
     {
-      Randomize_Tree(tree,tree->n_otu);
+      /* Randomize_Tree(tree,tree->n_otu); */
+      Randomize_Tree(tree,1);
       Spr_Pars(0,20,tree);
             
       Set_Both_Sides(NO,tree);
@@ -4916,7 +4916,7 @@ void Spr_List_Of_Trees(t_tree *tree)
 
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
-      Optimize_Br_Len_Serie (tree);
+      Optimize_Br_Len_Serie(tree);
 
       printf("\n>> lnL: %f",tree->c_lnL);
 
@@ -4927,6 +4927,8 @@ void Spr_List_Of_Trees(t_tree *tree)
       if(tree->c_lnL < worst_lnL) worst_lnL = tree->c_lnL;
     }
   while(list_size++ < 1 + (int)tree->n_otu/20);
+
+  rk = Ranks(lnL_list,max_list_size);
 
   Copy_Tree(tree_list[rk[0]],tree);
   /* Round_Optimize(tree,tree->data,100); */
