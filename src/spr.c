@@ -4834,11 +4834,10 @@ void Spr_List_Of_Trees(t_tree *tree)
 {
   int i,j,list_size,max_list_size,*rk,n_opt;
   t_tree **tree_list;
-  phydbl delta_lnL,*lnL_list,anneal_temp,best_lnL,worst_lnL;
+  phydbl delta_lnL,*lnL_list,best_lnL,worst_lnL;
   
   max_list_size                    = tree->n_otu;
   tree->mod->s_opt->max_depth_path = tree->n_otu;
-  anneal_temp                      = 0.0;
 
   tree_list = (t_tree **)mCalloc(max_list_size,sizeof(t_tree *));
   lnL_list  = (phydbl *)mCalloc(max_list_size,sizeof(phydbl));
@@ -4857,7 +4856,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   worst_lnL = -UNLIKELY;
   do
     {
-      Randomize_Tree(tree,5);
+      Randomize_Tree(tree,tree->n_otu);
       Spr_Pars(0,20,tree);
             
       Set_Both_Sides(NO,tree);
@@ -4878,7 +4877,6 @@ void Spr_List_Of_Trees(t_tree *tree)
   
   rk = Ranks(lnL_list,max_list_size);
     
-
   if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. Second type of SPR moves...\n");
   list_size = 0;
   best_lnL  =  UNLIKELY;
@@ -4888,13 +4886,14 @@ void Spr_List_Of_Trees(t_tree *tree)
     {
       Copy_Tree(tree_list[rk[list_size]],tree);
 
+      /* Randomize_Tree(tree,1); */
+
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
 
-      tree->annealing_temp                = anneal_temp;
-      tree->mod->s_opt->max_depth_path    = 5;
+      tree->mod->s_opt->max_depth_path    = tree->n_otu;
       tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(-1.0):(-1.0);
-      tree->mod->s_opt->spr_lnL           = NO;
+      tree->mod->s_opt->spr_lnL           = YES;
       tree->mod->s_opt->spr_pars          = NO;
       tree->mod->s_opt->min_diff_lk_move  = 0.1;
       tree->best_lnL                      = tree->c_lnL;
@@ -4904,6 +4903,7 @@ void Spr_List_Of_Trees(t_tree *tree)
           Set_Both_Sides(YES,tree);
           Lk(NULL,tree);
           Spr(UNLIKELY,1.0,tree);
+          tree->mod->s_opt->max_depth_path = tree->max_spr_depth;
         }
       while(tree->n_improvements > 5);
 
@@ -4924,7 +4924,16 @@ void Spr_List_Of_Trees(t_tree *tree)
   rk = Ranks(lnL_list,max_list_size);
 
   Copy_Tree(tree_list[rk[0]],tree);
-  Round_Optimize(tree,tree->data,100);
+  /* Round_Optimize(tree,tree->data,100); */
+
+  /*****************************/
+  do
+    {
+      Round_Optimize(tree,tree->data,ROUND_MAX);
+      if(!Check_NNI_Five_Branches(tree)) break;
+    }
+  while(1);
+  /*****************************/
 
   /* if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. Third type of SPR moves...\n"); */
   /* list_size = 0; */
