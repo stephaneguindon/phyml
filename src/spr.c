@@ -3514,10 +3514,10 @@ void Test_One_Spr_Target_Recur(t_node *a, t_node *d, t_edge *pulled, t_node *lin
               
               curr_score = (tree->mod->s_opt->spr_pars == NO) ? tree->best_lnL : tree->best_pars;
 
-              /* if(tree->depth_curr_path < tree->mod->s_opt->max_depth_path) */
-              if(tree->depth_curr_path < tree->mod->s_opt->max_depth_path && 
-                 *best_found == NO && 
-                 FABS(move_score - curr_score) < 20.)
+              if(tree->depth_curr_path < tree->mod->s_opt->max_depth_path)
+              /* if(tree->depth_curr_path < tree->mod->s_opt->max_depth_path &&  */
+              /*    *best_found == NO &&  */
+              /*    FABS(move_score - curr_score) < 20.) */
                 Test_One_Spr_Target_Recur(d,d->v[i],pulled,link,residual,init_target,best_found,tree);
               
               tree->depth_curr_path--;
