@@ -3288,8 +3288,6 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
                     }
                   else
                     {
-                      /* best_move_idx = -1; */
-                      n_moves = 1;
                       best_move_idx = Evaluate_List_Of_Regraft_Pos_Triple(tree->spr_list,n_moves,tree);
                     }
                 }
@@ -3312,7 +3310,7 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
                         apply_move = YES;
                     }
                 }
-                
+
               if((best_move_idx > -1) && (apply_move == YES))
                 {
                   Try_One_Spr_Move_Triple(tree->spr_list[best_move_idx],tree);
@@ -3880,7 +3878,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
 {
   t_spr *move;
   t_edge *init_target, *b_residual;
-  int i,j,best_move;
+  int i,j,best_move,better_found;
   int dir_v0, dir_v1, dir_v2;
   scalar_dbl *recorded_l,*recorded_v;
   phydbl best_lnL,init_lnL;
@@ -3897,6 +3895,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
   best_move = -1;
   init_lnL = tree->c_lnL;
   recorded_v = recorded_l = NULL;
+  better_found = NO;
 
   if(!list_size && !tree->io->fp_in_constraint_tree)
     {
@@ -4013,7 +4012,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
               Copy_Scalar_Dbl(move->n_link->b[dir_v2]->l_var,move->v2);
             }
           
-          if(move->lnL > best_lnL + tree->mod->s_opt->min_diff_lk_move)
+          if(move->lnL > best_lnL)
             {
               best_lnL  = move->lnL;
               best_move = i;
@@ -4035,55 +4034,50 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
           Restore_Br_Len(tree);
           
           /* Update relevant change proba matrices */
-          /* 	  Update_PMat_At_Given_Edge(move->n_link->b[0],tree); */
-          /* 	  Update_PMat_At_Given_Edge(move->n_link->b[1],tree); */
-          /* 	  Update_PMat_At_Given_Edge(move->n_link->b[2],tree); */
           Update_PMat_At_Given_Edge(move->b_target,tree);
-          
-          /* 	  Update_P_Lk(tree,move->n_link->b[0],move->n_link); */
-          /* 	  Update_P_Lk(tree,move->n_link->b[1],move->n_link); */
-          /* 	  Update_P_Lk(tree,move->n_link->b[2],move->n_link); */
-          
-          /* Update conditional likelihoods along the path from the prune to
-             the regraft position */
-          /* 	  Update_P_Lk_Along_A_Path(move->path,move->depth_path+1,tree); */
-          
+                    
           tree->c_lnL = init_lnL;
         }
       
 
       /* Bail out as soon as you've found a true improvement */
-      /* if(move->lnL > tree->best_lnL + 1.0) break; */
-      if(move->lnL > tree->best_lnL + tree->mod->s_opt->min_diff_lk_move) break;
-      
+      if(move->lnL > tree->best_lnL + tree->mod->s_opt->min_diff_lk_move) 
+        {
+          better_found = YES;
+          /* printf("\n. better found!"); */
+          break;      
+        }
     }
   
-  /* PhyML_Printf("\n. [ %4d/%4d ] %f",i,list_size,tree->best_lnL); */
+  /* PhyML_Printf("\n. [ %4d/%4d ] %f %f",i,list_size,tree->best_lnL,move->lnL); */
   /*   PhyML_Printf("\n. max_improv = %f",max_improv); */
   
   
-  MIXT_Set_Alias_Subpatt(YES,tree);
-  For(i,list_size)
+  if(better_found == NO)
     {
-      move = spr_list[i];
-      if(move->b_target)
+      MIXT_Set_Alias_Subpatt(YES,tree);
+      For(i,list_size)
         {
-          For(j,3) Update_PMat_At_Given_Edge(move->n_link->b[j],tree);
-          For(j,3) Update_P_Lk(tree,move->n_link->b[j],move->n_link);
-          
-          /* TO DO : we don't need to update all these partial likelihoods here.
-             Would need to record only those that were along the paths examined
-             above */
-          
-          For(j,3)
-            if(move->n_link->v[j] != move->n_opp_to_link)
-              Pre_Order_Lk(move->n_link,move->n_link->v[j],tree);
-          
-          break;
+          move = spr_list[i];
+          if(move->b_target)
+            {
+              For(j,3) Update_PMat_At_Given_Edge(move->n_link->b[j],tree);
+              For(j,3) Update_P_Lk(tree,move->n_link->b[j],move->n_link);
+              
+              /* TO DO : we don't need to update all these partial likelihoods here.
+                 Would need to record only those that were along the paths examined
+                 above */
+              
+              For(j,3)
+                if(move->n_link->v[j] != move->n_opp_to_link)
+                  Pre_Order_Lk(move->n_link,move->n_link->v[j],tree);
+              
+              break;
+            }
         }
-    }  
-  MIXT_Set_Alias_Subpatt(NO,tree);
-  
+      MIXT_Set_Alias_Subpatt(NO,tree);
+    }
+
 #ifdef DEBUG
   if(best_move < 0 && list_size > 0)
     {
@@ -4115,6 +4109,7 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
   int j;
   int dir_v0, dir_v1, dir_v2;
   int accept;
+  
 
   if(tree->mixt_tree != NULL)
     {
@@ -4860,7 +4855,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       if(tree->c_lnL > best_lnL)  best_lnL  = tree->c_lnL;
       if(tree->c_lnL < worst_lnL) worst_lnL = tree->c_lnL;
     }
-  while(list_size++ < 1 + (int)tree->n_otu/10);
+  while(list_size++ < 1 + (int)tree->n_otu/5);
   
   rk = Ranks(lnL_list,max_list_size);
     
