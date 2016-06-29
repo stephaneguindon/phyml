@@ -817,10 +817,10 @@ typedef struct __Align {
   char          *state; /*! sequence itself */
   int         *d_state; /*! sequence itself (digits) */
   short int *is_ambigu; /*! is_ambigu[site] = 1 if state[site] is an ambiguous character. 0 otherwise */
+  int              num;
 }align;
 
 /*!********************************************************/
-
 
 typedef struct __Calign {
   struct __Align **c_seq;             /*! compressed sequences      */
@@ -1937,7 +1937,8 @@ void Fill_Dir_Table(t_tree *tree);
 int Get_Subtree_Size(t_node *a,t_node *d);
 void Fast_Br_Len(t_edge *b,t_tree *tree,int approx);
 void Init_Eigen_Struct(eigen *this);
-phydbl Triple_Dist(t_node *a,t_tree *tree,int approx);
+phydbl Triple_Dist(t_node *a,t_tree *tree);
+phydbl Triple_Dist_Approx(t_node *a, t_edge *b, t_tree *tree);
 void Make_Symmetric(phydbl **F,int size);
 void Round_Down_Freq_Patt(phydbl **F,t_tree *tree);
 phydbl Get_Sum_Of_Cells(phydbl *F,t_tree *tree);
@@ -2123,6 +2124,9 @@ void Push_Bottom_Linked_List(void *what, t_ll *list);
 int Linked_List_Len(t_ll *list);
 void *Linked_List_Elem(int pos, t_ll *ll);
 void Randomize_Tree(t_tree *tree, int n_prune_regraft);
+t_ll *Get_List_Of_Reachable_Tips(t_node *a, t_node *d, t_tree *tree);
+void Get_List_Of_Reachable_Tips_Post(t_node *a, t_node *d, t_ll *list, t_tree *tree);
+phydbl Length_Of_Path_Between_List_Of_Tips(t_ll *tips0, t_ll *tips1, matrix *mat);
 
 #include "xml.h"
 #include "free.h"

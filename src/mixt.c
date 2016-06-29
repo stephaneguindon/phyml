@@ -2487,7 +2487,7 @@ void MIXT_Prepare_All(int num_rand_tree, t_tree *mixt_tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void MIXT_ML_Ancestral_Sequences_One_Node(t_node *mixt_d, t_tree *mixt_tree)
+void MIXT_Ancestral_Sequences_One_Node(t_node *mixt_d, t_tree *mixt_tree, int print)
 {
   if(mixt_d->tax) return;
   else
@@ -2679,21 +2679,23 @@ void MIXT_ML_Ancestral_Sequences_One_Node(t_node *mixt_d, t_tree *mixt_tree)
                             tree->mod->e_frq_weight->v / e_frq_weight_sum /
                             sum_probas;
 
-                          printf("\n class: %d prob: %f",
-                                 tree->mod->ras->parent_class_number,
-                                 curr_mixt_tree->mod->ras->gamma_r_proba->v[tree->mod->ras->parent_class_number]);
+                          if(print == YES)
+                            printf("\n class: %d prob: %f",
+                                   tree->mod->ras->parent_class_number,
+                                   curr_mixt_tree->mod->ras->gamma_r_proba->v[tree->mod->ras->parent_class_number]);
                         }
                     }
-
-                  PhyML_Fprintf(fp,"%4d\t%4d\t",site+1,d->num);
-                  For(i,Ns)
-                    {
-                      PhyML_Fprintf(fp,"%.4f\t",p[i]);
-                    }
-                  PhyML_Fprintf(fp,"\n");
-                  fflush(NULL);
-                  /* Exit("\n"); */
                   
+                  if(print == YES)
+                    {
+                      PhyML_Fprintf(fp,"%4d\t%4d\t",site+1,d->num);
+                      For(i,Ns)
+                        {
+                          PhyML_Fprintf(fp,"%.4f\t",p[i]);
+                        }
+                      PhyML_Fprintf(fp,"\n");
+                      fflush(NULL);
+                    }
 
                   tree = tree->next;
                   d    = d->next;

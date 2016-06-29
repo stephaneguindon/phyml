@@ -329,6 +329,7 @@ calign *Compact_Data(align **data, option *io)
   cdata_tmp->init_len                   = data[0]->len;
   cdata_tmp->crunch_len                 = n_patt;
   For(i,n_otu) cdata_tmp->c_seq[i]->len = n_patt;
+  For(i,n_otu) cdata_tmp->c_seq[i]->num = i;
   
   if(!io->quiet) PhyML_Printf("\n. %d patterns found (out of a total of %d sites). \n",n_patt,data[0]->len);
 
@@ -1483,7 +1484,7 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
     {
       if(tree->mod->s_opt->fast_nni)
         {
-          Fast_Br_Len(b_fcus,tree,1);
+          Fast_Br_Len(b_fcus,tree,YES);
           lk1 = Lk(b_fcus,tree);
         }
       else 
@@ -1523,7 +1524,7 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
     {
       if(tree->mod->s_opt->fast_nni)
         {
-          Fast_Br_Len(b_fcus,tree,1);
+          Fast_Br_Len(b_fcus,tree,YES);
           lk2 = Lk(b_fcus,tree);
         }
       else 
@@ -1574,7 +1575,7 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
     {
       if(tree->mod->s_opt->fast_nni)
         {
-          Fast_Br_Len(b_fcus,tree,1);
+          Fast_Br_Len(b_fcus,tree,YES);
           lk0 = Lk(b_fcus,tree);
         }
       else 
@@ -2109,6 +2110,8 @@ calign *Copy_Cseq(calign *ori, option *io)
   Init_Calign(n_otu,c_len+1,ori->init_len,new);
 
   new->obs_pinvar = ori->obs_pinvar;
+
+  For(i,n_otu) new->c_seq[i]->num = ori->c_seq[i]->num;
 
   For(i,ori->init_len) new->sitepatt[i] = ori->sitepatt[i];
 
@@ -3005,8 +3008,8 @@ void Bootstrap(t_tree *tree)
       Match_Tip_Numbers(tree,boot_tree);
 
       Get_Bip(boot_tree->a_nodes[0],
-          boot_tree->a_nodes[0]->v[0],
-          boot_tree);
+              boot_tree->a_nodes[0]->v[0],
+              boot_tree);
 
       Compare_Bip(tree,boot_tree,NO);
 
@@ -3559,9 +3562,6 @@ void Record_Model(t_mod *ori, t_mod *cpy)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-
-
 void Test_Node_Table_Consistency(t_tree *tree)
 {
   int i;
@@ -3737,7 +3737,6 @@ void Get_Bip(t_node *a, t_node *d, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Alloc_Bip(t_tree *tree)
 {
   int i;
@@ -3750,17 +3749,11 @@ void Alloc_Bip(t_tree *tree)
     {
       tree->a_nodes[i]->bip_size = (int *)mCalloc(3,sizeof(int));
       tree->a_nodes[i]->bip_node = (t_node ***)mCalloc(3,sizeof(t_node **));
-
-/*       For(j,3) */
-/* 	{ */
-/* 	  tree->a_nodes[i]->bip_node[j] = (t_node **)mCalloc(tree->n_otu,sizeof(t_node *)); */
-/* 	} */
     }
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 int Sort_Phydbl_Increase(const void *a, const void *b)
 {
@@ -5530,7 +5523,7 @@ void Joint_Proba_States_Left_Right(phydbl *Pij, phydbl *p_lk_left, phydbl *p_lk_
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-phydbl Triple_Dist(t_node *a, t_tree *tree, int approx)
+phydbl Triple_Dist(t_node *a, t_tree *tree)
 {
   if(a->tax) return UNLIKELY;
   else
@@ -5539,23 +5532,70 @@ phydbl Triple_Dist(t_node *a, t_tree *tree, int approx)
       Update_PMat_At_Given_Edge(a->b[2],tree);
 
       Update_P_Lk(tree,a->b[0],a);
-      Fast_Br_Len(a->b[0],tree,approx);
+      Fast_Br_Len(a->b[0],tree,YES);
 
       Update_P_Lk(tree,a->b[1],a);
-      Fast_Br_Len(a->b[1],tree,approx);
+      Fast_Br_Len(a->b[1],tree,YES);
 
       Update_P_Lk(tree,a->b[2],a);
-      Fast_Br_Len(a->b[2],tree,approx);
+      Fast_Br_Len(a->b[2],tree,YES);
 
       Update_P_Lk(tree,a->b[1],a);
       Update_P_Lk(tree,a->b[0],a);
     }
   
-
   return tree->c_lnL;
 
 }
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl Triple_Dist_Approx(t_node *a, t_edge *b, t_tree *tree)
+{
+  // !!!!!!!! NOT MIXT PROOF 
+  if(a->tax) return UNLIKELY;
+  else
+    {
+      int i;
+
+      For(i,3)
+        if(a->b[i] != b)
+          Update_PMat_At_Given_Edge(a->b[i],tree);
+
+      Update_P_Lk(tree,b,a);
+      Fast_Br_Len(b,tree,YES);
+
+      return tree->c_lnL;
+
+      /* t_node *v0,*v1,*v2; */
+      /* phydbl d01,d02,d12; */
+      /* t_ll *tips0,*tips1,*tips2; */
+
+      /* d01 = d02 = d12 = 0.0; */
+
+      /* v0 = a->v[0]; */
+      /* v1 = a->v[1]; */
+      /* v2 = a->v[2]; */
+
+      /* tips0 = Get_List_Of_Reachable_Tips(a,v0,tree); */
+      /* tips1 = Get_List_Of_Reachable_Tips(a,v1,tree); */
+      /* tips2 = Get_List_Of_Reachable_Tips(a,v2,tree); */
+      
+      /* d01 = Length_Of_Path_Between_List_Of_Tips(tips0,tips1,tree->mat); */
+      /* d02 = Length_Of_Path_Between_List_Of_Tips(tips0,tips2,tree->mat); */
+      /* d12 = Length_Of_Path_Between_List_Of_Tips(tips1,tips2,tree->mat); */
+
+      /* a->b[0]->l->v = (d01 + d02 - d12)/2.; */
+      /* a->b[1]->l->v = (d01 + d12 - d02)/2.; */
+      /* a->b[2]->l->v = (d02 + d12 - d01)/2.; */
+      
+      /* Free_Linked_List(tips0); */
+      /* Free_Linked_List(tips1); */
+      /* Free_Linked_List(tips2); */
+
+    }
+}
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -5852,7 +5892,6 @@ void Restore_Br_Len(t_tree *mixt_tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void Get_Dist_Btw_Edges(t_node *a, t_node *d, t_tree *tree)
 {
@@ -8041,7 +8080,6 @@ char *Bootstrap_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 char *aLRT_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
 {
   t_tree *tree;
@@ -10051,8 +10089,8 @@ void Connect_CSeqs_To_Nodes(calign *cdata, option *io, t_tree *tree)
                        tree->a_nodes[i]->name,
                        io->in_align_file);
           Exit("\n");
-        }      
-      tree->a_nodes[i]->c_seq = cdata->c_seq[j];      
+        }
+      tree->a_nodes[i]->c_seq = cdata->c_seq[j];
     }
 }
 
@@ -11573,16 +11611,126 @@ void Push_Bottom_Linked_List(void *what, t_ll *list)
       list->tail->next = (t_ll *)mCalloc(1,sizeof(t_ll));
       list->tail->next->v = (void *)what;
       list->tail = list->tail->next;
+      list->tail->head = list;
       list->tail->next = NULL;
     }
 }
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+t_ll *Get_List_Of_Reachable_Tips(t_node *a, t_node *d, t_tree *tree)
+{
+  t_ll *list;
+  list = Make_Linked_List();
+  Init_Linked_List(list);
+  Get_List_Of_Reachable_Tips_Post(a,d,list,tree);
+  return list;
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+void Get_List_Of_Reachable_Tips_Post(t_node *a, t_node *d, t_ll *list, t_tree *tree)
+{
+  if(d->tax)
+    {
+      /* printf("\n. push %d list: %p",d->num,list->head); */
+      Push_Bottom_Linked_List(d,list);
+      return;
+    }
+  else
+    {
+      int i;
+      For(i,3)
+        {
+          if(d->v[i] != a && d->b[i] != tree->e_root)
+            Get_List_Of_Reachable_Tips_Post(d,d->v[i],list,tree);
+        }
+    }  
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+// tips0: first list of tips. tips1: second list of tips
+phydbl Length_Of_Path_Between_List_Of_Tips(t_ll *tips0, t_ll *tips1, matrix *mat)
+{
+  phydbl d,n;
+  t_ll *x, *y;
+  t_node *nx, *ny;
+
+  d = 0.0;
+  n = 0;
+
+  /* Print_Mat(mat); */
+
+  // Add all distances between tips in distinct lists
+  x = tips0->head;
+  do
+    {
+      y = tips1->head;
+      do
+        {
+          nx = (t_node *)x->v;
+          ny = (t_node *)y->v;
+
+          d += mat->dist[nx->c_seq->num][ny->c_seq->num];
+
+          /* printf("\n. nx: %d ny: %d [%p %p] d: %G", */
+          /*        nx->c_seq->num, */
+          /*        ny->c_seq->num, */
+          /*        x->head, */
+          /*        y->head, */
+          /*        mat->dist[nx->c_seq->num][ny->c_seq->num]); fflush(NULL); */
+
+          n++; //  number of pairs of tips, each tip in different lists
+          y = y->next;
+        }
+      while(y);
+      x = x->next;
+    }
+  while(x);
+  
+  // Remove distances between tips in tips0
+  x = tips0->head;
+  do
+    {
+      y = tips0->head;
+      do
+        {
+          nx = (t_node *)x->v;
+          ny = (t_node *)y->v;
+          d -= mat->dist[nx->c_seq->num][ny->c_seq->num];
+          y = y->next;
+        }
+      while(y);
+      x = x->next;
+    }
+  while(x);
+
+
+  // Remove distances between tips in tips1
+  x = tips1->head;
+  do
+    {
+      y = tips1->head;
+      do
+        {
+          nx = (t_node *)x->v;
+          ny = (t_node *)y->v;
+          d -= mat->dist[nx->c_seq->num][ny->c_seq->num];
+          y = y->next;
+        }
+      while(y);
+      x = x->next;
+    }
+  while(x);
+
+  return d/(phydbl)n;
+}
+
+
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 

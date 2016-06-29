@@ -145,19 +145,8 @@ int main(int argc, char **argv)
                   switch(io->in_tree)
                     {
                     case 0 : case 1 : { tree = Dist_And_BioNJ(cdata,mod,io); break; }
-                    /* case 0 : case 1 :  */
-                    /*   {  */
-                    /*     tree = Make_Tree_From_Scratch(cdata->n_otu,cdata);  */
-                    /*     Random_Tree(tree); */
-                    /*     break;  */
-                    /*   } */
-                    case 2 :          
-                      { 
-                        tree = Read_User_Tree(cdata,mod,io); 
-                        break; 
-                      }
+                    case 2 :          { tree = Read_User_Tree(cdata,mod,io); break; }
                     }
-
 
                   if(io->fp_in_constraint_tree != NULL)
                     {
@@ -270,7 +259,7 @@ int main(int argc, char **argv)
                   PhyML_Printf("\n\n. Log likelihood of the current tree: %f.",tree->c_lnL);
 
                           
-                  if(tree->io->ancestral == YES) ML_Ancestral_Sequences(tree);
+                  if(tree->io->ancestral == YES) Ancestral_Sequences(tree,YES);
                   
                   /* Build_Distrib_Number_Of_Diff_States_Under_Model(tree); */
                   /* Exit("\n"); */

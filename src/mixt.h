@@ -85,7 +85,7 @@ void MIXT_Prepare_All(int num_rand_tree, t_tree *mixt_tree);
 void MIXT_Init_T_End(t_tree *mixt_tree);
 void MIXT_Add_Root(t_edge *mixt_b, t_tree *mixt_tree);
 void MIXT_Check_Model_Validity(t_tree *mixt_tree);
-void MIXT_ML_Ancestral_Sequences_One_Node(t_node *mixt_d, t_tree *mixt_tree);
+void MIXT_Ancestral_Sequences_One_Node(t_node *mixt_d, t_tree *mixt_tree, int print);
 void MIXT_Update_P_Pars(t_tree *mixt_tree, t_edge *mixt_b, t_node *mixt_d);
 void MIXT_Chain_Cal(t_tree *mixt_tree);
 void MIXT_Chain_Rates(t_rate *curr, t_rate *next);

@@ -1985,7 +1985,6 @@ matrix *ML_Dist(calign *data, t_mod *mod)
       tmpdata->c_seq[0]->name = data->c_seq[j]->name;
       tmpdata->wght           = data->wght;
 
-
       for(k=j+1;k<data->n_otu;k++)
         {
           tmpdata->c_seq[1]       = data->c_seq[k];
@@ -3543,48 +3542,49 @@ int Check_Lk_At_Given_Edge(int verbose, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void ML_Ancestral_Sequences(t_tree *tree)
+void Ancestral_Sequences(t_tree *tree, int print)
 {
   int i;
 
-  /* PhyML_Printf("\n. %s \n",Write_Tree(tree,NO)); */
-
-  PhyML_Printf("\n\n. Estimating ancestral sequences...");
-
-  strcpy(tree->io->out_ancestral_file,tree->io->out_file);
-  if(tree->io->append_run_ID) { strcat(tree->io->out_ancestral_file,"_"); strcat(tree->io->out_ancestral_file,tree->io->run_id_string); }
-  strcat(tree->io->out_ancestral_file,"_phyml_ancestral_seq");
-  tree->io->fp_out_ancestral = Openfile(tree->io->out_ancestral_file,1);
-
-  if(tree->n_root)
+  if(print == YES)
     {
-      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n== Printing the tree structure. Starting from the root node");
-      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n== and displaying the nodes underneath recursively. Edge numbers");
-      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n== and their lengths are also provided.\n\n");
-      Print_Node_Brief(tree->n_root,tree->n_root->v[0],tree,tree->io->fp_out_ancestral);
-      Print_Node_Brief(tree->n_root,tree->n_root->v[1],tree,tree->io->fp_out_ancestral);
+      PhyML_Printf("\n\n. Estimating ancestral sequences...");
+
+      strcpy(tree->io->out_ancestral_file,tree->io->out_file);
+      if(tree->io->append_run_ID) { strcat(tree->io->out_ancestral_file,"_"); strcat(tree->io->out_ancestral_file,tree->io->run_id_string); }
+      strcat(tree->io->out_ancestral_file,"_phyml_ancestral_seq");
+      tree->io->fp_out_ancestral = Openfile(tree->io->out_ancestral_file,1);
+      
+      if(tree->n_root)
+        {
+          PhyML_Fprintf(tree->io->fp_out_ancestral,"\n== Printing the tree structure. Starting from the root node");
+          PhyML_Fprintf(tree->io->fp_out_ancestral,"\n== and displaying the nodes underneath recursively. Edge numbers");
+          PhyML_Fprintf(tree->io->fp_out_ancestral,"\n== and their lengths are also provided.\n\n");
+          Print_Node_Brief(tree->n_root,tree->n_root->v[0],tree,tree->io->fp_out_ancestral);
+          Print_Node_Brief(tree->n_root,tree->n_root->v[1],tree,tree->io->fp_out_ancestral);
+        }
+      else
+        {
+          PhyML_Fprintf(tree->io->fp_out_ancestral,"\n== Printing the tree structure. Starting from node 0 (taxon %s)",tree->a_nodes[0]->name);
+          PhyML_Fprintf(tree->io->fp_out_ancestral,"\n== and displaying the nodes underneath recursively. Edge numbers");
+          PhyML_Fprintf(tree->io->fp_out_ancestral,"\n== and their lengths are also provided.\n\n");
+          Print_Node_Brief(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree,tree->io->fp_out_ancestral);
+        }
+      
+      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\n\n");
+      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n== Printing marginal probabilities of ancestral sequences at each site");
+      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n== of the alignment and each node of the tree.");
+      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\n");
+      PhyML_Fprintf(tree->io->fp_out_ancestral,"Site\tNode\t");
+      For(i,tree->mod->ns) PhyML_Fprintf(tree->io->fp_out_ancestral,"%c\t",Reciproc_Assign_State(i,tree->io->datatype));
+      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n");
     }
-  else
-    {
-      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n== Printing the tree structure. Starting from node 0 (taxon %s)",tree->a_nodes[0]->name);
-      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n== and displaying the nodes underneath recursively. Edge numbers");
-      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n== and their lengths are also provided.\n\n");
-      Print_Node_Brief(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree,tree->io->fp_out_ancestral);
-    }
-  
-  PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\n\n");
-  PhyML_Fprintf(tree->io->fp_out_ancestral,"\n== Printing marginal probabilities of ancestral sequences at each site");
-  PhyML_Fprintf(tree->io->fp_out_ancestral,"\n== of the alignment and each node of the tree.");
-  PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\n");
-  PhyML_Fprintf(tree->io->fp_out_ancestral,"Site\tNode\t");
-  For(i,tree->mod->ns) PhyML_Fprintf(tree->io->fp_out_ancestral,"%c\t",Reciproc_Assign_State(i,tree->io->datatype));
-  PhyML_Fprintf(tree->io->fp_out_ancestral,"\n");
 
   For(i,2*tree->n_otu-2)
     if(tree->a_nodes[i]->tax == NO)
-      ML_Ancestral_Sequences_One_Node(tree->a_nodes[i],tree);
+      Ancestral_Sequences_One_Node(tree->a_nodes[i],tree,print);
 
-  if(tree->n_root) ML_Ancestral_Sequences_One_Node(tree->n_root,tree);
+  if(tree->n_root) Ancestral_Sequences_One_Node(tree->n_root,tree,print);
 
 
   fclose(tree->io->fp_out_ancestral);
@@ -3593,15 +3593,14 @@ void ML_Ancestral_Sequences(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void ML_Ancestral_Sequences_One_Node(t_node *d, t_tree *tree)
+void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
 {
   if(d->tax) return;
   else
     {
       if(tree->is_mixt_tree) 
         {
-          MIXT_ML_Ancestral_Sequences_One_Node(d,tree);
-          return;
+          return MIXT_Ancestral_Sequences_One_Node(d,tree,print);
         }
       else
         {
@@ -3761,19 +3760,21 @@ void ML_Ancestral_Sequences_One_Node(t_node *d, t_tree *tree)
                     }
                 }
               
-              PhyML_Fprintf(fp,"%4d\t%4d\t",site+1,d->num);
-              sum_probas = .0;
-              For(i,Ns)
+              if(print == YES)
                 {
-                  PhyML_Fprintf(fp,"%.4f\t",p[i]);
-                  sum_probas += p[i];
+                  PhyML_Fprintf(fp,"%4d\t%4d\t",site+1,d->num);
+                  sum_probas = .0;
+                  For(i,Ns)
+                    {
+                      PhyML_Fprintf(fp,"%.4f\t",p[i]);
+                      sum_probas += p[i];
+                    }
+                  PhyML_Fprintf(fp,"\n");
                 }
-              PhyML_Fprintf(fp,"\n");
+
               assert(Are_Equal(sum_probas,1.0,0.01));
               fflush(NULL);
-              /* Exit("\n"); */
             }
-          
           Free(p);
         }
     }

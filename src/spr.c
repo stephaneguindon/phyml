@@ -1651,7 +1651,7 @@ int Est_Lk_Change (t_edge *e_prune, t_node *v_prune, t_tree *tree)
     /* Beg SG 18 May 2007 */
     if(tree->mod->s_opt->wim_inside_opt)
       {
-    Triple_Dist(v_tmp,tree,0);
+    Triple_Dist(v_tmp,tree);
     For(i,3) l_est[i] = v_tmp->b[i]->l->v;
       }
     /* End SG 18 May 2007 */
@@ -3284,23 +3284,18 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
                   Sort_Spr_List_LnL(tree);
                   if(tree->spr_list[0]->lnL > tree->best_lnL)
                     {
-                      /* n_moves = 1; */
-                      /* best_move_idx = Evaluate_List_Of_Regraft_Pos_Triple(tree->spr_list,n_moves,tree); */
                       best_move_idx = 0;
                     }
                   else
                     {
-                      /* best_move_idx = Evaluate_List_Of_Regraft_Pos_Triple(tree->spr_list,n_moves,tree); */
-                      best_move_idx = -1;
+                      /* best_move_idx = -1; */
+                      best_move_idx = Evaluate_List_Of_Regraft_Pos_Triple(tree->spr_list,n_moves,tree);
                     }
                 }
               else
                 {
                   best_move_idx = Evaluate_List_Of_Regraft_Pos_Triple(tree->spr_list,n_moves,tree);
                 }
-
-              /* For(i,n_moves) printf("\n. %d %f %d",i,tree->spr_list[i]->lnL,tree->spr_list[i]->pars); */
-              /* fflush(NULL); */
 
               if(best_move_idx > -1)
                 {
@@ -3585,13 +3580,6 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
       Update_P_Lk(tree,b_residual,n_link);
       move_lnL = Lk(b_residual,tree);
       MIXT_Set_Alias_Subpatt(NO,tree);
-
-      /* if(FABS(move_lnL - tree->best_lnL < 10.)) */
-      /*   { */
-      /*     MIXT_Set_Alias_Subpatt(YES,tree); */
-      /*     move->lnL = Triple_Dist(n_link,tree,YES); */
-      /*     MIXT_Set_Alias_Subpatt(NO,tree); */
-      /*   } */
     }
   else
     {
@@ -3989,17 +3977,9 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
           Graft_Subtree(move->b_target,move->n_link,b_residual,tree);
                     
           MIXT_Set_Alias_Subpatt(YES,tree);
-          move->lnL = Triple_Dist(move->n_link,tree,YES);
-
+          /* move->lnL = Triple_Dist(move->n_link,tree); */
+          move->lnL = Triple_Dist_Approx(move->n_link,move->b_opp_to_link,tree);
           MIXT_Set_Alias_Subpatt(NO,tree);
-
-          if((move->lnL < best_lnL) && (move->lnL > best_lnL - tree->mod->s_opt->max_delta_lnL_spr))
-            {
-              /* Estimate the three t_edge lengths at the regraft site */
-              MIXT_Set_Alias_Subpatt(YES,tree);
-              move->lnL = Triple_Dist(move->n_link,tree,NO);
-              MIXT_Set_Alias_Subpatt(NO,tree);
-            }
 
           /* printf("\n. %d/%d move->lnL= %f best_lnL=%f absolute_best=%f",i,list_size,move->lnL,best_lnL,tree->best_lnL); */
           
@@ -4334,7 +4314,6 @@ void Include_One_Spr_To_List_Of_Spr(t_spr *move, t_tree *tree)
       move_list->pars          = move->pars;
       move_list->lnL           = move->lnL;
       move_list->dist          = move->dist;
-
 
       if(move_list->l0 == NULL)
         {
