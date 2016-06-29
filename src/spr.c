@@ -3289,6 +3289,7 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
                   else
                     {
                       /* best_move_idx = -1; */
+                      n_moves = 1;
                       best_move_idx = Evaluate_List_Of_Regraft_Pos_Triple(tree->spr_list,n_moves,tree);
                     }
                 }
@@ -3977,8 +3978,8 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
           Graft_Subtree(move->b_target,move->n_link,b_residual,tree);
                     
           MIXT_Set_Alias_Subpatt(YES,tree);
-          /* move->lnL = Triple_Dist(move->n_link,tree); */
-          move->lnL = Triple_Dist_Approx(move->n_link,move->b_opp_to_link,tree);
+          move->lnL = Triple_Dist(move->n_link,tree);
+          /* move->lnL = Triple_Dist_Approx(move->n_link,move->b_opp_to_link,tree); */
           MIXT_Set_Alias_Subpatt(NO,tree);
 
           /* printf("\n. %d/%d move->lnL= %f best_lnL=%f absolute_best=%f",i,list_size,move->lnL,best_lnL,tree->best_lnL); */
