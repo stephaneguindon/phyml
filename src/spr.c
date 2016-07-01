@@ -3705,7 +3705,6 @@ void Speed_Spr_Loop(t_tree *tree)
   Spr_List_Of_Trees(tree);
   return;
 
-
   tree->best_pars                  = 1E+8;
   tree->mod->s_opt->spr_lnL        = NO;
   tree->mod->s_opt->spr_pars       = NO;
@@ -4854,8 +4853,8 @@ void Spr_List_Of_Trees(t_tree *tree)
   do
     {
       /* Randomize_Tree(tree,tree->n_otu); */
-      /* Spr_Pars(0,20,tree); */
       Stepwise_Add_Pars(tree);
+      Spr_Pars(0,2,tree);
          
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
@@ -4884,7 +4883,47 @@ void Spr_List_Of_Trees(t_tree *tree)
     {
       Copy_Tree(tree_list[rk[list_size]],tree);
 
-      tree->mod->s_opt->max_depth_path    = 20;
+      tree->mod->s_opt->max_depth_path    = 15;
+      tree->mod->s_opt->spr_lnL           = YES;
+      tree->mod->s_opt->spr_pars          = NO;
+      tree->mod->s_opt->min_diff_lk_move  = 0.1;
+      tree->best_lnL                      = lnL_list[rk[list_size]];
+      tree->mod->s_opt->eval_list_regraft = NO;
+      
+      do
+        {
+          Set_Both_Sides(YES,tree);
+          Lk(NULL,tree);
+          Spr(UNLIKELY,1.0,tree);
+          tree->mod->s_opt->max_depth_path = tree->max_spr_depth;
+        }
+      while(tree->n_improvements > 5);
+
+      Set_Both_Sides(NO,tree);
+      Lk(NULL,tree);
+      Optimize_Br_Len_Serie(tree);
+
+      printf("\n>> lnL: %f [%d/%d]",tree->c_lnL,list_size+1,1 + (int)tree->n_otu/20);
+
+      Copy_Tree(tree,tree_list[rk[list_size]]);
+      lnL_list[rk[list_size]] = tree->c_lnL;
+    }
+  while(list_size++ <= 5);
+
+
+  rk = Ranks(lnL_list,max_list_size);
+
+  if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. Last optimization round...\n");
+
+    
+  list_size = 0;
+  best_lnL  =  UNLIKELY;
+  worst_lnL = -UNLIKELY;
+  do
+    {
+      Copy_Tree(tree_list[rk[list_size]],tree);
+
+      tree->mod->s_opt->max_depth_path    = 5;
       tree->mod->s_opt->spr_lnL           = YES;
       tree->mod->s_opt->spr_pars          = NO;
       tree->mod->s_opt->min_diff_lk_move  = 0.1;
@@ -4908,34 +4947,11 @@ void Spr_List_Of_Trees(t_tree *tree)
 
       Copy_Tree(tree,tree_list[rk[list_size]]);
       lnL_list[rk[list_size]] = tree->c_lnL;
-
-      if(tree->c_lnL > best_lnL)  best_lnL  = tree->c_lnL;
-      if(tree->c_lnL < worst_lnL) worst_lnL = tree->c_lnL;
     }
-  while(list_size++ < 5);
-
-  if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. Last optimization round...\n");
+  while(list_size++ <= 2);
 
   rk = Ranks(lnL_list,max_list_size);
-    
   Copy_Tree(tree_list[rk[0]],tree);
-  
-  tree->mod->s_opt->max_depth_path    = 10;
-  tree->mod->s_opt->spr_lnL           = YES;
-  tree->mod->s_opt->spr_pars          = NO;
-  tree->mod->s_opt->min_diff_lk_move  = 0.1;
-  tree->best_lnL                      = lnL_list[rk[0]];
-  tree->mod->s_opt->eval_list_regraft = YES;
-  
-  do
-    {
-      Set_Both_Sides(YES,tree);
-      Lk(NULL,tree);
-      Spr(UNLIKELY,1.0,tree);
-      tree->mod->s_opt->max_depth_path = tree->max_spr_depth;
-    }
-  while(tree->n_improvements > 5);
-
 
   do
     {
