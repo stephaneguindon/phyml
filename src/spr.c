@@ -4039,17 +4039,27 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
           tree->c_lnL = init_lnL;
         }
       
+      /* PhyML_Printf("\n. [ %4d/%4d ] %f %f %s", */
+      /*              i,list_size,tree->best_lnL,move->lnL, */
+      /*              (move->lnL > tree->best_lnL + tree->mod->s_opt->min_diff_lk_move) ? "**" : ""); */
+
 
       /* Bail out as soon as you've found a true improvement */
       if(move->lnL > tree->best_lnL + tree->mod->s_opt->min_diff_lk_move) 
         {
           better_found = YES;
-          /* printf("\n. better found!"); */
           break;      
         }
+
+      /* Bail out if move is too far from optimum */
+      if(move->lnL < tree->best_lnL - 10.) 
+        {
+          better_found = NO;
+          break;
+        }
+
     }
   
-  /* PhyML_Printf("\n. [ %4d/%4d ] %f %f",i,list_size,tree->best_lnL,move->lnL); */
   /*   PhyML_Printf("\n. max_improv = %f",max_improv); */
   
   
