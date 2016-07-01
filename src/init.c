@@ -727,6 +727,7 @@ void Set_Defaults_Optimiz(t_opt *s_opt)
   s_opt->spr_pars             = YES;
   s_opt->spr_lnL              = NO;
   s_opt->min_depth_path       = 0;
+  s_opt->eval_list_regraft    = NO;
 
   s_opt->max_depth_path       = 20;
   s_opt->deepest_path         = 20;

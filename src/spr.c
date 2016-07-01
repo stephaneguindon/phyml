@@ -3212,7 +3212,9 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
   int n_moves_pars, n_moves, min_pars, best_move_idx;
   t_spr *best_pars_move;
   t_edge *target, *residual;
-  
+    
+  if(link->v[0] == NULL || link->v[1] == NULL || link->v[2] == NULL) return;
+ 
   best_move_idx = -1;
   tree->n_moves = 0;
 
@@ -3286,9 +3288,13 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
                     {
                       best_move_idx = 0;
                     }
-                  else
+                  else if(tree->mod->s_opt->eval_list_regraft == YES)
                     {
                       best_move_idx = Evaluate_List_Of_Regraft_Pos_Triple(tree->spr_list,n_moves,tree);
+                    }
+                  else 
+                    {
+                      best_move_idx = -1;
                     }
                 }
               else
@@ -3357,6 +3363,9 @@ int Test_All_Spr_Targets(t_edge *b_pulled, t_node *n_link, t_tree *tree)
         if(dir1<0) dir1 = i;
         else       dir2 = i;
       }
+
+  assert(dir1 > -1);
+  assert(dir2 > -1);
 
   if(n_link->v[dir1]->num < n_link->v[dir2]->num)
     {
@@ -4878,17 +4887,13 @@ void Spr_List_Of_Trees(t_tree *tree)
     {
       Copy_Tree(tree_list[rk[list_size]],tree);
 
-      /* Randomize_Tree(tree,1); */
-
-      Set_Both_Sides(NO,tree);
-      Lk(NULL,tree);
-
       tree->mod->s_opt->max_depth_path    = tree->n_otu;
       tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(-1.0):(-1.0);
       tree->mod->s_opt->spr_lnL           = YES;
       tree->mod->s_opt->spr_pars          = NO;
       tree->mod->s_opt->min_diff_lk_move  = 0.1;
-      tree->best_lnL                      = tree->c_lnL;
+      tree->best_lnL                      = lnL_list[rk[list_size]];
+      tree->mod->s_opt->eval_list_regraft = YES;
       
       do
         {
@@ -4903,7 +4908,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       Lk(NULL,tree);
       Optimize_Br_Len_Serie(tree);
 
-      printf("\n>> lnL: %f",tree->c_lnL);
+      printf("\n>> lnL: %f [%d/%d]",tree->c_lnL,list_size+1,1 + (int)tree->n_otu/20);
 
       Copy_Tree(tree,tree_list[rk[list_size]]);
       lnL_list[rk[list_size]] = tree->c_lnL;
@@ -4913,19 +4918,38 @@ void Spr_List_Of_Trees(t_tree *tree)
     }
   while(list_size++ < 1 + (int)tree->n_otu/20);
 
+
+
+  if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. Last optimization round...\n");
+
   rk = Ranks(lnL_list,max_list_size);
-
+    
   Copy_Tree(tree_list[rk[0]],tree);
-  /* Round_Optimize(tree,tree->data,100); */
+  
+  tree->mod->s_opt->max_depth_path    = 10;
+  tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(-1.0):(-1.0);
+  tree->mod->s_opt->spr_lnL           = YES;
+  tree->mod->s_opt->spr_pars          = NO;
+  tree->mod->s_opt->min_diff_lk_move  = 0.1;
+  tree->best_lnL                      = lnL_list[rk[0]];
+  tree->mod->s_opt->eval_list_regraft = YES;
+  
+  do
+    {
+      Set_Both_Sides(YES,tree);
+      Lk(NULL,tree);
+      Spr(UNLIKELY,1.0,tree);
+      tree->mod->s_opt->max_depth_path = tree->max_spr_depth;
+    }
+  while(tree->n_improvements > 5);
 
-  /*****************************/
+
   do
     {
       Round_Optimize(tree,tree->data,ROUND_MAX);
       if(!Check_NNI_Five_Branches(tree)) break;
     }
   while(1);
-  /*****************************/
 
   Free(tree_list);
   Free(lnL_list);
