@@ -3706,6 +3706,9 @@ void Speed_Spr_Loop(t_tree *tree)
   return;
 
 
+
+  printf("\n coucou\n");
+
   tree->best_pars                  = 1E+8;
   tree->mod->s_opt->spr_lnL        = NO;
   tree->mod->s_opt->spr_pars       = NO;
