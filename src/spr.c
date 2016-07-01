@@ -4903,7 +4903,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       Lk(NULL,tree);
       Optimize_Br_Len_Serie(tree);
 
-      printf("\n>> lnL: %f [%d/%d]",tree->c_lnL,list_size+1,1 + (int)tree->n_otu/20);
+      printf("\n>> lnL: %f [%d/5]",tree->c_lnL,list_size+1);
 
       Copy_Tree(tree,tree_list[rk[list_size]]);
       lnL_list[rk[list_size]] = tree->c_lnL;
