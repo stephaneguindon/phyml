@@ -3702,8 +3702,8 @@ void Speed_Spr_Loop(t_tree *tree)
   phydbl lk_old,delta_lnL;
   int i;
 
-  Spr_List_Of_Trees(tree);
-  return;
+  /* Spr_List_Of_Trees(tree); */
+  /* return; */
 
   tree->best_pars                  = 1E+8;
   tree->mod->s_opt->spr_lnL        = NO;
@@ -4870,7 +4870,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       if(tree->c_lnL > best_lnL)  best_lnL  = tree->c_lnL;
       if(tree->c_lnL < worst_lnL) worst_lnL = tree->c_lnL;
     }
-  while(list_size++ < 1 + (int)tree->n_otu/5);
+  while(list_size++ < MAX(10,1 + (int)tree->n_otu/5));
   
   rk = Ranks(lnL_list,max_list_size);
     
@@ -4911,9 +4911,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       if(tree->c_lnL > best_lnL)  best_lnL  = tree->c_lnL;
       if(tree->c_lnL < worst_lnL) worst_lnL = tree->c_lnL;
     }
-  while(list_size++ < 1 + (int)tree->n_otu/20);
-
-
+  while(list_size++ < 5);
 
   if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. Last optimization round...\n");
 
