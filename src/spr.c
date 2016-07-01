@@ -3726,7 +3726,6 @@ void Speed_Spr_Loop(t_tree *tree)
   if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. First round of SPR moves...\n");
   lk_old = tree->c_lnL;
   tree->mod->s_opt->max_depth_path    = tree->n_otu;
-  tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(-1.):(-1.);
   tree->mod->s_opt->spr_lnL           = NO;
   tree->mod->s_opt->spr_pars          = NO;
   tree->mod->s_opt->min_diff_lk_move  = 0.1;
@@ -3738,7 +3737,6 @@ void Speed_Spr_Loop(t_tree *tree)
   if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. Second round of SPR moves...\n");
   lk_old = tree->c_lnL;
   tree->mod->s_opt->max_depth_path    = tree->n_otu;
-  tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(2.):(0.);
   tree->mod->s_opt->spr_lnL           = YES;
   tree->mod->s_opt->spr_pars          = NO;
   tree->mod->s_opt->min_diff_lk_move  = 0.01;
@@ -4614,7 +4612,6 @@ void Spr_Shuffle(t_tree *mixt_tree)
   mixt_tree->mod->s_opt->spr_pars          = NO;
   mixt_tree->mod->s_opt->quickdirty        = NO;
   mixt_tree->best_lnL                      = mixt_tree->c_lnL;
-  mixt_tree->mod->s_opt->max_delta_lnL_spr = 0.;
   mixt_tree->mod->s_opt->max_depth_path    = mixt_tree->n_otu;
   mixt_tree->mod->s_opt->min_diff_lk_move  = 0.1;
   mixt_tree->annealing_temp                = 0.0;
@@ -4718,7 +4715,6 @@ void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int d
   Lk(NULL,tree);
 
   tree->mod->s_opt->max_depth_path    = (int)(tree->n_otu/3);
-  tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(5.):(0.);
   tree->mod->s_opt->min_diff_lk_move  = 0.1;
   tree->mod->s_opt->spr_lnL           = NO;
   tree->mod->s_opt->spr_pars          = NO;
@@ -4887,8 +4883,7 @@ void Spr_List_Of_Trees(t_tree *tree)
     {
       Copy_Tree(tree_list[rk[list_size]],tree);
 
-      tree->mod->s_opt->max_depth_path    = tree->n_otu;
-      tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(-1.0):(-1.0);
+      tree->mod->s_opt->max_depth_path    = 20;
       tree->mod->s_opt->spr_lnL           = YES;
       tree->mod->s_opt->spr_pars          = NO;
       tree->mod->s_opt->min_diff_lk_move  = 0.1;
@@ -4927,7 +4922,6 @@ void Spr_List_Of_Trees(t_tree *tree)
   Copy_Tree(tree_list[rk[0]],tree);
   
   tree->mod->s_opt->max_depth_path    = 10;
-  tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(-1.0):(-1.0);
   tree->mod->s_opt->spr_lnL           = YES;
   tree->mod->s_opt->spr_pars          = NO;
   tree->mod->s_opt->min_diff_lk_move  = 0.1;
