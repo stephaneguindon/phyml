@@ -35,5 +35,6 @@ void Init_P_Pars_Tips(t_tree *tree);
 void Get_Step_Mat(t_tree *tree);
 int Pars_Core(t_edge *b, t_tree *tree);
 int One_Pars_Step(t_edge *b,t_tree *tree);
+void Stepwise_Add_Pars(t_tree *tree);
 
 #endif

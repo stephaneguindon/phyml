@@ -90,6 +90,7 @@ int Check_Lk_At_Given_Edge(int verbose, t_tree *tree);
 void Ancestral_Sequences_One_Node(t_node *mixt_d, t_tree *mixt_tree, int print);
 void Ancestral_Sequences(t_tree *tree, int print);
 void Pull_Scaling_Factors(int site, t_edge *b, t_tree *tree);
+void Stepwise_Add_Lk(t_tree *tree);
 
 #endif
 

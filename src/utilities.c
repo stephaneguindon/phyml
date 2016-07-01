@@ -4679,7 +4679,6 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
 
 void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_tree *tree)
 {
-
   t_node *v1, *v2;
   t_edge *b1, *b2;
   int dir_v1, dir_v2;
@@ -4701,6 +4700,9 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
           else           dir_v2 = i;
         }
     }
+
+  assert(dir_v1 > -1);
+  assert(dir_v2 > -1);
 
   if(a->v[dir_v1]->num < a->v[dir_v2]->num)
     {

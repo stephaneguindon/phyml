@@ -3879,6 +3879,98 @@ void Pull_Scaling_Factors(int site,
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+// Tree should be ready for likelihood analysis when calling
+// this function.
+void Stepwise_Add_Lk(t_tree *tree)
+{
+  t_edge **residuals,**targets,*best_target;
+  int *nd_idx,i,j,n_targets,*tg_idx,n_opt;
+
+  residuals   = (t_edge **)mCalloc(tree->n_otu-3,sizeof(t_edge *));
+  targets     = (t_edge **)mCalloc(2*tree->n_otu-3,sizeof(t_edge *));
+  best_target = NULL;
+  nd_idx      = Permutate(tree->n_otu-3);
+
+  // Remove all tips except that corresponding to a_nodes[0], 
+  // a_nodes[1] and a_nodes[2].  
+  For(i,tree->n_otu-3)
+    {
+      Prune_Subtree(tree->a_nodes[i+3]->v[0],                   
+                    tree->a_nodes[i+3],
+                    NULL,
+                    residuals+i,
+                    tree);
+    }
+
+  // Initial targets
+  n_targets = 3;
+  For(i,n_targets) targets[i] = tree->a_nodes[i]->b[0];
+
+  // Regraft each tip on the tree at most parsimonious position
+  For(i,tree->n_otu-3)
+    {
+      Set_Both_Sides(YES,tree);
+      Lk(NULL,tree);
+
+      printf("\n. [%d/%d]",i,tree->n_otu-3);
+
+      tree->best_lnL = UNLIKELY;
+      best_target    = NULL;
+      tg_idx         = Permutate(n_targets);
+
+      For(j,n_targets)
+        {
+          Graft_Subtree(targets[tg_idx[j]],
+                        tree->a_nodes[nd_idx[i]+3]->v[0],
+                        residuals[i],
+                        tree);
+          
+          Update_PMat_At_Given_Edge(targets[tg_idx[j]],tree);
+          Update_PMat_At_Given_Edge(tree->a_nodes[nd_idx[i]+3]->b[0],tree);
+          Update_P_Lk(tree,residuals[i],tree->a_nodes[nd_idx[i]+3]->v[0]);
+          Lk(residuals[i],tree);
+
+          if(tree->c_lnL > tree->best_lnL)
+            {
+              tree->best_lnL = tree->c_lnL;
+              best_target = targets[tg_idx[j]];
+            }
+          
+          Prune_Subtree(tree->a_nodes[nd_idx[i]+3]->v[0],                        
+                        tree->a_nodes[nd_idx[i]+3],
+                        NULL,
+                        residuals+i,
+                        tree);
+        }
+
+      assert(best_target);
+            
+      Graft_Subtree(best_target,
+                    tree->a_nodes[nd_idx[i]+3]->v[0],
+                    residuals[i],
+                    tree);
+      
+      Set_Both_Sides(NO,tree);
+      Lk(NULL,tree);
+      n_opt = 0;
+      do Optimize_Br_Len_Serie (tree); while(n_opt++ < 3);
+
+      targets[n_targets]   = residuals[i]; 
+      targets[n_targets+1] = tree->a_nodes[nd_idx[i]+3]->b[0];
+      
+      Free(tg_idx);
+      n_targets+=2;
+    }
+
+  Round_Optimize(tree,tree->data,5);
+  printf("\n. lk: %f",tree->c_lnL);
+  Exit("\n");
+
+  Free(nd_idx);
+  Free(residuals);
+  Free(targets);
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 

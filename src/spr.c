@@ -3693,7 +3693,6 @@ void Speed_Spr_Loop(t_tree *tree)
   phydbl lk_old,delta_lnL;
   int i;
 
-
   Spr_List_Of_Trees(tree);
   return;
 
@@ -4830,13 +4829,13 @@ void Spr_List_Of_Trees(t_tree *tree)
   
   max_list_size                    = tree->n_otu;
   tree->mod->s_opt->max_depth_path = tree->n_otu;
-
   tree_list = (t_tree **)mCalloc(max_list_size,sizeof(t_tree *));
   lnL_list  = (phydbl *)mCalloc(max_list_size,sizeof(phydbl));
 
   For(i,max_list_size) lnL_list[i] = UNLIKELY;
 
-  Spr_Pars(0,100,tree);
+  Stepwise_Add_Pars(tree);
+  /* Spr_Pars(0,100,tree); */
   Round_Optimize(tree,tree->data,5);
   tree_list[0] = Make_Tree_From_Scratch(tree->n_otu,tree->data);
   Copy_Tree(tree,tree_list[0]);
@@ -4848,9 +4847,10 @@ void Spr_List_Of_Trees(t_tree *tree)
   worst_lnL = -UNLIKELY;
   do
     {
-      Randomize_Tree(tree,tree->n_otu);
-      Spr_Pars(0,20,tree);
-            
+      /* Randomize_Tree(tree,tree->n_otu); */
+      /* Spr_Pars(0,20,tree); */
+      Stepwise_Add_Pars(tree);
+         
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
       n_opt = 0;

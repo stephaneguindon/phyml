@@ -952,5 +952,96 @@ void Get_Step_Mat(t_tree *tree)
 }
 
 /*********************************************************/
-
 /*********************************************************/
+/*********************************************************/
+/*********************************************************/
+/*********************************************************/
+/*********************************************************/
+/*********************************************************/
+
+// Tree should be ready for likelihood analysis when calling
+// this function.
+void Stepwise_Add_Pars(t_tree *tree)
+{
+  t_edge **residuals,**targets,*best_target;
+  int *nd_idx,i,j,n_targets,*tg_idx;
+
+  residuals   = (t_edge **)mCalloc(tree->n_otu-3,sizeof(t_edge *));
+  targets     = (t_edge **)mCalloc(2*tree->n_otu-3,sizeof(t_edge *));
+  best_target = NULL;
+  nd_idx      = Permutate(tree->n_otu-3);
+
+  // Remove all tips except that corresponding to a_nodes[0], 
+  // a_nodes[1] and a_nodes[2].  
+  For(i,tree->n_otu-3)
+    {
+      Prune_Subtree(tree->a_nodes[i+3]->v[0],                   
+                    tree->a_nodes[i+3],
+                    NULL,
+                    residuals+i,
+                    tree);
+    }
+
+  // Initial targets
+  n_targets = 3;
+  For(i,n_targets) targets[i] = tree->a_nodes[i]->b[0];
+
+  // Regraft each tip on the tree at most parsimonious position
+  For(i,tree->n_otu-3)
+    {
+      Set_Both_Sides(YES,tree);
+      Pars(NULL,tree);
+
+      /* printf("\n. [%d/%d]",i,tree->n_otu-3); */
+
+      tree->best_pars = 1E+8;
+      best_target = NULL;
+      tg_idx      = Permutate(n_targets);
+
+      For(j,n_targets)
+        {
+          Graft_Subtree(targets[tg_idx[j]],
+                        tree->a_nodes[nd_idx[i]+3]->v[0],
+                        residuals[i],
+                        tree);
+          
+          Update_P_Pars(tree,
+                        tree->a_nodes[nd_idx[i]+3]->b[0],
+                        tree->a_nodes[nd_idx[i]+3]->v[0]);
+          Pars(tree->a_nodes[nd_idx[i]+3]->b[0],tree);
+          
+
+          if(tree->c_pars < tree->best_pars)
+            {
+              tree->best_pars = tree->c_pars;
+              best_target = targets[tg_idx[j]];
+            }
+          
+          Prune_Subtree(tree->a_nodes[nd_idx[i]+3]->v[0],                        
+                        tree->a_nodes[nd_idx[i]+3],
+                        NULL,
+                        residuals+i,
+                        tree);
+        }
+
+      assert(best_target);
+            
+      Graft_Subtree(best_target,
+                    tree->a_nodes[nd_idx[i]+3]->v[0],
+                    residuals[i],
+                    tree);
+      
+      targets[n_targets]   = residuals[i]; 
+      targets[n_targets+1] = tree->a_nodes[nd_idx[i]+3]->b[0];
+      
+      Free(tg_idx);
+      n_targets+=2;
+    }
+
+  /* printf("\n. pars: %d",tree->c_pars); */
+  /* Exit("\n"); */
+
+  Free(nd_idx);
+  Free(residuals);
+  Free(targets);
+}
