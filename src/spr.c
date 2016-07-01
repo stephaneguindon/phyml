@@ -3705,6 +3705,7 @@ void Speed_Spr_Loop(t_tree *tree)
   Spr_List_Of_Trees(tree);
   return;
 
+
   tree->best_pars                  = 1E+8;
   tree->mod->s_opt->spr_lnL        = NO;
   tree->mod->s_opt->spr_pars       = NO;
