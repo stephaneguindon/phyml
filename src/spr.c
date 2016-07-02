@@ -4859,7 +4859,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
       n_opt = 0;
-      do Optimize_Br_Len_Serie (tree); while(n_opt++ < 3);
+      do Optimize_Br_Len_Serie(tree); while(n_opt++ < 2);
 
       printf("\n>> lnL: %f pars: %d",tree->c_lnL,tree->c_pars);
 
@@ -4870,7 +4870,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       if(tree->c_lnL > best_lnL)  best_lnL  = tree->c_lnL;
       if(tree->c_lnL < worst_lnL) worst_lnL = tree->c_lnL;
     }
-  while(list_size++ < MAX(10,1 + (int)tree->n_otu/5));
+  while(list_size++ < 10);
   
   rk = Ranks(lnL_list,max_list_size);
     
