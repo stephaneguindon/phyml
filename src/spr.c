@@ -3274,7 +3274,10 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
                   tree->n_improvements++;
                 }
               else
-                Pars(NULL,tree);
+                {
+                  Set_Both_Sides(YES,tree);
+                  Pars(NULL,tree);
+                }
             }
           else
             {
@@ -4848,8 +4851,6 @@ void Spr_List_Of_Trees(t_tree *tree)
 
   if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. First type of SPR moves...\n");
   list_size = 1;
-  best_lnL  =  UNLIKELY;
-  worst_lnL = -UNLIKELY;
   do
     {
       /* Randomize_Tree(tree,tree->n_otu); */
@@ -4866,9 +4867,6 @@ void Spr_List_Of_Trees(t_tree *tree)
       tree_list[list_size] = Make_Tree_From_Scratch(tree->n_otu,tree->data);
       Copy_Tree(tree,tree_list[list_size]);
       lnL_list[list_size] = tree->c_lnL;
-
-      if(tree->c_lnL > best_lnL)  best_lnL  = tree->c_lnL;
-      if(tree->c_lnL < worst_lnL) worst_lnL = tree->c_lnL;
     }
   while(list_size++ < MAX(10,1 + (int)tree->n_otu/5));
   
@@ -4876,9 +4874,6 @@ void Spr_List_Of_Trees(t_tree *tree)
     
   if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. Second type of SPR moves...\n");
   list_size = 0;
-  best_lnL  =  UNLIKELY;
-  worst_lnL = -UNLIKELY;
-
   do
     {
       Copy_Tree(tree_list[rk[list_size]],tree);
@@ -4894,7 +4889,7 @@ void Spr_List_Of_Trees(t_tree *tree)
         {
           Set_Both_Sides(YES,tree);
           Lk(NULL,tree);
-          Spr(UNLIKELY,0.2,tree);
+          Spr(UNLIKELY,0.5,tree);
           tree->mod->s_opt->max_depth_path = tree->max_spr_depth;
         }
       while(tree->n_improvements > 5);
@@ -4915,10 +4910,7 @@ void Spr_List_Of_Trees(t_tree *tree)
 
   if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. Last optimization round...\n");
 
-    
   list_size = 0;
-  best_lnL  =  UNLIKELY;
-  worst_lnL = -UNLIKELY;
   do
     {
       Copy_Tree(tree_list[rk[list_size]],tree);
