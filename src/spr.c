@@ -4870,7 +4870,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       if(tree->c_lnL > best_lnL)  best_lnL  = tree->c_lnL;
       if(tree->c_lnL < worst_lnL) worst_lnL = tree->c_lnL;
     }
-  while(list_size++ < 10);
+  while(list_size++ < MAX(10,1 + (int)tree->n_otu/5));
   
   rk = Ranks(lnL_list,max_list_size);
     
@@ -4894,7 +4894,7 @@ void Spr_List_Of_Trees(t_tree *tree)
         {
           Set_Both_Sides(YES,tree);
           Lk(NULL,tree);
-          Spr(UNLIKELY,1.0,tree);
+          Spr(UNLIKELY,0.5,tree);
           tree->mod->s_opt->max_depth_path = tree->max_spr_depth;
         }
       while(tree->n_improvements > 5);
