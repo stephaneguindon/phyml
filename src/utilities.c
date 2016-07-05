@@ -1375,21 +1375,28 @@ void Share_Pars_Struct(t_tree *t_full, t_tree *t_empt)
 
 int Sort_Edges_NNI_Score(t_tree *tree, t_edge **sorted_edges, int n_elem)
 {
-  int i,j;
+  int i,j,done;
   t_edge *buff;
 
-  For(i,n_elem-1)
+  do
     {
-      for(j=i+1;j<n_elem;j++)
-    {
-      if(sorted_edges[j]->nni->score  < sorted_edges[i]->nni->score)
+      done = YES;
+      For(i,n_elem-1)
         {
-          buff = sorted_edges[j];
-          sorted_edges[j] = sorted_edges[i];
-          sorted_edges[i] = buff;
+          for(j=i+1;j<n_elem;j++)
+            {
+              if(sorted_edges[j]->nni->score  < sorted_edges[i]->nni->score)
+                {
+                  done = NO;
+                  buff = sorted_edges[j];
+                  sorted_edges[j] = sorted_edges[i];
+                  sorted_edges[i] = buff;
+                }
+            }
         }
     }
-    }
+  while(done == NO);
+
   return 1;
 }
 
@@ -5462,7 +5469,7 @@ void Fast_Br_Len(t_edge *b, t_tree *tree, int approx)
     Br_Len_Brent(b,tree);
   else
     {
-      tree->mod->s_opt->brent_it_max = 15;
+      tree->mod->s_opt->brent_it_max = 20;
       Br_Len_Brent(b,tree);
       tree->mod->s_opt->brent_it_max = BRENT_IT_MAX;
     }
