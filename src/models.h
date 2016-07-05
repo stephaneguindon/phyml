@@ -43,5 +43,6 @@ void Update_Eigen(t_mod *mod);
 void Update_RAS(t_mod *mod);
 void Update_Efrq(t_mod *mod);
 void PMat_MGF_Gamma(phydbl *Pij, phydbl shape, phydbl scale, phydbl scaling_fact, t_mod *mod);
+void Update_Boundaries(t_mod *mod);
 
 #endif

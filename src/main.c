@@ -86,7 +86,6 @@ int main(int argc, char **argv)
 #endif
 
   r_seed = (io->r_seed < 0)?(time(NULL)):(io->r_seed);
-  PhyML_Printf("\n. Random seed: %d",r_seed);
   srand(r_seed);
   io->r_seed = r_seed;
 

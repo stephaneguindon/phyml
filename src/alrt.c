@@ -351,7 +351,6 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   scalar_dbl *var_e1,*var_e2,*var_e3,*var_e4;
   phydbl lk0, lk1, lk2;
   scalar_dbl *l_init,*v_init;
-  phydbl l_infa, l_infb;
   phydbl lk_init, lk_temp;
   int i;
   int result;
@@ -413,24 +412,18 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
         if(b_fcus->left->v[i] != b_fcus->rght)//Only consider left_1 and left_2
           {
             Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
-            l_infa  = 2.;
-            l_infb  = 1.E-4;
-            lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus->left->b[i],tree);
+            lk_temp = Br_Len_Brent(b_fcus->left->b[i],tree);
           }
 
       Update_P_Lk(tree,b_fcus,b_fcus->left);
 
-      l_infa  = 2.;
-      l_infb  = 1.E-4;
-      lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus,tree);
+      lk_temp = Br_Len_Brent(b_fcus,tree);
 
       For(i,3)
         if(b_fcus->rght->v[i] != b_fcus->left)//Only consider right_1 and right_2
           {
             Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
-            l_infa  = 2.;
-            l_infb  = 1.E-4;
-            lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus->rght->b[i],tree);
+            lk_temp = Br_Len_Brent(b_fcus->rght->b[i],tree);
           }
       Update_P_Lk(tree,b_fcus,b_fcus->rght);
 
@@ -517,26 +510,17 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
         if(b_fcus->left->v[i] != b_fcus->rght)
           {
             Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
-            
-            l_infa  = 2.;
-            l_infb  = 1.E-4;
-            lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus->left->b[i],tree);
+            lk_temp = Br_Len_Brent(b_fcus->left->b[i],tree);
           }
       
       Update_P_Lk(tree,b_fcus,b_fcus->left);
-      
-      l_infa  = 2.;
-      l_infb  = 1.E-4;
-      lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus,tree);
+      lk_temp = Br_Len_Brent(b_fcus,tree);
       
       For(i,3)
         if(b_fcus->rght->v[i] != b_fcus->left)
           {
             Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
-            
-            l_infa  = 2;
-            l_infb  = 1.E-4;
-            lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus->rght->b[i],tree);
+            lk_temp = Br_Len_Brent(b_fcus->rght->b[i],tree);
           }
       
       Update_P_Lk(tree,b_fcus,b_fcus->rght);
@@ -625,28 +609,22 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
         if(b_fcus->left->v[i] != b_fcus->rght)
           {
             Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
-            
-            l_infa  = 2.;
-            l_infb  = 1.E-4;
-            lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus->left->b[i],tree);
+            lk_temp = Br_Len_Brent(b_fcus->left->b[i],tree);
             
             if(lk_temp < lk2 - tree->mod->s_opt->min_diff_lk_local)
               {
-                PhyML_Printf("\n== l_infa: %f l_infb: %f l: %f var:%f",l_infa,l_infb,b_fcus->left->b[i]->l->v,b_fcus->left->b[i]->l_var->v);
+                PhyML_Printf("\n== l: %f var:%f",b_fcus->left->b[i]->l->v,b_fcus->left->b[i]->l_var->v);
                 PhyML_Printf("\n== lk_temp = %f lk2 = %f",lk_temp,lk2);
                 PhyML_Printf("\n== Err. in file %s at line %d",__FILE__,__LINE__);
                 Exit("\n");
               }
           }
       Update_P_Lk(tree,b_fcus,b_fcus->left);
-      
-      l_infa  = 2.;
-      l_infb  = 1.E-4;
-      lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus,tree);
+      lk_temp = Br_Len_Brent(b_fcus,tree);
       
       if(lk_temp < lk2 - tree->mod->s_opt->min_diff_lk_local)
         {
-          PhyML_Printf("\n== l_infa: %f l_infb: %f l: %f var:%f",l_infa,l_infb,b_fcus->l->v,b_fcus->l_var->v);
+          PhyML_Printf("\n== l: %f var:%f",b_fcus->l->v,b_fcus->l_var->v);
           PhyML_Printf("\n== lk_temp = %f lk2 = %f",lk_temp,lk2);
           PhyML_Printf("\n== Err. in file %s at line %d",__FILE__,__LINE__);
           Exit("\n");
@@ -656,17 +634,14 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
         if(b_fcus->rght->v[i] != b_fcus->left)
           {
             Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
-            
-            l_infa  = 2.;
-            l_infb  = 1.E-4;
-            lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus->rght->b[i],tree);
+            lk_temp = Br_Len_Brent(b_fcus->rght->b[i],tree);
             
             if(lk_temp < lk2 - tree->mod->s_opt->min_diff_lk_local)
               {
                 Set_Both_Sides(YES,tree);
                 Lk(b_fcus,tree);
                 Check_Lk_At_Given_Edge(YES,tree);
-                PhyML_Printf("\n== l_infa: %f l_infb: %f l: %f var:%f",l_infa,l_infb,b_fcus->rght->b[i]->l->v,b_fcus->rght->b[i]->l_var->v);
+                PhyML_Printf("\n== l: %f var:%f",b_fcus->rght->b[i]->l->v,b_fcus->rght->b[i]->l_var->v);
                 PhyML_Printf("\n== lk_temp = %f lk2 = %f",lk_temp,lk2);
                 PhyML_Printf("\n== Err. in file %s at line %d",__FILE__,__LINE__);
                 Exit("\n");
@@ -795,7 +770,6 @@ void Make_Target_Swap(t_tree *tree, t_edge *b_fcus, int swaptodo)
 {
   t_node *v1,*v2,*v3,*v4;
   phydbl lktodo;
-  phydbl l_infa, l_infb;
   phydbl lk_init, lk_temp;
   int i;
 
@@ -867,27 +841,18 @@ void Make_Target_Swap(t_tree *tree, t_edge *b_fcus, int swaptodo)
         if(b_fcus->left->v[i] != b_fcus->rght)
           {
             Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
-            
-            l_infa  = 2.;
-            l_infb  = 1.E-4;
-            lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus->left->b[i],tree);
+            lk_temp = Br_Len_Brent(b_fcus->left->b[i],tree);
           }
 
 
       Update_P_Lk(tree,b_fcus,b_fcus->left);
-
-      l_infa  = 2.;
-      l_infb  = 1.E-4;
-      lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus,tree);
+      lk_temp = Br_Len_Brent(b_fcus,tree);
 
       For(i,3)
         if(b_fcus->rght->v[i] != b_fcus->left)
           {
             Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
-            
-            l_infa  = 2.;
-            l_infb  = 1.E-4;
-            lk_temp = Br_Len_Brent(l_infb,l_infa,b_fcus->rght->b[i],tree);
+            lk_temp = Br_Len_Brent(b_fcus->rght->b[i],tree);
           }
 
       Update_P_Lk(tree,b_fcus,b_fcus->rght);

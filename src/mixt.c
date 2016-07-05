@@ -1642,9 +1642,7 @@ void MIXT_Graft_Subtree(t_edge *mixt_target, t_node *mixt_link, t_edge *mixt_res
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void MIXT_Br_Len_Brent(phydbl prop_min,
-                       phydbl prop_max,
-                       t_edge *mixt_b,
+void MIXT_Br_Len_Brent(t_edge *mixt_b,
                        t_tree *mixt_tree)
 {
   t_tree *tree;
@@ -1661,14 +1659,13 @@ void MIXT_Br_Len_Brent(phydbl prop_min,
           b    = b->next;
         }
 
-      Br_Len_Brent(prop_min,prop_max,b,tree);
+      Br_Len_Brent(b,tree);
 
       b->l->onoff = OFF;
       tree = tree->next;
       b    = b->next;
     }
   while(tree);
-
 
   MIXT_Turn_Branches_OnOff_In_All_Elem(ON,mixt_tree);
 }
@@ -2416,6 +2413,23 @@ void MIXT_Connect_Cseqs_To_Nodes(t_tree *mixt_tree)
       tree = tree->next;
     }
   while(tree);
+  
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void MIXT_Set_Model_Parameters(t_mod *mixt_mod)
+{
+  t_mod *mod;
+
+  mod = mixt_mod;
+  do
+    {
+      Set_Model_Parameters(mod);
+      mod = mod->next;
+    }
+  while(mod);
   
 }
 

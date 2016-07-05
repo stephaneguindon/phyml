@@ -650,7 +650,6 @@ void Update_Qmat_GTR(phydbl *rr, phydbl *rr_val, int *rr_num, phydbl *pi, phydbl
         PhyML_Printf("\n== Err. in file %s at line %d (function '%s').\n",__FILE__,__LINE__,__FUNCTION__);
         Exit("");
       }
-
   For(i,6) rr[i] /= MAX(rr[5],RR_MIN);
   For(i,6) if(rr[i] < RR_MIN) rr[i] = RR_MIN;
   For(i,6) if(rr[i] > RR_MAX) rr[i] = RR_MAX;
@@ -785,12 +784,14 @@ void Update_RAS(t_mod *mod)
   int i;
 
   if(mod->ras->free_mixt_rates == NO) 
-    DiscreteGamma(mod->ras->gamma_r_proba->v,
-                  mod->ras->gamma_rr->v,
-                  mod->ras->alpha->v,
-                  mod->ras->alpha->v,
-                  mod->ras->n_catg,
-                  mod->ras->gamma_median);
+    {
+      DiscreteGamma(mod->ras->gamma_r_proba->v,
+                    mod->ras->gamma_rr->v,
+                    mod->ras->alpha->v,
+                    mod->ras->alpha->v,
+                    mod->ras->n_catg,
+                    mod->ras->gamma_median);
+    }
   else
     {
       if(mod->ras->sort_rate_classes == YES)
@@ -828,7 +829,6 @@ void Update_RAS(t_mod *mod)
           For(i,mod->ras->n_catg) mod->ras->gamma_r_proba->v[i]/=sum;
         }
       while((sum > 1.01) || (sum < 0.99));
-
 
       // Update class rates
       sum = .0;
@@ -899,9 +899,64 @@ void Update_Efrq(t_mod *mod)
 
 void Set_Model_Parameters(t_mod *mod)
 {
+  Update_Boundaries(mod);
   Update_RAS(mod);
   Update_Efrq(mod);
   Update_Eigen(mod);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Update_Boundaries(t_mod *mod)
+{
+  int i;
+
+  if(mod->kappa->v > TSTV_MAX) mod->kappa->v = TSTV_MAX;
+  if(mod->kappa->v < TSTV_MIN) mod->kappa->v = TSTV_MIN;
+
+  if(mod->ras->alpha->v < ALPHA_MIN) mod->ras->alpha->v = ALPHA_MIN;
+  if(mod->ras->alpha->v > ALPHA_MAX) mod->ras->alpha->v = ALPHA_MAX;
+
+  if(mod->ras->free_mixt_rates == YES) 
+    {
+      For(i,mod->ras->n_catg) 
+        {
+          if(mod->ras->gamma_rr_unscaled->v[i] < GAMMA_RR_UNSCALED_MIN)
+            mod->ras->gamma_rr_unscaled->v[i] = GAMMA_RR_UNSCALED_MIN;
+          
+          if(mod->ras->gamma_rr_unscaled->v[i] > GAMMA_RR_UNSCALED_MAX)
+            mod->ras->gamma_rr_unscaled->v[i] = GAMMA_RR_UNSCALED_MAX;
+          
+          if(mod->ras->gamma_r_proba_unscaled->v[i] < GAMMA_R_PROBA_UNSCALED_MIN)
+            mod->ras->gamma_r_proba_unscaled->v[i] = GAMMA_R_PROBA_UNSCALED_MIN;
+          
+          if(mod->ras->gamma_r_proba_unscaled->v[i] > GAMMA_R_PROBA_UNSCALED_MAX)
+            mod->ras->gamma_r_proba_unscaled->v[i] = GAMMA_R_PROBA_UNSCALED_MAX;
+        }
+    }
+
+  if(mod->whichmodel == CUSTOM || mod->whichmodel == GTR)
+    {
+      For(i,6) if(mod->r_mat->rr_val->v[i] < RR_MIN) mod->r_mat->rr_val->v[i] = RR_MIN;
+      For(i,6) if(mod->r_mat->rr_val->v[i] > RR_MAX) mod->r_mat->rr_val->v[i] = RR_MAX;
+    }
+
+  For(i,mod->ns)
+    {
+      if(mod->e_frq->pi_unscaled->v[i] < E_FRQ_MIN)
+        mod->e_frq->pi_unscaled->v[i] = E_FRQ_MIN;
+
+      if(mod->e_frq->pi_unscaled->v[i] > E_FRQ_MAX)
+        mod->e_frq->pi_unscaled->v[i] = E_FRQ_MAX;
+    }
+  
+  if(mod->r_mat_weight->v < R_MAT_WEIGHT_MIN) mod->r_mat_weight->v = R_MAT_WEIGHT_MIN;
+  if(mod->r_mat_weight->v > R_MAT_WEIGHT_MAX) mod->r_mat_weight->v = R_MAT_WEIGHT_MAX;
+
+  if(mod->e_frq_weight->v < E_FRQ_WEIGHT_MIN) mod->e_frq_weight->v = E_FRQ_WEIGHT_MIN;
+  if(mod->e_frq_weight->v > E_FRQ_WEIGHT_MAX) mod->e_frq_weight->v = E_FRQ_WEIGHT_MAX;
+
 }
 
 //////////////////////////////////////////////////////////////

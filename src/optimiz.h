@@ -45,7 +45,7 @@ phydbl    Alpha_Golden(phydbl ax, phydbl bx, phydbl cx, phydbl tol,phydbl *xmin,
 		       t_tree *tree, calign *cdata);
 phydbl    Br_Len_Golden(phydbl ax, phydbl bx, phydbl cx, phydbl tol, 
 			phydbl *xmin, t_edge *b_fcus, t_tree *tree);
-phydbl Br_Len_Brent(phydbl prop_min, phydbl prop_max, t_edge *b_fcus, t_tree *tree);
+phydbl Br_Len_Brent(t_edge *b_fcus, t_tree *tree);
 int       Br_Len_Brak(phydbl *ax, phydbl *bx, phydbl *cx, 
 		      phydbl *fa, phydbl *fb, phydbl *fc, 
 		      t_edge *b_fcus, t_tree *tree);
@@ -119,6 +119,7 @@ void Optimize_Single_Param_Generic(t_tree *tree, phydbl *param, phydbl lim_inf, 
 int Generic_Brak_Lk(phydbl *param,
                     phydbl *ax, phydbl *bx, phydbl *cx,
                     phydbl *fa, phydbl *fb, phydbl *fc,
+                    phydbl min, phydbl max,
                     phydbl (*obj_func)(t_edge *,t_tree *,supert_tree *),
                     t_edge *branch, t_tree *tree, supert_tree *stree);
 int Generic_Brak(phydbl *param,

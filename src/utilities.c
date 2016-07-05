@@ -1489,7 +1489,7 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
         }
       else 
         {
-          lk1 = Br_Len_Brent(l_infb,l_infa,b_fcus,tree);
+          lk1 = Br_Len_Brent(b_fcus,tree);
         }
     }
 
@@ -1529,7 +1529,7 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
         }
       else 
         {
-          lk2 = Br_Len_Brent(l_infb,l_infa,b_fcus,tree);
+          lk2 = Br_Len_Brent(b_fcus,tree);
         }
     }
 
@@ -1580,7 +1580,7 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
         }
       else 
         {
-          lk0 = Br_Len_Brent(l_infb,l_infa,b_fcus,tree);
+          lk0 = Br_Len_Brent(b_fcus,tree);
         }
     }
 
@@ -5447,11 +5447,11 @@ void Fast_Br_Len(t_edge *b, t_tree *tree, int approx)
   if(tree->is_mixt_tree)
     {
       if(approx == NO)
-        MIXT_Br_Len_Brent(tree->mod->l_min,tree->mod->l_max,b,tree);
+        MIXT_Br_Len_Brent(b,tree);
       else
         {
           tree->mod->s_opt->brent_it_max = 8;
-          MIXT_Br_Len_Brent(tree->mod->l_min,tree->mod->l_max,b,tree);
+          MIXT_Br_Len_Brent(b,tree);
           tree->mod->s_opt->brent_it_max = BRENT_IT_MAX;
         }
       return;
@@ -5459,11 +5459,11 @@ void Fast_Br_Len(t_edge *b, t_tree *tree, int approx)
 
 
   if(approx == NO)
-    Br_Len_Brent(0.001,2.,b,tree);
+    Br_Len_Brent(b,tree);
   else
     {
       tree->mod->s_opt->brent_it_max = 10;
-      Br_Len_Brent(tree->mod->l_min,tree->mod->l_max,b,tree);
+      Br_Len_Brent(b,tree);
       tree->mod->s_opt->brent_it_max = BRENT_IT_MAX;
     }
 }
@@ -10760,9 +10760,9 @@ void Best_Root_Position_IL_Model(t_tree *tree)
           /* Optimize_Br_Len_Serie(tree); */
 
           Update_P_Lk(tree,tree->n_root->b[1],tree->n_root);
-          Br_Len_Brent(tree->mod->l_min,tree->mod->l_max,tree->n_root->b[1],tree);
+          Br_Len_Brent(tree->n_root->b[1],tree);
           Update_P_Lk(tree,tree->n_root->b[2],tree->n_root);
-          Br_Len_Brent(tree->mod->l_min,tree->mod->l_max,tree->n_root->b[2],tree);
+          Br_Len_Brent(tree->n_root->b[2],tree);
 
           PhyML_Printf(" -- lnL: %20f",tree->c_lnL);
           if(tree->c_lnL > best_lnL)
@@ -10776,9 +10776,9 @@ void Best_Root_Position_IL_Model(t_tree *tree)
       Set_Both_Sides(YES,tree);
       Lk(NULL,tree);
       Update_P_Lk(tree,tree->n_root->b[1],tree->n_root);
-      Br_Len_Brent(tree->mod->l_min,tree->mod->l_max,tree->n_root->b[1],tree);
+      Br_Len_Brent(tree->n_root->b[1],tree);
       Update_P_Lk(tree,tree->n_root->b[2],tree->n_root);
-      Br_Len_Brent(tree->mod->l_min,tree->mod->l_max,tree->n_root->b[2],tree);
+      Br_Len_Brent(tree->n_root->b[2],tree);
       tree->ignore_root = YES;
     }
 }

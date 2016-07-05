@@ -406,8 +406,7 @@ void Pre_Order_Lk(t_node *a, t_node *d, t_tree *tree)
 phydbl Lk(t_edge *b, t_tree *tree)
 {
   int br;
-  
-
+ 
   if(b == NULL && tree->mod->s_opt->curr_opt_free_rates == YES)
     {
       tree->mod->s_opt->curr_opt_free_rates = NO;
@@ -2365,8 +2364,7 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
 
   if(tree->mod->log_l == YES) b_fcus->l->v = EXP(b_fcus->l->v);
 
-  if(b_fcus->l->v < l_min) b_fcus->l->v = l_min;
-  if(b_fcus->l->v > l_max) b_fcus->l->v = l_max;
+  if(b_fcus->l->v < 0.0) b_fcus->l->v = 0.0;
 
   For(i,tree->mod->ras->n_catg)
     {
@@ -3770,10 +3768,10 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
                       sum_probas += p[i];
                     }
                   PhyML_Fprintf(fp,"\n");
+                  fflush(NULL);
+                  assert(Are_Equal(sum_probas,1.0,0.01));
                 }
 
-              assert(Are_Equal(sum_probas,1.0,0.01));
-              fflush(NULL);
             }
           Free(p);
         }

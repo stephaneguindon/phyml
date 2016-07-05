@@ -2454,9 +2454,9 @@ int Find_Optim_Local (t_tree *tree)
       ** Use Brent optimization on the relevant edges at the regraft position
       ** and calculate the new likelihood value.
       */
-      Br_Len_Brent (0.05,20.,v_prune->b[0], tree);
-      Br_Len_Brent (0.05,20.,v_prune->b[1], tree);
-      Br_Len_Brent (0.05,20.,v_prune->b[2], tree);
+      Br_Len_Brent (v_prune->b[0], tree);
+      Br_Len_Brent (v_prune->b[1], tree);
+      Br_Len_Brent (v_prune->b[2], tree);
 
 /* 	  Update_PMat_At_Given_Edge (v_prune->b[0], tree); */
 /* 	  Update_PMat_At_Given_Edge (v_prune->b[1], tree); */
@@ -3488,7 +3488,7 @@ void Test_One_Spr_Target_Recur(t_node *a, t_node *d, t_edge *pulled, t_node *lin
   if(d->tax) return;
   else
     {
-      phydbl move_score,curr_score;
+      phydbl move_score;
       
       For(i,3)
         {
@@ -3521,8 +3521,6 @@ void Test_One_Spr_Target_Recur(t_node *a, t_node *d, t_edge *pulled, t_node *lin
                     }
                 }
               
-              curr_score = (tree->mod->s_opt->spr_pars == NO) ? tree->best_lnL : tree->best_pars;
-
               if(tree->depth_curr_path < tree->mod->s_opt->max_depth_path)
                 Test_One_Spr_Target_Recur(d,d->v[i],pulled,link,residual,init_target,best_found,tree);
               
@@ -3542,7 +3540,7 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
   scalar_dbl *l0,*l1,*l2;
   scalar_dbl *v0,*v1,*v2;
   t_node *n1,*n2;
-  phydbl init_lnL, move_lnL;
+  phydbl init_lnL;
   int init_pars;
   t_spr *move;
 
@@ -3554,7 +3552,6 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
 
   tree->n_moves++;
 
-  move_lnL  = UNLIKELY;
   init_lnL  = tree->c_lnL;
   init_pars = tree->c_pars;
 
@@ -3589,7 +3586,7 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
       Update_PMat_At_Given_Edge(b_target,tree);
       Update_PMat_At_Given_Edge(b_arrow,tree);
       Update_P_Lk(tree,b_residual,n_link);
-      move_lnL = Lk(b_residual,tree);
+      Lk(b_residual,tree);
       MIXT_Set_Alias_Subpatt(NO,tree);
     }
   else
@@ -4831,9 +4828,9 @@ void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int d
 
 void Spr_List_Of_Trees(t_tree *tree)
 {
-  int i,j,list_size,max_list_size,*rk,n_opt;
+  int i,list_size,max_list_size,*rk,n_opt;
   t_tree **tree_list;
-  phydbl delta_lnL,*lnL_list,best_lnL,worst_lnL;
+  phydbl *lnL_list;
   
   max_list_size                    = tree->n_otu;
   tree->mod->s_opt->max_depth_path = tree->n_otu;
