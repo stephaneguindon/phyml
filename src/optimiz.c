@@ -625,8 +625,8 @@ phydbl Br_Len_Brent(t_edge *b_fcus, t_tree *tree)
   l_begin  = b_fcus->l->v;
   lk_begin = Lk(loc_b,loc_tree); /*! We can't assume that the log-lk value is up-to-date */
 
-  min = 0.0;
-  max = 10.0;
+  min = loc_tree->mod->l_min;
+  max = loc_tree->mod->l_max;
   
   Generic_Brent_Lk(&(b_fcus->l->v),
                    min,
@@ -712,10 +712,12 @@ void Round_Optimize(t_tree *tree, calign *data, int n_round_max)
 
 void Optimize_Br_Len_Serie(t_tree *tree)
 {
+  phydbl lk_init,lk_end;
+
+  lk_init = tree->c_lnL;
+
   if(tree->mod->gamma_mgf_bl == YES)
     {
-      phydbl lk_init = tree->c_lnL;
-
       Generic_Brent_Lk(&(tree->mod->l_var_sigma),
                        tree->mod->l_var_min,
                        tree->mod->l_var_max,
@@ -758,6 +760,9 @@ void Optimize_Br_Len_Serie(t_tree *tree)
     {
       Optimize_Br_Len_Serie_Post(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree->a_nodes[0]->b[0],tree);
     }
+
+  lk_end = tree->c_lnL;
+  assert(lk_end > lk_init);
 }
 
 /*////////////////////////////////////////////////////////////
@@ -814,7 +819,6 @@ void Optimize_Br_Len_Multiplier(t_tree *mixt_tree, int verbose)
 void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tree)
 {
   int i;
-  phydbl l_infa,l_infb;
   phydbl lk_init;
 
   lk_init = tree->c_lnL;
@@ -837,14 +841,10 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
       return;
     }
 
-  l_infa = tree->mod->l_max;
-  l_infb = tree->mod->l_min;
-
   if(tree->io->mod->s_opt->opt_bl == YES) Br_Len_Brent(b_fcus,tree);
 
   if(tree->c_lnL < lk_init - tree->mod->s_opt->min_diff_lk_local)
     {
-      PhyML_Printf("\n== %f %f %G",l_infa,l_infb,b_fcus->l->v);
       PhyML_Printf("\n== %f -- %f",lk_init,tree->c_lnL);
       PhyML_Printf("\n== Edge: %d",b_fcus->num);
       PhyML_Printf("\n== is_mixt_tree: %d",tree->is_mixt_tree);
