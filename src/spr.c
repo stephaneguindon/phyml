@@ -4858,8 +4858,8 @@ void Spr_List_Of_Trees(t_tree *tree)
       n_opt = 0;
       do Optimize_Br_Len_Serie(tree); while(n_opt++ < 2);
 
-      tree->mod->s_opt->nni_br_len_opt = NO;
-      Simu(tree,3);
+      /* tree->mod->s_opt->nni_br_len_opt = NO; */
+      /* Simu(tree,3); */
 
       printf("\n>> lnL: %f pars: %d",tree->c_lnL,tree->c_pars);
 
@@ -4888,7 +4888,7 @@ void Spr_List_Of_Trees(t_tree *tree)
         {
           Set_Both_Sides(YES,tree);
           Lk(NULL,tree);
-          Spr(UNLIKELY,0.5,tree);
+          Spr(UNLIKELY,1.0,tree);
           tree->mod->s_opt->max_depth_path = tree->max_spr_depth;
         }
       while(tree->n_improvements > 5);
