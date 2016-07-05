@@ -4886,7 +4886,7 @@ void Spr_List_Of_Trees(t_tree *tree)
         {
           Set_Both_Sides(YES,tree);
           Lk(NULL,tree);
-          Spr(UNLIKELY,0.2,tree);
+          Spr(UNLIKELY,0.5,tree);
           tree->mod->s_opt->max_depth_path = tree->max_spr_depth;
         }
       while(tree->n_improvements > 5);
