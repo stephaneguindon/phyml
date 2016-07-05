@@ -599,7 +599,6 @@ phydbl Br_Len_Brent(t_edge *b_fcus, t_tree *tree)
   t_tree *loc_tree;
   t_edge *loc_b;
   phydbl lk_begin, lk_end;
-  phydbl la,lb,lc,ld,fa,fb,fc,fd;
   phydbl min,max;
   phydbl l_begin;
 
@@ -626,40 +625,8 @@ phydbl Br_Len_Brent(t_edge *b_fcus, t_tree *tree)
   l_begin  = b_fcus->l->v;
   lk_begin = Lk(loc_b,loc_tree); /*! We can't assume that the log-lk value is up-to-date */
 
-  if(b_fcus->l->v < 0.01)
-    {
-      lb = b_fcus->l->v;
-      fb = lk_begin;
-      
-      lc = 0.01;
-      b_fcus->l->v = lc;
-      fc = Lk(loc_b,loc_tree);
-    }
-  else
-    {
-      lc = b_fcus->l->v;
-      fc = lk_begin;
-
-      lb = 0.01;
-      b_fcus->l->v = lb;
-      fb = Lk(loc_b,loc_tree);
-    }
-
-  la = 0.0;
-  b_fcus->l->v = la;
-  fa = Lk(loc_b,loc_tree);
-
-  ld = 1.0;
-  b_fcus->l->v = ld;
-  fd = Lk(loc_b,loc_tree);
-
-  if(fa > fb && fa > fc && fa > fd) { min = la; max = lb; }
-  if(fb > fa && fb > fc && fb > fd) { min = la; max = lc; }
-  if(fc > fa && fc > fb && fc > fd) { min = lb; max = ld; }
-  if(fd > fa && fd > fb && fd > fc) { min = lc; max = ld; }
-  
-  b_fcus->l->v = l_begin;
-  loc_tree->c_lnL = lk_begin;
+  min = 0.0;
+  max = 1.0;
   
   Generic_Brent_Lk(&(b_fcus->l->v),
                    min,
