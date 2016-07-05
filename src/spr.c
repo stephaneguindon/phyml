@@ -4852,12 +4852,12 @@ void Spr_List_Of_Trees(t_tree *tree)
     {
       /* Randomize_Tree(tree,tree->n_otu); */
       Stepwise_Add_Pars(tree);
-      Spr_Pars(0,2,tree);
+      /* Spr_Pars(0,2,tree); */
          
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
       n_opt = 0;
-      do Optimize_Br_Len_Serie(tree); while(n_opt++ < 2);
+      do Optimize_Br_Len_Serie(tree); while(n_opt++ < 3);
 
       printf("\n>> lnL: %f pars: %d",tree->c_lnL,tree->c_pars);
 
@@ -4886,7 +4886,7 @@ void Spr_List_Of_Trees(t_tree *tree)
         {
           Set_Both_Sides(YES,tree);
           Lk(NULL,tree);
-          Spr(UNLIKELY,1.0,tree);
+          Spr(UNLIKELY,0.2,tree);
           tree->mod->s_opt->max_depth_path = tree->max_spr_depth;
         }
       while(tree->n_improvements > 5);

@@ -626,7 +626,7 @@ phydbl Br_Len_Brent(t_edge *b_fcus, t_tree *tree)
   lk_begin = Lk(loc_b,loc_tree); /*! We can't assume that the log-lk value is up-to-date */
 
   min = 0.0;
-  max = 1.0;
+  max = 10.0;
   
   Generic_Brent_Lk(&(b_fcus->l->v),
                    min,
@@ -2891,13 +2891,8 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
                   For(i,tree->mod->r_mat->n_diff_rr)
                     if(i != 5)
                       {
-                        phydbl a,c;
-                        
-                        a = tree->mod->r_mat->rr_val->v[i] * .1;
-                        c = tree->mod->r_mat->rr_val->v[i] * 10.;
-                        
                         Generic_Brent_Lk(&(tree->mod->r_mat->rr_val->v[i]),
-                                         a,c,
+                                         RR_MIN,RR_MAX,
                                          tree->mod->s_opt->min_diff_lk_local,
                                          tree->mod->s_opt->brent_it_max,
                                          tree->mod->s_opt->quickdirty,
@@ -3076,13 +3071,8 @@ void Optimize_Alpha(t_tree *mixt_tree, int verbose)
                 {
                   if(tree->mod->ras->n_catg > 1)
                     {
-                      phydbl a,c;
-
-                      a = tree->mod->ras->alpha->v * .1;
-                      c = tree->mod->ras->alpha->v * 10.;
-
                       Generic_Brent_Lk(&(tree->mod->ras->alpha->v),
-                                       a,c,
+                                       ALPHA_MIN,ALPHA_MAX,
                                        tree->mod->s_opt->min_diff_lk_local,
                                        tree->mod->s_opt->brent_it_max,
                                        tree->mod->s_opt->quickdirty,
