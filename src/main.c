@@ -225,13 +225,13 @@ int main(int argc, char **argv)
 #ifdef PHYML
                   if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
                                    
-                  {
-                    int i;
-                    Set_Both_Sides(NO,tree);
-                    For(i,10000) Lk(NULL,tree);
-                    printf("\n. lnL: %f",tree->c_lnL);
-                    Exit("\n");
-                  }
+                  /* { */
+                  /*   int i; */
+                  /*   Set_Both_Sides(NO,tree); */
+                  /*   For(i,10000) Lk(NULL,tree); */
+                  /*   printf("\n. lnL: %f",tree->c_lnL); */
+                  /*   Exit("\n"); */
+                  /* } */
 
 
 		  if(tree->mod->s_opt->opt_topo)
