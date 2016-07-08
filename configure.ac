@@ -68,7 +68,7 @@ AC_MSG_NOTICE("On arch ${host} use MAVX = ${AVX}")
 ;;
 *)
 MAVX=
-DAVX=-D__AVX
+DAVX=
 AC_MSG_NOTICE("Do not use MSSE = ${MAVX} because not available on arch ${host}")
 ;;
 esac

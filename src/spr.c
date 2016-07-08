@@ -4851,7 +4851,7 @@ void Spr_List_Of_Trees(t_tree *tree)
     {
       /* Randomize_Tree(tree,tree->n_otu); */
       Stepwise_Add_Pars(tree);
-      /* Spr_Pars(0,2,tree); */
+      Spr_Pars(0,2,tree);
 
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
@@ -4873,8 +4873,6 @@ void Spr_List_Of_Trees(t_tree *tree)
   do
     {
       Copy_Tree(tree_list[rk[list_size]],tree);
-
-      /* Randomize_Tree(tree,2); */
 
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
@@ -4904,7 +4902,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       Copy_Tree(tree,tree_list[rk[list_size]]);
       lnL_list[rk[list_size]] = tree->c_lnL;
     }
-  while(list_size++ <= 4);
+  while(list_size++ <= 5);
 
 
   rk = Ranks(lnL_list,max_list_size);
@@ -4942,7 +4940,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       Copy_Tree(tree,tree_list[rk[list_size]]);
       lnL_list[rk[list_size]] = tree->c_lnL;
     }
-  while(list_size++ <= 2);
+  while(list_size++ <= 3);
 
   rk = Ranks(lnL_list,max_list_size);
   Copy_Tree(tree_list[rk[0]],tree);

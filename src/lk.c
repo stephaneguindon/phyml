@@ -544,10 +544,11 @@ phydbl Lk(t_edge *b, t_tree *tree)
 
           if(tree->mod->use_m4mod) ambiguity_check = YES;
 
+#if (!defined(__AVX))
           Lk_Core(state,ambiguity_check,b,tree);
-
-          /* fprintf(stdout,"site %d lnL: %g:%d %g\n",tree->curr_site,tree->c_lnL_sorted[tree->curr_site],tree->data->wght[tree->curr_site],tree->c_lnL); */
-          /* fflush(stdout); */
+#else
+          AVX_Lk_Core(state,ambiguity_check,b,tree);
+#endif
         }
     }
 #endif
@@ -814,8 +815,13 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
   return log_site_lk;
 }
 
+/* Core of the likelihood calculcation. Assume that the partial likelihoods on both
+   sides of t_edge *b are up-to-date. Calculate the log-likelihood at one site.
+*/
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
 
 /* phydbl Lk_At_Given_Edge(t_edge *b_fcus, t_tree *tree) */
 /* { */
@@ -1011,7 +1017,7 @@ void Update_P_Lk(t_tree *tree, t_edge *b, t_node *d)
 #if (!defined(__AVX))
           Update_P_Lk_Nucl(tree,b,d);
 #else
-          Update_P_Lk_Nucl_AVX(tree,b,d);
+          AVX_Update_P_Lk_Nucl(tree,b,d);
 #endif
         }
       else if(tree->io->datatype == AA)
@@ -1612,265 +1618,6 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined(__AVX))
-void Update_P_Lk_Nucl_AVX(t_tree *tree, t_edge *b, t_node *d)
-{
-/*
-           |
-           |<- b
-           |
-           d
-          / \
-         /   \
-        /     \
-    n_v1   n_v2
-*/
-  t_node *n_v1, *n_v2;//d's "left" and "right" neighbor nodes
-  phydbl *p_lk,*p_lk_v1,*p_lk_v2;//Partial likelihood vector of node d, d's "left" neighbor, d's "right" neighbor. We fill *p_lk, and assume *p_lk_v1 and *p_lk_v2 are already filled.
-  phydbl *Pij1,*Pij2;
-  int *sum_scale, *sum_scale_v1, *sum_scale_v2;
-  int sum_scale_v1_val, sum_scale_v2_val;
-  int i;//index over the number of states
-  int catg/*index over the number of rate categories*/,site;
-  int n_patterns;//Number of distinct site patterns
-  int state_v1,state_v2;
-  int dim1, dim2, dim3;
-  phydbl curr_scaler;
-  int curr_scaler_pow, piecewise_scaler_pow;
-  phydbl smallest_p_lk;
-  phydbl p_lk_lim_inf;
-  phydbl p0,p1,p2,p3;
-  int *p_lk_loc;//Suppose site j, of a certain subtree, has "A" on one tip, and "C" on the other. If you come across this pattern again at site i<j, then you can simply copy the partial likelihoods
-  phydbl tip_v1[4],tip_v2[4];
-  
-
-  if(tree->n_root && tree->ignore_root == YES &&
-     (d == tree->n_root->v[1] || d == tree->n_root->v[2]) &&
-     (b == tree->n_root->b[1] || b == tree->n_root->b[2]))
-    {
-      assert(FALSE);
-    }
-
-
-  dim1 = tree->mod->ras->n_catg * tree->mod->ns;//Dimension of a matrix L that holds rate-specific character likelihoods. IOW, L[ij] is the likelihood of character j in rate class i
-  dim2 = tree->mod->ns;
-  dim3 = tree->mod->ns * tree->mod->ns;//Dimensions of the transition prob. matrix
-
-  state_v1 = state_v2 = -1;
-  sum_scale_v1_val = sum_scale_v2_val = 0;
-  curr_scaler = .0;
-  curr_scaler_pow = piecewise_scaler_pow = 0;
-
-  if(d->tax)
-    {
-      PhyML_Printf("\n== t_node %d is a leaf...",d->num);
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
-      Exit("\n");
-    }
-
-  n_patterns = tree->n_pattern;
-
-  p_lk_lim_inf                = (phydbl)P_LK_LIM_INF;
-  n_v1 = n_v2                 = NULL;
-  p_lk = p_lk_v1 = p_lk_v2    = NULL;
-  Pij1 = Pij2                 = NULL;
-  sum_scale_v1 = sum_scale_v2 = NULL;
-  p_lk_loc                    = NULL;
-  Set_All_P_Lk(&n_v1,&n_v2,
-               &p_lk,&sum_scale,&p_lk_loc,
-               &Pij1,&p_lk_v1,&sum_scale_v1,
-               &Pij2,&p_lk_v2,&sum_scale_v2,
-               d,b,tree);
-
-  if(tree->mod->augmented == YES && n_v1 && n_v1->tax == NO)
-    {
-      PhyML_Printf("\n== AVX version of the Update_Partial_Lk function does not");
-      PhyML_Printf("\n== allow augmented data. Please compile without the '-D__AVX'");
-      PhyML_Printf("\n== flag");
-      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-    }
-
-  /* For every site in the alignment */
-  For(site,n_patterns)
-    {
-      if(n_v1->tax == YES)
-        {
-          tip_v1[0] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+0];
-          tip_v1[1] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+1];
-          tip_v1[2] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+2];
-          tip_v1[3] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+3];
-        }
-
-      if(n_v2->tax == YES)
-        {
-          tip_v2[0] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+0];
-          tip_v2[1] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+1];
-          tip_v2[2] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+2];
-          tip_v2[3] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+3];
-        }
-
-      if(p_lk_loc[site] < site)
-        {
-          Copy_P_Lk(p_lk,p_lk_loc[site],site,tree);
-          Copy_Scale(sum_scale,p_lk_loc[site],site,tree);
-        }
-      else
-        {
-          /* For all rate classes */
-          For(catg,tree->mod->ras->n_catg)
-            {
-              smallest_p_lk  =  BIG;
-
-              __m256d _plk; // parent partial likelihood
-              __m256d _plk1,_plk2; // sister partial likelihood vectors
-              __m256d _p1[4],_p2[4]; // matrices of transition probabilities
-              __m256d _pplk1[4],_pplk2[4]; // dot product of _p1[i] & _plk1 (resp. _p2[i] & _plk2)
-
-              phydbl *loc_p_lk_v1,*loc_p_lk_v2;
-              phydbl *loc_p1,*loc_p2;
-              
-              For(i,4)
-                {
-                  loc_p1 = Pij1 + catg*dim3+i*dim2;
-                  loc_p2 = Pij2 + catg*dim3+i*dim2;
-                  
-                  _p1[i] = _mm256_load_pd(loc_p1);
-                  _p2[i] = _mm256_load_pd(loc_p2);
-                }
-
-              if(n_v1->tax == NO)
-                {
-                  loc_p_lk_v1 = p_lk_v1 + site*dim1+catg*dim2;
-                  _plk1 = _mm256_load_pd(loc_p_lk_v1);
-                }
-              else
-                {
-                  loc_p_lk_v1 = tip_v1;
-                  _plk1 = _mm256_load_pd(tip_v1);
-                }
-
-              if(n_v2->tax == NO)
-                {
-                  loc_p_lk_v2 = p_lk_v2 + site*dim1+catg*dim2;
-                  _plk2 = _mm256_load_pd(loc_p_lk_v2);
-                }
-              else
-                {
-                  loc_p_lk_v2 = tip_v2;
-                  _plk2 = _mm256_load_pd(tip_v2);
-                }
-
-              For(i,4)
-                {
-                  _pplk1[i] = _mm256_mul_pd(_p1[i],_plk1);
-                  _pplk2[i] = _mm256_mul_pd(_p2[i],_plk2);
-                }
-              
-              _plk = _mm256_mul_pd(AVX_Horizontal_Add(_pplk1),AVX_Horizontal_Add(_pplk2)); 
-                                   
-              _mm256_store_pd(p_lk+site*dim1+catg*dim2,_plk);
-
-              smallest_p_lk = BIG;
-              For(i,4) 
-                if(p_lk[site*dim1+catg*dim2+i] < smallest_p_lk) 
-                  smallest_p_lk = p_lk[site*dim1+catg*dim2+i] ;
-
-              /* Current scaling values at that site */
-              sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[catg*n_patterns+site]):(0);
-              sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[catg*n_patterns+site]):(0);
-              
-              sum_scale[catg*n_patterns+site] = sum_scale_v1_val + sum_scale_v2_val;
-              
-              /* Scaling. We have p_lk_lim_inf = 2^-500. Consider for instance that
-                 smallest_p_lk = 2^-600, then curr_scaler_pow will be equal to 100, and
-                 each element in the partial likelihood vector will be multiplied by
-                 2^100. */
-              if(smallest_p_lk < p_lk_lim_inf && tree->mod->augmented == NO)
-                {
-                  curr_scaler_pow = (int)(-500.*LOG2-LOG(smallest_p_lk))/LOG2;
-                  curr_scaler     = (phydbl)((unsigned long long)(1) << curr_scaler_pow);
-                  
-                  sum_scale[catg*n_patterns+site] += curr_scaler_pow;
-                  
-                  do
-                    {
-                      piecewise_scaler_pow = MIN(curr_scaler_pow,63);
-                      curr_scaler = (phydbl)((unsigned long long)(1) << piecewise_scaler_pow);
-                      For(i,tree->mod->ns)
-                        {
-                          p_lk[site*dim1+catg*dim2+i] *= curr_scaler;
-                          
-                          if(p_lk[site*dim1+catg*dim2+i] > BIG)
-                            {
-                              PhyML_Printf("\n== curr_scaler_pow = %d",curr_scaler_pow);
-                              PhyML_Printf("\n== Err. in file %s at line %d (function '%s').",__FILE__,__LINE__,__FUNCTION__);
-                              Exit("\n");
-                            }
-                          //                              fprintf(stderr,"\n%e",p_lk[site*dim1+catg*dim2+i]);
-                        }
-                      curr_scaler_pow -= piecewise_scaler_pow;
-                    }
-                  while(curr_scaler_pow != 0);
-                }
-            }
-        }
-    }
-}
-
-
-
-                  
-/*                   if(p_lk[site*dim1+catg*dim2+i] < smallest_p_lk) smallest_p_lk = p_lk[site*dim1+catg*dim2+i] ; */
-
-/*                   if(tree->mod->augmented == YES) break; */
-
-/*                 } */
-              
-/*               /\* Current scaling values at that site *\/ */
-/*               sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[catg*n_patterns+site]):(0); */
-/*               sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[catg*n_patterns+site]):(0); */
-              
-/*               sum_scale[catg*n_patterns+site] = sum_scale_v1_val + sum_scale_v2_val; */
-              
-/*               /\* Scaling. We have p_lk_lim_inf = 2^-500. Consider for instance that  */
-/*                  smallest_p_lk = 2^-600, then curr_scaler_pow will be equal to 100, and */
-/*                  each element in the partial likelihood vector will be multiplied by */
-/*                  2^100. *\/ */
-/*               if(smallest_p_lk < p_lk_lim_inf && tree->mod->augmented == NO) */
-/*                 { */
-/*                   curr_scaler_pow = (int)(-500.*LOG2-LOG(smallest_p_lk))/LOG2; */
-/*                   curr_scaler     = (phydbl)((unsigned long long)(1) << curr_scaler_pow); */
-                  
-/*                   sum_scale[catg*n_patterns+site] += curr_scaler_pow; */
-                                        
-/*                   do */
-/*                     { */
-/*                       piecewise_scaler_pow = MIN(curr_scaler_pow,63); */
-/*                       curr_scaler = (phydbl)((unsigned long long)(1) << piecewise_scaler_pow); */
-/*                       For(i,tree->mod->ns) */
-/*                         { */
-/*                           p_lk[site*dim1+catg*dim2+i] *= curr_scaler; */
-
-/*                           if(p_lk[site*dim1+catg*dim2+i] > BIG) */
-/*                             { */
-/*                               PhyML_Printf("\n== curr_scaler_pow = %d",curr_scaler_pow); */
-/*                               PhyML_Printf("\n== Err. in file %s at line %d (function '%s').",__FILE__,__LINE__,__FUNCTION__); */
-/*                               Exit("\n"); */
-/*                             } */
-/* //                              fprintf(stderr,"\n%e",p_lk[site*dim1+catg*dim2+i]); */
-/*                         } */
-/*                       curr_scaler_pow -= piecewise_scaler_pow; */
-/*                     } */
-/*                   while(curr_scaler_pow != 0); */
-/*                 } */
-/*             } */
-/*         } */
-/*     } */
-
-/* //  fprintf(stdout, "Updated partials:");fflush(stdout); */
-/* //  Dump_Arr_D(p_lk, tree->mod->ras->n_catg*tree->mod->ns*tree->n_pattern); */
-/* } */
-#endif
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
@@ -4245,7 +3992,449 @@ __m256d AVX_Horizontal_Add(__m256d x[4])
 
   return(_mm256_add_pd(z[0],z[1]));
 }
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl AVX_Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
+{
+  if(tree->io->datatype == NT)
+    {
+      return AVX_Lk_Core_Nucl(state,ambiguity_check,b,tree);
+    }
+  else
+    {
+      PhyML_Printf("\n== Functionality is not implemented yet");
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
+  return -1.;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl AVX_Lk_Core_Nucl(int state, int ambiguity_check, t_edge *b, t_tree *tree)
+{
+  phydbl log_site_lk;
+  phydbl site_lk_cat, site_lk, inv_site_lk;
+  int fact_sum_scale;
+  int catg,ns,site;
+  int dim1,dim2,dim3;
+  int exponent;
+  int num_prec_issue;
+  phydbl tip_v[4];
+  int i;
+#ifdef BEAGLE
+  dim1 = tree->n_pattern * tree->mod->ns;
+#else
+  dim1 = tree->mod->ras->n_catg * tree->mod->ns;//Dimension of a matrix L that holds rate-specific character likelihoods. IOW, L[ij] is the likelihood of character j in rate class i
 #endif
+  dim2 = tree->mod->ns;
+  dim3 = tree->mod->ns * tree->mod->ns;//Dimensions of the transition prob. matrix
+  
+  log_site_lk     = .0;
+  site_lk         = .0;
+  site_lk_cat     = .0;
+  site            = tree->curr_site;
+  ns              = tree->mod->ns;
+    
+  assert(ns == 4);
+
+  /* Skip this if no tree traveral was required, i.e. likelihood in each class of the mixture is already up to date */
+  if(tree->mod->s_opt->skip_tree_traversal == NO)
+    {
+      /* Actual likelihood calculation */
+      /* For all classes of rates */
+      For(catg,tree->mod->ras->n_catg)
+        {
+          site_lk_cat = .0;
+
+          if(b->rght->tax == YES)
+            {
+              tip_v[0] = (phydbl)b->p_lk_tip_r[site*dim2+0];
+              tip_v[1] = (phydbl)b->p_lk_tip_r[site*dim2+1];
+              tip_v[2] = (phydbl)b->p_lk_tip_r[site*dim2+2];
+              tip_v[3] = (phydbl)b->p_lk_tip_r[site*dim2+3];
+            }
+
+          __m256d _plk; // parent partial likelihood
+          __m256d _plk_l,_plk_r; // partial likelihood vector on lefthand (righthand) side of b
+          __m256d _p[4]; // matrix of transition probabilities
+          __m256d _pplk[4]; // dot product of _p[i] & _plk_r
+          double plk[4];
+          
+          // Transition  probability matrix
+          For(i,4) _p[i] = _mm256_load_pd(b->Pij_rr + catg*dim3+i*dim2);
+
+          // Partial likelihood vector on righthand side of b
+          if(b->rght->tax == NO)
+            _plk_r = _mm256_load_pd(b->p_lk_rght + site*dim1+catg*dim2);
+          else
+            _plk_r = _mm256_load_pd(tip_v);
+
+          // Partial likelihood vector on lefthand side of b
+          _plk_l = _mm256_load_pd(b->p_lk_left + site*dim1+catg*dim2);
+
+          For(i,4) _pplk[i] = _mm256_mul_pd(_p[i],_plk_r);
+          
+          _plk = _mm256_mul_pd(AVX_Horizontal_Add(_pplk),_plk_l); 
+  
+          _plk = _mm256_mul_pd(_plk,_mm256_load_pd(tree->mod->e_frq->pi->v));
+
+          _mm256_store_pd(plk,_plk);
+
+          site_lk_cat = plk[0]+plk[1]+plk[2]+plk[3];
+
+          tree->site_lk_cat[catg] = site_lk_cat;
+          
+        } /* site likelihood for all rate classes */
+      Pull_Scaling_Factors(site,b,tree);
+    }
+  
+  fact_sum_scale = tree->fact_sum_scale[site];
+  
+  //Likelihood of the site is the sum of the individual rate specific likelihoods
+  site_lk = .0;
+  For(catg,tree->mod->ras->n_catg)
+    {
+      site_lk +=
+        tree->unscaled_site_lk_cat[catg*tree->n_pattern + site]* 
+        tree->mod->ras->gamma_r_proba->v[catg]; //density
+    }
+  
+
+  if(tree->mod->ras->invar == YES)
+    {
+      num_prec_issue = NO;
+      inv_site_lk = Invariant_Lk(fact_sum_scale,site,&num_prec_issue,tree);
+      
+      if(num_prec_issue == YES) // inv_site_lk >> site_lk
+        {
+          site_lk = inv_site_lk * tree->mod->ras->pinvar->v;
+        }
+      else
+        {
+          site_lk = site_lk * (1. - tree->mod->ras->pinvar->v) + inv_site_lk * tree->mod->ras->pinvar->v;
+        }
+    }
+  
+  log_site_lk = LOG(site_lk) - (phydbl)LOG2 * fact_sum_scale; // log_site_lk =  log(site_lk_scaled / 2^(left_subtree+right_subtree))      
+
+  /* printf("\n. site_lk: %g fact_sum_scale: %d",site_lk,fact_sum_scale); */
+  
+  // Calculation of the site likelihood (using scaling factors)...
+  int piecewise_exponent;
+  phydbl multiplier;
+  if(fact_sum_scale >= 0)
+    {
+      tree->cur_site_lk[site] = site_lk;
+      exponent = -fact_sum_scale;
+      do
+        {
+          piecewise_exponent = MAX(exponent,-63);
+          multiplier = 1. / (phydbl)((unsigned long long)(1) << -piecewise_exponent);
+          tree->cur_site_lk[site] *= multiplier;
+          exponent -= piecewise_exponent;
+        }
+      while(exponent != 0);
+    }
+  else
+    {
+      //In some cases fact_sum_scale can be negative. If you rescale the partials of two independent subtrees and make some of
+      //these numbers large in order to avoid underflow, then there is a chance that when multiplied them together you will
+      //get an overflow, in which case fact_sum_scale can become negative.
+      
+      tree->cur_site_lk[site] = site_lk;
+      exponent = fact_sum_scale;
+      do
+        {
+          piecewise_exponent = MIN(exponent,63);
+          multiplier = (phydbl)((unsigned long long)(1) << piecewise_exponent);
+          tree->cur_site_lk[site] *= multiplier;
+          exponent -= piecewise_exponent;
+        }
+      while(exponent != 0);
+    }
+  
+  // ... or using the log-likelihood
+  if(isinf(site_lk) || isnan(site_lk))
+    {
+      tree->cur_site_lk[site] = EXP(log_site_lk);
+    }
+  
+  if(isinf(log_site_lk) || isnan(log_site_lk))
+    {
+      PhyML_Printf("\n== Site = %d",site);
+      PhyML_Printf("\n== Invar = %d",tree->data->invar[site]);
+      PhyML_Printf("\n== Mixt = %d",tree->is_mixt_tree);
+      PhyML_Printf("\n== Lk = %G log(Lk) = %f < %G",site_lk,log_site_lk,-BIG);
+      For(catg,tree->mod->ras->n_catg) PhyML_Printf("\n== rr=%f p=%f",tree->mod->ras->gamma_rr->v[catg],tree->mod->ras->gamma_r_proba->v[catg]);
+      PhyML_Printf("\n== Pinv = %G",tree->mod->ras->pinvar->v);
+      PhyML_Printf("\n== Bl mult = %G",tree->mod->br_len_mult->v);
+      PhyML_Printf("\n== fact_sum_scale = %d",fact_sum_scale);
+      PhyML_Printf("\n== n_catg: %d",tree->mod->ras->n_catg);
+      
+      if(tree->mod->whichmodel == GTR || tree->mod->whichmodel == CUSTOM)
+        {
+          int i,j;
+          PhyML_Printf("\n== Rate matrix\n");
+          For(i,tree->mod->ns)
+            {
+              For(j,tree->mod->ns)
+                {
+                  PhyML_Printf("%12G ",i,tree->mod->r_mat->qmat->v[i*4+j]); 
+                }
+              PhyML_Printf("\n");
+            }
+          fflush(NULL);
+          
+          PhyML_Printf("\n== Relative rates\n");
+          For(i,tree->mod->ns*(tree->mod->ns-1)/2)
+            {
+              PhyML_Printf("\n== rr[%3d]: %12G %12G",i,tree->mod->r_mat->rr->v[i],tree->mod->r_mat->rr_val->v[i]); 
+            }
+          fflush(NULL);
+          
+        }
+      
+      /* int i; */
+      /* For(i,2*tree->n_otu-3) */
+      /* 	{ */
+      /* 	  PhyML_Printf("\n. b%3d->l->v = %f %f [%G] %f %f %f %f [%s]",i, */
+      /* 		       tree->a_edges[i]->l->v, */
+      /* 		       tree->a_edges[i]->gamma_prior_mean, */
+      /* 		       tree->a_edges[i]->gamma_prior_var, */
+      /* 		       tree->rates->nd_t[tree->a_edges[i]->left->num], */
+      /* 		       tree->rates->nd_t[tree->a_edges[i]->rght->num], */
+      /* 		       tree->rates->br_r[tree->a_edges[i]->left->num], */
+      /* 		       tree->rates->br_r[tree->a_edges[i]->rght->num], */
+      /* 		       tree->a_edges[i] == tree->e_root ? "YES" : "NO"); */
+      /* 	  fflush(NULL); */
+      
+      /* 	} */
+      
+      Print_Site(tree->data,site,tree->n_otu,"\n",tree->mod->io->state_len,stdout);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')",__FILE__,__LINE__,__FUNCTION__);
+      Exit("\n");
+    }
+
+/* Multiply log likelihood by the number of times this site pattern is found in the data */
+  tree->c_lnL_sorted[site] = tree->data->wght[site]*log_site_lk;
+  
+  tree->c_lnL += tree->data->wght[site]*log_site_lk;
+
+
+  return log_site_lk;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
+{
+/*
+           |
+           |<- b
+           |
+           d
+          / \
+         /   \
+        /     \
+    n_v1   n_v2
+*/
+  t_node *n_v1, *n_v2;//d's "left" and "right" neighbor nodes
+  phydbl *p_lk,*p_lk_v1,*p_lk_v2;//Partial likelihood vector of node d, d's "left" neighbor, d's "right" neighbor. We fill *p_lk, and assume *p_lk_v1 and *p_lk_v2 are already filled.
+  phydbl *Pij1,*Pij2;
+  int *sum_scale, *sum_scale_v1, *sum_scale_v2;
+  int sum_scale_v1_val, sum_scale_v2_val;
+  int i;//index over the number of states
+  int catg/*index over the number of rate categories*/,site;
+  int n_patterns;//Number of distinct site patterns
+  int dim1, dim2, dim3;
+  phydbl curr_scaler;
+  int curr_scaler_pow, piecewise_scaler_pow;
+  phydbl smallest_p_lk;
+  phydbl p_lk_lim_inf;
+  int *p_lk_loc;//Suppose site j, of a certain subtree, has "A" on one tip, and "C" on the other. If you come across this pattern again at site i<j, then you can simply copy the partial likelihoods
+  phydbl tip_v1[4],tip_v2[4];
+  
+
+  if(tree->n_root && tree->ignore_root == YES &&
+     (d == tree->n_root->v[1] || d == tree->n_root->v[2]) &&
+     (b == tree->n_root->b[1] || b == tree->n_root->b[2]))
+    {
+      assert(FALSE);
+    }
+
+
+  dim1 = tree->mod->ras->n_catg * tree->mod->ns;//Dimension of a matrix L that holds rate-specific character likelihoods. IOW, L[ij] is the likelihood of character j in rate class i
+  dim2 = tree->mod->ns;
+  dim3 = tree->mod->ns * tree->mod->ns;//Dimensions of the transition prob. matrix
+
+  sum_scale_v1_val = sum_scale_v2_val = 0;
+  curr_scaler = .0;
+  curr_scaler_pow = piecewise_scaler_pow = 0;
+
+  if(d->tax)
+    {
+      PhyML_Printf("\n== t_node %d is a leaf...",d->num);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
+      Exit("\n");
+    }
+
+  n_patterns = tree->n_pattern;
+
+  p_lk_lim_inf                = (phydbl)P_LK_LIM_INF;
+  n_v1 = n_v2                 = NULL;
+  p_lk = p_lk_v1 = p_lk_v2    = NULL;
+  Pij1 = Pij2                 = NULL;
+  sum_scale_v1 = sum_scale_v2 = NULL;
+  p_lk_loc                    = NULL;
+  Set_All_P_Lk(&n_v1,&n_v2,
+               &p_lk,&sum_scale,&p_lk_loc,
+               &Pij1,&p_lk_v1,&sum_scale_v1,
+               &Pij2,&p_lk_v2,&sum_scale_v2,
+               d,b,tree);
+
+  if(tree->mod->augmented == YES && n_v1 && n_v1->tax == NO)
+    {
+      PhyML_Printf("\n== AVX version of the Update_Partial_Lk function does not");
+      PhyML_Printf("\n== allow augmented data. Please compile without the '-D__AVX'");
+      PhyML_Printf("\n== flag");
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
+
+  /* For every site in the alignment */
+  For(site,n_patterns)
+    {
+      if(n_v1->tax == YES)
+        {
+          tip_v1[0] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+0];
+          tip_v1[1] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+1];
+          tip_v1[2] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+2];
+          tip_v1[3] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+3];
+        }
+
+      if(n_v2->tax == YES)
+        {
+          tip_v2[0] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+0];
+          tip_v2[1] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+1];
+          tip_v2[2] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+2];
+          tip_v2[3] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+3];
+        }
+
+      if(p_lk_loc[site] < site)
+        {
+          Copy_P_Lk(p_lk,p_lk_loc[site],site,tree);
+          Copy_Scale(sum_scale,p_lk_loc[site],site,tree);
+        }
+      else
+        {
+          /* For all rate classes */
+          For(catg,tree->mod->ras->n_catg)
+            {
+              smallest_p_lk  =  BIG;
+
+              __m256d _plk; // parent partial likelihood
+              __m256d _plk1,_plk2; // sister partial likelihood vectors
+              __m256d _p1[4],_p2[4]; // matrices of transition probabilities
+              __m256d _pplk1[4],_pplk2[4]; // dot product of _p1[i] & _plk1 (resp. _p2[i] & _plk2)
+              
+              phydbl *loc_p_lk_v1,*loc_p_lk_v2;
+              phydbl *loc_p1,*loc_p2;
+                            
+              For(i,4)
+                {
+                  loc_p1 = Pij1 + catg*dim3+i*dim2;
+                  loc_p2 = Pij2 + catg*dim3+i*dim2;
+                  
+                  _p1[i] = _mm256_load_pd(loc_p1);
+                  _p2[i] = _mm256_load_pd(loc_p2);
+                }
+
+              if(n_v1->tax == NO)
+                {
+                  loc_p_lk_v1 = p_lk_v1 + site*dim1+catg*dim2;
+                  _plk1 = _mm256_load_pd(loc_p_lk_v1);
+                }
+              else
+                {
+                  loc_p_lk_v1 = tip_v1;
+                  _plk1 = _mm256_load_pd(tip_v1);
+                }
+
+              if(n_v2->tax == NO)
+                {
+                  loc_p_lk_v2 = p_lk_v2 + site*dim1+catg*dim2;
+                  _plk2 = _mm256_load_pd(loc_p_lk_v2);
+                }
+              else
+                {
+                  loc_p_lk_v2 = tip_v2;
+                  _plk2 = _mm256_load_pd(tip_v2);
+                }
+
+              For(i,4)
+                {
+                  _pplk1[i] = _mm256_mul_pd(_p1[i],_plk1);
+                  _pplk2[i] = _mm256_mul_pd(_p2[i],_plk2);
+                }
+              
+              _plk = _mm256_mul_pd(AVX_Horizontal_Add(_pplk1),AVX_Horizontal_Add(_pplk2)); 
+                                   
+              _mm256_store_pd(p_lk+site*dim1+catg*dim2,_plk);
+
+              smallest_p_lk = BIG;
+              For(i,4) 
+                if(p_lk[site*dim1+catg*dim2+i] < smallest_p_lk) 
+                  smallest_p_lk = p_lk[site*dim1+catg*dim2+i] ;
+
+              /* Current scaling values at that site */
+              sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[catg*n_patterns+site]):(0);
+              sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[catg*n_patterns+site]):(0);
+              
+              sum_scale[catg*n_patterns+site] = sum_scale_v1_val + sum_scale_v2_val;
+              
+              /* Scaling. We have p_lk_lim_inf = 2^-500. Consider for instance that
+                 smallest_p_lk = 2^-600, then curr_scaler_pow will be equal to 100, and
+                 each element in the partial likelihood vector will be multiplied by
+                 2^100. */
+              if(smallest_p_lk < p_lk_lim_inf && tree->mod->augmented == NO)
+                {
+                  curr_scaler_pow = (int)(-500.*LOG2-LOG(smallest_p_lk))/LOG2;
+                  curr_scaler     = (phydbl)((unsigned long long)(1) << curr_scaler_pow);
+                  
+                  sum_scale[catg*n_patterns+site] += curr_scaler_pow;
+                  
+                  do
+                    {
+                      piecewise_scaler_pow = MIN(curr_scaler_pow,63);
+                      curr_scaler = (phydbl)((unsigned long long)(1) << piecewise_scaler_pow);
+                      For(i,tree->mod->ns)
+                        {
+                          p_lk[site*dim1+catg*dim2+i] *= curr_scaler;
+                          
+                          if(p_lk[site*dim1+catg*dim2+i] > BIG)
+                            {
+                              PhyML_Printf("\n== curr_scaler_pow = %d",curr_scaler_pow);
+                              PhyML_Printf("\n== Err. in file %s at line %d (function '%s').",__FILE__,__LINE__,__FUNCTION__);
+                              Exit("\n");
+                            }
+                          //                              fprintf(stderr,"\n%e",p_lk[site*dim1+catg*dim2+i]);
+                        }
+                      curr_scaler_pow -= piecewise_scaler_pow;
+                    }
+                  while(curr_scaler_pow != 0);
+                }
+            }
+        }
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+#endif // __AVX
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
