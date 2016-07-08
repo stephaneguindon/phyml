@@ -60,10 +60,19 @@ AC_MSG_NOTICE("Do not use MSSE = ${MSSE} because not available on arch ${host}")
 ;;
 esac
 
-dnl CFLAGS="-O3 -fomit-frame-pointer -funroll-loops -Wall ${ARCH_flag}"
-dnl CFLAGS="-O3 -Wfloat-equal -fomit-frame-pointer -funroll-loops"
-dnl CFLAGS="-O3 -Wfloat-equal"
-dnl CFLAGS="-g"
+case "${host}" in
+*i386*|*amd64*|*x86_64*)
+MAVX=-mavx
+DAVX=-D__AVX
+AC_MSG_NOTICE("On arch ${host} use MAVX = ${AVX}")
+;;
+*)
+MAVX=
+DAVX=-D__AVX
+AC_MSG_NOTICE("Do not use MSSE = ${MAVX} because not available on arch ${host}")
+;;
+esac
+
 
 LDFLAGS="${ARGC_flag}" 
 
@@ -75,8 +84,8 @@ AC_ARG_ENABLE([debug],
               [AS_HELP_STRING([--enable-debug],
                               [Remove optimization options and add debug informations.])])
 AS_IF([test "x$enable_debug" = "xyes"],
-      [CFLAGS="-ansi -pedantic -Wall -std=c99 -O0 -g -Wuninitialized"],
-      [CFLAGS="-Wall -O2 ${MSSE} -fomit-frame-pointer -funroll-loops -Wempty-body -Wuninitialized ${ARCH_flag}"])
+      [CFLAGS="-ansi ${MAVX} ${DAVX}  -pedantic -Wall -std=c99 -O0 -g -Wuninitialized"],
+      [CFLAGS="-Wall -O2 ${MSSE} ${MAVX} ${DAVX} -fomit-frame-pointer -funroll-loops -Wempty-body -Wuninitialized ${ARCH_flag}"])
 
 AC_ARG_ENABLE([gprof],
               [AS_HELP_STRING([--enable-gprof],

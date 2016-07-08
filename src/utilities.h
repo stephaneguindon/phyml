@@ -28,6 +28,15 @@ the GNU public licence. See http://www.opensource.org for details.
 #include <float.h>
 #include <assert.h>
 #include <stdbool.h>
+#include <malloc.h>
+
+#if (defined(__AVX))
+#include <xmmintrin.h>
+#include <pmmintrin.h>
+#include <immintrin.h>
+#endif
+
+
 
 extern int n_sec1;
 extern int n_sec2;
@@ -79,6 +88,8 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define CG 3
 #define CT 4
 #define GT 5
+
+#define BYTE_ALIGN 32
 
 #ifndef M_1_SQRT_2PI
 #define M_1_SQRT_2PI	0.398942280401432677939946059934	/* 1/sqrt(2pi) */

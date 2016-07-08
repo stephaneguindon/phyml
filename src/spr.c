@@ -4838,7 +4838,7 @@ void Spr_List_Of_Trees(t_tree *tree)
 
   For(i,max_list_size) lnL_list[i] = UNLIKELY;
 
-  Stepwise_Add_Pars(tree);
+  /* Stepwise_Add_Pars(tree); */
   /* Spr_Pars(0,100,tree); */
   Round_Optimize(tree,tree->data,5);
   tree_list[0] = Make_Tree_From_Scratch(tree->n_otu,tree->data);
@@ -4851,15 +4851,12 @@ void Spr_List_Of_Trees(t_tree *tree)
     {
       /* Randomize_Tree(tree,tree->n_otu); */
       Stepwise_Add_Pars(tree);
-      Spr_Pars(0,2,tree);
+      /* Spr_Pars(0,2,tree); */
 
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
       n_opt = 0;
-      do Optimize_Br_Len_Serie(tree); while(n_opt++ < 2);
-
-      /* tree->mod->s_opt->nni_br_len_opt = NO; */
-      /* Simu(tree,3); */
+      do Optimize_Br_Len_Serie(tree); while(n_opt++ < 3);
 
       printf("\n>> lnL: %f pars: %d",tree->c_lnL,tree->c_pars);
 
@@ -4877,26 +4874,31 @@ void Spr_List_Of_Trees(t_tree *tree)
     {
       Copy_Tree(tree_list[rk[list_size]],tree);
 
+      /* Randomize_Tree(tree,2); */
+
+      Set_Both_Sides(NO,tree);
+      Lk(NULL,tree);
+
       tree->mod->s_opt->max_depth_path    = tree->n_otu;
       tree->mod->s_opt->spr_lnL           = YES;
       tree->mod->s_opt->spr_pars          = NO;
       tree->mod->s_opt->min_diff_lk_move  = 0.1;
-      tree->best_lnL                      = lnL_list[rk[list_size]];
       tree->mod->s_opt->eval_list_regraft = NO;
       
       do
         {
           Set_Both_Sides(YES,tree);
           Lk(NULL,tree);
-          Spr(UNLIKELY,1.0,tree);
+          tree->best_lnL = tree->c_lnL;
+          Spr(tree->c_lnL,1.0,tree);
           tree->mod->s_opt->max_depth_path = tree->max_spr_depth;
+          printf("\n>> lnL: %f pars: %d",Get_Lk(tree),tree->c_pars);          
         }
       while(tree->n_improvements > 5);
 
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
       Optimize_Br_Len_Serie(tree);
-
       printf("\n>> lnL: %f [%d/5]",tree->c_lnL,list_size+1);
 
       Copy_Tree(tree,tree_list[rk[list_size]]);
@@ -4918,21 +4920,22 @@ void Spr_List_Of_Trees(t_tree *tree)
       tree->mod->s_opt->spr_lnL           = YES;
       tree->mod->s_opt->spr_pars          = NO;
       tree->mod->s_opt->min_diff_lk_move  = 0.05;
-      tree->best_lnL                      = lnL_list[rk[list_size]];
       tree->mod->s_opt->eval_list_regraft = YES;
       
       do
         {
           Set_Both_Sides(YES,tree);
           Lk(NULL,tree);
+          tree->best_lnL = tree->c_lnL;
           Spr(UNLIKELY,1.0,tree);
           tree->mod->s_opt->max_depth_path = tree->max_spr_depth;
+          Set_Both_Sides(NO,tree);
+          Lk(NULL,tree);
+          Optimize_Br_Len_Serie(tree);
+          printf("\n>> lnL: %f pars: %d",Get_Lk(tree),tree->c_pars);          
         }
-      while(tree->n_improvements > 5);
+      while(tree->n_improvements > 2);
 
-      Set_Both_Sides(NO,tree);
-      Lk(NULL,tree);
-      Optimize_Br_Len_Serie(tree);
 
       printf("\n>> lnL: %f [%d/%d]",tree->c_lnL,list_size+1,1 + (int)tree->n_otu/20);
 

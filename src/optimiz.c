@@ -625,6 +625,8 @@ phydbl Br_Len_Brent(t_edge *b_fcus, t_tree *tree)
   l_begin  = b_fcus->l->v;
   lk_begin = Lk(loc_b,loc_tree); /*! We can't assume that the log-lk value is up-to-date */
 
+  /* min = loc_tree->mod->l_min; */
+  /* max = loc_tree->mod->l_max; */
   min = loc_tree->mod->l_min;
   max = loc_tree->mod->l_max;
   
@@ -762,7 +764,8 @@ void Optimize_Br_Len_Serie(t_tree *tree)
     }
 
   lk_end = tree->c_lnL;
-  assert(lk_end > lk_init);
+
+  assert(lk_end > lk_init - tree->mod->s_opt->min_diff_lk_local);
 }
 
 /*////////////////////////////////////////////////////////////
@@ -772,8 +775,6 @@ void Optimize_Br_Len_Multiplier(t_tree *mixt_tree, int verbose)
 {
   phydbl lk_init;
   t_tree *tree;
-
-
 
   tree = mixt_tree;
   

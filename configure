@@ -5064,6 +5064,21 @@ $as_echo "$as_me: \"Do not use MSSE = ${MSSE} because not available on arch ${ho
 ;;
 esac
 
+case "${host}" in
+*i386*|*amd64*|*x86_64*)
+MAVX=-mavx
+DAVX=-D__AVX
+{ $as_echo "$as_me:${as_lineno-$LINENO}: \"On arch ${host} use MAVX = ${AVX}\"" >&5
+$as_echo "$as_me: \"On arch ${host} use MAVX = ${AVX}\"" >&6;}
+;;
+*)
+MAVX=
+DAVX=-D__AVX
+{ $as_echo "$as_me:${as_lineno-$LINENO}: \"Do not use MSSE = ${MAVX} because not available on arch ${host}\"" >&5
+$as_echo "$as_me: \"Do not use MSSE = ${MAVX} because not available on arch ${host}\"" >&6;}
+;;
+esac
+
 
 LDFLAGS="${ARGC_flag}"
 
@@ -12203,9 +12218,9 @@ if test "${enable_debug+set}" = set; then :
 fi
 
 if test "x$enable_debug" = "xyes"; then :
-  CFLAGS="-ansi -pedantic -Wall -std=c99 -O0 -g -Wuninitialized"
+  CFLAGS="-ansi ${MAVX} ${DAVX}  -pedantic -Wall -std=c99 -O0 -g -Wuninitialized"
 else
-  CFLAGS="-Wall -O2 ${MSSE} -fomit-frame-pointer -funroll-loops -Wempty-body -Wuninitialized ${ARCH_flag}"
+  CFLAGS="-Wall -O2 ${MSSE} ${MAVX} ${DAVX} -fomit-frame-pointer -funroll-loops -Wempty-body -Wuninitialized ${ARCH_flag}"
 fi
 
 # Check whether --enable-gprof was given.

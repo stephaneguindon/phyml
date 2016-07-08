@@ -6461,10 +6461,8 @@ void Random_NNI(int n_moves, t_tree *tree)
       n_target  = tree->a_nodes[tree->n_otu + (int)((phydbl)rand()/RAND_MAX * (2*tree->n_otu-3-tree->n_otu))];
       For(j,3) if(!n_target->v[j]->tax) {b = n_target->b[j]; break;}
 
-
       For(j,3) if(b->left->v[j] != b->rght) {n1 = b->left->v[j]; break;}
       For(j,3) if(b->rght->v[j] != b->left) {n2 = b->rght->v[j]; break;}
-
 
       Swap(n1,b->left,b->rght,n2,tree);
     }

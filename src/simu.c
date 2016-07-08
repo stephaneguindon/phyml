@@ -222,7 +222,7 @@ void Simu_Pars(t_tree *tree, int n_step_max)
   n_without_swap      = 0;
   step                = 0;
   each                = 4;
-  lambda              = .75;
+  lambda              = 0.5;
   n_tot_swap          = 0;
 
   Update_Dirs(tree);
@@ -308,21 +308,21 @@ void Select_Edges_To_Swap(t_tree *tree, t_edge **sorted_b, int *n_neg)
       b = tree->a_edges[i];
       best_score = b->nni->score;
       
-      /* if((!b->left->tax) && (!b->rght->tax) && (b->nni->score < -tree->mod->s_opt->min_diff_lk_move)) */
-      /*   { */
-      /*     Check_NNI_Scores_Around(b->left,b->rght,b,&best_score,tree); */
-      /*     Check_NNI_Scores_Around(b->rght,b->left,b,&best_score,tree); */
-      /*     if(best_score < b->nni->score) continue; */
-      /*     sorted_b[*n_neg] = b; */
-      /*     (*n_neg)++; */
-      /*   } */
-
-
       if((!b->left->tax) && (!b->rght->tax) && (b->nni->score < -tree->mod->s_opt->min_diff_lk_move))
         {
+          Check_NNI_Scores_Around(b->left,b->rght,b,&best_score,tree);
+          Check_NNI_Scores_Around(b->rght,b->left,b,&best_score,tree);
+          if(best_score < b->nni->score) continue;
           sorted_b[*n_neg] = b;
           (*n_neg)++;
         }
+
+
+      /* if((!b->left->tax) && (!b->rght->tax) && (b->nni->score < -tree->mod->s_opt->min_diff_lk_move)) */
+      /*   { */
+      /*     sorted_b[*n_neg] = b; */
+      /*     (*n_neg)++; */
+      /*   } */
 
     }
 }
