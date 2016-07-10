@@ -28,7 +28,7 @@ the GNU public licence. See http://www.opensource.org for details.
 #include <float.h>
 #include <assert.h>
 #include <stdbool.h>
-#include <malloc.h>
+#include <malloc/malloc.h>
 
 #if (defined(__AVX))
 #include <xmmintrin.h>

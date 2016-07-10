@@ -212,7 +212,7 @@ void Make_Edge_Lk(t_edge *b, t_tree *tree)
 #if (!defined(__AVX))
   b->Pij_rr = (phydbl *)mCalloc(tree->mod->ras->n_catg*tree->mod->ns*tree->mod->ns,sizeof(phydbl));
 #else
-  b->Pij_rr = (double *)memalign(BYTE_ALIGN,(size_t)tree->mod->ras->n_catg*tree->mod->ns*tree->mod->ns*sizeof(phydbl));
+  posix_memalign((void *)&b->Pij_rr,BYTE_ALIGN,(size_t)tree->mod->ras->n_catg*tree->mod->ns*tree->mod->ns*sizeof(phydbl));
 #endif
 
   Make_Edge_Lk_Left(b,tree);
@@ -242,7 +242,7 @@ void Make_Edge_Lk_Left(t_edge *b, t_tree *tree)
 #if (!defined(__AVX))
           b->p_lk_left = (phydbl *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns,sizeof(phydbl));
 #else
-          b->p_lk_left = (double *)memalign(BYTE_ALIGN,(size_t)tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double));
+          posix_memalign((void **)&b->p_lk_left,BYTE_ALIGN,(size_t)tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double));
 #endif
           b->p_lk_tip_l = NULL;
         }
@@ -265,7 +265,7 @@ void Make_Edge_Lk_Left(t_edge *b, t_tree *tree)
 #if (!defined(__AVX))
       b->p_lk_left      = (phydbl *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns,sizeof(phydbl));
 #else
-      b->p_lk_left = (double *)memalign(BYTE_ALIGN,(size_t)tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double));
+      posix_memalign((void **)&b->p_lk_left,BYTE_ALIGN,(size_t)tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double));
 #endif
     }
 
@@ -296,7 +296,7 @@ void Make_Edge_Lk_Rght(t_edge *b, t_tree *tree)
 #if (!defined(__AVX))
           b->p_lk_rght = (phydbl *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns,sizeof(phydbl));
 #else
-          b->p_lk_rght = (double *)memalign(BYTE_ALIGN,(size_t)tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double));
+	  posix_memalign((void **)&b->p_lk_rght,BYTE_ALIGN,(size_t)tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double));
 #endif
           b->p_lk_tip_r = NULL;
         }
@@ -318,7 +318,7 @@ void Make_Edge_Lk_Rght(t_edge *b, t_tree *tree)
 #if (!defined(__AVX))
       b->p_lk_rght      = (phydbl *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns,sizeof(phydbl));
 #else
-      b->p_lk_rght = (double *)memalign(BYTE_ALIGN,(size_t)tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double));
+      posix_memalign((void **)&b->p_lk_rght,BYTE_ALIGN,(size_t)tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double));
 #endif
     }
 
@@ -706,7 +706,7 @@ void Make_Model_Complete(t_mod *mod)
 #if (!defined(__AVX))
   mod->Pij_rr->v = (phydbl *)mCalloc(mod->ras->n_catg*mod->ns*mod->ns,sizeof(phydbl));
 #else
-  mod->Pij_rr->v = (double *)memalign(BYTE_ALIGN,(size_t)mod->ras->n_catg*mod->ns*mod->ns*sizeof(double));
+  posix_memalign((void **)&mod->Pij_rr->v,BYTE_ALIGN,(size_t)mod->ras->n_catg*mod->ns*mod->ns*sizeof(double));
 #endif
 
   mod->eigen     = (eigen *)Make_Eigen_Struct(mod->ns);

@@ -4877,7 +4877,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
 
-      tree->mod->s_opt->max_depth_path    = tree->n_otu;
+      tree->mod->s_opt->max_depth_path    = 15;
       tree->mod->s_opt->spr_lnL           = YES;
       tree->mod->s_opt->spr_pars          = NO;
       tree->mod->s_opt->min_diff_lk_move  = 0.1;
@@ -4888,9 +4888,8 @@ void Spr_List_Of_Trees(t_tree *tree)
           Set_Both_Sides(YES,tree);
           Lk(NULL,tree);
           tree->best_lnL = tree->c_lnL;
-          Spr(tree->c_lnL,1.0,tree);
+          Spr(tree->c_lnL,0.5,tree);
           tree->mod->s_opt->max_depth_path = tree->max_spr_depth;
-          printf("\n>> lnL: %f pars: %d",Get_Lk(tree),tree->c_pars);          
         }
       while(tree->n_improvements > 5);
 
