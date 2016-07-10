@@ -4567,7 +4567,7 @@ void AVX_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
             {
               smallest_p_lk  =  BIG;
 
-              __m256d _plk; // parent partial likelihood
+              __m256d _plk[5]; // parent partial likelihood
               __m256d _plk1[5],_plk2[5]; // sister partial likelihood vectors
               __m256d _p1[5],_p2[5]; // vector of transition probabilities
               __m256d _pplk1[4],_pplk2[4]; // dot product of _p1[i] & _plk1 (resp. _p2[i] & _plk2)
