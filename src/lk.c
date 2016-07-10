@@ -4585,7 +4585,6 @@ void AVX_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
 	      _p2[3] = _mm256_load_pd(Pij2 + catg*dim3+12);
               _p2[4] = _mm256_load_pd(Pij2 + catg*dim3+16);
 	      
-
               if(n_v1->tax == NO)
                 {
                   _plk1[0] = _mm256_load_pd(p_lk_v1 + site*dim1+catg*dim2+0);
@@ -4620,16 +4619,30 @@ void AVX_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
 		  _plk2[4] = _mm256_load_pd(tip_v2+16);
 		}
 
-              For(i,4)
-                {
-                  _pplk1[i] = _mm256_mul_pd(_p1[i],_plk1);
-                  _pplk2[i] = _mm256_mul_pd(_p2[i],_plk2);
-                }
-              
-              _plk = _mm256_mul_pd(AVX_Horizontal_Add(_pplk1),AVX_Horizontal_Add(_pplk2)); 
-                                   
-              _mm256_store_pd(p_lk+site*dim1+catg*dim2,_plk);
+	      _pplk1[0] = _mm256_mul_pd(_p1[0],_plk1[0]);
+              _pplk1[1] = _mm256_mul_pd(_p1[1],_plk1[1]);
+	      _pplk1[2] = _mm256_mul_pd(_p1[2],_plk1[2]);
+	      _pplk1[3] = _mm256_mul_pd(_p1[3],_plk1[3]);
+	      _pplk1[4] = _mm256_mul_pd(_p1[4],_plk1[4]);
 
+	      _pplk2[0] = _mm256_mul_pd(_p2[0],_plk2[0]);
+              _pplk2[1] = _mm256_mul_pd(_p2[1],_plk2[1]);
+	      _pplk2[2] = _mm256_mul_pd(_p2[2],_plk2[2]);
+	      _pplk2[3] = _mm256_mul_pd(_p2[3],_plk2[3]);
+	      _pplk2[4] = _mm256_mul_pd(_p2[4],_plk2[4]);
+	      
+              _plk[0] = _mm256_mul_pd(AVX_Horizontal_Add(_pplk1[0]),AVX_Horizontal_Add(_pplk2[0])); 
+	      _plk[1] = _mm256_mul_pd(AVX_Horizontal_Add(_pplk1[1]),AVX_Horizontal_Add(_pplk2[1]));
+	      _plk[2] = _mm256_mul_pd(AVX_Horizontal_Add(_pplk1[2]),AVX_Horizontal_Add(_pplk2[2]));
+	      _plk[3] = _mm256_mul_pd(AVX_Horizontal_Add(_pplk1[3]),AVX_Horizontal_Add(_pplk2[3]));
+	      _plk[4] = _mm256_mul_pd(AVX_Horizontal_Add(_pplk1[4]),AVX_Horizontal_Add(_pplk2[4]));
+	      
+              _mm256_store_pd(p_lk+site*dim1+catg*dim2+0 ,_plk[0]);
+	      _mm256_store_pd(p_lk+site*dim1+catg*dim2+4 ,_plk[1]);
+	      _mm256_store_pd(p_lk+site*dim1+catg*dim2+8 ,_plk[2]);
+	      _mm256_store_pd(p_lk+site*dim1+catg*dim2+12,_plk[3]);
+	      _mm256_store_pd(p_lk+site*dim1+catg*dim2+16,_plk[4]);
+	      
               smallest_p_lk = BIG;
               For(i,4) 
                 if(p_lk[site*dim1+catg*dim2+i] < smallest_p_lk) 
