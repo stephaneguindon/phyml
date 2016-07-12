@@ -3259,6 +3259,20 @@ void Print_Settings(option *io)
   PhyML_Printf("\n                . Random seed:\t\t\t\t\t %d", io->r_seed);
   PhyML_Printf("\n                . Subtree patterns aliasing:\t\t\t %s",io->do_alias_subpatt?"yes":"no");
   PhyML_Printf("\n                . Version:\t\t\t\t\t %s", VERSION);
+  PhyML_Printf("\n                . AVX enabled?\t\t\t\t\t %s",
+#if defined(__AVX__)
+               "yes"
+#else
+               "no"
+#endif
+               );
+  PhyML_Printf("\n                . SSE3 enabled?\t\t\t\t\t %s",
+#if defined(__SSE3__)
+               "yes"
+#else
+               "no"
+#endif
+               );
 
 
   PhyML_Printf("\n\n oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo\n");
