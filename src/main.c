@@ -228,7 +228,7 @@ int main(int argc, char **argv)
                   /* { */
                   /*   int i; */
                   /*   Set_Both_Sides(NO,tree); */
-                  /*   For(i,10000) Lk(NULL,tree); */
+                  /*   For(i,1000) Lk(NULL,tree); */
                   /*   printf("\n. lnL: %f",tree->c_lnL); */
                   /*   Exit("\n"); */
                   /* } */
