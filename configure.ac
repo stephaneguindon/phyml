@@ -48,44 +48,21 @@ AC_FUNC_SETVBUF_REVERSED
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([floor pow rint sqrt strchr strstr])
 
-# Thanks for Charles Plessy from Debian
-case "${host}" in
-*i386*|*amd64*|*x86_64*)
-MSSE=-msse
-AC_MSG_NOTICE("On arch ${host} use MSSE = ${MSSE}")
-;;
-*)
-MSSE=
-AC_MSG_NOTICE("Do not use MSSE = ${MSSE} because not available on arch ${host}")
-;;
-esac
-
-case "${host}" in
-*i386*|*amd64*|*x86_64*)
-MAVX=-mavx
-DAVX=-D__AVX
-AC_MSG_NOTICE("On arch ${host} use MAVX = ${AVX}")
-;;
-*)
-MAVX=
-DAVX=
-AC_MSG_NOTICE("Do not use MSSE = ${MAVX} because not available on arch ${host}")
-;;
-esac
-
-
 LDFLAGS="${ARGC_flag}" 
 
 LT_INIT
 AC_PROG_LIBTOOL
 dnl Add option for compiling with debugging informations
 
+
+dnl -xHost for OSX amounts to -march=native for Linux
+
 AC_ARG_ENABLE([debug],
               [AS_HELP_STRING([--enable-debug],
                               [Remove optimization options and add debug informations.])])
 AS_IF([test "x$enable_debug" = "xyes"],
-      [CFLAGS="-ansi ${MAVX} ${DAVX}  -pedantic -Wall -std=c99 -O0 -g -Wuninitialized"],
-      [CFLAGS="-Wall -O2 ${MSSE} ${MAVX} ${DAVX} -fomit-frame-pointer -funroll-loops -Wempty-body -Wuninitialized ${ARCH_flag}"])
+      [CFLAGS="-ansi -march=native -pedantic -Wall -std=c99 -O0 -g -Wuninitialized"],
+      [CFLAGS="-Wall -O2 -march=native -fomit-frame-pointer -funroll-loops -Wempty-body -Wuninitialized ${ARCH_flag}"])
 
 AC_ARG_ENABLE([gprof],
               [AS_HELP_STRING([--enable-gprof],

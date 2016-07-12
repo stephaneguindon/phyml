@@ -31,7 +31,7 @@ the GNU public licence. See http://www.opensource.org for details.
 /* #include <malloc/malloc.h> */
 #include <malloc.h>
 
-#if (defined(__AVX))
+#if (defined(__AVX__))
 #include <xmmintrin.h>
 #include <pmmintrin.h>
 #include <immintrin.h>
@@ -2162,6 +2162,7 @@ void Randomize_Tree(t_tree *tree, int n_prune_regraft);
 t_ll *Get_List_Of_Reachable_Tips(t_node *a, t_node *d, t_tree *tree);
 void Get_List_Of_Reachable_Tips_Post(t_node *a, t_node *d, t_ll *list, t_tree *tree);
 phydbl Length_Of_Path_Between_List_Of_Tips(t_ll *tips0, t_ll *tips1, matrix *mat);
+
 
 #include "xml.h"
 #include "free.h"

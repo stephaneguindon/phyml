@@ -92,14 +92,14 @@ void Ancestral_Sequences(t_tree *tree, int print);
 void Pull_Scaling_Factors(int site, t_edge *b, t_tree *tree);
 void Stepwise_Add_Lk(t_tree *tree);
 
-#if defined(__AVX)
+#if defined(__AVX__)
 __m256d AVX_Horizontal_Add(__m256d x[4]);
 phydbl AVX_Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree);
 phydbl AVX_Lk_Core_Nucl(int state, int ambiguity_check, t_edge *b, t_tree *tree);
 phydbl AVX_Lk_Core_AA(int state, int ambiguity_check, t_edge *b, t_tree *tree);
 void AVX_Update_P_Lk_Nucl(t_tree *tree,t_edge *b_fcus,t_node *n);
 void AVX_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d);
-#endif
+#endif // __AVX__
 
 
 #endif

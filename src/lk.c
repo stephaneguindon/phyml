@@ -407,6 +407,7 @@ phydbl Lk(t_edge *b, t_tree *tree)
 {
   int br;
  
+
   if(b == NULL && tree->mod->s_opt->curr_opt_free_rates == YES)
     {
       tree->mod->s_opt->curr_opt_free_rates = NO;
@@ -544,7 +545,7 @@ phydbl Lk(t_edge *b, t_tree *tree)
 
           if(tree->mod->use_m4mod) ambiguity_check = YES;
 
-#if (!defined(__AVX))
+#if (!defined(__AVX__))
           Lk_Core(state,ambiguity_check,b,tree);
 #else
           AVX_Lk_Core(state,ambiguity_check,b,tree);
@@ -1014,7 +1015,7 @@ void Update_P_Lk(t_tree *tree, t_edge *b, t_node *d)
     {
       if(tree->io->datatype == NT)
         {
-#if (!defined(__AVX))
+#if (!defined(__AVX__))
           Update_P_Lk_Nucl(tree,b,d);
 #else
           AVX_Update_P_Lk_Nucl(tree,b,d);
@@ -1022,7 +1023,7 @@ void Update_P_Lk(t_tree *tree, t_edge *b, t_node *d)
         }
       else if(tree->io->datatype == AA)
         {
-#if (!defined(__AVX))
+#if (!defined(__AVX__))
           Update_P_Lk_AA(tree,b,d);
 #else
           /* Update_P_Lk_AA(tree,b,d); */
@@ -3979,7 +3980,7 @@ void Stepwise_Add_Lk(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if defined(__AVX)
+#if defined(__AVX__)
 __m256d AVX_Horizontal_Add(__m256d x[4])
 {
   __m256d y[2],z[2];
@@ -4542,8 +4543,7 @@ void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
   if(tree->mod->augmented == YES && n_v1 && n_v1->tax == NO)
     {
       PhyML_Printf("\n== AVX version of the Update_Partial_Lk function does not");
-      PhyML_Printf("\n== allow augmented data. Please compile without the '-D__AVX'");
-      PhyML_Printf("\n== flag");
+      PhyML_Printf("\n== allow augmented data.");
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
     }
 

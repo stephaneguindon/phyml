@@ -52,6 +52,23 @@ int main(int argc, char **argv)
   char *most_likely_tree=NULL;
   int orig_random_input_tree;
 
+  PhyML_Printf("\n. AVX enabled? %s",
+#if defined(__AVX__)
+               "yes"
+#else
+               "no"
+#endif
+               );
+  PhyML_Printf("\n. SSE3 enabled? %s",
+#if defined(__SSE3__)
+               "yes"
+#else
+               "no"
+#endif
+               );
+
+
+
 #ifdef MPI
   int rc;
   rc = MPI_Init(&argc,&argv);
