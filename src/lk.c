@@ -272,7 +272,6 @@ void Init_Tips_At_One_Site_Generic_Int(char *state, int ns, int state_len, int p
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Get_All_Partial_Lk_Scale(t_tree *tree, t_edge *b_fcus, t_node *a, t_node *d)
 {
   Update_P_Lk(tree,b_fcus,d);
@@ -403,10 +402,54 @@ void Pre_Order_Lk(t_node *a, t_node *d, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+// Updates all partial likelihood vectors. Depending on whether 
+// both_sides = YES or NO, only 'up' or 'up'&'down' partials will
+// be updates
+void Update_All_P_Lk(t_tree *tree)
+{
+  if(tree->n_root)
+    {
+      if(tree->ignore_root == NO)
+        {
+          Post_Order_Lk(tree->n_root,tree->n_root->v[1],tree);
+          Post_Order_Lk(tree->n_root,tree->n_root->v[2],tree);
+          
+          Update_P_Lk(tree,tree->n_root->b[1],tree->n_root);
+          Update_P_Lk(tree,tree->n_root->b[2],tree->n_root);
+          
+          if(tree->both_sides == YES)
+            {
+              Pre_Order_Lk(tree->n_root,tree->n_root->v[2],tree);
+              Pre_Order_Lk(tree->n_root,tree->n_root->v[1],tree);
+            }
+        }
+      else
+        {
+          Post_Order_Lk(tree->e_root->rght,tree->e_root->left,tree);
+          Post_Order_Lk(tree->e_root->left,tree->e_root->rght,tree);
+          
+          if(tree->both_sides == YES)
+            {
+              Pre_Order_Lk(tree->e_root->rght,tree->e_root->left,tree);
+              Pre_Order_Lk(tree->e_root->left,tree->e_root->rght,tree);
+            }
+        }
+    }
+  else
+    {
+      Post_Order_Lk(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree);
+      if(tree->both_sides == YES)
+        Pre_Order_Lk(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree);
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 phydbl Lk(t_edge *b, t_tree *tree)
 {
-  int br;
- 
+  int br,catg,state;
+  phydbl len,*expl;
 
   if(b == NULL && tree->mod->s_opt->curr_opt_free_rates == YES)
     {
@@ -463,7 +506,7 @@ phydbl Lk(t_edge *b, t_tree *tree)
         }
       else//Update the PMat for a specific edge
         {
-          Update_PMat_At_Given_Edge(b,tree);
+          if(tree->use_eigen_lr == NO) Update_PMat_At_Given_Edge(b,tree);
         }
       
       if(!b)
@@ -525,7 +568,25 @@ phydbl Lk(t_edge *b, t_tree *tree)
   calc_edgelks_beagle(b, tree);
 #else
 
-  int n_patterns,ambiguity_check,state;
+  if(tree->update_eigen_lr == YES) Update_Eigen_Lr(b,tree);
+
+
+  expl = (phydbl *)mCalloc(tree->mod->ras->n_catg*tree->mod->ns,sizeof(phydbl));
+ 
+  if(tree->use_eigen_lr == YES)
+    {
+      For(catg,tree->mod->ras->n_catg)
+        {
+          len = MAX(0.0,b->l->v)*tree->mod->ras->gamma_rr->v[catg];
+          len *= tree->mod->br_len_mult->v;
+          if(tree->mixt_tree)  len *= tree->mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number];
+          if(len < tree->mod->l_min)      len = tree->mod->l_min;
+          else if(len > tree->mod->l_max) len = tree->mod->l_max;      
+          For(state,tree->mod->ns) expl[catg*tree->mod->ns+state] = (phydbl)POW(tree->mod->eigen->e_val[state],len);
+        }
+    }
+
+  int n_patterns,ambiguity_check;
   n_patterns = tree->n_pattern;
   For(tree->curr_site,n_patterns)
     {
@@ -545,29 +606,106 @@ phydbl Lk(t_edge *b, t_tree *tree)
 
           if(tree->mod->use_m4mod) ambiguity_check = YES;
 
-#if (!defined(__AVX__))
-          Lk_Core(state,ambiguity_check,b,tree);
-#else
+#if (defined(__AVX__))
           AVX_Lk_Core(state,ambiguity_check,b,tree);
+#elif (defined(__SSE3__))
+          SSE_Lk_Core(state,ambiguity_check,b,tree);
+#else
+          if(tree->use_eigen_lr == YES)
+            Lk_Core_Eigen_Lr(state,ambiguity_check,YES,b,expl,tree);
+          else
+            Lk_Core(state,ambiguity_check,b,tree);
+
 #endif
         }
     }
 #endif
 
-/*   Qksort(tree->c_lnL_sorted,NULL,0,n_patterns-1); */
+  Free(expl);
 
-/*   tree->c_lnL = .0; */
-/*   For(tree->curr_site,n_patterns) */
-/*     { */
-/*       tree->c_lnL += tree->c_lnL_sorted[tree->curr_site]; */
-/*     } */
+  return tree->c_lnL;
+}
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+// First and second derivative of the log-likelihood with respect
+// to the length of edge b
+phydbl dLk(t_edge *b, t_tree *tree)
+{
+  int catg,state;
+  phydbl len,*expl,*expld,*expld2,rr;
+  phydbl lk,dlk,d2lk,dlnlk,d2lnlk,lnlk;
+  
+  assert(b != NULL);
+  
+  if(tree->is_mixt_tree == YES)
+    {
+#ifdef BEAGLE
+      Warn_And_Exit(TODO_BEAGLE);
+#endif
+      /* !!!!!! Function not MIXT proof !!!!!! */
+      /* return MIXT_dLk(b,tree); */
+    }
+    
+  if(tree->update_eigen_lr == YES) Update_Eigen_Lr(b,tree);
+  
+  expl   = (phydbl *)mCalloc(tree->mod->ras->n_catg*tree->mod->ns,sizeof(phydbl));
+  expld  = (phydbl *)mCalloc(tree->mod->ras->n_catg*tree->mod->ns,sizeof(phydbl));
+  expld2 = (phydbl *)mCalloc(tree->mod->ras->n_catg*tree->mod->ns,sizeof(phydbl));
+  
+  For(catg,tree->mod->ras->n_catg)
+    {
+      rr = tree->mod->ras->gamma_rr->v[catg];
+      rr *=  tree->mod->br_len_mult->v;
+      if(tree->mixt_tree) rr *= tree->mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number];
+      len = b->l->v * rr;
+      
+      if(len < tree->mod->l_min)
+        { 
+         len = tree->mod->l_min;
+         rr  = len / b->l->v;
+        }
+      else if(len > tree->mod->l_max) 
+        { 
+         len = tree->mod->l_max;      
+         rr  = len / b->l->v;
+        }
 
-  Adjust_Min_Diff_Lk(tree);
+      For(state,tree->mod->ns) expl[catg*tree->mod->ns+state]   = (phydbl)POW(tree->mod->eigen->e_val[state],len);
 
-//  Print_All_Edge_PMats(tree);
-//  Print_All_Edge_Likelihoods(tree);
-//  DUMP_D(tree->c_lnL);
+      For(state,tree->mod->ns) expld[catg*tree->mod->ns+state]  = expl[catg*tree->mod->ns+state] * 
+        LOG(tree->mod->eigen->e_val[state]) * rr;
+      
+      For(state,tree->mod->ns) expld2[catg*tree->mod->ns+state] = expld[catg*tree->mod->ns+state] * 
+        LOG(tree->mod->eigen->e_val[state]) * rr;        
+    }
+
+  lnlk = 0.0;
+  dlnlk = 0.0;
+  d2lnlk = 0.0;
+  For(tree->curr_site,tree->n_pattern)
+    {
+      dlk  = Lk_Core_Eigen_Lr(-1,-1,NO,b,expld,tree);
+      d2lk = Lk_Core_Eigen_Lr(-1,-1,NO,b,expld,tree);
+      lk   = Lk_Core_Eigen_Lr(-1,-1,NO,b,expl,tree); // Make sur to keep this call in the last position so that site_lk_cat is the
+                                                     // actual likelihood rather than its first or second derivative
+      
+      dlnlk  += tree->data->wght[tree->curr_site] * (dlk/lk);
+      d2lnlk += tree->data->wght[tree->curr_site] * (d2lk/lk - (dlk/lk)*(dlk/lk));
+      lnlk   += tree->data->wght[tree->curr_site] * (LOG(lk));
+
+      /* printf("\n. %4d lk: %12G dlk: %12G d2lk: %12G dlnlk: %12G d2lnlk: %12G",         */
+      /*   tree->curr_site,lk,dlk,d2lk, */
+      /*   dlnlk,d2lnlk); */
+    }
+
+  tree->c_dlnL  = dlnlk;
+  tree->c_d2lnL = d2lnlk;
+  tree->c_lnL   = lnlk;
+
+  Free(expl);
+  Free(expld);
+  Free(expld2);
 
   return tree->c_lnL;
 }
@@ -624,9 +762,12 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
                       sum +=
                         b->Pij_rr[(catg*dim3)+(state*dim2)+l] *
                         b->p_lk_left[(site*dim1)+(catg*dim2)+l];
+
                     }
                   
-                  site_lk_cat += sum * tree->mod->e_frq->pi->v[state];
+                  site_lk_cat += 
+                    sum * 
+                    tree->mod->e_frq->pi->v[state];
                 }
               else /* If the character observed at the tip is ambiguous: ns x ns terms to consider */
                 {
@@ -640,6 +781,7 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
                               sum +=
                                 b->Pij_rr[(catg*dim3)+(k*dim2)+l] *
                                 b->p_lk_left[(site*dim1)+(catg*dim2)+l];
+                              
                             }
                           
                           site_lk_cat +=
@@ -671,7 +813,7 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
                     }
                 }
             }
-          
+
           tree->site_lk_cat[catg] = site_lk_cat;
           
         } /* site likelihood for all rate classes */
@@ -708,6 +850,7 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
     }
   
   log_site_lk = LOG(site_lk) - (phydbl)LOG2 * fact_sum_scale; // log_site_lk =  log(site_lk_scaled / 2^(left_subtree+right_subtree))      
+
 
   /* printf("\n. site_lk: %g fact_sum_scale: %d",site_lk,fact_sum_scale); */
   
@@ -785,23 +928,7 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
           fflush(NULL);
           
         }
-      
-      /* int i; */
-      /* For(i,2*tree->n_otu-3) */
-      /* 	{ */
-      /* 	  PhyML_Printf("\n. b%3d->l->v = %f %f [%G] %f %f %f %f [%s]",i, */
-      /* 		       tree->a_edges[i]->l->v, */
-      /* 		       tree->a_edges[i]->gamma_prior_mean, */
-      /* 		       tree->a_edges[i]->gamma_prior_var, */
-      /* 		       tree->rates->nd_t[tree->a_edges[i]->left->num], */
-      /* 		       tree->rates->nd_t[tree->a_edges[i]->rght->num], */
-      /* 		       tree->rates->br_r[tree->a_edges[i]->left->num], */
-      /* 		       tree->rates->br_r[tree->a_edges[i]->rght->num], */
-      /* 		       tree->a_edges[i] == tree->e_root ? "YES" : "NO"); */
-      /* 	  fflush(NULL); */
-      
-      /* 	} */
-      
+            
       Print_Site(tree->data,site,tree->n_otu,"\n",tree->mod->io->state_len,stdout);
       PhyML_Printf("\n== Err. in file %s at line %d (function '%s')",__FILE__,__LINE__,__FUNCTION__);
       Exit("\n");
@@ -816,64 +943,242 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
   return log_site_lk;
 }
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 /* Core of the likelihood calculcation. Assume that the partial likelihoods on both
    sides of t_edge *b are up-to-date. Calculate the log-likelihood at one site.
+   Note: this function can be used to evaluate first or second derivative of the 
+   likelihood function with respect to the length of b, at a given site. Hence, be
+   careful with the meaning of 'site_lk', for instance.
 */
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
+phydbl Lk_Core_Eigen_Lr(int state, int ambiguity_check, short int returnlog, t_edge *b, phydbl *expl, t_tree *tree)
+{
+  phydbl log_site_lk,len;
+  phydbl site_lk_cat/*rate specific site lk*/, site_lk, inv_site_lk;
+  int fact_sum_scale;
+  phydbl sum;
+  int catg/*Index of the current rate classes*/,ns/*size of the state-space*/,k,l,site/*index of the current site in the MSA*/;
+  int dim1,dim2,dim3;
+  int exponent;
+  int num_prec_issue;
+  phydbl *p_lk_left,*p_lk_rght;
+
+#ifdef BEAGLE
+  dim1 = tree->n_pattern * tree->mod->ns;
+#else
+  dim1 = tree->mod->ras->n_catg * tree->mod->ns;//Dimension of a matrix L that holds rate-specific character likelihoods. IOW, L[ij] is the likelihood of character j in rate class i
+#endif
+  dim2 = tree->mod->ns;
+  dim3 = tree->mod->ns * tree->mod->ns;//Dimensions of the transition prob. matrix
+  
+  log_site_lk     = .0;
+  site_lk         = .0;
+  site_lk_cat     = .0;
+  site            = tree->curr_site;
+  ns              = tree->mod->ns;
 
 
-/* phydbl Lk_At_Given_Edge(t_edge *b_fcus, t_tree *tree) */
-/* { */
-/*   int n_patterns; */
+  /* Skip this if no tree traveral was required, i.e. likelihood in each class of the mixture is already up to date */
+  if(tree->mod->s_opt->skip_tree_traversal == NO)
+    {      
+      /* Actual likelihood calculation */
+      /* For all classes of rates */
+      For(catg,tree->mod->ras->n_catg)
+        {
+          p_lk_left = tree->eigen_lr_left + site*dim1 + catg*dim2; 
+          p_lk_rght = tree->eigen_lr_rght + site*dim1 + catg*dim2;
 
-/*   if(tree->is_mixt_tree) return MIXT_Lk_At_Given_Edge(tree); */
+          site_lk_cat = .0;
+          For(l,ns) // Likelihood calculation in O(ns) complexity instead of O(ns^2)! 
+            {
+              site_lk_cat += 
+                p_lk_left[l] *
+                p_lk_rght[l] *
+                expl[catg*dim2+l];
+            }
 
-/*   n_patterns = tree->n_pattern; */
+          tree->site_lk_cat[catg] = site_lk_cat;
+        }
+      Pull_Scaling_Factors(site,b,tree);
+    }
+  fact_sum_scale = tree->fact_sum_scale[site];
+  
 
-/* #ifdef PHYTIME */
-/*   if((tree->rates) && (tree->rates->bl_from_rt)) RATES_Update_Cur_Bl(tree); */
-/* #endif */
+  //Likelihood of the site is the sum of the individual rate specific likelihoods
+  site_lk = .0;
+  For(catg,tree->mod->ras->n_catg)
+    {
+      site_lk +=
+        tree->unscaled_site_lk_cat[catg*tree->n_pattern + site]* 
+        tree->mod->ras->gamma_r_proba->v[catg]; //density
+    }
+  
+  if(tree->mod->ras->invar == YES)
+    {
+      num_prec_issue = NO;
+      inv_site_lk = Invariant_Lk(fact_sum_scale,site,&num_prec_issue,tree);
+      
+      if(num_prec_issue == YES) // inv_site_lk >> site_lk
+        {
+          site_lk = inv_site_lk * tree->mod->ras->pinvar->v;
+        }
+      else
+        {
+          site_lk = site_lk * (1. - tree->mod->ras->pinvar->v) + inv_site_lk * tree->mod->ras->pinvar->v;
+        }
+    }
+  
+  if(site_lk > 0.0) // Might not be true if this function is used to evaluate first of second derivative
+    log_site_lk = LOG(site_lk) - (phydbl)LOG2 * fact_sum_scale; // log_site_lk =  log(site_lk_scaled / 2^(left_subtree+right_subtree))      
+  
+  // Calculation of the site likelihood (using scaling factors)...
+  int piecewise_exponent;
+  phydbl multiplier;
+  if(fact_sum_scale >= 0)
+    {
+      tree->cur_site_lk[site] = site_lk;
+      exponent = -fact_sum_scale;
+      do
+        {
+          piecewise_exponent = MAX(exponent,-63);
+          multiplier = 1. / (phydbl)((unsigned long long)(1) << -piecewise_exponent);
+          tree->cur_site_lk[site] *= multiplier;
+          exponent -= piecewise_exponent;
+        }
+      while(exponent != 0);
+    }
+  else
+    {
+      //In some cases fact_sum_scale can be negative. If you rescale the partials of two independent subtrees and make some of
+      //these numbers large in order to avoid underflow, then there is a chance that when multiplied them together you will
+      //get an overflow, in which case fact_sum_scale can become negative.
+      
+      tree->cur_site_lk[site] = site_lk;
+      exponent = fact_sum_scale;
+      do
+        {
+          piecewise_exponent = MIN(exponent,63);
+          multiplier = (phydbl)((unsigned long long)(1) << piecewise_exponent);
+          tree->cur_site_lk[site] *= multiplier;
+          exponent -= piecewise_exponent;
+        }
+      while(exponent != 0);
+    }
+    
+  if(isnan(log_site_lk))
+    {
+      PhyML_Printf("\n== Site = %d",site);
+      PhyML_Printf("\n== Invar = %d",tree->data->invar[site]);
+      PhyML_Printf("\n== Mixt = %d",tree->is_mixt_tree);
+      PhyML_Printf("\n== Lk = %G log(Lk) = %f < %G",site_lk,log_site_lk,-BIG);
+      For(catg,tree->mod->ras->n_catg) PhyML_Printf("\n== rr=%f p=%f",tree->mod->ras->gamma_rr->v[catg],tree->mod->ras->gamma_r_proba->v[catg]);
+      PhyML_Printf("\n== Pinv = %G",tree->mod->ras->pinvar->v);
+      PhyML_Printf("\n== Bl mult = %G",tree->mod->br_len_mult->v);
+      PhyML_Printf("\n== fact_sum_scale = %d",fact_sum_scale);
+      PhyML_Printf("\n== n_catg: %d",tree->mod->ras->n_catg);
+      
+      if(tree->mod->whichmodel == GTR || tree->mod->whichmodel == CUSTOM)
+        {
+          int i,j;
+          PhyML_Printf("\n== Rate matrix\n");
+          For(i,tree->mod->ns)
+            {
+              For(j,tree->mod->ns)
+                {
+                  PhyML_Printf("%12G ",i,tree->mod->r_mat->qmat->v[i*4+j]); 
+                }
+              PhyML_Printf("\n");
+            }
+          fflush(NULL);
+          
+          PhyML_Printf("\n== Relative rates\n");
+          For(i,tree->mod->ns*(tree->mod->ns-1)/2)
+            {
+              PhyML_Printf("\n== rr[%3d]: %12G %12G",i,tree->mod->r_mat->rr->v[i],tree->mod->r_mat->rr_val->v[i]); 
+            }
+          fflush(NULL);
+          
+        }
+            
+      Print_Site(tree->data,site,tree->n_otu,"\n",tree->mod->io->state_len,stdout);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')",__FILE__,__LINE__,__FUNCTION__);
+      Exit("\n");
+    }
 
-/*   Check_Br_Len_Bounds(tree); */
+  tree->c_lnL_sorted[site] = tree->data->wght[site]*log_site_lk;
+  site_lk = tree->cur_site_lk[site];
 
-/*   if(tree->rates && tree->io->lk_approx == NORMAL) */
-/*     { */
-/*       tree->c_lnL = Lk_Normal_Approx(tree); */
-/*       return tree->c_lnL; */
-/*     } */
+  tree->c_lnL += tree->data->wght[site]*log_site_lk;
 
-/*   Update_PMat_At_Given_Edge(b_fcus,tree); */
+  if(returnlog == YES) return log_site_lk;
+  else                 return site_lk;
+}
 
-/*   if(b_fcus->left->tax) */
-/*     { */
-/*       PhyML_Printf("\n. Err in file %s at line %d\n\n",__FILE__,__LINE__); */
-/*       Warn_And_Exit(""); */
-/*     } */
+/////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
 
-/*   tree->c_lnL             = .0; */
-/*   tree->sum_min_sum_scale = .0; */
-/*   For(tree->curr_site,n_patterns) */
-/*     if(tree->data->wght[tree->curr_site] > SMALL)  */
-/*       Lk_Core(b_fcus,tree); */
+void Update_Eigen_Lr(t_edge *b, t_tree *tree)
+{
+  int site,catg,state,i;
+  int dim1,dim2;
+  phydbl *dum,*dumdum;
 
-/* /\*   Qksort(tree->c_lnL_sorted,NULL,0,n_patterns-1); *\/ */
+  dum    = (phydbl *)mCalloc(tree->mod->ns,sizeof(phydbl));
+  dumdum = (phydbl *)mCalloc(tree->mod->ns,sizeof(phydbl));
 
-/* /\*   tree->c_lnL = .0; *\/ */
-/* /\*   For(tree->curr_site,n_patterns) *\/ */
-/* /\*     { *\/ */
-/* /\*       tree->c_lnL += tree->c_lnL_sorted[tree->curr_site]; *\/ */
-/* /\*     } *\/ */
+  assert(tree->update_eigen_lr);
+
+  dim1 = tree->mod->ras->n_catg * tree->mod->ns;
+  dim2 = tree->mod->ns;
+  
+
+  For(site,tree->n_pattern)
+    {      
+      For(catg,tree->mod->ras->n_catg)
+        {
+          // Dot product left partial likelihood with equilibrium freqs
+          For(state,tree->mod->ns) dum[state] = b->p_lk_left[site*dim1 + catg*dim2 + state] * tree->mod->e_frq->pi->v[state];
+                    
+          // Multiply by matrix of right eigen vectors
+          For(state,tree->mod->ns)
+            {
+              dumdum[state] = 0.0;
+              For(i,tree->mod->ns)
+                {
+                  dumdum[state] += 
+                    dum[i] * 
+                    tree->mod->eigen->r_e_vect[i*dim2 + state];
+                }
+            }
+
+          For(state,tree->mod->ns) tree->eigen_lr_left[site*dim1 + catg*dim2 + state] = dumdum[state];
 
 
-/*   Adjust_Min_Diff_Lk(tree); */
+          if(b->rght->tax == YES)
+            For(state,tree->mod->ns) dum[state] = (phydbl)b->p_lk_tip_r[site*dim2 + state]; 
+          else
+            For(state,tree->mod->ns) dum[state] = b->p_lk_rght[site*dim1 + catg*dim2 + state]; 
 
-/*   return tree->c_lnL; */
-/* } */
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
+          // Multiply  matrix of left eigen vectors by vector of partial likelihoods on 
+          // the righthand side of b
+          For(state,tree->mod->ns)
+            {
+              dumdum[state] = 0.0;
+              For(i,tree->mod->ns)
+                {
+                  dumdum[state] += 
+                    tree->mod->eigen->l_e_vect[state*dim2 + i] *
+                    dum[i];
+                }
+            }
+          For(state,tree->mod->ns) tree->eigen_lr_rght[site*dim1 + catg*dim2 + state] = dumdum[state];
+        }
+    }
+  Free(dum);
+  Free(dumdum);
+}
 
 /////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -915,19 +1220,19 @@ void Rate_Correction(int exponent, phydbl *site_lk_cat, t_tree *tree)
       (*site_lk_cat) = BIG / 10;
     }
   
-  if(*site_lk_cat < SMALL)
-    {
-      if(tree->mod->ras->n_catg == 1)
-        {
-          PhyML_Printf("\n== site_lk_cat = %G",*site_lk_cat);
-          PhyML_Printf("\n== exponent: %d", exponent);
-          PhyML_Printf("\n== Numerical precision issue alert.");
-          PhyML_Printf("\n== File %s at line %d (funtction '%s')\n",__FILE__,__LINE__,__FUNCTION__);
-	  PhyML_Printf("\n== %s",Write_Tree(tree,NO));
-          Exit("\n");
-        }
-      (*site_lk_cat) = .0;
-    }
+  /* if(*site_lk_cat < SMALL) */
+  /*   { */
+  /*     if(tree->mod->ras->n_catg == 1) */
+  /*       { */
+  /*         PhyML_Printf("\n== site_lk_cat = %G",*site_lk_cat); */
+  /*         PhyML_Printf("\n== exponent: %d", exponent); */
+  /*         PhyML_Printf("\n== Numerical precision issue alert."); */
+  /*         PhyML_Printf("\n== File %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__); */
+  /*         PhyML_Printf("\n== %s",Write_Tree(tree,NO)); */
+  /*         Exit("\n"); */
+  /*       } */
+  /*     (*site_lk_cat) = .0; */
+  /*   } */
 }
 
 //////////////////////////////////////////////////////////////
@@ -1015,19 +1320,23 @@ void Update_P_Lk(t_tree *tree, t_edge *b, t_node *d)
     {
       if(tree->io->datatype == NT)
         {
-#if (!defined(__AVX__))
-          Update_P_Lk_Nucl(tree,b,d);
-#else
+#if (defined(__AVX__))
           AVX_Update_P_Lk_Nucl(tree,b,d);
+#elif (defined(__SSE3__))
+          SSE_Update_P_Lk_Nucl(tree,b,d);
+#else
+          Update_P_Lk_Nucl(tree,b,d);
 #endif
         }
       else if(tree->io->datatype == AA)
         {
-#if (!defined(__AVX__))
-          Update_P_Lk_AA(tree,b,d);
-#else
-          /* Update_P_Lk_AA(tree,b,d); */
+#if (defined(__AVX__))
           AVX_Update_P_Lk_AA(tree,b,d);
+#elif (defined(__SSE3__))
+          SSE_Update_P_Lk_AA(tree,b,d);
+          /* Update_P_Lk_AA(tree,b,d); */
+#else
+          Update_P_Lk_AA(tree,b,d);
 #endif
         }
       else
@@ -3834,10 +4143,10 @@ void Pull_Scaling_Factors(int site,
               Exit("\n");
             }
           
-          tmp = sum + ((phydbl)LOGBIG - LOG(tree->site_lk_cat[catg]))/(phydbl)LOG2;
+          tmp = sum + ((phydbl)LOGBIG - LOG(FABS(tree->site_lk_cat[catg])))/(phydbl)LOG2;
           if(tmp < max_sum_scale) max_sum_scale = tmp; /* min of the maxs */
           
-          tmp = sum + ((phydbl)LOGSMALL - LOG(tree->site_lk_cat[catg]))/(phydbl)LOG2;
+          tmp = sum + ((phydbl)LOGSMALL - LOG(FABS(tree->site_lk_cat[catg])))/(phydbl)LOG2;
           if(tmp > min_sum_scale) min_sum_scale = tmp; /* max of the mins */
           
         }
@@ -4011,7 +4320,6 @@ phydbl AVX_Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
   else
     {
       return AVX_Lk_Core_AA(state,ambiguity_check,b,tree);
-      /* return Lk_Core(state,ambiguity_check,b,tree); */
     }
   return -1.;
 }
@@ -4230,7 +4538,7 @@ phydbl AVX_Lk_Core_AA(int state, int ambiguity_check, t_edge *b, t_tree *tree)
   int exponent;
   int num_prec_issue;
   phydbl tip_v[20];
-  int i,j;
+  int i,j,k;
 #ifdef BEAGLE
   dim1 = tree->n_pattern * tree->mod->ns;
 #else
@@ -4290,47 +4598,52 @@ phydbl AVX_Lk_Core_AA(int state, int ambiguity_check, t_edge *b, t_tree *tree)
           // Partial likelihood vector on righthand side of b
           if(b->rght->tax == NO)
             {
-              _plk_r[0] = _mm256_load_pd(b->p_lk_rght + site*dim1 + catg*dim2 + 0);
-              _plk_r[1] = _mm256_load_pd(b->p_lk_rght + site*dim1 + catg*dim2 + 4);
-              _plk_r[2] = _mm256_load_pd(b->p_lk_rght + site*dim1 + catg*dim2 + 8);
-              _plk_r[3] = _mm256_load_pd(b->p_lk_rght + site*dim1 + catg*dim2 + 12);
-              _plk_r[4] = _mm256_load_pd(b->p_lk_rght + site*dim1 + catg*dim2 + 16);
+              For(i,5) _plk_r[i] = _mm256_load_pd(b->p_lk_rght + site*dim1 + catg*dim2 + i*4);
+              /* _plk_r[0] = _mm256_load_pd(b->p_lk_rght + site*dim1 + catg*dim2 + 0); */
+              /* _plk_r[1] = _mm256_load_pd(b->p_lk_rght + site*dim1 + catg*dim2 + 4); */
+              /* _plk_r[2] = _mm256_load_pd(b->p_lk_rght + site*dim1 + catg*dim2 + 8); */
+              /* _plk_r[3] = _mm256_load_pd(b->p_lk_rght + site*dim1 + catg*dim2 + 12); */
+              /* _plk_r[4] = _mm256_load_pd(b->p_lk_rght + site*dim1 + catg*dim2 + 16); */
             }
           else
             {
-              _plk_r[0] = _mm256_load_pd(tip_v+0);
-              _plk_r[1] = _mm256_load_pd(tip_v+4);
-              _plk_r[2] = _mm256_load_pd(tip_v+8);
-              _plk_r[3] = _mm256_load_pd(tip_v+12);
-              _plk_r[4] = _mm256_load_pd(tip_v+16);
+              For(i,5) _plk_r[i] = _mm256_load_pd(tip_v + i*4);
+              /* _plk_r[0] = _mm256_load_pd(tip_v+0); */
+              /* _plk_r[1] = _mm256_load_pd(tip_v+4); */
+              /* _plk_r[2] = _mm256_load_pd(tip_v+8); */
+              /* _plk_r[3] = _mm256_load_pd(tip_v+12); */
+              /* _plk_r[4] = _mm256_load_pd(tip_v+16); */
             }
 
           // Partial likelihood vector on lefthand side of b
-          _plk_l[0] = _mm256_load_pd(b->p_lk_left + site*dim1 + catg*dim2 + 0);
-          _plk_l[1] = _mm256_load_pd(b->p_lk_left + site*dim1 + catg*dim2 + 4);
-          _plk_l[2] = _mm256_load_pd(b->p_lk_left + site*dim1 + catg*dim2 + 8);
-          _plk_l[3] = _mm256_load_pd(b->p_lk_left + site*dim1 + catg*dim2 + 12);
-          _plk_l[4] = _mm256_load_pd(b->p_lk_left + site*dim1 + catg*dim2 + 16);
+          For(i,5) _plk_l[i] = _mm256_load_pd(b->p_lk_left + site*dim1 + catg*dim2 + i*4);
+          /* _plk_l[0] = _mm256_load_pd(b->p_lk_left + site*dim1 + catg*dim2 + 0); */
+          /* _plk_l[1] = _mm256_load_pd(b->p_lk_left + site*dim1 + catg*dim2 + 4); */
+          /* _plk_l[2] = _mm256_load_pd(b->p_lk_left + site*dim1 + catg*dim2 + 8); */
+          /* _plk_l[3] = _mm256_load_pd(b->p_lk_left + site*dim1 + catg*dim2 + 12); */
+          /* _plk_l[4] = _mm256_load_pd(b->p_lk_left + site*dim1 + catg*dim2 + 16); */
 
           For(j,5)
             {
-              _pplk[0] = _mm256_setzero_pd();
-              _pplk[1] = _mm256_setzero_pd();
-              _pplk[2] = _mm256_setzero_pd();
-              _pplk[3] = _mm256_setzero_pd();
+              For(i,4) _pplk[i] = _mm256_setzero_pd();
+              /* _pplk[0] = _mm256_setzero_pd(); */
+              /* _pplk[1] = _mm256_setzero_pd(); */
+              /* _pplk[2] = _mm256_setzero_pd(); */
+              /* _pplk[3] = _mm256_setzero_pd(); */
 
               For(i,5) 
                 {
-                  _p[0] = _mm256_load_pd(b->Pij_rr + catg*dim3 + j*80 + i*4 + 0);
-                  _p[1] = _mm256_load_pd(b->Pij_rr + catg*dim3 + j*80 + i*4 + 20);
-                  _p[2] = _mm256_load_pd(b->Pij_rr + catg*dim3 + j*80 + i*4 + 40);
-                  _p[3] = _mm256_load_pd(b->Pij_rr + catg*dim3 + j*80 + i*4 + 60);
+                  For(k,4) _p[k] = _mm256_load_pd(b->Pij_rr + catg*dim3 + j*80 + i*4 + k*20);
+                  /* _p[0] = _mm256_load_pd(b->Pij_rr + catg*dim3 + j*80 + i*4 + 0); */
+                  /* _p[1] = _mm256_load_pd(b->Pij_rr + catg*dim3 + j*80 + i*4 + 20); */
+                  /* _p[2] = _mm256_load_pd(b->Pij_rr + catg*dim3 + j*80 + i*4 + 40); */
+                  /* _p[3] = _mm256_load_pd(b->Pij_rr + catg*dim3 + j*80 + i*4 + 60); */
 
-
-                  _pplk[0] = _mm256_add_pd(_pplk[0],_mm256_mul_pd(_p[0],_plk_r[i]));
-                  _pplk[1] = _mm256_add_pd(_pplk[1],_mm256_mul_pd(_p[1],_plk_r[i]));
-                  _pplk[2] = _mm256_add_pd(_pplk[2],_mm256_mul_pd(_p[2],_plk_r[i]));
-                  _pplk[3] = _mm256_add_pd(_pplk[3],_mm256_mul_pd(_p[3],_plk_r[i]));
+                  For(k,4) _pplk[k] = _mm256_add_pd(_pplk[k],_mm256_mul_pd(_p[k],_plk_r[i]));
+                  /* _pplk[0] = _mm256_add_pd(_pplk[0],_mm256_mul_pd(_p[0],_plk_r[i])); */
+                  /* _pplk[1] = _mm256_add_pd(_pplk[1],_mm256_mul_pd(_p[1],_plk_r[i])); */
+                  /* _pplk[2] = _mm256_add_pd(_pplk[2],_mm256_mul_pd(_p[2],_plk_r[i])); */
+                  /* _pplk[3] = _mm256_add_pd(_pplk[3],_mm256_mul_pd(_p[3],_plk_r[i])); */
                 }
 
               _plk = _mm256_mul_pd(AVX_Horizontal_Add(_pplk),_plk_l[j]); 
@@ -4580,46 +4893,42 @@ void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
 
 	      __m256d _plk; // parent partial likelihood
 	      __m256d _plk1,_plk2; // sister partial likelihood vectors
-	      __m256d _p1[100],_p2[100]; // matrices of transition probabilities
+	      __m256d _p1[4],_p2[4]; // matrices of transition probabilities
 	      __m256d _pplk1[4],_pplk2[4]; // dot product of _p1[i] & _plk1 (resp. _p2[i] & _plk2)
 
-	      _p1[0] = _mm256_load_pd(Pij1 + catg*dim3+0*dim2);
-	      _p1[1] = _mm256_load_pd(Pij1 + catg*dim3+1*dim2);
-	      _p1[2] = _mm256_load_pd(Pij1 + catg*dim3+2*dim2);
-	      _p1[3] = _mm256_load_pd(Pij1 + catg*dim3+3*dim2);
+              For(i,4) _p1[i] = _mm256_load_pd(Pij1 + catg*dim3 + i*dim2);
+	      /* _p1[0] = _mm256_load_pd(Pij1 + catg*dim3+0*dim2); */
+	      /* _p1[1] = _mm256_load_pd(Pij1 + catg*dim3+1*dim2); */
+	      /* _p1[2] = _mm256_load_pd(Pij1 + catg*dim3+2*dim2); */
+	      /* _p1[3] = _mm256_load_pd(Pij1 + catg*dim3+3*dim2); */
 
-	      _p2[0] = _mm256_load_pd(Pij2 + catg*dim3+0*dim2);
-	      _p2[1] = _mm256_load_pd(Pij2 + catg*dim3+1*dim2);
-	      _p2[2] = _mm256_load_pd(Pij2 + catg*dim3+2*dim2);
-	      _p2[3] = _mm256_load_pd(Pij2 + catg*dim3+3*dim2);
+              For(i,4) _p2[i] = _mm256_load_pd(Pij2 + catg*dim3 + i*dim2);
+	      /* _p2[0] = _mm256_load_pd(Pij2 + catg*dim3+0*dim2); */
+	      /* _p2[1] = _mm256_load_pd(Pij2 + catg*dim3+1*dim2); */
+	      /* _p2[2] = _mm256_load_pd(Pij2 + catg*dim3+2*dim2); */
+	      /* _p2[3] = _mm256_load_pd(Pij2 + catg*dim3+3*dim2); */
 	      
 	      if(n_v1->tax == NO)
-		{
-		  _plk1 = _mm256_load_pd(p_lk_v1 + site*dim1+catg*dim2);
-		}
+                _plk1 = _mm256_load_pd(p_lk_v1 + site*dim1+catg*dim2);
 	      else
-		{
-		  _plk1 = _mm256_load_pd(tip_v1);
-		}
+                _plk1 = _mm256_load_pd(tip_v1);
 
 	      if(n_v2->tax == NO)
-		{
-		  _plk2 = _mm256_load_pd(p_lk_v2 + site*dim1+catg*dim2);
-		}
+                _plk2 = _mm256_load_pd(p_lk_v2 + site*dim1+catg*dim2);
 	      else
-		{
-		  _plk2 = _mm256_load_pd(tip_v2);
-		}
+                _plk2 = _mm256_load_pd(tip_v2);
+              
+              For(i,4) _pplk1[i] = _mm256_mul_pd(_p1[i],_plk1);
+              /* _pplk1[0] = _mm256_mul_pd(_p1[0],_plk1); */
+              /* _pplk1[1] = _mm256_mul_pd(_p1[1],_plk1); */
+              /* _pplk1[2] = _mm256_mul_pd(_p1[2],_plk1); */
+              /* _pplk1[3] = _mm256_mul_pd(_p1[3],_plk1); */
 
-              _pplk1[0] = _mm256_mul_pd(_p1[0],_plk1);
-              _pplk1[1] = _mm256_mul_pd(_p1[1],_plk1);
-              _pplk1[2] = _mm256_mul_pd(_p1[2],_plk1);
-              _pplk1[3] = _mm256_mul_pd(_p1[3],_plk1);
-
-              _pplk2[0] = _mm256_mul_pd(_p2[0],_plk2);
-              _pplk2[1] = _mm256_mul_pd(_p2[1],_plk2);
-              _pplk2[2] = _mm256_mul_pd(_p2[2],_plk2);
-              _pplk2[3] = _mm256_mul_pd(_p2[3],_plk2);
+              For(i,4) _pplk2[i] = _mm256_mul_pd(_p2[i],_plk2);
+              /* _pplk2[0] = _mm256_mul_pd(_p2[0],_plk2); */
+              /* _pplk2[1] = _mm256_mul_pd(_p2[1],_plk2); */
+              /* _pplk2[2] = _mm256_mul_pd(_p2[2],_plk2); */
+              /* _pplk2[3] = _mm256_mul_pd(_p2[3],_plk2); */
               
               _plk = _mm256_mul_pd(AVX_Horizontal_Add(_pplk1),AVX_Horizontal_Add(_pplk2)); 
                                    
@@ -4692,7 +5001,7 @@ void AVX_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
   phydbl *Pij1,*Pij2;
   int *sum_scale, *sum_scale_v1, *sum_scale_v2;
   int sum_scale_v1_val, sum_scale_v2_val;
-  int i,j;
+  int i,j,k;
   int catg/*index over the number of rate categories*/,site;
   int n_patterns;//Number of distinct site patterns
   int dim1, dim2, dim3;
@@ -4816,75 +5125,88 @@ void AVX_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
               __m256d _plk1[5],_plk2[5]; // sister partial likelihood vectors
               __m256d _p1[4],_p2[4]; // vector of transition probabilities
               __m256d _pplk1[4],_pplk2[4]; // dot product of _p1[i] & _plk1 (resp. _p2[i] & _plk2)
-              
+
               if(n_v1->tax == NO)
                 {
-                  _plk1[0] = _mm256_load_pd(p_lk_v1 + site*dim1+catg*dim2+0);
-                  _plk1[1] = _mm256_load_pd(p_lk_v1 + site*dim1+catg*dim2+4);
-		  _plk1[2] = _mm256_load_pd(p_lk_v1 + site*dim1+catg*dim2+8);
-		  _plk1[3] = _mm256_load_pd(p_lk_v1 + site*dim1+catg*dim2+12);
-		  _plk1[4] = _mm256_load_pd(p_lk_v1 + site*dim1+catg*dim2+16);
+                  For(i,5) _plk1[i] = _mm256_load_pd(p_lk_v1 + site*dim1 + catg*dim2 + i*4);
+                  /* _plk1[0] = _mm256_load_pd(p_lk_v1 + site*dim1+catg*dim2+0); */
+                  /* _plk1[1] = _mm256_load_pd(p_lk_v1 + site*dim1+catg*dim2+4); */
+		  /* _plk1[2] = _mm256_load_pd(p_lk_v1 + site*dim1+catg*dim2+8); */
+		  /* _plk1[3] = _mm256_load_pd(p_lk_v1 + site*dim1+catg*dim2+12); */
+		  /* _plk1[4] = _mm256_load_pd(p_lk_v1 + site*dim1+catg*dim2+16); */
 		}
               else
                 {
-                  _plk1[0] = _mm256_load_pd(tip_v1+0);
-		  _plk1[1] = _mm256_load_pd(tip_v1+4);
-		  _plk1[2] = _mm256_load_pd(tip_v1+8);
-		  _plk1[3] = _mm256_load_pd(tip_v1+12);
-		  _plk1[4] = _mm256_load_pd(tip_v1+16);
+                  For(i,5) _plk1[i] = _mm256_load_pd(tip_v1 + i*4);
+                  /* _plk1[0] = _mm256_load_pd(tip_v1+0); */
+		  /* _plk1[1] = _mm256_load_pd(tip_v1+4); */
+		  /* _plk1[2] = _mm256_load_pd(tip_v1+8); */
+		  /* _plk1[3] = _mm256_load_pd(tip_v1+12); */
+		  /* _plk1[4] = _mm256_load_pd(tip_v1+16); */
 		}
 
               if(n_v2->tax == NO)
                 {
-                  _plk2[0] = _mm256_load_pd(p_lk_v2 + site*dim1+catg*dim2+0);
-                  _plk2[1] = _mm256_load_pd(p_lk_v2 + site*dim1+catg*dim2+4);
-		  _plk2[2] = _mm256_load_pd(p_lk_v2 + site*dim1+catg*dim2+8);
-		  _plk2[3] = _mm256_load_pd(p_lk_v2 + site*dim1+catg*dim2+12);
-		  _plk2[4] = _mm256_load_pd(p_lk_v2 + site*dim1+catg*dim2+16);
+                  For(i,5) _plk2[i] = _mm256_load_pd(p_lk_v2 + site*dim1 + catg*dim2 + i*4);
+                  /* _plk2[0] = _mm256_load_pd(p_lk_v2 + site*dim1+catg*dim2+0); */
+                  /* _plk2[1] = _mm256_load_pd(p_lk_v2 + site*dim1+catg*dim2+4); */
+		  /* _plk2[2] = _mm256_load_pd(p_lk_v2 + site*dim1+catg*dim2+8); */
+		  /* _plk2[3] = _mm256_load_pd(p_lk_v2 + site*dim1+catg*dim2+12); */
+		  /* _plk2[4] = _mm256_load_pd(p_lk_v2 + site*dim1+catg*dim2+16); */
 		}
               else
                 {
-                  _plk2[0] = _mm256_load_pd(tip_v2+0);
-                  _plk2[1] = _mm256_load_pd(tip_v2+4);
-		  _plk2[2] = _mm256_load_pd(tip_v2+8);
-		  _plk2[3] = _mm256_load_pd(tip_v2+12);
-		  _plk2[4] = _mm256_load_pd(tip_v2+16);
+                  For(i,5) _plk2[i] = _mm256_load_pd(tip_v2 + i*4);
+                  /* _plk2[0] = _mm256_load_pd(tip_v2+0); */
+                  /* _plk2[1] = _mm256_load_pd(tip_v2+4); */
+		  /* _plk2[2] = _mm256_load_pd(tip_v2+8); */
+		  /* _plk2[3] = _mm256_load_pd(tip_v2+12); */
+		  /* _plk2[4] = _mm256_load_pd(tip_v2+16); */
 		}
 
 
               For(j,5)
                 {
-                  _pplk1[0] = _mm256_setzero_pd();
-                  _pplk1[1] = _mm256_setzero_pd();
-                  _pplk1[2] = _mm256_setzero_pd();
-                  _pplk1[3] = _mm256_setzero_pd();
+                  For(i,4) _pplk1[i] = _mm256_setzero_pd();
+                  For(i,4) _pplk2[i] = _mm256_setzero_pd();
+
+                  /* _pplk1[0] = _mm256_setzero_pd(); */
+                  /* _pplk1[1] = _mm256_setzero_pd(); */
+                  /* _pplk1[2] = _mm256_setzero_pd(); */
+                  /* _pplk1[3] = _mm256_setzero_pd(); */
                   
-                  _pplk2[0] = _mm256_setzero_pd();
-                  _pplk2[1] = _mm256_setzero_pd();
-                  _pplk2[2] = _mm256_setzero_pd();
-                  _pplk2[3] = _mm256_setzero_pd();
+                  /* _pplk2[0] = _mm256_setzero_pd(); */
+                  /* _pplk2[1] = _mm256_setzero_pd(); */
+                  /* _pplk2[2] = _mm256_setzero_pd(); */
+                  /* _pplk2[3] = _mm256_setzero_pd(); */
                   
                   For(i,5)
                     {
-                      _p1[0] = _mm256_load_pd(Pij1 + catg*dim3 + j*80 + i*4 + 0);
-                      _p1[1] = _mm256_load_pd(Pij1 + catg*dim3 + j*80 + i*4 + 20);
-                      _p1[2] = _mm256_load_pd(Pij1 + catg*dim3 + j*80 + i*4 + 40);
-                      _p1[3] = _mm256_load_pd(Pij1 + catg*dim3 + j*80 + i*4 + 60);
+                      For(k,4) _p1[k] = _mm256_load_pd(Pij1 + catg*dim3 + j*80 + i*4 + k*20);
+                      For(k,4) _p2[k] = _mm256_load_pd(Pij2 + catg*dim3 + j*80 + i*4 + k*20);
+
+                      /* _p1[0] = _mm256_load_pd(Pij1 + catg*dim3 + j*80 + i*4 + 0); */
+                      /* _p1[1] = _mm256_load_pd(Pij1 + catg*dim3 + j*80 + i*4 + 20); */
+                      /* _p1[2] = _mm256_load_pd(Pij1 + catg*dim3 + j*80 + i*4 + 40); */
+                      /* _p1[3] = _mm256_load_pd(Pij1 + catg*dim3 + j*80 + i*4 + 60); */
                       
-                      _p2[0] = _mm256_load_pd(Pij2 + catg*dim3 + j*80 + i*4 + 0);
-                      _p2[1] = _mm256_load_pd(Pij2 + catg*dim3 + j*80 + i*4 + 20);
-                      _p2[2] = _mm256_load_pd(Pij2 + catg*dim3 + j*80 + i*4 + 40);
-                      _p2[3] = _mm256_load_pd(Pij2 + catg*dim3 + j*80 + i*4 + 60);
+                      /* _p2[0] = _mm256_load_pd(Pij2 + catg*dim3 + j*80 + i*4 + 0); */
+                      /* _p2[1] = _mm256_load_pd(Pij2 + catg*dim3 + j*80 + i*4 + 20); */
+                      /* _p2[2] = _mm256_load_pd(Pij2 + catg*dim3 + j*80 + i*4 + 40); */
+                      /* _p2[3] = _mm256_load_pd(Pij2 + catg*dim3 + j*80 + i*4 + 60); */
+
+                      For(k,4) _pplk1[k] = _mm256_add_pd(_pplk1[k],_mm256_mul_pd(_p1[k],_plk1[i]));
+                      For(k,4) _pplk2[k] = _mm256_add_pd(_pplk2[k],_mm256_mul_pd(_p2[k],_plk2[i]));
                       
-                      _pplk1[0] = _mm256_add_pd(_pplk1[0],_mm256_mul_pd(_p1[0],_plk1[i]));
-                      _pplk1[1] = _mm256_add_pd(_pplk1[1],_mm256_mul_pd(_p1[1],_plk1[i]));
-                      _pplk1[2] = _mm256_add_pd(_pplk1[2],_mm256_mul_pd(_p1[2],_plk1[i]));
-                      _pplk1[3] = _mm256_add_pd(_pplk1[3],_mm256_mul_pd(_p1[3],_plk1[i]));
+                      /* _pplk1[0] = _mm256_add_pd(_pplk1[0],_mm256_mul_pd(_p1[0],_plk1[i])); */
+                      /* _pplk1[1] = _mm256_add_pd(_pplk1[1],_mm256_mul_pd(_p1[1],_plk1[i])); */
+                      /* _pplk1[2] = _mm256_add_pd(_pplk1[2],_mm256_mul_pd(_p1[2],_plk1[i])); */
+                      /* _pplk1[3] = _mm256_add_pd(_pplk1[3],_mm256_mul_pd(_p1[3],_plk1[i])); */
                       
-                      _pplk2[0] = _mm256_add_pd(_pplk2[0],_mm256_mul_pd(_p2[0],_plk2[i]));
-                      _pplk2[1] = _mm256_add_pd(_pplk2[1],_mm256_mul_pd(_p2[1],_plk2[i]));
-                      _pplk2[2] = _mm256_add_pd(_pplk2[2],_mm256_mul_pd(_p2[2],_plk2[i]));
-                      _pplk2[3] = _mm256_add_pd(_pplk2[3],_mm256_mul_pd(_p2[3],_plk2[i]));
+                      /* _pplk2[0] = _mm256_add_pd(_pplk2[0],_mm256_mul_pd(_p2[0],_plk2[i])); */
+                      /* _pplk2[1] = _mm256_add_pd(_pplk2[1],_mm256_mul_pd(_p2[1],_plk2[i])); */
+                      /* _pplk2[2] = _mm256_add_pd(_pplk2[2],_mm256_mul_pd(_p2[2],_plk2[i])); */
+                      /* _pplk2[3] = _mm256_add_pd(_pplk2[3],_mm256_mul_pd(_p2[3],_plk2[i])); */
                     }
                   
                   _plk = _mm256_mul_pd(AVX_Horizontal_Add(_pplk1),AVX_Horizontal_Add(_pplk2));
@@ -4949,7 +5271,905 @@ void AVX_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#endif // __AVX
+#elif (defined (__SSE3__)) // __SSE3__
+
+phydbl SSE_Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
+{
+  if(tree->io->datatype == NT)
+    {
+      return SSE_Lk_Core_Nucl(state,ambiguity_check,b,tree);
+    }
+  else
+    {
+      return SSE_Lk_Core_AA(state,ambiguity_check,b,tree);
+    }
+  return -1.;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl SSE_Lk_Core_Nucl(int state, int ambiguity_check, t_edge *b, t_tree *tree)
+{
+  phydbl log_site_lk;
+  phydbl site_lk_cat, site_lk, inv_site_lk;
+  int fact_sum_scale;
+  int catg,ns,site;
+  int dim1,dim2,dim3;
+  int exponent;
+  int num_prec_issue;
+  phydbl tip_v[4];
+  int i,j,k;
+#ifdef BEAGLE
+  dim1 = tree->n_pattern * tree->mod->ns;
+#else
+  dim1 = tree->mod->ras->n_catg * tree->mod->ns;//Dimension of a matrix L that holds rate-specific character likelihoods. IOW, L[ij] is the likelihood of character j in rate class i
+#endif
+  dim2 = tree->mod->ns;
+  dim3 = tree->mod->ns * tree->mod->ns;//Dimensions of the transition prob. matrix
+  
+  log_site_lk     = .0;
+  site_lk         = .0;
+  site_lk_cat     = .0;
+  site            = tree->curr_site;
+  ns              = tree->mod->ns;
+    
+  assert(ns == 4);
+
+  /* Skip this if no tree traveral was required, i.e. likelihood in each class of the mixture is already up to date */
+  if(tree->mod->s_opt->skip_tree_traversal == NO)
+    {
+      /* Actual likelihood calculation */
+      /* For all classes of rates */
+      For(catg,tree->mod->ras->n_catg)
+        {
+          site_lk_cat = .0;
+
+          if(b->rght->tax == YES)
+            {
+              tip_v[0] = (phydbl)b->p_lk_tip_r[site*dim2+0];
+              tip_v[1] = (phydbl)b->p_lk_tip_r[site*dim2+1];
+              tip_v[2] = (phydbl)b->p_lk_tip_r[site*dim2+2];
+              tip_v[3] = (phydbl)b->p_lk_tip_r[site*dim2+3];
+            }
+
+          __m128d _plk; // parent partial likelihood
+          __m128d _plk_l[2],_plk_r[2]; // partial likelihood vector on lefthand (righthand) side of b
+          __m128d _p[2]; // matrix of transition probabilities
+          __m128d _pplk[2]; // dot product of _p[i] & _plk_r
+          double plk[4];
+          
+
+          // Partial likelihood vector on righthand side of b
+          if(b->rght->tax == NO)
+            {
+              For(i,2) _plk_r[i] = _mm_load_pd(b->p_lk_rght + site*dim1 + catg*dim2 + i*2);
+            }
+          else
+            {
+              For(i,2) _plk_r[i] = _mm_load_pd(tip_v + i*2);
+            }
+
+          // Partial likelihood vector on lefthand side of b
+          For(i,2) _plk_l[i] = _mm_load_pd(b->p_lk_left + site*dim1 + catg*dim2 + i*2);
+
+          For(j,2)
+            {
+              For(i,2) _pplk[i] = _mm_setzero_pd();
+
+              For(i,2) 
+                {
+                  For(k,2) _p[k]    = _mm_load_pd(b->Pij_rr + catg*dim3 + j*8 + i*2 + k*4);
+                  For(k,2) _pplk[k] = _mm_hadd_pd(_pplk[k],_mm_mul_pd(_p[k],_plk_r[i]));
+                }
+
+              _plk = _mm_mul_pd(_mm_hadd_pd(_pplk[0],_pplk[1]),_plk_l[j]);
+              _plk = _mm_mul_pd(_plk,_mm_load_pd(tree->mod->e_frq->pi->v + j*2));
+
+              _mm_store_pd(plk+j*2,_plk);
+            }
+
+          site_lk_cat = plk[0]+plk[1]+plk[2]+plk[3];
+
+          tree->site_lk_cat[catg] = site_lk_cat;
+          
+        } /* site likelihood for all rate classes */
+      Pull_Scaling_Factors(site,b,tree);
+    }
+  
+  fact_sum_scale = tree->fact_sum_scale[site];
+  
+  //Likelihood of the site is the sum of the individual rate specific likelihoods
+  site_lk = .0;
+  For(catg,tree->mod->ras->n_catg)
+    {
+      site_lk +=
+        tree->unscaled_site_lk_cat[catg*tree->n_pattern + site]* 
+        tree->mod->ras->gamma_r_proba->v[catg]; //density
+    }
+  
+
+  if(tree->mod->ras->invar == YES)
+    {
+      num_prec_issue = NO;
+      inv_site_lk = Invariant_Lk(fact_sum_scale,site,&num_prec_issue,tree);
+      
+      if(num_prec_issue == YES) // inv_site_lk >> site_lk
+        {
+          site_lk = inv_site_lk * tree->mod->ras->pinvar->v;
+        }
+      else
+        {
+          site_lk = site_lk * (1. - tree->mod->ras->pinvar->v) + inv_site_lk * tree->mod->ras->pinvar->v;
+        }
+    }
+  
+  log_site_lk = LOG(site_lk) - (phydbl)LOG2 * fact_sum_scale; // log_site_lk =  log(site_lk_scaled / 2^(left_subtree+right_subtree))      
+
+  /* printf("\n. site_lk: %g fact_sum_scale: %d",site_lk,fact_sum_scale); */
+  
+  // Calculation of the site likelihood (using scaling factors)...
+  int piecewise_exponent;
+  phydbl multiplier;
+  if(fact_sum_scale >= 0)
+    {
+      tree->cur_site_lk[site] = site_lk;
+      exponent = -fact_sum_scale;
+      do
+        {
+          piecewise_exponent = MAX(exponent,-63);
+          multiplier = 1. / (phydbl)((unsigned long long)(1) << -piecewise_exponent);
+          tree->cur_site_lk[site] *= multiplier;
+          exponent -= piecewise_exponent;
+        }
+      while(exponent != 0);
+    }
+  else
+    {
+      //In some cases fact_sum_scale can be negative. If you rescale the partials of two independent subtrees and make some of
+      //these numbers large in order to avoid underflow, then there is a chance that when multiplied them together you will
+      //get an overflow, in which case fact_sum_scale can become negative.
+      
+      tree->cur_site_lk[site] = site_lk;
+      exponent = fact_sum_scale;
+      do
+        {
+          piecewise_exponent = MIN(exponent,63);
+          multiplier = (phydbl)((unsigned long long)(1) << piecewise_exponent);
+          tree->cur_site_lk[site] *= multiplier;
+          exponent -= piecewise_exponent;
+        }
+      while(exponent != 0);
+    }
+  
+  // ... or using the log-likelihood
+  if(isinf(site_lk) || isnan(site_lk))
+    {
+      tree->cur_site_lk[site] = EXP(log_site_lk);
+    }
+  
+  if(isinf(log_site_lk) || isnan(log_site_lk))
+    {
+      PhyML_Printf("\n== Site = %d",site);
+      PhyML_Printf("\n== Invar = %d",tree->data->invar[site]);
+      PhyML_Printf("\n== Mixt = %d",tree->is_mixt_tree);
+      PhyML_Printf("\n== Lk = %G log(Lk) = %f < %G",site_lk,log_site_lk,-BIG);
+      For(catg,tree->mod->ras->n_catg) PhyML_Printf("\n== rr=%f p=%f",tree->mod->ras->gamma_rr->v[catg],tree->mod->ras->gamma_r_proba->v[catg]);
+      PhyML_Printf("\n== Pinv = %G",tree->mod->ras->pinvar->v);
+      PhyML_Printf("\n== Bl mult = %G",tree->mod->br_len_mult->v);
+      PhyML_Printf("\n== fact_sum_scale = %d",fact_sum_scale);
+      PhyML_Printf("\n== n_catg: %d",tree->mod->ras->n_catg);
+      
+      if(tree->mod->whichmodel == GTR || tree->mod->whichmodel == CUSTOM)
+        {
+          int i,j;
+          PhyML_Printf("\n== Rate matrix\n");
+          For(i,tree->mod->ns)
+            {
+              For(j,tree->mod->ns)
+                {
+                  PhyML_Printf("%12G ",i,tree->mod->r_mat->qmat->v[i*4+j]); 
+                }
+              PhyML_Printf("\n");
+            }
+          fflush(NULL);
+          
+          PhyML_Printf("\n== Relative rates\n");
+          For(i,tree->mod->ns*(tree->mod->ns-1)/2)
+            {
+              PhyML_Printf("\n== rr[%3d]: %12G %12G",i,tree->mod->r_mat->rr->v[i],tree->mod->r_mat->rr_val->v[i]); 
+            }
+          fflush(NULL);
+          
+        }
+            
+      Print_Site(tree->data,site,tree->n_otu,"\n",tree->mod->io->state_len,stdout);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')",__FILE__,__LINE__,__FUNCTION__);
+      Exit("\n");
+    }
+
+/* Multiply log likelihood by the number of times this site pattern is found in the data */
+  tree->c_lnL_sorted[site] = tree->data->wght[site]*log_site_lk;
+  
+  tree->c_lnL += tree->data->wght[site]*log_site_lk;
+
+
+  return log_site_lk;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl SSE_Lk_Core_AA(int state, int ambiguity_check, t_edge *b, t_tree *tree)
+{
+  phydbl log_site_lk;
+  phydbl site_lk_cat, site_lk, inv_site_lk;
+  int fact_sum_scale;
+  int catg,ns,site;
+  int dim1,dim2,dim3;
+  int exponent;
+  int num_prec_issue;
+  phydbl tip_v[20];
+  int i,j,k;
+#ifdef BEAGLE
+  dim1 = tree->n_pattern * tree->mod->ns;
+#else
+  dim1 = tree->mod->ras->n_catg * tree->mod->ns;//Dimension of a matrix L that holds rate-specific character likelihoods. IOW, L[ij] is the likelihood of character j in rate class i
+#endif
+  dim2 = tree->mod->ns;
+  dim3 = tree->mod->ns * tree->mod->ns;//Dimensions of the transition prob. matrix
+  
+  log_site_lk     = .0;
+  site_lk         = .0;
+  site_lk_cat     = .0;
+  site            = tree->curr_site;
+  ns              = tree->mod->ns;
+    
+  assert(ns == 20);
+
+  /* Skip this if no tree traveral was required, i.e. likelihood in each class of the mixture is already up to date */
+  if(tree->mod->s_opt->skip_tree_traversal == NO)
+    {
+      /* Actual likelihood calculation */
+      /* For all classes of rates */
+      For(catg,tree->mod->ras->n_catg)
+        {
+          site_lk_cat = .0;
+
+          if(b->rght->tax == YES)
+            {
+              tip_v[0]  = (phydbl)b->p_lk_tip_r[site*dim2+0];
+              tip_v[1]  = (phydbl)b->p_lk_tip_r[site*dim2+1];
+              tip_v[2]  = (phydbl)b->p_lk_tip_r[site*dim2+2];
+              tip_v[3]  = (phydbl)b->p_lk_tip_r[site*dim2+3];
+              tip_v[4]  = (phydbl)b->p_lk_tip_r[site*dim2+4];
+              tip_v[5]  = (phydbl)b->p_lk_tip_r[site*dim2+5];
+              tip_v[6]  = (phydbl)b->p_lk_tip_r[site*dim2+6];
+              tip_v[7]  = (phydbl)b->p_lk_tip_r[site*dim2+7];
+              tip_v[8]  = (phydbl)b->p_lk_tip_r[site*dim2+8];
+              tip_v[9]  = (phydbl)b->p_lk_tip_r[site*dim2+9];
+              tip_v[10] = (phydbl)b->p_lk_tip_r[site*dim2+10];
+              tip_v[11] = (phydbl)b->p_lk_tip_r[site*dim2+11];
+              tip_v[12] = (phydbl)b->p_lk_tip_r[site*dim2+12];
+              tip_v[13] = (phydbl)b->p_lk_tip_r[site*dim2+13];
+              tip_v[14] = (phydbl)b->p_lk_tip_r[site*dim2+14];
+              tip_v[15] = (phydbl)b->p_lk_tip_r[site*dim2+15];
+              tip_v[16] = (phydbl)b->p_lk_tip_r[site*dim2+16];
+              tip_v[17] = (phydbl)b->p_lk_tip_r[site*dim2+17];
+              tip_v[18] = (phydbl)b->p_lk_tip_r[site*dim2+18];
+              tip_v[19] = (phydbl)b->p_lk_tip_r[site*dim2+19];
+            }
+
+          __m128d _plk; // parent partial likelihood
+          __m128d _plk_l[10],_plk_r[10]; // partial likelihood vector on lefthand (righthand) side of b
+          __m128d _p[2]; // matrix of transition probabilities
+          __m128d _pplk[2]; // dot product of _p[i] & _plk_r
+          double plk[20];
+          
+
+          // Partial likelihood vector on righthand side of b
+          if(b->rght->tax == NO)
+            {
+              For(i,10) _plk_r[i] = _mm_load_pd(b->p_lk_rght + site*dim1 + catg*dim2 + i*2);
+            }
+          else
+            {
+              For(i,10) _plk_r[i] = _mm_load_pd(tip_v + i*2);
+            }
+
+          // Partial likelihood vector on lefthand side of b
+          For(i,10) _plk_l[i] = _mm_load_pd(b->p_lk_left + site*dim1 + catg*dim2 + i*2);
+
+          For(j,10)
+            {
+              For(i,2) _pplk[i] = _mm_setzero_pd();
+
+              For(i,10) 
+                {
+                  For(k,2) _p[k] = _mm_load_pd(b->Pij_rr + catg*dim3 + j*40 + i*2 + k*20);
+                  For(k,2) _pplk[k] = _mm_hadd_pd(_pplk[k],_mm_mul_pd(_p[k],_plk_r[i]));
+                }
+
+              _plk = _mm_mul_pd(_mm_hadd_pd(_pplk[0],_pplk[1]),_plk_l[j]);
+              _plk = _mm_mul_pd(_plk,_mm_load_pd(tree->mod->e_frq->pi->v + j*2));
+
+              _mm_store_pd(plk+j*2,_plk);
+            }
+
+
+
+          site_lk_cat = 
+            plk[0]+plk[1]+plk[2]+plk[3] +
+            plk[4]+plk[5]+plk[6]+plk[7] +
+            plk[8]+plk[9]+plk[10]+plk[11] +
+            plk[12]+plk[13]+plk[14]+plk[15] +
+            plk[16]+plk[17]+plk[18]+plk[19] ;
+
+          tree->site_lk_cat[catg] = site_lk_cat;
+          
+        } /* site likelihood for all rate classes */
+      Pull_Scaling_Factors(site,b,tree);
+    }
+  
+  fact_sum_scale = tree->fact_sum_scale[site];
+  
+  //Likelihood of the site is the sum of the individual rate specific likelihoods
+  site_lk = .0;
+  For(catg,tree->mod->ras->n_catg)
+    {
+      site_lk +=
+        tree->unscaled_site_lk_cat[catg*tree->n_pattern + site]* 
+        tree->mod->ras->gamma_r_proba->v[catg]; //density
+    }
+  
+
+  if(tree->mod->ras->invar == YES)
+    {
+      num_prec_issue = NO;
+      inv_site_lk = Invariant_Lk(fact_sum_scale,site,&num_prec_issue,tree);
+      
+      if(num_prec_issue == YES) // inv_site_lk >> site_lk
+        {
+          site_lk = inv_site_lk * tree->mod->ras->pinvar->v;
+        }
+      else
+        {
+          site_lk = site_lk * (1. - tree->mod->ras->pinvar->v) + inv_site_lk * tree->mod->ras->pinvar->v;
+        }
+    }
+  
+  log_site_lk = LOG(site_lk) - (phydbl)LOG2 * fact_sum_scale; // log_site_lk =  log(site_lk_scaled / 2^(left_subtree+right_subtree))      
+
+  /* printf("\n. site_lk: %g fact_sum_scale: %d",site_lk,fact_sum_scale); */
+  
+  // Calculation of the site likelihood (using scaling factors)...
+  int piecewise_exponent;
+  phydbl multiplier;
+  if(fact_sum_scale >= 0)
+    {
+      tree->cur_site_lk[site] = site_lk;
+      exponent = -fact_sum_scale;
+      do
+        {
+          piecewise_exponent = MAX(exponent,-63);
+          multiplier = 1. / (phydbl)((unsigned long long)(1) << -piecewise_exponent);
+          tree->cur_site_lk[site] *= multiplier;
+          exponent -= piecewise_exponent;
+        }
+      while(exponent != 0);
+    }
+  else
+    {
+      //In some cases fact_sum_scale can be negative. If you rescale the partials of two independent subtrees and make some of
+      //these numbers large in order to avoid underflow, then there is a chance that when multiplied them together you will
+      //get an overflow, in which case fact_sum_scale can become negative.
+      
+      tree->cur_site_lk[site] = site_lk;
+      exponent = fact_sum_scale;
+      do
+        {
+          piecewise_exponent = MIN(exponent,63);
+          multiplier = (phydbl)((unsigned long long)(1) << piecewise_exponent);
+          tree->cur_site_lk[site] *= multiplier;
+          exponent -= piecewise_exponent;
+        }
+      while(exponent != 0);
+    }
+  
+  // ... or using the log-likelihood
+  if(isinf(site_lk) || isnan(site_lk))
+    {
+      tree->cur_site_lk[site] = EXP(log_site_lk);
+    }
+  
+  if(isinf(log_site_lk) || isnan(log_site_lk))
+    {
+      PhyML_Printf("\n== Site = %d",site);
+      PhyML_Printf("\n== Invar = %d",tree->data->invar[site]);
+      PhyML_Printf("\n== Mixt = %d",tree->is_mixt_tree);
+      PhyML_Printf("\n== Lk = %G log(Lk) = %f < %G",site_lk,log_site_lk,-BIG);
+      For(catg,tree->mod->ras->n_catg) PhyML_Printf("\n== rr=%f p=%f",tree->mod->ras->gamma_rr->v[catg],tree->mod->ras->gamma_r_proba->v[catg]);
+      PhyML_Printf("\n== Pinv = %G",tree->mod->ras->pinvar->v);
+      PhyML_Printf("\n== Bl mult = %G",tree->mod->br_len_mult->v);
+      PhyML_Printf("\n== fact_sum_scale = %d",fact_sum_scale);
+      PhyML_Printf("\n== n_catg: %d",tree->mod->ras->n_catg);
+      
+      if(tree->mod->whichmodel == GTR || tree->mod->whichmodel == CUSTOM)
+        {
+          int i,j;
+          PhyML_Printf("\n== Rate matrix\n");
+          For(i,tree->mod->ns)
+            {
+              For(j,tree->mod->ns)
+                {
+                  PhyML_Printf("%12G ",i,tree->mod->r_mat->qmat->v[i*4+j]); 
+                }
+              PhyML_Printf("\n");
+            }
+          fflush(NULL);
+          
+          PhyML_Printf("\n== Relative rates\n");
+          For(i,tree->mod->ns*(tree->mod->ns-1)/2)
+            {
+              PhyML_Printf("\n== rr[%3d]: %12G %12G",i,tree->mod->r_mat->rr->v[i],tree->mod->r_mat->rr_val->v[i]); 
+            }
+          fflush(NULL);
+          
+        }
+            
+      Print_Site(tree->data,site,tree->n_otu,"\n",tree->mod->io->state_len,stdout);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')",__FILE__,__LINE__,__FUNCTION__);
+      Exit("\n");
+    }
+
+/* Multiply log likelihood by the number of times this site pattern is found in the data */
+  tree->c_lnL_sorted[site] = tree->data->wght[site]*log_site_lk;
+  
+  tree->c_lnL += tree->data->wght[site]*log_site_lk;
+
+
+  return log_site_lk;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void SSE_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
+{
+/*
+           |
+           |<- b
+           |
+           d
+          / \
+         /   \
+        /     \
+    n_v1   n_v2
+*/
+  t_node *n_v1, *n_v2;//d's "left" and "right" neighbor nodes
+  phydbl *p_lk,*p_lk_v1,*p_lk_v2;//Partial likelihood vector of node d, d's "left" neighbor, d's "right" neighbor. We fill *p_lk, and assume *p_lk_v1 and *p_lk_v2 are already filled.
+  phydbl *Pij1,*Pij2;
+  int *sum_scale, *sum_scale_v1, *sum_scale_v2;
+  int sum_scale_v1_val, sum_scale_v2_val;
+  int i,j,k;
+  int catg/*index over the number of rate categories*/,site;
+  int n_patterns;//Number of distinct site patterns
+  int dim1, dim2, dim3;
+  phydbl curr_scaler;
+  int curr_scaler_pow, piecewise_scaler_pow;
+  phydbl smallest_p_lk;
+  phydbl p_lk_lim_inf;
+  int *p_lk_loc;//Suppose site j, of a certain subtree, has "A" on one tip, and "C" on the other. If you come across this pattern again at site i<j, then you can simply copy the partial likelihoods
+  phydbl tip_v1[4],tip_v2[4];
+  
+
+  if(tree->n_root && tree->ignore_root == YES &&
+     (d == tree->n_root->v[1] || d == tree->n_root->v[2]) &&
+     (b == tree->n_root->b[1] || b == tree->n_root->b[2]))
+    {
+      assert(FALSE);
+    }
+
+
+  dim1 = tree->mod->ras->n_catg * tree->mod->ns;//Dimension of a matrix L that holds rate-specific character likelihoods. IOW, L[ij] is the likelihood of character j in rate class i
+  dim2 = tree->mod->ns;
+  dim3 = tree->mod->ns * tree->mod->ns;//Dimensions of the transition prob. matrix
+
+  sum_scale_v1_val = sum_scale_v2_val = 0;
+  curr_scaler = .0;
+  curr_scaler_pow = piecewise_scaler_pow = 0;
+
+  if(d->tax)
+    {
+      PhyML_Printf("\n== t_node %d is a leaf...",d->num);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
+      Exit("\n");
+    }
+
+  n_patterns = tree->n_pattern;
+
+  p_lk_lim_inf                = (phydbl)P_LK_LIM_INF;
+  n_v1 = n_v2                 = NULL;
+  p_lk = p_lk_v1 = p_lk_v2    = NULL;
+  Pij1 = Pij2                 = NULL;
+  sum_scale_v1 = sum_scale_v2 = NULL;
+  p_lk_loc                    = NULL;
+  Set_All_P_Lk(&n_v1,&n_v2,
+               &p_lk,&sum_scale,&p_lk_loc,
+               &Pij1,&p_lk_v1,&sum_scale_v1,
+               &Pij2,&p_lk_v2,&sum_scale_v2,
+               d,b,tree);
+
+  if(tree->mod->augmented == YES && n_v1 && n_v1->tax == NO)
+    {
+      PhyML_Printf("\n== AVX version of the Update_Partial_Lk function does not");
+      PhyML_Printf("\n== allow augmented data.");
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
+
+  /* For every site in the alignment */
+  For(site,n_patterns)
+    {
+      if(n_v1->tax == YES)
+        {
+          tip_v1[0] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+0];
+          tip_v1[1] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+1];
+          tip_v1[2] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+2];
+          tip_v1[3] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+3];
+        }
+
+      if(n_v2->tax == YES)
+        {
+          tip_v2[0] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+0];
+          tip_v2[1] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+1];
+          tip_v2[2] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+2];
+          tip_v2[3] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+3];
+        }
+
+      if(p_lk_loc[site] < site)
+        {
+          Copy_P_Lk(p_lk,p_lk_loc[site],site,tree);
+          Copy_Scale(sum_scale,p_lk_loc[site],site,tree);
+        }
+      else
+        {
+          /* For all rate classes */
+          For(catg,tree->mod->ras->n_catg)
+            {
+              smallest_p_lk  =  BIG;
+              
+	      __m128d _plk;
+	      __m128d _plk1[2],_plk2[2];
+	      __m128d _p1[2],_p2[2];
+	      __m128d _pplk1[2],_pplk2[2];
+
+	      if(n_v1->tax == NO)
+		{         
+		  For(i,2) _plk1[i] = _mm_load_pd(p_lk_v1 + site*dim1 + catg*dim2 + i*2);
+		}
+	      else
+		{
+		  For(i,2) _plk1[i] = _mm_load_pd(tip_v1 + i*2);
+		}
+
+	      if(n_v2->tax == NO)
+		{
+		  For(i,2) _plk2[i] = _mm_load_pd(p_lk_v2 + site*dim1 + catg*dim2 + i*2);
+		}
+	      else
+		{
+		  For(i,2) _plk2[i] = _mm_load_pd(tip_v2 + i*2);
+		}
+
+
+              For(j,2)
+                {
+                  For(i,2) _pplk1[i] = _mm_setzero_pd();
+                  For(i,2) _pplk2[i] = _mm_setzero_pd();
+
+                  For(i,2)
+                    {
+                      For(k,2) _p1[k] = _mm_load_pd(Pij1 + catg*dim3 + j*8 + i*2 + k*4);
+                      For(k,2) _p2[k] = _mm_load_pd(Pij2 + catg*dim3 + j*8 + i*2 + k*4);
+
+                      For(k,2) _pplk1[k] = _mm_hadd_pd(_pplk1[k],_mm_mul_pd(_p1[k],_plk1[i]));
+                      For(k,2) _pplk2[k] = _mm_hadd_pd(_pplk2[k],_mm_mul_pd(_p2[k],_plk2[i]));
+                    }
+
+                  _plk = _mm_mul_pd(_mm_hadd_pd(_pplk1[0],_pplk1[1]),
+                                    _mm_hadd_pd(_pplk2[0],_pplk2[1]));
+
+                  _mm_store_pd(p_lk + site*dim1 + catg*dim2 + j*2,_plk);
+                }
+                                                 
+
+              smallest_p_lk = BIG;
+              For(i,4) 
+                if(p_lk[site*dim1+catg*dim2+i] < smallest_p_lk) 
+                  smallest_p_lk = p_lk[site*dim1+catg*dim2+i] ;
+
+              /* Current scaling values at that site */
+              sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[catg*n_patterns+site]):(0);
+              sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[catg*n_patterns+site]):(0);
+              
+              sum_scale[catg*n_patterns+site] = sum_scale_v1_val + sum_scale_v2_val;
+              
+              /* Scaling. We have p_lk_lim_inf = 2^-500. Consider for instance that
+                 smallest_p_lk = 2^-600, then curr_scaler_pow will be equal to 100, and
+                 each element in the partial likelihood vector will be multiplied by
+                 2^100. */
+              if(smallest_p_lk < p_lk_lim_inf && tree->mod->augmented == NO)
+                {
+                  curr_scaler_pow = (int)(-500.*LOG2-LOG(smallest_p_lk))/LOG2;
+                  curr_scaler     = (phydbl)((unsigned long long)(1) << curr_scaler_pow);
+                  
+                  sum_scale[catg*n_patterns+site] += curr_scaler_pow;
+                  
+                  do
+                    {
+                      piecewise_scaler_pow = MIN(curr_scaler_pow,63);
+                      curr_scaler = (phydbl)((unsigned long long)(1) << piecewise_scaler_pow);
+                      For(i,tree->mod->ns)
+                        {
+                          p_lk[site*dim1+catg*dim2+i] *= curr_scaler;
+                          
+                          if(p_lk[site*dim1+catg*dim2+i] > BIG)
+                            {
+                              PhyML_Printf("\n== curr_scaler_pow = %d",curr_scaler_pow);
+                              PhyML_Printf("\n== Err. in file %s at line %d (function '%s').",__FILE__,__LINE__,__FUNCTION__);
+                              Exit("\n");
+                            }
+                          //                              fprintf(stderr,"\n%e",p_lk[site*dim1+catg*dim2+i]);
+                        }
+                      curr_scaler_pow -= piecewise_scaler_pow;
+                    }
+                  while(curr_scaler_pow != 0);
+                }
+            }
+        }
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void SSE_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
+{
+/*
+           |
+           |<- b
+           |
+           d
+          / \
+         /   \
+        /     \
+    n_v1   n_v2
+*/
+  t_node *n_v1, *n_v2;//d's "left" and "right" neighbor nodes
+  phydbl *p_lk,*p_lk_v1,*p_lk_v2;//Partial likelihood vector of node d, d's "left" neighbor, d's "right" neighbor. We fill *p_lk, and assume *p_lk_v1 and *p_lk_v2 are already filled.
+  phydbl *Pij1,*Pij2;
+  int *sum_scale, *sum_scale_v1, *sum_scale_v2;
+  int sum_scale_v1_val, sum_scale_v2_val;
+  int i,j,k;
+  int catg/*index over the number of rate categories*/,site;
+  int n_patterns;//Number of distinct site patterns
+  int dim1, dim2, dim3;
+  phydbl curr_scaler;
+  int curr_scaler_pow, piecewise_scaler_pow;
+  phydbl smallest_p_lk;
+  phydbl p_lk_lim_inf;
+  int *p_lk_loc;//Suppose site j, of a certain subtree, has "A" on one tip, and "C" on the other. If you come across this pattern again at site i<j, then you can simply copy the partial likelihoods
+  phydbl tip_v1[20],tip_v2[20];
+  
+
+  if(tree->n_root && tree->ignore_root == YES &&
+     (d == tree->n_root->v[1] || d == tree->n_root->v[2]) &&
+     (b == tree->n_root->b[1] || b == tree->n_root->b[2]))
+    {
+      assert(FALSE);
+    }
+
+
+  dim1 = tree->mod->ras->n_catg * tree->mod->ns;//Dimension of a matrix L that holds rate-specific character likelihoods. IOW, L[ij] is the likelihood of character j in rate class i
+  dim2 = tree->mod->ns;
+  dim3 = tree->mod->ns * tree->mod->ns;//Dimensions of the transition prob. matrix
+
+  sum_scale_v1_val = sum_scale_v2_val = 0;
+  curr_scaler = .0;
+  curr_scaler_pow = piecewise_scaler_pow = 0;
+
+  if(d->tax)
+    {
+      PhyML_Printf("\n== t_node %d is a leaf...",d->num);
+      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
+      Exit("\n");
+    }
+
+  n_patterns = tree->n_pattern;
+
+  p_lk_lim_inf                = (phydbl)P_LK_LIM_INF;
+  n_v1 = n_v2                 = NULL;
+  p_lk = p_lk_v1 = p_lk_v2    = NULL;
+  Pij1 = Pij2                 = NULL;
+  sum_scale_v1 = sum_scale_v2 = NULL;
+  p_lk_loc                    = NULL;
+  Set_All_P_Lk(&n_v1,&n_v2,
+               &p_lk,&sum_scale,&p_lk_loc,
+               &Pij1,&p_lk_v1,&sum_scale_v1,
+               &Pij2,&p_lk_v2,&sum_scale_v2,
+               d,b,tree);
+
+  if(tree->mod->augmented == YES && n_v1 && n_v1->tax == NO)
+    {
+      PhyML_Printf("\n== AVX version of the Update_Partial_Lk function does not");
+      PhyML_Printf("\n== allow augmented data. Please compile without the '-D__AVX'");
+      PhyML_Printf("\n== flag");
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
+
+  /* For every site in the alignment */
+  For(site,n_patterns)
+    {
+      if(n_v1->tax == YES)
+        {
+          tip_v1[0]  = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+0];
+          tip_v1[1]  = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+1];
+          tip_v1[2]  = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+2];
+          tip_v1[3]  = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+3];
+          tip_v1[4]  = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+4];
+	  tip_v1[5]  = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+5];
+	  tip_v1[6]  = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+6];
+	  tip_v1[7]  = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+7];
+	  tip_v1[8]  = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+8];
+	  tip_v1[9]  = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+9];
+	  tip_v1[10] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+10];
+	  tip_v1[11] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+11];
+	  tip_v1[12] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+12];
+	  tip_v1[13] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+13];
+	  tip_v1[14] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+14];
+	  tip_v1[15] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+15];
+	  tip_v1[16] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+16];
+	  tip_v1[17] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+17];
+	  tip_v1[18] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+18];
+	  tip_v1[19] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+19];
+	}
+
+      if(n_v2->tax == YES)
+        {
+          tip_v2[0]  = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+0];
+          tip_v2[1]  = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+1];
+          tip_v2[2]  = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+2];
+          tip_v2[3]  = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+3];
+          tip_v2[4]  = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+4];
+	  tip_v2[5]  = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+5];
+	  tip_v2[6]  = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+6];
+	  tip_v2[7]  = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+7];
+	  tip_v2[8]  = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+8];
+	  tip_v2[9]  = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+9];
+	  tip_v2[10] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+10];
+	  tip_v2[11] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+11];
+	  tip_v2[12] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+12];
+	  tip_v2[13] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+13];
+	  tip_v2[14] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+14];
+	  tip_v2[15] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+15];
+	  tip_v2[16] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+16];
+	  tip_v2[17] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+17];
+	  tip_v2[18] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+18];
+	  tip_v2[19] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+19];
+	}
+
+      if(p_lk_loc[site] < site)
+        {
+          Copy_P_Lk(p_lk,p_lk_loc[site],site,tree);
+          Copy_Scale(sum_scale,p_lk_loc[site],site,tree);
+        }
+      else
+        {
+          /* For all rate classes */
+          For(catg,tree->mod->ras->n_catg)
+            {
+              smallest_p_lk  =  BIG;
+
+	      __m128d _plk;
+	      __m128d _plk1[10],_plk2[10];
+	      __m128d _p1[2],_p2[2];
+	      __m128d _pplk1[2],_pplk2[2];
+
+	      if(n_v1->tax == NO)
+		{         
+		  For(i,10) _plk1[i] = _mm_load_pd(p_lk_v1 + site*dim1 + catg*dim2 + i*2);
+		}
+	      else
+		{
+		  For(i,10) _plk1[i] = _mm_load_pd(tip_v1 + i*2);
+		}
+
+	      if(n_v2->tax == NO)
+		{
+		  For(i,10) _plk2[i] = _mm_load_pd(p_lk_v2 + site*dim1 + catg*dim2 + i*2);
+		}
+	      else
+		{
+		  For(i,10) _plk2[i] = _mm_load_pd(tip_v2 + i*2);
+		}
+
+
+              For(j,10)
+                {
+                  For(i,2) _pplk1[i] = _mm_setzero_pd();
+                  For(i,2) _pplk2[i] = _mm_setzero_pd();
+
+                  For(i,10)
+                    {
+                      For(k,2) _p1[k] = _mm_load_pd(Pij1 + catg*dim3 + j*40 + i*2 + k*20);
+                      For(k,2) _p2[k] = _mm_load_pd(Pij2 + catg*dim3 + j*40 + i*2 + k*20);
+
+                      For(k,2) _pplk1[k] = _mm_hadd_pd(_pplk1[k],_mm_mul_pd(_p1[k],_plk1[i]));
+                      For(k,2) _pplk2[k] = _mm_hadd_pd(_pplk2[k],_mm_mul_pd(_p2[k],_plk2[i]));
+                    }
+
+                  _plk = _mm_mul_pd(_mm_hadd_pd(_pplk1[0],_pplk1[1]),
+                                    _mm_hadd_pd(_pplk2[0],_pplk2[1]));
+
+                  _mm_store_pd(p_lk + site*dim1 + catg*dim2 + j*2,_plk);
+                }
+                                                 
+
+
+              smallest_p_lk = BIG;
+              For(i,20) 
+                if(p_lk[site*dim1+catg*dim2+i] < smallest_p_lk) 
+                  smallest_p_lk = p_lk[site*dim1+catg*dim2+i] ;
+
+              /* Current scaling values at that site */
+              sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[catg*n_patterns+site]):(0);
+              sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[catg*n_patterns+site]):(0);
+              
+              sum_scale[catg*n_patterns+site] = sum_scale_v1_val + sum_scale_v2_val;
+              
+              /* Scaling. We have p_lk_lim_inf = 2^-500. Consider for instance that
+                 smallest_p_lk = 2^-600, then curr_scaler_pow will be equal to 100, and
+                 each element in the partial likelihood vector will be multiplied by
+                 2^100. */
+              if(smallest_p_lk < p_lk_lim_inf && tree->mod->augmented == NO)
+                {
+                  curr_scaler_pow = (int)(-500.*LOG2-LOG(smallest_p_lk))/LOG2;
+                  curr_scaler     = (phydbl)((unsigned long long)(1) << curr_scaler_pow);
+                  
+                  sum_scale[catg*n_patterns+site] += curr_scaler_pow;
+                  
+                  do
+                    {
+                      piecewise_scaler_pow = MIN(curr_scaler_pow,63);
+                      curr_scaler = (phydbl)((unsigned long long)(1) << piecewise_scaler_pow);
+                      For(i,tree->mod->ns)
+                        {
+                          p_lk[site*dim1+catg*dim2+i] *= curr_scaler;
+                          
+                          if(p_lk[site*dim1+catg*dim2+i] > BIG)
+                            {
+                              PhyML_Printf("\n== curr_scaler_pow = %d",curr_scaler_pow);
+                              PhyML_Printf("\n== Err. in file %s at line %d (function '%s').",__FILE__,__LINE__,__FUNCTION__);
+                              Exit("\n");
+                            }
+                          //                              fprintf(stderr,"\n%e",p_lk[site*dim1+catg*dim2+i]);
+                        }
+                      curr_scaler_pow -= piecewise_scaler_pow;
+                    }
+                  while(curr_scaler_pow != 0);
+                }
+            }
+        }
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+#endif 
+
+
+
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

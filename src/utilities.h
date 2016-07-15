@@ -35,8 +35,10 @@ the GNU public licence. See http://www.opensource.org for details.
 #include <xmmintrin.h>
 #include <pmmintrin.h>
 #include <immintrin.h>
+#elif (defined(__SSE3__))
+#include <emmintrin.h>
+#include <pmmintrin.h>
 #endif
-
 
 
 extern int n_sec1;
@@ -90,7 +92,13 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define CT 4
 #define GT 5
 
+#if (defined __AVX__)
 #define BYTE_ALIGN 32
+#elif (defined __SSE3__)
+#define BYTE_ALIGN 16
+#else
+#define BYTE_ALIGN 1
+#endif
 
 #ifndef M_1_SQRT_2PI
 #define M_1_SQRT_2PI	0.398942280401432677939946059934	/* 1/sqrt(2pi) */
@@ -650,6 +658,7 @@ typedef struct __Tree{
   struct __Disk_Event                   *disk;
   struct __XML_node                 *xml_root;
 
+  short int                      use_eigen_lr;
   int                            is_mixt_tree;
   int                                tree_num; /*! tree number. Used for mixture models */
   int                          ps_page_number; /*! when multiple trees are printed, this variable give the current page number */
@@ -679,7 +688,10 @@ typedef struct __Tree{
   int                           write_br_lens;
   int                                 *mutmap; /*! Mutational map */
   int                                json_num;
+  short int                   update_eigen_lr;
 
+  phydbl                       *eigen_lr_left;
+  phydbl                       *eigen_lr_rght;
   phydbl                             init_lnL;
   phydbl                             best_lnL; /*! highest value of the loglikelihood found so far */
   int                               best_pars; /*! highest value of the parsimony found so far */
@@ -690,6 +702,9 @@ typedef struct __Tree{
   phydbl                         *cur_site_lk; /*! vector of loglikelihoods at individual sites */
   phydbl                         *old_site_lk; /*! vector of likelihoods at individual sites */
   phydbl                       annealing_temp; /*! annealing temperature in simulated annealing optimization algo */
+  phydbl                               c_dlnL; /*! First derivative of the log-likelihood with respect to the length of a branch */
+  phydbl                              c_d2lnL; /*! Second derivative of the log-likelihood with respect to the length of a branch */
+
 
   phydbl                *unscaled_site_lk_cat; /*! partially scaled site likelihood at individual sites */
 
@@ -702,6 +717,7 @@ typedef struct __Tree{
   int                              *site_pars;
   int                                  c_pars;
   int                               *step_mat;
+  
 
   int                           size_spr_list;
   int                  perform_spr_right_away;

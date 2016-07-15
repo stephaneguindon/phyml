@@ -1066,8 +1066,11 @@ int Read_Command_Line(option *io, int argc, char **argv)
 		phydbl sum;
 		double val1,val2,val3,val4;
 		
+                io->mod->e_frq = (t_efrq *)Make_Efrq(4);
+                Init_Efrq(NULL,io->mod->e_frq);
+
 		io->mod->s_opt->opt_state_freq  = NO;
-		io->mod->e_frq->user_state_freq = YES;
+                io->mod->e_frq->user_state_freq = YES;
 		
 		sscanf(optarg,"%lf,%lf,%lf,%lf",&val1,&val2,&val3,&val4);
 		io->mod->e_frq->user_b_freq->v[0] = (phydbl)val1;

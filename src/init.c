@@ -151,6 +151,8 @@ void Init_Tree(t_tree *tree, int n_otu)
   tree->annealing_temp            = 0.;
   tree->both_sides                = NO;
   tree->json_num                  = 0;
+  tree->update_eigen_lr           = NO;
+  tree->use_eigen_lr              = NO;
 #ifdef BEAGLE
   tree->b_inst                    = UNINITIALIZED;
 #endif
@@ -2760,7 +2762,7 @@ int Init_Qmat_RtREV(phydbl *daa, phydbl *pi)
     /*
     Dimmic M.W., J.S. Rest, D.P. Mindell, and D. Goldstein. 2002. RArtREV:
     An amino acid substitution matrix for inference of retrovirus and
-    reverse transcriptase phyLOGeny. Journal of Molecular Evolution
+    reverse transcriptase phylogeny. Journal of Molecular Evolution
     55: 65-73.
     */
 

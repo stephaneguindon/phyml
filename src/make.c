@@ -25,6 +25,18 @@ void Make_Tree_4_Lk(t_tree *tree, calign *cdata, int n_site)
   tree->unscaled_site_lk_cat = (phydbl *)mCalloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->n_pattern,sizeof(phydbl));
   tree->fact_sum_scale       = (int *)mCalloc(tree->n_pattern,sizeof(int));
 
+#if (defined(__AVX__) || defined(__SSE3__))
+  if(posix_memalign((void **)&tree->eigen_lr_left,BYTE_ALIGN,(size_t)tree->n_pattern*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+#else
+  tree->eigen_lr_left        = (phydbl *)mCalloc(tree->n_pattern * MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes) * tree->mod->ns,sizeof(phydbl));
+#endif
+
+#if (defined(__AVX__) || defined(__SSE3__))
+  if(posix_memalign((void **)&tree->eigen_lr_rght,BYTE_ALIGN,(size_t)tree->n_pattern*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+#else
+  tree->eigen_lr_rght        = (phydbl *)mCalloc(tree->n_pattern * MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes) * tree->mod->ns,sizeof(phydbl));
+#endif
+
   tree->log_lks_aLRT = (phydbl **)mCalloc(3,sizeof(phydbl *));
   For(i,3) tree->log_lks_aLRT[i] = (phydbl *)mCalloc(tree->data->init_len,sizeof(phydbl));
 
@@ -209,10 +221,10 @@ void Make_Edge_Lk(t_edge *b, t_tree *tree)
 
   b->l_old->v = b->l->v;
 
-#if (!defined(__AVX__))
-  b->Pij_rr = (phydbl *)mCalloc(tree->mod->ras->n_catg*tree->mod->ns*tree->mod->ns,sizeof(phydbl));
+#if (defined(__AVX__) || defined(__SSE3__))
+  if(posix_memalign((void *)&b->Pij_rr,BYTE_ALIGN,(size_t)tree->mod->ras->n_catg*tree->mod->ns*tree->mod->ns*sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 #else
-  int m = posix_memalign((void *)&b->Pij_rr,BYTE_ALIGN,(size_t)tree->mod->ras->n_catg*tree->mod->ns*tree->mod->ns*sizeof(phydbl));
+  b->Pij_rr = (phydbl *)mCalloc(tree->mod->ras->n_catg*tree->mod->ns*tree->mod->ns,sizeof(phydbl));
 #endif
 
   Make_Edge_Lk_Left(b,tree);
@@ -239,10 +251,10 @@ void Make_Edge_Lk_Left(t_edge *b, t_tree *tree)
     {
       if((!b->left->tax) || (tree->mod->s_opt->greedy))
         {
-#if (!defined(__AVX__))
-          b->p_lk_left = (phydbl *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns,sizeof(phydbl));
+#if (defined(__AVX__) || defined(__SSE3__))
+          if(posix_memalign((void **)&b->p_lk_left,BYTE_ALIGN,(size_t)tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 #else
-          int m = posix_memalign((void **)&b->p_lk_left,BYTE_ALIGN,(size_t)tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double));
+          b->p_lk_left = (phydbl *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns,sizeof(phydbl));
 #endif
           b->p_lk_tip_l = NULL;
         }
@@ -262,10 +274,10 @@ void Make_Edge_Lk_Left(t_edge *b, t_tree *tree)
     {
       b->sum_scale_left = (int *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(int));
 
-#if (!defined(__AVX__))
-      b->p_lk_left      = (phydbl *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns,sizeof(phydbl));
+#if (defined(__AVX__) || defined(__SSE3__))
+      if(posix_memalign((void **)&b->p_lk_left,BYTE_ALIGN,(size_t)tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 #else
-      int m = posix_memalign((void **)&b->p_lk_left,BYTE_ALIGN,(size_t)tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double));
+      b->p_lk_left      = (phydbl *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns,sizeof(phydbl));
 #endif
     }
 
@@ -293,10 +305,10 @@ void Make_Edge_Lk_Rght(t_edge *b, t_tree *tree)
     {
       if((!b->rght->tax) || (tree->mod->s_opt->greedy))
         {
-#if (!defined(__AVX__))
-          b->p_lk_rght = (phydbl *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns,sizeof(phydbl));
+#if (defined(__AVX__) || defined(__SSE3__))
+	  if(posix_memalign((void **)&b->p_lk_rght,BYTE_ALIGN,(size_t)tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 #else
-	  int m = posix_memalign((void **)&b->p_lk_rght,BYTE_ALIGN,(size_t)tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double));
+          b->p_lk_rght = (phydbl *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns,sizeof(phydbl));
 #endif
           b->p_lk_tip_r = NULL;
         }
@@ -315,10 +327,10 @@ void Make_Edge_Lk_Rght(t_edge *b, t_tree *tree)
   if(b->num >= 2*tree->n_otu-3)
     {
       b->sum_scale_rght = (int *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(int));
-#if (!defined(__AVX__))
-      b->p_lk_rght      = (phydbl *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns,sizeof(phydbl));
+#if (defined(__AVX__) || defined(__SSE3__))
+      if(posix_memalign((void **)&b->p_lk_rght,BYTE_ALIGN,(size_t)tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 #else
-      int m = posix_memalign((void **)&b->p_lk_rght,BYTE_ALIGN,(size_t)tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double));
+      b->p_lk_rght      = (phydbl *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns,sizeof(phydbl));
 #endif
     }
 
@@ -683,6 +695,7 @@ t_mod *Make_Model_Basic()
 
   mod->aa_rate_mat_file       = Make_String(T_MAX_FILE);
   Init_String(mod->aa_rate_mat_file);
+
   return mod;
 }
 
@@ -703,10 +716,10 @@ void Make_Model_Complete(t_mod *mod)
   mod->Pij_rr = (vect_dbl *)mCalloc(1,sizeof(vect_dbl));
   Init_Vect_Dbl(0,mod->Pij_rr);
 
-#if (!defined(__AVX__))
-  mod->Pij_rr->v = (phydbl *)mCalloc(mod->ras->n_catg*mod->ns*mod->ns,sizeof(phydbl));
+#if (defined(__AVX__) || defined(__SSE3__))
+  if(posix_memalign((void **)&mod->Pij_rr->v,BYTE_ALIGN,(size_t)mod->ras->n_catg*mod->ns*mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 #else
-  int m = posix_memalign((void **)&mod->Pij_rr->v,BYTE_ALIGN,(size_t)mod->ras->n_catg*mod->ns*mod->ns*sizeof(double));
+  mod->Pij_rr->v = (phydbl *)mCalloc(mod->ras->n_catg*mod->ns*mod->ns,sizeof(phydbl));
 #endif
 
   mod->eigen     = (eigen *)Make_Eigen_Struct(mod->ns);

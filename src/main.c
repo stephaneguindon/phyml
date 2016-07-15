@@ -227,8 +227,19 @@ int main(int argc, char **argv)
                                    
                   /* { */
                   /*   int i; */
-                  /*   Set_Both_Sides(NO,tree); */
-                  /*   For(i,1000) Lk(NULL,tree); */
+                  /*   Set_Both_Sides(YES,tree); */
+                  /*   tree->update_eigen_lr = YES; */
+                  /*   tree->use_eigen_lr    = NO; */
+                  /*   Lk(NULL,tree); */
+                  /*   tree->update_eigen_lr = NO; */
+                  /*   tree->use_eigen_lr    = NO; */
+                  /*   For(i,100000)  */
+                  /*     { */
+                  /*       int j; */
+                  /*       For(j,2*tree->n_otu-3) if(tree->a_edges[j]->left->tax == NO && */
+                  /*                                 tree->a_edges[j]->rght->tax == NO) break; */
+                  /*       Lk(tree->a_edges[j],tree); */
+                  /*     } */
                   /*   printf("\n. lnL: %f",tree->c_lnL); */
                   /*   Exit("\n"); */
                   /* } */

@@ -5050,6 +5050,8 @@ fi
 done
 
 
+VECTOR_FLAG=
+
 LDFLAGS="${ARGC_flag}"
 
 case `pwd` in
@@ -12182,17 +12184,15 @@ CC="$lt_save_CC"
 
 
 
-
-
 # Check whether --enable-debug was given.
 if test "${enable_debug+set}" = set; then :
   enableval=$enable_debug;
 fi
 
 if test "x$enable_debug" = "xyes"; then :
-  CFLAGS="-ansi -march=native -pedantic -Wall -std=c99 -O0 -g -Wuninitialized"
+  CFLAGS="-ansi ${VECTOR_FLAG} -pedantic -Wall -std=c99 -O0 -g -Wuninitialized"
 else
-  CFLAGS="-Wall -O2 -march=native -fomit-frame-pointer -funroll-loops -Wempty-body -Wuninitialized ${ARCH_flag}"
+  CFLAGS="-Wall -O2 ${VECTOR_FLAG} -fomit-frame-pointer -funroll-loops -Wempty-body -Wuninitialized ${ARCH_flag}"
 fi
 
 # Check whether --enable-gprof was given.

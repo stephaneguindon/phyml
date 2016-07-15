@@ -284,7 +284,6 @@ void PMat_Empirical(phydbl l, t_mod *mod, int pos, phydbl *Pij)
             {
               Pij[pos+mod->ns*i+j] += (uexpt[i*n+k] * V[k*n+j]);
             }
-          /* 	  if(Pij[pos+mod->ns*i+j] < SMALL) Pij[pos+mod->ns*i+j] = SMALL; */
           if(Pij[pos+mod->ns*i+j] < SMALL_PIJ) Pij[pos+mod->ns*i+j] = SMALL_PIJ;
         }
       
@@ -467,8 +466,9 @@ void PMat(phydbl l, t_mod *mod, int pos, phydbl *Pij)
                 if((mod->whichmodel == JC69) ||
                    (mod->whichmodel == K80))
                   {
-                    /* 		    PMat_JC69(l,pos,Pij,mod); */
+                    /* PMat_JC69(l,pos,Pij,mod); */
                     PMat_K80(l,mod->kappa->v,pos,Pij);
+                    /* PMat_Empirical(l,mod,pos,Pij); */
                   }
                 else
                   {
@@ -479,6 +479,7 @@ void PMat(phydbl l, t_mod *mod, int pos, phydbl *Pij)
                        (mod->whichmodel == TN93))
                       {
                         PMat_TN93(l,mod,pos,Pij);
+                        /* PMat_Empirical(l,mod,pos,Pij); */
                       }
                     else
                       {
@@ -975,7 +976,7 @@ void Update_Eigen(t_mod *mod)
       return;
     }
 
-  if(mod->update_eigen)
+  if(mod->update_eigen == YES)
     {
       //Update the Q-matrix first before computing the Eigen(because the Eigen is computed based on the Q-matrix)
       if(mod->use_m4mod == NO)

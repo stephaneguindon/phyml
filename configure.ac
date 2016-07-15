@@ -48,21 +48,23 @@ AC_FUNC_SETVBUF_REVERSED
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([floor pow rint sqrt strchr strstr])
 
+dnl VECTOR_FLAG=-march=native
+dnl VECTOR_FLAG=-msse3
+dnl VECTOR_FLAG=-mavx
+VECTOR_FLAG=
+
 LDFLAGS="${ARGC_flag}" 
 
 LT_INIT
 AC_PROG_LIBTOOL
 dnl Add option for compiling with debugging informations
 
-
-dnl -xHost for OSX amounts to -march=native for Linux
-
 AC_ARG_ENABLE([debug],
               [AS_HELP_STRING([--enable-debug],
                               [Remove optimization options and add debug informations.])])
 AS_IF([test "x$enable_debug" = "xyes"],
-      [CFLAGS="-ansi -march=native -pedantic -Wall -std=c99 -O0 -g -Wuninitialized"],
-      [CFLAGS="-Wall -O2 -march=native -fomit-frame-pointer -funroll-loops -Wempty-body -Wuninitialized ${ARCH_flag}"])
+      [CFLAGS="-ansi ${VECTOR_FLAG} -pedantic -Wall -std=c99 -O0 -g -Wuninitialized"],
+      [CFLAGS="-Wall -O2 ${VECTOR_FLAG} -fomit-frame-pointer -funroll-loops -Wempty-body -Wuninitialized ${ARCH_flag}"])
 
 AC_ARG_ENABLE([gprof],
               [AS_HELP_STRING([--enable-gprof],

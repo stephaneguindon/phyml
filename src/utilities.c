@@ -4674,9 +4674,6 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
   cpy->num_curr_branch_available = 0;
   cpy->t_beg = ori->t_beg;
 
-/*   Connect_Edges_To_Nodes_Recur(cpy->a_nodes[0],cpy->a_nodes[0]->v[0],cpy); */
-/*   Update_Dirs(cpy); */
-
 #ifdef BEAGLE
   cpy->b_inst = ori->b_inst;
 #endif
@@ -8908,17 +8905,14 @@ void Set_Model_Name(t_mod *mod)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Adjust_Min_Diff_Lk(t_tree *tree)
 {
-
   if(sizeof(phydbl) == 4)
     {
       int exponent;
       exponent = (int)FLOOR(log10(FABS(tree->c_lnL)));
       tree->mod->s_opt->min_diff_lk_local = POW(10.,exponent - FLT_DIG + 1);
-      tree->mod->s_opt->min_diff_lk_local  = tree->mod->s_opt->min_diff_lk_local;
-      tree->mod->s_opt->min_diff_lk_move   = tree->mod->s_opt->min_diff_lk_local;
+      tree->mod->s_opt->min_diff_lk_move  = tree->mod->s_opt->min_diff_lk_local;
     }
 /*   PhyML_Printf("\n. Exponent = %d Precision = %E DIG = %d",exponent,tree->mod->s_opt->min_diff_lk_local,FLT_DIG); */
 }

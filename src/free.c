@@ -391,6 +391,8 @@ void Free_Tree_Lk(t_tree *mixt_tree)
       Free(tree->old_site_lk);
       Free(tree->site_lk_cat);
       Free(tree->fact_sum_scale);
+      Free(tree->eigen_lr_left);
+      Free(tree->eigen_lr_rght);
 
       For(i,3) Free(tree->log_lks_aLRT[i]);
       Free(tree->log_lks_aLRT);

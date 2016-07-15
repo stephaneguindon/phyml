@@ -22,6 +22,7 @@ the GNU public licence.  See http://www.opensource.org for details.
 #include "times.h"
 #include "mixt.h"
 
+void Update_All_P_Lk(t_tree *tree);
 void Init_Tips_At_One_Site_Nucleotides_Float(char state, int pos, phydbl *p_lk);
 void Init_Tips_At_One_Site_AA_Float(char aa, int pos, phydbl *p_lk);
 void Get_All_Partial_Lk(t_tree *tree,t_edge *b_fcus,t_node *a,t_node *d);
@@ -91,6 +92,9 @@ void Ancestral_Sequences_One_Node(t_node *mixt_d, t_tree *mixt_tree, int print);
 void Ancestral_Sequences(t_tree *tree, int print);
 void Pull_Scaling_Factors(int site, t_edge *b, t_tree *tree);
 void Stepwise_Add_Lk(t_tree *tree);
+void Update_Eigen_Lr(t_edge *b, t_tree *tree);
+phydbl Lk_Core_Eigen_Lr(int state, int ambiguity_check, short int returnlog, t_edge *b, phydbl *expl, t_tree *tree);
+phydbl dLk(t_edge *b, t_tree *tree);
 
 #if defined(__AVX__)
 __m256d AVX_Horizontal_Add(__m256d x[4]);
@@ -99,7 +103,13 @@ phydbl AVX_Lk_Core_Nucl(int state, int ambiguity_check, t_edge *b, t_tree *tree)
 phydbl AVX_Lk_Core_AA(int state, int ambiguity_check, t_edge *b, t_tree *tree);
 void AVX_Update_P_Lk_Nucl(t_tree *tree,t_edge *b_fcus,t_node *n);
 void AVX_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d);
-#endif // __AVX__
+#elif defined(__SSE__)
+phydbl SSE_Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree);
+phydbl SSE_Lk_Core_Nucl(int state, int ambiguity_check, t_edge *b, t_tree *tree);
+phydbl SSE_Lk_Core_AA(int state, int ambiguity_check, t_edge *b, t_tree *tree);
+void SSE_Update_P_Lk_Nucl(t_tree *tree,t_edge *b_fcus,t_node *n);
+void SSE_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d);
+#endif
 
 
 #endif
