@@ -4838,8 +4838,6 @@ void Spr_List_Of_Trees(t_tree *tree)
 
   For(i,max_list_size) lnL_list[i] = UNLIKELY;
 
-  /* Stepwise_Add_Pars(tree); */
-  /* Spr_Pars(0,100,tree); */
   Round_Optimize(tree,tree->data,5);
   tree_list[0] = Make_Tree_From_Scratch(tree->n_otu,tree->data);
   Copy_Tree(tree,tree_list[0]);
@@ -4849,7 +4847,6 @@ void Spr_List_Of_Trees(t_tree *tree)
   list_size = 1;
   do
     {
-      /* Randomize_Tree(tree,tree->n_otu); */
       Stepwise_Add_Pars(tree);
       Spr_Pars(0,2,tree);
 
@@ -4877,7 +4874,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
 
-      tree->mod->s_opt->max_depth_path    = 15;
+      tree->mod->s_opt->max_depth_path    = tree->n_otu;
       tree->mod->s_opt->spr_lnL           = YES;
       tree->mod->s_opt->spr_pars          = NO;
       tree->mod->s_opt->min_diff_lk_move  = 0.1;
@@ -4888,7 +4885,7 @@ void Spr_List_Of_Trees(t_tree *tree)
           Set_Both_Sides(YES,tree);
           Lk(NULL,tree);
           tree->best_lnL = tree->c_lnL;
-          Spr(tree->c_lnL,0.5,tree);
+          Spr(tree->c_lnL,0.2,tree);
           tree->mod->s_opt->max_depth_path = tree->max_spr_depth;
         }
       while(tree->n_improvements > 5);
