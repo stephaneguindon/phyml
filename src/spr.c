@@ -4850,10 +4850,12 @@ void Spr_List_Of_Trees(t_tree *tree)
       Stepwise_Add_Pars(tree);
       Spr_Pars(0,2,tree);
 
-      Set_Both_Sides(NO,tree);
-      Lk(NULL,tree);
-      n_opt = 0;
-      do Optimize_Br_Len_Serie(tree); while(n_opt++ < 3);
+      /* Set_Both_Sides(NO,tree); */
+      /* Lk(NULL,tree); */
+      /* n_opt = 0; */
+      /* do Optimize_Br_Len_Serie(tree); while(n_opt++ < 3); */
+
+      Simu(tree,2);
 
       printf("\n>> lnL: %f pars: %d",tree->c_lnL,tree->c_pars);
 
@@ -4890,10 +4892,12 @@ void Spr_List_Of_Trees(t_tree *tree)
         }
       while(tree->n_improvements > 5);
 
+
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
       Optimize_Br_Len_Serie(tree);
       printf("\n>> lnL: %f [%d/5]",tree->c_lnL,list_size+1);
+
 
       Copy_Tree(tree,tree_list[rk[list_size]]);
       lnL_list[rk[list_size]] = tree->c_lnL;
@@ -4901,43 +4905,43 @@ void Spr_List_Of_Trees(t_tree *tree)
   while(list_size++ <= 5);
 
 
-  rk = Ranks(lnL_list,max_list_size);
+  /* rk = Ranks(lnL_list,max_list_size); */
 
-  if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. Last optimization round...\n");
+  /* if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. Last optimization round...\n"); */
 
-  list_size = 0;
-  do
-    {
-      Copy_Tree(tree_list[rk[list_size]],tree);
+  /* list_size = 0; */
+  /* do */
+  /*   { */
+  /*     Copy_Tree(tree_list[rk[list_size]],tree); */
 
-      /* tree->mod->s_opt->max_depth_path    = 5; */
-      /* tree->mod->s_opt->spr_lnL           = YES; */
-      /* tree->mod->s_opt->spr_pars          = NO; */
-      /* tree->mod->s_opt->min_diff_lk_move  = 0.05; */
-      /* tree->mod->s_opt->eval_list_regraft = YES; */
+  /*     /\* tree->mod->s_opt->max_depth_path    = 5; *\/ */
+  /*     /\* tree->mod->s_opt->spr_lnL           = YES; *\/ */
+  /*     /\* tree->mod->s_opt->spr_pars          = NO; *\/ */
+  /*     /\* tree->mod->s_opt->min_diff_lk_move  = 0.05; *\/ */
+  /*     /\* tree->mod->s_opt->eval_list_regraft = YES; *\/ */
       
-      /* do */
-      /*   { */
-      /*     Set_Both_Sides(YES,tree); */
-      /*     Lk(NULL,tree); */
-      /*     tree->best_lnL = tree->c_lnL; */
-      /*     Spr(UNLIKELY,1.0,tree); */
-      /*     tree->mod->s_opt->max_depth_path = tree->max_spr_depth; */
-      /*     Set_Both_Sides(NO,tree); */
-      /*     Lk(NULL,tree); */
-      /*     Optimize_Br_Len_Serie(tree); */
-      /*     printf("\n>> lnL: %f pars: %d",Get_Lk(tree),tree->c_pars);           */
-      /*   } */
-      /* while(tree->n_improvements > 2); */
+  /*     /\* do *\/ */
+  /*     /\*   { *\/ */
+  /*     /\*     Set_Both_Sides(YES,tree); *\/ */
+  /*     /\*     Lk(NULL,tree); *\/ */
+  /*     /\*     tree->best_lnL = tree->c_lnL; *\/ */
+  /*     /\*     Spr(UNLIKELY,1.0,tree); *\/ */
+  /*     /\*     tree->mod->s_opt->max_depth_path = tree->max_spr_depth; *\/ */
+  /*     /\*     Set_Both_Sides(NO,tree); *\/ */
+  /*     /\*     Lk(NULL,tree); *\/ */
+  /*     /\*     Optimize_Br_Len_Serie(tree); *\/ */
+  /*     /\*     printf("\n>> lnL: %f pars: %d",Get_Lk(tree),tree->c_pars);           *\/ */
+  /*     /\*   } *\/ */
+  /*     /\* while(tree->n_improvements > 2); *\/ */
 
-      Simu(tree,5);
+  /*     Simu(tree,5); */
 
-      printf("\n>> lnL: %f [%d/%d]",tree->c_lnL,list_size+1,1 + (int)tree->n_otu/20);
+  /*     printf("\n>> lnL: %f [%d/%d]",tree->c_lnL,list_size+1,1 + (int)tree->n_otu/20); */
 
-      Copy_Tree(tree,tree_list[rk[list_size]]);
-      lnL_list[rk[list_size]] = tree->c_lnL;
-    }
-  while(list_size++ <= 3);
+  /*     Copy_Tree(tree,tree_list[rk[list_size]]); */
+  /*     lnL_list[rk[list_size]] = tree->c_lnL; */
+  /*   } */
+  /* while(list_size++ <= 3); */
 
   rk = Ranks(lnL_list,max_list_size);
   Copy_Tree(tree_list[rk[0]],tree);
