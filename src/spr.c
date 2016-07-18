@@ -4885,7 +4885,7 @@ void Spr_List_Of_Trees(t_tree *tree)
           Set_Both_Sides(YES,tree);
           Lk(NULL,tree);
           tree->best_lnL = tree->c_lnL;
-          Spr(tree->c_lnL,0.2,tree);
+          Spr(tree->c_lnL,1.0,tree);
           tree->mod->s_opt->max_depth_path = tree->max_spr_depth;
         }
       while(tree->n_improvements > 5);
@@ -4910,26 +4910,27 @@ void Spr_List_Of_Trees(t_tree *tree)
     {
       Copy_Tree(tree_list[rk[list_size]],tree);
 
-      tree->mod->s_opt->max_depth_path    = 5;
-      tree->mod->s_opt->spr_lnL           = YES;
-      tree->mod->s_opt->spr_pars          = NO;
-      tree->mod->s_opt->min_diff_lk_move  = 0.05;
-      tree->mod->s_opt->eval_list_regraft = YES;
+      /* tree->mod->s_opt->max_depth_path    = 5; */
+      /* tree->mod->s_opt->spr_lnL           = YES; */
+      /* tree->mod->s_opt->spr_pars          = NO; */
+      /* tree->mod->s_opt->min_diff_lk_move  = 0.05; */
+      /* tree->mod->s_opt->eval_list_regraft = YES; */
       
-      do
-        {
-          Set_Both_Sides(YES,tree);
-          Lk(NULL,tree);
-          tree->best_lnL = tree->c_lnL;
-          Spr(UNLIKELY,1.0,tree);
-          tree->mod->s_opt->max_depth_path = tree->max_spr_depth;
-          Set_Both_Sides(NO,tree);
-          Lk(NULL,tree);
-          Optimize_Br_Len_Serie(tree);
-          printf("\n>> lnL: %f pars: %d",Get_Lk(tree),tree->c_pars);          
-        }
-      while(tree->n_improvements > 2);
+      /* do */
+      /*   { */
+      /*     Set_Both_Sides(YES,tree); */
+      /*     Lk(NULL,tree); */
+      /*     tree->best_lnL = tree->c_lnL; */
+      /*     Spr(UNLIKELY,1.0,tree); */
+      /*     tree->mod->s_opt->max_depth_path = tree->max_spr_depth; */
+      /*     Set_Both_Sides(NO,tree); */
+      /*     Lk(NULL,tree); */
+      /*     Optimize_Br_Len_Serie(tree); */
+      /*     printf("\n>> lnL: %f pars: %d",Get_Lk(tree),tree->c_pars);           */
+      /*   } */
+      /* while(tree->n_improvements > 2); */
 
+      Simu(tree,5);
 
       printf("\n>> lnL: %f [%d/%d]",tree->c_lnL,list_size+1,1 + (int)tree->n_otu/20);
 
