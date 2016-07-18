@@ -31,7 +31,7 @@ void Usage()
   char *cha;
 
 
-  cha =getenv("OS");
+  cha = getenv("OS");
 
   if(cha!=NULL) 
     {

@@ -21,70 +21,8 @@ the GNU public licence.  See http://www.opensource.org for details.
 
 void Simu_Loop(t_tree *tree)
 {
-  phydbl lk_old,delta_lnL;
-  int n_round;
-
-  tree->best_pars                  = 1E+8;
-  tree->mod->s_opt->spr_lnL        = NO;
-  tree->mod->s_opt->spr_pars       = NO;
-  tree->mod->s_opt->quickdirty     = NO;
-
-  if((tree->mod->s_opt->print) && (!tree->io->quiet)) PhyML_Printf("\n\n. Maximizing likelihood (using SPR moves)...\n");
-
-  tree->mod->s_opt->max_depth_path = tree->n_otu;
-  Spr_Pars(0,10,tree);
-  Set_Both_Sides(YES,tree);
-  Lk(NULL,tree);
-
-  n_round = 0;
-  do
-    {
-      Optimiz_All_Free_Param(tree,(tree->io->quiet)?(NO):(tree->mod->s_opt->print));
-      Optimize_Br_Len_Serie(tree);
-    }
-  while(++n_round != 3); 
-
-  tree->best_pars = tree->c_pars;
-  tree->best_lnL  = tree->c_lnL;
-
-
-
-  /*****************************/
-  if(tree->mod->s_opt->print == YES && tree->io->quiet == NO) PhyML_Printf("\n\n. First round of SPR moves...\n");
-  lk_old = tree->c_lnL;
-  tree->mod->s_opt->max_depth_path    = tree->n_otu;
-  tree->mod->s_opt->max_delta_lnL_spr = (tree->io->datatype == NT)?(0.):(0.);
-  tree->mod->s_opt->spr_lnL           = NO;
-  tree->mod->s_opt->spr_pars          = NO;
-  tree->mod->s_opt->min_diff_lk_move  = 0.1;
-  delta_lnL                           = 3.0;
-  Speed_Spr(tree,1.0,20,delta_lnL);
-  Optimiz_All_Free_Param(tree,(tree->io->quiet)?(NO):(tree->mod->s_opt->print));
-
-  /*****************************/
-  tree->mod->s_opt->min_diff_lk_move  = 0.001;
-  lk_old = UNLIKELY;
-  do
-    {
-      lk_old = tree->c_lnL;
-      if(!Simu(tree,5)) break;
-    }
-  while(FABS(lk_old - tree->c_lnL) > tree->mod->s_opt->min_diff_lk_local);
-  /*****************************/
-
-  Optimiz_All_Free_Param(tree,(tree->io->quiet)?(NO):(tree->mod->s_opt->print));
-
-  /*****************************/
-  do
-    {
-      Round_Optimize(tree,tree->data,ROUND_MAX);
-      if(!Check_NNI_Five_Branches(tree)) break;
-    }
-  while(1);
-  /*****************************/
-
-/*   if((tree->mod->s_opt->print) && (!tree->io->quiet)) PhyML_Printf("\n"); */
-
+  Spr_List_Of_Trees(tree);
+  return;
 }
 
 //////////////////////////////////////////////////////////////
