@@ -601,8 +601,6 @@ phydbl Br_Len_Brent(t_edge *b_fcus, t_tree *tree)
   t_tree *loc_tree;
   t_edge *loc_b;
   phydbl lk_begin, lk_end;
-  phydbl min,max;
-  phydbl l_begin;
 
   lk_begin = UNLIKELY;
   lk_end   = UNLIKELY;
@@ -624,28 +622,24 @@ phydbl Br_Len_Brent(t_edge *b_fcus, t_tree *tree)
 
   if(b_fcus->l->onoff == OFF) return loc_tree->c_lnL;
 
-  l_begin  = b_fcus->l->v;
   tree->update_eigen_lr = YES;
   tree->use_eigen_lr    = NO;
 
   lk_begin = Lk(loc_b,loc_tree); /*! We can't assume that the log-lk value is up-to-date */
 
-  min = loc_tree->mod->l_min;
-  max = loc_tree->mod->l_max;
-
   tree->update_eigen_lr = NO;
   tree->use_eigen_lr    = YES;
   
   /* Generic_Brent_Lk(&(b_fcus->l->v), */
-  /*                  min, */
-  /*                  max, */
+  /*                  loc_tree->mod->l_min, */
+  /*                  loc_tree->mod->l_max, */
   /*                  tree->mod->s_opt->min_diff_lk_local, */
   /*                  tree->mod->s_opt->brent_it_max, */
   /*                  tree->mod->s_opt->quickdirty, */
   /*                  Wrap_Lk_At_Given_Edge, */
   /*                  loc_b,loc_tree,NULL,NO); */
 
-  Br_Len_Newton_Raphson(b_fcus,100,tree->mod->s_opt->min_diff_lk_local,tree);
+  Br_Len_Newton_Raphson(b_fcus,100,tree->mod->s_opt->min_diff_lk_local,loc_tree);
 
   Update_PMat_At_Given_Edge(b_fcus,tree);
   tree->update_eigen_lr = NO;
@@ -2272,18 +2266,19 @@ int Optimiz_Alpha_And_Pinv(t_tree *mixt_tree, int verbose)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-/* !!!!!!!!! Function is not MIXT proof !!!!!!!!!!!!! */
 phydbl Br_Len_Newton_Raphson(t_edge *b, int n_iter_max, phydbl tol, t_tree *tree)
 {
   short int converged;
   phydbl dl,d2l; 
   phydbl init_lnL,old_lnL;
   int iter;
+  phydbl best_l, best_lnL;
 
   tree->update_eigen_lr = YES;
   dLk(b,tree);
   tree->update_eigen_lr = NO;
-  old_lnL = init_lnL = tree->c_lnL;
+  best_lnL = old_lnL = init_lnL = tree->c_lnL;
+  best_l = b->l->v;
 
   converged = NO;
   iter = 0;
@@ -2293,7 +2288,7 @@ phydbl Br_Len_Newton_Raphson(t_edge *b, int n_iter_max, phydbl tol, t_tree *tree
       dl      = tree->c_dlnL;
       d2l     = tree->c_d2lnL;
 
-      if(d2l > 0)
+      if(d2l > 0.0)
         b->l->v *= 0.5;
       else
         b->l->v -= dl/d2l;
@@ -2302,26 +2297,35 @@ phydbl Br_Len_Newton_Raphson(t_edge *b, int n_iter_max, phydbl tol, t_tree *tree
       if(b->l->v > tree->mod->l_max) b->l->v = tree->mod->l_max;
 
       dLk(b,tree);
+
       iter++;
       if(iter > n_iter_max) break;
 
+      if(tree->c_lnL > best_lnL)
+        {
+          best_lnL = tree->c_lnL;
+          best_l   = b->l->v;
+        }
 
-      printf("\n %12f %12f %12f %12G %12G %12G %12G",
-             b->l->v,
-             old_lnL,
-             tree->c_lnL,
-             dl,
-             d2l,
-             old_lnL-tree->c_lnL,
-             tol);
+      /* printf("\n %12f %12f %12f %12G %12G %12G %12G", */
+      /*        b->l->v, */
+      /*        old_lnL, */
+      /*        tree->c_lnL, */
+      /*        dl, */
+      /*        d2l, */
+      /*        old_lnL-tree->c_lnL, */
+      /*        tol); */
 
 
       if(FABS(tree->c_lnL-old_lnL) < tol) converged = YES;
     }
   while(converged == NO);
   
-  printf("\n. init: %f current: %f l: %f",init_lnL,tree->c_lnL,b->l->v);
-  assert(tree->c_lnL > init_lnL-tol);
+  b->l->v = best_l;
+  tree->c_lnL = best_lnL;
+
+  /* printf("\n. init: %f current: %f l: %f",init_lnL,tree->c_lnL,b->l->v); */
+  assert(best_lnL > init_lnL-tol);
   
   return tree->c_lnL;
 }

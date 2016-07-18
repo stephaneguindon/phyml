@@ -11328,6 +11328,36 @@ phydbl Get_Lk(t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
+phydbl Get_dLk(t_tree *tree)
+{
+  t_tree *loc_tree;
+
+  loc_tree = tree;
+  /*! Rewind back to the first mixt_tree */
+  while(loc_tree->prev) loc_tree = loc_tree->prev;
+
+  return loc_tree->c_dlnL;
+
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+phydbl Get_d2Lk(t_tree *tree)
+{
+  t_tree *loc_tree;
+
+  loc_tree = tree;
+  /*! Rewind back to the first mixt_tree */
+  while(loc_tree->prev) loc_tree = loc_tree->prev;
+
+  return loc_tree->c_d2lnL;
+
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
 align **Make_Empty_Alignment(option *io)
 {
   int i;

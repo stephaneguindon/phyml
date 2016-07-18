@@ -570,7 +570,6 @@ phydbl Lk(t_edge *b, t_tree *tree)
 
   if(tree->update_eigen_lr == YES) Update_Eigen_Lr(b,tree);
 
-
   expl = (phydbl *)mCalloc(tree->mod->ras->n_catg*tree->mod->ns,sizeof(phydbl));
  
   if(tree->use_eigen_lr == YES)
@@ -645,6 +644,7 @@ phydbl dLk(t_edge *b, t_tree *tree)
 #endif
       /* !!!!!! Function not MIXT proof !!!!!! */
       /* return MIXT_dLk(b,tree); */
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
     }
     
   if(tree->update_eigen_lr == YES) Update_Eigen_Lr(b,tree);
@@ -660,16 +660,12 @@ phydbl dLk(t_edge *b, t_tree *tree)
       if(tree->mixt_tree) rr *= tree->mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number];
       len = b->l->v * rr;
       
-      if(len < tree->mod->l_min)
-        { 
-         len = tree->mod->l_min;
-         rr  = len / b->l->v;
-        }
-      else if(len > tree->mod->l_max) 
-        { 
-         len = tree->mod->l_max;      
-         rr  = len / b->l->v;
-        }
+      
+      if(len < tree->mod->l_min)      len = tree->mod->l_min;
+      else if(len > tree->mod->l_max) len = tree->mod->l_max;      
+      // value of rr should be corrected too if any of these two conditions
+      // is true. Leads to numerical precision issues though...
+
 
       For(state,tree->mod->ns) expl[catg*tree->mod->ns+state]   = (phydbl)POW(tree->mod->eigen->e_val[state],len);
 
@@ -678,6 +674,7 @@ phydbl dLk(t_edge *b, t_tree *tree)
       
       For(state,tree->mod->ns) expld2[catg*tree->mod->ns+state] = expld[catg*tree->mod->ns+state] * 
         LOG(tree->mod->eigen->e_val[state]) * rr;        
+
     }
 
   lnlk = 0.0;
@@ -947,7 +944,9 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
 //////////////////////////////////////////////////////////////
 
 /* Core of the likelihood calculcation. Assume that the partial likelihoods on both
-   sides of t_edge *b are up-to-date. Calculate the log-likelihood at one site.
+   sides of t_edge *b are up-to-date and that the product of the left and right matrices
+   of eigenvectors by right and left partial likelihood vectors was carried out before 
+   calling this function. Calculate the log-likelihood at one site.
    Note: this function can be used to evaluate first or second derivative of the 
    likelihood function with respect to the length of b, at a given site. Hence, be
    careful with the meaning of 'site_lk', for instance.
@@ -955,12 +954,11 @@ phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
 
 phydbl Lk_Core_Eigen_Lr(int state, int ambiguity_check, short int returnlog, t_edge *b, phydbl *expl, t_tree *tree)
 {
-  phydbl log_site_lk,len;
-  phydbl site_lk_cat/*rate specific site lk*/, site_lk, inv_site_lk;
+  phydbl log_site_lk;
+  phydbl site_lk_cat, site_lk, inv_site_lk;
   int fact_sum_scale;
-  phydbl sum;
-  int catg/*Index of the current rate classes*/,ns/*size of the state-space*/,k,l,site/*index of the current site in the MSA*/;
-  int dim1,dim2,dim3;
+  int catg,ns,l,site;
+  int dim1,dim2;
   int exponent;
   int num_prec_issue;
   phydbl *p_lk_left,*p_lk_rght;
@@ -971,7 +969,6 @@ phydbl Lk_Core_Eigen_Lr(int state, int ambiguity_check, short int returnlog, t_e
   dim1 = tree->mod->ras->n_catg * tree->mod->ns;//Dimension of a matrix L that holds rate-specific character likelihoods. IOW, L[ij] is the likelihood of character j in rate class i
 #endif
   dim2 = tree->mod->ns;
-  dim3 = tree->mod->ns * tree->mod->ns;//Dimensions of the transition prob. matrix
   
   log_site_lk     = .0;
   site_lk         = .0;
