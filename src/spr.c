@@ -4869,7 +4869,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       tree->mod->s_opt->max_depth_path    = 5;
       tree->mod->s_opt->spr_lnL           = YES;
       tree->mod->s_opt->spr_pars          = NO;
-      tree->mod->s_opt->min_diff_lk_move  = 0.1;
+      tree->mod->s_opt->min_diff_lk_move  = 0.01;
       tree->mod->s_opt->eval_list_regraft = YES;
       
       do
@@ -4878,7 +4878,6 @@ void Spr_List_Of_Trees(t_tree *tree)
           Lk(NULL,tree);
           tree->best_lnL = tree->c_lnL;
           Spr(tree->c_lnL,1.0,tree);
-          tree->mod->s_opt->max_depth_path = tree->max_spr_depth;
         }
       while(tree->n_improvements > 5);
 
