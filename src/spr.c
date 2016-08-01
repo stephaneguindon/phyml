@@ -4797,9 +4797,7 @@ void Spr_List_Of_Trees(t_tree *tree)
     {
       Stepwise_Add_Pars(tree);  
       Spr_Pars(0,10,tree);
-      Set_Both_Sides(NO,tree);
-      Lk(NULL,tree);
-      Optimize_Br_Len_Serie(tree);
+      Simu(tree,1);
 
       if(tree->c_lnL > best_lnL) 
         {
