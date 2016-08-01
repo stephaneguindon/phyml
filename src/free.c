@@ -630,7 +630,7 @@ void Free_Scalar_Dbl(scalar_dbl *v)
 {
   scalar_dbl *next;
   
-  assert(v);
+  /* assert(v); */
 
   next = v->next;
   do

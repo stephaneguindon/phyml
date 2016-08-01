@@ -683,7 +683,7 @@ phydbl dLk(t_edge *b, t_tree *tree)
   For(tree->curr_site,tree->n_pattern)
     {
       dlk  = Lk_Core_Eigen_Lr(-1,-1,NO,b,expld,tree);
-      d2lk = Lk_Core_Eigen_Lr(-1,-1,NO,b,expld,tree);
+      d2lk = Lk_Core_Eigen_Lr(-1,-1,NO,b,expld2,tree);
       lk   = Lk_Core_Eigen_Lr(-1,-1,NO,b,expl,tree); // Make sur to keep this call in the last position so that site_lk_cat is the
                                                      // actual likelihood rather than its first or second derivative
       

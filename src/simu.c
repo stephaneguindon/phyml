@@ -448,7 +448,6 @@ int Mov_Backward_Topo_Bl(t_tree *tree, phydbl lk_old, t_edge **tested_b, int n_t
     {
       l_init[i] = Duplicate_Scalar_Dbl(tree->a_edges[i]->l);
       v_init[i] = Duplicate_Scalar_Dbl(tree->a_edges[i]->l_var);
-      /* l_init[i] = MIXT_Get_Lengths_Of_This_Edge(tree->a_edges[i],tree); */
     }
 
   step = 2;
@@ -457,13 +456,12 @@ int Mov_Backward_Topo_Bl(t_tree *tree, phydbl lk_old, t_edge **tested_b, int n_t
       For(i,2*tree->n_otu-3)
         {
           b = tree->a_edges[i];
-          
-          /* b->l->v = b->l_old->v + (1./step) * (l_init[i] - b->l_old->v); */
-          
+                    
           orig = b;
           do
             {
               b->l->v = b->l_old->v + (1./step) * (l_init[i]->v - b->l_old->v);
+              if(b->next == NULL) break;
               b = b->next;
               l_init[i] = l_init[i]->next;
             }
@@ -493,30 +491,23 @@ int Mov_Backward_Topo_Bl(t_tree *tree, phydbl lk_old, t_edge **tested_b, int n_t
       if(tree->n_swap)  Exit("\n== Err. in Mov_Backward_Topo_Bl (n_swap > 0)\n");
       
       Restore_Br_Len(tree);
-
-      /* For(i,2*tree->n_otu-3) */
-      /*   { */
-      /*     b = tree->a_edges[i]; */
-          
-      /*     orig = b; */
-      /*     do */
-      /*       { */
-      /*         b->l->v = b->l_old->v; */
-      /*         b = b->next; */
-      /*       } */
-      /*     while(b); */
-      /*     b = orig; */
-      /*   } */
-      
       
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
     }
 
-  For(i,2*tree->n_otu-3) Free_Scalar_Dbl(l_init[i]);
+  For(i,2*tree->n_otu-3) 
+    {
+      while(l_init[i]->prev) l_init[i] = l_init[i]->prev; 
+      Free_Scalar_Dbl(l_init[i]);
+    }
   Free(l_init);
 
-  For(i,2*tree->n_otu-3) Free_Scalar_Dbl(v_init[i]);
+  For(i,2*tree->n_otu-3) 
+    {
+      while(v_init[i]->prev) v_init[i] = v_init[i]->prev;
+      Free_Scalar_Dbl(v_init[i]);
+    }
   Free(v_init);
 
   tree->n_swap = 0;

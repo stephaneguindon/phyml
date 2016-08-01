@@ -2266,6 +2266,7 @@ int Optimiz_Alpha_And_Pinv(t_tree *mixt_tree, int verbose)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
 phydbl Br_Len_Newton_Raphson(t_edge *b, int n_iter_max, phydbl tol, t_tree *tree)
 {
   short int converged;
@@ -2279,6 +2280,8 @@ phydbl Br_Len_Newton_Raphson(t_edge *b, int n_iter_max, phydbl tol, t_tree *tree
   tree->update_eigen_lr = NO;
   best_lnL = old_lnL = init_lnL = tree->c_lnL;
   best_l = b->l->v;
+
+  /* PhyML_Printf("\n Begin NR loop"); */
 
   converged = NO;
   iter = 0;
@@ -2307,14 +2310,14 @@ phydbl Br_Len_Newton_Raphson(t_edge *b, int n_iter_max, phydbl tol, t_tree *tree
           best_l   = b->l->v;
         }
 
-      /* printf("\n %12f %12f %12f %12G %12G %12G %12G", */
-      /*        b->l->v, */
-      /*        old_lnL, */
-      /*        tree->c_lnL, */
-      /*        dl, */
-      /*        d2l, */
-      /*        old_lnL-tree->c_lnL, */
-      /*        tol); */
+      /* PhyML_Printf("\n %12f %12f %12f %12G %12G %12G %12G", */
+      /*              b->l->v, */
+      /*              old_lnL, */
+      /*              tree->c_lnL, */
+      /*              dl, */
+      /*              d2l, */
+      /*              old_lnL-tree->c_lnL, */
+      /*              tol); */
 
 
       if(FABS(tree->c_lnL-old_lnL) < tol) converged = YES;
@@ -2327,6 +2330,7 @@ phydbl Br_Len_Newton_Raphson(t_edge *b, int n_iter_max, phydbl tol, t_tree *tree
   /* printf("\n. init: %f current: %f l: %f",init_lnL,tree->c_lnL,b->l->v); */
   assert(best_lnL > init_lnL-tol);
   
+  /* PhyML_Printf("\n End NR loop"); */
   return tree->c_lnL;
 }
 
