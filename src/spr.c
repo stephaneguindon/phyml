@@ -4773,8 +4773,10 @@ void Spr_List_Of_Trees(t_tree *tree)
   best_lnL                         = UNLIKELY;
   /* tree->mod->s_opt->print          = NO; */
   /* tree->io->quiet                  = YES; */
-  list_size_first_round            = (int)max_list_size/5;
-  list_size_second_round           = (int)max_list_size/10;
+  /* list_size_first_round            = (int)max_list_size/5; */
+  /* list_size_second_round           = (int)max_list_size/10; */
+  list_size_first_round            = 10;
+  list_size_second_round           = 5;
 
   tree_list = (t_tree **)mCalloc(max_list_size,sizeof(t_tree *));
   lnL_list  = (phydbl *)mCalloc(max_list_size,sizeof(phydbl));
@@ -4794,7 +4796,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   do
     {
       Stepwise_Add_Pars(tree);  
-      Spr_Pars(0,2,tree);
+      Spr_Pars(0,10,tree);
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
       Optimize_Br_Len_Serie(tree);
@@ -4817,14 +4819,15 @@ void Spr_List_Of_Trees(t_tree *tree)
   For(i,list_size) PhyML_Printf("\n. Tree %3d, lnL: %12.2f",i+1,lnL_list[rk[i]]);
 
   PhyML_Printf("\n\n. Improving the best trees SPRs...");
+
   list_size = 0;
   do
     {
       Copy_Tree(tree_list[rk[list_size]],tree);
-
+      
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
-
+      
       tree->mod->s_opt->max_depth_path    = tree->n_otu;
       tree->mod->s_opt->spr_lnL           = YES;
       tree->mod->s_opt->spr_pars          = NO;
@@ -4840,24 +4843,23 @@ void Spr_List_Of_Trees(t_tree *tree)
           tree->mod->s_opt->max_depth_path = tree->max_spr_depth;
         }
       while(tree->n_improvements > 5);
-
-
+      
+      
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
       Optimize_Br_Len_Serie(tree);
-
+      
       if(tree->c_lnL > best_lnL) 
         {
           best_lnL = tree->c_lnL;
           PhyML_Printf("\n. Better tree found -> lnL: %12.2f",best_lnL);
         }
-
+      
       Copy_Tree(tree,tree_list[rk[list_size]]);
       lnL_list[rk[list_size]] = tree->c_lnL;
     }
   while(++list_size <= list_size_second_round);
-
-
+  
   Free(rk);
   rk = Ranks(lnL_list,max_list_size);
 
