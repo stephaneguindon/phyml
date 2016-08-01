@@ -803,7 +803,16 @@ void Free_Model(t_mod *mod)
 
 void Free(void *p)
 {
+#if (defined(__AVX__) || defined(__SSE3__))
+#ifndef WIN32
   free(p);
+#else
+  _aligned_free(p);
+#endif
+#else  
+  free(p);
+#endif
+
   p = NULL;
 }
 

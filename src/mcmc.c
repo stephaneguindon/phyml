@@ -2430,7 +2430,6 @@ void MCMC_Updown_Nu_Cr(t_tree *tree)
 void MCMC_Print_Param_Stdin(t_mcmc *mcmc, t_tree *tree)
 {
   time_t cur_time;
-  int i;
 
   time(&cur_time);
   

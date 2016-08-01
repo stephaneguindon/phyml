@@ -55,9 +55,10 @@ dnl VECTOR_FLAG=
 
 LDFLAGS="${ARGC_flag}" 
 
-LT_INIT
-AC_PROG_LIBTOOL
-dnl Add option for compiling with debugging informations
+dnl Uncomment two rows below when compiling rwarp
+dnl LT_INIT
+dnl AC_PROG_LIBTOOL
+
 
 AC_ARG_ENABLE([debug],
               [AS_HELP_STRING([--enable-debug],

@@ -719,6 +719,7 @@ phydbl *DATE_MCMC(t_tree *tree)
                         tree->rates->death_rate);
 
           /* PhyML_Fprintf(fp_tree,"\n%s",Write_Tree(tree,NO)); */
+          PhyML_Fprintf(fp_tree,"\n%s",NULL);
           fflush(NULL);
 
           For(i,2*tree->n_otu-1)

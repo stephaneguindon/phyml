@@ -155,42 +155,42 @@ tiporder.c tiporder.h
 # continuous.c continuous.h
 phycont_LDADD = -lm
 else 
-if WANT_RWRAP
-lib_LTLIBRARIES = librwrap.la
-librwrap_la_SOURCES = main.c \
-utilities.c  utilities.h\
-optimiz.c  optimiz.h\
-lk.c  lk.h\
-bionj.c bionj.h\
-models.c  models.h\
-free.c  free.h\
-help.c  help.h\
-simu.c  simu.h\
-eigen.c  eigen.h\
-pars.c  pars.h\
-alrt.c  alrt.h\
-interface.c  interface.h\
-cl.c  cl.h\
-spr.c spr.h\
-draw.c  draw.h\
-stats.c stats.h\
-rates.c rates.h\
-mcmc.c mcmc.h\
-times.c times.h\
-tiporder.c tiporder.h\
-mg.c mg.h\
-m4.c m4.h\
-io.c io.h\
-make.c make.h\
-nexus.c nexus.h\
-init.c init.h\
-xml.c xml.h\
-mixt.c mixt.h\
-rwrapper.c rwrapper.h
-librwrap_la_LIBADD = -lm
-librwrap_la_LDFLAGS = -I/usr/share/R/include -shared -module -flat_namespace
-librwrap_la_CFLAGS=-std=gnu99 -fPIC -Wl,-z,defs
-else 
+# if WANT_RWRAP
+# lib_LTLIBRARIES = librwrap.la
+# librwrap_la_SOURCES = main.c \
+# utilities.c  utilities.h\
+# optimiz.c  optimiz.h\
+# lk.c  lk.h\
+# bionj.c bionj.h\
+# models.c  models.h\
+# free.c  free.h\
+# help.c  help.h\
+# simu.c  simu.h\
+# eigen.c  eigen.h\
+# pars.c  pars.h\
+# alrt.c  alrt.h\
+# interface.c  interface.h\
+# cl.c  cl.h\
+# spr.c spr.h\
+# draw.c  draw.h\
+# stats.c stats.h\
+# rates.c rates.h\
+# mcmc.c mcmc.h\
+# times.c times.h\
+# tiporder.c tiporder.h\
+# mg.c mg.h\
+# m4.c m4.h\
+# io.c io.h\
+# make.c make.h\
+# nexus.c nexus.h\
+# init.c init.h\
+# xml.c xml.h\
+# mixt.c mixt.h\
+# rwrapper.c rwrapper.h
+# librwrap_la_LIBADD = -lm
+# librwrap_la_LDFLAGS = -I/usr/share/R/include -shared -module -flat_namespace
+# librwrap_la_CFLAGS=-std=gnu99 -fPIC -Wl,-z,defs
+# else 
 if WANT_PART
 part_SOURCES = main.c \
 utilities.c utilities.h\
@@ -668,7 +668,7 @@ endif
 endif
 endif
 endif
-endif
+# endif
 
 
 all-am:	intro $(bin_PROGRAMS)

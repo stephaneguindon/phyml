@@ -4794,7 +4794,10 @@ void Spr_List_Of_Trees(t_tree *tree)
     {
       Stepwise_Add_Pars(tree);  
       Spr_Pars(0,2,tree);
-      Simu(tree,2);
+      Set_Both_Sides(NO,tree);
+      Lk(NULL,tree);
+      Optimize_Br_Len_Serie(tree);
+      Simu(tree,3);
 
       if(tree->c_lnL > best_lnL) 
         {
@@ -4878,6 +4881,7 @@ void Spr_List_Of_Trees(t_tree *tree)
           Lk(NULL,tree);
           tree->best_lnL = tree->c_lnL;
           Spr(tree->c_lnL,1.0,tree);
+          tree->mod->s_opt->max_depth_path = tree->max_spr_depth;
         }
       while(tree->n_improvements > 5);
 
