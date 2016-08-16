@@ -2602,8 +2602,8 @@ phydbl Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
 
   bx = *param;
 
-  a = (*param)*0.1;
-  b = (*param)*10.0;
+  a = MAX((*param)*0.1,ax);
+  b = MIN((*param)*10.0,cx);
 
   (*param) = a;
   if(logt == YES) (*param) = EXP(MIN(1.E+2,*param));
