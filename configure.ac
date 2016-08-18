@@ -1,8 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-dnl AC_INIT([PhyML],esyscmd([sh -c "echo "3.2." | tr -d '\n' ; date \"+%Y%m%d\" | tr -d '\n'"]),[guindon@lirmm.fr])
-AC_INIT([PhyML],[3.2.20160531],[guindon@lirmm.fr])
+AC_INIT([PhyML],esyscmd([sh -c "echo "3.3." | tr -d '\n' ; date \"+%Y%m%d\" | tr -d '\n'"]),[guindon@lirmm.fr])
 AM_INIT_AUTOMAKE([foreign])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
 AC_CONFIG_MACRO_DIR([m4])
@@ -48,14 +47,14 @@ AC_FUNC_SETVBUF_REVERSED
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([floor pow rint sqrt strchr strstr])
 
-VECTOR_FLAG=-march=native
+dnl VECTOR_FLAG=-march=native
 dnl VECTOR_FLAG=-msse3
 dnl VECTOR_FLAG=-mavx
-dnl VECTOR_FLAG=
+VECTOR_FLAG=
 
 LDFLAGS="${ARGC_flag}" 
 
-dnl Uncomment two rows below when compiling rwarp
+dnl Uncomment two rows below when compiling rwarp (need to have libtool installed)
 dnl LT_INIT
 dnl AC_PROG_LIBTOOL
 
@@ -65,6 +64,12 @@ AC_ARG_ENABLE([debug],
                               [Remove optimization options and add debug informations.])])
 AS_IF([test "x$enable_debug" = "xyes"],
       [CFLAGS="-ansi ${VECTOR_FLAG} -pedantic -Wall -std=c99 -O0 -g -Wuninitialized"],
+      [CFLAGS="-Wall -O2 ${VECTOR_FLAG} -fomit-frame-pointer -funroll-loops -Wempty-body -Wuninitialized ${ARCH_flag}"])
+
+AC_ARG_ENABLE([safemode],
+        AS_HELP_STRING([--enable-safemode],[Enable safe mode.]))
+AS_IF([test "x$enable_safemode" = "xyes"],
+      [CFLAGS="-Wall -DSAFEMODE -O2 ${VECTOR_FLAG} -fomit-frame-pointer -funroll-loops -Wempty-body -Wuninitialized ${ARCH_flag}"],
       [CFLAGS="-Wall -O2 ${VECTOR_FLAG} -fomit-frame-pointer -funroll-loops -Wempty-body -Wuninitialized ${ARCH_flag}"])
 
 AC_ARG_ENABLE([gprof],
@@ -196,6 +201,7 @@ AM_CONDITIONAL([WANT_DATE], [test "$date" = yes])
 if test "$date" = yes; then
    AC_DEFINE([DATE],[1],[DATE tag on])
 fi
+
 
 
 

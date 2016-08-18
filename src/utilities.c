@@ -1155,7 +1155,7 @@ char *Add_Taxa_To_Constraint_Tree(FILE *fp, calign *cdata)
 {
   char *line,*long_line;
   t_tree *tree;
-  int i,j;
+  int i,j,open;
 
   rewind(fp);
 
@@ -1164,9 +1164,17 @@ char *Add_Taxa_To_Constraint_Tree(FILE *fp, calign *cdata)
 
   long_line = (char *)mCalloc(T_MAX_LINE,sizeof(char));
   strcpy(long_line,line);
-
-  long_line[strlen(line)-1] = '\0';
-
+  i = 1;
+  open = 1;
+  while(open)
+    {
+      if(line[i]=='(') open++;
+      if(line[i]==')') open--;      
+      if(i > T_MAX_LINE) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+      i++;
+    }
+  long_line[i-1] = '\0';
+  
   For(i,cdata->n_otu)
     {
       For(j,tree->n_otu)
@@ -1492,8 +1500,7 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
     {
       if(tree->mod->s_opt->fast_nni)
         {
-          Fast_Br_Len(b_fcus,tree,YES);
-          lk1 = Lk(b_fcus,tree);
+          lk1 = Fast_Br_Len(b_fcus,tree,YES);
         }
       else 
         {
@@ -1532,8 +1539,7 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
     {
       if(tree->mod->s_opt->fast_nni)
         {
-          Fast_Br_Len(b_fcus,tree,YES);
-          lk2 = Lk(b_fcus,tree);
+          lk2 = Fast_Br_Len(b_fcus,tree,YES);
         }
       else 
         {
@@ -1583,8 +1589,7 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
     {
       if(tree->mod->s_opt->fast_nni)
         {
-          Fast_Br_Len(b_fcus,tree,YES);
-          lk0 = Lk(b_fcus,tree);
+          lk0 = Fast_Br_Len(b_fcus,tree,YES);
         }
       else 
         {
@@ -1947,9 +1952,7 @@ void Swap(t_node *a, t_node *b, t_node *c, t_node *d, t_tree *tree)
 
   if(!tree) return;
 
-#ifdef DEBUG
   if(!a || !b || !c || !d) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
-#endif
 
   ab = ba = cd = dc = bc = -1;
   
@@ -1959,16 +1962,13 @@ void Swap(t_node *a, t_node *b, t_node *c, t_node *d, t_tree *tree)
   For(i,3) if(d->v[i] == c) { dc = i; break; }
   For(i,3) if(b->v[i] == c) { bc = i; break; }
   
-#ifdef DEBUG
   if(ab < 0 || ba < 0 || cd < 0 || dc < 0)
     {
+      PhyML_Printf("\n== ab=%d ba=%d cd=%d dc=%d bc=%d",ab,ba,cd,dc,bc);
       PhyML_Printf("\n== Nodes %d %d %d %d.",a->num,b->num,c->num,d->num);
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
     }
-#endif
   
-
-
   a->v[ab] = c;
   d->v[dc] = b;
   b->v[ba] = d;
@@ -1993,9 +1993,9 @@ void Swap(t_node *a, t_node *b, t_node *c, t_node *d, t_tree *tree)
     }
   
   a->b[ab]->l_v1 = a->b[ab]->l_v2 =
-    a->b[ab]->r_v1 = a->b[ab]->r_v2 =
-    d->b[dc]->l_v1 = d->b[dc]->l_v2 =
-    d->b[dc]->r_v1 = d->b[dc]->r_v2 = -1;
+  a->b[ab]->r_v1 = a->b[ab]->r_v2 =
+  d->b[dc]->l_v1 = d->b[dc]->l_v2 =
+  d->b[dc]->r_v1 = d->b[dc]->r_v2 = -1;
   
   For(i,3)
     {
@@ -3772,7 +3772,6 @@ int Sort_Phydbl_Increase(const void *a, const void *b)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 int Sort_String(const void *a, const void *b)
 {
   return(strcmp((*(const char **)(a)), (*(const char **)(b))));
@@ -5177,7 +5176,6 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
   Set_Edge_Dirs(residual,residual->left,residual->rght,tree);
   Set_Edge_Dirs(b_up,b_up->left,b_up->rght,tree);
 
-
   if(tree->n_root && b_up == tree->e_root)
     {
       assert((tree->n_root->v[1] == NULL && tree->n_root->v[2] != NULL) ||
@@ -5447,7 +5445,7 @@ int Get_Subtree_Size(t_node *a, t_node *d)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Fast_Br_Len(t_edge *b, t_tree *tree, int approx)
+phydbl Fast_Br_Len(t_edge *b, t_tree *tree, int approx)
 {
   if(tree->is_mixt_tree)
     {
@@ -5459,7 +5457,7 @@ void Fast_Br_Len(t_edge *b, t_tree *tree, int approx)
           MIXT_Br_Len_Brent(b,tree);
           tree->mod->s_opt->brent_it_max = BRENT_IT_MAX;
         }
-      return;
+      return tree->c_lnL;
     }
 
 
@@ -5467,10 +5465,11 @@ void Fast_Br_Len(t_edge *b, t_tree *tree, int approx)
     Br_Len_Brent(b,tree);
   else
     {
-      tree->mod->s_opt->brent_it_max = 20;
+      tree->mod->s_opt->brent_it_max = 1;
       Br_Len_Brent(b,tree);
       tree->mod->s_opt->brent_it_max = BRENT_IT_MAX;
     }
+  return tree->c_lnL;
 }
 
 //////////////////////////////////////////////////////////////
@@ -8715,7 +8714,8 @@ t_edge *Find_Root_Edge(FILE *fp_input_tree, t_tree *tree)
 
   root_edge = tree->a_edges[i];
 
-  For(i,NODE_DEG_MAX) Free(subs[i]);
+  i = 0;
+  while(subs[i] != NULL) Free(subs[i++]);
   Free(subs);
   Free(line);
 
@@ -9768,8 +9768,8 @@ void Match_Nodes_In_Small_Tree(t_tree *small_tree, t_tree *big_tree)
 
   if(!Check_Topo_Constraints(big_tree,small_tree))
     {
-      PhyML_Printf("\n. small_tree and big_tree cannot have distinct topologies.");
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== small_tree and big_tree cannot have distinct topologies.");
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
 
@@ -10078,14 +10078,14 @@ void Connect_CSeqs_To_Nodes(calign *cdata, option *io, t_tree *tree)
       Warn_And_Exit("\n== The number of tips in the tree is not the same as the number of sequences\n");
     }
   
-  For(i,MAX(n_otu_tree,n_otu_cdata))
+  For(i,n_otu_tree)
     {
-      For(j,MIN(n_otu_tree,n_otu_cdata))
+      For(j,n_otu_cdata)
         {          
           if(!strcmp(tree->a_nodes[i]->name,cdata->c_seq[j]->name)) break;
         }
       
-      if(j==MIN(n_otu_tree,n_otu_cdata))
+      if(j==n_otu_cdata)
         {
           PhyML_Printf("\n== Taxon '%s' was not found in sequence file '%s'.\n",
                        tree->a_nodes[i]->name,

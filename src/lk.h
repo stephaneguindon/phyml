@@ -54,7 +54,7 @@ phydbl Lk_Dist(phydbl *F, phydbl dist, t_mod *mod);
 phydbl Update_Lk_At_Given_Edge(t_edge *b_fcus, t_tree *tree);
 void Update_P_Lk_Greedy(t_tree *tree, t_edge *b_fcus, t_node *n);
 void Get_All_Partial_Lk_Scale_Greedy(t_tree *tree, t_edge *b_fcus, t_node *a, t_node *d);
-phydbl Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree);
+phydbl Lk_Core(int state, int ambiguity_check, short int returnlog, t_edge *b, phydbl *expl, t_tree *tree);
 phydbl Lk_Triplet(t_node *a, t_node *d, t_tree *tree);
 void Print_Lk_Given_Edge_Recurr(t_node *a, t_node *d, t_edge *b, t_tree *tree);
 phydbl *Post_Prob_Rates_At_Given_Edge(t_edge *b, phydbl *post_prob, t_tree *tree);
@@ -94,7 +94,7 @@ void Pull_Scaling_Factors(int site, t_edge *b, t_tree *tree);
 void Stepwise_Add_Lk(t_tree *tree);
 void Update_Eigen_Lr(t_edge *b, t_tree *tree);
 phydbl Lk_Core_Eigen_Lr(int state, int ambiguity_check, short int returnlog, t_edge *b, phydbl *expl, t_tree *tree);
-phydbl dLk(t_edge *b, t_tree *tree);
+phydbl dLk(phydbl *l, t_edge *b, t_tree *tree);
 
 #if defined(__AVX__)
 __m256d AVX_Horizontal_Add(__m256d x[4]);

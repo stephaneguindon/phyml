@@ -768,13 +768,12 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
 
       r_mat_weight_sum = MIXT_Get_Sum_Chained_Scalar_Dbl(mixt_tree->next->mod->r_mat_weight);
       e_frq_weight_sum = MIXT_Get_Sum_Chained_Scalar_Dbl(mixt_tree->next->mod->e_frq_weight);
-      sum_probas       = MIXT_Get_Sum_Of_Probas_Across_Mixtures(r_mat_weight_sum, e_frq_weight_sum, mixt_tree);
+      sum_probas       = MIXT_Get_Sum_Of_Probas_Across_Mixtures(r_mat_weight_sum,e_frq_weight_sum,mixt_tree);
 
       mixt_tree->c_lnL = .0;
       dim1 = mixt_tree->mod->ns;
       dim2 = mixt_tree->mod->ns;
       
-
       For(site,mixt_tree->n_pattern)
         {
           b    = mixt_b->next;
@@ -785,7 +784,8 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
             {
               tree = tree->next;
               b    = b->next;
-              if(!tree || tree->is_mixt_tree == YES)
+
+              if(tree == NULL || tree->is_mixt_tree == YES)
                 {
                   PhyML_Printf("\n== %p",(void *)tree);
                   PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
@@ -807,7 +807,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
           /*! For all classes in the mixture */
           do
             {
-              if(tree->is_mixt_tree)
+              if(tree->is_mixt_tree == YES)
                 {
                   tree = tree->next;
                   b    = b->next;
@@ -917,7 +917,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
               if(sum < .0)
                 {
                   PhyML_Printf("\n== sum = %G",sum);
-                  PhyML_Printf("\n== Err in file %s at line %d\n\n",__FILE__,__LINE__);
+                  PhyML_Printf("\n== Err. in file %s at line %d\n\n",__FILE__,__LINE__);
                   Warn_And_Exit("\n");
                 }
 
@@ -943,7 +943,6 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
 
           /*! Populate the mixt_tree->site_lk_cat[class] table after
             scaling */
-
 
           tree  = mixt_tree->next;
           b     = mixt_b->next;
@@ -994,6 +993,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
               
               tree = tree->next;
               b    = b->next;
+
               class++;
             }
           while(tree && tree->is_mixt_tree == NO);
@@ -1107,8 +1107,6 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
           mixt_tree->c_lnL_sorted[site] = mixt_tree->data->wght[site]*log_site_lk;
 
           mixt_tree->c_lnL += mixt_tree->data->wght[site]*log_site_lk;
-          /*   tree->sum_min_sum_scale += (int)tree->data->wght[site]*min_sum_scale; */
-
         }
 
 
@@ -1148,6 +1146,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
 
 void MIXT_Update_Eigen(t_mod *mixt_mod)
 {
@@ -1660,13 +1659,15 @@ void MIXT_Br_Len_Brent(t_edge *mixt_b,
         }
 
       Br_Len_Brent(b,tree);
-
+      
       b->l->onoff = OFF;
       tree = tree->next;
       b    = b->next;
     }
   while(tree);
 
+  // Updates likelihood of mixt_tree
+  MIXT_Lk(mixt_b,mixt_tree);
   MIXT_Turn_Branches_OnOff_In_All_Elem(ON,mixt_tree);
 }
 
@@ -2497,7 +2498,6 @@ void MIXT_Prepare_All(int num_rand_tree, t_tree *mixt_tree)
   MIXT_Check_RAS_Struct_In_Each_Partition_Elem(mixt_tree);
 }
 
-
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
@@ -2725,4 +2725,52 @@ void MIXT_Ancestral_Sequences_One_Node(t_node *mixt_d, t_tree *mixt_tree, int pr
         }
       while(curr_mixt_tree != NULL);
     }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
+{
+  /* int catg,state; */
+  /* phydbl len,*expl,*expld,*expld2,rr; */
+  /* phydbl lk,dlk,d2lk,dlnlk,d2lnlk,lnlk; */
+  t_tree *tree;
+  t_edge *b;
+
+  assert(mixt_b != NULL);
+
+  mixt_tree->c_dlnL  = 0.0;
+  mixt_tree->c_d2lnL = 0.0;
+  mixt_tree->c_lnL   = 0.0;
+
+  tree = mixt_tree;
+  b    = mixt_b;
+  do
+    {
+      if(tree->is_mixt_tree == YES)
+        {
+          tree = tree->next;
+          b    = b->next;
+        }
+
+      if((&b->l->v) == l) 
+        // We are looking at a tree, in the list of trees making the
+        // partitioned/mixture model, that has an edge that matches,
+        // i.e., we want to evaluate the derivative of the likelihood
+        // with respect to the length of this edge
+        {
+          dLk(l,b,tree);
+          mixt_tree->c_dlnL  += tree->c_dlnL;
+          mixt_tree->c_d2lnL += tree->c_d2lnL;          
+        }
+      
+      mixt_tree->c_lnL += tree->c_lnL;
+      
+      tree = tree->next;
+      b    = b->next;
+    }
+  while(tree);
+
+  return 0.0;
 }

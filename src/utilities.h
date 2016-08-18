@@ -242,7 +242,7 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define  N_MAX_LABEL           10
 #define  BLOCK_LABELS         100
 
-#define  NODE_DEG_MAX         500
+#define  NODE_DEG_MAX        2000
 #define  BRENT_IT_MAX         500
 #define  BRENT_CGOLD    0.3819660
 #define  BRENT_ZEPS        1.e-10
@@ -379,7 +379,7 @@ typedef	double phydbl;
 
 // Do *not* change the values below and leave the lines with
 // curr_scaler_pow = (int)(-XXX.-LOG(smallest_p_lk))/LOG2;
-// as XXX depend on what the value of P_LK_LIM_INF 
+// as XXX depends on what the value of P_LK_LIM_INF is 
 #define  P_LK_LIM_INF   3.054936e-151 /* 2^-500 */
 #define  P_LK_LIM_SUP   3.273391e+150 /* 2^500 */
 
@@ -1986,7 +1986,7 @@ void Find_Mutual_Direction(t_node *n1,t_node *n2,short int *dir_n1_to_n2,short i
 void Update_Dir_To_Tips(t_node *a,t_node *d,t_tree *tree);
 void Fill_Dir_Table(t_tree *tree);
 int Get_Subtree_Size(t_node *a,t_node *d);
-void Fast_Br_Len(t_edge *b,t_tree *tree,int approx);
+phydbl Fast_Br_Len(t_edge *b, t_tree *tree, int approx);
 void Init_Eigen_Struct(eigen *this);
 phydbl Triple_Dist(t_node *a,t_tree *tree);
 phydbl Triple_Dist_Approx(t_node *a, t_edge *b, t_tree *tree);

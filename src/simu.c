@@ -108,7 +108,6 @@ int Simu(t_tree *tree, int n_step_max)
            (!tree->a_edges[i]->rght->tax))
           NNI(tree,tree->a_edges[i],NO);
 
-
       Select_Edges_To_Swap(tree,sorted_b,&n_neg);
       Sort_Edges_NNI_Score(tree,sorted_b,n_neg);
       Optimiz_Ext_Br(tree);
@@ -329,7 +328,7 @@ void Make_N_Swap(t_tree *tree,t_edge **b, int beg, int end)
           /* Undo this swap as it violates one of the topological constraints
              defined in the input constraint tree
           */
-          Swap(n1,n2,n3,n4,tree);
+          Swap(n4,n2,n3,n1,tree);
         }
       
       if(tree->n_root)
@@ -408,7 +407,7 @@ int Make_Best_Swap(t_tree *tree)
           /* Undo this swap as it violates one of the topological constraints
              defined in the input constraint tree
           */
-          Swap(n1,n2,n3,n4,tree);
+          Swap(n4,n2,n3,n1,tree);
         }
       
       /* b->l->v = b->nni->best_l; */

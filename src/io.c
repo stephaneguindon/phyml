@@ -78,7 +78,8 @@ t_tree *Read_Tree(char **s_tree)
       
       sprintf((*s_tree)+strlen((*s_tree))-1,"%s",");\0");
       
-      For(i,NODE_DEG_MAX) Free(subs[i]);
+      i = 0;
+      while(subs[i] != NULL) Free(subs[i++]);
       Free(subs);
       
       subs = Sub_Trees((*s_tree),&degree);
@@ -90,7 +91,8 @@ t_tree *Read_Tree(char **s_tree)
   tree->num_curr_branch_available = 0;
   For(i,degree) R_rtree((*s_tree),subs[i],root_node,tree,&n_int,&n_ext);
   
-  for(i=degree;i<NODE_DEG_MAX;i++) Free(subs[i]);
+  i = degree;
+  while(subs[i] != NULL) Free(subs[i++]);
   Free(subs);
   
   if(tree->n_root)
@@ -197,7 +199,8 @@ void R_rtree(char *s_tree_a, char *s_tree_d, t_node *a, t_tree *tree, int *n_int
               strcat(s_tree_d,b->labels[i]);
             }
 
-          For(i,NODE_DEG_MAX) Free(subs[i]);
+          i = 0;
+          while(subs[i] != NULL) Free(subs[i++]);
           Free(subs);
 
           subs=Sub_Trees(s_tree_d,&degree);
@@ -206,7 +209,8 @@ void R_rtree(char *s_tree_a, char *s_tree_d, t_node *a, t_tree *tree, int *n_int
       R_rtree(s_tree_d,subs[0],d,tree,n_int,n_ext);
       R_rtree(s_tree_d,subs[1],d,tree,n_int,n_ext);
 
-      for(i=2;i<NODE_DEG_MAX;i++) Free(subs[i]);
+      i = 2;
+      while(subs[i] != NULL) Free(subs[i++]);
       Free(subs);
     }
 
@@ -444,7 +448,6 @@ void Clean_Multifurcation(char **subtrees, int current_deg, int end_deg)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 char **Sub_Trees(char *tree, int *degree)
 {
   char **subs;
@@ -453,56 +456,57 @@ char **Sub_Trees(char *tree, int *degree)
 
   if(tree[0] != '(') {*degree = 1; return NULL;}
 
-  subs=(char **)mCalloc(NODE_DEG_MAX,sizeof(char *));
-
-  For(i,NODE_DEG_MAX) subs[i]=(char *)mCalloc(strlen(tree)+1,sizeof(char));
-
-
   posbeg=posend=1;
   (*degree)=0;
   do
     {
       posbeg = posend;
       if(tree[posend] != '(')
-    {
-      while((tree[posend] != ',' ) &&
-        (tree[posend] != ':' ) &&
-        (tree[posend] != '#' ) &&
-        (tree[posend] != ')' ))
         {
-          posend++ ;
+          while((tree[posend] != ',' ) &&
+                (tree[posend] != ':' ) &&
+                (tree[posend] != '#' ) &&
+                (tree[posend] != ')' ))
+            {
+              posend++ ;
+            }
+          posend -= 1;
         }
-      posend -= 1;
-    }
       else posend=Next_Par(tree,posend);
-
+      
       while((tree[posend+1] != ',') &&
-        (tree[posend+1] != ':') &&
-        (tree[posend+1] != '#') &&
-        (tree[posend+1] != ')')) {posend++;}
-
-
+            (tree[posend+1] != ':') &&
+            (tree[posend+1] != '#') &&
+            (tree[posend+1] != ')')) {posend++;}
+      
+      if(*degree == 0)
+        subs = (char **)mCalloc(1,sizeof(char *));
+      else
+        subs = (char **)mRealloc(subs,*degree+1,sizeof(char *));
+      
+      subs[(*degree)] = (char *)mCalloc(strlen(tree)+1,sizeof(char));
       strncpy(subs[(*degree)],tree+posbeg,posend-posbeg+1);
-/*       strcat(subs[(*degree)],"\0"); */
       subs[(*degree)][posend-posbeg+1]='\0'; /* Thanks to Jean-Baka Domelevo-Entfellner */
-
+      
       posend += 1;
       while((tree[posend] != ',') &&
-        (tree[posend] != ')')) {posend++;}
+            (tree[posend] != ')')) {posend++;}
       posend+=1;
-
-
+            
       (*degree)++;
       if((*degree) == NODE_DEG_MAX)
-    {
-      For(i,(*degree))
-        PhyML_Printf("\n. Subtree %d : %s\n",i+1,subs[i]);
-
-      PhyML_Printf("\n. The degree of a t_node cannot be greater than %d\n",NODE_DEG_MAX);
-      Warn_And_Exit("\n");
-    }
+        {
+          For(i,(*degree))
+            PhyML_Printf("\n. Subtree %d : %s\n",i+1,subs[i]);
+          
+          PhyML_Printf("\n. The degree of a t_node cannot be greater than %d\n",NODE_DEG_MAX);
+          Warn_And_Exit("\n");
+        }
     }
   while(tree[posend-1] != ')');
+
+  subs = (char **)mRealloc(subs,*degree+1,sizeof(char *));
+  subs[(*degree)] = NULL;
 
   return subs;
 }
@@ -1924,18 +1928,18 @@ t_tree *Read_Tree_File(option *io)
     {
     case PHYLIP:
       {
-    do
-      {
-        io->treelist->tree = (t_tree **)realloc(io->treelist->tree,(io->treelist->list_size+1)*sizeof(t_tree *));
-        io->tree = Read_Tree_File_Phylip(io->fp_in_tree);
-        fclose(io->fp_in_tree);
-        io->fp_in_tree = NULL;
-        if(!io->tree) break;
-        if(io->treelist->list_size > 1) PhyML_Printf("\n. Reading tree %d",io->treelist->list_size+1);
-        io->treelist->tree[io->treelist->list_size] = io->tree;
-        io->treelist->list_size++;
-      }while(io->tree);
-    break;
+        do
+          {
+            io->treelist->tree = (t_tree **)realloc(io->treelist->tree,(io->treelist->list_size+1)*sizeof(t_tree *));
+            io->tree = Read_Tree_File_Phylip(io->fp_in_tree);
+            fclose(io->fp_in_tree);
+            io->fp_in_tree = NULL;
+            if(!io->tree) break;
+            if(io->treelist->list_size > 1) PhyML_Printf("\n. Reading tree %d",io->treelist->list_size+1);
+            io->treelist->tree[io->treelist->list_size] = io->tree;
+            io->treelist->list_size++;
+          }while(io->tree);
+        break;
       }
     case NEXUS:
       {
@@ -1949,28 +1953,28 @@ t_tree *Read_Tree_File(option *io)
       }
     default:
       {
-    PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
-    Warn_And_Exit("");
-    break;
+        PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+        Warn_And_Exit("");
+        break;
       }
     }
-
+  
   if(!io->long_tax_names)
     {
       int i;
-
+      
       tree = io->treelist->tree[0];
-
+      
       io->long_tax_names  = (char **)mCalloc(tree->n_otu,sizeof(char *));
       io->short_tax_names = (char **)mCalloc(tree->n_otu,sizeof(char *));
-
+      
       For(i,tree->n_otu)
-    {
-      io->long_tax_names[i] = (char *)mCalloc(strlen(tree->a_nodes[i]->name)+1,sizeof(char));
-      io->short_tax_names[i] = (char *)mCalloc(strlen(tree->a_nodes[i]->name)+1,sizeof(char));
-      strcpy(io->long_tax_names[i],tree->a_nodes[i]->name);
-      strcpy(io->short_tax_names[i],tree->a_nodes[i]->name);
-    }
+        {
+          io->long_tax_names[i] = (char *)mCalloc(strlen(tree->a_nodes[i]->name)+1,sizeof(char));
+          io->short_tax_names[i] = (char *)mCalloc(strlen(tree->a_nodes[i]->name)+1,sizeof(char));
+          strcpy(io->long_tax_names[i],tree->a_nodes[i]->name);
+          strcpy(io->short_tax_names[i],tree->a_nodes[i]->name);
+        }
     }
   return NULL;
 }
@@ -2018,7 +2022,7 @@ char *Return_Tree_String_Phylip(FILE *fp_input_tree)
 
   if(fp_input_tree == NULL)
     {
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 
@@ -2039,21 +2043,21 @@ char *Return_Tree_String_Phylip(FILE *fp_input_tree)
   for(;;)
     {
       if((c == ' ') || (c == '\n'))
-    {
-      c=fgetc(fp_input_tree);
-      if(c == EOF || c == ';') break;
-      else continue;
-    }
+        {
+          c=fgetc(fp_input_tree);
+          if(c == EOF || c == ';') break;
+          else continue;
+        }
 
       if(c == '[')
-    {
-      Skip_Comment(fp_input_tree);
-      c = fgetc(fp_input_tree);
-      if(c == EOF || c == ';') break;
-    }
-
+        {
+          Skip_Comment(fp_input_tree);
+          c = fgetc(fp_input_tree);
+          if(c == EOF || c == ';') break;
+        }
+      
       line = (char *)mRealloc(line,i+2,sizeof(char));
-
+      
       line[i]=c;
       i++;
       c=fgetc(fp_input_tree);
@@ -2063,8 +2067,7 @@ char *Return_Tree_String_Phylip(FILE *fp_input_tree)
       if(open>maxopen) maxopen = open;
     }
   line[i] = '\0';
-
-
+    
   /* if(maxopen == 1) return NULL; */
   return line;
 }

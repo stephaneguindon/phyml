@@ -172,7 +172,7 @@ int main(int argc, char **argv)
                       Get_Bip(io->cstr_tree->a_nodes[0],
                               io->cstr_tree->a_nodes[0]->v[0],
                               io->cstr_tree);
-                      if(!tree->has_branch_lengths) Add_BioNJ_Branch_Lengths(tree,cdata,mod);                      
+                      if(tree->has_branch_lengths == NO) Add_BioNJ_Branch_Lengths(tree,cdata,mod);
                     }
 
                   if(!tree) continue;
