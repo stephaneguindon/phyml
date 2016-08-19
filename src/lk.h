@@ -93,8 +93,15 @@ void Ancestral_Sequences(t_tree *tree, int print);
 void Pull_Scaling_Factors(int site, t_edge *b, t_tree *tree);
 void Stepwise_Add_Lk(t_tree *tree);
 void Update_Eigen_Lr(t_edge *b, t_tree *tree);
-phydbl Lk_Core_Eigen_Lr(int state, int ambiguity_check, short int returnlog, t_edge *b, phydbl *expl, t_tree *tree);
 phydbl dLk(phydbl *l, t_edge *b, t_tree *tree);
+phydbl Lk_Core_One_Class(phydbl *p_lk_left, phydbl *p_lk_rght, 
+                         phydbl *Pij,
+                         short int *p_lk_tip_r,
+                         phydbl *expl, 
+                         int ns, int ambiguity_check, int state,
+                         t_edge *b, t_tree *tree);
+
+
 
 #if defined(__AVX__)
 __m256d AVX_Horizontal_Add(__m256d x[4]);
