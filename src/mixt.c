@@ -2257,6 +2257,9 @@ void MIXT_RATES_Update_Cur_Bl(t_tree *mixt_tree)
   while(tree);
 }
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 void MIXT_Update_Br_Len_Multipliers(t_mod *mod)
 {
   phydbl sum;
@@ -2744,47 +2747,421 @@ void MIXT_Ancestral_Sequences_One_Node(t_node *mixt_d, t_tree *mixt_tree, int pr
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+// First and second derivative of the log-likelihood with respect
+// to the length of edge b
 phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
 {
-  /* int catg,state; */
-  /* phydbl len,*expl,*expld,*expld2,rr; */
-  /* phydbl lk,dlk,d2lk,dlnlk,d2lnlk,lnlk; */
-  t_tree *tree;
-  t_edge *b;
+  t_tree *tree,*cpy_mixt_tree;
+  t_edge *b,*cpy_mixt_b;
+  phydbl sum_lnL;
+  int site, class, br;
+  phydbl *sum_scale_left_cat,*sum_scale_rght_cat;
+  phydbl sum,tmp;
+  int exponent;
+  phydbl lk,site_lk,log_site_lk,inv_site_lk;
+  int num_prec_issue,fact_sum_scale;
+  phydbl max_sum_scale,min_sum_scale;
+  int ambiguity_check,state;
+  int k,l;
+  int dim1,dim2;
+  phydbl r_mat_weight_sum, e_frq_weight_sum, sum_probas;
+  int piecewise_exponent;
+  phydbl multiplier,len;
+  phydbl *p_lk_left, *p_lk_rght,*expl;
 
-  assert(mixt_b != NULL);
+  tree            = NULL;
+  b               = NULL;
+  p_lk_left       = NULL;
+  p_lk_rght       = NULL;
+  expl            = NULL;
+  cpy_mixt_tree   = mixt_tree;
+  cpy_mixt_b      = mixt_b;
+  len             = -1.;
 
-  mixt_tree->c_dlnL  = 0.0;
-  mixt_tree->c_d2lnL = 0.0;
-  mixt_tree->c_lnL   = 0.0;
+  do /*! Consider each element of the data partition */
+    {
+      sum_scale_left_cat = (phydbl *)mCalloc(MAX(mixt_tree->mod->ras->n_catg,mixt_tree->mod->n_mixt_classes),sizeof(phydbl));
+      sum_scale_rght_cat = (phydbl *)mCalloc(MAX(mixt_tree->mod->ras->n_catg,mixt_tree->mod->n_mixt_classes),sizeof(phydbl));
 
-  tree = mixt_tree;
-  b    = mixt_b;
+      r_mat_weight_sum = MIXT_Get_Sum_Chained_Scalar_Dbl(mixt_tree->next->mod->r_mat_weight);
+      e_frq_weight_sum = MIXT_Get_Sum_Chained_Scalar_Dbl(mixt_tree->next->mod->e_frq_weight);
+      sum_probas       = MIXT_Get_Sum_Of_Probas_Across_Mixtures(r_mat_weight_sum,e_frq_weight_sum,mixt_tree);
+
+      if(mixt_tree->update_eigen_lr == YES) MIXT_Update_Eigen_Lr(mixt_b,mixt_tree);
+
+      mixt_tree->c_lnL = .0;
+      mixt_tree->c_dlnL = .0;
+      mixt_tree->c_d2lnL = .0;
+
+      dim1 = mixt_tree->mod->ns;
+      dim2 = mixt_tree->mod->ns;
+      
+      For(site,mixt_tree->n_pattern)
+        {
+          b    = mixt_b->next;
+          tree = mixt_tree->next;
+
+          /*! Skip calculations if model has zero rate */
+          while(tree->mod->ras->invar == YES)
+            {
+              tree = tree->next;
+              b    = b->next;
+
+              if(tree == NULL || tree->is_mixt_tree == YES)
+                {
+                  PhyML_Printf("\n== %p",(void *)tree);
+                  PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
+                  Exit("\n");
+                }
+            }
+
+          ambiguity_check = -1;
+          state           = -1;
+
+          if((b->rght->tax)                   &&
+             (!mixt_tree->mod->s_opt->greedy) &&
+             (mixt_tree->data->wght[site] > SMALL))
+            {
+              ambiguity_check = b->rght->c_seq->is_ambigu[site];
+              if(!ambiguity_check) state = b->rght->c_seq->d_state[site];
+            }
+                    
+          /*! For all classes in the mixture */
+          do
+            {
+              if(tree->is_mixt_tree == YES)
+                {
+                  tree = tree->next;
+                  b    = b->next;
+                }
+
+              tree->curr_site        = site;
+              tree->apply_lk_scaling = NO;
+
+              if(!(tree->mod->ras->invar == YES && mixt_tree->is_mixt_tree == YES) &&
+                 (tree->data->wght[tree->curr_site] > SMALL))
+                {
+                  if(tree->use_eigen_lr == YES)
+                    {                      
+                      if(expl == NULL) expl = (phydbl *)mCalloc(tree->mod->ns,sizeof(phydbl));
+
+                      if(site == 0) // Update expl only once when summing over all sites
+                        {
+                          len = b->l->v;
+                          len *= tree->mod->br_len_mult->v;
+                          len *= tree->mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number];
+                          if(len < tree->mod->l_min)      len = tree->mod->l_min;
+                          else if(len > tree->mod->l_max) len = tree->mod->l_max;
+                        }
+                          
+                      
+                      // Second derivative
+                      if(site == 0) 
+                        For(l,tree->mod->ns) 
+                          expl[l] = (phydbl)POW(tree->mod->eigen->e_val[l],len) * 
+                          LOG(tree->mod->eigen->e_val[state]) * rr *
+                          LOG(tree->mod->eigen->e_val[state]) * rr ;
+                      
+
+                      d2lk = Lk_Core_One_Class(tree->eigen_lr_left + site,
+                                               tree->eigen_lr_rght + site,
+                                               NULL,
+                                               NULL,
+                                               expl,
+                                               tree->mod->ns,
+                                               -1,-1,
+                                               b,tree);
+                      
+                      // First derivative
+                      if(site == 0) For(l,tree->mod->ns) expl[l] /= LOG(tree->mod->eigen->e_val[state]) * rr;
+                      
+                      dlk = Lk_Core_One_Class(tree->eigen_lr_left + site,
+                                              tree->eigen_lr_rght + site,
+                                              NULL,
+                                              NULL,
+                                              expl,
+                                              tree->mod->ns,
+                                              -1,-1,
+                                              b,tree);
+
+
+                      // Likelihood
+                      if(site == 0) For(l,tree->mod->ns) expl[l] /= LOG(tree->mod->eigen->e_val[state]) * rr;
+                      
+                      lk = Lk_Core_One_Class(tree->eigen_lr_left + site,
+                                             tree->eigen_lr_rght + site,
+                                             NULL,
+                                             NULL,
+                                             expl,
+                                             tree->mod->ns,
+                                             -1,-1,
+                                             b,tree);
+                    }
+                }
+              tree = tree->next;
+              b    = b->next;
+            }
+          while(tree && tree->is_mixt_tree == NO); 
+          // done with all trees in the mixture for this partition element.
+          // All likelihood values are in site_lk_cat[0]
+
+
+          if(expl != NULL) Free(expl);
+
+
+          // Pull scaling factors across all trees in the mixture
+          max_sum_scale =  (phydbl)BIG;
+          min_sum_scale = -(phydbl)BIG;
+
+          tree  = mixt_tree->next;
+          b     = mixt_b->next;
+          class = 0;
+          do
+            {
+              if(tree->mod->ras->invar == YES)
+                {
+                  tree = tree->next;
+                  b    = b->next;
+                  if(!(tree && tree->is_mixt_tree == NO)) break;
+                }
+
+              sum_scale_left_cat[class] =
+                (b->sum_scale_left)?
+                (b->sum_scale_left[site]):
+                (0.0);
+
+              sum_scale_rght_cat[class] =
+                (b->sum_scale_rght)?
+                (b->sum_scale_rght[site]):
+                (0.0);
+
+              sum = sum_scale_left_cat[class] + sum_scale_rght_cat[class];
+
+              if(sum < .0)
+                {
+                  PhyML_Printf("\n== sum = %G",sum);
+                  PhyML_Printf("\n== Err. in file %s at line %d\n\n",__FILE__,__LINE__);
+                  Warn_And_Exit("\n");
+                }
+
+              tmp = sum + ((phydbl)LOGBIG - LOG(tree->site_lk_cat[0]))/(phydbl)LOG2;
+              if(tmp < max_sum_scale) max_sum_scale = tmp; /* min of the maxs */
+
+              tmp = sum + ((phydbl)LOGSMALL - LOG(tree->site_lk_cat[0]))/(phydbl)LOG2;
+              if(tmp > min_sum_scale) min_sum_scale = tmp; /* max of the mins */
+
+              class++;
+
+              tree = tree->next;
+              b    = b->next;
+            }
+          while(tree && tree->is_mixt_tree == NO);
+
+          tree = NULL; /*! For debugging purpose */
+
+          if(min_sum_scale > max_sum_scale) min_sum_scale = max_sum_scale;
+
+          fact_sum_scale = (int)((max_sum_scale + min_sum_scale) / 2);
+          mixt_tree->fact_sum_scale[site] = fact_sum_scale;
+
+          /*! Populate the mixt_tree->site_lk_cat[class] table after
+            scaling */
+
+          tree  = mixt_tree->next;
+          b     = mixt_b->next;
+          class = 0;
+
+          do
+            {
+              if(tree->mod->ras->invar == YES)
+                {
+                  tree = tree->next;
+                  b    = b->next;
+                  if(!(tree && tree->is_mixt_tree == NO)) break;
+                }
+
+              exponent = -(sum_scale_left_cat[class]+sum_scale_rght_cat[class])+fact_sum_scale;
+              site_lk_cat = tree->site_lk_cat[0];
+              Rate_Correction(exponent,&site_lk_cat,mixt_tree);
+              mixt_tree->site_lk_cat[class] = site_lk_cat;
+              tree->site_lk_cat[0] = site_lk_cat;
+              class++;
+
+              tree = tree->next;
+              b    = b->next;
+            }
+          while(tree && tree->is_mixt_tree == NO);
+
+          
+          tree    = mixt_tree->next;
+          b       = mixt_b->next;
+          class   = 0;
+          site_lk = .0;
+
+          do
+            {
+              if(tree->mod->ras->invar == YES)
+                {
+                  tree = tree->next;
+                  b    = b->next;
+                  if(!(tree && tree->is_mixt_tree == NO)) break;
+                }
+
+              site_lk +=
+                mixt_tree->site_lk_cat[class] *
+                mixt_tree->mod->ras->gamma_r_proba->v[tree->mod->ras->parent_class_number] *
+                tree->mod->r_mat_weight->v / r_mat_weight_sum *
+                tree->mod->e_frq_weight->v / e_frq_weight_sum /
+                sum_probas;
+              
+              tree = tree->next;
+              b    = b->next;
+
+              class++;
+            }
+          while(tree && tree->is_mixt_tree == NO);
+
+
+          /* Scaling for invariants */
+          if(mixt_tree->mod->ras->invar == YES)
+            {
+              num_prec_issue = NO;
+
+              tree = mixt_tree->next;
+              while(tree->mod->ras->invar == NO)
+                {
+                  tree = tree->next;
+                  if(!tree || tree->is_mixt_tree == YES)
+                    {
+                      PhyML_Printf("\n== tree: %p",tree);
+                      PhyML_Printf("\n== Err in file %s at line %d",__FILE__,__LINE__);
+                      Exit("\n");
+                    }
+                }
+
+              tree->apply_lk_scaling = YES;
+
+              /*! 'tree' will give the correct state frequencies (as opposed to mixt_tree */
+              inv_site_lk = Invariant_Lk(fact_sum_scale,site,&num_prec_issue,tree);
+
+              if(num_prec_issue == YES) // inv_site_lk >> site_lk
+                {
+                  site_lk = inv_site_lk * mixt_tree->mod->ras->pinvar->v;
+                }
+              else
+                {
+                  site_lk = site_lk * (1. - mixt_tree->mod->ras->pinvar->v) + inv_site_lk * mixt_tree->mod->ras->pinvar->v;
+                }
+            }
+
+          log_site_lk = LOG(site_lk) - (phydbl)LOG2 * fact_sum_scale;
+
+          int mixt_class = 0;
+          int rate_class = 0;
+          For(rate_class,mixt_tree->mod->ras->n_catg)
+            {
+              mixt_tree->unscaled_site_lk_cat[rate_class*mixt_tree->n_pattern + site] = 0.0;
+              mixt_class = 0;
+              tree = mixt_tree->next;
+              do
+                {
+                  if(tree->mod->ras->parent_class_number == rate_class)
+                    {
+                      mixt_tree->unscaled_site_lk_cat[rate_class*mixt_tree->n_pattern + site] +=
+                        LOG(mixt_tree->site_lk_cat[rate_class]);
+                      break;
+                    }
+                  mixt_class++;
+                  tree = tree->next;
+                }
+              while(tree && tree->is_mixt_tree == NO);
+
+              mixt_tree->unscaled_site_lk_cat[rate_class*mixt_tree->n_pattern + site] = 
+                EXP(mixt_tree->unscaled_site_lk_cat[rate_class*mixt_tree->n_pattern + site]);
+            }
+
+          if(isinf(log_site_lk) || isnan(log_site_lk))
+            {
+              PhyML_Printf("\n== Site = %d",site);
+              PhyML_Printf("\n== Invar = %d",mixt_tree->data->invar[site]);
+              PhyML_Printf("\n== Mixt = %d",mixt_tree->is_mixt_tree);
+              PhyML_Printf("\n== Lk = %G LOG(Lk) = %f < %G",site_lk,log_site_lk,-BIG);
+              For(class,mixt_tree->mod->ras->n_catg) PhyML_Printf("\n== rr=%f p=%f",mixt_tree->mod->ras->gamma_rr->v[class],mixt_tree->mod->ras->gamma_r_proba->v[class]);
+              PhyML_Printf("\n== Pinv = %G",mixt_tree->mod->ras->pinvar->v);
+              PhyML_Printf("\n== Bl mult = %G",mixt_tree->mod->br_len_mult->v);
+              PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
+              Exit("\n");
+            }
+          
+          if(fact_sum_scale >= 0)
+            {
+              mixt_tree->cur_site_lk[site] = site_lk;
+              exponent = -fact_sum_scale;
+              do
+                {
+                  piecewise_exponent = MAX(exponent,-63);
+                  multiplier = 1. / (phydbl)((unsigned long long)(1) << -piecewise_exponent);
+                  mixt_tree->cur_site_lk[site] *= multiplier;
+                  exponent -= piecewise_exponent;
+                }
+              while(exponent != 0);
+            }
+          else
+            {
+              mixt_tree->cur_site_lk[site] = site_lk;
+              exponent = fact_sum_scale;
+              do
+                {
+                  piecewise_exponent = MIN(exponent,63);
+                  multiplier = (phydbl)((unsigned long long)(1) << piecewise_exponent);
+                  mixt_tree->cur_site_lk[site] *= multiplier;
+                  exponent -= piecewise_exponent;
+                }
+              while(exponent != 0);
+            }
+          
+          // ... or using the log-likelihood
+          if(isinf(site_lk) || isnan(site_lk))
+            {
+              mixt_tree->cur_site_lk[site] = EXP(log_site_lk);
+            }
+
+          /* Multiply log likelihood by the number of times this site pattern is found in the data */
+          mixt_tree->c_lnL_sorted[site] = mixt_tree->data->wght[site]*log_site_lk;
+
+          mixt_tree->c_lnL += mixt_tree->data->wght[site]*log_site_lk;
+        }
+
+      Free(sum_scale_left_cat);
+      Free(sum_scale_rght_cat);
+
+      /* printf("\n. <><><> LNL %f",mixt_tree->c_lnL); fflush(NULL); */
+
+      mixt_tree = mixt_tree->next_mixt;
+      mixt_b    = mixt_b->next_mixt;
+    }
+  while(mixt_tree);
+
+  mixt_tree = cpy_mixt_tree;
+  mixt_b    = cpy_mixt_b;
+
+  sum_lnL = .0;
   do
     {
-      if(tree->is_mixt_tree == YES)
-        {
-          tree = tree->next;
-          b    = b->next;
-        }
-
-      if((&b->l->v) == l) 
-        // We are looking at a tree, in the list of trees making the
-        // partitioned/mixture model, that has an edge that matches,
-        // i.e., we want to evaluate the derivative of the likelihood
-        // with respect to the length of this edge
-        {
-          dLk(l,b,tree);
-          mixt_tree->c_dlnL  += tree->c_dlnL;
-          mixt_tree->c_d2lnL += tree->c_d2lnL;          
-        }
-      
-      mixt_tree->c_lnL += tree->c_lnL;
-      
-      tree = tree->next;
-      b    = b->next;
+      sum_lnL += mixt_tree->c_lnL;
+      mixt_tree = mixt_tree->next_mixt;
     }
-  while(tree);
+  while(mixt_tree);
 
-  return 0.0;
+  mixt_tree = cpy_mixt_tree;
+  do
+    {
+      mixt_tree->c_lnL = sum_lnL;
+      mixt_tree = mixt_tree->next_mixt;
+    }
+  while(mixt_tree);
+
+  mixt_tree = cpy_mixt_tree;
+
+  return mixt_tree->c_lnL;
 }

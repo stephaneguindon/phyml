@@ -731,8 +731,9 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
     {
       dlk   = Lk_Core(-1,-1,NO ,b,expld,tree);
       d2lk  = Lk_Core(-1,-1,NO ,b,expld2,tree);
-      loglk = Lk_Core(-1,-1,YES,b,expl,tree); // Make sur to keep this call in the last position so that site_lk_cat is the
-                                              // actual likelihood rather than its first or second derivative
+      loglk = Lk_Core(-1,-1,YES,b,expl,tree); 
+      // Make sure to keep the call above in the last position so that site_lk_cat is the
+      // actual likelihood rather than its first or second derivative
 
       lk = EXP(loglk);
 
