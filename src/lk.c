@@ -345,7 +345,9 @@ void Post_Order_Lk(t_node *a, t_node *d, t_tree *tree)
               else dir = i;
             }
         }
-      
+
+      assert(dir > -1);
+
       if(tree->ignore_root == NO && d->b[dir] == tree->e_root)
         {
           if(d == tree->n_root->v[1]) Get_All_Partial_Lk_Scale(tree,tree->n_root->b[1],tree->n_root,d);
@@ -4225,7 +4227,7 @@ void Stepwise_Add_Lk(t_tree *tree)
       n_targets+=2;
     }
 
-  Round_Optimize(tree,tree->data,5);
+  Round_Optimize(tree,5);
   printf("\n. lk: %f",tree->c_lnL);
   Exit("\n");
 

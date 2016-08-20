@@ -451,7 +451,7 @@ void Optim_SPR (t_tree *tree, int max_size, int method)
   /*
   ** Perform a last round of optimization steps (for t_edge lengths).
   */
-  Round_Optimize(tree,tree->data,ROUND_MAX);
+  Round_Optimize(tree,ROUND_MAX);
   Check_NNI_Five_Branches(tree);
 }
 
@@ -4794,7 +4794,7 @@ void Spr_List_Of_Trees(t_tree *tree)
 
   PhyML_Printf("\n. First round of optimization...");
 
-  Round_Optimize(tree,tree->data,5);
+  Round_Optimize(tree,5);
   tree_list[0] = Make_Tree_From_Scratch(tree->n_otu,tree->data);
   Copy_Tree(tree,tree_list[0]);
   lnL_list[0] = tree->c_lnL;
@@ -4944,7 +4944,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   do
     {
       tree->mod->s_opt->fast_nni = NO;
-      Round_Optimize(tree,tree->data,ROUND_MAX);
+      Round_Optimize(tree,ROUND_MAX);
       if(!Check_NNI_Five_Branches(tree)) break;
     }
   while(1);

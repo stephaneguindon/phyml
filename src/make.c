@@ -515,7 +515,7 @@ matrix *Make_Mat(int n_otu)
 //////////////////////////////////////////////////////////////
 
 t_tree *Make_Tree_From_Scratch(int n_otu, calign *data)
-{
+{  
   t_tree *tree;
 
   tree = Make_Tree(n_otu);
@@ -528,26 +528,25 @@ t_tree *Make_Tree_From_Scratch(int n_otu, calign *data)
       Copy_Tax_Names_To_Tip_Labels(tree,data);
       tree->data = data;
     }
-
+  
 #ifdef BEAGLE
   //offset the branch's partial indices because BEAGLE insists on first storing the tips/taxa
   int num_branches = 2*tree->n_otu-1;
   int i;
   for(i=0;i<2*tree->n_otu-1;++i)
-  {
+    {
       //For edgeX, its "left" partial lies at index `num_tax + edgeX->num"
       tree->a_edges[i]->p_lk_left_idx = tree->n_otu + tree->a_edges[i]->p_lk_left_idx;
       //For edgeX, its "right" partial lies at index `num_tax + edgeX->num + num_branches"
       tree->a_edges[i]->p_lk_rght_idx = tree->n_otu + tree->a_edges[i]->p_lk_left_idx + num_branches;
-  }
+    }
 #endif
-
+  
   return tree;
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 t_tree *Make_Tree(int n_otu)
 {

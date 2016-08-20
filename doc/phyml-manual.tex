@@ -1489,7 +1489,9 @@ region usually have similar  GC contents). As a consequence, some components  of
 to be  estimated separately for each  partition element while  others should be shared  by different
 partition elements.
 
-Below is a simple example with a partitionned data set made of two elements:
+Below is a simple example with a partitionned data set made of two elements, corresponding to the
+sequence alignment files \x{nucleic1.txt} and \x{nucleic2.txt}. Importantly, the number and names of
+sequences in these two alignments have to match exactly. 
 
 \vspace{0.2cm}
 \begin{Verbatim}[frame=single, label=Two sets of branch lengths (one per partition element),
@@ -2011,7 +2013,8 @@ and use it as a template to fit this model to another data set.
 
 The example below gives  the complete XML file to specify the analysis  of three partition elements,
 corresponding to the nucleotide  sequence files \x{small\_p1\_pos1.seq}, \x{small\_p1\_pos2.seq} and
-\x{small\_p1\_pos3.seq} in  interleaved PHYLIP  format. \x{small\_p1\_pos1.seq}  is fitted  with the
+\x{small\_p1\_pos3.seq} in  interleaved PHYLIP  format. Importantly, the number and names of
+sequences in these three alignments match exactly. \x{small\_p1\_pos1.seq}  is fitted  with the
 HKY85 model of substitution (with the  transition/transversion ratio being estimated from the data),
 combined to a $\Gamma4$  model of rate variation across sites (with the  gamma shape parameter being
 estimated from the data).  \x{small\_p1\_pos2.seq} is fitted to a custom substitution model with the

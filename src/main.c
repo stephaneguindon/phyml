@@ -261,7 +261,7 @@ int main(int argc, char **argv)
 
                       //Optimize Branch lengths?
                       if(tree->mod->s_opt->opt_subst_param || tree->mod->s_opt->opt_bl) {
-                        Round_Optimize(tree,tree->data,ROUND_MAX);
+                        Round_Optimize(tree,ROUND_MAX);
                       } 
                       else { //No topology or branch length optimizations
                         Lk(NULL,tree);

@@ -2026,7 +2026,7 @@ phydbl *Covariance_Matrix(t_tree *tree)
 	  tree->data->wght[site_num[position]] += 1;
 	}
 
-      Round_Optimize(tree,tree->data,ROUND_MAX);
+      Round_Optimize(tree,ROUND_MAX);
       
       For(i,2*tree->n_otu-3) For(j,2*tree->n_otu-3) cov[i*dim+j] += LOG(tree->a_edges[i]->l->v) * LOG(tree->a_edges[j]->l->v);  
       For(i,2*tree->n_otu-3) mean[i] += LOG(tree->a_edges[i]->l->v);

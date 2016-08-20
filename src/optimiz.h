@@ -27,7 +27,7 @@ void      Optimiz_Ext_Br(t_tree *tree);
 void      Optimize_Param_Parall(t_tree *tree);
 phydbl    Optimize_Branch_Quad(t_tree *tree, calign *cdata, t_edge *b_fcus);
 void      Optimize_After_Hide(t_tree *tree, calign *cdata, t_node *h);
-void      Round_Optimize(t_tree *tree, calign *data, int n_round_max);
+void      Round_Optimize(t_tree *tree, int n_round_max);
 int       Dist_Seq_Brak(phydbl *ax, phydbl *bx, phydbl *cx, 
 			phydbl *fa, phydbl *fb, phydbl *fc, 
 			calign *data, int num1, int num2, t_mod *mod);

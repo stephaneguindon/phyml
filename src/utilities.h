@@ -1977,7 +1977,7 @@ void Match_Tip_Numbers(t_tree *tree1,t_tree *tree2);
 void Test_Multiple_Data_Set_Format(option *io);
 int Are_Compatible(char *statea,char *stateb,int stepsize,int datatype);
 void Hide_Ambiguities(calign *data);
-void Copy_Tree(t_tree *ori,t_tree *cpy);
+void Copy_Tree(t_tree *ori, t_tree *cpy);
 void Prune_Subtree(t_node *a,t_node *d,t_edge **target,t_edge **residual,t_tree *tree);
 void Graft_Subtree(t_edge *target,t_node *link,t_edge *residual,t_tree *tree);
 void Reassign_Node_Nums(t_node *a,t_node *d,int *curr_ext_node,int *curr_int_node,t_tree *tree);

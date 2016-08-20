@@ -4653,7 +4653,7 @@ option *PhyML_XML(char *xml_filename)
           if(mixt_tree->mod->s_opt->opt_subst_param ||
              mixt_tree->mod->s_opt->opt_bl)
             {
-              Round_Optimize(mixt_tree,mixt_tree->data,ROUND_MAX);
+              Round_Optimize(mixt_tree,ROUND_MAX);
             }
           else
             {

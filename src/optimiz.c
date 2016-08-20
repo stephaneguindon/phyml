@@ -662,7 +662,7 @@ phydbl Br_Len_Brent(t_edge *b_fcus, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Round_Optimize(t_tree *tree, calign *data, int n_round_max)
+void Round_Optimize(t_tree *tree, int n_round_max)
 {
   int n_round,each;
   phydbl lk_old, lk_new;
@@ -674,7 +674,6 @@ void Round_Optimize(t_tree *tree, calign *data, int n_round_max)
 
   Set_Both_Sides(NO,tree); /* Only the down partial likelihoods need to be up-to-date here */
   Lk(NULL,tree);
-
   
   while(n_round < n_round_max)
     {

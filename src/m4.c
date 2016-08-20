@@ -144,7 +144,7 @@ int M4_main(int argc, char **argv)
 		  else
 		    {
 		      if(tree->mod->s_opt->opt_subst_param || 
-			 tree->mod->s_opt->opt_bl)                       Round_Optimize(tree,tree->data,ROUND_MAX);
+			 tree->mod->s_opt->opt_bl)                       Round_Optimize(tree,ROUND_MAX);
 		      else                                               Lk(NULL,tree);
 		    }
 		  
@@ -1187,7 +1187,7 @@ void M4_Site_Branch_Classification_Experiment(t_tree *tree)
   PhyML_Printf("\n. Estimating model parameters...\n");
   tree->mod->s_opt->opt_cov_alpha = 1;
   tree->mod->s_opt->opt_cov_delta = 1;
-  Round_Optimize(tree,tree->data,ROUND_MAX);
+  Round_Optimize(tree,ROUND_MAX);
 
   tree->both_sides = 1;
   Lk(NULL,tree);

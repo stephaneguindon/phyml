@@ -92,4 +92,6 @@ void MIXT_RATES_Update_Cur_Bl(t_tree *mixt_tree);
 void MIXT_Set_Model_Parameters(t_mod *mixt_mod);
 phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree);
 void MIXT_Update_Eigen_Lr(t_edge *mixt_b, t_tree *mixt_tree);
+int MIXT_Part_Mixt_Size(t_tree *mixt_tree);
+
 #endif

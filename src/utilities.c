@@ -3004,7 +3004,7 @@ void Bootstrap(t_tree *tree)
       else
         {
           if(boot_tree->mod->s_opt->opt_subst_param || boot_tree->mod->s_opt->opt_bl)
-            Round_Optimize(boot_tree,boot_tree->data,ROUND_MAX);
+            Round_Optimize(boot_tree,ROUND_MAX);
           else
             Lk(NULL,boot_tree);
         }
@@ -4632,6 +4632,7 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
       cpy->a_edges[i]->l_r              = ori->a_edges[i]->l_r;
       cpy->a_edges[i]->r_l              = ori->a_edges[i]->r_l;
       cpy->a_edges[i]->does_exist       = ori->a_edges[i]->does_exist;
+
 #ifdef BEAGLE
       cpy->a_edges[i]->p_lk_left_idx    = ori->a_edges[i]->p_lk_left_idx;
       cpy->a_edges[i]->p_lk_rght_idx    = ori->a_edges[i]->p_lk_rght_idx;
@@ -4676,6 +4677,8 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
 #ifdef BEAGLE
   cpy->b_inst = ori->b_inst;
 #endif
+
+  if(cpy->next) Copy_Tree(cpy,cpy->next);
 }
 
 //////////////////////////////////////////////////////////////
@@ -4692,6 +4695,10 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
   int *buff_p_pars, *buff_pars, *buff_p_lk_loc, *buff_patt_id;
   unsigned int *buff_ui;
   short int *buff_p_lk_tip;
+
+  assert(a);
+  assert(d);
+  assert(tree);
 
   if(a->tax) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
@@ -5006,6 +5013,8 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
   unsigned int *buff_ui;
   t_edge *b_up;
 
+  assert(link);
+  assert(tree);
 
   dir_v1 = dir_v2 = -1;
   b_up = NULL;
@@ -5204,7 +5213,6 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void Reassign_Node_Nums(t_node *a, t_node *d, int *curr_ext_node, int *curr_int_node, t_tree *tree)
 {
@@ -7737,7 +7745,6 @@ phydbl Mean(phydbl *x, int n)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Best_Of_NNI_And_SPR(t_tree *tree)
 {
   if(tree->mod->s_opt->random_input_tree)
@@ -8155,7 +8162,7 @@ void Prepare_Tree_For_Lk(t_tree *tree)
   Make_Spr_List(tree);
   Make_Best_Spr(tree);
 
-  if(tree->is_mixt_tree) MIXT_Prepare_Tree_For_Lk(tree);
+  if(tree->is_mixt_tree == YES) MIXT_Prepare_Tree_For_Lk(tree);
 }
 
 //////////////////////////////////////////////////////////////

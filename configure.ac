@@ -70,7 +70,7 @@ AC_ARG_ENABLE([safemode],
         AS_HELP_STRING([--enable-safemode],[Enable safe mode.]))
 AS_IF([test "x$enable_safemode" = "xyes"],
       [CFLAGS="-Wall -DSAFEMODE -O2 ${VECTOR_FLAG} -fomit-frame-pointer -funroll-loops -Wempty-body -Wuninitialized ${ARCH_flag}"],
-      [CFLAGS="-Wall -O2 ${VECTOR_FLAG} -fomit-frame-pointer -funroll-loops -Wempty-body -Wuninitialized ${ARCH_flag}"])
+      [AS_IF([test "x$enable_debug" = "xno"],[CFLAGS="-Wall -O2 ${VECTOR_FLAG} -fomit-frame-pointer -funroll-loops -Wempty-body -Wuninitialized ${ARCH_flag}"])])
 
 AC_ARG_ENABLE([gprof],
               [AS_HELP_STRING([--enable-gprof],

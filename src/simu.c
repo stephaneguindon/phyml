@@ -130,8 +130,6 @@ int Simu(t_tree *tree, int n_step_max)
     }
   while(1);
 
-/*   Round_Optimize(tree,tree->data); */
-
   Free(sorted_b);
   Free(tested_b);
 
