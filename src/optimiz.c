@@ -621,14 +621,14 @@ phydbl Br_Len_Brent(t_edge *b_fcus, t_tree *tree)
     }
 
   if(b_fcus->l->onoff == OFF) return mixt_tree->c_lnL;
-
-  /* tree->update_eigen_lr = YES; */
-  /* tree->use_eigen_lr    = NO; */
+  
+  /* Set_Update_Eigen_Lr(YES,mixt_tree); */
+  /* Set_Use_Eigen_Lr(NO,mixt_tree); */
 
   lk_begin = Lk(mixt_b,mixt_tree); /*! We can't assume that the log-lk value is up-to-date */
 
-  /* tree->update_eigen_lr = NO; */
-  /* tree->use_eigen_lr    = YES; */
+  /* Set_Update_Eigen_Lr(NO,mixt_tree); */
+  /* Set_Use_Eigen_Lr(YES,mixt_tree); */
   
   Generic_Brent_Lk(&(b_fcus->l->v),
                    tree->mod->l_min,
@@ -642,9 +642,11 @@ phydbl Br_Len_Brent(t_edge *b_fcus, t_tree *tree)
   /* Br_Len_Newton_Raphson(&(b_fcus->l->v),mixt_b,tree->mod->s_opt->brent_it_max,tree->mod->s_opt->min_diff_lk_local,mixt_tree); */
 
   /* Update_PMat_At_Given_Edge(b_fcus,tree); */
-  /* tree->update_eigen_lr = NO; */
-  /* tree->use_eigen_lr    = NO; */
+
+  /* Set_Update_Eigen_Lr(NO,mixt_tree); */
+  /* Set_Use_Eigen_Lr(NO,mixt_tree); */
   
+
   lk_end = mixt_tree->c_lnL;
 
   if(lk_end < lk_begin - tree->mod->s_opt->min_diff_lk_local)
@@ -2274,13 +2276,15 @@ phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t
   int iter;
   phydbl best_l, best_lnL;
 
-  tree->update_eigen_lr = YES;
+  // Warning: make sure eigen_lr vectors are already up-to-date 
+
+  Set_Use_Eigen_Lr(YES,tree);
   dLk(l,b,tree);
-  tree->update_eigen_lr = NO;
+
   best_lnL = old_lnL = init_lnL = tree->c_lnL;
   best_l = *l;
 
-  /* PhyML_Printf("\n Begin NR loop (lnL: %f)",tree->c_lnL); */
+  /* PhyML_Printf("\n Begin NR loop (lnL: %f dlnL: %f d2lnL: %f)",tree->c_lnL,tree->c_dlnL,tree->c_d2lnL); */
 
   converged = NO;
   iter = 0;
@@ -2298,6 +2302,7 @@ phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t
       if(*l < tree->mod->l_min) *l = tree->mod->l_min;
       if(*l > tree->mod->l_max) *l = tree->mod->l_max;
 
+      Set_Use_Eigen_Lr(YES,tree);
       dLk(l,b,tree);
 
       iter++;

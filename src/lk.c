@@ -982,17 +982,17 @@ void Update_Eigen_Lr(t_edge *b, t_tree *tree)
   int dim1,dim2;
   phydbl *dum,*dumdum;
 
-if(tree->is_mixt_tree == YES)
-{
-MIXT_Update_Eigen_Lr(b,tree);
-return;
-}
-
+  if(tree->is_mixt_tree == YES)
+    {      
+      MIXT_Update_Eigen_Lr(b,tree);
+      return;
+    }
+  
   dum    = (phydbl *)mCalloc(tree->mod->ns,sizeof(phydbl));
   dumdum = (phydbl *)mCalloc(tree->mod->ns,sizeof(phydbl));
-
-  assert(tree->update_eigen_lr);
-
+  
+  assert(tree->update_eigen_lr == YES);
+  
   dim1 = tree->mod->ras->n_catg * tree->mod->ns;
   dim2 = tree->mod->ns;
   
@@ -1016,7 +1016,6 @@ return;
             }
 
           For(state,tree->mod->ns) tree->eigen_lr_left[site*dim1 + catg*dim2 + state] = dumdum[state];
-
 
           if(b->rght->tax == YES)
             For(state,tree->mod->ns) dum[state] = (phydbl)b->p_lk_tip_r[site*dim2 + state]; 

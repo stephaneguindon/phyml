@@ -2180,6 +2180,8 @@ void Randomize_Tree(t_tree *tree, int n_prune_regraft);
 t_ll *Get_List_Of_Reachable_Tips(t_node *a, t_node *d, t_tree *tree);
 void Get_List_Of_Reachable_Tips_Post(t_node *a, t_node *d, t_ll *list, t_tree *tree);
 phydbl Length_Of_Path_Between_List_Of_Tips(t_ll *tips0, t_ll *tips1, matrix *mat);
+void Set_Update_Eigen_Lr(short int yn, t_tree *tree);
+void Set_Use_Eigen_Lr(short int yn, t_tree *tree);
 
 
 #include "xml.h"
