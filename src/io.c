@@ -1984,7 +1984,7 @@ t_tree *Read_Tree_File(option *io)
 
 scalar_dbl *Read_Io_Weights(option *io)
 {
-  scalar_dbl *w,*ori;
+  scalar_dbl *w,*ori,*prev = NULL;
   double val;
 
   assert(io->weight_file);
@@ -1999,11 +1999,17 @@ scalar_dbl *Read_Io_Weights(option *io)
       if(fscanf(io->fp_weight_file,"%lf,",&val) == EOF) break;      
       w->v = (phydbl)val;
       w->next = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+      prev = w;
       w = w->next;
     }
   while(1);
 
-  w->next = NULL;
+  /* Remove the last allocated and empty element of the list */
+  if(prev !=NULL && prev->next != NULL)
+    {
+      Free(prev->next);
+      prev->next=NULL;
+    }
 
   fclose(io->fp_weight_file);
   
