@@ -994,13 +994,17 @@ void Update_Eigen_Lr(t_edge *b, t_tree *tree)
   dim1 = tree->mod->ras->n_catg * tree->mod->ns;
   dim2 = tree->mod->ns;
   
+  
   For(site,tree->n_pattern)
     {      
       For(catg,tree->mod->ras->n_catg)
         {
           // Dot product left partial likelihood with equilibrium freqs
-          For(state,tree->mod->ns) dum[state] = b->p_lk_left[site*dim1 + catg*dim2 + state] * tree->mod->e_frq->pi->v[state];
-                    
+          For(state,tree->mod->ns) 
+            {
+              dum[state] = b->p_lk_left[site*dim1 + catg*dim2 + state] * tree->mod->e_frq->pi->v[state];
+            }
+
           // Multiply by matrix of right eigen vectors
           For(state,tree->mod->ns)
             {
@@ -2593,7 +2597,7 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
   assert(b_fcus);
   assert(tree);
 
-  if(tree->is_mixt_tree)
+  if(tree->is_mixt_tree == YES)
     {
       MIXT_Update_PMat_At_Given_Edge(b_fcus,tree);
       return;
@@ -4806,7 +4810,7 @@ void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                &Pij1,&p_lk_v1,&sum_scale_v1,
                &Pij2,&p_lk_v2,&sum_scale_v2,
                d,b,tree);
-
+  
   if(tree->mod->augmented == YES && n_v1 && n_v1->tax == NO)
     {
       PhyML_Printf("\n== AVX version of the Update_Partial_Lk function does not");
@@ -4862,6 +4866,7 @@ void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
 	      /* _p2[2] = _mm256_load_pd(Pij2 + catg*dim3+2*dim2); */
 	      /* _p2[3] = _mm256_load_pd(Pij2 + catg*dim3+3*dim2); */
 	      
+
 	      if(n_v1->tax == NO)
                 _plk1 = _mm256_load_pd(p_lk_v1 + site*dim1+catg*dim2);
 	      else
@@ -4892,6 +4897,7 @@ void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                 {
                   if(isinf(p_lk[site*dim1+catg*dim2+i]) || isnan(p_lk[site*dim1+catg*dim2+i])) 
                     {
+                      PhyML_Printf("\n== p_lk: %f",p_lk[site*dim1+catg*dim2+i]);
                       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
                     }
                 }

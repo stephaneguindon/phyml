@@ -619,37 +619,35 @@ phydbl Br_Len_Brent(t_edge *b, t_tree *tree)
   
   if(b->l->onoff == OFF) return mixt_tree->c_lnL;
 
-  /* Set_Update_Eigen_Lr(YES,mixt_tree); */
-  /* Set_Use_Eigen_Lr(NO,mixt_tree); */
-
+  Set_Update_Eigen_Lr(YES,mixt_tree);
+  Set_Use_Eigen_Lr(NO,mixt_tree);
 
   Switch_Eigen(YES,mixt_tree->mod);
 
-
   lk_begin = Lk(mixt_b,mixt_tree); /*! We can't assume that the log-lk value is up-to-date */
   
-
-  /* Set_Update_Eigen_Lr(NO,mixt_tree); */
-  /* Set_Use_Eigen_Lr(YES,mixt_tree); */
+  Set_Update_Eigen_Lr(NO,mixt_tree);
+  Set_Use_Eigen_Lr(YES,mixt_tree);
   
-  Generic_Brent_Lk(&(b->l->v),
-                   tree->mod->l_min,
-                   tree->mod->l_max,
-                   tree->mod->s_opt->min_diff_lk_local,
-                   tree->mod->s_opt->brent_it_max,
-                   tree->mod->s_opt->quickdirty,
-                   Wrap_Lk_At_Given_Edge,
-                   mixt_b,mixt_tree,NULL,NO);
+  /* Generic_Brent_Lk(&(b->l->v), */
+  /*                  tree->mod->l_min, */
+  /*                  tree->mod->l_max, */
+  /*                  tree->mod->s_opt->min_diff_lk_local, */
+  /*                  tree->mod->s_opt->brent_it_max, */
+  /*                  tree->mod->s_opt->quickdirty, */
+  /*                  Wrap_Lk_At_Given_Edge, */
+  /*                  mixt_b,mixt_tree,NULL,NO); */
 
-  /* Br_Len_Newton_Raphson(&(b->l->v),mixt_b,tree->mod->s_opt->brent_it_max,tree->mod->s_opt->min_diff_lk_local,mixt_tree); */
+  Br_Len_Newton_Raphson(&(b->l->v),mixt_b,tree->mod->s_opt->brent_it_max,tree->mod->s_opt->min_diff_lk_local,mixt_tree);
 
-  /* Update_PMat_At_Given_Edge(mixt_b,mixt_tree); */
 
-  /* Set_Update_Eigen_Lr(NO,mixt_tree); */
-  /* Set_Use_Eigen_Lr(NO,mixt_tree); */
+  Update_PMat_At_Given_Edge(mixt_b,mixt_tree);
+
+  Set_Update_Eigen_Lr(NO,mixt_tree);
+  Set_Use_Eigen_Lr(NO,mixt_tree);
   
   lk_end = mixt_tree->c_lnL;
-
+  
   if(lk_end < lk_begin - tree->mod->s_opt->min_diff_lk_local)
     {
       PhyML_Printf("\n== l: %f var:%f",b->l->v,b->l_var->v);
@@ -2285,7 +2283,7 @@ phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t
   best_lnL = old_lnL = init_lnL = tree->c_lnL;
   best_l = *l;
 
-  PhyML_Printf("\n Begin NR loop (lnL: %f dlnL: %f d2lnL: %f)",tree->c_lnL,tree->c_dlnL,tree->c_d2lnL);
+  /* PhyML_Printf("\n Begin NR loop (lnL: %f dlnL: %f d2lnL: %f)",tree->c_lnL,tree->c_dlnL,tree->c_d2lnL); */
 
   converged = NO;
   iter = 0;
@@ -2699,8 +2697,7 @@ void Optimize_TsTv(t_tree *mixt_tree, int verbose)
               
               a = tree->mod->kappa->v * .1;
               c = tree->mod->kappa->v * 10.;
-              
-              
+                            
               Generic_Brent_Lk(&(tree->mod->kappa->v),
                                a,c,
                                tree->mod->s_opt->min_diff_lk_local,

@@ -688,6 +688,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
       if(!cpy_mixt_b)
         {
           For(br,2*mixt_tree->n_otu-3) Update_PMat_At_Given_Edge(mixt_tree->a_edges[br],mixt_tree);
+
           if(mixt_tree->n_root && mixt_tree->ignore_root == NO)
             {
               Update_PMat_At_Given_Edge(mixt_tree->n_root->b[1],mixt_tree);
@@ -1202,7 +1203,7 @@ void MIXT_Update_P_Lk(t_tree *mixt_tree, t_edge *mixt_b, t_node *mixt_d)
           d    = d->next;
         }
 
-      Update_P_Lk(tree,b,d);
+      if(tree->mod->ras->invar == NO) Update_P_Lk(tree,b,d);
 
       tree = tree->next;
       b    = b->next;
@@ -1271,7 +1272,6 @@ void MIXT_Update_PMat_At_Given_Edge(t_edge *mixt_b, t_tree *mixt_tree)
       b    = b->next;
     }
   while(tree);
-
 }
 
 //////////////////////////////////////////////////////////////
@@ -2780,6 +2780,7 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
   cpy_mixt_tree   = mixt_tree;
   cpy_mixt_b      = mixt_b;
   len             = -1.;
+
 
   do /*! Consider each element of the data partition */
     {
