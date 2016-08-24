@@ -646,8 +646,6 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
       Warn_And_Exit(TODO_BEAGLE);
 #endif
       return MIXT_dLk(l,b,tree);
-      /* !!!!!! Function not MIXT proof !!!!!! */
-      /* Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
     }
     
   if(tree->update_eigen_lr == YES) Update_Eigen_Lr(b,tree);
@@ -1044,7 +1042,7 @@ void Update_Eigen_Lr(t_edge *b, t_tree *tree)
 /////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Rate_Correction(int exponent, phydbl *site_lk_cat, t_tree *tree)
+void Rate_Correction(int exponent, phydbl *site_lk_cat)
 {
   int piecewise_exponent;
   phydbl multiplier;
@@ -4101,7 +4099,7 @@ void Pull_Scaling_Factors(int site,
         {
           exponent = -(sum_scale_left_cat[catg]+sum_scale_rght_cat[catg])+tree->fact_sum_scale[site];
           site_lk_cat = tree->site_lk_cat[catg];
-          Rate_Correction(exponent,&site_lk_cat,tree);
+          Rate_Correction(exponent,&site_lk_cat);
 
           if(isinf(site_lk_cat) || isnan(site_lk_cat))
             {

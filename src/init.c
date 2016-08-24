@@ -1153,7 +1153,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
           else For(i,4) mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
           For(i,mod->ns) mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
           mod->kappa->v          = 1.;
-          mod->update_eigen      = YES;
+          mod->update_eigen      = NO;
           io->mod->s_opt->opt_rr = YES;
         }
       
@@ -1162,8 +1162,8 @@ void Init_Model(calign *data, t_mod *mod, option *io)
           if(mod->e_frq->user_state_freq == NO) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->b_frq,mod->ns);  
           else For(i,4) mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
           For(i,mod->ns) mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
-          mod->kappa->v = 1.;
-          mod->update_eigen = YES;
+          mod->kappa->v     = 1.;
+          mod->update_eigen = NO;
           /* 	  io->mod->s_opt->opt_rr     = YES; */ /* What if the user decided not to optimise the rates? */
         }
       
@@ -1178,15 +1178,12 @@ void Init_Model(calign *data, t_mod *mod, option *io)
           Translate_Custom_Mod_String(mod);
         }
                   
-
-      if(((mod->whichmodel == GTR)    ||
-          (mod->whichmodel == CUSTOM) ||
-          (mod->whichmodel == HKY85)) &&
-         (mod->use_m4mod == NO))
+      // Eigen decomposition for all substitution models
+      if(mod->use_m4mod == NO)
         {
-          mod->update_eigen = YES;
+          Switch_Eigen(YES,mod);          
           Update_Eigen(mod);
-          mod->update_eigen = NO;
+          Switch_Eigen(NO,mod);
         }
       /* if((mod->whichmodel != GTR)    &&  */
       /* 	 (mod->whichmodel != CUSTOM) &&  */
@@ -1389,6 +1386,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
       Warn_And_Exit("");
     }
 
+  
   if(!mod->use_m4mod) Set_Model_Parameters(mod);
 
   Init_Eigen_Struct(mod->eigen);

@@ -86,7 +86,7 @@ void Sample_Ancestral_Seq_Pre(t_node *a, t_node *d, t_edge *b,
 phydbl Wrap_Lk_Times(t_edge *b, t_tree *tree, supert_tree *stree);
 phydbl Lk_LastFirst(t_tree *tree);
 phydbl Invariant_Lk(int fact_sum_scale, int site, int *num_prec_issue, t_tree *tree);
-void Rate_Correction(int exponent, phydbl *site_lk_cat, t_tree *tree);
+void Rate_Correction(int exponent, phydbl *site_lk_cat);
 int Check_Lk_At_Given_Edge(int verbose, t_tree *tree);
 void Ancestral_Sequences_One_Node(t_node *mixt_d, t_tree *mixt_tree, int print);
 void Ancestral_Sequences(t_tree *tree, int print);

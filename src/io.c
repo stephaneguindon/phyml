@@ -4985,7 +4985,6 @@ void Make_Efrq_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
             }
           mod->s_opt->opt_state_freq = YES;
         }
-      Free(buff);
     }
 
   buff = XML_Get_Attribute_Value(instance,"aa.freqs");
@@ -5005,7 +5004,7 @@ void Make_Efrq_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
             }
         }
     }
-
+  
 
   buff = XML_Get_Attribute_Value(instance,"base.freqs");
 

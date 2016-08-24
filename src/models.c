@@ -467,8 +467,8 @@ void PMat(phydbl l, t_mod *mod, int pos, phydbl *Pij)
                    (mod->whichmodel == K80))
                   {
                     /* PMat_JC69(l,pos,Pij,mod); */
-                    PMat_K80(l,mod->kappa->v,pos,Pij);
-                    /* PMat_Empirical(l,mod,pos,Pij); */
+                    /* PMat_K80(l,mod->kappa->v,pos,Pij); */
+                    PMat_Empirical(l,mod,pos,Pij);
                   }
                 else
                   {
@@ -589,7 +589,7 @@ void Update_Qmat_Generic(phydbl *rr, phydbl *pi, int ns, phydbl *qmat)
       PhyML_Printf("\n== Err in file %s at line %d\n\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
-
+  
   /* PhyML_Printf("\n"); */
   /* For(i,(int)(ns*(ns-1)/2)) */
   /*   { */
@@ -617,9 +617,9 @@ void Update_Qmat_Generic(phydbl *rr, phydbl *pi, int ns, phydbl *qmat)
   For(i,ns)
     {
       For(j,ns)
-    {
-      qmat[i*ns+j] *= pi[j];
-    }
+        {
+          qmat[i*ns+j] *= pi[j];
+        }
     }
 
   /* Compute diagonal elements */
@@ -872,22 +872,6 @@ void Update_Efrq(t_mod *mod)
       For(i,mod->ns) sum += FABS(mod->e_frq->pi_unscaled->v[i]);
       For(i,mod->ns) mod->e_frq->pi->v[i] = FABS(mod->e_frq->pi_unscaled->v[i])/sum;
 
-      do
-        {
-          sum = .0;
-          For(i,mod->ns)
-            {
-              if(mod->e_frq->pi->v[i] < 0.01) mod->e_frq->pi->v[i]=0.01;
-              if(mod->e_frq->pi->v[i] > 0.99) mod->e_frq->pi->v[i]=0.99;
-              sum += mod->e_frq->pi->v[i];
-            }
-          For(i,mod->ns) 
-            {
-              mod->e_frq->pi->v[i]/=sum;
-            }
-        }
-      while((sum > 1.01) || (sum < 0.99));
-
 #ifdef BEAGLE
       if(UNINITIALIZED != mod->b_inst)
         update_beagle_efrqs(mod);
@@ -969,7 +953,6 @@ void Update_Eigen(t_mod *mod)
   phydbl scalar;
   int i;
 
-
   if(mod->is_mixt_mod)
     {
       MIXT_Update_Eigen(mod);
@@ -998,7 +981,7 @@ void Update_Eigen(t_mod *mod)
           M4_Update_Qmat(mod->m4mod,mod);
         }
 
-      //Now compute the Eigen
+      //Now compute the eigen vectors and values
       scalar   = 1.0;
       n_iter   = 0;
       result   = 0;
@@ -1094,7 +1077,6 @@ void Update_Eigen(t_mod *mod)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void Switch_From_M4mod_To_Mod(t_mod *mod)
 {

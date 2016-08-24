@@ -596,41 +596,43 @@ int Br_Len_Brak(phydbl *ax, phydbl *bx, phydbl *cx,
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-phydbl Br_Len_Brent(t_edge *b_fcus, t_tree *tree)
+phydbl Br_Len_Brent(t_edge *b, t_tree *tree)
 {
-  t_tree *mixt_tree;
-  t_edge *mixt_b;
   phydbl lk_begin, lk_end;
+  t_edge *mixt_b;
+  t_tree *mixt_tree;
+
+  if(tree->is_mixt_tree == YES)
+    {
+      MIXT_Br_Len_Brent(b,tree);
+      return tree->c_lnL;
+    }
 
   lk_begin  = UNLIKELY;
   lk_end    = UNLIKELY;
-  mixt_tree = tree;
-  mixt_b    = b_fcus;
-
-  /*! Rewind back to the first mixt_tree */
-  while(mixt_tree->prev)
-    {
-      mixt_tree = mixt_tree->prev;
-      mixt_b    = mixt_b->prev;
-    }
-
-  if(tree->is_mixt_tree)
-    {
-      MIXT_Br_Len_Brent(b_fcus,tree);
-      return mixt_tree->c_lnL;
-    }
-
-  if(b_fcus->l->onoff == OFF) return mixt_tree->c_lnL;
   
+  mixt_tree = tree;
+  while(mixt_tree->prev != NULL) mixt_tree = mixt_tree->prev; 
+  
+  mixt_b = b;
+  while(mixt_b->prev != NULL) mixt_b = mixt_b->prev; 
+  
+  if(b->l->onoff == OFF) return mixt_tree->c_lnL;
+
   /* Set_Update_Eigen_Lr(YES,mixt_tree); */
   /* Set_Use_Eigen_Lr(NO,mixt_tree); */
 
+
+  Switch_Eigen(YES,mixt_tree->mod);
+
+
   lk_begin = Lk(mixt_b,mixt_tree); /*! We can't assume that the log-lk value is up-to-date */
+  
 
   /* Set_Update_Eigen_Lr(NO,mixt_tree); */
   /* Set_Use_Eigen_Lr(YES,mixt_tree); */
   
-  Generic_Brent_Lk(&(b_fcus->l->v),
+  Generic_Brent_Lk(&(b->l->v),
                    tree->mod->l_min,
                    tree->mod->l_max,
                    tree->mod->s_opt->min_diff_lk_local,
@@ -639,19 +641,18 @@ phydbl Br_Len_Brent(t_edge *b_fcus, t_tree *tree)
                    Wrap_Lk_At_Given_Edge,
                    mixt_b,mixt_tree,NULL,NO);
 
-  /* Br_Len_Newton_Raphson(&(b_fcus->l->v),mixt_b,tree->mod->s_opt->brent_it_max,tree->mod->s_opt->min_diff_lk_local,mixt_tree); */
+  /* Br_Len_Newton_Raphson(&(b->l->v),mixt_b,tree->mod->s_opt->brent_it_max,tree->mod->s_opt->min_diff_lk_local,mixt_tree); */
 
-  /* Update_PMat_At_Given_Edge(b_fcus,tree); */
+  /* Update_PMat_At_Given_Edge(mixt_b,mixt_tree); */
 
   /* Set_Update_Eigen_Lr(NO,mixt_tree); */
   /* Set_Use_Eigen_Lr(NO,mixt_tree); */
   
-
   lk_end = mixt_tree->c_lnL;
 
   if(lk_end < lk_begin - tree->mod->s_opt->min_diff_lk_local)
     {
-      PhyML_Printf("\n== l: %f var:%f",b_fcus->l->v,b_fcus->l_var->v);
+      PhyML_Printf("\n== l: %f var:%f",b->l->v,b->l_var->v);
       PhyML_Printf("\n== lk_beg = %f lk_end = %f",lk_begin, lk_end);
       PhyML_Printf("\n== Err. in file %s at line %d",__FILE__,__LINE__);
       Exit("\n");
@@ -875,9 +876,7 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
       
       For(i,3)
         if(d->v[i] == a || d->b[i] == tree->e_root) 
-          {
-            Update_P_Lk(tree,d->b[i],d);
-          }
+          Update_P_Lk(tree,d->b[i],d);
     }
   else
     {
@@ -1879,7 +1878,6 @@ int Dist_F_Brak(phydbl *ax, phydbl *bx, phydbl *cx, phydbl *F, phydbl *param, t_
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 phydbl Dist_F_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol, int n_iter_max,
             phydbl *param, phydbl *F, t_mod *mod)
 {
@@ -1896,8 +1894,8 @@ phydbl Dist_F_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol, int n_iter_max,
   fw = fv = fx = -Lk_Dist(F,FABS(bx),mod);
   curr_lnL = init_lnL = -fw;
   
-  assert(!isnan(fx));
-  assert(!isinf(fx));
+  assert(isnan(fx) == FALSE);
+  assert(isinf(fx) == FALSE);
 
   for(iter=1;iter<=BRENT_IT_MAX;iter++)
     {
@@ -2232,7 +2230,7 @@ int Optimiz_Alpha_And_Pinv(t_tree *mixt_tree, int verbose)
                                        tree->mod->s_opt->quickdirty,
                                        Wrap_Lk,NULL,mixt_tree,NULL,NO);
                     }
-                  if(verbose)
+                  if(verbose == YES)
                     {
                       Print_Lk(mixt_tree,"[Alpha              ]");
                       PhyML_Printf("[%10f]",tree->mod->ras->alpha->v);
@@ -2251,8 +2249,11 @@ int Optimiz_Alpha_And_Pinv(t_tree *mixt_tree, int verbose)
 
                   tree->mod->s_opt->skip_tree_traversal = NO;
 
-                  Print_Lk(mixt_tree,"[P-inv              ]");
-                  PhyML_Printf("[%10f]",tree->mod->ras->pinvar->v);
+                  if(verbose == YES)
+                    {
+                      Print_Lk(mixt_tree,"[P-inv              ]");
+                      PhyML_Printf("[%10f]",tree->mod->ras->pinvar->v);
+                    }
                 }
             }
         }
@@ -2284,7 +2285,7 @@ phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t
   best_lnL = old_lnL = init_lnL = tree->c_lnL;
   best_l = *l;
 
-  /* PhyML_Printf("\n Begin NR loop (lnL: %f dlnL: %f d2lnL: %f)",tree->c_lnL,tree->c_dlnL,tree->c_d2lnL); */
+  PhyML_Printf("\n Begin NR loop (lnL: %f dlnL: %f d2lnL: %f)",tree->c_lnL,tree->c_dlnL,tree->c_d2lnL);
 
   converged = NO;
   iter = 0;

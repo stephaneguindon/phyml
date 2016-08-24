@@ -949,7 +949,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
 
               exponent = -(sum_scale_left_cat[class]+sum_scale_rght_cat[class])+fact_sum_scale;
               site_lk_cat = tree->site_lk_cat[0];
-              Rate_Correction(exponent,&site_lk_cat,mixt_tree);
+              Rate_Correction(exponent,&site_lk_cat);
               mixt_tree->site_lk_cat[class] = site_lk_cat;
               tree->site_lk_cat[0] = site_lk_cat;
               class++;
@@ -1171,9 +1171,7 @@ void MIXT_Update_Eigen_Lr(t_edge *mixt_b, t_tree *mixt_tree)
           b    = b->next;
         }
 
-      printf("\n> here "); fflush(NULL);
       Update_Eigen_Lr(b,tree);
-      printf("\n< here "); fflush(NULL);
 
       tree = tree->next;
       b    = b->next;
@@ -1670,7 +1668,7 @@ void MIXT_Br_Len_Brent(t_edge *mixt_b,
 
   do
     {
-      if(tree->is_mixt_tree)
+      if(tree->is_mixt_tree == YES)
         {
           tree = tree->next;
           b    = b->next;
@@ -1678,7 +1676,8 @@ void MIXT_Br_Len_Brent(t_edge *mixt_b,
 
       Br_Len_Brent(b,tree);
       
-      b->l->onoff = OFF;
+      b->l->onoff = OFF; // Will not optimize that edge length later on in this loop
+
       tree = tree->next;
       b    = b->next;
     }
@@ -2301,10 +2300,6 @@ void MIXT_Update_Br_Len_Multipliers(t_mod *mod)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
 void MIXT_Init_Model(t_tree *mixt_tree)
 {
   t_mod *mod,*mixt_mod;
@@ -2798,6 +2793,10 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
       sum_scale_left_cat = (phydbl *)mCalloc(n_tot_classes,sizeof(phydbl));
       sum_scale_rght_cat = (phydbl *)mCalloc(n_tot_classes,sizeof(phydbl));
 
+      expl   = (phydbl *)mCalloc(ns*n_tot_classes,sizeof(phydbl));
+      expld  = (phydbl *)mCalloc(ns*n_tot_classes,sizeof(phydbl));
+      expld2 = (phydbl *)mCalloc(ns*n_tot_classes,sizeof(phydbl));
+
       r_mat_weight_sum = MIXT_Get_Sum_Chained_Scalar_Dbl(mixt_tree->next->mod->r_mat_weight);
       e_frq_weight_sum = MIXT_Get_Sum_Chained_Scalar_Dbl(mixt_tree->next->mod->e_frq_weight);
       sum_probas       = MIXT_Get_Sum_Of_Probas_Across_Mixtures(r_mat_weight_sum,e_frq_weight_sum,mixt_tree);
@@ -2806,11 +2805,7 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
 
 
       // Fill in expl, expld and expld2 vectors for each rate class
-      
-      if(expl   == NULL) expl   = (phydbl *)mCalloc(ns*n_tot_classes,sizeof(phydbl));
-      if(expld  == NULL) expld  = (phydbl *)mCalloc(ns*n_tot_classes,sizeof(phydbl));
-      if(expld2 == NULL) expld2 = (phydbl *)mCalloc(ns*n_tot_classes,sizeof(phydbl));
-      
+            
       tree = mixt_tree->next;
       class = 0;
       do
@@ -2990,9 +2985,9 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
                 {
                   exponent = -(sum_scale_left_cat[class]+sum_scale_rght_cat[class])+fact_sum_scale;
 
-                  Rate_Correction(exponent,lk+class,mixt_tree);
-                  Rate_Correction(exponent,dlk+class,mixt_tree);
-                  Rate_Correction(exponent,d2lk+class,mixt_tree);
+                  Rate_Correction(exponent,lk+class);
+                  Rate_Correction(exponent,dlk+class);
+                  Rate_Correction(exponent,d2lk+class);
                 }
 
               class++;
