@@ -4794,6 +4794,8 @@ void Spr_List_Of_Trees(t_tree *tree)
 
   PhyML_Printf("\n. First round of optimization...");
 
+  if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
+
   Round_Optimize(tree,5);
   tree_list[0] = Make_Tree_From_Scratch(tree->n_otu,tree->data);
   Copy_Tree(tree,tree_list[0]);
@@ -4813,7 +4815,8 @@ void Spr_List_Of_Trees(t_tree *tree)
       if(tree->c_lnL > best_lnL) 
         {
           best_lnL = tree->c_lnL;
-          PhyML_Printf("\n. Best tree found so far has lnL: %12.2f",best_lnL);
+          PhyML_Printf("\n. Best tree found so far has lnL: %12.2f (%d more trees to examine)",best_lnL,list_size_first_round-list_size);
+          if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
         }
 
       tree_list[list_size] = Make_Tree_From_Scratch(tree->n_otu,tree->data);
@@ -4827,8 +4830,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   PhyML_Printf("\n\n. Finished building the list of trees. Their scores are given below...");
   For(i,list_size) PhyML_Printf("\n. Tree %3d, lnL: %12.2f",i+1,lnL_list[rk[i]]);
 
-  PhyML_Printf("\n\n. Improving the best trees SPRs...");
-
+  PhyML_Printf("\n\n. Improving the best trees (%d trees to process)...",list_size_second_round);
   list_size = 0;
   do
     {
@@ -4861,7 +4863,8 @@ void Spr_List_Of_Trees(t_tree *tree)
       if(tree->c_lnL > best_lnL) 
         {
           best_lnL = tree->c_lnL;
-          PhyML_Printf("\n. Better tree found so far has lnL: %12.2f",best_lnL);
+          PhyML_Printf("\n. Better tree found so far has lnL: %12.2f (%d more trees to examine)",best_lnL,list_size_second_round-list_size);
+          if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
         }
       
       Copy_Tree(tree,tree_list[rk[list_size]]);
@@ -4884,7 +4887,8 @@ void Spr_List_Of_Trees(t_tree *tree)
       if(tree->c_lnL > best_lnL) 
         {
           best_lnL = tree->c_lnL;
-          PhyML_Printf("\n. Better tree found -> lnL: %12.2f",best_lnL);
+          PhyML_Printf("\n. Better tree found -> lnL: %12.2f (%d more trees to examine)",best_lnL,list_size_second_round-list_size);
+          if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
         }
 
       Copy_Tree(tree,tree_list[rk[list_size]]);
