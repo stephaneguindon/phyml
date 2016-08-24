@@ -478,8 +478,8 @@ void PMat(phydbl l, t_mod *mod, int pos, phydbl *Pij)
                        (mod->whichmodel == F84)   ||
                        (mod->whichmodel == TN93))
                       {
-                        PMat_TN93(l,mod,pos,Pij);
-                        /* PMat_Empirical(l,mod,pos,Pij); */
+                        /* PMat_TN93(l,mod,pos,Pij); */
+                        PMat_Empirical(l,mod,pos,Pij);
                       }
                     else
                       {
