@@ -33,6 +33,12 @@ void Bootstrap_MPI(t_tree *tree)
   int *score_par, *score_tot;
   char *bootStr, *t;
   
+  if(tree->is_mixt_tree == YES)
+    {
+      PhyML_Printf("\n== Bootstrap option not yet available for partition/mixture analysis.");
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
+    }
+
   randomRecv = nbElem = bootRecv = 0;
 
   tree->print_boot_val       = 1;
@@ -64,7 +70,7 @@ void Bootstrap_MPI(t_tree *tree)
       tree->mod->bootstrap = nbRep * Global_numTask;
       if (Global_myRank == 0) {
         PhyML_Printf("\n. The number of replicates is not a multiple of %d CPUs.\n", Global_numTask);
-        PhyML_Printf("\n. Will run %d replicates analysis.\n", tree->mod->bootstrap);
+        PhyML_Printf("\n. Will run %d replicates.\n", tree->mod->bootstrap);
       }
     }
   else
@@ -92,59 +98,73 @@ void Bootstrap_MPI(t_tree *tree)
       For(j,boot_data->crunch_len) boot_data->wght[j] = 0;
 
       // Send random data to other process
-      if (Global_myRank == 0) {
-        // Compute number of data to send
-        if (tree->mod->bootstrap - randomRecv > Global_numTask)
-          nbElem = Global_numTask;
-        else
-          nbElem = tree->mod->bootstrap - randomRecv;
-
-        For(i,nbElem) {
-          For(j,boot_data->crunch_len) boot_data->wght[j] = 0;
-          init_len = 0;
-          // Create random data
-          For(j,boot_data->init_len)
+      if (Global_myRank == 0) 
+        {
+          // Compute number of data to send
+          if (tree->mod->bootstrap - randomRecv > Global_numTask)
+            nbElem = Global_numTask;
+          else
+            nbElem = tree->mod->bootstrap - randomRecv;
+          
+          For(i,nbElem) 
             {
-              position = Rand_Int(0,(int)(tree->data->init_len-1.0));
-              boot_data->wght[site_num[position]] += 1;
-              init_len++;
-            }
-            
+              For(j,boot_data->crunch_len) boot_data->wght[j] = 0;
 
-          if (init_len != tree->data->init_len) {
-            MPI_Finalize();
-            Warn_And_Exit("\n== Pb. when copying sequences...\n");
-          }
-          // Send random data to other process, not to current process
-          if (i < nbElem-1) {
-            MPI_Ssend (boot_data->wght, boot_data->crunch_len, MPI_INT, i+1, Global_myRank, MPI_COMM_WORLD);
+              init_len = 0;
+              // Create random data
+              For(j,boot_data->init_len)
+                {
+                  position = Rand_Int(0,(int)(tree->data->init_len-1.0));
+                  boot_data->wght[site_num[position]] += 1;
+                  init_len++;
+                }
+              
+
+              if (init_len != tree->data->init_len) 
+                {
+                  PhyML_Printf("\n== thread: %d || init: %d %d here\n",Global_myRank,init_len,tree->data->init_len);
+                  fflush(NULL);
+                  Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
+                }
+              
+              // Send random data to other process, not to current process
+              if (i < nbElem-1)
+                {
+                  MPI_Ssend (boot_data->wght, boot_data->crunch_len, MPI_DOUBLE, i+1, Global_myRank, MPI_COMM_WORLD);
 #ifdef MPI_DEBUG
-fprintf (stderr, "\ntask %d, sending random to %d done\n", Global_myRank, i+1);
-fflush(stderr);
+                  fprintf (stderr, "\ntask %d, sending random to %d done\n", Global_myRank, i+1);
+                  fflush(stderr);
 #endif
-          }
-          randomRecv++;
+                }
+              randomRecv++;
+            }
         }
-      }
-      else {
-        MPI_Recv (boot_data->wght, boot_data->crunch_len, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &Stat);
+      else 
+        {
+          MPI_Recv(boot_data->wght, boot_data->crunch_len, MPI_DOUBLE, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &Stat);
 #ifdef MPI_DEBUG
-fprintf (stderr, "\ntask %d, receiving random from task %d done\n", Global_myRank, Stat.MPI_SOURCE);
-fflush(stderr);
+          fprintf (stderr, "\ntask %d, receiving random from task %d done\n", Global_myRank, Stat.MPI_SOURCE);
+          fflush(stderr);
 #endif
-      }
+
+
+        }
 
       init_len = 0;
       For(j,boot_data->crunch_len) init_len += boot_data->wght[j];
 
-      if(init_len != tree->data->init_len) {
-        MPI_Finalize();
-        Warn_And_Exit("\n== Pb when copying sequences\n");
-      }
+
+      if(init_len != tree->data->init_len) 
+        {
+          printf("\n== thread: %d init: %d %d\n",Global_myRank,init_len,tree->data->init_len);
+          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
+        }
+      
 
       (tree->mod->io->datatype == NT)?
         (Get_Base_Freqs(boot_data)):
         (Get_AA_Freqs(boot_data));
+
 
       if(tree->io->random_boot_seq_order) Randomize_Sequence_Order(boot_data);
 
@@ -198,7 +218,7 @@ fflush(stderr);
       boot_tree->mod                = boot_mod;
       boot_tree->io                 = tree->io;
       boot_tree->data               = boot_data;
-      boot_tree->mod->s_opt->print  = 0;
+      boot_tree->verbose            = VL0;
       boot_tree->n_pattern          = boot_tree->data->crunch_len;
       boot_tree->io->print_site_lnl = 0;
       boot_tree->io->print_trace    = 0;
@@ -235,7 +255,7 @@ fflush(stderr);
       else
         {
           if(boot_tree->mod->s_opt->opt_subst_param || boot_tree->mod->s_opt->opt_bl)
-            Round_Optimize(boot_tree,boot_tree->data,ROUND_MAX);
+            Round_Optimize(boot_tree,ROUND_MAX);
           else
             Lk(NULL,boot_tree);
         }
@@ -350,7 +370,7 @@ fflush(stdout);
     if(((bootRecv)%tree->io->boot_prog_every)) PhyML_Printf("] %4d/%4d\n ",bootRecv,tree->mod->bootstrap);
 
 PhyML_Printf("\n\n. Exiting bootstrap function normally."); fflush(NULL);
-  tree->lock_topo = 1; /* TopoLOGy should not be modified afterwards */
+tree->lock_topo = 1; /* Topology should not be modified afterwards */
 
   if(tree->io->print_boot_trees)
     {

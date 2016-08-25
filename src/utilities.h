@@ -104,7 +104,12 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define M_1_SQRT_2PI	0.398942280401432677939946059934	/* 1/sqrt(2pi) */
 #endif
 
-
+// verbose levels
+#define VL0 0
+#define VL1 1
+#define VL2 2
+#define VL3 3
+#define VL4 4
 
 #define T_MAX_MCMC_MOVE_NAME 500
 
@@ -680,6 +685,7 @@ typedef struct __Tree{
   short int                            *t_dir;
   int                          n_improvements;
   int                                 n_moves;
+  int                                 verbose;
 
   int                                      dp; /*! Data partition */
   int                               s_mod_num; /*! Substitution model number */
@@ -1199,8 +1205,6 @@ typedef struct __Option { /*! mostly used in 'help.c' */
 /*!********************************************************/
 
 typedef struct __Optimiz { /*! parameters to be optimised (mostly used in 'optimiz.c') */
-  int                    print; /*! =1 -> verbose mode  */
-
   int                opt_alpha; /*! =1 -> the gamma shape parameter is optimised */
   int                opt_kappa; /*! =1 -> the ts/tv ratio parameter is optimised */
   int               opt_lambda; /*! =1 -> the F84|TN93 model specific parameter is optimised */

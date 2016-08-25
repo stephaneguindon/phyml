@@ -682,7 +682,7 @@ void Round_Optimize(t_tree *tree, int n_round_max)
         Optimize_Br_Len_Serie(tree);
       
       if((tree->mod->s_opt->opt_bl || tree->mod->s_opt->constrained_br_len) &&
-         (tree->mod->s_opt->print) &&
+         (tree->verbose > VL2) &&
          (!tree->io->quiet)) Print_Lk(tree,"[Branch lengths     ]");
       
       Set_Both_Sides(NO,tree);
@@ -691,7 +691,7 @@ void Round_Optimize(t_tree *tree, int n_round_max)
       if(!each)
         {
           each = 1;
-          Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
+          Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->verbose > VL2));
           Set_Both_Sides(NO,tree);
           Lk(NULL,tree);
         }
@@ -711,7 +711,7 @@ void Round_Optimize(t_tree *tree, int n_round_max)
       each--;
     }
   
-  Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
+  Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->verbose > VL2));
 
 }
 
@@ -740,7 +740,7 @@ void Optimize_Br_Len_Serie(t_tree *tree)
           PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
         }
 
-      if((tree->io->quiet)?(0):(tree->mod->s_opt->print))
+      if((tree->io->quiet)?(0):(tree->verbose > VL2))
         {
           Print_Lk(tree,"[Branch len. var.   ]");
           PhyML_Printf("[%10f]",tree->mod->l_var_sigma);
@@ -1892,6 +1892,7 @@ phydbl Dist_F_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol, int n_iter_max,
   fw = fv = fx = -Lk_Dist(F,FABS(bx),mod);
   curr_lnL = init_lnL = -fw;
   
+  /* printf("\n. bx=%f f: %f %f %f %f fx: %f",bx,mod->e_frq->pi->v[0],mod->e_frq->pi->v[1],mod->e_frq->pi->v[2],mod->e_frq->pi->v[3],fx); */
   assert(isnan(fx) == FALSE);
   assert(isinf(fx) == FALSE);
 

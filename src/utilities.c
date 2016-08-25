@@ -1261,6 +1261,8 @@ void Share_Lk_Struct(t_tree *t_full, t_tree *t_empt)
   t_empt->log_lks_aLRT         = t_full->log_lks_aLRT;
   t_empt->site_lk_cat          = t_full->site_lk_cat;
   t_empt->fact_sum_scale       = t_full->fact_sum_scale;
+  t_empt->eigen_lr_left        = t_full->eigen_lr_left;
+  t_empt->eigen_lr_rght        = t_full->eigen_lr_rght;
 
   For(i,2*n_otu-3)
     {
@@ -2845,7 +2847,6 @@ int Assign_State_With_Ambiguity(char *c, int datatype, int stepsize)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Clean_Tree_Connections(t_tree *tree)
 {
 
@@ -2864,7 +2865,6 @@ void Clean_Tree_Connections(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Bootstrap(t_tree *tree)
 {
   int *site_num, n_site;
@@ -2876,6 +2876,13 @@ void Bootstrap(t_tree *tree)
   matrix *boot_mat;
   char *s;
 /*   phydbl rf; */
+
+
+  if(tree->is_mixt_tree == YES)
+    {
+      PhyML_Printf("\n== Bootstrap option not yet available for partition/mixture analysis.");
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
+    }
 
   tree->print_boot_val = 1;
   tree->print_alrt_val = 0;
@@ -2954,7 +2961,7 @@ void Bootstrap(t_tree *tree)
       boot_tree->mod                  = boot_mod;
       boot_tree->io                   = tree->io;
       boot_tree->data                 = boot_data;
-      boot_tree->mod->s_opt->print    = NO;
+      boot_tree->verbose              = VL0;
       boot_tree->n_pattern            = boot_tree->data->crunch_len;
       boot_tree->io->print_site_lnl   = NO;
       boot_tree->io->print_trace      = NO;
@@ -2962,13 +2969,11 @@ void Bootstrap(t_tree *tree)
       boot_tree->n_root               = NULL;
       boot_tree->e_root               = NULL;
 
-
       Set_Both_Sides(YES,boot_tree);
 
       if((boot_tree->mod->s_opt->random_input_tree) && (boot_tree->mod->s_opt->topo_search == SPR_MOVE)) Random_Tree(boot_tree);
 
       Connect_CSeqs_To_Nodes(boot_data,tree->io,boot_tree);
-
       Check_Br_Lens(boot_tree);
       Share_Lk_Struct(tree,boot_tree);
       Share_Spr_Struct(tree,boot_tree);
@@ -4673,6 +4678,8 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
 
   cpy->num_curr_branch_available = 0;
   cpy->t_beg                     = ori->t_beg;
+  cpy->verbose                   = ori->verbose;
+
 
 #ifdef BEAGLE
   cpy->b_inst = ori->b_inst;
@@ -7838,7 +7845,7 @@ void Best_Of_NNI_And_SPR(t_tree *tree)
           Warn_And_Exit("");
         }
 
-      if(tree->mod->s_opt->print)
+      if(tree->verbose > VL0)
         {
           PhyML_Printf("\n\n. Log likelihood obtained after NNI moves : %f",nni_lnL);
           PhyML_Printf("\n. Log likelihood obtained after SPR moves : %f",spr_lnL);

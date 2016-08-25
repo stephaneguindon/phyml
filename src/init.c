@@ -113,6 +113,7 @@ void Init_Tree(t_tree *tree, int n_otu)
   tree->mixt_tree                 = NULL;
   tree->geo                       = NULL;
   tree->xml_root                  = NULL;
+  tree->verbose                   = VL3;
 
   tree->is_mixt_tree              = NO;
   tree->tree_num                  = 0;
@@ -134,8 +135,8 @@ void Init_Tree(t_tree *tree, int n_otu)
   tree->n_root_pos                = -1.;
   tree->write_labels              = YES;
   tree->write_br_lens             = YES;
-  tree->print_boot_val            = 0;
-  tree->print_alrt_val            = 0;
+  tree->print_boot_val            = NO;
+  tree->print_alrt_val            = NO;
   tree->num_curr_branch_available = 0;
   tree->tip_order_score           = .0;
   tree->write_tax_names           = YES;
@@ -683,7 +684,6 @@ void Set_Defaults_Ras(t_ras *ras)
 
 void Set_Defaults_Optimiz(t_opt *s_opt)
 {
-  s_opt->print                = YES;
   s_opt->last_opt             = YES;
   s_opt->opt_subst_param      = YES;
   s_opt->opt_alpha            = YES;
@@ -1400,11 +1400,21 @@ void Init_Model(calign *data, t_mod *mod, option *io)
 void Init_Efrqs_Using_Observed_Freqs(t_efrq *f, phydbl *o, int ns)
 {
   int i;
+  phydbl eps,sum;
 
   assert(f);
   assert(o);
 
-  For(i,ns)  f->pi->v[i] = o[i];
+  // To avoid numerical prevision issues
+  eps = 1.E-50;
+
+  For(i,ns) f->pi->v[i] = MAX(o[i],eps);
+
+  sum = 0.0;
+  For(i,ns) sum += f->pi->v[i];
+
+  For(i,ns) f->pi->v[i] /= sum;;
+
 }
 
 //////////////////////////////////////////////////////////////

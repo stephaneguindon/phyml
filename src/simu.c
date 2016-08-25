@@ -77,7 +77,7 @@ int Simu(t_tree *tree, int n_step_max)
 
       if(tree->c_lnL < old_loglk)
         {
-          if((tree->mod->s_opt->print) && (!tree->io->quiet)) PhyML_Printf("\n\n. Moving backward\n");
+          if(tree->verbose > VL2 && tree->io->quiet == NO) PhyML_Printf("\n\n. Moving backward\n");
           if(!Mov_Backward_Topo_Bl(tree,old_loglk,tested_b,n_tested)) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
           if(!tree->n_swap) n_neg = 0;
           Record_Br_Len(tree);
@@ -97,7 +97,7 @@ int Simu(t_tree *tree, int n_step_max)
 
       if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
 
-      if((tree->mod->s_opt->print) && (!tree->io->quiet)) Print_Lk(tree,"[Topology           ]");
+      if(tree->verbose > VL2 && tree->io->quiet == NO) Print_Lk(tree,"[Topology           ]");
 
       if((FABS(old_loglk-tree->c_lnL) < tree->mod->s_opt->min_diff_lk_global) || (n_without_swap > it_lim_without_swap)) break;
 
@@ -119,7 +119,7 @@ int Simu(t_tree *tree, int n_step_max)
 
       Make_N_Swap(tree,tested_b,0,n_tested);
 
-      if((tree->mod->s_opt->print) && (!tree->io->quiet)) PhyML_Printf("[# nnis=%3d]",n_tested);
+      if((tree->verbose > VL2) && (tree->io->quiet == NO)) PhyML_Printf("[# nnis=%3d]",n_tested);
 
       n_tot_swap += n_tested;
 
@@ -162,7 +162,7 @@ void Simu_Pars(t_tree *tree, int n_step_max)
 
   Update_Dirs(tree);
 
-  if((tree->mod->s_opt->print) && (!tree->io->quiet)) PhyML_Printf("\n\n. Starting simultaneous NNI moves (parsimony criterion)...\n");
+  if((tree->verbose > VL0) && (tree->io->quiet == NO)) PhyML_Printf("\n\n. Starting simultaneous NNI moves (parsimony criterion)...\n");
 
   do
     {
@@ -175,7 +175,7 @@ void Simu_Pars(t_tree *tree, int n_step_max)
       Set_Both_Sides(YES,tree);
       Pars(NULL,tree);
       
-      if((tree->mod->s_opt->print) && (!tree->io->quiet))
+      if((tree->verbose > VL0) && (tree->io->quiet == NO))
         {
           Print_Pars(tree);
           if(step > 1) (n_tested > 1)?(printf("[%4d NNIs]",n_tested)):(printf("[%4d NNI ]",n_tested));
@@ -186,7 +186,7 @@ void Simu_Pars(t_tree *tree, int n_step_max)
       
       if((tree->c_pars > old_pars) && (step > 1))
         {
-          if((tree->mod->s_opt->print) && (!tree->io->quiet))
+          if(tree->verbose > VL0 && tree->io->quiet == NO)
             PhyML_Printf("\n\n. Moving backward (topoLlogy) \n");
           if(!Mov_Backward_Topo_Pars(tree,old_pars,tested_b,n_tested))
             Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    

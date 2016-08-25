@@ -2793,12 +2793,12 @@ void Update_P_Lk_Along_A_Path(t_node **path, int path_length, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 phydbl Lk_Dist(phydbl *F, phydbl dist, t_mod *mod)
 {
   int i,j,k;
   phydbl lnL,len;
   int dim1,dim2;
+  phydbl pi, pijk;
 
   // Compute likelihood of the model made of the
   // first class of the mixture.
@@ -2817,27 +2817,47 @@ phydbl Lk_Dist(phydbl *F, phydbl dist, t_mod *mod)
 
   dim1 = mod->ns*mod->ns;
   dim2 = mod->ns;
-  lnL = .0;
+  lnL  = .0;
+  pi   = -1.;
+  pijk = -1.;
 
   For(i,mod->ns-1)
     {
+      pi = mod->e_frq->pi->v[i];
+
       for(j=i+1;j<mod->ns;j++)
         {
           For(k,mod->ras->n_catg)
             {
-              lnL +=
-                (F[dim1*k+dim2*i+j] + F[dim1*k+dim2*j+i])*
-                LOG(mod->e_frq->pi->v[i] * mod->Pij_rr->v[dim1*k+dim2*i+j]);
-              /* printf("\n. f: %f Pij:%f F:%f", */
-              /*        mod->e_frq->pi->v[i], */
+              pijk = mod->Pij_rr->v[dim1*k+dim2*i+j];              
+              lnL += (F[dim1*k+dim2*i+j] + F[dim1*k+dim2*j+i]) * LOG(pi * pijk);
+
+              /* printf("\nXXXXXX i: %d j: %d f: %G Pij:%G F:%G %G %G", */
+              /*        i,j,mod->e_frq->pi->v[i], */
               /*        mod->Pij_rr->v[dim1*k+dim2*i+j], */
-              /*        F[dim1*k+dim2*j+i]); */
+              /*        F[dim1*k+dim2*j+i],lnL, */
+              /*        (F[dim1*k+dim2*i+j] + F[dim1*k+dim2*j+i])*LOG(pi * pijk)); */
             }
         }
     }
   
-  For(i,mod->ns) For(k,mod->ras->n_catg) lnL += F[dim1*k+dim2*i+i]* LOG(mod->e_frq->pi->v[i] * mod->Pij_rr->v[dim1*k+dim2*i+i]);
-  
+  For(i,mod->ns) 
+    {
+      pi = mod->e_frq->pi->v[i];
+      
+      For(k,mod->ras->n_catg) 
+        {
+          pijk = mod->Pij_rr->v[dim1*k+dim2*i+i];
+          lnL += F[dim1*k+dim2*i+i]* LOG(pi * pijk);
+
+          /* printf("\nYYYYYY i: %d j: %d f: %G Pij:%G F:%G lnL:%G pi:%G pijk:%G", */
+          /*        i,j,mod->e_frq->pi->v[i], */
+          /*        mod->Pij_rr->v[dim1*k+dim2*i+j], */
+          /*        F[dim1*k+dim2*j+i],lnL, */
+          /*        pi,pijk); */
+        }
+    }
+
   return lnL;
 }
 

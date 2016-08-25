@@ -48,7 +48,7 @@ int Check_NNI_Five_Branches(t_tree *tree)
       Update_Dirs(tree);
       
       //Interface output
-      if((tree->mod->s_opt->print) && (!tree->io->quiet)) PhyML_Printf("\n\n. Checking for NNIs, optimizing five branches...\n");
+      if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Checking for NNIs, optimizing five branches...\n");
       
       better_found  =  0;
       result        = -1;
@@ -155,7 +155,7 @@ int Check_NNI_Five_Branches(t_tree *tree)
               Exit("\n");
             }
 
-          if((tree->mod->s_opt->print) && (!tree->io->quiet)) Print_Lk(tree,"[Topology           ]");
+          if(tree->verbose > VL0 && tree->io->quiet == NO) Print_Lk(tree,"[Topology           ]");
 
           if(FABS(tree->c_lnL - init_lnL) < tree->mod->s_opt->min_diff_lk_move) return 0;
           return 1;

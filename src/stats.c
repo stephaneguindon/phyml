@@ -2013,7 +2013,7 @@ phydbl *Covariance_Matrix(t_tree *tree)
     }
 
   
-  tree->mod->s_opt->print = 0;
+  tree->verbose = VL0;
   For(replicate,sample_size)
     {
       For(i,2*tree->n_otu-3) tree->a_edges[i]->l->v = .1;

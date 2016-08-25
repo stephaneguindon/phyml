@@ -378,7 +378,7 @@ void Optim_SPR (t_tree *tree, int max_size, int method)
 {
   int   nr_moves, improvement;
 
-  if(tree->mod->s_opt->print) PhyML_Printf("\n\n. Starting SPR moves...\n");
+  if(tree->verbose > VL0) PhyML_Printf("\n\n. Starting SPR moves...\n");
 
   /*
   ** Calculate the current likelihood value.
@@ -386,7 +386,7 @@ void Optim_SPR (t_tree *tree, int max_size, int method)
   Set_Both_Sides(YES,tree);
   cur_lk = Lk(NULL,tree);
   time(&(tree->t_current));
-  if(tree->mod->s_opt->print) Print_Lk(tree,"topology");
+  if(tree->verbose > VL0) Print_Lk(tree,"topology");
 
   /*
   ** Optimize all t_edge lengths and calculate the new likelihood value.
@@ -396,7 +396,7 @@ void Optim_SPR (t_tree *tree, int max_size, int method)
   Set_Both_Sides(YES,tree);
   cur_lk = Lk(NULL,tree);
   time(&(tree->t_current));
-  if(tree->mod->s_opt->print) Print_Lk(tree,"topology");
+  if(tree->verbose > VL0) Print_Lk(tree,"topology");
 
   /*
   ** While improvements were found, perform another round of SPR moves.
@@ -435,7 +435,7 @@ void Optim_SPR (t_tree *tree, int max_size, int method)
         /*
         ** Optimize model parameters.
         */
-        Optimiz_All_Free_Param (tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
+        Optimiz_All_Free_Param (tree,(tree->io->quiet)?(0):(tree->verbose > VL0));
         Set_Both_Sides(YES,tree);
         Lk(NULL,tree);
       }
@@ -446,7 +446,7 @@ void Optim_SPR (t_tree *tree, int max_size, int method)
       /* Beg SG 28 May 2007 */
   }
 
-  if(tree->mod->s_opt->print) PhyML_Printf ("\n\n. Number of SPR moves: %d\n", nr_moves);
+  if(tree->verbose > VL0) PhyML_Printf ("\n\n. Number of SPR moves: %d\n", nr_moves);
 
   /*
   ** Perform a last round of optimization steps (for t_edge lengths).
@@ -627,7 +627,7 @@ int Perform_SPR_Moves (t_tree *tree, int max_size)
   Set_Both_Sides(YES,tree);
   cur_lk = Lk(NULL,tree);
   time(&(tree->t_current));
-  if(tree->mod->s_opt->print) Print_Lk(tree,"topoLOGy");
+  if(tree->verbose > VL0) Print_Lk(tree,"topoLOGy");
 
   /*
   ** Return the result.
@@ -786,7 +786,7 @@ int Perform_Best_SPR (t_tree *tree, int max_size)
   Set_Both_Sides(YES,tree);
   cur_lk = Lk(NULL,tree);
   time(&(tree->t_current));
-  if(tree->mod->s_opt->print) Print_Lk(tree,"topology");
+  if(tree->verbose > VL0) Print_Lk(tree,"topology");
 
   /*
   ** Return the result.
@@ -965,7 +965,7 @@ int Perform_One_SPR(t_tree *tree, int max_size)
   Set_Both_Sides(YES,tree);
   cur_lk = Lk(NULL,tree);
   time(&(tree->t_current));
-  if(tree->mod->s_opt->print) Print_Lk(tree,"topology");
+  if(tree->verbose > VL0) Print_Lk(tree,"topology");
 
   /*
   ** Return the result.
@@ -3765,12 +3765,12 @@ void Speed_Spr(t_tree *tree, phydbl prop_spr, int max_cycles, phydbl delta_lnL)
               Set_Both_Sides(YES,tree);
               Lk(NULL,tree);
               /* Print log-likelihood and parsimony scores */
-              if((tree->mod->s_opt->print) && (!tree->io->quiet)) Print_Lk(tree,"[Branch lengths     ]");
+              if(tree->verbose > VL2 && tree->io->quiet == NO) Print_Lk(tree,"[Branch lengths     ]");
             }
         }
       else
         {
-          if((tree->mod->s_opt->print) && (!tree->io->quiet)) Print_Pars(tree);
+          if(tree->verbose > VL2 && tree->io->quiet == NO) Print_Pars(tree);
         }
 
       Pars(NULL,tree);
@@ -4145,7 +4145,7 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
           Exit("\n");
         }
 
-      if((tree->mod->s_opt->print) && (!tree->io->quiet))
+      if(tree->verbose > VL2 && tree->io->quiet == NO)
         {
           Print_Lk_And_Pars(tree);
           PhyML_Printf(" [depth=%5d]",move->depth_path); fflush(NULL);
@@ -4212,7 +4212,7 @@ int Try_One_Spr_Move_Full(t_spr *move, t_tree *tree)
   if(tree->c_lnL > tree->best_lnL + tree->mod->s_opt->min_diff_lk_move)
     {
       Pars(NULL,tree);
-      if((tree->mod->s_opt->print) && (!tree->io->quiet)) Print_Lk(tree,"[Topology           ]");
+      if(tree->verbose > VL0 && tree->io->quiet == NO) Print_Lk(tree,"[Topology           ]");
       tree->n_improvements++;
       tree->best_lnL = tree->c_lnL;
       Record_Br_Len(tree);
@@ -4473,7 +4473,7 @@ void Spr_Pars(int threshold, int n_round_max, t_tree *tree)
 {  
   int curr_pars,round;
 
-  if((tree->mod->s_opt->print) && (!tree->io->quiet)) PhyML_Printf("\n. Minimizing parsimony...\n");
+  if(tree->verbose > VL2 && tree->io->quiet == NO) PhyML_Printf("\n. Minimizing parsimony...\n");
 
   tree->best_pars                  = 1E+8;
   tree->best_lnL                   = UNLIKELY;
@@ -4499,7 +4499,7 @@ void Spr_Shuffle(t_tree *mixt_tree)
   int *orig_catg,n,n_iter;
   t_tree *tree,**tree_list;
 
-  if(mixt_tree->mod->s_opt->print) PhyML_Printf("\n\n. Refining the tree...\n");
+  if(mixt_tree->verbose > VL0) PhyML_Printf("\n\n. Refining the tree...\n");
 
   /*! Get the number of classes in each mixture */
   orig_catg = MIXT_Get_Number_Of_Classes_In_All_Mixtures(mixt_tree);
@@ -4585,7 +4585,7 @@ void Spr_Shuffle(t_tree *mixt_tree)
 
   mixt_tree->annealing_temp = 0.0;
 
-  if(mixt_tree->mod->s_opt->print && (!mixt_tree->io->quiet))
+  if(mixt_tree->verbose > VL0 && mixt_tree->io->quiet == NO)
     {
       PhyML_Printf("\n\n. End of refining stage...\n");
     }
@@ -4727,7 +4727,7 @@ void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int d
       prop_spr+=0.2;
 
       Set_Both_Sides(YES,tree);
-      Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->mod->s_opt->print));
+      Optimiz_All_Free_Param(tree,(tree->io->quiet == YES)?(0):(tree->verbose > VL0));
       Optimize_Br_Len_Serie(tree);
 
       if(tree->io->print_trace)
@@ -4772,16 +4772,13 @@ void Spr_List_Of_Trees(t_tree *tree)
   int i,list_size,max_list_size,*rk,list_size_first_round,list_size_second_round;
   t_tree **tree_list;
   phydbl *lnL_list,best_lnL;
-  int print,quiet;
 
-  print = tree->mod->s_opt->print;
-  quiet = tree->io->quiet;
 
   max_list_size                    = tree->n_otu;
   tree->mod->s_opt->max_depth_path = tree->n_otu;
   best_lnL                         = UNLIKELY;
-  tree->mod->s_opt->print          = NO;
-  tree->io->quiet                  = YES;
+  tree->verbose                    = (tree->verbose == VL0) ? VL0 : VL1;
+  /* tree->io->quiet                  = YES; */
   /* list_size_first_round            = (int)max_list_size/5; */
   /* list_size_second_round           = (int)max_list_size/10; */
   list_size_first_round            = 10;
@@ -4792,8 +4789,8 @@ void Spr_List_Of_Trees(t_tree *tree)
 
   For(i,max_list_size) lnL_list[i] = UNLIKELY;
 
-  PhyML_Printf("\n. First round of optimization...");
-
+  if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n. First round of optimization...");
+  
   if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
 
   Round_Optimize(tree,5);
@@ -4801,7 +4798,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   Copy_Tree(tree,tree_list[0]);
   lnL_list[0] = tree->c_lnL;
 
-  PhyML_Printf("\n\n. Building a list of starting trees...");
+  if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Building a list of starting trees...");
 
   list_size = 1;
   do
@@ -4815,7 +4812,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       if(tree->c_lnL > best_lnL) 
         {
           best_lnL = tree->c_lnL;
-          PhyML_Printf("\n. Best tree found so far has lnL: %12.2f (%d more trees to examine)",best_lnL,list_size_first_round-list_size);
+          if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n. Best tree found so far has lnL: %12.2f (%d more trees to examine)",best_lnL,list_size_first_round-list_size);
           if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
         }
 
@@ -4827,10 +4824,13 @@ void Spr_List_Of_Trees(t_tree *tree)
   
   rk = Ranks(lnL_list,max_list_size);
     
-  PhyML_Printf("\n\n. Finished building the list of trees. Their scores are given below...");
-  For(i,list_size) PhyML_Printf("\n. Tree %3d, lnL: %12.2f",i+1,lnL_list[rk[i]]);
+  if(tree->verbose > VL0 && tree->io->quiet == NO) 
+    {
+      PhyML_Printf("\n\n. Finished building the list of trees. Their scores are given below...");
+      For(i,list_size) PhyML_Printf("\n. Tree %3d, lnL: %12.2f",i+1,lnL_list[rk[i]]);
+    }
 
-  PhyML_Printf("\n\n. Improving the best trees (%d trees to process)...",list_size_second_round);
+  if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Improving the best trees (%d trees to process)...",list_size_second_round);
   list_size = 0;
   do
     {
@@ -4863,7 +4863,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       if(tree->c_lnL > best_lnL) 
         {
           best_lnL = tree->c_lnL;
-          PhyML_Printf("\n. Better tree found so far has lnL: %12.2f (%d more trees to examine)",best_lnL,list_size_second_round-list_size);
+          if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n. Better tree found so far has lnL: %12.2f (%d more trees to examine)",best_lnL,list_size_second_round-list_size);
           if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
         }
       
@@ -4874,8 +4874,8 @@ void Spr_List_Of_Trees(t_tree *tree)
   
   Free(rk);
   rk = Ranks(lnL_list,max_list_size);
-
-  PhyML_Printf("\n\n. Improving the best trees using NNIs...");
+  
+  if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Improving the best trees using NNIs...");
   list_size = 0;
   do
     {
@@ -4887,7 +4887,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       if(tree->c_lnL > best_lnL) 
         {
           best_lnL = tree->c_lnL;
-          PhyML_Printf("\n. Better tree found -> lnL: %12.2f (%d more trees to examine)",best_lnL,list_size_second_round-list_size);
+          if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n. Better tree found -> lnL: %12.2f (%d more trees to examine)",best_lnL,list_size_second_round-list_size);
           if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
         }
 
@@ -4952,10 +4952,6 @@ void Spr_List_Of_Trees(t_tree *tree)
       if(!Check_NNI_Five_Branches(tree)) break;
     }
   while(1);
-
-  tree->mod->s_opt->print = print;
-  tree->io->quiet         = quiet;
-
 
   For(i,list_size_first_round) Free_Tree(tree_list[i]);
 
