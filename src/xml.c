@@ -114,9 +114,9 @@ t_tree *XML_Process_Base(char *xml_filename)
   if(io->append_run_ID) { strcat(io->out_tree_file,"_"); strcat(io->out_tree_file,io->run_id_string); }
 
 # if defined(DATE)
-  strcat(io->out_tree_file,"_date_tree");
+  strcat(io->out_tree_file,"_date_tree.txt");
 # else
-  strcat(io->out_tree_file,"_phyml_tree");
+  strcat(io->out_tree_file,"_phyml_tree.txt");
 #endif
 
   strcpy(io->out_stats_file,outputfile);
@@ -124,9 +124,9 @@ t_tree *XML_Process_Base(char *xml_filename)
 
 
 # if defined(DATE)
-  strcat(io->out_stats_file,"_date_stats");
+  strcat(io->out_stats_file,"_date_stats.txt");
 # else
-  strcat(io->out_stats_file,"_phyml_stats");
+  strcat(io->out_stats_file,"_phyml_stats.txt");
 #endif
 
 
@@ -146,7 +146,7 @@ t_tree *XML_Process_Base(char *xml_filename)
           io->print_trace = YES;
           strcpy(io->out_trace_file,outputfile);
           if(io->append_run_ID) { strcat(io->out_trace_file,"_"); strcat(io->out_trace_file,io->run_id_string); }
-          strcat(io->out_trace_file,"_phyml_trace");
+          strcat(io->out_trace_file,"_phyml_trace.txt");
           io->fp_out_trace = Openfile(io->out_trace_file,1);
         }
     }
@@ -336,7 +336,7 @@ t_tree *XML_Process_Base(char *xml_filename)
           if(select < 3) io->print_site_lnl = YES;
 
           strcpy(io->out_lk_file,io->in_align_file);
-          strcat(io->out_lk_file, "_phyml_lk");
+          strcat(io->out_lk_file, "_phyml_lk.txt");
           io->fp_out_lk = Openfile(io->out_lk_file,1);
         }
 

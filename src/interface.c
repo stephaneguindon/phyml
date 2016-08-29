@@ -133,7 +133,8 @@ void Launch_Interface(option *io)
   if(io->print_site_lnl)
     {
       strcpy(io->out_lk_file,io->in_align_file);
-      strcat(io->out_lk_file, "_phyml_lk");
+      strcat(io->out_lk_file, "_phyml_lk.txt");
+
       if(io->append_run_ID) { strcat(io->out_lk_file,"_"); strcat(io->out_lk_file,io->run_id_string); }
       io->fp_out_lk = Openfile(io->out_lk_file,1);
     }
@@ -141,7 +142,8 @@ void Launch_Interface(option *io)
   if(io->print_trace)
     {
       strcpy(io->out_trace_file,io->in_align_file);
-      strcat(io->out_trace_file,"_phyml_trace");
+      strcat(io->out_trace_file,"_phyml_trace.txt");
+
       if(io->append_run_ID) { strcat(io->out_trace_file,"_"); strcat(io->out_trace_file,io->run_id_string); }
       io->fp_out_trace = Openfile(io->out_trace_file,1);
     }
@@ -149,7 +151,8 @@ void Launch_Interface(option *io)
   if(io->mod->s_opt->random_input_tree)
     {
       strcpy(io->out_trees_file,io->in_align_file);
-      strcat(io->out_trees_file,"_phyml_trees");
+      strcat(io->out_trees_file,"_phyml_trees.txt");
+
       if(io->append_run_ID) { strcat(io->out_trees_file,"_"); strcat(io->out_trees_file,io->run_id_string); }
       io->fp_out_trees = Openfile(io->out_trees_file,1);
     }
@@ -157,12 +160,14 @@ void Launch_Interface(option *io)
   if((io->print_boot_trees) && (io->mod->bootstrap > 0))
     {
       strcpy(io->out_boot_tree_file,io->in_align_file);
-      strcat(io->out_boot_tree_file,"_phyml_boot_trees");
+      strcat(io->out_boot_tree_file,"_phyml_boot_trees.txt");
+
       if(io->append_run_ID) { strcat(io->out_boot_tree_file,"_"); strcat(io->out_boot_tree_file,io->run_id_string); }
       io->fp_out_boot_tree = Openfile(io->out_boot_tree_file,1);
       
       strcpy(io->out_boot_stats_file,io->in_align_file);
-      strcat(io->out_boot_stats_file,"_phyml_boot_stats");
+      strcat(io->out_boot_stats_file,"_phyml_boot_stats.txt");
+
       if(io->append_run_ID) { strcat(io->out_boot_stats_file,"_"); strcat(io->out_boot_stats_file,io->run_id_string); }
       io->fp_out_boot_stats = Openfile(io->out_boot_stats_file,1);
     }
@@ -210,7 +215,6 @@ void Clear()
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void Launch_Interface_Input(option *io)
 {
@@ -274,34 +278,22 @@ void Launch_Interface_Input(option *io)
 #if defined(PHYML) || defined(PART) || defined(PHYML_INSERT)
 
   strcpy(io->out_stats_file,io->in_align_file);
-  strcat(io->out_stats_file,"_phyml_stats.txt");
   
+  strcat(io->out_stats_file,"_phyml_stats.txt");  
   strcpy(io->out_tree_file,io->in_align_file);
+ 
   strcat(io->out_tree_file,"_phyml_tree.txt");
-
   strcpy(io->out_lk_file,io->in_align_file);
+
+
   strcat(io->out_lk_file,"_phyml_lk.txt");
 
-
-#endif
-
-
-#ifdef WIN32
 #ifdef EVOLVE
   if(Filexists("evolve_out.txt"));
 #elif OPTIMIZ
   if(Filexists("optimiz_out.txt"))
 #elif defined(PHYML) || defined(PART) || defined(PHYML_INSERT)
   if(Filexists(io->out_stats_file))
-#endif
-#elif UNIX
-#ifdef EVOLVE
-  if(Filexists("evolve_out"));
-#elif OPTIMIZ
-  if(Filexists("optimiz_out"))
-#elif defined(PHYML) || defined(PART) || defined(PHYML_INSERT)
-   if(Filexists(io->out_stats_file))
-#endif
 #endif
     {
       PhyML_Printf("\n");
@@ -330,22 +322,12 @@ void Launch_Interface_Input(option *io)
 
   /* io->fp_out_stats = Openfile(io->out_stats_file,io->out_stats_file_open_mode); */
 
-#ifdef WIN32
 #ifdef EVOLVE
   if(Filexists("evolve_seq.txt"))
 #elif OPTIMIZ
   if(Filexists("optimiz_tree.txt"))
 #elif defined(PHYML) || defined(PART) || defined(PHYML_INSERT)
   if(Filexists(io->out_tree_file))
-#endif
-#elif UNIX
-#ifdef EVOLVE
-  if(Filexists("evolve_seq"))
-#elif OPTIMIZ
-  if(Filexists("optimiz_tree"))
-#elif defined(PHYML) || defined(PART) || defined(PHYML_INSERT)
-  if(Filexists(io->out_tree_file))
-#endif
 #endif
     {
       PhyML_Printf("\n");
@@ -1752,10 +1734,11 @@ void Launch_Interface_Branch_Support(option *io)
 		  io->print_boot_trees = 1;
 
 		  strcpy(io->out_boot_tree_file,io->in_align_file);
+
 		  strcat(io->out_boot_tree_file,"_phyml_boot_trees.txt");
 		  io->fp_out_boot_tree = Openfile(io->out_boot_tree_file,1);
-
 		  strcpy(io->out_boot_stats_file,io->in_align_file);
+
 		  strcat(io->out_boot_stats_file,"_phyml_boot_stats.txt");
 		  io->fp_out_boot_stats = Openfile(io->out_boot_stats_file,1);
 
