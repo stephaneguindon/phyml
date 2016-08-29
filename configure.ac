@@ -47,7 +47,7 @@ AC_FUNC_SETVBUF_REVERSED
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([floor pow rint sqrt strchr strstr])
 
-VECTOR_FLAG=-march=native
+dnl VECTOR_FLAG=-march=native
 dnl VECTOR_FLAG=-msse3
 dnl VECTOR_FLAG=-mavx
 dnl VECTOR_FLAG=

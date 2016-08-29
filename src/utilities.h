@@ -369,7 +369,7 @@ typedef	double phydbl;
 #define TAN tan
 #define SMALL DBL_MIN
 #define BIG  DBL_MAX
-#define SMALL_PIJ 1.E-20
+#define SMALL_PIJ 1.E-40
 #define LOGBIG 690.
 #define LOGSMALL -690.
 

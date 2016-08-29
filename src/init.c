@@ -640,10 +640,10 @@ void Set_Defaults_Model(t_mod *mod)
   /* mod->r_mat->rr_val           = NULL; */
   /* mod->r_mat->n_rr_per_cat     = NULL; */
 
-  mod->io                       = NULL;
-  mod->log_l                    = NO;
-  mod->gamma_mgf_bl             = NO;
-  mod->br_len_mult->v     = 1.0;
+  mod->io             = NULL;
+  mod->log_l          = NO;
+  mod->gamma_mgf_bl   = NO;
+  mod->br_len_mult->v = 1.0;
 
 
 #if !(defined PHYTIME || defined INVITEE)

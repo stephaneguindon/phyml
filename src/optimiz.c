@@ -622,13 +622,16 @@ phydbl Br_Len_Brent(t_edge *b, t_tree *tree)
   Set_Update_Eigen_Lr(YES,mixt_tree);
   Set_Use_Eigen_Lr(NO,mixt_tree);
 
-  Switch_Eigen(YES,mixt_tree->mod);
+  /* if(Global_myRank == 1) printf("\n. ???????? %d lnL: %f b: %d",Global_myRank,tree->c_lnL,b->num); fflush(NULL); */
 
+  Switch_Eigen(YES,mixt_tree->mod);
   lk_begin = Lk(mixt_b,mixt_tree); /*! We can't assume that the log-lk value is up-to-date */
+
   
   Set_Update_Eigen_Lr(NO,mixt_tree);
   Set_Use_Eigen_Lr(YES,mixt_tree);
   
+
   /* Generic_Brent_Lk(&(b->l->v), */
   /*                  tree->mod->l_min, */
   /*                  tree->mod->l_max, */
@@ -638,8 +641,8 @@ phydbl Br_Len_Brent(t_edge *b, t_tree *tree)
   /*                  Wrap_Lk_At_Given_Edge, */
   /*                  mixt_b,mixt_tree,NULL,NO); */
 
-  Br_Len_Newton_Raphson(&(b->l->v),mixt_b,tree->mod->s_opt->brent_it_max,tree->mod->s_opt->min_diff_lk_local,mixt_tree);
 
+  Br_Len_Newton_Raphson(&(b->l->v),mixt_b,tree->mod->s_opt->brent_it_max,tree->mod->s_opt->min_diff_lk_local,mixt_tree);
 
   Update_PMat_At_Given_Edge(mixt_b,mixt_tree);
 
@@ -655,7 +658,6 @@ phydbl Br_Len_Brent(t_edge *b, t_tree *tree)
       PhyML_Printf("\n== Err. in file %s at line %d",__FILE__,__LINE__);
       Exit("\n");
     }
-
 
   return mixt_tree->c_lnL;
 }
@@ -673,21 +675,32 @@ void Round_Optimize(t_tree *tree, int n_round_max)
   n_round = 0;
   each = 0;
 
+  /* if(Global_myRank == 0) printf("\n. 0???????? %d lnL: %f",Global_myRank,tree->c_lnL); fflush(NULL); */
   Set_Both_Sides(NO,tree); /* Only the down partial likelihoods need to be up-to-date here */
   Lk(NULL,tree);
+  /* if(Global_myRank == 0) printf("\n. 1???????? %d lnL: %f",Global_myRank,tree->c_lnL); fflush(NULL); */
   
   while(n_round < n_round_max)
     {
-      if(tree->mod->s_opt->opt_bl || tree->mod->s_opt->constrained_br_len)
-        Optimize_Br_Len_Serie(tree);
+      /* if(Global_myRank == 0)  */
+        /* printf("\n. 2???????? %d lnL: %f",Global_myRank,tree->c_lnL); fflush(NULL); */
+
+      if(tree->mod->s_opt->opt_bl || tree->mod->s_opt->constrained_br_len) Optimize_Br_Len_Serie(tree);
+      
+      /* if(Global_myRank == 0)  */
+        /* printf("\n. 3???????? %d lnL: %f",Global_myRank,tree->c_lnL); fflush(NULL); */
+      
       
       if((tree->mod->s_opt->opt_bl || tree->mod->s_opt->constrained_br_len) &&
          (tree->verbose > VL2) &&
          (!tree->io->quiet)) Print_Lk(tree,"[Branch lengths     ]");
-      
+
+
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
       
+      /* if(Global_myRank == 0) printf("\n. 4???????? %d lnL: %f",Global_myRank,tree->c_lnL); fflush(NULL); */
+
       if(!each)
         {
           each = 1;
@@ -894,7 +907,6 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void Optimiz_Ext_Br(t_tree *tree)
 {
@@ -2284,7 +2296,7 @@ phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t
   best_lnL = old_lnL = init_lnL = tree->c_lnL;
   best_l = *l;
 
-  /* PhyML_Printf("\n Begin NR loop (lnL: %f dlnL: %f d2lnL: %f)",tree->c_lnL,tree->c_dlnL,tree->c_d2lnL); */
+  /*   PhyML_Printf("\n Begin NR loop (lnL: %f dlnL: %f d2lnL: %f)",tree->c_lnL,tree->c_dlnL,tree->c_d2lnL); */
 
   converged = NO;
   iter = 0;
@@ -2314,14 +2326,14 @@ phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t
           best_l   = *l;
         }
 
-      /* PhyML_Printf("\n %12f %12f %12f %12G %12G %12G %12G", */
-      /*              b->l->v, */
-      /*              old_lnL, */
-      /*              tree->c_lnL, */
-      /*              dl, */
-      /*              d2l, */
-      /*              old_lnL-tree->c_lnL, */
-      /*              tol); */
+        /* PhyML_Printf("\n %12f %12f %12f %12G %12G %12G %12G", */
+        /*              b->l->v, */
+        /*              old_lnL, */
+        /*              tree->c_lnL, */
+        /*              dl, */
+        /*              d2l, */
+        /*              old_lnL-tree->c_lnL, */
+        /*              tol); */
 
       if(FABS(tree->c_lnL-old_lnL) < tol) converged = YES;
     }
@@ -2331,6 +2343,7 @@ phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t
   tree->c_lnL = best_lnL;
 
   /* printf("\n. init: %f current: %f l: %f",init_lnL,tree->c_lnL,b->l->v); */
+
   assert(best_lnL > init_lnL-tol);
   
   /* PhyML_Printf("\n End NR loop"); */

@@ -258,6 +258,7 @@ void PMat_Empirical(phydbl l, t_mod *mod, int pos, phydbl *Pij)
   phydbl *U,*V,*R;
   phydbl *expt;
   phydbl *uexpt;
+  phydbl sum;
 
   expt  = mod->eigen->e_val_im;
   uexpt = mod->eigen->r_e_vect_im;
@@ -284,8 +285,13 @@ void PMat_Empirical(phydbl l, t_mod *mod, int pos, phydbl *Pij)
             {
               Pij[pos+mod->ns*i+j] += (uexpt[i*n+k] * V[k*n+j]);
             }
+
           if(Pij[pos+mod->ns*i+j] < SMALL_PIJ) Pij[pos+mod->ns*i+j] = SMALL_PIJ;
         }
+
+      sum = 0.0;
+      For(j,n) sum += Pij[pos+mod->ns*i+j];
+      For(j,n) Pij[pos+mod->ns*i+j] /= sum;
       
 #ifndef PHYML
       phydbl sum;
@@ -328,7 +334,6 @@ void PMat_Empirical(phydbl l, t_mod *mod, int pos, phydbl *Pij)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void PMat_Gamma(phydbl l, t_mod *mod, int pos, phydbl *Pij)
 {
@@ -1091,7 +1096,6 @@ void Switch_From_M4mod_To_Mod(t_mod *mod)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void PMat_MGF_Gamma(phydbl *Pij, phydbl shape, phydbl scale, phydbl scaling_fact, t_mod *mod)
 {

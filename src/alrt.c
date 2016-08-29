@@ -46,7 +46,7 @@ int Check_NNI_Five_Branches(t_tree *tree)
   while(better_found == YES)
     {
       Update_Dirs(tree);
-      
+            
       //Interface output
       if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Checking for NNIs, optimizing five branches...\n");
       
@@ -60,6 +60,7 @@ int Check_NNI_Five_Branches(t_tree *tree)
       Set_Both_Sides(YES,tree);
       init_lnL = Lk(NULL,tree);
       MIXT_Set_Alias_Subpatt(NO,tree);
+      
       
       //For every branch
       For(i,2*tree->n_otu-3)
@@ -127,6 +128,7 @@ int Check_NNI_Five_Branches(t_tree *tree)
                 }
             }
         }
+      
       
       if((tree->c_lnL < init_lnL - tree->mod->s_opt->min_diff_lk_local) || (tree->c_lnL > init_lnL + tree->mod->s_opt->min_diff_lk_local))
         {
@@ -358,6 +360,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
 
   result = 0;
 
+
   /*! Initialization */
   l_init             = Duplicate_Scalar_Dbl(b_fcus->l);
   v_init             = Duplicate_Scalar_Dbl(b_fcus->l_var);
@@ -409,18 +412,17 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
       lk0 = lk_temp;
 
       For(i,3) //a branch has three nodes
-        if(b_fcus->left->v[i] != b_fcus->rght)//Only consider left_1 and left_2
+        if(b_fcus->left->v[i] != b_fcus->rght) //Only consider left_1 and left_2
           {
             Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
             lk_temp = Br_Len_Brent(b_fcus->left->b[i],tree);
           }
 
       Update_P_Lk(tree,b_fcus,b_fcus->left);
-
       lk_temp = Br_Len_Brent(b_fcus,tree);
 
       For(i,3)
-        if(b_fcus->rght->v[i] != b_fcus->left)//Only consider right_1 and right_2
+        if(b_fcus->rght->v[i] != b_fcus->left) //Only consider right_1 and right_2
           {
             Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
             lk_temp = Br_Len_Brent(b_fcus->rght->b[i],tree);
@@ -466,7 +468,6 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   Update_PMat_At_Given_Edge(e3,tree);
   Update_PMat_At_Given_Edge(e4,tree);
   Update_PMat_At_Given_Edge(b_fcus,tree);
-
 
   /* Sanity check */
   MIXT_Set_Alias_Subpatt(YES,tree);

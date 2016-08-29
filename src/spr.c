@@ -4774,7 +4774,6 @@ void Spr_List_Of_Trees(t_tree *tree)
   phydbl *lnL_list,best_lnL;
 
 
-  max_list_size                    = tree->n_otu;
   tree->mod->s_opt->max_depth_path = tree->n_otu;
   best_lnL                         = UNLIKELY;
   tree->verbose                    = (tree->verbose == VL0) ? VL0 : VL1;
@@ -4783,6 +4782,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   /* list_size_second_round           = (int)max_list_size/10; */
   list_size_first_round            = 10;
   list_size_second_round           = 5;
+  max_list_size                    = list_size_first_round;
 
   tree_list = (t_tree **)mCalloc(max_list_size,sizeof(t_tree *));
   lnL_list  = (phydbl *)mCalloc(max_list_size,sizeof(phydbl));
@@ -4791,12 +4791,15 @@ void Spr_List_Of_Trees(t_tree *tree)
 
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n. First round of optimization...");
   
+
   if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
 
+  /* printf("\n. 0????????? %d lnL: %f",Global_myRank,Lk(NULL,tree)); fflush(NULL); */
   Round_Optimize(tree,5);
   tree_list[0] = Make_Tree_From_Scratch(tree->n_otu,tree->data);
   Copy_Tree(tree,tree_list[0]);
   lnL_list[0] = tree->c_lnL;
+
 
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Building a list of starting trees...");
 
@@ -4806,8 +4809,12 @@ void Spr_List_Of_Trees(t_tree *tree)
       Stepwise_Add_Pars(tree);  
       Spr_Pars(0,10,tree);
 
+      /* printf("\n. 1????????? %d lnL: %f tree: %d",Global_myRank,Lk(NULL,tree),list_size); fflush(NULL); */
+
       tree->mod->s_opt->fast_nni = YES;
       Simu(tree,2);
+
+      /* printf("\n. ...1?????????  lnL: %f tree: %d",Lk(NULL,tree),list_size); fflush(NULL); */
 
       if(tree->c_lnL > best_lnL) 
         {
@@ -4824,11 +4831,13 @@ void Spr_List_Of_Trees(t_tree *tree)
   
   rk = Ranks(lnL_list,max_list_size);
     
+
   if(tree->verbose > VL0 && tree->io->quiet == NO) 
     {
       PhyML_Printf("\n\n. Finished building the list of trees. Their scores are given below...");
       For(i,list_size) PhyML_Printf("\n. Tree %3d, lnL: %12.2f",i+1,lnL_list[rk[i]]);
     }
+
 
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Improving the best trees (%d trees to process)...",list_size_second_round);
   list_size = 0;
@@ -4836,6 +4845,8 @@ void Spr_List_Of_Trees(t_tree *tree)
     {
       Copy_Tree(tree_list[rk[list_size]],tree);
       
+      /* printf("\n. 2????????? %d lnL: %f tree: %d",Global_myRank,Lk(NULL,tree),list_size); fflush(NULL); */
+
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
       
@@ -4875,11 +4886,14 @@ void Spr_List_Of_Trees(t_tree *tree)
   Free(rk);
   rk = Ranks(lnL_list,max_list_size);
   
+
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Improving the best trees using NNIs...");
   list_size = 0;
   do
     {
       Copy_Tree(tree_list[rk[list_size]],tree);
+
+      /* printf("\n. 3????????? %d lnL: %f tree: %d",Global_myRank,Lk(NULL,tree),list_size); fflush(NULL); */
 
       tree->mod->s_opt->min_diff_lk_move  = 0.01;
       Simu(tree,5);
@@ -4947,11 +4961,15 @@ void Spr_List_Of_Trees(t_tree *tree)
   tree->mod->s_opt->min_diff_lk_move  = 0.01;
   do
     {
+      /* printf("\n. 4????????? %d lnL: %f",Global_myRank,Lk(NULL,tree)); fflush(NULL); */
+
       tree->mod->s_opt->fast_nni = NO;
       Round_Optimize(tree,ROUND_MAX);
       if(!Check_NNI_Five_Branches(tree)) break;
     }
   while(1);
+
+  /* printf("\n. 5????????? %d lnL: %f",Global_myRank,Lk(NULL,tree)); fflush(NULL); */
 
   For(i,list_size_first_round) Free_Tree(tree_list[i]);
 

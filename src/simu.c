@@ -106,8 +106,9 @@ int Simu(t_tree *tree, int n_step_max)
       For(i,2*tree->n_otu-3)
         if((!tree->a_edges[i]->left->tax) &&
            (!tree->a_edges[i]->rght->tax))
-          NNI(tree,tree->a_edges[i],NO);
-
+          {
+            NNI(tree,tree->a_edges[i],NO);
+          }
       Select_Edges_To_Swap(tree,sorted_b,&n_neg);
       Sort_Edges_NNI_Score(tree,sorted_b,n_neg);
       Optimiz_Ext_Br(tree);

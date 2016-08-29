@@ -481,7 +481,8 @@ phydbl Lk(t_edge *b, t_tree *tree)
   if((tree->rates) && (tree->rates->bl_from_rt)) RATES_Update_Cur_Bl(tree);
 #endif
 
-  if(tree->rates && tree->io->lk_approx == NORMAL)
+  
+if(tree->rates && tree->io->lk_approx == NORMAL)
     {
 #ifdef BEAGLE
       Warn_And_Exit(TODO_BEAGLE);
@@ -589,6 +590,7 @@ phydbl Lk(t_edge *b, t_tree *tree)
         }
     }
 
+
   int n_patterns,ambiguity_check;
   n_patterns = tree->n_pattern;
   For(tree->curr_site,n_patterns)
@@ -608,7 +610,7 @@ phydbl Lk(t_edge *b, t_tree *tree)
             }
 
           if(tree->mod->use_m4mod) ambiguity_check = YES;
-
+          
 #if (defined(__AVX__))
           AVX_Lk_Core(state,ambiguity_check,b,tree);
 #elif (defined(__SSE3__))
@@ -635,6 +637,10 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
   phydbl len,*expl,*expld,*expld2,rr;
   phydbl lk,dlk,d2lk,dlnlk,d2lnlk,loglk,c_lnL;
   phydbl eps;
+
+
+  if(*l < tree->mod->l_min)      *l = tree->mod->l_min;
+  else if(*l > tree->mod->l_max) *l = tree->mod->l_max;      
 
   eps = 1.E-50;
 
@@ -727,16 +733,72 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
   d2lnlk = 0.0;
   c_lnL  = 0.0;
 
+
   For(tree->curr_site,tree->n_pattern)
     {
+
       dlk   = Lk_Core(-1,-1,NO ,b,expld,tree);
       d2lk  = Lk_Core(-1,-1,NO ,b,expld2,tree);
       loglk = Lk_Core(-1,-1,YES,b,expl,tree); 
       // Make sure to keep the call above in the last position so that site_lk_cat is the
       // actual likelihood rather than its first or second derivative
 
-      lk = EXP(loglk);
 
+      if(isinf(loglk)) // Happens sometimes because we do not apply correction for SMALL_PIJ when use_eigen = YES
+        {
+          tree->use_eigen_lr = NO;
+          dlk   = Lk_Core(-1,-1,NO ,b,expld,tree);
+          d2lk  = Lk_Core(-1,-1,NO ,b,expld2,tree);
+          loglk = Lk_Core(-1,-1,YES,b,expl,tree); 
+          tree->use_eigen_lr = YES;
+          /* printf("\n. [%d] dlk: %G d2lk: %G loglk: %G",Global_myRank,dlk,d2lk,loglk); */
+        }
+
+      lk = EXP(loglk);
+      
+      if(isinf(loglk))
+        {
+          printf("\n== loglk: %G",loglk); fflush(NULL);
+          {
+            int catg,site,dim1,dim2,dim3,ns;
+            phydbl site_lk_cat;
+            
+            dim1 = tree->mod->ras->n_catg * tree->mod->ns;
+            dim2 = tree->mod->ns;
+            dim3 = tree->mod->ns * tree->mod->ns;
+            ns   = dim2;
+
+            site = tree->curr_site;
+
+            For(catg,tree->mod->ras->n_catg)
+              {
+                tree->use_eigen_lr = YES;
+                site_lk_cat = Lk_Core_One_Class(tree->eigen_lr_left + site*dim1 + catg*dim2,
+                                                tree->eigen_lr_rght + site*dim1 + catg*dim2,
+                                                NULL,
+                                                NULL,
+                                                expl + catg*ns,
+                                                ns,
+                                                -1,-1,
+                                                b,tree);
+                                
+                printf("\n. EIGEN: YES --> %G [%G]",site_lk_cat,b->l->v); fflush(NULL);
+
+                tree->use_eigen_lr = NO;
+                site_lk_cat = Lk_Core_One_Class(b->p_lk_left + (site*dim1) + (catg*dim2),
+                                                b->p_lk_rght + (site*dim1) + (catg*dim2),
+                                                b->Pij_rr + (catg*dim3),
+                                                b->p_lk_tip_r + site*dim2,
+                                                NULL,
+                                                ns,YES,-1,
+                                                b,tree);
+
+                printf("\n. EIGEN: NO --> %G [%G]",site_lk_cat,b->l->v); fflush(NULL);
+              }
+          }
+          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+        }
+      
       if(lk < eps) // To avoid numerical precision issues
         {
           lk += eps; 
@@ -749,18 +811,19 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
 
       c_lnL += tree->data->wght[tree->curr_site] * loglk;
 
-      if(isinf(dlnlk)  || isnan(dlnlk) ||
-         isinf(d2lnlk) || isnan(d2lnlk) ||
-         isinf(loglk)  || isnan(loglk))
+
+      if(isnan(dlnlk)  || isnan(d2lnlk) || isnan(loglk))
         {
           PhyML_Printf("\n== l=%G lk=%G dlk=%G d2lk=%G",*l,lk,dlk,d2lk);
           Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
         }
     }
 
+
   tree->c_dlnL  = dlnlk;
   tree->c_d2lnL = d2lnlk;
   tree->c_lnL   = c_lnL;
+
 
   Free(expl);
   Free(expld);
@@ -818,6 +881,7 @@ phydbl Lk_Core(int state, int ambiguity_check, short int returnlog, t_edge *b, p
           */
           if(tree->use_eigen_lr == YES)
             {
+
               site_lk_cat = Lk_Core_One_Class(tree->eigen_lr_left + site*dim1 + catg*dim2,
                                               tree->eigen_lr_rght + site*dim1 + catg*dim2,
                                               NULL,
@@ -826,6 +890,21 @@ phydbl Lk_Core(int state, int ambiguity_check, short int returnlog, t_edge *b, p
                                               ns,
                                               -1,-1,
                                               b,tree);
+
+              /* if(Global_myRank == 0 && site_lk_cat < 1.E-50 && site_lk_cat > -1.E-50) printf("\n. ??????? %G [%G %G %G %G] [%G %G %G %G] [%G %G %G %G]", */
+              /*                                                                                site_lk_cat, */
+              /*                                                                                tree->eigen_lr_left[site*dim1 + catg*dim2 + 0], */
+              /*                                                                                tree->eigen_lr_left[site*dim1 + catg*dim2 + 1], */
+              /*                                                                                tree->eigen_lr_left[site*dim1 + catg*dim2 + 2], */
+              /*                                                                                tree->eigen_lr_left[site*dim1 + catg*dim2 + 3], */
+              /*                                                                                tree->eigen_lr_rght[site*dim1 + catg*dim2 + 0], */
+              /*                                                                                tree->eigen_lr_rght[site*dim1 + catg*dim2 + 1], */
+              /*                                                                                tree->eigen_lr_rght[site*dim1 + catg*dim2 + 2], */
+              /*                                                                                tree->eigen_lr_rght[site*dim1 + catg*dim2 + 3], */
+              /*                                                                                expl[catg*dim2+0], */
+              /*                                                                                expl[catg*dim2+1], */
+              /*                                                                                expl[catg*dim2+2], */
+              /*                                                                                expl[catg*dim2+3]); fflush(NULL); */
             }
           else // tree->use_eigen_lr == NO
             {
@@ -860,6 +939,7 @@ phydbl Lk_Core(int state, int ambiguity_check, short int returnlog, t_edge *b, p
         tree->mod->ras->gamma_r_proba->v[catg]; //density
     }
   
+  /* if(Global_myRank == 0) printf("\n ?????????? site_lk %G",site_lk); fflush(NULL); */
   
   if(tree->mod->ras->invar == YES)
     {
@@ -879,6 +959,8 @@ phydbl Lk_Core(int state, int ambiguity_check, short int returnlog, t_edge *b, p
   if(!(site_lk < 0.0)) // Might not be true if this function is used to evaluate first or second derivative
     log_site_lk = LOG(site_lk) - (phydbl)LOG2 * fact_sum_scale; // log_site_lk =  log(site_lk_scaled / 2^(left_subtree+right_subtree))      
   
+  /* if(Global_myRank == 1) printf("\n ?????????? log_site_lk %g",log_site_lk); fflush(NULL); */
+
   // Calculation of the site likelihood (using scaling factors)...
   int piecewise_exponent;
   phydbl multiplier;
@@ -919,7 +1001,7 @@ phydbl Lk_Core(int state, int ambiguity_check, short int returnlog, t_edge *b, p
       tree->cur_site_lk[site] = EXP(log_site_lk);
     }
   
-  if(isinf(log_site_lk) || isnan(log_site_lk))
+  if(isnan(log_site_lk) == YES)
     {
       PhyML_Printf("\n== Site = %d",site);
       PhyML_Printf("\n== Invar = %d",tree->data->invar[site]);
@@ -993,7 +1075,6 @@ void Update_Eigen_Lr(t_edge *b, t_tree *tree)
   
   dim1 = tree->mod->ras->n_catg * tree->mod->ns;
   dim2 = tree->mod->ns;
-  
   
   For(site,tree->n_pattern)
     {      
@@ -2612,7 +2693,8 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
 
   if(tree->mod->log_l == YES) b_fcus->l->v = EXP(b_fcus->l->v);
 
-  if(b_fcus->l->v < 0.0) b_fcus->l->v = 0.0;
+  if(b_fcus->l->v < l_min) b_fcus->l->v = l_min;
+  if(b_fcus->l->v > l_max) b_fcus->l->v = l_max;
 
   For(i,tree->mod->ras->n_catg)
     {
@@ -4102,15 +4184,16 @@ void Pull_Scaling_Factors(int site,
           
           tmp = sum + ((phydbl)LOGSMALL - LOG(FABS(tree->site_lk_cat[catg])))/(phydbl)LOG2;
           if(tmp > min_sum_scale) min_sum_scale = tmp; /* max of the mins */
-          
+
+          assert(isnan(tmp) == NO);          
         }
       
       if(min_sum_scale > max_sum_scale)
         {
+          #ifdef SAFEMODE
           PhyML_Printf("\n== Numerical precision issue alert.");
           PhyML_Printf("\n== min_sum_scale = %G max_sum_scale = %G",min_sum_scale,max_sum_scale);
-          /* PhyML_Printf("\n== Err. in file %s at line %d\n\n",__FILE__,__LINE__); */
-          /* Warn_And_Exit("\n"); */
+          #endif
           min_sum_scale = max_sum_scale;
         }
       
@@ -4323,6 +4406,7 @@ phydbl AVX_Lk_Core_Nucl(int state, int ambiguity_check, t_edge *b, t_tree *tree)
   site            = tree->curr_site;
   ns              = tree->mod->ns;
     
+
   assert(ns == 4);
 
   /* Skip this if no tree traveral was required, i.e. likelihood in each class of the mixture is already up to date */
@@ -4332,6 +4416,7 @@ phydbl AVX_Lk_Core_Nucl(int state, int ambiguity_check, t_edge *b, t_tree *tree)
       /* For all classes of rates */
       For(catg,tree->mod->ras->n_catg)
         {
+
           site_lk_cat = .0;
 
           if(b->rght->tax == YES)
@@ -4349,7 +4434,11 @@ phydbl AVX_Lk_Core_Nucl(int state, int ambiguity_check, t_edge *b, t_tree *tree)
           double plk[4];
           
           // Transition  probability matrix
-          For(i,4) _p[i] = _mm256_load_pd(b->Pij_rr + catg*dim3+i*dim2);
+          For(i,4) _p[i] = _mm256_load_pd(b->Pij_rr + catg*dim3 + i*dim2);
+          _mm256_store_pd(plk,_p[0]);
+          _mm256_store_pd(plk,_p[1]);
+          _mm256_store_pd(plk,_p[2]);
+          _mm256_store_pd(plk,_p[3]);
 
           // Partial likelihood vector on righthand side of b
           if(b->rght->tax == NO)
@@ -4363,7 +4452,9 @@ phydbl AVX_Lk_Core_Nucl(int state, int ambiguity_check, t_edge *b, t_tree *tree)
           For(i,4) _pplk[i] = _mm256_mul_pd(_p[i],_plk_r);
           
           _plk = _mm256_mul_pd(AVX_Horizontal_Add(_pplk),_plk_l); 
-  
+          
+          _mm256_store_pd(plk,_plk);
+
           _plk = _mm256_mul_pd(_plk,_mm256_load_pd(tree->mod->e_frq->pi->v));
 
           _mm256_store_pd(plk,_plk);
