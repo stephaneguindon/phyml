@@ -285,8 +285,8 @@ void Launch_Interface_Input(option *io)
   strcat(io->out_tree_file,"_phyml_tree.txt");
   strcpy(io->out_lk_file,io->in_align_file);
 
-
   strcat(io->out_lk_file,"_phyml_lk.txt");
+#endif
 
 #ifdef EVOLVE
   if(Filexists("evolve_out.txt"));
