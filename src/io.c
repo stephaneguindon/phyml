@@ -5449,8 +5449,9 @@ void JSON_Write_All(json_a *array, FILE *where)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-json_o *JSON_Tree_To_Object(t_tree *tree)
+json_o *JSON_Tree_To_Object(t_tree *mixt_tree)
 {
+  t_tree *tree;
   json_sv *state,*sv;
   json_o *ret,*o;
   json_a *a;
@@ -5502,8 +5503,8 @@ json_o *JSON_Tree_To_Object(t_tree *tree)
   sv->string = (char *)mCalloc(string_len,sizeof(char));
   strcpy(sv->string,"value");
   sv->value = (char *)mCalloc(string_len,sizeof(char));
-  sprintf(sv->value,"%d",tree->json_num);
-  tree->json_num++;
+  sprintf(sv->value,"%d",mixt_tree->json_num);
+  mixt_tree->json_num++;
   
   sv->next = NULL;
 
@@ -5539,7 +5540,7 @@ json_o *JSON_Tree_To_Object(t_tree *tree)
   strcpy(sv->string,"value");
   sv->value = (char *)mCalloc(string_len,sizeof(char));
   time(&t_end);
-  sprintf(sv->value,"%d",(int)(t_end-tree->t_beg));
+  sprintf(sv->value,"%d",(int)(t_end-mixt_tree->t_beg));
   
   sv->next = NULL;
 
@@ -5571,7 +5572,7 @@ json_o *JSON_Tree_To_Object(t_tree *tree)
   sv->value = NULL; sv->array = NULL; sv->object = NULL; sv->next = NULL;
   sv->string = (char *)mCalloc(string_len,sizeof(char));
   strcpy(sv->string,"value");
-  s = Write_Tree(tree,NO);
+  s = Write_Tree(mixt_tree,NO);
   sv->value = (char *)mCalloc((int)strlen(s)+1,sizeof(char));
   sprintf(sv->value,"%s",s);
   Free(s);
@@ -5608,9 +5609,144 @@ json_o *JSON_Tree_To_Object(t_tree *tree)
   sv->string = (char *)mCalloc(string_len,sizeof(char));
   strcpy(sv->string,"value");
   sv->value = (char *)mCalloc(string_len,sizeof(char));
-  sprintf(sv->value,"%G",tree->c_lnL);
+  sprintf(sv->value,"%G",mixt_tree->c_lnL);
 
   sv->next = NULL;
+
+
+
+  // TsTv
+  {
+    int n_tstv,i;
+    scalar_dbl **tstv;
+
+    n_tstv = 0;
+    tstv   = NULL;
+    tree   = mixt_tree;
+    
+    do
+      {
+        if(tree->is_mixt_tree == YES) tree = tree->next;
+        
+        For(i,n_tstv) if(tree->mod->kappa == tstv[i]) break;
+        
+        if(i == n_tstv)
+          {
+            if(!tstv) tstv = (scalar_dbl **)mCalloc(1,sizeof(scalar_dbl *));
+            else      tstv = (scalar_dbl **)mRealloc(tstv,n_tstv+1,sizeof(scalar_dbl *));
+            tstv[n_tstv] = tree->mod->kappa;
+            n_tstv++;
+            
+            if(tree->mod->s_opt->opt_kappa == YES)
+              {
+                o->next = (json_o *)mCalloc(1,sizeof(json_o));
+                o = o->next;
+                
+                o->sv = (json_sv *)mCalloc(1,sizeof(json_sv));
+                sv = o->sv;
+                
+                sv->value = NULL; sv->array = NULL; sv->object = NULL; o->next = NULL;
+                sv->string = (char *)mCalloc(string_len,sizeof(char));
+                strcpy(sv->string,"type");
+                sv->value = (char *)mCalloc(string_len,sizeof(char));
+                strcpy(sv->value,"t_param");
+                
+                sv->next = (json_sv *)mCalloc(1,sizeof(json_sv));
+                sv = sv->next;
+                sv->value = NULL; sv->array = NULL; sv->object = NULL; sv->next = NULL;
+                sv->string = (char *)mCalloc(string_len,sizeof(char));
+                strcpy(sv->string,"id");
+                sv->value = (char *)mCalloc(string_len,sizeof(char));
+                strcpy(sv->value,"tstv");
+                sprintf(sv->value+strlen(sv->value),"%d",n_tstv);
+                
+                sv->next = (json_sv *)mCalloc(1,sizeof(json_sv));
+                sv = sv->next;
+                sv->value = NULL; sv->array = NULL; sv->object = NULL; sv->next = NULL;
+                sv->string = (char *)mCalloc(string_len,sizeof(char));
+                strcpy(sv->string,"value");
+                sv->value = (char *)mCalloc(string_len,sizeof(char));
+                sprintf(sv->value,"%G",tree->mod->kappa->v);
+                
+                sv->next = NULL;
+      
+              }
+          }
+        tree = tree->next;
+      }
+    while(tree);
+
+    if(tstv) Free(tstv);
+  }
+
+
+
+  // Alpha
+  {
+    int n_alpha,i;
+    scalar_dbl **alpha;
+
+    n_alpha = 0;
+    alpha   = NULL;
+    tree    = mixt_tree;
+    
+    do
+      {
+        
+        For(i,n_alpha) if(tree->mod->ras->alpha == alpha[i]) break;
+        
+        if(i == n_alpha)
+          {
+            if(!alpha) alpha = (scalar_dbl **)mCalloc(1,sizeof(scalar_dbl *));
+            else      alpha = (scalar_dbl **)mRealloc(alpha,n_alpha+1,sizeof(scalar_dbl *));
+            alpha[n_alpha] = tree->mod->ras->alpha;
+            n_alpha++;
+            
+            if(tree->mod->s_opt->opt_alpha == YES)
+              {
+                o->next = (json_o *)mCalloc(1,sizeof(json_o));
+                o = o->next;
+                
+                o->sv = (json_sv *)mCalloc(1,sizeof(json_sv));
+                sv = o->sv;
+                
+                sv->value = NULL; sv->array = NULL; sv->object = NULL; o->next = NULL;
+                sv->string = (char *)mCalloc(string_len,sizeof(char));
+                strcpy(sv->string,"type");
+                sv->value = (char *)mCalloc(string_len,sizeof(char));
+                strcpy(sv->value,"t_param");
+                
+                sv->next = (json_sv *)mCalloc(1,sizeof(json_sv));
+                sv = sv->next;
+                sv->value = NULL; sv->array = NULL; sv->object = NULL; sv->next = NULL;
+                sv->string = (char *)mCalloc(string_len,sizeof(char));
+                strcpy(sv->string,"id");
+                sv->value = (char *)mCalloc(string_len,sizeof(char));
+                strcpy(sv->value,"alpha");
+                sprintf(sv->value+strlen(sv->value),"%d",n_alpha);
+                
+                sv->next = (json_sv *)mCalloc(1,sizeof(json_sv));
+                sv = sv->next;
+                sv->value = NULL; sv->array = NULL; sv->object = NULL; sv->next = NULL;
+                sv->string = (char *)mCalloc(string_len,sizeof(char));
+                strcpy(sv->string,"value");
+                sv->value = (char *)mCalloc(string_len,sizeof(char));
+                sprintf(sv->value,"%G",tree->mod->ras->alpha->v);
+                
+                sv->next = NULL;
+      
+              }
+          }
+        tree = tree->next_mixt;
+      }
+    while(tree);
+
+    if(alpha) Free(alpha);
+  }
+
+
+
+
 
   return(ret);
 }

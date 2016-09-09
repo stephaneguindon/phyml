@@ -675,21 +675,14 @@ void Round_Optimize(t_tree *tree, int n_round_max)
   n_round = 0;
   each = 0;
 
-  /* if(Global_myRank == 0) printf("\n. 0???????? %d lnL: %f",Global_myRank,tree->c_lnL); fflush(NULL); */
   Set_Both_Sides(NO,tree); /* Only the down partial likelihoods need to be up-to-date here */
   Lk(NULL,tree);
-  /* if(Global_myRank == 0) printf("\n. 1???????? %d lnL: %f",Global_myRank,tree->c_lnL); fflush(NULL); */
-  
+
   while(n_round < n_round_max)
     {
-      /* if(Global_myRank == 0)  */
-        /* printf("\n. 2???????? %d lnL: %f",Global_myRank,tree->c_lnL); fflush(NULL); */
 
       if(tree->mod->s_opt->opt_bl || tree->mod->s_opt->constrained_br_len) Optimize_Br_Len_Serie(tree);
-      
-      /* if(Global_myRank == 0)  */
-        /* printf("\n. 3???????? %d lnL: %f",Global_myRank,tree->c_lnL); fflush(NULL); */
-      
+            
       
       if((tree->mod->s_opt->opt_bl || tree->mod->s_opt->constrained_br_len) &&
          (tree->verbose > VL2) &&
@@ -699,8 +692,6 @@ void Round_Optimize(t_tree *tree, int n_round_max)
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
       
-      /* if(Global_myRank == 0) printf("\n. 4???????? %d lnL: %f",Global_myRank,tree->c_lnL); fflush(NULL); */
-
       if(!each)
         {
           each = 1;
@@ -2694,7 +2685,7 @@ void Optimize_TsTv(t_tree *mixt_tree, int verbose)
 
   do
     {
-      if(tree->next) tree = tree->next;
+      if(tree->is_mixt_tree == YES) tree = tree->next;
       
       For(i,n_tstv) if(tree->mod->kappa == tstv[i]) break;
       
@@ -2705,7 +2696,7 @@ void Optimize_TsTv(t_tree *mixt_tree, int verbose)
           tstv[n_tstv] = tree->mod->kappa;
           n_tstv++;
           
-          if(tree->mod->s_opt->opt_kappa)
+          if(tree->mod->s_opt->opt_kappa == YES)
             {
               phydbl a,c;
               
