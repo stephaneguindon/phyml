@@ -1,0 +1,66 @@
+<phyml runid="chironius" output.file="chironius.output" branch.test="aLRT" print.json.trace="yes">
+
+  <topology>
+    <instance id="T1" init.tree="bionj"  optimise.tree="yes" search="spr"/>
+  </topology>
+	
+  <branchlengths id="BL1">
+    <instance id="L1" optimise.lens="yes"/>
+  </branchlengths>
+	
+  <ratematrices id="RM1">
+    <instance id="M1" model="GTR" optimise.rr="yes"/>
+    <instance id="M2" model="HKY85" optimise.rr="yes"/>
+  </ratematrices>
+	
+  <equfreqs id="EF1">
+    <instance id="F1"/>
+    <instance id="F2"/>
+    <instance id="F3"/>
+    <instance id="F4"/>
+  </equfreqs>
+	
+  <siterates id="SR1">
+    <instance id="R1" init.value="1.0"/>
+    <instance id="R2" init.value="1.0"/>
+    <instance id="R3" init.value="1.0"/>
+    <instance id="R4" init.value="1.0"/>
+    <weights id="D1" family="gamma" optimise.alpha="yes">
+    </weights>
+  </siterates>
+	
+  <siterates id="SR2">
+    <instance id="R5" init.value="1.0"/>
+    <instance id="R6" init.value="1.0"/>
+    <weights id="D2" family="freerates">
+    </weights>
+  </siterates>
+  
+  <siterates id="SR3">
+    <instance id="R7" init.value="1.0"/>
+    <instance id="R8" init.value="1.0"/>
+    <instance id="R9" init.value="1.0"/>
+    <weights id="D3" family="freerates">
+    </weights>
+  </siterates>
+  
+  
+  
+  <partitionelem id="partition1" file.name="./16s.phy" data.type="nt" interleaved="no" optimise.tree.scale="no">
+    <mixtureelem list="T1, T1, T1, T1"/>
+    <mixtureelem list="R1, R2, R3, R4"/>
+    <mixtureelem list="M1, M1, M1, M1"/>
+    <mixtureelem list="F2, F2, F2, F2"/>
+    <mixtureelem list="L1, L1, L1, L1"/>
+  </partitionelem>
+  
+  <partitionelem id="partition2" file.name="./cytb.phy" data.type="nt" interleaved="no" optimise.tree.scale="no">
+    <mixtureelem list="T1, T1"/>
+    <mixtureelem list="R5, R6"/>
+    <mixtureelem list="M2, M2"/>
+    <mixtureelem list="F3, F3"/>
+    <mixtureelem list="L1, L1"/>
+  </partitionelem>
+
+
+</phyml>

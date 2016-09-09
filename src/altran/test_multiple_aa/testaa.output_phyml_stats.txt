@@ -1,0 +1,120 @@
+
+. Starting tree: BioNJ
+. Tree topology search: spr
+. Processed 2 data sets ( ./part1.phy, ./part2.phy )
+. Final log-likelihood: -17356.516527
+
+
+ _______________________________________________________________________ 
+|                                                                       |
+|                              ./part1.phy      (partition element  0)  |
+|_______________________________________________________________________|
+
+. Number of rate classes:		           4
+. Model of rate variation:		       Gamma
+. Gamma shape parameter value:		        0.65
+   Optimise: 				         yes
+. Relative average rate:		    1.000000
+
+. Mixture class 1
+   Relative substitution rate:	    0.064345
+   Rel. rate freq. (> 0 rates):	    0.250000
+   Rate class number:		           0
+   Substitution model:		          LG
+   Rate matrix weight:		    1.000000
+   Amino-acid freq.:		       Model
+   Equ. freq. weight:		    1.000000
+
+. Mixture class 2
+   Relative substitution rate:	    0.340853
+   Rel. rate freq. (> 0 rates):	    0.250000
+   Rate class number:		           1
+   Substitution model:		          LG
+   Rate matrix weight:		    1.000000
+   Amino-acid freq.:		       Model
+   Equ. freq. weight:		    1.000000
+
+. Mixture class 3
+   Relative substitution rate:	    0.906434
+   Rel. rate freq. (> 0 rates):	    0.250000
+   Rate class number:		           2
+   Substitution model:		          LG
+   Rate matrix weight:		    1.000000
+   Amino-acid freq.:		       Model
+   Equ. freq. weight:		    1.000000
+
+. Mixture class 4
+   Relative substitution rate:	    2.688368
+   Rel. rate freq. (> 0 rates):	    0.250000
+   Rate class number:		           3
+   Substitution model:		          LG
+   Rate matrix weight:		    1.000000
+   Amino-acid freq.:		       Model
+   Equ. freq. weight:		    1.000000
+
+
+ _______________________________________________________________________ 
+|                                                                       |
+|                              ./part2.phy      (partition element  1)  |
+|_______________________________________________________________________|
+
+. Number of rate classes:		           4
+. Model of rate variation:		   FreeRates
+. Relative average rate:		    1.000000
+
+. Mixture class 1
+   Relative substitution rate:	    8.883283
+   Rel. rate freq. (> 0 rates):	    0.016855
+   Rate class number:		           0
+   Substitution model:		          LG
+   Rate matrix weight:		    1.000000
+   Amino-acid freq.:		       Model
+   Equ. freq. weight:		    1.000000
+
+. Mixture class 2
+   Relative substitution rate:	    0.999998
+   Rel. rate freq. (> 0 rates):	    0.301541
+   Rate class number:		           1
+   Substitution model:		          LG
+   Rate matrix weight:		    1.000000
+   Amino-acid freq.:		       Model
+   Equ. freq. weight:		    1.000000
+
+. Mixture class 3
+   Relative substitution rate:	    0.133357
+   Rel. rate freq. (> 0 rates):	    0.529042
+   Rate class number:		           2
+   Substitution model:		          LG
+   Rate matrix weight:		    1.000000
+   Amino-acid freq.:		       Model
+   Equ. freq. weight:		    1.000000
+
+. Mixture class 4
+   Relative substitution rate:	    3.134333
+   Rel. rate freq. (> 0 rates):	    0.152562
+   Rate class number:		           3
+   Substitution model:		          LG
+   Rate matrix weight:		    1.000000
+   Amino-acid freq.:		       Model
+   Equ. freq. weight:		    1.000000
+
+
+ _______________________________________________________________________ 
+|                                                                       |
+|                        Model summary table                            |
+|_______________________________________________________________________|
+
+  ------------------------------------------
+  Partition element  0  0  0  0  1  1  1  1 
+  ------------------------------------------
+  State frequencies  a  a  a  a  a  a  a  a 
+     Branch lengths  a  a  a  a  a  a  a  a 
+        Rate matrix  a  a  a  a  a  a  a  a 
+  ------------------------------------------
+
+
+. Tree estimated from data partition 0
+ (tax19:0.16425357,tax18:0.19170144,(tax9:0.27380650,((tax8:0.02534873,tax7:0.03497050):0.09703165,((tax2:0.04965165,tax1:0.05347636):0.06202203,((tax6:0.03167884,(tax4:0.01435070,(tax5:0.04119709,tax3:0.04704463):0.02092767):0.03466292):0.00776613,(tax12:0.05328543,((tax11:0.05363473,tax10:0.07565693):0.00760232,((tax13:0.09564363,tax14:0.06431181):0.01413446,(tax16:0.02664998,(tax17:0.12421576,tax15:0.02715867):0.02985767):0.02704690):0.01239709):0.00411934):0.00514522):0.00851806):0.02422674):0.02569647):0.20286401);
+
+. Tree estimated from data partition 1
+ (tax19:0.16425357,tax18:0.19170144,(tax9:0.27380650,((tax8:0.02534873,tax7:0.03497050):0.09703165,((tax2:0.04965165,tax1:0.05347636):0.06202203,((tax6:0.03167884,(tax4:0.01435070,(tax5:0.04119709,tax3:0.04704463):0.02092767):0.03466292):0.00776613,(tax12:0.05328543,((tax11:0.05363473,tax10:0.07565693):0.00760232,((tax13:0.09564363,tax14:0.06431181):0.01413446,(tax16:0.02664998,(tax17:0.12421576,tax15:0.02715867):0.02985767):0.02704690):0.01239709):0.00411934):0.00514522):0.00851806):0.02422674):0.02569647):0.20286401);

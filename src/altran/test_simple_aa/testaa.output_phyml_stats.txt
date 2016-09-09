@@ -1,0 +1,71 @@
+
+. Starting tree: BioNJ
+. Tree topology search: spr
+. Processed 1 data set ( ./part1.phy )
+. Final log-likelihood: -5796.788234
+
+
+ _______________________________________________________________________ 
+|                                                                       |
+|                              ./part1.phy      (partition element  0)  |
+|_______________________________________________________________________|
+
+. Number of rate classes:		           4
+. Model of rate variation:		       Gamma
+. Gamma shape parameter value:		        0.59
+   Optimise: 				         yes
+. Relative average rate:		    1.000000
+
+. Mixture class 1
+   Relative substitution rate:	    0.051096
+   Rel. rate freq. (> 0 rates):	    0.250000
+   Rate class number:		           0
+   Substitution model:		          LG
+   Rate matrix weight:		    1.000000
+   Amino-acid freq.:		       Model
+   Equ. freq. weight:		    1.000000
+
+. Mixture class 2
+   Relative substitution rate:	    0.306787
+   Rel. rate freq. (> 0 rates):	    0.250000
+   Rate class number:		           1
+   Substitution model:		          LG
+   Rate matrix weight:		    1.000000
+   Amino-acid freq.:		       Model
+   Equ. freq. weight:		    1.000000
+
+. Mixture class 3
+   Relative substitution rate:	    0.876242
+   Rel. rate freq. (> 0 rates):	    0.250000
+   Rate class number:		           2
+   Substitution model:		          LG
+   Rate matrix weight:		    1.000000
+   Amino-acid freq.:		       Model
+   Equ. freq. weight:		    1.000000
+
+. Mixture class 4
+   Relative substitution rate:	    2.765876
+   Rel. rate freq. (> 0 rates):	    0.250000
+   Rate class number:		           3
+   Substitution model:		          LG
+   Rate matrix weight:		    1.000000
+   Amino-acid freq.:		       Model
+   Equ. freq. weight:		    1.000000
+
+
+ _______________________________________________________________________ 
+|                                                                       |
+|                        Model summary table                            |
+|_______________________________________________________________________|
+
+  ------------------------------
+  Partition element  0  0  0  0 
+  ------------------------------
+  State frequencies  a  a  a  a 
+     Branch lengths  a  a  a  a 
+        Rate matrix  a  a  a  a 
+  ------------------------------
+
+
+. Tree estimated from data partition 0
+ (tax19:0.18003419,tax18:0.18389792,(tax9:0.40731549,((tax8:0.02695373,tax7:0.04765223):0.11116982,((tax2:0.01799552,tax1:0.00483667):0.01458613,((tax4:0.00181858,(tax3:0.02930565,tax5:0.02098187):0.01731017):0.02703800,((tax12:0.01677180,((tax16:0.00774479,(tax13:0.05779786,(tax17:0.01266728,tax15:0.00658395):0.02616688):0.00422561):0.00583925,(tax11:0.00383824,tax10:0.03460502):0.00348295):0.00149087):0.00439155,(tax14:0.01753864,tax6:0.00349542):0.00300783):0.00327407):0.00918182):0.03755624):0.04719644):0.10772748);

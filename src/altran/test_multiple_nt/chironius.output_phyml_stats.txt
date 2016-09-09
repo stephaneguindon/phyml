@@ -1,0 +1,158 @@
+
+. Starting tree: BioNJ
+. Tree topology search: spr
+. Processed 2 data sets ( ./16s.phy, ./cytb.phy )
+. Final log-likelihood: -6257.307001
+
+
+ _______________________________________________________________________ 
+|                                                                       |
+|                                ./16s.phy      (partition element  0)  |
+|_______________________________________________________________________|
+
+. Number of rate classes:		           4
+. Model of rate variation:		       Gamma
+. Gamma shape parameter value:		        0.19
+   Optimise: 				         yes
+. Relative average rate:		    1.000000
+
+. Mixture class 1
+   Relative substitution rate:	    0.000355
+   Rel. rate freq. (> 0 rates):	    0.250000
+   Rate class number:		           0
+   Substitution model:		         GTR
+   Optimise subst. rates:	         yes
+   Subst. rate A<->C:		        7.09
+   Subst. rate A<->G:		        9.54
+   Subst. rate A<->T:		        2.53
+   Subst. rate C<->G:		        0.02
+   Subst. rate C<->T:		       66.83
+   Subst. rate G<->T:		        1.00
+   Rate matrix weight:		    0.500000
+   Optimise nucletide freq.:	          no
+   Freq(A):			        0.35
+   Freq(C):			        0.23
+   Freq(G):			        0.18
+   Freq(T):			        0.23
+   Equ. freq. weight:		    0.500000
+
+. Mixture class 2
+   Relative substitution rate:	    0.027666
+   Rel. rate freq. (> 0 rates):	    0.250000
+   Rate class number:		           1
+   Substitution model:		         GTR
+   Optimise subst. rates:	         yes
+   Subst. rate A<->C:		        7.09
+   Subst. rate A<->G:		        9.54
+   Subst. rate A<->T:		        2.53
+   Subst. rate C<->G:		        0.02
+   Subst. rate C<->T:		       66.83
+   Subst. rate G<->T:		        1.00
+   Rate matrix weight:		    0.500000
+   Optimise nucletide freq.:	          no
+   Freq(A):			        0.35
+   Freq(C):			        0.23
+   Freq(G):			        0.18
+   Freq(T):			        0.23
+   Equ. freq. weight:		    0.500000
+
+. Mixture class 3
+   Relative substitution rate:	    0.354272
+   Rel. rate freq. (> 0 rates):	    0.250000
+   Rate class number:		           2
+   Substitution model:		         GTR
+   Optimise subst. rates:	         yes
+   Subst. rate A<->C:		        7.09
+   Subst. rate A<->G:		        9.54
+   Subst. rate A<->T:		        2.53
+   Subst. rate C<->G:		        0.02
+   Subst. rate C<->T:		       66.83
+   Subst. rate G<->T:		        1.00
+   Rate matrix weight:		    0.500000
+   Optimise nucletide freq.:	          no
+   Freq(A):			        0.35
+   Freq(C):			        0.23
+   Freq(G):			        0.18
+   Freq(T):			        0.23
+   Equ. freq. weight:		    0.500000
+
+. Mixture class 4
+   Relative substitution rate:	    3.617707
+   Rel. rate freq. (> 0 rates):	    0.250000
+   Rate class number:		           3
+   Substitution model:		         GTR
+   Optimise subst. rates:	         yes
+   Subst. rate A<->C:		        7.09
+   Subst. rate A<->G:		        9.54
+   Subst. rate A<->T:		        2.53
+   Subst. rate C<->G:		        0.02
+   Subst. rate C<->T:		       66.83
+   Subst. rate G<->T:		        1.00
+   Rate matrix weight:		    0.500000
+   Optimise nucletide freq.:	          no
+   Freq(A):			        0.35
+   Freq(C):			        0.23
+   Freq(G):			        0.18
+   Freq(T):			        0.23
+   Equ. freq. weight:		    0.500000
+
+
+ _______________________________________________________________________ 
+|                                                                       |
+|                               ./cytb.phy      (partition element  1)  |
+|_______________________________________________________________________|
+
+. Number of rate classes:		           2
+. Model of rate variation:		   FreeRates
+. Relative average rate:		    1.000000
+
+. Mixture class 1
+   Relative substitution rate:	    2.716514
+   Rel. rate freq. (> 0 rates):	    0.356205
+   Rate class number:		           0
+   Substitution model:		       HKY85
+   Value of the ts/tv ratio:	    7.311704
+   Optimise ts/tv ratio:	         yes
+   Rate matrix weight:		    0.500000
+   Optimise nucletide freq.:	          no
+   Freq(A):			        0.33
+   Freq(C):			        0.27
+   Freq(G):			        0.11
+   Freq(T):			        0.29
+   Equ. freq. weight:		    0.500000
+
+. Mixture class 2
+   Relative substitution rate:	    0.050269
+   Rel. rate freq. (> 0 rates):	    0.643795
+   Rate class number:		           1
+   Substitution model:		       HKY85
+   Value of the ts/tv ratio:	    7.311704
+   Optimise ts/tv ratio:	         yes
+   Rate matrix weight:		    0.500000
+   Optimise nucletide freq.:	          no
+   Freq(A):			        0.33
+   Freq(C):			        0.27
+   Freq(G):			        0.11
+   Freq(T):			        0.29
+   Equ. freq. weight:		    0.500000
+
+
+ _______________________________________________________________________ 
+|                                                                       |
+|                        Model summary table                            |
+|_______________________________________________________________________|
+
+  ------------------------------------
+  Partition element  0  0  0  0  1  1 
+  ------------------------------------
+  State frequencies  a  a  a  a  b  b 
+     Branch lengths  a  a  a  a  a  a 
+        Rate matrix  a  a  a  a  b  b 
+  ------------------------------------
+
+
+. Tree estimated from data partition 0
+ (((Chironius_quadricarinatus:0.03458889,(Chironius_flavolineatus:0.02918393,(Chironius_grandisquamis:0.01787374,(Chironius_monticola:0.00587862,((Pseustes_poecilonotus:0.12777215,(Drymarchon_couperi:0.05213449,Drymarchon_corais:0.02398597):0.11176131):0.01488958,(Pseustes_sulphureus:0.21127522,(Trimorphodon_biscutatus:0.15739234,Spilotes_pullatus:0.13851983):0.02807280):0.01322482):0.02729806):0.00681490):0.00887263):0.00575830):0.00000001,Corvus_corone:1.57700820):0.01466209,((Chironius_scurrulus:0.02247600,Chironius_laevicollis:0.00906886):0.03003430,(Chironius_exoletus:0.00866246,Chironius_fuscus:0.00732581):0.02334304):0.00000001,(Chironius_bicarinatus:0.01997450,(Chironius_foveatus:0.00000001,Chironius_carinatus:0.00973833):0.01401284):0.01594700);
+
+. Tree estimated from data partition 1
+ (((Chironius_quadricarinatus:0.03458889,(Chironius_flavolineatus:0.02918393,(Chironius_grandisquamis:0.01787374,(Chironius_monticola:0.00587862,((Pseustes_poecilonotus:0.12777215,(Drymarchon_couperi:0.05213449,Drymarchon_corais:0.02398597):0.11176131):0.01488958,(Pseustes_sulphureus:0.21127522,(Trimorphodon_biscutatus:0.15739234,Spilotes_pullatus:0.13851983):0.02807280):0.01322482):0.02729806):0.00681490):0.00887263):0.00575830):0.00000001,Corvus_corone:1.57700820):0.01466209,((Chironius_scurrulus:0.02247600,Chironius_laevicollis:0.00906886):0.03003430,(Chironius_exoletus:0.00866246,Chironius_fuscus:0.00732581):0.02334304):0.00000001,(Chironius_bicarinatus:0.01997450,(Chironius_foveatus:0.00000001,Chironius_carinatus:0.00973833):0.01401284):0.01594700);

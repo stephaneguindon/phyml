@@ -1,0 +1,5 @@
+Deux alignements nucleotidiques: 16s.phy et cytb.phy. GTR + gamma a 
+4 classes pour 16s.phy. HKY85 et freerates a 2 classes pour cytb.phy. 
+Parametres du GTR et HKY85 sont optimises. Chaque jeu de donnee a 
+son vecteur de frequences en bases, non optimise. 
+
