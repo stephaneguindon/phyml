@@ -117,7 +117,7 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define WINDOW_HEIGHT 800
 
 #define  ALPHA_MIN 0.01
-#define  ALPHA_MAX 10.
+#define  ALPHA_MAX 1000.
 
 #define  E_FRQ_WEIGHT_MIN 0.01
 #define  E_FRQ_WEIGHT_MAX 100.

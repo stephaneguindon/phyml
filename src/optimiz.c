@@ -2226,7 +2226,7 @@ int Optimiz_Alpha_And_Pinv(t_tree *mixt_tree, int verbose)
                   if(tree->mod->ras->n_catg > 1)
                     {
                       Generic_Brent_Lk(&(tree->mod->ras->alpha->v),
-                                       tree->mod->ras->alpha->v/2.,100.,
+                                       ALPHA_MIN,ALPHA_MAX,
                                        tree->mod->s_opt->min_diff_lk_local,
                                        tree->mod->s_opt->brent_it_max,
                                        tree->mod->s_opt->quickdirty,
@@ -2405,20 +2405,20 @@ phydbl Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
           if(FABS(p) >= FABS(0.5*q*etemp) || p <= q*(a-x) || p >= q*(b-x))
             {
               d=BRENT_CGOLD*(e=(x >= xm ? a-x : b-x));
-              /* PhyML_Printf(" Golden section step\n"); */
+              /* PhyML_Printf("\n. Golden section step"); */
             }
           else
             {
               d=p/q;
               u=x+d;
               if (u-a < tol2 || b-u < tol2) d=SIGN(tol1,xm-x);
-              /* PhyML_Printf(" Parabolic step [e=%f]\n",e); */
+              /* PhyML_Printf("\n. Parabolic step [e=%f]",e); */
             }
-            }
+        }
       else
         {
           d=BRENT_CGOLD*(e=(x >= xm ? a-x : b-x));
-          /* PhyML_Printf(" Golden section step (default) [e=%f tol1=%f a=%f b=%f d=%f]\n",e,tol1,a,b,d); */
+          /* PhyML_Printf("\n. Golden section step (default) [e=%f tol1=%f a=%f b=%f d=%f x=%f]",e,tol1,a,b,d,x); */
         }
 
       u=(FABS(d) >= tol1 ? x+d : x+SIGN(tol1,d));
@@ -2800,6 +2800,7 @@ void Optimize_Alpha(t_tree *mixt_tree, int verbose)
 
   do
     {
+
       if(tree->mod->s_opt->opt_alpha == YES && tree->mod->ras->n_catg > 1)
         {
           For(i,n_alpha) if(tree->mod->ras->alpha == alpha[i]) break;
@@ -2815,6 +2816,7 @@ void Optimize_Alpha(t_tree *mixt_tree, int verbose)
                  tree->mod->ras->free_mixt_rates == NO &&
                  tree->mod->s_opt->opt_pinvar == NO)
                 {
+                  
                   if(tree->mod->ras->n_catg > 1)
                     {
                       Generic_Brent_Lk(&(tree->mod->ras->alpha->v),
