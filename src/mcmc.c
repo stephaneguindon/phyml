@@ -4253,7 +4253,6 @@ void MCMC_Prune_Regraft(t_tree *tree)
   regraft_nd_list = NULL;
   times = tree->rates->nd_t;
 
-
   while(n_iter--)
     {
 
@@ -4324,13 +4323,17 @@ void MCMC_Prune_Regraft(t_tree *tree)
       regraft_nd_list = Make_Linked_List();
       Init_Linked_List(regraft_nd_list);
 
-      For(i,3)
-        if(target->left->v[i] && target->left->v[i] != target->rght) 
-          List_Of_Regraft_Nodes(target->left,target->left->v[i],time_daughter,regraft_nd_list,tree);
-      For(i,3)
-        if(target->rght->v[i] && target->rght->v[i] != target->left) 
-          List_Of_Regraft_Nodes(target->rght,target->rght->v[i],time_daughter,regraft_nd_list,tree);
-      
+      /* For(i,3) */
+      /*   if(target->left->v[i] && target->left->v[i] != target->rght)  */
+      /*     List_Of_Regraft_Nodes(target->left,target->left->v[i],time_daughter,regraft_nd_list,tree); */
+
+      /* For(i,3) */
+      /*   if(target->rght->v[i] && target->rght->v[i] != target->left)  */
+      /*     List_Of_Regraft_Nodes(target->rght,target->rght->v[i],time_daughter,regraft_nd_list,tree); */
+
+      List_Of_Regraft_Nodes(target->left,target->rght,time_daughter,regraft_nd_list,tree);      
+      List_Of_Regraft_Nodes(target->rght,target->left,time_daughter,regraft_nd_list,tree);
+          
 
       // Number of regraft nodes
       n_regraft_nd = Linked_List_Len(regraft_nd_list);
