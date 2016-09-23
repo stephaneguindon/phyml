@@ -4323,14 +4323,6 @@ void MCMC_Prune_Regraft(t_tree *tree)
       regraft_nd_list = Make_Linked_List();
       Init_Linked_List(regraft_nd_list);
 
-      /* For(i,3) */
-      /*   if(target->left->v[i] && target->left->v[i] != target->rght)  */
-      /*     List_Of_Regraft_Nodes(target->left,target->left->v[i],time_daughter,regraft_nd_list,tree); */
-
-      /* For(i,3) */
-      /*   if(target->rght->v[i] && target->rght->v[i] != target->left)  */
-      /*     List_Of_Regraft_Nodes(target->rght,target->rght->v[i],time_daughter,regraft_nd_list,tree); */
-
       List_Of_Regraft_Nodes(target->left,target->rght,time_daughter,regraft_nd_list,tree);      
       List_Of_Regraft_Nodes(target->rght,target->left,time_daughter,regraft_nd_list,tree);
           
@@ -4353,21 +4345,14 @@ void MCMC_Prune_Regraft(t_tree *tree)
           
           Free_Linked_List(regraft_nd_list);
                     
-          // Select a daughter of selected regraft node
-          dir_v1 = dir_v2 = -1;
-          For(i,3)
-            if(regraft_nd->v[i] != regraft_nd->anc)
-              {
-                if(dir_v1 < 0) dir_v1 = i;
-                else           dir_v2 = i;
-              }
-          
-          u = Uni();
-          if(u < 0.5) rnd_dir = dir_v1;
-          else        rnd_dir = dir_v2;
-          
-
-          regraft_edge = regraft_nd->b[rnd_dir];
+          // Regraft edge is the one sitting above regraft_nd
+          if(regraft_nd == tree->n_root->v[1] ||
+             regraft_nd == tree->n_root->v[2]) regraft_edge = tree->e_root;
+          else
+            {
+              For(i,3) if(regraft_nd->v[i] == regraft_nd->anc) break;
+              regraft_edge = regraft_nd->b[i];
+            }
         }
       
 

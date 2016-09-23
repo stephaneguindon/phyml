@@ -296,7 +296,9 @@ void DATE_Assign_Primary_Calibration(t_tree *tree)
       
       idx = tree->a_nodes[node_num]->n_cal;
       tree->a_nodes[node_num]->cal[idx] = tree->rates->a_cal[i];
+      tree->a_nodes[node_num]->cal[idx]->target_nd = tree->a_nodes[node_num];
       tree->a_nodes[node_num]->n_cal++;
+      
 
       if(tree->a_nodes[node_num]->n_cal == MAX_N_CAL)
         {
@@ -743,9 +745,93 @@ phydbl *DATE_MCMC(t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+// Update the list of nodes that are younger than lim
+void DATE_List_Of_Nodes_Younger_Than(t_node *a, t_node *d, phydbl lim, t_ll *list, t_tree *tree)
+{
+  if(tree->rates->nd_t[d->num] > lim) Push_Bottom_Linked_List(d,list);
+  
+  if(d->tax == YES) return;
+  else
+    {
+      int i;
+
+      For(i,3)
+        if(d->v[i] != a)
+          DATE_List_Of_Nodes_Younger_Than(d,d->v[i],lim,list,tree);            
+    }
+}
+
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, t_tree *tree)
+{
+  t_node *n;
+  int i,j;
+  t_ll *in,*out,*buff;
+  phydbl maxmin;
+
+
+  n = NULL;
+  maxmin = tree->rates->nd_t[tree->n_root->num];
+  in = NULL;
+  out = NULL;
+
+  n = prune_daughter;
+  while(n)
+    {
+      
+      For(i,tree->rates->n_cal)
+        {
+          if(n == tree->rates->a_cal[i]->target_nd)
+            {
+              // Maximum of the lower bounds for calibration intervals
+              maxmin = MAX(maxmin,tree->rates->a_cal[i]->lower);
+            }
+        }
+
+      n = n->anc;
+    }
+
+  n = prune_daughter;
+  while(n->anc && tree->rates->nd_t[n->anc->num] > maxmin)
+    {      
+      n = n->anc;
+      assert(n);
+    }
+     
+  DATE_List_Of_Nodes_Younger_Than(n->anc,n,0.0,in,tree);
+
+  n = prune_daughter;
+  while(n)
+    {      
+      For(i,tree->rates->n_cal)
+        {
+          if(n->anc && n->anc == tree->rates->a_cal[i]->target_nd)
+            {
+              For(j,3)
+                {
+                  if(n->anc->v[j] != n->anc->anc && n->anc->v[j] != n)
+                    {
+                      DATE_List_Of_Nodes_Younger_Than(n->anc,
+                                                      n->anc->v[j],
+                                                      tree->rates->a_cal[i]->upper,
+                                                      out,tree);
+                      break;
+                    }
+                }
+
+              buff = out->head;
+              while(buff != NULL) 
+                {
+                  /* Remove_From_Linked_List(buff,in); */
+                  buff = buff->next;
+                }
+            }
+        }
+    }
+}
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

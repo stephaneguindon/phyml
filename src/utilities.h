@@ -1498,7 +1498,7 @@ typedef struct __T_Rate {
   int *n_tips_below;
 
   short int *t_has_prior;
-  struct __Node **lca; /*! 2-way table of common ancestral nodes for each pari of nodes */
+  struct __Node **lca; /*! 2-way table of common ancestral nodes for each pair of nodes */
 
   short int *br_do_updt;
   phydbl *cur_gamma_prior_mean;

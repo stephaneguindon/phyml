@@ -34,6 +34,8 @@ void DATE_Chain_Cal(t_tree *mixt_tree);
 int DATE_Check_Calibration_Constraints(t_tree *tree);
 int DATE_Check_Time_Constraints(t_tree *tree);
 phydbl *DATE_MCMC(t_tree *tree);
+void DATE_List_Of_Nodes_Younger_Than(t_node *a, t_node *d, phydbl lim, t_ll *list, t_tree *tree);
+void DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, t_tree *tree);
 
 
 

@@ -11627,13 +11627,14 @@ int Linked_List_Len(t_ll *list)
 
 void List_Of_Regraft_Nodes(t_node *a, t_node *d, phydbl time_thresh, t_ll *list, t_tree *tree)
 {
-
-  if(d->tax || tree->rates->nd_t[d->num] > time_thresh) return;
+  if(tree->rates->nd_t[a->num] > time_thresh) return;
+  
+  Push_Bottom_Linked_List(d,list);
+  
+  if(d->tax) return;
   else
     {
       int i;
-
-      Push_Bottom_Linked_List(a,list);
 
       For(i,3)
         if(d->v[i] != a) 

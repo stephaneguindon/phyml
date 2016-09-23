@@ -2005,6 +2005,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       DATE_Assign_Primary_Calibration(mixt_tree);
       DATE_Update_T_Prior_MinMax(mixt_tree);
 
+
       /* { */
       /*   Print_Node(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree); */
       /*   Print_Node(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree); */
