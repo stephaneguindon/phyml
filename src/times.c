@@ -190,7 +190,7 @@ int TIMES_main(int argc, char **argv)
                       /* Exit("\n"); */
 
 		      /* MLE for branch lengths */
-		      Round_Optimize(tree,tree->data,ROUND_MAX);
+		      Round_Optimize(tree,ROUND_MAX);
 		      
 		      /* Set vector of mean branch lengths for the Normal approximation
 			 of the likelihood */
@@ -256,7 +256,7 @@ int TIMES_main(int argc, char **argv)
 
 	      break;
 	    }
-	  Free_Cseq(cdata);
+	  Free_Calign(cdata);
 	}
     }
 

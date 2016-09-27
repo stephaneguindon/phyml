@@ -25,6 +25,7 @@ void Read_Node_Name(t_node *d,char *s_tree_d,t_tree *tree);
 void Clean_Multifurcation(char **subtrees,int current_deg,int end_deg);
 char **Sub_Trees(char *tree,int *degree);
 int Next_Par(char *s,int pos);
+void Print_List(t_ll *list);
 void Print_Tree(FILE *fp,t_tree *tree);
 char *Write_Tree(t_tree *tree,int custom);
 void R_wtree(t_node *pere,t_node *fils,int *available,char **s_tree,t_tree *tree);

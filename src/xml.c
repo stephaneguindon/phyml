@@ -109,6 +109,12 @@ t_tree *XML_Process_Base(char *xml_filename)
       strcpy(io->run_id_string,s);
     }
 
+  s = XML_Get_Attribute_Value(p_elem,"r.seed");
+  if(s)
+    {
+      io->r_seed = (int)atoi(s);
+    }
+
   strcpy(io->out_file,outputfile);
   strcpy(io->out_tree_file,outputfile);
   if(io->append_run_ID) { strcat(io->out_tree_file,"_"); strcat(io->out_tree_file,io->run_id_string); }

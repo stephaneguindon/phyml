@@ -1871,7 +1871,7 @@ int Init_Qmat_MtArt(phydbl *daa, phydbl *pi) // Added by Federico Abascal
             ((Pagu_longi,Pena_monod),Harp_harpa),Spel_tulum));
 
             Note this is not the ML topoLOGy but the consensus one (based on morphoLOGical data,
-            phyLOGenetic reconstruction using nuclear genes, etc). Where relationships are
+            phylogenetic reconstruction using nuclear genes, etc). Where relationships are
             not clear, a polytomy was introduced (it contains quite a lot of polytomies!).
 
        The model was estimated using (the great and helpful) Ziheng Yang's Paml software package.
@@ -3643,6 +3643,7 @@ void Init_Linked_List(t_ll *list)
   list->head = list;
   list->tail = list;
   list->next = NULL;
+  list->prev = NULL;
   list->v    = NULL;
 }
 

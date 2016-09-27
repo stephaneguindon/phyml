@@ -4722,6 +4722,11 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
   assert(dir_v1 > -1);
   assert(dir_v2 > -1);
 
+
+  if(a->v[dir_v1] == a->anc) a->v[dir_v2]->anc = a->v[dir_v1];
+  else                       a->v[dir_v1]->anc = a->v[dir_v2];
+
+
   if(a->v[dir_v1]->num < a->v[dir_v2]->num)
     {
       v1 = a->v[dir_v1];
@@ -5034,6 +5039,18 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
         }
       else b_up = link->b[i];
     }
+
+  if(target->left == target->rght->anc)
+    {
+      link->anc = target->left;
+      target->rght->anc = link;
+    }
+  else
+    {
+      link->anc = target->rght;
+      target->left->anc = link;
+    }
+  
   
 
 #ifdef BEAGLE
@@ -11565,7 +11582,9 @@ phydbl Scalar_Elem(int pos, scalar_dbl *scl)
 void *Linked_List_Elem(int pos, t_ll *ll)
 {
   t_ll *loc;
-  assert(ll);
+  
+  if(ll == NULL) return NULL;
+  
   loc = ll->head;
   while(--pos >= 0) 
     {
@@ -11607,7 +11626,7 @@ int Linked_List_Len(t_ll *list)
   int len;
   t_ll *loc;
 
-  if(!list) return 0;
+  if(list == NULL) return 0;
 
   loc = list->head;
   len = 0;
@@ -11625,60 +11644,169 @@ int Linked_List_Len(t_ll *list)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-void List_Of_Regraft_Nodes(t_node *a, t_node *d, phydbl time_thresh, t_ll *list, t_tree *tree)
+void Push_Bottom_Linked_List(void *what, t_ll **list)
 {
-  if(tree->rates->nd_t[a->num] > time_thresh) return;
+  t_ll *new,*ll;
+
+  new = (t_ll *)mCalloc(1,sizeof(t_ll));  
+  new->v = (void *)what;
   
-  Push_Bottom_Linked_List(d,list);
-  
-  if(d->tax) return;
+  // First elem of list
+  if(*list == NULL) 
+    {
+      *list     = new;
+      new->tail = new;
+      new->head = new;
+      new->next = NULL;
+      new->prev = NULL;
+    }
   else
     {
-      int i;
+      new->prev = (*list)->tail;
+      new->prev->next = new;
+      new->next = NULL;
+      new->head = *list;      
 
-      For(i,3)
-        if(d->v[i] != a) 
-          List_Of_Regraft_Nodes(d,d->v[i],time_thresh,list,tree);
+      ll = *list;
+      do
+        {
+          ll->tail = new;
+          ll = ll->next;
+        }
+      while(ll);
     }
 }
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-void Push_Bottom_Linked_List(void *what, t_ll *list)
+void Remove_From_Linked_List(t_ll *elem, t_ll **list)
 {
-  if(list->v == NULL) 
+  t_ll *ll;
+
+  ll = (*list)->head;
+  
+  do
     {
-      // First elem is empty
-      list->v = (void *)what;
+      if(ll == elem)
+        {
+          if(ll == (*list)->head && ll != (*list)->tail)
+            {
+              // Re-initialise head of list
+              t_ll *mm,*newhead;
+              mm = (*list);
+              newhead = (*list)->head->next;
+              do { mm->head = newhead; mm = mm->next; } while(mm);              
+              (*list) = (*list)->head;
+              (*list)->head->prev = NULL;
+            }
+          else if(ll != (*list)->head && ll == (*list)->tail) 
+            {
+              // Re-initialise tail of list
+              t_ll *mm,*newtail;
+              mm = (*list);
+              newtail = (*list)->tail->prev;
+              do { mm->tail = newtail; mm = mm->next; } while(mm);              
+              (*list)->tail->next = NULL;
+            }
+          else if(ll == (*list)->head && ll == (*list)->tail) 
+            {
+              (*list)->tail = NULL;
+              (*list)->head = NULL;
+              (*list)->next = NULL;
+              (*list)->prev = NULL;
+              return;
+            }
+          else
+            {
+              ll->prev->next = ll->next;
+              ll->next->prev = ll->prev;
+            }
+
+
+          ll->next = NULL;
+          ll->prev = NULL;
+          ll->head = NULL;
+          ll->tail = NULL;
+          Free(ll);
+          return;
+        }
+      ll = ll->next;
     }
-  else
-    {
-      // Add one elem in list and add 
-      list->tail->next = (t_ll *)mCalloc(1,sizeof(t_ll));
-      list->tail->next->v = (void *)what;
-      list->tail = list->tail->next;
-      list->tail->head = list;
-      list->tail->next = NULL;
-    }
+  while(ll != NULL);
 }
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+void Remove_From_Linked_List_Based_On_Value(void *val, t_ll **list)
+{
+  t_ll *ll;
+
+  ll = (*list)->head;
+  
+  do
+    {
+      if(ll->v == val) 
+        {
+          if(ll == (*list)->head && ll != (*list)->tail)
+            {
+              // Re-initialise head of list
+              t_ll *mm,*newhead;
+              mm = (*list);
+              newhead = (*list)->head->next;
+              do { mm->head = newhead; mm = mm->next; } while(mm);              
+              (*list) = (*list)->head;
+              (*list)->head->prev = NULL;
+            }
+          else if(ll != (*list)->head && ll == (*list)->tail) 
+            {
+              // Re-initialise tail of list
+              t_ll *mm,*newtail;
+              mm = (*list);
+              newtail = (*list)->tail->prev;
+              do { mm->tail = newtail; mm = mm->next; } while(mm);              
+              (*list)->tail->next = NULL;
+            }
+          else if(ll == (*list)->head && ll == (*list)->tail) 
+            {
+              (*list) = NULL;
+              return;
+            }
+          else
+            {
+              ll->prev->next = ll->next;
+              ll->next->prev = ll->prev;
+            }
+
+
+          ll->next = NULL;
+          ll->prev = NULL;
+          ll->head = NULL;
+          ll->tail = NULL;
+          Free(ll);
+          return;
+        }
+      ll = ll->next;
+    }
+  while(ll != NULL);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
 
 t_ll *Get_List_Of_Reachable_Tips(t_node *a, t_node *d, t_tree *tree)
 {
   t_ll *list;
-  list = Make_Linked_List();
-  Init_Linked_List(list);
-  Get_List_Of_Reachable_Tips_Post(a,d,list,tree);
+  Get_List_Of_Reachable_Tips_Post(a,d,&list,tree);
   return list;
 }
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-void Get_List_Of_Reachable_Tips_Post(t_node *a, t_node *d, t_ll *list, t_tree *tree)
+void Get_List_Of_Reachable_Tips_Post(t_node *a, t_node *d, t_ll **list, t_tree *tree)
 {
   if(d->tax)
     {

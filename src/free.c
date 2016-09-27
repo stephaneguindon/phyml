@@ -669,7 +669,7 @@ void Free_Linked_List(t_ll *t)
 {
   t_ll *next;
 
-  assert(t);
+  if(t == NULL) return;
 
   next = t->next;
   do

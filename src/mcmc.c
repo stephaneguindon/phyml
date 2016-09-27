@@ -4255,7 +4255,6 @@ void MCMC_Prune_Regraft(t_tree *tree)
 
   while(n_iter--)
     {
-
       tree->mcmc->run_move[tree->mcmc->num_move_spr]++;
       
       RATES_Record_Times(tree);
@@ -4312,28 +4311,25 @@ void MCMC_Prune_Regraft(t_tree *tree)
       
       hr += LOG(1./(t_max - t_min));
 
+      // Get the list of potential regraft nodes (oldest node on regraft edge)
+      regraft_nd_list = DATE_List_Of_Regraft_Nodes(prune,prune_daughter,tree);
 
 
+      /* Print_Node(tree->n_root,tree->n_root->v[1],tree); */
+      /* Print_Node(tree->n_root,tree->n_root->v[2],tree); */
+      
       // Prune
       target = residual = NULL;
       Prune_Subtree(prune,prune_daughter,&target,&residual,tree);
       ori_target = target;
 
-      // Get the list of potential regraft nodes (oldest node on regraft edge)
-      regraft_nd_list = Make_Linked_List();
-      Init_Linked_List(regraft_nd_list);
-
-      List_Of_Regraft_Nodes(target->left,target->rght,time_daughter,regraft_nd_list,tree);      
-      List_Of_Regraft_Nodes(target->rght,target->left,time_daughter,regraft_nd_list,tree);
-          
+      /* printf("\n. prune: %d prune_daughter: %d",prune->num,prune_daughter->num); fflush(NULL); */
 
       // Number of regraft nodes
       n_regraft_nd = Linked_List_Len(regraft_nd_list);
-      n_regraft_nd--;
 
       if(n_regraft_nd == 0) 
         {
-          Free_Linked_List(regraft_nd_list);          
           regraft_edge = ori_target;
         }
       else
@@ -4343,6 +4339,8 @@ void MCMC_Prune_Regraft(t_tree *tree)
           
           regraft_nd = Linked_List_Elem(regraft_idx,regraft_nd_list);
           
+          /* printf("\n. regraft: %d len: %d",regraft_nd->num,n_regraft_nd); fflush(NULL); */
+
           Free_Linked_List(regraft_nd_list);
                     
           // Regraft edge is the one sitting above regraft_nd
@@ -4355,7 +4353,6 @@ void MCMC_Prune_Regraft(t_tree *tree)
             }
         }
       
-
       // Regraft
       Graft_Subtree(regraft_edge,prune,residual,tree);
       
@@ -4370,6 +4367,7 @@ void MCMC_Prune_Regraft(t_tree *tree)
       
       t_max = MIN(times[prune->v[dir_v1]->num],times[prune->v[dir_v2]->num]);
       t_min = times[prune->anc->num];
+
 
       times[prune->num] = Uni() * (t_max - t_min) + t_min;
             
@@ -4422,7 +4420,7 @@ void MCMC_Prune_Regraft(t_tree *tree)
       else
         {
           tree->mcmc->acc_move[tree->mcmc->num_move_spr]++;
-        }
+        }      
     }
 }
   

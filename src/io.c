@@ -2412,8 +2412,9 @@ void Print_Node(t_node *a, t_node *d, t_tree *tree)
   int dir;
   dir = -1;
   For(i,3) if(a->v[i] == d) {dir = i; break;}
-  PhyML_Printf("Node nums: %3d %3d  (dir:%3d) (anc:%3d) ta:%8.4f td:%8.4f t_min:%6.2f t_max:%6.2f",
+  PhyML_Printf("Node nums: %3d %3d  (dir:%3d) (a->anc:%3d) (d->anc:%3d) ta:%8.4f td:%8.4f t_min:%6.2f t_max:%6.2f",
                a->num,d->num,dir,a->anc?a->anc->num:(-1),
+               d->anc?d->anc->num:(-1),
                tree->rates?tree->rates->nd_t[a->num]:-1.,
                tree->rates?tree->rates->nd_t[d->num]:-1.,
                tree->rates?tree->rates->t_prior_min[a->num]:-1.,
@@ -3359,6 +3360,22 @@ void Print_Lk(t_tree *tree, char *string)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+void Print_List(t_ll *list)
+{
+  t_ll *ll;
+  ll = list->head;
+  do
+    {
+      t_node *n;
+      n = (t_node *)ll->v;
+      PhyML_Printf("\n. list elem: %p next: %p prev: %p [%d] %p %p",(void *)ll,(void *)ll->next,(void *)ll->prev,n->num,(void *)ll->head,(void *)ll->tail);
+      ll = ll->next;
+    }
+  while(ll != NULL);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
 void Print_Pars(t_tree *tree)
 {
