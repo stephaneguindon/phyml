@@ -36,7 +36,7 @@ int *MIXT_Record_Has_Invariants(t_tree *mixt_tree);
 void MIXT_Reset_Has_Invariants(int *has_invariants,t_tree *mixt_tree);
 void MIXT_Check_Invar_Setup(t_tree *mixt_tree);
 void MIXT_Prune_Subtree(t_node *mixt_a,t_node *mixt_d,t_edge **mixt_target,t_edge **mixt_residual,t_tree *mixt_tree);
-void MIXT_Graft_Subtree(t_edge *mixt_target,t_node *mixt_link,t_edge *mixt_residual,t_tree *mixt_tree);
+void MIXT_Graft_Subtree(t_edge *mixt_target, t_node *mixt_link, t_edge *mixt_residual, t_node *target_nd, t_tree *mixt_tree);
 void MIXT_Br_Len_Brent(t_edge *mixt_b, t_tree *mixt_tree);
 void MIXT_Check_Number_Of_Invar_Classes(t_tree *mixt_tree);
 void MIXT_Prepare_Tree_For_Lk(t_tree *tree);

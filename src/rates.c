@@ -24,7 +24,6 @@ the GNU public licence. See http://www.opensource.org for details.
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 phydbl RATES_Lk_Rates(t_tree *tree)
 {
 
@@ -33,14 +32,14 @@ phydbl RATES_Lk_Rates(t_tree *tree)
   RATES_Lk_Rates_Pre(tree->n_root,tree->n_root->v[2],NULL,tree);
   RATES_Lk_Rates_Pre(tree->n_root,tree->n_root->v[1],NULL,tree);
 
-  if(isnan(tree->rates->c_lnL_rates) || isinf(tree->rates->c_lnL_rates))
+  if(isnan(tree->rates->c_lnL_rates))
     {
       PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
       Exit("\n");
     }
 
-  /* return tree->rates->c_lnL_rates; */
-  return -1.0;
+  return tree->rates->c_lnL_rates;
+  /* return -1.0; */
 }
 
 //////////////////////////////////////////////////////////////
@@ -57,8 +56,8 @@ void RATES_Lk_Rates_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 
   if(d->anc != a)
     {
-      PhyML_Printf("\n. d=%d d->anc=%d a=%d root=%d",d->num,d->anc->num,a->num,tree->n_root->num);
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== d=%d d->anc=%d a=%d root=%d",d->num,d->anc->num,a->num,tree->n_root->num);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 
@@ -81,7 +80,7 @@ void RATES_Lk_Rates_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 
   if(isnan(tree->rates->c_lnL_rates))
     {
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       MCMC_Print_Param(tree->mcmc,tree);
       Exit("\n");
     }
@@ -434,13 +433,13 @@ phydbl RATES_Lk_Rates_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl n
       }
     }
 
-  if(isnan(log_dens) || isinf(FABS(log_dens)))
+  if(isnan(log_dens))
     {
-      PhyML_Printf("\n. Run=%4d br_r_d=%f br_r_a=%f dt_d=%f dt_a=%f nu=%f log_dens=%G sd=%f mean=%f\n",
+      PhyML_Printf("\n== Run=%4d br_r_d=%f br_r_a=%f dt_d=%f dt_a=%f nu=%f log_dens=%G sd=%f mean=%f\n",
 		   tree->mcmc->run,
 		   br_r_d,br_r_a,dt_d,dt_a,tree->rates->nu,log_dens,
 		   sd,mean);
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
 
@@ -2425,7 +2424,6 @@ void RATES_Update_Cur_Bl(t_tree *tree)
       /* 	     tree->rates->cur_gamma_prior_var[n1->num]); */
     }
 
-
   if(tree->is_mixt_tree == YES) MIXT_RATES_Update_Cur_Bl(tree);
 }
 
@@ -2465,7 +2463,6 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 
       tree->rates->cur_l[d->num] = dt*rr*cr;
       
-
       if(tree->rates->model == GUINDON)
 	{
 	  phydbl m,v;

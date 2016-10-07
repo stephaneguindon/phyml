@@ -1221,13 +1221,13 @@ phydbl Dgamma(phydbl x, phydbl shape, phydbl scale)
       x = 1.E+10;
     }
 
-  if(x < 1.E-20)
+  if(x < 1.E-200)
     {
       if(x < 0.0) return 0.0;
       else
 	{
-	  PhyML_Printf("\n. WARNING: small value of x -> x = %G",x);
-	  x = 1.E-20;
+	  PhyML_Printf("\n. WARNING: Dgamma -> small value of x = %G",x);
+	  x = 1.E-200;
 	}
     }
 

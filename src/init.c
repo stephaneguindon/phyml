@@ -840,13 +840,13 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
   rates->nd_t_recorded    = NO;
   rates->br_r_recorded    = NO;
 
-  rates->birth_rate       = 1.E-2;
+  rates->birth_rate       = 1.E-1;
   rates->birth_rate_min   = 1.E-6;
-  rates->birth_rate_max   = 1.E+1;
+  rates->birth_rate_max   = 1.E+2;
 
-  rates->death_rate       = 1.E-2;
+  rates->death_rate       = 1.E-1;
   rates->death_rate_min   = 1.E-6;
-  rates->death_rate_max   = 1.E+1;
+  rates->death_rate_max   = 1.E+2;
 
   if(rates->model_log_rates == YES)
     {
@@ -983,6 +983,27 @@ void Init_One_Spr(t_spr *a_spr)
   a_spr->prev             = NULL;
   a_spr->next             = NULL;
   a_spr->prev             = NULL;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Init_Target_Tip(t_cal *cal, t_tree *tree)
+{
+  int i,j;
+
+  For(i,cal->n_target_tax)
+    {
+      For(j,tree->n_otu)
+        {
+          if(!strcmp(tree->a_nodes[j]->name,cal->target_tax[i]))
+            {
+              cal->target_tip[i] = tree->a_nodes[j];
+              break;
+            }
+        }
+      assert(j != tree->n_otu);
+    }
 }
 
 //////////////////////////////////////////////////////////////
@@ -3597,6 +3618,7 @@ void Init_Calibration(t_cal *cal)
   cal->next       = NULL;
   cal->prev       = NULL;
   cal->target_tax = NULL;
+  cal->target_tip = NULL;
   cal->lower      = -1.;
   cal->upper      = -1.;
   cal->is_primary = FALSE;

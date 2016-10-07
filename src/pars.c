@@ -1003,6 +1003,7 @@ void Stepwise_Add_Pars(t_tree *tree)
           Graft_Subtree(targets[tg_idx[j]],
                         tree->a_nodes[nd_idx[i]+3]->v[0],
                         residuals[i],
+                        NULL,
                         tree);
           
           Update_P_Pars(tree,
@@ -1029,6 +1030,7 @@ void Stepwise_Add_Pars(t_tree *tree)
       Graft_Subtree(best_target,
                     tree->a_nodes[nd_idx[i]+3]->v[0],
                     residuals[i],
+                    NULL,
                     tree);
       
       targets[n_targets]   = residuals[i]; 

@@ -1622,28 +1622,102 @@ phydbl TIMES_Lk_Yule_Order_Root_Cond(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 // Log of prob density of internal node ages conditional on tree height, under
-// the birth death process with complete sampling.
+// the birth death process with incomplete sampling.
 phydbl TIMES_Lk_Birth_Death(t_tree *tree)
 {
   int i;
   phydbl lnL;
+  phydbl t,b,d,bmd,logbmd,expmbmd,logb;
+  phydbl bmin,bmax;
+  phydbl dmin,dmax;
 
-  lnL = 0.0;
-
-  // Normalizing factor. Need to call this function first
-  // so that t_prior_min/max are up to date for what's next
-  /* lnL -= LOG(DATE_J_Sum_Product(tree)); */
+  lnL     = 0.0;
+  b       = tree->rates->birth_rate;
+  d       = tree->rates->death_rate;
+  bmin    = tree->rates->birth_rate_min;
+  bmax    = tree->rates->birth_rate_max;
+  dmin    = tree->rates->death_rate_min;
+  dmax    = tree->rates->death_rate_max;
+  bmd     = b-d;
+  logbmd  = -1.;
+  expmbmd = -1.;
+  logb    = -1.;
+  t       = 0.0;
 
   For(i,2*tree->n_otu-1)
     if(tree->a_nodes[i]->tax == NO && tree->a_nodes[i] != tree->n_root)
       {
-        lnL += TIMES_Lk_Birth_Death_One_Node(tree->rates->nd_t[i],
-                                             tree->rates->t_prior_min[i],
-                                             tree->rates->t_prior_max[i],
-                                             tree);
-        if(isnan(lnL)) break;
+        if(tree->rates->nd_t[i] < tree->rates->t_prior_min[i] ||
+           tree->rates->nd_t[i] > tree->rates->t_prior_max[i]) return UNLIKELY;
       }
-    
+  
+  if(b > bmin && d > dmin && Are_Equal(bmd,0.0,bmin/10.) == NO)
+    {
+      logbmd = LOG(bmd);
+      expmbmd = EXP(d-b);
+
+      For(i,2*tree->n_otu-1)
+        if(tree->a_nodes[i]->tax == NO && tree->a_nodes[i] != tree->n_root)
+          {
+            t = FABS(tree->rates->nd_t[i]);            
+            // Equation 3.19 in Tanja Stadler's PhD thesis
+            lnL += 2*logbmd - bmd*t - 2.*LOG(b-d*POW(expmbmd,t));            
+          }
+
+      t = FABS(tree->rates->nd_t[tree->n_root->num]);
+      lnL += -bmd*t - LOG(b-d*POW(expmbmd,t));
+
+      lnL += log(bmd) + (tree->n_otu-1)*LOG(b) + LnGamma(tree->n_otu+1);
+    }
+  else if(b > bmin && d < dmin) // Yule process 
+    {
+      For(i,2*tree->n_otu-1)
+        if(tree->a_nodes[i]->tax == NO && tree->a_nodes[i] != tree->n_root)
+          {
+            t = FABS(tree->rates->nd_t[i]);            
+            // Equation 3.19 in Tanja Stadler's PhD thesis (Yule case)
+            lnL -= b*t;
+          }
+
+      t = FABS(tree->rates->nd_t[tree->n_root->num]);
+      lnL -= b*t;
+      
+      lnL += (tree->n_otu-1)*LOG(b) + LnGamma(tree->n_otu+1);
+    }
+  else if(b < bmin && d > dmin) 
+    {
+      return -INFINITY;
+    }
+  else if(Are_Equal(bmd,0.0,bmin/10.) == YES) // Critical birth-death process
+    {
+      logb = LOG(b);
+
+      For(i,2*tree->n_otu-1)
+        if(tree->a_nodes[i]->tax == NO && tree->a_nodes[i] != tree->n_root)
+          {
+            t = FABS(tree->rates->nd_t[i]);            
+            // Equation 3.19 in Tanja Stadler's PhD thesis (Critical case)
+            lnL += logb - 2.*LOG(1.+b*t);
+          }
+
+      t = FABS(tree->rates->nd_t[tree->n_root->num]);
+      lnL -= LOG(b*t);
+
+      lnL += LnGamma(tree->n_otu+1);
+      
+    }
+  else if(b < bmin && d < dmin) // Birth and death rates are below their limits
+    {
+      return -INFINITY;
+    }
+  else if(b > bmax && d > dmax)
+    {
+      return -INFINITY;
+    }
+  else
+    {
+      assert(FALSE);
+    }
 
   if(isnan(lnL) || isinf(FABS(lnL)))
     {
@@ -1652,50 +1726,9 @@ phydbl TIMES_Lk_Birth_Death(t_tree *tree)
     }
 
   tree->rates->c_lnL_times = lnL;
+
+
   return(lnL);
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-phydbl TIMES_Lk_Birth_Death_One_Node(phydbl t, phydbl min, phydbl max, t_tree *tree)
-{
-  phydbl lnL;
-  phydbl p0t1,p0t,p1t,gt,vt1;
-  phydbl b,d;
-  phydbl t1;
-
-  if(t > max || t < min) return NAN;
-
-  t = FABS(t);
-
-  lnL = 0.0;
-  b   = tree->rates->birth_rate;
-  d   = tree->rates->death_rate;
-  t1  = FABS(tree->rates->nd_t[tree->n_root->num]);
-
-
-  if(Are_Equal(b,d,1.E-6) == NO)
-    {
-      p0t1 = (b-d)/(b-d*EXP((d-b)*t1));
-      vt1  = 1. - p0t1*EXP((d-b)*t1);
-      
-      p0t = (b-d)/(b-d*EXP((d-b)*t));
-      p1t = p0t*p0t*EXP((d-b)*t);
-      gt  = b*p1t/vt1;
-      lnL = LOG(gt);
-      return lnL;
-    }
-  else
-    {
-      // Equation 8 in Yang and Rannala (2006)
-      // Node age outside its calibration boundaries
-      
-      gt  = (1.+b*t1)/(t1*(1.+b*t)*(1.+b*t));
-      lnL = LOG(gt);
-      return lnL;        
-    }
-  return NAN;
 }
 
 //////////////////////////////////////////////////////////////
@@ -1766,7 +1799,9 @@ void TIMES_Connect_List_Of_Taxa(t_node **tax_list, int list_size, phydbl t_mrca,
       new_mrca->v[1]         = anc[permut[i]];
       new_mrca->v[2]         = anc[permut[i+1]];
       new_mrca->v[0]         = NULL;
-      times[new_mrca->num]   = Uni()*(t_upper_bound - t_lower_bound) + t_lower_bound;
+      /* t_upper_bound          = MIN(times[new_mrca->v[1]->num],times[new_mrca->v[2]->num]); */
+      /* times[new_mrca->num]   = Uni()*(t_upper_bound - t_lower_bound) + t_lower_bound; */
+      times[new_mrca->num]   = t_upper_bound - ((phydbl)(i+1.)/n_anc)*(t_upper_bound - t_lower_bound);
 
 
       printf("\n. new_mrca->num: %d time: %f [%f %f] t_mrca: %f %d connect to %d %d %d [%f %f]",
@@ -1784,14 +1819,12 @@ void TIMES_Connect_List_Of_Taxa(t_node **tax_list, int list_size, phydbl t_mrca,
              );
       fflush(NULL);
 
-      t_upper_bound          = times[new_mrca->num]; // Might give a funny distribution of node ages, but should work nonetheless...
-      anc[permut[i+1]]       = new_mrca;
-      n_anc--;
+      anc[permut[i+1]] = new_mrca;
       i++;
       (*nd_num) += 1;
-      if(n_anc == 1) times[new_mrca->num] = t_mrca;
+      if(n_anc == i+1) { times[new_mrca->num] = t_mrca; break; }
     }
-  while(n_anc != 1);
+  while(1);
   
   Free(permut);
   Free(anc);
@@ -1837,12 +1870,9 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
         {
           if(cal->is_primary == YES)
             {
-              if(n_cal > 0) cal_times = (phydbl *)mRealloc(cal_times,n_cal+1,sizeof(phydbl));
-              
+              if(n_cal > 0) cal_times = (phydbl *)mRealloc(cal_times,n_cal+1,sizeof(phydbl));              
               cal_times[n_cal] = Uni()*(cal->upper - cal->lower) + cal->lower;
-                            
               if(cal_times[n_cal] < time_oldest_cal) time_oldest_cal = cal_times[n_cal];
-              
               n_cal++;
             }
           cal = cal->next;
@@ -1854,7 +1884,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       cal_ordering = (int *)mCalloc(n_cal,sizeof(int));
       For(i,n_cal) cal_ordering[i] = i;
       
-      // Find the ordering of calibration times from youngest to oldest
+      // Sort calibration times from youngest to oldest
       do
         {
           swap = NO;
@@ -1872,14 +1902,13 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       while(swap == YES);
       
       For(i,n_cal-1) assert(cal_times[cal_ordering[i]] > cal_times[cal_ordering[i+1]]);
-      
-        
-      // Connect all taxa that appear in all primary calibrations
+              
+      // Connect taxa that appear in every primary calibrations
       For(i,n_cal)
         {
           cal = cal_list;
           j = 0;
-          while(j!=cal_ordering[i]) 
+          while(j != cal_ordering[i]) 
             { 
               if(cal->is_primary == YES) j++; 
               cal = cal->next; 
@@ -1963,10 +1992,10 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
 
       /* For(i,list_size) printf("\n# To connect: %d",nd_list[i]->num); */
       
-      /* printf("\n >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> "); fflush(NULL); */
+      printf("\n <<<<<<<<<<<<<<<<<<<<<<<<<<<<<< "); fflush(NULL);
       TIMES_Connect_List_Of_Taxa(nd_list, 
                                  list_size,
-                                 Uni()*time_oldest_cal + time_oldest_cal, 
+                                 4.*time_oldest_cal, 
                                  times, 
                                  &nd_num,
                                  mixt_tree);
@@ -2108,6 +2137,11 @@ int TIMES_Check_Node_Height_Ordering(t_tree *tree)
 int TIMES_Check_Node_Height_Ordering_Post(t_node *a, t_node *d, t_tree *tree)
 {
 
+  if(d->anc != a)
+    {
+      PhyML_Printf("\n== d=%d d->anc=%d a=%d root=%d",d->num,d->anc->num,a->num,tree->n_root->num);
+      return NO;
+    }
   if(tree->rates->nd_t[d->num] < tree->rates->nd_t[a->num])
     {
       PhyML_Printf("\n== a->t = %f[%d] d->t %f[%d]",

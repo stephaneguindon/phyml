@@ -1299,6 +1299,7 @@ void Free_Calib(t_cal *cal)
           int i;
           For(i,cal->n_target_tax) Free(cal->target_tax[i]);
           Free(cal->target_tax);
+          Free(cal->target_tip);
         }
       Free(cal);
     }

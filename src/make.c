@@ -1212,10 +1212,18 @@ t_rate *RATES_Make_Rate_Struct(int n_otu)
 t_cal *Make_Calibration()
 {
   t_cal *calib;
-
   calib = (t_cal *)mCalloc(1, sizeof(t_cal));
-
   return(calib);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+t_node **Make_Target_Tip(int n)
+{
+  t_node **this;
+  this = (t_node **)mCalloc(n,sizeof(t_node *));
+  return(this);
 }
 
 //////////////////////////////////////////////////////////////

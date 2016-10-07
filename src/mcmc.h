@@ -183,4 +183,7 @@ void MCMC_PHYREX_Ldsk_And_Disk(t_tree *tree);
 void MCMC_Death_Rate(t_tree *tree);
 void MCMC_Time_All(t_tree *tree);
 void MCMC_Prune_Regraft(t_tree *tree);
+void MCMC_Randomize_Death(t_tree *tree);
+void MCMC_Time_Slice(t_tree *tree);
+void MCMC_Prune_Regraft_Local(t_tree *tree);
 #endif

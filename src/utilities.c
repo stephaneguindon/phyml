@@ -80,13 +80,13 @@ void Set_Edge_Dirs(t_edge *b, t_node *a, t_node *d, t_tree *tree)
 
   if(a == b->rght)
     {
-      PhyML_Printf("\n== a->num = %3d ; d->num = %3d",a->num,d->num);
+      PhyML_Printf("\n== a->num = %d ; d->num = %d",a->num,d->num);
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
     }
 
   if(d == b->left)
     {
-      PhyML_Printf("\n== a->num = %3d ; d->num = %3d",a->num,d->num);
+      PhyML_Printf("\n== a->num = %d ; d->num = %d",a->num,d->num);
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
     }
 
@@ -102,7 +102,7 @@ void Set_Edge_Dirs(t_edge *b, t_node *a, t_node *d, t_tree *tree)
       /* if((d->v[i]) && ((d->v[i] == a) || (e_root && d->b[i] == e_root))) */
       if((d->v[i]) && ((d->v[i] == a)))
         {
-          b->r_l  = i; /* we consider here that 'd' is on the right handside of 'b'*/
+          b->r_l = i; /* we consider here that 'd' is on the right handside of 'b'*/
           d->b[i] = b;
         }
     }
@@ -4693,7 +4693,7 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
 
 void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_tree *tree)
 {
-  t_node *v1, *v2;
+  t_node *v1, *v2, *buff_nd;
   t_edge *b1, *b2;
   int dir_v1, dir_v2;
   int i;
@@ -4706,6 +4706,12 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
   assert(a);
   assert(d);
   assert(tree);
+
+  if(tree->n_root && a == tree->n_root) 
+    {
+      if(d == tree->e_root->left) a = tree->e_root->rght;
+      if(d == tree->e_root->rght) a = tree->e_root->left;
+    }
 
   if(a->tax) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
@@ -4722,10 +4728,8 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
   assert(dir_v1 > -1);
   assert(dir_v2 > -1);
 
-
   if(a->v[dir_v1] == a->anc) a->v[dir_v2]->anc = a->v[dir_v1];
   else                       a->v[dir_v1]->anc = a->v[dir_v2];
-
 
   if(a->v[dir_v1]->num < a->v[dir_v2]->num)
     {
@@ -4742,7 +4746,12 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
       b2 = a->b[dir_v1];
     }
 
+
   assert(NULL != b1 && NULL != b2);
+
+  if(target)   (*target)   = b1;
+  if(residual) (*residual) = b2;
+
 
   a->v[dir_v1] = NULL;
   a->v[dir_v2] = NULL;
@@ -4982,27 +4991,65 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
       b1->l_var->v += b2->l_var->v;
     }
 
+
   (v1 == b1->left)?
     (Set_Edge_Dirs(b1,v1,v2,tree)):
     (Set_Edge_Dirs(b1,v2,v1,tree));
 
-  if(target)   (*target)   = b1;
-  if(residual) (*residual) = b2;
 
-
-  if(tree->n_root && (a == tree->n_root->v[1] || a == tree->n_root->v[2]))
+  if(tree->n_root != NULL)
     {
-      tree->e_root             = b1;
-      tree->n_root->v[1]       = b1->left;
-      tree->n_root->v[2]       = b1->rght;
-      tree->n_root->b[1]->rght = b1->left;
-      tree->n_root->b[2]->rght = b1->rght;
+      if(tree->n_root->v[1] == v1 && tree->n_root->v[2] == a) tree->n_root->v[2] = v2;
+      if(tree->n_root->v[2] == v1 && tree->n_root->v[1] == a) tree->n_root->v[1] = v2;
+  
+      if((tree->n_root->v[1] == v2 && tree->n_root->v[2] == a) || 
+         (tree->n_root->v[2] == v2 && tree->n_root->v[1] == a))
+        {
+          tree->e_root = b1;
+          if(tree->n_root->v[1] == v2) tree->n_root->v[2] = v1;
+          if(tree->n_root->v[2] == v2) tree->n_root->v[1] = v1;
+        }
+      
+      // Prune subtree to the left or to the right of the root node
+      if((tree->n_root->v[1] == a && tree->n_root->v[2] == d) ||
+         (tree->n_root->v[1] == d && tree->n_root->v[2] == a))
+        {
+          /* printf("\n. ^^prune^^ "); */
+          tree->e_root = b1;
+          tree->n_root->v[1] = v2;
+          tree->n_root->v[2] = v1;
+        }
+
+      /* tree->e_root->left = tree->n_root->v[1]; */
+      /* tree->e_root->rght = tree->n_root->v[2]; */
+
+      buff_nd = NULL;
+      if(tree->n_root->v[1] == tree->e_root->rght)
+        {
+          buff_nd = tree->n_root->v[1];
+          tree->n_root->v[1] = tree->n_root->v[2];
+          tree->n_root->v[2] = buff_nd;
+        }
+
+      /* printf("\n. tree->n_root->v[1]: %d tree->n_root->v[2]: %d", */
+      /*        tree->n_root->v[1] ? tree->n_root->v[1]->num : -1, */
+      /*        tree->n_root->v[2] ? tree->n_root->v[2]->num : -1); */
+      Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
+      Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
+      tree->n_root->anc = NULL;
     }
 
 #ifdef DEBUG
   if(b1->left->tax == YES && b1->rght->tax == NO)
     {
+      PhyML_Printf("\n== root: %d root->v1: %d root->v2: %d eroot: %d b1: %d b2: %d v1: %d v2: %d",
+                   tree->n_root->num,
+                   tree->n_root->v[1]->num,
+                   tree->n_root->v[2]->num,
+                   tree->e_root->num,
+                   b1->num,b2->num,v1->num,v2->num);
       PhyML_Printf("\n== b1->left->num = %d",b1->left->num);
+      PhyML_Printf("\n== b1->rght->num = %d",b1->rght->num);
       PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
@@ -5014,7 +5061,7 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
+void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_node *target_nd, t_tree *tree)
 {
   t_node *v1, *v2;
   int i, dir_v1, dir_v2;
@@ -5027,18 +5074,27 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
 
   assert(link);
   assert(tree);
-
+  assert(target);
+  
+  
   dir_v1 = dir_v2 = -1;
   b_up = NULL;
   For(i,3)
     {
-      if(!link->v[i])
+      if(link->v[i] == NULL)
         {
           if(dir_v1 < 0) dir_v1 = i;
           else           dir_v2 = i;
         }
       else b_up = link->b[i];
     }
+  
+  if(dir_v1 < 0 || dir_v2 < 0)
+    {
+      PhyML_Printf("\n== link: %d was not pruned in a clean manner...\n",link->num);
+      assert(FALSE);
+    }
+
 
   if(target->left == target->rght->anc)
     {
@@ -5050,8 +5106,7 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
       link->anc = target->rght;
       target->left->anc = link;
     }
-  
-  
+    
 
 #ifdef BEAGLE
   int temp;
@@ -5059,8 +5114,8 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
 
   if(target->left->num < target->rght->num)
     {
-      v1                           = target->left;
-      v2                           = target->rght;
+      v1 = target->left;
+      v2 = target->rght;
 
       if(tree->is_mixt_tree == NO)
         {
@@ -5113,8 +5168,8 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
     }
   else
     {
-      v1                           = target->rght;
-      v2                           = target->left;
+      v1 = target->rght;
+      v2 = target->left;
 
       if(tree->is_mixt_tree == NO)
         {
@@ -5163,6 +5218,7 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
     }
   
 
+
   For(i,3)
     if(v2->b[i] == target)
       {
@@ -5177,14 +5233,12 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
   residual->left  = link;
   residual->rght  = v2;
 
-
-  if(v1 == target->left)
-    target->rght = link;
-  else 
-    target->left = link;
+  if(v1 == target->left) target->rght = link;
+  else                   target->left = link;
 
   link->v[dir_v1] = v1;
   link->b[dir_v1] = target;
+
 
   For(i,3)
     if(v1->v[i] == v2)
@@ -5209,30 +5263,31 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_tree *tree)
   Set_Edge_Dirs(residual,residual->left,residual->rght,tree);
   Set_Edge_Dirs(b_up,b_up->left,b_up->rght,tree);
 
-  if(tree->n_root && b_up == tree->e_root)
-    {
-      assert((tree->n_root->v[1] == NULL && tree->n_root->v[2] != NULL) ||
-             (tree->n_root->v[1] != NULL && tree->n_root->v[2] == NULL));
-      if(tree->n_root->v[1] == NULL) tree->n_root->v[1] = link;      
-      if(tree->n_root->v[2] == NULL) tree->n_root->v[2] = link;      
-    }
+  /* printf("\n here %p target: %d [%p] eroot: %d [%p] target_nd: %d [%p] root: %d [%p]", */
+  /*        tree, */
+  /*        target?target->num:-1,target, */
+  /*        tree->e_root?tree->e_root->num:-1,tree->e_root, */
+  /*        target_nd?target_nd->num:-1,target_nd, */
+  /*        tree->n_root?tree->n_root->num:-1,tree->n_root); */
+  /* fflush(NULL); */
 
-  if(target == tree->e_root)
+  if(tree->n_root != NULL)
     {
-      tree->n_root->v[1]       = target->left;
-      tree->n_root->v[2]       = target->rght;
-      tree->n_root->b[1]->rght = target->left;
-      tree->n_root->b[2]->rght = target->rght;
-    }
+      if(target == tree->e_root)
+        {
+          if(target_nd == v1)                tree->e_root = residual;
+          else if(target_nd == tree->n_root) tree->e_root = b_up;
 
-  if(tree->n_root)
-    {
-      Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
+          tree->n_root->v[1] = tree->e_root->left;
+          tree->n_root->v[2] = tree->e_root->rght;
+        }
+
       Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
+      Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
       tree->n_root->anc = NULL;
     }
 
-  if(tree->is_mixt_tree == YES) MIXT_Graft_Subtree(target,link,residual,tree);
+  if(tree->is_mixt_tree == YES) MIXT_Graft_Subtree(target,link,residual,target_nd,tree);
 }
 
 //////////////////////////////////////////////////////////////
@@ -6815,7 +6870,7 @@ void Randomize_Tree(t_tree *tree, int n_prune_regraft)
       
       assert(b_target != NULL);
       
-      Graft_Subtree(b_target,rnd_node,b_residual,tree);
+      Graft_Subtree(b_target,rnd_node,b_residual,NULL,tree);
       
       n_rand--;
     }
@@ -7013,10 +7068,14 @@ void Add_Root(t_edge *target, t_tree *tree)
 
 void Update_Ancestors(t_node *a, t_node *d, t_tree *tree)
 {
+  if(d == NULL)
+    {
+      PhyML_Printf("\n. d is NULL; a: %d root: %d",a->num,tree->n_root->num);
+      Exit("\n");
+    }
+  d->anc = a;
 
   if(a == tree->n_root) a->anc = NULL;
-
-  d->anc = a;
 
   if(d->tax) return;
   else
@@ -8504,9 +8563,6 @@ void Time_To_Branch_Pre(t_node *a, t_node *d, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
 // Assume an ultrametric tree.
 void Branch_To_Time(t_tree *tree)
 {
@@ -9206,7 +9262,6 @@ int Check_Sequence_Name(char *s)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 int Scale_Subtree_Height(t_node *a, phydbl K, phydbl floor, int *n_nodes, t_tree *tree)
 {
   phydbl new_height;
@@ -9215,15 +9270,13 @@ int Scale_Subtree_Height(t_node *a, phydbl K, phydbl floor, int *n_nodes, t_tree
 
   new_height = .0;
 
-
-  if(!(tree->rates->nd_t[a->num] > floor))
-    new_height = K*(tree->rates->nd_t[a->num]-floor)+floor;
+  if(!(tree->rates->nd_t[a->num] > floor)) new_height = K*(tree->rates->nd_t[a->num]-floor)+floor;
 
   if(a == tree->n_root)
     {
       tree->rates->nd_t[tree->n_root->num] = new_height;
       *n_nodes = 1;
-
+      
       Scale_Node_Heights_Post(tree->n_root,tree->n_root->v[2],K,floor,n_nodes,tree);
       Scale_Node_Heights_Post(tree->n_root,tree->n_root->v[1],K,floor,n_nodes,tree);
     }
@@ -9258,19 +9311,7 @@ void Scale_Node_Heights_Post(t_node *a, t_node *d, phydbl K, phydbl floor, int *
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
     }
 
-  if(d->tax)
-    {
-      if(!(tree->rates->nd_t[d->num] > floor))
-        {
-          /* Scaling does not change the node height here
-             but, in theory this tip is among the scaled
-             nodes. Therefore needs to count it in for
-             working out correct Hastings ratios
-          */
-          /* *n_nodes = *n_nodes+1; */
-        }
-      return;
-    }
+  if(d->tax) return;
   else
     {
       int i;
@@ -9279,7 +9320,7 @@ void Scale_Node_Heights_Post(t_node *a, t_node *d, phydbl K, phydbl floor, int *
          it then becomes possible for nodes with different floor values
          to have their orders interverted (i.e., ancestor below descendant)
       */
-      if(!(tree->rates->nd_t[d->num] > floor))
+      if((tree->rates->nd_t[d->num] > floor) == NO) // If node is strictly older than floor
         {
           tree->rates->nd_t[d->num] = K*(tree->rates->nd_t[d->num]-floor)+floor;
           *n_nodes = *n_nodes+1;
@@ -10334,7 +10375,7 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree)
 
       Prune_Subtree(a,d,&nouse,&residual,tree);
 
-      Graft_Subtree(target_nd->b[ok_dir],a,residual,tree);
+      Graft_Subtree(target_nd->b[ok_dir],a,residual,NULL,tree);
 
       tree->rates->nd_t[a->num] = new_t;
 
@@ -11742,6 +11783,9 @@ void Remove_From_Linked_List(t_ll *elem, t_ll **list)
 void Remove_From_Linked_List_Based_On_Value(void *val, t_ll **list)
 {
   t_ll *ll;
+
+  if(val == NULL) return;
+  if(*list == NULL) return;
 
   ll = (*list)->head;
   

@@ -317,7 +317,7 @@ void Post_Order_Lk(t_node *a, t_node *d, t_tree *tree)
   int i,dir;
 
   dir = -1;
-
+  
   if(d->tax) return;
   else
     {
@@ -346,6 +346,19 @@ void Post_Order_Lk(t_node *a, t_node *d, t_tree *tree)
             }
         }
 
+      if(dir < 0)
+        {
+          PhyML_Printf("\n== a: %d d: %d [%d %d %d] [%d %d %d]",
+                       a->num,
+                       d->num,
+                       d->v[0] ? d->v[0]->num : -1,
+                       d->v[1] ? d->v[1]->num : -1,
+                       d->v[2] ? d->v[2]->num : -1,
+                       d->b[0] ? d->b[0]->num : -1,
+                       d->b[1] ? d->b[1]->num : -1,
+                       d->b[2] ? d->b[2]->num : -1);
+          fflush(NULL);
+        }
       assert(dir > -1);
 
       if(tree->ignore_root == NO && d->b[dir] == tree->e_root)
@@ -412,7 +425,7 @@ void Update_All_P_Lk(t_tree *tree)
   if(tree->n_root)
     {
       if(tree->ignore_root == NO)
-        {
+        {          
           Post_Order_Lk(tree->n_root,tree->n_root->v[1],tree);
           Post_Order_Lk(tree->n_root,tree->n_root->v[2],tree);
           
@@ -427,6 +440,7 @@ void Update_All_P_Lk(t_tree *tree)
         }
       else
         {
+
           Post_Order_Lk(tree->e_root->rght,tree->e_root->left,tree);
           Post_Order_Lk(tree->e_root->left,tree->e_root->rght,tree);
           
@@ -481,7 +495,6 @@ phydbl Lk(t_edge *b, t_tree *tree)
   if((tree->rates) && (tree->rates->bl_from_rt)) RATES_Update_Cur_Bl(tree);
 #endif
 
-  
 if(tree->rates && tree->io->lk_approx == NORMAL)
     {
 #ifdef BEAGLE
@@ -4292,6 +4305,7 @@ void Stepwise_Add_Lk(t_tree *tree)
           Graft_Subtree(targets[tg_idx[j]],
                         tree->a_nodes[nd_idx[i]+3]->v[0],
                         residuals[i],
+                        NULL,
                         tree);
           
           Update_PMat_At_Given_Edge(targets[tg_idx[j]],tree);
@@ -4317,6 +4331,7 @@ void Stepwise_Add_Lk(t_tree *tree)
       Graft_Subtree(best_target,
                     tree->a_nodes[nd_idx[i]+3]->v[0],
                     residuals[i],
+                    NULL,
                     tree);
       
       Set_Both_Sides(NO,tree);

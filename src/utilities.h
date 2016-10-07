@@ -1550,12 +1550,15 @@ typedef struct __Tmcmc {
   int num_move_nd_r;
   int num_move_br_r;
   int num_move_times;
+  int num_move_root_time;
   int num_move_nu;
   int num_move_clock_r;
   int num_move_tree_height;
+  int num_move_time_slice;
   int num_move_subtree_height;
   int num_move_kappa;
   int num_move_spr;
+  int num_move_spr_local;
   int num_move_tree_rates;
   int num_move_subtree_rates;
   int num_move_updown_nu_cr;
@@ -1729,6 +1732,7 @@ typedef struct __Calibration {
 
   short int is_primary; // Is is a primary or secondary calibration interval?
   
+  struct __Node **target_tip; // Array of targeted tips
   char **target_tax;
   int  n_target_tax;
 }t_cal;
@@ -1984,7 +1988,7 @@ int Are_Compatible(char *statea,char *stateb,int stepsize,int datatype);
 void Hide_Ambiguities(calign *data);
 void Copy_Tree(t_tree *ori, t_tree *cpy);
 void Prune_Subtree(t_node *a,t_node *d,t_edge **target,t_edge **residual,t_tree *tree);
-void Graft_Subtree(t_edge *target,t_node *link,t_edge *residual,t_tree *tree);
+void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_node *target_nd, t_tree *tree);
 void Reassign_Node_Nums(t_node *a,t_node *d,int *curr_ext_node,int *curr_int_node,t_tree *tree);
 void Reassign_Edge_Nums(t_node *a,t_node *d,int *curr_br,t_tree *tree);
 void Find_Mutual_Direction(t_node *n1,t_node *n2,short int *dir_n1_to_n2,short int *dir_n2_to_n1);

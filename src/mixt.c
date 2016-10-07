@@ -119,7 +119,6 @@ void MIXT_Chain_Nodes(t_tree *tree)
   if(tree->n_root != NULL)
     {
       n = tree->n_root;
-
       if(tree->next)      n->next       = tree->next->n_root;
       if(tree->prev)      n->prev       = tree->prev->n_root;
       if(tree->next_mixt) n->next_mixt  = tree->next_mixt->n_root;
@@ -723,6 +722,11 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                   MIXT_Post_Order_Lk(mixt_tree->e_root->rght,
                                      mixt_tree->e_root->left,
                                      mixt_tree);
+
+                  /* printf("\n<> Post -> 187 : %d %d %d", */
+                  /*        mixt_tree->a_nodes[187]->v[0]->num, */
+                  /*        mixt_tree->a_nodes[187]->v[1]->num, */
+                  /*        mixt_tree->a_nodes[187]->v[2]->num); */
 
                   MIXT_Post_Order_Lk(mixt_tree->e_root->left,
                                      mixt_tree->e_root->rght,
@@ -1613,39 +1617,42 @@ void MIXT_Prune_Subtree(t_node *mixt_a, t_node *mixt_d, t_edge **mixt_target, t_
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void MIXT_Graft_Subtree(t_edge *mixt_target, t_node *mixt_link, t_edge *mixt_residual, t_tree *mixt_tree)
+void MIXT_Graft_Subtree(t_edge *mixt_target, t_node *mixt_link, t_edge *mixt_residual, t_node *mixt_target_nd, t_tree *mixt_tree)
 {
   t_edge *target,*residual;
-  t_node *link;
+  t_node *link,*target_nd;
   t_tree *tree;
 
   MIXT_Turn_Branches_OnOff_In_One_Elem(OFF,mixt_tree);
 
-  tree     = mixt_tree;
-  target   = mixt_target;
-  residual = mixt_residual;
-  link     = mixt_link;
+  tree      = mixt_tree;
+  target    = mixt_target;
+  residual  = mixt_residual;
+  link      = mixt_link;
+  target_nd = mixt_target_nd;
 
   do
     {
       if(tree->is_mixt_tree == YES)
         {
-          tree     = tree->next;
-          target   = target->next;
-          residual = residual->next;
-          link     = link->next;
+          tree      = tree->next;
+          target    = target->next;
+          residual  = residual->next;
+          link      = link->next;
+          target_nd = target_nd ? target_nd->next : NULL;
         }
 
-      Graft_Subtree(target,link,residual,tree);
+      Graft_Subtree(target,link,residual,target_nd,tree);
 
-      tree     = tree->next;
-      target   = target->next;
-      residual = residual->next;
-      link     = link->next;
+      tree      = tree->next;
+      target    = target->next;
+      residual  = residual->next;
+      link      = link->next;
+      target_nd = target_nd ? target_nd->next : NULL;
     }
   while(tree && tree->is_mixt_tree == NO);
 
-  if(tree) Graft_Subtree(target,link,residual,tree);
+  if(tree) Graft_Subtree(target,link,residual,target_nd,tree);
 
   /*! Turn branches of this mixt_tree to ON after recursive call
     to Graft_Subtree such that, if branches of mixt_tree->next
@@ -2237,11 +2244,24 @@ void MIXT_Add_Root(t_edge *mixt_b, t_tree *mixt_tree)
       if(b == NULL) break; 
 
       Add_Root(b,tree);
+
       tree = tree->next;
       b    = b->next;
     }
-  while(tree && tree->is_mixt_tree == NO);
-  
+  while(tree);
+
+  tree = mixt_tree;
+  do
+    {
+      if(tree->next)      tree->n_root->next       = tree->next->n_root;
+      if(tree->prev)      tree->n_root->prev       = tree->prev->n_root;
+      if(tree->next_mixt) tree->n_root->next_mixt  = tree->next_mixt->n_root;
+      if(tree->prev_mixt) tree->n_root->prev_mixt  = tree->prev_mixt->n_root;
+
+      tree = tree->next;
+    }
+  while(tree);
+
 }
 
 //////////////////////////////////////////////////////////////
