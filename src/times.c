@@ -961,7 +961,9 @@ phydbl TIMES_Lk_Yule_Order(t_tree *tree)
 
 phydbl TIMES_Lk_Times(t_tree *tree)
 {
-  
+  DATE_Assign_Primary_Calibration(tree);
+  DATE_Update_T_Prior_MinMax(tree);
+
 #ifdef PHYTIME
   tree->rates->c_lnL_times =  TIMES_Lk_Yule_Order(tree);
 #elif defined(DATE)

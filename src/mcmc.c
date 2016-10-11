@@ -1576,6 +1576,7 @@ void MCMC_Root_Time(t_tree *tree)
 
   if(t_min > t_max) 
     {
+      PhyML_Printf("\n== t:%f",tree->rates->nd_t[tree->n_root->num]);
       PhyML_Printf("\n== t0 = %f t2 = %f t3 = %f",t0,t2,t3);
       PhyML_Printf("\n== t_min = %f t_max = %f",t_min,t_max);
       PhyML_Printf("\n== prior_min = %f prior_max = %f",tree->rates->t_prior_min[root->num],tree->rates->t_prior_max[root->num]);
@@ -4450,7 +4451,7 @@ void MCMC_Prune_Regraft(t_tree *tree)
           }
       
       t_max = MIN(times[prune->v[dir_v1]->num],times[prune->v[dir_v2]->num]);
-      t_min = prune->anc ? times[prune->anc->num] : 2.*t_max;
+      t_min = prune->anc ? times[prune->anc->num] : 1.2*t_max;
       
       hr += LOG(1./(t_max - t_min));
 
@@ -4460,10 +4461,14 @@ void MCMC_Prune_Regraft(t_tree *tree)
       // Add root node as one can regraft above it
       Push_Bottom_Linked_List(tree->n_root,&regraft_nd_list);
 
+      // Number of regraft nodes
+      n_regraft_nd = Linked_List_Len(regraft_nd_list);
 
-      /* Print_Node(tree->n_root,tree->n_root->v[1],tree); */
-      /* Print_Node(tree->n_root,tree->n_root->v[2],tree); */
-      
+      if(n_regraft_nd == 0)
+        {
+          Free_Linked_List(regraft_nd_list);          
+          continue;
+        }
 
       /* printf("\n. before prune"); */
       /* printf("\n> root: %d %d %d edge: %d [%d %d]", */
@@ -4489,10 +4494,6 @@ void MCMC_Prune_Regraft(t_tree *tree)
       /*        tree->e_root->rght->num); */
       /* fflush(NULL); */
 
-      // Number of regraft nodes
-      n_regraft_nd = Linked_List_Len(regraft_nd_list);
-
-      assert(n_regraft_nd > 0);
 
       // Randomly select one (uniform)
       regraft_idx = Rand_Int(0,n_regraft_nd-1);
@@ -4615,6 +4616,7 @@ void MCMC_Prune_Regraft(t_tree *tree)
           /* fflush(NULL); */
 
           RATES_Reset_Times(tree);
+          TIMES_Lk_Times(tree); 
           tree->c_lnL = cur_alnL;
           tree->rates->c_lnL_times = cur_glnL;
 
@@ -4789,17 +4791,19 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
       
       if(n_regraft_nd == 0)
         {
-        PhyML_Printf("\n. n_regraft: %d",n_regraft_nd);
-          PhyML_Printf("\n. a:%d b:%d c:%d d:%d e:%d",
-                       a?a->num:-1,
-                       b?b->num:-1,
-                       c?c->num:-1,
-                       d?d->num:-1,
-                       e?e->num:-1);
-          PhyML_Printf("\n. prune: %d prune_daughter: %d",prune->num,prune_daughter->num);
-          PhyML_Printf("\n. root: %d root->v1: %d root->v2: %d",tree->n_root->num,tree->n_root->v[1]->num,tree->n_root->v[2]->num);
+          /* PhyML_Printf("\n. n_regraft: %d",n_regraft_nd); */
+          /* PhyML_Printf("\n. a:%d b:%d c:%d d:%d e:%d", */
+          /*              a?a->num:-1, */
+          /*              b?b->num:-1, */
+          /*              c?c->num:-1, */
+          /*              d?d->num:-1, */
+          /*              e?e->num:-1); */
+          /* PhyML_Printf("\n. prune: %d prune_daughter: %d",prune->num,prune_daughter->num); */
+          /* PhyML_Printf("\n. root: %d root->v1: %d root->v2: %d",tree->n_root->num,tree->n_root->v[1]->num,tree->n_root->v[2]->num); */
+          Free_Linked_List(regraft_nd_list);
+          continue;
         }
-
+      
       assert(n_regraft_nd > 0);
       
       if(n_regraft_nd > 1)
@@ -4807,21 +4811,21 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
           if(e->tax == YES) hr -= LOG(1./3.); // Only three nodes are valid regraft positions
           else              hr -= LOG(1./5.); // Five nodes are valid regraft positions
         }
-
+      
       
       // Randomly select one (uniform)
       regraft_idx = Rand_Int(0,n_regraft_nd-1);
       
       regraft_nd = Linked_List_Elem(regraft_idx,regraft_nd_list);
-            
+      
       if(n_regraft_nd > 1)
         {
           if(regraft_nd->tax == YES) hr += LOG(1./3.); // Only three nodes are valid regraft positions
           else                       hr += LOG(1./5.); // Five nodes are valid regraft positions
         }
-
+      
       Free_Linked_List(regraft_nd_list);
-
+      
       // Prune
       target = residual = NULL;
       Prune_Subtree(prune,prune_daughter,&target,&residual,tree);
@@ -4892,10 +4896,13 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
           fflush(NULL);
           Graft_Subtree(ori_target,prune,residual,init_regraft_nd,tree);
 
-
           RATES_Reset_Times(tree);
+          TIMES_Lk_Times(tree); 
           tree->c_lnL = cur_alnL;
           tree->rates->c_lnL_times = cur_glnL;
+
+          /* DATE_Assign_Primary_Calibration(tree); */
+          /* DATE_Update_T_Prior_MinMax(tree); */
 
           /* /\* !!!!!!!!!!!!!! *\/ */
           /* new_alnL = Lk(NULL,tree); /\* Not necessary. Remove once tested *\/ */
@@ -5140,17 +5147,17 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
 	}
     }
   
-  for(i=mcmc->num_move_br_r;i<mcmc->num_move_br_r+2*tree->n_otu-2;i++) mcmc->move_weight[i] = (phydbl)(1./(2.*tree->n_otu-2)); /* Rates */
+  for(i=mcmc->num_move_br_r;i<mcmc->num_move_br_r+2*tree->n_otu-2;i++) mcmc->move_weight[i] = (phydbl)(1./tree->n_otu); /* Rates */
   for(i=mcmc->num_move_nd_r;i<mcmc->num_move_nd_r+2*tree->n_otu-1;i++) mcmc->move_weight[i] = 0.0; /* Node rates */
   mcmc->move_weight[mcmc->num_move_times]            = 1.0;
   mcmc->move_weight[mcmc->num_move_root_time]        = 0.0;
   mcmc->move_weight[mcmc->num_move_clock_r]          = 1.0;
-  mcmc->move_weight[mcmc->num_move_tree_height]      = 2.0;
+  mcmc->move_weight[mcmc->num_move_tree_height]      = 1.0;
   mcmc->move_weight[mcmc->num_move_time_slice]       = 1.0;
   mcmc->move_weight[mcmc->num_move_subtree_height]   = 1.0;
-  mcmc->move_weight[mcmc->num_move_nu]               = 2.0;
+  mcmc->move_weight[mcmc->num_move_nu]               = 1.0;
   mcmc->move_weight[mcmc->num_move_kappa]            = 0.5;
-  mcmc->move_weight[mcmc->num_move_spr]              = 0.5;
+  mcmc->move_weight[mcmc->num_move_spr]              = 3.0;
   mcmc->move_weight[mcmc->num_move_spr_local]        = 2.0;
   mcmc->move_weight[mcmc->num_move_tree_rates]       = 1.0;
   mcmc->move_weight[mcmc->num_move_subtree_rates]    = 0.5;

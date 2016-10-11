@@ -223,18 +223,9 @@ void DATE_Update_T_Prior_MinMax(t_tree *tree)
         {
           For(j,tree->a_nodes[i]->n_cal)
             {
-              tree->rates->t_prior_max[i] = MIN(tree->rates->t_prior_max[i],tree->a_nodes[i]->cal[j]->upper);
-              tree->rates->t_prior_min[i] = MAX(tree->rates->t_prior_min[i],MAX(tree->a_nodes[i]->cal[j]->lower,
-                                                                                tree->rates->nd_t[tree->n_root->num]));
+              tree->rates->t_prior_max[i] = tree->a_nodes[i]->cal[j]->upper;
+              tree->rates->t_prior_min[i] = tree->a_nodes[i]->cal[j]->lower;
             }
-        }
-      else
-        {
-          if(tree->a_nodes[i] != tree->n_root)
-            {                        
-              tree->rates->t_prior_max[i] = 0.0;
-              tree->rates->t_prior_min[i] = tree->rates->nd_t[tree->n_root->num];
-            }        
         }
     }
 
@@ -252,6 +243,14 @@ void DATE_Update_T_Prior_MinMax(t_tree *tree)
             tree->rates->t_prior_max[rk[i]] = tree->rates->t_prior_max[rk[j]];
         }
     }
+
+  /* printf("\n. min:%f max:%f rk: %d n_cal: %d low: %f up: %f", */
+  /*        tree->rates->t_prior_min[tree->n_root->num], */
+  /*        tree->rates->t_prior_max[tree->n_root->num], */
+  /*        tree->rates->t_rank[tree->n_root->num], */
+  /*        tree->a_nodes[tree->n_root->num]->n_cal, */
+  /*        tree->a_nodes[tree->n_root->num]->n_cal > 0 ? tree->a_nodes[tree->n_root->num]->cal[0]->lower : -1, */
+  /*        tree->a_nodes[tree->n_root->num]->n_cal > 0 ? tree->a_nodes[tree->n_root->num]->cal[0]->upper : -1); */
 }
 
 //////////////////////////////////////////////////////////////
@@ -644,14 +643,15 @@ phydbl *DATE_MCMC(t_tree *tree)
   PhyML_Printf("\n. log(Pr(Seq|Tree)) = %f",tree->c_lnL);
   PhyML_Printf("\n. log(Pr(Tree)) = %f",tree->rates->c_lnL_times);
   
-  PhyML_Fprintf(fp_stats,"\n%s\t%s\t%s\t%s\t%s\t%s\t%s",
+  PhyML_Fprintf(fp_stats,"\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s",
                 "sample",
                 "lnL(seq)",
                 "lnL(times)",
                 "birth",
                 "death",
                 "clock",
-                "root");
+                "root",
+                "tstv");
   fflush(NULL);
 
 
@@ -679,6 +679,7 @@ phydbl *DATE_MCMC(t_tree *tree)
 
       assert(!(move == tree->mcmc->n_moves));      
           
+      /* PhyML_Printf("\n== Move '%s'",tree->mcmc->move_name[move]); */
 
       if(!strcmp(tree->mcmc->move_name[move],"clock"))          MCMC_Clock_R(tree);
       if(!strcmp(tree->mcmc->move_name[move],"birth_rate"))     MCMC_Birth_Rate(tree);
@@ -727,14 +728,15 @@ phydbl *DATE_MCMC(t_tree *tree)
                        tree->rates->nd_t[tree->n_root->num],
                        (int)time(NULL) - t_beg);
 
-          PhyML_Fprintf(fp_stats,"\n%6d\t%9.1f\t%9.1f\t%12G\t%12G\t%12G\t%12G",
+          PhyML_Fprintf(fp_stats,"\n%6d\t%9.1f\t%9.1f\t%12G\t%12G\t%12G\t%12G\t%12G",
                         tree->mcmc->run,
                         tree->c_lnL,
                         tree->rates->c_lnL_times,
                         tree->rates->birth_rate,
                         tree->rates->death_rate,
                         tree->rates->clock_r,
-                        tree->rates->nd_t[tree->n_root->num]);
+                        tree->rates->nd_t[tree->n_root->num],
+                        tree->mod->kappa->v);
 
           Time_To_Branch(tree);
           tree->bl_ndigits = 1;
