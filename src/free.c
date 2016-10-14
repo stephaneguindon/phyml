@@ -1273,7 +1273,6 @@ void RATES_Free_Rates(t_rate *rates)
       Free(rates->has_survived);
       Free(rates->survival_rank);
       Free(rates->survival_dur);
-      Free(rates->node_height_dens_log_norm_const_update);
       Free(rates->t_prior_min_ori);
       Free(rates->t_prior_max_ori);
       Free(rates->times_partial_proba);

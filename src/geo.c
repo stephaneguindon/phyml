@@ -356,7 +356,6 @@ phydbl *GEO_MCMC(t_tree *tree)
 
   tree->mcmc->io               = NULL;
   tree->mcmc->is               = NO;
-  tree->mcmc->use_data         = YES;
   tree->mcmc->run              = 0;
   tree->mcmc->sample_interval  = 1E+3;
   tree->mcmc->chain_len        = 1E+6;
@@ -1633,7 +1632,7 @@ void MCMC_Geo_Updown_Tau_Lbda(t_tree *tree)
   tree->geo->tau  = new_tau;
   tree->geo->lbda = new_lbda;
 
-  if(tree->mcmc->use_data) new_lnL = GEO_Lk(tree->geo,tree);
+  if(tree->eval_alnL) new_lnL = GEO_Lk(tree->geo,tree);
 
   ratio = 0.0;
   /* Proposal ratio: 2n-2=> number of multiplications, 1=>number of divisions */
@@ -1703,7 +1702,7 @@ void MCMC_Geo_Updown_Lbda_Sigma(t_tree *tree)
   tree->geo->lbda   = new_lbda;
   tree->geo->sigma = new_sigma;
 
-  if(tree->mcmc->use_data) new_lnL = GEO_Lk(tree->geo,tree);
+  if(tree->eval_alnL) new_lnL = GEO_Lk(tree->geo,tree);
 
   ratio = 0.0;
   /* Proposal ratio: 2n-2=> number of multiplications, 1=>number of divisions */

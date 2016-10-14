@@ -113,6 +113,7 @@ void Init_Tree(t_tree *tree, int n_otu)
   tree->mixt_tree                 = NULL;
   tree->geo                       = NULL;
   tree->xml_root                  = NULL;
+  tree->ghost_tree                = NULL;
   tree->verbose                   = VL3;
 
   tree->is_mixt_tree              = NO;
@@ -154,6 +155,10 @@ void Init_Tree(t_tree *tree, int n_otu)
   tree->json_num                  = 0;
   tree->update_eigen_lr           = NO;
   tree->use_eigen_lr              = NO;
+  tree->eval_alnL                 = YES;
+  tree->eval_rlnL                 = YES;
+  tree->eval_glnL                 = YES;
+
 #ifdef BEAGLE
   tree->b_inst                    = UNINITIALIZED;
 #endif
@@ -3546,7 +3551,6 @@ void MCMC_Init_MCMC_Struct(char *filename, option *io, t_mcmc *mcmc)
 
   mcmc->io               = io;
   mcmc->is               = NO;
-  mcmc->use_data         = YES;
   mcmc->run              = 0;
   mcmc->sample_interval  = 1E+3;
   mcmc->chain_len        = 1E+7;

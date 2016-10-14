@@ -650,6 +650,7 @@ typedef struct __Tree{
   struct __Tree                    *next_mixt; /*! set to NULL by default. Used for mixture models */
   struct __Tree                    *prev_mixt; /*! set to NULL by default. Used for mixture models */
   struct __Tree                    *mixt_tree; /*! set to NULL by default. Used for mixture models */
+  struct __Tree                   *ghost_tree; /*! set to NULL by default. Used a latent variable in molecular dating */
   struct __Option                         *io; /*! input/output */
   struct __Matrix                        *mat; /*! pairwise distance matrix */
   struct __Node                   **curr_path; /*! list of nodes that form a path in the tree */
@@ -663,6 +664,10 @@ typedef struct __Tree{
   struct __Migrep_Model                 *mmod;
   struct __Disk_Event                   *disk;
   struct __XML_node                 *xml_root;
+
+  short int                         eval_alnL; /*! Evaluate likelihood for genetic data */
+  short int                         eval_rlnL; /*! Evaluate likelihood for rates along the tree */
+  short int                         eval_glnL; /*! Evaluate tree likelihood */
 
   short int                      use_eigen_lr;
   int                            is_mixt_tree;
@@ -1522,7 +1527,6 @@ typedef struct __T_Rate {
   phydbl log_K_cur;
   int cur_comb_numb;
   int *numb_calib_chosen;
-  phydbl *node_height_dens_log_norm_const_update;
   int update_time_norm_const;
 
   struct __T_Rate *next;
@@ -1618,7 +1622,6 @@ typedef struct __Tmcmc {
 
   int *adjust_tuning;
   int n_moves;
-  int use_data;
   int randomize;
   int norm_freq;
   int run;

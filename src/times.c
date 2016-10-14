@@ -180,7 +180,7 @@ int TIMES_main(int argc, char **argv)
 		  /* Work with log of branch lengths? */
 		  if(tree->mod->log_l == YES) Log_Br_Len(tree);
 
-		  if(io->mcmc->use_data == YES)
+		  if(io->eval_alnL == YES)
 		    {
 		      /* Force the exact likelihood score */
 		      user_lk_approx = tree->io->lk_approx;
@@ -1650,7 +1650,10 @@ phydbl TIMES_Lk_Birth_Death(t_tree *tree)
     if(tree->a_nodes[i]->tax == NO && tree->a_nodes[i] != tree->n_root)
       {
         if(tree->rates->nd_t[i] < tree->rates->t_prior_min[i] ||
-           tree->rates->nd_t[i] > tree->rates->t_prior_max[i]) return UNLIKELY;
+           tree->rates->nd_t[i] > tree->rates->t_prior_max[i]) 
+          {
+            return UNLIKELY;
+          }
       }
   
   if(b > bmin && d > dmin && Are_Equal(bmd,0.0,bmin/10.) == NO)
@@ -2035,7 +2038,6 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       
       DATE_Assign_Primary_Calibration(mixt_tree);
       DATE_Update_T_Prior_MinMax(mixt_tree);
-
 
       /* { */
       /*   Print_Node(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree); */

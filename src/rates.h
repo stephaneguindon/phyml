@@ -179,5 +179,7 @@ void RATES_Get_Survival_Ranks(t_tree *tree);
 void RATES_Bl_To_Bl(t_tree *tree);
 void RATES_Bl_To_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree);
 void RATES_Set_Birth_Rate_Boundaries(t_tree *tree);
+void RATES_Copy_Rate_Struct(t_rate *from, t_rate *to, int n_otu);
+void RATES_Duplicate_Calib_Struct(t_tree *from, t_tree *to);
 
 #endif

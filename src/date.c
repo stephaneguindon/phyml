@@ -610,13 +610,10 @@ phydbl *DATE_MCMC(t_tree *tree)
   TIMES_Randomize_Tree_With_Time_Constraints(tree->rates->a_cal[0], tree);
 
   mcmc = MCMC_Make_MCMC_Struct();
-
   tree->mcmc = mcmc;
-
   MCMC_Init_MCMC_Struct(NULL,NULL,mcmc);
-
   MCMC_Complete_MCMC(mcmc,tree);
-
+  
   MCMC_Randomize_Birth(tree);
   MCMC_Randomize_Death(tree);
   MCMC_Randomize_Clock_Rate(tree);
@@ -637,12 +634,28 @@ phydbl *DATE_MCMC(t_tree *tree)
   
   Set_Both_Sides(YES,tree);
   Lk(NULL,tree);
-  TIMES_Lk_Birth_Death(tree);
+  TIMES_Lk_Times(tree);
   RATES_Lk_Rates(tree);
 
   PhyML_Printf("\n. log(Pr(Seq|Tree)) = %f",tree->c_lnL);
   PhyML_Printf("\n. log(Pr(Tree)) = %f",tree->rates->c_lnL_times);
   
+
+  tree->ghost_tree = Make_Tree_From_Scratch(tree->n_otu,tree->data);
+  Copy_Tree(tree,tree->ghost_tree);
+  tree->ghost_tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
+  RATES_Init_Rate_Struct(tree->ghost_tree->rates,NULL,tree->n_otu);
+  RATES_Copy_Rate_Struct(tree->rates,tree->ghost_tree->rates,tree->n_otu);
+  RATES_Duplicate_Calib_Struct(tree,tree->ghost_tree);
+  MIXT_Chain_Cal(tree->ghost_tree);
+  TIMES_Lk_Times(tree->ghost_tree);
+  PhyML_Printf("\n. log(Pr(Ghost Tree)) = %f",tree->ghost_tree->rates->c_lnL_times);
+  mcmc = MCMC_Make_MCMC_Struct();
+  tree->ghost_tree->mcmc = mcmc;
+  MCMC_Init_MCMC_Struct(NULL,NULL,mcmc);
+  MCMC_Complete_MCMC(mcmc,tree->ghost_tree);
+
+
   PhyML_Fprintf(fp_stats,"\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s",
                 "sample",
                 "lnL(seq)",
@@ -657,7 +670,6 @@ phydbl *DATE_MCMC(t_tree *tree)
 
   For(i,mcmc->n_moves) tree->mcmc->start_ess[i] = YES;
   Set_Both_Sides(NO,tree);
-  mcmc->use_data   = YES; 
   mcmc->always_yes = NO;
   move             = -1;
 
@@ -700,7 +712,7 @@ phydbl *DATE_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"br_rate"))
       	{
       	  Set_Both_Sides(YES,tree);
-      	  if(tree->mcmc->use_data == YES) Lk(NULL,tree);
+      	  if(tree->eval_alnL == YES) Lk(NULL,tree);
       	  Set_Both_Sides(NO,tree);      	  
           MCMC_One_Rate(tree->n_root,tree->n_root->v[1],YES,tree);
           MCMC_One_Rate(tree->n_root,tree->n_root->v[2],YES,tree);

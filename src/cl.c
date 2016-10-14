@@ -360,7 +360,6 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	  }
 	case 59:
 	  {
-	    io->mcmc->use_data = NO;
 	    break;
 	  }
 	case 58:

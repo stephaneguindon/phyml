@@ -467,6 +467,8 @@ phydbl Lk(t_edge *b, t_tree *tree)
   int br,catg,state;
   phydbl len,*expl;
 
+  if(tree->eval_alnL == NO) return UNLIKELY;
+
   if(b == NULL && tree->mod->s_opt->curr_opt_free_rates == YES)
     {
       tree->mod->s_opt->curr_opt_free_rates = NO;
@@ -512,10 +514,7 @@ if(tree->rates && tree->io->lk_approx == NORMAL)
     {
       if(!b)//Update PMat for all edges
         {
-          For(br,2*tree->n_otu-3)
-            {
-              Update_PMat_At_Given_Edge(tree->a_edges[br],tree);
-            }
+          For(br,2*tree->n_otu-3) Update_PMat_At_Given_Edge(tree->a_edges[br],tree);
           if(tree->n_root && tree->ignore_root == NO)
             {
               Update_PMat_At_Given_Edge(tree->n_root->b[1],tree);
@@ -529,7 +528,7 @@ if(tree->rates && tree->io->lk_approx == NORMAL)
       
       if(!b)
         {
-          if(tree->n_root)
+          if(tree->n_root != NULL)
             {
               if(tree->ignore_root == NO)
                 {
@@ -795,7 +794,6 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
                                                 -1,-1,
                                                 b,tree);
                                 
-                printf("\n. EIGEN: YES --> %G [%G]",site_lk_cat,b->l->v); fflush(NULL);
 
                 tree->use_eigen_lr = NO;
                 site_lk_cat = Lk_Core_One_Class(b->p_lk_left + (site*dim1) + (catg*dim2),
@@ -806,7 +804,6 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
                                                 ns,YES,-1,
                                                 b,tree);
 
-                printf("\n. EIGEN: NO --> %G [%G]",site_lk_cat,b->l->v); fflush(NULL);
               }
           }
           Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
@@ -1333,6 +1330,7 @@ phydbl Invariant_Lk(int fact_sum_scale, int site, int *num_prec_issue, t_tree *t
 
 void Update_P_Lk(t_tree *tree, t_edge *b, t_node *d)
 {
+  if(tree->eval_alnL == NO) return;
 
   if(tree->is_mixt_tree)
     {
@@ -1912,7 +1910,7 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
               sum_scale[catg*n_patterns+site] = sum_scale_v1_val + sum_scale_v2_val;
 
               
-              /* Scaling. We have p_lk_lim_inf = 2^-500. Consider for instance that 
+              /* Scaling. We have p_lk_lim_inf = 2^-500. Consider for instance that
                  smallest_p_lk = 2^-600, then curr_scaler_pow will be equal to 100, and
                  each element in the partial likelihood vector will be multiplied by
                  2^100. */
@@ -1950,9 +1948,6 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
 //  fprintf(stdout, "Updated partials:");fflush(stdout);
 //  Dump_Arr_D(p_lk, tree->mod->ras->n_catg*tree->mod->ns*tree->n_pattern);
 }
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

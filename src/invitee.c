@@ -212,13 +212,7 @@ void PhyTime_XML(char *xml_file)
 
  ////////////////////////////////////////////////////////////////////////////
  ////////////////////////////////////////////////////////////////////////////
-  if(XML_Search_Attribute(n_r, "use_data") != NULL) 
-    {
-      if(XML_Search_Attribute(n_r, "use_data") -> value != NULL && (!strcmp(XML_Search_Attribute(n_r, "use_data") -> value, "YES")))
-        io -> mcmc -> use_data = YES;
-      if(XML_Search_Attribute(n_r, "use_data") -> value != NULL && (!strcmp(XML_Search_Attribute(n_r, "use_data") -> value, "NO")))
-        io -> mcmc -> use_data = NO;
-    }
+
 
   n_r = n_r -> child; 
   tree -> rates -> tot_num_cal = 0;
@@ -744,11 +738,6 @@ phydbl TIMES_Calib_Cond_Prob(t_tree *tree)
 
       constant = 0.0; 
       if(tot_num_comb > 1 && times_lk > -INFINITY && result != FALSE && tree->rates->update_time_norm_const == YES) 
-        {
-          tree -> rates -> node_height_dens_log_norm_const_update[i] = K_Constant_Prior_Times_Log(tree);
-          constant = tree -> rates -> node_height_dens_log_norm_const_update[i];
-        }
-      else constant = tree -> rates -> node_height_dens_log_norm_const_update[i];
  
       Yule_val[i] = constant + times_lk;
 
