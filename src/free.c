@@ -377,7 +377,6 @@ void Free_Edge_Pars(t_edge *b)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Free_Tree_Lk(t_tree *mixt_tree)
 {
   int i;
@@ -398,29 +397,32 @@ void Free_Tree_Lk(t_tree *mixt_tree)
       Free(tree->log_lks_aLRT);
 
       Free(tree->unscaled_site_lk_cat);
-
-      For(i,2*tree->n_otu-3) Free_Edge_Lk(tree->a_edges[i]);
-      For(i,2*tree->n_otu-3) Free_Edge_Loc(tree->a_edges[i]);
-
-      if(tree->n_root)
+      
+      For(i,2*tree->n_otu-1) Free_NNI(tree->a_edges[i]->nni);
+  
+      if(tree->is_mixt_tree == NO)
         {
-          Free_NNI(tree->n_root->b[1]->nni);
-          Free_NNI(tree->n_root->b[2]->nni);
-          Free(tree->n_root->b[1]->Pij_rr);
-          Free(tree->n_root->b[2]->Pij_rr);
-          Free_Edge_Lk_Left(tree->n_root->b[1]);
-          Free_Edge_Lk_Left(tree->n_root->b[2]);
-          Free_Edge_Loc_Left(tree->n_root->b[1]);
-          Free_Edge_Loc_Left(tree->n_root->b[2]);
+          For(i,2*tree->n_otu-3) Free_Edge_Lk(tree->a_edges[i]);
+          For(i,2*tree->n_otu-3) Free_Edge_Loc(tree->a_edges[i]);
+          
+          if(tree->n_root != NULL)
+            {
+              Free(tree->n_root->b[1]->Pij_rr);
+              Free(tree->n_root->b[2]->Pij_rr);
+              Free_Edge_Lk_Left(tree->n_root->b[1]);
+              Free_Edge_Lk_Left(tree->n_root->b[2]);
+              Free_Edge_Loc_Left(tree->n_root->b[1]);
+              Free_Edge_Loc_Left(tree->n_root->b[2]);
+            }
+          else
+            {
+              Free_Edge_Lk(tree->a_edges[2*tree->n_otu-3]);
+              Free_Edge_Lk(tree->a_edges[2*tree->n_otu-2]);
+              Free_Edge_Loc(tree->a_edges[2*tree->n_otu-3]);
+              Free_Edge_Loc(tree->a_edges[2*tree->n_otu-2]);
+            }
         }
-      else
-        {
-          Free_Edge_Lk(tree->a_edges[2*tree->n_otu-3]);
-          Free_Edge_Lk(tree->a_edges[2*tree->n_otu-2]);
-          Free_Edge_Loc(tree->a_edges[2*tree->n_otu-3]);
-          Free_Edge_Loc(tree->a_edges[2*tree->n_otu-2]);
-        }
-
+      
       tree = tree->next;
 
     }
@@ -479,7 +481,6 @@ void Free_Edge_Lk_Left(t_edge *b)
 
 void Free_Edge_Lk(t_edge *b)
 {
-  Free_NNI(b->nni);
   Free(b->Pij_rr);
   Free_Edge_Lk_Left(b);
   Free_Edge_Lk_Rght(b);
@@ -671,6 +672,7 @@ void Free_Linked_List(t_ll *t)
 
   if(t == NULL) return;
 
+  t = t->head;
   next = t->next;
   do
     {
@@ -1221,7 +1223,6 @@ void RATES_Free_Rates(t_rate *rates)
   if(rates->is_allocated == YES)
     {
       int i;
-
       Free(rates->nd_r);
       Free(rates->br_r);
       Free(rates->buff_r);
@@ -1273,6 +1274,7 @@ void RATES_Free_Rates(t_rate *rates)
       Free(rates->has_survived);
       Free(rates->survival_rank);
       Free(rates->survival_dur);
+      Free(rates->calib_prob);
       Free(rates->t_prior_min_ori);
       Free(rates->t_prior_max_ori);
       Free(rates->times_partial_proba);
@@ -1288,11 +1290,9 @@ void RATES_Free_Rates(t_rate *rates)
 
 void Free_Calib(t_cal *cal)
 {
-  
   if(!cal) return;
   else 
-    {      
-      Free_Calib(cal->next);
+    {    
       if(cal->target_tax != NULL)
         {
           int i;
@@ -1381,6 +1381,7 @@ void Free_Poly(t_poly *p)
 
 void Free_Mmod(t_phyrex_mod *mmod)
 {
+  if(mmod == NULL) return;
   Free_Geo_Coord(mmod->lim);
   Free(mmod);
 }

@@ -4156,8 +4156,8 @@ void MCMC_Birth_Rate(t_tree *tree)
   /*       		    tree->rates->birth_rate_max, */
   /*       		    tree->mcmc->num_move_birth_rate, */
   /*       		    &(tree->rates->c_lnL_times),NULL, */
-  /*       		    Wrap_Lk_Times,NULL,tree->mcmc->move_type[tree->mcmc->num_move_birth_rate],NO,NULL,tree,NULL);  */
-
+  /*       		    Wrap_Lk_Times,NULL,tree->mcmc->move_type[tree->mcmc->num_move_birth_rate],NO,NULL,tree,NULL); */
+ 
   phydbl cur_birth_rate,new_birth_rate;
   phydbl cur_lnL_time,new_lnL_time;
   phydbl cur_lnL_time_ghost,new_lnL_time_ghost;
@@ -4170,7 +4170,7 @@ void MCMC_Birth_Rate(t_tree *tree)
   cur_birth_rate = -1.0;
   new_birth_rate = -1.0;
   ratio          =  0.0;
-  n_mcmc_steps   = 1000;
+  n_mcmc_steps   =  100;
   move           = -1;
 
   K = tree->mcmc->tune_move[tree->mcmc->num_move_birth_rate];
@@ -4188,11 +4188,11 @@ void MCMC_Birth_Rate(t_tree *tree)
 
   MCMC_Make_Move(&cur_birth_rate,&new_birth_rate,birth_rate_min,birth_rate_max,&ratio,K,tree->mcmc->move_type[tree->mcmc->num_move_birth_rate]);
   
-  if(new_birth_rate < birth_rate_max && new_birth_rate > birth_rate_min) 
+  if(new_birth_rate < birth_rate_max && new_birth_rate > birth_rate_min)
     {
       tree->rates->birth_rate = new_birth_rate;
       
-      new_lnL_time = TIMES_Lk_Times(tree);      
+      new_lnL_time = TIMES_Lk_Times(tree);
       ratio += (new_lnL_time - cur_lnL_time);
 
       tree->ghost_tree->rates->birth_rate = cur_birth_rate;
@@ -4205,7 +4205,7 @@ void MCMC_Birth_Rate(t_tree *tree)
       i = 0;
       do
         {
-          u = Uni();          
+          u = Uni();
           For(move,tree->mcmc->n_moves) if(tree->mcmc->move_weight[move] > u-1.E-10) break;
 
           /* printf("\n. i: %d ghost c_lnL_time: %f move: %s", */
@@ -4230,14 +4230,14 @@ void MCMC_Birth_Rate(t_tree *tree)
       
       u = Uni();
       if(u > alpha) /* Reject */
-	{
-	  tree->rates->birth_rate  = cur_birth_rate;
+        {
+          tree->rates->birth_rate  = cur_birth_rate;
           tree->rates->c_lnL_times = cur_lnL_time;
-	}
+        }
       else
-	{
-	  tree->mcmc->acc_move[tree->mcmc->num_move_birth_rate]++;
-	}
+        {
+          tree->mcmc->acc_move[tree->mcmc->num_move_birth_rate]++;
+        }
     }
   tree->mcmc->run_move[tree->mcmc->num_move_birth_rate]++;
 }

@@ -1212,7 +1212,7 @@ phydbl General_Dist(phydbl *F, t_mod *mod, eigen *eigen_struct)
 
   /* Get the left eigen vector of pi^{-1} x F */
   For(i,eigen_struct->size*eigen_struct->size) eigen_struct->l_e_vect[i] = eigen_struct->r_e_vect[i];
-  if(!Matinv(eigen_struct->l_e_vect,eigen_struct->size,eigen_struct->size,YES)<0)
+  if(!Matinv(eigen_struct->l_e_vect,eigen_struct->size,eigen_struct->size,YES))
     {
       For(i,mod->ns) mod->e_frq->pi->v[i] = mod_pi[i];
       Update_Qmat_GTR(mod->r_mat->rr->v, mod->r_mat->rr_val->v, mod->r_mat->rr_num->v, mod->e_frq->pi->v, mod->r_mat->qmat->v);
@@ -1314,7 +1314,7 @@ phydbl GTR_Dist(phydbl *F, phydbl alpha, eigen *eigen_struct)
 
   /* Get the left eigen vector of pi^{-1} x F */
   For(i,eigen_struct->size*eigen_struct->size) eigen_struct->l_e_vect[i] = eigen_struct->r_e_vect[i];
-  if(!Matinv(eigen_struct->l_e_vect,eigen_struct->size,eigen_struct->size,YES)<0) {Free(pi); return -1.;}
+  if(!Matinv(eigen_struct->l_e_vect,eigen_struct->size,eigen_struct->size,YES)) {Free(pi); return -1.;}
 
   /* Equation (3) + inverse of the moment generating function for the gamma distribution (see Waddell & Steel, 1997) */
   For(i,eigen_struct->size)

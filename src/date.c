@@ -39,7 +39,7 @@ void DATE_XML(char *xml_filename)
   phydbl low,up,*res;
   char *clade_name;
   int seed;
-
+  
   mixt_tree = XML_Process_Base(xml_filename);
   assert(mixt_tree);
 
@@ -90,21 +90,32 @@ void DATE_XML(char *xml_filename)
 	  Exit("\n");
 	}
     }
+  
+  MIXT_Check_Model_Validity(mixt_tree);
+  MIXT_Init_Model(mixt_tree);
+  Print_Data_Structure(NO,stdout,mixt_tree);
+  tree = MIXT_Starting_Tree(mixt_tree);
+  Copy_Tree(tree,mixt_tree);
+  Free_Tree(tree);
+  MIXT_Connect_Cseqs_To_Nodes(mixt_tree);
+  MIXT_Init_T_Beg(mixt_tree);
+  MIXT_Chain_Edges(mixt_tree);
+  MIXT_Chain_Nodes(mixt_tree);
+  Add_Root(mixt_tree->a_edges[0],mixt_tree);  
+  Prepare_Tree_For_Lk(mixt_tree);
+  MIXT_Chain_All(mixt_tree);
+  MIXT_Check_Edge_Lens_In_All_Elem(mixt_tree);
+  MIXT_Turn_Branches_OnOff_In_All_Elem(ON,mixt_tree);
+  MIXT_Check_Invar_Struct_In_Each_Partition_Elem(mixt_tree);
+  MIXT_Check_RAS_Struct_In_Each_Partition_Elem(mixt_tree);
 
-
-  MIXT_Prepare_All(-1,mixt_tree);
-  if(mixt_tree->n_root == NULL) Add_Root(mixt_tree->a_edges[0],mixt_tree);
-
-  clade_name = (char *)mCalloc(T_MAX_NAME,sizeof(char));
-
+  
   xnd = xroot->child;
   assert(xnd);
   do
     {
       if(!strcmp(xnd->name,"calibration")) // Found a XML node <calibration>.
 	{
-          xnd_cal = xnd;
-
           // TO DO: make sure calibs are shared across partition elements -> need to write chain function to
           // call once the calib struct on the first mixt_tree is initialized.
           /* mixt_tree->rates->tot_num_cal++; */
@@ -113,17 +124,18 @@ void DATE_XML(char *xml_filename)
 	  low = -BIG;
 	  up  = BIG;
 
-	  xnd_dum = XML_Search_Node_Name("lower",YES,xnd_cal);
+	  xnd_dum = XML_Search_Node_Name("lower",YES,xnd);
 	  if(xnd_dum != NULL) low = String_To_Dbl(xnd_dum->value); 
 
-	  xnd_dum = XML_Search_Node_Name("upper",YES,xnd_cal);
+	  xnd_dum = XML_Search_Node_Name("upper",YES,xnd);
 	  if(xnd_dum != NULL) up = String_To_Dbl(xnd_dum->value);
           
+          xnd_cal = xnd->child;
           do
             {
-              if(!strcmp("appliesto",xnd_cal->child->name)) 
+              if(!strcmp("appliesto",xnd_cal->name)) 
                 {
-                  clade_name = XML_Get_Attribute_Value(xnd_cal->child,"clade.id");
+                  clade_name = XML_Get_Attribute_Value(xnd_cal,"clade.id");
                   
                   if(!clade_name)
                     {
@@ -135,19 +147,24 @@ void DATE_XML(char *xml_filename)
                   if(strcmp("root",clade_name))
                     {
                       xml_node *xnd_clade;
-                        
+
                       xnd_clade = XML_Search_Node_Generic("clade","id",clade_name,YES,xroot);
-                      
+
                       if(xnd_clade != NULL) // found clade with a given name
                         {
-                          char **clade;
+                          char **xclade,**clade;
                           int clade_size,nd_num;
                           t_cal *cal;
-
-                          clade      = XML_Read_Clade(xnd_clade->child,mixt_tree);
+                          int i;
+                          
+                          xclade     = XML_Read_Clade(xnd_clade->child,mixt_tree);
                           clade_size = XML_Number_Of_Taxa_In_Clade(xnd_clade->child);
                           // TO DO: chain all calibrations
                           cal        = Make_Calibration();
+
+                          clade = (char **)mCalloc(clade_size,sizeof(char *));
+                          For(i,clade_size) clade[i] = (char *)mCalloc(strlen(xclade[i])+1,sizeof(char));
+                          For(i,clade_size) strcpy(clade[i],xclade[i]);
                           
                           Init_Calibration(cal);
 
@@ -169,6 +186,8 @@ void DATE_XML(char *xml_filename)
                           PhyML_Printf("\n. Lower bound set to: %15f time units.",low);
                           PhyML_Printf("\n. Upper bound set to: %15f time units.",up);
                           PhyML_Printf("\n. .......................................................................");
+
+                          Free(xclade);
                         }
                       else
                         {
@@ -178,11 +197,10 @@ void DATE_XML(char *xml_filename)
                         }                      
                     }
                 }
-              xnd_cal->child = xnd_cal->child->next;
+              xnd_cal = xnd_cal->next;
             }
-          while(xnd_cal->child != NULL);
+          while(xnd_cal != NULL);
         }
-          /* mixt_tree->rates->calib = mixt_tree->rates->calib->next;	    */
       xnd = xnd->next;
     }
   while(xnd != NULL);
@@ -199,8 +217,49 @@ void DATE_XML(char *xml_filename)
 
   res = DATE_MCMC(mixt_tree);
 
+
+  // Cleaning up...
+  RATES_Free_Rates(mixt_tree->rates);
+  RATES_Free_Rates(mixt_tree->ghost_tree->rates);
+  MCMC_Free_MCMC(mixt_tree->mcmc);
+  MCMC_Free_MCMC(mixt_tree->ghost_tree->mcmc);
+  Free_Mmod(mixt_tree->mmod);
+  Free_Spr_List(mixt_tree);
+  Free_Triplet(mixt_tree->triplet_struct);
+  Free_Tree_Pars(mixt_tree);
+  Free_Tree_Lk(mixt_tree);
+
+  if(mixt_tree->io->fp_out_trees)      fclose(mixt_tree->io->fp_out_trees);
+  if(mixt_tree->io->fp_out_tree)       fclose(mixt_tree->io->fp_out_tree);
+  if(mixt_tree->io->fp_out_stats)      fclose(mixt_tree->io->fp_out_stats);
+  if(mixt_tree->io->fp_out_json_trace) fclose(mixt_tree->io->fp_out_json_trace);
+  Free_Input(mixt_tree->io);
+
+
+  tree = mixt_tree;
+  do
+    {
+      Free_Calign(tree->data);
+      tree = tree->next_mixt;
+    }
+  while(tree);
+
+  tree = mixt_tree;
+  do
+    {
+      Free_Optimiz(tree->mod->s_opt);
+      tree = tree->next;
+    }
+  while(tree);
+
+  
+  Free_Model_Complete(mixt_tree->mod);
+  Free_Model_Basic(mixt_tree->mod);
+  Free_Tree(mixt_tree->ghost_tree);  
+  Free_Tree(mixt_tree);  
   Free(res);
-  Free(clade_name);
+  XML_Free_XML_Tree(xroot);
+  fclose(fp_xml_in);
 }
 
 //////////////////////////////////////////////////////////////
@@ -628,7 +687,8 @@ phydbl *DATE_MCMC(t_tree *tree)
 
   n_vars                = 10;
   adjust_len            = 1E+6;
-  mcmc->sample_interval = 100;
+  mcmc->sample_interval = 500;
+  mcmc->chain_len       = 1E+7;
 
   res = (phydbl *)mCalloc(tree->mcmc->chain_len / tree->mcmc->sample_interval * n_vars,sizeof(phydbl));
   
@@ -693,30 +753,31 @@ phydbl *DATE_MCMC(t_tree *tree)
           
       /* PhyML_Printf("\n== Move '%s'",tree->mcmc->move_name[move]); */
 
-      if(!strcmp(tree->mcmc->move_name[move],"clock"))          MCMC_Clock_R(tree);
-      if(!strcmp(tree->mcmc->move_name[move],"birth_rate"))     MCMC_Birth_Rate(tree);
-      if(!strcmp(tree->mcmc->move_name[move],"death_rate"))     MCMC_Death_Rate(tree);
-      if(!strcmp(tree->mcmc->move_name[move],"tree_height"))    MCMC_Tree_Height(tree);
-      if(!strcmp(tree->mcmc->move_name[move],"times"))          MCMC_Time_All(tree);
-      if(!strcmp(tree->mcmc->move_name[move],"spr"))            MCMC_Prune_Regraft(tree);
-      if(!strcmp(tree->mcmc->move_name[move],"spr_local"))      MCMC_Prune_Regraft_Local(tree);
-      if(!strcmp(tree->mcmc->move_name[move],"updown_t_cr"))    MCMC_Updown_T_Cr(tree);
-      if(!strcmp(tree->mcmc->move_name[move],"updown_t_br"))    MCMC_Updown_T_Br(tree);
-      if(!strcmp(tree->mcmc->move_name[move],"subtree_rates"))  MCMC_Subtree_Rates(tree);
-      if(!strcmp(tree->mcmc->move_name[move],"kappa"))          MCMC_Kappa(tree);
-      if(!strcmp(tree->mcmc->move_name[move],"ras"))            MCMC_Rate_Across_Sites(tree);
-      if(!strcmp(tree->mcmc->move_name[move],"nu"))             MCMC_Nu(tree);
-      if(!strcmp(tree->mcmc->move_name[move],"subtree_height")) MCMC_Subtree_Height(tree);
-      if(!strcmp(tree->mcmc->move_name[move],"time_slice"))     MCMC_Time_Slice(tree);
+      if(!strcmp(tree->mcmc->move_name[move],"clock"))               MCMC_Clock_R(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"birth_rate"))     MCMC_Birth_Rate(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"death_rate"))     MCMC_Death_Rate(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"tree_height"))    MCMC_Tree_Height(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"times"))          MCMC_Time_All(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"spr"))            MCMC_Prune_Regraft(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"spr_local"))      MCMC_Prune_Regraft_Local(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"updown_t_cr"))    MCMC_Updown_T_Cr(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"updown_t_br"))    MCMC_Updown_T_Br(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"subtree_rates"))  MCMC_Subtree_Rates(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"kappa"))          MCMC_Kappa(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"ras"))            MCMC_Rate_Across_Sites(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"nu"))             MCMC_Nu(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"subtree_height")) MCMC_Subtree_Height(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"time_slice"))     MCMC_Time_Slice(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"br_rate"))
+      else if(!strcmp(tree->mcmc->move_name[move],"br_rate"))
       	{
       	  Set_Both_Sides(YES,tree);
       	  if(tree->eval_alnL == YES) Lk(NULL,tree);
-      	  Set_Both_Sides(NO,tree);      	  
+      	  Set_Both_Sides(NO,tree);
           MCMC_One_Rate(tree->n_root,tree->n_root->v[1],YES,tree);
           MCMC_One_Rate(tree->n_root,tree->n_root->v[2],YES,tree);
       	}
+      else continue;
 
       
 

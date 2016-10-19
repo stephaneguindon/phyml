@@ -740,7 +740,6 @@ void RATES_Duplicate_Calib_Struct(t_tree *from, t_tree *to)
   int i,j;
 
   to->rates->n_cal = from->rates->n_cal;
-  to->rates->a_cal = (t_cal **)mCalloc(from->rates->n_cal,sizeof(t_cal *));
 
   For(i,from->rates->n_cal)
     {      

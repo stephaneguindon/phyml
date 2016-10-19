@@ -4660,7 +4660,27 @@ option *PhyML_XML(char *xml_filename)
 
   For(num_rand_tree,io->mod->s_opt->n_rand_starts)
     {
-      MIXT_Prepare_All(num_rand_tree,mixt_tree);
+      MIXT_Check_Model_Validity(mixt_tree);
+      MIXT_Init_Model(mixt_tree);
+      Print_Data_Structure(NO,stdout,mixt_tree);
+      tree = MIXT_Starting_Tree(mixt_tree);
+      Copy_Tree(tree,mixt_tree);
+      Free_Tree(tree);
+  
+      if(mixt_tree->io->mod->s_opt->random_input_tree)
+        {
+          PhyML_Printf("\n\n. [%3d/%3d]",num_rand_tree+1,mixt_tree->io->mod->s_opt->n_rand_starts);
+          Random_Tree(mixt_tree);
+        }
+  
+      MIXT_Connect_Cseqs_To_Nodes(mixt_tree);
+      MIXT_Init_T_Beg(mixt_tree);
+      Prepare_Tree_For_Lk(mixt_tree);
+      MIXT_Chain_All(mixt_tree);
+      MIXT_Check_Edge_Lens_In_All_Elem(mixt_tree);
+      MIXT_Turn_Branches_OnOff_In_All_Elem(ON,mixt_tree);
+      MIXT_Check_Invar_Struct_In_Each_Partition_Elem(mixt_tree);
+      MIXT_Check_RAS_Struct_In_Each_Partition_Elem(mixt_tree);
       Br_Len_Not_Involving_Invar(mixt_tree);
       Unscale_Br_Len_Multiplier_Tree(mixt_tree);
       Set_Both_Sides(YES,mixt_tree);
@@ -5394,9 +5414,9 @@ void Make_RAS_From_XML_Node(xml_node *parent, t_mod *mod)
 
 void Generic_Exit(const char *file, int line, const char *function)
 {
-  PhyML_Printf("\n== Err. in file '%s' (line %d), function '%s'",file,line,function);
+  PhyML_Printf("\n== Err. in file '%s' (line %d)",file,line);
+  if(function != NULL) PhyML_Printf(", function '%s'",function);
   Exit("\n");
-
 }
 
 /*////////////////////////////////////////////////////////////

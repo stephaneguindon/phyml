@@ -51,18 +51,10 @@ void MIXT_Chain_All(t_tree *mixt_tree)
     }
   while(next);
 
-  curr = mixt_tree;
-  do
-    {
-      MIXT_Chain_Edges(curr);
-      MIXT_Chain_Nodes(curr);
-      MIXT_Chain_Sprs(curr);
-      MIXT_Chain_Triplets(curr);
-
-      curr = curr->next;
-    }
-  while(curr);
-
+  MIXT_Chain_Edges(mixt_tree);
+  MIXT_Chain_Nodes(mixt_tree);
+  MIXT_Chain_Sprs(mixt_tree);
+  MIXT_Chain_Triplets(mixt_tree);
   Make_Rmat_Weight(mixt_tree);
   Make_Efrq_Weight(mixt_tree);
 }
@@ -70,90 +62,116 @@ void MIXT_Chain_All(t_tree *mixt_tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void MIXT_Chain_Edges(t_tree *tree)
+void MIXT_Chain_Edges(t_tree *mixt_tree)
 {
   int i;
   t_edge *b;
+  t_tree *tree;
 
-
-  For(i,2*tree->n_otu-1)
+  tree = mixt_tree;
+  do
     {
-      b = tree->a_edges[i];
-
-      if(tree->next)      b->next       = tree->next->a_edges[i];
-      if(tree->prev)      b->prev       = tree->prev->a_edges[i];
-      if(tree->next_mixt) b->next_mixt  = tree->next_mixt->a_edges[i];
-      if(tree->prev_mixt) b->prev_mixt  = tree->prev_mixt->a_edges[i];
+      For(i,2*tree->n_otu-1)
+        {
+          b = tree->a_edges[i];
+          
+          if(tree->next)      b->next       = tree->next->a_edges[i];
+          if(tree->prev)      b->prev       = tree->prev->a_edges[i];
+          if(tree->next_mixt) b->next_mixt  = tree->next_mixt->a_edges[i];
+          if(tree->prev_mixt) b->prev_mixt  = tree->prev_mixt->a_edges[i];
+        }
+      
+      if(tree->e_root != NULL)
+        {
+          b = tree->e_root;
+          
+          if(tree->next)      b->next       = tree->next->e_root;
+          if(tree->prev)      b->prev       = tree->prev->e_root;
+          if(tree->next_mixt) b->next_mixt  = tree->next_mixt->e_root;
+          if(tree->prev_mixt) b->prev_mixt  = tree->prev_mixt->e_root;
+        }
+      tree = tree->next;
     }
-
-  if(tree->e_root != NULL)
-    {
-      b = tree->e_root;
-
-      if(tree->next)      b->next       = tree->next->e_root;
-      if(tree->prev)      b->prev       = tree->prev->e_root;
-      if(tree->next_mixt) b->next_mixt  = tree->next_mixt->e_root;
-      if(tree->prev_mixt) b->prev_mixt  = tree->prev_mixt->e_root;
-    }
+  while(tree);
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void MIXT_Chain_Nodes(t_tree *tree)
+void MIXT_Chain_Nodes(t_tree *mixt_tree)
 {
   int i;
   t_node *n;
+  t_tree *tree;
 
-  For(i,2*tree->n_otu-2)
+  tree = mixt_tree;
+  do
     {
-      n = tree->a_nodes[i];
-
-      if(tree->next)      n->next       = tree->next->a_nodes[i];
-      if(tree->prev)      n->prev       = tree->prev->a_nodes[i];
-      if(tree->next_mixt) n->next_mixt  = tree->next_mixt->a_nodes[i];
-      if(tree->prev_mixt) n->prev_mixt  = tree->prev_mixt->a_nodes[i];
+      For(i,2*tree->n_otu-2)
+        {
+          n = tree->a_nodes[i];
+          
+          if(tree->next)      n->next       = tree->next->a_nodes[i];
+          if(tree->prev)      n->prev       = tree->prev->a_nodes[i];
+          if(tree->next_mixt) n->next_mixt  = tree->next_mixt->a_nodes[i];
+          if(tree->prev_mixt) n->prev_mixt  = tree->prev_mixt->a_nodes[i];
+        }
+      
+      if(tree->n_root != NULL)
+        {
+          n = tree->n_root;
+          if(tree->next)      n->next       = tree->next->n_root;
+          if(tree->prev)      n->prev       = tree->prev->n_root;
+          if(tree->next_mixt) n->next_mixt  = tree->next_mixt->n_root;
+          if(tree->prev_mixt) n->prev_mixt  = tree->prev_mixt->n_root;
+        }
+      tree = tree->next;
     }
-
-
-  if(tree->n_root != NULL)
-    {
-      n = tree->n_root;
-      if(tree->next)      n->next       = tree->next->n_root;
-      if(tree->prev)      n->prev       = tree->prev->n_root;
-      if(tree->next_mixt) n->next_mixt  = tree->next_mixt->n_root;
-      if(tree->prev_mixt) n->prev_mixt  = tree->prev_mixt->n_root;
-    }
+  while(tree);
 }
-
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void MIXT_Chain_Sprs(t_tree *tree)
+void MIXT_Chain_Sprs(t_tree *mixt_tree)
 {
   int i;
+  t_tree *tree;
 
-  if(tree->next)      tree->best_spr->next      = tree->next->best_spr;
-  if(tree->prev)      tree->best_spr->prev      = tree->prev->best_spr;
-  if(tree->next_mixt) tree->best_spr->next_mixt = tree->next_mixt->best_spr;
-  if(tree->prev_mixt) tree->best_spr->prev_mixt = tree->prev_mixt->best_spr;
-
-  For(i,2*tree->n_otu-2)
+  tree = mixt_tree;
+  do
     {
-      if(tree->next)      tree->spr_list[i]->next      = tree->next->spr_list[i];
-      if(tree->prev)      tree->spr_list[i]->prev      = tree->prev->spr_list[i];
-      if(tree->next_mixt) tree->spr_list[i]->next_mixt = tree->next_mixt->spr_list[i];
-      if(tree->prev_mixt) tree->spr_list[i]->prev_mixt = tree->prev_mixt->spr_list[i];
+      if(tree->next)      tree->best_spr->next      = tree->next->best_spr;
+      if(tree->prev)      tree->best_spr->prev      = tree->prev->best_spr;
+      if(tree->next_mixt) tree->best_spr->next_mixt = tree->next_mixt->best_spr;
+      if(tree->prev_mixt) tree->best_spr->prev_mixt = tree->prev_mixt->best_spr;
+      
+      For(i,2*tree->n_otu-2)
+        {
+          if(tree->next)      tree->spr_list[i]->next      = tree->next->spr_list[i];
+          if(tree->prev)      tree->spr_list[i]->prev      = tree->prev->spr_list[i];
+          if(tree->next_mixt) tree->spr_list[i]->next_mixt = tree->next_mixt->spr_list[i];
+          if(tree->prev_mixt) tree->spr_list[i]->prev_mixt = tree->prev_mixt->spr_list[i];
+        }
+      tree = tree->next;
     }
+  while(tree);
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void MIXT_Chain_Triplets(t_tree *tree)
+void MIXT_Chain_Triplets(t_tree *mixt_tree)
 {
-  if(tree->next) tree->triplet_struct->next = tree->next->triplet_struct;
-  if(tree->prev) tree->triplet_struct->prev = tree->prev->triplet_struct;
+  t_tree *tree;
+
+  tree = mixt_tree;
+  do
+    {
+      if(tree->next) tree->triplet_struct->next = tree->next->triplet_struct;
+      if(tree->prev) tree->triplet_struct->prev = tree->prev->triplet_struct;
+      tree = tree->next;
+    }
+  while(tree);
 }
 
 //////////////////////////////////////////////////////////////

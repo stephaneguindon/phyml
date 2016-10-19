@@ -1079,16 +1079,9 @@ void XML_Make_Node_Value(xml_node *n, char *val)
 
 xml_node *XML_Make_Node(char *name)
 {
-
   xml_node *new_node = (xml_node *)mCalloc(1,sizeof(xml_node));
-
-  if(name)
-    {
-      new_node->name = (char *)mCalloc(strlen(name)+1,sizeof(char));
-    }
-
+  if(name) new_node->name = (char *)mCalloc(strlen(name)+1,sizeof(char));
   new_node->ds = (t_ds *)mCalloc(1,sizeof(t_ds));
-
   return new_node;
 }
 

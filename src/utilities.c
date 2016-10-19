@@ -6940,7 +6940,7 @@ void Add_Root(t_edge *target, t_tree *tree)
   assert(tree);
 
   #ifndef PHYML
-  PhyML_Printf("\n. Adding root on t_edge %d left = %d right = %d.",target->num,target->left->num,target->rght->num); fflush(NULL);
+  PhyML_Printf("\n. Adding root on t_edge %d left = %d right = %d.",target->num,target->left ? target->left->num : -1, target->rght ? target->rght->num : -1); fflush(NULL);
   #endif
 
   tree->e_root = target;
@@ -11724,7 +11724,7 @@ void Push_Bottom_Linked_List(void *what, t_ll **list)
 void Remove_From_Linked_List(t_ll *elem, t_ll **list)
 {
   t_ll *ll;
-
+  
   ll = (*list)->head;
   
   do
@@ -11756,6 +11756,8 @@ void Remove_From_Linked_List(t_ll *elem, t_ll **list)
               (*list)->head = NULL;
               (*list)->next = NULL;
               (*list)->prev = NULL;
+              Free(ll);
+              ll = NULL;
               return;
             }
           else

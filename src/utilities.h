@@ -44,6 +44,8 @@ the GNU public licence. See http://www.opensource.org for details.
 extern int n_sec1;
 extern int n_sec2;
 
+#define __FUNCTION__ NULL
+
 #define For(i,n)                     for(i=0; i<n; i++)
 #define Fors(i,n,s)                  for(i=0; i<n; i+=s)
 #define PointGamma(prob,alpha,beta)  PointChi2(prob,2.0*(alpha))/(2.0*(beta))
@@ -231,7 +233,7 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define INFINITY HUGE
 #endif
 
-#define MAX_N_CAL              10
+#define MAX_N_CAL             100
 #define N_MAX_OPTIONS         100
 
 #define NEXT_BLOCK_SIZE        50

@@ -1089,6 +1089,8 @@ t_tree *XML_Process_Base(char *xml_filename)
   Free(component);
   Free(class_num);
 
+  XML_Free_XML_Tree(root);
+  
   fclose(fp);
   return mixt_tree;
 }
@@ -1224,7 +1226,7 @@ xml_node *XML_Load_File(FILE *fp)
               if(c != '/') parent = node;
 
               buffer[0] = '\0';
-            }     
+            }
           bufptr = buffer;
         }
       else if(isspace(c) == NO)
