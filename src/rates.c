@@ -747,7 +747,6 @@ void RATES_Duplicate_Calib_Struct(t_tree *from, t_tree *to)
       to->rates->a_cal[i] = Make_Calibration();
       Init_Calibration(to->rates->a_cal[i]);
 
-
       to->rates->a_cal[i]->is_primary = from->rates->a_cal[i]->is_primary;
       to->rates->a_cal[i]->n_target_tax = from->rates->a_cal[i]->n_target_tax;
       to->rates->a_cal[i]->lower = from->rates->a_cal[i]->lower;

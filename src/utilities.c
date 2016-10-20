@@ -5075,8 +5075,7 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_node *targe
   assert(link);
   assert(tree);
   assert(target);
-  
-  
+    
   dir_v1 = dir_v2 = -1;
   b_up = NULL;
   For(i,3)
@@ -5276,6 +5275,7 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_node *targe
       if(target == tree->e_root)
         {
           if(target_nd == v1)                tree->e_root = residual;
+          else if(target_nd == v2)           tree->e_root = target;
           else if(target_nd == tree->n_root) tree->e_root = b_up;
 
           tree->n_root->v[1] = tree->e_root->left;
@@ -11689,9 +11689,29 @@ void Push_Bottom_Linked_List(void *what, t_ll **list)
 {
   t_ll *new,*ll;
 
+  /* { */
+  /*   if(*list) */
+  /*     { */
+  /*       t_node *n = what; */
+  /*       t_node *m = (*list)?(*list)->tail->v:NULL; */
+  /*       t_node *o = (*list)?(*list)->head->v:NULL; */
+  /*       printf("\n. before: push node %d bot %d head: %d --",n?n->num:-1,m?m->num:-1,o?o->num:-1); */
+  /*     } */
+  /*   else */
+  /*     { */
+  /*       printf("\n. "); */
+  /*     } */
+  /* } */
+
+  /* if(*list == NULL) printf("\n"); */
+  
   new = (t_ll *)mCalloc(1,sizeof(t_ll));  
   new->v = (void *)what;
   
+  /* t_node *n = what; */
+  /* printf("\n push node %p list: %p %p",new,*list,(*list)?(*list)->head:NULL); */
+
+
   // First elem of list
   if(*list == NULL) 
     {
@@ -11703,12 +11723,25 @@ void Push_Bottom_Linked_List(void *what, t_ll **list)
     }
   else
     {
-      new->prev = (*list)->tail;
-      new->prev->next = new;
-      new->next = NULL;
-      new->head = *list;      
+      ll = (*list)->head;
+      do
+        {
+          if(ll->v == what)
+            {
+              Free(new);
+              return; // 'what' already in list 
+            }
+          ll = ll->next;
+        }
+      while(ll);
 
-      ll = *list;
+
+      new->prev = (*list)->tail;
+      (*list)->tail->next = new;
+      new->next = NULL;
+      new->head = (*list)->head;      
+
+      ll = (*list)->head;
       do
         {
           ll->tail = new;
@@ -11721,15 +11754,19 @@ void Push_Bottom_Linked_List(void *what, t_ll **list)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-void Remove_From_Linked_List(t_ll *elem, t_ll **list)
+void Remove_From_Linked_List(t_ll *elem, void *val, t_ll **list)
 {
   t_ll *ll;
   
-  ll = (*list)->head;
+  if(*list == NULL) return;
   
+  ll = (*list)->head;
+
+  /* t_node *n = elem ? elem->v : val; */
+
   do
     {
-      if(ll == elem)
+      if((elem && ll == elem) || (val && ll->v == val))
         {
           if(ll == (*list)->head && ll != (*list)->tail)
             {
@@ -11756,67 +11793,9 @@ void Remove_From_Linked_List(t_ll *elem, t_ll **list)
               (*list)->head = NULL;
               (*list)->next = NULL;
               (*list)->prev = NULL;
-              Free(ll);
-              ll = NULL;
-              return;
-            }
-          else
-            {
-              ll->prev->next = ll->next;
-              ll->next->prev = ll->prev;
-            }
-
-
-          ll->next = NULL;
-          ll->prev = NULL;
-          ll->head = NULL;
-          ll->tail = NULL;
-          Free(ll);
-          return;
-        }
-      ll = ll->next;
-    }
-  while(ll != NULL);
-}
-
-/*////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////*/
-
-void Remove_From_Linked_List_Based_On_Value(void *val, t_ll **list)
-{
-  t_ll *ll;
-
-  if(val == NULL) return;
-  if(*list == NULL) return;
-
-  ll = (*list)->head;
-  
-  do
-    {
-      if(ll->v == val) 
-        {
-          if(ll == (*list)->head && ll != (*list)->tail)
-            {
-              // Re-initialise head of list
-              t_ll *mm,*newhead;
-              mm = (*list);
-              newhead = (*list)->head->next;
-              do { mm->head = newhead; mm = mm->next; } while(mm);              
-              (*list) = (*list)->head;
-              (*list)->head->prev = NULL;
-            }
-          else if(ll != (*list)->head && ll == (*list)->tail) 
-            {
-              // Re-initialise tail of list
-              t_ll *mm,*newtail;
-              mm = (*list);
-              newtail = (*list)->tail->prev;
-              do { mm->tail = newtail; mm = mm->next; } while(mm);              
-              (*list)->tail->next = NULL;
-            }
-          else if(ll == (*list)->head && ll == (*list)->tail) 
-            {
               (*list) = NULL;
+              /* printf("\n. free %p",ll); */
+              Free(ll);
               return;
             }
           else
@@ -11825,11 +11804,11 @@ void Remove_From_Linked_List_Based_On_Value(void *val, t_ll **list)
               ll->next->prev = ll->prev;
             }
 
-
           ll->next = NULL;
           ll->prev = NULL;
           ll->head = NULL;
           ll->tail = NULL;
+          /* printf("\n. free %p",ll); */
           Free(ll);
           return;
         }
@@ -11840,7 +11819,6 @@ void Remove_From_Linked_List_Based_On_Value(void *val, t_ll **list)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
-
 
 t_ll *Get_List_Of_Reachable_Tips(t_node *a, t_node *d, t_tree *tree)
 {

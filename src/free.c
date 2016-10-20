@@ -668,19 +668,23 @@ void Free_Scalar_Int(scalar_int *v)
 
 void Free_Linked_List(t_ll *t)
 {
-  t_ll *next;
+  t_ll *next,*ll;
 
   if(t == NULL) return;
 
-  t = t->head;
-  next = t->next;
+  ll = t->head;
+  next = ll->next;
   do
     {
-      Free(t);
-      t = next;
-      if(t) next = t->next;
+      /* t_node *n = ll->v; */
+      /* printf("\n. free node %d",n?n->num:-1); */
+      /* printf(" ll: %p",ll); */
+      /* printf(" hd: %p",ll?ll->head:NULL); fflush(NULL); */
+      Free(ll);
+      ll = next;
+      if(ll) next = ll->next;
     }
-  while(t);
+  while(ll);
 }
 
 //////////////////////////////////////////////////////////////

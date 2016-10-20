@@ -282,8 +282,8 @@ void DATE_Update_T_Prior_MinMax(t_tree *tree)
         {
           For(j,tree->a_nodes[i]->n_cal)
             {
-              tree->rates->t_prior_max[i] = tree->a_nodes[i]->cal[j]->upper;
-              tree->rates->t_prior_min[i] = tree->a_nodes[i]->cal[j]->lower;
+              tree->rates->t_prior_max[i] = MIN(tree->rates->t_prior_max[i],tree->a_nodes[i]->cal[j]->upper);
+              tree->rates->t_prior_min[i] = MAX(tree->rates->t_prior_min[i],tree->a_nodes[i]->cal[j]->lower);
             }
         }
     }
@@ -318,6 +318,8 @@ void DATE_Update_T_Prior_MinMax(t_tree *tree)
 void DATE_Assign_Primary_Calibration(t_tree *tree)
 {
   int i,j,idx,node_num;
+
+  For(i,tree->rates->n_cal) tree->rates->a_cal[i]->target_nd = NULL;
   
   For(i,2*tree->n_otu-1) 
     For(j,MAX_N_CAL) 
@@ -687,7 +689,7 @@ phydbl *DATE_MCMC(t_tree *tree)
 
   n_vars                = 10;
   adjust_len            = 1E+6;
-  mcmc->sample_interval = 500;
+  mcmc->sample_interval = 100;
   mcmc->chain_len       = 1E+7;
 
   res = (phydbl *)mCalloc(tree->mcmc->chain_len / tree->mcmc->sample_interval * n_vars,sizeof(phydbl));
@@ -750,9 +752,11 @@ phydbl *DATE_MCMC(t_tree *tree)
       For(move,tree->mcmc->n_moves) if(tree->mcmc->move_weight[move] > u-1.E-10) break;
 
       assert(!(move == tree->mcmc->n_moves));      
-          
-      /* PhyML_Printf("\n== Move '%s'",tree->mcmc->move_name[move]); */
 
+      
+      /* PhyML_Printf("\n== Move '%s' %f",tree->mcmc->move_name[move],tree->ghost_tree->rates->c_lnL_times); */
+
+      
       if(!strcmp(tree->mcmc->move_name[move],"clock"))               MCMC_Clock_R(tree);
       else if(!strcmp(tree->mcmc->move_name[move],"birth_rate"))     MCMC_Birth_Rate(tree);
       else if(!strcmp(tree->mcmc->move_name[move],"death_rate"))     MCMC_Death_Rate(tree);
@@ -779,8 +783,7 @@ phydbl *DATE_MCMC(t_tree *tree)
       	}
       else continue;
 
-      
-
+     
       if(!TIMES_Check_Node_Height_Ordering(tree))
         {
           PhyML_Printf("\n== move: %s",tree->mcmc->move_name[move]);
@@ -793,10 +796,11 @@ phydbl *DATE_MCMC(t_tree *tree)
 
       if(!(tree->mcmc->run%tree->mcmc->sample_interval))
         {
-          PhyML_Printf("\n. lnL: [%9.2f -- %9.2f -- %9.2f] rate: %12f root age: %12f [time: %7d sec]",
+          PhyML_Printf("\n. lnL: [%10.2f -- %10.2f -- %10.2f -- %10.2f] clock: %12f root age: %12f [time: %7d sec]",
                        tree->c_lnL,
                        tree->rates->c_lnL_times,
                        tree->rates->c_lnL_rates,
+                       tree->ghost_tree->rates->c_lnL_times,
                        tree->rates->clock_r,
                        tree->rates->nd_t[tree->n_root->num],
                        (int)time(NULL) - t_beg);
@@ -834,7 +838,6 @@ phydbl *DATE_MCMC(t_tree *tree)
 // Update the list of nodes that are younger than lim
 void DATE_List_Of_Nodes_Younger_Than(t_node *a, t_node *d, phydbl lim, t_ll **list, t_tree *tree)
 {
-  /* printf("\n. a: %d d: %d",a?a->num:-1,d?d->num:-1); */
   if(tree->rates->nd_t[d->num] > lim) Push_Bottom_Linked_List(d,list);
   
   if(d->tax == YES) return;
@@ -893,7 +896,17 @@ t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, t_tree *
   /* Print_Node(tree->n_root,tree->n_root->v[1],tree); */
   /* Print_Node(tree->n_root,tree->n_root->v[2],tree);               */
 
-  /* PhyML_Printf("\n. prune: %d prune_daughter: %d",prune->num,prune_daughter->num); */
+  /* PhyML_Printf("\n. prune: %d prune_daughter: %d [%f %f] v0: %d %f  v1: %d %f  v2: %d %f", */
+  /*              prune->num, */
+  /*              prune_daughter->num, */
+  /*              tree->rates->nd_t[prune->num], */
+  /*              tree->rates->nd_t[prune_daughter->num], */
+  /*              prune->v[0]->num, */
+  /*              tree->rates->nd_t[prune->v[0]->num], */
+  /*              prune->v[1]->num, */
+  /*              tree->rates->nd_t[prune->v[1]->num], */
+  /*              prune->v[2]->num, */
+  /*              tree->rates->nd_t[prune->v[2]->num]); */
 
   // Find the oldest LCA of calibrated sets among the nodes between
   // prune and root. These clades might see the position of their 
@@ -906,6 +919,7 @@ t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, t_tree *
           // That node is the LCA of calibration a_cal[i]
           if(n == tree->rates->a_cal[i]->target_nd)
             {
+              /* printf("\n. n: %d lo:%f up:%f min:%f max:%f",n->num,tree->rates->a_cal[i]->lower,tree->rates->a_cal[i]->upper,tree->rates->t_prior_min[n->num],tree->rates->t_prior_max[n->num]); */
               is_clade_affected = NO;
               For(j,tree->rates->a_cal[i]->n_target_tax)
                 {
@@ -932,7 +946,8 @@ t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, t_tree *
       n = n->anc;
     }
 
-  /* printf("\n. maxmin: %f root: %f",maxmin,tree->rates->nd_t[tree->n_root->num]); */
+  /* printf("\n. maxmin: %f t: %f %f",maxmin,tree->rates->nd_t[prune->num],TIMES_Lk_Times(tree)); */
+  assert(maxmin < tree->rates->nd_t[prune->num]);
 
   // Find the oldest internal node within intervals defined by 
   // calibrations affected by the pruning.
@@ -947,22 +962,23 @@ t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, t_tree *
      
   // List all nodes younger than this apical node
   DATE_List_Of_Nodes_Younger_Than(n->anc,n,-INFINITY,&in,tree);
-
-  /* printf("\n. Younger"); fflush(NULL); */
-  ll = in->head;
-  t_node *x;
-  do 
-    {
-      x = (t_node *)ll->v;
-      /* printf("\n. In0: %p %d",ll,x->num); fflush(NULL); */
-      ll = ll->next; 
-    } 
-  while(ll != NULL);
+  
+  /* /\* printf("\n. Younger"); fflush(NULL); *\/ */
+  /* ll = in->head; */
+  /* t_node *x; */
+  /* do  */
+  /*   { */
+  /*     x = (t_node *)ll->v; */
+  /*     /\* printf("\n. In0: %p %d",ll,x->num); fflush(NULL); *\/ */
+  /*     ll = ll->next;  */
+  /*   }  */
+  /* while(ll != NULL); */
 
 
   // Remove from that list the nodes that too young to be suitable
   // regraft points.
   n = prune_daughter;
+  out = NULL;
   while(n)
     {      
       /* printf("\n. n: %d",n->num); fflush(NULL); */
@@ -975,7 +991,6 @@ t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, t_tree *
                   if(n->anc->v[j] != n->anc->anc && n->anc->v[j] != n)
                     {
                       /* printf("\n. from: %d to: %d upper: %f",n->anc->num,n->anc->v[j]->num,tree->rates->a_cal[i]->upper); fflush(NULL); */
-                      out = NULL;
                       DATE_List_Of_Nodes_And_Ancestors_Younger_Than(n->anc,
                                                                     n->anc->v[j],
                                                                     tree->rates->a_cal[i]->upper,
@@ -1003,15 +1018,15 @@ t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, t_tree *
   // Add root node as one cannot regraft above it
   Push_Bottom_Linked_List(tree->n_root,&out);
 
-  /* printf("\nx outlist: %p",out); fflush(NULL); */
-  ll = out->head;
-  do
-    {
-      x = (t_node *)ll->v;
-      /* printf("\nx Outlist %d",x->num); */
-      ll = ll->next;
-    }
-  while(ll != NULL);
+  /* /\* printf("\nx outlist: %p",out); fflush(NULL); *\/ */
+  /* ll = out->head; */
+  /* do */
+  /*   { */
+  /*     /\* x = (t_node *)ll->v; *\/ */
+  /*     /\* printf("\nx Outlist %d",x->num); *\/ */
+  /*     ll = ll->next; */
+  /*   } */
+  /* while(ll != NULL); */
 
 
   /* printf("\nx out: %p",out); fflush(NULL); */
@@ -1019,14 +1034,14 @@ t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, t_tree *
   ll = out->head;
   do
     {
-      x = (t_node *)ll->v;
+      /* x = (t_node *)ll->v; */
       /* printf("\nx Remove %d",x->num); */
-      Remove_From_Linked_List_Based_On_Value(ll->v,&in);
+      Remove_From_Linked_List(NULL,ll->v,&in);
       /* PhyML_Printf("\n. List in (in->head:%p in->tail:%p):",in->head,in->tail); */
       /* Print_List(in); */
       ll = ll->next;
     }
-  while(ll != NULL);
+  while(ll != ll->tail);
 
   Free_Linked_List(out);
 

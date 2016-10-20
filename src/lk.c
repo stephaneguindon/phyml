@@ -770,7 +770,7 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
       
       if(isinf(loglk))
         {
-          printf("\n== loglk: %G",loglk); fflush(NULL);
+          PhyML_Printf("\n== loglk: %G",loglk); fflush(NULL);
           {
             int catg,site,dim1,dim2,dim3,ns;
             phydbl site_lk_cat;
@@ -793,7 +793,7 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
                                                 ns,
                                                 -1,-1,
                                                 b,tree);
-                                
+                PhyML_Printf("\n== site_lk_cat: %G",site_lk_cat);
 
                 tree->use_eigen_lr = NO;
                 site_lk_cat = Lk_Core_One_Class(b->p_lk_left + (site*dim1) + (catg*dim2),
@@ -804,6 +804,7 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
                                                 ns,YES,-1,
                                                 b,tree);
 
+                PhyML_Printf("\n== site_lk_cat: %G",site_lk_cat);
               }
           }
           Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
