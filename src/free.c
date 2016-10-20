@@ -1120,6 +1120,7 @@ void Free_Nexus_Parm(nexparm *parm)
 
 void XML_Free_XML_Tree(xml_node *node)
 {
+  if(!node) return;
   if(node->child) XML_Free_XML_Tree(node->child);
   if(node->next)  XML_Free_XML_Tree(node->next);
   XML_Free_XML_Node(node);

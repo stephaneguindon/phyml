@@ -1088,8 +1088,6 @@ t_tree *XML_Process_Base(char *xml_filename)
 
   Free(component);
   Free(class_num);
-
-  XML_Free_XML_Tree(root);
   
   fclose(fp);
   return mixt_tree;
@@ -1618,9 +1616,7 @@ xml_node *XML_Search_Node_Name(char *name, int skip, xml_node *node)
   /*     node?node->name:"xx", */
   /*     node->child?node->child->name:"xx", */
   /*     node->next?node->next->name:"xx"); fflush(NULL); */
-
-  assert(node);
-
+  
   match = NULL;
   if(skip == NO && !strcmp(node->name,name)) match = node;
   else

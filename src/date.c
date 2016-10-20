@@ -64,7 +64,8 @@ void DATE_XML(char *xml_filename)
       Exit("\n");
     }
 
-  xroot = XML_Load_File(fp_xml_in);
+  /* xroot = XML_Load_File(fp_xml_in); */
+  xroot = mixt_tree->xml_root;
 
   if(xroot == NULL)
     {

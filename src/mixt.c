@@ -1948,6 +1948,8 @@ void MIXT_Bootstrap(char *best_tree, xml_node *root)
   xml_node *n,*p_elem;
   char *bootstrap;
 
+  assert(root);
+  
   n = XML_Search_Node_Name("phyml",NO,root);
 
   bootstrap = XML_Get_Attribute_Value(n,"bootstrap");
@@ -2824,7 +2826,7 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
     {
       ns = mixt_tree->mod->ns;
       n_tot_classes = MIXT_Mixt_Size(mixt_tree);
-
+      
       lk   = (phydbl *)mCalloc(n_tot_classes,sizeof(phydbl));
       dlk  = (phydbl *)mCalloc(n_tot_classes,sizeof(phydbl));
       d2lk = (phydbl *)mCalloc(n_tot_classes,sizeof(phydbl));
