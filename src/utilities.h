@@ -1740,6 +1740,7 @@ typedef struct __Calibration {
   struct __Node **target_tip; // Array of targeted tips
   char **target_tax;
   int  n_target_tax;
+  char *clade_id;
 }t_cal;
 
 /*!********************************************************/

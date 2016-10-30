@@ -1305,6 +1305,7 @@ void Free_Calib(t_cal *cal)
           Free(cal->target_tax);
           Free(cal->target_tip);
         }
+      Free(cal->clade_id);
       Free(cal);
     }
 }

@@ -1647,9 +1647,9 @@ phydbl TIMES_Lk_Birth_Death(t_tree *tree)
   t       = 0.0;
 
   if(b < d) return UNLIKELY;
-
+  
   For(i,2*tree->n_otu-1)
-    if(tree->a_nodes[i]->tax == NO && tree->a_nodes[i] != tree->n_root)
+    if(tree->a_nodes[i]->tax == NO)
       {
         if(tree->rates->nd_t[i] < tree->rates->t_prior_min[i] ||
            tree->rates->nd_t[i] > tree->rates->t_prior_max[i]) 
@@ -1728,7 +1728,6 @@ phydbl TIMES_Lk_Birth_Death(t_tree *tree)
 
   if(isnan(lnL) || isinf(FABS(lnL)))
     {
-      printf("\n+++ NAN %f",lnL);
       tree->rates->c_lnL_times = UNLIKELY;
       return UNLIKELY;
     }

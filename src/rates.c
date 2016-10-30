@@ -3150,33 +3150,28 @@ void RATES_Expected_Tree_Length_Pre(t_node *a, t_node *d, phydbl eranc, phydbl *
 
 void RATES_Update_Norm_Fact(t_tree *tree)
 {
-  int i;
-  phydbl r,t,t_anc;
-  phydbl num,denom;
+  /* int i; */
+  /* phydbl r,t,t_anc; */
+  /* phydbl num,denom; */
   
-  num = denom = 0.0;
+  /* num = denom = 0.0; */
 
-  For(i,2*tree->n_otu-2)
-    {
-      r     = tree->rates->br_r[i];
-      t     = tree->rates->nd_t[i];
-      t_anc = tree->rates->nd_t[tree->a_nodes[i]->anc->num];
+  /* For(i,2*tree->n_otu-2) */
+  /*   { */
+  /*     r     = tree->rates->br_r[i]; */
+  /*     t     = tree->rates->nd_t[i]; */
+  /*     t_anc = tree->rates->nd_t[tree->a_nodes[i]->anc->num]; */
 
-      num   += (t-t_anc);
-      denom += (t-t_anc) * r;
-    }
-  tree->rates->norm_fact = num/denom;
+  /*     num   += (t-t_anc); */
+  /*     denom += (t-t_anc) * r; */
+  /*   } */
+  /* tree->rates->norm_fact = num/denom; */
 
-  /* !!!!!!!!!!!!!!!!!! */
   tree->rates->norm_fact = 1.0;
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
 
 void RATES_Normalise_Rates(t_tree *tree)
 {

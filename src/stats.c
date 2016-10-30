@@ -1226,7 +1226,7 @@ phydbl Dgamma(phydbl x, phydbl shape, phydbl scale)
       if(x < 0.0) return 0.0;
       else
 	{
-	  PhyML_Printf("\n. WARNING: Dgamma -> small value of x = %G",x);
+	  PhyML_Printf("\n. WARNING: Dgamma -> small value of x = %G (shape: %G scale: %G <X>: %G)",x,shape,scale,shape*scale);
 	  x = 1.E-200;
 	}
     }

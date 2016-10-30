@@ -601,7 +601,6 @@ void Get_Base_Freqs(calign *data)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Get_AA_Freqs(calign *data)
 {
   int i,j,k;
@@ -616,65 +615,65 @@ void Get_AA_Freqs(calign *data)
   For(k,8)
     {
       A = C = D = E = F = G = H = I = K = L =
-      M = N = P = Q = R = S = T = V = W = Y = .0;
-
+        M = N = P = Q = R = S = T = V = W = Y = .0;
+      
       For(i,data->n_otu)
-    {
-      For(j,data->crunch_len)
         {
-          w = data->wght[j];
-          if(w)
-        {
-          switch(data->c_seq[i]->state[j])
+          For(j,data->crunch_len)
             {
-            case 'A' : A+=w;		break;
-            case 'C' : C+=w;		break;
-            case 'D' : D+=w;		break;
-            case 'E' : E+=w;		break;
-            case 'F' : F+=w;		break;
-            case 'G' : G+=w;		break;
-            case 'H' : H+=w;		break;
-            case 'I' : I+=w;		break;
-            case 'K' : K+=w;		break;
-            case 'L' : L+=w;		break;
-            case 'M' : M+=w;		break;
-            case 'N' : N+=w;		break;
-            case 'P' : P+=w;		break;
-            case 'Q' : Q+=w;		break;
-            case 'R' : R+=w;		break;
-            case 'S' : S+=w;		break;
-            case 'T' : T+=w;		break;
-            case 'V' : V+=w;		break;
-            case 'W' : W+=w;		break;
-            case 'Y' : Y+=w;		break;
-            case 'Z' : Q+=w;		break;
-            case 'X' : case '?' : case 'O' : case '-' :
-              A+=w*fA;
-              C+=w*fC;
-              D+=w*fD;
-              E+=w*fE;
-              F+=w*fF;
-              G+=w*fG;
-              H+=w*fH;
-              I+=w*fI;
-              K+=w*fK;
-              L+=w*fL;
-              M+=w*fM;
-              N+=w*fN;
-              P+=w*fP;
-              Q+=w*fQ;
-              R+=w*fR;
-              S+=w*fS;
-              T+=w*fT;
-              V+=w*fV;
-              W+=w*fW;
-              Y+=w*fY;
-              break;
-            default : break;
+              w = data->wght[j];
+              if(w)
+                {
+                  switch(data->c_seq[i]->state[j])
+                    {
+                    case 'A' : A+=w;		break;
+                    case 'C' : C+=w;		break;
+                    case 'D' : D+=w;		break;
+                    case 'E' : E+=w;		break;
+                    case 'F' : F+=w;		break;
+                    case 'G' : G+=w;		break;
+                    case 'H' : H+=w;		break;
+                    case 'I' : I+=w;		break;
+                    case 'K' : K+=w;		break;
+                    case 'L' : L+=w;		break;
+                    case 'M' : M+=w;		break;
+                    case 'N' : N+=w;		break;
+                    case 'P' : P+=w;		break;
+                    case 'Q' : Q+=w;		break;
+                    case 'R' : R+=w;		break;
+                    case 'S' : S+=w;		break;
+                    case 'T' : T+=w;		break;
+                    case 'V' : V+=w;		break;
+                    case 'W' : W+=w;		break;
+                    case 'Y' : Y+=w;		break;
+                    case 'Z' : Q+=w;		break;
+                    case 'X' : case '?' : case 'O' : case '-' :
+                      A+=w*fA;
+                      C+=w*fC;
+                      D+=w*fD;
+                      E+=w*fE;
+                      F+=w*fF;
+                      G+=w*fG;
+                      H+=w*fH;
+                      I+=w*fI;
+                      K+=w*fK;
+                      L+=w*fL;
+                      M+=w*fM;
+                      N+=w*fN;
+                      P+=w*fP;
+                      Q+=w*fQ;
+                      R+=w*fR;
+                      S+=w*fS;
+                      T+=w*fT;
+                      V+=w*fV;
+                      W+=w*fW;
+                      Y+=w*fY;
+                      break;
+                    default : break;
+                    }
+                }
             }
         }
-        }
-    }
       sum = (A+C+D+E+F+G+H+I+K+L+M+N+P+Q+R+S+T+V+W+Y);
       fA = A/sum;      fC = C/sum;      fD = D/sum;      fE = E/sum;
       fF = F/sum;      fG = G/sum;      fH = H/sum;      fI = I/sum;
@@ -682,13 +681,12 @@ void Get_AA_Freqs(calign *data)
       fP = P/sum;      fQ = Q/sum;      fR = R/sum;      fS = S/sum;
       fT = T/sum;      fV = V/sum;      fW = W/sum;      fY = Y/sum;
     }
-
+  
   data->b_frq[0]  = fA;  data->b_frq[1]  = fR;  data->b_frq[2]  = fN;  data->b_frq[3]  = fD;
   data->b_frq[4]  = fC;  data->b_frq[5]  = fQ;  data->b_frq[6]  = fE;  data->b_frq[7]  = fG;
   data->b_frq[8]  = fH;  data->b_frq[9]  = fI;  data->b_frq[10] = fL;  data->b_frq[11] = fK;
   data->b_frq[12] = fM;  data->b_frq[13] = fF;  data->b_frq[14] = fP;  data->b_frq[15] = fS;
-  data->b_frq[16] = fT;  data->b_frq[17] = fW;  data->b_frq[18] = fY;  data->b_frq[19] = fV;
-
+  data->b_frq[16] = fT;  data->b_frq[17] = fW;  data->b_frq[18] = fY;  data->b_frq[19] = fV; 
 }
 
 //////////////////////////////////////////////////////////////
