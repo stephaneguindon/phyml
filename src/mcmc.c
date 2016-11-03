@@ -4616,7 +4616,31 @@ void MCMC_Prune_Regraft(t_tree *tree)
       // Number of regraft nodes
       n_regraft_nd = Linked_List_Len(regraft_nd_list);
 
-      assert(n_regraft_nd > 0); // Should be at least 1, since original graft site is in the list
+      if(!(n_regraft_nd > 0)) // Should be at least 1, since original graft site is in the list
+        {
+          printf("\n\n. prune: %d [%d-%d-%d] [%s-%s-%s] [%f-%f;%f] prune_daughter: %d [%f-%f;%f] prune->anc: %d [%f-%f;%f] effective: %d glnL: %f",
+                 prune->num,
+                 prune->v[0] ? prune->v[0]->num : -1,
+                 prune->v[1]->num,
+                 prune->v[2]->num,
+                 prune->v[0] ? prune->v[0]->tax ? prune->v[0]->name : "XXX" : "XXX",
+                 prune->v[1]->tax ? prune->v[1]->name : "XXX",
+                 prune->v[2]->tax ? prune->v[2]->name : "XXX",
+                 tree->rates->nd_t[prune->num],
+                 tree->rates->t_prior_min[prune->num],
+                 tree->rates->t_prior_max[prune->num],
+                 prune_daughter->num,
+                 tree->rates->nd_t[prune_daughter->num],
+                 tree->rates->t_prior_min[prune_daughter->num],
+                 tree->rates->t_prior_max[prune_daughter->num],
+                 prune->anc ? prune->anc->num : -1,
+                 prune->anc ? tree->rates->nd_t[prune->anc->num] : -1,
+                 prune->anc ? tree->rates->t_prior_min[prune->anc->num] : -1,
+                 prune->anc ? tree->rates->t_prior_max[prune->anc->num] : -1,
+                 effective_prune->num,
+                 tree->rates->c_lnL_times); fflush(NULL);
+          assert(FALSE);
+        }
       
       // Prune
       target = residual = NULL;
