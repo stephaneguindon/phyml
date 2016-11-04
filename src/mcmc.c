@@ -1189,7 +1189,6 @@ void MCMC_Time_Recur(t_node *a, t_node *d, int traversal, t_tree *tree)
 	  tree->c_lnL               = cur_lnL_data;
 	  tree->rates->c_lnL_rates  = cur_lnL_rate;
           tree->rates->c_lnL_times  = cur_lnL_time;
-          DATE_Update_T_Prior_MinMax(tree);
 
 
           if(Are_Equal(tree->rates->c_lnL_times,cur_lnL_time,1.E-3) == NO)
@@ -1614,16 +1613,16 @@ void MCMC_Root_Time(t_tree *tree)
 
 	  tree->c_lnL              = cur_lnL_data;
 	  tree->rates->c_lnL_rates = cur_lnL_rate;
-	  tree->rates->c_lnL_times = TIMES_Lk_Times(NO,tree); // required as some t_prior_min/max have been modified 
+	  tree->rates->c_lnL_times = cur_lnL_time;
           
-          if(Are_Equal(tree->rates->c_lnL_times,cur_lnL_time,1.E-3) == NO)
-            {
-              PhyML_Printf("\n\n");
-              Print_Node(tree->n_root,tree->n_root->v[1],tree);
-              Print_Node(tree->n_root,tree->n_root->v[2],tree);
-              PhyML_Printf("\n== new_glnL: %f cur_glnL: %f",tree->rates->c_lnL_times,cur_lnL_time);
-              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-            }
+          /* if(Are_Equal(tree->rates->c_lnL_times,cur_lnL_time,1.E-3) == NO) */
+          /*   { */
+          /*     PhyML_Printf("\n\n"); */
+          /*     Print_Node(tree->n_root,tree->n_root->v[1],tree); */
+          /*     Print_Node(tree->n_root,tree->n_root->v[2],tree); */
+          /*     PhyML_Printf("\n== new_glnL: %f cur_glnL: %f",tree->rates->c_lnL_times,cur_lnL_time); */
+          /*     Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
+          /*   } */
 	}
       else
 	{
@@ -1911,8 +1910,6 @@ void MCMC_Updown_T_Br(t_tree *tree)
     }
 
   if(RATES_Check_Node_Times(tree)) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-
-  tree->rates->birth_rate /= mult;
   
   For(i,2*tree->n_otu-2) tree->rates->br_do_updt[i] = YES;
   RATES_Update_Cur_Bl(tree);
