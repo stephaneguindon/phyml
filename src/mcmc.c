@@ -4199,6 +4199,7 @@ void MCMC_Birth_Rate(t_tree *tree)
         {
           PhyML_Printf("\n== glnL=%f",tree->ghost_tree->rates->c_lnL_times);
           PhyML_Printf("\n== birth=%G death=%G [%G]",new_birth_rate,tree->rates->death_rate,tree->ghost_tree->rates->death_rate);
+          TIMES_Lk_Times(YES,tree->ghost_tree);
           Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
         }
 
@@ -4219,6 +4220,7 @@ void MCMC_Birth_Rate(t_tree *tree)
             {
               PhyML_Printf("\n== move: %s",tree->mcmc->move_name[move]);
               PhyML_Printf("\n== glnL=%f",tree->ghost_tree->rates->c_lnL_times);
+              TIMES_Lk_Times(YES,tree->ghost_tree);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
 
