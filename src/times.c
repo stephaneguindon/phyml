@@ -959,14 +959,14 @@ phydbl TIMES_Lk_Yule_Order(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-phydbl TIMES_Lk_Times(t_tree *tree)
+phydbl TIMES_Lk_Times(int verbose, t_tree *tree)
 {
   DATE_Update_T_Prior_MinMax(tree);
 
 #ifdef PHYTIME
   tree->rates->c_lnL_times =  TIMES_Lk_Yule_Order(tree);
 #elif defined(DATE)
-  tree->rates->c_lnL_times =  TIMES_Lk_Birth_Death(tree);
+  tree->rates->c_lnL_times =  TIMES_Lk_Birth_Death(verbose,tree);
 #endif
 
   return(tree->rates->c_lnL_times);
@@ -1624,7 +1624,7 @@ phydbl TIMES_Lk_Yule_Order_Root_Cond(t_tree *tree)
 //////////////////////////////////////////////////////////////
 // Log of prob density of internal node ages conditional on tree height, under
 // the birth death process with incomplete sampling.
-phydbl TIMES_Lk_Birth_Death(t_tree *tree)
+phydbl TIMES_Lk_Birth_Death(int verbose, t_tree *tree)
 {
   int i;
   phydbl lnL;
@@ -1645,7 +1645,11 @@ phydbl TIMES_Lk_Birth_Death(t_tree *tree)
   logb    = -1.;
   t       = 0.0;
 
-  if(b < d) return UNLIKELY;
+  if(b < d)
+    {
+      if(verbose) printf("\n. b: %G d: %G",b,d);
+      return UNLIKELY;
+    }
   
   For(i,2*tree->n_otu-1)
     if(tree->a_nodes[i]->tax == NO)
@@ -1653,6 +1657,7 @@ phydbl TIMES_Lk_Birth_Death(t_tree *tree)
         if(tree->rates->nd_t[i] < tree->rates->t_prior_min[i] ||
            tree->rates->nd_t[i] > tree->rates->t_prior_max[i]) 
           {
+            if(verbose) printf("\n. node %d @ time %f min: %f max: %f",i,tree->rates->nd_t[i],tree->rates->t_prior_min[i],tree->rates->t_prior_max[i]);
             return UNLIKELY;
           }
       }
@@ -1692,7 +1697,8 @@ phydbl TIMES_Lk_Birth_Death(t_tree *tree)
     }
   else if(b < bmin && d > dmin) 
     {
-      return -INFINITY;
+      if(verbose) printf("\n. b: %G bmin: %G d: %G dmin: %G",b,bmin,d,dmin);
+      return UNLIKELY;
     }
   else if(Are_Equal(bmd,0.0,bmin/10.) == YES) // Critical birth-death process
     {
@@ -1714,10 +1720,12 @@ phydbl TIMES_Lk_Birth_Death(t_tree *tree)
     }
   else if(b < bmin && d < dmin) // Birth and death rates are below their limits
     {
+      if(verbose) printf("\n. b: %G bmin: %G d: %G dmin: %G",b,bmin,d,dmin);
       return -INFINITY;
     }
   else if(b > bmax && d > dmax)
     {
+      if(verbose) printf("\n. b: %G bmax: %G d: %G dmax: %G",b,bmax,d,dmax);
       return -INFINITY;
     }
   else
@@ -1727,6 +1735,7 @@ phydbl TIMES_Lk_Birth_Death(t_tree *tree)
 
   if(isnan(lnL) || isinf(FABS(lnL)))
     {
+      if(verbose) printf("\n. lnL: %f",lnL);
       tree->rates->c_lnL_times = UNLIKELY;
       return UNLIKELY;
     }

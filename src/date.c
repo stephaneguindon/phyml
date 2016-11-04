@@ -288,12 +288,6 @@ void DATE_Update_T_Prior_MinMax(t_tree *tree)
             {
               tree->rates->t_prior_max[i] = MIN(tree->rates->t_prior_max[i],tree->a_nodes[i]->cal[j]->upper);
               tree->rates->t_prior_min[i] = MAX(tree->rates->t_prior_min[i],tree->a_nodes[i]->cal[j]->lower);
-              /* printf("\n. Found calibration %s on node %d @ %f -> [%f;%f]", */
-              /*        tree->a_nodes[i]->cal[j]->clade_id, */
-              /*        tree->a_nodes[i]->num, */
-              /*        tree->rates->nd_t[i], */
-              /*        tree->rates->t_prior_min[i], */
-              /*        tree->rates->t_prior_max[i]); */
             }
         }
     }
@@ -741,7 +735,7 @@ phydbl *DATE_MCMC(t_tree *tree)
   Lk(NULL,tree);
   RATES_Lk_Rates(tree);
   DATE_Assign_Primary_Calibration(tree);
-  TIMES_Lk_Times(tree);
+  TIMES_Lk_Times(NO,tree);
 
   PhyML_Printf("\n. log(Pr(Seq|Tree)) = %f",tree->c_lnL);
   PhyML_Printf("\n. log(Pr(Tree)) = %f",tree->rates->c_lnL_times);
@@ -755,7 +749,7 @@ phydbl *DATE_MCMC(t_tree *tree)
   RATES_Duplicate_Calib_Struct(tree,tree->ghost_tree);
   MIXT_Chain_Cal(tree->ghost_tree);
   DATE_Assign_Primary_Calibration(tree->ghost_tree);
-  TIMES_Lk_Times(tree->ghost_tree);
+  TIMES_Lk_Times(NO,tree->ghost_tree);
   PhyML_Printf("\n. log(Pr(Ghost Tree)) = %f",tree->ghost_tree->rates->c_lnL_times);
   mcmc = MCMC_Make_MCMC_Struct();
   tree->ghost_tree->mcmc = mcmc;
@@ -858,7 +852,7 @@ phydbl *DATE_MCMC(t_tree *tree)
       MCMC_Get_Acc_Rates(tree->mcmc);
 
       if(!(tree->mcmc->run%tree->mcmc->sample_interval))
-        {
+        {          
           PhyML_Printf("\n. lnL: [%10.2f -- %10.2f -- %10.2f -- %10.2f] clock: %12f root age: %12f [time: %7d sec]",
                        tree->c_lnL,
                        tree->rates->c_lnL_times,
@@ -1022,7 +1016,7 @@ t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, phydbl *
     }
   
 
-  if(verbose) printf("\n. Apical: %d @ time %f",n->num,tree->rates->nd_t[n->num]); fflush(NULL);
+  if(verbose) printf("\n. Apical: %d @ time %f min: %f",n->num,tree->rates->nd_t[n->num],*t_min); fflush(NULL);
      
   // List all nodes younger than this apical node
   DATE_List_Of_Nodes_Younger_Than(n->anc,n,-INFINITY,&in,tree);
@@ -1123,13 +1117,13 @@ t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, phydbl *
 
       Remove_From_Linked_List(NULL,ll->v,&in);
 
-      if(verbose) PhyML_Printf("\n. List in (in->head:%p in->tail:%p):",in->head,in->tail);
+      if(verbose) PhyML_Printf("\n. List in (in->head:%p in->tail:%p):",in?in->head:NULL,in?in->tail:NULL);
 
       /* Print_List(in); */
       ll = ll->next;
     }
   while(ll != NULL);
-
+  
   Free_Linked_List(out);
 
   if(verbose)
