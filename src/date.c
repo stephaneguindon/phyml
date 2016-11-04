@@ -846,6 +846,14 @@ phydbl *DATE_MCMC(t_tree *tree)
         }
 
 
+      if(!(tree->rates->c_lnL_times > UNLIKELY))
+        {
+          PhyML_Printf("\n== move: %s",tree->mcmc->move_name[move]);
+          PhyML_Printf("\n== glnL=%f",tree->rates->c_lnL_times);
+          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+        }
+
+
       tree->mcmc->run++;
       MCMC_Get_Acc_Rates(tree->mcmc);
 
@@ -948,7 +956,7 @@ void DATE_List_Of_Nodes_And_Ancestors_Younger_Than(t_node *a, t_node *d, phydbl 
 // constraints. The subtree (defined by prune and prune_daughter
 // will be re-attached *on top of* one of the nodes in this list
 // (as opposed to *on one of the sister edges below*).
-t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, phydbl *t_min, phydbl *t_max, t_tree *tree)
+t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, phydbl *t_min, phydbl *t_max, int verbose, t_tree *tree)
 {
   t_node *n,*m;
   int i,j;
@@ -1013,23 +1021,27 @@ t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, phydbl *
       assert(n);
     }
   
-  /* printf("\n. Apical: %d @ time %f",n->num,tree->rates->nd_t[n->num]); fflush(NULL); */
+
+  if(verbose) printf("\n. Apical: %d @ time %f",n->num,tree->rates->nd_t[n->num]); fflush(NULL);
      
   // List all nodes younger than this apical node
   DATE_List_Of_Nodes_Younger_Than(n->anc,n,-INFINITY,&in,tree);
 
   assert(in != NULL);
   
-  /* ll = in->head; */
-  /* t_node *x; */
-  /* do */
-  /*   { */
-  /*     x = (t_node *)ll->v; */
-  /*     PhyML_Printf("\nx Inlist %d @ %f",x->num,tree->rates->nd_t[x->num]); */
-  /*     ll = ll->next; */
-  /*   } */
-  /* while(ll != NULL); */
-
+  if(verbose)
+    {
+      ll = in->head;
+      t_node *x;
+      do
+        {
+          x = (t_node *)ll->v;
+          PhyML_Printf("\nx Inlist %d @ %f",x->num,tree->rates->nd_t[x->num]);
+          ll = ll->next;
+        }
+      while(ll != NULL);
+    }
+  
   // Remove from that list the nodes that are too young to be suitable regraft points.
   /* n = prune_daughter; */
   /* out = NULL; */
@@ -1085,25 +1097,34 @@ t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, phydbl *
   // Add root node as one cannot regraft above it
   /* Push_Bottom_Linked_List(tree->n_root,&out); */
 
-  /* printf("\nx outlist: %p",out); fflush(NULL); */
-  /* ll = out->head; */
-  /* do */
-  /*   { */
-  /*     t_node *x = (t_node *)ll->v; */
-  /*     PhyML_Printf("\nx Outlist %d @ %f",x->num,tree->rates->nd_t[x->num]); */
-  /*     ll = ll->next; */
-  /*   } */
-  /* while(ll != NULL); */
-
+  if(verbose)
+    {
+      printf("\nx outlist: %p",out); fflush(NULL);
+      ll = out->head;
+      do
+        {
+          t_node *x = (t_node *)ll->v;
+          PhyML_Printf("\nx Outlist %d @ %f",x->num,tree->rates->nd_t[x->num]);
+          ll = ll->next;
+        }
+      while(ll != NULL);
+    }
+  
 
   /* Print_List(in); */
   ll = out->head;
   do
     {
-      /* t_node *x = (t_node *)ll->v; */
-      /* printf("\nx Remove %d",x->num); */
+      if(verbose)
+        {
+          t_node *x = (t_node *)ll->v;
+          printf("\nx Remove %d",x->num);
+        }
+
       Remove_From_Linked_List(NULL,ll->v,&in);
-      /* PhyML_Printf("\n. List in (in->head:%p in->tail:%p):",in->head,in->tail); */
+
+      if(verbose) PhyML_Printf("\n. List in (in->head:%p in->tail:%p):",in->head,in->tail);
+
       /* Print_List(in); */
       ll = ll->next;
     }
@@ -1111,16 +1132,19 @@ t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, phydbl *
 
   Free_Linked_List(out);
 
-  /* ll = in->head; */
-  /* do */
-  /*   { */
-  /*     t_node *x; */
-  /*     x = (t_node *)ll->v; */
-  /*     printf("\n. In1: %d",x->num); fflush(NULL); */
-  /*     ll = ll->next; */
-  /*   } */
-  /* while(ll != NULL); */
-
+  if(verbose)
+    {
+      ll = in->head;
+      do
+        {
+          t_node *x;
+          x = (t_node *)ll->v;
+          printf("\n. In1: %d",x->num); fflush(NULL);
+          ll = ll->next;
+        }
+      while(ll != NULL);
+    }
+  
   return(in);
 }
 
