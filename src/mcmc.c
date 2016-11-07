@@ -1084,7 +1084,6 @@ void MCMC_Time_Recur(t_node *a, t_node *d, int traversal, t_tree *tree)
   move_num     = tree->mcmc->num_move_times;
   t1_cur       = tree->rates->nd_t[d->num];
   ratio        = 0.0;
-  K            = tree->mcmc->tune_move[tree->mcmc->num_move_times];
   cur_lnL_data = tree->c_lnL;
   new_lnL_data = UNLIKELY;
   cur_lnL_rate = tree->rates->c_lnL_rates;
@@ -1123,7 +1122,9 @@ void MCMC_Time_Recur(t_node *a, t_node *d, int traversal, t_tree *tree)
 
   t_min += tree->rates->min_dt;
   t_max -= tree->rates->min_dt;
-       
+
+  K = tree->mcmc->tune_move[tree->mcmc->num_move_times] / (t_max - t_min);
+  
   MCMC_Make_Move(&t1_cur,&t1_new,t_min,t_max,&ratio,K,tree->mcmc->move_type[move_num]);
   /* t1_new = Uni()*(t_max - t_min) + t_min; */
 
