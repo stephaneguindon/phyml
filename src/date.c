@@ -288,7 +288,7 @@ void DATE_Update_T_Prior_MinMax(t_tree *tree)
             {
               tree->rates->t_prior_max[i] = MIN(tree->rates->t_prior_max[i],tree->a_nodes[i]->cal[j]->upper);
               tree->rates->t_prior_min[i] = MAX(tree->rates->t_prior_min[i],tree->a_nodes[i]->cal[j]->lower);
-            }
+            }         
         }
     }
 
@@ -998,7 +998,8 @@ t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, phydbl *
                     }
                   
                   // Maximum of the lower bounds for calibration intervals
-                  if(is_clade_affected == YES) *t_min = MAX(*t_min,tree->rates->a_cal[i]->lower);
+                  /* if(is_clade_affected == YES) *t_min = MAX(*t_min,tree->rates->a_cal[i]->lower); */
+                  if(is_clade_affected == YES) *t_min = MAX(*t_min,tree->rates->t_prior_min[n->num]);
                 }
             }
           n = n->anc;
