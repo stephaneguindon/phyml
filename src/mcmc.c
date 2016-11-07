@@ -1123,7 +1123,7 @@ void MCMC_Time_Recur(t_node *a, t_node *d, int traversal, t_tree *tree)
   t_min += tree->rates->min_dt;
   t_max -= tree->rates->min_dt;
 
-  K = tree->mcmc->tune_move[tree->mcmc->num_move_times] / (t_max - t_min);
+  K = tree->mcmc->tune_move[tree->mcmc->num_move_times] * (t_max - t_min);
   
   MCMC_Make_Move(&t1_cur,&t1_new,t_min,t_max,&ratio,K,tree->mcmc->move_type[move_num]);
   /* t1_new = Uni()*(t_max - t_min) + t_min; */
@@ -4539,8 +4539,9 @@ void MCMC_Prune_Regraft(t_tree *tree)
 {
   phydbl u,alpha,ratio,hr;
   phydbl t_min,t_max;
-  phydbl cur_glnL, new_glnL;
-  phydbl cur_alnL, new_alnL;
+  phydbl cur_lnL_seq,new_lnL_seq;
+  phydbl cur_lnL_rate,new_lnL_rate;
+  phydbl cur_lnL_time,new_lnL_time;
   phydbl regraft_t_min,regraft_t_max;
   int i,prune_idx,n_iter,n_regraft_nd,regraft_idx;
   phydbl *times;
@@ -4559,14 +4560,17 @@ void MCMC_Prune_Regraft(t_tree *tree)
       
       RATES_Record_Times(tree);
   
-      new_glnL       = tree->rates->c_lnL_times;
-      cur_glnL       = tree->rates->c_lnL_times;
-      new_alnL       = tree->c_lnL;
-      cur_alnL       = tree->c_lnL;
-      ratio          = 0.0;
-      hr             = 0.0;
-      regraft_nd     = NULL;
-      regraft_edge   = NULL;
+      cur_lnL_seq  = tree->c_lnL;
+      new_lnL_seq  = UNLIKELY;
+      cur_lnL_rate = tree->rates->c_lnL_rates;
+      new_lnL_rate = UNLIKELY;
+      cur_lnL_time = tree->rates->c_lnL_times;
+      new_lnL_time = UNLIKELY;
+
+      ratio        = 0.0;
+      hr           = 0.0;
+      regraft_nd   = NULL;
+      regraft_edge = NULL;
 
 
       // Select prune node (any internal node)
@@ -4795,22 +4799,24 @@ void MCMC_Prune_Regraft(t_tree *tree)
         }
 
       DATE_Assign_Primary_Calibration(tree);
-      new_glnL = TIMES_Lk_Times(NO,tree); 
-      ratio += (new_glnL - cur_glnL);
+      new_lnL_time = TIMES_Lk_Times(NO,tree); 
 
-      if(new_glnL > UNLIKELY)
+      if(new_lnL_time > UNLIKELY)
         {
           Set_Both_Sides(NO,tree);
-          new_alnL = Lk(NULL,tree);
-          ratio += (new_alnL - cur_alnL);
+          new_lnL_seq = Lk(NULL,tree);
+          new_lnL_rate = RATES_Lk_Rates(tree);
         }
       
+      ratio += (new_lnL_seq - cur_lnL_seq);
+      ratio += (new_lnL_rate - cur_lnL_rate);
+      ratio += (new_lnL_time - cur_lnL_time);
 
       ratio = EXP(ratio);
       alpha = MIN(1.,ratio);
 
       /* Always accept move */
-      if(tree->mcmc->always_yes == YES && new_glnL > UNLIKELY) alpha = 1.0;
+      if(tree->mcmc->always_yes == YES && new_lnL_time > UNLIKELY) alpha = 1.0;
       
       u = Uni();
             
@@ -4841,8 +4847,9 @@ void MCMC_Prune_Regraft(t_tree *tree)
           RATES_Reset_Times(tree);
           DATE_Assign_Primary_Calibration(tree);
           TIMES_Lk_Times(NO,tree); 
-          tree->c_lnL = cur_alnL;
-          tree->rates->c_lnL_times = cur_glnL;
+          tree->c_lnL = cur_lnL_seq;
+          tree->rates->c_lnL_times = cur_lnL_time;
+          tree->rates->c_lnL_rates = cur_lnL_rate;
 
           /* /\* !!!!!!!!!!!!!! *\/ */
           /* new_alnL = Lk(NULL,tree); /\* Not necessary. Remove once tested *\/ */
@@ -4874,8 +4881,9 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
 {
   phydbl u,alpha,ratio,hr;
   phydbl t_min,t_max;
-  phydbl cur_glnL, new_glnL;
-  phydbl cur_alnL, new_alnL;
+  phydbl cur_lnL_seq,new_lnL_seq;
+  phydbl cur_lnL_rate,new_lnL_rate;
+  phydbl cur_lnL_time,new_lnL_time;
   phydbl regraft_t_min,regraft_t_max;
   int i,prune_idx,n_iter,n_regraft_nd,regraft_idx;
   phydbl *times;
@@ -4895,13 +4903,15 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
       
       RATES_Record_Times(tree);
   
-      new_glnL       = tree->rates->c_lnL_times;
-      cur_glnL       = tree->rates->c_lnL_times;
-      new_alnL       = tree->c_lnL;
-      cur_alnL       = tree->c_lnL;
-      ratio          = 0.0;
-      hr             = 0.0;
-      regraft_nd     = NULL;
+      cur_lnL_seq  = tree->c_lnL;
+      new_lnL_seq  = UNLIKELY;
+      cur_lnL_rate = tree->rates->c_lnL_rates;
+      new_lnL_rate = UNLIKELY;
+      cur_lnL_time = tree->rates->c_lnL_times;
+      new_lnL_time = UNLIKELY;
+      ratio        = 0.0;
+      hr           = 0.0;
+      regraft_nd   = NULL;
 
       // Select prune node (any internal node except the root)
       i = 0;
@@ -5209,21 +5219,24 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
         }
 
       DATE_Assign_Primary_Calibration(tree);
-      new_glnL = TIMES_Lk_Times(NO,tree); 
-      ratio += (new_glnL - cur_glnL);
+      new_lnL_time = TIMES_Lk_Times(NO,tree); 
 
-      if(new_glnL > UNLIKELY)
+      if(new_lnL_time > UNLIKELY)
         {
           Set_Both_Sides(NO,tree);
-          new_alnL = Lk(NULL,tree);
-          ratio += (new_alnL - cur_alnL);
+          new_lnL_seq = Lk(NULL,tree);
+          new_lnL_rate = RATES_Lk_Rates(tree);
         }
       
+      ratio += (new_lnL_seq - cur_lnL_seq);
+      ratio += (new_lnL_rate - cur_lnL_rate);
+      ratio += (new_lnL_time - cur_lnL_time);
+
       ratio = EXP(ratio);
       alpha = MIN(1.,ratio);
 
       /* Always accept move */
-      if(tree->mcmc->always_yes == YES && new_glnL > UNLIKELY) alpha = 1.0;
+      if(tree->mcmc->always_yes == YES && new_lnL_time > UNLIKELY) alpha = 1.0;
       
       u = Uni();
             
@@ -5239,8 +5252,9 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
           RATES_Reset_Times(tree);
           DATE_Assign_Primary_Calibration(tree);
           TIMES_Lk_Times(NO,tree); 
-          tree->c_lnL = cur_alnL;
-          tree->rates->c_lnL_times = cur_glnL;
+          tree->c_lnL = cur_lnL_seq;
+          tree->rates->c_lnL_times = cur_lnL_time;
+          tree->rates->c_lnL_rates = cur_lnL_rate;
 
           /* DATE_Assign_Primary_Calibration(tree); */
           /* DATE_Update_T_Prior_MinMax(tree); */
@@ -5268,6 +5282,9 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
     }
 }
   
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
