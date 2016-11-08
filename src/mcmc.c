@@ -4198,12 +4198,15 @@ void MCMC_Birth_Rate(t_tree *tree)
       tree->ghost_tree->rates->birth_rate = cur_birth_rate;
       cur_lnL_time_ghost = TIMES_Lk_Times(NO,tree->ghost_tree);
 
-      tree->ghost_tree->eval_alnL         = NO;
-      tree->ghost_tree->eval_rlnL         = NO;
-      tree->ghost_tree->eval_glnL         = YES;
-      tree->ghost_tree->rates->birth_rate = new_birth_rate;
+      tree->ghost_tree->eval_alnL          = NO;
+      tree->ghost_tree->eval_rlnL          = NO;
+      tree->ghost_tree->eval_glnL          = YES;
+      tree->ghost_tree->rates->birth_rate  = new_birth_rate;
+      tree->ghost_tree->rates->c_lnL_rates = UNLIKELY;
+      tree->ghost_tree->c_lnL              = UNLIKELY;
       TIMES_Lk_Times(NO,tree->ghost_tree);
 
+      
       if(!(tree->ghost_tree->rates->c_lnL_times > UNLIKELY))
         {
           PhyML_Printf("\n== glnL=%f",tree->ghost_tree->rates->c_lnL_times);

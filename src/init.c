@@ -836,6 +836,7 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
 
   rates->met_within_gibbs = NO;
   rates->c_lnL_rates      = UNLIKELY;
+  rates->c_lnL_times      = UNLIKELY;
   rates->c_lnL_jps        = UNLIKELY;
   rates->adjust_rates     = 0;
   rates->use_rates        = 1;
