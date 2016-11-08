@@ -813,6 +813,7 @@ phydbl *DATE_MCMC(t_tree *tree)
       else if(!strcmp(tree->mcmc->move_name[move],"times"))          MCMC_Time_All(tree);
       else if(!strcmp(tree->mcmc->move_name[move],"spr"))            MCMC_Prune_Regraft(tree);
       else if(!strcmp(tree->mcmc->move_name[move],"spr_local"))      MCMC_Prune_Regraft_Local(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"spr_root"))      MCMC_Prune_Regraft_Root(tree);
       else if(!strcmp(tree->mcmc->move_name[move],"updown_t_cr"))    MCMC_Updown_T_Cr(tree);
       else if(!strcmp(tree->mcmc->move_name[move],"subtree_rates"))  MCMC_Subtree_Rates(tree);
       else if(!strcmp(tree->mcmc->move_name[move],"kappa"))          MCMC_Kappa(tree);

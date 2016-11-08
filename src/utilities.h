@@ -1565,6 +1565,7 @@ typedef struct __Tmcmc {
   int num_move_kappa;
   int num_move_spr;
   int num_move_spr_local;
+  int num_move_spr_root;
   int num_move_tree_rates;
   int num_move_subtree_rates;
   int num_move_updown_nu_cr;
