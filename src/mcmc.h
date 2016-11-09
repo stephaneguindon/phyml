@@ -187,4 +187,5 @@ void MCMC_Randomize_Death(t_tree *tree);
 void MCMC_Time_Slice(t_tree *tree);
 void MCMC_Prune_Regraft_Local(t_tree *tree);
 void MCMC_Prune_Regraft_Root(t_tree *tree);
+void MCMC_Birth_Death_Updown(t_tree *tree);
 #endif

@@ -224,9 +224,9 @@ void DATE_XML(char *xml_filename)
 
   // Cleaning up...
   RATES_Free_Rates(mixt_tree->rates);
-  RATES_Free_Rates(mixt_tree->ghost_tree->rates);
+  RATES_Free_Rates(mixt_tree->extra_tree->rates);
   MCMC_Free_MCMC(mixt_tree->mcmc);
-  MCMC_Free_MCMC(mixt_tree->ghost_tree->mcmc);
+  MCMC_Free_MCMC(mixt_tree->extra_tree->mcmc);
   Free_Mmod(mixt_tree->mmod);
   Free_Spr_List(mixt_tree);
   Free_Triplet(mixt_tree->triplet_struct);
@@ -259,7 +259,7 @@ void DATE_XML(char *xml_filename)
   
   Free_Model_Complete(mixt_tree->mod);
   Free_Model_Basic(mixt_tree->mod);
-  Free_Tree(mixt_tree->ghost_tree);  
+  Free_Tree(mixt_tree->extra_tree);  
   Free_Tree(mixt_tree);  
   Free(res);
   XML_Free_XML_Tree(xroot);
@@ -740,22 +740,36 @@ phydbl *DATE_MCMC(t_tree *tree)
   PhyML_Printf("\n. log(Pr(Seq|Tree)) = %f",tree->c_lnL);
   PhyML_Printf("\n. log(Pr(Tree)) = %f",tree->rates->c_lnL_times);
   
-
-  tree->ghost_tree = Make_Tree_From_Scratch(tree->n_otu,tree->data);
-  Copy_Tree(tree,tree->ghost_tree);
-  tree->ghost_tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
-  RATES_Init_Rate_Struct(tree->ghost_tree->rates,NULL,tree->n_otu);
-  RATES_Copy_Rate_Struct(tree->rates,tree->ghost_tree->rates,tree->n_otu);
-  RATES_Duplicate_Calib_Struct(tree,tree->ghost_tree);
-  MIXT_Chain_Cal(tree->ghost_tree);
-  DATE_Assign_Primary_Calibration(tree->ghost_tree);
-  TIMES_Lk_Times(NO,tree->ghost_tree);
-  PhyML_Printf("\n. log(Pr(Ghost Tree)) = %f",tree->ghost_tree->rates->c_lnL_times);
+  
+  tree->extra_tree = Make_Tree_From_Scratch(tree->n_otu,tree->data);
+  Copy_Tree(tree,tree->extra_tree);
+  tree->extra_tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
+  RATES_Init_Rate_Struct(tree->extra_tree->rates,NULL,tree->n_otu);
+  RATES_Copy_Rate_Struct(tree->rates,tree->extra_tree->rates,tree->n_otu);
+  RATES_Duplicate_Calib_Struct(tree,tree->extra_tree);
+  MIXT_Chain_Cal(tree->extra_tree);
+  DATE_Assign_Primary_Calibration(tree->extra_tree);
+  TIMES_Lk_Times(NO,tree->extra_tree);
+  PhyML_Printf("\n. log(Pr(extra tree)) = %f",tree->extra_tree->rates->c_lnL_times);
   mcmc = MCMC_Make_MCMC_Struct();
-  tree->ghost_tree->mcmc = mcmc;
+  tree->extra_tree->mcmc = mcmc;
   MCMC_Init_MCMC_Struct(NULL,NULL,mcmc);
-  MCMC_Complete_MCMC(mcmc,tree->ghost_tree);
+  MCMC_Complete_MCMC(mcmc,tree->extra_tree);
 
+
+  tree->extra_tree->extra_tree = Make_Tree_From_Scratch(tree->n_otu,tree->data);
+  Copy_Tree(tree,tree->extra_tree->extra_tree);
+  tree->extra_tree->extra_tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
+  RATES_Init_Rate_Struct(tree->extra_tree->extra_tree->rates,NULL,tree->n_otu);
+  RATES_Copy_Rate_Struct(tree->rates,tree->extra_tree->extra_tree->rates,tree->n_otu);
+  RATES_Duplicate_Calib_Struct(tree,tree->extra_tree->extra_tree);
+  MIXT_Chain_Cal(tree->extra_tree->extra_tree);
+  DATE_Assign_Primary_Calibration(tree->extra_tree->extra_tree);
+  TIMES_Lk_Times(NO,tree->extra_tree->extra_tree);
+  PhyML_Printf("\n. log(Pr(extra extra tree)) = %f",tree->extra_tree->extra_tree->rates->c_lnL_times);
+
+
+  
 
   PhyML_Fprintf(fp_stats,"\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s",
                 "sample",
@@ -795,32 +809,23 @@ phydbl *DATE_MCMC(t_tree *tree)
       
       /* PhyML_Printf("\n== Move '%s' %f",tree->mcmc->move_name[move],tree->c_lnL); */
 
-      /* { */
-      /*   phydbl curr_lnL = tree->c_lnL; */
-      /*   Lk(NULL,tree); */
-      /*   if(Are_Equal(curr_lnL,tree->c_lnL,1.E-6) == NO) */
-      /*     { */
-      /*       PhyML_Printf("\n. %f <> %f",curr_lnL,tree->c_lnL); */
-      /*       Exit("\n"); */
-      /*     } */
-      /* } */
-
       
-      if(!strcmp(tree->mcmc->move_name[move],"clock"))               MCMC_Clock_R(tree);
-      else if(!strcmp(tree->mcmc->move_name[move],"birth_rate"))     MCMC_Birth_Rate(tree);
-      else if(!strcmp(tree->mcmc->move_name[move],"death_rate"))     MCMC_Death_Rate(tree);
-      else if(!strcmp(tree->mcmc->move_name[move],"tree_height"))    MCMC_Tree_Height(tree);
-      else if(!strcmp(tree->mcmc->move_name[move],"times"))          MCMC_Time_All(tree);
-      else if(!strcmp(tree->mcmc->move_name[move],"spr"))            MCMC_Prune_Regraft(tree);
-      else if(!strcmp(tree->mcmc->move_name[move],"spr_local"))      MCMC_Prune_Regraft_Local(tree);
-      else if(!strcmp(tree->mcmc->move_name[move],"spr_root"))      MCMC_Prune_Regraft_Root(tree);
-      else if(!strcmp(tree->mcmc->move_name[move],"updown_t_cr"))    MCMC_Updown_T_Cr(tree);
-      else if(!strcmp(tree->mcmc->move_name[move],"subtree_rates"))  MCMC_Subtree_Rates(tree);
-      else if(!strcmp(tree->mcmc->move_name[move],"kappa"))          MCMC_Kappa(tree);
-      else if(!strcmp(tree->mcmc->move_name[move],"ras"))            MCMC_Rate_Across_Sites(tree);
-      else if(!strcmp(tree->mcmc->move_name[move],"nu"))             MCMC_Nu(tree);
-      else if(!strcmp(tree->mcmc->move_name[move],"subtree_height")) MCMC_Subtree_Height(tree);
-      else if(!strcmp(tree->mcmc->move_name[move],"time_slice"))     MCMC_Time_Slice(tree);
+      if(!strcmp(tree->mcmc->move_name[move],"clock"))                   MCMC_Clock_R(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"birth_rate"))         MCMC_Birth_Rate(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"death_rate"))         MCMC_Death_Rate(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"birth_death_updown")) MCMC_Birth_Death_Updown(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"tree_height"))        MCMC_Tree_Height(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"times"))              MCMC_Time_All(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"spr"))                MCMC_Prune_Regraft(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"spr_local"))          MCMC_Prune_Regraft_Local(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"spr_root"))           MCMC_Prune_Regraft_Root(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"updown_t_cr"))        MCMC_Updown_T_Cr(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"subtree_rates"))      MCMC_Subtree_Rates(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"kappa"))              MCMC_Kappa(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"ras"))                MCMC_Rate_Across_Sites(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"nu"))                 MCMC_Nu(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"subtree_height"))     MCMC_Subtree_Height(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"time_slice"))         MCMC_Time_Slice(tree);
 
       else if(!strcmp(tree->mcmc->move_name[move],"br_rate"))
       	{
@@ -855,7 +860,7 @@ phydbl *DATE_MCMC(t_tree *tree)
                        tree->c_lnL,
                        tree->rates->c_lnL_times,
                        tree->rates->c_lnL_rates,
-                       tree->ghost_tree->rates->c_lnL_times,
+                       tree->extra_tree->rates->c_lnL_times,
                        tree->rates->clock_r,
                        tree->rates->nd_t[tree->n_root->num],
                        (int)time(NULL) - t_beg);
@@ -870,9 +875,9 @@ phydbl *DATE_MCMC(t_tree *tree)
                         tree->rates->nd_t[tree->n_root->num],
                         tree->mod->kappa->v);
 
-          Time_To_Branch(tree->ghost_tree);
+          Time_To_Branch(tree->extra_tree);
           tree->bl_ndigits = 1;
-          s_tree = Write_Tree(tree->ghost_tree,NO);
+          s_tree = Write_Tree(tree->extra_tree,NO);
           tree->bl_ndigits = 7;
           PhyML_Fprintf(fp_tree,"\n%s",s_tree);
           Free(s_tree);

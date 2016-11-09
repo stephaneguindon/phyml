@@ -113,7 +113,7 @@ void Init_Tree(t_tree *tree, int n_otu)
   tree->mixt_tree                 = NULL;
   tree->geo                       = NULL;
   tree->xml_root                  = NULL;
-  tree->ghost_tree                = NULL;
+  tree->extra_tree                = NULL;
   tree->verbose                   = VL3;
 
   tree->is_mixt_tree              = NO;
@@ -848,11 +848,13 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
 
   rates->birth_rate       = 1.E-1;
   rates->birth_rate_min   = 1.E-6;
-  rates->birth_rate_max   = 1.E+2;
+  rates->birth_rate_max   = 1.E+0;
+  rates->birth_rate_pivot = 1.E-1;
 
   rates->death_rate       = 1.E-1;
   rates->death_rate_min   = 1.E-6;
-  rates->death_rate_max   = 1.E+2;
+  rates->death_rate_max   = 1.E+0;
+  rates->death_rate_pivot = 1.E-1;
 
   if(rates->model_log_rates == YES)
     {

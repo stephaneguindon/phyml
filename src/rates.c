@@ -626,10 +626,12 @@ void RATES_Copy_Rate_Struct(t_rate *from, t_rate *to, int n_otu)
   to->birth_rate = from->birth_rate;
   to->birth_rate_min = from->birth_rate_min;
   to->birth_rate_max = from->birth_rate_max;
+  to->birth_rate_pivot = from->birth_rate_pivot;
 
   to->death_rate = from->death_rate;
   to->death_rate_min = from->death_rate_min;
   to->death_rate_max = from->death_rate_max;
+  to->death_rate_pivot = from->death_rate_pivot;
   
   to->nu = from->nu;
   to->min_nu = from->min_nu;
