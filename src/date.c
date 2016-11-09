@@ -848,8 +848,6 @@ phydbl *DATE_MCMC(t_tree *tree)
         }
 
 
-      tree->mcmc->run++;
-      MCMC_Get_Acc_Rates(tree->mcmc);
 
       if(!(tree->mcmc->run%tree->mcmc->sample_interval))
         {          
@@ -872,9 +870,9 @@ phydbl *DATE_MCMC(t_tree *tree)
                         tree->rates->nd_t[tree->n_root->num],
                         tree->mod->kappa->v);
 
-          Time_To_Branch(tree);
+          Time_To_Branch(tree->ghost_tree);
           tree->bl_ndigits = 1;
-          s_tree = Write_Tree(tree,NO);
+          s_tree = Write_Tree(tree->ghost_tree,NO);
           tree->bl_ndigits = 7;
           PhyML_Fprintf(fp_tree,"\n%s",s_tree);
           Free(s_tree);
@@ -883,6 +881,9 @@ phydbl *DATE_MCMC(t_tree *tree)
 
           tree->mcmc->sample_num++;
         }
+
+      tree->mcmc->run++;
+      MCMC_Get_Acc_Rates(tree->mcmc);
     }
   while(tree->mcmc->run < tree->mcmc->chain_len);
 

@@ -6938,7 +6938,7 @@ void Add_Root(t_edge *target, t_tree *tree)
   assert(tree);
 
   #ifndef PHYML
-  PhyML_Printf("\n. Adding root on t_edge %d left = %d right = %d.",target->num,target->left ? target->left->num : -1, target->rght ? target->rght->num : -1); fflush(NULL);
+  /* PhyML_Printf("\n. Adding root on t_edge %d left = %d right = %d.",target->num,target->left ? target->left->num : -1, target->rght ? target->rght->num : -1); fflush(NULL) */;
   #endif
 
   tree->e_root = target;

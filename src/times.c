@@ -1819,20 +1819,20 @@ void TIMES_Connect_List_Of_Taxa(t_node **tax_list, int list_size, phydbl t_mrca,
       times[new_mrca->num]   = t_upper_bound - ((phydbl)(i+1.)/n_anc)*(t_upper_bound - t_lower_bound);
 
 
-      printf("\n. new_mrca->num: %d time: %f [%f %f] t_mrca: %f %d connect to %d %d %d [%f %f]",
-             new_mrca->num,
-             times[new_mrca->num],
-             t_lower_bound,
-             t_upper_bound,
-             t_mrca,
-             new_mrca->num,
-             new_mrca->v[0] ? new_mrca->v[0]->num : -1,
-             new_mrca->v[1] ? new_mrca->v[1]->num : -1,
-             new_mrca->v[2] ? new_mrca->v[2]->num : -1,
-             times[new_mrca->v[1]->num],
-             times[new_mrca->v[2]->num]
-             );
-      fflush(NULL);
+      /* printf("\n. new_mrca->num: %d time: %f [%f %f] t_mrca: %f %d connect to %d %d %d [%f %f]", */
+      /*        new_mrca->num, */
+      /*        times[new_mrca->num], */
+      /*        t_lower_bound, */
+      /*        t_upper_bound, */
+      /*        t_mrca, */
+      /*        new_mrca->num, */
+      /*        new_mrca->v[0] ? new_mrca->v[0]->num : -1, */
+      /*        new_mrca->v[1] ? new_mrca->v[1]->num : -1, */
+      /*        new_mrca->v[2] ? new_mrca->v[2]->num : -1, */
+      /*        times[new_mrca->v[1]->num], */
+      /*        times[new_mrca->v[2]->num] */
+      /*        ); */
+      /* fflush(NULL); */
 
       anc[permut[i+1]] = new_mrca;
       i++;
@@ -1963,7 +1963,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
           /* For(k,list_size) printf("\n@ %s",nd_list[k]->name); */
           /* printf("\n"); */
 
-          printf("\n >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ");
+          /* printf("\n >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> "); */
           TIMES_Connect_List_Of_Taxa(nd_list, 
                                      cal->n_target_tax, 
                                      cal_times[cal_ordering[i]], 
@@ -2007,7 +2007,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
 
       /* For(i,list_size) printf("\n# To connect: %d",nd_list[i]->num); */
       
-      printf("\n <<<<<<<<<<<<<<<<<<<<<<<<<<<<<< "); fflush(NULL);
+      /* printf("\n <<<<<<<<<<<<<<<<<<<<<<<<<<<<<< "); fflush(NULL); */
       TIMES_Connect_List_Of_Taxa(nd_list, 
                                  list_size,
                                  4.*time_oldest_cal, 
@@ -2068,7 +2068,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       if(!DATE_Check_Calibration_Constraints(mixt_tree) ||
          !DATE_Check_Time_Constraints(mixt_tree))
         {
-          PhyML_Printf("\n. Could not generate tree");
+          /* PhyML_Printf("\n. Could not generate tree"); */
         }
       else break; // Tree successfully generated
     }
