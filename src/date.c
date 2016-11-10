@@ -875,9 +875,9 @@ phydbl *DATE_MCMC(t_tree *tree)
                         tree->rates->nd_t[tree->n_root->num],
                         tree->mod->kappa->v);
 
-          Time_To_Branch(tree->extra_tree);
+          Time_To_Branch(tree);
           tree->bl_ndigits = 1;
-          s_tree = Write_Tree(tree->extra_tree,NO);
+          s_tree = Write_Tree(tree,NO);
           tree->bl_ndigits = 7;
           PhyML_Fprintf(fp_tree,"\n%s",s_tree);
           Free(s_tree);

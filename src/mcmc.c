@@ -4533,7 +4533,6 @@ void MCMC_Birth_Death_Updown(t_tree *tree)
           tree->extra_tree->rates->birth_rate = tree->rates->birth_rate_pivot;
           cur_lnL_time_pivot = TIMES_Lk_Times(NO,tree->extra_tree);
 
-
           tree->extra_tree->rates->death_rate = cur_death_rate;
           tree->extra_tree->rates->birth_rate = cur_birth_rate;
           cur_lnL_time_ghost = TIMES_Lk_Times(NO,tree->extra_tree);
