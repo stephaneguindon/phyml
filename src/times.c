@@ -2158,7 +2158,7 @@ int TIMES_Check_Node_Height_Ordering_Post(t_node *a, t_node *d, t_tree *tree)
     }
   if(tree->rates->nd_t[d->num] < tree->rates->nd_t[a->num])
     {
-      PhyML_Printf("\n== a->t = %f[%d] d->t %f[%d]",
+      PhyML_Printf("\n== a->t = %f [num:%d] d->t %f [num:%d]",
                    tree->rates->nd_t[a->num],
                    a->num,
                    tree->rates->nd_t[d->num],

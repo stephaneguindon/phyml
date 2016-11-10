@@ -5279,7 +5279,7 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_node *targe
           tree->n_root->v[1] = tree->e_root->left;
           tree->n_root->v[2] = tree->e_root->rght;
         }
-
+      
       Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
       Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
       tree->n_root->anc = NULL;
