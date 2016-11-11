@@ -749,6 +749,7 @@ phydbl *DATE_MCMC(t_tree *tree)
   RATES_Duplicate_Calib_Struct(tree,tree->extra_tree);
   MIXT_Chain_Cal(tree->extra_tree);
   DATE_Assign_Primary_Calibration(tree->extra_tree);
+  TIMES_Randomize_Tree_With_Time_Constraints(tree->extra_tree->rates->a_cal[0],tree->extra_tree);
   TIMES_Lk_Times(NO,tree->extra_tree);
   PhyML_Printf("\n. log(Pr(extra tree)) = %f",tree->extra_tree->rates->c_lnL_times);
   mcmc = MCMC_Make_MCMC_Struct();
