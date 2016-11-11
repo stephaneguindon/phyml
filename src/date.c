@@ -826,15 +826,7 @@ phydbl *DATE_MCMC(t_tree *tree)
       else if(!strcmp(tree->mcmc->move_name[move],"nu"))                 MCMC_Nu(tree);
       else if(!strcmp(tree->mcmc->move_name[move],"subtree_height"))     MCMC_Subtree_Height(tree);
       else if(!strcmp(tree->mcmc->move_name[move],"time_slice"))         MCMC_Time_Slice(tree);
-
-      else if(!strcmp(tree->mcmc->move_name[move],"br_rate"))
-      	{
-      	  Set_Both_Sides(YES,tree);
-      	  Lk(NULL,tree);
-      	  Set_Both_Sides(NO,tree);
-          MCMC_One_Rate(tree->n_root,tree->n_root->v[1],YES,tree);
-          MCMC_One_Rate(tree->n_root,tree->n_root->v[2],YES,tree);
-      	}
+      else if(!strcmp(tree->mcmc->move_name[move],"br_rate"))            MCMC_Rate_All(tree);
       else continue;
 
      

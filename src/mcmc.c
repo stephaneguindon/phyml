@@ -849,6 +849,18 @@ void MCMC_Sample_Joint_Rates_Prior(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+void MCMC_Rate_All(t_tree *tree)
+{
+  Set_Both_Sides(YES,tree);
+  Lk(NULL,tree);
+  Set_Both_Sides(NO,tree);
+  MCMC_One_Rate(tree->n_root,tree->n_root->v[1],YES,tree);
+  MCMC_One_Rate(tree->n_root,tree->n_root->v[2],YES,tree);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 void MCMC_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
 {
   t_edge *b;
@@ -880,8 +892,6 @@ void MCMC_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
   cur_lnL_rate = tree->rates->c_lnL_rates;
   new_lnL_rate = UNLIKELY;
 
-  
-  u = Uni();
   
   MCMC_Make_Move(&cur_mu,&new_mu,r_min,r_max,&ratio,K,tree->mcmc->move_type[tree->mcmc->num_move_br_r+d->num]);
 
@@ -929,12 +939,8 @@ void MCMC_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
               Update_P_Lk(tree,b,d);
             }
         }
+
       new_lnL_data = Lk(b,tree);
-      
-      /* tree->both_sides = NO; */
-      /* new_lnL_data = Lk(tree); */
-    
-      
       new_lnL_rate = RATES_Lk_Rates(tree);
       
       ratio += (new_lnL_data - cur_lnL_data);
@@ -4199,7 +4205,7 @@ void MCMC_Birth_Rate(t_tree *tree)
       new_lnL_time = TIMES_Lk_Times(NO,tree);
       ratio += (new_lnL_time - cur_lnL_time);
       
-      if(tree->mcmc->run_move[tree->mcmc->num_move_birth_rate] == 100)
+      if(tree->mcmc->run_move[tree->mcmc->num_move_birth_rate] == 500)
         {
           tree->rates->birth_rate_pivot = tree->rates->birth_rate;
           tree->rates->death_rate_pivot = tree->rates->death_rate;
@@ -4207,13 +4213,16 @@ void MCMC_Birth_Rate(t_tree *tree)
       
       if(tree->mcmc->run_move[tree->mcmc->num_move_birth_rate] >= 0)
         {
-          /* tree->extra_tree->rates->birth_rate = tree->rates->birth_rate_pivot; */
-          /* tree->extra_tree->rates->death_rate = tree->rates->death_rate_pivot; */
-          /* cur_lnL_time_pivot = TIMES_Lk_Times(NO,tree->extra_tree); */
-
-          tree->extra_tree->rates->birth_rate = cur_birth_rate;
-          tree->extra_tree->rates->death_rate = tree->rates->death_rate;
-          cur_lnL_time_ghost = TIMES_Lk_Times(NO,tree->extra_tree);
+          /* if(tree->mcmc->run_move[tree->mcmc->num_move_birth_rate] >= 500) */
+          /*   { */
+          /*     tree->extra_tree->rates->birth_rate = tree->rates->birth_rate_pivot; */
+          /*     tree->extra_tree->rates->death_rate = tree->rates->death_rate_pivot; */
+          /*     cur_lnL_time_pivot = TIMES_Lk_Times(NO,tree->extra_tree); */
+          /*   } */
+          
+          /* tree->extra_tree->rates->birth_rate = cur_birth_rate; */
+          /* tree->extra_tree->rates->death_rate = tree->rates->death_rate; */
+          /* cur_lnL_time_ghost = TIMES_Lk_Times(NO,tree->extra_tree); */
           
           Copy_Tree(tree->extra_tree,tree->extra_tree->extra_tree);
           RATES_Copy_Rate_Struct(tree->extra_tree->rates,tree->extra_tree->extra_tree->rates,tree->n_otu);
@@ -4263,15 +4272,22 @@ void MCMC_Birth_Rate(t_tree *tree)
             }
           while(i < n_mcmc_steps);
           
+          tree->extra_tree->rates->birth_rate = cur_birth_rate;
+          tree->extra_tree->rates->death_rate = tree->rates->death_rate;
+          cur_lnL_time_ghost = TIMES_Lk_Times(NO,tree->extra_tree);
+
           tree->extra_tree->rates->birth_rate = new_birth_rate;
           tree->extra_tree->rates->death_rate = tree->rates->death_rate;
           new_lnL_time_ghost = TIMES_Lk_Times(NO,tree->extra_tree);                    
           ratio += (cur_lnL_time_ghost - new_lnL_time_ghost);
 
-          /* tree->extra_tree->rates->birth_rate = tree->rates->birth_rate_pivot; */
-          /* tree->extra_tree->rates->death_rate = tree->rates->death_rate_pivot; */
-          /* new_lnL_time_pivot = TIMES_Lk_Times(NO,tree->extra_tree); */
-          /* ratio += (new_lnL_time_pivot - cur_lnL_time_pivot);           */
+          /* if(tree->mcmc->run_move[tree->mcmc->num_move_birth_rate] >= 500) */
+          /*   { */
+          /*     tree->extra_tree->rates->birth_rate = tree->rates->birth_rate_pivot; */
+          /*     tree->extra_tree->rates->death_rate = tree->rates->death_rate_pivot; */
+          /*     new_lnL_time_pivot = TIMES_Lk_Times(NO,tree->extra_tree); */
+          /*     ratio += (new_lnL_time_pivot - cur_lnL_time_pivot); */
+          /*   } */
         }
       
       ratio = EXP(ratio);
@@ -4365,13 +4381,16 @@ void MCMC_Death_Rate(t_tree *tree)
 
       if(tree->mcmc->run_move[tree->mcmc->num_move_birth_rate] >= 0)
         {
-          /* tree->extra_tree->rates->birth_rate = tree->rates->birth_rate_pivot; */
-          /* tree->extra_tree->rates->death_rate = tree->rates->death_rate_pivot; */
-          /* cur_lnL_time_pivot = TIMES_Lk_Times(NO,tree->extra_tree); */
-
-          tree->extra_tree->rates->death_rate = cur_death_rate;
-          tree->extra_tree->rates->birth_rate = tree->rates->birth_rate;
-          cur_lnL_time_ghost = TIMES_Lk_Times(NO,tree->extra_tree);
+          /* if(tree->mcmc->run_move[tree->mcmc->num_move_birth_rate] >= 500) */
+          /*   { */
+          /*     tree->extra_tree->rates->birth_rate = tree->rates->birth_rate_pivot; */
+          /*     tree->extra_tree->rates->death_rate = tree->rates->death_rate_pivot; */
+          /*     cur_lnL_time_pivot = TIMES_Lk_Times(NO,tree->extra_tree); */
+          /*   } */
+          
+          /* tree->extra_tree->rates->death_rate = cur_death_rate; */
+          /* tree->extra_tree->rates->birth_rate = tree->rates->birth_rate; */
+          /* cur_lnL_time_ghost = TIMES_Lk_Times(NO,tree->extra_tree); */
           
           Copy_Tree(tree->extra_tree,tree->extra_tree->extra_tree);
           RATES_Copy_Rate_Struct(tree->extra_tree->rates,tree->extra_tree->extra_tree->rates,tree->n_otu);
@@ -4425,15 +4444,23 @@ void MCMC_Death_Rate(t_tree *tree)
             }
           while(i < n_mcmc_steps);
           
+          tree->extra_tree->rates->death_rate = cur_death_rate;
+          tree->extra_tree->rates->birth_rate = tree->rates->birth_rate;
+          cur_lnL_time_ghost = TIMES_Lk_Times(NO,tree->extra_tree);
+
           tree->extra_tree->rates->birth_rate = tree->rates->birth_rate;
           tree->extra_tree->rates->death_rate = new_death_rate;
           new_lnL_time_ghost = TIMES_Lk_Times(NO,tree->extra_tree);          
+
           ratio += (cur_lnL_time_ghost - new_lnL_time_ghost);
 
-          /* tree->extra_tree->rates->birth_rate = tree->rates->birth_rate_pivot; */
-          /* tree->extra_tree->rates->death_rate = tree->rates->death_rate_pivot; */
-          /* new_lnL_time_pivot = TIMES_Lk_Times(NO,tree->extra_tree); */
-          /* ratio += (new_lnL_time_pivot - cur_lnL_time_pivot);           */
+          /* if(tree->mcmc->run_move[tree->mcmc->num_move_birth_rate] >= 500) */
+          /*   { */
+          /*     tree->extra_tree->rates->birth_rate = tree->rates->birth_rate_pivot; */
+          /*     tree->extra_tree->rates->death_rate = tree->rates->death_rate_pivot; */
+          /*     new_lnL_time_pivot = TIMES_Lk_Times(NO,tree->extra_tree); */
+          /*     ratio += (new_lnL_time_pivot - cur_lnL_time_pivot); */
+          /*   } */
         }
       
       ratio = EXP(ratio);
@@ -4533,13 +4560,16 @@ void MCMC_Birth_Death_Updown(t_tree *tree)
 
       if(tree->mcmc->run_move[tree->mcmc->num_move_birth_rate] >= 0)
         {
-          /* tree->extra_tree->rates->death_rate = tree->rates->death_rate_pivot; */
-          /* tree->extra_tree->rates->birth_rate = tree->rates->birth_rate_pivot; */
-          /* cur_lnL_time_pivot = TIMES_Lk_Times(NO,tree->extra_tree); */
-
-          tree->extra_tree->rates->death_rate = cur_death_rate;
-          tree->extra_tree->rates->birth_rate = cur_birth_rate;
-          cur_lnL_time_ghost = TIMES_Lk_Times(NO,tree->extra_tree);
+          /* if(tree->mcmc->run_move[tree->mcmc->num_move_birth_rate] >= 500) */
+          /*   { */
+          /*     tree->extra_tree->rates->death_rate = tree->rates->death_rate_pivot; */
+          /*     tree->extra_tree->rates->birth_rate = tree->rates->birth_rate_pivot; */
+          /*     cur_lnL_time_pivot = TIMES_Lk_Times(NO,tree->extra_tree); */
+          /*   } */
+          
+          /* tree->extra_tree->rates->death_rate = cur_death_rate; */
+          /* tree->extra_tree->rates->birth_rate = cur_birth_rate; */
+          /* cur_lnL_time_ghost = TIMES_Lk_Times(NO,tree->extra_tree); */
           
           Copy_Tree(tree->extra_tree,tree->extra_tree->extra_tree);
           RATES_Copy_Rate_Struct(tree->extra_tree->rates,tree->extra_tree->extra_tree->rates,tree->n_otu);
@@ -4594,15 +4624,23 @@ void MCMC_Birth_Death_Updown(t_tree *tree)
             }
           while(i < n_mcmc_steps);
           
+          tree->extra_tree->rates->death_rate = cur_death_rate;
+          tree->extra_tree->rates->birth_rate = cur_birth_rate;
+          cur_lnL_time_ghost = TIMES_Lk_Times(NO,tree->extra_tree);
+
           tree->extra_tree->rates->death_rate = new_death_rate;
           tree->extra_tree->rates->birth_rate = new_birth_rate;
           new_lnL_time_ghost = TIMES_Lk_Times(NO,tree->extra_tree);          
+
           ratio += (cur_lnL_time_ghost - new_lnL_time_ghost);
 
-          /* tree->extra_tree->rates->death_rate = tree->rates->death_rate_pivot; */
-          /* tree->extra_tree->rates->birth_rate = tree->rates->birth_rate_pivot; */
-          /* new_lnL_time_pivot = TIMES_Lk_Times(NO,tree->extra_tree); */
-          /* ratio += (new_lnL_time_pivot - cur_lnL_time_pivot);           */
+          /* if(tree->mcmc->run_move[tree->mcmc->num_move_birth_rate] == 500) */
+          /*   { */
+          /*     tree->extra_tree->rates->death_rate = tree->rates->death_rate_pivot; */
+          /*     tree->extra_tree->rates->birth_rate = tree->rates->birth_rate_pivot; */
+          /*     new_lnL_time_pivot = TIMES_Lk_Times(NO,tree->extra_tree); */
+          /*     ratio += (new_lnL_time_pivot - cur_lnL_time_pivot); */
+          /*   } */
         }
       
       ratio = EXP(ratio);
