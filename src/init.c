@@ -888,8 +888,8 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
     }
   else
     {
-      rates->nu            = 1.E-1;
-      rates->min_nu        = 1.E-2;
+      rates->nu            = 1.E-3;
+      rates->min_nu        = 1.E-8;
       rates->max_nu        = 100.0;
     }
 

@@ -772,7 +772,7 @@ phydbl *DATE_MCMC(t_tree *tree)
 
   
 
-  PhyML_Fprintf(fp_stats,"\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s",
+  PhyML_Fprintf(fp_stats,"\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s",
                 "sample",
                 "lnL(seq)",
                 "lnL(times)",
@@ -780,7 +780,8 @@ phydbl *DATE_MCMC(t_tree *tree)
                 "death",
                 "clock",
                 "root",
-                "tstv");
+                "tstv",
+                "nu");
   fflush(NULL);
 
 
@@ -857,7 +858,7 @@ phydbl *DATE_MCMC(t_tree *tree)
                        tree->rates->nd_t[tree->n_root->num],
                        (int)time(NULL) - t_beg);
 
-          PhyML_Fprintf(fp_stats,"\n%6d\t%9.1f\t%9.1f\t%12G\t%12G\t%12G\t%12G\t%12G",
+          PhyML_Fprintf(fp_stats,"\n%6d\t%9.1f\t%9.1f\t%12G\t%12G\t%12G\t%12G\t%12G\t%12G",
                         tree->mcmc->run,
                         tree->c_lnL,
                         tree->rates->c_lnL_times,
@@ -865,7 +866,8 @@ phydbl *DATE_MCMC(t_tree *tree)
                         tree->rates->death_rate,
                         tree->rates->clock_r,
                         tree->rates->nd_t[tree->n_root->num],
-                        tree->mod->kappa->v);
+                        tree->mod->kappa->v,
+                        tree->rates->nu);
 
           Time_To_Branch(tree);
           tree->bl_ndigits = 1;

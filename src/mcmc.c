@@ -4842,7 +4842,7 @@ void MCMC_Sim_Rate(t_node *a, t_node *d, t_tree *tree)
 
 void MCMC_Prune_Regraft(t_tree *tree)
 {
-  phydbl u,alpha,ratio,hr;
+  phydbl u,alpha,ratio,hr,scale;
   phydbl t_min,t_max;
   phydbl cur_lnL_seq,new_lnL_seq;
   phydbl cur_lnL_rate,new_lnL_rate;
@@ -4929,6 +4929,15 @@ void MCMC_Prune_Regraft(t_tree *tree)
         {
           effective_prune = prune;
         }
+
+
+      /* if(prune_daughter->tax == NO) */
+      /*   { */
+      /*     scale = Uni()*(times[tree->n_root->num]/times[prune_daughter->num]); */
+      /*     Scale_Subtree_Height(prune_daughter,scale,0.0,&n_nodes,tree); */
+      /*     ratio += (n_nodes-2)*LOG(scale); */
+      /*   } */
+      
 
 
       /* printf("\n\n. prune: %d [%d-%d-%d] [%s-%s-%s] [%f-%f;%f] prune_daughter: %d [%f-%f;%f] prune->anc: %d [%f-%f;%f] effective: %d", */
@@ -5137,6 +5146,7 @@ void MCMC_Prune_Regraft(t_tree *tree)
       ratio += (new_lnL_rate - cur_lnL_rate);
       ratio += (new_lnL_time - cur_lnL_time);
 
+
       ratio = EXP(ratio);
       alpha = MIN(1.,ratio);
 
@@ -5145,6 +5155,12 @@ void MCMC_Prune_Regraft(t_tree *tree)
       
       u = Uni();
             
+      /* PhyML_Printf("\n== [%f %f] [%f %f] [%f %f] r: %f", */
+      /*              new_lnL_seq , cur_lnL_seq, */
+      /*              new_lnL_rate , cur_lnL_rate, */
+      /*              new_lnL_time , cur_lnL_time, */
+      /*              ratio); */
+
       if(u > alpha)
         {
           // Reject
@@ -5176,6 +5192,8 @@ void MCMC_Prune_Regraft(t_tree *tree)
           tree->rates->c_lnL_times = cur_lnL_time;
           tree->rates->c_lnL_rates = cur_lnL_rate;
 
+          /* PhyML_Printf(" rej: %f",tree->rates->c_lnL_times); */
+          
           /* /\* !!!!!!!!!!!!!! *\/ */
           /* new_alnL = Lk(NULL,tree); /\* Not necessary. Remove once tested *\/ */
           /* if(Are_Equal(new_alnL,cur_alnL,1.E-3) == NO) */

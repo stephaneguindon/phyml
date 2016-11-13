@@ -408,9 +408,9 @@ phydbl RATES_Lk_Rates_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl n
     case GAMMA :
       {
 	if(tree->rates->model_log_rates == YES)
-	  log_dens = Dgamma(EXP(br_r_d),1./tree->rates->nu,tree->rates->nu);
+	  log_dens = Dgamma(EXP(br_r_d),1./(tree->rates->nu*dt_d*POW(tree->rates->clock_r,2)),tree->rates->nu*dt_d*POW(tree->rates->clock_r,2));
 	else
-	  log_dens = Dgamma(br_r_d,1./tree->rates->nu,tree->rates->nu);
+	  log_dens = Dgamma(br_r_d,1./(tree->rates->nu*dt_d*POW(tree->rates->clock_r,2)),tree->rates->nu*dt_d*POW(tree->rates->clock_r,2));
 
 	log_dens = LOG(log_dens);
 	break;

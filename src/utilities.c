@@ -9264,6 +9264,8 @@ int Scale_Subtree_Height(t_node *a, phydbl K, phydbl floor, int *n_nodes, t_tree
 {
   phydbl new_height;
 
+  if(a->tax == YES) return 0;
+  
   *n_nodes = 0;
 
   new_height = .0;
@@ -9347,6 +9349,7 @@ int Scale_Subtree_Rates(t_node *a, phydbl mult, int *n_nodes, t_tree *tree)
 {
   int res;
   int i;
+  
   
   *n_nodes = 0;
   res      = 1;
