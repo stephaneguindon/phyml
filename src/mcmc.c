@@ -4158,173 +4158,173 @@ void MCMC_Covarion_Switch(t_tree *tree)
 
 void MCMC_Birth_Rate(t_tree *tree)
 {
-  /* MCMC_Single_Param_Generic(&(tree->rates->birth_rate), */
-  /*       		    tree->rates->birth_rate_min, */
-  /*       		    tree->rates->birth_rate_max, */
-  /*       		    tree->mcmc->num_move_birth_rate, */
-  /*       		    &(tree->rates->c_lnL_times),NULL, */
-  /*       		    Wrap_Lk_Times,NULL,tree->mcmc->move_type[tree->mcmc->num_move_birth_rate],NO,NULL,tree,NULL); */
+  MCMC_Single_Param_Generic(&(tree->rates->birth_rate),
+        		    tree->rates->birth_rate_min,
+        		    tree->rates->birth_rate_max,
+        		    tree->mcmc->num_move_birth_rate,
+        		    &(tree->rates->c_lnL_times),NULL,
+        		    Wrap_Lk_Times,NULL,tree->mcmc->move_type[tree->mcmc->num_move_birth_rate],NO,NULL,tree,NULL);
  
-  phydbl cur_birth_rate,new_birth_rate;
-  phydbl cur_lnL_time,new_lnL_time;
-  phydbl cur_lnL_time_ghost,new_lnL_time_ghost;
-  phydbl cur_lnL_time_pivot,new_lnL_time_pivot;
-  phydbl u,alpha,ratio;
-  phydbl birth_rate_min,birth_rate_max;
-  phydbl K;
-  int i,n_mcmc_steps,move;
+  /* phydbl cur_birth_rate,new_birth_rate; */
+  /* phydbl cur_lnL_time,new_lnL_time; */
+  /* phydbl cur_lnL_time_ghost,new_lnL_time_ghost; */
+  /* phydbl cur_lnL_time_pivot,new_lnL_time_pivot; */
+  /* phydbl u,alpha,ratio; */
+  /* phydbl birth_rate_min,birth_rate_max; */
+  /* phydbl K; */
+  /* int i,n_mcmc_steps,move; */
 
-  cur_birth_rate = -1.0;
-  new_birth_rate = -1.0;
-  ratio          =  0.0;
-  n_mcmc_steps   =  tree->mcmc->run_move[tree->mcmc->num_move_birth_rate] == 1 ? 1000 : 100;
-  move           = -1;
+  /* cur_birth_rate = -1.0; */
+  /* new_birth_rate = -1.0; */
+  /* ratio          =  0.0; */
+  /* n_mcmc_steps   =  tree->mcmc->run_move[tree->mcmc->num_move_birth_rate] == 1 ? 1000 : 100; */
+  /* move           = -1; */
 
-  K = tree->mcmc->tune_move[tree->mcmc->num_move_birth_rate];
+  /* K = tree->mcmc->tune_move[tree->mcmc->num_move_birth_rate]; */
 
-  cur_lnL_time = tree->rates->c_lnL_times;
-  new_lnL_time = tree->rates->c_lnL_times;
+  /* cur_lnL_time = tree->rates->c_lnL_times; */
+  /* new_lnL_time = tree->rates->c_lnL_times; */
 
-  cur_lnL_time_ghost = UNLIKELY;
-  new_lnL_time_ghost = UNLIKELY;
+  /* cur_lnL_time_ghost = UNLIKELY; */
+  /* new_lnL_time_ghost = UNLIKELY; */
 
-  cur_lnL_time_pivot = UNLIKELY;
-  new_lnL_time_pivot = UNLIKELY;
+  /* cur_lnL_time_pivot = UNLIKELY; */
+  /* new_lnL_time_pivot = UNLIKELY; */
 
-  cur_birth_rate = tree->rates->birth_rate;
+  /* cur_birth_rate = tree->rates->birth_rate; */
 
-  birth_rate_min = MAX(tree->rates->birth_rate_min,tree->rates->death_rate);
-  birth_rate_max = tree->rates->birth_rate_max;
+  /* birth_rate_min = MAX(tree->rates->birth_rate_min,tree->rates->death_rate); */
+  /* birth_rate_max = tree->rates->birth_rate_max; */
   
-  MCMC_Make_Move(&cur_birth_rate,&new_birth_rate,birth_rate_min,birth_rate_max,&ratio,K,tree->mcmc->move_type[tree->mcmc->num_move_birth_rate]);
-  /* new_birth_rate = Uni()*(birth_rate_max - birth_rate_min) + birth_rate_min; */
+  /* MCMC_Make_Move(&cur_birth_rate,&new_birth_rate,birth_rate_min,birth_rate_max,&ratio,K,tree->mcmc->move_type[tree->mcmc->num_move_birth_rate]); */
+  /* /\* new_birth_rate = Uni()*(birth_rate_max - birth_rate_min) + birth_rate_min; *\/ */
   
-  if(new_birth_rate < birth_rate_max && new_birth_rate > birth_rate_min && new_birth_rate > tree->rates->death_rate)
-    {
-      tree->rates->birth_rate = new_birth_rate;
-      new_lnL_time = TIMES_Lk_Times(NO,tree);
-      ratio += (new_lnL_time - cur_lnL_time);
+  /* if(new_birth_rate < birth_rate_max && new_birth_rate > birth_rate_min && new_birth_rate > tree->rates->death_rate) */
+  /*   { */
+  /*     tree->rates->birth_rate = new_birth_rate; */
+  /*     new_lnL_time = TIMES_Lk_Times(NO,tree); */
+  /*     ratio += (new_lnL_time - cur_lnL_time); */
       
-      if(tree->mcmc->run_move[tree->mcmc->num_move_birth_rate] == 500)
-        {
-          tree->rates->birth_rate_pivot = tree->rates->birth_rate;
-          tree->rates->death_rate_pivot = tree->rates->death_rate;
-        }
+  /*     if(tree->mcmc->run_move[tree->mcmc->num_move_birth_rate] == 500) */
+  /*       { */
+  /*         tree->rates->birth_rate_pivot = tree->rates->birth_rate; */
+  /*         tree->rates->death_rate_pivot = tree->rates->death_rate; */
+  /*       } */
       
-      if(tree->mcmc->run_move[tree->mcmc->num_move_birth_rate] >= 0)
-        {
-          /* if(tree->mcmc->run_move[tree->mcmc->num_move_birth_rate] >= 500) */
-          /*   { */
-          /*     tree->extra_tree->rates->birth_rate = tree->rates->birth_rate_pivot; */
-          /*     tree->extra_tree->rates->death_rate = tree->rates->death_rate_pivot; */
-          /*     cur_lnL_time_pivot = TIMES_Lk_Times(NO,tree->extra_tree); */
-          /*   } */
+  /*     if(tree->mcmc->run_move[tree->mcmc->num_move_birth_rate] >= 0) */
+  /*       { */
+  /*         /\* if(tree->mcmc->run_move[tree->mcmc->num_move_birth_rate] >= 500) *\/ */
+  /*         /\*   { *\/ */
+  /*         /\*     tree->extra_tree->rates->birth_rate = tree->rates->birth_rate_pivot; *\/ */
+  /*         /\*     tree->extra_tree->rates->death_rate = tree->rates->death_rate_pivot; *\/ */
+  /*         /\*     cur_lnL_time_pivot = TIMES_Lk_Times(NO,tree->extra_tree); *\/ */
+  /*         /\*   } *\/ */
           
-          /* tree->extra_tree->rates->birth_rate = cur_birth_rate; */
-          /* tree->extra_tree->rates->death_rate = tree->rates->death_rate; */
-          /* cur_lnL_time_ghost = TIMES_Lk_Times(NO,tree->extra_tree); */
+  /*         /\* tree->extra_tree->rates->birth_rate = cur_birth_rate; *\/ */
+  /*         /\* tree->extra_tree->rates->death_rate = tree->rates->death_rate; *\/ */
+  /*         /\* cur_lnL_time_ghost = TIMES_Lk_Times(NO,tree->extra_tree); *\/ */
           
-          Copy_Tree(tree->extra_tree,tree->extra_tree->extra_tree);
-          RATES_Copy_Rate_Struct(tree->extra_tree->rates,tree->extra_tree->extra_tree->rates,tree->n_otu);
-          DATE_Assign_Primary_Calibration(tree->extra_tree->extra_tree);
+  /*         Copy_Tree(tree->extra_tree,tree->extra_tree->extra_tree); */
+  /*         RATES_Copy_Rate_Struct(tree->extra_tree->rates,tree->extra_tree->extra_tree->rates,tree->n_otu); */
+  /*         DATE_Assign_Primary_Calibration(tree->extra_tree->extra_tree); */
           
-          tree->extra_tree->eval_alnL          = NO;
-          tree->extra_tree->eval_rlnL          = NO;
-          tree->extra_tree->eval_glnL          = YES;
-          tree->extra_tree->rates->birth_rate  = new_birth_rate;
-          tree->extra_tree->rates->c_lnL_rates = UNLIKELY;
-          tree->extra_tree->c_lnL              = UNLIKELY;
+  /*         tree->extra_tree->eval_alnL          = NO; */
+  /*         tree->extra_tree->eval_rlnL          = NO; */
+  /*         tree->extra_tree->eval_glnL          = YES; */
+  /*         tree->extra_tree->rates->birth_rate  = new_birth_rate; */
+  /*         tree->extra_tree->rates->c_lnL_rates = UNLIKELY; */
+  /*         tree->extra_tree->c_lnL              = UNLIKELY; */
           
-          TIMES_Randomize_Tree_With_Time_Constraints(tree->extra_tree->rates->a_cal[0],tree->extra_tree);
-          tree->extra_tree->rates->birth_rate = new_birth_rate;
-          tree->extra_tree->rates->death_rate = tree->rates->death_rate;
-          TIMES_Lk_Times(NO,tree->extra_tree);
+  /*         TIMES_Randomize_Tree_With_Time_Constraints(tree->extra_tree->rates->a_cal[0],tree->extra_tree); */
+  /*         tree->extra_tree->rates->birth_rate = new_birth_rate; */
+  /*         tree->extra_tree->rates->death_rate = tree->rates->death_rate; */
+  /*         TIMES_Lk_Times(NO,tree->extra_tree); */
           
-          if(!(tree->extra_tree->rates->c_lnL_times > UNLIKELY))
-            {
-              PhyML_Printf("\n== glnL=%f",tree->extra_tree->rates->c_lnL_times);
-              PhyML_Printf("\n== birth=%G death=%G [%G]",new_birth_rate,tree->rates->death_rate,tree->extra_tree->rates->death_rate);
-              TIMES_Lk_Times(YES,tree->extra_tree);
-              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-            }
+  /*         if(!(tree->extra_tree->rates->c_lnL_times > UNLIKELY)) */
+  /*           { */
+  /*             PhyML_Printf("\n== glnL=%f",tree->extra_tree->rates->c_lnL_times); */
+  /*             PhyML_Printf("\n== birth=%G death=%G [%G]",new_birth_rate,tree->rates->death_rate,tree->extra_tree->rates->death_rate); */
+  /*             TIMES_Lk_Times(YES,tree->extra_tree); */
+  /*             Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
+  /*           } */
           
-          i = 0;
-          do
-            {
-              u = Uni();
-              For(move,tree->mcmc->n_moves) if(tree->mcmc->move_weight[move] > u-1.E-10) break;
+  /*         i = 0; */
+  /*         do */
+  /*           { */
+  /*             u = Uni(); */
+  /*             For(move,tree->mcmc->n_moves) if(tree->mcmc->move_weight[move] > u-1.E-10) break; */
               
-              /* PhyML_Printf("\n<< Move '%s' %f",tree->mcmc->move_name[move],tree->extra_tree->rates->c_lnL_times); */
+  /*             /\* PhyML_Printf("\n<< Move '%s' %f",tree->mcmc->move_name[move],tree->extra_tree->rates->c_lnL_times); *\/ */
               
-              if(!strcmp(tree->mcmc->move_name[move],"tree_height")) { MCMC_Tree_Height(tree->extra_tree); i++; }
-              if(!strcmp(tree->mcmc->move_name[move],"times"))       { MCMC_Time_All(tree->extra_tree); i++; }
-              if(!strcmp(tree->mcmc->move_name[move],"spr"))         { MCMC_Prune_Regraft(tree->extra_tree); i++; }
-              if(!strcmp(tree->mcmc->move_name[move],"spr_local"))   { MCMC_Prune_Regraft_Local(tree->extra_tree); i++; }
+  /*             if(!strcmp(tree->mcmc->move_name[move],"tree_height")) { MCMC_Tree_Height(tree->extra_tree); i++; } */
+  /*             if(!strcmp(tree->mcmc->move_name[move],"times"))       { MCMC_Time_All(tree->extra_tree); i++; } */
+  /*             if(!strcmp(tree->mcmc->move_name[move],"spr"))         { MCMC_Prune_Regraft(tree->extra_tree); i++; } */
+  /*             if(!strcmp(tree->mcmc->move_name[move],"spr_local"))   { MCMC_Prune_Regraft_Local(tree->extra_tree); i++; } */
               
-              if(!(tree->extra_tree->rates->c_lnL_times > UNLIKELY))
-                {
-                  PhyML_Printf("\n== move: %s",tree->mcmc->move_name[move]);
-                  PhyML_Printf("\n== glnL=%f",tree->extra_tree->rates->c_lnL_times);
-                  TIMES_Lk_Times(YES,tree->extra_tree);
-                  Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-                }
-              /* PhyML_Printf("\n==> %4d %15f",i,tree->extra_tree->rates->c_lnL_times); */
-            }
-          while(i < n_mcmc_steps);
+  /*             if(!(tree->extra_tree->rates->c_lnL_times > UNLIKELY)) */
+  /*               { */
+  /*                 PhyML_Printf("\n== move: %s",tree->mcmc->move_name[move]); */
+  /*                 PhyML_Printf("\n== glnL=%f",tree->extra_tree->rates->c_lnL_times); */
+  /*                 TIMES_Lk_Times(YES,tree->extra_tree); */
+  /*                 Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
+  /*               } */
+  /*             /\* PhyML_Printf("\n==> %4d %15f",i,tree->extra_tree->rates->c_lnL_times); *\/ */
+  /*           } */
+  /*         while(i < n_mcmc_steps); */
           
-          tree->extra_tree->rates->birth_rate = cur_birth_rate;
-          tree->extra_tree->rates->death_rate = tree->rates->death_rate;
-          cur_lnL_time_ghost = TIMES_Lk_Times(NO,tree->extra_tree);
+  /*         tree->extra_tree->rates->birth_rate = cur_birth_rate; */
+  /*         tree->extra_tree->rates->death_rate = tree->rates->death_rate; */
+  /*         cur_lnL_time_ghost = TIMES_Lk_Times(NO,tree->extra_tree); */
 
-          tree->extra_tree->rates->birth_rate = new_birth_rate;
-          tree->extra_tree->rates->death_rate = tree->rates->death_rate;
-          new_lnL_time_ghost = TIMES_Lk_Times(NO,tree->extra_tree);                    
-          ratio += (cur_lnL_time_ghost - new_lnL_time_ghost);
+  /*         tree->extra_tree->rates->birth_rate = new_birth_rate; */
+  /*         tree->extra_tree->rates->death_rate = tree->rates->death_rate; */
+  /*         new_lnL_time_ghost = TIMES_Lk_Times(NO,tree->extra_tree);                     */
+  /*         ratio += (cur_lnL_time_ghost - new_lnL_time_ghost); */
 
-          /* if(tree->mcmc->run_move[tree->mcmc->num_move_birth_rate] >= 500) */
-          /*   { */
-          /*     tree->extra_tree->rates->birth_rate = tree->rates->birth_rate_pivot; */
-          /*     tree->extra_tree->rates->death_rate = tree->rates->death_rate_pivot; */
-          /*     new_lnL_time_pivot = TIMES_Lk_Times(NO,tree->extra_tree); */
-          /*     ratio += (new_lnL_time_pivot - cur_lnL_time_pivot); */
-          /*   } */
-        }
+  /*         /\* if(tree->mcmc->run_move[tree->mcmc->num_move_birth_rate] >= 500) *\/ */
+  /*         /\*   { *\/ */
+  /*         /\*     tree->extra_tree->rates->birth_rate = tree->rates->birth_rate_pivot; *\/ */
+  /*         /\*     tree->extra_tree->rates->death_rate = tree->rates->death_rate_pivot; *\/ */
+  /*         /\*     new_lnL_time_pivot = TIMES_Lk_Times(NO,tree->extra_tree); *\/ */
+  /*         /\*     ratio += (new_lnL_time_pivot - cur_lnL_time_pivot); *\/ */
+  /*         /\*   } *\/ */
+  /*       } */
       
-      ratio = EXP(ratio);
-      alpha = MIN(1.,ratio);
+  /*     ratio = EXP(ratio); */
+  /*     alpha = MIN(1.,ratio); */
       
-      printf("\n.  b :%4d: %12G -> %12G ratio : %12G [ghost: %12G %12G -- pivot: %12G %12G -- real: %12G %12G]",
-             tree->mcmc->run_move[tree->mcmc->num_move_birth_rate],
-             cur_birth_rate,
-             new_birth_rate,
-             ratio,
-             cur_lnL_time_ghost,
-             new_lnL_time_ghost,
-             cur_lnL_time_pivot,
-             new_lnL_time_pivot,
-             cur_lnL_time,
-             new_lnL_time);
+  /*     printf("\n.  b :%4d: %12G -> %12G ratio : %12G [ghost: %12G %12G -- pivot: %12G %12G -- real: %12G %12G]", */
+  /*            tree->mcmc->run_move[tree->mcmc->num_move_birth_rate], */
+  /*            cur_birth_rate, */
+  /*            new_birth_rate, */
+  /*            ratio, */
+  /*            cur_lnL_time_ghost, */
+  /*            new_lnL_time_ghost, */
+  /*            cur_lnL_time_pivot, */
+  /*            new_lnL_time_pivot, */
+  /*            cur_lnL_time, */
+  /*            new_lnL_time); */
             
-      if(tree->mcmc->run_move[tree->mcmc->num_move_birth_rate] == 0) alpha = 2.0;
+  /*     if(tree->mcmc->run_move[tree->mcmc->num_move_birth_rate] == 0) alpha = 2.0; */
 
-      u = Uni();
-      if(u > alpha) /* Reject */
-        {
-          PhyML_Printf("  reject");
-          tree->rates->birth_rate  = cur_birth_rate;
-          tree->rates->c_lnL_times = cur_lnL_time;
+  /*     u = Uni(); */
+  /*     if(u > alpha) /\* Reject *\/ */
+  /*       { */
+  /*         PhyML_Printf("  reject"); */
+  /*         tree->rates->birth_rate  = cur_birth_rate; */
+  /*         tree->rates->c_lnL_times = cur_lnL_time; */
 
-          Copy_Tree(tree->extra_tree->extra_tree,tree->extra_tree);
-          RATES_Copy_Rate_Struct(tree->extra_tree->extra_tree->rates,tree->extra_tree->rates,tree->n_otu);
-          DATE_Assign_Primary_Calibration(tree->extra_tree);
-        }
-      else
-        {
-          PhyML_Printf("  accept");
-          tree->mcmc->acc_move[tree->mcmc->num_move_birth_rate]++;
-        }
-    }
-  tree->mcmc->run_move[tree->mcmc->num_move_birth_rate]++;
+  /*         Copy_Tree(tree->extra_tree->extra_tree,tree->extra_tree); */
+  /*         RATES_Copy_Rate_Struct(tree->extra_tree->extra_tree->rates,tree->extra_tree->rates,tree->n_otu); */
+  /*         DATE_Assign_Primary_Calibration(tree->extra_tree); */
+  /*       } */
+  /*     else */
+  /*       { */
+  /*         PhyML_Printf("  accept"); */
+  /*         tree->mcmc->acc_move[tree->mcmc->num_move_birth_rate]++; */
+  /*       } */
+  /*   } */
+  /* tree->mcmc->run_move[tree->mcmc->num_move_birth_rate]++; */
 }
 
 //////////////////////////////////////////////////////////////
@@ -4332,172 +4332,172 @@ void MCMC_Birth_Rate(t_tree *tree)
 
 void MCMC_Death_Rate(t_tree *tree)
 {
-  /* MCMC_Single_Param_Generic(&(tree->rates->death_rate), */
-  /*       		    0.0, // instead of tree->rates->death_rate_min as death rate can be equal to 0 (Yule model) */
-  /*       		    tree->rates->death_rate_max, */
-  /*       		    tree->mcmc->num_move_death_rate, */
-  /*       		    &(tree->rates->c_lnL_times),NULL, */
-  /*       		    Wrap_Lk_Times,NULL,tree->mcmc->move_type[tree->mcmc->num_move_death_rate],NO,NULL,tree,NULL); */
+  MCMC_Single_Param_Generic(&(tree->rates->death_rate),
+        		    0.0, // instead of tree->rates->death_rate_min as death rate can be equal to 0 (Yule model)
+        		    tree->rates->death_rate_max,
+        		    tree->mcmc->num_move_death_rate,
+        		    &(tree->rates->c_lnL_times),NULL,
+        		    Wrap_Lk_Times,NULL,tree->mcmc->move_type[tree->mcmc->num_move_death_rate],NO,NULL,tree,NULL);
  
-  phydbl cur_death_rate,new_death_rate;
-  phydbl cur_lnL_time,new_lnL_time;
-  phydbl cur_lnL_time_ghost,new_lnL_time_ghost;
-  phydbl cur_lnL_time_pivot,new_lnL_time_pivot;
-  phydbl u,alpha,ratio;
-  phydbl death_rate_min,death_rate_max;
-  phydbl K;
-  int i,n_mcmc_steps,move;
+  /* phydbl cur_death_rate,new_death_rate; */
+  /* phydbl cur_lnL_time,new_lnL_time; */
+  /* phydbl cur_lnL_time_ghost,new_lnL_time_ghost; */
+  /* phydbl cur_lnL_time_pivot,new_lnL_time_pivot; */
+  /* phydbl u,alpha,ratio; */
+  /* phydbl death_rate_min,death_rate_max; */
+  /* phydbl K; */
+  /* int i,n_mcmc_steps,move; */
 
-  cur_death_rate = -1.0;
-  new_death_rate = -1.0;
-  ratio          =  0.0;
-  n_mcmc_steps   =  tree->mcmc->run_move[tree->mcmc->num_move_death_rate] == 1 ? 1000 : 100;
-  move           = -1;
+  /* cur_death_rate = -1.0; */
+  /* new_death_rate = -1.0; */
+  /* ratio          =  0.0; */
+  /* n_mcmc_steps   =  tree->mcmc->run_move[tree->mcmc->num_move_death_rate] == 1 ? 1000 : 100; */
+  /* move           = -1; */
 
-  K = tree->mcmc->tune_move[tree->mcmc->num_move_death_rate];
+  /* K = tree->mcmc->tune_move[tree->mcmc->num_move_death_rate]; */
 
-  cur_lnL_time = tree->rates->c_lnL_times;
-  new_lnL_time = tree->rates->c_lnL_times;
+  /* cur_lnL_time = tree->rates->c_lnL_times; */
+  /* new_lnL_time = tree->rates->c_lnL_times; */
 
-  cur_lnL_time_ghost = UNLIKELY;
-  new_lnL_time_ghost = UNLIKELY;
+  /* cur_lnL_time_ghost = UNLIKELY; */
+  /* new_lnL_time_ghost = UNLIKELY; */
 
-  cur_lnL_time_pivot = UNLIKELY;
-  new_lnL_time_pivot = UNLIKELY;
+  /* cur_lnL_time_pivot = UNLIKELY; */
+  /* new_lnL_time_pivot = UNLIKELY; */
   
-  cur_death_rate = tree->rates->death_rate;
+  /* cur_death_rate = tree->rates->death_rate; */
 
-  death_rate_min = tree->rates->death_rate_min;
-  death_rate_max = MIN(tree->rates->death_rate_max,tree->rates->birth_rate);
+  /* death_rate_min = tree->rates->death_rate_min; */
+  /* death_rate_max = MIN(tree->rates->death_rate_max,tree->rates->birth_rate); */
 
-  MCMC_Make_Move(&cur_death_rate,&new_death_rate,death_rate_min,death_rate_max,&ratio,K,tree->mcmc->move_type[tree->mcmc->num_move_death_rate]);
-  /* new_death_rate = Uni()*(death_rate_max - death_rate_min) + death_rate_min; */
+  /* MCMC_Make_Move(&cur_death_rate,&new_death_rate,death_rate_min,death_rate_max,&ratio,K,tree->mcmc->move_type[tree->mcmc->num_move_death_rate]); */
+  /* /\* new_death_rate = Uni()*(death_rate_max - death_rate_min) + death_rate_min; *\/ */
   
-  if(new_death_rate < death_rate_max && new_death_rate > death_rate_min && new_death_rate < tree->rates->birth_rate)
-    {
-      tree->rates->death_rate = new_death_rate;      
-      new_lnL_time = TIMES_Lk_Times(NO,tree);
-      ratio += (new_lnL_time - cur_lnL_time);      
+  /* if(new_death_rate < death_rate_max && new_death_rate > death_rate_min && new_death_rate < tree->rates->birth_rate) */
+  /*   { */
+  /*     tree->rates->death_rate = new_death_rate;       */
+  /*     new_lnL_time = TIMES_Lk_Times(NO,tree); */
+  /*     ratio += (new_lnL_time - cur_lnL_time);       */
 
-      if(tree->mcmc->run_move[tree->mcmc->num_move_birth_rate] >= 0)
-        {
-          /* if(tree->mcmc->run_move[tree->mcmc->num_move_birth_rate] >= 500) */
-          /*   { */
-          /*     tree->extra_tree->rates->birth_rate = tree->rates->birth_rate_pivot; */
-          /*     tree->extra_tree->rates->death_rate = tree->rates->death_rate_pivot; */
-          /*     cur_lnL_time_pivot = TIMES_Lk_Times(NO,tree->extra_tree); */
-          /*   } */
+  /*     if(tree->mcmc->run_move[tree->mcmc->num_move_birth_rate] >= 0) */
+  /*       { */
+  /*         /\* if(tree->mcmc->run_move[tree->mcmc->num_move_birth_rate] >= 500) *\/ */
+  /*         /\*   { *\/ */
+  /*         /\*     tree->extra_tree->rates->birth_rate = tree->rates->birth_rate_pivot; *\/ */
+  /*         /\*     tree->extra_tree->rates->death_rate = tree->rates->death_rate_pivot; *\/ */
+  /*         /\*     cur_lnL_time_pivot = TIMES_Lk_Times(NO,tree->extra_tree); *\/ */
+  /*         /\*   } *\/ */
           
-          /* tree->extra_tree->rates->death_rate = cur_death_rate; */
-          /* tree->extra_tree->rates->birth_rate = tree->rates->birth_rate; */
-          /* cur_lnL_time_ghost = TIMES_Lk_Times(NO,tree->extra_tree); */
+  /*         /\* tree->extra_tree->rates->death_rate = cur_death_rate; *\/ */
+  /*         /\* tree->extra_tree->rates->birth_rate = tree->rates->birth_rate; *\/ */
+  /*         /\* cur_lnL_time_ghost = TIMES_Lk_Times(NO,tree->extra_tree); *\/ */
           
-          Copy_Tree(tree->extra_tree,tree->extra_tree->extra_tree);
-          RATES_Copy_Rate_Struct(tree->extra_tree->rates,tree->extra_tree->extra_tree->rates,tree->n_otu);
-          DATE_Assign_Primary_Calibration(tree->extra_tree->extra_tree);
+  /*         Copy_Tree(tree->extra_tree,tree->extra_tree->extra_tree); */
+  /*         RATES_Copy_Rate_Struct(tree->extra_tree->rates,tree->extra_tree->extra_tree->rates,tree->n_otu); */
+  /*         DATE_Assign_Primary_Calibration(tree->extra_tree->extra_tree); */
           
-          tree->extra_tree->eval_alnL          = NO;
-          tree->extra_tree->eval_rlnL          = NO;
-          tree->extra_tree->eval_glnL          = YES;
-          tree->extra_tree->rates->c_lnL_rates = UNLIKELY;
-          tree->extra_tree->c_lnL              = UNLIKELY;
+  /*         tree->extra_tree->eval_alnL          = NO; */
+  /*         tree->extra_tree->eval_rlnL          = NO; */
+  /*         tree->extra_tree->eval_glnL          = YES; */
+  /*         tree->extra_tree->rates->c_lnL_rates = UNLIKELY; */
+  /*         tree->extra_tree->c_lnL              = UNLIKELY; */
           
-          TIMES_Randomize_Tree_With_Time_Constraints(tree->extra_tree->rates->a_cal[0],tree->extra_tree);
-          tree->extra_tree->rates->birth_rate = tree->rates->birth_rate;
-          tree->extra_tree->rates->death_rate = new_death_rate;
-          TIMES_Lk_Times(NO,tree->extra_tree);
+  /*         TIMES_Randomize_Tree_With_Time_Constraints(tree->extra_tree->rates->a_cal[0],tree->extra_tree); */
+  /*         tree->extra_tree->rates->birth_rate = tree->rates->birth_rate; */
+  /*         tree->extra_tree->rates->death_rate = new_death_rate; */
+  /*         TIMES_Lk_Times(NO,tree->extra_tree); */
           
-          if(!(tree->extra_tree->rates->c_lnL_times > UNLIKELY))
-            {
-              PhyML_Printf("\n== glnL=%f",tree->extra_tree->rates->c_lnL_times);
-              PhyML_Printf("\n== death=%G birth=%G [%G]",new_death_rate,tree->rates->birth_rate,tree->extra_tree->rates->birth_rate);
-              TIMES_Lk_Times(YES,tree->extra_tree);
-              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-            }
+  /*         if(!(tree->extra_tree->rates->c_lnL_times > UNLIKELY)) */
+  /*           { */
+  /*             PhyML_Printf("\n== glnL=%f",tree->extra_tree->rates->c_lnL_times); */
+  /*             PhyML_Printf("\n== death=%G birth=%G [%G]",new_death_rate,tree->rates->birth_rate,tree->extra_tree->rates->birth_rate); */
+  /*             TIMES_Lk_Times(YES,tree->extra_tree); */
+  /*             Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
+  /*           } */
                     
-          i = 0;
-          do
-            {
-              u = Uni();
-              For(move,tree->mcmc->n_moves) if(tree->mcmc->move_weight[move] > u-1.E-10) break;
+  /*         i = 0; */
+  /*         do */
+  /*           { */
+  /*             u = Uni(); */
+  /*             For(move,tree->mcmc->n_moves) if(tree->mcmc->move_weight[move] > u-1.E-10) break; */
               
-              /* PhyML_Printf("\n>> Move '%s' %f %f b:%f d:%f-%f", */
-              /*              tree->mcmc->move_name[move], */
-              /*              tree->extra_tree->rates->c_lnL_times, */
-              /*              tree->rates->c_lnL_times, */
-              /*              tree->rates->birth_rate, */
-              /*              cur_death_rate, */
-              /*              new_death_rate); */
+  /*             /\* PhyML_Printf("\n>> Move '%s' %f %f b:%f d:%f-%f", *\/ */
+  /*             /\*              tree->mcmc->move_name[move], *\/ */
+  /*             /\*              tree->extra_tree->rates->c_lnL_times, *\/ */
+  /*             /\*              tree->rates->c_lnL_times, *\/ */
+  /*             /\*              tree->rates->birth_rate, *\/ */
+  /*             /\*              cur_death_rate, *\/ */
+  /*             /\*              new_death_rate); *\/ */
               
-              if(!strcmp(tree->mcmc->move_name[move],"tree_height")) { MCMC_Tree_Height(tree->extra_tree); i++; }
-              if(!strcmp(tree->mcmc->move_name[move],"times"))       { MCMC_Time_All(tree->extra_tree); i++; }
-              if(!strcmp(tree->mcmc->move_name[move],"spr"))         { MCMC_Prune_Regraft(tree->extra_tree); i++; }
-              if(!strcmp(tree->mcmc->move_name[move],"spr_local"))   { MCMC_Prune_Regraft_Local(tree->extra_tree); i++; }
+  /*             if(!strcmp(tree->mcmc->move_name[move],"tree_height")) { MCMC_Tree_Height(tree->extra_tree); i++; } */
+  /*             if(!strcmp(tree->mcmc->move_name[move],"times"))       { MCMC_Time_All(tree->extra_tree); i++; } */
+  /*             if(!strcmp(tree->mcmc->move_name[move],"spr"))         { MCMC_Prune_Regraft(tree->extra_tree); i++; } */
+  /*             if(!strcmp(tree->mcmc->move_name[move],"spr_local"))   { MCMC_Prune_Regraft_Local(tree->extra_tree); i++; } */
               
-              if(!(tree->extra_tree->rates->c_lnL_times > UNLIKELY))
-                {
-                  PhyML_Printf("\n== move: %s",tree->mcmc->move_name[move]);
-                  PhyML_Printf("\n== glnL=%f",tree->extra_tree->rates->c_lnL_times);
-                  TIMES_Lk_Times(YES,tree->extra_tree);
-                  Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-                }
-            }
-          while(i < n_mcmc_steps);
+  /*             if(!(tree->extra_tree->rates->c_lnL_times > UNLIKELY)) */
+  /*               { */
+  /*                 PhyML_Printf("\n== move: %s",tree->mcmc->move_name[move]); */
+  /*                 PhyML_Printf("\n== glnL=%f",tree->extra_tree->rates->c_lnL_times); */
+  /*                 TIMES_Lk_Times(YES,tree->extra_tree); */
+  /*                 Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
+  /*               } */
+  /*           } */
+  /*         while(i < n_mcmc_steps); */
           
-          tree->extra_tree->rates->death_rate = cur_death_rate;
-          tree->extra_tree->rates->birth_rate = tree->rates->birth_rate;
-          cur_lnL_time_ghost = TIMES_Lk_Times(NO,tree->extra_tree);
+  /*         tree->extra_tree->rates->death_rate = cur_death_rate; */
+  /*         tree->extra_tree->rates->birth_rate = tree->rates->birth_rate; */
+  /*         cur_lnL_time_ghost = TIMES_Lk_Times(NO,tree->extra_tree); */
 
-          tree->extra_tree->rates->birth_rate = tree->rates->birth_rate;
-          tree->extra_tree->rates->death_rate = new_death_rate;
-          new_lnL_time_ghost = TIMES_Lk_Times(NO,tree->extra_tree);          
+  /*         tree->extra_tree->rates->birth_rate = tree->rates->birth_rate; */
+  /*         tree->extra_tree->rates->death_rate = new_death_rate; */
+  /*         new_lnL_time_ghost = TIMES_Lk_Times(NO,tree->extra_tree);           */
 
-          ratio += (cur_lnL_time_ghost - new_lnL_time_ghost);
+  /*         ratio += (cur_lnL_time_ghost - new_lnL_time_ghost); */
 
-          /* if(tree->mcmc->run_move[tree->mcmc->num_move_birth_rate] >= 500) */
-          /*   { */
-          /*     tree->extra_tree->rates->birth_rate = tree->rates->birth_rate_pivot; */
-          /*     tree->extra_tree->rates->death_rate = tree->rates->death_rate_pivot; */
-          /*     new_lnL_time_pivot = TIMES_Lk_Times(NO,tree->extra_tree); */
-          /*     ratio += (new_lnL_time_pivot - cur_lnL_time_pivot); */
-          /*   } */
-        }
+  /*         /\* if(tree->mcmc->run_move[tree->mcmc->num_move_birth_rate] >= 500) *\/ */
+  /*         /\*   { *\/ */
+  /*         /\*     tree->extra_tree->rates->birth_rate = tree->rates->birth_rate_pivot; *\/ */
+  /*         /\*     tree->extra_tree->rates->death_rate = tree->rates->death_rate_pivot; *\/ */
+  /*         /\*     new_lnL_time_pivot = TIMES_Lk_Times(NO,tree->extra_tree); *\/ */
+  /*         /\*     ratio += (new_lnL_time_pivot - cur_lnL_time_pivot); *\/ */
+  /*         /\*   } *\/ */
+  /*       } */
       
-      ratio = EXP(ratio);
-      alpha = MIN(1.,ratio);
+  /*     ratio = EXP(ratio); */
+  /*     alpha = MIN(1.,ratio); */
       
-      printf("\n.  d :%4d: %12G -> %12G ratio : %12G [ghost: %12G %12G -- pivot: %12G %12G -- real: %12G %12G]",
-             tree->mcmc->run_move[tree->mcmc->num_move_death_rate],
-             cur_death_rate,
-             new_death_rate,
-             ratio,
-             cur_lnL_time_ghost,
-             new_lnL_time_ghost,
-             cur_lnL_time_pivot,
-             new_lnL_time_pivot,
-             cur_lnL_time,
-             new_lnL_time);
+  /*     printf("\n.  d :%4d: %12G -> %12G ratio : %12G [ghost: %12G %12G -- pivot: %12G %12G -- real: %12G %12G]", */
+  /*            tree->mcmc->run_move[tree->mcmc->num_move_death_rate], */
+  /*            cur_death_rate, */
+  /*            new_death_rate, */
+  /*            ratio, */
+  /*            cur_lnL_time_ghost, */
+  /*            new_lnL_time_ghost, */
+  /*            cur_lnL_time_pivot, */
+  /*            new_lnL_time_pivot, */
+  /*            cur_lnL_time, */
+  /*            new_lnL_time); */
 
-      if(tree->mcmc->run_move[tree->mcmc->num_move_birth_rate] == 0) alpha = 2.0;
+  /*     if(tree->mcmc->run_move[tree->mcmc->num_move_birth_rate] == 0) alpha = 2.0; */
 
-      u = Uni();
-      if(u > alpha) /* Reject */
-        {
-          PhyML_Printf("  reject");
-          tree->rates->death_rate  = cur_death_rate;
-          tree->rates->c_lnL_times = cur_lnL_time;
+  /*     u = Uni(); */
+  /*     if(u > alpha) /\* Reject *\/ */
+  /*       { */
+  /*         PhyML_Printf("  reject"); */
+  /*         tree->rates->death_rate  = cur_death_rate; */
+  /*         tree->rates->c_lnL_times = cur_lnL_time; */
 
-          Copy_Tree(tree->extra_tree->extra_tree,tree->extra_tree);
-          RATES_Copy_Rate_Struct(tree->extra_tree->extra_tree->rates,tree->extra_tree->rates,tree->n_otu);
-          DATE_Assign_Primary_Calibration(tree->extra_tree);
-        }
-      else
-        {
-          PhyML_Printf("  accept");
-          tree->mcmc->acc_move[tree->mcmc->num_move_death_rate]++;
-        }
-    }
-  tree->mcmc->run_move[tree->mcmc->num_move_death_rate]++;
+  /*         Copy_Tree(tree->extra_tree->extra_tree,tree->extra_tree); */
+  /*         RATES_Copy_Rate_Struct(tree->extra_tree->extra_tree->rates,tree->extra_tree->rates,tree->n_otu); */
+  /*         DATE_Assign_Primary_Calibration(tree->extra_tree); */
+  /*       } */
+  /*     else */
+  /*       { */
+  /*         PhyML_Printf("  accept"); */
+  /*         tree->mcmc->acc_move[tree->mcmc->num_move_death_rate]++; */
+  /*       } */
+  /*   } */
+  /* tree->mcmc->run_move[tree->mcmc->num_move_death_rate]++; */
 }
 
 //////////////////////////////////////////////////////////////
@@ -4571,69 +4571,70 @@ void MCMC_Birth_Death_Updown(t_tree *tree)
           /* tree->extra_tree->rates->birth_rate = cur_birth_rate; */
           /* cur_lnL_time_ghost = TIMES_Lk_Times(NO,tree->extra_tree); */
           
-          Copy_Tree(tree->extra_tree,tree->extra_tree->extra_tree);
-          RATES_Copy_Rate_Struct(tree->extra_tree->rates,tree->extra_tree->extra_tree->rates,tree->n_otu);
-          DATE_Assign_Primary_Calibration(tree->extra_tree->extra_tree);
+          /* Copy_Tree(tree->extra_tree,tree->extra_tree->extra_tree); */
+          /* RATES_Copy_Rate_Struct(tree->extra_tree->rates,tree->extra_tree->extra_tree->rates,tree->n_otu); */
+          /* DATE_Assign_Primary_Calibration(tree->extra_tree->extra_tree); */
           
-          tree->extra_tree->eval_alnL          = NO;
-          tree->extra_tree->eval_rlnL          = NO;
-          tree->extra_tree->eval_glnL          = YES;
-          tree->extra_tree->rates->c_lnL_rates = UNLIKELY;
-          tree->extra_tree->c_lnL              = UNLIKELY;
+          /* tree->extra_tree->eval_alnL          = NO; */
+          /* tree->extra_tree->eval_rlnL          = NO; */
+          /* tree->extra_tree->eval_glnL          = YES; */
+          /* tree->extra_tree->rates->c_lnL_rates = UNLIKELY; */
+          /* tree->extra_tree->c_lnL              = UNLIKELY; */
           
-          TIMES_Randomize_Tree_With_Time_Constraints(tree->extra_tree->rates->a_cal[0],tree->extra_tree);
-          tree->extra_tree->rates->death_rate = new_death_rate;
-          tree->extra_tree->rates->birth_rate = new_birth_rate;
-          TIMES_Lk_Times(NO,tree->extra_tree);
+          /* TIMES_Randomize_Tree_With_Time_Constraints(tree->extra_tree->rates->a_cal[0],tree->extra_tree); */
+          /* tree->extra_tree->rates->death_rate = new_death_rate; */
+          /* tree->extra_tree->rates->birth_rate = new_birth_rate; */
+          /* TIMES_Lk_Times(NO,tree->extra_tree); */
           
-          if(!(tree->extra_tree->rates->c_lnL_times > UNLIKELY))
-            {
-              PhyML_Printf("\n== glnL=%f",tree->extra_tree->rates->c_lnL_times);
-              PhyML_Printf("\n== death=%G birth=%G [%G]",new_death_rate,tree->rates->birth_rate,tree->extra_tree->rates->birth_rate);
-              TIMES_Lk_Times(YES,tree->extra_tree);
-              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-            }
+          /* if(!(tree->extra_tree->rates->c_lnL_times > UNLIKELY)) */
+          /*   { */
+          /*     PhyML_Printf("\n== glnL=%f",tree->extra_tree->rates->c_lnL_times); */
+          /*     PhyML_Printf("\n== death=%G birth=%G [%G]",new_death_rate,tree->rates->birth_rate,tree->extra_tree->rates->birth_rate); */
+          /*     TIMES_Lk_Times(YES,tree->extra_tree); */
+          /*     Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
+          /*   } */
           
           
-          i = 0;
-          do
-            {
-              u = Uni();
-              For(move,tree->mcmc->n_moves) if(tree->mcmc->move_weight[move] > u-1.E-10) break;
+          /* i = 0; */
+          /* do */
+          /*   { */
+          /*     u = Uni(); */
+          /*     For(move,tree->mcmc->n_moves) if(tree->mcmc->move_weight[move] > u-1.E-10) break; */
               
-              /* PhyML_Printf("\n>> Move '%s' %f %f b:%f d:%f-%f", */
-              /*              tree->mcmc->move_name[move], */
-              /*              tree->extra_tree->rates->c_lnL_times, */
-              /*              tree->rates->c_lnL_times, */
-              /*              tree->rates->birth_rate, */
-              /*              cur_death_rate, */
-              /*              new_death_rate); */
+          /*     /\* PhyML_Printf("\n>> Move '%s' %f %f b:%f d:%f-%f", *\/ */
+          /*     /\*              tree->mcmc->move_name[move], *\/ */
+          /*     /\*              tree->extra_tree->rates->c_lnL_times, *\/ */
+          /*     /\*              tree->rates->c_lnL_times, *\/ */
+          /*     /\*              tree->rates->birth_rate, *\/ */
+          /*     /\*              cur_death_rate, *\/ */
+          /*     /\*              new_death_rate); *\/ */
               
-              if(!strcmp(tree->mcmc->move_name[move],"tree_height")) { MCMC_Tree_Height(tree->extra_tree); i++; }
-              if(!strcmp(tree->mcmc->move_name[move],"times"))       { MCMC_Time_All(tree->extra_tree); i++; }
-              if(!strcmp(tree->mcmc->move_name[move],"spr"))         { MCMC_Prune_Regraft(tree->extra_tree); i++; }
-              if(!strcmp(tree->mcmc->move_name[move],"spr_local"))   { MCMC_Prune_Regraft_Local(tree->extra_tree); i++; }
+          /*     if(!strcmp(tree->mcmc->move_name[move],"tree_height")) { MCMC_Tree_Height(tree->extra_tree); i++; } */
+          /*     if(!strcmp(tree->mcmc->move_name[move],"times"))       { MCMC_Time_All(tree->extra_tree); i++; } */
+          /*     if(!strcmp(tree->mcmc->move_name[move],"spr"))         { MCMC_Prune_Regraft(tree->extra_tree); i++; } */
+          /*     if(!strcmp(tree->mcmc->move_name[move],"spr_local"))   { MCMC_Prune_Regraft_Local(tree->extra_tree); i++; } */
               
-              if(!(tree->extra_tree->rates->c_lnL_times > UNLIKELY))
-                {
-                  PhyML_Printf("\n== move: %s",tree->mcmc->move_name[move]);
-                  PhyML_Printf("\n== glnL=%f",tree->extra_tree->rates->c_lnL_times);
-                  TIMES_Lk_Times(YES,tree->extra_tree);
-                  Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-                }
-            }
-          while(i < n_mcmc_steps);
+          /*     if(!(tree->extra_tree->rates->c_lnL_times > UNLIKELY)) */
+          /*       { */
+          /*         PhyML_Printf("\n== move: %s",tree->mcmc->move_name[move]); */
+          /*         PhyML_Printf("\n== glnL=%f",tree->extra_tree->rates->c_lnL_times); */
+          /*         TIMES_Lk_Times(YES,tree->extra_tree); */
+          /*         Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
+          /*       } */
+          /*   } */
+          /* while(i < n_mcmc_steps); */
           
-          tree->extra_tree->rates->death_rate = cur_death_rate;
-          tree->extra_tree->rates->birth_rate = cur_birth_rate;
-          cur_lnL_time_ghost = TIMES_Lk_Times(NO,tree->extra_tree);
+          /* tree->extra_tree->rates->death_rate = cur_death_rate; */
+          /* tree->extra_tree->rates->birth_rate = cur_birth_rate; */
+          /* cur_lnL_time_ghost = TIMES_Lk_Times(NO,tree->extra_tree); */
 
-          tree->extra_tree->rates->death_rate = new_death_rate;
-          tree->extra_tree->rates->birth_rate = new_birth_rate;
-          new_lnL_time_ghost = TIMES_Lk_Times(NO,tree->extra_tree);          
+          /* tree->extra_tree->rates->death_rate = new_death_rate; */
+          /* tree->extra_tree->rates->birth_rate = new_birth_rate; */
+          /* new_lnL_time_ghost = TIMES_Lk_Times(NO,tree->extra_tree);           */
 
-          ratio += (cur_lnL_time_ghost - new_lnL_time_ghost);
+          /* ratio += (cur_lnL_time_ghost - new_lnL_time_ghost); */
 
+          
           /* if(tree->mcmc->run_move[tree->mcmc->num_move_birth_rate] == 500) */
           /*   { */
           /*     tree->extra_tree->rates->death_rate = tree->rates->death_rate_pivot; */
