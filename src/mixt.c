@@ -705,7 +705,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
       if(!cpy_mixt_b)
         {
           For(br,2*mixt_tree->n_otu-3) Update_PMat_At_Given_Edge(mixt_tree->a_edges[br],mixt_tree);
-
+  
           if(mixt_tree->n_root && mixt_tree->ignore_root == NO)
             {
               Update_PMat_At_Given_Edge(mixt_tree->n_root->b[1],mixt_tree);

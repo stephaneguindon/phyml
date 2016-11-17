@@ -510,6 +510,7 @@ if(tree->rates && tree->io->lk_approx == NORMAL)
 
   if(b == NULL) Set_Model_Parameters(tree->mod);
     
+  
   if(tree->mod->s_opt->skip_tree_traversal == NO)
     {
       if(!b)//Update PMat for all edges
@@ -2687,6 +2688,7 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
   assert(b_fcus);
   assert(tree);
 
+  
   if(tree->is_mixt_tree == YES)
     {
       MIXT_Update_PMat_At_Given_Edge(b_fcus,tree);

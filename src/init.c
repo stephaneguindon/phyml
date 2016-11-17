@@ -866,33 +866,24 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
   else
     {
       rates->max_rate  = 10.0;
-      rates->min_rate  = 0.0;
+      rates->min_rate  = 0.01;
     }
   /* rates->max_rate         = 6.0; */
   /* rates->min_rate         = 0.0; */
 
 
   rates->clock_r       = 1.E-4;
-  rates->min_clock     = 1.E-8;
-  rates->max_clock     = 1.E-3;
+  rates->min_clock     = 1.E-10;
+  rates->max_clock     = 1.E+2;
 
   /* rates->clock_r       = 3.E-4; */
   /* rates->max_clock     = 1.E-3; */
   /* rates->min_clock     = 1.E-5; */
 
-  if(rates->model != GAMMA)
-    {
-      rates->nu            = 1.E-3;
-      rates->min_nu        = 0.0;
-      rates->max_nu        = 1.0;
-    }
-  else
-    {
-      rates->nu            = 1.E-3;
-      rates->min_nu        = 1.E-8;
-      rates->max_nu        = 100.0;
-    }
-
+  rates->nu            = 1.E+2;
+  rates->min_nu        = 0.0;
+  rates->max_nu        = 1.E+8;
+  
   /* rates->max_nu        = 2.0; */
 
   /* rates->nu            = 1.E-4; */

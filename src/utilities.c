@@ -7068,8 +7068,8 @@ void Update_Ancestors(t_node *a, t_node *d, t_tree *tree)
 {
   if(d == NULL)
     {
-      PhyML_Printf("\n. d is NULL; a: %d root: %d",a->num,tree->n_root->num);
-      Exit("\n");
+      PhyML_Printf("\n== d is NULL; a: %d root: %d",a->num,tree->n_root->num);
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
     }
   d->anc = a;
 
@@ -8367,7 +8367,7 @@ t_node *Find_Lca_Pair_Of_Nodes(t_node *n1, t_node *n2, t_tree *tree)
 
   if(!tree->n_root)
     {
-      PhyML_Printf("\n. The tree must be rooted in this function.");
+      PhyML_Printf("\n== The tree must be rooted in this function.");
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
     }
 
@@ -8545,10 +8545,10 @@ void Time_To_Branch(t_tree *tree)
 void Time_To_Branch_Pre(t_node *a, t_node *d, t_tree *tree)
 {
   int i;
-
+  
   /* tree->rates->cur_l[d->num] = FABS(tree->rates->nd_t[d->num] - tree->rates->nd_t[a->num]); */
   tree->rates->cur_l[d->num] = tree->rates->nd_t[d->num] - tree->rates->nd_t[a->num];
-
+  
   if(d->tax) return;
   else
     {

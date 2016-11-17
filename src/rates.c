@@ -412,6 +412,13 @@ phydbl RATES_Lk_Rates_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl n
 	else
 	  log_dens = Dgamma(br_r_d,1./(tree->rates->nu*dt_d*POW(tree->rates->clock_r,2)),tree->rates->nu*dt_d*POW(tree->rates->clock_r,2));
 
+        /* printf("\n. br_r_d: %f dt_d: %f nu: %f shape: %G scale: %G", */
+        /*        br_r_d, */
+        /*        dt_d, */
+        /*        tree->rates->nu, */
+        /*        1./(tree->rates->nu*dt_d*POW(tree->rates->clock_r,2)), */
+        /*        tree->rates->nu*dt_d*POW(tree->rates->clock_r,2)); */
+
 	log_dens = LOG(log_dens);
 	break;
       }
@@ -1228,7 +1235,6 @@ void RATES_Get_Mean_Rates_Pre(t_node *a, t_node *d, t_edge *b, phydbl r_a, t_tre
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void RATES_Random_Branch_Lengths(t_tree *tree)
 {
@@ -2595,18 +2601,28 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
       td = tree->rates->nd_t[d->num];
       ta = tree->rates->nd_t[a->num];
       nu = tree->rates->nu;
+      rr = -1.0;
+      
+      if(tree->rates->model == GAMMA)
+        {
+          rr = rd;
+          tree->rates->cur_l[d->num] = dt*rr*cr;          
+        }
 
-      if(tree->rates->model_log_rates == YES)
-	{
-	  /* Artihmetic average */
-	  rr = (EXP(ra) + EXP(rd))/2.;
-	}
-      else
-	{
-	  rr = (ra+rd)/2.;
-	}
-
-      tree->rates->cur_l[d->num] = dt*rr*cr;
+      if(tree->rates->model == THORNE)
+        {
+          if(tree->rates->model_log_rates == YES)
+            {
+              /* Artihmetic average */
+              rr = (EXP(ra) + EXP(rd))/2.;
+            }
+          else
+            {
+              rr = (ra+rd)/2.;
+            }
+          
+          tree->rates->cur_l[d->num] = dt*rr*cr;
+        }
       
       if(tree->rates->model == GUINDON)
 	{
@@ -3483,7 +3499,6 @@ phydbl Sample_Average_Rate(t_node *a, t_node *d, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void RATES_Update_Mean_Br_Len(int iter, t_tree *tree)
 {
   int i,dim;
@@ -3534,7 +3549,6 @@ void RATES_Update_Cov_Br_Len(int iter, t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void RATES_Set_Mean_L(t_tree *tree)
 {
@@ -3717,7 +3731,6 @@ void RATES_Set_Birth_Rate_Boundaries(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void RATES_Write_Mean_R_On_Edge_Label(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 {
 
@@ -3747,12 +3760,6 @@ void RATES_Write_Mean_R_On_Edge_Label(t_node *a, t_node *d, t_edge *b, t_tree *t
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
-
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
 
 phydbl RATES_Get_Mean_Rate_In_Subtree(t_node *root, t_tree *tree)
 {
@@ -3785,9 +3792,7 @@ phydbl RATES_Get_Mean_Rate_In_Subtree(t_node *root, t_tree *tree)
   else
     {
       return 0.0;
-    }
-  
-  
+    }  
 }
 
 //////////////////////////////////////////////////////////////
