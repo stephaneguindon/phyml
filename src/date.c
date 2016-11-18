@@ -728,7 +728,7 @@ phydbl *DATE_MCMC(t_tree *tree)
 
   n_vars                = 10;
   adjust_len            = 1E+6;
-  mcmc->sample_interval = 100;
+  mcmc->sample_interval = 50;
   mcmc->chain_len       = 1E+7;
 
   res = (phydbl *)mCalloc(tree->mcmc->chain_len / tree->mcmc->sample_interval * n_vars,sizeof(phydbl));
@@ -785,8 +785,7 @@ phydbl *DATE_MCMC(t_tree *tree)
   For(i,tree->mod->ras->n_catg) PhyML_Fprintf(fp_stats,"rr%d\t",i);
   For(i,tree->mod->ras->n_catg) PhyML_Fprintf(fp_stats,"pr%d\t",i);
   fflush(NULL);
-
-
+  
   For(i,mcmc->n_moves) tree->mcmc->start_ess[i] = YES;
   Set_Both_Sides(NO,tree);
   mcmc->always_yes = NO;
@@ -850,7 +849,17 @@ phydbl *DATE_MCMC(t_tree *tree)
           Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
         }
 
-
+      /* PhyML_Printf("\n. move: %s lnL: %f",tree->mcmc->move_name[move],tree->c_lnL); */
+      /* { */
+      /*   phydbl cur, new; */
+      /*   cur = tree->c_lnL; */
+      /*   new = Lk(NULL,tree); */
+      /*   if(!Are_Equal(cur,new,1.E-4)) */
+      /*     { */
+      /*       PhyML_Printf("\n== cur: %f new: %f",cur,new); */
+      /*       Exit("\n"); */
+      /*     } */
+      /* } */
 
       if(!(tree->mcmc->run%tree->mcmc->sample_interval))
         {

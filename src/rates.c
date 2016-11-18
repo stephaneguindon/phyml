@@ -285,7 +285,6 @@ void RATES_Update_Triplet(t_node *n, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-/* Returns LOG(f(br_r_rght;br_r_left)) */
 phydbl RATES_Lk_Rates_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl nd_r_d, int n_a, int n_d, phydbl dt_a, phydbl dt_d, t_tree *tree)
 {
   phydbl log_dens;
@@ -408,17 +407,20 @@ phydbl RATES_Lk_Rates_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl n
     case GAMMA :
       {
 	if(tree->rates->model_log_rates == YES)
-	  log_dens = Dgamma(EXP(br_r_d),1./(tree->rates->nu*dt_d*POW(tree->rates->clock_r,2)),tree->rates->nu*dt_d*POW(tree->rates->clock_r,2));
-	else
-	  log_dens = Dgamma(br_r_d,1./(tree->rates->nu*dt_d*POW(tree->rates->clock_r,2)),tree->rates->nu*dt_d*POW(tree->rates->clock_r,2));
-
-        /* printf("\n. br_r_d: %f dt_d: %f nu: %f shape: %G scale: %G", */
-        /*        br_r_d, */
-        /*        dt_d, */
-        /*        tree->rates->nu, */
-        /*        1./(tree->rates->nu*dt_d*POW(tree->rates->clock_r,2)), */
-        /*        tree->rates->nu*dt_d*POW(tree->rates->clock_r,2)); */
-
+	  {
+            log_dens = Dgamma(EXP(br_r_d),1./(tree->rates->nu*dt_d*POW(tree->rates->clock_r,2)),tree->rates->nu*dt_d*POW(tree->rates->clock_r,2));
+            log_dens /=
+              (Pgamma(EXP(tree->rates->max_rate),1./(tree->rates->nu*dt_d*POW(tree->rates->clock_r,2)),tree->rates->nu*dt_d*POW(tree->rates->clock_r,2)) -
+               Pgamma(EXP(tree->rates->min_rate),1./(tree->rates->nu*dt_d*POW(tree->rates->clock_r,2)),tree->rates->nu*dt_d*POW(tree->rates->clock_r,2)));
+          }
+        else
+	  {
+            log_dens = Dgamma(br_r_d,1./(tree->rates->nu*dt_d*POW(tree->rates->clock_r,2)),tree->rates->nu*dt_d*POW(tree->rates->clock_r,2));
+            log_dens /=
+              (Pgamma(tree->rates->max_rate,1./(tree->rates->nu*dt_d*POW(tree->rates->clock_r,2)),tree->rates->nu*dt_d*POW(tree->rates->clock_r,2)) -
+               Pgamma(tree->rates->min_rate,1./(tree->rates->nu*dt_d*POW(tree->rates->clock_r,2)),tree->rates->nu*dt_d*POW(tree->rates->clock_r,2)));
+          }
+        
 	log_dens = LOG(log_dens);
 	break;
       }
@@ -3076,7 +3078,6 @@ void RATES_Get_All_Trip_Reg_Coeff(t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void RATES_Check_Lk_Rates(t_tree *tree, int *err)
 {

@@ -2059,8 +2059,8 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       // Adding root edge
       mixt_tree->num_curr_branch_available = 0;
       Connect_Edges_To_Nodes_Recur(mixt_tree->a_nodes[0],mixt_tree->a_nodes[0]->v[0],mixt_tree);
-      Fill_Dir_Table(mixt_tree);
-      Update_Dirs(mixt_tree);
+      /* Fill_Dir_Table(mixt_tree); */
+      /* Update_Dirs(mixt_tree); */
       
       For(i,2*mixt_tree->n_otu-3)
         {
