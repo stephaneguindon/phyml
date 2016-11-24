@@ -272,7 +272,7 @@ void DATE_XML(char *xml_filename)
 // Make sure secondary and primary calibration are up-to-date
 void DATE_Update_T_Prior_MinMax(t_tree *tree)
 {
-  int i,j,*rk;
+  int i,j;
 
   /* printf("\n"); */
   
@@ -876,8 +876,8 @@ phydbl *DATE_MCMC(t_tree *tree)
           For(i,tree->mod->ras->n_catg) PhyML_Fprintf(fp_stats,"%G\t",tree->mod->ras->gamma_rr->v[i]);
           For(i,tree->mod->ras->n_catg) PhyML_Fprintf(fp_stats,"%G\t",tree->mod->ras->gamma_r_proba->v[i]);
           
-          /* Time_To_Branch(tree); */
-          /* tree->bl_ndigits = 1; */
+          Time_To_Branch(tree);
+          tree->bl_ndigits = 1;
           RATES_Update_Cur_Bl(tree);
           s_tree = Write_Tree(tree,NO);
           tree->bl_ndigits = 7;
@@ -963,7 +963,6 @@ t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, phydbl *
   t_node *n,*m;
   int i,j;
   t_ll *out,*in,*ll;
-  phydbl maxmin;
   int is_clade_affected;
 
   n = NULL;
