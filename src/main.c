@@ -245,7 +245,8 @@ int main(int argc, char **argv)
                   /* } */
 
 
-		  if(tree->mod->s_opt->opt_topo)
+  
+                  if(tree->mod->s_opt->opt_topo)
 		    {
 		      if(tree->mod->s_opt->topo_search      == NNI_MOVE) Simu_Loop(tree);
 		      else if(tree->mod->s_opt->topo_search == SPR_MOVE) Speed_Spr_Loop(tree);
@@ -258,7 +259,6 @@ int main(int argc, char **argv)
 #ifdef BEAGLE
                       tree->b_inst = create_beagle_instance(tree, io->quiet, io);
 #endif
-
                       //Optimize Branch lengths?
                       if(tree->mod->s_opt->opt_subst_param || tree->mod->s_opt->opt_bl) {
                         Round_Optimize(tree,ROUND_MAX);

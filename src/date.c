@@ -46,6 +46,7 @@ void DATE_XML(char *xml_filename)
   mixt_tree->rates = RATES_Make_Rate_Struct(mixt_tree->n_otu);
   RATES_Init_Rate_Struct(mixt_tree->rates,NULL,mixt_tree->n_otu);
 
+
   tree = mixt_tree;
   do
     {
@@ -56,7 +57,6 @@ void DATE_XML(char *xml_filename)
   while(tree);
 
   
-
   fp_xml_in = fopen(xml_filename,"r");
   if(!fp_xml_in)
     {
@@ -216,9 +216,8 @@ void DATE_XML(char *xml_filename)
 
   MIXT_Chain_Cal(mixt_tree);
 
-  mixt_tree->rates->bl_from_rt = YES;
-  mixt_tree->rates->model      = GAMMA;
-
+  mixt_tree->rates->model = GAMMA;
+  
   res = DATE_MCMC(mixt_tree);
 
 
@@ -705,8 +704,8 @@ phydbl *DATE_MCMC(t_tree *tree)
 
   fp_stats = tree->io->fp_out_stats;
   fp_tree = tree->io->fp_out_tree;
-
-  TIMES_Randomize_Tree_With_Time_Constraints(tree->rates->a_cal[0], tree);
+  
+  TIMES_Randomize_Tree_With_Time_Constraints(tree->rates->a_cal[0],tree);
 
   mcmc = MCMC_Make_MCMC_Struct();
   tree->mcmc = mcmc;
@@ -718,31 +717,27 @@ phydbl *DATE_MCMC(t_tree *tree)
   MCMC_Randomize_Clock_Rate(tree);
   MCMC_Randomize_Rate_Across_Sites(tree);
 
-  PhyML_Printf("\n. birth: %f death: %f clock: %f",
-               tree->rates->birth_rate,
-               tree->rates->death_rate,
-               tree->rates->clock_r);
-
-  tree->rates->bl_from_rt = YES;  
-  RATES_Update_Cur_Bl(tree);
-
-  n_vars                = 10;
-  adjust_len            = 1E+6;
-  mcmc->sample_interval = 50;
-  mcmc->chain_len       = 1E+7;
+  n_vars                  = 10;
+  adjust_len              = 1E+6;
+  mcmc->sample_interval   = 50;
+  mcmc->chain_len         = 1E+7;
+  tree->rates->bl_from_rt = YES;
 
   res = (phydbl *)mCalloc(tree->mcmc->chain_len / tree->mcmc->sample_interval * n_vars,sizeof(phydbl));
   
   Set_Both_Sides(YES,tree);
+  Switch_Eigen(YES,tree->mod);
   Lk(NULL,tree);
+  Switch_Eigen(NO,tree->mod);
   RATES_Lk_Rates(tree);
   DATE_Assign_Primary_Calibration(tree);
   TIMES_Lk_Times(NO,tree);
 
+  RATES_Update_Cur_Bl(tree);
+  printf("\n. %s",Write_Tree(tree,NO));
   PhyML_Printf("\n. log(Pr(Seq|Tree)) = %f",tree->c_lnL);
   PhyML_Printf("\n. log(Pr(Tree)) = %f",tree->rates->c_lnL_times);
-  
-  
+    
   tree->extra_tree = Make_Tree_From_Scratch(tree->n_otu,tree->data);
   Copy_Tree(tree,tree->extra_tree);
   tree->extra_tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
@@ -758,18 +753,6 @@ phydbl *DATE_MCMC(t_tree *tree)
   tree->extra_tree->mcmc = mcmc;
   MCMC_Init_MCMC_Struct(NULL,NULL,mcmc);
   MCMC_Complete_MCMC(mcmc,tree->extra_tree);
-
-
-  tree->extra_tree->extra_tree = Make_Tree_From_Scratch(tree->n_otu,tree->data);
-  Copy_Tree(tree,tree->extra_tree->extra_tree);
-  tree->extra_tree->extra_tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
-  RATES_Init_Rate_Struct(tree->extra_tree->extra_tree->rates,NULL,tree->n_otu);
-  RATES_Copy_Rate_Struct(tree->rates,tree->extra_tree->extra_tree->rates,tree->n_otu);
-  RATES_Duplicate_Calib_Struct(tree,tree->extra_tree->extra_tree);
-  MIXT_Chain_Cal(tree->extra_tree->extra_tree);
-  DATE_Assign_Primary_Calibration(tree->extra_tree->extra_tree);
-  TIMES_Lk_Times(NO,tree->extra_tree->extra_tree);
-  PhyML_Printf("\n. log(Pr(extra extra tree)) = %f",tree->extra_tree->extra_tree->rates->c_lnL_times);
 
  
   PhyML_Fprintf(fp_stats,"\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t",
@@ -790,9 +773,7 @@ phydbl *DATE_MCMC(t_tree *tree)
   Set_Both_Sides(NO,tree);
   mcmc->always_yes = NO;
   move             = -1;
-
-
- 
+  
   // Get in the range of sensible values for clock_r
   i = 0;
   do { MCMC_Clock_R(tree); } while(i++ < 100);
@@ -867,9 +848,10 @@ phydbl *DATE_MCMC(t_tree *tree)
           mean_r = 0.0;
           For(i,2*tree->n_otu-2) mean_r += tree->rates->br_r[i];
           mean_r /= (phydbl)(2*tree->n_otu-2);
-           
-          PhyML_Printf("\n. lnL: [%10.2f -- %10.2f -- %10.2f -- %10.2f] clock: %12f root age: %12f [time: %7d sec run: %8d] mean:%15f",
-                       tree->c_lnL,
+
+          PhyML_Printf("\n. %10d lnL: [%10.2f -- %10.2f -- %10.2f -- %10.2f] clock: %12f root age: %12f [time: %7d sec run: %8d] mean:%15f %20s",
+                       tree->mcmc->run,
+                       Get_Lk(tree),
                        tree->rates->c_lnL_times,
                        tree->rates->c_lnL_rates,
                        tree->extra_tree->rates->c_lnL_times,
@@ -877,24 +859,26 @@ phydbl *DATE_MCMC(t_tree *tree)
                        tree->rates->nd_t[tree->n_root->num],                       
                        (int)time(NULL) - t_beg,
                        tree->mcmc->run,
-                       mean_r);
+                       mean_r,
+                       tree->mcmc->move_name[move]);
 
           PhyML_Fprintf(fp_stats,"\n%6d\t%9.1f\t%9.1f\t%12G\t%12G\t%12G\t%12G\t%12G\t%12G\t",
                         tree->mcmc->run,
-                        tree->c_lnL,
+                        Get_Lk(tree),
                         tree->rates->c_lnL_times,
                         tree->rates->birth_rate,
                         tree->rates->death_rate,
                         tree->rates->clock_r,
                         tree->rates->nd_t[tree->n_root->num],
-                        tree->mod->kappa->v,
+                        tree->next->mod->kappa->v,
                         tree->rates->nu);
-
+          
           For(i,tree->mod->ras->n_catg) PhyML_Fprintf(fp_stats,"%G\t",tree->mod->ras->gamma_rr->v[i]);
           For(i,tree->mod->ras->n_catg) PhyML_Fprintf(fp_stats,"%G\t",tree->mod->ras->gamma_r_proba->v[i]);
           
-          Time_To_Branch(tree);
-          tree->bl_ndigits = 1;
+          /* Time_To_Branch(tree); */
+          /* tree->bl_ndigits = 1; */
+          RATES_Update_Cur_Bl(tree);
           s_tree = Write_Tree(tree,NO);
           tree->bl_ndigits = 7;
           PhyML_Fprintf(fp_tree,"\n%s",s_tree);
@@ -902,6 +886,7 @@ phydbl *DATE_MCMC(t_tree *tree)
           fflush(NULL);
 
           tree->mcmc->sample_num++;
+
         }
 
       tree->mcmc->run++;

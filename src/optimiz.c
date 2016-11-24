@@ -680,8 +680,6 @@ void Round_Optimize(t_tree *tree, int n_round_max)
 
   while(n_round < n_round_max)
     {
-
-      printf("\n. lk: %f",tree->c_lnL); fflush(NULL);
       
       if(tree->mod->s_opt->opt_bl || tree->mod->s_opt->constrained_br_len) Optimize_Br_Len_Serie(tree);
 
@@ -836,8 +834,6 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
 
   lk_init = tree->c_lnL;
   
-  Print_Lk(tree,"[ >>>   ]");
-
   if(tree->mod->s_opt->constrained_br_len == YES)
     {
       Generic_Brent_Lk(&(tree->mod->br_len_mult->v),

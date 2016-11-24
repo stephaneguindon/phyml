@@ -21,7 +21,7 @@ void MIXT_Chain_All(t_tree *mixt_tree)
 {
   t_tree *curr, *next;
   int i;
-
+  
   curr = mixt_tree;
   next = mixt_tree->next;
 
@@ -705,7 +705,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
       if(!cpy_mixt_b)
         {
           For(br,2*mixt_tree->n_otu-3) Update_PMat_At_Given_Edge(mixt_tree->a_edges[br],mixt_tree);
-  
+
           if(mixt_tree->n_root && mixt_tree->ignore_root == NO)
             {
               Update_PMat_At_Given_Edge(mixt_tree->n_root->b[1],mixt_tree);
@@ -740,11 +740,6 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                   MIXT_Post_Order_Lk(mixt_tree->e_root->rght,
                                      mixt_tree->e_root->left,
                                      mixt_tree);
-
-                  /* printf("\n<> Post -> 187 : %d %d %d", */
-                  /*        mixt_tree->a_nodes[187]->v[0]->num, */
-                  /*        mixt_tree->a_nodes[187]->v[1]->num, */
-                  /*        mixt_tree->a_nodes[187]->v[2]->num); */
 
                   MIXT_Post_Order_Lk(mixt_tree->e_root->left,
                                      mixt_tree->e_root->rght,
@@ -2254,7 +2249,7 @@ void MIXT_Add_Root(t_edge *mixt_b, t_tree *mixt_tree)
   b    = mixt_b;
   do
     {
-      if(tree->is_mixt_tree) 
+      if(tree->is_mixt_tree)
         {
           tree = tree->next;
           b    = b->next;
@@ -2273,6 +2268,8 @@ void MIXT_Add_Root(t_edge *mixt_b, t_tree *mixt_tree)
   tree = mixt_tree;
   do
     {
+      assert(tree->n_root != NULL);
+      
       if(tree->next)      tree->n_root->next       = tree->next->n_root;
       if(tree->prev)      tree->n_root->prev       = tree->prev->n_root;
       if(tree->next_mixt) tree->n_root->next_mixt  = tree->next_mixt->n_root;

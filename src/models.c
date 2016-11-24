@@ -800,31 +800,16 @@ void Update_RAS(t_mod *mod)
     }
   else
     {
-      if(mod->ras->sort_rate_classes == YES)
+      // Update class frequencies
+      Qksort(mod->ras->gamma_r_proba_unscaled->v,NULL,0,mod->ras->n_catg-1); // Unscaled class frequencies sorted in increasing order
+ 
+      mod->ras->gamma_r_proba->v[0] = mod->ras->gamma_r_proba_unscaled->v[0] / mod->ras->gamma_r_proba_unscaled->v[mod->ras->n_catg-1];
+      for(i=1;i<mod->ras->n_catg;i++)
         {
-          For(i,mod->ras->n_catg) assert(mod->ras->gamma_r_proba_unscaled->v[i] < 1.0001);
-          mod->ras->gamma_r_proba_unscaled->v[mod->ras->n_catg-1] = 1.0;
-          
-          Qksort(mod->ras->gamma_r_proba_unscaled->v,NULL,0,mod->ras->n_catg-1); // Unscaled class frequencies sorted in increasing order
-
-          // Update class frequencies
-          For(i,mod->ras->n_catg)
-            {
-              if(!i)
-                mod->ras->gamma_r_proba->v[i] =
-                  mod->ras->gamma_r_proba_unscaled->v[i] /  (mod->ras->gamma_r_proba_unscaled->v[mod->ras->n_catg-1]) ;
-              else
-                mod->ras->gamma_r_proba->v[i] =
-                  (mod->ras->gamma_r_proba_unscaled->v[i] - mod->ras->gamma_r_proba_unscaled->v[i-1]) /
-                  (mod->ras->gamma_r_proba_unscaled->v[mod->ras->n_catg-1]) ;
-            }
-        }
-      else
-        {
-          mod->ras->gamma_r_proba_unscaled->v[mod->ras->n_catg-1] = 1.0;          
-          sum = 0.0;
-          For(i,mod->ras->n_catg) sum += mod->ras->gamma_r_proba_unscaled->v[i];
-          For(i,mod->ras->n_catg) mod->ras->gamma_r_proba->v[i] = mod->ras->gamma_r_proba_unscaled->v[i] / sum;
+          mod->ras->gamma_r_proba->v[i] =
+            (mod->ras->gamma_r_proba_unscaled->v[i] -
+             mod->ras->gamma_r_proba_unscaled->v[i-1]) /
+            mod->ras->gamma_r_proba_unscaled->v[mod->ras->n_catg-1];
         }
 
       do
@@ -840,19 +825,18 @@ void Update_RAS(t_mod *mod)
         }
       while((sum > 1.01) || (sum < 0.99));
 
+
       // Update class rates
 
       if(mod->ras->normalise_rr == YES)
         {
-          For(i,mod->ras->n_catg) assert(mod->ras->gamma_rr_unscaled->v[i] < (phydbl)(mod->ras->n_catg+0.0001));
           sum = .0;
           For(i,mod->ras->n_catg) sum += mod->ras->gamma_r_proba->v[i] * mod->ras->gamma_rr_unscaled->v[i];
           For(i,mod->ras->n_catg) mod->ras->gamma_rr->v[i] = mod->ras->gamma_rr_unscaled->v[i]/sum;
         }
       else
         {
-          For(i,mod->ras->n_catg)
-            mod->ras->gamma_rr->v[i] = mod->ras->gamma_rr_unscaled->v[i] * mod->ras->free_rate_mr->v;
+          For(i,mod->ras->n_catg) mod->ras->gamma_rr->v[i] = mod->ras->gamma_rr_unscaled->v[i] * mod->ras->free_rate_mr->v;
         }
       
       /* printf("\n"); */

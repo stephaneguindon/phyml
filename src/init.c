@@ -656,7 +656,7 @@ void Set_Defaults_Model(t_mod *mod)
   mod->l_max = 10.0;
 #else
   mod->l_min = 1.E-8;
-  mod->l_max = 2.0;
+  mod->l_max = 10.0;
 #endif
 
   mod->l_var_min  = mod->l_min;
@@ -865,8 +865,8 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
     }
   else
     {
-      rates->max_rate  = 10.0;
-      rates->min_rate  = 0.01;
+      rates->max_rate  = 100.0;
+      rates->min_rate  = 0.001;
     }
   /* rates->max_rate         = 6.0; */
   /* rates->min_rate         = 0.0; */
@@ -880,7 +880,7 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
   /* rates->max_clock     = 1.E-3; */
   /* rates->min_clock     = 1.E-5; */
 
-  rates->nu            = 1.E+2;
+  rates->nu            = 1.E0;
   rates->min_nu        = 0.0;
   rates->max_nu        = 1.E+8;
   
@@ -1038,6 +1038,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
       mod->l_max = LOG(mod->l_max);
     }
 
+  // Init unscaled relative rate frequencies
   if(mod->ras->init_r_proba == YES)
     {
       For(i,mod->ras->n_catg) mod->ras->gamma_r_proba->v[i]          = (phydbl)1./mod->ras->n_catg;
@@ -1045,13 +1046,16 @@ void Init_Model(calign *data, t_mod *mod, option *io)
     }
   else
     {
-      mod->ras->gamma_r_proba_unscaled->v[0] = mod->ras->gamma_r_proba->v[0];
-      for(i=1;i<mod->ras->n_catg;i++)
-        mod->ras->gamma_r_proba_unscaled->v[i] =
-          mod->ras->gamma_r_proba_unscaled->v[i-1] +
-          mod->ras->gamma_r_proba->v[i];
+      mod->ras->gamma_r_proba_unscaled->v[mod->ras->n_catg-1] = 1.0;
+      For(i,mod->ras->n_catg)
+        {
+          sum = 0.0;
+          For(j,i+1) sum += mod->ras->gamma_r_proba->v[j];
+          mod->ras->gamma_r_proba_unscaled->v[i] = sum * mod->ras->gamma_r_proba_unscaled->v[mod->ras->n_catg-1];
+        }
     }
 
+  // Init unscaled relative rates
   if(mod->ras->init_rr == YES)
     {
       if(mod->ras->n_catg > 1)
@@ -1065,7 +1069,12 @@ void Init_Model(calign *data, t_mod *mod, option *io)
           mod->ras->gamma_rr_unscaled->v[0] = 1.0;
         }
     }
+  else
+    {      
+      For(i,mod->ras->n_catg) mod->ras->gamma_rr_unscaled->v[i] = mod->ras->gamma_rr->v[i];      
+    }
   
+
   if(io->datatype == NT)
     {
       /* Set the substitution parameters to their default values

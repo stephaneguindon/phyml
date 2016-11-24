@@ -547,7 +547,6 @@ t_tree *XML_Process_Base(char *xml_filename)
                           Set_Defaults_Model(this_mod);
                           this_mod->ras->n_catg = 1;
                           this_mod->ns = iomod->ns;
-
                           /*! All br_len_multiplier point to the corresponding */
                           /*! parameter in the relevant mixt_tree */
                           Free_Scalar_Dbl(this_mod->br_len_mult);
@@ -625,48 +624,48 @@ t_tree *XML_Process_Base(char *xml_filename)
                               ds->obj = (t_rmat *)(mod->r_mat);
                               
                               /*! Create and connect the data structure n->ds->next to mod->kappa */
-                              ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
+                              ds->next = (t_ds *)mCalloc(1,sizeof(t_ds));
                               ds = ds->next;
                               ds->obj = (scalar_dbl *)(mod->kappa);
                               
                               /*! Create and connect the data structure n->ds->next to mod->s_opt->opt_kappa */
-                              ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
+                              ds->next = (t_ds *)mCalloc(1,sizeof(t_ds));
                               ds = ds->next;
                               ds->obj = (int *)(&mod->s_opt->opt_kappa);
                               
                               /*! Create and connect the data structure n->ds->next to mod->s_opt->opt_rr */
-                              ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
+                              ds->next = (t_ds *)mCalloc(1,sizeof(t_ds));
                               ds = ds->next;
                               ds->obj = (int *)(&mod->s_opt->opt_rr);
                               
                               /*! Create and connect the data structure n->ds->next to mod->whichmodel */
-                              ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
+                              ds->next = (t_ds *)mCalloc(1,sizeof(t_ds));
                               ds = ds->next;
                               ds->obj = (int *)(&mod->whichmodel);
                               
                               /*! Create and connect the data structure n->ds->next to mod->modelname */
-                              ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
+                              ds->next = (t_ds *)mCalloc(1,sizeof(t_ds));
                               ds = ds->next;
                               ds->obj = (t_string *)(mod->modelname);
                               
                               /*! Create and connect the data structure n->ds->next to mod->ns */
-                              ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
+                              ds->next = (t_ds *)mCalloc(1,sizeof(t_ds));
                               ds = ds->next;
                               ds->obj = (int *)(&mod->ns);
                               
                               /*! Create and connect the data structure n->ds->next to mod->modelname */
-                              ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
+                              ds->next = (t_ds *)mCalloc(1,sizeof(t_ds));
                               ds = ds->next;
                               ds->obj = (t_string *)(mod->custom_mod_string);
 
 
                               /*! Create and connect the data structure n->ds->next to mod->fp_aa_rate_mat */
-                              ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
+                              ds->next = (t_ds *)mCalloc(1,sizeof(t_ds));
                               ds = ds->next;
                               ds->obj = (FILE *)(mod->fp_aa_rate_mat);
 
                               /*! Create and connect the data structure n->ds->next to mod->aa_rate_mat_file */
-                              ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
+                              ds->next = (t_ds *)mCalloc(1,sizeof(t_ds));
                               ds = ds->next;
                               ds->obj = (t_string *)mod->aa_rate_mat_file;                              
                             }
@@ -826,9 +825,7 @@ t_tree *XML_Process_Base(char *xml_filename)
                               instance->ds->next = (t_ds *)mCalloc(1,sizeof(t_ds));
                               instance->ds->next->obj = (int *)(class_num + class_number);
                               
-                              iomod->ras->gamma_rr->v[class_number] = val;
-                              iomod->ras->gamma_rr_unscaled->v[class_number] = val;
-                              
+                              iomod->ras->gamma_rr->v[class_number] = val;                              
                               iomod->ras->init_rr = NO;
                               
                               if(Are_Equal(val,0.0,1E-20) == NO) class_number++;
@@ -850,6 +847,7 @@ t_tree *XML_Process_Base(char *xml_filename)
                           
                           xml_node *orig_w = NULL;
                           orig_w = XML_Search_Node_Attribute_Value("appliesto",instance->id,YES,instance->parent);
+                          
                           
                           if(orig_w)
                             {
@@ -1064,6 +1062,7 @@ t_tree *XML_Process_Base(char *xml_filename)
   while(io->prev != NULL) io = io->prev;
   while(mixt_tree->prev != NULL) mixt_tree = mixt_tree->prev;
 
+  
   /*! Finish making the models */
   mod = mixt_tree->mod;
   do
@@ -1708,12 +1707,15 @@ xml_node *XML_Search_Node_Attribute_Value(char *attr_name, char *value, int skip
       match = XML_Search_Node_Attribute_Value(attr_name, value, NO, node->child);
       return match;
     }
-
+  
   if(skip == NO && node->attr)
     {
       xml_attr *attr;
       char *sname, *sval;
+      char *qname, *qval;
 
+      qname = To_Lower_String(attr_name);
+      qval  = To_Lower_String(value);
 
       attr = node->attr;
       do
@@ -1721,11 +1723,13 @@ xml_node *XML_Search_Node_Attribute_Value(char *attr_name, char *value, int skip
           sname = To_Lower_String(attr->name);
           sval  = To_Lower_String(attr->value);
 
-          if(!strcmp(sname,attr_name) && !strcmp(sval,value)) 
+          if(!strcmp(sname,qname) && !strcmp(sval,qval)) 
             {
               match = node;
               Free(sname);
               Free(sval);
+              Free(qname);
+              Free(qval);
               break;
             }
 

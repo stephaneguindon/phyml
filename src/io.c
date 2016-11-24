@@ -685,12 +685,9 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
           (*s_tree)[(int)strlen(*s_tree)] = ':';
           
 #if !(defined PHYTIME || defined INVITEE || defined DATE)
-          if(!tree->n_root)
+          if(tree->n_root == NULL)
             {
-              if(tree->is_mixt_tree == NO)
-                {
-                  mean_len = fils->b[0]->l->v;
-                }
+              if(tree->is_mixt_tree == NO) mean_len = fils->b[0]->l->v;
               else mean_len = MIXT_Get_Mean_Edge_Len(fils->b[0],tree);
               sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,mean_len));
             }
@@ -718,13 +715,14 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
                 }
             }
 #else
-          if(!tree->n_root)
+          if(tree->n_root == NULL)
             {
               sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,fils->b[0]->l->v));
             }
           else
             {
               if(tree->rates) sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,tree->rates->cur_l[fils->num]));
+              /* sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,fils->b[0]->l->v)); */
             }
 #endif
         }
@@ -866,13 +864,14 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
                 }
             }
 #else
-          if(!tree->n_root)
+          if(tree->n_root == NULL)
             {
               sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,fils->b[p]->l->v));
             }
           else
             {
 	      if(tree->rates) sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,tree->rates->cur_l[fils->num]));
+              /* sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,fils->b[p]->l->v)); */
             }
 #endif
         }
@@ -896,7 +895,7 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
       if(*available < (int)T_MAX_NAME)
         {
           (*s_tree) = (char *)mRealloc(*s_tree,(int)strlen(*s_tree)+3*(int)T_MAX_NAME,sizeof(char));
-      For(i,3*(int)T_MAX_NAME) (*s_tree)[(int)strlen(*s_tree)+i] = '\0';
+          For(i,3*(int)T_MAX_NAME) (*s_tree)[(int)strlen(*s_tree)+i] = '\0';
           (*available) = 3*(int)T_MAX_NAME;
       /* printf("\n. ++ 2 Available = %d",(*available)); */
         }
@@ -2028,7 +2027,7 @@ char *Return_Tree_String_Phylip(FILE *fp_input_tree)
 
   if(fp_input_tree == NULL)
     {
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 
@@ -3350,7 +3349,7 @@ void Print_Lk(t_tree *tree, char *string)
 
   time(&(loc_tree->t_current));
   PhyML_Printf("\n. (%5d sec) [%15.4f] %s",
-           (int)(loc_tree->t_current-loc_tree->t_beg),loc_tree->c_lnL,
+               (int)(loc_tree->t_current-loc_tree->t_beg),Get_Lk(tree),
            string);
 #ifndef QUIET
   fflush(NULL);
@@ -4685,6 +4684,7 @@ option *PhyML_XML(char *xml_filename)
       Unscale_Br_Len_Multiplier_Tree(mixt_tree);
       Set_Both_Sides(YES,mixt_tree);
       
+
       if(mixt_tree->mod->s_opt->opt_topo)
         {
           if(mixt_tree->mod->s_opt->topo_search      == NNI_MOVE) Simu_Loop(mixt_tree);
@@ -4706,8 +4706,7 @@ option *PhyML_XML(char *xml_filename)
 
 
       PhyML_Printf("\n\n. Log-likelihood = %f",mixt_tree->c_lnL);
-
-
+  
       if((num_rand_tree == io->mod->s_opt->n_rand_starts-1) && (io->mod->s_opt->random_input_tree))
         {
           num_rand_tree--;

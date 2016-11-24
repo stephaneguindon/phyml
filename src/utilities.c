@@ -6273,9 +6273,8 @@ void Random_Tree(t_tree *tree)
 // Make sure internal edges have likelihood vectors on both
 // sides and external edges have one likelihood vector on the
 // lefthand side only
-// Note: deprecated since it screws things up when used in the
-// context of mixt_tree (as the same edges are not 'aligned' across
-// trees anymore). 
+// Note: make sure  p_lk_tips vector are re-initialized after
+// calling this function 
 void Reorganize_Edges_Given_Lk_Struct(t_tree *tree)
 {
   int j,i;
@@ -6944,14 +6943,8 @@ void Add_Root(t_edge *target, t_tree *tree)
   tree->e_root = target;
 
   /* Create the root t_node if it does not exist yet */
-  if(!tree->a_nodes[2*tree->n_otu-2])
-    {
-      tree->n_root = (t_node *)Make_Node_Light(2*tree->n_otu-2);
-    }
-  else
-    {
-      tree->n_root = tree->a_nodes[2*tree->n_otu-2];
-    }
+  if(!tree->a_nodes[2*tree->n_otu-2]) tree->n_root = (t_node *)Make_Node_Light(2*tree->n_otu-2);
+  else                                tree->n_root = tree->a_nodes[2*tree->n_otu-2];
 
   tree->a_nodes[2*tree->n_otu-2] = tree->n_root;
 
@@ -6968,7 +6961,7 @@ void Add_Root(t_edge *target, t_tree *tree)
   if(tree->n_root_pos > -1.0)
     {
       if(tree->n_root_pos < 1.E-6 &&  tree->n_root_pos > -1.E-6)
-        printf("\n. WARNING: you put the root at a weird position...");
+        printf("\n== WARNING: you put the root at a weird position...");
 
 /*       tree->n_root->l[0] = tree->e_root->l->v * (tree->n_root_pos/(1.+tree->n_root_pos)); */
 /*       tree->n_root->l[1] = tree->e_root->l->v - tree->n_root->l[0]; */

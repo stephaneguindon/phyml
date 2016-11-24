@@ -1911,7 +1911,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
         {
           if(cal->is_primary == YES)
             {
-              if(n_cal > 0) cal_times = (phydbl *)mRealloc(cal_times,n_cal+1,sizeof(phydbl));              
+              if(n_cal > 0) cal_times = (phydbl *)mRealloc(cal_times,n_cal+1,sizeof(phydbl));
               cal_times[n_cal] = Uni()*(cal->upper - cal->lower) + cal->lower;
               if(cal_times[n_cal] < time_oldest_cal) time_oldest_cal = cal_times[n_cal];
               n_cal++;
@@ -2059,8 +2059,6 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       // Adding root edge
       mixt_tree->num_curr_branch_available = 0;
       Connect_Edges_To_Nodes_Recur(mixt_tree->a_nodes[0],mixt_tree->a_nodes[0]->v[0],mixt_tree);
-      /* Fill_Dir_Table(mixt_tree); */
-      /* Update_Dirs(mixt_tree); */
       
       For(i,2*mixt_tree->n_otu-3)
         {
@@ -2139,28 +2137,15 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
             }
           tree->num_curr_branch_available = 0;
           Connect_Edges_To_Nodes_Recur(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree);
-          Fill_Dir_Table(tree);
-          Update_Dirs(tree);
           Add_Root(tree->a_edges[tree->prev->e_root->num],tree);
           Reorganize_Edges_Given_Lk_Struct(tree);
-          
-          /* { */
-          /*   printf("\n === \n"); */
-          /*   Print_Node(tree->n_root,tree->n_root->v[1],tree); */
-          /*   Print_Node(tree->n_root,tree->n_root->v[2],tree); */
-          /* } */
-          
+          Init_P_Lk_Tips_Int(tree);
+                   
           tree = tree->next;
         }
       while(tree);
     }
   
-  /* printf("\n >>> \n"); */
-  /* Print_Node(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree); */
-  /* Print_Node(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree); */
-
-  /* PhyML_Printf("\n. %s \n",Write_Tree(mixt_tree,NO)); */
-
   Free(tips);
   Free(nd_list);
   Free(no_cal_tip_num);
