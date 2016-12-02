@@ -6961,8 +6961,9 @@ void Add_Root(t_edge *target, t_tree *tree)
   if(tree->n_root_pos > -1.0)
     {
       if(tree->n_root_pos < 1.E-6 &&  tree->n_root_pos > -1.E-6)
-        printf("\n== WARNING: you put the root at a weird position...");
-
+        {
+          printf("\n== WARNING: you put the root at a weird position...");
+        }
 /*       tree->n_root->l[0] = tree->e_root->l->v * (tree->n_root_pos/(1.+tree->n_root_pos)); */
 /*       tree->n_root->l[1] = tree->e_root->l->v - tree->n_root->l[0]; */
 
@@ -9342,8 +9343,7 @@ int Scale_Subtree_Rates(t_node *a, phydbl mult, int *n_nodes, t_tree *tree)
 {
   int res;
   int i;
-  
-  
+    
   *n_nodes = 0;
   res      = 1;
 
@@ -9368,35 +9368,29 @@ int Scale_Subtree_Rates(t_node *a, phydbl mult, int *n_nodes, t_tree *tree)
 int Scale_Subtree_Rates_Post(t_node *a, t_node *d, phydbl mult, int *n_nodes, t_tree *tree)
 {
 
-  if(tree->rates->model_log_rates == YES)
-    {
-      tree->rates->br_r[d->num] += LOG(mult);
-    }
-  else
-    {
-      tree->rates->br_r[d->num] *= mult;
-    }
+  if(tree->rates->model_log_rates == YES) tree->rates->br_r[d->num] += LOG(mult);
+  else tree->rates->br_r[d->num] *= mult;
 
   *n_nodes = *n_nodes+1;
-
+  
   if(tree->rates->br_r[d->num] < tree->rates->min_rate) return 0;
   if(tree->rates->br_r[d->num] > tree->rates->max_rate) return 0;
-
+  
   if(d->tax) return 1;
   else
     {
       int i,res;
-
+      
       res = 1;
       For(i,3)
-    {
-      if((d->v[i] != a) &&
-         (d->b[i] != tree->e_root) &&
-         (res == 1))
         {
-          res = Scale_Subtree_Rates_Post(d,d->v[i],mult,n_nodes,tree);
+          if((d->v[i] != a) &&
+             (d->b[i] != tree->e_root) &&
+             (res == 1))
+            {
+              res = Scale_Subtree_Rates_Post(d,d->v[i],mult,n_nodes,tree);
+            }
         }
-    }
       return res;
     }
 }

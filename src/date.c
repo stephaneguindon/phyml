@@ -755,10 +755,12 @@ phydbl *DATE_MCMC(t_tree *tree)
   MCMC_Complete_MCMC(mcmc,tree->extra_tree);
 
  
-  PhyML_Fprintf(fp_stats,"\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t",
+  PhyML_Fprintf(fp_stats,"\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t",
                 "sample",
+                "lnL(posterior)",
                 "lnL(seq)",
                 "lnL(times)",
+                "lnL(rates)",
                 "birth",
                 "death",
                 "clock",
@@ -814,6 +816,7 @@ phydbl *DATE_MCMC(t_tree *tree)
       else if(!strcmp(tree->mcmc->move_name[move],"subtree_height"))     MCMC_Subtree_Height(tree);
       else if(!strcmp(tree->mcmc->move_name[move],"time_slice"))         MCMC_Time_Slice(tree);
       else if(!strcmp(tree->mcmc->move_name[move],"br_rate"))            MCMC_Rate_All(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"tree_rates"))         MCMC_Tree_Rates(tree);
       else continue;
       
       if(!TIMES_Check_Node_Height_Ordering(tree))
@@ -844,17 +847,17 @@ phydbl *DATE_MCMC(t_tree *tree)
 
       if(!(tree->mcmc->run%tree->mcmc->sample_interval))
         {
-          phydbl mean_r;
-          mean_r = 0.0;
-          For(i,2*tree->n_otu-2) mean_r += tree->rates->br_r[i];
-          mean_r /= (phydbl)(2*tree->n_otu-2);
+          phydbl mean_r,post;
+          mean_r = RATES_Average_Substitution_Rate(tree);
 
+          post = Get_Lk(tree) + tree->rates->c_lnL_times + tree->rates->c_lnL_rates;
+          
           PhyML_Printf("\n. %10d lnL: [%10.2f -- %10.2f -- %10.2f -- %10.2f] clock: %12f root age: %12f [time: %7d sec run: %8d] mean:%15f %20s",
                        tree->mcmc->run,
+                       post,
                        Get_Lk(tree),
                        tree->rates->c_lnL_times,
                        tree->rates->c_lnL_rates,
-                       tree->extra_tree->rates->c_lnL_times,
                        tree->rates->clock_r,
                        tree->rates->nd_t[tree->n_root->num],                       
                        (int)time(NULL) - t_beg,
@@ -862,13 +865,15 @@ phydbl *DATE_MCMC(t_tree *tree)
                        mean_r,
                        tree->mcmc->move_name[move]);
 
-          PhyML_Fprintf(fp_stats,"\n%6d\t%9.1f\t%9.1f\t%12G\t%12G\t%12G\t%12G\t%12G\t%12G\t",
+          PhyML_Fprintf(fp_stats,"\n%6d\t%9.1f\t%9.1f\t%9.1f\t%9.1f\t%12G\t%12G\t%12G\t%12G\t%12G\t%12G\t",
                         tree->mcmc->run,
+                        post,
                         Get_Lk(tree),
                         tree->rates->c_lnL_times,
+                        tree->rates->c_lnL_rates,
                         tree->rates->birth_rate,
                         tree->rates->death_rate,
-                        tree->rates->clock_r,
+                        mean_r,
                         tree->rates->nd_t[tree->n_root->num],
                         tree->next->mod->kappa->v,
                         tree->rates->nu);

@@ -421,7 +421,8 @@ phydbl RATES_Lk_Rates_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl n
             /*    Pgamma(tree->rates->min_rate,1./(tree->rates->nu*dt_d*POW(tree->rates->clock_r,2)),tree->rates->nu*dt_d*POW(tree->rates->clock_r,2))); */
 
             int err;
-            log_dens = Log_Dnorm_Trunc(br_r_d,1.0,tree->rates->nu,tree->rates->min_rate,tree->rates->max_rate,&err);
+            /* log_dens = Log_Dnorm_Trunc(br_r_d,1.0,tree->rates->nu/tree->rates->clock_r,tree->rates->min_rate,tree->rates->max_rate,&err); */
+            log_dens = Log_Dnorm_Trunc(br_r_d,1.0,2.0,tree->rates->min_rate,tree->rates->max_rate,&err);
           }
         
 	/* log_dens = LOG(log_dens); */
@@ -842,42 +843,21 @@ phydbl RATES_Average_Rate(t_tree *tree)
 
 phydbl RATES_Average_Substitution_Rate(t_tree *tree)
 {
-  phydbl sum_r,sum_dt;
-  phydbl u,t,t_anc;
+  phydbl l,dt;
   int i;
 
-  u = 0.0;
-  sum_r  = 0.0;
-  sum_dt = 0.0;
-
-  /* For(i,2*tree->n_otu-3)  */
-  /*   { */
-  /*     t     = tree->rates->nd_t[i]; */
-  /*     t_anc = tree->rates->nd_t[tree->a_nodes[i]->anc->num];       */
-  /*     u = tree->a_edges[i]->l->v; */
-  /*     if(tree->rates->model == GUINDON) u = tree->a_edges[i]->gamma_prior_mean; */
-  /*     sum_r += u;	   */
-  /*     sum_dt += FABS(t-t_anc); */
-  /*   } */
-
-  For(i,2*tree->n_otu-3)  
+  l = 0.0;
+  dt = 0.0;
+  For(i,2*tree->n_otu-1)
     {
-      if(tree->a_edges[i] != tree->e_root)
-	{
-	  t     = tree->rates->nd_t[tree->a_edges[i]->left->num];
-	  t_anc = tree->rates->nd_t[tree->a_edges[i]->rght->num];
-	  u = tree->a_edges[i]->l->v;
-	  sum_r += u;
-	  sum_dt += FABS(t-t_anc);
-	}
-      
-      sum_dt += FABS(tree->rates->nd_t[tree->n_root->v[2]->num] - tree->rates->nd_t[tree->n_root->num]);
-      sum_dt += FABS(tree->rates->nd_t[tree->n_root->v[1]->num] - tree->rates->nd_t[tree->n_root->num]);
-
-      u = tree->e_root->l->v;
-      sum_r += u;	 
+      if(tree->a_nodes[i] != tree->n_root)
+        {
+          dt += FABS(tree->rates->nd_t[tree->a_nodes[i]->num] - tree->rates->nd_t[tree->a_nodes[i]->anc->num]); 
+          l  += tree->rates->cur_l[tree->a_nodes[i]->num];
+        }
     }
-  return(sum_r / sum_dt);
+      
+  return(l/dt);
 }
 
 //////////////////////////////////////////////////////////////
@@ -2553,7 +2533,7 @@ void RATES_Update_Cur_Bl(t_tree *tree)
 
   tree->rates->u_cur_l[tree->e_root->num] = tree->e_root->l->v;
   tree->n_root_pos = tree->rates->cur_l[tree->n_root->v[2]->num] / tree->e_root->l->v;
-
+  
   if(tree->rates->model == GUINDON)
     {
       phydbl t0,t1,t2;
