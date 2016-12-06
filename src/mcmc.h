@@ -181,12 +181,14 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree);
 void MCMC_PHYREX_Disk_Given_Ldsk(t_tree *tree);
 void MCMC_PHYREX_Ldsk_And_Disk(t_tree *tree);
 void MCMC_Death_Rate(t_tree *tree);
-void MCMC_Time_All(t_tree *tree);
+void MCMC_Times_All(t_tree *tree);
 void MCMC_Prune_Regraft(t_tree *tree);
 void MCMC_Randomize_Death(t_tree *tree);
 void MCMC_Time_Slice(t_tree *tree);
 void MCMC_Prune_Regraft_Local(t_tree *tree);
 void MCMC_Prune_Regraft_Root(t_tree *tree);
 void MCMC_Birth_Death_Updown(t_tree *tree);
-void MCMC_Rate_All(t_tree *tree);
+void MCMC_Rates_All(t_tree *tree);
+void MCMC_Times_And_Rates_Recur(t_node *a, t_node *d, int traversal, t_tree *tree);
+void MCMC_Times_And_Rates_All(t_tree *tree);
 #endif

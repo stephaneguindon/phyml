@@ -806,7 +806,8 @@ phydbl *DATE_MCMC(t_tree *tree)
       else if(!strcmp(tree->mcmc->move_name[move],"death_rate"))         MCMC_Death_Rate(tree);
       else if(!strcmp(tree->mcmc->move_name[move],"birth_death_updown")) MCMC_Birth_Death_Updown(tree);
       else if(!strcmp(tree->mcmc->move_name[move],"tree_height"))        MCMC_Tree_Height(tree);
-      else if(!strcmp(tree->mcmc->move_name[move],"times"))              MCMC_Time_All(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"times"))              MCMC_Times_All(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"times_and_rates"))    MCMC_Times_And_Rates_All(tree);
       else if(!strcmp(tree->mcmc->move_name[move],"spr"))                MCMC_Prune_Regraft(tree);
       else if(!strcmp(tree->mcmc->move_name[move],"spr_local"))          MCMC_Prune_Regraft_Local(tree);
       else if(!strcmp(tree->mcmc->move_name[move],"updown_t_cr"))        MCMC_Updown_T_Cr(tree);
@@ -815,7 +816,7 @@ phydbl *DATE_MCMC(t_tree *tree)
       else if(!strcmp(tree->mcmc->move_name[move],"nu"))                 MCMC_Nu(tree);
       else if(!strcmp(tree->mcmc->move_name[move],"subtree_height"))     MCMC_Subtree_Height(tree);
       else if(!strcmp(tree->mcmc->move_name[move],"time_slice"))         MCMC_Time_Slice(tree);
-      else if(!strcmp(tree->mcmc->move_name[move],"br_rate"))            MCMC_Rate_All(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"br_rate"))            MCMC_Rates_All(tree);
       else if(!strcmp(tree->mcmc->move_name[move],"tree_rates"))         MCMC_Tree_Rates(tree);
       else continue;
       

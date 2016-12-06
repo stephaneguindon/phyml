@@ -1070,7 +1070,7 @@ phydbl Lk_Core(int state, int ambiguity_check, short int returnlog, t_edge *b, p
 // to the left and right of edge b
 void Update_Eigen_Lr(t_edge *b, t_tree *tree)
 {
-  int site,catg,state,i;
+  int site,catg,state,i,is_ambigu,observed_state;
   int dim1,dim2;
   phydbl *dum,*dumdum;
 
@@ -1089,7 +1089,11 @@ void Update_Eigen_Lr(t_edge *b, t_tree *tree)
   dim2 = tree->mod->ns;
   
   For(site,tree->n_pattern)
-    {      
+    {
+      is_ambigu = YES;
+      if(b->rght->tax == YES) is_ambigu = b->rght->c_seq->is_ambigu[site];
+      if(is_ambigu == NO) observed_state = b->rght->c_seq->d_state[site];
+
       For(catg,tree->mod->ras->n_catg)
         {
           // Dot product left partial likelihood with equilibrium freqs
@@ -1117,18 +1121,31 @@ void Update_Eigen_Lr(t_edge *b, t_tree *tree)
           else
             For(state,tree->mod->ns) dum[state] = b->p_lk_rght[site*dim1 + catg*dim2 + state]; 
 
-          // Multiply  matrix of left eigen vectors by vector of partial likelihoods on 
-          // the righthand side of b
-          For(state,tree->mod->ns)
+
+          
+          if(is_ambigu == YES)
             {
-              dumdum[state] = 0.0;
-              For(i,tree->mod->ns)
+              /* Multiply  matrix of left eigen vectors by vector of partial likelihoods on  */
+              /* the righthand side of b */
+              For(state,tree->mod->ns)
                 {
-                  dumdum[state] += 
-                    tree->mod->eigen->l_e_vect[state*dim2 + i] *
-                    dum[i];
+                  dumdum[state] = 0.0;
+                  For(i,tree->mod->ns)
+                    {
+                      dumdum[state] += 
+                        tree->mod->eigen->l_e_vect[state*dim2 + i] *
+                        dum[i];
+                    }
                 }
             }
+          else
+            {
+              For(state,tree->mod->ns)
+                {
+                  dumdum[state] = tree->mod->eigen->l_e_vect[state*dim2 + observed_state] * dum[observed_state];
+                }
+            }
+          
           For(state,tree->mod->ns) tree->eigen_lr_rght[site*dim1 + catg*dim2 + state] = dumdum[state];
         }
     }
@@ -4404,7 +4421,7 @@ phydbl AVX_Lk_Core_Nucl(int state, int ambiguity_check, t_edge *b, t_tree *tree)
   int dim1,dim2,dim3;
   int exponent;
   int num_prec_issue;
-  phydbl tip_v[4];
+  phydbl *tip_v,*plk;
   int i;
 #ifdef BEAGLE
   dim1 = tree->n_pattern * tree->mod->ns;
@@ -4414,12 +4431,20 @@ phydbl AVX_Lk_Core_Nucl(int state, int ambiguity_check, t_edge *b, t_tree *tree)
   dim2 = tree->mod->ns;
   dim3 = tree->mod->ns * tree->mod->ns;//Dimensions of the transition prob. matrix
   
+#ifndef WIN32
+  if(posix_memalign((void **)&tip_v,BYTE_ALIGN,(size_t)4*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&plk,BYTE_ALIGN,(size_t)4*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+#else
+  tip_v = _aligned_malloc(4 * sizeof(phydbl),BYTE_ALIGN);
+  plk   = _aligned_malloc(4 * sizeof(phydbl),BYTE_ALIGN);
+#endif
+
+
   log_site_lk     = .0;
   site_lk         = .0;
   site_lk_cat     = .0;
   site            = tree->curr_site;
   ns              = tree->mod->ns;
-    
 
   assert(ns == 4);
 
@@ -4445,7 +4470,6 @@ phydbl AVX_Lk_Core_Nucl(int state, int ambiguity_check, t_edge *b, t_tree *tree)
           __m256d _plk_l,_plk_r; // partial likelihood vector on lefthand (righthand) side of b
           __m256d _p[4]; // matrix of transition probabilities
           __m256d _pplk[4]; // dot product of _p[i] & _plk_r
-          double plk[4];
           
           // Transition  probability matrix
           For(i,4) _p[i] = _mm256_load_pd(b->Pij_rr + catg*dim3 + i*dim2);
@@ -4469,7 +4493,7 @@ phydbl AVX_Lk_Core_Nucl(int state, int ambiguity_check, t_edge *b, t_tree *tree)
           
           _mm256_store_pd(plk,_plk);
 
-          _plk = _mm256_mul_pd(_plk,_mm256_load_pd(tree->mod->e_frq->pi->v));
+          _plk = _mm256_mul_pd(_plk,_mm256_loadu_pd(tree->mod->e_frq->pi->v));
 
           _mm256_store_pd(plk,_plk);
 
@@ -4603,6 +4627,9 @@ phydbl AVX_Lk_Core_Nucl(int state, int ambiguity_check, t_edge *b, t_tree *tree)
   
   tree->c_lnL += tree->data->wght[site]*log_site_lk;
 
+  Free(tip_v);
+  Free(plk);
+  
   return log_site_lk;
 }
 
@@ -4618,7 +4645,7 @@ phydbl AVX_Lk_Core_AA(int state, int ambiguity_check, t_edge *b, t_tree *tree)
   int dim1,dim2,dim3;
   int exponent;
   int num_prec_issue;
-  phydbl tip_v[20];
+  phydbl *tip_v,*plk;
   int i,j,k;
 #ifdef BEAGLE
   dim1 = tree->n_pattern * tree->mod->ns;
@@ -4627,6 +4654,19 @@ phydbl AVX_Lk_Core_AA(int state, int ambiguity_check, t_edge *b, t_tree *tree)
 #endif
   dim2 = tree->mod->ns;
   dim3 = tree->mod->ns * tree->mod->ns;//Dimensions of the transition prob. matrix
+  
+
+#ifndef WIN32
+  if(posix_memalign((void **)&tip_v,BYTE_ALIGN,(size_t)20*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&plk,BYTE_ALIGN,(size_t)20*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+#else
+  tip_v = _aligned_malloc(20 * sizeof(phydbl),BYTE_ALIGN);
+  plk = _aligned_malloc(20 * sizeof(phydbl),BYTE_ALIGN);
+#endif
+
+
+
+
   
   log_site_lk     = .0;
   site_lk         = .0;
@@ -4673,8 +4713,6 @@ phydbl AVX_Lk_Core_AA(int state, int ambiguity_check, t_edge *b, t_tree *tree)
           __m256d _plk_l[5],_plk_r[5]; // partial likelihood vector on lefthand (righthand) side of b
           __m256d _p[4]; // matrix of transition probabilities
           __m256d _pplk[4]; // dot product of _p[i] & _plk_r
-          double plk[20];
-          
 
           // Partial likelihood vector on righthand side of b
           if(b->rght->tax == NO)
@@ -4728,7 +4766,7 @@ phydbl AVX_Lk_Core_AA(int state, int ambiguity_check, t_edge *b, t_tree *tree)
                 }
 
               _plk = _mm256_mul_pd(AVX_Horizontal_Add(_pplk),_plk_l[j]); 
-              _plk = _mm256_mul_pd(_plk,_mm256_load_pd(tree->mod->e_frq->pi->v+j*4));
+              _plk = _mm256_mul_pd(_plk,_mm256_loadu_pd(tree->mod->e_frq->pi->v+j*4));
               _mm256_store_pd(plk+j*4,_plk);
             }
 
@@ -4863,7 +4901,9 @@ phydbl AVX_Lk_Core_AA(int state, int ambiguity_check, t_edge *b, t_tree *tree)
   
   tree->c_lnL += tree->data->wght[site]*log_site_lk;
 
-
+  Free(tip_v);
+  Free(plk);
+  
   return log_site_lk;
 }
 
@@ -4896,8 +4936,17 @@ void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
   phydbl smallest_p_lk;
   phydbl p_lk_lim_inf;
   int *p_lk_loc;//Suppose site j, of a certain subtree, has "A" on one tip, and "C" on the other. If you come across this pattern again at site i<j, then you can simply copy the partial likelihoods
-  phydbl tip_v1[4],tip_v2[4];
+  phydbl *tip_v1,*tip_v2;
   
+
+#ifndef WIN32
+  if(posix_memalign((void **)&tip_v1,BYTE_ALIGN,(size_t)4*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&tip_v2,BYTE_ALIGN,(size_t)4*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+#else
+  tip_v1 = _aligned_malloc(4 * sizeof(phydbl),BYTE_ALIGN);
+  tip_v2 = _aligned_malloc(4 * sizeof(phydbl),BYTE_ALIGN);
+#endif
+
 
   if(tree->n_root && tree->ignore_root == YES &&
      (d == tree->n_root->v[1] || d == tree->n_root->v[2]) &&
@@ -5072,6 +5121,8 @@ void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
             }
         }
     }
+  Free(tip_v1);
+  Free(tip_v2);
 }
 
 //////////////////////////////////////////////////////////////
@@ -5103,8 +5154,16 @@ void AVX_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
   phydbl smallest_p_lk;
   phydbl p_lk_lim_inf;
   int *p_lk_loc;//Suppose site j, of a certain subtree, has "A" on one tip, and "C" on the other. If you come across this pattern again at site i<j, then you can simply copy the partial likelihoods
-  phydbl tip_v1[20],tip_v2[20];
+  phydbl *tip_v1,*tip_v2;
   
+
+#ifndef WIN32
+  if(posix_memalign((void **)&tip_v1,BYTE_ALIGN,(size_t)20*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&tip_v2,BYTE_ALIGN,(size_t)20*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+#else
+  tip_v1 = _aligned_malloc(20 * sizeof(phydbl),BYTE_ALIGN);
+  tip_v2 = _aligned_malloc(20 * sizeof(phydbl),BYTE_ALIGN);
+#endif
 
   if(tree->n_root && tree->ignore_root == YES &&
      (d == tree->n_root->v[1] || d == tree->n_root->v[2]) &&
@@ -5212,7 +5271,7 @@ void AVX_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
           /* For all rate classes */
           For(catg,tree->mod->ras->n_catg)
             {
-              smallest_p_lk  =  BIG;
+              smallest_p_lk = BIG;
 
               __m256d _plk; // parent partial likelihood
               __m256d _plk1[5],_plk2[5]; // sister partial likelihood vectors
@@ -5367,6 +5426,9 @@ void AVX_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
             }
         }
     }
+
+  Free(tip_v1);
+  Free(tip_v2);
 }
 
 //////////////////////////////////////////////////////////////

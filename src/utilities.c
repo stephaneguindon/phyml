@@ -4997,11 +4997,15 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
 
   if(tree->n_root != NULL)
     {
+      // Pruning one of the subtree below n_root->v[2], v2 below a
       if(tree->n_root->v[1] == v1 && tree->n_root->v[2] == a) tree->n_root->v[2] = v2;
-      if(tree->n_root->v[2] == v1 && tree->n_root->v[1] == a) tree->n_root->v[1] = v2;
+
+      // Pruning one of the subtree below n_root->v[1], v2 below a
+      else if(tree->n_root->v[2] == v1 && tree->n_root->v[1] == a) tree->n_root->v[1] = v2;
   
-      if((tree->n_root->v[1] == v2 && tree->n_root->v[2] == a) || 
-         (tree->n_root->v[2] == v2 && tree->n_root->v[1] == a))
+      // Pruning one of the subtree below n_root->v[1], v1 below a
+      else if((tree->n_root->v[1] == v2 && tree->n_root->v[2] == a) || 
+              (tree->n_root->v[2] == v2 && tree->n_root->v[1] == a))
         {
           tree->e_root = b1;
           if(tree->n_root->v[1] == v2) tree->n_root->v[2] = v1;
@@ -5009,8 +5013,8 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
         }
       
       // Prune subtree to the left or to the right of the root node
-      if((tree->n_root->v[1] == a && tree->n_root->v[2] == d) ||
-         (tree->n_root->v[1] == d && tree->n_root->v[2] == a))
+      else if((tree->n_root->v[1] == a && tree->n_root->v[2] == d) ||
+              (tree->n_root->v[1] == d && tree->n_root->v[2] == a))
         {
           /* printf("\n. ^^prune^^ "); */
           tree->e_root = b1;
@@ -5021,7 +5025,6 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
       /* tree->e_root->left = tree->n_root->v[1]; */
       /* tree->e_root->rght = tree->n_root->v[2]; */
 
-      buff_nd = NULL;
       if(tree->n_root->v[1] == tree->e_root->rght)
         {
           buff_nd = tree->n_root->v[1];

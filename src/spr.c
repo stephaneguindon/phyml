@@ -4812,7 +4812,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       Stepwise_Add_Pars(tree);  
       Spr_Pars(0,10,tree);
 
-      /* printf("\n. 1????????? %d lnL: %f tree: %d",Global_myRank,Lk(NULL,tree),list_size); fflush(NULL); */
+      /* printf("\n. ...0?????????  lnL: %f tree: %d",Lk(NULL,tree),list_size); fflush(NULL); */
 
       tree->mod->s_opt->fast_nni = YES;
       Simu(tree,2);

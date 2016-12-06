@@ -66,6 +66,7 @@ int Simu(t_tree *tree, int n_step_max)
       Lk(NULL,tree);
       MIXT_Set_Alias_Subpatt(NO,tree);
 
+      
       if(tree->c_lnL > old_loglk - 5.0)
         {
           MIXT_Set_Alias_Subpatt(YES,tree);

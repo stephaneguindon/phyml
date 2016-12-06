@@ -1558,6 +1558,7 @@ typedef struct __Tmcmc {
   int num_move_nd_r;
   int num_move_br_r;
   int num_move_times;
+  int num_move_times_and_rates;
   int num_move_root_time;
   int num_move_nu;
   int num_move_clock_r;
