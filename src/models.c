@@ -950,11 +950,13 @@ void Update_Eigen(t_mod *mod)
   phydbl scalar;
   int i;
 
-  if(mod->is_mixt_mod)
+
+  if(mod->is_mixt_mod == YES)
     {
       MIXT_Update_Eigen(mod);
       return;
     }
+
 
   if(mod->update_eigen == YES)
     {
@@ -964,13 +966,13 @@ void Update_Eigen(t_mod *mod)
           if(mod->io->datatype == NT)
             {
               if(mod->whichmodel == GTR)
-                 Update_Qmat_GTR(mod->r_mat->rr->v, mod->r_mat->rr_val->v, mod->r_mat->rr_num->v, mod->e_frq->pi->v, mod->r_mat->qmat->v);
+                Update_Qmat_GTR(mod->r_mat->rr->v, mod->r_mat->rr_val->v, mod->r_mat->rr_num->v, mod->e_frq->pi->v, mod->r_mat->qmat->v);
               else if(mod->whichmodel == CUSTOM)
-                 Update_Qmat_GTR(mod->r_mat->rr->v, mod->r_mat->rr_val->v, mod->r_mat->rr_num->v, mod->e_frq->pi->v, mod->r_mat->qmat->v);
+                Update_Qmat_GTR(mod->r_mat->rr->v, mod->r_mat->rr_val->v, mod->r_mat->rr_num->v, mod->e_frq->pi->v, mod->r_mat->qmat->v);
               else if(mod->whichmodel == HKY85)
-                 Update_Qmat_HKY(mod->kappa->v, mod->e_frq->pi->v, mod->r_mat->qmat->v);
+                Update_Qmat_HKY(mod->kappa->v, mod->e_frq->pi->v, mod->r_mat->qmat->v);
               else /* Any other nucleotide-based t_mod */
-                 Update_Qmat_HKY(mod->kappa->v, mod->e_frq->pi->v, mod->r_mat->qmat->v);
+                Update_Qmat_HKY(mod->kappa->v, mod->e_frq->pi->v, mod->r_mat->qmat->v);
             }
         }
       else
@@ -983,8 +985,11 @@ void Update_Eigen(t_mod *mod)
       n_iter   = 0;
       result   = 0;
 
-      For(i,mod->ns*mod->ns) mod->r_mat->qmat_buff->v[i] = mod->r_mat->qmat->v[i];
-
+      For(i,mod->ns*mod->ns)
+        {
+          mod->r_mat->qmat_buff->v[i] = mod->r_mat->qmat->v[i];
+        }
+      
       /* compute eigenvectors/values */
       /*       if(!EigenRealGeneral(mod->eigen->size,mod->r_mat->qmat,mod->eigen->e_val, */
       /* 			  mod->eigen->e_val_im, mod->eigen->r_e_vect, */

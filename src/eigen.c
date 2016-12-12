@@ -3,9 +3,9 @@
 *         for real general square matrix A
 *         A will be destroyed
 *         rr,ri are vectors containing eigenvalues
-*         vr,vi are matrices containing (right) eigenvectors
+*         vr,vi are matrices containing (right) real and imaginary eigenvectors
 *
-*              A*[vr+vi*i] = [vr+vi*i] * diag{rr+ri*i}
+*              A * [vr+vi*i] = [vr+vi*i] * diag{rr+ri*i}
 *
 *  Algorithm: Handbook for Automatic Computation, vol 2
 *             by Wilkinson and Reinsch, 1971
@@ -53,11 +53,12 @@ int Eigen(int job, phydbl *A, int n, phydbl *rr, phydbl *ri,
 /*     tiny=SQRT(POW((phydbl)BASE,(phydbl)(1-(int)DIGITS))); */
     tiny=FLT_MIN;
 
+    
     balance(A,n,&low,&hi,work);
     elemhess(job,A,n,low,hi,vr,vi, (int*)(work+n));
     if (-1 == realeig(job,A,n,low,hi,rr,ri,vr,vi)) return (-1);
     if (job) unbalance(n,vr,vi,low,hi,work);
-
+    
 /* sort, added by Z. Yang */
    for (i=0; i<n; i++) {
        for (j=i+1,it=i,t=rr[i]; j<n; j++)

@@ -191,4 +191,5 @@ void MCMC_Birth_Death_Updown(t_tree *tree);
 void MCMC_Rates_All(t_tree *tree);
 void MCMC_Times_And_Rates_Recur(t_node *a, t_node *d, int traversal, t_tree *tree);
 void MCMC_Times_And_Rates_All(t_tree *tree);
+void MCMC_Times_And_Rates_Root(t_tree *tree);
 #endif

@@ -244,14 +244,16 @@ int main(int argc, char **argv)
                   /*   Exit("\n"); */
                   /* } */
 
-
+                  Switch_Eigen(YES,tree->mod);                 
+                  Lk(NULL,tree);
+                  Switch_Eigen(NO,tree->mod);
   
                   if(tree->mod->s_opt->opt_topo)
 		    {
 		      if(tree->mod->s_opt->topo_search      == NNI_MOVE) Simu_Loop(tree);
 		      else if(tree->mod->s_opt->topo_search == SPR_MOVE) Speed_Spr_Loop(tree);
 		      else                                               Best_Of_NNI_And_SPR(tree);
-
+                      
                       if(tree->n_root) Add_Root(tree->a_edges[0],tree);
                     }
                   else
@@ -260,13 +262,11 @@ int main(int argc, char **argv)
                       tree->b_inst = create_beagle_instance(tree, io->quiet, io);
 #endif
                       //Optimize Branch lengths?
-                      if(tree->mod->s_opt->opt_subst_param || tree->mod->s_opt->opt_bl) {
+                      if(tree->mod->s_opt->opt_subst_param || tree->mod->s_opt->opt_bl) 
                         Round_Optimize(tree,ROUND_MAX);
-                      } 
-                      else { //No topology or branch length optimizations
-                        Lk(NULL,tree);
-                      }
+                       
                     }
+                
 
 
                   if(tree->mod->gamma_mgf_bl) Best_Root_Position_IL_Model(tree);

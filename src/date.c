@@ -46,7 +46,7 @@ void DATE_XML(char *xml_filename)
   mixt_tree->rates = RATES_Make_Rate_Struct(mixt_tree->n_otu);
   RATES_Init_Rate_Struct(mixt_tree->rates,NULL,mixt_tree->n_otu);
 
-
+  
   tree = mixt_tree;
   do
     {
@@ -110,6 +110,7 @@ void DATE_XML(char *xml_filename)
   MIXT_Check_Invar_Struct_In_Each_Partition_Elem(mixt_tree);
   MIXT_Check_RAS_Struct_In_Each_Partition_Elem(mixt_tree);
 
+  
   
   xnd = xroot->child;
   assert(xnd);

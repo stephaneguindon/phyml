@@ -696,7 +696,8 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
         {
           expl[catg*tree->mod->ns+state] = (phydbl)POW(tree->mod->eigen->e_val[state],len);
 
-          #ifdef SAFEMODE
+
+#ifdef SAFEMODE
           if(isinf(expl[catg*tree->mod->ns+state]) || isnan(expl[catg*tree->mod->ns+state])) 
             {
               PhyML_Printf("\n== expl=%f e_val=%f len=%f",
@@ -704,15 +705,16 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
                            tree->mod->eigen->e_val[state],len);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
-          #endif
+#endif
         }
 
       For(state,tree->mod->ns) 
         {
           expld[catg*tree->mod->ns+state] = expl[catg*tree->mod->ns+state] * 
             LOG(tree->mod->eigen->e_val[state]) * rr;
+          
 
-          #ifdef SAFEMODE
+#ifdef SAFEMODE
           if(isinf(expld[catg*tree->mod->ns+state]) || isnan(expld[catg*tree->mod->ns+state])) 
             {
               PhyML_Printf("\n== expld=%d expl=%f e_val=%f rr=%f",
@@ -721,7 +723,7 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
                            tree->mod->eigen->e_val[state],rr);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
-          #endif
+#endif
         }
 
       For(state,tree->mod->ns) 
@@ -729,7 +731,8 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
           expld2[catg*tree->mod->ns+state] = expld[catg*tree->mod->ns+state] * 
             LOG(tree->mod->eigen->e_val[state]) * rr;
 
-          #ifdef SAFEMODE
+          
+#ifdef SAFEMODE
           if(isinf(expld2[catg*tree->mod->ns+state]) || isnan(expld2[catg*tree->mod->ns+state])) 
             {
               PhyML_Printf("\n== expld2=%f e_val=%f len=%f",
@@ -737,10 +740,11 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
                            tree->mod->eigen->e_val[state],len);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
-          #endif
+#endif
         }
     }
 
+  
   loglk  = 0.0;
   dlnlk  = 0.0;
   d2lnlk = 0.0;
@@ -755,8 +759,7 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
       loglk = Lk_Core(-1,-1,YES,b,expl,tree); 
       // Make sure to keep the call above in the last position so that site_lk_cat is the
       // actual likelihood rather than its first or second derivative
-
-
+      
       if(isinf(loglk)) // Happens sometimes because we do not apply correction for SMALL_PIJ when use_eigen = YES
         {
           tree->use_eigen_lr = NO;
@@ -893,7 +896,6 @@ phydbl Lk_Core(int state, int ambiguity_check, short int returnlog, t_edge *b, p
           */
           if(tree->use_eigen_lr == YES)
             {
-
               site_lk_cat = Lk_Core_One_Class(tree->eigen_lr_left + site*dim1 + catg*dim2,
                                               tree->eigen_lr_rght + site*dim1 + catg*dim2,
                                               NULL,
@@ -1070,6 +1072,8 @@ phydbl Lk_Core(int state, int ambiguity_check, short int returnlog, t_edge *b, p
 // to the left and right of edge b
 void Update_Eigen_Lr(t_edge *b, t_tree *tree)
 {
+  
+     
   int site,catg,state,i,is_ambigu,observed_state;
   int dim1,dim2;
   phydbl *dum,*dumdum;
@@ -1079,7 +1083,14 @@ void Update_Eigen_Lr(t_edge *b, t_tree *tree)
       MIXT_Update_Eigen_Lr(b,tree);
       return;
     }
+
   
+#if (defined(__AVX__))
+  AVX_Update_Eigen_Lr(b,tree);
+  return;
+#endif
+
+
   dum    = (phydbl *)mCalloc(tree->mod->ns,sizeof(phydbl));
   dumdum = (phydbl *)mCalloc(tree->mod->ns,sizeof(phydbl));
   
@@ -1087,6 +1098,7 @@ void Update_Eigen_Lr(t_edge *b, t_tree *tree)
   
   dim1 = tree->mod->ras->n_catg * tree->mod->ns;
   dim2 = tree->mod->ns;
+  observed_state = -1;
   
   For(site,tree->n_pattern)
     {
@@ -1144,14 +1156,141 @@ void Update_Eigen_Lr(t_edge *b, t_tree *tree)
                 {
                   dumdum[state] = tree->mod->eigen->l_e_vect[state*dim2 + observed_state] * dum[observed_state];
                 }
-            }
-          
+            }          
           For(state,tree->mod->ns) tree->eigen_lr_rght[site*dim1 + catg*dim2 + state] = dumdum[state];
         }
     }
   Free(dum);
   Free(dumdum);
 }
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+#if (defined(__AVX__))
+void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree)
+{
+  int site,catg,state,is_ambigu,observed_state;
+  int i,j,k,l;
+  int dim1,dim2,nblocks,ns,sz;
+  phydbl *tip;
+  
+  ns = tree->mod->ns;
+  sz = (int)BYTE_ALIGN;
+  sz /= 8; // number of floating precision numbers in a __mm256d variable
+    
+  assert(tree->update_eigen_lr == YES);
+  
+  dim1           = tree->mod->ras->n_catg * tree->mod->ns;
+  dim2           = tree->mod->ns;
+  nblocks        = tree->mod->ns / sz;
+  observed_state = -1;
+  
+  __m256d _fplk[nblocks],_fplkev[sz],_colsum[nblocks];
+  phydbl *ev;
+
+  ev = NULL;
+#ifndef WIN32
+  if(posix_memalign((void **)&ev,BYTE_ALIGN,(size_t)sz*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+#else
+  ev = _aligned_malloc(sz * sizeof(phydbl),BYTE_ALIGN);
+#endif
+
+  tip = NULL;
+  if(b->rght->tax == YES)
+    {
+#ifndef WIN32
+      if(posix_memalign((void **)&tip,BYTE_ALIGN,(size_t)ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+#else
+      tip = _aligned_malloc(ns * sizeof(phydbl),BYTE_ALIGN);
+#endif
+    }
+  
+  
+  For(site,tree->n_pattern)
+    {
+      is_ambigu = YES;
+      if(b->rght->tax == YES) is_ambigu = b->rght->c_seq->is_ambigu[site];
+      if(is_ambigu == NO) observed_state = b->rght->c_seq->d_state[site];
+
+      For(catg,tree->mod->ras->n_catg)
+        {
+          // Dot product left partial likelihood with equilibrium freqs
+          For(i,nblocks) _fplk[i] = _mm256_mul_pd(_mm256_load_pd(&(b->p_lk_left[site*dim1 + catg*dim2 + i*sz])),
+                                                  _mm256_load_pd(&(tree->mod->e_frq->pi->v[i*sz])));
+          
+          For(i,nblocks) _colsum[i] = _mm256_setzero_pd();
+          // Multiply by matrix of right eigen vectors
+          // This matrix is made of nblocks*nblocks squares,
+          // each square being of 'area' sz*sz
+          For(i,nblocks) // row 
+            {
+              For(j,nblocks) // column
+                {
+                  For(k,sz) // column in sz*sz square
+                    {
+                      For(l,sz) // row in that same square
+                        {
+                          // Copy right eigen vector values column-by-column in block (i,j)
+                          ev[l] = tree->mod->eigen->r_e_vect[i*nblocks*sz*sz + j*sz + k + l*nblocks*sz];
+                        }
+                      _fplkev[k] = _mm256_mul_pd(_mm256_load_pd(ev),_fplk[i]);
+                    }
+                  _colsum[j] = _mm256_add_pd(_colsum[j],AVX_Horizontal_Add(_fplkev));
+                }
+            }          
+          For(j,nblocks) _mm256_store_pd(&(tree->eigen_lr_left[site*dim1 + catg*dim2 + j*sz]),_colsum[j]);
+
+
+          if(b->rght->tax == YES)
+            {
+              For(i,ns) tip[i] = b->p_lk_tip_r[site*dim2 + i];
+              For(i,nblocks) _fplk[i] = _mm256_load_pd(tip + i*sz); 
+            }
+          else
+            For(i,nblocks) _fplk[i] = _mm256_load_pd(&(b->p_lk_rght[site*dim1 + catg*dim2 + i*sz])); 
+
+          if(is_ambigu == YES)
+            {
+              For(i,nblocks) _colsum[i] = _mm256_setzero_pd();
+              // Multiply by matrix of right eigen vectors
+              // This matrix is made of nblocks*nblocks squares,
+              // each square being of 'area' sz*sz
+              For(i,nblocks) // row
+                {
+                  For(j,nblocks) // column
+                    {
+                      For(l,sz) // row in that same square
+                        {
+                          For(k,sz) // column in sz*sz square
+                            {
+                              // Copy left eigen vector values column-by-column in block (i,j)
+                              ev[k] = tree->mod->eigen->l_e_vect[i*nblocks*sz*sz + j*sz + k + l*nblocks*sz];
+                            }                          
+                          _fplkev[l] = _mm256_mul_pd(_mm256_load_pd(ev),_fplk[j]);
+                        }
+                      _colsum[i] = _mm256_add_pd(_colsum[i],AVX_Horizontal_Add(_fplkev));
+                    }
+                }
+              For(j,nblocks) _mm256_store_pd(&(tree->eigen_lr_rght[site*dim1 + catg*dim2 + j*sz]),_colsum[j]);
+            }
+          else
+            {
+              For(state,tree->mod->ns)
+                tree->eigen_lr_rght[site*dim1 + catg*dim2 + state] =
+                tree->mod->eigen->l_e_vect[state*dim2 + observed_state];
+            }
+        }
+    }
+
+  
+  if(ev)  Free(ev);
+  if(tip) Free(tip);
+
+}
+
+#elif (defined(__SSE3__))
+
+#endif
 
 /////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -4430,6 +4569,9 @@ phydbl AVX_Lk_Core_Nucl(int state, int ambiguity_check, t_edge *b, t_tree *tree)
 #endif
   dim2 = tree->mod->ns;
   dim3 = tree->mod->ns * tree->mod->ns;//Dimensions of the transition prob. matrix
+
+  plk   = NULL;
+  tip_v = NULL;
   
 #ifndef WIN32
   if(posix_memalign((void **)&tip_v,BYTE_ALIGN,(size_t)4*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
@@ -4440,6 +4582,7 @@ phydbl AVX_Lk_Core_Nucl(int state, int ambiguity_check, t_edge *b, t_tree *tree)
 #endif
 
 
+  
   log_site_lk     = .0;
   site_lk         = .0;
   site_lk_cat     = .0;
@@ -4493,7 +4636,7 @@ phydbl AVX_Lk_Core_Nucl(int state, int ambiguity_check, t_edge *b, t_tree *tree)
           
           _mm256_store_pd(plk,_plk);
 
-          _plk = _mm256_mul_pd(_plk,_mm256_loadu_pd(tree->mod->e_frq->pi->v));
+          _plk = _mm256_mul_pd(_plk,_mm256_load_pd(tree->mod->e_frq->pi->v));
 
           _mm256_store_pd(plk,_plk);
 
@@ -4655,7 +4798,9 @@ phydbl AVX_Lk_Core_AA(int state, int ambiguity_check, t_edge *b, t_tree *tree)
   dim2 = tree->mod->ns;
   dim3 = tree->mod->ns * tree->mod->ns;//Dimensions of the transition prob. matrix
   
-
+  tip_v = NULL;
+  plk = NULL;
+  
 #ifndef WIN32
   if(posix_memalign((void **)&tip_v,BYTE_ALIGN,(size_t)20*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   if(posix_memalign((void **)&plk,BYTE_ALIGN,(size_t)20*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
@@ -4663,9 +4808,6 @@ phydbl AVX_Lk_Core_AA(int state, int ambiguity_check, t_edge *b, t_tree *tree)
   tip_v = _aligned_malloc(20 * sizeof(phydbl),BYTE_ALIGN);
   plk = _aligned_malloc(20 * sizeof(phydbl),BYTE_ALIGN);
 #endif
-
-
-
 
   
   log_site_lk     = .0;
@@ -4766,7 +4908,7 @@ phydbl AVX_Lk_Core_AA(int state, int ambiguity_check, t_edge *b, t_tree *tree)
                 }
 
               _plk = _mm256_mul_pd(AVX_Horizontal_Add(_pplk),_plk_l[j]); 
-              _plk = _mm256_mul_pd(_plk,_mm256_loadu_pd(tree->mod->e_frq->pi->v+j*4));
+              _plk = _mm256_mul_pd(_plk,_mm256_load_pd(tree->mod->e_frq->pi->v+j*4));
               _mm256_store_pd(plk+j*4,_plk);
             }
 
@@ -4939,6 +5081,9 @@ void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
   phydbl *tip_v1,*tip_v2;
   
 
+  tip_v1 = NULL;
+  tip_v2 = NULL;
+  
 #ifndef WIN32
   if(posix_memalign((void **)&tip_v1,BYTE_ALIGN,(size_t)4*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   if(posix_memalign((void **)&tip_v2,BYTE_ALIGN,(size_t)4*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);

@@ -4684,7 +4684,11 @@ option *PhyML_XML(char *xml_filename)
       Unscale_Br_Len_Multiplier_Tree(mixt_tree);
       Set_Both_Sides(YES,mixt_tree);
       
-
+      
+      Switch_Eigen(YES,mixt_tree->mod);                 
+      Lk(NULL,mixt_tree);
+      Switch_Eigen(NO,mixt_tree->mod);
+      
       if(mixt_tree->mod->s_opt->opt_topo)
         {
           if(mixt_tree->mod->s_opt->topo_search      == NNI_MOVE) Simu_Loop(mixt_tree);
@@ -4697,10 +4701,6 @@ option *PhyML_XML(char *xml_filename)
              mixt_tree->mod->s_opt->opt_bl)
             {
               Round_Optimize(mixt_tree,ROUND_MAX);
-            }
-          else
-            {
-              Lk(NULL,mixt_tree);
             }
         }
 

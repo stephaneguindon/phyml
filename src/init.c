@@ -1026,6 +1026,8 @@ void Init_Model(calign *data, t_mod *mod, option *io)
 
   mod->ns = io->mod->ns;
 
+
+
   if(io->datatype == GENERIC) mod->whichmodel = JC69;
 
   dr      = (phydbl *)mCalloc(  mod->ns,sizeof(phydbl));
@@ -1037,7 +1039,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
       mod->l_min = LOG(mod->l_min);
       mod->l_max = LOG(mod->l_max);
     }
-
+  
   // Init unscaled relative rate frequencies
   if(mod->ras->init_r_proba == YES)
     {
@@ -1074,7 +1076,6 @@ void Init_Model(calign *data, t_mod *mod, option *io)
       For(i,mod->ras->n_catg) mod->ras->gamma_rr_unscaled->v[i] = mod->ras->gamma_rr->v[i];      
     }
   
-
   if(io->datatype == NT)
     {
       /* Set the substitution parameters to their default values
@@ -1206,18 +1207,6 @@ void Init_Model(calign *data, t_mod *mod, option *io)
           mod->custom_mod_string->s[5] = '5';
           Translate_Custom_Mod_String(mod);
         }
-                  
-      // Eigen decomposition for all substitution models
-      if(mod->use_m4mod == NO)
-        {
-          Switch_Eigen(YES,mod);          
-          Update_Eigen(mod);
-          Switch_Eigen(NO,mod);
-        }
-      /* if((mod->whichmodel != GTR)    &&  */
-      /* 	 (mod->whichmodel != CUSTOM) &&  */
-      /* 	 (mod->whichmodel != HKY85)) mod->update_eigen = NO; */
-
     }
   else if(mod->io->datatype == AA)
     {
@@ -1415,12 +1404,13 @@ void Init_Model(calign *data, t_mod *mod, option *io)
       Warn_And_Exit("");
     }
 
-  
   if(!mod->use_m4mod) Set_Model_Parameters(mod);
 
   Init_Eigen_Struct(mod->eigen);
 
-  free(dr);free(di);free(space);
+  free(dr);
+  free(di);
+  free(space);
 }
 
 //////////////////////////////////////////////////////////////

@@ -2359,7 +2359,7 @@ void MIXT_Init_Model(t_tree *mixt_tree)
   tree = mixt_tree;
   do
     {
-      if(tree->next_mixt)
+      if(tree->next_mixt != NULL)
         {
           tree->mod->next_mixt = tree->next_mixt->mod;
           tree->next_mixt->mod->prev_mixt = tree->mod;

@@ -854,8 +854,18 @@ t_efrq *Make_Efrq(int ns)
   e_frq = (t_efrq *)mCalloc(1,sizeof(t_efrq));
 
   e_frq->pi               = (vect_dbl *)mCalloc(1,sizeof(vect_dbl));
-  e_frq->pi->v            = (phydbl *)mCalloc(ns,sizeof(phydbl));
   e_frq->pi->len          = ns;
+
+#if (defined(__AVX__) || defined(__SSE3__))
+#ifndef WIN32
+  if(posix_memalign((void **)&e_frq->pi->v,BYTE_ALIGN,(size_t)ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+#else
+  e_frq->pi->v = _aligned_malloc(ns * sizeof(phydbl),BYTE_ALIGN);
+#endif
+#else
+  e_frq->pi->v = (phydbl *)mCalloc(ns,sizeof(phydbl));
+#endif
+
 
   e_frq->pi_unscaled      = (vect_dbl *)mCalloc(1,sizeof(vect_dbl));
   e_frq->pi_unscaled->v   = (phydbl *)mCalloc(ns,sizeof(phydbl));
