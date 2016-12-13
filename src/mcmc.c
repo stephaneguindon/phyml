@@ -2091,7 +2091,7 @@ void MCMC_Updown_T_Br(t_tree *tree)
   phydbl cur_lnL_rate,new_lnL_rate;
   phydbl cur_lnL_time,new_lnL_time;
   phydbl floor;
-  int n_nodes;
+  int n_nodes, target;
 
   /*! Check that sequences are isochronous. */
   For(i,tree->n_otu-1) if(!Are_Equal(tree->rates->nd_t[i+1],tree->rates->nd_t[i],1.E-10)) return; 
@@ -2099,7 +2099,6 @@ void MCMC_Updown_T_Br(t_tree *tree)
   if(FABS(tree->rates->t_prior_max[tree->n_root->num] - tree->rates->t_prior_min[tree->n_root->num]) < 1.E-10) return;
 
   RATES_Record_Times(tree);
-  Record_Br_Len(tree);
 
   K            = tree->mcmc->tune_move[tree->mcmc->num_move_updown_t_br];
   ratio        = 0.0;
@@ -2114,9 +2113,9 @@ void MCMC_Updown_T_Br(t_tree *tree)
   mult = EXP(K*(u-0.5));
 
 
+  target = Rand_Int(tree->n_otu,2*tree->n_otu-3);
   floor = 0.0;
-
-  Scale_Subtree_Height(tree->n_root,mult,floor,&n_nodes,tree);
+  Scale_Subtree_Height(tree->a_nodes[target],mult,floor,&n_nodes,tree);
 
   For(i,2*tree->n_otu-1)
     {
@@ -2124,7 +2123,6 @@ void MCMC_Updown_T_Br(t_tree *tree)
   	 tree->rates->nd_t[i] < tree->rates->t_prior_min[i])
   	{
   	  RATES_Reset_Times(tree);
-	  Restore_Br_Len(tree);
 	  tree->mcmc->run_move[tree->mcmc->num_move_updown_t_br]++;
   	  return;
   	}
@@ -2132,46 +2130,26 @@ void MCMC_Updown_T_Br(t_tree *tree)
 
   if(RATES_Check_Node_Times(tree)) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   
-  For(i,2*tree->n_otu-2) tree->rates->br_do_updt[i] = YES;
-  RATES_Update_Cur_Bl(tree);
   new_lnL_data = Lk(NULL,tree);
-
   new_lnL_rate = RATES_Lk_Rates(tree);
   new_lnL_time = TIMES_Lk_Times(NO,tree);
 
-  /* The Hastings ratio is actually mult^(n) when changing the absolute
-     node heights. When considering the relative heights, this ratio combined
-     to the Jacobian for the change of variable ends up to being equal to mult. 
-  */
-  ratio += (n_nodes - 1)*LOG(mult);
-  /* ratio += -LOG(mult) + LOG(Dgamma(1./mult,1./K,K)/Dgamma(mult,1./K,K)); */
+  ratio += n_nodes*LOG(mult);
 
   /* Likelihood ratio */
   ratio += (new_lnL_data - cur_lnL_data);
-
-  /* Prior ratio */
   ratio += (new_lnL_rate - cur_lnL_rate);
   ratio += (new_lnL_time - cur_lnL_time);
-
-  /* !!!!!!!!!!!!1 */
-  /* ratio += LOG(Dexp(FABS(new_height-floor),1./10.) / Dexp(FABS(cur_height-floor),1./10.)); */
   
   ratio = EXP(ratio);
   alpha = MIN(1.,ratio);
   u = Uni();
   
-  /* printf("\n. t_old = %f t_new = %f br_old = %f br_new = %f mult = %f K=%f", */
-  /*        tree->rates->nd_t[tree->n_root->num]/mult, */
-  /*        tree->rates->nd_t[tree->n_root->num], */
-  /*        tree->rates->birth_rate*mult, */
-  /*        tree->rates->birth_rate,mult,K); */
 
   if(u > alpha)
     {
       RATES_Reset_Times(tree);
-      tree->rates->birth_rate *= mult;
-      Restore_Br_Len(tree);
-      tree->c_lnL = cur_lnL_data;
+      tree->c_lnL              = cur_lnL_data;
       tree->rates->c_lnL_rates = cur_lnL_rate;
       tree->rates->c_lnL_times = cur_lnL_time;
     }
@@ -2198,7 +2176,6 @@ void MCMC_Subtree_Height(t_tree *tree)
   int n_nodes;
 
   RATES_Record_Times(tree);
-  Record_Br_Len(tree);
 
   K = tree->mcmc->tune_move[tree->mcmc->num_move_subtree_height];
   ratio        = 0.0;
@@ -2211,53 +2188,30 @@ void MCMC_Subtree_Height(t_tree *tree)
 
   u = Uni();
   mult = EXP(K*(u-0.5));
-  /* mult = Rgamma(1./K,K); */
 
   target = Rand_Int(tree->n_otu,2*tree->n_otu-3);
-
-  floor = tree->rates->t_floor[target];
-
+  floor = 0.0;
   if(tree->a_nodes[target] == tree->n_root) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
   if(!Scale_Subtree_Height(tree->a_nodes[target],mult,floor,&n_nodes,tree))
     {
       RATES_Reset_Times(tree);
-      Restore_Br_Len(tree);
       tree->mcmc->run_move[tree->mcmc->num_move_subtree_height]++;
       return;
     }
 
-  
-  For(i,2*tree->n_otu-1)
-    {
-      if(tree->rates->nd_t[i] > tree->rates->t_prior_max[i] ||
-  	 tree->rates->nd_t[i] < tree->rates->t_prior_min[i])
-  	{
-  	  RATES_Reset_Times(tree);
-	  Restore_Br_Len(tree);
-	  tree->mcmc->run_move[tree->mcmc->num_move_subtree_height]++;
-  	  return;
-  	}
-    }
+  if(RATES_Check_Node_Times(tree)) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
-     
-  For(i,2*tree->n_otu-2) tree->rates->br_do_updt[i] = YES;
-  RATES_Update_Cur_Bl(tree);
-  new_lnL_data = Lk(NULL,tree);
-
-  new_lnL_rate = RATES_Lk_Rates(tree);
   new_lnL_time = TIMES_Lk_Times(NO,tree);
 
-  /* The Hastings ratio here is mult^(n_nodes) and the ratio of the prior joint densities
-     of the modified node heigths given the unchanged one is 1. This is different from the 
-     case where all the nodes, including the root node, are scaled. 
-  */
+  if(new_lnL_time > UNLIKELY)
+    {
+      new_lnL_data = Lk(NULL,tree);
+      new_lnL_rate = RATES_Lk_Rates(tree);
+    }
+  
   ratio += (phydbl)(n_nodes)*LOG(mult);
-
-  /* Likelihood ratio */
   ratio += (new_lnL_data - cur_lnL_data);
-
-  /* Prior ratio */
   ratio += (new_lnL_rate - cur_lnL_rate);
   ratio += (new_lnL_time - cur_lnL_time);
 
@@ -2269,8 +2223,7 @@ void MCMC_Subtree_Height(t_tree *tree)
   if(u > alpha)
     {
       RATES_Reset_Times(tree);
-      Restore_Br_Len(tree);
-      tree->c_lnL = cur_lnL_data;
+      tree->c_lnL              = cur_lnL_data;
       tree->rates->c_lnL_rates = cur_lnL_rate;
       tree->rates->c_lnL_times = cur_lnL_time;
     }
@@ -6065,7 +6018,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_clock_r]               = 1.0;
   mcmc->move_weight[mcmc->num_move_tree_height]           = 0.1;
   mcmc->move_weight[mcmc->num_move_time_slice]            = 0.0;
-  mcmc->move_weight[mcmc->num_move_subtree_height]        = 0.0;
+  mcmc->move_weight[mcmc->num_move_subtree_height]        = 1.0;
   mcmc->move_weight[mcmc->num_move_nu]                    = 1.0;
   mcmc->move_weight[mcmc->num_move_kappa]                 = 0.5;
   mcmc->move_weight[mcmc->num_move_spr]                   = 2.0;
