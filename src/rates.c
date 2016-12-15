@@ -421,8 +421,8 @@ phydbl RATES_Lk_Rates_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl n
             /*    Pgamma(tree->rates->min_rate,1./(tree->rates->nu*dt_d*POW(tree->rates->clock_r,2)),tree->rates->nu*dt_d*POW(tree->rates->clock_r,2))); */
 
             int err;
-            /* log_dens = Log_Dnorm_Trunc(br_r_d,1.0,tree->rates->nu/tree->rates->clock_r,tree->rates->min_rate,tree->rates->max_rate,&err); */
-            log_dens = Log_Dnorm_Trunc(br_r_d,1.0,2.0,tree->rates->min_rate,tree->rates->max_rate,&err);
+            log_dens = Log_Dnorm_Trunc(br_r_d,1.0,tree->rates->nu/tree->rates->clock_r,tree->rates->min_rate,tree->rates->max_rate,&err);
+            /* log_dens = Log_Dnorm_Trunc(br_r_d,1.0,2.0,tree->rates->min_rate,tree->rates->max_rate,&err); */
           }
         
 	/* log_dens = LOG(log_dens); */
@@ -889,7 +889,6 @@ int RATES_Check_Node_Times(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void RATES_Check_Node_Times_Pre(t_node *a, t_node *d, int *err, t_tree *tree)
 {
   if((tree->rates->nd_t[d->num] < tree->rates->nd_t[a->num]) || (FABS(tree->rates->nd_t[d->num] - tree->rates->nd_t[a->num]) < 1.E-20))
@@ -911,12 +910,6 @@ void RATES_Check_Node_Times_Pre(t_node *a, t_node *d, int *err, t_tree *tree)
 }
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
-
-
-
-
-
 
 void RATES_Bracket_N_Jumps(int *up, int *down, phydbl param)
 {

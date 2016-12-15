@@ -3462,7 +3462,6 @@ void MCMC_Randomize_Node_Rates(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void MCMC_Randomize_Rates(t_tree *tree)
 {
 
@@ -5010,7 +5009,7 @@ void MCMC_Sim_Rate(t_node *a, t_node *d, t_tree *tree)
 
 void MCMC_Prune_Regraft(t_tree *tree)
 {
-  phydbl u,alpha,ratio,hr;
+  phydbl u,alpha,ratio;
   phydbl t_min,t_max;
   phydbl cur_lnL_seq,new_lnL_seq;
   phydbl cur_lnL_rate,new_lnL_rate;
@@ -5042,7 +5041,6 @@ void MCMC_Prune_Regraft(t_tree *tree)
       new_lnL_time = UNLIKELY;
 
       ratio          = 0.0;
-      hr             = 0.0;
       regraft_edge   = NULL;
       new_regraft_nd = NULL;
       cur_regraft_nd = NULL;
@@ -5146,6 +5144,8 @@ void MCMC_Prune_Regraft(t_tree *tree)
       regraft_nd_list = DATE_List_Of_Regraft_Nodes(effective_prune,prune_daughter,&regraft_t_min,&regraft_t_max,NO,tree);
       assert(regraft_nd_list);
 
+      if(prune == tree->n_root) Push_Bottom_Linked_List(prune,&regraft_nd_list);
+
       // Number of regraft nodes
       n_regraft_nd = Linked_List_Len(regraft_nd_list);
 
@@ -5184,19 +5184,20 @@ void MCMC_Prune_Regraft(t_tree *tree)
       Free_Linked_List(regraft_nd_list);
 
 
-      // Time of regraft node and corresponding (partial) Hastings ratio
-      t_max = MIN(times[prune_daughter->num],times[cur_regraft_nd->num]);      
+      // Time of regraft node and corresponding (partial) Hastings ratio (reverse move)
+      t_max = MIN(times[prune_daughter->num],times[cur_regraft_nd->num]); // if prune == tree->n_root times[cur_regraft_nd->num] is already set to the time of one of the two nodes below
       if(prune == tree->n_root) t_min = 3.0*t_max;
       else t_min = times[prune->anc->num];
       t_min = MAX(t_min,regraft_t_min);
-      hr += LOG(1./(t_max - t_min));
+      ratio += LOG(1./(t_max - t_min));
 
 
+      // Time of regraft node and corresponding (partial) Hastings ratio (forward move)
       t_max = MIN(times[prune_daughter->num],times[new_regraft_nd->num]);      
       if(new_regraft_nd == tree->n_root) t_min = 3.0*t_max;
       else t_min = times[new_regraft_nd->anc->num];
       t_min = MAX(t_min,regraft_t_min);
-      hr -= LOG(1./(t_max - t_min));
+      ratio -= LOG(1./(t_max - t_min));
 
       new_t = Uni()*(t_max-t_min) + t_min;
       
@@ -5408,20 +5409,21 @@ void MCMC_Prune_Regraft(t_tree *tree)
 
 void MCMC_Prune_Regraft_Local(t_tree *tree)
 {
-  phydbl u,alpha,ratio,hr;
+  phydbl u,alpha,ratio;
   phydbl t_min,t_max;
   phydbl cur_lnL_seq,new_lnL_seq;
   phydbl cur_lnL_rate,new_lnL_rate;
   phydbl cur_lnL_time,new_lnL_time;
   phydbl regraft_t_min,regraft_t_max;
+  phydbl new_t;
   int i,prune_idx,n_iter,n_regraft_nd,regraft_idx;
   phydbl *times;
   int rnd_dir,dir_v1,dir_v2;
-  t_node *prune,*prune_daughter,*regraft_nd,*cur_regraft_nd;
+  t_node *prune,*prune_daughter,*new_regraft_nd,*cur_regraft_nd,*effective_prune;
   t_ll *regraft_nd_list;
   t_edge *target, *ori_target, *residual,*regraft_edge;
   t_node *a, *b, *c, *d, *e;
-
+  
   n_iter = MAX(1,(int)(tree->n_otu/5));
   regraft_nd_list = NULL;
   times = tree->rates->nd_t;
@@ -5429,28 +5431,25 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
   while(n_iter--)
     {
       tree->mcmc->run_move[tree->mcmc->num_move_spr_local]++;
+
       
       RATES_Record_Times(tree);
-  
+      
       cur_lnL_seq  = tree->c_lnL;
       new_lnL_seq  = UNLIKELY;
       cur_lnL_rate = tree->rates->c_lnL_rates;
       new_lnL_rate = UNLIKELY;
       cur_lnL_time = tree->rates->c_lnL_times;
       new_lnL_time = UNLIKELY;
-      ratio        = 0.0;
-      hr           = 0.0;
-      regraft_nd   = NULL;
 
-      // Select prune node (any internal node except the root)
-      i = 0;
-      do
-        {
-          prune_idx = Rand_Int(tree->n_otu,2*tree->n_otu-2);
-          i++;
-          assert(i<1000);
-        }
-      while(tree->a_nodes[prune_idx] == tree->n_root);
+      ratio          = 0.0;
+      regraft_edge   = NULL;
+      new_regraft_nd = NULL;
+      cur_regraft_nd = NULL;
+      new_t          = 0.0;
+
+      // Select prune node (any internal node)
+      prune_idx = Rand_Int(tree->n_otu,2*tree->n_otu-2);
 
       prune = tree->a_nodes[prune_idx];
 
@@ -5468,12 +5467,52 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
       u = Uni();
       if(u < 0.5) rnd_dir = dir_v1;
       else        rnd_dir = dir_v2;
+          
+      prune_daughter  = prune->v[rnd_dir];
+      cur_regraft_nd = prune->v[rnd_dir == dir_v1 ? dir_v2 : dir_v1];      
       
-      prune_daughter = prune->v[rnd_dir];
-      cur_regraft_nd = prune->v[rnd_dir == dir_v1 ? dir_v2 : dir_v1];
+      
+      assert(prune_daughter->anc == prune);
 
+      if(prune == tree->n_root)
+        {
+          cur_regraft_nd = tree->n_root;
+          
+          if(prune_daughter == prune->v[dir_v1] && prune->v[dir_v2]->tax == YES)
+            {
+              prune_daughter = prune->v[dir_v2];
+            }
+
+          if(prune_daughter == prune->v[dir_v2] && prune->v[dir_v1]->tax == YES)
+            {
+              prune_daughter = prune->v[dir_v1];
+            }
+          
+          if(prune_daughter == tree->n_root->v[1])
+            {
+              effective_prune = tree->n_root->v[2];
+              times[tree->n_root->num] = times[tree->n_root->v[2]->num];
+            }
+          else
+            {
+              effective_prune = tree->n_root->v[1];
+              times[tree->n_root->num] = times[tree->n_root->v[1]->num];
+            }
+        }
+      else
+        {
+          effective_prune = prune;
+        }
+     
+      // Get the list of potential regraft nodes (oldest node on regraft edge)
+      regraft_nd_list = DATE_List_Of_Regraft_Nodes(effective_prune,prune_daughter,&regraft_t_min,&regraft_t_max,NO,tree);
+      assert(regraft_nd_list);
+
+      if(prune == tree->n_root) Push_Bottom_Linked_List(prune,&regraft_nd_list);
+      
 
       /*
+
           |
           |
           d
@@ -5484,52 +5523,14 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
      /\
     /  \
     a   b
-        */
-
-      /* printf("\n> prune: %d prune->anc: %d [%d %d %d] daughter: %d root: %d root->v1: %d root->v2: %d", */
-      /*        prune->num, */
-      /*        prune->anc->num, */
-      /*        prune->v[0]->num, */
-      /*        prune->v[1]->num, */
-      /*        prune->v[2]->num, */
-      /*        prune_daughter->num, */
-      /*        tree->n_root->num, */
-      /*        tree->n_root->v[1]->num, */
-      /*        tree->n_root->v[2]->num); */
-      /* fflush(NULL); */
-
-      // Get the list of potential regraft nodes (oldest node on regraft edge)
-      regraft_nd_list = DATE_List_Of_Regraft_Nodes(prune,prune_daughter,&regraft_t_min,&regraft_t_max,NO,tree);
-      assert(regraft_nd_list);
-
       
+      */
 
-      
-      /* { */
-      /*   t_ll *ll; */
-      /*   t_node *n; */
-      /*   ll = regraft_nd_list->head; */
-      /*   do */
-      /*     { */
-      /*       n = ll->v; */
-      /*       printf("\n> LIST %d",n->num); */
-      /*       ll = ll->next;             */
-      /*     } */
-      /*   while(ll); */
-      /* } */
-      
+
+      // Probability of forward move
       a = b = c = d = e = NULL;
       
-      For(i,3)
-        {
-          if(prune->v[i] != prune->anc && prune->b[i] != tree->e_root && prune->v[i] != prune_daughter)
-            {
-              e = prune->v[i];
-              break;
-            }
-        }
-      
-      assert(e);
+      e = cur_regraft_nd;
 
       if(e->tax == NO)
         {
@@ -5540,193 +5541,183 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
                   if(a == NULL) a = e->v[i];
                   else          b = e->v[i];
                 }
-              }
+            }
         }
-      
-      d = prune->anc;
-      
-      For(i,3)
-        {
-          if(d->v[i] != d->anc && d->b[i] != tree->e_root && d->v[i] != prune)
+
+      if(prune != tree->n_root)
+        {          
+          d = prune->anc;      
+
+          For(i,3)
             {
-              c = d->v[i];
-              break;
+              if(d->v[i] != d->anc && d->b[i] != tree->e_root && d->v[i] != prune)
+                {
+                  c = d->v[i];
+                  break;
+                }
             }
         }
       
-      /* printf("\n> a: %d b: %d c: %d d; %d e: %d", */
-      /*        a?a->num:-1, */
-      /*        b?b->num:-1, */
-      /*        c?c->num:-1, */
-      /*        d?d->num:-1, */
-      /*        e?e->num:-1); */
-
       For(i,2*tree->n_otu-1)
         {
           if(tree->a_nodes[i] != a &&
              tree->a_nodes[i] != b &&
              tree->a_nodes[i] != c &&
-             tree->a_nodes[i] != d &&
-             tree->a_nodes[i] != e)
+             tree->a_nodes[i] != d)
             Remove_From_Linked_List(NULL,tree->a_nodes[i],&regraft_nd_list);
         }
-
-      // Cannot regraft above root node
-      Remove_From_Linked_List(NULL,tree->n_root,&regraft_nd_list);
       
       // Number of regraft nodes
-      n_regraft_nd = Linked_List_Len(regraft_nd_list);
-      
-      if(!(n_regraft_nd > 0)) // Should be at least 1, since original graft site is in the list
+      n_regraft_nd = Linked_List_Len(regraft_nd_list);      
+      if(n_regraft_nd == 0)
         {
-          regraft_nd_list = DATE_List_Of_Regraft_Nodes(prune,prune_daughter,&regraft_t_min,&regraft_t_max,YES,tree);
-          assert(FALSE);
+          RATES_Reset_Times(tree);
+          Free_Linked_List(regraft_nd_list);
+          continue;
         }
+      ratio -= LOG(1./n_regraft_nd);
       
-      hr -= LOG(1./n_regraft_nd);
 
-      // Randomly select one (uniform)
+
+      // Randomly select one node among potential regraft sites (uniform)
       regraft_idx = Rand_Int(0,n_regraft_nd-1);      
-      regraft_nd = Linked_List_Elem(regraft_idx,regraft_nd_list);
+      new_regraft_nd = Linked_List_Elem(regraft_idx,regraft_nd_list);      
       Free_Linked_List(regraft_nd_list);
 
+
       // Time of regraft node and corresponding (partial) Hastings ratio
-      t_max = MIN(times[prune_daughter->num],times[cur_regraft_nd->num]);
-      t_min = times[prune->anc->num];      
+      t_max = MIN(times[prune_daughter->num],times[cur_regraft_nd->num]);      
+      if(prune == tree->n_root) t_min = 3.0*t_max;
+      else t_min = times[prune->anc->num];
       t_min = MAX(t_min,regraft_t_min);
-      hr += LOG(1./(t_max - t_min));
+      ratio += LOG(1./(t_max - t_min));
+
+
+      t_max = MIN(times[prune_daughter->num],times[new_regraft_nd->num]);      
+      if(new_regraft_nd == tree->n_root) t_min = 3.0*t_max;
+      else t_min = times[new_regraft_nd->anc->num];
+      t_min = MAX(t_min,regraft_t_min);
+      ratio -= LOG(1./(t_max - t_min));
+
+      new_t = Uni()*(t_max-t_min) + t_min;
 
       
+      // Probability of backward move
+      regraft_nd_list = DATE_List_Of_Regraft_Nodes(effective_prune,prune_daughter,&regraft_t_min,&regraft_t_max,NO,tree);
+      assert(regraft_nd_list);
+      if(prune == tree->n_root) Push_Bottom_Linked_List(prune,&regraft_nd_list);
+
+      a = b = c = d = e = NULL;
+      
+      e = new_regraft_nd;
+
+      if(e->tax == NO)
+        {
+          For(i,3)
+            {
+              if(e->v[i] != e->anc && e->b[i] != tree->e_root)
+                {
+                  if(a == NULL) a = e->v[i];
+                  else          b = e->v[i];
+                }
+            }
+        }
+
+      if(new_regraft_nd != tree->n_root)
+        {          
+          d = new_regraft_nd->anc;      
+
+          For(i,3)
+            {
+              if(d->v[i] != d->anc && d->b[i] != tree->e_root && d->v[i] != new_regraft_nd)
+                {
+                  c = d->v[i];
+                  break;
+                }
+            }
+        }
+      
+      For(i,2*tree->n_otu-1)
+        {
+          if(tree->a_nodes[i] != a &&
+             tree->a_nodes[i] != b &&
+             tree->a_nodes[i] != c &&
+             tree->a_nodes[i] != d)
+            Remove_From_Linked_List(NULL,tree->a_nodes[i],&regraft_nd_list);
+        }
+      
+      // Number of regraft nodes
+      n_regraft_nd = Linked_List_Len(regraft_nd_list);      
+      Free_Linked_List(regraft_nd_list);
+      assert(n_regraft_nd > 0);
+      ratio += LOG(1./n_regraft_nd);
+      
+
+
+
+
       // Prune
       target = residual = NULL;
       Prune_Subtree(prune,prune_daughter,&target,&residual,tree);
       ori_target = target;
-            
+      
+      
       // Regraft edge is the one sitting above regraft_nd
-      if(regraft_nd == tree->n_root->v[1] ||
-         regraft_nd == tree->n_root->v[2]) regraft_edge = tree->e_root;
+      if(new_regraft_nd == tree->n_root->v[1] ||
+         new_regraft_nd == tree->n_root->v[2] ||
+         new_regraft_nd == tree->n_root) regraft_edge = tree->e_root;
       else
         {
-          For(i,3) if(regraft_nd->v[i] == regraft_nd->anc) break;
-          regraft_edge = regraft_nd->b[i];
+          For(i,3) if(new_regraft_nd->v[i] == new_regraft_nd->anc) break;
+          assert(i!=3);
+          regraft_edge = new_regraft_nd->b[i];
         }
 
-      assert(regraft_edge);
-
-      // Regraft
-      Graft_Subtree(regraft_edge,prune,residual,regraft_nd,tree);
-
-      /* printf("\n. REGRAFT: %d",regraft_nd->num); */
-      
-      /* printf("\n< prune: %d prune->anc: %d [%d %d %d] daughter: %d root: %d root->v1: %d root->v2: %d", */
-      /*        prune->num, */
-      /*        prune->anc->num, */
-      /*        prune->v[0]->num, */
-      /*        prune->v[1]->num, */
-      /*        prune->v[2]->num, */
-      /*        prune_daughter->num, */
-      /*        tree->n_root->num, */
-      /*        tree->n_root->v[1]->num, */
-      /*        tree->n_root->v[2]->num); */
+      /* printf("\n. effective_prune: %d",effective_prune->num); */
       /* fflush(NULL); */
 
-      
-      // Probability of inverse move
-      // Get the list of potential regraft nodes (oldest node on regraft edge)
-      regraft_nd_list = DATE_List_Of_Regraft_Nodes(prune,prune_daughter,&regraft_t_min,&regraft_t_max,NO,tree);
+      assert(regraft_edge);      
 
-      /* { */
-      /*   t_ll *ll; */
-      /*   t_node *n; */
-      /*   ll = regraft_nd_list->head; */
-      /*   do */
-      /*     { */
-      /*       n = ll->v; */
-      /*       printf("\n< LIST %d",n->num); */
-      /*       ll = ll->next;             */
-      /*     } */
-      /*   while(ll); */
-      /* } */
+      // Regraft
+      Graft_Subtree(regraft_edge,
+                    effective_prune,
+                    residual,
+                    new_regraft_nd,tree);
 
-      a = b = c = d = e = NULL;
-      
-      For(i,3)
+
+      // Time and corresponding (partial) Hastings ratio            
+      if(new_regraft_nd == tree->n_root)
         {
-          if(prune->v[i] != prune->anc && prune->b[i] != tree->e_root && prune->v[i] != prune_daughter)
-            {
-              e = prune->v[i];
-              break;
-            }
+          times[effective_prune->num] = times[tree->n_root->num];
+          times[tree->n_root->num] = new_t;
         }
-      
-      assert(e);
-
-      if(e->tax == NO)
+      else
         {
-          For(i,3)
-            {
-              if(e->v[i] != e->anc && e->b[i] != tree->e_root)
-                {
-                  if(a == NULL) a = e->v[i];
-                  else          b = e->v[i];
-                }
-              }
+          times[effective_prune->num] = new_t;
         }
-      
-      d = prune->anc;
-      
-      For(i,3)
-        {
-          if(d->v[i] != d->anc && d->b[i] != tree->e_root && d->v[i] != prune)
-            {
-              c = d->v[i];
-              break;
-            }
-        }
-      
-      /* printf("\n< a: %d b: %d c: %d d; %d e: %d", */
-      /*        a?a->num:-1, */
-      /*        b?b->num:-1, */
-      /*        c?c->num:-1, */
-      /*        d?d->num:-1, */
-      /*        e?e->num:-1); */
-
-      For(i,2*tree->n_otu-1)
-        {
-          if(tree->a_nodes[i] != a &&
-             tree->a_nodes[i] != b &&
-             tree->a_nodes[i] != c &&
-             tree->a_nodes[i] != d &&
-             tree->a_nodes[i] != e)
-            Remove_From_Linked_List(NULL,tree->a_nodes[i],&regraft_nd_list);
-        }
-          
-      // Cannot regraft above root node
-      Remove_From_Linked_List(NULL,tree->n_root,&regraft_nd_list);
-
-      // Number of regraft nodes
-      n_regraft_nd = Linked_List_Len(regraft_nd_list);
-      
-      assert(n_regraft_nd > 0); // Should be at least 1, since original graft site is in the list
-      
-      hr += LOG(1./n_regraft_nd);
-
-      Free_Linked_List(regraft_nd_list);
-
-
-
-      // Time of regraft node and corresponding (partial) Hastings ratio
-      t_max = MIN(times[prune_daughter->num],times[regraft_nd->num]);
-      t_min = times[prune->anc->num];            
-      t_min = MAX(t_min,regraft_t_min);            
-      hr -= LOG(1./(t_max - t_min));
-
-      times[prune->num] = Uni() * (t_max - t_min) + t_min;
 
       if(!TIMES_Check_Node_Height_Ordering(tree))
         {
-          printf("\n. root: %d %d %d",tree->n_root->num,tree->n_root->v[1]->num,tree->n_root->v[2]->num);
-          Exit("\n");
+          printf("\n== prune[%d,%d]->t:%.3f daughter[%d]->t:%.3f prune_anc[%d]->t:%.3f regraft[%d]->t:%.3f regraft_anc[%d]->t:%.3f [effective:%d] t_prior_min/max: [prune:[%.3f %.3f] regraft:[%.3f %.3f]] reg_t_min:%.3f reg_t_max:%.3f",
+             effective_prune->num,
+             prune->num,
+             times[effective_prune->num],
+             prune_daughter->num,
+             times[prune_daughter->num],
+             effective_prune->anc->num,
+             times[effective_prune->anc->num],
+             new_regraft_nd->num,
+             times[new_regraft_nd->num],
+             new_regraft_nd->anc ? new_regraft_nd->anc->num : -1,
+             new_regraft_nd->anc ? times[new_regraft_nd->anc->num] : +1.,
+             effective_prune->num,
+             tree->rates->t_prior_min[effective_prune->num],
+             tree->rates->t_prior_max[effective_prune->num],
+             tree->rates->t_prior_min[new_regraft_nd->num],
+             tree->rates->t_prior_max[new_regraft_nd->num],
+             regraft_t_min,regraft_t_max);
+          PhyML_Printf("\n== root: %d %d %d",tree->n_root->num,tree->n_root->v[1]->num,tree->n_root->v[2]->num);
+          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
         }
 
       DATE_Assign_Primary_Calibration(tree);
@@ -5750,41 +5741,19 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
       if(tree->mcmc->always_yes == YES && new_lnL_time > UNLIKELY) alpha = 1.0;
       
       u = Uni();
-            
+
       if(u > alpha)
         {
           // Reject
-          Prune_Subtree(prune,prune_daughter,&target,&residual,tree);
-          /* printf("\n< %d %d %d - %d %d",cur_regraft_nd->num,ori_target->left->num,ori_target->rght->num,residual->left->num,residual->rght->num); */
-          /* printf("\nx root: %d %d %d",tree->n_root->num,tree->n_root->v[1]->num,tree->n_root->v[2]->num);           */
-          fflush(NULL);
-          Graft_Subtree(ori_target,prune,residual,cur_regraft_nd,tree);
+          Prune_Subtree(effective_prune,prune_daughter,&target,&residual,tree);
+          Graft_Subtree(ori_target,effective_prune,residual,prune == tree->n_root ? tree->n_root : cur_regraft_nd,tree);
 
           RATES_Reset_Times(tree);
           DATE_Assign_Primary_Calibration(tree);
           TIMES_Lk_Times(NO,tree); 
-          tree->c_lnL = cur_lnL_seq;
+          tree->c_lnL              = cur_lnL_seq;
           tree->rates->c_lnL_times = cur_lnL_time;
           tree->rates->c_lnL_rates = cur_lnL_rate;
-
-          /* DATE_Assign_Primary_Calibration(tree); */
-          /* DATE_Update_T_Prior_MinMax(tree); */
-
-          /* /\* !!!!!!!!!!!!!! *\/ */
-          /* new_alnL = Lk(NULL,tree); /\* Not necessary. Remove once tested *\/ */
-          /* if(Are_Equal(new_alnL,cur_alnL,1.E-3) == NO) */
-          /*   { */
-          /*     PhyML_Printf("\n== new_alnL: %f cur_alnL: %f",new_alnL,cur_alnL); */
-          /*     Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
-          /*   } */
-
-          /* /\* !!!!!!!!!!!!!! *\/ */
-          /* new_glnL = TIMES_Lk_Times(tree); /\* Not necessary. Remove once tested *\/ */
-          /* if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO) */
-          /*   { */
-          /*     PhyML_Printf("\n== new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL); */
-          /*     Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
-          /*   } */
         }
       else
         {
@@ -6021,7 +5990,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_subtree_height]        = 1.0;
   mcmc->move_weight[mcmc->num_move_nu]                    = 1.0;
   mcmc->move_weight[mcmc->num_move_kappa]                 = 0.5;
-  mcmc->move_weight[mcmc->num_move_spr]                   = 2.0;
+  mcmc->move_weight[mcmc->num_move_spr]                   = 3.0;
   mcmc->move_weight[mcmc->num_move_spr_local]             = 2.0;
   mcmc->move_weight[mcmc->num_move_spr_root]              = 0.0;
   mcmc->move_weight[mcmc->num_move_tree_rates]            = 1.0;

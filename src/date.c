@@ -717,6 +717,7 @@ phydbl *DATE_MCMC(t_tree *tree)
   MCMC_Randomize_Death(tree);
   MCMC_Randomize_Clock_Rate(tree);
   MCMC_Randomize_Rate_Across_Sites(tree);
+  MCMC_Randomize_Rates(tree);
 
   n_vars                  = 10;
   adjust_len              = 1E+6;
