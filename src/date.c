@@ -771,6 +771,7 @@ phydbl *DATE_MCMC(t_tree *tree)
                 "nu");
   For(i,tree->mod->ras->n_catg) PhyML_Fprintf(fp_stats,"rr%d\t",i);
   For(i,tree->mod->ras->n_catg) PhyML_Fprintf(fp_stats,"pr%d\t",i);
+  For(i,tree->rates->n_cal)     PhyML_Fprintf(fp_stats,"cal%d\t",i);
   fflush(NULL);
   
   For(i,mcmc->n_moves) tree->mcmc->start_ess[i] = YES;
@@ -801,6 +802,7 @@ phydbl *DATE_MCMC(t_tree *tree)
 
       
       /* PhyML_Printf("\n== Move '%s' %f",tree->mcmc->move_name[move],tree->c_lnL); */
+      phydbl diff_lk = -tree->c_lnL;
 
       
       if(!strcmp(tree->mcmc->move_name[move],"clock"))                   MCMC_Clock_R(tree);
@@ -828,7 +830,13 @@ phydbl *DATE_MCMC(t_tree *tree)
           Exit("\n");
         }
 
-
+      diff_lk += tree->c_lnL;
+      if(diff_lk > 50)
+        {
+          printf("\n. diff_lk: %f thanks to move '%s'",diff_lk,tree->mcmc->move_name[move]);
+        }
+      
+      
       if(!(tree->rates->c_lnL_times > UNLIKELY))
         {
           PhyML_Printf("\n== move: %s",tree->mcmc->move_name[move]);
@@ -883,6 +891,10 @@ phydbl *DATE_MCMC(t_tree *tree)
           
           For(i,tree->mod->ras->n_catg) PhyML_Fprintf(fp_stats,"%G\t",tree->mod->ras->gamma_rr->v[i]);
           For(i,tree->mod->ras->n_catg) PhyML_Fprintf(fp_stats,"%G\t",tree->mod->ras->gamma_r_proba->v[i]);
+          For(i,tree->rates->n_cal) PhyML_Fprintf(fp_stats,"%G\t",tree->rates->nd_t[tree->rates->a_cal[i]->target_nd->num]);
+
+
+
           
           Time_To_Branch(tree);
           tree->bl_ndigits = 1;
