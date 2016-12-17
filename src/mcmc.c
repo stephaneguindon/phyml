@@ -1100,7 +1100,7 @@ void MCMC_Times_And_Rates_Root(t_tree *tree)
 
   if(FABS(tree->rates->t_prior_min[root->num] - tree->rates->t_prior_max[root->num]) < 1.E-10) return;
   
-  move_num     = tree->mcmc->num_move_times_and_rates;
+  move_num     = tree->mcmc->num_move_times_and_rates_root;
   K            = tree->mcmc->tune_move[move_num];
   t1_cur       = tree->rates->nd_t[root->num];
   ratio        = 0.0;
@@ -5656,6 +5656,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->num_move_br_r                     = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_times                    = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_times_and_rates          = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_times_and_rates_root     = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_root_time                = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_nu                       = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_clock_r                  = mcmc->n_moves; mcmc->n_moves += 1;
@@ -5733,6 +5734,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   strcpy(mcmc->move_name[mcmc->num_move_nd_r],"nd_rate");
   strcpy(mcmc->move_name[mcmc->num_move_times],"times");
   strcpy(mcmc->move_name[mcmc->num_move_times_and_rates],"times_and_rates");
+  strcpy(mcmc->move_name[mcmc->num_move_times_and_rates_root],"times_and_rates_root");
   strcpy(mcmc->move_name[mcmc->num_move_root_time],"root_time");
   strcpy(mcmc->move_name[mcmc->num_move_nu],"nu");
   strcpy(mcmc->move_name[mcmc->num_move_clock_r],"clock");
@@ -5857,10 +5859,10 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
 	}
     }
   
-  mcmc->move_weight[mcmc->num_move_br_r]                  = 1.0; 
+  mcmc->move_weight[mcmc->num_move_br_r]                  = 2.0; 
   mcmc->move_weight[mcmc->num_move_nd_r]                  = 0.0;
-  mcmc->move_weight[mcmc->num_move_times]                 = 1.0;
-  mcmc->move_weight[mcmc->num_move_times_and_rates]       = 2.0;
+  mcmc->move_weight[mcmc->num_move_times]                 = 2.0;
+  mcmc->move_weight[mcmc->num_move_times_and_rates]       = 3.0;
   mcmc->move_weight[mcmc->num_move_root_time]             = 0.0;
   mcmc->move_weight[mcmc->num_move_clock_r]               = 1.0;
   mcmc->move_weight[mcmc->num_move_tree_height]           = 0.1;
@@ -5871,11 +5873,11 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_spr]                   = 2.0;
   mcmc->move_weight[mcmc->num_move_spr_local]             = 2.0;
   mcmc->move_weight[mcmc->num_move_spr_root]              = 0.0;
-  mcmc->move_weight[mcmc->num_move_tree_rates]            = 1.0;
+  mcmc->move_weight[mcmc->num_move_tree_rates]            = 0.5;
   mcmc->move_weight[mcmc->num_move_subtree_rates]         = 0.0;
   mcmc->move_weight[mcmc->num_move_updown_nu_cr]          = 0.0;
-  mcmc->move_weight[mcmc->num_move_ras]                   = 1.0;
-  mcmc->move_weight[mcmc->num_move_updown_t_cr]           = 1.0; /* Does not seem to work well (does not give uniform prior on root height
+  mcmc->move_weight[mcmc->num_move_ras]                   = 0.5;
+  mcmc->move_weight[mcmc->num_move_updown_t_cr]           = 0.0; /* Does not seem to work well (does not give uniform prior on root height
                                                                     when sampling from prior) */
   mcmc->move_weight[mcmc->num_move_cov_rates]             = 0.0;    
   mcmc->move_weight[mcmc->num_move_cov_switch]            = 0.0;

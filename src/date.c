@@ -772,6 +772,10 @@ phydbl *DATE_MCMC(t_tree *tree)
   For(i,tree->mod->ras->n_catg) PhyML_Fprintf(fp_stats,"rr%d\t",i);
   For(i,tree->mod->ras->n_catg) PhyML_Fprintf(fp_stats,"pr%d\t",i);
   For(i,tree->rates->n_cal)     PhyML_Fprintf(fp_stats,"cal%d\t",i);
+  PhyML_Fprintf(fp_stats,"accRT\t");
+  PhyML_Fprintf(fp_stats,"tuneRT\t");
+  PhyML_Fprintf(fp_stats,"accT\t");
+  PhyML_Fprintf(fp_stats,"tuneT\t");
   fflush(NULL);
   
   For(i,mcmc->n_moves) tree->mcmc->start_ess[i] = YES;
@@ -833,7 +837,7 @@ phydbl *DATE_MCMC(t_tree *tree)
       diff_lk += tree->c_lnL;
       if(diff_lk > 50)
         {
-          printf("\n. diff_lk: %f thanks to move '%s'",diff_lk,tree->mcmc->move_name[move]);
+          printf("\n. sample: %d diff_lk: %f thanks to move '%s'",tree->mcmc->sample_num,diff_lk,tree->mcmc->move_name[move]);
         }
       
       
@@ -892,6 +896,10 @@ phydbl *DATE_MCMC(t_tree *tree)
           For(i,tree->mod->ras->n_catg) PhyML_Fprintf(fp_stats,"%G\t",tree->mod->ras->gamma_rr->v[i]);
           For(i,tree->mod->ras->n_catg) PhyML_Fprintf(fp_stats,"%G\t",tree->mod->ras->gamma_r_proba->v[i]);
           For(i,tree->rates->n_cal) PhyML_Fprintf(fp_stats,"%G\t",tree->rates->nd_t[tree->rates->a_cal[i]->target_nd->num]);
+          PhyML_Fprintf(fp_stats,"%G\t",tree->mcmc->acc_rate[tree->mcmc->num_move_times_and_rates_root]);
+          PhyML_Fprintf(fp_stats,"%G\t",tree->mcmc->tune_move[tree->mcmc->num_move_times_and_rates_root]);
+          PhyML_Fprintf(fp_stats,"%G\t",tree->mcmc->acc_rate[tree->mcmc->num_move_root_time]);
+          PhyML_Fprintf(fp_stats,"%G\t",tree->mcmc->tune_move[tree->mcmc->num_move_root_time]);
 
 
 
