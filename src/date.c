@@ -1129,7 +1129,7 @@ t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, phydbl *
 
   if(verbose)
     {
-      printf("\nx outlist: %p",out); fflush(NULL);
+      printf("\nx outlist: %p",(void *)out); fflush(NULL);
       ll = out->head;
       do
         {

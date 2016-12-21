@@ -1630,42 +1630,45 @@ void MIXT_Prune_Subtree(t_node *mixt_a, t_node *mixt_d, t_edge **mixt_target, t_
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void MIXT_Graft_Subtree(t_edge *mixt_target, t_node *mixt_link, t_edge *mixt_residual, t_node *mixt_target_nd, t_tree *mixt_tree)
+void MIXT_Graft_Subtree(t_edge *mixt_target, t_node *mixt_link, t_node *mixt_link_daughter, t_edge *mixt_residual, t_node *mixt_target_nd, t_tree *mixt_tree)
 {
   t_edge *target,*residual;
-  t_node *link,*target_nd;
+  t_node *link,*link_daughter,*target_nd;
   t_tree *tree;
 
   MIXT_Turn_Branches_OnOff_In_One_Elem(OFF,mixt_tree);
 
-  tree      = mixt_tree;
-  target    = mixt_target;
-  residual  = mixt_residual;
-  link      = mixt_link;
-  target_nd = mixt_target_nd;
+  tree          = mixt_tree;
+  target        = mixt_target;
+  residual      = mixt_residual;
+  link          = mixt_link;
+  link_daughter = mixt_link_daughter;
+  target_nd     = mixt_target_nd;
 
   do
     {
       if(tree->is_mixt_tree == YES)
         {
-          tree      = tree->next;
-          target    = target->next;
-          residual  = residual->next;
-          link      = link->next;
-          target_nd = target_nd ? target_nd->next : NULL;
+          tree          = tree->next;
+          target        = target->next;
+          residual      = residual->next;
+          link          = link->next;
+          link_daughter = link_daughter ? link_daughter->next : NULL;
+          target_nd     = target_nd ? target_nd->next : NULL;
         }
 
-      Graft_Subtree(target,link,residual,target_nd,tree);
+      Graft_Subtree(target,link,link_daughter,residual,target_nd,tree);
 
-      tree      = tree->next;
-      target    = target->next;
-      residual  = residual->next;
-      link      = link->next;
-      target_nd = target_nd ? target_nd->next : NULL;
+      tree          = tree->next;
+      target        = target->next;
+      residual      = residual->next;
+      link          = link->next;
+      link_daughter = link_daughter ? link_daughter->next : NULL;
+      target_nd     = target_nd ? target_nd->next : NULL;
     }
   while(tree && tree->is_mixt_tree == NO);
 
-  if(tree) Graft_Subtree(target,link,residual,target_nd,tree);
+  if(tree) Graft_Subtree(target,link,link_daughter,residual,target_nd,tree);
 
   /*! Turn branches of this mixt_tree to ON after recursive call
     to Graft_Subtree such that, if branches of mixt_tree->next

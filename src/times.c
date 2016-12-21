@@ -1657,7 +1657,7 @@ phydbl TIMES_Lk_Birth_Death(int verbose, t_tree *tree)
         if(tree->rates->nd_t[i] < tree->rates->t_prior_min[i] ||
            tree->rates->nd_t[i] > tree->rates->t_prior_max[i]) 
           {
-            if(verbose) printf("\n. node %d @ time %f min: %f max: %f",i,tree->rates->nd_t[i],tree->rates->t_prior_min[i],tree->rates->t_prior_max[i]);
+            if(verbose) printf("\n== node %d @ time %f min: %f max: %f",i,tree->rates->nd_t[i],tree->rates->t_prior_min[i],tree->rates->t_prior_max[i]);
             return UNLIKELY;
           }
       }
@@ -1972,7 +1972,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
                   list_size++;
                 }
             }
-          while(j++ < (int)(2*n_no_cal_tip_num/(n_cal)));
+          while(j++ < MIN(n_no_cal_tip_num-1,(int)(2*n_no_cal_tip_num/(n_cal))));
           Free(permut);
 
           

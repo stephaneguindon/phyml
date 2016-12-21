@@ -4705,10 +4705,16 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
   assert(d);
   assert(tree);
 
+  
   if(tree->n_root && a == tree->n_root) 
     {
       if(d == tree->e_root->left) a = tree->e_root->rght;
-      if(d == tree->e_root->rght) a = tree->e_root->left;
+      else if(d == tree->e_root->rght) a = tree->e_root->left;
+      else
+        {
+          PhyML_Printf("\n== left: %d right: %d",tree->e_root->left->num,tree->e_root->rght->num);
+          assert(false);
+        }
     }
 
   if(a->tax) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
@@ -4726,6 +4732,9 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
   assert(dir_v1 > -1);
   assert(dir_v2 > -1);
 
+  assert(a->v[dir_v1] != NULL);
+  assert(a->v[dir_v2] != NULL);
+  
   if(a->v[dir_v1] == a->anc) a->v[dir_v2]->anc = a->v[dir_v1];
   else                       a->v[dir_v1]->anc = a->v[dir_v2];
 
@@ -5016,14 +5025,13 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
       else if((tree->n_root->v[1] == a && tree->n_root->v[2] == d) ||
               (tree->n_root->v[1] == d && tree->n_root->v[2] == a))
         {
-          /* printf("\n. ^^prune^^ "); */
           tree->e_root = b1;
           tree->n_root->v[1] = v2;
           tree->n_root->v[2] = v1;
+          // Update the time of the root node
+          if(tree->rates != NULL) tree->rates->nd_t[tree->n_root->num] = tree->rates->nd_t[a->num];
         }
 
-      /* tree->e_root->left = tree->n_root->v[1]; */
-      /* tree->e_root->rght = tree->n_root->v[2]; */
 
       if(tree->n_root->v[1] == tree->e_root->rght)
         {
@@ -5032,9 +5040,6 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
           tree->n_root->v[2] = buff_nd;
         }
 
-      /* printf("\n. tree->n_root->v[1]: %d tree->n_root->v[2]: %d", */
-      /*        tree->n_root->v[1] ? tree->n_root->v[1]->num : -1, */
-      /*        tree->n_root->v[2] ? tree->n_root->v[2]->num : -1); */
       Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
       Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
       tree->n_root->anc = NULL;
@@ -5062,7 +5067,7 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_node *target_nd, t_tree *tree)
+void Graft_Subtree(t_edge *target, t_node *link, t_node *link_daughter, t_edge *residual, t_node *target_nd, t_tree *tree)
 {
   t_node *v1, *v2;
   int i, dir_v1, dir_v2;
@@ -5077,6 +5082,20 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_node *targe
   assert(tree);
   assert(target);
     
+  if(link == tree->n_root)
+    {
+      assert(link_daughter);
+      if(link_daughter == tree->n_root->v[1]) link = tree->n_root->v[2];
+      else if(link_daughter == tree->n_root->v[2]) link = tree->n_root->v[1];
+      else
+        {
+          PhyML_Printf("\n== link: %d link_daughter: %d",
+                       link->num,
+                       link_daughter ? link_daughter->num : -1);
+          assert(false);
+        }
+    }
+
   dir_v1 = dir_v2 = -1;
   b_up = NULL;
   For(i,3)
@@ -5288,7 +5307,7 @@ void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_node *targe
       tree->n_root->anc = NULL;
     }
 
-  if(tree->is_mixt_tree == YES) MIXT_Graft_Subtree(target,link,residual,target_nd,tree);
+  if(tree->is_mixt_tree == YES) MIXT_Graft_Subtree(target,link,link_daughter,residual,target_nd,tree);
 }
 
 //////////////////////////////////////////////////////////////
@@ -6870,7 +6889,7 @@ void Randomize_Tree(t_tree *tree, int n_prune_regraft)
       
       assert(b_target != NULL);
       
-      Graft_Subtree(b_target,rnd_node,b_residual,NULL,tree);
+      Graft_Subtree(b_target,rnd_node,NULL,b_residual,NULL,tree);
       
       n_rand--;
     }
@@ -10366,7 +10385,7 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree)
 
       Prune_Subtree(a,d,&nouse,&residual,tree);
 
-      Graft_Subtree(target_nd->b[ok_dir],a,residual,NULL,tree);
+      Graft_Subtree(target_nd->b[ok_dir],a,NULL,residual,NULL,tree);
 
       tree->rates->nd_t[a->num] = new_t;
 

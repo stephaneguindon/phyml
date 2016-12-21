@@ -3254,11 +3254,11 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
               if(best_pars_move->pars <= tree->best_pars)
                 {
                   Prune_Subtree(best_pars_move->n_link,best_pars_move->n_opp_to_link,&init_target,&residual,tree);
-                  Graft_Subtree(best_pars_move->b_target,best_pars_move->n_link,residual,NULL,tree);                  
+                  Graft_Subtree(best_pars_move->b_target,best_pars_move->n_link,NULL,residual,NULL,tree);                  
                   if(!Check_Topo_Constraints(tree,tree->io->cstr_tree))
                     {
                       Prune_Subtree(best_pars_move->n_link,best_pars_move->n_opp_to_link,&dummy,&residual,tree);
-                      Graft_Subtree(init_target,best_pars_move->n_link,residual,NULL,tree);                  
+                      Graft_Subtree(init_target,best_pars_move->n_link,NULL,residual,NULL,tree);                  
                       Set_Both_Sides(YES,tree);
                       Pars(NULL,tree);
                     }
@@ -3418,7 +3418,7 @@ int Test_All_Spr_Targets(t_edge *b_pulled, t_node *n_link, t_tree *tree)
                                     b_pulled,n_link,b_residual,b_target,&best_found,tree);
         }
 
-      Graft_Subtree(b_target,n_link,b_residual,NULL,tree);
+      Graft_Subtree(b_target,n_link,NULL,b_residual,NULL,tree);
 
       if((n_link->v[dir1] != n_v1) || (n_link->v[dir2] != n_v2)) PhyML_Printf("\n== Warning: -- SWITCH NEEDED -- ! \n");
 
@@ -3571,7 +3571,7 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
       Copy_Scalar_Dbl(init_target->l_var,move->init_target_v);
     }
 
-  Graft_Subtree(b_target,n_link,b_residual,NULL,tree);
+  Graft_Subtree(b_target,n_link,NULL,b_residual,NULL,tree);
 
   // Save edge lengths so that they can be recovered in the end
   init_target_l   = Duplicate_Scalar_Dbl(b_target->l);
@@ -3922,7 +3922,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
           MIXT_Set_Alias_Subpatt(NO,tree);
           
           /* Regraft subtree */
-          Graft_Subtree(move->b_target,move->n_link,b_residual,NULL,tree);
+          Graft_Subtree(move->b_target,move->n_link,NULL,b_residual,NULL,tree);
                     
           MIXT_Set_Alias_Subpatt(YES,tree);
           move->lnL = Triple_Dist(move->n_link,tree);
@@ -3974,6 +3974,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
           
           Graft_Subtree(init_target,
                         move->n_link,
+                        NULL,
                         b_residual,
                         NULL,
                         tree);
@@ -4086,7 +4087,7 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
   Copy_Scalar_Dbl(move->init_target_l,init_target->l);
   Copy_Scalar_Dbl(move->init_target_v,init_target->l_var);
 
-  Graft_Subtree(move->b_target,move->n_link,b_residual,NULL,tree);
+  Graft_Subtree(move->b_target,move->n_link,NULL,b_residual,NULL,tree);
 
   dir_v1 = dir_v2 = dir_v0 = -1;
   For(j,3)
@@ -4172,6 +4173,7 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
 
   Graft_Subtree(init_target,
                 move->n_link,
+                NULL,
                 b_residual,
                 NULL,
                 tree);
@@ -4200,7 +4202,7 @@ int Try_One_Spr_Move_Full(t_spr *move, t_tree *tree)
         &b_residual,
         tree);
 
-  Graft_Subtree(move->b_target,move->n_link,b_residual,NULL,tree);
+  Graft_Subtree(move->b_target,move->n_link,NULL,b_residual,NULL,tree);
 
   MIXT_Set_Alias_Subpatt(YES,tree);
   Set_Both_Sides(YES,tree);
@@ -4230,6 +4232,7 @@ int Try_One_Spr_Move_Full(t_spr *move, t_tree *tree)
 
       Graft_Subtree(init_target,
                     move->n_link,
+                    NULL,
                     b_residual,
                     NULL,
                     tree);
@@ -4431,6 +4434,7 @@ void Random_Spr(int n_moves, t_tree *tree)
 
       Graft_Subtree(spr_struct->b_target,
                     spr_struct->n_link,                    
+                    NULL,
                     residual,NULL,tree);
     }
   Free(spr_struct);
@@ -4706,7 +4710,7 @@ void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int d
               
               assert(b_target != NULL);
               
-              Graft_Subtree(b_target,rnd_node,b_residual,NULL,tree);
+              Graft_Subtree(b_target,rnd_node,NULL,b_residual,NULL,tree);
               
               n_rand++;
             }

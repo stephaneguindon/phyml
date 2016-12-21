@@ -2000,7 +2000,7 @@ int Are_Compatible(char *statea,char *stateb,int stepsize,int datatype);
 void Hide_Ambiguities(calign *data);
 void Copy_Tree(t_tree *ori, t_tree *cpy);
 void Prune_Subtree(t_node *a,t_node *d,t_edge **target,t_edge **residual,t_tree *tree);
-void Graft_Subtree(t_edge *target, t_node *link, t_edge *residual, t_node *target_nd, t_tree *tree);
+void Graft_Subtree(t_edge *target, t_node *link, t_node *link_daughter, t_edge *residual, t_node *target_nd, t_tree *tree);
 void Reassign_Node_Nums(t_node *a,t_node *d,int *curr_ext_node,int *curr_int_node,t_tree *tree);
 void Reassign_Edge_Nums(t_node *a,t_node *d,int *curr_br,t_tree *tree);
 void Find_Mutual_Direction(t_node *n1,t_node *n2,short int *dir_n1_to_n2,short int *dir_n2_to_n1);
