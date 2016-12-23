@@ -651,7 +651,7 @@ void Set_Defaults_Model(t_mod *mod)
   mod->br_len_mult->v = 1.0;
 
 
-#if !(defined PHYTIME || defined INVITEE)
+#if !(defined PHYTIME || defined INVITEE || defined DATE)
   mod->l_min = 1.E-8;
   mod->l_max = 10.0;
 #else

@@ -718,7 +718,7 @@ phydbl *DATE_MCMC(t_tree *tree)
   MCMC_Randomize_Clock_Rate(tree);
   MCMC_Randomize_Rate_Across_Sites(tree);
   MCMC_Randomize_Rates(tree);
-
+  
   n_vars                  = 10;
   adjust_len              = 1E+6;
   mcmc->sample_interval   = 50;
@@ -903,14 +903,24 @@ phydbl *DATE_MCMC(t_tree *tree)
 
 
 
+          if(tree->mcmc->sample_num == 0)
+            {
+              PhyML_Fprintf(fp_tree,"\n#NEXUS");
+              PhyML_Fprintf(fp_tree,"\nBegin trees;");
+            }
+          else
+            {
+              fseek(fp_tree,-11,SEEK_CUR);
+            }
           
           Time_To_Branch(tree);
           tree->bl_ndigits = 1;
           /* RATES_Update_Cur_Bl(tree); */
           s_tree = Write_Tree(tree,NO);
           tree->bl_ndigits = 7;
-          PhyML_Fprintf(fp_tree,"\n%s",s_tree);
+          PhyML_Fprintf(fp_tree,"\ntree %f [&lnP=-1] = [&R] %s",s_tree,tree->c_lnL);          
           Free(s_tree);
+          PhyML_Fprintf(fp_tree,"\nEnd trees;");          
           fflush(NULL);
 
           tree->mcmc->sample_num++;

@@ -1410,6 +1410,7 @@ void Get_Survival_Duration_Post(t_node *a, t_node *d, t_tree *tree)
 //////////////////////////////////////////////////////////////
 
 /* Update the ranking of node heights. Use bubble sort algorithm */
+/* t_rank[i] is the node number that has rank i */
 
 void TIMES_Update_Node_Ordering(t_tree *tree)
 {
