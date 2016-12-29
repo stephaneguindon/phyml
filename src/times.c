@@ -961,6 +961,7 @@ phydbl TIMES_Lk_Yule_Order(t_tree *tree)
 
 phydbl TIMES_Lk_Times(int verbose, t_tree *tree)
 {
+
   DATE_Update_T_Prior_MinMax(tree);
 
 #ifdef PHYTIME
@@ -968,6 +969,8 @@ phydbl TIMES_Lk_Times(int verbose, t_tree *tree)
 #elif defined(DATE)
   tree->rates->c_lnL_times =  TIMES_Lk_Birth_Death(verbose,tree);
 #endif
+
+  /* if(tree->rates->c_lnL_times > UNLIKELY) tree->rates->c_lnL_times  = -1.; */
 
   return(tree->rates->c_lnL_times);
 }

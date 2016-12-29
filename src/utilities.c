@@ -5028,8 +5028,6 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
           tree->e_root = b1;
           tree->n_root->v[1] = v2;
           tree->n_root->v[2] = v1;
-          // Update the time of the root node
-          if(tree->rates != NULL) tree->rates->nd_t[tree->n_root->num] = tree->rates->nd_t[a->num];
         }
 
 

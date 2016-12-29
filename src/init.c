@@ -880,7 +880,7 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
   /* rates->max_clock     = 1.E-3; */
   /* rates->min_clock     = 1.E-5; */
 
-  rates->nu            = 1.0E-7;
+  rates->nu            = 1.0E-1;
   rates->min_nu        = 0.0;
   rates->max_nu        = 1.E+8;
   

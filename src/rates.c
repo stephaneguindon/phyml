@@ -24,7 +24,7 @@ the GNU public licence. See http://www.opensource.org for details.
 
 phydbl RATES_Lk_Rates(t_tree *tree)
 {
-
+  
   if(tree->eval_rlnL == NO) return UNLIKELY;
 
   tree->rates->c_lnL_rates  = .0;
@@ -39,7 +39,6 @@ phydbl RATES_Lk_Rates(t_tree *tree)
     }
 
   return tree->rates->c_lnL_rates;
-  /* return -1.0; */
 }
 
 //////////////////////////////////////////////////////////////
@@ -421,7 +420,8 @@ phydbl RATES_Lk_Rates_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl n
             /*    Pgamma(tree->rates->min_rate,1./(tree->rates->nu*dt_d*POW(tree->rates->clock_r,2)),tree->rates->nu*dt_d*POW(tree->rates->clock_r,2))); */
 
             int err;
-            log_dens = Log_Dnorm_Trunc(br_r_d,1.0,tree->rates->nu/tree->rates->clock_r,tree->rates->min_rate,tree->rates->max_rate,&err);
+            /* log_dens = Log_Dnorm_Trunc(br_r_d,1.0,tree->rates->nu/tree->rates->clock_r,tree->rates->min_rate,tree->rates->max_rate,&err); */
+            log_dens = Log_Dnorm_Trunc(br_r_d,1.0,tree->rates->nu,tree->rates->min_rate,tree->rates->max_rate,&err);
             /* log_dens = Log_Dnorm_Trunc(br_r_d,1.0,2.0,tree->rates->min_rate,tree->rates->max_rate,&err); */
           }
         
