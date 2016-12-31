@@ -865,7 +865,7 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
     }
   else
     {
-      rates->max_rate  = 10.0;
+      rates->max_rate  = 100.0;
       rates->min_rate  = 0.001;
     }
   /* rates->max_rate         = 6.0; */
