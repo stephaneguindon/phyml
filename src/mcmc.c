@@ -923,7 +923,7 @@ void MCMC_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
   phydbl new_mu, cur_mu;
   phydbl r_min, r_max;
   int move_num,err;
-  /* phydbl K; */
+  phydbl K;
 
 
   if(tree->rates->model == STRICTCLOCK) return;
@@ -937,16 +937,16 @@ void MCMC_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
   r_max        = tree->rates->max_rate;
   ratio        = 0.0;
   move_num     = tree->mcmc->num_move_br_r;
-  /* K            = tree->mcmc->tune_move[move_num]; */
+  K            = tree->mcmc->tune_move[move_num];
   cur_lnL_data = tree->c_lnL;
   new_lnL_data = UNLIKELY;
   cur_lnL_rate = tree->rates->c_lnL_rates;
   new_lnL_rate = UNLIKELY;
   
   /* MCMC_Make_Move(&cur_mu,&new_mu,r_min,r_max,&ratio,K,tree->mcmc->move_type[move_num]); */
-  new_mu = Rnorm_Trunc(1.0,2.0,r_min,r_max,&err);
-  ratio -= Log_Dnorm_Trunc(new_mu,1.0,2.0,r_min,r_max,&err);
-  ratio += Log_Dnorm_Trunc(cur_mu,1.0,2.0,r_min,r_max,&err);
+  new_mu = Rnorm_Trunc(1.0,3.*tree->rates->nu,r_min,r_max,&err);
+  ratio -= Log_Dnorm_Trunc(new_mu,1.0,3.*tree->rates->nu,r_min,r_max,&err);
+  ratio += Log_Dnorm_Trunc(cur_mu,1.0,3.*tree->rates->nu,r_min,r_max,&err);
 
   
   if(new_mu > r_min && new_mu < r_max)
@@ -3485,18 +3485,18 @@ void MCMC_Randomize_Rates(t_tree *tree)
 void MCMC_Randomize_Rates_Pre(t_node *a, t_node *d, t_tree *tree)
 {
   int i;
-  phydbl mean_r, var_r;
+  phydbl mean_r, sd_r;
   phydbl min_r, max_r;
   int err;
 
 /*   mean_r = tree->rates->br_r[a->num]; */
 /*   var_r  = tree->rates->nu * (tree->rates->nd_t[d->num] - tree->rates->nd_t[a->num]); */
   mean_r = 1.0;
-  var_r  = 0.5;
+  sd_r   = 10.0;
   min_r  = tree->rates->min_rate;
   max_r  = tree->rates->max_rate;
   
-  tree->rates->br_r[d->num] = Rnorm_Trunc(mean_r,SQRT(var_r),min_r,max_r,&err);
+  tree->rates->br_r[d->num] = Rnorm_Trunc(mean_r,sd_r,min_r,max_r,&err);
 
   if(d->tax) return;
   else
@@ -6250,10 +6250,10 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
 	}
     }
   
-  mcmc->move_weight[mcmc->num_move_br_r]                  = 2.0; 
+  mcmc->move_weight[mcmc->num_move_br_r]                  = 1.0; 
   mcmc->move_weight[mcmc->num_move_nd_r]                  = 0.0;
-  mcmc->move_weight[mcmc->num_move_times]                 = 2.0;
-  mcmc->move_weight[mcmc->num_move_times_and_rates]       = 3.0;
+  mcmc->move_weight[mcmc->num_move_times]                 = 1.0;
+  mcmc->move_weight[mcmc->num_move_times_and_rates]       = 5.0;
   mcmc->move_weight[mcmc->num_move_root_time]             = 0.0;
   mcmc->move_weight[mcmc->num_move_clock_r]               = 1.0;
   mcmc->move_weight[mcmc->num_move_tree_height]           = 1.0;
@@ -6261,10 +6261,10 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_subtree_height]        = 0.0;
   mcmc->move_weight[mcmc->num_move_nu]                    = 1.0;
   mcmc->move_weight[mcmc->num_move_kappa]                 = 0.5;
-  mcmc->move_weight[mcmc->num_move_spr]                   = 10.0;
+  mcmc->move_weight[mcmc->num_move_spr]                   = 8.0;
   mcmc->move_weight[mcmc->num_move_spr_local]             = 3.0;
   mcmc->move_weight[mcmc->num_move_spr_root]              = 0.0;
-  mcmc->move_weight[mcmc->num_move_tree_rates]            = 3.0;
+  mcmc->move_weight[mcmc->num_move_tree_rates]            = 0.5;
   mcmc->move_weight[mcmc->num_move_subtree_rates]         = 0.0;
   mcmc->move_weight[mcmc->num_move_updown_nu_cr]          = 0.0;
   mcmc->move_weight[mcmc->num_move_ras]                   = 1.0;
