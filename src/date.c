@@ -947,9 +947,9 @@ phydbl *DATE_MCMC(t_tree *tree)
               fseek(fp_tree,-11,SEEK_CUR);
             }
           
-          Time_To_Branch(tree);
-          tree->bl_ndigits = 1;
-          /* RATES_Update_Cur_Bl(tree); */
+          /* Time_To_Branch(tree); */
+          /* tree->bl_ndigits = 1; */
+          RATES_Update_Cur_Bl(tree);
           s_tree = Write_Tree(tree,NO);
           tree->bl_ndigits = 7;
           PhyML_Fprintf(fp_tree,"\ntree %f [&lnP=-1] = [&R] %s",s_tree,tree->c_lnL);          
