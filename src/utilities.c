@@ -11956,6 +11956,114 @@ void Set_Use_Eigen_Lr(short int yn, t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+void Random_Walk_Along_Tree_On_Radius(t_node *a, t_node *d, t_edge *b, phydbl *radius, t_edge **target_edge, t_node **target_nd, phydbl *target_time, t_tree *tree)
+{
+  assert(tree->rates);
+  
+  phydbl delta,ta,td;
+
+  /* if(tree->rates->nd_t[a->num] < tree->rates->nd_t[d->num]) */
+  /*   { */
+  /*     printf("\n. a: %d d: %d radius: %f l: %f [%f] -- %f | %f [%d]", */
+  /*            a->num, */
+  /*            d->num, */
+  /*            *radius, */
+  /*            b->l->v, */
+  /*            FABS(tree->rates->nd_t[a->num] - tree->rates->nd_t[d->num]) * tree->rates->clock_r * tree->rates->br_r[d->num], */
+  /*            tree->rates->cur_l[d->num], */
+  /*            tree->rates->cur_l[a->num], */
+  /*            b == tree->e_root); fflush(NULL); */
+  /*   } */
+  /* else */
+  /*   { */
+  /*     printf("\n. a: %d d: %d radius: %f l: %f [%f] -- %f | %f [%d]", */
+  /*            a->num, */
+  /*            d->num, */
+  /*            *radius, */
+  /*            b->l->v, */
+  /*            FABS(tree->rates->nd_t[a->num] - tree->rates->nd_t[d->num]) * tree->rates->clock_r * tree->rates->br_r[a->num], */
+  /*            tree->rates->cur_l[d->num], */
+  /*            tree->rates->cur_l[a->num], */
+  /*            b == tree->e_root); fflush(NULL); */
+  /*   } */
+  
+  delta = *radius;
+
+  assert(delta > 0.0);
+  
+  (*radius) -= b->l->v;
+  if(*radius < 0.0)
+    {
+      *target_edge = b;
+      ta = tree->rates->nd_t[a->num];
+      td = tree->rates->nd_t[d->num];
+
+      if(b != tree->e_root)
+        {
+          if(ta < td)
+            {
+              *target_time = ta + delta / (tree->rates->clock_r * tree->rates->br_r[d->num]);
+              *target_nd = d;
+              /* printf("\n< ta: %f td: %f new_time: %f delta: %f c: %f r: %f",ta,td,*target_time,delta,tree->rates->clock_r,tree->rates->br_r[d->num]); */
+            }
+          else
+            {
+              *target_time = ta - delta / (tree->rates->clock_r * tree->rates->br_r[a->num]);
+              *target_nd = a;
+              /* printf("\n> ta: %f td: %f new_time: %f delta: %f c: %f r: %f",ta,td,*target_time,delta,tree->rates->clock_r,tree->rates->br_r[a->num]); */
+            }
+        }
+      else
+        {
+          // target falls on edge below root leading to node a
+          if(delta < tree->rates->cur_l[a->num])
+            {
+              *target_time = ta - delta / (tree->rates->clock_r * tree->rates->br_r[a->num]);
+              *target_nd = a;
+            }
+          // target falls on edge below root leading to node d
+          else if(delta < (tree->rates->cur_l[a->num] + tree->rates->cur_l[d->num]))
+            {
+              *target_time = tree->rates->nd_t[tree->n_root->num] + (delta - tree->rates->cur_l[a->num])/(tree->rates->clock_r * tree->rates->br_r[d->num]);
+              *target_nd = d;
+            }
+          else
+            {
+              PhyML_Printf("\n == delta: %f cur_l[a]: %f cur_l[d]: %f l: %f",
+                           delta,
+                           tree->rates->cur_l[a->num],
+                           tree->rates->cur_l[d->num],
+                           b->l->v);
+              assert(false);
+            }
+        }
+      
+      return;
+    }
+  
+  if(d->tax == YES) return;
+  else
+    {      
+      int i,dir1,dir2;
+      phydbl u;
+      
+      dir1 = dir2 = -1;
+      For(i,3)
+        if(d->v[i] != a)
+          {
+            if(dir1 < 0) dir1 = i;
+            else         dir2 = i;
+          }
+             
+      u = Uni();
+      if(u < .5)
+        Random_Walk_Along_Tree_On_Radius(d,d->v[dir1],d->b[dir1],radius,target_edge,target_nd,target_time,tree);
+      else
+        Random_Walk_Along_Tree_On_Radius(d,d->v[dir2],d->b[dir2],radius,target_edge,target_nd,target_time,tree);
+    }
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

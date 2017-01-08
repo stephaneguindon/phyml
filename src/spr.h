@@ -84,6 +84,7 @@ void Sort_Spr_List_LnL(t_tree *tree);
 void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int do_rnd, int max_cycles);
 void Sort_Spr_List_Pars(t_tree *tree);
 void Spr_List_Of_Trees(t_tree *tree);
+void Prune_Regraft_Time_Tree(t_tree *tree);
 
 
 

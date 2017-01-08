@@ -1568,6 +1568,7 @@ typedef struct __Tmcmc {
   int num_move_subtree_height;
   int num_move_kappa;
   int num_move_spr;
+  int num_move_spr_weighted;
   int num_move_spr_local;
   int num_move_spr_root;
   int num_move_tree_rates;
@@ -2204,6 +2205,7 @@ void Get_List_Of_Reachable_Tips_Post(t_node *a, t_node *d, t_ll **list, t_tree *
 phydbl Length_Of_Path_Between_List_Of_Tips(t_ll *tips0, t_ll *tips1, matrix *mat);
 void Set_Update_Eigen_Lr(short int yn, t_tree *tree);
 void Set_Use_Eigen_Lr(short int yn, t_tree *tree);
+void Random_Walk_Along_Tree_On_Radius(t_node *a, t_node *d, t_edge *b, phydbl *radius, t_edge **target_edge, t_node **target_nd, phydbl *target_time, t_tree *tree);
 
 
 #include "xml.h"
