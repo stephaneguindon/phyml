@@ -772,12 +772,9 @@ phydbl *DATE_MCMC(t_tree *tree)
   For(i,tree->mod->ras->n_catg) PhyML_Fprintf(fp_stats,"rr%d\t",i);
   For(i,tree->mod->ras->n_catg) PhyML_Fprintf(fp_stats,"pr%d\t",i);
 
-  For(i,2*tree->n_otu-1)
-    if(tree->a_nodes[i]->tax == NO)
-      PhyML_Fprintf(fp_stats,"t%d\t",i);
-  
-  For(i,2*tree->n_otu-2)
-    PhyML_Fprintf(fp_stats,"br%d\t",i);
+  For(i,tree->rates->n_cal) PhyML_Fprintf(fp_stats,"t(%s)\t",tree->rates->a_cal[i]->clade_id);
+          
+  For(i,2*tree->n_otu-2) PhyML_Fprintf(fp_stats,"br%d\t",i);
   
   PhyML_Fprintf(fp_stats,"accRT\t");
   PhyML_Fprintf(fp_stats,"tuneRT\t");
@@ -835,7 +832,7 @@ phydbl *DATE_MCMC(t_tree *tree)
       /* PhyML_Printf("\n== Move '%s' %f",tree->mcmc->move_name[move],tree->c_lnL); */
       phydbl diff_lk = -tree->c_lnL;
 
-      if((tree->mcmc->run%1000) == 0 && tree->mcmc->run < 10000) Prune_Regraft_Time_Tree(tree);
+      /* if((tree->mcmc->run%1000) == 0 && tree->mcmc->run < 10000) Prune_Regraft_Time_Tree(tree); */
       
       if(!strcmp(tree->mcmc->move_name[move],"clock"))                   MCMC_Clock_R(tree);
       else if(!strcmp(tree->mcmc->move_name[move],"birth_rate"))         MCMC_Birth_Rate(tree);
@@ -939,9 +936,8 @@ phydbl *DATE_MCMC(t_tree *tree)
           For(i,tree->mod->ras->n_catg) PhyML_Fprintf(fp_stats,"%G\t",tree->mod->ras->gamma_rr->v[i]);
           For(i,tree->mod->ras->n_catg) PhyML_Fprintf(fp_stats,"%G\t",tree->mod->ras->gamma_r_proba->v[i]);
 
-          For(i,2*tree->n_otu-1)
-            if(tree->a_nodes[i]->tax == NO)
-              PhyML_Fprintf(fp_stats,"%G\t",tree->rates->nd_t[i]);
+
+          For(i,tree->rates->n_cal) PhyML_Fprintf(fp_stats,"%G\t",tree->rates->nd_t[tree->rates->a_cal[i]->target_nd->num]);
 
           For(i,2*tree->n_otu-2)
               PhyML_Fprintf(fp_stats,"%G\t",tree->rates->br_r[i]);
