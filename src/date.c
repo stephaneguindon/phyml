@@ -832,7 +832,7 @@ phydbl *DATE_MCMC(t_tree *tree)
       /* PhyML_Printf("\n== Move '%s' %f",tree->mcmc->move_name[move],tree->c_lnL); */
       phydbl diff_lk = -tree->c_lnL;
 
-      /* if((tree->mcmc->run%1000) == 0 && tree->mcmc->run < 10000) Prune_Regraft_Time_Tree(tree); */
+      if((tree->mcmc->run%1000) == 0 && tree->mcmc->run < 10000) Prune_Regraft_Time_Tree(tree);
       
       if(!strcmp(tree->mcmc->move_name[move],"clock"))                   MCMC_Clock_R(tree);
       else if(!strcmp(tree->mcmc->move_name[move],"birth_rate"))         MCMC_Birth_Rate(tree);
