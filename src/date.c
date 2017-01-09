@@ -720,8 +720,8 @@ phydbl *DATE_MCMC(t_tree *tree)
   MCMC_Randomize_Rates(tree);
   
   n_vars                  = 10;
-  adjust_len              = 1E+6;
-  mcmc->sample_interval   = 50;
+  adjust_len              = 1E+5;
+  mcmc->sample_interval   = 200;
   mcmc->chain_len         = 1E+7;
   tree->rates->bl_from_rt = YES;
 
@@ -980,9 +980,9 @@ phydbl *DATE_MCMC(t_tree *tree)
               fseek(fp_tree,-11,SEEK_CUR);
             }
           
-          /* Time_To_Branch(tree); */
-          /* tree->bl_ndigits = 1; */
-          RATES_Update_Cur_Bl(tree);
+          Time_To_Branch(tree);
+          tree->bl_ndigits = 1;
+          /* RATES_Update_Cur_Bl(tree); */
           s_tree = Write_Tree(tree,NO);
           tree->bl_ndigits = 7;
           PhyML_Fprintf(fp_tree,"\ntree %f [&lnP=-1] = [&R] %s",s_tree,tree->c_lnL);          
