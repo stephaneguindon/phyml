@@ -2251,7 +2251,8 @@ void MCMC_Tree_Rates(t_tree *tree)
   if(tree->rates->model == STRICTCLOCK) return;
 
   RATES_Record_Rates(tree);
-  Record_Br_Len(tree);
+  /* Record_Br_Len(tree); */
+  /* RATES_Update_Cur_Bl(tree); */
 
   tree->mcmc->run_move[tree->mcmc->num_move_tree_rates]++;
 

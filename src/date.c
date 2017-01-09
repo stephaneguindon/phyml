@@ -832,7 +832,7 @@ phydbl *DATE_MCMC(t_tree *tree)
       /* PhyML_Printf("\n== Move '%s' %f",tree->mcmc->move_name[move],tree->c_lnL); */
       phydbl diff_lk = -tree->c_lnL;
 
-      if((tree->mcmc->run%1000) == 0 && tree->mcmc->run < 10000) Prune_Regraft_Time_Tree(tree);
+      /* if((tree->mcmc->run%1000) == 0 && tree->mcmc->run < 10000) Prune_Regraft_Time_Tree(tree); */
       
       if(!strcmp(tree->mcmc->move_name[move],"clock"))                   MCMC_Clock_R(tree);
       else if(!strcmp(tree->mcmc->move_name[move],"birth_rate"))         MCMC_Birth_Rate(tree);
@@ -875,6 +875,7 @@ phydbl *DATE_MCMC(t_tree *tree)
         }
 
       /* PhyML_Printf("\n. move: %s lnL: %f",tree->mcmc->move_name[move],tree->c_lnL); */
+
       /* { */
       /*   phydbl cur, new; */
       /*   cur = tree->c_lnL; */
@@ -889,9 +890,9 @@ phydbl *DATE_MCMC(t_tree *tree)
 
       /* { */
       /*   phydbl cur_l,new_l; */
-      /*   cur_l = tree->a_edges[0]->l->v; */
+      /*   cur_l = tree->e_root->l->v; */
       /*   RATES_Update_Cur_Bl(tree); */
-      /*   new_l = tree->a_edges[0]->l->v; */
+      /*   new_l = tree->e_root->l->v; */
       /*   if(!Are_Equal(cur_l,new_l,1.E-4)) */
       /*     { */
       /*       PhyML_Printf("\n== cur_l: %f new_l: %f",cur_l,new_l); */
@@ -985,6 +986,7 @@ phydbl *DATE_MCMC(t_tree *tree)
           Free(s_tree);
           PhyML_Fprintf(fp_tree,"\nEnd trees;");          
           fflush(NULL);
+          RATES_Update_Cur_Bl(tree);
 
           tree->mcmc->sample_num++;
 

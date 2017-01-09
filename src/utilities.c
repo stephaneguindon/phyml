@@ -11961,7 +11961,7 @@ void Random_Walk_Along_Tree_On_Radius(t_node *a, t_node *d, t_edge *b, phydbl *r
 {
   assert(tree->rates);
   
-  phydbl delta,ta,td;
+  phydbl delta,ta,td,u;
 
   /* if(tree->rates->nd_t[a->num] < tree->rates->nd_t[d->num]) */
   /*   { */
@@ -12021,21 +12021,25 @@ void Random_Walk_Along_Tree_On_Radius(t_node *a, t_node *d, t_edge *b, phydbl *r
             {
               *target_time = ta - delta / (tree->rates->clock_r * tree->rates->br_r[a->num]);
               *target_nd = a;
-            }
-          // target falls on edge below root leading to node d
-          else if(delta < (tree->rates->cur_l[a->num] + tree->rates->cur_l[d->num]))
-            {
-              *target_time = tree->rates->nd_t[tree->n_root->num] + (delta - tree->rates->cur_l[a->num])/(tree->rates->clock_r * tree->rates->br_r[d->num]);
-              *target_nd = d;
+              /* printf("\n.. delta: %f l(a): %f time: %f ta: %f",delta,tree->rates->cur_l[a->num],*target_time,ta); */
             }
           else
             {
-              PhyML_Printf("\n == delta: %f cur_l[a]: %f cur_l[d]: %f l: %f",
-                           delta,
-                           tree->rates->cur_l[a->num],
-                           tree->rates->cur_l[d->num],
-                           b->l->v);
-              assert(false);
+              u = Uni();
+              if(u < .5)
+                {
+                  // target falls on edge below root leading to node d
+                  *target_time = tree->rates->nd_t[tree->n_root->num] + (delta - tree->rates->cur_l[a->num])/(tree->rates->clock_r * tree->rates->br_r[d->num]);
+                  *target_nd = d;
+                  /* printf("\n<< ta: %f td: %f new_time: %f delta: %f c: %f",ta,td,*target_time,delta,tree->rates->clock_r); */
+                }
+              else
+                {
+                  // target falls above root
+                  *target_time = tree->rates->nd_t[tree->n_root->num] - (delta - tree->rates->cur_l[a->num])/tree->rates->clock_r;
+                  *target_nd = tree->n_root;                  
+                  /* printf("\n>> ta: %f td: %f new_time: %f delta: %f c: %f",ta,td,*target_time,delta,tree->rates->clock_r); */
+                }
             }
         }
       
@@ -12046,7 +12050,6 @@ void Random_Walk_Along_Tree_On_Radius(t_node *a, t_node *d, t_edge *b, phydbl *r
   else
     {      
       int i,dir1,dir2;
-      phydbl u;
       
       dir1 = dir2 = -1;
       For(i,3)
