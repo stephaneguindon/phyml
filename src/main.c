@@ -423,13 +423,13 @@ int main(int argc, char **argv)
   return 1;
 }
 
-#elif(PHYTIME)
-#include "times.h"
-int main(int argc, char **argv)
-{
-  TIMES_main(argc, argv);
-  return 1;
-}
+/* #elif(PHYTIME) */
+/* #include "times.h" */
+/* int main(int argc, char **argv) */
+/* { */
+/*   TIMES_main(argc, argv); */
+/*   return 1; */
+/* } */
 
 #elif(PHYCONT)
 #include "continuous.h"
@@ -584,7 +584,7 @@ int main(int argc, char **argv)
   return 1;
 }
 
-#elif(DATE)
+#elif(PHYTIME)
 #include "date.h"
 int main(int argc, char **argv)
 {

@@ -8088,9 +8088,7 @@ t_tree *Dist_And_BioNJ(calign *cdata, t_mod *mod, option *io)
       Fill_Missing_Dist(mat);
 
       if(!io->quiet) PhyML_Printf("\n\n. Building BioNJ tree...");
-      
-      mat->tree = Make_Tree_From_Scratch(cdata->n_otu,cdata);
-      
+      mat->tree = Make_Tree_From_Scratch(cdata->n_otu,cdata);      
       Bionj(mat);
       
       tree      = mat->tree;

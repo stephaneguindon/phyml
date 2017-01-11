@@ -119,8 +119,8 @@ t_tree *XML_Process_Base(char *xml_filename)
   strcpy(io->out_tree_file,outputfile);
   if(io->append_run_ID) { strcat(io->out_tree_file,"_"); strcat(io->out_tree_file,io->run_id_string); }
 
-# if defined(DATE)
-  strcat(io->out_tree_file,"_date_tree.txt");
+# if defined(PHYTIME)
+  strcat(io->out_tree_file,"_phytime_tree.txt");
 # else
   strcat(io->out_tree_file,"_phyml_tree.txt");
 #endif
@@ -129,8 +129,8 @@ t_tree *XML_Process_Base(char *xml_filename)
   if(io->append_run_ID) { strcat(io->out_stats_file,"_"); strcat(io->out_stats_file,io->run_id_string); }
 
 
-# if defined(DATE)
-  strcat(io->out_stats_file,"_date_stats.txt");
+# if defined(PHYTIME)
+  strcat(io->out_stats_file,"_phytime_stats.txt");
 # else
   strcat(io->out_stats_file,"_phyml_stats.txt");
 #endif

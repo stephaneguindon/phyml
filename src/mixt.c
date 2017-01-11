@@ -2427,30 +2427,38 @@ t_tree *MIXT_Starting_Tree(t_tree *mixt_tree)
   t_tree *tree;
 
   tree = NULL;
-
-  switch(mixt_tree->io->in_tree)
+  
+  if(mixt_tree->io->mod->s_opt->random_input_tree == NO)
     {
-    case 2: // user-defined input tree 
-      {
-        assert(mixt_tree->io->fp_in_tree);
-        
-        // Copy user tree to all tree structures
-        tree = Read_User_Tree(mixt_tree->io->cdata,
-                              mixt_tree->mod,
-                              mixt_tree->io);
-        break;
-      }
-    case 1: case 0:
-      {
-        // Build a BioNJ tree from the analysis of
-        // the first partition element
-        tree = Dist_And_BioNJ(mixt_tree->data,
-                              mixt_tree->mod,
-                              mixt_tree->io);
-        break;
-      }
-    default : assert(FALSE);
-   }
+      switch(mixt_tree->io->in_tree)
+        {
+        case 2: // user-defined input tree 
+          {
+            assert(mixt_tree->io->fp_in_tree);
+            
+            // Copy user tree to all tree structures
+            tree = Read_User_Tree(mixt_tree->io->cdata,
+                                  mixt_tree->mod,
+                                  mixt_tree->io);
+            break;
+          }
+        case 1: case 0:
+          {
+            // Build a BioNJ tree from the analysis of
+            // the first partition element
+            tree = Dist_And_BioNJ(mixt_tree->data,
+                                  mixt_tree->mod,
+                                  mixt_tree->io);
+            break;
+          }
+        default : assert(FALSE);
+        }
+    }
+  else
+    {
+      tree = Make_Tree_From_Scratch(mixt_tree->n_otu,mixt_tree->data);
+      Random_Tree(tree);
+    }
   
   return tree;
 }

@@ -29,8 +29,9 @@ int Read_Command_Line(option *io, int argc, char **argv)
   PhyML_Printf("\n");
   writemode = WRITE;
 
-  if(argc == 1) Exit("\n. No argument was passed to the program. Please check the documentation. \n");
-
+  if(argc == 1) Exit("\n== No argument was passed to the program. Please check the documentation. \n");
+  PhyML_Printf("",writemode);
+  
   struct option longopts[] =
     {
       {"n_rgrft",           required_argument,NULL,0},
@@ -212,6 +213,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	case 73:
 	  {
 #ifdef INVITEE
+            
             Free_Optimiz(io->mod->s_opt);
             M4_Free_M4_Model(io->mod->m4mod);
             Free_Model_Basic(io->mod);
@@ -229,7 +231,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
             Free(io);
             return 0;
 
-#elif defined(DATE)
+#elif defined(PHYTIME)
 
             Free_Optimiz(io->mod->s_opt);
             M4_Free_M4_Model(io->mod->m4mod);

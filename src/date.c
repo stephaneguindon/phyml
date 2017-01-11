@@ -42,7 +42,7 @@ void DATE_XML(char *xml_filename)
   
   mixt_tree = XML_Process_Base(xml_filename);
   assert(mixt_tree);
-
+  
   mixt_tree->rates = RATES_Make_Rate_Struct(mixt_tree->n_otu);
   RATES_Init_Rate_Struct(mixt_tree->rates,NULL,mixt_tree->n_otu);
 
@@ -735,8 +735,11 @@ phydbl *DATE_MCMC(t_tree *tree)
   DATE_Assign_Primary_Calibration(tree);
   TIMES_Lk_Times(NO,tree);
 
+  Time_To_Branch(tree);
+  tree->bl_ndigits = 1;
+  printf("\n. Random init tree: %s",Write_Tree(tree,NO));
+  tree->bl_ndigits = 7;
   RATES_Update_Cur_Bl(tree);
-  printf("\n. %s",Write_Tree(tree,NO));
   PhyML_Printf("\n. log(Pr(Seq|Tree)) = %f",tree->c_lnL);
   PhyML_Printf("\n. log(Pr(Tree)) = %f",tree->rates->c_lnL_times);
     
@@ -830,9 +833,9 @@ phydbl *DATE_MCMC(t_tree *tree)
 
       
       /* PhyML_Printf("\n== Move '%s' %f",tree->mcmc->move_name[move],tree->c_lnL); */
-      phydbl diff_lk = -tree->c_lnL;
+      /* phydbl diff_lk = -tree->c_lnL; */
 
-      if((tree->mcmc->run%1000) == 0 && tree->mcmc->run < 10000) Prune_Regraft_Time_Tree(tree);
+      /* if((tree->mcmc->run%1000) == 0 && tree->mcmc->run < 10000) Prune_Regraft_Time_Tree(tree); */
       
       if(!strcmp(tree->mcmc->move_name[move],"clock"))                   MCMC_Clock_R(tree);
       else if(!strcmp(tree->mcmc->move_name[move],"birth_rate"))         MCMC_Birth_Rate(tree);
