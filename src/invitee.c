@@ -688,7 +688,7 @@ void PhyTime_XML(char *xml_file)
   Free_Tree_Pars(tree);
   Free_Tree_Lk(tree);
   Free_Tree(tree);
-  Free_Cseq(cdata);
+  Free_Calign(cdata);
   Free_Model(mod);
   if(io -> fp_in_align)   fclose(io -> fp_in_align);
   if(io -> fp_in_tree)    fclose(io -> fp_in_tree);
