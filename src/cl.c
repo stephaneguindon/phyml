@@ -1340,7 +1340,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	    else
 	      {
 		char choix;
-		PhyML_Printf ("\n. The optimization parameter must be 'tlr' or 'tl' or 'lr' or 'l' or 'r' or ''.");
+		PhyML_Printf ("\n. The optimization parameter must be 'tlr' or 'tl' or 'lr' or 'l' or 'r' or 'n'.");
 		PhyML_Printf("\n. Type any key to exit.\n");
 		if(!scanf("%c",&choix)) Exit("\n");
 		Exit("\n");
