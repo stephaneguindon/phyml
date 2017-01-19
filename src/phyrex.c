@@ -1137,7 +1137,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
   mcmc->io               = NULL;
   mcmc->is               = NO;
-  mcmc->use_data         = YES;
   mcmc->run              = 0;
   mcmc->chain_len_burnin = 1E+5;
   mcmc->randomize        = YES;
@@ -1293,7 +1292,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   For(i,mcmc->n_moves) tree->mcmc->start_ess[i] = YES;
 
   Set_Both_Sides(NO,tree);
-  mcmc->use_data   = YES; 
   mcmc->always_yes = NO;
   move             = -1;
   do

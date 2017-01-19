@@ -4990,12 +4990,12 @@ void Spr_List_Of_Trees(t_tree *tree)
 
 void Prune_Regraft_Time_Tree(t_tree *tree)
 {
-  phydbl u,alpha,ratio;
+  phydbl u,ratio;
   phydbl t_min,t_max;
   phydbl cur_lnL_seq,new_lnL_seq;
   phydbl cur_lnL_time,new_lnL_time;
   phydbl new_t;
-  int i,j,k,prune_idx,n_iter,n_regraft_nd,regraft_idx,dir_prune;
+  int i,j,k,prune_idx,n_regraft_nd,regraft_idx,dir_prune;
   phydbl *times;
   int rnd_dir,dir_v1,dir_v2,keepon;
   t_node *prune,*prune_daughter,*new_regraft_nd,*cur_regraft_nd;

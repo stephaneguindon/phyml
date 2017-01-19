@@ -814,6 +814,8 @@ phydbl *DATE_MCMC(t_tree *tree)
   i = 0;
   do { MCMC_Clock_R(tree); } while(i++ < 100);
 
+
+  
   
   do
     {
@@ -980,8 +982,9 @@ phydbl *DATE_MCMC(t_tree *tree)
               fseek(fp_tree,-11,SEEK_CUR);
             }
           
+          
           Time_To_Branch(tree);
-          tree->bl_ndigits = 1;
+          tree->bl_ndigits = 3;
           /* RATES_Update_Cur_Bl(tree); */
           s_tree = Write_Tree(tree,NO);
           tree->bl_ndigits = 7;

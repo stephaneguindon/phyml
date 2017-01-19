@@ -4477,6 +4477,7 @@ void MCMC_Birth_Rate(t_tree *tree)
 
 void MCMC_Death_Rate(t_tree *tree)
 {
+  
   /* MCMC_Single_Param_Generic(&(tree->rates->death_rate), */
   /*       		    0.0, // instead of tree->rates->death_rate_min as death rate can be equal to 0 (Yule model) */
   /*       		    tree->rates->death_rate_max, */
