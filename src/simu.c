@@ -79,7 +79,11 @@ int Simu(t_tree *tree, int n_step_max)
       if(tree->c_lnL < old_loglk)
         {
           if(tree->verbose > VL2 && tree->io->quiet == NO) PhyML_Printf("\n\n. Moving backward\n");
-          if(!Mov_Backward_Topo_Bl(tree,old_loglk,tested_b,n_tested)) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+          if(!Mov_Backward_Topo_Bl(tree,old_loglk,tested_b,n_tested))
+            {
+              PhyML_Printf("\n== tree->c_lnL: %f old_loglk: %f",tree->c_lnL,old_loglk);
+              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+            }
           if(!tree->n_swap) n_neg = 0;
           Record_Br_Len(tree);
           Set_Both_Sides(YES,tree);
@@ -189,7 +193,7 @@ void Simu_Pars(t_tree *tree, int n_step_max)
       if((tree->c_pars > old_pars) && (step > 1))
         {
           if(tree->verbose > VL0 && tree->io->quiet == NO)
-            PhyML_Printf("\n\n. Moving backward (topoLlogy) \n");
+            PhyML_Printf("\n\n. Moving backward (topology) \n");
           if(!Mov_Backward_Topo_Pars(tree,old_pars,tested_b,n_tested))
             Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
           if(!tree->n_swap) n_neg = 0;
@@ -479,7 +483,7 @@ int Mov_Backward_Topo_Bl(t_tree *tree, phydbl lk_old, t_edge **tested_b, int n_t
       
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
-      
+
       step++;
       
     }while((tree->c_lnL < lk_old) && (step < 1000));
@@ -547,7 +551,8 @@ int Mov_Backward_Topo_Pars(t_tree *tree, int pars_old, t_edge **tested_b, int n_
 
       step++;
 
-    }while((tree->c_pars > pars_old) && (step < 1000));
+    }
+  while((tree->c_pars > pars_old) && (step < 1000));
 
 
   if(step == 1000)

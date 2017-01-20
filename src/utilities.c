@@ -2960,6 +2960,7 @@ void Bootstrap(t_tree *tree)
       boot_tree->io                   = tree->io;
       boot_tree->data                 = boot_data;
       boot_tree->verbose              = VL0;
+      /* boot_tree->verbose              = VL3; */
       boot_tree->n_pattern            = boot_tree->data->crunch_len;
       boot_tree->io->print_site_lnl   = NO;
       boot_tree->io->print_trace      = NO;
@@ -2990,8 +2991,11 @@ void Bootstrap(t_tree *tree)
           Lk(NULL,boot_tree);
           MIXT_Set_Alias_Subpatt(NO,boot_tree);
         }
-      
-      
+
+      Switch_Eigen(YES,boot_tree->mod);                 
+      Lk(NULL,boot_tree);
+      Switch_Eigen(NO,boot_tree->mod);
+
       if(boot_tree->mod->s_opt->opt_topo)
         {
           if(boot_tree->mod->s_opt->topo_search == NNI_MOVE)

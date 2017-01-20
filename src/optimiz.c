@@ -2289,7 +2289,7 @@ phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t
   best_lnL = old_lnL = init_lnL = tree->c_lnL;
   best_l = *l;
 
-  /*   PhyML_Printf("\n Begin NR loop (lnL: %f dlnL: %f d2lnL: %f)",tree->c_lnL,tree->c_dlnL,tree->c_d2lnL); */
+  /* PhyML_Printf("\n Begin NR loop (lnL: %f dlnL: %f d2lnL: %f)",tree->c_lnL,tree->c_dlnL,tree->c_d2lnL); */
 
   converged = NO;
   iter = 0;
@@ -2340,6 +2340,7 @@ phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t
   assert(best_lnL > init_lnL-tol);
   
   /* PhyML_Printf("\n End NR loop"); */
+
   return tree->c_lnL;
 }
 
@@ -2457,7 +2458,7 @@ phydbl Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
         }
     }
 
-  Exit("\n. Too many iterations in Generic_Brent_Lk !");
+  Exit("\n== Too many iterations in Generic_Brent_Lk !");
   return(-1);
   /* Not Reached ??  *param=x;   */
   /* Not Reached ??  return fx; */
