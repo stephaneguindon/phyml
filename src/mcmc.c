@@ -3773,7 +3773,7 @@ void MCMC_Get_Acc_Rates(t_mcmc *mcmc)
 
 void MCMC_Adjust_Tuning_Parameter(int move, t_mcmc *mcmc)
 {
-  if(mcmc->adjust_tuning[move])
+  if(mcmc->adjust_tuning[move] == YES)
     {
       phydbl scale;
       phydbl rate;

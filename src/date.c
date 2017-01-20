@@ -805,10 +805,10 @@ phydbl *DATE_MCMC(t_tree *tree)
 
   fflush(NULL);
   
-  For(i,mcmc->n_moves) tree->mcmc->start_ess[i] = YES;
+  For(i,tree->mcmc->n_moves) tree->mcmc->start_ess[i] = YES;
   Set_Both_Sides(NO,tree);
-  mcmc->always_yes = NO;
-  move             = -1;
+  tree->mcmc->always_yes = NO;
+  move                   = -1;
   
   // Get in the range of sensible values for clock_r
   i = 0;
@@ -819,7 +819,7 @@ phydbl *DATE_MCMC(t_tree *tree)
   
   do
     {
-      if(mcmc->run > adjust_len) For(i,mcmc->n_moves) tree->mcmc->adjust_tuning[i] = NO;
+      if(tree->mcmc->run > adjust_len) For(i,tree->mcmc->n_moves) tree->mcmc->adjust_tuning[i] = NO;
 
       if(tree->c_lnL < UNLIKELY + 0.1)
         {
