@@ -240,6 +240,10 @@ void Bootstrap_MPI(t_tree *tree)
       Init_P_Pars_Tips(boot_tree);
       Br_Len_Not_Involving_Invar(boot_tree);
       
+      Switch_Eigen(YES,boot_tree->mod);                 
+      Lk(NULL,boot_tree);
+      Switch_Eigen(NO,boot_tree->mod);
+
       if(boot_tree->mod->s_opt->opt_topo)
         {
           if(boot_tree->mod->s_opt->topo_search == NNI_MOVE) 
