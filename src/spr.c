@@ -4040,13 +4040,13 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
 #ifdef DEBUG
   if(best_move < 0 && list_size > 0)
     {
-      PhyML_Printf("\n\n. Best_move < 0 !");
-      
-      PhyML_Printf("\n. List size = %d",list_size);
+      PhyML_Printf("\n\n== Best_move < 0 !");
+      PhyML_Printf("\n== List size = %d",list_size);
+      PhyML_Printf("\n== Best lnL = %f",best_lnL);
       For(i,list_size)
         {
           move = spr_list[i];
-          PhyML_Printf("\n. %p %p",move,move->b_target);
+          PhyML_Printf("\n== move %p %p lnL: %f",move,move->b_target,move->lnL);
         }
       
       PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
