@@ -2161,12 +2161,7 @@ likelihood  phylogenies.  Installing these  tools  and  processing data  sets  i
 following sections.
 
 \subsection{PhyTime}\index{PhyTime} PhyTime is  a program that estimates node  ages and substitution
-rates using a Bayesian  approach.  The performance and main features of  this software are described
-in two article (see Section \ref{sec:citephytime}).
-
-It  relies on  a  Gibbs  sampler which  outperforms  the
-``standard'' Metropolis-Hastings algorithm  implemented in a number of  phylogenetic softwares.  The
-details  and performance  of  this  approach are  described  in the  following  article:
+rates using a Bayesian  approach. This software served as a basis to perform the research in the following three articles: \cite{guindon10,guindon13,guindon17},
 
 \subsubsection{Installing PhyTime}
 
@@ -2182,177 +2177,122 @@ make;
   in the `src/' directory.
 
 \subsubsection{Running  PhyTime} Passing  options and  running  PhyTime on  your data  set is  quite
-similar to running  PhyML in commmand-line mode.  The main differences between the  two programs are
+similar to running  PhyML using an XML parameter input file.  The main differences between the  two programs are
 explained below:
 \begin{itemize}
-\item PhyTime takes as mandatory input a {\em rooted} phylogenetic tree.  Hence, the `\x{-u}' option
-must be used. Also, unlike PhyML, PhyTime does not modify the tree topology. Hence, the options that
-go with the `\x{-s}' command do not alter the input tree topology.
-\item  PhyTime  needs  an input  file  giving  information  about  calibration nodes.   The  command
-`\x{--calibration=}' followed by the name of  the file containing the calibration node information is
-mandatory. The content of that file should look as follows:
-
-\begin{figure}[h]
-\begin{small}
-\begin{Verbatim}[frame=single, label=Calibration node file, samepage=true, baselinestretch=0.5, fontsize=\tiny]
-Dugong_dugon Procavia_capensis Elephantidae | -65 -54
-Equus_sp. Ceratomorpha | -58 -54
-Cercopithecus_solatus Macaca_mulatta Hylobates_lar Homo_sapiens | -35 -25
-Lepus_crawshayi Oryctolagus_cuniculus Ochotona_princeps | -90 -37
-Marmota_monax Aplodontia_rufa | -120 -37
-Dryomys_nitedula Glis_glis | -120 -28.5
-@root@ | -100 -120
-\end{Verbatim}
-\end{small}
-\end{figure}
-
-Every row in  this file lists a  set of taxa that belong  to the same subtree (i.e.,  a clade). This
-list of taxa  is followed by the character  `\x{|}' and two real numbers corresponding  to the lower
-and upper bounds of the  calibration interval for the node at the root of  the clade. In the example
-given  here,  the  clade  grouping  the three  taxa  ``Dugong\_dugon'',  ``Procavia\_capensis''  and
-``Elephantida'' has  -65 as lower  bound and -54  as upper bound.  Node  ages (or node  heights) are
-relative to the most recent tip node in the phylogeny, which age is set to 0. It is also possible to
-define a  clade using  only two taxon  names. PhyTime will  then search  for the most  recent common
-ancestor  of these  two  taxa  in the  user-defined  phylogeny and  assign  time  boundaries to  the
-corresponding node. For serially-sampled data, the calibration nodes correspond to tips in the tree.
-A calibration file will then look as follows:
-\begin{figure}[h]
-\begin{small}
-\begin{Verbatim}[frame=single, label=Calibration node file (serially-sampled sequences), samepage=true, baselinestretch=0.5]
-taxaA | -65 -65
-taxaB | -65 -65
-taxaC | -20 -20
-taxaD | -30 -30
-taxaE | -30 -30
-taxaF | -60 -60
-taxaG | -61 -51
-@root@ | -100 -120
-\end{Verbatim}
-\end{small}
-\end{figure}
-
-
-% The maximum  value the average substitution rate  along a branch of  a phylogeny can take  is set to
-% $10^{-2}$ substitution per site per time unit. It  is therefore important that the time unit used to
-% specify the calibration intervals  are realistic with respect to this upper  bound. For instance, it
-% one time unit corresponds to one month,  one assumes that the maximum (average) substitution rate is
-% $10^{-3}$/site/month, which  is very high  (substitution rate in  introns is close  to 3/site/$10^9$
-% years).  Consider that in the example give above, one time unit is $10^6$ years.  Hence, the maximum
-% value the substitution  rate can take is $10^{-2}$/site/$10^6$  years, i.e., $10$/site/$10^9$ years.
-% Multiplying the calibration values by 10 amounts  to considering that the time unit is $10^5$ years,
-% implying a maximum  substitution rate equal to $10^{-2}$/site/$10^5$  years, i.e., $100$/site/$10^9$
-% years.
-
-Note   that  the  node corresponding  to  the  root of  the  whole tree  has  a specific  label:
-`\x{@root@}'.  {\color{red}{It is important  to specify upper and lower bounds for  the root node in
-order to ensure convergence  of the Gibbs sampler. If the prior interval for  the root height is not
-specified, the  upper bound will be set  to the upper bound  of the oldest calibration  node and the
-lower bound  will be set to twice  this age.}}  As a  consequence, leaving the prior  on root height
-interval unspecified may produce inaccurate estimates of node ages, especially if there are only few
-otherwise calibration nodes available.
-
-A notable exception to this rule comes from the analysis of serial sample \index{serial sample}
-data, i.e., alignments in which sequences were not sampled at the same time point.  For such data,
-the estimated number of substitutions accumulated between successive time points is used to estimate
-the substitution rate averaged over lineages. Because the time of collection of the sequences is
-generally known without ambiguity, this extra piece of data is translated into very informative
-calibration intervals for the tip nodes (i.e., calibration interval of zero width), which in turn
-results in substitution rate estimates with descreased variances.  Posterior distribution of
-substitution rates with small variances then allows one to get good estimates of the root age.
-
+\item Unlike PhyML, PhyTime requires calibration (and sequence) data as input. The format for
+  defining relevant time intervals is desctibed below.
+\item  PhyTime does not allow partitionned (i.e., multigene) analysis. Future releases might 
+implement this feature (depending on users' requests).
 \end{itemize}
 
-A typical PhyTime command-line should look like the following\index{command-line options!\x{--calibration}}:
+\subsubsection{PhyTime input}
+As stated above, PhyTime takes as input an XML file, very similar to those compatible with PhyML. An
+example is given thereafter. The first part of the input file (up to the \x{partitionelem} block) corresponds to a standard XML input
+file for PhyML. The second part is PhyTime-specific. Two now elements can be found here: \x{clade}
+and \x{calibration}\index{PhyTime!calibration}. The \x{clade}\index{PhyTime!clade} element is used to define a subset of taxa. Each of these taxa is
+given in a \x{taxon} element. The  value that each taxon takes is a string corresponding to the
+name of one of the sequences in the sequence alignment. In the example that follows, \x{Gymno\_Cycas}, \x{Gymno\_Ginko} and
+\x{Gymno\_Juniperus} and three taxa that define a clade called \x{CLADE1}. Note that, in the
+inference, this clade may not be monophyletic. The second important element is \x{calibration}. It
+helps defining time intervals corresponding to the time of diversification (or the time of the most
+recent common ancestor) of the clade the calibration points to. Each interval is defined using 
+\x{upper} and \x{lower} bounds.
 
-\begin{Verbatim}[fontsize=\small]
-./phytime -i seqname -u treename --calibration=calibration_file -m GTR -c 8
+\vspace{0.2cm}
+\begin{Verbatim}[frame=single, label=Example of PhyTime XML file, samepage=true, baselinestretch=0.5,
+  fontsize=\small, numbers=left]
+
+<phyml run.id="my_analysis" output.file="my_analysis">
+
+  <!-- Tree topology: use "bionj" here. Does not matter as the -->
+  <!-- tree is randomized at the start of the analysis anyway -->
+  <topology> 
+    <instance id="T1" init.tree="bionj" optimise.tree="yes"/>
+  </topology>
+  
+  <!-- Substitution model -->
+  <ratematrices id="RM1">
+    <instance id="M1" model="HKY85" optimise.tstv="no" tstv="4.0"/>
+  </ratematrices>
+
+  
+  <!-- Freerate model of variation of rates across sites -->
+  <siterates id="SR1">
+    <instance id="R3" init.value="0.5"/>
+    <instance id="R2" init.value="1.0"/>
+    <instance id="R1" init.value="2.0"/>
+    <weights  id="D1" family="freerates" optimise.freerates="no">
+      <instance appliesto="R3" value="0.33"/>
+      <instance appliesto="R2" value="0.33"/>
+      <instance appliesto="R1" value="0.33"/>
+    </weights>
+  </siterates>
+
+  <!-- Nucleotide frequencies at equilibrium -->
+  <equfreqs id="EF1">
+    <instance id="F1" optimise.freqs="no"/>
+  </equfreqs>
+
+
+  <!-- One vector of branch lengths -->
+  <branchlengths id="BL1" >
+    <instance id="L1" optimise.lens="no"/>
+  </branchlengths>
+
+
+  <partitionelem id="partition1" file.name="/path/to/sequences" \
+  data.type="nt" interleaved="no">
+    <mixtureelem list="T1, T1, T1"/>
+    <mixtureelem list="M1, M1, M1"/>
+    <mixtureelem list="F1, F1, F1"/>
+    <mixtureelem list="R1, R2, R3"/>
+    <mixtureelem list="L1, L1, L1"/>
+  </partitionelem>
 \end{Verbatim}
 
-Assuming the file `\x{seqname}' contains DNA  sequences in PHYLIP or NEXUS format, `\x{treename}' is
-the rooted  input tree in Newick  format and `\x{calibration\_file}'  is a set of  calibration nodes,
-PhyTime will  estimate the  posterior distribution of  node times  and substitution rates  under the
-assumption that the  substitution process follows a GTR  model with 8 classes of rates  in the Gamma
-distribution of  rates across sites. The  model parameter values  are estimated by a  Gibbs sampling
-technique. This algorithm tries diferent values of the model parameters and record the most probable
-ones. By default,  $10^6$ values for each  parameter are collected. These values  are recorded every
-$10^3$  sample. These  settings can  be  modified using  the appropriate  command-line options  (see
-below).
+\begin{Verbatim}[frame=single, label=Example of PhyTime XML file (ctnd), samepage=true, baselinestretch=0.5,
+  fontsize=\small, numbers=left]
+ 
+  <clade id="CLADE1">
+    <taxon value="Gymno_Cycas"/>
+    <taxon value="Gymno_Ginkgo"/>
+    <taxon value="Gymno_Juniperus"/>
+  </clade>
+  <calibration id="CAL1">
+    <lower>-452</lower>
+    <upper>-290</upper>
+    <appliesto clade.id="CLADE1">
+    </appliesto>
+  </calibration>
+
+  <clade id="CLADE2">
+    <taxon value="Fagales_Juglans"/>
+    <taxon value="Ophioglossum"/>
+  </clade>
+  <calibration id="CAL2">
+    <lower>-10000</lower>
+    <upper>-0</upper>
+    <appliesto clade.id="CLADE2">
+    </appliesto>
+  </calibration>
+
+</phyml>
+\end{Verbatim}
 
 
-\subsubsection{Upper bounds of model parameters}
 
-The  maximum expected  number  of substitutions  per  along a  given  branch is  set  to 1.0.  Since
-calibration times provide prior  information about the time scale considered, it  is possible to use
-that information to  define an upper bound for  the substitution rate. This upper bound  is equal to
-the ratio of  the maximum value for  a branch length (1.0) by  the amount of time  elapsed since the
-oldest  calibration point  (i.e., the  minimum  of the  lower bounds  taken  over the  whole set  of
-calibration points)\footnote{The actual  formula involves an extra parameter which  does not need to
-be  introduced  here}. It  is  important  to keep  in  mind  that the  upper  bound  of the  average
-substitution rate depends  on the time unit used  in the calibration priors. The value  of the upper
-bound is printed on screen at the start of the execution.
-
-PhyTime  implements  two  models  that  authorize  rates  to  be  autocorrelated.  The  strength  of
-autocorrelation is governed  by a parameter which value  is estimated from the data.  However, it is
-necessary to  set an appropriate  upper bound  for this parameter  prior running the  analysis.  The
-maximum value is set such that the correlation between the rate at the beginning and at the end of a
-branch of length 1.0 calendar time unit is not  different from 0. Here again the upper bound for the
-model parameter depends  on the time unit. It is  important to choose this unit so  that a branch of
-length 1.0 calendar unit can be considered as short. For this reason, {\color{red}{we recommend to select a time
-unit so that the calibration times take values between -10 and -1000}}\index{time scale}.
-
-\subsubsection{PhyTime specific options}
-
-Beside the \x{--calibration} option, there are other command line options that are specific to PhyTime:
-\begin{itemize}
-\item \x{--chain\_len=num}\index{command-line options!\x{--chain\_len}} \\
-\x{num} is the number of iterations required to estimate the joint posterior density of all the model
-parameters, i.e., the length of the MCMC chain. Its default is set to 1E+6.
-% \item \x{--burnin=num} \\
-% \x{num} is the number of iterations for the ``burnin'' period, i.e., the number of iterations
-% required before actually starting to get valid samples from the joint posterior density of all the
-% model parameters. Its default is set to 1E+5, i.e., 0.1 times the default value of the \x{chain\_len}
-% parameter (see above).
-\item \x{--sample\_freq=num}\index{command-line options!\x{--sample\_freq}}  \\  \x{num} is the number of  generations between successive collection
-of   the   model   parameter   values   throughout   the   MCMC   algorithm.   For   instance,   the
-\x{--sample\_freq=1E+2} option will make PhyTime sample the model parameter every 100th iteration of
-the MCMC algorithm. Its default is set to 1E+3.
-\item \x{--fastlk=yes (no)}\index{command-line options!\x{--fastlk}} [Default: no]\\
-The option is used to turn on (off) the approximation of the likelihood function using a
-multivariate normal density. By default, the exact likelihood is used. Using the normal
-approximation considerably speeds up the calculation. However, it is necessary to ensure that this
-approximation is appropriate by looking at the correlation between the exact and approximated
-likelihood values that are sampled. Please read Section \ref{sec:recomphytime} for a description of
-the appropriate steps to take.
-\item \x{--no\_sequences}\index{command-line options!\x{--no\_sequences}}\\
-Use this option to run the sampler without sequence data. This option can be useful when one wants
-to compare the marginal posterior density of model parameters to those derived when ignoring the
-information conveyed by the sequences. Such comparison should be conducted on a systematic basis  so as to determine whether the
-parameters estimates are mostly determined by the prior of driven by the sequence data.
-\item \x{--rate\_model=gbs/gbd/gamma/clock}\index{command-line options!\x{--rate\_model}}\\
-This option is to select the model of evolution of the rate of evolution. \x{gbs} (default) stands
-for Geometric Brownian + Stochastic. This model considers that rates evolve along the tree
-according to a geometric Brownian process \cite{kishino01} and the average rate of substitution
-along a branch is a gamma distributed random variable. This model is described in \cite{guindon13}.
-The \x{gbd} model (Geometric Browninan with Deterministic calculation of edge lengths) assumes the
-same Geometric Brownian model of rates. However, as opposed to \x{gbs}, this model uses a
-deterministic approximation to calculate the average rates of evolution along edges. This model
-corresponds to the one described in \cite{kishino01} and implemented in the program Multidivtime\index{Multidivtime}.
-\x{gamma} is a less sophisticated model that assumes that average rates along edges are distributed a
-priori according to a gamma distribution. It is analogous to the uncorrelated clock model
-implemented in BEAST\index{BEAST} with a gamma distribution replacing the exponential one. The \x{clock} option
-corresponds to the strict clock model where all the lineages in the tree evolve at the same pace.
-\end{itemize}
 
 \subsubsection{PhyTime output}
 
 The     program     PhyTime     generates     two     output     files.      The     file     called
-`\x{your\_seqfile\_phytime\_XXXX\_stats}', where  XXXX is  a randomly  generated integer,  lists the
+`\x{your\_seqfile\_phytime\_stats}', lists the
 node times  and branch  relative rates  sampled during the  estimation process.   It also  gives the
-sampled values for other parameters, such as  the autocorrelation of rates (parameter `Nu'), and the
-rate of evolution (parameter `EvolRate') amongst others.   This output file can be analysed with the
+sampled values for other parameters, such as  the autocorrelation of rates (parameter `nu'), and the
+rate of evolution (parameter `clock') amongst others.   This output file can be analysed with the
 program        Tracer\index{Tracer}        from         the        BEAST\index{BEAST}        package
-(\url{http://beast.bio.ed.ac.uk/Main_Page}).        The       second      file       is       called
-`\x{your\_seqfile\_phytime\_XXXX\_trees}'.  It is  the list of trees that were  collected during the
+(\url{http://beast.bio.ed.ac.uk/Main_Page}) or Icylog \url{http://tgvaughan.github.io/icylog/}\index{Icylog}.        The       second      file       is       called
+`\x{your\_seqfile\_phytime\_trees}'.  It is  the list of trees that were  collected during the
 estimation process, i.e., phylogenies sampled from the posterior density of trees.  This file can be
 processed   using   the   software   TreeAnnotator,   also  part   of   the   BEAST   package   (see
 \url{http://beast.bio.ed.ac.uk/Main_Page}) in  order to generate  confidence sets for the  node time
@@ -2375,42 +2315,42 @@ estimates.  It provides useful information when one has  to decide whether or no
 large enough to draw  valid conclusion, i.e., decide whether the chain was  run for long enough (see
 Section \ref{sec:recomphytime} for more detail about adequate chain length).
 
-\subsubsection{ClockRate vs. EvolRate}
+% \subsubsection{ClockRate vs. EvolRate}
 
-The average rate of evolution along a branch  is broken into two components. One is called ClockRate
-and is  the same throughout  the tree. The  other is called EvolRate  and corresponds to  a weighted
-average of  branch-specific rates.  The  model of rate  evolution implemented in PhyTime  forces the
-branch-specific rate values to  be greater than one. As a consequence,  ClockRate is usually smaller
-EvolRate.
+% The average rate of evolution along a branch  is broken into two components. One is called ClockRate
+% and is  the same throughout  the tree. The  other is called EvolRate  and corresponds to  a weighted
+% average of  branch-specific rates.  The  model of rate  evolution implemented in PhyTime  forces the
+% branch-specific rate values to  be greater than one. As a consequence,  ClockRate is usually smaller
+% EvolRate.
 
-In more mathematical terms, let $\mu$ be the value of ClockRate, $r_i$ be the value of the relative
-rate along branch $i$ and $\Delta_i$ the time elapsed along branch $i$. The value of EvolRate is
-then given by:
-\begin{eqnarray*}
-\mathrm{EvolRate} = \mu \frac{\sum_{i}^{2n-3} r_i \Delta_i}{\sum_{i}^{2n-3} \Delta_i}.
-\end{eqnarray*}  It is  clear from  this equation  that  multiplying each  $r_i$ by  a constant  and
-dividing $\mu$ by the same constant does not  change the value of EvolRate. The $r_i$s and $\mu$
-are then confounded,  or non-identifiable, and only  the value of EvolRate can  be estimated from
-the data.   {\color{red}{Please make sure  that you use  the value of  EvolRate rather than  that of
-ClockRate when referring to the estimate of the substitution rate}}.
+% In more mathematical terms, let $\mu$ be the value of ClockRate, $r_i$ be the value of the relative
+% rate along branch $i$ and $\Delta_i$ the time elapsed along branch $i$. The value of EvolRate is
+% then given by:
+% \begin{eqnarray*}
+% \mathrm{EvolRate} = \mu \frac{\sum_{i}^{2n-3} r_i \Delta_i}{\sum_{i}^{2n-3} \Delta_i}.
+% \end{eqnarray*}  It is  clear from  this equation  that  multiplying each  $r_i$ by  a constant  and
+% dividing $\mu$ by the same constant does not  change the value of EvolRate. The $r_i$s and $\mu$
+% are then confounded,  or non-identifiable, and only  the value of EvolRate can  be estimated from
+% the data.   {\color{red}{Please make sure  that you use  the value of  EvolRate rather than  that of
+% ClockRate when referring to the estimate of the substitution rate}}.
 
-\subsubsection{Effective sample size}\label{sec:ess}
+% \subsubsection{Effective sample size}\label{sec:ess}
 
-The MCMC technique  generates samples from a  target distribution (in our case,  the joint posterior
-density  of  parameters).  Due  to  the  Markovian  nature of  the  method,  these samples  are  not
-independent.  The  ESS is the estimated  number of independent  measurements obtained from a  set of
-(usually dependent) measurements. It is calculated using the following formula:
-\begin{eqnarray*}
-\mathrm{ESS} = N\left(\frac{1-r}{1+r}\right),
-\end{eqnarray*}
-where  $N$  is the  length  of  the  chain  (i.e., the  `raw'  or `correlated' sample  size)  and $r$  is  the
-autocorrelation value, which is obtained using the following formula:
-\begin{eqnarray*}
-r = \frac{1}{(N-k)\sigma_x^2} \sum_{i=1}^{N-k} (X_i - \mu_x)(X_{i+k}-\mu_x),
-\end{eqnarray*} where $\mu_x$ and $\sigma_x$ are the mean and standard deviation of the $X_i$ values
-respectively and $k$ is the lag. The value of $r$ that is used in PhyTime corresponds to the case where $k=1$,
-which therefore gives a first order  approximation of the `average' autocorrelation value (i.e., the
-autocorrelation averaged over the set of possible values of the lag).
+% The MCMC technique  generates samples from a  target distribution (in our case,  the joint posterior
+% density  of  parameters).  Due  to  the  Markovian  nature of  the  method,  these samples  are  not
+% independent.  The  ESS is the estimated  number of independent  measurements obtained from a  set of
+% (usually dependent) measurements. It is calculated using the following formula:
+% \begin{eqnarray*}
+% \mathrm{ESS} = N\left(\frac{1-r}{1+r}\right),
+% \end{eqnarray*}
+% where  $N$  is the  length  of  the  chain  (i.e., the  `raw'  or `correlated' sample  size)  and $r$  is  the
+% autocorrelation value, which is obtained using the following formula:
+% \begin{eqnarray*}
+% r = \frac{1}{(N-k)\sigma_x^2} \sum_{i=1}^{N-k} (X_i - \mu_x)(X_{i+k}-\mu_x),
+% \end{eqnarray*} where $\mu_x$ and $\sigma_x$ are the mean and standard deviation of the $X_i$ values
+% respectively and $k$ is the lag. The value of $r$ that is used in PhyTime corresponds to the case where $k=1$,
+% which therefore gives a first order  approximation of the `average' autocorrelation value (i.e., the
+% autocorrelation averaged over the set of possible values of the lag).
 
 
 \subsubsection{Prior distributions of model parameters}\label{sec:prior}
