@@ -30,7 +30,7 @@
 
 % \setpapersize{A4}
 % \hypersetup{colorlinks=true,linkcolor=blue,urlcolor=red,linkbordercolor=000}
-\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=red}
+\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=orange}
 \renewcommand{\baselinestretch}{1.}
 \makeindex
 \begin{document}
@@ -2181,29 +2181,29 @@ similar to running  PhyML using an XML parameter input file.  The main differenc
 explained below:
 \begin{itemize}
 \item Unlike PhyML, PhyTime requires calibration (and sequence) data as input. The format for
-  defining relevant time intervals is desctibed below.
+  defining the relevant time intervals is described below.
 \item  PhyTime does not allow partitionned (i.e., multigene) analysis. Future releases might 
 implement this feature (depending on users' requests).
 \end{itemize}
 
 \subsubsection{PhyTime input}
-As stated above, PhyTime takes as input an XML file, very similar to those compatible with PhyML. An
+As stated above, PhyTime takes as input an XML file very similar to those compatible with PhyML. An
 example is given thereafter. The first part of the input file (up to the \x{partitionelem} block) corresponds to a standard XML input
-file for PhyML. The second part is PhyTime-specific. Two now elements can be found here: \x{clade}
+file for PhyML. The second part is PhyTime-specific. Two new elements can be found here: \x{clade}
 and \x{calibration}\index{PhyTime!calibration}. The \x{clade}\index{PhyTime!clade} element is used to define a subset of taxa. Each of these taxa is
 given in a \x{taxon} element. The  value that each taxon takes is a string corresponding to the
-name of one of the sequences in the sequence alignment. In the example that follows, \x{Gymno\_Cycas}, \x{Gymno\_Ginko} and
-\x{Gymno\_Juniperus} and three taxa that define a clade called \x{CLADE1}. Note that, in the
-inference, this clade may not be monophyletic. The second important element is \x{calibration}. It
-helps defining time intervals corresponding to the time of diversification (or the time of the most
-recent common ancestor) of the clade the calibration points to. Each interval is defined using 
+name of one of the sequences in the alignment file. In the example that follows, \x{Gymno\_Cycas}, \x{Gymno\_Ginko} and
+\x{Gymno\_Juniperus} are three taxa that define a clade called \x{CLADE1}. Note that  this clade may
+not be monophyletic. In fact it is not considered as such during the inference. The second important element is \x{calibration}. It
+helps defining time intervals corresponding to the time of diversification (i.e., the time of the most
+recent common ancestor) of the set of taxa the calibration points to. Each interval is defined using 
 \x{upper} and \x{lower} bounds.
 
 \vspace{0.2cm}
 \begin{Verbatim}[frame=single, label=Example of PhyTime XML file, samepage=true, baselinestretch=0.5,
   fontsize=\small, numbers=left]
 
-<phyml run.id="my_analysis" output.file="my_analysis">
+<phyml run.id="abc" output.file="def">
 
   <!-- Tree topology: use "bionj" here. Does not matter as the -->
   <!-- tree is randomized at the start of the analysis anyway -->
@@ -2285,35 +2285,58 @@ recent common ancestor) of the clade the calibration points to. Each interval is
 
 \subsubsection{PhyTime output}
 
-The     program     PhyTime     generates     two     output     files.      The     file     called
-`\x{your\_seqfile\_phytime\_stats}', lists the
-node times  and branch  relative rates  sampled during the  estimation process.   It also  gives the
+The     program     PhyTime     generates     two     output     files.      Using the XML file given
+above, one of the output files is called  `\x{abc\_def\_phytime\_stats}'. It lists the
+node times  and (relative) substitution rates on edges  sampled during the  estimation process.   It also  gives the
 sampled values for other parameters, such as  the autocorrelation of rates (parameter `nu'), and the
 rate of evolution (parameter `clock') amongst others.   This output file can be analysed with the
 program        Tracer\index{Tracer}        from         the        BEAST\index{BEAST}        package
-(\url{http://beast.bio.ed.ac.uk/Main_Page}) or Icylog \url{http://tgvaughan.github.io/icylog/}\index{Icylog}.        The       second      file       is       called
-`\x{your\_seqfile\_phytime\_trees}'.  It is  the list of trees that were  collected during the
+(\url{http://beast.bio.ed.ac.uk/Main_Page}) or Icylog (\url{http://tgvaughan.github.io/icylog/}\index{Icylog}).        The       second      file       is       called
+`\x{abc\_def\_phytime\_trees}'.  It is  the list of rooted trees that were  collected during the
 estimation process, i.e., phylogenies sampled from the posterior density of trees.  This file can be
 processed   using   the   software   TreeAnnotator,   also  part   of   the   BEAST   package   (see
 \url{http://beast.bio.ed.ac.uk/Main_Page}) in  order to generate  confidence sets for the  node time
 estimates.
 
-Important  information is also  displayed on  the standard  output of  PhyTime (the  standard output
-generally corresponds to the terminal window from  which PhyTime was launched).  The first column of
-this output gives the current  generation, or run, of the chain. It starts at  1 and goes up to 1E+6
-by default (use \x{--chain\_len} to change this value, see above).  The second column gives the time
-elapsed  in seconds since  the sampling  began. The  third column  gives the  log likelihood  of the
-phylogenetic model (i.e., `Felsenstein's likelihood'). The  fourth column gives the logarithm of the
-joint prior  probability of substitution  rates along  the tree and  node heights. The  fifth column
-gives the  current sampled value  of the EvolRate  parameter along with the  corresponding Effective
-Sample Size (ESS) (see  Section \ref{sec:ess}) for this parameter.  The sixth  column gives the tree
-height  and the  corresponding  ESS.  The seventh  column  gives the  value  of the  autocorrelation
-parameter followed by the  corresponding ESS. The eightth column gives the  values of the birth rate
-parameter that  governs the birth-rate model  of species divergence  dates.  The last column  of the
-standard  output gives  the minimum  of the  ESS  values taken  over the  whole set  of node  height
-estimates.  It provides useful information when one has  to decide whether or not the sample size is
-large enough to draw  valid conclusion, i.e., decide whether the chain was  run for long enough (see
-Section \ref{sec:recomphytime} for more detail about adequate chain length).
+
+\subsubsection{MCMC settings}
+
+PhyTime estimates the joint posterior distribution  of the phylogenetic model parameters  using an
+MCMC algorithm. This algorithm relies on sampling values of these parameters iteratively. The number
+of iterations is fixed to 1E+07 and values of parameters are recorded every 200 generations. The
+vast majority of analyses will not warrant 1E+07 iterations  to converge to the
+target distribution (i.e., converge to the solution). I thus recommend  monitoring each analysis by
+loading on a regular basis the statistics output file produced by PhyTime in Tracer or Icylog  and
+interrupt the analysis once the effective sample sizes of all parameters have reached 200. 
+
+The MCMC
+algorithm implemented in PhyTime relies on multiple operators that update different parameters, or the
+same parameter in different ways. The weights of these operators, i.e., the frequency with which
+they are applied, were adjusted for the analysis of the plant data set described in
+\cite{guindon17}. If you think these default values are not suitable for your own analysis, please
+feel free to have a look at the function \x{MCMC\_Complete\_MCMC} in the file \x{mcmc.c} to make 
+the appropriate changes to the values of \x{mcmc->move\_weight[XXX]}, where \x{XXX} is the name of
+the operator. Alternatively, you might want to send me an email (\url{guindon@lirmm.fr}) if you are
+unsure about all this. 
+
+
+
+% Important  information is also  displayed on  the standard  output of  PhyTime (the  standard output
+% generally corresponds to the terminal window from  which PhyTime was launched).  The first column of
+% this output gives the current  generation, or run, of the chain. It starts at  1 and goes up to 1E+7
+% by default.  The second column gives the time elapsed  in seconds since  the sampling  began. The
+% third column  gives the  log likelihood  of the phylogenetic model (i.e., `Felsenstein's
+% likelihood'). The  fourth column gives the logarithm of the joint prior  probability of substitution
+% rates along  the tree and  node heights. The  fifth column gives the  current sampled value  of the
+% EvolRate  parameter along with the  corresponding Effective Sample Size (ESS)  for this parameter.
+% The sixth  column gives the tree height  and the  corresponding  ESS.  The seventh  column  gives
+% the  value  of the  autocorrelation parameter followed by the  corresponding ESS. The eightth column
+% gives the  values of the birth rate parameter that  governs the birth-rate model  of species
+% divergence  dates.  The last column  of the standard  output gives  the minimum  of the  ESS  values
+% taken  over the  whole set  of node  height estimates.  It provides useful information when one has
+% to decide whether or not the sample size is large enough to draw  valid conclusion, i.e., decide
+% whether the chain was  run for long enough (see Section \ref{sec:recomphytime} for more detail about
+% adequate chain length).
 
 % \subsubsection{ClockRate vs. EvolRate}
 
@@ -2353,20 +2376,20 @@ Section \ref{sec:recomphytime} for more detail about adequate chain length).
 % autocorrelation averaged over the set of possible values of the lag).
 
 
-\subsubsection{Prior distributions of model parameters}\label{sec:prior}
+% \subsubsection{Prior distributions of model parameters}\label{sec:prior}
 
-Any Bayesian analysis requires  specifying a prior distribution of model  parameters. The outcome of
-the data analysis, i.e., the posterior distribution,  is influenced by the priors.  It is especially
-true if the signal conveyed  by the data is weak.  While some have  argued that the specification of
-priors relies more  on arbitrary decisions than sound scientific  reasoning, choosing relevant prior
-distributions  is in  fact fully  integrated in  the process  of building  model that  generates the
-observed data.  In particular, the problem of  estimating divergence times naturally lends itself to
-hierarchical Bayesian modelling.  Based on the hypothesis  that rates of evolution are conserved (to
-some extant)  throughout the  course of  evolution, the hierarchical  Bayesian approach  provides an
-adequate framework for inferring substitution rates  and divergence dates separately. Hence, in this
-situation, it makes good  sense to use what is known about a  relatively well-defined feature of the
-evolution of genetic sequences (the ``molecular  clock'' hypothesis combined to stochastic variations of
-rates across lineages) to build a prior distribution on rates along edges.
+% Any Bayesian analysis requires  specifying a prior distribution of model  parameters. The outcome of
+% the data analysis, i.e., the posterior distribution,  is influenced by the priors.  It is especially
+% true if the signal conveyed  by the data is weak.  While some have  argued that the specification of
+% priors relies more  on arbitrary decisions than sound scientific  reasoning, choosing relevant prior
+% distributions  is in  fact fully  integrated in  the process  of building  model that  generates the
+% observed data.  In particular, the problem of  estimating divergence times naturally lends itself to
+% hierarchical Bayesian modelling.  Based on the hypothesis  that rates of evolution are conserved (to
+% some extant)  throughout the  course of  evolution, the hierarchical  Bayesian approach  provides an
+% adequate framework for inferring substitution rates  and divergence dates separately. Hence, in this
+% situation, it makes good  sense to use what is known about a  relatively well-defined feature of the
+% evolution of genetic sequences (the ``molecular  clock'' hypothesis combined to stochastic variations of
+% rates across lineages) to build a prior distribution on rates along edges.
 
 
 
