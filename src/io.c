@@ -1308,7 +1308,8 @@ void Post_Process_Data(option *io)
 
   /* Sequences are ordered alphabetically */
   data_buff = NULL;
-  swap = TRUE;
+  /* swap = TRUE; */
+  swap = FALSE;
   while(swap == TRUE)
     {
       swap = FALSE;

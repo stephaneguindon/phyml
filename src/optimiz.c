@@ -2276,7 +2276,7 @@ int Optimiz_Alpha_And_Pinv(t_tree *mixt_tree, int verbose)
 phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_tree *tree)
 {
   short int converged;
-  phydbl dl,d2l; 
+  phydbl dl,d2l,ratio; 
   phydbl init_lnL,old_lnL;
   int iter;
   phydbl best_l, best_lnL;
@@ -2284,6 +2284,7 @@ phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t
   // Warning: make sure eigen_lr vectors are already up-to-date 
 
   Set_Use_Eigen_Lr(YES,tree);
+  assert(isnan(*l) == FALSE);
   dLk(l,b,tree);
 
   best_lnL = old_lnL = init_lnL = tree->c_lnL;
@@ -2302,11 +2303,20 @@ phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t
       if(d2l > 0.0)
         *l *= 0.5;
       else
-        *l -= dl/d2l;
+        {
+          ratio = dl/d2l;
+          if(isnan(ratio) == NO) *l -= dl/d2l;
+        }
       
       if(*l < tree->mod->l_min) *l = tree->mod->l_min;
       if(*l > tree->mod->l_max) *l = tree->mod->l_max;
 
+      if(isnan(*l) == TRUE)
+        {
+          PhyML_Printf("\n. dl=%f d2l:%f",dl,d2l);
+          assert(FALSE);
+        }
+      
       Set_Use_Eigen_Lr(YES,tree);
       dLk(l,b,tree);
 

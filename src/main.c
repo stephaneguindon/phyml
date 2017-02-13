@@ -225,25 +225,7 @@ int main(int argc, char **argv)
 #ifdef PHYML
                   if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
                                    
-                  /* { */
-                  /*   int i; */
-                  /*   Set_Both_Sides(YES,tree); */
-                  /*   tree->update_eigen_lr = YES; */
-                  /*   tree->use_eigen_lr    = NO; */
-                  /*   Lk(NULL,tree); */
-                  /*   tree->update_eigen_lr = NO; */
-                  /*   tree->use_eigen_lr    = NO; */
-                  /*   For(i,100000)  */
-                  /*     { */
-                  /*       int j; */
-                  /*       For(j,2*tree->n_otu-3) if(tree->a_edges[j]->left->tax == NO && */
-                  /*                                 tree->a_edges[j]->rght->tax == NO) break; */
-                  /*       Lk(tree->a_edges[j],tree); */
-                  /*     } */
-                  /*   printf("\n. lnL: %f",tree->c_lnL); */
-                  /*   Exit("\n"); */
-                  /* } */
-
+              
                   Switch_Eigen(YES,tree->mod);                 
                   Lk(NULL,tree);
                   Switch_Eigen(NO,tree->mod);

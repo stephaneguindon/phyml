@@ -651,6 +651,7 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
   phydbl lk,dlk,d2lk,dlnlk,d2lnlk,loglk,c_lnL;
   phydbl eps;
 
+  assert(isnan(*l) == FALSE);
 
   if(*l < tree->mod->l_min)      *l = tree->mod->l_min;
   else if(*l > tree->mod->l_max) *l = tree->mod->l_max;      
