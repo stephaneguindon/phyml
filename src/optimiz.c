@@ -681,15 +681,14 @@ void Round_Optimize(t_tree *tree, int n_round_max)
   Lk(NULL,tree);
 
   while(n_round < n_round_max)
-    {
-      
+    {      
       if(tree->mod->s_opt->opt_bl || tree->mod->s_opt->constrained_br_len) Optimize_Br_Len_Serie(tree);
 
       if((tree->mod->s_opt->opt_bl || tree->mod->s_opt->constrained_br_len) &&
          (tree->verbose > VL2) &&
-         (!tree->io->quiet)) Print_Lk(tree,"[Branch lengths     ]");
+         (tree->io->quiet == NO)) Print_Lk(tree,"[Branch lengths     ]");
 
-
+      /* printf("\n. [%d] %f %s",n_round,tree->c_lnL,Write_Tree(tree,NO)); */
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
       
@@ -2290,7 +2289,7 @@ phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t
   best_lnL = old_lnL = init_lnL = tree->c_lnL;
   best_l = *l;
 
-  /* PhyML_Printf("\n Begin NR loop (lnL: %f dlnL: %f d2lnL: %f)",tree->c_lnL,tree->c_dlnL,tree->c_d2lnL); */
+  /* PhyML_Printf("\n Begin NR loop (lnL: %f dlnL: %f d2lnL: %f) b: %p tree: %s",tree->c_lnL,tree->c_dlnL,tree->c_d2lnL,(void *)b,Write_Tree(tree,NO)); */
 
   converged = NO;
   iter = 0;
@@ -2301,7 +2300,9 @@ phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t
       d2l     = tree->c_d2lnL;
 
       if(d2l > 0.0)
-        *l *= 0.5;
+        {
+          *l *= 0.5;
+        }
       else
         {
           ratio = dl/d2l;
@@ -2313,7 +2314,7 @@ phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t
 
       if(isnan(*l) == TRUE)
         {
-          PhyML_Printf("\n. dl=%f d2l:%f",dl,d2l);
+          PhyML_Printf("\n\n== dl=%f d2l:%f",dl,d2l);
           assert(FALSE);
         }
       
@@ -2489,9 +2490,6 @@ void Round_Optimize_Node_Heights(t_tree *tree)
 
   cur_lnL = UNLIKELY;
   new_lnL = Lk(NULL,tree);
-
-
-  printf("\n. cur_lnL = %f new_lnL=%f",cur_lnL,new_lnL);
 
 
   n_iter = 0;

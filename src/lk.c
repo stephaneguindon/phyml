@@ -4359,10 +4359,10 @@ void Pull_Scaling_Factors(int site,
       
       if(min_sum_scale > max_sum_scale)
         {
-          #ifdef SAFEMODE
+#ifdef SAFEMODE
           PhyML_Printf("\n== Numerical precision issue alert.");
           PhyML_Printf("\n== min_sum_scale = %G max_sum_scale = %G",min_sum_scale,max_sum_scale);
-          #endif
+#endif
           min_sum_scale = max_sum_scale;
         }
       

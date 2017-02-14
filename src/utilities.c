@@ -1480,9 +1480,8 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
 
   Record_Br_Len(tree);
 
-  if(v1->num < v2->num) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
+  if(v1->num < v2->num) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   if(v3->num < v4->num) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-
 
   /************************************************************/
   Swap(v2,b_fcus->left,b_fcus->rght,v3,tree);
@@ -5436,8 +5435,8 @@ void Find_Mutual_Direction(t_node *n1, t_node *n2, short int *dir_n1_to_n2, shor
     }
     }
 
-  PhyML_Printf("\n. n1=%d n2=%d",n1->num,n2->num);
-  PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+  PhyML_Printf("\n== n1=%d n2=%d",n1->num,n2->num);
+  PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
   Warn_And_Exit("");
 
 

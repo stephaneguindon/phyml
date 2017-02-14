@@ -4798,10 +4798,8 @@ void Spr_List_Of_Trees(t_tree *tree)
 
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n. First round of optimization...");
   
-
   if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
 
-  /* printf("\n. 0????????? %d lnL: %f",Global_myRank,Lk(NULL,tree)); fflush(NULL); */
   Round_Optimize(tree,5);
   tree_list[0] = Make_Tree_From_Scratch(tree->n_otu,tree->data);
   Copy_Tree(tree,tree_list[0]);
@@ -4816,7 +4814,6 @@ void Spr_List_Of_Trees(t_tree *tree)
       Stepwise_Add_Pars(tree);  
       Spr_Pars(0,10,tree);
 
-      /* printf("\n. ...0?????????  lnL: %f tree: %d",Lk(NULL,tree),list_size); fflush(NULL); */
 
       tree->mod->s_opt->fast_nni = YES;
       Simu(tree,2);

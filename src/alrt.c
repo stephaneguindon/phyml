@@ -880,9 +880,9 @@ void Make_Target_Swap(t_tree *tree, t_edge *b_fcus, int swaptodo)
 
   if(tree->c_lnL < lk_init - tree->mod->s_opt->min_diff_lk_global)
     {
-      PhyML_Printf("\n. [%3d] v1=%d v2=%d v3=%d v4=%d",b_fcus->num,v1->num,v2->num,v3->num,v4->num);
-      PhyML_Printf("\n. tree->c_lnL = %f lk_init = %f\n",tree->c_lnL,lk_init);
-      PhyML_Printf("\n. Err in file %s at line %d\n\n",__FILE__,__LINE__);
+      PhyML_Printf("\n== [%3d] v1=%d v2=%d v3=%d v4=%d",b_fcus->num,v1->num,v2->num,v3->num,v4->num);
+      PhyML_Printf("\n== tree->c_lnL = %f lk_init = %f\n",tree->c_lnL,lk_init);
+      PhyML_Printf("\n== Err. in file %s at line %d\n\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 }

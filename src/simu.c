@@ -44,7 +44,7 @@ int Simu(t_tree *tree, int n_step_max)
   n_tested            = 0;
   n_without_swap      = 0;
   step                = 0;
-  lambda              = .75;
+  lambda              = 0.75;
   n_tot_swap          = 0;
 
   Update_Dirs(tree);
@@ -61,7 +61,9 @@ int Simu(t_tree *tree, int n_step_max)
       ++step;
 
       if(n_tested || step == 1) MIXT_Set_Alias_Subpatt(YES,tree);
+
       old_loglk = tree->c_lnL;
+
       Set_Both_Sides(YES,tree);
       Lk(NULL,tree);
       MIXT_Set_Alias_Subpatt(NO,tree);
@@ -75,10 +77,11 @@ int Simu(t_tree *tree, int n_step_max)
           Lk(NULL,tree);
           MIXT_Set_Alias_Subpatt(NO,tree);
         }
-
+      
       if(tree->c_lnL < old_loglk)
         {
           if(tree->verbose > VL2 && tree->io->quiet == NO) PhyML_Printf("\n\n. Moving backward\n");
+
           if(!Mov_Backward_Topo_Bl(tree,old_loglk,tested_b,n_tested))
             {
               PhyML_Printf("\n== tree->c_lnL: %f old_loglk: %f",tree->c_lnL,old_loglk);
@@ -105,6 +108,8 @@ int Simu(t_tree *tree, int n_step_max)
       if(tree->verbose > VL2 && tree->io->quiet == NO) Print_Lk(tree,"[Topology           ]");
 
       if((FABS(old_loglk-tree->c_lnL) < tree->mod->s_opt->min_diff_lk_global) || (n_without_swap > it_lim_without_swap)) break;
+
+      Update_Dirs(tree);
 
       Fix_All(tree);
       n_neg = 0;
@@ -251,8 +256,18 @@ void Select_Edges_To_Swap(t_tree *tree, t_edge **sorted_b, int *n_neg)
       
       if((!b->left->tax) && (!b->rght->tax) && (b->nni->score < -tree->mod->s_opt->min_diff_lk_move))
         {
+          // Evaluate NNIs on edges at distance 1
           Check_NNI_Scores_Around(b->left,b->rght,b,&best_score,tree);
-          Check_NNI_Scores_Around(b->rght,b->left,b,&best_score,tree);
+          Check_NNI_Scores_Around(b->rght,b->left,b,&best_score,tree);          
+          
+          // Evaluate NNIs on edges at distance 2
+          Check_NNI_Scores_Around(b->left,b->left->v[b->l_v1],b,&best_score,tree);
+          Check_NNI_Scores_Around(b->left,b->left->v[b->l_v2],b,&best_score,tree);
+
+          // Evaluate NNIs on edges at distance 2
+          Check_NNI_Scores_Around(b->rght,b->rght->v[b->r_v1],b,&best_score,tree);
+          Check_NNI_Scores_Around(b->rght,b->rght->v[b->r_v2],b,&best_score,tree);
+
           if(best_score < b->nni->score) continue;
           sorted_b[*n_neg] = b;
           (*n_neg)++;
@@ -310,20 +325,25 @@ void Make_N_Swap(t_tree *tree,t_edge **b, int beg, int end)
     {
       n1 = n2 = n3 = n4 = NULL;
 
-      if(b[i]->nni->best_conf == 1)
-        {
-          n1 = b[i]->left->v[b[i]->l_v2];
-          n2 = b[i]->left;
-          n3 = b[i]->rght;
-          n4 = b[i]->rght->v[b[i]->r_v1];
-        }
-      else if(b[i]->nni->best_conf == 2)
-        {
-          n1 = b[i]->left->v[b[i]->l_v2];
-          n2 = b[i]->left;
-          n3 = b[i]->rght;
-          n4 = b[i]->rght->v[b[i]->r_v2];
-        }
+      n1 = b[i]->nni->swap_node_v1;
+      n2 = b[i]->nni->swap_node_v2;
+      n3 = b[i]->nni->swap_node_v3;
+      n4 = b[i]->nni->swap_node_v4;
+
+      /* if(b[i]->nni->best_conf == 1) */
+      /*   { */
+      /*     n1 = b[i]->left->v[b[i]->l_v2]; */
+      /*     n2 = b[i]->left; */
+      /*     n3 = b[i]->rght; */
+      /*     n4 = b[i]->rght->v[b[i]->r_v1]; */
+      /*   } */
+      /* else if(b[i]->nni->best_conf == 2) */
+      /*   { */
+      /*     n1 = b[i]->left->v[b[i]->l_v2]; */
+      /*     n2 = b[i]->left; */
+      /*     n3 = b[i]->rght; */
+      /*     n4 = b[i]->rght->v[b[i]->r_v2]; */
+      /*   } */
 
       Swap(n1,n2,n3,n4,tree);
       
@@ -352,7 +372,7 @@ void Make_N_Swap(t_tree *tree,t_edge **b, int beg, int end)
       /*   } */
       /* while(b[i]); */
       /* b[i] = orig; */
-
+      
       tree->n_swap++;
     }
 
@@ -389,20 +409,25 @@ int Make_Best_Swap(t_tree *tree)
       
       n1 = n2 = n3 = n4 = NULL;
 
-      if(b->nni->best_conf == 1)
-        {
-          n1 = b->left->v[b->l_v2];
-          n2 = b->left;
-          n3 = b->rght;
-          n4 = b->rght->v[b->r_v1];
-        }
-      else if(b->nni->best_conf == 2)
-        {
-          n1 = b->left->v[b->l_v2];
-          n2 = b->left;
-          n3 = b->rght;
-          n4 = b->rght->v[b->r_v2];
-        }
+      n1 = b->nni->swap_node_v1;
+      n2 = b->nni->swap_node_v2;
+      n3 = b->nni->swap_node_v3;
+      n4 = b->nni->swap_node_v4;
+
+      /* if(b->nni->best_conf == 1) */
+      /*   { */
+      /*     n1 = b->left->v[b->l_v2]; */
+      /*     n2 = b->left; */
+      /*     n3 = b->rght; */
+      /*     n4 = b->rght->v[b->r_v1]; */
+      /*   } */
+      /* else if(b->nni->best_conf == 2) */
+      /*   { */
+      /*     n1 = b->left->v[b->l_v2]; */
+      /*     n2 = b->left; */
+      /*     n3 = b->rght; */
+      /*     n4 = b->rght->v[b->r_v2]; */
+      /*   } */
 
       Swap(n1,n2,n3,n4,tree);
       
@@ -459,7 +484,7 @@ int Mov_Backward_Topo_Bl(t_tree *tree, phydbl lk_old, t_edge **tested_b, int n_t
       For(i,2*tree->n_otu-3)
         {
           b = tree->a_edges[i];
-                    
+
           orig = b;
           do
             {
@@ -594,20 +619,25 @@ void Unswap_N_Branch(t_tree *tree, t_edge **b, int beg, int end)
         {
           n1 = n2 = n3 = n4 = NULL;
           
-          if(b[i]->nni->best_conf == 1)
-            {
-              n1 = b[i]->left->v[b[i]->l_v2];
-              n2 = b[i]->left;
-              n3 = b[i]->rght;
-              n4 = b[i]->rght->v[b[i]->r_v1];
-            }
-          else if(b[i]->nni->best_conf == 2)
-            {
-              n1 = b[i]->left->v[b[i]->l_v2];
-              n2 = b[i]->left;
-              n3 = b[i]->rght;
-              n4 = b[i]->rght->v[b[i]->r_v2];
-            }
+          n1 = b[i]->nni->swap_node_v4;
+          n2 = b[i]->nni->swap_node_v2;
+          n3 = b[i]->nni->swap_node_v3;
+          n4 = b[i]->nni->swap_node_v1;
+
+          /* if(b[i]->nni->best_conf == 1) */
+          /*   { */
+          /*     n1 = b[i]->left->v[b[i]->l_v2]; */
+          /*     n2 = b[i]->left; */
+          /*     n3 = b[i]->rght; */
+          /*     n4 = b[i]->rght->v[b[i]->r_v1]; */
+          /*   } */
+          /* else if(b[i]->nni->best_conf == 2) */
+          /*   { */
+          /*     n1 = b[i]->left->v[b[i]->l_v2]; */
+          /*     n2 = b[i]->left; */
+          /*     n3 = b[i]->rght; */
+          /*     n4 = b[i]->rght->v[b[i]->r_v2]; */
+          /*   } */
 
           Swap(n1,n2,n3,n4,tree);
           
@@ -637,6 +667,7 @@ void Unswap_N_Branch(t_tree *tree, t_edge **b, int beg, int end)
           /*   } */
           /* while(b[i]); */
           /* b[i] = orig; */
+
         }
     }
   else
@@ -645,20 +676,25 @@ void Unswap_N_Branch(t_tree *tree, t_edge **b, int beg, int end)
         {
           n1 = n2 = n3 = n4 = NULL;
           
-          if(b[i]->nni->best_conf == 1)
-            {
-              n1 = b[i]->left->v[b[i]->l_v2];
-              n2 = b[i]->left;
-              n3 = b[i]->rght;
-              n4 = b[i]->rght->v[b[i]->r_v1];
-            }
-          else if(b[i]->nni->best_conf == 2)
-            {
-              n1 = b[i]->left->v[b[i]->l_v2];
-              n2 = b[i]->left;
-              n3 = b[i]->rght;
-              n4 = b[i]->rght->v[b[i]->r_v2];
-            }
+          n1 = b[i]->nni->swap_node_v4;
+          n2 = b[i]->nni->swap_node_v2;
+          n3 = b[i]->nni->swap_node_v3;
+          n4 = b[i]->nni->swap_node_v1;
+
+          /* if(b[i]->nni->best_conf == 1) */
+          /*   { */
+          /*     n1 = b[i]->left->v[b[i]->l_v2]; */
+          /*     n2 = b[i]->left; */
+          /*     n3 = b[i]->rght; */
+          /*     n4 = b[i]->rght->v[b[i]->r_v1]; */
+          /*   } */
+          /* else if(b[i]->nni->best_conf == 2) */
+          /*   { */
+          /*     n1 = b[i]->left->v[b[i]->l_v2]; */
+          /*     n2 = b[i]->left; */
+          /*     n3 = b[i]->rght; */
+          /*     n4 = b[i]->rght->v[b[i]->r_v2]; */
+          /*   } */
 
           Swap(n1,n2,n3,n4,tree);
           
@@ -675,6 +711,7 @@ void Unswap_N_Branch(t_tree *tree, t_edge **b, int beg, int end)
           Copy_Scalar_Dbl(b[i]->l_old,b[i]->l);
           Copy_Scalar_Dbl(b[i]->l_var_old,b[i]->l_var);
           
+
           /* orig = b[i]; */
           /* do */
           /*   { */
@@ -705,20 +742,26 @@ void Swap_N_Branch(t_tree *tree,t_edge **b, int beg, int end)
         {
           n1 = n2 = n3 = n4 = NULL;
           
-          if(b[i]->nni->best_conf == 1)
-            {
-              n1 = b[i]->left->v[b[i]->l_v2];
-              n2 = b[i]->left;
-              n3 = b[i]->rght;
-              n4 = b[i]->rght->v[b[i]->r_v1];
-            }
-          else if(b[i]->nni->best_conf == 2)
-            {
-              n1 = b[i]->left->v[b[i]->l_v2];
-              n2 = b[i]->left;
-              n3 = b[i]->rght;
-              n4 = b[i]->rght->v[b[i]->r_v2];
-            }
+          n1 = b[i]->nni->swap_node_v1;
+          n2 = b[i]->nni->swap_node_v2;
+          n3 = b[i]->nni->swap_node_v3;
+          n4 = b[i]->nni->swap_node_v4;
+
+
+          /* if(b[i]->nni->best_conf == 1) */
+          /*   { */
+          /*     n1 = b[i]->left->v[b[i]->l_v2]; */
+          /*     n2 = b[i]->left; */
+          /*     n3 = b[i]->rght; */
+          /*     n4 = b[i]->rght->v[b[i]->r_v1]; */
+          /*   } */
+          /* else if(b[i]->nni->best_conf == 2) */
+          /*   { */
+          /*     n1 = b[i]->left->v[b[i]->l_v2]; */
+          /*     n2 = b[i]->left; */
+          /*     n3 = b[i]->rght; */
+          /*     n4 = b[i]->rght->v[b[i]->r_v2]; */
+          /*   } */
           
           Swap(n1,n2,n3,n4,tree);
           
@@ -751,21 +794,27 @@ void Swap_N_Branch(t_tree *tree,t_edge **b, int beg, int end)
         {
 
           n1 = n2 = n3 = n4 = NULL;
-          
-          if(b[i]->nni->best_conf == 1)
-            {
-              n1 = b[i]->left->v[b[i]->l_v2];
-              n2 = b[i]->left;
-              n3 = b[i]->rght;
-              n4 = b[i]->rght->v[b[i]->r_v1];
-            }
-          else if(b[i]->nni->best_conf == 2)
-            {
-              n1 = b[i]->left->v[b[i]->l_v2];
-              n2 = b[i]->left;
-              n3 = b[i]->rght;
-              n4 = b[i]->rght->v[b[i]->r_v2];
-            }
+
+          n1 = b[i]->nni->swap_node_v1;
+          n2 = b[i]->nni->swap_node_v2;
+          n3 = b[i]->nni->swap_node_v3;
+          n4 = b[i]->nni->swap_node_v4;
+
+
+          /* if(b[i]->nni->best_conf == 1) */
+          /*   { */
+          /*     n1 = b[i]->left->v[b[i]->l_v2]; */
+          /*     n2 = b[i]->left; */
+          /*     n3 = b[i]->rght; */
+          /*     n4 = b[i]->rght->v[b[i]->r_v1]; */
+          /*   } */
+          /* else if(b[i]->nni->best_conf == 2) */
+          /*   { */
+          /*     n1 = b[i]->left->v[b[i]->l_v2]; */
+          /*     n2 = b[i]->left; */
+          /*     n3 = b[i]->rght; */
+          /*     n4 = b[i]->rght->v[b[i]->r_v2]; */
+          /*   } */
           
           Swap(n1,n2,n3,n4,tree);
           
@@ -799,8 +848,10 @@ void Swap_N_Branch(t_tree *tree,t_edge **b, int beg, int end)
 
 void Check_NNI_Scores_Around(t_node *a, t_node *d, t_edge *b, phydbl *best_score, t_tree *tree)
 {
-
   int i;
+
+  if(d->tax) return;
+  
   For(i,3)
     {
       if((d->v[i] != a) && (!d->v[i]->tax))
