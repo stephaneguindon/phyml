@@ -4784,7 +4784,6 @@ void Spr_List_Of_Trees(t_tree *tree)
   tree->mod->s_opt->max_depth_path = tree->n_otu;
   best_lnL                         = UNLIKELY;
   tree->verbose                    = (tree->verbose == VL0) ? VL0 : VL1;
-  /* tree->io->quiet                  = YES; */
   /* list_size_first_round            = (int)max_list_size/5; */
   /* list_size_second_round           = (int)max_list_size/10; */
   list_size_first_round            = 10;
@@ -4813,7 +4812,6 @@ void Spr_List_Of_Trees(t_tree *tree)
     {
       Stepwise_Add_Pars(tree);  
       Spr_Pars(0,10,tree);
-
 
       tree->mod->s_opt->fast_nni = YES;
       Simu(tree,2);
@@ -4850,7 +4848,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
       
-      tree->mod->s_opt->max_depth_path    = tree->n_otu;
+      tree->mod->s_opt->max_depth_path    = tree->n_otu/2;
       tree->mod->s_opt->spr_lnL           = YES;
       tree->mod->s_opt->spr_pars          = NO;
       tree->mod->s_opt->min_diff_lk_move  = 0.1;

@@ -5567,13 +5567,12 @@ phydbl Fast_Br_Len(t_edge *b, t_tree *tree, int approx)
         }
       return tree->c_lnL;
     }
-
-
-  if(approx == NO)
-    Br_Len_Brent(b,tree);
+  
+  
+  if(approx == NO) Br_Len_Brent(b,tree);
   else
     {
-      tree->mod->s_opt->brent_it_max = 1;
+      tree->mod->s_opt->brent_it_max = 3;
       Br_Len_Brent(b,tree);
       tree->mod->s_opt->brent_it_max = BRENT_IT_MAX;
     }
