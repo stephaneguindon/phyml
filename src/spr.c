@@ -4818,8 +4818,6 @@ void Spr_List_Of_Trees(t_tree *tree)
       tree->mod->s_opt->fast_nni = YES;
       Simu(tree,2);
 
-      /* printf("\n. ...1?????????  lnL: %f tree: %d",Lk(NULL,tree),list_size); fflush(NULL); */
-
       if(tree->c_lnL > best_lnL) 
         {
           best_lnL = tree->c_lnL;
@@ -4849,8 +4847,6 @@ void Spr_List_Of_Trees(t_tree *tree)
     {
       Copy_Tree(tree_list[rk[list_size]],tree);
       
-      /* printf("\n. 2????????? %d lnL: %f tree: %d",Global_myRank,Lk(NULL,tree),list_size); fflush(NULL); */
-
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
       
@@ -4896,8 +4892,6 @@ void Spr_List_Of_Trees(t_tree *tree)
   do
     {
       Copy_Tree(tree_list[rk[list_size]],tree);
-
-      /* printf("\n. 3????????? %d lnL: %f tree: %d",Global_myRank,Lk(NULL,tree),list_size); fflush(NULL); */
 
       tree->mod->s_opt->min_diff_lk_move  = 0.01;
       Simu(tree,5);
