@@ -4832,7 +4832,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       Copy_Tree(tree,tree_list[list_size]);
       lnL_list[list_size] = tree->c_lnL;
     }
-  while(++list_size < list_size_first_round && tree->c_lnL > best_lnL - 50.);
+  while(++list_size < list_size_first_round);
   
   rk = Ranks(lnL_list,max_list_size);
     
