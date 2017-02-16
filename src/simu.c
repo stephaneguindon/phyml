@@ -31,18 +31,28 @@ void Simu_Loop(t_tree *tree)
 int Simu(t_tree *tree, int n_step_max)
 {
   {
-  int i;
-  For(i,5)
-    {
-      Set_Both_Sides(NO,tree);
-      Lk(NULL,tree);
-      printf("\n. %3d lk: %f",i,tree->c_lnL);
-      NNI_Traversal(tree->a_nodes[0],
-                    tree->a_nodes[0]->v[0],
-                    NULL,
-                    tree->a_nodes[0]->b[0]
-                    ,tree);
-    }
+    phydbl old_loglk,delta;
+    int n_round;
+    
+    tree->c_lnL = UNLIKELY;
+    delta = UNLIKELY;
+    old_loglk = UNLIKELY;
+    n_round = 0;
+    do
+      {
+        old_loglk = tree->c_lnL;
+        Set_Both_Sides(NO,tree);
+        Lk(NULL,tree);
+        NNI_Traversal(tree->a_nodes[0],
+                      tree->a_nodes[0]->v[0],
+                      NULL,
+                      tree->a_nodes[0]->b[0],
+                      tree);
+        delta = tree->c_lnL - old_loglk;
+        n_round++;
+        printf("\n. round: %3d delta: %15g lk: %15g",n_round,delta,tree->c_lnL);
+      }
+    while(delta > 1.0 || n_round < 5);
   }
   return;
                 
