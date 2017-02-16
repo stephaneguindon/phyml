@@ -3515,7 +3515,7 @@ void Test_One_Spr_Target_Recur(t_node *a, t_node *d, t_edge *pulled, t_node *lin
                  (tree->depth_curr_path >= tree->mod->s_opt->min_depth_path))
                 {
                   move_score = Test_One_Spr_Target(d->b[i],pulled,link,residual,init_target,tree);
-
+                  
                   if((tree->mod->s_opt->spr_pars == NO  && move_score > tree->best_lnL + tree->mod->s_opt->min_diff_lk_move) ||
                      (tree->mod->s_opt->spr_pars == YES && move_score < tree->best_pars)) 
                     {
@@ -4816,8 +4816,8 @@ void Spr_List_Of_Trees(t_tree *tree)
       Stepwise_Add_Pars(tree);  
       Spr_Pars(0,10,tree);
 
-      tree->mod->s_opt->fast_nni = YES;
-      Simu(tree,2);
+      tree->mod->s_opt->fast_nni = NO;
+      Simu(tree,1);
       
       if(tree->c_lnL > best_lnL) 
         {
@@ -4858,7 +4858,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       tree->mod->s_opt->spr_pars          = NO;
       tree->mod->s_opt->min_diff_lk_move  = 0.1;
       tree->mod->s_opt->eval_list_regraft = NO;
-      tree->mod->s_opt->max_delta_lnL_spr = 10.;
+      tree->mod->s_opt->max_delta_lnL_spr = 20.;
       
       do
         {
@@ -4867,14 +4867,13 @@ void Spr_List_Of_Trees(t_tree *tree)
           tree->best_lnL = tree->c_lnL;
           Spr(tree->c_lnL,1.0,tree);
           tree->mod->s_opt->max_depth_path = tree->max_spr_depth;
-          printf("\n. %p lnL: %f %d",(void *)tree,tree->c_lnL,tree->n_improvements);
         }
       while(tree->n_improvements > 5);
 
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
       Optimize_Br_Len_Serie(tree);
-      printf("\n* %p lnL: %f %d -- %f",(void *)tree,tree->c_lnL,tree->n_improvements,best_lnL);
+      /* printf("\n* %p lnL: %f %d -- %f",(void *)tree,tree->c_lnL,tree->n_improvements,best_lnL); */
       
       if(tree->c_lnL > best_lnL) 
         {

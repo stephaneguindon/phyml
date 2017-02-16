@@ -129,12 +129,6 @@ void Set_Edge_Dirs(t_edge *b, t_node *a, t_node *d, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
 
 void Restrict_To_Coding_Position(align **data, option *io)
 {
@@ -1630,19 +1624,6 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
   if(b_fcus->nni->v2 == NULL) b_fcus->nni->v2 = Duplicate_Scalar_Dbl(var2);
   else                        Copy_Scalar_Dbl(var2,b_fcus->nni->v2);
 
-
-  /* b = b_fcus; */
-  /* i = 0; */
-  /* do */
-  /*   { */
-  /*     b->nni->l0 = l0[i]; */
-  /*     b->nni->l1 = l1[i]; */
-  /*     b->nni->l2 = l2[i]; */
-  /*     b = b->next; */
-  /*     i++; */
-  /*   } */
-  /* while(b); */
-
   b_fcus->nni->score = lk0 - MAX(lk1,lk2);
 
   if((b_fcus->nni->score <  tree->mod->s_opt->min_diff_lk_local) &&
@@ -1666,16 +1647,6 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
 
       if(b_fcus->nni->best_v == NULL) b_fcus->nni->best_v = Duplicate_Scalar_Dbl(var0);
       else                            Copy_Scalar_Dbl(var0,b_fcus->nni->best_v);
-      
-      /* b = b_fcus; */
-      /* i = 0; */
-      /* do */
-      /*   { */
-      /*     b->nni->best_l = l0[i]; */
-      /*     b = b->next; */
-      /*     i++; */
-      /*   } */
-      /* while(b); */
     }
   else if(lk1 > MAX(lk0,lk2))
     {
@@ -1690,17 +1661,6 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
 
       if(b_fcus->nni->best_v == NULL) b_fcus->nni->best_v = Duplicate_Scalar_Dbl(var1);
       else                            Copy_Scalar_Dbl(var1,b_fcus->nni->best_v);
-
-
-      /* b = b_fcus; */
-      /* i = 0; */
-      /* do */
-      /*   { */
-      /*     b->nni->best_l = l1[i]; */
-      /*     b = b->next; */
-      /*     i++; */
-      /*   } */
-      /* while(b); */
     }
   else if(lk2 > MAX(lk0,lk1))
     {
@@ -1715,17 +1675,6 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
 
       if(b_fcus->nni->best_v == NULL) b_fcus->nni->best_v = Duplicate_Scalar_Dbl(var2);
       else                            Copy_Scalar_Dbl(var2,b_fcus->nni->best_v);
-
-
-      /* b = b_fcus; */
-      /* i = 0; */
-      /* do */
-      /*   { */
-      /*     b->nni->best_l = l2[i]; */
-      /*     b = b->next; */
-      /*     i++; */
-      /*   } */
-      /* while(b); */
     }
   else
     {
@@ -1741,17 +1690,6 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
 
       if(b_fcus->nni->best_v == NULL) b_fcus->nni->best_v = Duplicate_Scalar_Dbl(var0);
       else                            Copy_Scalar_Dbl(var0,b_fcus->nni->best_v);
-
-
-      /* b = b_fcus; */
-      /* i = 0; */
-      /* do */
-      /*   { */
-      /*     b->nni->best_l = l0[i]; */
-      /*     b = b->next; */
-      /*     i++; */
-      /*   } */
-      /* while(b); */
     }
 
 
@@ -1763,7 +1701,6 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
 
           if(lk1 > lk2)
             {
-              tree->best_lnL = lk1;
               Swap(v2,b_fcus->left,b_fcus->rght,v3,tree);
               
               if(b_fcus->nni->best_l == NULL) b_fcus->nni->best_l = Duplicate_Scalar_Dbl(len1);
@@ -1771,23 +1708,9 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
               
               if(b_fcus->nni->best_v == NULL) b_fcus->nni->best_v = Duplicate_Scalar_Dbl(var1);
               else                            Copy_Scalar_Dbl(var1,b_fcus->nni->best_v);
-
-              /* Copy_Scalar_Dbl(len1,b_fcus->nni->best_l); */
-              /* Copy_Scalar_Dbl(var1,b_fcus->nni->best_v); */
-
-              /* b = b_fcus; */
-              /* i = 0; */
-              /* do */
-              /*   { */
-              /*     b->l->v = l1[i]; */
-              /*     b = b->next; */
-              /*     i++; */
-              /*   } */
-              /* while(b); */
             }
           else
             {
-              tree->best_lnL = lk2;
               Swap(v2,b_fcus->left,b_fcus->rght,v4,tree);
               
               if(b_fcus->nni->best_l == NULL) b_fcus->nni->best_l = Duplicate_Scalar_Dbl(len2);
@@ -1795,30 +1718,7 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
               
               if(b_fcus->nni->best_v == NULL) b_fcus->nni->best_v = Duplicate_Scalar_Dbl(var2);
               else                            Copy_Scalar_Dbl(var2,b_fcus->nni->best_v);
-
-              /* Copy_Scalar_Dbl(len2,b_fcus->nni->best_l); */
-              /* Copy_Scalar_Dbl(var2,b_fcus->nni->best_v); */
-
-              /* b = b_fcus; */
-              /* i = 0; */
-              /* do */
-              /*   { */
-              /*     b->l->v = l2[i]; */
-              /*     b = b->next; */
-              /*     i++; */
-              /*   } */
-              /* while(b); */
             }
-          
-          Update_Lk_At_Given_Edge(b_fcus,tree);
-          /* Set_Both_Sides(YES,tree); */
-          /* Lk(NULL,tree); */
-        }
-      else
-        {
-          tree->best_lnL = lk0;
-          // No change of topology done but length of central
-          // edge is optimal.
         }
     }
   else
@@ -10521,7 +10421,8 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
   int i;
   
   assert(tree->is_mixt_tree == NO);
-
+  assert(d->tax == NO);
+  
   if(tree->n_root == NULL || tree->ignore_root == YES)
     {
       if(tree->n_root && (b == tree->n_root->b[1] || b == tree->n_root->b[2])) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);

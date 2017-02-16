@@ -1499,12 +1499,10 @@ void Update_P_Lk(t_tree *tree, t_edge *b, t_node *d)
   
   assert(tree->is_mixt_tree == NO);
 
-  if((tree->io->do_alias_subpatt == YES) &&
-     (tree->update_alias_subpatt == YES))
+  if((tree->io->do_alias_subpatt == YES) && (tree->update_alias_subpatt == YES))
     Alias_One_Subpatt((d==b->left)?(b->rght):(b->left),d,tree);
 
   if(d->tax) return;
-
 
 #ifdef BEAGLE
   update_beagle_partials(tree, b, d);
@@ -5131,7 +5129,7 @@ void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                &p_lk,&sum_scale,&p_lk_loc,
                &Pij1,&p_lk_v1,&sum_scale_v1,
                &Pij2,&p_lk_v2,&sum_scale_v2,
-               d,b,tree);
+               d,b,tree);  
   
   if(tree->mod->augmented == YES && n_v1 && n_v1->tax == NO)
     {

@@ -892,7 +892,6 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
               Optimize_Br_Len_Serie_Post(d,d->v[i],d->b[i],tree);
             }
         }
-
       Update_P_Lk(tree,b_fcus,d);
     }
 }
