@@ -4814,11 +4814,19 @@ void Spr_List_Of_Trees(t_tree *tree)
   do
     {
       Stepwise_Add_Pars(tree);  
-      Spr_Pars(0,10,tree);
+      Spr_Pars(0,100,tree);
 
+
+      // Edge length optimization required as Stepwise_Add_Pars 
+      // 'erases' good edge lengths; doing more so after each call.
+      Set_Both_Sides(NO,tree);
+      Lk(NULL,tree);
+      Optimize_Br_Len_Serie(tree);
+
+      tree->best_lnL = UNLIKELY;
       tree->mod->s_opt->fast_nni = NO;
       Simu(tree,1);
-      
+
       if(tree->c_lnL > best_lnL) 
         {
           best_lnL = tree->c_lnL;
@@ -4843,6 +4851,40 @@ void Spr_List_Of_Trees(t_tree *tree)
       For(i,list_size) PhyML_Printf("\n. Tree %3d, lnL: %12.2f",i+1,lnL_list[rk[i]]);
     }
 
+
+  /* list_size = 0; */
+  /* do */
+  /*   { */
+  /*     Copy_Tree(tree_list[rk[list_size]],tree); */
+
+  /*     tree->best_lnL = UNLIKELY; */
+  /*     tree->mod->s_opt->fast_nni = NO; */
+  /*     Simu(tree,1); */
+      
+  /*     if(tree->c_lnL > best_lnL)  */
+  /*       { */
+  /*         best_lnL = tree->c_lnL; */
+  /*         if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n. Best tree found so far has lnL: %12.2f (%d trees left to examine at most)",best_lnL,list_size_first_round-list_size); */
+  /*         if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace);  */
+  /*       } */
+
+  /*     printf("\n* %p lnL: %f -- %f",(void *)tree,tree->c_lnL,best_lnL); */
+
+  /*     tree_list[list_size] = Make_Tree_From_Scratch(tree->n_otu,tree->data); */
+  /*     Copy_Tree(tree,tree_list[list_size]); */
+  /*     lnL_list[list_size] = tree->c_lnL; */
+  /*   } */
+  /* while(++list_size < list_size_first_round); */
+
+  /* Free(rk); */
+  /* rk = Ranks(lnL_list,max_list_size); */
+    
+
+  /* if(tree->verbose > VL0 && tree->io->quiet == NO)  */
+  /*   { */
+  /*     PhyML_Printf("\n\n. Finished building the list of trees. Their scores are given below..."); */
+  /*     For(i,list_size) PhyML_Printf("\n. Tree %3d, lnL: %12.2f",i+1,lnL_list[rk[i]]); */
+  /*   } */
 
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Improving the best trees (%d trees to process)...",list_size_second_round);
   list_size = 0;

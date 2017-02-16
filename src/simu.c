@@ -30,6 +30,23 @@ void Simu_Loop(t_tree *tree)
 
 int Simu(t_tree *tree, int n_step_max)
 {
+  {
+  int i;
+  For(i,5)
+    {
+      Set_Both_Sides(NO,tree);
+      Lk(NULL,tree);
+      printf("\n. %3d lk: %f",i,tree->c_lnL);
+      NNI_Traversal(tree->a_nodes[0],
+                    tree->a_nodes[0]->v[0],
+                    NULL,
+                    tree->a_nodes[0]->b[0]
+                    ,tree);
+    }
+  }
+  return;
+                
+
   phydbl old_loglk,n_iter,lambda;
   int i,n_neg,n_tested,n_without_swap,n_tot_swap,step,it_lim_without_swap;
   t_edge **sorted_b,**tested_b;
@@ -116,13 +133,12 @@ int Simu(t_tree *tree, int n_step_max)
       Update_Dirs(tree);
 
       Fix_All(tree);
-      n_neg = 0;
+
       For(i,2*tree->n_otu-3)
-        if((!tree->a_edges[i]->left->tax) &&
-           (!tree->a_edges[i]->rght->tax))
-          {
-            NNI(tree,tree->a_edges[i],NO);
-          }
+        if((!tree->a_edges[i]->left->tax) && (!tree->a_edges[i]->rght->tax))
+          NNI(tree,tree->a_edges[i],NO);
+
+      n_neg = 0;
       Select_Edges_To_Swap(tree,sorted_b,&n_neg);
       Sort_Edges_NNI_Score(tree,sorted_b,n_neg);
       Optimiz_Ext_Br(tree);
@@ -893,21 +909,44 @@ void Check_NNI_Scores_Around(t_node *a, t_node *d, t_edge *b, phydbl *best_score
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
-void NNI_Traversal(t_node *a, t_node *d, t_edge *b, int dir_to_a, t_tree *tree)
+//
+//        v
+//        |
+//        |
+//        a
+//       / \
+//      d   u
+//     / \
+//    v1 v2   
+void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
 {
   int i;
+
+  /* PhyML_Printf("\n. a:%3d d:%3d v:%3d",a->num,d->num,v?v->num:-1); */
   
-  if(d->tax == YES) return;
+  if(d->tax == YES)
+    {
+      Br_Len_Brent(b,tree);
+      return;
+    }
   else if(a->tax == YES)
     {      
-      For(i,3) if(d->v[i] != a) NNI_Traversal(d,d->v[i],d->b[i],0,tree);
+      For(i,3) if(d->v[i] != a)
+        {
+          Update_P_Lk(tree,d->b[i],d);
+          NNI_Traversal(d,d->v[i],a,d->b[i],tree);
+        }
+      Update_P_Lk(tree,b,d);
     }
   else
     {
       phydbl lk0,lk1,lk2;
-      t_node *v1,*v2,*u;
-      int dir_to_d;
+      phydbl l0;
+      t_node *v1,*v2,*u,*dum;
+      
+      lk0 = UNLIKELY;
+      lk1 = UNLIKELY;
+      lk2 = UNLIKELY;
       
       v1 = v2 = NULL;
       For(i,3)
@@ -916,19 +955,29 @@ void NNI_Traversal(t_node *a, t_node *d, t_edge *b, int dir_to_a, t_tree *tree)
             if(v1 == NULL) v1 = d->v[i];
             else           v2 = d->v[i];
           }
+      assert(v1 != NULL);
+      assert(v2 != NULL);
 
-      For(i,3) if(a->v[i] != d && i != dir_to_a) { u = a->v[i]; break; }
-
-      For(i,3) if(a->v[i] == d) { dir_to_d = i; break; }
+      dum = NULL;
+      if(Uni() < .5)
+        {
+          dum = v1;
+          v1  = v2;
+          v2  = dum;
+        }
       
-      // Update partial likelihood looking up
-      Update_P_Lk(tree,b,a);
+
+      u = NULL;
+      For(i,3) if(a->v[i] != d && a->v[i] != v) { u = a->v[i]; break; }
+      
 
       // Optimize edge length
       Br_Len_Brent(b,tree);
-
+      /* lk0 = Lk(b,tree); */
       lk0 = tree->c_lnL;
-
+      l0 = b->l->v;
+      
+      
       // First NNI
       Swap(v1,d,a,u,tree);
       // Update partial likelihood looking up
@@ -936,13 +985,15 @@ void NNI_Traversal(t_node *a, t_node *d, t_edge *b, int dir_to_a, t_tree *tree)
       // Update partial likelihood looking down
       Update_P_Lk(tree,b,d);
       // Evaluate likelihood
-      lk1 = Lk(b,tree);
+      Br_Len_Brent(b,tree);
+      /* lk1 = Lk(b,tree); */
+      lk1 = tree->c_lnL;
 
       if(lk1 < lk0)
         {
           // Unswap
           Swap(u,d,a,v1,tree);
-          
+      
           // Second NNI
           Swap(v2,d,a,u,tree);
           // Update partial likelihood looking up
@@ -950,18 +1001,36 @@ void NNI_Traversal(t_node *a, t_node *d, t_edge *b, int dir_to_a, t_tree *tree)
           // Update partial likelihood looking down
           Update_P_Lk(tree,b,d);
           // Evaluate likelihood
-          lk2 = Lk(b,tree);
+          Br_Len_Brent(b,tree);
+          /* lk2 = Lk(b,tree); */
+          lk2 = tree->c_lnL;
 
+      
           // Unswap
           if(lk2 < lk0)
             {
               Swap(u,d,a,v2,tree);
-              // Update partial likelihood looking down
-              Update_P_Lk(tree,b,d);
+              // Update partial likelihood looking up and down
+              Update_P_Lk(tree,b,a);
+              /* Restore_Br_Len(tree); */
+              b->l->v = l0;
+              /* tree->c_lnL = lk0; */
+              Lk(b,tree);
+            }
+          else
+            {
+              /* printf(" %d <*> %d",u->num,v2->num); */
             }
         }
-
-      For(i,3) if(d->v[i] != a) NNI_Traversal(d,d->v[i],d->b[i],dir_to_d,tree);
+      
+      
+      For(i,3)
+        if(d->v[i] != a)
+          {
+            Update_P_Lk(tree,d->b[i],d);
+            NNI_Traversal(d,d->v[i],a,d->b[i],tree);
+          }
+      Update_P_Lk(tree,b,d);
     }
 }
 
