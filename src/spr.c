@@ -4788,8 +4788,8 @@ void Spr_List_Of_Trees(t_tree *tree)
   tree->verbose                    = (tree->verbose == VL0) ? VL0 : VL1;
   /* list_size_first_round            = (int)max_list_size/5; */
   /* list_size_second_round           = (int)max_list_size/10; */
-  list_size_first_round            = 10;
-  list_size_second_round           = 5;
+  list_size_first_round            = 20;
+  list_size_second_round           = 10;
   max_list_size                    = list_size_first_round;
 
   tree_list = (t_tree **)mCalloc(max_list_size,sizeof(t_tree *));
@@ -4807,7 +4807,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   Copy_Tree(tree,tree_list[0]);
   lnL_list[0] = tree->c_lnL;
 
-
+  if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. First tree has log-likelihood %f",tree->c_lnL);
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Building a list of starting trees...");
 
   list_size = 1;
@@ -4860,7 +4860,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       tree->mod->s_opt->spr_pars          = NO;
       tree->mod->s_opt->min_diff_lk_move  = 0.1;
       tree->mod->s_opt->eval_list_regraft = NO;
-      tree->mod->s_opt->max_delta_lnL_spr = 50.;
+      tree->mod->s_opt->max_delta_lnL_spr = 20.;
       
       do
         {

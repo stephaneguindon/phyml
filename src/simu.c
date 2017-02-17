@@ -985,8 +985,8 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
       Br_Len_Brent(b,tree);
       /* lk0 = Lk(b,tree); */
       lk0 = tree->c_lnL;
-      l0 = b->l->v;
-      
+      /* l0 = b->l->v; */
+      Record_Br_Len(tree);
       
       // First NNI
       Swap(v1,d,a,u,tree);
@@ -995,8 +995,8 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
       // Update partial likelihood looking down
       Update_P_Lk(tree,b,d);
       // Evaluate likelihood
-      Br_Len_Brent(b,tree);
-      /* lk1 = Lk(b,tree); */
+      /* Br_Len_Brent(b,tree); */
+      lk1 = Lk(b,tree);
       lk1 = tree->c_lnL;
 
       if(lk1 < lk0)
@@ -1011,8 +1011,8 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
           // Update partial likelihood looking down
           Update_P_Lk(tree,b,d);
           // Evaluate likelihood
-          Br_Len_Brent(b,tree);
-          /* lk2 = Lk(b,tree); */
+          /* Br_Len_Brent(b,tree); */
+          lk2 = Lk(b,tree);
           lk2 = tree->c_lnL;
 
       
@@ -1022,8 +1022,8 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
               Swap(u,d,a,v2,tree);
               // Update partial likelihood looking up and down
               Update_P_Lk(tree,b,a);
-              /* Restore_Br_Len(tree); */
-              b->l->v = l0;
+              Restore_Br_Len(tree);
+              /* b->l->v = l0; */
               /* tree->c_lnL = lk0; */
               Lk(b,tree);
             }
