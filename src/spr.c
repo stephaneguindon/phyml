@@ -4827,7 +4827,7 @@ void Spr_List_Of_Trees(t_tree *tree)
           if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
         }
 
-      printf("\n* %p lnL: %f -- %f",(void *)tree,tree->c_lnL,best_lnL);
+      /* printf("\n* %p lnL: %f -- %f",(void *)tree,tree->c_lnL,best_lnL); */
 
       tree_list[list_size] = Make_Tree_From_Scratch(tree->n_otu,tree->data);
       Copy_Tree(tree,tree_list[list_size]);
@@ -4855,7 +4855,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
       
-      tree->mod->s_opt->max_depth_path    = tree->n_otu/2;
+      tree->mod->s_opt->max_depth_path    = tree->n_otu;
       tree->mod->s_opt->spr_lnL           = YES;
       tree->mod->s_opt->spr_pars          = NO;
       tree->mod->s_opt->min_diff_lk_move  = 0.1;
