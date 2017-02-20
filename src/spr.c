@@ -4803,19 +4803,20 @@ void Spr_List_Of_Trees(t_tree *tree)
   if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
 
   Round_Optimize(tree,5);
-  tree_list[0] = Make_Tree_From_Scratch(tree->n_otu,tree->data);
-  Copy_Tree(tree,tree_list[0]);
-  lnL_list[0] = tree->c_lnL;
 
-  if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. First tree has log-likelihood %f",tree->c_lnL);
+  best_lnL = tree->c_lnL;
+  if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. First tree has lnL: %12.2f",tree->c_lnL);
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Building a list of starting trees...");
 
-  list_size = 1;
+  list_size = 0;
   do
     {
-      Stepwise_Add_Pars(tree);  
-      Spr_Pars(0,100,tree);
-
+      if(list_size > 0)
+        {
+          Stepwise_Add_Pars(tree);  
+          Spr_Pars(0,100,tree);
+        }
+      
       tree->best_lnL = UNLIKELY;
       tree->mod->s_opt->fast_nni = NO;
       Simu(tree,1);
@@ -4856,11 +4857,12 @@ void Spr_List_Of_Trees(t_tree *tree)
       Lk(NULL,tree);
       
       tree->mod->s_opt->max_depth_path    = tree->n_otu;
+      /* tree->mod->s_opt->max_depth_path    = 10; */
       tree->mod->s_opt->spr_lnL           = YES;
       tree->mod->s_opt->spr_pars          = NO;
       tree->mod->s_opt->min_diff_lk_move  = 0.1;
       tree->mod->s_opt->eval_list_regraft = NO;
-      tree->mod->s_opt->max_delta_lnL_spr = 20.;
+      tree->mod->s_opt->max_delta_lnL_spr = 50.;
       
       do
         {
@@ -4868,7 +4870,7 @@ void Spr_List_Of_Trees(t_tree *tree)
           Lk(NULL,tree);
           tree->best_lnL = tree->c_lnL;
           Spr(tree->c_lnL,1.0,tree);
-          tree->mod->s_opt->max_depth_path = tree->max_spr_depth;
+          /* tree->mod->s_opt->max_depth_path = tree->max_spr_depth; */
         }
       while(tree->n_improvements > 5);
 
@@ -4919,7 +4921,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       Copy_Tree(tree,tree_list[rk[list_size]]);
       lnL_list[rk[list_size]] = tree->c_lnL;
     }
-  while(++list_size <= list_size_second_round  && tree->c_lnL > best_lnL - 10.);
+  while(++list_size <= list_size_second_round);
 
 
   /* Free(rk); */
