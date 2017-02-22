@@ -3024,7 +3024,7 @@ void Update_P_Lk_Along_A_Path(t_node **path, int path_length, t_tree *tree)
               }
             else
               {
-                PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
+                PhyML_Printf("\n== Err. in file %s at line %d. \n",__FILE__,__LINE__);
                 Exit("");
               }
             break;
@@ -3032,7 +3032,7 @@ void Update_P_Lk_Along_A_Path(t_node **path, int path_length, t_tree *tree)
 #ifdef DEBUG
       if(j == 3)
         {
-          PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
+          PhyML_Printf("\n== Err. in file %s at line %d.\n",__FILE__,__LINE__);
           Exit("");
         }
 #endif

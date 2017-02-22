@@ -6001,7 +6001,6 @@ void Path_Length(t_node *dep, t_node *arr, phydbl *len, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Check_Path(t_node *a, t_node *d, t_node *target, t_tree *tree)
 {
   PhyML_Printf("path---------\n");
