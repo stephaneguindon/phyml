@@ -3231,8 +3231,8 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
 
       if(tree->n_moves)
         {
-          n_moves_pars = MIN(5,tree->n_moves);
-          n_moves      = MIN(5,tree->n_moves);
+          n_moves_pars = MIN(10,tree->n_moves);
+          n_moves      = MIN(10,tree->n_moves);
 
           if(tree->mod->s_opt->spr_lnL == NO) n_moves = n_moves_pars;
           n_moves = MAX(1,n_moves);
@@ -3595,7 +3595,9 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
       Update_PMat_At_Given_Edge(b_target,tree);
       Update_PMat_At_Given_Edge(b_arrow,tree);
       Update_P_Lk(tree,b_residual,n_link);
-      /* Br_Len_Brent(b_residual,tree); */
+      /* !!!!!!!!!! */
+      /* Fast_Br_Len(b_residual,tree,YES); */
+      /* Triple_Dist(n_link,tree); */
       Lk(b_residual,tree);
       MIXT_Set_Alias_Subpatt(NO,tree);      
     }
@@ -4006,14 +4008,6 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
           better_found = YES;
           break;      
         }
-
-      /* Bail out if move is too far from optimum */
-      if(move->lnL < tree->best_lnL - 10.) 
-        {
-          better_found = NO;
-          break;
-        }
-
     }
   
   /*   PhyML_Printf("\n. max_improv = %f",max_improv); */
@@ -4868,7 +4862,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       tree->mod->s_opt->spr_pars          = NO;
       tree->mod->s_opt->min_diff_lk_move  = 0.1;
       tree->mod->s_opt->eval_list_regraft = YES;
-      tree->mod->s_opt->max_delta_lnL_spr = 100.;
+      tree->mod->s_opt->max_delta_lnL_spr = 50.;
       
       do
         {
