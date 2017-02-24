@@ -4816,6 +4816,10 @@ void Spr_List_Of_Trees(t_tree *tree)
           Spr_Pars(0,100,tree);
         }
       
+      Set_Both_Sides(NO,tree);
+      Lk(NULL,tree);
+      Optimize_Br_Len_Serie(tree);
+      
       tree->best_lnL = UNLIKELY;
       tree->mod->s_opt->fast_nni = NO;
       Simu(tree,1);
@@ -4861,7 +4865,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       tree->mod->s_opt->spr_lnL           = YES;
       tree->mod->s_opt->spr_pars          = NO;
       tree->mod->s_opt->min_diff_lk_move  = 0.1;
-      tree->mod->s_opt->eval_list_regraft = YES;
+      tree->mod->s_opt->eval_list_regraft = NO;
       tree->mod->s_opt->max_delta_lnL_spr = 50.;
       
       do

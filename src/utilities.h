@@ -390,7 +390,6 @@ typedef	double phydbl;
 #define  P_LK_LIM_INF   3.054936e-151 /* 2^-500 */
 #define  P_LK_LIM_SUP   3.273391e+150 /* 2^500 */
 
-
 #define T_MAX_XML_TAG 64
 
 #define NARGS_SEQ(_1,_2,_3,_4,_5,_6,_7,_8,N,...) N

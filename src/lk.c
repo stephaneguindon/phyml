@@ -629,7 +629,7 @@ if(tree->rates && tree->io->lk_approx == NORMAL)
 #elif (defined(__SSE3__))
           SSE_Lk_Core(state,ambiguity_check,b,tree);
 #else
-          Lk_Core(state,ambiguity_check,YES,b,expl,tree);
+          Lk_Core(state,ambiguity_check,YES,NO,b,expl,tree);
 #endif
         }
     }
@@ -649,7 +649,7 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
   int catg,state;
   phydbl len,*expl,*expld,*expld2,rr;
   phydbl lk,dlk,d2lk,dlnlk,d2lnlk,loglk,c_lnL;
-  phydbl eps;
+  phydbl eps,ev,expevlen;
 
   assert(isnan(*l) == FALSE);
 
@@ -691,13 +691,16 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
       else if(len > tree->mod->l_max) len = tree->mod->l_max;      
       // value of rr should be corrected too if any of these two conditions
       // is true. Leads to numerical precision issues though...
-
-
+      
+      
       For(state,tree->mod->ns) 
         {
-          expl[catg*tree->mod->ns+state] = (phydbl)POW(tree->mod->eigen->e_val[state],len);
-
-
+          ev = LOG(tree->mod->eigen->e_val[state]);
+          expevlen = (phydbl)EXP(ev*len);
+          expl[catg*tree->mod->ns+state] = expevlen;
+          expld[catg*tree->mod->ns+state] = ev*rr*expevlen;            
+          expld2[catg*tree->mod->ns+state] = ev*ev*rr*rr*expevlen;
+          
 #ifdef SAFEMODE
           if(isinf(expl[catg*tree->mod->ns+state]) || isnan(expl[catg*tree->mod->ns+state])) 
             {
@@ -706,16 +709,6 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
                            tree->mod->eigen->e_val[state],len);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
-#endif
-        }
-
-      For(state,tree->mod->ns) 
-        {
-          expld[catg*tree->mod->ns+state] = expl[catg*tree->mod->ns+state] * 
-            LOG(tree->mod->eigen->e_val[state]) * rr;
-          
-
-#ifdef SAFEMODE
           if(isinf(expld[catg*tree->mod->ns+state]) || isnan(expld[catg*tree->mod->ns+state])) 
             {
               PhyML_Printf("\n== expld=%d expl=%f e_val=%f rr=%f",
@@ -724,16 +717,6 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
                            tree->mod->eigen->e_val[state],rr);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
-#endif
-        }
-
-      For(state,tree->mod->ns) 
-        {
-          expld2[catg*tree->mod->ns+state] = expld[catg*tree->mod->ns+state] * 
-            LOG(tree->mod->eigen->e_val[state]) * rr;
-
-          
-#ifdef SAFEMODE
           if(isinf(expld2[catg*tree->mod->ns+state]) || isnan(expld2[catg*tree->mod->ns+state])) 
             {
               PhyML_Printf("\n== expld2=%f e_val=%f len=%f",
@@ -744,7 +727,6 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
 #endif
         }
     }
-
   
   loglk  = 0.0;
   dlnlk  = 0.0;
@@ -755,18 +737,18 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
   For(tree->curr_site,tree->n_pattern)
     {
 
-      dlk   = Lk_Core(-1,-1,NO ,b,expld,tree);
-      d2lk  = Lk_Core(-1,-1,NO ,b,expld2,tree);
-      loglk = Lk_Core(-1,-1,YES,b,expl,tree); 
+      dlk   = Lk_Core(-1,-1,NO ,YES,b,expld,tree);
+      d2lk  = Lk_Core(-1,-1,NO ,YES,b,expld2,tree);
+      loglk = Lk_Core(-1,-1,YES,NO ,b,expl,tree); 
       // Make sure to keep the call above in the last position so that site_lk_cat is the
       // actual likelihood rather than its first or second derivative
       
       if(isinf(loglk)) // Happens sometimes because we do not apply correction for SMALL_PIJ when use_eigen = YES
         {
           tree->use_eigen_lr = NO;
-          dlk   = Lk_Core(-1,-1,NO ,b,expld,tree);
-          d2lk  = Lk_Core(-1,-1,NO ,b,expld2,tree);
-          loglk = Lk_Core(-1,-1,YES,b,expl,tree); 
+          dlk   = Lk_Core(-1,-1,NO ,YES,b,expld,tree);
+          d2lk  = Lk_Core(-1,-1,NO ,YES,b,expld2,tree);
+          loglk = Lk_Core(-1,-1,YES,NO ,b,expl,tree); 
           tree->use_eigen_lr = YES;
           /* printf("\n. [%d] dlk: %G d2lk: %G loglk: %G",Global_myRank,dlk,d2lk,loglk); */
         }
@@ -815,17 +797,18 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
           Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
         }
       
-      if(lk < eps) // To avoid numerical precision issues
-        {
-          lk += eps; 
-          dlk += eps;
-          d2lk += eps;
-        }
+      /* if(lk < eps) // To avoid numerical precision issues */
+      /*   { */
+      /*     lk += eps;  */
+      /*     dlk += eps; */
+      /*     d2lk += eps; */
+      /*   } */
 
+      assert(lk>0.0);
+      
       dlnlk  += tree->data->wght[tree->curr_site] * (dlk/lk);
       d2lnlk += tree->data->wght[tree->curr_site] * (d2lk/lk - (dlk/lk)*(dlk/lk));
-
-      c_lnL += tree->data->wght[tree->curr_site] * loglk;
+      c_lnL  += tree->data->wght[tree->curr_site] * loglk;
 
 
       if(isnan(dlnlk)  || isnan(d2lnlk) || isnan(loglk))
@@ -855,10 +838,12 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
    sides of t_edge *b are up-to-date. Calculate the log-likelihood at one site.
    Note: this function can be used to evaluate first or second derivative of the 
    likelihood function with respect to the length of b, at a given site. Hence, be
-   careful with the meaning of 'site_lk'.
+   careful with the meaning of 'site_lk'. If 'derivative=TRUE', then site_lk is 
+   either the first or second derivative of the likelihood at that site, given the
+   length of edge 'b'.
 */
 
-phydbl Lk_Core(int state, int ambiguity_check, short int returnlog, t_edge *b, phydbl *expl, t_tree *tree)
+phydbl Lk_Core(int state, int ambiguity_check, short int returnlog, short int derivative, t_edge *b, phydbl *expl, t_tree *tree)
 {
   phydbl log_site_lk;
   phydbl site_lk_cat,site_lk,inv_site_lk;
@@ -888,8 +873,7 @@ phydbl Lk_Core(int state, int ambiguity_check, short int returnlog, t_edge *b, p
       /* Actual likelihood calculation */
       /* For all classes of rates */
       For(catg,tree->mod->ras->n_catg)
-        {
-         
+        {         
           /* If tree->use_eigen_lr == YES: assume that the partial likelihoods on both
              sides of t_edge *b are up-to-date and that the product of the left and right matrices
              of eigenvectors by right and left partial likelihood vectors was carried out before 
@@ -905,21 +889,6 @@ phydbl Lk_Core(int state, int ambiguity_check, short int returnlog, t_edge *b, p
                                               ns,
                                               -1,-1,
                                               b,tree);
-
-              /* if(Global_myRank == 0 && site_lk_cat < 1.E-50 && site_lk_cat > -1.E-50) printf("\n. ??????? %G [%G %G %G %G] [%G %G %G %G] [%G %G %G %G]", */
-              /*                                                                                site_lk_cat, */
-              /*                                                                                tree->eigen_lr_left[site*dim1 + catg*dim2 + 0], */
-              /*                                                                                tree->eigen_lr_left[site*dim1 + catg*dim2 + 1], */
-              /*                                                                                tree->eigen_lr_left[site*dim1 + catg*dim2 + 2], */
-              /*                                                                                tree->eigen_lr_left[site*dim1 + catg*dim2 + 3], */
-              /*                                                                                tree->eigen_lr_rght[site*dim1 + catg*dim2 + 0], */
-              /*                                                                                tree->eigen_lr_rght[site*dim1 + catg*dim2 + 1], */
-              /*                                                                                tree->eigen_lr_rght[site*dim1 + catg*dim2 + 2], */
-              /*                                                                                tree->eigen_lr_rght[site*dim1 + catg*dim2 + 3], */
-              /*                                                                                expl[catg*dim2+0], */
-              /*                                                                                expl[catg*dim2+1], */
-              /*                                                                                expl[catg*dim2+2], */
-              /*                                                                                expl[catg*dim2+3]); fflush(NULL); */
             }
           else // tree->use_eigen_lr == NO
             {
@@ -937,10 +906,8 @@ phydbl Lk_Core(int state, int ambiguity_check, short int returnlog, t_edge *b, p
           if(isinf(site_lk_cat) || isnan(site_lk_cat)) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
           /* printf("\n. %d sitelk=%f",site,site_lk_cat); */
-        } /* site likelihood for all rate classes */
-      
-      Pull_Scaling_Factors(site,b,tree);
-    
+        } /* site likelihood for all rate classes */      
+      Pull_Scaling_Factors(site,b,tree);    
     }
   
   fact_sum_scale = tree->fact_sum_scale[site];
@@ -953,10 +920,9 @@ phydbl Lk_Core(int state, int ambiguity_check, short int returnlog, t_edge *b, p
         tree->unscaled_site_lk_cat[catg*tree->n_pattern + site]* 
         tree->mod->ras->gamma_r_proba->v[catg]; //density
     }
+
   
-  /* if(Global_myRank == 0) printf("\n ?????????? site_lk %G",site_lk); fflush(NULL); */
-  
-  if(tree->mod->ras->invar == YES)
+  if(tree->mod->ras->invar == YES && derivative == NO)
     {
       num_prec_issue = NO;
       inv_site_lk = Invariant_Lk(fact_sum_scale,site,&num_prec_issue,tree);
@@ -971,11 +937,8 @@ phydbl Lk_Core(int state, int ambiguity_check, short int returnlog, t_edge *b, p
         }
     }
   
-  if(!(site_lk < 0.0)) // Might not be true if this function is used to evaluate first or second derivative
-    log_site_lk = LOG(site_lk) - (phydbl)LOG2 * fact_sum_scale; // log_site_lk =  log(site_lk_scaled / 2^(left_subtree+right_subtree))      
+  log_site_lk = LOG(site_lk) - (phydbl)LOG2 * fact_sum_scale; // log_site_lk =  log(site_lk_scaled / 2^(left_subtree+right_subtree))      
   
-  /* if(Global_myRank == 1) printf("\n ?????????? log_site_lk %g",log_site_lk); fflush(NULL); */
-
   // Calculation of the site likelihood (using scaling factors)...
   int piecewise_exponent;
   phydbl multiplier;
@@ -1016,7 +979,7 @@ phydbl Lk_Core(int state, int ambiguity_check, short int returnlog, t_edge *b, p
       tree->cur_site_lk[site] = EXP(log_site_lk);
     }
   
-  if(isnan(log_site_lk) == YES)
+  if(isnan(tree->cur_site_lk[site]) == YES)
     {
       PhyML_Printf("\n== Site = %d",site);
       PhyML_Printf("\n== Invar = %d",tree->data->invar[site]);
@@ -1056,7 +1019,7 @@ phydbl Lk_Core(int state, int ambiguity_check, short int returnlog, t_edge *b, p
       Exit("\n");
     }
 
-/* Multiply log likelihood by the number of times this site pattern is found in the data */
+  /* Multiply log likelihood by the number of times this site pattern is found in the data */
   tree->c_lnL_sorted[site] = tree->data->wght[site]*log_site_lk;
   
   tree->c_lnL += tree->data->wght[site]*log_site_lk;
@@ -1073,8 +1036,7 @@ phydbl Lk_Core(int state, int ambiguity_check, short int returnlog, t_edge *b, p
 // to the left and right of edge b
 void Update_Eigen_Lr(t_edge *b, t_tree *tree)
 {
-  
-     
+       
   int site,catg,state,i,is_ambigu,observed_state;
   int dim1,dim2;
   phydbl *dum,*dumdum;
@@ -4297,12 +4259,12 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-// Returns the value of fact_sum_scale, the part of the scaling factors
+// Computes the value of fact_sum_scale, the part of the scaling factors
 // that is common to all classes of the mixture and scale the 
-// likelihood for each mixture (using the part of the scaling
-// factors that is class-specific)
-
-void Pull_Scaling_Factors(int site,
+// likelihood for each mixture using the part of the scaling
+// factors that is class-specific
+ 
+ void Pull_Scaling_Factors(int site,
                           t_edge *b,
                           t_tree *tree)
 {
@@ -4417,9 +4379,9 @@ void Pull_Scaling_Factors(int site,
 
 // Tree should be ready for likelihood analysis when calling
 // this function.
-void Stepwise_Add_Lk(t_tree *tree)
-{
-  t_edge **residuals,**targets,*best_target;
+ void Stepwise_Add_Lk(t_tree *tree)
+ {
+   t_edge **residuals,**targets,*best_target;
   int *nd_idx,i,j,n_targets,*tg_idx,n_opt;
 
   residuals   = (t_edge **)mCalloc(tree->n_otu-3,sizeof(t_edge *));
