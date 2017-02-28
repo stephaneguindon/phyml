@@ -266,14 +266,10 @@ void PMat_Empirical(phydbl l, t_mod *mod, int pos, phydbl *Pij)
   V     = mod->eigen->l_e_vect;
   R     = mod->eigen->e_val; /* exponential of the eigen value matrix */
 
-  //Initialize a rate-specific N*N matrix
+  /* Initialize a rate-specific N*N matrix */
   For(i,n) For(k,n) Pij[pos+mod->ns*i+k] = .0;
-
   /* compute POW(EXP(D/mr),l) into mat_eDmrl */
-  For(k,n) 
-    {
-      expt[k] = (phydbl)POW(R[k],l);
-    }
+  For(k,n)  expt[k] = (phydbl)POW(R[k],l);
   /* multiply Vr*POW(EXP(D/mr),l)*Vi into Pij */
   For (i,n) For (k,n) uexpt[i*n+k] = U[i*n+k] * expt[k];
 
@@ -292,43 +288,6 @@ void PMat_Empirical(phydbl l, t_mod *mod, int pos, phydbl *Pij)
       sum = 0.0;
       For(j,n) sum += Pij[pos+mod->ns*i+j];
       For(j,n) Pij[pos+mod->ns*i+j] /= sum;
-      
-#ifndef PHYML
-      phydbl sum;
-      sum = .0;
-      For (j,n) sum += Pij[pos+mod->ns*i+j];
-      if((sum > 1.+.0001) || (sum < 1.-.0001))
-        {
-          PhyML_Printf("\n");
-          PhyML_Printf("\n. Q\n");
-          For(i,n) { For(j,n) PhyML_Printf("%7.3f ",mod->eigen->q[i*n+j]); PhyML_Printf("\n"); }
-          PhyML_Printf("\n. U\n");
-          For(i,n) { For(j,n) PhyML_Printf("%7.3f ",U[i*n+j]); PhyML_Printf("\n"); }
-          PhyML_Printf("\n");
-          PhyML_Printf("\n. V\n");
-          For(i,n) { For(j,n) PhyML_Printf("%7.3f ",V[i*n+j]); PhyML_Printf("\n"); }
-          PhyML_Printf("\n");
-          PhyML_Printf("\n. Eigen\n");
-          For(i,n)  PhyML_Printf("%E ",expt[i]);
-          PhyML_Printf("\n");
-          PhyML_Printf("\n. Pij\n");
-          For(i,n) { For (j,n) PhyML_Printf("%f ",Pij[pos+mod->ns*i+j]); PhyML_Printf("\n"); }
-          PhyML_Printf("\n. sum = %f",sum);
-          if(mod->m4mod)
-            {
-              int i;
-              PhyML_Printf("\n. mod->m4mod->alpha = %f",mod->m4mod->alpha);
-              PhyML_Printf("\n. mod->m4mod->delta = %f",mod->m4mod->delta);
-              For(i,mod->m4mod->n_h)
-                {
-                  PhyML_Printf("\n. mod->m4mod->multipl[%d] = %f",i,mod->m4mod->multipl[i]);
-                }
-            }
-          PhyML_Printf("\n. l=%f",l);
-          PhyML_Printf("\n. Err in file %s at line %d\n\n",__FILE__,__LINE__);
-          Warn_And_Exit("");
-        }
-#endif
     }
 }
 
@@ -458,72 +417,12 @@ void PMat(phydbl l, t_mod *mod, int pos, phydbl *Pij)
     }
   else
     {
-      switch(mod->io->datatype)
-        {
-        case NT :
-          {
-            if(mod->use_m4mod)
-              {
-                PMat_Empirical(l,mod,pos,Pij);
-              }
-            else
-              {
-                if((mod->whichmodel == JC69) ||
-                   (mod->whichmodel == K80))
-                  {
-                    /* PMat_JC69(l,pos,Pij,mod); */
-                    /* PMat_K80(l,mod->kappa->v,pos,Pij); */
-                    PMat_Empirical(l,mod,pos,Pij);
-                  }
-                else
-                  {
-                    if(
-                       (mod->whichmodel == F81)   ||
-                       (mod->whichmodel == HKY85) ||
-                       (mod->whichmodel == F84)   ||
-                       (mod->whichmodel == TN93))
-                      {
-                        /* PMat_TN93(l,mod,pos,Pij); */
-                        PMat_Empirical(l,mod,pos,Pij);
-                      }
-                    else
-                      {
 #ifdef BEAGLE
-                        //when there is no active instance (i.e. when we are building the initial tree)
-                        if(UNINITIALIZED == mod->b_inst) 
-                          {
-                            PMat_Empirical(l,mod,pos,Pij);
-                          }
+      //when there is no active instance (i.e. when we are building the initial tree)
+      if(UNINITIALIZED == mod->b_inst) PMat_Empirical(l,mod,pos,Pij);
 #else
-                        PMat_Empirical(l,mod,pos,Pij);
+      PMat_Empirical(l,mod,pos,Pij);
 #endif
-                      }
-                  }
-                break;
-              }
-          case AA :
-            {
-#ifdef BEAGLE
-                //when there is no active instance (i.e. when we are building the initial tree)
-                if(UNINITIALIZED == mod->b_inst) {
-                    PMat_Empirical(l,mod,pos,Pij);
-                }
-#else
-                PMat_Empirical(l,mod,pos,Pij);
-#endif
-              break;
-            }
-          default:
-            {
-              PMat_JC69(l,pos,Pij,mod);
-              break;
-    /* 	      PhyML_Printf("\n. Not implemented yet.\n"); */
-    /* 	      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__); */
-    /* 	      Warn_And_Exit(""); */
-    /* 	      break; */
-            }
-          }
-        }
     }
 }
 

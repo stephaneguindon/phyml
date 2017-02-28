@@ -649,14 +649,13 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
   int catg,state;
   phydbl len,*expl,*expld,*expld2,rr;
   phydbl lk,dlk,d2lk,dlnlk,d2lnlk,loglk,c_lnL;
-  phydbl eps,ev,expevlen;
+  phydbl ev,expevlen;
 
   assert(isnan(*l) == FALSE);
 
   if(*l < tree->mod->l_min)      *l = tree->mod->l_min;
   else if(*l > tree->mod->l_max) *l = tree->mod->l_max;      
 
-  eps = 1.E-50;
 
   assert(b != NULL);
   
@@ -797,13 +796,6 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
           Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
         }
       
-      /* if(lk < eps) // To avoid numerical precision issues */
-      /*   { */
-      /*     lk += eps;  */
-      /*     dlk += eps; */
-      /*     d2lk += eps; */
-      /*   } */
-
       assert(lk>0.0);
       
       dlnlk  += tree->data->wght[tree->curr_site] * (dlk/lk);
@@ -1051,6 +1043,9 @@ void Update_Eigen_Lr(t_edge *b, t_tree *tree)
 #if (defined(__AVX__))
   AVX_Update_Eigen_Lr(b,tree);
   return;
+#elif (defined(__SSE3__))
+  SSE_Update_Eigen_Lr(b,tree);
+  return;
 #endif
 
 
@@ -1072,10 +1067,7 @@ void Update_Eigen_Lr(t_edge *b, t_tree *tree)
       For(catg,tree->mod->ras->n_catg)
         {
           // Dot product left partial likelihood with equilibrium freqs
-          For(state,tree->mod->ns) 
-            {
-              dum[state] = b->p_lk_left[site*dim1 + catg*dim2 + state] * tree->mod->e_frq->pi->v[state];
-            }
+          For(state,tree->mod->ns) dum[state] = b->p_lk_left[site*dim1 + catg*dim2 + state] * tree->mod->e_frq->pi->v[state];
 
           // Multiply by matrix of right eigen vectors
           For(state,tree->mod->ns)
@@ -1129,6 +1121,7 @@ void Update_Eigen_Lr(t_edge *b, t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
 #if (defined(__AVX__))
 void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree)
 {
@@ -1251,8 +1244,130 @@ void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree)
 
 }
 
-#elif (defined(__SSE3__))
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
+#elif (defined(__SSE3__))
+void SSE_Update_Eigen_Lr(t_edge *b, t_tree *tree)
+{
+  int site,catg,state,is_ambigu,observed_state;
+  int i,j,k,l;
+  int dim1,dim2,nblocks,ns,sz;
+  phydbl *tip;
+  
+  ns = tree->mod->ns;
+  sz = (int)BYTE_ALIGN;
+  sz /= 8; // number of double floating precision numbers in a __mm256d variable: 16/8=4
+    
+  assert(tree->update_eigen_lr == YES);
+  
+  dim1           = tree->mod->ras->n_catg * tree->mod->ns;
+  dim2           = tree->mod->ns;
+  nblocks        = tree->mod->ns / sz;
+  observed_state = -1;
+  
+  __m128d _fplk[nblocks],_fplkev[sz],_colsum[nblocks];
+  phydbl *ev;
+
+  ev = NULL;
+#ifndef WIN32
+  if(posix_memalign((void **)&ev,BYTE_ALIGN,(size_t)sz*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+#else
+  ev = _aligned_malloc(sz * sizeof(phydbl),BYTE_ALIGN);
+#endif
+
+  tip = NULL;
+  if(b->rght->tax == YES)
+    {
+#ifndef WIN32
+      if(posix_memalign((void **)&tip,BYTE_ALIGN,(size_t)ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+#else
+      tip = _aligned_malloc(ns * sizeof(phydbl),BYTE_ALIGN);
+#endif
+    }
+  
+  
+  For(site,tree->n_pattern)
+    {
+      is_ambigu = YES;
+      if(b->rght->tax == YES) is_ambigu = b->rght->c_seq->is_ambigu[site];
+      if(is_ambigu == NO) observed_state = b->rght->c_seq->d_state[site];
+
+      For(catg,tree->mod->ras->n_catg)
+        {
+          // Dot product left partial likelihood with equilibrium freqs
+          For(i,nblocks) _fplk[i] = _mm_mul_pd(_mm_load_pd(&(b->p_lk_left[site*dim1 + catg*dim2 + i*sz])),
+                                               _mm_load_pd(&(tree->mod->e_frq->pi->v[i*sz])));
+          
+          For(i,nblocks) _colsum[i] = _mm_setzero_pd();
+          // Multiply by matrix of right eigen vectors
+          // This matrix is made of nblocks*nblocks squares,
+          // each square being of 'area' sz*sz
+          For(i,nblocks) // row 
+            {
+              For(j,nblocks) // column
+                {
+                  For(k,sz) // column in sz*sz square
+                    {
+                      For(l,sz) // row in that same square
+                        {
+                          // Copy right eigen vector values column-by-column in block (i,j)
+                          ev[l] = tree->mod->eigen->r_e_vect[i*nblocks*sz*sz + j*sz + k + l*nblocks*sz];
+                        }
+                      _fplkev[k] = _mm_mul_pd(_mm_load_pd(ev),_fplk[i]);
+                    }
+                  _colsum[j] = _mm_add_pd(_colsum[j],AVX_Horizontal_Add(_fplkev));
+                }
+            }          
+          For(j,nblocks) _mm_store_pd(&(tree->eigen_lr_left[site*dim1 + catg*dim2 + j*sz]),_colsum[j]);
+
+
+          if(b->rght->tax == YES)
+            {
+              For(i,ns) tip[i] = b->p_lk_tip_r[site*dim2 + i];
+              For(i,nblocks) _fplk[i] = _mm_load_pd(tip + i*sz); 
+            }
+          else
+            For(i,nblocks) _fplk[i] = _mm_load_pd(&(b->p_lk_rght[site*dim1 + catg*dim2 + i*sz])); 
+
+          if(is_ambigu == YES)
+            {
+              For(i,nblocks) _colsum[i] = _mm_setzero_pd();
+              // Multiply by matrix of right eigen vectors
+              // This matrix is made of nblocks*nblocks squares,
+              // each square being of 'area' sz*sz
+              For(i,nblocks) // row
+                {
+                  For(j,nblocks) // column
+                    {
+                      For(l,sz) // row in that same square
+                        {
+                          For(k,sz) // column in sz*sz square
+                            {
+                              // Copy left eigen vector values column-by-column in block (i,j)
+                              ev[k] = tree->mod->eigen->l_e_vect[i*nblocks*sz*sz + j*sz + k + l*nblocks*sz];
+                            }                          
+                          _fplkev[l] = _mm_mul_pd(_mm_load_pd(ev),_fplk[j]);
+                        }
+                      _colsum[i] = _mm_add_pd(_colsum[i],AVX_Horizontal_Add(_fplkev));
+                    }
+                }
+              For(j,nblocks) _mm_store_pd(&(tree->eigen_lr_rght[site*dim1 + catg*dim2 + j*sz]),_colsum[j]);
+            }
+          else
+            {
+              For(state,tree->mod->ns)
+                tree->eigen_lr_rght[site*dim1 + catg*dim2 + state] =
+                tree->mod->eigen->l_e_vect[state*dim2 + observed_state];
+            }
+        }
+    }
+
+  
+  if(ev)  Free(ev);
+  if(tip) Free(tip);
+
+}
 #endif
 
 /////////////////////////////////////////////////////////////
@@ -4452,8 +4567,6 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
                     NULL,
                     tree);
       
-      Set_Both_Sides(NO,tree);
-      Lk(NULL,tree);
       n_opt = 0;
       do Optimize_Br_Len_Serie (tree); while(n_opt++ < 3);
 

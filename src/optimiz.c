@@ -725,6 +725,9 @@ void Optimize_Br_Len_Serie(t_tree *tree)
 {
   phydbl lk_init,lk_end;
 
+  Set_Both_Sides(NO,tree);
+  Lk(NULL,tree);
+  
   lk_init = tree->c_lnL;
 
   if(tree->mod->gamma_mgf_bl == YES)
@@ -2276,16 +2279,8 @@ phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t
   phydbl dl,d2l,ratio; 
   phydbl init_lnL,old_lnL;
   int iter;
-  phydbl best_l, best_lnL,l_prev;
+  phydbl best_l, best_lnL;
 
-  /* /\* !!!!!!!!!!!!!!!!!!! *\/ */
-  /* Set_Both_Sides(YES,tree); */
-  /* Lk(NULL,tree); */
-
-  /* *l = tree->mod->l_min; */
-  
-  /* n_iter_max = 1000; */
-  /* /\* !!!!!!!!!!!!!!!!!!! *\/ */
 
   // Warning: make sure eigen_lr vectors are already up-to-date 
 
@@ -2295,7 +2290,6 @@ phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t
 
   best_lnL = old_lnL = init_lnL = tree->c_lnL;
   best_l = *l;
-  l_prev = tree->mod->l_min;
 
   /* PhyML_Printf("\n Begin NR loop (lnL: %f dlnL: %f d2lnL: %f) l: %12f num: %d",tree->c_lnL,tree->c_dlnL,tree->c_d2lnL,*l,b->num); */
 
@@ -2308,9 +2302,8 @@ phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t
       dl      = tree->c_dlnL;
       d2l     = tree->c_d2lnL;
 
-      /* PhyML_Printf("\n cur_l:%12f (prev: %12f) %12f %12f %12G %12G %12G %12G", */
+      /* PhyML_Printf("\n cur_l:%12f %12f %12f %12G %12G %12G %12G", */
       /*              *l, */
-      /*              l_prev, */
       /*              old_lnL, */
       /*              tree->c_lnL, */
       /*              dl, */
@@ -2318,14 +2311,12 @@ phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t
       /*              old_lnL-tree->c_lnL, */
       /*              tol); */
 
-      /* *l += 0.001; */
       if(d2l > 0.0)
         {
           *l *= 0.8;
         }
       else
         {
-          l_prev = *l;
           ratio = dl/d2l;
           if(isnan(ratio) == NO) *l -= dl/d2l;
         }

@@ -117,6 +117,7 @@ phydbl SSE_Lk_Core_Nucl(int state, int ambiguity_check, t_edge *b, t_tree *tree)
 phydbl SSE_Lk_Core_AA(int state, int ambiguity_check, t_edge *b, t_tree *tree);
 void SSE_Update_P_Lk_Nucl(t_tree *tree,t_edge *b_fcus,t_node *n);
 void SSE_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d);
+void SSE_Update_Eigen_Lr(t_edge *b, t_tree *tree);
 #endif
 
 

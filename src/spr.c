@@ -2592,11 +2592,8 @@ int Find_Optim_Globl (t_tree *tree)
         }
     }
 
-      Set_Both_Sides(YES,tree);
-      Lk(NULL,tree);
       Optimize_Br_Len_Serie (tree);
-      Set_Both_Sides(YES,tree);
-      new_lk = Lk (NULL,tree);
+      new_lk = tree->c_lnL;
 
 /*       PhyML_Printf("\n. global new_lk = %f\n",tree->c_lnL); */
 
@@ -3769,9 +3766,6 @@ void Speed_Spr(t_tree *tree, phydbl prop_spr, int max_cycles, phydbl delta_lnL)
             {
               /* Optimise branch lengths */
               Optimize_Br_Len_Serie(tree);
-              /* Update partial likelihoods */
-              Set_Both_Sides(YES,tree);
-              Lk(NULL,tree);
               /* Print log-likelihood and parsimony scores */
               if(tree->verbose > VL2 && tree->io->quiet == NO) Print_Lk(tree,"[Branch lengths     ]");
             }
@@ -4205,10 +4199,6 @@ int Try_One_Spr_Move_Full(t_spr *move, t_tree *tree)
 
   Graft_Subtree(move->b_target,move->n_link,NULL,b_residual,NULL,tree);
 
-  MIXT_Set_Alias_Subpatt(YES,tree);
-  Set_Both_Sides(YES,tree);
-  Lk(NULL,tree);
-  MIXT_Set_Alias_Subpatt(NO,tree);
   Optimize_Br_Len_Serie(tree);
 
   Set_Both_Sides(YES,tree);
@@ -4734,7 +4724,6 @@ void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int d
       tree->annealing_temp -= 0.5;
       prop_spr+=0.2;
 
-      Set_Both_Sides(YES,tree);
       Optimiz_All_Free_Param(tree,(tree->io->quiet == YES)?(0):(tree->verbose > VL0));
       Optimize_Br_Len_Serie(tree);
 
@@ -4816,14 +4805,11 @@ void Spr_List_Of_Trees(t_tree *tree)
           Spr_Pars(0,100,tree);
         }
       
-      Set_Both_Sides(NO,tree);
-      Lk(NULL,tree);
       Optimize_Br_Len_Serie(tree);
       
       tree->best_lnL = UNLIKELY;
       tree->mod->s_opt->fast_nni = NO;
       Simu(tree,1);
-
       
       if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n. Tree %3d lnL: %12.2f",list_size+1,tree->c_lnL);
 
@@ -4857,6 +4843,8 @@ void Spr_List_Of_Trees(t_tree *tree)
   do
     {
       Copy_Tree(tree_list[rk[list_size]],tree);
+
+      if(list_size == 0) Round_Optimize(tree,5);
       
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
@@ -4866,7 +4854,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       tree->mod->s_opt->spr_pars          = NO;
       tree->mod->s_opt->min_diff_lk_move  = 0.1;
       tree->mod->s_opt->eval_list_regraft = YES;
-      tree->mod->s_opt->max_delta_lnL_spr = 50.;
+      tree->mod->s_opt->max_delta_lnL_spr = 20.;
       
       do
         {
@@ -4875,12 +4863,10 @@ void Spr_List_Of_Trees(t_tree *tree)
           tree->best_lnL = tree->c_lnL;
           Spr(tree->c_lnL,1.0,tree);
           tree->mod->s_opt->max_depth_path = tree->max_spr_depth * 2;
-          tree->mod->s_opt->max_delta_lnL_spr = 20.;
+          /* tree->mod->s_opt->max_delta_lnL_spr = 50.; */
         }
       while(tree->n_improvements > 5);
 
-      Set_Both_Sides(NO,tree);
-      Lk(NULL,tree);
       Optimize_Br_Len_Serie(tree);
       if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n. Tree %3d lnL: %12.2f",list_size+1,tree->c_lnL);
       
@@ -4956,8 +4942,6 @@ void Spr_List_Of_Trees(t_tree *tree)
   /*     while(tree->n_improvements > 5); */
 
 
-  /*     Set_Both_Sides(NO,tree); */
-  /*     Lk(NULL,tree); */
   /*     Optimize_Br_Len_Serie(tree); */
 
   /*     if(tree->c_lnL > best_lnL)  */
