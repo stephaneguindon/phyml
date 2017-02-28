@@ -1187,7 +1187,7 @@ void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree)
                       For(l,sz) // row in that same square
                         {
                           // Copy right eigen vector values column-by-column in block (i,j)
-                          ev[l] = tree->mod->eigen->r_e_vect[i*nblocks*sz*sz + j*sz + k + l*nblocks*sz];
+                          ev[l] = tree->mod->eigen->r_e_vect[i*nblocks*sz*sz + j*sz + l*nblocks*sz + k];
                         }
                       _fplkev[k] = _mm256_mul_pd(_mm256_load_pd(ev),_fplk[i]);
                     }
@@ -1220,7 +1220,7 @@ void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree)
                           For(k,sz) // column in sz*sz square
                             {
                               // Copy left eigen vector values column-by-column in block (i,j)
-                              ev[k] = tree->mod->eigen->l_e_vect[i*nblocks*sz*sz + j*sz + k + l*nblocks*sz];
+                              ev[k] = tree->mod->eigen->l_e_vect[i*nblocks*sz*sz + j*sz + l*nblocks*sz + k];
                             }                          
                           _fplkev[l] = _mm256_mul_pd(_mm256_load_pd(ev),_fplk[j]);
                         }
@@ -1256,9 +1256,12 @@ void SSE_Update_Eigen_Lr(t_edge *b, t_tree *tree)
   phydbl *tip;
   
   ns = tree->mod->ns;
+
   sz = (int)BYTE_ALIGN;
-  sz /= 8; // number of double floating precision numbers in a __mm256d variable: 16/8=4
-    
+  sz /= 8; // number of double floating precision numbers in a __mm256d variable: 16/8=2
+
+  
+  
   assert(tree->update_eigen_lr == YES);
   
   dim1           = tree->mod->ras->n_catg * tree->mod->ns;
@@ -1312,11 +1315,11 @@ void SSE_Update_Eigen_Lr(t_edge *b, t_tree *tree)
                       For(l,sz) // row in that same square
                         {
                           // Copy right eigen vector values column-by-column in block (i,j)
-                          ev[l] = tree->mod->eigen->r_e_vect[i*nblocks*sz*sz + j*sz + k + l*nblocks*sz];
+                          ev[l] = tree->mod->eigen->r_e_vect[i*nblocks*sz*sz + j*sz + l*nblocks*sz + k];
                         }
                       _fplkev[k] = _mm_mul_pd(_mm_load_pd(ev),_fplk[i]);
                     }
-                  _colsum[j] = _mm_add_pd(_colsum[j],AVX_Horizontal_Add(_fplkev));
+                  _colsum[j] = _mm_add_pd(_colsum[j],_mm_hadd_pd(_fplkev[0],_fplkev[1]));
                 }
             }          
           For(j,nblocks) _mm_store_pd(&(tree->eigen_lr_left[site*dim1 + catg*dim2 + j*sz]),_colsum[j]);
@@ -1345,11 +1348,11 @@ void SSE_Update_Eigen_Lr(t_edge *b, t_tree *tree)
                           For(k,sz) // column in sz*sz square
                             {
                               // Copy left eigen vector values column-by-column in block (i,j)
-                              ev[k] = tree->mod->eigen->l_e_vect[i*nblocks*sz*sz + j*sz + k + l*nblocks*sz];
+                              ev[k] = tree->mod->eigen->l_e_vect[i*nblocks*sz*sz + j*sz + l*nblocks*sz + k];
                             }                          
                           _fplkev[l] = _mm_mul_pd(_mm_load_pd(ev),_fplk[j]);
                         }
-                      _colsum[i] = _mm_add_pd(_colsum[i],AVX_Horizontal_Add(_fplkev));
+                      _colsum[i] = _mm_add_pd(_colsum[i],_mm_hadd_pd(_fplkev[0],_fplkev[1]));
                     }
                 }
               For(j,nblocks) _mm_store_pd(&(tree->eigen_lr_rght[site*dim1 + catg*dim2 + j*sz]),_colsum[j]);

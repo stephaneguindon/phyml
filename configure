@@ -5016,7 +5016,7 @@ fi
 done
 
 
-VECTOR_FLAG=-march=native
+VECTOR_FLAG=-msse3
 
 LDFLAGS="${ARGC_flag}"
 
