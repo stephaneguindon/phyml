@@ -668,10 +668,27 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
     }
     
   if(tree->update_eigen_lr == YES) Update_Eigen_Lr(b,tree);
+
   
+#if (defined(__AVX__) || defined(__SSE3__))
+  expl   = NULL;
+  expld  = NULL;
+  expld2 = NULL;
+#ifndef WIN32
+  if(posix_memalign((void **)&expl  ,BYTE_ALIGN,(size_t)tree->mod->ras->n_catg*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&expld ,BYTE_ALIGN,(size_t)tree->mod->ras->n_catg*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&expld2,BYTE_ALIGN,(size_t)tree->mod->ras->n_catg*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+#else
+  expl   = _aligned_malloc(tree->mod->ras->n_catg*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
+  expld  = _aligned_malloc(tree->mod->ras->n_catg*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
+  expld2 = _aligned_malloc(tree->mod->ras->n_catg*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
+#endif
+#else
   expl   = (phydbl *)mCalloc(tree->mod->ras->n_catg*tree->mod->ns,sizeof(phydbl));
   expld  = (phydbl *)mCalloc(tree->mod->ras->n_catg*tree->mod->ns,sizeof(phydbl));
   expld2 = (phydbl *)mCalloc(tree->mod->ras->n_catg*tree->mod->ns,sizeof(phydbl));
+#endif
+
   
   For(catg,tree->mod->ras->n_catg)
     {
@@ -1134,6 +1151,8 @@ void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree)
   sz = (int)BYTE_ALIGN;
   sz /= 8; // number of floating precision numbers in a __mm256d variable
     
+  assert(sz == 4);
+  
   assert(tree->update_eigen_lr == YES);
   
   dim1           = tree->mod->ras->n_catg * tree->mod->ns;
@@ -1260,7 +1279,7 @@ void SSE_Update_Eigen_Lr(t_edge *b, t_tree *tree)
   sz = (int)BYTE_ALIGN;
   sz /= 8; // number of double floating precision numbers in a __mm256d variable: 16/8=2
 
-  
+  assert(sz == 2);
   
   assert(tree->update_eigen_lr == YES);
   
@@ -1319,7 +1338,7 @@ void SSE_Update_Eigen_Lr(t_edge *b, t_tree *tree)
                         }
                       _fplkev[k] = _mm_mul_pd(_mm_load_pd(ev),_fplk[i]);
                     }
-                  _colsum[j] = _mm_add_pd(_colsum[j],_mm_hadd_pd(_fplkev[0],_fplkev[1]));
+                  _colsum[j] = _mm_add_pd(_colsum[j],_mm_hadd_pd(_fplkev[0],_fplkev[1])); // won't work if sz != 2
                 }
             }          
           For(j,nblocks) _mm_store_pd(&(tree->eigen_lr_left[site*dim1 + catg*dim2 + j*sz]),_colsum[j]);
@@ -1452,7 +1471,69 @@ phydbl Lk_Core_One_Class(phydbl *p_lk_left, phydbl *p_lk_rght,
 #ifdef SAFEMODE
       assert(expl);
 #endif
+
+#if (defined(__AVX__))
+      int nblocks,sz;
+
+      sz = (int)BYTE_ALIGN;
+      sz /= 8;
+      assert(sz == 4);
+
+      nblocks = ns/sz;
+
+      __m256d _prod[nblocks],_x,_y;
+      phydbl *res;
+
+      res = NULL;
+#ifndef WIN32
+      if(posix_memalign((void **)&res,BYTE_ALIGN,(size_t)sz*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+#else
+      res = _aligned_malloc(sz * sizeof(phydbl),BYTE_ALIGN);
+#endif
       
+      For(l,nblocks) _prod[l] = _mm256_load_pd(p_lk_left + l*sz);
+      For(l,nblocks) _prod[l] = _mm256_mul_pd(_prod[l],_mm256_load_pd(p_lk_rght + l*sz));
+      For(l,nblocks) _prod[l] = _mm256_mul_pd(_prod[l],_mm256_load_pd(expl + l*sz));
+      _x = _mm256_setzero_pd();
+      For(l,nblocks) _x = _mm256_add_pd(_x,_prod[l]);
+      _x = _mm256_hadd_pd(_x,_x);
+      _y = _mm256_permute2f128_pd(_x,_x,0x21);
+      _mm256_store_pd(res,_mm256_add_pd(_x,_y));
+      lk = res[0];
+      Free(res);
+      
+#elif (defined(__SSE3__))
+
+      int nblocks,sz;
+
+      sz = (int)BYTE_ALIGN;
+      sz /= 8;
+      assert(sz == 2);
+
+      nblocks = ns/sz;
+
+      __m128d _prod[nblocks],_x;
+      phydbl *res;
+
+      res = NULL;
+#ifndef WIN32
+      if(posix_memalign((void **)&res,BYTE_ALIGN,(size_t)sz*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+#else
+      res = _aligned_malloc(sz * sizeof(phydbl),BYTE_ALIGN);
+#endif
+      
+      For(l,nblocks) _prod[l] = _mm_load_pd(p_lk_left + l*sz);
+      For(l,nblocks) _prod[l] = _mm_mul_pd(_prod[l],_mm_load_pd(p_lk_rght + l*sz));
+      For(l,nblocks) _prod[l] = _mm_mul_pd(_prod[l],_mm_load_pd(expl + l*sz));
+      _x = _mm_setzero_pd();
+      For(l,nblocks) _x = _mm_add_pd(_x,_prod[l]);
+      _x = _mm_hadd_pd(_x,_x);
+      _mm_store_pd(res,_x);
+      lk = res[0];
+      Free(res);
+
+#else
+
       lk = 0.0;
       For(l,ns) // Likelihood calculation in O(ns) complexity instead of O(ns^2)! 
         {
@@ -1461,6 +1542,9 @@ phydbl Lk_Core_One_Class(phydbl *p_lk_left, phydbl *p_lk_rght,
             p_lk_rght[l] *
             expl[l];
         }
+
+#endif
+      
       return lk;
     }
    else // tree->use_eigen_lr == NO
