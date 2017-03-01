@@ -4474,7 +4474,7 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
   int *sum_scale_left_cat,*sum_scale_rght_cat;
   int exponent;
   phydbl max_sum_scale,min_sum_scale;
-  phydbl sum,tmp;
+  phydbl sum,tmp,dum;
   phydbl site_lk_cat;
 
   sum_scale_left_cat = b->sum_scale_left_cat;
@@ -4509,11 +4509,13 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
               PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
               Exit("\n");
             }
-          
-          tmp = sum + ((phydbl)LOGBIG - LOG(FABS(tree->site_lk_cat[catg])))/(phydbl)LOG2;
+
+          dum = LOG(FABS(tree->site_lk_cat[catg]));
+
+          tmp = sum + ((phydbl)LOGBIG - dum)/(phydbl)LOG2;
           if(tmp < max_sum_scale) max_sum_scale = tmp; /* min of the maxs */
           
-          tmp = sum + ((phydbl)LOGSMALL - LOG(FABS(tree->site_lk_cat[catg])))/(phydbl)LOG2;
+          tmp = sum + ((phydbl)LOGSMALL - dum)/(phydbl)LOG2;
           if(tmp > min_sum_scale) min_sum_scale = tmp; /* max of the mins */
 
           assert(isnan(tmp) == NO);          
@@ -4812,7 +4814,6 @@ phydbl AVX_Lk_Core_Nucl(int state, int ambiguity_check, t_edge *b, t_tree *tree)
               PhyML_Printf("\n== %G %G %G %G",plk[0],plk[1],plk[2],plk[3]);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
-
         } /* site likelihood for all rate classes */
       Pull_Scaling_Factors(site,b,tree);
     }
