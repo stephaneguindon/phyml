@@ -58,7 +58,7 @@ dnl Uncomment two rows below when compiling rwarp (need to have libtool installe
 dnl LT_INIT
 dnl AC_PROG_LIBTOOL
 
-DEFAULT_C_FLAG="-Wall -O3 ${VECTOR_FLAG} ${ARCH_flag}"
+DEFAULT_C_FLAG="-Wall -O3 ${VECTOR_FLAG}"
 
 AC_ARG_ENABLE([debug],
               [AS_HELP_STRING([--enable-debug],
@@ -70,7 +70,7 @@ AS_IF([test "x$enable_debug" = "xyes"],
 AC_ARG_ENABLE([safemode],
         AS_HELP_STRING([--enable-safemode],[Enable safe mode.]))
 AS_IF([test "x$enable_safemode" = "xyes"],
-      [CFLAGS="-Wall -DSAFEMODE -O3 ${VECTOR_FLAG} ${ARCH_flag}"],
+      [CFLAGS="-Wall -DSAFEMODE -O3 ${VECTOR_FLAG}"],
       [AS_IF([test "x$enable_debug" = "xno"],[CFLAGS="${DEFAULT_C_FLAG}"])])
 
 AC_ARG_ENABLE([gprof],
@@ -98,7 +98,7 @@ AM_CONDITIONAL([WANT_WIN], [test "$enable_win" = yes])
 AC_ARG_ENABLE([beagle], [AS_HELP_STRING([--enable-beagle], [Compute likelihoods using BEAGLE library.])], [beagle=yes],[beagle=no])
 AS_IF([test "x$enable_beagle" = "xyes"],[PKG_CHECK_MODULES(BEAGLE, hmsbeagle-1)])
 AS_IF([test "x$enable_beagle" = "xyes"],
-      [CFLAGS="${CFLAGS} ${BEAGLE_CFLAGS} ${BEAGLE_LIBS} -lstdc++ ${ARCH_flag}"],
+      [CFLAGS="${CFLAGS} ${BEAGLE_CFLAGS} ${BEAGLE_LIBS} -lstdc++"],
       [CFLAGS=${CFLAGS}])
 AS_IF([test "x$enable_beagle" = "xyes"], AC_DEFINE([BEAGLE],[1],[BEAGLE tag on]))
 AM_CONDITIONAL([WANT_BEAGLE], [test "$enable_beagle" = yes])
@@ -192,7 +192,7 @@ fi
 
 dnl AS_IF([test "x$enable_phyrex" = "xyes"],[PKG_CHECK_MODULES([GTK], [gtk+-3.0])])
 dnl AS_IF([test "x$enable_phyrex" = "xyes"],[PKG_CHECK_MODULES([CAIRO], [cairo])])
-dnl AS_IF([test "x$enable_phyrex" = "xyes"],[CFLAGS="${CFLAGS} `pkg-config --cflags --libs gtk+-3.0` ${ARCH_flag}"])
+dnl AS_IF([test "x$enable_phyrex" = "xyes"],[CFLAGS="${CFLAGS} `pkg-config --cflags --libs gtk+-3.0`"])
 
 
 dnl AM_PATH_GTK_3_0(,,AC_MSG_ERROR(windoe-default needs GTK+-3))

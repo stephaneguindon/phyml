@@ -5328,7 +5328,8 @@ void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
       else
         {
           /* For all rate classes */
-          For(catg,tree->mod->ras->n_catg)
+          /* For(catg,tree->mod->ras->n_catg) */
+          for(catg=0;catg<tree->mod->ras->n_catg;catg++)
             {
               smallest_p_lk  =  BIG;
 
@@ -5337,45 +5338,37 @@ void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
 	      __m256d _p1[4],_p2[4]; // matrices of transition probabilities
 	      __m256d _pplk1[4],_pplk2[4]; // dot product of _p1[i] & _plk1 (resp. _p2[i] & _plk2)
 
-              For(i,4) _p1[i] = _mm256_load_pd(Pij1 + catg*dim3 + i*dim2);
-	      /* _p1[0] = _mm256_load_pd(Pij1 + catg*dim3+0*dim2); */
-	      /* _p1[1] = _mm256_load_pd(Pij1 + catg*dim3+1*dim2); */
-	      /* _p1[2] = _mm256_load_pd(Pij1 + catg*dim3+2*dim2); */
-	      /* _p1[3] = _mm256_load_pd(Pij1 + catg*dim3+3*dim2); */
+              /* For(i,4) _p1[i] = _mm256_load_pd(Pij1 + catg*dim3 + i*dim2); */
+              /* For(i,4) _p2[i] = _mm256_load_pd(Pij2 + catg*dim3 + i*dim2);	       */
 
-              For(i,4) _p2[i] = _mm256_load_pd(Pij2 + catg*dim3 + i*dim2);
-	      /* _p2[0] = _mm256_load_pd(Pij2 + catg*dim3+0*dim2); */
-	      /* _p2[1] = _mm256_load_pd(Pij2 + catg*dim3+1*dim2); */
-	      /* _p2[2] = _mm256_load_pd(Pij2 + catg*dim3+2*dim2); */
-	      /* _p2[3] = _mm256_load_pd(Pij2 + catg*dim3+3*dim2); */
-	      
+	      /* if(n_v1->tax == NO) _plk1 = _mm256_load_pd(p_lk_v1 + site*dim1+catg*dim2); */
+	      /* else _plk1 = _mm256_load_pd(tip_v1); */
 
-	      if(n_v1->tax == NO)
-                _plk1 = _mm256_load_pd(p_lk_v1 + site*dim1+catg*dim2);
-	      else
-                _plk1 = _mm256_load_pd(tip_v1);
-
-	      if(n_v2->tax == NO)
-                _plk2 = _mm256_load_pd(p_lk_v2 + site*dim1+catg*dim2);
-	      else
-                _plk2 = _mm256_load_pd(tip_v2);
+	      /* if(n_v2->tax == NO) _plk2 = _mm256_load_pd(p_lk_v2 + site*dim1+catg*dim2); */
+	      /* else _plk2 = _mm256_load_pd(tip_v2); */
               
-              For(i,4) _pplk1[i] = _mm256_mul_pd(_p1[i],_plk1);
-              /* _pplk1[0] = _mm256_mul_pd(_p1[0],_plk1); */
-              /* _pplk1[1] = _mm256_mul_pd(_p1[1],_plk1); */
-              /* _pplk1[2] = _mm256_mul_pd(_p1[2],_plk1); */
-              /* _pplk1[3] = _mm256_mul_pd(_p1[3],_plk1); */
+              /* For(i,4) _pplk1[i] = _mm256_mul_pd(_p1[i],_plk1); */
+              /* For(i,4) _pplk2[i] = _mm256_mul_pd(_p2[i],_plk2); */
 
-              For(i,4) _pplk2[i] = _mm256_mul_pd(_p2[i],_plk2);
-              /* _pplk2[0] = _mm256_mul_pd(_p2[0],_plk2); */
-              /* _pplk2[1] = _mm256_mul_pd(_p2[1],_plk2); */
-              /* _pplk2[2] = _mm256_mul_pd(_p2[2],_plk2); */
-              /* _pplk2[3] = _mm256_mul_pd(_p2[3],_plk2); */
+              for(i=0;i<4;i++) _p1[i] = _mm256_load_pd(Pij1 + catg*dim3 + i*dim2);
+              for(i=0;i<4;i++) _p2[i] = _mm256_load_pd(Pij2 + catg*dim3 + i*dim2);	      
+
+	      if(n_v1->tax == NO) _plk1 = _mm256_load_pd(p_lk_v1 + site*dim1+catg*dim2);
+	      else _plk1 = _mm256_load_pd(tip_v1);
               
-              _plk = _mm256_mul_pd(AVX_Horizontal_Add(_pplk1),AVX_Horizontal_Add(_pplk2)); 
+	      if(n_v2->tax == NO) _plk2 = _mm256_load_pd(p_lk_v2 + site*dim1+catg*dim2);
+	      else _plk2 = _mm256_load_pd(tip_v2);
+              
+              for(i=0;i<4;i++) _pplk1[i] = _mm256_mul_pd(_p1[i],_plk1);
+              for(i=0;i<4;i++) _pplk2[i] = _mm256_mul_pd(_p2[i],_plk2);
+              
+              _plk = _mm256_mul_pd(AVX_Horizontal_Add(_pplk1),
+                                   AVX_Horizontal_Add(_pplk2)); 
                                    
               _mm256_store_pd(p_lk+site*dim1+catg*dim2,_plk);
 
+              
+#ifdef SAFEMODE
               For(i,4) 
                 {
                   if(isinf(p_lk[site*dim1+catg*dim2+i]) || isnan(p_lk[site*dim1+catg*dim2+i])) 
@@ -5384,11 +5377,10 @@ void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
                     }
                 }
-
+#endif
+              
               smallest_p_lk = BIG;
-              For(i,4) 
-                if(p_lk[site*dim1+catg*dim2+i] < smallest_p_lk) 
-                  smallest_p_lk = p_lk[site*dim1+catg*dim2+i] ;
+              For(i,4) if(p_lk[site*dim1+catg*dim2+i] < smallest_p_lk) smallest_p_lk = p_lk[site*dim1+catg*dim2+i] ;
 
               /* Current scaling values at that site */
               sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[catg*n_patterns+site]):(0);
@@ -5421,7 +5413,6 @@ void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                               PhyML_Printf("\n== Err. in file %s at line %d (function '%s').",__FILE__,__LINE__,__FUNCTION__);
                               Exit("\n");
                             }
-                          //                              fprintf(stderr,"\n%e",p_lk[site*dim1+catg*dim2+i]);
                         }
                       curr_scaler_pow -= piecewise_scaler_pow;
                     }

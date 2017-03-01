@@ -5021,7 +5021,7 @@ VECTOR_FLAG=-march=native
 LDFLAGS="${ARGC_flag}"
 
 
-DEFAULT_C_FLAG="-Wall -O3 ${VECTOR_FLAG} ${ARCH_flag}"
+DEFAULT_C_FLAG="-Wall -O3 ${VECTOR_FLAG}"
 
 # Check whether --enable-debug was given.
 if test "${enable_debug+set}" = set; then :
