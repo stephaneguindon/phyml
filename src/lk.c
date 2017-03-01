@@ -1319,7 +1319,7 @@ void SSE_Update_Eigen_Lr(t_edge *b, t_tree *tree)
           for(i=0;i<nblocks;i++) _fplk[i] = _mm_mul_pd(_mm_load_pd(&(b->p_lk_left[site*dim1 + catg*dim2 + i*sz])),
                                                _mm_load_pd(&(tree->mod->e_frq->pi->v[i*sz])));
           
-          for(i=0,i<nblocks;i++) _colsum[i] = _mm_setzero_pd();
+          for(i=0;i<nblocks;i++) _colsum[i] = _mm_setzero_pd();
           // Multiply by matrix of right eigen vectors
           // This matrix is made of nblocks*nblocks squares,
           // each square being of 'area' sz*sz
