@@ -1032,7 +1032,7 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
           
           Switch_Eigen(YES,tree->mod);
           
-          For(rcat,tree->mod->m4mod->n_h)
+          for(rcat=0;rcat<tree->mod->m4mod->n_h;rcat++)
             {
               /* 	      Optimize_Single_Param_Generic(tree,&(tree->mod->m4mod->multipl_unscaled[rcat]), */
               /* 					    .01,10., */
@@ -1054,7 +1054,7 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
                 }
             }
           
-          For(rcat,tree->mod->m4mod->n_h)
+          for(rcat=0;rcat<tree->mod->m4mod->n_h;rcat++)
             {
               
               /*  	      Optimize_Single_Param_Generic(tree,&(tree->mod->m4mod->h_fq_unscaled[rcat]), */
@@ -1122,7 +1122,7 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
               
               Switch_Eigen(YES,tree->mod);
               
-              For(i,5) tree->mod->m4mod->o_rr[i] = LOG(tree->mod->m4mod->o_rr[i]);
+              for(i=0;i<5;i++) tree->mod->m4mod->o_rr[i] = LOG(tree->mod->m4mod->o_rr[i]);
               
               failed = YES;
               
@@ -1132,9 +1132,9 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
                    &Num_Derivative_Several_Param,
                    &Lnsrch,&failed);
               
-              For(i,5) tree->mod->m4mod->o_rr[i] = EXP(tree->mod->m4mod->o_rr[i]);
+              for(i=0;i<5;i++) tree->mod->m4mod->o_rr[i] = EXP(tree->mod->m4mod->o_rr[i]);
               
-              For(i,5)
+              for(i=0;i<5;i++)
                 {
                   /* 	      Optimize_Single_Param_Generic(tree,&(tree->mod->m4mod->o_rr[i]), */
                   /* 					    1.E-20,1.E+10, */
@@ -1198,7 +1198,7 @@ void BFGS(t_tree *tree,
   phydbl *init,*sign;
 
   hessin = (phydbl **)mCalloc(n,sizeof(phydbl *));
-  For(i,n) hessin[i] = (phydbl *)mCalloc(n,sizeof(phydbl));
+  for(i=0;i<n;i++) hessin[i] = (phydbl *)mCalloc(n,sizeof(phydbl));
   dg   = (phydbl *)mCalloc(n,sizeof(phydbl ));
   g    = (phydbl *)mCalloc(n,sizeof(phydbl ));
   pnew = (phydbl *)mCalloc(n,sizeof(phydbl ));
@@ -1208,13 +1208,13 @@ void BFGS(t_tree *tree,
   sign = (phydbl *)mCalloc(n,sizeof(phydbl ));
 
 
-  For(i,n) init[i] = p[i];
+  for(i=0;i<n;i++) init[i] = p[i];
 
 
   /*! p is log transformed */
-  if(logt == YES) For(i,n) p[i] = EXP(MIN(1.E+2,p[i]));
+  if(logt == YES) for(i=0;i<n;i++) p[i] = EXP(MIN(1.E+2,p[i]));
   fp=(*func)(tree);
-  if(logt == YES) For(i,n) p[i] = LOG(p[i]);
+  if(logt == YES) for(i=0;i<n;i++) p[i] = LOG(p[i]);
   
   /* PhyML_Printf("\n. ENTER BFGS WITH: %f\n",fp); */
   
@@ -1260,20 +1260,20 @@ void BFGS(t_tree *tree,
         {
           if(fp > fp_old)
             {
-              For(i,n) p[i] = init[i];
+              for(i=0;i<n;i++) p[i] = init[i];
               *failed = YES;
             }
           
-          if(logt == YES) For(i,n) p[i] = EXP(MIN(1.E+2,p[i]));
-          For(i,n) sign[i] = p[i] > .0 ? 1. : -1.;
-          if(is_positive == YES) For(i,n) p[i] = FABS(p[i]);
+          if(logt == YES) for(i=0;i<n;i++) p[i] = EXP(MIN(1.E+2,p[i]));
+          for(i=0;i<n;i++) sign[i] = p[i] > .0 ? 1. : -1.;
+          if(is_positive == YES) for(i=0;i<n;i++) p[i] = FABS(p[i]);
           (*func)(tree);
-          if(is_positive == YES) For(i,n) p[i] *= sign[i];
-          if(logt == YES) For(i,n) p[i] = LOG(p[i]);
+          if(is_positive == YES) for(i=0;i<n;i++) p[i] *= sign[i];
+          if(logt == YES) for(i=0;i<n;i++) p[i] = LOG(p[i]);
           
-          if(is_positive == YES) For(i,n) p[i] = FABS(p[i]);
+          if(is_positive == YES) for(i=0;i<n;i++) p[i] = FABS(p[i]);
           
-          For(i,n) Free(hessin[i]);
+          for(i=0;i<n;i++) Free(hessin[i]);
           free(hessin);
           free(xi);
           free(pnew);
@@ -1299,16 +1299,16 @@ void BFGS(t_tree *tree,
       if (test < gtol)
         {
           *failed = NO;
-          if(logt == YES) For(i,n) p[i] = EXP(MIN(1.E+2,p[i]));
-          For(i,n) sign[i] = p[i] > .0 ? 1. : -1.;
-          if(is_positive == YES) For(i,n) p[i] = FABS(p[i]);
+          if(logt == YES) for(i=0;i<n;i++) p[i] = EXP(MIN(1.E+2,p[i]));
+          for(i=0;i<n;i++) sign[i] = p[i] > .0 ? 1. : -1.;
+          if(is_positive == YES) for(i=0;i<n;i++) p[i] = FABS(p[i]);
           (*func)(tree);
-          if(is_positive == YES) For(i,n) p[i] *= sign[i];
-          if(logt == YES) For(i,n) p[i] = LOG(p[i]);
+          if(is_positive == YES) for(i=0;i<n;i++) p[i] *= sign[i];
+          if(logt == YES) for(i=0;i<n;i++) p[i] = LOG(p[i]);
           
-          if(is_positive == YES) For(i,n) p[i] = FABS(p[i]);
+          if(is_positive == YES) for(i=0;i<n;i++) p[i] = FABS(p[i]);
           
-          For(i,n) Free(hessin[i]);
+          for(i=0;i<n;i++) Free(hessin[i]);
           free(hessin);
           free(xi);
           free(pnew);
@@ -1359,7 +1359,7 @@ void BFGS(t_tree *tree,
     }
   /*   PhyML_Printf("\n. Too many iterations in BFGS...\n"); */
   *failed = YES;
-  For(i,n) Free(hessin[i]);
+  for(i=0;i<n;i++) Free(hessin[i]);
   free(hessin);
   free(xi);
   free(pnew);
@@ -1406,7 +1406,7 @@ void BFGS_Nonaligned(t_tree *tree,
   phydbl *init,*sign;
 
   hessin = (phydbl **)mCalloc(n,sizeof(phydbl *));
-  For(i,n) hessin[i] = (phydbl *)mCalloc(n,sizeof(phydbl));
+  for(i=0;i<n;i++) hessin[i] = (phydbl *)mCalloc(n,sizeof(phydbl));
   dg   = (phydbl *)mCalloc(n,sizeof(phydbl ));
   g    = (phydbl *)mCalloc(n,sizeof(phydbl ));
   pnew = (phydbl *)mCalloc(n,sizeof(phydbl ));
@@ -1415,11 +1415,11 @@ void BFGS_Nonaligned(t_tree *tree,
   init = (phydbl *)mCalloc(n,sizeof(phydbl ));
   sign = (phydbl *)mCalloc(n,sizeof(phydbl ));
 
-  For(i,n) init[i] = (*(p[i]));
+  for(i=0;i<n;i++) init[i] = (*(p[i]));
 
-  if(logt == YES) For(i,n) (*(p[i])) = EXP(MIN(1.E+2,*(p[i])));
+  if(logt == YES) for(i=0;i<n;i++) (*(p[i])) = EXP(MIN(1.E+2,*(p[i])));
   fp=(*func)(tree);
-  if(logt == YES) For(i,n) (*(p[i])) = LOG(*(p[i]));
+  if(logt == YES) for(i=0;i<n;i++) (*(p[i])) = LOG(*(p[i]));
 
   fp_old = fp;
 
@@ -1466,20 +1466,20 @@ void BFGS_Nonaligned(t_tree *tree,
           
           if(fp > fp_old)
             {
-              For(i,n) (*(p[i])) = init[i];
+              for(i=0;i<n;i++) (*(p[i])) = init[i];
               *failed = 1;
             }
           
-          if(logt == YES) For(i,n) (*(p[i])) = EXP(MIN(1.E+2,*(p[i])));
-          For(i,n) sign[i] = *(p[i]) > .0 ? 1. : -1.;
-          if(is_positive == YES) For(i,n) *(p[i]) = FABS(*(p[i]));
+          if(logt == YES) for(i=0;i<n;i++) (*(p[i])) = EXP(MIN(1.E+2,*(p[i])));
+          for(i=0;i<n;i++) sign[i] = *(p[i]) > .0 ? 1. : -1.;
+          if(is_positive == YES) for(i=0;i<n;i++) *(p[i]) = FABS(*(p[i]));
           (*func)(tree);
-          if(is_positive == YES) For(i,n) *(p[i]) *= sign[i];
-          if(logt == YES) For(i,n) (*(p[i])) = LOG(*(p[i]));
+          if(is_positive == YES) for(i=0;i<n;i++) *(p[i]) *= sign[i];
+          if(logt == YES) for(i=0;i<n;i++) (*(p[i])) = LOG(*(p[i]));
           
-          if(is_positive == YES) For(i,n) *(p[i]) = FABS(*(p[i]));
+          if(is_positive == YES) for(i=0;i<n;i++) *(p[i]) = FABS(*(p[i]));
           
-          For(i,n) Free(hessin[i]);
+          for(i=0;i<n;i++) Free(hessin[i]);
           free(hessin);
           free(xi);
           free(pnew);
@@ -1505,16 +1505,16 @@ void BFGS_Nonaligned(t_tree *tree,
       
       if (test < gtol)
         {
-          if(logt == YES) For(i,n) (*(p[i])) = EXP(MIN(1.E+2,*(p[i])));
-          For(i,n) sign[i] = *(p[i]) > .0 ? 1. : -1.;
-          if(is_positive == YES) For(i,n) *(p[i]) = FABS(*(p[i]));
+          if(logt == YES) for(i=0;i<n;i++) (*(p[i])) = EXP(MIN(1.E+2,*(p[i])));
+          for(i=0;i<n;i++) sign[i] = *(p[i]) > .0 ? 1. : -1.;
+          if(is_positive == YES) for(i=0;i<n;i++) *(p[i]) = FABS(*(p[i]));
           (*func)(tree);
-          if(is_positive == YES) For(i,n) *(p[i]) *= sign[i];
-          if(logt == YES) For(i,n) (*(p[i])) = LOG(*(p[i]));
+          if(is_positive == YES) for(i=0;i<n;i++) *(p[i]) *= sign[i];
+          if(logt == YES) for(i=0;i<n;i++) (*(p[i])) = LOG(*(p[i]));
           
-          if(is_positive == YES) For(i,n) *(p[i]) = FABS(*(p[i]));
+          if(is_positive == YES) for(i=0;i<n;i++) *(p[i]) = FABS(*(p[i]));
           
-          For(i,n) Free(hessin[i]);
+          for(i=0;i<n;i++) Free(hessin[i]);
           free(hessin);
           free(xi);
           free(pnew);
@@ -1565,7 +1565,7 @@ void BFGS_Nonaligned(t_tree *tree,
     }
   PhyML_Printf("\n. Too many iterations in BFGS...\n");
   *failed = YES;
-  For(i,n) Free(hessin[i]);
+  for(i=0;i<n;i++) Free(hessin[i]);
   free(hessin);
   free(xi);
   free(pnew);
@@ -1599,16 +1599,16 @@ int Lnsrch(t_tree *tree, int n, phydbl *xold, phydbl fold,
   local_xold = (phydbl *)mCalloc(n,sizeof(phydbl));
   sign       = (phydbl *)mCalloc(n,sizeof(phydbl));
 
-  For(i,n) local_xold[i] = xold[i];
+  for(i=0;i<n;i++) local_xold[i] = xold[i];
   
   *check=0;
   for(sum=0.0,i=0;i<n;i++) sum += p[i]*p[i];
   sum=SQRT(sum);
   /* PhyML_Printf("\n. lnsrch sum: %f",sum); */
-  if(sum > stpmax) For(i,n) p[i] *= stpmax/sum;
-  /* For(i,n) PhyML_Printf("\n. lnsrch p[i]: %f",p[i]); */
+  if(sum > stpmax) for(i=0;i<n;i++) p[i] *= stpmax/sum;
+  /* for(i=0;i<n;i++) PhyML_Printf("\n. lnsrch p[i]: %f",p[i]); */
   slope=0.0;
-  For(i,n) slope += g[i]*p[i];
+  for(i=0;i<n;i++) slope += g[i]*p[i];
   /* PhyML_Printf("\n. lnsrch slope: %f",slope); */
   test=0.0;
   for(i=0;i<n;i++)
@@ -1620,7 +1620,7 @@ int Lnsrch(t_tree *tree, int n, phydbl *xold, phydbl fold,
   alam=1.0;
   for (;;)
     {
-      For(i,n)
+      for(i=0;i<n;i++)
         {
           x[i]=local_xold[i]+alam*p[i];
           xold[i] = x[i];
@@ -1631,28 +1631,28 @@ int Lnsrch(t_tree *tree, int n, phydbl *xold, phydbl fold,
       
       if(i==n)
         {
-          if(logt == YES) For(i,n) xold[i] = EXP(MIN(1.E+2,xold[i]));
-          For(i,n) sign[i] = xold[i] < .0 ? -1. : 1.;
-          if(is_positive == YES) For(i,n) xold[i] = FABS(xold[i]);
-          /* For(i,n) PhyML_Printf("\n. <<>> %f",xold[i]); */
+          if(logt == YES) for(i=0;i<n;i++) xold[i] = EXP(MIN(1.E+2,xold[i]));
+          for(i=0;i<n;i++) sign[i] = xold[i] < .0 ? -1. : 1.;
+          if(is_positive == YES) for(i=0;i<n;i++) xold[i] = FABS(xold[i]);
+          /* for(i=0;i<n;i++) PhyML_Printf("\n. <<>> %f",xold[i]); */
           *f=Return_Abs_Lk(tree);
-          if(is_positive == YES) For(i,n) xold[i] *= sign[i];
-          if(logt == YES) For(i,n) xold[i] = LOG(xold[i]);
+          if(is_positive == YES) for(i=0;i<n;i++) xold[i] *= sign[i];
+          if(logt == YES) for(i=0;i<n;i++) xold[i] = LOG(xold[i]);
         }
       else *f=1.+fold+ALF*alam*slope;
       if (alam < alamin)
         {
           *check=1;
-          For(i,n) xold[i] = local_xold[i];
-          if(is_positive == YES) For(i,n) xold[i] = FABS(xold[i]);
+          for(i=0;i<n;i++) xold[i] = local_xold[i];
+          if(is_positive == YES) for(i=0;i<n;i++) xold[i] = FABS(xold[i]);
           Free(local_xold);
           Free(sign);
           return 0;
         }
       else if (*f <= fold+ALF*alam*slope)
         {
-          For(i,n) xold[i] = local_xold[i];
-          if(is_positive == YES) For(i,n) xold[i] = FABS(xold[i]);
+          for(i=0;i<n;i++) xold[i] = local_xold[i];
+          if(is_positive == YES) for(i=0;i<n;i++) xold[i] = FABS(xold[i]);
           Free(local_xold);
           Free(sign);
           return 0;
@@ -1713,7 +1713,7 @@ int Lnsrch_Nonaligned(t_tree *tree, int n, phydbl **xold, phydbl fold,
   local_xold = (phydbl *)mCalloc(n,sizeof(phydbl));
   sign       = (phydbl *)mCalloc(n,sizeof(phydbl));
 
-  For(i,n) local_xold[i] = *(xold[i]);
+  for(i=0;i<n;i++) local_xold[i] = *(xold[i]);
 
   *check=0;
   for(sum=0.0,i=0;i<n;i++) sum += p[i]*p[i];
@@ -1740,28 +1740,28 @@ int Lnsrch_Nonaligned(t_tree *tree, int n, phydbl **xold, phydbl fold,
 
       if(i==n)
     {
-          if(logt == YES) For(i,n) *(xold[i]) = EXP(MIN(1.E+2,*(xold[i])));
-          For(i,n) sign[i]    = *(xold[i]) < .0 ? -1. : 1.;
-          if(is_positive == YES) For(i,n) *(xold[i]) = FABS(*(xold[i]));
+          if(logt == YES) for(i=0;i<n;i++) *(xold[i]) = EXP(MIN(1.E+2,*(xold[i])));
+          for(i=0;i<n;i++) sign[i]    = *(xold[i]) < .0 ? -1. : 1.;
+          if(is_positive == YES) for(i=0;i<n;i++) *(xold[i]) = FABS(*(xold[i]));
       *f=Return_Abs_Lk(tree);
-          if(is_positive == YES) For(i,n) *(xold[i]) *= sign[i];
-          if(logt == YES) For(i,n) *(xold[i]) = LOG(*(xold[i]));
+          if(is_positive == YES) for(i=0;i<n;i++) *(xold[i]) *= sign[i];
+          if(logt == YES) for(i=0;i<n;i++) *(xold[i]) = LOG(*(xold[i]));
     }
       else *f=1.+fold+ALF*alam*slope;
 
       if (alam < alamin)
     {
       *check=1;
-      For(i,n) *(xold[i]) = local_xold[i];
-          if(is_positive == YES) For(i,n) *(xold[i]) = FABS(*(xold[i]));
+      for(i=0;i<n;i++) *(xold[i]) = local_xold[i];
+          if(is_positive == YES) for(i=0;i<n;i++) *(xold[i]) = FABS(*(xold[i]));
       Free(local_xold);
           Free(sign);
       return 0;
     }
       else if (*f <= fold+ALF*alam*slope)
     {
-      For(i,n) *(xold[i]) = local_xold[i];
-          if(is_positive) For(i,n) *(xold[i]) = FABS(*(xold[i]));
+      for(i=0;i<n;i++) *(xold[i]) = local_xold[i];
+          if(is_positive) for(i=0;i<n;i++) *(xold[i]) = FABS(*(xold[i]));
       Free(local_xold);
           Free(sign);
       return 0;
@@ -2213,7 +2213,7 @@ int Optimiz_Alpha_And_Pinv(t_tree *mixt_tree, int verbose)
     {
       if(tree->mod->s_opt->opt_alpha == YES && tree->mod->ras->n_catg > 1 && tree->mod->s_opt->opt_pinvar == YES)
         {
-          For(i,n_alpha) if(tree->mod->ras->alpha == alpha[i]) break;
+          for(i=0;i<n_alpha;i++) if(tree->mod->ras->alpha == alpha[i]) break;
 
           if(i == n_alpha)
             {
@@ -2624,7 +2624,7 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
     {
       if(tree->next) tree = tree->next;
       
-      For(i,n_r_mat) if(tree->mod->r_mat == r_mat[i]) break;
+      for(i=0;i<n_r_mat;i++) if(tree->mod->r_mat == r_mat[i]) break;
       
       if(i == n_r_mat) // tree->mod->r_mat was not found before
         {
@@ -2640,7 +2640,7 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
             {
               int failed,i;
               
-              For(i,tree->mod->r_mat->n_diff_rr) tree->mod->r_mat->rr_val->v[i] = LOG(tree->mod->r_mat->rr_val->v[i]);
+              for(i=0;i<tree->mod->r_mat->n_diff_rr;i++) tree->mod->r_mat->rr_val->v[i] = LOG(tree->mod->r_mat->rr_val->v[i]);
               
               failed = YES;
               
@@ -2653,12 +2653,12 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
                        &Lnsrch,&failed);
                 }
 
-              For(i,tree->mod->r_mat->n_diff_rr) tree->mod->r_mat->rr_val->v[i] = EXP(tree->mod->r_mat->rr_val->v[i]);
+              for(i=0;i<tree->mod->r_mat->n_diff_rr;i++) tree->mod->r_mat->rr_val->v[i] = EXP(tree->mod->r_mat->rr_val->v[i]);
               
 
               if(failed == YES)
                 {
-                  For(i,tree->mod->r_mat->n_diff_rr)
+                  for(i=0;i<tree->mod->r_mat->n_diff_rr;i++)
                     if(i != 5)
                       {
                         Generic_Brent_Lk(&(tree->mod->r_mat->rr_val->v[i]),
@@ -2710,7 +2710,7 @@ void Optimize_TsTv(t_tree *mixt_tree, int verbose)
     {
       if(tree->is_mixt_tree == YES) tree = tree->next;
       
-      For(i,n_tstv) if(tree->mod->kappa == tstv[i]) break;
+      for(i=0;i<n_tstv;i++) if(tree->mod->kappa == tstv[i]) break;
       
       if(i == n_tstv)
         {
@@ -2770,7 +2770,7 @@ void Optimize_Pinv(t_tree *mixt_tree, int verbose)
 
   do
     {
-      For(i,n_pinv) if(tree->mod->ras->pinvar == pinv[i]) break;
+      for(i=0;i<n_pinv;i++) if(tree->mod->ras->pinvar == pinv[i]) break;
 
       if(i == n_pinv)
         {
@@ -2826,7 +2826,7 @@ void Optimize_Alpha(t_tree *mixt_tree, int verbose)
 
       if(tree->mod->s_opt->opt_alpha == YES && tree->mod->ras->n_catg > 1)
         {
-          For(i,n_alpha) if(tree->mod->ras->alpha == alpha[i]) break;
+          for(i=0;i<n_alpha;i++) if(tree->mod->ras->alpha == alpha[i]) break;
 
           if(i == n_alpha)
             {
@@ -2908,8 +2908,8 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
               lk_before = tree->c_lnL;
 
               /* For(i,2*tree->n_otu-3) x[pos++] = &(tree->a_edges[i]->l->v); */
-              For(i,tree->mod->ras->n_catg) x[pos++] = tree->mod->ras->gamma_rr_unscaled->v+i;
-              For(i,tree->mod->ras->n_catg) x[pos++] = tree->mod->ras->gamma_r_proba_unscaled->v+i;
+              for(i=0;i<tree->mod->ras->n_catg;i++) x[pos++] = tree->mod->ras->gamma_rr_unscaled->v+i;
+              for(i=0;i<tree->mod->ras->n_catg;i++) x[pos++] = tree->mod->ras->gamma_r_proba_unscaled->v+i;
 
               /* For(i,2*tree->n_otu-3 + 2*tree->mod->ras->n_catg) *(x[i]) = LOG(MAX(1.E-10,*(x[i]))); */
               /* For(i,2*tree->mod->ras->n_catg) printf("\n:: %12f",*(x[i])); fflush(NULL); */
@@ -2968,7 +2968,7 @@ void Optimize_Free_Rate_Rr(t_tree *tree, int fast, int verbose)
 
       if(fast == YES)
         {
-          For(i,tree->mod->ras->n_catg) tree->mod->ras->skip_rate_cat[i] = YES;
+          for(i=0;i<tree->mod->ras->n_catg;i++) tree->mod->ras->skip_rate_cat[i] = YES;
           tree->mod->ras->normalise_rr                                   = NO;
 
           wm = Weighted_Mean(tree->mod->ras->gamma_rr_unscaled->v,
@@ -2980,7 +2980,7 @@ void Optimize_Free_Rate_Rr(t_tree *tree, int fast, int verbose)
         }
 
 
-      For(i,tree->mod->ras->n_catg-1)
+      for(i=0;i<tree->mod->ras->n_catg-1;i++)
         {
           if(fast == YES) tree->mod->ras->skip_rate_cat[i] = NO;
 
@@ -3010,7 +3010,7 @@ void Optimize_Free_Rate_Rr(t_tree *tree, int fast, int verbose)
 
       if(fast == YES)
         {
-          For(i,tree->mod->ras->n_catg) tree->mod->ras->skip_rate_cat[i] = NO;
+          for(i=0;i<tree->mod->ras->n_catg;i++) tree->mod->ras->skip_rate_cat[i] = NO;
           tree->mod->ras->normalise_rr                                   = YES;
 
           wm = Weighted_Mean(tree->mod->ras->gamma_rr_unscaled->v,
@@ -3026,7 +3026,7 @@ void Optimize_Free_Rate_Rr(t_tree *tree, int fast, int verbose)
   else
     {
       int i;
-      For(i,tree->mod->ras->n_catg-1)
+      for(i=0;i<tree->mod->ras->n_catg-1;i++)
         {
           phydbl a,c;
           
@@ -3054,7 +3054,7 @@ void Optimize_Free_Rate_Rr(t_tree *tree, int fast, int verbose)
   if(verbose) Print_Lk(tree,"[Rate class values  ]");
 
   /* int i; */
-  /* For(i,tree->mod->ras->n_catg) */
+  /* for(i=0;i<tree->mod->ras->n_catg;i++) */
   /*   { */
   /*     printf("\n+ c %2d p: %15f r: %15f up: %15f ur: %5f", */
   /*            i+1, */
@@ -3070,9 +3070,9 @@ void Optimize_Free_Rate_Rr(t_tree *tree, int fast, int verbose)
   /* int i; */
   /* printf("\n"); */
   /* printf("X*X %f ",tree->c_lnL); */
-  /* /\* For(i,tree->mod->ras->n_catg) printf("%f ",tree->mod->ras->gamma_rr_unscaled->v[i]); *\/ */
-  /* For(i,tree->mod->ras->n_catg) printf("%f ",tree->mod->ras->gamma_rr->v[i]); */
-  /* For(i,tree->mod->ras->n_catg) printf("%f ",tree->mod->ras->gamma_r_proba->v[i]); */
+  /* /\* for(i=0;i<tree->mod->ras->n_catg;i++) printf("%f ",tree->mod->ras->gamma_rr_unscaled->v[i]); *\/ */
+  /* for(i=0;i<tree->mod->ras->n_catg;i++) printf("%f ",tree->mod->ras->gamma_rr->v[i]); */
+  /* for(i=0;i<tree->mod->ras->n_catg;i++) printf("%f ",tree->mod->ras->gamma_r_proba->v[i]); */
   /* For(i,2*tree->n_otu-3) printf("%f ",tree->a_edges[i]->l->v); */
 }
 
@@ -3102,7 +3102,7 @@ void Optimize_Free_Rate_Weights(t_tree *tree, int fast, int verbose)
       For(i,2*tree->n_otu-1) tree->a_edges[i]->l->v /= (wm * tree->mod->ras->free_rate_mr->v);
     }
 
-  For(i,tree->mod->ras->n_catg-1)
+  for(i=0;i<tree->mod->ras->n_catg-1;i++)
     {
       phydbl a,c;
       
@@ -3162,7 +3162,7 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
     {
       if(tree->next) tree = tree->next;
 
-      For(i,n_freqs) if(tree->mod->e_frq->pi_unscaled == freqs[i]) break;
+      for(i=0;i<n_freqs;i++) if(tree->mod->e_frq->pi_unscaled == freqs[i]) break;
 
       if(i == n_freqs)
         {
@@ -3182,7 +3182,7 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
               
               if(failed == YES)
                 {
-                  For(i,tree->mod->ns)
+                  for(i=0;i<tree->mod->ns;i++)
                     {
                       phydbl a,c;
                       
@@ -3325,7 +3325,7 @@ void Optimize_Lambda(t_tree *mixt_tree, int verbose)
     {
       if(tree->next) tree = tree->next;
 
-      For(i,n_lambda) if(tree->mod->lambda == lambda[i]) break;
+      for(i=0;i<n_lambda;i++) if(tree->mod->lambda == lambda[i]) break;
 
       if(i == n_lambda)
     {

@@ -471,7 +471,7 @@ void DR_Get_Tree_Box_Width(tdraw *w, t_tree *tree)
   int max_name_len, curr_len;
 
   max_name_len = curr_len = 0;
-  For(i,tree->n_otu)
+  for(i=0;i<tree->n_otu;i++)
     {
       curr_len = (int)strlen(tree->a_nodes[i]->name);
       if(curr_len > max_name_len) max_name_len = curr_len;
@@ -491,7 +491,7 @@ phydbl DR_Get_Max_Dist_To_Root(t_tree *tree)
   int i;
 
   mx = .0;
-  For(i,tree->n_otu)
+  for(i=0;i<tree->n_otu;i++)
     {
       if(tree->a_nodes[i]->dist_to_root > mx)
 	{

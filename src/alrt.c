@@ -444,7 +444,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   buff = (t_tree *)tree;
   do
     {
-      For(site,tree->n_pattern) tree->log_lks_aLRT[0][site] = tree->c_lnL_sorted[site];
+      for(site=0;site<tree->n_pattern;site++) tree->log_lks_aLRT[0][site] = tree->c_lnL_sorted[site];
       tree = tree->next_mixt;
     }
   while(tree);
@@ -543,7 +543,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   buff = (t_tree *)tree;
   do
     {
-      For(site,tree->n_pattern) tree->log_lks_aLRT[1][site]= tree->c_lnL_sorted[site];
+      for(site=0;site<tree->n_pattern;site++) tree->log_lks_aLRT[1][site]= tree->c_lnL_sorted[site];
       tree = tree->next_mixt;
     }
   while(tree);
@@ -661,7 +661,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   buff = (t_tree *)tree;
   do
     {
-      For(site,tree->n_pattern) tree->log_lks_aLRT[2][site]= tree->c_lnL_sorted[site];
+      for(site=0;site<tree->n_pattern;site++) tree->log_lks_aLRT[2][site]= tree->c_lnL_sorted[site];
       tree = tree->next_mixt;
     }
   while(tree);
@@ -1082,7 +1082,7 @@ phydbl Statistics_to_RELL(t_tree *tree)
   t_tree *buff_tree;
 
   /*! 1000 times */
-  For(i,occurence)
+  for(i=0;i<occurence;i++)
     {
       lk0=0.0;
       lk1=0.0;
@@ -1093,7 +1093,7 @@ phydbl Statistics_to_RELL(t_tree *tree)
       do
         {
           pi = (phydbl *)mCalloc(tree->data->crunch_len,sizeof(phydbl));
-          For(site,tree->n_pattern) pi[site] = tree->data->wght[site] / (phydbl)tree->data->init_len;
+          for(site=0;site<tree->n_pattern;site++) pi[site] = tree->data->wght[site] / (phydbl)tree->data->init_len;
 
           For(site, tree->data->init_len)
             {
@@ -1192,7 +1192,7 @@ phydbl Statistics_To_SH(t_tree *tree)
     }
 
   /*! 1000 times */
-  For(i,occurence)
+  for(i=0;i<occurence;i++)
     {
       lk0=0.0;
       lk1=0.0;
@@ -1202,7 +1202,7 @@ phydbl Statistics_To_SH(t_tree *tree)
       do
         {
           pi = (phydbl *)mCalloc(tree->data->crunch_len,sizeof(phydbl));
-          For(site,tree->n_pattern) pi[site] = tree->data->wght[site] / (phydbl)tree->data->init_len;
+          for(site=0;site<tree->n_pattern;site++) pi[site] = tree->data->wght[site] / (phydbl)tree->data->init_len;
 
           /*! Shuffle the data */
           For(site, tree->data->init_len)

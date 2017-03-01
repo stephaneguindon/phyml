@@ -169,7 +169,7 @@ int cmatby (complex *a, complex *b, complex *c, int n,int m,int k)
    int i,j,i1;
    complex t;
 
-   For (i,n)  For(j,k) {
+   For (i,n)  for(j=0;j<k;j++) {
        for (i1=0,t=compl(0,0); i1<m; i1++)  
            t = cplus (t, cby(a[i*m+i1],b[i1*k+j]));
        c[i*k+j] = t;
@@ -185,7 +185,7 @@ int cmatinv( complex *x, int n, int m, phydbl *space)
    phydbl xmaxsize, ee=1e-20;
    complex t,t1;
 
-   For(i,n)  {
+   for(i=0;i<n;i++)  {
        xmaxsize = 0.;
        for (j=i; j<n; j++) {
           if ( xmaxsize < csize (x[j*m+i]))  {
@@ -198,25 +198,25 @@ int cmatinv( complex *x, int n, int m, phydbl *space)
            return(-1);
        }
        if (irow[i] != i) {
-           For(j,m) {
+           for(j=0;j<m;j++) {
                 t = x[i*m+j];
                 x[i*m+j] = x[irow[i]*m+j];
                 x[ irow[i]*m+j] = t;
            }
        }
        t = cdiv (compl(1,0), x[i*m+i]);
-       For(j,n) {
+       for(j=0;j<n;j++) {
            if (j == i) continue;
            t1 = cby (t,x[j*m+i]);
-           For(k,m)  x[j*m+k] = cminus (x[j*m+k], cby(t1,x[i*m+k]));
+           for(k=0;k<m;k++)  x[j*m+k] = cminus (x[j*m+k], cby(t1,x[i*m+k]));
            x[j*m+i] = cfactor (t1, -1);
        }
-       For(j,m)   x[i*m+j] = cby (x[i*m+j], t);
+       for(j=0;j<m;j++)   x[i*m+j] = cby (x[i*m+j], t);
        x[i*m+i] = t;
    }                         
    for (i=n-1; i>=0; i--) {
         if (irow[i] == i) continue;
-        For(j,n)  {
+        for(j=0;j<n;j++)  {
            t = x[j*m+i];
            x[j*m+i] = x[j*m+irow[i]];
            x[ j*m+irow[i]] = t;
@@ -862,7 +862,7 @@ void det(phydbl **a, int n, phydbl *d)
 {
   int j;
   ludcmp(a,n,d);
-  For(j,n) *d *= a[j][j];
+  for(j=0;j<n;j++) *d *= a[j][j];
 }
 
 
@@ -930,7 +930,7 @@ void det_1D(phydbl *a, int n, phydbl *d)
 {
   int j;
   ludcmp_1D(a,n,d);
-  For(j,n) *d *= a[j*n+j];
+  for(j=0;j<n;j++) *d *= a[j*n+j];
 }
 
 /* Find L such that L.L' = A */
@@ -942,7 +942,7 @@ phydbl *Cholesky_Decomp(phydbl *A,  int dim)
 
   L = (phydbl *)mCalloc(dim*dim,sizeof(phydbl));
 
-  For(i,dim)
+  for(i=0;i<dim;i++)
     {
       for(j=i;j<dim;j++)
 	{

@@ -104,7 +104,7 @@ int main(int argc, char **argv)
       io->n_trees     = MIN(io->n_trees,io->n_data_sets);
     }
 
-  For(num_data_set,io->n_data_sets)
+  for(num_data_set=0;num_data_set<io->n_data_sets;num_data_set++)
     {
       best_lnL = UNLIKELY;
       Get_Seq(io);
@@ -131,7 +131,7 @@ int main(int argc, char **argv)
                   Exit("\n");
                 }
 
-              For(num_rand_tree,io->mod->s_opt->n_rand_starts)
+              for(num_rand_tree=0;num_rand_tree<io->mod->s_opt->n_rand_starts;num_rand_tree++)
                 {
                   if((io->mod->s_opt->random_input_tree) && (io->mod->s_opt->topo_search != NNI_MOVE))
                     if(!io->quiet) PhyML_Printf("\n\n. [Random start %3d/%3d]",num_rand_tree+1,io->mod->s_opt->n_rand_starts);

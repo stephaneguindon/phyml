@@ -516,7 +516,7 @@ void Init_Mat(matrix *mat, calign *data)
   mat->curr_int = mat->n_otu;
   mat->method = 1;
 
-  For(i,data->n_otu)
+  for(i=0;i<data->n_otu;i++)
     {
       strcpy(mat->name[i],data->c_seq[i]->name);
       mat->on_off[i] = 1;
@@ -991,9 +991,9 @@ void Init_Target_Tip(t_cal *cal, t_tree *tree)
 {
   int i,j;
 
-  For(i,cal->n_target_tax)
+  for(i=0;i<cal->n_target_tax;i++)
     {
-      For(j,tree->n_otu)
+      for(j=0;j<tree->n_otu;j++)
         {
           if(!strcmp(tree->a_nodes[j]->name,cal->target_tax[i]))
             {
@@ -1043,13 +1043,13 @@ void Init_Model(calign *data, t_mod *mod, option *io)
   // Init unscaled relative rate frequencies
   if(mod->ras->init_r_proba == YES)
     {
-      For(i,mod->ras->n_catg) mod->ras->gamma_r_proba->v[i]          = (phydbl)1./mod->ras->n_catg;
-      For(i,mod->ras->n_catg) mod->ras->gamma_r_proba_unscaled->v[i] = (phydbl)(i+1);
+      for(i=0;i<mod->ras->n_catg;i++) mod->ras->gamma_r_proba->v[i]          = (phydbl)1./mod->ras->n_catg;
+      for(i=0;i<mod->ras->n_catg;i++) mod->ras->gamma_r_proba_unscaled->v[i] = (phydbl)(i+1);
     }
   else
     {
       mod->ras->gamma_r_proba_unscaled->v[mod->ras->n_catg-1] = 1.0;
-      For(i,mod->ras->n_catg)
+      for(i=0;i<mod->ras->n_catg;i++)
         {
           sum = 0.0;
           For(j,i+1) sum += mod->ras->gamma_r_proba->v[j];
@@ -1062,8 +1062,8 @@ void Init_Model(calign *data, t_mod *mod, option *io)
     {
       if(mod->ras->n_catg > 1)
         {
-          For(i,mod->ras->n_catg) mod->ras->gamma_rr->v[i]          = (phydbl)i;
-          For(i,mod->ras->n_catg) mod->ras->gamma_rr_unscaled->v[i] = (phydbl)i;
+          for(i=0;i<mod->ras->n_catg;i++) mod->ras->gamma_rr->v[i]          = (phydbl)i;
+          for(i=0;i<mod->ras->n_catg;i++) mod->ras->gamma_rr_unscaled->v[i] = (phydbl)i;
         }
       else
         {
@@ -1073,7 +1073,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
     }
   else
     {      
-      For(i,mod->ras->n_catg) mod->ras->gamma_rr_unscaled->v[i] = mod->ras->gamma_rr->v[i];      
+      for(i=0;i<mod->ras->n_catg;i++) mod->ras->gamma_rr_unscaled->v[i] = mod->ras->gamma_rr->v[i];      
     }
   
   if(io->datatype == NT)
@@ -1088,7 +1088,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
       
       if(mod->whichmodel == CUSTOM)
         {
-          For(i,6) mod->r_mat->rr_val->v[i] = 1.0;
+          for(i=0;i<6;i++) mod->r_mat->rr_val->v[i] = 1.0;
 
           /* Condition below is true if custom model corresponds to TN93 or K80 */
           if(mod->r_mat->rr_num->v[AC] == mod->r_mat->rr_num->v[AT] &&
@@ -1107,7 +1107,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
         }
       else if(mod->whichmodel == GTR)
         {
-          For(i,6) mod->r_mat->rr_val->v[i] = 1.0;
+          for(i=0;i<6;i++) mod->r_mat->rr_val->v[i] = 1.0;
           mod->r_mat->rr_val->v[AG] = 4.0;
           mod->r_mat->rr_val->v[CT] = 4.0;
         }
@@ -1144,8 +1144,8 @@ void Init_Model(calign *data, t_mod *mod, option *io)
       if(mod->whichmodel == F81)
         {
           if(mod->e_frq->user_state_freq == NO) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->b_frq,mod->ns);  
-          else For(i,4) mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
-          For(i,mod->ns) mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
+          else for(i=0;i<4;i++) mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
+          for(i=0;i<mod->ns;i++) mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
           mod->kappa->v = 1.;
           mod->update_eigen = NO;
         }
@@ -1153,8 +1153,8 @@ void Init_Model(calign *data, t_mod *mod, option *io)
       if(mod->whichmodel == F84)
         {
           if(mod->e_frq->user_state_freq == NO) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->b_frq,mod->ns);  
-          else For(i,4) mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
-          For(i,mod->ns) mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
+          else for(i=0;i<4;i++) mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
+          for(i=0;i<mod->ns;i++) mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
           aux = ((mod->e_frq->pi->v[0]+mod->e_frq->pi->v[2])-(mod->e_frq->pi->v[1]+mod->e_frq->pi->v[3]))/(2.*mod->kappa->v);
           mod->lambda->v = ((mod->e_frq->pi->v[1]+mod->e_frq->pi->v[3]) + aux)/((mod->e_frq->pi->v[0]+mod->e_frq->pi->v[2]) - aux);
           mod->update_eigen = NO;
@@ -1163,8 +1163,8 @@ void Init_Model(calign *data, t_mod *mod, option *io)
       if(mod->whichmodel == TN93)
         {
           if(mod->e_frq->user_state_freq == NO) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->b_frq,mod->ns);  
-          else For(i,4) mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
-          For(i,mod->ns) mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
+          else for(i=0;i<4;i++) mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
+          for(i=0;i<mod->ns;i++) mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
           mod->update_eigen = NO;
           if(io->mod->s_opt->opt_kappa) io->mod->s_opt->opt_lambda = YES;
         }
@@ -1172,16 +1172,16 @@ void Init_Model(calign *data, t_mod *mod, option *io)
       if(mod->whichmodel == HKY85)
         {
           if(mod->e_frq->user_state_freq == NO) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->b_frq,mod->ns);  
-          else For(i,4) mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
-          For(i,mod->ns) mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
+          else for(i=0;i<4;i++) mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
+          for(i=0;i<mod->ns;i++) mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
           mod->update_eigen = NO;
         }
       
       if(mod->whichmodel == GTR)
         {
           if(mod->e_frq->user_state_freq == NO) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->b_frq,mod->ns);  
-          else For(i,4) mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
-          For(i,mod->ns) mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
+          else for(i=0;i<4;i++) mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
+          for(i=0;i<mod->ns;i++) mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
           mod->kappa->v          = 1.;
           mod->update_eigen      = NO;
           io->mod->s_opt->opt_rr = YES;
@@ -1190,8 +1190,8 @@ void Init_Model(calign *data, t_mod *mod, option *io)
       if(mod->whichmodel == CUSTOM)
         {
           if(mod->e_frq->user_state_freq == NO) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->b_frq,mod->ns);  
-          else For(i,4) mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
-          For(i,mod->ns) mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
+          else for(i=0;i<4;i++) mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
+          for(i=0;i<mod->ns;i++) mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
           mod->kappa->v     = 1.;
           mod->update_eigen = NO;
           /* 	  io->mod->s_opt->opt_rr     = YES; */ /* What if the user decided not to optimise the rates? */
@@ -1337,7 +1337,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
       
       if(mod->s_opt->opt_state_freq == YES) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->b_frq,mod->ns);
 
-      For(i,mod->ns) if(mod->e_frq->pi->v[i] < 1.E-10)
+      for(i=0;i<mod->ns;i++) if(mod->e_frq->pi->v[i] < 1.E-10)
         {
           PhyML_Printf("\n. WARNING: at least one amino-acid frequency is equal to 0.0!");
           PhyML_Printf("\n. Numerical precision issues are likely to arise...");
@@ -1346,7 +1346,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
                        
 
       /* multiply the nth col of Q by the nth term of pi/100 just as in PAML */
-      For(i,mod->ns) For(j,mod->ns) mod->r_mat->qmat->v[i*mod->ns+j] *= mod->e_frq->pi->v[j] / 100.0;
+      for(i=0;i<mod->ns;i++) for(j=0;j<mod->ns;j++) mod->r_mat->qmat->v[i*mod->ns+j] *= mod->e_frq->pi->v[j] / 100.0;
       
       /* compute diagonal terms of Q and mean rate mr = l/t */
       mod->mr->v= .0;
@@ -1379,7 +1379,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
             }
           
           /* compute the diagonal terms of EXP(D) */
-          For(i,mod->ns) mod->eigen->e_val[i] = (phydbl)EXP(mod->eigen->e_val[i]);
+          for(i=0;i<mod->ns;i++) mod->eigen->e_val[i] = (phydbl)EXP(mod->eigen->e_val[i]);
         }
       else
         {
@@ -1390,7 +1390,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
   else if(mod->io->datatype == GENERIC)
     {
       /* Uniform state frequencies */
-      For(i,mod->ns)  mod->e_frq->pi->v[i] = 1./(phydbl)mod->ns;
+      for(i=0;i<mod->ns;i++)  mod->e_frq->pi->v[i] = 1./(phydbl)mod->ns;
       mod->kappa->v = 1;
       mod->s_opt->opt_state_freq = NO;
       mod->s_opt->opt_kappa      = NO;
@@ -1427,12 +1427,12 @@ void Init_Efrqs_Using_Observed_Freqs(t_efrq *f, phydbl *o, int ns)
   // To avoid numerical prevision issues
   eps = 1.E-50;
 
-  For(i,ns) f->pi->v[i] = MAX(o[i],eps);
+  for(i=0;i<ns;i++) f->pi->v[i] = MAX(o[i],eps);
 
   sum = 0.0;
-  For(i,ns) sum += f->pi->v[i];
+  for(i=0;i<ns;i++) sum += f->pi->v[i];
 
-  For(i,ns) f->pi->v[i] /= sum;;
+  for(i=0;i<ns;i++) f->pi->v[i] /= sum;;
 
 }
 
@@ -3417,14 +3417,14 @@ void M4_Init_Model(m4 *m4mod, calign *data, t_mod *mod)
 
   mod->ns = m4mod->n_o * m4mod->n_h;
 
-  For(i,m4mod->n_o) m4mod->o_fq[i] = mod->e_frq->pi->v[i]; /*! At that stage, the mod->pi vector as been initialized
+  for(i=0;i<m4mod->n_o;i++) m4mod->o_fq[i] = mod->e_frq->pi->v[i]; /*! At that stage, the mod->pi vector as been initialized
                                                              under a standard non covarion type of model. Use these
                                                              frequencies as they have been set according to the
                                                              nucleotide substitution model chosen (e.g., 1/4 for JC69). !*/
   For(i,(int)(m4mod->n_h)) m4mod->multipl[i] = 1.;
   
   ct = 0;
-  For(i,m4mod->n_o-1)
+  for(i=0;i<m4mod->n_o-1;i++)
     {
       for(j=i+1;j<m4mod->n_o;j++)
         {
@@ -3438,10 +3438,10 @@ void M4_Init_Model(m4 *m4mod, calign *data, t_mod *mod)
 
   if(mod->s_opt->opt_cov_delta) m4mod->delta = 1.0;
   if(mod->s_opt->opt_cov_alpha) m4mod->alpha = 1.0;
-  For(i,m4mod->n_h) m4mod->h_fq[i] = fq;
-  For(i,m4mod->n_h) m4mod->h_fq_unscaled[i] = 1.0;
-  For(i,m4mod->n_h) m4mod->multipl[i] = (phydbl)i;
-  For(i,m4mod->n_h) m4mod->multipl_unscaled[i] = (phydbl)i;
+  for(i=0;i<m4mod->n_h;i++) m4mod->h_fq[i] = fq;
+  for(i=0;i<m4mod->n_h;i++) m4mod->h_fq_unscaled[i] = 1.0;
+  for(i=0;i<m4mod->n_h;i++) m4mod->multipl[i] = (phydbl)i;
+  for(i=0;i<m4mod->n_h;i++) m4mod->multipl_unscaled[i] = (phydbl)i;
 
   Switch_Eigen(YES,mod);
   M4_Update_Qmat(m4mod,mod);

@@ -28,7 +28,7 @@ void Bionj(matrix *mat)
   phydbl vxy,lx,ly,lamda,score;
 
   Clean_Tree_Connections(mat->tree);  
-  For(i,mat->tree->n_otu) mat->tip_node[i] = mat->tree->a_nodes[i];
+  for(i=0;i<mat->tree->n_otu;i++) mat->tip_node[i] = mat->tree->a_nodes[i];
   mat->tree->num_curr_branch_available = 0;
 
   while(mat->r > 3)
@@ -62,7 +62,7 @@ void Finish(matrix *mat)
   dxy = dxz = dyz = -1.;
   x = y = z = -1;
 
-  For(i,mat->n_otu)
+  for(i=0;i<mat->n_otu;i++)
     {
       if(mat->on_off[i])
 	{
@@ -115,7 +115,7 @@ void Update_Mat(matrix *mat, int x, int y, phydbl lx, phydbl ly, phydbl vxy, phy
   int a,b;
   
   a = b = -1;
-  For(i,mat->n_otu)
+  for(i=0;i<mat->n_otu;i++)
     {
       if((mat->on_off[i]) && (i != x) && (i != y))
 	{
@@ -190,7 +190,7 @@ void Best_Pair(matrix *mat, int *x, int *y,phydbl *score)
 
   Qmin = 1.e+10;
   
-  For(i,mat->n_otu)
+  for(i=0;i<mat->n_otu;i++)
     {
       if(mat->on_off[i])
 	{
@@ -212,7 +212,7 @@ void Best_Pair(matrix *mat, int *x, int *y,phydbl *score)
     }
   
 /*   n_ties = 0; */
-/*   For(i,mat->n_otu) */
+/*   for(i=0;i<mat->n_otu;i++) */
 /*     { */
 /*       if(mat->on_off[i]) */
 /* 	{ */
@@ -251,12 +251,12 @@ void Best_Pair(matrix *mat, int *x, int *y,phydbl *score)
 
   Qmin2 = 1e+10;
 
-  For(i,mat->n_otu)
+  for(i=0;i<mat->n_otu;i++)
     {
       if((i != *y) && (i != *x) && (t_Qij[mat->n_otu*(*x)+i] < Qmin2)) Qmin2 = t_Qij[mat->n_otu*(*x)+i];
     }
 
-  For(i,mat->n_otu)
+  for(i=0;i<mat->n_otu;i++)
     {
       if((i != *y) && (i != *x) && (t_Qij[mat->n_otu*i+(*y)] < Qmin2)) Qmin2 = t_Qij[mat->n_otu*i+(*y)];
     }
@@ -275,12 +275,12 @@ void Compute_Sx(matrix *mat)
 {
   int i,j;
   
-  For(i,mat->n_otu)
+  for(i=0;i<mat->n_otu;i++)
     {
       mat->dist[i][i] = .0;
       if(mat->on_off[i])
 	{
-	  For(j,mat->n_otu)
+	  for(j=0;j<mat->n_otu;j++)
 	    {
 	      if((i != j) && (mat->on_off[j]))
 		{
@@ -378,7 +378,7 @@ phydbl Lamda(matrix *mat, int x, int y, phydbl vxy)
 	  lamda=0.5;
 	else
 	  {
-	    For(i,mat->n_otu)
+	    for(i=0;i<mat->n_otu;i++)
 	      {
 		if((x != i) && (y != i) && (mat->on_off[i]))
 		  lamda = lamda + BioNJ_Variance(mat,y,i) - BioNJ_Variance(mat,x,i);

@@ -25,7 +25,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
   int writemode;
 
   PhyML_Printf("\n. Command line: ");
-  For(i,argc) PhyML_Printf("%s ",argv[i]);
+  for(i=0;i<argc;i++) PhyML_Printf("%s ",argv[i]);
   PhyML_Printf("\n");
   writemode = WRITE;
 

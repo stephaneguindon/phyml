@@ -42,7 +42,7 @@ t_tree *XML_Process_Base(char *xml_filename)
     }
 
   class_num = (int *)mCalloc(N_MAX_MIXT_CLASSES,sizeof(int));
-  For(i,N_MAX_MIXT_CLASSES) class_num[i] = i;
+  for(i=0;i<N_MAX_MIXT_CLASSES;i++) class_num[i] = i;
 
   component = (char *)mCalloc(T_MAX_NAME,sizeof(char));
 
@@ -1797,7 +1797,7 @@ int XML_Validate_Attr_Int(char *target, int num, ...)
   sc_target = To_Lower_String(target);
   
   va_start(args,num);           
-  For(i,num)
+  for(i=0;i<num;i++)
     {
       s = va_arg(args, char *); 
       sc_s = To_Lower_String(s);      

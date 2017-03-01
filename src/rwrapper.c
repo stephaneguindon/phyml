@@ -32,13 +32,13 @@
 
 /*   tree->io->z_scores = (phydbl *)mCalloc(tree->n_otu,sizeof(phydbl)); */
 
-/*   /\\* For(i,tree->n_otu) tree->io->z_scores[i] = TIPO_Read_One_Taxon_Zscore(fp_coord_file,tree->noeud[i]->name,1,tree); *\\/ */
+/*   /\\* for(i=0;i<tree->n_otu;i++) tree->io->z_scores[i] = TIPO_Read_One_Taxon_Zscore(fp_coord_file,tree->noeud[i]->name,1,tree); *\\/ */
 /*   /\\* TIPO_Normalize_Zscores(tree); *\\/ */
 /*   /\\* TIPO_Get_Min_Number_Of_Tip_Permut(tree); *\\/ */
 /*   /\\* res[0] = (phydbl)tree->tip_order_score; *\\/ */
 
 
-/*   For(i,tree->n_otu) tree->io->z_scores[i] = TIPO_Read_One_Taxon_Zscore(fp_coord_file,tree->a_nodes[i]->name,1,tree); */
+/*   for(i=0;i<tree->n_otu;i++) tree->io->z_scores[i] = TIPO_Read_One_Taxon_Zscore(fp_coord_file,tree->a_nodes[i]->name,1,tree); */
 /*   Free_Bip(tree); */
 /*   Alloc_Bip(tree); */
 /*   Get_Bip(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree); */
@@ -53,7 +53,7 @@
 /* 		   NULL,tree,NULL); */
 
 /*   res[0] = (phydbl)tree->geo_mig_sd; */
-/*   /\\* For(i,tree->n_otu) Rprintf("\n.. %f",tree->io->z_scores[i]); *\\/ */
+/*   /\\* for(i=0;i<tree->n_otu;i++) Rprintf("\n.. %f",tree->io->z_scores[i]); *\\/ */
 /*   /\\* printf("\n>> sd: %f",tree->geo_mig_sd); *\\/ */
 
 /*   fclose(fp_tree_file); */

@@ -127,9 +127,9 @@ void Init_SPR (t_tree *tree)
     Make_Edge_Lk (edge_2, tree);
 
 
-/*     For(i,tree->data->crunch_len) */
+/*     for(i=0;i<tree->data->crunch_len;i++) */
 /*       { */
-/* 	For(j,tree->mod->ras->n_catg) */
+/* 	for(j=0;j<tree->mod->ras->n_catg;j++) */
 /* 	  { */
 /* 	    Free(edge_0->p_lk_rght[i][j]); */
 /* 	  } */
@@ -140,9 +140,9 @@ void Init_SPR (t_tree *tree)
     if(!edge_0->rght->tax) Free(edge_0->sum_scale_rght);
 
 
-/*     For(i,tree->data->crunch_len) */
+/*     for(i=0;i<tree->data->crunch_len;i++) */
 /*       { */
-/* 	For(j,tree->mod->ras->n_catg) */
+/* 	for(j=0;j<tree->mod->ras->n_catg;j++) */
 /* 	  { */
 /* 	    Free(edge_1->p_lk_rght[i][j]); */
 /* 	  } */
@@ -153,9 +153,9 @@ void Init_SPR (t_tree *tree)
     if(!edge_1->rght->tax) Free(edge_1->sum_scale_rght);
 
 
-/*     For(i,tree->data->crunch_len) */
+/*     for(i=0;i<tree->data->crunch_len;i++) */
 /*       { */
-/* 	For(j,tree->mod->ras->n_catg) */
+/* 	for(j=0;j<tree->mod->ras->n_catg;j++) */
 /* 	  { */
 /* 	    Free(edge_2->p_lk_rght[i][j]); */
 /* 	  } */
@@ -183,9 +183,9 @@ void Init_SPR (t_tree *tree)
     e_brent = u_1->b[0];
 
 
-/*     For(i,tree->data->crunch_len) */
+/*     for(i=0;i<tree->data->crunch_len;i++) */
 /*       { */
-/* 	For(j,tree->mod->ras->n_catg) */
+/* 	for(j=0;j<tree->mod->ras->n_catg;j++) */
 /* 	  { */
 /* 	    Free(edge_4->p_lk_rght[i][j]); */
 /* 	  } */
@@ -196,9 +196,9 @@ void Init_SPR (t_tree *tree)
     if(!edge_4->rght->tax) Free(edge_4->sum_scale_rght);
 
 
-/*     For(i,tree->data->crunch_len) */
+/*     for(i=0;i<tree->data->crunch_len;i++) */
 /*       { */
-/* 	For(j,tree->mod->ras->n_catg) */
+/* 	for(j=0;j<tree->mod->ras->n_catg;j++) */
 /* 	  { */
 /* 	    Free(edge_4->p_lk_left[i][j]); */
 /* 	  } */
@@ -3088,7 +3088,7 @@ void Sort_Spr_List_Depth(t_tree *tree)
   int i,j;
   t_spr *buff;
 
-  For(i,tree->n_moves-1)
+  for(i=0;i<tree->n_moves-1;i++)
     {
       for(j=i+1;j<tree->n_moves;j++)
         {
@@ -3110,7 +3110,7 @@ void Sort_Spr_List_LnL(t_tree *tree)
   int i,j;
   t_spr *buff;
 
-  For(i,tree->size_spr_list-1)
+  for(i=0;i<tree->size_spr_list-1;i++)
     {
       for(j=i+1;j<tree->size_spr_list;j++)
         {
@@ -3133,7 +3133,7 @@ void Sort_Spr_List_Pars(t_tree *tree)
   int i,j;
   t_spr *buff;
 
-  For(i,tree->size_spr_list-1)
+  for(i=0;i<tree->size_spr_list-1;i++)
     {
       for(j=i+1;j<tree->size_spr_list;j++)
         {
@@ -3157,7 +3157,7 @@ void Randomize_Spr_List(t_tree *tree)
   int i,j;
   t_spr *buff;
 
-  For(i,tree->n_moves)
+  for(i=0;i<tree->n_moves;i++)
     {
       j = Rand_Int(0,tree->n_moves-1);
       buff              = tree->spr_list[i];
@@ -3239,7 +3239,7 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
               min_pars = 1E+8;
               best_pars_move = NULL;
               
-              For(i,n_moves)
+              for(i=0;i<n_moves;i++)
                 {
                   if(tree->spr_list[i]->pars < min_pars)
                     {
@@ -3856,7 +3856,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
 
   
   recorded = NO;
-  For(i,list_size)
+  for(i=0;i<list_size;i++)
     {
       move = spr_list[i];
 
@@ -3935,7 +3935,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
           
           /* Record updated branch lengths for this move */
           dir_v1 = dir_v2 = dir_v0 = -1;
-          For(j,3)
+          for(j=0;j<3;j++)
             {
               if(move->n_link->v[j] == move->n_opp_to_link) dir_v0 = j;
               else if(dir_v1 < 0)                           dir_v1 = j;
@@ -4010,19 +4010,19 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
   if(better_found == NO)
     {
       MIXT_Set_Alias_Subpatt(YES,tree);
-      For(i,list_size)
+      for(i=0;i<list_size;i++)
         {
           move = spr_list[i];
           if(move->b_target)
             {
-              For(j,3) Update_PMat_At_Given_Edge(move->n_link->b[j],tree);
-              For(j,3) Update_P_Lk(tree,move->n_link->b[j],move->n_link);
+              for(j=0;j<3;j++) Update_PMat_At_Given_Edge(move->n_link->b[j],tree);
+              for(j=0;j<3;j++) Update_P_Lk(tree,move->n_link->b[j],move->n_link);
               
               /* TO DO : we don't need to update all these partial likelihoods here.
                  Would need to record only those that were along the paths examined
                  above */
               
-              For(j,3)
+              for(j=0;j<3;j++)
                 if(move->n_link->v[j] != move->n_opp_to_link)
                   Pre_Order_Lk(move->n_link,move->n_link->v[j],tree);
               
@@ -4038,7 +4038,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
       PhyML_Printf("\n\n== Best_move < 0 !");
       PhyML_Printf("\n== List size = %d",list_size);
       PhyML_Printf("\n== Best lnL = %f",best_lnL);
-      For(i,list_size)
+      for(i=0;i<list_size;i++)
         {
           move = spr_list[i];
           PhyML_Printf("\n== move %p %p lnL: %f",move,move->b_target,move->lnL);
@@ -4085,7 +4085,7 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
   Graft_Subtree(move->b_target,move->n_link,NULL,b_residual,NULL,tree);
 
   dir_v1 = dir_v2 = dir_v0 = -1;
-  For(j,3)
+  for(j=0;j<3;j++)
     {
       if(move->n_link->v[j] == move->n_opp_to_link) dir_v0 = j;
       else if(dir_v1 < 0)                           dir_v1 = j;
@@ -4379,7 +4379,7 @@ void Random_Spr(int n_moves, t_tree *tree)
   Init_One_Spr(spr_struct);
   target = residual = NULL;
 
-  For(i,n_moves)
+  for(i=0;i<n_moves;i++)
     {
       /* br_pulled = (int)((phydbl)rand()/RAND_MAX * (2*tree->n_otu-3-1)); */
       br_pulled = Rand_Int(0,2*tree->n_otu-3-1);
@@ -4437,7 +4437,7 @@ void Reset_Spr_List(t_tree *tree)
 {
   int i;
 
-  For(i,tree->size_spr_list)
+  for(i=0;i<tree->size_spr_list;i++)
     {
       tree->spr_list[i]->depth_path     = 0;
       tree->spr_list[i]->pars           = MAX_PARS;
@@ -4783,8 +4783,8 @@ void Spr_List_Of_Trees(t_tree *tree)
   tree_list = (t_tree **)mCalloc(max_list_size,sizeof(t_tree *));
   lnL_list  = (phydbl *)mCalloc(max_list_size,sizeof(phydbl));
 
-  For(i,max_list_size) lnL_list[i] = UNLIKELY;
-  For(i,max_list_size) tree_list[i] = NULL;
+  for(i=0;i<max_list_size;i++) lnL_list[i] = UNLIKELY;
+  for(i=0;i<max_list_size;i++) tree_list[i] = NULL;
 
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n. First round of optimization...");
   
@@ -4834,7 +4834,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   /* if(tree->verbose > VL0 && tree->io->quiet == NO)  */
   /*   { */
   /*     PhyML_Printf("\n\n. Finished building the list of trees. Their scores are given below..."); */
-  /*     For(i,list_size) PhyML_Printf("\n. Tree %3d, lnL: %12.2f",i+1,lnL_list[rk[i]]); */
+  /*     for(i=0;i<list_size;i++) PhyML_Printf("\n. Tree %3d, lnL: %12.2f",i+1,lnL_list[rk[i]]); */
   /*   } */
 
 
@@ -4888,7 +4888,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   /* if(tree->verbose > VL0 && tree->io->quiet == NO)  */
   /*   { */
   /*     PhyML_Printf("\n\n. Scores of current trees are given below..."); */
-  /*     For(i,list_size) PhyML_Printf("\n. Tree %3d, lnL: %12.2f",i+1,lnL_list[rk[i]]); */
+  /*     for(i=0;i<list_size;i++) PhyML_Printf("\n. Tree %3d, lnL: %12.2f",i+1,lnL_list[rk[i]]); */
   /*   } */
 
   
@@ -4970,7 +4970,7 @@ void Spr_List_Of_Trees(t_tree *tree)
     }
   while(1);
 
-  For(i,list_size_first_round) if(tree_list[i] != NULL) Free_Tree(tree_list[i]);
+  for(i=0;i<list_size_first_round;i++) if(tree_list[i] != NULL) Free_Tree(tree_list[i]);
 
   Free(tree_list);
   Free(lnL_list);
@@ -5025,7 +5025,7 @@ void Prune_Regraft_Time_Tree(t_tree *tree)
           
           // Select a daughter of prune node
           dir_v1 = dir_v2 = -1;
-          For(j,3) 
+          for(j=0;j<3;j++) 
             if(prune->v[j] != prune->anc && prune->b[j] != tree->e_root)
               {
                 if(dir_v1 < 0) dir_v1 = j;
@@ -5057,7 +5057,7 @@ void Prune_Regraft_Time_Tree(t_tree *tree)
           assert(prune_daughter->anc == prune);
           
           dir_prune = -1;
-          For(j,3)
+          for(j=0;j<3;j++)
             {
               if(prune_daughter->v[j] == prune || prune_daughter->b[j] == tree->e_root)
                 {
@@ -5078,7 +5078,7 @@ void Prune_Regraft_Time_Tree(t_tree *tree)
           n_regraft_nd = Linked_List_Len(regraft_nd_list);
           
           
-          For(j,n_regraft_nd)
+          for(j=0;j<n_regraft_nd;j++)
             {
               // Randomly select one (uniform)
               regraft_idx = Rand_Int(0,n_regraft_nd-1);      
@@ -5128,7 +5128,7 @@ void Prune_Regraft_Time_Tree(t_tree *tree)
                  new_regraft_nd == tree->n_root) regraft_edge = tree->e_root;
               else
                 {
-                  For(k,3) if(new_regraft_nd->v[k] == new_regraft_nd->anc) break;
+                  for(k=0;k<3;k++) if(new_regraft_nd->v[k] == new_regraft_nd->anc) break;
                   assert(k!=3);
                   regraft_edge = new_regraft_nd->b[k];
                 }

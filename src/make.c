@@ -455,7 +455,7 @@ nexcom **Make_Nexus_Com()
 
   com = (nexcom **)mCalloc(N_MAX_NEX_COM,sizeof(nexcom *));
 
-  For(i,N_MAX_NEX_COM)
+  for(i=0;i<N_MAX_NEX_COM;i++)
     {
       com[i]       = (nexcom *)mCalloc(1,sizeof(nexcom));
       com[i]->name = (char *)mCalloc(T_MAX_NEX_COM,sizeof(char));
@@ -500,7 +500,7 @@ matrix *Make_Mat(int n_otu)
   mat->tip_node = (t_node **)mCalloc(n_otu,sizeof(t_node *));
 
 
-  For(i,n_otu)
+  for(i=0;i<n_otu;i++)
     {
       mat->P[i]    = (phydbl *)mCalloc(n_otu,sizeof(phydbl));
       mat->Q[i]    = (phydbl *)mCalloc(n_otu,sizeof(phydbl));
@@ -610,7 +610,7 @@ calign *Make_Calign(int n_otu, int crunch_len, int state_len, int init_len, char
   cdata->invar    = (short int *)mCalloc(crunch_len,sizeof(short int));
   cdata->sitepatt = (int *)mCalloc(init_len,sizeof(int ));
 
-  For(j,n_otu)
+  for(j=0;j<n_otu;j++)
     {
       cdata->c_seq[j]            = (align *)mCalloc(1,sizeof(align));
       cdata->c_seq[j]->name      = (char *)mCalloc((int)(strlen(sp_names[j])+1),sizeof(char));
@@ -942,7 +942,7 @@ option *Make_Input()
   io->run_id_string                     = (char *)mCalloc(T_MAX_OPTION,sizeof(char));
   io->clade_list_file                   = (char *)mCalloc(T_MAX_FILE,sizeof(char));
   io->alphabet                          = (char **)mCalloc(T_MAX_ALPHABET,sizeof(char *));
-  For(i,T_MAX_ALPHABET) io->alphabet[i] = (char *)mCalloc(T_MAX_STATE,sizeof(char ));
+  for(i=0;i<T_MAX_ALPHABET;i++) io->alphabet[i] = (char *)mCalloc(T_MAX_STATE,sizeof(char ));
   io->treelist                          = (t_treelist *)mCalloc(1,sizeof(t_treelist));
   io->mcmc                              = (t_mcmc *)MCMC_Make_MCMC_Struct();
   io->rates                             = (t_rate *)RATES_Make_Rate_Struct(-1);
@@ -1008,28 +1008,28 @@ triplet *Make_Triplet_Struct(t_mod *mod)
   triplet_struct->eigen_struct    = (eigen *)Make_Eigen_Struct(mod->ns);
   triplet_struct->mod             = mod;
 
-  For(k,mod->ras->n_catg)
+  for(k=0;k<mod->ras->n_catg;k++)
     {
       triplet_struct->core[k]                = (phydbl ***)mCalloc(mod->ns,sizeof(phydbl **));
-      For(i,mod->ns)
+      for(i=0;i<mod->ns;i++)
     {
       triplet_struct->core[k][i]         = (phydbl **)mCalloc(mod->ns,sizeof(phydbl *));
-      For(j,mod->ns)
+      for(j=0;j<mod->ns;j++)
         triplet_struct->core[k][i][j]    = (phydbl  *)mCalloc(mod->ns,sizeof(phydbl ));
     }
     }
 
-  For(i,mod->ns)
+  for(i=0;i<mod->ns;i++)
     {
       triplet_struct->p_one_site[i]          = (phydbl **)mCalloc(mod->ns,sizeof(phydbl *));
-      For(j,mod->ns)
+      for(j=0;j<mod->ns;j++)
     triplet_struct->p_one_site[i][j]     = (phydbl  *)mCalloc(mod->ns,sizeof(phydbl ));
     }
 
-  For(i,mod->ns)
+  for(i=0;i<mod->ns;i++)
     {
       triplet_struct->sum_p_one_site[i]      = (phydbl **)mCalloc(mod->ns,sizeof(phydbl *));
-      For(j,mod->ns)
+      for(j=0;j<mod->ns;j++)
     triplet_struct->sum_p_one_site[i][j] = (phydbl  *)mCalloc(mod->ns,sizeof(phydbl ));
     }
 
@@ -1455,7 +1455,7 @@ void GEO_Make_Geo_Complete(int ldscape_sz, int n_dim, int n_tax, t_geo *t)
 
   // Locations
   t->coord_loc = (t_geo_coord **)mCalloc(ldscape_sz,sizeof(t_geo_coord *));
-  For(i,ldscape_sz) t->coord_loc[i] = GEO_Make_Geo_Coord(n_dim);
+  for(i=0;i<ldscape_sz;i++) t->coord_loc[i] = GEO_Make_Geo_Coord(n_dim);
 }
 
 //////////////////////////////////////////////////////////////
@@ -1536,7 +1536,7 @@ t_poly *Make_Poly(int n)
   int i;
   p = (t_poly *)mCalloc(1,sizeof(t_poly));
   p->poly_vert = (t_geo_coord **)mCalloc(n,sizeof(t_geo_coord *));
-  For(i,n) p->poly_vert[i] = GEO_Make_Geo_Coord(2);
+  for(i=0;i<n;i++) p->poly_vert[i] = GEO_Make_Geo_Coord(2);
   return(p);
 }
 

@@ -57,17 +57,17 @@ void Unroot_Tree(char **subtrees)
     {
       strcpy(subtrees[2],subtrees[1]);
       Clean_Multifurcation(tmp_sub,degree,2);
-      For(j,2) strcpy(subtrees[j],tmp_sub[j]);
+      for(j=0;j<2;j++) strcpy(subtrees[j],tmp_sub[j]);
     }
   else
     {
       tmp_sub = Sub_Trees(subtrees[1],&degree);
       strcpy(subtrees[2],subtrees[0]);
       Clean_Multifurcation(tmp_sub,degree,2);
-      For(j,2) strcpy(subtrees[j],tmp_sub[j]);
+      for(j=0;j<2;j++) strcpy(subtrees[j],tmp_sub[j]);
     }
 
-  For(i,degree) Free(tmp_sub[i]);
+  for(i=0;i<degree;i++) Free(tmp_sub[i]);
   Free(tmp_sub);
 }
 
@@ -136,7 +136,7 @@ void Restrict_To_Coding_Position(align **data, option *io)
 
   if(io->codpos != -1)
     {
-      For(i,io->n_otu)
+      for(i=0;i<io->n_otu;i++)
     {
       curr_pos = 0;
       for(j=io->codpos-1;j<data[i]->len;j+=3)
@@ -189,7 +189,7 @@ calign *Compact_Data(align **data, option *io)
   which_patt = 0;
 
   sp_names = (char **)mCalloc(n_otu,sizeof(char *));
-  For(i,n_otu)
+  for(i=0;i<n_otu;i++)
     {
       sp_names[i] = (char *)mCalloc(T_MAX_NAME,sizeof(char));
       strcpy(sp_names[i],data[i]->name);
@@ -200,7 +200,7 @@ calign *Compact_Data(align **data, option *io)
 
   proot = (pnode *)Create_Pnode(T_MAX_ALPHABET);
 
-  For(i,n_otu) Free(sp_names[i]);
+  for(i=0;i<n_otu;i++) Free(sp_names[i]);
   Free(sp_names);
 
   if(data[0]->len%io->state_len)
@@ -244,7 +244,7 @@ calign *Compact_Data(align **data, option *io)
       if(io->rm_ambigu == YES)
         {
           is_ambigu = NO;
-          For(j,n_otu) if(Is_Ambigu(data[j]->state+site,io->datatype,io->state_len)) break;
+          for(j=0;j<n_otu;j++) if(Is_Ambigu(data[j]->state+site,io->datatype,io->state_len)) break;
           if(j != n_otu)
             {
               is_ambigu = YES;
@@ -276,14 +276,14 @@ calign *Compact_Data(align **data, option *io)
           
           if(k == n_patt) /* add a new site pattern */
             {
-              For(j,n_otu)
+              for(j=0;j<n_otu;j++)
                 Copy_One_State(data[j]->state+site,
                                cdata_tmp->c_seq[j]->state+n_patt*io->state_len,
                                io->state_len);
               
-              For(i,n_otu)
+              for(i=0;i<n_otu;i++)
                 {
-                  For(j,n_otu)
+                  for(j=0;j<n_otu;j++)
                     {
                       if(!(Are_Compatible(cdata_tmp->c_seq[i]->state+n_patt*io->state_len,
                                           cdata_tmp->c_seq[j]->state+n_patt*io->state_len,
@@ -296,7 +296,7 @@ calign *Compact_Data(align **data, option *io)
               if((j == n_otu) && (i == n_otu)) /* all characters at that site are compatible with one another:
                                                   the site may be invariant */
                 {
-                  For(j,n_otu)
+                  for(j=0;j<n_otu;j++)
                     {
                       cdata_tmp->invar[n_patt] = Assign_State(cdata_tmp->c_seq[j]->state+n_patt*io->state_len,
                                                               io->datatype,
@@ -323,15 +323,15 @@ calign *Compact_Data(align **data, option *io)
   
   cdata_tmp->init_len                   = data[0]->len;
   cdata_tmp->crunch_len                 = n_patt;
-  For(i,n_otu) cdata_tmp->c_seq[i]->len = n_patt;
-  For(i,n_otu) cdata_tmp->c_seq[i]->num = i;
+  for(i=0;i<n_otu;i++) cdata_tmp->c_seq[i]->len = n_patt;
+  for(i=0;i<n_otu;i++) cdata_tmp->c_seq[i]->num = i;
   
   if(!io->quiet) PhyML_Printf("\n. %d patterns found (out of a total of %d sites). \n",n_patt,data[0]->len);
 
   if((io->rm_ambigu == YES) && (n_ambigu > 0)) PhyML_Printf("\n. Removed %d columns of the alignment as they contain ambiguous characters (e.g., gaps) \n",n_ambigu);
 
   n_invar=0.0;
-  For(i,cdata_tmp->crunch_len) if(cdata_tmp->invar[i] > -1.) n_invar+=cdata_tmp->wght[i];
+  for(i=0;i<cdata_tmp->crunch_len;i++) if(cdata_tmp->invar[i] > -1.) n_invar+=cdata_tmp->wght[i];
 
   if(io->quiet == NO) 
     {
@@ -385,7 +385,7 @@ calign *Compact_Cdata(calign *data, option *io)
   cdata->invar  = (short int *)mCalloc(data->crunch_len,sizeof(short int));
 
   cdata->crunch_len = cdata->init_len = -1;
-  For(j,n_otu)
+  for(j=0;j<n_otu;j++)
     {
       cdata->c_seq[j]            = (align *)mCalloc(1,sizeof(align));
       cdata->c_seq[j]->name      = (char *)mCalloc(T_MAX_NAME,sizeof(char));
@@ -398,13 +398,13 @@ calign *Compact_Cdata(calign *data, option *io)
 
   n_patt = which_patt =  0;
 
-  For(site,data->crunch_len)
+  for(site=0;site<data->crunch_len;site++)
     {
       if(data->wght[site] > 0.0)
         {
-          For(k,n_patt)
+          for(k=0;k<n_patt;k++)
             {
-              For(j,n_otu)
+              for(j=0;j<n_otu;j++)
                 {
                   if(strncmp(cdata->c_seq[j]->state+k*io->state_len,
                              data->c_seq[j]->state+site*io->state_len,
@@ -421,13 +421,13 @@ calign *Compact_Cdata(calign *data, option *io)
                     
           if(k == n_patt)
             {
-              For(j,n_otu) Copy_One_State(data->c_seq[j]->state+site*io->state_len,
+              for(j=0;j<n_otu;j++) Copy_One_State(data->c_seq[j]->state+site*io->state_len,
                                           cdata->c_seq[j]->state+n_patt*io->state_len,
                                           io->state_len);
               
-              For(i,n_otu)
+              for(i=0;i<n_otu;i++)
                 {
-                  For(j,n_otu)
+                  for(j=0;j<n_otu;j++)
                     {
                       if(!(Are_Compatible(cdata->c_seq[i]->state+n_patt*io->state_len,
                                           cdata->c_seq[j]->state+n_patt*io->state_len,
@@ -439,7 +439,7 @@ calign *Compact_Cdata(calign *data, option *io)
               
               if((j == n_otu) && (i == n_otu))
                 {
-                  For(j,n_otu)
+                  for(j=0;j<n_otu;j++)
                     {
                       cdata->invar[n_patt] = Assign_State(cdata->c_seq[j]->state+n_patt*io->state_len,
                                                           io->datatype,
@@ -461,7 +461,7 @@ calign *Compact_Cdata(calign *data, option *io)
   
   cdata->init_len   = data->crunch_len;
   cdata->crunch_len = n_patt;
-  For(i,n_otu) cdata->c_seq[i]->len = n_patt;
+  for(i=0;i<n_otu;i++) cdata->c_seq[i]->len = n_patt;
 
   if(io->datatype == NT)      Get_Base_Freqs(cdata);
   else if(io->datatype == AA) Get_AA_Freqs(cdata);
@@ -511,7 +511,7 @@ pnode *Create_Pnode(int size)
 
   n = (pnode *)mCalloc(1,sizeof(pnode ));
   n->next = (pnode **)mCalloc(size,sizeof(pnode *));
-  For(i,size) n->next[i] = NULL;
+  for(i=0;i<size;i++) n->next[i] = NULL;
   n->weight = 0;
   n->num = -1;
   return n;
@@ -531,12 +531,12 @@ void Get_Base_Freqs(calign *data)
 
   fA = fC = fG = fT = .25;
 
-  For(k,8)
+  for(k=0;k<8;k++)
     {
       A = C = G = T = .0;
-      For(i,data->n_otu)
+      for(i=0;i<data->n_otu;i++)
         {
-          For(j,data->crunch_len)
+          for(j=0;j<data->crunch_len;j++)
             {
               w = data->wght[j];
               if(w)
@@ -606,14 +606,14 @@ void Get_AA_Freqs(calign *data)
   fA = fC = fD = fE = fF = fG = fH = fI = fK = fL =
   fM = fN = fP = fQ = fR = fS = fT = fV = fW = fY = 1./20.;
 
-  For(k,8)
+  for(k=0;k<8;k++)
     {
       A = C = D = E = F = G = H = I = K = L =
         M = N = P = Q = R = S = T = V = W = Y = .0;
       
-      For(i,data->n_otu)
+      for(i=0;i<data->n_otu;i++)
         {
-          For(j,data->crunch_len)
+          for(j=0;j<data->crunch_len;j++)
             {
               w = data->wght[j];
               if(w)
@@ -738,11 +738,11 @@ void Connect_Edges_To_Nodes_Serial(t_tree *tree)
   int i,j;
 
   /* Reset */
-  For(i,2*tree->n_otu-1) For(j,3) tree->a_nodes[i]->b[j] = NULL;
+  For(i,2*tree->n_otu-1) for(j=0;j<3;j++) tree->a_nodes[i]->b[j] = NULL;
 
   tree->num_curr_branch_available = 0;
   
-  For(i,tree->n_otu)
+  for(i=0;i<tree->n_otu;i++)
     {
       if(!tree->a_nodes[i]->tax) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
@@ -757,7 +757,7 @@ void Connect_Edges_To_Nodes_Serial(t_tree *tree)
     {
       if(tree->a_nodes[i] == tree->n_root) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
-      For(j,3) 
+      for(j=0;j<3;j++) 
         if(!tree->a_nodes[i]->b[j])
           Connect_One_Edge_To_Two_Nodes(tree->a_nodes[i],
                                         tree->a_nodes[i]->v[j],
@@ -1167,9 +1167,9 @@ char *Add_Taxa_To_Constraint_Tree(FILE *fp, calign *cdata)
     }
   long_line[i-1] = '\0';
   
-  For(i,cdata->n_otu)
+  for(i=0;i<cdata->n_otu;i++)
     {
-      For(j,tree->n_otu)
+      for(j=0;j<tree->n_otu;j++)
         {
           if(!strcmp(tree->a_nodes[j]->name,cdata->c_seq[i]->name))
             break;
@@ -1202,9 +1202,9 @@ void Check_Constraint_Tree_Taxa_Names(t_tree *tree, calign *cdata)
   n_otu_tree  = tree->n_otu;
   n_otu_cdata = cdata->n_otu;
 
-  For(i,n_otu_tree)
+  for(i=0;i<n_otu_tree;i++)
     {
-      For(j,n_otu_cdata)
+      for(j=0;j<n_otu_cdata;j++)
     {
       if(!strcmp(tree->a_nodes[i]->name,cdata->c_seq[j]->name))
         break;
@@ -1225,7 +1225,7 @@ void Copy_Tax_Names_To_Tip_Labels(t_tree *tree, calign *data)
 {
   int i;
 
-  For(i,tree->n_otu)
+  for(i=0;i<tree->n_otu;i++)
     {
       tree->a_nodes[i]->name = (char *)mCalloc((int)strlen(data->c_seq[i]->name)+1,sizeof(char));
       tree->a_nodes[i]->ori_name = tree->a_nodes[i]->name;
@@ -1272,7 +1272,7 @@ void Share_Lk_Struct(t_tree *t_full, t_tree *t_empt)
       n_f = t_full->a_nodes[i];
       n_e = t_empt->a_nodes[i];
 
-      For(j,3)
+      for(j=0;j<3;j++)
     {
       if(n_f->b[j]->left == n_f)
         {
@@ -1319,7 +1319,7 @@ void Share_Lk_Struct(t_tree *t_full, t_tree *t_empt)
     }
     }
 
-  For(i,n_otu)
+  for(i=0;i<n_otu;i++)
     {
       n_f = t_full->a_nodes[i];
       n_e = t_empt->a_nodes[i];
@@ -1384,7 +1384,7 @@ int Sort_Edges_NNI_Score(t_tree *tree, t_edge **sorted_edges, int n_elem)
   do
     {
       done = YES;
-      For(i,n_elem-1)
+      for(i=0;i<n_elem-1;i++)
         {
           for(j=i+1;j<n_elem;j++)
             {
@@ -1414,13 +1414,13 @@ int Sort_Edges_Depth(t_tree *tree, t_edge **sorted_edges, int n_elem)
 
   depth = (phydbl *)mCalloc(n_elem,sizeof(phydbl));
 
-  For(i,n_elem)
+  for(i=0;i<n_elem;i++)
     depth[i] =
     sorted_edges[i]->left->bip_size[sorted_edges[i]->l_r] *
     sorted_edges[i]->rght->bip_size[sorted_edges[i]->r_l] ;
 
 
-  For(i,n_elem-1)
+  for(i=0;i<n_elem-1;i++)
     {
       for(j=i+1;j<n_elem;j++)
     {
@@ -1988,7 +1988,7 @@ void Update_SubTree_Partial_Lk(t_edge *b_fcus, t_node *a, t_node *d, t_tree *tre
 void Copy_Seq_Names_To_Tip_Labels(t_tree *tree, calign *data)
 {
   int i;
-  For(i,tree->n_otu)
+  for(i=0;i<tree->n_otu;i++)
     {
       strcpy(tree->a_nodes[i]->name,data->c_seq[i]->name);
     }
@@ -2007,7 +2007,7 @@ calign *Copy_Cseq(calign *ori, option *io)
   c_len = ori->crunch_len;
 
   sp_names = (char **)mCalloc(n_otu,sizeof(char *));
-  For(i,n_otu)
+  for(i=0;i<n_otu;i++)
     {
       sp_names[i] = (char *)mCalloc(strlen(ori->c_seq[i]->name)+1,sizeof(char));
       strcpy(sp_names[i],ori->c_seq[i]->name);
@@ -2018,15 +2018,15 @@ calign *Copy_Cseq(calign *ori, option *io)
 
   new->obs_pinvar = ori->obs_pinvar;
 
-  For(i,n_otu) new->c_seq[i]->num = ori->c_seq[i]->num;
+  for(i=0;i<n_otu;i++) new->c_seq[i]->num = ori->c_seq[i]->num;
 
-  For(i,ori->init_len) new->sitepatt[i] = ori->sitepatt[i];
+  for(i=0;i<ori->init_len;i++) new->sitepatt[i] = ori->sitepatt[i];
 
-  For(j,ori->crunch_len)
+  for(j=0;j<ori->crunch_len;j++)
     {
-      For(i,ori->n_otu)
+      for(i=0;i<ori->n_otu;i++)
         {
-          For(k,io->state_len)
+          for(k=0;k<io->state_len;k++)
             {
               new->c_seq[i]->state[j*io->state_len+k] =
                 ori->c_seq[i]->state[j*io->state_len+k];
@@ -2039,15 +2039,15 @@ calign *Copy_Cseq(calign *ori, option *io)
       new->invar[j]  = ori->invar[j];
     }
   
-  For(i,ori->n_otu)
+  for(i=0;i<ori->n_otu;i++)
     {
       new->c_seq[i]->len = ori->c_seq[i]->len;
       strcpy(new->c_seq[i]->name,ori->c_seq[i]->name);
     }
   
-  For(i,ori->n_otu) new->c_seq[i]->state[c_len*io->state_len] = '\0';
+  for(i=0;i<ori->n_otu;i++) new->c_seq[i]->state[c_len*io->state_len] = '\0';
 
-  For(i,T_MAX_ALPHABET) new->b_frq[i] = ori->b_frq[i];
+  for(i=0;i<T_MAX_ALPHABET;i++) new->b_frq[i] = ori->b_frq[i];
 
   new->init_len           = ori->init_len;
   new->clean_len          = ori->clean_len;
@@ -2055,7 +2055,7 @@ calign *Copy_Cseq(calign *ori, option *io)
   new->n_otu              = ori->n_otu;
   new->io                 = ori->io;
 
-  For(i,n_otu) Free(sp_names[i]);
+  for(i=0;i<n_otu;i++) Free(sp_names[i]);
   Free(sp_names);
 
   return new;
@@ -2087,7 +2087,7 @@ matrix *K80_dist(calign *data, phydbl g_shape)
   phydbl **len;
 
   len = (phydbl **)mCalloc(data->n_otu,sizeof(phydbl *));
-  For(i,data->n_otu)
+  for(i=0;i<data->n_otu;i++)
     len[i] = (phydbl *)mCalloc(data->n_otu,sizeof(phydbl));
 
   mat = Make_Mat(data->n_otu);
@@ -2098,7 +2098,7 @@ matrix *K80_dist(calign *data, phydbl g_shape)
   
   For(i,data->c_seq[0]->len)
     {
-      For(j,data->n_otu-1)
+      for(j=0;j<data->n_otu-1;j++)
         {
           for(k=j+1;k<data->n_otu;k++)
             {
@@ -2142,7 +2142,7 @@ matrix *K80_dist(calign *data, phydbl g_shape)
     }
   
   
-  For(i,data->n_otu-1)
+  for(i=0;i<data->n_otu-1;i++)
     for(j=i+1;j<data->n_otu;j++)
       {
     if(len[i][j] > .0)
@@ -2176,7 +2176,7 @@ matrix *K80_dist(calign *data, phydbl g_shape)
     mat->dist[j][i] = mat->dist[i][j];
       }
 
-  For(i,data->n_otu) free(len[i]);
+  for(i=0;i<data->n_otu;i++) free(len[i]);
   free(len);
   return mat;
 }
@@ -2194,7 +2194,7 @@ matrix *JC69_Dist(calign *data, t_mod *mod)
 
 
   len = (phydbl **)mCalloc(data->n_otu,sizeof(phydbl *));
-  For(i,data->n_otu)
+  for(i=0;i<data->n_otu;i++)
     len[i] = (phydbl *)mCalloc(data->n_otu,sizeof(phydbl));
 
   mat = Make_Mat(data->n_otu);
@@ -2204,7 +2204,7 @@ matrix *JC69_Dist(calign *data, t_mod *mod)
 
   For(site,data->c_seq[0]->len)
     {
-      For(j,data->n_otu-1)
+      for(j=0;j<data->n_otu-1;j++)
     {
       for(k=j+1;k<data->n_otu;k++)
         {
@@ -2228,7 +2228,7 @@ matrix *JC69_Dist(calign *data, t_mod *mod)
     }
 
 
-  For(i,data->n_otu-1)
+  for(i=0;i<data->n_otu-1;i++)
     for(j=i+1;j<data->n_otu;j++)
       {
     if(len[i][j] > .0) mat->P[i][j] /= len[i][j];
@@ -2248,7 +2248,7 @@ matrix *JC69_Dist(calign *data, t_mod *mod)
     mat->dist[j][i] = mat->dist[i][j];
       }
 
-  For(i,data->n_otu) free(len[i]);
+  for(i=0;i<data->n_otu;i++) free(len[i]);
   free(len);
 
   return mat;
@@ -2266,7 +2266,7 @@ matrix *Hamming_Dist(calign *data, t_mod *mod)
   int datatype;
 
   len = (phydbl **)mCalloc(data->n_otu,sizeof(phydbl *));
-  For(i,data->n_otu)
+  for(i=0;i<data->n_otu;i++)
     len[i] = (phydbl *)mCalloc(data->n_otu,sizeof(phydbl));
 
   mat = Make_Mat(data->n_otu);
@@ -2274,9 +2274,9 @@ matrix *Hamming_Dist(calign *data, t_mod *mod)
 
   datatype = mod->io->datatype;
 
-  For(i,data->crunch_len)
+  for(i=0;i<data->crunch_len;i++)
     {
-      For(j,data->n_otu-1)
+      for(j=0;j<data->n_otu-1;j++)
     {
       for(k=j+1;k<data->n_otu;k++)
         {
@@ -2298,7 +2298,7 @@ matrix *Hamming_Dist(calign *data, t_mod *mod)
     }
     }
 
-  For(i,data->n_otu-1)
+  for(i=0;i<data->n_otu-1;i++)
     for(j=i+1;j<data->n_otu;j++)
       {
     if(len[i][j] > .0)
@@ -2322,7 +2322,7 @@ matrix *Hamming_Dist(calign *data, t_mod *mod)
     mat->dist[j][i] = mat->dist[i][j];
       }
 
-  For(i,data->n_otu) free(len[i]);
+  for(i=0;i<data->n_otu;i++) free(len[i]);
   free(len);
 
   return mat;
@@ -2337,9 +2337,9 @@ int Is_Invar(int patt_num, int stepsize, int datatype, calign *data)
 {
   int i, j;
 
-  For(i,data->n_otu)
+  for(i=0;i<data->n_otu;i++)
     {
-      For(j,data->n_otu)
+      for(j=0;j<data->n_otu;j++)
     {
       if(!(Are_Compatible(data->c_seq[i]->state+patt_num,
                   data->c_seq[j]->state+patt_num,
@@ -2368,7 +2368,7 @@ int Is_Ambigu(char *state, int datatype, int stepsize)
   val = -1;
   if(datatype == NT)
     {
-      For(i,stepsize)
+      for(i=0;i<stepsize;i++)
         {
           switch(state[i])
             {
@@ -2389,7 +2389,7 @@ int Is_Ambigu(char *state, int datatype, int stepsize)
   else if(datatype == GENERIC)
     {
       int i;
-      For(i,stepsize) if(!isdigit(state[i])) break;
+      for(i=0;i<stepsize;i++) if(!isdigit(state[i])) break;
       if(i == stepsize) val = NO;
       else              val = YES;
     }
@@ -2404,15 +2404,15 @@ void Check_Ambiguities(calign *data, int datatype, int stepsize)
 {
   int i,j;
 
-  For(j,data->crunch_len)
+  for(j=0;j<data->crunch_len;j++)
     {
       data->ambigu[j] = NO;
-      For(i,data->n_otu)
+      for(i=0;i<data->n_otu;i++)
         {
           data->c_seq[i]->is_ambigu[j] = NO;
         }
       
-      For(i,data->n_otu)
+      for(i=0;i<data->n_otu;i++)
         {
           if(Is_Ambigu(data->c_seq[i]->state+j*stepsize,
                        datatype,
@@ -2432,9 +2432,9 @@ void Set_D_States(calign *data, int datatype, int stepsize)
 {
   int i,j;
 
-  For(j,data->crunch_len)
+  for(j=0;j<data->crunch_len;j++)
     {
-      For(i,data->n_otu)
+      for(i=0;i<data->n_otu;i++)
         {
           if(data->c_seq[i]->is_ambigu[j] == NO)
             {
@@ -2516,7 +2516,7 @@ int Assign_State(char *c, int datatype, int stepsize)
   state[0] = state[1] = state[2] = -1;
   if(datatype == NT)
     {
-      For(i,stepsize)
+      for(i=0;i<stepsize;i++)
         {
           switch(c[i])
             {
@@ -2655,7 +2655,7 @@ int Assign_State_With_Ambiguity(char *c, int datatype, int stepsize)
   state[0] = state[1] = state[2] = -1;
   if(datatype == NT)
     {
-      For(i,stepsize)
+      for(i=0;i<stepsize;i++)
         {
           switch(c[i])
             {
@@ -2792,7 +2792,7 @@ void Bootstrap(t_tree *tree)
   Get_Bip(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree);
 
   n_site = 0;
-  For(j,tree->data->crunch_len) For(k,tree->data->wght[j])
+  for(j=0;j<tree->data->crunch_len;j++) For(k,tree->data->wght[j])
     {
       site_num[n_site] = j;
       n_site++;
@@ -2803,12 +2803,12 @@ void Bootstrap(t_tree *tree)
   PhyML_Printf("\n\n. Non parametric bootstrap analysis \n\n");
   PhyML_Printf("  [");
 
-  For(replicate,tree->mod->bootstrap)
+  for(replicate=0;replicate<tree->mod->bootstrap;replicate++)
     {
-      For(j,boot_data->crunch_len) boot_data->wght[j] = 0;
+      for(j=0;j<boot_data->crunch_len;j++) boot_data->wght[j] = 0;
 
       init_len = 0;
-      For(j,boot_data->init_len)
+      for(j=0;j<boot_data->init_len;j++)
         {
           position = Rand_Int(0,(int)(tree->data->init_len-1.0));
           boot_data->wght[site_num[position]] += 1;
@@ -2818,7 +2818,7 @@ void Bootstrap(t_tree *tree)
       if(init_len != tree->data->init_len) Exit("\n== Pb. when copying sequences\n");
 
       init_len = 0;
-      For(j,boot_data->crunch_len) init_len += boot_data->wght[j];
+      for(j=0;j<boot_data->crunch_len;j++) init_len += boot_data->wght[j];
 
       if(init_len != tree->data->init_len) Exit("\n== Pb. when copying sequences\n");
 
@@ -3028,7 +3028,7 @@ phydbl Num_Derivatives_One_Param(phydbl (*func)(t_tree *tree), t_tree *tree,
   sign = (phydbl *)mCalloc(n_param,sizeof(phydbl));
 
   a = (phydbl **)mCalloc(11,sizeof(phydbl *));
-  For(i,11) a[i] = (phydbl *)mCalloc(11,sizeof(phydbl));
+  for(i=0;i<11;i++) a[i] = (phydbl *)mCalloc(11,sizeof(phydbl));
 
   n_iter = 10; /* */
 
@@ -3042,12 +3042,12 @@ phydbl Num_Derivatives_One_Param(phydbl (*func)(t_tree *tree), t_tree *tree,
     {
       param[which]   = param[which]+hh;
 
-      if(logt == YES) For(i,n_param) param[i] = EXP(MIN(1.E+2,param[i]));
-      For(i,n_param) sign[i] = param[i] > .0 ? 1. : -1.;
-      if(is_positive == YES) For(i,n_param) param[i] = FABS(param[i]);
+      if(logt == YES) for(i=0;i<n_param;i++) param[i] = EXP(MIN(1.E+2,param[i]));
+      for(i=0;i<n_param;i++) sign[i] = param[i] > .0 ? 1. : -1.;
+      if(is_positive == YES) for(i=0;i<n_param;i++) param[i] = FABS(param[i]);
       a[0][0]  = (*func)(tree);
-      if(is_positive == YES) For(i,n_param) param[i] *= sign[i];
-      if(logt == YES) For(i,n_param) param[i] = LOG(param[i]);
+      if(is_positive == YES) for(i=0;i<n_param;i++) param[i] *= sign[i];
+      if(logt == YES) for(i=0;i<n_param;i++) param[i] = LOG(param[i]);
 
       /* printf("\n. f0=%f f1=%f hh=%G %f",f0,a[0][0],hh,param[which]); */
 
@@ -3061,12 +3061,12 @@ phydbl Num_Derivatives_One_Param(phydbl (*func)(t_tree *tree), t_tree *tree,
     {
       param[which]   = param[which]+hh;
 
-      if(logt == YES) For(i,n_param) param[i] = EXP(MIN(1.E+2,param[i]));
-      For(i,n_param) sign[i] = param[i] > .0 ? 1. : -1.;
-      if(is_positive == YES) For(i,n_param) param[i] = FABS(param[i]);
+      if(logt == YES) for(i=0;i<n_param;i++) param[i] = EXP(MIN(1.E+2,param[i]));
+      for(i=0;i<n_param;i++) sign[i] = param[i] > .0 ? 1. : -1.;
+      if(is_positive == YES) for(i=0;i<n_param;i++) param[i] = FABS(param[i]);
       a[0][0]  = (*func)(tree);
-      if(is_positive == YES) For(i,n_param) param[i] *= sign[i];
-      if(logt == YES) For(i,n_param) param[i] = LOG(param[i]);
+      if(is_positive == YES) for(i=0;i<n_param;i++) param[i] *= sign[i];
+      if(logt == YES) for(i=0;i<n_param;i++) param[i] = LOG(param[i]);
 
       /*   param[which]   = param[which]-2*hh; */
       /*   a[0][0] -= (*func)(tree); */
@@ -3090,12 +3090,12 @@ phydbl Num_Derivatives_One_Param(phydbl (*func)(t_tree *tree), t_tree *tree,
           
           param[which]   = param[which]+hh;
           
-          if(logt == YES) For(j,n_param) param[j] = EXP(MIN(1.E+2,param[j]));
-          For(i,n_param) sign[i] = param[i] > .0 ? 1. : -1.;
-          if(is_positive == YES) For(i,n_param) param[i] = FABS(param[i]);
+          if(logt == YES) for(j=0;j<n_param;j++) param[j] = EXP(MIN(1.E+2,param[j]));
+          for(i=0;i<n_param;i++) sign[i] = param[i] > .0 ? 1. : -1.;
+          if(is_positive == YES) for(i=0;i<n_param;i++) param[i] = FABS(param[i]);
           a[0][i]  = (*func)(tree);
-          if(is_positive == YES) For(i,n_param) param[i] *= sign[i];
-          if(logt == YES) For(j,n_param) param[j] = LOG(param[j]);
+          if(is_positive == YES) for(i=0;i<n_param;i++) param[i] *= sign[i];
+          if(logt == YES) for(j=0;j<n_param;j++) param[j] = LOG(param[j]);
           
           /*   param[which]   = param[which]-2*hh; */
           /*   a[0][i] -= (*func)(tree); */
@@ -3124,7 +3124,7 @@ phydbl Num_Derivatives_One_Param(phydbl (*func)(t_tree *tree), t_tree *tree,
           if(FABS(a[i][i]-a[i-1][i-1]) >= 2.0*(*err)) break;
         }
     }
-  For(i,11) Free(a[i]);
+  for(i=0;i<11;i++) Free(a[i]);
   Free(a);
   Free(sign);
   
@@ -3145,7 +3145,7 @@ phydbl Num_Derivatives_One_Param_Nonaligned(phydbl (*func)(t_tree *tree), t_tree
   sign = (phydbl *)mCalloc(n_param,sizeof(phydbl));
 
   a = (phydbl **)mCalloc(11,sizeof(phydbl *));
-  For(i,11) a[i] = (phydbl *)mCalloc(11,sizeof(phydbl));
+  for(i=0;i<11;i++) a[i] = (phydbl *)mCalloc(11,sizeof(phydbl));
 
   n_iter = 10; /* */
 
@@ -3159,12 +3159,12 @@ phydbl Num_Derivatives_One_Param_Nonaligned(phydbl (*func)(t_tree *tree), t_tree
     {
       *(param[which])   = *(param[which])+hh;
 
-      if(logt == YES) For(i,n_param) *(param[i]) = EXP(MIN(1.E+2,*(param[i])));
-      For(i,n_param) sign[i] = (*(param[i])) > .0 ? 1. : -1.;
-      if(is_positive == YES) For(i,n_param) (*(param[i])) = FABS(*(param[i]));
+      if(logt == YES) for(i=0;i<n_param;i++) *(param[i]) = EXP(MIN(1.E+2,*(param[i])));
+      for(i=0;i<n_param;i++) sign[i] = (*(param[i])) > .0 ? 1. : -1.;
+      if(is_positive == YES) for(i=0;i<n_param;i++) (*(param[i])) = FABS(*(param[i]));
       a[0][0]  = (*func)(tree);
-      if(is_positive == YES) For(i,n_param) (*(param[i])) *= sign[i];
-      if(logt == YES) For(i,n_param) *(param[i]) = LOG(*(param[i]));
+      if(is_positive == YES) for(i=0;i<n_param;i++) (*(param[i])) *= sign[i];
+      if(logt == YES) for(i=0;i<n_param;i++) *(param[i]) = LOG(*(param[i]));
 
       /* printf("\n. f0=%f f1=%f hh=%G %f",f0,a[0][0],hh,*(param[which])); */
 
@@ -3178,12 +3178,12 @@ phydbl Num_Derivatives_One_Param_Nonaligned(phydbl (*func)(t_tree *tree), t_tree
     {
       *(param[which])   = *(param[which])+hh;
 
-      if(logt == YES) For(i,n_param) *(param[i]) = EXP(MIN(1.E+2,*(param[i])));
-      For(i,n_param) sign[i] = (*(param[i])) > .0 ? 1. : -1.;
-      if(is_positive == YES) For(i,n_param) (*(param[i])) = FABS(*(param[i]));
+      if(logt == YES) for(i=0;i<n_param;i++) *(param[i]) = EXP(MIN(1.E+2,*(param[i])));
+      for(i=0;i<n_param;i++) sign[i] = (*(param[i])) > .0 ? 1. : -1.;
+      if(is_positive == YES) for(i=0;i<n_param;i++) (*(param[i])) = FABS(*(param[i]));
       a[0][0]  = (*func)(tree);
-      if(is_positive == YES) For(i,n_param) (*(param[i])) *= sign[i];
-      if(logt == YES) For(i,n_param) *(param[i]) = LOG(*(param[i]));
+      if(is_positive == YES) for(i=0;i<n_param;i++) (*(param[i])) *= sign[i];
+      if(logt == YES) for(i=0;i<n_param;i++) *(param[i]) = LOG(*(param[i]));
 
       /*   *(param[which]   = *(param[which]-2*hh; */
       /*   a[0][0] -= (*func)(tree); */
@@ -3207,12 +3207,12 @@ phydbl Num_Derivatives_One_Param_Nonaligned(phydbl (*func)(t_tree *tree), t_tree
 
       *(param[which])   = *(param[which])+hh;
 
-          if(logt == YES) For(j,n_param) *(param[j]) = EXP(MIN(1.E+2,*(param[j])));
-          For(i,n_param) sign[i] = (*(param[i])) > .0 ? 1. : -1.;
-          if(is_positive == YES) For(i,n_param) (*(param[i])) = FABS(*(param[i]));
+          if(logt == YES) for(j=0;j<n_param;j++) *(param[j]) = EXP(MIN(1.E+2,*(param[j])));
+          for(i=0;i<n_param;i++) sign[i] = (*(param[i])) > .0 ? 1. : -1.;
+          if(is_positive == YES) for(i=0;i<n_param;i++) (*(param[i])) = FABS(*(param[i]));
       a[0][i]  = (*func)(tree);
-          if(is_positive == YES) For(i,n_param) (*(param[i])) *= sign[i];
-          if(logt == YES) For(j,n_param) *(param[j]) = LOG(*(param[j]));
+          if(is_positive == YES) for(i=0;i<n_param;i++) (*(param[i])) *= sign[i];
+          if(logt == YES) for(j=0;j<n_param;j++) *(param[j]) = LOG(*(param[j]));
 
       /*   *(param[which]   = *(param[which]-2*hh; */
       /*   a[0][i] -= (*func)(tree); */
@@ -3241,7 +3241,7 @@ phydbl Num_Derivatives_One_Param_Nonaligned(phydbl (*func)(t_tree *tree), t_tree
       if(FABS(a[i][i]-a[i-1][i-1]) >= 2.0*(*err)) break;
     }
     }
-  For(i,11) Free(a[i]);
+  for(i=0;i<11;i++) Free(a[i]);
   Free(a);
   Free(sign);
   return ans;
@@ -3258,16 +3258,16 @@ int Num_Derivative_Several_Param(t_tree *tree, phydbl *param, int n_param, phydb
 
   sign = (phydbl *)mCalloc(n_param,sizeof(phydbl));
 
-  if(logt == YES)   For(i,n_param) param[i] = EXP(MIN(1.E+2,param[i]));
-  For(i,n_param) sign[i] = (param[i]) > .0 ? 1. : -1.;
-  if(is_positive == YES) For(i,n_param) param[i] = FABS(param[i]);
+  if(logt == YES)   for(i=0;i<n_param;i++) param[i] = EXP(MIN(1.E+2,param[i]));
+  for(i=0;i<n_param;i++) sign[i] = (param[i]) > .0 ? 1. : -1.;
+  if(is_positive == YES) for(i=0;i<n_param;i++) param[i] = FABS(param[i]);
   f0 = (*func)(tree);
-  if(is_positive == YES) For(i,n_param) param[i] *= sign[i];
-  if(logt == YES)   For(i,n_param) param[i] = LOG(param[i]);
+  if(is_positive == YES) for(i=0;i<n_param;i++) param[i] *= sign[i];
+  if(logt == YES)   for(i=0;i<n_param;i++) param[i] = LOG(param[i]);
 
-  For(i,n_param)
+  for(i=0;i<n_param;i++)
     {
-      /* For(j,tree->mod->r_mat->n_diff_rr) PhyML_Printf("\n. 00%d %f",i,tree->mod->r_mat->rr_val->v[j]); */
+      /* for(j=0;j<tree->mod->r_mat->n_diff_rr;j++) PhyML_Printf("\n. 00%d %f",i,tree->mod->r_mat->rr_val->v[j]); */
       derivatives[i] = Num_Derivatives_One_Param(func,
                                                  tree,
                                                  f0,
@@ -3298,15 +3298,15 @@ int Num_Derivative_Several_Param_Nonaligned(t_tree *tree, phydbl **param, int n_
 
   sign = (phydbl *)mCalloc(n_param,sizeof(phydbl));
 
-  if(logt == YES)   For(i,n_param) (*(param[i])) = EXP(MIN(1.E+2,*(param[i])));
-  For(i,n_param) sign[i] = (*(param[i])) > .0 ? 1. : -1.;
-  if(is_positive == YES) For(i,n_param) *(param[i]) = FABS(*(param[i]));
+  if(logt == YES)   for(i=0;i<n_param;i++) (*(param[i])) = EXP(MIN(1.E+2,*(param[i])));
+  for(i=0;i<n_param;i++) sign[i] = (*(param[i])) > .0 ? 1. : -1.;
+  if(is_positive == YES) for(i=0;i<n_param;i++) *(param[i]) = FABS(*(param[i]));
   f0 = (*func)(tree);
-  if(is_positive == YES) For(i,n_param) *(param[i]) *= sign[i];
-  if(logt == YES)   For(i,n_param) (*(param[i])) = LOG(*(param[i]));
+  if(is_positive == YES) for(i=0;i<n_param;i++) *(param[i]) *= sign[i];
+  if(logt == YES)   for(i=0;i<n_param;i++) (*(param[i])) = LOG(*(param[i]));
 
 
-  For(i,n_param)
+  for(i=0;i<n_param;i++)
     {
 
       derivatives[i] = Num_Derivatives_One_Param_Nonaligned(func,
@@ -3339,7 +3339,7 @@ int Compare_Two_States(char *state1, char *state2, int state_size)
   /* 0 the two states are different */
   int i;
 
-  For(i,state_size) if(state1[i] != state2[i]) break;
+  for(i=0;i<state_size;i++) if(state1[i] != state2[i]) break;
 
   return (i==state_size)?(1):(0);
 }
@@ -3351,7 +3351,7 @@ int Compare_Two_States(char *state1, char *state2, int state_size)
 void Copy_One_State(char *from, char *to, int state_size)
 {
   int i;
-  For(i,state_size) to[i] = from[i];
+  for(i=0;i<state_size;i++) to[i] = from[i];
 }
 
 //////////////////////////////////////////////////////////////
@@ -3360,7 +3360,7 @@ void Copy_One_State(char *from, char *to, int state_size)
 void Copy_Dist(phydbl **cpy, phydbl **orig, int n)
 {
   int i,j;
-  For(i,n) For(j,n) cpy[i][j] = orig[i][j];
+  for(i=0;i<n;i++) for(j=0;j<n;j++) cpy[i][j] = orig[i][j];
 }
 
 //////////////////////////////////////////////////////////////
@@ -3433,7 +3433,7 @@ void Record_Model(t_mod *ori, t_mod *cpy)
         }
     }
   
-  For(i,cpy->ns)
+  for(i=0;i<cpy->ns;i++)
     {
       cpy->e_frq->pi->v[i]          = ori->e_frq->pi->v[i];
       cpy->e_frq->pi_unscaled->v[i] = ori->e_frq->pi_unscaled->v[i];
@@ -3442,7 +3442,7 @@ void Record_Model(t_mod *ori, t_mod *cpy)
   
   For(i,cpy->ns*cpy->ns) cpy->r_mat->qmat->v[i] = ori->r_mat->qmat->v[i];
   
-  For(i,cpy->ras->n_catg)
+  for(i=0;i<cpy->ras->n_catg;i++)
     {
       cpy->ras->gamma_r_proba->v[i]          = ori->ras->gamma_r_proba->v[i];
       cpy->ras->gamma_rr->v[i]               = ori->ras->gamma_rr->v[i];
@@ -3455,8 +3455,8 @@ void Record_Model(t_mod *ori, t_mod *cpy)
   cpy->eigen->size = ori->eigen->size;
   For(i,2*ori->ns)       cpy->eigen->space[i]       = ori->eigen->space[i];
   For(i,2*ori->ns)       cpy->eigen->space_int[i]   = ori->eigen->space_int[i];
-  For(i,ori->ns)         cpy->eigen->e_val[i]       = ori->eigen->e_val[i];
-  For(i,ori->ns)         cpy->eigen->e_val_im[i]    = ori->eigen->e_val_im[i];
+  for(i=0;i<ori->ns;i++)         cpy->eigen->e_val[i]       = ori->eigen->e_val[i];
+  for(i=0;i<ori->ns;i++)         cpy->eigen->e_val_im[i]    = ori->eigen->e_val_im[i];
   For(i,ori->ns*ori->ns) cpy->eigen->r_e_vect[i]    = ori->eigen->r_e_vect[i];
   For(i,ori->ns*ori->ns) cpy->eigen->r_e_vect[i]    = ori->eigen->r_e_vect[i];
   For(i,ori->ns*ori->ns) cpy->eigen->r_e_vect_im[i] = ori->eigen->r_e_vect_im[i];
@@ -3521,7 +3521,7 @@ void Get_Bip(t_node *a, t_node *d, t_tree *tree)
               if(a->v[i] == d)
                 {
                   a->bip_size[i] = 0;
-                  For(j,tree->n_otu)
+                  for(j=0;j<tree->n_otu;j++)
                     {
                       if(strcmp(tree->a_nodes[j]->name,d->name))
                         {
@@ -3572,7 +3572,7 @@ void Get_Bip(t_node *a, t_node *d, t_tree *tree)
       for(i=0;i<3;i++)
         if(d->v[i] != a)
           {
-            For(j,3)
+            for(j=0;j<3;j++)
               {
                 if(d->v[i]->v[j] == d)
                   {
@@ -3607,7 +3607,7 @@ void Get_Bip(t_node *a, t_node *d, t_tree *tree)
         if(a->v[i] == d)
           {
             a->bip_size[i] = 0;
-            For(j,tree->n_otu)
+            for(j=0;j<tree->n_otu;j++)
               {
                 For(k,d->bip_size[d_a])
                   {
@@ -3787,7 +3787,7 @@ int Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only)
                       
                       if(bip_size == 1) Warn_And_Exit("\n. Problem in Compare_Bip\n");
                       
-                      For(k,bip_size)
+                      for(k=0;k<bip_size;k++)
                         {
                           /* 			  if(strcmp(bip1[k],bip2[k])) break; */
                           if(bip1[k]->num != bip2[k]->num) break;
@@ -3835,9 +3835,9 @@ void Match_Tip_Numbers(t_tree *tree1, t_tree *tree2)
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
     }
 
-  For(i,tree1->n_otu)
+  for(i=0;i<tree1->n_otu;i++)
     {
-      For(j,tree2->n_otu)
+      for(j=0;j<tree2->n_otu;j++)
     {
       if(!strcmp(tree1->a_nodes[i]->name,tree2->a_nodes[j]->name))
         {
@@ -3883,10 +3883,10 @@ int Are_Compatible(char *statea, char *stateb, int stepsize, int datatype)
 
   if(datatype == NT)
     {
-      For(i,stepsize)
+      for(i=0;i<stepsize;i++)
         {
           a = statea[i];
-          For(j,stepsize)
+          for(j=0;j<stepsize;j++)
             {
               b = stateb[j];
               
@@ -4495,7 +4495,7 @@ int Are_Compatible(char *statea, char *stateb, int stepsize, int datatype)
 void Hide_Ambiguities(calign *data)
 {
   int i;
-  For(i,data->crunch_len) if(data->ambigu[i]) data->wght[i] = 0;
+  for(i=0;i<data->crunch_len;i++) if(data->ambigu[i]) data->wght[i] = 0;
 }
 
 //////////////////////////////////////////////////////////////
@@ -4507,7 +4507,7 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
 
   For(i,2*ori->n_otu-2)
     {
-      For(j,3)
+      for(j=0;j<3;j++)
         {
           if(ori->a_nodes[i]->v[j])
             {
@@ -4547,7 +4547,7 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
     }
 
 
-  For(i,ori->n_otu)
+  for(i=0;i<ori->n_otu;i++)
     {
       cpy->a_nodes[i]->tax = YES;
 
@@ -5304,7 +5304,7 @@ void Find_Mutual_Direction(t_node *n1, t_node *n2, short int *dir_n1_to_n2, shor
 
   for(i=0;i<3;i++)
     {
-      For(j,3)
+      for(j=0;j<3;j++)
     {
       scores[i][j] = 0;
 
@@ -5324,7 +5324,7 @@ void Find_Mutual_Direction(t_node *n1, t_node *n2, short int *dir_n1_to_n2, shor
 
   for(i=0;i<3;i++)
     {
-      For(j,3)
+      for(j=0;j<3;j++)
     {
       if(!scores[i][j])
         {
@@ -5344,7 +5344,7 @@ void Find_Mutual_Direction(t_node *n1, t_node *n2, short int *dir_n1_to_n2, shor
 /*   for(i=0;i<3;i++) */
 /*     { */
 /*       n_zero_line = 0; */
-/*       For(j,3) */
+/*       for(j=0;j<3;j++) */
 /* 	{ */
 /* 	  if(!scores[i][j]) n_zero_line++; */
 /* 	} */
@@ -5355,7 +5355,7 @@ void Find_Mutual_Direction(t_node *n1, t_node *n2, short int *dir_n1_to_n2, shor
 /*   for(i=0;i<3;i++) */
 /*     { */
 /*       n_zero_col = 0; */
-/*       For(j,3) */
+/*       for(j=0;j<3;j++) */
 /* 	{ */
 /* 	  if(!scores[j][i]) n_zero_col++; */
 /* 	} */
@@ -5382,9 +5382,9 @@ void Update_Dir_To_Tips(t_node *a, t_node *d, t_tree *tree)
     {
       if(a->v[i] == d)
         {
-          For(j,tree->n_otu) inout[j] = 1;
+          for(j=0;j<tree->n_otu;j++) inout[j] = 1;
           For(k,a->bip_size[i]) inout[a->bip_node[i][k]->num] = 0;
-          For(j,tree->n_otu) if(inout[tree->a_nodes[j]->num]) tree->t_dir[a->num*dim+tree->a_nodes[j]->num] = i;
+          for(j=0;j<tree->n_otu;j++) if(inout[tree->a_nodes[j]->num]) tree->t_dir[a->num*dim+tree->a_nodes[j]->num] = i;
           break;
         }
     }
@@ -5400,9 +5400,9 @@ void Update_Dir_To_Tips(t_node *a, t_node *d, t_tree *tree)
           else if(d->v[i] == a) d_a = i;
         }
       
-      For(j,tree->n_otu) inout[j] = 1;
+      for(j=0;j<tree->n_otu;j++) inout[j] = 1;
       For(k,d->bip_size[d_a]) inout[d->bip_node[d_a][k]->num] = 0;
-      For(j,tree->n_otu) if(inout[tree->a_nodes[j]->num]) tree->t_dir[d->num*dim+tree->a_nodes[j]->num] = d_a;
+      for(j=0;j<tree->n_otu;j++) if(inout[tree->a_nodes[j]->num]) tree->t_dir[d->num*dim+tree->a_nodes[j]->num] = d_a;
     }
   Free(inout);  
 }
@@ -5494,11 +5494,11 @@ void Joint_Proba_States_Left_Right(phydbl *Pij, phydbl *p_lk_left, phydbl *p_lk_
   int i,j;
   phydbl sum = 0.0;
 
-  For(i,n) F[i] = .0;
+  for(i=0;i<n;i++) F[i] = .0;
 
-  For(i,n)
+  for(i=0;i<n;i++)
     {
-      For(j,n)
+      for(j=0;j<n;j++)
     {
       F[i*n+j] =
         pi->v[i] *
@@ -5516,7 +5516,7 @@ void Joint_Proba_States_Left_Right(phydbl *Pij, phydbl *p_lk_left, phydbl *p_lk_
       F[i] /= sum;
       if(isnan(F[i]) || isinf(F[i]))
         {
-          For(i,n) For(j,n)
+          for(i=0;i<n;i++) for(j=0;j<n;j++)
             PhyML_Printf("\n== %15G %15G %15G %15G %15G",
                          pi->v[i] ,
                          Pij[i*n+j] ,
@@ -5618,7 +5618,7 @@ void Make_Symmetric(phydbl **F, int size)
 {
   int i,j;
 
-  For(i,size)
+  for(i=0;i<size;i++)
     {
       for(j=i+1;j<size;j++)
     {
@@ -5636,9 +5636,9 @@ void Round_Down_Freq_Patt(phydbl **F, t_tree *tree)
 {
   int i,j;
 
-  For(i,tree->mod->ns)
+  for(i=0;i<tree->mod->ns;i++)
     {
-      For(j,tree->mod->ns)
+      for(j=0;j<tree->mod->ns;j++)
     {
       (*F)[tree->mod->ns*i+j] = RINT((*F)[tree->mod->ns*i+j]);
     }
@@ -5654,8 +5654,8 @@ phydbl Get_Sum_Of_Cells(phydbl *F, t_tree *tree)
   int i,j;
   phydbl sum = .0;
 
-  For(i,tree->mod->ns)
-    For(j,tree->mod->ns)
+  for(i=0;i<tree->mod->ns;i++)
+    for(j=0;j<tree->mod->ns;j++)
     sum += F[tree->mod->ns*i+j];
 
   return sum;
@@ -5670,8 +5670,8 @@ void Divide_Cells(phydbl **F, phydbl div, t_tree *tree)
 {
   int i,j;
 
-  For(i,tree->mod->ns)
-    For(j,tree->mod->ns)
+  for(i=0;i<tree->mod->ns;i++)
+    for(j=0;j<tree->mod->ns;j++)
     (*F)[tree->mod->ns*i+j] /= div;
 }
 
@@ -5682,8 +5682,8 @@ void Divide_Cells(phydbl **F, phydbl div, t_tree *tree)
 void Divide_Mat_By_Vect(phydbl **F, phydbl *vect, int size)
 {
   int i,j;
-  For(i,size)
-    For(j,size)
+  for(i=0;i<size;i++)
+    for(j=0;j<size;j++)
     (*F)[size*i+j] = (*F)[size*i+j] / vect[j];
 }
 
@@ -5694,8 +5694,8 @@ void Divide_Mat_By_Vect(phydbl **F, phydbl *vect, int size)
 void Multiply_Mat_By_Vect(phydbl **F, phydbl *vect, int size)
 {
   int i,j;
-  For(i,size)
-    For(j,size)
+  for(i=0;i<size;i++)
+    for(j=0;j<size;j++)
     (*F)[size*i+j] = (*F)[size*i+j] * vect[j];
 }
 
@@ -6053,7 +6053,7 @@ void Sort_List_Of_Adjacent_Targets(t_edge ***list, int list_size)
 
   buff_edge = NULL;
 
-  For(i,list_size-1)
+  for(i=0;i<list_size-1;i++)
     {
       for(j=i+1;j<list_size;j++)
     if((*list)[j]->topo_dist_btw_edges < (*list)[i]->topo_dist_btw_edges)
@@ -6098,7 +6098,7 @@ int KH_Test(phydbl *site_lk_M1, phydbl *site_lk_M2, t_tree *tree)
   threshold = .0;
   mean = .0;
   obs_stat = .0;
-  For(i,tree->n_pattern)
+  for(i=0;i<tree->n_pattern;i++)
     {
       delta[i] = site_lk_M1[i] - site_lk_M2[i];
       mean += ((int)tree->data->wght[i])*delta[i];
@@ -6108,10 +6108,10 @@ int KH_Test(phydbl *site_lk_M1, phydbl *site_lk_M2, t_tree *tree)
 
   mean /= tree->data->init_len;
 
-  For(i,tree->data->init_len) delta[i] -= mean;
+  for(i=0;i<tree->data->init_len;i++) delta[i] -= mean;
 
   sd = .0;
-  For(i,tree->data->init_len) sd += POW(delta[i],2);
+  for(i=0;i<tree->data->init_len;i++) sd += POW(delta[i],2);
   sd /= (phydbl)(tree->data->init_len-1.);
 
 /*   threshold = tree->dnorm_thresh*SQRT(sd*tree->data->init_len); */
@@ -6140,8 +6140,8 @@ void Random_Tree(t_tree *tree)
   is_available  = (int *)mCalloc(2*tree->n_otu-2,sizeof(int));
   list_of_nodes = (int *)mCalloc(tree->n_otu,    sizeof(int));
 
-  For(i,tree->n_otu) is_available[i]  = 1;
-  For(i,tree->n_otu) list_of_nodes[i] = i;
+  for(i=0;i<tree->n_otu;i++) is_available[i]  = 1;
+  for(i=0;i<tree->n_otu;i++) list_of_nodes[i] = i;
 
 
   step = 0;
@@ -6151,7 +6151,7 @@ void Random_Tree(t_tree *tree)
       node_num = Rand_Int(0,tree->n_otu-1-step);
       node_num = list_of_nodes[node_num];
       is_available[node_num] = 0;
-      For(i,tree->n_otu) list_of_nodes[i] = -1;
+      for(i=0;i<tree->n_otu;i++) list_of_nodes[i] = -1;
       n_available = 0;
       For(i,2*tree->n_otu-2) if(is_available[i]) {list_of_nodes[n_available++] = i;}
 
@@ -6162,7 +6162,7 @@ void Random_Tree(t_tree *tree)
       node_num = Rand_Int(0,tree->n_otu-2-step);
       node_num = list_of_nodes[node_num];
       is_available[node_num] = 0;
-      For(i,tree->n_otu) list_of_nodes[i] = -1;
+      for(i=0;i<tree->n_otu;i++) list_of_nodes[i] = -1;
       n_available = 0;
       For(i,2*tree->n_otu-2) if(is_available[i]) {list_of_nodes[n_available++] = i;}
 
@@ -6170,7 +6170,7 @@ void Random_Tree(t_tree *tree)
       tree->a_nodes[tree->n_otu+step]->v[2] = tree->a_nodes[node_num];
 
       is_available[tree->n_otu+step] = 1;
-      For(i,tree->n_otu) list_of_nodes[i] = -1;
+      for(i=0;i<tree->n_otu;i++) list_of_nodes[i] = -1;
       n_available = 0;
       For(i,2*tree->n_otu-2) if(is_available[i]) list_of_nodes[n_available++] = i;
 
@@ -6458,13 +6458,13 @@ void Random_NNI(int n_moves, t_tree *tree)
 
   n1 = n2 = NULL;
   b = NULL;
-  For(i,n_moves)
+  for(i=0;i<n_moves;i++)
     {
       n_target  = tree->a_nodes[tree->n_otu + (int)((phydbl)rand()/RAND_MAX * (2*tree->n_otu-3-tree->n_otu))];
-      For(j,3) if(!n_target->v[j]->tax) {b = n_target->b[j]; break;}
+      for(j=0;j<3;j++) if(!n_target->v[j]->tax) {b = n_target->b[j]; break;}
 
-      For(j,3) if(b->left->v[j] != b->rght) {n1 = b->left->v[j]; break;}
-      For(j,3) if(b->rght->v[j] != b->left) {n2 = b->rght->v[j]; break;}
+      for(j=0;j<3;j++) if(b->left->v[j] != b->rght) {n1 = b->left->v[j]; break;}
+      for(j=0;j<3;j++) if(b->rght->v[j] != b->left) {n2 = b->rght->v[j]; break;}
 
       Swap(n1,b->left,b->rght,n2,tree);
     }
@@ -6477,7 +6477,7 @@ void Fill_Missing_Dist(matrix *mat)
 {
   int i,j;
   
-  For(i,mat->n_otu)
+  for(i=0;i<mat->n_otu;i++)
     {
       for(j=i+1;j<mat->n_otu;j++)
         {
@@ -6511,11 +6511,11 @@ void Fill_Missing_Dist_XY(int x, int y, matrix *mat)
   For(i,mat->n_otu*mat->n_otu) S1S2[i] = (phydbl *)mCalloc(2,sizeof(phydbl));
 
   cpt = 0;
-  For(i,mat->n_otu)
+  for(i=0;i<mat->n_otu;i++)
     {
       if((mat->dist[i][x] > .0) && (mat->dist[i][y] > .0))
         {
-          For(j,mat->n_otu)
+          for(j=0;j<mat->n_otu;j++)
             {
               if((mat->dist[j][x] > .0) && (mat->dist[j][y] > .0))
                 {
@@ -6538,7 +6538,7 @@ void Fill_Missing_Dist_XY(int x, int y, matrix *mat)
   pos_best_estimate = 0;
   min_crit = curr_crit = BIG;
   
-  For(i,cpt-1)
+  for(i=0;i<cpt-1;i++)
     {
       if((local_mins[i] < S1S2[i+1][0]) && (local_mins[i] > S1S2[i][0]))
         {
@@ -6569,11 +6569,11 @@ phydbl Least_Square_Missing_Dist_XY(int x, int y, phydbl dxy, matrix *mat)
   phydbl fit;
   
   fit = .0;
-  For(i,mat->n_otu)
+  for(i=0;i<mat->n_otu;i++)
     {
       if((mat->dist[i][x] > .0) && (mat->dist[i][y] > .0))
         {
-          For(j,mat->n_otu)
+          for(j=0;j<mat->n_otu;j++)
             {
               if((mat->dist[j][x] > .0) && (mat->dist[j][y] > .0))
                 {
@@ -6672,7 +6672,7 @@ void Check_Memory_Amount(t_tree *tree)
 int Get_State_From_P_Lk(phydbl *p_lk, int pos, t_tree *tree)
 {
   int i;
-  For(i,tree->mod->ns) if(p_lk[pos+i] > .0) return i;
+  for(i=0;i<tree->mod->ns;i++) if(p_lk[pos+i] > .0) return i;
   return -1;
 }
 
@@ -6683,7 +6683,7 @@ int Get_State_From_P_Lk(phydbl *p_lk, int pos, t_tree *tree)
 int Get_State_From_P_Pars(short int *p_pars, int pos, t_tree *tree)
 {
   int i;
-  For(i,tree->mod->ns) if(p_pars[pos+i] > .0) return i;
+  for(i=0;i<tree->mod->ns;i++) if(p_pars[pos+i] > .0) return i;
   return -1;
 }
 
@@ -6808,7 +6808,7 @@ void Randomize_Sequence_Order(calign *cdata)
   short int *buff_ambigu;
 
   exchange_with = -1;
-  For(i,cdata->n_otu)
+  for(i=0;i<cdata->n_otu;i++)
     {
       buff_dbl  = rand();
       buff_dbl /= (RAND_MAX+1.);
@@ -7058,7 +7058,7 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
   expval = EXP(MIN(1.E+2,mu-lambda));
   phi = (rho*lambda*(expval-1.) + (mu-lambda)*expval)/(expval-1.); /* Equation 16 */
   
-  For(i,tree->n_otu-1)
+  for(i=0;i<tree->n_otu-1;i++)
     {
       u = rand();
       u /= RAND_MAX;
@@ -7071,8 +7071,8 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
   
   Qksort(t,NULL,0,tree->n_otu-2); /* Node times ordering in ascending order */
   
-  For(i,tree->n_otu-1) tmp[i] =  t[tree->n_otu-2-i];
-  For(i,tree->n_otu-1) t[i]   = -tmp[i];
+  for(i=0;i<tree->n_otu-1;i++) tmp[i] =  t[tree->n_otu-2-i];
+  for(i=0;i<tree->n_otu-1;i++) t[i]   = -tmp[i];
   
   
   /* Rescale t_node times such that the time at the root t_node is -100 */
@@ -7111,7 +7111,7 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
       tree->rates->nd_t[curr_n->num] = t[n_connected/2];
       
       available_nodes[n_available] = tree->a_nodes[n1]->num;
-      For(i,n_available)
+      for(i=0;i<n_available;i++)
         if(available_nodes[i] == curr_n->num)
           {
             available_nodes[i] = tree->a_nodes[n2]->num;
@@ -7158,9 +7158,9 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
       tree->a_nodes[i]->num = i;
     }
   
-  For(i,tree->n_otu) tree->rates->nd_t[i] = 0.0;
+  for(i=0;i<tree->n_otu;i++) tree->rates->nd_t[i] = 0.0;
   
-  For(i,tree->n_otu)
+  for(i=0;i<tree->n_otu;i++)
     {
       if(!tree->a_nodes[i]->name) tree->a_nodes[i]->name = (char *)mCalloc(T_MAX_NAME,sizeof(char));
       strcpy(tree->a_nodes[i]->name,"x");
@@ -7309,7 +7309,7 @@ void Evolve(calign *data, t_mod *mod, t_tree *tree)
     }
 
 
-  For(site,data->init_len)
+  for(site=0;site<data->init_len;site++)
     {
       Set_Model_Parameters(mod);
 
@@ -7450,25 +7450,25 @@ void Site_Diversity(t_tree *tree)
   
   For(i,2*tree->n_otu-3)
     {
-      For(j,ns)
+      for(j=0;j<ns;j++)
         {
           tree->a_edges[i]->div_post_pred_left[j] = 0;
           tree->a_edges[i]->div_post_pred_rght[j] = 0;
         }
     }
   
-  For(i,tree->n_pattern)
+  for(i=0;i<tree->n_pattern;i++)
     {
       For(j,2*tree->n_otu-3)
         {
           Binary_Decomposition(tree->a_edges[j]->ui_l[i],div,ns);
           sum = 0;
-          For(k,ns) sum += div[k];
+          for(k=0;k<ns;k++) sum += div[k];
           tree->a_edges[j]->div_post_pred_left[sum-1] += tree->data->wght[i];
           
           Binary_Decomposition(tree->a_edges[j]->ui_r[i],div,ns);
           sum = 0;
-          For(k,ns) sum += div[k];
+          for(k=0;k<ns;k++) sum += div[k];
           tree->a_edges[j]->div_post_pred_rght[sum-1] += tree->data->wght[i];
         }
     }
@@ -7579,7 +7579,7 @@ void Subtree_Union(t_node *n, t_edge *b_fcus, t_tree *tree)
       (n->b[b_fcus->r_v2]->ui_l);
     }
 
-  For(site,tree->n_pattern) ui[site] = ui_v1[site] | ui_v2[site];
+  for(site=0;site<tree->n_pattern;site++) ui[site] = ui_v1[site] | ui_v2[site];
 
 }
 
@@ -7591,7 +7591,7 @@ void Binary_Decomposition(int value, int *bit_vect, int size)
 {
   int i,cumul;
 
-  For(i,size) bit_vect[i] = 0;
+  for(i=0;i<size;i++) bit_vect[i] = 0;
 
   cumul = 0;
   for(i=size-1;i>=0;i--)
@@ -7645,7 +7645,7 @@ phydbl Univariate_Kernel_Density_Estimate(phydbl where, phydbl *x, int sample_si
   cons = (1./sample_size) * (1./h) * (1./sqrt2pi);
 
   density = .0;
-  For(i,sample_size) density += EXP(-0.5 * POW((x[i] - where)/h,2));
+  for(i=0;i<sample_size;i++) density += EXP(-0.5 * POW((x[i] - where)/h,2));
   density *= cons;
 
   return density;
@@ -7674,7 +7674,7 @@ phydbl Multivariate_Kernel_Density_Estimate(phydbl *where, phydbl **x, int sampl
 
   _2pi = 6.283185;
 
-  For(i,vect_size)
+  for(i=0;i<vect_size;i++)
     {
       sd = SQRT(Var(x[i],sample_size));
 /*       h[i] = POW(4./(vect_size+2.),1./(vect_size+4)) * sd * POW(sample_size,-1./(vect_size+4)); */
@@ -7683,15 +7683,15 @@ phydbl Multivariate_Kernel_Density_Estimate(phydbl *where, phydbl **x, int sampl
     }
 
   cons = sample_size;
-  For(i,vect_size) cons *= h[i];
+  for(i=0;i<vect_size;i++) cons *= h[i];
   cons *= POW(_2pi,vect_size/2.);
   cons = 1./cons;
 
   density = .0;
-  For(i,sample_size)
+  for(i=0;i<sample_size;i++)
     {
       tmp = 1.0;
-      For(j,vect_size)
+      for(j=0;j<vect_size;j++)
     {
       tmp *= EXP(-0.5 * POW((x[j][i] - where[j])/h[j],2));
     }
@@ -7717,7 +7717,7 @@ phydbl Var(phydbl *x, int n)
   mean = Mean(x,n);
 
   sum2 = .0;
-  For(i,n) sum2 += x[i] * x[i];
+  for(i=0;i<n;i++) sum2 += x[i] * x[i];
 
   return (1./n) * (sum2 - n * POW(mean,2));
 }
@@ -7733,7 +7733,7 @@ phydbl Mean(phydbl *x, int n)
 
   sum = .0;
 
-  For(i,n) sum += x[i];
+  for(i=0;i<n;i++) sum += x[i];
 
   return sum / n;
 }
@@ -7927,7 +7927,7 @@ void JF(t_tree *tree)
   PhyML_Printf("\n\nSITES LKS:\n");
   int n_patterns = (int)FLOOR(tree->n_pattern);
   int site=0;
-  For(site,n_patterns) {
+  for(site=0;site<n_patterns;site++) {
     int wei=0;
     For(wei,tree->data->wght[site]) {
       PhyML_Printf("%f\n",tree->c_lnL_sorted[site] / tree->data->wght[site]);
@@ -7952,7 +7952,7 @@ void JF(t_tree *tree)
 /*   PhyML_Printf("\n\nSITES LKS:\n"); */
 /*   int n_patterns = (int)FLOOR(tree->n_pattern); */
 /*   int site=0; */
-/*   For(site,n_patterns) { */
+/*   for(site=0;site<n_patterns;site++) { */
 /*     int wei=0; */
 /*     For(wei,tree->data->wght[site]) { */
 /*       PhyML_Printf("%f\n",tree->c_lnL_sorted[site] / tree->data->wght[site]); */
@@ -8166,12 +8166,12 @@ void Find_Common_Tips(t_tree *tree1, t_tree *tree2)
 {
   int i,j;
 
-  For(i,tree1->n_otu) tree1->a_nodes[i]->common = 0;
-  For(i,tree2->n_otu) tree2->a_nodes[i]->common = 0;
+  for(i=0;i<tree1->n_otu;i++) tree1->a_nodes[i]->common = 0;
+  for(i=0;i<tree2->n_otu;i++) tree2->a_nodes[i]->common = 0;
 
-  For(i,tree1->n_otu)
+  for(i=0;i<tree1->n_otu;i++)
     {
-      For(j,tree2->n_otu)
+      for(j=0;j<tree2->n_otu;j++)
     {
       if(!strcmp(tree1->a_nodes[i]->name,tree2->a_nodes[j]->name))
         {
@@ -8329,19 +8329,19 @@ t_node *Find_Lca_Clade(t_node **node_list, int node_list_size, t_tree *tree)
     }
 
   list = (t_node ***)mCalloc(node_list_size,sizeof(t_node **));
-  For(i,node_list_size) list[i] = (t_node **)mCalloc(2*tree->n_otu-1,sizeof(t_node *));
+  for(i=0;i<node_list_size;i++) list[i] = (t_node **)mCalloc(2*tree->n_otu-1,sizeof(t_node *));
   size = (int *)mCalloc(node_list_size,sizeof(int));
   
-  For(i,node_list_size)
+  for(i=0;i<node_list_size;i++)
     {
       if(!Get_List_Of_Ancestors(node_list[i],list[i],size+i,tree))
         {
-          For(i,node_list_size) PhyML_Printf("\n== %s",node_list[i]->name);
+          for(i=0;i<node_list_size;i++) PhyML_Printf("\n== %s",node_list[i]->name);
           Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
         }
     }
 
-  /* For(i,node_list_size) */
+  /* for(i=0;i<node_list_size;i++) */
   /*   { */
   /*     int j; */
   /*     PhyML_Printf("\n. Listing all ancestors of node number %d [%s]", */
@@ -8354,7 +8354,7 @@ t_node *Find_Lca_Clade(t_node **node_list, int node_list_size, t_tree *tree)
     {
       do
         {
-          For(i,node_list_size-1)
+          for(i=0;i<node_list_size-1;i++)
             {
               assert(list[i][size[i]-1]);
               assert(list[i+1][size[i+1]-1]);
@@ -8368,7 +8368,7 @@ t_node *Find_Lca_Clade(t_node **node_list, int node_list_size, t_tree *tree)
 
           if(i != node_list_size-1) break;
           
-          For(i,node_list_size)
+          for(i=0;i<node_list_size;i++)
             {
               size[i]--;
               assert(size[i] > 0);
@@ -8384,7 +8384,7 @@ t_node *Find_Lca_Clade(t_node **node_list, int node_list_size, t_tree *tree)
       lca = node_list[0];
     }
   
-  For(i,node_list_size) Free(list[i]);
+  for(i=0;i<node_list_size;i++) Free(list[i]);
   Free(list);
   Free(size);
 
@@ -8560,13 +8560,13 @@ int Find_Clade(char **tax_name_list, int list_size, t_tree *tree)
   tax_num_list = (int *)mCalloc(list_size,sizeof(int));
   tax_node_list = (t_node **)mCalloc(list_size,sizeof(t_node *));
 
-  For(i,list_size) tax_num_list[i] = -1;
+  for(i=0;i<list_size;i++) tax_num_list[i] = -1;
 
   n_matches = 0;
 
-  For(i,list_size)
+  for(i=0;i<list_size;i++)
     {
-      For(j,tree->n_otu)
+      for(j=0;j<tree->n_otu;j++)
         {
           if(!strcmp(tax_name_list[i],tree->a_nodes[j]->name))
             {
@@ -8612,7 +8612,7 @@ void Find_Clade_Pre(t_node *a, t_node *d, int *tax_num_list, int list_size, int 
         score = 0;
         For(j,d->bip_size[i])
           {
-        For(k,list_size)
+        for(k=0;k<list_size;k++)
           {
             if(tax_num_list[k] == d->bip_node[i][j]->num)
               {
@@ -8736,7 +8736,7 @@ void Copy_Tree_Topology_With_Labels(t_tree *ori, t_tree *cpy)
 
   For(i,2*ori->n_otu-2)
     {
-      For(j,3)
+      for(j=0;j<3;j++)
         {
           if(ori->a_nodes[i]->v[j])
             {
@@ -8755,7 +8755,7 @@ void Copy_Tree_Topology_With_Labels(t_tree *ori, t_tree *cpy)
       cpy->a_edges[i]->l->v = ori->a_edges[i]->l->v;
     }
 
-  For(i,ori->n_otu)
+  for(i=0;i<ori->n_otu;i++)
     {
       cpy->a_nodes[i]->tax = 1;
       strcpy(cpy->a_nodes[i]->name,ori->a_nodes[i]->name);
@@ -8929,7 +8929,7 @@ void Translate_Tax_Names(char **tax_names, t_tree *tree)
   int i;
   int tax_num;
 
-  For(i,tree->n_otu)
+  for(i=0;i<tree->n_otu;i++)
     {
       tax_num = strtol(tree->a_nodes[i]->name,NULL,10);
       tree->a_nodes[i]->name = tax_names[tax_num-1];
@@ -9013,7 +9013,7 @@ void Get_Best_Root_Position(t_tree *tree)
       s = s_max = 0.0;
       For(i,2*tree->n_otu-2)
         {
-          For(j,3)
+          for(j=0;j<3;j++)
             {
               s = (tree->a_nodes[i]->s_outgrp[j]+eps) / (tree->a_nodes[i]->s_ingrp[j] + eps) ;
               /* printf("\n. [%d %d] %d %d",i,j,tree->a_nodes[i]->s_outgrp[j],tree->a_nodes[i]->s_ingrp[j]); */
@@ -9372,7 +9372,7 @@ phydbl Diff_Lk_Norm_At_Given_Edge(t_edge *b, t_tree *tree)
   dim = 2*tree->n_otu-3;
   sum = 0.0;
 
-  For(i,tree->n_short_l)
+  for(i=0;i<tree->n_short_l;i++)
     {
       b->l->v = tree->short_l[i];
 
@@ -9405,7 +9405,7 @@ void Adjust_Variances(t_tree *tree)
   phydbl new_diff,curr_diff;
 
   Make_Short_L(tree);
-  For(i,tree->n_short_l)
+  for(i=0;i<tree->n_short_l;i++)
     {
       tree->short_l[i] = tree->mod->l_min + i*(0.1 - tree->mod->l_min)/tree->n_short_l;
     }
@@ -9648,9 +9648,9 @@ void Prune_Tree(t_tree *big_tree, t_tree *small_tree)
   residual_edges = (t_edge **)mCalloc(big_tree->n_otu,sizeof(t_edge *));
 
   n_pruned_nodes = 0;
-  For(i,big_tree->n_otu)
+  for(i=0;i<big_tree->n_otu;i++)
     {
-      For(j,small_tree->n_otu)
+      for(j=0;j<small_tree->n_otu;j++)
         if(!strcmp(small_tree->a_nodes[j]->name,big_tree->a_nodes[i]->name))
           break;
       
@@ -9683,7 +9683,7 @@ void Prune_Tree(t_tree *big_tree, t_tree *small_tree)
   curr_br = 0;
   For(i,big_tree->n_otu+n_pruned_nodes)
     {
-      For(j,n_pruned_nodes)
+      for(j=0;j<n_pruned_nodes;j++)
         if(!strcmp(pruned_nodes[j]->name,big_tree->a_nodes[i]->name))
           break;
       
@@ -9701,7 +9701,7 @@ void Prune_Tree(t_tree *big_tree, t_tree *small_tree)
 
   big_tree->t_dir = (short int *)mCalloc((2*big_tree->n_otu-2)*(2*big_tree->n_otu-2),sizeof(short int));
   
-  For(i,n_pruned_nodes)
+  for(i=0;i<n_pruned_nodes;i++)
     {
       Free_Edge(residual_edges[i]);
       Free_Edge(pruned_nodes[i]->b[0]);
@@ -9757,9 +9757,9 @@ void Match_Nodes_In_Small_Tree(t_tree *small_tree, t_tree *big_tree)
 
   score = (int *)mCalloc(3,sizeof(int));
 
-  For(i,small_tree->n_otu)
+  for(i=0;i<small_tree->n_otu;i++)
     {
-      For(j,big_tree->n_otu)
+      for(j=0;j<big_tree->n_otu;j++)
     {
       if(!strcmp(small_tree->a_nodes[i]->name,big_tree->a_nodes[j]->name))
         {
@@ -9778,11 +9778,11 @@ void Match_Nodes_In_Small_Tree(t_tree *small_tree, t_tree *big_tree)
         {
           if(big_tree->a_nodes[j]->tax == NO)
         {
-          For(k,3) score[k] = 0;
+          for(k=0;k<3;k++) score[k] = 0;
 
-          For(k,3)
+          for(k=0;k<3;k++)
             {
-              For(l,3)
+              for(l=0;l<3;l++)
             {
               identical = 0;
               For(m,small_tree->a_nodes[i]->bip_size[k])
@@ -9877,9 +9877,9 @@ void Set_Taxa_Id_Ranking(t_tree *tree)
 {
   int i,j;
 
-  For(i,tree->n_otu) tree->a_nodes[i]->id_rank = 0;
+  for(i=0;i<tree->n_otu;i++) tree->a_nodes[i]->id_rank = 0;
 
-  For(i,tree->n_otu)
+  for(i=0;i<tree->n_otu;i++)
     {
       for(j=i+1;j<tree->n_otu;j++)
     {
@@ -9889,7 +9889,7 @@ void Set_Taxa_Id_Ranking(t_tree *tree)
         tree->a_nodes[j]->id_rank++;
     }
     }
-  /* For(i,tree->n_otu) PhyML_Printf("\n. %20s %4d",tree->a_nodes[i]->name,tree->a_nodes[i]->id_rank); */
+  /* for(i=0;i<tree->n_otu;i++) PhyML_Printf("\n. %20s %4d",tree->a_nodes[i]->name,tree->a_nodes[i]->id_rank); */
 }
 
 //////////////////////////////////////////////////////////////
@@ -9944,7 +9944,7 @@ void Get_Edge_Binary_Coding_Number(t_tree *tree)
     }
 
       b->bin_cod_num = 0.;
-      For(j,list_size) b->bin_cod_num += POW(2,list[j]->id_rank);
+      for(j=0;j<list_size;j++) b->bin_cod_num += POW(2,list[j]->id_rank);
       /* printf("\n. %f",b->bin_cod_num); */
     }
 }
@@ -10013,7 +10013,7 @@ char *To_Lower_String(char *in)
 
   out = (char *)mCalloc(len+1,sizeof(char));
 
-  For(i,len) out[i] = (char)tolower(in[i]);
+  for(i=0;i<len;i++) out[i] = (char)tolower(in[i]);
 
   out[len] = '\0';
   return(out);
@@ -10032,7 +10032,7 @@ char *To_Upper_String(char *in)
 
   out = (char *)mCalloc(len+1,sizeof(char));
 
-  For(i,len)
+  for(i=0;i<len;i++)
     {
       out[i] = (char)toupper(in[i]);
     }
@@ -10057,9 +10057,9 @@ void Connect_CSeqs_To_Nodes(calign *cdata, option *io, t_tree *tree)
       Warn_And_Exit("\n== The number of tips in the tree is not the same as the number of sequences\n");
     }
   
-  For(i,n_otu_tree)
+  for(i=0;i<n_otu_tree;i++)
     {
-      For(j,n_otu_cdata)
+      for(j=0;j<n_otu_cdata;j++)
         {          
           if(!strcmp(tree->a_nodes[i]->name,cdata->c_seq[j]->name)) break;
         }
@@ -10123,7 +10123,7 @@ phydbl *Dist_Btw_Tips(t_tree *tree)
 
   dist = (phydbl *)mCalloc(tree->n_otu*tree->n_otu,sizeof(phydbl));
 
-  For(i,tree->n_otu-1)
+  for(i=0;i<tree->n_otu-1;i++)
     {
       for(j=i+1;j<tree->n_otu;j++)
         {
@@ -10164,7 +10164,7 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree)
   residual = NULL;
   nouse = NULL;
   a = d = v1 = v2 = NULL;
-  For(i,tree->n_otu) // We will perform tree->n_otu random SPRs
+  for(i=0;i<tree->n_otu;i++) // We will perform tree->n_otu random SPRs
     {
       a = tree->a_nodes[Rand_Int(tree->n_otu,2*tree->n_otu-3)];
 
@@ -10176,7 +10176,7 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree)
       /* if(a == tree->n_root->v[1] || a == tree->n_root->v[2]) continue; */
 
       v1 = v2 = NULL;
-      For(j,3)
+      for(j=0;j<3;j++)
         {
           if(a->v[j] != a->anc && a->b[j] != tree->e_root)
             {
@@ -10190,7 +10190,7 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree)
       else       d = v2;
 
 
-      For(j,3) if(a->v[j] == d && a->b[j] == tree->e_root) break;
+      for(j=0;j<3;j++) if(a->v[j] == d && a->b[j] == tree->e_root) break;
       if(j != 3) continue;
 
       lim_sup = tree->rates->nd_t[d->num];
@@ -10243,7 +10243,7 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree)
               else
                 {
                   v1 = v2 = NULL;
-                  For(j,3)
+                  for(j=0;j<3;j++)
                     {
                       if(target_nd->v[j] != target_nd->anc)
                         {
@@ -10259,15 +10259,15 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree)
         }
 
       ok_dir = -1;
-      For(j,3) if(target_nd->v[j] == target_nd->anc || target_nd->b[j] == tree->e_root) ok_dir = j;
+      for(j=0;j<3;j++) if(target_nd->v[j] == target_nd->anc || target_nd->b[j] == tree->e_root) ok_dir = j;
 
       dir12 = -1;
-      For(j,3) if(tree->n_root->v[1]->v[j] == tree->n_root->v[2]) dir12 = j;
+      for(j=0;j<3;j++) if(tree->n_root->v[1]->v[j] == tree->n_root->v[2]) dir12 = j;
 
       if(dir12 == -1) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);        
 
       dir21 = -1;
-      For(j,3) if(tree->n_root->v[2]->v[j] == tree->n_root->v[1]) dir21 = j;
+      for(j=0;j<3;j++) if(tree->n_root->v[2]->v[j] == tree->n_root->v[1]) dir21 = j;
 
       if(dir21 == -1) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
@@ -10835,7 +10835,7 @@ void Build_Distrib_Number_Of_Diff_States_Under_Model(t_tree *tree)
     {
       if(tree->a_edges[i]->left->tax == NO && tree->a_edges[i]->rght->tax == NO)
         {
-          For(j,tree->mod->ns)
+          for(j=0;j<tree->mod->ns;j++)
             {
               PhyML_Printf("\n TRUE %3d 0 %3d %d",
                            i,
@@ -10873,7 +10873,7 @@ void Build_Distrib_Number_Of_Diff_States_Under_Model(t_tree *tree)
 
       For(i,2*tree->n_otu-3)
         {
-          For(j,tree->mod->ns)
+          for(j=0;j<tree->mod->ns;j++)
             {
               n_diff_states_all_l[j*(2*tree->n_otu-3)*(n_iter_tot) + i*(n_iter_tot) + iter] = tree->a_edges[i]->n_diff_states_l[j];
               n_diff_states_all_r[j*(2*tree->n_otu-3)*(n_iter_tot) + i*(n_iter_tot) + iter] = tree->a_edges[i]->n_diff_states_r[j];
@@ -10903,7 +10903,7 @@ void Build_Distrib_Number_Of_Diff_States_Under_Model(t_tree *tree)
     {
       if(tree->a_edges[i]->left->tax == NO && tree->a_edges[i]->rght->tax == NO)
         {
-          For(j,tree->mod->ns)
+          for(j=0;j<tree->mod->ns;j++)
             {              
               PhyML_Printf("\n SIM %3d 0 %3d %.0f %.0f",
                      i,
@@ -11060,9 +11060,9 @@ void Calculate_Number_Of_Diff_States_Core(t_node *a, t_node *d, t_edge *b, t_tre
 
     }
 
-  For(state,tree->mod->ns) diff[state] = 0;
+  for(state=0;state<tree->mod->ns;state++) diff[state] = 0;
   
-  For(site,tree->n_pattern)
+  for(site=0;site<tree->n_pattern;site++)
     {
       if(v1->tax == YES)
         {
@@ -11347,7 +11347,7 @@ align **Make_Empty_Alignment(option *io)
   line   = (char *)mCalloc(T_MAX_LINE,sizeof(char));
   data   = (align **)mCalloc(io->n_otu,sizeof(align *));
   
-  For(i,io->n_otu)
+  for(i=0;i<io->n_otu;i++)
     {
       data[i]        = (align *)mCalloc(1,sizeof(align));
       data[i]->name  = (char *)mCalloc(T_MAX_NAME,sizeof(char));
@@ -11365,7 +11365,7 @@ align **Make_Empty_Alignment(option *io)
         }
     }
 
-  For(i,io->n_otu) data[i]->state[data[i]->len] = '\0';
+  for(i=0;i<io->n_otu;i++) data[i]->state[data[i]->len] = '\0';
 
   Free(line);
 
@@ -11383,7 +11383,7 @@ phydbl Mean_Identity(calign *data)
   n = data->n_otu;
   
   tot_idt = 0.0;
-  For(i,n-1)
+  for(i=0;i<n-1;i++)
     {
       for(j=i+1; j<n; j++)
         {
@@ -11404,7 +11404,7 @@ phydbl Pairwise_Identity(int i, int j, calign *data)
   phydbl div,p,d;
   
   div = 0.0;
-  For(k,data->crunch_len) if(data->c_seq[i]->state[k] == data->c_seq[j]->state[k]) div += (phydbl)data->wght[k];
+  for(k=0;k<data->crunch_len;k++) if(data->c_seq[i]->state[k] == data->c_seq[j]->state[k]) div += (phydbl)data->wght[k];
 
   /* observed proportion of identity */
   p = 1. - div / (phydbl)data->init_len;
@@ -11459,7 +11459,7 @@ phydbl Nucleotide_Diversity(calign *data)
   n = data->n_otu;
   
   pair_div = 0.0;
-  For(i,n-1)
+  for(i=0;i<n-1;i++)
     {
       for(j=i+1; j<n; j++)
         {

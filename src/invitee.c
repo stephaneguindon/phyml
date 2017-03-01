@@ -676,7 +676,7 @@ void PhyTime_XML(char *xml_file)
 
   MCMC(tree);   
   PhyML_Printf("\n");
-  For(i,6) printf(" %d ", tree -> rates -> numb_calib_chosen[i]);
+  for(i=0;i<6;i++) printf(" %d ", tree -> rates -> numb_calib_chosen[i]);
   PhyML_Printf("\n");
                                        															
   MCMC_Close_MCMC(tree -> mcmc);																	

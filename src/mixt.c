@@ -530,7 +530,7 @@ void MIXT_Chain_Rates(t_rate *curr, t_rate *next)
 void MIXT_Chain_Cal(t_tree *mixt_tree)
 {
   int i;
-  For(i,mixt_tree->rates->n_cal-1) 
+  for(i=0;i<mixt_tree->rates->n_cal-1;i++) 
     {
       mixt_tree->rates->a_cal[i]->next   = mixt_tree->rates->a_cal[i+1];
       mixt_tree->rates->a_cal[i+1]->prev = mixt_tree->rates->a_cal[i];
@@ -793,7 +793,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
 
       mixt_tree->c_lnL = .0;
       
-      For(site,mixt_tree->n_pattern)
+      for(site=0;site<mixt_tree->n_pattern;site++)
         {
           b    = mixt_b->next;
           tree = mixt_tree->next;
@@ -854,7 +854,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                           len *= tree->mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number];
                           if(len < tree->mod->l_min)      len = tree->mod->l_min;
                           else if(len > tree->mod->l_max) len = tree->mod->l_max;
-                          For(l,tree->mod->ns) expl[l] = (phydbl)POW(tree->mod->eigen->e_val[l],len);
+                          for(l=0;l<tree->mod->ns;l++) expl[l] = (phydbl)POW(tree->mod->eigen->e_val[l],len);
                         }
 
                       site_lk_cat = Lk_Core_One_Class(tree->eigen_lr_left + site,
@@ -1043,7 +1043,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
 
           int mixt_class = 0;
           int rate_class = 0;
-          For(rate_class,mixt_tree->mod->ras->n_catg)
+          for(rate_class=0;rate_class<mixt_tree->mod->ras->n_catg;rate_class++)
             {
               mixt_tree->unscaled_site_lk_cat[rate_class*mixt_tree->n_pattern + site] = 0.0;
               mixt_class = 0;
@@ -1071,7 +1071,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
               PhyML_Printf("\n== Invar = %d",mixt_tree->data->invar[site]);
               PhyML_Printf("\n== Mixt = %d",mixt_tree->is_mixt_tree);
               PhyML_Printf("\n== Lk = %G LOG(Lk) = %f < %G",site_lk,log_site_lk,-BIG);
-              For(class,mixt_tree->mod->ras->n_catg) PhyML_Printf("\n== rr=%f p=%f",mixt_tree->mod->ras->gamma_rr->v[class],mixt_tree->mod->ras->gamma_r_proba->v[class]);
+              for(class=0;class<mixt_tree->mod->ras->n_catg;class++) PhyML_Printf("\n== rr=%f p=%f",mixt_tree->mod->ras->gamma_rr->v[class],mixt_tree->mod->ras->gamma_r_proba->v[class]);
               PhyML_Printf("\n== Pinv = %G",mixt_tree->mod->ras->pinvar->v);
               PhyML_Printf("\n== Bl mult = %G",mixt_tree->mod->br_len_mult->v);
               PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
@@ -1988,7 +1988,7 @@ void MIXT_Bootstrap(char *best_tree, xml_node *root)
       n_boot = atoi(bootstrap);
 
       io = NULL;
-      For(i,n_boot)
+      for(i=0;i<n_boot;i++)
         {
           boot_root = XML_Copy_XML_Graph(root);
 
@@ -2043,7 +2043,7 @@ void MIXT_Bootstrap(char *best_tree, xml_node *root)
               For(j,boot_data[0]->len)
                 {
                   position = Rand_Int(0,(int)(boot_data[0]->len-1.0));
-                  For(k,io->n_otu)
+                  for(k=0;k<io->n_otu;k++)
                     {
                       boot_data[k]->state[j] = orig_data[k]->state[position];
                     }
@@ -2617,15 +2617,15 @@ void MIXT_Ancestral_Sequences_One_Node(t_node *mixt_d, t_tree *mixt_tree, int pr
 
           p = (phydbl *)mCalloc(Ns,sizeof(phydbl));
 
-          /* For(site,curr_mixt_tree->n_pattern) // For each site in the current partition element */
-          For(site,curr_mixt_tree->data->init_len) // For each site in the current partition element
+          /* for(site=0;site<curr_mixt_tree->n_pattern;site++) // For each site in the current partition element */
+          for(site=0;site<curr_mixt_tree->data->init_len;site++) // For each site in the current partition element
             {
               csite = curr_mixt_tree->data->sitepatt[site];
 
               d    = curr_mixt_d->next ? curr_mixt_d->next : curr_mixt_d;
               tree = curr_mixt_tree->next ? curr_mixt_tree->next : curr_mixt_tree;
 
-              For(i,tree->mod->ns) p[i] = .0;
+              for(i=0;i<tree->mod->ns;i++) p[i] = .0;
 
               do // For each class of the mixture model that applies to the current partition element
                 {
@@ -2681,13 +2681,13 @@ void MIXT_Ancestral_Sequences_One_Node(t_node *mixt_d, t_tree *mixt_tree, int pr
                     }
 
 
-                  For(catg,tree->mod->ras->n_catg)
+                  for(catg=0;catg<tree->mod->ras->n_catg;catg++)
                     {
-                      For(i,Ns)
+                      for(i=0;i<Ns;i++)
                         {
                           p0 = .0;
                           if(v0->tax)
-                            For(j,tree->mod->ns)
+                            for(j=0;j<tree->mod->ns;j++)
                               {
                                 p0 += v0->b[0]->p_lk_tip_r[csite*Ns+j] * Pij0[catg*NsNs+i*Ns+j];
 
@@ -2696,7 +2696,7 @@ void MIXT_Ancestral_Sequences_One_Node(t_node *mixt_d, t_tree *mixt_tree, int pr
                                 /*        Pij0[catg*NsNs+i*Ns+j]); */
                               }
                           else
-                            For(j,tree->mod->ns)
+                            for(j=0;j<tree->mod->ns;j++)
                               {
                                 p0 += p_lk0[csite*NsNg+catg*Ns+j] * Pij0[catg*NsNs+i*Ns+j] / (phydbl)POW(2,sum_scale0[catg*curr_mixt_tree->n_pattern+csite]);
 
@@ -2708,7 +2708,7 @@ void MIXT_Ancestral_Sequences_One_Node(t_node *mixt_d, t_tree *mixt_tree, int pr
                               }
                           p1 = .0;
                           if(v1->tax)
-                            For(j,tree->mod->ns)
+                            for(j=0;j<tree->mod->ns;j++)
                               {
                                 p1 += v1->b[0]->p_lk_tip_r[csite*Ns+j] * Pij1[catg*NsNs+i*Ns+j];
 
@@ -2718,7 +2718,7 @@ void MIXT_Ancestral_Sequences_One_Node(t_node *mixt_d, t_tree *mixt_tree, int pr
                               }
 
                           else
-                            For(j,tree->mod->ns)
+                            for(j=0;j<tree->mod->ns;j++)
                               {
                                 p1 += p_lk1[csite*NsNg+catg*Ns+j] * Pij1[catg*NsNs+i*Ns+j] / (phydbl)POW(2,sum_scale1[catg*curr_mixt_tree->n_pattern+csite]);
 
@@ -2732,7 +2732,7 @@ void MIXT_Ancestral_Sequences_One_Node(t_node *mixt_d, t_tree *mixt_tree, int pr
 
                           p2 = .0;
                           if(v2->tax)
-                            For(j,tree->mod->ns)
+                            for(j=0;j<tree->mod->ns;j++)
                               {
                                 p2 += v2->b[0]->p_lk_tip_r[csite*Ns+j] * Pij2[catg*NsNs+i*Ns+j];
                                 /* printf("\n. p2 %d %f", */
@@ -2740,7 +2740,7 @@ void MIXT_Ancestral_Sequences_One_Node(t_node *mixt_d, t_tree *mixt_tree, int pr
                                 /*        Pij2[catg*NsNs+i*Ns+j]); */
                               }
                           else
-                            For(j,tree->mod->ns)
+                            for(j=0;j<tree->mod->ns;j++)
                               {
                                 p2 += p_lk2[csite*NsNg+catg*Ns+j] * Pij2[catg*NsNs+i*Ns+j] / (phydbl)POW(2,sum_scale2[catg*curr_mixt_tree->n_pattern+csite]);
 
@@ -2770,7 +2770,7 @@ void MIXT_Ancestral_Sequences_One_Node(t_node *mixt_d, t_tree *mixt_tree, int pr
                   if(print == YES)
                     {
                       PhyML_Fprintf(fp,"%4d\t%4d\t",site+1,d->num);
-                      For(i,Ns)
+                      for(i=0;i<Ns;i++)
                         {
                           PhyML_Fprintf(fp,"%.4f\t",p[i]);
                         }
@@ -2887,16 +2887,16 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
               len = 0.0;
             }
           
-          For(x,tree->mod->ns) 
+          for(x=0;x<tree->mod->ns;x++) 
             expld2[class*ns+x] = (phydbl)POW(tree->mod->eigen->e_val[x],len) * 
             LOG(tree->mod->eigen->e_val[x]) * rr *
             LOG(tree->mod->eigen->e_val[x]) * rr ;
           
-          For(x,tree->mod->ns) 
+          for(x=0;x<tree->mod->ns;x++) 
             expld[class*ns+x] = (phydbl)POW(tree->mod->eigen->e_val[x],len) * 
             LOG(tree->mod->eigen->e_val[x]) * rr ;
           
-          For(x,tree->mod->ns)  
+          for(x=0;x<tree->mod->ns;x++)  
             expl[class*ns+x] = (phydbl)POW(tree->mod->eigen->e_val[x],len);
           
           class++;
@@ -2914,7 +2914,7 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
       dlnlk              = 0.0;
       d2lnlk             = 0.0;
       
-      For(site,mixt_tree->n_pattern)
+      for(site=0;site<mixt_tree->n_pattern;site++)
         {
           b     = mixt_b->next;
           tree  = mixt_tree->next;
@@ -3139,7 +3139,7 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
               PhyML_Printf("\n== Invar = %d",mixt_tree->data->invar[site]);
               PhyML_Printf("\n== Mixt = %d",mixt_tree->is_mixt_tree);
               PhyML_Printf("\n== Lk = %G LOG(Lk) = %f < %G",site_lk,log_site_lk,-BIG);
-              For(class,mixt_tree->mod->ras->n_catg) PhyML_Printf("\n== rr=%f p=%f",mixt_tree->mod->ras->gamma_rr->v[class],mixt_tree->mod->ras->gamma_r_proba->v[class]);
+              for(class=0;class<mixt_tree->mod->ras->n_catg;class++) PhyML_Printf("\n== rr=%f p=%f",mixt_tree->mod->ras->gamma_rr->v[class],mixt_tree->mod->ras->gamma_r_proba->v[class]);
               PhyML_Printf("\n== Pinv = %G",mixt_tree->mod->ras->pinvar->v);
               PhyML_Printf("\n== Bl mult = %G",mixt_tree->mod->br_len_mult->v);
               PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);

@@ -39,7 +39,7 @@ int Pars(t_edge *b, t_tree *tree)
   if(b == NULL) b = tree->a_nodes[0]->b[0];
 
   tree->c_pars = 0;
-  For(site,n_patterns)
+  for(site=0;site<n_patterns;site++)
     {
       tree->site_pars[site] = 0;
       tree->curr_site       = site;
@@ -120,9 +120,9 @@ void Init_P_Pars_Tips(t_tree *tree)
 
 
 
-  For(curr_site,tree->data->crunch_len)
+  for(curr_site=0;curr_site<tree->data->crunch_len;curr_site++)
     {
-      For(i,tree->n_otu)
+      for(i=0;i<tree->n_otu;i++)
     {
       if(tree->a_nodes[i]->b[0]->rght->tax != 1)
         {
@@ -135,16 +135,16 @@ void Init_P_Pars_Tips(t_tree *tree)
           Init_Tips_At_One_Site_Nucleotides_Int(tree->a_nodes[i]->c_seq->state[curr_site],
                             0,
                             state_v);
-          For(j,tree->mod->ns) tree->a_nodes[i]->b[0]->p_pars_r[curr_site*dim1+j] = MAX_PARS;
-          For(j,tree->mod->ns) if(state_v[j] > 0.5) tree->a_nodes[i]->b[0]->p_pars_r[curr_site*dim1+j] =  0;
+          for(j=0;j<tree->mod->ns;j++) tree->a_nodes[i]->b[0]->p_pars_r[curr_site*dim1+j] = MAX_PARS;
+          for(j=0;j<tree->mod->ns;j++) if(state_v[j] > 0.5) tree->a_nodes[i]->b[0]->p_pars_r[curr_site*dim1+j] =  0;
         }
       else if(tree->io->datatype == AA)
         {
           Init_Tips_At_One_Site_AA_Int(tree->a_nodes[i]->c_seq->state[curr_site],
                        0,
                        state_v);
-          For(j,tree->mod->ns) tree->a_nodes[i]->b[0]->p_pars_r[curr_site*dim1+j] = MAX_PARS;
-          For(j,tree->mod->ns) if(state_v[j] > 0.5) tree->a_nodes[i]->b[0]->p_pars_r[curr_site*dim1+j] =  0;
+          for(j=0;j<tree->mod->ns;j++) tree->a_nodes[i]->b[0]->p_pars_r[curr_site*dim1+j] = MAX_PARS;
+          for(j=0;j<tree->mod->ns;j++) if(state_v[j] > 0.5) tree->a_nodes[i]->b[0]->p_pars_r[curr_site*dim1+j] =  0;
         }
       else if(tree->io->datatype == GENERIC)
         {
@@ -153,8 +153,8 @@ void Init_P_Pars_Tips(t_tree *tree)
                         tree->mod->io->state_len,
                         0,
                         state_v);
-          For(j,tree->mod->ns) tree->a_nodes[i]->b[0]->p_pars_r[curr_site*dim1+j] = MAX_PARS;
-          For(j,tree->mod->ns) if(state_v[j] > 0.5) tree->a_nodes[i]->b[0]->p_pars_r[curr_site*dim1+j] =  0;
+          for(j=0;j<tree->mod->ns;j++) tree->a_nodes[i]->b[0]->p_pars_r[curr_site*dim1+j] = MAX_PARS;
+          for(j=0;j<tree->mod->ns;j++) if(state_v[j] > 0.5) tree->a_nodes[i]->b[0]->p_pars_r[curr_site*dim1+j] =  0;
         }
     }
     }
@@ -170,9 +170,9 @@ void Init_Ui_Tips(t_tree *tree)
 
   state_v = (short int *)mCalloc(tree->mod->ns,sizeof(short int));
 
-  For(curr_site,tree->data->crunch_len)
+  for(curr_site=0;curr_site<tree->data->crunch_len;curr_site++)
     {
-      For(i,tree->n_otu)
+      for(i=0;i<tree->n_otu;i++)
         {
           if(tree->io->datatype == NT)
             {
@@ -189,7 +189,7 @@ void Init_Ui_Tips(t_tree *tree)
               /* 					    0, */
               /* 					    state_v);	       */
               tree->a_nodes[i]->b[0]->ui_r[curr_site] = 0;
-              For(j,tree->mod->ns) tree->a_nodes[i]->b[0]->ui_r[curr_site] += (unsigned int)(state_v[j] * POW(2,j));
+              for(j=0;j<tree->mod->ns;j++) tree->a_nodes[i]->b[0]->ui_r[curr_site] += (unsigned int)(state_v[j] * POW(2,j));
             }
           else if(tree->io->datatype == AA)
             {
@@ -200,7 +200,7 @@ void Init_Ui_Tips(t_tree *tree)
               /* 				   0, */
               /* 				   state_v); */
               tree->a_nodes[i]->b[0]->ui_r[curr_site] = 0;
-              For(j,tree->mod->ns) tree->a_nodes[i]->b[0]->ui_r[curr_site] += (unsigned int)(state_v[j] * POW(2,j));
+              for(j=0;j<tree->mod->ns;j++) tree->a_nodes[i]->b[0]->ui_r[curr_site] += (unsigned int)(state_v[j] * POW(2,j));
             }
           else if(tree->io->datatype == GENERIC)
             {
@@ -215,7 +215,7 @@ void Init_Ui_Tips(t_tree *tree)
               /* 					0, */
               /* 					state_v); */
               tree->a_nodes[i]->b[0]->ui_r[curr_site] = 0;
-              For(j,tree->mod->ns) tree->a_nodes[i]->b[0]->ui_r[curr_site] += (unsigned int)(state_v[j] * POW(2,j));
+              for(j=0;j<tree->mod->ns;j++) tree->a_nodes[i]->b[0]->ui_r[curr_site] += (unsigned int)(state_v[j] * POW(2,j));
             }
         }
     }
@@ -223,7 +223,7 @@ void Init_Ui_Tips(t_tree *tree)
   
   For(br,2*tree->n_otu-3)
     {
-      For(curr_site,tree->data->crunch_len)
+      for(curr_site=0;curr_site<tree->data->crunch_len;curr_site++)
         {
           tree->a_edges[br]->pars_r[curr_site] = 0;
           tree->a_edges[br]->pars_l[curr_site] = 0;
@@ -355,19 +355,19 @@ void Update_P_Pars(t_tree *tree, t_edge *b_fcus, t_node *n)
   
   if(tree->mod->s_opt->general_pars)
     {
-      For(site,n_patterns)
+      for(site=0;site<n_patterns;site++)
         {
-          For(i,tree->mod->ns)
+          for(i=0;i<tree->mod->ns;i++)
             {
               min_v1 = MAX_PARS;
-              For(j,tree->mod->ns)
+              for(j=0;j<tree->mod->ns;j++)
                 {
                   v = p_pars_v1[site*dim1+j] + tree->step_mat[i*tree->mod->ns+j];
                   if(v < min_v1) min_v1 = v;
                 }
               
               min_v2 = MAX_PARS;
-              For(j,tree->mod->ns)
+              for(j=0;j<tree->mod->ns;j++)
                 {
                   v = p_pars_v2[site*dim1+j] + tree->step_mat[i*tree->mod->ns+j];
                   if(v < min_v2) min_v2 = v;
@@ -378,7 +378,7 @@ void Update_P_Pars(t_tree *tree, t_edge *b_fcus, t_node *n)
     }
   else
     {
-      For(site,n_patterns)
+      for(site=0;site<n_patterns;site++)
         {
           pars[site] = pars_v1[site] + pars_v2[site];
           
@@ -410,17 +410,17 @@ int Pars_Core(t_edge *b, t_tree *tree)
 
   if(tree->mod->s_opt->general_pars)
     {
-      For(i,tree->mod->ns)
+      for(i=0;i<tree->mod->ns;i++)
     {
       min_l = MAX_PARS;
-      For(j,tree->mod->ns)
+      for(j=0;j<tree->mod->ns;j++)
         {
           v = b->p_pars_l[site*dim1+j] + tree->step_mat[i*tree->mod->ns+j];
           if(v < min_l) min_l = v;
         }
 
       min_r = MAX_PARS;
-      For(j,tree->mod->ns)
+      for(j=0;j<tree->mod->ns;j++)
         {
           v = b->p_pars_r[site*dim1+j] + tree->step_mat[i*tree->mod->ns+j];
           if(v < min_r) min_r = v;
@@ -453,7 +453,7 @@ int One_Pars_Step(t_edge *b,t_tree *tree)
   Set_Both_Sides(YES,tree);
   Pars(NULL,tree);
 
-  For(site,tree->n_pattern)
+  for(site=0;site<tree->n_pattern;site++)
     {
       if(!(b->ui_l[site] & b->ui_r[site])) break;
     }
@@ -475,7 +475,7 @@ int Pars_At_Given_Edge(t_edge *b, t_tree *tree)
   n_patterns = tree->n_pattern;
 
   tree->c_pars = .0;
-  For(site,n_patterns)
+  for(site=0;site<n_patterns;site++)
     {
       tree->site_pars[site] = 0;
       tree->curr_site = site;
@@ -948,7 +948,7 @@ void Get_Step_Mat(t_tree *tree)
 
     }
 
-  For(i,tree->mod->ns) tree->step_mat[i*tree->mod->ns+i] = 0;
+  for(i=0;i<tree->mod->ns;i++) tree->step_mat[i*tree->mod->ns+i] = 0;
 }
 
 /*********************************************************/
@@ -973,7 +973,7 @@ void Stepwise_Add_Pars(t_tree *tree)
 
   // Remove all tips except that corresponding to a_nodes[0], 
   // a_nodes[1] and a_nodes[2].  
-  For(i,tree->n_otu-3)
+  for(i=0;i<tree->n_otu-3;i++)
     {
       Prune_Subtree(tree->a_nodes[i+3]->v[0],                   
                     tree->a_nodes[i+3],
@@ -984,10 +984,10 @@ void Stepwise_Add_Pars(t_tree *tree)
 
   // Initial targets
   n_targets = 3;
-  For(i,n_targets) targets[i] = tree->a_nodes[i]->b[0];
+  for(i=0;i<n_targets;i++) targets[i] = tree->a_nodes[i]->b[0];
 
   // Regraft each tip on the tree at most parsimonious position
-  For(i,tree->n_otu-3)
+  for(i=0;i<tree->n_otu-3;i++)
     {
       Set_Both_Sides(YES,tree);
       Pars(NULL,tree);
@@ -998,7 +998,7 @@ void Stepwise_Add_Pars(t_tree *tree)
       best_target = NULL;
       tg_idx      = Permutate(n_targets);
 
-      For(j,n_targets)
+      for(j=0;j<n_targets;j++)
         {
           Graft_Subtree(targets[tg_idx[j]],
                         tree->a_nodes[nd_idx[i]+3]->v[0],
