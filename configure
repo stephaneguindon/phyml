@@ -5040,7 +5040,7 @@ if test "${enable_safemode+set}" = set; then :
 fi
 
 if test "x$enable_safemode" = "xyes"; then :
-  CFLAGS="-Wall -DSAFEMODE -O3 ${VECTOR_FLAG} ${ARCH_flag}"
+  CFLAGS="-Wall -DSAFEMODE -O3 ${VECTOR_FLAG}"
 else
   if test "x$enable_debug" = "xno"; then :
   CFLAGS="${DEFAULT_C_FLAG}"
@@ -5322,7 +5322,7 @@ $as_echo "yes" >&6; }
 fi
 fi
 if test "x$enable_beagle" = "xyes"; then :
-  CFLAGS="${CFLAGS} ${BEAGLE_CFLAGS} ${BEAGLE_LIBS} -lstdc++ ${ARCH_flag}"
+  CFLAGS="${CFLAGS} ${BEAGLE_CFLAGS} ${BEAGLE_LIBS} -lstdc++"
 else
   CFLAGS=${CFLAGS}
 fi
