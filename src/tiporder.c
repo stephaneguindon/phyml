@@ -351,7 +351,7 @@ void TIPO_Get_Tips_Y_Rank_Pre(t_node *a, t_node *d, phydbl *curr_rank, t_tree *t
   else
     {
       int i;
-      For(i,3)
+      for(i=0;i<3;i++)
 	{
 	  if(d->v[i] != a && d->b[i] != tree->e_root)
 	    {
@@ -394,7 +394,7 @@ void TIPO_Get_All_Y_Rank_Pre(t_node *a, t_node *d, t_tree *tree)
       int dir1,dir2;
       phydbl v1,v2;
 
-      For(i,3)
+      for(i=0;i<3;i++)
 	{
 	  if(d->v[i] != a && d->b[i] != tree->e_root)
 	    {
@@ -403,7 +403,7 @@ void TIPO_Get_All_Y_Rank_Pre(t_node *a, t_node *d, t_tree *tree)
 	}
 
       dir1 = dir2 = -1;
-      For(i,3)
+      for(i=0;i<3;i++)
 	{
 	  if(d->v[i] != a && d->b[i] != tree->e_root)
 	    {
@@ -440,7 +440,7 @@ void TIPO_Swap_One_Node(t_node *d, t_tree *tree)
       if(d != tree->n_root)
 	{
 	  dir1 = dir2 = -1;
-	  For(i,3)
+	  for(i=0;i<3;i++)
 	    {
 	      if((d->v[i] != d->anc) && (d->b[i] != tree->e_root))
 		{
@@ -584,7 +584,7 @@ void TIPO_Print_Tip_Ordered_Pre(t_node *a, t_node *d, t_tree *tree)
       int i,dir1,dir2;
 
       dir1 = dir2 = -1;
-      For(i,3)
+      for(i=0;i<3;i++)
 	{
 	  if((d->v[i] != a) && (d->b[i] != tree->e_root))
 	    {
@@ -743,7 +743,7 @@ void TIPO_Untangle_Node(t_node *a, t_node *d, t_node **node_table, int *conflict
       d_a = -1;
 
       /* It is a post order traversal */
-      For(i,3)
+      for(i=0;i<3;i++)
 	{
 	  if((d->v[i] != d->anc) && (d->b[i] != tree->e_root))
 	    {
@@ -756,7 +756,7 @@ void TIPO_Untangle_Node(t_node *a, t_node *d, t_node **node_table, int *conflict
       eps = 1.E-10;
 
       /* Find direction fron node d ((d)escendant) to a ((a)ncestor) */
-      For(i,3)
+      for(i=0;i<3;i++)
 	{
 	  if((d->v[i] == d->anc) || (d->b[i] == tree->e_root))
 	    {
@@ -1274,7 +1274,7 @@ phydbl TIPO_Lk_Post(t_node *a, t_node *d, t_tree *tree)
     {
       int i;
 
-      For(i,3)
+      for(i=0;i<3;i++)
 	{
 	  if(d->v[i] != a && d->b[i] != tree->e_root)
 	    {
@@ -1314,7 +1314,7 @@ phydbl TIPO_Lk_Core(t_node *a, t_node *d, t_tree *tree)
   else
     {
       d_v1 = d_v2 = -1;
-      For(i,3)
+      for(i=0;i<3;i++)
 	{
 	  if(d->v[i] != a && d->b[i] != tree->e_root)
 	    {
@@ -1330,7 +1330,7 @@ phydbl TIPO_Lk_Core(t_node *a, t_node *d, t_tree *tree)
   v1_d = v2_d = -1;
   if(d == tree->n_root)
     {
-      For(i,3)
+      for(i=0;i<3;i++)
 	{
 	  if(v1->b[i] == tree->e_root) v1_d = i;
 	  if(v2->b[i] == tree->e_root) v2_d = i;
@@ -1338,7 +1338,7 @@ phydbl TIPO_Lk_Core(t_node *a, t_node *d, t_tree *tree)
     }
   else
     {
-      For(i,3)
+      for(i=0;i<3;i++)
 	{
 	  if(v1->v[i] == d) v1_d = i;
 	  if(v2->v[i] == d) v2_d = i;

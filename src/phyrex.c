@@ -2882,14 +2882,14 @@ void PHYREX_Ldsk_To_Tree(t_tree *tree)
 
   For(i,tree->n_otu) assert(!(tree->a_nodes[i]->v[0] == NULL));
 
-  For(i,3) 
+  for(i=0;i<3;i++) 
     if(tree->n_root->v[2]->v[i] == tree->n_root) 
       { 
         tree->n_root->v[2]->v[i] = tree->n_root->v[1]; 
         break; 
       }
 
-  For(i,3) 
+  for(i=0;i<3;i++) 
     if(tree->n_root->v[1]->v[i] == tree->n_root) 
       { 
         tree->n_root->v[1]->v[i] = tree->n_root->v[2]; 

@@ -87,7 +87,7 @@ void RATES_Lk_Rates_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
   if(d->tax) return;
   else
     {
-      For(i,3)
+      for(i=0;i<3;i++)
 	{
 	  if((d->v[i] != a) && (d->b[i] != tree->e_root))
 	    {
@@ -128,7 +128,7 @@ phydbl RATES_Lk_Change_One_Time(t_node *n, phydbl new_t, t_tree *tree)
 
       RATES_Update_Triplet(n,tree);
       
-      For(i,3)
+      for(i=0;i<3;i++)
 	{
 	  if(n->b[i] != tree->e_root) RATES_Update_Triplet(n->v[i],tree);
 	  else RATES_Update_Triplet(tree->n_root,tree);
@@ -248,7 +248,7 @@ void RATES_Update_Triplet(t_node *n, t_tree *tree)
       r0 = tree->rates->nd_r[n->num];
 
       v1 = v2 = NULL;
-      For(i,3)
+      for(i=0;i<3;i++)
 	{
 	  if((n->v[i] != n->anc) && (n->b[i] != tree->e_root))
 	    {
@@ -816,7 +816,7 @@ void RATES_Print_Rates_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
     {
       int i;
 
-      For(i,3) 
+      for(i=0;i<3;i++) 
 	{
 	  if((d->v[i] != a) && (d->b[i] != tree->e_root))
 	    {
@@ -903,7 +903,7 @@ void RATES_Check_Node_Times_Pre(t_node *a, t_node *d, int *err, t_tree *tree)
     {
       int i;
 
-      For(i,3)
+      for(i=0;i<3;i++)
 	if((d->v[i] != a) && (d->b[i] != tree->e_root))	  
 	  RATES_Check_Node_Times_Pre(d,d->v[i],err,tree);
     }
@@ -1200,7 +1200,7 @@ void RATES_Get_Mean_Rates_Pre(t_node *a, t_node *d, t_edge *b, phydbl r_a, t_tre
     {
       int i;
       
-      For(i,3)
+      for(i=0;i<3;i++)
 	{
 	  if((d->v[i] != a) && (d->b[i] != tree->e_root))
 	    {
@@ -1268,7 +1268,7 @@ void RATES_Set_Node_Times_Pre(t_node *a, t_node *d, t_tree *tree)
       int i;
 
       v1 = v2 = NULL;
-      For(i,3) if((d->v[i] != a) && (d->b[i] != tree->e_root)) 
+      for(i=0;i<3;i++) if((d->v[i] != a) && (d->b[i] != tree->e_root)) 
 	{
 	  if(!v1) v1 = d->v[i]; 
 	  else    v2 = d->v[i];
@@ -1296,7 +1296,7 @@ void RATES_Set_Node_Times_Pre(t_node *a, t_node *d, t_tree *tree)
 	  PhyML_Printf("\n. Time for t_node %d is lower than should be. Set it to %f",d->num,tree->rates->nd_t[d->num]);
 	}
 
-      For(i,3)
+      for(i=0;i<3;i++)
 	{
 	  if((d->v[i] != a) && (d->b[i] != tree->e_root))
 	    {
@@ -1638,12 +1638,12 @@ void RATES_Posterior_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
 
   b = NULL;
   if(a == tree->n_root) b = tree->e_root;
-  else For(i,3) if(d->v[i] == a) { b = d->b[i]; break; }
+  else for(i=0;i<3;i++) if(d->v[i] == a) { b = d->b[i]; break; }
   
   v2 = v3 = NULL;
   if(!d->tax)
     {
-      For(i,3)
+      for(i=0;i<3;i++)
 	if((d->v[i] != a) && (d->b[i] != tree->e_root))
 	  {
 	    if(!v2) { v2 = d->v[i]; }
@@ -1869,7 +1869,7 @@ void RATES_Posterior_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
       if(d->tax == YES) return;
       else
 	{
-	  For(i,3)
+	  for(i=0;i<3;i++)
 	    if(d->v[i] != a && d->b[i] != tree->e_root)
 	      {
 		if(tree->io->lk_approx == EXACT) Update_P_Lk(tree,d->b[i],d);
@@ -1954,11 +1954,11 @@ void RATES_Posterior_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
 
   b1 = NULL;
   if(a == tree->n_root) b1 = tree->e_root;
-  else For(i,3) if(d->v[i] == a) { b1 = d->b[i]; break; }
+  else for(i=0;i<3;i++) if(d->v[i] == a) { b1 = d->b[i]; break; }
 
   b2 = b3 = NULL;
   v2 = v3 = NULL;
-  For(i,3)
+  for(i=0;i<3;i++)
     if((d->v[i] != a) && (d->b[i] != tree->e_root))
       {
 	if(!v2) { v2 = d->v[i]; b2 = d->b[i]; }
@@ -2131,7 +2131,7 @@ void RATES_Posterior_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
       PhyML_Printf("\n. COV11=%f COV12=%f COV13=%f COV22=%f COV23=%f COV33=%f",cov11,cov12,cov13,cov22,cov23,cov33);
       PhyML_Printf("\n. constraint1: %f constraints2: %f",l2XY[1],l2XY[2]);
       PhyML_Printf("\n");
-      For(i,3)
+      for(i=0;i<3;i++)
       	{
       	  PhyML_Printf(". mu%d=%12lf\t",i,mu[i]);
       	  For(j,3)
@@ -2329,7 +2329,7 @@ void RATES_Posterior_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
       if(d->tax == YES) return;
       else
 	{
-	  For(i,3)
+	  for(i=0;i<3;i++)
 	    if(d->v[i] != a && d->b[i] != tree->e_root)
 	      {
 		if(tree->io->lk_approx == EXACT) Update_P_Lk(tree,d->b[i],d);
@@ -2639,7 +2639,7 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
   else
     {
       int i;
-      For(i,3) 
+      for(i=0;i<3;i++) 
 	if((d->v[i] != a) && (d->b[i] != tree->e_root)) 
 	  RATES_Update_Cur_Bl_Pre(d,d->v[i],d->b[i],tree);
     }
@@ -2674,7 +2674,7 @@ void RATES_Bl_To_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
     {
       int i;
 
-      For(i,3) 
+      for(i=0;i<3;i++) 
 	if((d->v[i] != a) && (d->b[i] != tree->e_root)) 
 	  RATES_Bl_To_Bl_Pre(d,d->v[i],d->b[i],tree);
     }
@@ -2709,7 +2709,7 @@ void RATES_Bl_To_Ml_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
     {
       int i;
 
-      For(i,3) 
+      for(i=0;i<3;i++) 
 	if((d->v[i] != a) && (d->b[i] != tree->e_root)) 
 	  RATES_Bl_To_Ml_Pre(d,d->v[i],d->b[i],tree);
     }
@@ -2785,7 +2785,7 @@ void RATES_Get_Cov_Matrix_Rooted_Pre(t_node *a, t_node *d, t_edge *b, phydbl *co
   if(d->tax) return;
   else
     {
-      For(i,3)
+      for(i=0;i<3;i++)
 	if((d->v[i] != a) && (d->b[i] != tree->e_root)) 
 	  RATES_Get_Cov_Matrix_Rooted_Pre(d,d->v[i],d->b[i],cov,tree);
     }
@@ -2860,7 +2860,7 @@ void RATES_Variance_Mu_Pre(t_node *a, t_node *d, t_tree *tree)
   if(d->tax) return;
 
   dir1 = dir2 = -1;
-  For(i,3)
+  for(i=0;i<3;i++)
     {
       if((d->v[i] != a) && (d->b[i] != tree->e_root))
 	{
@@ -2882,7 +2882,7 @@ void RATES_Variance_Mu_Pre(t_node *a, t_node *d, t_tree *tree)
   tree->rates->cov_r[d->v[dir2]->num*dim+d->v[dir2]->num] = var0+var2;
 
 
-  For(i,3)
+  for(i=0;i<3;i++)
     {
       if((d->v[i] != a) && (d->b[i] != tree->e_root))
 	{
@@ -3135,7 +3135,7 @@ void RATES_Expected_Tree_Length_Pre(t_node *a, t_node *d, phydbl eranc, phydbl *
 
   if(d->tax) return;
   else
-    For(i,3)
+    for(i=0;i<3;i++)
       if(d->v[i] != a && d->b[i] != tree->e_root)
 	RATES_Expected_Tree_Length_Pre(d,d->v[i],erdes,mean,n,tree);
 }
@@ -3725,7 +3725,7 @@ void RATES_Write_Mean_R_On_Edge_Label(t_node *a, t_node *d, t_edge *b, t_tree *t
   else
     {
       int i;
-      For(i,3)
+      for(i=0;i<3;i++)
 	{
 	  if((d->v[i] != a) && (d->b[i] != tree->e_root))
 	    {
@@ -3756,7 +3756,7 @@ phydbl RATES_Get_Mean_Rate_In_Subtree(t_node *root, t_tree *tree)
       else
 	{
 	  int i;
-	  For(i,3)
+	  for(i=0;i<3;i++)
 	    {
 	      if(root->v[i] != root->anc && root->b[i] != tree->e_root)
 		{
@@ -3785,7 +3785,7 @@ void RATES_Get_Mean_Rate_In_Subtree_Pre(t_node *a, t_node *d, phydbl *sum, int *
   else
     {
       int i;
-      For(i,3)
+      for(i=0;i<3;i++)
 	{
 	  if(d->v[i] != a && d->b[i] != tree->e_root)
 	    {

@@ -1026,7 +1026,7 @@ void DATE_List_Of_Nodes_Younger_Than(t_node *a, t_node *d, phydbl lim, t_ll **li
         }
       else
         {
-          For(i,3)
+          for(i=0;i<3;i++)
             if(d->v[i] != a && d->b[i] != tree->e_root)
               DATE_List_Of_Nodes_Younger_Than(d,d->v[i],lim,list,tree);            
         }
@@ -1053,7 +1053,7 @@ void DATE_List_Of_Nodes_And_Ancestors_Younger_Than(t_node *a, t_node *d, phydbl 
         }
       else
         {      
-          For(i,3)
+          for(i=0;i<3;i++)
             if(d->v[i] != a && d->b[i] != tree->e_root)
               DATE_List_Of_Nodes_And_Ancestors_Younger_Than(d,d->v[i],lim,list,tree);            
         }

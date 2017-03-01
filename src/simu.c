@@ -898,7 +898,7 @@ void Check_NNI_Scores_Around(t_node *a, t_node *d, t_edge *b, phydbl *best_score
 
   if(d->tax) return;
   
-  For(i,3)
+  for(i=0;i<3;i++)
     {
       if((d->v[i] != a) && (!d->v[i]->tax))
         {
@@ -941,7 +941,7 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
     }
   else if(a->tax == YES)
     {      
-      For(i,3) if(d->v[i] != a)
+      for(i=0;i<3;i++) if(d->v[i] != a)
         {
           Update_P_Lk(tree,d->b[i],d);
           NNI_Traversal(d,d->v[i],a,d->b[i],tree);
@@ -959,7 +959,7 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
       lk2 = UNLIKELY;
       
       v1 = v2 = NULL;
-      For(i,3)
+      for(i=0;i<3;i++)
         if(d->v[i] != a)
           {
             if(v1 == NULL) v1 = d->v[i];
@@ -979,7 +979,7 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
       
 
       u = NULL;
-      For(i,3) if(a->v[i] != d && a->v[i] != v) { u = a->v[i]; break; }
+      for(i=0;i<3;i++) if(a->v[i] != d && a->v[i] != v) { u = a->v[i]; break; }
       
 
       // Optimize edge length
@@ -1051,7 +1051,7 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
           /*   } */
         }
       
-      For(i,3)
+      for(i=0;i<3;i++)
         if(d->v[i] != a)
           {
             Update_P_Lk(tree,d->b[i],d);

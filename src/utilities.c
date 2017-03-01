@@ -91,7 +91,7 @@ void Set_Edge_Dirs(t_edge *b, t_node *a, t_node *d, t_tree *tree)
     }
 
   b->l_r = b->r_l = -1;
-  For(i,3)
+  for(i=0;i<3;i++)
     {
       /* if((a->v[i]) && ((a->v[i] == d) || (e_root && a->b[i] == e_root))) */
       if((a->v[i]) && ((a->v[i] == d)))
@@ -107,10 +107,10 @@ void Set_Edge_Dirs(t_edge *b, t_node *a, t_node *d, t_tree *tree)
         }
     }
 
-  if(a->tax) {b->r_l = 0; For(i,3) if(d->v[i]==a) {b->l_r = i; break;}}
+  if(a->tax) {b->r_l = 0; for(i=0;i<3;i++) if(d->v[i]==a) {b->l_r = i; break;}}
 
   b->l_v1 = b->l_v2 = b->r_v1 = b->r_v2 = -1;
-  For(i,3)
+  for(i=0;i<3;i++)
     {
       if(b->left->v[i] != b->rght)
         {
@@ -777,7 +777,7 @@ void Connect_Edges_To_Nodes_Recur(t_node *a, t_node *d, t_tree *tree)
 
   if(d->tax) return;
   else 
-    For(i,3) 
+    for(i=0;i<3;i++) 
       if(d->v[i] != a) /* Don't add d->b[i] != tree->e_root condition here since tree is not wired yet... */ 
         Connect_Edges_To_Nodes_Recur(d,d->v[i],tree);
 }
@@ -796,10 +796,10 @@ void Connect_One_Edge_To_Two_Nodes(t_node *a, t_node *d, t_edge *b, t_tree *tree
     }
 
   dir_a_d = -1;
-  For(i,3) if(a->v[i] == d) { dir_a_d = i; break; }
+  for(i=0;i<3;i++) if(a->v[i] == d) { dir_a_d = i; break; }
 
   dir_d_a = -1;
-  For(i,3) if(d->v[i] == a) { dir_d_a = i; break; }
+  for(i=0;i<3;i++) if(d->v[i] == a) { dir_d_a = i; break; }
 
   if(dir_a_d == -1) Generic_Exit(__FILE__,__LINE__,__FUNCTION__); 
   if(dir_d_a == -1) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
@@ -1855,11 +1855,11 @@ void Swap(t_node *a, t_node *b, t_node *c, t_node *d, t_tree *tree)
 
   ab = ba = cd = dc = bc = -1;
   
-  For(i,3) if(a->v[i] == b) { ab = i; break; }
-  For(i,3) if(b->v[i] == a) { ba = i; break; }
-  For(i,3) if(c->v[i] == d) { cd = i; break; }
-  For(i,3) if(d->v[i] == c) { dc = i; break; }
-  For(i,3) if(b->v[i] == c) { bc = i; break; }
+  for(i=0;i<3;i++) if(a->v[i] == b) { ab = i; break; }
+  for(i=0;i<3;i++) if(b->v[i] == a) { ba = i; break; }
+  for(i=0;i<3;i++) if(c->v[i] == d) { cd = i; break; }
+  for(i=0;i<3;i++) if(d->v[i] == c) { dc = i; break; }
+  for(i=0;i<3;i++) if(b->v[i] == c) { bc = i; break; }
   
   if(ab < 0 || ba < 0 || cd < 0 || dc < 0)
     {
@@ -1883,7 +1883,7 @@ void Swap(t_node *a, t_node *b, t_node *c, t_node *d, t_tree *tree)
     (d->b[dc]->left = b):
     (d->b[dc]->rght = b);
   
-  For(i,3)
+  for(i=0;i<3;i++)
     {
       if(a->b[ab]->left->v[i] == a->b[ab]->rght) a->b[ab]->l_r = i;
       if(a->b[ab]->rght->v[i] == a->b[ab]->left) a->b[ab]->r_l = i;
@@ -1896,7 +1896,7 @@ void Swap(t_node *a, t_node *b, t_node *c, t_node *d, t_tree *tree)
   d->b[dc]->l_v1 = d->b[dc]->l_v2 =
   d->b[dc]->r_v1 = d->b[dc]->r_v2 = -1;
   
-  For(i,3)
+  for(i=0;i<3;i++)
     {
       if(i != a->b[ab]->l_r)
         {
@@ -1978,7 +1978,7 @@ void Update_SubTree_Partial_Lk(t_edge *b_fcus, t_node *a, t_node *d, t_tree *tre
 
   Update_P_Lk(tree,b_fcus,a);
   if(d->tax) return;
-  else For(i,3) if(d->v[i] != a)
+  else for(i=0;i<3;i++) if(d->v[i] != a)
     Update_SubTree_Partial_Lk(d->b[i],d,d->v[i],tree);
 }
 
@@ -3516,7 +3516,7 @@ void Get_Bip(t_node *a, t_node *d, t_tree *tree)
           d->bip_size[1]    = -1;
           d->bip_size[2]    = -1;
           
-          For(i,3)
+          for(i=0;i<3;i++)
             {
               if(a->v[i] == d)
                 {
@@ -3562,14 +3562,14 @@ void Get_Bip(t_node *a, t_node *d, t_tree *tree)
       
       d_a = -1;
       
-      For(i,3)
+      for(i=0;i<3;i++)
         {
           if(d->v[i] != a) Get_Bip(d,d->v[i],tree);
           else if(d->v[i] == a) d_a = i;
         }
       
       d->bip_size[d_a] = 0;
-      For(i,3)
+      for(i=0;i<3;i++)
         if(d->v[i] != a)
           {
             For(j,3)
@@ -3603,7 +3603,7 @@ void Get_Bip(t_node *a, t_node *d, t_tree *tree)
         }while(swapped == YES);
       
       
-      For(i,3)
+      for(i=0;i<3;i++)
         if(a->v[i] == d)
           {
             a->bip_size[i] = 0;
@@ -4623,7 +4623,7 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
   if(a->tax) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
   dir_v1 = dir_v2 = -1;
-  For(i,3)
+  for(i=0;i<3;i++)
     {
       if(a->v[i] != d)
         {
@@ -4864,7 +4864,7 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
         }
     }
 
-  For(i,3)
+  for(i=0;i<3;i++)
     if(v2->v[i] == a)
       {
         v2->v[i] = v1;
@@ -4880,7 +4880,7 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
     }
 #endif
 
-  For(i,3)
+  for(i=0;i<3;i++)
     if(v1->v[i] == a)
       {
         v1->v[i] = v2;
@@ -4999,7 +4999,7 @@ void Graft_Subtree(t_edge *target, t_node *link, t_node *link_daughter, t_edge *
 
   dir_v1 = dir_v2 = -1;
   b_up = NULL;
-  For(i,3)
+  for(i=0;i<3;i++)
     {
       if(link->v[i] == NULL)
         {
@@ -5139,7 +5139,7 @@ void Graft_Subtree(t_edge *target, t_node *link, t_node *link_daughter, t_edge *
   
 
 
-  For(i,3)
+  for(i=0;i<3;i++)
     if(v2->b[i] == target)
       {
         v2->v[i] = link;
@@ -5160,7 +5160,7 @@ void Graft_Subtree(t_edge *target, t_node *link, t_node *link_daughter, t_edge *
   link->b[dir_v1] = target;
 
 
-  For(i,3)
+  for(i=0;i<3;i++)
     if(v1->v[i] == v2)
       {
         v1->v[i] = link;
@@ -5249,7 +5249,7 @@ void Reassign_Node_Nums(t_node *a, t_node *d, int *curr_ext_node, int *curr_int_
       (*curr_int_node)++;
     }
 
-  For(i,3)
+  for(i=0;i<3;i++)
     {
       if(d->v[i] != a)
         Reassign_Node_Nums(d,d->v[i],curr_ext_node,curr_int_node,tree);
@@ -5265,7 +5265,7 @@ void Reassign_Edge_Nums(t_node *a, t_node *d, int *curr_br, t_tree *tree)
   t_edge *buff;
   int i,j;
 
-  For(i,3)
+  for(i=0;i<3;i++)
     if(a->v[i] == d)
       {
         buff = tree->a_edges[*curr_br];
@@ -5285,7 +5285,7 @@ void Reassign_Edge_Nums(t_node *a, t_node *d, int *curr_br, t_tree *tree)
   if(d->tax) return;
   else
     {
-      For(i,3)
+      for(i=0;i<3;i++)
         if(d->v[i] != a)
           Reassign_Edge_Nums(d,d->v[i],curr_br,tree);
     }
@@ -5302,7 +5302,7 @@ void Find_Mutual_Direction(t_node *n1, t_node *n2, short int *dir_n1_to_n2, shor
   if(n1 == n2) return;
 
 
-  For(i,3)
+  for(i=0;i<3;i++)
     {
       For(j,3)
     {
@@ -5322,7 +5322,7 @@ void Find_Mutual_Direction(t_node *n1, t_node *n2, short int *dir_n1_to_n2, shor
     }
     }
 
-  For(i,3)
+  for(i=0;i<3;i++)
     {
       For(j,3)
     {
@@ -5341,7 +5341,7 @@ void Find_Mutual_Direction(t_node *n1, t_node *n2, short int *dir_n1_to_n2, shor
 
 
 
-/*   For(i,3) */
+/*   for(i=0;i<3;i++) */
 /*     { */
 /*       n_zero_line = 0; */
 /*       For(j,3) */
@@ -5352,7 +5352,7 @@ void Find_Mutual_Direction(t_node *n1, t_node *n2, short int *dir_n1_to_n2, shor
 /*     } */
 
 
-/*   For(i,3) */
+/*   for(i=0;i<3;i++) */
 /*     { */
 /*       n_zero_col = 0; */
 /*       For(j,3) */
@@ -5378,7 +5378,7 @@ void Update_Dir_To_Tips(t_node *a, t_node *d, t_tree *tree)
 
   inout = (short int *)mCalloc(tree->n_otu,sizeof(short int));
   
-  For(i,3)
+  for(i=0;i<3;i++)
     {
       if(a->v[i] == d)
         {
@@ -5394,7 +5394,7 @@ void Update_Dir_To_Tips(t_node *a, t_node *d, t_tree *tree)
     {      
       d_a = -1;
       
-      For(i,3)
+      for(i=0;i<3;i++)
         {
           if(d->v[i] != a) Update_Dir_To_Tips(d,d->v[i],tree);
           else if(d->v[i] == a) d_a = i;
@@ -5443,7 +5443,7 @@ int Get_Subtree_Size(t_node *a, t_node *d)
   else
     {
       size = 0;
-      For(i,3)
+      for(i=0;i<3;i++)
     if(d->v[i] != a)
       size += Get_Subtree_Size(d,d->v[i]);
     }
@@ -5572,7 +5572,7 @@ phydbl Triple_Dist_Approx(t_node *a, t_edge *b, t_tree *tree)
     {
       int i;
 
-      For(i,3)
+      for(i=0;i<3;i++)
         if(a->b[i] != b)
           Update_PMat_At_Given_Edge(a->b[i],tree);
 
@@ -5710,7 +5710,7 @@ void Found_In_Subtree(t_node *a, t_node *d, t_node *target, int *match, t_tree *
     {
       int i;
       if(d == target) *match =  1;
-      For(i,3)
+      for(i=0;i<3;i++)
     {
       if(d->v[i] != a)
         Found_In_Subtree(d,d->v[i],target,match,tree);
@@ -5726,7 +5726,7 @@ void Get_List_Of_Target_Edges(t_node *a, t_node *d, t_edge **list, int *list_siz
 {
   int i;
 
-  For(i,3)
+  for(i=0;i<3;i++)
     {
       if(a->v[i] && a->v[i] == d)
         {
@@ -5738,7 +5738,7 @@ void Get_List_Of_Target_Edges(t_node *a, t_node *d, t_edge **list, int *list_siz
   if(d->tax) return;
   else
     {
-      For(i,3)
+      for(i=0;i<3;i++)
         {
           if(d->v[i] != a)
             Get_List_Of_Target_Edges(d,d->v[i],list,list_size,tree);
@@ -5912,12 +5912,12 @@ void Get_Dist_Btw_Edges(t_node *a, t_node *d, t_tree *tree)
   t_edge *b_fcus;
 
   b_fcus = NULL;
-  For(i,3) if(a->v[i] == d) {b_fcus = a->b[i]; break;}
+  for(i=0;i<3;i++) if(a->v[i] == d) {b_fcus = a->b[i]; break;}
 
   if(d->tax) return;
   else
     {
-      For(i,3)
+      for(i=0;i<3;i++)
     if(d->v[i] != a)
       {
         d->b[i]->topo_dist_btw_edges = b_fcus->topo_dist_btw_edges + 1;
@@ -5953,7 +5953,7 @@ void Get_List_Of_Nodes_In_Polytomy(t_node *a, t_node *d, t_node ***list, int *si
     {
       int i;
 
-      For(i,3)
+      for(i=0;i<3;i++)
     {
       if(d->v[i] != a)
         {
@@ -6028,7 +6028,7 @@ void Get_List_Of_Adjacent_Targets(t_node *a, t_node *d, t_node ***node_list, t_e
   
   if(a->tax) return;
   
-  For(i,3)
+  for(i=0;i<3;i++)
     if(a->v[i] == d)
       {
         if(node_list != NULL) (*node_list)[*list_size] = a;
@@ -6038,7 +6038,7 @@ void Get_List_Of_Adjacent_Targets(t_node *a, t_node *d, t_node ***node_list, t_e
   if(curr_depth == max_depth) return;
   if(d->tax) return;
   else
-    For(i,3)
+    for(i=0;i<3;i++)
       if(d->v[i] != a) Get_List_Of_Adjacent_Targets(d,d->v[i],node_list,edge_list,list_size,curr_depth+1,max_depth);
 }
 
@@ -6776,11 +6776,11 @@ void Randomize_Tree(t_tree *tree, int n_prune_regraft)
                     tree);
       
       n_targets = 0;
-      For(i,3)
+      for(i=0;i<3;i++)
         if(b_target->left->v[i] != b_target->rght)
           Get_List_Of_Adjacent_Targets(b_target->left,b_target->left->v[i],NULL,&target_list,&n_targets,0,tree->n_otu);
       
-      For(i,3)
+      for(i=0;i<3;i++)
         if(b_target->rght->v[i] != b_target->left)
           Get_List_Of_Adjacent_Targets(b_target->rght,b_target->rght->v[i],NULL,&target_list,&n_targets,0,tree->n_otu);
       
@@ -6994,7 +6994,7 @@ void Update_Ancestors(t_node *a, t_node *d, t_tree *tree)
   else
     {
       int i;
-      For(i,3)
+      for(i=0;i<3;i++)
         if((d->v[i] != a) && (d->b[i] != tree->e_root))
           Update_Ancestors(d,d->v[i],tree);
     }
@@ -7233,14 +7233,14 @@ void Random_Lineage_Rates(t_node *a, t_node *d, t_edge *b, phydbl stick_prob, ph
       new_rate = curr_rate;
     }
 
-      For(i,3)
+      for(i=0;i<3;i++)
     if(a->v[i] == d)
       {
         a->b[i]->l->v *= rates[new_rate];
         break;
       }
 
-      For(i,3)
+      for(i=0;i<3;i++)
     if(a->v[i] == d)
       {
         if(!(a->b[i]->n_labels%BLOCK_LABELS)) Make_New_Edge_Label(a->b[i]);
@@ -7256,7 +7256,7 @@ void Random_Lineage_Rates(t_node *a, t_node *d, t_edge *b, phydbl stick_prob, ph
   if(d->tax) return;
   else
     {
-      For(i,3)
+      for(i=0;i<3;i++)
     if(d->v[i] != a)
       Random_Lineage_Rates(d,d->v[i],d->b[i],stick_prob,rates,curr_rate,n_rates,tree);
     }
@@ -7425,7 +7425,7 @@ void Evolve_Recur(t_node *a, t_node *d, t_edge *b, int a_state, int r_class, int
   else
     {
       int i;
-      For(i,3)
+      for(i=0;i<3;i++)
         if(d->v[i] != a)
           Evolve_Recur(d,d->v[i],d->b[i],
                        d_state,r_class,site_num,gen_data,
@@ -7501,7 +7501,7 @@ void Site_Diversity_Post(t_node *a, t_node *d, t_edge *b, t_tree *tree)
     {
       int i;
 
-      For(i,3)
+      for(i=0;i<3;i++)
         if(d->v[i] != a)
           Site_Diversity_Post(d,d->v[i],d->b[i],tree);
       
@@ -7520,7 +7520,7 @@ void Site_Diversity_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
     {
       int i;
 
-      For(i,3)
+      for(i=0;i<3;i++)
     if(d->v[i] != a)
       {
         Subtree_Union(d,d->b[i],tree);
@@ -8224,7 +8224,7 @@ void Dist_To_Root_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
   if(d->tax) return;
   else
     {
-      For(i,3)
+      for(i=0;i<3;i++)
     if((d->v[i] != a) && (d->b[i] != tree->e_root))
       Dist_To_Root_Pre(d,d->v[i],d->b[i],tree);
     }
@@ -8465,7 +8465,7 @@ void Time_To_Branch_Pre(t_node *a, t_node *d, t_tree *tree)
   if(d->tax) return;
   else
     {
-      For(i,3)
+      for(i=0;i<3;i++)
         if((d->v[i] != a) && (d->b[i] != tree->e_root))
           Time_To_Branch_Pre(d,d->v[i],tree);
     }
@@ -8499,13 +8499,13 @@ void Branch_To_Time_Pre(t_node *a, t_node *d, t_tree *tree)
     }
   else
     {
-      For(i,3)
+      for(i=0;i<3;i++)
     if((d->v[i] != a) && (d->b[i] != tree->e_root))
       {
             Branch_To_Time_Pre(d,d->v[i],tree);
           }
 
-      For(i,3)
+      for(i=0;i<3;i++)
     if((d->v[i] != a) && (d->b[i] != tree->e_root))
       {
             tree->rates->nd_t[d->num] = tree->rates->nd_t[d->v[i]->num] - d->b[i]->l->v;
@@ -8540,7 +8540,7 @@ void Branch_Lengths_To_Rate_Lengths_Pre(t_node *a, t_node *d, t_tree *tree)
   if(d->tax) return;
   else
     {
-      For(i,3)
+      for(i=0;i<3;i++)
     if((d->v[i] != a) && (d->b[i] != tree->e_root))
       Branch_Lengths_To_Rate_Lengths_Pre(d,d->v[i],tree);
     }
@@ -8604,7 +8604,7 @@ void Find_Clade_Pre(t_node *a, t_node *d, int *tax_num_list, int list_size, int 
   int score;
 
 
-  For(i,3)
+  for(i=0;i<3;i++)
     if((d->v[i] == a) || (d->b[i] == tree->e_root))
       {
     if(list_size == d->bip_size[i])
@@ -8628,7 +8628,7 @@ void Find_Clade_Pre(t_node *a, t_node *d, int *tax_num_list, int list_size, int 
 
   if(d->tax) return;
   else
-    For(i,3)
+    for(i=0;i<3;i++)
       if((d->v[i] != a) && (d->b[i] != tree->e_root))
         Find_Clade_Pre(d,d->v[i],tax_num_list,list_size,num,tree);
 }
@@ -9058,7 +9058,7 @@ void Get_Best_Root_Position_Post(t_node *a, t_node *d, int *has_outgrp, t_tree *
     {
       int i;
       
-      For(i,3)
+      for(i=0;i<3;i++)
         if(d->v[i] != a && (d->b[i] != tree->e_root))
           Get_Best_Root_Position_Post(d,d->v[i],has_outgrp,tree);
       
@@ -9085,7 +9085,7 @@ void Get_Best_Root_Position_Pre(t_node *a, t_node *d, t_tree *tree)
     {
       int i;
 
-      For(i,3)
+      for(i=0;i<3;i++)
     if(d->v[i] != a && (d->b[i] != tree->e_root))
       {
         Get_OutIn_Scores(d->v[i],d);
@@ -9108,7 +9108,7 @@ void Get_OutIn_Scores(t_node *a, t_node *d)
 
   d_a = v1_d = v2_d = -1;
   d_v1 = d_v2 = -1;
-  For(i,3)
+  for(i=0;i<3;i++)
     {
       if(d->v[i] != a)
     {
@@ -9117,9 +9117,9 @@ void Get_OutIn_Scores(t_node *a, t_node *d)
     }
     }
 
-  For(i,3) if(d->v[i] == a) { d_a = i; break; }
-  For(i,3) if(d->v[d_v1]->v[i] == d) { v1_d = i; break; }
-  For(i,3) if(d->v[d_v2]->v[i] == d) { v2_d = i; break; }
+  for(i=0;i<3;i++) if(d->v[i] == a) { d_a = i; break; }
+  for(i=0;i<3;i++) if(d->v[d_v1]->v[i] == d) { v1_d = i; break; }
+  for(i=0;i<3;i++) if(d->v[d_v2]->v[i] == d) { v2_d = i; break; }
 
   d->s_ingrp[d_a] =
     d->v[d_v1]->s_ingrp[v1_d] +
@@ -9204,7 +9204,7 @@ int Scale_Subtree_Height(t_node *a, phydbl K, phydbl floor, int *n_nodes, t_tree
           *n_nodes = 1;
         }
       
-      For(i,3)
+      for(i=0;i<3;i++)
         if(a->v[i] != a->anc && a->b[i] != tree->e_root)
           {
             Scale_Node_Heights_Post(a,a->v[i],K,floor,n_nodes,tree);
@@ -9248,7 +9248,7 @@ void Scale_Node_Heights_Post(t_node *a, t_node *d, phydbl K, phydbl floor, int *
           Warn_And_Exit("");
         }
       
-      For(i,3)
+      for(i=0;i<3;i++)
         if(d->v[i] != a && d->b[i] != tree->e_root)
           Scale_Node_Heights_Post(d,d->v[i],K,floor,n_nodes,tree);
       
@@ -9274,7 +9274,7 @@ int Scale_Subtree_Rates(t_node *a, phydbl mult, int *n_nodes, t_tree *tree)
     }
   else
     {
-      For(i,3) if((a->v[i] != a->anc) &&
+      for(i=0;i<3;i++) if((a->v[i] != a->anc) &&
           (a->b[i] != tree->e_root) &&
           (res == 1)) res = Scale_Subtree_Rates_Post(a,a->v[i],mult,n_nodes,tree);
       return res;
@@ -9301,7 +9301,7 @@ int Scale_Subtree_Rates_Post(t_node *a, t_node *d, phydbl mult, int *n_nodes, t_
       int i,res;
       
       res = 1;
-      For(i,3)
+      for(i=0;i<3;i++)
         {
           if((d->v[i] != a) &&
              (d->b[i] != tree->e_root) &&
@@ -9340,7 +9340,7 @@ void Get_Node_Ranks_Pre(t_node *a, t_node *d,t_tree *tree)
     {
       int i;
 
-      For(i,3)
+      for(i=0;i<3;i++)
     {
       if(d->v[i] != a && d->b[i] != tree->e_root)
         {
@@ -9859,7 +9859,7 @@ void Find_Surviving_Edges_In_Small_Tree_Post(t_node *a, t_node *d, t_tree *small
     {
       int i;
 
-      For(i,3)
+      for(i=0;i<3;i++)
     {
       if(d->v[i] != a && d->b[i] != big_tree->e_root)
         {
@@ -10447,7 +10447,7 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
         }
 
       *n_v1 = *n_v2 = NULL;
-      For(i,3)//A node has 3 branches
+      for(i=0;i<3;i++)//A node has 3 branches
         {
           if(d->b[i] != b)//Skip d's own branch(i.e. the branch coming from d's parent); because we only care about the branches of d's neighbors
             {
@@ -10566,7 +10566,7 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
 
 
               *n_v1 = *n_v2 = NULL;
-              For(i,3)
+              for(i=0;i<3;i++)
                 {
                   if(d->b[i] != tree->e_root)
                     {
@@ -10627,7 +10627,7 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
                                 (tree->n_root->b[2]),
                                 tree);
 #endif
-              For(i,3)
+              for(i=0;i<3;i++)
                 {
                   if(d->b[i] != tree->e_root && d->b[i] != b)
                     {
@@ -10665,7 +10665,7 @@ void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
             }
 
           *n_v1 = *n_v2 = NULL;
-          For(i,3)
+          for(i=0;i<3;i++)
             {
               if(d->b[i] != b)
                 {
@@ -10970,7 +10970,7 @@ void Calculate_Number_Of_Diff_States_Post(t_node *a, t_node *d, t_edge *b, t_tre
     {
       int i;
 
-      For(i,3)
+      for(i=0;i<3;i++)
         if(d->v[i] != a)
           Calculate_Number_Of_Diff_States_Post(d,d->v[i],d->b[i],tree);
 
@@ -10989,7 +10989,7 @@ void Calculate_Number_Of_Diff_States_Pre(t_node *a, t_node *d, t_edge *b, t_tree
     {
       int i;
 
-      For(i,3)
+      for(i=0;i<3;i++)
         if(d->v[i] != a)
           {
             Calculate_Number_Of_Diff_States_Core(d->v[i],d,d->b[i],tree);
@@ -11159,7 +11159,7 @@ void Number_Of_Diff_States_One_Site_Post(t_node *a, t_node *d, t_edge *b, int si
     {
       int i;
 
-      For(i,3)
+      for(i=0;i<3;i++)
         if(d->v[i] != a && d->b[i] != tree->e_root)
           Number_Of_Diff_States_One_Site_Post(d,d->v[i],d->b[i],site,tree);
 
@@ -11749,7 +11749,7 @@ void Get_List_Of_Reachable_Tips_Post(t_node *a, t_node *d, t_ll **list, t_tree *
   else
     {
       int i;
-      For(i,3)
+      for(i=0;i<3;i++)
         {
           if(d->v[i] != a && d->b[i] != tree->e_root)
             Get_List_Of_Reachable_Tips_Post(d,d->v[i],list,tree);
@@ -11952,7 +11952,7 @@ void Random_Walk_Along_Tree_On_Radius(t_node *a, t_node *d, t_edge *b, phydbl *r
       int i,dir1,dir2;
       
       dir1 = dir2 = -1;
-      For(i,3)
+      for(i=0;i<3;i++)
         if(d->v[i] != a)
           {
             if(dir1 < 0) dir1 = i;

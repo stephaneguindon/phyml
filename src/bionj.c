@@ -441,7 +441,7 @@ int Bionj_Br_Length_Post(t_node *a, t_node *d, matrix *mat)
       int x,y;
 
       d_v1 = d_v2 = -1;
-      For(i,3)
+      for(i=0;i<3;i++)
 	if(d->v[i] != a) {(d_v1 < 0)?(d_v1 = i):(d_v2 = i);}
       
 

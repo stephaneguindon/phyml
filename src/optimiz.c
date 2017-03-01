@@ -870,7 +870,7 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
 
   if(tree->n_root && tree->ignore_root == NO)
     {
-      For(i,3)
+      for(i=0;i<3;i++)
         {
           if(d->v[i] != a && d->b[i] != tree->e_root)
             {
@@ -879,14 +879,14 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
             }
         }
       
-      For(i,3)
+      for(i=0;i<3;i++)
         if(d->v[i] == a || d->b[i] == tree->e_root) 
           Update_P_Lk(tree,d->b[i],d);
     }
   else
     {
       // Ok if root exists but require traversal to be initiated from a node != root
-      For(i,3)
+      for(i=0;i<3;i++)
         {
           if(d->v[i] != a)
             {
@@ -2562,7 +2562,7 @@ void Opt_Node_Heights_Recurr_Pre(t_node *a, t_node *d, t_tree *tree)
       t_node *v2,*v3;
 
       v2 = v3 = NULL;
-      For(i,3)
+      for(i=0;i<3;i++)
     if((d->v[i] != a) && (d->b[i] != tree->e_root))
       {
         if(!v2) { v2 = d->v[i]; }

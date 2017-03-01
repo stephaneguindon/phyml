@@ -125,13 +125,13 @@ void TIMES_Least_Square_Node_Times_Pre(t_node *a, t_node *d, phydbl *A, phydbl *
       int i;
       
  
-      For(i,3)
+      for(i=0;i<3;i++)
 	if((d->v[i] != a) && (d->b[i] != tree->e_root))
 	  TIMES_Least_Square_Node_Times_Pre(d,d->v[i],A,b,n,tree);
       
       A[d->num * n + d->num] = 1.;
       b[d->num] = .0;
-      For(i,3)
+      for(i=0;i<3;i++)
 	{
 	  A[d->num * n + d->v[i]->num] = -1./3.;
 	  if(d->v[i] != a) b[d->num] += d->b[i]->l->v;
@@ -173,14 +173,14 @@ void TIMES_Adjust_Node_Times_Pre(t_node *a, t_node *d, t_tree *tree)
       int i;
       phydbl min_height;
 
-      For(i,3)
+      for(i=0;i<3;i++)
 	if((d->v[i] != a) && (d->b[i] != tree->e_root))
 	  {
 	    TIMES_Adjust_Node_Times_Pre(d,d->v[i],tree);
 	  }
 
       min_height = 0.0;
-      For(i,3)
+      for(i=0;i<3;i++)
 	{
 	  if((d->v[i] != a) && (d->b[i] != tree->e_root))
 	    {
@@ -222,7 +222,7 @@ void TIMES_Print_Node_Times(t_node *a, t_node *d, t_tree *tree)
   int i;
   
   b = NULL;
-  For(i,3) if((d->v[i]) && (d->v[i] == a)) {b = d->b[i]; break;}
+  for(i=0;i<3;i++) if((d->v[i]) && (d->v[i] == a)) {b = d->b[i]; break;}
 
   PhyML_Printf("\n. (%3d %3d) a->t = %12f d->t = %12f (#=%12f) b->l->v = %12f [%12f;%12f]",
 	       a->num,d->num,
@@ -236,7 +236,7 @@ void TIMES_Print_Node_Times(t_node *a, t_node *d, t_tree *tree)
   else
     {
       int i;
-      For(i,3)
+      for(i=0;i<3;i++)
 	if((d->v[i] != a) && (d->b[i] != tree->e_root))
 	  TIMES_Print_Node_Times(d,d->v[i],tree);
     }
@@ -306,7 +306,7 @@ void TIMES_Set_All_Node_Priors_Bottom_Up(t_node *a, t_node *d, t_tree *tree)
     {
       t_node *v1, *v2; /* the two sons of d */
 
-      For(i,3)
+      for(i=0;i<3;i++)
 	{
 	  if((d->v[i] != a) && (d->b[i] != tree->e_root))
 	    {
@@ -315,7 +315,7 @@ void TIMES_Set_All_Node_Priors_Bottom_Up(t_node *a, t_node *d, t_tree *tree)
 	}
       
       v1 = v2 = NULL;
-      For(i,3) if((d->v[i] != a) && (d->b[i] != tree->e_root)) 
+      for(i=0;i<3;i++) if((d->v[i] != a) && (d->b[i] != tree->e_root)) 
 	{
 	  if(!v1) v1 = d->v[i]; 
 	  else    v2 = d->v[i];
@@ -374,7 +374,7 @@ void TIMES_Set_All_Node_Priors_Top_Down(t_node *a, t_node *d, t_tree *tree)
 	  tree->rates->t_prior_min[d->num] = tree->rates->t_prior_min[a->num];
 	}
             
-      For(i,3)
+      for(i=0;i<3;i++)
 	{
 	  if((d->v[i] != a) && (d->b[i] != tree->e_root))
 	    {
@@ -414,7 +414,7 @@ void TIMES_Set_Floor_Post(t_node *a, t_node *d, t_tree *tree)
       t_node *v1,*v2;
 
       v1 = v2 = NULL;
-      For(i,3)
+      for(i=0;i<3;i++)
 	{
 	  if(d->v[i] != a && d->b[i] != tree->e_root)
 	    {
@@ -735,7 +735,7 @@ void TIMES_Lk_Times_Trav(t_node *a, t_node *d, phydbl lim_inf, phydbl lim_sup, p
   if(d->tax == YES) return;
   else
     {      
-      For(i,3)
+      for(i=0;i<3;i++)
 	{
 	  if(d->v[i] != a && d->b[i] != tree->e_root)
 	    {
@@ -769,7 +769,7 @@ phydbl TIMES_Log_Number_Of_Ranked_Labelled_Histories(t_node *root, int per_slice
     }
   else
     {
-      For(i,3)
+      for(i=0;i<3;i++)
 	{
 	  if(root->v[i] != root->anc && root->b[i] != tree->e_root)
 	    {
@@ -822,7 +822,7 @@ void TIMES_Log_Number_Of_Ranked_Labelled_Histories_Post(t_node *a, t_node *d, in
       int i,n1,n2;
       t_node *v1, *v2;
 
-      For(i,3)
+      for(i=0;i<3;i++)
 	{
 	  if(d->v[i] != a && d->b[i] != tree->e_root)
 	    {
@@ -831,7 +831,7 @@ void TIMES_Log_Number_Of_Ranked_Labelled_Histories_Post(t_node *a, t_node *d, in
 	}
 
       v1 = v2 = NULL;
-      For(i,3)
+      for(i=0;i<3;i++)
 	{
 	  if(d->v[i] != a && d->b[i] != tree->e_root)
 	    {
@@ -961,7 +961,7 @@ void TIMES_Get_Number_Of_Time_Slices_Post(t_node *a, t_node *d, t_tree *tree)
     }
   else
     {
-      For(i,3)
+      for(i=0;i<3;i++)
 	if(d->v[i] != a && d->b[i] != tree->e_root)
 	  TIMES_Get_Number_Of_Time_Slices_Post(d,d->v[i],tree);
     }
@@ -1006,7 +1006,7 @@ void TIMES_Lk_Uniform_Post(t_node *a, t_node *d, t_tree *tree)
     {
       int i;
 
-      For(i,3)
+      for(i=0;i<3;i++)
 	{
 	  if(d->v[i] != a && d->b[i] != tree->e_root)
 	    {
@@ -1114,12 +1114,12 @@ void Get_Survival_Duration_Post(t_node *a, t_node *d, t_tree *tree)
       int i;
       t_node *v1, *v2;
 
-      For(i,3)
+      for(i=0;i<3;i++)
 	if(d->v[i] != a && d->b[i] != tree->e_root)
 	  Get_Survival_Duration_Post(d,d->v[i],tree);
       
       v1 = v2 = NULL;
-      For(i,3)
+      for(i=0;i<3;i++)
 	{
 	  if(d->v[i] != a && d->b[i] != tree->e_root)
 	    {
@@ -1914,7 +1914,7 @@ int TIMES_Check_Node_Height_Ordering_Post(t_node *a, t_node *d, t_tree *tree)
   else
     {
       int i;
-      For(i,3)
+      for(i=0;i<3;i++)
         {
           if(d->v[i] != a && d->b[i] != tree->e_root)
             if(!TIMES_Check_Node_Height_Ordering_Post(d,d->v[i],tree))

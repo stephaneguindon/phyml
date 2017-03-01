@@ -1642,7 +1642,7 @@ void Check_Time_Slices(t_node *a, t_node *d, int *result, phydbl *t_cur_slice_mi
         }
 
       int i;
-      For(i,3) 
+      for(i=0;i<3;i++) 
 	if((d -> v[i] != d -> anc) && (d -> b[i] != tree -> e_root))
              Check_Time_Slices(d, d -> v[i], result, t_cur_slice_min, t_cur_slice_max, tree);
     }
@@ -1665,7 +1665,7 @@ void Number_Of_Nodes_In_Slice(t_node *d_start, t_node *d, int *n, phydbl *t_cur_
         {
           (*n)++; 
           int i;
-          For(i,3) 
+          for(i=0;i<3;i++) 
             if((d -> v[i] != d -> anc) && (d -> b[i] != tree -> e_root))
               Number_Of_Nodes_In_Slice(d_start, d -> v[i], n, t_cur_slice_min, t_cur_slice_max, tree);
         }      
@@ -1708,7 +1708,7 @@ void Search_Root_Node_In_Slice(t_node *d_start, t_node *d, int *root_nodes, int 
             }
           
           int i;
-          For(i,3) 
+          for(i=0;i<3;i++) 
             if((d -> v[i] != d -> anc) && (d -> b[i] != tree -> e_root))
               Search_Root_Node_In_Slice(d, d -> v[i], root_nodes, num_elem, t_slice_min, t_slice_max, t_cur_slice_min, t_cur_slice_max, tree);
         }
@@ -1875,7 +1875,7 @@ void Check_Node_Time(t_node *a, t_node *d, int *result, t_tree *tree)
         }
 
       int i;
-      For(i,3) 
+      for(i=0;i<3;i++) 
 	if((d -> v[i] != d -> anc) && (d -> b[i] != tree -> e_root))
           Check_Node_Time(d, d -> v[i], result, tree);
     }
@@ -2106,7 +2106,7 @@ void Lk_Hastings_Ratio_Times(t_node *a, t_node *d, phydbl *tot_prob, t_tree *tre
       (*tot_prob) += LOG(1) - LOG(t_up - t_low);
 
       int i;
-      For(i,3) 
+      for(i=0;i<3;i++) 
 	if((d -> v[i] != d -> anc) && (d -> b[i] != tree -> e_root))
           { 
               Lk_Hastings_Ratio_Times(d, d -> v[i], tot_prob, tree);
@@ -2144,7 +2144,7 @@ void Update_Descendent_Cond_Jump(t_node *a, t_node *d, phydbl *L_Hast_ratio, t_t
         else t_up  = t_prior_max[d -> num]; 
         nd_t[d -> num] = Randomize_One_Node_Time(t_low, t_up);
         (*L_Hast_ratio) += LOG(1) - LOG(t_up - t_low);
-        For(i,3) 
+        for(i=0;i<3;i++) 
           if((d -> v[i] != d -> anc) && (d -> b[i] != tree -> e_root)) 
             Update_Descendent_Cond_Jump(d, d -> v[i], L_Hast_ratio, tree);
       }
@@ -2217,7 +2217,7 @@ void Update_Times_RND_Node_Ancestor_Descendant(int rnd_node, phydbl *L_Hast_rati
   nd_t[rnd_node] = new_time_rnd_node; 
 
   Update_Ancestor_Cond_Jump(tree -> a_nodes[rnd_node] -> anc, L_Hast_ratio, tree);
-  For(i,3) 
+  for(i=0;i<3;i++) 
     if((tree -> a_nodes[rnd_node] -> v[i] != tree -> a_nodes[rnd_node] -> anc) && (tree -> a_nodes[rnd_node] -> b[i] != tree -> e_root)) 
       Update_Descendent_Cond_Jump(tree -> a_nodes[rnd_node], tree -> a_nodes[rnd_node] -> v[i], L_Hast_ratio, tree);
  
@@ -2258,7 +2258,7 @@ void Update_Times_Down_Tree(t_node *a, t_node *d, phydbl *L_Hastings_ratio, t_tr
           /* t_prior_max[d -> num] = t_up;   */
         }    
       
-      For(i,3) 
+      for(i=0;i<3;i++) 
         if((d -> v[i] != d -> anc) && (d -> b[i] != tree -> e_root)) 
           Update_Times_Down_Tree(d, d -> v[i], L_Hastings_ratio, tree);
     }
@@ -2372,7 +2372,7 @@ void TIMES_Set_All_Node_Priors_Bottom_Up_S(t_node *a, t_node *d, int *result, t_
     {
       t_node *v1, *v2; /* the two sons of d */
 
-      For(i,3)
+      for(i=0;i<3;i++)
 	{
 	  if((d->v[i] != a) && (d->b[i] != tree->e_root))
 	    {
@@ -2381,7 +2381,7 @@ void TIMES_Set_All_Node_Priors_Bottom_Up_S(t_node *a, t_node *d, int *result, t_
 	}
       
       v1 = v2 = NULL;
-      For(i,3) if((d->v[i] != a) && (d->b[i] != tree->e_root)) 
+      for(i=0;i<3;i++) if((d->v[i] != a) && (d->b[i] != tree->e_root)) 
 	{
 	  if(!v1) v1 = d->v[i]; 
 	  else    v2 = d->v[i];
@@ -2440,7 +2440,7 @@ void TIMES_Set_All_Node_Priors_Top_Down_S(t_node *a, t_node *d, int *result, t_t
 	  tree->rates->t_prior_min[d->num] = tree->rates->t_prior_min[a->num];
 	}
             
-      For(i,3)
+      for(i=0;i<3;i++)
 	{
 	  if((d->v[i] != a) && (d->b[i] != tree->e_root))
 	    {
@@ -2553,7 +2553,7 @@ void Jump_Calibration_Move_Pre(t_node *a, t_node *d, phydbl old_ta, phydbl *log_
         }
 
       
-      For(i,3) 
+      for(i=0;i<3;i++) 
         if((d -> v[i] != d -> anc) && (d -> b[i] != tree -> e_root)) 
           Jump_Calibration_Move_Pre(d, d -> v[i], old_t, log_hastings_ratio, tree);
     }
@@ -2584,7 +2584,7 @@ void Multiple_Time_Proposal_Density(t_node *a, t_node *d, phydbl *time_proposal_
 
       (*time_proposal_density) += (- LOG(t_up - t_low));
            
-      For(i,3) 
+      for(i=0;i<3;i++) 
         if((d -> v[i] != d -> anc) && (d -> b[i] != tree -> e_root)) 
           Multiple_Time_Proposal_Density(d, d -> v[i], time_proposal_density, tree);
     }

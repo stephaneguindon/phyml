@@ -62,7 +62,7 @@ void Post_Order_Pars(t_node *a, t_node *d, t_tree *tree)
   if(d->tax) return;
   else
     {
-      For(i,3)
+      for(i=0;i<3;i++)
     {
       if(d->v[i] != a)
         Post_Order_Pars(d,d->v[i],tree);
@@ -81,7 +81,7 @@ void Pre_Order_Pars(t_node *a, t_node *d, t_tree *tree)
   if(d->tax) return;
   else
     {
-      For(i,3)
+      for(i=0;i<3;i++)
     {
       if(d->v[i] != a)
         {

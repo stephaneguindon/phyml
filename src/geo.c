@@ -845,7 +845,7 @@ int GEO_Get_Arrival_Location(t_node *n, t_geo *t, t_tree *tree)
 
   v1 = v2 = NULL;
 
-  For(i,3)
+  for(i=0;i<3;i++)
     {
       if(n->v[i] && n->v[i] != n->anc)
         {
@@ -1301,7 +1301,7 @@ void GEO_Randomize_Locations(t_node *n, t_geo *t, t_tree *tree)
       probs = (phydbl *)mCalloc(t->ldscape_sz,sizeof(phydbl));
       
       v1 = v2 = NULL;
-      For(i,3)
+      for(i=0;i<3;i++)
         {
           if(n->v[i] != n->anc && n->b[i] != tree->e_root)
             {
@@ -1414,7 +1414,7 @@ void GEO_Randomize_Locations(t_node *n, t_geo *t, t_tree *tree)
       
       Free(probs);
       
-      For(i,3)
+      for(i=0;i<3;i++)
         if(n->v[i] != n->anc && n->b[i] != tree->e_root) 
           GEO_Randomize_Locations(n->v[i],t,tree);
     }
@@ -1453,7 +1453,7 @@ void GEO_Get_Locations_Beneath_Post(t_node *a, t_node *d, t_geo *t, t_tree *tree
       int i;
       t_node *v1, *v2;
 
-      For(i,3) 
+      for(i=0;i<3;i++) 
         {
           if(d->v[i] != a && d->b[i] != tree->e_root)
             {
@@ -1463,7 +1463,7 @@ void GEO_Get_Locations_Beneath_Post(t_node *a, t_node *d, t_geo *t, t_tree *tree
           
 
       v1 = v2 = NULL;
-      For(i,3) 
+      for(i=0;i<3;i++) 
         {
           if(d->v[i] != a && d->b[i] != tree->e_root)
             {

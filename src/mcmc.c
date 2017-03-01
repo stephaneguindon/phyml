@@ -930,7 +930,7 @@ void MCMC_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
 
   b = NULL;
   if(a == tree->n_root) b = tree->e_root;
-  else For(i,3) if(d->v[i] == a) { b = d->b[i]; break; }
+  else for(i=0;i<3;i++) if(d->v[i] == a) { b = d->b[i]; break; }
    
   cur_mu       = tree->rates->br_r[d->num];
   r_min        = tree->rates->min_rate;
@@ -1016,7 +1016,7 @@ void MCMC_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
       if(d->tax == YES) return;
       else
 	{
-	  For(i,3)
+	  for(i=0;i<3;i++)
 	    if(d->v[i] != a && d->b[i] != tree->e_root)
               {
                 Update_P_Lk(tree,d->b[i],d);
@@ -1038,7 +1038,7 @@ void MCMC_One_Node_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
   b = NULL;
   if(a == tree->n_root) b = tree->e_root;
   else
-    For(i,3) if(d->v[i] == a) { b = d->b[i]; break; }
+    for(i=0;i<3;i++) if(d->v[i] == a) { b = d->b[i]; break; }
 
   /* Only the LOG_RANDWALK move seems to work here. Change with caution then. */
   tree->rates->br_do_updt[d->num] = YES;
@@ -1059,7 +1059,7 @@ void MCMC_One_Node_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
       if(d->tax == YES) return;
       else
 	{
-	  For(i,3)
+	  for(i=0;i<3;i++)
 	    if(d->v[i] != a && d->b[i] != tree->e_root)
 	      {
 		MCMC_One_Node_Rate(d,d->v[i],YES,tree);
@@ -1234,7 +1234,7 @@ void MCMC_Times_And_Rates_Recur(t_node *a, t_node *d, int traversal, t_tree *tre
 
   
   v2 = v3 = NULL;
-  For(i,3)
+  for(i=0;i<3;i++)
     if((d->v[i] != a) && (d->b[i] != tree->e_root))
       {
 	if(!v2) { v2 = d->v[i]; }
@@ -1315,7 +1315,7 @@ void MCMC_Times_And_Rates_Recur(t_node *a, t_node *d, int traversal, t_tree *tre
   if(d->tax == YES) return;
   else
     {
-      For(i,3)
+      for(i=0;i<3;i++)
         if(d->v[i] != a && d->b[i] != tree->e_root)
           {
             MCMC_Times_And_Rates_Recur(d,d->v[i],YES,tree);
@@ -1370,7 +1370,7 @@ void MCMC_Time_Recur(t_node *a, t_node *d, int traversal, t_tree *tree)
 
   
   v2 = v3 = NULL;
-  For(i,3)
+  for(i=0;i<3;i++)
     if((d->v[i] != a) && (d->b[i] != tree->e_root))
       {
 	if(!v2) { v2 = d->v[i]; }
@@ -1380,10 +1380,10 @@ void MCMC_Time_Recur(t_node *a, t_node *d, int traversal, t_tree *tree)
 
   b1 = NULL;
   if(a == tree->n_root) b1 = tree->e_root;
-  else For(i,3) if(d->v[i] == a) { b1 = d->b[i]; break; }
+  else for(i=0;i<3;i++) if(d->v[i] == a) { b1 = d->b[i]; break; }
 
   b2 = b3 = NULL;
-  For(i,3)
+  for(i=0;i<3;i++)
     if((d->v[i] != a) && (d->b[i] != tree->e_root))
       {
 	if(!b2) { b2 = d->b[i]; }
@@ -1540,7 +1540,7 @@ void MCMC_Time_Recur(t_node *a, t_node *d, int traversal, t_tree *tree)
       if(d->tax == YES) return;
       else
 	{
-          For(i,3)
+          for(i=0;i<3;i++)
             if(d->v[i] != a && d->b[i] != tree->e_root)
               {
                 Update_P_Lk(tree,d->b[i],d);
@@ -3488,7 +3488,7 @@ void MCMC_Randomize_Rates_Pre(t_node *a, t_node *d, t_tree *tree)
   if(d->tax) return;
   else
     {
-      For(i,3)
+      for(i=0;i<3;i++)
 	if(d->v[i] != a && d->b[i] != tree->e_root)
 	  MCMC_Randomize_Rates_Pre(d,d->v[i],tree);
     }
@@ -3672,7 +3672,7 @@ void MCMC_Randomize_Node_Times_Bottom_Up(t_node *a, t_node *d, t_tree *tree)
       t_node *v1, *v2;
 
 
-      For(i,3)
+      for(i=0;i<3;i++)
 	{
 	  if((d->v[i] != a) && (d->b[i] != tree->e_root))
 	    {
@@ -3681,7 +3681,7 @@ void MCMC_Randomize_Node_Times_Bottom_Up(t_node *a, t_node *d, t_tree *tree)
 	}
 
       v1 = v2 = NULL;
-      For(i,3)
+      for(i=0;i<3;i++)
       	{
       	  if(d->v[i] != a && d->b[i] != tree->e_root)
       	    {
@@ -3725,7 +3725,7 @@ void MCMC_Randomize_Node_Times_Top_Down(t_node *a, t_node *d, t_tree *tree)
       
       tree->rates->nd_t[d->num] = u;
 
-      For(i,3)
+      for(i=0;i<3;i++)
 	{
 	  if((d->v[i] != a) && (d->b[i] != tree->e_root))
 	    {
@@ -3987,7 +3987,7 @@ void MCMC_Br_Lens_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
   if(d->tax) return;
   else 
     {
-      For(i,3) 
+      for(i=0;i<3;i++) 
 	if(d->v[i] != a)
 	  {
 	    Update_P_Lk(tree,d->b[i],d);
@@ -4980,7 +4980,7 @@ void MCMC_Sim_Rate(t_node *a, t_node *d, t_tree *tree)
     {
       int i;
 
-      For(i,3)
+      for(i=0;i<3;i++)
 	if(d->v[i] != a && d->b[i] != tree->e_root)
 	  MCMC_Sim_Rate(d,d->v[i],tree);
     }
@@ -5059,7 +5059,7 @@ void MCMC_Prune_Regraft(t_tree *tree)
 
       // Select a daughter of prune node
       dir_v1 = dir_v2 = -1;
-      For(i,3) 
+      for(i=0;i<3;i++) 
         if(prune->v[i] != prune->anc && prune->b[i] != tree->e_root)
           {
             if(dir_v1 < 0) dir_v1 = i;
@@ -5091,7 +5091,7 @@ void MCMC_Prune_Regraft(t_tree *tree)
       assert(prune_daughter->anc == prune);
 
       dir_prune = -1;
-      For(i,3)
+      for(i=0;i<3;i++)
         {
           if(prune_daughter->v[i] == prune || prune_daughter->b[i] == tree->e_root)
             {
@@ -5206,7 +5206,7 @@ void MCMC_Prune_Regraft(t_tree *tree)
          new_regraft_nd == tree->n_root) regraft_edge = tree->e_root;
       else
         {
-          For(i,3) if(new_regraft_nd->v[i] == new_regraft_nd->anc) break;
+          for(i=0;i<3;i++) if(new_regraft_nd->v[i] == new_regraft_nd->anc) break;
           assert(i!=3);
           regraft_edge = new_regraft_nd->b[i];
         }
@@ -5368,7 +5368,7 @@ void MCMC_Prune_Regraft_Weighted(t_tree *tree)
 
       // Select a daughter of prune node
       dir_v1 = dir_v2 = -1;
-      For(i,3) 
+      for(i=0;i<3;i++) 
         if(prune->v[i] != prune->anc && prune->b[i] != tree->e_root)
           {
             if(dir_v1 < 0) dir_v1 = i;
@@ -5400,7 +5400,7 @@ void MCMC_Prune_Regraft_Weighted(t_tree *tree)
       assert(prune_daughter->anc == prune);
 
       dir_prune = -1;
-      For(i,3)
+      for(i=0;i<3;i++)
         {
           if(prune_daughter->v[i] == prune || prune_daughter->b[i] == tree->e_root)
             {
@@ -5482,7 +5482,7 @@ void MCMC_Prune_Regraft_Weighted(t_tree *tree)
          new_regraft_nd == tree->n_root) regraft_edge = tree->e_root;
       else
         {
-          For(i,3) if(new_regraft_nd->v[i] == new_regraft_nd->anc) break;
+          for(i=0;i<3;i++) if(new_regraft_nd->v[i] == new_regraft_nd->anc) break;
           assert(i!=3);
           regraft_edge = new_regraft_nd->b[i];
         }
@@ -5635,7 +5635,7 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
 
       // Select a daughter of prune node
       dir_v1 = dir_v2 = -1;
-      For(i,3) 
+      for(i=0;i<3;i++) 
         if(prune->v[i] != prune->anc && prune->b[i] != tree->e_root)
           {
             if(dir_v1 < 0) dir_v1 = i;
@@ -5667,7 +5667,7 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
       assert(prune_daughter->anc == prune);
 
       dir_prune = -1;
-      For(i,3)
+      for(i=0;i<3;i++)
         {
           if(prune_daughter->v[i] == prune || prune_daughter->b[i] == tree->e_root)
             {
@@ -5700,7 +5700,7 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
 
       if(e->tax == NO && times[e->num] < times[prune_daughter->num])
         {
-          For(i,3)
+          for(i=0;i<3;i++)
             {
               if(e->v[i] != e->anc && e->b[i] != tree->e_root)
                 {
@@ -5716,7 +5716,7 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
         {          
           d = prune_daughter->anc->anc;      
 
-          For(i,3)
+          for(i=0;i<3;i++)
             {
               if(d->v[i] != d->anc && d->b[i] != tree->e_root && d->v[i] != prune)
                 {
@@ -5822,7 +5822,7 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
          new_regraft_nd == tree->n_root) regraft_edge = tree->e_root;
       else
         {
-          For(i,3) if(new_regraft_nd->v[i] == new_regraft_nd->anc) break;
+          for(i=0;i<3;i++) if(new_regraft_nd->v[i] == new_regraft_nd->anc) break;
           assert(i!=3);
           regraft_edge = new_regraft_nd->b[i];
         }
@@ -5850,7 +5850,7 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
       
       if(e->tax == NO && times[e->num] < times[prune_daughter->num])
         {
-          For(i,3)
+          for(i=0;i<3;i++)
             {
               if(e->v[i] != e->anc && e->b[i] != tree->e_root)
                 {
@@ -5867,7 +5867,7 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
         {          
           d = prune_daughter->anc->anc;      
 
-          For(i,3)
+          for(i=0;i<3;i++)
             {
               if(d->v[i] != d->anc && d->b[i] != tree->e_root && d->v[i] != prune)
                 {
@@ -6398,7 +6398,7 @@ void MCMC_Slice_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
 
   b = NULL;
   if(a == tree->n_root) b = tree->e_root;
-  else For(i,3) if(d->v[i] == a) { b = d->b[i]; break; }
+  else for(i=0;i<3;i++) if(d->v[i] == a) { b = d->b[i]; break; }
   
   w = 0.05;
   /* w = 10.; */
@@ -6462,7 +6462,7 @@ void MCMC_Slice_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
       if(d->tax == YES) return;
       else
 	{
-	  For(i,3)
+	  for(i=0;i<3;i++)
 	    if(d->v[i] != a && d->b[i] != tree->e_root)
 	      {
 		if(tree->io->lk_approx == EXACT) Update_P_Lk(tree,d->b[i],d);

@@ -339,7 +339,7 @@ void DR_Print_Tree_Postscript_Pre(t_node *a, t_node *d, t_edge *b, int render_na
       PhyML_Fprintf(fp,"stroke\n");
       PhyML_Fprintf(fp,"gr\n");
       PhyML_Fprintf(fp,"0 0 0 sc\n");
-      For(i,3)
+      for(i=0;i<3;i++)
 	if(d->v[i] != a && d->b[i] != tree->e_root) DR_Print_Tree_Postscript_Pre(d,d->v[i],d->b[i],render_name,fp,w,tree);
     }
 
@@ -362,7 +362,7 @@ void DR_Get_X_Coord_Pre(t_node *a, t_node *d, t_edge *b, tdraw *w, int fixed_tip
   if(d->tax) return;
   else
     {
-      For(i,3)
+      for(i=0;i<3;i++)
 	if((d->v[i] != a) && (d->b[i] != tree->e_root)) 
 	  DR_Get_X_Coord_Pre(d,d->v[i],d->b[i],w,fixed_tips,tree);
     }
@@ -418,7 +418,7 @@ void DR_Get_Y_Coord_Post(t_node *a, t_node *d, t_edge *b, int *next_y_slot, int 
       int d1, d2;
 
       d1 = d2 = -1;
-      For(i,3)
+      for(i=0;i<3;i++)
 	{
 	  if(d->v[i] != a && d->b[i] != tree->e_root)
 	    {

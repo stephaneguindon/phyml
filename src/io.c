@@ -104,8 +104,8 @@ t_tree *Read_Tree(char **s_tree)
       
       tree->n_root->l[2] = tree->n_root->l[0];
       
-      For(i,3) if(tree->n_root->v[2]->v[i] == tree->n_root) { tree->n_root->v[2]->v[i] = tree->n_root->v[1]; break; }
-      For(i,3) if(tree->n_root->v[1]->v[i] == tree->n_root) { tree->n_root->v[1]->v[i] = tree->n_root->v[2]; break; }
+      for(i=0;i<3;i++) if(tree->n_root->v[2]->v[i] == tree->n_root) { tree->n_root->v[2]->v[i] = tree->n_root->v[1]; break; }
+      for(i=0;i<3;i++) if(tree->n_root->v[1]->v[i] == tree->n_root) { tree->n_root->v[1]->v[i] = tree->n_root->v[2]; break; }
       
       Connect_One_Edge_To_Two_Nodes(tree->n_root->v[2],
                                     tree->n_root->v[1],
@@ -161,7 +161,7 @@ void R_rtree(char *s_tree_a, char *s_tree_d, t_node *a, t_tree *tree, int *n_int
       Read_Branch_Label(s_tree_d,s_tree_a,tree->a_edges[tree->num_curr_branch_available]);
       Read_Branch_Length(s_tree_d,s_tree_a,tree);
 
-      For(i,3)
+      for(i=0;i<3;i++)
         {
           if(!a->v[i])
             {
@@ -225,7 +225,7 @@ void R_rtree(char *s_tree_a, char *s_tree_d, t_node *a, t_tree *tree, int *n_int
       Read_Branch_Label(s_tree_d,s_tree_a,tree->a_edges[tree->num_curr_branch_available]);
       Read_Branch_Length(s_tree_d,s_tree_a,tree);
 
-      For(i,3)
+      for(i=0;i<3;i++)
         {
           if(!a->v[i])
             {
@@ -785,7 +785,7 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
       
       if(tree->n_root != NULL)
         {
-          For(i,3)
+          for(i=0;i<3;i++)
             {
               if((fils->v[i] != pere) && (fils->b[i] != tree->e_root))
                 R_wtree(fils,fils->v[i],available,s_tree,tree);
@@ -794,7 +794,7 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
         }
       else
         {
-          For(i,3)
+          for(i=0;i<3;i++)
             {
               if(fils->v[i] != pere)
                 R_wtree(fils,fils->v[i],available,s_tree,tree);
@@ -1048,7 +1048,7 @@ void R_wtree_Custom(t_node *pere, t_node *fils, int *available, char **s_tree, i
 
       if(tree->n_root)
     {
-      For(i,3)
+      for(i=0;i<3;i++)
         {
           if((fils->v[i] != pere) && (fils->b[i] != tree->e_root))
         R_wtree_Custom(fils,fils->v[i],available,s_tree,pos,tree);
@@ -1057,7 +1057,7 @@ void R_wtree_Custom(t_node *pere, t_node *fils, int *available, char **s_tree, i
     }
       else
     {
-      For(i,3)
+      for(i=0;i<3;i++)
         {
           if(fils->v[i] != pere)
         R_wtree_Custom(fils,fils->v[i],available,s_tree,pos,tree);
@@ -2411,7 +2411,7 @@ void Print_Node(t_node *a, t_node *d, t_tree *tree)
   int i;
   int dir;
   dir = -1;
-  For(i,3) if(a->v[i] == d) {dir = i; break;}
+  for(i=0;i<3;i++) if(a->v[i] == d) {dir = i; break;}
   PhyML_Printf("Node nums: %3d %3d  (dir:%3d) (a->anc:%3d) (d->anc:%3d) ta:%8.4f td:%8.4f t_min:%6.2f t_max:%6.2f",
                a->num,d->num,dir,a->anc?a->anc->num:(-1),
                d->anc?d->anc->num:(-1),
@@ -2421,7 +2421,7 @@ void Print_Node(t_node *a, t_node *d, t_tree *tree)
                tree->rates?tree->rates->t_prior_max[a->num]:-1.);
 
   PhyML_Printf(" names = '%10s' '%10s' ; ",a->name,d->name);
-  For(i,3) if(a->v[i] == d)
+  for(i=0;i<3;i++) if(a->v[i] == d)
     {
       if(a->b[i])
         {
@@ -2436,7 +2436,7 @@ void Print_Node(t_node *a, t_node *d, t_tree *tree)
 
   if(d->tax) return;
   else
-    For(i,3)
+    for(i=0;i<3;i++)
       if(d->v[i] != a && d->b[i] != tree->e_root) Print_Node(d,d->v[i],tree);
 }
 
@@ -2449,14 +2449,14 @@ void Print_Node_Brief(t_node *a, t_node *d, t_tree *tree, FILE *fp)
   int dir;
 
   dir = -1;
-  For(i,3) if(a->v[i] == d) {dir = i; break;}
+  for(i=0;i<3;i++) if(a->v[i] == d) {dir = i; break;}
 
   PhyML_Fprintf(fp,"\n");
   PhyML_Fprintf(fp,"Node nums: %3d %3d  (dir:%3d)",
                a->num,d->num,dir);
 
   PhyML_Fprintf(fp,"\tnames = '%10s' '%10s' ; ",a->name,d->name);
-  For(i,3) if(a->v[i] == d)
+  for(i=0;i<3;i++) if(a->v[i] == d)
     {
       if(a->b[i])
         {
@@ -2470,7 +2470,7 @@ void Print_Node_Brief(t_node *a, t_node *d, t_tree *tree, FILE *fp)
 
   if(d->tax) return;
   else
-    For(i,3)
+    for(i=0;i<3;i++)
       if(d->v[i] != a && d->b[i] != tree->e_root) Print_Node_Brief(d,d->v[i],tree,fp);
 }
 

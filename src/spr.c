@@ -1652,7 +1652,7 @@ int Est_Lk_Change (t_edge *e_prune, t_node *v_prune, t_tree *tree)
     if(tree->mod->s_opt->wim_inside_opt)
       {
     Triple_Dist(v_tmp,tree);
-    For(i,3) l_est[i] = v_tmp->b[i]->l->v;
+    for(i=0;i<3;i++) l_est[i] = v_tmp->b[i]->l->v;
       }
     /* End SG 18 May 2007 */
 
@@ -3361,7 +3361,7 @@ int Test_All_Spr_Targets(t_edge *b_pulled, t_node *n_link, t_tree *tree)
   init_v_pulled = Duplicate_Scalar_Dbl(b_pulled->l_var);
 
   dir1 = dir2 = -1;
-  For(i,3)
+  for(i=0;i<3;i++)
     if(n_link->v[i] != n_opp_to_link)
       {
         if(dir1<0) dir1 = i;
@@ -3450,7 +3450,7 @@ int Test_All_Spr_Targets(t_edge *b_pulled, t_node *n_link, t_tree *tree)
           Update_P_Pars(tree,b_residual,n_link);
         }
 
-      For(i,3)
+      for(i=0;i<3;i++)
         if(n_link->v[i] != n_opp_to_link)
           {
             if(tree->mod->s_opt->spr_pars == NO)
@@ -3490,7 +3490,7 @@ void Test_One_Spr_Target_Recur(t_node *a, t_node *d, t_edge *pulled, t_node *lin
     {
       phydbl move_score;
       
-      For(i,3)
+      for(i=0;i<3;i++)
         {
           if(d->v[i] != a)
             {
@@ -3607,7 +3607,7 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
   n1 = (b_residual->left == n_link)?(b_residual->rght):(b_residual->left);
   n2 = (b_target->left   == n_link)?(b_target->rght):(b_target->left);
   dir_v1 = dir_v2 = dir_v0 = -1;
-  For(i,3)
+  for(i=0;i<3;i++)
     {
       if(n_link->v[i]      == n1) dir_v1 = i;
       else if(n_link->v[i] == n2) dir_v2 = i;
@@ -4689,11 +4689,11 @@ void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int d
                             tree);
               
               n_targets = 0;
-              For(i,3)
+              for(i=0;i<3;i++)
                 if(b_target->left->v[i] != b_target->rght)
                   Get_List_Of_Adjacent_Targets(b_target->left,b_target->left->v[i],NULL,&target_list,&n_targets,0,5);
               
-              For(i,3)
+              for(i=0;i<3;i++)
                 if(b_target->rght->v[i] != b_target->left)
                   Get_List_Of_Adjacent_Targets(b_target->rght,b_target->rght->v[i],NULL,&target_list,&n_targets,0,5);
               

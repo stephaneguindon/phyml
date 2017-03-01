@@ -411,7 +411,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
     {
       lk0 = lk_temp;
 
-      For(i,3) //a branch has three nodes
+      for(i=0;i<3;i++) //a branch has three nodes
         if(b_fcus->left->v[i] != b_fcus->rght) //Only consider left_1 and left_2
           {
             Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
@@ -421,7 +421,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
       Update_P_Lk(tree,b_fcus,b_fcus->left);
       lk_temp = Br_Len_Brent(b_fcus,tree);
 
-      For(i,3)
+      for(i=0;i<3;i++)
         if(b_fcus->rght->v[i] != b_fcus->left) //Only consider right_1 and right_2
           {
             Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
@@ -492,11 +492,11 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   lk1 = Lk(b_fcus,tree);
   MIXT_Set_Alias_Subpatt(NO,tree);
 
-  For(i,3)
+  for(i=0;i<3;i++)
     if(b_fcus->left->v[i] != b_fcus->rght)
       Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
   
-  For(i,3)
+  for(i=0;i<3;i++)
     if(b_fcus->rght->v[i] != b_fcus->left)
       Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
   
@@ -507,7 +507,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
     {
       lk1 = lk_temp;
       
-      For(i,3)
+      for(i=0;i<3;i++)
         if(b_fcus->left->v[i] != b_fcus->rght)
           {
             Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
@@ -517,7 +517,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
       Update_P_Lk(tree,b_fcus,b_fcus->left);
       lk_temp = Br_Len_Brent(b_fcus,tree);
       
-      For(i,3)
+      for(i=0;i<3;i++)
         if(b_fcus->rght->v[i] != b_fcus->left)
           {
             Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
@@ -592,11 +592,11 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   lk2 = Lk(b_fcus,tree);
   MIXT_Set_Alias_Subpatt(NO,tree);
   
-  For(i,3)
+  for(i=0;i<3;i++)
     if(b_fcus->left->v[i] != b_fcus->rght)
       Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
   
-  For(i,3)
+  for(i=0;i<3;i++)
     if(b_fcus->rght->v[i] != b_fcus->left)
       Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
   
@@ -606,7 +606,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
     {
       lk2 = lk_temp;
       
-      For(i,3)
+      for(i=0;i<3;i++)
         if(b_fcus->left->v[i] != b_fcus->rght)
           {
             Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
@@ -631,7 +631,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
           Exit("\n");
         }
       
-      For(i,3)
+      for(i=0;i<3;i++)
         if(b_fcus->rght->v[i] != b_fcus->left)
           {
             Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
@@ -696,11 +696,11 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   Update_P_Lk(tree,b_fcus,b_fcus->left);
   Update_P_Lk(tree,b_fcus,b_fcus->rght);
 
-  For(i,3)
+  for(i=0;i<3;i++)
     if(b_fcus->left->v[i] != b_fcus->rght)
       Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
 
-  For(i,3)
+  for(i=0;i<3;i++)
     if(b_fcus->rght->v[i] != b_fcus->left)
       Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
 
@@ -822,11 +822,11 @@ void Make_Target_Swap(t_tree *tree, t_edge *b_fcus, int swaptodo)
   Set_Both_Sides(YES,tree);
   lktodo = Update_Lk_At_Given_Edge(b_fcus,tree);
   
-  For(i,3)
+  for(i=0;i<3;i++)
     if(b_fcus->left->v[i] != b_fcus->rght)
       Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
   
-  For(i,3)
+  for(i=0;i<3;i++)
     if(b_fcus->rght->v[i] != b_fcus->left)
       Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
 
@@ -838,7 +838,7 @@ void Make_Target_Swap(t_tree *tree, t_edge *b_fcus, int swaptodo)
     {
       lktodo = lk_temp;
 
-      For(i,3)
+      for(i=0;i<3;i++)
         if(b_fcus->left->v[i] != b_fcus->rght)
           {
             Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
@@ -849,7 +849,7 @@ void Make_Target_Swap(t_tree *tree, t_edge *b_fcus, int swaptodo)
       Update_P_Lk(tree,b_fcus,b_fcus->left);
       lk_temp = Br_Len_Brent(b_fcus,tree);
 
-      For(i,3)
+      for(i=0;i<3;i++)
         if(b_fcus->rght->v[i] != b_fcus->left)
           {
             Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);

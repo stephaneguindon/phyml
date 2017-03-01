@@ -46,7 +46,7 @@ void Make_Tree_4_Lk(t_tree *tree, calign *cdata, int n_site)
 #endif
 
   tree->log_lks_aLRT = (phydbl **)mCalloc(3,sizeof(phydbl *));
-  For(i,3) tree->log_lks_aLRT[i] = (phydbl *)mCalloc(tree->data->init_len,sizeof(phydbl));
+  for(i=0;i<3;i++) tree->log_lks_aLRT[i] = (phydbl *)mCalloc(tree->data->init_len,sizeof(phydbl));
 
   For(i,2*tree->n_otu-1) Make_Edge_NNI(tree->a_edges[i]);
 
@@ -103,14 +103,14 @@ void Make_All_Edges_Lk(t_node *a, t_node *d, t_tree *tree)
 {
   int i;
 
-  For(i,3) 
+  for(i=0;i<3;i++) 
     if((a->v[i]) && (a->v[i] == d)) 
       Make_Edge_Lk(a->b[i],tree);
 
   if(d->tax) return;
   else
     {
-      For(i,3)
+      for(i=0;i<3;i++)
         {
           if(d->v[i] != a && d->b[i] != tree->e_root)
             Make_All_Edges_Lk(d,d->v[i],tree);

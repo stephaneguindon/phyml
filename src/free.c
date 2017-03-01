@@ -288,7 +288,7 @@ void Free_SubTree(t_edge *b_fcus, t_node *a, t_node *d, t_tree *tree)
   if(d->tax) return;
   else
     {
-      For(i,3)
+      for(i=0;i<3;i++)
     {
       if(d->v[i] != a)
         {
@@ -393,7 +393,7 @@ void Free_Tree_Lk(t_tree *mixt_tree)
       Free(tree->eigen_lr_left);
       Free(tree->eigen_lr_rght);
 
-      For(i,3) Free(tree->log_lks_aLRT[i]);
+      for(i=0;i<3;i++) Free(tree->log_lks_aLRT[i]);
       Free(tree->log_lks_aLRT);
 
       Free(tree->unscaled_site_lk_cat);
