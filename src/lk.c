@@ -5328,8 +5328,8 @@ void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
       else
         {
           /* For all rate classes */
-          /* For(catg,tree->mod->ras->n_catg) */
-          for(catg=0;catg<tree->mod->ras->n_catg;catg++)
+          For(catg,tree->mod->ras->n_catg)
+          /* for(catg=0;catg<tree->mod->ras->n_catg;catg++) */
             {
               smallest_p_lk  =  BIG;
 
@@ -5338,29 +5338,29 @@ void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
 	      __m256d _p1[4],_p2[4]; // matrices of transition probabilities
 	      __m256d _pplk1[4],_pplk2[4]; // dot product of _p1[i] & _plk1 (resp. _p2[i] & _plk2)
 
-              /* For(i,4) _p1[i] = _mm256_load_pd(Pij1 + catg*dim3 + i*dim2); */
-              /* For(i,4) _p2[i] = _mm256_load_pd(Pij2 + catg*dim3 + i*dim2);	       */
-
-	      /* if(n_v1->tax == NO) _plk1 = _mm256_load_pd(p_lk_v1 + site*dim1+catg*dim2); */
-	      /* else _plk1 = _mm256_load_pd(tip_v1); */
-
-	      /* if(n_v2->tax == NO) _plk2 = _mm256_load_pd(p_lk_v2 + site*dim1+catg*dim2); */
-	      /* else _plk2 = _mm256_load_pd(tip_v2); */
-              
-              /* For(i,4) _pplk1[i] = _mm256_mul_pd(_p1[i],_plk1); */
-              /* For(i,4) _pplk2[i] = _mm256_mul_pd(_p2[i],_plk2); */
-
-              for(i=0;i<4;i++) _p1[i] = _mm256_load_pd(Pij1 + catg*dim3 + i*dim2);
-              for(i=0;i<4;i++) _p2[i] = _mm256_load_pd(Pij2 + catg*dim3 + i*dim2);	      
+              For(i,4) _p1[i] = _mm256_load_pd(Pij1 + catg*dim3 + i*dim2);
+              For(i,4) _p2[i] = _mm256_load_pd(Pij2 + catg*dim3 + i*dim2);
 
 	      if(n_v1->tax == NO) _plk1 = _mm256_load_pd(p_lk_v1 + site*dim1+catg*dim2);
 	      else _plk1 = _mm256_load_pd(tip_v1);
-              
+
 	      if(n_v2->tax == NO) _plk2 = _mm256_load_pd(p_lk_v2 + site*dim1+catg*dim2);
 	      else _plk2 = _mm256_load_pd(tip_v2);
               
-              for(i=0;i<4;i++) _pplk1[i] = _mm256_mul_pd(_p1[i],_plk1);
-              for(i=0;i<4;i++) _pplk2[i] = _mm256_mul_pd(_p2[i],_plk2);
+              For(i,4) _pplk1[i] = _mm256_mul_pd(_p1[i],_plk1);
+              For(i,4) _pplk2[i] = _mm256_mul_pd(_p2[i],_plk2);
+
+              /* for(i=0;i<4;i++) _p1[i] = _mm256_load_pd(Pij1 + catg*dim3 + i*dim2); */
+              /* for(i=0;i<4;i++) _p2[i] = _mm256_load_pd(Pij2 + catg*dim3 + i*dim2);	       */
+
+	      /* if(n_v1->tax == NO) _plk1 = _mm256_load_pd(p_lk_v1 + site*dim1+catg*dim2); */
+	      /* else _plk1 = _mm256_load_pd(tip_v1); */
+              
+	      /* if(n_v2->tax == NO) _plk2 = _mm256_load_pd(p_lk_v2 + site*dim1+catg*dim2); */
+	      /* else _plk2 = _mm256_load_pd(tip_v2); */
+              
+              /* for(i=0;i<4;i++) _pplk1[i] = _mm256_mul_pd(_p1[i],_plk1); */
+              /* for(i=0;i<4;i++) _pplk2[i] = _mm256_mul_pd(_p2[i],_plk2); */
               
               _plk = _mm256_mul_pd(AVX_Horizontal_Add(_pplk1),
                                    AVX_Horizontal_Add(_pplk2)); 
