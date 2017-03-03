@@ -5242,9 +5242,9 @@ void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
   phydbl *tip_v1,*tip_v2;
   __m256d _plk; // parent partial likelihood
   __m256d _plk1,_plk2; // sister partial likelihood vectors
-  __m256d _p1[4*tree->mod->ras->n_catg],_p2[4*tree->mod->ras->n_catg]; // matrices of transition probabilities
   __m256d _pplk1[4],_pplk2[4]; // dot product of _p1[i] & _plk1 (resp. _p2[i] & _plk2)
   __m256d _pre_lk_all[16*tree->mod->ras->n_catg],_pre_lk_v1[4*tree->mod->ras->n_catg],_pre_lk_v2[4*tree->mod->ras->n_catg];
+  __m256d _p1[4*tree->mod->ras->n_catg],_p2[4*tree->mod->ras->n_catg]; // matrices of transition probabilities
 
   tip_v1   = NULL;
   tip_v2   = NULL;
@@ -5252,8 +5252,8 @@ void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
   if(posix_memalign((void **)&tip_v1,BYTE_ALIGN,(size_t)4*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   if(posix_memalign((void **)&tip_v2,BYTE_ALIGN,(size_t)4*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 #else
-  tip_v1   = _aligned_malloc(4 * sizeof(phydbl),BYTE_ALIGN);
-  tip_v2   = _aligned_malloc(4 * sizeof(phydbl),BYTE_ALIGN);
+  tip_v1 = _aligned_malloc(4 * sizeof(phydbl),BYTE_ALIGN);
+  tip_v2 = _aligned_malloc(4 * sizeof(phydbl),BYTE_ALIGN);
 #endif
 
 
