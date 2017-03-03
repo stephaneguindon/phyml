@@ -761,7 +761,7 @@ t_tree *XML_Process_Base(char *xml_filename)
                         }
                       
                       //////////////////////////////////////////
-                      //             TOPOLOGY                 //
+                      //             TOPOlogY                 //
                       //////////////////////////////////////////
                       
                       else if(!strcmp(parent->name,"topology"))

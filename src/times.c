@@ -460,7 +460,7 @@ phydbl TIMES_Log_Conditional_Uniform_Density(t_tree *tree)
 	{
 	  max = tree->rates->t_floor[i];
 
-	  dens += LOG(Dorder_Unif(tree->rates->nd_t[i],
+	  dens += log(Dorder_Unif(tree->rates->nd_t[i],
 				  tree->a_nodes[i]->rank-1,
 				  tree->a_nodes[i]->rank_max-2,
 				  min,max));
@@ -498,7 +498,7 @@ phydbl TIMES_Lk_Yule_Root_Marginal(t_tree *tree)
 	n++;
     }
 
-  return LnGamma(n+1) + LOG(lbda) - 2.*lbda*T + (n-2.)*LOG(1. - EXP(-lbda*T));
+  return LnGamma(n+1) + log(lbda) - 2.*lbda*T + (n-2.)*log(1. - exp(-lbda*T));
 }
 
 //////////////////////////////////////////////////////////////
@@ -558,7 +558,7 @@ phydbl TIMES_Lk_Yule_Joint(t_tree *tree)
 	  Exit("\n");
 	}
 
-      if(dt > 1.E-10) loglk += LOG((n+1)*lbda) - (n+1)*lbda*dt;
+      if(dt > 1.E-10) loglk += log((n+1)*lbda) - (n+1)*lbda*dt;
       n++;      
     }
 
@@ -579,7 +579,7 @@ phydbl TIMES_Lk_Yule_Joint(t_tree *tree)
   	    }
   	}
       dt -= ts[i];
-      loglk += LOG(n*lbda) - n*lbda*dt;
+      loglk += log(n*lbda) - n*lbda*dt;
     }
 
   /* printf("\n1 loglk = %f",loglk); */
@@ -611,7 +611,7 @@ phydbl TIMES_Lk_Yule_Order(t_tree *tree)
   tf = tree->rates->t_floor;
   t  = tree->rates->nd_t;
   n = NULL;
-  loglbda = LOG(tree->rates->birth_rate);
+  loglbda = log(tree->rates->birth_rate);
   lbda = tree->rates->birth_rate;
   lower_bound = -1.;
   upper_bound = -1.;
@@ -631,7 +631,7 @@ phydbl TIMES_Lk_Yule_Order(t_tree *tree)
   /*     if(n->tax == NO) */
   /*       { */
   /*         loglk  += (loglbda - lbda * FABS(t[j])); */
-  /*         /\* loglk -= LOG(EXP(-lbda*lower_bound) - EXP(-lbda*upper_bound)); // incorporate calibration boundaries here. *\/ */
+  /*         /\* loglk -= log(exp(-lbda*lower_bound) - exp(-lbda*upper_bound)); // incorporate calibration boundaries here. *\/ */
   /*       } */
   /*   } */
 
@@ -652,7 +652,7 @@ phydbl TIMES_Lk_Yule_Order(t_tree *tree)
       if(n->tax == NO)
         {
           loglk  += (loglbda - lbda * FABS(t[j]));
-          loglk -= LOG(EXP(-lbda*lower_bound) - EXP(-lbda*upper_bound)); // incorporate calibration boundaries here.    
+          loglk -= log(exp(-lbda*lower_bound) - exp(-lbda*upper_bound)); // incorporate calibration boundaries here.    
         }
       
       if(isinf(loglk) || isnan(loglk))
@@ -660,9 +660,9 @@ phydbl TIMES_Lk_Yule_Order(t_tree *tree)
           /* PhyML_Printf("\n. Lower bound: %f",lower_bound); */
           /* PhyML_Printf("\n. Upper bound: %f",upper_bound); */
           /* PhyML_Printf("\n. tf: %f tp_max: %f tp_min: %f ",tf[j],tp_max[j],tp_min[j]); */
-          /* PhyML_Printf("\n. exp1: %f",EXP(-lbda*lower_bound)); */
-          /* PhyML_Printf("\n. exp2: %f",EXP(-lbda*upper_bound)); */
-          /* PhyML_Printf("\n. diff: %f",EXP(-lbda*lower_bound) - EXP(-lbda*upper_bound)); */
+          /* PhyML_Printf("\n. exp1: %f",exp(-lbda*lower_bound)); */
+          /* PhyML_Printf("\n. exp2: %f",exp(-lbda*upper_bound)); */
+          /* PhyML_Printf("\n. diff: %f",exp(-lbda*lower_bound) - exp(-lbda*upper_bound)); */
           /* Exit("\n"); */
           return(-INFINITY);
         }      
@@ -670,17 +670,17 @@ phydbl TIMES_Lk_Yule_Order(t_tree *tree)
 
   lower_bound = MAX(FABS(tf[tree->n_root->num]),FABS(tp_max[tree->n_root->num]));
   upper_bound = FABS(tp_min[tree->n_root->num]);
-  loglk += LOG(2) + loglbda - 2.*lbda * FABS(t[tree->n_root->num]);
-  loglk -= LOG(EXP(-2.*lbda*lower_bound) - EXP(-2.*lbda*upper_bound));
+  loglk += log(2) + loglbda - 2.*lbda * FABS(t[tree->n_root->num]);
+  loglk -= log(exp(-2.*lbda*lower_bound) - exp(-2.*lbda*upper_bound));
 
   if(isinf(loglk) || isnan(loglk))
     {
       /* PhyML_Printf("\n. * Lower bound: %f",lower_bound); */
       /* PhyML_Printf("\n. * Upper bound: %f",upper_bound); */
       /* PhyML_Printf("\n. * tf: %f tp_max: %f tp_min: %f",tf[tree->n_root->num],tp_max[tree->n_root->num],tp_min[tree->n_root->num]); */
-      /* PhyML_Printf("\n. * exp1: %f",EXP(-2.*lbda*lower_bound)); */
-      /* PhyML_Printf("\n. * exp2: %f",EXP(-2.*lbda*upper_bound)); */
-      /* PhyML_Printf("\n. * diff: %f",EXP(-2.*lbda*lower_bound) - EXP(-2.*lbda*upper_bound)); */
+      /* PhyML_Printf("\n. * exp1: %f",exp(-2.*lbda*lower_bound)); */
+      /* PhyML_Printf("\n. * exp2: %f",exp(-2.*lbda*upper_bound)); */
+      /* PhyML_Printf("\n. * diff: %f",exp(-2.*lbda*lower_bound) - exp(-2.*lbda*upper_bound)); */
       /* Exit("\n"); */
       return(-INFINITY);
     }
@@ -729,7 +729,7 @@ void TIMES_Lk_Times_Trav(t_node *a, t_node *d, phydbl lim_inf, phydbl lim_sup, p
       lim_inf = tree->rates->nd_t[tree->n_root->num];
       lim_sup = tree->rates->t_floor[d->num];
       
-      *logdens = *logdens + LOG(lim_sup - lim_inf);   
+      *logdens = *logdens + log(lim_sup - lim_inf);   
     }
   
   if(d->tax == YES) return;
@@ -901,16 +901,16 @@ phydbl TIMES_Lk_Uniform_Core(t_tree *tree)
 
   /* printf("\n. ^ %f %f %f", */
   /* 	 (phydbl)(tree->rates->n_tips_below[tree->n_root->num]-2.), */
-  /* 	 LOG(tree->rates->time_slice_lims[tree->rates->curr_slice[tree->n_root->num]] - */
+  /* 	 log(tree->rates->time_slice_lims[tree->rates->curr_slice[tree->n_root->num]] - */
   /* 	     tree->rates->nd_t[tree->n_root->num]), */
   /* 	 (phydbl)(tree->rates->n_tips_below[tree->n_root->num]-2.) * */
-  /* 	 LOG(tree->rates->time_slice_lims[tree->rates->curr_slice[tree->n_root->num]] - */
+  /* 	 log(tree->rates->time_slice_lims[tree->rates->curr_slice[tree->n_root->num]] - */
   /* 	     tree->rates->nd_t[tree->n_root->num])); */
 
   tree->rates->c_lnL_times +=
     Factln(tree->rates->n_tips_below[tree->n_root->num]-2.) -
     (phydbl)(tree->rates->n_tips_below[tree->n_root->num]-2.) *
-    LOG(tree->rates->time_slice_lims[tree->rates->curr_slice[tree->n_root->num]] -
+    log(tree->rates->time_slice_lims[tree->rates->curr_slice[tree->n_root->num]] -
   	tree->rates->nd_t[tree->n_root->num]);
   
   tree->rates->c_lnL_times -= logn;
@@ -1019,7 +1019,7 @@ void TIMES_Lk_Uniform_Post(t_node *a, t_node *d, t_tree *tree)
 	  tree->rates->c_lnL_times += 
 	    Factln(tree->rates->n_tips_below[d->num]-1.) - 
 	    (phydbl)(tree->rates->n_tips_below[d->num]-1.) *
-	    LOG(tree->rates->time_slice_lims[tree->rates->curr_slice[d->num]] -
+	    log(tree->rates->time_slice_lims[tree->rates->curr_slice[d->num]] -
 		tree->rates->nd_t[d->num]);
 	}
     }
@@ -1286,7 +1286,7 @@ phydbl TIMES_Lk_Yule_Order_Root_Cond(t_tree *tree)
   tf = tree->rates->t_floor;
   t  = tree->rates->nd_t;
   n = NULL;
-  loglbda = LOG(tree->rates->birth_rate);
+  loglbda = log(tree->rates->birth_rate);
   lbda = tree->rates->birth_rate;
   lower_bound = -1.;
   upper_bound = -1.;
@@ -1306,7 +1306,7 @@ phydbl TIMES_Lk_Yule_Order_Root_Cond(t_tree *tree)
   /*     if(n->tax == NO) */
   /*       { */
   /*         loglk  += (loglbda - lbda * FABS(t[j])); */
-  /*         /\* loglk -= LOG(EXP(-lbda*lower_bound) - EXP(-lbda*upper_bound)); // incorporate calibration boundaries here. *\/ */
+  /*         /\* loglk -= log(exp(-lbda*lower_bound) - exp(-lbda*upper_bound)); // incorporate calibration boundaries here. *\/ */
   /*       } */
   /*   } */
 
@@ -1327,7 +1327,7 @@ phydbl TIMES_Lk_Yule_Order_Root_Cond(t_tree *tree)
       if(n->tax == NO)
         {
           loglk  += (loglbda - lbda * FABS(t[j]));
-          loglk -= LOG(EXP(-lbda*lower_bound) - EXP(-lbda*upper_bound)); // incorporate calibration boundaries here.    
+          loglk -= log(exp(-lbda*lower_bound) - exp(-lbda*upper_bound)); // incorporate calibration boundaries here.    
         }
 
         if(isinf(loglk) || isnan(loglk))
@@ -1342,8 +1342,8 @@ phydbl TIMES_Lk_Yule_Order_Root_Cond(t_tree *tree)
 
   /* lower_bound = MAX(FABS(tf[tree->n_root->num]),FABS(tp_max[tree->n_root->num])); */
   /* upper_bound = FABS(tp_min[tree->n_root->num]); */
-  /* loglk += LOG(2) + loglbda - 2.*lbda * FABS(t[tree->n_root->num]); */
-  /* loglk -= LOG(EXP(-2.*lbda*lower_bound) - EXP(-2.*lbda*upper_bound)); */
+  /* loglk += log(2) + loglbda - 2.*lbda * FABS(t[tree->n_root->num]); */
+  /* loglk -= log(exp(-2.*lbda*lower_bound) - exp(-2.*lbda*upper_bound)); */
 
 
   return(loglk);
@@ -1393,21 +1393,21 @@ phydbl TIMES_Lk_Birth_Death(int verbose, t_tree *tree)
   
   if(b > bmin && d > dmin && Are_Equal(bmd,0.0,bmin/10.) == NO)
     {
-      logbmd = LOG(bmd);
-      expmbmd = EXP(d-b);
+      logbmd = log(bmd);
+      expmbmd = exp(d-b);
 
       For(i,2*tree->n_otu-1)
         if(tree->a_nodes[i]->tax == NO && tree->a_nodes[i] != tree->n_root)
           {
             t = FABS(tree->rates->nd_t[i]);            
             // Equation 3.19 in Tanja Stadler's PhD thesis
-            lnL += 2*logbmd - bmd*t - 2.*LOG(b-d*POW(expmbmd,t));            
+            lnL += 2*logbmd - bmd*t - 2.*log(b-d*POW(expmbmd,t));            
           }
 
       t = FABS(tree->rates->nd_t[tree->n_root->num]);
-      lnL += -bmd*t - LOG(b-d*POW(expmbmd,t));
+      lnL += -bmd*t - log(b-d*POW(expmbmd,t));
 
-      lnL += log(bmd) + (tree->n_otu-1)*LOG(b) + LnGamma(tree->n_otu+1);
+      lnL += log(bmd) + (tree->n_otu-1)*log(b) + LnGamma(tree->n_otu+1);
     }
   else if(b > bmin && d < dmin) // Yule process 
     {
@@ -1422,7 +1422,7 @@ phydbl TIMES_Lk_Birth_Death(int verbose, t_tree *tree)
       t = FABS(tree->rates->nd_t[tree->n_root->num]);
       lnL -= b*t;
       
-      lnL += (tree->n_otu-1)*LOG(b) + LnGamma(tree->n_otu+1);
+      lnL += (tree->n_otu-1)*log(b) + LnGamma(tree->n_otu+1);
     }
   else if(b < bmin && d > dmin) 
     {
@@ -1431,18 +1431,18 @@ phydbl TIMES_Lk_Birth_Death(int verbose, t_tree *tree)
     }
   else if(Are_Equal(bmd,0.0,bmin/10.) == YES) // Critical birth-death process
     {
-      logb = LOG(b);
+      logb = log(b);
 
       For(i,2*tree->n_otu-1)
         if(tree->a_nodes[i]->tax == NO && tree->a_nodes[i] != tree->n_root)
           {
             t = FABS(tree->rates->nd_t[i]);            
             // Equation 3.19 in Tanja Stadler's PhD thesis (Critical case)
-            lnL += logb - 2.*LOG(1.+b*t);
+            lnL += logb - 2.*log(1.+b*t);
           }
 
       t = FABS(tree->rates->nd_t[tree->n_root->num]);
-      lnL -= LOG(b*t);
+      lnL -= log(b*t);
 
       lnL += LnGamma(tree->n_otu+1);
       

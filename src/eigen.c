@@ -141,7 +141,7 @@ complex cdiv (complex a,complex b)
 /* complex local_cexp (complex a) */
 /* { */
 /*    complex c; */
-/*    c.re = EXP(a.re); */
+/*    c.re = exp(a.re); */
 /*    if (FABS(a.im)==0) c.im = 0;  */
 /*    else  { c.im = c.re*sin(a.im); c.re*=cos(a.im); } */
 /*    return (c); */

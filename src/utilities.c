@@ -2238,7 +2238,7 @@ matrix *JC69_Dist(calign *data, t_mod *mod)
 
     if((1.-(mod->ns)/(mod->ns-1.)*mat->P[i][j]) < .0) mat->dist[i][j] = -1.;
     else
-      mat->dist[i][j] = -(mod->ns-1.)/(mod->ns)*(phydbl)LOG(1.-(mod->ns)/(mod->ns-1.)*mat->P[i][j]);
+      mat->dist[i][j] = -(mod->ns-1.)/(mod->ns)*(phydbl)log(1.-(mod->ns)/(mod->ns-1.)*mat->P[i][j]);
 
 /* 	PhyML_Printf("\n. Incorrect JC distances"); */
 /* 	mat->dist[i][j] = len[i][j]; */
@@ -3042,12 +3042,12 @@ phydbl Num_Derivatives_One_Param(phydbl (*func)(t_tree *tree), t_tree *tree,
     {
       param[which]   = param[which]+hh;
 
-      if(logt == YES) for(i=0;i<n_param;i++) param[i] = EXP(MIN(1.E+2,param[i]));
+      if(logt == YES) for(i=0;i<n_param;i++) param[i] = exp(MIN(1.E+2,param[i]));
       for(i=0;i<n_param;i++) sign[i] = param[i] > .0 ? 1. : -1.;
       if(is_positive == YES) for(i=0;i<n_param;i++) param[i] = FABS(param[i]);
       a[0][0]  = (*func)(tree);
       if(is_positive == YES) for(i=0;i<n_param;i++) param[i] *= sign[i];
-      if(logt == YES) for(i=0;i<n_param;i++) param[i] = LOG(param[i]);
+      if(logt == YES) for(i=0;i<n_param;i++) param[i] = log(param[i]);
 
       /* printf("\n. f0=%f f1=%f hh=%G %f",f0,a[0][0],hh,param[which]); */
 
@@ -3061,12 +3061,12 @@ phydbl Num_Derivatives_One_Param(phydbl (*func)(t_tree *tree), t_tree *tree,
     {
       param[which]   = param[which]+hh;
 
-      if(logt == YES) for(i=0;i<n_param;i++) param[i] = EXP(MIN(1.E+2,param[i]));
+      if(logt == YES) for(i=0;i<n_param;i++) param[i] = exp(MIN(1.E+2,param[i]));
       for(i=0;i<n_param;i++) sign[i] = param[i] > .0 ? 1. : -1.;
       if(is_positive == YES) for(i=0;i<n_param;i++) param[i] = FABS(param[i]);
       a[0][0]  = (*func)(tree);
       if(is_positive == YES) for(i=0;i<n_param;i++) param[i] *= sign[i];
-      if(logt == YES) for(i=0;i<n_param;i++) param[i] = LOG(param[i]);
+      if(logt == YES) for(i=0;i<n_param;i++) param[i] = log(param[i]);
 
       /*   param[which]   = param[which]-2*hh; */
       /*   a[0][0] -= (*func)(tree); */
@@ -3090,12 +3090,12 @@ phydbl Num_Derivatives_One_Param(phydbl (*func)(t_tree *tree), t_tree *tree,
           
           param[which]   = param[which]+hh;
           
-          if(logt == YES) for(j=0;j<n_param;j++) param[j] = EXP(MIN(1.E+2,param[j]));
+          if(logt == YES) for(j=0;j<n_param;j++) param[j] = exp(MIN(1.E+2,param[j]));
           for(i=0;i<n_param;i++) sign[i] = param[i] > .0 ? 1. : -1.;
           if(is_positive == YES) for(i=0;i<n_param;i++) param[i] = FABS(param[i]);
           a[0][i]  = (*func)(tree);
           if(is_positive == YES) for(i=0;i<n_param;i++) param[i] *= sign[i];
-          if(logt == YES) for(j=0;j<n_param;j++) param[j] = LOG(param[j]);
+          if(logt == YES) for(j=0;j<n_param;j++) param[j] = log(param[j]);
           
           /*   param[which]   = param[which]-2*hh; */
           /*   a[0][i] -= (*func)(tree); */
@@ -3159,12 +3159,12 @@ phydbl Num_Derivatives_One_Param_Nonaligned(phydbl (*func)(t_tree *tree), t_tree
     {
       *(param[which])   = *(param[which])+hh;
 
-      if(logt == YES) for(i=0;i<n_param;i++) *(param[i]) = EXP(MIN(1.E+2,*(param[i])));
+      if(logt == YES) for(i=0;i<n_param;i++) *(param[i]) = exp(MIN(1.E+2,*(param[i])));
       for(i=0;i<n_param;i++) sign[i] = (*(param[i])) > .0 ? 1. : -1.;
       if(is_positive == YES) for(i=0;i<n_param;i++) (*(param[i])) = FABS(*(param[i]));
       a[0][0]  = (*func)(tree);
       if(is_positive == YES) for(i=0;i<n_param;i++) (*(param[i])) *= sign[i];
-      if(logt == YES) for(i=0;i<n_param;i++) *(param[i]) = LOG(*(param[i]));
+      if(logt == YES) for(i=0;i<n_param;i++) *(param[i]) = log(*(param[i]));
 
       /* printf("\n. f0=%f f1=%f hh=%G %f",f0,a[0][0],hh,*(param[which])); */
 
@@ -3178,12 +3178,12 @@ phydbl Num_Derivatives_One_Param_Nonaligned(phydbl (*func)(t_tree *tree), t_tree
     {
       *(param[which])   = *(param[which])+hh;
 
-      if(logt == YES) for(i=0;i<n_param;i++) *(param[i]) = EXP(MIN(1.E+2,*(param[i])));
+      if(logt == YES) for(i=0;i<n_param;i++) *(param[i]) = exp(MIN(1.E+2,*(param[i])));
       for(i=0;i<n_param;i++) sign[i] = (*(param[i])) > .0 ? 1. : -1.;
       if(is_positive == YES) for(i=0;i<n_param;i++) (*(param[i])) = FABS(*(param[i]));
       a[0][0]  = (*func)(tree);
       if(is_positive == YES) for(i=0;i<n_param;i++) (*(param[i])) *= sign[i];
-      if(logt == YES) for(i=0;i<n_param;i++) *(param[i]) = LOG(*(param[i]));
+      if(logt == YES) for(i=0;i<n_param;i++) *(param[i]) = log(*(param[i]));
 
       /*   *(param[which]   = *(param[which]-2*hh; */
       /*   a[0][0] -= (*func)(tree); */
@@ -3207,12 +3207,12 @@ phydbl Num_Derivatives_One_Param_Nonaligned(phydbl (*func)(t_tree *tree), t_tree
 
       *(param[which])   = *(param[which])+hh;
 
-          if(logt == YES) for(j=0;j<n_param;j++) *(param[j]) = EXP(MIN(1.E+2,*(param[j])));
+          if(logt == YES) for(j=0;j<n_param;j++) *(param[j]) = exp(MIN(1.E+2,*(param[j])));
           for(i=0;i<n_param;i++) sign[i] = (*(param[i])) > .0 ? 1. : -1.;
           if(is_positive == YES) for(i=0;i<n_param;i++) (*(param[i])) = FABS(*(param[i]));
       a[0][i]  = (*func)(tree);
           if(is_positive == YES) for(i=0;i<n_param;i++) (*(param[i])) *= sign[i];
-          if(logt == YES) for(j=0;j<n_param;j++) *(param[j]) = LOG(*(param[j]));
+          if(logt == YES) for(j=0;j<n_param;j++) *(param[j]) = log(*(param[j]));
 
       /*   *(param[which]   = *(param[which]-2*hh; */
       /*   a[0][i] -= (*func)(tree); */
@@ -3258,12 +3258,12 @@ int Num_Derivative_Several_Param(t_tree *tree, phydbl *param, int n_param, phydb
 
   sign = (phydbl *)mCalloc(n_param,sizeof(phydbl));
 
-  if(logt == YES)   for(i=0;i<n_param;i++) param[i] = EXP(MIN(1.E+2,param[i]));
+  if(logt == YES)   for(i=0;i<n_param;i++) param[i] = exp(MIN(1.E+2,param[i]));
   for(i=0;i<n_param;i++) sign[i] = (param[i]) > .0 ? 1. : -1.;
   if(is_positive == YES) for(i=0;i<n_param;i++) param[i] = FABS(param[i]);
   f0 = (*func)(tree);
   if(is_positive == YES) for(i=0;i<n_param;i++) param[i] *= sign[i];
-  if(logt == YES)   for(i=0;i<n_param;i++) param[i] = LOG(param[i]);
+  if(logt == YES)   for(i=0;i<n_param;i++) param[i] = log(param[i]);
 
   for(i=0;i<n_param;i++)
     {
@@ -3298,12 +3298,12 @@ int Num_Derivative_Several_Param_Nonaligned(t_tree *tree, phydbl **param, int n_
 
   sign = (phydbl *)mCalloc(n_param,sizeof(phydbl));
 
-  if(logt == YES)   for(i=0;i<n_param;i++) (*(param[i])) = EXP(MIN(1.E+2,*(param[i])));
+  if(logt == YES)   for(i=0;i<n_param;i++) (*(param[i])) = exp(MIN(1.E+2,*(param[i])));
   for(i=0;i<n_param;i++) sign[i] = (*(param[i])) > .0 ? 1. : -1.;
   if(is_positive == YES) for(i=0;i<n_param;i++) *(param[i]) = FABS(*(param[i]));
   f0 = (*func)(tree);
   if(is_positive == YES) for(i=0;i<n_param;i++) *(param[i]) *= sign[i];
-  if(logt == YES)   for(i=0;i<n_param;i++) (*(param[i])) = LOG(*(param[i]));
+  if(logt == YES)   for(i=0;i<n_param;i++) (*(param[i])) = log(*(param[i]));
 
 
   for(i=0;i<n_param;i++)
@@ -7055,7 +7055,7 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
   mu     = 2.5;
   rho    = 9./150.;
   
-  expval = EXP(MIN(1.E+2,mu-lambda));
+  expval = exp(MIN(1.E+2,mu-lambda));
   phi = (rho*lambda*(expval-1.) + (mu-lambda)*expval)/(expval-1.); /* Equation 16 */
   
   for(i=0;i<tree->n_otu-1;i++)
@@ -7064,7 +7064,7 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
       u /= RAND_MAX;
       
       if(FABS(lambda - mu) > 1.E-4)
-        t[i] = (LOG(phi-u*rho*lambda) - LOG(phi-u*rho*lambda + u*(lambda-mu)))/(mu-lambda); /* Equation 15 */
+        t[i] = (log(phi-u*rho*lambda) - log(phi-u*rho*lambda + u*(lambda-mu)))/(mu-lambda); /* Equation 15 */
       else
         t[i] = u / (1.+lambda*rho*(1-u)); /* Equation 17 */
     }
@@ -7645,7 +7645,7 @@ phydbl Univariate_Kernel_Density_Estimate(phydbl where, phydbl *x, int sample_si
   cons = (1./sample_size) * (1./h) * (1./sqrt2pi);
 
   density = .0;
-  for(i=0;i<sample_size;i++) density += EXP(-0.5 * POW((x[i] - where)/h,2));
+  for(i=0;i<sample_size;i++) density += exp(-0.5 * POW((x[i] - where)/h,2));
   density *= cons;
 
   return density;
@@ -7693,7 +7693,7 @@ phydbl Multivariate_Kernel_Density_Estimate(phydbl *where, phydbl **x, int sampl
       tmp = 1.0;
       for(j=0;j<vect_size;j++)
     {
-      tmp *= EXP(-0.5 * POW((x[j][i] - where[j])/h[j],2));
+      tmp *= exp(-0.5 * POW((x[j][i] - where[j])/h[j],2));
     }
       density += tmp;
     }
@@ -9287,7 +9287,7 @@ int Scale_Subtree_Rates(t_node *a, phydbl mult, int *n_nodes, t_tree *tree)
 int Scale_Subtree_Rates_Post(t_node *a, t_node *d, phydbl mult, int *n_nodes, t_tree *tree)
 {
 
-  if(tree->rates->model_log_rates == YES) tree->rates->br_r[d->num] += LOG(mult);
+  if(tree->rates->model_log_rates == YES) tree->rates->br_r[d->num] += log(mult);
   else tree->rates->br_r[d->num] *= mult;
 
   *n_nodes = *n_nodes+1;
@@ -9356,7 +9356,7 @@ void Get_Node_Ranks_Pre(t_node *a, t_node *d,t_tree *tree)
 void Log_Br_Len(t_tree *tree)
 {
   int i;
-  For(i,2*tree->n_otu-3) tree->a_edges[i]->l->v = LOG(tree->a_edges[i]->l->v);
+  For(i,2*tree->n_otu-3) tree->a_edges[i]->l->v = log(tree->a_edges[i]->l->v);
 }
 
 //////////////////////////////////////////////////////////////
@@ -11416,7 +11416,7 @@ phydbl Pairwise_Identity(int i, int j, calign *data)
       else
         {
           /* Jukes & Cantor distance */
-          d = -(3./4.)*LOG(1. - 4./3.*p);
+          d = -(3./4.)*log(1. - 4./3.*p);
         }
     }
   else if(data->io->datatype == AA)
@@ -11425,12 +11425,12 @@ phydbl Pairwise_Identity(int i, int j, calign *data)
       else
         {
           /* Jukes & Cantor distance */
-          d = -(19./20.)*LOG(1. - 20./19.*p);
+          d = -(19./20.)*log(1. - 20./19.*p);
         }
     }
   else Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
-  return(EXP(-d));
+  return(exp(-d));
 }
 
 

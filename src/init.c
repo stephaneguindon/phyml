@@ -858,8 +858,8 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
 
   if(rates->model_log_rates == YES)
     {
-      rates->max_rate  =  LOG(10.);
-      rates->min_rate  = -LOG(10.);
+      rates->max_rate  =  log(10.);
+      rates->min_rate  = -log(10.);
       /* rates->max_rate  =  MDBL_MAX; */
       /* rates->min_rate  = -MDBL_MAX; */
     }
@@ -1036,8 +1036,8 @@ void Init_Model(calign *data, t_mod *mod, option *io)
 
   if(mod->log_l == YES)
     {
-      mod->l_min = LOG(mod->l_min);
-      mod->l_max = LOG(mod->l_max);
+      mod->l_min = log(mod->l_min);
+      mod->l_max = log(mod->l_max);
     }
   
   // Init unscaled relative rate frequencies
@@ -1378,8 +1378,8 @@ void Init_Model(calign *data, t_mod *mod, option *io)
               Exit("\n");
             }
           
-          /* compute the diagonal terms of EXP(D) */
-          for(i=0;i<mod->ns;i++) mod->eigen->e_val[i] = (phydbl)EXP(mod->eigen->e_val[i]);
+          /* compute the diagonal terms of exp(D) */
+          for(i=0;i<mod->ns;i++) mod->eigen->e_val[i] = (phydbl)exp(mod->eigen->e_val[i]);
         }
       else
         {
@@ -1889,7 +1889,7 @@ int Init_Qmat_MtArt(phydbl *daa, phydbl *pi) // Added by Federico Abascal
             (Habr_orego,Hept_hangz)),Limu_polyp),(Poll_polym,Mega_volca),(Gomp_hodgs,Tetr_biela),
             ((Pagu_longi,Pena_monod),Harp_harpa),Spel_tulum));
 
-            Note this is not the ML topoLOGy but the consensus one (based on morphoLOGical data,
+            Note this is not the ML topology but the consensus one (based on morphological data,
             phylogenetic reconstruction using nuclear genes, etc). Where relationships are
             not clear, a polytomy was introduced (it contains quite a lot of polytomies!).
 
@@ -1952,7 +1952,7 @@ int Init_Qmat_MtArt(phydbl *daa, phydbl *pi) // Added by Federico Abascal
     daa[19*20+ 13] = 51.9;  daa[19*20+ 14] = 31.7;  daa[19*20+ 15] = 60.6;  daa[19*20+ 16] = 544.1;
     daa[19*20+ 17] = 0.2;   daa[19*20+ 18] = 1.6;
 
-/*  MtArt.old: esta es la MtArt que hice con 26 secuencias (2 outgroups) con una topoLOGia incorrecta
+/*  MtArt.old: esta es la MtArt que hice con 26 secuencias (2 outgroups) con una topologia incorrecta
     daa[1*20+ 0] = 0.2;     daa[2*20+ 0] = 0.2;     daa[2*20+ 1] = 8.0;     daa[3*20+ 0] = 0.2;
     daa[3*20+ 1] = 0.2;     daa[3*20+ 2] = 441.7;   daa[4*20+ 0] = 287.9;   daa[4*20+ 1] = 48.4;
     daa[4*20+ 2] = 82.4;    daa[4*20+ 3] = 0.2;     daa[5*20+ 0] = 0.2;     daa[5*20+ 1] = 149.9;
@@ -2868,7 +2868,7 @@ int Init_Qmat_CpREV(phydbl *daa, phydbl *pi)
 
     /*
       Adachi, J., P. Waddell, W. Martin, and M. Hasegawa. 2000. Plastid
-      genome phyLOGeny and a model of amino acid substitution for proteins
+      genome phylogeny and a model of amino acid substitution for proteins
       encoded by chloroplast DNA. Journal of Molecular Evolution
       50:348-358.
     */
@@ -3251,7 +3251,7 @@ int Init_Qmat_MtMam(phydbl *daa, phydbl *pi)
 
     /*
       Cao, Y. et al. 1998 Conflict amongst individual mitochondrial
-      proteins in resolving the phyLOGeny of eutherian orders. Journal
+      proteins in resolving the phylogeny of eutherian orders. Journal
       of Molecular Evolution 15:1600-1611.
     */
 

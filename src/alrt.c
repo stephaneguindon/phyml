@@ -295,9 +295,9 @@ int Compute_Likelihood_Ratio_Test(t_edge *tested_edge, t_tree *tree)
               
               logK = 1. - MAX(MAX(tested_edge->nni->lk0,tested_edge->nni->lk1),tested_edge->nni->lk2);
               
-              Kp0 = EXP(tested_edge->nni->lk0+logK);
-              Kp1 = EXP(tested_edge->nni->lk1+logK);
-              Kp2 = EXP(tested_edge->nni->lk2+logK);
+              Kp0 = exp(tested_edge->nni->lk0+logK);
+              Kp1 = exp(tested_edge->nni->lk1+logK);
+              Kp2 = exp(tested_edge->nni->lk2+logK);
               tested_edge->ratio_test = Kp0/(Kp0+Kp1+Kp2);              
             }
         }

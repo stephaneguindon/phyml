@@ -112,7 +112,7 @@ int Rand_Int(int min, int max)
 * (2) X1 = Gamma(alpha1,1), X2 = Gamma(alpha2,1) independent
 *     then X = X1+X2 = Gamma(alpha1+alpha2,1)
 * (3) alpha = k = integer then
-*     X = Gamma(k,1) = Erlang(k,1) = -sum(LOG(Ui)) = -LOG(prod(Ui))
+*     X = Gamma(k,1) = Erlang(k,1) = -sum(log(Ui)) = -log(prod(Ui))
 *     where U1,...Uk iid uniform(0,1)
 *
 * Decompose alpha = k+delta with k = [alpha], and 0<delta<1
@@ -127,7 +127,7 @@ phydbl Ahrensdietergamma(phydbl alpha)
   if (alpha>0.) 
     {
       phydbl y = 0.;
-      phydbl b = (alpha+EXP(1.))/EXP(1.);
+      phydbl b = (alpha+exp(1.))/exp(1.);
       phydbl p = 1./alpha;
       int go = 0;
       while (go==0) 
@@ -138,11 +138,11 @@ phydbl Ahrensdietergamma(phydbl alpha)
 	  if (v<=1.) 
 	    {
 	      x = POW(v,p);
-	      y = EXP(-x);
+	      y = exp(-x);
 	    }
 	  else 
 	    {
-	      x = -LOG(p*(b-v));
+	      x = -log(p*(b-v));
 	      y = POW(x,alpha-1.);
 	    }
 	  go = (w<y); // x is accepted when go=1
@@ -219,13 +219,13 @@ phydbl Rgamma(phydbl shape, phydbl scale)
           p = e * Uni();
           if (p >= 1.0) 
             {
-              x = -LOG((e - p) / a);
-              if (Rexp(1.) >= (1.0 - a) * LOG(x))
+              x = -log((e - p) / a);
+              if (Rexp(1.) >= (1.0 - a) * log(x))
                 break;
 	    } 
           else 
             {
-              x = EXP(LOG(p) / a);
+              x = exp(log(p) / a);
               if (Rexp(1.) >= x)
                 break;
 	    }
@@ -302,7 +302,7 @@ phydbl Rgamma(phydbl shape, phydbl scale)
         
         
 	/* Step 7: quotient acceptance (q) */
-	if (LOG(1.0 - u) <= q)
+	if (log(1.0 - u) <= q)
           return scale * ret_val;
       }
     
@@ -327,13 +327,13 @@ phydbl Rgamma(phydbl shape, phydbl scale)
 		    ((((((a7 * v + a6) * v + a5) * v + a4) * v + a3) * v
 		      + a2) * v + a1) * v;
 	    else
-		q = q0 - s * t + 0.25 * t * t + (s2 + s2) * LOG(1.0 + v);
+		q = q0 - s * t + 0.25 * t * t + (s2 + s2) * log(1.0 + v);
 	    /* Step 11:	 hat acceptance (h) */
 	    /* (if q not positive go to step 8) */
 	    if (q > 0.0) {
-		w = EXP(q)-1.0;
+		w = exp(q)-1.0;
 		/* if t is rejected sample again at step 8 */
-		if (c * FABS(u) <= w * EXP(e - 0.5 * t * t))
+		if (c * FABS(u) <= w * exp(e - 0.5 * t * t))
 		    break;
 	    }
 	}
@@ -347,7 +347,7 @@ phydbl Rgamma(phydbl shape, phydbl scale)
 
 phydbl Rexp(phydbl lambda)
 {
-  return -LOG(Uni()+1.E-30)/lambda;
+  return -log(Uni()+1.E-30)/lambda;
 }
 
 /*////////////////////////////////////////////////////////////
@@ -359,7 +359,7 @@ phydbl Rexp_Trunc(phydbl lambda, phydbl left, phydbl rght)
 {
   phydbl u;
   u = Uni();
-  return (left-LOG(1. - u*(1.-EXP(-lambda*(rght-left))))/lambda);
+  return (left-log(1. - u*(1.-exp(-lambda*(rght-left))))/lambda);
 }
 
 /*////////////////////////////////////////////////////////////
@@ -372,7 +372,7 @@ phydbl Rnorm(phydbl mean, phydbl sd)
   
   /* u1=Uni(); */
   /* u2=Uni(); */
-  /* u1 = SQRT(-2.*LOG(u1))*COS(6.28318530717959f*u2); */
+  /* u1 = SQRT(-2.*log(u1))*COS(6.28318530717959f*u2); */
 
   /* Polar */
   phydbl d,x,y;
@@ -387,7 +387,7 @@ phydbl Rnorm(phydbl mean, phydbl sd)
       if(d>.0 && d<1.) break;
     }
   while(1);
-  u1 = x*SQRT((-2.*LOG(d))/d);
+  u1 = x*SQRT((-2.*log(d))/d);
 
   res = u1*sd+mean;
 
@@ -513,11 +513,11 @@ phydbl Rnorm_Trunc(phydbl mean, phydbl sd, phydbl min, phydbl max, int *error)
     {
       algo = 0;
     }
-  if((z_min > 0.0 || Are_Equal(z_min,0.0,1.E-10)) && z_max > z_min + 2.*SQRT(EXP(1.0))/(z_min + SQRT(z_min*z_min+4.)) * EXP((z_min*z_min - z_min*SQRT(z_min*z_min+4.))/4.))
+  if((z_min > 0.0 || Are_Equal(z_min,0.0,1.E-10)) && z_max > z_min + 2.*SQRT(exp(1.0))/(z_min + SQRT(z_min*z_min+4.)) * exp((z_min*z_min - z_min*SQRT(z_min*z_min+4.))/4.))
     {
       algo = 1;
     }
-  else if((z_max < 0.0 || Are_Equal(z_max,0.0,1.E-10)) && -z_min > -z_max + 2.*SQRT(EXP(1.0))/(-z_max + SQRT(z_max*z_max+4.)) * EXP((z_max*z_max - (-z_max)*SQRT(z_max*z_max+4.))/4.))
+  else if((z_max < 0.0 || Are_Equal(z_max,0.0,1.E-10)) && -z_min > -z_max + 2.*SQRT(exp(1.0))/(-z_max + SQRT(z_max*z_max+4.)) * exp((z_max*z_max - (-z_max)*SQRT(z_max*z_max+4.))/4.))
     {
       algo = 2;
     }
@@ -559,7 +559,7 @@ phydbl Rnorm_Trunc(phydbl mean, phydbl sd, phydbl min, phydbl max, int *error)
                 PhyML_Printf("\n== Too many iterations in Rnorm_Trunc()");
                 *error = YES; 
               }
-          }while(u > EXP(-POW(q-a,2)/2.));
+          }while(u > exp(-POW(q-a,2)/2.));
         z = q;
         break;
       }
@@ -577,7 +577,7 @@ phydbl Rnorm_Trunc(phydbl mean, phydbl sd, phydbl min, phydbl max, int *error)
                 PhyML_Printf("\n== Too many iterations in Rnorm_Trunc()");
                 *error = YES; 
               }
-          }while(u > EXP(-POW(q-a,2)/2.));
+          }while(u > exp(-POW(q-a,2)/2.));
         z = -q;
         break;
       }
@@ -587,9 +587,9 @@ phydbl Rnorm_Trunc(phydbl mean, phydbl sd, phydbl min, phydbl max, int *error)
         do
           {
             z = Uni()*(z_max - z_min) + z_min;
-            if(z_min < 0.0 && z_max > 0.0) q = EXP(-z*z/2.);
-            else if (z_max < 0.0) q = EXP((z_max*z_max-z*z)/2.);
-            else q = EXP((z_min*z_min-z*z)/2.);
+            if(z_min < 0.0 && z_max > 0.0) q = exp(-z*z/2.);
+            else if (z_max < 0.0) q = exp((z_max*z_max-z*z)/2.);
+            else q = exp((z_min*z_min-z*z)/2.);
             u = Uni();
             n_iter++;
             if(n_iter > n_max_iter)
@@ -677,7 +677,7 @@ phydbl Rgeom(phydbl p)
 
   u = Uni();
   if(u < SMALL) return(0.0);
-  x = LOG(u) / LOG(1. - p);
+  x = log(u) / log(1. - p);
   
   return(CEIL(x));  
 }
@@ -697,7 +697,7 @@ phydbl Dgeom(phydbl k, phydbl p, int logit)
     }
 
   if(logit == YES)
-    prob = (k - 1.)*LOG(1. - p) + LOG(p);
+    prob = (k - 1.)*log(1. - p) + log(p);
   else
     prob = POW(1.-p,k-1.)*p;
 
@@ -931,7 +931,7 @@ phydbl Dnorm_Moments(phydbl x, phydbl mean, phydbl var)
   pi = 3.141593;
   sd = SQRT(var);
 
-  dens = 1./(SQRT(2*pi)*sd)*EXP(-((x-mean)*(x-mean)/(2.*sd*sd)));
+  dens = 1./(SQRT(2*pi)*sd)*exp(-((x-mean)*(x-mean)/(2.*sd*sd)));
 
   return dens;
 }
@@ -944,12 +944,12 @@ phydbl Dnorm(phydbl x, phydbl mean, phydbl sd)
 {
   phydbl dens;
 
-  /* dens = -(.5*LOG2PI+LOG(sd))  - .5*POW(x-mean,2)/POW(sd,2); */
-  /* return EXP(dens); */
+  /* dens = -(.5*LOG2PI+log(sd))  - .5*POW(x-mean,2)/POW(sd,2); */
+  /* return exp(dens); */
   
   x = (x-mean)/sd;
 
-  dens = M_1_SQRT_2_PI * EXP(-0.5*x*x);
+  dens = M_1_SQRT_2_PI * exp(-0.5*x*x);
   
   return dens / sd;
 }
@@ -965,7 +965,7 @@ phydbl Log_Dnorm(phydbl x, phydbl mean, phydbl sd, int *err)
 
   x = (x-mean)/sd;
   
-  dens = -(phydbl)LOG(SQRT(2.*PI)) - x*x*0.5 - LOG(sd);
+  dens = -(phydbl)log(SQRT(2.*PI)) - x*x*0.5 - log(sd);
 
   if(dens < -BIG)
     {
@@ -1003,11 +1003,11 @@ phydbl Log_Dnorm_Trunc(phydbl x, phydbl mean, phydbl sd, phydbl lo, phydbl up, i
 
   if(cdf_up - cdf_lo < 1.E-20)
     {
-      log_dens = -230.; /* ~LOG(1.E-100) */
+      log_dens = -230.; /* ~log(1.E-100) */
     }
   else
     {
-      log_dens -= LOG(cdf_up - cdf_lo);
+      log_dens -= log(cdf_up - cdf_lo);
     }
 
   if(isnan(log_dens) || isinf(FABS(log_dens)))
@@ -1074,17 +1074,17 @@ phydbl Dnorm_Multi(phydbl *x, phydbl *mu, phydbl *cov, int size, int _log)
   det = Matrix_Det(cov,size,NO);
   /* det_1D(cov,size,&det); */
 
-  density = size * LOG2PI + LOG(det) + buff2[0];
+  density = size * LOG2PI + log(det) + buff2[0];
   density /= -2.;
 
-/*   density = (1./(POW(2.*PI,size/2.)*SQRT(FABS(det)))) * EXP(-0.5*buff2[0]); */
+/*   density = (1./(POW(2.*PI,size/2.)*SQRT(FABS(det)))) * exp(-0.5*buff2[0]); */
 
   Free(xmmu);
   Free(invcov);
   Free(buff1);
   Free(buff2);
 
-  return (_log)?(density):(EXP(density));
+  return (_log)?(density):(exp(density));
 }
 
 //////////////////////////////////////////////////////////////
@@ -1112,7 +1112,7 @@ phydbl Dnorm_Multi_Given_InvCov_Det(phydbl *x, phydbl *mu, phydbl *invcov, phydb
   Free(buff1);
   Free(buff2);
   
-  return (_log)?(density):(EXP(density));
+  return (_log)?(density):(exp(density));
 }
 
 //////////////////////////////////////////////////////////////
@@ -1143,7 +1143,7 @@ phydbl Bivariate_Normal_Density(phydbl x, phydbl y, phydbl mux, phydbl muy, phyd
   rho2 = rho*rho;
 
   dens = 1./(2*pi*sdx*sdy*SQRT(1.-rho2));
-  dens *= EXP((-1./(2.*(1.-rho2)))*(cx*cx/(sdx*sdx)+cy*cy/(sdy*sdy)+2*rho*cx*cy/(sdx*sdy)));
+  dens *= exp((-1./(2.*(1.-rho2)))*(cx*cx/(sdx*sdx)+cy*cy/(sdy*sdy)+2*rho*cx*cy/(sdx*sdy)));
 	      
   return dens;
 }
@@ -1154,7 +1154,7 @@ phydbl Bivariate_Normal_Density(phydbl x, phydbl y, phydbl mux, phydbl muy, phyd
 phydbl Dnbinom(phydbl x, phydbl n, phydbl p, int logit)
 {
 
-  phydbl lnDens = LnGamma(x+n) - LnGamma(n) - LnFact(x) + n*LOG(p) + x*LOG(1.-p);
+  phydbl lnDens = LnGamma(x+n) - LnGamma(n) - LnFact(x) + n*log(p) + x*log(1.-p);
 
   if(logit == TRUE)
     {
@@ -1162,7 +1162,7 @@ phydbl Dnbinom(phydbl x, phydbl n, phydbl p, int logit)
     }
   else
     {
-      return(EXP(lnDens));
+      return(exp(lnDens));
     }
 }
 
@@ -1239,18 +1239,18 @@ phydbl Dgamma(phydbl x, phydbl shape, phydbl scale)
     }
 
 
-  v = (shape-1.) * LOG(x) - shape * LOG(scale) - x / scale - LnGamma(shape);
+  v = (shape-1.) * log(x) - shape * log(scale) - x / scale - LnGamma(shape);
 
 
   if(v < 500.)
     {
-      v = EXP(v);
+      v = exp(v);
     }
   else
     {
       PhyML_Printf("\n. WARNING v=%f x=%f shape=%f scale=%f",v,x,shape,scale);
-      PhyML_Printf("\n. LOG(x) = %G LnGamma(shape)=%G",LOG(x),LnGamma(shape));
-      v = EXP(v);
+      PhyML_Printf("\n. log(x) = %G LnGamma(shape)=%G",log(x),LnGamma(shape));
+      v = exp(v);
       /* PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__); */
       /* Exit("\n"); */
     }
@@ -1264,7 +1264,7 @@ phydbl Dgamma(phydbl x, phydbl shape, phydbl scale)
 
 phydbl Dexp(phydbl x, phydbl param)
 {
-  return param * EXP(-param * x);
+  return param * exp(-param * x);
 }
 
 /*////////////////////////////////////////////////////////////
@@ -1275,7 +1275,7 @@ phydbl Dexp(phydbl x, phydbl param)
 
 phydbl Dexp_Trunc(phydbl x, phydbl lambda, phydbl left, phydbl rght)
 {
-  return (lambda * EXP(-lambda * x))/(EXP(-lambda * left) - EXP(-lambda * rght));
+  return (lambda * exp(-lambda * x))/(exp(-lambda * left) - exp(-lambda * rght));
 }
 
 /*////////////////////////////////////////////////////////////
@@ -1291,25 +1291,25 @@ phydbl Dpois(phydbl x, phydbl param, int logit)
       else return 0.0;
    }
 
-  v = x * LOG(param) - param - Factln(x);
+  v = x * log(param) - param - Factln(x);
   if(logit == YES) return v;
   else
     {
       if(v < 500.)
         {
-          v = EXP(v);
+          v = exp(v);
         }
       else
         {
           PhyML_Printf("\n. WARNING v=%f x=%f param=%f",v,x,param);
-          v = EXP(500);
+          v = exp(500);
         }
       
       /*   PhyML_Printf("\n. Poi %f %f (x=%f param=%f)", */
       /* 	 v, */
-      /* 	 POW(param,x) * EXP(-param) / EXP(LnGamma(x+1)), */
+      /* 	 POW(param,x) * exp(-param) / exp(LnGamma(x+1)), */
       /* 	 x,param); */
-      /*   return POW(param,x) * EXP(-param) / EXP(LnGamma(x+1)); */
+      /*   return POW(param,x) * exp(-param) / exp(LnGamma(x+1)); */
   
       return v;
     }
@@ -1344,13 +1344,13 @@ phydbl Pnorm(phydbl x, phydbl mean, phydbl sd)
 /*   if(x >= 0.0) */
 /*     { */
 /*       phydbl t = 1.0 / ( 1.0 + p * x ); */
-/*       return (1.0 - c * EXP( -x * x / 2.0 ) * t * */
+/*       return (1.0 - c * exp( -x * x / 2.0 ) * t * */
 /* 	      ( t *( t * ( t * ( t * b5 + b4 ) + b3 ) + b2 ) + b1 )); */
 /*     } */
 /*   else */
 /*     { */
 /*       phydbl t = 1.0 / ( 1.0 - p * x ); */
-/*       return ( c * EXP( -x * x / 2.0 ) * t * */
+/*       return ( c * exp( -x * x / 2.0 ) * t * */
 /* 	       ( t *( t * ( t * ( t * b5 + b4 ) + b3 ) + b2 ) + b1 )); */
 /*     } */
 
@@ -1656,7 +1656,7 @@ phydbl PointNormal (phydbl prob)
    p1 = (p<0.5 ? p : 1-p);
    if (p1<1e-20) z=999;
    else {
-      y = SQRT (LOG(1/(p1*p1)));   
+      y = SQRT (log(1/(p1*p1)));   
       z = y + ((((y*a4+a3)*y+a2)*y+a1)*y+a0) / ((((y*b4+b3)*y+b2)*y+b1)*y+b0);
    }
    return (p<0.5 ? -z : z);
@@ -1759,7 +1759,7 @@ phydbl PointNormal (phydbl prob)
 
 phydbl Bico(int n, int k)
 {
-  return FLOOR(0.5+EXP(Factln(n)-Factln(k)-Factln(n-k)));
+  return FLOOR(0.5+exp(Factln(n)-Factln(k)-Factln(n-k)));
 }
 
 
@@ -1947,7 +1947,7 @@ int DiscreteGamma (phydbl freqK[], phydbl rK[],
 //////////////////////////////////////////////////////////////
 
 
-/* Return LOG(n!) */
+/* Return log(n!) */
 
 phydbl LnFact(int n)
 {
@@ -1955,7 +1955,7 @@ phydbl LnFact(int n)
   phydbl res;
 
   res = .0;
-  for(i=2;i<n+1;i++) res += LOG((phydbl)i);
+  for(i=2;i<n+1;i++) res += log((phydbl)i);
   
   return(res);
 }
@@ -2028,8 +2028,8 @@ phydbl *Covariance_Matrix(t_tree *tree)
 
       Round_Optimize(tree,ROUND_MAX);
       
-      For(i,2*tree->n_otu-3) For(j,2*tree->n_otu-3) cov[i*dim+j] += LOG(tree->a_edges[i]->l->v) * LOG(tree->a_edges[j]->l->v);  
-      For(i,2*tree->n_otu-3) mean[i] += LOG(tree->a_edges[i]->l->v);
+      For(i,2*tree->n_otu-3) For(j,2*tree->n_otu-3) cov[i*dim+j] += log(tree->a_edges[i]->l->v) * log(tree->a_edges[j]->l->v);  
+      For(i,2*tree->n_otu-3) mean[i] += log(tree->a_edges[i]->l->v);
 
       PhyML_Printf("[%3d/%3d]",replicate,sample_size); fflush(NULL);
 /*       PhyML_Printf("\n. %3d %12f %12f %12f ", */
@@ -2113,7 +2113,7 @@ phydbl *Hessian(t_tree *tree)
   if(tree->mod->log_l == NO)
     l_inf = MAX(tree->mod->l_min,1./(phydbl)tree->data->init_len);
   else
-    l_inf = MAX(tree->mod->l_min,-LOG((phydbl)tree->data->init_len));
+    l_inf = MAX(tree->mod->l_min,-log((phydbl)tree->data->init_len));
 
 
   n_ok_edges = 0;
@@ -2328,14 +2328,14 @@ phydbl *Hessian(t_tree *tree)
 	
 	x=plus_plus;
 	y=minus_minus;
-	l=(tree->mod->log_l == YES)?(EXP(tree->a_edges[i]->l->v)):(tree->a_edges[i]->l->v); /* Get actual branch length */
+	l=(tree->mod->log_l == YES)?(exp(tree->a_edges[i]->l->v)):(tree->a_edges[i]->l->v); /* Get actual branch length */
 	
 	for(j=0;j<dim;j++)
 	  {
 	    x[j] = l + (100.*l-l)*((phydbl)j/dim);
-	    tree->a_edges[i]->l->v = (tree->mod->log_l)?(LOG(x[j])):(x[j]); /* Transform to log if necessary */
+	    tree->a_edges[i]->l->v = (tree->mod->log_l)?(log(x[j])):(x[j]); /* Transform to log if necessary */
 	    y[j] = Lk(tree->a_edges[i],tree);
-	    tree->a_edges[i]->l->v = (tree->mod->log_l)?(LOG(l)):(l); /* Go back to initial edge length */
+	    tree->a_edges[i]->l->v = (tree->mod->log_l)?(log(l)):(l); /* Go back to initial edge length */
 	  }
 	
 	cov = Covariance(x,y,dim);
@@ -2480,7 +2480,7 @@ phydbl *Gradient(t_tree *tree)
   if(tree->mod->log_l == NO)
     l_inf = MAX(tree->mod->l_min,1./(phydbl)tree->data->init_len);
   else
-    l_inf = MAX(tree->mod->l_min,-LOG((phydbl)tree->data->init_len));
+    l_inf = MAX(tree->mod->l_min,-log((phydbl)tree->data->init_len));
 
   for(i=0;i<dim;i++) 
     {
@@ -2631,7 +2631,7 @@ phydbl *Hessian_Seo(t_tree *tree)
   if(tree->mod->log_l == NO)
     l_inf = MAX(tree->mod->l_min,1./(phydbl)tree->data->init_len);
   else
-    l_inf = MAX(tree->mod->l_min,-LOG((phydbl)tree->data->init_len));
+    l_inf = MAX(tree->mod->l_min,-log((phydbl)tree->data->init_len));
 
   for(i=0;i<dim;i++) 
     {
@@ -2689,7 +2689,7 @@ phydbl *Hessian_Seo(t_tree *tree)
 	{
 	  tree->a_edges[i]->l->v += inc[i];
 	  Lk(tree->a_edges[i],tree);
-	  for(j=0;j<tree->n_pattern;j++) plus[i*tree->n_pattern+j] = LOG(tree->cur_site_lk[j]);
+	  for(j=0;j<tree->n_pattern;j++) plus[i*tree->n_pattern+j] = log(tree->cur_site_lk[j]);
 	  tree->a_edges[i]->l->v = ori_bl[i];
 	}
     }
@@ -2702,7 +2702,7 @@ phydbl *Hessian_Seo(t_tree *tree)
 	{
 	  tree->a_edges[i]->l->v -= inc[i];
 	  Lk(tree->a_edges[i],tree);
-	  for(j=0;j<tree->n_pattern;j++) minus[i*tree->n_pattern+j] = LOG(tree->cur_site_lk[j]);
+	  for(j=0;j<tree->n_pattern;j++) minus[i*tree->n_pattern+j] = log(tree->cur_site_lk[j]);
 	  tree->a_edges[i]->l->v = ori_bl[i];
 	}
     }
@@ -2713,15 +2713,15 @@ phydbl *Hessian_Seo(t_tree *tree)
       if(is_ok[i] == NO)
 	{
 	  Lk(tree->a_edges[i],tree);	
-	  for(j=0;j<tree->n_pattern;j++) zero[i*tree->n_pattern+j] = LOG(tree->cur_site_lk[j]);
+	  for(j=0;j<tree->n_pattern;j++) zero[i*tree->n_pattern+j] = log(tree->cur_site_lk[j]);
 	  
 	  tree->a_edges[i]->l->v += inc[i];
 	  lnL1 = Lk(tree->a_edges[i],tree);
-	  for(j=0;j<tree->n_pattern;j++) plus[i*tree->n_pattern+j] = LOG(tree->cur_site_lk[j]);
+	  for(j=0;j<tree->n_pattern;j++) plus[i*tree->n_pattern+j] = log(tree->cur_site_lk[j]);
 	  
 	  tree->a_edges[i]->l->v += inc[i];
 	  lnL2 = Lk(tree->a_edges[i],tree);
-	  for(j=0;j<tree->n_pattern;j++) plusplus[i*tree->n_pattern+j] = LOG(tree->cur_site_lk[j]);
+	  for(j=0;j<tree->n_pattern;j++) plusplus[i*tree->n_pattern+j] = log(tree->cur_site_lk[j]);
 	  
 	  tree->a_edges[i]->l->v = ori_bl[i];	
 
@@ -2772,7 +2772,7 @@ phydbl *Hessian_Seo(t_tree *tree)
 
 	if(tree->mod->log_l == YES) 
 	  {
-	    hessian[i*dim+i] = small_var * POW(EXP(tree->a_edges[i]->l->v),-2); 
+	    hessian[i*dim+i] = small_var * POW(exp(tree->a_edges[i]->l->v),-2); 
 	    hessian[i*dim+i] = -1./hessian[i*dim+i];
 	  }
       }
@@ -2789,7 +2789,7 @@ phydbl *Hessian_Seo(t_tree *tree)
 
   	if(tree->mod->log_l == YES)
   	  {
-  	    hessian[i*dim+i] = small_var * POW(EXP(tree->a_edges[i]->l->v),-2);
+  	    hessian[i*dim+i] = small_var * POW(exp(tree->a_edges[i]->l->v),-2);
   	    hessian[i*dim+i] = -1./hessian[i*dim+i];
   	  }
       }
@@ -2875,7 +2875,7 @@ void Recurr_Hessian(t_node *a, t_node *d, int plus_minus, phydbl *inc, phydbl *r
 //////////////////////////////////////////////////////////////
 
 
-/* Work out the Hessian for the likelihood function. Only LOGARITHM of branch lengths are considered as variable.
+/* Work out the Hessian for the likelihood function. Only logARITHM of branch lengths are considered as variable.
    This function is very much inspired from Jeff Thorne's 'hessian' function in his program 'estbranches'. */
 phydbl *Hessian_Log(t_tree *tree)
 {
@@ -3056,7 +3056,7 @@ phydbl *Hessian_Log(t_tree *tree)
     }
 
 /*   for(i=0;i<dim;i++) if(is_ok[i]) inc[i] = POW(tree->a_edges[i]->l->v+inc[i],2)-POW(tree->a_edges[i]->l->v,2); */
-  for(i=0;i<dim;i++) if(is_ok[i]) inc[i] = LOG(tree->a_edges[i]->l->v+inc[i])-LOG(tree->a_edges[i]->l->v);
+  for(i=0;i<dim;i++) if(is_ok[i]) inc[i] = log(tree->a_edges[i]->l->v+inc[i])-log(tree->a_edges[i]->l->v);
 /*   for(i=0;i<dim;i++) inc[i] = 2.*inc[i]; */
 /*   for(i=0;i<dim;i++) if(is_ok[i]) inc[i] = SQRT(tree->a_edges[i]->l->v+inc[i])-SQRT(tree->a_edges[i]->l->v); */
   
@@ -3203,9 +3203,9 @@ phydbl Log_Det(int *is_ok, t_tree *tree)
   phydbl ldet;
 
   ldet = 0.0;
-/*   For(i,2*tree->n_otu-3) if(is_ok[i]) ldet += LOG(2.*SQRT(tree->a_edges[i]->l->v)); */
-  For(i,2*tree->n_otu-3) if(is_ok[i]) ldet += LOG(tree->a_edges[i]->l->v);
-/*   For(i,2*tree->n_otu-3) if(is_ok[i]) ldet -= LOG(2*tree->a_edges[i]->l->v); */
+/*   For(i,2*tree->n_otu-3) if(is_ok[i]) ldet += log(2.*SQRT(tree->a_edges[i]->l->v)); */
+  For(i,2*tree->n_otu-3) if(is_ok[i]) ldet += log(tree->a_edges[i]->l->v);
+/*   For(i,2*tree->n_otu-3) if(is_ok[i]) ldet -= log(2*tree->a_edges[i]->l->v); */
   
   return ldet;
 
@@ -3475,12 +3475,12 @@ phydbl Matrix_Det(phydbl *A, int size, int _log)
 
   triA = Cholesky_Decomp(A,size);
   det = 0.0;
-  for(i=0;i<size;i++) det += LOG(triA[i*size+i]);
+  for(i=0;i<size;i++) det += log(triA[i*size+i]);
   Free(triA);
  
   if(_log == NO)
     {
-      det = EXP(det);
+      det = exp(det);
       return det*det;
     }
   else
@@ -4157,7 +4157,7 @@ phydbl Dorder_Unif(phydbl x, int r, int n, phydbl min, phydbl max)
     }
 
   cons = LnGamma(n+1) - LnGamma(r) - LnGamma(n-r+1);
-  cons = EXP(cons);
+  cons = exp(cons);
   cons = ROUND(cons);
 
   Fx = (x-min)/(max-min);
@@ -4386,7 +4386,7 @@ void Integrated_Brownian_Bridge_Moments(phydbl x_beg, phydbl x_end,
       six = SQRT(scaled_var*(x - x_beg)*(x_end - x)/(x_end - x_beg));
 
       sum += 
-	(2.*six)/SQRT(2.*PI)*EXP(-POW(mux,2)/(2.*POW(six,2))) + 
+	(2.*six)/SQRT(2.*PI)*exp(-POW(mux,2)/(2.*POW(six,2))) + 
 	2.*mux*Pnorm(mux/six,.0,1.) - mux;
     }
   sum += y_end;
@@ -4626,22 +4626,22 @@ phydbl t1369 = -0.71204290560e11 * t285 * u * T - 0.8638755840e10 * t75 * t70 * 
  /* printf("\n. Taylor: %f",*mean); */
  
  /*  /\* C(int(exp((B-A)*s/T+(1/2)*u*(T-s)*s/T), s = 0 .. T)) *\/ */
- /*  /\* Correct but numerically unstable due to EXP(TOO BIG) *\/ */
+ /*  /\* Correct but numerically unstable due to exp(TOO BIG) *\/ */
 
  /* *mean = */
  /*   SQRT(0.2e1) * */
  /*   SQRT(0.3141592654e1) * */
- /*   EXP((double) ((4 * B * B - 8 * B * A + 4 * B * u * T + 4 * A * A - 4 * A * u * T + u * u * T * T) / u / T) / 0.8e1) * */
+ /*   exp((double) ((4 * B * B - 8 * B * A + 4 * B * u * T + 4 * A * A - 4 * A * u * T + u * u * T * T) / u / T) / 0.8e1) * */
  /*   (-erf(SQRT(0.2e1) * (double) (-2 * B + 2 * A - u * T) / (double) T * pow((double) (u / T), -0.1e1 / 0.2e1) / 0.4e1) */
  /*    +erf(SQRT(0.2e1) * (double) (u *  T - 2 * B + 2 * A) / (double) T * pow((double) (u / T), -0.1e1 / 0.2e1) / 0.4e1))* */
  /*   pow((double) (u / T), -0.1e1 / 0.2e1) / 0.2e1; */
  
  /* *mean /= T; */
- /* *mean *= EXP(A); */
+ /* *mean *= exp(A); */
 
  /* printf("\nErf: %f [%f %f %f]", */
  /*        *mean, */
- /*        EXP((double) ((4 * B * B - 8 * B * A + 4 * B * u * T + 4 * A * A - 4 * A * u * T + u * u * T * T) / u / T) / 0.8e1), */
+ /*        exp((double) ((4 * B * B - 8 * B * A + 4 * B * u * T + 4 * A * A - 4 * A * u * T + u * u * T * T) / u / T) / 0.8e1), */
  /*        (double) ((4 * B * B - 8 * B * A + 4 * B * u * T + 4 * A * A - 4 * A * u * T + u * u * T * T) / u / T) / 0.8e1, */
  /*        (-erf(SQRT(0.2e1) * (double) (-2 * B + 2 * A - u * T) / (double) T * pow((double) (u / T), -0.1e1 / 0.2e1) / 0.4e1) + erf(SQRT(0.2e1) * (double) (u * T - 2 * B + 2 * A) / (double) T * pow((double) (u / T), -0.1e1 / 0.2e1) / 0.4e1)) * pow((double) (u / T), -0.1e1 / 0.2e1) / 0.2e1); */
 
@@ -4951,8 +4951,8 @@ phydbl Inverse_Truncated_Normal(phydbl y, phydbl mu, phydbl sigma, phydbl lim_in
   p_inf = Pnorm(lim_inf,mu,sigma);
   p_sup = Pnorm(lim_sup,mu,sigma);
 
-  /* return(mu + sigma * SQRT(-LOG( y * y * (p_sup - p_inf) * (p_sup - p_inf) * 2 * PI * sigma * sigma))); */
-  return(mu + sigma * SQRT(-LOG( y * y * (p_sup - p_inf) * (p_sup - p_inf) * 2. * PI * sigma * sigma)));
+  /* return(mu + sigma * SQRT(-log( y * y * (p_sup - p_inf) * (p_sup - p_inf) * 2 * PI * sigma * sigma))); */
+  return(mu + sigma * SQRT(-log( y * y * (p_sup - p_inf) * (p_sup - p_inf) * 2. * PI * sigma * sigma)));
 }
 
 //////////////////////////////////////////////////////////////

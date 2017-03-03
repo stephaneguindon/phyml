@@ -181,7 +181,7 @@ int GEO_Simulate_Estimate(int argc, char **argv)
   PhyML_Printf("\n. sigma max: %f threshold: %f",t->max_sigma,t->sigma_thresh);
   
   /* t->tau   = Uni()*(t->max_tau/100.-t->min_tau*10.)  + t->min_tau*10.; */
-  /* t->lbda  = EXP(Uni()*(LOG(t->max_lbda/100.)-LOG(t->min_lbda*10.))  + LOG(t->min_lbda*10.)); */
+  /* t->lbda  = exp(Uni()*(log(t->max_lbda/100.)-log(t->min_lbda*10.))  + log(t->min_lbda*10.)); */
   /* t->sigma = Uni()*(t->max_sigma-t->min_sigma) + t->min_sigma; */
 
   t->lbda  = 1.;
@@ -211,7 +211,7 @@ int GEO_Simulate_Estimate(int argc, char **argv)
   PhyML_Printf("\n. rf: %f",rf);
   
   phydbl scale;
-  scale = EXP(Rnorm(0,0.2));
+  scale = exp(Rnorm(0,0.2));
   PhyML_Printf("\n. Scale: %f",scale);
   For(i,2*tree->n_otu-1) tree->rates->nd_t[i] *= scale;
   
@@ -518,7 +518,7 @@ void GEO_Update_Fmat(t_geo *t)
   
   for(i=0;i<t->n_dim;i++) t->cov[i*t->n_dim+i] = t->sigma; // Diagonal covariance matrix. Same variance in every direction
 
-  lognloc = LOG(t->ldscape_sz);
+  lognloc = log(t->ldscape_sz);
 
   // Fill in F matrix;
   for(i=0;i<t->ldscape_sz;i++)
@@ -537,7 +537,7 @@ void GEO_Update_Fmat(t_geo *t)
           for(k=0;k<t->n_dim;k++) t->f_mat[i*t->ldscape_sz+j] -= Log_Dnorm(loc1[k],loc1[k],t->cov[k*t->n_dim+k],&err);
 
           // Take the exponential
-          t->f_mat[i*t->ldscape_sz+j] = EXP(t->f_mat[i*t->ldscape_sz+j]);
+          t->f_mat[i*t->ldscape_sz+j] = exp(t->f_mat[i*t->ldscape_sz+j]);
           
           // Matrix is symmetric
           t->f_mat[j*t->ldscape_sz+i] = t->f_mat[i*t->ldscape_sz+j];
@@ -750,12 +750,12 @@ phydbl GEO_Lk(t_geo *t, t_tree *tree)
       /*        t->ldscape[arr*t->n_dim+1]-t->ldscape[dep*t->n_dim+1]); */
 
       loglk -= R * FABS(tree->rates->nd_t[curr_n->num] - tree->rates->nd_t[prev_n->num]);
-      loglk += LOG(t->r_mat[dep * t->ldscape_sz + arr]);
+      loglk += log(t->r_mat[dep * t->ldscape_sz + arr]);
 
       /* printf("\n <> %d %f %f %d %d v1:%d v2:%d anc:%d %d %d %d", */
       /*        curr_n->num, */
       /*        R * FABS(tree->rates->nd_t[curr_n->num] - tree->rates->nd_t[prev_n->num]), */
-      /*        LOG(t->r_mat[dep * t->ldscape_sz + arr]), */
+      /*        log(t->r_mat[dep * t->ldscape_sz + arr]), */
       /*        dep,arr,v1->num,v2->num,curr_n->anc->num,curr_n->v[0]->num,curr_n->v[1]->num,curr_n->v[2]->num); */
 
       /* if(i<2) */
@@ -775,7 +775,7 @@ phydbl GEO_Lk(t_geo *t, t_tree *tree)
   // the next node)
   GEO_Update_Rmat(tree->n_root,t,tree);
 
-  loglk -= LOG(t->ldscape_sz); 
+  loglk -= log(t->ldscape_sz); 
   dep = t->idx_loc[tree->n_root->num];
   arr = 
     (t->idx_loc[tree->n_root->num] != t->idx_loc[tree->n_root->v[1]->num] ? 
@@ -784,12 +784,12 @@ phydbl GEO_Lk(t_geo *t, t_tree *tree)
   
   /* printf("\n %f %f",t->ldscape[dep],t->ldscape[arr]); */
 
-  loglk += LOG(t->r_mat[dep * t->ldscape_sz + arr]);
+  loglk += log(t->r_mat[dep * t->ldscape_sz + arr]);
     
   sum = .0;
   for(i=0;i<t->ldscape_sz;i++) sum += t->r_mat[dep * t->ldscape_sz + i];
   
-  loglk -= LOG(sum);
+  loglk -= log(sum);
 
   tree->geo->c_lnL = loglk;
 
@@ -1611,7 +1611,7 @@ void MCMC_Geo_Updown_Tau_Lbda(t_tree *tree)
   new_lbda = tree->geo->lbda;
 
   u = Uni();
-  mult = EXP(K*(u-0.5));
+  mult = exp(K*(u-0.5));
 
   /* Multiply tau by K */
   new_tau = cur_tau * K;
@@ -1636,14 +1636,14 @@ void MCMC_Geo_Updown_Tau_Lbda(t_tree *tree)
 
   ratio = 0.0;
   /* Proposal ratio: 2n-2=> number of multiplications, 1=>number of divisions */
-  ratio += 0.0*LOG(mult); /* (1-1)*LOG(mult); */
+  ratio += 0.0*log(mult); /* (1-1)*log(mult); */
   /* Likelihood density ratio */
   ratio += (new_lnL - cur_lnL);
 
   /* printf("\n. new_tau: %f new_lbda:%f cur_lnL:%f new_lnL:%f",new_tau,new_lbda,cur_lnL,new_lnL); */
 
 
-  ratio = EXP(ratio);
+  ratio = exp(ratio);
   alpha = MIN(1.,ratio);
   u = Uni();
   
@@ -1681,7 +1681,7 @@ void MCMC_Geo_Updown_Lbda_Sigma(t_tree *tree)
   new_sigma = tree->geo->sigma;
 
   u = Uni();
-  mult = EXP(K*(u-0.5));
+  mult = exp(K*(u-0.5));
 
   /* Multiply lbda by K */
   new_lbda = cur_lbda * K;
@@ -1706,14 +1706,14 @@ void MCMC_Geo_Updown_Lbda_Sigma(t_tree *tree)
 
   ratio = 0.0;
   /* Proposal ratio: 2n-2=> number of multiplications, 1=>number of divisions */
-  ratio += 0.0*LOG(mult); /* (1-1)*LOG(mult); */
+  ratio += 0.0*log(mult); /* (1-1)*log(mult); */
   /* Likelihood density ratio */
   ratio += (new_lnL - cur_lnL);
 
   /* printf("\n. new_lbda: %f new_sigma:%f cur_lnL:%f new_lnL:%f",new_lbda,new_sigma,cur_lnL,new_lnL); */
 
 
-  ratio = EXP(ratio);
+  ratio = exp(ratio);
   alpha = MIN(1.,ratio);
   u = Uni();
   

@@ -1,7 +1,7 @@
 /*
 
-PhyML:  a program that  computes maximum likelihood phyLOGenies from
-DNA or AA homoLOGous sequences.
+PhyML:  a program that  computes maximum likelihood phylogenies from
+DNA or AA homologous sequences.
 
 Copyright (C) Stephane Guindon. Oct 2003 onward.
 
@@ -1369,7 +1369,7 @@ phydbl TIPO_Lk_Core(t_node *a, t_node *d, t_tree *tree)
   /* 	 min_dist,Dnorm(dist,0.0,tree->geo_mig_sd)); */
 
   /* dens = Dnorm(min_dist,0.0,tree->geo_mig_sd); */
-  tree->geo_lnL += LOG(dens);
+  tree->geo_lnL += log(dens);
 
   return tree->geo_lnL;
 }

@@ -629,8 +629,8 @@ phydbl DATE_J(phydbl birth_r, phydbl death_r, phydbl t_min, phydbl t_pls)
   assert(t_pls > t_min);
   d = death_r;
   b = birth_r;
-  J = (b-d)*(EXP(t_min*d+t_pls*b) - EXP(t_min*b+t_pls*d));
-  J /= ((b*EXP(t_min*b)-d*EXP(t_min*d)) * (b*EXP(t_pls*b)-d*EXP(t_pls*d)));
+  J = (b-d)*(exp(t_min*d+t_pls*b) - exp(t_min*b+t_pls*d));
+  J /= ((b*exp(t_min*b)-d*exp(t_min*d)) * (b*exp(t_pls*b)-d*exp(t_pls*d)));
   /* printf("  J : %f",J); */
   return(J);
 }

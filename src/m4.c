@@ -1,7 +1,7 @@
 /*
 
 PhyML:  a program that  computes maximum likelihood phylogenies from
-DNA or AA homoLOGous sequences.
+DNA or AA homologous sequences.
 
 Copyright (C) Stephane Guindon. Oct 2003 onward.
 
@@ -672,7 +672,7 @@ void M4_Post_Prob_H_Class_Edge_Site(t_edge *b, phydbl ****integral, phydbl *post
 
   n_h = tree->mod->m4mod->n_h; /* number of classes, i.e., number of hidden states */
 
-  site_lk = (phydbl)EXP(tree->cur_site_lk[tree->curr_site]);
+  site_lk = (phydbl)exp(tree->cur_site_lk[tree->curr_site]);
 
   if(b->rght->tax)
     {
@@ -714,7 +714,7 @@ void M4_Post_Prob_H_Class_Edge_Site(t_edge *b, phydbl ****integral, phydbl *post
 	}
 
       /* TO DO */
-      for(i=0;i<n_h;i++) postprob[i] *= EXP(b->sum_scale_left[tree->curr_site]); 
+      for(i=0;i<n_h;i++) postprob[i] *= exp(b->sum_scale_left[tree->curr_site]); 
 
     }
   else
@@ -756,7 +756,7 @@ void M4_Post_Prob_H_Class_Edge_Site(t_edge *b, phydbl ****integral, phydbl *post
 	}
 
       /* TO DO */
-      for(i=0;i<n_h;i++) postprob[i] *= EXP(b->sum_scale_left[tree->curr_site] + b->sum_scale_rght[tree->curr_site]); 
+      for(i=0;i<n_h;i++) postprob[i] *= exp(b->sum_scale_left[tree->curr_site] + b->sum_scale_rght[tree->curr_site]); 
 
     }
 

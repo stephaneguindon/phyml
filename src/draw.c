@@ -1,7 +1,7 @@
 /*
 
-PHYML :  a program that  computes maximum likelihood  phyLOGenies from
-DNA or AA homoLOGous sequences
+PHYML :  a program that  computes maximum likelihood  phylogenies from
+DNA or AA homologous sequences
 
 Copyright (C) Stephane Guindon. Oct 2003 onward
 

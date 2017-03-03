@@ -927,10 +927,10 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                   Warn_And_Exit("\n");
                 }
 
-              tmp = sum + ((phydbl)LOGBIG - LOG(tree->site_lk_cat[0]))/(phydbl)LOG2;
+              tmp = sum + ((phydbl)LOGBIG - log(tree->site_lk_cat[0]))/(phydbl)LOG2;
               if(tmp < max_sum_scale) max_sum_scale = tmp; /* min of the maxs */
 
-              tmp = sum + ((phydbl)LOGSMALL - LOG(tree->site_lk_cat[0]))/(phydbl)LOG2;
+              tmp = sum + ((phydbl)LOGSMALL - log(tree->site_lk_cat[0]))/(phydbl)LOG2;
               if(tmp > min_sum_scale) min_sum_scale = tmp; /* max of the mins */
 
               class++;
@@ -1039,7 +1039,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                 }
             }
 
-          log_site_lk = LOG(site_lk) - (phydbl)LOG2 * fact_sum_scale;
+          log_site_lk = log(site_lk) - (phydbl)LOG2 * fact_sum_scale;
 
           int mixt_class = 0;
           int rate_class = 0;
@@ -1053,7 +1053,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                   if(tree->mod->ras->parent_class_number == rate_class)
                     {
                       mixt_tree->unscaled_site_lk_cat[rate_class*mixt_tree->n_pattern + site] +=
-                        LOG(mixt_tree->site_lk_cat[rate_class]);
+                        log(mixt_tree->site_lk_cat[rate_class]);
                       break;
                     }
                   mixt_class++;
@@ -1062,7 +1062,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
               while(tree && tree->is_mixt_tree == NO);
 
               mixt_tree->unscaled_site_lk_cat[rate_class*mixt_tree->n_pattern + site] = 
-                EXP(mixt_tree->unscaled_site_lk_cat[rate_class*mixt_tree->n_pattern + site]);
+                exp(mixt_tree->unscaled_site_lk_cat[rate_class*mixt_tree->n_pattern + site]);
             }
 
           if(isinf(log_site_lk) || isnan(log_site_lk))
@@ -1070,7 +1070,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
               PhyML_Printf("\n== Site = %d",site);
               PhyML_Printf("\n== Invar = %d",mixt_tree->data->invar[site]);
               PhyML_Printf("\n== Mixt = %d",mixt_tree->is_mixt_tree);
-              PhyML_Printf("\n== Lk = %G LOG(Lk) = %f < %G",site_lk,log_site_lk,-BIG);
+              PhyML_Printf("\n== Lk = %G log(Lk) = %f < %G",site_lk,log_site_lk,-BIG);
               for(class=0;class<mixt_tree->mod->ras->n_catg;class++) PhyML_Printf("\n== rr=%f p=%f",mixt_tree->mod->ras->gamma_rr->v[class],mixt_tree->mod->ras->gamma_r_proba->v[class]);
               PhyML_Printf("\n== Pinv = %G",mixt_tree->mod->ras->pinvar->v);
               PhyML_Printf("\n== Bl mult = %G",mixt_tree->mod->br_len_mult->v);
@@ -1108,7 +1108,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
           // ... or using the log-likelihood
           if(isinf(site_lk) || isnan(site_lk))
             {
-              mixt_tree->cur_site_lk[site] = EXP(log_site_lk);
+              mixt_tree->cur_site_lk[site] = exp(log_site_lk);
             }
 
           /* Multiply log likelihood by the number of times this site pattern is found in the data */
@@ -2889,12 +2889,12 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
           
           for(x=0;x<tree->mod->ns;x++) 
             expld2[class*ns+x] = (phydbl)POW(tree->mod->eigen->e_val[x],len) * 
-            LOG(tree->mod->eigen->e_val[x]) * rr *
-            LOG(tree->mod->eigen->e_val[x]) * rr ;
+            log(tree->mod->eigen->e_val[x]) * rr *
+            log(tree->mod->eigen->e_val[x]) * rr ;
           
           for(x=0;x<tree->mod->ns;x++) 
             expld[class*ns+x] = (phydbl)POW(tree->mod->eigen->e_val[x],len) * 
-            LOG(tree->mod->eigen->e_val[x]) * rr ;
+            log(tree->mod->eigen->e_val[x]) * rr ;
           
           for(x=0;x<tree->mod->ns;x++)  
             expl[class*ns+x] = (phydbl)POW(tree->mod->eigen->e_val[x],len);
@@ -3003,10 +3003,10 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
                       Warn_And_Exit("\n");
                     }
                   
-                  tmp = sum + ((phydbl)LOGBIG - LOG(tree->site_lk_cat[0]))/(phydbl)LOG2;
+                  tmp = sum + ((phydbl)LOGBIG - log(tree->site_lk_cat[0]))/(phydbl)LOG2;
                   if(tmp < max_sum_scale) max_sum_scale = tmp; /* min of the maxs */
 
-                  tmp = sum + ((phydbl)LOGSMALL - LOG(tree->site_lk_cat[0]))/(phydbl)LOG2;
+                  tmp = sum + ((phydbl)LOGSMALL - log(tree->site_lk_cat[0]))/(phydbl)LOG2;
                   if(tmp > min_sum_scale) min_sum_scale = tmp; /* max of the mins */
                 }
 
@@ -3131,14 +3131,14 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
           
           /* printf("\n. dlnlk: %f d2lnlk: %f wght: %f site_dlk: %f site_d2lk: %f",dlnlk,d2lnlk,mixt_tree->data->wght[site],site_dlk,site_d2lk); */
 
-          log_site_lk = LOG(site_lk) - (phydbl)LOG2 * fact_sum_scale;
+          log_site_lk = log(site_lk) - (phydbl)LOG2 * fact_sum_scale;
 
           if(isinf(log_site_lk) || isnan(log_site_lk))
             {
               PhyML_Printf("\n== Site = %d",site);
               PhyML_Printf("\n== Invar = %d",mixt_tree->data->invar[site]);
               PhyML_Printf("\n== Mixt = %d",mixt_tree->is_mixt_tree);
-              PhyML_Printf("\n== Lk = %G LOG(Lk) = %f < %G",site_lk,log_site_lk,-BIG);
+              PhyML_Printf("\n== Lk = %G log(Lk) = %f < %G",site_lk,log_site_lk,-BIG);
               for(class=0;class<mixt_tree->mod->ras->n_catg;class++) PhyML_Printf("\n== rr=%f p=%f",mixt_tree->mod->ras->gamma_rr->v[class],mixt_tree->mod->ras->gamma_r_proba->v[class]);
               PhyML_Printf("\n== Pinv = %G",mixt_tree->mod->ras->pinvar->v);
               PhyML_Printf("\n== Bl mult = %G",mixt_tree->mod->br_len_mult->v);

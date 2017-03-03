@@ -53,7 +53,7 @@ void print_beagle_flags(long inFlags) {
     if (inFlags & BEAGLE_FLAG_SCALING_ALWAYS)     fprintf(stdout, " SCALING_ALWAYS");
     if (inFlags & BEAGLE_FLAG_SCALING_DYNAMIC)    fprintf(stdout, " SCALING_DYNAMIC");
     if (inFlags & BEAGLE_FLAG_SCALERS_RAW)        fprintf(stdout, " SCALERS_RAW");
-    if (inFlags & BEAGLE_FLAG_SCALERS_LOG)        fprintf(stdout, " SCALERS_LOG");
+    if (inFlags & BEAGLE_FLAG_SCALERS_log)        fprintf(stdout, " SCALERS_log");
     if (inFlags & BEAGLE_FLAG_VECTOR_NONE)        fprintf(stdout, " VECTOR_NONE");
     if (inFlags & BEAGLE_FLAG_VECTOR_SSE)         fprintf(stdout, " VECTOR_SSE");
     if (inFlags & BEAGLE_FLAG_VECTOR_AVX)         fprintf(stdout, " VECTOR_AVX");
@@ -359,7 +359,7 @@ if(ret<0){
   }
   //Transform
   for(i=0;i<tree->n_pattern;++i)
-    tree->cur_site_lk[i]=EXP(tree->cur_site_lk[i]);
+    tree->cur_site_lk[i]=exp(tree->cur_site_lk[i]);
 }
 
 void update_beagle_eigen(t_mod* mod)
@@ -370,10 +370,10 @@ void update_beagle_eigen(t_mod* mod)
     //We use Eigen Decomposition only for GTR models and AA datasets
     if((mod->io->datatype == AA || whichmodel==GTR || whichmodel==CUSTOM) && mod->use_m4mod == NO)
     {
-        //Beagle expects untransformed eigen-values (i.e. recall e_val is EXP() scaled, so we undo that)
+        //Beagle expects untransformed eigen-values (i.e. recall e_val is exp() scaled, so we undo that)
         phydbl* evals = (phydbl*)malloc(mod->ns * sizeof(phydbl));
         int i;
-        for(i=0;i<mod->ns;++i)  evals[i]=LOG(mod->eigen->e_val[i]);
+        for(i=0;i<mod->ns;++i)  evals[i]=log(mod->eigen->e_val[i]);
         int ret=-1;
         if((sizeof(float)==sizeof(phydbl)))//Need to convert to doubles?
         {

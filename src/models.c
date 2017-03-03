@@ -1,7 +1,7 @@
 /*
 
-PhyML :  a program that  computes maximum likelihood  phyLOGenies from
-DNA or AA homoLOGous sequences
+PhyML :  a program that  computes maximum likelihood  phylogenies from
+DNA or AA homologous sequences
 
 Copyright (C) Stephane Guindon. Oct 2003 onward
 
@@ -28,11 +28,11 @@ void PMat_JC69(phydbl l, int pos, phydbl *Pij, t_mod *mod)
   ns = mod->ns;
 
 
-  for(i=0;i<ns;i++) Pij[pos+ ns*i+i] = 1. - ((ns - 1.)/ns)*(1. - EXP(-ns*l/(ns - 1.)));
+  for(i=0;i<ns;i++) Pij[pos+ ns*i+i] = 1. - ((ns - 1.)/ns)*(1. - exp(-ns*l/(ns - 1.)));
   for(i=0;i<ns-1;i++)
     for(j=i+1;j<ns;j++)
       {
-        Pij[pos+ ns*i+j] = (1./ns)*(1. - EXP(-ns*l/(ns - 1.)));
+        Pij[pos+ ns*i+j] = (1./ns)*(1. - exp(-ns*l/(ns - 1.)));
         if(Pij[pos+ns*i+j] < SMALL_PIJ) Pij[pos+ns*i+j] = SMALL_PIJ;
         Pij[pos+ ns*j+i] = Pij[pos+ ns*i+j];
       }
@@ -56,9 +56,9 @@ void PMat_K80(phydbl l, phydbl kappa, int pos, phydbl *Pij)
 
 
   aux = -2*l/(kappa+2);
-  e1 = (phydbl)EXP(aux *2);
+  e1 = (phydbl)exp(aux *2);
 
-  e2 = (phydbl)EXP(aux *(kappa+1));
+  e2 = (phydbl)exp(aux *(kappa+1));
   Tv = .25*(1-e1);
   Ts = .25*(1+e1-2*e2);
 
@@ -111,9 +111,9 @@ void PMat_TN93(phydbl l, t_mod *mod, int pos, phydbl *Pij)
   a2t = kappa2;
   a1t*=bt; a2t*=bt;
 
-  e1 = (phydbl)EXP(-a1t*R-bt*Y);
-  e2 = (phydbl)EXP(-a2t*Y-bt*R);
-  e3 = (phydbl)EXP(-bt);
+  e1 = (phydbl)exp(-a1t*R-bt*Y);
+  e2 = (phydbl)exp(-a2t*Y-bt*R);
+  e3 = (phydbl)exp(-bt);
 
 
   /*A->A*/Pij[pos + 4*0+0] = A+Y*A/R*e3+G/R*e1;
@@ -219,7 +219,7 @@ phydbl Get_Lambda_F84(phydbl *pi, phydbl *kappa)
 /* ouput : Pij , substitution probability matrix                    */
 /*                                                                  */
 /* matrix P(l) is computed as follows :                             */
-/* P(l) = EXP(Q*t) , where :                                        */
+/* P(l) = exp(Q*t) , where :                                        */
 /*                                                                  */
 /*   Q = substitution rate matrix = Vr*D*inverse(Vr) , where :      */
 /*                                                                  */
@@ -235,12 +235,12 @@ phydbl Get_Lambda_F84(phydbl *pi, phydbl *kappa)
 /*       p(i->j) = subst. probability from i to a different state   */
 /*               = -Q[ii] , as sum(j)(Q[ij]) +Q[ii] =0              */
 /*                                                                  */
-/* the Taylor development of EXP(Q*t) gives :                       */
-/* P(l) = Vr*EXP(D*t)        *inverse(Vr)                           */
-/*      = Vr*POW(EXP(D/mr),l)*inverse(Vr)                           */
+/* the Taylor development of exp(Q*t) gives :                       */
+/* P(l) = Vr*exp(D*t)        *inverse(Vr)                           */
+/*      = Vr*POW(exp(D/mr),l)*inverse(Vr)                           */
 /*                                                                  */
 /* for performance we compute only once the following matrixes :    */
-/* Vr, inverse(Vr), EXP(D/mr)                                       */
+/* Vr, inverse(Vr), exp(D/mr)                                       */
 /* thus each time we compute P(l) we only have to :                 */
 /* make 20 times the operation POW()                                */
 /* make 2 20x20 matrix multiplications , that is :                  */
@@ -268,9 +268,9 @@ void PMat_Empirical(phydbl l, t_mod *mod, int pos, phydbl *Pij)
 
   /* Initialize a rate-specific N*N matrix */
   for(i=0;i<n;i++) for(k=0;k<n;k++) Pij[pos+mod->ns*i+k] = .0;
-  /* compute POW(EXP(D/mr),l) into mat_eDmrl */
+  /* compute POW(exp(D/mr),l) into mat_eDmrl */
   for(k=0;k<n;k++)  expt[k] = (phydbl)POW(R[k],l);
-  /* multiply Vr*POW(EXP(D/mr),l)*Vi into Pij */
+  /* multiply Vr*POW(exp(D/mr),l)*Vi into Pij */
   For (i,n) For (k,n) uexpt[i*n+k] = U[i*n+k] * expt[k];
 
   For (i,n)
@@ -324,7 +324,7 @@ void PMat_Gamma(phydbl l, t_mod *mod, int pos, phydbl *Pij)
     }
 
   /* Formula 13.42, page 220 of Felsenstein's book ``Inferring Phylogenies'' */
-  for(k=0;k<n;k++) expt[k] = POW(shape/(shape-LOG(R[k])*l),shape);
+  for(k=0;k<n;k++) expt[k] = POW(shape/(shape-log(R[k])*l),shape);
 
   /* multiply Vr*expt*Vi into Pij */
   for(i=0;i<n;i++) for(k=0;k<n;k++) uexpt[i*n+k] = U[i*n+k] * expt[k];
@@ -930,8 +930,8 @@ void Update_Eigen(t_mod *mod)
             }
           for(i=0;i<mod->eigen->size;i++) mod->eigen->e_val[i] /= scalar;
           
-          /* compute the diagonal terms of EXP(D) */
-          for(i=0;i<mod->ns;i++) mod->eigen->e_val[i] = (phydbl)EXP(mod->eigen->e_val[i]);
+          /* compute the diagonal terms of exp(D) */
+          for(i=0;i<mod->ns;i++) mod->eigen->e_val[i] = (phydbl)exp(mod->eigen->e_val[i]);
 
       /* int j; */
       /* double *U,*V,*R; */
@@ -1004,7 +1004,7 @@ void PMat_MGF_Gamma(phydbl *Pij, phydbl shape, phydbl scale, phydbl scaling_fact
   imbd  = mod->eigen->e_val_im;
 
   /* Get the eigenvalues of Q (not the exponentials) */
-  for(i=0;i<dim;i++) imbd[i]  = LOG(mod->eigen->e_val[i]);
+  for(i=0;i<dim;i++) imbd[i]  = log(mod->eigen->e_val[i]);
 
   /* Multiply them by the scaling factor */
   for(i=0;i<dim;i++) imbd[i]  *= scaling_fact;
@@ -1117,14 +1117,14 @@ phydbl General_Dist(phydbl *F, t_mod *mod, eigen *eigen_struct)
       return -1.;
     }
 
-  /* LOG of eigen values */
+  /* log of eigen values */
   for(i=0;i<eigen_struct->size;i++)
     {
 /*       if(eigen_struct->e_val[i] < 0.0) eigen_struct->e_val[i] = 0.0001; */
-      eigen_struct->e_val[i] = (phydbl)LOG(eigen_struct->e_val[i]);
+      eigen_struct->e_val[i] = (phydbl)log(eigen_struct->e_val[i]);
      }
 
-  /* Matrix multiplications LOG(pi^{-1} x F) */
+  /* Matrix multiplications log(pi^{-1} x F) */
   for(i=0;i<eigen_struct->size;i++) for(j=0;j<eigen_struct->size;j++)
     eigen_struct->r_e_vect[eigen_struct->size*i+j] =
     eigen_struct->r_e_vect[eigen_struct->size*i+j] *
@@ -1220,12 +1220,12 @@ phydbl GTR_Dist(phydbl *F, phydbl alpha, eigen *eigen_struct)
       eigen_struct->e_val[i] = 0.0001;
     }
       if(alpha < .0)
-    eigen_struct->e_val[i] = (phydbl)LOG(eigen_struct->e_val[i]);
+    eigen_struct->e_val[i] = (phydbl)log(eigen_struct->e_val[i]);
       else
     eigen_struct->e_val[i] = alpha * (1. - (phydbl)POW(eigen_struct->e_val[i],-1./alpha));
      }
 
-  /* Matrix multiplications pi x LOG(pi^{-1} x F) */
+  /* Matrix multiplications pi x log(pi^{-1} x F) */
   for(i=0;i<eigen_struct->size;i++) for(j=0;j<eigen_struct->size;j++)
     eigen_struct->r_e_vect[eigen_struct->size*i+j] =
     eigen_struct->r_e_vect[eigen_struct->size*i+j] * eigen_struct->e_val[j];

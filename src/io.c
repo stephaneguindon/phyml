@@ -2239,7 +2239,7 @@ void Print_Site_Lk(t_tree *tree, FILE *fp)
   else
     {
       for(site=0;site<tree->data->init_len;site++)
-        PhyML_Fprintf(fp,"%.2f\t",LOG(tree->cur_site_lk[tree->data->sitepatt[site]]));
+        PhyML_Fprintf(fp,"%.2f\t",log(tree->cur_site_lk[tree->data->sitepatt[site]]));
       PhyML_Fprintf(fp,"\n");
     }
 }

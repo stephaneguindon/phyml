@@ -1,7 +1,7 @@
 /*
 
 PhyML:  a program that  computes maximum likelihood phylogenies from
-DNA or AA homoLOGous sequences.
+DNA or AA homologous sequences.
 
 Copyright (C) Stephane Guindon. Oct 2003 onward.
 
@@ -417,7 +417,7 @@ void MCMC_Single_Param_Generic(phydbl *val,
   new_val       = -1.0;
   ratio         =  0.0;
   K             = tree->mcmc->tune_move[move_num];
-  cur_lnval     = LOG(*val);
+  cur_lnval     = log(*val);
   new_lnval     = cur_lnval;
 
   if(lnLike)
@@ -475,7 +475,7 @@ void MCMC_Single_Param_Generic(phydbl *val,
       /*        new_lnPrior, */
       /*        ratio); */
 
-      ratio = EXP(ratio);
+      ratio = exp(ratio);
       alpha = MIN(1.,ratio);
       
       /* Always accept move */
@@ -665,7 +665,7 @@ void MCMC_Clock_R(t_tree *tree)
       ratio += (new_lnL_data - cur_lnL_data);
       ratio += (new_lnL_rate - cur_lnL_rate);
             
-      ratio = EXP(ratio);
+      ratio = exp(ratio);
       alpha = MIN(1.,ratio);
       
       u = Uni();
@@ -844,7 +844,7 @@ void MCMC_GEO_Loc(t_tree *tree)
   new_lnL = GEO_Lk(tree->geo,tree);
 
   ratio = (new_lnL - cur_lnL);        
-  ratio = EXP(ratio);
+  ratio = exp(ratio);
   alpha = MIN(1.,ratio);      
   u = Uni();
 
@@ -965,7 +965,7 @@ void MCMC_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
       ratio += (new_lnL_data - cur_lnL_data);
       ratio += (new_lnL_rate - cur_lnL_rate);
             
-      ratio = EXP(ratio);
+      ratio = exp(ratio);
       alpha = MIN(1.,ratio);
       
       u = Uni();
@@ -1041,7 +1041,7 @@ void MCMC_One_Node_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
   else
     for(i=0;i<3;i++) if(d->v[i] == a) { b = d->b[i]; break; }
 
-  /* Only the LOG_RANDWALK move seems to work here. Change with caution then. */
+  /* Only the log_RANDWALK move seems to work here. Change with caution then. */
   tree->rates->br_do_updt[d->num] = YES;
   MCMC_Single_Param_Generic(&(tree->rates->nd_r[d->num]),
 			    tree->rates->min_rate,
@@ -1130,8 +1130,8 @@ void MCMC_Times_And_Rates_Root(t_tree *tree)
   t_max -= tree->rates->min_dt;
 
   u = Uni();
-  t1_new = t_max - (t_max - t1_cur)*EXP(K*(u-.5));
-  ratio += LOG((t1_new - t_max) / (t1_cur - t_max));
+  t1_new = t_max - (t_max - t1_cur)*exp(K*(u-.5));
+  ratio += log((t1_new - t_max) / (t1_cur - t_max));
 
   r2_cur = tree->rates->br_r[v2->num];
   r3_cur = tree->rates->br_r[v3->num];
@@ -1171,7 +1171,7 @@ void MCMC_Times_And_Rates_Root(t_tree *tree)
       ratio += (new_lnL_rate - cur_lnL_rate);
       ratio += (new_lnL_time - cur_lnL_time);
 
-      ratio = EXP(ratio);
+      ratio = exp(ratio);
       alpha = MIN(1.,ratio);
       u = Uni();
          
@@ -1263,7 +1263,7 @@ void MCMC_Times_And_Rates_Recur(t_node *a, t_node *d, int traversal, t_tree *tre
   r3_new = r3_cur * (t3 - t1_cur) / (t3 - t1_new);
 
   ratio +=
-    LOG((t1_cur - t0) / (t1_new - t0) *
+    log((t1_cur - t0) / (t1_new - t0) *
         (t2 - t1_cur) / (t2 - t1_new) *
         (t3 - t1_cur) / (t3 - t1_new));
   
@@ -1287,7 +1287,7 @@ void MCMC_Times_And_Rates_Recur(t_node *a, t_node *d, int traversal, t_tree *tre
       ratio += (new_lnL_rate - cur_lnL_rate);
 
       
-      ratio = EXP(ratio);
+      ratio = exp(ratio);
       alpha = MIN(1.,ratio);
       u = Uni();
 
@@ -1440,7 +1440,7 @@ void MCMC_Time_Recur(t_node *a, t_node *d, int traversal, t_tree *tree)
       /*        cur_lnL_time,new_lnL_time, */
       /*        cur_lnL_rate,new_lnL_rate); */
 
-      ratio = EXP(ratio);
+      ratio = exp(ratio);
       alpha = MIN(1.,ratio);
       u = Uni();
 
@@ -1722,10 +1722,10 @@ void MCMC_Jump_Calibration(t_tree *tree)
           /* Prior ratio */
           ratio += (new_lnL_rate - cur_lnL_rate);
           ratio += (new_lnL_time - cur_lnL_time);
-          ratio += (LOG(calib_prior_prob[new_calib_comb_num]) - LOG(calib_prior_prob[cur_calib_comb_num]));
+          ratio += (log(calib_prior_prob[new_calib_comb_num]) - log(calib_prior_prob[cur_calib_comb_num]));
           ratio += times_log_hastings_ratio;
           
-          ratio = EXP(ratio);
+          ratio = exp(ratio);
           alpha = MIN(1.,ratio);
           u = Uni();
           
@@ -1844,8 +1844,8 @@ void MCMC_Root_Time(t_tree *tree)
     }
 
   u = Uni();
-  t1_new = t_max - (t_max - t1_cur)*EXP(K*(u-.5));
-  ratio += LOG((t1_new - t_max) / (t1_cur - t_max));
+  t1_new = t_max - (t_max - t1_cur)*exp(K*(u-.5));
+  ratio += log((t1_new - t_max) / (t1_cur - t_max));
   /* MCMC_Make_Move(&t1_cur,&t1_new,t_min,t_max,&ratio,K,tree->mcmc->move_type[move_num]); */
   /* t1_new = Uni()*(t_max-t_min) + t_min; */
   
@@ -1876,7 +1876,7 @@ void MCMC_Root_Time(t_tree *tree)
       ratio += (new_lnL_rate - cur_lnL_rate);
       ratio += (new_lnL_time - cur_lnL_time);
 
-      ratio = EXP(ratio);
+      ratio = exp(ratio);
       alpha = MIN(1.,ratio);
       u = Uni();
          
@@ -1943,7 +1943,7 @@ void MCMC_Tree_Height(t_tree *tree)
   new_lnL_time = UNLIKELY;
   
   u = Uni();
-  mult = EXP(K*(u-0.5));
+  mult = exp(K*(u-0.5));
 
   floor = 0.0;
   Scale_Subtree_Height(tree->n_root,mult,floor,&n_nodes,tree);
@@ -1958,7 +1958,7 @@ void MCMC_Tree_Height(t_tree *tree)
       new_lnL_rate = RATES_Lk_Rates(tree);
     }
   
-  ratio += (phydbl)(n_nodes)*LOG(mult);
+  ratio += (phydbl)(n_nodes)*log(mult);
 
   ratio += (new_lnL_data - cur_lnL_data);
   ratio += (new_lnL_rate - cur_lnL_rate);
@@ -1970,7 +1970,7 @@ void MCMC_Tree_Height(t_tree *tree)
   /*        new_lnL_rate,cur_lnL_rate); */
 
 
-  ratio = EXP(ratio);
+  ratio = exp(ratio);
   alpha = MIN(1.,ratio);
   u = Uni();
   
@@ -2028,7 +2028,7 @@ void MCMC_Updown_T_Cr(t_tree *tree)
 
 
   u = Uni();
-  mult = EXP(K*(u-0.5));
+  mult = exp(K*(u-0.5));
 
   floor = 0.0;
   Scale_Subtree_Height(tree->n_root,mult,floor,&n_nodes,tree);
@@ -2049,13 +2049,13 @@ void MCMC_Updown_T_Cr(t_tree *tree)
      node heights. When considering the relative heights, this ratio combined
      to the Jacobian for the change of variable ends up to being equal to mult. 
   */
-  ratio += (n_nodes - 1)*LOG(mult);
+  ratio += (n_nodes - 1)*log(mult);
 
   ratio += (new_lnL_rate - cur_lnL_rate);
   ratio += (new_lnL_time - cur_lnL_time);
 
   
-  ratio = EXP(ratio);
+  ratio = exp(ratio);
   alpha = MIN(1.,ratio);
   u = Uni();
   
@@ -2113,7 +2113,7 @@ void MCMC_Updown_T_Br(t_tree *tree)
   new_lnL_time = UNLIKELY;
 
   u = Uni();
-  mult = EXP(K*(u-0.5));
+  mult = exp(K*(u-0.5));
 
 
   target = Rand_Int(tree->n_otu,2*tree->n_otu-3);
@@ -2137,14 +2137,14 @@ void MCMC_Updown_T_Br(t_tree *tree)
   new_lnL_rate = RATES_Lk_Rates(tree);
   new_lnL_time = TIMES_Lk_Times(NO,tree);
 
-  ratio += n_nodes*LOG(mult);
+  ratio += n_nodes*log(mult);
 
   /* Likelihood ratio */
   ratio += (new_lnL_data - cur_lnL_data);
   ratio += (new_lnL_rate - cur_lnL_rate);
   ratio += (new_lnL_time - cur_lnL_time);
   
-  ratio = EXP(ratio);
+  ratio = exp(ratio);
   alpha = MIN(1.,ratio);
   u = Uni();
   
@@ -2189,7 +2189,7 @@ void MCMC_Subtree_Height(t_tree *tree)
   new_lnL_time = UNLIKELY;
 
   u = Uni();
-  mult = EXP(K*(u-0.5));
+  mult = exp(K*(u-0.5));
 
   target = Rand_Int(tree->n_otu,2*tree->n_otu-3);
   floor = 0.0;
@@ -2212,13 +2212,13 @@ void MCMC_Subtree_Height(t_tree *tree)
       new_lnL_rate = RATES_Lk_Rates(tree);
     }
   
-  ratio += (phydbl)(n_nodes)*LOG(mult);
+  ratio += (phydbl)(n_nodes)*log(mult);
   ratio += (new_lnL_data - cur_lnL_data);
   ratio += (new_lnL_rate - cur_lnL_rate);
   ratio += (new_lnL_time - cur_lnL_time);
 
 
-  ratio = EXP(ratio);
+  ratio = exp(ratio);
   alpha = MIN(1.,ratio);
   u = Uni();
   
@@ -2263,7 +2263,7 @@ void MCMC_Tree_Rates(t_tree *tree)
   ratio         = 0.0;
 
   u = Uni();
-  mult = EXP(K*(u-0.5));
+  mult = exp(K*(u-0.5));
     
   /* Multiply branch rates (or add to log of rates) */
   if(!Scale_Subtree_Rates(tree->n_root,mult,&n_nodes,tree))
@@ -2293,10 +2293,10 @@ void MCMC_Tree_Rates(t_tree *tree)
 
   new_lnL_rate = RATES_Lk_Rates(tree);
 
-  ratio += (n_nodes-1)*LOG(mult);
+  ratio += (n_nodes-1)*log(mult);
   ratio += (new_lnL_rate - cur_lnL_rate);
 
-  ratio = EXP(ratio);
+  ratio = exp(ratio);
   alpha = MIN(1.,ratio);
   u = Uni();
   
@@ -2336,7 +2336,7 @@ void MCMC_Subtree_Rates(t_tree *tree)
   ratio         = 0.0;
 
   u = Uni();
-  mult = EXP(K*(u-0.5));
+  mult = exp(K*(u-0.5));
   /* mult = Rgamma(1./K,K); */
 
   target = Rand_Int(tree->n_otu,2*tree->n_otu-3);
@@ -2354,17 +2354,17 @@ void MCMC_Subtree_Rates(t_tree *tree)
   new_lnL_data = Lk(NULL,tree);
 
   /* Proposal ratio: 2n-2=> number of multiplications, 1=>number of divisions */
-  ratio += (+n_nodes)*LOG(mult);
-  /* ratio += (n_nodes-2)*LOG(mult) + LOG(Dgamma(1./mult,1./K,K)/Dgamma(mult,1./K,K)); */
+  ratio += (+n_nodes)*log(mult);
+  /* ratio += (n_nodes-2)*log(mult) + log(Dgamma(1./mult,1./K,K)/Dgamma(mult,1./K,K)); */
   
   /* If modelling log of rates instead of rates */
-  if(tree->rates->model_log_rates == YES) ratio -= (n_nodes)*LOG(mult);
+  if(tree->rates->model_log_rates == YES) ratio -= (n_nodes)*log(mult);
 
   ratio += (new_lnL_rate - cur_lnL_rate);
   ratio += (new_lnL_data - cur_lnL_data);
 
 
-  ratio = EXP(ratio);
+  ratio = exp(ratio);
   alpha = MIN(1.,ratio);
   u = Uni();
   
@@ -2407,7 +2407,7 @@ void MCMC_Swing(t_tree *tree)
   ratio         = 0.0;
 
   u = Uni();
-  /* mult = EXP(K*(u-0.5)); */
+  /* mult = exp(K*(u-0.5)); */
   mult = u*(K - 1./K) + 1./K;
 
 
@@ -2446,11 +2446,11 @@ void MCMC_Swing(t_tree *tree)
 
   new_lnL_rate = RATES_Lk_Rates(tree);
 
-  ratio += (-(tree->n_otu-1.)-2.)*LOG(mult);
+  ratio += (-(tree->n_otu-1.)-2.)*log(mult);
   ratio += (new_lnL_rate - cur_lnL_rate);
   ratio += (new_lnL_data - cur_lnL_data);
 
-  ratio = EXP(ratio);
+  ratio = exp(ratio);
   alpha = MIN(1.,ratio);
   u = Uni();
 
@@ -2490,7 +2490,7 @@ void MCMC_Updown_Nu_Cr(t_tree *tree)
   new_lnL_rate  = tree->rates->c_lnL_rates;
   
   u = Uni();
-  mult = EXP(K*(u-0.5));
+  mult = exp(K*(u-0.5));
 
   /* Multiply branch rates */
   /* if(!Scale_Subtree_Rates(tree->n_root,mult,&n_nodes,tree)) */
@@ -2529,14 +2529,14 @@ void MCMC_Updown_Nu_Cr(t_tree *tree)
 
   ratio = 0.0;
   /* Proposal ratio: 2n-2=> number of multiplications, 1=>number of divisions */
-  /* ratio += n_nodes*LOG(mult); /\* (1-1)*LOG(mult); *\/ */
-  ratio += 0.0*LOG(mult); /* (1-1)*LOG(mult); */
+  /* ratio += n_nodes*log(mult); /\* (1-1)*log(mult); *\/ */
+  ratio += 0.0*log(mult); /* (1-1)*log(mult); */
   /* Prior density ratio */
   ratio += (new_lnL_rate - cur_lnL_rate);
   /* Likelihood density ratio */
   ratio += (new_lnL_data - cur_lnL_data);
 
-  ratio = EXP(ratio);
+  ratio = exp(ratio);
   alpha = MIN(1.,ratio);
   u = Uni();
   
@@ -2585,7 +2585,7 @@ void MCMC_Time_Slice(t_tree *tree)
   ratio        = 0.0;
   
   u = Uni();
-  mult = EXP(K*(u-0.5));
+  mult = exp(K*(u-0.5));
 
   floor = Uni()*tree->rates->nd_t[tree->n_root->num];
 
@@ -2603,7 +2603,7 @@ void MCMC_Time_Slice(t_tree *tree)
           new_lnL_rate = RATES_Lk_Rates(tree);
         }
       
-      ratio += (phydbl)(n_nodes)*LOG(mult);
+      ratio += (phydbl)(n_nodes)*log(mult);
 
       /* Likelihood ratio */
       ratio += (new_lnL_data - cur_lnL_data);
@@ -2620,7 +2620,7 @@ void MCMC_Time_Slice(t_tree *tree)
       /*        tree->mcmc->run_move[tree->mcmc->num_move_time_slice], */
       /*        K,floor,mult); */
       
-      ratio = EXP(ratio);
+      ratio = exp(ratio);
     }
   else
     {
@@ -2963,7 +2963,7 @@ void MCMC_Print_Param(t_mcmc *mcmc, t_tree *tree)
       for(i=tree->n_otu;i<2*tree->n_otu-1;i++) PhyML_Fprintf(fp,format,tree->rates->nd_t[i]);
       Free(format);
 
-      /* for(i=0;i<2*tree->n_otu-1;i++) PhyML_Fprintf(fp,"%.4f\t",LOG(tree->rates->nd_r[i])); */
+      /* for(i=0;i<2*tree->n_otu-1;i++) PhyML_Fprintf(fp,"%.4f\t",log(tree->rates->nd_r[i])); */
       
       // Average rate along edges: length divided by elapsed time
       For(i,2*tree->n_otu-2)
@@ -2972,7 +2972,7 @@ void MCMC_Print_Param(t_mcmc *mcmc, t_tree *tree)
 
       /* fp_pred = fopen("predict.txt","a");       */
       /* for(i=0;i<2*tree->n_otu-2;i++)  */
-      /* 	PhyML_Fprintf(fp_pred,"B%d\t%12f\t%12f\t%4d\n",i,EXP(tree->rates->br_r[i]),tree->rates->nd_t[i],tree->rates->has_survived[i]); */
+      /* 	PhyML_Fprintf(fp_pred,"B%d\t%12f\t%12f\t%4d\n",i,exp(tree->rates->br_r[i]),tree->rates->nd_t[i],tree->rates->has_survived[i]); */
       /* fclose(fp_pred); */
 
 
@@ -2989,14 +2989,14 @@ void MCMC_Print_Param(t_mcmc *mcmc, t_tree *tree)
 
       /* for(i=0;i<2*tree->n_otu-2;i++) PhyML_Fprintf(fp,"%.4f\t",tree->rates->cur_gamma_prior_mean[i]); */
       /* if(fp != stdout) for(i=tree->n_otu;i<2*tree->n_otu-1;i++) PhyML_Fprintf(fp,"%G\t",tree->rates->t_prior[i]); */
-/*       For(i,2*tree->n_otu-3) PhyML_Fprintf(fp,"%f\t",EXP(tree->a_edges[i]->l->v)); */
+/*       For(i,2*tree->n_otu-3) PhyML_Fprintf(fp,"%f\t",exp(tree->a_edges[i]->l->v)); */
 
 
       /* RATES_Update_Cur_Bl(tree); */
       /* For(i,2*tree->n_otu-3) PhyML_Fprintf(fp,"%f\t",tree->a_edges[i]->l->v); */
 
 
-      For(i,2*tree->n_otu-2) tree->rates->mean_r[i] = EXP(tree->rates->br_r[i]);
+      For(i,2*tree->n_otu-2) tree->rates->mean_r[i] = exp(tree->rates->br_r[i]);
       For(i,2*tree->n_otu-1) tree->rates->mean_t[i] = tree->rates->nd_t[i];
       
       /* Time_To_Branch(tree); */
@@ -3045,7 +3045,7 @@ void MCMC_Print_Param(t_mcmc *mcmc, t_tree *tree)
       /* 		    { */
       /* 		      n1 = v1->bip_size[j]; */
       /* 		      /\* r1 = RATES_Get_Mean_Rate_In_Subtree(v1,tree); *\/ */
-      /* 		      r1 = EXP(tree->rates->br_r[v1->num]); */
+      /* 		      r1 = exp(tree->rates->br_r[v1->num]); */
       /* 		      break; */
       /* 		    } */
       /* 		} */
@@ -3057,7 +3057,7 @@ void MCMC_Print_Param(t_mcmc *mcmc, t_tree *tree)
       /* 		    { */
       /* 		      n2 = v2->bip_size[j]; */
       /* 		      /\* r2 = RATES_Get_Mean_Rate_In_Subtree(v2,tree); *\/ */
-      /* 		      r2 = EXP(tree->rates->br_r[v2->num]); */
+      /* 		      r2 = exp(tree->rates->br_r[v2->num]); */
       /* 		      break; */
       /* 		    } */
       /* 		} */
@@ -3880,7 +3880,7 @@ void MCMC_One_Length(t_edge *b, t_tree *tree)
   K            = 0.1;
   
   u = Uni();
-  mult = EXP(K*(u-0.5));
+  mult = exp(K*(u-0.5));
   /* mult = u*(K-1./K)+1./K; */
   new_l = cur_l * mult;
 
@@ -3894,10 +3894,10 @@ void MCMC_One_Length(t_edge *b, t_tree *tree)
 
   ratio =
     (new_lnL_data - cur_lnL_data) +
-    (LOG(mult));
+    (log(mult));
 
 
-  ratio = EXP(ratio);
+  ratio = exp(ratio);
   alpha = MIN(1.,ratio);
   
   u = Uni();
@@ -3943,9 +3943,9 @@ void MCMC_Scale_Br_Lens(t_tree *tree)
 
   ratio =
     (new_lnL_data - cur_lnL_data) +
-    (2*tree->n_otu-5) * (LOG(mult));
+    (2*tree->n_otu-5) * (log(mult));
 
-  ratio = EXP(ratio);
+  ratio = exp(ratio);
   alpha = MIN(1.,ratio);
   
   u = Uni();
@@ -4043,7 +4043,7 @@ void MCMC_Kappa(t_tree *mixt_tree)
           
           /* printf("\n. cur_k: %f new_k: %f cur: %f new: %f",cur_kappa,new_kappa,cur_lnL_data,new_lnL_data); */
           
-          ratio = EXP(ratio);
+          ratio = exp(ratio);
           alpha = MIN(1.,ratio);
           
           u = Uni();
@@ -4154,8 +4154,8 @@ void MCMC_Free_Mixt_Rate(t_tree *tree)
       /* Metropolis-Hastings step */
       ratio = 0.;
       ratio += (new_lnL_data - cur_lnL_data);
-      ratio += LOG(hr);
-      ratio = EXP(ratio);
+      ratio += log(hr);
+      ratio = exp(ratio);
       alpha = MIN(1.,ratio);
       
       /* printf("\nf class=%d new_val=%f cur_val=%f cur: %f -> new: %f",c2updt,y[c2updt],y_cur,cur_lnL_data,new_lnL_data); */
@@ -4206,9 +4206,9 @@ void MCMC_Free_Mixt_Rate(t_tree *tree)
       // Metropolis-Hastings step
       ratio = 0.;
       ratio += (new_lnL_data - cur_lnL_data);
-      ratio += LOG(hr);
+      ratio += log(hr);
 
-      ratio = EXP(ratio);
+      ratio = exp(ratio);
       alpha = MIN(1.,ratio);
 
       /* printf("\nr class=%d new_val=%f cur_val=%f cur: %f -> new: %f",c2updt,y[c2updt],y_cur,cur_lnL_data,new_lnL_data); */
@@ -4440,7 +4440,7 @@ void MCMC_Birth_Rate(t_tree *tree)
           /*   } */
         }
       
-      ratio = EXP(ratio);
+      ratio = exp(ratio);
       alpha = MIN(1.,ratio);
       
       /* printf("\n.  b :%4d: %12G -> %12G ratio : %12G [ghost: %12G %12G -- real: %12G %12G]", */
@@ -4615,7 +4615,7 @@ void MCMC_Death_Rate(t_tree *tree)
           /*   } */
         }
       
-      ratio = EXP(ratio);
+      ratio = exp(ratio);
       alpha = MIN(1.,ratio);
       
       /* printf("\n.  d :%4d: %12G -> %12G ratio : %12G [ghost: %12G %12G -- real: %12G %12G]", */
@@ -4693,10 +4693,10 @@ void MCMC_Birth_Death_Updown(t_tree *tree)
   birth_rate_min = tree->rates->birth_rate_min;
   birth_rate_max = tree->rates->birth_rate_max;
 
-  scale = EXP(K*(Uni()-.5));
+  scale = exp(K*(Uni()-.5));
   new_birth_rate = cur_birth_rate * scale;
   new_death_rate = cur_death_rate * scale;
-  ratio += 2.*LOG(scale);
+  ratio += 2.*log(scale);
   
   if(new_death_rate < death_rate_max && new_death_rate > death_rate_min &&
      new_birth_rate < birth_rate_max && new_birth_rate > birth_rate_min &&
@@ -4796,7 +4796,7 @@ void MCMC_Birth_Death_Updown(t_tree *tree)
           /*   } */
         }
       
-      ratio = EXP(ratio);
+      ratio = exp(ratio);
       alpha = MIN(1.,ratio);
       
       /* printf("\n. bd :%4d: %12G -> %12G ratio : %12G [ghost: %12G %12G -- real: %12G %12G]", */
@@ -4888,10 +4888,10 @@ void MCMC_Nu(t_tree *tree)
       /* ratio += (new_nu - cur_nu); */
 	 
       /* Exponential prior on nu */
-      /* ratio += LOG(Dexp(new_nu,10.) / Dexp(cur_nu,10.)); */
+      /* ratio += log(Dexp(new_nu,10.) / Dexp(cur_nu,10.)); */
 
  
-      ratio = EXP(ratio);
+      ratio = exp(ratio);
       alpha = MIN(1.,ratio);
       
       u = Uni();
@@ -4932,7 +4932,7 @@ void MCMC_All_Rates(t_tree *tree)
   new_lnL_data = Lk(NULL,tree);
   
   ratio += (new_lnL_data - cur_lnL_data);
-  ratio = EXP(ratio);
+  ratio = exp(ratio);
 
   alpha = MIN(1.,ratio);
   u = Uni();
@@ -5050,7 +5050,7 @@ void MCMC_Prune_Regraft(t_tree *tree)
 
       /* prune_idx = Sample_i_With_Proba_pi(prob_idx,tree->n_otu-1); */
       /* prob_select_fwd = prob_idx[prune_idx]; */
-      /* ratio -= LOG(prob_select_fwd); */
+      /* ratio -= log(prob_select_fwd); */
       /* prune_idx = tree->rates->t_rank[prune_idx]; */
       
       prune = tree->a_nodes[prune_idx];
@@ -5150,13 +5150,13 @@ void MCMC_Prune_Regraft(t_tree *tree)
       if(prune == tree->n_root) t_min = 10.0*t_max;
       else t_min = times[prune->anc->num];
       t_min = MAX(t_min,regraft_t_min);
-      ratio += LOG(1./(t_max - t_min));
+      ratio += log(1./(t_max - t_min));
 
       t_max = MIN(times[prune_daughter->num],times[new_regraft_nd->num]);      
       if(new_regraft_nd == tree->n_root) t_min = 10.0*t_max;
       else t_min = times[new_regraft_nd->anc->num];
       t_min = MAX(t_min,regraft_t_min);
-      ratio -= LOG(1./(t_max - t_min));
+      ratio -= log(1./(t_max - t_min));
       
       new_t = Uni()*(t_max-t_min) + t_min;
 
@@ -5227,7 +5227,7 @@ void MCMC_Prune_Regraft(t_tree *tree)
       /* TIMES_Update_Node_Ordering(tree); */
       /* For(i,2*tree->n_otu-2) if(prune->num == tree->rates->t_rank[i]) break; */
       /* prob_select_bwd = prob_idx[i]; */
-      /* ratio += LOG(prob_select_bwd); */
+      /* ratio += log(prob_select_bwd); */
 
 
 
@@ -5269,7 +5269,7 @@ void MCMC_Prune_Regraft(t_tree *tree)
 
 
       
-      ratio = EXP(ratio);
+      ratio = exp(ratio);
       alpha = MIN(1.,ratio);
 
 
@@ -5535,7 +5535,7 @@ void MCMC_Prune_Regraft_Weighted(t_tree *tree)
       ratio += (new_lnL_rate - cur_lnL_rate);
       ratio += (new_lnL_time - cur_lnL_time);
       
-      ratio = EXP(ratio);
+      ratio = exp(ratio);
       alpha = MIN(1.,ratio);
 
       /* Always accept move */
@@ -5738,7 +5738,7 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
         }
 
       assert(n_regraft_nd > 0);
-      ratio -= LOG(1./n_regraft_nd);
+      ratio -= log(1./n_regraft_nd);
 
       // Randomly select one node among potential regraft sites (uniform)
       regraft_idx = Rand_Int(0,n_regraft_nd-1);
@@ -5750,13 +5750,13 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
       t_max = MIN(times[prune_daughter->num],times[cur_regraft_nd->num]);      
       if(prune == tree->n_root) t_min = 10.0*t_max;
       else t_min = times[prune->anc->num];
-      ratio += LOG(1./(t_max - t_min));
+      ratio += log(1./(t_max - t_min));
 
 
       t_max = MIN(times[prune_daughter->num],times[new_regraft_nd->num]);      
       if(new_regraft_nd == tree->n_root) t_min = 10.0*t_max;
       else t_min = times[new_regraft_nd->anc->num];
-      ratio -= LOG(1./(t_max - t_min));
+      ratio -= log(1./(t_max - t_min));
       
       new_t = Uni()*(t_max-t_min) + t_min;
 
@@ -5891,7 +5891,7 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
       // Number of regraft nodes
       n_regraft_nd = Linked_List_Len(regraft_nd_list);
       assert(n_regraft_nd > 0);
-      ratio += LOG(1./n_regraft_nd);
+      ratio += log(1./n_regraft_nd);
       Free_Linked_List(regraft_nd_list);
       
       // New age
@@ -5956,7 +5956,7 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
 
 
       
-      ratio = EXP(ratio);
+      ratio = exp(ratio);
       alpha = MIN(1.,ratio);
 
 
@@ -6508,8 +6508,8 @@ void MCMC_Make_Move(phydbl *cur, phydbl *new, phydbl inf, phydbl sup, phydbl *lo
     case MCMC_MOVE_SCALE_THORNE:
       {
 	u = Uni();
-	*new   = (*cur) * EXP(tune*(u-.5));
-	*loghr = LOG((*new)/(*cur));
+	*new   = (*cur) * exp(tune*(u-.5));
+	*loghr = log((*new)/(*cur));
 	break;
       }
 
@@ -6518,7 +6518,7 @@ void MCMC_Make_Move(phydbl *cur, phydbl *new, phydbl inf, phydbl sup, phydbl *lo
 	phydbl r;
 	*new = (*cur) * Rgamma(1./tune,tune);
 	r = (*new)/(*cur);
-	*loghr = -LOG(r) + LOG(Dgamma(1./r,1./tune,tune)/Dgamma(r,1./tune,tune));
+	*loghr = -log(r) + log(Dgamma(1./r,1./tune,tune)/Dgamma(r,1./tune,tune));
 	break;
       }
 
@@ -6599,7 +6599,7 @@ void MCMC_Read_Param_Vals(t_tree *tree)
   For(i,2*tree->n_otu-2)
     {
       v=fscanf(in_fp,"%lf\t",&val); // Edge average rates
-      tree->rates->br_r[i] = LOG(val);
+      tree->rates->br_r[i] = log(val);
     }
   
   v++;
@@ -6648,8 +6648,8 @@ void MCMC_PHYREX_Mu(t_tree *tree)
   /* K              = tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_mu]; */
 
   /* u = Uni(); */
-  /* new_beta = ori_beta * EXP(K*(u-.5)); */
-  /* hr += LOG(new_beta/ori_beta); */
+  /* new_beta = ori_beta * exp(K*(u-.5)); */
+  /* hr += log(new_beta/ori_beta); */
 
   /* tree->mmod->mu = 1./(new_beta+1.); */
 
@@ -6658,7 +6658,7 @@ void MCMC_PHYREX_Mu(t_tree *tree)
   /* ratio += (new_glnL - cur_glnL); */
   /* ratio += hr; */
   
-  /* ratio = EXP(ratio); */
+  /* ratio = exp(ratio); */
   /* alpha = MIN(1.,ratio); */
   
   /* /\* Always accept move *\/ */
@@ -6742,7 +6742,7 @@ void MCMC_PHYREX_Radius(t_tree *tree)
   /* ratio += (new_glnL - cur_glnL); */
   /* ratio += hr; */
   
-  /* ratio = EXP(ratio); */
+  /* ratio = exp(ratio); */
   /* alpha = MIN(1.,ratio); */
   
   /* /\* Always accept move *\/ */
@@ -6808,14 +6808,14 @@ void MCMC_PHYREX_Indel_Disk(t_tree *tree)
   new_rad = tree->mmod->rad;
   cur_rad = tree->mmod->rad;
 
-  /* new_lbda = cur_lbda * EXP(0.5*(Uni()-.5)); */
-  /* hr += LOG(new_lbda/cur_lbda); */
+  /* new_lbda = cur_lbda * exp(0.5*(Uni()-.5)); */
+  /* hr += log(new_lbda/cur_lbda); */
 
-  /* new_mu = cur_mu * EXP(0.5*(Uni()-.5)); */
-  /* hr += LOG(new_mu/cur_mu); */
+  /* new_mu = cur_mu * exp(0.5*(Uni()-.5)); */
+  /* hr += log(new_mu/cur_mu); */
 
-  /* new_rad = cur_rad * EXP(0.5*(Uni()-.5)); */
-  /* hr += LOG(new_rad/cur_rad); */
+  /* new_rad = cur_rad * exp(0.5*(Uni()-.5)); */
+  /* hr += log(new_rad/cur_rad); */
 
   if(new_rad > tree->mmod->max_rad || new_rad < tree->mmod->min_rad)     return; 
   if(new_mu > tree->mmod->max_mu || new_mu < tree->mmod->min_mu)         return; 
@@ -6931,20 +6931,20 @@ void MCMC_PHYREX_Delete_Disk(phydbl hr, int n_delete_disks, phydbl cur_lbda, phy
   
       PHYREX_Remove_Disk(target_disk[j]);
   
-      for(i=0;i<tree->mmod->n_dim;i++) hr += LOG(1./tree->mmod->lim->lonlat[i]);
+      for(i=0;i<tree->mmod->n_dim;i++) hr += log(1./tree->mmod->lim->lonlat[i]);
     }
 
   T = PHYREX_Tree_Height(tree);
 
   hr += LnChoose(n_valid_disks,n_delete_disks);
-  hr -= n_delete_disks * LOG(-T);
+  hr -= n_delete_disks * log(-T);
   hr += LnFact(n_delete_disks);
 
   new_glnL = PHYREX_Lk(tree);
   ratio += (new_glnL - cur_glnL);
   ratio += hr;
   
-  ratio = EXP(ratio);
+  ratio = exp(ratio);
   alpha = MIN(1.,ratio);
 
   /* Always accept move */
@@ -7047,18 +7047,18 @@ void MCMC_PHYREX_Insert_Disk(phydbl hr, int n_insert_disks, phydbl cur_lbda, phy
       
       for(i=0;i<tree->mmod->n_dim;i++) new_disk[j]->centr->lonlat[i] = Uni()*tree->mmod->lim->lonlat[i];
 
-      for(i=0;i<tree->mmod->n_dim;i++) hr -= LOG(1./tree->mmod->lim->lonlat[i]);
+      for(i=0;i<tree->mmod->n_dim;i++) hr -= log(1./tree->mmod->lim->lonlat[i]);
     }
 
   hr -= LnChoose(n_valid_disks+n_insert_disks,n_insert_disks);
-  hr += n_insert_disks * LOG(-T);
+  hr += n_insert_disks * log(-T);
   hr -= LnFact(n_insert_disks);
 
   new_glnL = PHYREX_Lk(tree);
   ratio = (new_glnL - cur_glnL);
   ratio += hr;
   
-  ratio = EXP(ratio);
+  ratio = exp(ratio);
   alpha = MIN(1.,ratio);
   
   /* Always accept move */
@@ -7187,8 +7187,8 @@ void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree)
 
           new_time = max - new_plusmin;
 
-          hr += LOG(Dexp(cur_plusmin,1./new_plusmin));
-          hr -= LOG(Dexp(new_plusmin,1./cur_plusmin));
+          hr += log(Dexp(cur_plusmin,1./new_plusmin));
+          hr -= log(Dexp(new_plusmin,1./cur_plusmin));
 
           new_glnL -= (log_lbda - FABS(ori_time[i]-max)*tree->mmod->lbda);
           new_glnL += (log_lbda - FABS(new_time   -max)*tree->mmod->lbda);
@@ -7206,7 +7206,7 @@ void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree)
   ratio += (new_glnL - cur_glnL);
   ratio += hr;
   
-  ratio = EXP(ratio);
+  ratio = exp(ratio);
   alpha = MIN(1.,ratio);
   
   /* Always accept move */
@@ -7289,7 +7289,7 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree)
   new_lbda        = tree->mmod->lbda;
 
   u = Uni();
-  scale_fact_times = EXP(K*(u-.5));
+  scale_fact_times = exp(K*(u-.5));
   
   if(tree->disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
@@ -7307,11 +7307,11 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree)
   /* The Hastings ratio involves (n_disk-2) when considering a uniform distrib
      for the multiplier, which is not the case here.
   */
-  hr += (n_disks)*LOG(scale_fact_times);
+  hr += (n_disks)*log(scale_fact_times);
 
   /* Adjust the value of lambda */
   new_lbda = cur_lbda * (1./scale_fact_times);
-  hr += LOG(1./scale_fact_times);
+  hr += log(1./scale_fact_times);
   tree->mmod->lbda = new_lbda;
 
   new_glnL = PHYREX_Lk(tree);
@@ -7321,7 +7321,7 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree)
   ratio += (new_glnL - cur_glnL);
   ratio += hr;
   
-  ratio = EXP(ratio);
+  ratio = exp(ratio);
   alpha = MIN(1.,ratio);
   
   /* Always accept move */
@@ -7465,7 +7465,7 @@ void MCMC_PHYREX_Swap_Disk(t_tree *tree)
       ratio += (new_glnL - cur_glnL);
       ratio += hr;
             
-      ratio = EXP(ratio);
+      ratio = exp(ratio);
       alpha = MIN(1.,ratio);
       
       /* Always accept move */
@@ -7538,11 +7538,11 @@ void MCMC_PHYREX_Indel_Hit(t_tree *tree)
   new_mu  = tree->mmod->mu;
   cur_mu  = tree->mmod->mu;
 
-  /* new_rad = cur_rad * EXP(0.5*(Uni()-.5)); */
-  /* hr += LOG(new_rad/cur_rad); */
+  /* new_rad = cur_rad * exp(0.5*(Uni()-.5)); */
+  /* hr += log(new_rad/cur_rad); */
 
-  /* new_mu = cur_mu * EXP(0.5*(Uni()-.5)); */
-  /* hr += LOG(new_mu/cur_mu); */
+  /* new_mu = cur_mu * exp(0.5*(Uni()-.5)); */
+  /* hr += log(new_mu/cur_mu); */
 
   if(new_rad > tree->mmod->max_rad || new_rad < tree->mmod->min_rad) return; 
   if(new_mu > tree->mmod->max_mu || new_mu < tree->mmod->min_mu)     return; 
@@ -7567,8 +7567,8 @@ void MCMC_PHYREX_Indel_Hit(t_tree *tree)
   /* K = 0.2; */
   /* n_disks_new = (int)Rgamma((phydbl)n_disks_cur/K,K); */
 
-  /* hr += LOG(Pgamma(n_disks_cur+1,(phydbl)n_disks_new/K,K) - Pgamma(n_disks_cur,(phydbl)n_disks_new/K,K)); */
-  /* hr -= LOG(Pgamma(n_disks_new+1,(phydbl)n_disks_cur/K,K) - Pgamma(n_disks_new,(phydbl)n_disks_cur/K,K)); */
+  /* hr += log(Pgamma(n_disks_cur+1,(phydbl)n_disks_new/K,K) - Pgamma(n_disks_cur,(phydbl)n_disks_new/K,K)); */
+  /* hr -= log(Pgamma(n_disks_new+1,(phydbl)n_disks_cur/K,K) - Pgamma(n_disks_new,(phydbl)n_disks_cur/K,K)); */
 
   if(n_disks_new < n_disks_cur) MCMC_PHYREX_Delete_Hit(hr, n_disks_cur - n_disks_new, cur_rad, cur_mu, tree);
   else                          MCMC_PHYREX_Insert_Hit(hr, n_disks_new - n_disks_cur, cur_rad, cur_mu, tree);  
@@ -7642,7 +7642,7 @@ void MCMC_PHYREX_Insert_Hit(phydbl hr, int n_insert_disks, phydbl cur_rad, phydb
       assert(young_disk->n_ldsk_a);
 
       /* Which lineage is going to be hit ? */
-      hr += LOG(young_disk->n_ldsk_a);
+      hr += log(young_disk->n_ldsk_a);
       
       young_ldsk[j] = young_disk->ldsk_a[Rand_Int(0,young_disk->n_ldsk_a-1)];
       old_ldsk[j]   = young_ldsk[j]->prev;
@@ -7707,7 +7707,7 @@ void MCMC_PHYREX_Insert_Hit(phydbl hr, int n_insert_disks, phydbl cur_rad, phydb
   T = PHYREX_Tree_Height(tree);
 
   hr -= LnChoose(n_valid_disks+n_insert_disks,n_insert_disks);
-  hr += n_insert_disks * LOG(-T);  
+  hr += n_insert_disks * log(-T);  
   hr -= LnFact(n_insert_disks);
 
   new_glnL = PHYREX_Lk(tree);
@@ -7715,7 +7715,7 @@ void MCMC_PHYREX_Insert_Hit(phydbl hr, int n_insert_disks, phydbl cur_rad, phydb
   ratio = (new_glnL - cur_glnL);
   ratio += hr;  
 
-  ratio = EXP(ratio);
+  ratio = exp(ratio);
   alpha = MIN(1.,ratio);
 
   if(tree->mcmc->always_yes == YES && new_glnL > UNLIKELY) alpha = 1.0;
@@ -7859,7 +7859,7 @@ void MCMC_PHYREX_Delete_Hit(phydbl hr, int n_delete_disks, phydbl cur_rad, phydb
       
       /* Part of the Hastings ratio corresponding to the probability of selecting */
       /* one of target_disk->n_ldsk_a to be hit */ 
-      hr -= LOG(target_disk[j]->next->n_ldsk_a);
+      hr -= log(target_disk[j]->next->n_ldsk_a);
             
       /* Density for position of the displaced ldsk */
       for(i=0;i<tree->mmod->n_dim;i++)
@@ -7891,7 +7891,7 @@ void MCMC_PHYREX_Delete_Hit(phydbl hr, int n_delete_disks, phydbl cur_rad, phydb
   T = PHYREX_Tree_Height(tree);
   
   hr += LnChoose(n_valid_disks,n_delete_disks);
-  hr -= n_delete_disks * LOG(-T);
+  hr -= n_delete_disks * log(-T);
   hr += LnFact(n_delete_disks);
 
   Free(valid_disks);
@@ -7901,7 +7901,7 @@ void MCMC_PHYREX_Delete_Hit(phydbl hr, int n_delete_disks, phydbl cur_rad, phydb
   ratio += (new_glnL - cur_glnL);
   ratio += hr;
 
-  ratio = EXP(ratio);
+  ratio = exp(ratio);
   alpha = MIN(1.,ratio);
   
   /* Always accept move */
@@ -8028,7 +8028,7 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
       prune_disk = valid_disks[i];
       Free(valid_disks);
       
-      hr -= LOG(1./n_prune_disks);
+      hr -= log(1./n_prune_disks);
 
       prune_ldsk = prune_disk->ldsk;
       /* Which daughter lineage are we pruning? */
@@ -8040,7 +8040,7 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
       /* prune_daughter_ldsk has to be the next coalescent node under prune_ldsk for this move to work */
       
       /* Proba of pruning this particular one */
-      hr -= LOG(1./prune_ldsk->n_next);
+      hr -= log(1./prune_ldsk->n_next);
             
       /* Get a ldsk to reattach the pruned lineage to */
       disk = tree->disk->prev;
@@ -8102,12 +8102,12 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
           i = Sample_i_With_Proba_pi(prob_disks,n_valid_disks);
           
           /* Prob of selecting this node as regraft site */
-          hr -= LOG(prob_disks[i]);
+          hr -= log(prob_disks[i]);
 
           assert(num_prune_disk > -1);
 
           /* Prob of selecting this node as regraft site (opposite move) */
-          hr += LOG(prob_disks[num_prune_disk]);
+          hr += log(prob_disks[num_prune_disk]);
         }
       else
         {
@@ -8131,7 +8131,7 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
 
       /* Proba of pruning that particular lineage in the opposite move 
        */
-      hr += LOG(1./(phydbl)(regraft_ldsk->n_next+1));
+      hr += log(1./(phydbl)(regraft_ldsk->n_next+1));
       
       /* Prob of selecting that prune ldsk in the opposite move. Number
          of prune sites increases by one in case actual regraft ldsk
@@ -8139,7 +8139,7 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
       */
       if(regraft_ldsk->n_next == 1) n_prune_disks += 1;
       if(prune_ldsk->n_next == 2) n_prune_disks   -= 1;
-      hr += LOG(1./n_prune_disks);
+      hr += log(1./n_prune_disks);
 
 
       /* Prune and regraft */
@@ -8179,7 +8179,7 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
       ratio += (new_glnL - cur_glnL);
       ratio += hr;
             
-      ratio = EXP(ratio);
+      ratio = exp(ratio);
       alpha = MIN(1.,ratio);
       
       /* Always accept move */
@@ -8293,7 +8293,7 @@ void MCMC_PHYREX_Simulate_Backward(t_tree *tree)
   while(disk && disk->time > t) disk = disk->prev;
   target_disk = disk->next;
 
-  hr -= LOG(FABS((target_disk->prev->time - target_disk->time)/T));
+  hr -= log(FABS((target_disk->prev->time - target_disk->time)/T));
 
   bkp_disk = target_disk->prev;
 
@@ -8303,13 +8303,13 @@ void MCMC_PHYREX_Simulate_Backward(t_tree *tree)
   PHYREX_Simulate_Backward_Core(NO,target_disk,tree);
   
   T =  PHYREX_Tree_Height(tree);
-  hr += LOG(FABS((target_disk->prev->time - target_disk->time)/T));
+  hr += log(FABS((target_disk->prev->time - target_disk->time)/T));
 
   new_alnL = Lk(NULL,tree);
   ratio += (new_alnL - cur_alnL);
   ratio += hr;
   
-  ratio = EXP(ratio);
+  ratio = exp(ratio);
   alpha = MIN(1.,ratio);
     
  /* Always accept move */
@@ -8427,14 +8427,14 @@ void MCMC_PHYREX_Simulate_Backward_Plus(t_tree *tree)
   new_mu        = cur_mu;
 
   
-  new_lbda = cur_lbda * EXP(0.2*(Uni()-.5));
-  hr += LOG(new_lbda/cur_lbda);
+  new_lbda = cur_lbda * exp(0.2*(Uni()-.5));
+  hr += log(new_lbda/cur_lbda);
 
-  new_mu = cur_mu * EXP(0.2*(Uni()-.5));
-  hr += LOG(new_mu/cur_mu);
+  new_mu = cur_mu * exp(0.2*(Uni()-.5));
+  hr += log(new_mu/cur_mu);
 
-  new_rad = cur_rad * EXP(0.2*(Uni()-.5));
-  hr += LOG(new_rad/cur_rad);
+  new_rad = cur_rad * exp(0.2*(Uni()-.5));
+  hr += log(new_rad/cur_rad);
 
   if(new_lbda < tree->mmod->min_lbda) return;
   if(new_lbda > tree->mmod->max_lbda) return;
@@ -8456,7 +8456,7 @@ void MCMC_PHYREX_Simulate_Backward_Plus(t_tree *tree)
   while(disk && disk->time > t) disk = disk->prev;
   target_disk = disk->next;
 
-  hr -= LOG(FABS((target_disk->prev->time - target_disk->time)/T));
+  hr -= log(FABS((target_disk->prev->time - target_disk->time)/T));
 
   bkp_disk = target_disk->prev;
 
@@ -8478,14 +8478,14 @@ void MCMC_PHYREX_Simulate_Backward_Plus(t_tree *tree)
   PHYREX_Simulate_Backward_Core(NO,target_disk,tree);
   
   T =  PHYREX_Tree_Height(tree);
-  hr += LOG(FABS((target_disk->prev->time - target_disk->time)/T));
+  hr += log(FABS((target_disk->prev->time - target_disk->time)/T));
 
   new_alnL = Lk(NULL,tree);
   ratio += (new_alnL - cur_alnL);
   ratio += (new_glnL_do - cur_glnL_do);
   ratio += hr;
   
-  ratio = EXP(ratio);
+  ratio = exp(ratio);
   alpha = MIN(1.,ratio);
     
  /* Always accept move */
@@ -8655,7 +8655,7 @@ void MCMC_PHYREX_Lineage_Traj(t_tree *tree)
       ratio += (new_glnL - cur_glnL);
       ratio += hr;
             
-      ratio = EXP(ratio);
+      ratio = exp(ratio);
       alpha = MIN(1.,ratio);
       
       if(tree->mcmc->always_yes == YES && new_glnL > UNLIKELY) alpha = 1.0;
@@ -8747,12 +8747,12 @@ void MCMC_PHYREX_Lbda_Times(t_tree *tree)
 
   disk = tree->disk;
   while(disk->prev != NULL) disk = disk->prev;
-  hr += (n_inter)*LOG(tree->mmod->lbda) + tree->mmod->lbda*disk->time;
+  hr += (n_inter)*log(tree->mmod->lbda) + tree->mmod->lbda*disk->time;
 
   new_glnL  = cur_glnL;
-  new_glnL -= (n_inter)*LOG(tree->mmod->lbda) + tree->mmod->lbda*disk->time;
-  new_lbda = cur_lbda * EXP(0.3*(Uni()-.5));
-  hr += LOG(new_lbda/cur_lbda);
+  new_glnL -= (n_inter)*log(tree->mmod->lbda) + tree->mmod->lbda*disk->time;
+  new_lbda = cur_lbda * exp(0.3*(Uni()-.5));
+  hr += log(new_lbda/cur_lbda);
 
   tree->mmod->lbda = new_lbda;
 
@@ -8769,9 +8769,9 @@ void MCMC_PHYREX_Lbda_Times(t_tree *tree)
 
   disk = tree->disk;
   while(disk->prev != NULL) disk = disk->prev;
-  hr -= n_inter*LOG(tree->mmod->lbda) + tree->mmod->lbda*disk->time;
+  hr -= n_inter*log(tree->mmod->lbda) + tree->mmod->lbda*disk->time;
   
-  new_glnL += n_inter*LOG(tree->mmod->lbda) + tree->mmod->lbda*disk->time;;
+  new_glnL += n_inter*log(tree->mmod->lbda) + tree->mmod->lbda*disk->time;;
   tree->mmod->c_lnL = new_glnL;
 
   new_alnL = Lk(NULL,tree);
@@ -8780,7 +8780,7 @@ void MCMC_PHYREX_Lbda_Times(t_tree *tree)
   ratio += (new_alnL - cur_alnL);
   ratio += hr;
             
-  ratio = EXP(ratio);
+  ratio = exp(ratio);
   alpha = MIN(1.,ratio);
 
   u = Uni();
@@ -8940,7 +8940,7 @@ void MCMC_PHYREX_Disk_Multi(t_tree *tree)
   ratio += (new_glnL - cur_glnL);
   ratio += hr;
   
-  ratio = EXP(ratio);
+  ratio = exp(ratio);
   alpha = MIN(1.,ratio);
   
   /* Always accept move */
@@ -9072,7 +9072,7 @@ void MCMC_PHYREX_Ldsk_Multi(t_tree *tree)
   ratio += (new_glnL - cur_glnL);
   ratio += hr;
   
-  ratio = EXP(ratio);
+  ratio = exp(ratio);
   alpha = MIN(1.,ratio);
   
   /* Always accept move */
@@ -9138,8 +9138,8 @@ void MCMC_PHYREX_Ldsk_And_Disk(t_tree *tree)
 
   tree->mcmc->run_move[tree->mcmc->num_move_phyrex_ldsk_and_disk]++;
 
-  new_rad = cur_rad * EXP(0.2*(Uni()-.5));
-  hr += LOG(new_rad/cur_rad);
+  new_rad = cur_rad * exp(0.2*(Uni()-.5));
+  hr += log(new_rad/cur_rad);
 
   if(new_rad > tree->mmod->max_rad) return;
   if(new_rad < tree->mmod->min_rad) return;
@@ -9206,7 +9206,7 @@ void MCMC_PHYREX_Ldsk_And_Disk(t_tree *tree)
   ratio += (new_glnL - cur_glnL);
   ratio += hr;
   
-  ratio = EXP(ratio);
+  ratio = exp(ratio);
   alpha = MIN(1.,ratio);
   
   /* Always accept move */
@@ -9336,7 +9336,7 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree)
       ratio += (new_glnL - cur_glnL);
       ratio += hr;
       
-      ratio = EXP(ratio);
+      ratio = exp(ratio);
       alpha = MIN(1.,ratio);
       
       u = Uni();
@@ -9439,7 +9439,7 @@ void MCMC_PHYREX_Disk_Given_Ldsk(t_tree *tree)
       ratio += (new_glnL - cur_glnL);
       ratio += hr;
       
-      ratio = EXP(ratio);
+      ratio = exp(ratio);
       alpha = MIN(1.,ratio);
       
       u = Uni();
@@ -9496,7 +9496,7 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
   type         = -1.0;
   n_trials     = (int)(PHYREX_Total_Number_Of_Hit_Disks(tree)/10);
   T            = PHYREX_Tree_Height(tree);
-  log_one_on_T = -LOG(FABS(T));
+  log_one_on_T = -log(FABS(T));
   pindel       = 0.5;
 
   disk = tree->disk->prev;
@@ -9520,14 +9520,14 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
       
       if(type < pindel) /* Insert */
         {
-          hr += LOG(FABS((t - disk->next->time)/T));
+          hr += log(FABS((t - disk->next->time)/T));
           hr -= log_one_on_T;
           
           young_disk = disk->next;
           assert(young_disk->n_ldsk_a);
           
           /* Which lineage is going to be hit ? */
-          hr -= LOG(1./young_disk->n_ldsk_a);
+          hr -= log(1./young_disk->n_ldsk_a);
 
           new_disk = PHYREX_Make_Disk_Event(tree->mmod->n_dim,tree->n_otu);
           PHYREX_Init_Disk_Event(new_disk,tree->mmod->n_dim,tree->mmod);
@@ -9597,7 +9597,7 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
           ratio  = (new_glnL - cur_glnL);
           ratio += hr;
           
-          ratio = EXP(ratio);
+          ratio = exp(ratio);
           alpha = MIN(1.,ratio);
           
           /* Always accept move */
@@ -9650,7 +9650,7 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
 
           /* Part of the Hastings ratio corresponding to the probability of selecting */
           /* one of disk->n_ldsk_a to be hit */ 
-          hr += LOG(1./target_disk->next->n_ldsk_a);
+          hr += log(1./target_disk->next->n_ldsk_a);
           
           /* Density for position of the displaced ldsk */
           for(j=0;j<tree->mmod->n_dim;j++)
@@ -9678,7 +9678,7 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
           old_ldsk->next[dir_old_young] = young_ldsk;
           young_ldsk->prev              = old_ldsk;
 
-          hr -= LOG(FABS((target_disk->time - target_disk->next->time)/T));
+          hr -= log(FABS((target_disk->time - target_disk->next->time)/T));
           hr += log_one_on_T;
           
           PHYREX_Remove_Disk(target_disk);
@@ -9688,7 +9688,7 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
           ratio  = (new_glnL - cur_glnL);
           ratio += hr;
           
-          ratio = EXP(ratio);
+          ratio = exp(ratio);
           alpha = MIN(1.,ratio);
           
           /* Always accept move */
@@ -9749,11 +9749,11 @@ void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree)
   type         = -1.0;
   n_trials     = (int)(PHYREX_Total_Number_Of_Intervals(tree)/2);
   T            = PHYREX_Tree_Height(tree);
-  log_one_on_T = -LOG(FABS(T));
+  log_one_on_T = -log(FABS(T));
   pindel       = 0.5;
 
   log_lk_centr = 0.0;
-  for(j=0;j<tree->mmod->n_dim;j++) log_lk_centr += LOG(1./tree->mmod->lim->lonlat[j]);
+  for(j=0;j<tree->mmod->n_dim;j++) log_lk_centr += log(1./tree->mmod->lim->lonlat[j]);
 
   disk = tree->disk->prev;
 
@@ -9777,7 +9777,7 @@ void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree)
       
       if(type < pindel) /* Insert */
         {
-          hr += LOG(FABS((t - disk->next->time)/T));
+          hr += log(FABS((t - disk->next->time)/T));
           hr -= log_one_on_T;
           hr -= log_lk_centr;
           
@@ -9797,7 +9797,7 @@ void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree)
           ratio  = (new_glnL - cur_glnL);
           ratio += hr;
           
-          ratio = EXP(ratio);
+          ratio = exp(ratio);
           alpha = MIN(1.,ratio);
           
           /* Always accept move */
@@ -9829,7 +9829,7 @@ void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree)
         {
           if(disk->ldsk != NULL) continue; /* Reject */
 
-          hr -= LOG(FABS((disk->time - disk->next->time)/T));
+          hr -= log(FABS((disk->time - disk->next->time)/T));
           hr += log_one_on_T;
           hr += log_lk_centr;
 
@@ -9842,7 +9842,7 @@ void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree)
           ratio  = (new_glnL - cur_glnL);
           ratio += hr;
           
-          ratio = EXP(ratio);
+          ratio = exp(ratio);
           alpha = MIN(1.,ratio);
           
           /* Always accept move */
