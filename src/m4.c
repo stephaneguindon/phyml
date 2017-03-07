@@ -627,8 +627,8 @@ phydbl ****M4_Integral_Term_On_One_Edge(t_edge *b, t_tree *tree)
     {
       for(g=0;g<tree->mod->ras->n_catg;g++)
 	{
-	  PMat(((phydbl)(i+0.5)/step)*b->l->v*tree->mod->ras->gamma_rr->v[g],tree->mod,g*ns*ns,P1);
-	  PMat(((phydbl)(step-i-0.5)/step)*b->l->v*tree->mod->ras->gamma_rr->v[g],tree->mod,g*ns*ns,P2);
+	  PMat(((phydbl)(i+0.5)/step)*b->l->v*tree->mod->ras->gamma_rr->v[g],tree->mod,g*ns*ns,P1,NULL);
+	  PMat(((phydbl)(step-i-0.5)/step)*b->l->v*tree->mod->ras->gamma_rr->v[g],tree->mod,g*ns*ns,P2,NULL);
 
 	  for(j=0;j<ns;j++)
 	    {

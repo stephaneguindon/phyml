@@ -251,8 +251,8 @@ void Update_P_Pars(t_tree *tree, t_edge *b_fcus, t_node *n)
   int i,j;
   int site;
   unsigned int *ui, *ui_v1, *ui_v2;
-  int *p_pars_v1, *p_pars_v2, *p_pars;
-  int *pars, *pars_v1, *pars_v2;
+  unsigned int *p_pars_v1, *p_pars_v2, *p_pars;
+  unsigned int *pars, *pars_v1, *pars_v2;
   int n_patterns;
   int min_v1,min_v2;
   int v;

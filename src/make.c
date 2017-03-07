@@ -56,11 +56,7 @@ void Make_Tree_4_Lk(t_tree *tree, calign *cdata, int n_site)
       For(i,2*tree->n_otu-2) Make_Node_Lk(tree->a_nodes[i]);
       For(i,2*tree->n_otu-1) Make_Edge_Loc(tree->a_edges[i],tree);
 
-      if(tree->mod->s_opt->greedy)
-        Init_P_Lk_Tips_Double(tree);
-      else
-        Init_P_Lk_Tips_Int(tree);
-
+      Init_P_Lk_Tips_Double(tree);
       Init_P_Lk_Loc(tree);
 
       if(tree->n_root != NULL)
@@ -199,9 +195,9 @@ void Make_Edge_Pars(t_edge *b, t_tree *tree)
 
 void Make_Edge_Pars_Left(t_edge *b, t_tree *tree)
 {
-  b->pars_l = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
+  b->pars_l = (unsigned int *)mCalloc(tree->data->crunch_len,sizeof(unsigned int));
   b->ui_l = (unsigned int *)mCalloc(tree->data->crunch_len,sizeof(unsigned int));
-  b->p_pars_l = (int *)mCalloc(tree->data->crunch_len*tree->mod->ns,sizeof(int ));
+  b->p_pars_l = (unsigned int *)mCalloc(tree->data->crunch_len*tree->mod->ns,sizeof(unsigned int ));
   b->n_diff_states_l = (int *)mCalloc(tree->mod->ns,sizeof(int ));
 }
 
@@ -210,9 +206,9 @@ void Make_Edge_Pars_Left(t_edge *b, t_tree *tree)
 
 void Make_Edge_Pars_Rght(t_edge *b, t_tree *tree)
 {
-  b->pars_r = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
+  b->pars_r = (unsigned int *)mCalloc(tree->data->crunch_len,sizeof(unsigned int));
   b->ui_r = (unsigned int *)mCalloc(tree->data->crunch_len,sizeof(unsigned int));
-  b->p_pars_r = (int *)mCalloc(tree->data->crunch_len*tree->mod->ns,sizeof(int ));
+  b->p_pars_r = (unsigned int *)mCalloc(tree->data->crunch_len*tree->mod->ns,sizeof(unsigned int ));
   b->n_diff_states_r = (int *)mCalloc(tree->mod->ns,sizeof(int ));
 }
 
@@ -232,11 +228,14 @@ void Make_Edge_Lk(t_edge *b, t_tree *tree)
 #if (defined(__AVX__) || defined(__SSE3__))
 #ifndef WIN32
   if(posix_memalign((void *)&b->Pij_rr,BYTE_ALIGN,(size_t)tree->mod->ras->n_catg*tree->mod->ns*tree->mod->ns*sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void *)&b->tPij_rr,BYTE_ALIGN,(size_t)tree->mod->ras->n_catg*tree->mod->ns*tree->mod->ns*sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 #else
   b->Pij_rr = _aligned_malloc(tree->mod->ras->n_catg*tree->mod->ns*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
+  b->tPij_rr = _aligned_malloc(tree->mod->ras->n_catg*tree->mod->ns*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
 #endif
 #else
   b->Pij_rr = (phydbl *)mCalloc(tree->mod->ras->n_catg*tree->mod->ns*tree->mod->ns,sizeof(phydbl));
+  b->tPij_rr = (phydbl *)mCalloc(tree->mod->ras->n_catg*tree->mod->ns*tree->mod->ns,sizeof(phydbl));
 #endif
 
   Make_Edge_Lk_Left(b,tree);
@@ -277,7 +276,16 @@ void Make_Edge_Lk_Left(t_edge *b, t_tree *tree)
       else if(b->left->tax)
         {
           b->p_lk_left   = NULL;
-          b->p_lk_tip_l  = (short int *)mCalloc(tree->data->crunch_len*tree->mod->ns,sizeof(short int ));
+          
+#if (defined(__AVX__) || defined(__SSE3__))
+#ifndef WIN32
+          if(posix_memalign((void **)&b->p_lk_tip_l,BYTE_ALIGN,(size_t)tree->data->crunch_len*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+#else
+          b->p_lk_tip_l = _aligned_malloc(tree->data->crunch_len*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
+#endif
+#else
+          b->p_lk_tip_l  = (phydbl *)mCalloc(tree->data->crunch_len*tree->mod->ns,sizeof(phydbl));
+#endif
         }
     }
   else
@@ -338,7 +346,15 @@ void Make_Edge_Lk_Rght(t_edge *b, t_tree *tree)
         }
       else if(b->rght->tax)
         {
-          b->p_lk_tip_r  = (short int *)mCalloc(tree->data->crunch_len*tree->mod->ns,sizeof(short int));
+#if (defined(__AVX__) || defined(__SSE3__))
+#ifndef WIN32
+          if(posix_memalign((void **)&b->p_lk_tip_r,BYTE_ALIGN,(size_t)tree->data->crunch_len*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+#else
+          b->p_lk_tip_r = _aligned_malloc(tree->data->crunch_len*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
+#endif
+#else
+          b->p_lk_tip_r  = (phydbl *)mCalloc(tree->data->crunch_len*tree->mod->ns,sizeof(phydbl));
+#endif
           b->p_lk_rght = NULL;
         }
     }

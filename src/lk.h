@@ -90,34 +90,21 @@ void Rate_Correction(int exponent, phydbl *site_lk_cat);
 int Check_Lk_At_Given_Edge(int verbose, t_tree *tree);
 void Ancestral_Sequences_One_Node(t_node *mixt_d, t_tree *mixt_tree, int print);
 void Ancestral_Sequences(t_tree *tree, int print);
-void Pull_Scaling_Factors(int site, t_edge *b, t_tree *tree);
 void Stepwise_Add_Lk(t_tree *tree);
 void Update_Eigen_Lr(t_edge *b, t_tree *tree);
 phydbl dLk(phydbl *l, t_edge *b, t_tree *tree);
-phydbl Lk_Core_One_Class(phydbl *p_lk_left, phydbl *p_lk_rght, 
-                         phydbl *Pij,
-                         short int *p_lk_tip_r,
-                         phydbl *expl, 
-                         int ns, int ambiguity_check, int state,
-                         t_edge *b, t_tree *tree);
+phydbl Lk_Core_One_Class(phydbl *p_lk_left, phydbl *p_lk_rght, phydbl *Pij, phydbl *p_lk_tip_r, phydbl *expl,  int ns, int ambiguity_check, int state, t_edge *b, t_tree *tree);
 
 
 
 #if defined(__AVX__)
-__m256d AVX_Horizontal_Add(__m256d x[4]);
 phydbl AVX_Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree);
 phydbl AVX_Lk_Core_Nucl(int state, int ambiguity_check, t_edge *b, t_tree *tree);
 phydbl AVX_Lk_Core_AA(int state, int ambiguity_check, t_edge *b, t_tree *tree);
-void AVX_Update_P_Lk_Nucl(t_tree *tree,t_edge *b_fcus,t_node *n);
-void AVX_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d);
-void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree);
 #elif defined(__SSE__)
 phydbl SSE_Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree);
 phydbl SSE_Lk_Core_Nucl(int state, int ambiguity_check, t_edge *b, t_tree *tree);
 phydbl SSE_Lk_Core_AA(int state, int ambiguity_check, t_edge *b, t_tree *tree);
-void SSE_Update_P_Lk_Nucl(t_tree *tree,t_edge *b_fcus,t_node *n);
-void SSE_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d);
-void SSE_Update_Eigen_Lr(t_edge *b, t_tree *tree);
 #endif
 
 

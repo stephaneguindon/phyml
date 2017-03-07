@@ -2567,7 +2567,7 @@ void Print_Model(t_mod *mod)
   PhyML_Printf("\n. Pij");
   for(k=0;k<mod->ras->n_catg;k++)
     {
-      PMat(0.01*mod->ras->gamma_rr->v[k],mod,mod->ns*mod->ns*k,mod->Pij_rr->v);
+      PMat(0.01*mod->ras->gamma_rr->v[k],mod,mod->ns*mod->ns*k,mod->Pij_rr->v,NULL);
       PhyML_Printf("\n. l=%f\n",0.01*mod->ras->gamma_rr->v[k]);
       for(i=0;i<mod->ns;i++)
         {
@@ -3656,7 +3656,7 @@ void Print_Edge_Likelihoods(t_tree* tree, t_edge* b, bool scientific/*Print in s
         fprintf(stdout,"Likelihoods on LEFT tip of Branch %d [site,state]:\n",b->num);
         for(site=0;site<tree->n_pattern;++site)
             for(j=0;j<tree->mod->ns;++j)
-                fprintf(stdout,"[%d,%d]%d ",site,j,b->p_lk_tip_l[site*tree->mod->ns + j]);
+              fprintf(stdout,"[%d,%d]%.1f ",site,j,b->p_lk_tip_l[site*tree->mod->ns + j]);
         fflush(stdout);
     }
     fprintf(stdout,"\n");fflush(stdout);
@@ -3678,7 +3678,7 @@ void Print_Edge_Likelihoods(t_tree* tree, t_edge* b, bool scientific/*Print in s
         fprintf(stdout,"Likelihoods on RIGHT tip of Branch %d [site,state]:\n",b->num);
         for(site=0;site<tree->n_pattern;++site)
             for(j=0;j<tree->mod->ns;++j)
-                fprintf(stdout,"[%d,%d]%d ",site,j,b->p_lk_tip_r[site*tree->mod->ns + j]);
+                fprintf(stdout,"[%d,%d]%.1f ",site,j,b->p_lk_tip_r[site*tree->mod->ns + j]);
         fflush(stdout);
     }
 }

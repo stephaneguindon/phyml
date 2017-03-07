@@ -565,6 +565,7 @@ typedef struct __Edge {
   int                         num_st_rght; /*! number of the subtree on the right side */
 
   phydbl                          *Pij_rr; /*! matrix of change probabilities and its first and secnd derivates (rate*state*state) */
+  phydbl                          *tPij_rr; /*! transpose matrix of change probabilities and its first and secnd derivates (rate*state*state) */
 #ifdef BEAGLE
   int                          Pij_rr_idx;
 #endif
@@ -576,7 +577,7 @@ typedef struct __Edge {
 
 
   phydbl            *p_lk_left,*p_lk_rght; /*! likelihoods of the subtree on the left and right side (for each site and each relative rate category) */
-  short int      *p_lk_tip_r, *p_lk_tip_l;
+  phydbl         *p_lk_tip_r, *p_lk_tip_l;
 #ifdef BEAGLE
   int        p_lk_left_idx, p_lk_rght_idx;
   int                        p_lk_tip_idx;
@@ -587,9 +588,9 @@ typedef struct __Edge {
   int                      *p_lk_loc_left;
   int                      *p_lk_loc_rght;
 
-  int                     *pars_l,*pars_r; /*! parsimony of the subtree on the left and right sides (for each site) */
+  unsigned int            *pars_l,*pars_r; /*! parsimony of the subtree on the left and right sides (for each site) */
   unsigned int               *ui_l, *ui_r; /*! union - intersection vectors used in Fitch's parsimony algorithm */
-  int                *p_pars_l, *p_pars_r; /*! conditional parsimony vectors */
+  unsigned int       *p_pars_l, *p_pars_r; /*! conditional parsimony vectors */
 
   /*! Below are the likelihood scaling factors (used in functions
      `Get_All_Partial_Lk_Scale' in lk.c. */
@@ -2147,7 +2148,7 @@ phydbl *Dist_Btw_Tips(t_tree *tree);
 void Random_SPRs_On_Rooted_Tree(t_tree *tree);
 
 
-void Set_P_Lk_One_Side(phydbl **Pij, phydbl **p_lk,  int **sum_scale, t_node *d, t_edge *b, t_tree *tree
+void Set_P_Lk_One_Side(phydbl **Pij, phydbl **tPij, phydbl **p_lk,  int **sum_scale, t_node *d, t_edge *b, t_tree *tree
 #ifdef BEAGLE
                        , int* child_p_idx, int* Pij_idx
 #endif
@@ -2156,8 +2157,8 @@ void Set_P_Lk_One_Side(phydbl **Pij, phydbl **p_lk,  int **sum_scale, t_node *d,
 
 void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
                                  phydbl **p_lk , int **sum_scale , int **p_lk_loc,
-                  phydbl **Pij1, phydbl **p_lk1, int **sum_scale1,
-                  phydbl **Pij2, phydbl **p_lk2, int **sum_scale2,
+                  phydbl **Pij1, phydbl **tPij1, phydbl **p_lk1, int **sum_scale1,
+                  phydbl **Pij2, phydbl **tPij2, phydbl **p_lk2, int **sum_scale2,
                   t_node *d, t_edge *b, t_tree *tree
 #ifdef BEAGLE
                   , int *dest_p_idx, int *child1_p_idx, int* child2_p_idx, int* Pij1_idx, int* Pij2_idx

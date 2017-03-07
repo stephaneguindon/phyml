@@ -201,11 +201,8 @@ phydbl Get_Lambda_F84(phydbl *pi, phydbl *kappa)
   return lambda;
 }
 
-
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
-
 
 /********************************************************************/
 /* void PMat_Empirical(phydbl l, t_mod *mod, phydbl ***Pij)         */
@@ -251,7 +248,7 @@ phydbl Get_Lambda_F84(phydbl *pi, phydbl *kappa)
 /*   8000 = 20x20x20 times the operation +                          */
 /********************************************************************/
 
-void PMat_Empirical(phydbl l, t_mod *mod, int pos, phydbl *Pij)
+void PMat_Empirical(phydbl l, t_mod *mod, int pos, phydbl *Pij, phydbl *tPij)
 {
   int n = mod->ns;
   int i, j, k;
@@ -288,6 +285,17 @@ void PMat_Empirical(phydbl l, t_mod *mod, int pos, phydbl *Pij)
       sum = 0.0;
       for(j=0;j<n;j++) sum += Pij[pos+mod->ns*i+j];
       for(j=0;j<n;j++) Pij[pos+mod->ns*i+j] /= sum;
+    }
+
+  if(tPij)
+    {
+      For (i,n)
+        {
+          For (j,n)
+            {
+              tPij[pos+mod->ns*i+j] = Pij[pos+mod->ns*j+i];
+            }
+        }
     }
 }
 
@@ -405,7 +413,7 @@ void PMat_Zero_Br_Len(t_mod *mod, int pos, phydbl *Pij)
  *  pos: offset into a specific rate-category
  *
  */
-void PMat(phydbl l, t_mod *mod, int pos, phydbl *Pij)
+void PMat(phydbl l, t_mod *mod, int pos, phydbl *Pij, phydbl *tPij)
 {
   /* Warning: l is never the log of branch length here */
   if(l < 0.0)
@@ -419,9 +427,9 @@ void PMat(phydbl l, t_mod *mod, int pos, phydbl *Pij)
     {
 #ifdef BEAGLE
       //when there is no active instance (i.e. when we are building the initial tree)
-      if(UNINITIALIZED == mod->b_inst) PMat_Empirical(l,mod,pos,Pij);
+      if(UNINITIALIZED == mod->b_inst) PMat_Empirical(l,mod,pos,Pij,tPij);
 #else
-      PMat_Empirical(l,mod,pos,Pij);
+      PMat_Empirical(l,mod,pos,Pij,tPij);
 #endif
     }
 }

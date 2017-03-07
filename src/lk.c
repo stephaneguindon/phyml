@@ -15,6 +15,24 @@ the GNU public licence. See http://www.opensource.org for details.
 #ifdef BEAGLE
 #include "beagle_utils.h"
 #endif
+#include <stdint.h>
+
+
+#if (defined(__AVX__))
+static void AVX_Update_P_Lk_Nucl(t_tree *tree,t_edge *b_fcus,t_node *n);
+static void AVX_Update_P_Lk_AA(t_tree *tree,t_edge *b_fcus,t_node *n);
+static inline __m256d AVX_Horizontal_Add(__m256d x[4]);
+static void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree);
+#endif
+
+
+#if (defined(__SSE__))
+static void SSE_Update_P_Lk_Nucl(t_tree *tree,t_edge *b_fcus,t_node *n);
+static void SSE_Update_P_Lk_AA(t_tree *tree,t_edge *b_fcus,t_node *n);
+static void SSE_Update_Eigen_Lr(t_edge *b, t_tree *tree);
+#endif
+
+static void Pull_Scaling_Factors(int site,t_edge *b,t_tree *tree);
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -1138,7 +1156,7 @@ void Update_Eigen_Lr(t_edge *b, t_tree *tree)
 //////////////////////////////////////////////////////////////
 
 #if (defined(__AVX__))
-void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree)
+static void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree)
 {
   int site,catg,state,is_ambigu,observed_state;
   int i,j,k,l;
@@ -1263,7 +1281,7 @@ void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree)
 //////////////////////////////////////////////////////////////
 
 #elif (defined(__SSE3__))
-void SSE_Update_Eigen_Lr(t_edge *b, t_tree *tree)
+static void SSE_Update_Eigen_Lr(t_edge *b, t_tree *tree)
 {
   int site,catg,state,is_ambigu,observed_state;
   int i,j,k,l;
@@ -1447,7 +1465,7 @@ void Rate_Correction(int exponent, phydbl *site_lk_cat)
  
 phydbl Lk_Core_One_Class(phydbl *p_lk_left, phydbl *p_lk_rght, 
                          phydbl *Pij,
-                         short int *p_lk_tip_r,
+                         phydbl *p_lk_tip_r,
                          phydbl *expl, 
                          int ns, int ambiguity_check, int state,
                          t_edge *b, t_tree *tree)
@@ -1468,7 +1486,7 @@ phydbl Lk_Core_One_Class(phydbl *p_lk_left, phydbl *p_lk_rght,
 #endif
 
 #if (defined(__AVX__))
-      int nblocks,sz;
+      unsigned int nblocks,sz;
 
       sz = (int)BYTE_ALIGN;
       sz /= 8;
@@ -1486,11 +1504,11 @@ phydbl Lk_Core_One_Class(phydbl *p_lk_left, phydbl *p_lk_rght,
       res = _aligned_malloc(sz * sizeof(phydbl),BYTE_ALIGN);
 #endif
       
-      for(l=0;l<nblocks;l++) _prod[l] = _mm256_load_pd(p_lk_left + l*sz);
-      for(l=0;l<nblocks;l++) _prod[l] = _mm256_mul_pd(_prod[l],_mm256_load_pd(p_lk_rght + l*sz));
-      for(l=0;l<nblocks;l++) _prod[l] = _mm256_mul_pd(_prod[l],_mm256_load_pd(expl + l*sz));
+      for(l=0;l<nblocks;++l) _prod[l] = _mm256_load_pd(p_lk_left + l*sz);
+      for(l=0;l<nblocks;++l) _prod[l] = _mm256_mul_pd(_prod[l],_mm256_load_pd(p_lk_rght + l*sz));
+      for(l=0;l<nblocks;++l) _prod[l] = _mm256_mul_pd(_prod[l],_mm256_load_pd(expl + l*sz));
       _x = _mm256_setzero_pd();
-      for(l=0;l<nblocks;l++) _x = _mm256_add_pd(_x,_prod[l]);
+      for(l=0;l<nblocks;++l) _x = _mm256_add_pd(_x,_prod[l]);
       _x = _mm256_hadd_pd(_x,_x);
       _y = _mm256_permute2f128_pd(_x,_x,0x21);
       _mm256_store_pd(res,_mm256_add_pd(_x,_y));
@@ -1499,7 +1517,7 @@ phydbl Lk_Core_One_Class(phydbl *p_lk_left, phydbl *p_lk_rght,
       
 #elif (defined(__SSE3__))
 
-      int nblocks,sz;
+      unsigned int nblocks,sz;
 
       sz = (int)BYTE_ALIGN;
       sz /= 8;
@@ -1517,9 +1535,9 @@ phydbl Lk_Core_One_Class(phydbl *p_lk_left, phydbl *p_lk_rght,
       res = _aligned_malloc(sz * sizeof(phydbl),BYTE_ALIGN);
 #endif
       
-      for(l=0;l<nblocks;l++) _prod[l] = _mm_load_pd(p_lk_left + l*sz);
-      for(l=0;l<nblocks;l++) _prod[l] = _mm_mul_pd(_prod[l],_mm_load_pd(p_lk_rght + l*sz));
-      for(l=0;l<nblocks;l++) _prod[l] = _mm_mul_pd(_prod[l],_mm_load_pd(expl + l*sz));
+      for(l=0;l<nblocks;++l) _prod[l] = _mm_load_pd(p_lk_left + l*sz);
+      for(l=0;l<nblocks;++l) _prod[l] = _mm_mul_pd(_prod[l],_mm_load_pd(p_lk_rght + l*sz));
+      for(l=0;l<nblocks;++l) _prod[l] = _mm_mul_pd(_prod[l],_mm_load_pd(expl + l*sz));
       _x = _mm_setzero_pd();
       for(l=0;l<nblocks;l++) _x = _mm_add_pd(_x,_prod[l]);
       _x = _mm_hadd_pd(_x,_x);
@@ -1721,6 +1739,7 @@ void Update_P_Lk_Generic(t_tree *tree, t_edge *b, t_node *d)
   phydbl p1_lk1,p2_lk2;
   phydbl *p_lk,*p_lk_v1,*p_lk_v2;
   phydbl *Pij1,*Pij2;
+  phydbl *tPij1,*tPij2;
   int *sum_scale, *sum_scale_v1, *sum_scale_v2;
   int sum_scale_v1_val, sum_scale_v2_val;
   int i,j;
@@ -1763,13 +1782,14 @@ void Update_P_Lk_Generic(t_tree *tree, t_edge *b, t_node *d)
   n_v1 = n_v2                 = NULL;
   p_lk = p_lk_v1 = p_lk_v2    = NULL;
   Pij1 = Pij2                 = NULL;
+  tPij1 = tPij2               = NULL;
   sum_scale_v1 = sum_scale_v2 = NULL;
   p_lk_loc                    = NULL;
 
   Set_All_P_Lk(&n_v1,&n_v2,
                &p_lk,&sum_scale,&p_lk_loc,
-               &Pij1,&p_lk_v1,&sum_scale_v1,
-               &Pij2,&p_lk_v2,&sum_scale_v2,
+               &Pij1,&tPij1,&p_lk_v1,&sum_scale_v1,
+               &Pij2,&tPij2,&p_lk_v2,&sum_scale_v2,
                d,b,tree);
 
   /* For every site in the alignment */
@@ -1962,14 +1982,17 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
 */
   t_node *n_v1, *n_v2;//d's "left" and "right" neighbor nodes
   phydbl p1_lk1,p2_lk2;//Partial likelihood at d's "left" neighbor, d's "right" neighbor
-  phydbl *p_lk,*p_lk_v1,*p_lk_v2;//Partial likelihood vector of node d, d's "left" neighbor, d's "right" neighbor. We fill *p_lk, and assume *p_lk_v1 and *p_lk_v2 are already filled.
+  phydbl *p_lk;
+  phydbl *p_lk_v1,*p_lk_v2;//Partial likelihood vector of node d, d's "left" neighbor, d's "right" neighbor. We fill *p_lk, and assume *p_lk_v1 and *p_lk_v2 are already filled.
   phydbl *Pij1,*Pij2;
+  phydbl *tPij1,*tPij2;
   int *sum_scale, *sum_scale_v1, *sum_scale_v2;
   int sum_scale_v1_val, sum_scale_v2_val;
   int i;//index over the number of states
-  int catg/*index over the number of rate categories*/,site;
-  int n_patterns;//Number of distinct site patterns
-  short int ambiguity_check_v1,ambiguity_check_v2;
+  int catg;
+  int site;
+  int n_patterns;
+  int ambiguity_check_v1,ambiguity_check_v2;
   int state_v1,state_v2;
   int dim1, dim2, dim3;
   phydbl curr_scaler;
@@ -2012,12 +2035,13 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
   n_v1 = n_v2                 = NULL;
   p_lk = p_lk_v1 = p_lk_v2    = NULL;
   Pij1 = Pij2                 = NULL;
+  tPij1 = tPij2               = NULL;
   sum_scale_v1 = sum_scale_v2 = NULL;
   p_lk_loc                    = NULL;
   Set_All_P_Lk(&n_v1,&n_v2,
                &p_lk,&sum_scale,&p_lk_loc,
-               &Pij1,&p_lk_v1,&sum_scale_v1,
-               &Pij2,&p_lk_v2,&sum_scale_v2,
+               &Pij1,&tPij1,&p_lk_v1,&sum_scale_v1,
+               &Pij2,&tPij2,&p_lk_v2,&sum_scale_v2,
                d,b,tree);
 
 
@@ -2284,6 +2308,7 @@ void Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
   phydbl p1_lk1,p2_lk2;
   phydbl *p_lk,*p_lk_v1,*p_lk_v2;
   phydbl *Pij1,*Pij2;
+  phydbl *tPij1,*tPij2;
   int *sum_scale, *sum_scale_v1, *sum_scale_v2;
   int sum_scale_v1_val, sum_scale_v2_val;
   int i;
@@ -2331,13 +2356,14 @@ void Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
   n_v1 = n_v2                 = NULL;
   p_lk = p_lk_v1 = p_lk_v2    = NULL;
   Pij1 = Pij2                 = NULL;
+  tPij1 = tPij2               = NULL;
   sum_scale_v1 = sum_scale_v2 = NULL;
   p_lk_loc                    = NULL;
 
   Set_All_P_Lk(&n_v1,&n_v2,
                &p_lk,&sum_scale,&p_lk_loc,
-               &Pij1,&p_lk_v1,&sum_scale_v1,
-               &Pij2,&p_lk_v2,&sum_scale_v2,
+               &Pij1,&tPij1,&p_lk_v1,&sum_scale_v1,
+               &Pij2,&tPij2,&p_lk_v2,&sum_scale_v2,
                d,b,tree);
 
   /* For every site in the alignment */
@@ -2744,7 +2770,7 @@ phydbl Lk_Given_Two_Seq(calign *data, int numseq1, int numseq2, phydbl dist, t_m
       len = dist*mod->ras->gamma_rr->v[i];
       if(len < mod->l_min) len = mod->l_min;
       else if(len > mod->l_max) len = mod->l_max;
-      PMat(len,mod,dim2*i,mod->Pij_rr->v);
+      PMat(len,mod,dim2*i,mod->Pij_rr->v,NULL);
     }
   
   if(mod->io->datatype == NT)
@@ -2852,10 +2878,9 @@ void Unconstraint_Lk(t_tree *tree)
 
 void Init_P_Lk_Tips_Double(t_tree *tree)
 {
-  int curr_site,i,j,k,dim1,dim2;
+  unsigned int curr_site,i,dim1;
 
-  dim1 = tree->mod->ras->n_catg * tree->mod->ns;
-  dim2 = tree->mod->ns;
+  dim1 = tree->mod->ns;
 
 
   for(i=0;i<tree->n_otu;i++)
@@ -2873,41 +2898,21 @@ void Init_P_Lk_Tips_Double(t_tree *tree)
       for(i=0;i<tree->n_otu;i++)
         {
           if (tree->io->datatype == NT)
-        /* Init_Tips_At_One_Site_Nucleotides_Float(tree->data->c_seq[i]->state[curr_site], */
-        /* 					    curr_site*dim1+0*dim2, */
-        /* 					    tree->a_nodes[i]->b[0]->p_lk_rght); */
             Init_Tips_At_One_Site_Nucleotides_Float(tree->a_nodes[i]->c_seq->state[curr_site],
-                                                    curr_site*dim1+0*dim2,
-                                                    tree->a_nodes[i]->b[0]->p_lk_rght);
+                                                    curr_site*dim1,
+                                                    tree->a_nodes[i]->b[0]->p_lk_tip_r);
 
           else if(tree->io->datatype == AA)
             Init_Tips_At_One_Site_AA_Float(tree->a_nodes[i]->c_seq->state[curr_site],
-                                           curr_site*dim1+0*dim2,
-                                           tree->a_nodes[i]->b[0]->p_lk_rght);
-        /* Init_Tips_At_One_Site_AA_Float(tree->data->c_seq[i]->state[curr_site], */
-        /* 				   curr_site*dim1+0*dim2, */
-        /* 				   tree->a_nodes[i]->b[0]->p_lk_rght); */
+                                           curr_site*dim1,
+                                           tree->a_nodes[i]->b[0]->p_lk_tip_r);
 
           else if(tree->io->datatype == GENERIC)
             Init_Tips_At_One_Site_Generic_Float(tree->a_nodes[i]->c_seq->state+curr_site*tree->mod->io->state_len,
                                                 tree->mod->ns,
                                                 tree->mod->io->state_len,
-                                                curr_site*dim1+0*dim2,
-                                                tree->a_nodes[i]->b[0]->p_lk_rght);
-        /* Init_Tips_At_One_Site_Generic_Float(tree->data->c_seq[i]->state+curr_site*tree->mod->io->state_len, */
-        /* 					tree->mod->ns, */
-        /* 					tree->mod->io->state_len, */
-        /* 					curr_site*dim1+0*dim2, */
-        /* 					tree->a_nodes[i]->b[0]->p_lk_rght); */
-
-          for(j=1;j<tree->mod->ras->n_catg;j++)
-            {
-              for(k=0;k<tree->mod->ns;k++)
-                {
-                  tree->a_nodes[i]->b[0]->p_lk_rght[curr_site*dim1+j*dim2+k] =
-                    tree->a_nodes[i]->b[0]->p_lk_rght[curr_site*dim1+0*dim2+k];
-                }
-            }
+                                                curr_site*dim1,
+                                                tree->a_nodes[i]->b[0]->p_lk_tip_r);
         }
     }
 
@@ -2944,34 +2949,34 @@ void Init_P_Lk_Tips_Int(t_tree *tree)
           /* printf("\n. init at %s %p",tree->a_nodes[i]->name,tree->a_nodes[i]->b[0]->p_lk_tip_r); fflush(NULL); */
           if(tree->io->datatype == NT)
             {
-              Init_Tips_At_One_Site_Nucleotides_Int(tree->a_nodes[i]->c_seq->state[curr_site],
+              Init_Tips_At_One_Site_Nucleotides_Float(tree->a_nodes[i]->c_seq->state[curr_site],
                                                     curr_site*dim1,
                                                     tree->a_nodes[i]->b[0]->p_lk_tip_r);
-          /* Init_Tips_At_One_Site_Nucleotides_Int(tree->data->c_seq[i]->state[curr_site], */
-          /* 					    curr_site*dim1, */
-          /* 					    tree->a_nodes[i]->b[0]->p_lk_tip_r); */
+              /* Init_Tips_At_One_Site_Nucleotides_Int(tree->data->c_seq[i]->state[curr_site], */
+              /* 					    curr_site*dim1, */
+              /* 					    tree->a_nodes[i]->b[0]->p_lk_tip_r); */
             }
           else if(tree->io->datatype == AA)
-            Init_Tips_At_One_Site_AA_Int(tree->a_nodes[i]->c_seq->state[curr_site],
-                         curr_site*dim1,
-                         tree->a_nodes[i]->b[0]->p_lk_tip_r);
-        /* Init_Tips_At_One_Site_AA_Int(tree->data->c_seq[i]->state[curr_site], */
-        /* 				 curr_site*dim1,					    */
-        /* 				 tree->a_nodes[i]->b[0]->p_lk_tip_r); */
-
+            Init_Tips_At_One_Site_AA_Float(tree->a_nodes[i]->c_seq->state[curr_site],
+                                           curr_site*dim1,
+                                           tree->a_nodes[i]->b[0]->p_lk_tip_r);
+          /* Init_Tips_At_One_Site_AA_Int(tree->data->c_seq[i]->state[curr_site], */
+          /* 				 curr_site*dim1,					    */
+          /* 				 tree->a_nodes[i]->b[0]->p_lk_tip_r); */
+          
           else if(tree->io->datatype == GENERIC)
             {
-              Init_Tips_At_One_Site_Generic_Int(tree->a_nodes[i]->c_seq->state+curr_site*tree->mod->io->state_len,
-                            tree->mod->ns,
-                            tree->mod->io->state_len,
-                            curr_site*dim1,
-                            tree->a_nodes[i]->b[0]->p_lk_tip_r);
-
-          /* Init_Tips_At_One_Site_Generic_Int(tree->data->c_seq[i]->state+curr_site*tree->mod->io->state_len, */
-          /* 					tree->mod->ns, */
-          /* 					tree->mod->io->state_len, */
-          /* 					curr_site*dim1, */
-          /* 					tree->a_nodes[i]->b[0]->p_lk_tip_r); */
+              Init_Tips_At_One_Site_Generic_Float(tree->a_nodes[i]->c_seq->state+curr_site*tree->mod->io->state_len,
+                                                  tree->mod->ns,
+                                                  tree->mod->io->state_len,
+                                                  curr_site*dim1,
+                                                  tree->a_nodes[i]->b[0]->p_lk_tip_r);
+              
+              /* Init_Tips_At_One_Site_Generic_Int(tree->data->c_seq[i]->state+curr_site*tree->mod->io->state_len, */
+              /* 					tree->mod->ns, */
+              /* 					tree->mod->io->state_len, */
+              /* 					curr_site*dim1, */
+              /* 					tree->a_nodes[i]->b[0]->p_lk_tip_r); */
             }
 #ifdef BEAGLE
           //Recall that tip partials are stored on the branch leading
@@ -3060,7 +3065,7 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
             assert(UNINITIALIZED != tree->mod->b_inst);
 #endif
                    
-            PMat(len,tree->mod,i*tree->mod->ns*tree->mod->ns,b_fcus->Pij_rr);
+            PMat(len,tree->mod,i*tree->mod->ns*tree->mod->ns,b_fcus->Pij_rr,b_fcus->tPij_rr);
           }
       else
           {
@@ -3220,7 +3225,7 @@ phydbl Lk_Dist(phydbl *F, phydbl dist, t_mod *mod)
       len = dist*mod->ras->gamma_rr->v[k];
       if(len < mod->l_min)      len = mod->l_min;
       else if(len > mod->l_max) len = mod->l_max;
-      PMat(len,mod,mod->ns*mod->ns*k,mod->Pij_rr->v);
+      PMat(len,mod,mod->ns*mod->ns*k,mod->Pij_rr->v,NULL);
     }
 
   dim1 = mod->ns*mod->ns;
@@ -4461,7 +4466,7 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
 // likelihood for each mixture using the part of the scaling
 // factors that is class-specific
  
- void Pull_Scaling_Factors(int site,
+void Pull_Scaling_Factors(int site,
                           t_edge *b,
                           t_tree *tree)
 {
@@ -4674,7 +4679,7 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
 //////////////////////////////////////////////////////////////
 
 #if defined(__AVX__)
-__m256d AVX_Horizontal_Add(__m256d x[4])
+static inline __m256d AVX_Horizontal_Add(__m256d x[4])
 {
   __m256d y[2],z[2];
 
@@ -5211,7 +5216,7 @@ phydbl AVX_Lk_Core_AA(int state, int ambiguity_check, t_edge *b, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
+static void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
 {
 /*
            |
@@ -5226,37 +5231,28 @@ void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
   t_node *n_v1, *n_v2;//d's "left" and "right" neighbor nodes
   phydbl *p_lk,*p_lk_v1,*p_lk_v2;//Partial likelihood vector of node d, d's "left" neighbor, d's "right" neighbor. We fill *p_lk, and assume *p_lk_v1 and *p_lk_v2 are already filled.
   phydbl *Pij1,*Pij2;
+  phydbl *tPij1,*tPij2;
   int *sum_scale, *sum_scale_v1, *sum_scale_v2;
   int sum_scale_v1_val, sum_scale_v2_val;
-  int i,j;//index over the number of states
-  int catg/*index over the number of rate categories*/,site;
-  int n_patterns;//Number of distinct site patterns
-  int dim1, dim2, dim3;
-  phydbl curr_scaler;
-  int curr_scaler_pow, piecewise_scaler_pow;
+  unsigned int  i,j;//index over the number of states
+  unsigned int catg;
+  unsigned int site;
   phydbl smallest_p_lk;
   short int ambiguity_check_v1,ambiguity_check_v2;
-  int state_v1,state_v2;
+  unsigned int state_v1,state_v2;
   phydbl p_lk_lim_inf;
-  int *p_lk_loc;//Suppose site j, of a certain subtree, has "A" on one tip, and "C" on the other. If you come across this pattern again at site i<j, then you can simply copy the partial likelihoods
-  phydbl *tip_v1,*tip_v2;
+  int *p_lk_loc; //Suppose site j, of a certain subtree, has "A" on one tip, and "C" on the other. If you come across this pattern again at site i<j, then you can simply copy the partial likelihoods
   __m256d _plk; // parent partial likelihood
   __m256d _plk1,_plk2; // sister partial likelihood vectors
   __m256d _pplk1[4],_pplk2[4]; // dot product of _p1[i] & _plk1 (resp. _p2[i] & _plk2)
   __m256d _pre_lk_all[16*tree->mod->ras->n_catg],_pre_lk_v1[4*tree->mod->ras->n_catg],_pre_lk_v2[4*tree->mod->ras->n_catg];
   __m256d _p1[4*tree->mod->ras->n_catg],_p2[4*tree->mod->ras->n_catg]; // matrices of transition probabilities
+  const unsigned int dim1 =  tree->mod->ras->n_catg * tree->mod->ns;
+  const unsigned int dim2 =  tree->mod->ns;
+  const unsigned int dim3 =  tree->mod->ns * tree->mod->ns;
+  
 
-  tip_v1   = NULL;
-  tip_v2   = NULL;
-#ifndef WIN32
-  if(posix_memalign((void **)&tip_v1,BYTE_ALIGN,(size_t)4*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-  if(posix_memalign((void **)&tip_v2,BYTE_ALIGN,(size_t)4*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-#else
-  tip_v1 = _aligned_malloc(4 * sizeof(phydbl),BYTE_ALIGN);
-  tip_v2 = _aligned_malloc(4 * sizeof(phydbl),BYTE_ALIGN);
-#endif
-
-
+  
   if(tree->n_root && tree->ignore_root == YES &&
      (d == tree->n_root->v[1] || d == tree->n_root->v[2]) &&
      (b == tree->n_root->b[1] || b == tree->n_root->b[2]))
@@ -5264,27 +5260,20 @@ void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
       assert(FALSE);
     }
 
-
-  dim1 = tree->mod->ras->n_catg * tree->mod->ns;//Dimension of a matrix L that holds rate-specific character likelihoods. IOW, L[ij] is the likelihood of character j in rate class i
-  dim2 = tree->mod->ns;
-  dim3 = tree->mod->ns * tree->mod->ns;//Dimensions of the transition prob. matrix
-
   sum_scale_v1_val = sum_scale_v2_val = 0;
-  curr_scaler = .0;
-  curr_scaler_pow = piecewise_scaler_pow = 0;
 
-  n_patterns = tree->n_pattern;
 
   p_lk_lim_inf                = (phydbl)P_LK_LIM_INF;
   n_v1 = n_v2                 = NULL;
   p_lk = p_lk_v1 = p_lk_v2    = NULL;
   Pij1 = Pij2                 = NULL;
+  tPij1 = tPij2               = NULL;
   sum_scale_v1 = sum_scale_v2 = NULL;
   p_lk_loc                    = NULL;
   Set_All_P_Lk(&n_v1,&n_v2,
                &p_lk,&sum_scale,&p_lk_loc,
-               &Pij1,&p_lk_v1,&sum_scale_v1,
-               &Pij2,&p_lk_v2,&sum_scale_v2,
+               &Pij1,&tPij1,&p_lk_v1,&sum_scale_v1,
+               &Pij2,&tPij2,&p_lk_v2,&sum_scale_v2,
                d,b,tree);  
   
   if(tree->mod->augmented == YES && n_v1 && n_v1->tax == NO)
@@ -5293,27 +5282,8 @@ void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
       PhyML_Printf("\n== allow augmented data.");
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
     }
-  
-  phydbl *tPij1,*tPij2;
-  tPij1 = NULL;
-  tPij2 = NULL;
-#ifndef WIN32
-  if(posix_memalign((void **)&tPij1,BYTE_ALIGN,(size_t)16*tree->mod->ras->n_catg*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-  if(posix_memalign((void **)&tPij2,BYTE_ALIGN,(size_t)16*tree->mod->ras->n_catg*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-#else
-  tPij1 = _aligned_malloc(16*tree->mod->ras->n_catg * sizeof(phydbl),BYTE_ALIGN);
-  tPij2 = _aligned_malloc(16*tree->mod->ras->n_catg * sizeof(phydbl),BYTE_ALIGN);
-#endif
-  
-  for(catg=0;catg<tree->mod->ras->n_catg;catg++)
-    for(i=0;i<4;i++)
-      for(j=0;j<4;j++)
-        {
-          tPij1[catg*dim3+i*dim2+j] = Pij1[catg*dim3+j*dim2+i];
-          tPij2[catg*dim3+i*dim2+j] = Pij2[catg*dim3+j*dim2+i];
-        }
-      
-  for(catg=0;catg<tree->mod->ras->n_catg;catg++)
+        
+  for(catg=0;catg<tree->mod->ras->n_catg;++catg)
     {
       for(j=0;j<16;j++)
         {
@@ -5328,29 +5298,12 @@ void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
       
       for(i=0;i<4;i++) _p1[4*catg+i] = _mm256_load_pd(Pij1 + catg*dim3 + i*dim2);
       for(i=0;i<4;i++) _p2[4*catg+i] = _mm256_load_pd(Pij2 + catg*dim3 + i*dim2);
-
     }
 
   
   /* For every site in the alignment */
-  for(site=0;site<n_patterns;site++)
+  for(site=0;site<tree->n_pattern;++site)
     {
-      if(n_v1->tax == YES)
-        {
-          tip_v1[0] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+0];
-          tip_v1[1] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+1];
-          tip_v1[2] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+2];
-          tip_v1[3] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+3];
-        }
-
-      if(n_v2->tax == YES)
-        {
-          tip_v2[0] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+0];
-          tip_v2[1] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+1];
-          tip_v2[2] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+2];
-          tip_v2[3] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+3];
-        }
-
       if(p_lk_loc[site] < site)
         {
           Copy_P_Lk(p_lk,p_lk_loc[site],site,tree);
@@ -5376,7 +5329,7 @@ void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
             }
           
           /* For all rate classes */
-          for(catg=0;catg<tree->mod->ras->n_catg;catg++)
+          for(catg=0;catg<tree->mod->ras->n_catg;++catg)
             {
               smallest_p_lk  =  BIG;
 
@@ -5390,9 +5343,9 @@ void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
               else if(n_v1->tax == YES && ambiguity_check_v1 == NO)
                 {
                   if(n_v2->tax == NO) _plk2 = _mm256_load_pd(p_lk_v2+site*dim1+catg*dim2);
-                  else _plk2 = _mm256_load_pd(tip_v2);
+                  else _plk2 = _mm256_load_pd(n_v2->b[0]->p_lk_tip_r + site*dim2);
 
-                  for(i=0;i<4;i++) _pplk2[i] = _mm256_mul_pd(_p2[catg*4+i],_plk2);
+                  for(i=0;i<4;++i) _pplk2[i] = _mm256_mul_pd(_p2[catg*4+i],_plk2);
 
                   _plk = _mm256_mul_pd(_pre_lk_v1[4*catg+state_v1],
                                        AVX_Horizontal_Add(_pplk2));
@@ -5400,26 +5353,28 @@ void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
               else if(n_v2->tax == YES && ambiguity_check_v2 == NO)
                 {
                   if(n_v1->tax == NO) _plk1 = _mm256_load_pd(p_lk_v1+site*dim1+catg*dim2);
-                  else _plk1 = _mm256_load_pd(tip_v1);
+                  else _plk1 = _mm256_load_pd(n_v1->b[0]->p_lk_tip_r + site*dim2);
 
-                  for(i=0;i<4;i++) _pplk1[i] = _mm256_mul_pd(_p1[catg*4+i],_plk1);
+                  for(i=0;i<4;++i) _pplk1[i] = _mm256_mul_pd(_p1[catg*4+i],_plk1);
 
                   _plk = _mm256_mul_pd(_pre_lk_v2[4*catg+state_v2],
                                        AVX_Horizontal_Add(_pplk1));
                 }
               else
-                {                  
-                  if(n_v1->tax == NO) _plk1 = _mm256_load_pd(p_lk_v1 + site*dim1+catg*dim2);
-                  else _plk1 = _mm256_load_pd(tip_v1);
+                {        
+
+                  if(n_v1->tax == NO) _plk1 = _mm256_load_pd(p_lk_v1 + site*dim1 + catg*dim2);
+                  else _plk1 = _mm256_load_pd(n_v1->b[0]->p_lk_tip_r + site*dim2);
                   
-                  if(n_v2->tax == NO) _plk2 = _mm256_load_pd(p_lk_v2 + site*dim1+catg*dim2);
-                  else _plk2 = _mm256_load_pd(tip_v2);
-                  
-                  for(i=0;i<4;i++) _pplk1[i] = _mm256_mul_pd(_p1[catg*4+i],_plk1);
-                  for(i=0;i<4;i++) _pplk2[i] = _mm256_mul_pd(_p2[catg*4+i],_plk2);
+                  if(n_v2->tax == NO) _plk2 = _mm256_load_pd(p_lk_v2 + site*dim1 + catg*dim2);
+                  else _plk2 = _mm256_load_pd(n_v2->b[0]->p_lk_tip_r + site*dim2);
+                                    
+                  for(i=0;i<4;++i) _pplk1[i] = _mm256_mul_pd(_p1[catg*4+i],_plk1);
+                  for(i=0;i<4;++i) _pplk2[i] = _mm256_mul_pd(_p2[catg*4+i],_plk2);
                   
                   _plk = _mm256_mul_pd(AVX_Horizontal_Add(_pplk1),
-                                       AVX_Horizontal_Add(_pplk2)); 
+                                       AVX_Horizontal_Add(_pplk2));
+
                 }
               
               _mm256_store_pd(p_lk+site*dim1+catg*dim2,_plk);
@@ -5437,15 +5392,15 @@ void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
               
               smallest_p_lk = BIG;
               if(n_v1->tax == NO && n_v2->tax == NO)
-                for(i=0;i<4;i++)
+                for(i=0;i<4;++i)
                   if(p_lk[site*dim1+catg*dim2+i] < smallest_p_lk)
                     smallest_p_lk = p_lk[site*dim1+catg*dim2+i] ;
 
               /* Current scaling values at that site */
-              sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[catg*n_patterns+site]):(0);
-              sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[catg*n_patterns+site]):(0);
+              sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[catg*tree->n_pattern+site]):(0);
+              sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[catg*tree->n_pattern+site]):(0);
               
-              sum_scale[catg*n_patterns+site] = sum_scale_v1_val + sum_scale_v2_val;
+              sum_scale[catg*tree->n_pattern+site] = sum_scale_v1_val + sum_scale_v2_val;
               
               /* Scaling. We have p_lk_lim_inf = 2^-500. Consider for instance that
                  smallest_p_lk = 2^-600, then curr_scaler_pow will be equal to 100, and
@@ -5454,20 +5409,22 @@ void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
               if(smallest_p_lk < p_lk_lim_inf &&
                  tree->mod->augmented == NO &&
                  tree->apply_lk_scaling == YES &&
-                 n_v1->tax == NO &&
-                 n_v2->tax == NO)
+                 (n_v1->tax == NO || n_v2->tax == NO))
                 {
+                  phydbl curr_scaler;
+                  int curr_scaler_pow, piecewise_scaler_pow;
+
                   curr_scaler_pow = (int)(-500.*LOG2-log(smallest_p_lk))/LOG2;
                   curr_scaler     = (phydbl)((unsigned long long)(1) << curr_scaler_pow);
                   
-                  sum_scale[catg*n_patterns+site] += curr_scaler_pow;
+                  sum_scale[catg*tree->n_pattern+site] += curr_scaler_pow;
                   
                   do
                     {
                       piecewise_scaler_pow = MIN(curr_scaler_pow,63);
                       curr_scaler = (phydbl)((unsigned long long)(1) << piecewise_scaler_pow);
                       
-                      for(i=0;i<tree->mod->ns;i++)
+                      for(i=0;i<tree->mod->ns;++i)
                         {
                           p_lk[site*dim1+catg*dim2+i] *= curr_scaler;
                           
@@ -5488,16 +5445,12 @@ void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
             }
         }
     }
-  Free(tip_v1);
-  Free(tip_v2);
-  Free(tPij1);
-  Free(tPij2);
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void AVX_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
+static void AVX_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
 {
 /*
            |
@@ -5512,33 +5465,22 @@ void AVX_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
   t_node *n_v1, *n_v2;//d's "left" and "right" neighbor nodes
   phydbl *p_lk,*p_lk_v1,*p_lk_v2;//Partial likelihood vector of node d, d's "left" neighbor, d's "right" neighbor. We fill *p_lk, and assume *p_lk_v1 and *p_lk_v2 are already filled.
   phydbl *Pij1,*Pij2;
+  phydbl *tPij1,*tPij2;
   int *sum_scale, *sum_scale_v1, *sum_scale_v2;
   int sum_scale_v1_val, sum_scale_v2_val;
   int i,j,k;
   int catg/*index over the number of rate categories*/,site;
-  int n_patterns;//Number of distinct site patterns
   int dim1, dim2, dim3;
   phydbl curr_scaler;
   int curr_scaler_pow, piecewise_scaler_pow;
   phydbl smallest_p_lk;
   phydbl p_lk_lim_inf;
   int *p_lk_loc;//Suppose site j, of a certain subtree, has "A" on one tip, and "C" on the other. If you come across this pattern again at site i<j, then you can simply copy the partial likelihoods
-  phydbl *tip_v1,*tip_v2;
   __m256d _plk; // parent partial likelihood
   __m256d _plk1[5],_plk2[5]; // sister partial likelihood vectors
   __m256d _p1[4],_p2[4]; // vector of transition probabilities
   __m256d _pplk1[4],_pplk2[4]; // dot product of _p1[i] & _plk1 (resp. _p2[i] & _plk2)
   
-
-  tip_v1 = tip_v2 = NULL;
-  
-#ifndef WIN32
-  if(posix_memalign((void **)&tip_v1,BYTE_ALIGN,(size_t)20*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-  if(posix_memalign((void **)&tip_v2,BYTE_ALIGN,(size_t)20*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-#else
-  tip_v1 = _aligned_malloc(20 * sizeof(phydbl),BYTE_ALIGN);
-  tip_v2 = _aligned_malloc(20 * sizeof(phydbl),BYTE_ALIGN);
-#endif
 
   if(tree->n_root && tree->ignore_root == YES &&
      (d == tree->n_root->v[1] || d == tree->n_root->v[2]) &&
@@ -5563,18 +5505,17 @@ void AVX_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
       Exit("\n");
     }
 
-  n_patterns = tree->n_pattern;
-
   p_lk_lim_inf                = (phydbl)P_LK_LIM_INF;
   n_v1 = n_v2                 = NULL;
   p_lk = p_lk_v1 = p_lk_v2    = NULL;
   Pij1 = Pij2                 = NULL;
+  tPij1 = tPij2                 = NULL;
   sum_scale_v1 = sum_scale_v2 = NULL;
   p_lk_loc                    = NULL;
   Set_All_P_Lk(&n_v1,&n_v2,
                &p_lk,&sum_scale,&p_lk_loc,
-               &Pij1,&p_lk_v1,&sum_scale_v1,
-               &Pij2,&p_lk_v2,&sum_scale_v2,
+               &Pij1,&tPij1,&p_lk_v1,&sum_scale_v1,
+               &Pij2,&tPij2,&p_lk_v2,&sum_scale_v2,
                d,b,tree);
 
   if(tree->mod->augmented == YES && n_v1 && n_v1->tax == NO)
@@ -5586,55 +5527,8 @@ void AVX_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
     }
 
   /* For every site in the alignment */
-  for(site=0;site<n_patterns;site++)
+  for(site=0;site<tree->n_pattern;++site)
     {
-      if(n_v1->tax == YES)
-        {
-          tip_v1[0]  = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+0];
-          tip_v1[1]  = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+1];
-          tip_v1[2]  = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+2];
-          tip_v1[3]  = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+3];
-          tip_v1[4]  = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+4];
-	  tip_v1[5]  = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+5];
-	  tip_v1[6]  = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+6];
-	  tip_v1[7]  = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+7];
-	  tip_v1[8]  = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+8];
-	  tip_v1[9]  = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+9];
-	  tip_v1[10] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+10];
-	  tip_v1[11] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+11];
-	  tip_v1[12] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+12];
-	  tip_v1[13] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+13];
-	  tip_v1[14] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+14];
-	  tip_v1[15] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+15];
-	  tip_v1[16] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+16];
-	  tip_v1[17] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+17];
-	  tip_v1[18] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+18];
-	  tip_v1[19] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+19];
-	}
-
-      if(n_v2->tax == YES)
-        {
-          tip_v2[0]  = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+0];
-          tip_v2[1]  = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+1];
-          tip_v2[2]  = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+2];
-          tip_v2[3]  = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+3];
-          tip_v2[4]  = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+4];
-	  tip_v2[5]  = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+5];
-	  tip_v2[6]  = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+6];
-	  tip_v2[7]  = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+7];
-	  tip_v2[8]  = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+8];
-	  tip_v2[9]  = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+9];
-	  tip_v2[10] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+10];
-	  tip_v2[11] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+11];
-	  tip_v2[12] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+12];
-	  tip_v2[13] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+13];
-	  tip_v2[14] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+14];
-	  tip_v2[15] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+15];
-	  tip_v2[16] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+16];
-	  tip_v2[17] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+17];
-	  tip_v2[18] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+18];
-	  tip_v2[19] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+19];
-	}
 
       if(p_lk_loc[site] < site)
         {
@@ -5655,7 +5549,7 @@ void AVX_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
 		}
               else
                 {
-                  for(i=0;i<5;i++) _plk1[i] = _mm256_load_pd(tip_v1 + i*4);
+                  for(i=0;i<5;i++) _plk1[i] = _mm256_load_pd(n_v1->b[0]->p_lk_tip_r + site*dim2 + i*4);
 		}
 
               if(n_v2->tax == NO)
@@ -5664,7 +5558,7 @@ void AVX_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
 		}
               else
                 {
-                  for(i=0;i<5;i++) _plk2[i] = _mm256_load_pd(tip_v2 + i*4);
+                  for(i=0;i<5;i++) _plk2[i] = _mm256_load_pd(n_v2->b[0]->p_lk_tip_r + site*dim2 + i*4);
 		}
 
 
@@ -5706,12 +5600,12 @@ void AVX_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
               for(i=0;i<20;i++) 
                 if(p_lk[site*dim1+catg*dim2+i] < smallest_p_lk) 
                   smallest_p_lk = p_lk[site*dim1+catg*dim2+i] ;
-
-              /* Current scaling values at that site */
-              sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[catg*n_patterns+site]):(0);
-              sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[catg*n_patterns+site]):(0);
               
-              sum_scale[catg*n_patterns+site] = sum_scale_v1_val + sum_scale_v2_val;
+              /* Current scaling values at that site */
+              sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[catg*tree->n_pattern + site]):(0);
+              sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[catg*tree->n_pattern + site]):(0);
+              
+              sum_scale[catg*tree->n_pattern + site] = sum_scale_v1_val + sum_scale_v2_val;
               
               /* Scaling. We have p_lk_lim_inf = 2^-500. Consider for instance that
                  smallest_p_lk = 2^-600, then curr_scaler_pow will be equal to 100, and
@@ -5722,7 +5616,7 @@ void AVX_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
                   curr_scaler_pow = (int)(-500.*LOG2-log(smallest_p_lk))/LOG2;
                   curr_scaler     = (phydbl)((unsigned long long)(1) << curr_scaler_pow);
                   
-                  sum_scale[catg*n_patterns+site] += curr_scaler_pow;
+                  sum_scale[catg*tree->n_pattern + site] += curr_scaler_pow;
                   
                   do
                     {
@@ -5748,9 +5642,6 @@ void AVX_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
             }
         }
     }
-
-  Free(tip_v1);
-  Free(tip_v2);
 }
 
 //////////////////////////////////////////////////////////////
@@ -6223,7 +6114,7 @@ phydbl SSE_Lk_Core_AA(int state, int ambiguity_check, t_edge *b, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void SSE_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
+static void SSE_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
 {
 /*
            |
@@ -6238,35 +6129,26 @@ void SSE_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
   t_node *n_v1, *n_v2;//d's "left" and "right" neighbor nodes
   phydbl *p_lk,*p_lk_v1,*p_lk_v2;//Partial likelihood vector of node d, d's "left" neighbor, d's "right" neighbor. We fill *p_lk, and assume *p_lk_v1 and *p_lk_v2 are already filled.
   phydbl *Pij1,*Pij2;
+  phydbl *tPij1,*tPij2;
   int *sum_scale, *sum_scale_v1, *sum_scale_v2;
   int sum_scale_v1_val, sum_scale_v2_val;
-  int i,j,k;
-  int catg/*index over the number of rate categories*/,site;
-  int n_patterns;//Number of distinct site patterns
-  int dim1, dim2, dim3;
-  phydbl curr_scaler;
-  int curr_scaler_pow, piecewise_scaler_pow;
+  unsigned int  i,j,k;
+  unsigned int catg/*index over the number of rate categories*/;
+  unsigned int site;
   phydbl smallest_p_lk;
-  phydbl p_lk_lim_inf;
-  int *p_lk_loc;//Suppose site j, of a certain subtree, has "A" on one tip, and "C" on the other. If you come across this pattern again at site i<j, then you can simply copy the partial likelihoods
   short int ambiguity_check_v1,ambiguity_check_v2;
-  int state_v1,state_v2;
-  phydbl *tip_v1,*tip_v2;
+  unsigned int state_v1,state_v2;
+  phydbl p_lk_lim_inf;
+  int *p_lk_loc; //Suppose site j, of a certain subtree, has "A" on one tip, and "C" on the other. If you come across this pattern again at site i<j, then you can simply copy the partial likelihoods
   __m128d _plk[2];
   __m128d _plk1[2],_plk2[2];
   __m128d _pplk1[2],_pplk2[2];
   __m128d _pre_lk_all[32*tree->mod->ras->n_catg],_pre_lk_v1[32*tree->mod->ras->n_catg],_pre_lk_v2[32*tree->mod->ras->n_catg];
   __m128d _p1[8*tree->mod->ras->n_catg],_p2[8*tree->mod->ras->n_catg]; // matrices of transition probabilities
+  const unsigned int dim1 =  tree->mod->ras->n_catg * tree->mod->ns;
+  const unsigned int dim2 =  tree->mod->ns;
+  const unsigned int dim3 =  tree->mod->ns * tree->mod->ns;
 
-  tip_v1   = NULL;
-  tip_v2   = NULL;
-#ifndef WIN32
-  if(posix_memalign((void **)&tip_v1,BYTE_ALIGN,(size_t)4*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-  if(posix_memalign((void **)&tip_v2,BYTE_ALIGN,(size_t)4*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-#else
-  tip_v1   = _aligned_malloc(4 * sizeof(phydbl),BYTE_ALIGN);
-  tip_v2   = _aligned_malloc(4 * sizeof(phydbl),BYTE_ALIGN);
-#endif
 
 
   if(tree->n_root && tree->ignore_root == YES &&
@@ -6277,13 +6159,7 @@ void SSE_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
     }
 
 
-  dim1 = tree->mod->ras->n_catg * tree->mod->ns;//Dimension of a matrix L that holds rate-specific character likelihoods. IOW, L[ij] is the likelihood of character j in rate class i
-  dim2 = tree->mod->ns;
-  dim3 = tree->mod->ns * tree->mod->ns;//Dimensions of the transition prob. matrix
-
   sum_scale_v1_val = sum_scale_v2_val = 0;
-  curr_scaler = .0;
-  curr_scaler_pow = piecewise_scaler_pow = 0;
 
   if(d->tax)
     {
@@ -6292,18 +6168,18 @@ void SSE_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
       Exit("\n");
     }
 
-  n_patterns = tree->n_pattern;
 
   p_lk_lim_inf                = (phydbl)P_LK_LIM_INF;
   n_v1 = n_v2                 = NULL;
   p_lk = p_lk_v1 = p_lk_v2    = NULL;
   Pij1 = Pij2                 = NULL;
+  tPij1 = tPij2               = NULL;
   sum_scale_v1 = sum_scale_v2 = NULL;
   p_lk_loc                    = NULL;
   Set_All_P_Lk(&n_v1,&n_v2,
                &p_lk,&sum_scale,&p_lk_loc,
-               &Pij1,&p_lk_v1,&sum_scale_v1,
-               &Pij2,&p_lk_v2,&sum_scale_v2,
+               &Pij1,&tPij1,&p_lk_v1,&sum_scale_v1,
+               &Pij2,&tPij2,&p_lk_v2,&sum_scale_v2,
                d,b,tree);
 
   if(tree->mod->augmented == YES && n_v1 && n_v1->tax == NO)
@@ -6313,24 +6189,6 @@ void SSE_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
     }
 
-  phydbl *tPij1,*tPij2;
-  tPij1 = NULL;
-  tPij2 = NULL;
-#ifndef WIN32
-  if(posix_memalign((void **)&tPij1,BYTE_ALIGN,(size_t)16*tree->mod->ras->n_catg*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-  if(posix_memalign((void **)&tPij2,BYTE_ALIGN,(size_t)16*tree->mod->ras->n_catg*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-#else
-  tPij1 = _aligned_malloc(16*tree->mod->ras->n_catg * sizeof(phydbl),BYTE_ALIGN);
-  tPij2 = _aligned_malloc(16*tree->mod->ras->n_catg * sizeof(phydbl),BYTE_ALIGN);
-#endif
-
-  for(catg=0;catg<tree->mod->ras->n_catg;catg++)
-    for(i=0;i<4;i++)
-      for(j=0;j<4;j++)
-        {
-          tPij1[catg*dim3+i*dim2+j] = Pij1[catg*dim3+j*dim2+i];
-          tPij2[catg*dim3+i*dim2+j] = Pij2[catg*dim3+j*dim2+i];
-        }
 
   for(catg=0;catg<tree->mod->ras->n_catg;catg++)
     {
@@ -6352,25 +6210,8 @@ void SSE_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
     }
 
   /* For every site in the alignment */
-  for(site=0;site<n_patterns;site++)
+  for(site=0;site<tree->n_pattern;++site)
     {
-      
-      if(n_v1->tax == YES)
-        {
-          tip_v1[0] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+0];
-          tip_v1[1] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+1];
-          tip_v1[2] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+2];
-          tip_v1[3] = (phydbl)n_v1->b[0]->p_lk_tip_r[site*dim2+3];
-        }
-
-      if(n_v2->tax == YES)
-        {
-          tip_v2[0] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+0];
-          tip_v2[1] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+1];
-          tip_v2[2] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+2];
-          tip_v2[3] = (phydbl)n_v2->b[0]->p_lk_tip_r[site*dim2+3];
-        }
-
       if(p_lk_loc[site] < site)
         {
           Copy_P_Lk(p_lk,p_lk_loc[site],site,tree);
@@ -6394,14 +6235,10 @@ void SSE_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
               ambiguity_check_v2 = n_v2->c_seq->is_ambigu[site];
               if(ambiguity_check_v2 == NO) state_v2 = n_v2->c_seq->d_state[site];
             }
-
-
-
           
           /* For all rate classes */
-          for(catg=0;catg<tree->mod->ras->n_catg;catg++)
-            {
-              
+          for(catg=0;catg<tree->mod->ras->n_catg;++catg)
+            {              
               smallest_p_lk  =  BIG;
               
               if(n_v1->tax == YES &&
@@ -6414,7 +6251,7 @@ void SSE_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
               else if(n_v1->tax == YES && ambiguity_check_v1 == NO)
                 {
                   if(n_v2->tax == NO) for(k=0;k<2;k++) _plk2[k] = _mm_load_pd(p_lk_v2 + site*dim1 + catg*dim2 + 2*k);
-                  else for(k=0;k<2;k++) _plk2[k] = _mm_load_pd(tip_v2 + 2*k);
+                  else for(k=0;k<2;k++) _plk2[k] = _mm_load_pd(n_v2->b[0]->p_lk_tip_r + site*dim2 + 2*k);
                   
                   for(j=0;j<2;j++)
                     {
@@ -6431,7 +6268,7 @@ void SSE_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
               else if(n_v2->tax == YES && ambiguity_check_v2 == NO)
                 {
                   if(n_v1->tax == NO) for(k=0;k<2;k++) _plk1[k] = _mm_load_pd(p_lk_v1 + site*dim1 + catg*dim2 + 2*k);
-                  else for(k=0;k<2;k++) _plk1[k] = _mm_load_pd(tip_v1 + 2*k);
+                  else for(k=0;k<2;k++) _plk1[k] = _mm_load_pd(n_v1->b[0]->p_lk_tip_r + site*dim2 + 2*k);
                                     
                   for(j=0;j<2;j++)
                     {
@@ -6450,12 +6287,12 @@ void SSE_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                   if(n_v1->tax == NO)
                     for(i=0;i<2;i++) _plk1[i] = _mm_load_pd(p_lk_v1 + site*dim1 + catg*dim2 + i*2);
                   else
-                    for(i=0;i<2;i++) _plk1[i] = _mm_load_pd(tip_v1 + i*2);
+                    for(i=0;i<2;i++) _plk1[i] = _mm_load_pd(n_v1->b[0]->p_lk_tip_r + site*dim2 + i*2);
                   
                   if(n_v2->tax == NO)
                     for(i=0;i<2;i++) _plk2[i] = _mm_load_pd(p_lk_v2 + site*dim1 + catg*dim2 + i*2);
                   else
-                    for(i=0;i<2;i++) _plk2[i] = _mm_load_pd(tip_v2 + i*2);
+                    for(i=0;i<2;i++) _plk2[i] = _mm_load_pd(n_v2->b[0]->p_lk_tip_r + site*dim2 + i*2);
 		
                   for(j=0;j<2;j++)
                     {
@@ -6483,10 +6320,10 @@ void SSE_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                   smallest_p_lk = p_lk[site*dim1+catg*dim2+i] ;
 
               /* Current scaling values at that site */
-              sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[catg*n_patterns+site]):(0);
-              sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[catg*n_patterns+site]):(0);
+              sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[catg*tree->n_pattern + site]):(0);
+              sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[catg*tree->n_pattern + site]):(0);
               
-              sum_scale[catg*n_patterns+site] = sum_scale_v1_val + sum_scale_v2_val;
+              sum_scale[catg*tree->n_pattern + site] = sum_scale_v1_val + sum_scale_v2_val;
               
               /* Scaling. We have p_lk_lim_inf = 2^-500. Consider for instance that
                  smallest_p_lk = 2^-600, then curr_scaler_pow will be equal to 100, and
@@ -6494,10 +6331,13 @@ void SSE_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                  2^100. */
               if(smallest_p_lk < p_lk_lim_inf && tree->mod->augmented == NO)
                 {
+                  phydbl curr_scaler;
+                  int curr_scaler_pow, piecewise_scaler_pow;
+
                   curr_scaler_pow = (int)(-500.*LOG2-log(smallest_p_lk))/LOG2;
                   curr_scaler     = (phydbl)((unsigned long long)(1) << curr_scaler_pow);
                   
-                  sum_scale[catg*n_patterns+site] += curr_scaler_pow;
+                  sum_scale[catg*tree->n_pattern + site] += curr_scaler_pow;
                   
                   do
                     {
@@ -6522,16 +6362,12 @@ void SSE_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
             }
         }
     }
-  Free(tip_v1);
-  Free(tip_v2);
-  Free(tPij1);
-  Free(tPij2);
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void SSE_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
+static void SSE_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
 {
 /*
            |
@@ -6546,6 +6382,7 @@ void SSE_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
   t_node *n_v1, *n_v2;//d's "left" and "right" neighbor nodes
   phydbl *p_lk,*p_lk_v1,*p_lk_v2;//Partial likelihood vector of node d, d's "left" neighbor, d's "right" neighbor. We fill *p_lk, and assume *p_lk_v1 and *p_lk_v2 are already filled.
   phydbl *Pij1,*Pij2;
+  phydbl *tPij1,*tPij2;
   int *sum_scale, *sum_scale_v1, *sum_scale_v2;
   int sum_scale_v1_val, sum_scale_v2_val;
   int i,j,k;
@@ -6589,12 +6426,13 @@ void SSE_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
   n_v1 = n_v2                 = NULL;
   p_lk = p_lk_v1 = p_lk_v2    = NULL;
   Pij1 = Pij2                 = NULL;
+  tPij1 = tPij2               = NULL;
   sum_scale_v1 = sum_scale_v2 = NULL;
   p_lk_loc                    = NULL;
   Set_All_P_Lk(&n_v1,&n_v2,
                &p_lk,&sum_scale,&p_lk_loc,
-               &Pij1,&p_lk_v1,&sum_scale_v1,
-               &Pij2,&p_lk_v2,&sum_scale_v2,
+               &Pij1,&tPij1,&p_lk_v1,&sum_scale_v1,
+               &Pij2,&tPij2,&p_lk_v2,&sum_scale_v2,
                d,b,tree);
 
   if(tree->mod->augmented == YES && n_v1 && n_v1->tax == NO)

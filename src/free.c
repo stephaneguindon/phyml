@@ -409,6 +409,8 @@ void Free_Tree_Lk(t_tree *mixt_tree)
             {
               Free(tree->n_root->b[1]->Pij_rr);
               Free(tree->n_root->b[2]->Pij_rr);
+              Free(tree->n_root->b[1]->tPij_rr);
+              Free(tree->n_root->b[2]->tPij_rr);
               Free_Edge_Lk_Left(tree->n_root->b[1]);
               Free_Edge_Lk_Left(tree->n_root->b[2]);
               Free_Edge_Loc_Left(tree->n_root->b[1]);
@@ -481,6 +483,7 @@ void Free_Edge_Lk_Left(t_edge *b)
 
 void Free_Edge_Lk(t_edge *b)
 {
+  Free(b->tPij_rr);
   Free(b->Pij_rr);
   Free_Edge_Lk_Left(b);
   Free_Edge_Lk_Rght(b);
