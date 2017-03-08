@@ -930,9 +930,8 @@ void Check_NNI_Scores_Around(t_node *a, t_node *d, t_edge *b, phydbl *best_score
 */
 void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
 {
-  int i;
+  unsigned int i;
 
-  /* PhyML_Printf("\n. a:%3d d:%3d v:%3d",a->num,d->num,v?v->num:-1); */
   
   if(d->tax == YES)
     {
@@ -959,7 +958,7 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
       lk2 = UNLIKELY;
       
       v1 = v2 = NULL;
-      for(i=0;i<3;i++)
+      for(i=0;i<3;++i)
         if(d->v[i] != a)
           {
             if(v1 == NULL) v1 = d->v[i];
@@ -979,14 +978,12 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
       
 
       u = NULL;
-      for(i=0;i<3;i++) if(a->v[i] != d && a->v[i] != v) { u = a->v[i]; break; }
+      for(i=0;i<3;++i) if(a->v[i] != d && a->v[i] != v) { u = a->v[i]; break; }
       
 
       // Optimize edge length
       Br_Len_Brent(b,tree);
-      /* lk0 = Lk(b,tree); */
       lk0 = tree->c_lnL;
-      /* l0 = b->l->v; */
       Record_Br_Len(tree);
 
       l0 = MIXT_Get_Mean_Edge_Len(b,tree);
@@ -999,7 +996,6 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
           // Update partial likelihood looking down
           Update_P_Lk(tree,b,d);
           // Evaluate likelihood
-          /* Br_Len_Brent(b,tree); */
           lk1 = Lk(b,tree);
           lk1 = tree->c_lnL;
           
@@ -1015,7 +1011,6 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
               // Update partial likelihood looking down
               Update_P_Lk(tree,b,d);
               // Evaluate likelihood
-              /* Br_Len_Brent(b,tree); */
               lk2 = Lk(b,tree);
               lk2 = tree->c_lnL;
               
@@ -1027,31 +1022,12 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
                   // Update partial likelihood looking up and down
                   Update_P_Lk(tree,b,a);
                   Restore_Br_Len(tree);
-                  /* b->l->v = l0; */
-                  /* tree->c_lnL = lk0; */
                   Lk(b,tree);
                 }
-              /* else */
-              /*   { */
-              /*     printf("\n l0: %f -- lk0: %f lk1: %f lk2: %f",b->l->v,lk0,lk1,lk2); */
-              /*   } */
-              
-              
-              /* Swap(u,d,a,v1,tree); */
-              /* // Update partial likelihood looking up and down */
-              /* Update_P_Lk(tree,b,a); */
-              /* Restore_Br_Len(tree); */
-              /* /\* b->l->v = l0; *\/ */
-              /* /\* tree->c_lnL = lk0; *\/ */
-              /* Lk(b,tree); */
             }
-          /* else */
-          /*   { */
-          /*     printf("\n l0: %f -- lk0: %f lk1: %f",b->l->v,lk0,lk1); */
-          /*   } */
         }
       
-      for(i=0;i<3;i++)
+      for(i=0;i<3;++i)
         if(d->v[i] != a)
           {
             Update_P_Lk(tree,d->b[i],d);
