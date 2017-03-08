@@ -812,7 +812,7 @@ void Free_Model(t_mod *mod)
 
 void Free(void *p)
 {
-#if (defined(__AVX__) || defined(__SSE3__))
+#if (defined(__AVX__) || defined(__SSE__))
 #ifndef WIN32
   free(p);
 #else

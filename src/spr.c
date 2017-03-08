@@ -4766,13 +4766,13 @@ void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int d
 
 void Spr_List_Of_Trees(t_tree *tree)
 {
-  unsigned int i,list_size,max_list_size,*rk;
+  unsigned int i,list_size,max_list_size;
+  int *rk;
   t_tree **tree_list;
   phydbl *lnL_list,best_lnL;
 
   const unsigned int list_size_first_round  = 10;
   const unsigned int list_size_second_round = 5;
-  const unsigned int list_size_third_round  = 1;
 
   best_lnL      = UNLIKELY;
   tree->verbose = (tree->verbose == VL0) ? VL0 : VL1;

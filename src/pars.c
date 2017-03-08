@@ -248,15 +248,15 @@ void Update_P_Pars(t_tree *tree, t_edge *b_fcus, t_node *n)
         /     \
 */
 
-  int i,j;
-  int site;
+  unsigned int i,j;
+  unsigned int site;
   unsigned int *ui, *ui_v1, *ui_v2;
   unsigned int *p_pars_v1, *p_pars_v2, *p_pars;
   unsigned int *pars, *pars_v1, *pars_v2;
-  int n_patterns;
+  unsigned int n_patterns;
   int min_v1,min_v2;
   int v;
-  int dim1;
+  unsigned int dim1;
 
   if(tree->is_mixt_tree)
     {
@@ -355,19 +355,19 @@ void Update_P_Pars(t_tree *tree, t_edge *b_fcus, t_node *n)
   
   if(tree->mod->s_opt->general_pars)
     {
-      for(site=0;site<n_patterns;site++)
+      for(site=0;site<n_patterns;++site)
         {
-          for(i=0;i<tree->mod->ns;i++)
+          for(i=0;i<tree->mod->ns;++i)
             {
               min_v1 = MAX_PARS;
-              for(j=0;j<tree->mod->ns;j++)
+              for(j=0;j<tree->mod->ns;++j)
                 {
                   v = p_pars_v1[site*dim1+j] + tree->step_mat[i*tree->mod->ns+j];
                   if(v < min_v1) min_v1 = v;
                 }
               
               min_v2 = MAX_PARS;
-              for(j=0;j<tree->mod->ns;j++)
+              for(j=0;j<tree->mod->ns;++j)
                 {
                   v = p_pars_v2[site*dim1+j] + tree->step_mat[i*tree->mod->ns+j];
                   if(v < min_v2) min_v2 = v;
@@ -378,7 +378,7 @@ void Update_P_Pars(t_tree *tree, t_edge *b_fcus, t_node *n)
     }
   else
     {
-      for(site=0;site<n_patterns;site++)
+      for(site=0;site<n_patterns;++site)
         {
           pars[site] = pars_v1[site] + pars_v2[site];
           

@@ -101,7 +101,9 @@ phydbl Lk_Core_One_Class(phydbl *p_lk_left, phydbl *p_lk_rght, phydbl *Pij, phyd
 phydbl AVX_Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree);
 phydbl AVX_Lk_Core_Nucl(int state, int ambiguity_check, t_edge *b, t_tree *tree);
 phydbl AVX_Lk_Core_AA(int state, int ambiguity_check, t_edge *b, t_tree *tree);
-#elif defined(__SSE__)
+#endif
+
+#if defined(__SSE3__)
 phydbl SSE_Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree);
 phydbl SSE_Lk_Core_Nucl(int state, int ambiguity_check, t_edge *b, t_tree *tree);
 phydbl SSE_Lk_Core_AA(int state, int ambiguity_check, t_edge *b, t_tree *tree);
