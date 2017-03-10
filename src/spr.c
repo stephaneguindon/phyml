@@ -4854,7 +4854,7 @@ void Spr_List_Of_Trees(t_tree *tree)
           Lk(NULL,tree);
           tree->best_lnL = tree->c_lnL;
           Spr(tree->c_lnL,1.0,tree);
-          /* tree->mod->s_opt->max_depth_path = MAX(tree->max_spr_depth,10); */
+          tree->mod->s_opt->max_depth_path = MAX(tree->max_spr_depth,10);
         }
       while(tree->n_improvements > 5);
 
