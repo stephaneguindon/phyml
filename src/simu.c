@@ -1019,8 +1019,10 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
               if(lk2 < lk0)
                 {
                   Swap(u,d,a,v2,tree);
-                  // Update partial likelihood looking up and down
+                  // Update partial likelihood looking up
                   Update_P_Lk(tree,b,a);
+                  // Update partial likelihood looking down
+                  Update_P_Lk(tree,b,d);
                   Restore_Br_Len(tree);
                   Lk(b,tree);
                 }
