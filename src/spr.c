@@ -4771,8 +4771,8 @@ void Spr_List_Of_Trees(t_tree *tree)
   t_tree **tree_list;
   phydbl *lnL_list,best_lnL;
 
-  const unsigned int list_size_first_round  = 10;
-  const unsigned int list_size_second_round = 5;
+  const unsigned int list_size_first_round  = 15;
+  const unsigned int list_size_second_round = 3;
 
   best_lnL      = UNLIKELY;
   tree->verbose = (tree->verbose == VL0) ? VL0 : VL1;
@@ -4836,7 +4836,7 @@ void Spr_List_Of_Trees(t_tree *tree)
     {
       Copy_Tree(tree_list[rk[list_size]],tree);
 
-      if(list_size == 0) Round_Optimize(tree,5);
+      if(list_size == 0) Round_Optimize(tree,ROUND_MAX);
       
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
