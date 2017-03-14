@@ -4871,6 +4871,22 @@ void Spr_List_Of_Trees(t_tree *tree)
   rk = Ranks(lnL_list,max_list_size);
   Copy_Tree(tree_list[rk[0]],tree);
 
+
+  
+  tree->mod->s_opt->max_depth_path    = tree->n_otu;
+  tree->mod->s_opt->spr_lnL           = YES;
+  tree->mod->s_opt->spr_pars          = NO;
+  tree->mod->s_opt->min_diff_lk_move  = 0.1;
+  tree->mod->s_opt->eval_list_regraft = YES;
+  tree->mod->s_opt->max_delta_lnL_spr = 100.;
+  
+  Set_Both_Sides(YES,tree);
+  Lk(NULL,tree);
+  Spr(tree->c_lnL,1.0,tree);
+  
+
+
+  
   tree->mod->s_opt->min_diff_lk_move  = 0.01;
   do
     {
