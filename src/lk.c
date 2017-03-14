@@ -497,14 +497,14 @@ if(tree->rates && tree->io->lk_approx == NORMAL)
  eigen_lr_left = tree->eigen_lr_left;
  eigen_lr_rght = tree->eigen_lr_rght;
  dot_prod      = tree->dot_prod;
-
  
-  if(b == NULL) Set_Model_Parameters(tree->mod);
+ 
+ if(b == NULL) Set_Model_Parameters(tree->mod);
     
   
-  if(tree->mod->s_opt->skip_tree_traversal == NO)
+ if(tree->mod->s_opt->skip_tree_traversal == NO)
     {
-      if(!b)//Update PMat for all edges
+      if(!b) //Update PMat for all edges
         {
           for(br=0;br<2*tree->n_otu-3;br++) Update_PMat_At_Given_Edge(tree->a_edges[br],tree);
           if(tree->n_root && tree->ignore_root == NO)
@@ -1017,22 +1017,22 @@ void Update_Eigen_Lr(t_edge *b, t_tree *tree)
   dim2 = tree->mod->ns;
   observed_state = -1;
   
-  for(site=0;site<tree->n_pattern;site++)
+  for(site=0;site<tree->n_pattern;++site)
     {
       is_ambigu = YES;
       if(b->rght->tax == YES) is_ambigu = b->rght->c_seq->is_ambigu[site];
       if(is_ambigu == NO) observed_state = b->rght->c_seq->d_state[site];
 
-      for(catg=0;catg<tree->mod->ras->n_catg;catg++)
+      for(catg=0;catg<tree->mod->ras->n_catg;++catg)
         {
           // Dot product left partial likelihood with equilibrium freqs
           for(state=0;state<tree->mod->ns;state++) dum[state] = b->p_lk_left[site*dim1 + catg*dim2 + state] * tree->mod->e_frq->pi->v[state];
 
           // Multiply by matrix of right eigen vectors
-          for(state=0;state<tree->mod->ns;state++)
+          for(state=0;state<tree->mod->ns;++state)
             {
               dumdum[state] = 0.0;
-              for(i=0;i<tree->mod->ns;i++)
+              for(i=0;i<tree->mod->ns;++i)
                 {
                   dumdum[state] += 
                     dum[i] * 
@@ -1040,12 +1040,12 @@ void Update_Eigen_Lr(t_edge *b, t_tree *tree)
                 }
             }
 
-          for(state=0;state<tree->mod->ns;state++) tree->eigen_lr_left[site*dim1 + catg*dim2 + state] = dumdum[state];
+          for(state=0;state<tree->mod->ns;++state) tree->eigen_lr_left[site*dim1 + catg*dim2 + state] = dumdum[state];
 
           if(b->rght->tax == YES)
-            for(state=0;state<tree->mod->ns;state++) dum[state] = (phydbl)b->p_lk_tip_r[site*dim2 + state]; 
+            for(state=0;state<tree->mod->ns;++state) dum[state] = (phydbl)b->p_lk_tip_r[site*dim2 + state]; 
           else
-            for(state=0;state<tree->mod->ns;state++) dum[state] = b->p_lk_rght[site*dim1 + catg*dim2 + state]; 
+            for(state=0;state<tree->mod->ns;++state) dum[state] = b->p_lk_rght[site*dim1 + catg*dim2 + state]; 
 
 
           
@@ -1053,7 +1053,7 @@ void Update_Eigen_Lr(t_edge *b, t_tree *tree)
             {
               /* Multiply  matrix of left eigen vectors by vector of partial likelihoods on  */
               /* the righthand side of b */
-              for(state=0;state<tree->mod->ns;state++)
+              for(state=0;state<tree->mod->ns;++state)
                 {
                   dumdum[state] = 0.0;
                   for(i=0;i<tree->mod->ns;i++)
@@ -1066,12 +1066,12 @@ void Update_Eigen_Lr(t_edge *b, t_tree *tree)
             }
           else
             {
-              for(state=0;state<tree->mod->ns;state++)
+              for(state=0;state<tree->mod->ns;++state)
                 {
                   dumdum[state] = tree->mod->eigen->l_e_vect[state*dim2 + observed_state] * dum[observed_state];
                 }
             }          
-          for(state=0;state<tree->mod->ns;state++) tree->eigen_lr_rght[site*dim1 + catg*dim2 + state] = dumdum[state];
+          for(state=0;state<tree->mod->ns;++state) tree->eigen_lr_rght[site*dim1 + catg*dim2 + state] = dumdum[state];
         }
     }
   Free(dum);
@@ -1085,25 +1085,22 @@ void Update_Eigen_Lr(t_edge *b, t_tree *tree)
 static void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree)
 {
   int site,catg,state,is_ambigu,observed_state;
-  int i,j,k,l;
-  int dim1,dim2,nblocks,ns,sz;
-  phydbl *tip;
+  unsigned int i,j,k,l;
   
-  ns = tree->mod->ns;
-  sz = (int)BYTE_ALIGN;
-  sz /= 8; // number of floating precision numbers in a __mm256d variable
-    
-  assert(sz == 4);
-  
-  assert(tree->update_eigen_lr == YES);
-  
-  dim1           = tree->mod->ras->n_catg * tree->mod->ns;
-  dim2           = tree->mod->ns;
-  nblocks        = tree->mod->ns / sz;
-  observed_state = -1;
-  
+  unsigned const int ns = tree->mod->ns;
+  unsigned const int sz = (int)BYTE_ALIGN / 8;  
+  unsigned const int dim1 = tree->mod->ras->n_catg * ns;
+  unsigned const int dim2 = ns;
+  unsigned const int nblocks = ns / sz;
+
   __m256d _fplk[nblocks],_fplkev[sz],_colsum[nblocks];
   phydbl *ev;
+
+      
+  assert(sz == 4);  
+  assert(tree->update_eigen_lr == YES);
+  observed_state = -1;
+  
 
   ev = NULL;
 #ifndef WIN32
@@ -1111,41 +1108,30 @@ static void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree)
 #else
   ev = _aligned_malloc(sz * sizeof(phydbl),BYTE_ALIGN);
 #endif
-
-  tip = NULL;
-  if(b->rght->tax == YES)
-    {
-#ifndef WIN32
-      if(posix_memalign((void **)&tip,BYTE_ALIGN,(size_t)ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-#else
-      tip = _aligned_malloc(ns * sizeof(phydbl),BYTE_ALIGN);
-#endif
-    }
-  
-  
-  for(site=0;site<tree->n_pattern;site++)
+    
+  for(site=0;site<tree->n_pattern;++site)
     {
       is_ambigu = YES;
       if(b->rght->tax == YES) is_ambigu = b->rght->c_seq->is_ambigu[site];
       if(is_ambigu == NO) observed_state = b->rght->c_seq->d_state[site];
 
-      for(catg=0;catg<tree->mod->ras->n_catg;catg++)
+      for(catg=0;catg<tree->mod->ras->n_catg;++catg)
         {
           // Dot product left partial likelihood with equilibrium freqs
-          for(i=0;i<nblocks;i++) _fplk[i] = _mm256_mul_pd(_mm256_load_pd(&(b->p_lk_left[site*dim1 + catg*dim2 + i*sz])),
+          for(i=0;i<nblocks;++i) _fplk[i] = _mm256_mul_pd(_mm256_load_pd(&(b->p_lk_left[site*dim1 + catg*dim2 + i*sz])),
                                                           _mm256_load_pd(&(tree->mod->e_frq->pi->v[i*sz])));
           
-          for(i=0;i<nblocks;i++) _colsum[i] = _mm256_setzero_pd();
+          for(i=0;i<nblocks;++i) _colsum[i] = _mm256_setzero_pd();
           // Multiply by matrix of right eigen vectors
           // This matrix is made of nblocks*nblocks squares,
           // each square being of 'area' sz*sz
-          for(i=0;i<nblocks;i++) // row 
+          for(i=0;i<nblocks;++i) // row 
             {
-              for(j=0;j<nblocks;j++) // column
+              for(j=0;j<nblocks;++j) // column
                 {
-                  for(k=0;k<sz;k++) // column in sz*sz square
+                  for(k=0;k<sz;++k) // column in sz*sz square
                     {
-                      for(l=0;l<sz;l++) // row in that same square
+                      for(l=0;l<sz;++l) // row in that same square
                         {
                           // Copy right eigen vector values column-by-column in block (i,j)
                           ev[l] = tree->mod->eigen->r_e_vect[i*nblocks*sz*sz + j*sz + l*nblocks*sz + k];
@@ -1155,30 +1141,29 @@ static void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree)
                   _colsum[j] = _mm256_add_pd(_colsum[j],AVX_Horizontal_Add(_fplkev));
                 }
             }          
-          for(j=0;j<nblocks;j++) _mm256_store_pd(&(tree->eigen_lr_left[site*dim1 + catg*dim2 + j*sz]),_colsum[j]);
+          for(j=0;j<nblocks;++j) _mm256_store_pd(&(tree->eigen_lr_left[site*dim1 + catg*dim2 + j*sz]),_colsum[j]);
 
 
           if(b->rght->tax == YES)
             {
-              for(i=0;i<ns;i++) tip[i] = b->p_lk_tip_r[site*dim2 + i];
-              for(i=0;i<nblocks;i++) _fplk[i] = _mm256_load_pd(tip + i*sz); 
+              for(i=0;i<nblocks;++i) _fplk[i] = _mm256_load_pd(b->p_lk_tip_r + site*dim2 + i*sz); 
             }
           else
-            for(i=0;i<nblocks;i++) _fplk[i] = _mm256_load_pd(&(b->p_lk_rght[site*dim1 + catg*dim2 + i*sz])); 
+            for(i=0;i<nblocks;++i) _fplk[i] = _mm256_load_pd(&(b->p_lk_rght[site*dim1 + catg*dim2 + i*sz])); 
 
           if(is_ambigu == YES)
             {
-              for(i=0;i<nblocks;i++) _colsum[i] = _mm256_setzero_pd();
+              for(i=0;i<nblocks;++i) _colsum[i] = _mm256_setzero_pd();
               // Multiply by matrix of right eigen vectors
               // This matrix is made of nblocks*nblocks squares,
               // each square being of 'area' sz*sz
-              for(i=0;i<nblocks;i++) // row
+              for(i=0;i<nblocks;++i) // row
                 {
-                  for(j=0;j<nblocks;j++) // column
+                  for(j=0;j<nblocks;++j) // column
                     {
-                      for(l=0;l<sz;l++) // row in that same square
+                      for(l=0;l<sz;++l) // row in that same square
                         {
-                          for(k=0;k<sz;k++) // column in sz*sz square
+                          for(k=0;k<sz;++k) // column in sz*sz square
                             {
                               // Copy left eigen vector values column-by-column in block (i,j)
                               ev[k] = tree->mod->eigen->l_e_vect[i*nblocks*sz*sz + j*sz + l*nblocks*sz + k];
@@ -1188,19 +1173,17 @@ static void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree)
                       _colsum[i] = _mm256_add_pd(_colsum[i],AVX_Horizontal_Add(_fplkev));
                     }
                 }
-              for(j=0;j<nblocks;j++) _mm256_store_pd(&(tree->eigen_lr_rght[site*dim1 + catg*dim2 + j*sz]),_colsum[j]);
+              for(j=0;j<nblocks;++j) _mm256_store_pd(&(tree->eigen_lr_rght[site*dim1 + catg*dim2 + j*sz]),_colsum[j]);
             }
           else
             {
-              for(state=0;state<tree->mod->ns;state++)
+              for(state=0;state<ns;++state)
                 tree->eigen_lr_rght[site*dim1 + catg*dim2 + state] =
                   tree->mod->eigen->l_e_vect[state*dim2 + observed_state];
             }
         }
     }
-
   if(ev)  Free(ev);
-  if(tip) Free(tip);
 }
 #endif
 //////////////////////////////////////////////////////////////
@@ -1211,25 +1194,18 @@ static void SSE_Update_Eigen_Lr(t_edge *b, t_tree *tree)
 {
   unsigned int site,catg,state,is_ambigu,observed_state;
   unsigned int i,j,k,l;
-  unsigned int sz;
   const unsigned int dim1 = tree->mod->ras->n_catg * tree->mod->ns;
   const unsigned int dim2 = tree->mod->ns;
-
-  sz = (int)BYTE_ALIGN;
-  sz /= 8; // number of double floating precision numbers in a __mm256d variable: 16/8=2
-
-  assert(sz == 2);
-  
-  const unsigned int nblocks = tree->mod->ns / sz;  
-
-  assert(tree->update_eigen_lr == YES);
-  
-
-  observed_state = -1;
-  
+  const unsigned int sz = (int)BYTE_ALIGN / 8;  
+  const unsigned int nblocks = tree->mod->ns / sz;    
   __m128d _fplk[nblocks],_fplkev[sz],_colsum[nblocks];
   phydbl *ev;
+  
+  assert(sz == 2);
+  assert(tree->update_eigen_lr == YES);
+  observed_state = -1;
 
+  
   ev = NULL;
 #ifndef WIN32
   if(posix_memalign((void **)&ev,BYTE_ALIGN,(size_t)sz*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
