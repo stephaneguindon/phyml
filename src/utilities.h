@@ -706,6 +706,13 @@ typedef struct __Tree{
 
   phydbl                       *eigen_lr_left;
   phydbl                       *eigen_lr_rght;
+  phydbl                            *dot_prod;
+
+  phydbl                                *expl;
+  phydbl                               *expld;
+  phydbl                              *expld2;
+
+
   phydbl                             init_lnL;
   phydbl                             best_lnL; /*! highest value of the loglikelihood found so far */
   int                               best_pars; /*! highest value of the parsimony found so far */

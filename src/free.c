@@ -392,6 +392,10 @@ void Free_Tree_Lk(t_tree *mixt_tree)
       Free(tree->fact_sum_scale);
       Free(tree->eigen_lr_left);
       Free(tree->eigen_lr_rght);
+      Free(tree->dot_prod);
+      Free(tree->expl);
+      Free(tree->expld);
+      Free(tree->expld2);
 
       for(i=0;i<3;i++) Free(tree->log_lks_aLRT[i]);
       Free(tree->log_lks_aLRT);
@@ -812,7 +816,7 @@ void Free_Model(t_mod *mod)
 
 void Free(void *p)
 {
-#if (defined(__AVX__) || defined(__SSE__))
+#if (defined(__AVX__) || defined(__SSE3__))
 #ifndef WIN32
   free(p);
 #else

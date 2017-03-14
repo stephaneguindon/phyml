@@ -47,8 +47,8 @@ AC_FUNC_SETVBUF_REVERSED
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([floor pow rint sqrt strchr strstr])
 
-VECTOR_FLAG=-march=native
-dnl VECTOR_FLAG=-msse3
+dnl VECTOR_FLAG=-march=native
+VECTOR_FLAG=-msse3
 dnl VECTOR_FLAG=-mavx
 dnl VECTOR_FLAG=
 
@@ -58,8 +58,9 @@ dnl Uncomment two rows below when compiling rwarp (need to have libtool installe
 dnl LT_INIT
 dnl AC_PROG_LIBTOOL
 
-DEFAULT_C_FLAG="-O2 -fomit-frame-pointer -funroll-loops ${VECTOR_FLAG}"
-dnl DEFAULT_C_FLAG="-Wall -O0 ${VECTOR_FLAG}"
+DEFAULT_C_FLAG="-O2 -fomit-frame-pointer -funroll-loops -Wall ${VECTOR_FLAG}"
+dnl DEFAULT_C_FLAG="-O3 ${VECTOR_FLAG}"
+dnl DEFAULT_C_FLAG="-Wall -Os ${VECTOR_FLAG}"
 
 AC_ARG_ENABLE([debug],
               [AS_HELP_STRING([--enable-debug],

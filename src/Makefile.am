@@ -642,7 +642,6 @@ rates.c rates.h\
 mcmc.c mcmc.h\
 times.c times.h\
 tiporder.c tiporder.h\
-mg.c mg.h\
 m4.c m4.h\
 io.c io.h\
 make.c make.h\

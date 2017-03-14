@@ -296,38 +296,6 @@ void Get_All_Partial_Lk_Scale(t_tree *tree, t_edge *b_fcus, t_node *a, t_node *d
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-/* void Post_Order_Lk(t_node *a, t_node *d, t_tree *tree) */
-/* { */
-/*   int i,dir; */
-
-/*   if(tree->is_mixt_tree == YES) */
-/*     { */
-/*       MIXT_Post_Order_Lk(a,d,tree); */
-/*       return; */
-/*     } */
-
-/*   dir = -1; */
-
-/*   if(d->tax)  */
-/*     { */
-/*       Get_All_Partial_Lk_Scale(tree,d->b[0],a,d); */
-/*       return; */
-/*     } */
-/*   else */
-/*     { */
-/*       for(i=0;i<3;i++) */
-/* 	{ */
-/* 	  if(d->v[i] != a) */
-/* 	    Post_Order_Lk(d,d->v[i],tree); */
-/* 	  else dir = i; */
-/* 	}       */
-/*       Get_All_Partial_Lk_Scale(tree,d->b[dir],a,d); */
-/*     } */
-/* } */
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
 void Post_Order_Lk(t_node *a, t_node *d, t_tree *tree)
 {
   int i,dir;
@@ -480,9 +448,12 @@ void Update_All_P_Lk(t_tree *tree)
 
 phydbl Lk(t_edge *b, t_tree *tree)
 {
-  int br,catg,state;
-  phydbl len,*expl;
-
+  unsigned int br,catg,state,ambiguity_check,site;
+  phydbl len,*expl,*eigen_lr_left,*eigen_lr_rght,*dot_prod;
+  const unsigned int ns = tree->mod->ns;
+  const unsigned int ncatg = tree->mod->ras->n_catg;
+  const unsigned int npatterns = tree->n_pattern;
+  
   if(tree->eval_alnL == NO) return UNLIKELY;
 
   if(b == NULL && tree->mod->s_opt->curr_opt_free_rates == YES)
@@ -522,8 +493,12 @@ if(tree->rates && tree->io->lk_approx == NORMAL)
       return tree->c_lnL;
     }
   
-  expl = NULL;
+ expl          = tree->expl;
+ eigen_lr_left = tree->eigen_lr_left;
+ eigen_lr_rght = tree->eigen_lr_rght;
+ dot_prod      = tree->dot_prod;
 
+ 
   if(b == NULL) Set_Model_Parameters(tree->mod);
     
   
@@ -603,30 +578,27 @@ if(tree->rates && tree->io->lk_approx == NORMAL)
 #else
 
   if(tree->update_eigen_lr == YES) Update_Eigen_Lr(b,tree);
- 
+  
   if(tree->use_eigen_lr == YES)
-    {
-      expl = (phydbl *)mCalloc(tree->mod->ras->n_catg*tree->mod->ns,sizeof(phydbl));
-
-      for(catg=0;catg<tree->mod->ras->n_catg;catg++)
+    {      
+      for(catg=0; catg < ncatg; catg++)
         {
           len = MAX(0.0,b->l->v)*tree->mod->ras->gamma_rr->v[catg];
           len *= tree->mod->br_len_mult->v;
           if(tree->mixt_tree != NULL)  len *= tree->mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number];
           if(len < tree->mod->l_min)      len = tree->mod->l_min;
           else if(len > tree->mod->l_max) len = tree->mod->l_max;
-          for(state=0;state<tree->mod->ns;state++) expl[catg*tree->mod->ns+state] = (phydbl)POW(tree->mod->eigen->e_val[state],len);
+          for(state=0; state < ns; ++state) expl[catg*tree->mod->ns+state] = (phydbl)POW(tree->mod->eigen->e_val[state],len);
         }
     }
 
 
-  int n_patterns,ambiguity_check;
-  n_patterns = tree->n_pattern;
-  for(tree->curr_site=0;tree->curr_site < n_patterns;tree->curr_site++)
+  for(site=0; site < npatterns; ++site)
     {
       ambiguity_check = -1;
       state           = -1;
-
+      tree->curr_site = site;
+      
       if(tree->data->wght[tree->curr_site] > SMALL)
         {
           if((b->rght->tax) && (tree->mod->s_opt->greedy == NO))
@@ -640,13 +612,22 @@ if(tree->rates && tree->io->lk_approx == NORMAL)
 
           if(tree->mod->use_m4mod) ambiguity_check = YES;
           
-#if (defined(__AVX__))
-          AVX_Lk_Core(state,ambiguity_check,b,tree);
-#elif (defined(__SSE3__))
-          SSE_Lk_Core(state,ambiguity_check,b,tree);
-#else
-          Lk_Core(state,ambiguity_check,YES,NO,b,expl,tree);
-#endif
+          if(tree->use_eigen_lr == YES)
+            {
+              Dot_Prod_Eigen_Lr(eigen_lr_left + site*ns*ncatg,
+                                eigen_lr_rght + site*ns*ncatg,
+                                expl,tree);
+              Lk_Core(-1,-1,YES,NO,b,expl,dot_prod,NULL,NULL,NULL,NULL,tree);
+            }
+          else
+            {
+              Lk_Core(state,ambiguity_check,YES,NO,
+                      b,NULL,NULL,
+                      b->p_lk_left  + site*ns*ncatg,
+                      b->p_lk_rght  + site*ns*ncatg,
+                      b->p_lk_tip_r + site*ns,
+                      b->Pij_rr,tree);
+            }
         }
     }
 #endif
@@ -662,14 +643,22 @@ if(tree->rates && tree->io->lk_approx == NORMAL)
 // to the length of edge b
 phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
 {
-  unsigned int catg,state;
-  phydbl len,*expl,*expld,*expld2,rr;
+  unsigned int catg,state,site;
+  phydbl len,rr;
   phydbl lk,dlk,d2lk,dlnlk,d2lnlk,loglk,c_lnL;
   phydbl ev,expevlen;
-  /* const unsigned int dim1 = tree->mod->ras->n_catg * tree->mod->ns; */
-  /* const unsigned int dim2 = tree->mod->ns; */
-  /* const unsigned int dim3 = tree->mod->ns * tree->mod->ns; */
+  
+  phydbl *eigen_lr_left = tree->eigen_lr_left;
+  phydbl *eigen_lr_rght = tree->eigen_lr_rght;
+  phydbl *dot_prod = tree->dot_prod;
+  phydbl *expl = tree->expl;
+  phydbl *expld = tree->expld;
+  phydbl *expld2 = tree->expld2;
 
+  const unsigned int ns = tree->mod->ns;
+  const unsigned int ncatg = tree->mod->ras->n_catg;
+  const unsigned int npattern = tree->n_pattern;
+  
   assert(isnan(*l) == FALSE);
 
   if(*l < tree->mod->l_min)      *l = tree->mod->l_min;
@@ -687,29 +676,8 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
     }
     
   if(tree->update_eigen_lr == YES) Update_Eigen_Lr(b,tree);
-
   
-#if (defined(__AVX__) || defined(__SSE3__))
-  expl   = NULL;
-  expld  = NULL;
-  expld2 = NULL;
-#ifndef WIN32
-  if(posix_memalign((void **)&expl  ,BYTE_ALIGN,(size_t)tree->mod->ras->n_catg*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-  if(posix_memalign((void **)&expld ,BYTE_ALIGN,(size_t)tree->mod->ras->n_catg*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-  if(posix_memalign((void **)&expld2,BYTE_ALIGN,(size_t)tree->mod->ras->n_catg*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-#else
-  expl   = _aligned_malloc(tree->mod->ras->n_catg*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
-  expld  = _aligned_malloc(tree->mod->ras->n_catg*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
-  expld2 = _aligned_malloc(tree->mod->ras->n_catg*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
-#endif
-#else
-  expl   = (phydbl *)mCalloc(tree->mod->ras->n_catg*tree->mod->ns,sizeof(phydbl));
-  expld  = (phydbl *)mCalloc(tree->mod->ras->n_catg*tree->mod->ns,sizeof(phydbl));
-  expld2 = (phydbl *)mCalloc(tree->mod->ras->n_catg*tree->mod->ns,sizeof(phydbl));
-#endif
-
-  
-  for(catg=0;catg<tree->mod->ras->n_catg;catg++)
+  for(catg=0;catg<ncatg;catg++)
     {
       rr = tree->mod->ras->gamma_rr->v[catg];
       rr *=  tree->mod->br_len_mult->v;
@@ -728,13 +696,13 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
       // is true. Leads to numerical precision issues though...
       
       
-      for(state=0;state<tree->mod->ns;state++) 
+      for(state=0;state<ns;state++) 
         {
           ev = log(tree->mod->eigen->e_val[state]);
           expevlen = (phydbl)exp(ev*len);
-          expl[catg*tree->mod->ns+state] = expevlen;
-          expld[catg*tree->mod->ns+state] = ev*rr*expevlen;            
-          expld2[catg*tree->mod->ns+state] = ev*ev*rr*rr*expevlen;
+          expl[catg*ns+state] = expevlen;
+          expld[catg*ns+state] = ev*rr;
+          expld2[catg*ns+state] = ev*ev*rr*rr;
           
 #ifdef SAFEMODE
           if(isinf(expl[catg*tree->mod->ns+state]) || isnan(expl[catg*tree->mod->ns+state])) 
@@ -767,32 +735,31 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
   dlnlk  = 0.0;
   d2lnlk = 0.0;
   c_lnL  = 0.0;
-
-  for(tree->curr_site=0;tree->curr_site<tree->n_pattern;++tree->curr_site)
+  
+  for(site=0;site<npattern;++site)
     {
-      dlk   = Lk_Core(-1,-1,NO ,YES,b,expld,tree);
-      d2lk  = Lk_Core(-1,-1,NO ,YES,b,expld2,tree);
-      loglk = Lk_Core(-1,-1,YES,NO ,b,expl,tree); 
+      tree->curr_site = site;
+      
+      Dot_Prod_Eigen_Lr(eigen_lr_left + site*ns*ncatg,
+                        eigen_lr_rght + site*ns*ncatg,
+                        expl,tree);
+      dlk   = Lk_Core(-1,-1,NO ,YES,b,expld ,dot_prod,NULL,NULL,NULL,NULL,tree);
+      d2lk  = Lk_Core(-1,-1,NO ,YES,b,expld2,dot_prod,NULL,NULL,NULL,NULL,tree);
+      loglk = Lk_Core(-1,-1,YES,NO ,b,NULL  ,dot_prod,NULL,NULL,NULL,NULL,tree); 
+
       // Make sure to keep the call above in the last position so that site_lk_cat is the
       // actual likelihood rather than its first or second derivative
       
       if(isinf(loglk)) // Happens sometimes because we do not apply correction for SMALL_PIJ when use_eigen = YES
-        {
-          tree->use_eigen_lr = NO;
-          dlk   = Lk_Core(-1,-1,NO ,YES,b,expld,tree);
-          d2lk  = Lk_Core(-1,-1,NO ,YES,b,expld2,tree);
-          loglk = Lk_Core(-1,-1,YES,NO ,b,expl,tree); 
-          tree->use_eigen_lr = YES;
-          printf("\n. dlk: %G d2lk: %G loglk: %G",dlk,d2lk,loglk);
-        }
+        Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
       lk = exp(loglk);
             
       assert(lk>0.0);
       
-      dlnlk  += tree->data->wght[tree->curr_site] * (dlk/lk);
-      d2lnlk += tree->data->wght[tree->curr_site] * (d2lk/lk - (dlk/lk)*(dlk/lk));
-      c_lnL  += tree->data->wght[tree->curr_site] * loglk;
+      dlnlk  += tree->data->wght[site] * (dlk/lk);
+      d2lnlk += tree->data->wght[site] * (d2lk/lk - (dlk/lk)*(dlk/lk));
+      c_lnL  += tree->data->wght[site] * loglk;
 
 
       if(isnan(dlnlk)  || isnan(d2lnlk) || isnan(loglk))
@@ -806,11 +773,6 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
   tree->c_dlnL  = dlnlk;
   tree->c_d2lnL = d2lnlk;
   tree->c_lnL   = c_lnL;
-
-
-  Free(expl);
-  Free(expld);
-  Free(expld2);
 
   return tree->c_lnL;
 }
@@ -827,69 +789,69 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
    length of edge 'b'.
 */
 
-phydbl Lk_Core(int state, int ambiguity_check, short int returnlog, short int derivative, t_edge *b, phydbl *expl, t_tree *tree)
+phydbl Lk_Core(int state, int ambiguity_check, short int returnlog, short int derivative,
+               t_edge *b, phydbl *expl,
+               phydbl *dot_prod,
+               phydbl *p_lk_left, phydbl *p_lk_rght,
+               phydbl *p_lk_tip_r,
+               phydbl *Pij_rr,
+               t_tree *tree)
 {
   phydbl log_site_lk;
   phydbl site_lk_cat,site_lk,inv_site_lk;
   int fact_sum_scale;
-  unsigned int catg,ns,site;
+  unsigned int catg;
   int exponent;
   int num_prec_issue;
-
-#ifdef BEAGLE
-  const unsigned dim1 = tree->n_pattern * tree->mod->ns;
-#else
-  const unsigned dim1 = tree->mod->ras->n_catg * tree->mod->ns;//Dimension of a matrix L that holds rate-specific character likelihoods. IOW, L[ij] is the likelihood of character j in rate class i
-#endif
-  const unsigned dim2 = tree->mod->ns;
-  const unsigned dim3 = tree->mod->ns * tree->mod->ns;//Dimensions of the transition prob. matrix
+  int piecewise_exponent;
+  phydbl multiplier;
+  const unsigned int ns = tree->mod->ns;
+  const unsigned int ncatg = tree->mod->ras->n_catg;
+  const unsigned int site = tree->curr_site;
+  
+  const unsigned dim2 = ns;
+  const unsigned dim3 = ns * ns;
   
   log_site_lk     = .0;
   site_lk         = .0;
   site_lk_cat     = .0;
-  site            = tree->curr_site;
-  ns              = tree->mod->ns;
 
-  /* Skip this if no tree traveral was required, i.e. likelihood in each class of the mixture is already up to date */
   if(tree->mod->s_opt->skip_tree_traversal == NO)
     {
-      /* Actual likelihood calculation */
-      /* For all classes of rates */
-      for(catg=0;catg<tree->mod->ras->n_catg;++catg)
-        {         
-          /* If tree->use_eigen_lr == YES: assume that the partial likelihoods on both
-             sides of t_edge *b are up-to-date and that the product of the left and right matrices
-             of eigenvectors by right and left partial likelihood vectors was carried out before 
-             calling this function. Calculate the log-likelihood at one site.
-          */
-          if(tree->use_eigen_lr == YES)
+      if(tree->use_eigen_lr == NO)
+        {
+          for(catg=0;catg<ncatg;++catg)
             {
-              site_lk_cat = Lk_Core_One_Class(tree->eigen_lr_left + site*dim1 + catg*dim2,
-                                              tree->eigen_lr_rght + site*dim1 + catg*dim2,
-                                              NULL,
-                                              NULL,
-                                              expl + catg*dim2,
-                                              ns,
-                                              -1,-1,
-                                              b,tree);
-            }
-          else // tree->use_eigen_lr == NO
-            {
-              site_lk_cat = Lk_Core_One_Class(b->p_lk_left + (site*dim1) + (catg*dim2),
-                                              b->p_lk_rght + (site*dim1) + (catg*dim2),
-                                              b->Pij_rr + (catg*dim3),
-                                              b->p_lk_tip_r + site*dim2,
+              site_lk_cat = Lk_Core_One_Class(p_lk_left + catg*dim2,
+                                              p_lk_rght + catg*dim2,
+                                              Pij_rr + catg*dim3,
+                                              p_lk_tip_r,
                                               NULL,
                                               ns,ambiguity_check,state,
                                               b,tree);
+              tree->site_lk_cat[catg] = site_lk_cat;
             }
+        }
+      else
+        {
+          for(catg=0;catg<ncatg;++catg)
+            {
+              site_lk_cat = Lk_Core_One_Class(dot_prod + catg*dim2,
+                                              NULL,
+                                              NULL,
+                                              NULL,
+                                              expl ? (expl + catg*dim2) : NULL,
+                                              ns,ambiguity_check,state,
+                                              b,tree);
+              tree->site_lk_cat[catg] = site_lk_cat;
+            }
+        }
           
-          tree->site_lk_cat[catg] = site_lk_cat;
 
-          if(isinf(site_lk_cat) || isnan(site_lk_cat)) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-
-          /* printf("\n. %d sitelk=%f",site,site_lk_cat); */
-        } /* site likelihood for all rate classes */      
+#ifdef SAFEMODE
+      if(isinf(site_lk_cat) || isnan(site_lk_cat)) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+#endif
+        
       Pull_Scaling_Factors(site,b,tree);    
     }
   
@@ -920,46 +882,52 @@ phydbl Lk_Core(int state, int ambiguity_check, short int returnlog, short int de
         }
     }
   
-  log_site_lk = log(site_lk) - (phydbl)LOG2 * fact_sum_scale; // log_site_lk =  log(site_lk_scaled / 2^(left_subtree+right_subtree))      
+  if(derivative == NO) log_site_lk = log(site_lk) - (phydbl)LOG2 * fact_sum_scale; // log_site_lk =  log(site_lk_scaled / 2^(left_subtree+right_subtree))      
   
   // Calculation of the site likelihood (using scaling factors)...
-  int piecewise_exponent;
-  phydbl multiplier;
-  if(fact_sum_scale >= 0)
+  if(tree->apply_lk_scaling == YES)
     {
-      tree->cur_site_lk[site] = site_lk;
-      exponent = -fact_sum_scale;
-      do
+      if(fact_sum_scale >= 0)
         {
-          piecewise_exponent = MAX(exponent,-63);
-          multiplier = 1. / (phydbl)((unsigned long long)(1) << -piecewise_exponent);
-          tree->cur_site_lk[site] *= multiplier;
-          exponent -= piecewise_exponent;
+          tree->cur_site_lk[site] = site_lk;
+          exponent = -fact_sum_scale;
+          do
+            {
+              piecewise_exponent = MAX(exponent,-63);
+              multiplier = 1. / (phydbl)((unsigned long long)(1) << -piecewise_exponent);
+              tree->cur_site_lk[site] *= multiplier;
+              exponent -= piecewise_exponent;
+            }
+          while(exponent != 0);
         }
-      while(exponent != 0);
-    }
-  else
-    {
-      //In some cases fact_sum_scale can be negative. If you rescale the partials of two independent subtrees and make some of
-      //these numbers large in order to avoid underflow, then there is a chance that when multiplied them together you will
-      //get an overflow, in which case fact_sum_scale can become negative.
-      
-      tree->cur_site_lk[site] = site_lk;
-      exponent = fact_sum_scale;
-      do
+      else
         {
-          piecewise_exponent = MIN(exponent,63);
-          multiplier = (phydbl)((unsigned long long)(1) << piecewise_exponent);
-          tree->cur_site_lk[site] *= multiplier;
-          exponent -= piecewise_exponent;
+          //In some cases fact_sum_scale can be negative. If you rescale the partials of two independent subtrees and make some of
+          //these numbers large in order to avoid underflow, then there is a chance that when multiplied them together you will
+          //get an overflow, in which case fact_sum_scale can become negative.
+          
+          tree->cur_site_lk[site] = site_lk;
+          exponent = fact_sum_scale;
+          do
+            {
+              piecewise_exponent = MIN(exponent,63);
+              multiplier = (phydbl)((unsigned long long)(1) << piecewise_exponent);
+              tree->cur_site_lk[site] *= multiplier;
+              exponent -= piecewise_exponent;
+            }
+          while(exponent != 0);
         }
-      while(exponent != 0);
     }
   
   // ... or using the log-likelihood
-  if(isinf(site_lk) || isnan(site_lk))
+  if(isinf(site_lk) || isnan(site_lk) || (tree->apply_lk_scaling == NO && derivative == NO))
     {
       tree->cur_site_lk[site] = exp(log_site_lk);
+    }
+  
+  if(derivative == YES && tree->apply_lk_scaling == NO)
+    {
+      tree->cur_site_lk[site] = site_lk;
     }
   
   if(isnan(tree->cur_site_lk[site]) == YES)
@@ -967,7 +935,7 @@ phydbl Lk_Core(int state, int ambiguity_check, short int returnlog, short int de
       PhyML_Printf("\n== Site = %d",site);
       PhyML_Printf("\n== Invar = %d",tree->data->invar[site]);
       PhyML_Printf("\n== Mixt = %d",tree->is_mixt_tree);
-      PhyML_Printf("\n== Lk = %G log(Lk) = %f < %G",site_lk,log_site_lk,-BIG);
+      PhyML_Printf("\n== lk = %G log(Lk) = %f < %G",site_lk,log_site_lk,-BIG);
       for(catg=0;catg<tree->mod->ras->n_catg;catg++) PhyML_Printf("\n== rr=%f p=%f",tree->mod->ras->gamma_rr->v[catg],tree->mod->ras->gamma_r_proba->v[catg]);
       PhyML_Printf("\n== Pinv = %G",tree->mod->ras->pinvar->v);
       PhyML_Printf("\n== Bl mult = %G",tree->mod->br_len_mult->v);
@@ -998,7 +966,7 @@ phydbl Lk_Core(int state, int ambiguity_check, short int returnlog, short int de
         }
             
       Print_Site(tree->data,site,tree->n_otu,"\n",tree->mod->io->state_len,stdout);
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')",__FILE__,__LINE__,__FUNCTION__);
+      PhyML_Printf("\n== Err. in file %s at line %d.",__FILE__,__LINE__);
       Exit("\n");
     }
 
@@ -1246,7 +1214,6 @@ static void SSE_Update_Eigen_Lr(t_edge *b, t_tree *tree)
   unsigned int sz;
   const unsigned int dim1 = tree->mod->ras->n_catg * tree->mod->ns;
   const unsigned int dim2 = tree->mod->ns;
-  const unsigned int ns   = tree->mod->ns;
 
   sz = (int)BYTE_ALIGN;
   sz /= 8; // number of double floating precision numbers in a __mm256d variable: 16/8=2
@@ -1409,6 +1376,14 @@ phydbl Lk_Core_One_Class(phydbl *p_lk_left, phydbl *p_lk_rght,
        
   if(tree->use_eigen_lr == YES)
     {
+      /* p_lk_left is the dot product of left and right partial likelihood vectors multiplied by matrices of
+         eigen vectors (left and right) multiplied by exp(eigenvalues * r_c * l) here 
+      */
+      /* expl is NULL if likelihood is to be calculated. It is the vector eigenvalues * r_c and (eigenvalues * r_c)^2 (dot
+         product here again) when the first and second derivatives are to be calculated respectively.
+      */
+
+
 #ifdef SAFEMODE
       assert(expl);
       assert(p_lk_left);
@@ -1418,68 +1393,46 @@ phydbl Lk_Core_One_Class(phydbl *p_lk_left, phydbl *p_lk_rght,
       const unsigned int sz = (int)BYTE_ALIGN / 8;
       const unsigned nblocks = ns/sz;
       __m256d _prod[nblocks],_x,_y;
-      phydbl *res;
 
 #ifdef SAFEMODE
       assert(sz == 4);
 #endif
-
-      res = NULL;
-#ifndef WIN32
-      if(posix_memalign((void **)&res,BYTE_ALIGN,(size_t)sz*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-#else
-      res = _aligned_malloc(sz * sizeof(phydbl),BYTE_ALIGN);
-#endif
-      
       for(l=0;l<nblocks;++l) _prod[l] = _mm256_load_pd(p_lk_left + l*sz);
-      for(l=0;l<nblocks;++l) _prod[l] = _mm256_mul_pd(_prod[l],_mm256_load_pd(p_lk_rght + l*sz));
-      for(l=0;l<nblocks;++l) _prod[l] = _mm256_mul_pd(_prod[l],_mm256_load_pd(expl + l*sz));
+      if(expl != NULL) for(l=0;l<nblocks;++l) _prod[l] = _mm256_mul_pd(_prod[l],_mm256_load_pd(expl + l*sz));
       _x = _mm256_setzero_pd();
       for(l=0;l<nblocks;++l) _x = _mm256_add_pd(_x,_prod[l]);
       _x = _mm256_hadd_pd(_x,_x);
       _y = _mm256_permute2f128_pd(_x,_x,0x21);
-      _mm256_store_pd(res,_mm256_add_pd(_x,_y));
-      lk = res[0];
-      Free(res);
+      _mm_store_sd(&lk, _mm256_castpd256_pd128(_mm256_add_pd(_x,_y)));
+
       
 #elif (defined(__SSE3__))
 
       const unsigned sz = (int)BYTE_ALIGN / 8;
       const unsigned int nblocks = ns/sz;
       __m128d _prod[nblocks],_x;
-      phydbl *res;
 
 #ifdef SAFEMODE
       assert(sz == 2);
 #endif
       
-
-      res = NULL;
-#ifndef WIN32
-      if(posix_memalign((void **)&res,BYTE_ALIGN,(size_t)sz*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-#else
-      res = _aligned_malloc(sz * sizeof(phydbl),BYTE_ALIGN);
-#endif
-      
       for(l=0;l<nblocks;++l) _prod[l] = _mm_load_pd(p_lk_left + l*sz);
-      for(l=0;l<nblocks;++l) _prod[l] = _mm_mul_pd(_prod[l],_mm_load_pd(p_lk_rght + l*sz));
-      for(l=0;l<nblocks;++l) _prod[l] = _mm_mul_pd(_prod[l],_mm_load_pd(expl + l*sz));
+      if(expl != NULL) for(l=0;l<nblocks;++l) _prod[l] = _mm_mul_pd(_prod[l],_mm_load_pd(expl + l*sz));
       _x = _mm_setzero_pd();
       for(l=0;l<nblocks;++l) _x = _mm_add_pd(_x,_prod[l]);
       _x = _mm_hadd_pd(_x,_x);
-      _mm_store_pd(res,_x);
-      lk = res[0];
-      Free(res);
+      _mm_store_sd(&lk,_x);
 
 #else
 
       lk = 0.0;
-      for(l=0;l<ns;++l) // Likelihood calculation in O(ns) complexity instead of O(ns^2)! 
+      if(expl != NULL)
         {
-          lk += 
-            p_lk_left[l] *
-            p_lk_rght[l] *
-            expl[l];
+          for(l=0;l<ns;++l)  lk += p_lk_left[l] * expl[l];
+        }
+      else
+        {
+          for(l=0;l<ns;++l) lk += p_lk_left[l];
         }
 
 #endif
@@ -1859,7 +1812,11 @@ void Update_P_Lk_Generic(t_tree *tree, t_edge *b, t_node *d)
                  smallest_p_lk = 2^-600, then curr_scaler_pow will be equal to 100, and
                  each element in the partial likelihood vector will be multiplied by
                  2^100. */
-              if(smallest_p_lk < (phydbl)P_LK_LIM_INF)
+              if(smallest_p_lk < (phydbl)P_LK_LIM_INF &&
+                 tree->mod->augmented == NO &&
+                 tree->apply_lk_scaling == YES &&
+                 (n_v1->tax == NO || n_v2->tax == NO))
+
                 {
                   curr_scaler_pow = (int)(-500.*LOG2-log(smallest_p_lk))/LOG2;
                   curr_scaler     = (phydbl)((unsigned long long)(1) << curr_scaler_pow);
@@ -1914,10 +1871,10 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
   phydbl *tPij1,*tPij2;
   int *sum_scale, *sum_scale_v1, *sum_scale_v2;
   int sum_scale_v1_val, sum_scale_v2_val;
-  int i;//index over the number of states
-  int catg;
-  int site;
-  int n_patterns;
+  unsigned int i;
+  unsigned int catg;
+  unsigned int site;
+  unsigned int n_patterns;
   int ambiguity_check_v1,ambiguity_check_v2;
   int state_v1,state_v2;
   int dim1, dim2, dim3;
@@ -2180,7 +2137,10 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                  smallest_p_lk = 2^-600, then curr_scaler_pow will be equal to 100, and
                  each element in the partial likelihood vector will be multiplied by
                  2^100. */
-              if(smallest_p_lk < p_lk_lim_inf && tree->mod->augmented == NO)
+              if(smallest_p_lk < p_lk_lim_inf &&
+                 tree->mod->augmented == NO &&
+                 tree->apply_lk_scaling == YES &&
+                 (n_v1->tax == NO || n_v2->tax == NO))
                 {
                   curr_scaler_pow = (int)(-500.*LOG2-log(smallest_p_lk))/LOG2;
                   curr_scaler     = (phydbl)((unsigned long long)(1) << curr_scaler_pow);
@@ -2201,7 +2161,6 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                               PhyML_Printf("\n== Err. in file %s at line %d (function '%s').",__FILE__,__LINE__,__FUNCTION__);
                               Exit("\n");
                             }
-//                              fprintf(stderr,"\n%e",p_lk[site*dim1+catg*dim2+i]);
                         }
                       curr_scaler_pow -= piecewise_scaler_pow;
                     }
@@ -2210,9 +2169,6 @@ void Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
             }
         }
     }
-
-//  fprintf(stdout, "Updated partials:");fflush(stdout);
-//  Dump_Arr_D(p_lk, tree->mod->ras->n_catg*tree->mod->ns*tree->n_pattern);
 }
 
 //////////////////////////////////////////////////////////////
@@ -2237,15 +2193,14 @@ void Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
   phydbl *tPij1,*tPij2;
   int *sum_scale, *sum_scale_v1, *sum_scale_v2;
   int sum_scale_v1_val, sum_scale_v2_val;
-  int i;
-  int catg,site;
-  int n_patterns;
+  unsigned int i;
+  unsigned int catg,site;
+  unsigned int n_patterns;
   short int ambiguity_check_v1,ambiguity_check_v2;
   int state_v1,state_v2;
-  int dim1, dim2, dim3;
   phydbl curr_scaler;
   int curr_scaler_pow, piecewise_scaler_pow;
-  phydbl smallest_p_lk;
+  phydbl smallest_p_lk,p_lk_lim_inf;
   phydbl p0,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15,p16,p17,p18,p19;
   int *p_lk_loc;
 
@@ -2261,9 +2216,9 @@ void Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
       Exit("");
     }
 
-  dim1 = tree->mod->ras->n_catg * tree->mod->ns;
-  dim2 = tree->mod->ns;
-  dim3 = tree->mod->ns * tree->mod->ns;
+  const unsigned int dim1 = tree->mod->ras->n_catg * tree->mod->ns;
+  const unsigned int dim2 = tree->mod->ns;
+  const unsigned int dim3 = tree->mod->ns * tree->mod->ns;
 
   state_v1 = state_v2 = -1;
   ambiguity_check_v1 = ambiguity_check_v2 = NO;
@@ -2279,6 +2234,7 @@ void Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
 
   n_patterns = tree->n_pattern;
 
+  p_lk_lim_inf                = (phydbl)P_LK_LIM_INF;
   n_v1 = n_v2                 = NULL;
   p_lk = p_lk_v1 = p_lk_v2    = NULL;
   Pij1 = Pij2                 = NULL;
@@ -2501,7 +2457,10 @@ void Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
                  smallest_p_lk = 2^-600, then curr_scaler_pow will be equal to 100, and
                  each element in the partial likelihood vector will be multiplied by
                  2^100. */
-              if(smallest_p_lk < (phydbl)P_LK_LIM_INF)
+              if(smallest_p_lk < p_lk_lim_inf &&
+                 tree->mod->augmented == NO &&
+                 tree->apply_lk_scaling == YES &&
+                 (n_v1->tax == NO || n_v2->tax == NO))
                 {
                   curr_scaler_pow = (int)(-500.*LOG2-log(smallest_p_lk))/LOG2;
                   curr_scaler     = (phydbl)((unsigned long long)(1) << curr_scaler_pow);
@@ -4627,439 +4586,6 @@ static inline __m256d AVX_Horizontal_Add(__m256d x[4])
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-phydbl AVX_Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
-{
-  if(tree->io->datatype == NT)
-    {
-      return AVX_Lk_Core_Nucl(state,ambiguity_check,b,tree);
-    }
-  else
-    {
-      return AVX_Lk_Core_AA(state,ambiguity_check,b,tree);
-    }
-  return -1.;
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-phydbl AVX_Lk_Core_Nucl(int state, int ambiguity_check, t_edge *b, t_tree *tree)
-{
-  phydbl log_site_lk;
-  phydbl site_lk_cat, site_lk, inv_site_lk;
-  int fact_sum_scale;
-  unsigned int catg,ns,site;
-  int exponent;
-  int num_prec_issue;
-  phydbl *plk;
-  unsigned int i;
-  __m256d _plk; // parent partial likelihood
-  __m256d _plk_l,_plk_r; // partial likelihood vector on lefthand (righthand) side of b
-  __m256d _p[4]; // matrix of transition probabilities
-  __m256d _pplk[4]; // dot product of _p[i] & _plk_r
-  
-
-#ifdef BEAGLE
-  const unsigned int dim1 = tree->n_pattern * tree->mod->ns;
-#else
-  const unsigned int dim1 = tree->mod->ras->n_catg * tree->mod->ns;//Dimension of a matrix L that holds rate-specific character likelihoods. IOW, L[ij] is the likelihood of character j in rate class i
-#endif
-  const unsigned dim2 = tree->mod->ns;
-  const unsigned dim3 = tree->mod->ns * tree->mod->ns;//Dimensions of the transition prob. matrix
-
-  plk   = NULL;  
-#ifndef WIN32
-  if(posix_memalign((void **)&plk,BYTE_ALIGN,(size_t)4*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-#else
-  plk = _aligned_malloc(4 * sizeof(phydbl),BYTE_ALIGN);
-#endif
-
-  
-  log_site_lk = .0;
-  site_lk     = .0;
-  site_lk_cat = .0;
-  site        = tree->curr_site;
-  ns          = tree->mod->ns;
-
-  /* Skip this if no tree traveral was required, i.e. likelihood in each class of the mixture is already up to date */
-  if(tree->mod->s_opt->skip_tree_traversal == NO)
-    {
-      /* Actual likelihood calculation */
-      /* For all classes of rates */
-      for(catg=0;catg<tree->mod->ras->n_catg;++catg)
-        {
-          site_lk_cat = .0;
-
-          // Transition  probability matrix
-          for(i=0;i<4;++i) _p[i] = _mm256_load_pd(b->Pij_rr + catg*dim3 + i*dim2);
-
-          // Partial likelihood vector on righthand side of b
-          if(b->rght->tax == NO)
-            _plk_r = _mm256_load_pd(b->p_lk_rght + site*dim1+catg*dim2);
-          else
-            _plk_r = _mm256_load_pd(b->p_lk_tip_r + site*dim2);
-
-          // Partial likelihood vector on lefthand side of b
-          _plk_l = _mm256_load_pd(b->p_lk_left + site*dim1 + catg*dim2);
-
-          for(i=0;i<4;++i) _pplk[i] = _mm256_mul_pd(_p[i],_plk_r);
-          
-          _plk = _mm256_mul_pd(AVX_Horizontal_Add(_pplk),_plk_l); 
-          
-          _mm256_store_pd(plk,_plk);
-
-          _plk = _mm256_mul_pd(_plk,_mm256_load_pd(tree->mod->e_frq->pi->v));
-
-          _mm256_store_pd(plk,_plk);
-
-          site_lk_cat = plk[0]+plk[1]+plk[2]+plk[3];
-
-          tree->site_lk_cat[catg] = site_lk_cat;
-          
-          if(isinf(site_lk_cat) || isnan(site_lk_cat))
-            {
-              PhyML_Printf("\n== %G %G %G %G",plk[0],plk[1],plk[2],plk[3]);
-              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-            }
-        } /* site likelihood for all rate classes */
-      Pull_Scaling_Factors(site,b,tree);
-    }
-  
-  fact_sum_scale = tree->fact_sum_scale[site];
-  
-  //Likelihood of the site is the sum of the individual rate specific likelihoods
-  site_lk = .0;
-  for(catg=0;catg<tree->mod->ras->n_catg;++catg)
-    {
-      site_lk +=
-        tree->unscaled_site_lk_cat[catg*tree->n_pattern + site]* 
-        tree->mod->ras->gamma_r_proba->v[catg]; //density
-    }
-  
-
-  if(tree->mod->ras->invar == YES)
-    {
-      num_prec_issue = NO;
-      inv_site_lk = Invariant_Lk(fact_sum_scale,site,&num_prec_issue,tree);
-      
-      if(num_prec_issue == YES) // inv_site_lk >> site_lk
-        {
-          site_lk = inv_site_lk * tree->mod->ras->pinvar->v;
-        }
-      else
-        {
-          site_lk = site_lk * (1. - tree->mod->ras->pinvar->v) + inv_site_lk * tree->mod->ras->pinvar->v;
-        }
-    }
-  
-  log_site_lk = log(site_lk) - (phydbl)LOG2 * fact_sum_scale; // log_site_lk =  log(site_lk_scaled / 2^(left_subtree+right_subtree))      
-
-  /* printf("\n. site_lk: %g fact_sum_scale: %d",site_lk,fact_sum_scale); */
-  
-  // Calculation of the site likelihood (using scaling factors)...
-  int piecewise_exponent;
-  phydbl multiplier;
-  if(fact_sum_scale >= 0)
-    {
-      tree->cur_site_lk[site] = site_lk;
-      exponent = -fact_sum_scale;
-      do
-        {
-          piecewise_exponent = MAX(exponent,-63);
-          multiplier = 1. / (phydbl)((unsigned long long)(1) << -piecewise_exponent);
-          tree->cur_site_lk[site] *= multiplier;
-          exponent -= piecewise_exponent;
-        }
-      while(exponent != 0);
-    }
-  else
-    {
-      //In some cases fact_sum_scale can be negative. If you rescale the partials of two independent subtrees and make some of
-      //these numbers large in order to avoid underflow, then there is a chance that when multiplied them together you will
-      //get an overflow, in which case fact_sum_scale can become negative.
-      
-      tree->cur_site_lk[site] = site_lk;
-      exponent = fact_sum_scale;
-      do
-        {
-          piecewise_exponent = MIN(exponent,63);
-          multiplier = (phydbl)((unsigned long long)(1) << piecewise_exponent);
-          tree->cur_site_lk[site] *= multiplier;
-          exponent -= piecewise_exponent;
-        }
-      while(exponent != 0);
-    }
-  
-  // ... or using the log-likelihood
-  if(isinf(site_lk) || isnan(site_lk))
-    {
-      tree->cur_site_lk[site] = exp(log_site_lk);
-    }
-  
-  if(isinf(log_site_lk) || isnan(log_site_lk))
-    {
-      PhyML_Printf("\n== Site = %d",site);
-      PhyML_Printf("\n== Invar = %d",tree->data->invar[site]);
-      PhyML_Printf("\n== Mixt = %d",tree->is_mixt_tree);
-      PhyML_Printf("\n== Lk = %G log(Lk) = %f < %G",site_lk,log_site_lk,-BIG);
-      for(catg=0;catg<tree->mod->ras->n_catg;catg++) PhyML_Printf("\n== rr=%f p=%f",tree->mod->ras->gamma_rr->v[catg],tree->mod->ras->gamma_r_proba->v[catg]);
-      PhyML_Printf("\n== Pinv = %G",tree->mod->ras->pinvar->v);
-      PhyML_Printf("\n== Bl mult = %G",tree->mod->br_len_mult->v);
-      PhyML_Printf("\n== fact_sum_scale = %d",fact_sum_scale);
-      PhyML_Printf("\n== n_catg: %d",tree->mod->ras->n_catg);
-      
-      if(tree->mod->whichmodel == GTR || tree->mod->whichmodel == CUSTOM)
-        {
-          int i,j;
-          PhyML_Printf("\n== Rate matrix\n");
-          for(i=0;i<tree->mod->ns;i++)
-            {
-              for(j=0;j<tree->mod->ns;j++)
-                {
-                  PhyML_Printf("%12G ",i,tree->mod->r_mat->qmat->v[i*4+j]); 
-                }
-              PhyML_Printf("\n");
-            }
-          fflush(NULL);
-          
-          PhyML_Printf("\n== Relative rates\n");
-          For(i,tree->mod->ns*(tree->mod->ns-1)/2)
-            {
-              PhyML_Printf("\n== rr[%3d]: %12G %12G",i,tree->mod->r_mat->rr->v[i],tree->mod->r_mat->rr_val->v[i]); 
-            }
-          fflush(NULL);
-          
-        }
-            
-      Print_Site(tree->data,site,tree->n_otu,"\n",tree->mod->io->state_len,stdout);
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')",__FILE__,__LINE__,__FUNCTION__);
-      Exit("\n");
-    }
-
-/* Multiply log likelihood by the number of times this site pattern is found in the data */
-  tree->c_lnL_sorted[site] = tree->data->wght[site]*log_site_lk;
-  
-  tree->c_lnL += tree->data->wght[site]*log_site_lk;
-
-  Free(plk);
-  
-  return log_site_lk;
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-phydbl AVX_Lk_Core_AA(int state, int ambiguity_check, t_edge *b, t_tree *tree)
-{
-  phydbl log_site_lk;
-  phydbl site_lk_cat, site_lk, inv_site_lk;
-  int fact_sum_scale;
-  unsigned int catg,ns,site;
-  int exponent;
-  int num_prec_issue;
-  phydbl *plk;
-  unsigned int i,j,k;
-  __m256d _plk; // parent partial likelihood
-  __m256d _plk_l[5],_plk_r[5]; // partial likelihood vector on lefthand (righthand) side of b
-  __m256d _p[4]; // matrix of transition probabilities
-  __m256d _pplk[4]; // dot product of _p[i] & _plk_r
-
-#ifdef BEAGLE
-  const unsigned int dim1 = tree->n_pattern * tree->mod->ns;
-#else
-  const unsigned int dim1 = tree->mod->ras->n_catg * tree->mod->ns;//Dimension of a matrix L that holds rate-specific character likelihoods. IOW, L[ij] is the likelihood of character j in rate class i
-#endif
-  const unsigned dim2 = tree->mod->ns;
-  const unsigned dim3 = tree->mod->ns * tree->mod->ns;//Dimensions of the transition prob. matrix
-
-  plk = NULL;
-  
-#ifndef WIN32
-  if(posix_memalign((void **)&plk,BYTE_ALIGN,(size_t)20*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-#else
-  plk = _aligned_malloc(20 * sizeof(phydbl),BYTE_ALIGN);
-#endif
-
-  
-  log_site_lk     = .0;
-  site_lk         = .0;
-  site_lk_cat     = .0;
-  site            = tree->curr_site;
-  ns              = tree->mod->ns;
-    
-  assert(ns == 20);
-
-  /* Skip this if no tree traveral was required, i.e. likelihood in each class of the mixture is already up to date */
-  if(tree->mod->s_opt->skip_tree_traversal == NO)
-    {
-      /* Actual likelihood calculation */
-      /* For all classes of rates */
-      for(catg=0;catg<tree->mod->ras->n_catg;++catg)
-        {
-          site_lk_cat = .0;
-
-          // Partial likelihood vector on righthand side of b
-          if(b->rght->tax == NO)
-            {
-              for(i=0;i<5;++i) _plk_r[i] = _mm256_load_pd(b->p_lk_rght + site*dim1 + catg*dim2 + i*4);
-            }
-          else
-            {
-              for(i=0;i<5;++i) _plk_r[i] = _mm256_load_pd(b->p_lk_tip_r + site*dim2 + i*4);
-            }
-
-          // Partial likelihood vector on lefthand side of b
-          for(i=0;i<5;++i) _plk_l[i] = _mm256_load_pd(b->p_lk_left + site*dim1 + catg*dim2 + i*4);
-
-          for(j=0;j<5;++j)
-            {
-              for(i=0;i<4;++i) _pplk[i] = _mm256_setzero_pd();
-
-              for(i=0;i<5;++i) 
-                {
-                  for(k=0;k<4;++k) _p[k] = _mm256_load_pd(b->Pij_rr + catg*dim3 + j*80 + i*4 + k*20);
-                  for(k=0;k<4;++k) _pplk[k] = _mm256_add_pd(_pplk[k],_mm256_mul_pd(_p[k],_plk_r[i]));
-                }
-
-              _plk = _mm256_mul_pd(AVX_Horizontal_Add(_pplk),_plk_l[j]); 
-              _plk = _mm256_mul_pd(_plk,_mm256_load_pd(tree->mod->e_frq->pi->v+j*4));
-              _mm256_store_pd(plk+j*4,_plk);
-            }
-
-          site_lk_cat = 
-            plk[0]+plk[1]+plk[2]+plk[3] +
-            plk[4]+plk[5]+plk[6]+plk[7] +
-            plk[8]+plk[9]+plk[10]+plk[11] +
-            plk[12]+plk[13]+plk[14]+plk[15] +
-            plk[16]+plk[17]+plk[18]+plk[19] ;
-
-          tree->site_lk_cat[catg] = site_lk_cat;
-          
-          if(isinf(site_lk_cat) || isnan(site_lk_cat)) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-
-        } /* site likelihood for all rate classes */
-      Pull_Scaling_Factors(site,b,tree);
-    }
-  
-  fact_sum_scale = tree->fact_sum_scale[site];
-  
-  //Likelihood of the site is the sum of the individual rate specific likelihoods
-  site_lk = .0;
-  for(catg=0;catg<tree->mod->ras->n_catg;++catg)
-    {
-      site_lk +=
-        tree->unscaled_site_lk_cat[catg*tree->n_pattern + site]* 
-        tree->mod->ras->gamma_r_proba->v[catg]; //density
-    }
-  
-
-  if(tree->mod->ras->invar == YES)
-    {
-      num_prec_issue = NO;
-      inv_site_lk = Invariant_Lk(fact_sum_scale,site,&num_prec_issue,tree);
-      
-      if(num_prec_issue == YES) // inv_site_lk >> site_lk
-        {
-          site_lk = inv_site_lk * tree->mod->ras->pinvar->v;
-        }
-      else
-        {
-          site_lk = site_lk * (1. - tree->mod->ras->pinvar->v) + inv_site_lk * tree->mod->ras->pinvar->v;
-        }
-    }
-  
-  log_site_lk = log(site_lk) - (phydbl)LOG2 * fact_sum_scale; // log_site_lk =  log(site_lk_scaled / 2^(left_subtree+right_subtree))      
-
-  // Calculation of the site likelihood (using scaling factors)...
-  int piecewise_exponent;
-  phydbl multiplier;
-  if(fact_sum_scale >= 0)
-    {
-      tree->cur_site_lk[site] = site_lk;
-      exponent = -fact_sum_scale;
-      do
-        {
-          piecewise_exponent = MAX(exponent,-63);
-          multiplier = 1. / (phydbl)((unsigned long long)(1) << -piecewise_exponent);
-          tree->cur_site_lk[site] *= multiplier;
-          exponent -= piecewise_exponent;
-        }
-      while(exponent != 0);
-    }
-  else
-    {
-      //In some cases fact_sum_scale can be negative. If you rescale the partials of two independent subtrees and make some of
-      //these numbers large in order to avoid underflow, then there is a chance that when multiplied them together you will
-      //get an overflow, in which case fact_sum_scale can become negative.
-      
-      tree->cur_site_lk[site] = site_lk;
-      exponent = fact_sum_scale;
-      do
-        {
-          piecewise_exponent = MIN(exponent,63);
-          multiplier = (phydbl)((unsigned long long)(1) << piecewise_exponent);
-          tree->cur_site_lk[site] *= multiplier;
-          exponent -= piecewise_exponent;
-        }
-      while(exponent != 0);
-    }
-  
-  // ... or using the log-likelihood
-  if(isinf(site_lk) || isnan(site_lk))
-    {
-      tree->cur_site_lk[site] = exp(log_site_lk);
-    }
-  
-  if(isinf(log_site_lk) || isnan(log_site_lk))
-    {
-      PhyML_Printf("\n== Site = %d",site);
-      PhyML_Printf("\n== Invar = %d",tree->data->invar[site]);
-      PhyML_Printf("\n== Mixt = %d",tree->is_mixt_tree);
-      PhyML_Printf("\n== Lk = %G log(Lk) = %f < %G",site_lk,log_site_lk,-BIG);
-      for(catg=0;catg<tree->mod->ras->n_catg;catg++) PhyML_Printf("\n== rr=%f p=%f",tree->mod->ras->gamma_rr->v[catg],tree->mod->ras->gamma_r_proba->v[catg]);
-      PhyML_Printf("\n== Pinv = %G",tree->mod->ras->pinvar->v);
-      PhyML_Printf("\n== Bl mult = %G",tree->mod->br_len_mult->v);
-      PhyML_Printf("\n== fact_sum_scale = %d",fact_sum_scale);
-      PhyML_Printf("\n== n_catg: %d",tree->mod->ras->n_catg);
-      
-      if(tree->mod->whichmodel == GTR || tree->mod->whichmodel == CUSTOM)
-        {
-          int i,j;
-          PhyML_Printf("\n== Rate matrix\n");
-          for(i=0;i<tree->mod->ns;i++)
-            {
-              for(j=0;j<tree->mod->ns;j++)
-                {
-                  PhyML_Printf("%12G ",i,tree->mod->r_mat->qmat->v[i*4+j]); 
-                }
-              PhyML_Printf("\n");
-            }
-          fflush(NULL);
-          
-          PhyML_Printf("\n== Relative rates\n");
-          For(i,tree->mod->ns*(tree->mod->ns-1)/2)
-            {
-              PhyML_Printf("\n== rr[%3d]: %12G %12G",i,tree->mod->r_mat->rr->v[i],tree->mod->r_mat->rr_val->v[i]); 
-            }
-          fflush(NULL);
-          
-        }
-            
-      Print_Site(tree->data,site,tree->n_otu,"\n",tree->mod->io->state_len,stdout);
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')",__FILE__,__LINE__,__FUNCTION__);
-      Exit("\n");
-    }
-
-/* Multiply log likelihood by the number of times this site pattern is found in the data */
-  tree->c_lnL_sorted[site] = tree->data->wght[site]*log_site_lk;
-  
-  tree->c_lnL += tree->data->wght[site]*log_site_lk;
-
-  Free(plk);
-  
-  return log_site_lk;
-}
-
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
@@ -5484,428 +5010,6 @@ static void AVX_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
 //////////////////////////////////////////////////////////////
 
 #if (defined (__SSE3__))
-
-phydbl SSE_Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree)
-{
-  if(tree->io->datatype == NT)
-    {
-      return SSE_Lk_Core_Nucl(state,ambiguity_check,b,tree);
-    }
-  else
-    {
-      return SSE_Lk_Core_AA(state,ambiguity_check,b,tree);
-    }
-  return -1.;
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-phydbl SSE_Lk_Core_Nucl(int state, int ambiguity_check, t_edge *b, t_tree *tree)
-{
-  phydbl log_site_lk;
-  phydbl site_lk_cat, site_lk, inv_site_lk;
-  int fact_sum_scale;
-  unsigned int catg,site;
-  int exponent;
-  int num_prec_issue;
-  unsigned int i,j,k;
-  __m128d _plk; // parent partial likelihood
-  __m128d _plk_l[2],_plk_r[2]; // partial likelihood vector on lefthand (righthand) side of b
-  __m128d _p[2]; // matrix of transition probabilities
-  __m128d _pplk[2]; // dot product of _p[i] & _plk_r
-  double plk[4];
-  const unsigned int ns   = tree->mod->ns;
-  const unsigned int dim2 = tree->mod->ns;
-  const unsigned int dim3 = tree->mod->ns * tree->mod->ns;
-#ifdef BEAGLE
-  const unsigned int dim1 = tree->n_pattern * tree->mod->ns;
-#else
-  const unsigned int dim1 = tree->mod->ras->n_catg * tree->mod->ns;
-#endif
-  
-  log_site_lk = .0;
-  site_lk     = .0;
-  site_lk_cat = .0;
-  site        = tree->curr_site;
-    
-  assert(ns == 4);
-
-  /* Skip this if no tree traveral was required, i.e. likelihood in each class of the mixture is already up to date */
-  if(tree->mod->s_opt->skip_tree_traversal == NO)
-    {
-      /* Actual likelihood calculation */
-      /* For all classes of rates */
-      for(catg=0;catg<tree->mod->ras->n_catg;++catg)
-        {
-          site_lk_cat = .0;
-
-          // Partial likelihood vector on righthand side of b
-          if(b->rght->tax == NO)
-            {
-              for(i=0;i<2;++i) _plk_r[i] = _mm_load_pd(b->p_lk_rght + site*dim1 + catg*dim2 + i*2);
-            }
-          else
-            {
-              for(i=0;i<2;++i) _plk_r[i] = _mm_load_pd(b->p_lk_tip_r + site*dim2 + i*2);
-            }
-
-          // Partial likelihood vector on lefthand side of b
-          for(i=0;i<2;++i) _plk_l[i] = _mm_load_pd(b->p_lk_left + site*dim1 + catg*dim2 + i*2);
-
-          for(j=0;j<2;++j)
-            {
-              for(i=0;i<2;++i) _pplk[i] = _mm_setzero_pd();
-
-              for(i=0;i<2;++i) 
-                {
-                  for(k=0;k<2;++k) _p[k]    = _mm_load_pd(b->Pij_rr + catg*dim3 + j*8 + i*2 + k*4);
-                  for(k=0;k<2;++k) _pplk[k] = _mm_hadd_pd(_pplk[k],_mm_mul_pd(_p[k],_plk_r[i]));
-                }
-
-              _plk = _mm_mul_pd(_mm_hadd_pd(_pplk[0],_pplk[1]),_plk_l[j]);
-              _plk = _mm_mul_pd(_plk,_mm_load_pd(tree->mod->e_frq->pi->v + j*2));
-
-              _mm_store_pd(plk+j*2,_plk);
-            }
-
-          site_lk_cat = plk[0]+plk[1]+plk[2]+plk[3];
-
-          tree->site_lk_cat[catg] = site_lk_cat;
-          
-          if(isinf(site_lk_cat) || isnan(site_lk_cat)) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-
-        } /* site likelihood for all rate classes */
-      Pull_Scaling_Factors(site,b,tree);
-    }
-  
-  fact_sum_scale = tree->fact_sum_scale[site];
-  
-  // Likelihood of the site is the sum of the individual rate specific likelihoods
-  site_lk = .0;
-  for(catg=0;catg<tree->mod->ras->n_catg;++catg)
-    {
-      site_lk +=
-        tree->unscaled_site_lk_cat[catg*tree->n_pattern + site]* 
-        tree->mod->ras->gamma_r_proba->v[catg]; //density
-    }
-  
-
-  if(tree->mod->ras->invar == YES)
-    {
-      num_prec_issue = NO;
-      inv_site_lk = Invariant_Lk(fact_sum_scale,site,&num_prec_issue,tree);
-      
-      if(num_prec_issue == YES) // inv_site_lk >> site_lk
-        {
-          site_lk = inv_site_lk * tree->mod->ras->pinvar->v;
-        }
-      else
-        {
-          site_lk = site_lk * (1. - tree->mod->ras->pinvar->v) + inv_site_lk * tree->mod->ras->pinvar->v;
-        }
-    }
-  
-  log_site_lk = log(site_lk) - (phydbl)LOG2 * fact_sum_scale; // log_site_lk =  log(site_lk_scaled / 2^(left_subtree+right_subtree))      
-
-  /* printf("\n. site_lk: %g fact_sum_scale: %d",site_lk,fact_sum_scale); */
-  
-  // Calculation of the site likelihood (using scaling factors)...
-  int piecewise_exponent;
-  phydbl multiplier;
-  if(fact_sum_scale >= 0)
-    {
-      tree->cur_site_lk[site] = site_lk;
-      exponent = -fact_sum_scale;
-      do
-        {
-          piecewise_exponent = MAX(exponent,-63);
-          multiplier = 1. / (phydbl)((unsigned long long)(1) << -piecewise_exponent);
-          tree->cur_site_lk[site] *= multiplier;
-          exponent -= piecewise_exponent;
-        }
-      while(exponent != 0);
-    }
-  else
-    {
-      //In some cases fact_sum_scale can be negative. If you rescale the partials of two independent subtrees and make some of
-      //these numbers large in order to avoid underflow, then there is a chance that when multiplied them together you will
-      //get an overflow, in which case fact_sum_scale can become negative.
-      
-      tree->cur_site_lk[site] = site_lk;
-      exponent = fact_sum_scale;
-      do
-        {
-          piecewise_exponent = MIN(exponent,63);
-          multiplier = (phydbl)((unsigned long long)(1) << piecewise_exponent);
-          tree->cur_site_lk[site] *= multiplier;
-          exponent -= piecewise_exponent;
-        }
-      while(exponent != 0);
-    }
-  
-  // ... or using the log-likelihood
-  if(isinf(site_lk) || isnan(site_lk))
-    {
-      tree->cur_site_lk[site] = exp(log_site_lk);
-    }
-  
-  if(isinf(log_site_lk) || isnan(log_site_lk))
-    {
-      PhyML_Printf("\n== Site = %d",site);
-      PhyML_Printf("\n== Invar = %d",tree->data->invar[site]);
-      PhyML_Printf("\n== Mixt = %d",tree->is_mixt_tree);
-      PhyML_Printf("\n== Lk = %G log(Lk) = %f < %G",site_lk,log_site_lk,-BIG);
-      for(catg=0;catg<tree->mod->ras->n_catg;catg++) PhyML_Printf("\n== rr=%f p=%f",tree->mod->ras->gamma_rr->v[catg],tree->mod->ras->gamma_r_proba->v[catg]);
-      PhyML_Printf("\n== Pinv = %G",tree->mod->ras->pinvar->v);
-      PhyML_Printf("\n== Bl mult = %G",tree->mod->br_len_mult->v);
-      PhyML_Printf("\n== fact_sum_scale = %d",fact_sum_scale);
-      PhyML_Printf("\n== n_catg: %d",tree->mod->ras->n_catg);
-      
-      if(tree->mod->whichmodel == GTR || tree->mod->whichmodel == CUSTOM)
-        {
-          int i,j;
-          PhyML_Printf("\n== Rate matrix\n");
-          for(i=0;i<tree->mod->ns;i++)
-            {
-              for(j=0;j<tree->mod->ns;j++)
-                {
-                  PhyML_Printf("%12G ",i,tree->mod->r_mat->qmat->v[i*4+j]); 
-                }
-              PhyML_Printf("\n");
-            }
-          fflush(NULL);
-          
-          PhyML_Printf("\n== Relative rates\n");
-          For(i,tree->mod->ns*(tree->mod->ns-1)/2)
-            {
-              PhyML_Printf("\n== rr[%3d]: %12G %12G",i,tree->mod->r_mat->rr->v[i],tree->mod->r_mat->rr_val->v[i]); 
-            }
-          fflush(NULL);
-          
-        }
-            
-      Print_Site(tree->data,site,tree->n_otu,"\n",tree->mod->io->state_len,stdout);
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')",__FILE__,__LINE__,__FUNCTION__);
-      Exit("\n");
-    }
-
-/* Multiply log likelihood by the number of times this site pattern is found in the data */
-  tree->c_lnL_sorted[site] = tree->data->wght[site]*log_site_lk;
-  
-  tree->c_lnL += tree->data->wght[site]*log_site_lk;
-
-  return log_site_lk;
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-phydbl SSE_Lk_Core_AA(int state, int ambiguity_check, t_edge *b, t_tree *tree)
-{
-  phydbl log_site_lk;
-  phydbl site_lk_cat, site_lk, inv_site_lk;
-  int fact_sum_scale;
-  unsigned int catg,site;
-  int exponent;
-  int num_prec_issue;
-  int piecewise_exponent;
-  phydbl multiplier;
-  unsigned int i,j,k;
-  __m128d _plk; // parent partial likelihood
-  __m128d _plk_l[10],_plk_r[10]; // partial likelihood vector on lefthand (righthand) side of b
-  __m128d _p[2]; // matrix of transition probabilities
-  __m128d _pplk[2]; // dot product of _p[i] & _plk_r
-  double plk[20];
-  const unsigned int ns   = tree->mod->ns;
-  const unsigned int dim2 = tree->mod->ns;
-  const unsigned int dim3 = tree->mod->ns * tree->mod->ns;
-#ifdef BEAGLE
-  const unsigned int dim1 = tree->n_pattern * tree->mod->ns;
-#else
-  const unsigned int dim1 = tree->mod->ras->n_catg * tree->mod->ns;
-#endif
-
-  log_site_lk     = .0;
-  site_lk         = .0;
-  site_lk_cat     = .0;
-  site            = tree->curr_site;
-    
-  assert(ns == 20);
-
-  /* Skip this if no tree traveral was required, i.e. likelihood in each class of the mixture is already up to date */
-  if(tree->mod->s_opt->skip_tree_traversal == NO)
-    {
-      /* Actual likelihood calculation */
-      /* For all classes of rates */
-      for(catg=0;catg<tree->mod->ras->n_catg;++catg)
-        {
-          site_lk_cat = .0;
-          
-          // Partial likelihood vector on righthand side of b
-          if(b->rght->tax == NO)
-            {
-              for(i=0;i<10;++i) _plk_r[i] = _mm_load_pd(b->p_lk_rght + site*dim1 + catg*dim2 + i*2);
-            }
-          else
-            {
-              for(i=0;i<10;++i) _plk_r[i] = _mm_load_pd(b->p_lk_tip_r + site*dim2 + i*2);
-            }
-
-          // Partial likelihood vector on lefthand side of b
-          for(i=0;i<10;++i) _plk_l[i] = _mm_load_pd(b->p_lk_left + site*dim1 + catg*dim2 + i*2);
-
-          for(j=0;j<10;++j)
-            {
-              for(i=0;i<2;++i) _pplk[i] = _mm_setzero_pd();
-
-              for(i=0;i<10;++i) 
-                {
-                  for(k=0;k<2;++k) _p[k] = _mm_load_pd(b->Pij_rr + catg*dim3 + j*40 + i*2 + k*20);
-                  for(k=0;k<2;++k) _pplk[k] = _mm_hadd_pd(_pplk[k],_mm_mul_pd(_p[k],_plk_r[i]));
-                }
-
-              _plk = _mm_mul_pd(_mm_hadd_pd(_pplk[0],_pplk[1]),_plk_l[j]);
-              _plk = _mm_mul_pd(_plk,_mm_load_pd(tree->mod->e_frq->pi->v + j*2));
-
-              _mm_store_pd(plk+j*2,_plk);
-            }
-
-          site_lk_cat = 
-            plk[0]+plk[1]+plk[2]+plk[3] +
-            plk[4]+plk[5]+plk[6]+plk[7] +
-            plk[8]+plk[9]+plk[10]+plk[11] +
-            plk[12]+plk[13]+plk[14]+plk[15] +
-            plk[16]+plk[17]+plk[18]+plk[19] ;
-
-          tree->site_lk_cat[catg] = site_lk_cat;
-          
-          if(isinf(site_lk_cat) || isnan(site_lk_cat)) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-
-        } /* site likelihood for all rate classes */
-      Pull_Scaling_Factors(site,b,tree);
-    }
-  
-  fact_sum_scale = tree->fact_sum_scale[site];
-  
-  //Likelihood of the site is the sum of the individual rate specific likelihoods
-  site_lk = .0;
-  for(catg=0;catg<tree->mod->ras->n_catg;++catg)
-    {
-      site_lk +=
-        tree->unscaled_site_lk_cat[catg*tree->n_pattern + site]* 
-        tree->mod->ras->gamma_r_proba->v[catg]; //density
-    }
-  
-
-  if(tree->mod->ras->invar == YES)
-    {
-      num_prec_issue = NO;
-      inv_site_lk = Invariant_Lk(fact_sum_scale,site,&num_prec_issue,tree);
-      
-      if(num_prec_issue == YES) // inv_site_lk >> site_lk
-        {
-          site_lk = inv_site_lk * tree->mod->ras->pinvar->v;
-        }
-      else
-        {
-          site_lk = site_lk * (1. - tree->mod->ras->pinvar->v) + inv_site_lk * tree->mod->ras->pinvar->v;
-        }
-    }
-  
-  log_site_lk = log(site_lk) - (phydbl)LOG2 * fact_sum_scale; // log_site_lk =  log(site_lk_scaled / 2^(left_subtree+right_subtree))      
-
-  /* printf("\n. site_lk: %g fact_sum_scale: %d",site_lk,fact_sum_scale); */
-  
-  // Calculation of the site likelihood (using scaling factors)...
-  if(fact_sum_scale >= 0)
-    {
-      tree->cur_site_lk[site] = site_lk;
-      exponent = -fact_sum_scale;
-      do
-        {
-          piecewise_exponent = MAX(exponent,-63);
-          multiplier = 1. / (phydbl)((unsigned long long)(1) << -piecewise_exponent);
-          tree->cur_site_lk[site] *= multiplier;
-          exponent -= piecewise_exponent;
-        }
-      while(exponent != 0);
-    }
-  else
-    {
-      //In some cases fact_sum_scale can be negative. If you rescale the partials of two independent subtrees and make some of
-      //these numbers large in order to avoid underflow, then there is a chance that when multiplied them together you will
-      //get an overflow, in which case fact_sum_scale can become negative.
-      
-      tree->cur_site_lk[site] = site_lk;
-      exponent = fact_sum_scale;
-      do
-        {
-          piecewise_exponent = MIN(exponent,63);
-          multiplier = (phydbl)((unsigned long long)(1) << piecewise_exponent);
-          tree->cur_site_lk[site] *= multiplier;
-          exponent -= piecewise_exponent;
-        }
-      while(exponent != 0);
-    }
-  
-  // ... or using the log-likelihood
-  if(isinf(site_lk) || isnan(site_lk))
-    {
-      tree->cur_site_lk[site] = exp(log_site_lk);
-    }
-  
-  if(isinf(log_site_lk) || isnan(log_site_lk))
-    {
-      PhyML_Printf("\n== Site = %d",site);
-      PhyML_Printf("\n== Invar = %d",tree->data->invar[site]);
-      PhyML_Printf("\n== Mixt = %d",tree->is_mixt_tree);
-      PhyML_Printf("\n== Lk = %G log(Lk) = %f < %G",site_lk,log_site_lk,-BIG);
-      for(catg=0;catg<tree->mod->ras->n_catg;catg++) PhyML_Printf("\n== rr=%f p=%f",tree->mod->ras->gamma_rr->v[catg],tree->mod->ras->gamma_r_proba->v[catg]);
-      PhyML_Printf("\n== Pinv = %G",tree->mod->ras->pinvar->v);
-      PhyML_Printf("\n== Bl mult = %G",tree->mod->br_len_mult->v);
-      PhyML_Printf("\n== fact_sum_scale = %d",fact_sum_scale);
-      PhyML_Printf("\n== n_catg: %d",tree->mod->ras->n_catg);
-      
-      if(tree->mod->whichmodel == GTR || tree->mod->whichmodel == CUSTOM)
-        {
-          int i,j;
-          PhyML_Printf("\n== Rate matrix\n");
-          for(i=0;i<tree->mod->ns;i++)
-            {
-              for(j=0;j<tree->mod->ns;j++)
-                {
-                  PhyML_Printf("%12G ",i,tree->mod->r_mat->qmat->v[i*4+j]); 
-                }
-              PhyML_Printf("\n");
-            }
-          fflush(NULL);
-          
-          PhyML_Printf("\n== Relative rates\n");
-          For(i,tree->mod->ns*(tree->mod->ns-1)/2)
-            {
-              PhyML_Printf("\n== rr[%3d]: %12G %12G",i,tree->mod->r_mat->rr->v[i],tree->mod->r_mat->rr_val->v[i]); 
-            }
-          fflush(NULL);
-          
-        }
-            
-      Print_Site(tree->data,site,tree->n_otu,"\n",tree->mod->io->state_len,stdout);
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')",__FILE__,__LINE__,__FUNCTION__);
-      Exit("\n");
-    }
-
-/* Multiply log likelihood by the number of times this site pattern is found in the data */
-  tree->c_lnL_sorted[site] = tree->data->wght[site]*log_site_lk;
-  
-  tree->c_lnL += tree->data->wght[site]*log_site_lk;
-
-
-  return log_site_lk;
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
 
 static void SSE_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
 {
@@ -6342,6 +5446,46 @@ static void SSE_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+void Dot_Prod_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, phydbl *expl, t_tree *tree)
+{
+  unsigned int l;
+  const unsigned int ns = tree->mod->ns;
+  const unsigned int ncatg = tree->mod->ras->n_catg;
+  phydbl *dot_prod = tree->dot_prod;
 
+   
+#if (defined(__AVX__))
+  const unsigned int sz = (int)BYTE_ALIGN / 8;
+  const unsigned nblocks = ns*ncatg/sz;
+  __m256d _prod[nblocks];
+  
+#ifdef SAFEMODE
+  assert(sz == 4);
+#endif
+
+  for(l=0;l<nblocks;++l) _prod[l] = _mm256_load_pd(p_lk_left + l*sz);
+  for(l=0;l<nblocks;++l) _prod[l] = _mm256_mul_pd(_prod[l],_mm256_load_pd(p_lk_rght + l*sz));
+  for(l=0;l<nblocks;++l) _prod[l] = _mm256_mul_pd(_prod[l],_mm256_load_pd(expl + l*sz));
+  for(l=0;l<nblocks;++l) _mm256_store_pd(dot_prod + l*sz,_prod[l]);
+  
+  
+#elif (defined(__SSE3__))
+  
+  const unsigned sz = (int)BYTE_ALIGN / 8;
+  const unsigned int nblocks = ns*ncatg/sz;
+  __m128d _prod[nblocks];
+  
+#ifdef SAFEMODE
+  assert(sz == 2);
+#endif
+  
+  for(l=0;l<nblocks;++l) _prod[l] = _mm_load_pd(p_lk_left + l*sz);
+  for(l=0;l<nblocks;++l) _prod[l] = _mm_mul_pd(_prod[l],_mm_load_pd(p_lk_rght + l*sz));
+  for(l=0;l<nblocks;++l) _prod[l] = _mm_mul_pd(_prod[l],_mm_load_pd(expl + l*sz));
+  for(l=0;l<nblocks;++l) _mm_store_pd(dot_prod + l*sz,_prod[l]);
+#else
+  
+#endif
+}
 
 

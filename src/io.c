@@ -3274,7 +3274,7 @@ void Print_Settings(option *io)
 #endif
                );
   PhyML_Printf("\n                . SSE enabled:\t\t\t\t\t %s",
-#if defined(__SSE__)
+#if defined(__SSE3__)
                "yes"
 #else
                "no"

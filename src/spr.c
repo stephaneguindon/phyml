@@ -4771,8 +4771,8 @@ void Spr_List_Of_Trees(t_tree *tree)
   t_tree **tree_list;
   phydbl *lnL_list,best_lnL;
 
-  const unsigned int list_size_first_round  = 10;
-  const unsigned int list_size_second_round = 5;
+  const unsigned int list_size_first_round  = 15;
+  const unsigned int list_size_second_round = 10;
 
   best_lnL      = UNLIKELY;
   tree->verbose = (tree->verbose == VL0) ? VL0 : VL1;
@@ -4841,7 +4841,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
       
-      tree->mod->s_opt->max_depth_path    = 10;
+      tree->mod->s_opt->max_depth_path    = 20;
       tree->mod->s_opt->spr_lnL           = YES;
       tree->mod->s_opt->spr_pars          = NO;
       tree->mod->s_opt->min_diff_lk_move  = 0.1;
