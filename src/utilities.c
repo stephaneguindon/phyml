@@ -4899,8 +4899,8 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
 
   if(b1->l->onoff == ON)
     {
-      b1->l->v     += b2->l->v;
-      b1->l_var->v += b2->l_var->v;
+      b1->l->v     *= 2.0;
+      b1->l_var->v *= 2.0;
     }
 
 
@@ -5172,8 +5172,8 @@ void Graft_Subtree(t_edge *target, t_node *link, t_node *link_daughter, t_edge *
 
   if(target->l->onoff == ON)
     {
-      target->l->v     /= 2.;
-      target->l_var->v /= 2.;
+      target->l->v     /= 2.0;
+      target->l_var->v /= 2.0;
     }
 
   if(residual->l->onoff == ON)
@@ -5556,8 +5556,8 @@ phydbl Triple_Dist(t_node *a, t_tree *tree)
       Update_P_Lk(tree,a->b[2],a);
       Fast_Br_Len(a->b[2],tree,YES);
 
-      Update_P_Lk(tree,a->b[1],a);
-      Update_P_Lk(tree,a->b[0],a);
+      /* Update_P_Lk(tree,a->b[1],a); */
+      /* Update_P_Lk(tree,a->b[0],a); */
     }
   
   return tree->c_lnL;

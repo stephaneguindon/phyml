@@ -3592,9 +3592,6 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
       Update_PMat_At_Given_Edge(b_target,tree);
       Update_PMat_At_Given_Edge(b_arrow,tree);
       Update_P_Lk(tree,b_residual,n_link);
-      /* !!!!!!!!!! */
-      /* Fast_Br_Len(b_residual,tree,YES); */
-      /* Triple_Dist(n_link,tree); */
       Lk(b_residual,tree);
       MIXT_Set_Alias_Subpatt(NO,tree);      
     }
@@ -4771,8 +4768,8 @@ void Spr_List_Of_Trees(t_tree *tree)
   t_tree **tree_list;
   phydbl *lnL_list,best_lnL;
 
-  const unsigned int list_size_first_round  = 15;
-  const unsigned int list_size_second_round = 10;
+  const unsigned int list_size_first_round  = 10;
+  const unsigned int list_size_second_round = 5;
 
   best_lnL      = UNLIKELY;
   tree->verbose = (tree->verbose == VL0) ? VL0 : VL1;
@@ -4802,9 +4799,7 @@ void Spr_List_Of_Trees(t_tree *tree)
           Stepwise_Add_Pars(tree);  
           Spr_Pars(0,100,tree);
         }
-      
-      Optimize_Br_Len_Serie(tree);
-      
+            
       tree->best_lnL = UNLIKELY;
       tree->mod->s_opt->fast_nni = NO;
       Simu(tree,1);
@@ -4817,8 +4812,6 @@ void Spr_List_Of_Trees(t_tree *tree)
           if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf(" *");
           if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
         }
-
-      /* printf("\n* %p lnL: %f -- %f",(void *)tree,tree->c_lnL,best_lnL); */
 
       tree_list[list_size] = Make_Tree_From_Scratch(tree->n_otu,tree->data);
       Copy_Tree(tree,tree_list[list_size]);
@@ -4845,7 +4838,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       tree->mod->s_opt->spr_lnL           = YES;
       tree->mod->s_opt->spr_pars          = NO;
       tree->mod->s_opt->min_diff_lk_move  = 0.1;
-      tree->mod->s_opt->eval_list_regraft = NO;
+      tree->mod->s_opt->eval_list_regraft = YES;
       tree->mod->s_opt->max_delta_lnL_spr = 50.;
       
       do
