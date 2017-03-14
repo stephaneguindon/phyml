@@ -4834,7 +4834,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
       
-      tree->mod->s_opt->max_depth_path    = 20;
+      tree->mod->s_opt->max_depth_path    = tree->n_otu;
       tree->mod->s_opt->spr_lnL           = YES;
       tree->mod->s_opt->spr_pars          = NO;
       tree->mod->s_opt->min_diff_lk_move  = 0.1;
@@ -4849,7 +4849,7 @@ void Spr_List_Of_Trees(t_tree *tree)
           Spr(tree->c_lnL,1.0,tree);
           tree->mod->s_opt->max_depth_path = MAX(tree->max_spr_depth,10);
         }
-      while(tree->n_improvements > 1);
+      while(tree->n_improvements > 3);
 
       Optimize_Br_Len_Serie(tree);
       if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n. Tree %3d lnL: %12.2f",list_size+1,tree->c_lnL);
