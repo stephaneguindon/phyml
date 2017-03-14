@@ -4768,8 +4768,8 @@ void Spr_List_Of_Trees(t_tree *tree)
   t_tree **tree_list;
   phydbl *lnL_list,best_lnL;
 
-  const unsigned int list_size_first_round  = 10;
-  const unsigned int list_size_second_round = 5;
+  const unsigned int list_size_first_round  = 15;
+  const unsigned int list_size_second_round = 10;
 
   best_lnL      = UNLIKELY;
   tree->verbose = (tree->verbose == VL0) ? VL0 : VL1;
@@ -4849,7 +4849,7 @@ void Spr_List_Of_Trees(t_tree *tree)
           Spr(tree->c_lnL,1.0,tree);
           tree->mod->s_opt->max_depth_path = MAX(tree->max_spr_depth,15);
         }
-      while(tree->n_improvements > 3);
+      while(tree->n_improvements > 5);
 
       Optimize_Br_Len_Serie(tree);
       if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n. Tree %3d lnL: %12.2f",list_size+1,tree->c_lnL);
