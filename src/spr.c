@@ -4770,6 +4770,7 @@ void Spr_List_Of_Trees(t_tree *tree)
 
   const unsigned int list_size_first_round  = 10;
   const unsigned int list_size_second_round = 5;
+  const unsigned int list_size_second_round = 2;
 
   best_lnL      = UNLIKELY;
   tree->verbose = (tree->verbose == VL0) ? VL0 : VL1;
@@ -4873,16 +4874,53 @@ void Spr_List_Of_Trees(t_tree *tree)
 
 
   
-  tree->mod->s_opt->max_depth_path    = tree->n_otu;
-  tree->mod->s_opt->spr_lnL           = YES;
-  tree->mod->s_opt->spr_pars          = NO;
-  tree->mod->s_opt->min_diff_lk_move  = 0.1;
-  tree->mod->s_opt->eval_list_regraft = YES;
-  tree->mod->s_opt->max_delta_lnL_spr = 100.;
+  if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Improving the best trees...");
+  list_size = 0;
+  do
+    {
+      Copy_Tree(tree_list[rk[list_size]],tree);
+
+      if(list_size == 0) Round_Optimize(tree,ROUND_MAX);
+      
+      Set_Both_Sides(NO,tree);
+      Lk(NULL,tree);
+      
+      tree->mod->s_opt->max_depth_path    = 20;
+      tree->mod->s_opt->spr_lnL           = YES;
+      tree->mod->s_opt->spr_pars          = NO;
+      tree->mod->s_opt->min_diff_lk_move  = 0.1;
+      tree->mod->s_opt->eval_list_regraft = YES;
+      tree->mod->s_opt->max_delta_lnL_spr = 100;
+      
+      do
+        {
+          Set_Both_Sides(YES,tree);
+          Lk(NULL,tree);
+          tree->best_lnL = tree->c_lnL;
+          Spr(tree->c_lnL,1.0,tree);
+          tree->mod->s_opt->max_depth_path = MAX(tree->max_spr_depth,10);
+        }
+      while(tree->n_improvements > 5);
+
+      Optimize_Br_Len_Serie(tree);
+      if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n. Tree %3d lnL: %12.2f",list_size+1,tree->c_lnL);
+      
+      if(tree->c_lnL > best_lnL) 
+        {
+          best_lnL = tree->c_lnL;
+          if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf(" *");
+          if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
+        }
+      
+      Copy_Tree(tree,tree_list[rk[list_size]]);
+      lnL_list[rk[list_size]] = tree->c_lnL;
+    }
+  while(++list_size < list_size_third_round);
   
-  Set_Both_Sides(YES,tree);
-  Lk(NULL,tree);
-  Spr(tree->c_lnL,1.0,tree);
+
+  Free(rk);
+  rk = Ranks(lnL_list,max_list_size);
+  Copy_Tree(tree_list[rk[0]],tree);
   
 
 
