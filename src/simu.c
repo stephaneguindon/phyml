@@ -49,6 +49,7 @@ int Simu(t_tree *tree, int n_step_max)
                     tree);
       delta = tree->c_lnL - old_loglk;
       n_round++;
+      if(n_round == n_step_max) break;
     }
   while(delta > 1.0 || n_round < 5);
 
@@ -934,12 +935,12 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
   
   if(d->tax == YES)
     {
-      /* Fast_Br_Len(b,tree,YES); */
       Br_Len_Brent(b,tree);
       return;
     }
   else if(a->tax == YES)
     {      
+      Br_Len_Brent(b,tree);
       for(i=0;i<3;++i) if(d->v[i] != a)
         {
           Update_P_Lk(tree,d->b[i],d);
@@ -983,7 +984,6 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
 
       // Optimize edge length
       Br_Len_Brent(b,tree);
-      /* Fast_Br_Len(b,tree,YES); */
       lk0 = tree->c_lnL;
       Record_Br_Len(tree);
 
@@ -997,6 +997,7 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
           // Update partial likelihood looking down
           Update_P_Lk(tree,b,d);
           // Evaluate likelihood
+          Br_Len_Brent(b,tree);
           lk1 = Lk(b,tree);
           lk1 = tree->c_lnL;
           
@@ -1012,6 +1013,7 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
               // Update partial likelihood looking down
               Update_P_Lk(tree,b,d);
               // Evaluate likelihood
+              Br_Len_Brent(b,tree);
               lk2 = Lk(b,tree);
               lk2 = tree->c_lnL;
               
