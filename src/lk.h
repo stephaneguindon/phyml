@@ -108,9 +108,7 @@ void Dot_Prod_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, phydbl *expl, t_tre
 phydbl AVX_Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree);
 phydbl AVX_Lk_Core_Nucl(int state, int ambiguity_check, t_edge *b, t_tree *tree);
 phydbl AVX_Lk_Core_AA(int state, int ambiguity_check, t_edge *b, t_tree *tree);
-#endif
-
-#if defined(__SSE3__)
+#elif defined(__SSE3__)
 phydbl SSE_Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree);
 phydbl SSE_Lk_Core_Nucl(int state, int ambiguity_check, t_edge *b, t_tree *tree);
 phydbl SSE_Lk_Core_AA(int state, int ambiguity_check, t_edge *b, t_tree *tree);

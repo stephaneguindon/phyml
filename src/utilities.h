@@ -250,7 +250,7 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define  BLOCK_LABELS         100
 
 #define  NODE_DEG_MAX        2000
-#define  BRENT_IT_MAX         500
+#define  BRENT_IT_MAX         100
 #define  BRENT_CGOLD    0.3819660
 #define  BRENT_ZEPS        1.e-10
 #define  MNBRAK_GOLD     1.618034
@@ -371,7 +371,7 @@ typedef	double phydbl;
 #define TAN tan
 #define SMALL DBL_MIN
 #define BIG  DBL_MAX
-#define SMALL_PIJ 1.E-40
+#define SMALL_PIJ 1.E-100
 #define LOGBIG 690.
 #define LOGSMALL -690.
 

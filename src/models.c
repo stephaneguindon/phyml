@@ -250,8 +250,8 @@ phydbl Get_Lambda_F84(phydbl *pi, phydbl *kappa)
 
 void PMat_Empirical(phydbl l, t_mod *mod, int pos, phydbl *Pij, phydbl *tPij)
 {
-  int n = mod->ns;
-  int i, j, k;
+  const unsigned int ns = mod->ns;
+  unsigned int i, j, k;
   phydbl *U,*V,*R;
   phydbl *expt;
   phydbl *uexpt;
@@ -264,36 +264,36 @@ void PMat_Empirical(phydbl l, t_mod *mod, int pos, phydbl *Pij, phydbl *tPij)
   R     = mod->eigen->e_val; /* exponential of the eigen value matrix */
 
   /* Initialize a rate-specific N*N matrix */
-  for(i=0;i<n;i++) for(k=0;k<n;k++) Pij[pos+mod->ns*i+k] = .0;
+  for(i=0;i<ns;++i) for(k=0;k<ns;k++) Pij[pos+ns*i+k] = .0;
   /* compute POW(exp(D/mr),l) into mat_eDmrl */
-  for(k=0;k<n;k++)  expt[k] = (phydbl)POW(R[k],l);
+  for(k=0;k<ns;++k)  expt[k] = (phydbl)POW(R[k],l);
   /* multiply Vr*POW(exp(D/mr),l)*Vi into Pij */
-  For (i,n) For (k,n) uexpt[i*n+k] = U[i*n+k] * expt[k];
+  for(i=0;i<ns;i++) for (k=0;k<ns;k++) uexpt[i*ns+k] = U[i*ns+k] * expt[k];
 
-  For (i,n)
+  for(i=0;i<ns;++i)
     {
-      For (j,n)
+      for(j=0;j<ns;++j)
         {
-          for(k=0;k<n;k++)
+          for(k=0;k<ns;++k)
             {
-              Pij[pos+mod->ns*i+j] += (uexpt[i*n+k] * V[k*n+j]);
+              Pij[pos+ns*i+j] += (uexpt[i*ns+k] * V[k*ns+j]);
             }
 
-          if(Pij[pos+mod->ns*i+j] < SMALL_PIJ) Pij[pos+mod->ns*i+j] = SMALL_PIJ;
+          if(Pij[pos+ns*i+j] < SMALL_PIJ) Pij[pos+ns*i+j] = SMALL_PIJ;
         }
 
       sum = 0.0;
-      for(j=0;j<n;j++) sum += Pij[pos+mod->ns*i+j];
-      for(j=0;j<n;j++) Pij[pos+mod->ns*i+j] /= sum;
+      for(j=0;j<ns;++j) sum += Pij[pos+ns*i+j];
+      for(j=0;j<ns;++j) Pij[pos+ns*i+j] /= sum;
     }
 
   if(tPij)
     {
-      For (i,n)
+      for(i=0;i<ns;++i)
         {
-          For (j,n)
+          for(j=0;j<ns;++j)
             {
-              tPij[pos+mod->ns*i+j] = Pij[pos+mod->ns*j+i];
+              tPij[pos+ns*i+j] = Pij[pos+ns*j+i];
             }
         }
     }

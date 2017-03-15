@@ -59,8 +59,6 @@ dnl LT_INIT
 dnl AC_PROG_LIBTOOL
 
 DEFAULT_C_FLAG="-O2 -fomit-frame-pointer -funroll-loops -Wall ${VECTOR_FLAG}"
-dnl DEFAULT_C_FLAG="-O3 ${VECTOR_FLAG}"
-dnl DEFAULT_C_FLAG="-Wall -Os ${VECTOR_FLAG}"
 
 AC_ARG_ENABLE([debug],
               [AS_HELP_STRING([--enable-debug],
@@ -79,7 +77,7 @@ AC_ARG_ENABLE([gprof],
               [AS_HELP_STRING([--enable-gprof],
                               [Remove optimization options and add profiling informations.])])
 AS_IF([test "x$enable_gprof" = "xyes"],
-      [CFLAGS="-ansi -pedantic -Wall -std=c99 -O0 -g -pg ${VECTOR_FLAG}"],
+      [CFLAGS="-Wall -O2 -pg ${VECTOR_FLAG}"],
       [AS_IF([test "x$enable_debug" = "xno"],[CFLAGS="${DEFAULT_C_FLAG}"])])
 
 AC_ARG_ENABLE([mpi],

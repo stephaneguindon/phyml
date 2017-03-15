@@ -973,7 +973,7 @@ void Stepwise_Add_Pars(t_tree *tree)
 
   // Remove all tips except that corresponding to a_nodes[0], 
   // a_nodes[1] and a_nodes[2].  
-  for(i=0;i<tree->n_otu-3;i++)
+  for(i=0;i<tree->n_otu-3;++i)
     {
       Prune_Subtree(tree->a_nodes[i+3]->v[0],                   
                     tree->a_nodes[i+3],
@@ -987,7 +987,7 @@ void Stepwise_Add_Pars(t_tree *tree)
   for(i=0;i<n_targets;i++) targets[i] = tree->a_nodes[i]->b[0];
 
   // Regraft each tip on the tree at most parsimonious position
-  for(i=0;i<tree->n_otu-3;i++)
+  for(i=0;i<tree->n_otu-3;++i)
     {
       Set_Both_Sides(YES,tree);
       Pars(NULL,tree);

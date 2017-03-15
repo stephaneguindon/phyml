@@ -23,10 +23,7 @@ static void AVX_Update_P_Lk_Nucl(t_tree *tree,t_edge *b_fcus,t_node *n);
 static void AVX_Update_P_Lk_AA(t_tree *tree,t_edge *b_fcus,t_node *n);
 static inline __m256d AVX_Horizontal_Add(__m256d x[4]);
 static void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree);
-#endif
-
-
-#if (defined(__SSE3__))
+#elif (defined(__SSE3__))
 static void SSE_Update_P_Lk_Nucl(t_tree *tree,t_edge *b_fcus,t_node *n);
 static void SSE_Update_P_Lk_AA(t_tree *tree,t_edge *b_fcus,t_node *n);
 static void SSE_Update_Eigen_Lr(t_edge *b, t_tree *tree);
@@ -805,12 +802,11 @@ phydbl Lk_Core(int state, int ambiguity_check, short int returnlog, short int de
   int num_prec_issue;
   int piecewise_exponent;
   phydbl multiplier;
-  const unsigned int ns = tree->mod->ns;
+  const unsigned int ns    = tree->mod->ns;
   const unsigned int ncatg = tree->mod->ras->n_catg;
-  const unsigned int site = tree->curr_site;
-  
-  const unsigned dim2 = ns;
-  const unsigned dim3 = ns * ns;
+  const unsigned int site  = tree->curr_site;  
+  const unsigned dim2      = ns;
+  const unsigned dim3      = ns * ns;
   
   log_site_lk     = .0;
   site_lk         = .0;
@@ -857,13 +853,12 @@ phydbl Lk_Core(int state, int ambiguity_check, short int returnlog, short int de
   
   fact_sum_scale = tree->fact_sum_scale[site];
 
-  //Likelihood of the site is the sum of the individual rate specific likelihoods
   site_lk = .0;
   for(catg=0;catg<tree->mod->ras->n_catg;++catg)
     {
       site_lk +=
         tree->unscaled_site_lk_cat[catg*tree->n_pattern + site]* 
-        tree->mod->ras->gamma_r_proba->v[catg]; //density
+        tree->mod->ras->gamma_r_proba->v[catg];
     }
 
   
@@ -1185,11 +1180,7 @@ static void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree)
     }
   if(ev)  Free(ev);
 }
-#endif
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-#if (defined(__SSE3__))
+#elif (defined(__SSE3__))
 static void SSE_Update_Eigen_Lr(t_edge *b, t_tree *tree)
 {
   unsigned int site,catg,state,is_ambigu,observed_state;
@@ -4562,9 +4553,6 @@ static inline __m256d AVX_Horizontal_Add(__m256d x[4])
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
 static void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
 {
 /*
@@ -4980,12 +4968,11 @@ static void AVX_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
         }
     }
 }
-#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined (__SSE3__))
+#elif (defined (__SSE3__))
 
 static void SSE_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
 {

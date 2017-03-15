@@ -3394,10 +3394,7 @@ int Test_All_Spr_Targets(t_edge *b_pulled, t_node *n_link, t_tree *tree)
     {
       Prune_Subtree(n_link,n_opp_to_link,&b_target,&b_residual,tree);
 
-      if(tree->mod->s_opt->spr_lnL == YES)
-        {
-          Update_PMat_At_Given_Edge(b_target,tree);
-        }
+      if(tree->mod->s_opt->spr_lnL == YES) Update_PMat_At_Given_Edge(b_target,tree);
 
       best_found = NO;
       tree->depth_curr_path = 0;
@@ -3490,7 +3487,7 @@ void Test_One_Spr_Target_Recur(t_node *a, t_node *d, t_edge *pulled, t_node *lin
     {
       phydbl move_score;
       
-      for(i=0;i<3;i++)
+      for(i=0;i<3;++i)
         {
           if(d->v[i] != a)
             {
@@ -4768,8 +4765,9 @@ void Spr_List_Of_Trees(t_tree *tree)
   t_tree **tree_list;
   phydbl *lnL_list,best_lnL;
 
-  const unsigned int list_size_first_round  = 15;
-  const unsigned int list_size_second_round = 10;
+  const unsigned int list_size_first_round  = 100;
+  const unsigned int list_size_second_round = 20;
+  const unsigned int list_size_third_round = 10;
 
   best_lnL      = UNLIKELY;
   tree->verbose = (tree->verbose == VL0) ? VL0 : VL1;
@@ -4800,11 +4798,10 @@ void Spr_List_Of_Trees(t_tree *tree)
           Spr_Pars(0,100,tree);
         }
             
-      tree->best_lnL = UNLIKELY;
-      tree->mod->s_opt->fast_nni = NO;
-      Simu(tree,1);
-      
       Optimize_Br_Len_Serie(tree);
+      /* Set_Both_Sides(NO,tree); */
+      /* Lk(NULL,tree); */
+
 
       if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n. Tree %3d lnL: %12.2f",list_size+1,tree->c_lnL);
 
@@ -4822,9 +4819,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   while(++list_size < list_size_first_round);
   
   rk = Ranks(lnL_list,max_list_size);
-    
-
-
+      
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Improving the best trees...");
   list_size = 0;
   do
@@ -4832,28 +4827,13 @@ void Spr_List_Of_Trees(t_tree *tree)
       Copy_Tree(tree_list[rk[list_size]],tree);
 
       if(list_size == 0) Round_Optimize(tree,ROUND_MAX);
-      
-      Set_Both_Sides(NO,tree);
-      Lk(NULL,tree);
-      
-      tree->mod->s_opt->max_depth_path    = tree->n_otu;
-      tree->mod->s_opt->spr_lnL           = YES;
-      tree->mod->s_opt->spr_pars          = NO;
-      tree->mod->s_opt->min_diff_lk_move  = 0.1;
-      tree->mod->s_opt->eval_list_regraft = NO;
-      tree->mod->s_opt->max_delta_lnL_spr = 100.;
-      
-      do
-        {
-          Set_Both_Sides(YES,tree);
-          Lk(NULL,tree);
-          tree->best_lnL = tree->c_lnL;
-          Spr(tree->c_lnL,1.0,tree);
-          /* tree->mod->s_opt->max_depth_path = MAX(tree->max_spr_depth,15); */
-        }
-      while(tree->n_improvements > 5);
 
+      tree->best_lnL = tree_list[rk[list_size]]->c_lnL;
+      tree->mod->s_opt->fast_nni = NO;
+      Simu(tree,1);
+      
       Optimize_Br_Len_Serie(tree);
+
       if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n. Tree %3d lnL: %12.2f",list_size+1,tree->c_lnL);
       
       if(tree->c_lnL > best_lnL) 
@@ -4872,7 +4852,53 @@ void Spr_List_Of_Trees(t_tree *tree)
   Free(rk);
   rk = Ranks(lnL_list,max_list_size);
   Copy_Tree(tree_list[rk[0]],tree);
-   
+
+    if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Improving the best trees...");
+  list_size = 0;
+  do
+    {
+      Copy_Tree(tree_list[rk[list_size]],tree);
+
+      if(list_size == 0) Round_Optimize(tree,ROUND_MAX);
+
+      tree->best_lnL                      = tree_list[rk[list_size]]->c_lnL;
+      tree->mod->s_opt->max_depth_path    = 20;
+      tree->mod->s_opt->spr_lnL           = YES;
+      tree->mod->s_opt->spr_pars          = NO;
+      tree->mod->s_opt->min_diff_lk_move  = 0.1;
+      tree->mod->s_opt->eval_list_regraft = NO;
+      tree->mod->s_opt->max_delta_lnL_spr = 100.;
+      
+      do
+        {
+          Set_Both_Sides(YES,tree);
+          Lk(NULL,tree);
+          tree->best_lnL = tree->c_lnL;
+          Spr(tree->c_lnL,1.0,tree);
+        }
+      while(tree->n_improvements > 5);
+
+      Optimize_Br_Len_Serie(tree);
+
+      if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n. Tree %3d lnL: %12.2f",list_size+1,tree->c_lnL);
+      
+      if(tree->c_lnL > best_lnL) 
+        {
+          best_lnL = tree->c_lnL;
+          if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf(" *");
+          if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
+        }
+      
+      Copy_Tree(tree,tree_list[rk[list_size]]);
+      lnL_list[rk[list_size]] = tree->c_lnL;
+    }
+  while(++list_size < list_size_third_round);
+  
+
+  Free(rk);
+  rk = Ranks(lnL_list,max_list_size);
+  Copy_Tree(tree_list[rk[0]],tree);
+
   tree->mod->s_opt->min_diff_lk_move  = 0.01;
   do
     {

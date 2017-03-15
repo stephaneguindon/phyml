@@ -4505,9 +4505,9 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
 {
   int i,j;
 
-  For(i,2*ori->n_otu-2)
+  for(i=0;i<2*ori->n_otu-2;++i)
     {
-      for(j=0;j<3;j++)
+      for(j=0;j<3;++j)
         {
           if(ori->a_nodes[i]->v[j])
             {
@@ -4523,7 +4523,7 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
         }
     }
 
-  For(i,2*ori->n_otu-3)
+  for(i=0;i<2*ori->n_otu-3;++i)
     {
       cpy->a_edges[i]->l->v             = ori->a_edges[i]->l->v;
       cpy->a_edges[i]->l_old->v         = ori->a_edges[i]->l_old->v;
@@ -4547,7 +4547,7 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
     }
 
 
-  for(i=0;i<ori->n_otu;i++)
+  for(i=0;i<ori->n_otu;++i)
     {
       cpy->a_nodes[i]->tax = YES;
 
@@ -5464,7 +5464,7 @@ phydbl Fast_Br_Len(t_edge *b, t_tree *tree, int approx)
         MIXT_Br_Len_Brent(b,tree);
       else
         {
-          tree->mod->s_opt->brent_it_max = 8;
+          tree->mod->s_opt->brent_it_max = 5;
           MIXT_Br_Len_Brent(b,tree);
           tree->mod->s_opt->brent_it_max = BRENT_IT_MAX;
         }

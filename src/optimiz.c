@@ -625,7 +625,7 @@ phydbl Br_Len_Brent(t_edge *b, t_tree *tree)
       Set_Update_Eigen_Lr(YES,mixt_tree);
       Set_Use_Eigen_Lr(NO,mixt_tree);
       
-      lk_begin = Lk(mixt_b,mixt_tree); /*! We can't assume that the log-lk value is up-to-date */
+      lk_begin = Lk(mixt_b,mixt_tree); /* We can't assume that the log-lk value is up-to-date */
       
       Set_Update_Eigen_Lr(NO,mixt_tree);
       Set_Use_Eigen_Lr(YES,mixt_tree);
