@@ -4804,6 +4804,8 @@ void Spr_List_Of_Trees(t_tree *tree)
       tree->mod->s_opt->fast_nni = NO;
       Simu(tree,1);
       
+      Optimize_Br_Len_Serie(tree);
+
       if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n. Tree %3d lnL: %12.2f",list_size+1,tree->c_lnL);
 
       if(tree->c_lnL > best_lnL) 
