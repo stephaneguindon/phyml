@@ -5556,8 +5556,8 @@ phydbl Triple_Dist(t_node *a, t_tree *tree)
       Update_P_Lk(tree,a->b[2],a);
       Fast_Br_Len(a->b[2],tree,YES);
 
-      /* Update_P_Lk(tree,a->b[1],a); */
-      /* Update_P_Lk(tree,a->b[0],a); */
+      Update_P_Lk(tree,a->b[1],a);
+      Update_P_Lk(tree,a->b[0],a);
     }
   
   return tree->c_lnL;

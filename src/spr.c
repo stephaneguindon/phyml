@@ -4870,8 +4870,6 @@ void Spr_List_Of_Trees(t_tree *tree)
   Free(rk);
   rk = Ranks(lnL_list,max_list_size);
   Copy_Tree(tree_list[rk[0]],tree);
-
-
    
   tree->mod->s_opt->min_diff_lk_move  = 0.01;
   do
