@@ -3669,15 +3669,15 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
   
   rk = Include_One_Spr_To_List_Of_Spr(move,tree);
 
-  if(rk <= 3 && tree->mod->s_opt->spr_lnL == YES)
+  /* if(rk <= 3 && tree->mod->s_opt->spr_lnL == YES) */
   /* if(tree->mod->s_opt->spr_lnL == YES && */
   /*    move->lnL > tree->best_lnL - 10.) */
-    {
-      MIXT_Set_Alias_Subpatt(YES,tree);
-      move->lnL = Triple_Dist(move->n_link,tree);
-      MIXT_Set_Alias_Subpatt(NO,tree);
-      move->lnL = tree->c_lnL;
-    }
+    /* { */
+    /*   MIXT_Set_Alias_Subpatt(YES,tree); */
+    /*   move->lnL = Triple_Dist(move->n_link,tree); */
+    /*   MIXT_Set_Alias_Subpatt(NO,tree); */
+    /*   move->lnL = tree->c_lnL; */
+    /* } */
   
   Copy_Scalar_Dbl(init_target_l,b_target->l);
   Copy_Scalar_Dbl(init_target_v,b_target->l_var);
@@ -4883,7 +4883,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       tree->mod->s_opt->spr_lnL           = YES;
       tree->mod->s_opt->spr_pars          = NO;
       tree->mod->s_opt->min_diff_lk_move  = 0.1;
-      tree->mod->s_opt->eval_list_regraft = YES;
+      tree->mod->s_opt->eval_list_regraft = NO;
       tree->mod->s_opt->max_delta_lnL_spr = 100.;
       
       do
