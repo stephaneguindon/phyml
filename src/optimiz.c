@@ -835,6 +835,7 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
   int i;
   phydbl lk_init;
 
+  
   lk_init = tree->c_lnL;
   
   if(tree->mod->s_opt->constrained_br_len == YES)
@@ -862,15 +863,14 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
       PhyML_Printf("\n== %f -- %f",lk_init,tree->c_lnL);
       PhyML_Printf("\n== Edge: %d",b_fcus->num);
       PhyML_Printf("\n== is_mixt_tree: %d",tree->is_mixt_tree);
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
-      Warn_And_Exit("");
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
     }
 
   if(d->tax) return;
 
   if(tree->n_root && tree->ignore_root == NO)
     {
-      for(i=0;i<3;i++)
+      for(i=0;i<3;++i)
         {
           if(d->v[i] != a && d->b[i] != tree->e_root)
             {
@@ -879,18 +879,19 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
             }
         }
       
-      for(i=0;i<3;i++)
+      for(i=0;i<3;++i)
         if(d->v[i] == a || d->b[i] == tree->e_root) 
           Update_P_Lk(tree,d->b[i],d);
     }
   else
     {
       // Ok if root exists but require traversal to be initiated from a node != root
-      for(i=0;i<3;i++)
+      for(i=0;i<3;++i)
         {
           if(d->v[i] != a)
             {
               Update_P_Lk(tree,d->b[i],d);
+              /* printf("\n. a: %d d: %d",d->num,d->v[i]->num); */
               Optimize_Br_Len_Serie_Post(d,d->v[i],d->b[i],tree);
             }
         }

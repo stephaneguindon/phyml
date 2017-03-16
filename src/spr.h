@@ -71,7 +71,7 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree);
 int Try_One_Spr_Move_Full(t_spr *move, t_tree *tree);
 void Make_Best_Spr(t_tree *tree);
 void Random_Spr(int n_moves, t_tree *tree);
-void Include_One_Spr_To_List_Of_Spr(t_spr *move, t_tree *tree);
+unsigned int Include_One_Spr_To_List_Of_Spr(t_spr *move, t_tree *tree);
 void Reset_Spr_List(t_tree *tree);
 int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree *tree);
 void Best_Spr(t_tree *tree);

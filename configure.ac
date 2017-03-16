@@ -47,9 +47,9 @@ AC_FUNC_SETVBUF_REVERSED
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([floor pow rint sqrt strchr strstr])
 
-VECTOR_FLAG=-march=native
+dnl VECTOR_FLAG=-march=native
 dnl VECTOR_FLAG=-msse3
-dnl VECTOR_FLAG=-mavx
+VECTOR_FLAG=-mavx
 dnl VECTOR_FLAG=
 
 LDFLAGS="${ARGC_flag}" 
@@ -58,7 +58,8 @@ dnl Uncomment two rows below when compiling rwarp (need to have libtool installe
 dnl LT_INIT
 dnl AC_PROG_LIBTOOL
 
-DEFAULT_C_FLAG="-O2 -fomit-frame-pointer -funroll-loops -Wall ${VECTOR_FLAG}"
+DEFAULT_C_FLAG="-std=c99 -O2 -Wall ${VECTOR_FLAG}"
+dnl DEFAULT_C_FLAG="-O3 -Wall ${VECTOR_FLAG}"
 
 AC_ARG_ENABLE([debug],
               [AS_HELP_STRING([--enable-debug],
@@ -77,7 +78,7 @@ AC_ARG_ENABLE([gprof],
               [AS_HELP_STRING([--enable-gprof],
                               [Remove optimization options and add profiling informations.])])
 AS_IF([test "x$enable_gprof" = "xyes"],
-      [CFLAGS="-Wall -O2 -pg ${VECTOR_FLAG}"],
+      [CFLAGS="-pg -fno-inline ${VECTOR_FLAG}"],
       [AS_IF([test "x$enable_debug" = "xno"],[CFLAGS="${DEFAULT_C_FLAG}"])])
 
 AC_ARG_ENABLE([mpi],

@@ -3540,6 +3540,7 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
   scalar_dbl *init_target_l, *init_arrow_l, *init_residual_l;
   scalar_dbl *init_target_v, *init_arrow_v, *init_residual_v;
   int i,dir_v0,dir_v1,dir_v2;
+  unsigned rk;
   scalar_dbl *l0,*l1,*l2;
   scalar_dbl *v0,*v1,*v2;
   t_node *n1,*n2;
@@ -3557,7 +3558,8 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
 
   init_lnL  = tree->c_lnL;
   init_pars = tree->c_pars;
-
+  rk        = -1;
+  
   move = tree->spr_list[tree->size_spr_list];
 
   if(move->init_target_l == NULL)
@@ -3665,8 +3667,18 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
   move->dist          = b_target->topo_dist_btw_edges;
   move->n_opp_to_link = (n_link==b_arrow->left)?(b_arrow->rght):(b_arrow->left);
   
-  Include_One_Spr_To_List_Of_Spr(move,tree);
+  rk = Include_One_Spr_To_List_Of_Spr(move,tree);
 
+  if(rk <= 3 && tree->mod->s_opt->spr_lnL == YES)
+  /* if(tree->mod->s_opt->spr_lnL == YES && */
+  /*    move->lnL > tree->best_lnL - 10.) */
+    {
+      MIXT_Set_Alias_Subpatt(YES,tree);
+      move->lnL = Triple_Dist(move->n_link,tree);
+      MIXT_Set_Alias_Subpatt(NO,tree);
+      move->lnL = tree->c_lnL;
+    }
+  
   Copy_Scalar_Dbl(init_target_l,b_target->l);
   Copy_Scalar_Dbl(init_target_v,b_target->l_var);
 
@@ -3684,9 +3696,6 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
 
   if(tree->mod->s_opt->spr_lnL == YES) 
     {
-      /* /\* !!!!!! *\/ */
-      /* Fast_Br_Len(b_target,tree,YES); */
-      /* Br_Len_Brent(b_target,tree); */
       Update_PMat_At_Given_Edge(b_target,tree);
     }
 
@@ -4237,9 +4246,9 @@ int Try_One_Spr_Move_Full(t_spr *move, t_tree *tree)
 
 /*********************************************************/
 
-void Include_One_Spr_To_List_Of_Spr(t_spr *move, t_tree *tree)
+unsigned int Include_One_Spr_To_List_Of_Spr(t_spr *move, t_tree *tree)
 {
-  int i;
+  unsigned int i, rk;
   t_spr *buff_spr,*orig_move, *orig_move_list, *move_list;
   t_tree *orig_tree;
 
@@ -4355,9 +4364,19 @@ void Include_One_Spr_To_List_Of_Spr(t_spr *move, t_tree *tree)
               tree = orig_tree;
               
             }
-          else  break;
+          else
+            {
+              rk = i;
+              break;
+            }
         }
     }
+  /* if(tree->mod->s_opt->spr_lnL == YES) */
+  /*   { */
+  /*     printf("\n. move->lnL: %f i: %d size_spr_list: %d",move->lnL,rk,tree->size_spr_list); */
+  /*     for(i=0;i<tree->size_spr_list;i++) printf("\n== %d %f",i,tree->spr_list[i]->lnL); */
+  /*   } */
+  return rk;
 }
 
 /*********************************************************/
@@ -4765,9 +4784,9 @@ void Spr_List_Of_Trees(t_tree *tree)
   t_tree **tree_list;
   phydbl *lnL_list,best_lnL;
 
-  const unsigned int list_size_first_round  = 20;
-  const unsigned int list_size_second_round = 10;
-  const unsigned int list_size_third_round = 10;
+  const unsigned int list_size_first_round  = 25;
+  const unsigned int list_size_second_round = 15;
+  const unsigned int list_size_third_round = 3;
 
   best_lnL      = UNLIKELY;
   tree->verbose = (tree->verbose == VL0) ? VL0 : VL1;
@@ -4798,13 +4817,11 @@ void Spr_List_Of_Trees(t_tree *tree)
           Spr_Pars(0,100,tree);
         }
       
-      /* tree->best_lnL = UNLIKELY; */
-      /* Simu(tree,1); */
+      Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
+      /* Optimize_Br_Len_Serie(tree); */
+      Set_Both_Sides(NO,tree);
+      Lk(NULL,tree);
 
-      Optimize_Br_Len_Serie(tree);
-      /* Set_Both_Sides(NO,tree); */
-      /* Lk(NULL,tree); */
-            
       if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n. Tree %3d lnL: %12.2f",list_size+1,tree->c_lnL);
 
       if(tree->c_lnL > best_lnL) 
@@ -4830,23 +4847,8 @@ void Spr_List_Of_Trees(t_tree *tree)
 
       if(list_size == 0) Round_Optimize(tree,ROUND_MAX);
 
-      tree->mod->s_opt->max_depth_path    = 20;
-      tree->mod->s_opt->spr_lnL           = YES;
-      tree->mod->s_opt->spr_pars          = NO;
-      tree->mod->s_opt->min_diff_lk_move  = 0.1;
-      tree->mod->s_opt->eval_list_regraft = NO;
-      tree->mod->s_opt->max_delta_lnL_spr = 100.;
-      
-      /* do */
-      /*   { */
-          Set_Both_Sides(YES,tree);
-          Lk(NULL,tree);
-          tree->best_lnL = tree->c_lnL;
-          Spr(tree->c_lnL,1.0,tree);
-          /* Optimize_Br_Len_Serie(tree); */
-      /*     printf("\n. lnL: %f %d",tree->c_lnL,tree->n_improvements); */
-      /*   } */
-      /* while(tree->n_improvements > 5); */
+      tree->best_lnL = tree_list[rk[list_size]]->c_lnL;
+      Simu(tree,5);
 
       Optimize_Br_Len_Serie(tree);
 
@@ -4862,7 +4864,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       Copy_Tree(tree,tree_list[rk[list_size]]);
       lnL_list[rk[list_size]] = tree->c_lnL;
     }
-  while(++list_size < list_size_third_round);
+  while(++list_size < list_size_second_round);
   
 
   Free(rk);
@@ -4877,7 +4879,24 @@ void Spr_List_Of_Trees(t_tree *tree)
 
       if(list_size == 0) Round_Optimize(tree,ROUND_MAX);
 
-      Simu(tree,100);
+      tree->mod->s_opt->max_depth_path    = 15;
+      tree->mod->s_opt->spr_lnL           = YES;
+      tree->mod->s_opt->spr_pars          = NO;
+      tree->mod->s_opt->min_diff_lk_move  = 0.1;
+      tree->mod->s_opt->eval_list_regraft = YES;
+      tree->mod->s_opt->max_delta_lnL_spr = 100.;
+      
+      do
+        {
+          Set_Both_Sides(YES,tree);
+          Lk(NULL,tree);
+          tree->best_lnL = tree->c_lnL;
+          Spr(tree->c_lnL,1.0,tree);
+          Optimize_Br_Len_Serie(tree);
+          printf("\n. lnL: %f %d",tree->c_lnL,tree->n_improvements);
+        }
+      while(tree->n_improvements > 0);
+
       Optimize_Br_Len_Serie(tree);
 
       if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n. Tree %3d lnL: %12.2f",list_size+1,tree->c_lnL);
@@ -4892,7 +4911,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       Copy_Tree(tree,tree_list[rk[list_size]]);
       lnL_list[rk[list_size]] = tree->c_lnL;
     }
-  while(++list_size < list_size_second_round);
+  while(++list_size < list_size_third_round);
   
   Free(rk);
   rk = Ranks(lnL_list,max_list_size);

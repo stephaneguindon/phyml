@@ -825,7 +825,8 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
             {
               sprintf(*s_tree+(int)strlen(*s_tree),"%f",fils->b[p]->ratio_test);
             }
-          
+
+
           fflush(NULL);
           
           (*s_tree)[(int)strlen(*s_tree)] = ':';
@@ -2592,23 +2593,23 @@ void Print_Mat(matrix *mat)
 
   PhyML_Printf("%d",mat->n_otu);
   PhyML_Printf("\n");
-
+  
   for(i=0;i<mat->n_otu;i++)
     {
       for(j=0;j<13;j++)
-    {
-      if(j>=(int)strlen(mat->name[i])) putchar(' ');
-      else putchar(mat->name[i][j]);
-    }
-
+        {
+          if(j>=(int)strlen(mat->name[i])) putchar(' ');
+          else putchar(mat->name[i][j]);
+        }
+      
       for(j=0;j<mat->n_otu;j++)
-    {
-      char s[2]="-";
-      if(mat->dist[i][j] < .0)
-        PhyML_Printf("%12s",s);
-      else
-        PhyML_Printf("%12f",mat->dist[i][j]);
-    }
+        {
+          char s[2]="-";
+          if(mat->dist[i][j] < .0)
+            PhyML_Printf("%12s",s);
+          else
+            PhyML_Printf("%12f",mat->dist[i][j]);
+        }
       PhyML_Printf("\n");
     }
 }
@@ -3786,7 +3787,7 @@ t_tree *Read_User_Tree(calign *cdata, t_mod *mod, option *io)
   io->fp_in_tree = NULL;
   if(!tree) Exit("\n== Input tree not found...");
   /* Add branch lengths if necessary */
-  if(!tree->has_branch_lengths) Add_BioNJ_Branch_Lengths(tree,cdata,mod);
+  if(tree->has_branch_lengths == NO) Add_BioNJ_Branch_Lengths(tree,cdata,mod,NULL);
   return tree;
 }
 

@@ -371,7 +371,7 @@ typedef	double phydbl;
 #define TAN tan
 #define SMALL DBL_MIN
 #define BIG  DBL_MAX
-#define SMALL_PIJ 1.E-100
+#define SMALL_PIJ 1.E-10
 #define LOGBIG 690.
 #define LOGSMALL -690.
 
@@ -2076,7 +2076,7 @@ void Best_Of_NNI_And_SPR(t_tree *tree);
 int Polint(phydbl *xa,phydbl *ya,int n,phydbl x,phydbl *y,phydbl *dy);
 void JF(t_tree *tree);
 t_tree *Dist_And_BioNJ(calign *cdata,t_mod *mod,option *io);
-void Add_BioNJ_Branch_Lengths(t_tree *tree,calign *cdata,t_mod *mod);
+void Add_BioNJ_Branch_Lengths(t_tree *tree, calign *cdata, t_mod *mod, matrix *mat);
 char *Bootstrap_From_String(char *s_tree,calign *cdata,t_mod *mod,option *io);
 char *aLRT_From_String(char *s_tree,calign *cdata,t_mod *mod,option *io);
 void Prepare_Tree_For_Lk(t_tree *tree);

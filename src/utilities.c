@@ -2361,7 +2361,6 @@ int Is_Invar(int patt_num, int stepsize, int datatype, calign *data)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 int Is_Ambigu(char *state, int datatype, int stepsize)
 {
   int val,i;
@@ -8012,20 +8011,13 @@ t_tree *Dist_And_BioNJ(calign *cdata, t_mod *mod, option *io)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Add_BioNJ_Branch_Lengths(t_tree *tree, calign *cdata, t_mod *mod)
+void Add_BioNJ_Branch_Lengths(t_tree *tree, calign *cdata, t_mod *mod, matrix *mat)
 {
-  matrix *mat;
-
-  PhyML_Printf("\n");
-  PhyML_Printf("\n. Computing branch length estimates...\n");
-
   Connect_CSeqs_To_Nodes(cdata,mod->io,tree);
-  mat = ML_Dist(cdata,mod);
+  if(mat == NULL) mat = ML_Dist(cdata,mod);
   mat->tree = tree;
   mat->method = 0;
   Bionj_Br_Length(mat);
-
-  Free_Mat(mat);
 }
 
 //////////////////////////////////////////////////////////////
@@ -10368,7 +10360,7 @@ void Set_P_Lk_One_Side(phydbl **Pij, phydbl **tPij, phydbl **p_lk,  int **sum_sc
       //Does d lie on "left" or "right" of the branch b?
       if(d == b->left)//If d is on the left of b, then d's neighbor is on the right
         {
-          *p_lk      = b->p_lk_rght;
+          *p_lk      = (b->rght->tax == YES) ? b->p_lk_tip_r : b->p_lk_rght;
           *sum_scale = b->sum_scale_rght;
 #ifdef BEAGLE
           *child_p_idx = b->rght->tax? b->p_lk_tip_idx: b->p_lk_rght_idx;
