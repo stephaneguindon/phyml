@@ -4784,9 +4784,8 @@ void Spr_List_Of_Trees(t_tree *tree)
   t_tree **tree_list;
   phydbl *lnL_list,best_lnL;
 
-  const unsigned int list_size_first_round  = 25;
-  const unsigned int list_size_second_round = 15;
-  const unsigned int list_size_third_round = 3;
+  const unsigned int list_size_first_round  = 20;
+  const unsigned int list_size_second_round = 5;
 
   best_lnL      = UNLIKELY;
   tree->verbose = (tree->verbose == VL0) ? VL0 : VL1;
@@ -4818,9 +4817,8 @@ void Spr_List_Of_Trees(t_tree *tree)
         }
       
       Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
-      /* Optimize_Br_Len_Serie(tree); */
-      Set_Both_Sides(NO,tree);
-      Lk(NULL,tree);
+      tree->best_lnL = UNLIKELY;
+      Simu(tree,100);
 
       if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n. Tree %3d lnL: %12.2f",list_size+1,tree->c_lnL);
 
@@ -4839,37 +4837,6 @@ void Spr_List_Of_Trees(t_tree *tree)
   
   rk = Ranks(lnL_list,max_list_size);
       
-  if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Improving the best trees...");
-  list_size = 0;
-  do
-    {
-      Copy_Tree(tree_list[rk[list_size]],tree);
-
-      if(list_size == 0) Round_Optimize(tree,ROUND_MAX);
-
-      tree->best_lnL = tree_list[rk[list_size]]->c_lnL;
-      Simu(tree,5);
-
-      Optimize_Br_Len_Serie(tree);
-
-      if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n. Tree %3d lnL: %12.2f",list_size+1,tree->c_lnL);
-      
-      if(tree->c_lnL > best_lnL)
-        {
-          best_lnL = tree->c_lnL;
-          if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf(" *");
-          if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace);
-        }
-      
-      Copy_Tree(tree,tree_list[rk[list_size]]);
-      lnL_list[rk[list_size]] = tree->c_lnL;
-    }
-  while(++list_size < list_size_second_round);
-  
-
-  Free(rk);
-  rk = Ranks(lnL_list,max_list_size);
-  Copy_Tree(tree_list[rk[0]],tree);
 
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Improving the best trees...");
   list_size = 0;
@@ -4911,13 +4878,13 @@ void Spr_List_Of_Trees(t_tree *tree)
       Copy_Tree(tree,tree_list[rk[list_size]]);
       lnL_list[rk[list_size]] = tree->c_lnL;
     }
-  while(++list_size < list_size_third_round);
+  while(++list_size < list_size_second_round);
   
   Free(rk);
   rk = Ranks(lnL_list,max_list_size);
   Copy_Tree(tree_list[rk[0]],tree);
 
-
+  
   tree->mod->s_opt->min_diff_lk_move  = 0.01;
   do
     {
