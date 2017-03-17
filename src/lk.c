@@ -18,22 +18,25 @@ the GNU public licence. See http://www.opensource.org for details.
 #include <stdint.h>
 
 
-#if (!defined(__AVX__) && !defined(__SSE3__))
-static inline phydbl Lk_Core_One_Class_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght,phydbl *Pij,phydbl *p_lk_tip_r,phydbl *expl,int ns, int ambiguity_check, int state,t_edge *b, t_tree *tree);
-#endif
+/* #if (!defined(__AVX__) && !defined(__SSE3__)) */
+static inline phydbl Lk_Core_One_Class_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght,phydbl *Pij,phydbl *tPij,phydbl *expl,int ns, int ambiguity_check, int state,t_edge *b, t_tree *tree);
+static inline phydbl Lk_Core_One_Class_No_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght,phydbl *Pij,phydbl *tPij,phydbl *expl,int ns, int ambiguity_check, int state,t_edge *b, t_tree *tree);
+/* #endif */
 
-#if (defined(__AVX__))
+/* #if (defined(__AVX__)) */
 static inline void AVX_Update_P_Lk_Nucl(t_tree *tree,t_edge *b_fcus,t_node *n);
 static inline void AVX_Update_P_Lk_AA(t_tree *tree,t_edge *b_fcus,t_node *n);
 static inline __m256d AVX_Horizontal_Add(__m256d x[4]);
 static inline void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree);
-static inline phydbl AVX_Lk_Core_One_Class_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght,phydbl *Pij,phydbl *p_lk_tip_r,phydbl *expl,int ns, int ambiguity_check, int state,t_edge *b, t_tree *tree);
-#elif (defined(__SSE3__))
+static inline phydbl AVX_Lk_Core_One_Class_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght,phydbl *Pij,phydbl *tPij,phydbl *expl,int ns, int ambiguity_check, int state,t_edge *b, t_tree *tree);
+static inline phydbl AVX_Lk_Core_One_Class_No_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght,phydbl *Pij,phydbl *tPij,phydbl *expl,int ns, int ambiguity_check, int state,t_edge *b, t_tree *tree);
+/* #elif (defined(__SSE3__)) */
 static inline void SSE_Update_P_Lk_Nucl(t_tree *tree,t_edge *b_fcus,t_node *n);
 static inline void SSE_Update_P_Lk_AA(t_tree *tree,t_edge *b_fcus,t_node *n);
 static inline void SSE_Update_Eigen_Lr(t_edge *b, t_tree *tree);
-static inline phydbl SSE_Lk_Core_One_Class_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, phydbl *Pij,phydbl *p_lk_tip_r,phydbl *expl,int ns, int ambiguity_check, int state,t_edge *b, t_tree *tree);
-#endif
+static inline phydbl SSE_Lk_Core_One_Class_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, phydbl *Pij,phydbl *tPij,phydbl *expl,int ns, int ambiguity_check, int state,t_edge *b, t_tree *tree);
+static inline phydbl SSE_Lk_Core_One_Class_No_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, phydbl *Pij,phydbl *tPij,phydbl *expl,int ns, int ambiguity_check, int state,t_edge *b, t_tree *tree);
+/* #endif */
 
 static inline void Pull_Scaling_Factors(int site,t_edge *b,t_tree *tree);
 
@@ -589,7 +592,7 @@ if(tree->rates && tree->io->lk_approx == NORMAL)
         {
           len = MAX(0.0,b->l->v)*tree->mod->ras->gamma_rr->v[catg];
           len *= tree->mod->br_len_mult->v;
-          if(tree->mixt_tree != NULL)  len *= tree->mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number];
+          if(tree->mixt_tree != NULL)     len *= tree->mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number];
           if(len < tree->mod->l_min)      len = tree->mod->l_min;
           else if(len > tree->mod->l_max) len = tree->mod->l_max;
           for(state=0; state < ns; ++state) expl[catg*tree->mod->ns+state] = (phydbl)POW(tree->mod->eigen->e_val[state],len);
@@ -627,10 +630,9 @@ if(tree->rates && tree->io->lk_approx == NORMAL)
             {
               Lk_Core(state,ambiguity_check,YES,NO,
                       b,NULL,NULL,
-                      b->p_lk_left  + site*ns*ncatg,
-                      b->p_lk_rght  + site*ns*ncatg,
-                      b->p_lk_tip_r + site*ns,
-                      b->Pij_rr,tree);
+                      b->p_lk_left + site*ns*ncatg,
+                      (b->rght->tax == YES) ? (b->p_lk_tip_r + site*ns) : (b->p_lk_rght  + site*ns*ncatg),
+                      b->Pij_rr,b->tPij_rr,tree);
             }
         }
     }
@@ -800,8 +802,8 @@ phydbl Lk_Core(int state, int ambiguity_check, short int returnlog, short int de
                t_edge *b, phydbl *expl,
                phydbl *dot_prod,
                phydbl *p_lk_left, phydbl *p_lk_rght,
-               phydbl *p_lk_tip_r,
                phydbl *Pij_rr,
+               phydbl *tPij_rr,
                t_tree *tree)
 {
   phydbl log_site_lk;
@@ -829,9 +831,9 @@ phydbl Lk_Core(int state, int ambiguity_check, short int returnlog, short int de
           for(catg=0;catg<ncatg;++catg)
             {
               site_lk_cat = Lk_Core_One_Class(p_lk_left + catg*dim2,
-                                              p_lk_rght + catg*dim2,
+                                              (b->rght->tax == YES) ? (p_lk_rght) : (p_lk_rght + catg*dim2),
                                               Pij_rr + catg*dim3,
-                                              p_lk_tip_r,
+                                              tPij_rr + catg*dim3,
                                               NULL,
                                               ns,ambiguity_check,state,
                                               b,tree);
@@ -845,8 +847,8 @@ phydbl Lk_Core(int state, int ambiguity_check, short int returnlog, short int de
               site_lk_cat = Lk_Core_One_Class(dot_prod + catg*dim2,
                                               NULL,
                                               NULL,
-                                              NULL,
                                               expl ? (expl + catg*dim2) : NULL,
+                                              NULL,
                                               ns,ambiguity_check,state,
                                               b,tree);
               tree->site_lk_cat[catg] = site_lk_cat;
@@ -893,36 +895,8 @@ phydbl Lk_Core(int state, int ambiguity_check, short int returnlog, short int de
   // Calculation of the site likelihood (using scaling factors)...
   if(tree->apply_lk_scaling == YES)
     {
-      if(fact_sum_scale >= 0)
-        {
-          tree->cur_site_lk[site] = site_lk;
-          exponent = -fact_sum_scale;
-          do
-            {
-              piecewise_exponent = MAX(exponent,-63);
-              multiplier = 1. / (phydbl)((unsigned long long)(1) << -piecewise_exponent);
-              tree->cur_site_lk[site] *= multiplier;
-              exponent -= piecewise_exponent;
-            }
-          while(exponent != 0);
-        }
-      else
-        {
-          //In some cases fact_sum_scale can be negative. If you rescale the partials of two independent subtrees and make some of
-          //these numbers large in order to avoid underflow, then there is a chance that when multiplied them together you will
-          //get an overflow, in which case fact_sum_scale can become negative.
-          
-          tree->cur_site_lk[site] = site_lk;
-          exponent = fact_sum_scale;
-          do
-            {
-              piecewise_exponent = MIN(exponent,63);
-              multiplier = (phydbl)((unsigned long long)(1) << piecewise_exponent);
-              tree->cur_site_lk[site] *= multiplier;
-              exponent -= piecewise_exponent;
-            }
-          while(exponent != 0);
-        }
+      Rate_Correction(-fact_sum_scale,&site_lk);
+      tree->cur_site_lk[site] = site_lk;
     }
   
   
@@ -1005,7 +979,6 @@ void Update_Eigen_Lr(t_edge *b, t_tree *tree)
       return;
     }
 
-  
 #if (defined(__AVX__))
   AVX_Update_Eigen_Lr(b,tree);
   return;
@@ -1088,7 +1061,8 @@ void Update_Eigen_Lr(t_edge *b, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined(__AVX__))
+/* #if (defined(__AVX__)) */
+
 static void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree)
 {
   int site,catg,state,is_ambigu,observed_state;
@@ -1192,7 +1166,9 @@ static void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree)
     }
   if(ev)  Free(ev);
 }
-#elif (defined(__SSE3__))
+
+/* #elif (defined(__SSE3__)) */
+
 static void SSE_Update_Eigen_Lr(t_edge *b, t_tree *tree)
 {
   unsigned int site,catg,state,is_ambigu,observed_state;
@@ -1294,7 +1270,7 @@ static void SSE_Update_Eigen_Lr(t_edge *b, t_tree *tree)
   if(ev)  Free(ev);
 
 }
-#endif
+/* #endif */
 
 /////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -1334,15 +1310,14 @@ void Rate_Correction(int exponent, phydbl *site_lk_cat)
       PhyML_Printf("\n== exponent: %d site_lk_cat: %f", exponent,*site_lk_cat);
       PhyML_Printf("\n== File %s at line %d\n\n",__FILE__,__LINE__);
       (*site_lk_cat) = BIG / 10;
-    }  
+    }
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
  
 phydbl Lk_Core_One_Class(phydbl *p_lk_left, phydbl *p_lk_rght, 
-                         phydbl *Pij,
-                         phydbl *p_lk_tip_r,
+                         phydbl *Pij,phydbl *tPij,
                          phydbl *expl, 
                          int ns, int ambiguity_check, int state,
                          t_edge *b, t_tree *tree)
@@ -1367,72 +1342,54 @@ phydbl Lk_Core_One_Class(phydbl *p_lk_left, phydbl *p_lk_rght,
       assert(p_lk_left);
 #endif
 
-#if (defined(__AVX__))
-      lk = AVX_Lk_Core_One_Class_Eigen_Lr(p_lk_left,p_lk_rght, 
-                                          Pij,
-                                          p_lk_tip_r,
-                                          expl, 
-                                          ns, ambiguity_check, state,
-                                          b, tree);
+      /* !!!!!!!!!!!!!!!!!!!!! */
+/* #if (defined(__AVX__)) */
+/*       lk = AVX_Lk_Core_One_Class_Eigen_Lr(p_lk_left,p_lk_rght, */
+/*                                           Pij,tPij, */
+/*                                           expl, */
+/*                                           ns, ambiguity_check, state, */
+/*                                           b, tree); */
       
-#elif (defined(__SSE3__))
-      lk = SSE_Lk_Core_One_Class_Eigen_Lr(p_lk_left, p_lk_rght, 
-                                          Pij,
-                                          p_lk_tip_r,
-                                          expl, 
-                                          ns, ambiguity_check, state,
-                                          b, tree);
-#else
+/* #elif (defined(__SSE3__)) */
+/*       lk = SSE_Lk_Core_One_Class_Eigen_Lr(p_lk_left, p_lk_rght, */
+/*                                           Pij,tPij, */
+/*                                           expl, */
+/*                                           ns, ambiguity_check, state, */
+/*                                           b, tree); */
+/* #else */
       lk = Lk_Core_One_Class_Eigen_Lr(p_lk_left, p_lk_rght, 
-                                      Pij,
-                                      p_lk_tip_r,
+                                      Pij,tPij,
                                       expl, 
                                       ns, ambiguity_check, state,
                                       b, tree);
-#endif
+/* #endif */
       
       return lk;
     }
    else // tree->use_eigen_lr == NO
      {
-       /* b is an external edge */
-       if((b->rght->tax == YES) && (tree->mod->s_opt->greedy == NO)) /* By convention, tips are always on the right of an external edge */
-         {
-           if(ambiguity_check == NO)/* If the character observed at the tip is NOT ambiguous: ns x 1 terms to consider */
-             {
-               sum = .0;
-               for(l=0;l<ns;++l) sum += Pij[state*ns+l] * p_lk_left[l];               
-               lk += sum * tree->mod->e_frq->pi->v[state];
-             }
-           else /* If the character observed at the tip is ambiguous: ns x ns terms to consider */
-             {
-               for(k=0;k<ns;++k)
-                 {
-                   if(p_lk_tip_r[k] > .0) /* Only bother ascending into the subtrees if the likelihood of state k, at site "site*dim2" is > 0 */
-                     {
-                       sum = .0;
-                       for(l=0;l<ns;l++) sum += Pij[k*ns+l] * p_lk_left[l];                       
-                       lk += sum * tree->mod->e_frq->pi->v[k] * p_lk_tip_r[k];
-                     }
-                 }
-             }
-         }
-       else /* b is an internal edge: ns x ns terms to consider */
-         {
-#ifdef SAFEMODE
-           assert(p_lk_rght);
-#endif
-           for(k=0;k<ns;++k)
-             {
-               if(p_lk_rght[k] > .0) // Only bother descending into the subtrees if the likelihood of state k is > 0
-                 {
-                   sum = .0;
-                   for(l=0;l<ns;++l) sum += Pij[k*ns+l] * p_lk_left[l];                   
-                   lk += sum * tree->mod->e_frq->pi->v[k] * p_lk_rght[k];
-                 }
-             }
-         }
-       return lk;
+       /* !!!!!!!!!!!!!!!!!!!!1 */
+       /* #if (defined(__AVX__)) */
+/*       lk = AVX_Lk_Core_One_Class_No_Eigen_Lr(p_lk_left,p_lk_rght, */
+/*                                              Pij,tPij, */
+/*                                              expl, */
+/*                                              ns, ambiguity_check, state, */
+/*                                              b, tree); */
+      
+/* #elif (defined(__SSE3__)) */
+/*       lk = SSE_Lk_Core_One_Class_No_Eigen_Lr(p_lk_left, p_lk_rght, */
+/*                                              Pij,tPij, */
+/*                                              expl, */
+/*                                              ns, ambiguity_check, state, */
+/*                                              b, tree); */
+/* #else */
+      lk = Lk_Core_One_Class_No_Eigen_Lr(p_lk_left, p_lk_rght, 
+                                         Pij,tPij,
+                                         expl, 
+                                         ns, ambiguity_check, state,
+                                         b, tree);
+/* #endif */
+      return lk;
      }
    return INFINITY;
 }
@@ -1440,10 +1397,9 @@ phydbl Lk_Core_One_Class(phydbl *p_lk_left, phydbl *p_lk_rght,
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined(__AVX__))
+/* #if (defined(__AVX__)) */
 static inline phydbl AVX_Lk_Core_One_Class_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, 
-                                                    phydbl *Pij,
-                                                    phydbl *p_lk_tip_r,
+                                                    phydbl *Pij,phydbl *tPij,
                                                     phydbl *expl, 
                                                     int ns, int ambiguity_check, int state,
                                                     t_edge *b, t_tree *tree)
@@ -1476,11 +1432,59 @@ static inline phydbl AVX_Lk_Core_One_Class_Eigen_Lr(phydbl *p_lk_left, phydbl *p
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#elif (defined(__SSE3__))
+static inline phydbl AVX_Lk_Core_One_Class_No_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, 
+                                                       phydbl *Pij,phydbl *tPij,
+                                                       phydbl *expl, 
+                                                       int ns, int ambiguity_check, int state,
+                                                       t_edge *b, t_tree *tree)
+{
+  phydbl lk = 0.0;
+  phydbl dum = 0.0;
+  const unsigned int sz = (int)BYTE_ALIGN / 8;
+  const unsigned nblocks = ns/sz;
+  __m256d _v1[nblocks],_v2[nblocks],_w;
+  __m256d _x,_y;
+  unsigned int i,j,k;
+  
+  if(ambiguity_check == NO) // tip case.
+    {
+      _w = _mm256_set1_pd(tree->mod->e_frq->pi->v[state]);
+      for(i=0;i<nblocks;i++) _v1[i] = _mm256_mul_pd(_mm256_load_pd(Pij + state*ns + i*sz),_w);
+      for(i=0;i<nblocks;i++) _v1[i] = _mm256_mul_pd(_v1[i],_mm256_load_pd(p_lk_left + i*sz));
+      _x = _mm256_setzero_pd();
+      for(i=0;i<nblocks;i++) _x = _mm256_add_pd(_x,_v1[i]);
+      _x = _mm256_hadd_pd(_x,_x);
+      _y = _mm256_permute2f128_pd(_x,_x,0x21);
+      _mm_store_sd(&lk,_mm256_castpd256_pd128(_mm256_add_pd(_x,_y)));
+    }
+  else
+    {
+      for(i=0;i<nblocks;i++)
+        {
+          _v1[i] = _mm256_mul_pd(_mm256_load_pd(p_lk_rght + i*sz),
+                                 _mm256_load_pd(tree->mod->e_frq->pi->v + i*sz));
+          
+          _w = _mm256_set1_pd(p_lk_left[j]);
+          for(i=0;i<nblocks;i++) _v2[i] = _mm256_mul_pd(_w,_mm256_load_pd(tPij + j*ns + i*sz));
+          for(i=0;i<nblocks;i++) _v2[i] = _mm256_mul_pd(_v1[i],_v2[i]);
+          _x = _mm256_setzero_pd();
+          for(i=0;i<nblocks;i++) _x = _mm256_add_pd(_x,_v2[i]);
+          _x = _mm256_hadd_pd(_x,_x);
+          _y = _mm256_permute2f128_pd(_x,_x,0x21);
+          _mm_store_sd(&dum,_mm256_castpd256_pd128(_mm256_add_pd(_x,_y)));
+          lk += dum;
+        }
+    }
+  return lk;
+}
+ 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+/* #elif (defined(__SSE3__)) */
 
 static inline phydbl SSE_Lk_Core_One_Class_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, 
-                                                    phydbl *Pij,
-                                                    phydbl *p_lk_tip_r,
+                                                    phydbl *Pij,phydbl *tPij,
                                                     phydbl *expl, 
                                                     int ns, int ambiguity_check, int state,
                                                     t_edge *b, t_tree *tree)
@@ -1513,14 +1517,26 @@ static inline phydbl SSE_Lk_Core_One_Class_Eigen_Lr(phydbl *p_lk_left, phydbl *p
   return lk;
 }
 
-#else
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+static inline phydbl SSE_Lk_Core_One_Class_No_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, 
+                                                       phydbl *Pij,phydbl *tPij,
+                                                       phydbl *expl, 
+                                                       int ns, int ambiguity_check, int state,
+                                                       t_edge *b, t_tree *tree)
+{
+  phydbl lk = 0.0;
+  return lk;
+}
+
+/* #else */
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
 static inline phydbl Lk_Core_One_Class_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, 
-                                                phydbl *Pij,
-                                                phydbl *p_lk_tip_r,
+                                                phydbl *Pij,phydbl *tPij,
                                                 phydbl *expl, 
                                                 int ns, int ambiguity_check, int state,
                                                 t_edge *b, t_tree *tree)
@@ -1532,11 +1548,62 @@ static inline phydbl Lk_Core_One_Class_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_
   else for(l=0;l<ns;++l) lk += p_lk_left[l];
   return lk;
 }
-#endif
+
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+static inline phydbl Lk_Core_One_Class_No_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, 
+                                                   phydbl *Pij,phydbl *tPij,
+                                                   phydbl *expl, 
+                                                   int ns, int ambiguity_check, int state,
+                                                   t_edge *b, t_tree *tree)
+{
+  unsigned int l,k;
+  phydbl lk = 0.0;
+  phydbl sum = 0.0;
+  
+  /* b is an external edge */
+  if((b->rght->tax == YES) && (tree->mod->s_opt->greedy == NO)) /* By convention, tips are always on the right of an external edge */
+    {
+      if(ambiguity_check == NO)/* If the character observed at the tip is NOT ambiguous: ns x 1 terms to consider */
+        {
+          sum = .0;
+          for(l=0;l<ns;++l) sum += Pij[state*ns+l] * p_lk_left[l];               
+          lk += sum * tree->mod->e_frq->pi->v[state];
+        }
+      else /* If the character observed at the tip is ambiguous: ns x ns terms to consider */
+        {
+          for(k=0;k<ns;++k)
+            {
+              if(p_lk_rght[k] > .0) /* Only bother ascending into the subtrees if the likelihood of state k, at site "site*dim2" is > 0 */
+                {
+                  sum = .0;
+                  for(l=0;l<ns;l++) sum += Pij[k*ns+l] * p_lk_left[l];                       
+                  lk += sum * tree->mod->e_frq->pi->v[k] * p_lk_rght[k];
+                }
+            }
+        }
+    }
+  else /* b is an internal edge: ns x ns terms to consider */
+    {
+      for(k=0;k<ns;++k)
+        {
+          if(p_lk_rght[k] > .0) // Only bother descending into the subtrees if the likelihood of state k is > 0
+            {
+              sum = .0;
+              for(l=0;l<ns;++l) sum += Pij[k*ns+l] * p_lk_left[l];                   
+              lk += sum * tree->mod->e_frq->pi->v[k] * p_lk_rght[k];
+            }
+        }
+    }
+  return lk;
+}
+
+/* #endif */
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
 // Returns the scaled likelihood for invariable sites
 phydbl Invariant_Lk(int fact_sum_scale, int site, int *num_prec_issue, t_tree *tree)
@@ -1559,7 +1626,7 @@ phydbl Invariant_Lk(int fact_sum_scale, int site, int *num_prec_issue, t_tree *t
 
           if(tree->apply_lk_scaling == YES)
             {
-              exponent = fact_sum_scale;
+              exponent = fact_sum_scale;              
               do
                 {
                   piecewise_exponent = MIN(exponent,63);
@@ -1620,7 +1687,9 @@ void Update_P_Lk(t_tree *tree, t_edge *b, t_node *d)
       if(tree->io->datatype == NT)
         {
 #if (defined(__AVX__))
-          AVX_Update_P_Lk_Nucl(tree,b,d);
+          Update_P_Lk_Nucl(tree,b,d);
+          /* !!!!!!!!!!!!!!! */
+          /* AVX_Update_P_Lk_Nucl(tree,b,d); */
 #elif (defined(__SSE3__))
           SSE_Update_P_Lk_Nucl(tree,b,d);
 #else
@@ -4424,7 +4493,7 @@ static inline void Pull_Scaling_Factors(int site, t_edge *b, t_tree *tree)
         {
           if(isinf(tree->site_lk_cat[catg]) || isnan(tree->site_lk_cat[catg]))
             Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-            
+          
           sum_scale_left_cat[catg] =
             (b->sum_scale_left)?
             (b->sum_scale_left[catg*tree->n_pattern+site]):
@@ -4441,7 +4510,7 @@ static inline void Pull_Scaling_Factors(int site, t_edge *b, t_tree *tree)
             {
               printf("\n== tree: %s\n",Write_Tree(tree,NO));
               PhyML_Printf("\n== b->num = %d  sum = %G root ? %d",sum,b->num,b == tree->e_root);
-              PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
+              PhyML_Printf("\n== Err. in file %s at line %d.\n",__FILE__,__LINE__);
               Exit("\n");
             }
 
@@ -4475,34 +4544,7 @@ static inline void Pull_Scaling_Factors(int site, t_edge *b, t_tree *tree)
           exponent = -(sum_scale_left_cat[catg]+sum_scale_rght_cat[catg])+tree->fact_sum_scale[site];
           site_lk_cat = tree->site_lk_cat[catg];
           Rate_Correction(exponent,&site_lk_cat);
-
-          
-#ifdef SAFEMODE
-          if(isinf(site_lk_cat) || isnan(site_lk_cat))
-            {
-              sum_scale_left_cat[catg] =
-                (b->sum_scale_left)?
-                (b->sum_scale_left[catg*tree->n_pattern+site]):
-                (0.0);
-              
-              sum_scale_rght_cat[catg] =
-                (b->sum_scale_rght)?
-                (b->sum_scale_rght[catg*tree->n_pattern+site]):
-                (0.0);
-              
-              PhyML_Printf("\n== lk: %G -> %G",tree->site_lk_cat[catg],site_lk_cat);
-              PhyML_Printf("\n== catg: %d",catg);
-              PhyML_Printf("\n== alpha: %f",tree->mod->ras->alpha->v);
-              PhyML_Printf("\n== exp:%d",exponent);
-              for(catg=0;catg<tree->mod->ras->n_catg;catg++) 
-                PhyML_Printf("\n== catg: %d left:%d rght:%d fact:%d",catg,sum_scale_left_cat[catg],sum_scale_rght_cat[catg],tree->fact_sum_scale[site]);
-              PhyML_Printf("\n== Err. in file %s at line %d (function '%s')",__FILE__,__LINE__,__FUNCTION__);
-              Exit("\n");
-            }
-#endif
-          
           tree->site_lk_cat[catg] = site_lk_cat;
-
         }
     }
   else // No scaling of lk
@@ -4656,19 +4698,19 @@ static inline void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
   phydbl *tPij1,*tPij2;
   int *sum_scale, *sum_scale_v1, *sum_scale_v2;
   int sum_scale_v1_val, sum_scale_v2_val;
-  unsigned int  i,j;//index over the number of states
+  unsigned int  i,j;
   unsigned int catg;
   unsigned int site;
   phydbl smallest_p_lk;
   short int ambiguity_check_v1,ambiguity_check_v2;
   unsigned int state_v1,state_v2;
   phydbl p_lk_lim_inf;
-  int *p_lk_loc; //Suppose site j, of a certain subtree, has "A" on one tip, and "C" on the other. If you come across this pattern again at site i<j, then you can simply copy the partial likelihoods
-  __m256d _plk; // parent partial likelihood
-  __m256d _plk1,_plk2; // sister partial likelihood vectors
-  __m256d _pplk1[4],_pplk2[4]; // dot product of _p1[i] & _plk1 (resp. _p2[i] & _plk2)
+  int *p_lk_loc;
+  __m256d _plk; 
+  __m256d _plk1,_plk2;
+  __m256d _pplk1[4],_pplk2[4]; 
   __m256d _pre_lk_all[16*tree->mod->ras->n_catg],_pre_lk_v1[4*tree->mod->ras->n_catg],_pre_lk_v2[4*tree->mod->ras->n_catg];
-  __m256d _p1[4*tree->mod->ras->n_catg],_p2[4*tree->mod->ras->n_catg]; // matrices of transition probabilities
+  __m256d _p1[4*tree->mod->ras->n_catg],_p2[4*tree->mod->ras->n_catg];
   const unsigned int dim1 =  tree->mod->ras->n_catg * tree->mod->ns;
   const unsigned int dim2 =  tree->mod->ns;
   const unsigned int dim3 =  tree->mod->ns * tree->mod->ns;
@@ -4701,19 +4743,27 @@ static inline void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
       PhyML_Printf("\n== allow augmented data.");
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
     }
-        
+  
   for(catg=0;catg<tree->mod->ras->n_catg;++catg)
     {
-      for(j=0;j<16;j++)
+      if(n_v1->tax == YES && n_v2->tax == YES)
         {
-          state_v1 = (int)(j/4);
-          state_v2 = (int)(j%4);
-          _pre_lk_all[16*catg+j] = _mm256_mul_pd(_mm256_load_pd(tPij1 + catg*dim3 + state_v1*dim2),
-                                                 _mm256_load_pd(tPij2 + catg*dim3 + state_v2*dim2)); 
+          for(j=0;j<16;j++)
+            {
+              state_v1 = (int)(j/4);
+              state_v2 = (int)(j%4);
+              _pre_lk_all[16*catg+j] = _mm256_mul_pd(_mm256_load_pd(tPij1 + catg*dim3 + state_v1*dim2),
+                                                     _mm256_load_pd(tPij2 + catg*dim3 + state_v2*dim2)); 
+            }
         }
-
-      for(j=0;j<4;j++) _pre_lk_v1[4*catg+j] = _mm256_load_pd(tPij1 + catg*dim3 + j*dim2);
-      for(j=0;j<4;j++) _pre_lk_v2[4*catg+j] = _mm256_load_pd(tPij2 + catg*dim3 + j*dim2);
+      else if(n_v1->tax == YES)
+        {
+          for(j=0;j<4;j++) _pre_lk_v1[4*catg+j] = _mm256_load_pd(tPij1 + catg*dim3 + j*dim2);
+        }
+      else if(n_v1->tax == YES)
+        {      
+          for(j=0;j<4;j++) _pre_lk_v2[4*catg+j] = _mm256_load_pd(tPij2 + catg*dim3 + j*dim2);
+        }
       
       for(i=0;i<4;i++) _p1[4*catg+i] = _mm256_load_pd(Pij1 + catg*dim3 + i*dim2);
       for(i=0;i<4;i++) _p2[4*catg+i] = _mm256_load_pd(Pij2 + catg*dim3 + i*dim2);
@@ -4761,7 +4811,7 @@ static inline void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                 }
               else if(n_v1->tax == YES && ambiguity_check_v1 == NO)
                 {
-                  if(n_v2->tax == NO) _plk2 = _mm256_load_pd(p_lk_v2+site*dim1+catg*dim2);
+                  if(n_v2->tax == NO) _plk2 = _mm256_load_pd(p_lk_v2 + site*dim1 + catg*dim2);
                   else _plk2 = _mm256_load_pd(p_lk_v2 + site*dim2);
 
                   for(i=0;i<4;++i) _pplk2[i] = _mm256_mul_pd(_p2[catg*4+i],_plk2);
@@ -4771,7 +4821,7 @@ static inline void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                 }
               else if(n_v2->tax == YES && ambiguity_check_v2 == NO)
                 {
-                  if(n_v1->tax == NO) _plk1 = _mm256_load_pd(p_lk_v1+site*dim1+catg*dim2);
+                  if(n_v1->tax == NO) _plk1 = _mm256_load_pd(p_lk_v1 + site*dim1 + catg*dim2);
                   else _plk1 = _mm256_load_pd(p_lk_v1 + site*dim2);
 
                   for(i=0;i<4;++i) _pplk1[i] = _mm256_mul_pd(_p1[catg*4+i],_plk1);
@@ -4794,7 +4844,7 @@ static inline void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                                        AVX_Horizontal_Add(_pplk2));
                 }
               
-              _mm256_store_pd(p_lk+site*dim1+catg*dim2,_plk);
+              _mm256_store_pd(p_lk + site*dim1 + catg*dim2,_plk);
               
 #ifdef SAFEMODE
               for(i=0;i<4;i++) 
@@ -5133,18 +5183,25 @@ static inline void SSE_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
 
   for(catg=0;catg<tree->mod->ras->n_catg;++catg)
     {
-      for(i=0;i<4;++i)
+      if(n_v1->tax == YES && n_v2->tax == YES)
         {
-          for(j=0;j<4;++j)
+          for(i=0;i<4;++i)
             {
-              for(k=0;k<2;++k) _pre_lk_all[32*catg + 8*i + 2*j + k] = _mm_mul_pd(_mm_load_pd(tPij1 + 16*catg + 4*i + 2*k),
-                                                                                 _mm_load_pd(tPij2 + 16*catg + 4*j + 2*k)); 
+              for(j=0;j<4;++j)
+                {
+                  for(k=0;k<2;++k) _pre_lk_all[32*catg + 8*i + 2*j + k] = _mm_mul_pd(_mm_load_pd(tPij1 + 16*catg + 4*i + 2*k),
+                                                                                     _mm_load_pd(tPij2 + 16*catg + 4*j + 2*k)); 
+                }
             }
         }
-      
-
-      for(j=0;j<4;++j) for(k=0;k<2;++k) _pre_lk_v1[8*catg + 2*j + k] = _mm_load_pd(tPij1 + 16*catg + 4*j + k*2);
-      for(j=0;j<4;++j) for(k=0;k<2;++k) _pre_lk_v2[8*catg + 2*j + k] = _mm_load_pd(tPij2 + 16*catg + 4*j + k*2);
+      else if(n_v1->tax == YES)
+        {
+          for(j=0;j<4;++j) for(k=0;k<2;++k) _pre_lk_v1[8*catg + 2*j + k] = _mm_load_pd(tPij1 + 16*catg + 4*j + k*2);
+        }
+      else if(n_v2->tax == YES)
+        {
+          for(j=0;j<4;++j) for(k=0;k<2;++k) _pre_lk_v2[8*catg + 2*j + k] = _mm_load_pd(tPij2 + 16*catg + 4*j + k*2);
+        }
       
       for(j=0;j<2;++j) for(i=0;i<2;++i) for(k=0;k<2;++k) _p1[8*catg+4*j+1*i+2*k] = _mm_load_pd(Pij1 + catg*dim3 + j*8 + i*2 + k*4);
       for(j=0;j<2;++j) for(i=0;i<2;++i) for(k=0;k<2;++k) _p2[8*catg+4*j+1*i+2*k] = _mm_load_pd(Pij2 + catg*dim3 + j*8 + i*2 + k*4);
@@ -5497,39 +5554,41 @@ void Dot_Prod_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, phydbl *expl, t_tre
   const unsigned int ncatg = tree->mod->ras->n_catg;
   phydbl *dot_prod = tree->dot_prod;
 
-   
-#if (defined(__AVX__))
-  const unsigned int sz = (int)BYTE_ALIGN / 8;
-  const unsigned nblocks = ns*ncatg/sz;
-  __m256d _prod[nblocks];
-  
-#ifdef SAFEMODE
-  assert(sz == 4);
-#endif
+/*   #if (defined(__AVX__)) */
 
-  for(l=0;l<nblocks;++l) _prod[l] = _mm256_load_pd(p_lk_left + l*sz);
-  for(l=0;l<nblocks;++l) _prod[l] = _mm256_mul_pd(_prod[l],_mm256_load_pd(p_lk_rght + l*sz));
-  for(l=0;l<nblocks;++l) _prod[l] = _mm256_mul_pd(_prod[l],_mm256_load_pd(expl + l*sz));
-  for(l=0;l<nblocks;++l) _mm256_store_pd(dot_prod + l*sz,_prod[l]);
+/*   const unsigned int sz = (int)BYTE_ALIGN / 8; */
+/*   const unsigned nblocks = ns*ncatg/sz; */
+/*   __m256d _prod[nblocks]; */
   
+/* #ifdef SAFEMODE */
+/*   assert(sz == 4); */
+/* #endif */
+
+/*   for(l=0;l<nblocks;++l) _prod[l] = _mm256_load_pd(p_lk_left + l*sz); */
+/*   for(l=0;l<nblocks;++l) _prod[l] = _mm256_mul_pd(_prod[l],_mm256_load_pd(p_lk_rght + l*sz)); */
+/*   for(l=0;l<nblocks;++l) _prod[l] = _mm256_mul_pd(_prod[l],_mm256_load_pd(expl + l*sz)); */
+/*   for(l=0;l<nblocks;++l) _mm256_store_pd(dot_prod + l*sz,_prod[l]); */
+    
+/* #elif (defined(__SSE3__)) */
   
-#elif (defined(__SSE3__))
+/*   const unsigned sz = (int)BYTE_ALIGN / 8; */
+/*   const unsigned int nblocks = ns*ncatg/sz; */
+/*   __m128d _prod[nblocks]; */
   
-  const unsigned sz = (int)BYTE_ALIGN / 8;
-  const unsigned int nblocks = ns*ncatg/sz;
-  __m128d _prod[nblocks];
+/* #ifdef SAFEMODE */
+/*   assert(sz == 2); */
+/* #endif */
   
-#ifdef SAFEMODE
-  assert(sz == 2);
-#endif
-  
-  for(l=0;l<nblocks;++l) _prod[l] = _mm_load_pd(p_lk_left + l*sz);
-  for(l=0;l<nblocks;++l) _prod[l] = _mm_mul_pd(_prod[l],_mm_load_pd(p_lk_rght + l*sz));
-  for(l=0;l<nblocks;++l) _prod[l] = _mm_mul_pd(_prod[l],_mm_load_pd(expl + l*sz));
-  for(l=0;l<nblocks;++l) _mm_store_pd(dot_prod + l*sz,_prod[l]);
-#else
-  
-#endif
+/*   for(l=0;l<nblocks;++l) _prod[l] = _mm_load_pd(p_lk_left + l*sz); */
+/*   for(l=0;l<nblocks;++l) _prod[l] = _mm_mul_pd(_prod[l],_mm_load_pd(p_lk_rght + l*sz)); */
+/*   for(l=0;l<nblocks;++l) _prod[l] = _mm_mul_pd(_prod[l],_mm_load_pd(expl + l*sz)); */
+/*   for(l=0;l<nblocks;++l) _mm_store_pd(dot_prod + l*sz,_prod[l]); */
+
+/* #else */
+
+  for(l=0;l<ns*ncatg;++l) dot_prod[l] = p_lk_left[l] * p_lk_rght[l] * expl[l];
+    
+/* #endif */
 }
 
 

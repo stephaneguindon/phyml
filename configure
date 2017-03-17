@@ -5016,7 +5016,7 @@ fi
 done
 
 
-VECTOR_FLAG=-march=native
+VECTOR_FLAG=
 
 LDFLAGS="${ARGC_flag}"
 

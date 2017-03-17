@@ -710,9 +710,9 @@ void Set_Defaults_Optimiz(t_opt *s_opt)
   s_opt->steph_spr            = YES;
   s_opt->opt_br_len_mult      = NO;
 
-  s_opt->min_diff_lk_local    = 1.E-01;
-  s_opt->min_diff_lk_global   = 1.E-01;
-  s_opt->min_diff_lk_move     = 1.E-01;
+  s_opt->min_diff_lk_local    = 1.E-02;
+  s_opt->min_diff_lk_global   = 1.E-02;
+  s_opt->min_diff_lk_move     = 1.E-02;
 
   s_opt->p_moves_to_examine   = 0.15;
   s_opt->fast_nni             = NO;

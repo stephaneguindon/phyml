@@ -871,7 +871,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                       site_lk_cat = Lk_Core_One_Class(b->p_lk_left + site*mixt_tree->mod->ns,
                                                       b->p_lk_rght + site*mixt_tree->mod->ns,
                                                       b->Pij_rr,
-                                                      b->p_lk_tip_r + site*mixt_tree->mod->ns,
+                                                      b->tPij_rr,
                                                       NULL,
                                                       tree->mod->ns,ambiguity_check,state,
                                                       b,tree);
