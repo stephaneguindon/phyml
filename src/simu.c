@@ -997,7 +997,7 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
           // Update partial likelihood looking down
           Update_P_Lk(tree,b,d);
           // Evaluate likelihood
-          Br_Len_Brent(b,tree);
+          /* Br_Len_Brent(b,tree); */
           lk1 = Lk(b,tree);
           lk1 = tree->c_lnL;
           
@@ -1013,7 +1013,7 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
               // Update partial likelihood looking down
               Update_P_Lk(tree,b,d);
               // Evaluate likelihood
-              Br_Len_Brent(b,tree);
+              /* Br_Len_Brent(b,tree); */
               lk2 = Lk(b,tree);
               lk2 = tree->c_lnL;
               

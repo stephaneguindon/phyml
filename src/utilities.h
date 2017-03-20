@@ -2153,25 +2153,6 @@ void Branch_To_Time_Pre(t_node *a, t_node *d, t_tree *tree);
 void Path_Length(t_node *dep, t_node *arr, phydbl *len, t_tree *tree);
 phydbl *Dist_Btw_Tips(t_tree *tree);
 void Random_SPRs_On_Rooted_Tree(t_tree *tree);
-
-
-void Set_P_Lk_One_Side(phydbl **Pij, phydbl **tPij, phydbl **p_lk,  int **sum_scale, t_node *d, t_edge *b, t_tree *tree
-#ifdef BEAGLE
-                       , int* child_p_idx, int* Pij_idx
-#endif
-                       );
-
-
-void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
-                                 phydbl **p_lk , int **sum_scale , int **p_lk_loc,
-                  phydbl **Pij1, phydbl **tPij1, phydbl **p_lk1, int **sum_scale1,
-                  phydbl **Pij2, phydbl **tPij2, phydbl **p_lk2, int **sum_scale2,
-                  t_node *d, t_edge *b, t_tree *tree
-#ifdef BEAGLE
-                  , int *dest_p_idx, int *child1_p_idx, int* child2_p_idx, int* Pij1_idx, int* Pij2_idx
-#endif
-                  );
-
 void Best_Root_Position_IL_Model(t_tree *tree);
 void Set_Br_Len_Var(t_edge *b, t_tree *tree);
 void Check_Br_Lens(t_tree *tree);
