@@ -3516,12 +3516,12 @@ void Test_One_Spr_Target_Recur(t_node *a, t_node *d, t_edge *pulled, t_node *lin
                       *best_found = YES;
                       return;
                     }
-                  /* else if(tree->mod->s_opt->spr_pars == NO  && move_score < tree->best_lnL - tree->mod->s_opt->max_delta_lnL_spr) // so bad, no need to go further... */
-                  /*   { */
-                  /*     tree->curr_path[tree->depth_curr_path] = NULL; */
-                  /*     tree->depth_curr_path--; */
-                  /*     return; */
-                  /*   } */
+                  else if(tree->mod->s_opt->spr_pars == NO  && move_score < tree->best_lnL - tree->mod->s_opt->max_delta_lnL_spr) // so bad, no need to go further...
+                    {
+                      tree->curr_path[tree->depth_curr_path] = NULL;
+                      tree->depth_curr_path--;
+                      return;
+                    }
                 }
               
               if(tree->depth_curr_path < tree->mod->s_opt->max_depth_path)
@@ -4846,7 +4846,7 @@ void Spr_List_Of_Trees(t_tree *tree)
 
       if(list_size == 0) Round_Optimize(tree,ROUND_MAX);
 
-      tree->mod->s_opt->max_depth_path    = 15;
+      tree->mod->s_opt->max_depth_path    = tree->n_otu;
       tree->mod->s_opt->spr_lnL           = YES;
       tree->mod->s_opt->spr_pars          = NO;
       tree->mod->s_opt->min_diff_lk_move  = 0.1;
