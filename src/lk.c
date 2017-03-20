@@ -768,8 +768,6 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
       // actual likelihood rather than its first or second derivative
 
       c_lnL  += tree->data->wght[site] * loglk;
-
-      if(loglk < -500.) continue;
       
       if(isinf(loglk)) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 

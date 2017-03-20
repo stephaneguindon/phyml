@@ -5053,7 +5053,7 @@ if test "${enable_gprof+set}" = set; then :
 fi
 
 if test "x$enable_gprof" = "xyes"; then :
-  CFLAGS="-pg -fno-inline ${VECTOR_FLAG}"
+  CFLAGS="-O2 -pg -fno-inline ${VECTOR_FLAG}"
 else
   if test "x$enable_debug" = "xno"; then :
   CFLAGS="${DEFAULT_C_FLAG}"

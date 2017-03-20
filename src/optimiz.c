@@ -1119,15 +1119,13 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
       if(tree->mod->io->datatype == NT)
         {
           if(tree->mod->whichmodel == GTR || tree->mod->whichmodel == CUSTOM)
-            {
-              
+            {              
               Switch_Eigen(YES,tree->mod);
               
               for(i=0;i<5;i++) tree->mod->m4mod->o_rr[i] = log(tree->mod->m4mod->o_rr[i]);
               
               failed = YES;
               
-              /* BFGS(tree,tree->mod->m4mod->o_rr,5,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,YES, */
               BFGS(tree,tree->mod->m4mod->o_rr,5,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,YES,NO,
                    &Return_Abs_Lk,
                    &Num_Derivative_Several_Param,
@@ -2314,7 +2312,7 @@ phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t
 
       if(d2l > 0.0)
         {
-          *l *= 0.8;
+          *l *= 0.5;
         }
       else
         {
