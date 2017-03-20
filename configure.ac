@@ -58,7 +58,7 @@ dnl Uncomment two rows below when compiling rwarp (need to have libtool installe
 dnl LT_INIT
 dnl AC_PROG_LIBTOOL
 
-DEFAULT_C_FLAG="-O2 -Wall -Winline --param large-stack-frame=1024 ${VECTOR_FLAG}"
+DEFAULT_C_FLAG="-O2 -fomit-frame-pointer -funroll-loops -Wall -Winline --param large-stack-frame=1024 ${VECTOR_FLAG}"
 dnl DEFAULT_C_FLAG="-O2 -Wall -Winline ${VECTOR_FLAG}"
 dnl DEFAULT_C_FLAG="-O3 -Wall ${VECTOR_FLAG}"
 

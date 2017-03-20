@@ -5021,7 +5021,7 @@ VECTOR_FLAG=-march=native
 LDFLAGS="${ARGC_flag}"
 
 
-DEFAULT_C_FLAG="-O2 -Wall -Winline --param large-stack-frame=1024 ${VECTOR_FLAG}"
+DEFAULT_C_FLAG="-O2 -fomit-frame-pointer -funroll-loops -Wall -Winline --param large-stack-frame=1024 ${VECTOR_FLAG}"
 
 # Check whether --enable-debug was given.
 if test "${enable_debug+set}" = set; then :
