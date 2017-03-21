@@ -20,25 +20,25 @@ the GNU public licence. See http://www.opensource.org for details.
 int CALL;
 int TIME;
 
-/* #if (!defined(__AVX__) && !defined(__SSE3__)) */
+#if (!defined(__AVX__) && !defined(__SSE3__))
 static inline phydbl Lk_Core_One_Class_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght,phydbl *Pij,phydbl *tPij,phydbl *expl,int ns, int ambiguity_check, int state,t_edge *b, t_tree *tree);
 static inline phydbl Lk_Core_One_Class_No_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght,phydbl *Pij,phydbl *tPij,phydbl *expl,int ns, int ambiguity_check, int state,t_edge *b, t_tree *tree);
-/* #endif */
+#endif
 
-/* #if (defined(__AVX__)) */
+#if (defined(__AVX__))
 static inline void AVX_Update_P_Lk_Nucl(t_tree *tree,t_edge *b_fcus,t_node *n);
 static inline void AVX_Update_P_Lk_AA(t_tree *tree,t_edge *b_fcus,t_node *n);
 static inline __m256d AVX_Horizontal_Add(__m256d x[4]);
 static inline void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree);
 static inline phydbl AVX_Lk_Core_One_Class_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght,phydbl *Pij,phydbl *tPij,phydbl *expl,int ns, int ambiguity_check, int state,t_edge *b, t_tree *tree);
 static inline phydbl AVX_Lk_Core_One_Class_No_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght,phydbl *Pij,phydbl *tPij,phydbl *expl,int ns, int ambiguity_check, int state,t_edge *b, t_tree *tree);
-/* #elif (defined(__SSE3__)) */
+#elif (defined(__SSE3__))
 static inline void SSE_Update_P_Lk_Nucl(t_tree *tree,t_edge *b_fcus,t_node *n);
 static inline void SSE_Update_P_Lk_AA(t_tree *tree,t_edge *b_fcus,t_node *n);
 static inline void SSE_Update_Eigen_Lr(t_edge *b, t_tree *tree);
 static inline phydbl SSE_Lk_Core_One_Class_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, phydbl *Pij,phydbl *tPij,phydbl *expl,int ns, int ambiguity_check, int state,t_edge *b, t_tree *tree);
 static inline phydbl SSE_Lk_Core_One_Class_No_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, phydbl *Pij,phydbl *tPij,phydbl *expl,int ns, int ambiguity_check, int state,t_edge *b, t_tree *tree);
-/* #endif */
+#endif
 
 static inline void Dot_Prod_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, phydbl *dot_prod, phydbl *expl, t_tree *tree);
 static inline void Pull_Scaling_Factors(int site,t_edge *b,t_tree *tree);
@@ -1092,7 +1092,7 @@ void Update_Eigen_Lr(t_edge *b, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-/* #if (defined(__AVX__)) */
+#if (defined(__AVX__))
 
 static void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree)
 {
@@ -1199,7 +1199,7 @@ static void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-/* #elif (defined(__SSE3__)) */
+#elif (defined(__SSE3__))
 
 static void SSE_Update_Eigen_Lr(t_edge *b, t_tree *tree)
 {
@@ -1301,7 +1301,7 @@ static void SSE_Update_Eigen_Lr(t_edge *b, t_tree *tree)
   if(ev)  Free(ev);
 
 }
-/* #endif */
+#endif
 
 /////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -1417,7 +1417,7 @@ static inline phydbl Lk_Core_One_Class(phydbl *p_lk_left, phydbl *p_lk_rght,
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-/* #if (defined(__AVX__)) */
+#if (defined(__AVX__))
 static inline phydbl AVX_Lk_Core_One_Class_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, 
                                                     phydbl *Pij,phydbl *tPij,
                                                     phydbl *expl, 
@@ -1509,7 +1509,7 @@ static inline phydbl AVX_Lk_Core_One_Class_No_Eigen_Lr(phydbl *p_lk_left, phydbl
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-/* #elif (defined(__SSE3__)) */
+#elif (defined(__SSE3__))
 
 static inline phydbl SSE_Lk_Core_One_Class_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, 
                                                     phydbl *Pij,phydbl *tPij,
@@ -1610,7 +1610,7 @@ static inline phydbl SSE_Lk_Core_One_Class_No_Eigen_Lr(phydbl *p_lk_left, phydbl
   return lk;
 }
 
-/* #else */
+#else
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -1679,7 +1679,7 @@ static inline phydbl Lk_Core_One_Class_No_Eigen_Lr(phydbl *p_lk_left, phydbl *p_
   return lk;
 }
 
-/* #endif */
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
