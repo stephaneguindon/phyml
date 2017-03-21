@@ -58,7 +58,7 @@ dnl Uncomment two rows below when compiling rwarp (need to have libtool installe
 dnl LT_INIT
 dnl AC_PROG_LIBTOOL
 
-DEFAULT_C_FLAG="-O2 -fomit-frame-pointer -funroll-loops -Wall -Winline --param large-stack-frame=1024 ${VECTOR_FLAG}"
+DEFAULT_C_FLAG="-O2 -fomit-frame-pointer -funroll-loops -Wall -Winline --param large-stack-frame=1024 --param max-inline-insns-single=1000 --param inline-unit-growth=100 ${VECTOR_FLAG}"
 dnl DEFAULT_C_FLAG="-O2 -Wall -Winline ${VECTOR_FLAG}"
 dnl DEFAULT_C_FLAG="-O3 -Wall ${VECTOR_FLAG}"
 
@@ -79,7 +79,7 @@ AC_ARG_ENABLE([gprof],
               [AS_HELP_STRING([--enable-gprof],
                               [Remove optimization options and add profiling informations.])])
 AS_IF([test "x$enable_gprof" = "xyes"],
-      [CFLAGS="-O2 -pg -fno-inline ${VECTOR_FLAG}"],
+      [CFLAGS="-g -pg -fno-inline ${VECTOR_FLAG}"],
       [AS_IF([test "x$enable_debug" = "xno"],[CFLAGS="${DEFAULT_C_FLAG}"])])
 
 AC_ARG_ENABLE([mpi],

@@ -226,6 +226,9 @@ int main(int argc, char **argv)
                   if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
                                    
               
+                  CALL = 0;
+                  TIME = 0;
+                  
                   Switch_Eigen(YES,tree->mod);                 
                   Lk(NULL,tree);
                   Switch_Eigen(NO,tree->mod);
@@ -248,8 +251,8 @@ int main(int argc, char **argv)
                         Round_Optimize(tree,ROUND_MAX);
                        
                     }
-                
-
+                  
+                  printf("\n. CALL : %d TIME : %d",CALL,TIME);
 
                   if(tree->mod->gamma_mgf_bl) Best_Root_Position_IL_Model(tree);
 

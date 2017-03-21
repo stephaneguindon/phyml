@@ -53,7 +53,6 @@ phydbl Lk_Dist(phydbl *F, phydbl dist, t_mod *mod);
 phydbl Update_Lk_At_Given_Edge(t_edge *b_fcus, t_tree *tree);
 void Update_P_Lk_Greedy(t_tree *tree, t_edge *b_fcus, t_node *n);
 void Get_All_Partial_Lk_Scale_Greedy(t_tree *tree, t_edge *b_fcus, t_node *a, t_node *d);
-phydbl Lk_Core(int state, int ambiguity_check,short int returnlog,short int derivative,t_edge *b, phydbl *expl,phydbl *dot_prod,phydbl *p_lk_left, phydbl *p_lk_rght,phydbl *Pij_rr,phydbl *tPij_rr,t_tree *tree);
 phydbl Lk_Triplet(t_node *a, t_node *d, t_tree *tree);
 void Print_Lk_Given_Edge_Recurr(t_node *a, t_node *d, t_edge *b, t_tree *tree);
 phydbl *Post_Prob_Rates_At_Given_Edge(t_edge *b, phydbl *post_prob, t_tree *tree);
@@ -89,9 +88,6 @@ void Ancestral_Sequences(t_tree *tree, int print);
 void Stepwise_Add_Lk(t_tree *tree);
 void Update_Eigen_Lr(t_edge *b, t_tree *tree);
 phydbl dLk(phydbl *l, t_edge *b, t_tree *tree);
-phydbl Lk_Core_One_Class(phydbl *p_lk_left, phydbl *p_lk_rght, phydbl *Pij, phydbl *tPij, phydbl *expl,  int ns, int ambiguity_check, int state, t_edge *b, t_tree *tree);
-void Dot_Prod_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, phydbl *expl, t_tree *tree);
-
 
 
 #if defined(__AVX__)

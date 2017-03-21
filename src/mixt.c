@@ -857,24 +857,24 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                           for(l=0;l<tree->mod->ns;l++) expl[l] = (phydbl)POW(tree->mod->eigen->e_val[l],len);
                         }
 
-                      site_lk_cat = Lk_Core_One_Class(tree->eigen_lr_left + site,
-                                                      tree->eigen_lr_rght + site,
-                                                      NULL,
-                                                      NULL,
-                                                      expl,
-                                                      tree->mod->ns,
-                                                      -1,-1,
-                                                      b,tree);
+                      /* site_lk_cat = Lk_Core_One_Class(tree->eigen_lr_left + site, */
+                      /*                                 tree->eigen_lr_rght + site, */
+                      /*                                 NULL, */
+                      /*                                 NULL, */
+                      /*                                 expl, */
+                      /*                                 tree->mod->ns, */
+                      /*                                 -1,-1, */
+                      /*                                 b,tree); */
                     }
                   else // tree->use_eigen_lr == NO
                     {
-                      site_lk_cat = Lk_Core_One_Class(b->p_lk_left + site*mixt_tree->mod->ns,
-                                                      b->p_lk_rght + site*mixt_tree->mod->ns,
-                                                      b->Pij_rr,
-                                                      b->tPij_rr,
-                                                      NULL,
-                                                      tree->mod->ns,ambiguity_check,state,
-                                                      b,tree);
+                      /* site_lk_cat = Lk_Core_One_Class(b->p_lk_left + site*mixt_tree->mod->ns, */
+                      /*                                 b->p_lk_rght + site*mixt_tree->mod->ns, */
+                      /*                                 b->Pij_rr, */
+                      /*                                 b->tPij_rr, */
+                      /*                                 NULL, */
+                      /*                                 tree->mod->ns,ambiguity_check,state, */
+                      /*                                 b,tree); */
                     }
                   tree->site_lk_cat[0] = site_lk_cat;
                 }
@@ -2929,32 +2929,32 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
 
               if(tree->mod->ras->invar == NO && tree->data->wght[tree->curr_site] > SMALL)
                 {                  
-                  d2lk[class] = Lk_Core_One_Class(tree->eigen_lr_left + site*ns,
-                                                  tree->eigen_lr_rght + site*ns,
-                                                  NULL,
-                                                  NULL,
-                                                  expld2 + class*ns,
-                                                  tree->mod->ns,
-                                                  -1,-1,
-                                                  b,tree);
+                  /* d2lk[class] = Lk_Core_One_Class(tree->eigen_lr_left + site*ns, */
+                  /*                                 tree->eigen_lr_rght + site*ns, */
+                  /*                                 NULL, */
+                  /*                                 NULL, */
+                  /*                                 expld2 + class*ns, */
+                  /*                                 tree->mod->ns, */
+                  /*                                 -1,-1, */
+                  /*                                 b,tree); */
                                     
-                  dlk[class] = Lk_Core_One_Class(tree->eigen_lr_left + site*ns,
-                                                 tree->eigen_lr_rght + site*ns,
-                                                 NULL,
-                                                 NULL,
-                                                 expld + class*ns,
-                                                 tree->mod->ns,
-                                                 -1,-1,
-                                                 b,tree);
+                  /* dlk[class] = Lk_Core_One_Class(tree->eigen_lr_left + site*ns, */
+                  /*                                tree->eigen_lr_rght + site*ns, */
+                  /*                                NULL, */
+                  /*                                NULL, */
+                  /*                                expld + class*ns, */
+                  /*                                tree->mod->ns, */
+                  /*                                -1,-1, */
+                  /*                                b,tree); */
                   
-                  lk[class] = Lk_Core_One_Class(tree->eigen_lr_left + site*ns,
-                                                tree->eigen_lr_rght + site*ns,
-                                                NULL,
-                                                NULL,
-                                                expl + class*ns,
-                                                tree->mod->ns,
-                                                -1,-1,
-                                                b,tree);
+                  /* lk[class] = Lk_Core_One_Class(tree->eigen_lr_left + site*ns, */
+                  /*                               tree->eigen_lr_rght + site*ns, */
+                  /*                               NULL, */
+                  /*                               NULL, */
+                  /*                               expl + class*ns, */
+                  /*                               tree->mod->ns, */
+                  /*                               -1,-1, */
+                  /*                               b,tree); */
                   
                   /* printf("\n\n. site: %d",site); */
                   /* printf("\n. lr_left: %G %G %G %G",tree->eigen_lr_left[site],tree->eigen_lr_left[site+1],tree->eigen_lr_left[site+2],tree->eigen_lr_left[site+3]); fflush(NULL); */

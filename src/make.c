@@ -49,12 +49,12 @@ void Make_Tree_4_Lk(t_tree *tree, calign *cdata, int n_site)
 
   #if (defined(__AVX__) || defined(__SSE3__))
 #ifndef WIN32
-  if(posix_memalign((void **)&tree->dot_prod,BYTE_ALIGN,(size_t)tree->mod->ns*tree->mod->ras->n_catg*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&tree->dot_prod,BYTE_ALIGN,(size_t)tree->n_pattern*tree->mod->ns*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 #else
-  tree->dot_prod = _aligned_malloc(tree->mod->ns*tree->mod->ras->n_catg*sizeof(phydbl),BYTE_ALIGN);
+  tree->dot_prod = _aligned_malloc(tree->n_pattern*tree->mod->ns*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*sizeof(phydbl),BYTE_ALIGN);
 #endif
 #else
-  tree->dot_prod = (phydbl *)mCalloc(tree->mod->ns*tree->mod->ras->n_catg,sizeof(phydbl));
+  tree->dot_prod = (phydbl *)mCalloc(tree->n_pattern*tree->mod->ns*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(phydbl));
 #endif
 
 

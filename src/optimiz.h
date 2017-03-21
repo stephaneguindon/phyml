@@ -179,7 +179,6 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose);
 void Optimize_Free_Rate_Weights(t_tree *tree, int fast, int verbose);
 void Optimize_Free_Rate_Rr(t_tree *tree, int fast, int verbose);
 void Optimize_Br_Len_Multiplier(t_tree *tree, int verbose);
-phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_tree *tree);
 
 #endif
 

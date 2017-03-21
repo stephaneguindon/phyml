@@ -87,6 +87,10 @@ static inline int isinf_d  (double      x) { return isnan (x - x); }
 static inline int isinf_ld (long double x) { return isnan (x - x); }
 #endif
 
+
+extern int CALL;
+extern int TIME;
+
 #define AC 0
 #define AG 1
 #define AT 2
