@@ -967,7 +967,10 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
 
               exponent = -(sum_scale_left_cat[class]+sum_scale_rght_cat[class])+fact_sum_scale;
               site_lk_cat = tree->site_lk_cat[0];
-              Rate_Correction(exponent,&site_lk_cat);
+
+              /* Rate_Correction(exponent,&site_lk_cat); */
+              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+
               mixt_tree->site_lk_cat[class] = site_lk_cat;
               tree->site_lk_cat[0] = site_lk_cat;
               class++;
@@ -1027,7 +1030,8 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
               tree->apply_lk_scaling = YES;
 
               /*! 'tree' will give the correct state frequencies (as opposed to mixt_tree */
-              inv_site_lk = Invariant_Lk(fact_sum_scale,site,&num_prec_issue,tree);
+              /* inv_site_lk = Invariant_Lk(fact_sum_scale,site,&num_prec_issue,tree); */
+              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
               if(num_prec_issue == YES) // inv_site_lk >> site_lk
                 {
@@ -3035,10 +3039,11 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
               if(tree->mod->ras->invar == NO)
                 {
                   exponent = -(sum_scale_left_cat[class]+sum_scale_rght_cat[class])+fact_sum_scale;
-
-                  Rate_Correction(exponent,lk+class);
-                  Rate_Correction(exponent,dlk+class);
-                  Rate_Correction(exponent,d2lk+class);
+                  
+                  Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+                  /* Rate_Correction(exponent,lk+class); */
+                  /* Rate_Correction(exponent,dlk+class); */
+                  /* Rate_Correction(exponent,d2lk+class); */
                 }
 
               class++;
@@ -3109,7 +3114,10 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
               tree->apply_lk_scaling = YES;
 
               /*! 'tree' will give the correct state frequencies (as opposed to mixt_tree) */
-              inv_site_lk = Invariant_Lk(fact_sum_scale,site,&num_prec_issue,tree);
+              
+              /* inv_site_lk = Invariant_Lk(fact_sum_scale,site,&num_prec_issue,tree); */
+              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+
 
               if(num_prec_issue == YES) // inv_site_lk >> site_lk
                 {

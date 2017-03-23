@@ -232,7 +232,7 @@ int main(int argc, char **argv)
                   Switch_Eigen(YES,tree->mod);                 
                   Lk(NULL,tree);
                   Switch_Eigen(NO,tree->mod);
-  
+                  
                   if(tree->mod->s_opt->opt_topo)
 		    {
 		      if(tree->mod->s_opt->topo_search      == NNI_MOVE) Simu_Loop(tree);
