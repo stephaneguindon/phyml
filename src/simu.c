@@ -51,7 +51,7 @@ int Simu(t_tree *tree, int n_step_max)
       n_round++;
       if(n_round == n_step_max) break;
     }
-  while(delta > 1.0 || n_round < 5);
+  while(delta > 0.1);
 
   return 1;
                 
