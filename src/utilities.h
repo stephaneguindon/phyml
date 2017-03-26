@@ -393,6 +393,8 @@ typedef	double phydbl;
 // as XXX depends on what the value of P_LK_LIM_INF is 
 #define  P_LK_LIM_INF   3.054936e-151 /* 2^-500 */
 #define  P_LK_LIM_SUP   3.273391e+150 /* 2^500 */
+/* #define  P_LK_LIM_INF   1.499697e-241 /\* 2^-800 *\/ */
+/* #define  P_LK_LIM_SUP   6.668014e+240 /\* 2^800 *\/ */
 
 #define T_MAX_XML_TAG 64
 

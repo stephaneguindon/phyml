@@ -59,7 +59,7 @@ dnl LT_INIT
 dnl AC_PROG_LIBTOOL
 
 dnl DEFAULT_C_FLAG="-O2 -fomit-frame-pointer -funroll-loops -Wall -Winline --param large-stack-frame=1024 --param max-inline-insns-single=1000 --param inline-unit-growth=1001 ${VECTOR_FLAG}"
-DEFAULT_C_FLAG="-O2 -fomit-frame-pointer -funroll-loops -Wall -Winline --param large-stack-frame=1024 --param max-inline-insns-single=1000 ${VECTOR_FLAG}"
+DEFAULT_C_FLAG="-O2 -fomit-frame-pointer -funroll-loops -Wall -Winline ${VECTOR_FLAG}"
 dnl DEFAULT_C_FLAG="-O2 -Wall -Winline ${VECTOR_FLAG}"
 dnl DEFAULT_C_FLAG="-O3 -Wall ${VECTOR_FLAG}"
 

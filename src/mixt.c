@@ -1049,14 +1049,14 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
           int rate_class = 0;
           for(rate_class=0;rate_class<mixt_tree->mod->ras->n_catg;rate_class++)
             {
-              mixt_tree->unscaled_site_lk_cat[rate_class*mixt_tree->n_pattern + site] = 0.0;
+              mixt_tree->unscaled_site_lk_cat[site*mixt_tree->mod->ras->n_catg + rate_class] = 0.0;
               mixt_class = 0;
               tree = mixt_tree->next;
               do
                 {
                   if(tree->mod->ras->parent_class_number == rate_class)
                     {
-                      mixt_tree->unscaled_site_lk_cat[rate_class*mixt_tree->n_pattern + site] +=
+                      mixt_tree->unscaled_site_lk_cat[site*mixt_tree->mod->ras->n_catg + rate_class] +=
                         log(mixt_tree->site_lk_cat[rate_class]);
                       break;
                     }
@@ -1065,8 +1065,8 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                 }
               while(tree && tree->is_mixt_tree == NO);
 
-              mixt_tree->unscaled_site_lk_cat[rate_class*mixt_tree->n_pattern + site] = 
-                exp(mixt_tree->unscaled_site_lk_cat[rate_class*mixt_tree->n_pattern + site]);
+              mixt_tree->unscaled_site_lk_cat[site*mixt_tree->mod->ras->n_catg + rate_class] = 
+                exp(mixt_tree->unscaled_site_lk_cat[site*mixt_tree->mod->ras->n_catg + rate_class]);
             }
 
           if(isinf(log_site_lk) || isnan(log_site_lk))

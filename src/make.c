@@ -61,16 +61,16 @@ void Make_Tree_4_Lk(t_tree *tree, calign *cdata, int n_site)
 
 #if (defined(__AVX__) || defined(__SSE3__))
 #ifndef WIN32
-  if(posix_memalign((void **)&tree->expl  ,BYTE_ALIGN,(size_t)tree->mod->ras->n_catg*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&tree->expl  ,BYTE_ALIGN,(size_t)3*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   if(posix_memalign((void **)&tree->expld ,BYTE_ALIGN,(size_t)tree->mod->ras->n_catg*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   if(posix_memalign((void **)&tree->expld2,BYTE_ALIGN,(size_t)tree->mod->ras->n_catg*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 #else
-  tree->expl   = _aligned_malloc(tree->mod->ras->n_catg*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
+  tree->expl   = _aligned_malloc(3*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
   tree->expld  = _aligned_malloc(tree->mod->ras->n_catg*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
   tree->expld2 = _aligned_malloc(tree->mod->ras->n_catg*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
 #endif
 #else
-  tree->expl   = (phydbl *)mCalloc(tree->mod->ras->n_catg*tree->mod->ns,sizeof(phydbl));
+  tree->expl   = (phydbl *)mCalloc(3*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns,sizeof(phydbl));
   tree->expld  = (phydbl *)mCalloc(tree->mod->ras->n_catg*tree->mod->ns,sizeof(phydbl));
   tree->expld2 = (phydbl *)mCalloc(tree->mod->ras->n_catg*tree->mod->ns,sizeof(phydbl));
 #endif

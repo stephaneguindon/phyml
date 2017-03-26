@@ -147,7 +147,7 @@ void Init_Tree(t_tree *tree, int n_otu)
   tree->norm_scale                = 0.0;
   tree->br_len_recorded           = NO;
   tree->max_spr_depth             = 0;
-  tree->apply_lk_scaling          = NO;
+  tree->apply_lk_scaling          = YES;
   tree->dp                        = 0;
   tree->ignore_root               = YES;
   tree->annealing_temp            = 0.;

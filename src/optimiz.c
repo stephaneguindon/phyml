@@ -2355,7 +2355,7 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
 
 
       if(FABS(tree->c_lnL-old_lnL) < tol) converged = YES;
-      /* if(FABS(dl) < 1.E-2) converged = YES; */
+      if(FABS(dl) < 1.E-2) converged = YES;
     }
   while(converged == NO);
   

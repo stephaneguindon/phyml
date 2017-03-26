@@ -2198,21 +2198,21 @@ void Print_Site_Lk(t_tree *tree, FILE *fp)
             {
               for(catg=0;catg<tree->mod->ras->n_catg;catg++)
                 {                  
-                  PhyML_Fprintf(fp,"%-23g",tree->unscaled_site_lk_cat[catg*tree->n_pattern + tree->data->sitepatt[site]]);
+                  PhyML_Fprintf(fp,"%-23g",tree->unscaled_site_lk_cat[tree->data->sitepatt[site]*tree->mod->ras->n_catg + catg]);
                 }
                   
               postmean = .0;
               for(catg=0;catg<tree->mod->ras->n_catg;catg++)
                 postmean +=
                 tree->mod->ras->gamma_rr->v[catg] *
-                tree->unscaled_site_lk_cat[catg*tree->n_pattern + tree->data->sitepatt[site]] *
+                tree->unscaled_site_lk_cat[tree->data->sitepatt[site]*tree->mod->ras->n_catg + catg] *
                 tree->mod->ras->gamma_r_proba->v[catg];
 
               sum = .0;
               for(catg=0;catg<tree->mod->ras->n_catg;catg++)
                 {
                   sum +=
-                    tree->unscaled_site_lk_cat[catg*tree->n_pattern + tree->data->sitepatt[site]] *
+                    tree->unscaled_site_lk_cat[tree->data->sitepatt[site]*tree->mod->ras->n_catg + catg] *
                     tree->mod->ras->gamma_r_proba->v[catg];
                 }
 
