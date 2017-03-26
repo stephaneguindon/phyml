@@ -248,8 +248,6 @@ int main(int argc, char **argv)
                        
                     }
                   
-                  printf("\n. CALL : %d TIME : %d",CALL,TIME);
-
                   if(tree->mod->gamma_mgf_bl) Best_Root_Position_IL_Model(tree);
 
                   Set_Both_Sides(YES,tree);

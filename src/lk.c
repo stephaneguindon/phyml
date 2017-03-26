@@ -670,7 +670,6 @@ if(tree->rates && tree->io->lk_approx == NORMAL)
 phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
 {
   unsigned int catg,state,site;
-  short int ambiguity_check;
   phydbl len,rr;
   phydbl lk,dlk,d2lk,dlnlk,d2lnlk,loglk,c_lnL;
   phydbl ev,expevlen;
@@ -728,14 +727,22 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
           ev = log(tree->mod->eigen->e_val[state]);
           expevlen = exp(ev*len);
 
-          /* !!!!!!!!!! */
-          expl[catg*ns+state] = expevlen;
-          expld[catg*ns+state] = expevlen*ev*rr;
-          expld2[catg*ns+state] = expevlen*ev*ev*rr*rr;
+          /* !!!!!!!!!!!!! */
+          /* expl[catg*ns+state] = expevlen; */
+          /* expld[catg*ns+state] = expevlen*ev*rr; */
+          /* expld2[catg*ns+state] = expevlen*ev*ev*rr*rr; */
 
+          expl[0*ncatg*ns + catg*ns+state] = expevlen;
+          expl[1*ncatg*ns + catg*ns+state] = expevlen*ev*rr;
+          expl[2*ncatg*ns + catg*ns+state] = expevlen*ev*ev*rr*rr;
+
+          expld  = expl + 1*ncatg*ns;
+          expld2 = expl + 2*ncatg*ns;
+          
           /* expl[3*catg*ns+3*state+0] = expevlen; */
           /* expl[3*catg*ns+3*state+1] = ev*rr; */
           /* expl[3*catg*ns+3*state+2] = ev*rr*ev*rr; */
+
         }
     }
   
@@ -754,14 +761,7 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
     {
       tree->curr_site = site;
       
-      ambiguity_check = YES;
-      state = -1;
-      if((b->rght->tax) && (tree->mod->s_opt->greedy == NO))
-        {
-          ambiguity_check = b->rght->c_seq->is_ambigu[site];
-          if(ambiguity_check == NO) state = b->rght->c_seq->d_state[site];
-        }
-            
+
       lk    = Lk_Core_Eigen_Lr(expl  ,dot_prod + site*ns*ncatg,NO,NO ,b,tree);
       dlk   = Lk_Core_Eigen_Lr(expld ,dot_prod + site*ns*ncatg,NO,YES,b,tree);
       d2lk  = Lk_Core_Eigen_Lr(expld2,dot_prod + site*ns*ncatg,NO,YES,b,tree);
@@ -789,7 +789,7 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
       /*     for(state=0;state<ns;state++) */
       /*       { */
       /*         dum = dot_prod[site*ns*ncatg + catg*ns + state] * expl[3*catg*ns + 3*state + 0]; */
-      /*         dum *= 0.25; */
+      /*         dum *= tree->mod->ras->gamma_r_proba->v[catg]; */
       /*         lk += dum; */
       /*         dlk += dum * expl[3*catg*ns + 3*state + 1]; */
       /*         d2lk += dum * expl[3*catg*ns + 3*state + 2]; */
