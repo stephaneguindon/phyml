@@ -48,8 +48,8 @@ AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([floor pow rint sqrt strchr strstr])
 
 dnl VECTOR_FLAG=-march=native
-dnl VECTOR_FLAG=-msse3
-VECTOR_FLAG=-mavx
+VECTOR_FLAG=-msse3
+dnl VECTOR_FLAG=-mavx
 dnl VECTOR_FLAG=
 
 LDFLAGS="${ARGC_flag}" 

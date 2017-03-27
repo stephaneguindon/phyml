@@ -26,16 +26,14 @@ static inline phydbl Lk_Core_One_Class_No_Eigen_Lr(phydbl *p_lk_left, phydbl *p_
 /* #endif */
 
 #if (defined(__AVX__))
-static inline void AVX_Update_P_Lk_Nucl(t_tree *tree,t_edge *b_fcus,t_node *n);
-static inline void AVX_Update_P_Lk_AA(t_tree *tree,t_edge *b_fcus,t_node *n);
+static inline void AVX_Update_Partial_Lk(t_tree *tree,t_edge *b_fcus,t_node *n);
 static inline __m256d AVX_Horizontal_Add(__m256d x[4]);
 static inline void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree);
 static inline phydbl AVX_Lk_Core_One_Class_Eigen_Lr(phydbl *dot_prod, phydbl *expl, unsigned int ns);
 static inline phydbl AVX_Lk_Core_One_Class_No_Eigen_Lr(phydbl *p_lk_left,phydbl *p_lk_rght,phydbl *Pij,phydbl *pi,int ns, int ambiguity_check, int observed_state);  
 static inline phydbl AVX_Vect_Norm(__m256d _z);
 #elif (defined(__SSE3__))
-static inline void SSE_Update_P_Lk_Nucl(t_tree *tree,t_edge *b_fcus,t_node *n);
-static inline void SSE_Update_P_Lk_AA(t_tree *tree,t_edge *b_fcus,t_node *n);
+static inline void SSE_Update_Partial_Lk(t_tree *tree,t_edge *b_fcus,t_node *n);
 static inline void SSE_Update_Eigen_Lr(t_edge *b, t_tree *tree);
 static inline phydbl SSE_Lk_Core_One_Class_Eigen_Lr(phydbl *dot_prod, phydbl *expl, int ns);
 static inline phydbl SSE_Lk_Core_One_Class_No_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, phydbl *Pij, phydbl *pi, int ns, int ambiguity_check, int state);
@@ -1693,9 +1691,9 @@ void Update_P_Lk(t_tree *tree, t_edge *b, t_node *d)
       if(tree->io->datatype == NT)
         {
 #if (defined(__AVX__))
-          AVX_Update_P_Lk_Nucl(tree,b,d);
+          AVX_Update_Partial_Lk(tree,b,d);
 #elif (defined(__SSE3__))
-          SSE_Update_P_Lk_Nucl(tree,b,d);
+          SSE_Update_Partial_Lk(tree,b,d);
 #else
           Update_P_Lk_Nucl(tree,b,d);
 #endif
@@ -1703,9 +1701,9 @@ void Update_P_Lk(t_tree *tree, t_edge *b, t_node *d)
       else if(tree->io->datatype == AA)
         {
 #if (defined(__AVX__))
-          AVX_Update_P_Lk_AA(tree,b,d);
+          AVX_Update_Partial_Lk(tree,b,d);
 #elif (defined(__SSE3__))
-          SSE_Update_P_Lk_AA(tree,b,d);
+          SSE_Update_Partial_Lk(tree,b,d);
 #else
           Update_P_Lk_AA(tree,b,d);
 #endif
@@ -4730,7 +4728,7 @@ static inline __m256d AVX_Horizontal_Add(__m256d x[4])
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-static inline void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
+static inline void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
 {
 /*
            |
@@ -4761,7 +4759,7 @@ static inline void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
   const unsigned int ns = tree->mod->ns;
   const unsigned int ncatg = tree->mod->ras->n_catg;
 
-  const unsigned int catgns =  ncatg * ns;
+  const unsigned int ncatgns =  ncatg * ns;
   const unsigned int nsns =  ns * ns;
     
   __m256d _plk; 
@@ -4802,7 +4800,7 @@ static inline void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
       else
         {
           /* For all rate classes */
-          for(catg=0;catg<tree->mod->ras->n_catg;++catg)
+          for(catg=0;catg<ncatg;++catg)
             {              
               _plk1 =  _mm256_setzero_pd();
               _plk2 =  _mm256_setzero_pd();
@@ -4810,14 +4808,14 @@ static inline void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                 {
                   if(n_v1->tax == NO)
                     _x1 = _mm256_mul_pd(_mm256_load_pd(tPij1 + catg*nsns + i*ns),
-                                        _mm256_set1_pd(p_lk_v1[site*catgns + catg*ns + i]));
+                                        _mm256_set1_pd(p_lk_v1[site*ncatgns + catg*ns + i]));
                   else
                     _x1 = _mm256_mul_pd(_mm256_load_pd(tPij1 + catg*nsns + i*ns),
                                         _mm256_set1_pd(p_lk_v1[site*ns + i]));
                   
                   if(n_v2->tax == NO)
                     _x2 = _mm256_mul_pd(_mm256_load_pd(tPij2 + catg*nsns + i*ns),
-                                        _mm256_set1_pd(p_lk_v2[site*catgns + catg*ns + i]));
+                                        _mm256_set1_pd(p_lk_v2[site*ncatgns + catg*ns + i]));
                   else
                     _x2 = _mm256_mul_pd(_mm256_load_pd(tPij2 + catg*nsns + i*ns),
                                         _mm256_set1_pd(p_lk_v2[site*ns + i]));
@@ -4828,14 +4826,14 @@ static inline void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                 }
               _plk = _mm256_mul_pd(_plk1,_plk2);
                       
-              _mm256_store_pd(p_lk + site*catgns + catg*ns,_plk);
+              _mm256_store_pd(p_lk + site*ncatgns + catg*ns,_plk);
                             
               if(tree->scaling_method == SCALE_RATE_SPECIFIC)
                 {
                   smallest_p_lk = BIG;
                   for(i=0;i<ns;++i)
-                    if(p_lk[site*catgns+catg*ns+i] < smallest_p_lk)
-                      smallest_p_lk = p_lk[site*catgns+catg*ns+i] ;
+                    if(p_lk[site*ncatgns+catg*ns+i] < smallest_p_lk)
+                      smallest_p_lk = p_lk[site*ncatgns+catg*ns+i] ;
 
                   /* Current scaling values at that site */
                   sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[site*ncatg+catg]):(0);
@@ -4854,7 +4852,7 @@ static inline void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
                       int curr_scaler_pow;
                       curr_scaler_pow = (int)(-500.*LOG2-log(smallest_p_lk))/LOG2;
                       sum_scale[site*ncatg+catg] += curr_scaler_pow;
-                      for(i=0;i<ns;++i) Rate_Correction(curr_scaler_pow, p_lk + site*catgns + catg*ns + i);
+                      for(i=0;i<ns;++i) Rate_Correction(curr_scaler_pow, p_lk + site*ncatgns + catg*ns + i);
                     }
                 }
             }
@@ -4867,194 +4865,15 @@ static inline void AVX_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
               
               largest_p_lk = -BIG; 
               for(i=0;i<ns*ncatg;++i)
-                if(p_lk[site*catgns+i] > largest_p_lk)
-                  largest_p_lk = p_lk[site*catgns+i] ;
+                if(p_lk[site*ncatgns+i] > largest_p_lk)
+                  largest_p_lk = p_lk[site*ncatgns+i] ;
 
               if(largest_p_lk < INV_TWO_TO_THE_LARGE &&
                  tree->mod->augmented == NO &&
                  tree->apply_lk_scaling == YES)
                 {
-                  for(i=0;i<ns*ncatg;++i) p_lk[site*catgns + i] *= TWO_TO_THE_LARGE;
+                  for(i=0;i<ns*ncatg;++i) p_lk[site*ncatgns + i] *= TWO_TO_THE_LARGE;
                   sum_scale[site] += LARGE;
-                }
-            }
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-static inline void AVX_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
-{
-/*
-           |
-           |<- b
-           |
-           d
-          / \
-         /   \
-        /     \
-    n_v1   n_v2
-*/
-  t_node *n_v1, *n_v2;//d's "left" and "right" neighbor nodes
-  phydbl *p_lk,*p_lk_v1,*p_lk_v2;//Partial likelihood vector of node d, d's "left" neighbor, d's "right" neighbor. We fill *p_lk, and assume *p_lk_v1 and *p_lk_v2 are already filled.
-  phydbl *Pij1,*Pij2;
-  phydbl *tPij1,*tPij2;
-  int *sum_scale, *sum_scale_v1, *sum_scale_v2;
-  int sum_scale_v1_val, sum_scale_v2_val;
-  unsigned int i,j,k;
-  int catg/*index over the number of rate categories*/,site;
-  phydbl curr_scaler;
-  int curr_scaler_pow, piecewise_scaler_pow;
-  phydbl smallest_p_lk;
-  phydbl p_lk_lim_inf;
-  int *p_lk_loc;//Suppose site j, of a certain subtree, has "A" on one tip, and "C" on the other. If you come across this pattern again at site i<j, then you can simply copy the partial likelihoods
-  __m256d _plk; // parent partial likelihood
-  __m256d _plk1[5],_plk2[5]; // sister partial likelihood vectors
-  __m256d _p1[4],_p2[4]; // vector of transition probabilities
-  __m256d _pplk1[4],_pplk2[4]; // dot product of _p1[i] & _plk1 (resp. _p2[i] & _plk2)
-
-  const unsigned int ncatg = tree->mod->ras->n_catg;
-  const unsigned int ns = tree->mod->ns;
-  
-  const unsigned int dim1 =  ncatg * ns;
-  const unsigned int dim2 =  ns;
-  const unsigned int nsns =  ns * ns;
-  
-
-  if(tree->n_root && tree->ignore_root == YES &&
-     (d == tree->n_root->v[1] || d == tree->n_root->v[2]) &&
-     (b == tree->n_root->b[1] || b == tree->n_root->b[2]))
-    {
-      assert(FALSE);
-    }
-
-  sum_scale_v1_val = sum_scale_v2_val = 0;
-  curr_scaler = .0;
-  curr_scaler_pow = piecewise_scaler_pow = 0;
-
-  if(d->tax)
-    {
-      PhyML_Printf("\n== t_node %d is a leaf...",d->num);
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
-      Exit("\n");
-    }
-
-  p_lk_lim_inf                = (phydbl)P_LK_LIM_INF;
-  n_v1 = n_v2                 = NULL;
-  p_lk = p_lk_v1 = p_lk_v2    = NULL;
-  Pij1 = Pij2                 = NULL;
-  tPij1 = tPij2                 = NULL;
-  sum_scale_v1 = sum_scale_v2 = NULL;
-  p_lk_loc                    = NULL;
-  Set_All_P_Lk(&n_v1,&n_v2,
-               &p_lk,&sum_scale,&p_lk_loc,
-               &Pij1,&tPij1,&p_lk_v1,&sum_scale_v1,
-               &Pij2,&tPij2,&p_lk_v2,&sum_scale_v2,
-               d,b,tree);
-
-  if(tree->mod->augmented == YES && n_v1 && n_v1->tax == NO)
-    {
-      PhyML_Printf("\n== AVX version of the Update_Partial_Lk function does not");
-      PhyML_Printf("\n== allow augmented data. Please compile without the '-D__AVX'");
-      PhyML_Printf("\n== flag");
-      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-    }
-
-  /* For every site in the alignment */
-  for(site=0;site<tree->n_pattern;++site)
-    {
-      if(p_lk_loc[site] < site)
-        {
-          Copy_P_Lk(p_lk,p_lk_loc[site],site,tree);
-          Copy_Scale(sum_scale,p_lk_loc[site],site,tree);
-        }
-      else
-        {
-          /* For all rate classes */
-          for(catg=0;catg<tree->mod->ras->n_catg;++catg)
-            {
-              if(n_v1->tax == NO)
-                {
-                  for(i=0;i<5;++i) _plk1[i] = _mm256_load_pd(p_lk_v1 + site*dim1 + catg*dim2 + i*4);
-		}
-              else
-                {
-                  for(i=0;i<5;++i) _plk1[i] = _mm256_load_pd(p_lk_v1 + site*dim2 + i*4);
-		}
-
-              if(n_v2->tax == NO)
-                {
-                  for(i=0;i<5;++i) _plk2[i] = _mm256_load_pd(p_lk_v2 + site*dim1 + catg*dim2 + i*4);
-		}
-              else
-                {
-                  for(i=0;i<5;++i) _plk2[i] = _mm256_load_pd(p_lk_v2 + site*dim2 + i*4);
-		}
-
-
-              for(j=0;j<5;++j)
-                {
-                  for(i=0;i<4;++i) _pplk1[i] = _mm256_setzero_pd();
-                  for(i=0;i<4;++i) _pplk2[i] = _mm256_setzero_pd();
-
-                  for(i=0;i<5;++i)
-                    {
-                      for(k=0;k<4;++k) _p1[k] = _mm256_load_pd(Pij1 + catg*nsns + j*80 + i*4 + k*20);
-                      for(k=0;k<4;++k) _p2[k] = _mm256_load_pd(Pij2 + catg*nsns + j*80 + i*4 + k*20);
-
-                      for(k=0;k<4;++k) _pplk1[k] = _mm256_add_pd(_pplk1[k],_mm256_mul_pd(_p1[k],_plk1[i]));
-                      for(k=0;k<4;++k) _pplk2[k] = _mm256_add_pd(_pplk2[k],_mm256_mul_pd(_p2[k],_plk2[i]));                      
-                    }
-                  
-                  _plk = _mm256_mul_pd(AVX_Horizontal_Add(_pplk1),
-                                       AVX_Horizontal_Add(_pplk2));
-                  _mm256_store_pd(p_lk+site*dim1+catg*dim2+j*4,_plk);
-
-                }
-
-              smallest_p_lk = BIG;
-              for(i=0;i<20;++i) 
-                if(p_lk[site*dim1+catg*dim2+i] < smallest_p_lk) 
-                  smallest_p_lk = p_lk[site*dim1+catg*dim2+i] ;
-              
-              /* Current scaling values at that site */
-              sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[site*ncatg+catg]):(0);
-              sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[site*ncatg+catg]):(0);
-              
-              sum_scale[site*ncatg+catg] = sum_scale_v1_val + sum_scale_v2_val;
-              
-              /* Scaling. We have p_lk_lim_inf = 2^-500. Consider for instance that
-                 smallest_p_lk = 2^-600, then curr_scaler_pow will be equal to 100, and
-                 each element in the partial likelihood vector will be multiplied by
-                 2^100. */
-              if(smallest_p_lk < p_lk_lim_inf && tree->mod->augmented == NO)
-                {
-                  curr_scaler_pow = (int)(-500.*LOG2-log(smallest_p_lk))/LOG2;
-                  curr_scaler     = (phydbl)((unsigned long long)(1) << curr_scaler_pow);
-                  
-                  sum_scale[site*ncatg+catg] += curr_scaler_pow;
-                  
-                  do
-                    {
-                      piecewise_scaler_pow = MIN(curr_scaler_pow,63);
-                      curr_scaler = (phydbl)((unsigned long long)(1) << piecewise_scaler_pow);
-
-                      for(i=0;i<tree->mod->ns;++i)
-                        {
-                          p_lk[site*dim1+catg*dim2+i] *= curr_scaler;
-                          
-                          if(p_lk[site*dim1+catg*dim2+i] > BIG)
-                            {
-                              PhyML_Printf("\n== curr_scaler_pow = %d",curr_scaler_pow);
-                              PhyML_Printf("\n== Err. in file %s at line %d (function '%s').",__FILE__,__LINE__,__FUNCTION__);
-                              Exit("\n");
-                            }
-                        }
-                      curr_scaler_pow -= piecewise_scaler_pow;
-                    }
-                  while(curr_scaler_pow != 0);
                 }
             }
         }
@@ -5066,7 +4885,7 @@ static inline void AVX_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
 
 #elif (defined (__SSE3__))
 
-static inline void SSE_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
+static inline void SSE_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
 {
 /*
            |
@@ -5087,7 +4906,7 @@ static inline void SSE_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
   unsigned int  i,j,k;
   unsigned int catg/*index over the number of rate categories*/;
   unsigned int site;
-  phydbl smallest_p_lk;
+  phydbl smallest_p_lk,largest_p_lk;
   short int ambiguity_check_v1,ambiguity_check_v2;
   unsigned int state_v1,state_v2;
   phydbl p_lk_lim_inf;
@@ -5100,14 +4919,11 @@ static inline void SSE_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
   const unsigned int sz = (int)BYTE_ALIGN / 8;
   const unsigned nblocks = ns/sz;
   
-  const unsigned int dim1 =  ncatg * ns;
-  const unsigned int dim2 =  ns;
+  const unsigned int ncatgns =  ncatg * ns;
   const unsigned int nsns =  ns * ns;
   
   __m128d _x1[nblocks], _x2[nblocks];
   __m128d _plk[nblocks],_plk1[nblocks],_plk2[nblocks];
-  __m128d _pre_lk_all[32*ncatg],_pre_lk_v1[32*ncatg],_pre_lk_v2[32*ncatg];
-  __m128d _p1[8*ncatg],_p2[8*ncatg]; // matrices of transition probabilities
 
     
   if(tree->n_root && tree->ignore_root == YES &&
@@ -5125,7 +4941,6 @@ static inline void SSE_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
       PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
       Exit("\n");
     }
-
 
   sum_scale_v1_val            = 0;
   sum_scale_v2_val            = 0;  
@@ -5150,36 +4965,6 @@ static inline void SSE_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
     }
 
-  for(catg=0;catg<ncatg;++catg)
-    {
-      if(n_v1->tax == YES && n_v2->tax == YES)
-        {
-          for(i=0;i<ns;++i)
-            {
-              for(j=0;j<ns;++j)
-                {
-                  for(k=0;k<nblocks;++k)
-                    _pre_lk_all[catg*ns*ns*nblocks + i*ns*nblocks + j*nblocks + k] =
-                      _mm_mul_pd(_mm_load_pd(tPij1 + catg*ns*ns + i*ns + sz*k),
-                                 _mm_load_pd(tPij2 + catg*ns*ns + j*ns + sz*k));
-                }
-            }
-        }
-
-      if(n_v1->tax == YES)
-        {
-          for(i=0;i<ns;++i) for(k=0;k<nblocks;++k) _pre_lk_v1[catg*ns*nblocks + i*nblocks + k] = _mm_load_pd(tPij1 + catg*ns*ns + ns*i + sz*k);
-        }
-
-      if(n_v2->tax == YES)
-        {
-          for(i=0;i<ns;++i) for(k=0;k<nblocks;++k) _pre_lk_v2[catg*ns*nblocks + i*nblocks + k] = _mm_load_pd(tPij2 + catg*ns*ns + ns*i + sz*k);
-        }
-      
-      for(i=0;i<ns;++i) for(k=0;k<nblocks;++k) _p1[catg*ns*nblocks + i*nblocks + k] = _mm_load_pd(tPij1 + catg*ns*ns + i*ns + sz*k);
-      for(i=0;i<ns;++i) for(k=0;k<nblocks;++k) _p2[catg*ns*nblocks + i*nblocks + k] = _mm_load_pd(tPij2 + catg*ns*ns + i*ns + sz*k);
-    }
-
   /* For every site in the alignment */
   for(site=0;site<npattern;++site)
     {
@@ -5190,121 +4975,82 @@ static inline void SSE_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
         }
       else
         {
-          state_v1 = state_v2 = -1;
-          ambiguity_check_v1 = ambiguity_check_v2 = NO;
-          
-          if(n_v1->tax == YES)
-            {
-              /* Is the state at this tip ambiguous? */
-              ambiguity_check_v1 = n_v1->c_seq->is_ambigu[site];
-              if(ambiguity_check_v1 == NO) state_v1 = n_v1->c_seq->d_state[site];
-            }
-          
-          if(n_v2->tax == YES)
-            {
-              /* Is the state at this tip ambiguous? */
-              ambiguity_check_v2 = n_v2->c_seq->is_ambigu[site];
-              if(ambiguity_check_v2 == NO) state_v2 = n_v2->c_seq->d_state[site];
-            }
-          
           /* For all rate classes */
           for(catg=0;catg<tree->mod->ras->n_catg;++catg)
             {                            
-              if(n_v1->tax == YES &&
-                 n_v2->tax == YES &&
-                 ambiguity_check_v1 == NO &&
-                 ambiguity_check_v2 == NO)
+              for(k=0;k<nblocks;++k) _plk1[k] =  _mm_setzero_pd();
+              for(k=0;k<nblocks;++k) _plk2[k] =  _mm_setzero_pd();
+              
+              for(i=0;i<ns;++i) // for each *column*
                 {
-                  for(k=0;k<nblocks;k++) _plk[k] = _pre_lk_all[catg*ns*ns*nblocks + state_v1*ns*nblocks + state_v2*nblocks + k];
-                }
-              else if(n_v1->tax == YES && ambiguity_check_v1 == NO)
-                {
-                  for(k=0;k<nblocks;k++) _plk2[k] =  _mm_setzero_pd();
-
-                  for(i=0;i<ns;++i)
-                    {
-                      if(n_v2->tax == NO)
-                        for(k=0;k<nblocks;++k) _x2[k] = _mm_mul_pd(_p2[catg*ns*nblocks + i*nblocks + k],
-                                                                   _mm_set1_pd(p_lk_v2[site*ns*ncatg + catg*ns + i]));
-                      else
-                        for(k=0;k<nblocks;++k) _x2[k] = _mm_mul_pd(_p2[catg*ns*nblocks + i*nblocks + k],
-                                                                   _mm_set1_pd(p_lk_v2[site*ns + i]));
-
-                      for(k=0;k<nblocks;++k) _plk2[k] = _mm_add_pd(_plk2[k],_x2[k]);
-                    }
-                  for(k=0;k<nblocks;++k) _plk[k] = _mm_mul_pd(_pre_lk_v1[catg*ns*nblocks + state_v1*nblocks + k],_plk2[k]);
-                }
-              else if(n_v2->tax == YES && ambiguity_check_v2 == NO)
-                {
-                  for(k=0;k<nblocks;k++) _plk1[k] =  _mm_setzero_pd();
-
-                  for(i=0;i<ns;++i)
-                    {
-                      if(n_v1->tax == NO)
-                        for(k=0;k<nblocks;++k) _x1[k] = _mm_mul_pd(_p1[catg*ns*nblocks + i*nblocks + k],
-                                                                   _mm_set1_pd(p_lk_v1[site*ns*ncatg + catg*ns + i]));
-                      else
-                        for(k=0;k<nblocks;++k) _x1[k] = _mm_mul_pd(_p1[catg*ns*nblocks + i*nblocks + k],
-                                                                   _mm_set1_pd(p_lk_v1[site*ns + i]));
-
-                      for(k=0;k<nblocks;++k) _plk1[k] = _mm_add_pd(_plk1[k],_x1[k]);
-                    }
-                  for(k=0;k<nblocks;++k) _plk[k] = _mm_mul_pd(_pre_lk_v2[catg*ns*nblocks + state_v2*nblocks + k],_plk1[k]);
-                }
-              else
-                {
-                  for(k=0;k<nblocks;++k) _plk1[k] =  _mm_setzero_pd();
-                  for(k=0;k<nblocks;++k) _plk2[k] =  _mm_setzero_pd();
+                  if(n_v1->tax == NO)
+                    for(k=0;k<nblocks;++k) _x1[k] = _mm_mul_pd(_mm_load_pd(tPij1 + catg*nsns + i*ns + sz*k),
+                                                               _mm_set1_pd(p_lk_v1[site*ncatgns + catg*ns + i]));
+                  else
+                    for(k=0;k<nblocks;++k) _x1[k] = _mm_mul_pd(_mm_load_pd(tPij1 + catg*nsns + i*ns + sz*k),
+                                                               _mm_set1_pd(p_lk_v1[site*ns + i]));
                   
-                  for(i=0;i<ns;++i) // for each *column*
-                    {
-                      if(n_v1->tax == NO)
-                        for(k=0;k<nblocks;++k) _x1[k] = _mm_mul_pd(_mm_load_pd(tPij1 + catg*nsns + i*dim2 + sz*k),
-                                                                   _mm_set1_pd(p_lk_v1[site*dim1 + catg*dim2 + i]));
-                      else
-                        for(k=0;k<nblocks;++k) _x1[k] = _mm_mul_pd(_mm_load_pd(tPij1 + catg*nsns + i*dim2 + sz*k),
-                                                                   _mm_set1_pd(p_lk_v1[site*dim2 + i]));
-                      
-                      if(n_v2->tax == NO)
-                        for(k=0;k<nblocks;++k) _x2[k] = _mm_mul_pd(_mm_load_pd(tPij2 + catg*nsns + i*dim2 + sz*k),
-                                                                   _mm_set1_pd(p_lk_v2[site*dim1 + catg*dim2 + i]));
-                      else
-                        for(k=0;k<nblocks;++k) _x2[k] = _mm_mul_pd(_mm_load_pd(tPij2 + catg*nsns + i*dim2 + sz*k),
-                                                                   _mm_set1_pd(p_lk_v2[site*dim2 + i]));
-                      
-                      for(k=0;k<nblocks;++k) _plk1[k] = _mm_add_pd(_plk1[k],_x1[k]);
-                      for(k=0;k<nblocks;++k) _plk2[k] = _mm_add_pd(_plk2[k],_x2[k]);
-                    }
+                  if(n_v2->tax == NO)
+                    for(k=0;k<nblocks;++k) _x2[k] = _mm_mul_pd(_mm_load_pd(tPij2 + catg*nsns + i*ns + sz*k),
+                                                               _mm_set1_pd(p_lk_v2[site*ncatgns + catg*ns + i]));
+                  else
+                    for(k=0;k<nblocks;++k) _x2[k] = _mm_mul_pd(_mm_load_pd(tPij2 + catg*nsns + i*ns + sz*k),
+                                                               _mm_set1_pd(p_lk_v2[site*ns + i]));
                   
-                  for(k=0;k<nblocks;++k) _plk[k] = _mm_mul_pd(_plk1[k],_plk2[k]);
+                  for(k=0;k<nblocks;++k) _plk1[k] = _mm_add_pd(_plk1[k],_x1[k]);
+                  for(k=0;k<nblocks;++k) _plk2[k] = _mm_add_pd(_plk2[k],_x2[k]);
                 }
+              
+              for(k=0;k<nblocks;++k) _plk[k] = _mm_mul_pd(_plk1[k],_plk2[k]);
 
-              for(k=0;k<nblocks;++k) _mm_store_pd(p_lk + site*dim1 + catg*dim2 + sz*k,_plk[k]);
+              for(k=0;k<nblocks;++k) _mm_store_pd(p_lk + site*ncatgns + catg*ns + sz*k,_plk[k]);
               
-              
-              smallest_p_lk = BIG;
-              for(i=0;i<ns;++i) 
-                if(p_lk[site*dim1+catg*dim2+i] < smallest_p_lk) 
-                  smallest_p_lk = p_lk[site*dim1+catg*dim2+i] ;
-              
-              /* Current scaling values at that site */
-              sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[site*ncatg+catg]):(0);
-              sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[site*ncatg+catg]):(0);
-              
-              sum_scale[site*ncatg+catg] = sum_scale_v1_val + sum_scale_v2_val;
+              if(tree->scaling_method == SCALE_RATE_SPECIFIC)
+                {                  
+                  smallest_p_lk = BIG;
+                  for(i=0;i<ns;++i) 
+                    if(p_lk[site*ncatgns+catg*ns+i] < smallest_p_lk) 
+                      smallest_p_lk = p_lk[site*ncatgns+catg*ns+i] ;
                   
-              /* Scaling. We have p_lk_lim_inf = 2^-500. Consider for instance that
-                 smallest_p_lk = 2^-600, then curr_scaler_pow will be equal to 100, and
-                 each element in the partial likelihood vector will be multiplied by
-                 2^100. */
-              if(smallest_p_lk < p_lk_lim_inf &&
+                  /* Current scaling values at that site */
+                  sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[site*ncatg+catg]):(0);
+                  sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[site*ncatg+catg]):(0);
+                  
+                  sum_scale[site*ncatg+catg] = sum_scale_v1_val + sum_scale_v2_val;
+                  
+                  /* Scaling. We have p_lk_lim_inf = 2^-500. Consider for instance that
+                     smallest_p_lk = 2^-600, then curr_scaler_pow will be equal to 100, and
+                     each element in the partial likelihood vector will be multiplied by
+                     2^100. */
+                  if(smallest_p_lk < p_lk_lim_inf &&
+                     tree->mod->augmented == NO &&
+                     tree->apply_lk_scaling == YES)
+                    {
+                      int curr_scaler_pow;
+                      curr_scaler_pow = (int)(-500.*LOG2-log(smallest_p_lk))/LOG2;
+                      sum_scale[site*ncatg+catg] += curr_scaler_pow;
+                      for(i=0;i<ns;++i) Rate_Correction(curr_scaler_pow, p_lk + site*ncatgns + catg*ns + i);
+                    }
+                }
+            }
+
+          if(tree->scaling_method == SCALE_FAST)
+            {
+              sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[site]):(0);
+              sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[site]):(0);              
+              sum_scale[site] = sum_scale_v1_val + sum_scale_v2_val;
+              
+              largest_p_lk = -BIG; 
+              for(i=0;i<ns*ncatg;++i)
+                if(p_lk[site*ncatgns+i] > largest_p_lk)
+                  largest_p_lk = p_lk[site*ncatgns+i] ;
+              
+              if(largest_p_lk < INV_TWO_TO_THE_LARGE &&
                  tree->mod->augmented == NO &&
                  tree->apply_lk_scaling == YES)
                 {
-                  int curr_scaler_pow;
-                  curr_scaler_pow = (int)(-500.*LOG2-log(smallest_p_lk))/LOG2;
-                  sum_scale[site*ncatg+catg] += curr_scaler_pow;
-                  for(i=0;i<ns;++i) Rate_Correction(curr_scaler_pow, p_lk + site*dim1 + catg*dim2 + i);
+                  for(i=0;i<ns*ncatg;++i) p_lk[site*ncatgns + i] *= TWO_TO_THE_LARGE;
+                  sum_scale[site] += LARGE;
                 }
             }
         }
@@ -5313,185 +5059,6 @@ static inline void SSE_Update_P_Lk_Nucl(t_tree *tree, t_edge *b, t_node *d)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
-static inline void SSE_Update_P_Lk_AA(t_tree *tree, t_edge *b, t_node *d)
-{
-/*
-           |
-           |<- b
-           |
-           d
-          / \
-         /   \
-        /     \
-    n_v1   n_v2
-*/
-  t_node *n_v1, *n_v2;//d's "left" and "right" neighbor nodes
-  phydbl *p_lk,*p_lk_v1,*p_lk_v2;//Partial likelihood vector of node d, d's "left" neighbor, d's "right" neighbor. We fill *p_lk, and assume *p_lk_v1 and *p_lk_v2 are already filled.
-  phydbl *Pij1,*Pij2;
-  phydbl *tPij1,*tPij2;
-  int *sum_scale, *sum_scale_v1, *sum_scale_v2;
-  int sum_scale_v1_val, sum_scale_v2_val;
-  unsigned int i,j,k;
-  unsigned int catg,site;
-  phydbl curr_scaler;
-  int curr_scaler_pow, piecewise_scaler_pow;
-  phydbl smallest_p_lk;
-  phydbl p_lk_lim_inf;
-  int *p_lk_loc;//Suppose site j, of a certain subtree, has "A" on one tip, and "C" on the other. If you come across this pattern again at site i<j, then you can simply copy the partial likelihoods
-  __m128d _plk;
-  __m128d _plk1[10],_plk2[10];
-  __m128d _p1[2],_p2[2];
-  __m128d _pplk1[2],_pplk2[2];
-
-  const unsigned int ncatg = tree->mod->ras->n_catg;
-  const unsigned int ns = tree->mod->ns;
-
-  const unsigned int dim1 = ncatg * ns;
-  const unsigned int dim2 = ns;
-  const unsigned int nsns = ns * ns;
-
-  if(tree->n_root && tree->ignore_root == YES &&
-     (d == tree->n_root->v[1] || d == tree->n_root->v[2]) &&
-     (b == tree->n_root->b[1] || b == tree->n_root->b[2]))
-    {
-      assert(FALSE);
-    }
-
-
-
-  sum_scale_v1_val = sum_scale_v2_val = 0;
-  curr_scaler = .0;
-  curr_scaler_pow = piecewise_scaler_pow = 0;
-
-  if(d->tax)
-    {
-      PhyML_Printf("\n== t_node %d is a leaf...",d->num);
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
-      Exit("\n");
-    }
-
-  p_lk_lim_inf                = (phydbl)P_LK_LIM_INF;
-  n_v1 = n_v2                 = NULL;
-  p_lk = p_lk_v1 = p_lk_v2    = NULL;
-  Pij1 = Pij2                 = NULL;
-  tPij1 = tPij2               = NULL;
-  sum_scale_v1 = sum_scale_v2 = NULL;
-  p_lk_loc                    = NULL;
-  Set_All_P_Lk(&n_v1,&n_v2,
-               &p_lk,&sum_scale,&p_lk_loc,
-               &Pij1,&tPij1,&p_lk_v1,&sum_scale_v1,
-               &Pij2,&tPij2,&p_lk_v2,&sum_scale_v2,
-               d,b,tree);
-
-  if(tree->mod->augmented == YES && n_v1 && n_v1->tax == NO)
-    {
-      PhyML_Printf("\n== AVX version of the Update_Partial_Lk function does not");
-      PhyML_Printf("\n== allow augmented data. Please compile without the '-D__AVX'");
-      PhyML_Printf("\n== flag");
-      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-    }
-
-  /* For every site in the alignment */
-  for(site=0;site<tree->n_pattern;++site)
-    {
-      if(p_lk_loc[site] < site)
-        {
-          Copy_P_Lk(p_lk,p_lk_loc[site],site,tree);
-          Copy_Scale(sum_scale,p_lk_loc[site],site,tree);
-        }
-      else
-        {
-          /* For all rate classes */
-          for(catg=0;catg<ncatg;++catg)
-            {
-              smallest_p_lk  =  BIG;
-
-	      if(n_v1->tax == NO)
-		{         
-		  for(i=0;i<10;++i) _plk1[i] = _mm_load_pd(p_lk_v1 + site*dim1 + catg*dim2 + i*2);
-		}
-	      else
-		{
-		  for(i=0;i<10;++i) _plk1[i] = _mm_load_pd(p_lk_v1 + site*dim2 + i*2);
-		}
-
-	      if(n_v2->tax == NO)
-		{
-		  for(i=0;i<10;++i) _plk2[i] = _mm_load_pd(p_lk_v2 + site*dim1 + catg*dim2 + i*2);
-		}
-	      else
-		{
-		  for(i=0;i<10;++i) _plk2[i] = _mm_load_pd(p_lk_v2 + site*dim2 + i*2);
-		}
-
-
-              for(j=0;j<10;++j)
-                {
-                  for(i=0;i<2;++i) _pplk1[i] = _mm_setzero_pd();
-                  for(i=0;i<2;++i) _pplk2[i] = _mm_setzero_pd();
-
-                  for(i=0;i<10;++i)
-                    {
-                      for(k=0;k<2;++k) _p1[k] = _mm_load_pd(Pij1 + catg*nsns + j*40 + i*2 + k*20);
-                      for(k=0;k<2;++k) _p2[k] = _mm_load_pd(Pij2 + catg*nsns + j*40 + i*2 + k*20);
-
-                      for(k=0;k<2;++k) _pplk1[k] = _mm_hadd_pd(_pplk1[k],_mm_mul_pd(_p1[k],_plk1[i]));
-                      for(k=0;k<2;++k) _pplk2[k] = _mm_hadd_pd(_pplk2[k],_mm_mul_pd(_p2[k],_plk2[i]));
-                    }
-
-                  _plk = _mm_mul_pd(_mm_hadd_pd(_pplk1[0],_pplk1[1]),
-                                    _mm_hadd_pd(_pplk2[0],_pplk2[1]));
-
-                  _mm_store_pd(p_lk + site*dim1 + catg*dim2 + j*2,_plk);
-                }
-                                                 
-              smallest_p_lk = BIG;
-              for(i=0;i<20;++i) 
-                if(p_lk[site*dim1+catg*dim2+i] < smallest_p_lk) 
-                  smallest_p_lk = p_lk[site*dim1+catg*dim2+i] ;
-
-              /* Current scaling values at that site */
-              sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[site*ncatg+catg]):(0);
-              sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[site*ncatg+catg]):(0);
-              
-              sum_scale[site*ncatg+catg] = sum_scale_v1_val + sum_scale_v2_val;
-              
-              /* Scaling. We have p_lk_lim_inf = 2^-500. Consider for instance that
-                 smallest_p_lk = 2^-600, then curr_scaler_pow will be equal to 100, and
-                 each element in the partial likelihood vector will be multiplied by
-                 2^100. */
-              if(smallest_p_lk < p_lk_lim_inf && tree->mod->augmented == NO)
-                {
-                  curr_scaler_pow = (int)(-500.*LOG2-log(smallest_p_lk))/LOG2;
-                  curr_scaler     = (phydbl)((unsigned long long)(1) << curr_scaler_pow);
-                  
-                  sum_scale[site*ncatg+catg] += curr_scaler_pow;
-                  
-                  do
-                    {
-                      piecewise_scaler_pow = MIN(curr_scaler_pow,63);
-                      curr_scaler = (phydbl)((unsigned long long)(1) << piecewise_scaler_pow);
-                      for(i=0;i<ns;i++)
-                        {
-                          p_lk[site*dim1+catg*dim2+i] *= curr_scaler;
-                          
-                          if(p_lk[site*dim1+catg*dim2+i] > BIG)
-                            {
-                              PhyML_Printf("\n== curr_scaler_pow = %d",curr_scaler_pow);
-                              PhyML_Printf("\n== Err. in file %s at line %d (function '%s').",__FILE__,__LINE__,__FUNCTION__);
-                              Exit("\n");
-                            }
-                          //                              fprintf(stderr,"\n%e",p_lk[site*dim1+catg*dim2+i]);
-                        }
-                      curr_scaler_pow -= piecewise_scaler_pow;
-                    }
-                  while(curr_scaler_pow != 0);
-                }
-            }
-        }
-    }
-}
 
 #endif 
 
