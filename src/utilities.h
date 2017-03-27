@@ -396,6 +396,13 @@ typedef	double phydbl;
 /* #define  P_LK_LIM_INF   1.499697e-241 /\* 2^-800 *\/ */
 /* #define  P_LK_LIM_SUP   6.668014e+240 /\* 2^800 *\/ */
 
+#define LARGE 100
+#define TWO_TO_THE_LARGE 1267650600228229401496703205376.0 /* 2^100 In R : sprintf("%.100f", 2^100)*/
+#define INV_TWO_TO_THE_LARGE (1./TWO_TO_THE_LARGE)
+
+#define SCALE_RATE_SPECIFIC 1
+#define SCALE_FAST 2
+
 #define T_MAX_XML_TAG 64
 
 #define NARGS_SEQ(_1,_2,_3,_4,_5,_6,_7,_8,N,...) N
@@ -676,6 +683,7 @@ typedef struct __Tree{
   short int                         eval_alnL; /*! Evaluate likelihood for genetic data */
   short int                         eval_rlnL; /*! Evaluate likelihood for rates along the tree */
   short int                         eval_glnL; /*! Evaluate tree likelihood */
+  short int                    scaling_method;
 
   short int                      use_eigen_lr;
   int                            is_mixt_tree;

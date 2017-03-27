@@ -158,7 +158,8 @@ void Init_Tree(t_tree *tree, int n_otu)
   tree->eval_alnL                 = YES;
   tree->eval_rlnL                 = YES;
   tree->eval_glnL                 = YES;
-
+  tree->scaling_method            = SCALE_FAST;
+  
 #ifdef BEAGLE
   tree->b_inst                    = UNINITIALIZED;
 #endif
