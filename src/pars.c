@@ -96,7 +96,7 @@ void Pre_Order_Pars(t_node *a, t_node *d, t_tree *tree)
 
 void Get_All_Partial_Pars(t_tree *tree, t_edge *b_fcus, t_node *a, t_node *d)
 {
-  Update_P_Pars(tree,b_fcus,d);
+  Update_Partial_Pars(tree,b_fcus,d);
 }
 
 /*********************************************************/
@@ -108,7 +108,7 @@ void Site_Pars(t_tree *tree)
 
 /*********************************************************/
 
-void Init_P_Pars_Tips(t_tree *tree)
+void Init_Partial_Pars_Tips(t_tree *tree)
 {
   int curr_site,i,j;
   short int *state_v;
@@ -236,7 +236,7 @@ void Init_Ui_Tips(t_tree *tree)
 
 /*********************************************************/
 
-void Update_P_Pars(t_tree *tree, t_edge *b_fcus, t_node *n)
+void Update_Partial_Pars(t_tree *tree, t_edge *b_fcus, t_node *n)
 {
 /*
            |
@@ -260,7 +260,7 @@ void Update_P_Pars(t_tree *tree, t_edge *b_fcus, t_node *n)
 
   if(tree->is_mixt_tree)
     {
-      MIXT_Update_P_Pars(tree,b_fcus,n);
+      MIXT_Update_Partial_Pars(tree,b_fcus,n);
       return;
     }
 
@@ -489,8 +489,8 @@ int Pars_At_Given_Edge(t_edge *b, t_tree *tree)
 
 int Update_Pars_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
 {
-  Update_P_Pars(tree,b_fcus,b_fcus->left);
-  Update_P_Pars(tree,b_fcus,b_fcus->rght);
+  Update_Partial_Pars(tree,b_fcus,b_fcus->left);
+  Update_Partial_Pars(tree,b_fcus,b_fcus->rght);
   tree->c_pars = Pars(b_fcus,tree);
   return tree->c_pars;
 }
@@ -1007,7 +1007,7 @@ void Stepwise_Add_Pars(t_tree *tree)
                         NULL,
                         tree);
           
-          Update_P_Pars(tree,
+          Update_Partial_Pars(tree,
                         tree->a_nodes[nd_idx[i]+3]->b[0],
                         tree->a_nodes[nd_idx[i]+3]->v[0]);
           Pars(tree->a_nodes[nd_idx[i]+3]->b[0],tree);

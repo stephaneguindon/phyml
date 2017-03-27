@@ -726,8 +726,8 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                   MIXT_Post_Order_Lk(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);
                   MIXT_Post_Order_Lk(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree);
                   
-                  MIXT_Update_P_Lk(mixt_tree,mixt_tree->n_root->b[1],mixt_tree->n_root);
-                  MIXT_Update_P_Lk(mixt_tree,mixt_tree->n_root->b[2],mixt_tree->n_root);
+                  MIXT_Update_Partial_Lk(mixt_tree,mixt_tree->n_root->b[1],mixt_tree->n_root);
+                  MIXT_Update_Partial_Lk(mixt_tree,mixt_tree->n_root->b[2],mixt_tree->n_root);
                 
                   if(mixt_tree->both_sides == YES)
                     {
@@ -1205,7 +1205,7 @@ void MIXT_Update_Eigen_Lr(t_edge *mixt_b, t_tree *mixt_tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void MIXT_Update_P_Lk(t_tree *mixt_tree, t_edge *mixt_b, t_node *mixt_d)
+void MIXT_Update_Partial_Lk(t_tree *mixt_tree, t_edge *mixt_b, t_node *mixt_d)
 {
   t_tree *tree;
   t_edge *b;
@@ -1224,7 +1224,7 @@ void MIXT_Update_P_Lk(t_tree *mixt_tree, t_edge *mixt_b, t_node *mixt_d)
           d    = d->next;
         }
 
-      if(tree->mod->ras->invar == NO) Update_P_Lk(tree,b,d);
+      if(tree->mod->ras->invar == NO) Update_Partial_Lk(tree,b,d);
 
       tree = tree->next;
       b    = b->next;
@@ -1238,7 +1238,7 @@ void MIXT_Update_P_Lk(t_tree *mixt_tree, t_edge *mixt_b, t_node *mixt_d)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void MIXT_Update_P_Pars(t_tree *mixt_tree, t_edge *mixt_b, t_node *mixt_d)
+void MIXT_Update_Partial_Pars(t_tree *mixt_tree, t_edge *mixt_b, t_node *mixt_d)
 {
   t_tree *tree;
   t_edge *b;
@@ -1257,7 +1257,7 @@ void MIXT_Update_P_Pars(t_tree *mixt_tree, t_edge *mixt_b, t_node *mixt_d)
           d    = d->next;
         }
 
-      Update_P_Pars(tree,b,d);
+      Update_Partial_Pars(tree,b,d);
 
       tree = tree->next;
       b    = b->next;

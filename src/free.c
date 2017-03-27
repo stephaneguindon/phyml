@@ -394,8 +394,6 @@ void Free_Tree_Lk(t_tree *mixt_tree)
       Free(tree->eigen_lr_rght);
       Free(tree->dot_prod);
       Free(tree->expl);
-      Free(tree->expld);
-      Free(tree->expld2);
 
       for(i=0;i<3;i++) Free(tree->log_lks_aLRT[i]);
       Free(tree->log_lks_aLRT);

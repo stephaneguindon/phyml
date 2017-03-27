@@ -1868,7 +1868,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
           Connect_Edges_To_Nodes_Recur(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree);
           Add_Root(tree->a_edges[tree->prev->e_root->num],tree);
           Reorganize_Edges_Given_Lk_Struct(tree);
-          Init_P_Lk_Tips_Int(tree);
+          Init_Partial_Lk_Tips_Int(tree);
                    
           tree = tree->next;
         }

@@ -2850,7 +2850,7 @@ void Recurr_Hessian(t_node *a, t_node *d, int plus_minus, phydbl *inc, phydbl *r
   for(i=0;i<3;i++)
     if(a->v[i] == d)
       {
-	Update_P_Lk(tree,a->b[i],a);
+	Update_Partial_Lk(tree,a->b[i],a);
 
 	ori_l = a->b[i]->l->v;
 	if(is_ok[a->b[i]->num])
@@ -3171,7 +3171,7 @@ void Recurr_Hessian_Log(t_node *a, t_node *d, int plus_minus, phydbl *inc, phydb
   for(i=0;i<3;i++)
     if(a->v[i] == d)
       {
-	Update_P_Lk(tree,a->b[i],a);
+	Update_Partial_Lk(tree,a->b[i],a);
 
 	ori_l = a->b[i]->l->v;
 	if(is_ok[a->b[i]->num])

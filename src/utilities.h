@@ -723,9 +723,6 @@ typedef struct __Tree{
   phydbl                            *dot_prod;
 
   phydbl                                *expl;
-  phydbl                               *expld;
-  phydbl                              *expld2;
-
 
   phydbl                             init_lnL;
   phydbl                             best_lnL; /*! highest value of the loglikelihood found so far */
@@ -1973,7 +1970,6 @@ int Sort_Edges_Depth(t_tree *tree,t_edge **sorted_edges,int n_elem);
 void NNI(t_tree *tree,t_edge *b_fcus,int do_swap);
 void NNI_Pars(t_tree *tree,t_edge *b_fcus,int do_swap);
 void Swap(t_node *a,t_node *b,t_node *c,t_node *d,t_tree *tree);
-void Update_All_Partial_Lk(t_edge *b_fcus,t_tree *tree);
 void Update_SubTree_Partial_Lk(t_edge *b_fcus,t_node *a,t_node *d,t_tree *tree);
 void Copy_Seq_Names_To_Tip_Labels(t_tree *tree,calign *data);
 calign *Copy_Cseq(calign *ori,option *io);

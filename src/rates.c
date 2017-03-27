@@ -1875,13 +1875,13 @@ void RATES_Posterior_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
 	  for(i=0;i<3;i++)
 	    if(d->v[i] != a && d->b[i] != tree->e_root)
 	      {
-		if(tree->io->lk_approx == EXACT) Update_P_Lk(tree,d->b[i],d);
+		if(tree->io->lk_approx == EXACT) Update_Partial_Lk(tree,d->b[i],d);
 		/* if(tree->io->lk_approx == EXACT) { tree->both_sides = YES; Lk(tree); } */
 		RATES_Posterior_One_Rate(d,d->v[i],YES,tree);
 	      }
 	}
       
-      if(tree->io->lk_approx == EXACT) Update_P_Lk(tree,b,d);
+      if(tree->io->lk_approx == EXACT) Update_Partial_Lk(tree,b,d);
       /* if(tree->io->lk_approx == EXACT) { tree->both_sides = YES; Lk(tree); } */
     }
 }
@@ -2272,7 +2272,7 @@ void RATES_Posterior_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
       Update_PMat_At_Given_Edge(b1,tree);
       Update_PMat_At_Given_Edge(b2,tree);
       Update_PMat_At_Given_Edge(b3,tree);
-      Update_P_Lk(tree,b1,d);
+      Update_Partial_Lk(tree,b1,d);
     }
   new_lnL_data = Lk(b1,tree);
 
@@ -2315,7 +2315,7 @@ void RATES_Posterior_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
 	  Update_PMat_At_Given_Edge(b1,tree);
 	  Update_PMat_At_Given_Edge(b2,tree);
 	  Update_PMat_At_Given_Edge(b3,tree);
-	  Update_P_Lk(tree,b1,d);
+	  Update_Partial_Lk(tree,b1,d);
 	}
     }
   else
@@ -2335,11 +2335,11 @@ void RATES_Posterior_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
 	  for(i=0;i<3;i++)
 	    if(d->v[i] != a && d->b[i] != tree->e_root)
 	      {
-		if(tree->io->lk_approx == EXACT) Update_P_Lk(tree,d->b[i],d);
+		if(tree->io->lk_approx == EXACT) Update_Partial_Lk(tree,d->b[i],d);
 		RATES_Posterior_One_Time(d,d->v[i],YES,tree);
 	      }
 	}
-      if(tree->io->lk_approx == EXACT) Update_P_Lk(tree,b1,d);
+      if(tree->io->lk_approx == EXACT) Update_Partial_Lk(tree,b1,d);
     }
   
 }

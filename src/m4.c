@@ -520,7 +520,7 @@ void M4_Update_Qmat(m4 *m4mod, t_mod *mod)
 //////////////////////////////////////////////////////////////
 
 
-void M4_Init_P_Lk_Tips_Double(t_tree *tree)
+void M4_Init_Partial_Lk_Tips_Double(t_tree *tree)
 {
   int curr_site,i,j,k,l,dim1,dim2,dim3;
   
@@ -564,7 +564,7 @@ void M4_Init_P_Lk_Tips_Double(t_tree *tree)
 //////////////////////////////////////////////////////////////
 
 
-void M4_Init_P_Lk_Tips_Int(t_tree *tree)
+void M4_Init_Partial_Lk_Tips_Int(t_tree *tree)
 {
   int curr_site,i,j,k,dim2,dim3;
 
@@ -1406,8 +1406,8 @@ void M4_Detect_Site_Switches_Experiment(t_tree *tree)
       Evolve(cpy_data, nocov_mod, tree);
       tree->data = cpy_data;
 
-      if(tree->mod->s_opt->greedy) Init_P_Lk_Tips_Double(tree);
-      else Init_P_Lk_Tips_Int(tree);
+      if(tree->mod->s_opt->greedy) Init_Partial_Lk_Tips_Double(tree);
+      else Init_Partial_Lk_Tips_Int(tree);
       
       tree->mod = nocov_mod;
       For(i,2*tree->n_otu-3) tree->a_edges[i]->l->v = nocov_bl[i];
@@ -1522,8 +1522,8 @@ void M4_Posterior_Prediction_Experiment(t_tree *tree)
   tree->data      = ori_data;
   tree->n_pattern = ori_data->crunch_len;
   
-  if(tree->mod->s_opt->greedy) Init_P_Lk_Tips_Double(tree);
-  else Init_P_Lk_Tips_Int(tree);
+  if(tree->mod->s_opt->greedy) Init_Partial_Lk_Tips_Double(tree);
+  else Init_Partial_Lk_Tips_Int(tree);
 
   PhyML_Printf("\n. Estimate model parameters under non-switching substitution model.\n");
   Switch_From_M4mod_To_Mod(tree->mod);
@@ -1553,8 +1553,8 @@ void M4_Posterior_Prediction_Experiment(t_tree *tree)
       tree->data      = cpy_data;
       tree->n_pattern = cpy_data->init_len;
 
-      if(tree->mod->s_opt->greedy) Init_P_Lk_Tips_Double(tree);
-      else Init_P_Lk_Tips_Int(tree);
+      if(tree->mod->s_opt->greedy) Init_Partial_Lk_Tips_Double(tree);
+      else Init_Partial_Lk_Tips_Int(tree);
 
       Lk(NULL,tree);
 
@@ -1570,8 +1570,8 @@ void M4_Posterior_Prediction_Experiment(t_tree *tree)
   tree->data      = ori_data;
   tree->n_pattern = ori_data->crunch_len;
   
-  if(tree->mod->s_opt->greedy) Init_P_Lk_Tips_Double(tree);
-  else Init_P_Lk_Tips_Int(tree);
+  if(tree->mod->s_opt->greedy) Init_Partial_Lk_Tips_Double(tree);
+  else Init_Partial_Lk_Tips_Int(tree);
 
   PhyML_Printf("\n. Estimate model parameters under switching substitution model.\n");
   Switch_From_Mod_To_M4mod(tree->mod);
@@ -1587,8 +1587,8 @@ void M4_Posterior_Prediction_Experiment(t_tree *tree)
       Evolve(cpy_data,tree->mod,tree);
       tree->data      = cpy_data;
       tree->n_pattern = cpy_data->init_len;
-      if(tree->mod->s_opt->greedy) Init_P_Lk_Tips_Double(tree);
-      else Init_P_Lk_Tips_Int(tree);
+      if(tree->mod->s_opt->greedy) Init_Partial_Lk_Tips_Double(tree);
+      else Init_Partial_Lk_Tips_Int(tree);
 
       Lk(NULL,tree);
 

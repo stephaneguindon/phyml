@@ -763,9 +763,9 @@ void Optimize_Br_Len_Serie(t_tree *tree)
   
   if(tree->n_root && tree->ignore_root == NO)
     {
-      Update_P_Lk(tree,tree->n_root->b[1],tree->n_root);
+      Update_Partial_Lk(tree,tree->n_root->b[1],tree->n_root);
       Optimize_Br_Len_Serie_Post(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
-      Update_P_Lk(tree,tree->n_root->b[2],tree->n_root);
+      Update_Partial_Lk(tree,tree->n_root->b[2],tree->n_root);
       Optimize_Br_Len_Serie_Post(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
     }
   else if(tree->n_root && tree->ignore_root == YES)
@@ -881,14 +881,14 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
         {
           if(d->v[i] != a && d->b[i] != tree->e_root)
             {
-              Update_P_Lk(tree,d->b[i],d);
+              Update_Partial_Lk(tree,d->b[i],d);
               Optimize_Br_Len_Serie_Post(d,d->v[i],d->b[i],tree);
             }
         }
       
       for(i=0;i<3;++i)
         if(d->v[i] == a || d->b[i] == tree->e_root) 
-          Update_P_Lk(tree,d->b[i],d);
+          Update_Partial_Lk(tree,d->b[i],d);
     }
   else
     {
@@ -897,12 +897,12 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
         {
           if(d->v[i] != a)
             {
-              Update_P_Lk(tree,d->b[i],d);
+              Update_Partial_Lk(tree,d->b[i],d);
               /* printf("\n. a: %d d: %d",d->num,d->v[i]->num); */
               Optimize_Br_Len_Serie_Post(d,d->v[i],d->b[i],tree);
             }
         }
-      Update_P_Lk(tree,b_fcus,d);
+      Update_Partial_Lk(tree,b_fcus,d);
     }
 }
 

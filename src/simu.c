@@ -943,10 +943,10 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
       Br_Len_Brent(b,tree);
       for(i=0;i<3;++i) if(d->v[i] != a)
         {
-          Update_P_Lk(tree,d->b[i],d);
+          Update_Partial_Lk(tree,d->b[i],d);
           NNI_Traversal(d,d->v[i],a,d->b[i],tree);
         }
-      Update_P_Lk(tree,b,d);
+      Update_Partial_Lk(tree,b,d);
     }
   else
     {
@@ -993,9 +993,9 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
           // First NNI
           Swap(v1,d,a,u,tree);
           // Update partial likelihood looking up
-          Update_P_Lk(tree,b,a);
+          Update_Partial_Lk(tree,b,a);
           // Update partial likelihood looking down
-          Update_P_Lk(tree,b,d);
+          Update_Partial_Lk(tree,b,d);
           // Evaluate likelihood
           /* Br_Len_Brent(b,tree); */
           lk1 = Lk(b,tree);
@@ -1009,9 +1009,9 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
               // Second NNI
               Swap(v2,d,a,u,tree);
               // Update partial likelihood looking up
-              Update_P_Lk(tree,b,a);
+              Update_Partial_Lk(tree,b,a);
               // Update partial likelihood looking down
-              Update_P_Lk(tree,b,d);
+              Update_Partial_Lk(tree,b,d);
               // Evaluate likelihood
               /* Br_Len_Brent(b,tree); */
               lk2 = Lk(b,tree);
@@ -1023,9 +1023,9 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
                 {
                   Swap(u,d,a,v2,tree);
                   // Update partial likelihood looking up
-                  Update_P_Lk(tree,b,a);
+                  Update_Partial_Lk(tree,b,a);
                   // Update partial likelihood looking down
-                  Update_P_Lk(tree,b,d);
+                  Update_Partial_Lk(tree,b,d);
                   Restore_Br_Len(tree);
                   Lk(b,tree);
                 }
@@ -1035,10 +1035,10 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
       for(i=0;i<3;++i)
         if(d->v[i] != a)
           {
-            Update_P_Lk(tree,d->b[i],d);
+            Update_Partial_Lk(tree,d->b[i],d);
             NNI_Traversal(d,d->v[i],a,d->b[i],tree);
           }
-      Update_P_Lk(tree,b,d);
+      Update_Partial_Lk(tree,b,d);
     }
 }
 

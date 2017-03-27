@@ -1938,49 +1938,12 @@ void Swap(t_node *a, t_node *b, t_node *c, t_node *d, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-void Update_All_Partial_Lk(t_edge *b_fcus, t_tree *tree)
-{
-
-  Update_SubTree_Partial_Lk(b_fcus->left->b[b_fcus->l_v1],
-                b_fcus->left,
-                b_fcus->left->v[b_fcus->l_v1],
-                tree);
-
-  Update_SubTree_Partial_Lk(b_fcus->left->b[b_fcus->l_v2],
-                b_fcus->left,
-                b_fcus->left->v[b_fcus->l_v2],
-                tree);
-
-  Update_SubTree_Partial_Lk(b_fcus->rght->b[b_fcus->r_v1],
-                b_fcus->rght,
-                b_fcus->rght->v[b_fcus->r_v1],
-                tree);
-
-  Update_SubTree_Partial_Lk(b_fcus->rght->b[b_fcus->r_v2],
-                b_fcus->rght,
-                b_fcus->rght->v[b_fcus->r_v2],
-                tree);
-
-  tree->c_lnL = Lk(b_fcus,tree);
-
-
-  if(tree->next) Update_All_Partial_Lk(tree->next->a_edges[b_fcus->num],
-                       tree->next);
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-
 void Update_SubTree_Partial_Lk(t_edge *b_fcus, t_node *a, t_node *d, t_tree *tree)
 {
   int i;
-
-  Update_P_Lk(tree,b_fcus,a);
+  Update_Partial_Lk(tree,b_fcus,a);
   if(d->tax) return;
-  else for(i=0;i<3;i++) if(d->v[i] != a)
-    Update_SubTree_Partial_Lk(d->b[i],d,d->v[i],tree);
+  else for(i=0;i<3;++i) if(d->v[i] != a) Update_SubTree_Partial_Lk(d->b[i],d,d->v[i],tree);
 }
 
 //////////////////////////////////////////////////////////////
@@ -1989,10 +1952,7 @@ void Update_SubTree_Partial_Lk(t_edge *b_fcus, t_node *a, t_node *d, t_tree *tre
 void Copy_Seq_Names_To_Tip_Labels(t_tree *tree, calign *data)
 {
   int i;
-  for(i=0;i<tree->n_otu;i++)
-    {
-      strcpy(tree->a_nodes[i]->name,data->c_seq[i]->name);
-    }
+  for(i=0;i<tree->n_otu;++i) strcpy(tree->a_nodes[i]->name,data->c_seq[i]->name);
 }
 
 //////////////////////////////////////////////////////////////
@@ -2878,9 +2838,9 @@ void Bootstrap(t_tree *tree)
       Share_Pars_Struct(tree,boot_tree);
       Update_Dirs(boot_tree);
 
-      Init_P_Lk_Tips_Double(boot_tree);
+      Init_Partial_Lk_Tips_Double(boot_tree);
       Init_Ui_Tips(boot_tree);
-      Init_P_Pars_Tips(boot_tree);
+      Init_Partial_Pars_Tips(boot_tree);
       Br_Len_Not_Involving_Invar(boot_tree);
 
       if(boot_tree->io->do_alias_subpatt)
@@ -5546,17 +5506,17 @@ phydbl Triple_Dist(t_node *a, t_tree *tree)
       Update_PMat_At_Given_Edge(a->b[1],tree);
       Update_PMat_At_Given_Edge(a->b[2],tree);
 
-      Update_P_Lk(tree,a->b[0],a);
+      Update_Partial_Lk(tree,a->b[0],a);
       Fast_Br_Len(a->b[0],tree,YES);
 
-      Update_P_Lk(tree,a->b[1],a);
+      Update_Partial_Lk(tree,a->b[1],a);
       Fast_Br_Len(a->b[1],tree,YES);
 
-      Update_P_Lk(tree,a->b[2],a);
+      Update_Partial_Lk(tree,a->b[2],a);
       Fast_Br_Len(a->b[2],tree,YES);
 
-      Update_P_Lk(tree,a->b[1],a);
-      Update_P_Lk(tree,a->b[0],a);
+      Update_Partial_Lk(tree,a->b[1],a);
+      Update_Partial_Lk(tree,a->b[0],a);
     }
   
   return tree->c_lnL;
@@ -5578,7 +5538,7 @@ phydbl Triple_Dist_Approx(t_node *a, t_edge *b, t_tree *tree)
         if(a->b[i] != b)
           Update_PMat_At_Given_Edge(a->b[i],tree);
 
-      Update_P_Lk(tree,b,a);
+      Update_Partial_Lk(tree,b,a);
       Fast_Br_Len(b,tree,YES);
 
       return tree->c_lnL;
@@ -6673,7 +6633,7 @@ void Check_Memory_Amount(t_tree *tree)
 //////////////////////////////////////////////////////////////
 
 
-int Get_State_From_P_Lk(phydbl *p_lk, int pos, t_tree *tree)
+int Get_State_From_Partial_Lk(phydbl *p_lk, int pos, t_tree *tree)
 {
   int i;
   for(i=0;i<tree->mod->ns;i++) if(p_lk[pos+i] > .0) return i;
@@ -6684,7 +6644,7 @@ int Get_State_From_P_Lk(phydbl *p_lk, int pos, t_tree *tree)
 //////////////////////////////////////////////////////////////
 
 
-int Get_State_From_P_Pars(short int *p_pars, int pos, t_tree *tree)
+int Get_State_From_Partial_Pars(short int *p_pars, int pos, t_tree *tree)
 {
   int i;
   for(i=0;i<tree->mod->ns;i++) if(p_pars[pos+i] > .0) return i;
@@ -7823,9 +7783,9 @@ void Best_Of_NNI_And_SPR(t_tree *tree)
         }
 
       Copy_Tree(best_tree,tree);
-      Init_P_Lk_Tips_Double(tree);
+      Init_Partial_Lk_Tips_Double(tree);
       Init_Ui_Tips(tree);
-      Init_P_Pars_Tips(tree);
+      Init_Partial_Pars_Tips(tree);
       Transfer_Br_Len_To_Tree(best_bl,tree);
       Record_Model(best_mod,tree->mod);
 
@@ -10364,9 +10324,9 @@ void Best_Root_Position_IL_Model(t_tree *tree)
 
           /* Optimize_Br_Len_Serie(tree); */
 
-          Update_P_Lk(tree,tree->n_root->b[1],tree->n_root);
+          Update_Partial_Lk(tree,tree->n_root->b[1],tree->n_root);
           Br_Len_Brent(tree->n_root->b[1],tree);
-          Update_P_Lk(tree,tree->n_root->b[2],tree->n_root);
+          Update_Partial_Lk(tree,tree->n_root->b[2],tree->n_root);
           Br_Len_Brent(tree->n_root->b[2],tree);
 
           PhyML_Printf(" -- lnL: %20f",tree->c_lnL);
@@ -10380,9 +10340,9 @@ void Best_Root_Position_IL_Model(t_tree *tree)
       Add_Root(best_edge,tree);
       Set_Both_Sides(YES,tree);
       Lk(NULL,tree);
-      Update_P_Lk(tree,tree->n_root->b[1],tree->n_root);
+      Update_Partial_Lk(tree,tree->n_root->b[1],tree->n_root);
       Br_Len_Brent(tree->n_root->b[1],tree);
-      Update_P_Lk(tree,tree->n_root->b[2],tree->n_root);
+      Update_Partial_Lk(tree,tree->n_root->b[2],tree->n_root);
       Br_Len_Brent(tree->n_root->b[2],tree);
       tree->ignore_root = YES;
     }

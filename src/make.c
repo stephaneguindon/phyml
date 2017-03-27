@@ -62,17 +62,11 @@ void Make_Tree_4_Lk(t_tree *tree, calign *cdata, int n_site)
 #if (defined(__AVX__) || defined(__SSE3__))
 #ifndef WIN32
   if(posix_memalign((void **)&tree->expl  ,BYTE_ALIGN,(size_t)3*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-  if(posix_memalign((void **)&tree->expld ,BYTE_ALIGN,(size_t)tree->mod->ras->n_catg*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-  if(posix_memalign((void **)&tree->expld2,BYTE_ALIGN,(size_t)tree->mod->ras->n_catg*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 #else
   tree->expl   = _aligned_malloc(3*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
-  tree->expld  = _aligned_malloc(tree->mod->ras->n_catg*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
-  tree->expld2 = _aligned_malloc(tree->mod->ras->n_catg*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
 #endif
 #else
   tree->expl   = (phydbl *)mCalloc(3*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns,sizeof(phydbl));
-  tree->expld  = (phydbl *)mCalloc(tree->mod->ras->n_catg*tree->mod->ns,sizeof(phydbl));
-  tree->expld2 = (phydbl *)mCalloc(tree->mod->ras->n_catg*tree->mod->ns,sizeof(phydbl));
 #endif
 
 
@@ -87,8 +81,8 @@ void Make_Tree_4_Lk(t_tree *tree, calign *cdata, int n_site)
       For(i,2*tree->n_otu-2) Make_Node_Lk(tree->a_nodes[i]);
       For(i,2*tree->n_otu-1) Make_Edge_Loc(tree->a_edges[i],tree);
 
-      Init_P_Lk_Tips_Double(tree);
-      Init_P_Lk_Loc(tree);
+      Init_Partial_Lk_Tips_Double(tree);
+      Init_Partial_Lk_Loc(tree);
 
       if(tree->n_root != NULL)
         {
@@ -112,7 +106,7 @@ void Make_Tree_4_Pars(t_tree *tree, calign *cdata, int n_site)
 
   For(i,2*tree->n_otu-1) Make_Edge_Pars(tree->a_edges[i],tree);
   Init_Ui_Tips(tree);
-  Init_P_Pars_Tips(tree); /* Must be called after Init_Ui_Tips is called */
+  Init_Partial_Pars_Tips(tree); /* Must be called after Init_Ui_Tips is called */
 
   if(tree->n_root)
     {

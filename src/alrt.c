@@ -414,20 +414,20 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
       for(i=0;i<3;i++) //a branch has three nodes
         if(b_fcus->left->v[i] != b_fcus->rght) //Only consider left_1 and left_2
           {
-            Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
+            Update_Partial_Lk(tree,b_fcus->left->b[i],b_fcus->left);
             lk_temp = Br_Len_Brent(b_fcus->left->b[i],tree);
           }
 
-      Update_P_Lk(tree,b_fcus,b_fcus->left);
+      Update_Partial_Lk(tree,b_fcus,b_fcus->left);
       lk_temp = Br_Len_Brent(b_fcus,tree);
 
       for(i=0;i<3;i++)
         if(b_fcus->rght->v[i] != b_fcus->left) //Only consider right_1 and right_2
           {
-            Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
+            Update_Partial_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
             lk_temp = Br_Len_Brent(b_fcus->rght->b[i],tree);
           }
-      Update_P_Lk(tree,b_fcus,b_fcus->rght);
+      Update_Partial_Lk(tree,b_fcus,b_fcus->rght);
 
       if(lk_temp < lk0 - tree->mod->s_opt->min_diff_lk_local)
         {
@@ -471,8 +471,8 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
 
   /* Sanity check */
   MIXT_Set_Alias_Subpatt(YES,tree);
-  Update_P_Lk(tree,b_fcus,b_fcus->rght);
-  Update_P_Lk(tree,b_fcus,b_fcus->left);
+  Update_Partial_Lk(tree,b_fcus,b_fcus->rght);
+  Update_Partial_Lk(tree,b_fcus,b_fcus->left);
   lk_temp = Lk(b_fcus,tree);
   MIXT_Set_Alias_Subpatt(NO,tree);
   if((lk_temp > lk_init + tree->mod->s_opt->min_diff_lk_local) || (lk_temp < lk_init - tree->mod->s_opt->min_diff_lk_local))
@@ -487,18 +487,18 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   Swap(v2,b_fcus->left,b_fcus->rght,v3,tree);
   MIXT_Set_Alias_Subpatt(YES,tree);
   Set_Both_Sides(YES,tree);
-  Update_P_Lk(tree,b_fcus,b_fcus->left);
-  Update_P_Lk(tree,b_fcus,b_fcus->rght);
+  Update_Partial_Lk(tree,b_fcus,b_fcus->left);
+  Update_Partial_Lk(tree,b_fcus,b_fcus->rght);
   lk1 = Lk(b_fcus,tree);
   MIXT_Set_Alias_Subpatt(NO,tree);
 
   for(i=0;i<3;i++)
     if(b_fcus->left->v[i] != b_fcus->rght)
-      Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
+      Update_Partial_Lk(tree,b_fcus->left->b[i],b_fcus->left);
   
   for(i=0;i<3;i++)
     if(b_fcus->rght->v[i] != b_fcus->left)
-      Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
+      Update_Partial_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
   
   
   /*! Optimize branch lengths and update likelihoods */
@@ -510,21 +510,21 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
       for(i=0;i<3;i++)
         if(b_fcus->left->v[i] != b_fcus->rght)
           {
-            Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
+            Update_Partial_Lk(tree,b_fcus->left->b[i],b_fcus->left);
             lk_temp = Br_Len_Brent(b_fcus->left->b[i],tree);
           }
       
-      Update_P_Lk(tree,b_fcus,b_fcus->left);
+      Update_Partial_Lk(tree,b_fcus,b_fcus->left);
       lk_temp = Br_Len_Brent(b_fcus,tree);
       
       for(i=0;i<3;i++)
         if(b_fcus->rght->v[i] != b_fcus->left)
           {
-            Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
+            Update_Partial_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
             lk_temp = Br_Len_Brent(b_fcus->rght->b[i],tree);
           }
       
-      Update_P_Lk(tree,b_fcus,b_fcus->rght);
+      Update_Partial_Lk(tree,b_fcus,b_fcus->rght);
       
       if(lk_temp < lk1 - tree->mod->s_opt->min_diff_lk_local)
         {
@@ -572,8 +572,8 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   
   /* Sanity check */
   MIXT_Set_Alias_Subpatt(YES,tree);
-  Update_P_Lk(tree,b_fcus,b_fcus->rght);
-  Update_P_Lk(tree,b_fcus,b_fcus->left);
+  Update_Partial_Lk(tree,b_fcus,b_fcus->rght);
+  Update_Partial_Lk(tree,b_fcus,b_fcus->left);
   lk_temp = Lk(b_fcus,tree);
   MIXT_Set_Alias_Subpatt(NO,tree);
   if((lk_temp > lk_init + tree->mod->s_opt->min_diff_lk_local) || (lk_temp < lk_init - tree->mod->s_opt->min_diff_lk_local))
@@ -587,18 +587,18 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   Swap(v2,b_fcus->left,b_fcus->rght,v4,tree);
   Set_Both_Sides(YES,tree);
   MIXT_Set_Alias_Subpatt(YES,tree);
-  Update_P_Lk(tree,b_fcus,b_fcus->left);
-  Update_P_Lk(tree,b_fcus,b_fcus->rght);
+  Update_Partial_Lk(tree,b_fcus,b_fcus->left);
+  Update_Partial_Lk(tree,b_fcus,b_fcus->rght);
   lk2 = Lk(b_fcus,tree);
   MIXT_Set_Alias_Subpatt(NO,tree);
   
   for(i=0;i<3;i++)
     if(b_fcus->left->v[i] != b_fcus->rght)
-      Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
+      Update_Partial_Lk(tree,b_fcus->left->b[i],b_fcus->left);
   
   for(i=0;i<3;i++)
     if(b_fcus->rght->v[i] != b_fcus->left)
-      Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
+      Update_Partial_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
   
   /*! Optimize branch lengths and update likelihoods */
   lk_temp = UNLIKELY;
@@ -609,7 +609,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
       for(i=0;i<3;i++)
         if(b_fcus->left->v[i] != b_fcus->rght)
           {
-            Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
+            Update_Partial_Lk(tree,b_fcus->left->b[i],b_fcus->left);
             lk_temp = Br_Len_Brent(b_fcus->left->b[i],tree);
             
             if(lk_temp < lk2 - tree->mod->s_opt->min_diff_lk_local)
@@ -620,7 +620,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
                 Exit("\n");
               }
           }
-      Update_P_Lk(tree,b_fcus,b_fcus->left);
+      Update_Partial_Lk(tree,b_fcus,b_fcus->left);
       lk_temp = Br_Len_Brent(b_fcus,tree);
       
       if(lk_temp < lk2 - tree->mod->s_opt->min_diff_lk_local)
@@ -634,7 +634,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
       for(i=0;i<3;i++)
         if(b_fcus->rght->v[i] != b_fcus->left)
           {
-            Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
+            Update_Partial_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
             lk_temp = Br_Len_Brent(b_fcus->rght->b[i],tree);
             
             if(lk_temp < lk2 - tree->mod->s_opt->min_diff_lk_local)
@@ -649,7 +649,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
               }
           }
       
-      Update_P_Lk(tree,b_fcus,b_fcus->rght);
+      Update_Partial_Lk(tree,b_fcus,b_fcus->rght);
       
     }
   while(FABS(lk_temp-lk2) > tree->mod->s_opt->min_diff_lk_global);
@@ -693,16 +693,16 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   Update_PMat_At_Given_Edge(b_fcus,tree);
 
   MIXT_Set_Alias_Subpatt(YES,tree);
-  Update_P_Lk(tree,b_fcus,b_fcus->left);
-  Update_P_Lk(tree,b_fcus,b_fcus->rght);
+  Update_Partial_Lk(tree,b_fcus,b_fcus->left);
+  Update_Partial_Lk(tree,b_fcus,b_fcus->rght);
 
   for(i=0;i<3;i++)
     if(b_fcus->left->v[i] != b_fcus->rght)
-      Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
+      Update_Partial_Lk(tree,b_fcus->left->b[i],b_fcus->left);
 
   for(i=0;i<3;i++)
     if(b_fcus->rght->v[i] != b_fcus->left)
-      Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
+      Update_Partial_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
 
   MIXT_Set_Alias_Subpatt(NO,tree);
 
@@ -824,11 +824,11 @@ void Make_Target_Swap(t_tree *tree, t_edge *b_fcus, int swaptodo)
   
   for(i=0;i<3;i++)
     if(b_fcus->left->v[i] != b_fcus->rght)
-      Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
+      Update_Partial_Lk(tree,b_fcus->left->b[i],b_fcus->left);
   
   for(i=0;i<3;i++)
     if(b_fcus->rght->v[i] != b_fcus->left)
-      Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
+      Update_Partial_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
 
   MIXT_Set_Alias_Subpatt(NO,tree);
 
@@ -841,22 +841,22 @@ void Make_Target_Swap(t_tree *tree, t_edge *b_fcus, int swaptodo)
       for(i=0;i<3;i++)
         if(b_fcus->left->v[i] != b_fcus->rght)
           {
-            Update_P_Lk(tree,b_fcus->left->b[i],b_fcus->left);
+            Update_Partial_Lk(tree,b_fcus->left->b[i],b_fcus->left);
             lk_temp = Br_Len_Brent(b_fcus->left->b[i],tree);
           }
 
 
-      Update_P_Lk(tree,b_fcus,b_fcus->left);
+      Update_Partial_Lk(tree,b_fcus,b_fcus->left);
       lk_temp = Br_Len_Brent(b_fcus,tree);
 
       for(i=0;i<3;i++)
         if(b_fcus->rght->v[i] != b_fcus->left)
           {
-            Update_P_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
+            Update_Partial_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
             lk_temp = Br_Len_Brent(b_fcus->rght->b[i],tree);
           }
 
-      Update_P_Lk(tree,b_fcus,b_fcus->rght);
+      Update_Partial_Lk(tree,b_fcus,b_fcus->rght);
 
       if(lk_temp < lktodo - tree->mod->s_opt->min_diff_lk_local)
         {
@@ -1285,9 +1285,9 @@ phydbl Statistics_To_SH(t_tree *tree)
 phydbl Update_Lk_At_Given_Edge_Excluding(t_edge *b_fcus, t_tree *tree, t_node *exclude)
 {
   if((!b_fcus->left->tax) && (exclude == NULL || exclude != b_fcus->left))
-    Update_P_Lk(tree,b_fcus,b_fcus->left);
+    Update_Partial_Lk(tree,b_fcus,b_fcus->left);
   if((!b_fcus->rght->tax) && (exclude == NULL || exclude != b_fcus->rght))
-    Update_P_Lk(tree,b_fcus,b_fcus->rght);
+    Update_Partial_Lk(tree,b_fcus,b_fcus->rght);
 
   tree->c_lnL = Lk(b_fcus,tree);
 

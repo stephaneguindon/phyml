@@ -908,7 +908,7 @@ void MCMC_Rates_All(t_tree *tree)
   Lk(NULL,tree);
   Set_Both_Sides(NO,tree);
   MCMC_One_Rate(tree->n_root,tree->n_root->v[1],YES,tree);
-  Update_P_Lk(tree,tree->e_root,tree->n_root->v[1]);
+  Update_Partial_Lk(tree,tree->e_root,tree->n_root->v[1]);
   MCMC_One_Rate(tree->n_root,tree->n_root->v[2],YES,tree);
 }
 
@@ -1020,10 +1020,10 @@ void MCMC_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
 	  for(i=0;i<3;i++)
 	    if(d->v[i] != a && d->b[i] != tree->e_root)
               {
-                Update_P_Lk(tree,d->b[i],d);
+                Update_Partial_Lk(tree,d->b[i],d);
                 MCMC_One_Rate(d,d->v[i],YES,tree);
               }
-          Update_P_Lk(tree,b,d);
+          Update_Partial_Lk(tree,b,d);
         }
     }
 }
@@ -1335,7 +1335,7 @@ void MCMC_Times_All(t_tree *tree)
   Set_Both_Sides(NO,tree);
   MCMC_Root_Time(tree);
   MCMC_Time_Recur(tree->n_root,tree->n_root->v[1],YES,tree);
-  Update_P_Lk(tree,tree->e_root,tree->n_root->v[1]);
+  Update_Partial_Lk(tree,tree->e_root,tree->n_root->v[1]);
   MCMC_Time_Recur(tree->n_root,tree->n_root->v[2],YES,tree);
 }
 
@@ -1426,7 +1426,7 @@ void MCMC_Time_Recur(t_node *a, t_node *d, int traversal, t_tree *tree)
               Update_PMat_At_Given_Edge(b1,tree);
               Update_PMat_At_Given_Edge(b2,tree);
               Update_PMat_At_Given_Edge(b3,tree);
-              Update_P_Lk(tree,b1,d);
+              Update_Partial_Lk(tree,b1,d);
             }
           new_lnL_data = Lk(b1,tree);
           
@@ -1455,7 +1455,7 @@ void MCMC_Time_Recur(t_node *a, t_node *d, int traversal, t_tree *tree)
               Update_PMat_At_Given_Edge(b1,tree);
               Update_PMat_At_Given_Edge(b2,tree);
               Update_PMat_At_Given_Edge(b3,tree);
-              Update_P_Lk(tree,b1,d);
+              Update_Partial_Lk(tree,b1,d);
             }
 
           if(isinf(FABS(new_lnL_time)) == YES || isnan(new_lnL_time) == YES)
@@ -1544,10 +1544,10 @@ void MCMC_Time_Recur(t_node *a, t_node *d, int traversal, t_tree *tree)
           for(i=0;i<3;i++)
             if(d->v[i] != a && d->b[i] != tree->e_root)
               {
-                Update_P_Lk(tree,d->b[i],d);
+                Update_Partial_Lk(tree,d->b[i],d);
                 MCMC_Time_Recur(d,d->v[i],YES,tree);
               }
-          Update_P_Lk(tree,b1,d);
+          Update_Partial_Lk(tree,b1,d);
         }
     }	    
 }
@@ -3991,10 +3991,10 @@ void MCMC_Br_Lens_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
       for(i=0;i<3;i++) 
 	if(d->v[i] != a)
 	  {
-	    Update_P_Lk(tree,d->b[i],d);
+	    Update_Partial_Lk(tree,d->b[i],d);
 	    MCMC_Br_Lens_Pre(d,d->v[i],d->b[i],tree);
 	  }
-      Update_P_Lk(tree,b,d);
+      Update_Partial_Lk(tree,b,d);
     }  
 }
 
@@ -6466,11 +6466,11 @@ void MCMC_Slice_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
 	  for(i=0;i<3;i++)
 	    if(d->v[i] != a && d->b[i] != tree->e_root)
 	      {
-		if(tree->io->lk_approx == EXACT) Update_P_Lk(tree,d->b[i],d);
+		if(tree->io->lk_approx == EXACT) Update_Partial_Lk(tree,d->b[i],d);
 		MCMC_Slice_One_Rate(d,d->v[i],YES,tree);
 	      }
 	}
-      if(tree->io->lk_approx == EXACT) Update_P_Lk(tree,b,d);
+      if(tree->io->lk_approx == EXACT) Update_Partial_Lk(tree,b,d);
     }
 }
 

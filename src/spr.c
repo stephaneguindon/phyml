@@ -1534,7 +1534,7 @@ int Est_Lk_Change (t_edge *e_prune, t_node *v_prune, t_tree *tree)
           }
       }
       }
-      Update_P_Lk (tree, e_tmp, rgrft_cand[cand]->path[i]);
+      Update_Partial_Lk (tree, e_tmp, rgrft_cand[cand]->path[i]);
     }
     if (v_n == e_regraft->left)
     {
@@ -1661,7 +1661,7 @@ int Est_Lk_Change (t_edge *e_prune, t_node *v_prune, t_tree *tree)
     ** Calculate the change in likelihood locally. Save it and the estimated edge
     ** lengths in the current candidate in the list.
     */
-    Update_P_Lk (tree, v_tmp->b[0], v_tmp);
+    Update_Partial_Lk (tree, v_tmp->b[0], v_tmp);
     new_lk = Lk(v_tmp->b[0],tree);
 /*     PhyML_Printf("\n. new_lk = %f",new_lk); */
 
@@ -1743,7 +1743,7 @@ int Est_Lk_Change (t_edge *e_prune, t_node *v_prune, t_tree *tree)
       break;
     }
       }
-      Update_P_Lk (tree, e_tmp, rgrft_cand[cand]->path[i]);
+      Update_Partial_Lk (tree, e_tmp, rgrft_cand[cand]->path[i]);
     }
 
     /*
@@ -2068,7 +2068,7 @@ int Best_Lk_Change (t_edge *e_prune, t_node *v_prune, t_tree *tree)
       }
     }
       }
-      Update_P_Lk (tree, e_tmp, rgrft_cand[cand]->path[i]);
+      Update_Partial_Lk (tree, e_tmp, rgrft_cand[cand]->path[i]);
     }
     if (v_n == e_regraft->left)
     {
@@ -2180,7 +2180,7 @@ int Best_Lk_Change (t_edge *e_prune, t_node *v_prune, t_tree *tree)
       v_tmp->b[i]->l->v = l_est[i];
       Update_PMat_At_Given_Edge (v_tmp->b[i], tree);
     }
-    Update_P_Lk (tree, v_tmp->b[0], v_tmp);
+    Update_Partial_Lk (tree, v_tmp->b[0], v_tmp);
 
     /*
     ** Calculate the change in likelihood locally. Save it and the estimated edge
@@ -2227,7 +2227,7 @@ int Best_Lk_Change (t_edge *e_prune, t_node *v_prune, t_tree *tree)
       break;
     }
       }
-      Update_P_Lk (tree, e_tmp, rgrft_cand[cand]->path[i]);
+      Update_Partial_Lk (tree, e_tmp, rgrft_cand[cand]->path[i]);
     }
   }
 
@@ -2462,7 +2462,7 @@ int Find_Optim_Local (t_tree *tree)
 /* 	  Update_PMat_At_Given_Edge (v_prune->b[1], tree); */
 /* 	  Update_PMat_At_Given_Edge (v_prune->b[2], tree); */
 
-      Update_P_Lk (tree, v_prune->b[0], v_prune);
+      Update_Partial_Lk (tree, v_prune->b[0], v_prune);
       new_lk = Lk(v_prune->b[0],tree);
 
 /* 	  PhyML_Printf("\n. local new_lk = %f",new_lk); */
@@ -3435,16 +3435,16 @@ int Test_All_Spr_Targets(t_edge *b_pulled, t_node *n_link, t_tree *tree)
       if(tree->mod->s_opt->spr_pars == NO)
       	{
           MIXT_Set_Alias_Subpatt(YES,tree);
-          Update_P_Lk(tree,b_pulled,  n_link);
-          Update_P_Lk(tree,b_target,  n_link);
-          Update_P_Lk(tree,b_residual,n_link);
+          Update_Partial_Lk(tree,b_pulled,  n_link);
+          Update_Partial_Lk(tree,b_target,  n_link);
+          Update_Partial_Lk(tree,b_residual,n_link);
           MIXT_Set_Alias_Subpatt(NO,tree);
         }
       else
       	{
-          Update_P_Pars(tree,b_pulled,  n_link);
-          Update_P_Pars(tree,b_target,  n_link);
-          Update_P_Pars(tree,b_residual,n_link);
+          Update_Partial_Pars(tree,b_pulled,  n_link);
+          Update_Partial_Pars(tree,b_target,  n_link);
+          Update_Partial_Pars(tree,b_residual,n_link);
         }
 
       for(i=0;i<3;i++)
@@ -3494,12 +3494,12 @@ void Test_One_Spr_Target_Recur(t_node *a, t_node *d, t_edge *pulled, t_node *lin
               if(tree->mod->s_opt->spr_pars == NO)
                 {
                   MIXT_Set_Alias_Subpatt(YES,tree);
-                  Update_P_Lk(tree,d->b[i],d);
+                  Update_Partial_Lk(tree,d->b[i],d);
                   MIXT_Set_Alias_Subpatt(NO,tree);
                 }
               else
                 {
-                  Update_P_Pars(tree,d->b[i],d);
+                  Update_Partial_Pars(tree,d->b[i],d);
                 }
 
               tree->depth_curr_path++;
@@ -3592,13 +3592,13 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
       MIXT_Set_Alias_Subpatt(YES,tree);
       Update_PMat_At_Given_Edge(b_target,tree);
       Update_PMat_At_Given_Edge(b_arrow,tree);
-      Update_P_Lk(tree,b_residual,n_link);
+      Update_Partial_Lk(tree,b_residual,n_link);
       Lk(b_residual,tree);
       MIXT_Set_Alias_Subpatt(NO,tree);      
     }
   else
     {
-      Update_P_Pars(tree,b_residual,n_link);
+      Update_Partial_Pars(tree,b_residual,n_link);
       Pars(b_residual,tree);
     }
 
@@ -3926,7 +3926,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
           /* Update conditional likelihoods along the path from the prune to
              the regraft position */
           MIXT_Set_Alias_Subpatt(YES,tree);
-          Update_P_Lk_Along_A_Path(move->path,move->depth_path+1,tree);
+          Update_Partial_Lk_Along_A_Path(move->path,move->depth_path+1,tree);
           MIXT_Set_Alias_Subpatt(NO,tree);
           
           /* Regraft subtree */
@@ -4021,7 +4021,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
           if(move->b_target)
             {
               for(j=0;j<3;j++) Update_PMat_At_Given_Edge(move->n_link->b[j],tree);
-              for(j=0;j<3;j++) Update_P_Lk(tree,move->n_link->b[j],move->n_link);
+              for(j=0;j<3;j++) Update_Partial_Lk(tree,move->n_link->b[j],move->n_link);
               
               /* TO DO : we don't need to update all these partial likelihoods here.
                  Would need to record only those that were along the paths examined
@@ -4848,12 +4848,12 @@ void Spr_List_Of_Trees(t_tree *tree)
 
       if(list_size == 0) Round_Optimize(tree,ROUND_MAX);
 
-      tree->mod->s_opt->max_depth_path    = tree->n_otu;
+      tree->mod->s_opt->max_depth_path    = 20;
       tree->mod->s_opt->spr_lnL           = YES;
       tree->mod->s_opt->spr_pars          = NO;
       tree->mod->s_opt->min_diff_lk_move  = 0.1;
       tree->mod->s_opt->eval_list_regraft = YES;
-      tree->mod->s_opt->max_delta_lnL_spr = 50.;
+      tree->mod->s_opt->max_delta_lnL_spr = 100.;
       
       do
         {
