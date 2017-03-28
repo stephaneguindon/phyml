@@ -4787,7 +4787,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   phydbl *lnL_list,best_lnL;
 
   const unsigned int list_size_first_round  = (int)tree->n_otu / 10;
-  const unsigned int list_size_second_round = 3;
+  const unsigned int list_size_second_round = 1;
 
   best_lnL      = UNLIKELY;
   tree->verbose = (tree->verbose == VL0) ? VL0 : VL1;
@@ -4848,12 +4848,12 @@ void Spr_List_Of_Trees(t_tree *tree)
 
       if(list_size == 0) Round_Optimize(tree,ROUND_MAX);
 
-      tree->mod->s_opt->max_depth_path    = 10;
+      tree->mod->s_opt->max_depth_path    = (int)tree->n_otu/5;
       tree->mod->s_opt->spr_lnL           = YES;
       tree->mod->s_opt->spr_pars          = NO;
       tree->mod->s_opt->min_diff_lk_move  = 0.1;
       tree->mod->s_opt->eval_list_regraft = YES;
-      tree->mod->s_opt->max_delta_lnL_spr = 200.;
+      tree->mod->s_opt->max_delta_lnL_spr = 100.;
       
       do
         {
