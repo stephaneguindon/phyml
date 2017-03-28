@@ -4848,7 +4848,7 @@ void Spr_List_Of_Trees(t_tree *tree)
 
       if(list_size == 0) Round_Optimize(tree,ROUND_MAX);
 
-      tree->mod->s_opt->max_depth_path    = 15;
+      tree->mod->s_opt->max_depth_path    = 10;
       tree->mod->s_opt->spr_lnL           = YES;
       tree->mod->s_opt->spr_pars          = NO;
       tree->mod->s_opt->min_diff_lk_move  = 0.1;
