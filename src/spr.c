@@ -4862,7 +4862,6 @@ void Spr_List_Of_Trees(t_tree *tree)
           Lk(NULL,tree);
           tree->best_lnL = tree->c_lnL;
           Spr(tree->c_lnL,1.0,tree);
-          tree->annealing_temp -= 1.0;
           /* Optimize_Br_Len_Serie(tree); */
           /* printf("\n. lnL: %f %d",tree->c_lnL,tree->n_improvements); */
         }
