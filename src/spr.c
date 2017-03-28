@@ -4786,7 +4786,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   t_tree **tree_list;
   phydbl *lnL_list,best_lnL;
 
-  const unsigned int list_size_first_round  = 5 + (int)tree->n_otu / 20;
+  const unsigned int list_size_first_round  = 5 + (int)tree->n_otu / 10;
   const unsigned int list_size_second_round = 1;
 
   best_lnL      = UNLIKELY;
@@ -4821,6 +4821,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
       tree->best_lnL = UNLIKELY;
       Simu(tree,100);
+      Optimize_Br_Len_Serie(tree);
 
       if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n. Tree %3d lnL: %12.2f",list_size+1,tree->c_lnL);
 
