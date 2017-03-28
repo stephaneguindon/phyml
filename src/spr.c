@@ -4787,7 +4787,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   phydbl *lnL_list,best_lnL;
 
   const unsigned int list_size_first_round  = 5 + (int)tree->n_otu / 20;
-  const unsigned int list_size_second_round = 3;
+  const unsigned int list_size_second_round = 1;
 
   best_lnL      = UNLIKELY;
   tree->verbose = (tree->verbose == VL0) ? VL0 : VL1;
