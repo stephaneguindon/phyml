@@ -3228,8 +3228,8 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
 
       if(tree->n_moves)
         {
-          n_moves_pars = MIN(8,tree->n_moves);
-          n_moves      = MIN(8,tree->n_moves);
+          n_moves_pars = MIN(5,tree->n_moves);
+          n_moves      = MIN(5,tree->n_moves);
 
           if(tree->mod->s_opt->spr_lnL == NO) n_moves = n_moves_pars;
           n_moves = MAX(1,n_moves);
@@ -4848,7 +4848,7 @@ void Spr_List_Of_Trees(t_tree *tree)
 
       if(list_size == 0) Round_Optimize(tree,ROUND_MAX);
 
-      tree->mod->s_opt->max_depth_path    = (int)tree->n_otu/5;
+      tree->mod->s_opt->max_depth_path    = 15;
       tree->mod->s_opt->spr_lnL           = YES;
       tree->mod->s_opt->spr_pars          = NO;
       tree->mod->s_opt->min_diff_lk_move  = 0.1;
