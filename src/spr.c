@@ -3516,14 +3516,14 @@ void Test_One_Spr_Target_Recur(t_node *a, t_node *d, t_edge *pulled, t_node *lin
                       *best_found = YES;
                       return;
                     }
-                  /* else if(tree->mod->s_opt->spr_pars == NO  && */
-                  /*         move_score < tree->best_lnL - tree->mod->s_opt->max_delta_lnL_spr && // so bad, no need to go further... */
-                  /*         tree->depth_curr_path > 2)  */
-                  /*   { */
-                  /*     tree->curr_path[tree->depth_curr_path] = NULL; */
-                  /*     tree->depth_curr_path--; */
-                  /*     return; */
-                  /*   } */
+                  else if(tree->mod->s_opt->spr_pars == NO  &&
+                          move_score < tree->best_lnL - tree->mod->s_opt->max_delta_lnL_spr && // so bad, no need to go further...
+                          tree->depth_curr_path > 5)
+                    {
+                      tree->curr_path[tree->depth_curr_path] = NULL;
+                      tree->depth_curr_path--;
+                      return;
+                    }
                 }
               
               if(tree->depth_curr_path < tree->mod->s_opt->max_depth_path)
@@ -4787,7 +4787,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   phydbl *lnL_list,best_lnL;
 
   const unsigned int list_size_first_round  = 5 + (int)tree->n_otu / 20;
-  const unsigned int list_size_second_round = 1;
+  const unsigned int list_size_second_round = 3;
 
   best_lnL      = UNLIKELY;
   tree->verbose = (tree->verbose == VL0) ? VL0 : VL1;
@@ -4821,6 +4821,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
       tree->best_lnL = UNLIKELY;
       Simu(tree,100);
+      Optimize_Br_Len_Serie(tree);
 
       if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n. Tree %3d lnL: %12.2f",list_size+1,tree->c_lnL);
 
@@ -4853,7 +4854,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       tree->mod->s_opt->spr_pars          = NO;
       tree->mod->s_opt->min_diff_lk_move  = 0.1;
       tree->mod->s_opt->eval_list_regraft = YES;
-      tree->mod->s_opt->max_delta_lnL_spr = 100.;
+      tree->mod->s_opt->max_delta_lnL_spr = 20.;
       
       do
         {
@@ -4861,7 +4862,7 @@ void Spr_List_Of_Trees(t_tree *tree)
           Lk(NULL,tree);
           tree->best_lnL = tree->c_lnL;
           Spr(tree->c_lnL,1.0,tree);
-          Optimize_Br_Len_Serie(tree);
+          /* Optimize_Br_Len_Serie(tree); */
           /* printf("\n. lnL: %f %d",tree->c_lnL,tree->n_improvements); */
         }
       while(tree->n_improvements > 0);
