@@ -931,7 +931,6 @@ void Check_NNI_Scores_Around(t_node *a, t_node *d, t_edge *b, phydbl *best_score
 void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
 {
   unsigned int i;
-
   
   if(d->tax == YES)
     {
@@ -939,7 +938,7 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
       return;
     }
   else if(a->tax == YES)
-    {      
+    {
       Br_Len_Brent(b,tree);
       for(i=0;i<3;++i) if(d->v[i] != a)
         {
@@ -999,7 +998,6 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
           // Evaluate likelihood
           /* Br_Len_Brent(b,tree); */
           lk1 = Lk(b,tree);
-          lk1 = tree->c_lnL;
           
           if(lk1 < lk0)
             {
@@ -1015,7 +1013,6 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
               // Evaluate likelihood
               /* Br_Len_Brent(b,tree); */
               lk2 = Lk(b,tree);
-              lk2 = tree->c_lnL;
               
               
               // Unswap
@@ -1042,8 +1039,134 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
     }
 }
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+/* void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree) */
+/* { */
+/*   unsigned int i; */
+  
+/*   if(d->tax == YES) */
+/*     { */
+/*       Br_Len_Brent(b,tree); */
+/*       return; */
+/*     } */
+/*   else if(a->tax == YES) */
+/*     {       */
+/*       Br_Len_Brent(b,tree); */
+/*       for(i=0;i<3;++i) if(d->v[i] != a) */
+/*         { */
+/*           Update_Partial_Lk(tree,d->b[i],d); */
+/*           NNI_Traversal(d,d->v[i],a,d->b[i],tree); */
+/*         } */
+/*       Update_Partial_Lk(tree,b,d); */
+/*     } */
+/*   else */
+/*     { */
+/*       phydbl lk0,lk1,lk2; */
+/*       phydbl l0,l1,l2; */
+/*       phydbl rnd; */
+/*       t_node *v1,*v2,*u,*dum; */
+      
+/*       lk0 = UNLIKELY; */
+/*       lk1 = UNLIKELY; */
+/*       lk2 = UNLIKELY; */
+      
+/*       v1 = v2 = NULL; */
+/*       for(i=0;i<3;++i) */
+/*         if(d->v[i] != a) */
+/*           { */
+/*             if(v1 == NULL) v1 = d->v[i]; */
+/*             else           v2 = d->v[i]; */
+/*           } */
+/*       assert(v1 != NULL); */
+/*       assert(v2 != NULL); */
+
+/*       dum = NULL; */
+/*       rnd = Uni(); */
+/*       if(rnd < .5) */
+/*         { */
+/*           dum = v1; */
+/*           v1  = v2; */
+/*           v2  = dum; */
+/*         } */
+      
+
+/*       u = NULL; */
+/*       for(i=0;i<3;++i) if(a->v[i] != d && a->v[i] != v) { u = a->v[i]; break; } */
+      
+
+/*       // Optimize edge length */
+/*       Br_Len_Brent(b,tree); */
+/*       lk0 = tree->c_lnL; */
+/*       Record_Br_Len(tree); */
+
+/*       l0 = MIXT_Get_Mean_Edge_Len(b,tree); */
+
+/*       // First NNI */
+/*       Swap(v1,d,a,u,tree); */
+/*       // Update partial likelihood looking up */
+/*       Update_Partial_Lk(tree,b,a); */
+/*       // Update partial likelihood looking down */
+/*       Update_Partial_Lk(tree,b,d); */
+/*       // Evaluate likelihood */
+/*       Br_Len_Brent(b,tree); */
+/*       l1 = MIXT_Get_Mean_Edge_Len(b,tree); */
+/*       lk1 = Lk(b,tree); */
+          
+/*       // Unswap */
+/*       Swap(u,d,a,v1,tree); */
+      
+/*       // Second NNI */
+/*       Swap(v2,d,a,u,tree); */
+/*       // Update partial likelihood looking up */
+/*       Update_Partial_Lk(tree,b,a); */
+/*       // Update partial likelihood looking down */
+/*       Update_Partial_Lk(tree,b,d); */
+/*       // Evaluate likelihood */
+/*       Br_Len_Brent(b,tree); */
+/*       l2 = MIXT_Get_Mean_Edge_Len(b,tree); */
+/*       lk2 = Lk(b,tree); */
+      
+              
+/*       // Unswap */
+/*       Swap(u,d,a,v2,tree); */
+/*       // Update partial likelihood looking up */
+/*       Update_Partial_Lk(tree,b,a); */
+/*       // Update partial likelihood looking down */
+/*       Update_Partial_Lk(tree,b,d); */
+/*       Restore_Br_Len(tree); */
+/*       Lk(b,tree); */
+
+/*       if(lk1 > MAX(lk2,lk0)) */
+/*         { */
+/*           Swap(v1,d,a,u,tree); */
+/*           Update_Partial_Lk(tree,b,a); */
+/*           Update_Partial_Lk(tree,b,d); */
+/*           b->l->v = l1; */
+/*           tree->c_lnL = lk1; */
+/*         } */
+/*       else if(lk2 > MAX(lk1,lk0)) */
+/*         { */
+/*           Swap(v2,d,a,u,tree); */
+/*           Update_Partial_Lk(tree,b,a); */
+/*           Update_Partial_Lk(tree,b,d); */
+/*           b->l->v = l2; */
+/*           tree->c_lnL = lk2; */
+/*         } */
+      
 
 
+      
+/*       for(i=0;i<3;++i) */
+/*         if(d->v[i] != a) */
+/*           { */
+/*             Update_Partial_Lk(tree,d->b[i],d); */
+/*             NNI_Traversal(d,d->v[i],a,d->b[i],tree); */
+/*           } */
+/*       Update_Partial_Lk(tree,b,d); */
+/*     } */
+/* } */
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

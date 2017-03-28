@@ -3296,7 +3296,7 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
                     {
                       best_move_idx = Evaluate_List_Of_Regraft_Pos_Triple(tree->spr_list,n_moves,tree);
                     }
-                  else 
+                  else
                     {
                       best_move_idx = -1;
                     }
@@ -4132,7 +4132,7 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
           PhyML_Printf("\n== c_lnL = %f move_lnL = %f", tree->c_lnL,move->lnL);
           PhyML_Printf("\n== %d l0=%G l1=%G l2=%G v0=%G v1=%G v2=%G",move->n_link->num,move->l0->v,move->l1->v,move->l2->v,move->v0->v,move->v1->v,move->v2->v);
           PhyML_Printf("\n== Gamma MGF? %d",tree->io->mod->gamma_mgf_bl);
-          PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
+          PhyML_Printf("\n== Err. in file %s at line %d.\n",__FILE__,__LINE__);
           Check_Lk_At_Given_Edge(YES,tree);
           /* { */
           /*   int i; */
@@ -4855,6 +4855,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       tree->mod->s_opt->min_diff_lk_move  = 0.1;
       tree->mod->s_opt->eval_list_regraft = YES;
       tree->mod->s_opt->max_delta_lnL_spr = 20.;
+      tree->annealing_temp                = 4.0;
       
       do
         {
@@ -4862,8 +4863,10 @@ void Spr_List_Of_Trees(t_tree *tree)
           Lk(NULL,tree);
           tree->best_lnL = tree->c_lnL;
           Spr(tree->c_lnL,1.0,tree);
+          tree->annealing_temp -= 1.0;
+          if(tree->annealing_temp < 0.0) tree->annealing_temp = 0.0;
           /* Optimize_Br_Len_Serie(tree); */
-          /* printf("\n. lnL: %f %d",tree->c_lnL,tree->n_improvements); */
+          printf("\n. lnL: %f %d",tree->c_lnL,tree->n_improvements);
         }
       while(tree->n_improvements > 0);
 
