@@ -4855,7 +4855,6 @@ void Spr_List_Of_Trees(t_tree *tree)
       tree->mod->s_opt->min_diff_lk_move  = 0.1;
       tree->mod->s_opt->eval_list_regraft = YES;
       tree->mod->s_opt->max_delta_lnL_spr = 20.;
-      tree->annealing_temp                = 4.0;
       
       do
         {
@@ -4864,9 +4863,8 @@ void Spr_List_Of_Trees(t_tree *tree)
           tree->best_lnL = tree->c_lnL;
           Spr(tree->c_lnL,1.0,tree);
           tree->annealing_temp -= 1.0;
-          if(tree->annealing_temp < 0.0) tree->annealing_temp = 0.0;
           /* Optimize_Br_Len_Serie(tree); */
-          printf("\n. lnL: %f %d",tree->c_lnL,tree->n_improvements);
+          /* printf("\n. lnL: %f %d",tree->c_lnL,tree->n_improvements); */
         }
       while(tree->n_improvements > 0);
 
