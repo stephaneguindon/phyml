@@ -3228,8 +3228,8 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
 
       if(tree->n_moves)
         {
-          n_moves_pars = MIN(3,tree->n_moves);
-          n_moves      = MIN(3,tree->n_moves);
+          n_moves_pars = MIN(8,tree->n_moves);
+          n_moves      = MIN(8,tree->n_moves);
 
           if(tree->mod->s_opt->spr_lnL == NO) n_moves = n_moves_pars;
           n_moves = MAX(1,n_moves);
@@ -3516,14 +3516,14 @@ void Test_One_Spr_Target_Recur(t_node *a, t_node *d, t_edge *pulled, t_node *lin
                       *best_found = YES;
                       return;
                     }
-                  else if(tree->mod->s_opt->spr_pars == NO  &&
-                          move_score < tree->best_lnL - tree->mod->s_opt->max_delta_lnL_spr && // so bad, no need to go further...
-                          tree->depth_curr_path > 2) 
-                    {
-                      tree->curr_path[tree->depth_curr_path] = NULL;
-                      tree->depth_curr_path--;
-                      return;
-                    }
+                  /* else if(tree->mod->s_opt->spr_pars == NO  && */
+                  /*         move_score < tree->best_lnL - tree->mod->s_opt->max_delta_lnL_spr && // so bad, no need to go further... */
+                  /*         tree->depth_curr_path > 2)  */
+                  /*   { */
+                  /*     tree->curr_path[tree->depth_curr_path] = NULL; */
+                  /*     tree->depth_curr_path--; */
+                  /*     return; */
+                  /*   } */
                 }
               
               if(tree->depth_curr_path < tree->mod->s_opt->max_depth_path)
