@@ -1295,9 +1295,9 @@ void Post_Process_Data(option *io)
   int i,j,swap;
   align *data_buff;
 
-  For(i,io->data[0]->len)
+  for(i=0;i<io->data[0]->len;++i)
     {
-      for(j=0;j<io->n_otu;j++)
+      for(j=0;j<io->n_otu;++j)
         {
           if((io->data[j]->state[i] == '?') || (io->data[j]->state[i] == '-')) io->data[j]->state[i] = 'X';
           if((io->datatype == NT) && (io->data[j]->state[i] == 'N')) io->data[j]->state[i] = 'X';
@@ -1305,7 +1305,7 @@ void Post_Process_Data(option *io)
         }
     }
 
-  for(i=0;i<io->n_otu;i++) io->data[i]->len = io->data[0]->len;
+  for(i=0;i<io->n_otu;++i) io->data[i]->len = io->data[0]->len;
 
   /* Sequences are ordered alphabetically */
   data_buff = NULL;

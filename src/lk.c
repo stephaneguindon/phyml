@@ -4319,35 +4319,69 @@ static inline void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
         }
       else
         {
-          /* For all rate classes */
-          for(catg=0;catg<ncatg;++catg)
-            {              
-              _plk1 =  _mm256_setzero_pd();
-              _plk2 =  _mm256_setzero_pd();
-              for(i=0;i<ns;++i)
-                {
-                  if(n_v1->tax == NO)
-                    _x1 = _mm256_mul_pd(_mm256_load_pd(tPij1 + catg*nsns + i*ns),
-                                        _mm256_set1_pd(p_lk_v1[site*ncatgns + catg*ns + i]));
-                  else
-                    _x1 = _mm256_mul_pd(_mm256_load_pd(tPij1 + catg*nsns + i*ns),
-                                        _mm256_set1_pd(p_lk_v1[site*ns + i]));
-                  
-                  if(n_v2->tax == NO)
-                    _x2 = _mm256_mul_pd(_mm256_load_pd(tPij2 + catg*nsns + i*ns),
-                                        _mm256_set1_pd(p_lk_v2[site*ncatgns + catg*ns + i]));
-                  else
-                    _x2 = _mm256_mul_pd(_mm256_load_pd(tPij2 + catg*nsns + i*ns),
-                                        _mm256_set1_pd(p_lk_v2[site*ns + i]));
-                  
-                  
-                  _plk1 = _mm256_add_pd(_plk1,_x1);
-                  _plk2 = _mm256_add_pd(_plk2,_x2);
-                }
-              _plk = _mm256_mul_pd(_plk1,_plk2);
+
+          if(n_v1->tax == YES &&
+             n_v2->tax == YES &&
+             n_v1->c_seq->state[site] == 'X' &&
+             n_v2->c_seq->state[site] == 'X')
+            {
+              for(i=0;i<ncatgns;++i) p_lk[site*ncatgns + i] = 1.0;
+            }
+          else
+            {
+              /* For all rate classes */
+              for(catg=0;catg<ncatg;++catg)
+                {              
+                  _plk1 =  _mm256_setzero_pd();
+                  _plk2 =  _mm256_setzero_pd();
+                  for(i=0;i<ns;++i)
+                    {
+                      _x1 = _mm256_setzero_pd();
+                      _x2 = _mm256_setzero_pd();
                       
-              _mm256_store_pd(p_lk + site*ncatgns + catg*ns,_plk);
-                            
+                      if(n_v1->tax == NO)
+                        {
+                          if(p_lk_v1[site*ncatgns + catg*ns + i] > 0.0)
+                            {
+                              _x1 = _mm256_mul_pd(_mm256_load_pd(tPij1 + catg*nsns + i*ns),
+                                                  _mm256_set1_pd(p_lk_v1[site*ncatgns + catg*ns + i]));
+                              _plk1 = _mm256_add_pd(_plk1,_x1);
+                            }
+                        }                  
+                      else
+                        {
+                          if(p_lk_v1[site*ns + i] > 0.0)
+                            {
+                              _x1 = _mm256_mul_pd(_mm256_load_pd(tPij1 + catg*nsns + i*ns),
+                                                  _mm256_set1_pd(p_lk_v1[site*ns + i]));
+                              _plk1 = _mm256_add_pd(_plk1,_x1);
+                            }
+                        }
+                      
+                      if(n_v2->tax == NO)
+                        {
+                          if(p_lk_v2[site*ncatgns + catg*ns + i] > 0.0)
+                            {
+                              _x2 = _mm256_mul_pd(_mm256_load_pd(tPij2 + catg*nsns + i*ns),
+                                                  _mm256_set1_pd(p_lk_v2[site*ncatgns + catg*ns + i]));
+                              _plk2 = _mm256_add_pd(_plk2,_x2);
+                            }
+                        }
+                      else
+                        {
+                          if(p_lk_v2[site*ns + i] > 0.0)
+                            {
+                              _x2 = _mm256_mul_pd(_mm256_load_pd(tPij2 + catg*nsns + i*ns),
+                                                  _mm256_set1_pd(p_lk_v2[site*ns + i]));
+                              _plk2 = _mm256_add_pd(_plk2,_x2);
+                            }
+                        }
+                    }
+                  _plk = _mm256_mul_pd(_plk1,_plk2);
+                      
+                  _mm256_store_pd(p_lk + site*ncatgns + catg*ns,_plk);
+                }
+              
               if(tree->scaling_method == SCALE_RATE_SPECIFIC)
                 {
                   smallest_p_lk = BIG;
@@ -4423,7 +4457,7 @@ static inline void SSE_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
   phydbl *tPij1,*tPij2;
   int *sum_scale, *sum_scale_v1, *sum_scale_v2;
   int sum_scale_v1_val, sum_scale_v2_val;
-  unsigned int  i,j,k;
+  unsigned int  i,k;
   unsigned int catg/*index over the number of rate categories*/;
   unsigned int site;
   phydbl smallest_p_lk,largest_p_lk;
@@ -4493,35 +4527,66 @@ static inline void SSE_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
         }
       else
         {
-          /* For all rate classes */
-          for(catg=0;catg<tree->mod->ras->n_catg;++catg)
-            {                            
-              for(k=0;k<nblocks;++k) _plk1[k] =  _mm_setzero_pd();
-              for(k=0;k<nblocks;++k) _plk2[k] =  _mm_setzero_pd();
-              
-              for(i=0;i<ns;++i) // for each *column*
-                {
-                  if(n_v1->tax == NO)
-                    for(k=0;k<nblocks;++k) _x1[k] = _mm_mul_pd(_mm_load_pd(tPij1 + catg*nsns + i*ns + sz*k),
-                                                               _mm_set1_pd(p_lk_v1[site*ncatgns + catg*ns + i]));
-                  else
-                    for(k=0;k<nblocks;++k) _x1[k] = _mm_mul_pd(_mm_load_pd(tPij1 + catg*nsns + i*ns + sz*k),
-                                                               _mm_set1_pd(p_lk_v1[site*ns + i]));
+          if(n_v1->tax == YES &&
+             n_v2->tax == YES &&
+             n_v1->c_seq->state[site] == 'X' &&
+             n_v2->c_seq->state[site] == 'X')
+            {
+              for(i=0;i<ncatgns;++i) p_lk[site*ncatgns + i] = 1.0;
+            }                                                  
+          else
+            {
+              /* For all rate classes */
+              for(catg=0;catg<tree->mod->ras->n_catg;++catg)
+                {                            
+                  for(k=0;k<nblocks;++k) _plk1[k] =  _mm_setzero_pd();
+                  for(k=0;k<nblocks;++k) _plk2[k] =  _mm_setzero_pd();
                   
-                  if(n_v2->tax == NO)
-                    for(k=0;k<nblocks;++k) _x2[k] = _mm_mul_pd(_mm_load_pd(tPij2 + catg*nsns + i*ns + sz*k),
-                                                               _mm_set1_pd(p_lk_v2[site*ncatgns + catg*ns + i]));
-                  else
-                    for(k=0;k<nblocks;++k) _x2[k] = _mm_mul_pd(_mm_load_pd(tPij2 + catg*nsns + i*ns + sz*k),
-                                                               _mm_set1_pd(p_lk_v2[site*ns + i]));
+                  for(i=0;i<ns;++i) // for each *column*
+                    {
+                      
+                      for(k=0;k<nblocks;++k) _x1[k] =  _mm_setzero_pd();
+                      for(k=0;k<nblocks;++k) _x2[k] =  _mm_setzero_pd();
+                      
+                      if(n_v1->tax == NO)
+                        {
+                          if(p_lk_v1[site*ncatgns + catg*ns + i] > 0.0)
+                            for(k=0;k<nblocks;++k) _x1[k] = _mm_mul_pd(_mm_load_pd(tPij1 + catg*nsns + i*ns + sz*k),
+                                                                       _mm_set1_pd(p_lk_v1[site*ncatgns + catg*ns + i]));
+                          
+                          for(k=0;k<nblocks;++k) _plk1[k] = _mm_add_pd(_plk1[k],_x1[k]);
+                        }
+                      else
+                        {
+                          if(p_lk_v1[site*ns + i] > 0.0)
+                            for(k=0;k<nblocks;++k) _x1[k] = _mm_mul_pd(_mm_load_pd(tPij1 + catg*nsns + i*ns + sz*k),
+                                                                       _mm_set1_pd(p_lk_v1[site*ns + i]));
+                          
+                          for(k=0;k<nblocks;++k) _plk1[k] = _mm_add_pd(_plk1[k],_x1[k]);
+                        }
+                      
+                      if(n_v2->tax == NO)
+                        {
+                          if(p_lk_v2[site*ncatgns + catg*ns + i] > 0.0)
+                            for(k=0;k<nblocks;++k) _x2[k] = _mm_mul_pd(_mm_load_pd(tPij2 + catg*nsns + i*ns + sz*k),
+                                                                       _mm_set1_pd(p_lk_v2[site*ncatgns + catg*ns + i]));
+                          
+                          for(k=0;k<nblocks;++k) _plk2[k] = _mm_add_pd(_plk2[k],_x2[k]);
+                        }
+                      else
+                        {
+                          if(p_lk_v2[site*ns + i] > 0.0)
+                            for(k=0;k<nblocks;++k) _x2[k] = _mm_mul_pd(_mm_load_pd(tPij2 + catg*nsns + i*ns + sz*k),
+                                                                       _mm_set1_pd(p_lk_v2[site*ns + i]));
+                          
+                          for(k=0;k<nblocks;++k) _plk2[k] = _mm_add_pd(_plk2[k],_x2[k]);
+                        }                  
+                    }
                   
-                  for(k=0;k<nblocks;++k) _plk1[k] = _mm_add_pd(_plk1[k],_x1[k]);
-                  for(k=0;k<nblocks;++k) _plk2[k] = _mm_add_pd(_plk2[k],_x2[k]);
+                  for(k=0;k<nblocks;++k) _plk[k] = _mm_mul_pd(_plk1[k],_plk2[k]);
+                  
+                  for(k=0;k<nblocks;++k) _mm_store_pd(p_lk + site*ncatgns + catg*ns + sz*k,_plk[k]);
                 }
-              
-              for(k=0;k<nblocks;++k) _plk[k] = _mm_mul_pd(_plk1[k],_plk2[k]);
-
-              for(k=0;k<nblocks;++k) _mm_store_pd(p_lk + site*ncatgns + catg*ns + sz*k,_plk[k]);
               
               if(tree->scaling_method == SCALE_RATE_SPECIFIC)
                 {                  
