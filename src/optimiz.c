@@ -785,7 +785,11 @@ void Optimize_Br_Len_Serie(t_tree *tree)
 
   lk_end = tree->c_lnL;
 
-  assert(lk_end > lk_init - tree->mod->s_opt->min_diff_lk_local);
+  if(lk_end < lk_init - tree->mod->s_opt->min_diff_lk_local)
+    {
+      PhyML_Printf("\n== lk_init: %f lk_end: %f",lk_init,lk_end);
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
 }
 
 /*////////////////////////////////////////////////////////////
@@ -2309,9 +2313,8 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
       dl      = tree->c_dlnL;
       d2l     = tree->c_d2lnL;
 
-      /* PhyML_Printf("\n cur_l:%12f old_lnL:%12f new_lnL:%12f dl:%12G d2l:%12G delta:%12G", */
+      /* PhyML_Printf("\n cur_l:%12f lnL:%12f dl:%12G d2l:%12G delta:%12G", */
       /*              *l, */
-      /*              old_lnL, */
       /*              tree->c_lnL, */
       /*              dl, */
       /*              d2l, */

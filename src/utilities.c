@@ -1255,6 +1255,8 @@ void Share_Lk_Struct(t_tree *t_full, t_tree *t_empt)
   t_empt->fact_sum_scale       = t_full->fact_sum_scale;
   t_empt->eigen_lr_left        = t_full->eigen_lr_left;
   t_empt->eigen_lr_rght        = t_full->eigen_lr_rght;
+  t_empt->dot_prod             = t_full->dot_prod;
+  t_empt->expl                 = t_full->expl;
 
   For(i,2*n_otu-3)
     {
@@ -7973,11 +7975,14 @@ t_tree *Dist_And_BioNJ(calign *cdata, t_mod *mod, option *io)
 
 void Add_BioNJ_Branch_Lengths(t_tree *tree, calign *cdata, t_mod *mod, matrix *mat)
 {
+  short unsigned int freemat = NO;
+  if(mat == NULL) freemat = YES;
   Connect_CSeqs_To_Nodes(cdata,mod->io,tree);
   if(mat == NULL) mat = ML_Dist(cdata,mod);
   mat->tree = tree;
   mat->method = 0;
   Bionj_Br_Length(mat);
+  if(freemat == YES) Free_Mat(mat);
 }
 
 //////////////////////////////////////////////////////////////
