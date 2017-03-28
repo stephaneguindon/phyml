@@ -3228,8 +3228,8 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
 
       if(tree->n_moves)
         {
-          n_moves_pars = MIN(8,tree->n_moves);
-          n_moves      = MIN(8,tree->n_moves);
+          n_moves_pars = MIN(3,tree->n_moves);
+          n_moves      = MIN(3,tree->n_moves);
 
           if(tree->mod->s_opt->spr_lnL == NO) n_moves = n_moves_pars;
           n_moves = MAX(1,n_moves);
@@ -3542,7 +3542,6 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
   scalar_dbl *init_target_l, *init_arrow_l, *init_residual_l;
   scalar_dbl *init_target_v, *init_arrow_v, *init_residual_v;
   int i,dir_v0,dir_v1,dir_v2;
-  unsigned rk;
   scalar_dbl *l0,*l1,*l2;
   scalar_dbl *v0,*v1,*v2;
   t_node *n1,*n2;
@@ -3560,7 +3559,6 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
 
   init_lnL  = tree->c_lnL;
   init_pars = tree->c_pars;
-  rk        = -1;
   
   move = tree->spr_list[tree->size_spr_list];
 
@@ -3669,7 +3667,7 @@ phydbl Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
   move->dist          = b_target->topo_dist_btw_edges;
   move->n_opp_to_link = (n_link==b_arrow->left)?(b_arrow->rght):(b_arrow->left);
   
-  rk = Include_One_Spr_To_List_Of_Spr(move,tree);
+  Include_One_Spr_To_List_Of_Spr(move,tree);
 
   /* if(rk <= 3 && tree->mod->s_opt->spr_lnL == YES) */
   /* if(tree->mod->s_opt->spr_lnL == YES && */
@@ -4260,6 +4258,8 @@ unsigned int Include_One_Spr_To_List_Of_Spr(t_spr *move, t_tree *tree)
       Exit("\n");
     }
 
+  rk = -1;
+  
   if(((tree->mod->s_opt->spr_lnL == YES) && (move->lnL  > tree->spr_list[tree->size_spr_list-1]->lnL)) ||
      ((tree->mod->s_opt->spr_lnL == NO) && (move->pars <= tree->spr_list[tree->size_spr_list-1]->pars)))
     {
@@ -4786,8 +4786,8 @@ void Spr_List_Of_Trees(t_tree *tree)
   t_tree **tree_list;
   phydbl *lnL_list,best_lnL;
 
-  const unsigned int list_size_first_round  = 10;
-  const unsigned int list_size_second_round = 1;
+  const unsigned int list_size_first_round  = (int)tree->n_otu / 10;
+  const unsigned int list_size_second_round = 3;
 
   best_lnL      = UNLIKELY;
   tree->verbose = (tree->verbose == VL0) ? VL0 : VL1;
