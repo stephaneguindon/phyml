@@ -37,6 +37,7 @@ int Simu(t_tree *tree, int n_step_max)
   delta = UNLIKELY;
   old_loglk = UNLIKELY;
   n_round = 0;
+  tree->annealing_temp = 5.0;
   do
     {
       old_loglk = tree->c_lnL;
@@ -48,10 +49,12 @@ int Simu(t_tree *tree, int n_step_max)
                     tree->a_nodes[0]->b[0],
                     tree);
       delta = tree->c_lnL - old_loglk;
+      tree->annealing_temp -= 1.0;
+      if(tree->annealing_temp < 0.0) tree->annealing_temp = 0.0;
       n_round++;
       if(n_round == n_step_max) break;
     }
-  while(delta > 1.0);
+  while(delta > 1.0 || Are_Equal(tree->annealing_temp,0.0,1.E-3) == NO);
 
   return 1;
                 
@@ -950,8 +953,9 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
   else
     {
       phydbl lk0,lk1,lk2;
-      phydbl l0,rnd;
+      phydbl l0,rnd,p,accept_prob;
       t_node *v1,*v2,*u,*dum;
+      unsigned int keep_topo;
       
       lk0 = UNLIKELY;
       lk1 = UNLIKELY;
@@ -998,8 +1002,18 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
           // Evaluate likelihood
           /* Br_Len_Brent(b,tree); */
           lk1 = Lk(b,tree);
+
           
-          if(lk1 < lk0)
+          keep_topo = (lk1 > lk0);
+          if(Are_Equal(tree->annealing_temp,0.0,1.E-3) == NO)
+            {
+              accept_prob = exp((lk1-lk0)/tree->annealing_temp);
+              p = Uni();
+              if(!(p > accept_prob)) keep_topo = YES;
+            }
+
+          /* if(lk1 < lk0) */
+          if(keep_topo == NO)
             {
               // Unswap
               Swap(u,d,a,v1,tree);
@@ -1015,8 +1029,17 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
               lk2 = Lk(b,tree);
               
               
+              keep_topo = (lk2 > lk0);
+              if(Are_Equal(tree->annealing_temp,0.0,1.E-3) == NO)
+                {
+                  accept_prob = exp((lk2-lk0)/tree->annealing_temp);
+                  p = Uni();
+                  if(!(p > accept_prob)) keep_topo = YES;
+                }
+
               // Unswap
-              if(lk2 < lk0)
+              /* if(lk2 < lk0) */
+              if(keep_topo == NO)
                 {
                   Swap(u,d,a,v2,tree);
                   // Update partial likelihood looking up
@@ -1028,6 +1051,7 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
                 }
             }
         }
+
       
       for(i=0;i<3;++i)
         if(d->v[i] != a)
