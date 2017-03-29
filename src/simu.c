@@ -982,8 +982,8 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
       
 
       // Optimize edge length
-      Br_Len_Brent(b,tree);
-      lk0 = tree->c_lnL;
+      /* Br_Len_Brent(b,tree); */
+      lk0 = Lk(b,tree);
       Record_Br_Len(tree);
 
       l0 = MIXT_Get_Mean_Edge_Len(b,tree);
