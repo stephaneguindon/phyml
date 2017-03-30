@@ -937,12 +937,12 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
   
   if(d->tax == YES)
     {
-      Br_Len_Brent(b,tree);
+      /* Br_Len_Brent(b,tree); */
       return;
     }
   else if(a->tax == YES)
     {
-      Br_Len_Brent(b,tree);
+      /* Br_Len_Brent(b,tree); */
       for(i=0;i<3;++i) if(d->v[i] != a)
         {
           Update_Partial_Lk(tree,d->b[i],d);
@@ -1000,7 +1000,7 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
           // Update partial likelihood looking down
           Update_Partial_Lk(tree,b,d);
           // Evaluate likelihood
-          /* Br_Len_Brent(b,tree); */
+          /* Br_Len_Brent(b,tree); */          
           lk1 = Lk(b,tree);
 
           
@@ -1012,8 +1012,8 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
               if(!(p > accept_prob)) keep_topo = YES;
             }
 
-          /* if(lk1 < lk0) */
-          if(keep_topo == NO)
+          /* if(keep_topo == NO) */
+          if(lk1 < lk0)
             {
               // Unswap
               Swap(u,d,a,v1,tree);
@@ -1038,8 +1038,8 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
                 }
 
               // Unswap
-              /* if(lk2 < lk0) */
-              if(keep_topo == NO)
+              if(lk2 < lk0)
+              /* if(keep_topo == NO) */
                 {
                   Swap(u,d,a,v2,tree);
                   // Update partial likelihood looking up

@@ -4819,8 +4819,8 @@ void Spr_List_Of_Trees(t_tree *tree)
         }
       
       Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
+      tree->c_lnL = UNLIKELY;
       Optimize_Br_Len_Serie(tree);
-      tree->best_lnL = tree->c_lnL;
       Simu(tree,100);
 
       if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n. Tree %3d lnL: %12.2f",list_size+1,tree->c_lnL);
