@@ -4849,12 +4849,12 @@ void Spr_List_Of_Trees(t_tree *tree)
 
       if(list_size == 0) Round_Optimize(tree,ROUND_MAX);
 
-      tree->mod->s_opt->max_depth_path    = 15;
+      tree->mod->s_opt->max_depth_path    = (int)tree->n_otu/5;
       tree->mod->s_opt->spr_lnL           = YES;
       tree->mod->s_opt->spr_pars          = NO;
-      tree->mod->s_opt->min_diff_lk_move  = 0.1;
-      tree->mod->s_opt->eval_list_regraft = YES;
-      tree->mod->s_opt->max_delta_lnL_spr = 20.;
+      tree->mod->s_opt->min_diff_lk_move  = 1.E-1;
+      tree->mod->s_opt->eval_list_regraft = NO;
+      tree->mod->s_opt->max_delta_lnL_spr = 200.;
       
       do
         {
@@ -4862,12 +4862,15 @@ void Spr_List_Of_Trees(t_tree *tree)
           Lk(NULL,tree);
           tree->best_lnL = tree->c_lnL;
           Spr(tree->c_lnL,1.0,tree);
-          /* Optimize_Br_Len_Serie(tree); */
-          /* printf("\n. lnL: %f %d",tree->c_lnL,tree->n_improvements); */
+          tree->mod->s_opt->max_depth_path = MAX(3,2 * tree->max_spr_depth);
+          tree->mod->s_opt->eval_list_regraft = YES;
+          Optimize_Br_Len_Serie(tree);
+          printf("\n. lnL: %14G depth: %3d # improv: %d",
+                 tree->c_lnL,
+                 tree->max_spr_depth,
+                 tree->n_improvements); fflush(NULL);
         }
-      while(tree->n_improvements > 5);
-
-      Optimize_Br_Len_Serie(tree);
+      while(tree->n_improvements > 0);
 
       if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n. Tree %3d lnL: %12.2f",list_size+1,tree->c_lnL);
       

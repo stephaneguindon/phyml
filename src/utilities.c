@@ -5419,27 +5419,15 @@ int Get_Subtree_Size(t_node *a, t_node *d)
 
 phydbl Fast_Br_Len(t_edge *b, t_tree *tree, int approx)
 {
-  if(tree->is_mixt_tree)
-    {
-      if(approx == NO)
-        MIXT_Br_Len_Brent(b,tree);
-      else
-        {
-          tree->mod->s_opt->brent_it_max = 5;
-          MIXT_Br_Len_Brent(b,tree);
-          tree->mod->s_opt->brent_it_max = BRENT_IT_MAX;
-        }
-      return tree->c_lnL;
-    }
-  
-  
-  if(approx == NO) Br_Len_Brent(b,tree);
-  else
-    {
-      tree->mod->s_opt->brent_it_max = 5;
-      Br_Len_Brent(b,tree);
-      tree->mod->s_opt->brent_it_max = BRENT_IT_MAX;
-    }
+  phydbl init_min_diff_lk_local = tree->mod->s_opt->min_diff_lk_local;
+
+  tree->mod->s_opt->min_diff_lk_local = 0.1;      
+
+  if(tree->is_mixt_tree) MIXT_Br_Len_Brent(b,tree);   
+  else Br_Len_Brent(b,tree);
+
+  tree->mod->s_opt->min_diff_lk_local = init_min_diff_lk_local;
+
   return tree->c_lnL;
 }
 
@@ -5516,7 +5504,8 @@ phydbl Triple_Dist(t_node *a, t_tree *tree)
 
       Update_Partial_Lk(tree,a->b[2],a);
       Fast_Br_Len(a->b[2],tree,YES);
-
+        
+      
       Update_Partial_Lk(tree,a->b[1],a);
       Update_Partial_Lk(tree,a->b[0],a);
     }
