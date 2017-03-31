@@ -937,12 +937,12 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
   
   if(d->tax == YES)
     {
-      /* Br_Len_Brent(b,tree); */
+      Br_Len_Brent(b,tree);
       return;
     }
   else if(a->tax == YES)
     {
-      /* Br_Len_Brent(b,tree); */
+      Br_Len_Brent(b,tree);
       for(i=0;i<3;++i) if(d->v[i] != a)
         {
           Update_Partial_Lk(tree,d->b[i],d);
@@ -986,7 +986,7 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
       
 
       // Optimize edge length
-      /* Br_Len_Brent(b,tree); */
+      Br_Len_Brent(b,tree);
       lk0 = Lk(b,tree);
       Record_Br_Len(tree);
 

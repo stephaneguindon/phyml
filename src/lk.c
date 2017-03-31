@@ -748,7 +748,11 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
       d2lk  = Lk_Core_Eigen_Lr(expld2,dot_prod + site*ns*ncatg,YES,b,tree);
       lk    = Lk_Core_Eigen_Lr(expl  ,dot_prod + site*ns*ncatg,NO ,b,tree);
 
-      assert(lk > 0.0);
+      if(!(lk > 0.0))
+        {
+          PhyML_Printf("\n== dlk: %G d2lk: %G lk: %G",dlk,d2lk,lk);
+          assert(FALSE);
+        }
 
       dlk /= lk;
       d2lk /= lk;

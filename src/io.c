@@ -313,10 +313,10 @@ void Read_Branch_Label(char *s_d, char *s_a, t_edge *b)
   if(p)
     {
       /* if(b->n_labels == 1) */
-      /* 	PhyML_Printf("\n. Read label '%s' on t_edge %3d.",b->labels[0],b->num); */
+      /* 	PhyML_Printf("\n\u2022 Read label '%s' on t_edge %3d.",b->labels[0],b->num); */
       /* else */
       /* 	{ */
-      /* 	  PhyML_Printf("\n. Read labels "); */
+      /* 	  PhyML_Printf("\n\u2022 Read labels "); */
       /* 	  for(i=0;i<b->n_labels;i++) PhyML_Printf("'%s' ",b->labels[i]); */
       /* 	  PhyML_Printf("on t_edge %3d.",b->num); */
       /* 	} */
@@ -328,7 +328,7 @@ void Read_Branch_Label(char *s_d, char *s_a, t_edge *b)
     }
   /* else */
   /*   { */
-  /*     PhyML_Printf("\n. No label found on %s",s_d); */
+  /*     PhyML_Printf("\n\u2022 No label found on %s",s_d); */
   /*   } */
   Free(sub_tp);
 }
@@ -497,9 +497,9 @@ char **Sub_Trees(char *tree, int *degree)
       if((*degree) == NODE_DEG_MAX)
         {
           For(i,(*degree))
-            PhyML_Printf("\n. Subtree %d : %s\n",i+1,subs[i]);
+            PhyML_Printf("\n\u2022 Subtree %d : %s\n",i+1,subs[i]);
           
-          PhyML_Printf("\n. The degree of a t_node cannot be greater than %d\n",NODE_DEG_MAX);
+          PhyML_Printf("\n\u2022 The degree of a t_node cannot be greater than %d\n",NODE_DEG_MAX);
           Warn_And_Exit("\n");
         }
     }
@@ -751,7 +751,7 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
           (*s_tree) = (char *)mRealloc(*s_tree,(int)strlen(*s_tree)+3*(int)T_MAX_NAME,sizeof(char));
           For(i,3*(int)T_MAX_NAME) (*s_tree)[(int)strlen(*s_tree)+i] = '\0';
           (*available) = 3*(int)T_MAX_NAME;
-          /* printf("\n. ++ 0 Available = %d",(*available)); */
+          /* printf("\n\u2022 ++ 0 Available = %d",(*available)); */
         }
 #endif
       
@@ -771,7 +771,7 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
           (*s_tree) = (char *)mRealloc(*s_tree,(int)strlen(*s_tree)+3*(int)T_MAX_NAME,sizeof(char));
           For(i,3*(int)T_MAX_NAME) (*s_tree)[(int)strlen(*s_tree)+i] = '\0';
           (*available) = 3*(int)T_MAX_NAME;
-          /* printf("\n. ++ 1 Available = %d",(*available)); */
+          /* printf("\n\u2022 ++ 1 Available = %d",(*available)); */
         }
 #endif
       /* (*available)--; */
@@ -898,7 +898,7 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
           (*s_tree) = (char *)mRealloc(*s_tree,(int)strlen(*s_tree)+3*(int)T_MAX_NAME,sizeof(char));
           For(i,3*(int)T_MAX_NAME) (*s_tree)[(int)strlen(*s_tree)+i] = '\0';
           (*available) = 3*(int)T_MAX_NAME;
-      /* printf("\n. ++ 2 Available = %d",(*available)); */
+      /* printf("\n\u2022 ++ 2 Available = %d",(*available)); */
         }
 #endif
 
@@ -1212,21 +1212,21 @@ void Detect_Tree_File_Format(option *io)
       if(errno)
     {
       io->tree_file_format = PHYLIP;
-      PhyML_Printf("\n. Detected PHYLIP tree file format.");
+      PhyML_Printf("\n\u2022 Detected PHYLIP tree file format.");
     }
       else if(c == '#')
     {
       char s[10],t[6]="NEXUS";
       if(!fgets(s,6,io->fp_in_tree))
         {
-          PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+          PhyML_Printf("\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
           Warn_And_Exit("");
         }
       if(!strcmp(t,s))
         {
           fsetpos(io->fp_in_tree,&curr_pos);
           io->tree_file_format = NEXUS;
-          PhyML_Printf("\n. Detected NEXUS tree file format.");
+          PhyML_Printf("\n\u2022 Detected NEXUS tree file format.");
           return;
         }
     }
@@ -1358,7 +1358,7 @@ void Post_Process_Data(option *io)
 /* 	{	   */
 /* 	  Get_Token(&s,token);	   */
 
-/* /\* 	  PhyML_Printf("\n. Token: '%s' next_token=%d cur_token=%d",token,nxt_token_t,cur_token_t); *\/ */
+/* /\* 	  PhyML_Printf("\n\u2022 Token: '%s' next_token=%d cur_token=%d",token,nxt_token_t,cur_token_t); *\/ */
 
 /* 	  if(token[0] == '\0') break; */
 
@@ -1663,11 +1663,11 @@ void Read_Ntax_Len_Phylip(FILE *fp ,int *n_otu, int *n_tax)
           if(strcmp(line,"\n") && strcmp(line,"\r") && strcmp(line,"\t"))
             {
               sscanf(line,"%d",n_otu);
-              if(*n_otu <= 0) Warn_And_Exit("\n. The number of taxa cannot be negative.\n");
+              if(*n_otu <= 0) Warn_And_Exit("\n\u2022 The number of taxa cannot be negative.\n");
               
               if(!fscanf(fp,"%s",line)) Exit("\n");
               sscanf(line,"%d",n_tax);
-              if(*n_tax <= 0) Warn_And_Exit("\n. The sequence length cannot be negative.\n");
+              if(*n_tax <= 0) Warn_And_Exit("\n\u2022 The sequence length cannot be negative.\n");
               else readok = 1;
             }
         }
@@ -1780,7 +1780,7 @@ align **Read_Seq_Interleaved(option *io)
   
   if(data[0]->len == io->init_len * io->state_len) end = 1;
 
-/*   if(end) printf("\n. finished yet '%c'\n",fgetc(io->fp_in_align)); */
+/*   if(end) printf("\n\u2022 finished yet '%c'\n",fgetc(io->fp_in_align)); */
   if(!end)
     {
       end = 0;
@@ -1907,7 +1907,7 @@ int Read_One_Line_Seq(align ***data, int num_otu, FILE *in)
       if(c == ';') break;
     }
 
-  /* printf("\n. Exit nchar: %d [%d]\n",nchar,c==EOF); */
+  /* printf("\n\u2022 Exit nchar: %d [%d]\n",nchar,c==EOF); */
   if(c == EOF) return 0;
   else return 1;
 }
@@ -1936,7 +1936,7 @@ t_tree *Read_Tree_File(option *io)
             fclose(io->fp_in_tree);
             io->fp_in_tree = NULL;
             if(!io->tree) break;
-            if(io->treelist->list_size > 1) PhyML_Printf("\n. Reading tree %d",io->treelist->list_size+1);
+            if(io->treelist->list_size > 1) PhyML_Printf("\n\u2022 Reading tree %d",io->treelist->list_size+1);
             io->treelist->tree[io->treelist->list_size] = io->tree;
             io->treelist->list_size++;
           }while(io->tree);
@@ -2482,36 +2482,36 @@ void Print_Model(t_mod *mod)
 {
   int i,j,k;
 
-  PhyML_Printf("\n. name=%s",mod->modelname->s);
-  PhyML_Printf("\n. string=%s",mod->custom_mod_string);
-  PhyML_Printf("\n. mod_num=%d",mod->mod_num);
-  PhyML_Printf("\n. ns=%d",mod->ns);
-  PhyML_Printf("\n. n_catg=%d",mod->ras->n_catg);
-  PhyML_Printf("\n. kappa=%f",mod->kappa->v);
-  PhyML_Printf("\n. alpha=%f",mod->ras->alpha->v);
-  PhyML_Printf("\n. lambda=%f",mod->lambda->v);
-  PhyML_Printf("\n. pinvar=%f",mod->ras->pinvar->v);
-  PhyML_Printf("\n. br_len_mult=%f",mod->br_len_mult->v);
-  PhyML_Printf("\n. whichmodel=%d",mod->whichmodel);
-  PhyML_Printf("\n. update_eigen=%d",mod->update_eigen);
-  PhyML_Printf("\n. bootstrap=%d",mod->bootstrap);
-  PhyML_Printf("\n. n_diff_rr=%d",mod->r_mat->n_diff_rr);
-  PhyML_Printf("\n. invar=%d",mod->ras->invar);
-  PhyML_Printf("\n. use_m4mod=%d",mod->use_m4mod);
-  PhyML_Printf("\n. gamma_median=%d",mod->ras->gamma_median);
-  PhyML_Printf("\n. state_len=%d",mod->io->state_len);
-  PhyML_Printf("\n. log_l=%d",mod->log_l);
-  PhyML_Printf("\n. l_min=%f",mod->l_min);
-  PhyML_Printf("\n. l_max=%f",mod->l_max);
-  PhyML_Printf("\n. free_mixt_rates=%d",mod->ras->free_mixt_rates);
-  PhyML_Printf("\n. gamma_mgf_bl=%d",mod->gamma_mgf_bl);
+  PhyML_Printf("\n\u2022 name=%s",mod->modelname->s);
+  PhyML_Printf("\n\u2022 string=%s",mod->custom_mod_string);
+  PhyML_Printf("\n\u2022 mod_num=%d",mod->mod_num);
+  PhyML_Printf("\n\u2022 ns=%d",mod->ns);
+  PhyML_Printf("\n\u2022 n_catg=%d",mod->ras->n_catg);
+  PhyML_Printf("\n\u2022 kappa=%f",mod->kappa->v);
+  PhyML_Printf("\n\u2022 alpha=%f",mod->ras->alpha->v);
+  PhyML_Printf("\n\u2022 lambda=%f",mod->lambda->v);
+  PhyML_Printf("\n\u2022 pinvar=%f",mod->ras->pinvar->v);
+  PhyML_Printf("\n\u2022 br_len_mult=%f",mod->br_len_mult->v);
+  PhyML_Printf("\n\u2022 whichmodel=%d",mod->whichmodel);
+  PhyML_Printf("\n\u2022 update_eigen=%d",mod->update_eigen);
+  PhyML_Printf("\n\u2022 bootstrap=%d",mod->bootstrap);
+  PhyML_Printf("\n\u2022 n_diff_rr=%d",mod->r_mat->n_diff_rr);
+  PhyML_Printf("\n\u2022 invar=%d",mod->ras->invar);
+  PhyML_Printf("\n\u2022 use_m4mod=%d",mod->use_m4mod);
+  PhyML_Printf("\n\u2022 gamma_median=%d",mod->ras->gamma_median);
+  PhyML_Printf("\n\u2022 state_len=%d",mod->io->state_len);
+  PhyML_Printf("\n\u2022 log_l=%d",mod->log_l);
+  PhyML_Printf("\n\u2022 l_min=%f",mod->l_min);
+  PhyML_Printf("\n\u2022 l_max=%f",mod->l_max);
+  PhyML_Printf("\n\u2022 free_mixt_rates=%d",mod->ras->free_mixt_rates);
+  PhyML_Printf("\n\u2022 gamma_mgf_bl=%d",mod->gamma_mgf_bl);
 
-  PhyML_Printf("\n. Pi\n");
+  PhyML_Printf("\n\u2022 Pi\n");
   for(i=0;i<mod->ns;i++) PhyML_Printf(" %f ",mod->e_frq->pi->v[i]);
   PhyML_Printf("\n");
   for(i=0;i<mod->ns;i++) PhyML_Printf(" %f ",mod->e_frq->pi_unscaled->v[i]);
 
-  PhyML_Printf("\n. Rates\n");
+  PhyML_Printf("\n\u2022 Rates\n");
   for(i=0;i<mod->ras->n_catg;i++) PhyML_Printf(" %f ",mod->ras->gamma_r_proba->v[i]);
   PhyML_Printf("\n");
   for(i=0;i<mod->ras->n_catg;i++) PhyML_Printf(" %f ",mod->ras->gamma_r_proba_unscaled->v[i]);
@@ -2522,7 +2522,7 @@ void Print_Model(t_mod *mod)
 
 
 
-  PhyML_Printf("\n. Qmat \n");
+  PhyML_Printf("\n\u2022 Qmat \n");
   if(mod->whichmodel == CUSTOM)
     {
       fflush(NULL);
@@ -2539,7 +2539,7 @@ void Print_Model(t_mod *mod)
       PhyML_Printf("\n");
     }
 
-  PhyML_Printf("\n. Freqs");
+  PhyML_Printf("\n\u2022 Freqs");
   PhyML_Printf("\n");
   for(i=0;i<mod->ns;i++) PhyML_Printf(" %12f ",mod->e_frq->user_b_freq->v[i]);
   PhyML_Printf("\n");
@@ -2547,7 +2547,7 @@ void Print_Model(t_mod *mod)
   PhyML_Printf("\n");
   for(i=0;i<mod->ns;i++) PhyML_Printf(" %12f ",mod->e_frq->pi_unscaled->v[i]);
 
-  PhyML_Printf("\n. Eigen\n");
+  PhyML_Printf("\n\u2022 Eigen\n");
   For(i,2*mod->ns)       PhyML_Printf(" %f ",mod->eigen->space[i]);
   PhyML_Printf("\n");
   For(i,2*mod->ns)       PhyML_Printf(" %f ",mod->eigen->space_int[i]);
@@ -2565,11 +2565,11 @@ void Print_Model(t_mod *mod)
   For(i,mod->ns*mod->ns) PhyML_Printf(" %f ",mod->eigen->q[i]);
   PhyML_Printf("\n");
 
-  PhyML_Printf("\n. Pij");
+  PhyML_Printf("\n\u2022 Pij");
   for(k=0;k<mod->ras->n_catg;k++)
     {
       PMat(0.01*mod->ras->gamma_rr->v[k],mod,mod->ns*mod->ns*k,mod->Pij_rr->v,NULL);
-      PhyML_Printf("\n. l=%f\n",0.01*mod->ras->gamma_rr->v[k]);
+      PhyML_Printf("\n\u2022 l=%f\n",0.01*mod->ras->gamma_rr->v[k]);
       for(i=0;i<mod->ns;i++)
         {
           PhyML_Printf("  ");
@@ -2633,7 +2633,7 @@ FILE *Openfile(char *filename, int mode)
       {
         while(!(fp = (FILE *)fopen(s,"r")) && ++open_test<10)
           {
-            PhyML_Printf("\n. Can't open file '%s', enter a new name : ",s);
+            PhyML_Printf("\n\u2022 Can't open file '%s', enter a new name : ",s);
             Getstring_Stdin(s);
           }
         break;
@@ -2678,21 +2678,21 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
       Print_Banner_Small(fp_out);
     }
 
-  PhyML_Fprintf(fp_out,"\n. Sequence filename: \t\t\t%s", Basename(io->in_align_file));
-  PhyML_Fprintf(fp_out,"\n. Data set: \t\t\t\t#%d",n_data_set);
+  PhyML_Fprintf(fp_out,"\n\u2022 Sequence filename: \t\t\t%s", Basename(io->in_align_file));
+  PhyML_Fprintf(fp_out,"\n\u2022 Data set: \t\t\t\t#%d",n_data_set);
 
-  if(io->mod->s_opt->random_input_tree) PhyML_Fprintf(fp_out,"\n. Random init tree: \t\t\t#%d",num_tree+1);
-  else if(io->n_trees > 1)              PhyML_Fprintf(fp_out,"\n. Starting tree number: \t\t#%d",num_tree+1);
+  if(io->mod->s_opt->random_input_tree) PhyML_Fprintf(fp_out,"\n\u2022 Random init tree: \t\t\t#%d",num_tree+1);
+  else if(io->n_trees > 1)              PhyML_Fprintf(fp_out,"\n\u2022 Starting tree number: \t\t#%d",num_tree+1);
 
   if(io->mod->s_opt->opt_topo)
     {
-      if(io->mod->s_opt->topo_search == NNI_MOVE) PhyML_Fprintf(fp_out,"\n. Tree topology search : \t\tNNIs");
-      else if(io->mod->s_opt->topo_search == SPR_MOVE) PhyML_Fprintf(fp_out,"\n. Tree topology search : \t\tSPRs");
-      else if(io->mod->s_opt->topo_search == BEST_OF_NNI_AND_SPR) PhyML_Fprintf(fp_out,"\n. Tree topology search : \t\tBest of NNIs and SPRs");
+      if(io->mod->s_opt->topo_search == NNI_MOVE) PhyML_Fprintf(fp_out,"\n\u2022 Tree topology search : \t\tNNIs");
+      else if(io->mod->s_opt->topo_search == SPR_MOVE) PhyML_Fprintf(fp_out,"\n\u2022 Tree topology search : \t\tSPRs");
+      else if(io->mod->s_opt->topo_search == BEST_OF_NNI_AND_SPR) PhyML_Fprintf(fp_out,"\n\u2022 Tree topology search : \t\tBest of NNIs and SPRs");
     }
   else
     {
-      PhyML_Fprintf(fp_out,"\n. Tree topology: \t\t\tfixed");
+      PhyML_Fprintf(fp_out,"\n\u2022 Tree topology: \t\t\tfixed");
     }
 
 
@@ -2713,41 +2713,41 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
         strcat(s,"random tree");
     }
 
-  PhyML_Fprintf(fp_out,"\n. Initial tree: \t\t\t%s",s);
+  PhyML_Fprintf(fp_out,"\n\u2022 Initial tree: \t\t\t%s",s);
   Free(s);
 
   if(tree->io->datatype == NT)
     {
-      PhyML_Fprintf(fp_out,"\n. Model of nucleotides substitution: \t%s",tree->mod->modelname->s);
+      PhyML_Fprintf(fp_out,"\n\u2022 Model of nucleotides substitution: \t%s",tree->mod->modelname->s);
       if(io->mod->whichmodel == CUSTOM)
       PhyML_Fprintf(fp_out," (%s)",io->mod->custom_mod_string);
     }
   else if(tree->io->datatype == AA)
     {
-      PhyML_Fprintf(fp_out,"\n. Model of amino acids substitution: \t%s",tree->mod->modelname->s);
+      PhyML_Fprintf(fp_out,"\n\u2022 Model of amino acids substitution: \t%s",tree->mod->modelname->s);
       if(io->mod->whichmodel == CUSTOMAA) PhyML_Fprintf(fp_out," (%s)",tree->mod->aa_rate_mat_file->s);
     }
   else
     {
-      fprintf(fp_out,"\n. Substitution model: \t\t\t%s",tree->mod->modelname->s);
+      fprintf(fp_out,"\n\u2022 Substitution model: \t\t\t%s",tree->mod->modelname->s);
     }
 
 
-  PhyML_Fprintf(fp_out,"\n. Number of taxa: \t\t\t%d",tree->n_otu);/*added FLT*/
+  PhyML_Fprintf(fp_out,"\n\u2022 Number of taxa: \t\t\t%d",tree->n_otu);/*added FLT*/
 
-  PhyML_Fprintf(fp_out,"\n. Log-likelihood: \t\t\t%.5f",tree->c_lnL);/*was last ; moved here FLT*/
+  PhyML_Fprintf(fp_out,"\n\u2022 Log-likelihood: \t\t\t%.5f",tree->c_lnL);/*was last ; moved here FLT*/
 
   Unconstraint_Lk(tree);
-  PhyML_Fprintf(fp_out,"\n. Unconstrained likelihood: \t\t%.5f",tree->unconstraint_lk);
+  PhyML_Fprintf(fp_out,"\n\u2022 Unconstrained likelihood: \t\t%.5f",tree->unconstraint_lk);
 
-  PhyML_Fprintf(fp_out,"\n. Parsimony: \t\t\t\t%d",tree->c_pars);
+  PhyML_Fprintf(fp_out,"\n\u2022 Parsimony: \t\t\t\t%d",tree->c_pars);
 
-  PhyML_Fprintf(fp_out,"\n. Tree size: \t\t\t\t%.5f",Get_Tree_Size(tree));
+  PhyML_Fprintf(fp_out,"\n\u2022 Tree size: \t\t\t\t%.5f",Get_Tree_Size(tree));
 
   /* if(tree->mod->ras->n_catg > 1 && tree->mod->ras->free_mixt_rates == NO) */
   if(tree->mod->ras->free_mixt_rates == NO)
     {
-      PhyML_Fprintf(fp_out,"\n. Discrete gamma model: \t\t%s","Yes");
+      PhyML_Fprintf(fp_out,"\n\u2022 Discrete gamma model: \t\t%s","Yes");
       PhyML_Fprintf(fp_out,"\n  - Number of classes: \t\t\t%d",tree->mod->ras->n_catg);
       PhyML_Fprintf(fp_out,"\n  - Gamma shape parameter: \t\t%.3f",tree->mod->ras->alpha->v);
       for(i=0;i<tree->mod->ras->n_catg;i++)
@@ -2759,7 +2759,7 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
     {
       int *rk;
       rk = Ranks(tree->mod->ras->gamma_rr->v,tree->mod->ras->n_catg);
-      PhyML_Fprintf(fp_out,"\n. FreeRate model: \t\t\t%s","Yes");
+      PhyML_Fprintf(fp_out,"\n\u2022 FreeRate model: \t\t\t%s","Yes");
       PhyML_Fprintf(fp_out,"\n  - Number of classes: \t\t\t%d",tree->mod->ras->n_catg);
       for(i=0;i<tree->mod->ras->n_catg;i++)
         {
@@ -2768,26 +2768,26 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
       Free(rk);
     }
 
-  if(tree->mod->ras->invar) PhyML_Fprintf(fp_out,"\n. Proportion of invariant: \t\t%.3f",tree->mod->ras->pinvar->v);
+  if(tree->mod->ras->invar) PhyML_Fprintf(fp_out,"\n\u2022 Proportion of invariant: \t\t%.3f",tree->mod->ras->pinvar->v);
 
-  if(tree->mod->gamma_mgf_bl == YES) PhyML_Fprintf(fp_out,"\n. Variance of branch lengths: \t\t%f",tree->mod->l_var_sigma);
+  if(tree->mod->gamma_mgf_bl == YES) PhyML_Fprintf(fp_out,"\n\u2022 Variance of branch lengths: \t\t%f",tree->mod->l_var_sigma);
 
   /*was before Discrete gamma model ; moved here FLT*/
   if((tree->mod->whichmodel == K80)   ||
      (tree->mod->whichmodel == HKY85) ||
      (tree->mod->whichmodel == F84))
-    PhyML_Fprintf(fp_out,"\n. Transition/transversion ratio: \t%.3f",tree->mod->kappa->v);
+    PhyML_Fprintf(fp_out,"\n\u2022 Transition/transversion ratio: \t%.3f",tree->mod->kappa->v);
   else if(tree->mod->whichmodel == TN93)
     {
-      PhyML_Fprintf(fp_out,"\n. Transition/transversion ratio for purines: \t\t%.3f",
+      PhyML_Fprintf(fp_out,"\n\u2022 Transition/transversion ratio for purines: \t\t%.3f",
             tree->mod->kappa->v*2.*tree->mod->lambda->v/(1.+tree->mod->lambda->v));
-      PhyML_Fprintf(fp_out,"\n. Transition/transversion ratio for pyrimidines: \t%.3f",
+      PhyML_Fprintf(fp_out,"\n\u2022 Transition/transversion ratio for pyrimidines: \t%.3f",
           tree->mod->kappa->v*2./(1.+tree->mod->lambda->v));
     }
 
   if(tree->io->datatype == NT)
     {
-      PhyML_Fprintf(fp_out,"\n. Nucleotides frequencies:");
+      PhyML_Fprintf(fp_out,"\n\u2022 Nucleotides frequencies:");
       PhyML_Fprintf(fp_out,"\n  - f(A)=%8.5f",tree->mod->e_frq->pi->v[0]);
       PhyML_Fprintf(fp_out,"\n  - f(C)=%8.5f",tree->mod->e_frq->pi->v[1]);
       PhyML_Fprintf(fp_out,"\n  - f(G)=%8.5f",tree->mod->e_frq->pi->v[2]);
@@ -2816,7 +2816,7 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
       PhyML_Fprintf(fp_out,"  G <-> T   %8.5f\n",tree->mod->r_mat->rr->v[5]);
 
 
-      PhyML_Fprintf(fp_out,"\n. Instantaneous rate matrix : ");
+      PhyML_Fprintf(fp_out,"\n\u2022 Instantaneous rate matrix : ");
       PhyML_Fprintf(fp_out,"\n  [A---------C---------G---------T------]\n");
       for(i=0;i<4;i++)
     {
@@ -2841,17 +2841,17 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
 
 
   PhyML_Fprintf(fp_out,"\n");
-  PhyML_Fprintf(fp_out,"\n. Run ID:\t\t\t\t%s", (io->append_run_ID) ? (io->run_id_string): ("none"));
-  PhyML_Fprintf(fp_out,"\n. Random seed:\t\t\t\t%d", io->r_seed);
-  PhyML_Fprintf(fp_out,"\n. Subtree patterns aliasing:\t\t%s",io->do_alias_subpatt?"yes":"no");
-  PhyML_Fprintf(fp_out,"\n. Version:\t\t\t\t%s", VERSION);
+  PhyML_Fprintf(fp_out,"\n\u2022 Run ID:\t\t\t\t%s", (io->append_run_ID) ? (io->run_id_string): ("none"));
+  PhyML_Fprintf(fp_out,"\n\u2022 Random seed:\t\t\t\t%d", io->r_seed);
+  PhyML_Fprintf(fp_out,"\n\u2022 Subtree patterns aliasing:\t\t%s",io->do_alias_subpatt?"yes":"no");
+  PhyML_Fprintf(fp_out,"\n\u2022 Version:\t\t\t\t%s", VERSION);
 
   hour = div(t_end-t_beg,3600);
   min  = div(t_end-t_beg,60  );
 
   min.quot -= hour.quot*60;
 
-  PhyML_Fprintf(fp_out,"\n. Time used:\t\t\t\t%dh%dm%ds (%d seconds)", hour.quot,min.quot,(int)(t_end-t_beg)%60,(int)(t_end-t_beg));
+  PhyML_Fprintf(fp_out,"\n\u2022 Time used:\t\t\t\t%dh%dm%ds (%d seconds)", hour.quot,min.quot,(int)(t_end-t_beg)%60,(int)(t_end-t_beg));
 
 
   if(add_citation == YES)
@@ -3346,7 +3346,7 @@ void Print_Lk(t_tree *tree, char *string)
   while(loc_tree->prev) loc_tree = loc_tree->prev;
 
   time(&(loc_tree->t_current));
-  PhyML_Printf("\n. (%5d sec) [%15.4f] %s",
+  PhyML_Printf("\n\u2022 (%5d sec) [%15.4f] %s",
                (int)(loc_tree->t_current-loc_tree->t_beg),Get_Lk(tree),
            string);
 #ifndef QUIET
@@ -3365,7 +3365,7 @@ void Print_List(t_ll *list)
     {
       t_node *n;
       n = (t_node *)ll->v;
-      PhyML_Printf("\n. list elem: %p next: %p prev: %p [%d] %p %p",(void *)ll,(void *)ll->next,(void *)ll->prev,n->num,(void *)ll->head,(void *)ll->tail);
+      PhyML_Printf("\n\u2022 list elem: %p next: %p prev: %p [%d] %p %p",(void *)ll,(void *)ll->next,(void *)ll->prev,n->num,(void *)ll->head,(void *)ll->tail);
       ll = ll->next;
     }
   while(ll != NULL);
@@ -3377,7 +3377,7 @@ void Print_List(t_ll *list)
 void Print_Pars(t_tree *tree)
 {
   time(&(tree->t_current));
-  PhyML_Printf("\n. (%5d sec) [%5d]",(int)(tree->t_current-tree->t_beg),tree->c_pars);
+  PhyML_Printf("\n\u2022 (%5d sec) [%5d]",(int)(tree->t_current-tree->t_beg),tree->c_pars);
 #ifndef QUIET
   fflush(NULL);
 #endif
@@ -3390,7 +3390,7 @@ void Print_Lk_And_Pars(t_tree *tree)
 {
   time(&(tree->t_current));
 
-  PhyML_Printf("\n. (%5d sec) [%15.4f] [%5d]",
+  PhyML_Printf("\n\u2022 (%5d sec) [%15.4f] [%5d]",
      (int)(tree->t_current-tree->t_beg),
      tree->c_lnL,tree->c_pars);
 
@@ -3437,8 +3437,8 @@ void Read_Qmat(phydbl *daa, phydbl *pi, FILE *fp)
   for(i=0;i<20;i++) sum += pi[i];
   if(FABS(sum - 1.) > 1.E-06)
     {
-      PhyML_Printf("\n. Sum of amino-acid frequencies: %f",sum);
-      PhyML_Printf("\n. Scaling amino-acid frequencies...\n");
+      PhyML_Printf("\n\u2022 Sum of amino-acid frequencies: %f",sum);
+      PhyML_Printf("\n\u2022 Scaling amino-acid frequencies...\n");
       for(i=0;i<20;i++) pi[i] /= sum;
     }
 }
@@ -3529,9 +3529,9 @@ void Print_Diversity(FILE *fp, t_tree *tree)
 
 /*       if((mean_div_left != tree->data->init_len) || (mean_div_rght != tree->data->init_len)) */
 /* 	{ */
-/* 	  PhyML_Printf("\n. mean_div_left = %f mean_div_rght = %f init_len = %d", */
+/* 	  PhyML_Printf("\n\u2022 mean_div_left = %f mean_div_rght = %f init_len = %d", */
 /* 		 mean_div_left,mean_div_rght,tree->data->init_len); */
-/* 	  PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__); */
+/* 	  PhyML_Printf("\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__); */
 /* 	  Warn_And_Exit(""); */
 /* 	} */
 }
@@ -3780,7 +3780,7 @@ t_tree *Read_User_Tree(calign *cdata, t_mod *mod, option *io)
   t_tree *tree;
 
 
-  PhyML_Printf("\n. Reading tree..."); fflush(NULL);
+  PhyML_Printf("\n\u2022 Reading tree..."); fflush(NULL);
   if(io->n_trees == 1) rewind(io->fp_in_tree);
   tree = Read_Tree_File_Phylip(io->fp_in_tree);
   fclose(io->fp_in_tree);
@@ -3803,7 +3803,7 @@ void Print_Time_Info(time_t t_beg, time_t t_end)
   min  = div(t_end-t_beg,60  );
   min.quot -= hour.quot*60;
 
-  PhyML_Printf("\n\n. Time used %dh%dm%ds\n", hour.quot,min.quot,(int)(t_end-t_beg)%60);
+  PhyML_Printf("\n\n\u2022 Time used %dh%dm%ds\n", hour.quot,min.quot,(int)(t_end-t_beg)%60);
   PhyML_Printf("\noooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo\n");
 }
 
@@ -3872,7 +3872,7 @@ void Read_Clade_Priors(char *file_name, t_tree *tree)
   int node_num;
 
   PhyML_Printf("\n");
-  PhyML_Printf("\n. Reading prior on node ages.\n");
+  PhyML_Printf("\n\u2022 Reading prior on node ages.\n");
 
   line = (char *)mCalloc(T_MAX_LINE,sizeof(char));
   s    = (char *)mCalloc(T_MAX_LINE,sizeof(char));
@@ -3903,7 +3903,7 @@ void Read_Clade_Priors(char *file_name, t_tree *tree)
         }
       s[i] = '\0';
 
-      /* PhyML_Printf("\n. s = %s\n",s); */
+      /* PhyML_Printf("\n\u2022 s = %s\n",s); */
 
       if(line[pos] == '\n' || line[pos] == '#') break;
       pos++;
@@ -3936,10 +3936,10 @@ void Read_Clade_Priors(char *file_name, t_tree *tree)
         {
           PhyML_Printf("\n");
           PhyML_Printf("\n");
-          PhyML_Printf("\n. .................................................................");
-          PhyML_Printf("\n. WARNING: could not find any clade in the tree referred to with the following taxon names:");
-          for(i=0;i<clade_size;i++) PhyML_Printf("\n. \"%s\"",clade_list[i]);
-          PhyML_Printf("\n. .................................................................");
+          PhyML_Printf("\n\u2022 .................................................................");
+          PhyML_Printf("\n\u2022 WARNING: could not find any clade in the tree referred to with the following taxon names:");
+          for(i=0;i<clade_size;i++) PhyML_Printf("\n\u2022 \"%s\"",clade_list[i]);
+          PhyML_Printf("\n\u2022 .................................................................");
           /* sleep(3); */
         }
       else
@@ -3956,19 +3956,19 @@ void Read_Clade_Priors(char *file_name, t_tree *tree)
         tree->rates->nd_t[node_num] = prior_low;
 
           PhyML_Printf("\n");
-          PhyML_Printf("\n. [%3d]..................................................................",n_clade_priors);
-          PhyML_Printf("\n. Node %4d matches the clade referred to with the following taxon names:",node_num);
-          for(i=0;i<clade_size;i++) PhyML_Printf("\n. - \"%s\"",clade_list[i]);
-          PhyML_Printf("\n. Lower bound set to: %15f time units.",MIN(prior_low,prior_up));
-          PhyML_Printf("\n. Upper bound set to: %15f time units.",MAX(prior_low,prior_up));
-          PhyML_Printf("\n. .......................................................................");
+          PhyML_Printf("\n\u2022 [%3d]..................................................................",n_clade_priors);
+          PhyML_Printf("\n\u2022 Node %4d matches the clade referred to with the following taxon names:",node_num);
+          for(i=0;i<clade_size;i++) PhyML_Printf("\n\u2022 - \"%s\"",clade_list[i]);
+          PhyML_Printf("\n\u2022 Lower bound set to: %15f time units.",MIN(prior_low,prior_up));
+          PhyML_Printf("\n\u2022 Upper bound set to: %15f time units.",MAX(prior_low,prior_up));
+          PhyML_Printf("\n\u2022 .......................................................................");
         }
     }
     }
   while(1);
 
 
-  PhyML_Printf("\n. Read prior information on %d %s.",n_clade_priors,n_clade_priors > 1 ? "clades":"clade");
+  PhyML_Printf("\n\u2022 Read prior information on %d %s.",n_clade_priors,n_clade_priors > 1 ? "clades":"clade");
 
   if(!n_clade_priors)
     {
@@ -4205,10 +4205,10 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
   phydbl r_mat_weight_sum, e_frq_weight_sum;
 
 
-  PhyML_Fprintf(fp,"\n. Starting tree: %s",
+  PhyML_Fprintf(fp,"\n\u2022 Starting tree: %s",
            mixt_tree->io->in_tree == 2?mixt_tree->io->in_tree_file:"BioNJ");
 
-  PhyML_Fprintf(fp,"\n. Tree topology search: %s",
+  PhyML_Fprintf(fp,"\n\u2022 Tree topology search: %s",
            mixt_tree->io->mod->s_opt->opt_topo==YES?
            mixt_tree->io->mod->s_opt->topo_search==SPR_MOVE?"spr":
            mixt_tree->io->mod->s_opt->topo_search==NNI_MOVE?"nni":
@@ -4242,12 +4242,12 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
   s[(int)strlen(s)-2]=' ';
   s[(int)strlen(s)-1]='\0';
 
-  if(final == NO)  PhyML_Fprintf(fp,"\n. Processing %d data %s (%s)",n_partition_elem,n_partition_elem>1?"sets":"set",s);
-  if(final == YES) PhyML_Fprintf(fp,"\n. Processed %d data %s (%s)",n_partition_elem,n_partition_elem>1?"sets":"set",s);
+  if(final == NO)  PhyML_Fprintf(fp,"\n\u2022 Processing %d data %s (%s)",n_partition_elem,n_partition_elem>1?"sets":"set",s);
+  if(final == YES) PhyML_Fprintf(fp,"\n\u2022 Processed %d data %s (%s)",n_partition_elem,n_partition_elem>1?"sets":"set",s);
   Free(s);
 
   if(final == YES)
-    PhyML_Fprintf(fp,"\n. Final log-likelihood: %f",mixt_tree->c_lnL);
+    PhyML_Fprintf(fp,"\n\u2022 Final log-likelihood: %f",mixt_tree->c_lnL);
 
   r_mat_weight_sum = MIXT_Get_Sum_Chained_Scalar_Dbl(mixt_tree->next->mod->r_mat_weight);
   e_frq_weight_sum = MIXT_Get_Sum_Chained_Scalar_Dbl(mixt_tree->next->mod->e_frq_weight);
@@ -4263,24 +4263,24 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
       PhyML_Fprintf(fp,"\n|_______________________________________________________________________|");
       PhyML_Fprintf(fp,"\n");
 
-      PhyML_Fprintf(fp,"\n. Number of rate classes:\t\t%12d",mixt_tree->mod->ras->n_catg+(mixt_tree->mod->ras->invar ?1:0));
+      PhyML_Fprintf(fp,"\n\u2022 Number of rate classes:\t\t%12d",mixt_tree->mod->ras->n_catg+(mixt_tree->mod->ras->invar ?1:0));
       if(mixt_tree->mod->ras->n_catg > 1)
         {
-          PhyML_Fprintf(fp,"\n. Model of rate variation:\t\t%12s",
+          PhyML_Fprintf(fp,"\n\u2022 Model of rate variation:\t\t%12s",
                         mixt_tree->mod->ras->free_mixt_rates?"FreeRates":
                         mixt_tree->mod->ras->invar?"Gamma+Inv":"Gamma");
           if(mixt_tree->mod->ras->free_mixt_rates == NO)
             {
-              PhyML_Fprintf(fp,"\n. Gamma shape parameter value:\t\t%12.2f",mixt_tree->mod->ras->alpha->v);
+              PhyML_Fprintf(fp,"\n\u2022 Gamma shape parameter value:\t\t%12.2f",mixt_tree->mod->ras->alpha->v);
               PhyML_Fprintf(fp,"\n   Optimise: \t\t\t\t%12s",mixt_tree->mod->s_opt->opt_alpha==YES?"yes":"no");
             }
           if(mixt_tree->mod->ras->invar == YES)
             {
-              PhyML_Fprintf(fp,"\n. Proportion of invariable sites:\t%12.2f",mixt_tree->mod->ras->pinvar->v);
+              PhyML_Fprintf(fp,"\n\u2022 Proportion of invariable sites:\t%12.2f",mixt_tree->mod->ras->pinvar->v);
               PhyML_Fprintf(fp,"\n   Optimise: \t\t\t\t%12s",mixt_tree->mod->s_opt->opt_pinvar==YES?"yes":"no");
             }
         }
-      PhyML_Fprintf(fp,"\n. Relative average rate:\t\t%12f",mixt_tree->mod->br_len_mult->v);
+      PhyML_Fprintf(fp,"\n\u2022 Relative average rate:\t\t%12f",mixt_tree->mod->br_len_mult->v);
 
      
       tree = mixt_tree;
@@ -4289,7 +4289,7 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
           if(tree->is_mixt_tree) tree = tree->next;
 
           PhyML_Fprintf(fp,"\n");
-          PhyML_Fprintf(fp,"\n. Mixture class %d",class+1);
+          PhyML_Fprintf(fp,"\n\u2022 Mixture class %d",class+1);
           
           if(mixt_tree->mod->ras->n_catg > 1)
             {
@@ -4611,7 +4611,7 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
       do
         {
           PhyML_Fprintf(fp,"\n");
-          PhyML_Fprintf(fp,"\n. Tree estimated from data partition %d",c++);
+          PhyML_Fprintf(fp,"\n\u2022 Tree estimated from data partition %d",c++);
           Br_Len_Involving_Invar(tree->next);
           Rescale_Br_Len_Multiplier_Tree(tree->next);
           s = Write_Tree(tree->next,NO); /*! tree->next is not a mixt_tree so edge lengths
@@ -4666,7 +4666,7 @@ option *PhyML_XML(char *xml_filename)
   
       if(mixt_tree->io->mod->s_opt->random_input_tree)
         {
-          PhyML_Printf("\n\n. [%3d/%3d]",num_rand_tree+1,mixt_tree->io->mod->s_opt->n_rand_starts);
+          PhyML_Printf("\n\n\u2022 [%3d/%3d]",num_rand_tree+1,mixt_tree->io->mod->s_opt->n_rand_starts);
           Random_Tree(mixt_tree);
         }
   
@@ -4703,7 +4703,7 @@ option *PhyML_XML(char *xml_filename)
         }
 
 
-      PhyML_Printf("\n\n. Log-likelihood = %f",mixt_tree->c_lnL);
+      PhyML_Printf("\n\n\u2022 Log-likelihood = %f",mixt_tree->c_lnL);
   
       if((num_rand_tree == io->mod->s_opt->n_rand_starts-1) && (io->mod->s_opt->random_input_tree))
         {
@@ -4748,7 +4748,7 @@ option *PhyML_XML(char *xml_filename)
     }
 
   /*! Print the most likely tree in the output file */
-  if(!mixt_tree->io->quiet) PhyML_Printf("\n\n. Printing the most likely tree in file '%s'...\n", Basename(mixt_tree->io->out_tree_file));
+  if(!mixt_tree->io->quiet) PhyML_Printf("\n\n\u2022 Printing the most likely tree in file '%s'...\n", Basename(mixt_tree->io->out_tree_file));
   PhyML_Fprintf(mixt_tree->io->fp_out_tree,"%s\n",most_likely_tree);
 
   /*! Bootstrap analysis */
