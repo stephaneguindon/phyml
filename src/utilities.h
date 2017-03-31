@@ -1287,6 +1287,8 @@ typedef struct __Optimiz { /*! parameters to be optimised (mostly used in 'optim
   int             deepest_path;
   int        eval_list_regraft;
   phydbl     max_delta_lnL_spr;
+  phydbl     max_delta_lnL_spr_current;
+  phydbl         worst_lnL_spr;
   int            br_len_in_spr;
   int      opt_free_mixt_rates;
   int       constrained_br_len;
