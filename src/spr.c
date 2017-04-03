@@ -1719,24 +1719,23 @@ void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int d
 void Spr_List_Of_Trees(t_tree *tree)
 {
   unsigned int i,list_size,max_list_size,iter,n_trees;
-  int *rk;
+  int *rk,*max_depth_list;
   t_tree **tree_list,**tree_list_cpy;
-  phydbl *lnL_list,best_lnL,max_delta_lnL_across;
-
-  /* const unsigned int list_size_first_round  = 5 + (int)tree->n_otu / 15; */
-  const unsigned int list_size_first_round  = 3;
-  const unsigned int list_size_second_round  = 1;
+  phydbl *lnL_list,*max_delta_lnL_list,best_lnL;
+  
+  const unsigned int list_size_first_round  = 5 + (int)tree->n_otu / 15;
+  const unsigned int list_size_second_round  = 3;
   const unsigned int list_size_third_round = 1;
-
-  max_delta_lnL_across = 500.;
   
   best_lnL      = UNLIKELY;
   tree->verbose = (tree->verbose == VL0) ? VL0 : VL1;
   max_list_size = MAX(MAX(list_size_first_round,list_size_second_round),list_size_third_round);
 
-  tree_list     = (t_tree **)mCalloc(max_list_size,sizeof(t_tree *));
-  tree_list_cpy = (t_tree **)mCalloc(max_list_size,sizeof(t_tree *));
-  lnL_list      = (phydbl *)mCalloc(max_list_size,sizeof(phydbl));
+  tree_list          = (t_tree **)mCalloc(max_list_size,sizeof(t_tree *));
+  tree_list_cpy      = (t_tree **)mCalloc(max_list_size,sizeof(t_tree *));
+  lnL_list           = (phydbl *)mCalloc(max_list_size,sizeof(phydbl));
+  max_delta_lnL_list = (phydbl *)mCalloc(max_list_size,sizeof(phydbl));
+  max_depth_list     = (int *)mCalloc(max_list_size,sizeof(int));
 
   for(i=0;i<max_list_size;++i) lnL_list[i] = UNLIKELY;
   for(i=0;i<max_list_size;++i) tree_list[i] = Make_Tree_From_Scratch(tree->n_otu,tree->data);
@@ -1759,36 +1758,15 @@ void Spr_List_Of_Trees(t_tree *tree)
       if(list_size > 0)
         {
           Stepwise_Add_Pars(tree);
-          Spr_Pars(0,100,tree);
+          Spr_Pars(0,5,tree);
         }
       
       Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
       tree->c_lnL = UNLIKELY;
 
-
-      tree->mod->s_opt->max_depth_path            = (int)tree->n_otu/2;
-      tree->mod->s_opt->spr_lnL                   = YES;
-      tree->mod->s_opt->spr_pars                  = NO;
-      tree->mod->s_opt->min_diff_lk_move          = 1.E-1;
-      tree->mod->s_opt->eval_list_regraft         = NO;
-      tree->mod->s_opt->max_delta_lnL_spr         = max_delta_lnL_across;
-
-      Set_Both_Sides(YES,tree);
-      Lk(NULL,tree);
-      tree->best_lnL = tree->c_lnL;
-      Spr(tree->c_lnL,1.0,tree);
+      Simu(tree,tree->n_otu);
       Optimize_Br_Len_Serie(tree);
 
-      max_delta_lnL_across = 2.*tree->mod->s_opt->max_delta_lnL_spr_current;
-      
-      printf("\n. max_delta: %G",max_delta_lnL_across);
-      /* Simu(tree,tree->n_otu); */
-      /* Optimize_Br_Len_Serie(tree); */
-
-
-
-
-      
       if(tree->verbose > VL0 && tree->io->quiet == NO)
         {
           if(list_size == 1) Table_Top(25);
@@ -1822,7 +1800,7 @@ void Spr_List_Of_Trees(t_tree *tree)
  
       if(list_size == 0) Round_Optimize(tree,ROUND_MAX);
 
-      tree->mod->s_opt->max_depth_path            = 10;
+      tree->mod->s_opt->max_depth_path            = tree->n_otu;
       tree->mod->s_opt->spr_lnL                   = YES;
       tree->mod->s_opt->spr_pars                  = NO;
       tree->mod->s_opt->min_diff_lk_move          = 1.E-1;
@@ -1834,7 +1812,13 @@ void Spr_List_Of_Trees(t_tree *tree)
       tree->best_lnL = tree->c_lnL;
       Spr(tree->c_lnL,1.0,tree);
       Optimize_Br_Len_Serie(tree);
+      tree->mod->s_opt->max_delta_lnL_spr = MAX(10.,tree->mod->s_opt->max_delta_lnL_spr_current);
+      tree->mod->s_opt->max_depth_path = MAX(3,tree->max_spr_depth);
+      printf("\n. tree->mod->s_opt->max_delta_lnL_spr_current: %f depth: %d",
+             tree->mod->s_opt->max_delta_lnL_spr,
+             tree->mod->s_opt->max_depth_path);
 
+      
       n_trees++;
       
       if(tree->verbose > VL0 && tree->io->quiet == NO)
@@ -1857,6 +1841,8 @@ void Spr_List_Of_Trees(t_tree *tree)
       
       Copy_Tree(tree,tree_list[rk[list_size]]);
       lnL_list[rk[list_size]] = tree->c_lnL;
+      max_depth_list[rk[list_size]] = tree->mod->s_opt->max_depth_path;
+      max_delta_lnL_list[rk[list_size]] = tree->mod->s_opt->max_delta_lnL_spr;
     }
   while(++list_size < list_size_second_round);
 
@@ -1874,15 +1860,17 @@ void Spr_List_Of_Trees(t_tree *tree)
  
       if(list_size == 0) Round_Optimize(tree,ROUND_MAX);
 
-      tree->mod->s_opt->max_depth_path            = (int)tree->n_otu/3;
+      tree->mod->s_opt->max_depth_path            = 2.*max_depth_list[rk[list_size]];
       tree->mod->s_opt->spr_lnL                   = YES;
       tree->mod->s_opt->spr_pars                  = NO;
       tree->mod->s_opt->min_diff_lk_move          = 1.E-1;
       tree->mod->s_opt->eval_list_regraft         = YES;
-      tree->mod->s_opt->max_delta_lnL_spr         = MAX(20.,2.*tree->mod->s_opt->max_delta_lnL_spr_current);
+      tree->mod->s_opt->max_delta_lnL_spr         = 2.*max_delta_lnL_list[rk[list_size]];
 
-      printf("\n. INIT max_delta: %G",tree->mod->s_opt->max_delta_lnL_spr);
-      
+      printf("\n. tree->mod->s_opt->max_delta_lnL_spr: %f max_depth: %d",
+             tree->mod->s_opt->max_delta_lnL_spr,
+             tree->mod->s_opt->max_depth_path);
+
       iter = 0;
       do
         {
@@ -1890,7 +1878,7 @@ void Spr_List_Of_Trees(t_tree *tree)
           Lk(NULL,tree);
           tree->best_lnL = tree->c_lnL;
           Spr(tree->c_lnL,1.0,tree);
-          tree->mod->s_opt->max_delta_lnL_spr = tree->mod->s_opt->max_delta_lnL_spr_current;
+          /* tree->mod->s_opt->max_delta_lnL_spr = tree->mod->s_opt->max_delta_lnL_spr_current; */
           printf("\n. max_delta: %G",tree->mod->s_opt->max_delta_lnL_spr_current);
           Optimize_Br_Len_Serie(tree);
           n_trees++;
@@ -1945,6 +1933,8 @@ void Spr_List_Of_Trees(t_tree *tree)
 
   Free(tree_list);
   Free(lnL_list);
+  Free(max_delta_lnL_list);
+  Free(max_depth_list);
   Free(rk);
 }
 
