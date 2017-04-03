@@ -1805,7 +1805,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       tree->mod->s_opt->spr_pars                  = NO;
       tree->mod->s_opt->min_diff_lk_move          = 1.E-1;
       tree->mod->s_opt->eval_list_regraft         = NO;
-      tree->mod->s_opt->max_delta_lnL_spr         = 2000.;
+      tree->mod->s_opt->max_delta_lnL_spr         = 200.;
 
       Set_Both_Sides(YES,tree);
       Lk(NULL,tree);
