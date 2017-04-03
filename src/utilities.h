@@ -1366,6 +1366,8 @@ typedef struct __SPR{
   struct __SPR            *prev;
   struct __SPR       *next_mixt;
   struct __SPR       *prev_mixt;
+  struct __SPR       *path_prev;
+  struct __SPR       *path_next;
 
 }t_spr;
 
