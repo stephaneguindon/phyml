@@ -394,18 +394,18 @@ int Test_All_Spr_Targets(t_edge *b_pulled, t_node *n_link, t_tree *tree)
           Update_Partial_Pars(tree,b_residual,n_link);
         }
 
-      for(i=0;i<3;++i)
-        if(n_link->v[i] != n_opp_to_link)
-          {
-            if(tree->mod->s_opt->spr_pars == NO)
-              {
-                MIXT_Set_Alias_Subpatt(YES,tree);
-                Pre_Order_Lk(n_link,n_link->v[i],tree);
-                MIXT_Set_Alias_Subpatt(NO,tree);
-              }
-            else
-              Pre_Order_Pars(n_link,n_link->v[i],tree);
-          }
+      /* for(i=0;i<3;++i) */
+      /*   if(n_link->v[i] != n_opp_to_link) */
+      /*     { */
+      /*       if(tree->mod->s_opt->spr_pars == NO) */
+      /*         { */
+      /*           MIXT_Set_Alias_Subpatt(YES,tree); */
+      /*           Pre_Order_Lk(n_link,n_link->v[i],tree); */
+      /*           MIXT_Set_Alias_Subpatt(NO,tree); */
+      /*         } */
+      /*       else */
+      /*         Pre_Order_Pars(n_link,n_link->v[i],tree); */
+      /*     } */
     }
 
   tree->c_lnL = init_lnL;
@@ -427,7 +427,9 @@ void Test_One_Spr_Target_Recur(t_node *a, t_node *d, t_edge *pulled, t_node *lin
 {
   unsigned int i;
   t_spr *move,*next_move;
-
+  vect_dbl *p_lk_cpy = NULL;
+  vect_int *p_pars_cpy = NULL;
+  
   move = next_move = NULL;
   
   if(*best_found == YES) return;
@@ -442,12 +444,14 @@ void Test_One_Spr_Target_Recur(t_node *a, t_node *d, t_edge *pulled, t_node *lin
             {
               if(tree->mod->s_opt->spr_pars == NO)
                 {
+                  p_lk_cpy = Duplicate_Partial_Lk(d,d->b[i],tree);
                   MIXT_Set_Alias_Subpatt(YES,tree);
                   Update_Partial_Lk(tree,d->b[i],d);
                   MIXT_Set_Alias_Subpatt(NO,tree);
                 }
               else
                 {
+                  p_pars_cpy = Duplicate_Partial_Pars(d,d->b[i],tree);
                   Update_Partial_Pars(tree,d->b[i],d);
                 }
 
@@ -460,6 +464,19 @@ void Test_One_Spr_Target_Recur(t_node *a, t_node *d, t_edge *pulled, t_node *lin
                 {
                   move = Test_One_Spr_Target(d->b[i],pulled,link,residual,init_target,tree);
 
+                  if(tree->mod->s_opt->spr_pars == NO)
+                    {
+                      Copy_Partial_Lk(d,d->b[i],p_lk_cpy,tree);
+                      Free_Vect_Dbl(p_lk_cpy);
+                    }
+                  else
+                    {
+                      Copy_Partial_Pars(d,d->b[i],p_pars_cpy,tree);
+                      Free_Vect_Int(p_pars_cpy);
+                    }
+                  
+
+                  
                   move->path_prev = prev_move;
 
                   if((tree->mod->s_opt->spr_pars == NO  && move->lnL > tree->best_lnL + tree->mod->s_opt->min_diff_lk_move) ||
@@ -1805,7 +1822,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       tree->mod->s_opt->spr_pars                  = NO;
       tree->mod->s_opt->min_diff_lk_move          = 1.E-1;
       tree->mod->s_opt->eval_list_regraft         = NO;
-      tree->mod->s_opt->max_delta_lnL_spr         = 200.;
+      tree->mod->s_opt->max_delta_lnL_spr         = 1000.;
 
       Set_Both_Sides(YES,tree);
       Lk(NULL,tree);

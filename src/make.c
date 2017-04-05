@@ -220,9 +220,9 @@ void Make_Edge_Pars(t_edge *b, t_tree *tree)
 
 void Make_Edge_Pars_Left(t_edge *b, t_tree *tree)
 {
-  b->pars_l = (unsigned int *)mCalloc(tree->data->crunch_len,sizeof(unsigned int));
-  b->ui_l = (unsigned int *)mCalloc(tree->data->crunch_len,sizeof(unsigned int));
-  b->p_pars_l = (unsigned int *)mCalloc(tree->data->crunch_len*tree->mod->ns,sizeof(unsigned int ));
+  b->pars_l = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
+  b->ui_l = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
+  b->p_pars_l = (int *)mCalloc(tree->data->crunch_len*tree->mod->ns,sizeof(int ));
   b->n_diff_states_l = (int *)mCalloc(tree->mod->ns,sizeof(int ));
 }
 
@@ -231,9 +231,9 @@ void Make_Edge_Pars_Left(t_edge *b, t_tree *tree)
 
 void Make_Edge_Pars_Rght(t_edge *b, t_tree *tree)
 {
-  b->pars_r = (unsigned int *)mCalloc(tree->data->crunch_len,sizeof(unsigned int));
-  b->ui_r = (unsigned int *)mCalloc(tree->data->crunch_len,sizeof(unsigned int));
-  b->p_pars_r = (unsigned int *)mCalloc(tree->data->crunch_len*tree->mod->ns,sizeof(unsigned int ));
+  b->pars_r = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
+  b->ui_r = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
+  b->p_pars_r = (int *)mCalloc(tree->data->crunch_len*tree->mod->ns,sizeof(int ));
   b->n_diff_states_r = (int *)mCalloc(tree->mod->ns,sizeof(int ));
 }
 

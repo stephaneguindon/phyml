@@ -4561,10 +4561,10 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
   int i;
   phydbl *buff_p_lk;
   int *buff_scale;
-  unsigned int *buff_p_pars;
-  unsigned  int *buff_pars;
+  int *buff_p_pars;
+  int *buff_pars;
   int *buff_p_lk_loc, *buff_patt_id;
-  unsigned int *buff_ui;
+  int *buff_ui;
   phydbl *buff_p_lk_tip;
 
   assert(a);
@@ -4937,10 +4937,10 @@ void Graft_Subtree(t_edge *target, t_node *link, t_node *link_daughter, t_edge *
   int i, dir_v1, dir_v2;
   phydbl *buff_p_lk;
   int *buff_scale;
-  unsigned int *buff_p_pars, *buff_pars;
+  int *buff_p_pars, *buff_pars;
   int *buff_p_lk_loc, *buff_patt_id;
   phydbl *buff_p_lk_tip;
-  unsigned int *buff_ui;
+  int *buff_ui;
   t_edge *b_up;
 
   assert(link);
@@ -6198,11 +6198,11 @@ void Swap_Partial_Lk(t_edge *a, t_edge *b, int side_a, int side_b, t_tree *tree)
 {
   phydbl *buff_p_lk;
   int *buff_scale;
-  unsigned int *buff_p_pars;
-  unsigned int *buff_pars;
+  int *buff_p_pars;
+  int *buff_pars;
   int *buff_p_lk_loc, *buff_patt_id;
   phydbl *buff_p_lk_tip;
-  unsigned int *buff_ui;
+  int *buff_ui;
   
   
   if(side_a == LEFT && side_b == LEFT)
@@ -6571,7 +6571,7 @@ void Check_Memory_Amount(t_tree *tree)
 
   /* Partial Pars */
   nbytes += (2*n_otu-3) * 2 * tree->data->crunch_len * sizeof(int);
-  nbytes += (2*n_otu-3) * 2 * tree->data->crunch_len * sizeof(unsigned int);
+  nbytes += (2*n_otu-3) * 2 * tree->data->crunch_len * sizeof(int);
   nbytes += (2*n_otu-3) * 2 * tree->data->crunch_len * mod->ns * sizeof(int);
 
   /* Pmat */
@@ -7501,7 +7501,7 @@ void Subtree_Union(t_node *n, t_edge *b_fcus, t_tree *tree)
 */
 
   int site;
-  unsigned int *ui, *ui_v1, *ui_v2;
+  int *ui, *ui_v1, *ui_v2;
 
   ui = ui_v1 = ui_v2 = NULL;
 
@@ -10582,7 +10582,7 @@ void Calculate_Number_Of_Diff_States_Pre(t_node *a, t_node *d, t_edge *b, t_tree
 
 void Calculate_Number_Of_Diff_States_Core(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 {
-  unsigned int *ui, *ui_v1, *ui_v2;
+  int *ui, *ui_v1, *ui_v2;
   int sum,site,state;
   int *diff;
   t_node *v1, *v2;
@@ -10751,7 +10751,7 @@ void Number_Of_Diff_States_One_Site_Post(t_node *a, t_node *d, t_edge *b, int si
 
 int Number_Of_Diff_States_One_Site_Core(t_node *a, t_node *d, t_edge *b, int site, t_tree *tree)
 {
-  unsigned int *ui, *ui_v1, *ui_v2;
+  int *ui, *ui_v1, *ui_v2;
   int sum;
   t_node *v1, *v2;
   

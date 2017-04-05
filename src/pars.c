@@ -82,13 +82,13 @@ void Pre_Order_Pars(t_node *a, t_node *d, t_tree *tree)
   else
     {
       for(i=0;i<3;i++)
-    {
-      if(d->v[i] != a)
         {
-          Get_All_Partial_Pars(tree,d->b[i],d->v[i],d);
-          Pre_Order_Pars(d,d->v[i],tree);
+          if(d->v[i] != a)
+            {
+              Get_All_Partial_Pars(tree,d->b[i],d->v[i],d);
+              Pre_Order_Pars(d,d->v[i],tree);
+            }
         }
-    }
     }
 }
 
@@ -118,45 +118,43 @@ void Init_Partial_Pars_Tips(t_tree *tree)
 
   state_v = (short int *)mCalloc(tree->mod->ns,sizeof(short int));
 
-
-
   for(curr_site=0;curr_site<tree->data->crunch_len;curr_site++)
     {
       for(i=0;i<tree->n_otu;i++)
-    {
-      if(tree->a_nodes[i]->b[0]->rght->tax != 1)
         {
+          if(tree->a_nodes[i]->b[0]->rght->tax != 1)
+            {
 	      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
-          Exit("\n");
+              Exit("\n");
+            }
+          
+          if(tree->io->datatype == NT)
+            {
+              Init_Tips_At_One_Site_Nucleotides_Int(tree->a_nodes[i]->c_seq->state[curr_site],
+                                                    0,
+                                                    state_v);
+              for(j=0;j<tree->mod->ns;j++) tree->a_nodes[i]->b[0]->p_pars_r[curr_site*dim1+j] = MAX_PARS;
+              for(j=0;j<tree->mod->ns;j++) if(state_v[j] > 0.5) tree->a_nodes[i]->b[0]->p_pars_r[curr_site*dim1+j] =  0;
+            }
+          else if(tree->io->datatype == AA)
+            {
+              Init_Tips_At_One_Site_AA_Int(tree->a_nodes[i]->c_seq->state[curr_site],
+                                           0,
+                                           state_v);
+              for(j=0;j<tree->mod->ns;j++) tree->a_nodes[i]->b[0]->p_pars_r[curr_site*dim1+j] = MAX_PARS;
+              for(j=0;j<tree->mod->ns;j++) if(state_v[j] > 0.5) tree->a_nodes[i]->b[0]->p_pars_r[curr_site*dim1+j] =  0;
+            }
+          else if(tree->io->datatype == GENERIC)
+            {
+              Init_Tips_At_One_Site_Generic_Int(tree->a_nodes[i]->c_seq->state+curr_site*tree->mod->io->state_len,
+                                                tree->mod->ns,
+                                                tree->mod->io->state_len,
+                                                0,
+                                                state_v);
+              for(j=0;j<tree->mod->ns;j++) tree->a_nodes[i]->b[0]->p_pars_r[curr_site*dim1+j] = MAX_PARS;
+              for(j=0;j<tree->mod->ns;j++) if(state_v[j] > 0.5) tree->a_nodes[i]->b[0]->p_pars_r[curr_site*dim1+j] =  0;
+            }
         }
-
-      if(tree->io->datatype == NT)
-        {
-          Init_Tips_At_One_Site_Nucleotides_Int(tree->a_nodes[i]->c_seq->state[curr_site],
-                            0,
-                            state_v);
-          for(j=0;j<tree->mod->ns;j++) tree->a_nodes[i]->b[0]->p_pars_r[curr_site*dim1+j] = MAX_PARS;
-          for(j=0;j<tree->mod->ns;j++) if(state_v[j] > 0.5) tree->a_nodes[i]->b[0]->p_pars_r[curr_site*dim1+j] =  0;
-        }
-      else if(tree->io->datatype == AA)
-        {
-          Init_Tips_At_One_Site_AA_Int(tree->a_nodes[i]->c_seq->state[curr_site],
-                       0,
-                       state_v);
-          for(j=0;j<tree->mod->ns;j++) tree->a_nodes[i]->b[0]->p_pars_r[curr_site*dim1+j] = MAX_PARS;
-          for(j=0;j<tree->mod->ns;j++) if(state_v[j] > 0.5) tree->a_nodes[i]->b[0]->p_pars_r[curr_site*dim1+j] =  0;
-        }
-      else if(tree->io->datatype == GENERIC)
-        {
-          Init_Tips_At_One_Site_Generic_Int(tree->a_nodes[i]->c_seq->state+curr_site*tree->mod->io->state_len,
-                        tree->mod->ns,
-                        tree->mod->io->state_len,
-                        0,
-                        state_v);
-          for(j=0;j<tree->mod->ns;j++) tree->a_nodes[i]->b[0]->p_pars_r[curr_site*dim1+j] = MAX_PARS;
-          for(j=0;j<tree->mod->ns;j++) if(state_v[j] > 0.5) tree->a_nodes[i]->b[0]->p_pars_r[curr_site*dim1+j] =  0;
-        }
-    }
     }
   Free(state_v);
 }
@@ -189,7 +187,7 @@ void Init_Ui_Tips(t_tree *tree)
               /* 					    0, */
               /* 					    state_v);	       */
               tree->a_nodes[i]->b[0]->ui_r[curr_site] = 0;
-              for(j=0;j<tree->mod->ns;j++) tree->a_nodes[i]->b[0]->ui_r[curr_site] += (unsigned int)(state_v[j] * POW(2,j));
+              for(j=0;j<tree->mod->ns;j++) tree->a_nodes[i]->b[0]->ui_r[curr_site] += (int)(state_v[j] * POW(2,j));
             }
           else if(tree->io->datatype == AA)
             {
@@ -200,7 +198,7 @@ void Init_Ui_Tips(t_tree *tree)
               /* 				   0, */
               /* 				   state_v); */
               tree->a_nodes[i]->b[0]->ui_r[curr_site] = 0;
-              for(j=0;j<tree->mod->ns;j++) tree->a_nodes[i]->b[0]->ui_r[curr_site] += (unsigned int)(state_v[j] * POW(2,j));
+              for(j=0;j<tree->mod->ns;j++) tree->a_nodes[i]->b[0]->ui_r[curr_site] += (int)(state_v[j] * POW(2,j));
             }
           else if(tree->io->datatype == GENERIC)
             {
@@ -215,7 +213,7 @@ void Init_Ui_Tips(t_tree *tree)
               /* 					0, */
               /* 					state_v); */
               tree->a_nodes[i]->b[0]->ui_r[curr_site] = 0;
-              for(j=0;j<tree->mod->ns;j++) tree->a_nodes[i]->b[0]->ui_r[curr_site] += (unsigned int)(state_v[j] * POW(2,j));
+              for(j=0;j<tree->mod->ns;j++) tree->a_nodes[i]->b[0]->ui_r[curr_site] += (int)(state_v[j] * POW(2,j));
             }
         }
     }
@@ -250,13 +248,14 @@ void Update_Partial_Pars(t_tree *tree, t_edge *b_fcus, t_node *n)
 
   unsigned int i,j;
   unsigned int site;
-  unsigned int *ui, *ui_v1, *ui_v2;
-  unsigned int *p_pars_v1, *p_pars_v2, *p_pars;
-  unsigned int *pars, *pars_v1, *pars_v2;
-  unsigned int n_patterns;
+  int *ui, *ui_v1, *ui_v2;
+  int *p_pars_v1, *p_pars_v2, *p_pars;
+  int *pars, *pars_v1, *pars_v2;
   int min_v1,min_v2;
   int v;
-  unsigned int dim1;
+  
+  const unsigned int ns = tree->mod->ns;
+  const unsigned int n_patterns = tree->n_pattern;
 
   if(tree->is_mixt_tree)
     {
@@ -270,12 +269,10 @@ void Update_Partial_Pars(t_tree *tree, t_edge *b_fcus, t_node *n)
 
   if(n->tax) return;
 
-  dim1 = tree->mod->ns;
   ui = ui_v1 = ui_v2 = NULL;
   p_pars = p_pars_v1 = p_pars_v2 = NULL;
   pars = pars_v1 = pars_v2 = NULL;
 
-  n_patterns = tree->n_pattern;
     
   if(n == b_fcus->left)
     {
@@ -357,22 +354,22 @@ void Update_Partial_Pars(t_tree *tree, t_edge *b_fcus, t_node *n)
     {
       for(site=0;site<n_patterns;++site)
         {
-          for(i=0;i<tree->mod->ns;++i)
+          for(i=0;i<ns;++i)
             {
               min_v1 = MAX_PARS;
-              for(j=0;j<tree->mod->ns;++j)
+              for(j=0;j<ns;++j)
                 {
-                  v = p_pars_v1[site*dim1+j] + tree->step_mat[i*tree->mod->ns+j];
+                  v = p_pars_v1[site*ns+j] + tree->step_mat[i*ns+j];
                   if(v < min_v1) min_v1 = v;
                 }
               
               min_v2 = MAX_PARS;
-              for(j=0;j<tree->mod->ns;++j)
+              for(j=0;j<ns;++j)
                 {
-                  v = p_pars_v2[site*dim1+j] + tree->step_mat[i*tree->mod->ns+j];
+                  v = p_pars_v2[site*ns+j] + tree->step_mat[i*ns+j];
                   if(v < min_v2) min_v2 = v;
                 }
-              p_pars[site*dim1+i] = min_v1 + min_v2;
+              p_pars[site*ns+i] = min_v1 + min_v2;
             }
         }
     }
@@ -398,43 +395,42 @@ void Update_Partial_Pars(t_tree *tree, t_edge *b_fcus, t_node *n)
 int Pars_Core(t_edge *b, t_tree *tree)
 {
   int site;
-  int i,j;
+  unsigned int i,j;
   int site_pars;
   int min_l,min_r;
   int v;
-  int dim1;
-
-  dim1 = tree->mod->ns;
+  
+  const unsigned int ns = tree->mod->ns;
   site = tree->curr_site;
   site_pars = MAX_PARS;
 
   if(tree->mod->s_opt->general_pars)
     {
-      for(i=0;i<tree->mod->ns;i++)
-    {
-      min_l = MAX_PARS;
-      for(j=0;j<tree->mod->ns;j++)
+      for(i=0;i<ns;++i)
         {
-          v = b->p_pars_l[site*dim1+j] + tree->step_mat[i*tree->mod->ns+j];
-          if(v < min_l) min_l = v;
+          min_l = MAX_PARS;
+          for(j=0;j<ns;++j)
+            {
+              v = b->p_pars_l[site*ns+j] + tree->step_mat[i*ns+j];
+              if(v < min_l) min_l = v;
+            }
+          
+          min_r = MAX_PARS;
+          for(j=0;j<ns;++j)
+            {
+              v = b->p_pars_r[site*ns+j] + tree->step_mat[i*ns+j];
+              if(v < min_r) min_r = v;
+            }
+          
+          if((min_l + min_r) < site_pars) site_pars = min_l + min_r;
         }
-
-      min_r = MAX_PARS;
-      for(j=0;j<tree->mod->ns;j++)
-        {
-          v = b->p_pars_r[site*dim1+j] + tree->step_mat[i*tree->mod->ns+j];
-          if(v < min_r) min_r = v;
-        }
-
-      if((min_l + min_r) < site_pars) site_pars = min_l + min_r;
-    }
     }
   else
     {
       site_pars = b->pars_l[site] + b->pars_r[site];
       if(!(b->ui_l[site] & b->ui_r[site])) site_pars++;
     }
-
+  
   return site_pars;
 }
 
@@ -1049,3 +1045,111 @@ void Stepwise_Add_Pars(t_tree *tree)
   Free(residuals);
   Free(targets);
 }
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Copy_Partial_Pars(t_node *d, t_edge *b, vect_int *src, t_tree *tree)
+{
+  if(tree->is_mixt_tree)
+    {
+      MIXT_Copy_Partial_Pars(d, b, src, tree);
+      return;
+    }
+  
+  int *dest;
+  unsigned int nelem;
+  
+  nelem = tree->mod->ns * tree->n_pattern;
+  
+  if(d == b->left)
+    {
+      assert(d->tax == NO);      
+      dest = b->p_pars_l;
+    }
+  else
+    {
+      dest = b->p_pars_r;
+    }
+
+  memcpy(dest,src->v,nelem*sizeof(int));
+
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+vect_int *Duplicate_Partial_Pars(t_node *d, t_edge *b, t_tree *tree)
+{
+  if(tree->is_mixt_tree)
+    {
+      return MIXT_Duplicate_Partial_Pars(d,b,tree);      
+    }
+  
+  vect_int *dest,*src;
+  unsigned int nelem;
+
+  dest = (vect_int *)mCalloc(1,sizeof(vect_int));
+  src  = (vect_int *)mCalloc(1,sizeof(vect_int));
+  
+  nelem = tree->mod->ns * tree->n_pattern;
+  
+  if(d == b->left)
+    {
+      assert(d->tax == NO);      
+      src->v = b->p_pars_l;
+    }
+  else
+    {
+      src->v = b->p_pars_r;
+    }
+
+  dest->v = (int *)mCalloc(nelem,sizeof(int));
+  memcpy(dest->v,src->v,nelem*sizeof(int));
+
+  Free(src);
+  
+  return dest;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////

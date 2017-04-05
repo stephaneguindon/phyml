@@ -96,6 +96,11 @@ int MIXT_Part_Mixt_Size(t_tree *mixt_tree);
 int MIXT_Mixt_Size(t_tree *mixt_tree);
 void MIXT_Set_Use_Eigen_Lr(short int yn, t_tree *mixt_tree);
 void MIXT_Set_Update_Eigen_Lr(short int yn, t_tree *mixt_tree);
+void MIXT_Copy_Partial_Pars(t_node *mixt_d, t_edge *mixt_b, vect_int *mixt_src, t_tree *mixt_tree);
+void MIXT_Copy_Partial_Lk(t_node *mixt_d, t_edge *mixt_b, vect_dbl *mixt_src, t_tree *mixt_tree);
+vect_int *MIXT_Duplicate_Partial_Pars(t_node *mixt_d, t_edge *mixt_b, t_tree *mixt_tree);
+vect_dbl *MIXT_Duplicate_Partial_Lk(t_node *mixt_d, t_edge *mixt_b, t_tree *mixt_tree);
+
 
 
 

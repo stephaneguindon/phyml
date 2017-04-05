@@ -611,28 +611,29 @@ typedef struct __Edge {
   int                      *p_lk_loc_left;
   int                      *p_lk_loc_rght;
 
-  unsigned int            *pars_l,*pars_r; /*! parsimony of the subtree on the left and right sides (for each site) */
-  unsigned int               *ui_l, *ui_r; /*! union - intersection vectors used in Fitch's parsimony algorithm */
-  unsigned int       *p_pars_l, *p_pars_r; /*! conditional parsimony vectors */
+  int            *pars_l,*pars_r; /*! parsimony of the subtree on the left and right sides (for each site) */
+  int               *ui_l, *ui_r; /*! union - intersection vectors used in Fitch's parsimony algorithm */
+  int       *p_pars_l, *p_pars_r; /*! conditional parsimony vectors */
 
   /*! Below are the likelihood scaling factors (used in functions
-     `Get_All_Partial_Lk_Scale' in lk.c. */
+    `Get_All_Partial_Lk_Scale' in lk.c. */
   /*
-For every site, every subtree and every rate class, PhyML maintains a`sum_scale_pow' value
-where sum_scale_pow = sum_scale_pow_v1 + sum_scale_pow_v2 + curr_scale_pow'
-sum_scale_pow_v1 and sum_scale_pow_v2 are sum_scale_pow of the left and
-right subtrees. curr_scale_pow is an integer greater than one.
-The smaller the partials, the larger curr_scale_pow.
-
-Now the partials for this subtree are scaled by *multiplying* each of
-them by 2^curr_scale_pow. The reason for doing the scaling this way is
-that multiplications by 2^x (x an integer) can be done in an 'exact'
-manner (i.e., there is no loss of numerical precision)
-
-At the root edge, the log-likelihood is then
+    For every site, every subtree and every rate class, PhyML maintains a`sum_scale_pow' value
+    where sum_scale_pow = sum_scale_pow_v1 + sum_scale_pow_v2 + curr_scale_pow'
+    sum_scale_pow_v1 and sum_scale_pow_v2 are sum_scale_pow of the left and
+    right subtrees. curr_scale_pow is an integer greater than one.
+    The smaller the partials, the larger curr_scale_pow.
+    
+    Now the partials for this subtree are scaled by *multiplying* each of
+    them by 2^curr_scale_pow. The reason for doing the scaling this way is
+    that multiplications by 2^x (x an integer) can be done in an 'exact'
+    manner (i.e., there is no loss of numerical precision)
+    
+    At the root edge, the log-likelihood is then
     logL = logL' - (sum_scale_pow_left + sum_scale_pow_right)log(2),
-where L' is the scaled likelihood.
-*/
+    where L' is the scaled likelihood.
+  */
+  
   int                 *sum_scale_left_cat;
   int                 *sum_scale_rght_cat;
   int                     *sum_scale_left;
