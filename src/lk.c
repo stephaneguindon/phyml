@@ -1910,7 +1910,6 @@ void Default_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
   unsigned int i,j;
   unsigned int catg;
   unsigned int site;
-  unsigned int n_patterns;
   int ambiguity_check_v1,ambiguity_check_v2;
   int state_v1,state_v2;
   phydbl smallest_p_lk,largest_p_lk;
@@ -1921,6 +1920,7 @@ void Default_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
   const unsigned int ns = tree->mod->ns;
   const unsigned int ncatgns = ncatg * ns;//Dimension of a matrix L that holds rate-specific character likelihoods. IOW, L[ij] is the likelihood of character j in rate class i
   const unsigned int nsns = ns * ns;//Dimensions of the transition prob. matrix
+  const unsigned int n_patterns = tree->n_pattern;
 
 
   if(tree->n_root && tree->ignore_root == YES &&
@@ -1942,7 +1942,6 @@ void Default_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
       Exit("\n");
     }
 
-  n_patterns = tree->n_pattern;
 
   p_lk_lim_inf                = (phydbl)P_LK_LIM_INF;
   n_v1 = n_v2                 = NULL;
@@ -3041,11 +3040,49 @@ void Alias_Subpatt_Pre(t_node *a, t_node *d, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Copy_Partial_Lk(t_node *d, t_edge *b, vect_dbl *src, t_tree *tree)
+void Backup_Partial_Lk(t_node *d, t_edge *b, t_tree *tree)
 {
   if(tree->is_mixt_tree)
     {
-      MIXT_Copy_Partial_Lk(d, b, src, tree);
+      MIXT_Backup_Partial_Lk(d, b, tree);
+      return;
+    }
+  
+  phydbl *src;
+  unsigned int nelem;
+  
+  if(d == b->left)
+    {
+      assert(d->tax == NO);      
+      nelem = tree->mod->ras->n_catg * tree->mod->ns * tree->n_pattern;
+      src = b->p_lk_left;
+    }
+  else
+    {
+      if(d->tax == YES)
+        {
+          nelem = tree->mod->ns * tree->n_pattern;
+          src = b->p_lk_tip_r;
+        }
+      else
+        {
+          nelem = tree->mod->ras->n_catg * tree->mod->ns * tree->n_pattern;
+          src = b->p_lk_rght;
+        }
+    }
+
+  memcpy(tree->p_lk_bkup,src,nelem*sizeof(phydbl));
+
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Restore_Partial_Lk(t_node *d, t_edge *b, t_tree *tree)
+{
+  if(tree->is_mixt_tree)
+    {
+      MIXT_Restore_Partial_Lk(d, b, tree);
       return;
     }
   
@@ -3054,8 +3091,7 @@ void Copy_Partial_Lk(t_node *d, t_edge *b, vect_dbl *src, t_tree *tree)
   
   if(d == b->left)
     {
-      assert(d->tax == NO);
-      
+      assert(d->tax == NO);      
       nelem = tree->mod->ras->n_catg * tree->mod->ns * tree->n_pattern;
       dest = b->p_lk_left;
     }
@@ -3073,66 +3109,71 @@ void Copy_Partial_Lk(t_node *d, t_edge *b, vect_dbl *src, t_tree *tree)
         }
     }
 
-  memcpy(dest,src->v,nelem*sizeof(phydbl));
+  memcpy(dest,tree->p_lk_bkup,nelem*sizeof(phydbl));
 
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-vect_dbl *Duplicate_Partial_Lk(t_node *d, t_edge *b, t_tree *tree)
+void Backup_Partial_Scale(t_node *d, t_edge *b, t_tree *tree)
 {
-  vect_dbl *dest,*src;
+  if(tree->is_mixt_tree)
+    {
+      MIXT_Backup_Partial_Scale(d, b, tree);
+      return;
+    }
+  
+  int *src;
   unsigned int nelem;
-
-  dest = (vect_dbl *)mCalloc(1,sizeof(vect_dbl));
-  src  = (vect_dbl *)mCalloc(1,sizeof(vect_dbl));
   
   if(d == b->left)
     {
-      assert(d->tax == NO);
-      
-      nelem = tree->mod->ras->n_catg * tree->mod->ns * tree->n_pattern;
-      src->v = b->p_lk_left;
+      nelem = tree->mod->ras->n_catg * tree->n_pattern;
+      src = b->sum_scale_left;
     }
   else
     {
-      if(d->tax == YES)
-        {
-          nelem = tree->mod->ns * tree->n_pattern;
-          src->v = b->p_lk_tip_r;
-        }
-      else
-        {
-          nelem = tree->mod->ras->n_catg * tree->mod->ns * tree->n_pattern;
-          src->v = b->p_lk_rght;
-        }
+      nelem = tree->mod->ras->n_catg * tree->n_pattern;
+      src = b->sum_scale_rght;
     }
 
-  dest->v = (phydbl *)mCalloc(nelem,sizeof(phydbl));
-  memcpy(dest->v,src->v,nelem*sizeof(phydbl));
+  memcpy(tree->p_scale_bkup,src,nelem*sizeof(int));
 
-  Free(src);
-  
-  return dest;
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Copy_Scale(int *scale, int site_from, int site_to, t_tree *tree)
+void Restore_Partial_Scale(t_node *d, t_edge *b, t_tree *tree)
 {
-  int i;
-
-  for(i=0;i<tree->mod->ras->n_catg;i++)
+  if(tree->is_mixt_tree)
     {
-      scale[i*tree->n_pattern+site_to] = scale[i*tree->n_pattern+site_from];
-/*       PhyML_Printf("\n. %d",scale[i*tree->n_pattern+site_to]); */
+      MIXT_Restore_Partial_Scale(d, b, tree);
+      return;
     }
+  
+  int *dest;
+  unsigned int nelem;
+  
+  if(d == b->left)
+    {
+      nelem = tree->mod->ras->n_catg * tree->n_pattern;
+      dest = b->sum_scale_left;
+    }
+  else
+    {
+      nelem = tree->mod->ras->n_catg * tree->n_pattern;
+      dest = b->sum_scale_rght;
+    }
+
+  memcpy(dest,tree->p_scale_bkup,nelem*sizeof(int));
+  
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
 
 void Init_Partial_Lk_Loc(t_tree *tree)
 {

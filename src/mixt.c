@@ -3336,12 +3336,11 @@ void MIXT_Set_Use_Eigen_Lr(short int yn, t_tree *mixt_tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void MIXT_Copy_Partial_Pars(t_node *mixt_d, t_edge *mixt_b, vect_int *mixt_src, t_tree *mixt_tree)
+void MIXT_Backup_Partial_Pars(t_node *mixt_d, t_edge *mixt_b, t_tree *mixt_tree)
 {
-  t_tree *tree    = mixt_tree;
-  t_node *d       = mixt_d;
-  t_edge *b       = mixt_b;
-  vect_int *src = mixt_src;
+  t_tree *tree = mixt_tree;
+  t_node *d    = mixt_d;
+  t_edge *b    = mixt_b;
 
   do
     {
@@ -3350,15 +3349,13 @@ void MIXT_Copy_Partial_Pars(t_node *mixt_d, t_edge *mixt_b, vect_int *mixt_src, 
           tree = tree->next;
           d    = d->next;
           b    = b->next;
-          src  = src->next;
         }
 
-      Copy_Partial_Pars(d,b,src,tree);
+      Backup_Partial_Pars(d,b,tree);
 
       tree = tree->next;
       d    = d->next;
       b    = b->next;      
-      src  = src->next;
     }
   while(tree);  
 }
@@ -3366,12 +3363,11 @@ void MIXT_Copy_Partial_Pars(t_node *mixt_d, t_edge *mixt_b, vect_int *mixt_src, 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void MIXT_Copy_Partial_Lk(t_node *mixt_d, t_edge *mixt_b, vect_dbl *mixt_src, t_tree *mixt_tree)
+void MIXT_Restore_Partial_Pars(t_node *mixt_d, t_edge *mixt_b, t_tree *mixt_tree)
 {
-  t_tree *tree  = mixt_tree;
-  t_node *d     = mixt_d;
-  t_edge *b     = mixt_b;
-  vect_dbl *src = mixt_src;
+  t_tree *tree = mixt_tree;
+  t_node *d    = mixt_d;
+  t_edge *b    = mixt_b;
 
   do
     {
@@ -3380,15 +3376,13 @@ void MIXT_Copy_Partial_Lk(t_node *mixt_d, t_edge *mixt_b, vect_dbl *mixt_src, t_
           tree = tree->next;
           d    = d->next;
           b    = b->next;
-          src  = src->next;
         }
 
-      Copy_Partial_Lk(d,b,src,tree);
+      Restore_Partial_Pars(d,b,tree);
 
       tree = tree->next;
       d    = d->next;
       b    = b->next;      
-      src  = src->next;
     }
   while(tree);  
 }
@@ -3396,63 +3390,147 @@ void MIXT_Copy_Partial_Lk(t_node *mixt_d, t_edge *mixt_b, vect_dbl *mixt_src, t_
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-vect_int *MIXT_Duplicate_Partial_Pars(t_node *mixt_d, t_edge *mixt_b, t_tree *mixt_tree)
+void MIXT_Backup_Partial_Lk(t_node *mixt_d, t_edge *mixt_b, t_tree *mixt_tree)
 {
-  vect_int *p_pars,*p_pars_init;
   t_tree *tree = mixt_tree;
   t_node *d    = mixt_d;
   t_edge *b    = mixt_b;
-  
-  p_pars = Duplicate_Partial_Pars(d,b,tree);
-  p_pars_init = p_pars;
-  
+
   do
     {
-      if(tree->next)
+      if(tree->is_mixt_tree == YES)
         {
-          p_pars->next = Duplicate_Partial_Pars(d,b,tree);
-          p_pars = p_pars->next;
+          tree = tree->next;
+          d    = d->next;
+          b    = b->next;
         }
-            
-      d    = d->next;
-      b    = b->next;
+
+      Backup_Partial_Lk(d,b,tree);
+
       tree = tree->next;
+      d    = d->next;
+      b    = b->next;      
     }
-  while(tree);
-  
-  return p_pars_init;
+  while(tree);  
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-vect_dbl *MIXT_Duplicate_Partial_Lk(t_node *mixt_d, t_edge *mixt_b, t_tree *mixt_tree)
+void MIXT_Restore_Partial_Lk(t_node *mixt_d, t_edge *mixt_b, t_tree *mixt_tree)
 {
-  vect_dbl *p_lk,*p_lk_init;
   t_tree *tree = mixt_tree;
   t_node *d    = mixt_d;
   t_edge *b    = mixt_b;
-  
-  p_lk = Duplicate_Partial_Lk(d,b,tree);
-  p_lk_init = p_lk;
-  
+
   do
     {
-      if(tree->next)
+      if(tree->is_mixt_tree == YES)
         {
-          p_lk->next = Duplicate_Partial_Lk(d,b,tree);
-          p_lk = p_lk->next;
+          tree = tree->next;
+          d    = d->next;
+          b    = b->next;
         }
-            
-      d    = d->next;
-      b    = b->next;
+
+      Restore_Partial_Lk(d,b,tree);
+
       tree = tree->next;
+      d    = d->next;
+      b    = b->next;      
     }
-  while(tree);
-  
-  return p_lk_init;
+  while(tree);  
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void MIXT_Backup_Partial_Scale(t_node *mixt_d, t_edge *mixt_b, t_tree *mixt_tree)
+{
+  t_tree *tree = mixt_tree;
+  t_node *d    = mixt_d;
+  t_edge *b    = mixt_b;
+
+  do
+    {
+      if(tree->is_mixt_tree == YES)
+        {
+          tree = tree->next;
+          d    = d->next;
+          b    = b->next;
+        }
+
+      Backup_Partial_Scale(d,b,tree);
+
+      tree = tree->next;
+      d    = d->next;
+      b    = b->next;      
+    }
+  while(tree);  
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void MIXT_Restore_Partial_Scale(t_node *mixt_d, t_edge *mixt_b, t_tree *mixt_tree)
+{
+  t_tree *tree = mixt_tree;
+  t_node *d    = mixt_d;
+  t_edge *b    = mixt_b;
+
+  do
+    {
+      if(tree->is_mixt_tree == YES)
+        {
+          tree = tree->next;
+          d    = d->next;
+          b    = b->next;
+        }
+
+      Restore_Partial_Scale(d,b,tree);
+
+      tree = tree->next;
+      d    = d->next;
+      b    = b->next;      
+    }
+  while(tree);  
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+
 

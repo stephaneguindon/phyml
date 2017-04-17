@@ -1049,11 +1049,40 @@ void Stepwise_Add_Pars(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Copy_Partial_Pars(t_node *d, t_edge *b, vect_int *src, t_tree *tree)
+void Backup_Partial_Pars(t_node *d, t_edge *b, t_tree *tree)
 {
   if(tree->is_mixt_tree)
     {
-      MIXT_Copy_Partial_Pars(d, b, src, tree);
+      MIXT_Backup_Partial_Pars(d, b, tree);
+      return;
+    }
+  
+  int *src;
+  unsigned int nelem;
+  
+  nelem = tree->mod->ns * tree->n_pattern;
+  
+  if(d == b->left)
+    {
+      src = b->p_pars_l;
+    }
+  else
+    {
+      src = b->p_pars_r;
+    }
+
+  memcpy(tree->p_pars_bkup,src,nelem*sizeof(int));
+
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Restore_Partial_Pars(t_node *d, t_edge *b, t_tree *tree)
+{
+  if(tree->is_mixt_tree)
+    {
+      MIXT_Restore_Partial_Pars(d, b, tree);
       return;
     }
   
@@ -1064,7 +1093,6 @@ void Copy_Partial_Pars(t_node *d, t_edge *b, vect_int *src, t_tree *tree)
   
   if(d == b->left)
     {
-      assert(d->tax == NO);      
       dest = b->p_pars_l;
     }
   else
@@ -1072,44 +1100,8 @@ void Copy_Partial_Pars(t_node *d, t_edge *b, vect_int *src, t_tree *tree)
       dest = b->p_pars_r;
     }
 
-  memcpy(dest,src->v,nelem*sizeof(int));
+  memcpy(dest,tree->p_pars_bkup,nelem*sizeof(int));
 
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-vect_int *Duplicate_Partial_Pars(t_node *d, t_edge *b, t_tree *tree)
-{
-  if(tree->is_mixt_tree)
-    {
-      return MIXT_Duplicate_Partial_Pars(d,b,tree);      
-    }
-  
-  vect_int *dest,*src;
-  unsigned int nelem;
-
-  dest = (vect_int *)mCalloc(1,sizeof(vect_int));
-  src  = (vect_int *)mCalloc(1,sizeof(vect_int));
-  
-  nelem = tree->mod->ns * tree->n_pattern;
-  
-  if(d == b->left)
-    {
-      assert(d->tax == NO);      
-      src->v = b->p_pars_l;
-    }
-  else
-    {
-      src->v = b->p_pars_r;
-    }
-
-  dest->v = (int *)mCalloc(nelem,sizeof(int));
-  memcpy(dest->v,src->v,nelem*sizeof(int));
-
-  Free(src);
-  
-  return dest;
 }
 
 //////////////////////////////////////////////////////////////

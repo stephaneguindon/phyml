@@ -36,8 +36,7 @@ void Get_Step_Mat(t_tree *tree);
 int Pars_Core(t_edge *b, t_tree *tree);
 int One_Pars_Step(t_edge *b,t_tree *tree);
 void Stepwise_Add_Pars(t_tree *tree);
-void Copy_Partial_Pars(t_node *d, t_edge *b, vect_int *src, t_tree *tree);
-vect_int *Duplicate_Partial_Pars(t_node *d, t_edge *b, t_tree *tree);
-
+void Backup_Partial_Pars(t_node *d, t_edge *b, t_tree *tree);
+void Restore_Partial_Pars(t_node *d, t_edge *b, t_tree *tree);
 
 #endif

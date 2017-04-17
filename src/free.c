@@ -321,7 +321,8 @@ void Free_Tree_Pars(t_tree *mixt_tree)
     {
       Free(tree->step_mat);
       Free(tree->site_pars);
-
+      Free(tree->p_pars_bkup);
+      
       For(i,2*tree->n_otu-3) 
         {
           Free_Edge_Pars(tree->a_edges[i]);
@@ -394,7 +395,9 @@ void Free_Tree_Lk(t_tree *mixt_tree)
       Free(tree->eigen_lr_rght);
       Free(tree->dot_prod);
       Free(tree->expl);
-
+      Free(tree->p_lk_bkup);
+      Free(tree->p_pars_bkup);
+      
       for(i=0;i<3;i++) Free(tree->log_lks_aLRT[i]);
       Free(tree->log_lks_aLRT);
 

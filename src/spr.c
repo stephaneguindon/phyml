@@ -427,8 +427,6 @@ void Test_One_Spr_Target_Recur(t_node *a, t_node *d, t_edge *pulled, t_node *lin
 {
   unsigned int i;
   t_spr *move,*next_move;
-  vect_dbl *p_lk_cpy = NULL;
-  vect_int *p_pars_cpy = NULL;
   
   move = next_move = NULL;
   
@@ -444,14 +442,15 @@ void Test_One_Spr_Target_Recur(t_node *a, t_node *d, t_edge *pulled, t_node *lin
             {
               if(tree->mod->s_opt->spr_pars == NO)
                 {
-                  p_lk_cpy = Duplicate_Partial_Lk(d,d->b[i],tree);
+                  Backup_Partial_Lk(d,d->b[i],tree);
+                  Backup_Partial_Scale(d,d->b[i],tree);
                   MIXT_Set_Alias_Subpatt(YES,tree);
                   Update_Partial_Lk(tree,d->b[i],d);
                   MIXT_Set_Alias_Subpatt(NO,tree);
                 }
               else
                 {
-                  p_pars_cpy = Duplicate_Partial_Pars(d,d->b[i],tree);
+                  Backup_Partial_Pars(d,d->b[i],tree);
                   Update_Partial_Pars(tree,d->b[i],d);
                 }
 
@@ -466,17 +465,14 @@ void Test_One_Spr_Target_Recur(t_node *a, t_node *d, t_edge *pulled, t_node *lin
 
                   if(tree->mod->s_opt->spr_pars == NO)
                     {
-                      Copy_Partial_Lk(d,d->b[i],p_lk_cpy,tree);
-                      Free_Vect_Dbl(p_lk_cpy);
+                      Restore_Partial_Lk(d,d->b[i],tree);
+                      Restore_Partial_Scale(d,d->b[i],tree);
                     }
                   else
                     {
-                      Copy_Partial_Pars(d,d->b[i],p_pars_cpy,tree);
-                      Free_Vect_Int(p_pars_cpy);
+                      Restore_Partial_Pars(d,d->b[i],tree);
                     }
-                  
-
-                  
+                                    
                   move->path_prev = prev_move;
 
                   if((tree->mod->s_opt->spr_pars == NO  && move->lnL > tree->best_lnL + tree->mod->s_opt->min_diff_lk_move) ||
