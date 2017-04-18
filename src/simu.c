@@ -54,7 +54,7 @@ int Simu(t_tree *tree, int n_step_max)
       n_round++;
       if(n_round == n_step_max) break;
     }
-  while(delta > 0.1 || Are_Equal(tree->annealing_temp,0.0,1.E-3) == NO);
+  while(delta > 0.1 || Are_Equal(tree->annealing_temp,0.0,1.E-3) == NO || n_round < 5);
 
   return 1;
                 

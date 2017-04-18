@@ -49,7 +49,6 @@ void Make_Tree_4_Lk(t_tree *tree, calign *cdata, int n_site)
 
 
   tree->p_scale_bkup = (int *)mCalloc(tree->n_pattern*tree->mod->ns,sizeof(int));
-  tree->p_pars_bkup = (int *)mCalloc(tree->n_pattern*tree->mod->ns,sizeof(int));
 
 
   tree->log_lks_aLRT = (phydbl **)mCalloc(3,sizeof(phydbl *));
@@ -85,6 +84,7 @@ void Make_Tree_4_Pars(t_tree *tree, calign *cdata, int n_site)
   int i;
   tree->site_pars = (int *)mCalloc(tree->n_pattern,sizeof(int));
   tree->step_mat = (int *)mCalloc(tree->mod->ns * tree->mod->ns,sizeof(int));
+  tree->p_pars_bkup = (int *)mCalloc(tree->n_pattern*tree->mod->ns,sizeof(int));
 
   For(i,2*tree->n_otu-1) Make_Edge_Pars(tree->a_edges[i],tree);
   Init_Ui_Tips(tree);
