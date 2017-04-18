@@ -2315,15 +2315,13 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
 
       if(d2l > 0.0)
         {
-          *l *= 0.5;
+          *l *= 0.1;
         }
       else
         {
           ratio = dl/d2l;
           if(isnan(ratio) == NO) *l -= dl/d2l;
         }
-    
-  
       
       if(*l < tree->mod->l_min) *l = tree->mod->l_min;
       if(*l > tree->mod->l_max) *l = tree->mod->l_max;
@@ -2358,8 +2356,8 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
   *l = best_l;
   tree->c_lnL = best_lnL;
   
-  Set_Use_Eigen_Lr(NO,tree);
-  tree->c_lnL = Lk(b,tree);
+  /* Set_Use_Eigen_Lr(NO,tree); */
+  /* tree->c_lnL = Lk(b,tree); */
 
   /* printf("\n. init: %f current: %f l: %f",init_lnL,tree->c_lnL,b->l->v); */
   /* Exit("\n"); */

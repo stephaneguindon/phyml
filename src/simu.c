@@ -50,11 +50,12 @@ int Simu(t_tree *tree, int n_step_max)
                     tree);
       delta = tree->c_lnL - old_loglk;
       tree->annealing_temp -= 1.0;
+      PhyML_Printf("\n. lnL: %15f",tree->c_lnL);
       if(tree->annealing_temp < 0.0) tree->annealing_temp = 0.0;
       n_round++;
       if(n_round == n_step_max) break;
     }
-  while(delta > 0.1 || Are_Equal(tree->annealing_temp,0.0,1.E-3) == NO || n_round < 10);
+  while(delta > 0.1 || Are_Equal(tree->annealing_temp,0.0,1.E-3) == NO || n_round < (int)tree->n_otu/10);
 
   return 1;
                 
@@ -985,11 +986,10 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
       for(i=0;i<3;++i) if(a->v[i] != d && a->v[i] != v) { u = a->v[i]; break; }
       
 
-      // Optimize edge length
       lk0 = Lk(b,tree);
       Record_Br_Len(tree);
-
       l0 = MIXT_Get_Mean_Edge_Len(b,tree);
+
       if(l0 < 0.1)
         {
           // First NNI
