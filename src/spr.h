@@ -65,7 +65,7 @@ int Spr_Recur(t_node *a, t_node *d, t_tree *tree);
 int Test_All_Spr_Targets(t_edge *pulled, t_node *link, t_tree *tree);
 void Randomize_Spr_List(t_tree *tree);
 void Test_One_Spr_Target_Recur(t_node *a, t_node *d, t_edge *pulled, t_node *link, t_edge *residual, t_edge *init_target, int *best_found, t_spr *prev_move, t_tree *tree);
-t_spr *Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_edge *b_residual, t_edge *init_target, t_tree *tree);
+t_spr *Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_edge *b_residual, t_edge *init_target, t_node *polarity, t_tree *tree);
 void Apply_Spr_Moves_One_By_One(t_tree *tree);
 int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree);
 int Try_One_Spr_Move_Full(t_spr *move, t_tree *tree);

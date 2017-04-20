@@ -981,12 +981,10 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
           v2  = dum;
         }
       
-
       u = NULL;
       for(i=0;i<3;++i) if(a->v[i] != d && a->v[i] != v) { u = a->v[i]; break; }
       
-
-      Br_Len_Brent(b,tree);
+      /* Br_Len_Brent(b,tree); */
       lk0 = Lk(b,tree);
       Record_Br_Len(tree);
       l0 = MIXT_Get_Mean_Edge_Len(b,tree);
@@ -1000,7 +998,7 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
           // Update partial likelihood looking down
           Update_Partial_Lk(tree,b,d);
           // Evaluate likelihood
-          Br_Len_Brent(b,tree);
+          /* Br_Len_Brent(b,tree); */
           lk1 = Lk(b,tree);
 
           
@@ -1025,7 +1023,7 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
               // Update partial likelihood looking down
               Update_Partial_Lk(tree,b,d);
               // Evaluate likelihood
-              Br_Len_Brent(b,tree);
+              /* Br_Len_Brent(b,tree); */
               lk2 = Lk(b,tree);
               
               
@@ -1052,7 +1050,7 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
             }
         }
       
-      /* Br_Len_Brent(b,tree); */
+      Br_Len_Brent(b,tree);
 
       for(i=0;i<3;++i)
         if(d->v[i] != a)
