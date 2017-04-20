@@ -50,7 +50,7 @@ int Simu(t_tree *tree, int n_step_max)
                     tree);
       delta = tree->c_lnL - old_loglk;
       tree->annealing_temp -= 1.0;
-      PhyML_Printf("\n. lnL: %15f",tree->c_lnL);
+      /* PhyML_Printf("\n. lnL: %15f",tree->c_lnL); */
       if(tree->annealing_temp < 0.0) tree->annealing_temp = 0.0;
       n_round++;
       if(n_round == n_step_max) break;

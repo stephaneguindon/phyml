@@ -4860,8 +4860,8 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
 
   if(b1->l->onoff == ON)
     {
-      b1->l->v     *= 2.0;
-      b1->l_var->v *= 2.0;
+      b1->l->v     = (b1->l->v + b2->l->v);
+      b1->l_var->v = (b1->l_var->v + b2->l_var->v);
     }
 
 

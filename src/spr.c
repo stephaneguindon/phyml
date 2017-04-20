@@ -345,14 +345,13 @@ int Test_All_Spr_Targets(t_edge *b_pulled, t_node *n_link, t_tree *tree)
 
   if(!(n_v1->tax && n_v2->tax)) /*! Pruning is meaningless otherwise */
     {
+      /* printf("\n. LK 1: %G",Lk(NULL,tree)); */
+      
       Prune_Subtree(n_link,n_opp_to_link,&b_target,&b_residual,tree);
 
-      if(tree->mod->s_opt->spr_lnL == YES)
-        {
-          Update_PMat_At_Given_Edge(b_target,tree);
-        }
+      if(tree->mod->s_opt->spr_lnL == YES) Update_PMat_At_Given_Edge(b_target,tree);
       
-      for(i=0;i<tree->size_spr_list;i++) tree->spr_list[i]->path_prev = NULL;
+      for(i=0;i<tree->size_spr_list;++i) tree->spr_list[i]->path_prev = NULL;
 
       best_found = NO;
       tree->depth_curr_path = 0;
@@ -392,11 +391,9 @@ int Test_All_Spr_Targets(t_edge *b_pulled, t_node *n_link, t_tree *tree)
 
       if(tree->mod->s_opt->spr_pars == NO)
       	{
-          MIXT_Set_Alias_Subpatt(YES,tree);
           Update_Partial_Lk(tree,b_pulled,  n_link);
           Update_Partial_Lk(tree,b_target,  n_link);
           Update_Partial_Lk(tree,b_residual,n_link);
-          MIXT_Set_Alias_Subpatt(NO,tree);
         }
       else
       	{
@@ -404,6 +401,19 @@ int Test_All_Spr_Targets(t_edge *b_pulled, t_node *n_link, t_tree *tree)
           Update_Partial_Pars(tree,b_target,  n_link);
           Update_Partial_Pars(tree,b_residual,n_link);
         }
+
+
+      For(i,3)
+        if(n_link->v[i] != n_opp_to_link)
+          {
+            if(tree->mod->s_opt->spr_lnL)
+              Pre_Order_Lk(n_link,n_link->v[i],tree);
+            else
+              Pre_Order_Pars(n_link,n_link->v[i],tree);
+          }
+      
+      /* printf("\n. LK 2: %G",Lk(NULL,tree)); */
+      /* Exit("\n"); */
     }
 
   tree->c_lnL = init_lnL;
@@ -439,15 +449,13 @@ void Test_One_Spr_Target_Recur(t_node *a, t_node *d, t_edge *pulled, t_node *lin
             {
               if(tree->mod->s_opt->spr_pars == NO)
                 {
-                  Backup_Partial_Lk(d,d->b[i],tree);
-                  Backup_Partial_Scale(d,d->b[i],tree);
-                  MIXT_Set_Alias_Subpatt(YES,tree);
+                  /* Backup_Partial_Lk(d,d->b[i],tree); */
+                  /* Backup_Partial_Scale(d,d->b[i],tree); */
                   Update_Partial_Lk(tree,d->b[i],d);
-                  MIXT_Set_Alias_Subpatt(NO,tree);
                 }
               else
                 {
-                  Backup_Partial_Pars(d,d->b[i],tree);
+                  /* Backup_Partial_Pars(d,d->b[i],tree); */
                   Update_Partial_Pars(tree,d->b[i],d);
                 }
 
@@ -461,17 +469,7 @@ void Test_One_Spr_Target_Recur(t_node *a, t_node *d, t_edge *pulled, t_node *lin
                   
                   move = Test_One_Spr_Target(d->b[i],pulled,link,residual,init_target,d,tree);
                   /* if(tree->mod->s_opt->spr_pars == NO) printf("\n. current depth: %d lnL: %f",move->depth_path,move->lnL); */
-                         
-                  if(tree->mod->s_opt->spr_pars == NO)
-                    {
-                      Restore_Partial_Lk(d,d->b[i],tree);
-                      Restore_Partial_Scale(d,d->b[i],tree);
-                    }
-                  else
-                    {
-                      Restore_Partial_Pars(d,d->b[i],tree);
-                    }
-                                    
+                                                             
                   move->path_prev = prev_move;
 
                   if((tree->mod->s_opt->spr_pars == NO  && move->lnL > tree->best_lnL + tree->mod->s_opt->min_diff_lk_move) ||
@@ -488,8 +486,18 @@ void Test_One_Spr_Target_Recur(t_node *a, t_node *d, t_edge *pulled, t_node *lin
                  tree->mod->s_opt->spr_pars == YES);
               
               if(go_to_next == YES) Test_One_Spr_Target_Recur(d,d->v[i],pulled,link,residual,init_target,best_found,move,tree);
-              
+
+              /* if(tree->mod->s_opt->spr_pars == NO) */
+              /*   { */
+              /*     Update_Partial_Lk(tree,d->b[i],d); */
+              /*   } */
+              /* else */
+              /*   { */
+              /*     Update_Partial_Pars(tree,d->b[i],d); */
+              /*   } */
+
               tree->depth_curr_path--;
+
             }
         }
     }
@@ -534,7 +542,6 @@ t_spr *Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
       Copy_Scalar_Dbl(init_target->l_var,move->init_target_v);
     }
 
-  Graft_Subtree(b_target,n_link,NULL,b_residual,NULL,tree);
 
   // Save edge lengths so that they can be recovered in the end
   init_target_l   = Duplicate_Scalar_Dbl(b_target->l);
@@ -546,26 +553,31 @@ t_spr *Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
   init_residual_l = Duplicate_Scalar_Dbl(b_residual->l);
   init_residual_v = Duplicate_Scalar_Dbl(b_residual->l_var);
 
+  Graft_Subtree(b_target,n_link,NULL,b_residual,NULL,tree);
+
   if(tree->mod->s_opt->spr_lnL == YES)
     {
-      /* Update_PMat_At_Given_Edge(b_target,tree); */
-      /* Update_PMat_At_Given_Edge(b_residual,tree); */
-      /* Update_Partial_Lk(tree,b_arrow,n_link); */
-      /* Lk(b_arrow,tree); */
+      Update_PMat_At_Given_Edge(b_target,tree);
+      Update_PMat_At_Given_Edge(b_residual,tree);
+      Update_Partial_Lk(tree,b_arrow,n_link);
+      Lk(b_arrow,tree);
       
-      if(b_target->left == polarity || b_target->rght == polarity)
-        {
-          Update_PMat_At_Given_Edge(b_residual,tree);
-          Update_Partial_Lk(tree,b_target,n_link);
-          Br_Len_Brent(b_target,tree);
-        }
-      else if(b_residual->left == polarity || b_residual->rght == polarity)
-        {
-          Update_PMat_At_Given_Edge(b_target,tree);
-          Update_Partial_Lk(tree,b_residual,n_link);
-          Br_Len_Brent(b_residual,tree);
-        }
-      else assert(FALSE);      
+      /* if(b_target->left == polarity || b_target->rght == polarity) */
+      /*   { */
+      /*     Update_PMat_At_Given_Edge(b_residual,tree); */
+      /*     // Impossible to backup here as we have already one p_lk in backup ! */
+      /*     Backup_Partial_Lk(n_link,b_target,tree); */
+      /*     Backup_Partial_Scale(n_link,b_target,tree); */
+      /*     Update_Partial_Lk(tree,b_target,n_link); */
+      /*     Br_Len_Brent(b_target,tree); */
+      /*   } */
+      /* else if(b_residual->left == polarity || b_residual->rght == polarity) */
+      /*   { */
+      /*     Update_PMat_At_Given_Edge(b_target,tree); */
+      /*     Update_Partial_Lk(tree,b_residual,n_link); */
+      /*     Br_Len_Brent(b_residual,tree); */
+      /*   } */
+      /* else assert(FALSE);       */
     }
   else
     {
@@ -576,7 +588,7 @@ t_spr *Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
   n1 = (b_residual->left == n_link)?(b_residual->rght):(b_residual->left);
   n2 = (b_target->left   == n_link)?(b_target->rght):(b_target->left);
   dir_v1 = dir_v2 = dir_v0 = -1;
-  for(i=0;i<3;i++)
+  for(i=0;i<3;++i)
     {
       if(n_link->v[i]      == n1) dir_v1 = i;
       else if(n_link->v[i] == n2) dir_v2 = i;
@@ -641,6 +653,22 @@ t_spr *Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
   move->n_opp_to_link = (n_link==b_arrow->left)?(b_arrow->rght):(b_arrow->left);
   
   rk = Include_One_Spr_To_List_Of_Spr(move,tree);
+    
+  /* if(tree->mod->s_opt->spr_lnL == YES) */
+  /*   { */
+  /*     if(b_target->left == polarity || b_target->rght == polarity) */
+  /*       { */
+  /*         Restore_Partial_Lk(n_link,b_target,tree); */
+  /*         Restore_Partial_Scale(n_link,b_target,tree); */
+  /*       } */
+  /*   } */
+  
+  Prune_Subtree(n_link,
+                (n_link==b_arrow->left)?(b_arrow->rght):(b_arrow->left),
+                &b_target,
+                &b_residual,
+                tree);
+
   
   Copy_Scalar_Dbl(init_target_l,b_target->l);
   Copy_Scalar_Dbl(init_target_v,b_target->l_var);
@@ -651,14 +679,8 @@ t_spr *Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
   Copy_Scalar_Dbl(init_residual_l,b_residual->l);
   Copy_Scalar_Dbl(init_residual_v,b_residual->l_var);
 
-  Prune_Subtree(n_link,
-                (n_link==b_arrow->left)?(b_arrow->rght):(b_arrow->left),
-                &b_target,
-                &b_residual,
-                tree);
-
   if(tree->mod->s_opt->spr_lnL == YES) Update_PMat_At_Given_Edge(b_target,tree);
-
+  
   tree->c_lnL   = init_lnL;
   tree->c_pars  = init_pars;
 
@@ -1083,9 +1105,7 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
       time(&(tree->t_current));
       Pars(NULL,tree);
       Set_Both_Sides(YES,tree);
-      MIXT_Set_Alias_Subpatt(YES,tree);
       Lk(NULL,tree);
-      MIXT_Set_Alias_Subpatt(NO,tree);
 
       if(FABS(tree->c_lnL - move->lnL) > tree->mod->s_opt->min_diff_lk_move)
         {
@@ -1113,11 +1133,6 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
           delta = move->lnL - dum_move->lnL;          
           if(delta > tree->mod->s_opt->max_delta_lnL_spr_current)
             tree->mod->s_opt->max_delta_lnL_spr_current = delta;
-          printf("\n. delta: %G max_delta_lnL_spr_current: %G depth: %d lnL: %G",
-                 delta,
-                 tree->mod->s_opt->max_delta_lnL_spr_current,
-                 move->depth_path,
-                 move->lnL);
           dum_move = dum_move->path_prev;
         }
       
@@ -1742,7 +1757,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   t_tree **tree_list,**tree_list_cpy;
   phydbl *lnL_list,*max_delta_lnL_list,best_lnL;
   
-  const unsigned int list_size_first_round  = (int)tree->n_otu/3;
+  const unsigned int list_size_first_round  = (int)tree->n_otu/2;
   const unsigned int list_size_second_round  = 1;
   const unsigned int list_size_third_round  = 1;
   
@@ -1767,28 +1782,26 @@ void Spr_List_Of_Trees(t_tree *tree)
   best_lnL = tree->c_lnL;
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n\u2022 Score of initial tree: %12.2f",tree->c_lnL);
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n\u2022 Building a list of starting trees (NNI search)...\n");
-  tree_list[0] = Make_Tree_From_Scratch(tree->n_otu,tree->data);
-  Copy_Tree(tree,tree_list[0]);
-  lnL_list[0] = tree->c_lnL;
 
-  list_size = 1;
+  list_size = 0;
   do
     {
-      if(list_size > 0)
+      /* if(list_size > 0) */
         {
+          /* Randomize_Tree(tree,2*tree->n_otu); */
           Stepwise_Add_Pars(tree);
-          Spr_Pars(0,tree->n_otu,tree);
+          /* Spr_Pars(0,tree->n_otu,tree); */
         }
       
       Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
       tree->c_lnL = UNLIKELY;
-      /* Simu(tree,2); */
-      Optimize_Br_Len_Serie(tree);
-      Lk(NULL,tree);
+      Simu(tree,3);
+      /* Optimize_Br_Len_Serie(tree); */
+      /* Lk(NULL,tree); */
       
       if(tree->verbose > VL0 && tree->io->quiet == NO)
         {
-          if(list_size == 1) Table_Top(25);
+          if(list_size == 0) Table_Top(25);
           PhyML_Printf("\n\t \u2502 %3d      %12.2f   \u2502",list_size,tree->c_lnL);
         }
       if(tree->c_lnL > best_lnL)
@@ -1819,30 +1832,36 @@ void Spr_List_Of_Trees(t_tree *tree)
  
       if(list_size == 0) Round_Optimize(tree,ROUND_MAX);
 
-      tree->mod->s_opt->max_depth_path            = (int)tree->n_otu/3;
-      tree->mod->s_opt->spr_lnL                   = YES;
-      tree->mod->s_opt->spr_pars                  = NO;
-      tree->mod->s_opt->min_diff_lk_move          = 1.E-1;
-      tree->perform_spr_right_away                = NO;
-      tree->mod->s_opt->eval_list_regraft         = NO;
-      tree->mod->s_opt->max_delta_lnL_spr         = 500.;
-      tree->mod->s_opt->max_delta_lnL_spr_current = 0.0;
-
-      Set_Both_Sides(YES,tree);
-      Lk(NULL,tree);
-      tree->best_lnL = tree->c_lnL;
-      Spr(tree->c_lnL,1.0,tree);
-      Optimize_Br_Len_Serie(tree);
-      tree->mod->s_opt->max_delta_lnL_spr = tree->mod->s_opt->max_delta_lnL_spr_current;
-      tree->mod->s_opt->max_depth_path = tree->max_spr_depth;
-
-      printf("\n. tree->mod->s_opt->max_delta_lnL_spr_current: %f depth: %d",
-             tree->mod->s_opt->max_delta_lnL_spr,
-             tree->mod->s_opt->max_depth_path);
-
-      
+      do
+        {
+          tree->mod->s_opt->max_depth_path            = (int)tree->n_otu;
+          tree->mod->s_opt->spr_lnL                   = YES;
+          tree->mod->s_opt->spr_pars                  = NO;
+          tree->mod->s_opt->min_diff_lk_move          = 1.E-1;
+          tree->perform_spr_right_away                = YES;
+          tree->mod->s_opt->eval_list_regraft         = NO;
+          tree->mod->s_opt->max_delta_lnL_spr         = 10000.;
+          tree->mod->s_opt->max_delta_lnL_spr_current = 0.0;
+          
+          Set_Both_Sides(YES,tree);
+          Lk(NULL,tree);
+          tree->best_lnL = tree->c_lnL;
+          Spr(tree->c_lnL,1.0,tree);
+          Optimize_Br_Len_Serie(tree);
+          /* tree->mod->s_opt->max_delta_lnL_spr = tree->mod->s_opt->max_delta_lnL_spr_current; */
+          /* tree->mod->s_opt->max_depth_path = tree->max_spr_depth; */
+          
+          printf("\n. tree->mod->s_opt->max_delta_lnL_spr_current: %12f depth: %4d n_improv: %4d lnL: %f",
+                 tree->mod->s_opt->max_delta_lnL_spr,
+                 tree->mod->s_opt->max_depth_path,
+                 tree->n_improvements,
+                 tree->c_lnL);
+          
+        }
+      while(tree->n_improvements > 0);
+        
       n_trees++;
-      
+        
       if(tree->verbose > VL0 && tree->io->quiet == NO)
         {
           if(list_size == 0) Table_Top(25);
@@ -1880,13 +1899,13 @@ void Spr_List_Of_Trees(t_tree *tree)
  
       if(list_size == 0) Round_Optimize(tree,ROUND_MAX);
 
-      tree->mod->s_opt->max_depth_path            = MAX(10,max_depth_list[rk[list_size]]);
+      tree->mod->s_opt->max_depth_path            = MAX(20,max_depth_list[rk[list_size]]);
       tree->mod->s_opt->spr_lnL                   = YES;
       tree->mod->s_opt->spr_pars                  = NO;
       tree->mod->s_opt->min_diff_lk_move          = 1.E-1;
       tree->perform_spr_right_away                = YES;
       tree->mod->s_opt->eval_list_regraft         = YES;
-      tree->mod->s_opt->max_delta_lnL_spr         = MAX(50.,max_delta_lnL_list[rk[list_size]]);
+      tree->mod->s_opt->max_delta_lnL_spr         = MAX(10000.,max_delta_lnL_list[rk[list_size]]);
 
       printf("\n. tree->mod->s_opt->max_delta_lnL_spr: %f max_depth: %d",
              tree->mod->s_opt->max_delta_lnL_spr,
