@@ -21,8 +21,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int PHYREX_Main(int argc, char *argv[])
 {
-  return(PHYREX_Main_Estimate(argc,argv));
-  /* return(PHYREX_Main_Simulate(argc,argv)); */
+  /* return(PHYREX_Main_Estimate(argc,argv)); */
+  return(PHYREX_Main_Simulate(argc,argv));
 }
 
 //////////////////////////////////////////////////////////////
@@ -161,7 +161,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   sprintf(s+strlen(s),".%d.xml",tree->mod->io->r_seed);
   PHYREX_Print_MultiTypeTree_Config_File(n_sites,s,tree);
 
-  res = PHYREX_MCMC(tree);
+  /* res = PHYREX_MCMC(tree); */
 
   disk = tree->disk;
   for(i=0;i<disk->n_ldsk_a;i++) Free_Ldisk(disk->ldsk_a[i]);
@@ -327,12 +327,12 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   tree->mod->whichmodel    = HKY85;
   tree->mod->kappa->v      = 4.0;
     
-  Prepare_Tree_For_Lk(tree);
-  Evolve(tree->data,tree->mod,tree);
+  /* Prepare_Tree_For_Lk(tree); */
+  /* Evolve(tree->data,tree->mod,tree); */
 
-  if(tree->mod->s_opt->greedy) Init_P_Lk_Tips_Double(tree);
-  else                         Init_P_Lk_Tips_Int(tree);
-  Init_P_Lk_Loc(tree);
+  /* if(tree->mod->s_opt->greedy) Init_Partial_Lk_Tips_Double(tree); */
+  /* else                         Init_Partial_Lk_Tips_Int(tree); */
+  /* Init_Partial_Lk_Loc(tree); */
 
   disk = tree->disk->prev;
   while(disk->prev) disk = disk->prev;
@@ -923,6 +923,16 @@ t_sarea *PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree)
     }
   while(n_lineages > 1);
 
+  t_ldsk *dum = tree->disk->ldsk_a[0];
+  unsigned int evt = 0;
+  do
+    {      
+      PhyML_Printf("\n %4d %15f %15f",evt,dum->coord->lonlat[0],dum->coord->lonlat[1]);
+      dum = dum->prev;
+      evt++;
+    }
+  while(dum);
+  
   /* for(i=0;i<n_otu;i++) printf("\n> %s",tree->disk->ldsk_a[i]->coord->id); */
 
   disk->prev = NULL;
