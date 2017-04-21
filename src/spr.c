@@ -1788,7 +1788,7 @@ void Spr_List_Of_Trees(t_tree *tree)
  
       if(list_size == 0) Round_Optimize(tree,ROUND_MAX);
 
-      do
+      /* do */
         {
           tree->mod->s_opt->max_depth_path            = (int)tree->n_otu/3;
           tree->mod->s_opt->spr_lnL                   = YES;
@@ -1814,7 +1814,7 @@ void Spr_List_Of_Trees(t_tree *tree)
                  tree->c_lnL);
           
         }
-      while(tree->n_improvements > 5);
+      /* while(tree->n_improvements > 5); */
         
       n_trees++;
         
