@@ -10046,24 +10046,30 @@ void Switch_Eigen(int state, t_mod *mod)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Set_Both_Sides(int yesno, t_tree *mixt_tree)
+void Set_Both_Sides(int yesno, t_tree *tree)
 {
-  t_tree *tree;
-
-  assert(!mixt_tree->prev);
-
-  tree = mixt_tree;
-  do
-    {
-      tree->both_sides = yesno;
-      tree = tree->next;
-    }
-  while(tree);
-
+  if(tree->is_mixt_tree == YES) MIXT_Set_Both_Sides(yesno,tree);
+  tree->both_sides = yesno;
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void Set_Use_Eigen_Lr(int yesno, t_tree *tree)
+{
+  if(tree->is_mixt_tree == YES) MIXT_Set_Use_Eigen_Lr(yesno,tree);
+  tree->use_eigen_lr = yesno;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Set_Update_Eigen_Lr(int yesno, t_tree *tree)
+{
+  if(tree->is_mixt_tree == YES) MIXT_Set_Update_Eigen_Lr(yesno,tree);
+  tree->update_eigen_lr = yesno;
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 // Returns the matrix of pairwise distances between tips
@@ -11418,24 +11424,6 @@ phydbl Length_Of_Path_Between_List_Of_Tips(t_ll *tips0, t_ll *tips1, matrix *mat
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
  
-void Set_Update_Eigen_Lr(short int yn, t_tree *tree)
-{
-  if(tree->is_mixt_tree == YES) MIXT_Set_Update_Eigen_Lr(yn,tree);
-  tree->update_eigen_lr = yn;
-}
-
-/*////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////*/
-
-void Set_Use_Eigen_Lr(short int yn, t_tree *tree)
-{
-  if(tree->is_mixt_tree == YES) MIXT_Set_Use_Eigen_Lr(yn,tree);
-  tree->use_eigen_lr = yn;
-}
-
-/*////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////*/
-
 void Random_Walk_Along_Tree_On_Radius(t_node *a, t_node *d, t_edge *b, phydbl *radius, t_edge **target_edge, t_node **target_nd, phydbl *target_time, t_tree *tree)
 {
   assert(tree->rates);

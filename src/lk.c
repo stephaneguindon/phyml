@@ -49,14 +49,7 @@ static inline void Set_Partial_Lk_One_Side(phydbl **Pij, phydbl **tPij, phydbl *
                                      , int* child_p_idx, int* Pij_idx
 #endif
                                      );
-static inline phydbl Lk_Core(int state, int ambiguity_check, short int derivative,
-                             phydbl *p_lk_left, phydbl *p_lk_rght,
-                             phydbl *Pij_rr,
-                             t_edge *b,
-                             t_tree *tree);
-static inline phydbl Lk_Core_Eigen_Lr(phydbl *expl, phydbl *dot_prod, short int derivative, t_edge *b, t_tree *tree);
 static inline void Rate_Correction(int exponent, phydbl *site_lk_cat);
-static inline phydbl Invariant_Lk(int fact_sum_scale, int site, int *num_prec_issue, t_tree *tree);
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -527,7 +520,7 @@ if(tree->rates && tree->io->lk_approx == NORMAL)
     {
       if(!b) //Update PMat for all edges
         {
-          for(br=0;br<2*tree->n_otu-3;br++) Update_PMat_At_Given_Edge(tree->a_edges[br],tree);
+          for(br=0;br<2*tree->n_otu-3;++br) Update_PMat_At_Given_Edge(tree->a_edges[br],tree);
           if(tree->n_root && tree->ignore_root == NO)
             {
               Update_PMat_At_Given_Edge(tree->n_root->b[1],tree);
@@ -601,8 +594,8 @@ if(tree->rates && tree->io->lk_approx == NORMAL)
   if(tree->update_eigen_lr == YES) Update_Eigen_Lr(b,tree);
   
   if(tree->use_eigen_lr == YES)
-    {      
-      for(catg=0;catg<ncatg;catg++)
+    {  
+      for(catg=0;catg<ncatg;++catg)
         {
           len = MAX(0.0,b->l->v)*tree->mod->ras->gamma_rr->v[catg];
           len *= tree->mod->br_len_mult->v;
@@ -784,7 +777,7 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
    length of edge 'b'.
 */
 
-static inline phydbl Lk_Core(int state, int ambiguity_check, short int derivative,
+phydbl Lk_Core(int state, int ambiguity_check, short int derivative,
                              phydbl *p_lk_left, phydbl *p_lk_rght,
                              phydbl *Pij_rr,
                              t_edge *b,
@@ -871,7 +864,7 @@ static inline phydbl Lk_Core(int state, int ambiguity_check, short int derivativ
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-static inline phydbl Lk_Core_Eigen_Lr(phydbl *expl, phydbl *dot_prod, short int derivative, t_edge *b, t_tree *tree)
+phydbl Lk_Core_Eigen_Lr(phydbl *expl, phydbl *dot_prod, short int derivative, t_edge *b, t_tree *tree)
 {
   phydbl site_lk,res;
   unsigned int catg;
@@ -1532,7 +1525,7 @@ static inline phydbl Lk_Core_One_Class_No_Eigen_Lr(phydbl *p_lk_left, phydbl *p_
 //////////////////////////////////////////////////////////////
 
 // Returns the scaled likelihood for invariable sites
-static inline phydbl Invariant_Lk(int fact_sum_scale, int site, int *num_prec_issue, t_tree *tree)
+phydbl Invariant_Lk(int fact_sum_scale, int site, int *num_prec_issue, t_tree *tree)
 {
   int exponent,piecewise_exponent;
   phydbl multiplier;

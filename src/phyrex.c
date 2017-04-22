@@ -285,7 +285,7 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
   mmod->mu = 2./neigh;
 
   /* Theta (radius) */
-  tree->mmod->rad = Uni()*(4.0 - 1.5) + 1.5;
+  tree->mmod->rad = Uni()*(2.0 - 0.2) + 0.2;
 
   mmod->sigsq = neigh / (4.*PI*Ne/area);
 
@@ -293,10 +293,10 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int
 
   
 
-  /* !!!!!!!!!!!!! */
-  /* mmod->lbda  = 1.00; */
-  /* mmod->mu    = 0.9; */
-  /* mmod->rad   = 10.00; */
+  /* /\* !!!!!!!!!!!!! *\/ */
+  /* mmod->lbda  = 1.0; */
+  /* mmod->mu    = 0.5; */
+  /* mmod->rad   = 0.5; */
   /* neigh       = 2./mmod->mu; */
   /* mmod->sigsq = PHYREX_Update_Sigsq(tree); */
 
@@ -728,10 +728,51 @@ t_sarea *PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree)
       disk->time = curr_t;
       disk->mmod = mmod;
     }
-  while(n_disk < 100000);
-
+  while(n_disk < 30000);
+  
   for(i=0;i<pop_size;i++) ldsk_a_pop[i]->disk = disk;
 
+  t_ldsk *dum = ldsk_a_pop[0];
+  phydbl s = mmod->lim->lonlat[0]*mmod->lim->lonlat[1]; // area
+  phydbl gentime = 1./(2*PI*mmod->rad*mmod->rad*mmod->mu*mmod->lbda/s);
+  phydbl ssq = 0.0;
+  phydbl curr_pos,prev_pos;
+  int curr_gen,prev_gen,nhits=0;
+  prev_pos = dum->coord->lonlat[0];
+  curr_pos = curr_pos;
+  curr_gen = prev_gen = 1;
+  do
+    {
+      curr_gen  = 1 + (int)(dum->disk->time-curr_t)/gentime;
+      curr_pos  = dum->coord->lonlat[0];
+
+      assert(dum->disk);
+
+      if(curr_gen != prev_gen)
+        {
+          ssq += pow(curr_pos-prev_pos,2);
+          prev_pos = curr_pos;
+          prev_gen = curr_gen;
+        }
+
+      dum = dum->prev;
+      nhits++;
+    }
+  while(dum);
+  PhyML_Printf("\n # var T nhits T/nhits gentime sigsq theta u lambda");
+  PhyML_Printf("\n a@z %G %f %d %f %f %f %f %f %f",
+               (1./(curr_t/gentime))*ssq,
+               curr_t,
+               nhits,
+               curr_t/nhits,
+               gentime,
+               4*pow(mmod->rad,4)*mmod->lbda/s*PI*mmod->mu*gentime,
+               mmod->rad,
+               mmod->mu,
+               mmod->lbda);
+
+
+  
   /* Allocate coordinates for all the tips first (will grow afterwards) */
   ldsk_a_samp = (t_ldsk **)mCalloc(n_otu,sizeof(t_ldsk *));
   ldsk_a_tips = (t_ldsk **)mCalloc(n_otu,sizeof(t_ldsk *));
@@ -923,15 +964,6 @@ t_sarea *PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree)
     }
   while(n_lineages > 1);
 
-  t_ldsk *dum = tree->disk->ldsk_a[0];
-  unsigned int evt = 0;
-  do
-    {      
-      PhyML_Printf("\n %4d %15f %15f",evt,dum->coord->lonlat[0],dum->coord->lonlat[1]);
-      dum = dum->prev;
-      evt++;
-    }
-  while(dum);
   
   /* for(i=0;i<n_otu;i++) printf("\n> %s",tree->disk->ldsk_a[i]->coord->id); */
 
@@ -946,6 +978,8 @@ t_sarea *PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree)
       disk = disk->prev;
       n_discs++;
     }
+
+
 
   Free(ldsk_a_tmp);
   Free(ldsk_a_samp);
