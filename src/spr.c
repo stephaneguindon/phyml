@@ -1744,7 +1744,7 @@ void Spr_List_Of_Trees(t_tree *tree)
         {
           /* Randomize_Tree(tree,2*tree->n_otu); */
           Stepwise_Add_Pars(tree);
-          /* Spr_Pars(0,tree->n_otu,tree); */
+          Spr_Pars(0,tree->n_otu,tree);
         }
       
       Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);

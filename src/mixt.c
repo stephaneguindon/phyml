@@ -879,6 +879,11 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                     }
                 }
               
+              printf("\n. site: %4d lk: %15f class: %3d",
+                     site,
+                     site_lk_cat,
+                     tree->mod->ras->parent_class_number);
+              
               sum_scale_left_cat[tree->mod->ras->parent_class_number] =
                 (b->sum_scale_left)?
                 (b->sum_scale_left[site]):
@@ -3371,7 +3376,7 @@ void MIXT_Set_Both_Sides(int yesno, t_tree *mixt_tree)
 {
   t_tree *tree;
   
-  assert(tree->is_mixt_tree == YES);
+  assert(mixt_tree->is_mixt_tree == YES);
 
   tree = mixt_tree;
   
