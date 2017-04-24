@@ -11178,7 +11178,7 @@ int Linked_List_Len(t_ll *list)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-void Push_Bottom_Linked_List(void *what, t_ll **list)
+void Push_Bottom_Linked_List(void *what, t_ll **list, bool remove_duplicates)
 {
   t_ll *new,*ll;
 
@@ -11217,17 +11217,20 @@ void Push_Bottom_Linked_List(void *what, t_ll **list)
   else
     {
       ll = (*list)->head;
-      do
-        {
-          if(ll->v == what)
-            {
-              Free(new);
-              return; // 'what' already in list 
-            }
-          ll = ll->next;
-        }
-      while(ll);
 
+      if(remove_duplicates == YES)
+        {
+          do
+            {
+              if(ll->v == what)
+                {
+                  Free(new);
+                  return; // 'what' already in list 
+                }
+              ll = ll->next;
+            }
+          while(ll);
+        }
 
       new->prev = (*list)->tail;
       (*list)->tail->next = new;
@@ -11328,7 +11331,7 @@ void Get_List_Of_Reachable_Tips_Post(t_node *a, t_node *d, t_ll **list, t_tree *
   if(d->tax)
     {
       /* printf("\n\u2022 push %d list: %p",d->num,list->head); */
-      Push_Bottom_Linked_List(d,list);
+      Push_Bottom_Linked_List(d,list,YES);
       return;
     }
   else
@@ -11423,7 +11426,7 @@ phydbl Length_Of_Path_Between_List_Of_Tips(t_ll *tips0, t_ll *tips1, matrix *mat
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
- 
+
 void Random_Walk_Along_Tree_On_Radius(t_node *a, t_node *d, t_edge *b, phydbl *radius, t_edge **target_edge, t_node **target_nd, phydbl *target_time, t_tree *tree)
 {
   assert(tree->rates);

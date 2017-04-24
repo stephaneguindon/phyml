@@ -115,6 +115,8 @@ void Init_Tree(t_tree *tree, int n_otu)
   tree->xml_root                  = NULL;
   tree->extra_tree                = NULL;
   tree->verbose                   = VL3;
+  tree->edge_list                 = NULL;
+  tree->node_list                 = NULL;
 
   tree->is_mixt_tree              = NO;
   tree->tree_num                  = 0;
@@ -204,7 +206,7 @@ void Init_Edge_Light(t_edge *b, int num)
   b->p_pars_r             = NULL;
   b->n_diff_states_l      = NULL;
   b->n_diff_states_r      = NULL;
-
+  
 #ifdef BEAGLE
   b->p_lk_left_idx         = num;
   b->p_lk_rght_idx         = UNINITIALIZED; //Will be initialized later when the total number of branches is known (i.e. in Make_Tree_From_Scratch())

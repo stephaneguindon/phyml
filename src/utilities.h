@@ -601,6 +601,8 @@ typedef struct __Edge {
 
   phydbl            *p_lk_left,*p_lk_rght; /*! likelihoods of the subtree on the left and right side (for each site and each relative rate category) */
   phydbl         *p_lk_tip_r, *p_lk_tip_l;
+
+
 #ifdef BEAGLE
   int        p_lk_left_idx, p_lk_rght_idx;
   int                        p_lk_tip_idx;
@@ -690,6 +692,9 @@ typedef struct __Tree{
   struct __Migrep_Model                 *mmod;
   struct __Disk_Event                   *disk;
   struct __XML_node                 *xml_root;
+  struct __Generic_LL              *edge_list;
+  struct __Generic_LL              *node_list;
+
 
   short int                         eval_alnL; /*! Evaluate likelihood for genetic data */
   short int                         eval_rlnL; /*! Evaluate likelihood for rates along the tree */
@@ -2212,7 +2217,7 @@ scalar_dbl *Read_Weights(option *io);
 phydbl Scalar_Elem(int pos, scalar_dbl *scl);
 int Scalar_Len(scalar_dbl *scl);
 void List_Of_Regraft_Nodes(t_node *a, t_node *d, phydbl time_thresh, t_ll *list, t_tree *tree);
-void Push_Bottom_Linked_List(void *what, t_ll **list);
+void Push_Bottom_Linked_List(void *what, t_ll **list, bool remove_duplicates);
 void Remove_From_Linked_List(t_ll *elem, void *val, t_ll **list);
 int Linked_List_Len(t_ll *list);
 void *Linked_List_Elem(int pos, t_ll *ll);

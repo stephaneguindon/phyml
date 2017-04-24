@@ -145,10 +145,47 @@ int Spr(phydbl init_lnL, phydbl prop_spr, t_tree *tree)
     }
 
 
-
-  Free(br_idx);
+  /* int start_otu = Rand_Int(0,tree->n_otu-1); */
+  /* Spr_Pre_Order(tree->a_nodes[start_otu], */
+  /*               tree->a_nodes[start_otu]->v[0], */
+  /*               tree->a_nodes[start_otu]->b[0], */
+  /*               tree); */
+  /* Free(br_idx); */
 
   return tree->n_improvements;
+}
+
+/*********************************************************/
+
+void Spr_Pre_Order(t_node *a, t_node *d, t_edge *b, t_tree *tree)
+{
+  if(d->tax) return;
+  else
+    {
+      unsigned int i;
+      
+
+      /* printf("\n. a: %d d: %d score: %d d1: %d d2: %d ",a->num,d->num,tree->c_pars); */
+
+      /* for(i=0;i<3;++i) */
+      /*   { */
+      /*     if(d->v[i] != a) */
+      /*       { */
+      /*         Spr_Subtree(d->b[i],d->v[i],tree); */
+      /*       } */
+      /*   } */
+
+      Spr_Subtree(b,a,tree);
+      
+      for(i=0;i<3;++i)
+        {
+          if(d->v[i] != a)
+            {
+              Spr_Pre_Order(d,d->v[i],d->b[i],tree);
+            }
+        }
+
+    }
 }
 
 /*********************************************************/
@@ -344,14 +381,15 @@ int Test_All_Spr_Targets(t_edge *b_pulled, t_node *n_link, t_tree *tree)
     }
 
   if(!(n_v1->tax && n_v2->tax)) /*! Pruning is meaningless otherwise */
-    {
-      
+    {      
       Prune_Subtree(n_link,n_opp_to_link,&b_target,&b_residual,tree);
 
       if(tree->mod->s_opt->spr_lnL == YES) Update_PMat_At_Given_Edge(b_target,tree);
       
       for(i=0;i<tree->size_spr_list;++i) tree->spr_list[i]->path_prev = NULL;
 
+      tree->edge_list = NULL;
+      tree->node_list = NULL;
       best_found = NO;
       tree->depth_curr_path = 0;
       tree->curr_path[0] = b_target->left;
@@ -404,15 +442,40 @@ int Test_All_Spr_Targets(t_edge *b_pulled, t_node *n_link, t_tree *tree)
 
       // Below is not optimal. Maybe add an argument so that partial lk deeper than a certain
       // depth are not updated.
-      For(i,3)
-        if(n_link->v[i] != n_opp_to_link)
-          {
-            if(tree->mod->s_opt->spr_lnL)
-              Pre_Order_Lk(n_link,n_link->v[i],tree);
-            else
-              Pre_Order_Pars(n_link,n_link->v[i],tree);
-          }
-      
+      /* For(i,3) */
+      /*   if(n_link->v[i] != n_opp_to_link) */
+      /*     { */
+      /*       if(tree->mod->s_opt->spr_lnL) */
+      /*         Pre_Order_Lk(n_link,n_link->v[i],tree); */
+      /*       else */
+      /*         Pre_Order_Pars(n_link,n_link->v[i],tree); */
+      /*     } */
+
+      t_ll *e_ll = tree->edge_list->head;
+      t_ll *n_ll = tree->node_list->head;
+      t_edge *e;
+      t_node *n;
+      do
+        {
+          assert(e_ll);
+          assert(n_ll);
+
+          e = (t_edge *)e_ll->v;
+          n = (t_node *)n_ll->v;
+
+          /* printf("\n. update on edge %d node %d",e->num,n->num); fflush(NULL); */
+          if(tree->mod->s_opt->spr_lnL)
+            Update_Partial_Lk(tree,e,n);
+          else
+            Update_Partial_Pars(tree,e,n);
+            
+          e_ll = e_ll->next;
+          n_ll = n_ll->next;
+        }
+      while(e_ll != NULL);
+
+      Free_Linked_List(tree->edge_list);
+      Free_Linked_List(tree->node_list);
     }
 
   tree->c_lnL = init_lnL;
@@ -450,6 +513,10 @@ void Test_One_Spr_Target_Recur(t_node *a, t_node *d, t_edge *pulled, t_node *lin
                 Update_Partial_Lk(tree,d->b[i],d);
               else
                 Update_Partial_Pars(tree,d->b[i],d);
+
+              /* printf("\n push edge %d node %d",d->b[i]->num,d->num); fflush(NULL); */
+              Push_Bottom_Linked_List(d->b[i],&tree->edge_list,NO);
+              Push_Bottom_Linked_List(d,&tree->node_list,NO);
 
               tree->depth_curr_path++;
 
@@ -2029,7 +2096,7 @@ void Prune_Regraft_Time_Tree(t_tree *tree)
           // Get the list of potential regraft nodes (oldest node on regraft edge)
           regraft_nd_list = DATE_List_Of_Regraft_Nodes(prune_daughter->v[dir_prune],prune_daughter,&regraft_t_min,&regraft_t_max,NO,tree);
           assert(regraft_nd_list);
-          if(prune == tree->n_root) Push_Bottom_Linked_List(prune,&regraft_nd_list);
+          if(prune == tree->n_root) Push_Bottom_Linked_List(prune,&regraft_nd_list,YES);
           
           
           // Number of regraft nodes

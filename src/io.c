@@ -3132,41 +3132,43 @@ void Print_Settings(option *io)
   PhyML_Printf("\n\n\n");
   PhyML_Printf("\n\n");
 
-  PhyML_Printf("                                 ..........................                                      \n");
-  PhyML_Printf(" ooooooooooooooooooooooooooooo        CURRENT SETTINGS        ooooooooooooooooooooooooooooooooooo\n");
-  PhyML_Printf("                                 ..........................                                      \n");
+  PhyML_Printf("\t\t\t\u205C\t SETTINGS \t\u205C  \n\n");
 
-  PhyML_Printf("\n                . Sequence filename:\t\t\t\t %s", Basename(io->in_align_file));
+  /* PhyML_Printf("                                 ..........................                                      \n"); */
+  /* PhyML_Printf(" ooooooooooooooooooooooooooooo        CURRENT SETTINGS        ooooooooooooooooooooooooooooooooooo\n"); */
+  /* PhyML_Printf("                         ..........................                      \n"); */
+
+  PhyML_Printf("\n        \u2023 Sequence filename:\t\t\t\t %s", Basename(io->in_align_file));
 
   if(io->datatype == NT) strcpy(s,"dna");
   else if(io->datatype == AA) strcpy(s,"aa");
   else strcpy(s,"generic");
 
-  PhyML_Printf("\n                . Data type:\t\t\t\t\t %s",s);
-  PhyML_Printf("\n                . Alphabet size:\t\t\t\t %d",io->mod->ns);
+  PhyML_Printf("\n        \u2023 Data type:\t\t\t\t\t %s",s);
+  PhyML_Printf("\n        \u2023 Alphabet size:\t\t\t\t %d",io->mod->ns);
 
-  PhyML_Printf("\n                . Sequence format:\t\t\t\t %s", io->interleaved ? "interleaved": "sequential");
-  PhyML_Printf("\n                . Number of data sets:\t\t\t\t %d", io->n_data_sets);
+  PhyML_Printf("\n        \u2023 Sequence format:\t\t\t\t %s", io->interleaved ? "interleaved": "sequential");
+  PhyML_Printf("\n        \u2023 Number of data sets:\t\t\t\t %d", io->n_data_sets);
 
-  PhyML_Printf("\n                . Nb of bootstrapped data sets:\t\t\t %d", io->mod->bootstrap);
+  PhyML_Printf("\n        \u2023 Nb of bootstrapped data sets:\t\t\t %d", io->mod->bootstrap);
 
   if (io->mod->bootstrap > 0)
-    PhyML_Printf("\n                . Compute approximate likelihood ratio test:\t no");
+    PhyML_Printf("\n        \u2023 Compute approximate likelihood ratio test:\t no");
   else
     {
       if(io->ratio_test == 1)
-    PhyML_Printf("\n                . Compute approximate likelihood ratio test:\t yes (aLRT statistics)");
+    PhyML_Printf("\n        \u2023 Compute approximate likelihood ratio test:\t yes (aLRT statistics)");
       else if(io->ratio_test == 2)
-    PhyML_Printf("\n                . Compute approximate likelihood ratio test:\t yes (Chi2-based parametric branch supports)");
+    PhyML_Printf("\n        \u2023 Compute approximate likelihood ratio test:\t yes (Chi2-based parametric branch supports)");
       else if(io->ratio_test == 3)
-    PhyML_Printf("\n                . Compute approximate likelihood ratio test:\t yes (Minimum of SH-like and Chi2-based branch supports)");
+    PhyML_Printf("\n        \u2023 Compute approximate likelihood ratio test:\t yes (Minimum of SH-like and Chi2-based branch supports)");
       else if(io->ratio_test == 4)
-    PhyML_Printf("\n                . Compute approximate likelihood ratio test:\t yes (SH-like branch supports)");
+    PhyML_Printf("\n        \u2023 Compute approximate likelihood ratio test:\t yes (SH-like branch supports)");
       else if(io->ratio_test == 5)
-    PhyML_Printf("\n                . Compute approximate likelihood ratio test:\t yes (aBayes branch supports)");
+    PhyML_Printf("\n        \u2023 Compute approximate likelihood ratio test:\t yes (aBayes branch supports)");
     }
 
-  PhyML_Printf("\n                . Model name:\t\t\t\t\t %s", io->mod->modelname->s);
+  PhyML_Printf("\n        \u2023 Model name:\t\t\t\t\t %s", io->mod->modelname->s);
 
   if(io->datatype == AA && io->mod->whichmodel == CUSTOMAA) PhyML_Printf(" (%s)",io->mod->aa_rate_mat_file->s);
 
@@ -3178,34 +3180,34 @@ void Print_Settings(option *io)
           (io->mod->whichmodel == TN93))
         {
           if(io->mod->s_opt && io->mod->s_opt->opt_kappa)
-            PhyML_Printf("\n                . Ts/tv ratio:\t\t\t\t\t estimated");
+            PhyML_Printf("\n        \u2023 Ts/tv ratio:\t\t\t\t\t estimated");
           else
-            PhyML_Printf("\n                . Ts/tv ratio:\t\t\t\t\t %f", io->mod->kappa->v);
+            PhyML_Printf("\n        \u2023 Ts/tv ratio:\t\t\t\t\t %f", io->mod->kappa->v);
         }
     }
 
   if(io->mod->s_opt && io->mod->s_opt->opt_pinvar)
-    PhyML_Printf("\n                . Proportion of invariable sites:\t\t estimated");
+    PhyML_Printf("\n        \u2023 Proportion of invariable sites:\t\t estimated");
   else
-    PhyML_Printf("\n                . Proportion of invariable sites:\t\t %f", io->mod->ras->pinvar->v);
+    PhyML_Printf("\n        \u2023 Proportion of invariable sites:\t\t %f", io->mod->ras->pinvar->v);
 
 
-  PhyML_Printf("\n                . Number of subst. rate categs:\t\t\t %d", io->mod->ras->n_catg);
+  PhyML_Printf("\n        \u2023 Number of subst. rate catgs:\t\t\t %d", io->mod->ras->n_catg);
   if(io->mod->ras->n_catg > 1)
     {
       if(io->mod->ras->free_mixt_rates == NO)
         {
           if(io->mod->s_opt && io->mod->s_opt->opt_alpha)
-            PhyML_Printf("\n                . Gamma distribution parameter:\t\t\t estimated");
+            PhyML_Printf("\n        \u2023 Gamma distribution parameter:\t\t\t estimated");
           else
-            PhyML_Printf("\n                . Gamma distribution parameter:\t\t\t %f", io->mod->ras->alpha->v);
-          PhyML_Printf("\n                . 'Middle' of each rate class:\t\t\t %s",(io->mod->ras->gamma_median)?("median"):("mean"));
+            PhyML_Printf("\n        \u2023 Gamma distribution parameter:\t\t\t %f", io->mod->ras->alpha->v);
+          PhyML_Printf("\n        \u2023 'Middle' of each rate class:\t\t\t %s",(io->mod->ras->gamma_median)?("median"):("mean"));
         }
     }
   
   
   if(io->datatype == AA)
-    PhyML_Printf("\n                . Amino acid equilibrium frequencies:\t\t %s", (io->mod->s_opt->opt_state_freq) ? ("empirical"):("model"));
+    PhyML_Printf("\n        \u2023 Amino acid equilibrium frequencies:\t\t %s", (io->mod->s_opt->opt_state_freq) ? ("empirical"):("model"));
   else if(io->datatype == NT)
     {
       if((io->mod->whichmodel != JC69) &&
@@ -3214,16 +3216,16 @@ void Print_Settings(option *io)
         {
           if(io->mod->s_opt && !io->mod->e_frq->user_state_freq)
             {
-              PhyML_Printf("\n                . Nucleotide equilibrium frequencies:\t\t %s", (io->mod->s_opt->opt_state_freq) ? ("ML"):("empirical"));
+              PhyML_Printf("\n        \u2023 Nucleotide equilibrium frequencies:\t\t %s", (io->mod->s_opt->opt_state_freq) ? ("ML"):("empirical"));
             }
           else
             {
-              PhyML_Printf("\n                . Nucleotide equilibrium frequencies:\t\t %s","user-defined");
+              PhyML_Printf("\n        \u2023 Nucleotide equilibrium frequencies:\t\t %s","user-defined");
             }
         }
     }
   
-  PhyML_Printf("\n                . Optimise tree topology:\t\t\t %s", (io->mod->s_opt && io->mod->s_opt->opt_topo) ? "yes": "no");
+  PhyML_Printf("\n        \u2023 Optimise tree topology:\t\t\t %s", (io->mod->s_opt && io->mod->s_opt->opt_topo) ? "yes": "no");
   
   switch(io->in_tree)
     {
@@ -3236,21 +3238,21 @@ void Print_Settings(option *io)
   
   if(io->mod->s_opt && io->mod->s_opt->opt_topo)
     {
-      if(io->mod->s_opt->topo_search == NNI_MOVE) PhyML_Printf("\n                . Tree topology search:\t\t\t\t NNIs");
-      else if(io->mod->s_opt->topo_search == SPR_MOVE) PhyML_Printf("\n                . Tree topology search:\t\t\t\t SPRs");
-      else if(io->mod->s_opt->topo_search == BEST_OF_NNI_AND_SPR) PhyML_Printf("\n                . Tree topology search:\t\t\t\t Best of NNIs and SPRs");
+      if(io->mod->s_opt->topo_search == NNI_MOVE) PhyML_Printf("\n        \u2023 Tree topology search:\t\t\t\t NNIs");
+      else if(io->mod->s_opt->topo_search == SPR_MOVE) PhyML_Printf("\n        \u2023 Tree topology search:\t\t\t\t SPRs");
+      else if(io->mod->s_opt->topo_search == BEST_OF_NNI_AND_SPR) PhyML_Printf("\n        \u2023 Tree topology search:\t\t\t\t Best of NNIs and SPRs");
       
-      PhyML_Printf("\n                . Starting tree:\t\t\t\t %s",s);
+      PhyML_Printf("\n        \u2023 Starting tree:\t\t\t\t %s",s);
 
-      PhyML_Printf("\n                . Add random input tree:\t\t\t %s", (io->mod->s_opt->random_input_tree) ? "yes": "no");
+      PhyML_Printf("\n        \u2023 Add random input tree:\t\t\t %s", (io->mod->s_opt->random_input_tree) ? "yes": "no");
       if(io->mod->s_opt->random_input_tree)
-    PhyML_Printf("\n                . Number of random starting trees:\t\t %d", io->mod->s_opt->n_rand_starts);
+    PhyML_Printf("\n        \u2023 Number of random starting trees:\t\t %d", io->mod->s_opt->n_rand_starts);
     }
   else
     if(io->mod->s_opt && !io->mod->s_opt->random_input_tree)
-      PhyML_Printf("\n                . Evaluated tree:\t\t\t\t \"%s\"",s);
+      PhyML_Printf("\n        \u2023 Evaluated tree:\t\t\t\t \"%s\"",s);
 
-  PhyML_Printf("\n                . Optimise branch lengths:\t\t\t %s", (io->mod->s_opt && io->mod->s_opt->opt_bl) ? "yes": "no");
+  PhyML_Printf("\n        \u2023 Optimise branch lengths:\t\t\t %s", (io->mod->s_opt && io->mod->s_opt->opt_bl) ? "yes": "no");
 
   answer = 0;
   if(io->mod->s_opt &&
@@ -3260,21 +3262,21 @@ void Print_Settings(option *io)
       io->mod->s_opt->opt_pinvar ||
       io->mod->s_opt->opt_rr)) answer = 1;
 
-  PhyML_Printf("\n                . Optimise substitution model parameters:\t %s", (answer) ? "yes": "no");
+  PhyML_Printf("\n        \u2023 Optimise substitution model parameters:\t %s", (answer) ? "yes": "no");
 
-  PhyML_Printf("\n                . Run ID:\t\t\t\t\t %s", (io->append_run_ID) ? (io->run_id_string): ("none"));
-  PhyML_Printf("\n                . Random seed:\t\t\t\t\t %d", io->r_seed);
-  PhyML_Printf("\n                . Subtree patterns aliasing:\t\t\t %s",io->do_alias_subpatt?"yes":"no");
-  PhyML_Printf("\n                . Version:\t\t\t\t\t %s", VERSION);
-  PhyML_Printf("\n                . Byte alignment:\t\t\t\t %d",BYTE_ALIGN);
-  PhyML_Printf("\n                . AVX enabled:\t\t\t\t\t %s",
+  PhyML_Printf("\n        \u2023 Run ID:\t\t\t\t\t %s", (io->append_run_ID) ? (io->run_id_string): ("none"));
+  PhyML_Printf("\n        \u2023 Random seed:\t\t\t\t\t %d", io->r_seed);
+  PhyML_Printf("\n        \u2023 Subtree patterns aliasing:\t\t\t %s",io->do_alias_subpatt?"yes":"no");
+  PhyML_Printf("\n        \u2023 Version:\t\t\t\t\t %s", VERSION);
+  PhyML_Printf("\n        \u2023 Byte alignment:\t\t\t\t %d",BYTE_ALIGN);
+  PhyML_Printf("\n        \u2023 AVX enabled:\t\t\t\t\t %s",
 #if defined(__AVX__)
                "yes"
 #else
                "no"
 #endif
                );
-  PhyML_Printf("\n                . SSE enabled:\t\t\t\t\t %s",
+  PhyML_Printf("\n        \u2023 SSE enabled:\t\t\t\t\t %s",
 #if defined(__SSE3__)
                "yes"
 #else
@@ -3283,7 +3285,7 @@ void Print_Settings(option *io)
                );
 
 
-  PhyML_Printf("\n\n oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo\n");
+  PhyML_Printf("\n\n                           \u205C \u205C \u205C \u205C \u205C \u205C \u205C \u205C \u205C \u205C \u205C \u205C  \n");
 
   PhyML_Printf("\n\n");
   fflush(NULL);

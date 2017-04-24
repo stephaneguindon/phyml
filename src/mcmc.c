@@ -5106,7 +5106,7 @@ void MCMC_Prune_Regraft(t_tree *tree)
       // Get the list of potential regraft nodes (oldest node on regraft edge)
       regraft_nd_list = DATE_List_Of_Regraft_Nodes(prune_daughter->v[dir_prune],prune_daughter,&regraft_t_min,&regraft_t_max,NO,tree);
       assert(regraft_nd_list);
-      if(prune == tree->n_root) Push_Bottom_Linked_List(prune,&regraft_nd_list);
+      if(prune == tree->n_root) Push_Bottom_Linked_List(prune,&regraft_nd_list,YES);
 
       // Number of regraft nodes
       n_regraft_nd = Linked_List_Len(regraft_nd_list);
@@ -5709,8 +5709,8 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
                   else          b = e->v[i];
                 }
             }
-          Push_Bottom_Linked_List(a,&regraft_nd_list);
-          Push_Bottom_Linked_List(b,&regraft_nd_list);
+          Push_Bottom_Linked_List(a,&regraft_nd_list,YES);
+          Push_Bottom_Linked_List(b,&regraft_nd_list,YES);
         }
 
       if(prune_daughter->anc != tree->n_root)
@@ -5725,8 +5725,8 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
                   break;
                 }
             }
-          Push_Bottom_Linked_List(c,&regraft_nd_list);
-          Push_Bottom_Linked_List(d,&regraft_nd_list);
+          Push_Bottom_Linked_List(c,&regraft_nd_list,YES);
+          Push_Bottom_Linked_List(d,&regraft_nd_list,YES);
         }
       
       n_regraft_nd = Linked_List_Len(regraft_nd_list);
@@ -5859,8 +5859,8 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
                   else          b = e->v[i];
                 }
             }
-          Push_Bottom_Linked_List(a,&regraft_nd_list);
-          Push_Bottom_Linked_List(b,&regraft_nd_list);
+          Push_Bottom_Linked_List(a,&regraft_nd_list,YES);
+          Push_Bottom_Linked_List(b,&regraft_nd_list,YES);
         }
 
       // prune is different from prune_daughter->anc here if prune == tree->n_root
@@ -5876,8 +5876,8 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
                   break;
                 }
             }
-          Push_Bottom_Linked_List(c,&regraft_nd_list);
-          Push_Bottom_Linked_List(d,&regraft_nd_list);
+          Push_Bottom_Linked_List(c,&regraft_nd_list,YES);
+          Push_Bottom_Linked_List(d,&regraft_nd_list,YES);
         }
 
       /* printf("\n+ a:%d b:%d c:%d d:%d e:%d", */

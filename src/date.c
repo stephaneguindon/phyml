@@ -1012,7 +1012,7 @@ phydbl *DATE_MCMC(t_tree *tree)
 // Update the list of nodes that are younger than lim
 void DATE_List_Of_Nodes_Younger_Than(t_node *a, t_node *d, phydbl lim, t_ll **list, t_tree *tree)
 {
-  if(tree->rates->nd_t[d->num] > lim) Push_Bottom_Linked_List(d,list);
+  if(tree->rates->nd_t[d->num] > lim) Push_Bottom_Linked_List(d,list,YES);
   
   if(d->tax == YES) return;
   else
@@ -1039,7 +1039,7 @@ void DATE_List_Of_Nodes_Younger_Than(t_node *a, t_node *d, phydbl lim, t_ll **li
 // not younger than lim
 void DATE_List_Of_Nodes_And_Ancestors_Younger_Than(t_node *a, t_node *d, phydbl lim, t_ll **list, t_tree *tree)
 {
-  if(tree->rates->nd_t[d->num] > lim && a != NULL && tree->rates->nd_t[a->num] > lim) Push_Bottom_Linked_List(d,list);
+  if(tree->rates->nd_t[d->num] > lim && a != NULL && tree->rates->nd_t[a->num] > lim) Push_Bottom_Linked_List(d,list,YES);
   
   if(d->tax == YES) return;
   else
@@ -1203,7 +1203,7 @@ t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, phydbl *
   DATE_List_Of_Nodes_Younger_Than(prune,prune_daughter,-INFINITY,&out,tree);
 
   // Add prune node to the list of node that can't be targeted for regraft
-  Push_Bottom_Linked_List(prune,&out);
+  Push_Bottom_Linked_List(prune,&out,YES);
 
   // Add root node as one cannot regraft above it
   /* Push_Bottom_Linked_List(tree->n_root,&out); */

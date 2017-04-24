@@ -362,12 +362,12 @@ void Post_Order_Lk(t_node *a, t_node *d, t_tree *tree)
 
       if(tree->ignore_root == NO && d->b[dir] == tree->e_root)
         {
-          if(d == tree->n_root->v[1]) Get_All_Partial_Lk_Scale(tree,tree->n_root->b[1],tree->n_root,d);
-          else                        Get_All_Partial_Lk_Scale(tree,tree->n_root->b[2],tree->n_root,d);
+          if(d == tree->n_root->v[1]) Update_Partial_Lk(tree,tree->n_root->b[1],d);
+          else                        Update_Partial_Lk(tree,tree->n_root->b[2],d);
         }
       else
         {
-          Get_All_Partial_Lk_Scale(tree,d->b[dir],a,d);
+          Update_Partial_Lk(tree,d->b[dir],d);
         }
     }
 }
@@ -390,22 +390,22 @@ void Pre_Order_Lk(t_node *a, t_node *d, t_tree *tree)
 
       if(tree->n_root)
         {
-          for(i=0;i<3;i++)
+          for(i=0;i<3;++i)
             {
               if(d->v[i] != a && d->b[i] != tree->e_root)
                 {
-                  Get_All_Partial_Lk_Scale(tree,d->b[i],d->v[i],d);
+                  Update_Partial_Lk(tree,d->b[i],d);
                   Pre_Order_Lk(d,d->v[i],tree);
                 }
             }
         }
       else
         {
-          for(i=0;i<3;i++)
+          for(i=0;i<3;++i)
             {
               if(d->v[i] != a)
                 {
-                  Get_All_Partial_Lk_Scale(tree,d->b[i],d->v[i],d);
+                  Update_Partial_Lk(tree,d->b[i],d);
                   Pre_Order_Lk(d,d->v[i],tree);
                 }
             }
@@ -1584,7 +1584,7 @@ phydbl Invariant_Lk(int fact_sum_scale, int site, int *num_prec_issue, t_tree *t
 void Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
 {
   if(tree->eval_alnL == NO) return;
-
+  
   if(tree->is_mixt_tree)
     {
       MIXT_Update_Partial_Lk(tree,b,d);
@@ -1625,7 +1625,9 @@ void Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
       Update_Partial_Lk_Generic(tree,b,d);
     }
 #endif
-//  Print_Edge_Likelihoods(tree, b, false);
+
+
+  //  Print_Edge_Likelihoods(tree, b, false);
 }
 
 //////////////////////////////////////////////////////////////
@@ -1696,10 +1698,10 @@ void Update_Partial_Lk_Generic(t_tree *tree, t_edge *b, t_node *d)
   p_lk_loc                    = NULL;
 
   Set_All_Partial_Lk(&n_v1,&n_v2,
-               &p_lk,&sum_scale,&p_lk_loc,
-               &Pij1,&tPij1,&p_lk_v1,&sum_scale_v1,
-               &Pij2,&tPij2,&p_lk_v2,&sum_scale_v2,
-               d,b,tree);
+                     &p_lk,&sum_scale,&p_lk_loc,
+                     &Pij1,&tPij1,&p_lk_v1,&sum_scale_v1,
+                     &Pij2,&tPij2,&p_lk_v2,&sum_scale_v2,
+                     d,b,tree);
 
   /* For every site in the alignment */
   for(site=0;site<n_patterns;site++)
