@@ -649,6 +649,8 @@ nexus.c nexus.h\
 init.c init.h\
 xml.c xml.h\
 date.c date.h\
+sse.c sse.h\
+avx.c avx.h\
 mixt.c mixt.h
 phyml_LDADD = -lm
 endif

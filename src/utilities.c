@@ -10048,8 +10048,8 @@ void Switch_Eigen(int state, t_mod *mod)
 
 void Set_Both_Sides(int yesno, t_tree *tree)
 {
-  if(tree->is_mixt_tree == YES) MIXT_Set_Both_Sides(yesno,tree);
   tree->both_sides = yesno;
+  if(tree->is_mixt_tree == YES) MIXT_Set_Both_Sides(yesno,tree);
 }
 
 //////////////////////////////////////////////////////////////

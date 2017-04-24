@@ -21,6 +21,8 @@ the GNU public licence.  See http://www.opensource.org for details.
 #include "free.h"
 #include "times.h"
 #include "mixt.h"
+#include "avx.h"
+#include "sse.h"
 
 void Update_All_Partial_Lk(t_tree *tree);
 void Init_Tips_At_One_Site_Nucleotides_Float(char state, int pos, phydbl *p_lk);
@@ -96,15 +98,26 @@ phydbl Lk_Core_Eigen_Lr(phydbl *expl, phydbl *dot_prod, short int derivative, t_
 phydbl Invariant_Lk(int fact_sum_scale, int site, int *num_prec_issue, t_tree *tree);
 
 
-#if defined(__AVX__)
-phydbl AVX_Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree);
-phydbl AVX_Lk_Core_Nucl(int state, int ambiguity_check, t_edge *b, t_tree *tree);
-phydbl AVX_Lk_Core_AA(int state, int ambiguity_check, t_edge *b, t_tree *tree);
-#elif defined(__SSE3__)
-phydbl SSE_Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree);
-phydbl SSE_Lk_Core_Nucl(int state, int ambiguity_check, t_edge *b, t_tree *tree);
-phydbl SSE_Lk_Core_AA(int state, int ambiguity_check, t_edge *b, t_tree *tree);
+
+
+
+
+phydbl Lk_Core_One_Class_Eigen_Lr(phydbl *dot_prod, phydbl *expl, int ns);
+phydbl Lk_Core_One_Class_No_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, phydbl *Pij,phydbl *pi, int ns, int ambiguity_check, int state);
+
+void Pull_Scaling_Factors(int site,t_edge *b,t_tree *tree);
+void Set_All_Partial_Lk(t_node **n_v1, t_node **n_v2,phydbl **p_lk, int **sum_scale, int **p_lk_loc,phydbl **Pij1, phydbl **tPij1, phydbl **p_lk_v1, int **sum_scale_v1,phydbl **Pij2, phydbl **tPij2, phydbl **p_lk_v2, int **sum_scale_v2,t_node *d, t_edge *b, t_tree *tree
+#ifdef BEAGLE
+                                , int *dest_p_idx, int *child1_p_idx, int* child2_p_idx, int* Pij1_idx, int* Pij2_idx
 #endif
+                                );
+void Set_Partial_Lk_One_Side(phydbl **Pij, phydbl **tPij, phydbl **p_lk,  int **sum_scale, t_node *d, t_edge *b, t_tree *tree
+#ifdef BEAGLE
+                                     , int* child_p_idx, int* Pij_idx
+#endif
+                                     );
+void Rate_Correction(int exponent, phydbl *site_lk_cat);
+
 
 
 #endif

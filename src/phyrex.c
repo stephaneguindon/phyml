@@ -143,7 +143,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   printf("\n. seed: %d",seed);
   srand(seed);
   
-  tree = PHYREX_Simulate(n_otus,n_sites,10.,10.,seed);
+  tree = PHYREX_Simulate(n_otus,n_sites,50.,50.,seed);
 
   disk = tree->disk;
   while(disk->prev) disk = disk->prev;
@@ -728,7 +728,7 @@ t_sarea *PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree)
       disk->time = curr_t;
       disk->mmod = mmod;
     }
-  while(n_disk < 30000);
+  while(n_disk < 10000);
   
   for(i=0;i<pop_size;i++) ldsk_a_pop[i]->disk = disk;
 

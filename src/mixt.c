@@ -682,6 +682,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
   phydbl multiplier,len;
   phydbl *expl,*dot_prod;
 
+  
   tree            = NULL;
   b               = NULL;
   expl            = NULL;
@@ -859,10 +860,12 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                       ambiguity_check = b->rght->c_seq->is_ambigu[tree->curr_site];
                       if(ambiguity_check == NO) state = b->rght->c_seq->d_state[tree->curr_site];                        
                     }
-          
+
+                  site_lk_cat = 0.0;
+                  
                   if(tree->use_eigen_lr == YES)
                     {
-                      site_lk_cat = Lk_Core_Eigen_Lr(expl,dot_prod + site*ns*ncatg,NO,b,tree);
+                      site_lk_cat = Lk_Core_Eigen_Lr(expl,dot_prod + site*ns,NO,b,tree);
                     }
                   else
                     {
@@ -878,12 +881,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                                               b->Pij_rr,b,tree);
                     }
                 }
-              
-              printf("\n. site: %4d lk: %15f class: %3d",
-                     site,
-                     site_lk_cat,
-                     tree->mod->ras->parent_class_number);
-              
+                            
               sum_scale_left_cat[tree->mod->ras->parent_class_number] =
                 (b->sum_scale_left)?
                 (b->sum_scale_left[site]):
@@ -898,7 +896,12 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                 sum_scale_left_cat[tree->mod->ras->parent_class_number] +
                 sum_scale_rght_cat[tree->mod->ras->parent_class_number];
 
-              site_lk_cat /= pow(sum,2);
+              site_lk_cat /= pow(2,sum);
+
+              printf("\n\u2022 site: %4d lk: %15f class: %3d sum: %d",
+                     site,
+                     site_lk_cat,
+                     tree->mod->ras->parent_class_number,sum);
 
               tree->site_lk_cat[0] = site_lk_cat;
                       
@@ -971,14 +974,14 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
 
           if(isinf(log_site_lk) || isnan(log_site_lk))
             {
-              PhyML_Printf("\n== Site = %d",site);
-              PhyML_Printf("\n== Invar = %d",mixt_tree->data->invar[site]);
-              PhyML_Printf("\n== Mixt = %d",mixt_tree->is_mixt_tree);
-              PhyML_Printf("\n== Lk = %G log(Lk) = %f < %G",site_lk,log_site_lk,-BIG);
+              PhyML_Printf("\n== site = %d",site);
+              PhyML_Printf("\n== invar = %d",mixt_tree->data->invar[site]);
+              PhyML_Printf("\n== mixt = %d",mixt_tree->is_mixt_tree);
+              PhyML_Printf("\n== lk = %G log(lk) = %f < %G",site_lk,log_site_lk,-BIG);
               for(class=0;class<mixt_tree->mod->ras->n_catg;class++) PhyML_Printf("\n== rr=%f p=%f",mixt_tree->mod->ras->gamma_rr->v[class],mixt_tree->mod->ras->gamma_r_proba->v[class]);
-              PhyML_Printf("\n== Pinv = %G",mixt_tree->mod->ras->pinvar->v);
-              PhyML_Printf("\n== Bl mult = %G",mixt_tree->mod->br_len_mult->v);
-              PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
+              PhyML_Printf("\n== pinv = %G",mixt_tree->mod->ras->pinvar->v);
+              PhyML_Printf("\n== bl mult = %G",mixt_tree->mod->br_len_mult->v);
+              PhyML_Printf("\n== Err. in file %s at line %d.\n",__FILE__,__LINE__);
               Exit("\n");
             }
                     
@@ -1428,7 +1431,7 @@ void MIXT_Check_RAS_Struct_In_Each_Partition_Elem(t_tree *mixt_tree)
                       PhyML_Printf("\n== The invariant site class has to be the first element in");
                       PhyML_Printf("\n== each <mixtureelem> component. Please amend you XML");
                       PhyML_Printf("\n== file accordingly.\n");
-                      Exit("\n.");
+                      Exit("\n\u2022");
                     }
                 }
               tree  = tree->next;
@@ -2212,7 +2215,7 @@ void MIXT_Update_Br_Len_Multipliers(t_mod *mod)
         {
           loc->br_len_mult->v = loc->br_len_mult_unscaled->v / sum;
           loc->br_len_mult->v *= (phydbl)(n_mixt);
-          /* printf("\n. HERE %f %f\n",loc->br_len_mult_unscaled->v,loc->br_len_mult->v); */
+          /* printf("\n\u2022 HERE %f %f\n",loc->br_len_mult_unscaled->v,loc->br_len_mult->v); */
         }
       loc = loc->next_mixt;
     }
@@ -2431,7 +2434,7 @@ void MIXT_Prepare_All(int num_rand_tree, t_tree *mixt_tree)
   
   if(mixt_tree->io->mod->s_opt->random_input_tree)
     {
-      PhyML_Printf("\n\n. [%3d/%3d]",num_rand_tree+1,mixt_tree->io->mod->s_opt->n_rand_starts);
+      PhyML_Printf("\n\n\u2022 [%3d/%3d]",num_rand_tree+1,mixt_tree->io->mod->s_opt->n_rand_starts);
       Random_Tree(mixt_tree);
     }
   
@@ -2571,7 +2574,7 @@ void MIXT_Ancestral_Sequences_One_Node(t_node *mixt_d, t_tree *mixt_tree, int pr
                               {
                                 p0 += v0->b[0]->p_lk_tip_r[csite*Ns+j] * Pij0[catg*NsNs+i*Ns+j];
 
-                                /* printf("\n. p0 %d %f", */
+                                /* printf("\n\u2022 p0 %d %f", */
                                 /*        v0->b[0]->p_lk_tip_r[site*Ns+j], */
                                 /*        Pij0[catg*NsNs+i*Ns+j]); */
                               }
@@ -2582,7 +2585,7 @@ void MIXT_Ancestral_Sequences_One_Node(t_node *mixt_d, t_tree *mixt_tree, int pr
 
                                 /* p0 += p_lk0[site*NsNg+catg*Ns+j] * Pij0[catg*NsNs+i*Ns+j]; */
 
-                                /* printf("\n. p0 %f %f", */
+                                /* printf("\n\u2022 p0 %f %f", */
                                 /*        p_lk0[site*NsNg+catg*Ns+j], */
                                 /*        Pij0[catg*NsNs+i*Ns+j]); */
                               }
@@ -2592,7 +2595,7 @@ void MIXT_Ancestral_Sequences_One_Node(t_node *mixt_d, t_tree *mixt_tree, int pr
                               {
                                 p1 += v1->b[0]->p_lk_tip_r[csite*Ns+j] * Pij1[catg*NsNs+i*Ns+j];
 
-                                /* printf("\n. p1 %d %f", */
+                                /* printf("\n\u2022 p1 %d %f", */
                                 /*        v1->b[0]->p_lk_tip_r[site*Ns+j], */
                                 /*        Pij1[catg*NsNs+i*Ns+j]); */
                               }
@@ -2604,7 +2607,7 @@ void MIXT_Ancestral_Sequences_One_Node(t_node *mixt_d, t_tree *mixt_tree, int pr
 
                                 /* p1 += p_lk1[site*NsNg+catg*Ns+j] * Pij1[catg*NsNs+i*Ns+j];  */
 
-                                /* printf("\n. p1 %f %f", */
+                                /* printf("\n\u2022 p1 %f %f", */
                                 /*        p_lk1[site*NsNg+catg*Ns+j], */
                                 /*        Pij1[catg*NsNs+i*Ns+j]); */
                              }
@@ -2615,7 +2618,7 @@ void MIXT_Ancestral_Sequences_One_Node(t_node *mixt_d, t_tree *mixt_tree, int pr
                             for(j=0;j<tree->mod->ns;j++)
                               {
                                 p2 += v2->b[0]->p_lk_tip_r[csite*Ns+j] * Pij2[catg*NsNs+i*Ns+j];
-                                /* printf("\n. p2 %d %f", */
+                                /* printf("\n\u2022 p2 %d %f", */
                                 /*        v2->b[0]->p_lk_tip_r[site*Ns+j], */
                                 /*        Pij2[catg*NsNs+i*Ns+j]); */
                               }
@@ -2626,7 +2629,7 @@ void MIXT_Ancestral_Sequences_One_Node(t_node *mixt_d, t_tree *mixt_tree, int pr
 
                                 /* p2 += p_lk2[site*NsNg+catg*Ns+j] * Pij2[catg*NsNs+i*Ns+j]; */
 
-                                /* printf("\n. p2 %f %f", */
+                                /* printf("\n\u2022 p2 %f %f", */
                                 /*        p_lk2[site*NsNg+catg*Ns+j], */
                                 /*        Pij2[catg*NsNs+i*Ns+j]);  */
                              }
@@ -2836,13 +2839,13 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
                   /*                               -1,-1, */
                   /*                               b,tree); */
                   
-                  /* printf("\n\n. site: %d",site); */
-                  /* printf("\n. lr_left: %G %G %G %G",tree->eigen_lr_left[site],tree->eigen_lr_left[site+1],tree->eigen_lr_left[site+2],tree->eigen_lr_left[site+3]); fflush(NULL); */
-                  /* printf("\n. lr_rght: %G %G %G %G",tree->eigen_lr_rght[site],tree->eigen_lr_rght[site+1],tree->eigen_lr_rght[site+2],tree->eigen_lr_rght[site+3]); fflush(NULL); */
-                  /* printf("\n. expl: %G %G %G %G rr: %f len: %f",expl[class+0],expl[class+1],expl[class+2],expl[class+3],rr,len); */
-                  /* printf("\n. expld: %G %G %G %G rr: %f len: %f",expld[class+0],expld[class+1],expld[class+2],expld[class+3],rr,len); */
-                  /* printf("\n. expld2: %G %G %G %G rr: %f len: %f",expld2[class+0],expld2[class+1],expld2[class+2],expld2[class+3],rr,len); */
-                  /* printf("\n. class: %d d2lk: %G dlk: %G lk: %G",class,d2lk[class],dlk[class],lk[class]); fflush(NULL); */
+                  /* printf("\n\n\u2022 site: %d",site); */
+                  /* printf("\n\u2022 lr_left: %G %G %G %G",tree->eigen_lr_left[site],tree->eigen_lr_left[site+1],tree->eigen_lr_left[site+2],tree->eigen_lr_left[site+3]); fflush(NULL); */
+                  /* printf("\n\u2022 lr_rght: %G %G %G %G",tree->eigen_lr_rght[site],tree->eigen_lr_rght[site+1],tree->eigen_lr_rght[site+2],tree->eigen_lr_rght[site+3]); fflush(NULL); */
+                  /* printf("\n\u2022 expl: %G %G %G %G rr: %f len: %f",expl[class+0],expl[class+1],expl[class+2],expl[class+3],rr,len); */
+                  /* printf("\n\u2022 expld: %G %G %G %G rr: %f len: %f",expld[class+0],expld[class+1],expld[class+2],expld[class+3],rr,len); */
+                  /* printf("\n\u2022 expld2: %G %G %G %G rr: %f len: %f",expld2[class+0],expld2[class+1],expld2[class+2],expld2[class+3],rr,len); */
+                  /* printf("\n\u2022 class: %d d2lk: %G dlk: %G lk: %G",class,d2lk[class],dlk[class],lk[class]); fflush(NULL); */
                 }
 
               class++;
@@ -3013,7 +3016,7 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
           dlnlk  += mixt_tree->data->wght[site] * ( site_dlk / site_lk );
           d2lnlk += mixt_tree->data->wght[site] * ( site_d2lk / site_lk - (site_dlk / site_lk) * (site_dlk / site_lk) );
           
-          /* printf("\n. dlnlk: %f d2lnlk: %f wght: %f site_dlk: %f site_d2lk: %f",dlnlk,d2lnlk,mixt_tree->data->wght[site],site_dlk,site_d2lk); */
+          /* printf("\n\u2022 dlnlk: %f d2lnlk: %f wght: %f site_dlk: %f site_d2lk: %f",dlnlk,d2lnlk,mixt_tree->data->wght[site],site_dlk,site_d2lk); */
 
           log_site_lk = log(site_lk) - (phydbl)LOG2 * fact_sum_scale;
 
@@ -3382,6 +3385,7 @@ void MIXT_Set_Both_Sides(int yesno, t_tree *mixt_tree)
   
   do
     {
+      if(tree->is_mixt_tree == YES) tree = tree->next;        
       Set_Both_Sides(yesno,tree);
       tree = tree->next;
     }
