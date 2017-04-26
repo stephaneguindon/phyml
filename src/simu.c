@@ -954,9 +954,10 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
   else
     {
       phydbl lk0,lk1,lk2;
-      phydbl l0,rnd,p,accept_prob;
+      phydbl l0,rnd;
       t_node *v1,*v2,*u,*dum;
-      unsigned int keep_topo;
+      /* unsigned int keep_topo; */
+      /* phydbl p,accept_prob; */
       
       lk0 = UNLIKELY;
       lk1 = UNLIKELY;
@@ -1002,13 +1003,13 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
           lk1 = Lk(b,tree);
 
           
-          keep_topo = (lk1 > lk0);
-          if(Are_Equal(tree->annealing_temp,0.0,1.E-3) == NO)
-            {
-              accept_prob = exp((lk1-lk0)/tree->annealing_temp);
-              p = Uni();
-              if(!(p > accept_prob)) keep_topo = YES;
-            }
+          /* keep_topo = (lk1 > lk0); */
+          /* if(Are_Equal(tree->annealing_temp,0.0,1.E-3) == NO) */
+          /*   { */
+          /*     accept_prob = exp((lk1-lk0)/tree->annealing_temp); */
+          /*     p = Uni(); */
+          /*     if(!(p > accept_prob)) keep_topo = YES; */
+          /*   } */
 
           /* if(keep_topo == NO) */
           if(lk1 < lk0)
@@ -1027,13 +1028,13 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
               lk2 = Lk(b,tree);
               
               
-              keep_topo = (lk2 > lk0);
-              if(Are_Equal(tree->annealing_temp,0.0,1.E-3) == NO)
-                {
-                  accept_prob = exp((lk2-lk0)/tree->annealing_temp);
-                  p = Uni();
-                  if(!(p > accept_prob)) keep_topo = YES;
-                }
+              /* keep_topo = (lk2 > lk0); */
+              /* if(Are_Equal(tree->annealing_temp,0.0,1.E-3) == NO) */
+              /*   { */
+              /*     accept_prob = exp((lk2-lk0)/tree->annealing_temp); */
+              /*     p = Uni(); */
+              /*     if(!(p > accept_prob)) keep_topo = YES; */
+              /*   } */
 
               // Unswap
               if(lk2 < lk0)
