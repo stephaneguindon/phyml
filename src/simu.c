@@ -956,6 +956,7 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
       phydbl lk0,lk1,lk2;
       phydbl l0,rnd;
       t_node *v1,*v2,*u,*dum;
+
       /* unsigned int keep_topo; */
       /* phydbl p,accept_prob; */
       
