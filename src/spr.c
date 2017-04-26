@@ -439,18 +439,6 @@ int Test_All_Spr_Targets(t_edge *b_pulled, t_node *n_link, t_tree *tree)
           Update_Partial_Pars(tree,b_residual,n_link);
         }
 
-
-      // Below is not optimal. Maybe add an argument so that partial lk deeper than a certain
-      // depth are not updated.
-      /* For(i,3) */
-      /*   if(n_link->v[i] != n_opp_to_link) */
-      /*     { */
-      /*       if(tree->mod->s_opt->spr_lnL) */
-      /*         Pre_Order_Lk(n_link,n_link->v[i],tree); */
-      /*       else */
-      /*         Pre_Order_Pars(n_link,n_link->v[i],tree); */
-      /*     } */
-
       t_ll *e_ll = tree->edge_list->head;
       t_ll *n_ll = tree->node_list->head;
       t_edge *e;
@@ -1778,7 +1766,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   t_tree **tree_list,**tree_list_cpy;
   phydbl *lnL_list,*max_delta_lnL_list,best_lnL;
   
-  const unsigned int list_size_first_round  = 5 + (int)tree->n_otu/15;
+  const unsigned int list_size_first_round  = 5 + (int)tree->n_otu/20;
   const unsigned int list_size_second_round  = 1;
   const unsigned int list_size_third_round  = 1;
   
@@ -1857,7 +1845,7 @@ void Spr_List_Of_Trees(t_tree *tree)
 
       do
         {
-          tree->mod->s_opt->max_depth_path            = (int)tree->n_otu/3;
+          tree->mod->s_opt->max_depth_path            = 1+(int)tree->n_otu/5;
           tree->mod->s_opt->spr_lnL                   = YES;
           tree->mod->s_opt->spr_pars                  = NO;
           tree->mod->s_opt->min_diff_lk_move          = 1.E-1;
@@ -1922,7 +1910,7 @@ void Spr_List_Of_Trees(t_tree *tree)
  
       if(list_size == 0) Round_Optimize(tree,ROUND_MAX);
 
-      tree->mod->s_opt->max_depth_path            = MAX(10,max_depth_list[rk[list_size]]);
+      tree->mod->s_opt->max_depth_path            = MAX(5,max_depth_list[rk[list_size]]);
       tree->mod->s_opt->spr_lnL                   = YES;
       tree->mod->s_opt->spr_pars                  = NO;
       tree->mod->s_opt->min_diff_lk_move          = 1.E-1;
