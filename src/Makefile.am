@@ -553,6 +553,8 @@ init.c init.h\
 xml.c xml.h\
 mixt.c mixt.h\
 date.c date.h\
+sse.c sse.h\
+avx.c avx.h\
 phyrex.c phyrex.h
 else
 if WANT_BEAGLE

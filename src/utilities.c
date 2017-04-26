@@ -5674,7 +5674,6 @@ void Found_In_Subtree(t_node *a, t_node *d, t_node *target, int *match, t_tree *
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Get_List_Of_Target_Edges(t_node *a, t_node *d, t_edge **list, int *list_size, t_tree *tree)
 {
   int i;
@@ -5997,7 +5996,6 @@ void Get_List_Of_Adjacent_Targets(t_node *a, t_node *d, t_node ***node_list, t_e
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void Sort_List_Of_Adjacent_Targets(t_edge ***list, int list_size)
 {
@@ -10057,8 +10055,8 @@ void Set_Both_Sides(int yesno, t_tree *tree)
 
 void Set_Use_Eigen_Lr(int yesno, t_tree *tree)
 {
-  if(tree->is_mixt_tree == YES) MIXT_Set_Use_Eigen_Lr(yesno,tree);
   tree->use_eigen_lr = yesno;
+  if(tree->is_mixt_tree == YES) MIXT_Set_Use_Eigen_Lr(yesno,tree);
 }
 
 //////////////////////////////////////////////////////////////
@@ -10066,8 +10064,8 @@ void Set_Use_Eigen_Lr(int yesno, t_tree *tree)
 
 void Set_Update_Eigen_Lr(int yesno, t_tree *tree)
 {
-  if(tree->is_mixt_tree == YES) MIXT_Set_Update_Eigen_Lr(yesno,tree);
   tree->update_eigen_lr = yesno;
+  if(tree->is_mixt_tree == YES) MIXT_Set_Update_Eigen_Lr(yesno,tree);
 }
 
 //////////////////////////////////////////////////////////////

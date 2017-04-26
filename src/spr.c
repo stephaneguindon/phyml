@@ -1874,11 +1874,11 @@ void Spr_List_Of_Trees(t_tree *tree)
           tree->mod->s_opt->max_delta_lnL_spr = tree->mod->s_opt->max_delta_lnL_spr_current;
           tree->mod->s_opt->max_depth_path = tree->max_spr_depth;
           
-          printf("\n. tree->mod->s_opt->max_delta_lnL_spr_current: %12f depth: %4d n_improv: %4d lnL: %f",
-                 tree->mod->s_opt->max_delta_lnL_spr,
-                 tree->mod->s_opt->max_depth_path,
-                 tree->n_improvements,
-                 tree->c_lnL);
+          /* printf("\n. tree->mod->s_opt->max_delta_lnL_spr_current: %12f depth: %4d n_improv: %4d lnL: %f", */
+          /*        tree->mod->s_opt->max_delta_lnL_spr, */
+          /*        tree->mod->s_opt->max_depth_path, */
+          /*        tree->n_improvements, */
+          /*        tree->c_lnL); */
           
         }
       while(tree->n_improvements > 5);
@@ -1930,9 +1930,9 @@ void Spr_List_Of_Trees(t_tree *tree)
       tree->mod->s_opt->eval_list_regraft         = YES;
       tree->mod->s_opt->max_delta_lnL_spr         = MAX(50.,max_delta_lnL_list[rk[list_size]]);
 
-      printf("\n. tree->mod->s_opt->max_delta_lnL_spr: %f max_depth: %d",
-             tree->mod->s_opt->max_delta_lnL_spr,
-             tree->mod->s_opt->max_depth_path);
+      /* printf("\n. tree->mod->s_opt->max_delta_lnL_spr: %f max_depth: %d", */
+      /*        tree->mod->s_opt->max_delta_lnL_spr, */
+      /*        tree->mod->s_opt->max_depth_path); */
 
       iter = 0;
       do

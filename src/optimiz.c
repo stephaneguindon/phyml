@@ -860,7 +860,6 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
       return;
     }
 
-  /* printf("\n. NODE A: %d NODE D: %d",a->num,d->num); */
   if(tree->io->mod->s_opt->opt_bl == YES) Br_Len_Brent(b_fcus,tree);
 
   if(tree->c_lnL < lk_init - tree->mod->s_opt->min_diff_lk_local)

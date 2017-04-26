@@ -625,18 +625,18 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
   phydbl len,rr;
   phydbl lk,dlk,d2lk,dlnlk,d2lnlk;
   phydbl ev,expevlen;
-    
-  phydbl *dot_prod = tree->dot_prod;
-  phydbl *expl = tree->expl;
-  phydbl *expld = NULL;
-  phydbl *expld2 = NULL;
-
+   
   const unsigned int ns = tree->mod->ns;
   const unsigned int ncatg = tree->mod->ras->n_catg;
   const unsigned int npattern = tree->n_pattern;
+
+  phydbl *dot_prod = tree->dot_prod;
+  phydbl *expl = tree->expl;
+  phydbl *expld = expl + 1*ncatg*ns;
+  phydbl *expld2 = expl + 2*ncatg*ns;
+
   
   assert(isnan(*l) == FALSE);
-
 
   if(*l < tree->mod->l_min)      *l = tree->mod->l_min;
   else if(*l > tree->mod->l_max) *l = tree->mod->l_max;      
@@ -657,8 +657,7 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
   for(catg=0;catg<ncatg;catg++)
     {
       rr = tree->mod->ras->gamma_rr->v[catg];
-      rr *=  tree->mod->br_len_mult->v;
-      if(tree->mixt_tree != NULL) rr *= tree->mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number];
+      rr *=  tree->mod->br_len_mult->v;      
 
       len = (*l) * rr;
             
@@ -679,23 +678,15 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
           ev = log(tree->mod->eigen->e_val[state]);
           expevlen = exp(ev*len);
 
-          expl[0*ncatg*ns + catg*ns+state] = expevlen;
-          expl[1*ncatg*ns + catg*ns+state] = expevlen*ev*rr;
-          expl[2*ncatg*ns + catg*ns+state] = expevlen*ev*ev*rr*rr;
-
-          expld  = expl + 1*ncatg*ns;
-          expld2 = expl + 2*ncatg*ns;
-          
+          expl[0*ncatg*ns + catg*ns + state] = expevlen;
+          expl[1*ncatg*ns + catg*ns + state] = expevlen*ev*rr;
+          expl[2*ncatg*ns + catg*ns + state] = expevlen*ev*ev*rr*rr;
         }
     }
   
-  dlnlk  = 0.0;
-  d2lnlk = 0.0;
 
-  /* CALL++; */
-  /* struct timespec start, end; */
-  /* clock_gettime(CLOCK_MONOTONIC_RAW, &start); */
-
+  dlnlk       = 0.0;
+  d2lnlk      = 0.0;
   tree->c_lnL = .0;
   
   for(site=0;site<npattern;++site)
@@ -706,6 +697,8 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
       d2lk  = Lk_Core_Eigen_Lr(expld2,dot_prod + site*ns*ncatg,YES,b,tree);
       lk    = Lk_Core_Eigen_Lr(expl  ,dot_prod + site*ns*ncatg,NO ,b,tree);
 
+      /* printf("\n. site: %4d l:%15G lk:%15G dlk:%15G d2lk:%15G",site,b->l->v,lk,dlk,d2lk); */
+      
       if(!(lk > 0.0))
         {
           PhyML_Printf("\n== dlk: %G d2lk: %G lk: %G",dlk,d2lk,lk);
@@ -718,11 +711,6 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
       dlnlk  += tree->data->wght[site] * dlk;
       d2lnlk += tree->data->wght[site] * d2lk - dlk*dlk;     
     }
-  
-  /* clock_gettime(CLOCK_MONOTONIC_RAW, &end); */
-  /* uint64_t delta = (end.tv_sec - start.tv_sec) * 1000000 + (end.tv_nsec - start.tv_nsec) / 1000; */
-  /* TIME += (int)(delta); */
-  /* printf("\n. time: %lu\n",delta); exit(-1);  */
 
   tree->c_dlnL  = dlnlk;
   tree->c_d2lnL = d2lnlk;
@@ -780,6 +768,13 @@ phydbl Lk_Core(int state, int ambiguity_check, short int derivative,
                                                                   Pij_rr + catg*nsns,
                                                                   pi,ns, ambiguity_check, state);
 #endif
+
+
+          /* printf("\n\u2022 site: %4d lk: %15f class: %3d", */
+          /*        site, */
+          /*        tree->site_lk_cat[catg], */
+          /*        catg); */
+
         }
 
       Pull_Scaling_Factors(site,b,tree);
@@ -822,7 +817,8 @@ phydbl Lk_Core(int state, int ambiguity_check, short int derivative,
       tree->c_lnL += tree->data->wght[site] * log_site_lk;
       tree->cur_site_lk[site] = exp(log_site_lk); // note to self : add opt out option to avoid calculating this if not necessary
     }
-  
+
+  /* printf("\n. clnL: %f",tree->c_lnL); */
   return res;
 }
 
