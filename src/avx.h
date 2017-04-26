@@ -23,6 +23,8 @@ the GNU public licence.  See http://www.opensource.org for details.
 #include "mixt.h"
 
 
+#if defined(__AVX__)
+
 void AVX_Update_Partial_Lk(t_tree *tree,t_edge *b_fcus,t_node *n);
 __m256d AVX_Horizontal_Add(__m256d x[4]);
 void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree);
@@ -33,4 +35,5 @@ phydbl AVX_Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree);
 phydbl AVX_Lk_Core_Nucl(int state, int ambiguity_check, t_edge *b, t_tree *tree);
 phydbl AVX_Lk_Core_AA(int state, int ambiguity_check, t_edge *b, t_tree *tree);
 
+#endif
 #endif
