@@ -135,7 +135,7 @@ extern int TIME;
 #define  E_FRQ_MAX 100.
 
 #define  TSTV_MIN 0.05
-#define  TSTV_MAX 10.0
+#define  TSTV_MAX 20.0
 
 #define  PINV_MIN 0.00001
 #define  PINV_MAX 0.99999

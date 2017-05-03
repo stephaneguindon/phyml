@@ -786,7 +786,7 @@ t_sarea *PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree)
       phydbl u = mmod->mu;
       phydbl rho = mmod->rho;
       phydbl mean =
-        0.25*rho*u*
+        0.5*PI*rho*u*r*r*
         (erf(0.5*sqrt(2.)/r*(cy-0.0))*erf(0.5*sqrt(2.)/r*(cx-0.0)) +
          erf(0.5*sqrt(2.)/r*(cy-h))*erf(0.5*sqrt(2.)/r*(cx-w)) -
          erf(0.5*sqrt(2.)/r*(cy-0.0))*erf(0.5*sqrt(2.)/r*(cx-w)) -

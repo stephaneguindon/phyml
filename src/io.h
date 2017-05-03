@@ -78,7 +78,7 @@ int Set_Whichmodel(int select);
 void Print_Site(calign *cdata, int num, int n_otu, char *sep, int stepsize, FILE *fp);
 option *PhyML_XML(char *xml_filename);
 void Check_Taxa_Sets(t_tree *mixt_tree);
-void Make_Ratematrice_From_XML_Node(xml_node *instance, option *io, t_mod *mod);
+void Make_Ratematrix_From_XML_Node(xml_node *instance, option *io, t_mod *mod);
 void Make_Efrq_From_XML_Node(xml_node *instance, option *io, t_mod *mod);
 void Make_Topology_From_XML_Node(xml_node *instance, option *io, t_mod *mod);
 void Make_RAS_From_XML_Node(xml_node *parent, t_mod *mod);

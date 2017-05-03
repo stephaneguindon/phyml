@@ -434,7 +434,7 @@ phydbl Lk(t_edge *b, t_tree *tree)
   const unsigned int ncatg = tree->mod->ras->n_catg;
   const unsigned int npatterns = tree->n_pattern;
 
-
+  
   if(tree->eval_alnL == NO) return UNLIKELY;
 
   if(b == NULL && tree->mod->s_opt->curr_opt_free_rates == YES)
@@ -454,7 +454,6 @@ phydbl Lk(t_edge *b, t_tree *tree)
     }
   
   tree->old_lnL = tree->c_lnL;
-
   
 #ifdef PHYREX
   PHYREX_Ldsk_To_Tree(tree);
@@ -478,8 +477,13 @@ if(tree->rates && tree->io->lk_approx == NORMAL)
  dot_prod = tree->dot_prod;
  
  
- if(b == NULL) Set_Model_Parameters(tree->mod);
-    
+ if(b == NULL)
+   {
+     Update_Boundaries(tree->mod);
+     Update_RAS(tree->mod);
+     Update_Efrq(tree->mod);
+     Update_Eigen(tree->mod);
+   }
   
  if(tree->mod->s_opt->skip_tree_traversal == NO)
     {
@@ -1163,8 +1167,6 @@ void Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
       return;
     }
   
-  assert(tree->is_mixt_tree == NO);
-
   if((tree->io->do_alias_subpatt == YES) &&
      (tree->update_alias_subpatt == YES))
     Alias_One_Subpatt((d==b->left)?(b->rght):(b->left),d,tree);
@@ -1981,7 +1983,6 @@ phydbl Lk_Given_Two_Seq(calign *data, int numseq1, int numseq2, phydbl dist, t_m
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void Unconstraint_Lk(t_tree *tree)
 {
@@ -2832,7 +2833,6 @@ phydbl Wrap_Part_Lk_At_Given_Edge(t_edge *b, t_tree *tree, supert_tree *stree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 phydbl Wrap_Part_Lk(t_edge *b, t_tree *tree, supert_tree *stree)
 {

@@ -4683,8 +4683,7 @@ option *PhyML_XML(char *xml_filename)
       Br_Len_Not_Involving_Invar(mixt_tree);
       Unscale_Br_Len_Multiplier_Tree(mixt_tree);
       Set_Both_Sides(YES,mixt_tree);
-      
-      
+            
       Switch_Eigen(YES,mixt_tree->mod);                 
       Lk(NULL,mixt_tree);
       Switch_Eigen(NO,mixt_tree->mod);
@@ -4697,11 +4696,7 @@ option *PhyML_XML(char *xml_filename)
         }
       else
         {
-          if(mixt_tree->mod->s_opt->opt_subst_param ||
-             mixt_tree->mod->s_opt->opt_bl)
-            {
-              Round_Optimize(mixt_tree,ROUND_MAX);
-            }
+          Round_Optimize(mixt_tree,ROUND_MAX);
         }
 
 
@@ -4828,7 +4823,7 @@ void Check_Taxa_Sets(t_tree *mixt_tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Make_Ratematrice_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
+void Make_Ratematrix_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
 {
   char *model = NULL;
   int select;
@@ -4920,11 +4915,13 @@ void Make_Ratematrice_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
         {
           if(!strcmp(opt_tstv,"true") || !strcmp(opt_tstv,"yes"))
             {
-              mod->s_opt->opt_kappa = YES;
+              mod->s_opt->opt_kappa       = YES;
+              mod->s_opt->opt_subst_param = YES;
             }
           else
             {
-              mod->s_opt->opt_kappa = NO;
+              mod->s_opt->opt_kappa       = NO;
+              mod->s_opt->opt_subst_param = NO;
             }
         }
     }
@@ -4943,7 +4940,13 @@ void Make_Ratematrice_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
         {
           if(!strcmp(opt_rr,"yes") || !strcmp(opt_rr,"true"))
             {
-              mod->s_opt->opt_rr = YES;
+              mod->s_opt->opt_rr          = YES;
+              mod->s_opt->opt_subst_param = YES;
+            }
+          else
+            {
+              mod->s_opt->opt_rr          = NO;
+              mod->s_opt->opt_subst_param = NO;
             }
         }
     }

@@ -311,9 +311,10 @@ t_tree *XML_Process_Base(char *xml_filename)
       iomod->s_opt = (t_opt *)Make_Optimiz();
       Set_Defaults_Optimiz(iomod->s_opt);
       
-      iomod->s_opt->opt_kappa   = NO;
-      iomod->s_opt->opt_lambda  = NO;
-      iomod->s_opt->opt_rr      = NO;
+      iomod->s_opt->opt_kappa       = NO;
+      iomod->s_opt->opt_lambda      = NO;
+      iomod->s_opt->opt_rr          = NO;
+      iomod->s_opt->opt_subst_param = NO;
       
       /*! Input file
        */
@@ -616,8 +617,8 @@ t_tree *XML_Process_Base(char *xml_filename)
                           /* ! First time we process this 'instance' node which has this 'ratematrices' parent */
                           if(instance->ds->obj == NULL)
                             {
-                              Make_Ratematrice_From_XML_Node(instance,io,mod);
-                              
+                              Make_Ratematrix_From_XML_Node(instance,io,mod);
+                                                            
                               ds = instance->ds;
                               
                               /*! Connect the data structure n->ds to mod->r_mat */

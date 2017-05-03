@@ -89,7 +89,6 @@ void MIXT_Update_Partial_Pars(t_tree *mixt_tree, t_edge *mixt_b, t_node *mixt_d)
 void MIXT_Chain_Cal(t_tree *mixt_tree);
 void MIXT_Chain_Rates(t_rate *curr, t_rate *next);
 void MIXT_RATES_Update_Cur_Bl(t_tree *mixt_tree);
-void MIXT_Set_Model_Parameters(t_mod *mixt_mod);
 phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree);
 void MIXT_Update_Eigen_Lr(t_edge *mixt_b, t_tree *mixt_tree);
 int MIXT_Part_Mixt_Size(t_tree *mixt_tree);

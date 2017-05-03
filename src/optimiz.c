@@ -627,7 +627,6 @@ phydbl Br_Len_Brent(t_edge *b, t_tree *tree)
   
   lk_begin = Lk(mixt_b,mixt_tree); /* We can't assume that the log-lk value is up-to-date */
   
-
   Set_Update_Eigen_Lr(NO,mixt_tree);
   Set_Use_Eigen_Lr(YES,mixt_tree);
     
@@ -676,20 +675,15 @@ void Round_Optimize(t_tree *tree, int n_round_max)
   n_round = 0;
   each = 0;
 
-  Set_Both_Sides(NO,tree); /* Only the down partial likelihoods need to be up-to-date here */
-  Lk(NULL,tree);
-
   while(n_round < n_round_max)
     {      
       if(tree->mod->s_opt->opt_bl || tree->mod->s_opt->constrained_br_len) Optimize_Br_Len_Serie(tree);
-
+      
       if((tree->mod->s_opt->opt_bl || tree->mod->s_opt->constrained_br_len) &&
          (tree->verbose > VL2) &&
          (tree->io->quiet == NO)) Print_Lk(tree,"[Branch lengths     ]");
 
       /* printf("\n. [%d] %f ",n_round,tree->c_lnL); fflush(NULL); */
-      Set_Both_Sides(NO,tree);
-      Lk(NULL,tree);
       
       if(!each)
         {
@@ -722,8 +716,6 @@ void Round_Optimize(t_tree *tree, int n_round_max)
 void Optimize_Br_Len_Serie(t_tree *tree)
 {
   phydbl lk_init,lk_end;
-
-  /* printf("\n. STARTED OPTIMIZING EDGE LENGTHS"); */
   
   Set_Both_Sides(NO,tree);
   Lk(NULL,tree);
@@ -2393,7 +2385,7 @@ phydbl Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
   if(logt == YES) (*param) = log(*param);
   init_lnL = old_lnL = fw;
   
-  /* PhyML_Printf("\n. %p %p %p init_lnL=%f fu=%f ax=%f cx=%f",branch,tree,stree,init_lnL,fu,ax,cx); */
+  /* PhyML_Printf("\n. %p %p %p init_lnL=%f fu=%f ax=%f cx=%f param=%f",branch,tree,stree,init_lnL,fu,ax,cx,*param); */
   
   for(iter=1;iter<=BRENT_IT_MAX;iter++)
     {
@@ -2455,8 +2447,7 @@ phydbl Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
       if(logt == YES) (*param) = exp(MIN(1.E+2,*param));
       fu = -(*obj_func)(branch,tree,stree);
       if(logt == YES) (*param) = log(*param);
-
-      /* PhyML_Printf("\n. iter=%d/%d param=%f lnL=%f",iter,BRENT_IT_MAX,*param,fu); */
+      /* PhyML_Printf("\n. iter=%d/%d param=%f lnL=%f u: %f x: %f d: %f logt: %d",iter,BRENT_IT_MAX,*param,fu,u,x,d,logt); */
 
       if(fu <= fx)
         {
@@ -2725,8 +2716,10 @@ void Optimize_TsTv(t_tree *mixt_tree, int verbose)
             {
               phydbl a,c;
               
-              a = tree->mod->kappa->v * .1;
-              c = tree->mod->kappa->v * 10.;
+              /* a = tree->mod->kappa->v * .1; */
+              /* c = tree->mod->kappa->v * 10.; */
+              a = TSTV_MIN;
+              c = TSTV_MAX;
                             
               Generic_Brent_Lk(&(tree->mod->kappa->v),
                                a,c,
@@ -2734,7 +2727,7 @@ void Optimize_TsTv(t_tree *mixt_tree, int verbose)
                                tree->mod->s_opt->brent_it_max,
                                tree->mod->s_opt->quickdirty,
                                Wrap_Lk,NULL,mixt_tree,NULL,NO);
-                            
+              
               if(verbose)
                 {
                   Print_Lk(mixt_tree,"[Ts/ts ratio        ]");
@@ -3339,12 +3332,12 @@ void Optimize_Lambda(t_tree *mixt_tree, int verbose)
       if(tree->mod->s_opt->opt_lambda)
         {
           Generic_Brent_Lk(&(tree->mod->lambda->v),
-                   0.001,100.,
-                   tree->mod->s_opt->min_diff_lk_local,
-                   tree->mod->s_opt->brent_it_max,
-                   tree->mod->s_opt->quickdirty,
-                   Wrap_Lk,NULL,mixt_tree,NULL,NO);
-
+                           0.001,100.,
+                           tree->mod->s_opt->min_diff_lk_local,
+                           tree->mod->s_opt->brent_it_max,
+                           tree->mod->s_opt->quickdirty,
+                           Wrap_Lk,NULL,mixt_tree,NULL,NO);
+          
           if(verbose)
         {
           Print_Lk(mixt_tree,"[Lambda             ]");

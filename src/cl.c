@@ -1496,11 +1496,11 @@ int Read_Command_Line(option *io, int argc, char **argv)
   
   if(!io->mod->s_opt->opt_subst_param)
     {
-      io->mod->s_opt->opt_alpha  = 0;
-      io->mod->s_opt->opt_kappa  = 0;
-      io->mod->s_opt->opt_lambda = 0;
-      io->mod->s_opt->opt_pinvar = 0;
-      io->mod->s_opt->opt_rr     = 0;	
+      io->mod->s_opt->opt_alpha  = NO;
+      io->mod->s_opt->opt_kappa  = NO;
+      io->mod->s_opt->opt_lambda = NO;
+      io->mod->s_opt->opt_pinvar = NO;
+      io->mod->s_opt->opt_rr     = NO;	
     }
   
   if(io->mod->whichmodel != K80 && 

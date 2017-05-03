@@ -678,7 +678,6 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
   phydbl r_mat_weight_sum, e_frq_weight_sum, sum_probas;
   phydbl len;
   phydbl *expl,*dot_prod;
-
   
   tree          = NULL;
   b             = NULL;
@@ -694,7 +693,34 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
   if((mixt_tree->rates) && (mixt_tree->rates->bl_from_rt)) MIXT_RATES_Update_Cur_Bl(mixt_tree);
 #endif
 
+  /* Update RAS structure (mixt_tree level) */
+  tree = mixt_tree;
+  do
+    {
+      if(!cpy_mixt_b) Update_RAS(tree->mod);
+      tree = tree->next_mixt;
+    }
+  while(tree);
 
+  /* Update other model structure (tree level) */
+  tree = mixt_tree->next;
+  do
+    {
+      if(tree->is_mixt_tree == YES) tree = tree->next;
+      
+      if(!cpy_mixt_b)
+        {
+          Update_Boundaries(tree->mod);
+          Update_Efrq(tree->mod);
+          Update_Eigen(tree->mod);
+        }
+      
+      tree = tree->next;
+    }
+  while(tree);
+
+
+  
   do /*! Consider each element of the data partition */
     {
       tree = mixt_tree->next;
@@ -705,9 +731,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
         }
       while(tree && tree->is_mixt_tree == NO);
       
-
-      if(!cpy_mixt_b) Set_Model_Parameters(mixt_tree->mod);      
-
+      
       Set_Br_Len_Var(mixt_b,mixt_tree);
 
       if(!cpy_mixt_b)
@@ -1049,7 +1073,6 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void MIXT_Update_Partial_Lk(t_tree *mixt_tree, t_edge *mixt_b, t_node *mixt_d)
 {
@@ -1530,8 +1553,7 @@ void MIXT_Graft_Subtree(t_edge *mixt_target, t_node *mixt_link, t_node *mixt_lin
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void MIXT_Br_Len_Brent(t_edge *mixt_b,
-                       t_tree *mixt_tree)
+void MIXT_Br_Len_Brent(t_edge *mixt_b, t_tree *mixt_tree)
 {
   t_tree *tree;
   t_edge *b;
@@ -2331,23 +2353,6 @@ void MIXT_Connect_Cseqs_To_Nodes(t_tree *mixt_tree)
       tree = tree->next;
     }
   while(tree);
-  
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-void MIXT_Set_Model_Parameters(t_mod *mixt_mod)
-{
-  t_mod *mod;
-
-  mod = mixt_mod;
-  do
-    {
-      Set_Model_Parameters(mod);
-      mod = mod->next;
-    }
-  while(mod);
   
 }
 
