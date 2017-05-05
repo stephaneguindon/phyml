@@ -733,10 +733,6 @@ typedef struct __Tree{
   int                                 *mutmap; /*! Mutational map */
   int                                json_num;
   short int                   update_eigen_lr;
-
-  phydbl                           *p_lk_bkup;
-  int                           *p_scale_bkup;
-  int                            *p_pars_bkup;
   
   phydbl                       *eigen_lr_left;
   phydbl                       *eigen_lr_rght;

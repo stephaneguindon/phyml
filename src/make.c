@@ -31,24 +31,18 @@ void Make_Tree_4_Lk(t_tree *tree, calign *cdata, int n_site)
   if(posix_memalign((void **)&tree->eigen_lr_rght,BYTE_ALIGN,(size_t)MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   if(posix_memalign((void **)&tree->dot_prod,BYTE_ALIGN,(size_t)tree->n_pattern*tree->mod->ns*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   if(posix_memalign((void **)&tree->expl,BYTE_ALIGN,(size_t)3*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-  if(posix_memalign((void **)&tree->p_lk_bkup,BYTE_ALIGN,(size_t)tree->n_pattern*tree->mod->ns*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 #else
   tree->eigen_lr_left = _aligned_malloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes) * tree->mod->ns * sizeof(phydbl),BYTE_ALIGN);
   tree->eigen_lr_rght = _aligned_malloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes) * tree->mod->ns * sizeof(phydbl),BYTE_ALIGN);
   tree->dot_prod = _aligned_malloc(tree->n_pattern*tree->mod->ns*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*sizeof(phydbl),BYTE_ALIGN);
   tree->expl = _aligned_malloc(3*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
-  tree->p_lk_bkup = _aligned_malloc(tree->n_pattern*tree->mod->ns*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*sizeof(phydbl),BYTE_ALIGN);
 #endif
 #else
   tree->eigen_lr_left = (phydbl *)mCalloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes) * tree->mod->ns,sizeof(phydbl));
   tree->eigen_lr_rght = (phydbl *)mCalloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes) * tree->mod->ns,sizeof(phydbl));
   tree->dot_prod = (phydbl *)mCalloc(tree->n_pattern*tree->mod->ns*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(phydbl));
   tree->expl = (phydbl *)mCalloc(3*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns,sizeof(phydbl));
-  tree->p_lk_bkup = (phydbl *)mCalloc(tree->n_pattern*tree->mod->ns*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(phydbl));
 #endif
-
-
-  tree->p_scale_bkup = (int *)mCalloc(tree->n_pattern*tree->mod->ns,sizeof(int));
 
 
   tree->log_lks_aLRT = (phydbl **)mCalloc(3,sizeof(phydbl *));
@@ -84,7 +78,6 @@ void Make_Tree_4_Pars(t_tree *tree, calign *cdata, int n_site)
   int i;
   tree->site_pars = (int *)mCalloc(tree->n_pattern,sizeof(int));
   tree->step_mat = (int *)mCalloc(tree->mod->ns * tree->mod->ns,sizeof(int));
-  tree->p_pars_bkup = (int *)mCalloc(tree->n_pattern*tree->mod->ns,sizeof(int));
 
   For(i,2*tree->n_otu-1) Make_Edge_Pars(tree->a_edges[i],tree);
   Init_Ui_Tips(tree);

@@ -125,6 +125,8 @@ mixt.c mixt.h\
 init.c init.h\
 nexus.c nexus.h\
 date.c date.h\
+sse.c sse.h\
+avx.c avx.h\
 xml.c xml.h
 phytime_LDADD = -lm
 else 
@@ -323,6 +325,8 @@ init.c init.h\
 xml.c xml.h\
 mixt.c mixt.h\
 date.c date.h\
+sse.c sse.h\
+avx.c avx.h\
 mpi_boot.c mpi_boot.h
 phyml_mpi_LDADD = -lm
 else

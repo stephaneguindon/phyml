@@ -1049,64 +1049,6 @@ void Stepwise_Add_Pars(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Backup_Partial_Pars(t_node *d, t_edge *b, t_tree *tree)
-{
-  if(tree->is_mixt_tree)
-    {
-      MIXT_Backup_Partial_Pars(d, b, tree);
-      return;
-    }
-  
-  int *src;
-  unsigned int nelem;
-  
-  nelem = tree->mod->ns * tree->n_pattern;
-  
-  if(d == b->left)
-    {
-      src = b->p_pars_l;
-    }
-  else
-    {
-      src = b->p_pars_r;
-    }
-
-  memcpy(tree->p_pars_bkup,src,nelem*sizeof(int));
-
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-void Restore_Partial_Pars(t_node *d, t_edge *b, t_tree *tree)
-{
-  if(tree->is_mixt_tree)
-    {
-      MIXT_Restore_Partial_Pars(d, b, tree);
-      return;
-    }
-  
-  int *dest;
-  unsigned int nelem;
-  
-  nelem = tree->mod->ns * tree->n_pattern;
-  
-  if(d == b->left)
-    {
-      dest = b->p_pars_l;
-    }
-  else
-    {
-      dest = b->p_pars_r;
-    }
-
-  memcpy(dest,tree->p_pars_bkup,nelem*sizeof(int));
-
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 

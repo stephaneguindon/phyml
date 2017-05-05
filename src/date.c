@@ -722,6 +722,7 @@ phydbl *DATE_MCMC(t_tree *tree)
   n_vars                  = 10;
   adjust_len              = 1E+5;
   mcmc->sample_interval   = 200;
+  mcmc->print_every       = 10;
   mcmc->chain_len         = 1E+7;
   tree->rates->bl_from_rt = YES;
 
@@ -735,10 +736,10 @@ phydbl *DATE_MCMC(t_tree *tree)
   DATE_Assign_Primary_Calibration(tree);
   TIMES_Lk_Times(NO,tree);
 
-  Time_To_Branch(tree);
-  tree->bl_ndigits = 1;
-  printf("\n. Random init tree: %s",Write_Tree(tree,NO));
-  tree->bl_ndigits = 7;
+  /* Time_To_Branch(tree); */
+  /* tree->bl_ndigits = 1; */
+  /* printf("\n. Random init tree: %s",Write_Tree(tree,NO)); */
+  /* tree->bl_ndigits = 7; */
   RATES_Update_Cur_Bl(tree);
   PhyML_Printf("\n. log(Pr(Seq|Tree)) = %f",tree->c_lnL);
   PhyML_Printf("\n. log(Pr(Tree)) = %f",tree->rates->c_lnL_times);
@@ -829,15 +830,8 @@ phydbl *DATE_MCMC(t_tree *tree)
 
       u = Uni();
       for(move=0;move<tree->mcmc->n_moves;move++) if(tree->mcmc->move_weight[move] > u-1.E-10) break;
-
       
       assert(!(move == tree->mcmc->n_moves));      
-
-      
-      /* PhyML_Printf("\n== Move '%s' %f",tree->mcmc->move_name[move],tree->c_lnL); */
-      /* phydbl diff_lk = -tree->c_lnL; */
-
-      /* if((tree->mcmc->run%1000) == 0 && tree->mcmc->run < 10000) Prune_Regraft_Time_Tree(tree); */
       
       if(!strcmp(tree->mcmc->move_name[move],"clock"))                   MCMC_Clock_R(tree);
       else if(!strcmp(tree->mcmc->move_name[move],"birth_rate"))         MCMC_Birth_Rate(tree);
@@ -864,12 +858,6 @@ phydbl *DATE_MCMC(t_tree *tree)
           PhyML_Printf("\n== move: %s",tree->mcmc->move_name[move]);
           Exit("\n");
         }
-
-      /* diff_lk += tree->c_lnL; */
-      /* if(diff_lk > 50) */
-      /*   { */
-      /*     printf("\n. sample: %d diff_lk: %f thanks to move '%s'",tree->mcmc->sample_num,diff_lk,tree->mcmc->move_name[move]); */
-      /*   } */
       
       
       if(!(tree->rates->c_lnL_times > UNLIKELY))
@@ -879,41 +867,15 @@ phydbl *DATE_MCMC(t_tree *tree)
           Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
         }
 
-      /* PhyML_Printf("\n. move: %s lnL: %f",tree->mcmc->move_name[move],tree->c_lnL); */
-
-      /* { */
-      /*   phydbl cur, new; */
-      /*   cur = tree->c_lnL; */
-      /*   new = Lk(NULL,tree); */
-      /*   if(!Are_Equal(cur,new,1.E-4)) */
-      /*     { */
-      /*       PhyML_Printf("\n== cur: %f new: %f",cur,new); */
-      /*       Exit("\n"); */
-      /*     } */
-      /* } */
-
-
-      /* { */
-      /*   phydbl cur_l,new_l; */
-      /*   cur_l = tree->e_root->l->v; */
-      /*   RATES_Update_Cur_Bl(tree); */
-      /*   new_l = tree->e_root->l->v; */
-      /*   if(!Are_Equal(cur_l,new_l,1.E-4)) */
-      /*     { */
-      /*       PhyML_Printf("\n== cur_l: %f new_l: %f",cur_l,new_l); */
-      /*       Exit("\n"); */
-      /*     } */
-      /* } */
-
       
-      if(!(tree->mcmc->run%tree->mcmc->sample_interval))
+      if(!(tree->mcmc->run%tree->mcmc->print_every))
         {
           phydbl mean_r,post;
-          mean_r = RATES_Average_Substitution_Rate(tree);
 
+          mean_r = RATES_Average_Substitution_Rate(tree);
           post = Get_Lk(tree) + tree->rates->c_lnL_times + tree->rates->c_lnL_rates;
-          
-          PhyML_Printf("\n. %10d lnL: [%10.2f -- %10.2f -- %10.2f -- %10.2f] clock: %12f root age: %12f [time: %7d sec run: %8d] mean:%15f %20s",
+
+          PhyML_Printf("\n. %10d lnL: [%12.2f -- %12.2f -- %12.2f -- %12.2f] clock: %12f root age: %12f [time: %7d sec run: %8d] mean:%15f %20s",
                        tree->mcmc->run,
                        post,
                        Get_Lk(tree),
@@ -925,7 +887,15 @@ phydbl *DATE_MCMC(t_tree *tree)
                        tree->mcmc->run,
                        mean_r,
                        tree->mcmc->move_name[move]);
-
+        }
+      
+      if(!(tree->mcmc->run%tree->mcmc->sample_interval))
+        {
+          phydbl mean_r,post;
+          
+          mean_r = RATES_Average_Substitution_Rate(tree);
+          post = Get_Lk(tree) + tree->rates->c_lnL_times + tree->rates->c_lnL_rates;
+          
           PhyML_Fprintf(fp_stats,"\n%6d\t%9.1f\t%9.1f\t%9.1f\t%9.1f\t%12G\t%12G\t%12G\t%12G\t%12G\t%12G\t",
                         tree->mcmc->run,
                         post,

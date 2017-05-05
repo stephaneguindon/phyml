@@ -1729,18 +1729,20 @@ xml_node *XML_Search_Node_Attribute_Value(char *attr_name, char *value, int skip
               match = node;
               Free(sname);
               Free(sval);
-              Free(qname);
-              Free(qval);
               break;
             }
 
           Free(sname);
           Free(sval);
+
           attr = attr->next;
+
           if(!attr) break;
         }
       while(1);
 
+      Free(qval);
+      Free(qname);
     }
 
   if(match) return(match);
