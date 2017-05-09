@@ -735,10 +735,10 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
 */
 
 phydbl Lk_Core(int state, int ambiguity_check, short int derivative,
-                             phydbl *p_lk_left, phydbl *p_lk_rght,
-                             phydbl *Pij_rr,
-                             t_edge *b,
-                             t_tree *tree)
+               phydbl *p_lk_left, phydbl *p_lk_rght,
+               phydbl *Pij_rr,
+               t_edge *b,
+               t_tree *tree)
 {
   phydbl site_lk,res,*pi;
   unsigned int catg;
@@ -774,7 +774,7 @@ phydbl Lk_Core(int state, int ambiguity_check, short int derivative,
 #endif
 
 
-          /* printf("\n\u2022 site: %4d lk: %15f class: %3d", */
+          /* printf("\n\u2022 site: %4d lk: %15G class: %3d", */
           /*        site, */
           /*        tree->site_lk_cat[catg], */
           /*        catg); */

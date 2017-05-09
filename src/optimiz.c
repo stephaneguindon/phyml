@@ -648,6 +648,7 @@ phydbl Br_Len_Brent(t_edge *b, t_tree *tree)
   /*                  Wrap_Lk_At_Given_Edge, */
   /*                  mixt_b,mixt_tree,NULL,NO); */
   
+
   lk_end = mixt_tree->c_lnL;
 
   
