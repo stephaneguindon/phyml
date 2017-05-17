@@ -1854,7 +1854,9 @@ typedef struct __Migrep_Model{
   phydbl           prior_param_sigsq; // parameter of the parameter for the prior 
 
   phydbl                         rho; // intensity parameter of the Poisson point processs
+  phydbl                gen_cal_time; // duration of one generation in calendar time unit
 
+  
   phydbl                       c_lnL; // current value of log-likelihood 
   phydbl              c_ln_prior_rad; // current value of log prior for the prior on radius
   phydbl             c_ln_prior_lbda; // current value of log prior for the prior on lbda
