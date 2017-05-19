@@ -170,13 +170,13 @@ void Init_Ui_Tips(t_tree *tree)
 
   for(curr_site=0;curr_site<tree->data->crunch_len;curr_site++)
     {
-      for(i=0;i<tree->n_otu;i++)
+      for(i=0;i<tree->n_otu;++i)
         {
           if(tree->io->datatype == NT)
             {
               if(tree->a_nodes[i]->b[0]->rght->tax != 1)
                 {
-                  PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+                  PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
                   Exit("\n");
                 }
               

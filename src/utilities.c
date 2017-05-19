@@ -7218,7 +7218,6 @@ void Random_Lineage_Rates(t_node *a, t_node *d, t_edge *b, phydbl stick_prob, ph
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 t_edge *Find_Edge_With_Label(char *label, t_tree *tree)
 {
   int i,j;
@@ -7236,7 +7235,7 @@ t_edge *Find_Edge_With_Label(char *label, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Evolve(calign *data, t_mod *mod, t_tree *tree)
+void Evolve(calign *data, t_mod *mod, int first_site_pos, t_tree *tree)
 {
   int root_state, root_rate_class;
   int site,i;
@@ -7255,14 +7254,11 @@ void Evolve(calign *data, t_mod *mod, t_tree *tree)
   Set_Br_Len_Var(NULL,tree);
 
   switch_to_yes = NO;
-  if(tree->mod->gamma_mgf_bl == YES) 
-    {
-      switch_to_yes = YES;
-      /* tree->mod->gamma_mgf_bl = NO; */
-    }
+  if(tree->mod->gamma_mgf_bl == YES) switch_to_yes = YES;
 
-
-  for(site=0;site<data->init_len;site++)
+  assert(first_site_pos < data->init_len);
+  
+  for(site=first_site_pos;site<data->init_len;++site)
     {
       Set_Model_Parameters(mod);
 
@@ -7284,7 +7280,7 @@ void Evolve(calign *data, t_mod *mod, t_tree *tree)
 
       /*   } */
 
-      For(i,2*tree->n_otu-3) Update_PMat_At_Given_Edge(tree->a_edges[i],tree);
+      for(i=0;i<2*tree->n_otu-3;++i) Update_PMat_At_Given_Edge(tree->a_edges[i],tree);
 
       /* Pick the root nucleotide/aa */
       root_state = Pick_State(mod->ns,mod->e_frq->pi->v);
@@ -7345,7 +7341,6 @@ int Pick_State(int n, phydbl *prob)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void Evolve_Recur(t_node *a, t_node *d, t_edge *b, int a_state, int r_class, int site_num, calign *gen_data, t_mod *mod, t_tree *tree)
 {
@@ -10448,7 +10443,7 @@ void Build_Distrib_Number_Of_Diff_States_Under_Model(t_tree *tree)
 
   do
     {
-      Evolve(tree->data,tree->mod,tree);
+      Evolve(tree->data,tree->mod,0,tree);
 
       Calculate_Number_Of_Diff_States(tree);
 

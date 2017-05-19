@@ -193,6 +193,7 @@ extern int TIME;
 
 #define  PHYLIP 0
 #define  NEXUS  1
+#define  IBDSIM 2
 
 #ifndef YES
 #define  YES 1
@@ -2091,7 +2092,7 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu,int rooted);
 #endif
 void Random_Lineage_Rates(t_node *a,t_node *d,t_edge *b,phydbl stick_prob,phydbl *rates,int curr_rate,int n_rates,t_tree *tree);
 t_edge *Find_Edge_With_Label(char *label,t_tree *tree);
-void Evolve(calign *data,t_mod *mod,t_tree *tree);
+void Evolve(calign *data, t_mod *mod, int first_site_pos, t_tree *tree);
 int Pick_State(int n,phydbl *prob);
 void Evolve_Recur(t_node *a,t_node *d,t_edge *b,int a_state,int r_class,int site_num,calign *gen_data,t_mod *mod,t_tree *tree);
 void Site_Diversity(t_tree *tree);

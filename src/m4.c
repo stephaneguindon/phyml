@@ -1140,7 +1140,7 @@ void M4_Site_Branch_Classification_Experiment(t_tree *tree)
 
   /* Generate a simulated data set under H0, with the right sequence length. */
   PhyML_Printf("\n. Evolving sequences (delta=%f, alpha=%f) ...\n",tree->mod->m4mod->delta,tree->mod->m4mod->alpha);
-  Evolve(cpy_data,tree->mod,tree);
+  Evolve(cpy_data,tree->mod,0,tree);
 
   for(i=0;i<cpy_data->init_len;i++)
     {
@@ -1374,7 +1374,7 @@ void M4_Detect_Site_Switches_Experiment(t_tree *tree)
 
   /* Generate a simulated data set under H0, with the right sequence length. */
   tree->mod = nocov_mod;
-  Evolve(cpy_data, nocov_mod, tree);
+  Evolve(cpy_data, nocov_mod, 0, tree);
 
   /* Generate the memory needed for likelihood calculation because
      we will need bigger arrays 
@@ -1403,7 +1403,7 @@ void M4_Detect_Site_Switches_Experiment(t_tree *tree)
       For(i,2*tree->n_otu-3) Update_PMat_At_Given_Edge(tree->a_edges[i],tree);
       
       /* Generate sequences */
-      Evolve(cpy_data, nocov_mod, tree);
+      Evolve(cpy_data, nocov_mod, 0, tree);
       tree->data = cpy_data;
 
       if(tree->mod->s_opt->greedy) Init_Partial_Lk_Tips_Double(tree);
@@ -1501,7 +1501,7 @@ void M4_Posterior_Prediction_Experiment(t_tree *tree)
   /* Generate a simulated data set under H0, with the right sequence length. */
   Set_Model_Parameters(tree->mod);
   For(i,2*tree->n_otu-3) Update_PMat_At_Given_Edge(tree->a_edges[i],tree);
-  Evolve(cpy_data,tree->mod,tree);
+  Evolve(cpy_data,tree->mod,0,tree);
 
   /* Generate the memory needed for likelihood calculation because
      we will need bigger arrays
@@ -1549,7 +1549,7 @@ void M4_Posterior_Prediction_Experiment(t_tree *tree)
   n_iter = 0;
   do
     {
-      Evolve(cpy_data,tree->mod,tree);
+      Evolve(cpy_data,tree->mod,0,tree);
       tree->data      = cpy_data;
       tree->n_pattern = cpy_data->init_len;
 
@@ -1584,7 +1584,7 @@ void M4_Posterior_Prediction_Experiment(t_tree *tree)
   n_iter = 0;
   do
     {
-      Evolve(cpy_data,tree->mod,tree);
+      Evolve(cpy_data,tree->mod,0,tree);
       tree->data      = cpy_data;
       tree->n_pattern = cpy_data->init_len;
       if(tree->mod->s_opt->greedy) Init_Partial_Lk_Tips_Double(tree);

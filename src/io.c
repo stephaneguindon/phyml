@@ -2273,18 +2273,17 @@ void Print_Seq(FILE *fp, align **data, int n_otu)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-void Print_CSeq(FILE *fp, int compressed, calign *cdata)
+void Print_CSeq(FILE *fp, int compressed, calign *cdata, t_tree *tree)
 {
   int i,j;
   int n_otu;
 
   n_otu = cdata->n_otu;
-  if(cdata->format == 0)
+  if(cdata->format == PHYLIP)
     {
       PhyML_Fprintf(fp,"%d\t%d\n",n_otu,cdata->init_len);
     }
-  else
+  else if(cdata->format == NEXUS)
     {
       PhyML_Fprintf(fp,"#NEXUS\n");
       PhyML_Fprintf(fp,"begin data\n");
@@ -2292,45 +2291,86 @@ void Print_CSeq(FILE *fp, int compressed, calign *cdata)
       PhyML_Fprintf(fp,"format sequential datatype=dna;\n");
       PhyML_Fprintf(fp,"matrix\n");
     }
-
-  for(i=0;i<n_otu;i++)
+  else
     {
-      for(j=0;j<50;j++)
+      PhyML_Fprintf(fp,"This sample file is to be processed by IBDSim (http://www1.montpellier.inra.fr/CBGP/software/ibdsim/)");
+    }
+
+  if(cdata->format == PHYLIP || cdata->format == NEXUS)
+    {
+      for(i=0;i<n_otu;i++)
         {
-          if(j<(int)strlen(cdata->c_seq[i]->name))
-            fputc(cdata->c_seq[i]->name[j],fp);
-          else fputc(' ',fp);
-        }
-      
-      if(compressed == YES) /* Print out compressed sequences */
-        PhyML_Fprintf(fp,"%s",cdata->c_seq[i]->state);
-      else /* Print out uncompressed sequences */
-        {
-          for(j=0;j<cdata->init_len;j++)
+          for(j=0;j<50;j++)
             {
-              PhyML_Fprintf(fp,"%c",cdata->c_seq[i]->state[cdata->sitepatt[j]]);
+              if(j<(int)strlen(cdata->c_seq[i]->name))
+                fputc(cdata->c_seq[i]->name[j],fp);
+              else fputc(' ',fp);
             }
+          
+          if(compressed == YES) /* Print out compressed sequences */
+            PhyML_Fprintf(fp,"%s",cdata->c_seq[i]->state);
+          else /* Print out uncompressed sequences */
+            {
+              for(j=0;j<cdata->init_len;j++)
+                {
+                  PhyML_Fprintf(fp,"%c",cdata->c_seq[i]->state[cdata->sitepatt[j]]);
+                }
+            }
+          PhyML_Fprintf(fp,"\n");
         }
       PhyML_Fprintf(fp,"\n");
+      
+      if(cdata->format == NEXUS)
+        {
+          PhyML_Fprintf(fp,";\n");
+          PhyML_Fprintf(fp,"END;\n");
+        }
     }
-  PhyML_Fprintf(fp,"\n");
-
-  if(cdata->format == 1)
+  else if(cdata->format == IBDSIM)
     {
-      PhyML_Fprintf(fp,";\n");
-      PhyML_Fprintf(fp,"END;\n");
+      for(i=0;i<cdata->init_len;i++) PhyML_Fprintf(fp,"\nlocus %6d",i);
+      for(i=0;i<n_otu;i++)
+        {
+          PhyML_Fprintf(fp,"\npop");
+          PhyML_Fprintf(fp,"%12f  %12f , ",
+                        tree->a_nodes[i]->coord->lonlat[0],
+                        tree->a_nodes[i]->coord->lonlat[1]);
+          for(j=0;j<cdata->init_len;j++)
+            {
+              switch(tree->a_nodes[i]->c_seq->state[j])
+                {
+                case 'A' :
+                  {
+                    PhyML_Fprintf(fp,"001 ");
+                    break;
+                  }
+                case 'C' :
+                  {
+                    PhyML_Fprintf(fp,"002 ");
+                    break;
+                  }
+                case 'G' :
+                  {
+                    PhyML_Fprintf(fp,"003 ");
+                    break;
+                  }
+                case 'T' :
+                  {
+                    PhyML_Fprintf(fp,"004 ");
+                    break;
+                  }
+                }
+            }   
+        }
     }
-
-
-/*   PhyML_Printf("\t"); */
-/*   for(j=0;j<cdata->crunch_len;j++) */
-/*     PhyML_Printf("%.0f ",cdata->wght[j]); */
-/*   PhyML_Printf("\n"); */
+  /*   PhyML_Printf("\t"); */
+  /*   for(j=0;j<cdata->crunch_len;j++) */
+  /*     PhyML_Printf("%.0f ",cdata->wght[j]); */
+  /*   PhyML_Printf("\n"); */
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void Print_CSeq_Select(FILE *fp, int compressed, calign *cdata, t_tree *tree)
 {
