@@ -638,7 +638,6 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
   phydbl *expl = tree->expl;
   phydbl *expld = expl + 1*ncatg*ns;
   phydbl *expld2 = expl + 2*ncatg*ns;
-
   
   assert(isnan(*l) == FALSE);
 
@@ -705,7 +704,54 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
       
       if(!(lk > 0.0))
         {
-          PhyML_Printf("\n== dlk: %G d2lk: %G lk: %G",dlk,d2lk,lk);
+          /* PhyML_Printf("\n== dlk: %G d2lk: %G lk: %G",dlk,d2lk,lk); */
+          int l;
+          int i,j;
+          phydbl *U,*V,*Q;
+          printf("\n== l: %G dlk: %G d2lk: %G lk: %G",b->l->v,dlk,d2lk,lk);
+          lk = 0.0;
+          for(l=0;l<ns;++l)
+            {
+              lk += dot_prod[site*ns*ncatg+l] * expl[l];
+              printf("\n== lk: %12G dot_prod: %12G expl: %12G left: %12G rght: %12G",
+                     lk,dot_prod[site*ns*ncatg+l],expl[l],
+                     b->p_lk_left[site*ns*ncatg + catg*ns + l],
+                     b->rght->tax ? b->p_lk_tip_r[site*ns + l] : b->p_lk_rght[site*ns*ncatg + catg*ns + l]);
+            }
+          printf("\n== U\n");
+          U = tree->mod->eigen->r_e_vect;
+          for(i=0;i<ns;i++) { for(j=0;j<ns;j++) printf("%12G ",U[i*ns+j]); printf("\n"); }
+          printf("\n");
+          printf("\n== V\n");
+          V = tree->mod->eigen->l_e_vect;
+          for(i=0;i<ns;i++) { for(j=0;j<ns;j++) printf("%12G ",V[i*ns+j]); printf("\n"); }
+          printf("\n");
+          printf("\n== exp(D)\n");
+          for(i=0;i<ns;i++) printf("%12G\n",tree->mod->eigen->e_val[i]);
+          printf("\n");
+          printf("\n== Q\n");
+          Q = tree->mod->r_mat->qmat->v;
+          for(i=0;i<ns;i++) { for(j=0;j<ns;j++) printf("%12G ",Q[i*ns+j]); printf("\n"); }
+          printf("\n");
+          printf("\n== F\n");
+          for(i=0;i<ns;i++) printf("f(%3d)=%12G\n",i,tree->mod->e_frq->pi->v[i]); 
+          printf("\n\n. tstv : %G",tree->mod->kappa->v);
+          
+          for(catg=0;catg<ncatg;++catg)
+            {
+              for(state=0;state<ns;++state) 
+                {
+                  printf("\n== catg: %3d state: %3d -- expl: %12G expld: %12G expld2: %12G dot_prod: %12G",
+                         catg,
+                         state,
+                         expl[0*ncatg*ns + catg*ns + state], 
+                         expl[1*ncatg*ns + catg*ns + state], 
+                         expl[2*ncatg*ns + catg*ns + state],
+                         dot_prod[site*ns*ncatg]);
+                }
+            }
+          
+          fflush(NULL);
           assert(FALSE);
         }
 
@@ -1057,7 +1103,7 @@ phydbl Lk_Core_One_Class_Eigen_Lr(phydbl *dot_prod, phydbl *expl, int ns)
 {
   unsigned int l;
   phydbl lk = 0.0;
-  if(expl != NULL) for(l=0;l<ns;++l)  lk += dot_prod[l] * expl[l];
+  if(expl != NULL) for(l=0;l<ns;++l) lk += dot_prod[l] * expl[l]; 
   else for(l=0;l<ns;++l) lk += dot_prod[l];
   return lk;
 }

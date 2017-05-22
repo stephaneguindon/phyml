@@ -3856,7 +3856,7 @@ void PhyML_Printf(char *format, ...)
 {
   va_list ptr;
 
- #ifdef MPI
+#ifdef MPI
   if(Global_myRank == 0)
     {
       va_start (ptr, format);

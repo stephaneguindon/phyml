@@ -191,9 +191,9 @@ void Bootstrap_MPI(t_tree *tree)
 	      }
 	    case NEXUS:
 	      {
-		PhyML_Printf("\n. Unfortunately, PhyML cannot read NEXUS files and perform a bootstrap analysis."); 
-		PhyML_Printf("\n. Please use the PHYLIP format.."); 
-		PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+		PhyML_Printf("\n== Unfortunately, PhyML cannot read NEXUS files and perform a bootstrap analysis."); 
+		PhyML_Printf("\n== Please use the PHYLIP format."); 
+		PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
 		Warn_And_Exit("");
 		break;
 	      }
@@ -289,7 +289,7 @@ void Bootstrap_MPI(t_tree *tree)
             fprintf(tree->io->fp_out_boot_tree,"%s\n",s);
             fprintf(tree->io->fp_out_boot_stats,"%s\n",t);
             bootRecv++;
-            PhyML_Printf(".");
+            PhyML_Printf("\u2022");
 	    if(!((bootRecv)%tree->io->boot_prog_every)) 
 	      {
 		PhyML_Printf("] %4d/%4d\n  ",bootRecv,tree->mod->bootstrap);
@@ -326,7 +326,7 @@ void Bootstrap_MPI(t_tree *tree)
 		  fprintf(tree->io->fp_out_boot_stats,"%s\n", bootStr);
 		
 		bootRecv++;
-		PhyML_Printf(".");
+		PhyML_Printf("\u2022");
 		if(!((bootRecv)%tree->io->boot_prog_every)) {
 		  PhyML_Printf("] %4d/%4d\n  ",bootRecv,tree->mod->bootstrap);
 		  if(bootRecv != tree->mod->bootstrap) PhyML_Printf("[");

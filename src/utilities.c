@@ -2904,7 +2904,7 @@ void Bootstrap(t_tree *tree)
       /* 	rf += tree->a_edges[j]->bip_score; */
 
 
-      PhyML_Printf(".");
+      PhyML_Printf("\u2022");
 #ifndef QUIET
       fflush(stdout);
 #endif

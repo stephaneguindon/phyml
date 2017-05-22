@@ -1389,8 +1389,6 @@ void Free_Ldisk(t_ldsk *t)
     {
       Free(t->next);
       Free_Geo_Coord(t->coord);
-      /* if(t->min_coord) Free_Geo_Coord(t->min_coord); */
-      /* if(t->max_coord) Free_Geo_Coord(t->max_coord); */
       if(t->cpy_coord) Free_Geo_Coord(t->cpy_coord);
       Free(t);
     }

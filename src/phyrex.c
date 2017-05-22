@@ -274,35 +274,50 @@ t_tree *PHYREX_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl
   PHYREX_Init_Migrep_Mod(mmod,n_dim,w,h);
 
 
-  do
-    {
-      /* Effective population size */
-      minNe = 100.; maxNe = 5000.;
-      Ne = Uni() * (maxNe - minNe) + minNe;
-      
-      /* Neighborhood size */
-      max_neigh = 0.01*Ne; min_neigh = 0.001*Ne;
-      neigh = Uni()*(max_neigh - min_neigh)  + min_neigh;
-    }
-  while(neigh < 2.0);
-  
-  /* Death parameter */
-  mmod->mu = 2./neigh;
+  /* /\* Death proba param *\/ */
+  /* mmod->mu = Uni(); */
+  /* /\* Theta (radius) *\/ */
+  /* mmod->rad = Uni()*(1.0 - 0.2) + 0.2; */
+  /* /\* Rate of events *\/ */
+  /* mmod->lbda = 1.0; */
+  /* /\* Population density *\/ */
+  /* mmod->rho = Uni()*(3.0 - 0.1) + 0.1; */
 
+
+  /* Death proba param */
+  mmod->mu = 0.8;
   /* Theta (radius) */
-  mmod->rad = Uni()*(3.0 - 0.5) + 0.5;
-  mmod->sigsq = neigh / (4.*PI*Ne/area);
-  mmod->lbda = area * mmod->sigsq / (4.*PI*mmod->mu*pow(mmod->rad,4));
-  mmod->rho = Uni()*(10.0 - 0.1) + 0.1;
+  mmod->rad = 1000.;
+  /* Rate of events */
+  mmod->lbda = 1.0*w*h;
+  /* Population density */
+  mmod->rho = 1.;
+
+  
+  /* Dispersal parameter */
+  mmod->sigsq = 4.*pow(mmod->rad,4)*mmod->lbda*PI*mmod->mu/area;
+  
   // Duration of a generation in number of events
   mmod->gen_cal_time = 1./(2.*mmod->mu*pow(mmod->rad,2)/pow(w*h,2)*
                            (sqrt(2.)*mmod->rad*exp(-.5*pow(h/mmod->rad,2)) + h*sqrt(PI)*erf(sqrt(2.)*h/(2.*mmod->rad)) - sqrt(2.)*mmod->rad)*
                            (sqrt(2.)*mmod->rad*exp(-.5*pow(w/mmod->rad,2)) + w*sqrt(PI)*erf(sqrt(2.)*w/(2.*mmod->rad)) - sqrt(2.)*mmod->rad));
   // Divide by rate of events per calendar time unit to get duration of gen. in calendar time unit
   mmod->gen_cal_time *= 1./mmod->lbda;
+
   
+  PhyML_Printf("\n. lambda=%G; mu=%G; rad=%G; clockr=%G; sigsq=%G; neigh=%G; N=%G; rhoe=%G one_gen=%G",
+               mmod->lbda,
+               mmod->mu,
+               mmod->rad,
+               tree->rates->clock_r,
+               mmod->sigsq,
+               2./mmod->mu,
+               area*2./(4*PI*mmod->sigsq*mmod->mu),
+               2./(4.*PI*mmod->sigsq*mmod->mu),
+               mmod->gen_cal_time);
+  fflush(NULL);
 
-
+  
   // Initialize position of sampled individuals
   tree->disk = PHYREX_Make_Disk_Event(mmod->n_dim,tree->n_otu);
   PHYREX_Init_Disk_Event(tree->disk,mmod->n_dim,NULL);
@@ -346,22 +361,24 @@ t_tree *PHYREX_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl
         t_ldsk *lin1 = tree->disk->ldsk_a[permut[0]];
         t_ldsk *lin2 = tree->disk->ldsk_a[permut[1]];
         phydbl dist =
-          sqrt(pow(lin1->coord->lonlat[0]-lin1->coord->lonlat[0],2) +
-               pow(lin1->coord->lonlat[1]-lin1->coord->lonlat[1],2));
+          sqrt(pow(lin1->coord->lonlat[0]-lin2->coord->lonlat[0],2) +
+               pow(lin1->coord->lonlat[1]-lin2->coord->lonlat[1],2));
+
+        t_dsk *disk = tree->disk;
         do
           {
-            lin1 = lin1->prev;
-            lin2 = lin2->prev;
-            if(lin1 == lin2) break;
+            if(disk->ldsk == lin1->prev) lin1 = lin1->prev;
+            if(disk->ldsk == lin2->prev) lin2 = lin2->prev;
+            if(lin1 == lin2) break; // found MRCA
+            disk = disk->prev;
           }
-        while(lin1 != NULL && lin2 != NULL);
+        while(disk);
 
         assert(lin1 && lin2);
         
         PhyML_Printf("\n. #$# %G %G",dist,lin1->disk->time);
       }
-
-
+      
       PHYREX_Ldsk_To_Tree(tree);  
 
       Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
@@ -378,24 +395,22 @@ t_tree *PHYREX_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl
 
       Evolve(tree->data,tree->mod,locus_idx,tree);
       
+      t_dsk *disk = tree->disk->prev;
+      while(disk->prev)
+        {
+          disk = disk->prev;
+          if(disk->next->ldsk != NULL) Free_Ldisk(disk->next->ldsk);
+          Free_Disk(disk->next);
+        }
+
       locus_idx++;
     }
   while(locus_idx < n_loci);
 
   tree->data->format = IBDSIM;
+  PhyML_Printf("\n\n");
   Print_CSeq(stdout,NO,tree->data,tree);
 
-  PhyML_Printf("\n. lambda=%G; mu=%G; rad=%G; clockr=%G; sigsq=%G; neigh=%G; N=%G; rhoe=%G one_gen=%G",
-               mmod->lbda,
-               mmod->mu,
-               mmod->rad,
-               tree->rates->clock_r,
-               mmod->sigsq,
-               neigh,
-               area*neigh/(4*PI*mmod->sigsq),
-               neigh/(4.*PI*mmod->sigsq),
-               mmod->gen_cal_time);
-  fflush(NULL);
 
   Exit("\n");
 
@@ -444,7 +459,7 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, int r_seed)
   io->r_seed   = r_seed;
 
   io->n_otu    = n_otu;
-  io->init_len = 500; /* sequence length */
+  io->init_len = 10; /* sequence length */
 
   io->data = Make_Empty_Alignment(io);
 

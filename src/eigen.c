@@ -51,7 +51,8 @@ int Eigen(int job, phydbl *A, int n, phydbl *rr, phydbl *ri,
     phydbl tiny, t; 
 
 /*     tiny=SQRT(POW((phydbl)BASE,(phydbl)(1-(int)DIGITS))); */
-    tiny=FLT_MIN;
+    /* tiny=FLT_MIN; */
+    tiny = SMALL;
 
     
     balance(A,n,&low,&hi,work);
@@ -60,17 +61,32 @@ int Eigen(int job, phydbl *A, int n, phydbl *rr, phydbl *ri,
     if (job) unbalance(n,vr,vi,low,hi,work);
     
 /* sort, added by Z. Yang */
-   for (i=0; i<n; i++) {
-       for (j=i+1,it=i,t=rr[i]; j<n; j++)
-           if (t<rr[j]) { t=rr[j]; it=j; }
-       rr[it]=rr[i];   rr[i]=t;
-       t=ri[it];       ri[it]=ri[i];  ri[i]=t;
-       for (k=0; k<n; k++) {
-          t=vr[k*n+it];  vr[k*n+it]=vr[k*n+i];  vr[k*n+i]=t;
-          t=vi[k*n+it];  vi[k*n+it]=vi[k*n+i];  vi[k*n+i]=t;
-       }
+   for (i=0; i<n; ++i)
+     {
+       for (j=i+1,it=i,t=rr[i]; j<n; ++j)
+         if (t<rr[j])
+           {
+             t=rr[j];
+             it=j;
+           }
+       rr[it]=rr[i];
+       rr[i]=t;
+       t=ri[it];
+       ri[it]=ri[i];
+       ri[i]=t;
+
+       for (k=0; k<n; ++k)
+         {
+           t=vr[k*n+it];
+           vr[k*n+it]=vr[k*n+i];
+           vr[k*n+i]=t;
+
+           t=vi[k*n+it];
+           vi[k*n+it]=vi[k*n+i];
+           vi[k*n+i]=t;
+         }
        if (FABS(ri[i])>tiny) istate=1;
-   }
+     }
 
     return (istate) ;
 }
@@ -313,7 +329,8 @@ void balance(phydbl *mat, int n,int *low, int *hi, phydbl *scale)
             }
 
 /*             if (c != 0 && r != 0) {  */
-            if (FABS(c) > SMALL && FABS(r) > SMALL) {
+            if ((FABS(c) > SMALL || FABS(c) < -SMALL) && (FABS(r) > SMALL || FABS(r) < -SMALL))
+              {
                g = r / BASE;
                 f = 1;
                 s = c + r;

@@ -512,16 +512,15 @@ void Update_Qmat_Generic(phydbl *rr, phydbl *pi, int ns, phydbl *qmat)
     {
       rr[i] /= rr[(int)(ns*(ns-1)/2)-1];
     }
-
+  
   /* Fill the non-diagonal parts */
   for(i=0;i<ns;i++)
     {
       for(j=i+1;j<ns;j++)
-    {
-      qmat[i*ns+j] = rr[MIN(i,j) * ns + MAX(i,j) -
-                (MIN(i,j)+1+(int)POW(MIN(i,j)+1,2))/2];
-      qmat[j*ns+i] = qmat[i*ns+j];
-    }
+        {
+          qmat[i*ns+j] = rr[MIN(i,j) * ns + MAX(i,j) - (MIN(i,j)+1+(int)POW(MIN(i,j)+1,2))/2];
+          qmat[j*ns+i] = qmat[i*ns+j];
+        }
     }
 
 
@@ -539,7 +538,7 @@ void Update_Qmat_Generic(phydbl *rr, phydbl *pi, int ns, phydbl *qmat)
   for(i=0;i<ns;i++)
     {
       sum = .0;
-      for(j=0;j<ns;j++) {sum += qmat[i*ns+j];}
+      for(j=0;j<ns;j++) sum += qmat[i*ns+j];
       qmat[i*ns+i] = -sum;
       mr += sum * pi[i];
     }
@@ -765,20 +764,36 @@ void Update_RAS(t_mod *mod)
 
 void Update_Efrq(t_mod *mod)
 {
-  phydbl sum;
-  int i;
 
-  if((mod->io->datatype == NT) && (mod->s_opt->opt_state_freq))
+  unsigned int i;
+  phydbl sum;
+
+  if((mod->io->datatype == NT) && (mod->s_opt->opt_state_freq == YES))
     {
-      sum = .0;
+      sum = 0.0;
       for(i=0;i<mod->ns;i++) sum += FABS(mod->e_frq->pi_unscaled->v[i]);
       for(i=0;i<mod->ns;i++) mod->e_frq->pi->v[i] = FABS(mod->e_frq->pi_unscaled->v[i])/sum;
-
+            
 #ifdef BEAGLE
       if(UNINITIALIZED != mod->b_inst)
         update_beagle_efrqs(mod);
 #endif
     }
+  
+
+  // Adjust equilibrium state frequencies if some of them are too close to zero
+  // in order to avoid numerical precision issues.
+  int iter = 0;
+  do
+    {
+      for(i=0;i<mod->ns;i++) if(mod->e_frq->pi->v[i] < E_FRQ_MIN) mod->e_frq->pi->v[i] = E_FRQ_MIN;
+      sum = 0.0;
+      for(i=0;i<mod->ns;i++) sum += FABS(mod->e_frq->pi->v[i]);
+      for(i=0;i<mod->ns;i++) mod->e_frq->pi->v[i] /= sum;
+      iter++;
+    }
+  while(iter < 10);
+
 }
 
 //////////////////////////////////////////////////////////////
@@ -831,11 +846,11 @@ void Update_Boundaries(t_mod *mod)
 
   for(i=0;i<mod->ns;i++)
     {
-      if(mod->e_frq->pi_unscaled->v[i] < E_FRQ_MIN)
-        mod->e_frq->pi_unscaled->v[i] = E_FRQ_MIN;
+      if(mod->e_frq->pi_unscaled->v[i] < UNSCALED_E_FRQ_MIN)
+        mod->e_frq->pi_unscaled->v[i] = UNSCALED_E_FRQ_MIN;
 
-      if(mod->e_frq->pi_unscaled->v[i] > E_FRQ_MAX)
-        mod->e_frq->pi_unscaled->v[i] = E_FRQ_MAX;
+      if(mod->e_frq->pi_unscaled->v[i] > UNSCALED_E_FRQ_MAX)
+        mod->e_frq->pi_unscaled->v[i] = UNSCALED_E_FRQ_MAX;
     }
   
   if(mod->r_mat_weight->v < R_MAT_WEIGHT_MIN) mod->r_mat_weight->v = R_MAT_WEIGHT_MIN;
