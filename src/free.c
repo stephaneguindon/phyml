@@ -1,6 +1,6 @@
 /*
 
-PHYML :  a program that  computes maximum likelihood  phyLOGenies from
+PHYML :  a program that  computes maximum likelihood  phylogenies from
 DNA or AA homologous sequences
 
 Copyright (C) Stephane Guindon. Oct 2003 onward
@@ -127,7 +127,7 @@ void Free_Mat(matrix *mat)
 {
   int i;
 
-  For(i,mat->n_otu)
+  for(i=0;i<mat->n_otu;i++)
     {
       Free(mat->P[i]);
       Free(mat->Q[i]);
@@ -154,9 +154,9 @@ void Free_Partial_Lk(phydbl *p_lk, int len, int n_catg)
   Free(p_lk);
 
 /*   int i,j; */
-/*   For(i,len) */
+/*   for(i=0;i<len;i++) */
 /*     { */
-/*       For(j,n_catg) Free((*p_lk)[i][j]); */
+/*       for(j=0;j<n_catg;j++) Free((*p_lk)[i][j]); */
 /*       Free((*p_lk)[i]); */
 /*     } */
 /*   Free((*p_lk)); */
@@ -214,7 +214,7 @@ void Free_Bip(t_tree *tree)
       For(i,2*tree->n_otu-2)
     {
       Free(tree->a_nodes[i]->bip_size);
-      For(j,3) Free(tree->a_nodes[i]->bip_node[j]);
+      for(j=0;j<3;j++) Free(tree->a_nodes[i]->bip_node[j]);
       Free(tree->a_nodes[i]->bip_node);
     }
     }
@@ -234,7 +234,7 @@ void Free_Calign(calign *data)
   Free(data->ambigu);
   Free(data->b_frq);
   Free(data->sitepatt);
-  For(i,data->n_otu)
+  for(i=0;i<data->n_otu;i++)
     {
       Free(data->c_seq[i]->name);
       if(data->c_seq[i]->state)
@@ -255,7 +255,7 @@ void Free_Calign(calign *data)
 void Free_Seq(align **d, int n_otu)
 {
   int i;
-  For(i,n_otu)
+  for(i=0;i<n_otu;i++)
     {
       Free(d[i]->name);
       Free(d[i]->state);
@@ -288,7 +288,7 @@ void Free_SubTree(t_edge *b_fcus, t_node *a, t_node *d, t_tree *tree)
   if(d->tax) return;
   else
     {
-      For(i,3)
+      for(i=0;i<3;i++)
     {
       if(d->v[i] != a)
         {
@@ -321,7 +321,7 @@ void Free_Tree_Pars(t_tree *mixt_tree)
     {
       Free(tree->step_mat);
       Free(tree->site_pars);
-
+      
       For(i,2*tree->n_otu-3) 
         {
           Free_Edge_Pars(tree->a_edges[i]);
@@ -392,8 +392,10 @@ void Free_Tree_Lk(t_tree *mixt_tree)
       Free(tree->fact_sum_scale);
       Free(tree->eigen_lr_left);
       Free(tree->eigen_lr_rght);
-
-      For(i,3) Free(tree->log_lks_aLRT[i]);
+      Free(tree->dot_prod);
+      Free(tree->expl);
+      
+      for(i=0;i<3;i++) Free(tree->log_lks_aLRT[i]);
       Free(tree->log_lks_aLRT);
 
       Free(tree->unscaled_site_lk_cat);
@@ -409,6 +411,8 @@ void Free_Tree_Lk(t_tree *mixt_tree)
             {
               Free(tree->n_root->b[1]->Pij_rr);
               Free(tree->n_root->b[2]->Pij_rr);
+              Free(tree->n_root->b[1]->tPij_rr);
+              Free(tree->n_root->b[2]->tPij_rr);
               Free_Edge_Lk_Left(tree->n_root->b[1]);
               Free_Edge_Lk_Left(tree->n_root->b[2]);
               Free_Edge_Loc_Left(tree->n_root->b[1]);
@@ -481,6 +485,7 @@ void Free_Edge_Lk_Left(t_edge *b)
 
 void Free_Edge_Lk(t_edge *b)
 {
+  Free(b->tPij_rr);
   Free(b->Pij_rr);
   Free_Edge_Lk_Left(b);
   Free_Edge_Lk_Rght(b);
@@ -609,6 +614,27 @@ void Free_Model_Basic(t_mod *mixt_mod)
 void Free_Vect_Dbl(vect_dbl *v)
 {
   vect_dbl *next;
+
+  assert(v);
+
+  next = v->next;
+  do
+    {
+      Free(v->v);
+      Free(v);
+
+      v = next;
+      if(v) next = v->next;
+    }
+  while(v);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Free_Vect_Int(vect_int *v)
+{
+  vect_int *next;
 
   assert(v);
 
@@ -854,11 +880,11 @@ void Free_Input(option *io)
       Free(io->nt_or_cd);
       Free(io->run_id_string);
       Free(io->clade_list_file);
-      For(i,T_MAX_ALPHABET) Free(io->alphabet[i]);
+      for(i=0;i<T_MAX_ALPHABET;i++) Free(io->alphabet[i]);
       Free(io->alphabet);
       if(io->short_tax_names)
         {
-          For(i,io->size_tax_names)
+          for(i=0;i<io->size_tax_names;i++)
             {
               Free(io->short_tax_names[i]);
               Free(io->long_tax_names[i]);
@@ -905,7 +931,7 @@ void Free_St(supert_tree *st)
   For(i,2*st->tree->n_otu-1)
     Free_NNI(st->tree->a_edges[i]->nni);
 
-  For(i,st->n_part) Free(st->match_st_node_in_gt[i]);
+  for(i=0;i<st->n_part;i++) Free(st->match_st_node_in_gt[i]);
 
   Free(st->match_st_node_in_gt);
 
@@ -988,27 +1014,27 @@ void Free_Triplet(triplet *t)
   Free(t->pi_cd);
   Free(t->pi_bd);
 
-  For(k,t->mod->ras->n_catg)
+  for(k=0;k<t->mod->ras->n_catg;k++)
     {
-      For(i,t->size)
+      for(i=0;i<t->size;i++)
     {
-      For(j,t->size) Free(t->core[k][i][j]);
+      for(j=0;j<t->size;j++) Free(t->core[k][i][j]);
       Free(t->core[k][i]);
     }
       Free(t->core[k]);
     }
   Free(t->core);
 
-  For(i,t->size)
+  for(i=0;i<t->size;i++)
     {
-      For(j,t->size) Free(t->p_one_site[i][j]);
+      for(j=0;j<t->size;j++) Free(t->p_one_site[i][j]);
       Free(t->p_one_site[i]);
     }
   Free(t->p_one_site);
 
-  For(i,t->size)
+  for(i=0;i<t->size;i++)
     {
-      For(j,t->size) Free(t->sum_p_one_site[i][j]);
+      for(j=0;j<t->size;j++) Free(t->sum_p_one_site[i][j]);
       Free(t->sum_p_one_site[i]);
     }
   Free(t->sum_p_one_site);
@@ -1027,7 +1053,7 @@ void Free_Triplet(triplet *t)
 void Free_Actual_CSeq(calign *data)
 {
   int i;
-  For(i,data->n_otu)
+  for(i=0;i<data->n_otu;i++)
     {
       Free(data->c_seq[i]->state);
       Free(data->c_seq[i]->d_state);
@@ -1043,7 +1069,7 @@ void Free_Prefix_Tree(pnode *n, int size)
 {
   int i;
 
-  For(i,size)
+  for(i=0;i<size;i++)
     {
       if(n->next[i])
     {
@@ -1078,7 +1104,7 @@ void Free_Nexus(option *io)
 {
   int i,j;
 
-  For(i,N_MAX_NEX_COM)
+  for(i=0;i<N_MAX_NEX_COM;i++)
     {
       For(j,io->nex_com_list[i]->nparm) Free_Nexus_Parm(io->nex_com_list[i]->parm[j]);
       Free(io->nex_com_list[i]->parm);
@@ -1096,7 +1122,7 @@ void Free_Nexus_Com(nexcom **com)
 {
   int i;
 
-  For(i,N_MAX_NEX_COM)
+  for(i=0;i<N_MAX_NEX_COM;i++)
     {
       Free(com[i]->parm);
       Free(com[i]->name);
@@ -1182,7 +1208,7 @@ void MCMC_Free_MCMC(t_mcmc *mcmc)
   Free(mcmc->prev_run_move);
   Free(mcmc->acc_rate);
   Free(mcmc->tune_move);
-  For(i,mcmc->n_moves) Free(mcmc->move_name[i]);
+  for(i=0;i<mcmc->n_moves;i++) Free(mcmc->move_name[i]);
   Free(mcmc->move_name);
   Free(mcmc->ess_run);
   Free(mcmc->start_ess);
@@ -1205,7 +1231,7 @@ void M4_Free_M4_Model(m4 *m4mod)
 
   if(m4mod->o_mats)
     {
-      For(i,m4mod->n_h) Free(m4mod->o_mats[i]);
+      for(i=0;i<m4mod->n_h;i++) Free(m4mod->o_mats[i]);
       Free(m4mod->o_mats);
       Free(m4mod->h_mat);
       Free(m4mod->o_rr);
@@ -1284,7 +1310,7 @@ void RATES_Free_Rates(t_rate *rates)
       Free(rates->t_prior_max_ori);
       Free(rates->times_partial_proba);
       Free(rates->numb_calib_chosen);
-      For(i,rates->n_cal) Free_Calib(rates->a_cal[i]);
+      for(i=0;i<rates->n_cal;i++) Free_Calib(rates->a_cal[i]);
       Free(rates->a_cal);
     }
   Free(rates);
@@ -1301,7 +1327,7 @@ void Free_Calib(t_cal *cal)
       if(cal->target_tax != NULL)
         {
           int i;
-          For(i,cal->n_target_tax) Free(cal->target_tax[i]);
+          for(i=0;i<cal->n_target_tax;i++) Free(cal->target_tax[i]);
           Free(cal->target_tax);
           Free(cal->target_tip);
         }
@@ -1323,7 +1349,7 @@ void Free_Geo(t_geo *t)
   Free(t->sorted_nd);
   Free(t->cov);
   Free(t->idx_loc_beneath);
-  For(i,t->ldscape_sz) Free_Geo_Coord(t->coord_loc[i]);
+  for(i=0;i<t->ldscape_sz;i++) Free_Geo_Coord(t->coord_loc[i]);
   Free(t->coord_loc);
   Free(t);
 }
@@ -1363,8 +1389,6 @@ void Free_Ldisk(t_ldsk *t)
     {
       Free(t->next);
       Free_Geo_Coord(t->coord);
-      /* if(t->min_coord) Free_Geo_Coord(t->min_coord); */
-      /* if(t->max_coord) Free_Geo_Coord(t->max_coord); */
       if(t->cpy_coord) Free_Geo_Coord(t->cpy_coord);
       Free(t);
     }
@@ -1377,7 +1401,7 @@ void Free_Ldisk(t_ldsk *t)
 void Free_Poly(t_poly *p)
 {
   int i;
-  For(i,p->n_poly_vert) Free_Geo_Coord(p->poly_vert[i]);
+  for(i=0;i<p->n_poly_vert;i++) Free_Geo_Coord(p->poly_vert[i]);
   Free(p->poly_vert);
   Free(p);
 }

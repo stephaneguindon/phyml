@@ -66,6 +66,7 @@ void XML_Free_XML_Attr(xml_attr *attr);
 void XML_Free_XML_Ds(t_ds *ds);
 void Free_String(t_string *ts);
 void Free_Vect_Dbl(vect_dbl *v);
+void Free_Vect_Int(vect_int *v);
 void Free_Scalar_Dbl(scalar_dbl *v);
 void Free_Scalar_Int(scalar_int *v);
 void Free_Edge_Core(t_edge *b);

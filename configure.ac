@@ -58,26 +58,30 @@ dnl Uncomment two rows below when compiling rwarp (need to have libtool installe
 dnl LT_INIT
 dnl AC_PROG_LIBTOOL
 
+dnl DEFAULT_C_FLAG="-O2 -fomit-frame-pointer -funroll-loops -Wall -Winline --param large-stack-frame=1024 --param max-inline-insns-single=1000 --param inline-unit-growth=1001 ${VECTOR_FLAG}"
+DEFAULT_C_FLAG="-std=c99 -O2 -fomit-frame-pointer -funroll-loops -Wall -Winline ${VECTOR_FLAG}"
+dnl DEFAULT_C_FLAG="-O2 -Wall -Winline ${VECTOR_FLAG}"
+dnl DEFAULT_C_FLAG="-O3 -Wall ${VECTOR_FLAG}"
 
 AC_ARG_ENABLE([debug],
               [AS_HELP_STRING([--enable-debug],
                               [Remove optimization options and add debug informations.])])
 AS_IF([test "x$enable_debug" = "xyes"],
       [CFLAGS="-ansi ${VECTOR_FLAG} -pedantic -Wall -std=c99 -O0 -g -Wuninitialized"],
-      [CFLAGS="-Wall -O2 ${VECTOR_FLAG} -fomit-frame-pointer -funroll-loops -Wempty-body -Wuninitialized ${ARCH_flag}"])
+      [CFLAGS="${DEFAULT_C_FLAG}"])
 
 AC_ARG_ENABLE([safemode],
         AS_HELP_STRING([--enable-safemode],[Enable safe mode.]))
 AS_IF([test "x$enable_safemode" = "xyes"],
-      [CFLAGS="-Wall -DSAFEMODE -O2 ${VECTOR_FLAG} -fomit-frame-pointer -funroll-loops -Wempty-body -Wuninitialized ${ARCH_flag}"],
-      [AS_IF([test "x$enable_debug" = "xno"],[CFLAGS="-Wall -O2 ${VECTOR_FLAG} -fomit-frame-pointer -funroll-loops -Wempty-body -Wuninitialized ${ARCH_flag}"])])
+      [CFLAGS="-Wall -DSAFEMODE -O3 ${VECTOR_FLAG}"],
+      [AS_IF([test "x$enable_debug" = "xno"],[CFLAGS="${DEFAULT_C_FLAG}"])])
 
 AC_ARG_ENABLE([gprof],
               [AS_HELP_STRING([--enable-gprof],
                               [Remove optimization options and add profiling informations.])])
 AS_IF([test "x$enable_gprof" = "xyes"],
-      [CFLAGS="-ansi -pedantic -Wall -std=c99 -O0 -g -pg"],
-      [AS_IF([test "x$enable_debug" = "xno"],[CFLAGS="-Wall -O2 -msse -fomit-frame-pointer -funroll-loops ${ARCH_flag}"])])
+      [CFLAGS="-g -pg -fno-inline ${VECTOR_FLAG}"],
+      [AS_IF([test "x$enable_debug" = "xno"],[CFLAGS="${DEFAULT_C_FLAG}"])])
 
 AC_ARG_ENABLE([mpi],
               [AS_HELP_STRING([--enable-mpi],
@@ -91,13 +95,17 @@ AC_ARG_ENABLE([win],
               [AS_HELP_STRING([--enable-win],
                               [Compile with mingw instead of gcc.])])
 AS_IF([test "x$enable_win" = "xyes"],[CC="i686-w64-mingw32-gcc"])
+AS_IF([test "x$enable_win" = "xyes"],
+      [CFLAGS="-O2 -fomit-frame-pointer -funroll-loops -Wall -Winline ${VECTOR_FLAG}"],
+      [AS_IF([test "x$enable_win" = "xno"],[CFLAGS="${DEFAULT_C_FLAG}"])])
+
 AM_CONDITIONAL([WANT_WIN], [test "$enable_win" = yes])
 
 
 AC_ARG_ENABLE([beagle], [AS_HELP_STRING([--enable-beagle], [Compute likelihoods using BEAGLE library.])], [beagle=yes],[beagle=no])
 AS_IF([test "x$enable_beagle" = "xyes"],[PKG_CHECK_MODULES(BEAGLE, hmsbeagle-1)])
 AS_IF([test "x$enable_beagle" = "xyes"],
-      [CFLAGS="${CFLAGS} ${BEAGLE_CFLAGS} ${BEAGLE_LIBS} -lstdc++ ${ARCH_flag}"],
+      [CFLAGS="${CFLAGS} ${BEAGLE_CFLAGS} ${BEAGLE_LIBS} -lstdc++"],
       [CFLAGS=${CFLAGS}])
 AS_IF([test "x$enable_beagle" = "xyes"], AC_DEFINE([BEAGLE],[1],[BEAGLE tag on]))
 AM_CONDITIONAL([WANT_BEAGLE], [test "$enable_beagle" = yes])
@@ -191,7 +199,7 @@ fi
 
 dnl AS_IF([test "x$enable_phyrex" = "xyes"],[PKG_CHECK_MODULES([GTK], [gtk+-3.0])])
 dnl AS_IF([test "x$enable_phyrex" = "xyes"],[PKG_CHECK_MODULES([CAIRO], [cairo])])
-dnl AS_IF([test "x$enable_phyrex" = "xyes"],[CFLAGS="${CFLAGS} `pkg-config --cflags --libs gtk+-3.0` ${ARCH_flag}"])
+dnl AS_IF([test "x$enable_phyrex" = "xyes"],[CFLAGS="${CFLAGS} `pkg-config --cflags --libs gtk+-3.0`"])
 
 
 dnl AM_PATH_GTK_3_0(,,AC_MSG_ERROR(windoe-default needs GTK+-3))

@@ -16,14 +16,14 @@ void Find_Nexus_Com(char *token, nexcom **found_com, nexparm **default_parm, nex
 {
   int i,j,tokenlen,ndiff;
     
-  For(i,N_MAX_NEX_COM) 
+  for(i=0;i<N_MAX_NEX_COM;i++) 
     {
       tokenlen = strlen(token);
       ndiff = -1;
       if(tokenlen && (tokenlen == strlen(com_list[i]->name)))
 	{
 	  ndiff = 0;
-	  For(j,tokenlen)
+	  for(j=0;j<tokenlen;j++)
 	    {
 	      Lowercase(token+j);
 	      Lowercase(com_list[i]->name+j);
@@ -54,14 +54,14 @@ void Find_Nexus_Parm(char *token, nexparm **found_parm, nexcom *curr_com)
       Exit("");
     }
 
-  For(i,curr_com->nparm)
+  for(i=0;i<curr_com->nparm;i++)
     {
       tokenlen = strlen(token);
       ndiff = -1;
       if(tokenlen == strlen(curr_com->parm[i]->name))
 	{
 	  ndiff = 0;
-	  For(j,tokenlen)
+	  for(j=0;j<tokenlen;j++)
 	    {
 	      Lowercase(token+j);
 	      Lowercase(curr_com->parm[i]->name+j);
@@ -369,7 +369,7 @@ int Read_Nexus_Format(char *token, nexparm *curr_parm, option *io)
 
       int len;
       len = strlen(io->alphabet[0]);
-      For(i,io->mod->ns)
+      for(i=0;i<io->mod->ns;i++)
 	{
 	  if(strlen(io->alphabet[i]) != len)
 	    {
@@ -380,7 +380,7 @@ int Read_Nexus_Format(char *token, nexparm *curr_parm, option *io)
 	}
       io->state_len = len;      
 
-/*       For(i,io->mod->ns) PhyML_Printf("\n. '%s'",io->alphabet[i]); */
+/*       for(i=0;i<io->mod->ns;i++) PhyML_Printf("\n. '%s'",io->alphabet[i]); */
     }
   
   else if(!strcmp(curr_parm->name,"equate"))

@@ -108,6 +108,7 @@ phydbl PHYREX_Effective_Density(t_tree *tree);
 phydbl PHYREX_Generation_Length(t_tree *tree);
 int PHYREX_Number_Of_Sampled_Demes(t_tree *tree);
 phydbl PHYREX_Coalescence_Rate(t_tree *tree);
+t_tree *PHYREX_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl h, int r_seed);
 
 
 

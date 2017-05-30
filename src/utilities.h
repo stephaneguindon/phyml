@@ -87,6 +87,10 @@ static inline int isinf_d  (double      x) { return isnan (x - x); }
 static inline int isinf_ld (long double x) { return isnan (x - x); }
 #endif
 
+
+extern int CALL;
+extern int TIME;
+
 #define AC 0
 #define AG 1
 #define AT 2
@@ -128,10 +132,13 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define  R_MAT_WEIGHT_MAX 100.
 
 #define  E_FRQ_MIN 0.01
-#define  E_FRQ_MAX 100.
+#define  E_FRQ_MAX 1.00
+
+#define  UNSCALED_E_FRQ_MIN 0.01
+#define  UNSCALED_E_FRQ_MAX 100.
 
 #define  TSTV_MIN 0.05
-#define  TSTV_MAX 10.0
+#define  TSTV_MAX 20.0
 
 #define  PINV_MIN 0.00001
 #define  PINV_MAX 0.99999
@@ -189,6 +196,7 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 
 #define  PHYLIP 0
 #define  NEXUS  1
+#define  IBDSIM 2
 
 #ifndef YES
 #define  YES 1
@@ -250,7 +258,7 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define  BLOCK_LABELS         100
 
 #define  NODE_DEG_MAX        2000
-#define  BRENT_IT_MAX         500
+#define  BRENT_IT_MAX         100
 #define  BRENT_CGOLD    0.3819660
 #define  BRENT_ZEPS        1.e-10
 #define  MNBRAK_GOLD     1.618034
@@ -371,7 +379,7 @@ typedef	double phydbl;
 #define TAN tan
 #define SMALL DBL_MIN
 #define BIG  DBL_MAX
-#define SMALL_PIJ 1.E-40
+#define SMALL_PIJ 1.E-100
 #define LOGBIG 690.
 #define LOGSMALL -690.
 
@@ -389,7 +397,25 @@ typedef	double phydbl;
 // as XXX depends on what the value of P_LK_LIM_INF is 
 #define  P_LK_LIM_INF   3.054936e-151 /* 2^-500 */
 #define  P_LK_LIM_SUP   3.273391e+150 /* 2^500 */
+/* #define  P_LK_LIM_INF   1.499697e-241 /\* 2^-800 *\/ */
+/* #define  P_LK_LIM_SUP   6.668014e+240 /\* 2^800 *\/ */
 
+/* #define LARGE 100 */
+/* #define TWO_TO_THE_LARGE 1267650600228229401496703205376.0 /\* 2^100 In R : sprintf("%.100f", 2^100)*\/ */
+
+/* #define LARGE 200 */
+/* #define TWO_TO_THE_LARGE 1606938044258990275541962092341162602522202993782792835301376.0 /\* 2^200 In R : sprintf("%.100f", 2^256)*\/ */
+
+#define LARGE 256
+#define TWO_TO_THE_LARGE 115792089237316195423570985008687907853269984665640564039457584007913129639936.0 /* 2^256 In R : sprintf("%.100f", 2^256)*/
+
+#define INV_TWO_TO_THE_LARGE (1./TWO_TO_THE_LARGE)
+
+#define SCALE_RATE_SPECIFIC 1
+#define SCALE_FAST 2
+
+#define SCALENO 0
+#define SCALEYES 1
 
 #define T_MAX_XML_TAG 64
 
@@ -566,6 +592,7 @@ typedef struct __Edge {
   int                         num_st_rght; /*! number of the subtree on the right side */
 
   phydbl                          *Pij_rr; /*! matrix of change probabilities and its first and secnd derivates (rate*state*state) */
+  phydbl                          *tPij_rr; /*! transpose matrix of change probabilities and its first and secnd derivates (rate*state*state) */
 #ifdef BEAGLE
   int                          Pij_rr_idx;
 #endif
@@ -577,7 +604,9 @@ typedef struct __Edge {
 
 
   phydbl            *p_lk_left,*p_lk_rght; /*! likelihoods of the subtree on the left and right side (for each site and each relative rate category) */
-  short int      *p_lk_tip_r, *p_lk_tip_l;
+  phydbl         *p_lk_tip_r, *p_lk_tip_l;
+
+
 #ifdef BEAGLE
   int        p_lk_left_idx, p_lk_rght_idx;
   int                        p_lk_tip_idx;
@@ -588,28 +617,29 @@ typedef struct __Edge {
   int                      *p_lk_loc_left;
   int                      *p_lk_loc_rght;
 
-  int                     *pars_l,*pars_r; /*! parsimony of the subtree on the left and right sides (for each site) */
-  unsigned int               *ui_l, *ui_r; /*! union - intersection vectors used in Fitch's parsimony algorithm */
-  int                *p_pars_l, *p_pars_r; /*! conditional parsimony vectors */
+  int            *pars_l,*pars_r; /*! parsimony of the subtree on the left and right sides (for each site) */
+  int               *ui_l, *ui_r; /*! union - intersection vectors used in Fitch's parsimony algorithm */
+  int       *p_pars_l, *p_pars_r; /*! conditional parsimony vectors */
 
   /*! Below are the likelihood scaling factors (used in functions
-     `Get_All_Partial_Lk_Scale' in lk.c. */
+    `Get_All_Partial_Lk_Scale' in lk.c. */
   /*
-For every site, every subtree and every rate class, PhyML maintains a`sum_scale_pow' value
-where sum_scale_pow = sum_scale_pow_v1 + sum_scale_pow_v2 + curr_scale_pow'
-sum_scale_pow_v1 and sum_scale_pow_v2 are sum_scale_pow of the left and
-right subtrees. curr_scale_pow is an integer greater than one.
-The smaller the partials, the larger curr_scale_pow.
-
-Now the partials for this subtree are scaled by *multiplying* each of
-them by 2^curr_scale_pow. The reason for doing the scaling this way is
-that multiplications by 2^x (x an integer) can be done in an 'exact'
-manner (i.e., there is no loss of numerical precision)
-
-At the root edge, the log-likelihood is then
+    For every site, every subtree and every rate class, PhyML maintains a`sum_scale_pow' value
+    where sum_scale_pow = sum_scale_pow_v1 + sum_scale_pow_v2 + curr_scale_pow'
+    sum_scale_pow_v1 and sum_scale_pow_v2 are sum_scale_pow of the left and
+    right subtrees. curr_scale_pow is an integer greater than one.
+    The smaller the partials, the larger curr_scale_pow.
+    
+    Now the partials for this subtree are scaled by *multiplying* each of
+    them by 2^curr_scale_pow. The reason for doing the scaling this way is
+    that multiplications by 2^x (x an integer) can be done in an 'exact'
+    manner (i.e., there is no loss of numerical precision)
+    
+    At the root edge, the log-likelihood is then
     logL = logL' - (sum_scale_pow_left + sum_scale_pow_right)log(2),
-where L' is the scaled likelihood.
-*/
+    where L' is the scaled likelihood.
+  */
+  
   int                 *sum_scale_left_cat;
   int                 *sum_scale_rght_cat;
   int                     *sum_scale_left;
@@ -666,10 +696,14 @@ typedef struct __Tree{
   struct __Migrep_Model                 *mmod;
   struct __Disk_Event                   *disk;
   struct __XML_node                 *xml_root;
+  struct __Generic_LL              *edge_list;
+  struct __Generic_LL              *node_list;
+
 
   short int                         eval_alnL; /*! Evaluate likelihood for genetic data */
   short int                         eval_rlnL; /*! Evaluate likelihood for rates along the tree */
   short int                         eval_glnL; /*! Evaluate tree likelihood */
+  short int                    scaling_method;
 
   short int                      use_eigen_lr;
   int                            is_mixt_tree;
@@ -703,9 +737,13 @@ typedef struct __Tree{
   int                                 *mutmap; /*! Mutational map */
   int                                json_num;
   short int                   update_eigen_lr;
-
+  
   phydbl                       *eigen_lr_left;
   phydbl                       *eigen_lr_rght;
+  phydbl                            *dot_prod;
+
+  phydbl                                *expl;
+
   phydbl                             init_lnL;
   phydbl                             best_lnL; /*! highest value of the loglikelihood found so far */
   int                               best_pars; /*! highest value of the parsimony found so far */
@@ -1259,6 +1297,8 @@ typedef struct __Optimiz { /*! parameters to be optimised (mostly used in 'optim
   int             deepest_path;
   int        eval_list_regraft;
   phydbl     max_delta_lnL_spr;
+  phydbl     max_delta_lnL_spr_current;
+  phydbl         worst_lnL_spr;
   int            br_len_in_spr;
   int      opt_free_mixt_rates;
   int       constrained_br_len;
@@ -1336,6 +1376,8 @@ typedef struct __SPR{
   struct __SPR            *prev;
   struct __SPR       *next_mixt;
   struct __SPR       *prev_mixt;
+  struct __SPR       *path_prev;
+  struct __SPR       *path_next;
 
 }t_spr;
 
@@ -1816,7 +1858,9 @@ typedef struct __Migrep_Model{
   phydbl           prior_param_sigsq; // parameter of the parameter for the prior 
 
   phydbl                         rho; // intensity parameter of the Poisson point processs
+  phydbl                gen_cal_time; // duration of one generation in calendar time unit
 
+  
   phydbl                       c_lnL; // current value of log-likelihood 
   phydbl              c_ln_prior_rad; // current value of log prior for the prior on radius
   phydbl             c_ln_prior_lbda; // current value of log prior for the prior on lbda
@@ -1952,7 +1996,6 @@ int Sort_Edges_Depth(t_tree *tree,t_edge **sorted_edges,int n_elem);
 void NNI(t_tree *tree,t_edge *b_fcus,int do_swap);
 void NNI_Pars(t_tree *tree,t_edge *b_fcus,int do_swap);
 void Swap(t_node *a,t_node *b,t_node *c,t_node *d,t_tree *tree);
-void Update_All_Partial_Lk(t_edge *b_fcus,t_tree *tree);
 void Update_SubTree_Partial_Lk(t_edge *b_fcus,t_node *a,t_node *d,t_tree *tree);
 void Copy_Seq_Names_To_Tip_Labels(t_tree *tree,calign *data);
 calign *Copy_Cseq(calign *ori,option *io);
@@ -2052,7 +2095,7 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu,int rooted);
 #endif
 void Random_Lineage_Rates(t_node *a,t_node *d,t_edge *b,phydbl stick_prob,phydbl *rates,int curr_rate,int n_rates,t_tree *tree);
 t_edge *Find_Edge_With_Label(char *label,t_tree *tree);
-void Evolve(calign *data,t_mod *mod,t_tree *tree);
+void Evolve(calign *data, t_mod *mod, int first_site_pos, t_tree *tree);
 int Pick_State(int n,phydbl *prob);
 void Evolve_Recur(t_node *a,t_node *d,t_edge *b,int a_state,int r_class,int site_num,calign *gen_data,t_mod *mod,t_tree *tree);
 void Site_Diversity(t_tree *tree);
@@ -2069,7 +2112,7 @@ void Best_Of_NNI_And_SPR(t_tree *tree);
 int Polint(phydbl *xa,phydbl *ya,int n,phydbl x,phydbl *y,phydbl *dy);
 void JF(t_tree *tree);
 t_tree *Dist_And_BioNJ(calign *cdata,t_mod *mod,option *io);
-void Add_BioNJ_Branch_Lengths(t_tree *tree,calign *cdata,t_mod *mod);
+void Add_BioNJ_Branch_Lengths(t_tree *tree, calign *cdata, t_mod *mod, matrix *mat);
 char *Bootstrap_From_String(char *s_tree,calign *cdata,t_mod *mod,option *io);
 char *aLRT_From_String(char *s_tree,calign *cdata,t_mod *mod,option *io);
 void Prepare_Tree_For_Lk(t_tree *tree);
@@ -2146,25 +2189,6 @@ void Branch_To_Time_Pre(t_node *a, t_node *d, t_tree *tree);
 void Path_Length(t_node *dep, t_node *arr, phydbl *len, t_tree *tree);
 phydbl *Dist_Btw_Tips(t_tree *tree);
 void Random_SPRs_On_Rooted_Tree(t_tree *tree);
-
-
-void Set_P_Lk_One_Side(phydbl **Pij, phydbl **p_lk,  int **sum_scale, t_node *d, t_edge *b, t_tree *tree
-#ifdef BEAGLE
-                       , int* child_p_idx, int* Pij_idx
-#endif
-                       );
-
-
-void Set_All_P_Lk(t_node **n_v1, t_node **n_v2,
-                                 phydbl **p_lk , int **sum_scale , int **p_lk_loc,
-                  phydbl **Pij1, phydbl **p_lk1, int **sum_scale1,
-                  phydbl **Pij2, phydbl **p_lk2, int **sum_scale2,
-                  t_node *d, t_edge *b, t_tree *tree
-#ifdef BEAGLE
-                  , int *dest_p_idx, int *child1_p_idx, int* child2_p_idx, int* Pij1_idx, int* Pij2_idx
-#endif
-                  );
-
 void Best_Root_Position_IL_Model(t_tree *tree);
 void Set_Br_Len_Var(t_edge *b, t_tree *tree);
 void Check_Br_Lens(t_tree *tree);
@@ -2195,7 +2219,7 @@ scalar_dbl *Read_Weights(option *io);
 phydbl Scalar_Elem(int pos, scalar_dbl *scl);
 int Scalar_Len(scalar_dbl *scl);
 void List_Of_Regraft_Nodes(t_node *a, t_node *d, phydbl time_thresh, t_ll *list, t_tree *tree);
-void Push_Bottom_Linked_List(void *what, t_ll **list);
+void Push_Bottom_Linked_List(void *what, t_ll **list, bool remove_duplicates);
 void Remove_From_Linked_List(t_ll *elem, void *val, t_ll **list);
 int Linked_List_Len(t_ll *list);
 void *Linked_List_Elem(int pos, t_ll *ll);
@@ -2203,9 +2227,12 @@ void Randomize_Tree(t_tree *tree, int n_prune_regraft);
 t_ll *Get_List_Of_Reachable_Tips(t_node *a, t_node *d, t_tree *tree);
 void Get_List_Of_Reachable_Tips_Post(t_node *a, t_node *d, t_ll **list, t_tree *tree);
 phydbl Length_Of_Path_Between_List_Of_Tips(t_ll *tips0, t_ll *tips1, matrix *mat);
-void Set_Update_Eigen_Lr(short int yn, t_tree *tree);
-void Set_Use_Eigen_Lr(short int yn, t_tree *tree);
+void Set_Update_Eigen_Lr(int yn, t_tree *tree);
+void Set_Use_Eigen_Lr(int yn, t_tree *tree);
 void Random_Walk_Along_Tree_On_Radius(t_node *a, t_node *d, t_edge *b, phydbl *radius, t_edge **target_edge, t_node **target_nd, phydbl *target_time, t_tree *tree);
+void Table_Top(unsigned int width);
+void Table_Row(unsigned int width);
+void Table_Bottom(unsigned int width);
 
 
 #include "xml.h"

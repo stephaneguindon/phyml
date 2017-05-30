@@ -64,14 +64,14 @@ int Spr(phydbl init_lnL, phydbl prop_spr, t_tree *tree);
 int Spr_Recur(t_node *a, t_node *d, t_tree *tree);
 int Test_All_Spr_Targets(t_edge *pulled, t_node *link, t_tree *tree);
 void Randomize_Spr_List(t_tree *tree);
-void Test_One_Spr_Target_Recur(t_node *a, t_node *d, t_edge *pulled, t_node *link, t_edge *residual, t_edge *init_target, int *best_found, t_tree *tree);
-phydbl Test_One_Spr_Target(t_edge *target, t_edge *arrow, t_node *link, t_edge *residual, t_edge *init_target, t_tree *tree);
+void Test_One_Spr_Target_Recur(t_node *a, t_node *d, t_edge *pulled, t_node *link, t_edge *residual, t_edge *init_target, int *best_found, t_spr *prev_move, t_tree *tree);
+t_spr *Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_edge *b_residual, t_edge *init_target, t_node *polarity, t_tree *tree);
 void Apply_Spr_Moves_One_By_One(t_tree *tree);
 int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree);
 int Try_One_Spr_Move_Full(t_spr *move, t_tree *tree);
 void Make_Best_Spr(t_tree *tree);
 void Random_Spr(int n_moves, t_tree *tree);
-void Include_One_Spr_To_List_Of_Spr(t_spr *move, t_tree *tree);
+unsigned int Include_One_Spr_To_List_Of_Spr(t_spr *move, t_tree *tree);
 void Reset_Spr_List(t_tree *tree);
 int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree *tree);
 void Best_Spr(t_tree *tree);
@@ -85,6 +85,7 @@ void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int d
 void Sort_Spr_List_Pars(t_tree *tree);
 void Spr_List_Of_Trees(t_tree *tree);
 void Prune_Regraft_Time_Tree(t_tree *tree);
+void Spr_Pre_Order(t_node *a, t_node *d, t_edge *b, t_tree *tree);
 
 
 

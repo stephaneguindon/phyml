@@ -1,7 +1,7 @@
 /*
 
-PhyML:  a program that  computes maximum likelihood phyLOGenies from
-DNA or AA homoLOGous sequences.
+PhyML:  a program that  computes maximum likelihood phylogenies from
+DNA or AA homologous sequences.
 
 Copyright (C) Stephane Guindon. Oct 2003 onward.
 
@@ -25,7 +25,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
   int writemode;
 
   PhyML_Printf("\n. Command line: ");
-  For(i,argc) PhyML_Printf("%s ",argv[i]);
+  for(i=0;i<argc;i++) PhyML_Printf("%s ",argv[i]);
   PhyML_Printf("\n");
   writemode = WRITE;
 
@@ -1496,11 +1496,11 @@ int Read_Command_Line(option *io, int argc, char **argv)
   
   if(!io->mod->s_opt->opt_subst_param)
     {
-      io->mod->s_opt->opt_alpha  = 0;
-      io->mod->s_opt->opt_kappa  = 0;
-      io->mod->s_opt->opt_lambda = 0;
-      io->mod->s_opt->opt_pinvar = 0;
-      io->mod->s_opt->opt_rr     = 0;	
+      io->mod->s_opt->opt_alpha  = NO;
+      io->mod->s_opt->opt_kappa  = NO;
+      io->mod->s_opt->opt_lambda = NO;
+      io->mod->s_opt->opt_pinvar = NO;
+      io->mod->s_opt->opt_rr     = NO;	
     }
   
   if(io->mod->whichmodel != K80 && 

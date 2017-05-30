@@ -26,7 +26,7 @@ void MIXT_Set_Lengths_Of_This_Edge(phydbl *lens,t_edge *mixt_b, t_tree *tree);
 void MIXT_Post_Order_Lk(t_node *mixt_a,t_node *mixt_d,t_tree *mixt_tree);
 void MIXT_Pre_Order_Lk(t_node *mixt_a,t_node *mixt_d,t_tree *mixt_tree);
 phydbl MIXT_Lk(t_edge *mixt_b,t_tree *mixt_tree);
-void MIXT_Update_P_Lk(t_tree *mixt_tree,t_edge *mixt_b,t_node *mixt_d);
+void MIXT_Update_Partial_Lk(t_tree *mixt_tree,t_edge *mixt_b,t_node *mixt_d);
 void MIXT_Update_PMat_At_Given_Edge(t_edge *mixt_b,t_tree *mixt_tree);
 int *MIXT_Get_Number_Of_Classes_In_All_Mixtures(t_tree *mixt_tree);
 t_tree **MIXT_Record_All_Mixtures(t_tree *mixt_tree);
@@ -85,18 +85,22 @@ void MIXT_Init_T_End(t_tree *mixt_tree);
 void MIXT_Add_Root(t_edge *mixt_b, t_tree *mixt_tree);
 void MIXT_Check_Model_Validity(t_tree *mixt_tree);
 void MIXT_Ancestral_Sequences_One_Node(t_node *mixt_d, t_tree *mixt_tree, int print);
-void MIXT_Update_P_Pars(t_tree *mixt_tree, t_edge *mixt_b, t_node *mixt_d);
+void MIXT_Update_Partial_Pars(t_tree *mixt_tree, t_edge *mixt_b, t_node *mixt_d);
 void MIXT_Chain_Cal(t_tree *mixt_tree);
 void MIXT_Chain_Rates(t_rate *curr, t_rate *next);
 void MIXT_RATES_Update_Cur_Bl(t_tree *mixt_tree);
-void MIXT_Set_Model_Parameters(t_mod *mixt_mod);
 phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree);
 void MIXT_Update_Eigen_Lr(t_edge *mixt_b, t_tree *mixt_tree);
 int MIXT_Part_Mixt_Size(t_tree *mixt_tree);
 int MIXT_Mixt_Size(t_tree *mixt_tree);
-void MIXT_Set_Use_Eigen_Lr(short int yn, t_tree *mixt_tree);
-void MIXT_Set_Update_Eigen_Lr(short int yn, t_tree *mixt_tree);
-
-
+void MIXT_Set_Use_Eigen_Lr(int yn, t_tree *mixt_tree);
+void MIXT_Set_Update_Eigen_Lr(int yn, t_tree *mixt_tree);
+void MIXT_Backup_Partial_Pars(t_node *mixt_d, t_edge *mixt_b, t_tree *mixt_tree);
+void MIXT_Restore_Partial_Pars(t_node *mixt_d, t_edge *mixt_b, t_tree *mixt_tree);
+void MIXT_Backup_Partial_Lk(t_node *mixt_d, t_edge *mixt_b, t_tree *mixt_tree);
+void MIXT_Restore_Partial_Lk(t_node *mixt_d, t_edge *mixt_b, t_tree *mixt_tree);
+void MIXT_Backup_Partial_Scale(t_node *mixt_d, t_edge *mixt_b, t_tree *mixt_tree);
+void MIXT_Restore_Partial_Scale(t_node *mixt_d, t_edge *mixt_b, t_tree *mixt_tree);
+void MIXT_Set_Both_Sides(int yesno, t_tree *mixt_tree);
 
 #endif

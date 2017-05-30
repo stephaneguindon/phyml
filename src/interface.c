@@ -774,7 +774,7 @@ void Launch_Interface_Model(option *io)
 	if(io->mod->whichmodel == CUSTOM)
 	  {
 	    rr_param = (char **)mCalloc(6,sizeof(char *));
-	    For(i,6) rr_param[i] = (char *)mCalloc(10,sizeof(char));
+	    for(i=0;i<6;i++) rr_param[i] = (char *)mCalloc(10,sizeof(char));
 	    rr = (char *)mCalloc(50,sizeof(char));
 
 	    mod = io->mod;
@@ -787,7 +787,7 @@ void Launch_Interface_Model(option *io)
 		Getstring_Stdin(io->mod->custom_mod_string->s);
 		if(strlen(io->mod->custom_mod_string->s) == 6)
 		  {
-		    For(i,6)
+		    for(i=0;i<6;i++)
 		      {
 			while(!isdigit((int)io->mod->custom_mod_string->s[i]))
 			  {
@@ -823,10 +823,10 @@ void Launch_Interface_Model(option *io)
 	    strcpy(rr_param[5],"G<->T");
 
 	    PhyML_Printf("\n. Set the relative rate values\n");
-	    For(i,mod->r_mat->n_diff_rr)
+	    for(i=0;i<mod->r_mat->n_diff_rr;i++)
 	      {
 		sprintf(rr,"\n. [");
-		For(j,6)
+		for(j=0;j<6;j++)
 		  {
 		    if(mod->r_mat->rr_num->v[j] == i) 
 		      {
@@ -855,7 +855,7 @@ void Launch_Interface_Model(option *io)
 		  }
 	      }
 
-	    For(i,6) Free(rr_param[i]);
+	    for(i=0;i<6;i++) Free(rr_param[i]);
 	    Free(rr_param);
 	    Free(rr);
 	  }
@@ -879,7 +879,7 @@ void Launch_Interface_Model(option *io)
 		    int n_trial;
 		    
 		    bases = (char **)mCalloc(4,sizeof(char *));
-		    For(i,4) bases[i] = (char *)mCalloc(50,sizeof(char));
+		    for(i=0;i<4;i++) bases[i] = (char *)mCalloc(50,sizeof(char));
 		    bs = (char *)mCalloc(100,sizeof(char));
 		    
 		    strcpy(bases[0],". f(A)> ");
@@ -889,7 +889,7 @@ void Launch_Interface_Model(option *io)
 		    
 		    PhyML_Printf("\n. Set nucleotide frequencies \n");
 		    sum = .0;
-		    For(i,4)
+		    for(i=0;i<4;i++)
 		      {
 			PhyML_Printf("%s",bases[i]);
 			Getstring_Stdin(bs);
@@ -907,7 +907,7 @@ void Launch_Interface_Model(option *io)
 			sum += io->mod->e_frq->user_b_freq->v[i];
 		      }
 		
-		    For(i,4) io->mod->e_frq->user_b_freq->v[i] /= sum;
+		    for(i=0;i<4;i++) io->mod->e_frq->user_b_freq->v[i] /= sum;
 
 		    if(sum > 1.0 || sum < 1.0)
 		      {
@@ -921,7 +921,7 @@ void Launch_Interface_Model(option *io)
 			if(!scanf("%c",bs)) Exit("\n");
 		      }
 
-		    For(i,4) Free(bases[i]);
+		    for(i=0;i<4;i++) Free(bases[i]);
 		    Free(bases);
 		    Free(bs);
 		  }
@@ -1833,7 +1833,7 @@ void Launch_Interface_Multigene(option *io)
       io->st       = (supert_tree *)PART_Make_Supert_tree_Light(io);
       io->st->n_part = io->n_data_sets;
 
-      For(set,io->n_part)
+      for(set=0;set<io->n_part;set++)
 	{
 	  io->st->optionlist[set] = Make_Input();
 	  Set_Defaults_Input(io->st->optionlist[set]);

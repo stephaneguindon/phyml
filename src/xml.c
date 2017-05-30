@@ -42,7 +42,7 @@ t_tree *XML_Process_Base(char *xml_filename)
     }
 
   class_num = (int *)mCalloc(N_MAX_MIXT_CLASSES,sizeof(int));
-  For(i,N_MAX_MIXT_CLASSES) class_num[i] = i;
+  for(i=0;i<N_MAX_MIXT_CLASSES;i++) class_num[i] = i;
 
   component = (char *)mCalloc(T_MAX_NAME,sizeof(char));
 
@@ -311,9 +311,10 @@ t_tree *XML_Process_Base(char *xml_filename)
       iomod->s_opt = (t_opt *)Make_Optimiz();
       Set_Defaults_Optimiz(iomod->s_opt);
       
-      iomod->s_opt->opt_kappa   = NO;
-      iomod->s_opt->opt_lambda  = NO;
-      iomod->s_opt->opt_rr      = NO;
+      iomod->s_opt->opt_kappa       = NO;
+      iomod->s_opt->opt_lambda      = NO;
+      iomod->s_opt->opt_rr          = NO;
+      iomod->s_opt->opt_subst_param = NO;
       
       /*! Input file
        */
@@ -616,8 +617,8 @@ t_tree *XML_Process_Base(char *xml_filename)
                           /* ! First time we process this 'instance' node which has this 'ratematrices' parent */
                           if(instance->ds->obj == NULL)
                             {
-                              Make_Ratematrice_From_XML_Node(instance,io,mod);
-                              
+                              Make_Ratematrix_From_XML_Node(instance,io,mod);
+                                                            
                               ds = instance->ds;
                               
                               /*! Connect the data structure n->ds to mod->r_mat */
@@ -761,7 +762,7 @@ t_tree *XML_Process_Base(char *xml_filename)
                         }
                       
                       //////////////////////////////////////////
-                      //             TOPOLOGY                 //
+                      //             TOPOlogY                 //
                       //////////////////////////////////////////
                       
                       else if(!strcmp(parent->name,"topology"))
@@ -1728,18 +1729,20 @@ xml_node *XML_Search_Node_Attribute_Value(char *attr_name, char *value, int skip
               match = node;
               Free(sname);
               Free(sval);
-              Free(qname);
-              Free(qval);
               break;
             }
 
           Free(sname);
           Free(sval);
+
           attr = attr->next;
+
           if(!attr) break;
         }
       while(1);
 
+      Free(qval);
+      Free(qname);
     }
 
   if(match) return(match);
@@ -1797,7 +1800,7 @@ int XML_Validate_Attr_Int(char *target, int num, ...)
   sc_target = To_Lower_String(target);
   
   va_start(args,num);           
-  For(i,num)
+  for(i=0;i<num;i++)
     {
       s = va_arg(args, char *); 
       sc_s = To_Lower_String(s);      

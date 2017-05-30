@@ -21,10 +21,10 @@ the GNU public licence.  See http://www.opensource.org for details.
 #include "stats.h"
 #include "mixt.h"
 
-void PMat(phydbl l, t_mod *mod, int pos, phydbl *Pij);
+void PMat(phydbl l, t_mod *mod, int pos, phydbl *Pij, phydbl *tPij);
 void  PMat_K80(phydbl l,phydbl kappa, int pos, phydbl *Pij);
 void  PMat_TN93(phydbl l, t_mod *mod, int pos, phydbl *Pij);
-void  PMat_Empirical(phydbl l, t_mod *mod, int pos, phydbl *Pij);
+void  PMat_Empirical(phydbl l, t_mod *mod, int pos, phydbl *Pij, phydbl *tPij);
 void PMat_Zero_Br_Len(t_mod *mod, int pos, phydbl *Pij);
 void PMat_Gamma(phydbl l, t_mod *mod, int pos, phydbl *Pij);
 int GetDaa (phydbl *daa, phydbl *pi, char *file_name);

@@ -30,116 +30,155 @@ void Simu_Loop(t_tree *tree)
 
 int Simu(t_tree *tree, int n_step_max)
 {
-  phydbl old_loglk,n_iter,lambda;
-  int i,n_neg,n_tested,n_without_swap,n_tot_swap,step,it_lim_without_swap;
-  t_edge **sorted_b,**tested_b;
-
-  sorted_b = (t_edge **)mCalloc(tree->n_otu-3,sizeof(t_edge *));
-  tested_b = (t_edge **)mCalloc(tree->n_otu-3,sizeof(t_edge *));
-
-  old_loglk           = UNLIKELY;
-  tree->c_lnL         = UNLIKELY;
-  n_iter              = 1.0;
-  it_lim_without_swap = (tree->mod->ras->invar)?(1):(1);
-  n_tested            = 0;
-  n_without_swap      = 0;
-  step                = 0;
-  lambda              = .75;
-  n_tot_swap          = 0;
-
-  Update_Dirs(tree);
-
-  if(tree->lock_topo)
-    {
-      PhyML_Printf("\n== The tree topology is locked.");
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
-      Warn_And_Exit("");
-    }
-
+  phydbl old_loglk,delta;
+  unsigned int n_round;
+  
+  tree->c_lnL = UNLIKELY;
+  delta = UNLIKELY;
+  old_loglk = UNLIKELY;
+  n_round = 0;
+  tree->annealing_temp = 0.0;
   do
     {
-      ++step;
-
-      if(n_tested || step == 1) MIXT_Set_Alias_Subpatt(YES,tree);
       old_loglk = tree->c_lnL;
-      Set_Both_Sides(YES,tree);
+      Set_Both_Sides(NO,tree);
       Lk(NULL,tree);
-      MIXT_Set_Alias_Subpatt(NO,tree);
+      NNI_Traversal(tree->a_nodes[0],
+                    tree->a_nodes[0]->v[0],
+                    NULL,
+                    tree->a_nodes[0]->b[0],
+                    tree);
+      delta = tree->c_lnL - old_loglk;
+      tree->annealing_temp -= 1.0;
+      /* PhyML_Printf("\n. lnL: %15f",tree->c_lnL); */
+      if(tree->annealing_temp < 0.0) tree->annealing_temp = 0.0;
+      n_round++;
+      if(n_round == n_step_max) break;
+    }
+  while(delta > 1.0 || Are_Equal(tree->annealing_temp,0.0,1.E-3) == NO || n_round < 5);
+
+  return 1;
+                
+
+  /* phydbl old_loglk,n_iter,lambda; */
+  /* int i,n_neg,n_tested,n_without_swap,n_tot_swap,step,it_lim_without_swap; */
+  /* t_edge **sorted_b,**tested_b; */
+
+  /* sorted_b = (t_edge **)mCalloc(tree->n_otu-3,sizeof(t_edge *)); */
+  /* tested_b = (t_edge **)mCalloc(tree->n_otu-3,sizeof(t_edge *)); */
+
+  /* old_loglk           = UNLIKELY; */
+  /* tree->c_lnL         = UNLIKELY; */
+  /* n_iter              = 1.0; */
+  /* it_lim_without_swap = (tree->mod->ras->invar)?(1):(1); */
+  /* n_tested            = 0; */
+  /* n_without_swap      = 0; */
+  /* step                = 0; */
+  /* lambda              = 0.75; */
+  /* n_tot_swap          = 0; */
+
+  /* Update_Dirs(tree); */
+
+  /* if(tree->lock_topo) */
+  /*   { */
+  /*     PhyML_Printf("\n== The tree topology is locked."); */
+  /*     PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__); */
+  /*     Warn_And_Exit(""); */
+  /*   } */
+  
+  /* Set_Both_Sides(NO,tree); */
+  /* Lk(NULL,tree); */
+  /* Optimize_Br_Len_Serie(tree); */
+  
+  /* do */
+  /*   { */
+  /*     ++step; */
+
+  /*     if(n_tested || step == 1) MIXT_Set_Alias_Subpatt(YES,tree); */
+
+  /*     old_loglk = tree->c_lnL; */
+
+  /*     Set_Both_Sides(YES,tree); */
+  /*     Lk(NULL,tree); */
+  /*     MIXT_Set_Alias_Subpatt(NO,tree); */
 
       
-      if(tree->c_lnL > old_loglk - 5.0)
-        {
-          MIXT_Set_Alias_Subpatt(YES,tree);
-          Optimize_Br_Len_Serie(tree);
-          Set_Both_Sides(YES,tree);
-          Lk(NULL,tree);
-          MIXT_Set_Alias_Subpatt(NO,tree);
-        }
+  /*     /\* if(tree->c_lnL > old_loglk - 5.0) *\/ */
+  /*     /\*   { *\/ */
+  /*     /\*     MIXT_Set_Alias_Subpatt(YES,tree); *\/ */
+  /*     /\*     Optimize_Br_Len_Serie(tree); *\/ */
+  /*     /\*     Set_Both_Sides(YES,tree); *\/ */
+  /*     /\*     Lk(NULL,tree); *\/ */
+  /*     /\*     MIXT_Set_Alias_Subpatt(NO,tree); *\/ */
+  /*     /\*   } *\/ */
+      
+  /*     if(tree->c_lnL < old_loglk && step > 1) */
+  /*       { */
+  /*         if(tree->verbose > VL2 && tree->io->quiet == NO) PhyML_Printf("\n\n. Moving backward\n"); */
 
-      if(tree->c_lnL < old_loglk)
-        {
-          if(tree->verbose > VL2 && tree->io->quiet == NO) PhyML_Printf("\n\n. Moving backward\n");
-          if(!Mov_Backward_Topo_Bl(tree,old_loglk,tested_b,n_tested))
-            {
-              PhyML_Printf("\n== tree->c_lnL: %f old_loglk: %f",tree->c_lnL,old_loglk);
-              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-            }
-          if(!tree->n_swap) n_neg = 0;
-          Record_Br_Len(tree);
-          Set_Both_Sides(YES,tree);
-          Lk(NULL,tree);
-        }
+  /*         if(!Mov_Backward_Topo_Bl(tree,old_loglk,tested_b,n_tested)) */
+  /*           { */
+  /*             PhyML_Printf("\n== tree->c_lnL: %f old_loglk: %f",tree->c_lnL,old_loglk); */
+  /*             Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
+  /*           } */
+  /*         if(!tree->n_swap) n_neg = 0; */
+  /*         Record_Br_Len(tree); */
+  /*         Set_Both_Sides(YES,tree); */
+  /*         Lk(NULL,tree); */
+  /*       } */
 
-      if(step > n_step_max) break;
+  /*     if(step > n_step_max) break; */
 
-      if(tree->io->print_trace)
-        {
-          char *s = Write_Tree(tree,NO);
-          PhyML_Fprintf(tree->io->fp_out_trace,"[%f]%s\n",tree->c_lnL,s); fflush(tree->io->fp_out_trace);
-          if(tree->io->print_site_lnl) Print_Site_Lk(tree,tree->io->fp_out_lk); fflush(tree->io->fp_out_lk);
-          Free(s);
-        }
+  /*     if(tree->io->print_trace) */
+  /*       { */
+  /*         char *s = Write_Tree(tree,NO); */
+  /*         PhyML_Fprintf(tree->io->fp_out_trace,"[%f]%s\n",tree->c_lnL,s); fflush(tree->io->fp_out_trace); */
+  /*         if(tree->io->print_site_lnl) Print_Site_Lk(tree,tree->io->fp_out_lk); fflush(tree->io->fp_out_lk); */
+  /*         Free(s); */
+  /*       } */
 
-      if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
+  /*     if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace);  */
 
-      if(tree->verbose > VL2 && tree->io->quiet == NO) Print_Lk(tree,"[Topology           ]");
+  /*     if(tree->verbose > VL2 && tree->io->quiet == NO) Print_Lk(tree,"[Topology           ]"); */
+      
+  /*     if((FABS(old_loglk-tree->c_lnL) < tree->mod->s_opt->min_diff_lk_global) || (n_without_swap > it_lim_without_swap)) break; */
 
-      if((FABS(old_loglk-tree->c_lnL) < tree->mod->s_opt->min_diff_lk_global) || (n_without_swap > it_lim_without_swap)) break;
+  /*     Update_Dirs(tree); */
 
-      Fix_All(tree);
-      n_neg = 0;
-      For(i,2*tree->n_otu-3)
-        if((!tree->a_edges[i]->left->tax) &&
-           (!tree->a_edges[i]->rght->tax))
-          {
-            NNI(tree,tree->a_edges[i],NO);
-          }
-      Select_Edges_To_Swap(tree,sorted_b,&n_neg);
-      Sort_Edges_NNI_Score(tree,sorted_b,n_neg);
-      Optimiz_Ext_Br(tree);
-      Update_Bl(tree,lambda);
+  /*     Fix_All(tree); */
 
-      n_tested = 0;
-      For(i,(int)CEIL((phydbl)n_neg*(lambda)))
-        tested_b[n_tested++] = sorted_b[i];
+  /*     For(i,2*tree->n_otu-3) */
+  /*       if((!tree->a_edges[i]->left->tax) && (!tree->a_edges[i]->rght->tax)) */
+  /*         NNI(tree,tree->a_edges[i],NO); */
 
-      Make_N_Swap(tree,tested_b,0,n_tested);
+  /*     n_neg = 0; */
+  /*     Select_Edges_To_Swap(tree,sorted_b,&n_neg); */
+  /*     Sort_Edges_NNI_Score(tree,sorted_b,n_neg); */
+  /*     Optimiz_Ext_Br(tree); */
+  /*     Update_Bl(tree,lambda); */
 
-      if((tree->verbose > VL2) && (tree->io->quiet == NO)) PhyML_Printf("[# nnis=%3d]",n_tested);
+  /*     n_tested = 0; */
+  /*     For(i,(int)CEIL((phydbl)n_neg*(lambda))) */
+  /*       tested_b[n_tested++] = sorted_b[i]; */
 
-      n_tot_swap += n_tested;
+  /*     Make_N_Swap(tree,tested_b,0,n_tested); */
 
-      if(n_tested > 0) n_without_swap = 0;
-      else             n_without_swap++;
 
-      n_iter+=1.0;
-    }
-  while(1);
+  /*     if((tree->verbose > VL2) && (tree->io->quiet == NO)) PhyML_Printf("[# nnis=%3d]",n_tested); */
 
-  Free(sorted_b);
-  Free(tested_b);
+  /*     n_tot_swap += n_tested; */
 
-  return n_tot_swap;
+  /*     if(n_tested > 0) n_without_swap = 0; */
+  /*     else             n_without_swap++; */
+
+  /*     n_iter+=1.0; */
+  /*   } */
+  /* while(1); */
+
+  /* Free(sorted_b); */
+  /* Free(tested_b); */
+
+  /* return n_tot_swap; */
 }
 
 //////////////////////////////////////////////////////////////
@@ -240,20 +279,31 @@ void Select_Edges_To_Swap(t_tree *tree, t_edge **sorted_b, int *n_neg)
 {
   int i;
   t_edge *b;
-  phydbl best_score;
+  /* phydbl best_score; */
 
   *n_neg = 0;
 
   For(i,2*tree->n_otu-3)
     {
       b = tree->a_edges[i];
-      best_score = b->nni->score;
+      /* best_score = b->nni->score; */
       
       if((!b->left->tax) && (!b->rght->tax) && (b->nni->score < -tree->mod->s_opt->min_diff_lk_move))
         {
-          Check_NNI_Scores_Around(b->left,b->rght,b,&best_score,tree);
-          Check_NNI_Scores_Around(b->rght,b->left,b,&best_score,tree);
-          if(best_score < b->nni->score) continue;
+          /* // Evaluate NNIs on edges at distance 1 */
+          /* Check_NNI_Scores_Around(b->left,b->rght,b,&best_score,tree); */
+          /* Check_NNI_Scores_Around(b->rght,b->left,b,&best_score,tree);           */
+          
+          /* // Evaluate NNIs on edges at distance 2 */
+          /* Check_NNI_Scores_Around(b->left,b->left->v[b->l_v1],b,&best_score,tree); */
+          /* Check_NNI_Scores_Around(b->left,b->left->v[b->l_v2],b,&best_score,tree); */
+
+          /* // Evaluate NNIs on edges at distance 2 */
+          /* Check_NNI_Scores_Around(b->rght,b->rght->v[b->r_v1],b,&best_score,tree); */
+          /* Check_NNI_Scores_Around(b->rght,b->rght->v[b->r_v2],b,&best_score,tree); */
+
+          /* if(best_score < b->nni->score) continue; */
+
           sorted_b[*n_neg] = b;
           (*n_neg)++;
         }
@@ -310,21 +360,41 @@ void Make_N_Swap(t_tree *tree,t_edge **b, int beg, int end)
     {
       n1 = n2 = n3 = n4 = NULL;
 
+      n1 = b[i]->nni->swap_node_v1;
+      n2 = b[i]->nni->swap_node_v2;
+      n3 = b[i]->nni->swap_node_v3;
+      n4 = b[i]->nni->swap_node_v4;
+
+      /* if(b[i]->nni->best_conf == 1) */
+      /*   { */
+      /*     n1 = b[i]->left->v[b[i]->l_v2]; */
+      /*     n2 = b[i]->left; */
+      /*     n3 = b[i]->rght; */
+      /*     n4 = b[i]->rght->v[b[i]->r_v1]; */
+      /*   } */
+      /* else if(b[i]->nni->best_conf == 2) */
+      /*   { */
+      /*     n1 = b[i]->left->v[b[i]->l_v2]; */
+      /*     n2 = b[i]->left; */
+      /*     n3 = b[i]->rght; */
+      /*     n4 = b[i]->rght->v[b[i]->r_v2]; */
+      /*   } */
+
       if(b[i]->nni->best_conf == 1)
         {
-          n1 = b[i]->left->v[b[i]->l_v2];
-          n2 = b[i]->left;
-          n3 = b[i]->rght;
-          n4 = b[i]->rght->v[b[i]->r_v1];
+          if(n1 != b[i]->left->v[b[i]->l_v2] ||
+             /* n2 != b[i]->left || */
+             /* n3 != b[i]->rght || */
+             n4 != b[i]->rght->v[b[i]->r_v1]) continue;
         }
       else if(b[i]->nni->best_conf == 2)
         {
-          n1 = b[i]->left->v[b[i]->l_v2];
-          n2 = b[i]->left;
-          n3 = b[i]->rght;
-          n4 = b[i]->rght->v[b[i]->r_v2];
+          if(n1 != b[i]->left->v[b[i]->l_v2] ||
+             /* n2 != b[i]->left || */
+             /* n3 != b[i]->rght || */
+             n4 != b[i]->rght->v[b[i]->r_v2]) continue;
         }
-
+            
       Swap(n1,n2,n3,n4,tree);
       
       if(!Check_Topo_Constraints(tree,tree->io->cstr_tree))
@@ -352,7 +422,7 @@ void Make_N_Swap(t_tree *tree,t_edge **b, int beg, int end)
       /*   } */
       /* while(b[i]); */
       /* b[i] = orig; */
-
+      
       tree->n_swap++;
     }
 
@@ -388,6 +458,11 @@ int Make_Best_Swap(t_tree *tree)
       return_value = 1;
       
       n1 = n2 = n3 = n4 = NULL;
+
+      /* n1 = b->nni->swap_node_v1; */
+      /* n2 = b->nni->swap_node_v2; */
+      /* n3 = b->nni->swap_node_v3; */
+      /* n4 = b->nni->swap_node_v4; */
 
       if(b->nni->best_conf == 1)
         {
@@ -459,7 +534,7 @@ int Mov_Backward_Topo_Bl(t_tree *tree, phydbl lk_old, t_edge **tested_b, int n_t
       For(i,2*tree->n_otu-3)
         {
           b = tree->a_edges[i];
-                    
+
           orig = b;
           do
             {
@@ -594,20 +669,25 @@ void Unswap_N_Branch(t_tree *tree, t_edge **b, int beg, int end)
         {
           n1 = n2 = n3 = n4 = NULL;
           
-          if(b[i]->nni->best_conf == 1)
-            {
-              n1 = b[i]->left->v[b[i]->l_v2];
-              n2 = b[i]->left;
-              n3 = b[i]->rght;
-              n4 = b[i]->rght->v[b[i]->r_v1];
-            }
-          else if(b[i]->nni->best_conf == 2)
-            {
-              n1 = b[i]->left->v[b[i]->l_v2];
-              n2 = b[i]->left;
-              n3 = b[i]->rght;
-              n4 = b[i]->rght->v[b[i]->r_v2];
-            }
+          n1 = b[i]->nni->swap_node_v4;
+          n2 = b[i]->nni->swap_node_v2;
+          n3 = b[i]->nni->swap_node_v3;
+          n4 = b[i]->nni->swap_node_v1;
+
+          /* if(b[i]->nni->best_conf == 1) */
+          /*   { */
+          /*     n1 = b[i]->left->v[b[i]->l_v2]; */
+          /*     n2 = b[i]->left; */
+          /*     n3 = b[i]->rght; */
+          /*     n4 = b[i]->rght->v[b[i]->r_v1]; */
+          /*   } */
+          /* else if(b[i]->nni->best_conf == 2) */
+          /*   { */
+          /*     n1 = b[i]->left->v[b[i]->l_v2]; */
+          /*     n2 = b[i]->left; */
+          /*     n3 = b[i]->rght; */
+          /*     n4 = b[i]->rght->v[b[i]->r_v2]; */
+          /*   } */
 
           Swap(n1,n2,n3,n4,tree);
           
@@ -637,6 +717,7 @@ void Unswap_N_Branch(t_tree *tree, t_edge **b, int beg, int end)
           /*   } */
           /* while(b[i]); */
           /* b[i] = orig; */
+
         }
     }
   else
@@ -645,20 +726,25 @@ void Unswap_N_Branch(t_tree *tree, t_edge **b, int beg, int end)
         {
           n1 = n2 = n3 = n4 = NULL;
           
-          if(b[i]->nni->best_conf == 1)
-            {
-              n1 = b[i]->left->v[b[i]->l_v2];
-              n2 = b[i]->left;
-              n3 = b[i]->rght;
-              n4 = b[i]->rght->v[b[i]->r_v1];
-            }
-          else if(b[i]->nni->best_conf == 2)
-            {
-              n1 = b[i]->left->v[b[i]->l_v2];
-              n2 = b[i]->left;
-              n3 = b[i]->rght;
-              n4 = b[i]->rght->v[b[i]->r_v2];
-            }
+          n1 = b[i]->nni->swap_node_v4;
+          n2 = b[i]->nni->swap_node_v2;
+          n3 = b[i]->nni->swap_node_v3;
+          n4 = b[i]->nni->swap_node_v1;
+
+          /* if(b[i]->nni->best_conf == 1) */
+          /*   { */
+          /*     n1 = b[i]->left->v[b[i]->l_v2]; */
+          /*     n2 = b[i]->left; */
+          /*     n3 = b[i]->rght; */
+          /*     n4 = b[i]->rght->v[b[i]->r_v1]; */
+          /*   } */
+          /* else if(b[i]->nni->best_conf == 2) */
+          /*   { */
+          /*     n1 = b[i]->left->v[b[i]->l_v2]; */
+          /*     n2 = b[i]->left; */
+          /*     n3 = b[i]->rght; */
+          /*     n4 = b[i]->rght->v[b[i]->r_v2]; */
+          /*   } */
 
           Swap(n1,n2,n3,n4,tree);
           
@@ -675,6 +761,7 @@ void Unswap_N_Branch(t_tree *tree, t_edge **b, int beg, int end)
           Copy_Scalar_Dbl(b[i]->l_old,b[i]->l);
           Copy_Scalar_Dbl(b[i]->l_var_old,b[i]->l_var);
           
+
           /* orig = b[i]; */
           /* do */
           /*   { */
@@ -705,20 +792,26 @@ void Swap_N_Branch(t_tree *tree,t_edge **b, int beg, int end)
         {
           n1 = n2 = n3 = n4 = NULL;
           
-          if(b[i]->nni->best_conf == 1)
-            {
-              n1 = b[i]->left->v[b[i]->l_v2];
-              n2 = b[i]->left;
-              n3 = b[i]->rght;
-              n4 = b[i]->rght->v[b[i]->r_v1];
-            }
-          else if(b[i]->nni->best_conf == 2)
-            {
-              n1 = b[i]->left->v[b[i]->l_v2];
-              n2 = b[i]->left;
-              n3 = b[i]->rght;
-              n4 = b[i]->rght->v[b[i]->r_v2];
-            }
+          n1 = b[i]->nni->swap_node_v1;
+          n2 = b[i]->nni->swap_node_v2;
+          n3 = b[i]->nni->swap_node_v3;
+          n4 = b[i]->nni->swap_node_v4;
+
+
+          /* if(b[i]->nni->best_conf == 1) */
+          /*   { */
+          /*     n1 = b[i]->left->v[b[i]->l_v2]; */
+          /*     n2 = b[i]->left; */
+          /*     n3 = b[i]->rght; */
+          /*     n4 = b[i]->rght->v[b[i]->r_v1]; */
+          /*   } */
+          /* else if(b[i]->nni->best_conf == 2) */
+          /*   { */
+          /*     n1 = b[i]->left->v[b[i]->l_v2]; */
+          /*     n2 = b[i]->left; */
+          /*     n3 = b[i]->rght; */
+          /*     n4 = b[i]->rght->v[b[i]->r_v2]; */
+          /*   } */
           
           Swap(n1,n2,n3,n4,tree);
           
@@ -751,21 +844,27 @@ void Swap_N_Branch(t_tree *tree,t_edge **b, int beg, int end)
         {
 
           n1 = n2 = n3 = n4 = NULL;
-          
-          if(b[i]->nni->best_conf == 1)
-            {
-              n1 = b[i]->left->v[b[i]->l_v2];
-              n2 = b[i]->left;
-              n3 = b[i]->rght;
-              n4 = b[i]->rght->v[b[i]->r_v1];
-            }
-          else if(b[i]->nni->best_conf == 2)
-            {
-              n1 = b[i]->left->v[b[i]->l_v2];
-              n2 = b[i]->left;
-              n3 = b[i]->rght;
-              n4 = b[i]->rght->v[b[i]->r_v2];
-            }
+
+          n1 = b[i]->nni->swap_node_v1;
+          n2 = b[i]->nni->swap_node_v2;
+          n3 = b[i]->nni->swap_node_v3;
+          n4 = b[i]->nni->swap_node_v4;
+
+
+          /* if(b[i]->nni->best_conf == 1) */
+          /*   { */
+          /*     n1 = b[i]->left->v[b[i]->l_v2]; */
+          /*     n2 = b[i]->left; */
+          /*     n3 = b[i]->rght; */
+          /*     n4 = b[i]->rght->v[b[i]->r_v1]; */
+          /*   } */
+          /* else if(b[i]->nni->best_conf == 2) */
+          /*   { */
+          /*     n1 = b[i]->left->v[b[i]->l_v2]; */
+          /*     n2 = b[i]->left; */
+          /*     n3 = b[i]->rght; */
+          /*     n4 = b[i]->rght->v[b[i]->r_v2]; */
+          /*   } */
           
           Swap(n1,n2,n3,n4,tree);
           
@@ -799,9 +898,11 @@ void Swap_N_Branch(t_tree *tree,t_edge **b, int beg, int end)
 
 void Check_NNI_Scores_Around(t_node *a, t_node *d, t_edge *b, phydbl *best_score, t_tree *tree)
 {
-
   int i;
-  For(i,3)
+
+  if(d->tax) return;
+  
+  for(i=0;i<3;i++)
     {
       if((d->v[i] != a) && (!d->v[i]->tax))
         {
@@ -821,34 +922,147 @@ void Check_NNI_Scores_Around(t_node *a, t_node *d, t_edge *b, phydbl *best_score
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+/*
+        v
+        |
+        |
+        a
+       / \
+      d   u
+     / \
+    v1 v2   
+*/
+void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
+{
+  unsigned int i;
+  
+  if(d->tax == YES)
+    {
+      Br_Len_Brent(b,tree);
+      return;
+    }
+  else if(a->tax == YES)
+    {
+      Br_Len_Brent(b,tree);
+      for(i=0;i<3;++i) if(d->v[i] != a)
+        {
+          Update_Partial_Lk(tree,d->b[i],d);
+          NNI_Traversal(d,d->v[i],a,d->b[i],tree);
+        }
+      Update_Partial_Lk(tree,b,d);
+    }
+  else
+    {
+      phydbl lk0,lk1,lk2;
+      phydbl l0,rnd;
+      t_node *v1,*v2,*u,*dum;
+
+      /* unsigned int keep_topo; */
+      /* phydbl p,accept_prob; */
+      
+      lk0 = UNLIKELY;
+      lk1 = UNLIKELY;
+      lk2 = UNLIKELY;
+      
+      v1 = v2 = NULL;
+      for(i=0;i<3;++i)
+        if(d->v[i] != a)
+          {
+            if(v1 == NULL) v1 = d->v[i];
+            else           v2 = d->v[i];
+          }
+      assert(v1 != NULL);
+      assert(v2 != NULL);
+
+      dum = NULL;
+      rnd = Uni();
+      if(rnd < .5)
+        {
+          dum = v1;
+          v1  = v2;
+          v2  = dum;
+        }
+      
+      u = NULL;
+      for(i=0;i<3;++i) if(a->v[i] != d && a->v[i] != v) { u = a->v[i]; break; }
+      
+      /* Br_Len_Brent(b,tree); */
+      lk0 = Lk(b,tree);
+      Record_Br_Len(tree);
+      l0 = MIXT_Get_Mean_Edge_Len(b,tree);
+
+      if(l0 < 0.1)
+        {
+          // First NNI
+          Swap(v1,d,a,u,tree);
+          // Update partial likelihood looking up
+          Update_Partial_Lk(tree,b,a);
+          // Update partial likelihood looking down
+          Update_Partial_Lk(tree,b,d);
+          // Evaluate likelihood
+          /* Br_Len_Brent(b,tree); */
+          lk1 = Lk(b,tree);
+
+          
+          /* keep_topo = (lk1 > lk0); */
+          /* if(Are_Equal(tree->annealing_temp,0.0,1.E-3) == NO) */
+          /*   { */
+          /*     accept_prob = exp((lk1-lk0)/tree->annealing_temp); */
+          /*     p = Uni(); */
+          /*     if(!(p > accept_prob)) keep_topo = YES; */
+          /*   } */
+
+          /* if(keep_topo == NO) */
+          if(lk1 < lk0)
+            {
+              // Unswap
+              Swap(u,d,a,v1,tree);
+              
+              // Second NNI
+              Swap(v2,d,a,u,tree);
+              // Update partial likelihood looking up
+              Update_Partial_Lk(tree,b,a);
+              // Update partial likelihood looking down
+              Update_Partial_Lk(tree,b,d);
+              // Evaluate likelihood
+              /* Br_Len_Brent(b,tree); */
+              lk2 = Lk(b,tree);
+              
+              
+              /* keep_topo = (lk2 > lk0); */
+              /* if(Are_Equal(tree->annealing_temp,0.0,1.E-3) == NO) */
+              /*   { */
+              /*     accept_prob = exp((lk2-lk0)/tree->annealing_temp); */
+              /*     p = Uni(); */
+              /*     if(!(p > accept_prob)) keep_topo = YES; */
+              /*   } */
+
+              // Unswap
+              if(lk2 < lk0)
+              /* if(keep_topo == NO) */
+                {
+                  Swap(u,d,a,v2,tree);
+                  // Update partial likelihood looking up
+                  Update_Partial_Lk(tree,b,a);
+                  // Update partial likelihood looking down
+                  Update_Partial_Lk(tree,b,d);
+                  Restore_Br_Len(tree);
+                  Lk(b,tree);
+                }
+            }
+        }
+      
+      Br_Len_Brent(b,tree);
+
+      for(i=0;i<3;++i)
+        if(d->v[i] != a)
+          {
+            Update_Partial_Lk(tree,d->b[i],d);
+            NNI_Traversal(d,d->v[i],a,d->b[i],tree);
+          }
+      Update_Partial_Lk(tree,b,d);
+    }
+}
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-

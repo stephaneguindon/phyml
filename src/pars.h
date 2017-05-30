@@ -27,14 +27,16 @@ void Pre_Order_Pars(t_node *a, t_node *d, t_tree *tree);
 void Get_Partial_Pars(t_tree *tree, t_edge *b_fcus, t_node *a, t_node *d);
 void Site_Pars(t_tree *tree);
 void Init_Ui_Tips(t_tree *tree);
-void Update_P_Pars(t_tree *tree, t_edge *b_fcus, t_node *n);
+void Update_Partial_Pars(t_tree *tree, t_edge *b_fcus, t_node *n);
 int Pars_At_Given_Edge(t_edge *b, t_tree *tree);
 void Get_All_Partial_Pars(t_tree *tree, t_edge *b_fcus, t_node *a, t_node *d);
 int Update_Pars_At_Given_Edge(t_edge *b_fcus, t_tree *tree);
-void Init_P_Pars_Tips(t_tree *tree);
+void Init_Partial_Pars_Tips(t_tree *tree);
 void Get_Step_Mat(t_tree *tree);
 int Pars_Core(t_edge *b, t_tree *tree);
 int One_Pars_Step(t_edge *b,t_tree *tree);
 void Stepwise_Add_Pars(t_tree *tree);
+void Backup_Partial_Pars(t_node *d, t_edge *b, t_tree *tree);
+void Restore_Partial_Pars(t_node *d, t_edge *b, t_tree *tree);
 
 #endif

@@ -27,26 +27,26 @@ void Make_Tree_4_Lk(t_tree *tree, calign *cdata, int n_site)
 
 #if (defined(__AVX__) || defined(__SSE3__))
 #ifndef WIN32
-  if(posix_memalign((void **)&tree->eigen_lr_left,BYTE_ALIGN,(size_t)tree->n_pattern*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&tree->eigen_lr_left,BYTE_ALIGN,(size_t)MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&tree->eigen_lr_rght,BYTE_ALIGN,(size_t)MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&tree->dot_prod,BYTE_ALIGN,(size_t)tree->n_pattern*tree->mod->ns*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&tree->expl,BYTE_ALIGN,(size_t)3*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 #else
-  tree->eigen_lr_left = _aligned_malloc(tree->n_pattern * MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes) * tree->mod->ns * sizeof(phydbl),BYTE_ALIGN);
+  tree->eigen_lr_left = _aligned_malloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes) * tree->mod->ns * sizeof(phydbl),BYTE_ALIGN);
+  tree->eigen_lr_rght = _aligned_malloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes) * tree->mod->ns * sizeof(phydbl),BYTE_ALIGN);
+  tree->dot_prod = _aligned_malloc(tree->n_pattern*tree->mod->ns*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*sizeof(phydbl),BYTE_ALIGN);
+  tree->expl = _aligned_malloc(3*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
 #endif
 #else
-  tree->eigen_lr_left = (phydbl *)mCalloc(tree->n_pattern * MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes) * tree->mod->ns,sizeof(phydbl));
+  tree->eigen_lr_left = (phydbl *)mCalloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes) * tree->mod->ns,sizeof(phydbl));
+  tree->eigen_lr_rght = (phydbl *)mCalloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes) * tree->mod->ns,sizeof(phydbl));
+  tree->dot_prod = (phydbl *)mCalloc(tree->n_pattern*tree->mod->ns*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(phydbl));
+  tree->expl = (phydbl *)mCalloc(3*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns,sizeof(phydbl));
 #endif
 
-#if (defined(__AVX__) || defined(__SSE3__))
-#ifndef WIN32
-  if(posix_memalign((void **)&tree->eigen_lr_rght,BYTE_ALIGN,(size_t)tree->n_pattern*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-#else
-  tree->eigen_lr_rght = _aligned_malloc(tree->n_pattern * MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes) * tree->mod->ns * sizeof(phydbl),BYTE_ALIGN);
-#endif
-#else
-  tree->eigen_lr_rght = (phydbl *)mCalloc(tree->n_pattern * MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes) * tree->mod->ns,sizeof(phydbl));
-#endif
 
   tree->log_lks_aLRT = (phydbl **)mCalloc(3,sizeof(phydbl *));
-  For(i,3) tree->log_lks_aLRT[i] = (phydbl *)mCalloc(tree->data->init_len,sizeof(phydbl));
+  for(i=0;i<3;i++) tree->log_lks_aLRT[i] = (phydbl *)mCalloc(tree->data->init_len,sizeof(phydbl));
 
   For(i,2*tree->n_otu-1) Make_Edge_NNI(tree->a_edges[i]);
 
@@ -56,12 +56,8 @@ void Make_Tree_4_Lk(t_tree *tree, calign *cdata, int n_site)
       For(i,2*tree->n_otu-2) Make_Node_Lk(tree->a_nodes[i]);
       For(i,2*tree->n_otu-1) Make_Edge_Loc(tree->a_edges[i],tree);
 
-      if(tree->mod->s_opt->greedy)
-        Init_P_Lk_Tips_Double(tree);
-      else
-        Init_P_Lk_Tips_Int(tree);
-
-      Init_P_Lk_Loc(tree);
+      Init_Partial_Lk_Tips_Double(tree);
+      Init_Partial_Lk_Loc(tree);
 
       if(tree->n_root != NULL)
         {
@@ -85,7 +81,7 @@ void Make_Tree_4_Pars(t_tree *tree, calign *cdata, int n_site)
 
   For(i,2*tree->n_otu-1) Make_Edge_Pars(tree->a_edges[i],tree);
   Init_Ui_Tips(tree);
-  Init_P_Pars_Tips(tree); /* Must be called after Init_Ui_Tips is called */
+  Init_Partial_Pars_Tips(tree); /* Must be called after Init_Ui_Tips is called */
 
   if(tree->n_root)
     {
@@ -103,14 +99,14 @@ void Make_All_Edges_Lk(t_node *a, t_node *d, t_tree *tree)
 {
   int i;
 
-  For(i,3) 
+  for(i=0;i<3;i++) 
     if((a->v[i]) && (a->v[i] == d)) 
       Make_Edge_Lk(a->b[i],tree);
 
   if(d->tax) return;
   else
     {
-      For(i,3)
+      for(i=0;i<3;i++)
         {
           if(d->v[i] != a && d->b[i] != tree->e_root)
             Make_All_Edges_Lk(d,d->v[i],tree);
@@ -200,7 +196,7 @@ void Make_Edge_Pars(t_edge *b, t_tree *tree)
 void Make_Edge_Pars_Left(t_edge *b, t_tree *tree)
 {
   b->pars_l = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
-  b->ui_l = (unsigned int *)mCalloc(tree->data->crunch_len,sizeof(unsigned int));
+  b->ui_l = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
   b->p_pars_l = (int *)mCalloc(tree->data->crunch_len*tree->mod->ns,sizeof(int ));
   b->n_diff_states_l = (int *)mCalloc(tree->mod->ns,sizeof(int ));
 }
@@ -211,7 +207,7 @@ void Make_Edge_Pars_Left(t_edge *b, t_tree *tree)
 void Make_Edge_Pars_Rght(t_edge *b, t_tree *tree)
 {
   b->pars_r = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
-  b->ui_r = (unsigned int *)mCalloc(tree->data->crunch_len,sizeof(unsigned int));
+  b->ui_r = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
   b->p_pars_r = (int *)mCalloc(tree->data->crunch_len*tree->mod->ns,sizeof(int ));
   b->n_diff_states_r = (int *)mCalloc(tree->mod->ns,sizeof(int ));
 }
@@ -232,11 +228,14 @@ void Make_Edge_Lk(t_edge *b, t_tree *tree)
 #if (defined(__AVX__) || defined(__SSE3__))
 #ifndef WIN32
   if(posix_memalign((void *)&b->Pij_rr,BYTE_ALIGN,(size_t)tree->mod->ras->n_catg*tree->mod->ns*tree->mod->ns*sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void *)&b->tPij_rr,BYTE_ALIGN,(size_t)tree->mod->ras->n_catg*tree->mod->ns*tree->mod->ns*sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 #else
   b->Pij_rr = _aligned_malloc(tree->mod->ras->n_catg*tree->mod->ns*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
+  b->tPij_rr = _aligned_malloc(tree->mod->ras->n_catg*tree->mod->ns*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
 #endif
 #else
   b->Pij_rr = (phydbl *)mCalloc(tree->mod->ras->n_catg*tree->mod->ns*tree->mod->ns,sizeof(phydbl));
+  b->tPij_rr = (phydbl *)mCalloc(tree->mod->ras->n_catg*tree->mod->ns*tree->mod->ns,sizeof(phydbl));
 #endif
 
   Make_Edge_Lk_Left(b,tree);
@@ -277,7 +276,16 @@ void Make_Edge_Lk_Left(t_edge *b, t_tree *tree)
       else if(b->left->tax)
         {
           b->p_lk_left   = NULL;
-          b->p_lk_tip_l  = (short int *)mCalloc(tree->data->crunch_len*tree->mod->ns,sizeof(short int ));
+          
+#if (defined(__AVX__) || defined(__SSE3__))
+#ifndef WIN32
+          if(posix_memalign((void **)&b->p_lk_tip_l,BYTE_ALIGN,(size_t)tree->data->crunch_len*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+#else
+          b->p_lk_tip_l = _aligned_malloc(tree->data->crunch_len*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
+#endif
+#else
+          b->p_lk_tip_l  = (phydbl *)mCalloc(tree->data->crunch_len*tree->mod->ns,sizeof(phydbl));
+#endif
         }
     }
   else
@@ -338,7 +346,15 @@ void Make_Edge_Lk_Rght(t_edge *b, t_tree *tree)
         }
       else if(b->rght->tax)
         {
-          b->p_lk_tip_r  = (short int *)mCalloc(tree->data->crunch_len*tree->mod->ns,sizeof(short int));
+#if (defined(__AVX__) || defined(__SSE3__))
+#ifndef WIN32
+          if(posix_memalign((void **)&b->p_lk_tip_r,BYTE_ALIGN,(size_t)tree->data->crunch_len*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+#else
+          b->p_lk_tip_r = _aligned_malloc(tree->data->crunch_len*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
+#endif
+#else
+          b->p_lk_tip_r  = (phydbl *)mCalloc(tree->data->crunch_len*tree->mod->ns,sizeof(phydbl));
+#endif
           b->p_lk_rght = NULL;
         }
     }
@@ -455,7 +471,7 @@ nexcom **Make_Nexus_Com()
 
   com = (nexcom **)mCalloc(N_MAX_NEX_COM,sizeof(nexcom *));
 
-  For(i,N_MAX_NEX_COM)
+  for(i=0;i<N_MAX_NEX_COM;i++)
     {
       com[i]       = (nexcom *)mCalloc(1,sizeof(nexcom));
       com[i]->name = (char *)mCalloc(T_MAX_NEX_COM,sizeof(char));
@@ -500,7 +516,7 @@ matrix *Make_Mat(int n_otu)
   mat->tip_node = (t_node **)mCalloc(n_otu,sizeof(t_node *));
 
 
-  For(i,n_otu)
+  for(i=0;i<n_otu;i++)
     {
       mat->P[i]    = (phydbl *)mCalloc(n_otu,sizeof(phydbl));
       mat->Q[i]    = (phydbl *)mCalloc(n_otu,sizeof(phydbl));
@@ -610,7 +626,7 @@ calign *Make_Calign(int n_otu, int crunch_len, int state_len, int init_len, char
   cdata->invar    = (short int *)mCalloc(crunch_len,sizeof(short int));
   cdata->sitepatt = (int *)mCalloc(init_len,sizeof(int ));
 
-  For(j,n_otu)
+  for(j=0;j<n_otu;j++)
     {
       cdata->c_seq[j]            = (align *)mCalloc(1,sizeof(align));
       cdata->c_seq[j]->name      = (char *)mCalloc((int)(strlen(sp_names[j])+1),sizeof(char));
@@ -942,7 +958,7 @@ option *Make_Input()
   io->run_id_string                     = (char *)mCalloc(T_MAX_OPTION,sizeof(char));
   io->clade_list_file                   = (char *)mCalloc(T_MAX_FILE,sizeof(char));
   io->alphabet                          = (char **)mCalloc(T_MAX_ALPHABET,sizeof(char *));
-  For(i,T_MAX_ALPHABET) io->alphabet[i] = (char *)mCalloc(T_MAX_STATE,sizeof(char ));
+  for(i=0;i<T_MAX_ALPHABET;i++) io->alphabet[i] = (char *)mCalloc(T_MAX_STATE,sizeof(char ));
   io->treelist                          = (t_treelist *)mCalloc(1,sizeof(t_treelist));
   io->mcmc                              = (t_mcmc *)MCMC_Make_MCMC_Struct();
   io->rates                             = (t_rate *)RATES_Make_Rate_Struct(-1);
@@ -1008,28 +1024,28 @@ triplet *Make_Triplet_Struct(t_mod *mod)
   triplet_struct->eigen_struct    = (eigen *)Make_Eigen_Struct(mod->ns);
   triplet_struct->mod             = mod;
 
-  For(k,mod->ras->n_catg)
+  for(k=0;k<mod->ras->n_catg;k++)
     {
       triplet_struct->core[k]                = (phydbl ***)mCalloc(mod->ns,sizeof(phydbl **));
-      For(i,mod->ns)
+      for(i=0;i<mod->ns;i++)
     {
       triplet_struct->core[k][i]         = (phydbl **)mCalloc(mod->ns,sizeof(phydbl *));
-      For(j,mod->ns)
+      for(j=0;j<mod->ns;j++)
         triplet_struct->core[k][i][j]    = (phydbl  *)mCalloc(mod->ns,sizeof(phydbl ));
     }
     }
 
-  For(i,mod->ns)
+  for(i=0;i<mod->ns;i++)
     {
       triplet_struct->p_one_site[i]          = (phydbl **)mCalloc(mod->ns,sizeof(phydbl *));
-      For(j,mod->ns)
+      for(j=0;j<mod->ns;j++)
     triplet_struct->p_one_site[i][j]     = (phydbl  *)mCalloc(mod->ns,sizeof(phydbl ));
     }
 
-  For(i,mod->ns)
+  for(i=0;i<mod->ns;i++)
     {
       triplet_struct->sum_p_one_site[i]      = (phydbl **)mCalloc(mod->ns,sizeof(phydbl *));
-      For(j,mod->ns)
+      for(j=0;j<mod->ns;j++)
     triplet_struct->sum_p_one_site[i][j] = (phydbl  *)mCalloc(mod->ns,sizeof(phydbl ));
     }
 
@@ -1455,7 +1471,7 @@ void GEO_Make_Geo_Complete(int ldscape_sz, int n_dim, int n_tax, t_geo *t)
 
   // Locations
   t->coord_loc = (t_geo_coord **)mCalloc(ldscape_sz,sizeof(t_geo_coord *));
-  For(i,ldscape_sz) t->coord_loc[i] = GEO_Make_Geo_Coord(n_dim);
+  for(i=0;i<ldscape_sz;i++) t->coord_loc[i] = GEO_Make_Geo_Coord(n_dim);
 }
 
 //////////////////////////////////////////////////////////////
@@ -1536,7 +1552,7 @@ t_poly *Make_Poly(int n)
   int i;
   p = (t_poly *)mCalloc(1,sizeof(t_poly));
   p->poly_vert = (t_geo_coord **)mCalloc(n,sizeof(t_geo_coord *));
-  For(i,n) p->poly_vert[i] = GEO_Make_Geo_Coord(2);
+  for(i=0;i<n;i++) p->poly_vert[i] = GEO_Make_Geo_Coord(2);
   return(p);
 }
 

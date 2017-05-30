@@ -1,6 +1,6 @@
 /*
 
-PhyML:  a program that  computes maximum likelihood phyLOGenies from
+PhyML:  a program that  computes maximum likelihood phylogenies from
 DNA or AA homologous sequences.
 
 Copyright (C) Stephane Guindon. Oct 2003 onward.
@@ -52,7 +52,7 @@ void Bootstrap_MPI(t_tree *tree)
   Get_Bip(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree);
 
   n_site = 0;
-  For(j,tree->data->crunch_len) For(k,tree->data->wght[j])
+  for(j=0;j<tree->data->crunch_len;j++) For(k,tree->data->wght[j])
     {
       site_num[n_site] = j;
       n_site++;
@@ -95,7 +95,7 @@ void Bootstrap_MPI(t_tree *tree)
 
   For(replicate, nbRep)
     {
-      For(j,boot_data->crunch_len) boot_data->wght[j] = 0;
+      for(j=0;j<boot_data->crunch_len;j++) boot_data->wght[j] = 0;
 
       // Send random data to other process
       if (Global_myRank == 0) 
@@ -106,13 +106,13 @@ void Bootstrap_MPI(t_tree *tree)
           else
             nbElem = tree->mod->bootstrap - randomRecv;
           
-          For(i,nbElem) 
+          for(i=0;i<nbElem;i++) 
             {
-              For(j,boot_data->crunch_len) boot_data->wght[j] = 0;
+              for(j=0;j<boot_data->crunch_len;j++) boot_data->wght[j] = 0;
 
               init_len = 0;
               // Create random data
-              For(j,boot_data->init_len)
+              for(j=0;j<boot_data->init_len;j++)
                 {
                   position = Rand_Int(0,(int)(tree->data->init_len-1.0));
                   boot_data->wght[site_num[position]] += 1;
@@ -151,7 +151,7 @@ void Bootstrap_MPI(t_tree *tree)
         }
 
       init_len = 0;
-      For(j,boot_data->crunch_len) init_len += boot_data->wght[j];
+      for(j=0;j<boot_data->crunch_len;j++) init_len += boot_data->wght[j];
 
 
       if(init_len != tree->data->init_len) 
@@ -191,9 +191,9 @@ void Bootstrap_MPI(t_tree *tree)
 	      }
 	    case NEXUS:
 	      {
-		PhyML_Printf("\n. Unfortunately, PhyML cannot read NEXUS files and perform a bootstrap analysis."); 
-		PhyML_Printf("\n. Please use the PHYLIP format.."); 
-		PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+		PhyML_Printf("\n== Unfortunately, PhyML cannot read NEXUS files and perform a bootstrap analysis."); 
+		PhyML_Printf("\n== Please use the PHYLIP format."); 
+		PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
 		Warn_And_Exit("");
 		break;
 	      }
@@ -234,10 +234,10 @@ void Bootstrap_MPI(t_tree *tree)
       Fill_Dir_Table(boot_tree);
       Update_Dirs(boot_tree);
 
-      if(tree->mod->s_opt->greedy) Init_P_Lk_Tips_Double(boot_tree);
-      else                         Init_P_Lk_Tips_Int(boot_tree);
+      if(tree->mod->s_opt->greedy) Init_Partial_Lk_Tips_Double(boot_tree);
+      else                         Init_Partial_Lk_Tips_Int(boot_tree);
       Init_Ui_Tips(boot_tree);
-      Init_P_Pars_Tips(boot_tree);
+      Init_Partial_Pars_Tips(boot_tree);
       Br_Len_Not_Involving_Invar(boot_tree);
       
       Switch_Eigen(YES,boot_tree->mod);                 
@@ -289,7 +289,7 @@ void Bootstrap_MPI(t_tree *tree)
             fprintf(tree->io->fp_out_boot_tree,"%s\n",s);
             fprintf(tree->io->fp_out_boot_stats,"%s\n",t);
             bootRecv++;
-            PhyML_Printf(".");
+            PhyML_Printf("\u2022");
 	    if(!((bootRecv)%tree->io->boot_prog_every)) 
 	      {
 		PhyML_Printf("] %4d/%4d\n  ",bootRecv,tree->mod->bootstrap);
@@ -326,7 +326,7 @@ void Bootstrap_MPI(t_tree *tree)
 		  fprintf(tree->io->fp_out_boot_stats,"%s\n", bootStr);
 		
 		bootRecv++;
-		PhyML_Printf(".");
+		PhyML_Printf("\u2022");
 		if(!((bootRecv)%tree->io->boot_prog_every)) {
 		  PhyML_Printf("] %4d/%4d\n  ",bootRecv,tree->mod->bootstrap);
 		  if(bootRecv != tree->mod->bootstrap) PhyML_Printf("[");
@@ -523,7 +523,7 @@ void Print_Fp_Out_Lines_MPI(t_tree *tree, option *io, int n_data_set, char *boot
     {
       int i,j;
 
-      For(i,4)
+      for(i=0;i<4;i++)
         {
           if (i!=0) {
             /*format*/
@@ -536,7 +536,7 @@ void Print_Fp_Out_Lines_MPI(t_tree *tree, option *io, int n_data_set, char *boot
             snprintf(tmp, T_MAX_LINE, "             \t                                      \t");
             strncat (s, tmp, T_MAX_LINE);
           }
-          For(j,4) {
+          for(j=0;j<4;j++) {
             snprintf(tmp, T_MAX_LINE, "%8.5f  ",tree->mod->r_mat->qmat->v[i*4+j]);
             strncat (s, tmp, T_MAX_LINE);
           }

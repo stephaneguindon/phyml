@@ -125,6 +125,8 @@ mixt.c mixt.h\
 init.c init.h\
 nexus.c nexus.h\
 date.c date.h\
+sse.c sse.h\
+avx.c avx.h\
 xml.c xml.h
 phytime_LDADD = -lm
 else 
@@ -323,6 +325,8 @@ init.c init.h\
 xml.c xml.h\
 mixt.c mixt.h\
 date.c date.h\
+sse.c sse.h\
+avx.c avx.h\
 mpi_boot.c mpi_boot.h
 phyml_mpi_LDADD = -lm
 else
@@ -356,6 +360,8 @@ nexus.c nexus.h\
 init.c init.h\
 xml.c xml.h\
 mixt.c mixt.h\
+sse.c sse.h\
+avx.c avx.h\
 date.c date.h
 phyml_windows_LDADD = -lm
 else
@@ -553,6 +559,8 @@ init.c init.h\
 xml.c xml.h\
 mixt.c mixt.h\
 date.c date.h\
+sse.c sse.h\
+avx.c avx.h\
 phyrex.c phyrex.h
 else
 if WANT_BEAGLE
@@ -642,7 +650,6 @@ rates.c rates.h\
 mcmc.c mcmc.h\
 times.c times.h\
 tiporder.c tiporder.h\
-mg.c mg.h\
 m4.c m4.h\
 io.c io.h\
 make.c make.h\
@@ -650,6 +657,8 @@ nexus.c nexus.h\
 init.c init.h\
 xml.c xml.h\
 date.c date.h\
+sse.c sse.h\
+avx.c avx.h\
 mixt.c mixt.h
 phyml_LDADD = -lm
 endif

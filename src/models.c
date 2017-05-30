@@ -1,7 +1,7 @@
 /*
 
-PhyML :  a program that  computes maximum likelihood  phyLOGenies from
-DNA or AA homoLOGous sequences
+PhyML :  a program that  computes maximum likelihood  phylogenies from
+DNA or AA homologous sequences
 
 Copyright (C) Stephane Guindon. Oct 2003 onward
 
@@ -28,11 +28,11 @@ void PMat_JC69(phydbl l, int pos, phydbl *Pij, t_mod *mod)
   ns = mod->ns;
 
 
-  For(i,ns) Pij[pos+ ns*i+i] = 1. - ((ns - 1.)/ns)*(1. - EXP(-ns*l/(ns - 1.)));
-  For(i,ns-1)
+  for(i=0;i<ns;i++) Pij[pos+ ns*i+i] = 1. - ((ns - 1.)/ns)*(1. - exp(-ns*l/(ns - 1.)));
+  for(i=0;i<ns-1;i++)
     for(j=i+1;j<ns;j++)
       {
-        Pij[pos+ ns*i+j] = (1./ns)*(1. - EXP(-ns*l/(ns - 1.)));
+        Pij[pos+ ns*i+j] = (1./ns)*(1. - exp(-ns*l/(ns - 1.)));
         if(Pij[pos+ns*i+j] < SMALL_PIJ) Pij[pos+ns*i+j] = SMALL_PIJ;
         Pij[pos+ ns*j+i] = Pij[pos+ ns*i+j];
       }
@@ -56,9 +56,9 @@ void PMat_K80(phydbl l, phydbl kappa, int pos, phydbl *Pij)
 
 
   aux = -2*l/(kappa+2);
-  e1 = (phydbl)EXP(aux *2);
+  e1 = (phydbl)exp(aux *2);
 
-  e2 = (phydbl)EXP(aux *(kappa+1));
+  e2 = (phydbl)exp(aux *(kappa+1));
   Tv = .25*(1-e1);
   Ts = .25*(1+e1-2*e2);
 
@@ -74,7 +74,7 @@ void PMat_K80(phydbl l, phydbl kappa, int pos, phydbl *Pij)
 
   Pij[pos+ 4*2+3] = Pij[pos+ 4*3+2] = Tv;
 
-  For(i,4) For(j,4)
+  for(i=0;i<4;i++) for(j=0;j<4;j++)
     if(Pij[pos + 4*i+j] < SMALL_PIJ) Pij[pos + 4*i+j] = SMALL_PIJ;
 
 }
@@ -111,9 +111,9 @@ void PMat_TN93(phydbl l, t_mod *mod, int pos, phydbl *Pij)
   a2t = kappa2;
   a1t*=bt; a2t*=bt;
 
-  e1 = (phydbl)EXP(-a1t*R-bt*Y);
-  e2 = (phydbl)EXP(-a2t*Y-bt*R);
-  e3 = (phydbl)EXP(-bt);
+  e1 = (phydbl)exp(-a1t*R-bt*Y);
+  e2 = (phydbl)exp(-a2t*Y-bt*R);
+  e3 = (phydbl)exp(-bt);
 
 
   /*A->A*/Pij[pos + 4*0+0] = A+Y*A/R*e3+G/R*e1;
@@ -136,7 +136,7 @@ void PMat_TN93(phydbl l, t_mod *mod, int pos, phydbl *Pij)
   /*T->G*/Pij[pos + 4*3+2] = G*(1-e3);
   /*T->T*/Pij[pos + 4*3+3] = T+R*T/Y*e3+C/Y*e2;
 
-  For(i,4) For(j,4)
+  for(i=0;i<4;i++) for(j=0;j<4;j++)
     if(Pij[pos + 4*i+j] < SMALL_PIJ) Pij[pos + 4*i+j] = SMALL_PIJ;
 
 /*   /\*A->A*\/(*Pij)[0][0] = A+Y*A/R*e3+G/R*e1;  */
@@ -159,7 +159,7 @@ void PMat_TN93(phydbl l, t_mod *mod, int pos, phydbl *Pij)
 /*   /\*T->G*\/(*Pij)[3][2] = G*(1-e3); */
 /*   /\*T->T*\/(*Pij)[3][3] = T+R*T/Y*e3+C/Y*e2; */
 
-/*   For(i,4) For(j,4) */
+/*   for(i=0;i<4;i++) for(j=0;j<4;j++) */
 /*     if((*Pij)[i][j] < SMALL) (*Pij)[i][j] = SMALL; */
 
 }
@@ -201,11 +201,8 @@ phydbl Get_Lambda_F84(phydbl *pi, phydbl *kappa)
   return lambda;
 }
 
-
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
-
 
 /********************************************************************/
 /* void PMat_Empirical(phydbl l, t_mod *mod, phydbl ***Pij)         */
@@ -219,7 +216,7 @@ phydbl Get_Lambda_F84(phydbl *pi, phydbl *kappa)
 /* ouput : Pij , substitution probability matrix                    */
 /*                                                                  */
 /* matrix P(l) is computed as follows :                             */
-/* P(l) = EXP(Q*t) , where :                                        */
+/* P(l) = exp(Q*t) , where :                                        */
 /*                                                                  */
 /*   Q = substitution rate matrix = Vr*D*inverse(Vr) , where :      */
 /*                                                                  */
@@ -235,12 +232,12 @@ phydbl Get_Lambda_F84(phydbl *pi, phydbl *kappa)
 /*       p(i->j) = subst. probability from i to a different state   */
 /*               = -Q[ii] , as sum(j)(Q[ij]) +Q[ii] =0              */
 /*                                                                  */
-/* the Taylor development of EXP(Q*t) gives :                       */
-/* P(l) = Vr*EXP(D*t)        *inverse(Vr)                           */
-/*      = Vr*POW(EXP(D/mr),l)*inverse(Vr)                           */
+/* the Taylor development of exp(Q*t) gives :                       */
+/* P(l) = Vr*exp(D*t)        *inverse(Vr)                           */
+/*      = Vr*POW(exp(D/mr),l)*inverse(Vr)                           */
 /*                                                                  */
 /* for performance we compute only once the following matrixes :    */
-/* Vr, inverse(Vr), EXP(D/mr)                                       */
+/* Vr, inverse(Vr), exp(D/mr)                                       */
 /* thus each time we compute P(l) we only have to :                 */
 /* make 20 times the operation POW()                                */
 /* make 2 20x20 matrix multiplications , that is :                  */
@@ -251,10 +248,10 @@ phydbl Get_Lambda_F84(phydbl *pi, phydbl *kappa)
 /*   8000 = 20x20x20 times the operation +                          */
 /********************************************************************/
 
-void PMat_Empirical(phydbl l, t_mod *mod, int pos, phydbl *Pij)
+void PMat_Empirical(phydbl l, t_mod *mod, int pos, phydbl *Pij, phydbl *tPij)
 {
-  int n = mod->ns;
-  int i, j, k;
+  const unsigned int ns = mod->ns;
+  unsigned int i, j, k;
   phydbl *U,*V,*R;
   phydbl *expt;
   phydbl *uexpt;
@@ -266,69 +263,39 @@ void PMat_Empirical(phydbl l, t_mod *mod, int pos, phydbl *Pij)
   V     = mod->eigen->l_e_vect;
   R     = mod->eigen->e_val; /* exponential of the eigen value matrix */
 
-  //Initialize a rate-specific N*N matrix
-  For(i,n) For(k,n) Pij[pos+mod->ns*i+k] = .0;
+  /* Initialize a rate-specific N*N matrix */
+  for(i=0;i<ns;++i) for(k=0;k<ns;k++) Pij[pos+ns*i+k] = .0;
+  /* compute POW(exp(D/mr),l) into mat_eDmrl */
+  for(k=0;k<ns;++k)  expt[k] = (phydbl)POW(R[k],l);
+  /* multiply Vr*POW(exp(D/mr),l)*Vi into Pij */
+  for(i=0;i<ns;i++) for (k=0;k<ns;k++) uexpt[i*ns+k] = U[i*ns+k] * expt[k];
 
-  /* compute POW(EXP(D/mr),l) into mat_eDmrl */
-  For(k,n) 
+  for(i=0;i<ns;++i)
     {
-      expt[k] = (phydbl)POW(R[k],l);
-    }
-  /* multiply Vr*POW(EXP(D/mr),l)*Vi into Pij */
-  For (i,n) For (k,n) uexpt[i*n+k] = U[i*n+k] * expt[k];
-
-  For (i,n)
-    {
-      For (j,n)
+      for(j=0;j<ns;++j)
         {
-          For(k,n)
+          for(k=0;k<ns;++k)
             {
-              Pij[pos+mod->ns*i+j] += (uexpt[i*n+k] * V[k*n+j]);
+              Pij[pos+ns*i+j] += (uexpt[i*ns+k] * V[k*ns+j]);
             }
 
-          if(Pij[pos+mod->ns*i+j] < SMALL_PIJ) Pij[pos+mod->ns*i+j] = SMALL_PIJ;
+          if(Pij[pos+ns*i+j] < SMALL_PIJ) Pij[pos+ns*i+j] = SMALL_PIJ;
         }
 
       sum = 0.0;
-      For(j,n) sum += Pij[pos+mod->ns*i+j];
-      For(j,n) Pij[pos+mod->ns*i+j] /= sum;
-      
-#ifndef PHYML
-      phydbl sum;
-      sum = .0;
-      For (j,n) sum += Pij[pos+mod->ns*i+j];
-      if((sum > 1.+.0001) || (sum < 1.-.0001))
+      for(j=0;j<ns;++j) sum += Pij[pos+ns*i+j];
+      for(j=0;j<ns;++j) Pij[pos+ns*i+j] /= sum;
+    }
+
+  if(tPij)
+    {
+      for(i=0;i<ns;++i)
         {
-          PhyML_Printf("\n");
-          PhyML_Printf("\n. Q\n");
-          For(i,n) { For(j,n) PhyML_Printf("%7.3f ",mod->eigen->q[i*n+j]); PhyML_Printf("\n"); }
-          PhyML_Printf("\n. U\n");
-          For(i,n) { For(j,n) PhyML_Printf("%7.3f ",U[i*n+j]); PhyML_Printf("\n"); }
-          PhyML_Printf("\n");
-          PhyML_Printf("\n. V\n");
-          For(i,n) { For(j,n) PhyML_Printf("%7.3f ",V[i*n+j]); PhyML_Printf("\n"); }
-          PhyML_Printf("\n");
-          PhyML_Printf("\n. Eigen\n");
-          For(i,n)  PhyML_Printf("%E ",expt[i]);
-          PhyML_Printf("\n");
-          PhyML_Printf("\n. Pij\n");
-          For(i,n) { For (j,n) PhyML_Printf("%f ",Pij[pos+mod->ns*i+j]); PhyML_Printf("\n"); }
-          PhyML_Printf("\n. sum = %f",sum);
-          if(mod->m4mod)
+          for(j=0;j<ns;++j)
             {
-              int i;
-              PhyML_Printf("\n. mod->m4mod->alpha = %f",mod->m4mod->alpha);
-              PhyML_Printf("\n. mod->m4mod->delta = %f",mod->m4mod->delta);
-              For(i,mod->m4mod->n_h)
-                {
-                  PhyML_Printf("\n. mod->m4mod->multipl[%d] = %f",i,mod->m4mod->multipl[i]);
-                }
+              tPij[pos+ns*i+j] = Pij[pos+ns*j+i];
             }
-          PhyML_Printf("\n. l=%f",l);
-          PhyML_Printf("\n. Err in file %s at line %d\n\n",__FILE__,__LINE__);
-          Warn_And_Exit("");
         }
-#endif
     }
 }
 
@@ -356,7 +323,7 @@ void PMat_Gamma(phydbl l, t_mod *mod, int pos, phydbl *Pij)
   else                 shape = mod->ras->alpha->v;
 
 
-  For(i,n) For(k,n) Pij[pos+mod->ns*i+k] = .0;
+  for(i=0;i<n;i++) for(k=0;k<n;k++) Pij[pos+mod->ns*i+k] = .0;
 
   if(shape < 1.E-10)
     {
@@ -365,16 +332,16 @@ void PMat_Gamma(phydbl l, t_mod *mod, int pos, phydbl *Pij)
     }
 
   /* Formula 13.42, page 220 of Felsenstein's book ``Inferring Phylogenies'' */
-  For(k,n) expt[k] = POW(shape/(shape-LOG(R[k])*l),shape);
+  for(k=0;k<n;k++) expt[k] = POW(shape/(shape-log(R[k])*l),shape);
 
   /* multiply Vr*expt*Vi into Pij */
-  For(i,n) For(k,n) uexpt[i*n+k] = U[i*n+k] * expt[k];
+  for(i=0;i<n;i++) for(k=0;k<n;k++) uexpt[i*n+k] = U[i*n+k] * expt[k];
 
   For (i,n)
     {
       For (j,n)
     {
-      For(k,n)
+      for(k=0;k<n;k++)
         {
           Pij[pos+mod->ns*i+j] += (uexpt[i*n+k] * V[k*n+j]);
         }
@@ -389,25 +356,25 @@ void PMat_Gamma(phydbl l, t_mod *mod, int pos, phydbl *Pij)
     {
       PhyML_Printf("\n");
       PhyML_Printf("\n. Q\n");
-      For(i,n) { For(j,n) PhyML_Printf("%7.3f ",mod->eigen->q[i*n+j]); PhyML_Printf("\n"); }
+      for(i=0;i<n;i++) { for(j=0;j<n;j++) PhyML_Printf("%7.3f ",mod->eigen->q[i*n+j]); PhyML_Printf("\n"); }
       PhyML_Printf("\n. U\n");
-      For(i,n) { For(j,n) PhyML_Printf("%7.3f ",U[i*n+j]); PhyML_Printf("\n"); }
+      for(i=0;i<n;i++) { for(j=0;j<n;j++) PhyML_Printf("%7.3f ",U[i*n+j]); PhyML_Printf("\n"); }
       PhyML_Printf("\n");
       PhyML_Printf("\n. V\n");
-      For(i,n) { For(j,n) PhyML_Printf("%7.3f ",V[i*n+j]); PhyML_Printf("\n"); }
+      for(i=0;i<n;i++) { for(j=0;j<n;j++) PhyML_Printf("%7.3f ",V[i*n+j]); PhyML_Printf("\n"); }
       PhyML_Printf("\n");
       PhyML_Printf("\n. Eigen\n");
-      For(i,n)  PhyML_Printf("%E ",expt[i]);
+      for(i=0;i<n;i++)  PhyML_Printf("%E ",expt[i]);
       PhyML_Printf("\n");
       PhyML_Printf("\n. Pij\n");
-      For(i,n) { For (j,n) PhyML_Printf("%f ",Pij[pos+mod->ns*i+j]); PhyML_Printf("\n"); }
+      for(i=0;i<n;i++) { For (j,n) PhyML_Printf("%f ",Pij[pos+mod->ns*i+j]); PhyML_Printf("\n"); }
       PhyML_Printf("\n. sum = %f",sum);
       if(mod->m4mod)
         {
           int i;
           PhyML_Printf("\n. mod->m4mod->ras->alpha = %f",mod->m4mod->alpha);
           PhyML_Printf("\n. mod->m4mod->delta = %f",mod->m4mod->delta);
-          For(i,mod->m4mod->n_h)
+          for(i=0;i<mod->m4mod->n_h;i++)
         {
           PhyML_Printf("\n. mod->m4mod->multipl[%d] = %f",i,mod->m4mod->multipl[i]);
         }
@@ -446,7 +413,7 @@ void PMat_Zero_Br_Len(t_mod *mod, int pos, phydbl *Pij)
  *  pos: offset into a specific rate-category
  *
  */
-void PMat(phydbl l, t_mod *mod, int pos, phydbl *Pij)
+void PMat(phydbl l, t_mod *mod, int pos, phydbl *Pij, phydbl *tPij)
 {
   /* Warning: l is never the log of branch length here */
   if(l < 0.0)
@@ -458,72 +425,12 @@ void PMat(phydbl l, t_mod *mod, int pos, phydbl *Pij)
     }
   else
     {
-      switch(mod->io->datatype)
-        {
-        case NT :
-          {
-            if(mod->use_m4mod)
-              {
-                PMat_Empirical(l,mod,pos,Pij);
-              }
-            else
-              {
-                if((mod->whichmodel == JC69) ||
-                   (mod->whichmodel == K80))
-                  {
-                    /* PMat_JC69(l,pos,Pij,mod); */
-                    /* PMat_K80(l,mod->kappa->v,pos,Pij); */
-                    PMat_Empirical(l,mod,pos,Pij);
-                  }
-                else
-                  {
-                    if(
-                       (mod->whichmodel == F81)   ||
-                       (mod->whichmodel == HKY85) ||
-                       (mod->whichmodel == F84)   ||
-                       (mod->whichmodel == TN93))
-                      {
-                        /* PMat_TN93(l,mod,pos,Pij); */
-                        PMat_Empirical(l,mod,pos,Pij);
-                      }
-                    else
-                      {
 #ifdef BEAGLE
-                        //when there is no active instance (i.e. when we are building the initial tree)
-                        if(UNINITIALIZED == mod->b_inst) 
-                          {
-                            PMat_Empirical(l,mod,pos,Pij);
-                          }
+      //when there is no active instance (i.e. when we are building the initial tree)
+      if(UNINITIALIZED == mod->b_inst) PMat_Empirical(l,mod,pos,Pij,tPij);
 #else
-                        PMat_Empirical(l,mod,pos,Pij);
+      PMat_Empirical(l,mod,pos,Pij,tPij);
 #endif
-                      }
-                  }
-                break;
-              }
-          case AA :
-            {
-#ifdef BEAGLE
-                //when there is no active instance (i.e. when we are building the initial tree)
-                if(UNINITIALIZED == mod->b_inst) {
-                    PMat_Empirical(l,mod,pos,Pij);
-                }
-#else
-                PMat_Empirical(l,mod,pos,Pij);
-#endif
-              break;
-            }
-          default:
-            {
-              PMat_JC69(l,pos,Pij,mod);
-              break;
-    /* 	      PhyML_Printf("\n. Not implemented yet.\n"); */
-    /* 	      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__); */
-    /* 	      Warn_And_Exit(""); */
-    /* 	      break; */
-            }
-          }
-        }
     }
 }
 
@@ -559,7 +466,7 @@ int GetDaa (phydbl *daa, phydbl *pi, char *file_name)
      if (dmin>daa[i*naa+j]) dmin=daa[i*naa+j];
        }
 
-   For(i,naa)
+   for(i=0;i<naa;i++)
      {
 /*        if(fscanf(fdaa,"%lf",&pi[i])!=1) Exit("\n. err aaRatefile"); */
        if(fscanf(fdaa,"%lf",&val)!=1) Exit("\n. err aaRatefile");
@@ -605,23 +512,22 @@ void Update_Qmat_Generic(phydbl *rr, phydbl *pi, int ns, phydbl *qmat)
     {
       rr[i] /= rr[(int)(ns*(ns-1)/2)-1];
     }
-
+  
   /* Fill the non-diagonal parts */
-  For(i,ns)
+  for(i=0;i<ns;i++)
     {
       for(j=i+1;j<ns;j++)
-    {
-      qmat[i*ns+j] = rr[MIN(i,j) * ns + MAX(i,j) -
-                (MIN(i,j)+1+(int)POW(MIN(i,j)+1,2))/2];
-      qmat[j*ns+i] = qmat[i*ns+j];
-    }
+        {
+          qmat[i*ns+j] = rr[MIN(i,j) * ns + MAX(i,j) - (MIN(i,j)+1+(int)POW(MIN(i,j)+1,2))/2];
+          qmat[j*ns+i] = qmat[i*ns+j];
+        }
     }
 
 
   /* Multiply by pi */
-  For(i,ns)
+  for(i=0;i<ns;i++)
     {
-      For(j,ns)
+      for(j=0;j<ns;j++)
         {
           qmat[i*ns+j] *= pi[j];
         }
@@ -629,15 +535,15 @@ void Update_Qmat_Generic(phydbl *rr, phydbl *pi, int ns, phydbl *qmat)
 
   /* Compute diagonal elements */
   mr = .0;
-  For(i,ns)
+  for(i=0;i<ns;i++)
     {
       sum = .0;
-      For(j,ns) {sum += qmat[i*ns+j];}
+      for(j=0;j<ns;j++) sum += qmat[i*ns+j];
       qmat[i*ns+i] = -sum;
       mr += sum * pi[i];
     }
 
-  /* For(i,ns) For(j,ns) qmat[i*ns+j] /= mr; */
+  /* for(i=0;i<ns;i++) for(j=0;j<ns;j++) qmat[i*ns+j] /= mr; */
 }
 
 //////////////////////////////////////////////////////////////
@@ -648,19 +554,17 @@ void Update_Qmat_GTR(phydbl *rr, phydbl *rr_val, int *rr_num, phydbl *pi, phydbl
   int i;
   phydbl mr;
 
-  For(i,6) rr[i] = rr_val[rr_num[i]];
-  For(i,6)
+  for(i=0;i<6;i++) rr[i] = rr_val[rr_num[i]];
+  for(i=0;i<6;i++)
     if(rr[i] < 0.0)
       {
         PhyML_Printf("\n== rr%d: %f",i,rr[i]);
         PhyML_Printf("\n== Err. in file %s at line %d (function '%s').\n",__FILE__,__LINE__,__FUNCTION__);
         Exit("");
       }
-  For(i,6) rr[i] /= MAX(rr[5],RR_MIN);
-  For(i,6) if(rr[i] < RR_MIN) rr[i] = RR_MIN;
-  For(i,6) if(rr[i] > RR_MAX) rr[i] = RR_MAX;
-
-  For(i,6) if(isnan(rr[i])) Generic_Exit(__FILE__,__LINE__,__FUNCTION__); 
+  for(i=0;i<6;i++) rr[i] /= MAX(rr[5],RR_MIN);
+  for(i=0;i<6;i++) if(rr[i] < RR_MIN) rr[i] = RR_MIN;
+  for(i=0;i<6;i++) if(rr[i] > RR_MAX) rr[i] = RR_MAX;
 
   qmat[0*4+1] = (rr[0]*pi[1]);
   qmat[0*4+2] = (rr[1]*pi[2]);
@@ -685,18 +589,18 @@ void Update_Qmat_GTR(phydbl *rr, phydbl *rr_val, int *rr_num, phydbl *pi, phydbl
 
   /* compute diagonal terms of Q and mean rate mr = l/t */
   mr = .0;
-  For(i,4) mr += pi[i] * (-qmat[i*4+i]);
-  For(i,16) qmat[i] /= mr;
+  for(i=0;i<4;i++) mr += pi[i] * (-qmat[i*4+i]);
+  for(i=0;i<16;i++) qmat[i] /= mr;
 
   /* int j; */
   /* printf("\n"); */
   /* printf("\n. rr -- "); */
-  /* For(i,5) printf(" %15f ",rr[i]); */
+  /* for(i=0;i<5;i++) printf(" %15f ",rr[i]); */
   /* printf("\n"); */
-  /* For(i,4) */
+  /* for(i=0;i<4;i++) */
   /*   { */
   /*     printf("\n. [%15f] \t ",pi[i]); */
-  /*     For(j,4) */
+  /*     for(j=0;j<4;j++) */
   /* 	{ */
   /* 	  printf(" %15f ",qmat[i*4+j]); */
   /* 	} */
@@ -736,7 +640,7 @@ void Update_Qmat_HKY(phydbl kappa, phydbl *pi, phydbl *qmat)
   /* compute diagonal terms of Q and mean rate mr = l/t */
   mr = .0;
   For (i,4) mr += pi[i] * (-qmat[i*4+i]);
-  For(i,16) qmat[i] /= mr;
+  for(i=0;i<16;i++) qmat[i] /= mr;
 }
 
 //////////////////////////////////////////////////////////////
@@ -747,13 +651,13 @@ void Translate_Custom_Mod_String(t_mod *mod)
 {
   int i,j;
 
-  For(i,6) mod->r_mat->n_rr_per_cat->v[i] = 0;
+  for(i=0;i<6;i++) mod->r_mat->n_rr_per_cat->v[i] = 0;
 
   mod->r_mat->n_diff_rr = 0;
 
-  For(i,6)
+  for(i=0;i<6;i++)
     {
-      For(j,i)
+      for(j=0;j<i;j++)
         {
           if(mod->custom_mod_string->s[i] == mod->custom_mod_string->s[j])
             {
@@ -775,8 +679,8 @@ void Translate_Custom_Mod_String(t_mod *mod)
     }
   
     /* PhyML_Printf("\n"); */
-    /* For(i,6) PhyML_Printf("%d ",mod->r_mat->rr_num->v[i]); */
-    /* For(i,mod->r_mat->n_diff_rr) PhyML_Printf("\n. Class %d size %d",i+1,mod->r_mat->n_rr_per_cat->v[i]); */
+    /* for(i=0;i<6;i++) PhyML_Printf("%d ",mod->r_mat->rr_num->v[i]); */
+    /* for(i=0;i<mod->r_mat->n_diff_rr;i++) PhyML_Printf("\n. Class %d size %d",i+1,mod->r_mat->n_rr_per_cat->v[i]); */
 }
 
 //////////////////////////////////////////////////////////////
@@ -815,13 +719,13 @@ void Update_RAS(t_mod *mod)
       do
         {
           sum = .0;
-          For(i,mod->ras->n_catg)
+          for(i=0;i<mod->ras->n_catg;i++)
             {
               if(mod->ras->gamma_r_proba->v[i] < 0.01) mod->ras->gamma_r_proba->v[i]=0.01;
               if(mod->ras->gamma_r_proba->v[i] > 0.99) mod->ras->gamma_r_proba->v[i]=0.99;
               sum += mod->ras->gamma_r_proba->v[i];
             }
-          For(i,mod->ras->n_catg) mod->ras->gamma_r_proba->v[i]/=sum;
+          for(i=0;i<mod->ras->n_catg;i++) mod->ras->gamma_r_proba->v[i]/=sum;
         }
       while((sum > 1.01) || (sum < 0.99));
 
@@ -831,16 +735,16 @@ void Update_RAS(t_mod *mod)
       if(mod->ras->normalise_rr == YES)
         {
           sum = .0;
-          For(i,mod->ras->n_catg) sum += mod->ras->gamma_r_proba->v[i] * mod->ras->gamma_rr_unscaled->v[i];
-          For(i,mod->ras->n_catg) mod->ras->gamma_rr->v[i] = mod->ras->gamma_rr_unscaled->v[i]/sum;
+          for(i=0;i<mod->ras->n_catg;i++) sum += mod->ras->gamma_r_proba->v[i] * mod->ras->gamma_rr_unscaled->v[i];
+          for(i=0;i<mod->ras->n_catg;i++) mod->ras->gamma_rr->v[i] = mod->ras->gamma_rr_unscaled->v[i]/sum;
         }
       else
         {
-          For(i,mod->ras->n_catg) mod->ras->gamma_rr->v[i] = mod->ras->gamma_rr_unscaled->v[i] * mod->ras->free_rate_mr->v;
+          for(i=0;i<mod->ras->n_catg;i++) mod->ras->gamma_rr->v[i] = mod->ras->gamma_rr_unscaled->v[i] * mod->ras->free_rate_mr->v;
         }
       
       /* printf("\n"); */
-      /* For(i,mod->ras->n_catg)  */
+      /* for(i=0;i<mod->ras->n_catg;i++)  */
       /*   printf("\nx %3d %12f %12f xx %12f %12f", */
       /*          mod->ras->normalise_rr, */
       /*          mod->ras->gamma_r_proba->v[i], */
@@ -860,20 +764,36 @@ void Update_RAS(t_mod *mod)
 
 void Update_Efrq(t_mod *mod)
 {
+
+  unsigned int i;
   phydbl sum;
-  int i;
 
-  if((mod->io->datatype == NT) && (mod->s_opt->opt_state_freq))
+  if((mod->io->datatype == NT) && (mod->s_opt->opt_state_freq == YES))
     {
-      sum = .0;
-      For(i,mod->ns) sum += FABS(mod->e_frq->pi_unscaled->v[i]);
-      For(i,mod->ns) mod->e_frq->pi->v[i] = FABS(mod->e_frq->pi_unscaled->v[i])/sum;
-
+      sum = 0.0;
+      for(i=0;i<mod->ns;i++) sum += FABS(mod->e_frq->pi_unscaled->v[i]);
+      for(i=0;i<mod->ns;i++) mod->e_frq->pi->v[i] = FABS(mod->e_frq->pi_unscaled->v[i])/sum;
+            
 #ifdef BEAGLE
       if(UNINITIALIZED != mod->b_inst)
         update_beagle_efrqs(mod);
 #endif
     }
+  
+
+  // Adjust equilibrium state frequencies if some of them are too close to zero
+  // in order to avoid numerical precision issues.
+  int iter = 0;
+  do
+    {
+      for(i=0;i<mod->ns;i++) if(mod->e_frq->pi->v[i] < E_FRQ_MIN) mod->e_frq->pi->v[i] = E_FRQ_MIN;
+      sum = 0.0;
+      for(i=0;i<mod->ns;i++) sum += FABS(mod->e_frq->pi->v[i]);
+      for(i=0;i<mod->ns;i++) mod->e_frq->pi->v[i] /= sum;
+      iter++;
+    }
+  while(iter < 10);
+
 }
 
 //////////////////////////////////////////////////////////////
@@ -902,7 +822,7 @@ void Update_Boundaries(t_mod *mod)
 
   if(mod->ras->free_mixt_rates == YES) 
     {
-      For(i,mod->ras->n_catg) 
+      for(i=0;i<mod->ras->n_catg;i++) 
         {
           if(mod->ras->gamma_rr_unscaled->v[i] < GAMMA_RR_UNSCALED_MIN)
             mod->ras->gamma_rr_unscaled->v[i] = GAMMA_RR_UNSCALED_MIN;
@@ -920,17 +840,17 @@ void Update_Boundaries(t_mod *mod)
 
   if(mod->whichmodel == CUSTOM || mod->whichmodel == GTR)
     {
-      For(i,6) if(mod->r_mat->rr_val->v[i] < RR_MIN) mod->r_mat->rr_val->v[i] = RR_MIN;
-      For(i,6) if(mod->r_mat->rr_val->v[i] > RR_MAX) mod->r_mat->rr_val->v[i] = RR_MAX;
+      for(i=0;i<6;i++) if(mod->r_mat->rr_val->v[i] < RR_MIN) mod->r_mat->rr_val->v[i] = RR_MIN;
+      for(i=0;i<6;i++) if(mod->r_mat->rr_val->v[i] > RR_MAX) mod->r_mat->rr_val->v[i] = RR_MAX;
     }
 
-  For(i,mod->ns)
+  for(i=0;i<mod->ns;i++)
     {
-      if(mod->e_frq->pi_unscaled->v[i] < E_FRQ_MIN)
-        mod->e_frq->pi_unscaled->v[i] = E_FRQ_MIN;
+      if(mod->e_frq->pi_unscaled->v[i] < UNSCALED_E_FRQ_MIN)
+        mod->e_frq->pi_unscaled->v[i] = UNSCALED_E_FRQ_MIN;
 
-      if(mod->e_frq->pi_unscaled->v[i] > E_FRQ_MAX)
-        mod->e_frq->pi_unscaled->v[i] = E_FRQ_MAX;
+      if(mod->e_frq->pi_unscaled->v[i] > UNSCALED_E_FRQ_MAX)
+        mod->e_frq->pi_unscaled->v[i] = UNSCALED_E_FRQ_MAX;
     }
   
   if(mod->r_mat_weight->v < R_MAT_WEIGHT_MIN) mod->r_mat_weight->v = R_MAT_WEIGHT_MIN;
@@ -1029,10 +949,10 @@ void Update_Eigen(t_mod *mod)
                   Exit("\n");
                 }
             }
-          For(i,mod->eigen->size) mod->eigen->e_val[i] /= scalar;
+          for(i=0;i<mod->eigen->size;i++) mod->eigen->e_val[i] /= scalar;
           
-          /* compute the diagonal terms of EXP(D) */
-          For(i,mod->ns) mod->eigen->e_val[i] = (phydbl)EXP(mod->eigen->e_val[i]);
+          /* compute the diagonal terms of exp(D) */
+          for(i=0;i<mod->ns;i++) mod->eigen->e_val[i] = (phydbl)exp(mod->eigen->e_val[i]);
 
       /* int j; */
       /* double *U,*V,*R; */
@@ -1049,15 +969,15 @@ void Update_Eigen(t_mod *mod)
 
       /* PhyML_Printf("\n"); */
       /* PhyML_Printf("\n. Q\n"); */
-      /* For(i,n) { For(j,n) PhyML_Printf("%7.3f ",mod->eigen->q[i*n+j]); PhyML_Printf("\n"); } */
+      /* for(i=0;i<n;i++) { for(j=0;j<n;j++) PhyML_Printf("%7.3f ",mod->eigen->q[i*n+j]); PhyML_Printf("\n"); } */
       /* PhyML_Printf("\n. U\n"); */
-      /* For(i,n) { For(j,n) PhyML_Printf("%7.3f ",U[i*n+j]); PhyML_Printf("\n"); } */
+      /* for(i=0;i<n;i++) { for(j=0;j<n;j++) PhyML_Printf("%7.3f ",U[i*n+j]); PhyML_Printf("\n"); } */
       /* PhyML_Printf("\n"); */
       /* PhyML_Printf("\n. V\n"); */
-      /* For(i,n) { For(j,n) PhyML_Printf("%7.3f ",V[i*n+j]); PhyML_Printf("\n"); } */
+      /* for(i=0;i<n;i++) { for(j=0;j<n;j++) PhyML_Printf("%7.3f ",V[i*n+j]); PhyML_Printf("\n"); } */
       /* PhyML_Printf("\n"); */
       /* PhyML_Printf("\n. Eigen\n"); */
-      /* For(i,n)  PhyML_Printf("%E ",mod->eigen->e_val[i]); */
+      /* for(i=0;i<n;i++)  PhyML_Printf("%E ",mod->eigen->e_val[i]); */
       /* PhyML_Printf("\n"); */
 
 /* 	  Exit("\n"); */
@@ -1086,7 +1006,7 @@ void Switch_From_M4mod_To_Mod(t_mod *mod)
 
   mod->use_m4mod = 0;
   mod->ns = mod->m4mod->n_o;
-  For(i,mod->ns) mod->e_frq->pi->v[i] = mod->m4mod->o_fq[i];
+  for(i=0;i<mod->ns;i++) mod->e_frq->pi->v[i] = mod->m4mod->o_fq[i];
   mod->eigen->size = mod->ns;
   Switch_Eigen(YES,mod);
 }
@@ -1105,24 +1025,24 @@ void PMat_MGF_Gamma(phydbl *Pij, phydbl shape, phydbl scale, phydbl scaling_fact
   imbd  = mod->eigen->e_val_im;
 
   /* Get the eigenvalues of Q (not the exponentials) */
-  For(i,dim) imbd[i]  = LOG(mod->eigen->e_val[i]);
+  for(i=0;i<dim;i++) imbd[i]  = log(mod->eigen->e_val[i]);
 
   /* Multiply them by the scaling factor */
-  For(i,dim) imbd[i]  *= scaling_fact;
+  for(i=0;i<dim;i++) imbd[i]  *= scaling_fact;
 
-  For(i,dim) imbd[i] *= -scale;
-  For(i,dim) imbd[i] += 1.0;
-  For(i,dim) imbd[i]  = POW(imbd[i],-shape);
+  for(i=0;i<dim;i++) imbd[i] *= -scale;
+  for(i=0;i<dim;i++) imbd[i] += 1.0;
+  for(i=0;i<dim;i++) imbd[i]  = POW(imbd[i],-shape);
 
-  For(i,dim) For(k,dim) uexpt[i*dim+k] = mod->eigen->r_e_vect[i*dim+k] * imbd[k];
+  for(i=0;i<dim;i++) for(k=0;k<dim;k++) uexpt[i*dim+k] = mod->eigen->r_e_vect[i*dim+k] * imbd[k];
 
-  For(i,dim) For(k,dim) Pij[dim*i+k] = .0;
+  for(i=0;i<dim;i++) for(k=0;k<dim;k++) Pij[dim*i+k] = .0;
 
-  For(i,dim)
+  for(i=0;i<dim;i++)
     {
-      For(j,dim)
+      for(j=0;j<dim;j++)
 	{
-	  For(k,dim)
+	  for(k=0;k<dim;k++)
 	    {
 	      Pij[dim*i+j] += (uexpt[i*dim+k] * mod->eigen->l_e_vect[k*dim+j]);
 	    }
@@ -1134,10 +1054,10 @@ void PMat_MGF_Gamma(phydbl *Pij, phydbl shape, phydbl scale, phydbl scaling_fact
   /* printf("\n. Pij: %f",Pij[1]); */
 
   /* printf("\n. Pmat"); */
-  /* For(i,dim) */
+  /* for(i=0;i<dim;i++) */
   /*   { */
   /*     printf("\n"); */
-  /*     For(j,dim) */
+  /*     for(j=0;j<dim;j++) */
   /* 	{ */
   /* 	  printf("%12f ",Pij[i*dim+j]); */
   /* 	} */
@@ -1153,7 +1073,7 @@ void Switch_From_Mod_To_M4mod(t_mod *mod)
   int i;
   mod->use_m4mod = 1;
   mod->ns = mod->m4mod->n_o * mod->m4mod->n_h;
-  For(i,mod->ns) mod->e_frq->pi->v[i] = mod->m4mod->o_fq[i%mod->m4mod->n_o] * mod->m4mod->h_fq[i/mod->m4mod->n_o];
+  for(i=0;i<mod->ns;i++) mod->e_frq->pi->v[i] = mod->m4mod->o_fq[i%mod->m4mod->n_o] * mod->m4mod->h_fq[i/mod->m4mod->n_o];
   mod->eigen->size = mod->ns;
   Switch_Eigen(YES,mod);
 }
@@ -1178,12 +1098,12 @@ phydbl General_Dist(phydbl *F, t_mod *mod, eigen *eigen_struct)
   pi       = (phydbl *)mCalloc(eigen_struct->size,sizeof(phydbl));
   mod_pi   = (phydbl *)mCalloc(eigen_struct->size,sizeof(phydbl));
 
-  For(i,mod->ns) mod_pi[i] = mod->e_frq->pi->v[i];
+  for(i=0;i<mod->ns;i++) mod_pi[i] = mod->e_frq->pi->v[i];
 
   sum = .0;
-  For(i,eigen_struct->size)
+  for(i=0;i<eigen_struct->size;i++)
     {
-      For(j,eigen_struct->size)
+      for(j=0;j<eigen_struct->size;j++)
         {
           pi[i] += (F[eigen_struct->size*i+j] + F[eigen_struct->size*j+i])/2.;
           sum += F[eigen_struct->size*i+j];
@@ -1194,13 +1114,13 @@ phydbl General_Dist(phydbl *F, t_mod *mod, eigen *eigen_struct)
   Divide_Mat_By_Vect(&F,mod->e_frq->pi->v,eigen_struct->size);
 
   /* Eigen decomposition of pi^{-1} x F */
-  For(i,eigen_struct->size) For(j,eigen_struct->size) F_phydbl[eigen_struct->size*i+j] = F[eigen_struct->size*i+j];
+  for(i=0;i<eigen_struct->size;i++) for(j=0;j<eigen_struct->size;j++) F_phydbl[eigen_struct->size*i+j] = F[eigen_struct->size*i+j];
 
   if(Eigen(1,F_phydbl,mod->eigen->size,mod->eigen->e_val,
        mod->eigen->e_val_im,mod->eigen->r_e_vect,
        mod->eigen->r_e_vect_im,mod->eigen->space))
     {
-      For(i,mod->ns) mod->e_frq->pi->v[i] = mod_pi[i];
+      for(i=0;i<mod->ns;i++) mod->e_frq->pi->v[i] = mod_pi[i];
       Update_Qmat_GTR(mod->r_mat->rr->v, mod->r_mat->rr_val->v, mod->r_mat->rr_num->v, mod->e_frq->pi->v, mod->r_mat->qmat->v);
       Free(pi);
       Free(mod_pi);
@@ -1211,42 +1131,42 @@ phydbl General_Dist(phydbl *F, t_mod *mod, eigen *eigen_struct)
   For(i,eigen_struct->size*eigen_struct->size) eigen_struct->l_e_vect[i] = eigen_struct->r_e_vect[i];
   if(!Matinv(eigen_struct->l_e_vect,eigen_struct->size,eigen_struct->size,YES))
     {
-      For(i,mod->ns) mod->e_frq->pi->v[i] = mod_pi[i];
+      for(i=0;i<mod->ns;i++) mod->e_frq->pi->v[i] = mod_pi[i];
       Update_Qmat_GTR(mod->r_mat->rr->v, mod->r_mat->rr_val->v, mod->r_mat->rr_num->v, mod->e_frq->pi->v, mod->r_mat->qmat->v);
       Free(pi);
       Free(mod_pi);
       return -1.;
     }
 
-  /* LOG of eigen values */
-  For(i,eigen_struct->size)
+  /* log of eigen values */
+  for(i=0;i<eigen_struct->size;i++)
     {
 /*       if(eigen_struct->e_val[i] < 0.0) eigen_struct->e_val[i] = 0.0001; */
-      eigen_struct->e_val[i] = (phydbl)LOG(eigen_struct->e_val[i]);
+      eigen_struct->e_val[i] = (phydbl)log(eigen_struct->e_val[i]);
      }
 
-  /* Matrix multiplications LOG(pi^{-1} x F) */
-  For(i,eigen_struct->size) For(j,eigen_struct->size)
+  /* Matrix multiplications log(pi^{-1} x F) */
+  for(i=0;i<eigen_struct->size;i++) for(j=0;j<eigen_struct->size;j++)
     eigen_struct->r_e_vect[eigen_struct->size*i+j] =
     eigen_struct->r_e_vect[eigen_struct->size*i+j] *
     eigen_struct->e_val[j];
-  For(i,eigen_struct->size) For(j,eigen_struct->size) F[eigen_struct->size*i+j] = .0;
-  For(i,eigen_struct->size) For(j,eigen_struct->size) For(k,eigen_struct->size)
+  for(i=0;i<eigen_struct->size;i++) for(j=0;j<eigen_struct->size;j++) F[eigen_struct->size*i+j] = .0;
+  for(i=0;i<eigen_struct->size;i++) for(j=0;j<eigen_struct->size;j++) for(k=0;k<eigen_struct->size;k++)
     F[eigen_struct->size*i+j] += eigen_struct->r_e_vect[eigen_struct->size*i+k] * eigen_struct->l_e_vect[eigen_struct->size*k+j];
 
 
   /* Trace */
   dist = .0;
-  For(i,eigen_struct->size) dist+=F[eigen_struct->size*i+i];
+  for(i=0;i<eigen_struct->size;i++) dist+=F[eigen_struct->size*i+i];
 
   sum_ev = .0;
-  For(i,mod->ns) sum_ev += mod->eigen->e_val[i];
+  for(i=0;i<mod->ns;i++) sum_ev += mod->eigen->e_val[i];
 
 /*   dist /= sum_ev; */
   dist /= -4.;
 
 
-/*   For(i,mod->ns) mod->e_frq->pi->v[i] = mod_pi[i]; */
+/*   for(i=0;i<mod->ns;i++) mod->e_frq->pi->v[i] = mod_pi[i]; */
 /*   Update_Qmat_GTR(mod); */
   Free(pi);
   Free(mod_pi);
@@ -1277,9 +1197,9 @@ phydbl GTR_Dist(phydbl *F, phydbl alpha, eigen *eigen_struct)
 /*   F[4*3+0] = 3./4898.;    F[4*3+1] = 117./4898.;  F[4*3+2] = 1./4898.;   F[4*3+3] = 1126./4898.; */
 
   sum = 0.0;
-  For(i,eigen_struct->size)
+  for(i=0;i<eigen_struct->size;i++)
     {
-      For(j,eigen_struct->size)
+      for(j=0;j<eigen_struct->size;j++)
         {
           pi[i] += (F[eigen_struct->size*i+j] + F[eigen_struct->size*j+i])/2.;
           sum += F[eigen_struct->size*i+j];
@@ -1288,11 +1208,11 @@ phydbl GTR_Dist(phydbl *F, phydbl alpha, eigen *eigen_struct)
 
 /* /\*   Jukes and Cantor correction *\/ */
 /*   sum = .0; */
-/*   For(i,eigen_struct->size) sum += F[eigen_struct->size*i+i]; */
+/*   for(i=0;i<eigen_struct->size;i++) sum += F[eigen_struct->size*i+i]; */
 /*   sum = 1.-sum; */
 /*   For(i,eigen_struct->size*eigen_struct->size) F[i] = sum/12.; */
-/*   For(i,eigen_struct->size) F[eigen_struct->size*i+i] = (1.-sum)/4.; */
-/*   For(i,eigen_struct->size) pi[i] = 1./(phydbl)eigen_struct->size; */
+/*   for(i=0;i<eigen_struct->size;i++) F[eigen_struct->size*i+i] = (1.-sum)/4.; */
+/*   for(i=0;i<eigen_struct->size;i++) pi[i] = 1./(phydbl)eigen_struct->size; */
 
 
   Make_Symmetric(&F,eigen_struct->size);
@@ -1300,7 +1220,7 @@ phydbl GTR_Dist(phydbl *F, phydbl alpha, eigen *eigen_struct)
 
 
   /* Eigen decomposition of pi^{-1} x F */
-  For(i,eigen_struct->size) For(j,eigen_struct->size) F_phydbl[eigen_struct->size*i+j] = F[eigen_struct->size*i+j];
+  for(i=0;i<eigen_struct->size;i++) for(j=0;j<eigen_struct->size;j++) F_phydbl[eigen_struct->size*i+j] = F[eigen_struct->size*i+j];
   if(Eigen(1,F_phydbl,eigen_struct->size,eigen_struct->e_val,
        eigen_struct->e_val_im,eigen_struct->r_e_vect,
        eigen_struct->r_e_vect_im,eigen_struct->space))
@@ -1314,30 +1234,30 @@ phydbl GTR_Dist(phydbl *F, phydbl alpha, eigen *eigen_struct)
   if(!Matinv(eigen_struct->l_e_vect,eigen_struct->size,eigen_struct->size,YES)) {Free(pi); return -1.;}
 
   /* Equation (3) + inverse of the moment generating function for the gamma distribution (see Waddell & Steel, 1997) */
-  For(i,eigen_struct->size)
+  for(i=0;i<eigen_struct->size;i++)
     {
       if(eigen_struct->e_val[i] < 0.0)
     {
       eigen_struct->e_val[i] = 0.0001;
     }
       if(alpha < .0)
-    eigen_struct->e_val[i] = (phydbl)LOG(eigen_struct->e_val[i]);
+    eigen_struct->e_val[i] = (phydbl)log(eigen_struct->e_val[i]);
       else
     eigen_struct->e_val[i] = alpha * (1. - (phydbl)POW(eigen_struct->e_val[i],-1./alpha));
      }
 
-  /* Matrix multiplications pi x LOG(pi^{-1} x F) */
-  For(i,eigen_struct->size) For(j,eigen_struct->size)
+  /* Matrix multiplications pi x log(pi^{-1} x F) */
+  for(i=0;i<eigen_struct->size;i++) for(j=0;j<eigen_struct->size;j++)
     eigen_struct->r_e_vect[eigen_struct->size*i+j] =
     eigen_struct->r_e_vect[eigen_struct->size*i+j] * eigen_struct->e_val[j];
-  For(i,eigen_struct->size) For(j,eigen_struct->size) F[eigen_struct->size*i+j] = .0;
-  For(i,eigen_struct->size) For(j,eigen_struct->size) For(k,eigen_struct->size)
+  for(i=0;i<eigen_struct->size;i++) for(j=0;j<eigen_struct->size;j++) F[eigen_struct->size*i+j] = .0;
+  for(i=0;i<eigen_struct->size;i++) for(j=0;j<eigen_struct->size;j++) for(k=0;k<eigen_struct->size;k++)
     F[eigen_struct->size*i+j] += eigen_struct->r_e_vect[eigen_struct->size*i+k] * eigen_struct->l_e_vect[eigen_struct->size*k+j];
-  For(i,eigen_struct->size) For(j,eigen_struct->size) F[eigen_struct->size*i+j] *= pi[i];
+  for(i=0;i<eigen_struct->size;i++) for(j=0;j<eigen_struct->size;j++) F[eigen_struct->size*i+j] *= pi[i];
 
   /* Trace */
   dist = .0;
-  For(i,eigen_struct->size) dist-=F[eigen_struct->size*i+i];
+  for(i=0;i<eigen_struct->size;i++) dist-=F[eigen_struct->size*i+i];
 
 /*   PhyML_Printf("\nDIST = %f\n",dist); Exit("\n"); */
 
