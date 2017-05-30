@@ -95,6 +95,10 @@ AC_ARG_ENABLE([win],
               [AS_HELP_STRING([--enable-win],
                               [Compile with mingw instead of gcc.])])
 AS_IF([test "x$enable_win" = "xyes"],[CC="i686-w64-mingw32-gcc"])
+AS_IF([test "x$enable_win" = "xyes"],
+      [CFLAGS="-O2 -fomit-frame-pointer -funroll-loops -Wall -Winline ${VECTOR_FLAG}"],
+      [AS_IF([test "x$enable_win" = "xno"],[CFLAGS="${DEFAULT_C_FLAG}"])])
+
 AM_CONDITIONAL([WANT_WIN], [test "$enable_win" = yes])
 
 
