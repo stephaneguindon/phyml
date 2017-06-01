@@ -251,6 +251,7 @@ t_tree *PHYREX_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl
   Random_Tree(tree);
   Connect_CSeqs_To_Nodes(cdata,io,tree);
   tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
+  io->rates->model = STRICTCLOCK;
   RATES_Init_Rate_Struct(tree->rates,io->rates,tree->n_otu);
     
   tree->data      = cdata;
@@ -287,7 +288,7 @@ t_tree *PHYREX_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl
   /* Death proba param */
   mmod->mu = 0.8;
   /* Theta (radius) */
-  mmod->rad = 1000.;
+  mmod->rad = 0.3;
   /* Rate of events */
   mmod->lbda = 1.0*w*h;
   /* Population density */
@@ -376,11 +377,12 @@ t_tree *PHYREX_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl
 
         assert(lin1 && lin2);
         
-        PhyML_Printf("\n. #$# %G %G",dist,lin1->disk->time);
+        PhyML_Printf("\n. #$# locus %4d ; physical distance: %G time to coalescence: %G",locus_idx,dist,lin1->disk->time);
       }
       
       PHYREX_Ldsk_To_Tree(tree);  
 
+      
       Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
       Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
       RATES_Fill_Lca_Table(tree);
@@ -388,10 +390,13 @@ t_tree *PHYREX_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl
       T = PHYREX_Tree_Height(tree);
 
       tree->rates->bl_from_rt = YES;
-      tree->rates->clock_r    = 0.01/FABS(T);
-      tree->rates->model      = STRICTCLOCK;
+      tree->rates->clock_r    = 1.E-3/FABS(T);
 
       RATES_Update_Cur_Bl(tree);
+
+      char *s = Write_Tree(tree,NO);
+      PhyML_Printf("\n. #@# tree: %s",s);
+      Free(s);
 
       Evolve(tree->data,tree->mod,locus_idx,tree);
       

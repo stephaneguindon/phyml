@@ -7256,13 +7256,15 @@ void Evolve(calign *data, t_mod *mod, int first_site_pos, t_tree *tree)
   switch_to_yes = NO;
   if(tree->mod->gamma_mgf_bl == YES) switch_to_yes = YES;
 
+  Switch_Eigen(YES,mod);                 
+
   assert(first_site_pos < data->init_len);
   
   for(site=first_site_pos;site<data->init_len;++site)
     {
       Set_Model_Parameters(mod);
 
-      /* Pick the rate class */
+     /* Pick the rate class */
       root_state = root_rate_class = -1;
       root_rate_class = Pick_State(mod->ras->n_catg,mod->ras->gamma_r_proba->v);
 
@@ -7281,7 +7283,7 @@ void Evolve(calign *data, t_mod *mod, int first_site_pos, t_tree *tree)
       /*   } */
 
       for(i=0;i<2*tree->n_otu-3;++i) Update_PMat_At_Given_Edge(tree->a_edges[i],tree);
-
+      
       /* Pick the root nucleotide/aa */
       root_state = Pick_State(mod->ns,mod->e_frq->pi->v);
       data->c_seq[0]->state[site] = Reciproc_Assign_State(root_state,tree->io->datatype);
@@ -7352,7 +7354,12 @@ void Evolve_Recur(t_node *a, t_node *d, t_edge *b, int a_state, int r_class, int
 
   d_state = Pick_State(mod->ns,b->Pij_rr+r_class*dim1+a_state*dim2);
 
-/*   PhyML_Printf("\n>> %c (%d,%d)",Reciproc_Assign_State(d_state,mod->io->datatype),d_state,(int)d_state/mod->m4mod->n_o); */
+  /* PhyML_Printf("\n>> %c (%d) L:%G %G %G %G %G",Reciproc_Assign_State(d_state,mod->io->datatype),d_state, */
+  /*              b->l->v, */
+  /*              b->Pij_rr[r_class*dim1+a_state*dim2+0], */
+  /*              b->Pij_rr[r_class*dim1+a_state*dim2+1], */
+  /*              b->Pij_rr[r_class*dim1+a_state*dim2+2], */
+  /*              b->Pij_rr[r_class*dim1+a_state*dim2+3]); */
 
   if(mod->use_m4mod)
     {

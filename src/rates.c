@@ -2575,7 +2575,7 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
     {
       tree->rates->br_do_updt[d->num] = NO;
 
-      dt = tree->rates->nd_t[d->num] - tree->rates->nd_t[a->num];
+      dt = fabs(tree->rates->nd_t[d->num] - tree->rates->nd_t[a->num]);
       cr = tree->rates->clock_r;
       rd = tree->rates->br_r[d->num];
       ra = tree->rates->br_r[a->num];
@@ -2583,6 +2583,7 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
       ta = tree->rates->nd_t[a->num];
       nu = tree->rates->nu;
       rr = -1.0;
+
       
       if(tree->rates->model == GAMMA)
         {
@@ -2619,6 +2620,17 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 
 	  tree->rates->cur_l[d->num] = tree->rates->cur_gamma_prior_mean[d->num]; // Required for having proper branch lengths in Write_Tree function
 	}
+      
+      if(tree->rates->model == STRICTCLOCK)
+        {
+          tree->rates->cur_l[d->num] = dt*cr;          
+        }
+
+      /* printf("\n. td: %12f ta: %12f dt: %12f cr: %12f ra: %12f rd: %12f l: %12f", */
+      /*        tree->rates->nd_t[d->num], */
+      /*        tree->rates->nd_t[a->num], */
+      /*        dt,cr,ra,rd,tree->rates->cur_l[d->num]); */
+
       
       if(tree->mod && tree->mod->log_l == YES) tree->rates->cur_l[d->num] = log(tree->rates->cur_l[d->num]);
       

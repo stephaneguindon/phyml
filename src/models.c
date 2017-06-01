@@ -267,6 +267,7 @@ void PMat_Empirical(phydbl l, t_mod *mod, int pos, phydbl *Pij, phydbl *tPij)
   for(i=0;i<ns;++i) for(k=0;k<ns;k++) Pij[pos+ns*i+k] = .0;
   /* compute POW(exp(D/mr),l) into mat_eDmrl */
   for(k=0;k<ns;++k)  expt[k] = (phydbl)POW(R[k],l);
+
   /* multiply Vr*POW(exp(D/mr),l)*Vi into Pij */
   for(i=0;i<ns;i++) for (k=0;k<ns;k++) uexpt[i*ns+k] = U[i*ns+k] * expt[k];
 

@@ -2230,7 +2230,7 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
 #ifdef BEAGLE
             assert(UNINITIALIZED != tree->mod->b_inst);
 #endif
-                   
+
             PMat(len,tree->mod,i*tree->mod->ns*tree->mod->ns,b_fcus->Pij_rr,b_fcus->tPij_rr);
           }
       else
