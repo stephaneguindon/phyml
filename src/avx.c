@@ -417,7 +417,7 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
               for(i=0;i<ncatgns;++i) p_lk[site*ncatgns + i] *= TWO_TO_THE_LARGE;
               sum_scale[site] += LARGE;
             }
-        }      
+        }
     }
 }
 

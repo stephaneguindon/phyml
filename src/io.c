@@ -1219,7 +1219,7 @@ void Detect_Tree_File_Format(option *io)
       char s[10],t[6]="NEXUS";
       if(!fgets(s,6,io->fp_in_tree))
         {
-          PhyML_Printf("\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
+          PhyML_Printf("\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
           Warn_And_Exit("");
         }
       if(!strcmp(t,s))
@@ -3325,7 +3325,7 @@ void Print_Settings(option *io)
                );
 
 
-  PhyML_Printf("\n\n                           \u205C \u205C \u205C \u205C \u205C \u205C \u205C \u205C \u205C \u205C \u205C \u205C  \n");
+  PhyML_Printf("\n\n                         \u205C \u205C \u205C \u205C \u205C \u205C \u205C \u205C \u205C \u205C \u205C \u205C  \n");
 
   PhyML_Printf("\n\n");
   fflush(NULL);

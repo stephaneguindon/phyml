@@ -213,6 +213,7 @@ t_tree *PHYREX_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl
   phydbl area, neigh;
   phydbl T;
   phydbl Ne,maxNe,minNe;
+  phydbl subst_rate;
   int locus_idx;
 
   n_dim = 2; // 2-dimensional landscape
@@ -349,6 +350,7 @@ t_tree *PHYREX_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl
 
 
   // Generate sequences
+  subst_rate = .0;
   locus_idx = 0;
   do
     {
@@ -390,8 +392,17 @@ t_tree *PHYREX_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl
       T = PHYREX_Tree_Height(tree);
 
       tree->rates->bl_from_rt = YES;
-      tree->rates->clock_r    = 1.E-3/FABS(T);
+      /* tree->rates->clock_r    = 1.E-3/FABS(T); // slow */
+      /* tree->rates->clock_r    = 1.E-0/FABS(T); // fast */
+      /* tree->rates->clock_r    = 1.E-1/FABS(T); // medium */
+      /* tree->rates->clock_r = 1.E-7; // slow; */
+      /* tree->rates->clock_r = 1.E-4; // medium; */
+      tree->rates->clock_r = 1.E-2; // fast;
 
+      
+      PhyML_Printf("\n. #!# mutation rate at that locus: %G subst. per time unit",tree->rates->clock_r);
+      subst_rate += tree->rates->clock_r;
+      
       RATES_Update_Cur_Bl(tree);
 
       char *s = Write_Tree(tree,NO);
@@ -412,6 +423,8 @@ t_tree *PHYREX_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl
     }
   while(locus_idx < n_loci);
 
+  PhyML_Printf("\n. #s# average rate of mutation : %G",subst_rate/(phydbl)n_loci); 
+  
   tree->data->format = IBDSIM;
   PhyML_Printf("\n\n");
   Print_CSeq(stdout,NO,tree->data,tree);
