@@ -291,8 +291,8 @@ t_tree *PHYREX_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl
   /* Theta (radius) */
   mmod->rad = 0.3;
   /* Rate of events */
-  mmod->lbda = 1.0*w*h;
-  /* Population density */
+  mmod->lbda = 10.*w*h;
+  /* (Actual, not effective) population density */
   mmod->rho = 1.;
 
   
@@ -306,18 +306,26 @@ t_tree *PHYREX_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl
   // Divide by rate of events per calendar time unit to get duration of gen. in calendar time unit
   mmod->gen_cal_time *= 1./mmod->lbda;
 
+
+  phydbl p = Prob_Two_Lineages_Coal_One_Event(w,h,mmod->mu,mmod->rad);
+  printf("\n. p.sim: %G p.appx: %G",p,4.*pow(mmod->mu,2)*pow(PI,2)*pow(mmod->rad,4)/(pow(w*h,2)));
+  phydbl rhoe = 1./(1.-exp(-mmod->lbda*p*mmod->gen_cal_time));
+  rhoe /= area;
   
-  PhyML_Printf("\n. lambda=%G; mu=%G; rad=%G; clockr=%G; sigsq=%G; neigh=%G; N=%G; rhoe=%G one_gen=%G",
+  PhyML_Printf("\n. lambda=%G; mu=%G; rad=%G; clockr=%G; sigsq=%G; neigh=%G; rhoe(small rad)=%G rhoe(numerical)=%G rhoe(large rad)=%G one_gen=%G",
                mmod->lbda,
                mmod->mu,
                mmod->rad,
                tree->rates->clock_r,
                mmod->sigsq,
                2./mmod->mu,
-               area*2./(4*PI*mmod->sigsq*mmod->mu),
-               2./(4.*PI*mmod->sigsq*mmod->mu),
+               (1./(1.-exp(-4.*pow(mmod->mu,2)*pow(PI,2)*pow(mmod->rad,4)/(pow(w*h,2))*mmod->lbda*mmod->gen_cal_time)))/area,
+               rhoe,
+               /* (1./(1.-exp(-mmod->lbda*mmod->mu/(w*h))))/area, */
+               (1./(1.-exp(-mmod->mu)))/area,
                mmod->gen_cal_time);
   fflush(NULL);
+  /* Exit("\n"); */
 
   
   // Initialize position of sampled individuals
@@ -396,8 +404,8 @@ t_tree *PHYREX_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl
       /* tree->rates->clock_r    = 1.E-0/FABS(T); // fast */
       /* tree->rates->clock_r    = 1.E-1/FABS(T); // medium */
       /* tree->rates->clock_r = 1.E-7; // slow; */
-      /* tree->rates->clock_r = 1.E-4; // medium; */
-      tree->rates->clock_r = 1.E-2; // fast;
+      tree->rates->clock_r = 1.E-4; // medium;
+      /* tree->rates->clock_r = 1.E-2; // fast; */
 
       
       PhyML_Printf("\n. #!# mutation rate at that locus: %G subst. per time unit",tree->rates->clock_r);
@@ -4687,6 +4695,51 @@ phydbl PHYREX_Coalescence_Rate(t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+
+phydbl Prob_Two_Lineages_Coal_One_Event(phydbl w, phydbl h, phydbl mu, phydbl rad)
+{
+  phydbl cx,cy;
+  phydbl l1x,l1y;
+  phydbl l2x,l2y;
+  phydbl prob_hit;
+  int n_hit,n_trials,trial;
+
+  n_trials = 10000000;
+  trial = 0;
+  n_hit = 0;
+  do
+    {
+      cx = Uni()*w;
+      cy = Uni()*h;
+      
+      l1x = Uni()*w;
+      l1y = Uni()*h;
+
+      l2x = Uni()*w;
+      l2y = Uni()*h;
+
+      prob_hit = log(mu);
+      prob_hit += -POW(l1x - cx,2)/(2.*pow(rad,2));
+      prob_hit += -POW(l1y - cy,2)/(2.*pow(rad,2));
+
+      prob_hit += log(mu);
+      prob_hit += -POW(l2x - cx,2)/(2.*pow(rad,2));
+      prob_hit += -POW(l2y - cy,2)/(2.*pow(rad,2));
+
+      prob_hit = exp(prob_hit);
+      
+      if(!(Uni() > prob_hit)) n_hit++;
+
+      trial++;
+    }
+  while(trial != n_trials);
+  
+  return((phydbl)n_hit/n_trials);
+}
+
+
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

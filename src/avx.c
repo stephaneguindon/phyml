@@ -405,6 +405,7 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
           sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[site]):(0);              
           sum_scale[site] = sum_scale_v1_val + sum_scale_v2_val;
           
+          
           largest_p_lk = -BIG; 
           for(i=0;i<ncatgns;++i)
             if(p_lk[site*ncatgns+i] > largest_p_lk)

@@ -3392,12 +3392,21 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
           int *sum_scale0, *sum_scale1, *sum_scale2;
           phydbl sum_probas;
           phydbl *Pij0, *Pij1, *Pij2;          
+          phydbl inc,num,denom;
           FILE *fp;
 
           unsigned const int ncatg = tree->mod->ras->n_catg;
           unsigned const int ns = tree->mod->ns;
           unsigned const int nsns = ns*ns;
           unsigned const int ncatgns = ns*ncatg;
+
+
+          if(tree->scaling_method == SCALE_RATE_SPECIFIC)
+            {
+              PhyML_Printf("\n== Likelihood rescaling method not compatible with the calculation of ancestral state probabilities.");
+              Exit("\n");
+            }
+
           
           if(!d) return;
           
@@ -3458,58 +3467,77 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
                   sum_scale2 = b2->sum_scale_rght;
                 }
               
-              
+              denom = 0.0;
+              for(catg=0;catg<ncatg;++catg)
+                denom +=
+                  tree->unscaled_site_lk_cat[csite*ncatg+catg] *
+                  tree->mod->ras->gamma_r_proba->v[catg];
+
               for(catg=0;catg<ncatg;++catg)
                 {
-                  for(i=0;i<ns;i++)
+                  for(i=0;i<ns;++i)
                     {
                       p0 = .0;
                       if(v0->tax)
                         for(j=0;j<ns;++j)
                           {
                             p0 += v0->b[0]->p_lk_tip_r[csite*ns+j] * Pij0[catg*nsns+i*ns+j];
+                            if(isinf(p0) || isnan(p0) || p0 < SMALL)
+                              {
+                                PhyML_Printf("\n== p0: %G v0->b[0]->p_lk_tip_r[csite*ns+j]: %G Pij0[catg*nsns+i*ns+j]: %G\n",
+                                             p0,
+                                             v0->b[0]->p_lk_tip_r[csite*ns+j],
+                                             Pij0[catg*nsns+i*ns+j]);
+                                Exit("\n");
+                              }
                           }
                       else
                         for(j=0;j<ns;j++)
                           {
-                            switch(tree->scaling_method)
+                            p0 += p_lk0[csite*ncatgns+catg*ns+j] * Pij0[catg*nsns+i*ns+j];
+                            if(isinf(p0) || isnan(p0) || p0 < SMALL)
                               {
-                              case SCALE_RATE_SPECIFIC : 
-                                {
-                                  p0 += p_lk0[csite*ncatgns+catg*ns+j] * Pij0[catg*nsns+i*ns+j] / (phydbl)POW(2,sum_scale0[csite*ncatg+catg]);
-                                  break;
-                                }
-                              case SCALE_FAST :
-                                {
-                                  p0 += p_lk0[csite*ncatgns+catg*ns+j] * Pij0[catg*nsns+i*ns+j] / (phydbl)POW(2,sum_scale0[csite]);
-                                  break;
-                                }
+                                PhyML_Printf("\n== p0: %G p_lk0[csite*ncatgns+catg*ns+j]: %G Pij0[catg*nsns+i*ns+j]: %G (phydbl)POW(2,sum_scale0[csite*ncatg+catg]): %G sum_scale0: %d\n",
+                                             p0,
+                                             p_lk0[csite*ncatgns+catg*ns+j],
+                                             Pij0[catg*nsns+i*ns+j],
+                                             (phydbl)POW(2,sum_scale0[csite]),
+                                             sum_scale0[csite]);
+                                Exit("\n");
                               }
                           }
+                    
                       p1 = .0;
                       if(v1->tax)
                         for(j=0;j<ns;j++)
                           {
                             p1 += v1->b[0]->p_lk_tip_r[csite*ns+j] * Pij1[catg*nsns+i*ns+j];
+                            if(isinf(p1) || isnan(p1))
+                              {
+                                PhyML_Printf("\n== p1: %G v1->b[0]->p_lk_tip_r[csite*ns+j]: %G Pij1[catg*nsns+i*ns+j]: %G\n",
+                                             p1,
+                                             v1->b[0]->p_lk_tip_r[csite*ns+j],
+                                             Pij1[catg*nsns+i*ns+j]);
+                                Exit("\n");
+                              }
                           }
                       
                       else
                         for(j=0;j<ns;j++)
                           {
-                            switch(tree->scaling_method)
+                            /* p1 += p_lk1[csite*ncatgns+catg*ns+j] * Pij1[catg*nsns+i*ns+j] / (phydbl)POW(2,sum_scale1[csite]); */
+                            p1 += p_lk1[csite*ncatgns+catg*ns+j] * Pij1[catg*nsns+i*ns+j];
+                            if(isinf(p1) || isnan(p1))
                               {
-                              case SCALE_RATE_SPECIFIC : 
-                                {
-                                  p1 += p_lk1[csite*ncatgns+catg*ns+j] * Pij1[catg*nsns+i*ns+j] / (phydbl)POW(2,sum_scale1[csite*ncatg+catg]);
-                                  break;
-                                }
-                              case SCALE_FAST :
-                                {
-                                  p1 += p_lk1[csite*ncatgns+catg*ns+j] * Pij1[catg*nsns+i*ns+j] / (phydbl)POW(2,sum_scale1[csite]);
-                                  break;
-                                }
+                                PhyML_Printf("\n== p1: %G p_lk1[csite*ncatgns+catg*ns+j]: %G Pij1[catg*nsns+i*ns+j]: %G (phydbl)POW(2,sum_scale1[csite*ncatg+catg]): %G\n",
+                                             p1,
+                                             p_lk1[csite*ncatgns+catg*ns+j],
+                                             Pij1[catg*nsns+i*ns+j],
+                                             (phydbl)POW(2,sum_scale1[csite]));
+                                Exit("\n");
                               }
                           }
+                      
                       p2 = .0;
                       if(v2->tax)
                         for(j=0;j<ns;j++)
@@ -3519,25 +3547,36 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
                       else
                         for(j=0;j<ns;j++)
                           {
-                            switch(tree->scaling_method)
+                            p2 += p_lk2[csite*ncatgns+catg*ns+j] * Pij2[catg*nsns+i*ns+j];
+                            if(isinf(p2) || isnan(p2))
                               {
-                              case SCALE_RATE_SPECIFIC : 
-                                {
-                                  p2 += p_lk2[csite*ncatgns+catg*ns+j] * Pij2[catg*nsns+i*ns+j] / (phydbl)POW(2,sum_scale2[csite*ncatg+catg]);
-                                }
-                              case SCALE_FAST :
-                                {
-                                  p2 += p_lk2[csite*ncatgns+catg*ns+j] * Pij2[catg*nsns+i*ns+j] / (phydbl)POW(2,sum_scale2[csite]);
-                                  break;
-                                }                                
+                                PhyML_Printf("\n== p2: %G p_lk2[csite*ncatgns+catg*ns+j]: %G Pij2[catg*nsns+i*ns+j]: %G (phydbl)POW(2,sum_scale2[csite]): %G\n",
+                                             p2,
+                                             p_lk2[csite*ncatgns+catg*ns+j],
+                                             Pij2[catg*nsns+i*ns+j],
+                                             (phydbl)POW(2,sum_scale2[csite]));
+                                Exit("\n");
                               }
                           }
                       
-                      p[i] +=
+                      inc =
                         p0*p1*p2*
                         tree->mod->e_frq->pi->v[i] /
-                        tree->cur_site_lk[csite] *
                         tree->mod->ras->gamma_r_proba->v[catg];
+
+                      p[i] += inc;                      
+                      
+                      if(isinf(p[i]) || isnan(p[i]))
+                        {
+                          PhyML_Printf("\n== site: %4d p0: %G p1: %G p2: %G tree->mod->e_frq->pi->v[i]: %G tree->cur_site_lk[csite]: %G  tree->mod->ras->gamma_r_proba->v[catg]: %G tree->c_lnL_sorted[csite]: %G",
+                                       csite,
+                                       p0,p1,p2,
+                                       tree->mod->e_frq->pi->v[i] ,
+                                       tree->cur_site_lk[csite] ,
+                                       tree->mod->ras->gamma_r_proba->v[catg],
+                                       tree->c_lnL_sorted[csite]);
+                          Exit("\n");
+                        }
                     }
 
                   /* printf("\n. site: %d || %d %d %d", */
@@ -3547,10 +3586,10 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
                   /*        v2->tax ? -1 : sum_scale2[csite*ncatg+catg]); */
 
                 }
-              
-              /* sum_probas = 0.0; */
-              /* for(i=0;i<ns;i++) sum_probas += p[i]; */
-              /* for(i=0;i<ns;i++) p[i]/=sum_probas; */
+                            
+              sum_probas = 0.0;
+              for(i=0;i<ns;i++) sum_probas += p[i];
+              for(i=0;i<ns;i++) p[i]/=sum_probas;
               
               
               if(print == YES)
@@ -3564,9 +3603,12 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
                     }
                   PhyML_Fprintf(fp,"\n");
                   fflush(NULL);
-                  assert(Are_Equal(sum_probas,1.0,0.01));
+                  if(Are_Equal(sum_probas,1.0,0.01) == NO)
+                    {
+                      for(i=0;i<ns;++i) PhyML_Printf("\n. p[%2d]=%G",i,p[i]);
+                      Exit("\n");
+                    }
                 }
-
             }
           Free(p);
         }
