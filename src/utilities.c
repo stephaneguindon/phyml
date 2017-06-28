@@ -7885,8 +7885,8 @@ void JF(t_tree *tree)
   for(site=0;site<n_patterns;site++) {
     int wei=0;
     For(wei,tree->data->wght[site]) {
-      PhyML_Printf("%f\n",tree->c_lnL_sorted[site] / tree->data->wght[site]);
-      sum+=tree->c_lnL_sorted[site] / tree->data->wght[site];
+      PhyML_Printf("%f\n",tree->c_lnL_sorted[site]);
+      sum+=tree->c_lnL_sorted[site];
     }
   }
 

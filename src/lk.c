@@ -863,7 +863,7 @@ phydbl Lk_Core(int state, int ambiguity_check, short int derivative,
     {
       phydbl log_site_lk;
       log_site_lk = log(site_lk) - (phydbl)LOG2 * tree->fact_sum_scale[site]; // log_site_lk =  log(site_lk_scaled / 2^(left_subtree+right_subtree))
-      tree->c_lnL_sorted[site] = tree->data->wght[site] * log_site_lk;
+      tree->c_lnL_sorted[site] = log_site_lk;
       tree->c_lnL += tree->data->wght[site] * log_site_lk;
       tree->cur_site_lk[site] = exp(log_site_lk); // note to self : add opt out option to avoid calculating this if not necessary
     }
@@ -941,7 +941,7 @@ phydbl Lk_Core_Eigen_Lr(phydbl *expl, phydbl *dot_prod, short int derivative, t_
     {
       phydbl log_site_lk;
       log_site_lk = log(site_lk) - (phydbl)LOG2 * tree->fact_sum_scale[site]; // log_site_lk =  log(site_lk_scaled / 2^(left_subtree+right_subtree))
-      tree->c_lnL_sorted[site] = tree->data->wght[site] * log_site_lk;
+      tree->c_lnL_sorted[site] = log_site_lk;
       tree->c_lnL += tree->data->wght[site] * log_site_lk;
       tree->cur_site_lk[site] = exp(log_site_lk); // note to self : add opt out option to avoid calculating this if not necessary
     }
@@ -3392,7 +3392,7 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
           int *sum_scale0, *sum_scale1, *sum_scale2;
           phydbl sum_probas;
           phydbl *Pij0, *Pij1, *Pij2;          
-          phydbl inc,num,denom;
+          phydbl inc,sum_scale;
           FILE *fp;
 
           unsigned const int ncatg = tree->mod->ras->n_catg;
@@ -3433,6 +3433,8 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
               Pij0 = b0->Pij_rr;
               Pij1 = b1->Pij_rr;
               Pij2 = b2->Pij_rr;
+
+              sum_scale = 0.0;
               
               if(v0 == b0->left)
                 {
@@ -3467,11 +3469,6 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
                   sum_scale2 = b2->sum_scale_rght;
                 }
               
-              denom = 0.0;
-              for(catg=0;catg<ncatg;++catg)
-                denom +=
-                  tree->unscaled_site_lk_cat[csite*ncatg+catg] *
-                  tree->mod->ras->gamma_r_proba->v[catg];
 
               for(catg=0;catg<ncatg;++catg)
                 {
@@ -3479,92 +3476,109 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
                     {
                       p0 = .0;
                       if(v0->tax)
-                        for(j=0;j<ns;++j)
-                          {
-                            p0 += v0->b[0]->p_lk_tip_r[csite*ns+j] * Pij0[catg*nsns+i*ns+j];
-                            if(isinf(p0) || isnan(p0) || p0 < SMALL)
-                              {
-                                PhyML_Printf("\n== p0: %G v0->b[0]->p_lk_tip_r[csite*ns+j]: %G Pij0[catg*nsns+i*ns+j]: %G\n",
-                                             p0,
-                                             v0->b[0]->p_lk_tip_r[csite*ns+j],
-                                             Pij0[catg*nsns+i*ns+j]);
-                                Exit("\n");
-                              }
-                          }
+                        {
+                          for(j=0;j<ns;++j)
+                            {
+                              p0 += v0->b[0]->p_lk_tip_r[csite*ns+j] * Pij0[catg*nsns+i*ns+j];
+                              if(isinf(p0) || isnan(p0) || p0 < SMALL)
+                                {
+                                  PhyML_Printf("\n== p0: %G v0->b[0]->p_lk_tip_r[csite*ns+j]: %G Pij0[catg*nsns+i*ns+j]: %G\n",
+                                               p0,
+                                               v0->b[0]->p_lk_tip_r[csite*ns+j],
+                                               Pij0[catg*nsns+i*ns+j]);
+                                  Exit("\n");
+                                }
+                            }
+                        }
                       else
-                        for(j=0;j<ns;j++)
-                          {
-                            p0 += p_lk0[csite*ncatgns+catg*ns+j] * Pij0[catg*nsns+i*ns+j];
-                            if(isinf(p0) || isnan(p0) || p0 < SMALL)
-                              {
-                                PhyML_Printf("\n== p0: %G p_lk0[csite*ncatgns+catg*ns+j]: %G Pij0[catg*nsns+i*ns+j]: %G (phydbl)POW(2,sum_scale0[csite*ncatg+catg]): %G sum_scale0: %d\n",
-                                             p0,
-                                             p_lk0[csite*ncatgns+catg*ns+j],
-                                             Pij0[catg*nsns+i*ns+j],
-                                             (phydbl)POW(2,sum_scale0[csite]),
-                                             sum_scale0[csite]);
-                                Exit("\n");
-                              }
-                          }
-                    
+                        {
+                          for(j=0;j<ns;j++)
+                            {
+                              /* p0 += p_lk0[csite*ncatgns+catg*ns+j] * Pij0[catg*nsns+i*ns+j] / (phydbl)POW(2,sum_scale0[csite]); */
+                              p0 += p_lk0[csite*ncatgns+catg*ns+j] * Pij0[catg*nsns+i*ns+j];
+                              if(isinf(p0) || isnan(p0))
+                                {
+                                  PhyML_Printf("\n== p0: %G p_lk0[csite*ncatgns+catg*ns+j]: %G Pij0[catg*nsns+i*ns+j]: %G (phydbl)POW(2,sum_scale0[csite*ncatg+catg]): %G sum_scale0: %d\n",
+                                               p0,
+                                               p_lk0[csite*ncatgns+catg*ns+j],
+                                               Pij0[catg*nsns+i*ns+j],
+                                               (phydbl)POW(2,sum_scale0[csite]),
+                                               sum_scale0[csite]);
+                                  Exit("\n");
+                                }
+                            }
+                          if(catg == 0 && i == 0) sum_scale += sum_scale0[csite];
+                        }
+                      
                       p1 = .0;
                       if(v1->tax)
-                        for(j=0;j<ns;j++)
-                          {
-                            p1 += v1->b[0]->p_lk_tip_r[csite*ns+j] * Pij1[catg*nsns+i*ns+j];
-                            if(isinf(p1) || isnan(p1))
-                              {
-                                PhyML_Printf("\n== p1: %G v1->b[0]->p_lk_tip_r[csite*ns+j]: %G Pij1[catg*nsns+i*ns+j]: %G\n",
-                                             p1,
-                                             v1->b[0]->p_lk_tip_r[csite*ns+j],
-                                             Pij1[catg*nsns+i*ns+j]);
-                                Exit("\n");
-                              }
-                          }
-                      
+                        {
+                          for(j=0;j<ns;j++)
+                            {
+                              p1 += v1->b[0]->p_lk_tip_r[csite*ns+j] * Pij1[catg*nsns+i*ns+j];
+                              if(isinf(p1) || isnan(p1))
+                                {
+                                  PhyML_Printf("\n== p1: %G v1->b[0]->p_lk_tip_r[csite*ns+j]: %G Pij1[catg*nsns+i*ns+j]: %G\n",
+                                               p1,
+                                               v1->b[0]->p_lk_tip_r[csite*ns+j],
+                                               Pij1[catg*nsns+i*ns+j]);
+                                  Exit("\n");
+                                }
+                            }
+                        }
                       else
-                        for(j=0;j<ns;j++)
-                          {
-                            /* p1 += p_lk1[csite*ncatgns+catg*ns+j] * Pij1[catg*nsns+i*ns+j] / (phydbl)POW(2,sum_scale1[csite]); */
-                            p1 += p_lk1[csite*ncatgns+catg*ns+j] * Pij1[catg*nsns+i*ns+j];
-                            if(isinf(p1) || isnan(p1))
-                              {
-                                PhyML_Printf("\n== p1: %G p_lk1[csite*ncatgns+catg*ns+j]: %G Pij1[catg*nsns+i*ns+j]: %G (phydbl)POW(2,sum_scale1[csite*ncatg+catg]): %G\n",
-                                             p1,
-                                             p_lk1[csite*ncatgns+catg*ns+j],
-                                             Pij1[catg*nsns+i*ns+j],
-                                             (phydbl)POW(2,sum_scale1[csite]));
-                                Exit("\n");
-                              }
-                          }
+                        {
+                          for(j=0;j<ns;j++)
+                            {
+                              /* p1 += p_lk1[csite*ncatgns+catg*ns+j] * Pij1[catg*nsns+i*ns+j] / (phydbl)POW(2,sum_scale1[csite]); */
+                              p1 += p_lk1[csite*ncatgns+catg*ns+j] * Pij1[catg*nsns+i*ns+j];
+                              if(isinf(p1) || isnan(p1))
+                                {
+                                  PhyML_Printf("\n== p1: %G p_lk1[csite*ncatgns+catg*ns+j]: %G Pij1[catg*nsns+i*ns+j]: %G (phydbl)POW(2,sum_scale1[csite*ncatg+catg]): %G\n",
+                                               p1,
+                                               p_lk1[csite*ncatgns+catg*ns+j],
+                                               Pij1[catg*nsns+i*ns+j],
+                                               (phydbl)POW(2,sum_scale1[csite]));
+                                  Exit("\n");
+                                }
+                            }
+                          if(catg == 0 && i == 0) sum_scale += sum_scale1[csite];
+                        }
                       
                       p2 = .0;
                       if(v2->tax)
-                        for(j=0;j<ns;j++)
-                          {
-                            p2 += v2->b[0]->p_lk_tip_r[csite*ns+j] * Pij2[catg*nsns+i*ns+j];
-                          }
+                        {
+                          for(j=0;j<ns;j++)
+                            {
+                              p2 += v2->b[0]->p_lk_tip_r[csite*ns+j] * Pij2[catg*nsns+i*ns+j];
+                            }
+                        }
                       else
-                        for(j=0;j<ns;j++)
-                          {
-                            p2 += p_lk2[csite*ncatgns+catg*ns+j] * Pij2[catg*nsns+i*ns+j];
-                            if(isinf(p2) || isnan(p2))
-                              {
-                                PhyML_Printf("\n== p2: %G p_lk2[csite*ncatgns+catg*ns+j]: %G Pij2[catg*nsns+i*ns+j]: %G (phydbl)POW(2,sum_scale2[csite]): %G\n",
-                                             p2,
-                                             p_lk2[csite*ncatgns+catg*ns+j],
-                                             Pij2[catg*nsns+i*ns+j],
-                                             (phydbl)POW(2,sum_scale2[csite]));
-                                Exit("\n");
-                              }
-                          }
-                      
+                        {
+                          for(j=0;j<ns;j++)
+                            {
+                              /* p2 += p_lk2[csite*ncatgns+catg*ns+j] * Pij2[catg*nsns+i*ns+j] / (phydbl)POW(2,sum_scale2[csite]) ; */
+                              p2 += p_lk2[csite*ncatgns+catg*ns+j] * Pij2[catg*nsns+i*ns+j];
+                              if(isinf(p2) || isnan(p2))
+                                {
+                                  PhyML_Printf("\n== p2: %G p_lk2[csite*ncatgns+catg*ns+j]: %G Pij2[catg*nsns+i*ns+j]: %G (phydbl)POW(2,sum_scale2[csite]): %G\n",
+                                               p2,
+                                               p_lk2[csite*ncatgns+catg*ns+j],
+                                               Pij2[catg*nsns+i*ns+j],
+                                               (phydbl)POW(2,sum_scale2[csite]));
+                                  Exit("\n");
+                                }
+                            }
+                          if(catg == 0 && i == 0) sum_scale += sum_scale2[csite];
+                        }
+                          
                       inc =
                         p0*p1*p2*
-                        tree->mod->e_frq->pi->v[i] /
+                        tree->mod->e_frq->pi->v[i] *
                         tree->mod->ras->gamma_r_proba->v[catg];
 
                       p[i] += inc;                      
+
                       
                       if(isinf(p[i]) || isnan(p[i]))
                         {
@@ -3586,10 +3600,14 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
                   /*        v2->tax ? -1 : sum_scale2[csite*ncatg+catg]); */
 
                 }
-                            
-              sum_probas = 0.0;
-              for(i=0;i<ns;i++) sum_probas += p[i];
-              for(i=0;i<ns;i++) p[i]/=sum_probas;
+
+              for(i=0;i<ns;i++) p[i] = log(p[i]) - (phydbl)LOG2 * sum_scale;
+              for(i=0;i<ns;i++) p[i] -= tree->c_lnL_sorted[csite];
+              for(i=0;i<ns;i++) p[i] = exp(p[i]);
+              
+              /* sum_probas = 0.0; */
+              /* for(i=0;i<ns;i++) sum_probas += p[i]; */
+              /* for(i=0;i<ns;i++) p[i]/=sum_probas; */
               
               
               if(print == YES)
@@ -3605,7 +3623,8 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
                   fflush(NULL);
                   if(Are_Equal(sum_probas,1.0,0.01) == NO)
                     {
-                      for(i=0;i<ns;++i) PhyML_Printf("\n. p[%2d]=%G",i,p[i]);
+                      PhyML_Printf("\n== Probabilities do not sum to 1.0! Aborting.");
+                      for(i=0;i<ns;++i) PhyML_Printf("\n== p[%2d]=%G",i,p[i]);
                       Exit("\n");
                     }
                 }
