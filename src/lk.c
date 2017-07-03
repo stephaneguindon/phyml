@@ -3530,7 +3530,6 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
                         {
                           for(j=0;j<ns;j++)
                             {
-                              /* p1 += p_lk1[csite*ncatgns+catg*ns+j] * Pij1[catg*nsns+i*ns+j] / (phydbl)POW(2,sum_scale1[csite]); */
                               p1 += p_lk1[csite*ncatgns+catg*ns+j] * Pij1[catg*nsns+i*ns+j];
                               if(isinf(p1) || isnan(p1))
                                 {
@@ -3557,7 +3556,6 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
                         {
                           for(j=0;j<ns;j++)
                             {
-                              /* p2 += p_lk2[csite*ncatgns+catg*ns+j] * Pij2[catg*nsns+i*ns+j] / (phydbl)POW(2,sum_scale2[csite]) ; */
                               p2 += p_lk2[csite*ncatgns+catg*ns+j] * Pij2[catg*nsns+i*ns+j];
                               if(isinf(p2) || isnan(p2))
                                 {

@@ -444,7 +444,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   buff = (t_tree *)tree;
   do
     {
-      for(site=0;site<tree->n_pattern;site++) tree->log_lks_aLRT[0][site] = tree->c_lnL_sorted[site];
+      for(site=0;site<tree->n_pattern;site++) tree->log_lks_aLRT[0][site] = tree->c_lnL_sorted[site] * tree->data->wght[site];
       tree = tree->next_mixt;
     }
   while(tree);
@@ -543,7 +543,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   buff = (t_tree *)tree;
   do
     {
-      for(site=0;site<tree->n_pattern;site++) tree->log_lks_aLRT[1][site]= tree->c_lnL_sorted[site];
+      for(site=0;site<tree->n_pattern;site++) tree->log_lks_aLRT[1][site]= tree->c_lnL_sorted[site] * tree->data->wght[site];
       tree = tree->next_mixt;
     }
   while(tree);
@@ -661,7 +661,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   buff = (t_tree *)tree;
   do
     {
-      for(site=0;site<tree->n_pattern;site++) tree->log_lks_aLRT[2][site]= tree->c_lnL_sorted[site];
+      for(site=0;site<tree->n_pattern;site++) tree->log_lks_aLRT[2][site]= tree->c_lnL_sorted[site] * tree->data->wght[site];
       tree = tree->next_mixt;
     }
   while(tree);

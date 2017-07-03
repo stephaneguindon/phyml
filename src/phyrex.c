@@ -145,7 +145,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   srand(seed);
   
   /* tree = PHYREX_Simulate(n_otus,n_sites,10.,10.,seed); */
-  tree = PHYREX_Simulate_Independent_Loci(n_otus,500,10.,10.,seed);
+  tree = PHYREX_Simulate_Independent_Loci(n_otus,500,20.,20.,seed);
 
   disk = tree->disk;
   while(disk->prev) disk = disk->prev;
@@ -296,8 +296,6 @@ t_tree *PHYREX_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl
   mmod->rho = 1.;
 
   
-  /* Dispersal parameter */
-  mmod->sigsq = 4.*pow(mmod->rad,4)*mmod->lbda*PI*mmod->mu/area;
   
   // Duration of a generation in number of events
   mmod->gen_cal_time = 1./(2.*mmod->mu*pow(mmod->rad,2)/pow(w*h,2)*
@@ -306,7 +304,10 @@ t_tree *PHYREX_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl
   // Divide by rate of events per calendar time unit to get duration of gen. in calendar time unit
   mmod->gen_cal_time *= 1./mmod->lbda;
 
+  /* Dispersal parameter (per generation) */
+  mmod->sigsq = 4.*pow(mmod->rad,4)*mmod->lbda*PI*mmod->mu/area * mmod->gen_cal_time;
 
+ 
   phydbl p = Prob_Two_Lineages_Coal_One_Event(w,h,mmod->mu,mmod->rad);
   printf("\n. p.sim: %G p.appx: %G",p,4.*pow(mmod->mu,2)*pow(PI,2)*pow(mmod->rad,4)/(pow(w*h,2)));
   phydbl rhoe = 1./(1.-exp(-mmod->lbda*p*mmod->gen_cal_time));
