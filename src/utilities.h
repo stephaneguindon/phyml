@@ -1785,11 +1785,13 @@ typedef struct __Calibration {
   phydbl upper; // upper bound
 
   short int is_primary; // Is is a primary or secondary calibration interval?
-  
+
+  char *id; // calibration ID
   struct __Node **target_tip; // Array of targeted tips
   char **target_tax;
   int  n_target_tax;
   char *clade_id;
+  phydbl alpha; // probability of the calibration constraint
 }t_cal;
 
 /*!********************************************************/

@@ -1915,73 +1915,6 @@ int Read_One_Line_Seq(align ***data, int num_otu, FILE *in)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-t_tree *Read_Tree_File(option *io)
-{
-  t_tree *tree;
-
-  assert(io->fp_in_tree);
-
-  Detect_Tree_File_Format(io);
-
-  io->treelist->list_size = 0;
-
-  switch(io->tree_file_format)
-    {
-    case PHYLIP:
-      {
-        do
-          {
-            io->treelist->tree = (t_tree **)realloc(io->treelist->tree,(io->treelist->list_size+1)*sizeof(t_tree *));
-            io->tree = Read_Tree_File_Phylip(io->fp_in_tree);
-            fclose(io->fp_in_tree);
-            io->fp_in_tree = NULL;
-            if(!io->tree) break;
-            if(io->treelist->list_size > 1) PhyML_Printf("\n\u2022 Reading tree %d",io->treelist->list_size+1);
-            io->treelist->tree[io->treelist->list_size] = io->tree;
-            io->treelist->list_size++;
-          }while(io->tree);
-        break;
-      }
-    case NEXUS:
-      {
-        io->nex_com_list = Make_Nexus_Com();
-        Init_Nexus_Format(io->nex_com_list);
-        Get_Nexus_Data(io->fp_in_tree,io);
-        fclose(io->fp_in_tree);
-        io->fp_in_tree = NULL;
-        Free_Nexus(io);
-        break;
-      }
-    default:
-      {
-        PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
-        Warn_And_Exit("");
-        break;
-      }
-    }
-  
-  if(!io->long_tax_names)
-    {
-      int i;
-      
-      tree = io->treelist->tree[0];
-      
-      io->long_tax_names  = (char **)mCalloc(tree->n_otu,sizeof(char *));
-      io->short_tax_names = (char **)mCalloc(tree->n_otu,sizeof(char *));
-      
-      for(i=0;i<tree->n_otu;i++)
-        {
-          io->long_tax_names[i] = (char *)mCalloc(strlen(tree->a_nodes[i]->name)+1,sizeof(char));
-          io->short_tax_names[i] = (char *)mCalloc(strlen(tree->a_nodes[i]->name)+1,sizeof(char));
-          strcpy(io->long_tax_names[i],tree->a_nodes[i]->name);
-          strcpy(io->short_tax_names[i],tree->a_nodes[i]->name);
-        }
-    }
-  return NULL;
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
 
 scalar_dbl *Read_Io_Weights(option *io)
 {
@@ -3820,14 +3753,13 @@ void Print_Tree_Structure(t_tree* tree)
 t_tree *Read_User_Tree(calign *cdata, t_mod *mod, option *io)
 {
   t_tree *tree;
-
-
+  
   PhyML_Printf("\n\u2022 Reading tree..."); fflush(NULL);
   if(io->n_trees == 1) rewind(io->fp_in_tree);
   tree = Read_Tree_File_Phylip(io->fp_in_tree);
-  fclose(io->fp_in_tree);
-  io->fp_in_tree = NULL;
-  if(!tree) Exit("\n== Input tree not found...");
+  /* fclose(io->fp_in_tree); */
+  /* io->fp_in_tree = NULL; */
+  if(tree == NULL) Exit("\n== Input tree not found...");
   /* Add branch lengths if necessary */
   if(tree->has_branch_lengths == NO) Add_BioNJ_Branch_Lengths(tree,cdata,mod,NULL);
   return tree;

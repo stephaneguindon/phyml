@@ -39,6 +39,7 @@ xml_node *XML_Search_Node_Generic(char *nd_name, char *attr_name, char *attr_val
 t_tree *XML_Process_Base(char *xml_filename);
 int XML_Number_Of_Taxa_In_Clade(xml_node *n_clade);
 char **XML_Read_Clade(xml_node *n_clade, t_tree *tree);
+void DATE_XML(char *xml_filename);
 
 
 #endif

@@ -40,7 +40,6 @@ void Read_Ntax_Len_Phylip(FILE *fp,int *n_otu,int *n_tax);
 align **Read_Seq_Sequential(option *io);
 align **Read_Seq_Interleaved(option *io);
 int Read_One_Line_Seq(align ***data,int num_otu,FILE *in);
-t_tree *Read_Tree_File(option *io);
 char *Return_Tree_String_Phylip(FILE *fp_input_tree);
 t_tree *Read_Tree_File_Phylip(FILE *fp_input_tree);
 void Print_Site_Lk(t_tree *tree,FILE *fp);
