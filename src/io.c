@@ -5638,7 +5638,7 @@ json_o *JSON_Tree_To_Object(t_tree *mixt_tree)
       {
         if(tree->is_mixt_tree == YES) tree = tree->next;
         
-        for(i=0;i<n_tstv;i++) if(tree->mod->kappa == tstv[i]) break;
+        for(i=0;i<n_tstv;++i) if(tree->mod->kappa == tstv[i]) break;
         
         if(i == n_tstv)
           {
@@ -5755,8 +5755,49 @@ json_o *JSON_Tree_To_Object(t_tree *mixt_tree)
   }
 
 
+  
+  // Tree size
+  {
+    tree = mixt_tree;
+    int tree_num = 1;
+    do
+      {        
+        o->next = (json_o *)mCalloc(1,sizeof(json_o));
+        o = o->next;
+                
+        o->sv = (json_sv *)mCalloc(1,sizeof(json_sv));
+        sv = o->sv;
+        
+        sv->value = NULL; sv->array = NULL; sv->object = NULL; o->next = NULL;
+        sv->string = (char *)mCalloc(string_len,sizeof(char));
+        strcpy(sv->string,"type");
+        sv->value = (char *)mCalloc(string_len,sizeof(char));
+        strcpy(sv->value,"t_param");
+                
+        sv->next = (json_sv *)mCalloc(1,sizeof(json_sv));
+        sv = sv->next;
+        sv->value = NULL; sv->array = NULL; sv->object = NULL; sv->next = NULL;
+        sv->string = (char *)mCalloc(string_len,sizeof(char));
+        strcpy(sv->string,"id");
+        sv->value = (char *)mCalloc(string_len,sizeof(char));
+        strcpy(sv->value,"tree_size");
+        sprintf(sv->value+strlen(sv->value),"%d",tree_num);
+        
+        sv->next = (json_sv *)mCalloc(1,sizeof(json_sv));
+        sv = sv->next;
+        sv->value = NULL; sv->array = NULL; sv->object = NULL; sv->next = NULL;
+        sv->string = (char *)mCalloc(string_len,sizeof(char));
+        strcpy(sv->string,"value");
+        sv->value = (char *)mCalloc(string_len,sizeof(char));
+        sprintf(sv->value,"%G",Get_Tree_Size(tree));
+        
+        sv->next = NULL;
+                
+        tree = tree->next_mixt;
+      }
+    while(tree);
 
-
+  }
 
   return(ret);
 }

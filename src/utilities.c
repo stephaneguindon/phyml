@@ -8145,7 +8145,7 @@ phydbl Get_Tree_Size(t_tree *tree)
   tree_size = 0.0;
   For(i,2*tree->n_otu-3) tree_size += tree->a_edges[i]->l->v;
 
-  if(tree->n_root)
+  if(tree->n_root != NULL)
     {
       tree_size += tree->n_root->b[1]->l->v;
       tree_size += tree->n_root->b[2]->l->v;
