@@ -129,9 +129,12 @@ void DATE_Assign_Primary_Calibration(t_tree *tree)
   
   for(i=0;i<tree->rates->n_cal;i++)
     {
-      node_num = Find_Clade(tree->rates->a_cal[i]->target_tax,
-                            tree->rates->a_cal[i]->n_target_tax,
-                            tree);
+      PhyML_Printf("\n. Needs rewriting...");
+      assert(FALSE);
+       
+      /* node_num = Find_Clade(tree->rates->a_cal[i]->target_tax, */
+      /*                       tree->rates->a_cal[i]->n_target_tax, */
+      /*                       tree); */
       
       idx = tree->a_nodes[node_num]->n_cal;
       tree->a_nodes[node_num]->cal[idx] = tree->rates->a_cal[i];
@@ -538,7 +541,9 @@ phydbl *DATE_MCMC(t_tree *tree)
   for(i=0;i<tree->mod->ras->n_catg;i++) PhyML_Fprintf(fp_stats,"rr%d\t",i);
   for(i=0;i<tree->mod->ras->n_catg;i++) PhyML_Fprintf(fp_stats,"pr%d\t",i);
 
-  for(i=0;i<tree->rates->n_cal;i++) PhyML_Fprintf(fp_stats,"t(%s)\t",tree->rates->a_cal[i]->clade_id);
+  PhyML_Printf("\n. Needs rewriting...");
+  assert(FALSE);
+  /* for(i=0;i<tree->rates->n_cal;i++) PhyML_Fprintf(fp_stats,"t(%s)\t",tree->rates->a_cal[i]->clade_id); */
           
   For(i,2*tree->n_otu-2) PhyML_Fprintf(fp_stats,"br%d\t",i);
   
@@ -802,7 +807,7 @@ void DATE_List_Of_Nodes_And_Ancestors_Younger_Than(t_node *a, t_node *d, phydbl 
 t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, phydbl *t_min, phydbl *t_max, int verbose, t_tree *tree)
 {
   t_node *n,*m;
-  int i,j;
+  int i/* ,j */;
   t_ll *out,*in,*ll;
   int is_clade_affected;
 
@@ -823,28 +828,33 @@ t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, phydbl *
       n = prune;
       while(n)
         {
-          for(i=0;i<tree->rates->n_cal;i++)
+          for(i=0;i<tree->rates->n_cal;++i)
             {
               // That node is the LCA of calibration a_cal[i]
               if(n == tree->rates->a_cal[i]->target_nd)
                 {
                   is_clade_affected = NO;
-                  For(j,tree->rates->a_cal[i]->n_target_tax)
-                    {
-                      m = tree->rates->a_cal[i]->target_tip[j];
-                      do
-                        {
-                          if(m == prune_daughter)
-                            {
-                              is_clade_affected = YES;
-                              break;
-                            }
-                          m = m->anc;
-                        }
-                      while(m);
+
+                  PhyML_Printf("\n. Needs rewriting...");
+                  assert(FALSE);
+
+                  /* for(j=0;j<tree->rates->a_cal[i]->n_target_tax;++j) */
+                  /*   { */
+                  /*     m = tree->rates->a_cal[i]->target_tip[j]; */
+                  /*     do */
+                  /*       { */
+                  /*         if(m == prune_daughter) */
+                  /*           { */
+                  /*             is_clade_affected = YES; */
+                  /*             break; */
+                  /*           } */
+                  /*         m = m->anc; */
+                  /*       } */
+                  /*     while(m); */
                       
-                      if(is_clade_affected == YES) break;
-                    }
+                  /*     if(is_clade_affected == YES) break; */
+                  /*   } */
+
                   
                   // Maximum of the lower bounds for calibration intervals
                   /* if(is_clade_affected == YES) *t_min = MAX(*t_min,tree->rates->a_cal[i]->lower); */

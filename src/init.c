@@ -992,20 +992,22 @@ void Init_One_Spr(t_spr *a_spr)
 
 void Init_Target_Tip(t_cal *cal, t_tree *tree)
 {
-  int i,j;
+  assert(FALSE);
 
-  for(i=0;i<cal->n_target_tax;i++)
-    {
-      for(j=0;j<tree->n_otu;j++)
-        {
-          if(!strcmp(tree->a_nodes[j]->name,cal->target_tax[i]))
-            {
-              cal->target_tip[i] = tree->a_nodes[j];
-              break;
-            }
-        }
-      assert(j != tree->n_otu);
-    }
+  /* int i,j; */
+
+  /* for(i=0;i<cal->n_target_tax;i++) */
+  /*   { */
+  /*     for(j=0;j<tree->n_otu;j++) */
+  /*       { */
+  /*         if(!strcmp(tree->a_nodes[j]->name,cal->target_tax[i])) */
+  /*           { */
+  /*             cal->target_tip[i] = tree->a_nodes[j]; */
+  /*             break; */
+  /*           } */
+  /*       } */
+  /*     assert(j != tree->n_otu); */
+  /*   } */
 }
 
 //////////////////////////////////////////////////////////////
@@ -3614,14 +3616,17 @@ void MCMC_Init_MCMC_Struct(char *filename, option *io, t_mcmc *mcmc)
 
 void Init_Calibration(t_cal *cal)
 {
-  cal->target_nd  = NULL;
-  cal->next       = NULL;
-  cal->prev       = NULL;
-  cal->target_tax = NULL;
-  cal->target_tip = NULL;
-  cal->lower      = -1.;
-  cal->upper      = -1.;
-  cal->is_primary = FALSE;
+  assert(FALSE);
+  
+  /* cal->target_nd  = NULL; */
+  /* cal->next       = NULL; */
+  /* cal->prev       = NULL; */
+  /* cal->target_tax = NULL; */
+  /* cal->target_tip = NULL; */
+  /* cal->lower      = -1.; */
+  /* cal->upper      = -1.; */
+  /* cal->is_primary = FALSE; */
+
 }
 
 //////////////////////////////////////////////////////////////

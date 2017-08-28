@@ -1992,9 +1992,6 @@ void Spr_List_Of_Trees(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
 void Prune_Regraft_Time_Tree(t_tree *tree)
 {
   phydbl u,ratio;
@@ -2015,7 +2012,7 @@ void Prune_Regraft_Time_Tree(t_tree *tree)
   do
     {
       keepon = NO;
-      for(i=tree->n_otu;i<2*tree->n_otu-2;i++) // for each internal node
+      for(i=tree->n_otu;i<2*tree->n_otu-2;++i) // for each internal node
         {
           
           TIMES_Update_Node_Ordering(tree);
@@ -2040,7 +2037,7 @@ void Prune_Regraft_Time_Tree(t_tree *tree)
           
           // Select a daughter of prune node
           dir_v1 = dir_v2 = -1;
-          for(j=0;j<3;j++) 
+          for(j=0;j<3;++j) 
             if(prune->v[j] != prune->anc && prune->b[j] != tree->e_root)
               {
                 if(dir_v1 < 0) dir_v1 = j;

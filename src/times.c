@@ -1601,15 +1601,17 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
   // List node indices that are not in any calibration set
   no_cal_tip_num = NULL;
   n_no_cal_tip_num = 0;
-  for(i=0;i<mixt_tree->n_otu;i++)
+  for(i=0;i<mixt_tree->n_otu;++i)
     {
       cal = cal_list;
       while(cal != NULL)
         {
-          for(j=0;j<cal->n_target_tax;j++)
-            if(cal->target_tip[j] == mixt_tree->a_nodes[i])
-              break;
-          if(j != cal->n_target_tax) break;
+          PhyML_Printf("\n. Needs rewriting...");
+          assert(FALSE);
+          /* for(j=0;j<cal->n_target_tax;++j) */
+          /*   if(cal->target_tip[j] == mixt_tree->a_nodes[i]) */
+          /*     break; */
+          /* if(j != cal->n_target_tax) break; */
           cal = cal->next;
         }
       if(cal == NULL)
@@ -1709,13 +1711,18 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
           // Add all the taxa that are  in the calibration set of cal
           // This should be done here so that the last node in nd_list
           // belongs to the taxa in the calibration
-          for(j=0;j<cal->n_target_tax;j++) 
-            {
-              nd_list[list_size] = tips[cal->target_tip[j]->num];
-              /* PhyML_Printf("\n> %s",tips[cal->target_tip[j]->num]->name); */
-              list_size++;
-            }
-                    
+          PhyML_Printf("\n. Needs rewriting...");
+          assert(FALSE);
+          /* for(j=0;j<cal->n_target_tax;j++)  */
+          /*   { */
+          /*     nd_list[list_size] = tips[cal->target_tip[j]->num]; */
+          /*     /\* PhyML_Printf("\n> %s",tips[cal->target_tip[j]->num]->name); *\/ */
+          /*     list_size++; */
+          /*   } */
+
+
+
+          
           /* for(j=0;j<n_cal;j++) */
           /*   { */
           /*     printf("\n. %d -> %f", */
@@ -1758,14 +1765,18 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
             }
         }
 
-      cal = cal_list;
-      do
-        {
-          nd_list[list_size] = cal->target_tip[0];
-          list_size++;
-          cal = cal->next;
-        }
-      while(cal);
+
+      PhyML_Printf("\n. Needs rewriting...");
+      assert(FALSE);
+      
+      /* cal = cal_list; */
+      /* do */
+      /*   { */
+      /*     nd_list[list_size] = cal->target_tip[0]; */
+      /*     list_size++; */
+      /*     cal = cal->next; */
+      /*   } */
+      /* while(cal); */
 
       /* for(i=0;i<list_size;i++) printf("\n# To connect: %d lower: %f",nd_list[i]->num,time_oldest_cal); */
       

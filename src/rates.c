@@ -752,7 +752,7 @@ void RATES_Copy_Rate_Struct(t_rate *from, t_rate *to, int n_otu)
 
 void RATES_Duplicate_Calib_Struct(t_tree *from, t_tree *to)
 {
-  int i,j;
+  int i/* ,j */;
 
   to->rates->n_cal = from->rates->n_cal;
 
@@ -762,20 +762,22 @@ void RATES_Duplicate_Calib_Struct(t_tree *from, t_tree *to)
       to->rates->a_cal[i] = Make_Calibration();
       Init_Calibration(to->rates->a_cal[i]);
 
+      assert(FALSE);
+      
       to->rates->a_cal[i]->is_primary = from->rates->a_cal[i]->is_primary;
-      to->rates->a_cal[i]->n_target_tax = from->rates->a_cal[i]->n_target_tax;
+      /* to->rates->a_cal[i]->n_target_tax = from->rates->a_cal[i]->n_target_tax; */
       to->rates->a_cal[i]->lower = from->rates->a_cal[i]->lower;
       to->rates->a_cal[i]->upper = from->rates->a_cal[i]->upper;
 
-      to->rates->a_cal[i]->target_tax = (char **)mCalloc(to->rates->a_cal[i]->n_target_tax,sizeof(char *));
-      For(j,to->rates->a_cal[i]->n_target_tax) 
-        {
-          to->rates->a_cal[i]->target_tax[j] = (char *)mCalloc(strlen(from->rates->a_cal[i]->target_tax[j])+1,sizeof(char ));
-          strcpy(to->rates->a_cal[i]->target_tax[j],from->rates->a_cal[i]->target_tax[j]);
-        }
+      /* to->rates->a_cal[i]->target_tax = (char **)mCalloc(to->rates->a_cal[i]->n_target_tax,sizeof(char *)); */
+      /* for(j=0;j<to->rates->a_cal[i]->n_target_tax;++j)  */
+      /*   { */
+      /*     to->rates->a_cal[i]->target_tax[j] = (char *)mCalloc(strlen(from->rates->a_cal[i]->target_tax[j])+1,sizeof(char )); */
+      /*     strcpy(to->rates->a_cal[i]->target_tax[j],from->rates->a_cal[i]->target_tax[j]); */
+      /*   } */
 
-      to->rates->a_cal[i]->target_tip = Make_Target_Tip(to->rates->a_cal[i]->n_target_tax);
-      Init_Target_Tip(to->rates->a_cal[i],to);
+      /* to->rates->a_cal[i]->target_tip = Make_Target_Tip(to->rates->a_cal[i]->n_target_tax); */
+      /* Init_Target_Tip(to->rates->a_cal[i],to); */
 
     }
 }

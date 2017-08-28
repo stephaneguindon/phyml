@@ -2316,7 +2316,7 @@ void DATE_XML(char *xml_filename)
                       if(xnd_clade != NULL) // found clade with a given name
                         {
                           char **xclade,**clade,*calib_id;
-                          int clade_size,nd_num;
+                          int clade_size/* ,nd_num */;
                           t_cal *cal;
                           int i;
                           
@@ -2334,31 +2334,31 @@ void DATE_XML(char *xml_filename)
                           cal->id = (char *)mCalloc(strlen(calib_id)+1,sizeof(char));
                           strcpy(cal->id,calib_id);
                           
-                          cal->clade_id = (char *)mCalloc(strlen(clade_name)+1,sizeof(char));
-                          strcpy(cal->clade_id,clade_name);
+                          /* cal->clade_id = (char *)mCalloc(strlen(clade_name)+1,sizeof(char)); */
+                          /* strcpy(cal->clade_id,clade_name); */
                           
-                          Init_Calibration(cal);
+                          /* Init_Calibration(cal); */
 
-                          mixt_tree->rates->a_cal[mixt_tree->rates->n_cal] = cal;
-                          mixt_tree->rates->n_cal++;
+                          /* mixt_tree->rates->a_cal[mixt_tree->rates->n_cal] = cal; */
+                          /* mixt_tree->rates->n_cal++; */
                           
-                          cal->is_primary   = YES;
-                          cal->target_tax   = clade;
-                          cal->n_target_tax = clade_size;
+                          /* cal->is_primary   = YES; */
+                          /* cal->target_tax   = clade; */
+                          /* cal->n_target_tax = clade_size; */
                           cal->lower        = low;
                           cal->upper        = up;
-                          cal->alpha        = alpha_proba_dbl;
+                          /* cal->alpha        = alpha_proba_dbl; */
                           
-                          nd_num = Find_Clade(clade,clade_size,mixt_tree);
+                          /* nd_num = Find_Clade(clade,clade_size,mixt_tree); */
 
-                          cal->target_tip = Make_Target_Tip(cal->n_target_tax);
-                          Init_Target_Tip(cal,mixt_tree);
+                          /* cal->target_tip = Make_Target_Tip(cal->n_target_tax); */
+                          /* Init_Target_Tip(cal,mixt_tree); */
 
-                          PhyML_Printf("\n. Node number to which calibration [%s] applies to is [%d]",clade_name,nd_num);                          
-                          PhyML_Printf("\n. Lower bound set to: %15f time units.",low);
-                          PhyML_Printf("\n. Upper bound set to: %15f time units.",up);
-                          PhyML_Printf("\n. Probability: %15G",cal->alpha);
-                          PhyML_Printf("\n. .......................................................................");
+                          /* PhyML_Printf("\n. Node number to which calibration [%s] applies to is [%d]",clade_name,nd_num);                           */
+                          /* PhyML_Printf("\n. Lower bound set to: %15f time units.",low); */
+                          /* PhyML_Printf("\n. Upper bound set to: %15f time units.",up); */
+                          /* PhyML_Printf("\n. Probability: %15G",cal->alpha); */
+                          /* PhyML_Printf("\n. ......................................................................."); */
 
                           Free(xclade);
                         }

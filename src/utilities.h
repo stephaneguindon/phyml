@@ -29,7 +29,7 @@ the GNU public licence. See http://www.opensource.org for details.
 #include <assert.h>
 #include <stdbool.h>
 /* #include <malloc/malloc.h> */
-#include <malloc.h>
+/* #include <malloc.h> */
 
 #if (defined(__AVX__))
 #include <xmmintrin.h>
@@ -1780,19 +1780,35 @@ typedef struct __Calibration {
   struct __Node *target_nd; // The node this calibration applies to
   struct __Calibration *next; // Next calibration
   struct __Calibration *prev; // Previous calibration
+  struct __Clade **clade_list;
 
+  phydbl *alpha_list; // list of alpha proba, one for each clade in clade_list
+
+  int current_clade_idx; // index of the clade the calibration time interval currently applies to
+  int clade_list_size;
+  
   phydbl lower; // lower bound
   phydbl upper; // upper bound
 
-  short int is_primary; // Is is a primary or secondary calibration interval?
+  short int is_primary; // Is it a primary or secondary calibration interval?
 
   char *id; // calibration ID
-  struct __Node **target_tip; // Array of targeted tips
-  char **target_tax;
-  int  n_target_tax;
-  char *clade_id;
-  phydbl alpha; // probability of the calibration constraint
 }t_cal;
+
+/*!********************************************************/
+
+typedef struct __Clade{
+  /* char *id; */
+  /* struct __Node **target_tip; // Array of targeted tips */
+  /* char **target_tax; */
+  /* int  n_target_tax; */
+  /* char *clade_id; */
+
+  char *id;
+  struct __Node **tip_list; // list of tips defining the clade
+  char **tax_list; // list of names of tips defining the clade
+  int  n_tax; // number of taxa in the clade
+}t_clad;
 
 /*!********************************************************/
 

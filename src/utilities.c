@@ -3339,7 +3339,7 @@ t_mod *Copy_Model(t_mod *ori)
 
   Make_Model_Complete(cpy);
   Record_Model(ori,cpy);
-  cpy->m4mod = M4_Copy_M4_Model(ori, ori->m4mod);
+  /* cpy->m4mod = M4_Copy_M4_Model(ori, ori->m4mod); */
 
 #ifdef BEAGLE
   cpy->b_inst              = ori->b_inst;

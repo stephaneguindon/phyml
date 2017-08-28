@@ -3746,7 +3746,6 @@ void Print_Tree_Structure(t_tree* tree)
         fprintf(stdout,"Edge %d, LeftNode %d, RightNode %d\n",tree->a_edges[i]->num,tree->a_edges[i]->left->num,tree->a_edges[i]->rght->num);fflush(stdout);
     }
 }
-
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 

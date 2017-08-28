@@ -1324,15 +1324,11 @@ void Free_Calib(t_cal *cal)
   if(!cal) return;
   else 
     {    
-      if(cal->target_tax != NULL)
-        {
-          int i;
-          for(i=0;i<cal->n_target_tax;i++) Free(cal->target_tax[i]);
-          Free(cal->target_tax);
-          Free(cal->target_tip);
-        }
+      int i;
+      for(i=0;i<cal->clade_list_size;i++) Free(cal->clade_list[i]);
+      Free(cal->clade_list);      
       Free(cal->id);
-      Free(cal->clade_id);
+      Free(cal->alpha_list);
       Free(cal);
     }
 }
