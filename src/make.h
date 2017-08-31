@@ -78,5 +78,6 @@ void Make_Edge_Loc_Rght(t_edge *b, t_tree *tree);
 void Make_Edge_Loc_Left(t_edge *b, t_tree *tree);
 t_ll *Make_Linked_List();
 t_node **Make_Target_Tip(int n);
+t_clad *Make_Clade();
 
 #endif

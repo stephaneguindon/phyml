@@ -2187,11 +2187,16 @@ char **XML_Read_Clade(xml_node *xnd_clade, t_tree *tree)
 void DATE_XML(char *xml_filename)
 {
   FILE *fp_xml_in;
-  xml_node *xnd,*xnd_dum,*xnd_cal,*xroot;
+  xml_node *xnd,*xnd_dum,*xnd_clade,*xnd_cal,*xroot;
   t_tree *mixt_tree,*tree;
   phydbl low,up,*res,alpha_proba_dbl;
-  char *clade_name,*alpha_proba_string;
+  char *clade_name,*alpha_proba_string,*calib_id,*clade_id;
   int seed;
+  t_clad *clade;
+  t_cal *cal;
+  
+  clade = NULL;
+  cal = NULL;
   
   mixt_tree = XML_Process_Base(xml_filename);
   assert(mixt_tree);
@@ -2275,22 +2280,32 @@ void DATE_XML(char *xml_filename)
           // call once the calib struct on the first mixt_tree is initialized.
           /* mixt_tree->rates->tot_num_cal++; */
 	  /* if (mixt_tree->rates->calib == NULL) mixt_tree->rates->calib = Make_Calib(mixt_tree->n_otu); */
-
+          xnd_cal = xnd;
+          
 	  low = -BIG;
 	  up  = BIG;
 
-	  xnd_dum = XML_Search_Node_Name("lower",YES,xnd);
+	  xnd_dum = XML_Search_Node_Name("lower",YES,xnd_cal);
 	  if(xnd_dum != NULL) low = String_To_Dbl(xnd_dum->value); 
 
-	  xnd_dum = XML_Search_Node_Name("upper",YES,xnd);
+	  xnd_dum = XML_Search_Node_Name("upper",YES,xnd_cal);
 	  if(xnd_dum != NULL) up = String_To_Dbl(xnd_dum->value);
           
-          xnd_cal = xnd->child;
+          cal = Make_Calibration();
+          
+          calib_id = XML_Get_Attribute_Value(xnd_cal,"id");
+          cal->id = (char *)mCalloc(strlen(calib_id)+1,sizeof(char));
+          strcpy(cal->id,calib_id);
+                          
+          cal->current_clade_idx = 0;
+
+          
+          xnd = xnd_cal->child;
           do
             {
-              if(!strcmp("appliesto",xnd_cal->name)) 
+              if(!strcmp("appliesto",xnd->name)) 
                 {
-                  clade_name = XML_Get_Attribute_Value(xnd_cal,"clade.id");
+                  clade_name = XML_Get_Attribute_Value(xnd,"clade.id");
                   
                   if(!clade_name)
                     {
@@ -2299,7 +2314,7 @@ void DATE_XML(char *xml_filename)
                       Exit("\n");
                     }
 
-                  alpha_proba_string = XML_Get_Attribute_Value(xnd_cal,"probability");
+                  alpha_proba_string = XML_Get_Attribute_Value(xnd,"probability");
 
                   alpha_proba_dbl = -1;
                   if(!alpha_proba_string) alpha_proba_dbl = 1.0;
@@ -2309,28 +2324,30 @@ void DATE_XML(char *xml_filename)
                   
                   if(strcmp("root",clade_name))
                     {
-                      xml_node *xnd_clade;
-
                       xnd_clade = XML_Search_Node_Generic("clade","id",clade_name,YES,xroot);
 
                       if(xnd_clade != NULL) // found clade with a given name
                         {
-                          char **xclade,**clade,*calib_id;
+                          char **xclade;
                           int clade_size/* ,nd_num */;
-                          t_cal *cal;
                           int i;
                           
                           xclade     = XML_Read_Clade(xnd_clade->child,mixt_tree);
                           clade_size = XML_Number_Of_Taxa_In_Clade(xnd_clade->child);
                           // TO DO: chain all calibrations
-                          cal        = Make_Calibration();
 
-                          clade = (char **)mCalloc(clade_size,sizeof(char *));
-                          for(i=0;i<clade_size;i++) clade[i] = (char *)mCalloc(strlen(xclade[i])+1,sizeof(char));
-                          for(i=0;i<clade_size;i++) strcpy(clade[i],xclade[i]);
+                          clade = Make_Clade();
+
+                          cal->clade_list[cal->clade_list_size] = clade;
+                          cal->clade_list_size++;                          
+                            
+                          clade->n_tax = clade_size;
+                          clade->tax_list = (char **)mCalloc(clade_size,sizeof(char *));
+                          for(i=0;i<clade_size;++i) clade->tax_list[i] = (char *)mCalloc(strlen(xclade[i])+1,sizeof(char));
+                          for(i=0;i<clade_size;++i) strcpy(clade->tax_list[i],xclade[i]);
 
 
-                          calib_id = XML_Get_Attribute_Value(xnd,"id");
+                          clade_id = XML_Get_Attribute_Value(xnd,"id");
                           cal->id = (char *)mCalloc(strlen(calib_id)+1,sizeof(char));
                           strcpy(cal->id,calib_id);
                           

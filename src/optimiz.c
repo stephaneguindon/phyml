@@ -676,6 +676,7 @@ void Round_Optimize(t_tree *tree, int n_round_max)
   n_round = 0;
   each = 0;
 
+  
   while(n_round < n_round_max)
     {      
       if(tree->mod->s_opt->opt_bl || tree->mod->s_opt->constrained_br_len) Optimize_Br_Len_Serie(tree);
@@ -684,7 +685,6 @@ void Round_Optimize(t_tree *tree, int n_round_max)
          (tree->verbose > VL2) &&
          (tree->io->quiet == NO)) Print_Lk(tree,"[Branch lengths     ]");
 
-      /* printf("\n. [%d] %f ",n_round,tree->c_lnL); fflush(NULL); */
       
       if(!each)
         {
@@ -693,16 +693,16 @@ void Round_Optimize(t_tree *tree, int n_round_max)
         }
 
       lk_new = tree->c_lnL;
+      /* printf("\n. [%d] new:%f old:%f",n_round,lk_new,lk_old); fflush(NULL); */
+
       if(lk_new < lk_old - tree->mod->s_opt->min_diff_lk_local)
         {
           PhyML_Printf("\n== lk_new = %f lk_old = %f diff = %f",lk_new,lk_old,lk_new-lk_old);
           Exit("\n== Optimisation failed ! (Round_Optimize)\n");
         }
-      if(FABS(lk_new - lk_old) < tree->mod->s_opt->min_diff_lk_local) break;
-      else 
-        {
-          lk_old  = lk_new;
-        }
+      if((FABS(lk_new - lk_old) < tree->mod->s_opt->min_diff_lk_local) && (each == 0)) break;
+      lk_old  = lk_new;
+
       n_round++;
       each--;
     }
@@ -3171,14 +3171,16 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
             {
               failed = YES;
 
+
               BFGS(mixt_tree,tree->mod->e_frq->pi_unscaled->v,tree->mod->ns,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,YES,
                    &Return_Abs_Lk,
                    &Num_Derivative_Several_Param,
                    &Lnsrch,&failed);
               
+
               if(failed == YES)
                 {
-                  for(i=0;i<tree->mod->ns;i++)
+                  for(i=0;i<tree->mod->ns;++i)
                     {
                       phydbl a,c;
                       

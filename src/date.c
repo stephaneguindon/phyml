@@ -117,11 +117,14 @@ void DATE_Update_T_Prior_MinMax(t_tree *tree)
 void DATE_Assign_Primary_Calibration(t_tree *tree)
 {
   int i,j,idx,node_num;
+  t_clad *clad;
 
+  clad = NULL;
+  
   for(i=0;i<tree->rates->n_cal;i++) tree->rates->a_cal[i]->target_nd = NULL;
   
-  For(i,2*tree->n_otu-1) 
-    for(j=0;j<MAX_N_CAL;j++) 
+  for(i=0;i<2*tree->n_otu-1;++i) 
+    for(j=0;j<MAX_N_CAL;++j) 
     {
       tree->a_nodes[i]->cal[j] = NULL;
       tree->a_nodes[i]->n_cal  = 0;
@@ -129,12 +132,10 @@ void DATE_Assign_Primary_Calibration(t_tree *tree)
   
   for(i=0;i<tree->rates->n_cal;i++)
     {
-      PhyML_Printf("\n. Needs rewriting...");
-      assert(FALSE);
-       
-      /* node_num = Find_Clade(tree->rates->a_cal[i]->target_tax, */
-      /*                       tree->rates->a_cal[i]->n_target_tax, */
-      /*                       tree); */
+      clad = tree->rates->a_cal[i]->clade_list[tree->rates->a_cal[i]->current_clade_idx];
+      node_num = Find_Clade(clad->tax_list,
+                            clad->n_tax,
+                            tree);
       
       idx = tree->a_nodes[node_num]->n_cal;
       tree->a_nodes[node_num]->cal[idx] = tree->rates->a_cal[i];
@@ -807,10 +808,12 @@ void DATE_List_Of_Nodes_And_Ancestors_Younger_Than(t_node *a, t_node *d, phydbl 
 t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, phydbl *t_min, phydbl *t_max, int verbose, t_tree *tree)
 {
   t_node *n,*m;
-  int i/* ,j */;
+  int i,j;
   t_ll *out,*in,*ll;
   int is_clade_affected;
+  t_clad *clade;
 
+  clade = NULL;
   n = NULL;
   m = NULL;
   *t_min = -INFINITY;
@@ -835,25 +838,23 @@ t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, phydbl *
                 {
                   is_clade_affected = NO;
 
-                  PhyML_Printf("\n. Needs rewriting...");
-                  assert(FALSE);
-
-                  /* for(j=0;j<tree->rates->a_cal[i]->n_target_tax;++j) */
-                  /*   { */
-                  /*     m = tree->rates->a_cal[i]->target_tip[j]; */
-                  /*     do */
-                  /*       { */
-                  /*         if(m == prune_daughter) */
-                  /*           { */
-                  /*             is_clade_affected = YES; */
-                  /*             break; */
-                  /*           } */
-                  /*         m = m->anc; */
-                  /*       } */
-                  /*     while(m); */
+                  clade = tree->rates->a_cal[i]->clade_list[tree->rates->a_cal[i]->current_clade_idx];
+                  for(j=0;j<clade->n_tax;++j)
+                    {
+                      m = clade->tip_list[j];
+                      do
+                        {
+                          if(m == prune_daughter)
+                            {
+                              is_clade_affected = YES;
+                              break;
+                            }
+                          m = m->anc;
+                        }
+                      while(m);
                       
-                  /*     if(is_clade_affected == YES) break; */
-                  /*   } */
+                      if(is_clade_affected == YES) break;
+                    }
 
                   
                   // Maximum of the lower bounds for calibration intervals
@@ -896,46 +897,51 @@ t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, phydbl *
     }
   
   // Remove from that list the nodes that are too young to be suitable regraft points.
-  /* n = prune_daughter; */
-  /* out = NULL; */
-  /* while(n) */
-  /*   { */
-  /*     for(i=0;i<tree->rates->n_cal;i++) */
-  /*       { */
-  /*         if(n->anc && n->anc == tree->rates->a_cal[i]->target_nd) */
-  /*           { */
-  /*             For(j,tree->rates->a_cal[i]->n_target_tax) */
-  /*               { */
-  /*                 m = tree->rates->a_cal[i]->target_tip[j]; */
-  /*                 do */
-  /*                   { */
-  /*                     if(m == prune_daughter) break;                       */
-  /*                     if(m == prune) break; */
-  /*                     m = m->anc; */
-  /*                   } */
-  /*                 while(m); */
-  /*                 if(m == prune) break; // Prune-regraft anywhere below calibrated node will not change that node. */
-  /*               } */
+  
+  PhyML_Printf("\n. Needs rewriting...");
+  assert(FALSE);
+  
+  n = prune_daughter;
+  out = NULL;
+  while(n)
+    {
+      for(i=0;i<tree->rates->n_cal;i++)
+        {
+          clade = tree->rates->a_cal[i]->clade_list[tree->rates->a_cal[i]->current_clade_idx];
+          if(n->anc && n->anc == tree->rates->a_cal[i]->target_nd)
+            {
+              for(j=0;j<clade->n_tax;++j)
+                {
+                  m = clade->tip_list[j];
+                  do
+                    {
+                      if(m == prune_daughter) break;
+                      if(m == prune) break;
+                      m = m->anc;
+                    }
+                  while(m);
+                  if(m == prune) break; // Prune-regraft anywhere below calibrated node will not change that node.
+                }
               
-  /*             if(m != prune) */
-  /*               { */
-  /*                 for(j=0;j<3;j++) */
-  /*                   { */
-  /*                     if(n->anc->v[j] != n->anc->anc && n->anc->b[j] != tree->e_root && n->anc->v[j] != n) */
-  /*                       { */
-  /*                         DATE_List_Of_Nodes_And_Ancestors_Younger_Than(n->anc, */
-  /*                                                                       n->anc->v[j], */
-  /*                                                                       tree->rates->a_cal[i]->upper, */
-  /*                                                                       &out, */
-  /*                                                                       tree); */
-  /*                         break; */
-  /*                       } */
-  /*                   } */
-  /*               } */
-  /*           } */
-  /*       } */
-  /*     n = n->anc; */
-  /*   } */
+              if(m != prune)
+                {
+                  for(j=0;j<3;++j)
+                    {
+                      if(n->anc->v[j] != n->anc->anc && n->anc->b[j] != tree->e_root && n->anc->v[j] != n)
+                        {
+                          DATE_List_Of_Nodes_And_Ancestors_Younger_Than(n->anc,
+                                                                        n->anc->v[j],
+                                                                        tree->rates->a_cal[i]->upper,
+                                                                        &out,
+                                                                        tree);
+                          break;
+                        }
+                    }
+                }
+            }
+        }
+      n = n->anc;
+    }
 
   // Remove nodes that are `strictly' younger than prune_daughter
   DATE_List_Of_Nodes_And_Ancestors_Younger_Than(tree->n_root,tree->n_root->v[1],tree->rates->nd_t[prune_daughter->num],&out,tree);
