@@ -693,14 +693,15 @@ void Round_Optimize(t_tree *tree, int n_round_max)
         }
 
       lk_new = tree->c_lnL;
-      /* printf("\n. [%d] new:%f old:%f",n_round,lk_new,lk_old); fflush(NULL); */
+      /* printf("\n. [%d] new:%f old:%f each:%d",n_round,lk_new,lk_old,each); fflush(NULL); */
 
       if(lk_new < lk_old - tree->mod->s_opt->min_diff_lk_local)
         {
           PhyML_Printf("\n== lk_new = %f lk_old = %f diff = %f",lk_new,lk_old,lk_new-lk_old);
           Exit("\n== Optimisation failed ! (Round_Optimize)\n");
         }
-      if((FABS(lk_new - lk_old) < tree->mod->s_opt->min_diff_lk_local) && (each == 0)) break;
+      
+      if((FABS(lk_new - lk_old) < tree->mod->s_opt->min_diff_lk_local) && (each == 3)) break;
       lk_old  = lk_new;
 
       n_round++;
