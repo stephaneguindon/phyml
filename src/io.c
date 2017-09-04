@@ -134,7 +134,7 @@ void R_rtree(char *s_tree_a, char *s_tree_d, t_node *a, t_tree *tree, int *n_int
 
   if(strstr(s_tree_a," "))
     {
-      PhyML_Printf("\n== [%s]",s_tree_a);
+      PhyML_Fprintf(stderr,"\n\u2022 [%s]",s_tree_a);
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
     }
 
@@ -148,8 +148,8 @@ void R_rtree(char *s_tree_a, char *s_tree_d, t_node *a, t_tree *tree, int *n_int
 
       if((*n_int + n_otu) == (2*n_otu-1))
         {
-          PhyML_Printf("\n== The number of internal nodes in the tree exceeds the number of taxa minus one.");
-          PhyML_Printf("\n== There probably is a formating problem in the input tree.");
+          PhyML_Fprintf(stderr,"\n\u2022 The number of internal nodes in the tree exceeds the number of taxa minus one.");
+          PhyML_Fprintf(stderr,"\n\u2022 There probably is a formating problem in the input tree.");
           Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
         }
 
@@ -497,9 +497,9 @@ char **Sub_Trees(char *tree, int *degree)
       if((*degree) == NODE_DEG_MAX)
         {
           For(i,(*degree))
-            PhyML_Printf("\n\u2022 Subtree %d : %s\n",i+1,subs[i]);
+            PhyML_Fprintf(stderr,"\n\u2022 Subtree %d : %s\n",i+1,subs[i]);
           
-          PhyML_Printf("\n\u2022 The degree of a t_node cannot be greater than %d\n",NODE_DEG_MAX);
+          PhyML_Fprintf(stderr,"\n\u2022 The degree of a t_node cannot be greater than %d\n",NODE_DEG_MAX);
           Warn_And_Exit("\n");
         }
     }
@@ -675,9 +675,9 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
         }
       else
         {
-          PhyML_Printf("\n== Unknown tree format.");
-	  PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
-          PhyML_Printf("\n== s=%s\n",*s_tree);
+          PhyML_Printf("\n\u2022 Unknown tree format.");
+	  PhyML_Printf("\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
+          PhyML_Printf("\n\u2022 s=%s\n",*s_tree);
         }
       
       if((fils->b) && (fils->b[0]) && (tree->write_br_lens == YES))
@@ -739,10 +739,10 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
       
       if(*available < 0)
         {
-          PhyML_Printf("\n== s=%s\n",*s_tree);
-          PhyML_Printf("\n== len=%d\n",(int)strlen(*s_tree));
-          PhyML_Printf("\n== The sequence names in your input file might be too long.");
-          PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+          PhyML_Fprintf(stderr,"\n\u2022 s=%s\n",*s_tree);
+          PhyML_Fprintf(stderr,"\n\u2022 len=%d\n",(int)strlen(*s_tree));
+          PhyML_Fprintf(stderr,"\n\u2022 The sequence names in your input file might be too long.");
+          PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
           Warn_And_Exit("");
         }
       
@@ -804,10 +804,10 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
       
       if(p < 0)
         {
-          PhyML_Printf("\n== pere: %d fils=%d root=%d root->v[2]=%d root->v[1]=%d",pere->num,fils->num,tree->n_root->num,tree->n_root->v[2]->num,tree->n_root->v[1]->num);
-          PhyML_Printf("\n== fils=%p root=%p root->v[2]=%p root->v[1]=%p",fils,tree->n_root,tree->n_root->v[2],tree->n_root->v[1]);
-          PhyML_Printf("\n== tree->e_root=%p fils->b[0]=%p fils->b[1]=%p fils->b[2]=%p",tree->e_root,fils->b[0],fils->b[1],fils->b[2]);
-          PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
+          PhyML_Fprintf(stderr,"\n\u2022 pere: %d fils=%d root=%d root->v[2]=%d root->v[1]=%d",pere->num,fils->num,tree->n_root->num,tree->n_root->v[2]->num,tree->n_root->v[1]->num);
+          PhyML_Fprintf(stderr,"\n\u2022 fils=%p root=%p root->v[2]=%p root->v[1]=%p",fils,tree->n_root,tree->n_root->v[2],tree->n_root->v[1]);
+          PhyML_Fprintf(stderr,"\n\u2022 tree->e_root=%p fils->b[0]=%p fils->b[1]=%p fils->b[2]=%p",tree->e_root,fils->b[0],fils->b[1],fils->b[2]);
+          PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
           Exit("\n");
         }
       
@@ -888,8 +888,8 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
 
       if(*available < 0)
     {
-      PhyML_Printf("\n== available = %d",*available);
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n\u2022 available = %d",*available);
+      PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 
@@ -958,9 +958,9 @@ void R_wtree_Custom(t_node *pere, t_node *fils, int *available, char **s_tree, i
     }
       else
     {
-      PhyML_Printf("\n== Unknown tree format.");
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
-      PhyML_Printf("\n== s=%s\n",*s_tree);
+      PhyML_Printf("\n\u2022 Unknown tree format.");
+      PhyML_Printf("\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n\u2022 s=%s\n",*s_tree);
     }
 
       if((fils->b) && (fils->b[0]) && (tree->write_br_lens == YES))
@@ -1018,10 +1018,10 @@ void R_wtree_Custom(t_node *pere, t_node *fils, int *available, char **s_tree, i
 
       if(*available < 0)
     {
-      PhyML_Printf("\n== s=%s\n",*s_tree);
-      PhyML_Printf("\n== len=%d\n",strlen(*s_tree));
-      PhyML_Printf("\n== The sequence names in your input file might be too long.");
-      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n\u2022 s=%s\n",*s_tree);
+      PhyML_Fprintf(stderr,"\n\u2022 len=%d\n",strlen(*s_tree));
+      PhyML_Fprintf(stderr,"\n\u2022 The sequence names in your input file might be too long.");
+      PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 
@@ -1070,9 +1070,9 @@ void R_wtree_Custom(t_node *pere, t_node *fils, int *available, char **s_tree, i
 
       if(p < 0)
     {
-      PhyML_Printf("\n== fils=%p root=%p root->v[2]=%p root->v[1]=%p",fils,tree->n_root,tree->n_root->v[2],tree->n_root->v[1]);
-      PhyML_Printf("\n== tree->e_root=%p fils->b[0]=%p fils->b[1]=%p fils->b[2]=%p",tree->e_root,fils->b[0],fils->b[1],fils->b[2]);
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n\u2022 fils=%p root=%p root->v[2]=%p root->v[1]=%p",fils,tree->n_root,tree->n_root->v[2],tree->n_root->v[1]);
+      PhyML_Fprintf(stderr,"\n\u2022 tree->e_root=%p fils->b[0]=%p fils->b[1]=%p fils->b[2]=%p",tree->e_root,fils->b[0],fils->b[1],fils->b[2]);
+      PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 
@@ -1144,10 +1144,10 @@ void R_wtree_Custom(t_node *pere, t_node *fils, int *available, char **s_tree, i
       (*available) = (*available) - (*pos - ori_len);
 
       if(*available < 0)
-    {
-      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
-      Warn_And_Exit("");
-    }
+        {
+          PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
+          Warn_And_Exit("");
+        }
 
       if(*available < (int)T_MAX_NAME)
     {
@@ -1181,7 +1181,7 @@ void Detect_Align_File_Format(option *io)
           char s[10],t[6]="NEXUS";
           if(!fgets(s,6,io->fp_in_align))
             {
-              PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+              PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
               Exit("\n");
             }
           if(!strcmp(t,s))
@@ -1219,7 +1219,7 @@ void Detect_Tree_File_Format(option *io)
       char s[10],t[6]="NEXUS";
       if(!fgets(s,6,io->fp_in_tree))
         {
-          PhyML_Printf("\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
+          PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
           Warn_And_Exit("");
         }
       if(!strcmp(t,s))
@@ -1244,7 +1244,7 @@ align **Get_Seq(option *io)
   
   if(!io->fp_in_align)
     {
-      PhyML_Printf("\n== Filehandle to '%s' seems to be closed.",io->in_align_file);
+      PhyML_Fprintf(stderr,"\n\u2022 Filehandle to '%s' seems to be closed.",io->in_align_file);
       Exit("\n");
     }
   
@@ -1267,7 +1267,7 @@ align **Get_Seq(option *io)
       }
     default:
       {
-        PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
+        PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
         Exit("\n");
         break;
       }
@@ -1275,7 +1275,7 @@ align **Get_Seq(option *io)
   
   if(!io->data)
     {
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
+      PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
       Exit("\n");
     }
   else
@@ -1627,7 +1627,7 @@ align **Get_Seq_Phylip(option *io)
 
   if(io->n_otu > N_MAX_OTU)
     {
-      PhyML_Printf("\n== The number of taxa should not exceed %d",N_MAX_OTU);
+      PhyML_Fprintf(stderr,"\n\u2022 The number of taxa should not exceed %d",N_MAX_OTU);
       Exit("\n");
     }
   
@@ -1653,9 +1653,9 @@ void Read_Ntax_Len_Phylip(FILE *fp ,int *n_otu, int *n_tax)
       if(fscanf(fp,"%s",line) == EOF)
         {
           Free(line);
-          PhyML_Printf("\n== PhyML can't read in this alignment.");
-          PhyML_Printf("\n== Could it be that sequence file is empty?");
-          PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+          PhyML_Fprintf(stderr,"\n\u2022 PhyML can't read in this alignment.");
+          PhyML_Fprintf(stderr,"\n\u2022 Could it be that sequence file is empty?");
+          PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
           Exit("\n");
         }
       else
@@ -1714,8 +1714,8 @@ align **Read_Seq_Sequential(option *io)
 
       if(data[i]->len != io->init_len * io->state_len)
         {
-          PhyML_Printf("\n== Err. Problem with species %s's sequence (check the format).\n",data[i]->name);
-          PhyML_Printf("\n== Observed sequence length: %d, expected length: %d\n",data[i]->len, io->init_len * io->state_len);
+          PhyML_Fprintf(stderr,"\n\u2022 Err. Problem with species %s's sequence (check the format).\n",data[i]->name);
+          PhyML_Fprintf(stderr,"\n\u2022 Observed sequence length: %d, expected length: %d\n",data[i]->len, io->init_len * io->state_len);
           Warn_And_Exit("");
         }
     }
@@ -1769,9 +1769,9 @@ align **Read_Seq_Interleaved(option *io)
           end = 1;
           if((i != io->n_otu) && (i != io->n_otu-1))
             {
-              PhyML_Printf("\n== i:%d n_otu:%d",i,io->n_otu);
-              PhyML_Printf("\n== Err.: problem with species %s's sequence.\n",data[i]->name);
-              PhyML_Printf("\n== Observed sequence length: %d, expected length: %d\n",data[i]->len, io->init_len * io->state_len);
+              PhyML_Fprintf(stderr,"\n\u2022 i:%d n_otu:%d",i,io->n_otu);
+              PhyML_Fprintf(stderr,"\n\u2022 Err.: problem with species %s's sequence.\n",data[i]->name);
+              PhyML_Fprintf(stderr,"\n\u2022 Observed sequence length: %d, expected length: %d\n",data[i]->len, io->init_len * io->state_len);
               Exit("");
             }
           break;
@@ -1794,7 +1794,7 @@ align **Read_Seq_Interleaved(option *io)
  
           if(line[0] != 13 && line[0] != 10)
             {
-              PhyML_Printf("\n== Err.: one or more missing sequences in block %d.\n",num_block-1);
+              PhyML_Fprintf(stderr,"\n\u2022 Err.: one or more missing sequences in block %d.\n",num_block-1);
               Exit("");
             }
           
@@ -1808,15 +1808,15 @@ align **Read_Seq_Interleaved(option *io)
               fgetpos(io->fp_in_align,&curr_pos);
               if(!fscanf(io->fp_in_align,format,line))
                 {
-                  PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+                  PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
                   Warn_And_Exit("");
                 }
               if(line && strcmp(line,data[i]->name)) fsetpos(io->fp_in_align,&curr_pos);
               
               if(data[i]->len > io->init_len * io->state_len)
                 {
-                  PhyML_Printf("\n== Observed sequence length=%d expected length=%d.\n",data[i]->len,io->init_len * io->state_len);
-                  PhyML_Printf("\n== Err.: Problem with species %s's sequence.\n",data[i]->name);
+                  PhyML_Fprintf(stderr,"\n\u2022 Observed sequence length=%d expected length=%d.\n",data[i]->len,io->init_len * io->state_len);
+                  PhyML_Fprintf(stderr,"\n\u2022 Err.: Problem with species %s's sequence.\n",data[i]->name);
                   Exit("");
                 }
               else if(!Read_One_Line_Seq(&data,i,io->fp_in_align))
@@ -1824,8 +1824,8 @@ align **Read_Seq_Interleaved(option *io)
                   end = 1;
                   if((i != io->n_otu) && (i != io->n_otu-1))
                     {
-                      PhyML_Printf("\n== Err.: Problem with species %s's sequence.\n",data[i]->name);
-                      PhyML_Printf("\n== Observed sequence length: %d, expected length: %d.\n",data[i]->len, io->init_len * io->state_len);
+                      PhyML_Fprintf(stderr,"\n\u2022 Err.: Problem with species %s's sequence.\n",data[i]->name);
+                      PhyML_Fprintf(stderr,"\n\u2022 Observed sequence length: %d, expected length: %d.\n",data[i]->len, io->init_len * io->state_len);
                       Exit("");
                     }
                   break;
@@ -1840,7 +1840,7 @@ align **Read_Seq_Interleaved(option *io)
     {
       if(data[i]->len != io->init_len * io->state_len)
         {
-          PhyML_Printf("\n== Check sequence '%s' length (expected length: %d, observed length: %d) [OTU %d].\n",data[i]->name,io->init_len,data[i]->len,i+1);
+          PhyML_Fprintf(stderr,"\n\u2022 Check sequence '%s' length (expected length: %d, observed length: %d) [OTU %d].\n",data[i]->name,io->init_len,data[i]->len,i+1);
           Exit("");
         }
     }
@@ -1898,7 +1898,7 @@ int Read_One_Line_Seq(align ***data, int num_otu, FILE *in)
         {
           c = (*data)[0]->state[(*data)[num_otu]->len];
           if(!num_otu)
-            Warn_And_Exit("\n== Err: Symbol \".\" should not appear in the first sequence\n");
+            Warn_And_Exit("\n\u2022 Err: Symbol \".\" should not appear in the first sequence\n");
         }
       (*data)[num_otu]->state[(*data)[num_otu]->len]=c;
       (*data)[num_otu]->len++;
@@ -1962,7 +1962,7 @@ char *Return_Tree_String_Phylip(FILE *fp_input_tree)
 
   if(fp_input_tree == NULL)
     {
-      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 
@@ -2057,7 +2057,7 @@ void Print_Site_Lk(t_tree *tree, FILE *fp)
 
   if(!tree->io->print_site_lnl)
     {
-      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("");
     }
 
@@ -3394,7 +3394,7 @@ void Read_Qmat(phydbl *daa, phydbl *pi, FILE *fp)
           /* 	  if(!fscanf(fp,"%lf",&(daa[i*20+j]))) Exit("\n"); */
           if(!fscanf(fp,"%lf",&val))
             {
-              PhyML_Printf("\n== Rate matrix file does not appear to have a proper format. Please refer to the documentation.");
+              PhyML_Fprintf(stderr,"\n\u2022 Rate matrix file does not appear to have a proper format. Please refer to the documentation.");
               Exit("\n");
             }
           daa[i*20+j] = (phydbl)val;
@@ -3679,8 +3679,8 @@ void Dump_Arr_S(short int* arr, int num)
 
   if(NULL==arr)
     {
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
-      Exit("\n== Trying to print NULL array");
+      PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
+      Exit("\n\u2022 Trying to print NULL array");
       return;
     }
   fprintf(stdout,"[");
@@ -3701,8 +3701,8 @@ void Dump_Arr_D(phydbl* arr, int num)
 
   if(NULL==arr)
     {
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
-      Exit("\n== Trying to print NULL array");
+      PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
+      Exit("\n\u2022 Trying to print NULL array");
       return;
     }
   fprintf(stdout,"[");
@@ -3723,8 +3723,8 @@ void Dump_Arr_I(int* arr, int num)
 
   if(NULL==arr)
     {
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
-      Exit("\n== Trying to print NULL array");
+      PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
+      Exit("\n\u2022 Trying to print NULL array");
       return;
     }
   fprintf(stdout,"[");
@@ -3759,7 +3759,7 @@ t_tree *Read_User_Tree(calign *cdata, t_mod *mod, option *io)
   tree = Read_Tree_File_Phylip(io->fp_in_tree);
   /* fclose(io->fp_in_tree); */
   /* io->fp_in_tree = NULL; */
-  if(tree == NULL) Exit("\n== Input tree not found...");
+  if(tree == NULL) Exit("\n\u2022 Input tree not found...");
   /* Add branch lengths if necessary */
   if(tree->has_branch_lengths == NO) Add_BioNJ_Branch_Lengths(tree,cdata,mod,NULL);
   return tree;
@@ -3946,13 +3946,13 @@ void Read_Clade_Priors(char *file_name, t_tree *tree)
 
   if(!n_clade_priors)
     {
-      PhyML_Printf("\n== PhyTime could not find any prior on node age.");
-      PhyML_Printf("\n== This is likely due to a problem in the calibration ");
-      PhyML_Printf("\n== file format. Make sure, for instance, that there is ");
-      PhyML_Printf("\n== a blank character between the end of the last name");
-      PhyML_Printf("\n== of each clade and the character `|'. Otherwise, ");
-      PhyML_Printf("\n== please refer to the example file.\n");
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
+      PhyML_Fprintf(stderr,"\n\u2022 PhyTime could not find any prior on node age.");
+      PhyML_Fprintf(stderr,"\n\u2022 This is likely due to a problem in the calibration ");
+      PhyML_Fprintf(stderr,"\n\u2022 file format. Make sure, for instance, that there is ");
+      PhyML_Fprintf(stderr,"\n\u2022 a blank character between the end of the last name");
+      PhyML_Fprintf(stderr,"\n\u2022 of each clade and the character `|'. Otherwise, ");
+      PhyML_Fprintf(stderr,"\n\u2022 please refer to the example file.\n");
+      PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
       Warn_And_Exit("");
     }
 
@@ -4155,9 +4155,9 @@ int Set_Whichmodel(int select)
       }
     default:
       {
-    PhyML_Printf("\n== Model number %d is unknown. Please use a valid model name",select);
-    Exit("\n");
-    break;
+        PhyML_Fprintf(stderr,"\n\u2022 Model number %d is unknown. Please use a valid model name",select);
+        Exit("\n");
+        break;
       }
     }
 
@@ -4778,10 +4778,10 @@ void Check_Taxa_Sets(t_tree *mixt_tree)
             {
               if(strcmp(tree->a_nodes[i]->name,tree->next->a_nodes[i]->name))
                 {
-                  PhyML_Printf("\n== There seems to be a problem in one (or more) of your");
-                  PhyML_Printf("\n== sequence alignments. PhyML could not match taxon");
-                  PhyML_Printf("\n== '%s' found in file '%s' with any of the taxa",tree->a_nodes[i]->name,tree->io->in_align_file);
-                  PhyML_Printf("\n== listed in file '%s'.",tree->next->io->in_align_file);
+                  PhyML_Fprintf(stderr,"\n\u2022 There seems to be a problem in one (or more) of your");
+                  PhyML_Fprintf(stderr,"\n\u2022 sequence alignments. PhyML could not match taxon");
+                  PhyML_Fprintf(stderr,"\n\u2022 '%s' found in file '%s' with any of the taxa",tree->a_nodes[i]->name,tree->io->in_align_file);
+                  PhyML_Fprintf(stderr,"\n\u2022 listed in file '%s'.",tree->next->io->in_align_file);
                   Exit("\n");
                 }
             }
@@ -4804,8 +4804,8 @@ void Make_Ratematrix_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
 
   if(model == NULL)
     {
-      PhyML_Printf("\n== Poorly formated XML file.");
-      PhyML_Printf("\n== Attribute 'model' is mandatory in a <ratematrix> node.");
+      PhyML_Fprintf(stderr,"\n\u2022 Poorly formated XML file.");
+      PhyML_Fprintf(stderr,"\n\u2022 Attribute 'model' is mandatory in a <ratematrix> node.");
       Exit("\n");
     }
 
@@ -4843,7 +4843,7 @@ void Make_Ratematrix_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
     {
       if(io->datatype != NT)
         {
-          PhyML_Printf("\n== Data type and selected model are incompatible");
+          PhyML_Fprintf(stderr,"\n\u2022 Data type and selected model are incompatible");
           Exit("\n");
         }
     }
@@ -4851,7 +4851,7 @@ void Make_Ratematrix_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
     {
       if(io->datatype != AA)
         {
-          PhyML_Printf("\n== Data type and selected model are incompatible");
+          PhyML_Fprintf(stderr,"\n\u2022 Data type and selected model are incompatible");
           Exit("\n");
         }
     }
@@ -4933,8 +4933,8 @@ void Make_Ratematrix_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
 
       if(!model_code)
         {
-          PhyML_Printf("\n== No valid 'model.code' attribute could be found.\n");
-          PhyML_Printf("\n== Please fix your XML file.\n");
+          PhyML_Fprintf(stderr,"\n\u2022 No valid 'model.code' attribute could be found.\n");
+          PhyML_Fprintf(stderr,"\n\u2022 Please fix your XML file.\n");
           Exit("\n");
         }
       else
@@ -4953,8 +4953,8 @@ void Make_Ratematrix_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
 
       if(!r_mat_file)
         {
-          PhyML_Printf("\n== No valid 'ratematrix.file' attribute could be found.");
-          PhyML_Printf("\n== Please fix your XML file.\n");
+          PhyML_Fprintf(stderr,"\n\u2022 No valid 'ratematrix.file' attribute could be found.");
+          PhyML_Fprintf(stderr,"\n\u2022 Please fix your XML file.\n");
           Exit("\n");
         }
       else
@@ -4996,8 +4996,8 @@ void Make_Efrq_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
         {
           if(io->datatype == AA)
             {
-              PhyML_Printf("\n== Option 'optimise.freqs' set to 'yes' (or 'true')");
-              PhyML_Printf("\n== is not allowed with amino-acid data.");
+              PhyML_Fprintf(stderr,"\n\u2022 Option 'optimise.freqs' set to 'yes' (or 'true')");
+              PhyML_Fprintf(stderr,"\n\u2022 is not allowed with amino-acid data.");
               Exit("\n");
             }
           mod->s_opt->opt_state_freq = YES;
@@ -5029,7 +5029,7 @@ void Make_Efrq_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
     {
       if(io->datatype == AA)
         {
-          PhyML_Printf("\n== Option 'base.freqs' is not allowed with amino-acid data.");
+          PhyML_Fprintf(stderr,"\n\u2022 Option 'base.freqs' is not allowed with amino-acid data.");
           Exit("\n");
         }
       else
@@ -5070,8 +5070,8 @@ void Make_Topology_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
 
   if(!init_tree)
     {
-      PhyML_Printf("\n== Attribute 'init.tree=bionj|user|random' is mandatory");
-      PhyML_Printf("\n== Please amend your XML file accordingly.");
+      PhyML_Fprintf(stderr,"\n\u2022 Attribute 'init.tree=bionj|user|random' is mandatory");
+      PhyML_Fprintf(stderr,"\n\u2022 Please amend your XML file accordingly.");
       Exit("\n");
     }
 
@@ -5083,7 +5083,7 @@ void Make_Topology_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
 
       if(!Filexists(starting_tree))
         {
-          PhyML_Printf("\n== The tree file '%s' could not be found.",starting_tree);
+          PhyML_Fprintf(stderr,"\n\u2022 The tree file '%s' could not be found.",starting_tree);
           Exit("\n");
         }
       else
@@ -5105,7 +5105,7 @@ void Make_Topology_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
       if(n_rand_starts)
         {
           mod->s_opt->n_rand_starts = atoi(n_rand_starts);
-          if(mod->s_opt->n_rand_starts < 1) Exit("\n== Number of random starting trees must be > 0.\n\n");
+          if(mod->s_opt->n_rand_starts < 1) Exit("\n\u2022 Number of random starting trees must be > 0.\n\n");
         }
 
       strcpy(io->out_trees_file,io->in_align_file);
@@ -5176,7 +5176,7 @@ void Make_Topology_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
                   }
                 default:
                   {
-                    PhyML_Printf("\n== Topology search option '%s' is not valid.",search);
+                    PhyML_Fprintf(stderr,"\n\u2022 Topology search option '%s' is not valid.",search);
                     Exit("\n");
                     break;
                   }
@@ -5350,17 +5350,17 @@ void Make_RAS_From_XML_Node(xml_node *parent, t_mod *mod)
           }
         default:
           {
-            if(family != NULL) PhyML_Printf("\n== family: %s",family);
+            if(family != NULL) PhyML_Printf("\n\u2022 family: %s",family);
             else 
               {
-                PhyML_Printf("\n== Please specify a model family (\"gamma\", \"gamma+inv\" or \"freerate\")");
-                PhyML_Printf("\n== for every 'weights' element in every 'siterate' element. Note that " );
-                PhyML_Printf("\n== a \"gamma\" or a \"freerate\" model with a single rate class amounts");
-                PhyML_Printf("\n== to no variation of rates across sites, if this is the model you'd");
-                PhyML_Printf("\n== like to implement...");
+                PhyML_Printf("\n\u2022 Please specify a model family (\"gamma\", \"gamma+inv\" or \"freerate\")");
+                PhyML_Printf("\n\u2022 for every 'weights' element in every 'siterate' element. Note that " );
+                PhyML_Printf("\n\u2022 a \"gamma\" or a \"freerate\" model with a single rate class amounts");
+                PhyML_Printf("\n\u2022 to no variation of rates across sites, if this is the model you'd");
+                PhyML_Printf("\n\u2022 like to implement...");
               }
 
-            PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+            PhyML_Printf("\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
             Exit("\n");
           }
         }
@@ -5370,10 +5370,10 @@ void Make_RAS_From_XML_Node(xml_node *parent, t_mod *mod)
 
   if(w && nc != mod->ras->n_catg)
     {
-      PhyML_Printf("\n== <siterates> component '%s'. The number of classes ",parent->id);
-      PhyML_Printf("\n== specified in the <weight> component should be ");
-      PhyML_Printf("\n== the same as that of <instance> nodes. Please fix");
-      PhyML_Printf("\n== your XML file accordingly.");
+      PhyML_Printf("\n\u2022 <siterates> component '%s'. The number of classes ",parent->id);
+      PhyML_Printf("\n\u2022 specified in the <weight> component should be ");
+      PhyML_Printf("\n\u2022 the same as that of <instance> nodes. Please fix");
+      PhyML_Printf("\n\u2022 your XML file accordingly.");
       Exit("\n");
     }
 
@@ -5388,8 +5388,9 @@ void Make_RAS_From_XML_Node(xml_node *parent, t_mod *mod)
 
 void Generic_Exit(const char *file, int line, const char *function)
 {
-  PhyML_Printf("\n== Err. in file '%s' (line %d)",file,line);
+  PhyML_Fprintf(stderr,"\n\u2022 Err. in file '%s' (line %d)",file,line);
   if(function != NULL) PhyML_Printf(", function '%s'",function);
+  PhyML_Fprintf(stderr,"\n\u2022 PhyML finished prematurely.");
   Exit("\n");
 }
 

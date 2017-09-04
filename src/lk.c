@@ -58,9 +58,9 @@ void Init_Tips_At_One_Site_Nucleotides_Float(char state, int pos, phydbl *p_lk)
       p_lk[pos+0]=p_lk[pos+1]=p_lk[pos+2]=p_lk[pos+3]=1.;break;
     default :
       {
-    PhyML_Printf("\n== Unknown character state : %c\n",state);
-    Exit("\n== Init failed (data type supposed to be DNA)\n");
-    break;
+        PhyML_Fprintf(stderr,"\n\u2022 Unknown character state : %c\n",state);
+        Exit("\n\u2022 Init failed (data type supposed to be DNA)\n");
+        break;
       }
     }
 }
@@ -106,8 +106,8 @@ void Init_Tips_At_One_Site_Nucleotides_Int(char state, int pos, short int *p_par
       p_pars[pos+0]=p_pars[pos+1]=p_pars[pos+2]=p_pars[pos+3]=1;break;
     default :
       {
-        PhyML_Printf("\n. Unknown character state : %c\n",state);
-        Exit("\n. Init failed (data type supposed to be DNA)\n");
+        PhyML_Fprintf(stderr,"\n\u2022 Unknown character state : %c\n",state);
+        Exit("\n\u2022 Init failed (data type supposed to be DNA)\n");
         break;
       }
     }
@@ -150,8 +150,8 @@ void Init_Tips_At_One_Site_AA_Float(char aa, int pos, phydbl *p_lk)
   case 'X' : case '?' : case '-' : for(i=0;i<20;i++) p_lk[pos+i] = 1.; break;
   default :
     {
-      PhyML_Printf("\n. Unknown character state : %c\n",aa);
-      Exit("\n. Init failed (data type supposed to be amino-acids)\n");
+      PhyML_Fprintf(stderr,"\n\u2022 Unknown character state : %c\n",aa);
+      Exit("\n\u2022 Init failed (data type supposed to be amino-acids)\n");
       break;
     }
   }
@@ -194,8 +194,8 @@ void Init_Tips_At_One_Site_AA_Int(char aa, int pos, short int *p_pars)
   case 'X' : case '?' : case '-' : for(i=0;i<20;i++) p_pars[pos+i] = 1; break;
   default :
     {
-      PhyML_Printf("\n. Unknown character state : %c\n",aa);
-      Exit("\n. Init failed (data type supposed to be amino-acids)\n");
+      PhyML_Fprintf(stderr,"\n\u2022 Unknown character state : %c\n",aa);
+      Exit("\n\u2022 Init failed (data type supposed to be amino-acids)\n");
       break;
     }
   }
@@ -218,18 +218,18 @@ void Init_Tips_At_One_Site_Generic_Float(char *state, int ns, int state_len, int
       sprintf(format,"%%%dd",state_len);
       if(!sscanf(state,format,&state_int))
     {
-      PhyML_Printf("\n== state='%c'",state);
-      PhyML_Printf("\n== Err in file %s at line %d (function '%s')\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n\u2022 state='%c'",state);
+      PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d (function '%s')\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
       if(state_int > ns)
     {
-      PhyML_Printf("\n. %s %d cstate: %.2s istate: %d state_len: %d.\n",__FILE__,__LINE__,state,state_int,state_len);
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
+      PhyML_Fprintf(stderr,"\n\u2022 %s %d cstate: %.2s istate: %d state_len: %d.\n",__FILE__,__LINE__,state,state_int,state_len);
+      PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Warn_And_Exit("");
     }
       p_lk[pos+state_int] = 1.;
-      /*       PhyML_Printf("\n. %s %d cstate: %.2s istate: %d state_len: %d ns: %d pos: %d",__FILE__,__LINE__,state,state_int,state_len,ns,pos); */
+      /*       PhyML_Printf("\n\u2022 %s %d cstate: %.2s istate: %d state_len: %d ns: %d pos: %d",__FILE__,__LINE__,state,state_int,state_len,ns,pos); */
     }
 }
 
@@ -249,17 +249,17 @@ void Init_Tips_At_One_Site_Generic_Int(char *state, int ns, int state_len, int p
       char format[6];
       sprintf(format,"%%%dd",state_len);
       if(!sscanf(state,format,&state_int))
-    {
-      PhyML_Printf("\n. state='%c'",state);
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
-      Warn_And_Exit("");
-    }
+        {
+          PhyML_Fprintf(stderr,"\n\u2022 state='%c'",state);
+          PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
+          Warn_And_Exit("");
+        }
       if(state_int > ns)
-    {
-      PhyML_Printf("\n. %s %d cstate: %.2s istate: %d state_len: %d.\n",__FILE__,__LINE__,state,state_int,state_len);
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
-      Warn_And_Exit("");
-    }
+        {
+          PhyML_Fprintf(stderr,"\n\u2022 %s %d cstate: %.2s istate: %d state_len: %d.\n",__FILE__,__LINE__,state,state_int,state_len);
+          PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
+          Warn_And_Exit("");
+        }
       p_pars[pos+state_int] = 1;
 /*       PhyML_Printf("\n* %s %d cstate: %.2s istate: %d state_len: %d ns: %d pos: %d",__FILE__,__LINE__,state,state_int,state_len,ns,pos); */
     }
@@ -312,7 +312,7 @@ void Post_Order_Lk(t_node *a, t_node *d, t_tree *tree)
 
       if(dir < 0)
         {
-          PhyML_Printf("\n== a: %d d: %d [%d %d %d] [%d %d %d]",
+          PhyML_Printf("\n\u2022 a: %d d: %d [%d %d %d] [%d %d %d]",
                        a->num,
                        d->num,
                        d->v[0] ? d->v[0]->num : -1,
@@ -666,7 +666,7 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
             
       if(isinf(len) || isnan(len)) 
         {
-          PhyML_Printf("\n== len=%f rr=%f l=%f",len,rr,*l);
+          PhyML_Fprintf(stderr,"\n\u2022 len=%f rr=%f l=%f",len,rr,*l);
           Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
         }
 
@@ -700,48 +700,48 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
       d2lk  = Lk_Core_Eigen_Lr(expld2,dot_prod + site*ns*ncatg,YES,b,tree);
       lk    = Lk_Core_Eigen_Lr(expl  ,dot_prod + site*ns*ncatg,NO ,b,tree);
 
-      /* printf("\n. site: %4d l:%15G lk:%15G dlk:%15G d2lk:%15G",site,b->l->v,lk,dlk,d2lk); */
+      /* printf("\n\u2022 site: %4d l:%15G lk:%15G dlk:%15G d2lk:%15G",site,b->l->v,lk,dlk,d2lk); */
       
       if(!(lk > 0.0))
         {
-          /* PhyML_Printf("\n== dlk: %G d2lk: %G lk: %G",dlk,d2lk,lk); */
+          /* PhyML_Printf("\n\u2022 dlk: %G d2lk: %G lk: %G",dlk,d2lk,lk); */
           int l;
           int i,j;
           phydbl *U,*V,*Q;
-          printf("\n== l: %G dlk: %G d2lk: %G lk: %G",b->l->v,dlk,d2lk,lk);
+          printf("\n\u2022 l: %G dlk: %G d2lk: %G lk: %G",b->l->v,dlk,d2lk,lk);
           lk = 0.0;
           for(l=0;l<ns;++l)
             {
               lk += dot_prod[site*ns*ncatg+l] * expl[l];
-              printf("\n== lk: %12G dot_prod: %12G expl: %12G left: %12G rght: %12G",
+              printf("\n\u2022 lk: %12G dot_prod: %12G expl: %12G left: %12G rght: %12G",
                      lk,dot_prod[site*ns*ncatg+l],expl[l],
                      b->p_lk_left[site*ns*ncatg + catg*ns + l],
                      b->rght->tax ? b->p_lk_tip_r[site*ns + l] : b->p_lk_rght[site*ns*ncatg + catg*ns + l]);
             }
-          printf("\n== U\n");
+          printf("\n\u2022 U\n");
           U = tree->mod->eigen->r_e_vect;
           for(i=0;i<ns;i++) { for(j=0;j<ns;j++) printf("%12G ",U[i*ns+j]); printf("\n"); }
           printf("\n");
-          printf("\n== V\n");
+          printf("\n\u2022 V\n");
           V = tree->mod->eigen->l_e_vect;
           for(i=0;i<ns;i++) { for(j=0;j<ns;j++) printf("%12G ",V[i*ns+j]); printf("\n"); }
           printf("\n");
-          printf("\n== exp(D)\n");
+          printf("\n\u2022 exp(D)\n");
           for(i=0;i<ns;i++) printf("%12G\n",tree->mod->eigen->e_val[i]);
           printf("\n");
-          printf("\n== Q\n");
+          printf("\n\u2022 Q\n");
           Q = tree->mod->r_mat->qmat->v;
           for(i=0;i<ns;i++) { for(j=0;j<ns;j++) printf("%12G ",Q[i*ns+j]); printf("\n"); }
           printf("\n");
-          printf("\n== F\n");
+          printf("\n\u2022 F\n");
           for(i=0;i<ns;i++) printf("f(%3d)=%12G\n",i,tree->mod->e_frq->pi->v[i]); 
-          printf("\n\n. tstv : %G",tree->mod->kappa->v);
+          printf("\n\n\u2022 tstv : %G",tree->mod->kappa->v);
           
           for(catg=0;catg<ncatg;++catg)
             {
               for(state=0;state<ns;++state) 
                 {
-                  printf("\n== catg: %3d state: %3d -- expl: %12G expld: %12G expld2: %12G dot_prod: %12G",
+                  printf("\n\u2022 catg: %3d state: %3d -- expl: %12G expld: %12G expld2: %12G dot_prod: %12G",
                          catg,
                          state,
                          expl[0*ncatg*ns + catg*ns + state], 
@@ -868,7 +868,7 @@ phydbl Lk_Core(int state, int ambiguity_check, short int derivative,
       tree->cur_site_lk[site] = exp(log_site_lk); // note to self : add opt out option to avoid calculating this if not necessary
     }
 
-  /* printf("\n. clnL: %f",tree->c_lnL); */
+  /* printf("\n\u2022 clnL: %f",tree->c_lnL); */
   return res;
 }
 
@@ -1163,7 +1163,7 @@ phydbl Invariant_Lk(int fact_sum_scale, int site, int *num_prec_issue, t_tree *t
         {
           inv_site_lk = tree->mod->e_frq->pi->v[tree->data->invar[site]];
           
-          /* printf("\n. inv_site_lk = %f [%c] [%d]",inv_site_lk,tree->data->c_seq[0]->state[site],tree->data->invar[site]); */
+          /* printf("\n\u2022 inv_site_lk = %f [%c] [%d]",inv_site_lk,tree->data->c_seq[0]->state[site],tree->data->invar[site]); */
 
           if(tree->apply_lk_scaling == YES)
             {
@@ -1182,11 +1182,11 @@ phydbl Invariant_Lk(int fact_sum_scale, int site, int *num_prec_issue, t_tree *t
           if(isinf(inv_site_lk)) // P(D|r=0) >> P(D|r>0) => assume P(D) = P(D|r=0)P(r=0)
             {
               int i;
-              PhyML_Printf("\n== fact_sum_scale: %d",fact_sum_scale);              
-              PhyML_Printf("\n== pi: %f",tree->mod->e_frq->pi->v[tree->data->invar[site]]);              
-              for(i=0;i<tree->mod->ns;i++) PhyML_Printf("\n== pi %d: %f",i,tree->mod->e_frq->pi->v[i]);
-              PhyML_Printf("\n== Numerical precision issue alert.");
-              PhyML_Printf("\n== File %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
+              PhyML_Printf("\n\u2022 fact_sum_scale: %d",fact_sum_scale);              
+              PhyML_Printf("\n\u2022 pi: %f",tree->mod->e_frq->pi->v[tree->data->invar[site]]);              
+              for(i=0;i<tree->mod->ns;i++) PhyML_Printf("\n\u2022 pi %d: %f",i,tree->mod->e_frq->pi->v[i]);
+              PhyML_Printf("\n\u2022 Numerical precision issue alert.");
+              PhyML_Printf("\n\u2022 File %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
               (*num_prec_issue) = YES;
             }
         }
@@ -1303,8 +1303,8 @@ void Update_Partial_Lk_Generic(t_tree *tree, t_edge *b, t_node *d)
 
   if(d->tax)
     {
-      PhyML_Printf("\n== t_node %d is a leaf...",d->num);
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s').\n",__FILE__,__LINE__,__FUNCTION__);
+      PhyML_Fprintf(stderr,"\n\u2022 t_node %d is a leaf...",d->num);
+      PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d (function '%s').\n",__FILE__,__LINE__,__FUNCTION__);
       Exit("\n");
     }
 
@@ -1552,8 +1552,8 @@ void Default_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
   
   if(d->tax)
     {
-      PhyML_Printf("\n== t_node %d is a leaf...",d->num);
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
+      PhyML_Fprintf(stderr,"\n\u2022 t_node %d is a leaf...",d->num);
+      PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
       Exit("\n");
     }
 
@@ -1874,8 +1874,8 @@ matrix *ML_Dist(calign *data, t_mod *mod)
           else if((sum > 1. - .001) && (sum < 1. + .001)) Opt_Dist_F(&(d_max),F,mod);
           else
             {
-              PhyML_Printf("\n\n== sum = %f",sum);
-              PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
+              PhyML_Fprintf(stderr,"\n\n\u2022 sum = %f",sum);
+              PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
               Exit("");
             }
           
@@ -1958,8 +1958,8 @@ phydbl Lk_Given_Two_Seq(calign *data, int numseq1, int numseq2, phydbl dist, t_m
     }
   else
     {
-      PhyML_Printf("\n\n== Not implemented yet...");
-      PhyML_Printf("\n== Err in file %s at line %d\n\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n\n\u2022 Not implemented yet...");
+      PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n\n",__FILE__,__LINE__);
       Warn_And_Exit("\n");
     }
   
@@ -2007,8 +2007,8 @@ phydbl Lk_Given_Two_Seq(calign *data, int numseq1, int numseq2, phydbl dist, t_m
           
           if(site_lk <= .0)
             {
-              PhyML_Printf("\n\n== '%c' '%c'\n",seq1->state[i],seq2->state[i]);
-              Exit("\n== Err: site lk <= 0\n");
+              PhyML_Fprintf(stderr,"\n\n\u2022 '%c' '%c'\n",seq1->state[i],seq2->state[i]);
+              Exit("\n\u2022 Err: site lk <= 0\n");
             }
           
           log_site_lk += (phydbl)log(site_lk);
@@ -2054,7 +2054,7 @@ void Init_Partial_Lk_Tips_Double(t_tree *tree)
       if(!tree->a_nodes[i]->c_seq || 
 	 strcmp(tree->a_nodes[i]->c_seq->name,tree->a_nodes[i]->name))
         {
-          PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
+          PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
           Exit("");
         }
     }
@@ -2102,7 +2102,7 @@ void Init_Partial_Lk_Tips_Int(t_tree *tree)
       if(!tree->a_nodes[i]->c_seq || 
 	 strcmp(tree->a_nodes[i]->c_seq->name,tree->a_nodes[i]->name))
         {
-          PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
+          PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
           Exit("");
         }
     }
@@ -2111,8 +2111,8 @@ void Init_Partial_Lk_Tips_Int(t_tree *tree)
     {
       for(i=0;i<tree->n_otu;i++)
         {
-          /* printf("\n. site: %3d %c",curr_site,tree->a_nodes[i]->c_seq->state[curr_site]); */
-          /* printf("\n. init at %s %p",tree->a_nodes[i]->name,tree->a_nodes[i]->b[0]->p_lk_tip_r); fflush(NULL); */
+          /* printf("\n\u2022 site: %3d %c",curr_site,tree->a_nodes[i]->c_seq->state[curr_site]); */
+          /* printf("\n\u2022 init at %s %p",tree->a_nodes[i]->name,tree->a_nodes[i]->b[0]->p_lk_tip_r); fflush(NULL); */
           if(tree->io->datatype == NT)
             {
               Init_Tips_At_One_Site_Nucleotides_Float(tree->a_nodes[i]->c_seq->state[curr_site],
@@ -2265,14 +2265,14 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
       int ret = beagleUpdateTransitionMatrices(tree->b_inst,0,p_matrices,NULL,NULL,branch_lens,1);
       if(ret<0)
         {
-          fprintf(stderr, "beagleUpdateTransitionMatrices() on instance %i failed:%i\n\n",tree->b_inst,ret);
+          PhyML_Fprintf(stderr, "beagleUpdateTransitionMatrices() on instance %i failed:%i\n\n",tree->b_inst,ret);
           Exit("");
         }
       //Retrieve a "local" copy of the P-matrix
       ret = beagleGetTransitionMatrix(tree->b_inst, b_fcus->Pij_rr_idx, b_fcus->Pij_rr);
       if(ret<0)
         {
-          fprintf(stderr, "beagleGetTransitionMatrix() on instance %i failed:%i\n\n",tree->b_inst,ret);
+          PhyML_Fprintf(stderr, "beagleGetTransitionMatrix() on instance %i failed:%i\n\n",tree->b_inst,ret);
           Exit("");
         }
     }
@@ -2281,7 +2281,7 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
       int ret = beagleSetTransitionMatrix(tree->b_inst, b_fcus->Pij_rr_idx, b_fcus->Pij_rr, -1);
       if(ret<0)
         {
-          fprintf(stderr, "beagleSetTransitionMatrix() on instance %i failed:%i\n\n",tree->b_inst,ret);
+          PhyML_Fprintf(stderr, "beagleSetTransitionMatrix() on instance %i failed:%i\n\n",tree->b_inst,ret);
           Exit("");
         }
   }
@@ -2354,7 +2354,7 @@ void Update_Partial_Lk_Along_A_Path(t_node **path, int path_length, t_tree *tree
               }
             else
               {
-                PhyML_Printf("\n== Err. in file %s at line %d. \n",__FILE__,__LINE__);
+                PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d. \n",__FILE__,__LINE__);
                 Exit("");
               }
             break;
@@ -2362,7 +2362,7 @@ void Update_Partial_Lk_Along_A_Path(t_node **path, int path_length, t_tree *tree
 #ifdef DEBUG
       if(j == 3)
         {
-          PhyML_Printf("\n== Err. in file %s at line %d.\n",__FILE__,__LINE__);
+          PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d.\n",__FILE__,__LINE__);
           Exit("");
         }
 #endif
@@ -2526,7 +2526,7 @@ void Alias_One_Subpatt(t_node *a, t_node *d, t_tree *tree)
         }
           if(j > i)
         {
-          PhyML_Printf("\n. Err in file %s at line %d\n\n",__FILE__,__LINE__);
+          PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n\n",__FILE__,__LINE__);
           Warn_And_Exit("");
         }
         }
@@ -2598,8 +2598,8 @@ void Alias_One_Subpatt(t_node *a, t_node *d, t_tree *tree)
               }
             if(j > i)
               {
-            PhyML_Printf("\n. Err in file %s at line %d\n\n",__FILE__,__LINE__);
-            Warn_And_Exit("");
+                PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n\n",__FILE__,__LINE__);
+                Warn_And_Exit("");
               }
           }
           }
@@ -2706,7 +2706,7 @@ phydbl Lk_Normal_Approx(t_tree *tree)
 
   /* printf("\n"); */
   /* for(i=0;i<dim;i++) printf("%f\t",tree->rates->u_cur_l[i]); */
-  /* printf("\n. Lk=%f %f",lnL,tree->mod->l_min); */
+  /* printf("\n\u2022 Lk=%f %f",lnL,tree->mod->l_min); */
 
 
 /*   err = NO; */
@@ -2719,13 +2719,13 @@ phydbl Lk_Normal_Approx(t_tree *tree)
 /* 	  lnL -= Log_Dnorm(tree->a_edges[i]->l->v,tree->rates->mean_l[i],SQRT(tree->rates->cov_l[i*dim+i]),&err); */
 /* 	  if(err) */
 /* 	    { */
-/* 	      PhyML_Printf("\n. Err in file %s at line %d\n\n",__FILE__,__LINE__); */
+/* 	      PhyML_Printf("\n\u2022 Err in file %s at line %d\n\n",__FILE__,__LINE__); */
 /* 	      Warn_And_Exit(""); */
 /* 	    } */
 /* 	  lambda = 1./SQRT(tree->rates->cov_l[i*dim+i]); */
 /* 	  l = (tree->mod->log_l == YES)?(exp(tree->a_edges[i]->l->v)):(tree->a_edges[i]->l->v); */
 /* 	  lnL += log(Dexp(l,lambda)); */
-/* /\* 	  printf("\n. lambda = %f",lambda); *\/ */
+/* /\* 	  printf("\n\u2022 lambda = %f",lambda); *\/ */
 /* 	} */
 /*     } */
 
@@ -3078,7 +3078,7 @@ void Sample_Ancestral_Seq_Pre(t_node *a, t_node *d, t_edge *b,
   
   /* if(site == 92) */
   /*   { */
-  /*     printf("\n. sa=%d (%s,%d) sd=%d (%s,%d) b->l->v=%f", */
+  /*     printf("\n\u2022 sa=%d (%s,%d) sd=%d (%s,%d) b->l->v=%f", */
   /* 	     sa,a->tax?a->name:"",a->num,sd,d->tax?d->name:"",d->num,b->l->v); */
   /*   } */
   
@@ -3189,7 +3189,7 @@ void Map_Mutations(t_node *a, t_node *d, int sa, int sd, t_edge *b, int site, in
       // Select the appropriate vector of change probabilities
       probs = all_probs+slast*tree->mod->ns;
 
-      /* printf("\n. slast=%2d sd=%2d tlast=%12G td=%12G p=%12f rcat=%12f site=%4d", */
+      /* printf("\n\u2022 slast=%2d sd=%2d tlast=%12G td=%12G p=%12f rcat=%12f site=%4d", */
       /* 	 slast,sd,tlast,td,-Q[slast*tree->mod->ns+slast], */
       /* 	 tree->mod->ras->gamma_rr->v[rate_cat],site); */
 
@@ -3214,8 +3214,8 @@ void Map_Mutations(t_node *a, t_node *d, int sa, int sd, t_edge *b, int site, in
 
         if((thismut > 5) || (thismut < 0))
           {
-            PhyML_Printf("\n. thismut = %d",thismut);
-            PhyML_Printf("\n. Err in file %s at line %d\n\n",__FILE__,__LINE__);
+            PhyML_Fprintf(stderr,"\n\u2022 thismut = %d",thismut);
+            PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n\n",__FILE__,__LINE__);
             Warn_And_Exit("");
           }
 
@@ -3284,7 +3284,7 @@ int Check_Lk_At_Given_Edge(int verbose, t_tree *tree)
   For(i,2*tree->n_otu-3)
     {
       lk[i] = Lk(tree->a_edges[i],tree);
-      if(verbose == YES) PhyML_Printf("\n. Edge %3d %13G %f %13G",
+      if(verbose == YES) PhyML_Printf("\n\u2022 Edge %3d %13G %f %13G",
                                       tree->a_edges[i]->num,tree->a_edges[i]->l->v,lk[i],
                                       tree->a_edges[i]->l_var->v);
             
@@ -3325,7 +3325,7 @@ void Ancestral_Sequences(t_tree *tree, int print)
 
   if(print == YES)
     {
-      PhyML_Printf("\n\n. Estimating ancestral sequences...");
+      PhyML_Printf("\n\n\u2022 Estimating ancestral sequences...");
 
       strcpy(tree->io->out_ancestral_file,tree->io->out_file);
       if(tree->io->append_run_ID) { strcat(tree->io->out_ancestral_file,"_"); strcat(tree->io->out_ancestral_file,tree->io->run_id_string); }
@@ -3334,23 +3334,23 @@ void Ancestral_Sequences(t_tree *tree, int print)
       
       if(tree->n_root)
         {
-          PhyML_Fprintf(tree->io->fp_out_ancestral,"\n== Printing the tree structure. Starting from the root node");
-          PhyML_Fprintf(tree->io->fp_out_ancestral,"\n== and displaying the nodes underneath recursively. Edge numbers");
-          PhyML_Fprintf(tree->io->fp_out_ancestral,"\n== and their lengths are also provided.\n\n");
+          PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\u2022 Printing the tree structure. Starting from the root node");
+          PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\u2022 and displaying the nodes underneath recursively. Edge numbers");
+          PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\u2022 and their lengths are also provided.\n\n");
           Print_Node_Brief(tree->n_root,tree->n_root->v[0],tree,tree->io->fp_out_ancestral);
           Print_Node_Brief(tree->n_root,tree->n_root->v[1],tree,tree->io->fp_out_ancestral);
         }
       else
         {
-          PhyML_Fprintf(tree->io->fp_out_ancestral,"\n== Printing the tree structure. Starting from node 0 (taxon %s)",tree->a_nodes[0]->name);
-          PhyML_Fprintf(tree->io->fp_out_ancestral,"\n== and displaying the nodes underneath recursively. Edge numbers");
-          PhyML_Fprintf(tree->io->fp_out_ancestral,"\n== and their lengths are also provided.\n\n");
+          PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\u2022 Printing the tree structure. Starting from node 0 (taxon %s)",tree->a_nodes[0]->name);
+          PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\u2022 and displaying the nodes underneath recursively. Edge numbers");
+          PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\u2022 and their lengths are also provided.\n\n");
           Print_Node_Brief(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree,tree->io->fp_out_ancestral);
         }
       
       PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\n\n");
-      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n== Printing marginal probabilities of ancestral sequences at each site");
-      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n== of the alignment and each node of the tree.");
+      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\u2022 Printing marginal probabilities of ancestral sequences at each site");
+      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\u2022 of the alignment and each node of the tree.");
       PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\n");
       PhyML_Fprintf(tree->io->fp_out_ancestral,"Site\tNode\t");
       for(i=0;i<tree->mod->ns;i++) PhyML_Fprintf(tree->io->fp_out_ancestral,"%c\t",Reciproc_Assign_State(i,tree->io->datatype));
@@ -3403,7 +3403,7 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
 
           if(tree->scaling_method == SCALE_RATE_SPECIFIC)
             {
-              PhyML_Printf("\n== Likelihood rescaling method not compatible with the calculation of ancestral state probabilities.");
+              PhyML_Fprintf(stderr,"\n\u2022 Likelihood rescaling method not compatible with the calculation of ancestral state probabilities.");
               Exit("\n");
             }
 
@@ -3482,10 +3482,10 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
                               p0 += v0->b[0]->p_lk_tip_r[csite*ns+j] * Pij0[catg*nsns+i*ns+j];
                               if(isinf(p0) || isnan(p0) || p0 < SMALL)
                                 {
-                                  PhyML_Printf("\n== p0: %G v0->b[0]->p_lk_tip_r[csite*ns+j]: %G Pij0[catg*nsns+i*ns+j]: %G\n",
-                                               p0,
-                                               v0->b[0]->p_lk_tip_r[csite*ns+j],
-                                               Pij0[catg*nsns+i*ns+j]);
+                                  PhyML_Fprintf(stderr,"\n\u2022 p0: %G v0->b[0]->p_lk_tip_r[csite*ns+j]: %G Pij0[catg*nsns+i*ns+j]: %G\n",
+                                                p0,
+                                                v0->b[0]->p_lk_tip_r[csite*ns+j],
+                                                Pij0[catg*nsns+i*ns+j]);
                                   Exit("\n");
                                 }
                             }
@@ -3498,12 +3498,12 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
                               p0 += p_lk0[csite*ncatgns+catg*ns+j] * Pij0[catg*nsns+i*ns+j];
                               if(isinf(p0) || isnan(p0))
                                 {
-                                  PhyML_Printf("\n== p0: %G p_lk0[csite*ncatgns+catg*ns+j]: %G Pij0[catg*nsns+i*ns+j]: %G (phydbl)POW(2,sum_scale0[csite*ncatg+catg]): %G sum_scale0: %d\n",
-                                               p0,
-                                               p_lk0[csite*ncatgns+catg*ns+j],
-                                               Pij0[catg*nsns+i*ns+j],
-                                               (phydbl)POW(2,sum_scale0[csite]),
-                                               sum_scale0[csite]);
+                                  PhyML_Fprintf(stderr,"\n\u2022 p0: %G p_lk0[csite*ncatgns+catg*ns+j]: %G Pij0[catg*nsns+i*ns+j]: %G (phydbl)POW(2,sum_scale0[csite*ncatg+catg]): %G sum_scale0: %d\n",
+                                                p0,
+                                                p_lk0[csite*ncatgns+catg*ns+j],
+                                                Pij0[catg*nsns+i*ns+j],
+                                                (phydbl)POW(2,sum_scale0[csite]),
+                                                sum_scale0[csite]);
                                   Exit("\n");
                                 }
                             }
@@ -3518,10 +3518,10 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
                               p1 += v1->b[0]->p_lk_tip_r[csite*ns+j] * Pij1[catg*nsns+i*ns+j];
                               if(isinf(p1) || isnan(p1))
                                 {
-                                  PhyML_Printf("\n== p1: %G v1->b[0]->p_lk_tip_r[csite*ns+j]: %G Pij1[catg*nsns+i*ns+j]: %G\n",
-                                               p1,
-                                               v1->b[0]->p_lk_tip_r[csite*ns+j],
-                                               Pij1[catg*nsns+i*ns+j]);
+                                  PhyML_Fprintf(stderr,"\n\u2022 p1: %G v1->b[0]->p_lk_tip_r[csite*ns+j]: %G Pij1[catg*nsns+i*ns+j]: %G\n",
+                                                p1,
+                                                v1->b[0]->p_lk_tip_r[csite*ns+j],
+                                                Pij1[catg*nsns+i*ns+j]);
                                   Exit("\n");
                                 }
                             }
@@ -3533,11 +3533,11 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
                               p1 += p_lk1[csite*ncatgns+catg*ns+j] * Pij1[catg*nsns+i*ns+j];
                               if(isinf(p1) || isnan(p1))
                                 {
-                                  PhyML_Printf("\n== p1: %G p_lk1[csite*ncatgns+catg*ns+j]: %G Pij1[catg*nsns+i*ns+j]: %G (phydbl)POW(2,sum_scale1[csite*ncatg+catg]): %G\n",
-                                               p1,
-                                               p_lk1[csite*ncatgns+catg*ns+j],
-                                               Pij1[catg*nsns+i*ns+j],
-                                               (phydbl)POW(2,sum_scale1[csite]));
+                                  PhyML_Fprintf(stderr,"\n\u2022 p1: %G p_lk1[csite*ncatgns+catg*ns+j]: %G Pij1[catg*nsns+i*ns+j]: %G (phydbl)POW(2,sum_scale1[csite*ncatg+catg]): %G\n",
+                                                p1,
+                                                p_lk1[csite*ncatgns+catg*ns+j],
+                                                Pij1[catg*nsns+i*ns+j],
+                                                (phydbl)POW(2,sum_scale1[csite]));
                                   Exit("\n");
                                 }
                             }
@@ -3559,11 +3559,11 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
                               p2 += p_lk2[csite*ncatgns+catg*ns+j] * Pij2[catg*nsns+i*ns+j];
                               if(isinf(p2) || isnan(p2))
                                 {
-                                  PhyML_Printf("\n== p2: %G p_lk2[csite*ncatgns+catg*ns+j]: %G Pij2[catg*nsns+i*ns+j]: %G (phydbl)POW(2,sum_scale2[csite]): %G\n",
-                                               p2,
-                                               p_lk2[csite*ncatgns+catg*ns+j],
-                                               Pij2[catg*nsns+i*ns+j],
-                                               (phydbl)POW(2,sum_scale2[csite]));
+                                  PhyML_Fprintf(stderr,"\n\u2022 p2: %G p_lk2[csite*ncatgns+catg*ns+j]: %G Pij2[catg*nsns+i*ns+j]: %G (phydbl)POW(2,sum_scale2[csite]): %G\n",
+                                                p2,
+                                                p_lk2[csite*ncatgns+catg*ns+j],
+                                                Pij2[catg*nsns+i*ns+j],
+                                                (phydbl)POW(2,sum_scale2[csite]));
                                   Exit("\n");
                                 }
                             }
@@ -3580,7 +3580,7 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
                       
                       if(isinf(p[i]) || isnan(p[i]))
                         {
-                          PhyML_Printf("\n== site: %4d p0: %G p1: %G p2: %G tree->mod->e_frq->pi->v[i]: %G tree->cur_site_lk[csite]: %G  tree->mod->ras->gamma_r_proba->v[catg]: %G tree->c_lnL_sorted[csite]: %G",
+                          PhyML_Fprintf(stderr,"\n\u2022 site: %4d p0: %G p1: %G p2: %G tree->mod->e_frq->pi->v[i]: %G tree->cur_site_lk[csite]: %G  tree->mod->ras->gamma_r_proba->v[catg]: %G tree->c_lnL_sorted[csite]: %G",
                                        csite,
                                        p0,p1,p2,
                                        tree->mod->e_frq->pi->v[i] ,
@@ -3591,7 +3591,7 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
                         }
                     }
 
-                  /* printf("\n. site: %d || %d %d %d", */
+                  /* printf("\n\u2022 site: %d || %d %d %d", */
                   /*        csite, */
                   /*        v0->tax ? -1 : sum_scale0[csite*ncatg+catg], */
                   /*        v1->tax ? -1 : sum_scale1[csite*ncatg+catg], */
@@ -3621,8 +3621,8 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
                   fflush(NULL);
                   if(Are_Equal(sum_probas,1.0,0.01) == NO)
                     {
-                      PhyML_Printf("\n== Probabilities do not sum to 1.0! Aborting.");
-                      for(i=0;i<ns;++i) PhyML_Printf("\n== p[%2d]=%G",i,p[i]);
+                      PhyML_Fprintf(stderr,"\n\u2022 Probabilities do not sum to 1.0! Aborting.");
+                      for(i=0;i<ns;++i) PhyML_Fprintf(stderr,"\n\u2022 p[%2d]=%G",i,p[i]);
                       Exit("\n");
                     }
                 }
@@ -3683,9 +3683,9 @@ void Pull_Scaling_Factors(int site, t_edge *b, t_tree *tree)
                 
                 if(sum < .0)
                   {
-                    printf("\n== tree: %s\n",Write_Tree(tree,NO));
-                    PhyML_Printf("\n== b->num = %d  sum = %G root ? %d",sum,b->num,b == tree->e_root);
-                    PhyML_Printf("\n== Err. in file %s at line %d.\n",__FILE__,__LINE__);
+                    PhyML_Fprintf(stderr,"\n\u2022 tree: %s\n",Write_Tree(tree,NO));
+                    PhyML_Fprintf(stderr,"\n\u2022 b->num = %d  sum = %G root ? %d",sum,b->num,b == tree->e_root);
+                    PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d.\n",__FILE__,__LINE__);
                     Exit("\n");
                   }
                 
@@ -3703,8 +3703,8 @@ void Pull_Scaling_Factors(int site, t_edge *b, t_tree *tree)
             if(min_sum_scale > max_sum_scale)
               {
 #ifdef SAFEMODE
-                PhyML_Printf("\n== Numerical precision issue alert.");
-                PhyML_Printf("\n== min_sum_scale = %G max_sum_scale = %G",min_sum_scale,max_sum_scale);
+                PhyML_Printf("\n\u2022 Numerical precision issue alert.");
+                PhyML_Printf("\n\u2022 min_sum_scale = %G max_sum_scale = %G",min_sum_scale,max_sum_scale);
 #endif
                 min_sum_scale = max_sum_scale;
               }
@@ -3779,7 +3779,7 @@ void Pull_Scaling_Factors(int site, t_edge *b, t_tree *tree)
       Set_Both_Sides(YES,tree);
       Lk(NULL,tree);
 
-      printf("\n. [%d/%d]",i,tree->n_otu-3);
+      printf("\n\u2022 [%d/%d]",i,tree->n_otu-3);
 
       tree->best_lnL = UNLIKELY;
       best_target    = NULL;
@@ -3832,7 +3832,7 @@ void Pull_Scaling_Factors(int site, t_edge *b, t_tree *tree)
     }
 
   Round_Optimize(tree,5);
-  printf("\n. lk: %f",tree->c_lnL);
+  PhyML_Fprintf(stderr,"\n\u2022 lk: %f",tree->c_lnL);
   Exit("\n");
 
   Free(nd_idx);

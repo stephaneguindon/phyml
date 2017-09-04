@@ -564,7 +564,7 @@ void MIXT_Turn_Branches_OnOff_In_One_Elem(int onoff, t_tree *mixt_tree)
 
   if(mixt_tree->is_mixt_tree == NO)
     {
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
+      PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
       Exit("\n");
     }
 
@@ -572,14 +572,11 @@ void MIXT_Turn_Branches_OnOff_In_One_Elem(int onoff, t_tree *mixt_tree)
 
   do
     {
-      For(i,2*tree->n_otu-1) tree->a_edges[i]->l->onoff = onoff;
+      for(i=0;i<2*tree->n_otu-1;++i) tree->a_edges[i]->l->onoff = onoff;
       tree = tree->next;
     }
   while(tree && tree->is_mixt_tree == NO);
 }
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -834,8 +831,8 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
 
               if(tree == NULL || tree->is_mixt_tree == YES)
                 {
-                  PhyML_Printf("\n== %p",(void *)tree);
-                  PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
+                  PhyML_Fprintf(stderr,"\n\u2022 %p",(void *)tree);
+                  PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
                   Exit("\n");
                 }
             }
@@ -876,8 +873,8 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
 
               if(tree == NULL || tree->is_mixt_tree == YES)
                 {
-                  PhyML_Printf("\n== %p",(void *)tree);
-                  PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
+                  PhyML_Fprintf(stderr,"\n\u2022 %p",(void *)tree);
+                  PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
                   Exit("\n");
                 }
             }
@@ -1012,8 +1009,8 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                   tree = tree->next;
                   if(tree == NULL || tree->is_mixt_tree == YES)
                     {
-                      PhyML_Printf("\n== tree: %p",tree);
-                      PhyML_Printf("\n== Err in file %s at line %d",__FILE__,__LINE__);
+                      PhyML_Fprintf(stderr,"\n\u2022 tree: %p",tree);
+                      PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d",__FILE__,__LINE__);
                       Exit("\n");
                     }
                 }
@@ -1035,14 +1032,14 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
           
           if(isinf(log_site_lk) || isnan(log_site_lk))
             {
-              PhyML_Printf("\n== site = %d",site);
-              PhyML_Printf("\n== invar = %d",mixt_tree->data->invar[site]);
-              PhyML_Printf("\n== mixt = %d",mixt_tree->is_mixt_tree);
-              PhyML_Printf("\n== lk = %G log(lk) = %f < %G",site_lk,log_site_lk,-BIG);
-              for(class=0;class<mixt_tree->mod->ras->n_catg;class++) PhyML_Printf("\n== rr=%f p=%f",mixt_tree->mod->ras->gamma_rr->v[class],mixt_tree->mod->ras->gamma_r_proba->v[class]);
-              PhyML_Printf("\n== pinv = %G",mixt_tree->mod->ras->pinvar->v);
-              PhyML_Printf("\n== bl mult = %G",mixt_tree->mod->br_len_mult->v);
-              PhyML_Printf("\n== Err. in file %s at line %d.\n",__FILE__,__LINE__);
+              PhyML_Fprintf(stderr,"\n\u2022 site = %d",site);
+              PhyML_Fprintf(stderr,"\n\u2022 invar = %d",mixt_tree->data->invar[site]);
+              PhyML_Fprintf(stderr,"\n\u2022 mixt = %d",mixt_tree->is_mixt_tree);
+              PhyML_Fprintf(stderr,"\n\u2022 lk = %G log(lk) = %f < %G",site_lk,log_site_lk,-BIG);
+              for(class=0;class<mixt_tree->mod->ras->n_catg;class++) PhyML_Fprintf(stderr,"\n\u2022 rr=%f p=%f",mixt_tree->mod->ras->gamma_rr->v[class],mixt_tree->mod->ras->gamma_r_proba->v[class]);
+              PhyML_Fprintf(stderr,"\n\u2022 pinv = %G",mixt_tree->mod->ras->pinvar->v);
+              PhyML_Fprintf(stderr,"\n\u2022 bl mult = %G",mixt_tree->mod->br_len_mult->v);
+              PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d.\n",__FILE__,__LINE__);
               Exit("\n");
             }
                     
@@ -1402,17 +1399,17 @@ void MIXT_Check_Invar_Struct_In_Each_Partition_Elem(t_tree *mixt_tree)
 
           if(n_inv > 1)
             {
-              PhyML_Printf("\n== Found %d classes of the mixture for file '%s' set to",n_inv,tree->mixt_tree->io->in_align_file);
-              PhyML_Printf("\n== invariable. Only one such class per mixture is allowed.");
-              PhyML_Printf("\n== Err. in file %s at line %d\n\n",__FILE__,__LINE__);
+              PhyML_Fprintf(stderr,"\n\u2022 Found %d classes of the mixture for file '%s' set to",n_inv,tree->mixt_tree->io->in_align_file);
+              PhyML_Fprintf(stderr,"\n\u2022 invariable. Only one such class per mixture is allowed.");
+              PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n\n",__FILE__,__LINE__);
               Warn_And_Exit("\n");
             }
 
           if(tree->mixt_tree->mod->ras->invar == NO &&
              tree->mod->ras->invar == YES)
             {
-              PhyML_Printf("\n== Unexpected settings for 'siterates' in a partition element (file '%s')",tree->mixt_tree->io->in_align_file);
-              PhyML_Printf("\n== Err. in file %s at line %d\n\n",__FILE__,__LINE__);
+              PhyML_Fprintf(stderr,"\n\u2022 Unexpected settings for 'siterates' in a partition element (file '%s')",tree->mixt_tree->io->in_align_file);
+              PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n\n",__FILE__,__LINE__);
               Warn_And_Exit("\n");
             }
 
@@ -1443,9 +1440,9 @@ void MIXT_Check_RAS_Struct_In_Each_Partition_Elem(t_tree *mixt_tree)
                 {
                   if(tree->next->mod->ras->invar == NO)
                     {
-                      PhyML_Printf("\n== The invariant site class has to be the first element in");
-                      PhyML_Printf("\n== each <mixtureelem> component. Please amend you XML");
-                      PhyML_Printf("\n== file accordingly.\n");
+                      PhyML_Fprintf(stderr,"\n\u2022 The invariant site class has to be the first element in");
+                      PhyML_Fprintf(stderr,"\n\u2022 each <mixtureelem> component. Please amend you XML");
+                      PhyML_Fprintf(stderr,"\n\u2022 file accordingly.\n");
                       Exit("\n\u2022");
                     }
                 }
@@ -1459,14 +1456,14 @@ void MIXT_Check_RAS_Struct_In_Each_Partition_Elem(t_tree *mixt_tree)
             {
               if(n_classes < tree->mixt_tree->mod->ras->n_catg)
                 {
-                  PhyML_Printf("\n== %d class%s found in 'partitionelem' for file '%s' while",
-                               n_classes,
-                               (n_classes>1)?"es\0":"\0",
-                               tree->mixt_tree->io->in_align_file);
-                  PhyML_Printf("\n== the corresponding 'siterates' element defined %d class%s.",
-                               tree->mixt_tree->mod->ras->n_catg,
-                               (tree->mixt_tree->mod->ras->n_catg>1)?"es\0":"\0");
-                  PhyML_Printf("\n== Err. in file %s at line %d\n\n",__FILE__,__LINE__);
+                  PhyML_Fprintf(stderr,"\n\u2022 %d class%s found in 'partitionelem' for file '%s' while",
+                                n_classes,
+                                (n_classes>1)?"es\0":"\0",
+                                tree->mixt_tree->io->in_align_file);
+                  PhyML_Fprintf(stderr,"\n\u2022 the corresponding 'siterates' element defined %d class%s.",
+                                tree->mixt_tree->mod->ras->n_catg,
+                                (tree->mixt_tree->mod->ras->n_catg>1)?"es\0":"\0");
+                  PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n\n",__FILE__,__LINE__);
                   Warn_And_Exit("\n");
                 }
             }
@@ -1787,9 +1784,9 @@ void MIXT_Check_Edge_Lens_In_One_Elem(t_tree *mixt_tree)
             {
               if(tree->a_edges[i]->l != tree->next->a_edges[i]->l)
                 {
-                  PhyML_Printf("\n== %p %p",tree->a_edges[i]->l,tree->next->a_edges[i]->l);
-                  PhyML_Printf("\n== Only one set of edge lengths is allowed ");
-                  PhyML_Printf("\n== in a 'partitionelem'. Please fix your XML file.");
+                  PhyML_Fprintf(stderr,"\n\u2022 %p %p",tree->a_edges[i]->l,tree->next->a_edges[i]->l);
+                  PhyML_Fprintf(stderr,"\n\u2022 Only one set of edge lengths is allowed ");
+                  PhyML_Fprintf(stderr,"\n\u2022 in a 'partitionelem'. Please fix your XML file.");
                   Exit("\n");
                 }
             }
@@ -2290,18 +2287,21 @@ void MIXT_Check_Model_Validity(t_tree *mixt_tree)
             {
               if(mod_in->e_frq == mod_out->e_frq)
                 {
-                  if(mod_in->io->datatype == NT && mod_in->e_frq->user_state_freq == NO)
+                  if(mod_in->io->datatype == NT &&
+                     mod_in->e_frq->user_state_freq == NO &&
+                     mod_in->whichmodel != JC69 &&
+                     mod_in->whichmodel != K80)
                     {
-                      PhyML_Printf("\n== A vector of observed nucleotide frequencies should correspond ");
-                      PhyML_Printf("\n== to one data set only. If you are using the XML interface, ");
-                      PhyML_Printf("\n== please amend your file accordingly.");          
+                      PhyML_Fprintf(stderr,"\n\u2022 A vector of observed nucleotide frequencies should correspond ");
+                      PhyML_Fprintf(stderr,"\n\u2022 to one data set only. If you are using the XML interface, ");
+                      PhyML_Fprintf(stderr,"\n\u2022 please amend your file accordingly.");          
                       Exit("\n");
                     }
                   else if(mod_in->io->datatype == AA && mod_in->e_frq->empirical_state_freq == YES)
                     {
-                      PhyML_Printf("\n== A vector of observed amino-acid frequencies should correspond ");
-                      PhyML_Printf("\n== to one data set only. If you are using the XML interface, ");
-                      PhyML_Printf("\n== please amend your file accordingly.");          
+                      PhyML_Fprintf(stderr,"\n\u2022 A vector of observed amino-acid frequencies should correspond ");
+                      PhyML_Fprintf(stderr,"\n\u2022 to one data set only. If you are using the XML interface, ");
+                      PhyML_Fprintf(stderr,"\n\u2022 please amend your file accordingly.");          
                       Exit("\n");
                     }
                 }
@@ -2755,7 +2755,7 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
           
           if(isinf(len) || isnan(len)) 
             {
-              PhyML_Printf("\n== len=%f rr=%f l=%f",len,rr,*l);
+              PhyML_Fprintf(stderr,"\n\u2022 len=%f rr=%f l=%f",len,rr,*l);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
           
@@ -2917,8 +2917,8 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
                   tree = tree->next;
                   if(!tree || tree->is_mixt_tree == YES)
                     {
-                      PhyML_Printf("\n== tree: %p",tree);
-                      PhyML_Printf("\n== Err in file %s at line %d",__FILE__,__LINE__);
+                      PhyML_Fprintf(stderr,"\n\u2022 tree: %p",tree);
+                      PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d",__FILE__,__LINE__);
                       Exit("\n");
                     }
                 }
@@ -2953,14 +2953,14 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
 
           if(isinf(log_site_lk) || isnan(log_site_lk))
             {
-              PhyML_Printf("\n== site = %d",site);
-              PhyML_Printf("\n== invar = %d",mixt_tree->data->invar[site]);
-              PhyML_Printf("\n== mixt = %d",mixt_tree->is_mixt_tree);
-              PhyML_Printf("\n== lk = %G log(lk) = %f < %G",site_lk,log_site_lk,-BIG);
-              for(class=0;class<mixt_tree->mod->ras->n_catg;++class) PhyML_Printf("\n== rr=%f p=%f",mixt_tree->mod->ras->gamma_rr->v[class],mixt_tree->mod->ras->gamma_r_proba->v[class]);
-              PhyML_Printf("\n== pinv = %G",mixt_tree->mod->ras->pinvar->v);
-              PhyML_Printf("\n== bl mult = %G",mixt_tree->mod->br_len_mult->v);
-              PhyML_Printf("\n== Err. in file %s at line %d.\n",__FILE__,__LINE__);
+              PhyML_Fprintf(stderr,"\n\u2022 site = %d",site);
+              PhyML_Fprintf(stderr,"\n\u2022 invar = %d",mixt_tree->data->invar[site]);
+              PhyML_Fprintf(stderr,"\n\u2022 mixt = %d",mixt_tree->is_mixt_tree);
+              PhyML_Fprintf(stderr,"\n\u2022 lk = %G log(lk) = %f < %G",site_lk,log_site_lk,-BIG);
+              for(class=0;class<mixt_tree->mod->ras->n_catg;++class) PhyML_Printf("\n\u2022 rr=%f p=%f",mixt_tree->mod->ras->gamma_rr->v[class],mixt_tree->mod->ras->gamma_r_proba->v[class]);
+              PhyML_Fprintf(stderr,"\n\u2022 pinv = %G",mixt_tree->mod->ras->pinvar->v);
+              PhyML_Fprintf(stderr,"\n\u2022 bl mult = %G",mixt_tree->mod->br_len_mult->v);
+              PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d.\n",__FILE__,__LINE__);
               Exit("\n");
             }
           

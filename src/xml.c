@@ -29,7 +29,7 @@ t_tree *XML_Process_Base(char *xml_filename)
   fp = fopen(xml_filename,"r");
   if(!fp)
     {
-      PhyML_Printf("\n== Could not find the XML file '%s'.\n",xml_filename);
+      PhyML_Fprintf(stderr,"\n\u2022 Could not find the XML file '%s'.\n",xml_filename);
       Exit("\n");
     }
 
@@ -37,7 +37,7 @@ t_tree *XML_Process_Base(char *xml_filename)
 
   if(!root)
     {
-      PhyML_Printf("\n== Encountered an issue while loading the XML file.\n");
+      PhyML_Fprintf(stderr,"\n\u2022 Encountered an issue while loading the XML file.\n");
       Exit("\n");
     }
 
@@ -75,14 +75,14 @@ t_tree *XML_Process_Base(char *xml_filename)
 
   if(count > 1)
     {
-      PhyML_Printf("\n== There should not more than one 'topology' node.");
-      PhyML_Printf("\n== Found %d. Please fix your XML file",count);
+      PhyML_Fprintf(stderr,"\n\u2022 There should not more than one 'topology' node.");
+      PhyML_Fprintf(stderr,"\n\u2022 Found %d. Please fix your XML file",count);
       Exit("\n");
     }
   else if(count < 1)
     {
-      PhyML_Printf("\n== There should be at least one 'topology' node.");
-      PhyML_Printf("\n== Found none. Please fix your XML file");
+      PhyML_Fprintf(stderr,"\n\u2022 There should be at least one 'topology' node.");
+      PhyML_Fprintf(stderr,"\n\u2022 Found none. Please fix your XML file");
       Exit("\n");
     }
 
@@ -94,8 +94,8 @@ t_tree *XML_Process_Base(char *xml_filename)
 
   if(!outputfile)
     {
-      PhyML_Printf("\n== The 'outputfile' attribute in 'phyml' tag is mandatory.");
-      PhyML_Printf("\n== Please amend your XML file accordingly.");
+      PhyML_Fprintf(stderr,"\n\u2022 The 'outputfile' attribute in 'phyml' tag is mandatory.");
+      PhyML_Fprintf(stderr,"\n\u2022 Please amend your XML file accordingly.");
       Exit("\n");
     }
 
@@ -197,8 +197,8 @@ t_tree *XML_Process_Base(char *xml_filename)
         }
       else
         {
-          PhyML_Printf("\n== '%s' is not a valid option for 'branch.test'.",s);
-          PhyML_Printf("\n== Please use 'aLRT' or 'aBayes' or 'SH'.");
+          PhyML_Fprintf(stderr,"\n\u2022 '%s' is not a valid option for 'branch.test'.",s);
+          PhyML_Fprintf(stderr,"\n\u2022 Please use 'aLRT' or 'aBayes' or 'SH'.");
           Exit("\n");
         }
     }
@@ -250,9 +250,9 @@ t_tree *XML_Process_Base(char *xml_filename)
       dt = XML_Get_Attribute_Value(p_elem,"data.type");
       if(!dt)
         {
-          PhyML_Printf("\n== Please specify the type of data ('aa' or 'nt') for partition element '%s'",
-                       XML_Get_Attribute_Value(p_elem,"id"));
-          PhyML_Printf("\n== Syntax: 'data.type=\"aa\"' or 'data.type=\"nt\"'");
+          PhyML_Fprintf(stderr,"\n\u2022 Please specify the type of data ('aa' or 'nt') for partition element '%s'",
+                        XML_Get_Attribute_Value(p_elem,"id"));
+          PhyML_Fprintf(stderr,"\n\u2022 Syntax: 'data.type=\"aa\"' or 'data.type=\"nt\"'");
           Exit("\n");
         }
       
@@ -271,7 +271,7 @@ t_tree *XML_Process_Base(char *xml_filename)
           }
         default:
           {
-            PhyML_Printf("\n== Unknown data type. Must be either 'aa' or 'nt'.");
+            PhyML_Fprintf(stderr,"\n\u2022 Unknown data type. Must be either 'aa' or 'nt'.");
             Exit("\n");
           }
         }
@@ -322,8 +322,8 @@ t_tree *XML_Process_Base(char *xml_filename)
       
       if(!alignment)
         {
-          PhyML_Printf("\n== 'file.name' tag is mandatory. Please amend your");
-          PhyML_Printf("\n== XML file accordingly.");
+          PhyML_Fprintf(stderr,"\n\u2022 'file.name' tag is mandatory. Please amend your");
+          PhyML_Fprintf(stderr,"\n\u2022 XML file accordingly.");
           Exit("\n");
         }
       
@@ -500,8 +500,8 @@ t_tree *XML_Process_Base(char *xml_filename)
               
               if(j != n_components && first_m_elem > 1)
                 {
-                  PhyML_Printf("\n== Discrepancy in the number of elements in nodes 'mixtureelem' partitionelem id '%s'",p_elem->id);
-                  PhyML_Printf("\n== Check 'mixturelem' node with list '%s'",list);
+                  PhyML_Fprintf(stderr,"\n\u2022 Discrepancy in the number of elements in nodes 'mixtureelem' partitionelem id '%s'",p_elem->id);
+                  PhyML_Fprintf(stderr,"\n\u2022 Check 'mixturelem' node with list '%s'",list);
                   Exit("\n");
                 }
               n_components = j;
@@ -595,14 +595,14 @@ t_tree *XML_Process_Base(char *xml_filename)
                       
                       if(!instance)
                         {
-                          PhyML_Printf("\n== Could not find a node with id: '%s'.",component);
-                          PhyML_Printf("\n== Problem with 'mixtureelem' node, list '%s'.",list);
+                          PhyML_Fprintf(stderr,"\n\u2022 Could not find a node with id: '%s'.",component);
+                          PhyML_Fprintf(stderr,"\n\u2022 Problem with 'mixtureelem' node, list '%s'.",list);
                           Exit("\n");
                         }
                       
                       if(!instance->parent)
                         {
-                          PhyML_Printf("\n== Node '%s' with id:'%s' has no parent.",instance->name,component);
+                          PhyML_Fprintf(stderr,"\n\u2022 Node '%s' with id:'%s' has no parent.",instance->name,component);
                           Exit("\n");
                         }
                       
@@ -938,9 +938,9 @@ t_tree *XML_Process_Base(char *xml_filename)
                                      tree->prev->a_edges[i]->l == mixt_tree->a_edges[i]->l &&
                                      tree->prev->is_mixt_tree == NO)
                                     {
-                                      PhyML_Printf("\n== %p %p",tree->a_edges[i]->l,mixt_tree->a_edges[i]->l);
-                                      PhyML_Printf("\n== Only one set of edge lengths is allowed ");
-                                      PhyML_Printf("\n== in a 'partitionelem'. Please fix your XML file.");
+                                      PhyML_Fprintf(stderr,"\n\u2022 %p %p",tree->a_edges[i]->l,mixt_tree->a_edges[i]->l);
+                                      PhyML_Fprintf(stderr,"\n\u2022 Only one set of edge lengths is allowed ");
+                                      PhyML_Fprintf(stderr,"\n\u2022 in a 'partitionelem'. Please fix your XML file.");
                                       Exit("\n");
                                     }
                                 }
@@ -1009,8 +1009,8 @@ t_tree *XML_Process_Base(char *xml_filename)
                           
                           if(n_otu != tree->n_otu)
                             {
-                              PhyML_Printf("\n== All the data sets should display the same number of sequences.");
-                              PhyML_Printf("\n== Found at least one data set with %d sequences and one with %d sequences.",n_otu,tree->n_otu);
+                              PhyML_Fprintf(stderr,"\n\u2022 All the data sets should display the same number of sequences.");
+                              PhyML_Fprintf(stderr,"\n\u2022 Found at least one data set with %d sequences and one with %d sequences.",n_otu,tree->n_otu);
                               Exit("\n");
                             }
                           
@@ -1115,7 +1115,7 @@ xml_node *XML_Load_File(FILE *fp)
         {
           *bufptr = '\0';
 
-          /* PhyML_Printf("\n. Read value '%s' for node '%s'",buffer,node->name); */
+          /* PhyML_Printf("\n\u2022 Read value '%s' for node '%s'",buffer,node->name); */
           /* fflush(NULL); */
 
           XML_Set_Node_Value(node,buffer);
@@ -1131,11 +1131,11 @@ xml_node *XML_Load_File(FILE *fp)
               if(isspace(c) != NO || c == '>' || (c == '/' && bufptr > buffer)) break; // End of open or close tag
               else if(c == '<')
                 {
-                  Exit("\n== Bare < in element!");
+                  Exit("\n\u2022 Bare < in element!");
                 }             
               else if(XML_Add_Character(c,&bufptr,&buffer,&bufsize))
                 {
-                  PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+                  PhyML_Printf("\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
                   Exit("\n");     
                 }
             }
@@ -1151,7 +1151,7 @@ xml_node *XML_Load_File(FILE *fp)
                      bufptr[-2] == '-' && bufptr[-1] == '-') break;
                   else if(XML_Add_Character(c,&bufptr,&buffer,&bufsize))
                     {
-                      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+                      PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
                       Exit("\n");         
                     }
                 }
@@ -1159,7 +1159,7 @@ xml_node *XML_Load_File(FILE *fp)
 
               if(c != '>')
                 {
-                  PhyML_Printf("\n== Early EOF in comment node.");
+                  PhyML_Fprintf(stderr,"\n\u2022 Early EOF in comment node.");
                   Exit("\n");     
                 }             
             }     
@@ -1167,12 +1167,12 @@ xml_node *XML_Load_File(FILE *fp)
             {
               if(strcmp(buffer+1,parent->name))
                 {
-                  PhyML_Printf("\n== Opened tag with name '%s' and closed it with '%s'...",node->name,buffer+1);
-                  PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+                  PhyML_Fprintf(stderr,"\n\u2022 Opened tag with name '%s' and closed it with '%s'...",node->name,buffer+1);
+                  PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
                   Exit("\n");
                 }
 
-              /* printf("\n. Closing node with name '%s'",node->name); */
+              /* printf("\n\u2022 Closing node with name '%s'",node->name); */
 
               if(node->parent)
                 {
@@ -1188,15 +1188,15 @@ xml_node *XML_Load_File(FILE *fp)
                     break;
                   else if (XML_Add_Character(c, &bufptr, &buffer, &bufsize))
                     {
-                      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+                      PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
                       Exit("\n");         
                     }
                 }
 
               if(c != '>')
                 {
-                  PhyML_Printf("\n== An error occurred when reading the processing instruction.");
-                  PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+                  PhyML_Fprintf(stderr,"\n\u2022 An error occurred when reading the processing instruction.");
+                  PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
                   Exit("\n");     
                 }
 
@@ -1214,7 +1214,7 @@ xml_node *XML_Load_File(FILE *fp)
                 {
                   if((c=fgetc(fp)) != '>')
                     {
-                      PhyML_Printf("\n== Expected '>' but read '%c' instead",c);
+                      PhyML_Fprintf(stderr,"\n\u2022 Expected '>' but read '%c' instead",c);
                       Exit("\n");
                     }
                   c = '/';
@@ -1230,7 +1230,7 @@ xml_node *XML_Load_File(FILE *fp)
         {
           if(XML_Add_Character(c,&bufptr,&buffer,&bufsize))
             {
-              PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+              PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
               Exit("\n");
             }
         }
@@ -1258,7 +1258,7 @@ int XML_Add_Character(int c, char  **bufptr, char **buffer, int *bufsize)
     if((newbuffer = realloc(*buffer, *bufsize)) == NULL)
       {
         Free(*buffer);
-        PhyML_Printf("\n== Unable to expand string buffer to %d bytes!", *bufsize);
+        PhyML_Fprintf(stderr,"\n\u2022 Unable to expand string buffer to %d bytes!", *bufsize);
         Exit("\n");
       }
     
@@ -1294,19 +1294,19 @@ int XML_Parse_Element(FILE *fp, xml_node *n)
 
       if(c == '/') // End of tag
         {
-          /* printf("\n. Closing node '%s'.",n->name); */
+          /* printf("\n\u2022 Closing node '%s'.",n->name); */
 
           quote = fgetc(fp);
           if(quote != '>')
             {
-              PhyML_Printf("\n== Expected '>' after '%c' but read '%c' instead",c,quote);
+              PhyML_Fprintf(stderr,"\n\u2022 Expected '>' after '%c' but read '%c' instead",c,quote);
               Exit("\n");
             }
           break;
         }
       else if(c == '<')
         {
-          Exit("\n== Bare < in element!");        
+          Exit("\n\u2022 Bare < in element!");        
         }
       else if(c == '>') // End of tag
         {
@@ -1324,7 +1324,7 @@ int XML_Parse_Element(FILE *fp, xml_node *n)
             {
               if(XML_Add_Character(c,&ptr,&name,&namesize))
                 {
-                  PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+                  PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
                   Exit("\n");
                 }
               if(c == quote) break;
@@ -1340,7 +1340,7 @@ int XML_Parse_Element(FILE *fp, xml_node *n)
                 {
                   if(XML_Add_Character(c,&ptr,&name,&namesize))
                     {
-                      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+                      PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
                       Exit("\n");
                     }
                 }         
@@ -1357,8 +1357,8 @@ int XML_Parse_Element(FILE *fp, xml_node *n)
 
           if(c == EOF)
             {
-              PhyML_Printf("\n== Missing value in attribute.");
-              PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+              PhyML_Fprintf(stderr,"\n\u2022 Missing value in attribute.");
+              PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
               Exit("\n");
             }
 
@@ -1374,7 +1374,7 @@ int XML_Parse_Element(FILE *fp, xml_node *n)
                     {
                       if(XML_Add_Character(c,&ptr,&value,&valsize))
                         {
-                          PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+                          PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
                           Exit("\n");
                         }
                     }
@@ -1394,7 +1394,7 @@ int XML_Parse_Element(FILE *fp, xml_node *n)
                     {
                       if(XML_Add_Character(c,&ptr,&value,&valsize))
                         {
-                          PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+                          PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
                           Exit("\n");
                         }                     
                     }
@@ -1402,7 +1402,7 @@ int XML_Parse_Element(FILE *fp, xml_node *n)
             }
         }
 
-      /* printf("\n. Setting attribute '%s=%s' to node '%s'",name,value,n->name); */
+      /* printf("\n\u2022 Setting attribute '%s=%s' to node '%s'",name,value,n->name); */
       XML_Set_Attribute(n,name,value);
 
       if(c == '>') break;
@@ -1412,7 +1412,7 @@ int XML_Parse_Element(FILE *fp, xml_node *n)
   Free(name);
   Free(value);
 
-  /* printf("\n. Return '%c'\n",c); */
+  /* printf("\n\u2022 Return '%c'\n",c); */
   return(c);
 }
 
@@ -1460,7 +1460,7 @@ int XML_Set_Attribute(xml_node *n, char *attr_name, char *attr_value)
   if(!strcmp(s,"id"))
     {
       XML_Set_Node_Id(n,attr_value);
-      /* printf("\n. Node '%s' id is '%s'",n->name,n->id); */
+      /* printf("\n\u2022 Node '%s' id is '%s'",n->name,n->id); */
     }
   Free(s);
 
@@ -1499,10 +1499,10 @@ xml_node *XML_Search_Node_Generic(char *nd_name, char *attr_name, char *attr_val
 
   xml_node *match;
 
-  /* if(nd_name) printf("\n. [1] nd_name:%s attr_name:%s attr_val:%s \n", nd_name, attr_name, attr_val); */
-  /* else  printf("\n. attr_name:%s attr_val:%s \n", attr_name, attr_val); */
+  /* if(nd_name) printf("\n\u2022 [1] nd_name:%s attr_name:%s attr_val:%s \n", nd_name, attr_name, attr_val); */
+  /* else  printf("\n\u2022 attr_name:%s attr_val:%s \n", attr_name, attr_val); */
   
-  /* printf("\n. name:%s child:%s next:%s ", */
+  /* printf("\n\u2022 name:%s child:%s next:%s ", */
   /*     node?node->name:"xx", */
   /*     node->child?node->child->name:"xx", */
   /*     node->next?node->next->name:"xx"); fflush(NULL); */
@@ -1596,7 +1596,7 @@ xml_node *XML_Search_Node_Generic(char *nd_name, char *attr_name, char *attr_val
     {
       if(node -> parent == NULL) // Reached the root
         {
-          PhyML_Printf("\n== Could not find a node with name '%s'.", attr_name);
+          PhyML_Fprintf(stderr,"\n\u2022 Could not find a node with name '%s'.", attr_name);
           Exit("\n");
         }
       return NULL;
@@ -1611,7 +1611,7 @@ xml_node *XML_Search_Node_Name(char *name, int skip, xml_node *node)
 {
   xml_node *match;
   
-  /* printf("\n. name:%s child:%s next:%s ", */
+  /* printf("\n\u2022 name:%s child:%s next:%s ", */
   /*     node?node->name:"xx", */
   /*     node->child?node->child->name:"xx", */
   /*     node->next?node->next->name:"xx"); fflush(NULL); */
@@ -1634,7 +1634,7 @@ xml_node *XML_Search_Node_Name(char *name, int skip, xml_node *node)
         {
           if(node->parent == NULL) // Reached the root
             {
-              PhyML_Printf("\n== Could not find a node with name '%s'.",name);
+              PhyML_Fprintf(stderr,"\n\u2022 Could not find a node with name '%s'.",name);
               Exit("\n");
             }
           return NULL;
@@ -1652,7 +1652,7 @@ xml_node *XML_Search_Node_ID(char *id, int skip, xml_node *node)
   
   if(!node)
     {
-      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");         
     }
       
@@ -1675,7 +1675,7 @@ xml_node *XML_Search_Node_ID(char *id, int skip, xml_node *node)
         {
           if(node->parent == NULL) // Reached the root
             {
-              PhyML_Printf("\n== Could not find a node with id '%s'.",id);
+              PhyML_Fprintf(stderr,"\n\u2022 Could not find a node with id '%s'.",id);
               Exit("\n");
             }
           
@@ -1695,8 +1695,8 @@ xml_node *XML_Search_Node_Attribute_Value(char *attr_name, char *value, int skip
   
   if(!node)
     {
-      PhyML_Printf("\n== node: %p attr: %p",node,node?node->attr:NULL);
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n\u2022 node: %p attr: %p",node,node?node->attr:NULL);
+      PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");         
     }
   
@@ -1806,7 +1806,7 @@ int XML_Validate_Attr_Int(char *target, int num, ...)
   if(i == num) 
     {
       i = -1;
-      PhyML_Printf("\n== Attribute value '%s' is not valid",target);
+      PhyML_Fprintf(stderr,"\n\u2022 Attribute value '%s' is not valid",target);
       Exit("\n");
     }
 
@@ -1829,13 +1829,13 @@ void XML_Check_Siterates_Node(xml_node *parent)
 
   if(!parent)
     {
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");         
     }
 
   if(strcmp(parent->name,"siterates"))
     {
-      PhyML_Printf("\n== Node name '%s' should be 'siterates'",parent->name);
+      PhyML_Fprintf(stderr,"\n\u2022 Node name '%s' should be 'siterates'",parent->name);
       Exit("\n");
     }
   
@@ -1847,7 +1847,7 @@ void XML_Check_Siterates_Node(xml_node *parent)
       if(!strcmp(n->name,"weights")) n_weights_nodes++;
       if(n_weights_nodes > 1)
         {
-          PhyML_Printf("\n== Only one distribution is authorized for 'siterates' nodes.");
+          PhyML_Fprintf(stderr,"\n\u2022 Only one distribution is authorized for 'siterates' nodes.");
           Exit("\n");
         }
       n = n->next;
@@ -1876,8 +1876,8 @@ void XML_Check_Siterates_Node(xml_node *parent)
                   
                   if(rate_value == endptr || errno == ERANGE)
                     {
-                      PhyML_Printf("\n== value: %s",rate_value);
-                      PhyML_Printf("\n== Error in reading attribute 'init.value' in node 'instance'.");
+                      PhyML_Fprintf(stderr,"\n\u2022 value: %s",rate_value);
+                      PhyML_Fprintf(stderr,"\n\u2022 Error in reading attribute 'init.value' in node 'instance'.");
                       Exit("\n");
                     }
                   
@@ -1891,9 +1891,9 @@ void XML_Check_Siterates_Node(xml_node *parent)
       
       if(n_zeros != 1)
         {
-          PhyML_Printf("\n== # of zero-rates: %d",n_zeros);
-          PhyML_Printf("\n== Exactly one rate value has to be set to zero when using the 'gamma+inv' model.");
-          PhyML_Printf("\n== Component id: %s",parent->id);
+          PhyML_Fprintf(stderr,"\n\u2022 # of zero-rates: %d",n_zeros);
+          PhyML_Fprintf(stderr,"\n\u2022 Exactly one rate value has to be set to zero when using the 'gamma+inv' model.");
+          PhyML_Fprintf(stderr,"\n\u2022 Component id: %s",parent->id);
           Exit("\n");
         }
     }
@@ -1909,7 +1909,7 @@ int XML_Get_Number_Of_Classes_Siterates(xml_node *parent)
 
   if(!parent)
     {
-      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
     }
 
@@ -1938,7 +1938,7 @@ int XML_Siterates_Has_Invariants(xml_node *parent)
 
   if(!parent)
     {
-      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");         
     }
       
@@ -1984,9 +1984,9 @@ void XML_Check_Duplicate_ID(xml_node *n)
   
   if(count > 1)
     {
-      PhyML_Printf("\n== Node ID '%s' was found more than once.",n->id);
-      PhyML_Printf("\n== Each ID must be unique. Please amend your XML");
-      PhyML_Printf("\n== file accordingly.");
+      PhyML_Fprintf(stderr,"\n\u2022 Node ID '%s' was found more than once.",n->id);
+      PhyML_Fprintf(stderr,"\n\u2022 Each ID must be unique. Please amend your XML");
+      PhyML_Fprintf(stderr,"\n\u2022 file accordingly.");
       Exit("\n");
     }
 
@@ -2118,8 +2118,8 @@ void Check_Mandatory_XML_Node(xml_node *root, char *name)
 {
   if(!XML_Search_Node_Name(name,NO,root))
     {
-      PhyML_Printf("\n== Could not find mandatory XML node with name '%s'.",name);
-      PhyML_Printf("\n== Please amend your XML file.");
+      PhyML_Fprintf(stderr,"\n\u2022 Could not find mandatory XML node with name '%s'.",name);
+      PhyML_Fprintf(stderr,"\n\u2022 Please amend your XML file.");
       Exit("\n");
     }
 }
@@ -2142,8 +2142,8 @@ int XML_Number_Of_Taxa_In_Clade(xml_node *n_clade)
     }
   else
     {
-      PhyML_Printf("\n== Clade is empty.");
-      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n\u2022 Clade is empty.");
+      PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
   return(clade_size);
@@ -2173,8 +2173,8 @@ char **XML_Read_Clade(xml_node *xnd_clade, t_tree *tree)
     }
   else
     {
-      PhyML_Printf("== Clade is empty. \n");
-      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"== Clade is empty. \n");
+      PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
 
@@ -2218,7 +2218,7 @@ void DATE_XML(char *xml_filename)
   fp_xml_in = fopen(xml_filename,"r");
   if(!fp_xml_in)
     {
-      PhyML_Printf("\n== Could not find the XML file '%s'.\n",xml_filename);
+      PhyML_Fprintf(stderr,"\n\u2022 Could not find the XML file '%s'.\n",xml_filename);
       Exit("\n");
     }
 
@@ -2227,7 +2227,7 @@ void DATE_XML(char *xml_filename)
 
   if(xroot == NULL)
     {
-      PhyML_Printf("\n== Encountered an issue while loading the XML file.\n");
+      PhyML_Fprintf(stderr,"\n\u2022 Encountered an issue while loading the XML file.\n");
       Exit("\n");
     }
   
@@ -2236,16 +2236,16 @@ void DATE_XML(char *xml_filename)
 
   if(xnd == NULL)
     {
-      PhyML_Printf("\n== No calibration information seems to be provided.");
-      PhyML_Printf("\n== Please amend your XML file. \n");
+      PhyML_Fprintf(stderr,"\n\u2022 No calibration information seems to be provided.");
+      PhyML_Fprintf(stderr,"\n\u2022 Please amend your XML file. \n");
       Exit("\n");
     }
   else
     {
       if(XML_Search_Node_Name("upper",NO,xnd->child) == NULL && XML_Search_Node_Name("lower",NO,xnd->child) == NULL)
 	{
-	  PhyML_Printf("\n== There is no calibration information provided. \n");
-	  PhyML_Printf("\n== Please check your data. \n");
+	  PhyML_Fprintf(stderr,"\n\u2022 There is no calibration information provided. \n");
+	  PhyML_Fprintf(stderr,"\n\u2022 Please check your data. \n");
 	  Exit("\n");
 	}
     }
@@ -2309,8 +2309,8 @@ void DATE_XML(char *xml_filename)
                   
                   if(!clade_name)
                     {
-                      PhyML_Printf("\n== Attribute 'value=CLADE_NAME' is mandatory");
-                      PhyML_Printf("\n== Please amend your XML file accordingly.");
+                      PhyML_Fprintf(stderr,"\n\u2022 Attribute 'value=CLADE_NAME' is mandatory");
+                      PhyML_Fprintf(stderr,"\n\u2022 Please amend your XML file accordingly.");
                       Exit("\n");
                     }
 
@@ -2371,18 +2371,18 @@ void DATE_XML(char *xml_filename)
                           /* cal->target_tip = Make_Target_Tip(cal->n_target_tax); */
                           /* Init_Target_Tip(cal,mixt_tree); */
 
-                          /* PhyML_Printf("\n. Node number to which calibration [%s] applies to is [%d]",clade_name,nd_num);                           */
-                          /* PhyML_Printf("\n. Lower bound set to: %15f time units.",low); */
-                          /* PhyML_Printf("\n. Upper bound set to: %15f time units.",up); */
-                          /* PhyML_Printf("\n. Probability: %15G",cal->alpha); */
-                          /* PhyML_Printf("\n. ......................................................................."); */
+                          /* PhyML_Printf("\n\u2022 Node number to which calibration [%s] applies to is [%d]",clade_name,nd_num);                           */
+                          /* PhyML_Printf("\n\u2022 Lower bound set to: %15f time units.",low); */
+                          /* PhyML_Printf("\n\u2022 Upper bound set to: %15f time units.",up); */
+                          /* PhyML_Printf("\n\u2022 Probability: %15G",cal->alpha); */
+                          /* PhyML_Printf("\n\u2022 ......................................................................."); */
 
                           Free(xclade);
                         }
                       else
                         {
-                          PhyML_Printf("\n== Calibration information for clade [%s] was not found.", clade_name);
-                          PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+                          PhyML_Fprintf(stderr,"\n\u2022 Calibration information for clade [%s] was not found.", clade_name);
+                          PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
                           Exit("\n");
                         }                      
                     }
@@ -2399,7 +2399,7 @@ void DATE_XML(char *xml_filename)
   seed = (mixt_tree->io->r_seed < 0)?(time(NULL)):(mixt_tree->io->r_seed);
   srand(seed);
   mixt_tree->io->r_seed = seed;
-  PhyML_Printf("\n. Seed: %d",seed);
+  PhyML_Printf("\n\u2022 Seed: %d",seed);
 
   MIXT_Chain_Cal(mixt_tree);
 
