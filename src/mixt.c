@@ -1885,7 +1885,7 @@ void MIXT_Bootstrap(char *best_tree, xml_node *root)
       n_boot = atoi(bootstrap);
 
       io = NULL;
-      for(i=0;i<n_boot;i++)
+      for(i=0;i<n_boot;++i)
         {
           boot_root = XML_Copy_XML_Graph(root);
 
@@ -1937,10 +1937,10 @@ void MIXT_Bootstrap(char *best_tree, xml_node *root)
               fclose(io->fp_in_align);
 
               /*! Bootstrap resampling: sample from original and put in boot */
-              For(j,boot_data[0]->len)
+              for(j=0;j<boot_data[0]->len;++j)
                 {
                   position = Rand_Int(0,(int)(boot_data[0]->len-1.0));
-                  for(k=0;k<io->n_otu;k++)
+                  for(k=0;k<io->n_otu;++k)
                     {
                       boot_data[k]->state[j] = orig_data[k]->state[position];
                     }
@@ -1960,10 +1960,8 @@ void MIXT_Bootstrap(char *best_tree, xml_node *root)
               Print_Seq(boot_fp_in_align,boot_data,io->n_otu);
               fclose(boot_fp_in_align);
 
-
               Free_Seq(orig_data,io->n_otu);
               Free_Seq(boot_data,io->n_otu);
-
 
               Free_Input(io);
               elem++;
@@ -1988,7 +1986,7 @@ void MIXT_Bootstrap(char *best_tree, xml_node *root)
               p_elem = XML_Search_Node_Name("partitionelem",YES,p_elem);
               if(!p_elem) break;
               seqfile_attr = XML_Search_Attribute(p_elem,"file.name");
-              /* unlink(seqfile_attr->value); */
+              unlink(seqfile_attr->value);
             }
           while(p_elem);
 

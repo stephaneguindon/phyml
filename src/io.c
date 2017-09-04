@@ -2188,12 +2188,13 @@ void Print_Seq(FILE *fp, align **data, int n_otu)
   PhyML_Fprintf(fp,"%d\t%d\n",n_otu,data[0]->len);
   for(i=0;i<n_otu;i++)
     {
-      for(j=0;j<20;j++)
-        {
-          if(j<(int)strlen(data[i]->name))
-            fputc(data[i]->name[j],fp);
-          else fputc(' ',fp);
-        }
+      PhyML_Fprintf(fp,"%s\t",data[i]->name);
+      /* for(j=0;j<20;j++) */
+      /*   { */
+      /*     if(j<(int)strlen(data[i]->name)) */
+      /*       fputc(data[i]->name[j],fp); */
+      /*     else fputc(' ',fp); */
+      /*   } */
       /*       PhyML_Printf("%10d  ",i); */
       For(j,data[i]->len)
         {
