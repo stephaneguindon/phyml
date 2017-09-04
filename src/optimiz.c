@@ -991,6 +991,8 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
   Optimize_Free_Rate(tree,verbose);
   Optimize_Br_Len_Multiplier(tree,verbose);
 
+  if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
+
   if(tree->mod->use_m4mod)
     {
       int failed,i;
