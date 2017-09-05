@@ -8058,6 +8058,10 @@ char *aLRT_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
   Make_Tree_4_Lk(tree,cdata,cdata->init_len);
   tree->triplet_struct = Make_Triplet_Struct(mod);
   Init_Triplet_Struct(tree->triplet_struct);
+
+  Unscale_Br_Len_Multiplier_Tree(tree);
+  Br_Len_Not_Involving_Invar(tree);
+
   Make_Spr_List(tree);
   Make_Best_Spr(tree);
 
@@ -8066,15 +8070,15 @@ char *aLRT_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
 #endif
 
   Set_Both_Sides(YES,tree);
-//  Print_All_Edge_Likelihoods(tree);
   Lk(NULL,tree);
-//  Print_All_Edge_PMats(tree);
-//  Print_All_Edge_Likelihoods(tree);
-
+  
   aLRT(tree);
 
-
   Free(s_tree);
+
+  Rescale_Br_Len_Multiplier_Tree(tree);
+  Br_Len_Involving_Invar(tree);
+
   s_tree = Write_Tree(tree,NO);
 
 #ifdef BEAGLE
