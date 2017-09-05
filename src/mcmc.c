@@ -970,7 +970,7 @@ void MCMC_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
       
       u = Uni();
       
-      /* PhyML_Printf("\n== %f->%f %f->%f %f->%f ratio:%f", */
+      /* PhyML_Printf("\n\u2022 %f->%f %f->%f %f->%f ratio:%f", */
       /*              cur_mu,new_mu, */
       /*              cur_lnL_data,new_lnL_data, */
       /*              cur_lnL_rate,new_lnL_rate, */
@@ -990,8 +990,8 @@ void MCMC_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
           /* new_lnL_data = Lk(b,tree); /\* Not necessary. Remove once tested *\/ */
           /* if(Are_Equal(new_lnL_data,cur_lnL_data,1.E-3) == NO) */
           /*   { */
-          /*     PhyML_Printf("\n== a: %d d: %d ",a->num,d->num); */
-          /*     PhyML_Printf("\n== new_alnL: %f cur_alnL: %f",new_lnL_data,cur_lnL_data); */
+          /*     PhyML_Printf("\n\u2022 a: %d d: %d ",a->num,d->num); */
+          /*     PhyML_Printf("\n\u2022 new_alnL: %f cur_alnL: %f",new_lnL_data,cur_lnL_data); */
           /*     Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
           /*   } */
         }
@@ -1003,8 +1003,8 @@ void MCMC_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
           /* cur_lnL_data = Lk(b,tree); /\* Not necessary. Remove once tested *\/ */
           /* if(Are_Equal(new_lnL_data,cur_lnL_data,1.E-3) == NO) */
           /*   { */
-          /*     PhyML_Printf("\n== a: %d d: %d",a->num,d->num); */
-          /*     PhyML_Printf("\n== new_alnL: %f cur_alnL: %f",new_lnL_data,cur_lnL_data); */
+          /*     PhyML_Printf("\n\u2022 a: %d d: %d",a->num,d->num); */
+          /*     PhyML_Printf("\n\u2022 new_alnL: %f cur_alnL: %f",new_lnL_data,cur_lnL_data); */
           /*     Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
           /*   } */
 	}
@@ -1142,11 +1142,11 @@ void MCMC_Times_And_Rates_Root(t_tree *tree)
 
   if(t_min > t_max) 
     {
-      PhyML_Printf("\n== glnL:%f",TIMES_Lk_Times(NO,tree));
-      PhyML_Printf("\n== t:%f",tree->rates->nd_t[tree->n_root->num]);
-      PhyML_Printf("\n== t0 = %f t2 = %f t3 = %f",t0,t2,t3);
-      PhyML_Printf("\n== t_min = %f t_max = %f",t_min,t_max);
-      PhyML_Printf("\n== prior_min = %f prior_max = %f",tree->rates->t_prior_min[root->num],tree->rates->t_prior_max[root->num]);
+      PhyML_Fprintf(stderr,"\n\u2022 glnL:%f",TIMES_Lk_Times(NO,tree));
+      PhyML_Fprintf(stderr,"\n\u2022 t:%f",tree->rates->nd_t[tree->n_root->num]);
+      PhyML_Fprintf(stderr,"\n\u2022 t0 = %f t2 = %f t3 = %f",t0,t2,t3);
+      PhyML_Fprintf(stderr,"\n\u2022 t_min = %f t_max = %f",t_min,t_max);
+      PhyML_Fprintf(stderr,"\n\u2022 prior_min = %f prior_max = %f",tree->rates->t_prior_min[root->num],tree->rates->t_prior_max[root->num]);
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
     }
 
@@ -1471,11 +1471,11 @@ void MCMC_Time_Recur(t_node *a, t_node *d, int traversal, t_tree *tree)
 
           if(Are_Equal(tree->rates->c_lnL_times,cur_lnL_time,1.E-3) == NO)
             {
-              PhyML_Printf("\n\n");
-              PhyML_Printf("\n== moved node %d from %f to %f\n",d->num,t1_cur,t1_new);
+              PhyML_Fprintf(stderr,"\n\n");
+              PhyML_Fprintf(stderr,"\n\u2022 moved node %d from %f to %f\n",d->num,t1_cur,t1_new);
               Print_Node(tree->n_root,tree->n_root->v[1],tree);
               Print_Node(tree->n_root,tree->n_root->v[2],tree);              
-              PhyML_Printf("\n== new_glnL: %f cur_glnL: %f",tree->rates->c_lnL_times,cur_lnL_time);
+              PhyML_Fprintf(stderr,"\n\u2022 new_glnL: %f cur_glnL: %f",tree->rates->c_lnL_times,cur_lnL_time);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
           
@@ -1483,9 +1483,9 @@ void MCMC_Time_Recur(t_node *a, t_node *d, int traversal, t_tree *tree)
           /* new_lnL_data = Lk(NULL,tree); /\* Not necessary. Remove once tested *\/ */
           /* if(Are_Equal(new_lnL_data,cur_lnL_data,1.E-3) == NO) */
           /*   { */
-          /*     PhyML_Printf("\n== a: %d d: %d v2: %d v3: %d",a->num,d->num,v2->num,v3->num); */
-          /*     PhyML_Printf("\n== t1_cur: %f t1_new: %f",t1_cur,t1_new); */
-          /*     PhyML_Printf("\n== new_alnL: %f cur_alnL: %f",new_lnL_data,cur_lnL_data); */
+          /*     PhyML_Printf("\n\u2022 a: %d d: %d v2: %d v3: %d",a->num,d->num,v2->num,v3->num); */
+          /*     PhyML_Printf("\n\u2022 t1_cur: %f t1_new: %f",t1_cur,t1_new); */
+          /*     PhyML_Printf("\n\u2022 new_alnL: %f cur_alnL: %f",new_lnL_data,cur_lnL_data); */
           /*     Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
           /*   } */
 	}
@@ -1495,9 +1495,9 @@ void MCMC_Time_Recur(t_node *a, t_node *d, int traversal, t_tree *tree)
           /* cur_lnL_data = Lk(NULL,tree); /\* Not necessary. Remove once tested *\/ */
           /* if(Are_Equal(new_lnL_data,cur_lnL_data,1.E-3) == NO) */
           /*   { */
-          /*     PhyML_Printf("\n== a: %d d: %d v2: %d v3: %d",a->num,d->num,v2->num,v3->num); */
-          /*     PhyML_Printf("\n== t1_cur: %f t1_new: %f",t1_cur,t1_new); */
-          /*     PhyML_Printf("\n== new_alnL: %f cur_alnL: %f",new_lnL_data,cur_lnL_data); */
+          /*     PhyML_Printf("\n\u2022 a: %d d: %d v2: %d v3: %d",a->num,d->num,v2->num,v3->num); */
+          /*     PhyML_Printf("\n\u2022 t1_cur: %f t1_new: %f",t1_cur,t1_new); */
+          /*     PhyML_Printf("\n\u2022 new_alnL: %f cur_alnL: %f",new_lnL_data,cur_lnL_data); */
           /*     Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
           /*   } */
 	  tree->mcmc->acc_move[move_num]++;
@@ -1508,29 +1508,29 @@ void MCMC_Time_Recur(t_node *a, t_node *d, int traversal, t_tree *tree)
       if(t1_new < t0)
 	{
 	  t1_new = t0+1.E-4;
-	  PhyML_Printf("\n");
-	  PhyML_Printf("\n== a is root -> %s",(a == tree->n_root)?("YES"):("NO"));
-	  PhyML_Printf("\n== t0 = %f t1_new = %f",t0,t1_new);
-	  PhyML_Printf("\n== t_min=%f t_max=%f",t_min,t_max);
-	  PhyML_Printf("\n== (t1-t0)=%f (t2-t1)=%f",t1_cur-t0,t2-t1_cur);
-	  PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+	  PhyML_Fprintf(stderr,"\n");
+	  PhyML_Fprintf(stderr,"\n\u2022 a is root -> %s",(a == tree->n_root)?("YES"):("NO"));
+	  PhyML_Fprintf(stderr,"\n\u2022 t0 = %f t1_new = %f",t0,t1_new);
+	  PhyML_Fprintf(stderr,"\n\u2022 t_min=%f t_max=%f",t_min,t_max);
+	  PhyML_Fprintf(stderr,"\n\u2022 (t1-t0)=%f (t2-t1)=%f",t1_cur-t0,t2-t1_cur);
+	  PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
 	  /*       Exit("\n"); */
 	}
       if(t1_new > MIN(t2,t3))
 	{
-	  PhyML_Printf("\n");
-	  PhyML_Printf("\n== a is root -> %s",(a == tree->n_root)?("YES"):("NO"));
-	  PhyML_Printf("\n== t0 = %f t1_new = %f t1 = %f t2 = %f t3 = %f MIN(t2,t3)=%f",t0,t1_new,t1_cur,t2,t3,MIN(t2,t3));
-	  PhyML_Printf("\n== t_min=%f t_max=%f",t_min,t_max);
-	  PhyML_Printf("\n== (t1-t0)=%f (t2-t1)=%f",t1_cur-t0,t2-t1_cur);
-	  PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+	  PhyML_Fprintf(stderr,"\n");
+	  PhyML_Fprintf(stderr,"\n\u2022 a is root -> %s",(a == tree->n_root)?("YES"):("NO"));
+	  PhyML_Fprintf(stderr,"\n\u2022 t0 = %f t1_new = %f t1 = %f t2 = %f t3 = %f MIN(t2,t3)=%f",t0,t1_new,t1_cur,t2,t3,MIN(t2,t3));
+	  PhyML_Fprintf(stderr,"\n\u2022 t_min=%f t_max=%f",t_min,t_max);
+	  PhyML_Fprintf(stderr,"\n\u2022 (t1-t0)=%f (t2-t1)=%f",t1_cur-t0,t2-t1_cur);
+	  PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
 	  /*       Exit("\n"); */
 	}
       
       if(isnan(t1_new))
 	{
-	  PhyML_Printf("\n== run=%d",tree->mcmc->run);
-	  PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+	  PhyML_Fprintf(stderr,"\n\u2022 run=%d",tree->mcmc->run);
+	  PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
 	}
     }
   
@@ -1695,13 +1695,13 @@ void MCMC_Jump_Calibration(t_tree *tree)
          
           if(result != TRUE)
             {
-              PhyML_Printf("\n. ...................... OLD CALIBRATION.....................................\n");
+              PhyML_Fprintf(stderr,"\n. ...................... OLD CALIBRATION.....................................\n");
               for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\n. Node number:[%d] Lower bound:[%f] Upper bound:[%f] Node time:[%f]. \n", i, tree -> rates -> t_prior_min_ori[i], tree -> rates -> t_prior_max_ori[i], tree -> rates -> buff_t[i]);
-              PhyML_Printf("\n. ...........................................................................\n");
-              PhyML_Printf("\n. ................. NEW PROPOSED CALIBRATION ................................\n");
+              PhyML_Fprintf(stderr,"\n. ...........................................................................\n");
+              PhyML_Fprintf(stderr,"\n. ................. NEW PROPOSED CALIBRATION ................................\n");
               for(i = tree -> n_otu; i < 2 * tree -> n_otu -1; i++) printf("\n. Node number:[%d] Lower bound:[%f] Upper bound:[%f] Node time:[%f]. \n", i, tree -> rates -> t_prior_min[i], tree -> rates -> t_prior_max[i], tree -> rates -> nd_t[i]);
-              PhyML_Printf("\n. ...........................................................................\n");
-              PhyML_Printf("\n== There is a problem with calibration information.\n");
+              PhyML_Fprintf(stderr,"\n. ...........................................................................\n");
+              PhyML_Fprintf(stderr,"\n\u2022 There is a problem with calibration information.\n");
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
           RATES_Update_Cur_Bl(tree);
@@ -1835,11 +1835,11 @@ void MCMC_Root_Time(t_tree *tree)
 
   if(t_min > t_max) 
     {
-      PhyML_Printf("\n== glnL:%f",TIMES_Lk_Times(NO,tree));
-      PhyML_Printf("\n== t:%f",tree->rates->nd_t[tree->n_root->num]);
-      PhyML_Printf("\n== t0 = %f t2 = %f t3 = %f",t0,t2,t3);
-      PhyML_Printf("\n== t_min = %f t_max = %f",t_min,t_max);
-      PhyML_Printf("\n== prior_min = %f prior_max = %f",tree->rates->t_prior_min[root->num],tree->rates->t_prior_max[root->num]);
+      PhyML_Fprintf(stderr,"\n\u2022 glnL:%f",TIMES_Lk_Times(NO,tree));
+      PhyML_Fprintf(stderr,"\n\u2022 t:%f",tree->rates->nd_t[tree->n_root->num]);
+      PhyML_Fprintf(stderr,"\n\u2022 t0 = %f t2 = %f t3 = %f",t0,t2,t3);
+      PhyML_Fprintf(stderr,"\n\u2022 t_min = %f t_max = %f",t_min,t_max);
+      PhyML_Fprintf(stderr,"\n\u2022 prior_min = %f prior_max = %f",tree->rates->t_prior_min[root->num],tree->rates->t_prior_max[root->num]);
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
     }
 
@@ -1901,7 +1901,7 @@ void MCMC_Root_Time(t_tree *tree)
           /*     PhyML_Printf("\n\n"); */
           /*     Print_Node(tree->n_root,tree->n_root->v[1],tree); */
           /*     Print_Node(tree->n_root,tree->n_root->v[2],tree); */
-          /*     PhyML_Printf("\n== new_glnL: %f cur_glnL: %f",tree->rates->c_lnL_times,cur_lnL_time); */
+          /*     PhyML_Printf("\n\u2022 new_glnL: %f cur_glnL: %f",tree->rates->c_lnL_times,cur_lnL_time); */
           /*     Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
           /*   } */
 	}
@@ -1984,7 +1984,7 @@ void MCMC_Tree_Height(t_tree *tree)
 
       if(Are_Equal(tree->rates->c_lnL_times,cur_lnL_time,1.E-3) == NO)
         {
-          PhyML_Printf("\n== new_glnL: %f cur_glnL: %f",tree->rates->c_lnL_times,cur_lnL_time);
+          PhyML_Fprintf(stderr,"\n\u2022 new_glnL: %f cur_glnL: %f",tree->rates->c_lnL_times,cur_lnL_time);
           Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
         }
     }
@@ -2640,7 +2640,7 @@ void MCMC_Time_Slice(t_tree *tree)
 
       if(Are_Equal(tree->rates->c_lnL_times,cur_lnL_time,1.E-3) == NO)
         {
-          PhyML_Printf("\n== new_glnL: %f cur_glnL: %f",tree->rates->c_lnL_times,cur_lnL_time);
+          PhyML_Fprintf(stderr,"\n\u2022 new_glnL: %f cur_glnL: %f",tree->rates->c_lnL_times,cur_lnL_time);
           Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
         }
     }
@@ -3210,7 +3210,7 @@ void MCMC_Pause(t_mcmc *mcmc)
 
 	    if(len < 0)
 	      {
-		PhyML_Printf("\n. The value entered must be an integer greater than 0.\n");
+		PhyML_Fprintf(stderr,"\n. The value entered must be an integer greater than 0.\n");
 		Exit("\n");
 	      }	    
 	    mcmc->chain_len += len;
@@ -3641,12 +3641,12 @@ void MCMC_Randomize_Node_Times(t_tree *tree)
 
   if(iter == 1000)
     {      
-      PhyML_Printf("\n== min_dt = %f",min_dt);
-      PhyML_Printf("\n== min->t=%f min->anc->t=%f",tree->rates->nd_t[min_node],tree->rates->nd_t[tree->a_nodes[min_node]->anc->num]);
-      PhyML_Printf("\n== d up=%f down=%f",tree->rates->t_prior_min[min_node],tree->rates->t_prior_max[min_node]);
-      PhyML_Printf("\n== a up=%f down=%f",tree->rates->t_prior_min[tree->a_nodes[min_node]->anc->num],tree->rates->t_prior_max[tree->a_nodes[min_node]->anc->num]);
-      PhyML_Printf("\n== up=%f down=%f",tree->rates->t_prior_min[min_node],tree->rates->t_floor[tree->a_nodes[min_node]->anc->num]);
-      PhyML_Printf("\n== min_node = %d",min_node);
+      PhyML_Fprintf(stderr,"\n\u2022 min_dt = %f",min_dt);
+      PhyML_Fprintf(stderr,"\n\u2022 min->t=%f min->anc->t=%f",tree->rates->nd_t[min_node],tree->rates->nd_t[tree->a_nodes[min_node]->anc->num]);
+      PhyML_Fprintf(stderr,"\n\u2022 d up=%f down=%f",tree->rates->t_prior_min[min_node],tree->rates->t_prior_max[min_node]);
+      PhyML_Fprintf(stderr,"\n\u2022 a up=%f down=%f",tree->rates->t_prior_min[tree->a_nodes[min_node]->anc->num],tree->rates->t_prior_max[tree->a_nodes[min_node]->anc->num]);
+      PhyML_Fprintf(stderr,"\n\u2022 up=%f down=%f",tree->rates->t_prior_min[min_node],tree->rates->t_floor[tree->a_nodes[min_node]->anc->num]);
+      PhyML_Fprintf(stderr,"\n\u2022 min_node = %d",min_node);
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
     }
 
@@ -4389,8 +4389,8 @@ void MCMC_Birth_Rate(t_tree *tree)
           
           if(!(tree->extra_tree->rates->c_lnL_times > UNLIKELY))
             {
-              PhyML_Printf("\n== glnL=%f",tree->extra_tree->rates->c_lnL_times);
-              PhyML_Printf("\n== birth=%G death=%G [%G]",new_birth_rate,tree->rates->death_rate,tree->extra_tree->rates->death_rate);
+              PhyML_Fprintf(stderr,"\n\u2022 glnL=%f",tree->extra_tree->rates->c_lnL_times);
+              PhyML_Fprintf(stderr,"\n\u2022 birth=%G death=%G [%G]",new_birth_rate,tree->rates->death_rate,tree->extra_tree->rates->death_rate);
               TIMES_Lk_Times(YES,tree->extra_tree);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
@@ -4410,12 +4410,12 @@ void MCMC_Birth_Rate(t_tree *tree)
               
               if(!(tree->extra_tree->rates->c_lnL_times > UNLIKELY))
                 {
-                  PhyML_Printf("\n== move: %s",tree->mcmc->move_name[move]);
-                  PhyML_Printf("\n== glnL=%f",tree->extra_tree->rates->c_lnL_times);
+                  PhyML_Fprintf(stderr,"\n\u2022 move: %s",tree->mcmc->move_name[move]);
+                  PhyML_Fprintf(stderr,"\n\u2022 glnL=%f",tree->extra_tree->rates->c_lnL_times);
                   TIMES_Lk_Times(YES,tree->extra_tree);
                   Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
                 }
-              /* PhyML_Printf("\n==> %4d %15f",i,tree->extra_tree->rates->c_lnL_times); */
+              /* PhyML_Printf("\n\u2022> %4d %15f",i,tree->extra_tree->rates->c_lnL_times); */
             }
           while(i < n_mcmc_steps);
           
@@ -4558,8 +4558,8 @@ void MCMC_Death_Rate(t_tree *tree)
           
           if(!(tree->extra_tree->rates->c_lnL_times > UNLIKELY))
             {
-              PhyML_Printf("\n== glnL=%f",tree->extra_tree->rates->c_lnL_times);
-              PhyML_Printf("\n== death=%G birth=%G [%G]",new_death_rate,tree->rates->birth_rate,tree->extra_tree->rates->birth_rate);
+              PhyML_Fprintf(stderr,"\n\u2022 glnL=%f",tree->extra_tree->rates->c_lnL_times);
+              PhyML_Fprintf(stderr,"\n\u2022 death=%G birth=%G [%G]",new_death_rate,tree->rates->birth_rate,tree->extra_tree->rates->birth_rate);
               TIMES_Lk_Times(YES,tree->extra_tree);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
@@ -4585,8 +4585,8 @@ void MCMC_Death_Rate(t_tree *tree)
               
               if(!(tree->extra_tree->rates->c_lnL_times > UNLIKELY))
                 {
-                  PhyML_Printf("\n== move: %s",tree->mcmc->move_name[move]);
-                  PhyML_Printf("\n== glnL=%f",tree->extra_tree->rates->c_lnL_times);
+                  PhyML_Fprintf(stderr,"\n\u2022 move: %s",tree->mcmc->move_name[move]);
+                  PhyML_Fprintf(stderr,"\n\u2022 glnL=%f",tree->extra_tree->rates->c_lnL_times);
                   TIMES_Lk_Times(YES,tree->extra_tree);
                   Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
                 }
@@ -4739,8 +4739,8 @@ void MCMC_Birth_Death_Updown(t_tree *tree)
           
           if(!(tree->extra_tree->rates->c_lnL_times > UNLIKELY))
             {
-              PhyML_Printf("\n== glnL=%f",tree->extra_tree->rates->c_lnL_times);
-              PhyML_Printf("\n== death=%G birth=%G [%G]",new_death_rate,tree->rates->birth_rate,tree->extra_tree->rates->birth_rate);
+              PhyML_Fprintf(stderr,"\n\u2022 glnL=%f",tree->extra_tree->rates->c_lnL_times);
+              PhyML_Fprintf(stderr,"\n\u2022 death=%G birth=%G [%G]",new_death_rate,tree->rates->birth_rate,tree->extra_tree->rates->birth_rate);
               TIMES_Lk_Times(YES,tree->extra_tree);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
@@ -4767,8 +4767,8 @@ void MCMC_Birth_Death_Updown(t_tree *tree)
               
               if(!(tree->extra_tree->rates->c_lnL_times > UNLIKELY))
                 {
-                  PhyML_Printf("\n== move: %s",tree->mcmc->move_name[move]);
-                  PhyML_Printf("\n== glnL=%f",tree->extra_tree->rates->c_lnL_times);
+                  PhyML_Fprintf(stderr,"\n\u2022 move: %s",tree->mcmc->move_name[move]);
+                  PhyML_Fprintf(stderr,"\n\u2022 glnL=%f",tree->extra_tree->rates->c_lnL_times);
                   TIMES_Lk_Times(YES,tree->extra_tree);
                   Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
                 }
@@ -5233,7 +5233,7 @@ void MCMC_Prune_Regraft(t_tree *tree)
 
       if(!TIMES_Check_Node_Height_Ordering(tree))
         {
-          printf("\n== prune[%d]->t:%.3f daughter[%d]->t:%.3f prune_anc[%d]->t:%.3f regraft[%d]->t:%.3f regraft_anc[%d]->t:%.3f [effective:%d] t_prior_min/max: [prune:[%.3f %.3f] regraft:[%.3f %.3f]] ",
+          printf("\n\u2022 prune[%d]->t:%.3f daughter[%d]->t:%.3f prune_anc[%d]->t:%.3f regraft[%d]->t:%.3f regraft_anc[%d]->t:%.3f [effective:%d] t_prior_min/max: [prune:[%.3f %.3f] regraft:[%.3f %.3f]] ",
                  prune->num,
                  times[prune->num],
                  prune_daughter->num,
@@ -5249,7 +5249,7 @@ void MCMC_Prune_Regraft(t_tree *tree)
                  tree->rates->t_prior_max[prune->num],
                  tree->rates->t_prior_min[new_regraft_nd->num],
                  tree->rates->t_prior_max[new_regraft_nd->num]);
-          PhyML_Printf("\n== root: %d %d %d",tree->n_root->num,tree->n_root->v[1]->num,tree->n_root->v[2]->num);
+          PhyML_Fprintf(stderr,"\n\u2022 root: %d %d %d",tree->n_root->num,tree->n_root->v[1]->num,tree->n_root->v[2]->num);
           Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
         }
 
@@ -5297,9 +5297,9 @@ void MCMC_Prune_Regraft(t_tree *tree)
           
           if(!(tree->rates->c_lnL_times > UNLIKELY))
             {
-              printf("\n== time prune: %f",times[prune->num]);
-              printf("\n== time prune_daughter: %f",times[prune_daughter->num]);
-              printf("\n== prune: %d prune_daughter: %d prune_daughter->v[dir_prune]: %d cur_regraft_nd: %d new_regraft_nd: %d",
+              printf("\n\u2022 time prune: %f",times[prune->num]);
+              printf("\n\u2022 time prune_daughter: %f",times[prune_daughter->num]);
+              printf("\n\u2022 prune: %d prune_daughter: %d prune_daughter->v[dir_prune]: %d cur_regraft_nd: %d new_regraft_nd: %d",
                      prune->num,
                      prune_daughter->num,
                      prune_daughter->v[dir_prune]->num,
@@ -5501,7 +5501,7 @@ void MCMC_Prune_Regraft_Weighted(t_tree *tree)
 
       if(!TIMES_Check_Node_Height_Ordering(tree))
         {
-          printf("\n== prune[%d]->t:%.3f daughter[%d]->t:%.3f prune_anc[%d]->t:%.3f regraft[%d]->t:%.3f regraft_anc[%d]->t:%.3f [effective:%d] t_prior_min/max: [prune:[%.3f %.3f] regraft:[%.3f %.3f]] ",
+          printf("\n\u2022 prune[%d]->t:%.3f daughter[%d]->t:%.3f prune_anc[%d]->t:%.3f regraft[%d]->t:%.3f regraft_anc[%d]->t:%.3f [effective:%d] t_prior_min/max: [prune:[%.3f %.3f] regraft:[%.3f %.3f]] ",
                  prune->num,
                  times[prune->num],
                  prune_daughter->num,
@@ -5517,7 +5517,7 @@ void MCMC_Prune_Regraft_Weighted(t_tree *tree)
                  tree->rates->t_prior_max[prune->num],
                  tree->rates->t_prior_min[new_regraft_nd->num],
                  tree->rates->t_prior_max[new_regraft_nd->num]);
-          PhyML_Printf("\n== root: %d %d %d",tree->n_root->num,tree->n_root->v[1]->num,tree->n_root->v[2]->num);
+          PhyML_Fprintf(stderr,"\n\u2022 root: %d %d %d",tree->n_root->num,tree->n_root->v[1]->num,tree->n_root->v[2]->num);
           Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
         }
 
@@ -5561,9 +5561,9 @@ void MCMC_Prune_Regraft_Weighted(t_tree *tree)
           
           if(!(tree->rates->c_lnL_times > UNLIKELY))
             {
-              printf("\n== time prune: %f",times[prune->num]);
-              printf("\n== time prune_daughter: %f",times[prune_daughter->num]);
-              printf("\n== prune: %d prune_daughter: %d prune_daughter->v[dir_prune]: %d cur_regraft_nd: %d new_regraft_nd: %d",
+              printf("\n\u2022 time prune: %f",times[prune->num]);
+              printf("\n\u2022 time prune_daughter: %f",times[prune_daughter->num]);
+              printf("\n\u2022 prune: %d prune_daughter: %d prune_daughter->v[dir_prune]: %d cur_regraft_nd: %d new_regraft_nd: %d",
                      prune->num,
                      prune_daughter->num,
                      prune_daughter->v[dir_prune]->num,
@@ -5920,7 +5920,7 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
 
       if(!TIMES_Check_Node_Height_Ordering(tree))
         {
-          printf("\n== prune[%d]->t:%.3f daughter[%d]->t:%.3f prune_anc[%d]->t:%.3f regraft[%d]->t:%.3f regraft_anc[%d]->t:%.3f [effective:%d] t_prior_min/max: [prune:[%.3f %.3f] regraft:[%.3f %.3f]] ",
+          printf("\n\u2022 prune[%d]->t:%.3f daughter[%d]->t:%.3f prune_anc[%d]->t:%.3f regraft[%d]->t:%.3f regraft_anc[%d]->t:%.3f [effective:%d] t_prior_min/max: [prune:[%.3f %.3f] regraft:[%.3f %.3f]] ",
                  prune->num,
                  times[prune->num],
                  prune_daughter->num,
@@ -5936,7 +5936,7 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
                  tree->rates->t_prior_max[prune->num],
                  tree->rates->t_prior_min[new_regraft_nd->num],
                  tree->rates->t_prior_max[new_regraft_nd->num]);
-          PhyML_Printf("\n== root: %d %d %d",tree->n_root->num,tree->n_root->v[1]->num,tree->n_root->v[2]->num);
+          PhyML_Fprintf(stderr,"\n\u2022 root: %d %d %d",tree->n_root->num,tree->n_root->v[1]->num,tree->n_root->v[2]->num);
           Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
         }
 
@@ -5984,9 +5984,9 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
           
           if(!(tree->rates->c_lnL_times > UNLIKELY))
             {
-              printf("\n== time prune: %f",times[prune->num]);
-              printf("\n== time prune_daughter: %f",times[prune_daughter->num]);
-              printf("\n== prune: %d prune_daughter: %d prune_daughter->v[dir_prune]: %d cur_regraft_nd: %d new_regraft_nd: %d",
+              printf("\n\u2022 time prune: %f",times[prune->num]);
+              printf("\n\u2022 time prune_daughter: %f",times[prune_daughter->num]);
+              printf("\n\u2022 prune: %d prune_daughter: %d prune_daughter->v[dir_prune]: %d cur_regraft_nd: %d new_regraft_nd: %d",
                      prune->num,
                      prune_daughter->num,
                      prune_daughter->v[dir_prune]->num,
@@ -6550,13 +6550,13 @@ void MCMC_Read_Param_Vals(t_tree *tree)
   
   if(fgets(token,sizemax,in_fp) == NULL) // Skip first line
     {
-      PhyML_Printf("\n== Wrong file format.");
+      PhyML_Fprintf(stderr,"\n\u2022 Wrong file format.");
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
     }
     
   if(fgets(token,sizemax,in_fp) == NULL) // Skip second
     {
-      PhyML_Printf("\n== Wrong file format.");
+      PhyML_Fprintf(stderr,"\n\u2022 Wrong file format.");
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
     }
 
@@ -6967,7 +6967,7 @@ void MCMC_PHYREX_Delete_Disk(phydbl hr, int n_delete_disks, phydbl cur_lbda, phy
           new_glnL = PHYREX_Lk(tree);
           if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
             {
-              PhyML_Printf("\n== new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
+              PhyML_Fprintf(stderr,"\n\u2022 new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
         }
@@ -7087,7 +7087,7 @@ void MCMC_PHYREX_Insert_Disk(phydbl hr, int n_insert_disks, phydbl cur_lbda, phy
           new_glnL = PHYREX_Lk(tree);
           if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
             {
-              PhyML_Printf("\n== new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
+              PhyML_Fprintf(stderr,"\n\u2022 new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
         }
@@ -7228,7 +7228,7 @@ void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree)
               
           if(Are_Equal(new_alnL,cur_alnL,1.E-3) == NO)
             {
-              PhyML_Printf("\n== new_alnL: %f cur_alnL: %f",new_alnL,cur_alnL);
+              PhyML_Fprintf(stderr,"\n\u2022 new_alnL: %f cur_alnL: %f",new_alnL,cur_alnL);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
             
@@ -7237,7 +7237,7 @@ void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree)
           
           if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
             {
-              PhyML_Printf("\n== new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
+              PhyML_Fprintf(stderr,"\n\u2022 new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
         }
@@ -7354,7 +7354,7 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree)
           
           if(Are_Equal(new_alnL,cur_alnL,1.E-3) == NO)
             {
-              PhyML_Printf("\n== new_alnL: %f cur_alnL: %f lbda: %f",new_alnL,cur_alnL,tree->mmod->lbda);
+              PhyML_Fprintf(stderr,"\n\u2022 new_alnL: %f cur_alnL: %f lbda: %f",new_alnL,cur_alnL,tree->mmod->lbda);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
             
@@ -7363,7 +7363,7 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree)
           
           if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
             {
-              PhyML_Printf("\n== new_glnL: %f cur_glnL: %f lbda: %f",new_glnL,cur_glnL,tree->mmod->lbda);
+              PhyML_Fprintf(stderr,"\n\u2022 new_glnL: %f cur_glnL: %f lbda: %f",new_glnL,cur_glnL,tree->mmod->lbda);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
         }
@@ -7493,7 +7493,7 @@ void MCMC_PHYREX_Swap_Disk(t_tree *tree)
               
               if(Are_Equal(new_alnL,cur_alnL,1.E-3) == NO)
                 {
-                  PhyML_Printf("\n== new_alnL: %f cur_alnL: %f",new_alnL,cur_alnL);
+                  PhyML_Fprintf(stderr,"\n\u2022 new_alnL: %f cur_alnL: %f",new_alnL,cur_alnL);
                   Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
                 }
                 
@@ -7502,7 +7502,7 @@ void MCMC_PHYREX_Swap_Disk(t_tree *tree)
               
               if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
                 {
-                  PhyML_Printf("\n== new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
+                  PhyML_Fprintf(stderr,"\n\u2022 new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
                   Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
                 }
             }
@@ -7649,8 +7649,8 @@ void MCMC_PHYREX_Insert_Hit(phydbl hr, int n_insert_disks, phydbl cur_rad, phydb
   
       if(old_ldsk[j]->disk->time > young_ldsk[j]->disk->time) 
         {
-          PhyML_Printf("\n== young_ldsk: %f",young_ldsk[j]->disk->time);
-          PhyML_Printf("\n== old_ldsk: %f",old_ldsk[j]->disk->time);
+          PhyML_Printf("\n\u2022 young_ldsk: %f",young_ldsk[j]->disk->time);
+          PhyML_Printf("\n\u2022 old_ldsk: %f",old_ldsk[j]->disk->time);
           assert(FALSE);
         }
       
@@ -7747,7 +7747,7 @@ void MCMC_PHYREX_Insert_Hit(phydbl hr, int n_insert_disks, phydbl cur_rad, phydb
           new_glnL = PHYREX_Lk(tree);
           if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
             {
-              PhyML_Printf("\n== new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
+              PhyML_Fprintf(stderr,"\n\u2022 new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
         }
@@ -7929,7 +7929,7 @@ void MCMC_PHYREX_Delete_Hit(phydbl hr, int n_delete_disks, phydbl cur_rad, phydb
           new_glnL = PHYREX_Lk(tree);
           if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
             {
-              PhyML_Printf("\n== new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
+              PhyML_Fprintf(stderr,"\n\u2022 new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
         }
@@ -8220,7 +8220,7 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
               new_alnL = Lk(NULL,tree);
               if(Are_Equal(new_alnL,cur_alnL,1.E-3) == NO)
                 {
-                  PhyML_Printf("\n== new_alnL: %f cur_alnL: %f",new_alnL,cur_alnL);
+                  PhyML_Fprintf(stderr,"\n\u2022 new_alnL: %f cur_alnL: %f",new_alnL,cur_alnL);
                   Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
                 }
                 
@@ -8228,7 +8228,7 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
               new_glnL = PHYREX_Lk(tree);
               if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
                 {
-                  PhyML_Printf("\n== new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
+                  PhyML_Fprintf(stderr,"\n\u2022 new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
                   Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
                 }
             }
@@ -8339,7 +8339,7 @@ void MCMC_PHYREX_Simulate_Backward(t_tree *tree)
           new_alnL = Lk(NULL,tree);
           if(Are_Equal(new_alnL,cur_alnL,1.E-3) == NO)
             {
-              PhyML_Printf("\n== new_alnL: %f cur_alnL: %f",new_alnL,cur_alnL);
+              PhyML_Fprintf(stderr,"\n\u2022 new_alnL: %f cur_alnL: %f",new_alnL,cur_alnL);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
         
@@ -8348,7 +8348,7 @@ void MCMC_PHYREX_Simulate_Backward(t_tree *tree)
           
           if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
             {
-              PhyML_Printf("\n. new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
+              PhyML_Fprintf(stderr,"\n. new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
         }
@@ -8520,7 +8520,7 @@ void MCMC_PHYREX_Simulate_Backward_Plus(t_tree *tree)
           new_alnL = Lk(NULL,tree);
           if(Are_Equal(new_alnL,cur_alnL,1.E-3) == NO)
             {
-              PhyML_Printf("\n== new_alnL: %f cur_alnL: %f",new_alnL,cur_alnL);
+              PhyML_Fprintf(stderr,"\n\u2022 new_alnL: %f cur_alnL: %f",new_alnL,cur_alnL);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
         
@@ -8529,7 +8529,7 @@ void MCMC_PHYREX_Simulate_Backward_Plus(t_tree *tree)
           
           if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
             {
-              PhyML_Printf("\n. new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
+              PhyML_Fprintf(stderr,"\n. new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
         }
@@ -8685,7 +8685,7 @@ void MCMC_PHYREX_Lineage_Traj(t_tree *tree)
               
               if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
                 {
-                  PhyML_Printf("\n== new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
+                  PhyML_Fprintf(stderr,"\n\u2022 new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
                   Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
                 }
             }
@@ -8804,7 +8804,7 @@ void MCMC_PHYREX_Lbda_Times(t_tree *tree)
           
           if(Are_Equal(new_alnL,cur_alnL,1.E-3) == NO)
             {
-              PhyML_Printf("\n== new_alnL: %f cur_alnL: %f",new_alnL,cur_alnL);
+              PhyML_Fprintf(stderr,"\n\u2022 new_alnL: %f cur_alnL: %f",new_alnL,cur_alnL);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
             
@@ -8813,7 +8813,7 @@ void MCMC_PHYREX_Lbda_Times(t_tree *tree)
           
           if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
             {
-              PhyML_Printf("\n== new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
+              PhyML_Fprintf(stderr,"\n\u2022 new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
         }
@@ -8961,7 +8961,7 @@ void MCMC_PHYREX_Disk_Multi(t_tree *tree)
           new_glnL = PHYREX_Lk(tree);
           if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
             {
-              PhyML_Printf("\n. new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
+              PhyML_Fprintf(stderr,"\n. new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
         }
@@ -9093,7 +9093,7 @@ void MCMC_PHYREX_Ldsk_Multi(t_tree *tree)
           new_glnL = PHYREX_Lk(tree);
           if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
             {
-              PhyML_Printf("\n. new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
+              PhyML_Fprintf(stderr,"\n. new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
         }
@@ -9230,7 +9230,7 @@ void MCMC_PHYREX_Ldsk_And_Disk(t_tree *tree)
           new_glnL = PHYREX_Lk(tree);
           if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
             {
-              PhyML_Printf("\n. new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
+              PhyML_Fprintf(stderr,"\n. new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
         }
@@ -9351,8 +9351,8 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree)
               
               if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
                 {
-                  PhyML_Printf("\n. disk->ldsk->prev: %p",disk->ldsk->prev);
-                  PhyML_Printf("\n== new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
+                  PhyML_Fprintf(stderr,"\n. disk->ldsk->prev: %p",disk->ldsk->prev);
+                  PhyML_Fprintf(stderr,"\n\u2022 new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
                   Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
                 }
             }
@@ -9454,8 +9454,8 @@ void MCMC_PHYREX_Disk_Given_Ldsk(t_tree *tree)
               
               if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
                 {
-                  PhyML_Printf("\n== disk->ldsk->prev: %p",disk->ldsk->prev);
-                  PhyML_Printf("\n== new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
+                  PhyML_Fprintf(stderr,"\n\u2022 disk->ldsk->prev: %p",disk->ldsk->prev);
+                  PhyML_Fprintf(stderr,"\n\u2022 new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
                   Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
                 }
             }
@@ -9538,8 +9538,8 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
 
           if(old_ldsk->disk->time > young_ldsk->disk->time) 
             {
-              PhyML_Printf("\n== young_ldsk: %f",young_ldsk->disk->time);
-              PhyML_Printf("\n== old_ldsk: %f",old_ldsk->disk->time);
+              PhyML_Printf("\n\u2022 young_ldsk: %f",young_ldsk->disk->time);
+              PhyML_Printf("\n\u2022 old_ldsk: %f",old_ldsk->disk->time);
               assert(FALSE);
             }
           
@@ -9619,7 +9619,7 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
                   new_glnL = PHYREX_Lk(tree);
                   if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
                     {
-                      PhyML_Printf("\n== new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
+                      PhyML_Fprintf(stderr,"\n\u2022 new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
                       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
                     }
                 }
@@ -9707,7 +9707,7 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
                   new_glnL = PHYREX_Lk(tree);
                   if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
                     {
-                      PhyML_Printf("\n== new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
+                      PhyML_Fprintf(stderr,"\n\u2022 new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
                       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
                     }
                 }
@@ -9815,7 +9815,7 @@ void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree)
                   new_glnL = PHYREX_Lk(tree);
                   if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
                     {
-                      PhyML_Printf("\n== new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
+                      PhyML_Fprintf(stderr,"\n\u2022 new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
                       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
                     }
                 }
@@ -9859,7 +9859,7 @@ void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree)
                   new_glnL = PHYREX_Lk(tree);
                   if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
                     {
-                      PhyML_Printf("\n== new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
+                      PhyML_Fprintf(stderr,"\n\u2022 new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
                       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
                     }
                 }

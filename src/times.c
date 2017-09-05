@@ -59,7 +59,7 @@ void TIMES_Least_Square_Node_Times(t_edge *e_root, t_tree *tree)
     
   if(!Matinv(A, n, n,YES))
     {
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s').\n",__FILE__,__LINE__,__FUNCTION__);
+      PhyML_Fprintf(stderr,"\n== Err. in file %s at line %d (function '%s').\n",__FILE__,__LINE__,__FUNCTION__);
       Exit("\n");      
     }
 
@@ -278,9 +278,9 @@ void TIMES_Set_All_Node_Priors(t_tree *tree)
   
   if(tree->rates->t_prior_min[tree->n_root->num] > 0.0)
     {
-      PhyML_Printf("\n== Failed to set the lower bound for the root node.");
-      PhyML_Printf("\n== Make sure at least one of the calibration interval");
-      PhyML_Printf("\n== provides a lower bound.");
+      PhyML_Fprintf(stderr,"\n== Failed to set the lower bound for the root node.");
+      PhyML_Fprintf(stderr,"\n== Make sure at least one of the calibration interval");
+      PhyML_Fprintf(stderr,"\n== provides a lower bound.");
       Exit("\n");
     }
 
@@ -331,9 +331,9 @@ void TIMES_Set_All_Node_Priors_Bottom_Up(t_node *a, t_node *d, t_tree *tree)
 
 	  if(tree->rates->t_prior_max[d->num] < tree->rates->t_prior_min[d->num])
 	    {
-	      PhyML_Printf("\n== prior_min=%f prior_max=%f",tree->rates->t_prior_min[d->num],tree->rates->t_prior_max[d->num]);
-	      PhyML_Printf("\n== Inconsistency in the prior settings detected at node %d",d->num);
-	      PhyML_Printf("\n== Err. in file %s at line %d (function %s)\n\n",__FILE__,__LINE__,__FUNCTION__);
+	      PhyML_Fprintf(stderr,"\n== prior_min=%f prior_max=%f",tree->rates->t_prior_min[d->num],tree->rates->t_prior_max[d->num]);
+	      PhyML_Fprintf(stderr,"\n== Inconsistency in the prior settings detected at node %d",d->num);
+	      PhyML_Fprintf(stderr,"\n== Err. in file %s at line %d (function %s)\n\n",__FILE__,__LINE__,__FUNCTION__);
 	      Warn_And_Exit("\n");
 	    }
 	}
@@ -363,9 +363,9 @@ void TIMES_Set_All_Node_Priors_Top_Down(t_node *a, t_node *d, t_tree *tree)
 	  
 	  if(tree->rates->t_prior_max[d->num] < tree->rates->t_prior_min[d->num])
 	    {
-	      PhyML_Printf("\n== prior_min=%f prior_max=%f",tree->rates->t_prior_min[d->num],tree->rates->t_prior_max[d->num]);
-	      PhyML_Printf("\n== Inconsistency in the prior settings detected at t_node %d",d->num);
-	      PhyML_Printf("\n== Err. in file %s at line %d (function %s)\n\n",__FILE__,__LINE__,__FUNCTION__);
+	      PhyML_Fprintf(stderr,"\n== prior_min=%f prior_max=%f",tree->rates->t_prior_min[d->num],tree->rates->t_prior_max[d->num]);
+	      PhyML_Fprintf(stderr,"\n== Inconsistency in the prior settings detected at t_node %d",d->num);
+	      PhyML_Fprintf(stderr,"\n== Err. in file %s at line %d (function %s)\n\n",__FILE__,__LINE__,__FUNCTION__);
 	      Warn_And_Exit("\n");
 	    }
 	}
@@ -553,8 +553,8 @@ phydbl TIMES_Lk_Yule_Joint(t_tree *tree)
 
       if(n<1)
 	{
-	  PhyML_Printf("\n== i=%d tr[i]=%f",i,t[tr[i]]);
-	  PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+	  PhyML_Fprintf(stderr,"\n== i=%d tr[i]=%f",i,t[tr[i]]);
+	  PhyML_Fprintf(stderr,"\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
 	  Exit("\n");
 	}
 
@@ -1332,9 +1332,9 @@ phydbl TIMES_Lk_Yule_Order_Root_Cond(t_tree *tree)
 
         if(isinf(loglk) || isnan(loglk))
           {
-            PhyML_Printf("\n. Lower bound: %f",lower_bound);
-            PhyML_Printf("\n. Upper bound: %f",upper_bound);
-            PhyML_Printf("\n. tf: %f tp_max: %f tp_min: %f root: %f",tf[j],tp_max[j],tp_min[j],root_height);
+            PhyML_Fprintf(stderr,"\n. Lower bound: %f",lower_bound);
+            PhyML_Fprintf(stderr,"\n. Upper bound: %f",upper_bound);
+            PhyML_Fprintf(stderr,"\n. tf: %f tp_max: %f tp_min: %f root: %f",tf[j],tp_max[j],tp_min[j],root_height);
             Exit("\n");
           }
 
@@ -1843,15 +1843,15 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
 
   if(repeat == n_max_repeats)
     {
-      PhyML_Printf("\n\n");
-      PhyML_Printf("\n== A random tree satisfying the calibration constraints provided");
-      PhyML_Printf("\n== could not be generated. It probably means that there are some");
-      PhyML_Printf("\n== inconsistencies in the calibration data. For instance, the calibration");
-      PhyML_Printf("\n== time interval for the MRCA of a clade with taxa {X,Y} (noted as [a,b])");
-      PhyML_Printf("\n== cannot be strictly older than the interval corresponding to taxa ");
-      PhyML_Printf("\n== {X,Z,Y} (noted as [c,d]), i.e., b cannot be smaller (older) than c. ");
-      PhyML_Printf("\n== Also, please remember that the present time corresponds to a time");
-      PhyML_Printf("\n== value equal to zero and past events have negative time values.");
+      PhyML_Fprintf(stderr,"\n\n");
+      PhyML_Fprintf(stderr,"\n== A random tree satisfying the calibration constraints provided");
+      PhyML_Fprintf(stderr,"\n== could not be generated. It probably means that there are some");
+      PhyML_Fprintf(stderr,"\n== inconsistencies in the calibration data. For instance, the calibration");
+      PhyML_Fprintf(stderr,"\n== time interval for the MRCA of a clade with taxa {X,Y} (noted as [a,b])");
+      PhyML_Fprintf(stderr,"\n== cannot be strictly older than the interval corresponding to taxa ");
+      PhyML_Fprintf(stderr,"\n== {X,Z,Y} (noted as [c,d]), i.e., b cannot be smaller (older) than c. ");
+      PhyML_Fprintf(stderr,"\n== Also, please remember that the present time corresponds to a time");
+      PhyML_Fprintf(stderr,"\n== value equal to zero and past events have negative time values.");
       Exit("\n");
     }
 

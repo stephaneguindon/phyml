@@ -94,7 +94,7 @@ void DATE_Update_T_Prior_MinMax(t_tree *tree)
   /* /\*   { *\/ */
   /* /\*     if(tree->rates->t_prior_min[i] > tree->rates->t_prior_max[i]) *\/ */
   /* /\*       { *\/ */
-  /* /\*         PhyML_Printf("\n== i: %d t_prior_min: %f t_prior_max: %f", *\/ */
+  /* /\*         PhyML_Printf("\n\u2022 i: %d t_prior_min: %f t_prior_max: %f", *\/ */
   /* /\*                      i, *\/ */
   /* /\*                      tree->rates->t_prior_min[i], *\/ */
   /* /\*                      tree->rates->t_prior_max[i]); *\/ */
@@ -145,10 +145,10 @@ void DATE_Assign_Primary_Calibration(t_tree *tree)
 
       if(tree->a_nodes[node_num]->n_cal == MAX_N_CAL)
         {
-          PhyML_Printf("\n== A node cannot have more than %d calibration",MAX_N_CAL); 
-          PhyML_Printf("\n== constraints attached to it. Feel free to increase the"); 
-          PhyML_Printf("\n== value of the variable MAX_N_CAL in utilities.h if");
-          PhyML_Printf("\n== necessary.");
+          PhyML_Fprintf(stderr,"\n\u2022 A node cannot have more than %d calibration",MAX_N_CAL); 
+          PhyML_Fprintf(stderr,"\n\u2022 constraints attached to it. Feel free to increase the"); 
+          PhyML_Fprintf(stderr,"\n\u2022 value of the variable MAX_N_CAL in utilities.h if");
+          PhyML_Fprintf(stderr,"\n\u2022 necessary.");
           Exit("\n");
         }
     }
@@ -373,11 +373,11 @@ int DATE_Is_Split_Accessible(t_node *d, int which, phydbl *splitted_cal, t_tree 
           splitted_cal[which+1] < tree->rates->t_prior_min[d->num])                return -1; // splitted interval is older than [t_prior_min,t_prior_max]
   else
     {
-      PhyML_Printf("\n== d->num: %d d->tax: %d",d->num,d->tax);
-      PhyML_Printf("\n== t_prior_min: %f t_prior_max: %f",
+      PhyML_Printf("\n\u2022 d->num: %d d->tax: %d",d->num,d->tax);
+      PhyML_Printf("\n\u2022 t_prior_min: %f t_prior_max: %f",
                    tree->rates->t_prior_min[d->num],
                    tree->rates->t_prior_max[d->num]);
-      PhyML_Printf("\n== splitted_cal_min: %f splitted_cal_max: %f",
+      PhyML_Printf("\n\u2022 splitted_cal_min: %f splitted_cal_max: %f",
                    splitted_cal[which],
                    splitted_cal[which+1]);      
       PhyML_Printf("\n");
@@ -592,7 +592,7 @@ phydbl *DATE_MCMC(t_tree *tree)
 
       if(tree->c_lnL < UNLIKELY + 0.1)
         {
-          PhyML_Printf("\n== Move '%s' failed\n",tree->mcmc->move_name[move]);
+          PhyML_Printf("\n\u2022 Move '%s' failed\n",tree->mcmc->move_name[move]);
           assert(FALSE);
         }
 
@@ -623,18 +623,19 @@ phydbl *DATE_MCMC(t_tree *tree)
       
       if(!TIMES_Check_Node_Height_Ordering(tree))
         {
-          PhyML_Printf("\n== move: %s",tree->mcmc->move_name[move]);
+          PhyML_Fprintf(stderr,"\n\u2022 move: %s",tree->mcmc->move_name[move]);
           Exit("\n");
         }
       
       
       if(!(tree->rates->c_lnL_times > UNLIKELY))
         {
-          PhyML_Printf("\n== move: %s",tree->mcmc->move_name[move]);
-          PhyML_Printf("\n== glnL=%f",tree->rates->c_lnL_times);
+          PhyML_Fprintf(stderr,"\n\u2022 move: %s",tree->mcmc->move_name[move]);
+          PhyML_Fprintf(stderr,"\n\u2022 glnL=%f",tree->rates->c_lnL_times);
           Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
         }
 
+      (void)signal(SIGINT,MCMC_Terminate);
       
       if(!(tree->mcmc->run%tree->mcmc->print_every))
         {

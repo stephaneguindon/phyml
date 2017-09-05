@@ -34,7 +34,7 @@ phydbl RATES_Lk_Rates(t_tree *tree)
 
   if(isnan(tree->rates->c_lnL_rates))
     {
-      PhyML_Printf("\n== Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
+      PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
       Exit("\n");
     }
 
@@ -54,8 +54,8 @@ void RATES_Lk_Rates_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 
   if(d->anc != a)
     {
-      PhyML_Printf("\n== d=%d d->anc=%d a=%d root=%d",d->num,d->anc->num,a->num,tree->n_root->num);
-      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n\u2022 d=%d d->anc=%d a=%d root=%d",d->num,d->anc->num,a->num,tree->n_root->num);
+      PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 
@@ -76,7 +76,7 @@ void RATES_Lk_Rates_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 
   if(isnan(tree->rates->c_lnL_rates))
     {
-      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
       MCMC_Print_Param(tree->mcmc,tree);
       Exit("\n");
     }
@@ -116,8 +116,8 @@ phydbl RATES_Lk_Change_One_Time(t_node *n, phydbl new_t, t_tree *tree)
 {  
   if(n == tree->n_root)
     {
-      PhyML_Printf("\n. Moving the time of the root t_node is not permitted.");
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n\u2022 Moving the time of the root t_node is not permitted.");
+      PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
   else
@@ -218,13 +218,13 @@ void RATES_Update_Triplet(t_node *n, t_tree *tree)
 	  }
 	case GUINDON :
 	  {
-	    Exit("\n. Not implemented yet.\n");
-	    PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+	    PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
+	    Exit("\n\u2022 Not implemented yet.\n");
 	    break;
 	  }
 	default :
 	  {
-	    Exit("\n. Model not implemented yet.\n");
+	    Exit("\n\u2022 Model not implemented yet.\n");
 	    break;
 	  }
 	}
@@ -232,7 +232,7 @@ void RATES_Update_Triplet(t_node *n, t_tree *tree)
 
       if(isnan(log_dens) || isinf(FABS(log_dens)))
 	{
-	  PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+	  PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
 	  MCMC_Print_Param(tree->mcmc,tree);
 	  Exit("\n");
 	}
@@ -321,16 +321,16 @@ phydbl RATES_Lk_Rates_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl n
 
 	    if(err)
 	      {
-		PhyML_Printf("\n. Run: %d",tree->mcmc->run);
-		PhyML_Printf("\n. br_r_d = %f br_r_a = %f dt_d = %f logcr = %f",br_r_d,br_r_a,dt_d,logcr);
-		PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+		PhyML_Fprintf(stderr,"\n\u2022 Run: %d",tree->mcmc->run);
+		PhyML_Fprintf(stderr,"\n\u2022 br_r_d = %f br_r_a = %f dt_d = %f logcr = %f",br_r_d,br_r_a,dt_d,logcr);
+		PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
 		Exit("\n");
 	      }
 	  }
 	else
 	  {
-	    PhyML_Printf("\n. Not implemented yet.");
-	    PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+	    PhyML_Fprintf(stderr,"\n\u2022 Not implemented yet.");
+	    PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
 	    Exit("\n");
 	  }
 
@@ -368,9 +368,9 @@ phydbl RATES_Lk_Rates_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl n
 
 	/* if(err || isnan(log_dens) || isinf(log_dens)) */
 	/*   { */
-	/*     PhyML_Printf("\n. br_r_a=%f br_r_d=%f dt_d=%f nu=%G",br_r_a,br_r_d,dt_d,tree->rates->nu); */
-	/*     PhyML_Printf("\n. Run: %d",tree->mcmc->run); */
-	/*     PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__); */
+	/*     PhyML_Printf("\n\u2022 br_r_a=%f br_r_d=%f dt_d=%f nu=%G",br_r_a,br_r_d,dt_d,tree->rates->nu); */
+	/*     PhyML_Printf("\n\u2022 Run: %d",tree->mcmc->run); */
+	/*     PhyML_Printf("\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__); */
 	/*     Exit("\n"); */
 	/*   } */
 
@@ -396,9 +396,9 @@ phydbl RATES_Lk_Rates_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl n
 
 	if(err)
 	  {
-	    PhyML_Printf("\n. Run: %d",tree->mcmc->run);
-	    PhyML_Printf("\n. br_r_d=%f mean=%f sd=%f min_r=%f max_r=%f dt_d=%f",br_r_d,mean,sd,min_r,max_r,dt_d);
-	    PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+	    PhyML_Fprintf(stderr,"\n\u2022 Run: %d",tree->mcmc->run);
+	    PhyML_Fprintf(stderr,"\n\u2022 br_r_d=%f mean=%f sd=%f min_r=%f max_r=%f dt_d=%f",br_r_d,mean,sd,min_r,max_r,dt_d);
+	    PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
 	    Exit("\n");
 	  }
 	break;
@@ -436,18 +436,18 @@ phydbl RATES_Lk_Rates_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl n
 
     default : 
       {
-	PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+	PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
 	Warn_And_Exit("");
       }
     }
 
   if(isnan(log_dens))
     {
-      PhyML_Printf("\n== Run=%4d br_r_d=%f br_r_a=%f dt_d=%f dt_a=%f nu=%f log_dens=%G sd=%f mean=%f\n",
-		   tree->mcmc->run,
-		   br_r_d,br_r_a,dt_d,dt_a,tree->rates->nu,log_dens,
-		   sd,mean);
-      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n\u2022 Run=%4d br_r_d=%f br_r_a=%f dt_d=%f dt_a=%f nu=%f log_dens=%G sd=%f mean=%f\n",
+                    tree->mcmc->run,
+                    br_r_d,br_r_a,dt_d,dt_a,tree->rates->nu,log_dens,
+                    sd,mean);
+      PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
 
@@ -497,7 +497,7 @@ phydbl RATES_Compound_Core_Marginal(phydbl mu1, phydbl mu2, phydbl dt1, phydbl d
   if(equ)
     {
       v0 = 1.0*Dgamma(mu1,alpha,beta)/dmu1;
-      /*       Rprintf("\n. mu1=%f mu2=%f",mu1,mu2); */
+      /*       Rprintf("\n\u2022 mu1=%f mu2=%f",mu1,mu2); */
     }
   else
     {
@@ -526,7 +526,7 @@ phydbl RATES_Compound_Core_Marginal(phydbl mu1, phydbl mu2, phydbl dt1, phydbl d
       v2 += Dpois(0,lexp*dt2,NO)*Dgamma(mu2,alpha,beta)*RATES_Dmu(mu1,-1,dt1,alpha,beta,lexp,1,0);
 
     }
-/*   PhyML_Printf("\n. %f %f %f %f %f ",mu1,mu2,dt1,dt2,v2); */
+/*   PhyML_Printf("\n\u2022 %f %f %f %f %f ",mu1,mu2,dt1,dt2,v2); */
   v2 /= dmu1;
 
   dens = p0*v0 + p1*v1 + v2;
@@ -537,7 +537,7 @@ phydbl RATES_Compound_Core_Marginal(phydbl mu1, phydbl mu2, phydbl dt1, phydbl d
   
   if(dens < SMALL)
     {
-      PhyML_Printf("\n. dens=%12G mu1=%12G mu2=%12G dt1=%12G dt2=%12G lexp=%12G alpha=%f v0=%f v1=%f v2=%f p0=%f p1=%f p2=%f",
+      PhyML_Printf("\n\u2022 dens=%12G mu1=%12G mu2=%12G dt1=%12G dt2=%12G lexp=%12G alpha=%f v0=%f v1=%f v2=%f p0=%f p1=%f p2=%f",
 	     dens,
 	     mu1,mu2,dt1,dt2,
 	     lexp,
@@ -561,8 +561,8 @@ phydbl RATES_Compound_Core_Joint(phydbl mu1, phydbl mu2, int n1, int n2, phydbl 
 
   if(n1 < 0 || n2 < 0)
     {
-      PhyML_Printf("\n. n1=%d n2=%d",n1,n2);
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n\u2022 n1=%d n2=%d",n1,n2);
+      PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 
@@ -570,7 +570,7 @@ phydbl RATES_Compound_Core_Joint(phydbl mu1, phydbl mu2, int n1, int n2, phydbl 
   
   if((n1 < 0) || (n2 < 0))
     {
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 
@@ -604,7 +604,7 @@ phydbl RATES_Compound_Core_Joint(phydbl mu1, phydbl mu2, int n1, int n2, phydbl 
   
   if(density < 1.E-70) density = 1.E-70;
 
-/*   PhyML_Printf("\n. density = %15G mu1=%3.4f mu2=%3.4f dt1=%3.4f dt2=%3.4f n1=%2d n2=%2d",density,mu1,mu2,dt1,dt2,n1,n2); */
+/*   PhyML_Printf("\n\u2022 density = %15G mu1=%3.4f mu2=%3.4f dt1=%3.4f dt2=%3.4f n1=%2d n2=%2d",density,mu1,mu2,dt1,dt2,n1,n2); */
   return density;
 }
 
@@ -613,7 +613,7 @@ phydbl RATES_Compound_Core_Joint(phydbl mu1, phydbl mu2, int n1, int n2, phydbl 
 void RATES_Print_Triplets(t_tree *tree)
 {
   int i;
-  For(i,2*tree->n_otu-1) PhyML_Printf("\n. Node %3d t=%f",i,tree->rates->triplet[i]);
+  For(i,2*tree->n_otu-1) PhyML_Printf("\n\u2022 Node %3d t=%f",i,tree->rates->triplet[i]);
 }
 
 
@@ -788,7 +788,7 @@ void RATES_Duplicate_Calib_Struct(t_tree *from, t_tree *to)
 void RATES_Print_Rates_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 {  
   if((d == tree->n_root->v[2] && d->tax) || (d == tree->n_root->v[1] && d->tax))
-    PhyML_Printf("\n. a=%3d ++d=%3d rate=%12f t_left=%12f t_rght=%12f ml=%12f l=%12f %12f",
+    PhyML_Printf("\n\u2022 a=%3d ++d=%3d rate=%12f t_left=%12f t_rght=%12f ml=%12f l=%12f %12f",
 	   a->num,d->num,
 	   tree->rates->br_r[d->num],
 	   tree->rates->nd_t[a->num],tree->rates->nd_t[d->num],
@@ -797,7 +797,7 @@ void RATES_Print_Rates_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 	   (tree->rates->nd_t[d->num]-tree->rates->nd_t[a->num])*tree->rates->clock_r*tree->rates->br_r[d->num]);
   
   else if((d == tree->n_root->v[2]) || (d == tree->n_root->v[1]))
-    PhyML_Printf("\n. a=%3d __d=%3d rate=%12f t_left=%12f t_rght=%12f ml=%12f l=%12f %12f",
+    PhyML_Printf("\n\u2022 a=%3d __d=%3d rate=%12f t_left=%12f t_rght=%12f ml=%12f l=%12f %12f",
 	   a->num,d->num,
 	   tree->rates->br_r[d->num],
 	   tree->rates->nd_t[a->num],tree->rates->nd_t[d->num],
@@ -805,7 +805,7 @@ void RATES_Print_Rates_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 	   tree->rates->cur_l[d->num],
 	   (tree->rates->nd_t[d->num]-tree->rates->nd_t[a->num])*tree->rates->clock_r*tree->rates->br_r[d->num]);
   else 
-    PhyML_Printf("\n. a=%3d   d=%3d rate=%12f t_left=%12f t_rght=%12f ml=%12f l=%12f %12f",
+    PhyML_Printf("\n\u2022 a=%3d   d=%3d rate=%12f t_left=%12f t_rght=%12f ml=%12f l=%12f %12f",
 	   a->num,d->num,
 	   tree->rates->br_r[d->num],
 	   tree->rates->nd_t[a->num],tree->rates->nd_t[d->num],
@@ -895,9 +895,9 @@ void RATES_Check_Node_Times_Pre(t_node *a, t_node *d, int *err, t_tree *tree)
 {
   if((tree->rates->nd_t[d->num] < tree->rates->nd_t[a->num]) || (FABS(tree->rates->nd_t[d->num] - tree->rates->nd_t[a->num]) < 1.E-20))
     {
-      PhyML_Printf("\n== a->t=%f d->t=%f",tree->rates->nd_t[a->num],tree->rates->nd_t[d->num]);
-      PhyML_Printf("\n== a->t_prior_min=%f a->t_prior_max=%f",tree->rates->t_prior_min[a->num],tree->rates->t_prior_max[a->num]);
-      PhyML_Printf("\n== d->t_prior_min=%f d->t_prior_max=%f",tree->rates->t_prior_min[d->num],tree->rates->t_prior_max[d->num]);
+      PhyML_Printf("\n\u2022 a->t=%f d->t=%f",tree->rates->nd_t[a->num],tree->rates->nd_t[d->num]);
+      PhyML_Printf("\n\u2022 a->t_prior_min=%f a->t_prior_max=%f",tree->rates->t_prior_min[a->num],tree->rates->t_prior_max[a->num]);
+      PhyML_Printf("\n\u2022 d->t_prior_min=%f d->t_prior_max=%f",tree->rates->t_prior_min[d->num],tree->rates->t_prior_max[d->num]);
       *err = YES;
     }
   if(d->tax) return;
@@ -947,8 +947,8 @@ void RATES_Bracket_N_Jumps(int *up, int *down, phydbl param)
   
   if(step == 1000)
     {
-      PhyML_Printf("\n. a=%f b=%f c=%f param=%f",a,b,c,param);
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n\u2022 a=%f b=%f c=%f param=%f",a,b,c,param);
+      PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
   *up = c;
@@ -1037,22 +1037,22 @@ phydbl RATES_Dmu_One(phydbl mu, phydbl dt, phydbl a, phydbl b, phydbl lexp)
   
   if(dt < 0.0)
     {
-      PhyML_Printf("\n. dt=%f",dt);
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n\u2022 dt=%f",dt);
+      PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
   
   if(lexpdt < SMALL)
     {
-      PhyML_Printf("\n. lexpdt=%G lexp=%G dt=%G",lexpdt,lexp,dt);
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n\u2022 lexpdt=%G lexp=%G dt=%G",lexpdt,lexp,dt);
+      PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 
   if(mu < 1.E-10)
     {
-      PhyML_Printf("\n. mu=%G",mu);
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n\u2022 mu=%G",mu);
+      PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");      
     }
   
@@ -1124,7 +1124,7 @@ void RATES_Expect_Number_Subst(phydbl t_beg, phydbl t_end, phydbl r_beg,  int *n
 	    curr_t = next_t;
 	  }
 	
-	/*   PhyML_Printf("\n. [%3d %f %f]",*n_jumps,*mean_r,r_beg); */
+	/*   PhyML_Printf("\n\u2022 [%3d %f %f]",*n_jumps,*mean_r,r_beg); */
 	
 	if(*mean_r < rates->min_rate) *mean_r = rates->min_rate;
 	if(*mean_r > rates->max_rate) *mean_r = rates->max_rate;
@@ -1162,14 +1162,14 @@ void RATES_Expect_Number_Subst(phydbl t_beg, phydbl t_end, phydbl r_beg,  int *n
 
 	*mean_r = Rnorm_Trunc(mean,sd,rates->min_rate,rates->max_rate,&err);
 
-	if(err) PhyML_Printf("\n. %s %d %d",__FILE__,__LINE__,tree->mcmc->run);
+	if(err) PhyML_Printf("\n\u2022 %s %d %d",__FILE__,__LINE__,tree->mcmc->run);
 	*r_end  = *mean_r;
 	break;
       }
     default:
       {
-	PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-	Exit("\n. Model not implemented yet.\n");
+	PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
+	Exit("\n\u2022 Model not implemented yet.\n");
 	break;
       }
     }
@@ -1284,21 +1284,21 @@ void RATES_Set_Node_Times_Pre(t_node *a, t_node *d, t_tree *tree)
 
       if(t_sup > t_inf)
 	{
-	  PhyML_Printf("\n. t_sup = %f t_inf = %f",t_sup,t_inf);
-	  PhyML_Printf("\n. Run = %d",tree->mcmc->run);
-	  PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+	  PhyML_Fprintf(stderr,"\n\u2022 t_sup = %f t_inf = %f",t_sup,t_inf);
+	  PhyML_Fprintf(stderr,"\n\u2022 Run = %d",tree->mcmc->run);
+	  PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
 	  Warn_And_Exit("");
 	}
             
       if(tree->rates->nd_t[d->num] > t_inf)      
 	{
 	  tree->rates->nd_t[d->num] = t_inf;
-	  PhyML_Printf("\n. Time for t_node %d is larger than should be. Set it to %f",d->num,tree->rates->nd_t[d->num]);
+	  PhyML_Printf("\n\u2022 Time for t_node %d is larger than should be. Set it to %f",d->num,tree->rates->nd_t[d->num]);
 	}
       else if(tree->rates->nd_t[d->num] < t_sup) 
 	{
 	  tree->rates->nd_t[d->num] = t_sup;
-	  PhyML_Printf("\n. Time for t_node %d is lower than should be. Set it to %f",d->num,tree->rates->nd_t[d->num]);
+	  PhyML_Printf("\n\u2022 Time for t_node %d is lower than should be. Set it to %f",d->num,tree->rates->nd_t[d->num]);
 	}
 
       for(i=0;i<3;i++)
@@ -1322,15 +1322,15 @@ phydbl RATES_Dmu1_And_Mu2_One_Jump_Two_Intervals(phydbl mu1, phydbl mu2, phydbl 
 
   if(mu2 < 1.E-10)
     {
-      PhyML_Printf("\n. mu2=%G",mu2);
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n\u2022 mu2=%G",mu2);
+      PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 
   if(mu1 < 1.E-10)
     {
-      PhyML_Printf("\n. mu2=%G",mu1);
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n\u2022 mu2=%G",mu1);
+      PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 
@@ -1376,8 +1376,8 @@ phydbl RATES_Dmu1_Given_V_And_N(phydbl mu1, phydbl v, int n, phydbl dt1, phydbl 
 	  
 	  if(u < 1.E-10)
 	    {
-	      PhyML_Printf("\n. u = %G",u);
-	      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+	      PhyML_Fprintf(stderr,"\n\u2022 u = %G",u);
+	      PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
 	      Warn_And_Exit("");
 	    }
 	  
@@ -1389,8 +1389,8 @@ phydbl RATES_Dmu1_Given_V_And_N(phydbl mu1, phydbl v, int n, phydbl dt1, phydbl 
       u = (mu1 - lbda*v)/(1.-lbda);
       if(u < 1.E-10)
 	{
-	  PhyML_Printf("\n. mu1 = %f lambda = %f v = %f u = %G beg = %f end = %f",mu1,lbda,v,u,beg,end);
-	  PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+	  PhyML_Fprintf(stderr,"\n\u2022 mu1 = %f lambda = %f v = %f u = %G beg = %f end = %f",mu1,lbda,v,u,beg,end);
+	  PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
 	  Warn_And_Exit("");
 	}
       
@@ -1400,8 +1400,8 @@ phydbl RATES_Dmu1_Given_V_And_N(phydbl mu1, phydbl v, int n, phydbl dt1, phydbl 
       u = (mu1 - lbda*v)/(1.-lbda);
       if(u < 1.E-10)
 	{
-	  PhyML_Printf("\n. u = %G",u);
-	  PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+	  PhyML_Fprintf(stderr,"\n\u2022 u = %G",u);
+	  PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
 	  Warn_And_Exit("");
 	}
       
@@ -1450,9 +1450,9 @@ phydbl RATES_Dmu2_And_Mu1_Given_Min_N(phydbl mu1, phydbl mu2, phydbl dt1, phydbl
 
   if(density < 0.0)
     {
-      PhyML_Printf("\n. density=%f cmpoiss = %f i=%d n_min=%d mu1=%f mu2=%f dt1=%f dt2=%f",
+      PhyML_Fprintf(stderr,"\n\u2022 density=%f cmpoiss = %f i=%d n_min=%d mu1=%f mu2=%f dt1=%f dt2=%f",
 	     density,cumpoiss,i,n_min,mu1,mu2,dt1,dt2);
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 
@@ -1491,15 +1491,15 @@ phydbl RATES_Dmu2_And_Mu1_Given_N(phydbl mu1, phydbl mu2, phydbl dt1, phydbl dt2
 
 	if(mu2 < 1.E-10)
 	  {
-	    PhyML_Printf("\n. mu2=%f",mu2);
-	    PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+	    PhyML_Fprintf(stderr,"\n\u2022 mu2=%f",mu2);
+	    PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
 	    Warn_And_Exit("");
 	  }
 
 	if(mu1 < 1.E-10)
 	  {
-	    PhyML_Printf("\n. mu1=%f",mu1);
-	    PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+	    PhyML_Fprintf(stderr,"\n\u2022 mu1=%f",mu1);
+	    PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
 	    Warn_And_Exit("");
 	  }
 
@@ -1706,13 +1706,13 @@ void RATES_Posterior_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
 
   if(isnan(cvl) || isnan(cel) || cvl < .0) 
     {
-      for(i=0;i<dim;i++) if(i != b->num) printf("\n. reg: %f %f %f nu=%f clock=%f",
+      for(i=0;i<dim;i++) if(i != b->num) printf("\n\u2022 reg: %f %f %f nu=%f clock=%f",
 					tree->rates->reg_coeff[b->num*dim+i],
 					tree->rates->u_cur_l[i],
 					tree->rates->mean_l[i],
 					tree->rates->nu,tree->rates->clock_r);
-      PhyML_Printf("\n. cel=%f cvl=%f\n",cel,cvl); 
-      PhyML_Printf("\n. Warning: invalid expected and/or std. dev. values. Skipping this step.\n"); 
+      PhyML_Fprintf(stderr,"\n\u2022 cel=%f cvl=%f\n",cel,cvl); 
+      PhyML_Fprintf(stderr,"\n\u2022 Warning: invalid expected and/or std. dev. values. Skipping this step.\n"); 
       Exit("\n");
     }
 
@@ -1747,8 +1747,8 @@ void RATES_Posterior_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
   
   if(cvr < 0.0)
     {
-      PhyML_Printf("\n. cvr=%f d->tax=%d V1=%f v2=%f V3=%f",cvr,d->tax,V1,V2,V3);
-      PhyML_Printf("\n. T0=%f T1=%f T2=%f T3=%f",T0,T1,T2,T3);
+      PhyML_Fprintf(stderr,"\n\u2022 cvr=%f d->tax=%d V1=%f v2=%f V3=%f",cvr,d->tax,V1,V2,V3);
+      PhyML_Fprintf(stderr,"\n\u2022 T0=%f T1=%f T2=%f T3=%f",T0,T1,T2,T3);
       Exit("\n");
     }
 
@@ -1773,16 +1773,16 @@ void RATES_Posterior_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
 
   if(err || isnan(rd))
     {
-      PhyML_Printf("\n");
-      PhyML_Printf("\n. run: %d err=%d d->tax=%d",tree->mcmc->run,err,d->tax);
-      PhyML_Printf("\n. rd=%f cvr=%G dt=%G cr=%G",rd,cvr,dt,cr);
-      PhyML_Printf("\n. prior_mean = %G prior_var = %G",prior_mean,prior_var);
-      PhyML_Printf("\n. like_mean = %G like_var = %G",like_mean,like_var);
-      PhyML_Printf("\n. post_mean = %G post_var = %G",post_mean,post_var);
-      PhyML_Printf("\n. clock_r = %f",tree->rates->clock_r);
-      PhyML_Printf("\n. T0=%f T1=%f T2=%f T3=%f",T0,T1,T2,T3);
-      PhyML_Printf("\n. U0=%f U1=%f U2=%f U3=%f",U0,U1,U2,U3);
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n");
+      PhyML_Fprintf(stderr,"\n\u2022 run: %d err=%d d->tax=%d",tree->mcmc->run,err,d->tax);
+      PhyML_Fprintf(stderr,"\n\u2022 rd=%f cvr=%G dt=%G cr=%G",rd,cvr,dt,cr);
+      PhyML_Fprintf(stderr,"\n\u2022 prior_mean = %G prior_var = %G",prior_mean,prior_var);
+      PhyML_Fprintf(stderr,"\n\u2022 like_mean = %G like_var = %G",like_mean,like_var);
+      PhyML_Fprintf(stderr,"\n\u2022 post_mean = %G post_var = %G",post_mean,post_var);
+      PhyML_Fprintf(stderr,"\n\u2022 clock_r = %f",tree->rates->clock_r);
+      PhyML_Fprintf(stderr,"\n\u2022 T0=%f T1=%f T2=%f T3=%f",T0,T1,T2,T3);
+      PhyML_Fprintf(stderr,"\n\u2022 U0=%f U1=%f U2=%f U3=%f",U0,U1,U2,U3);
+      PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }    
 
@@ -1817,7 +1817,7 @@ void RATES_Posterior_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
 
       tree->rates->c_lnL_rates = new_lnL_rate;
       
-      /* printf("\n. %f %f sd1=%f U1=%f rd=%f ra=%f a=%d d=%d [%f] [%f %f]", */
+      /* printf("\n\u2022 %f %f sd1=%f U1=%f rd=%f ra=%f a=%d d=%d [%f] [%f %f]", */
       /* 	     new_lnL_rate,RATES_Lk_Rates(tree),sd1,U1,rd,ra,a->num,d->num,tree->rates->br_r[tree->n_root->num], */
       /* 	     Log_Dnorm_Trunc(U1,ra,sd1,r_min,r_max,&err), */
       /* 	     Log_Dnorm_Trunc(rd,ra,sd1,r_min,r_max,&err)); */
@@ -1834,7 +1834,7 @@ void RATES_Posterior_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
       
       ratio = exp(ratio);
       
-      /*   printf("\n. R a=%3d T0=%6.1f T1=%6.1f T2=%6.1f T3=%6.1f ratio=%8f pm=%7f U1=%7.2f rd=%7.2f %f %f lr=%f %f ld=%f %f [%f]",a->num,T0,T1,T2,T3,ratio,post_mean,U1,rd, */
+      /*   printf("\n\u2022 R a=%3d T0=%6.1f T1=%6.1f T2=%6.1f T3=%6.1f ratio=%8f pm=%7f U1=%7.2f rd=%7.2f %f %f lr=%f %f ld=%f %f [%f]",a->num,T0,T1,T2,T3,ratio,post_mean,U1,rd, */
       /* 	 Log_Dnorm_Trunc(U1,post_mean,post_sd,r_min,r_max,&err), */
       /* 	 Log_Dnorm_Trunc(rd,post_mean,post_sd,r_min,r_max,&err), */
       /* 	 new_lnL_rate,cur_lnL_rate, */
@@ -2032,8 +2032,8 @@ void RATES_Posterior_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
 /*   cov22 = tree->rates->cov[b2->num*dim+b2->num]; */
 /*   cov33 = tree->rates->cov[b3->num*dim+b3->num]; */
 
-/*   PhyML_Printf("\n- El1=%10f El2=%10f El3=%10f",El1,El2,El3); */
-/*   PhyML_Printf("\n- cov11=%10f cov12=%10f cov13=%10f cov23=%10f cov22=%10f cov33=%10f", cov11,cov12,cov13,cov23,cov22,cov33); */
+/*   PhyML_Fprintf(stderr,"\n- El1=%10f El2=%10f El3=%10f",El1,El2,El3); */
+/*   PhyML_Fprintf(stderr,"\n- cov11=%10f cov12=%10f cov13=%10f cov23=%10f cov22=%10f cov33=%10f", cov11,cov12,cov13,cov23,cov22,cov33); */
 
   num_1 = num_2 = num_3 = -1;
   if(b1->num < b2->num && b2->num < b3->num) { num_1 = 0; num_2 = 1; num_3 = 2; }
@@ -2069,8 +2069,8 @@ void RATES_Posterior_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
   El3 += tree->rates->mean_l[b3->num];
 
 
-/*   PhyML_Printf("\n+ El1=%10f El2=%10f El3=%10f",El1,El2,El3); */
-/*   PhyML_Printf("\n+ cov11=%10f cov12=%10f cov13=%10f cov23=%10f cov22=%10f cov33=%10f", cov11,cov12,cov13,cov23,cov22,cov33); */
+/*   PhyML_Fprintf(stderr,"\n+ El1=%10f El2=%10f El3=%10f",El1,El2,El3); */
+/*   PhyML_Fprintf(stderr,"\n+ cov11=%10f cov12=%10f cov13=%10f cov23=%10f cov22=%10f cov33=%10f", cov11,cov12,cov13,cov23,cov22,cov33); */
 
 
   t1_new = +1;
@@ -2083,7 +2083,7 @@ void RATES_Posterior_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
 
   if(t_min > t_max) 
     {
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
 
@@ -2129,12 +2129,12 @@ void RATES_Posterior_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
 
   if(cond_cov[0*3+0] < 0.0)
     {
-      PhyML_Printf("\n. a: %d d: %d",a->num,d->num);
-      PhyML_Printf("\n. Conditional mean=%G var=%G",cond_mu[0],cond_cov[0*3+0]);
-      PhyML_Printf("\n. t0=%G t1=%f t2=%f t3=%f l1=%G l2=%G l3=%G",t0,t1,t2,t3,l1,l2,l3);
-      PhyML_Printf("\n. El1=%G El2=%G El3=%G Nu=%G r1=%G r2=%G r3=%G cr=%G",El1,El2,El3,tree->rates->nu,r1,r2,r3,cr);
-      PhyML_Printf("\n. COV11=%f COV12=%f COV13=%f COV22=%f COV23=%f COV33=%f",cov11,cov12,cov13,cov22,cov23,cov33);
-      PhyML_Printf("\n. constraint1: %f constraints2: %f",l2XY[1],l2XY[2]);
+      PhyML_Printf("\n\u2022 a: %d d: %d",a->num,d->num);
+      PhyML_Printf("\n\u2022 Conditional mean=%G var=%G",cond_mu[0],cond_cov[0*3+0]);
+      PhyML_Printf("\n\u2022 t0=%G t1=%f t2=%f t3=%f l1=%G l2=%G l3=%G",t0,t1,t2,t3,l1,l2,l3);
+      PhyML_Printf("\n\u2022 El1=%G El2=%G El3=%G Nu=%G r1=%G r2=%G r3=%G cr=%G",El1,El2,El3,tree->rates->nu,r1,r2,r3,cr);
+      PhyML_Printf("\n\u2022 COV11=%f COV12=%f COV13=%f COV22=%f COV23=%f COV33=%f",cov11,cov12,cov13,cov22,cov23,cov33);
+      PhyML_Printf("\n\u2022 constraint1: %f constraints2: %f",l2XY[1],l2XY[2]);
       PhyML_Printf("\n");
       for(i=0;i<3;i++)
       	{
@@ -2165,18 +2165,18 @@ void RATES_Posterior_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
   if(err)
     {
       PhyML_Printf("\n");
-      PhyML_Printf("\n. Root ? %s",(tree->n_root==a)?("yes"):("no")); 
-      PhyML_Printf("\n. %s %d %d",__FILE__,__LINE__,tree->mcmc->run);
-      PhyML_Printf("\n. t0=%f t1=%f t2=%f t3=%f",t0,t1,t2,t3);
-      PhyML_Printf("\n. t_min=%f t_max=%f",t_min,t_max);
-      PhyML_Printf("\n. bl_min=%f bl_max=%f",bl_min,bl_max);
-      PhyML_Printf("\n. cond_mu[0]=%f cond_cov[0]=%f",cond_mu[0],SQRT(cond_cov[0*3+0]));
-      PhyML_Printf("\n. El1=%f El2=%f El3=%f",El1,El2,El3);
-      PhyML_Printf("\n. l1=%f l2=%f l3=%f",l1,l2,l3);
-      PhyML_Printf("\n. u0=%f r1=%f r2=%f r3=%f",u0,r1,r2,r3);
-      PhyML_Printf("\n. COV11=%f COV22=%f",cov11,cov22);
-      PhyML_Printf("\n. Clock rate = %f",tree->rates->clock_r);
-      PhyML_Printf("\n. Setting t1_new to %f",t1);
+      PhyML_Printf("\n\u2022 Root ? %s",(tree->n_root==a)?("yes"):("no")); 
+      PhyML_Printf("\n\u2022 %s %d %d",__FILE__,__LINE__,tree->mcmc->run);
+      PhyML_Printf("\n\u2022 t0=%f t1=%f t2=%f t3=%f",t0,t1,t2,t3);
+      PhyML_Printf("\n\u2022 t_min=%f t_max=%f",t_min,t_max);
+      PhyML_Printf("\n\u2022 bl_min=%f bl_max=%f",bl_min,bl_max);
+      PhyML_Printf("\n\u2022 cond_mu[0]=%f cond_cov[0]=%f",cond_mu[0],SQRT(cond_cov[0*3+0]));
+      PhyML_Printf("\n\u2022 El1=%f El2=%f El3=%f",El1,El2,El3);
+      PhyML_Printf("\n\u2022 l1=%f l2=%f l3=%f",l1,l2,l3);
+      PhyML_Printf("\n\u2022 u0=%f r1=%f r2=%f r3=%f",u0,r1,r2,r3);
+      PhyML_Printf("\n\u2022 COV11=%f COV22=%f",cov11,cov22);
+      PhyML_Printf("\n\u2022 Clock rate = %f",tree->rates->clock_r);
+      PhyML_Printf("\n\u2022 Setting t1_new to %f",t1);
       t1_new = t1;
       /* 	  Exit("\n"); */
     }
@@ -2192,17 +2192,17 @@ void RATES_Posterior_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
   /*       if(err) */
   /* 	{ */
   /* 	  PhyML_Printf("\n"); */
-  /* 	  PhyML_Printf("\n. %s %d %d",__FILE__,__LINE__,tree->mcmc->run); */
-  /* 	  PhyML_Printf("\n. t0=%f t1=%f t2=%f t3=%f",t0,t1,t2,t3); */
-  /* 	  PhyML_Printf("\n. t_min=%f t_max=%f",t_min,t_max); */
-  /* 	  PhyML_Printf("\n. bl_min=%f bl_max=%f",bl_min,bl_max); */
-  /* 	  PhyML_Printf("\n. cond_mu[0]=%f cond_cov[0]=%f",cond_mu[0],SQRT(cond_cov[0*3+0])); */
-  /* 	  PhyML_Printf("\n. El1=%f El2=%f El3=%f",El1,El2,El3); */
-  /* 	  PhyML_Printf("\n. l1=%f l2=%f l3=%f",l1,l2,l3); */
-  /* 	  PhyML_Printf("\n. u0=%f r1=%f r2=%f r3=%f",u0,r1,r2,r3); */
-  /* 	  PhyML_Printf("\n. COV11=%f COV22=%f",cov11,cov22); */
-  /* 	  PhyML_Printf("\n. Clock rate = %f",tree->rates->clock_r); */
-  /* 	  PhyML_Printf("\n. Setting t1_new to %f",t1); */
+  /* 	  PhyML_Printf("\n\u2022 %s %d %d",__FILE__,__LINE__,tree->mcmc->run); */
+  /* 	  PhyML_Printf("\n\u2022 t0=%f t1=%f t2=%f t3=%f",t0,t1,t2,t3); */
+  /* 	  PhyML_Printf("\n\u2022 t_min=%f t_max=%f",t_min,t_max); */
+  /* 	  PhyML_Printf("\n\u2022 bl_min=%f bl_max=%f",bl_min,bl_max); */
+  /* 	  PhyML_Printf("\n\u2022 cond_mu[0]=%f cond_cov[0]=%f",cond_mu[0],SQRT(cond_cov[0*3+0])); */
+  /* 	  PhyML_Printf("\n\u2022 El1=%f El2=%f El3=%f",El1,El2,El3); */
+  /* 	  PhyML_Printf("\n\u2022 l1=%f l2=%f l3=%f",l1,l2,l3); */
+  /* 	  PhyML_Printf("\n\u2022 u0=%f r1=%f r2=%f r3=%f",u0,r1,r2,r3); */
+  /* 	  PhyML_Printf("\n\u2022 COV11=%f COV22=%f",cov11,cov22); */
+  /* 	  PhyML_Printf("\n\u2022 Clock rate = %f",tree->rates->clock_r); */
+  /* 	  PhyML_Printf("\n\u2022 Setting t1_new to %f",t1); */
   /* 	  t1_new = t1; */
   /* /\* 	  Exit("\n"); *\/ */
   /* 	} */
@@ -2212,40 +2212,40 @@ void RATES_Posterior_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
     {
       t1_new = t0+1.E-4;
       PhyML_Printf("\n");
-      PhyML_Printf("\n. a is root -> %s",(a == tree->n_root)?("YES"):("NO"));
-      PhyML_Printf("\n. t0 = %f t1_new = %f t1 = %f",t0,t1_new,t1);
-      PhyML_Printf("\n. t_min=%f t_max=%f",t_min,t_max);
-      PhyML_Printf("\n. l1 = %f",l1);
-      PhyML_Printf("\n. bl_min = %f bl_max = %f",bl_min,bl_max);
-      PhyML_Printf("\n. (t1-t0)=%f (t2-t1)=%f",t1-t0,t2-t1);
-      PhyML_Printf("\n. l1 = %f l2 = %f cov11=%f cov22=%f cov33=%f",l1,l2,cov11,cov22,cov33);
-      PhyML_Printf("\n. clock=%G",tree->rates->clock_r);
-      PhyML_Printf("\n. u0=%f r1=%f r2=%f r3=%f",u0,r1,r2,r3);
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n\u2022 a is root -> %s",(a == tree->n_root)?("YES"):("NO"));
+      PhyML_Printf("\n\u2022 t0 = %f t1_new = %f t1 = %f",t0,t1_new,t1);
+      PhyML_Printf("\n\u2022 t_min=%f t_max=%f",t_min,t_max);
+      PhyML_Printf("\n\u2022 l1 = %f",l1);
+      PhyML_Printf("\n\u2022 bl_min = %f bl_max = %f",bl_min,bl_max);
+      PhyML_Printf("\n\u2022 (t1-t0)=%f (t2-t1)=%f",t1-t0,t2-t1);
+      PhyML_Printf("\n\u2022 l1 = %f l2 = %f cov11=%f cov22=%f cov33=%f",l1,l2,cov11,cov22,cov33);
+      PhyML_Printf("\n\u2022 clock=%G",tree->rates->clock_r);
+      PhyML_Printf("\n\u2022 u0=%f r1=%f r2=%f r3=%f",u0,r1,r2,r3);
+      PhyML_Printf("\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
       /*       Exit("\n"); */
     }
   if(t1_new > MIN(t2,t3))
     {
       PhyML_Printf("\n");
-      PhyML_Printf("\n. a is root -> %s",(a == tree->n_root)?("YES"):("NO"));
-      PhyML_Printf("\n. t0 = %f t1_new = %f t1 = %f t2 = %f t3 = %f MIN(t2,t3)=%f",t0,t1_new,t1,t2,t3,MIN(t2,t3));
-      PhyML_Printf("\n. t_min=%f t_max=%f",t_min,t_max);
-      PhyML_Printf("\n. l2 = %f",l2);
-      PhyML_Printf("\n. bl_min = %f bl_max = %f",bl_min,bl_max);
-      PhyML_Printf("\n. (t1-t0)=%f (t2-t1)=%f",t1-t0,t2-t1);
-      PhyML_Printf("\n. l1 = %f l2 = %f cov11=%f cov22=%f cov33=%f",l1,l2,cov11,cov22,cov33);
-      PhyML_Printf("\n. clock=%G",tree->rates->clock_r);
-      PhyML_Printf("\n. u0=%f r1=%f r2=%f r3=%f",u0,r1,r2,r3);
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n\u2022 a is root -> %s",(a == tree->n_root)?("YES"):("NO"));
+      PhyML_Printf("\n\u2022 t0 = %f t1_new = %f t1 = %f t2 = %f t3 = %f MIN(t2,t3)=%f",t0,t1_new,t1,t2,t3,MIN(t2,t3));
+      PhyML_Printf("\n\u2022 t_min=%f t_max=%f",t_min,t_max);
+      PhyML_Printf("\n\u2022 l2 = %f",l2);
+      PhyML_Printf("\n\u2022 bl_min = %f bl_max = %f",bl_min,bl_max);
+      PhyML_Printf("\n\u2022 (t1-t0)=%f (t2-t1)=%f",t1-t0,t2-t1);
+      PhyML_Printf("\n\u2022 l1 = %f l2 = %f cov11=%f cov22=%f cov33=%f",l1,l2,cov11,cov22,cov33);
+      PhyML_Printf("\n\u2022 clock=%G",tree->rates->clock_r);
+      PhyML_Printf("\n\u2022 u0=%f r1=%f r2=%f r3=%f",u0,r1,r2,r3);
+      PhyML_Printf("\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
       /*       Exit("\n"); */
     }
   
   if(isnan(t1_new))
     {
-      PhyML_Printf("\n. run=%d",tree->mcmc->run);
-      PhyML_Printf("\n. mean=%G var=%G",cond_mu[0],cond_cov[0*3+0]);
-      PhyML_Printf("\n. t1=%f l1=%G r1=%G t0=%G",t1,l1,r1,t0);
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n\u2022 run=%d",tree->mcmc->run);
+      PhyML_Printf("\n\u2022 mean=%G var=%G",cond_mu[0],cond_cov[0*3+0]);
+      PhyML_Printf("\n\u2022 t1=%f l1=%G r1=%G t0=%G",t1,l1,r1,t0);
+      PhyML_Printf("\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
       /*       Exit("\n"); */
     }
   
@@ -2439,25 +2439,25 @@ void RATES_Posterior_Time_Root(t_tree *tree)
   if(t0 > t1 || t0 > t2)
     {
       PhyML_Printf("\n");
-      PhyML_Printf("\n. Run = %d",tree->mcmc->run);
-      PhyML_Printf("\n. t0=%f t1=%f t2=%f",t0,t1,t2);
-      PhyML_Printf("\n. t0_min=%f t0_max=%f",t0_min,t0_max);
-      PhyML_Printf("\n. new_l=%f cel=%f",new_l,cel);
-      PhyML_Printf("\n. u0=%f u1=%f u2=%f",u0/cr,u1/cr,u2/cr);
-      PhyML_Printf("\n. Nu = %f Clock = %f",tree->rates->nu,tree->rates->clock_r);
-      PhyML_Printf("\n. Setting t0 to %f",tree->rates->nd_t[root->num]);
+      PhyML_Printf("\n\u2022 Run = %d",tree->mcmc->run);
+      PhyML_Printf("\n\u2022 t0=%f t1=%f t2=%f",t0,t1,t2);
+      PhyML_Printf("\n\u2022 t0_min=%f t0_max=%f",t0_min,t0_max);
+      PhyML_Printf("\n\u2022 new_l=%f cel=%f",new_l,cel);
+      PhyML_Printf("\n\u2022 u0=%f u1=%f u2=%f",u0/cr,u1/cr,u2/cr);
+      PhyML_Printf("\n\u2022 Nu = %f Clock = %f",tree->rates->nu,tree->rates->clock_r);
+      PhyML_Printf("\n\u2022 Setting t0 to %f",tree->rates->nd_t[root->num]);
       return;
     }
 
   if(t0 < t0_min || t0 > t0_max)
     {
       PhyML_Printf("\n");
-      PhyML_Printf("\n. Run = %d",tree->mcmc->run);
-      PhyML_Printf("\n. t0=%f t1=%f t2=%f",t0,t1,t2);
-      PhyML_Printf("\n. t0_min=%f t0_max=%f",t0_min,t0_max);
-      PhyML_Printf("\n. u0=%f u1=%f u2=%f",u0/cr,u1/cr,u2/cr);
-      PhyML_Printf("\n. Nu = %f Clock = %f",tree->rates->nu,tree->rates->clock_r);
-      PhyML_Printf("\n. Setting t0 to %f",tree->rates->nd_t[root->num]);
+      PhyML_Printf("\n\u2022 Run = %d",tree->mcmc->run);
+      PhyML_Printf("\n\u2022 t0=%f t1=%f t2=%f",t0,t1,t2);
+      PhyML_Printf("\n\u2022 t0_min=%f t0_max=%f",t0_min,t0_max);
+      PhyML_Printf("\n\u2022 u0=%f u1=%f u2=%f",u0/cr,u1/cr,u2/cr);
+      PhyML_Printf("\n\u2022 Nu = %f Clock = %f",tree->rates->nu,tree->rates->clock_r);
+      PhyML_Printf("\n\u2022 Setting t0 to %f",tree->rates->nd_t[root->num]);
       t0 = tree->rates->nd_t[root->num];      
     }
 
@@ -2551,7 +2551,7 @@ void RATES_Update_Cur_Bl(t_tree *tree)
 	POW((t1-t0)/(t1+t2-2.*t0),2)*tree->rates->cur_gamma_prior_var[n0->num] +
 	POW((t2-t0)/(t1+t2-2.*t0),2)*tree->rates->cur_gamma_prior_var[n1->num];
 
-      /* printf("\n. ROOT: %f %f %f %f", */
+      /* printf("\n\u2022 ROOT: %f %f %f %f", */
       /* 	     tree->rates->cur_gamma_prior_mean[n0->num], */
       /* 	     tree->rates->cur_gamma_prior_var[n0->num], */
       /* 	     tree->rates->cur_gamma_prior_mean[n1->num], */
@@ -2628,7 +2628,7 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
           tree->rates->cur_l[d->num] = dt*cr;          
         }
 
-      /* printf("\n. td: %12f ta: %12f dt: %12f cr: %12f ra: %12f rd: %12f l: %12f", */
+      /* printf("\n\u2022 td: %12f ta: %12f dt: %12f cr: %12f ra: %12f rd: %12f l: %12f", */
       /*        tree->rates->nd_t[d->num], */
       /*        tree->rates->nd_t[a->num], */
       /*        dt,cr,ra,rd,tree->rates->cur_l[d->num]); */
@@ -2645,9 +2645,9 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
       
       if(b && (isnan(b->l->v) || isnan(b->l_var->v)))
 	{
-	  PhyML_Printf("\n== dt=%G rr=%G cr=%G ra=%G rd=%G nu=%G %f %f ",dt,rr,cr,ra,rd,nu,b->l_var->v,b->l->v);	  
-	  PhyML_Printf("\n== ta=%G td=%G ra*cr=%G rd*cr=%G sd=%G",ta,td,ra*cr,rd*cr,SQRT(dt*nu)*cr);
-	  PhyML_Printf("\n== Err. in file %s at line %d (function '%s').\n",__FILE__,__LINE__,__FUNCTION__);
+	  PhyML_Fprintf(stderr,"\n\u2022 dt=%G rr=%G cr=%G ra=%G rd=%G nu=%G %f %f ",dt,rr,cr,ra,rd,nu,b->l_var->v,b->l->v);	  
+	  PhyML_Fprintf(stderr,"\n\u2022 ta=%G td=%G ra*cr=%G rd*cr=%G sd=%G",ta,td,ra*cr,rd*cr,SQRT(dt*nu)*cr);
+	  PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d (function '%s').\n",__FILE__,__LINE__,__FUNCTION__);
 	  Exit("\n");
 	}
     }
@@ -2852,7 +2852,7 @@ void RATES_Covariance_Mu(t_tree *tree)
 	    }
 	  else
 	    {
-	      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+	      PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
 	      Exit("\n");
 	    }
 	}
@@ -3089,8 +3089,8 @@ void RATES_Check_Lk_Rates(t_tree *tree, int *err)
 
       if(t_anc > t)
 	{
-	  PhyML_Printf("\n. %d %d u=%f u_anc=%f t=%f t_anc=%f",i,tree->a_nodes[i]->anc->num,u,u_anc,t,t_anc);
-	  PhyML_Printf("\n. %d %d %d",tree->n_root->num,tree->n_root->v[2]->num,tree->n_root->v[1]->num);
+	  PhyML_Printf("\n\u2022 %d %d u=%f u_anc=%f t=%f t_anc=%f",i,tree->a_nodes[i]->anc->num,u,u_anc,t,t_anc);
+	  PhyML_Printf("\n\u2022 %d %d %d",tree->n_root->num,tree->n_root->v[2]->num,tree->n_root->v[1]->num);
 	  *err = 1;
 	}
     }
@@ -3112,8 +3112,8 @@ phydbl RATES_Expected_Tree_Length(t_tree *tree)
 
   if(n != 2*tree->n_otu-2)
     {
-      PhyML_Printf("\n. n=%d 2n-2=%d",n,2*tree->n_otu-2);
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n\u2022 n=%d 2n-2=%d",n,2*tree->n_otu-2);
+      PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
 
@@ -3213,14 +3213,14 @@ void RATES_Normalise_Rates(t_tree *tree)
 
 /*   if(tree->rates->clock_r < tree->rates->min_clock) */
 /*     { */
-/*       PhyML_Printf("\n. Curr mean rates: %G",curr); */
-/*       PhyML_Printf("\n. Set clock rate to: %G",tree->rates->clock_r); */
+/*       PhyML_Printf("\n\u2022 Curr mean rates: %G",curr); */
+/*       PhyML_Printf("\n\u2022 Set clock rate to: %G",tree->rates->clock_r); */
 /*       tree->rates->clock_r = tree->rates->min_clock; */
 /*     } */
 /*   if(tree->rates->clock_r > tree->rates->max_clock) */
 /*     { */
-/*       PhyML_Printf("\n. Curr mean rates: %G",curr); */
-/*       PhyML_Printf("\n. Set clock rate to: %G",tree->rates->clock_r); */
+/*       PhyML_Printf("\n\u2022 Curr mean rates: %G",curr); */
+/*       PhyML_Printf("\n\u2022 Set clock rate to: %G",tree->rates->clock_r); */
 /*       tree->rates->clock_r = tree->rates->max_clock; */
 /*     } */
 
@@ -3258,7 +3258,7 @@ phydbl RATES_Find_Max_Dt_Bisec(phydbl r, phydbl r_mean, phydbl ta, phydbl tc, ph
       else
 	trunc_cdf = (1. - cdfr)/(1. - cdf0);
 	
-/*       PhyML_Printf("\n. ta=%15f tb=%15f tc=%15f cdf = %15f",ta,tb,tc,trunc_cdf); */
+/*       PhyML_Printf("\n\u2022 ta=%15f tb=%15f tc=%15f cdf = %15f",ta,tb,tc,trunc_cdf); */
 
       if(trunc_cdf > threshp)
 	{
@@ -3273,14 +3273,14 @@ phydbl RATES_Find_Max_Dt_Bisec(phydbl r, phydbl r_mean, phydbl ta, phydbl tc, ph
 
   if(tb < ori_ta)
     {
-      PhyML_Printf("\n. tb < ta r=%f r_mean=%f",r,r_mean);
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n\u2022 tb < ta r=%f r_mean=%f",r,r_mean);
+      PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
   if(tb > ori_tc)
     {
-      PhyML_Printf("\n. tb > tc r=%f r_mean=%f ori_ta=%f ori_tc=%f tb=%f",r,r_mean,ori_ta,ori_tc,tb);
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n\u2022 tb > tc r=%f r_mean=%f ori_ta=%f ori_tc=%f tb=%f",r,r_mean,ori_ta,ori_tc,tb);
+      PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
 
@@ -3318,7 +3318,7 @@ phydbl RATES_Find_Min_Dt_Bisec(phydbl r, phydbl r_mean, phydbl ta, phydbl tc, ph
       else
 	trunc_cdf = (1. - cdfr)/(1. - cdf0);
 	
-/*       PhyML_Printf("\n. ta=%15f tb=%15f tc=%15f cdf = %15f",ta,tb,tc,trunc_cdf); */
+/*       PhyML_Printf("\n\u2022 ta=%15f tb=%15f tc=%15f cdf = %15f",ta,tb,tc,trunc_cdf); */
 
       if(trunc_cdf > threshp)
 	{
@@ -3333,14 +3333,14 @@ phydbl RATES_Find_Min_Dt_Bisec(phydbl r, phydbl r_mean, phydbl ta, phydbl tc, ph
 
   if(tb < ori_ta)
     {
-      PhyML_Printf("\n. tb < ta r=%f r_mean=%f",r,r_mean);
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n\u2022 tb < ta r=%f r_mean=%f",r,r_mean);
+      PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
   if(tb > ori_tc)
     {
-      PhyML_Printf("\n. tb > tc r=%f r_mean=%f ori_ta=%f ori_tc=%f tb=%f",r,r_mean,ori_ta,ori_tc,tb);
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n\u2022 tb > tc r=%f r_mean=%f ori_ta=%f ori_tc=%f tb=%f",r,r_mean,ori_ta,ori_tc,tb);
+      PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
 
@@ -3434,9 +3434,9 @@ phydbl RATES_Get_Correction_Factor(phydbl mode, phydbl sd, int *err, t_tree *tre
 /*   Y1 = Dnorm(X1-K,.0,1.)/(1. - Pnorm(X1-K,.0,1.)) - X1; */
   Y1 = (Dnorm(A-K+X1,.0,1.)-Dnorm(B-K+X1,.0,1.))/(Pnorm(B-K+X1,.0,1.)-Pnorm(A-K+X1,.0,1.)) - X1;
 
-/*   printf("\n. ^^ mean=%f sd=%f",mode,sd); */
+/*   printf("\n\u2022 ^^ mean=%f sd=%f",mode,sd); */
 
-/*   printf("\n. X0=%f Y0=%f X1=%f Y1=%f",X0,Y0,X1,Y1); */
+/*   printf("\n\u2022 X0=%f Y0=%f X1=%f Y1=%f",X0,Y0,X1,Y1); */
 
   do
     {
@@ -3450,7 +3450,7 @@ phydbl RATES_Get_Correction_Factor(phydbl mode, phydbl sd, int *err, t_tree *tre
 
       if(denom < 1.E-10) 
 	{
-/* 	  printf("\n. X2 = %f Y2=%f num=%f denom=%f Y1=%f Y0=%f X1=%f X0=%f mode=%f sd=%f",X2,Y2,num,denom,Y1,Y0,X1,X0,mode,sd);	   */
+/* 	  printf("\n\u2022 X2 = %f Y2=%f num=%f denom=%f Y1=%f Y0=%f X1=%f X0=%f mode=%f sd=%f",X2,Y2,num,denom,Y1,Y0,X1,X0,mode,sd);	   */
 	  *err = YES;
 	  break;
 	}
@@ -3458,7 +3458,7 @@ phydbl RATES_Get_Correction_Factor(phydbl mode, phydbl sd, int *err, t_tree *tre
 /*       Y2 = Dnorm(X2-K,.0,1.)/(1. - Pnorm(X2-K,.0,1.)) - X2; */
       Y2 = (Dnorm(A-K+X2,.0,1.)-Dnorm(B-K+X2,.0,1.))/(Pnorm(B-K+X2,.0,1.)-Pnorm(A-K+X2,.0,1.)) - X2;
       
-     /*  printf("\n. X2 = %f Y2=%f num=%f denom=%f Y1=%f Y0=%f X1=%f X0=%f",X2,Y2,num,denom,Y1,Y0,X1,X0); */
+     /*  printf("\n\u2022 X2 = %f Y2=%f num=%f denom=%f Y1=%f Y0=%f X1=%f X0=%f",X2,Y2,num,denom,Y1,Y0,X1,X0); */
 
       if(X2 > X1)
 	{
@@ -3476,7 +3476,7 @@ phydbl RATES_Get_Correction_Factor(phydbl mode, phydbl sd, int *err, t_tree *tre
 	}      
     }while(fabs(Y2) > eps);
 
-/*   printf("\n. shift = %f X2=%f Y2 = %f",X2*sd,X2,Y2); */
+/*   printf("\n\u2022 shift = %f X2=%f Y2 = %f",X2*sd,X2,Y2); */
 
   return X2 * sd;
 }
@@ -3566,8 +3566,8 @@ void RATES_Record_Times(t_tree *mixt_tree)
     {
       if(tree->rates->nd_t_recorded == YES)
         {
-          PhyML_Printf("\n== Overwriting recorded times is forbidden.\n");
-          PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+          PhyML_Fprintf(stderr,"\n\u2022 Overwriting recorded times is forbidden.\n");
+          PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
           Exit("\n");
         }
 
@@ -3605,8 +3605,8 @@ void RATES_Record_Rates(t_tree *tree)
 
   if(tree->rates->br_r_recorded == YES)
     {
-      PhyML_Printf("\n. Overwriting recorded rates is forbidden.\n");
-      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n\u2022 Overwriting recorded rates is forbidden.\n");
+      PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
 
@@ -3679,8 +3679,8 @@ void RATES_Set_Clock_And_Nu_Max(t_tree *tree)
       /* tree->rates->max_nu    = 1.0; */
       tree->rates->max_clock = max_clock;
       
-      PhyML_Printf("\n. Clock rate parameter upper bound set to %f expected subst./site/time unit",tree->rates->max_clock);
-      PhyML_Printf("\n. Autocorrelation parameter upper bound set to %f",tree->rates->max_nu);
+      PhyML_Printf("\n\u2022 Clock rate parameter upper bound set to %f expected subst./site/time unit",tree->rates->max_clock);
+      PhyML_Printf("\n\u2022 Autocorrelation parameter upper bound set to %f",tree->rates->max_nu);
     }
 }
 
@@ -3716,8 +3716,8 @@ void RATES_Set_Birth_Rate_Boundaries(t_tree *tree)
   
   /* tree->rates->birth_rate_min = 1.E-6; */
   /* tree->rates->birth_rate_max = 1.; */
-  PhyML_Printf("\n. Birth rate lower bound set to %f.",tree->rates->birth_rate_min);
-  PhyML_Printf("\n. Birth rate upper bound set to %f.",tree->rates->birth_rate_max);
+  PhyML_Printf("\n\u2022 Birth rate lower bound set to %f.",tree->rates->birth_rate_min);
+  PhyML_Printf("\n\u2022 Birth rate upper bound set to %f.",tree->rates->birth_rate_max);
 
 }
 
@@ -3802,7 +3802,7 @@ void RATES_Get_Mean_Rate_In_Subtree_Pre(t_node *a, t_node *d, phydbl *sum, int *
   else
     {
       int i;
-      for(i=0;i<3;i++)
+      for(i=0;i<3;++i)
 	{
 	  if(d->v[i] != a && d->b[i] != tree->e_root)
 	    {
@@ -3830,7 +3830,7 @@ char *RATES_Get_Model_Name(int model)
     case STRICTCLOCK : {strcpy(s,"clock"); break;}
     default : 
       {
-	PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+	PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
 	Exit("\n");
 	break;
      }
