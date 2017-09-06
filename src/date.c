@@ -117,11 +117,18 @@ void DATE_Update_T_Prior_MinMax(t_tree *tree)
 void DATE_Assign_Primary_Calibration(t_tree *tree)
 {
   int i,j,idx,node_num;
-  t_clad *clad;
-
-  clad = NULL;
+  t_clad *clade;
+  t_cal *cal;
   
-  for(i=0;i<tree->rates->n_cal;i++) tree->rates->a_cal[i]->target_nd = NULL;
+  clade = NULL;
+  cal  = NULL;
+  
+  for(i=0;i<tree->rates->n_cal;++i)
+    {
+      cal = tree->rates->a_cal[i];
+      clade = cal->clade_list[cal->current_clade_idx];
+      clade->target_nd = NULL;
+    }
   
   for(i=0;i<2*tree->n_otu-1;++i) 
     for(j=0;j<MAX_N_CAL;++j) 
@@ -130,16 +137,19 @@ void DATE_Assign_Primary_Calibration(t_tree *tree)
       tree->a_nodes[i]->n_cal  = 0;
     }
   
-  for(i=0;i<tree->rates->n_cal;i++)
+  for(i=0;i<tree->rates->n_cal;++i)
     {
-      clad = tree->rates->a_cal[i]->clade_list[tree->rates->a_cal[i]->current_clade_idx];
-      node_num = Find_Clade(clad->tax_list,
-                            clad->n_tax,
+      cal = tree->rates->a_cal[i];
+      clade = cal->clade_list[cal->current_clade_idx];
+
+      node_num = Find_Clade(clade->tax_list,
+                            clade->n_tax,
                             tree);
+
+      clade->target_nd = tree->a_nodes[node_num];
       
       idx = tree->a_nodes[node_num]->n_cal;
       tree->a_nodes[node_num]->cal[idx] = tree->rates->a_cal[i];
-      tree->a_nodes[node_num]->cal[idx]->target_nd = tree->a_nodes[node_num];
       tree->a_nodes[node_num]->n_cal++;
       
 
@@ -461,7 +471,7 @@ phydbl *DATE_MCMC(t_tree *tree)
 {
   t_mcmc *mcmc;
   char *s_tree;
-  int move, n_vars, i, adjust_len;
+  int move, n_vars, i, j, adjust_len;
   phydbl u;
   phydbl *res;
   FILE *fp_stats,*fp_tree;
@@ -471,9 +481,11 @@ phydbl *DATE_MCMC(t_tree *tree)
 
   fp_stats = tree->io->fp_out_stats;
   fp_tree = tree->io->fp_out_tree;
+
   
   TIMES_Randomize_Tree_With_Time_Constraints(tree->rates->a_cal[0],tree);
 
+  
   mcmc = MCMC_Make_MCMC_Struct();
   tree->mcmc = mcmc;
   MCMC_Init_MCMC_Struct(NULL,NULL,mcmc);
@@ -507,10 +519,13 @@ phydbl *DATE_MCMC(t_tree *tree)
   /* printf("\n. Random init tree: %s",Write_Tree(tree,NO)); */
   /* tree->bl_ndigits = 7; */
   RATES_Update_Cur_Bl(tree);
+
+  
   PhyML_Printf("\n. log(Pr(Seq|Tree)) = %f",tree->c_lnL);
   PhyML_Printf("\n. log(Pr(Tree)) = %f",tree->rates->c_lnL_times);
     
   tree->extra_tree = Make_Tree_From_Scratch(tree->n_otu,tree->data);
+  tree->extra_tree->mod = tree->mod;
   Copy_Tree(tree,tree->extra_tree);
   tree->extra_tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
   RATES_Init_Rate_Struct(tree->extra_tree->rates,NULL,tree->n_otu);
@@ -542,10 +557,10 @@ phydbl *DATE_MCMC(t_tree *tree)
   for(i=0;i<tree->mod->ras->n_catg;i++) PhyML_Fprintf(fp_stats,"rr%d\t",i);
   for(i=0;i<tree->mod->ras->n_catg;i++) PhyML_Fprintf(fp_stats,"pr%d\t",i);
 
-  PhyML_Printf("\n. Needs rewriting...");
-  assert(FALSE);
-  /* for(i=0;i<tree->rates->n_cal;i++) PhyML_Fprintf(fp_stats,"t(%s)\t",tree->rates->a_cal[i]->clade_id); */
-          
+  for(i=0;i<tree->rates->n_cal;i++)
+    for(j=0;j<tree->rates->a_cal[i]->clade_list_size;++j)
+      PhyML_Fprintf(fp_stats,"t(%s)\t",tree->rates->a_cal[i]->clade_list[j]->id);
+  
   For(i,2*tree->n_otu-2) PhyML_Fprintf(fp_stats,"br%d\t",i);
   
   PhyML_Fprintf(fp_stats,"accRT\t");
@@ -682,8 +697,13 @@ phydbl *DATE_MCMC(t_tree *tree)
           for(i=0;i<tree->mod->ras->n_catg;i++) PhyML_Fprintf(fp_stats,"%G\t",tree->mod->ras->gamma_r_proba->v[i]);
 
 
-          for(i=0;i<tree->rates->n_cal;i++) PhyML_Fprintf(fp_stats,"%G\t",tree->rates->nd_t[tree->rates->a_cal[i]->target_nd->num]);
-
+          for(i=0;i<tree->rates->n_cal;i++)
+            {
+              t_cal *cal = tree->rates->a_cal[i];
+              t_clad *clade = cal->clade_list[cal->current_clade_idx];
+              PhyML_Fprintf(fp_stats,"%G\t",tree->rates->nd_t[clade->target_nd->num]);
+            }
+          
           For(i,2*tree->n_otu-2)
               PhyML_Fprintf(fp_stats,"%G\t",tree->rates->br_r[i]);
 
@@ -813,7 +833,9 @@ t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, phydbl *
   t_ll *out,*in,*ll;
   int is_clade_affected;
   t_clad *clade;
+  t_cal *cal;
 
+  cal = NULL;
   clade = NULL;
   n = NULL;
   m = NULL;
@@ -835,11 +857,13 @@ t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, phydbl *
           for(i=0;i<tree->rates->n_cal;++i)
             {
               // That node is the LCA of calibration a_cal[i]
-              if(n == tree->rates->a_cal[i]->target_nd)
+              cal = tree->rates->a_cal[i];
+              clade = cal->clade_list[cal->current_clade_idx];
+              
+              if(n == clade->target_nd)
                 {
                   is_clade_affected = NO;
 
-                  clade = tree->rates->a_cal[i]->clade_list[tree->rates->a_cal[i]->current_clade_idx];
                   for(j=0;j<clade->n_tax;++j)
                     {
                       m = clade->tip_list[j];
@@ -899,8 +923,6 @@ t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, phydbl *
   
   // Remove from that list the nodes that are too young to be suitable regraft points.
   
-  PhyML_Printf("\n. Needs rewriting...");
-  assert(FALSE);
   
   n = prune_daughter;
   out = NULL;
@@ -908,8 +930,10 @@ t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, phydbl *
     {
       for(i=0;i<tree->rates->n_cal;i++)
         {
-          clade = tree->rates->a_cal[i]->clade_list[tree->rates->a_cal[i]->current_clade_idx];
-          if(n->anc && n->anc == tree->rates->a_cal[i]->target_nd)
+          cal = tree->rates->a_cal[i];
+          clade = cal->clade_list[cal->current_clade_idx];
+
+          if(n->anc && n->anc == clade->target_nd)
             {
               for(j=0;j<clade->n_tax;++j)
                 {

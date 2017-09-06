@@ -32,14 +32,14 @@ void Make_Tree_4_Lk(t_tree *tree, calign *cdata, int n_site)
   if(posix_memalign((void **)&tree->dot_prod,BYTE_ALIGN,(size_t)tree->n_pattern*tree->mod->ns*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   if(posix_memalign((void **)&tree->expl,BYTE_ALIGN,(size_t)3*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 #else
-  tree->eigen_lr_left = _aligned_malloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes) * tree->mod->ns * sizeof(phydbl),BYTE_ALIGN);
-  tree->eigen_lr_rght = _aligned_malloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes) * tree->mod->ns * sizeof(phydbl),BYTE_ALIGN);
+  tree->eigen_lr_left = _aligned_malloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
+  tree->eigen_lr_rght = _aligned_malloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
   tree->dot_prod = _aligned_malloc(tree->n_pattern*tree->mod->ns*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*sizeof(phydbl),BYTE_ALIGN);
   tree->expl = _aligned_malloc(3*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
 #endif
 #else
-  tree->eigen_lr_left = (phydbl *)mCalloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes) * tree->mod->ns,sizeof(phydbl));
-  tree->eigen_lr_rght = (phydbl *)mCalloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes) * tree->mod->ns,sizeof(phydbl));
+  tree->eigen_lr_left = (phydbl *)mCalloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns,sizeof(phydbl));
+  tree->eigen_lr_rght = (phydbl *)mCalloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns,sizeof(phydbl));
   tree->dot_prod = (phydbl *)mCalloc(tree->n_pattern*tree->mod->ns*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(phydbl));
   tree->expl = (phydbl *)mCalloc(3*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns,sizeof(phydbl));
 #endif

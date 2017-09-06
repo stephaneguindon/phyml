@@ -5953,13 +5953,9 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
       ratio += (new_lnL_seq - cur_lnL_seq);
       ratio += (new_lnL_rate - cur_lnL_rate);
       ratio += (new_lnL_time - cur_lnL_time);
-
-
       
       ratio = exp(ratio);
       alpha = MIN(1.,ratio);
-
-
 
       /* Always accept move */
       if(tree->mcmc->always_yes == YES && new_lnL_time > UNLIKELY) alpha = 1.0;

@@ -429,7 +429,7 @@ void Update_All_Partial_Lk(t_tree *tree)
 phydbl Lk(t_edge *b, t_tree *tree)
 {
   unsigned int br,catg,state,ambiguity_check,site;
-  phydbl len,*expl,*dot_prod;
+  phydbl len,*expl,*dot_prod;  
   const unsigned int ns = tree->mod->ns;
   const unsigned int ncatg = tree->mod->ras->n_catg;
   const unsigned int npatterns = tree->n_pattern;

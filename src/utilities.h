@@ -1777,7 +1777,6 @@ typedef struct __XML_attr {
 /*!********************************************************/
 
 typedef struct __Calibration {
-  struct __Node *target_nd; // The node this calibration applies to
   struct __Calibration *next; // Next calibration
   struct __Calibration *prev; // Previous calibration
   struct __Clade **clade_list;
@@ -1798,16 +1797,11 @@ typedef struct __Calibration {
 /*!********************************************************/
 
 typedef struct __Clade{
-  /* char *id; */
-  /* struct __Node **target_tip; // Array of targeted tips */
-  /* char **target_tax; */
-  /* int  n_target_tax; */
-  /* char *clade_id; */
-
   char *id;
   struct __Node **tip_list; // list of tips defining the clade
   char **tax_list; // list of names of tips defining the clade
   int  n_tax; // number of taxa in the clade
+  struct __Node *target_nd; // The node this calibration applies to
 }t_clad;
 
 /*!********************************************************/
@@ -2251,6 +2245,8 @@ void Random_Walk_Along_Tree_On_Radius(t_node *a, t_node *d, t_edge *b, phydbl *r
 void Table_Top(unsigned int width);
 void Table_Row(unsigned int width);
 void Table_Bottom(unsigned int width);
+t_cal *Duplicate_Calib(t_cal *from);
+t_clad *Duplicate_Clade(t_clad *from);
 
 
 #include "xml.h"

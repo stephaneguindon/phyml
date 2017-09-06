@@ -1587,6 +1587,9 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
   phydbl *times,*cal_times,time_oldest_cal;
   int i,j,nd_num,*cal_ordering,n_cal,swap,list_size,tmp,orig_is_mixt_tree,repeat,n_max_repeats,tip_num,*no_cal_tip_num,n_no_cal_tip_num,*permut;
   t_cal *cal;
+  t_clad *clade;
+  
+
   
   assert(mixt_tree->rates);
   
@@ -1597,7 +1600,9 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
   orig_is_mixt_tree       = mixt_tree->is_mixt_tree;
   mixt_tree->is_mixt_tree = NO;
   n_max_repeats           = 1000;
-
+  cal                     = NULL;
+  clade                   = NULL;
+  
   // List node indices that are not in any calibration set
   no_cal_tip_num = NULL;
   n_no_cal_tip_num = 0;
@@ -1606,12 +1611,20 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       cal = cal_list;
       while(cal != NULL)
         {
-          PhyML_Printf("\n. Needs rewriting...");
-          assert(FALSE);
-          /* for(j=0;j<cal->n_target_tax;++j) */
-          /*   if(cal->target_tip[j] == mixt_tree->a_nodes[i]) */
-          /*     break; */
-          /* if(j != cal->n_target_tax) break; */
+          clade = cal->clade_list[cal->current_clade_idx];
+          for(j=0;j<clade->n_tax;++j)
+            {
+              /* printf("\n>>> %s %s %d [%d %d] [%p %p]", */
+              /*        clade->tip_list[j]->name, */
+              /*        mixt_tree->a_nodes[i]->name, */
+              /*        clade->tip_list[j] == mixt_tree->a_nodes[i], */
+              /*        clade->tip_list[j]->num, */
+              /*        mixt_tree->a_nodes[i]->num, */
+              /*        clade->tip_list[j], */
+              /*        mixt_tree->a_nodes[i]); */              
+              if(clade->tip_list[j] == mixt_tree->a_nodes[i]) break;
+            }
+          if(j != clade->n_tax) break;
           cal = cal->next;
         }
       if(cal == NULL)
@@ -1622,6 +1635,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
           n_no_cal_tip_num++;
         }
     }
+  
   
   for(repeat=0;repeat<n_max_repeats;repeat++)
     {
@@ -1650,7 +1664,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
           cal = cal->next;
         }
  
-      /* printf("\n. n_cal : %d",n_cal); */
+      /* printf("\n. n_cal : %d",n_cal); fflush(NULL); */
       /* Exit("\n"); */
      
       cal_ordering = (int *)mCalloc(n_cal,sizeof(int));
@@ -1676,7 +1690,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       for(i=0;i<n_cal-1;i++) assert(cal_times[cal_ordering[i]] > cal_times[cal_ordering[i+1]]);
               
       // Connect taxa that appear in every primary calibrations
-      for(i=0;i<n_cal;i++)
+      for(i=0;i<n_cal;++i)
         {
           cal = cal_list;
           j = 0;
@@ -1689,7 +1703,13 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
           
           list_size = 0;
 
-
+          /* printf("\n. n_cal: %d n_no_cal_tip_num: %d [%d %d] n_otu: %d", */
+          /*        n_cal, */
+          /*        n_no_cal_tip_num, */
+          /*        n_no_cal_tip_num-1, */
+          /*        (int)(2*n_no_cal_tip_num/(n_cal)), */
+          /*        mixt_tree->n_otu); fflush(NULL); */
+          
           // Add some taxa that are not in any calibration set
           permut = Permutate(n_no_cal_tip_num);
           j = 0;
@@ -1701,6 +1721,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
                   nd_list[list_size] = tips[tip_num];
                   /* PhyML_Printf("\n# %s",tips[tip_num]->name); */
                   list_size++;
+                  assert(list_size < mixt_tree->n_otu);
                 }
             }
           while(j++ < MIN(n_no_cal_tip_num-1,(int)(2*n_no_cal_tip_num/(n_cal))));
@@ -1711,16 +1732,14 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
           // Add all the taxa that are  in the calibration set of cal
           // This should be done here so that the last node in nd_list
           // belongs to the taxa in the calibration
-          PhyML_Printf("\n. Needs rewriting...");
-          assert(FALSE);
-          /* for(j=0;j<cal->n_target_tax;j++)  */
-          /*   { */
-          /*     nd_list[list_size] = tips[cal->target_tip[j]->num]; */
-          /*     /\* PhyML_Printf("\n> %s",tips[cal->target_tip[j]->num]->name); *\/ */
-          /*     list_size++; */
-          /*   } */
-
-
+          clade = cal->clade_list[cal->current_clade_idx];
+          for(j=0;j<clade->n_tax;j++)
+            {
+              nd_list[list_size] = tips[clade->tip_list[j]->num];
+              list_size++;
+              assert(list_size < mixt_tree->n_otu);
+            }
+          
 
           
           /* for(j=0;j<n_cal;j++) */
@@ -1756,7 +1775,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       // Connect all remaining taxa
       for(i=0;i<mixt_tree->n_otu;i++) nd_list[i] = NULL;
       list_size = 0;
-      for(i=0;i<mixt_tree->n_otu;i++) 
+      for(i=0;i<mixt_tree->n_otu;++i)
         {
           if(tips[i]->v[0] == NULL) // Tip is not connected yet
             {
@@ -1766,17 +1785,16 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
         }
 
 
-      PhyML_Printf("\n. Needs rewriting...");
-      assert(FALSE);
       
-      /* cal = cal_list; */
-      /* do */
-      /*   { */
-      /*     nd_list[list_size] = cal->target_tip[0]; */
-      /*     list_size++; */
-      /*     cal = cal->next; */
-      /*   } */
-      /* while(cal); */
+      cal = cal_list;
+      do
+        {
+          clade = cal->clade_list[cal->current_clade_idx];
+          nd_list[list_size] = clade->tip_list[0];
+          list_size++;
+          cal = cal->next;
+        }
+      while(cal);
 
       /* for(i=0;i<list_size;i++) printf("\n# To connect: %d lower: %f",nd_list[i]->num,time_oldest_cal); */
       
@@ -1800,7 +1818,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       mixt_tree->num_curr_branch_available = 0;
       Connect_Edges_To_Nodes_Recur(mixt_tree->a_nodes[0],mixt_tree->a_nodes[0]->v[0],mixt_tree);
       
-      For(i,2*mixt_tree->n_otu-3)
+      for(i=0;i<2*mixt_tree->n_otu-3;++i)
         {
           if(((mixt_tree->a_edges[i]->left == mixt_tree->n_root->v[1]) || (mixt_tree->a_edges[i]->rght == mixt_tree->n_root->v[1])) &&
              ((mixt_tree->a_edges[i]->left == mixt_tree->n_root->v[2]) || (mixt_tree->a_edges[i]->rght == mixt_tree->n_root->v[2])))
@@ -1861,6 +1879,8 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
 
   mixt_tree->is_mixt_tree = orig_is_mixt_tree;
 
+
+  
   if(mixt_tree->is_mixt_tree == YES)
     {
       t_tree *tree;
@@ -1885,6 +1905,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
         }
       while(tree);
     }
+
   
   Free(tips);
   Free(nd_list);

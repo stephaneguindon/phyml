@@ -530,6 +530,7 @@ void MIXT_Chain_Rates(t_rate *curr, t_rate *next)
 void MIXT_Chain_Cal(t_tree *mixt_tree)
 {
   int i;
+
   for(i=0;i<mixt_tree->rates->n_cal-1;i++) 
     {
       mixt_tree->rates->a_cal[i]->next   = mixt_tree->rates->a_cal[i+1];

@@ -2233,7 +2233,7 @@ void DATE_XML(char *xml_filename)
   
   // Looking for calibration node(s)
   xnd = XML_Search_Node_Name("calibration",YES,xroot);
-
+  
   if(xnd == NULL)
     {
       PhyML_Fprintf(stderr,"\n\u2022 No calibration information seems to be provided.");
@@ -2280,32 +2280,40 @@ void DATE_XML(char *xml_filename)
           // call once the calib struct on the first mixt_tree is initialized.
           /* mixt_tree->rates->tot_num_cal++; */
 	  /* if (mixt_tree->rates->calib == NULL) mixt_tree->rates->calib = Make_Calib(mixt_tree->n_otu); */
+
           xnd_cal = xnd;
           
 	  low = -BIG;
 	  up  = BIG;
-
+          
+          cal = Make_Calibration();          
+          Init_Calibration(cal);
+          
 	  xnd_dum = XML_Search_Node_Name("lower",YES,xnd_cal);
 	  if(xnd_dum != NULL) low = String_To_Dbl(xnd_dum->value); 
 
 	  xnd_dum = XML_Search_Node_Name("upper",YES,xnd_cal);
 	  if(xnd_dum != NULL) up = String_To_Dbl(xnd_dum->value);
-          
-          cal = Make_Calibration();
-          
+
           calib_id = XML_Get_Attribute_Value(xnd_cal,"id");
           cal->id = (char *)mCalloc(strlen(calib_id)+1,sizeof(char));
           strcpy(cal->id,calib_id);
                           
+          cal->clade_list_size = 0;
           cal->current_clade_idx = 0;
-
+          cal->lower = low;
+          cal->upper = up;
+          cal->is_primary = YES;
           
-          xnd = xnd_cal->child;
+          mixt_tree->rates->a_cal[mixt_tree->rates->n_cal] = cal;
+          mixt_tree->rates->n_cal++;
+                          
+          xnd_dum = xnd_cal->child;
           do
             {
-              if(!strcmp("appliesto",xnd->name)) 
+              if(!strcmp("appliesto",xnd_dum->name)) 
                 {
-                  clade_name = XML_Get_Attribute_Value(xnd,"clade.id");
+                  clade_name = XML_Get_Attribute_Value(xnd_dum,"clade.id");
                   
                   if(!clade_name)
                     {
@@ -2314,7 +2322,7 @@ void DATE_XML(char *xml_filename)
                       Exit("\n");
                     }
 
-                  alpha_proba_string = XML_Get_Attribute_Value(xnd,"probability");
+                  alpha_proba_string = XML_Get_Attribute_Value(xnd_dum,"probability");
 
                   alpha_proba_dbl = -1;
                   if(!alpha_proba_string) alpha_proba_dbl = 1.0;
@@ -2329,7 +2337,7 @@ void DATE_XML(char *xml_filename)
                       if(xnd_clade != NULL) // found clade with a given name
                         {
                           char **xclade;
-                          int clade_size/* ,nd_num */;
+                          int clade_size,nd_num;
                           int i;
                           
                           xclade     = XML_Read_Clade(xnd_clade->child,mixt_tree);
@@ -2338,6 +2346,11 @@ void DATE_XML(char *xml_filename)
 
                           clade = Make_Clade();
 
+                          if(cal->clade_list_size == 0) cal->clade_list = (t_clad **)mCalloc(1,sizeof(t_clad *));
+                          else cal->clade_list = (t_clad **)mRealloc(cal->clade_list,cal->clade_list_size+1,sizeof(t_clad *));
+                          if(cal->clade_list_size == 0) cal->alpha_list = (phydbl *)mCalloc(1,sizeof(phydbl));
+                          else cal->alpha_list = (phydbl *)mRealloc(cal->alpha_list,cal->clade_list_size+1,sizeof(phydbl));
+                          
                           cal->clade_list[cal->clade_list_size] = clade;
                           cal->clade_list_size++;                          
                             
@@ -2346,36 +2359,20 @@ void DATE_XML(char *xml_filename)
                           for(i=0;i<clade_size;++i) clade->tax_list[i] = (char *)mCalloc(strlen(xclade[i])+1,sizeof(char));
                           for(i=0;i<clade_size;++i) strcpy(clade->tax_list[i],xclade[i]);
 
-
                           clade_id = XML_Get_Attribute_Value(xnd,"id");
-                          cal->id = (char *)mCalloc(strlen(calib_id)+1,sizeof(char));
-                          strcpy(cal->id,calib_id);
+                          clade->id = (char *)mCalloc(strlen(clade_id)+1,sizeof(char));
+                          strcpy(clade->id,clade_id);
                           
-                          /* cal->clade_id = (char *)mCalloc(strlen(clade_name)+1,sizeof(char)); */
-                          /* strcpy(cal->clade_id,clade_name); */
+                          nd_num = Find_Clade(clade->tax_list,clade_size,mixt_tree);
+                          clade->target_nd = mixt_tree->a_nodes[nd_num];
                           
-                          /* Init_Calibration(cal); */
+                          clade->tip_list = Make_Target_Tip(clade->n_tax);
+                          Init_Target_Tip(clade,mixt_tree);
 
-                          /* mixt_tree->rates->a_cal[mixt_tree->rates->n_cal] = cal; */
-                          /* mixt_tree->rates->n_cal++; */
-                          
-                          /* cal->is_primary   = YES; */
-                          /* cal->target_tax   = clade; */
-                          /* cal->n_target_tax = clade_size; */
-                          cal->lower        = low;
-                          cal->upper        = up;
-                          /* cal->alpha        = alpha_proba_dbl; */
-                          
-                          /* nd_num = Find_Clade(clade,clade_size,mixt_tree); */
-
-                          /* cal->target_tip = Make_Target_Tip(cal->n_target_tax); */
-                          /* Init_Target_Tip(cal,mixt_tree); */
-
-                          /* PhyML_Printf("\n\u2022 Node number to which calibration [%s] applies to is [%d]",clade_name,nd_num);                           */
-                          /* PhyML_Printf("\n\u2022 Lower bound set to: %15f time units.",low); */
-                          /* PhyML_Printf("\n\u2022 Upper bound set to: %15f time units.",up); */
-                          /* PhyML_Printf("\n\u2022 Probability: %15G",cal->alpha); */
-                          /* PhyML_Printf("\n\u2022 ......................................................................."); */
+                          PhyML_Printf("\n\u2022 Node number to which calibration [%s] applies to is [%d]",clade_name,nd_num);
+                          PhyML_Printf("\n\u2022 Lower bound set to: %15f time units.",low);
+                          PhyML_Printf("\n\u2022 Upper bound set to: %15f time units.",up);
+                          PhyML_Printf("\n\u2022 .......................................................................");
 
                           Free(xclade);
                         }
@@ -2387,9 +2384,9 @@ void DATE_XML(char *xml_filename)
                         }                      
                     }
                 }
-              xnd_cal = xnd_cal->next;
+              xnd_dum = xnd_dum->next;
             }
-          while(xnd_cal != NULL);
+          while(xnd_dum != NULL);
         }
       xnd = xnd->next;
     }

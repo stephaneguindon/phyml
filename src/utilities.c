@@ -788,7 +788,7 @@ void Connect_Edges_To_Nodes_Recur(t_node *a, t_node *d, t_tree *tree)
 void Connect_One_Edge_To_Two_Nodes(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 {
   int i,dir_a_d,dir_d_a;
-    
+
   if(a == NULL || d == NULL) 
     {
       PhyML_Fprintf(stderr,"\n\u2022 a: %d d: %d",a?a->num:-1,d?d->num:-1);
@@ -11572,8 +11572,65 @@ void Table_Bottom(unsigned int width)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+t_cal *Duplicate_Calib(t_cal *from)
+{
+  int i;
+  t_cal *to;
+  
+  to = Make_Calibration();
+
+  to->current_clade_idx = from->current_clade_idx;
+  to->lower = from->lower;
+  to->upper = from->upper;
+  to->is_primary = from->is_primary;
+  to->clade_list_size = from->clade_list_size;
+
+  to->id = (char *)mCalloc(strlen(from->id)+1,sizeof(char)); 
+  strcpy(to->id,from->id);
+
+  to->alpha_list = (phydbl *)mCalloc(from->clade_list_size,sizeof(phydbl));
+  to->clade_list = (t_clad **)mCalloc(from->clade_list_size,sizeof(t_clad *));
+
+  for(i=0;i<from->clade_list_size;++i)
+    {
+      to->alpha_list[i] = from->alpha_list[i];
+      to->clade_list[i] = Duplicate_Clade(from->clade_list[i]);
+    }
+  
+  return(to);
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+t_clad *Duplicate_Clade(t_clad *from)
+{
+  int i;
+  t_clad *to;
+
+  to = Make_Clade();
+
+  to->id = (char *)mCalloc(strlen(from->id)+1,sizeof(char));
+  strcpy(to->id,from->id);
+  
+  to->n_tax = from->n_tax;
+  to->target_nd = from->target_nd;
+
+  to->tax_list = (char **)mCalloc(from->n_tax,sizeof(char *));
+  to->tip_list = (t_node **)mCalloc(from->n_tax,sizeof(t_node *));
+  
+  for(i=0;i<from->n_tax;++i)
+    {
+      to->tax_list[i] = (char *)mCalloc(strlen(from->tax_list[i])+1,sizeof(char));
+      strcpy(to->tax_list[i],from->tax_list[i]);
+      to->tip_list[i] = from->tip_list[i];
+    }
+  
+  return to;
+  
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////
