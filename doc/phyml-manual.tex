@@ -1072,12 +1072,13 @@ Sequence file name~: `{\x seq}'\\
 \hline
 Output file name & Content \\
 \hline
-\x{seq\_phyml\_tree} & ML tree\\
-\x{seq\_phyml\_stats} &  ML model parameters\\
-\x{seq\_phyml\_boot\_trees} & ML trees -- bootstrap replicates\\
-\x{seq\_phyml\_boot\_stats} & ML model parameters -- bootstrap replicates \\
-\x{seq\_phyml\_rand\_trees} & ML trees -- multiple random starts\\
-\x{seq\_phyml\_ancestral\_seq} & ML trees -- ancestral sequences\\
+\x{seq\_phyml\_tree.txt} & ML tree\\
+\x{seq\_phyml\_stats.txt} &  ML model parameters\\
+\x{seq\_phyml\_boot\_trees.txt} & ML trees -- bootstrap replicates\\
+\x{seq\_phyml\_boot\_stats.txt} & ML model parameters -- bootstrap replicates \\
+\x{seq\_phyml\_rand\_trees.txt} & ML trees -- multiple random starts\\
+\x{seq\_phyml\_ancestral\_seq.txt} & ancestral sequences\\
+\x{seq\_phyml\_ancestral\_tree.txt} & ML tree with node labels as in ancestral sequence file\\
 \hline
 \end{tabular}
 \end{center}
@@ -1099,32 +1100,13 @@ information can be used to estimate sampling errors around each parameter of the
 When the random  tree option is turned on,  the maximum likelihood trees estimated  from each random
 starting trees are printed in a separate tree file (see last row of Table \ref{tab:output}).
 
-PhyML estimates ancestral sequences by calculating the marginal probability of each character state
-at each internal node of the phylogeny. These probabilities are given in the file
-\x{seq\_phyml\_ancestral\_seq}. The bulk of this file is a table where each row corresponds to a
-site in the original alignment and an the number corresponding to an internal node. It is relatively
+PhyML estimates ancestral sequences by calculating the {\em marginal} (as opposed to the {\em joint}) probability of each character
+  state at each internal node of the phylogeny. These probabilities are given in the file
+\x{seq\_phyml\_ancestral\_seq.txt}. The bulk of this file is a table where each row corresponds to a
+site in the original alignment and a number corresponding labeling each internal node. It is relatively
 straightforward to identify which number corresponds to which node in the tree by examining the
-information provided at the beginning of \x{seq\_phyml\_ancestral\_seq}. This section of the file
-displays the tree structure in terms of a list of node numbers rather than in the NEWICK format. 
-For instance, the tree \x{(A,B,(C,D));} corresponds to the
-following list of nodes:
+information provided in the Newick-formatted file \x{seq\_phyml\_ancestral\_tree.txt}.
 
-\vspace{0.2cm}
-\begin{Verbatim}[frame=single, label=List of nodes corresponding to \x{(A,B,(C,D));}, samepage=true,
-  baselinestretch=0.5, fontsize=\small]
-
-Node nums:   0   4  (dir:  0) names = 'A'      '(null)';
-Node nums:   4   2  (dir:  1) names = '(null)' 'B';
-Node nums:   4   5  (dir:  2) names = '(null)' '(null)';
-Node nums:   5   1  (dir:  0) names = '(null)' 'C';
-Node nums:   5   3  (dir:  1) names = '(null)' 'D';
-
-\end{Verbatim}
-
-The two integers following \x{Node nums} are the node numbers. They are displayed in a recursive
-manner. The number on the left column is that of the ancestral node while the one on the right
-column is the direct descendant. The following columns are the node names. These names are set to
-\x{null} except for the tip nodes, where the corresponding taxon names are displayed.
 
 \subsection{Treatment of invariable sites with fixed branch lengths}
 
