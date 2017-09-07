@@ -3332,19 +3332,38 @@ void Ancestral_Sequences(t_tree *tree, int print)
       strcat(tree->io->out_ancestral_file,"_phyml_ancestral_seq.txt");
       tree->io->fp_out_ancestral = Openfile(tree->io->out_ancestral_file,1);
       
-      tree->print_node_num = YES;
-      tree->print_boot_val = NO;
-      tree->print_alrt_val = NO;
 
+      char *s = (char *)mCalloc((int)strlen(tree->io->in_align_file)+50,sizeof(char));
+      strcpy(s,tree->io->in_align_file);
+      strcat(s,"_phyml_ancestral_tree.txt");
+      FILE *fp = Openfile(s,WRITE);
+      
       PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\n\n");
       PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\u2022 Printing marginal probabilities of ancestral sequences at each site");
       PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\u2022 of the alignment and each node of the tree. The tree in Newick format");
       PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\u2022 with internal nodes labels corresponding to those given below can be");
-      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\u2022 found in the standard PhyML tree output.");
+      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\u2022 found in the file '%s'.",s);
+      Free(s);
       PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\n");
       PhyML_Fprintf(tree->io->fp_out_ancestral,"Site\tNodeLabel\t");
       for(i=0;i<tree->mod->ns;i++) PhyML_Fprintf(tree->io->fp_out_ancestral,"%c\t",Reciproc_Assign_State(i,tree->io->datatype));
       PhyML_Fprintf(tree->io->fp_out_ancestral,"\n");
+
+      
+      short int bck_boot_val = tree->print_boot_val;
+      short int bck_alrt_val = tree->print_alrt_val;
+      
+      tree->print_node_num = YES;
+      tree->print_boot_val = NO;
+      tree->print_alrt_val = NO;
+      s = Write_Tree(tree,NO);
+      PhyML_Fprintf(fp,"%s",s);
+      tree->print_node_num = NO;
+      tree->print_boot_val = bck_boot_val;
+      tree->print_alrt_val = bck_alrt_val;
+
+      Free(s);
+      fclose(fp);
     }
 
   for(i=0;i<2*tree->n_otu-2;i++)

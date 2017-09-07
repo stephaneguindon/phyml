@@ -145,12 +145,7 @@ int Spr(phydbl init_lnL, phydbl prop_spr, t_tree *tree)
     }
 
 
-  /* int start_otu = Rand_Int(0,tree->n_otu-1); */
-  /* Spr_Pre_Order(tree->a_nodes[start_otu], */
-  /*               tree->a_nodes[start_otu]->v[0], */
-  /*               tree->a_nodes[start_otu]->b[0], */
-  /*               tree); */
-  /* Free(br_idx); */
+  Free(br_idx);
 
   return tree->n_improvements;
 }
@@ -1983,6 +1978,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   for(i=0;i<max_list_size;++i) if(tree_list_cpy[i] != NULL) Free_Tree(tree_list_cpy[i]);
 
   Free(tree_list);
+  Free(tree_list_cpy);
   Free(lnL_list);
   Free(max_delta_lnL_list);
   Free(max_depth_list);
