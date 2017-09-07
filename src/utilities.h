@@ -718,9 +718,10 @@ typedef struct __Tree{
   int                                  n_swap; /*! number of NNIs performed */
   int                               n_pattern; /*! number of distinct site patterns */
   int                      has_branch_lengths; /*! =1 iff input tree displays branch lengths */
-  int                          print_boot_val; /*! if print_boot_val=1, the bootstrap values are printed */
-  int                          print_alrt_val; /*! if print_boot_val=1, the aLRT values are printed */
-  int                              both_sides; /*! both_sides=1 -> a pre-order and a post-order tree
+  short int                    print_boot_val; /*! if print_boot_val=1, the bootstrap values are printed */
+  short int                    print_alrt_val; /*! if print_boot_val=1, the aLRT values are printed */
+  short int                    print_node_num; /*! print node numbers if print_node_num=1 */
+  short int                        both_sides; /*! both_sides=1 -> a pre-order and a post-order tree
                           traversals are required to compute the likelihood
                           of every subtree in the phylogeny*/
   int               num_curr_branch_available; /*!gives the number of the next cell in a_edges that is free to receive a pointer to a branch */
@@ -1781,7 +1782,7 @@ typedef struct __Calibration {
   struct __Calibration *prev; // Previous calibration
   struct __Clade **clade_list;
 
-  phydbl *alpha_list; // list of alpha proba, one for each clade in clade_list
+  phydbl *alpha_proba_list; // list of alpha proba, one for each clade in clade_list
 
   int current_clade_idx; // index of the clade the calibration time interval currently applies to
   int clade_list_size;

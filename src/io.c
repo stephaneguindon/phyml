@@ -572,6 +572,7 @@ char *Write_Tree(t_tree *tree, int custom)
   s=(char *)mCalloc(T_MAX_LINE,sizeof(char));
 #endif
 
+  i = -1;
   s[0]='(';
 
   if(custom == NO)
@@ -619,6 +620,13 @@ char *Write_Tree(t_tree *tree, int custom)
     }
 
   s[(int)strlen(s)-1]=')';
+  if(tree->print_node_num == YES)
+    {
+      if(!tree->n_root)
+        sprintf(s+(int)strlen(s),"%d",tree->a_nodes[tree->n_otu+i]->num);
+      else
+        sprintf(s+(int)strlen(s),"%d",tree->n_root->num);        
+    }
   s[(int)strlen(s)]=';';
 
   return s;
@@ -635,19 +643,19 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
 #if !(defined PHYTIME || defined INVITEE)
   phydbl mean_len;
 #endif
-
+  
   format = (char *)mCalloc(100,sizeof(char));
 
   sprintf(format,"%%.%df",tree->bl_ndigits);
-
+  
   p = -1;
-  if(fils->tax)
+  if(fils->tax == YES) // Tip node
     {
       /* printf("\n- Writing on %p",*s_tree); */
       /* ori_len = *pos; */
 
       last_len = (int)strlen(*s_tree);
-
+      
       if(OUTPUT_TREE_FORMAT == NEWICK)
         {
           if(tree->write_tax_names == YES)
@@ -696,20 +704,13 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
               if(pere == tree->n_root)
                 {
                   phydbl root_pos = (fils == tree->n_root->v[2])?(tree->n_root_pos):(1.-tree->n_root_pos);
-                  if(tree->is_mixt_tree == NO)
-                    {
-                      mean_len = tree->e_root->l->v;
-                    }
+                  if(tree->is_mixt_tree == NO) mean_len = tree->e_root->l->v;
                   else mean_len = MIXT_Get_Mean_Edge_Len(tree->e_root,tree);
                   sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,mean_len) * root_pos);
                 }
               else
                 {
-                  if(tree->is_mixt_tree == NO)
-                    {
-                      mean_len = fils->b[0]->l->v;
-                    }
-                  
+                  if(tree->is_mixt_tree == NO) mean_len = fils->b[0]->l->v;                  
                   else mean_len = MIXT_Get_Mean_Edge_Len(fils->b[0],tree);
                   sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,mean_len));
                 }
@@ -756,7 +757,7 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
 #endif
       
     }
-  else
+  else // Internal node
     {
       (*s_tree)[(int)strlen(*s_tree)]='(';
       
@@ -815,18 +816,22 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
       
       (*s_tree)[last_len-1] = ')';
       
+      
       if((fils->b) && (tree->write_br_lens == YES))
         {
-          if(tree->print_boot_val)
+          if(tree->print_boot_val == YES)
             {
               sprintf(*s_tree+(int)strlen(*s_tree),"%d",fils->b[p]->bip_score);
             }
-          else if(tree->print_alrt_val)
+          else if(tree->print_alrt_val == YES)
             {
               sprintf(*s_tree+(int)strlen(*s_tree),"%f",fils->b[p]->ratio_test);
             }
-
-
+          else if(tree->print_node_num == YES)
+            {
+              sprintf(*s_tree+(int)strlen(*s_tree),"%d",fils->num);
+            }
+          
           fflush(NULL);
           
           (*s_tree)[(int)strlen(*s_tree)] = ':';
@@ -887,18 +892,18 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
       /* printf("\n2 %s [%d,%d]",*s_tree,(int)(int)strlen(*s_tree),*available); */
 
       if(*available < 0)
-    {
-      PhyML_Fprintf(stderr,"\n\u2022 available = %d",*available);
-      PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
-      Warn_And_Exit("");
-    }
+        {
+          PhyML_Fprintf(stderr,"\n\u2022 available = %d",*available);
+          PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
+          Warn_And_Exit("");
+        }
 
       if(*available < (int)T_MAX_NAME)
         {
           (*s_tree) = (char *)mRealloc(*s_tree,(int)strlen(*s_tree)+3*(int)T_MAX_NAME,sizeof(char));
           For(i,3*(int)T_MAX_NAME) (*s_tree)[(int)strlen(*s_tree)+i] = '\0';
           (*available) = 3*(int)T_MAX_NAME;
-      /* printf("\n\u2022 ++ 2 Available = %d",(*available)); */
+          /* printf("\n\u2022 ++ 2 Available = %d",(*available)); */
         }
 #endif
 
@@ -959,7 +964,7 @@ void R_wtree_Custom(t_node *pere, t_node *fils, int *available, char **s_tree, i
       else
     {
       PhyML_Printf("\n\u2022 Unknown tree format.");
-      PhyML_Printf("\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Printf("\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
       PhyML_Printf("\n\u2022 s=%s\n",*s_tree);
     }
 

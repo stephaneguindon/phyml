@@ -11589,12 +11589,12 @@ t_cal *Duplicate_Calib(t_cal *from)
   to->id = (char *)mCalloc(strlen(from->id)+1,sizeof(char)); 
   strcpy(to->id,from->id);
 
-  to->alpha_list = (phydbl *)mCalloc(from->clade_list_size,sizeof(phydbl));
+  to->alpha_proba_list = (phydbl *)mCalloc(from->clade_list_size,sizeof(phydbl));
   to->clade_list = (t_clad **)mCalloc(from->clade_list_size,sizeof(t_clad *));
 
   for(i=0;i<from->clade_list_size;++i)
     {
-      to->alpha_list[i] = from->alpha_list[i];
+      to->alpha_proba_list[i] = from->alpha_proba_list[i];
       to->clade_list[i] = Duplicate_Clade(from->clade_list[i]);
     }
   

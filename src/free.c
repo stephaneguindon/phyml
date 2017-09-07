@@ -1327,7 +1327,7 @@ void Free_Calib(t_cal *cal)
       for(i=0;i<cal->clade_list_size;i++) Free(cal->clade_list[i]);
       Free(cal->clade_list);      
       Free(cal->id);
-      Free(cal->alpha_list);
+      Free(cal->alpha_proba_list);
       Free(cal);
     }
 }

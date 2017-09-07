@@ -3614,15 +3614,15 @@ void MCMC_Init_MCMC_Struct(char *filename, option *io, t_mcmc *mcmc)
 
 void Init_Calibration(t_cal *cal)
 {  
-  cal->next            = NULL;
-  cal->prev            = NULL;
-  cal->lower           = -1.;
-  cal->upper           = -1.;
-  cal->is_primary      = FALSE;
-  cal->alpha_list      = NULL;
-  cal->clade_list      = NULL;
-  cal->clade_list_size = 0;
-  cal->id              = NULL;
+  cal->next             = NULL;
+  cal->prev             = NULL;
+  cal->lower            = -1.;
+  cal->upper            = -1.;
+  cal->is_primary       = FALSE;
+  cal->alpha_proba_list = NULL;
+  cal->clade_list       = NULL;
+  cal->clade_list_size  = 0;
+  cal->id               = NULL;
 }
 
 //////////////////////////////////////////////////////////////

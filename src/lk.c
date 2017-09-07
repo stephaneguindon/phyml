@@ -3329,35 +3329,25 @@ void Ancestral_Sequences(t_tree *tree, int print)
 
       strcpy(tree->io->out_ancestral_file,tree->io->out_file);
       if(tree->io->append_run_ID) { strcat(tree->io->out_ancestral_file,"_"); strcat(tree->io->out_ancestral_file,tree->io->run_id_string); }
-      strcat(tree->io->out_ancestral_file,"_phyml_ancestral_seq");
+      strcat(tree->io->out_ancestral_file,"_phyml_ancestral_seq.txt");
       tree->io->fp_out_ancestral = Openfile(tree->io->out_ancestral_file,1);
       
-      if(tree->n_root)
-        {
-          PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\u2022 Printing the tree structure. Starting from the root node");
-          PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\u2022 and displaying the nodes underneath recursively. Edge numbers");
-          PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\u2022 and their lengths are also provided.\n\n");
-          Print_Node_Brief(tree->n_root,tree->n_root->v[0],tree,tree->io->fp_out_ancestral);
-          Print_Node_Brief(tree->n_root,tree->n_root->v[1],tree,tree->io->fp_out_ancestral);
-        }
-      else
-        {
-          PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\u2022 Printing the tree structure. Starting from node 0 (taxon %s)",tree->a_nodes[0]->name);
-          PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\u2022 and displaying the nodes underneath recursively. Edge numbers");
-          PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\u2022 and their lengths are also provided.\n\n");
-          Print_Node_Brief(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree,tree->io->fp_out_ancestral);
-        }
-      
+      tree->print_node_num = YES;
+      tree->print_boot_val = NO;
+      tree->print_alrt_val = NO;
+
       PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\n\n");
       PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\u2022 Printing marginal probabilities of ancestral sequences at each site");
-      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\u2022 of the alignment and each node of the tree.");
+      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\u2022 of the alignment and each node of the tree. The tree in Newick format");
+      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\u2022 with internal nodes labels corresponding to those given below can be");
+      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\u2022 found in the standard PhyML tree output.");
       PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\n");
-      PhyML_Fprintf(tree->io->fp_out_ancestral,"Site\tNode\t");
+      PhyML_Fprintf(tree->io->fp_out_ancestral,"Site\tNodeLabel\t");
       for(i=0;i<tree->mod->ns;i++) PhyML_Fprintf(tree->io->fp_out_ancestral,"%c\t",Reciproc_Assign_State(i,tree->io->datatype));
       PhyML_Fprintf(tree->io->fp_out_ancestral,"\n");
     }
 
-  For(i,2*tree->n_otu-2)
+  for(i=0;i<2*tree->n_otu-2;i++)
     if(tree->a_nodes[i]->tax == NO)
       Ancestral_Sequences_One_Node(tree->a_nodes[i],tree,print);
 
@@ -3480,8 +3470,9 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
                           for(j=0;j<ns;++j)
                             {
                               p0 += v0->b[0]->p_lk_tip_r[csite*ns+j] * Pij0[catg*nsns+i*ns+j];
-                              if(isinf(p0) || isnan(p0) || p0 < SMALL)
-                                {
+                              /* if(isinf(p0) || isnan(p0) || p0 < SMALL) */
+                              if(isinf(p0) || isnan(p0)) 
+                               {
                                   PhyML_Fprintf(stderr,"\n\u2022 p0: %G v0->b[0]->p_lk_tip_r[csite*ns+j]: %G Pij0[catg*nsns+i*ns+j]: %G\n",
                                                 p0,
                                                 v0->b[0]->p_lk_tip_r[csite*ns+j],
@@ -3610,7 +3601,7 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
               
               if(print == YES)
                 {
-                  PhyML_Fprintf(fp,"%4d\t%4d\t",site+1,d->num);
+                  PhyML_Fprintf(fp,"%4d\t%9d\t",site+1,d->num);
                   sum_probas = .0;
                   for(i=0;i<ns;i++)
                     {
