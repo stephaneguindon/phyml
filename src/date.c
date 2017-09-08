@@ -39,14 +39,14 @@ void DATE_Update_T_Prior_MinMax(t_tree *tree)
 
   /* printf("\n"); */
   
-  for(i=tree->n_otu;i<2*tree->n_otu-1;i++) // All internal nodes 
+  for(i=tree->n_otu;i<2*tree->n_otu-1;++i) // All internal nodes 
     {
       tree->rates->t_prior_max[i] = 0.0;
       tree->rates->t_prior_min[i] = -INFINITY;
 
       if(tree->a_nodes[i]->n_cal > 0) // Primary calibration found on that node
         {
-          For(j,tree->a_nodes[i]->n_cal)
+          for(j=0;j<tree->a_nodes[i]->n_cal;++j)
             {
               tree->rates->t_prior_max[i] = MIN(tree->rates->t_prior_max[i],tree->a_nodes[i]->cal[j]->upper);
               tree->rates->t_prior_min[i] = MAX(tree->rates->t_prior_min[i],tree->a_nodes[i]->cal[j]->lower);
@@ -557,9 +557,24 @@ phydbl *DATE_MCMC(t_tree *tree)
   for(i=0;i<tree->mod->ras->n_catg;i++) PhyML_Fprintf(fp_stats,"rr%d\t",i);
   for(i=0;i<tree->mod->ras->n_catg;i++) PhyML_Fprintf(fp_stats,"pr%d\t",i);
 
-  for(i=0;i<tree->rates->n_cal;i++)
-    for(j=0;j<tree->rates->a_cal[i]->clade_list_size;++j)
-      PhyML_Fprintf(fp_stats,"t(%s)\t",tree->rates->a_cal[i]->clade_list[j]->id);
+
+  for(i=0;i<tree->rates->n_cal;++i)
+    {
+      t_cal *cal = tree->rates->a_cal[i];
+      for(j=0;j<cal->clade_list_size;++j)
+        {
+          t_clad *clade = cal->clade_list[j];
+          PhyML_Fprintf(fp_stats,"t(calib:%s_clade:%s)\t",cal->id,clade->id);
+        }
+    }
+
+  for(i=0;i<tree->rates->n_cal;++i)
+    {
+      t_cal *cal = tree->rates->a_cal[i];
+      PhyML_Fprintf(fp_stats,"clade(calib:%s)\t",cal->id);
+    }
+
+
   
   For(i,2*tree->n_otu-2) PhyML_Fprintf(fp_stats,"br%d\t",i);
   
@@ -634,6 +649,7 @@ phydbl *DATE_MCMC(t_tree *tree)
       else if(!strcmp(tree->mcmc->move_name[move],"time_slice"))         MCMC_Time_Slice(tree);
       else if(!strcmp(tree->mcmc->move_name[move],"br_rate"))            MCMC_Rates_All(tree);
       else if(!strcmp(tree->mcmc->move_name[move],"tree_rates"))         MCMC_Tree_Rates(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"clade_change"))       MCMC_Clade_Change(tree);
       else continue;
       
       if(!TIMES_Check_Node_Height_Ordering(tree))
@@ -700,11 +716,21 @@ phydbl *DATE_MCMC(t_tree *tree)
           for(i=0;i<tree->rates->n_cal;i++)
             {
               t_cal *cal = tree->rates->a_cal[i];
-              t_clad *clade = cal->clade_list[cal->current_clade_idx];
-              PhyML_Fprintf(fp_stats,"%G\t",tree->rates->nd_t[clade->target_nd->num]);
+              for(j=0;j<cal->clade_list_size;++j)
+                {
+                  t_clad *clade = cal->clade_list[j];
+                  PhyML_Fprintf(fp_stats,"%G\t",tree->rates->nd_t[clade->target_nd->num]);
+                }
             }
           
-          For(i,2*tree->n_otu-2)
+          for(i=0;i<tree->rates->n_cal;++i)
+            {
+              t_cal *cal = tree->rates->a_cal[i];
+              PhyML_Fprintf(fp_stats,"%d\t",cal->current_clade_idx);
+            }
+
+
+  For(i,2*tree->n_otu-2)
               PhyML_Fprintf(fp_stats,"%G\t",tree->rates->br_r[i]);
 
           PhyML_Fprintf(fp_stats,"%G\t",tree->mcmc->acc_rate[tree->mcmc->num_move_times_and_rates_root]);
@@ -1035,6 +1061,21 @@ t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, phydbl *
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+phydbl DATE_Lk_Calib(t_tree *tree)
+{
+  phydbl lnL;
+  int i;
+  t_cal *cal;
+
+  lnL = 0.0;
+  for(i=0;i<tree->rates->n_cal;++i)
+    {
+      cal = tree->rates->a_cal[i];
+      lnL += LOG(cal->alpha_proba_list[cal->current_clade_idx]);
+    }
+  
+  return lnL;
+}
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 

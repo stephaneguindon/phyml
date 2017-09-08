@@ -2358,7 +2358,12 @@ void DATE_XML(char *xml_filename)
                           for(i=0;i<clade_size;++i) clade->tax_list[i] = (char *)mCalloc(strlen(xclade[i])+1,sizeof(char));
                           for(i=0;i<clade_size;++i) strcpy(clade->tax_list[i],xclade[i]);
 
-                          clade_id = XML_Get_Attribute_Value(xnd,"id");
+                          clade_id = XML_Get_Attribute_Value(xnd_dum,"clade.id");
+                          if(clade_id == NULL)
+                            {
+                              PhyML_Fprintf(stderr,"\n\u2022 Attribute \"clade.id\" is missing in \"appliesto\" tag.");
+                              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+                            }
                           clade->id = (char *)mCalloc(strlen(clade_id)+1,sizeof(char));
                           strcpy(clade->id,clade_id);
                           

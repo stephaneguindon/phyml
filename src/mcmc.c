@@ -4913,6 +4913,65 @@ void MCMC_Nu(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+void MCMC_Clade_Change(t_tree *tree)
+{
+  phydbl u,alpha,ratio;
+  phydbl cur_lnL_calib, new_lnL_calib;
+  phydbl cur_lnL_time, new_lnL_time;
+  int target_cal_idx,current_clade_idx,new_clade_idx;
+  t_cal *cal;
+  
+  ratio         = 0.0;
+  cal           = NULL;
+  cur_lnL_calib = DATE_Lk_Calib(tree);
+
+  new_lnL_time = tree->rates->c_lnL_times;
+  cur_lnL_time = tree->rates->c_lnL_times;
+      
+
+  
+  // Choose a calibration uniformly at random
+  target_cal_idx = Rand_Int(0,tree->rates->n_cal-1);
+  cal = tree->rates->a_cal[target_cal_idx];
+
+  /* printf("\n. CURRENT cal: %s clade: %s target: %d",cal->id,cal->clade_list[cal->current_clade_idx]->id,cal->clade_list[cal->current_clade_idx]->target_nd->num); */
+
+  // Choose a new clade uniformly at random
+  current_clade_idx = cal->current_clade_idx;
+  new_clade_idx = Rand_Int(0,cal->clade_list_size-1);
+  cal->current_clade_idx = new_clade_idx;
+
+  new_lnL_time = TIMES_Lk_Times(NO,tree);
+  ratio += new_lnL_time - cur_lnL_time;
+  
+  /* printf("\n. NEW cal: %s clade: %s target: %d",cal->id,cal->clade_list[cal->current_clade_idx]->id,cal->clade_list[cal->current_clade_idx]->target_nd->num); */
+
+  new_lnL_calib = DATE_Lk_Calib(tree);
+  ratio += new_lnL_calib - cur_lnL_calib;
+      
+  ratio = exp(ratio);
+  alpha = MIN(1.,ratio);
+  
+  u = Uni();
+  if(u > alpha) /* Reject */
+    {
+      /* printf("\n. reject\n"); */
+      cal->current_clade_idx = current_clade_idx;
+      tree->rates->c_lnL_times = cur_lnL_time;
+      TIMES_Lk_Times(NO,tree); // Required in order to update node targeted by selected calibration
+    }
+  else
+    {
+      /* printf("\n. accept\n"); */
+      tree->mcmc->acc_move[tree->mcmc->num_move_clade_change]++;
+    }
+  tree->mcmc->run_move[tree->mcmc->num_move_clade_change]++;
+}
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 void MCMC_All_Rates(t_tree *tree)
 {
   phydbl cur_lnL_data, new_lnL_data, cur_lnL_rate;
@@ -6066,14 +6125,14 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->num_move_phyrex_lbda_times        = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_phyrex_indel_disk_serial = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_phyrex_sim_plus          = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_phyrex_indel_hit_serial  = mcmc->n_moves; mcmc->n_moves += 1;
-  
+  mcmc->num_move_phyrex_indel_hit_serial  = mcmc->n_moves; mcmc->n_moves += 1;  
   mcmc->num_move_phyrex_ldsk_given_disk   = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_phyrex_disk_given_ldsk   = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_phyrex_ldsk_and_disk     = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_phyrex_ldsk_multi        = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_phyrex_disk_multi        = mcmc->n_moves; mcmc->n_moves += 1;
-
+  mcmc->num_move_clade_change             = mcmc->n_moves; mcmc->n_moves += 1;
+    
   mcmc->run_move       = (int *)mCalloc(mcmc->n_moves,sizeof(int));
   mcmc->acc_move       = (int *)mCalloc(mcmc->n_moves,sizeof(int));
   mcmc->prev_run_move  = (int *)mCalloc(mcmc->n_moves,sizeof(int));
@@ -6151,6 +6210,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   strcpy(mcmc->move_name[mcmc->num_move_phyrex_ldsk_and_disk],"phyrex_ldsk_and_disk");
   strcpy(mcmc->move_name[mcmc->num_move_phyrex_disk_given_ldsk],"phyrex_disk_given_ldsk");
   strcpy(mcmc->move_name[mcmc->num_move_phyrex_ldsk_given_disk],"phyrex_ldsk_given_disk");
+  strcpy(mcmc->move_name[mcmc->num_move_clade_change],"clade_change");
 
 
   for(i=0;i<mcmc->n_moves;i++) mcmc->move_type[i] = -1;
@@ -6263,6 +6323,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_geo_updown_tau_lbda]   = 1.0;
   mcmc->move_weight[mcmc->num_move_geo_updown_lbda_sigma] = 1.0;
   mcmc->move_weight[mcmc->num_move_geo_dum]               = 1.0;
+  mcmc->move_weight[mcmc->num_move_clade_change]          = 1.0;
 
 # if defined (PHYREX)
 
