@@ -726,7 +726,8 @@ phydbl *DATE_MCMC(t_tree *tree)
           for(i=0;i<tree->rates->n_cal;++i)
             {
               t_cal *cal = tree->rates->a_cal[i];
-              PhyML_Fprintf(fp_stats,"%d\t",cal->current_clade_idx);
+              /* PhyML_Fprintf(fp_stats,"%d\t",cal->current_clade_idx); */
+              PhyML_Fprintf(fp_stats,"%s\t",cal->clade_list[cal->current_clade_idx]->id);
             }
 
 

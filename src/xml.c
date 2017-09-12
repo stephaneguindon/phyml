@@ -2194,6 +2194,7 @@ void DATE_XML(char *xml_filename)
   int seed;
   t_clad *clade;
   t_cal *cal;
+  int i,j;
   
   clade = NULL;
   cal = NULL;
@@ -2367,19 +2368,12 @@ void DATE_XML(char *xml_filename)
                           clade->id = (char *)mCalloc(strlen(clade_id)+1,sizeof(char));
                           strcpy(clade->id,clade_id);
                           
-
-
                           nd_num = Find_Clade(clade->tax_list,clade_size,mixt_tree);
                           clade->target_nd = mixt_tree->a_nodes[nd_num];
                           
                           clade->tip_list = Make_Target_Tip(clade->n_tax);
                           Init_Target_Tip(clade,mixt_tree);
 
-                          PhyML_Printf("\n\u2022 Calibration id: %s.",cal->id);
-                          PhyML_Printf("\n\u2022 Lower bound set to: %15f time units.",low);
-                          PhyML_Printf("\n\u2022 Upper bound set to: %15f time units.",up);
-                          PhyML_Printf("\n\u2022 This calibration applies to node %d with probability %G.",nd_num,cal->alpha_proba_list[cal->clade_list_size-1]);
-                          PhyML_Printf("\n\u2022 .......................................................................");
 
                           Free(xclade);
                         }
@@ -2398,8 +2392,27 @@ void DATE_XML(char *xml_filename)
       xnd = xnd->next;
     }
   while(xnd != NULL);
-  
 
+  for(i=0;i<mixt_tree->rates->n_cal;++i)
+    {
+      cal = mixt_tree->rates->a_cal[i];
+
+      phydbl sum = 0.0;
+      for(j=0;j<cal->clade_list_size;j++) sum += cal->alpha_proba_list[j];
+      for(j=0;j<cal->clade_list_size;j++) cal->alpha_proba_list[j] /= sum;
+
+      for(j=0;j<cal->clade_list_size;j++)
+        {
+          clade = cal->clade_list[j];
+          PhyML_Printf("\n\u2022 Calibration id: %s.",cal->id);
+          PhyML_Printf("\n\u2022 Lower bound set to: %15f time units.",cal->lower);
+          PhyML_Printf("\n\u2022 Upper bound set to: %15f time units.",cal->upper);
+          PhyML_Printf("\n\u2022 This calibration applies to node %d with probability %G.",clade->target_nd->num,cal->alpha_proba_list[j]);
+          PhyML_Printf("\n\u2022 .......................................................................");
+        }
+    }
+  
+                          
   seed = (mixt_tree->io->r_seed < 0)?(time(NULL)):(mixt_tree->io->r_seed);
   srand(seed);
   mixt_tree->io->r_seed = seed;
