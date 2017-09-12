@@ -2142,8 +2142,20 @@ PhyML  is software package  that provides  tools to  tackle problems  other than
 likelihood  phylogenies.  Installing these  tools  and  processing data  sets  is  explained is  the
 following sections.
 
-\subsection{PhyTime}\index{PhyTime} PhyTime is  a program that estimates node  ages and substitution
-rates using a Bayesian  approach. This software served as a basis to perform the research in the following three articles: \cite{guindon10,guindon13,guindon17},
+\subsection{PhyTime}\index{PhyTime} PhyTime is  a program that uses Bayesian sampling techniques to
+infer phylogenies from the analysis of genetic and fossil data. Edge lengths (and node heights) are
+expressed in calendar time units, as opposed to expected number of substitutions as in
+PhyML. PhyTime can thus be used to date past evolutionary events. The main original features
+compared to other software for molecular dating are:
+\begin{itemize}
+\item a model of rate evolution whereby rates can vary along each branch (other
+  software consider that the rates of evolution vary from one branch to another but stay constant
+  along any given branch) \cite{guindon13}.
+\item the opportunity to accomodate for uncertrainty in calibration information. A single time
+  constraint can apply to different clades with corresponding probabilities \cite{guindon17}
+\end{itemize}
+
+
 
 \subsubsection{Installing PhyTime}
 
