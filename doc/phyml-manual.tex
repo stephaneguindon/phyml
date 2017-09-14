@@ -2144,18 +2144,17 @@ following sections.
 
 \subsection{PhyTime}\index{PhyTime} PhyTime is  a program that uses Bayesian sampling techniques to
 infer phylogenies from the analysis of genetic and fossil data. Edge lengths (and node heights) are
-expressed in calendar time units, as opposed to expected number of substitutions as in
+expressed in calendar time units as opposed to expected number of substitutions as in
 PhyML. PhyTime can thus be used to date past evolutionary events. The main original features
 compared to other software for molecular dating are:
 \begin{itemize}
 \item a model of rate evolution whereby rates can vary along each branch (other
   software consider that the rates of evolution vary from one branch to another but stay constant
   along any given branch) \cite{guindon13}.
-\item the opportunity to accomodate for uncertrainty in calibration information. A single time
-  constraint can apply to different clades with corresponding probabilities \cite{guindon17}
+\item the opportunity to accomodate for uncertainty in calibration information. A single time
+  constraint can apply to multiple clades with corresponding probabilities as determined from prior
+  analysis of fossil data \cite{guindon17}.
 \end{itemize}
-
-
 
 \subsubsection{Installing PhyTime}
 
@@ -2174,23 +2173,23 @@ make;
 similar to running  PhyML using an XML parameter input file.  The main differences between the  two programs are
 explained below:
 \begin{itemize}
-\item Unlike PhyML, PhyTime requires calibration (and sequence) data as input. The format for
+\item Unlike PhyML, PhyTime requires calibration (along with genetic sequence) data as input. The format for
   defining the relevant time intervals is described below.
-\item  PhyTime does not allow partitionned (i.e., multigene) analysis. Future releases might 
-implement this feature (depending on users' requests).
+\item  PhyTime does not allow partitionned (i.e., multigene) analysis yet.
 \end{itemize}
 
 \subsubsection{PhyTime input}
 As stated above, PhyTime takes as input an XML file very similar to those compatible with PhyML. An
 example is given thereafter. The first part of the input file (up to the \x{partitionelem} block) corresponds to a standard XML input
-file for PhyML. The second part is PhyTime-specific. Two new elements can be found here: \x{clade}
+file for PhyML. The second part is PhyTime-specific. Two new tags can be found here: \x{clade}
 and \x{calibration}\index{PhyTime!calibration}. The \x{clade}\index{PhyTime!clade} element is used to define a subset of taxa. Each of these taxa is
 given in a \x{taxon} element. The  value that each taxon takes is a string corresponding to the
 name of one of the sequences in the alignment file. In the example that follows, \x{Gymno\_Cycas}, \x{Gymno\_Ginko} and
 \x{Gymno\_Juniperus} are three taxa that define a clade called \x{CLADE1}. Note that  this clade may
 not be monophyletic. In fact it is not considered as such during the inference. The second important element is \x{calibration}. It
-helps defining time intervals corresponding to the time of diversification (i.e., the time of the most
-recent common ancestor) of the set of taxa the calibration points to. Each interval is defined using 
+defines time intervals corresponding to the time of diversification (i.e., the time of the most
+recent common ancestor) of the set of taxa the calibration points to. In other words, a given time
+interval defines the calibration for the timing of the crown node of a given clade. Each interval is defined using 
 \x{upper} and \x{lower} bounds.
 
 \vspace{0.2cm}
@@ -2274,6 +2273,22 @@ recent common ancestor) of the set of taxa the calibration points to. Each inter
 </phyml>
 \end{Verbatim}
 
+\subsubsection{Accounting for calibration uncertainty}
+
+It is not always obvious to determine with full precision and accuracy where in the tree a given
+fossil branches in. For instance, a first morphological feature of an ancestral (fossilized) species
+might be shared by species A but not B nor C, while a second feature might be displayed by A and B but
+not C. The first feature calibrates the most recent common ancestor (MRCA)\index{MRCA} of A and
+B. Indeed, this ancestor cannot be younger than the fossil itself because, if this was  the case, then
+A {\em and} B would display the morphological feature of interest. In a similar fashion, the second
+feature points to a MRCA of A, B and the fossil that is older than the MRCA of A and B
+only. Assuming that the tree topology is ((A,B),C), the calibration thus applies here to the MRCA of
+A, B and C, which cannot be younger than the fossil. Assuming that the fossil was discovered in a
+well-defined geological layer which age range is known without ambiguity, it is still unclear which
+node in the tree this time interval calibrates. PhyTime accomodates for this uncertainty by giving a
+probability to the two scenari: with probability $\alpha$ the calibration time interval applies to
+the MRCA of species A and B and with probability $1-\alpha$, this interval calibrates the age of the
+MRCA of A, B and C. 
 
 
 
