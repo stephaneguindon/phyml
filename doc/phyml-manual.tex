@@ -2343,9 +2343,10 @@ given above, one of the output files is called  `\x{abc\_def\_phytime\_stats.txt
 node times  and (relative) substitution rates on edges  sampled during the  estimation process.   It
 also  gives the sampled values for other parameters, such as  the autocorrelation of rates
 (parameter `nu'), and the rate of evolution (parameter `clock') amongst others.   This output file
-can be analysed with the program        Tracer\index{Tracer}        from         the
+can not be analysed with the program        Tracer\index{Tracer}        from         the
 BEAST\index{BEAST}        package (\url{http://beast.bio.ed.ac.uk/Main_Page}) or Icylog
-(\url{http://tgvaughan.github.io/icylog/}\index{Icylog}).        The       second      file       is
+(\url{http://tgvaughan.github.io/icylog/}\index{Icylog}) as some of the columns display
+non-numerical variables. It is preferable to process this file using R here.       The       second      file       is
 called `\x{abc\_def\_phytime\_trees.txt}'.  It is  the list of rooted trees that were  collected
 during the estimation process, i.e., phylogenies sampled from the posterior density of trees.  This
 file can be processed   using   the   software   TreeAnnotator,   also  part   of   the   BEAST
