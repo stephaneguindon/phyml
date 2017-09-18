@@ -20,7 +20,6 @@ the GNU public licence. See http://www.opensource.org for details.
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 phydbl String_To_Dbl(char *string)
 {
   phydbl buff;
@@ -32,13 +31,38 @@ phydbl String_To_Dbl(char *string)
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
     }
 
-
   buff = strtod(string,&endptr);
+
   if(string == endptr || errno == ERANGE)
     {
       PhyML_Printf("\n\u2022 Error in translating string '%s' to double.",string);
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
     }
+  return buff;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+int String_To_Int(char *string)
+{
+  int buff;
+  char *endptr;
+
+  if(!string)
+    {
+      PhyML_Fprintf(stderr,"\n\u2022 String object empty.");
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
+    }
+
+  buff = (int)strtol(string,&endptr, 10);
+
+  if(string == endptr || errno == ERANGE)
+    {
+      PhyML_Fprintf(stderr,"\n\u2022 Error in translating string '%s' to integer.",string);
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
+    }
+
   return buff;
 }
 

@@ -1131,7 +1131,9 @@ typedef struct __Option { /*! mostly used in 'help.c' */
   struct __List_Tree       *treelist; /*! list of trees. */
   struct __Option              *next;
   struct __Option              *prev;
-
+  struct __Tmcmc               *mcmc;
+  struct __T_Rate             *rates;
+  
   int                    interleaved; /*! interleaved or sequential sequence file format ? */
   int                        in_tree; /*! =1 iff a user input tree is used as input */
 
@@ -1238,8 +1240,6 @@ typedef struct __Option { /*! mostly used in 'help.c' */
 
   int                    mem_question;
   int                do_alias_subpatt;
-  struct __Tmcmc                *mcmc;
-  struct __T_Rate              *rates;
   
 #ifdef BEAGLE
   int                 beagle_resource;
@@ -2190,6 +2190,7 @@ void Init_Vect_Dbl(int len,vect_dbl *p);
 void Init_Vect_Int(int len,vect_int *p);
 char *To_Lower_String(char *in);
 phydbl String_To_Dbl(char *string);
+int String_To_Int(char *string);
 char *To_Upper_String(char *in);
 void Connect_CSeqs_To_Nodes(calign *cdata, option *io, t_tree *tree);
 void Switch_Eigen(int state, t_mod *mod);

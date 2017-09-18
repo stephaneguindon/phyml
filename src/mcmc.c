@@ -1017,7 +1017,7 @@ void MCMC_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
       if(d->tax == YES) return;
       else
 	{
-	  for(i=0;i<3;i++)
+	  for(i=0;i<3;++i)
 	    if(d->v[i] != a && d->b[i] != tree->e_root)
               {
                 Update_Partial_Lk(tree,d->b[i],d);
@@ -1235,7 +1235,7 @@ void MCMC_Times_And_Rates_Recur(t_node *a, t_node *d, int traversal, t_tree *tre
 
   
   v2 = v3 = NULL;
-  for(i=0;i<3;i++)
+  for(i=0;i<3;++i)
     if((d->v[i] != a) && (d->b[i] != tree->e_root))
       {
 	if(!v2) { v2 = d->v[i]; }
@@ -4872,15 +4872,13 @@ void MCMC_Nu(t_tree *tree)
 
       if(tree->rates->model == GUINDON)
 	{
-	  For(i,2*tree->n_otu-2) tree->rates->br_do_updt[i] = YES;
+	  for(i=0;i<2*tree->n_otu-2;++i) tree->rates->br_do_updt[i] = YES;
 	  new_lnL_data = Lk(NULL,tree);
 	}
       
-      ratio +=
-      	(new_lnL_rate - cur_lnL_rate);
+      ratio += (new_lnL_rate - cur_lnL_rate);
 
-      ratio +=
-	(new_lnL_data - cur_lnL_data);
+      ratio += (new_lnL_data - cur_lnL_data);
 
 
       /* !!!!!!!!!!!!!!!! */

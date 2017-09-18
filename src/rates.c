@@ -3637,7 +3637,7 @@ void RATES_Set_Clock_And_Nu_Max(t_tree *tree)
       l_max = tree->mod->l_max;
       
       min_t = .0;
-      For(i,2*tree->n_otu-1) if(tree->rates->t_prior_min[i] < min_t) min_t = tree->rates->t_prior_min[i];
+      for(i=0;i<2*tree->n_otu-1;++i) if(tree->rates->t_prior_min[i] < min_t) min_t = tree->rates->t_prior_min[i];
       
       dt = FABS(min_t);
       max_clock = l_max / dt; 

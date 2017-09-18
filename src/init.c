@@ -600,7 +600,7 @@ void Set_Defaults_Input(option* io)
 
   MCMC_Init_MCMC_Struct(NULL,io,io->mcmc);
   RATES_Init_Rate_Struct(io->rates,NULL,-1);
-  io->rates->model               = GUINDON;
+  io->rates->model               = GAMMA;
 }
 
 //////////////////////////////////////////////////////////////
@@ -885,7 +885,7 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
 
   rates->nu            = 1.0E-1;
   rates->min_nu        = 0.0;
-  rates->max_nu        = 1.E+8;
+  rates->max_nu        = 2.0;
   
   /* rates->max_nu        = 2.0; */
 
@@ -909,9 +909,9 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
 
   if(n_otu > 0)
     {
-      For(i,(2*n_otu-2)*(2*n_otu-2)) rates->cov_l[i] = 0.0;
+      for(i=0;i<(2*n_otu-2)*(2*n_otu-2);++i) rates->cov_l[i] = 0.0;
       
-      For(i,2*n_otu-2)
+      for(i=0;i<2*n_otu-2;++i)
         {
           rates->n_jps[i]  =  -1;
           rates->t_jps[i]  =  -1;

@@ -2181,7 +2181,7 @@ explained below:
 \subsubsection{PhyTime input}
 As stated above, PhyTime takes as input an XML file very similar to those compatible with PhyML. An
 example is given thereafter. The first part of the input file (up to the \x{partitionelem} block) corresponds to a standard XML input
-file for PhyML. The second part is PhyTime-specific. Two new tags can be found here: \x{clade}
+file for PhyML. Note however that the tag name ``\x{phytime}'' replaces ``\x{phyml}''. The second part is PhyTime-specific. Two new tags can be found here: \x{clade}
 and \x{calibration}\index{PhyTime!calibration}. The \x{clade}\index{PhyTime!clade} element is used to define a subset of taxa. Each of these taxa is
 given in a \x{taxon} element. The  value that each taxon takes is a string corresponding to the
 name of one of the sequences in the alignment file. In the example that follows, \x{Gymno\_Cycas}, \x{Gymno\_Ginko} and
@@ -2196,7 +2196,7 @@ interval defines the calibration for the timing of the crown node of a given cla
 \begin{Verbatim}[frame=single, label=Example of PhyTime XML file, samepage=true, baselinestretch=0.5,
   fontsize=\small, numbers=left]
 
-<phyml run.id="abc" output.file="def">
+<phytime run.id="abc" output.file="def">
 
   <!-- Tree topology: use "bionj" here. Does not matter as the -->
   <!-- tree is randomized at the start of the analysis anyway -->
@@ -2270,13 +2270,13 @@ interval defines the calibration for the timing of the crown node of a given cla
     </appliesto>
   </calibration>
 
-</phyml>
+</phytime>
 \end{Verbatim}
 
 \subsubsection{Accounting for calibration uncertainty}
 
 It is not always obvious to determine with full precision and accuracy where in the tree a given
-fossil branches in. For instance, a first morphological feature of an ancestral (fossilized) species
+fossil branches in {\em a priori}. For instance, a first morphological feature of an ancestral (fossilized) species
 might be shared by species A but not B nor C, while a second feature might be displayed by A and B but
 not C. The first feature calibrates the most recent common ancestor (MRCA)\index{MRCA} of A and
 B. Indeed, this ancestor cannot be younger than the fossil itself because, if this was  the case, then
@@ -2284,28 +2284,73 @@ A {\em and} B would display the morphological feature of interest. In a similar 
 feature points to a MRCA of A, B and the fossil that is older than the MRCA of A and B
 only. Assuming that the tree topology is ((A,B),C), the calibration thus applies here to the MRCA of
 A, B and C, which cannot be younger than the fossil. Assuming that the fossil was discovered in a
-well-defined geological layer which age range is known without ambiguity, it is still unclear which
-node in the tree this time interval calibrates. PhyTime accomodates for this uncertainty by giving a
+well-defined geological layer which age range is known without ambiguity, there is still uncertainty
+around the node in the tree this time interval calibrates. PhyTime accomodates for this uncertainty by giving a
 probability to the two scenari: with probability $\alpha$ the calibration time interval applies to
 the MRCA of species A and B and with probability $1-\alpha$, this interval calibrates the age of the
 MRCA of A, B and C. 
 
+It is fairly straightforward to set up an analysis that incorporates probabilistic distributions on
+calibrations in PhyTime. The section of the XML file below gives a simple example whereby the
+calibration  ``\x{CAL1}'' applies to ``\x{CLADE1}'' (i.e., the smallest clade in the tree that
+displays the three taxa {\em Gymno\_Juniperus},
+  {\em Gymno\_Sciadopitys} and {\em Gymno\_Cycas}) with probability 0.2 and to ``\x{CLADE2}'' (i.e.,
+  the smallest clade that displays {\em  Gymno\_Juniperus} and {\em Gymno\_Sciadopitys}) with probability 0.8.
+
+\begin{Verbatim}[frame=single, label=Example of PhyTime XML file with calibration uncertainty, samepage=true, baselinestretch=0.5,
+  fontsize=\small, numbers=left]
+  ...
+ 
+  <clade id="CLADE1">
+    <taxon value="Gymno_Juniperus"/>
+    <taxon value="Gymno_Sciadopitys"/>
+    <taxon value="Gymno_Cycas"/>
+  </clade>
+
+  <clade id="CLADE2">
+    <taxon value="Gymno_Juniperus"/>
+    <taxon value="Gymno_Sciadopitys"/>
+  </clade>
+
+  <clade id="CLADE3">
+    <taxon value="Fagales_Juglans"/>
+    <taxon value="Ophioglossum"/>
+  </clade>
+
+  
+  <calibration id="CAL1">
+    <lower>-400</lower>
+    <upper>-50</upper>
+    <appliesto clade.id="CLADE1" probability="0.2"/>
+    <appliesto clade.id="CLADE2" probability="0.8"/>
+  </calibration>
+
+  <calibration id="CAL2">
+    <lower>-500</lower>
+    <upper>-300</upper>
+    <appliesto clade.id="CLADE3">
+    </appliesto>
+  </calibration>
+
+</phytime>
+\end{Verbatim}
 
 
 \subsubsection{PhyTime output}
 
-The     program     PhyTime     generates     two     output     files.      Using the XML file given
-above, one of the output files is called  `\x{abc\_def\_phytime\_stats}'. It lists the
-node times  and (relative) substitution rates on edges  sampled during the  estimation process.   It also  gives the
-sampled values for other parameters, such as  the autocorrelation of rates (parameter `nu'), and the
-rate of evolution (parameter `clock') amongst others.   This output file can be analysed with the
-program        Tracer\index{Tracer}        from         the        BEAST\index{BEAST}        package
-(\url{http://beast.bio.ed.ac.uk/Main_Page}) or Icylog (\url{http://tgvaughan.github.io/icylog/}\index{Icylog}).        The       second      file       is       called
-`\x{abc\_def\_phytime\_trees}'.  It is  the list of rooted trees that were  collected during the
-estimation process, i.e., phylogenies sampled from the posterior density of trees.  This file can be
-processed   using   the   software   TreeAnnotator,   also  part   of   the   BEAST   package   (see
-\url{http://beast.bio.ed.ac.uk/Main_Page}) in  order to generate  confidence sets for the  node time
-estimates.
+The     program     PhyTime     generates     two     output     files.      Using the XML file
+given above, one of the output files is called  `\x{abc\_def\_phytime\_stats.txt}'. It lists the
+node times  and (relative) substitution rates on edges  sampled during the  estimation process.   It
+also  gives the sampled values for other parameters, such as  the autocorrelation of rates
+(parameter `nu'), and the rate of evolution (parameter `clock') amongst others.   This output file
+can be analysed with the program        Tracer\index{Tracer}        from         the
+BEAST\index{BEAST}        package (\url{http://beast.bio.ed.ac.uk/Main_Page}) or Icylog
+(\url{http://tgvaughan.github.io/icylog/}\index{Icylog}).        The       second      file       is
+called `\x{abc\_def\_phytime\_trees.txt}'.  It is  the list of rooted trees that were  collected
+during the estimation process, i.e., phylogenies sampled from the posterior density of trees.  This
+file can be processed   using   the   software   TreeAnnotator,   also  part   of   the   BEAST
+package   (see \url{http://beast.bio.ed.ac.uk/Main_Page}) in  order to generate  confidence sets for
+the  node time estimates.
 
 
 \subsubsection{MCMC settings}

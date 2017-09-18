@@ -86,8 +86,13 @@ t_tree *XML_Process_Base(char *xml_filename)
       Exit("\n");
     }
 
+#if defined PHYML
+  printf("\n. HERE"); fflush(NULL);
   p_elem = XML_Search_Node_Name("phyml",NO,p_elem);
-
+#elif defined PHYTIME
+  p_elem = XML_Search_Node_Name("phytime",NO,p_elem);
+#endif
+  
   /*! Input file
    */
   outputfile = XML_Get_Attribute_Value(p_elem,"output.file");
@@ -1073,8 +1078,13 @@ t_tree *XML_Process_Base(char *xml_filename)
   while(mod);
 
   Check_Taxa_Sets(mixt_tree);
-
+  
+#if defined PHYML
   Check_Mandatory_XML_Node(root,"phyml");
+#elif defined PHYTIME
+  Check_Mandatory_XML_Node(root,"phytime");
+#endif
+  
   Check_Mandatory_XML_Node(root,"topology");
   Check_Mandatory_XML_Node(root,"branchlengths");
   Check_Mandatory_XML_Node(root,"ratematrices");
@@ -2190,7 +2200,7 @@ void DATE_XML(char *xml_filename)
   xml_node *xnd,*xnd_dum,*xnd_clade,*xnd_cal,*xroot;
   t_tree *mixt_tree,*tree;
   phydbl low,up,*res,alpha_proba_dbl;
-  char *clade_name,*alpha_proba_string,*calib_id,*clade_id;
+  char *clade_name,*alpha_proba_string,*calib_id,*clade_id,*dum_string;
   int seed;
   t_clad *clade;
   t_cal *cal;
@@ -2229,8 +2239,29 @@ void DATE_XML(char *xml_filename)
   if(xroot == NULL)
     {
       PhyML_Fprintf(stderr,"\n\u2022 Encountered an issue while loading the XML file.\n");
-      Exit("\n");
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
     }
+
+  xnd = XML_Search_Node_Name("phytime",NO,xroot);
+
+  if(xnd == NULL)
+    {
+      PhyML_Fprintf(stderr,"\n\u2022 Cound not find the \"root\" of the XML file (it should have \'phytime\' as tag name).\n");
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
+
+  dum_string = XML_Get_Attribute_Value(xnd,"mcmc.chain.len");
+  if(dum_string != NULL) mixt_tree->io->mcmc->chain_len = (int)String_To_Dbl(dum_string);
+  
+  dum_string = XML_Get_Attribute_Value(xnd,"mcmc.sample.every");
+  if(dum_string != NULL) mixt_tree->io->mcmc->sample_interval = (int)String_To_Dbl(dum_string);
+
+  dum_string = XML_Get_Attribute_Value(xnd,"mcmc.print.every");
+  if(dum_string != NULL) mixt_tree->io->mcmc->print_every = (int)String_To_Dbl(dum_string);
+
+  dum_string = XML_Get_Attribute_Value(xnd,"mcmc.burnin");
+  if(dum_string != NULL) mixt_tree->io->mcmc->chain_len_burnin = (int)String_To_Dbl(dum_string);
+
   
   // Looking for calibration node(s)
   xnd = XML_Search_Node_Name("calibration",YES,xroot);
@@ -2393,6 +2424,7 @@ void DATE_XML(char *xml_filename)
     }
   while(xnd != NULL);
 
+  PhyML_Printf("\n\n.......................................................................");
   for(i=0;i<mixt_tree->rates->n_cal;++i)
     {
       cal = mixt_tree->rates->a_cal[i];
@@ -2404,11 +2436,11 @@ void DATE_XML(char *xml_filename)
       for(j=0;j<cal->clade_list_size;j++)
         {
           clade = cal->clade_list[j];
-          PhyML_Printf("\n\u2022 Calibration id: %s.",cal->id);
-          PhyML_Printf("\n\u2022 Lower bound set to: %15f time units.",cal->lower);
-          PhyML_Printf("\n\u2022 Upper bound set to: %15f time units.",cal->upper);
-          PhyML_Printf("\n\u2022 This calibration applies to node %d with probability %G.",clade->target_nd->num,cal->alpha_proba_list[j]);
-          PhyML_Printf("\n\u2022 .......................................................................");
+          PhyML_Printf("\n Calibration id: %s.",cal->id);
+          PhyML_Printf("\n Lower bound set to: %15f time units.",cal->lower);
+          PhyML_Printf("\n Upper bound set to: %15f time units.",cal->upper);
+          PhyML_Printf("\n This calibration applies to node %d with probability %G.",clade->target_nd->num,cal->alpha_proba_list[j]);
+          PhyML_Printf("\n.......................................................................");
         }
     }
   
@@ -2416,7 +2448,7 @@ void DATE_XML(char *xml_filename)
   seed = (mixt_tree->io->r_seed < 0)?(time(NULL)):(mixt_tree->io->r_seed);
   srand(seed);
   mixt_tree->io->r_seed = seed;
-  PhyML_Printf("\n\u2022 Seed: %d",seed);
+  PhyML_Printf("\n\n\u2022 Seed: %d",seed);
 
   MIXT_Chain_Cal(mixt_tree);
 
