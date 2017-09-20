@@ -772,7 +772,7 @@ phydbl *DATE_MCMC(t_tree *tree)
           if(tree->mcmc->sample_num == 0)
             {
               PhyML_Fprintf(fp_tree,"\n#NEXUS");
-              PhyML_Fprintf(fp_tree,"\nBegin trees;");
+              PhyML_Fprintf(fp_tree,"\nBEGIN TREES;");
             }
           else
             {
@@ -787,7 +787,7 @@ phydbl *DATE_MCMC(t_tree *tree)
           tree->bl_ndigits = 7;
           PhyML_Fprintf(fp_tree,"\ntree %f [&lnP=-1] = [&R] %s",s_tree,tree->c_lnL);          
           Free(s_tree);
-          PhyML_Fprintf(fp_tree,"\nEnd trees;");          
+          PhyML_Fprintf(fp_tree,"\nEND;");          
           fflush(NULL);
           RATES_Update_Cur_Bl(tree);
 

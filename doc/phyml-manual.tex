@@ -2196,7 +2196,8 @@ interval defines the calibration for the timing of the crown node of a given cla
 \begin{Verbatim}[frame=single, label=Example of PhyTime XML file, samepage=true, baselinestretch=0.5,
   fontsize=\small, numbers=left]
 
-<phytime run.id="abc" output.file="def">
+<phytime run.id="abc" output.file="def" mcmc.chain.len="1E+7" \
+mcmc.sample.every="100" mcmc.print.every="50" mcmc.burnin="10000">
 
   <!-- Tree topology: use "bionj" here. Does not matter as the -->
   <!-- tree is randomized at the start of the analysis anyway -->
@@ -2336,24 +2337,6 @@ displays the three taxa {\em Gymno\_Juniperus},
 \end{Verbatim}
 
 
-\subsubsection{PhyTime output}
-
-The     program     PhyTime     generates     two     output     files.      Using the XML file
-given above, one of the output files is called  `\x{abc\_def\_phytime\_stats.txt}'. It lists the
-node times  and (relative) substitution rates on edges  sampled during the  estimation process.   It
-also  gives the sampled values for other parameters, such as  the autocorrelation of rates
-(parameter `nu'), and the rate of evolution (parameter `clock') amongst others.   This output file
-can not be analysed with the program        Tracer\index{Tracer}        from         the
-BEAST\index{BEAST}        package (\url{http://beast.bio.ed.ac.uk/Main_Page}) or Icylog
-(\url{http://tgvaughan.github.io/icylog/}\index{Icylog}) as some of the columns display
-non-numerical variables. It is preferable to process this file using R here.       The       second      file       is
-called `\x{abc\_def\_phytime\_trees.txt}'.  It is  the list of rooted trees that were  collected
-during the estimation process, i.e., phylogenies sampled from the posterior density of trees.  This
-file can be processed   using   the   software   TreeAnnotator,   also  part   of   the   BEAST
-package   (see \url{http://beast.bio.ed.ac.uk/Main_Page}) in  order to generate  confidence sets for
-the  node time estimates.
-
-
 \subsubsection{MCMC settings}
 
 PhyTime estimates the joint posterior distribution  of the phylogenetic model parameters  using an
@@ -2364,8 +2347,7 @@ target distribution (i.e., converge to the solution). I thus recommend  monitori
 loading on a regular basis the statistics output file produced by PhyTime in Tracer or Icylog  and
 interrupt the analysis once the effective sample sizes of all parameters have reached 200. 
 
-The MCMC
-algorithm implemented in PhyTime relies on multiple operators that update different parameters, or the
+The MCMC algorithm implemented in PhyTime relies on multiple operators that update different parameters, or the
 same parameter in different ways. The weights of these operators, i.e., the frequency with which
 they are applied, were adjusted for the analysis of the plant data set described in
 \cite{guindon17}. If you think these default values are not suitable for your own analysis, please
@@ -2375,6 +2357,73 @@ the operator. Alternatively, you might want to send me an email (\url{guindon@li
 unsure about all this. 
 
 
+\subsubsection{PhyTime output}
+
+The     program     PhyTime     generates     two     output     files.      Using the XML file
+given above, one of the output files is called  `\x{abc\_def\_phytime\_stats.txt}'. It lists the
+node times  and (relative) substitution rates on edges  sampled during the  estimation process.   It
+also  gives the sampled values for other parameters, such as  the autocorrelation of rates
+(parameter `nu'), and the rate of evolution (parameter `clock') amongst others.   This output file
+can not be analysed with the program        Tracer\index{Tracer}        from         the
+BEAST\index{BEAST}        package (\url{http://beast.bio.ed.ac.uk/Main_Page}) or Icylog
+(\url{http://tgvaughan.github.io/icylog/}\index{Icylog}) as some of the columns display
+non-numerical variables. It is preferable to process this file using R here. Section
+\ref{sec:phytimeexample} of this document gives more information about the statistics output file.       The       second      file       is
+called `\x{abc\_def\_phytime\_trees.txt}'.  It is  the list of rooted trees that were  collected
+during the estimation process, i.e., phylogenies sampled from the posterior density of trees.  This
+file can be processed   using   the   software   TreeAnnotator,   also  part   of   the   BEAST
+package   (see \url{http://beast.bio.ed.ac.uk/Main_Page}) in  order to generate  confidence sets for
+the  node time estimates.
+
+
+\subsubsection{An example of PhyTime input and output files}\label{sec:phytimeexample}
+
+The directory \x{phyml/examples/phytime/} provides a sequence alignment (\x{seq.txt}) and an XML
+input file (\x{param.xml}) that can be used to run an analysis (using the following command:
+\x{phytime --xml=param.xml}). The XML file is very similar to that described above and will thus not
+be discussed further. The statistics output file is called \x{small\_example\_phytime\_stats.txt}. The
+columns of this file are as follows:
+\begin{itemize}
+\item \x{sample}: the index of the iteration in the MCMC algorithm. For instance, a sample value of
+  100 means that 100 ``moves'' in the MCMC have been applied so far, one such move can correspond to
+  an attempt to modify the tree topology, or  height of some internal nodes, etc.
+\item \x{lnL(posterior)}: the logarithm of the posterior density of the current model parameters. It is this function
+  that the MCMC attempts to get samples from.
+\item \x{lnL(seq)}: the logarithm of the conditional probability of the sequence alignment given the current model
+  parameters.
+\item \x{lnL(times)}: the logarithm of the probability density of the phylogeny evaluated under the
+  birth and death branching process.
+\item \x{lnL(rates)}: the logarithm of the probability density of the relative substitution rates
+  along every edge of the current phylogeny.
+\item \x{birth}: sampled values of the birth parameter. Histogram of these values provide an
+  estimate of the marginal posterior distribution for this parameter.
+\item \x{death}: death parameter for the birth-death branching process.
+\item \x{clock}: mean rate of substitution.
+\item \x{root}: age of the root node. Note that ages in PhyTime are relative
+  to the present, i.e., an age of -100 corresponds to a time point 100 time units ago.
+\item \x{tstv}: transition/transversion ratio (the substitution model used
+  here is HKY, as selected in the \x{param.xml} file).
+\item \x{nu}: rate autocorrelation parameter.
+\item \x{rr0}, \x{rr1}, \x{rr2}, \x{pr0}, \x{pr1}, \x{pr2}: relative rate of substitution and the
+  corresponding frequencies. The mixture model of rate variation used in this analysis is the
+  FreeRate model \cite{soubrier12} with three rate classes. These  columns give the values of
+  these six parameters (though there are only four free parameters) sampled from the target
+  (posterior) distribution.  
+\item \x{t(calib:CAL1\_clade:CLADE1)}: sampled age of the MRCA of \x{CLADE1} when calibration
+  \x{CAL1} applies to this particular node.
+\item \x{t(calib:CAL1\_clade:CLADE2)}: sampled age of the MRCA of \x{CLADE2} when calibration
+  \x{CAL1} applies to this node.
+\item \x{t(calib:CAL2\_clade:CLADE3)}: sampled age of the MRCA of \x{CLADE3} when calibration
+  \x{CAL2} applies to this node.
+\item \x{clade(calib:CAL1)}: the clade id (\x{CLADE1} or \x{CLADE2}) calibration \x{CAL1} applies
+  to.
+\item \x{clade(calib:CAL2)}: the clade id (\x{CLADE1} or \x{CLADE2}) calibration \x{CAL1} applies
+  to.
+\item \x{br0}, $\ldots$, \x{br41}: relative rate on all edges in the tree.
+\item \x{t22}, $\ldots$, \x{t42}: ages of all internal nodes.
+\item The remaining columns provides information about the acceptance rate of various operators in
+  the MCMC and the corresponding tuning parameters.
+\end{itemize}
 
 % Important  information is also  displayed on  the standard  output of  PhyTime (the  standard output
 % generally corresponds to the terminal window from  which PhyTime was launched).  The first column of

@@ -547,7 +547,7 @@ void Print_Tree(FILE *fp, t_tree *tree)
       PhyML_Fprintf(fp,"#NEXUS\n");
       PhyML_Fprintf(fp,"BEGIN TREES;\n");
       PhyML_Fprintf(fp,"\tTRANSLATE\n");
-      for(i=0;i<tree->n_otu;i++) PhyML_Fprintf(fp,"\t%3d\t%s,\n",i+1,tree->a_nodes[i]->name);
+      for(i=0;i<tree->n_otu;++i) PhyML_Fprintf(fp,"\t%3d\t%s,\n",i+1,tree->a_nodes[i]->name);
       PhyML_Fprintf(fp,"\tUTREE PAUP_1=\n");
       PhyML_Fprintf(fp,"%s\n",s_tree);
       PhyML_Fprintf(fp,"ENDBLOCK;");

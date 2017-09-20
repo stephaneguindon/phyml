@@ -1,0 +1,83 @@
+<phytime run.id="example" output.file="small" mcmc.chain.len="1E+7" mcmc.sample.every="100" mcmc.print.every="50" mcmc.burnin="10000">
+
+  <!-- Tree topology -->
+  <topology> 
+    <instance id="T1" init.tree="bionj" optimise.tree="yes"/>
+  </topology>
+  
+
+  <!-- Substitution model -->
+  <ratematrices id="RM1">
+    <instance id="M1" model="HKY85" optimise.tstv="no" tstv="4.0"/>
+  </ratematrices>
+
+  
+  <!-- Freerate model of variation of rates across sites -->
+  <siterates id="SR1">
+    <instance id="R3" init.value="0.5"/>
+    <instance id="R2" init.value="1.0"/>
+    <instance id="R1" init.value="2.0"/>
+    <weights  id="D1" family="freerates" optimise.freerates="no">
+      <instance appliesto="R3" value="0.33"/>
+      <instance appliesto="R2" value="0.33"/>
+      <instance appliesto="R1" value="0.33"/>
+    </weights>
+  </siterates>
+
+  <!-- Nucleotide frequencies -->
+  <equfreqs id="EF1">
+    <instance id="F1" optimise.freqs="no"/>
+  </equfreqs>
+
+
+  <!-- Vector of edge lengths -->
+  <branchlengths id="BL1" >
+    <instance id="L1" optimise.lens="no"/>
+  </branchlengths>
+
+  <!-- Model assembly -->
+  <partitionelem id="partition1" file.name="./seq.txt" data.type="nt" interleaved="no">
+    <mixtureelem list="T1, T1, T1"/>
+    <mixtureelem list="M1, M1, M1"/>
+    <mixtureelem list="F1, F1, F1"/>
+    <mixtureelem list="R1, R2, R3"/>
+    <mixtureelem list="L1, L1, L1"/>
+  </partitionelem>
+
+  <!-- Definition of clades -->
+  <clade id="CLADE1">
+    <taxon value="Gymno_Juniperus"/>
+    <taxon value="Gymno_Sciadopitys"/>
+    <taxon value="Gymno_Cycas"/>
+  </clade>
+
+  <clade id="CLADE2">
+    <taxon value="Gymno_Juniperus"/>
+    <taxon value="Gymno_Sciadopitys"/>
+  </clade>
+
+  <clade id="CLADE3">
+    <taxon value="Fagales_Juglans"/>
+    <taxon value="Ophioglossum"/>
+  </clade>
+
+
+  <!-- Calibration CAL1 applies to CLADE1 with proba 0.2 and to CLADE2 with proba 0.8 -->
+  <calibration id="CAL1">
+    <lower>-400</lower>
+    <upper>-50</upper>
+    <appliesto clade.id="CLADE1" probability="0.2"/>
+    <appliesto clade.id="CLADE2" probability="0.8"/>
+  </calibration>
+
+  <!-- Calibration CAL2 applies to CLADE3 with proba 1 -->
+  <calibration id="CAL2">
+    <lower>-500</lower>
+    <upper>-300</upper>
+    <appliesto clade.id="CLADE3">
+    </appliesto>
+  </calibration>
+
+</phytime>
+
+
