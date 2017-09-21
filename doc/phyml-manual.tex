@@ -2136,7 +2136,7 @@ The ``historic citation'' for PhyML is:
 
 
 
-\section{Other programs in the PhyML package}
+\section{Other programs}
 
 PhyML  is software package  that provides  tools to  tackle problems  other than  estimating maximum
 likelihood  phylogenies.  Installing these  tools  and  processing data  sets  is  explained is  the
@@ -2340,21 +2340,26 @@ displays the three taxa {\em Gymno\_Juniperus},
 \subsubsection{MCMC settings}
 
 PhyTime estimates the joint posterior distribution  of the phylogenetic model parameters  using an
-MCMC algorithm. This algorithm relies on sampling values of these parameters iteratively. The number
-of iterations is fixed to 1E+07 and values of parameters are recorded every 200 generations. The
-vast majority of analyses will not warrant 1E+07 iterations  to converge to the
-target distribution (i.e., converge to the solution). I thus recommend  monitoring each analysis by
-loading on a regular basis the statistics output file produced by PhyTime in Tracer or Icylog  and
-interrupt the analysis once the effective sample sizes of all parameters have reached 200. 
+MCMC algorithm. This algorithm relies on sampling values of these parameters iteratively. The
+default number of iterations is fixed to 1E+07 and values of parameters are recorded every 1E+03
+iteration of the MCMC algorithm. The burnin period, during which tuning parameters of the MCMC as
+adjusted, lasts for 1E+04 iterations. These three parameters can be modified by setting the values
+of the attributes \x{mcmc.chain.len}, \x{mcmc.sample.every} and \x{mcmc.burnin} in the XML parameter
+file accordingly. For instance, the first line of this file could look as follows: \x{<phytime
+run.id="example" output.file="small" mcmc.chain.len="1E+7" mcmc.sample.every="100"
+mcmc.print.every="50" mcmc.burnin="10000">}
 
-The MCMC algorithm implemented in PhyTime relies on multiple operators that update different parameters, or the
-same parameter in different ways. The weights of these operators, i.e., the frequency with which
-they are applied, were adjusted for the analysis of the plant data set described in
-\cite{guindon17}. If you think these default values are not suitable for your own analysis, please
-feel free to have a look at the function \x{MCMC\_Complete\_MCMC} in the file \x{mcmc.c} to make 
-the appropriate changes to the values of \x{mcmc->move\_weight[XXX]}, where \x{XXX} is the name of
-the operator. Alternatively, you might want to send me an email (\url{guindon@lirmm.fr}) if you are
-unsure about all this. 
+The vast majority of analyses will not warrant 1E+07 iterations  to converge to the target
+distribution (i.e., converge to the solution). I thus recommend  monitoring each analysis by loading
+on a regular basis the statistics output file produced by PhyTime and interrupt the analysis once
+the effective sample sizes of all parameters have reached 200.  The MCMC algorithm implemented in
+PhyTime relies on multiple operators that update different parameters, or the same parameter in
+different ways. The weights of these operators, i.e., the frequency with which they are applied,
+were adjusted for the analysis of the plant data set described in \cite{guindon17}. If you think
+these default values are not suitable for your own analysis, please feel free to have a look at the
+function \x{MCMC\_Complete\_MCMC} in the file \x{mcmc.c} to make  the appropriate changes to the
+values of \x{mcmc->move\_weight[XXX]}, where \x{XXX} is the name of the operator. Alternatively, you
+might want to send me an email (\url{guindon@lirmm.fr}) if you are unsure about all this. 
 
 
 \subsubsection{PhyTime output}
@@ -2424,6 +2429,50 @@ columns of this file are as follows:
 \item The remaining columns provides information about the acceptance rate of various operators in
   the MCMC and the corresponding tuning parameters.
 \end{itemize}
+
+The script below can be copied and pasted into R in order to produce the plots in Figure
+\ref{fig:phytimetrace}. The two plots at the top left and center give the trace of the node age of
+the MRCA of \x{CLADE1} when calibration \x{CAL1} applies to it (left) and that of \x{CLADE2} when
+the same calibration applies to it (centre). The plot on the top right gives the clade (which of
+\x{CLADE1} or \x{CLADE2}) the calibration \x{CAL1} applies to. The analysis of these  plots
+clearly shows a correlation between the three traces. Indeed,  when \x{CAL1} applies to \x{CLADE1}, the
+ages of the MRCAs of \x{CLADE1} and \x{CLADE2} are pushed towards youngers ages. This behaviour
+makes good sense since the taxa making up \x{CLADE2} ({\em Gymno Juniperus} and {\em Gymno
+  Juniperus}) define a substet of those making up \x{CLADE1}
+({\em Gymno Juniperus}, {\em Gymno Juniperus} and {\em Gymno Cycas}). As a consequence, when
+\x{CAL1} applies to \x{CLADE2}, the MRCA of \x{CLADE1} is ``free'' to wander towards older values.
+
+\begin{Verbatim}[frame=single, label=R script to produce traces from the PhyTime statistics file, samepage=true, baselinestretch=0.5,
+  fontsize=\small, numbers=left]
+file=paste("./phyml/examples/phytime/",
+"small_example_phytime_stats.txt",sep="");
+d=read.table(file,header=T); 
+idx=floor(0.1*length(d$sample)):length(d$sample) 
+par(mfrow=c(2,3),mar=c(5,4,2,2)); 
+plot(d$sample[idx],d$t.calib.CAL1_clade.CLADE1.[idx],type="l",
+col="red",ylab="Time",xlab="Sample",main="Time CLADE1 under CAL1")
+plot(d$sample[idx],d$t.calib.CAL1_clade.CLADE2.[idx],type="l",
+col="red",ylab="Time",xlab="Sample",main="Time CLADE2 under CAL1")
+plot(d$sample[idx],d$clade.calib.CAL1.[idx],type="l",col="black",
+ylab="Clade",xlab="Sample",main="Sampled clade \n 
+(1->CLADE1, 2->CLADE2)") 
+plot(d$sample[idx],d$lnL.seq.[idx],type="l",col="orange",
+ylab="log(Probability)",xlab="Sample",main="Likelihood sequences")
+plot(d$sample[idx],d$lnL.posterior.[idx],type="l",col="orange",
+ylab="log(density)",xlab="Sample",main="Joint posterior") 
+plot(d$sample[idx],d$lnL.times.[idx],type="l",col="orange",
+ylab="log(density)",xlab="Sample",main="Likelihood branching 
+process")
+\end{Verbatim}
+
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=13.8cm]{./fig/mcmctrace}
+\end{center}
+\caption{{\bf Traces from the statistics output file produced by PhyTime.}} 
+\label{fig:phytimetrace}
+\end{figure}
 
 % Important  information is also  displayed on  the standard  output of  PhyTime (the  standard output
 % generally corresponds to the terminal window from  which PhyTime was launched).  The first column of
