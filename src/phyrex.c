@@ -1269,7 +1269,7 @@ t_sarea *PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree)
         {
           for(j=0;j<n_poly;j++) Free_Poly(poly[j]);
           Free(poly);
-          /* PhyML_Printf("\n\u2022 Not enough individuals in polygon(s) (only %d found).",sample_size); */
+          /* PhyML_Printf("\n. Not enough individuals in polygon(s) (only %d found).",sample_size); */
           /* Generic_Exit(__FILE__,__LINE__,__FUNCTION__);       */
         }
       else break;
@@ -1340,7 +1340,7 @@ t_sarea *PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree)
 
       if(n_lineages != n_remain+(disk->prev->ldsk && disk->prev->ldsk->n_next>0)?1:0) 
         {
-          PhyML_Fprintf(stderr,"\n\u2022 n_lineages: %d n_remain: %d n_next: %d",
+          PhyML_Fprintf(stderr,"\n. n_lineages: %d n_remain: %d n_next: %d",
                         n_lineages,
                         n_remain,
                         disk->prev->ldsk->n_next);
@@ -1359,8 +1359,8 @@ t_sarea *PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree)
       
       if(disk->prev == NULL)
         {
-          PhyML_Fprintf(stderr,"\n\u2022 # lineages left: %d",n_remain);
-          PhyML_Fprintf(stderr,"\n\u2022 Sample has not coalesced completely.");
+          PhyML_Fprintf(stderr,"\n. # lineages left: %d",n_remain);
+          PhyML_Fprintf(stderr,"\n. Sample has not coalesced completely.");
           fflush(NULL);
           Exit("\n");
         }
@@ -1746,7 +1746,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
       if(tree->mmod->c_lnL < UNLIKELY + 0.1)
         {
-          PhyML_Printf("\n\u2022 Move '%s' failed\n",tree->mcmc->move_name[move]);
+          PhyML_Printf("\n. Move '%s' failed\n",tree->mcmc->move_name[move]);
           assert(FALSE);
         }
 
@@ -2252,7 +2252,7 @@ t_ldsk *PHYREX_Next_Coal_Lindisk(t_ldsk *t)
     {
       if(t->n_next > 1) // Should have t->is_coal = YES
         {
-          PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
+          PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
           Warn_And_Exit("");
         }
       return PHYREX_Next_Coal_Lindisk(t->next[0]);
@@ -2524,7 +2524,7 @@ int PHYREX_Get_Next_Direction(t_ldsk *young, t_ldsk *old)
 {
   if(young->disk->time < old->disk->time)
     {
-      PhyML_Printf("\n\u2022 young (%s) @ time %f; old (%s) @ time %f",
+      PhyML_Printf("\n. young (%s) @ time %f; old (%s) @ time %f",
                    young->coord->id,young->disk->time,
                    old->coord->id,old->disk->time);
       fflush(NULL);
@@ -2645,7 +2645,7 @@ void PHYREX_Update_Lindisk_List_Core(t_dsk *disk, t_tree *tree)
   
   if(disk->n_ldsk_a > tree->n_otu) 
     {
-      PhyML_Fprintf(stderr,"\n\u2022 disk: %s next: %s disk->n_ldsk_a: %d coord: %s",disk->id, disk->next->id, disk->n_ldsk_a, disk->ldsk?disk->ldsk->coord->id:"xx");
+      PhyML_Fprintf(stderr,"\n. disk: %s next: %s disk->n_ldsk_a: %d coord: %s",disk->id, disk->next->id, disk->n_ldsk_a, disk->ldsk?disk->ldsk->coord->id:"xx");
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
     }
 }
@@ -2791,13 +2791,13 @@ void PHYREX_Check_Struct(t_tree *tree)
                           ldisk->prev->coord->lonlat[j]) > 2.*tree->mmod->rad)
                     {
                       PHYREX_Print_Struct('=',tree);
-                      PhyML_Fprintf(stderr,"\n\u2022 %f %f %f",
+                      PhyML_Fprintf(stderr,"\n. %f %f %f",
                                     ldisk->coord->lonlat[j], 
                                     ldisk->prev->coord->lonlat[j],
                                     2.*tree->mmod->rad);
-                      PhyML_Fprintf(stderr,"\n\u2022 Radius: %f",tree->mmod->rad);
-                      PhyML_Fprintf(stderr,"\n\u2022 Check ldsk %s",ldisk->coord->id);
-                      PhyML_Fprintf(stderr,"\n\u2022 Centr: %f",ldisk->prev->disk->centr->lonlat[j]);
+                      PhyML_Fprintf(stderr,"\n. Radius: %f",tree->mmod->rad);
+                      PhyML_Fprintf(stderr,"\n. Check ldsk %s",ldisk->coord->id);
+                      PhyML_Fprintf(stderr,"\n. Centr: %f",ldisk->prev->disk->centr->lonlat[j]);
                       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
                     }
                 }
@@ -3832,20 +3832,20 @@ void PHYREX_Read_Tip_Coordinates(t_ldsk **ldsk_a, t_tree *tree)
   
   if(found_ne == NO)
     {
-      PhyML_Fprintf(stderr,"\n\u2022 Could not find coordinates for northernmost  point.");
+      PhyML_Fprintf(stderr,"\n. Could not find coordinates for northernmost  point.");
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
     }
 
   if(found_sw == NO)
     {
-      PhyML_Fprintf(stderr,"\n\u2022 Could not find coordinates for southernmost point.");
+      PhyML_Fprintf(stderr,"\n. Could not find coordinates for southernmost point.");
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
     }
 
   for(i=0;i<tree->n_otu;i++) 
     if(done[i] == NO) 
       {
-        PhyML_Fprintf(stderr,"\n\u2022 Could not find coordinates for '%s'.",tree->a_nodes[i]->name);
+        PhyML_Fprintf(stderr,"\n. Could not find coordinates for '%s'.",tree->a_nodes[i]->name);
         Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
       }
 

@@ -24,12 +24,12 @@ int Read_Command_Line(option *io, int argc, char **argv)
   int i;
   int writemode;
 
-  PhyML_Printf("\n\u2022 Command line: ");
+  PhyML_Printf("\n. Command line: ");
   for(i=0;i<argc;i++) PhyML_Printf("%s ",argv[i]);
   PhyML_Printf("\n");
   writemode = WRITE;
 
-  if(argc == 1) Exit("\n\u2022 No argument was passed to the program. Please check the documentation. \n");
+  if(argc == 1) Exit("\n. No argument was passed to the program. Please check the documentation. \n");
   PhyML_Printf("",writemode);
   
   struct option longopts[] =
@@ -165,22 +165,22 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	    if(strlen(optarg) > T_MAX_FILE -11)
 	      {
 		char choix;
-		strcpy (tmp, "\n\u2022 The file name'");
+		strcpy (tmp, "\n. The file name'");
 		strcat (tmp, optarg);
 		strcat (tmp, "' is too long.\n");
 		PhyML_Printf("%s",tmp);
-		PhyML_Printf("\n\u2022 Type any key to exit.\n");
+		PhyML_Printf("\n. Type any key to exit.\n");
 		if(!scanf("%c",&choix)) Exit("\n");
 		Exit("\n");
 	      }
 	    else if (!Filexists (optarg))
 	      {
 		char choix;
-		strcpy (tmp, "\n\u2022 The file '");
+		strcpy (tmp, "\n. The file '");
 		strcat (tmp, optarg);
 		strcat (tmp, "' doesn't exist.\n");
 		PhyML_Printf("%s",tmp);
-		PhyML_Printf("\n\u2022 Type any key to exit.\n");
+		PhyML_Printf("\n. Type any key to exit.\n");
 		if(!scanf("%c",&choix)) Exit("\n");
 		Exit("\n");
 	      }
@@ -266,22 +266,22 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	    if(strlen(optarg) > T_MAX_FILE -11)
 	      {
 		char choix;
-		strcpy (tmp, "\n\u2022 The file name'");
+		strcpy (tmp, "\n. The file name'");
 		strcat (tmp, optarg);
 		strcat (tmp, "' is too long.\n");
 		PhyML_Printf("%s",tmp);
-		PhyML_Printf("\n\u2022 Type any key to exit.\n");
+		PhyML_Printf("\n. Type any key to exit.\n");
 		if(!scanf("%c",&choix)) Exit("\n");
 		Exit("\n");
 	      }
 	    else if (!Filexists (optarg))
 	      {
 		char choix;
-		strcpy (tmp, "\n\u2022 The file '");
+		strcpy (tmp, "\n. The file '");
 		strcat (tmp, optarg);
 		strcat (tmp, "' doesn't exist.\n");
 		PhyML_Printf("%s",tmp);
-		PhyML_Printf("\n\u2022 Type any key to exit.\n");
+		PhyML_Printf("\n. Type any key to exit.\n");
 		if(!scanf("%c",&choix)) Exit("\n");
 		Exit("\n");
 	      }
@@ -301,8 +301,8 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	    if(io->codpos < 1 || io->codpos > 3)
 	      {
 		char choix;
-		PhyML_Printf("\n\u2022 Coding position must be set to 1, 2 or 3.\n");
-		PhyML_Printf("\n\u2022 Type any key to exit.\n");
+		PhyML_Printf("\n. Coding position must be set to 1, 2 or 3.\n");
+		PhyML_Printf("\n. Type any key to exit.\n");
 		if(!scanf("%c",&choix)) Exit("\n");
 		Exit("\n");
 	      }
@@ -336,7 +336,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	    else if(!strcmp(optarg,"strict_clock")) io->rates->model = STRICTCLOCK;
 	    else 
 	      {
-		PhyML_Printf("\n\u2022 rate_model should be 'gbs', 'gbd', 'gamma' or 'clock'.");
+		PhyML_Printf("\n. rate_model should be 'gbs', 'gbd', 'gamma' or 'clock'.");
 		Exit("\n");
 	      }
 	    Free(s);
@@ -387,8 +387,8 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	    if(io->mcmc->chain_len_burnin < 1)
 	      {
 		char choix;
-		PhyML_Printf("\n\u2022 chain_len_burnin must be an integer greater than 0.\n");
-		PhyML_Printf("\n\u2022 Type any key to exit.\n");
+		PhyML_Printf("\n. chain_len_burnin must be an integer greater than 0.\n");
+		PhyML_Printf("\n. Type any key to exit.\n");
 		if(!scanf("%c",&choix)) Exit("\n");
 		Exit("\n");
 	      }
@@ -402,8 +402,8 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	    if(io->mcmc->sample_interval < 1)
 	      {
 		char choix;
-		PhyML_Printf("\n\u2022 sample_interval must be an integer greater than 0.\n");
-		PhyML_Printf("\n\u2022 Type any key to exit.\n");
+		PhyML_Printf("\n. sample_interval must be an integer greater than 0.\n");
+		PhyML_Printf("\n. Type any key to exit.\n");
 		if(!scanf("%c",&choix)) Exit("\n");
 		Exit("\n");
 	      }
@@ -417,8 +417,8 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	    if(io->mcmc->chain_len < 1)
 	      {
 		char choix;
-		PhyML_Printf("\n\u2022 chain_len must be an integer greater than 0.\n");
-		PhyML_Printf("\n\u2022 Type any key to exit.\n");
+		PhyML_Printf("\n. chain_len must be an integer greater than 0.\n");
+		PhyML_Printf("\n. Type any key to exit.\n");
 		if(!scanf("%c",&choix)) Exit("\n");
 		Exit("\n");
 	      }
@@ -440,8 +440,8 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	    if(io->boot_prog_every < 1)
 	      {
 		char choix;
-		PhyML_Printf("\n\u2022 boot_progress_every must be an integer greater than 0.\n");
-		PhyML_Printf("\n\u2022 Type any key to exit.\n");
+		PhyML_Printf("\n. boot_progress_every must be an integer greater than 0.\n");
+		PhyML_Printf("\n. Type any key to exit.\n");
 		if(!scanf("%c",&choix)) Exit("\n");
 		Exit("\n");
 	      }
@@ -454,7 +454,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	  }
 	case 49:
 	  {
-	    PhyML_Printf("\n\u2022 This is PhyML version %s.\n\n",VERSION);
+	    PhyML_Printf("\n. This is PhyML version %s.\n\n",VERSION);
 	    Exit("");
 	    break;
 	  }	  
@@ -490,8 +490,8 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	    if(io->mod->s_opt->min_diff_lk_move < 0)
 	      {
 		char choix;
-		PhyML_Printf("\n\u2022 Min_diff_lk_move must be a double greater than 0.\n");
-		PhyML_Printf("\n\u2022 Type any key to exit.\n");
+		PhyML_Printf("\n. Min_diff_lk_move must be a double greater than 0.\n");
+		PhyML_Printf("\n. Type any key to exit.\n");
 		if(!scanf("%c",&choix)) Exit("\n");
 		Exit("\n");
 	      }
@@ -502,8 +502,8 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	    io->mod->s_opt->pars_thresh = (int)atoi(optarg);
 	    if(io->mod->s_opt->pars_thresh < 0)
 	      {
-		PhyML_Printf("\n\u2022 The parsimony threshold must be an integer greater than 0.\n");
-		PhyML_Printf("\n\u2022 Type any key to exit.\n");
+		PhyML_Printf("\n. The parsimony threshold must be an integer greater than 0.\n");
+		PhyML_Printf("\n. Type any key to exit.\n");
 		Exit("\n");
 	      }
 	    break;
@@ -548,8 +548,8 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	    if(io->mod->m4mod->n_h < 1)
 	      {
 		char choix;
-		PhyML_Printf("\n\u2022 The number of classes must be greater than 0.\n");
-		PhyML_Printf("\n\u2022 Type any key to exit.\n");
+		PhyML_Printf("\n. The number of classes must be greater than 0.\n");
+		PhyML_Printf("\n. Type any key to exit.\n");
 		if(!scanf("%c",&choix)) Exit("\n");
 		Exit("\n");
 	      }
@@ -573,8 +573,8 @@ int Read_Command_Line(option *io, int argc, char **argv)
 		if(io->mod->m4mod->alpha < 1.E-5)
 		  {
 		    char choix;
-		    PhyML_Printf("\n\u2022 The value of alpha must be greater than 1.E-5.\n");
-		    PhyML_Printf("\n\u2022 Type any key to exit.\n");
+		    PhyML_Printf("\n. The value of alpha must be greater than 1.E-5.\n");
+		    PhyML_Printf("\n. Type any key to exit.\n");
 		    if(!scanf("%c",&choix)) Exit("\n");
 		    Exit("\n");
 		  }
@@ -596,8 +596,8 @@ int Read_Command_Line(option *io, int argc, char **argv)
 		if(atof(optarg) < 1.E-10)
 		  {
 		    char choix;
-		    PhyML_Printf("\n\u2022 The value of delta must be larger than 1.E-10.\n");
-		    PhyML_Printf("\n\u2022 Type any key to exit.\n");
+		    PhyML_Printf("\n. The value of delta must be larger than 1.E-10.\n");
+		    PhyML_Printf("\n. Type any key to exit.\n");
 		    if(!scanf("%c",&choix)) Exit("\n");
 		    Exit("\n");
 		  }
@@ -709,7 +709,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	  {
 	    io->mod->s_opt->random_input_tree = 1;
 	    io->mod->s_opt->n_rand_starts = atoi(optarg);
-	    if(io->mod->s_opt->n_rand_starts < 1) Exit("\n\u2022 Number of random starting trees must be > 0.\n\n");
+	    if(io->mod->s_opt->n_rand_starts < 1) Exit("\n. Number of random starting trees must be > 0.\n\n");
 	  }
 	case 's':case 6:
 	  {
@@ -790,8 +790,8 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	    else
 	      {
 		char choix;
-		PhyML_Printf("\n\u2022 Unknown argument to -d option: please use `nt' for DNA or `aa' for Amino-Acids\n");
-		PhyML_Printf("\n\u2022 Type any key to exit.\n");
+		PhyML_Printf("\n. Unknown argument to -d option: please use `nt' for DNA or `aa' for Amino-Acids\n");
+		PhyML_Printf("\n. Type any key to exit.\n");
 		if(!scanf("%c",&choix)) Exit("\n");
 		Exit("\n");
 	      }
@@ -810,7 +810,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
 		
 		if(strlen(io->mod->custom_mod_string->s) != 6)
 		  {
-		    Warn_And_Exit("\n\u2022 The string should be of length 6.\n");
+		    Warn_And_Exit("\n. The string should be of length 6.\n");
 		  }
 		else
 		  {
@@ -942,7 +942,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	      }
 	    else
 	      {
-		PhyML_Printf("\n\u2022 The model name is incorrect. Please see the documentation.\n");
+		PhyML_Printf("\n. The model name is incorrect. Please see the documentation.\n");
 		Exit("\n");
 	      }
 
@@ -963,8 +963,8 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	    else if (atof(optarg) < 1.E-10)
 	      {
 		char choix;
-		PhyML_Printf("\n\u2022 Alpha must be > 1.E-10.\n");
-		PhyML_Printf("\n\u2022 Type any key to exit.\n");
+		PhyML_Printf("\n. Alpha must be > 1.E-10.\n");
+		PhyML_Printf("\n. Type any key to exit.\n");
 		if(!scanf("%c",&choix)) Exit("\n");
 		Exit("\n");
 	      }
@@ -980,8 +980,8 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	    if ((int)String_To_Dbl(optarg) < -5)
 	      {
 		char choix;
-		PhyML_Printf("\n\u2022 Branch test value must be a positive integer for bootstrap, or between -1 and -4 for aLRT branch test\n");
-		PhyML_Printf("\n\u2022 Type any key to exit.\n");
+		PhyML_Printf("\n. Branch test value must be a positive integer for bootstrap, or between -1 and -4 for aLRT branch test\n");
+		PhyML_Printf("\n. Type any key to exit.\n");
 		if(!scanf("%c",&choix)) Exit("\n");
 		Exit("\n");
 	      }
@@ -996,8 +996,8 @@ int Read_Command_Line(option *io, int argc, char **argv)
 		    if(io->n_data_sets > 1)
 		      {
 			char choix;
-			PhyML_Printf("\n\u2022 Bootstrap option is not allowed with multiple data sets\n");
-			PhyML_Printf("\n\u2022 Type any key to exit.\n");
+			PhyML_Printf("\n. Bootstrap option is not allowed with multiple data sets\n");
+			PhyML_Printf("\n. Type any key to exit.\n");
 			if(!scanf("%c",&choix)) Exit("\n");
 			Exit("\n");
 		      }
@@ -1020,8 +1020,8 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	    if ((!atoi(optarg)) || (atoi(optarg) < 0))
 	      {
 		char choix;
-		PhyML_Printf("\n\u2022 Unknown argument to -c option: the number of rate categories must be a positive integer\n");
-		PhyML_Printf("\n\u2022 Type any key to exit.\n");
+		PhyML_Printf("\n. Unknown argument to -c option: the number of rate categories must be a positive integer\n");
+		PhyML_Printf("\n. Type any key to exit.\n");
 		if(!scanf("%c",&choix)) Exit("\n");		  
 		Exit("\n");
 	      }
@@ -1030,7 +1030,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
 		io->mod->ras->n_catg = atoi(optarg);
 		if(io->mod->ras->n_catg < 1) 
 		  {
-		    PhyML_Printf("\n\u2022 The number of rate categories must be a positive integer\n");
+		    PhyML_Printf("\n. The number of rate categories must be a positive integer\n");
 		    Exit("\n");
 		  }
 	      }
@@ -1046,7 +1046,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
 		  io->mod->s_opt->opt_state_freq = YES;
 		else
 		  {
-		    PhyML_Printf("\n\u2022 Please define the data type (nt or aa) before setting the -f option\n");
+		    PhyML_Printf("\n. Please define the data type (nt or aa) before setting the -f option\n");
 		    Exit("\n");
 		  }
 	      }
@@ -1058,7 +1058,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
 		  io->mod->s_opt->opt_state_freq = NO;
 		else
 		  {
-		    PhyML_Printf("\n\u2022 Please define the data type (nt or aa) before setting the -f option\n");
+		    PhyML_Printf("\n. Please define the data type (nt or aa) before setting the -f option\n");
 		    Exit("\n");
 		  }
 	      }
@@ -1100,7 +1100,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
 		   io->mod->e_frq->user_b_freq->v[2] > 1. ||
 		   io->mod->e_frq->user_b_freq->v[3] > 1.)
 		  {
-		    Warn_And_Exit("\n\u2022 Invalid base frequencies.\n");
+		    Warn_And_Exit("\n. Invalid base frequencies.\n");
 		  }
 	      }
 	    break;
@@ -1119,11 +1119,11 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	    if (strlen (optarg) > T_MAX_FILE -16)
 	      {
 		char choix;
-		strcpy (tmp, "\n\u2022 The file name'");
+		strcpy (tmp, "\n. The file name'");
 		strcat (tmp, optarg);
 		strcat (tmp, "' is too long.\n");
 		PhyML_Printf("%s",tmp);
-		PhyML_Printf("\n\u2022 Type any key to exit.\n");
+		PhyML_Printf("\n. Type any key to exit.\n");
 		if(!scanf("%c",&choix)) Exit("\n");
 		Exit("\n");
 	      }
@@ -1131,11 +1131,11 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	    else if (!Filexists (optarg))
 	      {
 		char choix;
-		strcpy (tmp, "\n\u2022 The file '");
+		strcpy (tmp, "\n. The file '");
 		strcat (tmp, optarg);
 		strcat (tmp, "' does not exist.\n");
 		PhyML_Printf("%s",tmp);
-		PhyML_Printf("\n\u2022 Type any key to exit.\n");
+		PhyML_Printf("\n. Type any key to exit.\n");
 		if(!scanf("%c",&choix)) Exit("\n");
 		Exit("\n");
 	      }
@@ -1196,8 +1196,8 @@ int Read_Command_Line(option *io, int argc, char **argv)
 		    if (atof(optarg) < .0)
 		      {
 			char choix;
-			PhyML_Printf("\n\u2022 The ts/tv ratio must be a positive number\n");
-			PhyML_Printf("\n\u2022 Type any key to exit.\n");
+			PhyML_Printf("\n. The ts/tv ratio must be a positive number\n");
+			PhyML_Printf("\n. Type any key to exit.\n");
 			if(!scanf("%c",&choix)) Exit("\n");
 			Exit("\n");
 		      }
@@ -1216,8 +1216,8 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	    if ((!atoi(optarg)) || (atoi(optarg) < 0))
 	      {
 		char choix;
-		PhyML_Printf("\n\u2022 The number of alignments must be a positive integer\n");
-		PhyML_Printf("\n\u2022 Type any key to exit.\n");
+		PhyML_Printf("\n. The number of alignments must be a positive integer\n");
+		PhyML_Printf("\n. Type any key to exit.\n");
 		if(!scanf("%c",&choix)) Exit("\n");
 		Exit("\n");
 	      }
@@ -1236,22 +1236,22 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	    if(strlen(optarg) > T_MAX_FILE -11)
 	      {
 		char choix;
-		strcpy (tmp, "\n\u2022 The file name'");
+		strcpy (tmp, "\n. The file name'");
 		strcat (tmp, optarg);
 		strcat (tmp, "' is too long.\n");
 		PhyML_Printf("%s",tmp);
-		PhyML_Printf("\n\u2022 Type any key to exit.\n");
+		PhyML_Printf("\n. Type any key to exit.\n");
 		if(!scanf("%c",&choix)) Exit("\n");
 		Exit("\n");
 	      }
 	    else if (! Filexists (optarg))
 	      {
 		char choix;
-		strcpy (tmp, "\n\u2022 The file '");
+		strcpy (tmp, "\n. The file '");
 		strcat (tmp, optarg);
 		strcat (tmp, "' doesn't exist.\n");
 		PhyML_Printf("%s",tmp);
-		PhyML_Printf("\n\u2022 Type any key to exit.\n");
+		PhyML_Printf("\n. Type any key to exit.\n");
 		if(!scanf("%c",&choix)) Exit("\n");
 		Exit("\n");
 	      }
@@ -1279,8 +1279,8 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	    else if ((atof(optarg) < 0.0) || (atof(optarg) > 1.0))
 	      {
 		char choix;
-		PhyML_Printf("\n\u2022 The proportion of invariable site must be a number between 0.0 and 1.0\n");
-		PhyML_Printf("\n\u2022 Type any key to exit.");
+		PhyML_Printf("\n. The proportion of invariable site must be a number between 0.0 and 1.0\n");
+		PhyML_Printf("\n. Type any key to exit.");
 		if(!scanf("%c",&choix)) Exit("\n");
 		Exit("\n");
 	      }
@@ -1311,7 +1311,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	      }
 	    else if(!strcmp(optarg,"t"))
 	      {
-		Warn_And_Exit("\n\u2022 You can't optimize the topology without adjusting branch length too...\n");
+		Warn_And_Exit("\n. You can't optimize the topology without adjusting branch length too...\n");
 	      }
 	    else if(!strcmp(optarg,"lr"))
 	      {
@@ -1340,8 +1340,8 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	    else
 	      {
 		char choix;
-		PhyML_Printf ("\n\u2022 The optimization parameter must be 'tlr' or 'tl' or 'lr' or 'l' or 'r' or 'n'.");
-		PhyML_Printf("\n\u2022 Type any key to exit.\n");
+		PhyML_Printf ("\n. The optimization parameter must be 'tlr' or 'tl' or 'lr' or 'l' or 'r' or 'n'.");
+		PhyML_Printf("\n. Type any key to exit.\n");
 		if(!scanf("%c",&choix)) Exit("\n");
 		Exit("\n");
 	      }
@@ -1373,8 +1373,8 @@ int Read_Command_Line(option *io, int argc, char **argv)
   /*       if(io->mod->s_opt->opt_state_freq) */
   /* 	{ */
   /* 	  char c; */
-  /* 	  PhyML_Printf("\n\u2022 WARNING: nucleotide frequencies must be set to 1/4 with this model.\n"); */
-  /* 	  PhyML_Printf("\n\u2022 Type the enter key to resume the analysis.\n"); */
+  /* 	  PhyML_Printf("\n. WARNING: nucleotide frequencies must be set to 1/4 with this model.\n"); */
+  /* 	  PhyML_Printf("\n. Type the enter key to resume the analysis.\n"); */
   /* 	  scanf("%c",&c); */
   /* 	} */
   /*       io->mod->s_opt->opt_state_freq = 0; */
@@ -1404,22 +1404,22 @@ int Read_Command_Line(option *io, int argc, char **argv)
      (io->mod->s_opt->topo_search == NNI_MOVE) && 
      (io->mod->s_opt->random_input_tree))
     {
-      Warn_And_Exit("\n\u2022 The random starting tree option is only compatible with SPR based search options.\n"); 
+      Warn_And_Exit("\n. The random starting tree option is only compatible with SPR based search options.\n"); 
     }
   
   if ((io->datatype == NT) && (io->mod->whichmodel > 10))
     {
       char choix;
-      PhyML_Printf("\n\u2022 Err.: model incompatible with the data type. Please use JC69, K80, F81, HKY, F84, TN93 or GTR\n");
-      PhyML_Printf("\n\u2022 Type any key to exit.\n");
+      PhyML_Printf("\n. Err.: model incompatible with the data type. Please use JC69, K80, F81, HKY, F84, TN93 or GTR\n");
+      PhyML_Printf("\n. Type any key to exit.\n");
       if(!scanf("%c",&choix)) Exit("\n");
       Warn_And_Exit("\n");
     }
   else if ((io->datatype == AA) && (io->mod->whichmodel < 11))
     {
       char choix;
-      PhyML_Printf("\n\u2022 Err.: model incompatible with the data type. Please use LG, Dayhoff, JTT, MtREV, WAG, DCMut, RtREV, CpREV, VT, Blosum62, MtMam, MtArt, HIVw, HIVb or AB.\n");
-      PhyML_Printf("\n\u2022 Type any key to exit.\n");
+      PhyML_Printf("\n. Err.: model incompatible with the data type. Please use LG, Dayhoff, JTT, MtREV, WAG, DCMut, RtREV, CpREV, VT, Blosum62, MtMam, MtArt, HIVw, HIVb or AB.\n");
+      PhyML_Printf("\n. Type any key to exit.\n");
       if(!scanf("%c",&choix)) Exit("\n");
       Exit("\n");
     }
@@ -1513,7 +1513,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
   
   if(io->datatype == AA && io->mod->whichmodel == CUSTOMAA && !io->mod->fp_aa_rate_mat)
     {
-      PhyML_Printf("\n\u2022 Custom model option with amino-acid requires you to specify a rate matrix file through the '--aa_rate_file' option.\n");
+      PhyML_Printf("\n. Custom model option with amino-acid requires you to specify a rate matrix file through the '--aa_rate_file' option.\n");
       Exit("\n");
     }
   

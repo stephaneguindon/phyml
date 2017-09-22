@@ -116,7 +116,7 @@ int main(int argc, char **argv)
       
       if(io->data)
         {
-          if(io->n_data_sets > 1) PhyML_Printf("\n\u2022 Data set [#%d]\n",num_data_set+1);
+          if(io->n_data_sets > 1) PhyML_Printf("\n. Data set [#%d]\n",num_data_set+1);
           cdata = Compact_Data(io->data,io);
 
           Free_Seq(io->data,cdata->n_otu);
@@ -134,7 +134,7 @@ int main(int argc, char **argv)
               for(num_rand_tree=0;num_rand_tree<io->mod->s_opt->n_rand_starts;num_rand_tree++)
                 {
                   if((io->mod->s_opt->random_input_tree) && (io->mod->s_opt->topo_search != NNI_MOVE))
-                    if(!io->quiet) PhyML_Printf("\n\n\u2022 [Random start %3d/%3d]",num_rand_tree+1,io->mod->s_opt->n_rand_starts);
+                    if(!io->quiet) PhyML_Printf("\n\n. [Random start %3d/%3d]",num_rand_tree+1,io->mod->s_opt->n_rand_starts);
 
                   Init_Model(cdata,mod,io);
 
@@ -151,7 +151,7 @@ int main(int argc, char **argv)
                     {
                       char *s;
 
-                      PhyML_Printf("\n\u2022 Reading constraint tree file...");
+                      PhyML_Printf("\n. Reading constraint tree file...");
                       
                       io->cstr_tree = Read_Tree_File_Phylip(io->fp_in_constraint_tree);
 
@@ -254,7 +254,7 @@ int main(int argc, char **argv)
                   Lk(NULL,tree);
                   Pars(NULL,tree);
                   Get_Tree_Size(tree);
-                  PhyML_Printf("\n\n\u2022 Log likelihood of the current tree: %f.",tree->c_lnL);
+                  PhyML_Printf("\n\n. Log likelihood of the current tree: %f.",tree->c_lnL);
 
                           
                   if(tree->io->ancestral == YES) Ancestral_Sequences(tree,YES);
@@ -269,7 +269,7 @@ int main(int argc, char **argv)
 
 #elif defined EVOLVE
                   Evolve(tree->data,tree->mod,tree);
-                  Exit("\n\u2022 Exiting 'evolve'\n");
+                  Exit("\n. Exiting 'evolve'\n");
 #endif
 
                   if(!tree->n_root) Get_Best_Root_Position(tree);
@@ -319,16 +319,16 @@ int main(int argc, char **argv)
               /* Launch bootstrap analysis */
               if(mod->bootstrap)
                 {
-                  if(!io->quiet) PhyML_Printf("\n\n\u2022 Launch bootstrap analysis on the most likely tree...");
+                  if(!io->quiet) PhyML_Printf("\n\n. Launch bootstrap analysis on the most likely tree...");
 
 #ifdef MPI
                   MPI_Bcast (most_likely_tree, strlen(most_likely_tree)+1, MPI_CHAR, 0, MPI_COMM_WORLD);
-                  if(!io->quiet)  PhyML_Printf("\n\n\u2022 The bootstrap analysis will use %d CPUs.",Global_numTask);
+                  if(!io->quiet)  PhyML_Printf("\n\n. The bootstrap analysis will use %d CPUs.",Global_numTask);
 #endif
                   
                   most_likely_tree = Bootstrap_From_String(most_likely_tree,cdata,mod,io);
 
-                  PhyML_Printf("\n\n\u2022 Completed the bootstrap analysis succesfully."); fflush(NULL);
+                  PhyML_Printf("\n\n. Completed the bootstrap analysis succesfully."); fflush(NULL);
                 }
               else
                 if(io->ratio_test != NO)
@@ -338,7 +338,7 @@ int main(int argc, char **argv)
                   }
 
               /* Print the most likely tree in the output file */
-              if(!io->quiet) PhyML_Printf("\n\n\u2022 Printing the most likely tree in file '%s'.", Basename(io->out_tree_file));
+              if(!io->quiet) PhyML_Printf("\n\n. Printing the most likely tree in file '%s'.", Basename(io->out_tree_file));
               if(io->n_data_sets == 1) rewind(io->fp_out_tree);
               PhyML_Fprintf(io->fp_out_tree,"%s\n",most_likely_tree);
 
@@ -357,7 +357,7 @@ int main(int argc, char **argv)
 
   if(most_likely_tree) Free(most_likely_tree);
 
-  if(mod->s_opt->n_rand_starts > 1) PhyML_Printf("\n\u2022 Best log likelihood: %f\n",best_lnL);
+  if(mod->s_opt->n_rand_starts > 1) PhyML_Printf("\n. Best log likelihood: %f\n",best_lnL);
 
   Free_Optimiz(mod->s_opt);
   M4_Free_M4_Model(mod->m4mod);
@@ -435,7 +435,7 @@ int main(int argc, char **argv)
 
   For(i,2*tree1->n_otu-2)
     {
-      printf("\n\u2022 Node %d in tree1 matches node %d in tree2",i,(tree1->noeud[i]->match_node)?(tree1->noeud[i]->match_node->num):(-1));
+      printf("\n. Node %d in tree1 matches node %d in tree2",i,(tree1->noeud[i]->match_node)?(tree1->noeud[i]->match_node->num):(-1));
     }
 
 
@@ -465,7 +465,7 @@ int main(int argc, char **argv)
 /*   Get_Bip(tree1->noeud[0],tree1->noeud[0]->v[0],tree1); */
 /*   Get_Bip(tree2->noeud[0],tree2->noeud[0]->v[0],tree2); */
 
-/* /\*   PhyML_Printf("\n\u2022 rf=%f\n",Compare_Bip_On_Existing_Edges(thresh,tree1,tree2)); *\/ */
+/* /\*   PhyML_Printf("\n. rf=%f\n",Compare_Bip_On_Existing_Edges(thresh,tree1,tree2)); *\/ */
 /*   For(i,2*tree1->n_otu-3) tree1->a_edges[i]->bip_score = 0; */
 /*   For(i,2*tree2->n_otu-3) tree2->a_edges[i]->bip_score = 0; */
 
@@ -511,12 +511,12 @@ int main(int argc, char **argv)
 
 /*   if(!n_edges) */
 /*     { */
-/*       Exit("\n\u2022 No comparable internal edges were found.\n"); */
+/*       Exit("\n. No comparable internal edges were found.\n"); */
 /*     } */
 /*   else */
 /*     { */
-/*       PhyML_Printf("\n\u2022 Robinson and Foulds distance: %f.",(double)rf/(n_edges)); */
-/* /\*       PhyML_Printf("\n\u2022 %d internal edges were processed (%d in the first tree, %d in the second).\n",n_edges,n_edges_t1,n_edges-n_edges_t1); *\/ */
+/*       PhyML_Printf("\n. Robinson and Foulds distance: %f.",(double)rf/(n_edges)); */
+/* /\*       PhyML_Printf("\n. %d internal edges were processed (%d in the first tree, %d in the second).\n",n_edges,n_edges_t1,n_edges-n_edges_t1); *\/ */
 /*       PhyML_Printf("\n"); */
 /*     } */
 

@@ -831,8 +831,8 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
     rates->model_log_rates = NO;
   else
     {
-      PhyML_Fprintf(stderr,"\n\u2022 Please initialize model properly.");
-      PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n. Please initialize model properly.");
+      PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 
@@ -1377,7 +1377,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
           For (i,mod->ns*mod->ns) mod->eigen->l_e_vect[i] = mod->eigen->r_e_vect[i];
           if(!Matinv(mod->eigen->l_e_vect,mod->eigen->size,mod->eigen->size,YES))
             {
-              PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d.",__FILE__,__LINE__);
+              PhyML_Fprintf(stderr,"\n. Err in file %s at line %d.",__FILE__,__LINE__);
               Exit("\n");
             }
           
@@ -1386,8 +1386,8 @@ void Init_Model(calign *data, t_mod *mod, option *io)
         }
       else
         {
-          if (result==-1) PhyML_Printf("\n\u2022 Eigenvalues/vectors computation does not converge : computation cancelled");
-          else if (result==1) PhyML_Printf("\n\u2022 Complex eigenvalues/vectors : computation cancelled");
+          if (result==-1) PhyML_Printf("\n. Eigenvalues/vectors computation does not converge : computation cancelled");
+          else if (result==1) PhyML_Printf("\n. Complex eigenvalues/vectors : computation cancelled");
         }
     }
   else if(mod->io->datatype == GENERIC)
@@ -1402,8 +1402,8 @@ void Init_Model(calign *data, t_mod *mod, option *io)
     }
   else
     {
-      PhyML_Fprintf(stderr,"\n\u2022 Datatype not recognized.\n");
-      PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n. Datatype not recognized.\n");
+      PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 
@@ -3413,8 +3413,8 @@ void M4_Init_Model(m4 *m4mod, calign *data, t_mod *mod)
   else if(mod->io->datatype == AA) m4mod->n_o = 20;
   else
     {
-      PhyML_Fprintf(stderr,"\n\u2022 Not implemented yet.");
-      PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n. Not implemented yet.");
+      PhyML_Fprintf(stderr,"\n. Err in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 

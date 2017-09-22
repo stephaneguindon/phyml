@@ -289,7 +289,7 @@ void Bootstrap_MPI(t_tree *tree)
             fprintf(tree->io->fp_out_boot_tree,"%s\n",s);
             fprintf(tree->io->fp_out_boot_stats,"%s\n",t);
             bootRecv++;
-            PhyML_Printf("\u2022");
+            PhyML_Printf(".");
 	    if(!((bootRecv)%tree->io->boot_prog_every)) 
 	      {
 		PhyML_Printf("] %4d/%4d\n  ",bootRecv,tree->mod->bootstrap);
@@ -326,7 +326,7 @@ void Bootstrap_MPI(t_tree *tree)
 		  fprintf(tree->io->fp_out_boot_stats,"%s\n", bootStr);
 		
 		bootRecv++;
-		PhyML_Printf("\u2022");
+		PhyML_Printf(".");
 		if(!((bootRecv)%tree->io->boot_prog_every)) {
 		  PhyML_Printf("] %4d/%4d\n  ",bootRecv,tree->mod->bootstrap);
 		  if(bootRecv != tree->mod->bootstrap) PhyML_Printf("[");

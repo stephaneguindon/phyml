@@ -919,7 +919,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
           move->lnL = Triple_Dist(move->n_link,tree);
           MIXT_Set_Alias_Subpatt(NO,tree);
 
-          /* printf("\n\u2022 %d/%d move->lnL= %f best_lnL=%f absolute_best=%f",i,list_size,move->lnL,best_lnL,tree->best_lnL); */
+          /* printf("\n. %d/%d move->lnL= %f best_lnL=%f absolute_best=%f",i,list_size,move->lnL,best_lnL,tree->best_lnL); */
           
           /* Record updated branch lengths for this move */
           dir_v1 = dir_v2 = dir_v0 = -1;
@@ -979,7 +979,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
           tree->c_lnL = init_lnL;
         }
       
-      /* PhyML_Printf("\n\u2022 [ %4d/%4d ] %f %f %s", */
+      /* PhyML_Printf("\n. [ %4d/%4d ] %f %f %s", */
       /*              i,list_size,tree->best_lnL,move->lnL, */
       /*              (move->lnL > tree->best_lnL + tree->mod->s_opt->min_diff_lk_move) ? "**" : ""); */
 
@@ -992,7 +992,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
         }
     }
   
-  /*   PhyML_Printf("\n\u2022 max_improv = %f",max_improv); */
+  /*   PhyML_Printf("\n. max_improv = %f",max_improv); */
   
   
   if(better_found == NO)
@@ -1461,7 +1461,7 @@ void Spr_Pars(int threshold, int n_round_max, t_tree *tree)
 {  
   int curr_pars,round;
 
-  if(tree->verbose > VL2 && tree->io->quiet == NO) PhyML_Printf("\n\u2022 Minimizing parsimony...\n");
+  if(tree->verbose > VL2 && tree->io->quiet == NO) PhyML_Printf("\n. Minimizing parsimony...\n");
 
   tree->best_pars                  = 1E+8;
   tree->best_lnL                   = UNLIKELY;
@@ -1487,7 +1487,7 @@ void Spr_Shuffle(t_tree *mixt_tree)
   int *orig_catg,n,n_iter;
   t_tree *tree,**tree_list;
 
-  if(mixt_tree->verbose > VL0) PhyML_Printf("\n\n\u2022 Refining the tree...\n");
+  if(mixt_tree->verbose > VL0) PhyML_Printf("\n\n. Refining the tree...\n");
 
   /*! Get the number of classes in each mixture */
   orig_catg = MIXT_Get_Number_Of_Classes_In_All_Mixtures(mixt_tree);
@@ -1575,7 +1575,7 @@ void Spr_Shuffle(t_tree *mixt_tree)
 
   if(mixt_tree->verbose > VL0 && mixt_tree->io->quiet == NO)
     {
-      PhyML_Printf("\n\n\u2022 End of refining stage...\n");
+      PhyML_Printf("\n\n. End of refining stage...\n");
     }
 
   /*! Go back to the original data structure, with potentially more
@@ -1785,8 +1785,8 @@ void Spr_List_Of_Trees(t_tree *tree)
   Round_Optimize(tree,10);
 
   best_lnL = tree->c_lnL;
-  if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n\u2022 Score of initial tree: %12.2f",tree->c_lnL);
-  if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n\u2022 Building a list of starting trees (NNI search)...\n");
+  if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Score of initial tree: %12.2f",tree->c_lnL);
+  if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Building a list of starting trees (NNI search)...\n");
 
   list_size = 0;
   do
@@ -1813,7 +1813,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       if(tree->c_lnL > best_lnL)
         {
           best_lnL = tree->c_lnL;
-          if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf(" \u2022");
+          if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf(" .");
           if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace);
         }
       
@@ -1830,7 +1830,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   
   rk = Ranks(lnL_list,max_list_size);
 
-  if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n\u2022 Fast optimisation of the best trees (SPR search)...\n");
+  if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Fast optimisation of the best trees (SPR search)...\n");
   list_size = 0;
   n_trees   = 0;
   do
@@ -1878,7 +1878,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       if(tree->c_lnL > best_lnL)
         {
           best_lnL = tree->c_lnL;
-          if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf(" \u2022");
+          if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf(" .");
           if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace);
         }
 
@@ -1898,7 +1898,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   Free(rk);
   rk = Ranks(lnL_list,max_list_size);
 
-  if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n\u2022 Thorough optimisation of the best trees (SPR search)...\n");
+  if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Thorough optimisation of the best trees (SPR search)...\n");
   list_size = 0;
   n_trees   = 0;
   do
@@ -1937,7 +1937,7 @@ void Spr_List_Of_Trees(t_tree *tree)
           if(tree->c_lnL > best_lnL)
             {
               best_lnL = tree->c_lnL;
-              if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf(" \u2022");
+              if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf(" .");
               if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace);
             }
           if(tree->verbose > VL0 && tree->io->quiet == NO)
@@ -1960,7 +1960,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   Copy_Tree(tree_list[rk[0]],tree);
 
   
-  if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n\u2022 Final optimisation steps...\n");
+  if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Final optimisation steps...\n");
 
   i = tree->verbose;
   tree->verbose = VL0;
@@ -2222,7 +2222,7 @@ void Prune_Regraft_Time_Tree(t_tree *tree)
                 }
               else
                 {
-                  PhyML_Printf("\n\u2022 Hill-climbing step :: subtree [%4d/%4d] target [%4d/%4d] lnl: %f delta: %f",
+                  PhyML_Printf("\n. Hill-climbing step :: subtree [%4d/%4d] target [%4d/%4d] lnl: %f delta: %f",
                                i,2*tree->n_otu-2,
                                j,n_regraft_nd,
                                tree->c_lnL,

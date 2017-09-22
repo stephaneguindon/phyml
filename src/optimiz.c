@@ -38,8 +38,8 @@ void Optimize_Single_Param_Generic(t_tree *tree, phydbl *param, phydbl lim_inf, 
 
   if(tree->c_lnL < lk_init - tree->mod->s_opt->min_diff_lk_global)
     {
-      PhyML_Fprintf(stderr,"\n\u2022 %.10f < %.10f --> diff=%.10f param value = %f\n",tree->c_lnL,lk_init,tree->c_lnL-lk_init,*param);
-      Exit("\n\u2022 Optimisation failed !\n");
+      PhyML_Fprintf(stderr,"\n. %.10f < %.10f --> diff=%.10f param value = %f\n",tree->c_lnL,lk_init,tree->c_lnL-lk_init,*param);
+      Exit("\n. Optimisation failed !\n");
     }
 }
 
@@ -294,7 +294,7 @@ phydbl Generic_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol,
   fw=fv=fx=-Lk(NULL,tree);
   init_lnL = -fw;
 
-  /* PhyML_Printf("\n\u2022 init_lnL = %f a=%f b=%f c=%f\n",init_lnL,ax,bx,cx); */
+  /* PhyML_Printf("\n. init_lnL = %f a=%f b=%f c=%f\n",init_lnL,ax,bx,cx); */
 
   for(iter=1;iter<=n_iter_max;iter++)
     {
@@ -308,7 +308,7 @@ phydbl Generic_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol,
       Lk(NULL,tree);
       if(tree->c_lnL < init_lnL - tree->mod->s_opt->min_diff_lk_local)
         {
-          PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
+          PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
           Warn_And_Exit("");
         }
       return tree->c_lnL;
@@ -347,7 +347,7 @@ phydbl Generic_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol,
       (*xmin) = FABS(u);
       fu = -Lk(NULL,tree);
 
-      /* PhyML_Printf("\n\u2022 iter=%d/%d param=%f loglk=%f",iter,BRENT_IT_MAX,*xmin,tree->c_lnL); */
+      /* PhyML_Printf("\n. iter=%d/%d param=%f loglk=%f",iter,BRENT_IT_MAX,*xmin,tree->c_lnL); */
 
 /*       if(fu <= fx) */
       if(fu < fx)
@@ -377,7 +377,7 @@ phydbl Generic_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol,
     }
     }
 
-  Exit("\n\u2022 Too many iterations in Generic_Brent !");
+  Exit("\n. Too many iterations in Generic_Brent !");
   return(-1);
   /* Not Reached ??  *xmin=x;   */
   /* Not Reached ??  return fx; */
@@ -654,9 +654,9 @@ phydbl Br_Len_Brent(t_edge *b, t_tree *tree)
   
   if(lk_end < lk_begin - tree->mod->s_opt->min_diff_lk_local)
     {
-      PhyML_Fprintf(stderr,"\n\u2022 l: %f var:%f",b->l->v,b->l_var->v);
-      PhyML_Fprintf(stderr,"\n\u2022 lk_beg = %f lk_end = %f",lk_begin, lk_end);
-      PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n. l: %f var:%f",b->l->v,b->l_var->v);
+      PhyML_Fprintf(stderr,"\n. lk_beg = %f lk_end = %f",lk_begin, lk_end);
+      PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d",__FILE__,__LINE__);
       Exit("\n");
     }
 
@@ -693,12 +693,12 @@ void Round_Optimize(t_tree *tree, int n_round_max)
         }
 
       lk_new = tree->c_lnL;
-      /* printf("\n\u2022 [%d] new:%f old:%f each:%d",n_round,lk_new,lk_old,each); fflush(NULL); */
+      /* printf("\n. [%d] new:%f old:%f each:%d",n_round,lk_new,lk_old,each); fflush(NULL); */
 
       if(lk_new < lk_old - tree->mod->s_opt->min_diff_lk_local)
         {
-          PhyML_Fprintf(stderr,"\n\u2022 lk_new = %f lk_old = %f diff = %f",lk_new,lk_old,lk_new-lk_old);
-          Exit("\n\u2022 Optimisation failed ! (Round_Optimize)\n");
+          PhyML_Fprintf(stderr,"\n. lk_new = %f lk_old = %f diff = %f",lk_new,lk_old,lk_new-lk_old);
+          Exit("\n. Optimisation failed ! (Round_Optimize)\n");
         }
       
       if((FABS(lk_new - lk_old) < tree->mod->s_opt->min_diff_lk_local) && (each == 3)) break;
@@ -736,8 +736,8 @@ void Optimize_Br_Len_Serie(t_tree *tree)
 
       if(tree->c_lnL < lk_init - tree->mod->s_opt->min_diff_lk_local)
         {
-          PhyML_Printf("\n\u2022 %f -- %f",lk_init,tree->c_lnL);
-          PhyML_Printf("\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
+          PhyML_Printf("\n. %f -- %f",lk_init,tree->c_lnL);
+          PhyML_Printf("\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
         }
 
       if((tree->io->quiet)?(0):(tree->verbose > VL2))
@@ -774,7 +774,7 @@ void Optimize_Br_Len_Serie(t_tree *tree)
 
   if(lk_end < lk_init - tree->mod->s_opt->min_diff_lk_local)
     {
-      PhyML_Fprintf(stderr,"\n\u2022 lk_init: %f lk_end: %f",lk_init,lk_end);
+      PhyML_Fprintf(stderr,"\n. lk_init: %f lk_end: %f",lk_init,lk_end);
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
     }
 }
@@ -803,7 +803,7 @@ void Optimize_Br_Len_Multiplier(t_tree *mixt_tree, int verbose)
 
           if(Get_Lk(tree) < lk_init - tree->mod->s_opt->min_diff_lk_local)
             {
-              PhyML_Fprintf(stderr,"\n\u2022 %f -- %f",lk_init,tree->c_lnL);
+              PhyML_Fprintf(stderr,"\n. %f -- %f",lk_init,tree->c_lnL);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
         }
@@ -847,7 +847,7 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
 
       if(tree->c_lnL < lk_init - tree->mod->s_opt->min_diff_lk_local)
         {
-          PhyML_Fprintf(stderr,"\n\u2022 %f -- %f",lk_init,tree->c_lnL);
+          PhyML_Fprintf(stderr,"\n. %f -- %f",lk_init,tree->c_lnL);
           Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
         }
 
@@ -858,9 +858,9 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
 
   if(tree->c_lnL < lk_init - tree->mod->s_opt->min_diff_lk_local)
     {
-      PhyML_Fprintf(stderr,"\n\u2022 %f -- %f",lk_init,tree->c_lnL);
-      PhyML_Fprintf(stderr,"\n\u2022 Edge: %d",b_fcus->num);
-      PhyML_Fprintf(stderr,"\n\u2022 is_mixt_tree: %d",tree->is_mixt_tree);
+      PhyML_Fprintf(stderr,"\n. %f -- %f",lk_init,tree->c_lnL);
+      PhyML_Fprintf(stderr,"\n. Edge: %d",b_fcus->num);
+      PhyML_Fprintf(stderr,"\n. is_mixt_tree: %d",tree->is_mixt_tree);
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
     }
 
@@ -1214,13 +1214,13 @@ void BFGS(t_tree *tree,
   fp=(*func)(tree);
   if(logt == YES) for(i=0;i<n;i++) p[i] = log(p[i]);
   
-  /* PhyML_Printf("\n\u2022 ENTER BFGS WITH: %f\n",fp); */
+  /* PhyML_Printf("\n. ENTER BFGS WITH: %f\n",fp); */
   
   fp_old = fp;
   
   (*dfunc)(tree,p,n,step_size,logt,func,g,is_positive);
   
-  /* PhyML_Printf("\n\u2022 BFGS step_size: %f",step_size); */
+  /* PhyML_Printf("\n. BFGS step_size: %f",step_size); */
 
   for (i=0;i<n;i++)
     {
@@ -1228,13 +1228,13 @@ void BFGS(t_tree *tree,
       hessin[i][i]=1.0;
       xi[i] = -g[i];
       sum += p[i]*p[i];
-      /* PhyML_Printf("\n\u2022 BFGS x[%d]: %f p[i]: %f",i,xi[i],p[i]); */
+      /* PhyML_Printf("\n. BFGS x[%d]: %f p[i]: %f",i,xi[i],p[i]); */
     }
   
   stpmax=STPMX*MAX(SQRT(sum),(phydbl)n);
   for(its=1;its<=ITMAX;its++)
     {
-      /* PhyML_Printf("\n\u2022 BFGS -> %f stpmax: %f\n",tree->c_lnL,stpmax); */
+      /* PhyML_Printf("\n. BFGS -> %f stpmax: %f\n",tree->c_lnL,stpmax); */
       
       lnsrch(tree,n,p,fp,g,xi,pnew,&fret,stpmax,&check,logt,is_positive);
       
@@ -1251,7 +1251,7 @@ void BFGS(t_tree *tree,
       for (i=0;i<n;i++)
         {
           temp=xi[i]/MAX(p[i],1.0);
-          /* printf("\n\u2022 x[i]=%f p[i]=%f",xi[i],p[i]); */
+          /* printf("\n. x[i]=%f p[i]=%f",xi[i],p[i]); */
           if (temp > test) test=temp;
         }
       if (test < TOLX || (FABS(fp-fp_old) < difff && its > 1))
@@ -1355,7 +1355,7 @@ void BFGS(t_tree *tree,
         for (j=0;j<n;j++) xi[i] -= hessin[i][j]*g[j];
       }
     }
-  /*   PhyML_Printf("\n\u2022 Too many iterations in BFGS...\n"); */
+  /*   PhyML_Printf("\n. Too many iterations in BFGS...\n"); */
   *failed = YES;
   for(i=0;i<n;i++) Free(hessin[i]);
   free(hessin);
@@ -1440,7 +1440,7 @@ void BFGS_Nonaligned(t_tree *tree,
     {
       lnsrch_nonaligned(tree,n,p,fp,g,xi,pnew,&fret,stpmax,&check,logt,is_positive);
 
-      /* PhyML_Printf("\n\u2022 BFGS -> %f\n",tree->c_lnL); */
+      /* PhyML_Printf("\n. BFGS -> %f\n",tree->c_lnL); */
 
       fp_old = fp;
       fp = fret;
@@ -1455,7 +1455,7 @@ void BFGS_Nonaligned(t_tree *tree,
       for (i=0;i<n;i++)
         {
           temp=xi[i]/MAX(*(p[i]),1.0);
-          /* printf("\n\u2022 x[i]=%G p[i]=%f",xi[i],*(p[i])); */
+          /* printf("\n. x[i]=%G p[i]=%f",xi[i],*(p[i])); */
           if (temp > test) test=temp;
         }
 
@@ -1561,7 +1561,7 @@ void BFGS_Nonaligned(t_tree *tree,
           for (j=0;j<n;j++) xi[i] -= hessin[i][j]*g[j];
         }
     }
-  PhyML_Printf("\n\u2022 Too many iterations in BFGS...\n");
+  PhyML_Printf("\n. Too many iterations in BFGS...\n");
   *failed = YES;
   for(i=0;i<n;i++) Free(hessin[i]);
   free(hessin);
@@ -1602,12 +1602,12 @@ int Lnsrch(t_tree *tree, int n, phydbl *xold, phydbl fold,
   *check=0;
   for(sum=0.0,i=0;i<n;i++) sum += p[i]*p[i];
   sum=SQRT(sum);
-  /* PhyML_Printf("\n\u2022 lnsrch sum: %f",sum); */
+  /* PhyML_Printf("\n. lnsrch sum: %f",sum); */
   if(sum > stpmax) for(i=0;i<n;i++) p[i] *= stpmax/sum;
-  /* for(i=0;i<n;i++) PhyML_Printf("\n\u2022 lnsrch p[i]: %f",p[i]); */
+  /* for(i=0;i<n;i++) PhyML_Printf("\n. lnsrch p[i]: %f",p[i]); */
   slope=0.0;
   for(i=0;i<n;i++) slope += g[i]*p[i];
-  /* PhyML_Printf("\n\u2022 lnsrch slope: %f",slope); */
+  /* PhyML_Printf("\n. lnsrch slope: %f",slope); */
   test=0.0;
   for(i=0;i<n;i++)
     {
@@ -1622,17 +1622,17 @@ int Lnsrch(t_tree *tree, int n, phydbl *xold, phydbl fold,
         {
           x[i]=local_xold[i]+alam*p[i];
           xold[i] = x[i];
-          /* PhyML_Printf("\n\u2022 lnsrch x[i]: %f",x[i]); */
+          /* PhyML_Printf("\n. lnsrch x[i]: %f",x[i]); */
         }
       
-      /* PhyML_Printf("\n\u2022 lnsrch loop slope: %f alam: %f alam2: %f",slope,alam,alam2); */
+      /* PhyML_Printf("\n. lnsrch loop slope: %f alam: %f alam2: %f",slope,alam,alam2); */
       
       if(i==n)
         {
           if(logt == YES) for(i=0;i<n;i++) xold[i] = exp(MIN(1.E+2,xold[i]));
           for(i=0;i<n;i++) sign[i] = xold[i] < .0 ? -1. : 1.;
           if(is_positive == YES) for(i=0;i<n;i++) xold[i] = FABS(xold[i]);
-          /* for(i=0;i<n;i++) PhyML_Printf("\n\u2022 <<>> %f",xold[i]); */
+          /* for(i=0;i<n;i++) PhyML_Printf("\n. <<>> %f",xold[i]); */
           *f=Return_Abs_Lk(tree);
           if(is_positive == YES) for(i=0;i<n;i++) xold[i] *= sign[i];
           if(logt == YES) for(i=0;i<n;i++) xold[i] = log(xold[i]);
@@ -1895,7 +1895,7 @@ phydbl Dist_F_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol, int n_iter_max,
   fw = fv = fx = -Lk_Dist(F,FABS(bx),mod);
   curr_lnL = init_lnL = -fw;
   
-  /* printf("\n\u2022 bx=%f f: %f %f %f %f fx: %f",bx,mod->e_frq->pi->v[0],mod->e_frq->pi->v[1],mod->e_frq->pi->v[2],mod->e_frq->pi->v[3],fx); */
+  /* printf("\n. bx=%f f: %f %f %f %f fx: %f",bx,mod->e_frq->pi->v[0],mod->e_frq->pi->v[1],mod->e_frq->pi->v[2],mod->e_frq->pi->v[3],fx); */
   assert(isnan(fx) == FALSE);
   assert(isinf(fx) == FALSE);
 
@@ -1982,7 +1982,7 @@ phydbl Dist_F_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol, int n_iter_max,
         }
     }
   
-  Exit("\n\u2022 Too many iterations in Dist_F_Brent !\n");
+  Exit("\n. Too many iterations in Dist_F_Brent !\n");
   return(-1);
 }
 
@@ -2171,7 +2171,7 @@ phydbl Missing_Dist_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol, int n_ite
         }
     }
     }
-  Exit("\n\u2022 Too many iterations in Missing_Dist_Brent !");
+  Exit("\n. Too many iterations in Missing_Dist_Brent !");
   return(-1);
 }
 
@@ -2323,7 +2323,7 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
   
       if(isnan(*l) == TRUE)
         {
-          PhyML_Printf("\n\n\u2022 dl=%f d2l:%f",dl,d2l);
+          PhyML_Printf("\n\n. dl=%f d2l:%f",dl,d2l);
           assert(FALSE);
         }
       
@@ -2354,7 +2354,7 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
   /* Set_Use_Eigen_Lr(NO,tree); */
   /* tree->c_lnL = Lk(b,tree); */
 
-  /* printf("\n\u2022 init: %f current: %f l: %f",init_lnL,tree->c_lnL,b->l->v); */
+  /* printf("\n. init: %f current: %f l: %f",init_lnL,tree->c_lnL,b->l->v); */
   /* Exit("\n"); */
   /* assert(best_lnL > init_lnL-tol); */
   
@@ -2389,7 +2389,7 @@ phydbl Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
   if(logt == YES) (*param) = log(*param);
   init_lnL = old_lnL = fw;
   
-  /* PhyML_Printf("\n\u2022 %p %p %p init_lnL=%f fu=%f ax=%f cx=%f param=%f",branch,tree,stree,init_lnL,fu,ax,cx,*param); */
+  /* PhyML_Printf("\n. %p %p %p init_lnL=%f fu=%f ax=%f cx=%f param=%f",branch,tree,stree,init_lnL,fu,ax,cx,*param); */
   
   for(iter=1;iter<=BRENT_IT_MAX;iter++)
     {
@@ -2402,7 +2402,7 @@ phydbl Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
           if(logt == YES) (*param) = exp(MIN(1.E+2,*param));
           fu = (*obj_func)(branch,tree,stree);
           if(logt == YES) (*param) = log(*param);
-          /* printf("\n\u2022 return %f [%f] %d",fu,*param,iter); */
+          /* printf("\n. return %f [%f] %d",fu,*param,iter); */
           return fu;
         }
 
@@ -2412,7 +2412,7 @@ phydbl Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
           if(logt == YES) (*param) = exp(MIN(1.E+2,*param));
           fu = (*obj_func)(branch,tree,stree);
           if(logt == YES) (*param) = log(*param);
-          /* printf("\n\u2022 return %f [%f] %d",*param,fu,iter); */
+          /* printf("\n. return %f [%f] %d",*param,fu,iter); */
           return fu;
         }
 
@@ -2429,20 +2429,20 @@ phydbl Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
           if(FABS(p) >= FABS(0.5*q*etemp) || p <= q*(a-x) || p >= q*(b-x))
             {
               d=BRENT_CGOLD*(e=(x >= xm ? a-x : b-x));
-              /* PhyML_Printf("\n\u2022 Golden section step"); */
+              /* PhyML_Printf("\n. Golden section step"); */
             }
           else
             {
               d=p/q;
               u=x+d;
               if (u-a < tol2 || b-u < tol2) d=SIGN(tol1,xm-x);
-              /* PhyML_Printf("\n\u2022 Parabolic step [e=%f]",e); */
+              /* PhyML_Printf("\n. Parabolic step [e=%f]",e); */
             }
         }
       else
         {
           d=BRENT_CGOLD*(e=(x >= xm ? a-x : b-x));
-          /* PhyML_Printf("\n\u2022 Golden section step (default) [e=%f tol1=%f a=%f b=%f d=%f x=%f]",e,tol1,a,b,d,x); */
+          /* PhyML_Printf("\n. Golden section step (default) [e=%f tol1=%f a=%f b=%f d=%f x=%f]",e,tol1,a,b,d,x); */
         }
 
       u=(FABS(d) >= tol1 ? x+d : x+SIGN(tol1,d));
@@ -2451,7 +2451,7 @@ phydbl Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
       if(logt == YES) (*param) = exp(MIN(1.E+2,*param));
       fu = -(*obj_func)(branch,tree,stree);
       if(logt == YES) (*param) = log(*param);
-      /* PhyML_Printf("\n\u2022 iter=%d/%d param=%f lnL=%f u: %f x: %f d: %f logt: %d",iter,BRENT_IT_MAX,*param,fu,u,x,d,logt); */
+      /* PhyML_Printf("\n. iter=%d/%d param=%f lnL=%f u: %f x: %f d: %f logt: %d",iter,BRENT_IT_MAX,*param,fu,u,x,d,logt); */
 
       if(fu <= fx)
         {
@@ -2478,7 +2478,7 @@ phydbl Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
         }
     }
 
-  Exit("\n\u2022 Too many iterations in Generic_Brent_Lk !");
+  Exit("\n. Too many iterations in Generic_Brent_Lk !");
   return(-1);
   /* Not Reached ??  *param=x;   */
   /* Not Reached ??  return fx; */
@@ -2516,7 +2516,7 @@ void Round_Optimize_Node_Heights(t_tree *tree)
                        tree->mod->s_opt->quickdirty,
                        Wrap_Lk,NULL,tree,NULL,NO);
 
-      printf("\n\u2022 cur_lnL=%f new_lnL=%f clock_r=%G root height=%f",
+      printf("\n. cur_lnL=%f new_lnL=%f clock_r=%G root height=%f",
          cur_lnL,new_lnL,tree->rates->clock_r,tree->rates->nd_t[tree->n_root->num]);
       new_lnL = tree->c_lnL;
       n_iter++;
@@ -2584,7 +2584,7 @@ void Opt_Node_Heights_Recurr_Pre(t_node *a, t_node *d, t_tree *tree)
 
       if(t_min > t_max)
         {
-          PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n",__FILE__,__LINE__);
+          PhyML_Fprintf(stderr,"\n. Err in file %s at line %d\n",__FILE__,__LINE__);
           Exit("\n");
         }
 
@@ -2595,7 +2595,7 @@ void Opt_Node_Heights_Recurr_Pre(t_node *a, t_node *d, t_tree *tree)
                        tree->mod->s_opt->quickdirty,
                        Wrap_Lk,NULL,tree,NULL,NO);
 
-      /* printf("\n\u2022 t%d = %f [%f;%f] lnL = %f",d->num,tree->rates->nd_t[d->num],t_min,t_max,tree->c_lnL); */
+      /* printf("\n. t%d = %f [%f;%f] lnL = %f",d->num,tree->rates->nd_t[d->num],t_min,t_max,tree->c_lnL); */
 
     }
 }
@@ -2892,8 +2892,8 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
 
               if(lk_after < lk_before - tree->mod->s_opt->min_diff_lk_global)
                 {
-                  PhyML_Fprintf(stderr,"\n\u2022 lk_before: %f lk_after: %f diff: %G",lk_before,lk_after,lk_before-lk_after);
-                  PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
+                  PhyML_Fprintf(stderr,"\n. lk_before: %f lk_after: %f diff: %G",lk_before,lk_after,lk_before-lk_after);
+                  PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
                   Exit("");
                 }
             }
@@ -2933,8 +2933,8 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
 
               if(lk_after < lk_before - tree->mod->s_opt->min_diff_lk_global)
                 {
-                  PhyML_Fprintf(stderr,"\n\u2022 lk_before: %f lk_after: %f diff: %G",lk_before,lk_after,lk_before-lk_after);
-                  PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
+                  PhyML_Fprintf(stderr,"\n. lk_before: %f lk_after: %f diff: %G",lk_before,lk_after,lk_before-lk_after);
+                  PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
                   Exit("");
                 }
 
@@ -3001,8 +3001,8 @@ void Optimize_Free_Rate_Rr(t_tree *tree, int fast, int verbose)
 
           if(lk_after < lk_before - tree->mod->s_opt->min_diff_lk_global)
             {
-              PhyML_Fprintf(stderr,"\n\u2022 lk_before: %f lk_after: %f diff: %G",lk_before,lk_after,lk_before-lk_after);
-              PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
+              PhyML_Fprintf(stderr,"\n. lk_before: %f lk_after: %f diff: %G",lk_before,lk_after,lk_before-lk_after);
+              PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
               Exit("");
             }
         }
@@ -3045,8 +3045,8 @@ void Optimize_Free_Rate_Rr(t_tree *tree, int fast, int verbose)
 
   if(lk_after < lk_before - tree->mod->s_opt->min_diff_lk_global)
     {
-      PhyML_Fprintf(stderr,"\n\u2022 lk_before: %f lk_after: %f diff: %G",lk_before,lk_after,lk_before-lk_after);
-      PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n. lk_before: %f lk_after: %f diff: %G",lk_before,lk_after,lk_before-lk_after);
+      PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("");
     }
 
@@ -3064,7 +3064,7 @@ void Optimize_Free_Rate_Rr(t_tree *tree, int fast, int verbose)
   /*   } */
   /* fflush(NULL); */
 
-  /* printf("\n\u2022 LK: %f",Lk(NULL,tree)); */
+  /* printf("\n. LK: %f",Lk(NULL,tree)); */
 
   /* int i; */
   /* printf("\n"); */
@@ -3132,8 +3132,8 @@ void Optimize_Free_Rate_Weights(t_tree *tree, int fast, int verbose)
 
   if(lk_after < lk_before - tree->mod->s_opt->min_diff_lk_global)
     {
-      PhyML_Fprintf(stderr,"\n\u2022 lk_before: %f lk_after: %f diff: %G",lk_before,lk_after,lk_before-lk_after);
-      PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n. lk_before: %f lk_after: %f diff: %G",lk_before,lk_after,lk_before-lk_after);
+      PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("");
     }
 

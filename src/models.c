@@ -328,7 +328,7 @@ void PMat_Gamma(phydbl l, t_mod *mod, int pos, phydbl *Pij)
 
   if(shape < 1.E-10)
     {
-      PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 
@@ -498,8 +498,8 @@ void Update_Qmat_Generic(phydbl *rr, phydbl *pi, int ns, phydbl *qmat)
 
   if(rr[(int)(ns*(ns-1)/2)-1] < 0.00001)
     {
-      PhyML_Fprintf(stderr,"\n\u2022 rr[%d]=%f",(int)(ns*(ns-1)/2)-1,rr[(int)(ns*(ns-1)/2)-1]);
-      PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n. rr[%d]=%f",(int)(ns*(ns-1)/2)-1,rr[(int)(ns*(ns-1)/2)-1]);
+      PhyML_Fprintf(stderr,"\n. Err in file %s at line %d\n\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
   
@@ -559,8 +559,8 @@ void Update_Qmat_GTR(phydbl *rr, phydbl *rr_val, int *rr_num, phydbl *pi, phydbl
   for(i=0;i<6;i++)
     if(rr[i] < 0.0)
       {
-        PhyML_Fprintf(stderr,"\n\u2022 rr%d: %f",i,rr[i]);
-        PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d (function '%s').\n",__FILE__,__LINE__,__FUNCTION__);
+        PhyML_Fprintf(stderr,"\n. rr%d: %f",i,rr[i]);
+        PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d (function '%s').\n",__FILE__,__LINE__,__FUNCTION__);
         Exit("");
       }
   for(i=0;i<6;i++) rr[i] /= MAX(rr[5],RR_MIN);
@@ -924,7 +924,7 @@ void Update_Eigen(t_mod *mod)
           For (i,mod->ns*mod->ns) mod->eigen->l_e_vect[i] = mod->eigen->r_e_vect[i];
           while(!Matinv(mod->eigen->l_e_vect, mod->eigen->size, mod->eigen->size,YES))
             {
-	      PhyML_Printf("\n\u2022 Trying Q<-Q*scalar and then Root<-Root/scalar to fix this...\n");
+	      PhyML_Printf("\n. Trying Q<-Q*scalar and then Root<-Root/scalar to fix this...\n");
               scalar += scalar / 3.;
               For(i,mod->eigen->size*mod->eigen->size) mod->r_mat->qmat_buff->v[i]  = mod->r_mat->qmat->v[i];
               For(i,mod->eigen->size*mod->eigen->size) mod->r_mat->qmat_buff->v[i] *= scalar;
@@ -933,12 +933,12 @@ void Update_Eigen(t_mod *mod)
                      mod->eigen->r_e_vect_im,mod->eigen->space);
               if (result == -1)
                 {
-                  PhyML_Fprintf(stderr,"\n\u2022 Eigenvalues/vectors computation did not converge: computation cancelled."); 
+                  PhyML_Fprintf(stderr,"\n. Eigenvalues/vectors computation did not converge: computation cancelled."); 
                   Exit("\n");
                 }
               else if (result == 1)
 		{
-                  PhyML_Fprintf(stderr,"\n\u2022 Complex eigenvalues/vectors: computation cancelled.");
+                  PhyML_Fprintf(stderr,"\n. Complex eigenvalues/vectors: computation cancelled.");
                   Exit("\n");
                 }
 
@@ -946,7 +946,7 @@ void Update_Eigen(t_mod *mod)
               n_iter++;
 	      if(n_iter > 100) 
                 {                  
-                  PhyML_Fprintf(stderr,"\n\u2022 Cannot work out eigen vectors.");
+                  PhyML_Fprintf(stderr,"\n. Cannot work out eigen vectors.");
                   Exit("\n");
                 }
             }

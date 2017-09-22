@@ -124,7 +124,7 @@ void Init_Partial_Pars_Tips(t_tree *tree)
         {
           if(tree->a_nodes[i]->b[0]->rght->tax != 1)
             {
-	      PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
+	      PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
               Exit("\n");
             }
           
@@ -176,7 +176,7 @@ void Init_Ui_Tips(t_tree *tree)
             {
               if(tree->a_nodes[i]->b[0]->rght->tax != 1)
                 {
-                  PhyML_Fprintf(stderr,"\n\u2022 Err. in file %s at line %d\n",__FILE__,__LINE__);
+                  PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
                   Exit("\n");
                 }
               

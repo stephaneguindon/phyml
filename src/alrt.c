@@ -48,7 +48,7 @@ int Check_NNI_Five_Branches(t_tree *tree)
       Update_Dirs(tree);
             
       //Interface output
-      if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n\u2022 Checking for NNIs, optimizing five branches...\n");
+      if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Checking for NNIs, optimizing five branches...\n");
       
       better_found  =  0;
       result        = -1;
@@ -133,7 +133,7 @@ int Check_NNI_Five_Branches(t_tree *tree)
       if((tree->c_lnL < init_lnL - tree->mod->s_opt->min_diff_lk_local) || (tree->c_lnL > init_lnL + tree->mod->s_opt->min_diff_lk_local))
         {
           PhyML_Fprintf(stderr,"\n\n== tree->c_lnL = %f init_lnL = %f.",tree->c_lnL,init_lnL);
-          PhyML_Fprintf(stderr,"\n== Err. in file %s at line %d\n\n\u2022\n",__FILE__,__LINE__);
+          PhyML_Fprintf(stderr,"\n== Err. in file %s at line %d\n\n.\n",__FILE__,__LINE__);
           Warn_And_Exit("\n");
         }
       
@@ -153,7 +153,7 @@ int Check_NNI_Five_Branches(t_tree *tree)
           if(tree->c_lnL < init_lnL)
             {
               PhyML_Fprintf(stderr,"\n\n== tree->c_lnL = %f init_lnL = %f.",tree->c_lnL,init_lnL);
-              PhyML_Fprintf(stderr,"\n== Err. in file %s at line %d\n\n\u2022\n",__FILE__,__LINE__);
+              PhyML_Fprintf(stderr,"\n== Err. in file %s at line %d\n\n.\n",__FILE__,__LINE__);
               Exit("\n");
             }
 
@@ -197,7 +197,7 @@ void aLRT(t_tree *tree)
     default : return;
     }
   
-  if(tree->io->quiet == NO) PhyML_Printf("\n\n\u2022 Calculating fast branch supports (using '%s').",method);
+  if(tree->io->quiet == NO) PhyML_Printf("\n\n. Calculating fast branch supports (using '%s').",method);
   Free(method);
   
   MIXT_Set_Alias_Subpatt(YES,tree);
@@ -800,7 +800,7 @@ void Make_Target_Swap(t_tree *tree, t_edge *b_fcus, int swaptodo)
     }
   if(v3->num < v4->num)
     {
-      PhyML_Fprintf(stderr,"\n\u2022 Err in file %s at line %d\n\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n. Err in file %s at line %d\n\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
 
@@ -869,7 +869,7 @@ void Make_Target_Swap(t_tree *tree, t_edge *b_fcus, int swaptodo)
   //until no significative improvement is detected
 
 
-/*   PhyML_Printf("\n\u2022<< [%3d] l=%f lk_init=%f tree->c_lnL=%f score=%12f v1=%3d v2=%3d v3=%3d v4=%3d >>", */
+/*   PhyML_Printf("\n.<< [%3d] l=%f lk_init=%f tree->c_lnL=%f score=%12f v1=%3d v2=%3d v3=%3d v4=%3d >>", */
 /* 	 b_fcus->num, */
 /* 	 b_fcus->l->v, */
 /* 	 lk_init, */
