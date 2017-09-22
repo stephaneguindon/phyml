@@ -4284,9 +4284,6 @@ phydbl *Rnorm_Multid_Trunc_Constraint(phydbl *mu, phydbl *cov, phydbl *min, phyd
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-
-
 void Integrated_Brownian_Bridge_Moments(phydbl x_beg, phydbl x_end, 
 					phydbl y_beg, phydbl y_end, 
 					phydbl brownian_var, phydbl *mean, phydbl *var)
@@ -4411,7 +4408,7 @@ void Integrated_Brownian_Bridge_Moments(phydbl x_beg, phydbl x_end,
 
 /* Let X'(t) = A + (B-A)t/T + X(t) and X(t) = W(t) + t/T * W(T),
 i.e., X(t) is a Brownian bridge starting at 0 at t=0 and stopping
-at 0 at t=T. X'(t) starts at X'(t)=A at t=0 and stops at X'(t)=B at
+at value 1 at time t=T. X'(t) starts at X'(t)=A at t=0 and stops at X'(t)=B at
 t=T. This function calculates the mean and variance of 
 Z(T) = 1/T \int_0^T exp(X'(t)) dt. It uses a 13th order approximation
 to exp(X) = 1 + X + (1/2!)X^2 + ... (1/10!)X^10

@@ -27,7 +27,7 @@ phydbl String_To_Dbl(char *string)
 
   if(!string)
     {
-      PhyML_Printf("\n. String object empty.");
+      PhyML_Fprintf(stderr,"\n. String object empty.");
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
     }
 
@@ -9262,8 +9262,7 @@ int Scale_Subtree_Rates(t_node *a, phydbl mult, int *n_nodes, t_tree *tree)
 int Scale_Subtree_Rates_Post(t_node *a, t_node *d, phydbl mult, int *n_nodes, t_tree *tree)
 {
 
-  if(tree->rates->model_log_rates == YES) tree->rates->br_r[d->num] += log(mult);
-  else tree->rates->br_r[d->num] *= mult;
+  tree->rates->br_r[d->num] *= mult;
 
   *n_nodes = *n_nodes+1;
   
@@ -11482,7 +11481,11 @@ void Random_Walk_Along_Tree_On_Radius(t_node *a, t_node *d, t_edge *b, phydbl *r
   
   delta = *radius;
 
-  assert(delta > 0.0);
+  if(!(delta > 0.0))
+    {
+      PhyML_Fprintf(stderr,"\n. delta=%G",delta);
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
+    }
   
   (*radius) -= b->l->v;
   if(*radius < 0.0)

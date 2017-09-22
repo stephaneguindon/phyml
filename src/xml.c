@@ -2452,8 +2452,9 @@ void DATE_XML(char *xml_filename)
 
   MIXT_Chain_Cal(mixt_tree);
 
-  mixt_tree->rates->model = GAMMA;
-  
+  mixt_tree->rates->model = GUINDON;
+  mixt_tree->rates->nu    = 1.0E-10;
+
   res = DATE_MCMC(mixt_tree);
 
 

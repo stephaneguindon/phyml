@@ -1557,8 +1557,6 @@ typedef struct __T_Rate {
   phydbl *cur_gamma_prior_mean;
   phydbl *cur_gamma_prior_var;
 
-  int model_log_rates;
-
   short int nd_t_recorded;
   short int br_r_recorded;
 

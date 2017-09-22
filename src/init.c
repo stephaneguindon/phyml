@@ -818,25 +818,6 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
       rates->model = NONE;
     }
 
-
-  if(rates->model == NONE)
-    rates->model_log_rates = NO;
-  else if(rates->model == THORNE)
-    rates->model_log_rates = YES;
-  else if(rates->model == GUINDON)
-    rates->model_log_rates = YES;
-  else if(rates->model == GAMMA)
-    rates->model_log_rates = NO;
-  else if(rates->model == STRICTCLOCK)
-    rates->model_log_rates = NO;
-  else
-    {
-      PhyML_Fprintf(stderr,"\n. Please initialize model properly.");
-      PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
-      Warn_And_Exit("");
-    }
-
-
   rates->met_within_gibbs = NO;
   rates->c_lnL_rates      = UNLIKELY;
   rates->c_lnL_times      = UNLIKELY;
@@ -859,21 +840,8 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
   rates->death_rate_max   = 1.E+0;
   rates->death_rate_pivot = 1.E-1;
 
-  if(rates->model_log_rates == YES)
-    {
-      rates->max_rate  =  log(10.);
-      rates->min_rate  = -log(10.);
-      /* rates->max_rate  =  MDBL_MAX; */
-      /* rates->min_rate  = -MDBL_MAX; */
-    }
-  else
-    {
-      rates->max_rate  = 100.0;
-      rates->min_rate  = 0.001;
-    }
-  /* rates->max_rate         = 6.0; */
-  /* rates->min_rate         = 0.0; */
-
+  rates->max_rate  = 100.0;
+  rates->min_rate  = 0.001;
 
   rates->clock_r       = 1.E-4;
   rates->min_clock     = 1.E-10;
@@ -920,18 +888,10 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
           rates->cur_l[i]  = 0.01;
         }
       
-      For(i,2*n_otu-1)
+      for(i=0;i<2*n_otu-1;++i)
         {
-          if(rates->model_log_rates == YES)
-            {
-              rates->nd_r[i]   = 0.0;
-              rates->br_r[i]   = 0.0;
-            }
-          else
-            {
-              rates->nd_r[i]   = 1.0;
-              rates->br_r[i]   = 1.0;
-            }
+          rates->nd_r[i]   = 1.0;
+          rates->br_r[i]   = 1.0;
           
           rates->mean_t[i] = 0.0;
           rates->nd_t[i]   = 0.0;

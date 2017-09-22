@@ -304,78 +304,9 @@ phydbl RATES_Lk_Rates_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl n
     {
     case THORNE :
       {
-	int err;	
-
-	if(tree->rates->model_log_rates == YES)
-	  {
-
-	    br_r_d += logcr;
-	    br_r_a += logcr;
-	    min_r  += logcr;
-	    max_r  += logcr;
-
-	    sd   = SQRT(tree->rates->nu*dt_d);
-	    mean = br_r_a - .5*sd*sd;
-
-	    log_dens = Log_Dnorm_Trunc(br_r_d,mean,sd,min_r,max_r,&err);
-
-	    if(err)
-	      {
-		PhyML_Fprintf(stderr,"\n. Run: %d",tree->mcmc->run);
-		PhyML_Fprintf(stderr,"\n. br_r_d = %f br_r_a = %f dt_d = %f logcr = %f",br_r_d,br_r_a,dt_d,logcr);
-		PhyML_Fprintf(stderr,"\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-		Exit("\n");
-	      }
-	  }
-	else
-	  {
-	    PhyML_Fprintf(stderr,"\n. Not implemented yet.");
-	    PhyML_Fprintf(stderr,"\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-	    Exit("\n");
-	  }
-
-	/* int err; */
-	/* phydbl cr; */
-	/* phydbl min_r, max_r; */
-
-	/* cr = tree->rates->clock_r; */
-	/* min_r = tree->rates->min_rate * cr; */
-	/* max_r = tree->rates->max_rate * cr; */
-
-	/* /\* !!!!!!!!!!!!1 *\/ */
-	/* br_r_d *= cr; */
-	/* br_r_a *= cr; */
-
-	/* err = NO; */
-	
-	/* /\* if(dt_d < 5.0) dt_d = 5.0; *\/ */
-
-	/* sd = SQRT(dt_d*tree->rates->nu); */
-
- 	/* /\* sd   = SQRT(dt_d*exp(tree->rates->nu)); *\/ */
-	/* /\* mean = log(br_r_a) - .5*sd*sd; *\/ */
-
-	/* if(tree->rates->model_log_rates == YES) */
-	/*   { */
-	/*     mean = br_r_a - .5*sd*sd; */
-	/*   } */
-	/* else */
-	/*   { */
-	/*     mean = br_r_a; */
-	/*   } */
-
-	/* log_dens = Log_Dnorm_Trunc(br_r_d,mean,sd,min_r,max_r,&err); */
-
-	/* if(err || isnan(log_dens) || isinf(log_dens)) */
-	/*   { */
-	/*     PhyML_Printf("\n. br_r_a=%f br_r_d=%f dt_d=%f nu=%G",br_r_a,br_r_d,dt_d,tree->rates->nu); */
-	/*     PhyML_Printf("\n. Run: %d",tree->mcmc->run); */
-	/*     PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__); */
-	/*     Exit("\n"); */
-	/*   } */
-
+        PhyML_Fprintf(stderr,"\n. Not implemented yet.");
+        assert(FALSE);            
 	break;
-
       }
     case GUINDON :
       {
@@ -405,27 +336,8 @@ phydbl RATES_Lk_Rates_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl n
       }
     case GAMMA :
       {
-	if(tree->rates->model_log_rates == YES)
-	  {
-            /* log_dens = Dgamma(exp(br_r_d),1./(tree->rates->nu*dt_d*POW(tree->rates->clock_r,2)),tree->rates->nu*dt_d*POW(tree->rates->clock_r,2)); */
-            /* log_dens /= */
-            /*   (Pgamma(exp(tree->rates->max_rate),1./(tree->rates->nu*dt_d*POW(tree->rates->clock_r,2)),tree->rates->nu*dt_d*POW(tree->rates->clock_r,2)) - */
-            /*    Pgamma(exp(tree->rates->min_rate),1./(tree->rates->nu*dt_d*POW(tree->rates->clock_r,2)),tree->rates->nu*dt_d*POW(tree->rates->clock_r,2))); */
-          }
-        else
-	  {
-            /* log_dens = Dgamma(br_r_d,1./(tree->rates->nu*dt_d*POW(tree->rates->clock_r,2)),tree->rates->nu*dt_d*POW(tree->rates->clock_r,2)); */
-            /* log_dens /= */
-            /*   (Pgamma(tree->rates->max_rate,1./(tree->rates->nu*dt_d*POW(tree->rates->clock_r,2)),tree->rates->nu*dt_d*POW(tree->rates->clock_r,2)) - */
-            /*    Pgamma(tree->rates->min_rate,1./(tree->rates->nu*dt_d*POW(tree->rates->clock_r,2)),tree->rates->nu*dt_d*POW(tree->rates->clock_r,2))); */
-
-            int err;
-            /* log_dens = Log_Dnorm_Trunc(br_r_d,1.0,tree->rates->nu/tree->rates->clock_r,tree->rates->min_rate,tree->rates->max_rate,&err); */
-            log_dens = Log_Dnorm_Trunc(br_r_d,1.0,tree->rates->nu,tree->rates->min_rate,tree->rates->max_rate,&err);
-            /* log_dens = Log_Dnorm_Trunc(br_r_d,1.0,2.0,tree->rates->min_rate,tree->rates->max_rate,&err); */
-          }
-        
-	/* log_dens = log(log_dens); */
+        int err;
+        log_dens = Log_Dnorm_Trunc(br_r_d,1.0,tree->rates->nu,tree->rates->min_rate,tree->rates->max_rate,&err);
 	break;
       }
     case STRICTCLOCK :
@@ -681,8 +593,6 @@ void RATES_Copy_Rate_Struct(t_rate *from, t_rate *to, int n_otu)
   
   to->update_mean_l = from->update_mean_l;
   to->update_cov_l = from->update_cov_l;
-
-  to->model_log_rates = from->model_log_rates;
   
   to->nd_t_recorded = from->nd_t_recorded;
   to->br_r_recorded = from->br_r_recorded;
@@ -1702,17 +1612,8 @@ void RATES_Posterior_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
   /* like_mean = cel / (dt*cr*nf); */
   /* like_var  = cvl / POW(dt*cr*nf,2);  */
 
-  /* Model log of rates. Branch lengths are given in log units */
-  if(tree->rates->model_log_rates == YES) 
-    {      
-      like_mean = cel -    log(dt*cr*nf);
-      like_var  = cvl - 2.*log(dt*cr*nf);
-    }
-  else
-    {
-      like_mean = cel / (dt*cr*nf);
-      like_var  = cvl / POW(dt*cr*nf,2);
-    }
+  like_mean = cel / (dt*cr*nf);
+  like_var  = cvl / POW(dt*cr*nf,2);
   
   /* Prior */
   if(!d->tax)
@@ -2576,16 +2477,7 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 
       if(tree->rates->model == THORNE)
         {
-          if(tree->rates->model_log_rates == YES)
-            {
-              /* Artihmetic average */
-              rr = (exp(ra) + exp(rd))/2.;
-            }
-          else
-            {
-              rr = (ra+rd)/2.;
-            }
-          
+          rr = (ra+rd)/2.;          
           tree->rates->cur_l[d->num] = dt*rr*cr;
         }
       
@@ -2593,8 +2485,14 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 	{
 	  phydbl m,v;
 
-	  Integrated_Geometric_Brownian_Bridge_Moments(dt,ra,rd,nu,&m,&v);
-	  
+	  Integrated_Geometric_Brownian_Bridge_Moments(dt,log(ra),log(rd),nu,&m,&v);
+
+          if(m < 0.0 || v < 0.0)
+            {
+              PhyML_Fprintf(stderr,"\n. dt: %G ra: %G rd: %G nu: %G m: %G v: %G\n",dt,ra,rd,nu,&m,&v);
+              assert(FALSE);
+            }
+          
 	  m *= cr*dt; // the actual rate average is m * cr. We multiply by dt in order to derive the value for the branch length
 	  v *= (cr*cr)*(dt*dt);
 
@@ -3623,17 +3521,8 @@ void RATES_Set_Clock_And_Nu_Max(t_tree *tree)
   if(tree->rates->model == THORNE || 
      tree->rates->model == GUINDON)
     {
-      tune = 1.05;
-      
-      if(tree->rates->model_log_rates == NO)
-	{
-	  r_max = log(tree->rates->max_rate);
-	}
-      else
-	{
-	  r_max = tree->rates->max_rate;
-	}
-      
+      tune  = 1.05;
+      r_max = tree->rates->max_rate;     
       l_max = tree->mod->l_max;
       
       min_t = .0;

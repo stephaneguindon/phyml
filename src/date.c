@@ -671,7 +671,7 @@ phydbl *DATE_MCMC(t_tree *tree)
         {
           PhyML_Fprintf(stderr,"\n. move: %s",tree->mcmc->move_name[move]);
           PhyML_Fprintf(stderr,"\n. glnL=%f",tree->rates->c_lnL_times);
-          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+          assert(FALSE);
         }
 
       (void)signal(SIGINT,MCMC_Terminate);
@@ -683,7 +683,7 @@ phydbl *DATE_MCMC(t_tree *tree)
           mean_r = RATES_Average_Substitution_Rate(tree);
           post = Get_Lk(tree) + tree->rates->c_lnL_times + tree->rates->c_lnL_rates;
 
-          if(tree->mcmc->run < adjust_len) PhyML_Printf("\n\u2600");
+          if(tree->mcmc->run < adjust_len) PhyML_Printf("\n.");
           else PhyML_Printf("\n.");
           PhyML_Printf(" %10d lnL: [%12.2f -- %12.2f -- %12.2f -- %12.2f] clock: %12f root age: %12f [time: %7d sec run: %8d] mean:%15f %20s",
                        tree->mcmc->run,

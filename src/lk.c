@@ -3121,10 +3121,7 @@ void Map_Mutations(t_node *a, t_node *d, int sa, int sd, t_edge *b, int site, in
   mut = (int *)mCalloc(tree->mod->ns*tree->mod->ns,sizeof(int));
 
   // Edge rate
-  br =
-    (tree->rates->model_log_rates == YES)?
-    exp(tree->rates->br_r[d->num]):
-    tree->rates->br_r[d->num];
+  br = tree->rates->br_r[d->num];
 
   // Clock (i.e., overall) rate
   cr = tree->rates->clock_r;

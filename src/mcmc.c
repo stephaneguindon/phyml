@@ -288,17 +288,8 @@ void MCMC(t_tree *tree)
       	  Lk(NULL,tree);
           Set_Both_Sides(NO,tree);     
 
-      	  if(tree->mcmc->is == NO || tree->rates->model_log_rates == YES)
-      	    {
-              MCMC_Root_Time(tree);
-	      MCMC_Time_Recur(tree->n_root,tree->n_root->v[first],YES,tree);
-	      MCMC_Time_Recur(tree->n_root,tree->n_root->v[secod],YES,tree);
-      	    }
-      	  else
-      	    {
-      	      RATES_Posterior_One_Time(tree->n_root,tree->n_root->v[first],YES,tree);
-      	      RATES_Posterior_One_Time(tree->n_root,tree->n_root->v[secod],YES,tree);
-      	    }
+          RATES_Posterior_One_Time(tree->n_root,tree->n_root->v[first],YES,tree);
+          RATES_Posterior_One_Time(tree->n_root,tree->n_root->v[secod],YES,tree);
       	}
       
       /* Node Rates */
@@ -2357,8 +2348,6 @@ void MCMC_Subtree_Rates(t_tree *tree)
   ratio += (+n_nodes)*log(mult);
   /* ratio += (n_nodes-2)*log(mult) + log(Dgamma(1./mult,1./K,K)/Dgamma(mult,1./K,K)); */
   
-  /* If modelling log of rates instead of rates */
-  if(tree->rates->model_log_rates == YES) ratio -= (n_nodes)*log(mult);
 
   ratio += (new_lnL_rate - cur_lnL_rate);
   ratio += (new_lnL_data - cur_lnL_data);
@@ -5020,14 +5009,7 @@ void MCMC_Sim_Rate(t_node *a, t_node *d, t_tree *tree)
   dt_d   = tree->rates->nd_t[d->num] - tree->rates->nd_t[a->num];
   sd     = SQRT(dt_d*tree->rates->nu);
   
-  if(tree->rates->model_log_rates == YES)
-    {
-      mean = br_r_a - .5*sd*sd;
-    }
-  else
-    {
-      mean = br_r_a;
-    }
+  mean = br_r_a;
       
   if(tree->rates->model == STRICTCLOCK) tree->rates->br_r[d->num] = 1.0;
   else
@@ -5575,7 +5557,7 @@ void MCMC_Prune_Regraft_Weighted(t_tree *tree)
                  tree->rates->t_prior_min[new_regraft_nd->num],
                  tree->rates->t_prior_max[new_regraft_nd->num]);
           PhyML_Fprintf(stderr,"\n. root: %d %d %d",tree->n_root->num,tree->n_root->v[1]->num,tree->n_root->v[2]->num);
-          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
+          assert(FALSE);
         }
 
       DATE_Assign_Primary_Calibration(tree);
@@ -5994,7 +5976,7 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
                  tree->rates->t_prior_min[new_regraft_nd->num],
                  tree->rates->t_prior_max[new_regraft_nd->num]);
           PhyML_Fprintf(stderr,"\n. root: %d %d %d",tree->n_root->num,tree->n_root->v[1]->num,tree->n_root->v[2]->num);
-          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
+          assert(FALSE);                
         }
 
       DATE_Assign_Primary_Calibration(tree);
@@ -6606,13 +6588,13 @@ void MCMC_Read_Param_Vals(t_tree *tree)
   if(fgets(token,sizemax,in_fp) == NULL) // Skip first line
     {
       PhyML_Fprintf(stderr,"\n. Wrong file format.");
-      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
+      assert(FALSE);
     }
     
   if(fgets(token,sizemax,in_fp) == NULL) // Skip second
     {
       PhyML_Fprintf(stderr,"\n. Wrong file format.");
-      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+      assert(FALSE);
     }
 
   v=fscanf(in_fp,"%lf\t",&val); // Run
