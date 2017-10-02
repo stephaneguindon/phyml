@@ -762,7 +762,7 @@ void Connect_Edges_To_Nodes_Serial(t_tree *tree)
   int i,j;
 
   /* Reset */
-  For(i,2*tree->n_otu-1) for(j=0;j<3;j++) tree->a_nodes[i]->b[j] = NULL;
+  for(i=0;i<2*tree->n_otu-1;++i) for(j=0;j<3;j++) tree->a_nodes[i]->b[j] = NULL;
 
   tree->num_curr_branch_available = 0;
   
@@ -770,6 +770,8 @@ void Connect_Edges_To_Nodes_Serial(t_tree *tree)
     {
       if(!tree->a_nodes[i]->tax) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
+      assert(tree->a_nodes[i] != tree->a_nodes[i]->v[0]);
+      
       Connect_One_Edge_To_Two_Nodes(tree->a_nodes[i],
                                     tree->a_nodes[i]->v[0],
                                     tree->a_edges[tree->num_curr_branch_available],
@@ -783,10 +785,13 @@ void Connect_Edges_To_Nodes_Serial(t_tree *tree)
 
       for(j=0;j<3;j++) 
         if(!tree->a_nodes[i]->b[j])
-          Connect_One_Edge_To_Two_Nodes(tree->a_nodes[i],
-                                        tree->a_nodes[i]->v[j],
-                                        tree->a_edges[tree->num_curr_branch_available],
-                                        tree);
+          {
+            assert(tree->a_nodes[i] != tree->a_nodes[i]->v[j]);
+            Connect_One_Edge_To_Two_Nodes(tree->a_nodes[i],
+                                          tree->a_nodes[i]->v[j],
+                                          tree->a_edges[tree->num_curr_branch_available],
+                                          tree);
+          }
     }
 }
 
@@ -797,6 +802,7 @@ void Connect_Edges_To_Nodes_Recur(t_node *a, t_node *d, t_tree *tree)
 {
   int i;
 
+  assert(a!=d);
   Connect_One_Edge_To_Two_Nodes(a,d,tree->a_edges[tree->num_curr_branch_available],tree);
 
   if(d->tax) return;
@@ -813,10 +819,10 @@ void Connect_One_Edge_To_Two_Nodes(t_node *a, t_node *d, t_edge *b, t_tree *tree
 {
   int i,dir_a_d,dir_d_a;
 
-  if(a == NULL || d == NULL) 
+  if(a == NULL || d == NULL || a->num == d->num) 
     {
       PhyML_Fprintf(stderr,"\n. a: %d d: %d",a?a->num:-1,d?d->num:-1);
-      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+      assert(FALSE);
     }
 
   dir_a_d = -1;
@@ -838,6 +844,8 @@ void Connect_One_Edge_To_Two_Nodes(t_node *a, t_node *d, t_edge *b, t_tree *tree
 
   tree->num_curr_branch_available += 1;
 
+  assert(a != d);
+  
   (b->left == a)?
     (Set_Edge_Dirs(b,a,d,tree)):
     (Set_Edge_Dirs(b,d,a,tree));
@@ -4888,7 +4896,8 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
       b1->l_var->v = (b1->l_var->v + b2->l_var->v);
     }
 
-
+  assert(v1 != v2);
+  
   (v1 == b1->left)?
     (Set_Edge_Dirs(b1,v1,v2,tree)):
     (Set_Edge_Dirs(b1,v2,v1,tree));
@@ -5167,6 +5176,10 @@ void Graft_Subtree(t_edge *target, t_node *link, t_node *link_daughter, t_edge *
       residual->l_var->v = target->l_var->v;
     }
 
+  assert(target->left != target->rght);
+  assert(residual->left != residual->rght);
+  assert(b_up->left != b_up->rght);
+  
   Set_Edge_Dirs(target,target->left,target->rght,tree);
   Set_Edge_Dirs(residual,residual->left,residual->rght,tree);
   Set_Edge_Dirs(b_up,b_up->left,b_up->rght,tree);
