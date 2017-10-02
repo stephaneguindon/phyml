@@ -1593,3 +1593,25 @@ t_ll *Make_Linked_List()
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+/* Matrices used in transfer bootstrap computation (tbe.c) */
+void Alloc_TBE_Matrices(int n_otu, short unsigned*** i_matrix, short unsigned*** c_matrix,short unsigned*** hamming, short unsigned** min_dist, short unsigned**  min_dist_edge, int** cluster_sizes){
+  int i;
+  int nb_edges = 2*n_otu-3;
+  (*min_dist) = (short unsigned*) malloc(nb_edges*sizeof(short unsigned)); /* array of min Hamming distances */
+  (*min_dist_edge) = (short unsigned*) malloc(nb_edges*sizeof(short unsigned)); /* array of edge ids corresponding to min Hamming distances */
+  (*cluster_sizes) = (int*) malloc(nb_edges*sizeof(int)); /* array of sizes of clusters associated to each branch (in the post order traversal) */
+  (*c_matrix) = (short unsigned**) malloc(nb_edges*sizeof(short unsigned*)); /* matrix of cardinals of complements */
+  (*i_matrix) = (short unsigned**) malloc(nb_edges*sizeof(short unsigned*)); /* matrix of cardinals of intersections */
+  (*hamming) = (short unsigned**) malloc(nb_edges*sizeof(short unsigned*)); /* matrix of Hamming distances */
+  for (i=0; i<nb_edges; i++){
+    (*c_matrix)[i] = (short unsigned*) malloc(nb_edges*sizeof(short unsigned));
+    (*i_matrix)[i] = (short unsigned*) malloc(nb_edges*sizeof(short unsigned));
+    (*hamming)[i] = (short unsigned*) malloc(nb_edges*sizeof(short unsigned));
+    (*min_dist)[i] = n_otu; /* initialization to the nb of taxa */
+    (*cluster_sizes)[i] = 0;
+  }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////

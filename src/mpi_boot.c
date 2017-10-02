@@ -16,7 +16,11 @@ the GNU public licence. See http://www.opensource.org for details.
 
 /*********************************************************/
 
-void Bootstrap_MPI(t_tree *tree)
+/* 
+   if tbe_bootstrap == 0 => Classical FBP (Felsenstein bootstrap proportions) 
+   else => TBE (Transfer bootstrap expectation)
+*/
+void Bootstrap_MPI(t_tree *tree, int tbe_bootstrap)
 {
   int *site_num, n_site;
   int replicate,j,k;
@@ -41,7 +45,9 @@ void Bootstrap_MPI(t_tree *tree)
 
   randomRecv = nbElem = bootRecv = 0;
 
-  tree->print_boot_val       = 1;
+  tree->print_boot_val       = !tbe_bootstrap;
+  tree->print_tbe_val        = tbe_bootstrap;
+  
   tree->print_alrt_val       = 0;
   boot_tree                  = NULL;
 
@@ -274,7 +280,11 @@ void Bootstrap_MPI(t_tree *tree)
               boot_tree->a_nodes[0]->v[0],
               boot_tree);
 
-      Compare_Bip(tree,boot_tree,NO);
+      if(!tbe_bootstrap){
+	Compare_Bip(tree,boot_tree,NO);
+      }else{
+	Compare_Bip_Distance(tree, boot_tree);
+      }
       
       Br_Len_Involving_Invar(boot_tree);
 

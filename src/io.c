@@ -830,6 +830,11 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
             {
               sprintf(*s_tree+(int)strlen(*s_tree),"%d",fils->b[p]->bip_score);
             }
+          else if(tree->print_tbe_val == YES)
+            {
+	      int pminus1=MIN(fils->b[p]->left->bip_size[fils->b[p]->l_r], fils->b[p]->rght->bip_size[fils->b[p]->r_l])-1;
+              sprintf(*s_tree+(int)strlen(*s_tree),"%f",1-((fils->b[p]->tdist_score)/(tree->mod->bootstrap*1.0))/pminus1);
+            }
           else if(tree->print_alrt_val == YES)
             {
               sprintf(*s_tree+(int)strlen(*s_tree),"%f",fils->b[p]->ratio_test);
