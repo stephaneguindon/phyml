@@ -176,6 +176,7 @@ void Init_Edge_Light(t_edge *b, int num)
 {
   b->num                  = num;
   b->bip_score            = 0;
+  b->tdist_score          = 0;
   b->dist_btw_edges       = .0;
   b->topo_dist_btw_edges  = 0;
   b->has_zero_br_len      = NO;
@@ -556,6 +557,7 @@ void Set_Defaults_Input(option* io)
   io->tree                       = NULL;
   io->mod                        = NULL;
   strcpy(io->nt_or_cd,"nucleotides");
+  io->tbe_bootstrap              = 0;
   io->n_data_sets                = 1;
   io->interleaved                = 1;
   io->in_tree                    = 0;

@@ -127,6 +127,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
       {"coord_file",          required_argument,NULL,77},
       {"json_trace",          no_argument,NULL,78},
       {"weights",             required_argument,NULL,79},
+      {"tbe",                 no_argument,NULL,80},
       {0,0,0,0}
     };
 
@@ -144,7 +145,11 @@ int Read_Command_Line(option *io, int argc, char **argv)
 
       switch(c)
 	{
-
+	case 80 :
+	  {
+	    io->tbe_bootstrap = 1;
+	    break;
+	  }
         case 79:
           {
             io->has_io_weights = YES;
