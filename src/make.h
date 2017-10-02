@@ -79,5 +79,6 @@ void Make_Edge_Loc_Left(t_edge *b, t_tree *tree);
 t_ll *Make_Linked_List();
 t_node **Make_Target_Tip(int n);
 t_clad *Make_Clade();
-
+void Alloc_TBE_Matrices(int n_otu,  short unsigned*** i_matrix, short unsigned*** c_matrix,short unsigned*** hamming,
+			short unsigned** min_dist, short unsigned**  min_dist_edge, int** cluster_sizes);
 #endif

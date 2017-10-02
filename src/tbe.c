@@ -13,10 +13,9 @@ the GNU public licence. See http://www.opensource.org for details.
 #include "tbe.h"
 #include "utilities.h"
 
-
 /* UNION AND INTERSECT CALCULATIONS (FOR THE TRANSFER METHOD) */
-void update_i_c_post_order_ref_tree(t_tree *ref_tree, t_node * orig, t_node* target, t_edge *my_br, t_tree *boot_tree,
-				    short unsigned** i_matrix, short unsigned** c_matrix, int* cluster_sizes) {
+void Update_IC_Ref_Tree(t_tree *ref_tree, t_node * orig, t_node* target, t_edge *my_br, t_tree *boot_tree,
+			short unsigned** i_matrix, short unsigned** c_matrix, int* cluster_sizes){
   /* this function does the post-order traversal (recursive from the pseudoroot to the leaves, updating knowledge for the subtrees)
      of the reference tree, examining only leaves (terminal edges) of the bootstrap tree.
      It sends a probe from the orig node to the target node (nodes in ref_tree), calculating I_ij and C_ij
@@ -70,7 +69,7 @@ void update_i_c_post_order_ref_tree(t_tree *ref_tree, t_node * orig, t_node* tar
     
     for (k = 0; k < 3; k++) {
       if(target->v[k]!=orig){
-	update_i_c_post_order_ref_tree(ref_tree, target, target->v[k], target->b[k], boot_tree, i_matrix, c_matrix, cluster_sizes);
+	Update_IC_Ref_Tree(ref_tree, target, target->v[k], target->b[k], boot_tree, i_matrix, c_matrix, cluster_sizes);
 	next_edge_id = target->b[k]->num;
 	cluster_sizes[edge_id] += cluster_sizes[next_edge_id];
 	for (j=0; j < 2*boot_tree->n_otu-3; j++) { /* for all the terminal edges of boot_tree */
@@ -88,8 +87,8 @@ void update_i_c_post_order_ref_tree(t_tree *ref_tree, t_node * orig, t_node* tar
 } /* end update_i_c_post_order_ref_tree */
 
 
-void update_all_i_c_post_order_ref_tree(t_tree* ref_tree, t_tree* boot_tree,
-					short unsigned** i_matrix, short unsigned** c_matrix, int* cluster_sizes) {
+void Update_All_IC_Ref_Tree(t_tree* ref_tree, t_tree* boot_tree,
+			    short unsigned** i_matrix, short unsigned** c_matrix, int* cluster_sizes) {
   /* this function is the first step of the union and intersection calculations */
   int i;
   t_node *root;
@@ -100,20 +99,20 @@ void update_all_i_c_post_order_ref_tree(t_tree* ref_tree, t_tree* boot_tree,
 	  (!ref_tree->a_nodes[ref_tree->n_otu+i]->v[1]) ||
 	  (!ref_tree->a_nodes[ref_tree->n_otu+i]->v[2])) i++;
     root=ref_tree->a_nodes[ref_tree->n_otu+i];
-    update_i_c_post_order_ref_tree(ref_tree, root, root->v[0], root->b[0], boot_tree, i_matrix, c_matrix, cluster_sizes);
-    update_i_c_post_order_ref_tree(ref_tree, root, root->v[1], root->b[1], boot_tree, i_matrix, c_matrix, cluster_sizes);
-    update_i_c_post_order_ref_tree(ref_tree, root, root->v[2], root->b[2], boot_tree, i_matrix, c_matrix, cluster_sizes);
+    Update_IC_Ref_Tree(ref_tree, root, root->v[0], root->b[0], boot_tree, i_matrix, c_matrix, cluster_sizes);
+    Update_IC_Ref_Tree(ref_tree, root, root->v[1], root->b[1], boot_tree, i_matrix, c_matrix, cluster_sizes);
+    Update_IC_Ref_Tree(ref_tree, root, root->v[2], root->b[2], boot_tree, i_matrix, c_matrix, cluster_sizes);
   } else {
     root=ref_tree->n_root;
-    update_i_c_post_order_ref_tree(ref_tree, root, root->v[0], root->b[0], boot_tree, i_matrix, c_matrix, cluster_sizes);
-    update_i_c_post_order_ref_tree(ref_tree, root, root->v[1], root->b[1], boot_tree, i_matrix, c_matrix, cluster_sizes);
+   Update_IC_Ref_Tree(ref_tree, root, root->v[0], root->b[0], boot_tree, i_matrix, c_matrix, cluster_sizes);
+   Update_IC_Ref_Tree(ref_tree, root, root->v[1], root->b[1], boot_tree, i_matrix, c_matrix, cluster_sizes);
   }
 } /* end update_all_i_c_post_order_ref_tree */
 
-void update_i_c_post_order_boot_tree(t_tree* ref_tree, t_tree* boot_tree, t_node* orig, t_node* target,
-				     t_edge *my_br, short unsigned** i_matrix, short unsigned** c_matrix,
-				     short unsigned** hamming, short unsigned* min_dist,
-				     short unsigned* min_dist_edge, int* cluster_sizes) {
+void Update_IC_Boot_Tree(t_tree* ref_tree, t_tree* boot_tree, t_node* orig, t_node* target,
+			 t_edge *my_br, short unsigned** i_matrix, short unsigned** c_matrix,
+			 short unsigned** hamming, short unsigned* min_dist,
+			 short unsigned* min_dist_edge, int* cluster_sizes) {
   /* here we implement the second part of the Brehelin/Gascuel/Martin algorithm:
      post-order traversal of the bootstrap tree, and numerical recurrence. 
      in this function, orig and target are nodes of boot_tree (aka T_boot).
@@ -136,7 +135,7 @@ void update_i_c_post_order_boot_tree(t_tree* ref_tree, t_tree* boot_tree, t_node
     for(k=0;k<3;k++) {
       if(target->v[k] != orig){
 	next_boot_edge_id = target->b[k]->num;
-	update_i_c_post_order_boot_tree(ref_tree, boot_tree, target, target->v[k], target->b[k],
+	Update_IC_Boot_Tree(ref_tree, boot_tree, target, target->v[k], target->b[k],
 					i_matrix, c_matrix, hamming, min_dist, min_dist_edge, cluster_sizes);
 	for (i=0; i < 2*ref_tree->n_otu-3; i++) { /* for all the edges of ref_tree */ 
 	  i_matrix[i][boot_edge_id] += i_matrix[i][next_boot_edge_id];
@@ -165,8 +164,9 @@ void update_i_c_post_order_boot_tree(t_tree* ref_tree, t_tree* boot_tree, t_node
 } /* end update_i_c_post_order_boot_tree */
 
 
-void update_all_i_c_post_order_boot_tree(t_tree* ref_tree, t_tree* boot_tree, short unsigned** i_matrix, short unsigned** c_matrix,
-					 short unsigned** hamming, short unsigned* min_dist, short unsigned* min_dist_edge, int* cluster_sizes) {
+void Update_All_IC_Boot_Tree(t_tree* ref_tree, t_tree* boot_tree, short unsigned** i_matrix,
+			     short unsigned** c_matrix, short unsigned** hamming,
+			     short unsigned* min_dist, short unsigned* min_dist_edge, int* cluster_sizes) {
 	/* this function is the second step of the union and intersection calculations */
   int i;
   t_node *root;
@@ -176,56 +176,20 @@ void update_all_i_c_post_order_boot_tree(t_tree* ref_tree, t_tree* boot_tree, sh
 	  (!boot_tree->a_nodes[boot_tree->n_otu+i]->v[1]) ||
 	  (!boot_tree->a_nodes[boot_tree->n_otu+i]->v[2])) i++;
     root=boot_tree->a_nodes[boot_tree->n_otu+i];
-    update_i_c_post_order_boot_tree(ref_tree, boot_tree, root, root->v[0], root->b[0], i_matrix, c_matrix, hamming, min_dist, min_dist_edge, cluster_sizes);
-    update_i_c_post_order_boot_tree(ref_tree, boot_tree, root, root->v[1], root->b[1], i_matrix, c_matrix, hamming, min_dist, min_dist_edge, cluster_sizes);
-    update_i_c_post_order_boot_tree(ref_tree, boot_tree, root, root->v[2], root->b[2], i_matrix, c_matrix, hamming, min_dist, min_dist_edge, cluster_sizes);
+    Update_IC_Boot_Tree(ref_tree, boot_tree, root, root->v[0], root->b[0], i_matrix, c_matrix, hamming, min_dist, min_dist_edge, cluster_sizes);
+    Update_IC_Boot_Tree(ref_tree, boot_tree, root, root->v[1], root->b[1], i_matrix, c_matrix, hamming, min_dist, min_dist_edge, cluster_sizes);
+    Update_IC_Boot_Tree(ref_tree, boot_tree, root, root->v[2], root->b[2], i_matrix, c_matrix, hamming, min_dist, min_dist_edge, cluster_sizes);
   } else {
     root=boot_tree->n_root;
-    update_i_c_post_order_boot_tree(ref_tree, boot_tree, root, root->v[0], root->b[0], i_matrix, c_matrix, hamming, min_dist, min_dist_edge, cluster_sizes);
-    update_i_c_post_order_boot_tree(ref_tree, boot_tree, root, root->v[1], root->b[2], i_matrix, c_matrix, hamming, min_dist, min_dist_edge, cluster_sizes);
+    Update_IC_Boot_Tree(ref_tree, boot_tree, root, root->v[0], root->b[0], i_matrix, c_matrix, hamming, min_dist, min_dist_edge, cluster_sizes);
+    Update_IC_Boot_Tree(ref_tree, boot_tree, root, root->v[1], root->b[2], i_matrix, c_matrix, hamming, min_dist, min_dist_edge, cluster_sizes);
   }
   
   /* and then some checks to make sure everything went ok */
   for(i=0; i<2*ref_tree->n_otu-3; i++) {
     assert(min_dist[ref_tree->a_edges[i]->num] >= 0);
     if(ref_tree->a_edges[i]->rght->tax || ref_tree->a_edges[i]->left->tax){
-      if(ref_tree->a_edges[i]->rght->tax)
-      if(ref_tree->a_edges[i]->left->tax)
       assert(min_dist[ref_tree->a_edges[i]->num] == 0); /* any terminal edge should have an exact match in any bootstrap tree */
     }
   }
 } /* end update_all_i_c_post_order_boot_tree */
-
-void alloc_tbe_matrices(int n_otu, short unsigned*** i_matrix, short unsigned*** c_matrix,short unsigned*** hamming, short unsigned** min_dist, short unsigned**  min_dist_edge, int** cluster_sizes){
-  int i;
-  int nb_edges = 2*n_otu-3;
-  (*min_dist) = (short unsigned*) malloc(nb_edges*sizeof(short unsigned)); /* array of min Hamming distances */
-  (*min_dist_edge) = (short unsigned*) malloc(nb_edges*sizeof(short unsigned)); /* array of edge ids corresponding to min Hamming distances */
-  (*cluster_sizes) = (int*) malloc(nb_edges*sizeof(int)); /* array of sizes of clusters associated to each branch (in the post order traversal) */
-  (*c_matrix) = (short unsigned**) malloc(nb_edges*sizeof(short unsigned*)); /* matrix of cardinals of complements */
-  (*i_matrix) = (short unsigned**) malloc(nb_edges*sizeof(short unsigned*)); /* matrix of cardinals of intersections */
-  (*hamming) = (short unsigned**) malloc(nb_edges*sizeof(short unsigned*)); /* matrix of Hamming distances */
-  for (i=0; i<nb_edges; i++){
-    (*c_matrix)[i] = (short unsigned*) malloc(nb_edges*sizeof(short unsigned));
-    (*i_matrix)[i] = (short unsigned*) malloc(nb_edges*sizeof(short unsigned));
-    (*hamming)[i] = (short unsigned*) malloc(nb_edges*sizeof(short unsigned));
-    (*min_dist)[i] = n_otu; /* initialization to the nb of taxa */
-    (*cluster_sizes)[i] = 0;
-  }
-}
-
-void free_tbe_matrices(int n_otu,  short unsigned*** i_matrix, short unsigned*** c_matrix,short unsigned*** hamming, short unsigned** min_dist, short unsigned**  min_dist_edge, int** cluster_sizes){
-  int i;
-  int nb_edges = 2*n_otu-3;
-  for (i=0; i<nb_edges; i++) {
-    free((*c_matrix)[i]);
-    free((*i_matrix)[i]);
-    free((*hamming)[i]);
-  }
-  free((*c_matrix));
-  free((*i_matrix));
-  free((*hamming));
-  free((*min_dist));
-  free((*min_dist_edge));
-  free((*cluster_sizes));
-}

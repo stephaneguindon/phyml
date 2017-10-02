@@ -91,5 +91,7 @@ void Free_Edge_Loc_Left(t_edge *b);
 void Free_Edge_Loc(t_edge *b);
 void Free_NNI(t_nni *t);
 void Free_Linked_List(t_ll *t);
-
+void Free_TBE_Matrices(int n_otu,  short unsigned*** i_matrix, short unsigned*** c_matrix,
+		       short unsigned*** hamming, short unsigned** min_dist,
+		       short unsigned**  min_dist_edge, int** cluster_sizes);
 #endif

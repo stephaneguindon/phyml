@@ -3828,15 +3828,18 @@ void Compare_Bip_Distance(t_tree *tree1, t_tree *tree2){
   short unsigned* min_dist;
   short unsigned* min_dist_edge;
   int* cluster_sizes;
-  alloc_tbe_matrices(tree1->n_otu, &i_matrix, &c_matrix, &hamming, &min_dist, &min_dist_edge, &cluster_sizes);
-  update_all_i_c_post_order_ref_tree(tree1, tree2, i_matrix, c_matrix, cluster_sizes);
-  update_all_i_c_post_order_boot_tree(tree1, tree2, i_matrix, c_matrix,hamming,min_dist, min_dist_edge, cluster_sizes);
+  
+  Alloc_TBE_Matrices(tree1->n_otu, &i_matrix, &c_matrix, &hamming, &min_dist, &min_dist_edge, &cluster_sizes);
+
+  Update_All_IC_Ref_Tree(tree1, tree2, i_matrix, c_matrix, cluster_sizes);
+  Update_All_IC_Boot_Tree(tree1, tree2, i_matrix, c_matrix,hamming,min_dist, min_dist_edge, cluster_sizes);
 
   for(i=0; i<2*tree1->n_otu-3; i++){
     cur_edge = tree1->a_edges[i];
     cur_edge->tdist_score+=min_dist[cur_edge->num];
   }
-  free_tbe_matrices(tree1->n_otu, &i_matrix, &c_matrix, &hamming, &min_dist, &min_dist_edge, &cluster_sizes);
+  
+  Free_TBE_Matrices(tree1->n_otu, &i_matrix, &c_matrix, &hamming, &min_dist, &min_dist_edge, &cluster_sizes);
 }
 
 
