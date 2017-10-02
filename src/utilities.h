@@ -719,9 +719,9 @@ typedef struct __Tree{
   int                                  n_swap; /*! number of NNIs performed */
   int                               n_pattern; /*! number of distinct site patterns */
   int                      has_branch_lengths; /*! =1 iff input tree displays branch lengths */
-  short int                    print_tbe_val;  /*! if print_boot_val=1, the TBE bootstrap values are printed */
+  short int                    print_tbe_val;  /*! if print_tbe_val=1,  the TBE bootstrap values are printed */
   short int                    print_boot_val; /*! if print_boot_val=1, the bootstrap values are printed */
-  short int                    print_alrt_val; /*! if print_boot_val=1, the aLRT values are printed */
+  short int                    print_alrt_val; /*! if print_alrt_val=1, the aLRT values are printed */
   short int                    print_node_num; /*! print node numbers if print_node_num=1 */
   short int                        both_sides; /*! both_sides=1 -> a pre-order and a post-order tree
                           traversals are required to compute the likelihood
