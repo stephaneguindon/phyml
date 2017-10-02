@@ -3466,10 +3466,8 @@ void MCMC_Randomize_Rates_Pre(t_node *a, t_node *d, t_tree *tree)
   phydbl min_r, max_r;
   int err;
 
-/*   mean_r = tree->rates->br_r[a->num]; */
-/*   var_r  = tree->rates->nu * (tree->rates->nd_t[d->num] - tree->rates->nd_t[a->num]); */
   mean_r = 1.0;
-  sd_r   = 10.0;
+  sd_r   = 1.0;
   min_r  = tree->rates->min_rate;
   max_r  = tree->rates->max_rate;
   
@@ -3478,7 +3476,7 @@ void MCMC_Randomize_Rates_Pre(t_node *a, t_node *d, t_tree *tree)
   if(d->tax) return;
   else
     {
-      for(i=0;i<3;i++)
+      for(i=0;i<3;++i)
 	if(d->v[i] != a && d->b[i] != tree->e_root)
 	  MCMC_Randomize_Rates_Pre(d,d->v[i],tree);
     }
@@ -5449,20 +5447,12 @@ void MCMC_Prune_Regraft_Weighted(t_tree *tree)
             }
         }
       assert(dir_prune > -1);
-            
-      
-      
+
+
       radius = Rnorm(0.0,0.05);
       radius = FABS(radius);
       radius += tree->rates->cur_l[prune_daughter->num]; // valid too when prune == tree->n_root
-      
-      /* printf("\n. radius: %f %p %p %p", */
-      /*        radius, */
-      /*        prune_daughter, */
-      /*        prune_daughter->v[dir_prune],                                        */
-      /*        prune_daughter->b[dir_prune]); */
-      /* fflush(NULL); */
-      
+            
       // Get the list of potential regraft nodes (oldest node on regraft edge)
       Random_Walk_Along_Tree_On_Radius(prune_daughter,
                                        prune_daughter->v[dir_prune],                                       
@@ -5485,8 +5475,7 @@ void MCMC_Prune_Regraft_Weighted(t_tree *tree)
       if(new_regraft_nd == prune) continue;
       if(new_regraft_nd == cur_regraft_nd) continue;
       if(new_t > times[prune_daughter->num]) continue;
-      
-          
+                
       // New age
       if(prune == tree->n_root || new_regraft_nd == tree->n_root)
         {
@@ -5522,14 +5511,13 @@ void MCMC_Prune_Regraft_Weighted(t_tree *tree)
          new_regraft_nd == tree->n_root) regraft_edge = tree->e_root;
       else
         {
-          for(i=0;i<3;i++) if(new_regraft_nd->v[i] == new_regraft_nd->anc) break;
+          for(i=0;i<3;++i) if(new_regraft_nd->v[i] == new_regraft_nd->anc) break;
           assert(i!=3);
           regraft_edge = new_regraft_nd->b[i];
         }
 
       assert(regraft_edge);      
       
-
       // Regraft
       Graft_Subtree(regraft_edge,
                     prune_daughter->v[dir_prune],
@@ -5537,10 +5525,10 @@ void MCMC_Prune_Regraft_Weighted(t_tree *tree)
                     residual,
                     new_regraft_nd,tree);
       
-
+      
       if(!TIMES_Check_Node_Height_Ordering(tree))
         {
-          printf("\n. prune[%d]->t:%.3f daughter[%d]->t:%.3f prune_anc[%d]->t:%.3f regraft[%d]->t:%.3f regraft_anc[%d]->t:%.3f [effective:%d] t_prior_min/max: [prune:[%.3f %.3f] regraft:[%.3f %.3f]] ",
+          PhyML_Fprintf(stderr,"\n. prune[%d]->t:%.3f daughter[%d]->t:%.3f prune_anc[%d]->t:%.3f regraft[%d]->t:%.3f regraft_anc[%d]->t:%.3f [effective:%d] t_prior_min/max: [prune:[%.3f %.3f] regraft:[%.3f %.3f]] ",
                  prune->num,
                  times[prune->num],
                  prune_daughter->num,

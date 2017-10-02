@@ -2238,7 +2238,7 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
 #ifdef BEAGLE
             Warn_And_Exit(TODO_BEAGLE);
 #endif
-            
+
             shape = mean*mean/var;
             scale = var/mean;
             PMat_MGF_Gamma(b_fcus->Pij_rr+tree->mod->ns*tree->mod->ns*i,shape,scale,1.0,tree->mod);

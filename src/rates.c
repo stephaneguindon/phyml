@@ -315,16 +315,19 @@ phydbl RATES_Lk_Rates_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl n
 	min_r = tree->rates->min_rate;
 	max_r = tree->rates->max_rate;
 
-	br_r_d += logcr;
-	br_r_a += logcr;
-	min_r  += logcr;
-	max_r  += logcr;
+	br_r_d = log(br_r_d*cr);
+	br_r_a = log(br_r_a*cr);
+        min_r  = log(min_r*cr);
+	max_r  = log(max_r*cr);
 
 	sd   = SQRT(tree->rates->nu*dt_d);
 	mean = br_r_a - .5*sd*sd;
 
+        // log(density(log(Rate)))
  	log_dens = Log_Dnorm_Trunc(br_r_d,mean,sd,min_r,max_r,&err);
-
+        // log(denstity(Rate))
+        log_dens -= log(exp(br_r_d)*cr);
+        
 	if(err)
 	  {
 	    PhyML_Fprintf(stderr,"\n. Run: %d",tree->mcmc->run);
@@ -728,7 +731,7 @@ phydbl RATES_Average_Rate(t_tree *tree)
   int i;
   phydbl sum;
   sum = 0.0;
-  For(i,2*tree->n_otu-2) sum += tree->rates->br_r[i];
+  for(i=0;i<2*tree->n_otu-2;++i) sum += tree->rates->br_r[i];
   return sum/(2*tree->n_otu-2);
 }
 //////////////////////////////////////////////////////////////
@@ -741,7 +744,7 @@ phydbl RATES_Average_Substitution_Rate(t_tree *tree)
 
   l = 0.0;
   dt = 0.0;
-  For(i,2*tree->n_otu-1)
+  for(i=0;i<2*tree->n_otu-1;++i)
     {
       if(tree->a_nodes[i] != tree->n_root)
         {
@@ -762,7 +765,7 @@ phydbl RATES_Check_Mean_Rates_True(t_tree *tree)
   int i;
   
   sum = 0.0;
-  For(i,2*tree->n_otu-2) sum += tree->rates->true_r[i];
+  for(i=0;i<2*tree->n_otu-2;++i) sum += tree->rates->true_r[i];
   return(sum/(phydbl)(2*tree->n_otu-2));
 }
 
@@ -2485,16 +2488,32 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 	{
 	  phydbl m,v;
 
-	  Integrated_Geometric_Brownian_Bridge_Moments(dt,log(ra),log(rd),nu,&m,&v);
+	  /* Integrated_Geometric_Brownian_Bridge_Moments(dt,ra,rd,nu,&m,&v); */
+	  Integrated_Geometric_Brownian_Bridge_Moments(0.199651,3.14076,3.1447,0.00160769,&m,&v);
+          
+          /* PhyML_Fprintf(stderr,"\n\nmean=%G var=%G",m,v); */
+          /* Exit("\n"); */
 
           if(m < 0.0 || v < 0.0)
             {
-              PhyML_Fprintf(stderr,"\n. dt: %G ra: %G rd: %G nu: %G m: %G v: %G\n",dt,ra,rd,nu,&m,&v);
+              PhyML_Fprintf(stderr,"\n. dt: %G ra: %G rd: %G nu: %G m: %G v: %G\n",dt,ra,rd,nu,m,v);
+
+              /* t_node *n = d; */
+              /* do */
+              /*   { */
+              /*     PhyML_Fprintf(stderr,"\n. r: %G dt: %G", */
+              /*                   tree->rates->br_r[n->num], */
+              /*                   tree->rates->nd_t[n->num]-tree->rates->nd_t[n->anc->num]); */
+              /*     n = n->anc; */
+              /*   } */
+              /* while(n != tree->n_root); */
+
               assert(FALSE);
             }
           
 	  m *= cr*dt; // the actual rate average is m * cr. We multiply by dt in order to derive the value for the branch length
 	  v *= (cr*cr)*(dt*dt);
+
 
 	  tree->rates->cur_gamma_prior_mean[d->num] = m;
 	  tree->rates->cur_gamma_prior_var[d->num]  = v;
@@ -2535,7 +2554,7 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
   else
     {
       int i;
-      for(i=0;i<3;i++) 
+      for(i=0;i<3;++i) 
 	if((d->v[i] != a) && (d->b[i] != tree->e_root)) 
 	  RATES_Update_Cur_Bl_Pre(d,d->v[i],d->b[i],tree);
     }

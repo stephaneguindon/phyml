@@ -3689,7 +3689,7 @@ int Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only)
   if(on_existing_edges_only == YES)
     {
       n_edges = 0;
-      For(i,2*tree1->n_otu-3)
+      for(i=0;i<2*tree1->n_otu-3;++i)
         if(tree1->a_edges[i]->does_exist && tree2->a_edges[i]->does_exist) n_edges++;
       n_edges -= tree1->n_otu;
     }
@@ -3701,7 +3701,7 @@ int Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only)
 
   identical = 0;
   different = 0;
-  For(i,2*tree1->n_otu-3)
+  for(i=0;i<2*tree1->n_otu-3;++i)
     {
       b1 = tree1->a_edges[i];
       bip_size1 = MIN(b1->left->bip_size[b1->l_r],b1->rght->bip_size[b1->r_l]);
@@ -4610,7 +4610,7 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
   if(a->tax) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
   dir_v1 = dir_v2 = -1;
-  for(i=0;i<3;i++)
+  for(i=0;i<3;++i)
     {
       if(a->v[i] != d)
         {
@@ -4851,7 +4851,7 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
         }
     }
 
-  for(i=0;i<3;i++)
+  for(i=0;i<3;++i)
     if(v2->v[i] == a)
       {
         v2->v[i] = v1;
@@ -4867,7 +4867,7 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
     }
 #endif
 
-  for(i=0;i<3;i++)
+  for(i=0;i<3;++i)
     if(v1->v[i] == a)
       {
         v1->v[i] = v2;
@@ -11484,7 +11484,7 @@ void Random_Walk_Along_Tree_On_Radius(t_node *a, t_node *d, t_edge *b, phydbl *r
   if(!(delta > 0.0))
     {
       PhyML_Fprintf(stderr,"\n. delta=%G",delta);
-      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
+      assert(FALSE);
     }
   
   (*radius) -= b->l->v;
@@ -11498,15 +11498,34 @@ void Random_Walk_Along_Tree_On_Radius(t_node *a, t_node *d, t_edge *b, phydbl *r
         {
           if(ta < td)
             {
-              *target_time = ta + delta / (tree->rates->clock_r * tree->rates->br_r[d->num]);
+              /* *target_time = ta + delta / (tree->rates->clock_r * tree->rates->br_r[d->num]); */
+              *target_time = ta + delta / tree->rates->cur_l[d->num];
               *target_nd = d;
-              /* printf("\n< ta: %f td: %f new_time: %f delta: %f c: %f r: %f",ta,td,*target_time,delta,tree->rates->clock_r,tree->rates->br_r[d->num]); */
+              /* PhyML_Fprintf(stderr,"\n< ta: %G td: %G new_time: %G delta: %G c: %G r: %G rad: %G l->v: %G", */
+              /*               ta, */
+              /*               td, */
+              /*               *target_time, */
+              /*               delta, */
+              /*               tree->rates->clock_r, */
+              /*               tree->rates->br_r[d->num], */
+              /*               *radius, */
+              /*               b->l->v); */
+              assert(*target_time > ta && *target_time < td);
             }
           else
             {
-              *target_time = ta - delta / (tree->rates->clock_r * tree->rates->br_r[a->num]);
+              /* *target_time = ta - delta / (tree->rates->clock_r * tree->rates->br_r[a->num]); */
+              *target_time = ta - delta / tree->rates->cur_l[a->num];
               *target_nd = a;
-              /* printf("\n> ta: %f td: %f new_time: %f delta: %f c: %f r: %f",ta,td,*target_time,delta,tree->rates->clock_r,tree->rates->br_r[a->num]); */
+              /* PhyML_Fprintf(stderr,"\n> ta: %f td: %f new_time: %f delta: %f c: %f r: %f l->v: %G", */
+              /*               ta, */
+              /*               td, */
+              /*               *target_time, */
+              /*               delta, */
+              /*               tree->rates->clock_r, */
+              /*               tree->rates->br_r[a->num], */
+              /*               b->l->v); */
+              assert(*target_time < ta && *target_time > td);
             }
         }
       else
@@ -11514,9 +11533,10 @@ void Random_Walk_Along_Tree_On_Radius(t_node *a, t_node *d, t_edge *b, phydbl *r
           // target falls on edge below root leading to node a
           if(delta < tree->rates->cur_l[a->num])
             {
-              *target_time = ta - delta / (tree->rates->clock_r * tree->rates->br_r[a->num]);
+              /* *target_time = ta - delta / (tree->rates->clock_r * tree->rates->br_r[a->num]); */
+              *target_time = ta - delta / tree->rates->cur_l[a->num];
               *target_nd = a;
-              /* printf("\n.. delta: %f l(a): %f time: %f ta: %f",delta,tree->rates->cur_l[a->num],*target_time,ta); */
+              /* PhyML_Fprintf(stderr,"\n.. delta: %f l(a): %f time: %f ta: %f",delta,tree->rates->cur_l[a->num],*target_time,ta); */
             }
           else
             {
@@ -11524,16 +11544,17 @@ void Random_Walk_Along_Tree_On_Radius(t_node *a, t_node *d, t_edge *b, phydbl *r
               if(u < .5)
                 {
                   // target falls on edge below root leading to node d
-                  *target_time = tree->rates->nd_t[tree->n_root->num] + (delta - tree->rates->cur_l[a->num])/(tree->rates->clock_r * tree->rates->br_r[d->num]);
+                  /* *target_time = tree->rates->nd_t[tree->n_root->num] + (delta - tree->rates->cur_l[a->num])/(tree->rates->clock_r * tree->rates->br_r[d->num]); */
+                  *target_time = tree->rates->nd_t[tree->n_root->num] + (delta - tree->rates->cur_l[a->num])/tree->rates->cur_l[d->num];
                   *target_nd = d;
-                  /* printf("\n<< ta: %f td: %f new_time: %f delta: %f c: %f",ta,td,*target_time,delta,tree->rates->clock_r); */
+                  /* PhyML_Fprintf(stderr,"\n<< ta: %f td: %f new_time: %f delta: %f c: %f",ta,td,*target_time,delta,tree->rates->clock_r); */
                 }
               else
                 {
                   // target falls above root
                   *target_time = tree->rates->nd_t[tree->n_root->num] - (delta - tree->rates->cur_l[a->num])/tree->rates->clock_r;
                   *target_nd = tree->n_root;                  
-                  /* printf("\n>> ta: %f td: %f new_time: %f delta: %f c: %f",ta,td,*target_time,delta,tree->rates->clock_r); */
+                  /* PhyML_Fprintf(stderr,"\n>> ta: %f td: %f new_time: %f delta: %f c: %f",ta,td,*target_time,delta,tree->rates->clock_r); */
                 }
             }
         }
@@ -11547,13 +11568,13 @@ void Random_Walk_Along_Tree_On_Radius(t_node *a, t_node *d, t_edge *b, phydbl *r
       int i,dir1,dir2;
       
       dir1 = dir2 = -1;
-      for(i=0;i<3;i++)
+      for(i=0;i<3;++i)
         if(d->v[i] != a)
           {
             if(dir1 < 0) dir1 = i;
             else         dir2 = i;
           }
-             
+
       u = Uni();
       if(u < .5)
         Random_Walk_Along_Tree_On_Radius(d,d->v[dir1],d->b[dir1],radius,target_edge,target_nd,target_time,tree);
