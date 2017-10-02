@@ -1470,6 +1470,28 @@ void Free_NNI(t_nni *t)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+/* Matrices used in transfer bootstrap computation (tbe.c) */
+void Free_TBE_Matrices(int n_otu,  short unsigned*** i_matrix, short unsigned*** c_matrix,
+		       short unsigned*** hamming, short unsigned** min_dist,
+		       short unsigned**  min_dist_edge, int** cluster_sizes){
+  int i;
+  int nb_edges = 2*n_otu-3;
+  for (i=0; i<nb_edges; i++) {
+    free((*c_matrix)[i]);
+    free((*i_matrix)[i]);
+    free((*hamming)[i]);
+  }
+  free((*c_matrix));
+  free((*i_matrix));
+  free((*hamming));
+  free((*min_dist));
+  free((*min_dist_edge));
+  free((*cluster_sizes));
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

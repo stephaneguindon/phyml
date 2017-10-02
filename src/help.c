@@ -126,8 +126,12 @@ void Usage()
   PhyML_Printf("\t\t%sint%s = -4: SH-like branch supports alone.\n",LINE,FLAT);
   PhyML_Printf("\t\t%sint%s = -5: (default) approximate Bayes branch supports.\n",LINE,FLAT);
   PhyML_Printf("\n");
-  #endif
 
+  PhyML_Printf("%s\n\t--tbe%s\n",BOLD,FLAT);
+  PhyML_Printf("\t\tComputes TBE instead of FBP (standard) bootstrap support\n");
+  PhyML_Printf("\t\tHas no effect with -b <= 0\n");
+
+  #endif
 
   PhyML_Printf("%s\n\t-m (or --model) %smodel%s\n",BOLD,LINE,FLAT);
   PhyML_Printf("\t\tmodel%s : substitution model name.\n",FLAT);

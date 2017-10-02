@@ -11,6 +11,7 @@ the GNU public licence. See http://www.opensource.org for details.
 */
 
 #include "utilities.h"
+#include "tbe.h"
 #include "assert.h"
 
 #ifdef BEAGLE
@@ -2756,7 +2757,11 @@ void Clean_Tree_Connections(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Bootstrap(t_tree *tree)
+/* 
+   if tbe_bootstrap == 0  => Classical FBP (Felsenstein bootstrap proportions) 
+   else => TBE (Transfer bootstrap expectation)
+*/
+void Bootstrap(t_tree *tree, int tbe_bootstrap)
 {
   int *site_num, n_site;
   int replicate,j,k;
@@ -2775,7 +2780,9 @@ void Bootstrap(t_tree *tree)
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
     }
 
-  tree->print_boot_val = 1;
+  tree->print_boot_val = !tbe_bootstrap;
+  tree->print_tbe_val = tbe_bootstrap;
+  
   tree->print_alrt_val = 0;
   boot_tree            = NULL;
 
@@ -2917,8 +2924,11 @@ void Bootstrap(t_tree *tree)
       Get_Bip(boot_tree->a_nodes[0],
               boot_tree->a_nodes[0]->v[0],
               boot_tree);
-
-      Compare_Bip(tree,boot_tree,NO);
+      if(!tbe_bootstrap){
+	Compare_Bip(tree,boot_tree,NO);
+      }else{
+	Compare_Bip_Distance(tree, boot_tree);
+      }
 
       Check_Br_Lens(boot_tree);
       Br_Len_Involving_Invar(boot_tree);
@@ -3808,6 +3818,38 @@ int Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only)
   return n_edges - identical;
   /* return different; */
 }
+
+
+/* 
+   Computes min transfer distance between branches of tree1 and tree2 
+   And adds these distances to tdist_score of each branches of tree1
+   the score is not normalized yet by depth nor by number of bootstrap 
+   trees.
+   This will be done at the end.
+*/
+void Compare_Bip_Distance(t_tree *tree1, t_tree *tree2){
+  int i;
+  t_edge *cur_edge;
+  short unsigned** i_matrix;
+  short unsigned** c_matrix;
+  short unsigned** hamming;
+  short unsigned* min_dist;
+  short unsigned* min_dist_edge;
+  int* cluster_sizes;
+  
+  Alloc_TBE_Matrices(tree1->n_otu, &i_matrix, &c_matrix, &hamming, &min_dist, &min_dist_edge, &cluster_sizes);
+
+  Update_All_IC_Ref_Tree(tree1, tree2, i_matrix, c_matrix, cluster_sizes);
+  Update_All_IC_Boot_Tree(tree1, tree2, i_matrix, c_matrix,hamming,min_dist, min_dist_edge, cluster_sizes);
+
+  for(i=0; i<2*tree1->n_otu-3; i++){
+    cur_edge = tree1->a_edges[i];
+    cur_edge->tdist_score+=min_dist[cur_edge->num];
+  }
+  
+  Free_TBE_Matrices(tree1->n_otu, &i_matrix, &c_matrix, &hamming, &min_dist, &min_dist_edge, &cluster_sizes);
+}
+
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -8013,7 +8055,7 @@ void Add_BioNJ_Branch_Lengths(t_tree *tree, calign *cdata, t_mod *mod, matrix *m
 char *Bootstrap_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
 {
   t_tree *tree;
-
+  
   tree = Read_Tree(&s_tree);
 
   tree->n_root = NULL;
@@ -8045,9 +8087,9 @@ char *Bootstrap_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
   Lk(NULL,tree);
 
 #ifdef MPI
-  Bootstrap_MPI(tree);
+  Bootstrap_MPI(tree, io->tbe_bootstrap);
 #else
-  Bootstrap(tree);
+  Bootstrap(tree, io->tbe_bootstrap);
 #endif
 
   Free(s_tree);
@@ -11689,8 +11731,7 @@ t_clad *Duplicate_Clade(t_clad *from)
     }
   
   return to;
-  
-}
+  }
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
