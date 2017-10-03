@@ -2433,8 +2433,8 @@ void RATES_Update_Cur_Bl(t_tree *tree)
 	(t2-t0)/(t1+t2-2.*t0)*tree->rates->cur_gamma_prior_mean[n1->num];
       
       tree->e_root->l_var->v = 
-	POW((t1-t0)/(t1+t2-2.*t0),2)*tree->rates->cur_gamma_prior_var[n0->num] +
-	POW((t2-t0)/(t1+t2-2.*t0),2)*tree->rates->cur_gamma_prior_var[n1->num];
+	pow((t1-t0)/(t1+t2-2.*t0),2)*tree->rates->cur_gamma_prior_var[n0->num] +
+	pow((t2-t0)/(t1+t2-2.*t0),2)*tree->rates->cur_gamma_prior_var[n1->num];
     }
 
   if(tree->is_mixt_tree == YES) MIXT_RATES_Update_Cur_Bl(tree);
