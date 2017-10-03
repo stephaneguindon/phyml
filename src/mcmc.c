@@ -194,14 +194,14 @@ void MCMC(t_tree *tree)
       /* Clock rate */
       if(!strcmp(tree->mcmc->move_name[move],"clock"))
       	{
-      	  For(i,2*tree->n_otu-2) tree->rates->br_do_updt[i] = YES;	  
+      	  for(i=0;i<2*tree->n_otu-2;++i) tree->rates->br_do_updt[i] = YES;	  
           MCMC_Clock_R(tree);  
       	}
 
       /* Nu */
       else if(!strcmp(tree->mcmc->move_name[move],"nu"))
       	{
-      	  For(i,2*tree->n_otu-2) tree->rates->br_do_updt[i] = YES;
+      	  for(i=0;i<2*tree->n_otu-2;++i) tree->rates->br_do_updt[i] = YES;
 	  MCMC_Nu(tree);
       	}
 
@@ -3901,7 +3901,6 @@ void MCMC_One_Length(t_edge *b, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void MCMC_Scale_Br_Lens(t_tree *tree)
 {
   phydbl u;
@@ -3918,7 +3917,7 @@ void MCMC_Scale_Br_Lens(t_tree *tree)
   u = Uni();
   mult = u*(K-1./K)+1./K;
 
-  For(i,2*tree->n_otu-3) 
+  for(i=0;i<2*tree->n_otu-3;++i) 
     {
       tree->a_edges[i]->l->v *= mult;
       if(tree->a_edges[i]->l->v < tree->mod->l_min || 
@@ -4830,7 +4829,6 @@ void MCMC_Nu(t_tree *tree)
   phydbl cur_lnL_data, new_lnL_data;
   int i;
 
-  Record_Br_Len(tree);
 
   cur_nu        = -1.0;
   new_nu        = -1.0;
@@ -4860,21 +4858,12 @@ void MCMC_Nu(t_tree *tree)
       if(tree->rates->model == GUINDON)
 	{
 	  for(i=0;i<2*tree->n_otu-2;++i) tree->rates->br_do_updt[i] = YES;
+          RATES_Update_Cur_Bl(tree);
 	  new_lnL_data = Lk(NULL,tree);
 	}
       
       ratio += (new_lnL_rate - cur_lnL_rate);
-
       ratio += (new_lnL_data - cur_lnL_data);
-
-
-      /* !!!!!!!!!!!!!!!! */
-      /* Modelling exp(nu) and making move on nu */
-      /* ratio += (new_nu - cur_nu); */
-	 
-      /* Exponential prior on nu */
-      /* ratio += log(Dexp(new_nu,10.) / Dexp(cur_nu,10.)); */
-
  
       ratio = exp(ratio);
       alpha = MIN(1.,ratio);
@@ -4882,10 +4871,10 @@ void MCMC_Nu(t_tree *tree)
       u = Uni();
       if(u > alpha) /* Reject */
 	{
-	  tree->rates->nu    = cur_nu;
+	  tree->rates->nu          = cur_nu;
 	  tree->rates->c_lnL_rates = cur_lnL_rate;
-	  tree->c_lnL        = cur_lnL_data;
-	  Restore_Br_Len(tree);
+	  tree->c_lnL              = cur_lnL_data;
+          if(tree->rates->model == GUINDON) RATES_Update_Cur_Bl(tree);
 	}
       else
 	{
@@ -5250,6 +5239,9 @@ void MCMC_Prune_Regraft(t_tree *tree)
         }
 
       assert(regraft_edge);      
+      assert(residual->left != residual->rght);
+      assert(regraft_edge->left != prune_daughter->v[dir_prune]);
+      assert(regraft_edge->rght != prune_daughter->v[dir_prune]);
       
 
       // Regraft
@@ -5322,6 +5314,9 @@ void MCMC_Prune_Regraft(t_tree *tree)
           Prune_Subtree(prune_daughter->v[dir_prune],
                         prune_daughter,
                         &target,&residual,tree);
+          assert(residual->left != residual->rght);
+          assert(ori_target->left != prune_daughter->v[dir_prune]);
+          assert(ori_target->rght != prune_daughter->v[dir_prune]);
           Graft_Subtree(ori_target,
                         prune_daughter->v[dir_prune],
                         prune_daughter,residual,prune == tree->n_root ? tree->n_root : cur_regraft_nd,tree);
@@ -5452,7 +5447,8 @@ void MCMC_Prune_Regraft_Weighted(t_tree *tree)
       radius = Rnorm(0.0,0.05);
       radius = FABS(radius);
       radius += tree->rates->cur_l[prune_daughter->num]; // valid too when prune == tree->n_root
-            
+
+      /* printf("\n. Init rad: %G l: %G %G root: %d",radius,tree->rates->cur_l[prune_daughter->num],prune_daughter->b[dir_prune]->l->v,prune_daughter->b[dir_prune] == tree->e_root); */
       // Get the list of potential regraft nodes (oldest node on regraft edge)
       Random_Walk_Along_Tree_On_Radius(prune_daughter,
                                        prune_daughter->v[dir_prune],                                       
@@ -5463,19 +5459,21 @@ void MCMC_Prune_Regraft_Weighted(t_tree *tree)
                                        &new_t,
                                        tree);
       
-      /* printf("\n. new_regraft_edge: %d, new_regraft_nd: %d time: %f K: %f cur_regraft_nd: %d", */
+      
+      /* printf("\n. new_regraft_edge: %d, new_regraft_nd: %d time: %f cur_regraft_nd: %d prune: %d prune_daughter: %d", */
       /*        regraft_edge ? regraft_edge->num : -1, */
       /*        new_regraft_nd ? new_regraft_nd->num : -1, */
-      /*        new_t,K, */
+      /*        new_t, */
       /*        cur_regraft_nd->num, */
       /*        prune->num, */
-      /*        prune_daughter->num); fflush(NULL); */
+             /* prune_daughter->num); fflush(NULL); */
 
       if(new_regraft_nd == NULL) continue;
       if(new_regraft_nd == prune) continue;
       if(new_regraft_nd == cur_regraft_nd) continue;
       if(new_t > times[prune_daughter->num]) continue;
-                
+      assert(new_regraft_nd != prune_daughter);
+      
       // New age
       if(prune == tree->n_root || new_regraft_nd == tree->n_root)
         {
@@ -5505,7 +5503,7 @@ void MCMC_Prune_Regraft_Weighted(t_tree *tree)
       ori_target = target;
       
 
-      // Regraft edge is the one sitting above regraft_nd
+      // Regraft edge is the one sitting above new_regraft_nd
       if(new_regraft_nd == tree->n_root->v[1] ||
          new_regraft_nd == tree->n_root->v[2] ||
          new_regraft_nd == tree->n_root) regraft_edge = tree->e_root;
@@ -5516,8 +5514,11 @@ void MCMC_Prune_Regraft_Weighted(t_tree *tree)
           regraft_edge = new_regraft_nd->b[i];
         }
 
-      assert(regraft_edge);      
-      
+      assert(regraft_edge);
+      assert(residual->left != residual->rght);
+      assert(regraft_edge->left != prune_daughter->v[dir_prune]);
+      assert(regraft_edge->rght != prune_daughter->v[dir_prune]);
+
       // Regraft
       Graft_Subtree(regraft_edge,
                     prune_daughter->v[dir_prune],
@@ -5576,6 +5577,9 @@ void MCMC_Prune_Regraft_Weighted(t_tree *tree)
           Prune_Subtree(prune_daughter->v[dir_prune],
                         prune_daughter,
                         &target,&residual,tree);
+          assert(residual->left != residual->rght);
+          assert(ori_target->left != prune_daughter->v[dir_prune]);
+          assert(ori_target->rght != prune_daughter->v[dir_prune]);
           Graft_Subtree(ori_target,
                         prune_daughter->v[dir_prune],
                         prune_daughter,residual,prune == tree->n_root ? tree->n_root : cur_regraft_nd,tree);
@@ -5856,6 +5860,9 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
         }
 
       assert(regraft_edge);      
+      assert(residual->left != residual->rght);
+      assert(regraft_edge->left != prune_daughter->v[dir_prune]);
+      assert(regraft_edge->rght != prune_daughter->v[dir_prune]);
       
       // Regraft
       Graft_Subtree(regraft_edge,
@@ -5995,6 +6002,9 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
           Prune_Subtree(prune_daughter->v[dir_prune],
                         prune_daughter,
                         &target,&residual,tree);
+          assert(residual->left != residual->rght);
+          assert(ori_target->left != prune_daughter->v[dir_prune]);
+          assert(ori_target->rght != prune_daughter->v[dir_prune]);
           Graft_Subtree(ori_target,
                         prune_daughter->v[dir_prune],
                         prune_daughter,residual,prune == tree->n_root ? tree->n_root : cur_regraft_nd,tree);

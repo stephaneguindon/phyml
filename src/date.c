@@ -660,6 +660,13 @@ phydbl *DATE_MCMC(t_tree *tree)
       else if(!strcmp(tree->mcmc->move_name[move],"clade_change"))       MCMC_Clade_Change(tree);
       else continue;
       
+      
+      if(!RATES_Check_Edge_Length_Consistency(tree))
+        {
+          PhyML_Fprintf(stderr,"\n. move: %s",tree->mcmc->move_name[move]);
+          Exit("\n");
+        }
+      
       if(!TIMES_Check_Node_Height_Ordering(tree))
         {
           PhyML_Fprintf(stderr,"\n. move: %s",tree->mcmc->move_name[move]);

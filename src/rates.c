@@ -2435,12 +2435,6 @@ void RATES_Update_Cur_Bl(t_tree *tree)
       tree->e_root->l_var->v = 
 	POW((t1-t0)/(t1+t2-2.*t0),2)*tree->rates->cur_gamma_prior_var[n0->num] +
 	POW((t2-t0)/(t1+t2-2.*t0),2)*tree->rates->cur_gamma_prior_var[n1->num];
-
-      /* printf("\n. ROOT: %f %f %f %f", */
-      /* 	     tree->rates->cur_gamma_prior_mean[n0->num], */
-      /* 	     tree->rates->cur_gamma_prior_var[n0->num], */
-      /* 	     tree->rates->cur_gamma_prior_mean[n1->num], */
-      /* 	     tree->rates->cur_gamma_prior_var[n1->num]); */
     }
 
   if(tree->is_mixt_tree == YES) MIXT_RATES_Update_Cur_Bl(tree);
@@ -2488,8 +2482,8 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 	{
 	  phydbl m,v;
 
-	  /* Integrated_Geometric_Brownian_Bridge_Moments(dt,ra,rd,nu,&m,&v); */
-	  Integrated_Geometric_Brownian_Bridge_Moments(0.199651,3.14076,3.1447,0.00160769,&m,&v);
+	  Integrated_Geometric_Brownian_Bridge_Moments(dt,ra,rd,nu,&m,&v);
+	  /* Integrated_Geometric_Brownian_Bridge_Moments(0.199651,3.14076,3.1447,0.00160769,&m,&v); */
           
           /* PhyML_Fprintf(stderr,"\n\nmean=%G var=%G",m,v); */
           /* Exit("\n"); */
@@ -3753,6 +3747,31 @@ void RATES_Get_Survival_Ranks(t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+int RATES_Check_Edge_Length_Consistency(t_tree *tree)
+{
+  int i;
+
+  for(i=0;i<2*tree->n_otu-3;++i)
+    {
+      if(tree->a_edges[i]->left->anc == tree->a_edges[i]->rght)
+        {
+          if(Are_Equal(tree->rates->cur_l[tree->a_edges[i]->left->num],
+                       tree->a_edges[i]->l->v,
+                       1.E-5) == NO) return 0;            
+        }
+
+      if(tree->a_edges[i]->rght->anc == tree->a_edges[i]->left)
+        {
+          if(Are_Equal(tree->rates->cur_l[tree->a_edges[i]->rght->num],
+                       tree->a_edges[i]->l->v,
+                       1.E-5) == NO) return 0;
+        }
+    }
+
+  return 1;
+  
+}
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
