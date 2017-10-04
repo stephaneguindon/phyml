@@ -100,6 +100,94 @@ void RATES_Lk_Rates_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+phydbl RATES_Lk_Rates_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl nd_r_d, int n_a, int n_d, phydbl dt_a, phydbl dt_d, t_tree *tree)
+{
+  phydbl log_dens;
+  phydbl mean,sd;
+  phydbl min_r, max_r;
+  phydbl cr,logcr;
+  
+  cr        = tree->rates->clock_r;
+  logcr     = log(cr);
+  log_dens  = UNLIKELY;
+  mean = sd = -1.;
+  min_r     = tree->rates->min_rate;
+  max_r     = tree->rates->max_rate;
+
+  dt_d = MAX(0.5,dt_d); // We give only one decimal when printing out node heights. It is therefore a fair approximation
+
+  switch(tree->rates->model)
+    {
+    case THORNE :
+      {
+        PhyML_Fprintf(stderr,"\n. Not implemented yet.");
+        assert(FALSE);            
+	break;
+      }
+    case GUINDON :
+      {
+	int err;	
+
+	min_r = tree->rates->min_rate;
+	max_r = tree->rates->max_rate;
+
+	br_r_d = log(br_r_d*cr);
+	br_r_a = log(br_r_a*cr);
+        min_r  = log(min_r*cr);
+	max_r  = log(max_r*cr);
+
+	sd   = sqrt(tree->rates->nu*dt_d);
+	mean = br_r_a - .5*sd*sd;
+
+        // log(density(log(Rate)))
+ 	log_dens = Log_Dnorm_Trunc(br_r_d,mean,sd,min_r,max_r,&err);
+        // log(denstity(Rate))
+        log_dens -= log(exp(br_r_d)*cr);
+        
+	if(err)
+	  {
+	    PhyML_Fprintf(stderr,"\n. Run: %d",tree->mcmc->run);
+	    PhyML_Fprintf(stderr,"\n. br_r_d=%f mean=%f sd=%f min_r=%f max_r=%f dt_d=%f",br_r_d,mean,sd,min_r,max_r,dt_d);
+	    PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
+	    Exit("\n");
+	  }
+	break;
+      }
+    case GAMMA :
+      {
+        int err;
+        log_dens = Log_Dnorm_Trunc(br_r_d,1.0,tree->rates->nu,tree->rates->min_rate,tree->rates->max_rate,&err);
+	break;
+      }
+    case STRICTCLOCK :
+      {
+	log_dens = 0.0;
+	break;
+      }
+
+    default : 
+      {
+	PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
+	Warn_And_Exit("");
+      }
+    }
+
+  if(isnan(log_dens))
+    {
+      PhyML_Fprintf(stderr,"\n. Run=%4d br_r_d=%f br_r_a=%f dt_d=%f dt_a=%f nu=%f log_dens=%G sd=%f mean=%f\n",
+                    tree->mcmc->run,
+                    br_r_d,br_r_a,dt_d,dt_a,tree->rates->nu,log_dens,
+                    sd,mean);
+      PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
+      Exit("\n");
+    }
+
+  return log_dens;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 phydbl RATES_Lk_Change_One_Rate(t_node *d, phydbl new_rate, t_tree *tree)
 {
   tree->rates->br_r[d->num] = new_rate;
@@ -284,93 +372,6 @@ void RATES_Update_Triplet(t_node *n, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-phydbl RATES_Lk_Rates_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl nd_r_d, int n_a, int n_d, phydbl dt_a, phydbl dt_d, t_tree *tree)
-{
-  phydbl log_dens;
-  phydbl mean,sd;
-  phydbl min_r, max_r;
-  phydbl cr,logcr;
-  
-  cr        = tree->rates->clock_r;
-  logcr     = log(cr);
-  log_dens  = UNLIKELY;
-  mean = sd = -1.;
-  min_r     = tree->rates->min_rate;
-  max_r     = tree->rates->max_rate;
-
-  dt_d = MAX(0.5,dt_d); // We give only one decimal when printing out node heights. It is therefore a fair approximation
-
-  switch(tree->rates->model)
-    {
-    case THORNE :
-      {
-        PhyML_Fprintf(stderr,"\n. Not implemented yet.");
-        assert(FALSE);            
-	break;
-      }
-    case GUINDON :
-      {
-	int err;	
-
-	min_r = tree->rates->min_rate;
-	max_r = tree->rates->max_rate;
-
-	br_r_d = log(br_r_d*cr);
-	br_r_a = log(br_r_a*cr);
-        min_r  = log(min_r*cr);
-	max_r  = log(max_r*cr);
-
-	sd   = SQRT(tree->rates->nu*dt_d);
-	mean = br_r_a - .5*sd*sd;
-
-        // log(density(log(Rate)))
- 	log_dens = Log_Dnorm_Trunc(br_r_d,mean,sd,min_r,max_r,&err);
-        // log(denstity(Rate))
-        log_dens -= log(exp(br_r_d)*cr);
-        
-	if(err)
-	  {
-	    PhyML_Fprintf(stderr,"\n. Run: %d",tree->mcmc->run);
-	    PhyML_Fprintf(stderr,"\n. br_r_d=%f mean=%f sd=%f min_r=%f max_r=%f dt_d=%f",br_r_d,mean,sd,min_r,max_r,dt_d);
-	    PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
-	    Exit("\n");
-	  }
-	break;
-      }
-    case GAMMA :
-      {
-        int err;
-        log_dens = Log_Dnorm_Trunc(br_r_d,1.0,tree->rates->nu,tree->rates->min_rate,tree->rates->max_rate,&err);
-	break;
-      }
-    case STRICTCLOCK :
-      {
-	log_dens = 0.0;
-	break;
-      }
-
-    default : 
-      {
-	PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
-	Warn_And_Exit("");
-      }
-    }
-
-  if(isnan(log_dens))
-    {
-      PhyML_Fprintf(stderr,"\n. Run=%4d br_r_d=%f br_r_a=%f dt_d=%f dt_a=%f nu=%f log_dens=%G sd=%f mean=%f\n",
-                    tree->mcmc->run,
-                    br_r_d,br_r_a,dt_d,dt_a,tree->rates->nu,log_dens,
-                    sd,mean);
-      PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
-      Exit("\n");
-    }
-
-  return log_dens;
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
 
 
 phydbl RATES_Compound_Core(phydbl mu1, phydbl mu2, int n1, int n2, phydbl dt1, phydbl dt2, phydbl alpha, phydbl beta, phydbl lexp, phydbl eps, int approx)
@@ -2483,11 +2484,13 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 	  phydbl m,v;
 
 	  Integrated_Geometric_Brownian_Bridge_Moments(dt,ra,rd,nu,&m,&v);
-	  /* Integrated_Geometric_Brownian_Bridge_Moments(0.199651,3.14076,3.1447,0.00160769,&m,&v); */
-          
-          /* PhyML_Fprintf(stderr,"\n\nmean=%G var=%G",m,v); */
-          /* Exit("\n"); */
 
+          if(isnan(m) || isnan(v))
+            {
+              PhyML_Fprintf(stderr,"\n. dt: %G ra: %G rd: %G nu: %G m: %G v: %G",
+                            dt,ra,rd,nu,m,v);
+              assert(FALSE);
+            }
           if(m < 0.0 || v < 0.0)
             {
               PhyML_Fprintf(stderr,"\n. dt: %G ra: %G rd: %G nu: %G m: %G v: %G\n",dt,ra,rd,nu,m,v);
@@ -2539,8 +2542,7 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 	{
 	  PhyML_Fprintf(stderr,"\n. dt=%G rr=%G cr=%G ra=%G rd=%G nu=%G %f %f ",dt,rr,cr,ra,rd,nu,b->l_var->v,b->l->v);	  
 	  PhyML_Fprintf(stderr,"\n. ta=%G td=%G ra*cr=%G rd*cr=%G sd=%G",ta,td,ra*cr,rd*cr,SQRT(dt*nu)*cr);
-	  PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d (function '%s').\n",__FILE__,__LINE__,__FUNCTION__);
-	  Exit("\n");
+	  assert(FALSE);
 	}
     }
 
