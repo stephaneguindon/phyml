@@ -1255,7 +1255,8 @@ void RATES_Free_Rates(t_rate *rates)
       int i;
       Free(rates->nd_r);
       Free(rates->br_r);
-      Free(rates->buff_r);
+      Free(rates->buff_nd_r);
+      Free(rates->buff_br_r);
       Free(rates->true_r);
       Free(rates->buff_t);
       Free(rates->nd_t);

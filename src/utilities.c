@@ -9325,11 +9325,14 @@ int Scale_Subtree_Rates_Post(t_node *a, t_node *d, phydbl mult, int *n_nodes, t_
 {
 
   tree->rates->br_r[d->num] *= mult;
+  tree->rates->nd_r[d->num] *= mult;
 
   *n_nodes = *n_nodes+1;
   
   if(tree->rates->br_r[d->num] < tree->rates->min_rate) return 0;
   if(tree->rates->br_r[d->num] > tree->rates->max_rate) return 0;
+  if(tree->rates->nd_r[d->num] < tree->rates->min_rate) return 0;
+  if(tree->rates->nd_r[d->num] > tree->rates->max_rate) return 0;
   
   if(d->tax) return 1;
   else
@@ -9337,7 +9340,7 @@ int Scale_Subtree_Rates_Post(t_node *a, t_node *d, phydbl mult, int *n_nodes, t_
       int i,res;
       
       res = 1;
-      for(i=0;i<3;i++)
+      for(i=0;i<3;++i)
         {
           if((d->v[i] != a) &&
              (d->b[i] != tree->e_root) &&

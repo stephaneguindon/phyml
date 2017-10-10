@@ -1065,6 +1065,7 @@ void MCMC_One_Node_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
 
 void MCMC_Times_And_Rates_All(t_tree *tree)
 {
+  if(tree->rates->model == GUINDON) return;
   MCMC_Times_And_Rates_Root(tree);
   MCMC_Times_And_Rates_Recur(tree->n_root,tree->n_root->v[1],YES,tree);
   MCMC_Times_And_Rates_Recur(tree->n_root,tree->n_root->v[2],YES,tree);
@@ -1089,8 +1090,6 @@ void MCMC_Times_And_Rates_Root(t_tree *tree)
   t_node *root;
   phydbl r2_cur,r3_cur;
   phydbl r2_new,r3_new;
-
-  /* printf("\n IN ROOT: %f",tree->rates->c_lnL_times); */
 
   root = tree->n_root;
 
@@ -2237,7 +2236,7 @@ void MCMC_Tree_Rates(t_tree *tree)
 {
   phydbl K,mult,u,alpha,ratio;
   phydbl cur_lnL_rate,new_lnL_rate;
-  /* phydbl cur_lnL_data,new_lnL_data; */
+  phydbl cur_lnL_seq,new_lnL_seq;
   int n_nodes;
   phydbl init_clock;
   
@@ -2252,7 +2251,9 @@ void MCMC_Tree_Rates(t_tree *tree)
   new_lnL_rate  = UNLIKELY;
   init_clock    = tree->rates->clock_r;
   ratio         = 0.0;
-
+  cur_lnL_seq   = tree->c_lnL;
+  new_lnL_seq   = tree->c_lnL;
+    
   u = Uni();
   mult = exp(K*(u-0.5));
     
@@ -2274,13 +2275,14 @@ void MCMC_Tree_Rates(t_tree *tree)
       return;
     }
 
-/*   if(tree->rates->model == GUINDON) */
-/*     { */
-      /* int i; */
-      /* For(i,2*tree->n_otu-2) tree->rates->br_do_updt[i] = YES; */
-      /* RATES_Update_Cur_Bl(tree); */
-      /* new_lnL_data = Lk(NULL,tree); */
-/*     } */
+  if(tree->rates->model == GUINDON)
+    {
+      int i;
+      for(i=0;i<2*tree->n_otu-2;++i) tree->rates->br_do_updt[i] = YES;
+      RATES_Update_Cur_Bl(tree);
+      new_lnL_seq = Lk(NULL,tree);
+      ratio += (new_lnL_seq - cur_lnL_seq);
+    }
 
   new_lnL_rate = RATES_Lk_Rates(tree);
 
@@ -2297,6 +2299,11 @@ void MCMC_Tree_Rates(t_tree *tree)
       tree->rates->clock_r = init_clock;
       RATES_Reset_Rates(tree);
       tree->rates->c_lnL_rates = cur_lnL_rate;
+      if(tree->rates->model == GUINDON)
+        {
+          RATES_Update_Cur_Bl(tree);
+          tree->c_lnL = cur_lnL_seq;
+        }
     }
   else
     {
@@ -2310,7 +2317,7 @@ void MCMC_Tree_Rates(t_tree *tree)
 void MCMC_Subtree_Rates(t_tree *tree)
 {  phydbl K,mult,u,alpha,ratio;
   phydbl cur_lnL_rate,new_lnL_rate;
-  phydbl cur_lnL_data,new_lnL_data;
+  phydbl cur_lnL_seq,new_lnL_seq;
   int target;
   int n_nodes;
   
@@ -2322,8 +2329,8 @@ void MCMC_Subtree_Rates(t_tree *tree)
   K             = tree->mcmc->tune_move[tree->mcmc->num_move_subtree_rates];
   cur_lnL_rate  = tree->rates->c_lnL_rates;
   new_lnL_rate  = cur_lnL_rate;
-  cur_lnL_data  = tree->c_lnL;
-  new_lnL_data  = cur_lnL_data;
+  cur_lnL_seq   = tree->c_lnL;
+  new_lnL_seq   = cur_lnL_seq;
   ratio         = 0.0;
 
   u = Uni();
@@ -2336,13 +2343,12 @@ void MCMC_Subtree_Rates(t_tree *tree)
   if(!Scale_Subtree_Rates(tree->a_nodes[target],mult,&n_nodes,tree))
     {
       RATES_Reset_Rates(tree);
-      Restore_Br_Len(tree);
       tree->mcmc->run_move[tree->mcmc->num_move_subtree_rates]++;
       return;
     }
 
   new_lnL_rate = RATES_Lk_Rates(tree);
-  new_lnL_data = Lk(NULL,tree);
+  new_lnL_seq  = Lk(NULL,tree);
 
   /* Proposal ratio: 2n-2=> number of multiplications, 1=>number of divisions */
   ratio += (+n_nodes)*log(mult);
@@ -2350,7 +2356,7 @@ void MCMC_Subtree_Rates(t_tree *tree)
   
 
   ratio += (new_lnL_rate - cur_lnL_rate);
-  ratio += (new_lnL_data - cur_lnL_data);
+  ratio += (new_lnL_seq - cur_lnL_seq);
 
 
   ratio = exp(ratio);
@@ -2362,7 +2368,7 @@ void MCMC_Subtree_Rates(t_tree *tree)
       RATES_Reset_Rates(tree);
       Restore_Br_Len(tree);
       tree->rates->c_lnL_rates = cur_lnL_rate;
-      tree->c_lnL        = cur_lnL_data;
+      tree->c_lnL = cur_lnL_seq;
     }
   else
     {

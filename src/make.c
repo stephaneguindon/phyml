@@ -1167,7 +1167,8 @@ t_rate *RATES_Make_Rate_Struct(int n_otu)
       rates->is_allocated         = YES;
       rates->nd_r                 = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
       rates->br_r                 = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
-      rates->buff_r               = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
+      rates->buff_br_r            = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
+      rates->buff_nd_r            = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
       rates->true_r               = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
       rates->nd_t                 = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
       rates->buff_t               = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));

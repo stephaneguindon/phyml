@@ -1498,7 +1498,8 @@ typedef struct __T_Rate {
   phydbl     *true_t; /*! true t_node times (including root node) */
   phydbl     *true_r; /*! true t_edge rates (on rooted tree) */
   phydbl     *buff_t;
-  phydbl     *buff_r;
+  phydbl     *buff_br_r;
+  phydbl     *buff_nd_r;
   phydbl     *dens; /*! Probability densities of mean substitution rates at the nodes */
   phydbl     *ml_l; /*! ML t_edge lengths (rooted) */
   phydbl     *cur_l; /*! Current t_edge lengths (rooted) */

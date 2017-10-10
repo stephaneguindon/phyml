@@ -131,18 +131,18 @@ phydbl RATES_Lk_Rates_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl n
 	min_r = tree->rates->min_rate;
 	max_r = tree->rates->max_rate;
 
-	br_r_d = log(br_r_d*cr);
-	br_r_a = log(br_r_a*cr);
+	nd_r_d = log(nd_r_d*cr);
+	nd_r_a = log(nd_r_a*cr);
         min_r  = log(min_r*cr);
 	max_r  = log(max_r*cr);
 
 	sd   = sqrt(tree->rates->nu*dt_d);
-	mean = br_r_a - .5*sd*sd;
+	mean = nd_r_a - .5*sd*sd;
 
         // log(density(log(Rate)))
- 	log_dens = Log_Dnorm_Trunc(br_r_d,mean,sd,min_r,max_r,&err);
+ 	log_dens = Log_Dnorm_Trunc(nd_r_d,mean,sd,min_r,max_r,&err);
         // log(denstity(Rate))
-        log_dens -= log(exp(br_r_d)*cr);
+        log_dens -= log(exp(nd_r_d)/cr);
         
 	if(err)
 	  {
@@ -605,35 +605,36 @@ void RATES_Copy_Rate_Struct(t_rate *from, t_rate *to, int n_otu)
   to->cur_comb_numb = from->cur_comb_numb;
   to->update_time_norm_const = from->update_time_norm_const;
 
-  For(i,2*n_otu-1) to->nd_r[i] = from->nd_r[i];
-  For(i,2*n_otu-1) to->br_r[i] = from->br_r[i];
-  For(i,2*n_otu-1) to->buff_r[i] = from->buff_r[i];
-  For(i,2*n_otu-1) to->true_r[i] = from->true_r[i];
-  For(i,2*n_otu-1) to->nd_t[i] = from->nd_t[i];
-  For(i,2*n_otu-1) to->buff_t[i] = from->buff_t[i];
-  For(i,2*n_otu-1) to->true_t[i] = from->true_t[i];
-  For(i,2*n_otu-1) to->t_mean[i] = from->t_mean[i];
-  For(i,2*n_otu-1) to->t_prior[i] = from->t_prior[i];
-  For(i,2*n_otu-1) to->t_prior_min[i] = from->t_prior_min[i];
-  For(i,2*n_otu-1) to->t_prior_max[i] = from->t_prior_max[i];
-  For(i,2*n_otu-1) to->t_floor[i] = from->t_floor[i];
-  For(i,2*n_otu-1) to->t_rank[i] = from->t_rank[i];
-  For(i,2*n_otu-1) to->t_has_prior[i] = from->t_has_prior[i];
-  For(i,2*n_otu-2) to->dens[i] = from->dens[i];
-  For(i,2*n_otu-1) to->triplet[i] = from->triplet[i];
-  For(i,2*n_otu-1) to->n_jps[i] = from->n_jps[i];
-  For(i,2*n_otu-2) to->t_jps[i] = from->t_jps[i];
+  for(i=0;i<2*n_otu-1;++i) to->nd_r[i] = from->nd_r[i];
+  for(i=0;i<2*n_otu-1;++i) to->br_r[i] = from->br_r[i];
+  for(i=0;i<2*n_otu-1;++i) to->buff_br_r[i] = from->buff_br_r[i];
+  for(i=0;i<2*n_otu-1;++i) to->buff_nd_r[i] = from->buff_nd_r[i];
+  for(i=0;i<2*n_otu-1;++i) to->true_r[i] = from->true_r[i];
+  for(i=0;i<2*n_otu-1;++i) to->nd_t[i] = from->nd_t[i];
+  for(i=0;i<2*n_otu-1;++i) to->buff_t[i] = from->buff_t[i];
+  for(i=0;i<2*n_otu-1;++i) to->true_t[i] = from->true_t[i];
+  for(i=0;i<2*n_otu-1;++i) to->t_mean[i] = from->t_mean[i];
+  for(i=0;i<2*n_otu-1;++i) to->t_prior[i] = from->t_prior[i];
+  for(i=0;i<2*n_otu-1;++i) to->t_prior_min[i] = from->t_prior_min[i];
+  for(i=0;i<2*n_otu-1;++i) to->t_prior_max[i] = from->t_prior_max[i];
+  for(i=0;i<2*n_otu-1;++i) to->t_floor[i] = from->t_floor[i];
+  for(i=0;i<2*n_otu-1;++i) to->t_rank[i] = from->t_rank[i];
+  for(i=0;i<2*n_otu-1;++i) to->t_has_prior[i] = from->t_has_prior[i];
+  for(i=0;i<2*n_otu-2;++i) to->dens[i] = from->dens[i];
+  for(i=0;i<2*n_otu-1;++i) to->triplet[i] = from->triplet[i];
+  for(i=0;i<2*n_otu-1;++i) to->n_jps[i] = from->n_jps[i];
+  for(i=0;i<2*n_otu-2;++i) to->t_jps[i] = from->t_jps[i];
   For(i,(2*n_otu-2)*(2*n_otu-2)) to->cov_l[i] = from->cov_l[i];
   For(i,(2*n_otu-2)*(2*n_otu-2)) to->invcov[i] = from->invcov[i];
-  For(i,2*n_otu-2) to->mean_l[i] = from->mean_l[i];
-  For(i,2*n_otu-2) to->ml_l[i] = from->ml_l[i];
-  For(i,2*n_otu-2) to->cur_l[i] = from->cur_l[i];
+  for(i=0;i<2*n_otu-2;++i) to->mean_l[i] = from->mean_l[i];
+  for(i=0;i<2*n_otu-2;++i) to->ml_l[i] = from->ml_l[i];
+  for(i=0;i<2*n_otu-2;++i) to->cur_l[i] = from->cur_l[i];
   For(i,2*n_otu-3) to->u_ml_l[i] = from->u_ml_l[i];
   For(i,2*n_otu-3) to->u_cur_l[i] = from->u_cur_l[i];
   For(i,(2*n_otu-2)*(2*n_otu-2)) to->cov_r[i] = from->cov_r[i];
-  For(i,2*n_otu-2) to->cond_var[i] = from->cond_var[i];
-  For(i,2*n_otu-2) to->mean_r[i] = from->mean_r[i];
-  For(i,2*n_otu-1) to->mean_t[i] = from->mean_t[i];
+  for(i=0;i<2*n_otu-2;++i) to->cond_var[i] = from->cond_var[i];
+  for(i=0;i<2*n_otu-2;++i) to->mean_r[i] = from->mean_r[i];
+  for(i=0;i<2*n_otu-1;++i) to->mean_t[i] = from->mean_t[i];
   For(i,(2*n_otu-1)*(2*n_otu-1)) to->lca[i] = from->lca[i];
   For(i,(2*n_otu-2)*(2*n_otu-2)) to->reg_coeff[i] = from->reg_coeff[i];
   For(i,(2*n_otu-2)*(6*n_otu-9)) to->trip_reg_coeff[i] = from->trip_reg_coeff[i];
@@ -645,18 +646,18 @@ void RATES_Copy_Rate_Struct(t_rate *from, t_rate *to, int n_otu)
   For(i,2*n_otu) to->_2n_vect5[i] = from->_2n_vect5[i];
   For(i,4*n_otu*n_otu) to->_2n2n_vect1[i] = from->_2n2n_vect1[i];
   For(i,4*n_otu*n_otu) to->_2n2n_vect2[i] = from->_2n2n_vect2[i];
-  For(i,2*n_otu-1) to->br_do_updt[i] = from->br_do_updt[i];
-  For(i,2*n_otu-1) to->cur_gamma_prior_mean[i] = from->cur_gamma_prior_mean[i];
-  For(i,2*n_otu-1) to->cur_gamma_prior_var[i] = from->cur_gamma_prior_var[i];
-  For(i,2*n_otu-1) to->n_tips_below[i] = from->n_tips_below[i];
-  For(i,2*n_otu-1) to->time_slice_lims[i] = from->time_slice_lims[i];
-  For(i,2*n_otu-1) to->n_time_slice_spans[i] = from->n_time_slice_spans[i];
-  For(i,2*n_otu-1) to->curr_slice[i] = from->curr_slice[i];
-  For(i,2*n_otu-1) to->has_survived[i] = from->has_survived[i];
-  For(i,2*n_otu-1) to->survival_rank[i] = from->survival_rank[i];
-  For(i,2*n_otu-1) to->survival_dur[i] = from->survival_dur[i];
-  For(i,2*n_otu-1) to->calib_prob[i] = from->calib_prob[i];
-  For(i,2*n_otu-1) to->t_prior_min_ori[i] = from->t_prior_max_ori[i];
+  for(i=0;i<2*n_otu-1;++i) to->br_do_updt[i] = from->br_do_updt[i];
+  for(i=0;i<2*n_otu-1;++i) to->cur_gamma_prior_mean[i] = from->cur_gamma_prior_mean[i];
+  for(i=0;i<2*n_otu-1;++i) to->cur_gamma_prior_var[i] = from->cur_gamma_prior_var[i];
+  for(i=0;i<2*n_otu-1;++i) to->n_tips_below[i] = from->n_tips_below[i];
+  for(i=0;i<2*n_otu-1;++i) to->time_slice_lims[i] = from->time_slice_lims[i];
+  for(i=0;i<2*n_otu-1;++i) to->n_time_slice_spans[i] = from->n_time_slice_spans[i];
+  for(i=0;i<2*n_otu-1;++i) to->curr_slice[i] = from->curr_slice[i];
+  for(i=0;i<2*n_otu-1;++i) to->has_survived[i] = from->has_survived[i];
+  for(i=0;i<2*n_otu-1;++i) to->survival_rank[i] = from->survival_rank[i];
+  for(i=0;i<2*n_otu-1;++i) to->survival_dur[i] = from->survival_dur[i];
+  for(i=0;i<2*n_otu-1;++i) to->calib_prob[i] = from->calib_prob[i];
+  for(i=0;i<2*n_otu-1;++i) to->t_prior_min_ori[i] = from->t_prior_max_ori[i];
   For(i,n_otu*n_otu) to->times_partial_proba[i] = from->times_partial_proba[i];
   For(i,n_otu*n_otu) to->numb_calib_chosen[i] = from->numb_calib_chosen[i];
 }
@@ -2457,10 +2458,22 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
     {
       tree->rates->br_do_updt[d->num] = NO;
 
+      if(tree->rates->model == GAMMA ||
+         tree->rates->model == THORNE ||
+         tree->rates->model == STRICTCLOCK)
+        {
+          rd = tree->rates->br_r[d->num];
+          ra = tree->rates->br_r[a->num];
+        }
+      else if(tree->rates->model == GUINDON)
+        {
+          rd = tree->rates->nd_r[d->num];
+          ra = tree->rates->nd_r[a->num];
+        }
+      else assert(FALSE);
+
       dt = fabs(tree->rates->nd_t[d->num] - tree->rates->nd_t[a->num]);
-      cr = tree->rates->clock_r;
-      rd = tree->rates->br_r[d->num];
-      ra = tree->rates->br_r[a->num];
+      cr = tree->rates->clock_r;      
       td = tree->rates->nd_t[d->num];
       ta = tree->rates->nd_t[a->num];
       nu = tree->rates->nu;
@@ -2485,32 +2498,17 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 
 	  Integrated_Geometric_Brownian_Bridge_Moments(dt,ra,rd,nu,&m,&v);
 
-          if(isnan(m) || isnan(v))
+          if(isnan(m) || isnan(v) || m < 0.0 || v < 0.0)
             {
-              PhyML_Fprintf(stderr,"\n. dt: %G ra: %G rd: %G nu: %G m: %G v: %G",
-                            dt,ra,rd,nu,m,v);
+              PhyML_Fprintf(stderr,"\n. dt: %G ra: %G rd: %G nu: %G m: %G v: %G a is root ? %d d is root ? %d",
+                            dt,ra,rd,nu,m,v,
+                            a==tree->n_root,
+                            d==tree->n_root);
               assert(FALSE);
             }
-          if(m < 0.0 || v < 0.0)
-            {
-              PhyML_Fprintf(stderr,"\n. dt: %G ra: %G rd: %G nu: %G m: %G v: %G\n",dt,ra,rd,nu,m,v);
-
-              /* t_node *n = d; */
-              /* do */
-              /*   { */
-              /*     PhyML_Fprintf(stderr,"\n. r: %G dt: %G", */
-              /*                   tree->rates->br_r[n->num], */
-              /*                   tree->rates->nd_t[n->num]-tree->rates->nd_t[n->anc->num]); */
-              /*     n = n->anc; */
-              /*   } */
-              /* while(n != tree->n_root); */
-
-              assert(FALSE);
-            }
-          
+                    
 	  m *= cr*dt; // the actual rate average is m * cr. We multiply by dt in order to derive the value for the branch length
 	  v *= (cr*cr)*(dt*dt);
-
 
 	  tree->rates->cur_gamma_prior_mean[d->num] = m;
 	  tree->rates->cur_gamma_prior_var[d->num]  = v;
@@ -2639,10 +2637,10 @@ void RATES_Get_Cov_Matrix_Rooted(phydbl *unroot_cov, t_tree *tree)
   RATES_Get_Cov_Matrix_Rooted_Pre(tree->n_root,tree->n_root->v[2],NULL,unroot_cov,tree);
   RATES_Get_Cov_Matrix_Rooted_Pre(tree->n_root,tree->n_root->v[1],NULL,unroot_cov,tree);
 
-  For(i,dim+1) tree->rates->cov_l[i*(dim+1)+tree->n_root->v[2]->num] /= 2.;
-  For(i,dim+1) tree->rates->cov_l[i*(dim+1)+tree->n_root->v[1]->num] /= 2.;
-  For(i,dim+1) tree->rates->cov_l[tree->n_root->v[2]->num*(dim+1)+i] /= 2.;
-  For(i,dim+1) tree->rates->cov_l[tree->n_root->v[1]->num*(dim+1)+i] /= 2.;
+  for(i=0;i<dim+1;++i) tree->rates->cov_l[i*(dim+1)+tree->n_root->v[2]->num] /= 2.;
+  for(i=0;i<dim+1;++i) tree->rates->cov_l[i*(dim+1)+tree->n_root->v[1]->num] /= 2.;
+  for(i=0;i<dim+1;++i) tree->rates->cov_l[tree->n_root->v[2]->num*(dim+1)+i] /= 2.;
+  for(i=0;i<dim+1;++i) tree->rates->cov_l[tree->n_root->v[1]->num*(dim+1)+i] /= 2.;
 
 }
 
@@ -2912,7 +2910,7 @@ void RATES_Get_Trip_Conditional_Variances(t_tree *tree)
 
   For(i,2*n_otu-3) a[i] = tree->rates->mean_l[i] * (Uni() * 0.2 + 0.9);
 
-  For(i,2*n_otu-2)
+  for(i=0;i<2*n_otu-2;++i)
     {
       n = tree->a_nodes[i];
       if(!n->tax)
@@ -2948,7 +2946,7 @@ void RATES_Get_All_Trip_Reg_Coeff(t_tree *tree)
 
   For(i,2*n_otu-3) a[i] = tree->rates->mean_l[i] * (Uni() * 0.2 + 0.9);
 
-  For(i,2*n_otu-2)
+  for(i=0;i<2*n_otu-2;++i)
     {
       n = tree->a_nodes[i];
       if(!n->tax)
@@ -3504,7 +3502,8 @@ void RATES_Record_Rates(t_tree *tree)
       Exit("\n");
     }
 
-  For(i,2*tree->n_otu-2) tree->rates->buff_r[i] = tree->rates->br_r[i];
+  for(i=0;i<2*tree->n_otu-2;++i) tree->rates->buff_br_r[i] = tree->rates->br_r[i];
+  for(i=0;i<2*tree->n_otu-1;++i) tree->rates->buff_nd_r[i] = tree->rates->nd_r[i];
 }
 
 //////////////////////////////////////////////////////////////
@@ -3515,7 +3514,8 @@ void RATES_Reset_Rates(t_tree *tree)
 {
   int i;
   tree->rates->br_r_recorded = NO;
-  For(i,2*tree->n_otu-2) tree->rates->br_r[i] = tree->rates->buff_r[i];
+  for(i=0;i<2*tree->n_otu-2;++i) tree->rates->br_r[i] = tree->rates->buff_br_r[i];
+  for(i=0;i<2*tree->n_otu-1;++i) tree->rates->nd_r[i] = tree->rates->buff_nd_r[i];
 }
 
 //////////////////////////////////////////////////////////////
