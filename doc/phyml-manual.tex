@@ -1,17 +1,18 @@
 \documentclass[a4paper,12pt]{article}
 \usepackage{fancyvrb}
+\usepackage{amsfonts}
 \usepackage{graphicx}
 \usepackage{tabularx}
 % \usepackage{color}
 \usepackage{xcolor}
 \usepackage{psfrag}
-\usepackage[fleqn]{amsmath}
 \usepackage[hyphens]{url}
 % \usepackage{vmargin}
 \usepackage{cite}
 \usepackage{caption2}
 \usepackage{hyperref}
 \usepackage{makeidx}
+\usepackage[fleqn]{amsmath}
 \renewcommand{\captionlabeldelim}{.}
 \def\thesection{\arabic{section}}
 \renewcommand{\thefigure}{\arabic{figure}}
@@ -27,6 +28,9 @@
 }
 \newcommand{\x}[1]{\texttt{#1}}
 \newcommand{\sfv}{$\Lambda$V}
+
+\DeclareMathOperator*{\Ex}{\mathbb{E}}
+\newcommand{\Var}{\mathrm{Var}}
 
 % \setpapersize{A4}
 % \hypersetup{colorlinks=true,linkcolor=blue,urlcolor=red,linkbordercolor=000}
@@ -2181,8 +2185,33 @@ explained below:
 \subsubsection{PhyTime input}
 As stated above, PhyTime takes as input an XML file very similar to those compatible with PhyML. An
 example is given thereafter. The first part of the input file (up to the \x{partitionelem} block) corresponds to a standard XML input
-file for PhyML. Note however that the tag name ``\x{phytime}'' replaces ``\x{phyml}''. The second part is PhyTime-specific. Two new tags can be found here: \x{clade}
-and \x{calibration}\index{PhyTime!calibration}. The \x{clade}\index{PhyTime!clade} element is used to define a subset of taxa. Each of these taxa is
+file for PhyML. Note however that the tag name ``\x{phytime}'' replaces ``\x{phyml}''. The second
+part is PhyTime-specific. Three new tags can be found here: \x{lineagerates}, \x{clade}
+and \x{calibration}\index{PhyTime!calibration}. 
+
+The \x{lineagerates}\index{PhyTime!lineagerates} element is used to define the model of rate
+variation across lineages. Its only attribute is \x{model} which can take the following values:
+\begin{itemize}
+\item \x{model=strictclock} or \x{model=clock}  implements the strict clock model, i.e., all lineages
+  evolve at the same instantaneous rate, at any point in time.
+\item \x{model=lognormal} or \x{model=normal}. The logarithm of the average rate along each branch is distributed as a
+  normal distribution. The mean and variance of this distribution are the same for all branches. More
+  precisely, let $R_b$ be the average rate of substitution along edge $b$. We have $R_b=X_b\cdot
+  \mu$, where $\mu$ is the ``baseline'' (or average over lineages) rate of substitution and $X_b$ is
+  thus the branch-specific {\em relative} rate of substitution. The lognormal model has $\log(X_b)
+  \sim \mathcal{N}(1,\nu)$, i.e., the logarithm of the relative rate is normally distributed with
+  mean (mode and median) set to 1.0 and standard deviation equal to $\nu$.
+\item \x{model=geometricbrownian} or \x{model=brownian} or \x{model=geo}. The logarithm of the rate
+  of substitution evolves according to a Brownian motion process along the tree. More precisely, the
+  logarithm of the rate of evolution at the end of edge $b$, noted as $Y_b^{\text{stop}}=\log(R_b^{\text{stop}})$, is
+  normally distributed with variance $v := \nu \cdot \Delta t_b$, where $\Delta t_b$ is the (calendar) time elapsed
+  along edge $b$, and mean equal to $Y_b^{\text{start}}-\frac{1}{2} v$, so that $\Ex(R_b^{\text{stop}})=\Ex(R_b^{\text{start}})$.
+  Under the geometric Brownian motion model, the average rate of evolution is also random. This
+  variability is taken into account in the calculation of the transition between nucleotides or
+  amino-acids along edges. See Guindon, 2012, {\em Syst. Biol.} for more information.
+\end{itemize}
+ 
+The \x{clade}\index{PhyTime!clade} element is used to define a subset of taxa. Each of these taxa is
 given in a \x{taxon} element. The  value that each taxon takes is a string corresponding to the
 name of one of the sequences in the alignment file. In the example that follows, \x{Gymno\_Cycas}, \x{Gymno\_Ginko} and
 \x{Gymno\_Juniperus} are three taxa that define a clade called \x{CLADE1}. Note that  this clade may
@@ -2195,16 +2224,15 @@ interval defines the calibration for the timing of the crown node of a given cla
 \vspace{0.2cm}
 \begin{Verbatim}[frame=single, label=Example of PhyTime XML file, samepage=true, baselinestretch=0.5,
   fontsize=\small, numbers=left]
-
 <phytime run.id="abc" output.file="def" mcmc.chain.len="1E+7" \
 mcmc.sample.every="100" mcmc.print.every="50" mcmc.burnin="10000">
 
-  <!-- Tree topology: use "bionj" here. Does not matter as the -->
-  <!-- tree is randomized at the start of the analysis anyway -->
+  <!-- Tree topology -->
   <topology> 
     <instance id="T1" init.tree="bionj" optimise.tree="yes"/>
   </topology>
   
+
   <!-- Substitution model -->
   <ratematrices id="RM1">
     <instance id="M1" model="HKY85" optimise.tstv="no" tstv="4.0"/>
@@ -2223,20 +2251,19 @@ mcmc.sample.every="100" mcmc.print.every="50" mcmc.burnin="10000">
     </weights>
   </siterates>
 
-  <!-- Nucleotide frequencies at equilibrium -->
+  <!-- Nucleotide frequencies -->
   <equfreqs id="EF1">
     <instance id="F1" optimise.freqs="no"/>
   </equfreqs>
 
-
-  <!-- One vector of branch lengths -->
+  <!-- Vector of edge lengths -->
   <branchlengths id="BL1" >
     <instance id="L1" optimise.lens="no"/>
   </branchlengths>
 
-
-  <partitionelem id="partition1" file.name="/path/to/sequences" \
-  data.type="nt" interleaved="no">
+  <!-- Model assembly -->
+  <partitionelem id="partition1" file.name="./seq.txt" \
+   data.type="nt" interleaved="no">
     <mixtureelem list="T1, T1, T1"/>
     <mixtureelem list="M1, M1, M1"/>
     <mixtureelem list="F1, F1, F1"/>
@@ -2248,6 +2275,9 @@ mcmc.sample.every="100" mcmc.print.every="50" mcmc.burnin="10000">
 \begin{Verbatim}[frame=single, label=Example of PhyTime XML file (ctnd), samepage=true, baselinestretch=0.5,
   fontsize=\small, numbers=left]
  
+  <!-- Model of rate variation across lineages -->
+  <lineagerates model="clock"/>
+
   <clade id="CLADE1">
     <taxon value="Gymno_Cycas"/>
     <taxon value="Gymno_Ginkgo"/>

@@ -575,7 +575,14 @@ phydbl *DATE_MCMC(t_tree *tree)
 
 
   
-  for(i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"br%d\t",i);
+  if(tree->rates->model == THORNE ||
+     tree->rates->model == LOGNORMAL ||
+     tree->rates->model == STRICTCLOCK)
+    for(i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"br%d\t",i);
+  else
+    for(i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"nr%d\t",i);
+
+
   for(i=0;i<2*tree->n_otu-1;++i) if(tree->a_nodes[i]->tax == NO) PhyML_Fprintf(fp_stats,"t%d\t",i);
   
   PhyML_Fprintf(fp_stats,"accRT\t");
@@ -663,13 +670,15 @@ phydbl *DATE_MCMC(t_tree *tree)
       
       if(!RATES_Check_Edge_Length_Consistency(tree))
         {
-          PhyML_Fprintf(stderr,"\n. move: %s",tree->mcmc->move_name[move]);
+          PhyML_Fprintf(stderr,"\n. Issue detected by RATES_Check_Edge_Length_Consistency(tree).");
+          PhyML_Fprintf(stderr,"\n. Move: %s",tree->mcmc->move_name[move]);
           Exit("\n");
         }
       
       if(!TIMES_Check_Node_Height_Ordering(tree))
         {
-          PhyML_Fprintf(stderr,"\n. move: %s",tree->mcmc->move_name[move]);
+          PhyML_Fprintf(stderr,"\n. Issue detected by TIMES_Check_Node_Height_Ordering(tree).");
+          PhyML_Fprintf(stderr,"\n. Move: %s",tree->mcmc->move_name[move]);
           Exit("\n");
         }
       
@@ -748,8 +757,13 @@ phydbl *DATE_MCMC(t_tree *tree)
             }
 
 
-          for(i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"%G\t",tree->rates->br_r[i]);
-
+          if(tree->rates->model == THORNE ||
+             tree->rates->model == LOGNORMAL ||
+             tree->rates->model == STRICTCLOCK)
+            for(i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"%G\t",tree->rates->br_r[i]);
+          else
+            for(i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"%G\t",tree->rates->nd_r[i]);
+            
           for(i=0;i<2*tree->n_otu-1;++i) if(tree->a_nodes[i]->tax == NO) PhyML_Fprintf(fp_stats,"%G\t",tree->rates->nd_t[i]);
 
           PhyML_Fprintf(fp_stats,"%G\t",tree->mcmc->acc_rate[tree->mcmc->num_move_times_and_rates_root]);

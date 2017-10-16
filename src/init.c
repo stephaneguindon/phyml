@@ -602,7 +602,7 @@ void Set_Defaults_Input(option* io)
 
   MCMC_Init_MCMC_Struct(NULL,io,io->mcmc);
   RATES_Init_Rate_Struct(io->rates,NULL,-1);
-  io->rates->model               = GAMMA;
+  io->rates->model               = LOGNORMAL;
 }
 
 //////////////////////////////////////////////////////////////

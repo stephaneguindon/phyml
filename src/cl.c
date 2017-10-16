@@ -334,8 +334,8 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	    i = 0;
 	    while(optarg[i++]) s[i]=tolower(optarg[i]);
 	    if(!strcmp(optarg,"gbd")) io->rates->model               = THORNE;
-	    else if(!strcmp(optarg,"gbs")) io->rates->model          = GUINDON;
-	    else if(!strcmp(optarg,"gamma")) io->rates->model        = GAMMA;
+	    else if(!strcmp(optarg,"geom")) io->rates->model         = GUINDON;
+	    else if(!strcmp(optarg,"lognorm")) io->rates->model      = LOGNORMAL;
 	    else if(!strcmp(optarg,"clock")) io->rates->model        = STRICTCLOCK;
 	    else if(!strcmp(optarg,"strictclock")) io->rates->model  = STRICTCLOCK;
 	    else if(!strcmp(optarg,"strict_clock")) io->rates->model = STRICTCLOCK;

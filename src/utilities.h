@@ -326,7 +326,7 @@ extern int TIME;
 #define COMPOUND_COR   0
 #define COMPOUND_NOCOR 1
 #define EXPONENTIAL    2
-#define GAMMA          3
+#define LOGNORMAL      3
 #define THORNE         4
 #define GUINDON        5
 #define STRICTCLOCK    6
@@ -1541,6 +1541,7 @@ typedef struct __T_Rate {
   int bl_from_rt; /*! if =1, branch lengths are obtained as the product of cur_r and t */
   int approx;
   int model; /*! Model number */
+  char *model_name;
   int is_allocated;
   int met_within_gibbs;
 

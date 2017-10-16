@@ -1312,6 +1312,7 @@ void RATES_Free_Rates(t_rate *rates)
       Free(rates->numb_calib_chosen);
       for(i=0;i<rates->n_cal;i++) Free_Calib(rates->a_cal[i]);
       Free(rates->a_cal);
+      Free(rates->model_name);
     }
   Free(rates);
 }

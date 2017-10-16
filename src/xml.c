@@ -2262,6 +2262,108 @@ void DATE_XML(char *xml_filename)
   dum_string = XML_Get_Attribute_Value(xnd,"mcmc.burnin");
   if(dum_string != NULL) mixt_tree->io->mcmc->chain_len_burnin = (int)String_To_Dbl(dum_string);
 
+
+
+
+  // Looking for XML node with rate-across-lineage info
+  xnd = XML_Search_Node_Name("lineagerates",YES,xroot);
+
+  if(xnd == NULL)
+    {
+      PhyML_Fprintf(stdout,"\n. The model of rate variation across lineages is not specified.");
+      PhyML_Fprintf(stdout,"\n. Using the geometric Brownian model (see Guindon, 2012, Syst. Biol.).\n");
+      mixt_tree->rates->model      = GUINDON;
+      mixt_tree->mod->gamma_mgf_bl = YES;
+    }
+  else
+    {
+      char *model_name;
+      model_name = XML_Get_Attribute_Value(xnd,"model");
+
+      if(model_name == NULL)
+        {
+          PhyML_Fprintf(stderr,"\n. Please specify a model of rate variation across lineages,");
+          PhyML_Fprintf(stderr,"\n. e.g., <lineagerates model=\"geometricbrownian\"/>.");
+          PhyML_Fprintf(stderr,"\n. See the manual for more options.");
+          assert(FALSE);
+        }
+      else
+        {
+          if(!strcmp(model_name,"geometricbrownian"))
+            {
+              mixt_tree->rates->model      = GUINDON;
+              mixt_tree->mod->gamma_mgf_bl = YES;
+              strcpy(mixt_tree->rates->model_name,"geometric Brownian"); 
+            }
+          else if(!strcmp(model_name,"geometric"))
+            {
+              mixt_tree->rates->model      = GUINDON;
+              mixt_tree->mod->gamma_mgf_bl = YES;
+              strcpy(mixt_tree->rates->model_name,"geometric Brownian"); 
+            }
+          else if(!strcmp(model_name,"brownian"))
+            {
+              mixt_tree->rates->model      = GUINDON;
+              mixt_tree->mod->gamma_mgf_bl = YES;
+              strcpy(mixt_tree->rates->model_name,"geometric Brownian"); 
+            }
+          else if(!strcmp(model_name,"geo"))
+            {
+              mixt_tree->rates->model      = GUINDON;
+              mixt_tree->mod->gamma_mgf_bl = YES;
+              strcpy(mixt_tree->rates->model_name,"geometric Brownian"); 
+            }
+          else if(!strcmp(model_name,"lognormal"))
+            {
+              mixt_tree->rates->model      = LOGNORMAL;
+              mixt_tree->mod->gamma_mgf_bl = NO;
+              strcpy(mixt_tree->rates->model_name,"lognormal (uncorrelated)"); 
+            }
+          else if(!strcmp(model_name,"normal"))
+            {
+              mixt_tree->rates->model      = LOGNORMAL;
+              mixt_tree->mod->gamma_mgf_bl = NO;
+              strcpy(mixt_tree->rates->model_name,"lognormal (uncorrelated)"); 
+            }
+          else if(!strcmp(model_name,"strictclock"))
+            {
+              mixt_tree->rates->model      = STRICTCLOCK;
+              mixt_tree->mod->gamma_mgf_bl = NO;
+              strcpy(mixt_tree->rates->model_name,"strict clock"); 
+            }
+          else if(!strcmp(model_name,"clock"))
+            {
+              mixt_tree->rates->model      = STRICTCLOCK;
+              mixt_tree->mod->gamma_mgf_bl = NO;
+              strcpy(mixt_tree->rates->model_name,"strict clock"); 
+            }
+          else
+            {
+              assert(FALSE);
+            }
+        }
+    }
+  
+  // Looking for XML node with rate-across-lineage info
+  xnd = XML_Search_Node_Name("calibration",YES,xroot);
+
+  if(xnd == NULL)
+    {
+      PhyML_Fprintf(stderr,"\n. No calibration information seems to be provided.");
+      PhyML_Fprintf(stderr,"\n. Please amend your XML file. \n");
+      assert(FALSE);
+    }
+  else
+    {
+      assert(xnd->child);
+      if(XML_Search_Node_Name("upper",NO,xnd->child) == NULL && XML_Search_Node_Name("lower",NO,xnd->child) == NULL)
+	{
+	  PhyML_Fprintf(stderr,"\n. There is no calibration information provided. \n");
+	  PhyML_Fprintf(stderr,"\n. Please check your data. \n");
+          assert(FALSE);
+	}
+    }
+
   
   // Looking for calibration node(s)
   xnd = XML_Search_Node_Name("calibration",YES,xroot);
@@ -2281,6 +2383,7 @@ void DATE_XML(char *xml_filename)
 	  Exit("\n");
 	}
     }
+
   
   MIXT_Check_Model_Validity(mixt_tree);
   MIXT_Init_Model(mixt_tree);
@@ -2452,10 +2555,8 @@ void DATE_XML(char *xml_filename)
 
   MIXT_Chain_Cal(mixt_tree);
 
-  mixt_tree->rates->model      = GAMMA;
-  mixt_tree->mod->gamma_mgf_bl = NO;
-  /* mixt_tree->rates->model      = GUINDON; */
-  /* mixt_tree->mod->gamma_mgf_bl = YES; */
+  PhyML_Printf("\n. Model of variation of rates across lineages: %s",mixt_tree->rates->model_name);
+
   res = DATE_MCMC(mixt_tree);
 
 

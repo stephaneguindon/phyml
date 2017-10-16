@@ -105,10 +105,9 @@ phydbl RATES_Lk_Rates_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl n
   phydbl log_dens;
   phydbl mean,sd;
   phydbl min_r, max_r;
-  phydbl cr,logcr;
+  phydbl cr;
   
   cr        = tree->rates->clock_r;
-  logcr     = log(cr);
   log_dens  = UNLIKELY;
   mean = sd = -1.;
   min_r     = tree->rates->min_rate;
@@ -141,7 +140,7 @@ phydbl RATES_Lk_Rates_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl n
 
         // log(density(log(Rate)))
  	log_dens = Log_Dnorm_Trunc(nd_r_d,mean,sd,min_r,max_r,&err);
-        // log(denstity(Rate))
+        // log(density(Rate))
         log_dens -= log(exp(nd_r_d)/cr);
         
 	if(err)
@@ -153,10 +152,14 @@ phydbl RATES_Lk_Rates_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl n
 	  }
 	break;
       }
-    case GAMMA :
+    case LOGNORMAL :
       {
         int err;
-        log_dens = Log_Dnorm_Trunc(br_r_d,1.0,tree->rates->nu,tree->rates->min_rate,tree->rates->max_rate,&err);
+        phydbl log_br_r_d = log(br_r_d);
+        // log(density(log(Relative Rate)));
+        log_dens = Log_Dnorm_Trunc(log_br_r_d,1.0,tree->rates->nu,tree->rates->min_rate,tree->rates->max_rate,&err);
+        // log(density(Rate));
+        log_dens -= log_br_r_d;
 	break;
       }
     case STRICTCLOCK :
@@ -279,7 +282,7 @@ void RATES_Update_Triplet(t_node *n, t_tree *tree)
 	    log_dens = log(log_dens);
 	    break;
 	  }
-	case GAMMA :
+	case LOGNORMAL :
 	  {
 	    log_dens = Dgamma(mu0,tree->rates->nu,1./tree->rates->nu) * Dgamma(mu1,tree->rates->nu,1./tree->rates->nu);
 	    log_dens = log(log_dens);
@@ -1038,7 +1041,7 @@ void RATES_Expect_Number_Subst(phydbl t_beg, phydbl t_end, phydbl r_beg,  int *n
 	*r_end  = *mean_r;
 	break;
       }
-    case GAMMA:
+    case LOGNORMAL:
       {
 	*mean_r = Rgamma(rates->nu,1./rates->nu);
 
@@ -2458,7 +2461,7 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
     {
       tree->rates->br_do_updt[d->num] = NO;
 
-      if(tree->rates->model == GAMMA ||
+      if(tree->rates->model == LOGNORMAL ||
          tree->rates->model == THORNE ||
          tree->rates->model == STRICTCLOCK)
         {
@@ -2480,7 +2483,7 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
       rr = -1.0;
 
       
-      if(tree->rates->model == GAMMA)
+      if(tree->rates->model == LOGNORMAL)
         {
           rr = rd;
           tree->rates->cur_l[d->num] = dt*rr*cr;          
@@ -2504,7 +2507,7 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
                             dt,ra,rd,nu,m,v,
                             a==tree->n_root,
                             d==tree->n_root);
-              assert(FALSE);
+              /* assert(FALSE); */
             }
                     
 	  m *= cr*dt; // the actual rate average is m * cr. We multiply by dt in order to derive the value for the branch length
@@ -3700,7 +3703,6 @@ void RATES_Get_Mean_Rate_In_Subtree_Pre(t_node *a, t_node *d, phydbl *sum, int *
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 char *RATES_Get_Model_Name(int model)
 {
   char *s;
@@ -3709,10 +3711,10 @@ char *RATES_Get_Model_Name(int model)
 
   switch(model)
     {
-    case GUINDON     : {strcpy(s,"gbs"); break;}
+    case GUINDON     : {strcpy(s,"geometric Brownian"); break;}
     case THORNE      : {strcpy(s,"gbd"); break;}
-    case GAMMA       : {strcpy(s,"gamma"); break;}
-    case STRICTCLOCK : {strcpy(s,"clock"); break;}
+    case LOGNORMAL   : {strcpy(s,"lognormal"); break;}
+    case STRICTCLOCK : {strcpy(s,"strict clock"); break;}
     default : 
       {
 	PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__);

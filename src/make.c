@@ -1222,6 +1222,7 @@ t_rate *RATES_Make_Rate_Struct(int n_otu)
       rates->times_partial_proba  = (phydbl *)mCalloc(n_otu*n_otu,sizeof(phydbl));
       rates->numb_calib_chosen    = (int *)mCalloc(n_otu*n_otu,sizeof(phydbl));
       rates->a_cal                = (t_cal **)mCalloc(n_otu-1,sizeof(t_cal *));
+      rates->model_name           = (char *)mCalloc(T_MAX_NAME,sizeof(char));
     }
 
   return rates;
