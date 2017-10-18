@@ -405,7 +405,7 @@ calign *Compact_Cdata(calign *data, option *io)
   cdata->n_otu  = n_otu;
   cdata->c_seq  = (align **)mCalloc(n_otu,sizeof(align *));
   cdata->wght   = (phydbl *)mCalloc(data->crunch_len,sizeof(phydbl));
-  cdata->b_frq  = (phydbl *)mCalloc(io->mod->ns,sizeof(phydbl));
+  cdata->obs_state_frq  = (phydbl *)mCalloc(io->mod->ns,sizeof(phydbl));
   cdata->ambigu = (short int *)mCalloc(data->crunch_len,sizeof(short int));
   cdata->invar  = (short int *)mCalloc(data->crunch_len,sizeof(short int));
 
@@ -611,10 +611,10 @@ void Get_Base_Freqs(calign *data)
       fT = T/(A+C+G+T);
     }
   
-  data->b_frq[0] = fA;
-  data->b_frq[1] = fC;
-  data->b_frq[2] = fG;
-  data->b_frq[3] = fT;  
+  data->obs_state_frq[0] = fA;
+  data->obs_state_frq[1] = fC;
+  data->obs_state_frq[2] = fG;
+  data->obs_state_frq[3] = fT;  
 }
 
 //////////////////////////////////////////////////////////////
@@ -701,11 +701,11 @@ void Get_AA_Freqs(calign *data)
       fT = T/sum;      fV = V/sum;      fW = W/sum;      fY = Y/sum;
     }
   
-  data->b_frq[0]  = fA;  data->b_frq[1]  = fR;  data->b_frq[2]  = fN;  data->b_frq[3]  = fD;
-  data->b_frq[4]  = fC;  data->b_frq[5]  = fQ;  data->b_frq[6]  = fE;  data->b_frq[7]  = fG;
-  data->b_frq[8]  = fH;  data->b_frq[9]  = fI;  data->b_frq[10] = fL;  data->b_frq[11] = fK;
-  data->b_frq[12] = fM;  data->b_frq[13] = fF;  data->b_frq[14] = fP;  data->b_frq[15] = fS;
-  data->b_frq[16] = fT;  data->b_frq[17] = fW;  data->b_frq[18] = fY;  data->b_frq[19] = fV; 
+  data->obs_state_frq[0]  = fA;  data->obs_state_frq[1]  = fR;  data->obs_state_frq[2]  = fN;  data->obs_state_frq[3]  = fD;
+  data->obs_state_frq[4]  = fC;  data->obs_state_frq[5]  = fQ;  data->obs_state_frq[6]  = fE;  data->obs_state_frq[7]  = fG;
+  data->obs_state_frq[8]  = fH;  data->obs_state_frq[9]  = fI;  data->obs_state_frq[10] = fL;  data->obs_state_frq[11] = fK;
+  data->obs_state_frq[12] = fM;  data->obs_state_frq[13] = fF;  data->obs_state_frq[14] = fP;  data->obs_state_frq[15] = fS;
+  data->obs_state_frq[16] = fT;  data->obs_state_frq[17] = fW;  data->obs_state_frq[18] = fY;  data->obs_state_frq[19] = fV; 
 }
 
 //////////////////////////////////////////////////////////////
@@ -2043,7 +2043,7 @@ calign *Copy_Cseq(calign *ori, option *io)
   
   for(i=0;i<ori->n_otu;i++) new->c_seq[i]->state[c_len*io->state_len] = '\0';
 
-  for(i=0;i<T_MAX_ALPHABET;i++) new->b_frq[i] = ori->b_frq[i];
+  for(i=0;i<T_MAX_ALPHABET;i++) new->obs_state_frq[i] = ori->obs_state_frq[i];
 
   new->init_len           = ori->init_len;
   new->clean_len          = ori->clean_len;

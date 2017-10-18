@@ -701,16 +701,14 @@ phydbl *DATE_MCMC(t_tree *tree)
 
           if(tree->mcmc->run < adjust_len) PhyML_Printf("\n.");
           else PhyML_Printf("\n.");
-          PhyML_Printf(" %10d lnL: [%12.2f -- %12.2f -- %12.2f -- %12.2f] clock: %12f root age: %12f [time: %7d sec run: %8d] mean:%15f %20s",
+          PhyML_Printf(" %10d lnL: [%12.2f -- %12.2f -- %12.2f -- %12.2f] root age: %12f [time: %7d sec] clock: %15f %20s",
                        tree->mcmc->run,
                        post,
                        Get_Lk(tree),
                        tree->rates->c_lnL_times,
                        tree->rates->c_lnL_rates,
-                       tree->rates->clock_r,
                        tree->rates->nd_t[tree->n_root->num],                       
                        (int)time(NULL) - t_beg,
-                       tree->mcmc->run,
                        mean_r,
                        tree->mcmc->move_name[move]);
         }

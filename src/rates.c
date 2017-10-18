@@ -2543,7 +2543,7 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 	{
 	  PhyML_Fprintf(stderr,"\n. dt=%G rr=%G cr=%G ra=%G rd=%G nu=%G %f %f ",dt,rr,cr,ra,rd,nu,b->l_var->v,b->l->v);	  
 	  PhyML_Fprintf(stderr,"\n. ta=%G td=%G ra*cr=%G rd*cr=%G sd=%G",ta,td,ra*cr,rd*cr,SQRT(dt*nu)*cr);
-	  assert(FALSE);
+	  /* assert(FALSE); */
 	}
     }
 

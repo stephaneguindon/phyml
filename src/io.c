@@ -2677,9 +2677,7 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
 
   if(io->mod->s_opt->opt_topo)
     {
-      if(io->mod->s_opt->topo_search == NNI_MOVE) PhyML_Fprintf(fp_out,"\n. Tree topology search : \t\tNNIs");
-      else if(io->mod->s_opt->topo_search == SPR_MOVE) PhyML_Fprintf(fp_out,"\n. Tree topology search : \t\tSPRs");
-      else if(io->mod->s_opt->topo_search == BEST_OF_NNI_AND_SPR) PhyML_Fprintf(fp_out,"\n. Tree topology search : \t\tBest of NNIs and SPRs");
+      PhyML_Fprintf(fp_out,"\n. Tree topology search: \t\tSPRs");
     }
   else
     {
@@ -2729,8 +2727,12 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
   PhyML_Fprintf(fp_out,"\n. Log-likelihood: \t\t\t%.5f",tree->c_lnL);/*was last ; moved here FLT*/
 
   Unconstraint_Lk(tree);
-  PhyML_Fprintf(fp_out,"\n. Unconstrained likelihood: \t\t%.5f",tree->unconstraint_lk);
+  PhyML_Fprintf(fp_out,"\n. Unconstrained log-likelihood: \t\t%.5f",tree->unconstraint_lk);
 
+  Composite_Lk(tree);
+  PhyML_Fprintf(fp_out,"\n. Composite log-likelihood: \t\t%.5f",tree->composite_lk);
+
+  
   PhyML_Fprintf(fp_out,"\n. Parsimony: \t\t\t\t%d",tree->c_pars);
 
   PhyML_Fprintf(fp_out,"\n. Tree size: \t\t\t\t%.5f",Get_Tree_Size(tree));
@@ -2779,10 +2781,10 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
   if(tree->io->datatype == NT)
     {
       PhyML_Fprintf(fp_out,"\n. Nucleotides frequencies:");
-      PhyML_Fprintf(fp_out,"\n  - f(A)=%8.5f",tree->mod->e_frq->pi->v[0]);
-      PhyML_Fprintf(fp_out,"\n  - f(C)=%8.5f",tree->mod->e_frq->pi->v[1]);
-      PhyML_Fprintf(fp_out,"\n  - f(G)=%8.5f",tree->mod->e_frq->pi->v[2]);
-      PhyML_Fprintf(fp_out,"\n  - f(T)=%8.5f",tree->mod->e_frq->pi->v[3]);
+      PhyML_Fprintf(fp_out,"\n  - f(A): %8.5f",tree->mod->e_frq->pi->v[0]);
+      PhyML_Fprintf(fp_out,"\n  - f(C): %8.5f",tree->mod->e_frq->pi->v[1]);
+      PhyML_Fprintf(fp_out,"\n  - f(G): %8.5f",tree->mod->e_frq->pi->v[2]);
+      PhyML_Fprintf(fp_out,"\n  - f(T): %8.5f",tree->mod->e_frq->pi->v[3]);
     }
 
   /*****************************************/
@@ -2799,12 +2801,12 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
 
       PhyML_Fprintf(fp_out,"\n");
       PhyML_Fprintf(fp_out,". GTR relative rate parameters : \n");
-      PhyML_Fprintf(fp_out,"  A <-> C   %8.5f\n",  tree->mod->r_mat->rr->v[0]);
-      PhyML_Fprintf(fp_out,"  A <-> G   %8.5f\n",  tree->mod->r_mat->rr->v[1]);
-      PhyML_Fprintf(fp_out,"  A <-> T   %8.5f\n",  tree->mod->r_mat->rr->v[2]);
-      PhyML_Fprintf(fp_out,"  C <-> G   %8.5f\n",  tree->mod->r_mat->rr->v[3]);
-      PhyML_Fprintf(fp_out,"  C <-> T   %8.5f\n",  tree->mod->r_mat->rr->v[4]);
-      PhyML_Fprintf(fp_out,"  G <-> T   %8.5f\n",tree->mod->r_mat->rr->v[5]);
+      PhyML_Fprintf(fp_out,"  A <-> C:   %8.5f\n",  tree->mod->r_mat->rr->v[0]);
+      PhyML_Fprintf(fp_out,"  A <-> G:   %8.5f\n",  tree->mod->r_mat->rr->v[1]);
+      PhyML_Fprintf(fp_out,"  A <-> T:   %8.5f\n",  tree->mod->r_mat->rr->v[2]);
+      PhyML_Fprintf(fp_out,"  C <-> G:   %8.5f\n",  tree->mod->r_mat->rr->v[3]);
+      PhyML_Fprintf(fp_out,"  C <-> T:   %8.5f\n",  tree->mod->r_mat->rr->v[4]);
+      PhyML_Fprintf(fp_out,"  G <-> T:   %8.5f\n",tree->mod->r_mat->rr->v[5]);
 
 
       PhyML_Fprintf(fp_out,"\n. Instantaneous rate matrix : ");

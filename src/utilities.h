@@ -764,7 +764,8 @@ typedef struct __Tree{
   phydbl                *unscaled_site_lk_cat; /*! partially scaled site likelihood at individual sites */
 
   phydbl                         *site_lk_cat; /*! loglikelihood at a single site and for each class of rate*/
-  phydbl                      unconstraint_lk; /*! unconstrained (or multinomial) likelihood  */
+  phydbl                      unconstraint_lk; /*! unconstrained (or multinomial) log-likelihood  */
+  phydbl                         composite_lk; /*! composite log-likelihood  */
   int                         *fact_sum_scale;
   phydbl                       **log_lks_aLRT; /*! used to compute several branch supports */
   phydbl                           n_root_pos; /*! position of the root on its t_edge */
@@ -930,7 +931,7 @@ typedef struct __Align {
 typedef struct __Calign {
   struct __Align **c_seq;             /*! compressed sequences      */
   struct __Option    *io;             /*! input/output */
-  phydbl          *b_frq;             /*! observed state frequencies */
+  phydbl  *obs_state_frq;             /*! observed state frequencies */
   short int       *invar;             /*! < 0 -> polymorphism observed */
   phydbl           *wght;             /*! # of each site in c_align */
   short int      *ambigu;             /*! ambigu[i]=1 is one or more of the sequences at site

@@ -232,7 +232,7 @@ void Free_Calign(calign *data)
   Free(data->invar);
   Free(data->wght);
   Free(data->ambigu);
-  Free(data->b_frq);
+  Free(data->obs_state_frq);
   Free(data->sitepatt);
   for(i=0;i<data->n_otu;i++)
     {

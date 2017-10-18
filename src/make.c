@@ -618,13 +618,13 @@ calign *Make_Calign(int n_otu, int crunch_len, int state_len, int init_len, char
   calign *cdata;
   int j;
 
-  cdata           = (calign *)mCalloc(1,sizeof(calign));
-  cdata->c_seq    = (align **)mCalloc(n_otu,sizeof(align *));
-  cdata->b_frq    = (phydbl *)mCalloc(T_MAX_ALPHABET,sizeof(phydbl));
-  cdata->wght     = (phydbl *)mCalloc(crunch_len,sizeof(phydbl));
-  cdata->ambigu   = (short int *)mCalloc(crunch_len,sizeof(short int));
-  cdata->invar    = (short int *)mCalloc(crunch_len,sizeof(short int));
-  cdata->sitepatt = (int *)mCalloc(init_len,sizeof(int ));
+  cdata                = (calign *)mCalloc(1,sizeof(calign));
+  cdata->c_seq         = (align **)mCalloc(n_otu,sizeof(align *));
+  cdata->obs_state_frq = (phydbl *)mCalloc(T_MAX_ALPHABET,sizeof(phydbl));
+  cdata->wght          = (phydbl *)mCalloc(crunch_len,sizeof(phydbl));
+  cdata->ambigu        = (short int *)mCalloc(crunch_len,sizeof(short int));
+  cdata->invar         = (short int *)mCalloc(crunch_len,sizeof(short int));
+  cdata->sitepatt      = (int *)mCalloc(init_len,sizeof(int ));
 
   for(j=0;j<n_otu;j++)
     {

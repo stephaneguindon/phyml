@@ -1171,7 +1171,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
 
 #ifdef PHYREX
 		strcpy(io->out_summary_file,optarg);
-		strcat(io->out_summary_file,"_phyrex_summary");
+		strcat(io->out_summary_file,"_phyrex_summary.txt");
 #endif
 
 

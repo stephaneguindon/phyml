@@ -1800,7 +1800,7 @@ matrix *ML_Dist(calign *data, t_mod *mod)
 
   tmpdata         = (calign *)mCalloc(1,sizeof(calign));
   tmpdata->c_seq  = (align **)mCalloc(2,sizeof(align *));
-  tmpdata->b_frq  = (phydbl *)mCalloc(mod->ns,sizeof(phydbl));
+  tmpdata->obs_state_frq  = (phydbl *)mCalloc(mod->ns,sizeof(phydbl));
   tmpdata->ambigu = (short int *)mCalloc(data->crunch_len,sizeof(short int));
   F               = (phydbl *)mCalloc(mod->ns*mod->ns,sizeof(phydbl ));
   eigen_struct    = (eigen *)Make_Eigen_Struct(mod->ns);
@@ -1895,7 +1895,7 @@ matrix *ML_Dist(calign *data, t_mod *mod)
   
   
   Free(tmpdata->ambigu);
-  Free(tmpdata->b_frq);
+  Free(tmpdata->obs_state_frq);
   Free(tmpdata->c_seq);
   free(tmpdata);
   Free_Eigen(eigen_struct);
@@ -2029,7 +2029,7 @@ phydbl Lk_Given_Two_Seq(calign *data, int numseq1, int numseq2, phydbl dist, t_m
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
+// Multinomial log likelihood
 void Unconstraint_Lk(t_tree *tree)
 {
   int i;
@@ -2037,6 +2037,21 @@ void Unconstraint_Lk(t_tree *tree)
   tree->unconstraint_lk = .0;
   for(i=0;i<tree->data->crunch_len;i++) tree->unconstraint_lk += tree->data->wght[i]*(phydbl)log(tree->data->wght[i]);
   tree->unconstraint_lk -= tree->data->init_len*(phydbl)log(tree->data->init_len);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+// Log-likelihood assuming a tree with edge of infinite lengths
+void Composite_Lk(t_tree *tree)
+{
+  int i;
+  tree->composite_lk = 0.0;
+  for(i=0;i<tree->mod->ns;++i)
+    tree->composite_lk +=
+      tree->data->obs_state_frq[i]*
+      tree->data->init_len*
+      tree->n_otu*
+      log(tree->mod->e_frq->pi->v[i]);
 }
 
 //////////////////////////////////////////////////////////////

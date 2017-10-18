@@ -96,6 +96,7 @@ phydbl Lk_Core(int state, int ambiguity_check, short int derivative,
                              t_tree *tree);
 phydbl Lk_Core_Eigen_Lr(phydbl *expl, phydbl *dot_prod, short int derivative, t_edge *b, t_tree *tree);
 phydbl Invariant_Lk(int fact_sum_scale, int site, int *num_prec_issue, t_tree *tree);
+void Composite_Lk(t_tree *tree);
 
 
 

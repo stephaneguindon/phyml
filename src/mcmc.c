@@ -1065,7 +1065,6 @@ void MCMC_One_Node_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
 
 void MCMC_Times_And_Rates_All(t_tree *tree)
 {
-  /* if(tree->rates->model == GUINDON) return; */
   MCMC_Times_And_Rates_Root(tree);
   MCMC_Times_And_Rates_Recur(tree->n_root,tree->n_root->v[1],YES,tree);
   MCMC_Times_And_Rates_Recur(tree->n_root,tree->n_root->v[2],YES,tree);
@@ -1185,7 +1184,7 @@ void MCMC_Times_And_Rates_Root(t_tree *tree)
       new_lnL_time = TIMES_Lk_Times(NO,tree); 
       new_lnL_rate = RATES_Lk_Rates(tree);
 
-      if(tree->rates->model == GUINDON)
+      if(tree->rates->model == GUINDON && tree->eval_alnL == YES)
         {
           int i;
           for(i=0;i<2*tree->n_otu-2;++i) tree->rates->br_do_updt[i] = YES;
@@ -1351,7 +1350,7 @@ void MCMC_Times_And_Rates_Recur(t_node *a, t_node *d, int traversal, t_tree *tre
       new_lnL_time = TIMES_Lk_Times(NO,tree);
       new_lnL_rate = RATES_Lk_Rates(tree);
 
-      if(tree->rates->model == GUINDON)
+      if(tree->rates->model == GUINDON && tree->eval_alnL == YES)
         {
           int i;
           for(i=0;i<2*tree->n_otu-2;++i) tree->rates->br_do_updt[i] = YES;
@@ -2353,7 +2352,7 @@ void MCMC_Tree_Rates(t_tree *tree)
   init_clock    = tree->rates->clock_r;
   ratio         = 0.0;
   cur_lnL_seq   = tree->c_lnL;
-  new_lnL_seq   = tree->c_lnL;
+  new_lnL_seq   = UNLIKELY;
     
   u = Uni();
   mult = exp(K*(u-0.5));
@@ -2376,18 +2375,19 @@ void MCMC_Tree_Rates(t_tree *tree)
       return;
     }
 
-  if(tree->rates->model == GUINDON)
+  if(tree->rates->model == GUINDON && tree->eval_alnL == YES)
     {
       int i;
       for(i=0;i<2*tree->n_otu-2;++i) tree->rates->br_do_updt[i] = YES;
       new_lnL_seq = Lk(NULL,tree);
-      ratio += (new_lnL_seq - cur_lnL_seq);
     }
-
+  else new_lnL_seq = cur_lnL_seq;
+  
   new_lnL_rate = RATES_Lk_Rates(tree);
 
   ratio += (n_nodes-1)*log(mult);
   ratio += (new_lnL_rate - cur_lnL_rate);
+  ratio += (new_lnL_seq - cur_lnL_seq);
 
   ratio = exp(ratio);
   alpha = MIN(1.,ratio);
@@ -4961,7 +4961,7 @@ void MCMC_Nu(t_tree *tree)
       
       new_lnL_rate = RATES_Lk_Rates(tree);      
 
-      if(tree->rates->model == GUINDON)
+      if(tree->rates->model == GUINDON && tree->eval_alnL == YES)
 	{
 	  for(i=0;i<2*tree->n_otu-2;++i) tree->rates->br_do_updt[i] = YES;
           RATES_Update_Cur_Bl(tree);
@@ -4980,7 +4980,7 @@ void MCMC_Nu(t_tree *tree)
 	  tree->rates->nu          = cur_nu;
 	  tree->rates->c_lnL_rates = cur_lnL_rate;
 	  tree->c_lnL              = cur_lnL_data;
-          if(tree->rates->model == GUINDON) RATES_Update_Cur_Bl(tree);
+          if(tree->rates->model == GUINDON && tree->eval_alnL == YES) RATES_Update_Cur_Bl(tree);
 	}
       else
 	{
