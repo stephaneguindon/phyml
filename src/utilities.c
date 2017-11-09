@@ -11576,7 +11576,7 @@ void Random_Walk_Along_Tree_On_Radius(t_node *a, t_node *d, t_edge *b, phydbl *r
               /*        tree->rates->clock_r * tree->rates->br_r[d->num], */
               /*        tree->rates->cur_l[d->num] / fabs(ta-td)); */
               
-              /* PhyML_Fprintf(stderr,"\n< ta: %G td: %G new_time: %G delta: %G c: %G r: %G rad: %G l->v: %G", */
+              /* PhyML_Fprintf(stderr,"\n< ta: %G td: %G new_time: %G delta: %G c: %G r: %G rad: %G l->v: %G cur_l: %G root_edge ? %d", */
               /*               ta, */
               /*               td, */
               /*               *target_time, */
@@ -11584,7 +11584,10 @@ void Random_Walk_Along_Tree_On_Radius(t_node *a, t_node *d, t_edge *b, phydbl *r
               /*               tree->rates->clock_r, */
               /*               tree->rates->br_r[d->num], */
               /*               *radius, */
-              /*               b->l->v); */
+              /*               b->l->v, */
+              /*               tree->rates->cur_l[d->num], */
+              /*               b == tree->e_root); */
+
               assert(*target_time > ta && *target_time < td);
             }
           else
@@ -11596,14 +11599,17 @@ void Random_Walk_Along_Tree_On_Radius(t_node *a, t_node *d, t_edge *b, phydbl *r
               /*        tree->rates->clock_r * tree->rates->br_r[a->num], */
               /*        tree->rates->cur_l[a->num] / fabs(ta-td)); */
 
-              /* PhyML_Fprintf(stderr,"\n> ta: %f td: %f new_time: %f delta: %f c: %f r: %f l->v: %G", */
+              /* PhyML_Fprintf(stderr,"\n> ta: %f td: %f new_time: %f delta: %f c: %f r: %f l->v: %G cur_l: %G root_edge ? %d", */
               /*               ta, */
               /*               td, */
               /*               *target_time, */
               /*               delta, */
               /*               tree->rates->clock_r, */
               /*               tree->rates->br_r[a->num], */
-              /*               b->l->v); */
+              /*               b->l->v, */
+              /*               tree->rates->cur_l[a->num], */
+              /*               b == tree->e_root); */
+
               assert(*target_time < ta && *target_time > td);
             }
         }

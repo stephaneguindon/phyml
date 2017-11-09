@@ -3762,14 +3762,28 @@ int RATES_Check_Edge_Length_Consistency(t_tree *tree)
         {
           if(Are_Equal(tree->rates->cur_l[tree->a_edges[i]->left->num],
                        tree->a_edges[i]->l->v,
-                       1.E-5) == NO) return 0;            
+                       1.E-5) == NO)
+            {
+              PhyML_Fprintf(stderr,"\n. cur_l: %G l: %G is_root: %d",
+                            tree->rates->cur_l[tree->a_edges[i]->left->num],
+                            tree->a_edges[i]->l->v,
+                            tree->a_edges[i] == tree->e_root);
+              return 0;
+            }
         }
 
       if(tree->a_edges[i]->rght->anc == tree->a_edges[i]->left)
         {
           if(Are_Equal(tree->rates->cur_l[tree->a_edges[i]->rght->num],
                        tree->a_edges[i]->l->v,
-                       1.E-5) == NO) return 0;
+                       1.E-5) == NO)
+            {
+              PhyML_Fprintf(stderr,"\n. cur_l: %G l: %G is_root: %d",
+                            tree->rates->cur_l[tree->a_edges[i]->rght->num],
+                            tree->a_edges[i]->l->v,
+                            tree->a_edges[i] == tree->e_root);
+              return 0;
+            }
         }
     }
 

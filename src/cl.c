@@ -725,11 +725,13 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	      }
 	    else if((!strcmp(optarg,"nni")) || (!strcmp(optarg,"NNI")))
 	      {
+                PhyML_Printf("\n. The NNI option is deprecated. PhyML now uses a mix of SPRs and NNIs.");
 		io->mod->s_opt->topo_search         = NNI_MOVE;
 		io->mod->s_opt->random_input_tree   = 0;
 	      }
 	    else if((!strcmp(optarg,"best")) || (!strcmp(optarg,"BEST")))
 	      {
+                PhyML_Printf("\n. The BEST option is deprecated. PhyML now uses a mix of SPRs and NNIs.");
 		io->mod->s_opt->topo_search = BEST_OF_NNI_AND_SPR;
 		io->mod->s_opt->greedy      = (io->mod->s_opt->steph_spr)?(0):(1);
 	      }

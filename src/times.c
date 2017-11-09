@@ -1356,12 +1356,13 @@ phydbl TIMES_Lk_Yule_Order_Root_Cond(t_tree *tree)
 // the birth death process with incomplete sampling.
 phydbl TIMES_Lk_Birth_Death(int verbose, t_tree *tree)
 {
-  int i;
+  int i,n;
   phydbl lnL;
   phydbl t,b,d,bmd,logbmd,expmbmd,logb;
   phydbl bmin,bmax;
   phydbl dmin,dmax;
-
+  phydbl lognut1,logp_1t,troot,pt,nut1;
+  
   lnL     = 0.0;
   b       = tree->rates->birth_rate;
   d       = tree->rates->death_rate;
@@ -1374,14 +1375,17 @@ phydbl TIMES_Lk_Birth_Death(int verbose, t_tree *tree)
   expmbmd = -1.;
   logb    = -1.;
   t       = 0.0;
-
+  n       = tree->n_otu;
+  troot   = fabs(tree->rates->nd_t[tree->n_root->num]);
+  logb    = log(b);
+  
   if(b < d)
     {
       if(verbose) printf("\n. b: %G d: %G",b,d);
       return UNLIKELY;
     }
   
-  For(i,2*tree->n_otu-1)
+  for(i=0;i<2*tree->n_otu-1;++i)
     if(tree->a_nodes[i]->tax == NO)
       {
         if(tree->rates->nd_t[i] < tree->rates->t_prior_min[i] ||
@@ -1396,34 +1400,67 @@ phydbl TIMES_Lk_Birth_Death(int verbose, t_tree *tree)
     {
       logbmd = log(bmd);
       expmbmd = exp(d-b);
-
-      For(i,2*tree->n_otu-1)
+      
+      pt = bmd/(b-d*pow(expmbmd,troot));
+      nut1 = 1. - pt*pow(expmbmd,troot);
+      lognut1 = log(nut1);
+      /* printf("\n. lognut1: %G pt: %G b: %G d: %G exp: %G",nut1,pt,b,d,expmbmd); fflush(NULL); */
+      
+      for(i=0;i<2*tree->n_otu-1;++i)
         if(tree->a_nodes[i]->tax == NO && tree->a_nodes[i] != tree->n_root)
           {
-            t = FABS(tree->rates->nd_t[i]);            
-            // Equation 3.19 in Tanja Stadler's PhD thesis
-            lnL += 2*logbmd - bmd*t - 2.*log(b-d*POW(expmbmd,t));            
+            t = fabs(tree->rates->nd_t[i]);            
+
+            /* // Equation 3.19 in Tanja Stadler's PhD thesis */
+            /* lnL += 2*logbmd - bmd*t - 2.*log(b-d*pow(expmbmd,t));             */
+
+            // Equation 6 in Yang and Rannala, 1997 with rho=1
+            logp_1t = 2.*logbmd - 2.*log(b-d*exp((d-b)*t)) + (d-b)*t;
+            lnL += logb + logp_1t - lognut1; 
           }
 
-      t = FABS(tree->rates->nd_t[tree->n_root->num]);
-      lnL += -bmd*t - log(b-d*POW(expmbmd,t));
+      lnL += LnGamma(n-1);
+      
+      /* t = FABS(tree->rates->nd_t[tree->n_root->num]); */
+      /* lnL += -bmd*t - log(b-d*pow(expmbmd,t)); */
+      /* lnL += log(bmd) + (tree->n_otu-1)*log(b) + LnGamma(tree->n_otu+1); */
 
-      lnL += log(bmd) + (tree->n_otu-1)*log(b) + LnGamma(tree->n_otu+1);
+      // Divide joint density p(x(1),...,x(n-1)) by p(x(1)) in order to get
+      // the conditional density p(x(2),...,x(n-1)|x(1)). The log of the marginal p(x(1))
+      // (Theorem 3.4.11 in Tanja's PhD thesis) is given below and subtracted to lnL.
+      /* k = 1; */
+      /* s = FABS(tree->rates->nd_t[tree->n_root->num]); */
+      /* phydbl p_x1 = (k+1)*Choose(n,k+1)*pow(b,n-k)*pow(bmd,k+2)*exp(-bmd*(k+1)*s)*pow(1.-exp(-bmd*s),n-k-1)/pow(b-d*exp(-bmd*s),n+1); */
+      /* lnL -= log(p_x1); */
     }
   else if(b > bmin && d < dmin) // Yule process 
     {
-      For(i,2*tree->n_otu-1)
+      for(i=0;i<2*tree->n_otu-1;++i)
         if(tree->a_nodes[i]->tax == NO && tree->a_nodes[i] != tree->n_root)
           {
-            t = FABS(tree->rates->nd_t[i]);            
-            // Equation 3.19 in Tanja Stadler's PhD thesis (Yule case)
-            lnL -= b*t;
+            t = fabs(tree->rates->nd_t[i]);            
+            /* // Equation 3.19 in Tanja Stadler's PhD thesis (Yule case) */
+            /* lnL -= b*t; */
+
+            // Equation 6 in Yang and Rannala, 1997 with rho=1
+            logp_1t = - b*t;
+            lnL += logb + logp_1t - lognut1; 
           }
 
-      t = FABS(tree->rates->nd_t[tree->n_root->num]);
-      lnL -= b*t;
-      
-      lnL += (tree->n_otu-1)*log(b) + LnGamma(tree->n_otu+1);
+      lnL += LnGamma(n-1);
+
+      /* t = fabs(tree->rates->nd_t[tree->n_root->num]); */
+      /* lnL -= b*t;       */
+      /* lnL += (tree->n_otu-1)*log(b) + LnGamma(tree->n_otu+1); */
+
+
+      // Divide joint density p(x(1),...,x(n-1)) by p(x(1)) in order to get
+      // the conditional density p(x(2),...,x(n-1)|x(1)). The log of the marginal p(x(1))
+      // (Theorem 3.4.11, remark 3.4.12 in Tanja's PhD thesis) is given below and subtracted to lnL.
+      /* k = 1; */
+      /* s = FABS(tree->rates->nd_t[tree->n_root->num]); */
+      /* phydbl p_x1 = (k+1)*Choose(n,k+1)*b*pow(exp(b*s)-1.,n-k-1)/exp(b*s*n); */
+      /* lnL -= log(p_x1); */
     }
   else if(b < bmin && d > dmin) 
     {
@@ -1434,19 +1471,32 @@ phydbl TIMES_Lk_Birth_Death(int verbose, t_tree *tree)
     {
       logb = log(b);
 
-      For(i,2*tree->n_otu-1)
+      for(i=0;i<2*tree->n_otu-1;++i)
         if(tree->a_nodes[i]->tax == NO && tree->a_nodes[i] != tree->n_root)
           {
-            t = FABS(tree->rates->nd_t[i]);            
-            // Equation 3.19 in Tanja Stadler's PhD thesis (Critical case)
-            lnL += logb - 2.*log(1.+b*t);
+            t = fabs(tree->rates->nd_t[i]);            
+
+            /* // Equation 3.19 in Tanja Stadler's PhD thesis (Critical case) */
+            /* lnL += logb - 2.*log(1.+b*t); */
+
+            
+            // Equation 7 in Yang and Rannala, 1997 with rho=1
+            lnL += log((1.+d)/pow(1.+d*t,2)); 
           }
 
-      t = FABS(tree->rates->nd_t[tree->n_root->num]);
-      lnL -= log(b*t);
-
-      lnL += LnGamma(tree->n_otu+1);
+      lnL += LnGamma(n-1);
       
+      /* t = fabs(tree->rates->nd_t[tree->n_root->num]); */
+      /* lnL -= log(b*t); */
+      /* lnL += LnGamma(tree->n_otu+1); */
+      
+      // Divide joint density p(x(1),...,x(n-1)) by p(x(1)) in order to get
+      // the conditional density p(x(2),...,x(n-1)|x(1)). The log of the marginal p(x(1))
+      // (Theorem 3.4.11, remark 3.4.12 in Tanja's PhD thesis) is given below and subtracted to lnL.
+      /* k = 1; */
+      /* s = fabs(tree->rates->nd_t[tree->n_root->num]); */
+      /* phydbl p_x1 = (k+1)*Choose(n,k+1)*pow(b,n-k)*pow(s,n-k-1)/pow(1.+b*s,n+1); */
+      /* lnL -= log(p_x1); */
     }
   else if(b < bmin && d < dmin) // Birth and death rates are below their limits
     {
@@ -1589,9 +1639,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
   int i,j,nd_num,*cal_ordering,n_cal,swap,list_size,tmp,orig_is_mixt_tree,repeat,n_max_repeats,tip_num,*no_cal_tip_num,n_no_cal_tip_num,*permut;
   t_cal *cal;
   t_clad *clade;
-  
-
-  
+    
   assert(mixt_tree->rates);
   
   tips    = (t_node **)mCalloc(mixt_tree->n_otu,sizeof(t_node *));
@@ -1613,21 +1661,11 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       while(cal != NULL)
         {
           clade = cal->clade_list[cal->current_clade_idx];
-          for(j=0;j<clade->n_tax;++j)
-            {
-              /* printf("\n>>> %s %s %d [%d %d] [%p %p]", */
-              /*        clade->tip_list[j]->name, */
-              /*        mixt_tree->a_nodes[i]->name, */
-              /*        clade->tip_list[j] == mixt_tree->a_nodes[i], */
-              /*        clade->tip_list[j]->num, */
-              /*        mixt_tree->a_nodes[i]->num, */
-              /*        clade->tip_list[j], */
-              /*        mixt_tree->a_nodes[i]); */              
-              if(clade->tip_list[j] == mixt_tree->a_nodes[i]) break;
-            }
+          for(j=0;j<clade->n_tax;++j) if(clade->tip_list[j] == mixt_tree->a_nodes[i]) break;
           if(j != clade->n_tax) break;
           cal = cal->next;
         }
+      
       if(cal == NULL)
         {
           if(n_no_cal_tip_num == 0) no_cal_tip_num = (int *)mCalloc(1,sizeof(int));
@@ -1638,14 +1676,14 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
     }
   
   
-  for(repeat=0;repeat<n_max_repeats;repeat++)
+  for(repeat=0;repeat<n_max_repeats;++repeat)
     {
       nd_num = mixt_tree->n_otu;
   
       /* PhyML_Printf("\n\n. Repeat %d",repeat); */
 
-      for(i=0;i<mixt_tree->n_otu;i++) tips[i] = mixt_tree->a_nodes[i];
-      for(i=0;i<mixt_tree->n_otu;i++) mixt_tree->a_nodes[i]->v[0] = NULL; 
+      for(i=0;i<mixt_tree->n_otu;++i) tips[i] = mixt_tree->a_nodes[i];
+      for(i=0;i<mixt_tree->n_otu;++i) mixt_tree->a_nodes[i]->v[0] = NULL; 
 
 
       // Set a time for each calibration 
@@ -1669,7 +1707,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       /* Exit("\n"); */
      
       cal_ordering = (int *)mCalloc(n_cal,sizeof(int));
-      for(i=0;i<n_cal;i++) cal_ordering[i] = i;
+      for(i=0;i<n_cal;++i) cal_ordering[i] = i;
       
       // Sort calibration times from youngest to oldest
       do
@@ -1712,22 +1750,24 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
           /*        mixt_tree->n_otu); fflush(NULL); */
           
           // Add some taxa that are not in any calibration set
-          permut = Permutate(n_no_cal_tip_num);
-          j = 0;
-          do
+          if(n_no_cal_tip_num > 0)
             {
-              tip_num = no_cal_tip_num[permut[j]];
-              if(tips[tip_num]->v[0] == NULL)
+              permut = Permutate(n_no_cal_tip_num);
+              j = 0;
+              do
                 {
-                  nd_list[list_size] = tips[tip_num];
-                  /* PhyML_Printf("\n# %s",tips[tip_num]->name); */
-                  list_size++;
-                  assert(list_size < mixt_tree->n_otu);
+                  tip_num = no_cal_tip_num[permut[j]];
+                  if(tips[tip_num]->v[0] == NULL)
+                    {
+                      nd_list[list_size] = tips[tip_num];
+                      /* PhyML_Printf("\n# %s",tips[tip_num]->name); */
+                      list_size++;
+                      assert(list_size <= mixt_tree->n_otu);
+                    }
                 }
+              while(j++ < MIN(n_no_cal_tip_num-1,(int)(2*n_no_cal_tip_num/(n_cal))));
+              Free(permut);
             }
-          while(j++ < MIN(n_no_cal_tip_num-1,(int)(2*n_no_cal_tip_num/(n_cal))));
-          Free(permut);
-
           
 
           // Add all the taxa that are  in the calibration set of cal
@@ -1738,7 +1778,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
             {
               nd_list[list_size] = tips[clade->tip_list[j]->num];
               list_size++;
-              assert(list_size < mixt_tree->n_otu);
+              assert(list_size <= mixt_tree->n_otu);
             }
           
 
@@ -1782,6 +1822,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
             {
               nd_list[list_size] = tips[i];
               list_size++;
+              assert(list_size <= mixt_tree->n_otu);
             }
         }
 
@@ -1793,6 +1834,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
           clade = cal->clade_list[cal->current_clade_idx];
           nd_list[list_size] = clade->tip_list[0];
           list_size++;
+          assert(list_size <= mixt_tree->n_otu);
           cal = cal->next;
         }
       while(cal);
@@ -1890,7 +1932,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       tree = mixt_tree->next;
       do
         {
-          For(i,2*tree->n_otu-1)
+          for(i=0;i<2*tree->n_otu-1;++i)
             {
               tree->a_nodes[i]->v[0] = tree->prev->a_nodes[i]->v[0] ? tree->a_nodes[tree->prev->a_nodes[i]->v[0]->num] : NULL;
               tree->a_nodes[i]->v[1] = tree->prev->a_nodes[i]->v[1] ? tree->a_nodes[tree->prev->a_nodes[i]->v[1]->num] : NULL;

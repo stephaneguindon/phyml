@@ -520,6 +520,24 @@ phydbl *DATE_MCMC(t_tree *tree)
   RATES_Update_Cur_Bl(tree);
 
   
+  PhyML_Printf("\n. AVX enabled: %s",
+#if defined(__AVX__)
+               "yes"
+#else
+               "no"
+#endif
+               );
+  PhyML_Printf("\n. SSE enabled: %s",
+#if defined(__SSE3__)
+               "yes"
+#else
+               "no"
+#endif
+               );
+
+  PhyML_Printf("\n\n. Seed: %d",tree->io->r_seed);
+  PhyML_Printf("\n. Ignore sequences: %s",tree->eval_alnL == YES ? "no" : "yes");
+  PhyML_Printf("\n. Model of variation of rates across lineages: %s",tree->rates->model_name);
   PhyML_Printf("\n. log(Pr(Seq|Tree)) = %f",tree->c_lnL);
   PhyML_Printf("\n. log(Pr(Tree)) = %f",tree->rates->c_lnL_times);
     
@@ -529,6 +547,7 @@ phydbl *DATE_MCMC(t_tree *tree)
   tree->extra_tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
   RATES_Init_Rate_Struct(tree->extra_tree->rates,NULL,tree->n_otu);
   RATES_Copy_Rate_Struct(tree->rates,tree->extra_tree->rates,tree->n_otu);
+  tree->extra_tree->rates->model = LOGNORMAL;
   RATES_Duplicate_Calib_Struct(tree,tree->extra_tree);
   MIXT_Chain_Cal(tree->extra_tree);
   DATE_Assign_Primary_Calibration(tree->extra_tree);
@@ -635,7 +654,7 @@ phydbl *DATE_MCMC(t_tree *tree)
     {
       if(tree->mcmc->run > adjust_len) for(i=0;i<tree->mcmc->n_moves;i++) tree->mcmc->adjust_tuning[i] = NO;
 
-      if(tree->c_lnL < UNLIKELY + 0.1)
+      if(tree->c_lnL < UNLIKELY + 0.1 && tree->eval_alnL == YES)
         {
           PhyML_Printf("\n. Move '%s' failed\n",tree->mcmc->move_name[move]);
           assert(FALSE);
@@ -672,14 +691,14 @@ phydbl *DATE_MCMC(t_tree *tree)
         {
           PhyML_Fprintf(stderr,"\n. Issue detected by RATES_Check_Edge_Length_Consistency(tree).");
           PhyML_Fprintf(stderr,"\n. Move: %s",tree->mcmc->move_name[move]);
-          Exit("\n");
+          if(tree->eval_alnL == YES) assert(FALSE);
         }
       
       if(!TIMES_Check_Node_Height_Ordering(tree))
         {
           PhyML_Fprintf(stderr,"\n. Issue detected by TIMES_Check_Node_Height_Ordering(tree).");
           PhyML_Fprintf(stderr,"\n. Move: %s",tree->mcmc->move_name[move]);
-          Exit("\n");
+          assert(FALSE);
         }
       
       
@@ -795,7 +814,7 @@ phydbl *DATE_MCMC(t_tree *tree)
             }
           else
             {
-              fseek(fp_tree,-11,SEEK_CUR);
+              fseek(fp_tree,-5,SEEK_CUR);
             }
           
           
@@ -804,7 +823,7 @@ phydbl *DATE_MCMC(t_tree *tree)
           /* RATES_Update_Cur_Bl(tree); */
           s_tree = Write_Tree(tree,NO);
           tree->bl_ndigits = 7;
-          PhyML_Fprintf(fp_tree,"\ntree %f [&lnP=-1] = [&R] %s",s_tree,tree->c_lnL);          
+          PhyML_Fprintf(fp_tree,"\ntree %d [&lnP=%f] = [&R] %s",tree->mcmc->sample_num,tree->c_lnL,s_tree);          
           Free(s_tree);
           PhyML_Fprintf(fp_tree,"\nEND;");          
           fflush(NULL);

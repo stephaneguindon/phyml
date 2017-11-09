@@ -36,11 +36,14 @@ t_tree *Read_Tree(char **s_tree)
   For(i,(int)strlen((*s_tree))) if((*s_tree)[i] == ',') n_otu++;
   n_otu+=1;
 
+
+  
   tree = Make_Tree_From_Scratch(n_otu,NULL);
   subs = Sub_Trees((*s_tree),&degree);
   Clean_Multifurcation(subs,degree,3);
 
-  if(degree == 2)
+
+    if(degree == 2)
     {
       /* Unroot_Tree(subs); */
       /* degree = 3; */
@@ -2727,7 +2730,7 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
   PhyML_Fprintf(fp_out,"\n. Log-likelihood: \t\t\t%.5f",tree->c_lnL);/*was last ; moved here FLT*/
 
   Unconstraint_Lk(tree);
-  PhyML_Fprintf(fp_out,"\n. Unconstrained log-likelihood: \t\t%.5f",tree->unconstraint_lk);
+  PhyML_Fprintf(fp_out,"\n. Unconstrained log-likelihood: \t%.5f",tree->unconstraint_lk);
 
   Composite_Lk(tree);
   PhyML_Fprintf(fp_out,"\n. Composite log-likelihood: \t\t%.5f",tree->composite_lk);
@@ -3125,11 +3128,10 @@ void Print_Settings(option *io)
   PhyML_Printf("\n\n\n");
   PhyML_Printf("\n\n");
 
-  PhyML_Printf("\t\t\t\u205C\t SETTINGS \t\u205C  \n\n");
 
-  /* PhyML_Printf("                                 ..........................                                      \n"); */
-  /* PhyML_Printf(" ooooooooooooooooooooooooooooo        CURRENT SETTINGS        ooooooooooooooooooooooooooooooooooo\n"); */
-  /* PhyML_Printf("                         ..........................                      \n"); */
+  PhyML_Printf("                                 ..........................                                      \n");
+  PhyML_Printf(" ooooooooooooooooooooooooooooo        CURRENT SETTINGS        ooooooooooooooooooooooooooooooooooo\n");
+  PhyML_Printf("                                 ..........................                      \n");
 
   PhyML_Printf("\n        \u2023 Sequence filename:\t\t\t\t %s", Basename(io->in_align_file));
 
@@ -3278,7 +3280,7 @@ void Print_Settings(option *io)
                );
 
 
-  PhyML_Printf("\n\n                         \u205C \u205C \u205C \u205C \u205C \u205C \u205C \u205C \u205C \u205C \u205C \u205C  \n");
+  /* PhyML_Printf("\n\n                         \u205C \u205C \u205C \u205C \u205C \u205C \u205C \u205C \u205C \u205C \u205C \u205C  \n"); */
 
   PhyML_Printf("\n\n");
   fflush(NULL);
@@ -3298,7 +3300,7 @@ void Print_Banner(FILE *fp)
   PhyML_Fprintf(fp,"                                                                                                  \n");
   PhyML_Fprintf(fp,"                           http://www.atgc-montpellier.fr/phyml                                          \n");
   PhyML_Fprintf(fp,"                                                                                                  \n");
-  PhyML_Fprintf(fp,"                         Copyright CNRS - Universite Montpellier II                                 \n");
+  PhyML_Fprintf(fp,"                         Copyright CNRS - Universite Montpellier                                  \n");
   PhyML_Fprintf(fp,"                                                                                                  \n");
   PhyML_Fprintf(fp," oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo\n");
 }
@@ -3312,8 +3314,8 @@ void Print_Banner_Small(FILE *fp)
   PhyML_Fprintf(fp,"\n");
   PhyML_Fprintf(fp," oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo\n");
   PhyML_Fprintf(fp,"                                  ---  PhyML %s  ---                                             \n",VERSION);
-  PhyML_Fprintf(fp,"                            http://www.atgc-montpellier.fr/phyml                                          \n");
-  PhyML_Fprintf(fp,"                         Copyright CNRS - Universite Montpellier II                                 \n");
+  PhyML_Fprintf(fp,"                              http://www.atgc-montpellier.fr/phyml                                          \n");
+  PhyML_Fprintf(fp,"                             Copyright CNRS - Universite Montpellier                                 \n");
   PhyML_Fprintf(fp," oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo\n");
 }
 

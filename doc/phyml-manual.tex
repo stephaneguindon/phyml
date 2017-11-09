@@ -51,7 +51,7 @@
 \today
 \vfill
 \normalsize
-\href{http://stephaneguindon.github.io/phyml-downloads/}{http://stephaneguindon.github.io/phyml-downloads/}\\
+\href{https://github.com/stephaneguindon/phyml}{https://github.com/stephaneguindon/phyml}\\
 \vspace{0.4cm}
 \href{http://www.atgc-montpellier.fr/phyml}{http://www.atgc-montpellier.fr/phyml}}
 \end{center}
@@ -2219,7 +2219,8 @@ not be monophyletic. In fact it is not considered as such during the inference. 
 defines time intervals corresponding to the time of diversification (i.e., the time of the most
 recent common ancestor) of the set of taxa the calibration points to. In other words, a given time
 interval defines the calibration for the timing of the crown node of a given clade. Each interval is defined using 
-\x{upper} and \x{lower} bounds.
+the \x{upper} and \x{lower} tags. The upper (resp. lower) bound for each interval corresponds to the amount of time elapsed
+in \x{upper} (resp. \x{lower}) time units.
 
 \vspace{0.2cm}
 \begin{Verbatim}[frame=single, label=Example of PhyTime XML file, samepage=true, baselinestretch=0.5,
@@ -2284,8 +2285,8 @@ mcmc.sample.every="100" mcmc.print.every="50" mcmc.burnin="10000">
     <taxon value="Gymno_Juniperus"/>
   </clade>
   <calibration id="CAL1">
-    <lower>-452</lower>
-    <upper>-290</upper>
+    <lower>290</lower>
+    <upper>452</upper>
     <appliesto clade.id="CLADE1">
     </appliesto>
   </calibration>
@@ -2295,8 +2296,8 @@ mcmc.sample.every="100" mcmc.print.every="50" mcmc.burnin="10000">
     <taxon value="Ophioglossum"/>
   </clade>
   <calibration id="CAL2">
-    <lower>-10000</lower>
-    <upper>-0</upper>
+    <lower>0</lower>
+    <upper>10000</upper>
     <appliesto clade.id="CLADE2">
     </appliesto>
   </calibration>
@@ -2309,14 +2310,18 @@ mcmc.sample.every="100" mcmc.print.every="50" mcmc.burnin="10000">
 It is not always obvious to determine with full precision and accuracy where in the tree a given
 fossil branches in {\em a priori}. For instance, a first morphological feature of an ancestral (fossilized) species
 might be shared by species A but not B nor C, while a second feature might be displayed by A and B but
-not C. The first feature calibrates the most recent common ancestor (MRCA)\index{MRCA} of A and
+not C. Assuming for simplicity that the true tree topology is ((A,B),C), then the first feature calibrates the most recent common ancestor (MRCA)\index{MRCA} of A and
 B. Indeed, this ancestor cannot be younger than the fossil itself because, if this was  the case, then
 A {\em and} B would display the morphological feature of interest. In a similar fashion, the second
-feature points to a MRCA of A, B and the fossil that is older than the MRCA of A and B
-only. Assuming that the tree topology is ((A,B),C), the calibration thus applies here to the MRCA of
-A, B and C, which cannot be younger than the fossil. Assuming that the fossil was discovered in a
+feature suggests that the calibration should instead apply to the MRCA of A, B and C. 
+
+Therefore, assuming  that the fossil was discovered in a
 well-defined geological layer which age range is known without ambiguity, there is still uncertainty
-around the node in the tree this time interval calibrates. PhyTime accomodates for this uncertainty by giving a
+around the node in the tree this time interval calibrates. In the particular example given above, it
+is not clear whether the calibration constraints applies to the node corresponding to the MRCA of A
+and B, or the root of the tree.
+
+PhyTime accomodates for this uncertainty by giving a
 probability to the two scenari: with probability $\alpha$ the calibration time interval applies to
 the MRCA of species A and B and with probability $1-\alpha$, this interval calibrates the age of the
 MRCA of A, B and C. 
@@ -2327,6 +2332,10 @@ calibration  ``\x{CAL1}'' applies to ``\x{CLADE1}'' (i.e., the smallest clade in
 displays the three taxa {\em Gymno\_Juniperus},
   {\em Gymno\_Sciadopitys} and {\em Gymno\_Cycas}) with probability 0.2 and to ``\x{CLADE2}'' (i.e.,
   the smallest clade that displays {\em  Gymno\_Juniperus} and {\em Gymno\_Sciadopitys}) with probability 0.8.
+Also, calibration \x{CAL2} applies to \x{CLADE3} with probability 1.0, which is implicit here and
+thus does not need to be specified in the XML file.
+
+
 
 \begin{Verbatim}[frame=single, label=Example of PhyTime XML file with calibration uncertainty, samepage=true, baselinestretch=0.5,
   fontsize=\small, numbers=left]
@@ -2350,15 +2359,15 @@ displays the three taxa {\em Gymno\_Juniperus},
 
   
   <calibration id="CAL1">
-    <lower>-400</lower>
-    <upper>-50</upper>
+    <lower>50</lower>
+    <upper>400</upper>
     <appliesto clade.id="CLADE1" probability="0.2"/>
     <appliesto clade.id="CLADE2" probability="0.8"/>
   </calibration>
 
   <calibration id="CAL2">
-    <lower>-500</lower>
-    <upper>-300</upper>
+    <lower>300</lower>
+    <upper>500</upper>
     <appliesto clade.id="CLADE3">
     </appliesto>
   </calibration>
@@ -2372,17 +2381,24 @@ displays the three taxa {\em Gymno\_Juniperus},
 PhyTime estimates the joint posterior distribution  of the phylogenetic model parameters  using an
 MCMC algorithm. This algorithm relies on sampling values of these parameters iteratively. The
 default number of iterations is fixed to 1E+07 and values of parameters are recorded every 1E+03
-iteration of the MCMC algorithm. The burnin period, during which tuning parameters of the MCMC as
+iteration of the MCMC algorithm. The burn-in period, during which tuning parameters of the MCMC as
 adjusted, lasts for 1E+04 iterations. These three parameters can be modified by setting the values
 of the attributes \x{mcmc.chain.len}, \x{mcmc.sample.every} and \x{mcmc.burnin} in the XML parameter
-file accordingly. For instance, the first line of this file could look as follows: \x{<phytime
-run.id="example" output.file="small" mcmc.chain.len="1E+7" mcmc.sample.every="100"
-mcmc.print.every="50" mcmc.burnin="10000">}
+file accordingly. For instance, the first line of this file could look as follows: 
+\vspace{0.2cm}
+\begin{Verbatim}[frame=single, label=MCMC settings, samepage=true, baselinestretch=0.5,
+  fontsize=\small, numbers=left]
+<phytime
+run.id="example" output.file="small" mcmc.chain.len="1E+7" 
+mcmc.sample.every="100" mcmc.print.every="50" mcmc.burnin="10000">
+\end{Verbatim}
 
 The vast majority of analyses will not warrant 1E+07 iterations  to converge to the target
 distribution (i.e., converge to the solution). I thus recommend  monitoring each analysis by loading
 on a regular basis the statistics output file produced by PhyTime and interrupt the analysis once
-the effective sample sizes of all parameters have reached 200.  The MCMC algorithm implemented in
+the effective sample sizes of all parameters have reached 200.  
+
+The MCMC algorithm implemented in
 PhyTime relies on multiple operators that update different parameters, or the same parameter in
 different ways. The weights of these operators, i.e., the frequency with which they are applied,
 were adjusted for the analysis of the plant data set described in \cite{guindon17}. If you think
@@ -2391,6 +2407,18 @@ function \x{MCMC\_Complete\_MCMC} in the file \x{mcmc.c} to make  the appropriat
 values of \x{mcmc->move\_weight[XXX]}, where \x{XXX} is the name of the operator. Alternatively, you
 might want to send me an email (\url{guindon@lirmm.fr}) if you are unsure about all this. 
 
+It is generally very useful to compare the posterior estimates of model parameters to that obtained
+from a sampler that ignores sequence data (i.e., the Bayesian sampler only takes as input data the
+calibration information). Such analysis helps quantifying how sensitive are the marginal posterior
+estimates to the estimates one would get prior collecting and analysing genetic sequences. The
+attribute \x{ignore.sequences} used in the \x{phytime} tag permits to run such analysis. The first
+lines of a corresponding XML file would then look as follows:
+
+\vspace{0.2cm}
+\begin{Verbatim}[frame=single, label=Sampling from the prior in PhyTime, samepage=true, baselinestretch=0.5,
+  fontsize=\small, numbers=left]
+<phytime run.id="prior" output.file="seq" ignore.sequences>
+\end{Verbatim}
 
 \subsubsection{PhyTime output}
 

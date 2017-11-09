@@ -64,16 +64,16 @@
 
   <!-- Calibration CAL1 applies to CLADE1 with proba 0.2 and to CLADE2 with proba 0.8 -->
   <calibration id="CAL1">
-    <lower>-400</lower>
-    <upper>-50</upper>
+    <lower>50</lower>
+    <upper>400</upper>
     <appliesto clade.id="CLADE1" probability="0.2"/>
     <appliesto clade.id="CLADE2" probability="0.8"/>
   </calibration>
 
   <!-- Calibration CAL2 applies to CLADE3 with proba 1 -->
   <calibration id="CAL2">
-    <lower>-500</lower>
-    <upper>-300</upper>
+    <lower>300</lower>
+    <upper>500</upper>
     <appliesto clade.id="CLADE3">
     </appliesto>
   </calibration>

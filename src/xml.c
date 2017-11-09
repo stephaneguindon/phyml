@@ -93,15 +93,31 @@ t_tree *XML_Process_Base(char *xml_filename)
   p_elem = XML_Search_Node_Name("phytime",NO,p_elem);
 #endif
   
+  if(!p_elem)
+    {
+#if defined PHYML
+      PhyML_Fprintf(stderr,"\n. The 'phyml' tag is mandatory.");
+#elif defined PHYTIME
+      PhyML_Fprintf(stderr,"\n. The 'phytime' tag is mandatory.");
+#endif
+      PhyML_Fprintf(stderr,"\n. Please amend your XML file accordingly.");
+      assert(false);
+    }
+
+
   /*! Input file
    */
   outputfile = XML_Get_Attribute_Value(p_elem,"output.file");
 
   if(!outputfile)
     {
+#if defined PHYML
       PhyML_Fprintf(stderr,"\n. The 'outputfile' attribute in 'phyml' tag is mandatory.");
+#elif defined PHYTIME
+      PhyML_Fprintf(stderr,"\n. The 'outputfile' attribute in 'phytime' tag is mandatory.");
+#endif
       PhyML_Fprintf(stderr,"\n. Please amend your XML file accordingly.");
-      Exit("\n");
+      assert(false);
     }
 
   io = (option *)Make_Input();
@@ -2263,17 +2279,29 @@ void DATE_XML(char *xml_filename)
   if(dum_string != NULL) mixt_tree->io->mcmc->chain_len_burnin = (int)String_To_Dbl(dum_string);
 
 
+  dum_string = XML_Get_Attribute_Value(xnd,"ignore.sequences");
+  if(dum_string != NULL) mixt_tree->eval_alnL = NO;
+
+  dum_string = XML_Get_Attribute_Value(xnd,"ignore.seq");
+  if(dum_string != NULL) mixt_tree->eval_alnL = NO;
+
+  dum_string = XML_Get_Attribute_Value(xnd,"ignore.data");
+  if(dum_string != NULL) mixt_tree->eval_alnL = NO;
 
 
+  
+  
   // Looking for XML node with rate-across-lineage info
   xnd = XML_Search_Node_Name("lineagerates",YES,xroot);
 
+  
   if(xnd == NULL)
     {
       PhyML_Fprintf(stdout,"\n. The model of rate variation across lineages is not specified.");
       PhyML_Fprintf(stdout,"\n. Using the geometric Brownian model (see Guindon, 2012, Syst. Biol.).\n");
       mixt_tree->rates->model      = GUINDON;
       mixt_tree->mod->gamma_mgf_bl = YES;
+      strcpy(mixt_tree->rates->model_name,"geometric Brownian"); 
     }
   else
     {
@@ -2418,7 +2446,7 @@ void DATE_XML(char *xml_filename)
 
           xnd_cal = xnd;
           
-	  low = -BIG;
+	  low = 0.0;
 	  up  = BIG;
           
           cal = Make_Calibration();          
@@ -2436,8 +2464,8 @@ void DATE_XML(char *xml_filename)
                           
           cal->clade_list_size = 0;
           cal->current_clade_idx = 0;
-          cal->lower = low;
-          cal->upper = up;
+          cal->lower = -up;
+          cal->upper = -low;
           cal->is_primary = YES;
           
           mixt_tree->rates->a_cal[mixt_tree->rates->n_cal] = cal;
@@ -2551,11 +2579,8 @@ void DATE_XML(char *xml_filename)
   seed = (mixt_tree->io->r_seed < 0)?(time(NULL)):(mixt_tree->io->r_seed);
   srand(seed);
   mixt_tree->io->r_seed = seed;
-  PhyML_Printf("\n\n. Seed: %d",seed);
 
   MIXT_Chain_Cal(mixt_tree);
-
-  PhyML_Printf("\n. Model of variation of rates across lineages: %s",mixt_tree->rates->model_name);
 
   res = DATE_MCMC(mixt_tree);
 
