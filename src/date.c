@@ -672,9 +672,11 @@ phydbl *DATE_MCMC(t_tree *tree)
       else if(!strcmp(tree->mcmc->move_name[move],"tree_height"))        MCMC_Tree_Height(tree);
       else if(!strcmp(tree->mcmc->move_name[move],"times"))              MCMC_Times_All(tree);
       else if(!strcmp(tree->mcmc->move_name[move],"times_and_rates"))    MCMC_Times_And_Rates_All(tree);
-      else if(!strcmp(tree->mcmc->move_name[move],"spr"))                MCMC_Prune_Regraft(tree);
-      else if(!strcmp(tree->mcmc->move_name[move],"spr_local"))          MCMC_Prune_Regraft_Local(tree);
-      else if(!strcmp(tree->mcmc->move_name[move],"spr_weighted"))       MCMC_Prune_Regraft_Weighted(tree);
+      
+      else if(!strcmp(tree->mcmc->move_name[move],"spr"))                { if(tree->mcmc->run < 50000) MCMC_Prune_Regraft(tree); }
+      else if(!strcmp(tree->mcmc->move_name[move],"spr_local"))          { if(tree->mcmc->run < 50000) MCMC_Prune_Regraft_Local(tree);}
+      else if(!strcmp(tree->mcmc->move_name[move],"spr_weighted"))       { if(tree->mcmc->run < 50000) MCMC_Prune_Regraft_Weighted(tree);}
+
       else if(!strcmp(tree->mcmc->move_name[move],"updown_t_cr"))        MCMC_Updown_T_Cr(tree);
       else if(!strcmp(tree->mcmc->move_name[move],"kappa"))              MCMC_Kappa(tree);
       else if(!strcmp(tree->mcmc->move_name[move],"ras"))                MCMC_Rate_Across_Sites(tree);
@@ -726,7 +728,7 @@ phydbl *DATE_MCMC(t_tree *tree)
                        Get_Lk(tree),
                        tree->rates->c_lnL_times,
                        tree->rates->c_lnL_rates,
-                       tree->rates->nd_t[tree->n_root->num],                       
+                       fabs(tree->rates->nd_t[tree->n_root->num]),                       
                        (int)time(NULL) - t_beg,
                        mean_r,
                        tree->mcmc->move_name[move]);
@@ -748,7 +750,7 @@ phydbl *DATE_MCMC(t_tree *tree)
                         tree->rates->birth_rate,
                         tree->rates->death_rate,
                         mean_r,
-                        tree->rates->nd_t[tree->n_root->num],
+                        fabs(tree->rates->nd_t[tree->n_root->num]),
                         tree->next->mod->kappa->v,
                         tree->rates->nu);
           
@@ -762,7 +764,7 @@ phydbl *DATE_MCMC(t_tree *tree)
               for(j=0;j<cal->clade_list_size;++j)
                 {
                   t_clad *clade = cal->clade_list[j];
-                  PhyML_Fprintf(fp_stats,"%G\t",tree->rates->nd_t[clade->target_nd->num]);
+                  PhyML_Fprintf(fp_stats,"%G\t",fabs(tree->rates->nd_t[clade->target_nd->num]));
                 }
             }
           
@@ -781,7 +783,7 @@ phydbl *DATE_MCMC(t_tree *tree)
           else
             for(i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"%G\t",tree->rates->nd_r[i]);
             
-          for(i=0;i<2*tree->n_otu-1;++i) if(tree->a_nodes[i]->tax == NO) PhyML_Fprintf(fp_stats,"%G\t",tree->rates->nd_t[i]);
+          for(i=0;i<2*tree->n_otu-1;++i) if(tree->a_nodes[i]->tax == NO) PhyML_Fprintf(fp_stats,"%G\t",fabs(tree->rates->nd_t[i]));
 
           PhyML_Fprintf(fp_stats,"%G\t",tree->mcmc->acc_rate[tree->mcmc->num_move_times_and_rates_root]);
           PhyML_Fprintf(fp_stats,"%G\t",tree->mcmc->tune_move[tree->mcmc->num_move_times_and_rates_root]);

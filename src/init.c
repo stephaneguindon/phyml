@@ -834,12 +834,12 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
 
   rates->birth_rate       = 1.E-1;
   rates->birth_rate_min   = 1.E-6;
-  rates->birth_rate_max   = 1.E+1;
+  rates->birth_rate_max   = 1.E+0;
   rates->birth_rate_pivot = 1.E-1;
 
   rates->death_rate       = 1.E-1;
   rates->death_rate_min   = 1.E-6;
-  rates->death_rate_max   = 1.E+1;
+  rates->death_rate_max   = 1.E+0;
   rates->death_rate_pivot = 1.E-1;
 
   rates->max_rate  = 100.0;

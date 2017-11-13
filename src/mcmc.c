@@ -921,6 +921,7 @@ void MCMC_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
   phydbl K;
 
   if(tree->rates->model == STRICTCLOCK) return;
+  if(tree->rates->model == GUINDON) return;
 
   b = NULL;
   if(a == tree->n_root) b = tree->e_root;
@@ -2380,10 +2381,7 @@ void MCMC_Tree_Rates(t_tree *tree)
       return;
     }
 
-  if(tree->rates->model == GUINDON && tree->eval_alnL == YES)
-    {
-      new_lnL_seq = Lk(NULL,tree);
-    }
+  if(tree->rates->model == GUINDON && tree->eval_alnL == YES) new_lnL_seq = Lk(NULL,tree);
   else new_lnL_seq = cur_lnL_seq;
   
   new_lnL_rate = RATES_Lk_Rates(tree);
