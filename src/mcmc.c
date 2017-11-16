@@ -1193,8 +1193,7 @@ void MCMC_Times_And_Rates_Root(t_tree *tree)
 
       if(tree->rates->model == GUINDON && tree->eval_alnL == YES)
         {
-          int i;
-          for(i=0;i<2*tree->n_otu-2;++i) tree->rates->br_do_updt[i] = YES;
+          RATES_Update_Cur_Bl(tree);
           new_lnL_seq = Lk(NULL,tree);        
         }
       else new_lnL_seq = cur_lnL_seq;
@@ -1354,13 +1353,12 @@ void MCMC_Times_And_Rates_Recur(t_node *a, t_node *d, int traversal, t_tree *tre
         }
       else assert(FALSE);
 
-      RATES_Update_Cur_Bl(tree);
-
       new_lnL_time = TIMES_Lk_Times(NO,tree);
       new_lnL_rate = RATES_Lk_Rates(tree);
 
       if(tree->rates->model == GUINDON && tree->eval_alnL == YES)
         {
+          RATES_Update_Cur_Bl(tree);
           new_lnL_seq = Lk(NULL,tree);
         }
       else new_lnL_seq = cur_lnL_seq;
@@ -1577,7 +1575,6 @@ void MCMC_Time_Recur(t_node *a, t_node *d, int traversal, t_tree *tree)
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
           
-          /* !!!!!!!!!!!!!! */
           /* new_lnL_data = Lk(NULL,tree); /\* Not necessary. Remove once tested *\/ */
           /* if(Are_Equal(new_lnL_data,cur_lnL_data,1.E-3) == NO) */
           /*   { */
@@ -1589,7 +1586,6 @@ void MCMC_Time_Recur(t_node *a, t_node *d, int traversal, t_tree *tree)
 	}
       else
 	{
-          /* !!!!!!!!!!!!!! */
           /* cur_lnL_data = Lk(NULL,tree); /\* Not necessary. Remove once tested *\/ */
           /* if(Are_Equal(new_lnL_data,cur_lnL_data,1.E-3) == NO) */
           /*   { */
@@ -2105,6 +2101,7 @@ void MCMC_Updown_T_Cr(t_tree *tree)
   phydbl K,mult,u,alpha,ratio;
   phydbl cur_lnL_rate,new_lnL_rate;
   phydbl cur_lnL_time,new_lnL_time;
+  phydbl cur_lnL_seq,new_lnL_seq;
   phydbl floor;
   int n_nodes;
 
@@ -2121,6 +2118,8 @@ void MCMC_Updown_T_Cr(t_tree *tree)
   new_lnL_rate = UNLIKELY;
   cur_lnL_time = tree->rates->c_lnL_times;
   new_lnL_time = UNLIKELY;
+  cur_lnL_seq  = tree->c_lnL;
+  new_lnL_seq  = UNLIKELY;
 
 
   u = Uni();
@@ -2151,6 +2150,14 @@ void MCMC_Updown_T_Cr(t_tree *tree)
   ratio += (new_lnL_time - cur_lnL_time);
 
   
+  if(tree->rates->model == GUINDON && tree->eval_alnL == YES)
+    {
+      RATES_Update_Cur_Bl(tree);
+      new_lnL_seq = Lk(NULL,tree);
+    }
+  else new_lnL_seq = cur_lnL_seq;
+  ratio += (new_lnL_seq - cur_lnL_seq);
+  
   ratio = exp(ratio);
   alpha = MIN(1.,ratio);
   u = Uni();
@@ -2168,6 +2175,11 @@ void MCMC_Updown_T_Cr(t_tree *tree)
       tree->rates->clock_r *= mult;
       tree->rates->c_lnL_rates = cur_lnL_rate;
       tree->rates->c_lnL_times = cur_lnL_time;
+      if(tree->rates->model == GUINDON && tree->eval_alnL == YES)
+        {
+          RATES_Update_Cur_Bl(tree);
+          tree->c_lnL = cur_lnL_seq;
+        }
     }
   else
     {
@@ -2381,7 +2393,11 @@ void MCMC_Tree_Rates(t_tree *tree)
       return;
     }
 
-  if(tree->rates->model == GUINDON && tree->eval_alnL == YES) new_lnL_seq = Lk(NULL,tree);
+  if(tree->rates->model == GUINDON && tree->eval_alnL == YES)
+    {
+      RATES_Update_Cur_Bl(tree);
+      new_lnL_seq = Lk(NULL,tree);
+    }
   else new_lnL_seq = cur_lnL_seq;
   
   new_lnL_rate = RATES_Lk_Rates(tree);
@@ -4652,7 +4668,6 @@ void MCMC_Death_Rate(t_tree *tree)
           tree->extra_tree->rates->c_lnL_rates = UNLIKELY;
           tree->extra_tree->c_lnL              = UNLIKELY;
           
-          /* !!!!!!!!!!!!!!!!!!!!!!!!!!! */
           TIMES_Randomize_Tree_With_Time_Constraints(tree->extra_tree->rates->a_cal[0],tree->extra_tree);
           tree->extra_tree->rates->birth_rate = tree->rates->birth_rate;
           tree->extra_tree->rates->death_rate = new_death_rate;
@@ -4823,7 +4838,6 @@ void MCMC_Birth_Death_Updown(t_tree *tree)
           tree->extra_tree->rates->c_lnL_rates = UNLIKELY;
           tree->extra_tree->c_lnL              = UNLIKELY;
           
-          /* !!!!!!!!!!!!!!!!!!!!!!!!!!! */
           TIMES_Randomize_Tree_With_Time_Constraints(tree->extra_tree->rates->a_cal[0],tree->extra_tree);
           tree->extra_tree->rates->death_rate = new_death_rate;
           tree->extra_tree->rates->birth_rate = new_birth_rate;
@@ -4939,10 +4953,10 @@ void MCMC_Nu(t_tree *tree)
   K = tree->mcmc->tune_move[tree->mcmc->num_move_nu];
 
   cur_lnL_rate = tree->rates->c_lnL_rates;
-  new_lnL_rate = tree->rates->c_lnL_rates;
+  new_lnL_rate = UNLIKELY;
 
   cur_lnL_data = tree->c_lnL;
-  new_lnL_data = tree->c_lnL;
+  new_lnL_data = UNLIKELY;
   
   cur_nu       = tree->rates->nu;
 
@@ -4959,8 +4973,11 @@ void MCMC_Nu(t_tree *tree)
 
       if(tree->rates->model == GUINDON && tree->eval_alnL == YES)
 	{
+          RATES_Update_Cur_Bl(tree);
 	  new_lnL_data = Lk(NULL,tree);
 	}
+      else
+        new_lnL_data = cur_lnL_data;
       
       ratio += (new_lnL_rate - cur_lnL_rate);
       ratio += (new_lnL_data - cur_lnL_data);
@@ -5152,6 +5169,7 @@ void MCMC_Prune_Regraft(t_tree *tree)
   
   while(n_iter--)
     {
+      
       TIMES_Update_Node_Ordering(tree);
       
       tree->mcmc->run_move[tree->mcmc->num_move_spr]++;
@@ -5427,8 +5445,19 @@ void MCMC_Prune_Regraft(t_tree *tree)
           RATES_Reset_Times(tree);
           RATES_Update_Cur_Bl(tree);
           DATE_Assign_Primary_Calibration(tree);
-          TIMES_Lk_Times(NO,tree); 
+          new_lnL_time = TIMES_Lk_Times(NO,tree); 
+          if(Are_Equal(new_lnL_time,cur_lnL_time,1.E-5) == NO)
+            {
+              PhyML_Printf("\n. new_lnL_time: %f cur_lnL_time: %f",new_lnL_time,cur_lnL_time);
+              assert(FALSE);
+            }
 
+          /* new_lnL_seq = Lk(NULL,tree); */
+          /* if(Are_Equal(new_lnL_seq,cur_lnL_seq,1.E-5) == NO) */
+          /*   { */
+          /*     PhyML_Printf("\n. new: %f cur: %f",new_lnL_seq,cur_lnL_seq); */
+          /*     assert(FALSE); */
+          /*   } */
           
           if(!(tree->rates->c_lnL_times > UNLIKELY))
             {
@@ -5691,8 +5720,19 @@ void MCMC_Prune_Regraft_Weighted(t_tree *tree)
           RATES_Reset_Times(tree);
           RATES_Update_Cur_Bl(tree);
           DATE_Assign_Primary_Calibration(tree);
-          TIMES_Lk_Times(NO,tree); 
+          new_lnL_time = TIMES_Lk_Times(NO,tree); 
+          if(Are_Equal(new_lnL_time,cur_lnL_time,1.E-5) == NO)
+            {
+              PhyML_Printf("\n. new_lnL_time: %f cur_lnL_time: %f",new_lnL_time,cur_lnL_time);
+              assert(FALSE);
+            }
 
+          /* new_lnL_seq = Lk(NULL,tree); */
+          /* if(Are_Equal(new_lnL_seq,cur_lnL_seq,1.E-5) == NO) */
+          /*   { */
+          /*     PhyML_Printf("\n. new: %f cur: %f",new_lnL_seq,cur_lnL_seq); */
+          /*     assert(FALSE); */
+          /*   } */
           
           if(!(tree->rates->c_lnL_times > UNLIKELY))
             {
@@ -5975,7 +6015,6 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
                     residual,
                     new_regraft_nd,tree);
       
-      RATES_Update_Cur_Bl(tree);
 
       a = b = c = d = e = NULL;
       regraft_nd_list = NULL;
@@ -6085,6 +6124,7 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
 
       if(new_lnL_time > UNLIKELY)
         {
+          RATES_Update_Cur_Bl(tree);
           Set_Both_Sides(NO,tree);
           new_lnL_seq = Lk(NULL,tree);
           new_lnL_rate = RATES_Lk_Rates(tree);
@@ -6116,10 +6156,25 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
                         prune_daughter,residual,prune == tree->n_root ? tree->n_root : cur_regraft_nd,tree);
 
           RATES_Reset_Times(tree);
-          RATES_Update_Cur_Bl(tree);
           DATE_Assign_Primary_Calibration(tree);
-          TIMES_Lk_Times(NO,tree); 
+          new_lnL_time = TIMES_Lk_Times(NO,tree); 
+          if(Are_Equal(new_lnL_time,cur_lnL_time,1.E-5) == NO)
+            {
+              PhyML_Printf("\n. new_lnL_time: %f cur_lnL_time: %f",new_lnL_time,cur_lnL_time);
+              assert(FALSE);
+            }
+          
 
+          
+          RATES_Update_Cur_Bl(tree);
+
+          /* new_lnL_seq = Lk(NULL,tree); */
+          /* if(Are_Equal(new_lnL_seq,cur_lnL_seq,1.E-5) == NO) */
+          /*   { */
+          /*     PhyML_Printf("\n. new: %f cur: %f",new_lnL_seq,cur_lnL_seq); */
+          /*     assert(FALSE); */
+          /*   } */
+          
           
           if(!(tree->rates->c_lnL_times > UNLIKELY))
             {

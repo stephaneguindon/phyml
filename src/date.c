@@ -673,9 +673,9 @@ phydbl *DATE_MCMC(t_tree *tree)
       else if(!strcmp(tree->mcmc->move_name[move],"times"))              MCMC_Times_All(tree);
       else if(!strcmp(tree->mcmc->move_name[move],"times_and_rates"))    MCMC_Times_And_Rates_All(tree);
       
-      else if(!strcmp(tree->mcmc->move_name[move],"spr"))                { if(tree->mcmc->run < 50000) MCMC_Prune_Regraft(tree); }
-      else if(!strcmp(tree->mcmc->move_name[move],"spr_local"))          { if(tree->mcmc->run < 50000) MCMC_Prune_Regraft_Local(tree);}
-      else if(!strcmp(tree->mcmc->move_name[move],"spr_weighted"))       { if(tree->mcmc->run < 50000) MCMC_Prune_Regraft_Weighted(tree);}
+      else if(!strcmp(tree->mcmc->move_name[move],"spr"))                { MCMC_Prune_Regraft(tree); }
+      else if(!strcmp(tree->mcmc->move_name[move],"spr_local"))          { MCMC_Prune_Regraft_Local(tree);}
+      else if(!strcmp(tree->mcmc->move_name[move],"spr_weighted"))       { MCMC_Prune_Regraft_Weighted(tree);}
 
       else if(!strcmp(tree->mcmc->move_name[move],"updown_t_cr"))        MCMC_Updown_T_Cr(tree);
       else if(!strcmp(tree->mcmc->move_name[move],"kappa"))              MCMC_Kappa(tree);
@@ -687,7 +687,8 @@ phydbl *DATE_MCMC(t_tree *tree)
       else if(!strcmp(tree->mcmc->move_name[move],"tree_rates"))         MCMC_Tree_Rates(tree);
       else if(!strcmp(tree->mcmc->move_name[move],"clade_change"))       MCMC_Clade_Change(tree);
       else continue;
-      
+
+      /* PhyML_Fprintf(stderr,"\n. move: %s",tree->mcmc->move_name[move]); */      
       
       if(!RATES_Check_Edge_Length_Consistency(tree))
         {
@@ -720,7 +721,7 @@ phydbl *DATE_MCMC(t_tree *tree)
           mean_r = RATES_Average_Substitution_Rate(tree);
           post = Get_Lk(tree) + tree->rates->c_lnL_times + tree->rates->c_lnL_rates;
 
-          if(tree->mcmc->run < adjust_len) PhyML_Printf("\n.");
+          if(tree->mcmc->run < adjust_len) PhyML_Printf("\nx");
           else PhyML_Printf("\n.");
           PhyML_Printf(" %10d lnL: [%12.2f -- %12.2f -- %12.2f -- %12.2f] root age: %12f [time: %7d sec] clock: %15f %20s",
                        tree->mcmc->run,
