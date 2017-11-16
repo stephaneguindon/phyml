@@ -87,7 +87,6 @@ t_tree *XML_Process_Base(char *xml_filename)
     }
 
 #if defined PHYML
-  printf("\n. HERE"); fflush(NULL);
   p_elem = XML_Search_Node_Name("phyml",NO,p_elem);
 #elif defined PHYTIME
   p_elem = XML_Search_Node_Name("phytime",NO,p_elem);

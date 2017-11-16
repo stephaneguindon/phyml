@@ -3098,7 +3098,7 @@ void Optimize_Free_Rate_Weights(t_tree *tree, int fast, int verbose)
                          tree->mod->ras->n_catg);
 
       tree->mod->ras->free_rate_mr->v = 100.;
-      For(i,2*tree->n_otu-1) tree->a_edges[i]->l->v /= (wm * tree->mod->ras->free_rate_mr->v);
+      for(i=0;i<2*tree->n_otu-1;++i) tree->a_edges[i]->l->v /= (wm * tree->mod->ras->free_rate_mr->v);
     }
 
   for(i=0;i<tree->mod->ras->n_catg-1;i++)
@@ -3125,7 +3125,7 @@ void Optimize_Free_Rate_Weights(t_tree *tree, int fast, int verbose)
                          tree->mod->ras->gamma_r_proba->v,
                          tree->mod->ras->n_catg);
 
-      For(i,2*tree->n_otu-1) tree->a_edges[i]->l->v *= (wm * tree->mod->ras->free_rate_mr->v);
+      for(i=0;i<2*tree->n_otu-1;++i) tree->a_edges[i]->l->v *= (wm * tree->mod->ras->free_rate_mr->v);
     }
 
   lk_after = tree->c_lnL;
