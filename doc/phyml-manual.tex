@@ -1757,7 +1757,7 @@ distribution of the relative rates. The available options for such element are:
   i.e., the relative rates and the corresponding frequencies.
 \end{itemize}
 \vspace{0.2cm}
-\begin{Verbatim}[frame=single, label=Example of `siterates' component, samepage=true,
+\begin{Verbatim}[frame=single, label=Example of `siterates' component (discrete gamma model), samepage=true,
   baselinestretch=0.5, fontsize=\small, numbers=left]
 
   <siterates id="SR1">
@@ -1771,6 +1771,32 @@ distribution of the relative rates. The available options for such element are:
   </siterates>
 \end{Verbatim}
 
+Setting up an analysis using the FreeRate\index{FreeRate} mixture model of rate variation across
+sites \cite{soubrier12} requires a
+bit more work. As in the discrete gamma model, the FreeRate model relies on definies classes of
+(relative) rates. In the discrete gamma model, each class has the same frequency. This is no longer
+the case with FreeRate. It is thus necessary to specify the frequency, or weight, of each class of rate in the
+XML file. The example below illustrates how these weights are defined in practice:
+\vspace{0.2cm}
+\begin{Verbatim}[frame=single, label=Example of `siterates' component (FreeRate model), samepage=true,
+  baselinestretch=0.5, fontsize=\small, numbers=left]
+  <!-- Freerate model of variation of rates across sites -->
+  <siterates id="SR1">
+    <instance id="R1" init.value="0.1"/>
+    <instance id="R2" init.value="0.7"/>
+    <instance id="R3" init.value="1.9"/>
+    <instance id="R4" init.value="5.1"/>
+    <weights  id="D1" family="freerates" optimise.freerates="yes">
+      <instance appliesto="R1" value="0.4"/>
+      <instance appliesto="R2" value="0.3"/>
+      <instance appliesto="R3" value="0.1"/>
+      <instance appliesto="R4" value="0.1"/>
+    </weights>
+  </siterates>
+\end{Verbatim}
+Note that the weights do not have to sum to one. PhyML rescales them before starting the analysis
+such that these weights are transformed into proper probabilities. The relative rates themselves are
+rescaled too such that the weighted average (relative) rate is equal to one after rescaling.
 
 
 \subsubsection{{\tt partitionelem} and {\tt mixtureelem} components}\index{XML options!{\tt partitionelem}
