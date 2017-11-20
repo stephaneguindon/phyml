@@ -1154,26 +1154,26 @@ int Read_Command_Line(option *io, int argc, char **argv)
 		strcpy(io->out_file, optarg);
 		strcpy(io->out_tree_file,optarg);
 #ifdef PHYML
-		strcat(io->out_tree_file,"_phyml_tree.txt");
+		strcat(io->out_tree_file,"_phyml_tree");
 #elif M4
-		strcat(io->out_tree_file,"_m4_tree.txt");
+		strcat(io->out_tree_file,"_m4_tree");
 #elif PHYREX
-		strcat(io->out_tree_file,"_phyrex_tree.txt");
+		strcat(io->out_tree_file,"_phyrex_tree");
 #endif
                 
 		strcpy(io->out_stats_file,optarg);
 #ifdef PHYML
-		strcat(io->out_stats_file,"_phyml_stats.txt");
+		strcat(io->out_stats_file,"_phyml_stats");
 #elif M4
-		strcat(io->out_stats_file,"_m4_stats.txt");
+		strcat(io->out_stats_file,"_m4_stats");
 #elif PHYREX
-		strcat(io->out_stats_file,"_phyrex_stats.txt");
+		strcat(io->out_stats_file,"_phyrex_stats");
 #endif
 
 
 #ifdef PHYREX
 		strcpy(io->out_summary_file,optarg);
-		strcat(io->out_summary_file,"_phyrex_summary.txt");
+		strcat(io->out_summary_file,"_phyrex_summary");
 #endif
 
 
@@ -1448,24 +1448,27 @@ int Read_Command_Line(option *io, int argc, char **argv)
   if(io->print_site_lnl)
     {
       strcpy(io->out_lk_file,io->in_align_file);
-      strcat(io->out_lk_file, "_phyml_lk.txt");
+      strcat(io->out_lk_file, "_phyml_lk");
       if(io->append_run_ID) { strcat(io->out_lk_file,"_"); strcat(io->out_lk_file,io->run_id_string); }
+      strcat(io->out_lk_file, ".txt");
       io->fp_out_lk = Openfile(io->out_lk_file,1);
     }
   
   if(io->print_trace)
     {
       strcpy(io->out_trace_file,io->in_align_file);
-      strcat(io->out_trace_file,"_phyml_trace.txt");
+      strcat(io->out_trace_file,"_phyml_trace");
       if(io->append_run_ID) { strcat(io->out_trace_file,"_"); strcat(io->out_trace_file,io->run_id_string); }
+      strcat(io->out_trace_file,".txt");
       io->fp_out_trace = Openfile(io->out_trace_file,WRITE);
     }
 
   if(io->print_json_trace)
     {
       strcpy(io->out_json_trace_file,io->in_align_file);
-      strcat(io->out_json_trace_file,"_phyml_trace.json");
+      strcat(io->out_json_trace_file,"_phyml_trace");
       if(io->append_run_ID) { strcat(io->out_json_trace_file,"_"); strcat(io->out_json_trace_file,io->run_id_string); }
+      strcat(io->out_json_trace_file,".json");
       io->fp_out_json_trace = Openfile(io->out_json_trace_file,READWRITE);
     }
 
@@ -1473,21 +1476,24 @@ int Read_Command_Line(option *io, int argc, char **argv)
   if(io->mod->s_opt->random_input_tree)
     {
       strcpy(io->out_trees_file,io->in_align_file);
-      strcat(io->out_trees_file,"_phyml_rand_trees.txt");
+      strcat(io->out_trees_file,"_phyml_rand_trees");
       if(io->append_run_ID) { strcat(io->out_trees_file,"_"); strcat(io->out_trees_file,io->run_id_string); }
+      strcat(io->out_trees_file,".txt");
       io->fp_out_trees = Openfile(io->out_trees_file,1);
     }
   
   if((io->print_boot_trees) && (io->mod->bootstrap > 0))
     {
       strcpy(io->out_boot_tree_file,io->in_align_file);
-      strcat(io->out_boot_tree_file,"_phyml_boot_trees.txt");
+      strcat(io->out_boot_tree_file,"_phyml_boot_trees");
       if(io->append_run_ID) { strcat(io->out_boot_tree_file,"_"); strcat(io->out_boot_tree_file,io->run_id_string); }
+      strcat(io->out_boot_tree_file,".txt");
       io->fp_out_boot_tree = Openfile(io->out_boot_tree_file,1);
       
       strcpy(io->out_boot_stats_file,io->in_align_file);
-      strcat(io->out_boot_stats_file,"_phyml_boot_stats.txt");
+      strcat(io->out_boot_stats_file,"_phyml_boot_stats");
       if(io->append_run_ID) { strcat(io->out_boot_stats_file,"_"); strcat(io->out_boot_stats_file,io->run_id_string); }
+      strcat(io->out_boot_stats_file,".txt");
       io->fp_out_boot_stats = Openfile(io->out_boot_stats_file,1);
     }
   
@@ -1498,7 +1504,11 @@ int Read_Command_Line(option *io, int argc, char **argv)
       strcat(io->out_tree_file,io->run_id_string);
       strcat(io->out_stats_file,io->run_id_string);
     }
-  
+
+  strcat(io->out_tree_file,".txt");
+  strcat(io->out_stats_file,".txt");
+
+
   if(io->mod->ras->n_catg == 1) io->mod->s_opt->opt_alpha = 0;
   
   if(!io->mod->s_opt->opt_subst_param)

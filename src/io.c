@@ -5132,6 +5132,7 @@ void Make_Topology_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
       strcpy(io->out_trees_file,io->in_align_file);
       strcat(io->out_trees_file,"_phyml_rand_trees");
       if(io->append_run_ID) { strcat(io->out_trees_file,"_"); strcat(io->out_trees_file,io->run_id_string); }
+      strcat(io->out_trees_file,".txt"); 
       io->fp_out_trees = Openfile(io->out_trees_file,1);
     }
   else if(!strcmp(init_tree,"parsimony") ||
