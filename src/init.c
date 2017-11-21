@@ -546,6 +546,8 @@ void Set_Defaults_Input(option* io)
   io->fp_out_trace               = NULL;
   io->fp_weight_file             = NULL;
   io->fp_out_json_trace          = NULL;
+  io->fp_out_lk                  = NULL;
+  io->fp_out_trace               = NULL;
   io->long_tax_names             = NULL;
   io->short_tax_names            = NULL;
   io->lon                        = NULL;

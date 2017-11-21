@@ -980,8 +980,12 @@ t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, phydbl *
     }
   
 
-  if(verbose) printf("\n. Apical: %d @ time %f min: %f",n->num,tree->rates->nd_t[n->num],*t_min); fflush(NULL);
-     
+  if(verbose)
+    {
+      PhyML_Printf("\n. Apical: %d @ time %f min: %f",n->num,tree->rates->nd_t[n->num],*t_min);
+      fflush(NULL);
+    }
+  
   // List all nodes younger than this apical node
   DATE_List_Of_Nodes_Younger_Than(n->anc,n,-INFINITY,&in,tree);
 

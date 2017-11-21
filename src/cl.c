@@ -1445,7 +1445,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
       io->mod->m4mod->use_cov_free       = 1;
     }
   
-  if(io->print_site_lnl)
+  if(io->print_site_lnl && io->fp_in_align != NULL)
     {
       strcpy(io->out_lk_file,io->in_align_file);
       strcat(io->out_lk_file, "_phyml_lk");
@@ -1454,7 +1454,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
       io->fp_out_lk = Openfile(io->out_lk_file,1);
     }
   
-  if(io->print_trace)
+  if(io->print_trace && io->fp_in_align != NULL)
     {
       strcpy(io->out_trace_file,io->in_align_file);
       strcat(io->out_trace_file,"_phyml_trace");
@@ -1463,7 +1463,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
       io->fp_out_trace = Openfile(io->out_trace_file,WRITE);
     }
 
-  if(io->print_json_trace)
+  if(io->print_json_trace && io->fp_in_align != NULL)
     {
       strcpy(io->out_json_trace_file,io->in_align_file);
       strcat(io->out_json_trace_file,"_phyml_trace");
@@ -1473,7 +1473,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
     }
 
   
-  if(io->mod->s_opt->random_input_tree)
+  if(io->mod->s_opt->random_input_tree && io->fp_in_align != NULL)
     {
       strcpy(io->out_trees_file,io->in_align_file);
       strcat(io->out_trees_file,"_phyml_rand_trees");
@@ -1482,7 +1482,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
       io->fp_out_trees = Openfile(io->out_trees_file,1);
     }
   
-  if((io->print_boot_trees) && (io->mod->bootstrap > 0))
+  if((io->print_boot_trees) && (io->mod->bootstrap > 0) && (io->fp_in_align != NULL))
     {
       strcpy(io->out_boot_tree_file,io->in_align_file);
       strcat(io->out_boot_tree_file,"_phyml_boot_trees");
@@ -1497,7 +1497,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
       io->fp_out_boot_stats = Openfile(io->out_boot_stats_file,1);
     }
   
-  if(io->append_run_ID)
+  if(io->append_run_ID && io->fp_in_align != NULL)
     {
       strcat(io->out_tree_file,"_");
       strcat(io->out_stats_file,"_");
@@ -1505,9 +1505,11 @@ int Read_Command_Line(option *io, int argc, char **argv)
       strcat(io->out_stats_file,io->run_id_string);
     }
 
-  strcat(io->out_tree_file,".txt");
-  strcat(io->out_stats_file,".txt");
-
+  if(io->fp_in_align != NULL)
+    {
+      strcat(io->out_tree_file,".txt");
+      strcat(io->out_stats_file,".txt");
+    }
 
   if(io->mod->ras->n_catg == 1) io->mod->s_opt->opt_alpha = 0;
   
@@ -1538,15 +1540,21 @@ int Read_Command_Line(option *io, int argc, char **argv)
   // Make sure you don't erase the input file...
   if(!strcmp(io->out_tree_file,io->in_align_file) ||
      !strcmp(io->out_stats_file,io->in_align_file)) 
-    Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
-
-  io->fp_out_tree  = Openfile(io->out_tree_file,writemode);
-  io->fp_out_stats = Openfile(io->out_stats_file,writemode);
+    {
+      PhyML_Fprintf(stderr,"\n. The alignment file '%s' does not seem to exist...",io->in_align_file);
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
+    }
+  
+  if(io->fp_in_align != NULL)
+    {
+      io->fp_out_tree  = Openfile(io->out_tree_file,writemode);
+      io->fp_out_stats = Openfile(io->out_stats_file,writemode);
+    }
 #endif
   
 
 #if defined(PHYREX)
-  io->fp_out_summary = Openfile(io->out_summary_file,writemode);
+  if(io->fp_in_align != NULL) io->fp_out_summary = Openfile(io->out_summary_file,writemode);
 #endif
   
   if(io->mod->whichmodel == GTR) 
