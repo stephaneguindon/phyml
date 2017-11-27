@@ -137,12 +137,13 @@ t_tree *XML_Process_Base(char *xml_filename)
 
   strcpy(io->out_file,outputfile);
   strcpy(io->out_tree_file,outputfile);
-  if(io->append_run_ID) { strcat(io->out_tree_file,"_"); strcat(io->out_tree_file,io->run_id_string); }
+  strcpy(io->out_stats_file,outputfile);
 
+  
 # if defined(PHYTIME)
-  strcat(io->out_tree_file,"_phytime_tree.txt");
+  strcat(io->out_tree_file,"_phytime_tree");
 # else
-  strcat(io->out_tree_file,"_phyml_tree.txt");
+  strcat(io->out_tree_file,"_phyml_tree");
 #endif
 
   strcpy(io->out_stats_file,outputfile);
@@ -150,12 +151,18 @@ t_tree *XML_Process_Base(char *xml_filename)
 
 
 # if defined(PHYTIME)
-  strcat(io->out_stats_file,"_phytime_stats.txt");
+  strcat(io->out_stats_file,"_phytime_stats");
 # else
-  strcat(io->out_stats_file,"_phyml_stats.txt");
+  strcat(io->out_stats_file,"_phyml_stats");
 #endif
 
 
+  if(io->append_run_ID) { strcat(io->out_tree_file,"_"); strcat(io->out_tree_file,io->run_id_string); }
+  if(io->append_run_ID) { strcat(io->out_stats_file,"_"); strcat(io->out_stats_file,io->run_id_string); }
+
+  strcat(io->out_stats_file,".txt");
+  strcat(io->out_tree_file,".txt");
+ 
   io->fp_out_tree  = Openfile(io->out_tree_file,1);
   io->fp_out_stats = Openfile(io->out_stats_file,1);
 
@@ -171,8 +178,9 @@ t_tree *XML_Process_Base(char *xml_filename)
         {
           io->print_trace = YES;
           strcpy(io->out_trace_file,outputfile);
+          strcat(io->out_trace_file,"_phyml_trace");
           if(io->append_run_ID) { strcat(io->out_trace_file,"_"); strcat(io->out_trace_file,io->run_id_string); }
-          strcat(io->out_trace_file,"_phyml_trace.txt");
+          strcat(io->out_trace_file,".txt");
           io->fp_out_trace = Openfile(io->out_trace_file,1);
         }
     }
@@ -190,8 +198,9 @@ t_tree *XML_Process_Base(char *xml_filename)
         {
           io->print_json_trace = YES;
           strcpy(io->out_json_trace_file,outputfile);
+          strcat(io->out_json_trace_file,"_phyml_trace");
           if(io->append_run_ID) { strcat(io->out_json_trace_file,"_"); strcat(io->out_json_trace_file,io->run_id_string); }
-          strcat(io->out_json_trace_file,"_phyml_trace.json");
+          strcat(io->out_json_trace_file,".json");
           io->fp_out_json_trace = Openfile(io->out_json_trace_file,READWRITE);
         }
     }
