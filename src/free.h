@@ -83,7 +83,7 @@ void Free_Poly(t_poly *p);
 void Free_Mmod(t_phyrex_mod *mmod);
 void Free_Efrq_Weights(t_mod *mixt_mod);
 void Free_Rmat_Weights(t_mod *mixt_mod);
-void JSON_Free_StringVal(json_sv *sv);
+void JSON_Free_KeyVal(json_kv *kv);
 void JSON_Free_Object(json_o *o);
 void JSON_Free_Array(json_a *a);
 void Free_Edge_Loc_Rght(t_edge *b);

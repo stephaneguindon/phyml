@@ -1428,7 +1428,7 @@ void JSON_Free_Array(json_a *a)
 
 void JSON_Free_Object(json_o *o)
 {
-  if(o->sv) JSON_Free_StringVal(o->sv);
+  if(o->kv) JSON_Free_KeyVal(o->kv);
   if(o->next) JSON_Free_Object(o->next);
   Free(o);
 }
@@ -1436,14 +1436,14 @@ void JSON_Free_Object(json_o *o)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void JSON_Free_StringVal(json_sv *sv)
+void JSON_Free_KeyVal(json_kv *kv)
 {
-  if(sv->string) Free(sv->string);
-  if(sv->value) Free(sv->value);
-  if(sv->object) JSON_Free_Object(sv->object);
-  if(sv->array) JSON_Free_Array(sv->array);
-  if(sv->next) JSON_Free_StringVal(sv->next);
-  Free(sv);
+  if(kv->key) Free(kv->key);
+  if(kv->value) Free(kv->value);
+  if(kv->object) JSON_Free_Object(kv->object);
+  if(kv->array) JSON_Free_Array(kv->array);
+  if(kv->next) JSON_Free_KeyVal(kv->next);
+  Free(kv);
 }
 
 //////////////////////////////////////////////////////////////

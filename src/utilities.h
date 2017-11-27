@@ -1948,18 +1948,18 @@ typedef struct __SampArea {
 
 /*!********************************************************/
 
-typedef struct __JSON_StringVal {
-  char *string;
+typedef struct __JSON_KeyVal {
+  char *key;
   char *value;
   struct __JSON_Object *object;
   struct __JSON_Array *array;
-  struct __JSON_StringVal *next;
-}json_sv;
+  struct __JSON_KeyVal *next;
+}json_kv;
 
 /*!********************************************************/
 
 typedef struct __JSON_Object {
-  struct __JSON_StringVal *sv;
+  struct __JSON_KeyVal *kv;
   struct __JSON_Object *next;
 }json_o;
 

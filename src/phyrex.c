@@ -1063,23 +1063,24 @@ t_sarea *PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree)
 
   
   /* Dispersal stuff */
-  /* {     */
+  /* { */
   /*   phydbl T = disk->time; // total simulation time (in calendar unit) */
-  /*   t_ldsk *dum_ldsk = disk->ldsk_a[Rand_Int(0,disk->n_ldsk_a-1)]; */
+  /*   t_ldsk *dum_ldsk = disk->ldsk_a[Rand_Int(0,disk->n_ldsk_a-1)]; // random selection of a lineage among all the lineages available at present time */
   /*   t_dsk *dum_dsk = disk; */
   /*   phydbl s = w*h; // area */
   /*   printf("\n. s: %f",s); fflush(NULL); */
   /*   phydbl gentime = 1./(2.*PI*mmod->rad*mmod->rad*mmod->mu*mmod->lbda/s); */
-  /*   phydbl ssq = 0.0; */
+  /*   phydbl ssq = 0.0; // sum of squared difference between current and previous position of lineage, when previous pos != current pos. */
   /*   phydbl curr_pos,prev_pos; */
   /*   int curr_gen,prev_gen,nhits=0; */
   /*   prev_pos = dum_ldsk->coord->lonlat[0]; */
   /*   curr_pos = prev_pos; */
   /*   curr_gen = prev_gen = 1; */
+  /*   // Compute sum of squared difference of positions */
   /*   do */
-  /*     {       */
-  /*       curr_gen  = 1 + (int)(dum_dsk->time-T)/gentime; */
-  /*       curr_pos  = dum_ldsk->coord->lonlat[0]; */
+  /*     { */
+  /*       curr_gen  = 1 + (int)(dum_dsk->time-T)/gentime; // increment the number of generations (generation time measured in calendar time units) */
+  /*       curr_pos  = dum_ldsk->coord->lonlat[0]; // current position of lineage */
         
   /*       if(dum_ldsk->disk == dum_dsk) // lineage was born at that time */
   /*         { */
