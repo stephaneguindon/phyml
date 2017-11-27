@@ -1445,6 +1445,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
       io->mod->m4mod->use_cov_free       = 1;
     }
   
+
   if(io->print_site_lnl && io->fp_in_align != NULL)
     {
       strcpy(io->out_lk_file,io->in_align_file);
