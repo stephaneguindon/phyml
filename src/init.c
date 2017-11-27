@@ -546,6 +546,8 @@ void Set_Defaults_Input(option* io)
   io->fp_out_trace               = NULL;
   io->fp_weight_file             = NULL;
   io->fp_out_json_trace          = NULL;
+  io->fp_out_lk                  = NULL;
+  io->fp_out_trace               = NULL;
   io->long_tax_names             = NULL;
   io->short_tax_names            = NULL;
   io->lon                        = NULL;
@@ -577,11 +579,11 @@ void Set_Defaults_Input(option* io)
   io->random_boot_seq_order      = YES;
   io->print_trace                = NO;
   io->print_json_trace           = NO;
-  io->print_site_lnl             = 0;
+  io->print_site_lnl             = NO;
   io->m4_model                   = NO;
-  io->rm_ambigu                  = 0;
-  io->append_run_ID              = 0;
-  io->quiet                      = 0;
+  io->rm_ambigu                  = NO;
+  io->append_run_ID              = NO;
+  io->quiet                      = NO;
   io->datatype                   = NT;
   io->colalias                   = YES;
   io->data_file_format           = PHYLIP;
