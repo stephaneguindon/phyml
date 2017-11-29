@@ -140,14 +140,12 @@ t_tree *XML_Process_Base(char *xml_filename)
   strcpy(io->out_stats_file,outputfile);
 
   
+
 # if defined(PHYTIME)
   strcat(io->out_tree_file,"_phytime_tree");
 # else
   strcat(io->out_tree_file,"_phyml_tree");
 #endif
-
-  strcpy(io->out_stats_file,outputfile);
-  if(io->append_run_ID) { strcat(io->out_stats_file,"_"); strcat(io->out_stats_file,io->run_id_string); }
 
 
 # if defined(PHYTIME)
