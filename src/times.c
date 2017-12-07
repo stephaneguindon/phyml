@@ -1435,6 +1435,8 @@ phydbl TIMES_Lk_Birth_Death(int verbose, t_tree *tree)
     }
   else if(b > bmin && d < dmin) // Yule process 
     {
+      lognut1 = log(1.-exp(-b*troot));
+      
       for(i=0;i<2*tree->n_otu-1;++i)
         if(tree->a_nodes[i]->tax == NO && tree->a_nodes[i] != tree->n_root)
           {

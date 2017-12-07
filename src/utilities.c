@@ -6654,21 +6654,32 @@ void Check_Memory_Amount(t_tree *tree)
   nbytes = 0;
 
   /* Partial Pars */
+  /* pars_r */
   nbytes += (2*n_otu-3) * 2 * tree->data->crunch_len * sizeof(int);
+  /* ui_r */
   nbytes += (2*n_otu-3) * 2 * tree->data->crunch_len * sizeof(int);
+  /* p_pars_r */
   nbytes += (2*n_otu-3) * 2 * tree->data->crunch_len * mod->ns * sizeof(int);
+  /* n_diff_states_r */
+  nbytes += (2*n_otu-3) * 2 * mod->ns * sizeof(int);
 
   /* Pmat */
+  /* Pij_rr */
+  nbytes += (2*n_otu-3) * mod->ras->n_catg * mod->ns * mod->ns * sizeof(phydbl);
+  /* tPij_rr */
   nbytes += (2*n_otu-3) * mod->ras->n_catg * mod->ns * mod->ns * sizeof(phydbl);
 
 
   /* Partial Lk */
+  /* p_lk */
   nbytes += ((2*n_otu-3) * 2 - tree->n_otu) * tree->data->crunch_len * mod->ras->n_catg * mod->ns * sizeof(phydbl);
+  /* p_lk_tip */
+  nbytes += (tree->n_otu) * tree->data->crunch_len * mod->ns * sizeof(phydbl);
 
 
   /* Scaling factors */
-  nbytes += ((2*n_otu-3) * 2 - tree->n_otu) * tree->data->crunch_len * sizeof(int);
-
+  /* sum_scale */
+  nbytes += ((2*n_otu-3) * 2 - tree->n_otu) * tree->data->crunch_len * mod->ras->n_catg * sizeof(int);
 
 
   if(((phydbl)nbytes/(1.E+06)) > 256.)
@@ -9944,7 +9955,7 @@ void Get_Edge_Binary_Coding_Number(t_tree *tree)
   if(tree->n_otu > 1000)
     {
       PhyML_Printf("\n. Can't work out edge binary code if the number of taxa >1000.");
-      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+      assert(FALSE);
     }
 
   Free_Bip(tree);
@@ -9954,32 +9965,32 @@ void Get_Edge_Binary_Coding_Number(t_tree *tree)
   Set_Taxa_Id_Ranking(tree);
 
   b = NULL;
-  For(i,2*tree->n_otu-3)
+  for(i=0;i<2*tree->n_otu-3;++i)
     {
       b = tree->a_edges[i];
 
       max_left = 0;
-      For(j,b->left->bip_size[b->l_r])
-    if(b->left->bip_node[b->l_r][j]->id_rank > max_left)
-      max_left = b->left->bip_node[b->l_r][j]->id_rank;
+      for(j=0;j<b->left->bip_size[b->l_r];++j)
+        if(b->left->bip_node[b->l_r][j]->id_rank > max_left)
+          max_left = b->left->bip_node[b->l_r][j]->id_rank;
 
       max_rght = 0;
-      For(j,b->rght->bip_size[b->r_l])
-    if(b->rght->bip_node[b->r_l][j]->id_rank > max_rght)
-      max_rght = b->rght->bip_node[b->r_l][j]->id_rank;
+      for(j=0;j<b->rght->bip_size[b->r_l];++j)
+        if(b->rght->bip_node[b->r_l][j]->id_rank > max_rght)
+          max_rght = b->rght->bip_node[b->r_l][j]->id_rank;
 
 
       if(max_left < max_rght)
-    {
-      list = b->left->bip_node[b->l_r];
-      list_size = b->left->bip_size[b->l_r];
-    }
+        {
+          list = b->left->bip_node[b->l_r];
+          list_size = b->left->bip_size[b->l_r];
+        }
       else
-    {
-      list = b->rght->bip_node[b->r_l];
-      list_size = b->rght->bip_size[b->r_l];
-    }
-
+        {
+          list = b->rght->bip_node[b->r_l];
+          list_size = b->rght->bip_size[b->r_l];
+        }
+      
       b->bin_cod_num = 0.;
       for(j=0;j<list_size;j++) b->bin_cod_num += POW(2,list[j]->id_rank);
       /* printf("\n. %f",b->bin_cod_num); */

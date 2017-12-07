@@ -48,13 +48,13 @@ void Make_Tree_4_Lk(t_tree *tree, calign *cdata, int n_site)
   tree->log_lks_aLRT = (phydbl **)mCalloc(3,sizeof(phydbl *));
   for(i=0;i<3;i++) tree->log_lks_aLRT[i] = (phydbl *)mCalloc(tree->data->init_len,sizeof(phydbl));
 
-  For(i,2*tree->n_otu-1) Make_Edge_NNI(tree->a_edges[i]);
+  for(i=0;i<2*tree->n_otu-1;++i) Make_Edge_NNI(tree->a_edges[i]);
 
   if(tree->is_mixt_tree == NO)
     {
-      For(i,2*tree->n_otu-1) Make_Edge_Lk(tree->a_edges[i],tree);
-      For(i,2*tree->n_otu-2) Make_Node_Lk(tree->a_nodes[i]);
-      For(i,2*tree->n_otu-1) Make_Edge_Loc(tree->a_edges[i],tree);
+      for(i=0;i<2*tree->n_otu-1;++i) Make_Edge_Lk(tree->a_edges[i],tree);
+      for(i=0;i<2*tree->n_otu-2;++i) Make_Node_Lk(tree->a_nodes[i]);
+      for(i=0;i<2*tree->n_otu-1;++i) Make_Edge_Loc(tree->a_edges[i],tree);
 
       Init_Partial_Lk_Tips_Double(tree);
       Init_Partial_Lk_Loc(tree);
@@ -169,7 +169,7 @@ t_edge *Make_Edge_Light(t_node *a, t_node *d, int num)
 
       b->l->v             = a->l[b->l_r];
       if(a->tax) b->l->v  = a->l[b->r_l];
-      b->l_old->v            = b->l->v;
+      b->l_old->v         = b->l->v;
     }
   else
     {
@@ -592,7 +592,7 @@ void Make_All_Tree_Nodes(t_tree *tree)
 
   tree->a_nodes = (t_node **)mCalloc(2*tree->n_otu-1,sizeof(t_node *));
 
-  For(i,2*tree->n_otu-1)
+  for(i=0;i<2*tree->n_otu-1;++i)
     {
       tree->a_nodes[i] = (t_node *)Make_Node_Light(i);
       if(i < tree->n_otu) tree->a_nodes[i]->tax = 1;
@@ -607,7 +607,7 @@ void Make_All_Tree_Edges(t_tree *tree)
 {
   int i;
   tree->a_edges = (t_edge **)mCalloc(2*tree->n_otu-1,sizeof(t_edge *));
-  For(i,2*tree->n_otu-1) tree->a_edges[i] = (t_edge *)Make_Edge_Light(NULL,NULL,i);
+  for(i=0;i<2*tree->n_otu-1;++i) tree->a_edges[i] = (t_edge *)Make_Edge_Light(NULL,NULL,i);
 }
 
 //////////////////////////////////////////////////////////////

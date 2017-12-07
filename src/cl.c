@@ -475,9 +475,12 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	  }
 	case 46 : 
 	  {
-	    io->append_run_ID = YES;
-	    strcpy(io->run_id_string,optarg);
-	    break;
+            if(strlen(optarg) > 0)
+              {
+                io->append_run_ID = YES;
+                strcpy(io->run_id_string,optarg);
+              }
+            break;
 	  }
 	case 45 : 
 	  {

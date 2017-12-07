@@ -26,10 +26,6 @@ if WANT_TIPORDER
 bin_PROGRAMS = tiporder
 PROG = TIPORDER
 else 
-if WANT_M4
-bin_PROGRAMS = m4
-PROG = M4
-else 
 if WANT_RF
 bin_PROGRAMS = rf
 PROG = RF
@@ -93,7 +89,6 @@ endif
 endif
 endif
 endif
-endif
 
 if WANT_PHYTIME
 phytime_SOURCES = main.c \
@@ -120,12 +115,12 @@ stats.c stats.h\
 mg.c mg.h\
 tiporder.c tiporder.h\
 io.c io.h\
-tbe.c tbe.h \
 make.c make.h\
 mixt.c mixt.h\
 init.c init.h\
 nexus.c nexus.h\
 date.c date.h\
+tbe.c tbe.h \
 sse.c sse.h\
 avx.c avx.h\
 xml.c xml.h
@@ -152,6 +147,7 @@ m4.c m4.h\
 draw.c draw.h\
 rates.c rates.h\
 mcmc.c mcmc.h\
+tbe.c tbe.h \
 stats.c stats.h\
 mg.c mg.h\
 tiporder.c tiporder.h
@@ -212,6 +208,7 @@ cl.c cl.h\
 mg.c mg.h\
 spr.c spr.h\
 m4.c m4.h\
+tbe.c tbe.h \
 draw.c draw.h\
 stats.c stats.h\
 tiporder.c tiporder.h
@@ -232,6 +229,7 @@ pars.c pars.h\
 alrt.c alrt.h\
 interface.c interface.h\
 cl.c cl.h\
+tbe.c tbe.h \
 mg.c mg.h\
 times.c times.h\
 mcmc.c mcmc.h\
@@ -243,32 +241,6 @@ stats.c stats.h\
 tiporder.c tiporder.h
 tiporder_LDADD = -lm
 else
-if WANT_M4
-m4_SOURCES = main.c \
-utilities.c utilities.h\
-optimiz.c optimiz.h\
-lk.c lk.h\
-bionj.c bionj.h\
-models.c models.h\
-free.c free.h\
-help.c help.h\
-simu.c simu.h\
-eigen.c eigen.h\
-pars.c pars.h\
-alrt.c alrt.h\
-interface.c interface.h\
-cl.c cl.h\
-mg.c mg.h\
-times.c times.h\
-mcmc.c mcmc.h\
-rates.c rates.h\
-spr.c spr.h\
-draw.c draw.h\
-stats.c stats.h\
-tiporder.c tiporder.h\
-m4.c m4.h
-m4_LDADD = -lm
-else 
 if WANT_RF
 rf_SOURCES = main.c \
 utilities.c utilities.h\
@@ -291,6 +263,7 @@ rates.c rates.h\
 spr.c spr.h\
 draw.c draw.h\
 stats.c stats.h\
+tbe.c tbe.h \
 tiporder.c tiporder.h\
 m4.c m4.h
 rf_LDADD = -lm
@@ -320,12 +293,12 @@ tiporder.c tiporder.h\
 mg.c mg.h\
 m4.c m4.h\
 io.c io.h\
-tbe.c tbe.h \
 make.c make.h\
 nexus.c nexus.h\
 init.c init.h\
 xml.c xml.h\
 mixt.c mixt.h\
+tbe.c tbe.h \
 date.c date.h\
 sse.c sse.h\
 avx.c avx.h\
@@ -349,6 +322,7 @@ interface.c  interface.h\
 cl.c  cl.h\
 spr.c spr.h\
 draw.c  draw.h\
+tbe.c tbe.h \
 stats.c stats.h\
 rates.c rates.h\
 mcmc.c mcmc.h\
@@ -357,14 +331,11 @@ tiporder.c tiporder.h\
 mg.c mg.h\
 m4.c m4.h\
 io.c io.h\
-tbe.c tbe.h \
 make.c make.h\
 nexus.c nexus.h\
 init.c init.h\
 xml.c xml.h\
 mixt.c mixt.h\
-sse.c sse.h\
-avx.c avx.h\
 date.c date.h
 phyml_windows_LDADD = -lm
 else
@@ -393,8 +364,8 @@ tiporder.c tiporder.h\
 mg.c mg.h\
 m4.c m4.h\
 io.c io.h\
-tbe.c tbe.h \
 make.c make.h\
+tbe.c tbe.h \
 nexus.c nexus.h\
 init.c init.h\
 xml.c xml.h\
@@ -426,9 +397,9 @@ tiporder.c tiporder.h\
 mg.c mg.h\
 m4.c m4.h\
 io.c io.h\
-tbe.c tbe.h \
 make.c make.h\
 nexus.c nexus.h\
+tbe.c tbe.h \
 init.c init.h\
 xml.c xml.h\
 invitee.c invitee.h\
@@ -452,6 +423,7 @@ interface.c  interface.h\
 cl.c  cl.h\
 spr.c spr.h\
 draw.c  draw.h\
+tbe.c tbe.h \
 stats.c stats.h\
 rates.c rates.h\
 mcmc.c mcmc.h\
@@ -460,7 +432,6 @@ tiporder.c tiporder.h\
 mg.c mg.h\
 m4.c m4.h\
 io.c io.h\
-tbe.c tbe.h \
 make.c make.h\
 nexus.c nexus.h\
 init.c init.h\
@@ -493,8 +464,8 @@ tiporder.c tiporder.h\
 mg.c mg.h\
 m4.c m4.h\
 io.c io.h\
-tbe.c tbe.h \
 make.c make.h\
+tbe.c tbe.h \
 nexus.c nexus.h\
 init.c init.h\
 xml.c xml.h\
@@ -527,8 +498,8 @@ tiporder.c tiporder.h\
 mg.c mg.h\
 m4.c m4.h\
 io.c io.h\
-tbe.c tbe.h \
 make.c make.h\
+tbe.c tbe.h \
 nexus.c nexus.h\
 init.c init.h\
 xml.c xml.h\
@@ -561,13 +532,13 @@ tiporder.c tiporder.h\
 mg.c mg.h\
 m4.c m4.h\
 io.c io.h\
-tbe.c tbe.h \
 make.c make.h\
 nexus.c nexus.h\
 init.c init.h\
 xml.c xml.h\
 mixt.c mixt.h\
 date.c date.h\
+tbe.c tbe.h \
 sse.c sse.h\
 avx.c avx.h\
 phyrex.c phyrex.h
@@ -595,9 +566,9 @@ mcmc.c mcmc.h\
 times.c times.h\
 tiporder.c tiporder.h\
 mg.c mg.h\
+tbe.c tbe.h \
 m4.c m4.h\
 io.c io.h\
-tbe.c tbe.h \
 make.c make.h\
 nexus.c nexus.h\
 init.c init.h\
@@ -631,11 +602,11 @@ tiporder.c tiporder.h\
 mg.c mg.h\
 m4.c m4.h\
 io.c io.h\
-tbe.c tbe.h \
 make.c make.h\
 nexus.c nexus.h\
 init.c init.h\
 xml.c xml.h\
+tbe.c tbe.h \
 mixt.c mixt.h\
 date.c date.h
 date_LDADD = -lm
@@ -663,7 +634,6 @@ times.c times.h\
 tiporder.c tiporder.h\
 m4.c m4.h\
 io.c io.h\
-tbe.c tbe.h \
 make.c make.h\
 nexus.c nexus.h\
 init.c init.h\
@@ -671,9 +641,9 @@ xml.c xml.h\
 date.c date.h\
 sse.c sse.h\
 avx.c avx.h\
+tbe.c tbe.h \
 mixt.c mixt.h
 phyml_LDADD = -lm
-endif
 endif
 endif
 endif

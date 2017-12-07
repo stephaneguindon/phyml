@@ -1,11 +1,10 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-dnl AC_INIT([PhyML],esyscmd([sh -c "echo "3.3." | tr -d '\n' ; date \"+%Y%m%d\" | tr -d '\n'"]),[guindon@lirmm.fr])
-AC_INIT([PhyML],esyscmd([sh -c "echo "3.3." | tr -d '\n' ; echo "20170530" | tr -d '\n'"]),[guindon@lirmm.fr])
+AC_INIT([PhyML],esyscmd([sh -c "echo "3.3." | tr -d '\n' ; date \"+%Y%m%d\" | tr -d '\n'"]),[guindon@lirmm.fr])
 AM_INIT_AUTOMAKE([foreign])
-m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
-AC_CONFIG_MACRO_DIR([m4])
+dnl m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
+dnl AC_CONFIG_MACRO_DIR([m4])
 
 AC_CONFIG_SRCDIR([src/simu.c],[doc/phyml-manual.tex])
 AC_CONFIG_HEADERS([config.h])
@@ -96,10 +95,6 @@ AC_ARG_ENABLE([win],
               [AS_HELP_STRING([--enable-win],
                               [Compile with mingw instead of gcc.])])
 AS_IF([test "x$enable_win" = "xyes"],[CC="i686-w64-mingw32-gcc"])
-AS_IF([test "x$enable_win" = "xyes"],
-      [CFLAGS="-O2 -fomit-frame-pointer -funroll-loops -Wall -Winline ${VECTOR_FLAG}"],
-      [AS_IF([test "x$enable_win" = "xno"],[CFLAGS="${DEFAULT_C_FLAG}"])])
-
 AM_CONDITIONAL([WANT_WIN], [test "$enable_win" = yes])
 
 
@@ -149,11 +144,6 @@ if test "$phycont" = yes; then
    AC_DEFINE([PHYCONT],[1],[PHYCONT tag on])
 fi
 
-AC_ARG_ENABLE([m4],[AS_HELP_STRING([--enable-m4],[Compile M4])],[m4=yes],[m4=no])
-AM_CONDITIONAL([WANT_M4], [test "$m4" = yes])
-if test "$m4" = yes; then
-   AC_DEFINE([M4],[1],[m4 tag on])
-fi
 
 AC_ARG_ENABLE([rf],[AS_HELP_STRING([--enable-rf],[Compile RF])],[rf=yes],[rf=no])
 AM_CONDITIONAL([WANT_RF], [test "$rf" = yes])
@@ -219,7 +209,6 @@ if test "$tiporder" = no; then
 if test "$part" = no; then
 if test "$rwrap" = no; then
 if test "$phycont" = no; then
-if test "$m4" = no; then
 if test "$test" = no; then
 if test "$invitee" = no; then
 if test "$geo" = no; then
@@ -228,7 +217,6 @@ if test "$checkpoint" = no; then
 if test "$phyrex" = no; then
 if test "$date" = no; then
    AC_DEFINE([PHYML],[1],[PHYML tag on])
-fi
 fi
 fi
 fi

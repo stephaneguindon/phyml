@@ -108,7 +108,7 @@ t_tree *XML_Process_Base(char *xml_filename)
    */
   outputfile = XML_Get_Attribute_Value(p_elem,"output.file");
 
-  if(!outputfile)
+  if(!outputfile || !(strlen(outputfile)>0))
     {
 #if defined PHYML
       PhyML_Fprintf(stderr,"\n. The 'outputfile' attribute in 'phyml' tag is mandatory.");
@@ -123,14 +123,14 @@ t_tree *XML_Process_Base(char *xml_filename)
   Set_Defaults_Input(io);
 
   s = XML_Get_Attribute_Value(p_elem,"run.id");
-  if(s)
+  if(s && strlen(s)>0)
     {
       io->append_run_ID = YES;
       strcpy(io->run_id_string,s);
     }
 
   s = XML_Get_Attribute_Value(p_elem,"r.seed");
-  if(s)
+  if(s && strlen(s)>0)
     {
       io->r_seed = (int)atoi(s);
     }

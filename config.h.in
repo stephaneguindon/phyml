@@ -86,9 +86,6 @@
 /* INVITEE tag on */
 #undef INVITEE
 
-/* m4 tag on */
-#undef M4
-
 /* MPI tag on */
 #undef MPI
 
