@@ -23,7 +23,7 @@ pdflatex: $(MANTEXSRC)
 makeindex: $(MANIDX)
 	makeindex $<
 
-phyml-manual.pdf: intro latex makeindex pdflatex
+phyml-manual.pdf: intro makeindex pdflatex
 	@echo ""
 	@echo "Done."
 
