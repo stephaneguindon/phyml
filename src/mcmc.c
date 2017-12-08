@@ -1130,6 +1130,8 @@ void MCMC_Times_And_Rates_Root(t_tree *tree)
   t1_new = t_max - (t_max - t1_cur)*exp(K*(u-.5));
   ratio += log((t1_new - t_max) / (t1_cur - t_max));
 
+  r2_cur = r3_cur = -1.0;
+  
   if(tree->rates->model == THORNE ||
      tree->rates->model == LOGNORMAL ||
      tree->rates->model == STRICTCLOCK)
@@ -1281,7 +1283,10 @@ void MCMC_Times_And_Rates_Recur(t_node *a, t_node *d, int traversal, t_tree *tre
   new_lnL_seq  = UNLIKELY;
   r_min        = tree->rates->min_rate;
   r_max        = tree->rates->max_rate;
-
+  r2_cur       = -1.0;
+  r1_cur       = -1.0;
+  r3_cur       = -1.0;
+  
   
   v2 = v3 = NULL;
   for(i=0;i<3;++i)

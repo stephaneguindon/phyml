@@ -95,6 +95,7 @@ AC_ARG_ENABLE([win],
               [AS_HELP_STRING([--enable-win],
                               [Compile with mingw instead of gcc.])])
 AS_IF([test "x$enable_win" = "xyes"],[CC="i686-w64-mingw32-gcc"])
+AS_IF([test "x$enable_win" = "xyes"],AC_DEFINE([WIN32],[1],[WIN32 tag on]))
 AM_CONDITIONAL([WANT_WIN], [test "$enable_win" = yes])
 
 

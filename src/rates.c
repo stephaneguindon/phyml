@@ -2455,6 +2455,7 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
   assert(a);
   assert(d);
 
+  ra = rd = -1.;
   tree->rates->br_do_updt[d->num] = YES;
 
   if(tree->rates->br_do_updt[d->num] == YES)

@@ -336,6 +336,8 @@ nexus.c nexus.h\
 init.c init.h\
 xml.c xml.h\
 mixt.c mixt.h\
+sse.c sse.h\
+avx.c avx.h\
 date.c date.h
 phyml_windows_LDADD = -lm
 else

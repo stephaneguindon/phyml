@@ -146,6 +146,9 @@
 /* Version number of package */
 #undef VERSION
 
+/* WIN32 tag on */
+#undef WIN32
+
 /* Define to empty if `const' does not conform to ANSI C. */
 #undef const
 
