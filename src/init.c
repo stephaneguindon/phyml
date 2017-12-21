@@ -149,7 +149,7 @@ void Init_Tree(t_tree *tree, int n_otu)
   tree->norm_scale                = 0.0;
   tree->br_len_recorded           = NO;
   tree->max_spr_depth             = 0;
-  tree->apply_lk_scaling          = YES;
+  tree->apply_lk_scaling          = NO;
   tree->dp                        = 0;
   tree->ignore_root               = YES;
   tree->annealing_temp            = 0.;
@@ -1363,6 +1363,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
       mod->s_opt->opt_kappa      = NO;
       mod->s_opt->opt_lambda     = NO;
       mod->update_eigen          = NO;
+      for(i=0;i<mod->ns*(mod->ns-1)/2;i++) mod->r_mat->rr_val->v[i] = 1.0;
     }
   else
     {
@@ -2498,6 +2499,7 @@ int Init_Qmat_MtREV(phydbl *daa, phydbl *pi)
   pi[ 8] = 0.028000; pi[ 9] = 0.088000; pi[10] = 0.169000; pi[11] = 0.023000;
   pi[12] = 0.054000; pi[13] = 0.061000; pi[14] = 0.054000; pi[15] = 0.072000;
   pi[16] = 0.086000; pi[17] = 0.029000; pi[18] = 0.033000; pi[19] = 0.043000;
+
 
   return 1;
 }

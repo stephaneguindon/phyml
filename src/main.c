@@ -225,9 +225,11 @@ int main(int argc, char **argv)
 #ifdef PHYML
                   if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
                                                      
+
                   Switch_Eigen(YES,tree->mod);                 
                   Lk(NULL,tree);
                   Switch_Eigen(NO,tree->mod);
+
                   
                   if(tree->mod->s_opt->opt_topo)
 		    {

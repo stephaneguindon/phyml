@@ -560,6 +560,7 @@ if(tree->rates && tree->io->lk_approx == NORMAL)
   calc_edgelks_beagle(b, tree);
 #else
 
+  
   if(tree->update_eigen_lr == YES) Update_Eigen_Lr(b,tree);
   
   if(tree->use_eigen_lr == YES)
@@ -667,7 +668,7 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
       if(isinf(len) || isnan(len)) 
         {
           PhyML_Fprintf(stderr,"\n. len=%f rr=%f l=%f",len,rr,*l);
-          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+          assert(FALSE);
         }
 
       if(len < tree->mod->l_min)      len = tree->mod->l_min;
@@ -747,7 +748,7 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
                          expl[0*ncatg*ns + catg*ns + state], 
                          expl[1*ncatg*ns + catg*ns + state], 
                          expl[2*ncatg*ns + catg*ns + state],
-                         dot_prod[site*ns*ncatg]);
+                         dot_prod[site*ns*ncatg + state]);
                 }
             }
           
@@ -801,25 +802,33 @@ phydbl Lk_Core(int state, int ambiguity_check, short int derivative,
     {
       for(catg=0;catg<ncatg;++catg)
         {
+          if(ns == 4 || ns == 20)
+            {
 #if (defined(__AVX__))
-          tree->site_lk_cat[catg] = AVX_Lk_Core_One_Class_No_Eigen_Lr(p_lk_left + catg*ns,
-                                                                      (b->rght->tax) ? (p_lk_rght) : (p_lk_rght + catg*ns),
-                                                                      Pij_rr + catg*nsns,
-                                                                      pi,ns, ambiguity_check, state);
-          
+              tree->site_lk_cat[catg] = AVX_Lk_Core_One_Class_No_Eigen_Lr(p_lk_left + catg*ns,
+                                                                          (b->rght->tax) ? (p_lk_rght) : (p_lk_rght + catg*ns),
+                                                                          Pij_rr + catg*nsns,
+                                                                          pi,ns, ambiguity_check, state);
+              
 #elif (defined(__SSE3__))
-          tree->site_lk_cat[catg] = SSE_Lk_Core_One_Class_No_Eigen_Lr(p_lk_left + catg*ns,
+              tree->site_lk_cat[catg] = SSE_Lk_Core_One_Class_No_Eigen_Lr(p_lk_left + catg*ns,
+                                                                          (b->rght->tax) ? (p_lk_rght) : (p_lk_rght + catg*ns),
+                                                                          Pij_rr + catg*nsns,
+                                                                          pi,ns, ambiguity_check, state);
+#else
+              tree->site_lk_cat[catg] = Lk_Core_One_Class_No_Eigen_Lr(p_lk_left + catg*ns,
                                                                       (b->rght->tax) ? (p_lk_rght) : (p_lk_rght + catg*ns),
                                                                       Pij_rr + catg*nsns,
                                                                       pi,ns, ambiguity_check, state);
-#else
-          tree->site_lk_cat[catg] = Lk_Core_One_Class_No_Eigen_Lr(p_lk_left + catg*ns,
-                                                                  (b->rght->tax) ? (p_lk_rght) : (p_lk_rght + catg*ns),
-                                                                  Pij_rr + catg*nsns,
-                                                                  pi,ns, ambiguity_check, state);
 #endif
-
-
+            }
+          else
+            {
+              tree->site_lk_cat[catg] = Lk_Core_One_Class_No_Eigen_Lr(p_lk_left + catg*ns,
+                                                                      (b->rght->tax) ? (p_lk_rght) : (p_lk_rght + catg*ns),
+                                                                      Pij_rr + catg*nsns,
+                                                                      pi,ns, ambiguity_check, state);
+            }
           /* printf("\n. site: %4d lk: %15G class: %3d", */
           /*        site, */
           /*        tree->site_lk_cat[catg], */
@@ -866,6 +875,7 @@ phydbl Lk_Core(int state, int ambiguity_check, short int derivative,
       tree->c_lnL_sorted[site] = log_site_lk;
       tree->c_lnL += tree->data->wght[site] * log_site_lk;
       tree->cur_site_lk[site] = exp(log_site_lk); // note to self : add opt out option to avoid calculating this if not necessary
+      /* PhyML_Printf("\n. ###### site: %4d log_lk: %G fact_sum_scale: %d",site,log_site_lk,tree->fact_sum_scale[site]); */
     }
 
   /* printf("\n. clnL: %f",tree->c_lnL); */
@@ -889,19 +899,28 @@ phydbl Lk_Core_Eigen_Lr(phydbl *expl, phydbl *dot_prod, short int derivative, t_
     {
       for(catg=0;catg<ncatg;++catg)
         {
+          if(tree->mod->io->datatype == NT || tree->mod->io->datatype == AA)
+            {
 #if (defined(__AVX__))
-          tree->site_lk_cat[catg] = AVX_Lk_Core_One_Class_Eigen_Lr(dot_prod + catg*ns,
+              tree->site_lk_cat[catg] = AVX_Lk_Core_One_Class_Eigen_Lr(dot_prod + catg*ns,
+                                                                       expl ? (expl + catg*ns) : NULL,
+                                                                       ns);
+#elif (defined(__SSE3__))
+              tree->site_lk_cat[catg] = SSE_Lk_Core_One_Class_Eigen_Lr(dot_prod + catg*ns,
+                                                                       expl ? (expl + catg*ns) : NULL,
+                                                                       ns);
+#else
+              tree->site_lk_cat[catg] = Lk_Core_One_Class_Eigen_Lr(dot_prod + catg*ns,
                                                                    expl ? (expl + catg*ns) : NULL,
                                                                    ns);
-#elif (defined(__SSE3__))
-          tree->site_lk_cat[catg] = SSE_Lk_Core_One_Class_Eigen_Lr(dot_prod + catg*ns,
-                                                       expl ? (expl + catg*ns) : NULL,
-                                                       ns);
-#else
-          tree->site_lk_cat[catg] = Lk_Core_One_Class_Eigen_Lr(dot_prod + catg*ns,
-                                                               expl ? (expl + catg*ns) : NULL,
-                                                               ns);
 #endif
+            }
+          else
+            {
+              tree->site_lk_cat[catg] = Lk_Core_One_Class_Eigen_Lr(dot_prod + catg*ns,
+                                                                   expl ? (expl + catg*ns) : NULL,
+                                                                   ns);
+            }
         }
 
       Pull_Scaling_Factors(site,b,tree);
@@ -969,19 +988,24 @@ void Update_Eigen_Lr(t_edge *b, t_tree *tree)
   const unsigned int dim1 = ncatg * ns;
   const unsigned int dim2 = ns;
 
+  
   if(tree->is_mixt_tree == YES)
     {      
       MIXT_Update_Eigen_Lr(b,tree);
       return;
     }
 
+  if(tree->mod->ns == 4 || tree->mod->ns == 20)
+    {
 #if (defined(__AVX__))
-  AVX_Update_Eigen_Lr(b,tree);
-  return;
+      AVX_Update_Eigen_Lr(b,tree);
+      return;
 #elif (defined(__SSE3__))
-  SSE_Update_Eigen_Lr(b,tree);
-  return;
+      SSE_Update_Eigen_Lr(b,tree);
+      return;
 #endif
+    }
+  
 
   dum    = (phydbl *)mCalloc(tree->mod->ns,sizeof(phydbl));
   dumdum = (phydbl *)mCalloc(tree->mod->ns,sizeof(phydbl));
@@ -1224,8 +1248,7 @@ void Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
 #else
   if(tree->mod->use_m4mod == NO)
     {
-      if(tree->io->datatype == NT ||
-         tree->io->datatype == AA)
+      if(tree->mod->ns == 4 || tree->mod->ns == 20)
         {
 #if (defined(__AVX__))
           AVX_Update_Partial_Lk(tree,b,d);
@@ -1288,6 +1311,7 @@ void Update_Partial_Lk_Generic(t_tree *tree, t_edge *b, t_node *d)
   unsigned const int nsns = ns * ns;
   
 
+  
   if(tree->n_root && tree->ignore_root == YES &&
      (d == tree->n_root->v[1] || d == tree->n_root->v[2]) &&
      (b == tree->n_root->b[1] || b == tree->n_root->b[2]))
@@ -2200,6 +2224,7 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
   l_min = tree->mod->l_min;
   l_max = tree->mod->l_max;
 
+  
   len = -1.0;
 
   if(tree->mod->log_l == YES) b_fcus->l->v = exp(b_fcus->l->v);

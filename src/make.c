@@ -674,7 +674,7 @@ void Make_Custom_Model(t_mod *mod)
       PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
-
+  
   if(!mod->r_mat->rr->v)
     mod->r_mat->rr->v = (phydbl *)mCalloc(mod->ns*(mod->ns-1)/2,sizeof(phydbl));
 
@@ -773,7 +773,7 @@ void Make_Model_Complete(t_mod *mod)
 #endif
 
   mod->eigen     = (eigen *)Make_Eigen_Struct(mod->ns);
-
+  
   // If r_mat (e_frq) are not NULL, then they have been created elsewhere and affected.
   if(!mod->r_mat)
     {
@@ -802,7 +802,12 @@ void Make_Model_Complete(t_mod *mod)
       Make_Custom_Model(mod);
       Translate_Custom_Mod_String(mod);
     }
-  if(mod->whichmodel == GTR)
+  
+  if(mod->io->datatype == NT && mod->whichmodel == GTR)
+    {
+      Make_Custom_Model(mod);
+    }
+  else if(mod->io->datatype == GENERIC)
     {
       Make_Custom_Model(mod);
     }

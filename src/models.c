@@ -266,7 +266,7 @@ void PMat_Empirical(phydbl l, t_mod *mod, int pos, phydbl *Pij, phydbl *tPij)
   /* Initialize a rate-specific N*N matrix */
   for(i=0;i<ns;++i) for(k=0;k<ns;k++) Pij[pos+ns*i+k] = .0;
   /* compute POW(exp(D/mr),l) into mat_eDmrl */
-  for(k=0;k<ns;++k)  expt[k] = (phydbl)POW(R[k],l);
+  for(k=0;k<ns;++k)  expt[k] = (phydbl)pow(R[k],l);
 
   /* multiply Vr*POW(exp(D/mr),l)*Vi into Pij */
   for(i=0;i<ns;i++) for (k=0;k<ns;k++) uexpt[i*ns+k] = U[i*ns+k] * expt[k];
@@ -288,6 +288,7 @@ void PMat_Empirical(phydbl l, t_mod *mod, int pos, phydbl *Pij, phydbl *tPij)
       for(j=0;j<ns;++j) Pij[pos+ns*i+j] /= sum;
     }
 
+
   if(tPij)
     {
       for(i=0;i<ns;++i)
@@ -298,6 +299,36 @@ void PMat_Empirical(phydbl l, t_mod *mod, int pos, phydbl *Pij, phydbl *tPij)
             }
         }
     }
+
+  /* PhyML_Printf("\n. l: %G",l); */
+  /* PhyML_Printf("\n. U\n"); */
+  /* for(i=0;i<ns;++i) */
+  /*   { */
+  /*     for(j=0;j<ns;++j) */
+  /*       { */
+  /*         PhyML_Printf("%5f ",U[ns*i+j]); */
+  /*       } */
+  /*     PhyML_Printf("\n"); */
+  /*   } */
+  /* PhyML_Printf("\n. V\n"); */
+  /* for(i=0;i<ns;++i) */
+  /*   { */
+  /*     for(j=0;j<ns;++j) */
+  /*       { */
+  /*         PhyML_Printf("%5f ",V[i*ns+j]); */
+  /*       } */
+  /*     PhyML_Printf("\n"); */
+  /*   } */
+  /* PhyML_Printf("\n. P\n"); */
+  /* for(i=0;i<ns;++i) */
+  /*   { */
+  /*     for(j=0;j<ns;++j) */
+  /*       { */
+  /*         PhyML_Printf("%5f ",Pij[pos+ns*j+i]); */
+  /*       } */
+  /*     PhyML_Printf("\n"); */
+  /*   } */
+
 }
 
 //////////////////////////////////////////////////////////////
@@ -494,13 +525,12 @@ void Update_Qmat_Generic(phydbl *rr, phydbl *pi, int ns, phydbl *qmat)
   int i,j;
   phydbl sum,mr;
 
-  For(i,ns*ns) qmat[i] = .0;
+  for(i=0;i<ns*ns;++i) qmat[i] = .0;
 
   if(rr[(int)(ns*(ns-1)/2)-1] < 0.00001)
     {
       PhyML_Fprintf(stderr,"\n. rr[%d]=%f",(int)(ns*(ns-1)/2)-1,rr[(int)(ns*(ns-1)/2)-1]);
-      PhyML_Fprintf(stderr,"\n. Err in file %s at line %d\n\n",__FILE__,__LINE__);
-      Warn_And_Exit("");
+      assert(FALSE);
     }
   
   /* PhyML_Printf("\n"); */
@@ -509,7 +539,7 @@ void Update_Qmat_Generic(phydbl *rr, phydbl *pi, int ns, phydbl *qmat)
   /*     PhyML_Printf("\n> rr %d = %f",i,rr[i]); */
   /*   } */
 
-  For(i,(int)(ns*(ns-1)/2))
+  for(i=0;i<(int)(ns*(ns-1)/2);++i)
     {
       rr[i] /= rr[(int)(ns*(ns-1)/2)-1];
     }
@@ -895,6 +925,10 @@ void Update_Eigen(t_mod *mod)
               else /* Any other nucleotide-based t_mod */
                 Update_Qmat_HKY(mod->kappa->v, mod->e_frq->pi->v, mod->r_mat->qmat->v);
             }
+          else if(mod->io->datatype == GENERIC)
+            {
+              Update_Qmat_Generic(mod->r_mat->rr_val->v,mod->e_frq->pi->v,mod->ns,mod->r_mat->qmat->v);
+            }
         }
       else
         {
@@ -906,7 +940,7 @@ void Update_Eigen(t_mod *mod)
       n_iter   = 0;
       result   = 0;
 
-      For(i,mod->ns*mod->ns)
+      for(i=0;i<mod->ns*mod->ns;++i)
         {
           mod->r_mat->qmat_buff->v[i] = mod->r_mat->qmat->v[i];
         }

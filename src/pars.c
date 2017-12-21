@@ -900,7 +900,7 @@ void Get_Step_Mat(t_tree *tree)
       tree->step_mat[19*tree->mod->ns+18] =    3 ;
       tree->step_mat[19*tree->mod->ns+19] =    0 ;
     }
-  else
+  else if(tree->io->datatype == NT)
     {
       tree->step_mat[0*tree->mod->ns+0] = 0;
       tree->step_mat[0*tree->mod->ns+1] = 2;
@@ -921,27 +921,13 @@ void Get_Step_Mat(t_tree *tree)
       tree->step_mat[3*tree->mod->ns+1] = 1;
       tree->step_mat[3*tree->mod->ns+2] = 2;
       tree->step_mat[3*tree->mod->ns+3] = 0;
-
-/*       tree->step_mat[0*tree->mod->ns+0] = 0; */
-/*       tree->step_mat[0*tree->mod->ns+1] = 1; */
-/*       tree->step_mat[0*tree->mod->ns+2] = 1; */
-/*       tree->step_mat[0*tree->mod->ns+3] = 1; */
-
-/*       tree->step_mat[1*tree->mod->ns+0] = 1; */
-/*       tree->step_mat[1*tree->mod->ns+1] = 0; */
-/*       tree->step_mat[1*tree->mod->ns+2] = 1; */
-/*       tree->step_mat[1*tree->mod->ns+3] = 1; */
-
-/*       tree->step_mat[2*tree->mod->ns+0] = 1; */
-/*       tree->step_mat[2*tree->mod->ns+1] = 1; */
-/*       tree->step_mat[2*tree->mod->ns+2] = 0; */
-/*       tree->step_mat[2*tree->mod->ns+3] = 1; */
-
-/*       tree->step_mat[3*tree->mod->ns+0] = 1; */
-/*       tree->step_mat[3*tree->mod->ns+1] = 1; */
-/*       tree->step_mat[3*tree->mod->ns+2] = 1; */
-/*       tree->step_mat[3*tree->mod->ns+3] = 0; */
-
+    }
+  else if(tree->io->datatype == GENERIC)
+    {
+      int j;
+      for(i=0;i<tree->mod->ns;i++)
+        for(j=0;j<tree->mod->ns;j++)
+          if(j!=i) tree->step_mat[i*tree->mod->ns+j] = 1;
     }
 
   for(i=0;i<tree->mod->ns;i++) tree->step_mat[i*tree->mod->ns+i] = 0;

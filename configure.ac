@@ -47,10 +47,14 @@ AC_FUNC_SETVBUF_REVERSED
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([floor pow rint sqrt strchr strstr])
 
-VECTOR_FLAG=-march=native
-dnl VECTOR_FLAG=-msse3
-dnl VECTOR_FLAG=-mavx
-dnl VECTOR_FLAG=
+DEFAULT_VECTOR_FLAG=-march=native
+AC_ARG_ENABLE([native],
+              [AS_HELP_STRING([--disable-native],
+                              [Remove AVX or SSE compilation options.])])
+AS_IF([test "x$enable_native" = "xno"],
+      [VECTOR_FLAG=],
+      [VECTOR_FLAG="${DEFAULT_VECTOR_FLAG}"])
+
 
 LDFLAGS="${ARGC_flag}" 
 
@@ -58,10 +62,8 @@ dnl Uncomment two rows below when compiling rwarp (need to have libtool installe
 dnl LT_INIT
 dnl AC_PROG_LIBTOOL
 
-dnl DEFAULT_C_FLAG="-O2 -fomit-frame-pointer -funroll-loops -Wall -Winline --param large-stack-frame=1024 --param max-inline-insns-single=1000 --param inline-unit-growth=1001 ${VECTOR_FLAG}"
+
 DEFAULT_C_FLAG="-std=c99 -O2 -fomit-frame-pointer -funroll-loops -Wall -Winline ${VECTOR_FLAG}"
-dnl DEFAULT_C_FLAG="-O2 -Wall -Winline ${VECTOR_FLAG}"
-dnl DEFAULT_C_FLAG="-O3 -Wall ${VECTOR_FLAG}"
 
 AC_ARG_ENABLE([debug],
               [AS_HELP_STRING([--enable-debug],

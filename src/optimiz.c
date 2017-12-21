@@ -20,7 +20,7 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
 void Optimize_Single_Param_Generic(t_tree *tree, phydbl *param, phydbl lim_inf, phydbl lim_sup, phydbl tol, int n_max_iter, int quickdirty)
 {
   phydbl lk_init;
-
+  
   lk_init = tree->c_lnL;
 
   Generic_Brent_Lk(param,
@@ -39,7 +39,7 @@ void Optimize_Single_Param_Generic(t_tree *tree, phydbl *param, phydbl lim_inf, 
   if(tree->c_lnL < lk_init - tree->mod->s_opt->min_diff_lk_global)
     {
       PhyML_Fprintf(stderr,"\n. %.10f < %.10f --> diff=%.10f param value = %f\n",tree->c_lnL,lk_init,tree->c_lnL-lk_init,*param);
-      Exit("\n. Optimisation failed !\n");
+      assert(FALSE);
     }
 }
 
@@ -650,7 +650,6 @@ phydbl Br_Len_Brent(t_edge *b, t_tree *tree)
   
 
   lk_end = mixt_tree->c_lnL;
-
   
   if(lk_end < lk_begin - tree->mod->s_opt->min_diff_lk_local)
     {
@@ -676,9 +675,10 @@ void Round_Optimize(t_tree *tree, int n_round_max)
   n_round = 0;
   each = 0;
 
+
   
   while(n_round < n_round_max)
-    {      
+    {
       if(tree->mod->s_opt->opt_bl || tree->mod->s_opt->constrained_br_len) Optimize_Br_Len_Serie(tree);
       
       if((tree->mod->s_opt->opt_bl || tree->mod->s_opt->constrained_br_len) &&
@@ -698,7 +698,7 @@ void Round_Optimize(t_tree *tree, int n_round_max)
       if(lk_new < lk_old - tree->mod->s_opt->min_diff_lk_local)
         {
           PhyML_Fprintf(stderr,"\n. lk_new = %f lk_old = %f diff = %f",lk_new,lk_old,lk_new-lk_old);
-          Exit("\n. Optimisation failed ! (Round_Optimize)\n");
+          assert(FALSE);
         }
       
       if((FABS(lk_new - lk_old) < tree->mod->s_opt->min_diff_lk_local) && (each == 3)) break;
@@ -724,6 +724,7 @@ void Optimize_Br_Len_Serie(t_tree *tree)
   
   lk_init = tree->c_lnL;
 
+  
   if(tree->mod->gamma_mgf_bl == YES)
     {
       Generic_Brent_Lk(&(tree->mod->l_var_sigma),

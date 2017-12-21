@@ -2633,7 +2633,7 @@ char Reciproc_Assign_State(int i_state, int datatype)
     }
   else if(datatype == GENERIC)
     {
-      return (char)i_state;
+      return i_state + '0';
     }
   return -1;
 }
