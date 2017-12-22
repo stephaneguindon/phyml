@@ -1,14 +1,16 @@
-<phytime run.id="example" output.file="small" mcmc.chain.len="1E+7" mcmc.sample.every="100" mcmc.print.every="50" mcmc.burnin="10000">
-
+<phytime run.id="" output.file="dating" mcmc.chain.len="1E+7" mcmc.sample.every="100" mcmc.print.every="50" mcmc.burnin="10000">
+  
   <!-- Tree topology -->
   <topology> 
     <instance id="T1" init.tree="bionj" optimise.tree="yes"/>
   </topology>
   
+  <!-- Model of rate variation across lineages -->
+  <lineagerates model="geo"/>
 
   <!-- Substitution model -->
   <ratematrices id="RM1">
-    <instance id="M1" model="HKY85" optimise.tstv="no" tstv="4.0"/>
+    <instance id="M1" model="HKY85"/>
   </ratematrices>
 
   
@@ -65,7 +67,7 @@
   <!-- Calibration CAL1 applies to CLADE1 with proba 0.2 and to CLADE2 with proba 0.8 -->
   <calibration id="CAL1">
     <lower>50</lower>
-    <upper>400</upper>
+    <upper>210</upper>
     <appliesto clade.id="CLADE1" probability="0.2"/>
     <appliesto clade.id="CLADE2" probability="0.8"/>
   </calibration>
