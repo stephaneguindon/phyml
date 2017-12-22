@@ -279,7 +279,6 @@ void PMat_Empirical(phydbl l, t_mod *mod, int pos, phydbl *Pij, phydbl *tPij)
             {
               Pij[pos+ns*i+j] += (uexpt[i*ns+k] * V[k*ns+j]);
             }
-
           if(Pij[pos+ns*i+j] < SMALL_PIJ) Pij[pos+ns*i+j] = SMALL_PIJ;
         }
 
@@ -802,8 +801,8 @@ void Update_Efrq(t_mod *mod)
   if((mod->io->datatype == NT) && (mod->s_opt->opt_state_freq == YES))
     {
       sum = 0.0;
-      for(i=0;i<mod->ns;i++) sum += FABS(mod->e_frq->pi_unscaled->v[i]);
-      for(i=0;i<mod->ns;i++) mod->e_frq->pi->v[i] = FABS(mod->e_frq->pi_unscaled->v[i])/sum;
+      for(i=0;i<mod->ns;i++) sum += fabs(mod->e_frq->pi_unscaled->v[i]);
+      for(i=0;i<mod->ns;i++) mod->e_frq->pi->v[i] = fabs(mod->e_frq->pi_unscaled->v[i])/sum;
             
 #ifdef BEAGLE
       if(UNINITIALIZED != mod->b_inst)
@@ -811,20 +810,6 @@ void Update_Efrq(t_mod *mod)
 #endif
     }
   
-
-  // Adjust equilibrium state frequencies if some of them are too close to zero
-  // in order to avoid numerical precision issues.
-  int iter = 0;
-  do
-    {
-      for(i=0;i<mod->ns;i++) if(mod->e_frq->pi->v[i] < E_FRQ_MIN) mod->e_frq->pi->v[i] = E_FRQ_MIN;
-      sum = 0.0;
-      for(i=0;i<mod->ns;i++) sum += FABS(mod->e_frq->pi->v[i]);
-      for(i=0;i<mod->ns;i++) mod->e_frq->pi->v[i] /= sum;
-      iter++;
-    }
-  while(iter < 10);
-
 }
 
 //////////////////////////////////////////////////////////////

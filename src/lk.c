@@ -829,11 +829,6 @@ phydbl Lk_Core(int state, int ambiguity_check, short int derivative,
                                                                       Pij_rr + catg*nsns,
                                                                       pi,ns, ambiguity_check, state);
             }
-          /* printf("\n. site: %4d lk: %15G class: %3d", */
-          /*        site, */
-          /*        tree->site_lk_cat[catg], */
-          /*        catg); */
-
         }
 
       Pull_Scaling_Factors(site,b,tree);
@@ -1148,6 +1143,7 @@ phydbl Lk_Core_One_Class_No_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, phydb
       sum = .0;
       for(l=0;l<ns;++l) sum += Pij[state*ns+l] * p_lk_left[l];               
       lk += sum * pi[state];
+      /* printf("\n. $$$ lk: %G sum: %G pi: %G",lk,sum,pi[state]); */
     }
   else /* If the character observed at the tip is ambiguous: ns x ns terms to consider */
     {
@@ -1158,6 +1154,7 @@ phydbl Lk_Core_One_Class_No_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, phydb
               sum = .0;
               for(l=0;l<ns;l++) sum += Pij[k*ns+l] * p_lk_left[l];                       
               lk += sum * pi[k] * p_lk_rght[k];
+              /* printf("\n. $$$ lk: %G sum: %G pi: %G p_lk_rght: %G",lk,sum,pi[k],p_lk_rght[k]); */
             }
         }
     } 
@@ -1465,7 +1462,7 @@ void Update_Partial_Lk_Generic(t_tree *tree, t_edge *b, t_node *d)
               
               p_lk[site*ncatgns+catg*ns+i] = p1_lk1 * p2_lk2;
               
-              /* 	      PhyML_Printf("\n+ %G",p_lk[site*ncatgns+catg*ns+i]); */
+              /* if(site == 0) PhyML_Printf("\n+ site: %d %G",site,p_lk[site*ncatgns+catg*ns+i]); */
               
             }
           

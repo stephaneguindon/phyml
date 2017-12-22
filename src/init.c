@@ -149,7 +149,7 @@ void Init_Tree(t_tree *tree, int n_otu)
   tree->norm_scale                = 0.0;
   tree->br_len_recorded           = NO;
   tree->max_spr_depth             = 0;
-  tree->apply_lk_scaling          = NO;
+  tree->apply_lk_scaling          = YES;
   tree->dp                        = 0;
   tree->ignore_root               = YES;
   tree->annealing_temp            = 0.;
@@ -1304,13 +1304,19 @@ void Init_Model(calign *data, t_mod *mod, option *io)
       
       if(mod->s_opt->opt_state_freq == YES) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);
 
-      for(i=0;i<mod->ns;i++) if(mod->e_frq->pi->v[i] < 1.E-10)
+
+      // Adjust equilibrium state frequencies if some of them are too close to zero
+      // in order to avoid numerical precision issues.
+      int iter = 0;
+      do
         {
-          PhyML_Printf("\n. WARNING: at least one amino-acid frequency is equal to 0.0!");
-          PhyML_Printf("\n. Numerical precision issues are likely to arise...");
-          break;
+          for(i=0;i<mod->ns;i++) if(mod->e_frq->pi->v[i] < E_FRQ_MIN) mod->e_frq->pi->v[i] = E_FRQ_MIN;
+          sum = 0.0;
+          for(i=0;i<mod->ns;i++) sum += fabs(mod->e_frq->pi->v[i]);
+          for(i=0;i<mod->ns;i++) mod->e_frq->pi->v[i] /= sum;
+          iter++;
         }
-                       
+      while(iter < 10);                       
 
       /* multiply the nth col of Q by the nth term of pi/100 just as in PAML */
       for(i=0;i<mod->ns;i++) for(j=0;j<mod->ns;j++) mod->r_mat->qmat->v[i*mod->ns+j] *= mod->e_frq->pi->v[j] / 100.0;
