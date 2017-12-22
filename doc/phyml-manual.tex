@@ -2514,44 +2514,43 @@ columns of this file are as follows:
 \end{itemize}
 
 The script below can be copied and pasted into R in order to produce the plots in Figure
-\ref{fig:phytimetrace}. The two plots at the top left and center give the trace of the node age of
+\ref{fig:phytimetrace} (assuming R was launched from the \x{phyml/examples/phytime} directory). The two plots at the top left and center give the trace of the node age of
 the MRCA of \x{CLADE1} when calibration \x{CAL1} applies to it (left) and that of \x{CLADE2} when
-the same calibration applies to it (centre). The plot on the top right gives the clade (which of
+the same calibration \x{CAL1} applies to it (centre). The plot on the top right gives the clade (which of
 \x{CLADE1} or \x{CLADE2}) the calibration \x{CAL1} applies to. The analysis of these  plots
-clearly shows a correlation between the three traces. Indeed,  when \x{CAL1} applies to \x{CLADE1}, the
-ages of the MRCAs of \x{CLADE1} and \x{CLADE2} are pushed towards youngers ages. This behaviour
-makes good sense since the taxa making up \x{CLADE2} ({\em Gymno Juniperus} and {\em Gymno
-  Juniperus}) define a substet of those making up \x{CLADE1}
-({\em Gymno Juniperus}, {\em Gymno Juniperus} and {\em Gymno Cycas}). As a consequence, when
-\x{CAL1} applies to \x{CLADE2}, the MRCA of \x{CLADE1} is ``free'' to wander towards older values.
+shows the impact of applying the calibration constraint to \x{CLADE1} and \x{CLADE2} alternatively.
+When \x{CAL1} applies to \x{CLADE2} (i.e., ({\em Gymno Juniperus} and {\em Gymno
+  Sciadopitys}) are pushed towards older values compared to the situation where the constraint applies
+to \x{CLADE1} ({\em Gymno Juniperus}, {\em Gymno Sciadopitys} and {\em Gymno Cycas}).
+This behaviour makes good sense since the taxa making up \x{CLADE2} define a substet of those making up \x{CLADE1}. As a consequence, when
+\x{CAL1} applies to \x{CLADE1}, the MRCA of \x{CLADE2} is ``free'' to wander towards younger
+ages. When this constraint applies to \x{CLADE2} instead, it pushes the age of that nodes (and that
+of the MRCA of \x{CLADE1}) towards older values, as expected.
 
 \begin{Verbatim}[frame=single, label=R script to produce traces from the PhyTime statistics file, samepage=true, baselinestretch=0.5,
   fontsize=\small, numbers=left]
-file=paste("./phyml/examples/phytime/",
-"small_example_phytime_stats.txt",sep="");
-d=read.table(file,header=T); 
-idx=floor(0.1*length(d$sample)):length(d$sample) 
-par(mfrow=c(2,3),mar=c(5,4,2,2)); 
+file=paste("dating_phytime_stats.txt",sep="");
+d=read.table(file,header=T);
+idx=floor(0.1*length(d$sample)):length(d$sample)
+par(mfrow=c(2,3),mar=c(5,4,2,2));
 plot(d$sample[idx],d$t.calib.CAL1_clade.CLADE1.[idx],type="l",
 col="red",ylab="Time",xlab="Sample",main="Time CLADE1 under CAL1")
 plot(d$sample[idx],d$t.calib.CAL1_clade.CLADE2.[idx],type="l",
 col="red",ylab="Time",xlab="Sample",main="Time CLADE2 under CAL1")
 plot(d$sample[idx],d$clade.calib.CAL1.[idx],type="l",col="black",
-ylab="Clade",xlab="Sample",main="Sampled clade \n 
-(1->CLADE1, 2->CLADE2)") 
+ylab="Clade",xlab="Sample",main="(1->CLADE1, 2->CLADE2)")
 plot(d$sample[idx],d$lnL.seq.[idx],type="l",col="orange",
 ylab="log(Probability)",xlab="Sample",main="Likelihood sequences")
 plot(d$sample[idx],d$lnL.posterior.[idx],type="l",col="orange",
-ylab="log(density)",xlab="Sample",main="Joint posterior") 
+ylab="log(density)",xlab="Sample",main="Joint posterior")
 plot(d$sample[idx],d$lnL.times.[idx],type="l",col="orange",
-ylab="log(density)",xlab="Sample",main="Likelihood branching 
-process")
+ylab="log(density)",xlab="Sample",main="Branching process")
 \end{Verbatim}
 
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=13.8cm]{./fig/mcmctrace}
+\includegraphics[width=13.8cm]{./fig/phytimetrace}
 \end{center}
 \caption{{\bf Traces from the statistics output file produced by PhyTime.}} 
 \label{fig:phytimetrace}
