@@ -3378,7 +3378,8 @@ t_mod *Copy_Model(t_mod *ori)
   cpy->ns          = ori->ns;
   cpy->ras->n_catg = ori->ras->n_catg;
   cpy->whichmodel  = ori->whichmodel;
-
+  cpy->io          = ori->io;
+  
   Make_Model_Complete(cpy);
   Record_Model(ori,cpy);
   /* cpy->m4mod = M4_Copy_M4_Model(ori, ori->m4mod); */

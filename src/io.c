@@ -2075,11 +2075,7 @@ void Print_Site_Lk(t_tree *tree, FILE *fp)
   char *s;
   phydbl postmean,sum;
 
-  if(!tree->io->print_site_lnl)
-    {
-      PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
-      Exit("");
-    }
+  if(tree->io->print_site_lnl == NO) assert(FALSE);
 
   if(!tree->io->print_trace)
     {
