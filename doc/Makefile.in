@@ -119,7 +119,8 @@ am__can_run_installinfo = \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
-am__dist_doc_DATA_DIST = phyml-manual.tex phyml-manual.pdf
+am__dist_doc_DATA_DIST = phyml-manual.tex ./fig/phyrexlog.pdf \
+	./fig/phytimetrace.pdf phyml-manual.pdf
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -255,7 +256,8 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-docfiles = phyml-manual.tex $(am__append_1)
+docfiles = phyml-manual.tex ./fig/phyrexlog.pdf ./fig/phytimetrace.pdf \
+	$(am__append_1)
 MANNAME = phyml-manual
 MANTEXSRC = $(MANNAME).tex
 MANIDX = $(MANNAME).idx
@@ -480,10 +482,11 @@ latex: $(MANTEXSRC)
 pdflatex: $(MANTEXSRC)
 	pdflatex $<
 
-makeindex: $(MANIDX)
+makeindex: $(MANTEXSRC)
 	makeindex $<
 
-phyml-manual.pdf: intro makeindex pdflatex
+phyml-manual.pdf: intro pdflatex makeindex
+# phyml-manual.pdf: intro pdflatex
 	@echo ""
 	@echo "Done."
 

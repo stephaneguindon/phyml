@@ -296,7 +296,7 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
     {
       PhyML_Printf("\n== AVX version of the Update_Partial_Lk function does not");
       PhyML_Printf("\n== allow augmented data.");
-      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+      assert(FALSE);
     }
     
   /* For every site in the alignment */

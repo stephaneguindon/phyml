@@ -1,7 +1,6 @@
-
 docdir = $(datadir)/doc
 
-docfiles = phyml-manual.tex
+docfiles = phyml-manual.tex ./fig/phyrexlog.pdf ./fig/phytimetrace.pdf
 
 if HAVE_PDFLATEX
 docfiles += phyml-manual.pdf
@@ -20,10 +19,11 @@ latex: $(MANTEXSRC)
 pdflatex: $(MANTEXSRC)
 	pdflatex $<
 
-makeindex: $(MANIDX)
+makeindex: $(MANTEXSRC)
 	makeindex $<
 
-phyml-manual.pdf: intro makeindex pdflatex
+phyml-manual.pdf: intro pdflatex makeindex
+# phyml-manual.pdf: intro pdflatex
 	@echo ""
 	@echo "Done."
 
