@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT([PhyML],esyscmd([sh -c "echo "3.3." | tr -d '\n' ; date \"+%Y%m%d\" | tr -d '\n'"]),[guindon@lirmm.fr])
+AC_INIT([PhyML],esyscmd([sh -c "echo "3.3." | tr -d '\n' ; echo "20180129" | tr -d '\n'"]),[guindon@lirmm.fr])
 AM_INIT_AUTOMAKE([foreign])
 dnl m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
 dnl AC_CONFIG_MACRO_DIR([m4])
