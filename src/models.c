@@ -735,8 +735,10 @@ void Update_RAS(t_mod *mod)
   else
     {
       // Update class frequencies
+#ifndef PHYML
       Qksort(mod->ras->gamma_r_proba_unscaled->v,NULL,0,mod->ras->n_catg-1); // Unscaled class frequencies sorted in increasing order
- 
+#endif
+      
       mod->ras->gamma_r_proba->v[0] = mod->ras->gamma_r_proba_unscaled->v[0] / mod->ras->gamma_r_proba_unscaled->v[mod->ras->n_catg-1];
       for(i=1;i<mod->ras->n_catg;i++)
         {

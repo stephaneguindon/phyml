@@ -4296,7 +4296,7 @@ void MCMC_Free_Mixt_Rate(t_tree *tree)
       
       denom = 0.0;
       for(i=0;i<c;i++) denom += z[i]*y[i];
-      denom = POW(denom,c);
+      denom = pow(denom,c);
 
       // Proposal move.
       u = Uni();
