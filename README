@@ -4,13 +4,11 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
 To install any program that is part of the PhyML package, type the following commands:
-autoreconf -i;
 ./configure --enable-XXXX;
 make;
 where XXXX is phyml or phyrex or phytime.
 
 To compile a Windows executable, install MinGW and run:
-autoreconf -i;
 ./configure --enable-win --enable-XXXX;
 make;
 
