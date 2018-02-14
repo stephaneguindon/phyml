@@ -1,18 +1,21 @@
 
-//////////////////////////////////////////////////////////////////////////
-// You have downloaded the Stable or the Development version of PhyML   //
-//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+// You downloaded a stable release  of PhyML from https://github.com/stephaneguindon/phyml/releases //
+//////////////////////////////////////////////////////////////////////////////////////////////////////
 
 To install any program that is part of the PhyML package, type the following commands:
+autoreconf -i;
 ./configure --enable-XXXX;
 make;
 where XXXX is phyml or phyrex or phytime.
 
 To compile a Windows executable, install MinGW and run:
+autoreconf -i;
 ./configure --enable-win --enable-XXXX;
 make;
 
 To install the MPI version of PhyML, type the following commands:
+autoreconf -i;
 ./configure --enable-mpi --enable-phyml;
 make;
 

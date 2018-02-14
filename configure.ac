@@ -3,8 +3,6 @@
 
 AC_INIT([PhyML],esyscmd([sh -c "echo "3.3." | tr -d '\n' ; echo "20180129" | tr -d '\n'"]),[guindon@lirmm.fr])
 AM_INIT_AUTOMAKE([foreign])
-dnl m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
-dnl AC_CONFIG_MACRO_DIR([m4])
 
 AC_CONFIG_SRCDIR([src/simu.c],[doc/phyml-manual.tex])
 AC_CONFIG_HEADERS([config.h])
