@@ -1769,8 +1769,8 @@ void Spr_List_Of_Trees(t_tree *tree)
   t_tree **tree_list,**tree_list_cpy;
   phydbl *lnL_list,*max_delta_lnL_list,best_lnL;
   
-  /* const unsigned int list_size_first_round  = 5 + (int)tree->n_otu/20; */
-  const unsigned int list_size_first_round  = 15;
+  /* const unsigned int list_size_first_round  = 5 + (int)tree->n_otu/10; */
+  const unsigned int list_size_first_round  = 1;
   const unsigned int list_size_second_round  = 1;
   const unsigned int list_size_third_round  = 1;
   
@@ -1838,6 +1838,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   
   rk = Ranks(lnL_list,max_list_size);
 
+  
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Fast optimisation of the best trees (SPR search)...\n");
   list_size = 0;
   n_trees   = 0;
@@ -1847,16 +1848,15 @@ void Spr_List_Of_Trees(t_tree *tree)
  
       if(list_size == 0) Round_Optimize(tree,ROUND_MAX);
 
+      tree->mod->s_opt->max_depth_path = 15;
+      tree->mod->s_opt->max_delta_lnL_spr = 500.;
       do
         {
-          /* tree->mod->s_opt->max_depth_path            = 1+(int)tree->n_otu/5; */
-          tree->mod->s_opt->max_depth_path            = 15;
           tree->mod->s_opt->spr_lnL                   = YES;
           tree->mod->s_opt->spr_pars                  = NO;
           tree->mod->s_opt->min_diff_lk_move          = 1.E-1;
           tree->perform_spr_right_away                = YES;
           tree->mod->s_opt->eval_list_regraft         = NO;
-          tree->mod->s_opt->max_delta_lnL_spr         = 500.;
           tree->mod->s_opt->max_delta_lnL_spr_current = 0.0;
           
           Set_Both_Sides(YES,tree);
@@ -1915,7 +1915,7 @@ void Spr_List_Of_Trees(t_tree *tree)
  
       if(list_size == 0) Round_Optimize(tree,ROUND_MAX);
 
-      tree->mod->s_opt->max_depth_path            = MAX(5,max_depth_list[rk[list_size]]);
+      tree->mod->s_opt->max_depth_path            = MAX(10,max_depth_list[rk[list_size]]);
       tree->mod->s_opt->spr_lnL                   = YES;
       tree->mod->s_opt->spr_pars                  = NO;
       tree->mod->s_opt->min_diff_lk_move          = 1.E-1;

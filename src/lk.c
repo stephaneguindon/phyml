@@ -1836,6 +1836,7 @@ matrix *ML_Dist(calign *data, t_mod *mod)
   else if(mod->io->datatype == AA)      mat = JC69_Dist(data,mod);
   else if(mod->io->datatype == GENERIC) mat = JC69_Dist(data,mod);
 
+  
   for(i=0;i<mod->ras->n_catg;i++) /* Don't use the discrete gamma distribution */
     {
       mod->ras->gamma_rr->v[i]      = 1.0;
@@ -1868,9 +1869,9 @@ matrix *ML_Dist(calign *data, t_mod *mod)
           
           d_max = init;
           
-          For(i,mod->ns*mod->ns) F[i]=.0;
+          for(i=0;i<mod->ns*mod->ns;++i) F[i]=.0;
           len = 0.0;
-          For(l,twodata->c_seq[0]->len)
+          for(l=0;l<twodata->c_seq[0]->len;++l)
             {
               state0 = Assign_State(twodata->c_seq[0]->state+l*mod->io->state_len,mod->io->datatype,mod->io->state_len);
               state1 = Assign_State(twodata->c_seq[1]->state+l*mod->io->state_len,mod->io->datatype,mod->io->state_len);
@@ -1884,11 +1885,11 @@ matrix *ML_Dist(calign *data, t_mod *mod)
           
           if(len > .0) 
             {
-              For(i,mod->ns*mod->ns) F[i] /= len;
+              for(i=0;i<mod->ns*mod->ns;++i) F[i] /= len;
             }
           
           sum = 0.;
-          For(i,mod->ns*mod->ns) sum += F[i];
+          for(i=0;i<mod->ns*mod->ns;++i) sum += F[i];
           
           /* if(sum < .001) d_max = -1.; */
           if(sum < .001) d_max = init;
@@ -2447,12 +2448,6 @@ phydbl Lk_Dist(phydbl *F, phydbl dist, t_mod *mod)
             {
               pijk = mod->Pij_rr->v[dim1*k+dim2*i+j];              
               lnL += (F[dim1*k+dim2*i+j] + F[dim1*k+dim2*j+i]) * log(pi * pijk);
-
-              /* printf("\nXXXXXX i: %d j: %d f: %G Pij:%G F:%G %G %G", */
-              /*        i,j,mod->e_frq->pi->v[i], */
-              /*        mod->Pij_rr->v[dim1*k+dim2*i+j], */
-              /*        F[dim1*k+dim2*j+i],lnL, */
-              /*        (F[dim1*k+dim2*i+j] + F[dim1*k+dim2*j+i])*log(pi * pijk)); */
             }
         }
     }
@@ -2465,12 +2460,6 @@ phydbl Lk_Dist(phydbl *F, phydbl dist, t_mod *mod)
         {
           pijk = mod->Pij_rr->v[dim1*k+dim2*i+i];
           lnL += F[dim1*k+dim2*i+i]* log(pi * pijk);
-
-          /* printf("\nYYYYYY i: %d j: %d f: %G Pij:%G F:%G lnL:%G pi:%G pijk:%G", */
-          /*        i,j,mod->e_frq->pi->v[i], */
-          /*        mod->Pij_rr->v[dim1*k+dim2*i+j], */
-          /*        F[dim1*k+dim2*j+i],lnL, */
-          /*        pi,pijk); */
         }
     }
 

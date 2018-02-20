@@ -47,10 +47,10 @@ int Simu(t_tree *tree, int n_step_max)
                     tree->a_nodes[0]->v[0],
                     NULL,
                     tree->a_nodes[0]->b[0],
+                    n_round < 1 ? NO : YES,
                     tree);
       delta = tree->c_lnL - old_loglk;
       tree->annealing_temp -= 1.0;
-      /* PhyML_Printf("\n. lnL: %15f",tree->c_lnL); */
       if(tree->annealing_temp < 0.0) tree->annealing_temp = 0.0;
       n_round++;
       if(n_round == n_step_max) break;
@@ -58,127 +58,6 @@ int Simu(t_tree *tree, int n_step_max)
   while(delta > 1.0 || Are_Equal(tree->annealing_temp,0.0,1.E-3) == NO || n_round < 5);
 
   return 1;
-                
-
-  /* phydbl old_loglk,n_iter,lambda; */
-  /* int i,n_neg,n_tested,n_without_swap,n_tot_swap,step,it_lim_without_swap; */
-  /* t_edge **sorted_b,**tested_b; */
-
-  /* sorted_b = (t_edge **)mCalloc(tree->n_otu-3,sizeof(t_edge *)); */
-  /* tested_b = (t_edge **)mCalloc(tree->n_otu-3,sizeof(t_edge *)); */
-
-  /* old_loglk           = UNLIKELY; */
-  /* tree->c_lnL         = UNLIKELY; */
-  /* n_iter              = 1.0; */
-  /* it_lim_without_swap = (tree->mod->ras->invar)?(1):(1); */
-  /* n_tested            = 0; */
-  /* n_without_swap      = 0; */
-  /* step                = 0; */
-  /* lambda              = 0.75; */
-  /* n_tot_swap          = 0; */
-
-  /* Update_Dirs(tree); */
-
-  /* if(tree->lock_topo) */
-  /*   { */
-  /*     PhyML_Printf("\n== The tree topology is locked."); */
-  /*     PhyML_Printf("\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__); */
-  /*     Warn_And_Exit(""); */
-  /*   } */
-  
-  /* Set_Both_Sides(NO,tree); */
-  /* Lk(NULL,tree); */
-  /* Optimize_Br_Len_Serie(tree); */
-  
-  /* do */
-  /*   { */
-  /*     ++step; */
-
-  /*     if(n_tested || step == 1) MIXT_Set_Alias_Subpatt(YES,tree); */
-
-  /*     old_loglk = tree->c_lnL; */
-
-  /*     Set_Both_Sides(YES,tree); */
-  /*     Lk(NULL,tree); */
-  /*     MIXT_Set_Alias_Subpatt(NO,tree); */
-
-      
-  /*     /\* if(tree->c_lnL > old_loglk - 5.0) *\/ */
-  /*     /\*   { *\/ */
-  /*     /\*     MIXT_Set_Alias_Subpatt(YES,tree); *\/ */
-  /*     /\*     Optimize_Br_Len_Serie(tree); *\/ */
-  /*     /\*     Set_Both_Sides(YES,tree); *\/ */
-  /*     /\*     Lk(NULL,tree); *\/ */
-  /*     /\*     MIXT_Set_Alias_Subpatt(NO,tree); *\/ */
-  /*     /\*   } *\/ */
-      
-  /*     if(tree->c_lnL < old_loglk && step > 1) */
-  /*       { */
-  /*         if(tree->verbose > VL2 && tree->io->quiet == NO) PhyML_Printf("\n\n. Moving backward\n"); */
-
-  /*         if(!Mov_Backward_Topo_Bl(tree,old_loglk,tested_b,n_tested)) */
-  /*           { */
-  /*             PhyML_Printf("\n== tree->c_lnL: %f old_loglk: %f",tree->c_lnL,old_loglk); */
-  /*             Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
-  /*           } */
-  /*         if(!tree->n_swap) n_neg = 0; */
-  /*         Record_Br_Len(tree); */
-  /*         Set_Both_Sides(YES,tree); */
-  /*         Lk(NULL,tree); */
-  /*       } */
-
-  /*     if(step > n_step_max) break; */
-
-  /*     if(tree->io->print_trace) */
-  /*       { */
-  /*         char *s = Write_Tree(tree,NO); */
-  /*         PhyML_Fprintf(tree->io->fp_out_trace,"[%f]%s\n",tree->c_lnL,s); fflush(tree->io->fp_out_trace); */
-  /*         if(tree->io->print_site_lnl) Print_Site_Lk(tree,tree->io->fp_out_lk); fflush(tree->io->fp_out_lk); */
-  /*         Free(s); */
-  /*       } */
-
-  /*     if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace);  */
-
-  /*     if(tree->verbose > VL2 && tree->io->quiet == NO) Print_Lk(tree,"[Topology           ]"); */
-      
-  /*     if((FABS(old_loglk-tree->c_lnL) < tree->mod->s_opt->min_diff_lk_global) || (n_without_swap > it_lim_without_swap)) break; */
-
-  /*     Update_Dirs(tree); */
-
-  /*     Fix_All(tree); */
-
-  /*     For(i,2*tree->n_otu-3) */
-  /*       if((!tree->a_edges[i]->left->tax) && (!tree->a_edges[i]->rght->tax)) */
-  /*         NNI(tree,tree->a_edges[i],NO); */
-
-  /*     n_neg = 0; */
-  /*     Select_Edges_To_Swap(tree,sorted_b,&n_neg); */
-  /*     Sort_Edges_NNI_Score(tree,sorted_b,n_neg); */
-  /*     Optimiz_Ext_Br(tree); */
-  /*     Update_Bl(tree,lambda); */
-
-  /*     n_tested = 0; */
-  /*     For(i,(int)CEIL((phydbl)n_neg*(lambda))) */
-  /*       tested_b[n_tested++] = sorted_b[i]; */
-
-  /*     Make_N_Swap(tree,tested_b,0,n_tested); */
-
-
-  /*     if((tree->verbose > VL2) && (tree->io->quiet == NO)) PhyML_Printf("[# nnis=%3d]",n_tested); */
-
-  /*     n_tot_swap += n_tested; */
-
-  /*     if(n_tested > 0) n_without_swap = 0; */
-  /*     else             n_without_swap++; */
-
-  /*     n_iter+=1.0; */
-  /*   } */
-  /* while(1); */
-
-  /* Free(sorted_b); */
-  /* Free(tested_b); */
-
-  /* return n_tot_swap; */
 }
 
 //////////////////////////////////////////////////////////////
@@ -932,22 +811,22 @@ void Check_NNI_Scores_Around(t_node *a, t_node *d, t_edge *b, phydbl *best_score
      / \
     v1 v2   
 */
-void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
+void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_tree *tree)
 {
   unsigned int i;
   
   if(d->tax == YES)
     {
-      Br_Len_Brent(b,tree);
+      if(opt_edges == YES) Br_Len_Brent(b,tree);
       return;
     }
   else if(a->tax == YES)
     {
-      Br_Len_Brent(b,tree);
+      if(opt_edges == YES)  Br_Len_Brent(b,tree);
       for(i=0;i<3;++i) if(d->v[i] != a)
         {
           Update_Partial_Lk(tree,d->b[i],d);
-          NNI_Traversal(d,d->v[i],a,d->b[i],tree);
+          NNI_Traversal(d,d->v[i],a,d->b[i],opt_edges,tree);
         }
       Update_Partial_Lk(tree,b,d);
     }
@@ -991,74 +870,58 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, t_tree *tree)
       Record_Br_Len(tree);
       l0 = MIXT_Get_Mean_Edge_Len(b,tree);
 
-      if(l0 < 0.1)
-        {
-          // First NNI
-          Swap(v1,d,a,u,tree);
-          // Update partial likelihood looking up
-          Update_Partial_Lk(tree,b,a);
-          // Update partial likelihood looking down
-          Update_Partial_Lk(tree,b,d);
-          // Evaluate likelihood
-          /* Br_Len_Brent(b,tree); */
-          lk1 = Lk(b,tree);
 
-          
-          /* keep_topo = (lk1 > lk0); */
-          /* if(Are_Equal(tree->annealing_temp,0.0,1.E-3) == NO) */
-          /*   { */
-          /*     accept_prob = exp((lk1-lk0)/tree->annealing_temp); */
-          /*     p = Uni(); */
-          /*     if(!(p > accept_prob)) keep_topo = YES; */
-          /*   } */
+      // First NNI
+      Swap(v1,d,a,u,tree);
+      // Update partial likelihood looking up
+      Update_Partial_Lk(tree,b,a);
+      // Update partial likelihood looking down
+      Update_Partial_Lk(tree,b,d);
+      // Evaluate likelihood
+      /* Br_Len_Brent(b,tree); */
+      lk1 = Lk(b,tree);
 
-          /* if(keep_topo == NO) */
-          if(lk1 < lk0)
-            {
-              // Unswap
-              Swap(u,d,a,v1,tree);
-              
-              // Second NNI
-              Swap(v2,d,a,u,tree);
-              // Update partial likelihood looking up
-              Update_Partial_Lk(tree,b,a);
-              // Update partial likelihood looking down
-              Update_Partial_Lk(tree,b,d);
-              // Evaluate likelihood
-              /* Br_Len_Brent(b,tree); */
-              lk2 = Lk(b,tree);
-              
-              
-              /* keep_topo = (lk2 > lk0); */
-              /* if(Are_Equal(tree->annealing_temp,0.0,1.E-3) == NO) */
-              /*   { */
-              /*     accept_prob = exp((lk2-lk0)/tree->annealing_temp); */
-              /*     p = Uni(); */
-              /*     if(!(p > accept_prob)) keep_topo = YES; */
-              /*   } */
-
-              // Unswap
-              if(lk2 < lk0)
-              /* if(keep_topo == NO) */
-                {
-                  Swap(u,d,a,v2,tree);
-                  // Update partial likelihood looking up
-                  Update_Partial_Lk(tree,b,a);
-                  // Update partial likelihood looking down
-                  Update_Partial_Lk(tree,b,d);
-                  Restore_Br_Len(tree);
-                  Lk(b,tree);
-                }
-            }
-        }
+         
+      // Unswap
+      Swap(u,d,a,v1,tree);              
+      // Second NNI
+      Swap(v2,d,a,u,tree);
+      // Update partial likelihood looking up
+      Update_Partial_Lk(tree,b,a);
+      // Update partial likelihood looking down
+      Update_Partial_Lk(tree,b,d);
+      // Evaluate likelihood
+      /* Br_Len_Brent(b,tree); */
+      lk2 = Lk(b,tree);
       
-      Br_Len_Brent(b,tree);
+              
+      // Unswap
+      Swap(u,d,a,v2,tree);
+
+      if(lk1 > MAX(lk0,lk2))
+        {
+          Swap(v1,d,a,u,tree);
+          tree->c_lnL = lk1;
+        }
+      else if(lk2 > MAX(lk0,lk1))
+        {
+          Swap(v2,d,a,u,tree);
+          tree->c_lnL = lk2;
+        }
+      else tree->c_lnL = lk0;
+      
+      // Update partial likelihood looking up
+      Update_Partial_Lk(tree,b,a);
+      // Update partial likelihood looking down
+      Update_Partial_Lk(tree,b,d);
+      
+      if(opt_edges == YES) Br_Len_Brent(b,tree);
 
       for(i=0;i<3;++i)
         if(d->v[i] != a)
           {
             Update_Partial_Lk(tree,d->b[i],d);
-            NNI_Traversal(d,d->v[i],a,d->b[i],tree);
+            NNI_Traversal(d,d->v[i],a,d->b[i],opt_edges,tree);
           }
       Update_Partial_Lk(tree,b,d);
     }

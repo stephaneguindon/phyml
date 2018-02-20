@@ -1881,7 +1881,7 @@ int Dist_F_Brak(phydbl *ax, phydbl *bx, phydbl *cx, phydbl *F, phydbl *param, t_
 //////////////////////////////////////////////////////////////
 
 phydbl Dist_F_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol, int n_iter_max,
-            phydbl *param, phydbl *F, t_mod *mod)
+                    phydbl *param, phydbl *F, t_mod *mod)
 {
   int iter;
   phydbl a,b,d,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm;
