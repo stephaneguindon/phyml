@@ -47,15 +47,16 @@ int Simu(t_tree *tree, int n_step_max)
                     tree->a_nodes[0]->v[0],
                     NULL,
                     tree->a_nodes[0]->b[0],
-                    n_round < 1 ? NO : YES,
+                    YES,
                     tree);
       delta = tree->c_lnL - old_loglk;
       tree->annealing_temp -= 1.0;
       if(tree->annealing_temp < 0.0) tree->annealing_temp = 0.0;
       n_round++;
       if(n_round == n_step_max) break;
+      if(delta < 1.0) break;
     }
-  while(delta > 1.0 || Are_Equal(tree->annealing_temp,0.0,1.E-3) == NO || n_round < 5);
+  while(1);
 
   return 1;
 }
