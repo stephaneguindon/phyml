@@ -48,8 +48,9 @@ int Simu(t_tree *tree, int n_step_max)
                     tree->a_nodes[tree->tip_root]->v[0],
                     NULL,
                     tree->a_nodes[tree->tip_root]->b[0],
-                    YES,
+                    n_round < 2 ? NO : YES,
                     tree);
+      if(n_round < 2) Optimize_Br_Len_Serie(tree);
       printf("\n. lnL: %G",tree->c_lnL);
       delta = tree->c_lnL - old_loglk;
       tree->annealing_temp -= 1.0;
@@ -871,7 +872,7 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_
       u = NULL;
       for(i=0;i<3;++i) if(a->v[i] != d && a->v[i] != v) { u = a->v[i]; break; }
       
-      Br_Len_Brent(b,tree);
+      if(opt_edges == YES) Br_Len_Brent(b,tree);
       lk0 = Lk(b,tree);
       l0 = Duplicate_Scalar_Dbl(b->l);
 
@@ -885,7 +886,7 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_
           // Update partial likelihood looking down
           Update_Partial_Lk(tree,b,d);
           // Evaluate likelihood
-          Br_Len_Brent(b,tree);
+          if(opt_edges == YES) Br_Len_Brent(b,tree);
           lk1 = Lk(b,tree);
           l1 = Duplicate_Scalar_Dbl(b->l);
           
@@ -899,7 +900,7 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_
           // Update partial likelihood looking down
           Update_Partial_Lk(tree,b,d);
           // Evaluate likelihood
-          Br_Len_Brent(b,tree);
+          if(opt_edges == YES) Br_Len_Brent(b,tree);
           lk2 = Lk(b,tree);
           l2 = Duplicate_Scalar_Dbl(b->l);
           

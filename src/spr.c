@@ -1472,8 +1472,8 @@ void Spr_Pars(int threshold, int n_round_max, t_tree *tree)
   tree->mod->s_opt->spr_lnL        = NO;
   tree->mod->s_opt->spr_pars       = YES;
   curr_pars                        = tree->c_pars;
-  tree->mod->s_opt->max_depth_path = 15;
-  round                            = 1;
+  tree->mod->s_opt->max_depth_path = tree->n_otu;
+  round                            = 0;
   do
     {
       curr_pars = tree->c_pars;
@@ -1799,13 +1799,18 @@ void Spr_List_Of_Trees(t_tree *tree)
   list_size = 0;
   do
     {
-      /* if(list_size > 0) */
-        {
-          /* Randomize_Tree(tree,2*tree->n_otu); */
+       /* if(list_size == 0) */
+       /*  { */
           Stepwise_Add_Pars(tree);
           Spr_Pars(0,tree->n_otu,tree);
-        }
-      
+        /* } */
+       /* else */
+       /*   { */
+           /* Random_NNI((int)tree->n_otu/2,tree); */
+           /* Randomize_Tree(tree,5); */
+           /* Spr_Pars(0,tree->n_otu,tree); */
+         /* } */
+       
       Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
       tree->c_lnL = UNLIKELY;
       Simu(tree,10000);
