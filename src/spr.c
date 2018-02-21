@@ -1771,7 +1771,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   
   /* const unsigned int list_size_first_round  = 5 + (int)tree->n_otu/10; */
   const unsigned int list_size_first_round  = 10;
-  const unsigned int list_size_second_round  = 5;
+  const unsigned int list_size_second_round  = 3;
   const unsigned int list_size_third_round  = 1;
   
   best_lnL      = UNLIKELY;

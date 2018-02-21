@@ -834,9 +834,10 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_
   else
     {
       phydbl lk0,lk1,lk2;
-      phydbl l0,rnd;
+      phydbl rnd;
       t_node *v1,*v2,*u,*dum;
-
+      scalar_dbl *l0,*l1,*l2;
+      
       /* unsigned int keep_topo; */
       /* phydbl p,accept_prob; */
       
@@ -866,10 +867,9 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_
       u = NULL;
       for(i=0;i<3;++i) if(a->v[i] != d && a->v[i] != v) { u = a->v[i]; break; }
       
-      /* Br_Len_Brent(b,tree); */
+      Br_Len_Brent(b,tree);
       lk0 = Lk(b,tree);
-      Record_Br_Len(tree);
-      l0 = MIXT_Get_Mean_Edge_Len(b,tree);
+      l0 = Duplicate_Scalar_Dbl(b->l);
 
 
       // First NNI
@@ -879,8 +879,9 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_
       // Update partial likelihood looking down
       Update_Partial_Lk(tree,b,d);
       // Evaluate likelihood
-      /* Br_Len_Brent(b,tree); */
+      Br_Len_Brent(b,tree);
       lk1 = Lk(b,tree);
+      l1 = Duplicate_Scalar_Dbl(b->l);
 
          
       // Unswap
@@ -892,8 +893,9 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_
       // Update partial likelihood looking down
       Update_Partial_Lk(tree,b,d);
       // Evaluate likelihood
-      /* Br_Len_Brent(b,tree); */
+      Br_Len_Brent(b,tree);
       lk2 = Lk(b,tree);
+      l2 = Duplicate_Scalar_Dbl(b->l);
       
               
       // Unswap
@@ -902,14 +904,25 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_
       if(lk1 > MAX(lk0,lk2))
         {
           Swap(v1,d,a,u,tree);
+          Copy_Scalar_Dbl(l1,b->l);
           tree->c_lnL = lk1;
         }
       else if(lk2 > MAX(lk0,lk1))
         {
           Swap(v2,d,a,u,tree);
+          Copy_Scalar_Dbl(l2,b->l);
           tree->c_lnL = lk2;
         }
-      else tree->c_lnL = lk0;
+      else
+        {
+          Copy_Scalar_Dbl(l0,b->l);
+          tree->c_lnL = lk0;
+        }
+
+      Free_Scalar_Dbl(l0);
+      Free_Scalar_Dbl(l1);
+      Free_Scalar_Dbl(l2);
+
       
       // Update partial likelihood looking up
       Update_Partial_Lk(tree,b,a);
