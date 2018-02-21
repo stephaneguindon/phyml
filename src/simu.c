@@ -42,13 +42,15 @@ int Simu(t_tree *tree, int n_step_max)
     {
       old_loglk = tree->c_lnL;
       Set_Both_Sides(NO,tree);
+      tree->tip_root = Rand_Int(0,tree->n_otu-1);
       Lk(NULL,tree);
-      NNI_Traversal(tree->a_nodes[0],
-                    tree->a_nodes[0]->v[0],
+      NNI_Traversal(tree->a_nodes[tree->tip_root],
+                    tree->a_nodes[tree->tip_root]->v[0],
                     NULL,
-                    tree->a_nodes[0]->b[0],
+                    tree->a_nodes[tree->tip_root]->b[0],
                     YES,
                     tree);
+      printf("\n. lnL: %G",tree->c_lnL);
       delta = tree->c_lnL - old_loglk;
       tree->annealing_temp -= 1.0;
       if(tree->annealing_temp < 0.0) tree->annealing_temp = 0.0;
@@ -840,6 +842,8 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_
       
       /* unsigned int keep_topo; */
       /* phydbl p,accept_prob; */
+
+      l0 = l1 = l2 = NULL;
       
       lk0 = UNLIKELY;
       lk1 = UNLIKELY;
@@ -872,35 +876,41 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_
       l0 = Duplicate_Scalar_Dbl(b->l);
 
 
-      // First NNI
-      Swap(v1,d,a,u,tree);
-      // Update partial likelihood looking up
-      Update_Partial_Lk(tree,b,a);
-      // Update partial likelihood looking down
-      Update_Partial_Lk(tree,b,d);
-      // Evaluate likelihood
-      Br_Len_Brent(b,tree);
-      lk1 = Lk(b,tree);
-      l1 = Duplicate_Scalar_Dbl(b->l);
+      /* if(b->l->v < 0.1) */
+        {
+          // First NNI
+          Swap(v1,d,a,u,tree);
+          // Update partial likelihood looking up
+          Update_Partial_Lk(tree,b,a);
+          // Update partial likelihood looking down
+          Update_Partial_Lk(tree,b,d);
+          // Evaluate likelihood
+          Br_Len_Brent(b,tree);
+          lk1 = Lk(b,tree);
+          l1 = Duplicate_Scalar_Dbl(b->l);
+          
+          
+          // Unswap
+          Swap(u,d,a,v1,tree);              
+          // Second NNI
+          Swap(v2,d,a,u,tree);
+          // Update partial likelihood looking up
+          Update_Partial_Lk(tree,b,a);
+          // Update partial likelihood looking down
+          Update_Partial_Lk(tree,b,d);
+          // Evaluate likelihood
+          Br_Len_Brent(b,tree);
+          lk2 = Lk(b,tree);
+          l2 = Duplicate_Scalar_Dbl(b->l);
+          
+          
+          // Unswap
+          Swap(u,d,a,v2,tree);
+        }
 
-         
-      // Unswap
-      Swap(u,d,a,v1,tree);              
-      // Second NNI
-      Swap(v2,d,a,u,tree);
-      // Update partial likelihood looking up
-      Update_Partial_Lk(tree,b,a);
-      // Update partial likelihood looking down
-      Update_Partial_Lk(tree,b,d);
-      // Evaluate likelihood
-      Br_Len_Brent(b,tree);
-      lk2 = Lk(b,tree);
-      l2 = Duplicate_Scalar_Dbl(b->l);
+
+
       
-              
-      // Unswap
-      Swap(u,d,a,v2,tree);
-
       if(lk1 > MAX(lk0,lk2))
         {
           Swap(v1,d,a,u,tree);
@@ -919,9 +929,12 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_
           tree->c_lnL = lk0;
         }
 
-      Free_Scalar_Dbl(l0);
-      Free_Scalar_Dbl(l1);
-      Free_Scalar_Dbl(l2);
+
+      Update_PMat_At_Given_Edge(b,tree);
+
+      if(l0) Free_Scalar_Dbl(l0);
+      if(l1) Free_Scalar_Dbl(l1);
+      if(l2) Free_Scalar_Dbl(l2);
 
       
       // Update partial likelihood looking up
@@ -929,7 +942,6 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_
       // Update partial likelihood looking down
       Update_Partial_Lk(tree,b,d);
       
-      if(opt_edges == YES) Br_Len_Brent(b,tree);
 
       for(i=0;i<3;++i)
         if(d->v[i] != a)

@@ -768,7 +768,7 @@ void Optimize_Br_Len_Serie(t_tree *tree)
     }
   else
     {
-      Optimize_Br_Len_Serie_Post(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree->a_nodes[0]->b[0],tree);
+      Optimize_Br_Len_Serie_Post(tree->a_nodes[tree->tip_root],tree->a_nodes[tree->tip_root]->v[0],tree->a_nodes[tree->tip_root]->b[0],tree);
     }
 
   lk_end = tree->c_lnL;

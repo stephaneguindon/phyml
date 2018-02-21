@@ -740,7 +740,7 @@ typedef struct __Tree{
   int                                 *mutmap; /*! Mutational map */
   int                                json_num;
   short int                   update_eigen_lr;
-  
+  int                                tip_root; /*! Index of tip node used as the root */
   phydbl                       *eigen_lr_left;
   phydbl                       *eigen_lr_rght;
   phydbl                            *dot_prod;

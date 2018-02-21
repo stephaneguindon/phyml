@@ -533,9 +533,9 @@ if(tree->rates && tree->io->lk_approx == NORMAL)
             }
           else
             {
-              Post_Order_Lk(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree);
+              Post_Order_Lk(tree->a_nodes[tree->tip_root],tree->a_nodes[tree->tip_root]->v[0],tree);
               if(tree->both_sides == YES)
-                Pre_Order_Lk(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree);
+                Pre_Order_Lk(tree->a_nodes[tree->tip_root],tree->a_nodes[tree->tip_root]->v[0],tree);
             }
         }
     }
@@ -550,7 +550,7 @@ if(tree->rates && tree->io->lk_approx == NORMAL)
             b = tree->e_root;
         }
       else                                        
-        b = tree->a_nodes[0]->b[0];
+        b = tree->a_nodes[tree->tip_root]->b[0];
     }
 
   tree->c_lnL             = .0;

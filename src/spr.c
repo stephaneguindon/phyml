@@ -1808,9 +1808,9 @@ void Spr_List_Of_Trees(t_tree *tree)
       
       Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
       tree->c_lnL = UNLIKELY;
-      Simu(tree,tree->n_otu);
-      Optimize_Br_Len_Serie(tree);
-      Lk(NULL,tree);
+      Simu(tree,10000);
+      /* Optimize_Br_Len_Serie(tree); */
+      /* Lk(NULL,tree); */
       
       if(tree->verbose > VL0 && tree->io->quiet == NO)
         {
@@ -1839,6 +1839,10 @@ void Spr_List_Of_Trees(t_tree *tree)
   rk = Ranks(lnL_list,max_list_size);
 
   
+
+
+
+
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Fast optimisation of the best trees (SPR search)...\n");
   list_size = 0;
   n_trees   = 0;
