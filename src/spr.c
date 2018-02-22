@@ -1770,7 +1770,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   phydbl *lnL_list,*max_delta_lnL_list,best_lnL;
   
   /* const unsigned int list_size_first_round  = 5 + (int)tree->n_otu/10; */
-  const unsigned int list_size_first_round  = 20;
+  const unsigned int list_size_first_round  = 5;
   const unsigned int list_size_second_round  = 3;
   const unsigned int list_size_third_round  = 1;
   
@@ -1928,7 +1928,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       tree->mod->s_opt->max_depth_path            = MAX(10,max_depth_list[rk[list_size]]);
       tree->mod->s_opt->spr_lnL                   = YES;
       tree->mod->s_opt->spr_pars                  = NO;
-      tree->mod->s_opt->min_diff_lk_move          = 1.E-3;
+      tree->mod->s_opt->min_diff_lk_move          = 1.E-1;
       tree->perform_spr_right_away                = YES;
       tree->mod->s_opt->eval_list_regraft         = YES;
       tree->mod->s_opt->max_delta_lnL_spr         = MAX(50.,max_delta_lnL_list[rk[list_size]]);
