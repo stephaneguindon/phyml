@@ -1812,29 +1812,30 @@ void Spr_List_Of_Trees(t_tree *tree)
          /* } */
        
       Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
-      tree->c_lnL = UNLIKELY;
+      /* tree->c_lnL = UNLIKELY; */
       Simu(tree,10000);
       /* Optimize_Br_Len_Serie(tree); */
       /* Lk(NULL,tree); */
       
       if(tree->verbose > VL0 && tree->io->quiet == NO)
         {
-          if(list_size == 0) Table_Top(25);
-          PhyML_Printf("\n\t \u2502 %3d      %12.2f   \u2502",list_size,tree->c_lnL);
+          /* if(list_size == 0) Table_Top(25); */
+          /* PhyML_Printf("\n\t \u2502 %3d      %12.2f   \u2502",list_size,tree->c_lnL); */
+          PhyML_Printf("\n\t%3d      %12.2f ",list_size+1,tree->c_lnL);
         }
       
       if(tree->c_lnL > best_lnL)
         {
           best_lnL = tree->c_lnL;
-          if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf(" .");
+          if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf(" +");
           if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace);
         }
       
-      if(tree->verbose > VL0 && tree->io->quiet == NO)
-        {
-          if(list_size == list_size_first_round - 1) Table_Bottom(25);
-          else Table_Row(25);
-        }
+      /* if(tree->verbose > VL0 && tree->io->quiet == NO) */
+      /*   { */
+      /*     if(list_size == list_size_first_round - 1) Table_Bottom(25); */
+      /*     else Table_Row(25); */
+      /*   } */
       
       Copy_Tree(tree,tree_list[list_size]);
       lnL_list[list_size] = tree->c_lnL;
@@ -1882,21 +1883,22 @@ void Spr_List_Of_Trees(t_tree *tree)
         
       if(tree->verbose > VL0 && tree->io->quiet == NO)
         {
-          if(list_size == 0) Table_Top(25);
-          PhyML_Printf("\n\t \u2502 %3d      %12.2f   \u2502",n_trees,tree->c_lnL);
+          /* if(list_size == 0) Table_Top(25); */
+          /* PhyML_Printf("\n\t \u2502 %3d      %12.2f   \u2502",n_trees,tree->c_lnL); */
+          PhyML_Printf("\n\t%3d      %12.2f ",n_trees,tree->c_lnL);
         }
       if(tree->c_lnL > best_lnL)
         {
           best_lnL = tree->c_lnL;
-          if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf(" .");
+          if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf(" +");
           if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace);
         }
 
-      if(tree->verbose > VL0 && tree->io->quiet == NO)
-        {
-          if(list_size == list_size_second_round - 1) Table_Bottom(25);
-          else Table_Row(25);
-        }
+      /* if(tree->verbose > VL0 && tree->io->quiet == NO) */
+      /*   { */
+      /*     if(list_size == list_size_second_round - 1) Table_Bottom(25); */
+      /*     else Table_Row(25); */
+      /*   } */
       
       Copy_Tree(tree,tree_list[rk[list_size]]);
       lnL_list[rk[list_size]] = tree->c_lnL;
@@ -1938,20 +1940,21 @@ void Spr_List_Of_Trees(t_tree *tree)
           
           if(tree->verbose > VL0 && tree->io->quiet == NO)
             {
-              if(iter == 0) Table_Top(25);
-              PhyML_Printf("\n\t \u2502 %3d      %12.2f   \u2502",n_trees,tree->c_lnL);
+              /* if(iter == 0) Table_Top(25); */
+              /* PhyML_Printf("\n\t \u2502 %3d      %12.2f   \u2502",n_trees,tree->c_lnL); */
+              PhyML_Printf("\n\t%3d      %12.2f ",n_trees,tree->c_lnL);
             }
           if(tree->c_lnL > best_lnL)
             {
               best_lnL = tree->c_lnL;
-              if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf(" .");
+              if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf(" +");
               if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace);
             }
-          if(tree->verbose > VL0 && tree->io->quiet == NO)
-            {
-              if(tree->n_improvements == 0 && iter > 0) Table_Bottom(25);
-              else Table_Row(25);
-            }
+          /* if(tree->verbose > VL0 && tree->io->quiet == NO) */
+          /*   { */
+          /*     if(tree->n_improvements == 0 && iter > 0) Table_Bottom(25); */
+          /*     else Table_Row(25); */
+          /*   } */
           iter++;
         }
       while(tree->n_improvements > 0 || iter <= 1);

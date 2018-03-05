@@ -48,16 +48,14 @@ int Simu(t_tree *tree, int n_step_max)
                     tree->a_nodes[tree->tip_root]->v[0],
                     NULL,
                     tree->a_nodes[tree->tip_root]->b[0],
-                    n_round < 2 ? NO : YES,
+                    YES,
                     tree);
-      if(n_round < 2) Optimize_Br_Len_Serie(tree);
-      printf("\n. lnL: %G",tree->c_lnL);
       delta = tree->c_lnL - old_loglk;
       tree->annealing_temp -= 1.0;
       if(tree->annealing_temp < 0.0) tree->annealing_temp = 0.0;
       n_round++;
       if(n_round == n_step_max) break;
-      if(delta < 1.0) break;
+      if(delta < 5.0) break;
     }
   while(1);
 
