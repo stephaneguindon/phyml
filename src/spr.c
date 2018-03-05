@@ -1858,8 +1858,8 @@ void Spr_List_Of_Trees(t_tree *tree)
  
       if(list_size == 0) Round_Optimize(tree,ROUND_MAX);
 
-      tree->mod->s_opt->max_depth_path            = 20;
-      tree->mod->s_opt->max_delta_lnL_spr         = 500.;
+      tree->mod->s_opt->max_depth_path            = 15;
+      tree->mod->s_opt->max_delta_lnL_spr         = 200.;
       tree->mod->s_opt->spr_lnL                   = YES;
       tree->mod->s_opt->spr_pars                  = NO;
       tree->mod->s_opt->min_diff_lk_move          = 1.0;
@@ -1875,7 +1875,7 @@ void Spr_List_Of_Trees(t_tree *tree)
           Spr(tree->c_lnL,1.0,tree);
           Optimize_Br_Len_Serie(tree);
           tree->mod->s_opt->max_delta_lnL_spr = tree->mod->s_opt->max_delta_lnL_spr_current;
-          tree->mod->s_opt->max_depth_path = tree->max_spr_depth;          
+          tree->mod->s_opt->max_depth_path = tree->max_spr_depth;
         }
       while(tree->n_improvements > 5);
         

@@ -55,7 +55,7 @@ int Simu(t_tree *tree, int n_step_max)
       if(tree->annealing_temp < 0.0) tree->annealing_temp = 0.0;
       n_round++;
       if(n_round == n_step_max) break;
-      if(delta < 5.0) break;
+      if(delta < 1.0) break;
     }
   while(1);
 
