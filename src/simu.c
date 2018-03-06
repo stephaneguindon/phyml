@@ -58,7 +58,7 @@ int Simu(t_tree *tree, int n_step_max)
       n_round++;
       PhyML_Printf("\n. lnL: %G T: %G",tree->c_lnL,tree->annealing_temp);
       if(n_round == n_step_max && Are_Equal(tree->annealing_temp,0.0,1.E-3)) break;
-      if(delta < 2.0 && Are_Equal(tree->annealing_temp,0.0,1.E-3)) break;
+      if(delta < 1.0 && Are_Equal(tree->annealing_temp,0.0,1.E-3)) break;
 
       /* time(&t_end); */
       /* Print_Time_Info_Brief(t_beg,t_end); */
