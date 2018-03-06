@@ -11348,6 +11348,165 @@ void Push_Bottom_Linked_List(void *what, t_ll **list, bool remove_duplicates)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
+void Swap_Partial_Lk_Extra(t_edge *b, t_node *d, int whichone, t_tree *tree)
+{
+  void *buff;
+
+  if(whichone == 0)
+    {
+      if(d == b->left)
+        {
+          buff = b->div_post_pred_left;
+          b->div_post_pred_left = tree->div_post_pred_extra_0;
+          tree->div_post_pred_extra_0 = buff;
+          
+          buff = b->sum_scale_left_cat;
+          b->sum_scale_left_cat = tree->sum_scale_cat_extra_0;
+          tree->sum_scale_cat_extra_0 = buff;
+          
+          if(b->left)
+            {
+              if(!b->left->tax)
+                {
+                  buff = b->sum_scale_left;
+                  b->sum_scale_left = tree->sum_scale_extra_0;
+                  tree->sum_scale_extra_0 = buff;
+                }
+              
+              if(!b->left->tax || tree->mod->s_opt->greedy)
+                {
+                  buff = b->p_lk_left;
+                  b->p_lk_left = tree->p_lk_extra_0;
+                  tree->p_lk_extra_0 = buff;
+                }
+              else if(b->left->tax)
+                {
+                  buff = b->p_lk_tip_l;
+                  b->p_lk_tip_l = tree->p_lk_tip_extra_0;
+                  tree->p_lk_tip_extra_0 = buff;
+                }
+            }
+          buff = b->patt_id_left;
+          b->patt_id_left = tree->patt_id_extra_0;
+          tree->patt_id_extra_0 = buff;
+        }
+      else
+        {
+          buff = b->div_post_pred_rght;
+          b->div_post_pred_rght = tree->div_post_pred_extra_0;
+          tree->div_post_pred_extra_0 = buff;
+          
+          buff = b->sum_scale_rght_cat;
+          b->sum_scale_rght_cat = tree->sum_scale_cat_extra_0;
+          tree->sum_scale_cat_extra_0 = buff;
+          
+          if(b->rght)
+            {
+              if(!b->rght->tax)
+                {
+                  buff = b->sum_scale_rght;
+                  b->sum_scale_rght = tree->sum_scale_extra_0;
+                  tree->sum_scale_extra_0 = buff;
+                }
+              
+              if(!b->rght->tax || tree->mod->s_opt->greedy)
+                {
+                  buff = b->p_lk_rght;
+                  b->p_lk_rght = tree->p_lk_extra_0;
+                  tree->p_lk_extra_0 = buff;
+                }
+              else if(b->rght->tax)
+                {
+                  buff = b->p_lk_tip_r;
+                  b->p_lk_tip_r = tree->p_lk_tip_extra_0;
+                  tree->p_lk_tip_extra_0 = buff;
+                }
+            }
+          buff = b->patt_id_rght;
+          b->patt_id_rght = tree->patt_id_extra_0;
+          tree->patt_id_extra_0 = buff;
+        }
+    }
+  else
+    {
+      if(d == b->left)
+        {
+          buff = b->div_post_pred_left;
+          b->div_post_pred_left = tree->div_post_pred_extra_1;
+          tree->div_post_pred_extra_1 = buff;
+          
+          buff = b->sum_scale_left_cat;
+          b->sum_scale_left_cat = tree->sum_scale_cat_extra_1;
+          tree->sum_scale_cat_extra_1 = buff;
+          
+          if(b->left)
+            {
+              if(!b->left->tax)
+                {
+                  buff = b->sum_scale_left;
+                  b->sum_scale_left = tree->sum_scale_extra_1;
+                  tree->sum_scale_extra_1 = buff;
+                }
+              
+              if(!b->left->tax || tree->mod->s_opt->greedy)
+                {
+                  buff = b->p_lk_left;
+                  b->p_lk_left = tree->p_lk_extra_1;
+                  tree->p_lk_extra_1 = buff;
+                }
+              else if(b->left->tax)
+                {
+                  buff = b->p_lk_tip_l;
+                  b->p_lk_tip_l = tree->p_lk_tip_extra_1;
+                  tree->p_lk_tip_extra_1 = buff;
+                }
+            }
+          buff = b->patt_id_left;
+          b->patt_id_left = tree->patt_id_extra_1;
+          tree->patt_id_extra_1 = buff;
+        }
+      else
+        {
+          buff = b->div_post_pred_rght;
+          b->div_post_pred_rght = tree->div_post_pred_extra_1;
+          tree->div_post_pred_extra_1 = buff;
+          
+          buff = b->sum_scale_rght_cat;
+          b->sum_scale_rght_cat = tree->sum_scale_cat_extra_1;
+          tree->sum_scale_cat_extra_1 = buff;
+          
+          if(b->rght)
+            {
+              if(!b->rght->tax)
+                {
+                  buff = b->sum_scale_rght;
+                  b->sum_scale_rght = tree->sum_scale_extra_1;
+                  tree->sum_scale_extra_1 = buff;
+                }
+              
+              if(!b->rght->tax || tree->mod->s_opt->greedy)
+                {
+                  buff = b->p_lk_rght;
+                  b->p_lk_rght = tree->p_lk_extra_1;
+                  tree->p_lk_extra_1 = buff;
+                }
+              else if(b->rght->tax)
+                {
+                  buff = b->p_lk_tip_r;
+                  b->p_lk_tip_r = tree->p_lk_tip_extra_1;
+                  tree->p_lk_tip_extra_1 = buff;
+                }
+            }
+          buff = b->patt_id_rght;
+          b->patt_id_rght = tree->patt_id_extra_1;
+          tree->patt_id_extra_1 = buff;
+        }
+    }
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
 void Remove_From_Linked_List(t_ll *elem, void *val, t_ll **list)
 {
   t_ll *ll;

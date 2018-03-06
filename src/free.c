@@ -446,6 +446,26 @@ void Free_Node_Lk(t_node *n)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+void Free_Extra_Edge_Lk(t_tree *tree)
+{
+  if(tree->div_post_pred_extra_0) Free(tree->div_post_pred_extra_0);
+  if(tree->sum_scale_cat_extra_0) Free(tree->sum_scale_cat_extra_0);
+  if(tree->sum_scale_extra_0) Free(tree->sum_scale_extra_0);
+  if(tree->p_lk_extra_0) Free(tree->p_lk_extra_0);
+  if(tree->p_lk_tip_extra_0) Free(tree->p_lk_tip_extra_0);
+  if(tree->patt_id_extra_0) Free(tree->patt_id_extra_0);
+
+  if(tree->div_post_pred_extra_1) Free(tree->div_post_pred_extra_1);
+  if(tree->sum_scale_cat_extra_1) Free(tree->sum_scale_cat_extra_1);
+  if(tree->sum_scale_extra_1) Free(tree->sum_scale_extra_1);
+  if(tree->p_lk_extra_1) Free(tree->p_lk_extra_1);
+  if(tree->p_lk_tip_extra_1) Free(tree->p_lk_tip_extra_1);
+  if(tree->patt_id_extra_1) Free(tree->patt_id_extra_1);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 void Free_Edge_Lk_Rght(t_edge *b)
 {
   Free(b->div_post_pred_rght);

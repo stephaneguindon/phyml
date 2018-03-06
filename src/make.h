@@ -81,4 +81,5 @@ t_node **Make_Target_Tip(int n);
 t_clad *Make_Clade();
 void Alloc_TBE_Matrices(int n_otu,  short unsigned*** i_matrix, short unsigned*** c_matrix,short unsigned*** hamming,
 			short unsigned** min_dist, short unsigned**  min_dist_edge, int** cluster_sizes);
+void Make_Extra_Edge_Lk(t_tree *tree);
 #endif

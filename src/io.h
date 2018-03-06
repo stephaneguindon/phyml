@@ -68,6 +68,7 @@ void Print_Diversity(FILE *fp,t_tree *tree);
 void Print_Diversity_Pre(t_node *a,t_node *d,t_edge *b,FILE *fp,t_tree *tree);
 t_tree *Read_User_Tree(calign *cdata,t_mod *mod,option *io);
 void Print_Time_Info(time_t t_beg,time_t t_end);
+void Print_Time_Info_Brief(time_t t_beg,time_t t_end);
 void PhyML_Printf(char *format,...);
 void PhyML_Fprintf(FILE *fp,char *format,...);
 void Read_Clade_Priors(char *file_name,t_tree *tree);

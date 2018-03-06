@@ -32,12 +32,14 @@ int Simu(t_tree *tree, int n_step_max)
 {
   phydbl old_loglk,delta;
   unsigned int n_round;
-  
+  time_t t_beg,t_end;
+
+  time(&t_beg);
   tree->c_lnL = UNLIKELY;
   delta = UNLIKELY;
   old_loglk = UNLIKELY;
   n_round = 0;
-  tree->annealing_temp = 0.0;
+  tree->annealing_temp = 5.0;
   do
     {
       old_loglk = tree->c_lnL;
@@ -54,8 +56,12 @@ int Simu(t_tree *tree, int n_step_max)
       tree->annealing_temp -= 1.0;
       if(tree->annealing_temp < 0.0) tree->annealing_temp = 0.0;
       n_round++;
-      if(n_round == n_step_max) break;
-      if(delta < 1.0) break;
+      PhyML_Printf("\n. lnL: %G T: %G",tree->c_lnL,tree->annealing_temp);
+      if(n_round == n_step_max && Are_Equal(tree->annealing_temp,0.0,1.E-3)) break;
+      if(delta < 2.0 && Are_Equal(tree->annealing_temp,0.0,1.E-3)) break;
+
+      /* time(&t_end); */
+      /* Print_Time_Info_Brief(t_beg,t_end); */
     }
   while(1);
 
@@ -826,10 +832,10 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_
     {
       if(opt_edges == YES)  Br_Len_Brent(b,tree);
       for(i=0;i<3;++i) if(d->v[i] != a)
-        {
-          Update_Partial_Lk(tree,d->b[i],d);
-          NNI_Traversal(d,d->v[i],a,d->b[i],opt_edges,tree);
-        }
+                         {
+                           Update_Partial_Lk(tree,d->b[i],d);
+                           NNI_Traversal(d,d->v[i],a,d->b[i],opt_edges,tree);
+                         }
       Update_Partial_Lk(tree,b,d);
     }
   else
@@ -838,9 +844,8 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_
       phydbl rnd;
       t_node *v1,*v2,*u,*dum;
       scalar_dbl *l0,*l1,*l2;
+      phydbl p_accept;
       
-      /* unsigned int keep_topo; */
-      /* phydbl p,accept_prob; */
 
       l0 = l1 = l2 = NULL;
       
@@ -874,60 +879,76 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_
       lk0 = Lk(b,tree);
       l0 = Duplicate_Scalar_Dbl(b->l);
 
-
-      /* if(b->l->v < 0.1) */
-        {
-          // First NNI
-          Swap(v1,d,a,u,tree);
-          // Update partial likelihood looking up
-          Update_Partial_Lk(tree,b,a);
-          // Update partial likelihood looking down
-          Update_Partial_Lk(tree,b,d);
-          // Evaluate likelihood
-          if(opt_edges == YES) Br_Len_Brent(b,tree);
-          lk1 = Lk(b,tree);
-          l1 = Duplicate_Scalar_Dbl(b->l);
-          
-          
-          // Unswap
-          Swap(u,d,a,v1,tree);              
-          // Second NNI
-          Swap(v2,d,a,u,tree);
-          // Update partial likelihood looking up
-          Update_Partial_Lk(tree,b,a);
-          // Update partial likelihood looking down
-          Update_Partial_Lk(tree,b,d);
-          // Evaluate likelihood
-          if(opt_edges == YES) Br_Len_Brent(b,tree);
-          lk2 = Lk(b,tree);
-          l2 = Duplicate_Scalar_Dbl(b->l);
-          
-          
-          // Unswap
-          Swap(u,d,a,v2,tree);
-        }
-
-
-
+      Swap_Partial_Lk_Extra(b,a,0,tree);
+      Swap_Partial_Lk_Extra(b,d,1,tree);
       
-      if(lk1 > MAX(lk0,lk2))
+      /* if(b->l->v < 0.1) */
+      {
+        // First NNI
+        Swap(v1,d,a,u,tree);
+        // Update partial likelihood looking up
+        Update_Partial_Lk(tree,b,a);
+        // Update partial likelihood looking down
+        Update_Partial_Lk(tree,b,d);
+        // Evaluate likelihood
+        if(opt_edges == YES) Br_Len_Brent(b,tree);
+        lk1 = Lk(b,tree);
+        l1 = Duplicate_Scalar_Dbl(b->l);
+        // Unswap
+        Swap(u,d,a,v1,tree);              
+        
+        
+        if(lk1 < lk0)
+          {
+            // Second NNI
+            Swap(v2,d,a,u,tree);
+            // Update partial likelihood looking up
+            Update_Partial_Lk(tree,b,a);
+            // Update partial likelihood looking down
+            Update_Partial_Lk(tree,b,d);
+            // Evaluate likelihood
+            if(opt_edges == YES) Br_Len_Brent(b,tree);
+            lk2 = Lk(b,tree);
+            l2 = Duplicate_Scalar_Dbl(b->l);
+            // Unswap
+            Swap(u,d,a,v2,tree);
+          }
+        
+      }
+            
+      Swap_Partial_Lk_Extra(b,a,0,tree);
+      Swap_Partial_Lk_Extra(b,d,1,tree);
+      
+
+      p_accept = exp((lk1-lk0)/(tree->annealing_temp+1.E-6));
+      rnd = Uni();
+      
+      if(rnd < p_accept)
         {
           Swap(v1,d,a,u,tree);
           Copy_Scalar_Dbl(l1,b->l);
           tree->c_lnL = lk1;
-        }
-      else if(lk2 > MAX(lk0,lk1))
-        {
-          Swap(v2,d,a,u,tree);
-          Copy_Scalar_Dbl(l2,b->l);
-          tree->c_lnL = lk2;
+          Update_Partial_Lk(tree,b,a);
+          Update_Partial_Lk(tree,b,d);
         }
       else
         {
-          Copy_Scalar_Dbl(l0,b->l);
-          tree->c_lnL = lk0;
+          p_accept = exp((lk2-lk0)/(tree->annealing_temp+1.E-6));
+          rnd = Uni();
+          if(rnd < p_accept)
+            {
+              Swap(v2,d,a,u,tree);
+              Copy_Scalar_Dbl(l2,b->l);
+              tree->c_lnL = lk2;
+              Update_Partial_Lk(tree,b,a);
+              Update_Partial_Lk(tree,b,d);
+            }
+          else
+            {
+              Copy_Scalar_Dbl(l0,b->l);
+              tree->c_lnL = lk0; 
+            }
         }
-
 
       Update_PMat_At_Given_Edge(b,tree);
 
@@ -936,12 +957,6 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_
       if(l2) Free_Scalar_Dbl(l2);
 
       
-      // Update partial likelihood looking up
-      Update_Partial_Lk(tree,b,a);
-      // Update partial likelihood looking down
-      Update_Partial_Lk(tree,b,d);
-      
-
       for(i=0;i<3;++i)
         if(d->v[i] != a)
           {

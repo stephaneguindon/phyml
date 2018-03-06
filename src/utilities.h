@@ -809,6 +809,20 @@ typedef struct __Tree{
   int                                  b_inst; /*! The BEAGLE instance id associated with this tree. */
 #endif
 
+  // Extra partial lk structure for bookkeeping 
+  short int *div_post_pred_extra_0;
+  int *sum_scale_cat_extra_0;
+  int *sum_scale_extra_0;
+  phydbl *p_lk_extra_0;
+  phydbl *p_lk_tip_extra_0;
+  int *patt_id_extra_0;
+
+  short int *div_post_pred_extra_1;
+  int *sum_scale_cat_extra_1;
+  int *sum_scale_extra_1;
+  phydbl *p_lk_extra_1;
+  phydbl *p_lk_tip_extra_1;
+  int *patt_id_extra_1;
 }t_tree;
 
 /*!********************************************************/
@@ -2255,7 +2269,7 @@ void Table_Row(unsigned int width);
 void Table_Bottom(unsigned int width);
 t_cal *Duplicate_Calib(t_cal *from);
 t_clad *Duplicate_Clade(t_clad *from);
-
+void Swap_Partial_Lk_Extra(t_edge *b, t_node *d, int whichone, t_tree *tree);
 #include "xml.h"
 #include "free.h"
 #include "spr.h"
