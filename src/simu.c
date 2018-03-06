@@ -39,7 +39,7 @@ int Simu(t_tree *tree, int n_step_max)
   delta = UNLIKELY;
   old_loglk = UNLIKELY;
   n_round = 0;
-  tree->annealing_temp = 5.0;
+  tree->annealing_temp = 3.0;
   do
     {
       old_loglk = tree->c_lnL;
@@ -53,7 +53,7 @@ int Simu(t_tree *tree, int n_step_max)
                     YES,
                     tree);
       delta = tree->c_lnL - old_loglk;
-      tree->annealing_temp -= 1.0;
+      tree->annealing_temp -= 0.5;
       if(tree->annealing_temp < 0.0) tree->annealing_temp = 0.0;
       n_round++;
       PhyML_Printf("\n. lnL: %G T: %G",tree->c_lnL,tree->annealing_temp);
@@ -922,8 +922,10 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_
 
       p_accept = exp((lk1-lk0)/(tree->annealing_temp+1.E-6));
       rnd = Uni();
+
+      /* printf("\n. lk0: %f lk1: %f lk2: %f p: %G",lk0,lk1,lk2,p_accept); */
       
-      if(rnd < p_accept)
+      if(rnd < p_accept && lk2 < lk1)
         {
           Swap(v1,d,a,u,tree);
           Copy_Scalar_Dbl(l1,b->l);
