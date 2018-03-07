@@ -587,9 +587,19 @@ t_spr *Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
 
   if(tree->mod->s_opt->spr_lnL == YES)
     {
+      if(b_target->l->v < 0.01) b_target->l->v = 0.01;
+      if(b_residual->l->v < 0.01) b_residual->l->v = 0.01;
+
       Update_PMat_At_Given_Edge(b_target,tree);
       Update_PMat_At_Given_Edge(b_residual,tree);
       Update_Partial_Lk(tree,b_arrow,n_link);
+
+      /* Br_Len_Brent(b_arrow,tree); */
+      /* Update_Partial_Lk(tree,b_target,n_link); */
+      /* Br_Len_Brent(b_target,tree); */
+      /* Update_Partial_Lk(tree,b_residual,n_link); */
+      /* Br_Len_Brent(b_residual,tree); */
+
       Lk(b_arrow,tree);
     }
   else
