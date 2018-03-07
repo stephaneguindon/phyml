@@ -39,7 +39,7 @@ int Simu(t_tree *tree, int n_step_max)
   delta = UNLIKELY;
   old_loglk = UNLIKELY;
   n_round = 0;
-  tree->annealing_temp = 3.0;
+  tree->annealing_temp = 2.0;
   do
     {
       old_loglk = tree->c_lnL;
