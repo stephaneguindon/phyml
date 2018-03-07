@@ -823,6 +823,8 @@ typedef struct __Tree{
   phydbl *p_lk_extra_1;
   phydbl *p_lk_tip_extra_1;
   int *patt_id_extra_1;
+
+  int n_edges_traversed;
 }t_tree;
 
 /*!********************************************************/

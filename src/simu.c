@@ -46,6 +46,7 @@ int Simu(t_tree *tree, int n_step_max)
       Set_Both_Sides(NO,tree);
       tree->tip_root = Rand_Int(0,tree->n_otu-1);
       Lk(NULL,tree);
+      tree->n_edges_traversed = 0;
       NNI_Traversal(tree->a_nodes[tree->tip_root],
                     tree->a_nodes[tree->tip_root]->v[0],
                     NULL,
@@ -53,13 +54,14 @@ int Simu(t_tree *tree, int n_step_max)
                     YES,
                     tree);
       delta = tree->c_lnL - old_loglk;
-      tree->annealing_temp -= 0.5;
+      tree->annealing_temp -= 0.2;
       if(tree->annealing_temp < 0.0) tree->annealing_temp = 0.0;
       n_round++;
       PhyML_Printf("\n. lnL: %G T: %G",tree->c_lnL,tree->annealing_temp);
-      if(n_round == n_step_max && Are_Equal(tree->annealing_temp,0.0,1.E-3)) break;
-      if(delta < 0.1 && Are_Equal(tree->annealing_temp,0.0,1.E-3)) break;
+      if(n_round == n_step_max && Are_Equal(tree->annealing_temp,0.0,1.E-3) && tree->n_edges_traversed > tree->n_otu) break;
+      if(delta < 0.1 && Are_Equal(tree->annealing_temp,0.0,1.E-3) && tree->n_edges_traversed > tree->n_otu) break;
 
+      /* if(n_round == 30) break; */
       /* time(&t_end); */
       /* Print_Time_Info_Brief(t_beg,t_end); */
     }
@@ -831,11 +833,12 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_
   else if(a->tax == YES)
     {
       if(opt_edges == YES)  Br_Len_Brent(b,tree);
-      for(i=0;i<3;++i) if(d->v[i] != a)
-                         {
-                           Update_Partial_Lk(tree,d->b[i],d);
-                           NNI_Traversal(d,d->v[i],a,d->b[i],opt_edges,tree);
-                         }
+      for(i=0;i<3;++i)
+        if(d->v[i] != a)
+          {
+            Update_Partial_Lk(tree,d->b[i],d);
+            NNI_Traversal(d,d->v[i],a,d->b[i],opt_edges,tree);
+          }
       Update_Partial_Lk(tree,b,d);
     }
   else
@@ -845,8 +848,10 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_
       t_node *v1,*v2,*u,*dum;
       scalar_dbl *l0,*l1,*l2;
       phydbl p_accept;
-      
+      int dir1, dir2;
 
+      tree->n_edges_traversed++;
+      
       l0 = l1 = l2 = NULL;
       
       lk0 = UNLIKELY;
@@ -898,7 +903,7 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_
         Swap(u,d,a,v1,tree);              
         
         
-        if(lk1 < lk0)
+        /* if(lk1 < lk0) */
           {
             // Second NNI
             Swap(v2,d,a,u,tree);
@@ -923,22 +928,24 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_
       p_accept = exp((lk1-lk0)/(tree->annealing_temp+1.E-6));
       rnd = Uni();
 
-      /* printf("\n. lk0: %f lk1: %f lk2: %f p: %G",lk0,lk1,lk2,p_accept); */
+      /* printf("\n. a: %d d: %d -- lk0: %f lk1: %f lk2: %f p: %G %G %G %G",a->num,d->num,lk0,lk1,lk2,p_accept,l0->v,l1->v,l2->v); */
       
       if(rnd < p_accept && lk2 < lk1)
         {
+          /* printf("-- swap 1"); */
           Swap(v1,d,a,u,tree);
           Copy_Scalar_Dbl(l1,b->l);
           tree->c_lnL = lk1;
           Update_Partial_Lk(tree,b,a);
           Update_Partial_Lk(tree,b,d);
         }
-      else
+      else 
         {
           p_accept = exp((lk2-lk0)/(tree->annealing_temp+1.E-6));
           rnd = Uni();
           if(rnd < p_accept)
             {
+              /* printf("-- swap 2"); */
               Swap(v2,d,a,u,tree);
               Copy_Scalar_Dbl(l2,b->l);
               tree->c_lnL = lk2;
@@ -947,6 +954,7 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_
             }
           else
             {
+              /* printf("-- no swap"); */
               Copy_Scalar_Dbl(l0,b->l);
               tree->c_lnL = lk0; 
             }
@@ -958,13 +966,30 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_
       if(l1) Free_Scalar_Dbl(l1);
       if(l2) Free_Scalar_Dbl(l2);
 
-      
+
+      dir1 = dir2 = -1;
       for(i=0;i<3;++i)
         if(d->v[i] != a)
           {
-            Update_Partial_Lk(tree,d->b[i],d);
-            NNI_Traversal(d,d->v[i],a,d->b[i],opt_edges,tree);
+            if(dir1 < 0) dir1 = i;
+            else dir2 = i;
           }
+
+      rnd = Uni();
+      if(rnd < 0.5)
+        {
+          Update_Partial_Lk(tree,d->b[dir1],d);
+          NNI_Traversal(d,d->v[dir1],a,d->b[dir1],opt_edges,tree);
+          Update_Partial_Lk(tree,d->b[dir2],d);
+          NNI_Traversal(d,d->v[dir2],a,d->b[dir2],opt_edges,tree);
+        }
+      else
+        {
+          Update_Partial_Lk(tree,d->b[dir2],d);
+          NNI_Traversal(d,d->v[dir2],a,d->b[dir2],opt_edges,tree);
+          Update_Partial_Lk(tree,d->b[dir1],d);
+          NNI_Traversal(d,d->v[dir1],a,d->b[dir1],opt_edges,tree);
+        }
       Update_Partial_Lk(tree,b,d);
     }
 }
