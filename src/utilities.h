@@ -2254,6 +2254,7 @@ scalar_dbl *Duplicate_Scalar_Dbl(scalar_dbl *from);
 scalar_dbl *Read_Weights(option *io);
 phydbl Scalar_Elem(int pos, scalar_dbl *scl);
 int Scalar_Len(scalar_dbl *scl);
+void Set_Scalar_Dbl_Min_Thresh(phydbl thresh, scalar_dbl *from);
 void List_Of_Regraft_Nodes(t_node *a, t_node *d, phydbl time_thresh, t_ll *list, t_tree *tree);
 void Push_Bottom_Linked_List(void *what, t_ll **list, bool remove_duplicates);
 void Remove_From_Linked_List(t_ll *elem, void *val, t_ll **list);
