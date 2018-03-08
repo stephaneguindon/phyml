@@ -1798,7 +1798,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   phydbl *lnL_list,*max_delta_lnL_list,best_lnL;
   
   /* const unsigned int list_size_first_round  = 5 + (int)tree->n_otu/10; */
-  const unsigned int list_size_first_round  = 10;
+  const unsigned int list_size_first_round  = 15;
   const unsigned int list_size_second_round  = 1;
   const unsigned int list_size_third_round  = 1;
   const unsigned int list_size_fourth_round  = 1;
@@ -1831,7 +1831,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       Stepwise_Add_Pars(tree);
       Spr_Pars(0,tree->n_otu,tree);
       Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
-      Simu(tree,10000,5.,0.0,0.0,(int)(tree->n_otu/2));
+      Simu(tree,10000,1.,0.0,0.0,(int)(tree->n_otu/2));
       
       if(tree->verbose > VL0 && tree->io->quiet == NO)
         {
