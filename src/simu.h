@@ -17,7 +17,7 @@ the GNU public licence.  See http://www.opensource.org for details.
 
 #include "utilities.h"
 
-int Simu(t_tree *tree, int n_step_max, phydbl delta_lnL, phydbl init_T, phydbl delta_T);
+int Simu(t_tree *tree, int n_step_max, phydbl delta_lnL, phydbl init_T, phydbl delta_T, int min_n_edges_traversed);
 void Simu_Loop(t_tree *tree);
 void Select_Edges_To_Swap(t_tree *tree,t_edge **sorted_b,int *n_neg);
 void Update_Bl(t_tree *tree,phydbl fact);
