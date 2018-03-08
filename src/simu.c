@@ -28,7 +28,7 @@ void Simu_Loop(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-int Simu(t_tree *tree, int n_step_max)
+int Simu(t_tree *tree, int n_step_max, phydbl delta_lnL, phydbl init_T, phydbl delta_T)
 {
   phydbl old_loglk,delta;
   unsigned int n_round;
@@ -39,7 +39,7 @@ int Simu(t_tree *tree, int n_step_max)
   delta = UNLIKELY;
   old_loglk = UNLIKELY;
   n_round = 0;
-  tree->annealing_temp = 2.0;
+  tree->annealing_temp = init_T;
   do
     {
       old_loglk = tree->c_lnL;
@@ -54,12 +54,12 @@ int Simu(t_tree *tree, int n_step_max)
                     YES,
                     tree);
       delta = tree->c_lnL - old_loglk;
-      tree->annealing_temp -= 0.2;
+      tree->annealing_temp -= delta_T;
       if(tree->annealing_temp < 0.0) tree->annealing_temp = 0.0;
       n_round++;
       PhyML_Printf("\n. lnL: %G T: %G",tree->c_lnL,tree->annealing_temp);
       if(n_round == n_step_max && Are_Equal(tree->annealing_temp,0.0,1.E-3) && tree->n_edges_traversed > tree->n_otu) break;
-      if(delta < 0.1 && Are_Equal(tree->annealing_temp,0.0,1.E-3) && tree->n_edges_traversed > tree->n_otu) break;
+      if(delta < delta_lnL && Are_Equal(tree->annealing_temp,0.0,1.E-3) && tree->n_edges_traversed > tree->n_otu) break;
 
       /* if(n_round == 30) break; */
       /* time(&t_end); */

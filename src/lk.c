@@ -417,9 +417,9 @@ void Update_All_Partial_Lk(t_tree *tree)
     }
   else
     {
-      Post_Order_Lk(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree);
+      Post_Order_Lk(tree->a_nodes[tree->tip_root],tree->a_nodes[tree->tip_root]->v[0],tree);
       if(tree->both_sides == YES)
-        Pre_Order_Lk(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree);
+        Pre_Order_Lk(tree->a_nodes[tree->tip_root],tree->a_nodes[tree->tip_root]->v[0],tree);
     }
 }
 
