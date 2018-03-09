@@ -140,7 +140,8 @@ int Spr(phydbl init_lnL, phydbl prop_spr, t_tree *tree)
           Lk(b,tree);
         }
       Spr_Subtree(b,b->left,tree);
-
+      if(tree->n_improvements > 0) break;
+      
       if(tree->mod->s_opt->spr_lnL == YES)
         {
           Post_Order_Lk(b->left,b->rght,tree);
@@ -593,8 +594,8 @@ t_spr *Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
 
   if(tree->mod->s_opt->spr_lnL == YES)
     {
-      Set_Scalar_Dbl_Min_Thresh(0.001,b_target->l);
-      Set_Scalar_Dbl_Min_Thresh(0.001,b_residual->l);
+      /* Set_Scalar_Dbl_Min_Thresh(0.001,b_target->l); */
+      /* Set_Scalar_Dbl_Min_Thresh(0.001,b_residual->l); */
 
       Update_PMat_At_Given_Edge(b_target,tree);
       Update_PMat_At_Given_Edge(b_residual,tree);
@@ -1789,7 +1790,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   t_tree **tree_list,**tree_list_cpy;
   phydbl *lnL_list,*max_delta_lnL_list,best_lnL;
   
-  const unsigned int list_size_first_round  = 15;
+  const unsigned int list_size_first_round  = 20;
   const unsigned int list_size_second_round  = 1;
   const unsigned int list_size_third_round  = 1;
   
@@ -1821,7 +1822,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       Stepwise_Add_Pars(tree);
       Spr_Pars(0,tree->n_otu,tree);
       Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
-      Simu(tree,10000,1.,3.0,0.2,(int)(tree->n_otu/2));
+      Simu(tree,10000,1.,4.0,0.2,(int)(tree->n_otu/2));
       
       if(tree->verbose > VL0 && tree->io->quiet == NO)
         {

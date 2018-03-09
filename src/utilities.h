@@ -705,7 +705,8 @@ typedef struct __Tree{
   short int                         eval_rlnL; /*! Evaluate likelihood for rates along the tree */
   short int                         eval_glnL; /*! Evaluate tree likelihood */
   short int                    scaling_method;
-
+  short int                     fully_nni_opt;
+  
   short int                      use_eigen_lr;
   int                            is_mixt_tree;
   int                                tree_num; /*! tree number. Used for mixture models */

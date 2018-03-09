@@ -164,6 +164,7 @@ void Init_Tree(t_tree *tree, int n_otu)
   tree->perform_spr_right_away    = YES;
   tree->tip_root                  = 0;
   tree->n_edges_traversed         = 0;
+  tree->fully_nni_opt             = NO;
   
 #ifdef BEAGLE
   tree->b_inst                    = UNINITIALIZED;

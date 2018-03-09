@@ -33,7 +33,8 @@ int Simu(t_tree *tree, int n_step_max, phydbl delta_lnL, phydbl init_T, phydbl d
   phydbl old_loglk,delta;
   unsigned int n_round;
   time_t t_beg,t_end;
-
+  int i;
+  
   time(&t_beg);
   tree->c_lnL = UNLIKELY;
   delta = UNLIKELY;
@@ -45,8 +46,10 @@ int Simu(t_tree *tree, int n_step_max, phydbl delta_lnL, phydbl init_T, phydbl d
       old_loglk = tree->c_lnL;
       Set_Both_Sides(NO,tree);
       tree->tip_root = Rand_Int(0,tree->n_otu-1);
+      for(i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->is_alive = YES;
       Lk(NULL,tree);
       tree->n_edges_traversed = 0;
+      tree->fully_nni_opt = YES;
       NNI_Traversal(tree->a_nodes[tree->tip_root],
                     tree->a_nodes[tree->tip_root]->v[0],
                     NULL,
@@ -57,10 +60,10 @@ int Simu(t_tree *tree, int n_step_max, phydbl delta_lnL, phydbl init_T, phydbl d
       tree->annealing_temp -= delta_T;
       if(tree->annealing_temp < 0.0) tree->annealing_temp = 0.0;
       n_round++;
-      PhyML_Printf("\n. lnL: %G T: %G",tree->c_lnL,tree->annealing_temp);
+      PhyML_Printf("\n. lnL: %12G T: %12G %4d/%4d",tree->c_lnL,tree->annealing_temp,tree->n_edges_traversed,tree->n_otu);
 
-      if(n_round == n_step_max && Are_Equal(tree->annealing_temp,0.0,1.E-3) && tree->n_edges_traversed > min_n_edges_traversed) break;
-      if(delta < delta_lnL && Are_Equal(tree->annealing_temp,0.0,1.E-3) && tree->n_edges_traversed > min_n_edges_traversed) break;
+      if(n_round == n_step_max && Are_Equal(tree->annealing_temp,0.0,1.E-3) && tree->fully_nni_opt == NO) break;
+      if(delta < delta_lnL && Are_Equal(tree->annealing_temp,0.0,1.E-3) && tree->fully_nni_opt == NO) break;
 
 
       /* if(n_round == 30) break; */
@@ -826,13 +829,15 @@ void Check_NNI_Scores_Around(t_node *a, t_node *d, t_edge *b, phydbl *best_score
 void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_tree *tree)
 {
   unsigned int i;
+
+  /* printf("\n. a: %d d: %d [%d - %d]", a->num,d->num,a->tax,d->tax); */
   
   if(d->tax == YES)
     {
       if(opt_edges == YES) Br_Len_Brent(b,tree);
       return;
     }
-  else if(a->tax == YES)
+  else if(a->tax == YES || b->is_alive == NO)
     {
       if(opt_edges == YES)  Br_Len_Brent(b,tree);
       for(i=0;i<3;++i)
@@ -852,6 +857,8 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_
       phydbl p_accept;
       int dir1, dir2;
 
+      b->is_alive = NO;
+      
       tree->n_edges_traversed++;
       
       l0 = l1 = l2 = NULL;
@@ -934,12 +941,12 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_
       
       if(rnd < p_accept && lk2 < lk1)
         {
-          /* printf("-- swap 1"); */
           Swap(v1,d,a,u,tree);
           Copy_Scalar_Dbl(l1,b->l);
           tree->c_lnL = lk1;
           Update_Partial_Lk(tree,b,a);
           Update_Partial_Lk(tree,b,d);
+          tree->fully_nni_opt = NO;
         }
       else 
         {
@@ -947,16 +954,15 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_
           rnd = Uni();
           if(rnd < p_accept)
             {
-              /* printf("-- swap 2"); */
               Swap(v2,d,a,u,tree);
               Copy_Scalar_Dbl(l2,b->l);
               tree->c_lnL = lk2;
               Update_Partial_Lk(tree,b,a);
               Update_Partial_Lk(tree,b,d);
+              tree->fully_nni_opt = NO;
             }
           else
             {
-              /* printf("-- no swap"); */
               Copy_Scalar_Dbl(l0,b->l);
               tree->c_lnL = lk0; 
             }
