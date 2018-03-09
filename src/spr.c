@@ -140,7 +140,6 @@ int Spr(phydbl init_lnL, phydbl prop_spr, t_tree *tree)
           Lk(b,tree);
         }
       Spr_Subtree(b,b->left,tree);
-      if(tree->n_improvements > 0) break;
       
       if(tree->mod->s_opt->spr_lnL == YES)
         {
@@ -1790,7 +1789,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   t_tree **tree_list,**tree_list_cpy;
   phydbl *lnL_list,*max_delta_lnL_list,best_lnL;
   
-  const unsigned int list_size_first_round  = 20;
+  const unsigned int list_size_first_round  = 1;
   const unsigned int list_size_second_round  = 1;
   const unsigned int list_size_third_round  = 1;
   
@@ -1822,7 +1821,8 @@ void Spr_List_Of_Trees(t_tree *tree)
       Stepwise_Add_Pars(tree);
       Spr_Pars(0,tree->n_otu,tree);
       Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
-      Simu(tree,10000,1.,4.0,0.2,(int)(tree->n_otu/2));
+      Optimize_Br_Len_Serie(tree);
+      /* Simu(tree,10000,0.1,0.0,0.2,(int)(tree->n_otu/2)); */
       
       if(tree->verbose > VL0 && tree->io->quiet == NO)
         {
@@ -1868,15 +1868,15 @@ void Spr_List_Of_Trees(t_tree *tree)
           Optimize_Br_Len_Serie(tree);
           tree->mod->s_opt->max_delta_lnL_spr = tree->mod->s_opt->max_delta_lnL_spr_current;
           tree->mod->s_opt->max_depth_path = tree->max_spr_depth;
+          if(tree->verbose > VL0 && tree->io->quiet == NO)
+            {
+              PhyML_Printf("\n\t%3d      %12.2f %3d",n_trees,tree->c_lnL,tree->max_spr_depth);
+            }
         }
       while(tree->n_improvements > 0);
       
       n_trees++;
       
-      if(tree->verbose > VL0 && tree->io->quiet == NO)
-        {
-          PhyML_Printf("\n\t%3d      %12.2f ",n_trees,tree->c_lnL);
-        }
       if(tree->c_lnL > best_lnL)
         {
           best_lnL = tree->c_lnL;
@@ -1924,7 +1924,7 @@ void Spr_List_Of_Trees(t_tree *tree)
           
           if(tree->verbose > VL0 && tree->io->quiet == NO)
             {
-              PhyML_Printf("\n\t%3d      %12.2f ",n_trees,tree->c_lnL);
+              PhyML_Printf("\n\t%3d      %12.2f %3d",n_trees,tree->c_lnL,tree->max_spr_depth);
             }
           if(tree->c_lnL > best_lnL)
             {
