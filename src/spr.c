@@ -138,7 +138,6 @@ int Spr(phydbl init_lnL, phydbl prop_spr, t_tree *tree)
           Post_Order_Lk(b->rght,b->left,tree);
           Post_Order_Lk(b->left,b->rght,tree);
           Lk(b,tree);
-          if(tree->c_lnL > tree->best_lnL) tree->best_lnL = tree->c_lnL;
         }
       Spr_Subtree(b,b->left,tree);
 
@@ -147,7 +146,6 @@ int Spr(phydbl init_lnL, phydbl prop_spr, t_tree *tree)
           Post_Order_Lk(b->left,b->rght,tree);
           Post_Order_Lk(b->rght,b->left,tree);
           Lk(b,tree);
-          if(tree->c_lnL > tree->best_lnL) tree->best_lnL = tree->c_lnL;
         }
       Spr_Subtree(b,b->rght,tree);
     }
@@ -1195,12 +1193,6 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
   
       Restore_Br_Len(tree);
   
-      /* !!!!!!!!!!!!!!!!! */
-      /* Set_Both_Sides(YES,tree); */
-      /* MIXT_Set_Alias_Subpatt(YES,tree); */
-      /* Lk(NULL,tree); */
-      /* MIXT_Set_Alias_Subpatt(NO,tree); */
-
       Pars(NULL,tree);
       return 0;
     }
@@ -1797,11 +1789,9 @@ void Spr_List_Of_Trees(t_tree *tree)
   t_tree **tree_list,**tree_list_cpy;
   phydbl *lnL_list,*max_delta_lnL_list,best_lnL;
   
-  /* const unsigned int list_size_first_round  = 5 + (int)tree->n_otu/10; */
   const unsigned int list_size_first_round  = 15;
   const unsigned int list_size_second_round  = 1;
   const unsigned int list_size_third_round  = 1;
-  const unsigned int list_size_fourth_round  = 1;
   
   best_lnL      = UNLIKELY;
   tree->verbose = (tree->verbose == VL0) ? VL0 : VL1;
@@ -1862,12 +1852,12 @@ void Spr_List_Of_Trees(t_tree *tree)
       if(list_size == 0) Round_Optimize(tree,ROUND_MAX);
 
       tree->mod->s_opt->max_depth_path            = 15;
-      tree->mod->s_opt->max_delta_lnL_spr         = 200.;
+      tree->mod->s_opt->max_delta_lnL_spr         = 500.;
       tree->mod->s_opt->spr_lnL                   = YES;
       tree->mod->s_opt->spr_pars                  = NO;
-      tree->mod->s_opt->min_diff_lk_move          = 0.1;
+      tree->mod->s_opt->min_diff_lk_move          = 1.0;
       tree->perform_spr_right_away                = YES;
-      tree->mod->s_opt->eval_list_regraft         = YES;
+      tree->mod->s_opt->eval_list_regraft         = NO;
       tree->mod->s_opt->max_delta_lnL_spr_current = 0.0;
       tree->best_lnL                              = Lk(NULL,tree);
       do
@@ -1875,8 +1865,8 @@ void Spr_List_Of_Trees(t_tree *tree)
           
           Spr(tree->c_lnL,1.0,tree);
           Optimize_Br_Len_Serie(tree);
-          tree->mod->s_opt->max_delta_lnL_spr = MAX(20.,tree->mod->s_opt->max_delta_lnL_spr_current);
-          tree->mod->s_opt->max_depth_path = MAX(5,tree->max_spr_depth);
+          tree->mod->s_opt->max_delta_lnL_spr = tree->mod->s_opt->max_delta_lnL_spr_current;
+          tree->mod->s_opt->max_depth_path = tree->max_spr_depth;
         }
       while(tree->n_improvements > 0);
       
@@ -1906,50 +1896,49 @@ void Spr_List_Of_Trees(t_tree *tree)
   Free(rk);
   rk = Ranks(lnL_list,max_list_size);
 
-  /* if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Thorough optimisation of the best trees (SPR search)...\n"); */
-  /* list_size = 0; */
-  /* n_trees   = 0; */
-  /* do */
-  /*   { */
-  /*     Copy_Tree(tree_list[rk[list_size]],tree); */
+  if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Thorough optimisation of the best trees (SPR search)...\n");
+  list_size = 0;
+  n_trees   = 0;
+  do
+    {
+      Copy_Tree(tree_list[rk[list_size]],tree);
  
-  /*     if(list_size == 0) Round_Optimize(tree,ROUND_MAX); */
+      if(list_size == 0) Round_Optimize(tree,ROUND_MAX);
 
-  /*     tree->mod->s_opt->max_depth_path            = MAX(10,max_depth_list[rk[list_size]]); */
-  /*     tree->mod->s_opt->spr_lnL                   = YES; */
-  /*     tree->mod->s_opt->spr_pars                  = NO; */
-  /*     tree->mod->s_opt->min_diff_lk_move          = 1.E-1; */
-  /*     tree->perform_spr_right_away                = YES; */
-  /*     tree->mod->s_opt->eval_list_regraft         = YES; */
-  /*     tree->mod->s_opt->max_delta_lnL_spr         = MAX(50.,max_delta_lnL_list[rk[list_size]]); */
-  /*     tree->best_lnL                              = Lk(NULL,tree); */
+      tree->mod->s_opt->max_depth_path            = MAX(5,max_depth_list[rk[list_size]]);
+      tree->mod->s_opt->spr_lnL                   = YES;
+      tree->mod->s_opt->spr_pars                  = NO;
+      tree->mod->s_opt->min_diff_lk_move          = 1.E-1;
+      tree->perform_spr_right_away                = YES;
+      tree->mod->s_opt->eval_list_regraft         = YES;
+      tree->mod->s_opt->max_delta_lnL_spr         = MAX(50.,max_delta_lnL_list[rk[list_size]]);
+      tree->best_lnL                              = Lk(NULL,tree);
 
-  /*     iter = 0; */
-  /*     do */
-  /*       { */
-  /*         Spr(tree->c_lnL,1.0,tree); */
-  /*         Optimize_Br_Len_Serie(tree); */
-  /*         n_trees++; */
+      iter = 0;
+      do
+        {
+          Spr(tree->c_lnL,1.0,tree);
+          Optimize_Br_Len_Serie(tree);
+          n_trees++;
           
-  /*         if(tree->verbose > VL0 && tree->io->quiet == NO) */
-  /*           { */
-  /*             PhyML_Printf("\n\t%3d      %12.2f ",n_trees,tree->c_lnL); */
-  /*           } */
-  /*         if(tree->c_lnL > best_lnL) */
-  /*           { */
-  /*             best_lnL = tree->c_lnL; */
-  /*             if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf(" +"); */
-  /*             if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); */
-  /*           } */
-  /*         iter++; */
-  /*       } */
-  /*     while(tree->n_improvements > 0); */
-      
-      
-  /*     Copy_Tree(tree,tree_list[rk[list_size]]); */
-  /*     lnL_list[rk[list_size]] = tree->c_lnL; */
-  /*   } */
-  /* while(++list_size < list_size_third_round); */
+          if(tree->verbose > VL0 && tree->io->quiet == NO)
+            {
+              PhyML_Printf("\n\t%3d      %12.2f ",n_trees,tree->c_lnL);
+            }
+          if(tree->c_lnL > best_lnL)
+            {
+              best_lnL = tree->c_lnL;
+              if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf(" +");
+              if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace);
+            }
+          iter++;
+        }
+      while(tree->n_improvements > 0);
+            
+      Copy_Tree(tree,tree_list[rk[list_size]]);
+      lnL_list[rk[list_size]] = tree->c_lnL;
+    }
+  while(++list_size < list_size_third_round);
   
   Free(rk);
   rk = Ranks(lnL_list,max_list_size);
