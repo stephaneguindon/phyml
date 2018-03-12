@@ -47,7 +47,6 @@ int Simu(t_tree *tree, int n_step_max, phydbl delta_lnL, phydbl init_T, phydbl d
       Set_Both_Sides(NO,tree);
       tree->tip_root = Rand_Int(0,tree->n_otu-1);
       Lk(NULL,tree);
-      for(i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->is_alive = YES;
       tree->n_edges_traversed = 0;
       tree->fully_nni_opt = YES;
       NNI_Traversal(tree->a_nodes[tree->tip_root],
@@ -62,8 +61,7 @@ int Simu(t_tree *tree, int n_step_max, phydbl delta_lnL, phydbl init_T, phydbl d
       n_round++;
       PhyML_Printf("\n. lnL: %12G T: %12G %4d/%4d fully_opt ? %d",tree->c_lnL,tree->annealing_temp,tree->n_edges_traversed,tree->n_otu,tree->fully_nni_opt);
 
-      if(n_round == n_step_max && Are_Equal(tree->annealing_temp,0.0,1.E-3) && tree->fully_nni_opt == YES) break;
-      if(delta < delta_lnL && Are_Equal(tree->annealing_temp,0.0,1.E-3) && tree->fully_nni_opt == YES) break;
+      if((n_round == n_step_max || delta < delta_lnL) && Are_Equal(tree->annealing_temp,0.0,1.E-3) && tree->fully_nni_opt == YES) break;
 
 
       /* if(n_round == 30) break; */
@@ -837,7 +835,7 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_
       if(opt_edges == YES) Br_Len_Brent(b,tree);
       return;
     }
-  else if(a->tax == YES || b->is_alive == NO)
+  else if(a->tax == YES)
     {
       if(opt_edges == YES && a->tax == YES)  Br_Len_Brent(b,tree);
       for(i=0;i<3;++i)
@@ -858,8 +856,6 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_
       int dir1, dir2;
 
       tree->n_edges_traversed++;
-      b->is_alive = NO;
-      
       
       l0 = l1 = l2 = NULL;
       
@@ -985,21 +981,11 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_
             else dir2 = i;
           }
 
-      rnd = Uni();
-      if(rnd < 0.5)
-        {
-          Update_Partial_Lk(tree,d->b[dir1],d);
-          NNI_Traversal(d,d->v[dir1],a,d->b[dir1],opt_edges,tree);
-          Update_Partial_Lk(tree,d->b[dir2],d);
-          NNI_Traversal(d,d->v[dir2],a,d->b[dir2],opt_edges,tree);
-        }
-      else
-        {
-          Update_Partial_Lk(tree,d->b[dir2],d);
-          NNI_Traversal(d,d->v[dir2],a,d->b[dir2],opt_edges,tree);
-          Update_Partial_Lk(tree,d->b[dir1],d);
-          NNI_Traversal(d,d->v[dir1],a,d->b[dir1],opt_edges,tree);
-        }
+      Update_Partial_Lk(tree,d->b[dir1],d);
+      NNI_Traversal(d,d->v[dir1],a,d->b[dir1],opt_edges,tree);
+      Update_Partial_Lk(tree,d->b[dir2],d);
+      NNI_Traversal(d,d->v[dir2],a,d->b[dir2],opt_edges,tree);
+
       Update_Partial_Lk(tree,b,d);
     }
 }
