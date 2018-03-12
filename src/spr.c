@@ -1822,7 +1822,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       Spr_Pars(0,tree->n_otu,tree);
       Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
       Optimize_Br_Len_Serie(tree);
-      Simu(tree,10000,2.0,0.0,0.2,(int)(tree->n_otu/2));
+      Simu(tree,10000,0.1,0.0,0.2,(int)(tree->n_otu/2));
       
       if(tree->verbose > VL0 && tree->io->quiet == NO)
         {
@@ -1856,7 +1856,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       tree->mod->s_opt->max_delta_lnL_spr         = 500.;
       tree->mod->s_opt->spr_lnL                   = YES;
       tree->mod->s_opt->spr_pars                  = NO;
-      tree->mod->s_opt->min_diff_lk_move          = 1.0;
+      tree->mod->s_opt->min_diff_lk_move          = 0.1;
       tree->perform_spr_right_away                = YES;
       tree->mod->s_opt->eval_list_regraft         = NO;
       tree->mod->s_opt->max_delta_lnL_spr_current = 0.0;
