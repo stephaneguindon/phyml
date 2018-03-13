@@ -258,7 +258,7 @@ extern int TIME;
 #define  BLOCK_LABELS         100
 
 #define  NODE_DEG_MAX        2000
-#define  BRENT_IT_MAX         100
+#define  BRENT_IT_MAX        1000
 #define  BRENT_CGOLD    0.3819660
 #define  BRENT_ZEPS        1.e-10
 #define  MNBRAK_GOLD     1.618034
@@ -666,6 +666,10 @@ typedef struct __Edge {
   int                    *n_diff_states_r; /*! Number of different states found in the subtree on the right of this edge */
 
   phydbl                      bin_cod_num;
+
+  short int        update_partial_lk_left;
+  short int        update_partial_lk_rght;
+
 }t_edge;
 
 /*!********************************************************/

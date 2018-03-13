@@ -1227,6 +1227,9 @@ phydbl Invariant_Lk(int fact_sum_scale, int site, int *num_prec_issue, t_tree *t
 void Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
 {
   if(tree->eval_alnL == NO) return;
+  if(b->left == d && b->update_partial_lk_left == NO) return;
+  if(b->rght == d && b->update_partial_lk_rght == NO) return;
+
   
   if(tree->is_mixt_tree)
     {
@@ -4233,3 +4236,52 @@ void Set_Partial_Lk_One_Side(phydbl **Pij, phydbl **tPij, phydbl **p_lk,  int **
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void Switch_Partial_Lk_Post(t_node *a, t_node *d, t_edge *b, short int yesno, t_tree *tree)
+{
+  if(a == tree->n_root) assert(FALSE);
+  if(d->tax == NO)
+    {
+      int i;
+
+      for(i=0;i<3;++i)
+        if(d->v[i] != a)
+          Switch_Partial_Lk_Post(d,d->v[i],d->b[i],yesno,tree);
+    } 
+
+  if(b->left == d) b->update_partial_lk_left = yesno;
+  else if(b->rght == d) b->update_partial_lk_rght = yesno;
+  else assert(FALSE);
+
+  return;
+}
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Switch_Partial_Lk_Pre(t_node *a, t_node *d, t_edge *b, short int yesno, t_tree *tree)
+{  
+  if(a == tree->n_root) assert(FALSE);
+  if(d->tax == YES) return;
+  else
+    {
+      int i;
+      
+      for(i=0;i<3;++i)
+        {
+          if(d->v[i] != a)
+            {
+              if(d->b[i]->left == d) d->b[i]->update_partial_lk_left = yesno;
+              else if(d->b[i]->rght == d) d->b[i]->update_partial_lk_rght = yesno;
+              else assert(FALSE);
+            }
+        }
+      
+      for(i=0;i<3;++i)
+        if(d->v[i] != a)
+          Switch_Partial_Lk_Pre(d,d->v[i],d->b[i],yesno,tree);
+    }
+  
+  return;
+}

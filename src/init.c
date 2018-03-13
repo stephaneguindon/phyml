@@ -210,6 +210,9 @@ void Init_Edge_Light(t_edge *b, int num)
   b->p_pars_r             = NULL;
   b->n_diff_states_l      = NULL;
   b->n_diff_states_r      = NULL;
+
+  b->update_partial_lk_left = YES;
+  b->update_partial_lk_rght = YES;
   
 #ifdef BEAGLE
   b->p_lk_left_idx         = num;

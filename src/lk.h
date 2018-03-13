@@ -118,6 +118,8 @@ void Set_Partial_Lk_One_Side(phydbl **Pij, phydbl **tPij, phydbl **p_lk,  int **
 #endif
                                      );
 void Rate_Correction(int exponent, phydbl *site_lk_cat);
+void Switch_Partial_Lk_Pre(t_node *a, t_node *d, t_edge *b, short int yesno, t_tree *tree);
+void Switch_Partial_Lk_Post(t_node *a, t_node *d, t_edge *b, short int yesno, t_tree *tree);
 
 
 
