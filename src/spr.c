@@ -1782,7 +1782,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   t_tree **tree_list,**tree_list_cpy;
   phydbl *lnL_list,*max_delta_lnL_list,best_lnL;
   
-  const unsigned int list_size_first_round  = 30;
+  const unsigned int list_size_first_round  = 5;
   const unsigned int list_size_second_round  = 1;
   const unsigned int list_size_third_round  = 1;
   
@@ -1845,8 +1845,8 @@ void Spr_List_Of_Trees(t_tree *tree)
  
       if(list_size == 0) Round_Optimize(tree,ROUND_MAX);
 
-      tree->mod->s_opt->max_depth_path            = 20;
-      tree->mod->s_opt->max_delta_lnL_spr         = 1000.;
+      tree->mod->s_opt->max_depth_path            = 10;
+      tree->mod->s_opt->max_delta_lnL_spr         = 100.;
       tree->mod->s_opt->spr_lnL                   = YES;
       tree->mod->s_opt->spr_pars                  = NO;
       tree->mod->s_opt->min_diff_lk_move          = 1.0;
@@ -1866,7 +1866,7 @@ void Spr_List_Of_Trees(t_tree *tree)
               PhyML_Printf("\n\t%3d      %12.2f depth max: %3d # improvements: %3d",n_trees,tree->c_lnL,tree->max_spr_depth,tree->n_improvements);
             }
         }
-      while(tree->n_improvements > 0);
+      while(tree->n_improvements > 5);
       
       n_trees++;
       
