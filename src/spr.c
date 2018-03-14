@@ -1814,7 +1814,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       Stepwise_Add_Pars(tree);
       Spr_Pars(0,tree->n_otu,tree);
       for(int i=0;i<2*tree->n_otu-3;i++) MIXT_Set_Br_Len(1.E-3,tree->a_edges[i],tree);
-      /* Optimize_Br_Len_Serie(tree); */
+      Optimize_Br_Len_Serie(tree);
       Simu(tree,3,1.0,0.0,0.1,(int)(tree->n_otu/2));
       
       if(tree->verbose > VL0 && tree->io->quiet == NO)
