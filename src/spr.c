@@ -1778,7 +1778,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   t_tree **tree_list,**tree_list_cpy;
   phydbl *lnL_list,*max_delta_lnL_list,best_lnL;
   
-  const unsigned int list_size_first_round  = 10;
+  const unsigned int list_size_first_round  = 1;
   const unsigned int list_size_second_round  = 1;
   const unsigned int list_size_third_round  = 1;
   
@@ -1811,7 +1811,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       Spr_Pars(0,tree->n_otu,tree);
       for(int i=0;i<2*tree->n_otu-3;i++) MIXT_Set_Br_Len(1.E-3,tree->a_edges[i],tree);
       Optimize_Br_Len_Serie(tree);
-      Simu(tree,2+(int)(tree->n_otu/20),1.0,0.0,0.1,(int)(tree->n_otu/2));
+      /* Simu(tree,2+(int)(tree->n_otu/20),1.0,0.0,0.1,(int)(tree->n_otu/2)); */
       
       if(tree->verbose > VL0 && tree->io->quiet == NO)
         {
@@ -1841,11 +1841,11 @@ void Spr_List_Of_Trees(t_tree *tree)
  
       if(list_size == 0) Round_Optimize(tree,ROUND_MAX);
 
-      tree->mod->s_opt->max_depth_path            = 10;
-      tree->mod->s_opt->max_delta_lnL_spr         = 100.;
+      tree->mod->s_opt->max_depth_path            = 30;
+      tree->mod->s_opt->max_delta_lnL_spr         = 10000.;
       tree->mod->s_opt->spr_lnL                   = YES;
       tree->mod->s_opt->spr_pars                  = NO;
-      tree->mod->s_opt->min_diff_lk_move          = 1.0;
+      tree->mod->s_opt->min_diff_lk_move          = 0.1;
       tree->perform_spr_right_away                = YES;
       tree->mod->s_opt->eval_list_regraft         = NO;
       tree->mod->s_opt->max_delta_lnL_spr_current = 0.0;
