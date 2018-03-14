@@ -1896,7 +1896,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       if(list_size == 0) Round_Optimize(tree,ROUND_MAX);
 
       /* tree->mod->s_opt->max_depth_path            = MAX(10,max_depth_list[rk[list_size]]); */
-      tree->mod->s_opt->max_depth_path            = tree->n_otu
+      tree->mod->s_opt->max_depth_path            = tree->n_otu;
       /* tree->mod->s_opt->max_delta_lnL_spr         = MAX(100.,max_delta_lnL_list[rk[list_size]]); */
         tree->mod->s_opt->max_delta_lnL_spr       = 1000.;
       tree->mod->s_opt->spr_lnL                   = YES;
