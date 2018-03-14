@@ -1841,7 +1841,7 @@ void Spr_List_Of_Trees(t_tree *tree)
  
       if(list_size == 0) Round_Optimize(tree,ROUND_MAX);
 
-      tree->mod->s_opt->max_depth_path            = 30;
+      tree->mod->s_opt->max_depth_path            = tree->n_otu;
       tree->mod->s_opt->max_delta_lnL_spr         = 10000.;
       tree->mod->s_opt->spr_lnL                   = YES;
       tree->mod->s_opt->spr_pars                  = NO;
@@ -1859,7 +1859,7 @@ void Spr_List_Of_Trees(t_tree *tree)
           tree->mod->s_opt->max_depth_path = tree->max_spr_depth;
           if(tree->verbose > VL0 && tree->io->quiet == NO)
             {
-              PhyML_Printf("\n\t%3d      %12.2f depth max: %3d # improvements: %3d",n_trees,tree->c_lnL,tree->max_spr_depth,tree->n_improvements);
+              PhyML_Printf("\n\t%3d      %12.2f depth max: %3d # improvements: %3d delta lnL max: %12f",n_trees,tree->c_lnL,tree->max_spr_depth,tree->n_improvements,tree->mod->s_opt->max_delta_lnL_spr);
             }
         }
       while(tree->n_improvements > 5);
@@ -1895,13 +1895,13 @@ void Spr_List_Of_Trees(t_tree *tree)
  
       if(list_size == 0) Round_Optimize(tree,ROUND_MAX);
 
-      tree->mod->s_opt->max_depth_path            = MAX(5,max_depth_list[rk[list_size]]);
+      tree->mod->s_opt->max_depth_path            = MAX(10,max_depth_list[rk[list_size]]);
       tree->mod->s_opt->spr_lnL                   = YES;
       tree->mod->s_opt->spr_pars                  = NO;
-      tree->mod->s_opt->min_diff_lk_move          = 1.E-1;
+      tree->mod->s_opt->min_diff_lk_move          = 0.1;
       tree->perform_spr_right_away                = YES;
       tree->mod->s_opt->eval_list_regraft         = YES;
-      tree->mod->s_opt->max_delta_lnL_spr         = MAX(50.,max_delta_lnL_list[rk[list_size]]);
+      tree->mod->s_opt->max_delta_lnL_spr         = MAX(100.,max_delta_lnL_list[rk[list_size]]);
       tree->best_lnL                              = Lk(NULL,tree);
 
       iter = 0;
@@ -1913,7 +1913,7 @@ void Spr_List_Of_Trees(t_tree *tree)
           
           if(tree->verbose > VL0 && tree->io->quiet == NO)
             {
-              PhyML_Printf("\n\t%3d      %12.2f %3d",n_trees,tree->c_lnL,tree->max_spr_depth);
+              PhyML_Printf("\n\t%3d      %12.2f depth max: %3d # improvements: %3d",n_trees,tree->c_lnL,tree->max_spr_depth,tree->n_improvements);
             }
           if(tree->c_lnL > best_lnL)
             {
