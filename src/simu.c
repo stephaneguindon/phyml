@@ -61,7 +61,7 @@ int Simu(t_tree *tree, int n_step_max, phydbl delta_lnL, phydbl init_T, phydbl d
       n_round++;
       PhyML_Printf("\n. lnL: %12G T: %12G %4d/%4d fully_opt ? %d",tree->c_lnL,tree->annealing_temp,tree->n_edges_traversed,tree->n_otu,tree->fully_nni_opt);
 
-      if((n_round == n_step_max || delta < delta_lnL) && Are_Equal(tree->annealing_temp,0.0,1.E-3) && tree->fully_nni_opt == YES) break;
+      if((n_round == n_step_max || delta < delta_lnL || tree->fully_nni_opt == YES) && Are_Equal(tree->annealing_temp,0.0,1.E-3)) break;
 
 
       /* if(n_round == 30) break; */
