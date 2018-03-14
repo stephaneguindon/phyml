@@ -385,7 +385,7 @@ int Test_All_Spr_Targets(t_edge *b_pulled, t_node *n_link, t_tree *tree)
                                 b_target->left,
                                 b_pulled,n_link,b_residual,b_target,&best_found,NULL,tree);
 
-      if(best_found == NO || tree->perform_spr_right_away == NO)
+      /* if(best_found == NO || tree->perform_spr_right_away == NO) */
         {
           tree->depth_curr_path = 0;
           tree->curr_path[0] = b_target->rght;
