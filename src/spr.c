@@ -205,8 +205,8 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
 
       if(tree->n_moves)
         {
-          n_moves_pars = MIN(3,tree->n_moves);
-          n_moves      = MIN(3,tree->n_moves);
+          n_moves_pars = MIN(5,tree->n_moves);
+          n_moves      = MIN(5,tree->n_moves);
 
           if(tree->mod->s_opt->spr_lnL == NO) n_moves = n_moves_pars;
           n_moves = MAX(1,n_moves);
@@ -385,7 +385,7 @@ int Test_All_Spr_Targets(t_edge *b_pulled, t_node *n_link, t_tree *tree)
                                 b_target->left,
                                 b_pulled,n_link,b_residual,b_target,&best_found,NULL,tree);
 
-      /* if(best_found == NO || tree->perform_spr_right_away == NO) */
+      if(best_found == NO || tree->perform_spr_right_away == NO)
         {
           tree->depth_curr_path = 0;
           tree->curr_path[0] = b_target->rght;
@@ -1183,10 +1183,6 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
   
       Restore_Br_Len(tree);
 
-      /* !!!!!!!!!!!!!!!!!!!!!!!! */
-      /* Set_Both_Sides(YES,tree); */
-      /* Lk(NULL,tree); */
-      /* Pars(NULL,tree); */
       return 0;
     }
 }
