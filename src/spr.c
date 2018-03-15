@@ -206,8 +206,8 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
 
       if(tree->n_moves)
         {
-          n_moves_pars = MIN(3,tree->n_moves);
-          n_moves      = MIN(3,tree->n_moves);
+          n_moves_pars = MIN(10,tree->n_moves);
+          n_moves      = MIN(10,tree->n_moves);
 
           if(tree->mod->s_opt->spr_lnL == NO) n_moves = n_moves_pars;
           n_moves = MAX(1,n_moves);
