@@ -206,8 +206,8 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
 
       if(tree->n_moves)
         {
-          n_moves_pars = MIN(10,tree->n_moves);
-          n_moves      = MIN(10,tree->n_moves);
+          n_moves_pars = MIN(3,tree->n_moves);
+          n_moves      = MIN(3,tree->n_moves);
 
           if(tree->mod->s_opt->spr_lnL == NO) n_moves = n_moves_pars;
           n_moves = MAX(1,n_moves);
@@ -1780,7 +1780,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   phydbl *lnL_list,*max_delta_lnL_list,best_lnL;
   
   unsigned int list_size_first_round  = 10;
-  unsigned int list_size_second_round  = 5;
+  unsigned int list_size_second_round  = 6;
   unsigned int list_size_third_round  = 1;
   
   best_lnL      = UNLIKELY;
@@ -1834,7 +1834,7 @@ void Spr_List_Of_Trees(t_tree *tree)
 
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Fast optimisation of the best trees (SPR search)...\n");
 
-  /* do */
+  do
     {
       if(rk) Free(rk);
       rk = Ranks(lnL_list,max_list_size);
@@ -1855,7 +1855,7 @@ void Spr_List_Of_Trees(t_tree *tree)
           tree->perform_spr_right_away                = YES;
           tree->mod->s_opt->eval_list_regraft         = NO;
           tree->mod->s_opt->max_delta_lnL_spr_current = 0.0;
-
+          tree->c_lnL                                 = lnL_list[list_size];
           /* do */
           {
             
@@ -1891,7 +1891,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       list_size_second_round /= 2;
       printf("\n. list_size: %d",list_size_second_round);
     }
-  /* while(list_size_second_round > 1); */
+  while(list_size_second_round > 1);
 
   Free(rk);
   rk = Ranks(lnL_list,max_list_size);
