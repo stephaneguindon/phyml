@@ -1795,6 +1795,9 @@ void Spr_List_Of_Trees(t_tree *tree)
   max_depth_list     = (int *)mCalloc(max_list_size,sizeof(int));
 
   for(i=0;i<max_list_size;++i) lnL_list[i] = UNLIKELY;
+  for(i=0;i<max_list_size;++i) max_depth_list[i] = 20;
+  for(i=0;i<max_list_size;++i) max_delta_lnL_list[i] = 500.;
+
   for(i=0;i<max_list_size;++i) tree_list[i] = Make_Tree_From_Scratch(tree->n_otu,tree->data);
   for(i=0;i<max_list_size;++i) tree_list_cpy[i] = Make_Tree_From_Scratch(tree->n_otu,tree->data);
   
@@ -1810,9 +1813,10 @@ void Spr_List_Of_Trees(t_tree *tree)
   do
     {
       Stepwise_Add_Pars(tree);
-      Spr_Pars(0,tree->n_otu,tree);
+      /* Spr_Pars(0,tree->n_otu,tree); */
       Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
       /* Simu(tree,1,1.0,0.0,0.1,(int)(tree->n_otu/2)); */
+      Lk(NULL,tree);
       
       if(tree->verbose > VL0 && tree->io->quiet == NO)
         {
@@ -1845,10 +1849,9 @@ void Spr_List_Of_Trees(t_tree *tree)
         {
           Copy_Tree(tree_list[rk[list_size]],tree);
           
-          /* if(list_size == 0) Round_Optimize(tree,ROUND_MAX); */
           
-          tree->mod->s_opt->max_depth_path            = 15;
-          tree->mod->s_opt->max_delta_lnL_spr         = 500.;
+          tree->mod->s_opt->max_depth_path            = max_depth_list[rk[list_size]];
+          tree->mod->s_opt->max_delta_lnL_spr         = max_delta_lnL_list[rk[list_size]];
           tree->mod->s_opt->spr_lnL                   = YES;
           tree->mod->s_opt->spr_pars                  = NO;
           tree->mod->s_opt->min_diff_lk_move          = 0.1;
@@ -1884,7 +1887,6 @@ void Spr_List_Of_Trees(t_tree *tree)
           lnL_list[rk[list_size]] = tree->c_lnL;
           max_depth_list[rk[list_size]] = tree->mod->s_opt->max_depth_path;
           max_delta_lnL_list[rk[list_size]] = tree->mod->s_opt->max_delta_lnL_spr;
-          
         }
       while(++list_size < list_size_second_round);
 
@@ -1903,13 +1905,12 @@ void Spr_List_Of_Trees(t_tree *tree)
     {
       Copy_Tree(tree_list[rk[list_size]],tree);
  
-      if(list_size == 0) Round_Optimize(tree,ROUND_MAX);
 
       tree->mod->s_opt->max_depth_path            = MAX(5,max_depth_list[rk[list_size]]);
       tree->mod->s_opt->max_delta_lnL_spr         = MAX(20.,max_delta_lnL_list[rk[list_size]]);
       tree->mod->s_opt->spr_lnL                   = YES;
       tree->mod->s_opt->spr_pars                  = NO;
-      tree->mod->s_opt->min_diff_lk_move          = 0.1;
+      tree->mod->s_opt->min_diff_lk_move          = 0.01;
       tree->perform_spr_right_away                = YES;
       tree->mod->s_opt->eval_list_regraft         = YES;
 
@@ -1947,7 +1948,7 @@ void Spr_List_Of_Trees(t_tree *tree)
 
   i = tree->verbose;
   tree->verbose = VL0;
-  tree->mod->s_opt->min_diff_lk_move  = 1.E-2;
+  tree->mod->s_opt->min_diff_lk_move  = 1.E-3;
   do
     {
       tree->mod->s_opt->fast_nni = NO;
