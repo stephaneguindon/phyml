@@ -622,31 +622,31 @@ phydbl Br_Len_Brent(t_edge *b, t_tree *tree)
   
   if(b->l->onoff == OFF) return mixt_tree->c_lnL;
 
-  /* Set_Update_Eigen_Lr(YES,mixt_tree); */
-  /* Set_Use_Eigen_Lr(NO,mixt_tree); */
+  Set_Update_Eigen_Lr(YES,mixt_tree);
+  Set_Use_Eigen_Lr(NO,mixt_tree);
   
-  /* lk_begin = Lk(mixt_b,mixt_tree); /\* We can't assume that the log-lk value is up-to-date *\/ */
+  lk_begin = Lk(mixt_b,mixt_tree); /* We can't assume that the log-lk value is up-to-date */
   
-  /* Set_Update_Eigen_Lr(NO,mixt_tree); */
-  /* Set_Use_Eigen_Lr(YES,mixt_tree); */
+  Set_Update_Eigen_Lr(NO,mixt_tree);
+  Set_Use_Eigen_Lr(YES,mixt_tree);
     
-  /* Br_Len_Newton_Raphson(&(b->l->v),mixt_b,tree->mod->s_opt->brent_it_max,tree->mod->s_opt->min_diff_lk_local,mixt_tree); */
+  Br_Len_Newton_Raphson(&(b->l->v),mixt_b,tree->mod->s_opt->brent_it_max,tree->mod->s_opt->min_diff_lk_local,mixt_tree);
   
-  /* Update_PMat_At_Given_Edge(mixt_b,mixt_tree); */
+  Update_PMat_At_Given_Edge(mixt_b,mixt_tree);
   
-  /* Set_Update_Eigen_Lr(NO,mixt_tree); */
-  /* Set_Use_Eigen_Lr(NO,mixt_tree); */
+  Set_Update_Eigen_Lr(NO,mixt_tree);
+  Set_Use_Eigen_Lr(NO,mixt_tree);
 
   
-  lk_begin = Lk(mixt_b,mixt_tree);
-  Generic_Brent_Lk(&(b->l->v),
-                   tree->mod->l_min,
-                   tree->mod->l_max,
-                   tree->mod->s_opt->min_diff_lk_local,
-                   tree->mod->s_opt->brent_it_max,
-                   tree->mod->s_opt->quickdirty,
-                   Wrap_Lk_At_Given_Edge,
-                   mixt_b,mixt_tree,NULL,NO);
+  /* lk_begin = Lk(mixt_b,mixt_tree); */
+  /* Generic_Brent_Lk(&(b->l->v), */
+  /*                  tree->mod->l_min, */
+  /*                  tree->mod->l_max, */
+  /*                  tree->mod->s_opt->min_diff_lk_local, */
+  /*                  tree->mod->s_opt->brent_it_max, */
+  /*                  tree->mod->s_opt->quickdirty, */
+  /*                  Wrap_Lk_At_Given_Edge, */
+  /*                  mixt_b,mixt_tree,NULL,NO); */
   
 
   lk_end = mixt_tree->c_lnL;
@@ -2280,19 +2280,44 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
   phydbl init_dlnL,old_dlnL;
   int iter;
   phydbl best_l, best_lnL;
+  phydbl u, v, mult;
 
-
+  best_l = *l;
+  best_lnL = old_lnL = init_lnL = tree->c_lnL;
+  
+  u = tree->mod->l_min;
+  v = tree->mod->l_min;
+  *l = tree->mod->l_min;
+  Set_Use_Eigen_Lr(YES,tree);
+  dLk(l,b,tree);
+  if(tree->c_dlnL < 0.0)
+    {
+      *l = best_l;
+      tree->c_lnL = best_lnL;
+      return;
+    }
+  
+  mult = 50.;
+  do
+    {
+      *l *= mult;
+      Set_Use_Eigen_Lr(YES,tree);
+      dLk(l,b,tree);
+    }
+  while(tree->c_dlnL > 0.0);
+  v = *l;
+  u = *l/mult;
   // Warning: make sure eigen_lr vectors are already up-to-date 
 
+  *l = (u+v)/2.;
+
+  
   Set_Use_Eigen_Lr(YES,tree);
   assert(isnan(*l) == FALSE);
   dLk(l,b,tree);
 
-  
-  
-
-  best_lnL = old_lnL = init_lnL = tree->c_lnL;
-  best_l = *l;
+  /* best_lnL = old_lnL = init_lnL = tree->c_lnL; */
+  /* best_l = *l; */
 
   /* PhyML_Printf("\n Begin NR loop (lnL: %12G dlnL: %12G d2lnL: %12G) l: %12G num: %d",tree->c_lnL,tree->c_dlnL,tree->c_d2lnL,*l,b->num); */
   
@@ -2346,6 +2371,29 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
           best_l   = *l;
         }
 
+
+      /* dl      = tree->c_dlnL; */
+      /* d2l     = tree->c_d2lnL; */
+
+      /* if(dl < 0.0) */
+      /*   { */
+      /*     v = *l; */
+      /*   } */
+      /* else */
+      /*   { */
+      /*     u = *l; */
+      /*   } */
+      /* *l = (u+v)/2.; */
+      /* old_lnL = tree->c_lnL; */
+      /* dLk(l,b,tree); */
+
+      /* PhyML_Printf("\n. u: %G v: %G lnL: %G",u,v,tree->c_lnL); */
+      
+      /* if(tree->c_lnL > best_lnL) */
+      /*   { */
+      /*     best_lnL = tree->c_lnL; */
+      /*     best_l   = *l; */
+      /*   } */
 
       if(FABS(tree->c_lnL-old_lnL) < tol && tree->c_lnL > old_lnL) converged = YES;
       if(FABS(dl) < 1.E-2) converged = YES;
