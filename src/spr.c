@@ -1795,8 +1795,8 @@ void Spr_List_Of_Trees(t_tree *tree)
   max_depth_list     = (int *)mCalloc(max_list_size,sizeof(int));
 
   for(i=0;i<max_list_size;++i) lnL_list[i] = UNLIKELY;
-  for(i=0;i<max_list_size;++i) max_depth_list[i] = 20;
-  for(i=0;i<max_list_size;++i) max_delta_lnL_list[i] = 500.;
+  for(i=0;i<max_list_size;++i) max_depth_list[i] = MAX(15,(int)tree->n_otu/10);
+  for(i=0;i<max_list_size;++i) max_delta_lnL_list[i] = (phydbl)(2.*tree->n_otu);
 
   for(i=0;i<max_list_size;++i) tree_list[i] = Make_Tree_From_Scratch(tree->n_otu,tree->data);
   for(i=0;i<max_list_size;++i) tree_list_cpy[i] = Make_Tree_From_Scratch(tree->n_otu,tree->data);
