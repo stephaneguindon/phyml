@@ -622,31 +622,31 @@ phydbl Br_Len_Brent(t_edge *b, t_tree *tree)
   
   if(b->l->onoff == OFF) return mixt_tree->c_lnL;
 
-  Set_Update_Eigen_Lr(YES,mixt_tree);
-  Set_Use_Eigen_Lr(NO,mixt_tree);
+  /* Set_Update_Eigen_Lr(YES,mixt_tree); */
+  /* Set_Use_Eigen_Lr(NO,mixt_tree); */
   
-  lk_begin = Lk(mixt_b,mixt_tree); /* We can't assume that the log-lk value is up-to-date */
+  /* lk_begin = Lk(mixt_b,mixt_tree); /\* We can't assume that the log-lk value is up-to-date *\/ */
   
-  Set_Update_Eigen_Lr(NO,mixt_tree);
-  Set_Use_Eigen_Lr(YES,mixt_tree);
+  /* Set_Update_Eigen_Lr(NO,mixt_tree); */
+  /* Set_Use_Eigen_Lr(YES,mixt_tree); */
     
-  Br_Len_Newton_Raphson(&(b->l->v),mixt_b,tree->mod->s_opt->brent_it_max,tree->mod->s_opt->min_diff_lk_local,mixt_tree);
+  /* Br_Len_Newton_Raphson(&(b->l->v),mixt_b,tree->mod->s_opt->brent_it_max,tree->mod->s_opt->min_diff_lk_local,mixt_tree); */
   
-  Update_PMat_At_Given_Edge(mixt_b,mixt_tree);
+  /* Update_PMat_At_Given_Edge(mixt_b,mixt_tree); */
   
-  Set_Update_Eigen_Lr(NO,mixt_tree);
-  Set_Use_Eigen_Lr(NO,mixt_tree);
+  /* Set_Update_Eigen_Lr(NO,mixt_tree); */
+  /* Set_Use_Eigen_Lr(NO,mixt_tree); */
 
   
-  /* lk_begin = Lk(mixt_b,mixt_tree); */
-  /* Generic_Brent_Lk(&(b->l->v), */
-  /*                  tree->mod->l_min, */
-  /*                  tree->mod->l_max, */
-  /*                  tree->mod->s_opt->min_diff_lk_local, */
-  /*                  tree->mod->s_opt->brent_it_max, */
-  /*                  tree->mod->s_opt->quickdirty, */
-  /*                  Wrap_Lk_At_Given_Edge, */
-  /*                  mixt_b,mixt_tree,NULL,NO); */
+  lk_begin = Lk(mixt_b,mixt_tree);
+  Generic_Brent_Lk(&(b->l->v),
+                   tree->mod->l_min,
+                   tree->mod->l_max,
+                   tree->mod->s_opt->min_diff_lk_local,
+                   tree->mod->s_opt->brent_it_max,
+                   tree->mod->s_opt->quickdirty,
+                   Wrap_Lk_At_Given_Edge,
+                   mixt_b,mixt_tree,NULL,NO);
   
 
   lk_end = mixt_tree->c_lnL;
@@ -2277,6 +2277,7 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
   short int converged;
   phydbl dl,d2l,ratio; 
   phydbl init_lnL,old_lnL;
+  phydbl init_dlnL,old_dlnL;
   int iter;
   phydbl best_l, best_lnL;
 
@@ -2287,27 +2288,27 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
   assert(isnan(*l) == FALSE);
   dLk(l,b,tree);
 
-  /* Lk(b,tree); */
+  
+  
 
   best_lnL = old_lnL = init_lnL = tree->c_lnL;
   best_l = *l;
 
-  /* PhyML_Printf("\n Begin NR loop (lnL: %f dlnL: %f d2lnL: %f) l: %12f num: %d",tree->c_lnL,tree->c_dlnL,tree->c_d2lnL,*l,b->num); */
+  /* PhyML_Printf("\n Begin NR loop (lnL: %12G dlnL: %12G d2lnL: %12G) l: %12G num: %d",tree->c_lnL,tree->c_dlnL,tree->c_d2lnL,*l,b->num); */
   
   converged = NO;
   iter = 0;
   do
     {
-      old_lnL = tree->c_lnL;
-      dl      = tree->c_dlnL;
-      d2l     = tree->c_d2lnL;
-
-      /* PhyML_Printf("\n cur_l:%12f lnL:%12f dl:%12G d2l:%12G delta:%12G", */
+      /* PhyML_Printf("\n cur_l:%12G lnL:%12G dl:%12G d2l:%12G delta:%12G", */
       /*              *l, */
       /*              tree->c_lnL, */
       /*              dl, */
       /*              d2l, */
       /*              old_lnL-tree->c_lnL); */
+
+      dl      = tree->c_dlnL;
+      d2l     = tree->c_d2lnL;
 
       if(d2l > 0.0)
         {
@@ -2329,10 +2330,12 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
         }
       
 
+      old_lnL = tree->c_lnL;
       Set_Use_Eigen_Lr(YES,tree);
       dLk(l,b,tree);
 
-      /* PhyML_Printf(" -- new_l: %12f lk: %f ratio: %G",*l,tree->c_lnL,ratio); */
+      /* PhyML_Printf(" -- new_l: %12G lk: %12G ratio: %12G delta=%G",*l,tree->c_lnL,ratio,tree->c_lnL-old_lnL); */
+
       
       iter++;
       if(iter > n_iter_max) break;
@@ -2344,7 +2347,7 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
         }
 
 
-      if(FABS(tree->c_lnL-old_lnL) < tol) converged = YES;
+      if(FABS(tree->c_lnL-old_lnL) < tol && tree->c_lnL > old_lnL) converged = YES;
       if(FABS(dl) < 1.E-2) converged = YES;
     }
   while(converged == NO);
@@ -2361,7 +2364,7 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
   
   /* Set_Use_Eigen_Lr(YES,tree); */
   /* dLk(l,b,tree); */
-  /* PhyML_Printf("\n End NR loop (lnL: %f dlnL: %f d2lnL: %f) l: %12f",tree->c_lnL,tree->c_dlnL,tree->c_d2lnL,*l); */
+  /* PhyML_Printf("\n End NR loop (lnL: %12G dlnL: %12G d2lnL: %12G) l: %12G",tree->c_lnL,tree->c_dlnL,tree->c_d2lnL,*l); */
 
   return tree->c_lnL;
 }
