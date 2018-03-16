@@ -625,27 +625,27 @@ phydbl Br_Len_Brent(t_edge *b, t_tree *tree)
   Set_Update_Eigen_Lr(YES,mixt_tree);
   Set_Use_Eigen_Lr(NO,mixt_tree);
   
-  lk_begin = Lk(mixt_b,mixt_tree); /* We can't assume that the log-lk value is up-to-date */
+  /* lk_begin = Lk(mixt_b,mixt_tree); /\* We can't assume that the log-lk value is up-to-date *\/ */
   
-  Set_Update_Eigen_Lr(NO,mixt_tree);
-  Set_Use_Eigen_Lr(YES,mixt_tree);
+  /* Set_Update_Eigen_Lr(NO,mixt_tree); */
+  /* Set_Use_Eigen_Lr(YES,mixt_tree); */
     
-  Br_Len_Newton_Raphson(&(b->l->v),mixt_b,tree->mod->s_opt->brent_it_max,tree->mod->s_opt->min_diff_lk_local,mixt_tree);
+  /* Br_Len_Newton_Raphson(&(b->l->v),mixt_b,tree->mod->s_opt->brent_it_max,tree->mod->s_opt->min_diff_lk_local,mixt_tree); */
   
-  Update_PMat_At_Given_Edge(mixt_b,mixt_tree);
+  /* Update_PMat_At_Given_Edge(mixt_b,mixt_tree); */
   
-  Set_Update_Eigen_Lr(NO,mixt_tree);
-  Set_Use_Eigen_Lr(NO,mixt_tree);
+  /* Set_Update_Eigen_Lr(NO,mixt_tree); */
+  /* Set_Use_Eigen_Lr(NO,mixt_tree); */
   
-  /* lk_begin = Lk(mixt_b,mixt_tree); */
-  /* Generic_Brent_Lk(&(b->l->v), */
-  /*                  tree->mod->l_min, */
-  /*                  tree->mod->l_max, */
-  /*                  tree->mod->s_opt->min_diff_lk_local, */
-  /*                  tree->mod->s_opt->brent_it_max, */
-  /*                  tree->mod->s_opt->quickdirty, */
-  /*                  Wrap_Lk_At_Given_Edge, */
-  /*                  mixt_b,mixt_tree,NULL,NO); */
+  lk_begin = Lk(mixt_b,mixt_tree);
+  Generic_Brent_Lk(&(b->l->v),
+                   tree->mod->l_min,
+                   tree->mod->l_max,
+                   tree->mod->s_opt->min_diff_lk_local,
+                   tree->mod->s_opt->brent_it_max,
+                   tree->mod->s_opt->quickdirty,
+                   Wrap_Lk_At_Given_Edge,
+                   mixt_b,mixt_tree,NULL,NO);
 
   /* printf("\n. b->num: %4d l=%12G lnL: %12G",b->num,b->l->v,tree->c_lnL); */
   
