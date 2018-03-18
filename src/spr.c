@@ -1796,7 +1796,7 @@ void Spr_List_Of_Trees(t_tree *tree)
 
   for(i=0;i<max_list_size;++i) lnL_list[i] = UNLIKELY;
   for(i=0;i<max_list_size;++i) max_depth_list[i] = MAX(15,(int)tree->n_otu/10);
-  for(i=0;i<max_list_size;++i) max_delta_lnL_list[i] = (phydbl)(2.*tree->n_otu);
+  for(i=0;i<max_list_size;++i) max_delta_lnL_list[i] = (phydbl)(10.*tree->n_otu);
 
   for(i=0;i<max_list_size;++i) tree_list[i] = Make_Tree_From_Scratch(tree->n_otu,tree->data);
   for(i=0;i<max_list_size;++i) tree_list_cpy[i] = Make_Tree_From_Scratch(tree->n_otu,tree->data);
@@ -1813,9 +1813,9 @@ void Spr_List_Of_Trees(t_tree *tree)
   do
     {
       Stepwise_Add_Pars(tree);
-      /* Spr_Pars(0,tree->n_otu,tree); */
+      Spr_Pars(0,tree->n_otu,tree);
       Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
-      /* Simu(tree,5,1.0,0.0,0.1,(int)(tree->n_otu/2)); */
+      Simu(tree,1000,1.0,0.0,0.1,(int)(tree->n_otu/2));
       Lk(NULL,tree);
       
       if(tree->verbose > VL0 && tree->io->quiet == NO)
@@ -1885,8 +1885,8 @@ void Spr_List_Of_Trees(t_tree *tree)
           
           Copy_Tree(tree,tree_list[rk[list_size]]);
           lnL_list[rk[list_size]] = tree->c_lnL;
-          max_depth_list[rk[list_size]] = tree->mod->s_opt->max_depth_path;
-          max_delta_lnL_list[rk[list_size]] = tree->mod->s_opt->max_delta_lnL_spr;
+          max_depth_list[rk[list_size]] = (int)(1.5*tree->mod->s_opt->max_depth_path);
+          max_delta_lnL_list[rk[list_size]] = 2.*tree->mod->s_opt->max_delta_lnL_spr;
         }
       while(++list_size < list_size_second_round);
 
