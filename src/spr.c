@@ -1815,7 +1815,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       Stepwise_Add_Pars(tree);
       Spr_Pars(0,tree->n_otu,tree);
       Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
-      Simu(tree,1000,1.0,0.0,0.1,(int)(tree->n_otu/2));
+      /* Simu(tree,1000,1.0,0.0,0.1,(int)(tree->n_otu/2)); */
       Lk(NULL,tree);
       
       if(tree->verbose > VL0 && tree->io->quiet == NO)
