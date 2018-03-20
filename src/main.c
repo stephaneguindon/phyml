@@ -177,6 +177,7 @@ int main(int argc, char **argv)
 
                   if(!tree) continue;
 
+                  
                   time(&t_beg);
                   time(&(tree->t_beg));
 

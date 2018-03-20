@@ -698,7 +698,7 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
       tree->curr_site = site;
       
       dlk   = Lk_Core_Eigen_Lr(expld ,dot_prod + site*ns*ncatg,YES,b,tree);
-      d2lk  = Lk_Core_Eigen_Lr(expld2,dot_prod + site*ns*ncatg,YES,b,tree);
+      /* d2lk  = Lk_Core_Eigen_Lr(expld2,dot_prod + site*ns*ncatg,YES,b,tree); */
       lk    = Lk_Core_Eigen_Lr(expl  ,dot_prod + site*ns*ncatg,NO ,b,tree);
 
       /* printf("\n. site: %4d l:%15G lk:%15G dlk:%15G d2lk:%15G",site,b->l->v,lk,dlk,d2lk); */

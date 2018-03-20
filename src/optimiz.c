@@ -2276,20 +2276,26 @@ int Optimiz_Alpha_And_Pinv(t_tree *mixt_tree, int verbose)
 static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_tree *tree)
 {
   short int converged;
-  phydbl dl,d2l,ratio; 
   phydbl init_lnL,old_lnL;
   phydbl init_dlnL,old_dlnL;
   int iter;
-  phydbl best_l, best_lnL;
-  phydbl u, v, mult;
-  
+  phydbl best_l, new_l, best_lnL;
+  phydbl u, v;
+  phydbl fu, fv;
+  phydbl dfu, dfv;
+  phydbl mult;
+  phydbl a_,b_,A_,B_,C_,D_,root1,root2;
+  short int ok1, ok2;
   // Warning: make sure eigen_lr vectors are already up-to-date 
 
   best_l = *l;
   best_lnL = old_lnL = init_lnL = tree->c_lnL;  
   mult = 5.;
-
-  // Find good lower bound
+  ok1 = ok2 = NO;
+  a_ = b_ = A_ = B_ = D_ = root1 = root2 = -1.;
+  u = v = fu = fv = dfu = dfv = -1.;
+  
+  // Find value of l where first derivative is < 0;
   *l /= mult;
   dLk(l,b,tree);
   while(tree->c_dlnL < 0.0)
@@ -2310,7 +2316,9 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
         }
     }
   u = *l;
-
+  fu = tree->c_lnL;
+  dfu = tree->c_dlnL;
+  
   
   // Find good upper bound
   *l = best_l*mult;
@@ -2333,65 +2341,89 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
         }
     }
   v = *l;
+  fv = tree->c_lnL;
+  dfv = tree->c_dlnL;
 
-  *l = (u+v)/2.;
-
-  /* printf("\n. u=%G v=%G",u,v); */
   
-  Set_Use_Eigen_Lr(YES,tree);
-  assert(isnan(*l) == FALSE);
-  dLk(l,b,tree);
 
 
   /* PhyML_Printf("\n Begin NR loop (lnL: %12G dlnL: %12G d2lnL: %12G) l: %12G num: %d",tree->c_lnL,tree->c_dlnL,tree->c_d2lnL,*l,b->num); */
-  
   converged = NO;
   iter = 0;
   do
     {
-      /* PhyML_Printf("\n cur_l:%12G lnL:%12G dl:%12G d2l:%12G delta:%12G", */
-      /*              *l, */
-      /*              tree->c_lnL, */
-      /*              dl, */
-      /*              d2l, */
-      /*              old_lnL-tree->c_lnL); */
+      a_ = dfu*(v-u) - (fv-fu);
+      b_ = -dfv*(v-u) + (fv-fu);
+      
+      A_ = 3.*a_ - 3.*b_;
+      B_ = -4.*a_ + 2.*b_;
+      C_ = fv-fu+a_;
+      D_ = sqrt(B_*B_-4.*A_*C_);
 
-      dl      = tree->c_dlnL;
-      d2l     = tree->c_d2lnL;
+      root1 = (-B_-D_)/(2.*A_);
+      root2 = (-B_+D_)/(2.*A_);
 
-      if(d2l > 0.0)
+      root1 = root1*(v-u) + u;
+      root2 = root2*(v-u) + u;
+      
+      ok1 = NO;
+      ok2 = NO;
+      if(root1 > u && root1 < v) ok1 = YES;
+      if(root2 > u && root2 < v) ok2 = YES;
+      
+      if(ok1 == YES && ok2 == YES) new_l = root1 < root2 ? root1 : root2;
+      else if(ok1 == YES) new_l = root1;
+      else if(ok2 == YES) new_l = root2;
+      else if(u/v < 1.001 && u/v > 0.999)
         {
-          *l *= 0.1;
+          *l = best_l;
+          tree->c_lnL = best_lnL;
+          return;
         }
       else
-        {
-          ratio = dl/d2l;
-          if(isnan(ratio) == NO) *l -= dl/d2l;
-        }
-      
-      if(*l < tree->mod->l_min) *l = tree->mod->l_min;
-      if(*l > tree->mod->l_max) *l = tree->mod->l_max;
-  
-      if(isnan(*l) == TRUE)
-        {
-          PhyML_Printf("\n\n. dl=%f d2l:%f",dl,d2l);
+        {      
+
+          PhyML_Printf("\n. iter=%4d u=%12G fu=%12G dfu=%12G v=%12G fv=%12G dfv=%12G root1=%12G root2=%12G",iter,u,fu,dfu,v,fv,dfv,root1,root2);
           assert(FALSE);
         }
       
-
+      *l = new_l;
+          
       old_lnL = tree->c_lnL;
       Set_Use_Eigen_Lr(YES,tree);
       dLk(l,b,tree);
-
-      /* PhyML_Printf(" -- new_l: %12G lk: %12G ratio: %12G delta=%G",*l,tree->c_lnL,ratio,tree->c_lnL-old_lnL); */
-      
       if(tree->c_lnL > best_lnL)
         {
           best_lnL = tree->c_lnL;
           best_l   = *l;
         }
+      /* PhyML_Printf("\n. iter=%4d u=%12G fu=%12G dfu=%12G v=%12G fv=%12G dfv=%12G root1=%12G root2=%12G lnL:%G",iter,u,fu,dfu,v,fv,dfv,root1,root2,tree->c_lnL); */
+      
+      /* if(tree->c_lnL < old_lnL) */
+      /*   { */
+      /*     PhyML_Printf("\n>> iter=%4d u=%12G fu=%12G dfu=%12G v=%12G fv=%12G dfv=%12G root1=%12G root2=%12G lnL:%12G old_lnL:%12G",iter,u,fu,dfu,v,fv,dfv,root1,root2,tree->c_lnL,old_lnL); */
+      /*   } */
+      
+      if(tree->c_dlnL > 0.0)
+        {
+          u = new_l;
+          fu = tree->c_lnL;
+          dfu = tree->c_dlnL;
+        }
+      else
+        {
+          v = new_l;
+          fv = tree->c_lnL;
+          dfv = tree->c_dlnL;
+        }
 
+
+      assert(u < v);
+      assert(dfu > 0.0);
+      assert(dfv < 0.0);
+      
       if(FABS(tree->c_lnL-old_lnL) < tol && tree->c_lnL > old_lnL) converged = YES;
+      if(++iter == n_iter_max) converged = YES;
       /* if(FABS(dl) < 1.E-2) converged = YES; */
     }
   while(converged == NO);
@@ -2412,7 +2444,15 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
   /* Set_Use_Eigen_Lr(YES,tree); */
   /* dLk(l,b,tree); */
   /* PhyML_Printf("\n End NR loop (lnL: %12G dlnL: %12G d2lnL: %12G) l: %12G",tree->c_lnL,tree->c_dlnL,tree->c_d2lnL,*l); */
+  if(iter == n_iter_max)
+    {
+      PhyML_Printf("\n. Too many iterations in Newton Raphson routine.\n");
+      assert(FALSE);
+    }
 
+  /* PhyML_Printf("\n. %d %G %G",tree->c_lnL > init_lnL,tree->c_lnL,init_lnL); */
+  /* assert(tree->c_lnL > init_lnL); */
+  
   return tree->c_lnL;
 }
 
