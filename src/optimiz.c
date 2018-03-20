@@ -2277,7 +2277,6 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
 {
   short int converged;
   phydbl init_lnL,old_lnL;
-  phydbl init_dlnL,old_dlnL;
   int iter;
   phydbl best_l, new_l, best_lnL;
   phydbl u, v;
@@ -2294,7 +2293,9 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
   ok1 = ok2 = NO;
   a_ = b_ = A_ = B_ = D_ = root1 = root2 = -1.;
   u = v = fu = fv = dfu = dfv = -1.;
-  
+  new_l = -1.;
+
+ 
   // Find value of l where first derivative is < 0;
   *l /= mult;
   dLk(l,b,tree);
@@ -2305,7 +2306,7 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
         {
           *l = best_l;
           tree->c_lnL = best_lnL;
-          return;
+          return best_lnL;
         }
       Set_Use_Eigen_Lr(YES,tree);
       dLk(l,b,tree);
@@ -2330,7 +2331,7 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
         {
           *l = best_l;
           tree->c_lnL = best_lnL;
-          return;
+          return best_lnL;
         }
       Set_Use_Eigen_Lr(YES,tree);
       dLk(l,b,tree);
@@ -2352,6 +2353,7 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
   iter = 0;
   do
     {
+      // Spline interpolation (https://en.wikipedia.org/wiki/Spline_interpolation)
       a_ = dfu*(v-u) - (fv-fu);
       b_ = -dfv*(v-u) + (fv-fu);
       
@@ -2374,15 +2376,8 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
       if(ok1 == YES && ok2 == YES) new_l = root1 < root2 ? root1 : root2;
       else if(ok1 == YES) new_l = root1;
       else if(ok2 == YES) new_l = root2;
-      else if(u/v < 1.001 && u/v > 0.999)
+      else if(u/v > 1.1 || u/v < 0.9)
         {
-          *l = best_l;
-          tree->c_lnL = best_lnL;
-          return;
-        }
-      else
-        {      
-
           PhyML_Printf("\n. iter=%4d u=%12G fu=%12G dfu=%12G v=%12G fv=%12G dfv=%12G root1=%12G root2=%12G",iter,u,fu,dfu,v,fv,dfv,root1,root2);
           assert(FALSE);
         }
@@ -2397,6 +2392,7 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
           best_lnL = tree->c_lnL;
           best_l   = *l;
         }
+      
       /* PhyML_Printf("\n. iter=%4d u=%12G fu=%12G dfu=%12G v=%12G fv=%12G dfv=%12G root1=%12G root2=%12G lnL:%G",iter,u,fu,dfu,v,fv,dfv,root1,root2,tree->c_lnL); */
       
       /* if(tree->c_lnL < old_lnL) */
@@ -2422,9 +2418,9 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
       assert(dfu > 0.0);
       assert(dfv < 0.0);
       
-      if(FABS(tree->c_lnL-old_lnL) < tol && tree->c_lnL > old_lnL) converged = YES;
+      if(fabs(tree->c_lnL-old_lnL) < tol && tree->c_lnL > old_lnL) converged = YES;
       if(++iter == n_iter_max) converged = YES;
-      /* if(FABS(dl) < 1.E-2) converged = YES; */
+      if(fabs(u-v) < 1.E-3) converged = YES;
     }
   while(converged == NO);
 
@@ -2446,7 +2442,7 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
   /* PhyML_Printf("\n End NR loop (lnL: %12G dlnL: %12G d2lnL: %12G) l: %12G",tree->c_lnL,tree->c_dlnL,tree->c_d2lnL,*l); */
   if(iter == n_iter_max)
     {
-      PhyML_Printf("\n. Too many iterations in Newton Raphson routine.\n");
+      PhyML_Printf("\n. Too many iterations in edge length optimization routine.\n");
       assert(FALSE);
     }
 
