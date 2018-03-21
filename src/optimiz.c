@@ -655,7 +655,7 @@ phydbl Br_Len_Opt(t_edge *b, t_tree *tree)
   Set_Use_Eigen_Lr(NO,mixt_tree);
   
   /* lk_begin = Lk(mixt_b,mixt_tree); */
-  /* Generic_Brent_Lk(&(b->l->v), */
+  /* tree->n_tot_bl_opt += Generic_Brent_Lk(&(b->l->v), */
   /*                  tree->mod->l_min, */
   /*                  tree->mod->l_max, */
   /*                  tree->mod->s_opt->min_diff_lk_local, */
@@ -2306,7 +2306,7 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
 
   best_l = *l;
   best_lnL = old_lnL = init_lnL = tree->c_lnL;  
-  mult = 5.;
+  mult = 1.2;
   ok1 = ok2 = NO;
   a_ = b_ = A_ = B_ = D_ = root1 = root2 = -1.;
   u = v = fu = fv = dfu = dfv = -1.;
@@ -2319,6 +2319,7 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
   while(tree->c_dlnL < 0.0)
     {
       *l /= mult;
+      tree->n_tot_bl_opt++;
       if(*l < tree->mod->l_min)
         {
           *l = best_l;
@@ -2344,6 +2345,7 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
   while(tree->c_dlnL > 0.0)
     {
       *l *= mult;
+      tree->n_tot_bl_opt++;
       if(*l > tree->mod->l_max)
         {
           *l = best_l;
@@ -2400,6 +2402,7 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
         }
       
       *l = new_l;
+      tree->n_tot_bl_opt++;
           
       old_lnL = tree->c_lnL;
       Set_Use_Eigen_Lr(YES,tree);
@@ -2472,7 +2475,7 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-phydbl Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
+int Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
                         int n_iter_max, int quickdirty,
                         phydbl (*obj_func)(t_edge *,t_tree *,supert_tree *),
                         t_edge *branch, t_tree *tree, supert_tree *stree, int logt)
@@ -2482,7 +2485,9 @@ phydbl Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
   phydbl e=0.0;
   phydbl old_lnL,init_lnL;
   phydbl bx = *param;
-
+  int n_opt_step;
+  
+  n_opt_step = 0;
   d=0.0;
   a=((ax < cx) ? ax : cx);
   b=((ax > cx) ? ax : cx);
@@ -2507,7 +2512,7 @@ phydbl Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
           fu = (*obj_func)(branch,tree,stree);
           if(logt == YES) (*param) = log(*param);
           /* printf("\n. return %f [%f] %d",fu,*param,iter); */
-          return fu;
+          return n_opt_step;
         }
 
       if((FABS(fu-old_lnL) < tol && iter > 1) || (iter > n_iter_max - 1))
@@ -2517,7 +2522,7 @@ phydbl Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
           fu = (*obj_func)(branch,tree,stree);
           if(logt == YES) (*param) = log(*param);
           /* printf("\n. return %f [%f] %d",*param,fu,iter); */
-          return fu;
+          return n_opt_step;
         }
 
       if(FABS(e) > tol1)
@@ -2551,6 +2556,7 @@ phydbl Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
 
       u=(FABS(d) >= tol1 ? x+d : x+SIGN(tol1,d));
       (*param) = u;
+      n_opt_step++;
       old_lnL = fu;
       if(logt == YES) (*param) = exp(MIN(1.E+2,*param));
       fu = -(*obj_func)(branch,tree,stree);
@@ -2582,8 +2588,9 @@ phydbl Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
         }
     }
 
-  Exit("\n. Too many iterations in Generic_Brent_Lk !");
-  return(-1);
+  PhyML_Printf("\n. Too many iterations in Generic_Brent_Lk !");
+  assert(FALSE);
+  return(n_opt_step);
   /* Not Reached ??  *param=x;   */
   /* Not Reached ??  return fx; */
 }

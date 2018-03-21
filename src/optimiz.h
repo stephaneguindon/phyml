@@ -153,10 +153,10 @@ phydbl Branch_Rate_Shape_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol,
 phydbl Node_Time_Brent_Fixed_Br_Len(phydbl ax, phydbl bx, phydbl cx, phydbl tol,
 				    t_node *n, t_tree *tree, int n_iter_max);
 
-phydbl Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol, 
-			int n_iter_max, int quickdirty,
-			phydbl (*obj_func)(t_edge *,t_tree *,supert_tree *), 
-			t_edge *branch, t_tree *tree, supert_tree *stree, int logt);
+int Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol, 
+                     int n_iter_max, int quickdirty,
+                     phydbl (*obj_func)(t_edge *,t_tree *,supert_tree *), 
+                     t_edge *branch, t_tree *tree, supert_tree *stree, int logt);
 void Round_Optimize_Node_Heights(t_tree *tree);
 void Opt_Node_Heights_Recurr_Pre(t_node *a, t_node *d, t_tree *tree);
 void Opt_Node_Heights_Recurr(t_tree *tree);

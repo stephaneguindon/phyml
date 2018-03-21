@@ -830,6 +830,7 @@ typedef struct __Tree{
   int *patt_id_extra_1;
 
   int n_edges_traversed;
+  int n_tot_bl_opt;
 }t_tree;
 
 /*!********************************************************/

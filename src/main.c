@@ -231,7 +231,9 @@ int main(int argc, char **argv)
                   Lk(NULL,tree);
                   Switch_Eigen(NO,tree->mod);
 
-                  
+
+                  tree->n_tot_bl_opt = 0;
+
                   if(tree->mod->s_opt->opt_topo)
 		    {
 		      if(tree->mod->s_opt->topo_search      == NNI_MOVE) Simu_Loop(tree);
@@ -250,6 +252,7 @@ int main(int argc, char **argv)
                         Round_Optimize(tree,ROUND_MAX);
                        
                     }
+
                   
                   if(tree->mod->gamma_mgf_bl) Best_Root_Position_IL_Model(tree);
 
