@@ -1796,7 +1796,7 @@ void Spr_List_Of_Trees(t_tree *tree)
 
   for(i=0;i<max_list_size;++i) lnL_list[i] = UNLIKELY;
   for(i=0;i<max_list_size;++i) max_depth_list[i] = MAX(15,(int)tree->n_otu/10);
-  for(i=0;i<max_list_size;++i) max_delta_lnL_list[i] = (phydbl)(10.*tree->n_otu);
+  for(i=0;i<max_list_size;++i) max_delta_lnL_list[i] = (phydbl)(5.*tree->n_otu);
 
   for(i=0;i<max_list_size;++i) tree_list[i] = Make_Tree_From_Scratch(tree->n_otu,tree->data);
   for(i=0;i<max_list_size;++i) tree_list_cpy[i] = Make_Tree_From_Scratch(tree->n_otu,tree->data);
@@ -1812,10 +1812,14 @@ void Spr_List_Of_Trees(t_tree *tree)
   list_size = 0;
   do
     {
-      Stepwise_Add_Pars(tree);
-      Spr_Pars(0,tree->n_otu,tree);
-      Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
-      Simu(tree,1000,1.0,0.0,0.1,(int)(tree->n_otu/2));
+      if(list_size > 0)
+        {
+          Stepwise_Add_Pars(tree);
+          Spr_Pars(0,tree->n_otu,tree);
+          Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
+        }
+
+      Simu(tree,1000,0.1,1.0,0.1,(int)(tree->n_otu/2));
       /* Optimize_Br_Len_Serie(tree); */
       /* Lk(NULL,tree); */
       
@@ -1835,7 +1839,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       lnL_list[list_size] = tree->c_lnL;
     }
   while(++list_size < list_size_first_round);
-  
+      
 
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Fast optimisation of the best trees (SPR search)...\n");
 

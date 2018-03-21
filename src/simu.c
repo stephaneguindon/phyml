@@ -61,7 +61,7 @@ int Simu(t_tree *tree, int n_step_max, phydbl delta_lnL, phydbl init_T, phydbl d
       n_round++;
       PhyML_Printf("\n. lnL: %12G T: %12G %4d/%4d fully_opt ? %d",tree->c_lnL,tree->annealing_temp,tree->n_edges_traversed,tree->n_otu,tree->fully_nni_opt);
 
-      if((n_round == n_step_max || tree->fully_nni_opt == YES) && Are_Equal(tree->annealing_temp,0.0,1.E-3)) break;
+      if((n_round == n_step_max || tree->fully_nni_opt == YES) && Are_Equal(tree->annealing_temp,0.0,1.E-3) && delta < delta_lnL) break;
 
 
       /* if(n_round == 30) break; */
@@ -935,6 +935,7 @@ void NNI_Core(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_tree 
   l1 = Duplicate_Scalar_Dbl(b->l);
   Swap(u,d,a,v1,tree);              
   
+
   
   // Second NNI
   Swap(v2,d,a,u,tree);
@@ -958,6 +959,11 @@ void NNI_Core(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_tree 
   /* Swap_Partial_Lk_Extra(b,a,0,tree); */
   /* Swap_Partial_Lk_Extra(b,d,1,tree); */
     
+  /* if((u->tax == YES && !strcmp(u->name,"tax57")) || */
+  /*    (v1->tax == YES && !strcmp(v1->name,"tax57")) || */
+  /*    (v2->tax == YES && !strcmp(v2->name,"tax57"))) */
+  /*   printf("\n. lk0: %G lk1: %G lk2: %G l0: %G l1: %G l2: %G",lk0,lk1,lk2,l0->v,l1->v,l2->v); */
+
   p_accept = exp((lk1-lk0)/(tree->annealing_temp+1.E-6));
   if(Are_Equal(lk1,lk0,tree->mod->s_opt->min_diff_lk_local) && Are_Equal(tree->annealing_temp,0.0,1.E-3)) p_accept = .0;
   rnd = Uni();
