@@ -1855,7 +1855,7 @@ void Spr_List_Of_Trees(t_tree *tree)
           Copy_Tree(tree_list[rk[list_size]],tree);
                     
           tree->mod->s_opt->max_depth_path            = MAX(5,max_depth_list[rk[list_size]]);
-          tree->mod->s_opt->max_delta_lnL_spr         = MAX(20.,max_delta_lnL_list[rk[list_size]]);
+          /* tree->mod->s_opt->max_delta_lnL_spr         = MAX(20.,max_delta_lnL_list[rk[list_size]]); */
           tree->mod->s_opt->spr_lnL                   = YES;
           tree->mod->s_opt->spr_pars                  = NO;
           tree->mod->s_opt->min_diff_lk_move          = 0.1;
@@ -1873,7 +1873,7 @@ void Spr_List_Of_Trees(t_tree *tree)
                   PhyML_Printf("\n\t%3d      %12.2f depth max: %3d # improvements: %3d delta lnL max: %12f",
                                n_trees,tree->c_lnL,tree->max_spr_depth,tree->n_improvements,tree->mod->s_opt->max_delta_lnL_spr);
                 }
-              tree->mod->s_opt->max_delta_lnL_spr = 2.*tree->mod->s_opt->max_delta_lnL_spr_current;
+              /* tree->mod->s_opt->max_delta_lnL_spr = 2.*tree->mod->s_opt->max_delta_lnL_spr_current; */
               tree->mod->s_opt->max_depth_path = 2*tree->max_spr_depth;
             }
           while(tree->n_improvements > 0);
