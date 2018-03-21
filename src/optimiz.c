@@ -598,7 +598,24 @@ int Br_Len_Brak(phydbl *ax, phydbl *bx, phydbl *cx,
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-phydbl Br_Len_Brent(t_edge *b, t_tree *tree)
+phydbl Fast_Br_Len(t_edge *b, t_tree *tree, int approx)
+{
+  phydbl init_min_diff_lk_local = tree->mod->s_opt->min_diff_lk_local;
+
+  tree->mod->s_opt->min_diff_lk_local = 1.E-1;      
+
+  if(tree->is_mixt_tree) MIXT_Br_Len_Opt(b,tree);   
+  else Br_Len_Opt(b,tree);
+
+  tree->mod->s_opt->min_diff_lk_local = init_min_diff_lk_local;
+
+  return tree->c_lnL;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl Br_Len_Opt(t_edge *b, t_tree *tree)
 {
   phydbl lk_begin, lk_end;
   t_edge *mixt_b;
@@ -607,7 +624,7 @@ phydbl Br_Len_Brent(t_edge *b, t_tree *tree)
   
   if(tree->is_mixt_tree == YES)
     {
-      MIXT_Br_Len_Brent(b,tree);
+      MIXT_Br_Len_Opt(b,tree);
       return tree->c_lnL;
     }
 
@@ -856,7 +873,7 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
       return;
     }
 
-  if(tree->io->mod->s_opt->opt_bl == YES) Br_Len_Brent(b_fcus,tree);
+  if(tree->io->mod->s_opt->opt_bl == YES) Br_Len_Opt(b_fcus,tree);
 
   if(tree->c_lnL < lk_init - tree->mod->s_opt->min_diff_lk_local)
     {
@@ -919,7 +936,7 @@ void Optimiz_Ext_Br(t_tree *tree)
           l_init = Duplicate_Scalar_Dbl(b->l);          
           v_init = Duplicate_Scalar_Dbl(b->l_var);          
           
-          Br_Len_Brent(b,tree);
+          Br_Len_Opt(b,tree);
           
           if(b->nni->best_l == NULL)
             {

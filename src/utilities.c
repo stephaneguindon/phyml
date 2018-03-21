@@ -1533,7 +1533,7 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
         }
       else 
         {
-          lk1 = Br_Len_Brent(b_fcus,tree);
+          lk1 = Br_Len_Opt(b_fcus,tree);
         }
     }
 
@@ -1572,7 +1572,7 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
         }
       else 
         {
-          lk2 = Br_Len_Brent(b_fcus,tree);
+          lk2 = Br_Len_Opt(b_fcus,tree);
         }
     }
 
@@ -1622,7 +1622,7 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
         }
       else 
         {
-          lk0 = Br_Len_Brent(b_fcus,tree);
+          lk0 = Br_Len_Opt(b_fcus,tree);
         }
     }
 
@@ -5504,22 +5504,6 @@ int Get_Subtree_Size(t_node *a, t_node *d)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-phydbl Fast_Br_Len(t_edge *b, t_tree *tree, int approx)
-{
-  phydbl init_min_diff_lk_local = tree->mod->s_opt->min_diff_lk_local;
-
-  tree->mod->s_opt->min_diff_lk_local = 1.E-1;      
-
-  if(tree->is_mixt_tree) MIXT_Br_Len_Brent(b,tree);   
-  else Br_Len_Brent(b,tree);
-
-  tree->mod->s_opt->min_diff_lk_local = init_min_diff_lk_local;
-
-  return tree->c_lnL;
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
 /*!
   Calculate the joint probability of states (nt or aa) at the
   two extremities of a given edge given the matrix of transition
@@ -10423,9 +10407,9 @@ void Best_Root_Position_IL_Model(t_tree *tree)
           /* Optimize_Br_Len_Serie(tree); */
 
           Update_Partial_Lk(tree,tree->n_root->b[1],tree->n_root);
-          Br_Len_Brent(tree->n_root->b[1],tree);
+          Br_Len_Opt(tree->n_root->b[1],tree);
           Update_Partial_Lk(tree,tree->n_root->b[2],tree->n_root);
-          Br_Len_Brent(tree->n_root->b[2],tree);
+          Br_Len_Opt(tree->n_root->b[2],tree);
 
           PhyML_Printf(" -- lnL: %20f",tree->c_lnL);
           if(tree->c_lnL > best_lnL)
@@ -10439,9 +10423,9 @@ void Best_Root_Position_IL_Model(t_tree *tree)
       Set_Both_Sides(YES,tree);
       Lk(NULL,tree);
       Update_Partial_Lk(tree,tree->n_root->b[1],tree->n_root);
-      Br_Len_Brent(tree->n_root->b[1],tree);
+      Br_Len_Opt(tree->n_root->b[1],tree);
       Update_Partial_Lk(tree,tree->n_root->b[2],tree->n_root);
-      Br_Len_Brent(tree->n_root->b[2],tree);
+      Br_Len_Opt(tree->n_root->b[2],tree);
       tree->ignore_root = YES;
     }
 }

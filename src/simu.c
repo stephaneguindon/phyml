@@ -61,7 +61,7 @@ int Simu(t_tree *tree, int n_step_max, phydbl delta_lnL, phydbl init_T, phydbl d
       n_round++;
       PhyML_Printf("\n. lnL: %12G T: %12G %4d/%4d fully_opt ? %d",tree->c_lnL,tree->annealing_temp,tree->n_edges_traversed,tree->n_otu,tree->fully_nni_opt);
 
-      if((n_round == n_step_max || delta < delta_lnL || tree->fully_nni_opt == YES) && Are_Equal(tree->annealing_temp,0.0,1.E-3)) break;
+      if((n_round == n_step_max || tree->fully_nni_opt == YES) && Are_Equal(tree->annealing_temp,0.0,1.E-3)) break;
 
 
       /* if(n_round == 30) break; */
@@ -832,12 +832,12 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_
   
   if(d->tax == YES)
     {
-      if(opt_edges == YES) Br_Len_Brent(b,tree);
+      if(opt_edges == YES) Br_Len_Opt(b,tree);
       return;
     }
   else if(a->tax == YES)
     {
-      if(opt_edges == YES && a->tax == YES)  Br_Len_Brent(b,tree);
+      if(opt_edges == YES && a->tax == YES)  Br_Len_Opt(b,tree);
       for(i=0;i<3;++i)
         if(d->v[i] != a)
           {
@@ -910,7 +910,7 @@ void NNI_Core(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_tree 
   u = NULL;
   for(i=0;i<3;++i) if(a->v[i] != d && a->v[i] != v) { u = a->v[i]; break; }
   
-  if(opt_edges == YES) Br_Len_Brent(b,tree);
+  if(opt_edges == YES) Br_Len_Opt(b,tree);
   lk0 = Lk(b,tree);
   l0 = Duplicate_Scalar_Dbl(b->l);
   
@@ -924,7 +924,7 @@ void NNI_Core(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_tree 
   // Update partial likelihood looking down
   Update_Partial_Lk(tree,b,d);
   // Evaluate likelihood
-  if(opt_edges == YES) Br_Len_Brent(b,tree);
+  if(opt_edges == YES) Br_Len_Opt(b,tree);
   lk1 = Lk(b,tree);
   // Unswap
   if(lk1 > lk0)
@@ -943,7 +943,7 @@ void NNI_Core(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_tree 
   // Update partial likelihood looking down
   Update_Partial_Lk(tree,b,d);
   // Evaluate likelihood
-  if(opt_edges == YES) Br_Len_Brent(b,tree);
+  if(opt_edges == YES) Br_Len_Opt(b,tree);
   lk2 = Lk(b,tree);
   if(lk2 > lk0)
     {

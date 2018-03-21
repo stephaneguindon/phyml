@@ -415,17 +415,17 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
         if(b_fcus->left->v[i] != b_fcus->rght) //Only consider left_1 and left_2
           {
             Update_Partial_Lk(tree,b_fcus->left->b[i],b_fcus->left);
-            lk_temp = Br_Len_Brent(b_fcus->left->b[i],tree);
+            lk_temp = Br_Len_Opt(b_fcus->left->b[i],tree);
           }
 
       Update_Partial_Lk(tree,b_fcus,b_fcus->left);
-      lk_temp = Br_Len_Brent(b_fcus,tree);
+      lk_temp = Br_Len_Opt(b_fcus,tree);
 
       for(i=0;i<3;i++)
         if(b_fcus->rght->v[i] != b_fcus->left) //Only consider right_1 and right_2
           {
             Update_Partial_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
-            lk_temp = Br_Len_Brent(b_fcus->rght->b[i],tree);
+            lk_temp = Br_Len_Opt(b_fcus->rght->b[i],tree);
           }
       Update_Partial_Lk(tree,b_fcus,b_fcus->rght);
 
@@ -511,17 +511,17 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
         if(b_fcus->left->v[i] != b_fcus->rght)
           {
             Update_Partial_Lk(tree,b_fcus->left->b[i],b_fcus->left);
-            lk_temp = Br_Len_Brent(b_fcus->left->b[i],tree);
+            lk_temp = Br_Len_Opt(b_fcus->left->b[i],tree);
           }
       
       Update_Partial_Lk(tree,b_fcus,b_fcus->left);
-      lk_temp = Br_Len_Brent(b_fcus,tree);
+      lk_temp = Br_Len_Opt(b_fcus,tree);
       
       for(i=0;i<3;i++)
         if(b_fcus->rght->v[i] != b_fcus->left)
           {
             Update_Partial_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
-            lk_temp = Br_Len_Brent(b_fcus->rght->b[i],tree);
+            lk_temp = Br_Len_Opt(b_fcus->rght->b[i],tree);
           }
       
       Update_Partial_Lk(tree,b_fcus,b_fcus->rght);
@@ -610,7 +610,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
         if(b_fcus->left->v[i] != b_fcus->rght)
           {
             Update_Partial_Lk(tree,b_fcus->left->b[i],b_fcus->left);
-            lk_temp = Br_Len_Brent(b_fcus->left->b[i],tree);
+            lk_temp = Br_Len_Opt(b_fcus->left->b[i],tree);
             
             if(lk_temp < lk2 - tree->mod->s_opt->min_diff_lk_local)
               {
@@ -621,7 +621,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
               }
           }
       Update_Partial_Lk(tree,b_fcus,b_fcus->left);
-      lk_temp = Br_Len_Brent(b_fcus,tree);
+      lk_temp = Br_Len_Opt(b_fcus,tree);
       
       if(lk_temp < lk2 - tree->mod->s_opt->min_diff_lk_local)
         {
@@ -635,7 +635,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
         if(b_fcus->rght->v[i] != b_fcus->left)
           {
             Update_Partial_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
-            lk_temp = Br_Len_Brent(b_fcus->rght->b[i],tree);
+            lk_temp = Br_Len_Opt(b_fcus->rght->b[i],tree);
             
             if(lk_temp < lk2 - tree->mod->s_opt->min_diff_lk_local)
               {
@@ -842,18 +842,18 @@ void Make_Target_Swap(t_tree *tree, t_edge *b_fcus, int swaptodo)
         if(b_fcus->left->v[i] != b_fcus->rght)
           {
             Update_Partial_Lk(tree,b_fcus->left->b[i],b_fcus->left);
-            lk_temp = Br_Len_Brent(b_fcus->left->b[i],tree);
+            lk_temp = Br_Len_Opt(b_fcus->left->b[i],tree);
           }
 
 
       Update_Partial_Lk(tree,b_fcus,b_fcus->left);
-      lk_temp = Br_Len_Brent(b_fcus,tree);
+      lk_temp = Br_Len_Opt(b_fcus,tree);
 
       for(i=0;i<3;i++)
         if(b_fcus->rght->v[i] != b_fcus->left)
           {
             Update_Partial_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
-            lk_temp = Br_Len_Brent(b_fcus->rght->b[i],tree);
+            lk_temp = Br_Len_Opt(b_fcus->rght->b[i],tree);
           }
 
       Update_Partial_Lk(tree,b_fcus,b_fcus->rght);

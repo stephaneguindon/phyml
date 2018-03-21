@@ -591,11 +591,11 @@ t_spr *Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
       Update_PMat_At_Given_Edge(b_residual,tree);
       Update_Partial_Lk(tree,b_arrow,n_link);
       
-      /* Br_Len_Brent(b_arrow,tree); */
+      /* Br_Len_Opt(b_arrow,tree); */
       /* Update_Partial_Lk(tree,b_target,n_link); */
-      /* Br_Len_Brent(b_target,tree); */
+      /* Br_Len_Opt(b_target,tree); */
       /* Update_Partial_Lk(tree,b_residual,n_link); */
-      /* Br_Len_Brent(b_residual,tree); */
+      /* Br_Len_Opt(b_residual,tree); */
 
       Lk(b_arrow,tree);
     }
@@ -1816,7 +1816,8 @@ void Spr_List_Of_Trees(t_tree *tree)
       Spr_Pars(0,tree->n_otu,tree);
       Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
       Simu(tree,1000,1.0,0.0,0.1,(int)(tree->n_otu/2));
-      Lk(NULL,tree);
+      /* Optimize_Br_Len_Serie(tree); */
+      /* Lk(NULL,tree); */
       
       if(tree->verbose > VL0 && tree->io->quiet == NO)
         {

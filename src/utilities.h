@@ -2091,7 +2091,6 @@ void Find_Mutual_Direction(t_node *n1,t_node *n2,short int *dir_n1_to_n2,short i
 void Update_Dir_To_Tips(t_node *a,t_node *d,t_tree *tree);
 void Fill_Dir_Table(t_tree *tree);
 int Get_Subtree_Size(t_node *a,t_node *d);
-phydbl Fast_Br_Len(t_edge *b, t_tree *tree, int approx);
 void Init_Eigen_Struct(eigen *this);
 phydbl Triple_Dist(t_node *a,t_tree *tree);
 phydbl Triple_Dist_Approx(t_node *a, t_edge *b, t_tree *tree);

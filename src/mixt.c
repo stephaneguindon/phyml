@@ -1576,7 +1576,7 @@ void MIXT_Graft_Subtree(t_edge *mixt_target, t_node *mixt_link, t_node *mixt_lin
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void MIXT_Br_Len_Brent(t_edge *mixt_b, t_tree *mixt_tree)
+void MIXT_Br_Len_Opt(t_edge *mixt_b, t_tree *mixt_tree)
 {
   t_tree *tree;
   t_edge *b;
@@ -1592,7 +1592,7 @@ void MIXT_Br_Len_Brent(t_edge *mixt_b, t_tree *mixt_tree)
           b    = b->next;
         }
 
-      Br_Len_Brent(b,tree);
+      Br_Len_Opt(b,tree);
       
       b->l->onoff = OFF; // Will not optimize that edge length later on in this loop
 

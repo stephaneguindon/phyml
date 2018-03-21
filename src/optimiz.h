@@ -45,7 +45,7 @@ phydbl    Alpha_Golden(phydbl ax, phydbl bx, phydbl cx, phydbl tol,phydbl *xmin,
 		       t_tree *tree, calign *cdata);
 phydbl    Br_Len_Golden(phydbl ax, phydbl bx, phydbl cx, phydbl tol, 
 			phydbl *xmin, t_edge *b_fcus, t_tree *tree);
-phydbl Br_Len_Brent(t_edge *b_fcus, t_tree *tree);
+phydbl Br_Len_Opt(t_edge *b_fcus, t_tree *tree);
 int       Br_Len_Brak(phydbl *ax, phydbl *bx, phydbl *cx, 
 		      phydbl *fa, phydbl *fb, phydbl *fc, 
 		      t_edge *b_fcus, t_tree *tree);
@@ -132,7 +132,7 @@ phydbl Generic_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol,
 void Optimize_Br_Len_Serie(t_tree *tree);
 void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tree);
 void Optimize_Global_Rate(t_tree *tree);
-phydbl Br_Len_Brent_Default(t_edge *b_fcus, t_tree *tree);
+phydbl Fast_Br_Len(t_edge *b, t_tree *tree, int approx);
 
 void EM_Dist(t_mod *mod, calign *data);
 phydbl Dist_F_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol, int n_iter_max, 
