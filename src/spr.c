@@ -1779,8 +1779,8 @@ void Spr_List_Of_Trees(t_tree *tree)
   t_tree **tree_list,**tree_list_cpy;
   phydbl *lnL_list,*max_delta_lnL_list,best_lnL;
   
-  unsigned int list_size_first_round  = 5;
-  unsigned int list_size_second_round  = 4;
+  unsigned int list_size_first_round  = 1;
+  unsigned int list_size_second_round  = 1;
   unsigned int list_size_third_round  = 1;
   
   best_lnL      = UNLIKELY;
@@ -1795,8 +1795,8 @@ void Spr_List_Of_Trees(t_tree *tree)
   max_depth_list     = (int *)mCalloc(max_list_size,sizeof(int));
 
   for(i=0;i<max_list_size;++i) lnL_list[i] = UNLIKELY;
-  for(i=0;i<max_list_size;++i) max_depth_list[i] = MAX(15,(int)tree->n_otu/10);
-  for(i=0;i<max_list_size;++i) max_delta_lnL_list[i] = (phydbl)(50.*tree->n_otu);
+  for(i=0;i<max_list_size;++i) max_depth_list[i] = MAX(20,(int)tree->n_otu/10);
+  for(i=0;i<max_list_size;++i) max_delta_lnL_list[i] = (phydbl)(10.*tree->n_otu);
 
   for(i=0;i<max_list_size;++i) tree_list[i] = Make_Tree_From_Scratch(tree->n_otu,tree->data);
   for(i=0;i<max_list_size;++i) tree_list_cpy[i] = Make_Tree_From_Scratch(tree->n_otu,tree->data);
@@ -1853,8 +1853,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       do
         {
           Copy_Tree(tree_list[rk[list_size]],tree);
-          
-          
+                    
           tree->mod->s_opt->max_depth_path            = MAX(5,max_depth_list[rk[list_size]]);
           tree->mod->s_opt->max_delta_lnL_spr         = MAX(20.,max_delta_lnL_list[rk[list_size]]);
           tree->mod->s_opt->spr_lnL                   = YES;
@@ -1865,8 +1864,8 @@ void Spr_List_Of_Trees(t_tree *tree)
           tree->mod->s_opt->max_delta_lnL_spr_current = 0.0;
           tree->c_lnL                                 = lnL_list[list_size];
 
-          Spr(tree->c_lnL,1.0,tree);
           Optimize_Br_Len_Serie(tree);
+          Spr(tree->c_lnL,1.0,tree);
           tree->mod->s_opt->max_delta_lnL_spr = tree->mod->s_opt->max_delta_lnL_spr_current;
           tree->mod->s_opt->max_depth_path = tree->max_spr_depth;
           if(tree->verbose > VL0 && tree->io->quiet == NO)
