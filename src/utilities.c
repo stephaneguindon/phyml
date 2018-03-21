@@ -5568,13 +5568,16 @@ phydbl Triple_Dist(t_node *a, t_tree *tree)
       Update_PMat_At_Given_Edge(a->b[2],tree);
 
       Update_Partial_Lk(tree,a->b[0],a);
-      Fast_Br_Len(a->b[0],tree,YES);
-
+      /* Fast_Br_Len(a->b[0],tree,YES); */
+      Br_Len_Opt(a->b[0],tree);
+      
       Update_Partial_Lk(tree,a->b[1],a);
-      Fast_Br_Len(a->b[1],tree,YES);
+      /* Fast_Br_Len(a->b[1],tree,YES); */
+      Br_Len_Opt(a->b[1],tree);
 
       Update_Partial_Lk(tree,a->b[2],a);
-      Fast_Br_Len(a->b[2],tree,YES);
+      /* Fast_Br_Len(a->b[2],tree,YES); */
+      Br_Len_Opt(a->b[2],tree);
         
       
       Update_Partial_Lk(tree,a->b[1],a);
