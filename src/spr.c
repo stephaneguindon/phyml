@@ -1819,7 +1819,7 @@ void Spr_List_Of_Trees(t_tree *tree)
           Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
         }
 
-      Simu(tree,1000,0.1,1.0,0.1,(int)(tree->n_otu/2));
+      /* Simu(tree,1000,0.1,1.0,0.1,(int)(tree->n_otu/2)); */
       /* Optimize_Br_Len_Serie(tree); */
       /* Lk(NULL,tree); */
       
@@ -1864,16 +1864,20 @@ void Spr_List_Of_Trees(t_tree *tree)
           tree->mod->s_opt->max_delta_lnL_spr_current = 0.0;
           tree->c_lnL                                 = lnL_list[list_size];
 
-          Optimize_Br_Len_Serie(tree);
-          Spr(tree->c_lnL,1.0,tree);
-          tree->mod->s_opt->max_delta_lnL_spr = tree->mod->s_opt->max_delta_lnL_spr_current;
-          tree->mod->s_opt->max_depth_path = tree->max_spr_depth;
-          if(tree->verbose > VL0 && tree->io->quiet == NO)
+          do
             {
-              PhyML_Printf("\n\t%3d      %12.2f depth max: %3d # improvements: %3d delta lnL max: %12f",
-                           n_trees,tree->c_lnL,tree->max_spr_depth,tree->n_improvements,tree->mod->s_opt->max_delta_lnL_spr);
+              Spr(tree->c_lnL,1.0,tree);
+              Optimize_Br_Len_Serie(tree);
+              if(tree->verbose > VL0 && tree->io->quiet == NO)
+                {
+                  PhyML_Printf("\n\t%3d      %12.2f depth max: %3d # improvements: %3d delta lnL max: %12f",
+                               n_trees,tree->c_lnL,tree->max_spr_depth,tree->n_improvements,tree->mod->s_opt->max_delta_lnL_spr);
+                }
+              tree->mod->s_opt->max_delta_lnL_spr = 2.*tree->mod->s_opt->max_delta_lnL_spr_current;
+              tree->mod->s_opt->max_depth_path = 2*tree->max_spr_depth;
             }
-                    
+          while(tree->n_improvements > 0);
+          
           n_trees++;
           
           if(tree->c_lnL > best_lnL)
@@ -1887,7 +1891,7 @@ void Spr_List_Of_Trees(t_tree *tree)
           Copy_Tree(tree,tree_list[rk[list_size]]);
           lnL_list[rk[list_size]] = tree->c_lnL;
           max_depth_list[rk[list_size]] = (int)(1.5*tree->mod->s_opt->max_depth_path);
-          max_delta_lnL_list[rk[list_size]] = 2.*tree->mod->s_opt->max_delta_lnL_spr;
+          max_delta_lnL_list[rk[list_size]] = 1.5*tree->mod->s_opt->max_delta_lnL_spr;
         }
       while(++list_size < list_size_second_round);
 
