@@ -1795,7 +1795,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   max_depth_list     = (int *)mCalloc(max_list_size,sizeof(int));
 
   for(i=0;i<max_list_size;++i) lnL_list[i] = UNLIKELY;
-  for(i=0;i<max_list_size;++i) max_depth_list[i] = MAX(20,(int)tree->n_otu/10);
+  for(i=0;i<max_list_size;++i) max_depth_list[i] = MAX(20,(int)tree->n_otu);
   for(i=0;i<max_list_size;++i) max_delta_lnL_list[i] = (phydbl)(10.*tree->n_otu);
 
   for(i=0;i<max_list_size;++i) tree_list[i] = Make_Tree_From_Scratch(tree->n_otu,tree->data);
@@ -1854,7 +1854,7 @@ void Spr_List_Of_Trees(t_tree *tree)
         {
           Copy_Tree(tree_list[rk[list_size]],tree);
                     
-          tree->mod->s_opt->max_depth_path            = MAX(5,max_depth_list[rk[list_size]]);
+          /* tree->mod->s_opt->max_depth_path            = MAX(5,max_depth_list[rk[list_size]]); */
           /* tree->mod->s_opt->max_delta_lnL_spr         = MAX(20.,max_delta_lnL_list[rk[list_size]]); */
           tree->mod->s_opt->spr_lnL                   = YES;
           tree->mod->s_opt->spr_pars                  = NO;
@@ -1874,7 +1874,7 @@ void Spr_List_Of_Trees(t_tree *tree)
                                n_trees,tree->c_lnL,tree->max_spr_depth,tree->n_improvements,tree->mod->s_opt->max_delta_lnL_spr);
                 }
               /* tree->mod->s_opt->max_delta_lnL_spr = 2.*tree->mod->s_opt->max_delta_lnL_spr_current; */
-              tree->mod->s_opt->max_depth_path = 2*tree->max_spr_depth;
+              /* tree->mod->s_opt->max_depth_path = 2*tree->max_spr_depth; */
             }
           while(tree->n_improvements > 0);
           
