@@ -1884,8 +1884,8 @@ void Spr_List_Of_Trees(t_tree *tree)
                                tree->mod->s_opt->max_delta_lnL_spr,
                                tree->mod->s_opt->max_delta_lnL_spr_current);
                 }
-              /* tree->mod->s_opt->max_delta_lnL_spr = 2.*tree->mod->s_opt->max_delta_lnL_spr_current; */
-              /* tree->mod->s_opt->max_depth_path = 2*tree->max_spr_depth; */
+              tree->mod->s_opt->max_delta_lnL_spr = 2.*tree->mod->s_opt->max_delta_lnL_spr_current;
+              tree->mod->s_opt->max_depth_path = 2*tree->max_spr_depth;
             }
           while(tree->n_improvements > 0);
           
@@ -1901,8 +1901,8 @@ void Spr_List_Of_Trees(t_tree *tree)
           
           Copy_Tree(tree,tree_list[rk[list_size]]);
           lnL_list[rk[list_size]] = tree->c_lnL;
-          max_depth_list[rk[list_size]] = (int)(1.5*tree->mod->s_opt->max_depth_path);
-          max_delta_lnL_list[rk[list_size]] = 1.5*tree->mod->s_opt->max_delta_lnL_spr;
+          max_depth_list[rk[list_size]] = (int)(2.0*tree->mod->s_opt->max_depth_path);
+          max_delta_lnL_list[rk[list_size]] = 2.0*tree->mod->s_opt->max_delta_lnL_spr;
         }
       while(++list_size < list_size_second_round);
 
