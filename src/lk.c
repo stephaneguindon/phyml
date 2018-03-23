@@ -2396,7 +2396,7 @@ void Update_Partial_Lk_Along_A_Path(t_node **path, int path_length, t_tree *tree
             else
               {
                 PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d. \n",__FILE__,__LINE__);
-                Exit("");
+                assert(FALSE);
               }
             break;
           }
@@ -2404,7 +2404,7 @@ void Update_Partial_Lk_Along_A_Path(t_node **path, int path_length, t_tree *tree
       if(j == 3)
         {
           PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d.\n",__FILE__,__LINE__);
-          Exit("");
+          assert(FALSE);
         }
 #endif
     }

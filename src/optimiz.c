@@ -766,36 +766,41 @@ void Optimize_Br_Len_Serie(t_tree *tree)
         }
     }
 
-  
-  if(tree->n_root && tree->ignore_root == NO)
-    {
-      Update_Partial_Lk(tree,tree->n_root->b[1],tree->n_root);
-      Optimize_Br_Len_Serie_Post(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
-      Update_Partial_Lk(tree,tree->n_root->b[2],tree->n_root);
-      Optimize_Br_Len_Serie_Post(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
-    }
-  else if(tree->n_root && tree->ignore_root == YES)
-    {
-      Optimize_Br_Len_Serie_Post(tree->e_root->rght,
-                                 tree->e_root->left,
-                                 tree->e_root,tree);
 
-      Optimize_Br_Len_Serie_Post(tree->e_root->left,
-                                 tree->e_root->rght,
-                                 tree->e_root,tree);
-    }
-  else
+  do
     {
-      Optimize_Br_Len_Serie_Post(tree->a_nodes[tree->tip_root],tree->a_nodes[tree->tip_root]->v[0],tree->a_nodes[tree->tip_root]->b[0],tree);
+      lk_init = tree->c_lnL;
+      if(tree->n_root && tree->ignore_root == NO)
+        {
+          Update_Partial_Lk(tree,tree->n_root->b[1],tree->n_root);
+          Optimize_Br_Len_Serie_Post(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
+          Update_Partial_Lk(tree,tree->n_root->b[2],tree->n_root);
+          Optimize_Br_Len_Serie_Post(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
+        }
+      else if(tree->n_root && tree->ignore_root == YES)
+        {
+          Optimize_Br_Len_Serie_Post(tree->e_root->rght,
+                                     tree->e_root->left,
+                                     tree->e_root,tree);
+          
+          Optimize_Br_Len_Serie_Post(tree->e_root->left,
+                                     tree->e_root->rght,
+                                     tree->e_root,tree);
+        }
+      else
+        {
+          Optimize_Br_Len_Serie_Post(tree->a_nodes[tree->tip_root],tree->a_nodes[tree->tip_root]->v[0],tree->a_nodes[tree->tip_root]->b[0],tree);
+        }
+      
+      lk_end = tree->c_lnL;
+      
+      if(lk_end < lk_init - tree->mod->s_opt->min_diff_lk_local)
+        {
+          PhyML_Fprintf(stderr,"\n. lk_init: %f lk_end: %f",lk_init,lk_end);
+          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+        }
     }
-
-  lk_end = tree->c_lnL;
-
-  if(lk_end < lk_init - tree->mod->s_opt->min_diff_lk_local)
-    {
-      PhyML_Fprintf(stderr,"\n. lk_init: %f lk_end: %f",lk_init,lk_end);
-      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-    }
+  while(lk_end - lk_init > tree->mod->s_opt->min_diff_lk_local);
 }
 
 /*////////////////////////////////////////////////////////////
@@ -902,7 +907,7 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
     }
   else
     {
-      // Ok if root exists but require traversal to be initiated from a node != root
+      // Ok if root exists but requires traversal to be initiated from a node != root
       for(i=0;i<3;++i)
         {
           if(d->v[i] != a)
@@ -2364,8 +2369,6 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
   fv = tree->c_lnL;
   dfv = tree->c_dlnL;
 
-  
-
 
   /* PhyML_Printf("\n Begin NR loop (lnL: %12G dlnL: %12G d2lnL: %12G) l: %12G num: %d",tree->c_lnL,tree->c_dlnL,tree->c_d2lnL,*l,b->num); */
   converged = NO;
@@ -2448,7 +2451,7 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
   *l = best_l;
   tree->c_lnL = best_lnL;
 
-  /* printf(" *l=%12G lnL:%15G",*l,tree->c_lnL); */
+  /* printf("\n. *l=%12G lnL:%15G",*l,tree->c_lnL); */
   
   /* Set_Use_Eigen_Lr(NO,tree); */
   /* tree->c_lnL = Lk(b,tree); */
