@@ -697,7 +697,7 @@ void Round_Optimize(t_tree *tree, int n_round_max)
   
   while(n_round < n_round_max)
     {
-      if(tree->mod->s_opt->opt_bl || tree->mod->s_opt->constrained_br_len) Optimize_Br_Len_Serie(tree);
+      if(tree->mod->s_opt->opt_bl || tree->mod->s_opt->constrained_br_len) Optimize_Br_Len_Serie(n_round_max,tree);
       
       if((tree->mod->s_opt->opt_bl || tree->mod->s_opt->constrained_br_len) &&
          (tree->verbose > VL2) &&
@@ -733,9 +733,10 @@ void Round_Optimize(t_tree *tree, int n_round_max)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Optimize_Br_Len_Serie(t_tree *tree)
+void Optimize_Br_Len_Serie(int n_max_iter, t_tree *tree)
 {
   phydbl lk_init,lk_end;
+  int iter;
   
   Set_Both_Sides(NO,tree);
   Lk(NULL,tree);
@@ -766,7 +767,7 @@ void Optimize_Br_Len_Serie(t_tree *tree)
         }
     }
 
-
+  iter = 0;
   do
     {
       lk_init = tree->c_lnL;
@@ -800,7 +801,7 @@ void Optimize_Br_Len_Serie(t_tree *tree)
           Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
         }
     }
-  while(lk_end - lk_init > tree->mod->s_opt->min_diff_lk_local);
+  while(lk_end - lk_init > tree->mod->s_opt->min_diff_lk_local || ++iter > n_max_iter);
 }
 
 /*////////////////////////////////////////////////////////////

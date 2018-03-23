@@ -3858,7 +3858,7 @@ void Pull_Scaling_Factors(int site, t_edge *b, t_tree *tree)
                     tree);
       
       n_opt = 0;
-      do Optimize_Br_Len_Serie (tree); while(n_opt++ < 3);
+      do Optimize_Br_Len_Serie (2,tree); while(n_opt++ < 3);
 
       targets[n_targets]   = residuals[i]; 
       targets[n_targets+1] = tree->a_nodes[nd_idx[i]+3]->b[0];

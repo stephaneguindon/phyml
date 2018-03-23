@@ -23,6 +23,7 @@ the GNU public licence.  See http://www.opensource.org for details.
 #include "tiporder.h"
 
 
+void Optimize_Br_Len_Serie(int n_max_iter, t_tree *tree);
 void      Optimiz_Ext_Br(t_tree *tree);
 void      Optimize_Param_Parall(t_tree *tree);
 phydbl    Optimize_Branch_Quad(t_tree *tree, calign *cdata, t_edge *b_fcus);
@@ -129,7 +130,6 @@ int Generic_Brak(phydbl *param,
 		 t_tree *tree);
 phydbl Generic_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol, 
 		     phydbl *xmin, t_tree *tree, int n_iter_max,int quickdirty);
-void Optimize_Br_Len_Serie(t_tree *tree);
 void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tree);
 void Optimize_Global_Rate(t_tree *tree);
 phydbl Fast_Br_Len(t_edge *b, t_tree *tree, int approx);
