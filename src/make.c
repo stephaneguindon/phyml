@@ -1200,18 +1200,38 @@ void Make_Best_Spr(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Make_Spr_List(t_tree *tree)
+void Make_Spr_List_One_Edge(t_tree *tree)
 {
   int i;
 
-  tree->size_spr_list = 2*tree->n_otu-3;
+  tree->size_spr_list_one_edge = 2*tree->n_otu-3;
 
-  tree->spr_list = (t_spr **)mCalloc(2*tree->n_otu-2,sizeof(t_spr *));
+  tree->spr_list_one_edge = (t_spr **)mCalloc(2*tree->n_otu-2,sizeof(t_spr *));
 
-  For(i,2*tree->n_otu-2)
+  for(i=0;i<2*tree->n_otu-2;++i)
     {
-      tree->spr_list[i] = Make_One_Spr(tree);
-      Init_One_Spr(tree->spr_list[i]);
+      tree->spr_list_one_edge[i] = Make_One_Spr(tree);
+      Init_One_Spr(tree->spr_list_one_edge[i]);
+    }
+
+  tree->perform_spr_right_away = NO;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Make_Spr_List_All_Edge(t_tree *tree)
+{
+  int i;
+
+  tree->size_spr_list_all_edge = 2*tree->n_otu-3;
+
+  tree->spr_list_all_edge = (t_spr **)mCalloc(2*tree->n_otu-2,sizeof(t_spr *));
+
+  for(i=0;i<2*tree->n_otu-2;++i)
+    {
+      tree->spr_list_all_edge[i] = Make_One_Spr(tree);
+      Init_One_Spr(tree->spr_list_all_edge[i]);
     }
 
   tree->perform_spr_right_away = NO;

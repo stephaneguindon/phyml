@@ -199,7 +199,7 @@ int M4_main(int argc, char **argv)
 		      tree->mod->s_opt->random_input_tree = 0;
 		    }
 		  
-		  Free_Spr_List(tree);
+		  Free_Spr_List_One_Edge(tree);
 		  Free_One_Spr(tree->best_spr);
 		  if(tree->mat) Free_Mat(tree->mat);
 		  Free_Triplet(tree->triplet_struct);

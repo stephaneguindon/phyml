@@ -147,10 +147,10 @@ void MIXT_Chain_Sprs(t_tree *mixt_tree)
       
       For(i,2*tree->n_otu-2)
         {
-          if(tree->next)      tree->spr_list[i]->next      = tree->next->spr_list[i];
-          if(tree->prev)      tree->spr_list[i]->prev      = tree->prev->spr_list[i];
-          if(tree->next_mixt) tree->spr_list[i]->next_mixt = tree->next_mixt->spr_list[i];
-          if(tree->prev_mixt) tree->spr_list[i]->prev_mixt = tree->prev_mixt->spr_list[i];
+          if(tree->next)      tree->spr_list_one_edge[i]->next      = tree->next->spr_list_one_edge[i];
+          if(tree->prev)      tree->spr_list_one_edge[i]->prev      = tree->prev->spr_list_one_edge[i];
+          if(tree->next_mixt) tree->spr_list_one_edge[i]->next_mixt = tree->next_mixt->spr_list_one_edge[i];
+          if(tree->prev_mixt) tree->spr_list_one_edge[i]->prev_mixt = tree->prev_mixt->spr_list_one_edge[i];
         }
       tree = tree->next;
     }
@@ -1289,14 +1289,14 @@ void MIXT_Break_All_Mixtures(int *c_max, t_tree *mixt_tree)
               tree->next = NULL;
               For(i,2*tree->n_otu-1) tree->a_edges[i]->next  = NULL;
               For(i,2*tree->n_otu-1) tree->a_nodes[i]->next  = NULL;
-              For(i,2*tree->n_otu-2) tree->spr_list[i]->next = NULL;
+              For(i,2*tree->n_otu-2) tree->spr_list_one_edge[i]->next = NULL;
             }
           else
             {
               tree->next = tree->mixt_tree->next_mixt;
               For(i,2*tree->n_otu-1) tree->a_edges[i]->next  = tree->mixt_tree->next_mixt->a_edges[i];
               For(i,2*tree->n_otu-1) tree->a_nodes[i]->next  = tree->mixt_tree->next_mixt->a_nodes[i];
-              For(i,2*tree->n_otu-2) tree->spr_list[i]->next = tree->mixt_tree->next_mixt->spr_list[i];
+              For(i,2*tree->n_otu-2) tree->spr_list_one_edge[i]->next = tree->mixt_tree->next_mixt->spr_list_one_edge[i];
             }
         }
 

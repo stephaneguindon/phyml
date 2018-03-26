@@ -4746,7 +4746,7 @@ option *PhyML_XML(char *xml_filename)
       MIXT_Init_T_End(mixt_tree);
       Print_Data_Structure(YES,mixt_tree->io->fp_out_stats,mixt_tree);
 
-      Free_Spr_List(mixt_tree);
+      Free_Spr_List_One_Edge(mixt_tree);
       Free_Triplet(mixt_tree->triplet_struct);
       Free_Tree_Pars(mixt_tree);
       Free_Tree_Lk(mixt_tree);

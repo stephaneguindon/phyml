@@ -1002,7 +1002,7 @@ void Free_One_Spr(t_spr *this_spr)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Free_Spr_List(t_tree *mixt_tree)
+void Free_Spr_List_One_Edge(t_tree *mixt_tree)
 {
   int i;
   t_tree *tree;
@@ -1010,9 +1010,8 @@ void Free_Spr_List(t_tree *mixt_tree)
   tree = mixt_tree;
   do
     {
-      For(i,tree->size_spr_list+1) Free_One_Spr(tree->spr_list[i]);
-      Free(tree->spr_list);
-      Free_One_Spr(tree->best_spr);
+      for(i=0;i<tree->size_spr_list_one_edge+1;++i) Free_One_Spr(tree->spr_list_one_edge[i]);
+      Free(tree->spr_list_one_edge);
       tree = tree->next;
     }
   while(tree);
@@ -1021,6 +1020,26 @@ void Free_Spr_List(t_tree *mixt_tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void Free_Spr_List_All_Edge(t_tree *mixt_tree)
+{
+  int i;
+  t_tree *tree;
+
+  tree = mixt_tree;
+  do
+    {
+      for(i=0;i<tree->size_spr_list_all_edge+1;++i) Free_One_Spr(tree->spr_list_all_edge[i]);
+      Free(tree->spr_list_all_edge);
+      tree = tree->next;
+    }
+  while(tree);
+
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 
 void Free_Triplet(triplet *t)
 {
@@ -1033,35 +1052,35 @@ void Free_Triplet(triplet *t)
   Free(t->pi_cd);
   Free(t->pi_bd);
 
-  for(k=0;k<t->mod->ras->n_catg;k++)
+  for(k=0;k<t->mod->ras->n_catg;++k)
     {
-      for(i=0;i<t->size;i++)
-    {
-      for(j=0;j<t->size;j++) Free(t->core[k][i][j]);
-      Free(t->core[k][i]);
-    }
+      for(i=0;i<t->size;++i)
+        {
+          for(j=0;j<t->size;++j) Free(t->core[k][i][j]);
+          Free(t->core[k][i]);
+        }
       Free(t->core[k]);
     }
   Free(t->core);
-
-  for(i=0;i<t->size;i++)
+  
+  for(i=0;i<t->size;++i)
     {
-      for(j=0;j<t->size;j++) Free(t->p_one_site[i][j]);
+      for(j=0;j<t->size;++j) Free(t->p_one_site[i][j]);
       Free(t->p_one_site[i]);
     }
   Free(t->p_one_site);
-
-  for(i=0;i<t->size;i++)
+  
+  for(i=0;i<t->size;++i)
     {
-      for(j=0;j<t->size;j++) Free(t->sum_p_one_site[i][j]);
+      for(j=0;j<t->size;++j) Free(t->sum_p_one_site[i][j]);
       Free(t->sum_p_one_site[i]);
     }
   Free(t->sum_p_one_site);
 
   Free_Eigen(t->eigen_struct);
-
+  
   if(t->next) Free_Triplet(t->next);
-
+  
   Free(t);
 }
 

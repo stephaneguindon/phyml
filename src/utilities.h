@@ -691,7 +691,8 @@ typedef struct __Tree{
   struct __Option                         *io; /*! input/output */
   struct __Matrix                        *mat; /*! pairwise distance matrix */
   struct __Node                   **curr_path; /*! list of nodes that form a path in the tree */
-  struct __SPR                     **spr_list;
+  struct __SPR            **spr_list_one_edge;
+  struct __SPR            **spr_list_all_edge;
   struct __SPR                      *best_spr;
   struct __Tdraw                     *ps_tree; /*! structure for drawing trees in postscript format */
   struct __T_Rate                       *rates; /*! structure for handling rates of evolution */
@@ -780,7 +781,8 @@ typedef struct __Tree{
   int                               *step_mat;
   
 
-  int                           size_spr_list;
+  int                  size_spr_list_one_edge;
+  int                  size_spr_list_all_edge;
   int                  perform_spr_right_away;
 
   time_t                                t_beg;

@@ -1381,8 +1381,8 @@ void Share_Lk_Struct(t_tree *t_full, t_tree *t_empt)
 
 void Share_Spr_Struct(t_tree *t_full, t_tree *t_empt)
 {
-  t_empt->size_spr_list = t_full->size_spr_list;
-  t_empt->spr_list      = t_full->spr_list;
+  t_empt->size_spr_list_one_edge = t_full->size_spr_list_one_edge;
+  t_empt->spr_list_one_edge      = t_full->spr_list_one_edge;
   t_empt->best_spr      = t_full->best_spr;
 }
 
@@ -8086,7 +8086,7 @@ char *Bootstrap_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
   Init_Triplet_Struct(tree->triplet_struct);
   Unscale_Br_Len_Multiplier_Tree(tree);
   Br_Len_Not_Involving_Invar(tree);
-  Make_Spr_List(tree);
+  Make_Spr_List_One_Edge(tree);
   Make_Best_Spr(tree);
 
   Set_Both_Sides(YES,tree);
@@ -8105,7 +8105,7 @@ char *Bootstrap_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
 
   s_tree = Write_Tree(tree,NO);
 
-  Free_Spr_List(tree);
+  Free_Spr_List_One_Edge(tree);
   Free_Triplet(tree->triplet_struct);
   Free_Tree_Pars(tree);
   Free_Tree_Lk(tree);
@@ -8147,7 +8147,7 @@ char *aLRT_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
   Unscale_Br_Len_Multiplier_Tree(tree);
   Br_Len_Not_Involving_Invar(tree);
 
-  Make_Spr_List(tree);
+  Make_Spr_List_One_Edge(tree);
   Make_Best_Spr(tree);
 
 #ifdef BEAGLE
@@ -8170,7 +8170,8 @@ char *aLRT_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
   finalize_beagle_instance(tree);
 #endif
 
-  Free_Spr_List(tree);
+  Free_Spr_List_One_Edge(tree);
+  Free_Spr_List_All_Edge(tree);
   Free_Triplet(tree->triplet_struct);
   Free_Tree_Pars(tree);
   Free_Tree_Lk(tree);
@@ -8189,7 +8190,8 @@ void Prepare_Tree_For_Lk(t_tree *tree)
   Make_Tree_4_Lk(tree,tree->data,tree->data->init_len);
   tree->triplet_struct = Make_Triplet_Struct(tree->mod);
   Init_Triplet_Struct(tree->triplet_struct);
-  Make_Spr_List(tree);
+  Make_Spr_List_One_Edge(tree);
+  Make_Spr_List_All_Edge(tree);
   Make_Best_Spr(tree);
 
   if(tree->is_mixt_tree == YES) MIXT_Prepare_Tree_For_Lk(tree);

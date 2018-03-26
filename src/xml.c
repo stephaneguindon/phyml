@@ -2597,7 +2597,7 @@ void DATE_XML(char *xml_filename)
   MCMC_Free_MCMC(mixt_tree->mcmc);
   MCMC_Free_MCMC(mixt_tree->extra_tree->mcmc);
   Free_Mmod(mixt_tree->mmod);
-  Free_Spr_List(mixt_tree);
+  Free_Spr_List_One_Edge(mixt_tree);
   Free_Triplet(mixt_tree->triplet_struct);
   Free_Tree_Pars(mixt_tree);
   Free_Tree_Lk(mixt_tree);

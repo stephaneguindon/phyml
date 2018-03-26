@@ -315,7 +315,8 @@ int main(int argc, char **argv)
 #ifdef BEAGLE
                   finalize_beagle_instance(tree);
 #endif
-                  Free_Spr_List(tree);
+                  Free_Spr_List_One_Edge(tree);
+                  Free_Spr_List_All_Edge(tree);
                   Free_Triplet(tree->triplet_struct);
                   Free_Tree_Pars(tree);
                   Free_Tree_Lk(tree);
