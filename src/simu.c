@@ -44,6 +44,7 @@ int Simu(t_tree *tree, int n_step_max, phydbl delta_lnL, phydbl init_T, phydbl d
   do
     {
       old_loglk = tree->c_lnL;
+      for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(n_round+1),(phydbl)(1./(n_round+1)));
       Set_Both_Sides(NO,tree);
       tree->tip_root = Rand_Int(0,tree->n_otu-1);
       Lk(NULL,tree);
