@@ -61,7 +61,7 @@ int Simu(t_tree *tree, int n_step_max, phydbl delta_lnL, phydbl init_T, phydbl d
       n_round++;
       PhyML_Printf("\n. lnL: %12G T: %12G %4d/%4d fully_opt ? %d",tree->c_lnL,tree->annealing_temp,tree->n_edges_traversed,tree->n_otu,tree->fully_nni_opt);
 
-      if((n_round == n_step_max || tree->fully_nni_opt == YES) && Are_Equal(tree->annealing_temp,0.0,1.E-3) && delta < delta_lnL) break;
+      if((n_round >= n_step_max || tree->fully_nni_opt == YES) && Are_Equal(tree->annealing_temp,0.0,1.E-3) && delta < delta_lnL) break;
 
 
       /* if(n_round == 30) break; */
@@ -926,13 +926,13 @@ void NNI_Core(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_tree 
   // Evaluate likelihood
   if(opt_edges == YES) Br_Len_Opt(b,tree);
   lk1 = Lk(b,tree);
-  // Unswap
-  if(lk1 > lk0)
+  if(lk1 > lk0 + tree->mod->s_opt->min_diff_lk_move)
     {
       tree->fully_nni_opt = NO;
       return;
     }
   l1 = Duplicate_Scalar_Dbl(b->l);
+  // Unswap
   Swap(u,d,a,v1,tree);              
   
 
@@ -946,7 +946,7 @@ void NNI_Core(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_tree 
   // Evaluate likelihood
   if(opt_edges == YES) Br_Len_Opt(b,tree);
   lk2 = Lk(b,tree);
-  if(lk2 > lk0)
+  if(lk2 > lk0 + tree->mod->s_opt->min_diff_lk_move)
     {
       tree->fully_nni_opt = NO;
       Free_Scalar_Dbl(l1);
