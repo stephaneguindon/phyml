@@ -17,6 +17,7 @@ the GNU public licence.  See http://www.opensource.org for details.
 
 #include "utilities.h"
 
+void Init_Cseq(align *this);
 void Init_Eigen_Struct(eigen *this);
 void Init_Scalar_Dbl(scalar_dbl *p);
 void Init_Scalar_Int(scalar_int *p);

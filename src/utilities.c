@@ -2253,7 +2253,6 @@ matrix *JC69_Dist(calign *data, t_mod *mod)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 matrix *Hamming_Dist(calign *data, t_mod *mod)
 {
   int i,j,k;
@@ -2273,59 +2272,139 @@ matrix *Hamming_Dist(calign *data, t_mod *mod)
   for(i=0;i<data->crunch_len;i++)
     {
       for(j=0;j<data->n_otu-1;j++)
-    {
-      for(k=j+1;k<data->n_otu;k++)
         {
-          if((!Is_Ambigu(data->c_seq[j]->state+i*mod->io->state_len,datatype,mod->io->state_len)) &&
-         (!Is_Ambigu(data->c_seq[k]->state+i*mod->io->state_len,datatype,mod->io->state_len)))
-        {
-          len[j][k]+=data->wght[i];
-          len[k][j]=len[j][k];
-/* 		  if(data->c_seq[j]->state[i] != data->c_seq[k]->state[i]) */
-          if(!Are_Compatible(data->c_seq[j]->state+i*mod->io->state_len,
-                     data->c_seq[k]->state+i*mod->io->state_len,
-                     mod->io->state_len,
-                     mod->io->datatype))
+          for(k=j+1;k<data->n_otu;k++)
             {
-              mat->P[j][k]+=data->wght[i];
+              if((!Is_Ambigu(data->c_seq[j]->state+i*mod->io->state_len,datatype,mod->io->state_len)) &&
+                 (!Is_Ambigu(data->c_seq[k]->state+i*mod->io->state_len,datatype,mod->io->state_len)))
+                {
+                  len[j][k]+=data->wght[i];
+                  len[k][j]=len[j][k];
+                  /* 		  if(data->c_seq[j]->state[i] != data->c_seq[k]->state[i]) */
+                  if(!Are_Compatible(data->c_seq[j]->state+i*mod->io->state_len,
+                                     data->c_seq[k]->state+i*mod->io->state_len,
+                                     mod->io->state_len,
+                                     mod->io->datatype))
+                    {
+                      mat->P[j][k]+=data->wght[i];
+                    }
+                }
             }
         }
-        }
     }
-    }
-
+  
   for(i=0;i<data->n_otu-1;i++)
     for(j=i+1;j<data->n_otu;j++)
       {
-    if(len[i][j] > .0)
-      {
-        mat->P[i][j] /= len[i][j];
+        if(len[i][j] > .0)
+          {
+            mat->P[i][j] /= len[i][j];
+          }
+        else
+          {
+            mat->P[i][j] = 1.;
+          }
+        
+        mat->P[j][i] = mat->P[i][j];
+        
+        mat->dist[i][j] = mat->P[i][j];
+        
+        
+        if(mat->dist[i][j] > DIST_MAX)
+          {
+            mat->dist[i][j] = DIST_MAX;
+          }
+        mat->dist[j][i] = mat->dist[i][j];
       }
-    else
-      {
-        mat->P[i][j] = 1.;
-      }
-
-    mat->P[j][i] = mat->P[i][j];
-
-    mat->dist[i][j] = mat->P[i][j];
-
-
-    if(mat->dist[i][j] > DIST_MAX)
-      {
-        mat->dist[i][j] = DIST_MAX;
-      }
-    mat->dist[j][i] = mat->dist[i][j];
-      }
-
+  
   for(i=0;i<data->n_otu;i++) free(len[i]);
   free(len);
-
+  
   return mat;
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+short int Are_Sequences_Identical(align *seq1, align *seq2)
+{
+  for(int i=0; i<seq1->len; ++i) if(seq1->state[i] != seq2->state[i]) return NO;
+  return YES;  
+}
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Remove_Duplicates(calign *data, t_mod *mod, option *io)
+{
+  int n_duplicates,n_removed,n_otu_orig;
+  align *tmp;
+  
+  n_otu_orig = data->n_otu;
+  n_duplicates = 0;
+  
+  for(int i=0; i<data->n_otu-1; ++i)
+    {
+      if(data->c_seq[i]->is_duplicate == YES) continue;
+      else
+        {
+          for(int j=i+1; j < data->n_otu; ++j)
+            {
+              if(Are_Sequences_Identical(data->c_seq[i],data->c_seq[j]) == YES)
+                {
+                  data->c_seq[j]->is_duplicate = YES;
+                  PhyML_Printf("\n. Removed taxon '%s' as it is a duplicate of taxon '%s'.",
+                               data->c_seq[j]->name,data->c_seq[i]->name);
+                  n_duplicates++;
+                }
+            }
+        }
+    }
+
+  n_removed = 0;
+  for(int i=0; i < n_otu_orig; ++i)
+    {
+      if(data->c_seq[i]->is_duplicate == YES)
+        {
+          if(!n_removed) data->c_seq_rm = (align **)mCalloc(1,sizeof(align *));
+          else data->c_seq_rm = (align **)mRealloc(data->c_seq_rm,n_removed+1,sizeof(align *));
+          data->c_seq_rm[n_removed] = data->c_seq[i];
+          n_removed++;
+        }
+    }
+  
+  data->n_rm = n_removed;
+
+  for(int i=0; i < n_otu_orig; ++i)
+    {
+      if(data->c_seq[i]->is_duplicate == YES)
+        {
+          for(int j=i+1; j < n_otu_orig; j++)
+            {
+              if(data->c_seq[j]->is_duplicate == NO)
+                {
+                  tmp = data->c_seq[i];
+                  data->c_seq[i] = data->c_seq[j];
+                  data->c_seq[j] = tmp;
+                  break;
+                }              
+            }
+        }
+    }
+
+  data->n_otu -= data->n_rm;
+  io->n_otu = data->n_otu;
+
+  if(n_duplicates > 0) PhyML_Printf("\n");
+  
+  /* for(int i=0; i < n_otu_orig; ++i) */
+  /*   { */
+  /*     PhyML_Printf("\n. %s %d",data->c_seq[i]->name,data->c_seq[i]->is_duplicate); */
+  /*   } */
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 
 /* Test if the given site pattern is invariant. Does not handle ambiguities */
 

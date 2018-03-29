@@ -273,6 +273,7 @@ extern int TIME;
 #define  NJ_SEUIL             0.1
 #define  ROUND_MAX            100
 #define  DIST_MAX            2.00
+#define  DIST_MIN          1.e-10
 #define  AROUND_LK           50.0
 #define  PROP_STEP            1.0
 #define  T_MAX_ALPHABET        22
@@ -940,34 +941,37 @@ typedef struct __List_Tree { /*! a list of trees */
 /*!********************************************************/
 
 typedef struct __Align {
-  char           *name; /*! sequence name */
-  int              len; /*! sequence length */
-  char          *state; /*! sequence itself */
-  int         *d_state; /*! sequence itself (digits) */
-  short int *is_ambigu; /*! is_ambigu[site] = 1 if state[site] is an ambiguous character. 0 otherwise */
-  int              num;
+  char             *name; /*! sequence name */
+  int                len; /*! sequence length */
+  char            *state; /*! sequence itself */
+  int           *d_state; /*! sequence itself (digits) */
+  short int   *is_ambigu; /*! is_ambigu[site] = 1 if state[site] is an ambiguous character. 0 otherwise */
+  short int is_duplicate;
+  int                num;
 }align;
 
 /*!********************************************************/
 
 typedef struct __Calign {
-  struct __Align **c_seq;             /*! compressed sequences      */
-  struct __Option    *io;             /*! input/output */
-  phydbl  *obs_state_frq;             /*! observed state frequencies */
-  short int       *invar;             /*! < 0 -> polymorphism observed */
-  phydbl           *wght;             /*! # of each site in c_align */
-  short int      *ambigu;             /*! ambigu[i]=1 is one or more of the sequences at site
+  struct __Align    **c_seq;             /*! compressed sequences      */
+  struct __Align **c_seq_rm;             /*! removed sequences      */
+  struct __Option       *io;             /*! input/output */
+  phydbl     *obs_state_frq;             /*! observed state frequencies */
+  short int          *invar;             /*! < 0 -> polymorphism observed */
+  phydbl              *wght;             /*! # of each site in c_align */
+  short int         *ambigu;             /*! ambigu[i]=1 is one or more of the sequences at site
                                         i display an ambiguous character */
-  phydbl      obs_pinvar;
-  int              n_otu;             /*! number of taxa */
-  int          clean_len;             /*! uncrunched sequences lenghts without gaps */
-  int         crunch_len;             /*! crunched sequences lengths */
-  int           init_len;             /*! length of the uncompressed sequences */
-  int          *sitepatt;             /*! this array maps the position of the patterns in the
+  phydbl         obs_pinvar;
+  int                 n_otu;             /*! number of taxa */
+  int                  n_rm;             /*! number of taxa removed */
+  int             clean_len;             /*! uncrunched sequences lenghts without gaps */
+  int            crunch_len;             /*! crunched sequences lengths */
+  int              init_len;             /*! length of the uncompressed sequences */
+  int             *sitepatt;             /*! this array maps the position of the patterns in the
                                         compressed alignment to the positions in the uncompressed
                                         one */
-  int             format;             /*! 0 (default): PHYLIP. 1: NEXUS. */
-  scalar_dbl    *io_wght;             /*! weight of each *site* (not pattern) given as input */
+  int                format;             /*! 0 (default): PHYLIP. 1: NEXUS. */
+  scalar_dbl       *io_wght;             /*! weight of each *site* (not pattern) given as input */
 }calign;
 
 /*!********************************************************/
@@ -2283,6 +2287,8 @@ void Table_Bottom(unsigned int width);
 t_cal *Duplicate_Calib(t_cal *from);
 t_clad *Duplicate_Clade(t_clad *from);
 void Swap_Partial_Lk_Extra(t_edge *b, t_node *d, int whichone, t_tree *tree);
+void Remove_Duplicates(calign *data, t_mod *mod, option *io);
+short int Are_Sequences_Identical(align *seq1, align *seq2);
 #include "xml.h"
 #include "free.h"
 #include "spr.h"

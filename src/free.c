@@ -245,7 +245,23 @@ void Free_Calign(calign *data)
         }
       Free(data->c_seq[i]);
     }
-  Free(data->c_seq);
+
+
+  for(i=0;i<data->n_rm;i++)
+    {
+      Free(data->c_seq_rm[i]->name);
+      if(data->c_seq_rm[i]->state)
+        {
+          Free(data->c_seq_rm[i]->state);
+          Free(data->c_seq_rm[i]->d_state);
+          if(data->c_seq_rm[i]->is_ambigu) Free(data->c_seq_rm[i]->is_ambigu);
+        }
+      Free(data->c_seq_rm[i]);
+    }
+  
+  if(data->c_seq_rm != NULL) Free(data->c_seq_rm);
+  if(data->c_seq != NULL) Free(data->c_seq);
+
   Free(data);
 }
 

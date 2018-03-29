@@ -118,7 +118,7 @@ int main(int argc, char **argv)
         {
           if(io->n_data_sets > 1) PhyML_Printf("\n. Data set [#%d]\n",num_data_set+1);
           cdata = Compact_Data(io->data,io);
-
+          
           Free_Seq(io->data,cdata->n_otu);
 
           for(num_tree=(io->n_trees == 1)?(0):(num_data_set);num_tree < io->n_trees;num_tree++)
@@ -139,6 +139,8 @@ int main(int argc, char **argv)
                   Init_Model(cdata,mod,io);
 
                   if(io->mod->use_m4mod) M4_Init_Model(mod->m4mod,cdata,mod);
+
+                  Remove_Duplicates(cdata,mod,io);
 
                   //Make the initial tree
                   switch(io->in_tree)
