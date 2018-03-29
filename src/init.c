@@ -123,7 +123,6 @@ void Init_Tree(t_tree *tree, int n_otu)
   tree->depth_curr_path           = 0;
   tree->has_bip                   = NO;
   tree->n_moves                   = 0;
-  tree->n_improvements            = 0;
   tree->bl_from_node_stamps       = 0;
   tree->lock_topo                 = NO;
   tree->ps_page_number            = 0;
@@ -148,7 +147,6 @@ void Init_Tree(t_tree *tree, int n_otu)
   tree->n_short_l                 = 100;
   tree->norm_scale                = 0.0;
   tree->br_len_recorded           = NO;
-  tree->max_spr_depth             = 0;
   tree->apply_lk_scaling          = YES;
   tree->dp                        = 0;
   tree->ignore_root               = YES;
@@ -724,7 +722,11 @@ void Set_Defaults_Optimiz(t_opt *s_opt)
   s_opt->brent_it_max         = BRENT_IT_MAX;
   s_opt->steph_spr            = YES;
   s_opt->opt_br_len_mult      = NO;
-
+  s_opt->min_n_triple_moves   = 20;
+  s_opt->max_rank_triple_move = 0;
+  s_opt->n_improvements       = 0;
+  s_opt->max_spr_depth        = 0;
+  
   s_opt->min_diff_lk_local    = 1.E-03;
   s_opt->min_diff_lk_global   = 1.E-03;
   s_opt->min_diff_lk_move     = 1.E-03;

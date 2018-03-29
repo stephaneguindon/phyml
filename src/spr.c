@@ -116,9 +116,10 @@ int Spr(phydbl init_lnL, phydbl prop_spr, t_tree *tree)
   int *br_idx;
   t_edge *b;
 
-  tree->n_improvements = 0;
-  tree->max_spr_depth  = 0;
-
+  tree->mod->s_opt->n_improvements = 0;
+  tree->mod->s_opt->max_spr_depth  = 0;
+  tree->mod->s_opt->max_rank_triple_move = 0;
+  
   Reset_Spr_List(tree->spr_list_all_edge,tree->size_spr_list_all_edge);
 
   br_idx = Permutate(2*tree->n_otu-3);
@@ -142,7 +143,7 @@ int Spr(phydbl init_lnL, phydbl prop_spr, t_tree *tree)
   Free(br_idx);
 
   
-  if(tree->n_improvements == 0 && tree->mod->s_opt->spr_lnL == YES)
+  if(tree->mod->s_opt->n_improvements == 0 && tree->mod->s_opt->spr_lnL == YES)
     {
       Optimize_Br_Len_Serie(2,tree);
       tree->best_lnL = tree->c_lnL;
@@ -166,7 +167,7 @@ int Spr(phydbl init_lnL, phydbl prop_spr, t_tree *tree)
         }
     }
   
-  return tree->n_improvements;
+  return tree->mod->s_opt->n_improvements;
 }
 
 /*********************************************************/
@@ -233,8 +234,8 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
 
       if(tree->n_moves)
         {
-          n_moves_pars = MIN(3,tree->n_moves);
-          n_moves      = MIN(3,tree->n_moves);
+          n_moves_pars = MIN(tree->mod->s_opt->min_n_triple_moves,tree->n_moves);
+          n_moves      = MIN(tree->mod->s_opt->min_n_triple_moves,tree->n_moves);
 
           if(tree->mod->s_opt->spr_lnL == NO) n_moves = n_moves_pars;
           n_moves = MAX(1,n_moves);
@@ -268,7 +269,7 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
                     }
                   else
                     {
-                      if(best_pars_move->depth_path > tree->max_spr_depth) tree->max_spr_depth = best_pars_move->depth_path;
+                      if(best_pars_move->depth_path > tree->mod->s_opt->max_spr_depth) tree->mod->s_opt->max_spr_depth = best_pars_move->depth_path;
                       Set_Both_Sides(YES,tree);
                       Pars(NULL,tree);
                       tree->best_pars = tree->c_pars;
@@ -278,7 +279,7 @@ void Spr_Subtree(t_edge *b, t_node *link, t_tree *tree)
                           PhyML_Fprintf(stderr,"\n== Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
                           Exit("\n");
                         }
-                      tree->n_improvements++;
+                      tree->mod->s_opt->n_improvements++;
                     }
                   Reset_Spr_List(tree->spr_list_one_edge,tree->size_spr_list_one_edge);
                 }
@@ -791,11 +792,11 @@ void Speed_Spr(t_tree *tree, phydbl prop_spr, int max_cycles, phydbl delta_lnL)
       Spr(UNLIKELY,prop_spr,tree);
 
       // Set maximum depth for future spr rounds to deepest spr found so far
-      tree->mod->s_opt->max_depth_path = tree->max_spr_depth;
+      tree->mod->s_opt->max_depth_path = tree->mod->s_opt->max_spr_depth;
 
       if(tree->mod->s_opt->spr_pars == NO)
         {
-          if(tree->n_improvements > 0)
+          if(tree->mod->s_opt->n_improvements > 0)
             {
               /* Optimise branch lengths */
               Optimize_Br_Len_Serie(2,tree);
@@ -854,7 +855,7 @@ void Speed_Spr(t_tree *tree, phydbl prop_spr, int max_cycles, phydbl delta_lnL)
       if(step+1 > max_cycles) break;
       if((tree->mod->s_opt->spr_pars == NO)  && (FABS(old_lnL-tree->c_lnL)   < delta_lnL)) break;
       if((tree->mod->s_opt->spr_pars == YES) && (FABS(old_pars-tree->c_pars) < 1)) break;
-      if(!tree->n_improvements) break;
+      if(!tree->mod->s_opt->n_improvements) break;
     }
   while(1);
 }
@@ -969,7 +970,13 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
           move->lnL = Triple_Dist(move->n_link,tree);
           MIXT_Set_Alias_Subpatt(NO,tree);
 
-          /* printf("\n. %d/%d move->lnL= %f best_lnL=%f absolute_best=%f",i,list_size,move->lnL,best_lnL,tree->best_lnL); */
+          /* printf("\n. %d/%d init_lnL: %12G move->lnL= %12G best_lnL=%12G absolute_best=%12G", */
+          /*        i, */
+          /*        list_size, */
+          /*        init_lnL, */
+          /*        move->lnL, */
+          /*        best_lnL, */
+          /*        tree->best_lnL); */
           
           /* Record updated branch lengths for this move */
           dir_v1 = dir_v2 = dir_v0 = -1;
@@ -1038,6 +1045,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
       if(move->lnL > tree->best_lnL + tree->mod->s_opt->min_diff_lk_move) 
         {
           better_found = YES;
+          if(i > tree->mod->s_opt->max_rank_triple_move) tree->mod->s_opt->max_rank_triple_move = i; 
           break;      
         }
     }
@@ -1185,7 +1193,7 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
         }
 
 
-      tree->n_improvements++;
+      tree->mod->s_opt->n_improvements++;
 
       t_spr *dum_move = move;
       phydbl delta = 0.0;
@@ -1205,7 +1213,7 @@ int Try_One_Spr_Move_Triple(t_spr *move, t_tree *tree)
       if(move->depth_path > tree->mod->s_opt->deepest_path)
         tree->mod->s_opt->deepest_path = move->depth_path;
 
-      if(move->depth_path > tree->max_spr_depth) tree->max_spr_depth = move->depth_path;
+      if(move->depth_path > tree->mod->s_opt->max_spr_depth) tree->mod->s_opt->max_spr_depth = move->depth_path;
         
       return 1;
     }
@@ -1257,7 +1265,7 @@ int Try_One_Spr_Move_Full(t_spr *move, short int apply_move, t_tree *tree)
   if(tree->c_lnL > tree->best_lnL + tree->mod->s_opt->min_diff_lk_move && apply_move == YES)
     {
       tree->best_lnL = tree->c_lnL;
-      tree->n_improvements++;
+      tree->mod->s_opt->n_improvements++;
       return 1;
     }
   else
@@ -1528,7 +1536,7 @@ void Spr_Pars(int threshold, int n_round_max, t_tree *tree)
       curr_pars = tree->c_pars;
       Speed_Spr(tree,1.0,1,0.0);      
     }
-  while(tree->n_improvements && FABS(tree->c_pars - curr_pars) > threshold && round++ < n_round_max);
+  while(tree->mod->s_opt->n_improvements && FABS(tree->c_pars - curr_pars) > threshold && round++ < n_round_max);
 }
 
 //////////////////////////////////////////////////////////////
@@ -1616,8 +1624,8 @@ void Spr_Shuffle(t_tree *mixt_tree)
 
       if(mixt_tree->annealing_temp < 0.0) mixt_tree->annealing_temp = 0.0;
 
-      if(mixt_tree->n_improvements < 5      || 
-         mixt_tree->max_spr_depth  < 2      || 
+      if(mixt_tree->mod->s_opt->n_improvements < 5      || 
+         mixt_tree->mod->s_opt->max_spr_depth  < 2      || 
          FABS(lk_old-mixt_tree->c_lnL) < 5. ||
          ++n_iter > 10) break;
       
@@ -1803,7 +1811,7 @@ void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int d
       Copy_Tree(best_tree,tree);
 
     }
-  while(++step <= max_cycles && tree->n_improvements > 0 && tree->max_spr_depth  > 1);
+  while(++step <= max_cycles && tree->mod->s_opt->n_improvements > 0 && tree->mod->s_opt->max_spr_depth  > 1);
 
   Free(target_list);
 }
@@ -1821,7 +1829,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   unsigned int list_size_first_round  = 1;
   unsigned int list_size_second_round  = 1;
   unsigned int list_size_third_round  = 1;
-  
+  unsigned int last_best_found = 0;
   best_lnL      = UNLIKELY;
   tree->verbose = (tree->verbose == VL0) ? VL0 : VL1;
   max_list_size = MAX(MAX(list_size_first_round,list_size_second_round),list_size_third_round);
@@ -1897,17 +1905,14 @@ void Spr_List_Of_Trees(t_tree *tree)
 
       do
         {
-          Copy_Tree(tree_list[rk[list_size]],tree);
-                    
+          Copy_Tree(tree_list[rk[list_size]],tree);                    
           
-          Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
-
-          tree->mod->s_opt->max_depth_path            = 20;
+          tree->mod->s_opt->max_depth_path            = tree->n_otu;
           tree->mod->s_opt->max_delta_lnL_spr         = 2.E+5;
           tree->mod->s_opt->spr_lnL                   = YES;
           tree->mod->s_opt->spr_pars                  = NO;
-          tree->mod->s_opt->min_diff_lk_move          = 1.E-0;
-          tree->mod->s_opt->min_diff_lk_local         = 1.E-0;
+          tree->mod->s_opt->min_diff_lk_move          = 1.E-1;
+          tree->mod->s_opt->min_diff_lk_local         = 1.E-1;
           tree->perform_spr_right_away                = YES;
           tree->mod->s_opt->eval_list_regraft         = NO;
           tree->mod->s_opt->max_delta_lnL_spr_current = 0.0;
@@ -1921,23 +1926,30 @@ void Spr_List_Of_Trees(t_tree *tree)
               Spr(tree->c_lnL,1.0,tree);
               Optimize_Br_Len_Serie(1,tree);
               
+              tree->mod->s_opt->max_depth_path = MAX(5,3*tree->mod->s_opt->max_spr_depth);
+              /* tree->mod->s_opt->max_delta_lnL_spr = 3.*tree->mod->s_opt->max_delta_lnL_spr_current; */
+
               if(tree->verbose > VL0 && tree->io->quiet == NO)
                 {
-                  PhyML_Printf("\n\t%3d      %12.2f depth max: %3d # improvements: %3d delta lnL max: %12f current: %12f",
+                  PhyML_Printf("\n\t%3d lnL: %12.2f depth: %5d/%5d   # improvements: %3d",
                                iter+1,
                                tree->c_lnL,
-                               tree->max_spr_depth,
-                               tree->n_improvements,
-                               tree->mod->s_opt->max_delta_lnL_spr,
-                               tree->mod->s_opt->max_delta_lnL_spr_current);
+                               tree->mod->s_opt->max_spr_depth,
+                               tree->mod->s_opt->max_depth_path,
+                               tree->mod->s_opt->n_improvements);
                 }
 
-              /* tree->mod->s_opt->max_depth_path    = MAX(5,2*tree->max_spr_depth);           */
-              /* tree->mod->s_opt->max_delta_lnL_spr = 3.*tree->mod->s_opt->max_delta_lnL_spr_current; */
+              if(tree->c_lnL > best_lnL)
+                {
+                  best_lnL = tree->c_lnL;
+                  if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf(" +");
+                  if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace);
+                }
+
               
               iter++;
             }
-          while(tree->n_improvements > 5);
+          while(tree->mod->s_opt->n_improvements > 5);
           
           n_trees++;
           
@@ -1970,48 +1982,58 @@ void Spr_List_Of_Trees(t_tree *tree)
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Thorough optimisation of the best trees (SPR search)...\n");
   list_size = 0;
   n_trees   = 0;
+  last_best_found = 0;
   do
     {
       Copy_Tree(tree_list[rk[list_size]],tree);
        
-      tree->mod->s_opt->max_depth_path            = 15;
+      tree->mod->s_opt->max_depth_path            = tree->n_otu;
       tree->mod->s_opt->max_delta_lnL_spr         = 2.E+5;
       tree->mod->s_opt->spr_lnL                   = YES;
       tree->mod->s_opt->spr_pars                  = NO;
-      tree->mod->s_opt->min_diff_lk_move          = 1.E-1;
-      tree->mod->s_opt->min_diff_lk_local         = 1.E-1;
+      tree->mod->s_opt->min_diff_lk_move          = 1.E-2;
+      tree->mod->s_opt->min_diff_lk_local         = 1.E-2;
       tree->perform_spr_right_away                = YES;
       tree->mod->s_opt->eval_list_regraft         = YES;
-
-      /* iter = 0; */
+      tree->mod->s_opt->max_delta_lnL_spr_current = 0.0;
+      tree->c_lnL                                 = lnL_list[list_size];
+      tree->mod->s_opt->min_n_triple_moves        = 20;
+      tree->mod->s_opt->max_rank_triple_move      = 0;
+      tree->mod->s_opt->max_no_better_tree_found  = 10;
+      
       do
         {
           for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(iter),(phydbl)(1./(iter)));
-          /* for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= 1. + Rnorm((phydbl)(1./(iter+1.)),(phydbl)(1./(iter+1.))); */
           Spr(tree->c_lnL,1.0,tree);
           Optimize_Br_Len_Serie(1,tree);
+                    
+          tree->mod->s_opt->max_depth_path    = MAX(5,3*tree->mod->s_opt->max_spr_depth);
+          /* tree->mod->s_opt->max_delta_lnL_spr = 3.*tree->mod->s_opt->max_delta_lnL_spr_current; */
+          tree->mod->s_opt->min_n_triple_moves = MAX(3,3*tree->mod->s_opt->max_rank_triple_move);
           
           if(tree->verbose > VL0 && tree->io->quiet == NO)
             {
-              PhyML_Printf("\n\t%3d      %12.2f depth max: %3d # improvements: %3d",
+              PhyML_Printf("\n\t%3d lnL: %12.2f depth: %5d/%5d   # improvements: %3d  # moves min: %3d",
                            iter+1,
                            tree->c_lnL,
-                           tree->max_spr_depth,
-                           tree->n_improvements);
+                           tree->mod->s_opt->max_spr_depth,
+                           tree->mod->s_opt->max_depth_path,
+                           tree->mod->s_opt->n_improvements,
+                           tree->mod->s_opt->min_n_triple_moves);
             }
-          
+
           if(tree->c_lnL > best_lnL)
             {
+              last_best_found = 0;;
               best_lnL = tree->c_lnL;
               if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf(" +");
               if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace);
             }
           
-          /* tree->mod->s_opt->max_depth_path    = MAX(5,2*tree->max_spr_depth);           */
-          /* tree->mod->s_opt->max_delta_lnL_spr = 3.*tree->mod->s_opt->max_delta_lnL_spr_current; */
+          last_best_found++;
           iter++;
         }
-      while(tree->n_improvements > 0);
+      while(tree->mod->s_opt->n_improvements > 0 && last_best_found <= tree->mod->s_opt->max_no_better_tree_found);
             
       Copy_Tree(tree,tree_list[rk[list_size]]);
       lnL_list[rk[list_size]] = tree->c_lnL;

@@ -734,7 +734,6 @@ typedef struct __Tree{
                           of every subtree in the phylogeny*/
   int               num_curr_branch_available; /*!gives the number of the next cell in a_edges that is free to receive a pointer to a branch */
   short int                            *t_dir;
-  int                          n_improvements;
   int                                 n_moves;
   int                                 verbose;
 
@@ -805,7 +804,6 @@ typedef struct __Tree{
   phydbl                           norm_scale;
 
   short int                   br_len_recorded;
-  int                           max_spr_depth;
 
   short int                  apply_lk_scaling; /*! Applying scaling of likelihoods. YES/NO */
 
@@ -1309,7 +1307,12 @@ typedef struct __Optimiz { /*! parameters to be optimised (mostly used in 'optim
   int              pars_thresh;
   int            hybrid_thresh;
   int          opt_br_len_mult;
-
+  int       min_n_triple_moves;
+  int     max_rank_triple_move;
+  int           n_improvements;
+  int            max_spr_depth;
+  int max_no_better_tree_found;
+  
   phydbl        tree_size_mult; /*! tree size multiplier */
   phydbl     min_diff_lk_local;
   phydbl    min_diff_lk_global;
