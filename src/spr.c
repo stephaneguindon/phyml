@@ -2000,17 +2000,17 @@ void Spr_List_Of_Trees(t_tree *tree)
       tree->c_lnL                                 = lnL_list[list_size];
       tree->mod->s_opt->min_n_triple_moves        = 10;
       tree->mod->s_opt->max_rank_triple_move      = 0;
-      tree->mod->s_opt->max_no_better_tree_found  = 5;
+      tree->mod->s_opt->max_no_better_tree_found  = 10;
 
       do
         {
-          for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(iter),(phydbl)(1./(iter)));
+          /* for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(iter),(phydbl)(1./(iter))); */
           Spr(tree->c_lnL,1.0,tree);
           Optimize_Br_Len_Serie(1,tree);
                     
           tree->mod->s_opt->max_depth_path    = MAX(10,3*tree->mod->s_opt->max_spr_depth);
           /* tree->mod->s_opt->max_delta_lnL_spr = 3.*tree->mod->s_opt->max_delta_lnL_spr_current; */
-          tree->mod->s_opt->min_n_triple_moves = MAX(10,2*tree->mod->s_opt->max_rank_triple_move);
+          tree->mod->s_opt->min_n_triple_moves = MAX(10,3*tree->mod->s_opt->max_rank_triple_move);
           
           if(tree->verbose > VL0 && tree->io->quiet == NO)
             {
