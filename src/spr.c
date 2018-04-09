@@ -1859,16 +1859,17 @@ void Spr_List_Of_Trees(t_tree *tree)
     {
       /* if(list_size > 0) */
         {
-          Stepwise_Add_Pars(tree);
+          // Stepwise_Add_Pars(tree);
           /* Spr_Pars(0,tree->n_otu,tree); */
-          Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
+          Randomize_Tree(tree,tree->n_otu);
+Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
         }
       
       /* tree->mod->s_opt->min_diff_lk_move  = 1.E-0; */
       /* tree->mod->s_opt->min_diff_lk_local = 1.E-0; */
-      /* Simu(tree,100,1.0,0.0,0.1,(int)(tree->n_otu/2)); */
-      Optimize_Br_Len_Serie(1000,tree);
-      Lk(NULL,tree);
+      // Simu(tree,100,1.0,0.0,0.1,(int)(tree->n_otu/2));
+      // Optimize_Br_Len_Serie(1000,tree);
+       Lk(NULL,tree);
       
       if(tree->verbose > VL0 && tree->io->quiet == NO)
         {
@@ -1890,7 +1891,7 @@ void Spr_List_Of_Trees(t_tree *tree)
     }
   while(++list_size < list_size_first_round);
       
-  Round_Optimize(tree,1000);
+  //Round_Optimize(tree,1000);
 
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Fast optimisation of the best trees (SPR search)...\n");
 
@@ -1919,7 +1920,7 @@ void Spr_List_Of_Trees(t_tree *tree)
           iter = 0;
           do
             {
-              for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(iter+1),(phydbl)(1./(iter+1)));
+              for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(0.2*iter+1),(phydbl)(1./(0.2*iter+1)));
               /* for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= 1. + Rnorm((phydbl)(1./(iter+1.)),(phydbl)(1./(iter+1.))); */
               Spr(tree->c_lnL,1.0,tree);
               Optimize_Br_Len_Serie(1,tree);
@@ -2007,7 +2008,7 @@ void Spr_List_Of_Trees(t_tree *tree)
           Spr(tree->c_lnL,1.0,tree);
           Optimize_Br_Len_Serie(1,tree);
                     
-          tree->mod->s_opt->max_depth_path     = MAX(10,2*tree->mod->s_opt->max_spr_depth);
+          tree->mod->s_opt->max_depth_path     = MAX(5,2*tree->mod->s_opt->max_spr_depth);
           tree->mod->s_opt->max_delta_lnL_spr  = MAX(20.,3.*tree->mod->s_opt->max_delta_lnL_spr_current);
           tree->mod->s_opt->min_n_triple_moves = MAX(10,3*tree->mod->s_opt->max_rank_triple_move);
           

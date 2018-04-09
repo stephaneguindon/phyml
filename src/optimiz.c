@@ -2301,7 +2301,7 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
   short int converged;
   phydbl init_lnL,old_lnL;
   int iter;
-  phydbl best_l, new_l, best_lnL;
+  phydbl best_l, new_l, init_l, best_lnL;
   phydbl u, v;
   phydbl fu, fv;
   phydbl dfu, dfv;
@@ -2310,7 +2310,7 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
   short int ok1, ok2;
   // Warning: make sure eigen_lr vectors are already up-to-date 
 
-  best_l = *l;
+  best_l = init_l = *l;
   best_lnL = old_lnL = init_lnL = tree->c_lnL;  
   mult = 1.2;
   ok1 = ok2 = NO;
@@ -2443,8 +2443,9 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
       assert(dfv < 0.0);
       
       if(fabs(tree->c_lnL-old_lnL) < tol && tree->c_lnL > old_lnL) converged = YES;
-      if(++iter == n_iter_max) converged = YES;
+      if(++iter == n_iter_max+20) converged = YES;
       if(fabs(u-v) < 1.E-3) converged = YES;
+      if(iter >= n_iter_max) PhyML_Fprintf(stderr,"l=%G lnL=%G",*l,tree->c_lnL);
     }
   while(converged == NO);
 
@@ -2466,7 +2467,7 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
   /* PhyML_Printf("\n End NR loop (lnL: %12G dlnL: %12G d2lnL: %12G) l: %12G",tree->c_lnL,tree->c_dlnL,tree->c_d2lnL,*l); */
   if(iter == n_iter_max)
     {
-      PhyML_Printf("\n. Too many iterations in edge length optimization routine.\n");
+      PhyML_Printf("\n. Too many iterations in edge length optimization routine (l=%G init=%G).\n",best_l,init_l);
       assert(FALSE);
     }
 
