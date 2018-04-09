@@ -1859,10 +1859,10 @@ void Spr_List_Of_Trees(t_tree *tree)
     {
       /* if(list_size > 0) */
         {
-          // Stepwise_Add_Pars(tree);
+          Stepwise_Add_Pars(tree);
           /* Spr_Pars(0,tree->n_otu,tree); */
-          Randomize_Tree(tree,tree->n_otu);
-Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
+          /* Randomize_Tree(tree,tree->n_otu); */
+          Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
         }
       
       /* tree->mod->s_opt->min_diff_lk_move  = 1.E-0; */
@@ -1920,7 +1920,7 @@ Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
           iter = 0;
           do
             {
-              for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(0.2*iter+1),(phydbl)(1./(0.2*iter+1)));
+              for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(0.5*iter+1),(phydbl)(1./(0.5*iter+1)));
               /* for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= 1. + Rnorm((phydbl)(1./(iter+1.)),(phydbl)(1./(iter+1.))); */
               Spr(tree->c_lnL,1.0,tree);
               Optimize_Br_Len_Serie(1,tree);
@@ -1988,7 +1988,7 @@ Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
     {
       Copy_Tree(tree_list[rk[list_size]],tree);
        
-      tree->mod->s_opt->max_depth_path            = 15;
+      tree->mod->s_opt->max_depth_path            = 10;
       tree->mod->s_opt->max_delta_lnL_spr         = 2.E+5;
       tree->mod->s_opt->spr_lnL                   = YES;
       tree->mod->s_opt->spr_pars                  = NO;
@@ -2010,7 +2010,7 @@ Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
                     
           tree->mod->s_opt->max_depth_path     = MAX(5,2*tree->mod->s_opt->max_spr_depth);
           tree->mod->s_opt->max_delta_lnL_spr  = MAX(20.,3.*tree->mod->s_opt->max_delta_lnL_spr_current);
-          tree->mod->s_opt->min_n_triple_moves = MAX(10,3*tree->mod->s_opt->max_rank_triple_move);
+          tree->mod->s_opt->min_n_triple_moves = MAX(5,3*tree->mod->s_opt->max_rank_triple_move);
           
           if(tree->verbose > VL0 && tree->io->quiet == NO)
             {
