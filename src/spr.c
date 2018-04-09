@@ -1867,7 +1867,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       
       /* tree->mod->s_opt->min_diff_lk_move  = 1.E-0; */
       /* tree->mod->s_opt->min_diff_lk_local = 1.E-0; */
-      // Simu(tree,100,1.0,0.0,0.1,(int)(tree->n_otu/2));
+      Simu(tree,100,0.1,0.0,0.1,(int)(tree->n_otu/2));
       // Optimize_Br_Len_Serie(1000,tree);
        Lk(NULL,tree);
       
