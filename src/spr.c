@@ -1920,6 +1920,7 @@ void Spr_List_Of_Trees(t_tree *tree)
           do
             {
               Randomize_Tree(tree,(int)(0.1*tree->n_otu/(iter+1)));
+              for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(0.1*iter+1),(phydbl)(1./(0.1*iter+1)));
               Spr(tree->c_lnL,1.0,tree);
               Optimize_Br_Len_Serie(1,tree);
               
@@ -1979,7 +1980,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   Round_Optimize(tree,1000);
 
 
-
+  Copy_Tree(best_tree,tree_list[rk[0]]);
 
 
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Fast optimisation of the best trees (SPR search)...\n");
@@ -2009,7 +2010,7 @@ void Spr_List_Of_Trees(t_tree *tree)
           iter = 0;
           do
             {
-              for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(0.5*iter+1),(phydbl)(1./(0.5*iter+1)));
+              for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(iter+1),(phydbl)(1./(iter+1)));
               Spr(tree->c_lnL,1.0,tree);
               Optimize_Br_Len_Serie(1,tree);
               
