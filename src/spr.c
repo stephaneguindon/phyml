@@ -1821,7 +1821,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   t_tree **tree_list,**tree_list_cpy;
   phydbl *lnL_list,*max_delta_lnL_list,best_lnL;
   t_tree *best_tree;
-
+  time_t t_cur;
   
   unsigned int list_size_first_round  = 1;
   unsigned int list_size_second_round  = 1;
@@ -1922,17 +1922,19 @@ void Spr_List_Of_Trees(t_tree *tree)
           iter = 0;
           do
             {
-              Random_NNI((int)(0.2*tree->n_otu/(iter+1)),tree);
-              for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(0.2*iter+1),(phydbl)(1./(0.2*iter+1)));
+              Random_NNI((int)(0.5*tree->n_otu/(iter+1)),tree);
+              for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(0.1*iter+1),(phydbl)(1./(0.1*iter+1)));
               Spr(tree->c_lnL,1.0,tree);
               Optimize_Br_Len_Serie(5,tree);
               
-              tree->mod->s_opt->max_depth_path = MAX(10,2*tree->mod->s_opt->max_spr_depth);
-              tree->mod->s_opt->max_delta_lnL_spr = MAX(20.,2.*tree->mod->s_opt->max_delta_lnL_spr_current);
+              tree->mod->s_opt->max_depth_path = MAX(10,3*tree->mod->s_opt->max_spr_depth);
+              tree->mod->s_opt->max_delta_lnL_spr = MAX(20.,3.*tree->mod->s_opt->max_delta_lnL_spr_current);
 
               if(tree->verbose > VL0 && tree->io->quiet == NO)
                 {
-                  PhyML_Printf("\n\t%3d lnL: %12.2f depth: %5d/%5d   # improvements: %3d delta_lnL: %10G",
+                  time(&t_cur);
+                  PhyML_Printf("\n\t%5ds %3d lnL: %12.2f depth: %5d/%5d   # improvements: %3d delta_lnL: %10.2f",
+                               (int)(t_cur-tree->t_beg),
                                iter+1,
                                tree->c_lnL,
                                tree->mod->s_opt->max_spr_depth,
