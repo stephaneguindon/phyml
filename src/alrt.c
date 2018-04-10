@@ -63,7 +63,7 @@ int Check_NNI_Five_Branches(t_tree *tree)
       
       
       //For every branch
-      For(i,2*tree->n_otu-3)
+      for(i=0;i<2*tree->n_otu-3;++i)
         {
           //if this branch is not terminal
           if((!tree->a_edges[i]->left->tax) && (!tree->a_edges[i]->rght->tax))
