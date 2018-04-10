@@ -128,6 +128,7 @@ int Spr(phydbl init_lnL, phydbl prop_spr, t_tree *tree)
   Set_Both_Sides(YES,tree);
   Lk(NULL,tree);
   tree->best_lnL = tree->c_lnL;
+
   
   for(i=0;i<MAX(1,(int)((2*tree->n_otu-3)*prop_spr));++i)
     {
@@ -139,6 +140,7 @@ int Spr(phydbl init_lnL, phydbl prop_spr, t_tree *tree)
 
       Spr_Subtree(b,b->left,tree);
       Spr_Subtree(b,b->rght,tree);
+
     }
     
   Free(br_idx);
@@ -1921,11 +1923,11 @@ void Spr_List_Of_Trees(t_tree *tree)
           do
             {
               Random_NNI((int)(0.2*tree->n_otu/(iter+1)),tree);
-              for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(0.5*iter+1),(phydbl)(1./(0.5*iter+1)));
+              for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(0.2*iter+1),(phydbl)(1./(0.2*iter+1)));
               Spr(tree->c_lnL,1.0,tree);
-              Optimize_Br_Len_Serie(1,tree);
+              Optimize_Br_Len_Serie(5,tree);
               
-              tree->mod->s_opt->max_depth_path = MAX(5,2*tree->mod->s_opt->max_spr_depth);
+              tree->mod->s_opt->max_depth_path = MAX(10,2*tree->mod->s_opt->max_spr_depth);
               tree->mod->s_opt->max_delta_lnL_spr = MAX(20.,2.*tree->mod->s_opt->max_delta_lnL_spr_current);
 
               if(tree->verbose > VL0 && tree->io->quiet == NO)
