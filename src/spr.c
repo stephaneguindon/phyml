@@ -119,6 +119,7 @@ int Spr(phydbl init_lnL, phydbl prop_spr, t_tree *tree)
   tree->mod->s_opt->n_improvements = 0;
   tree->mod->s_opt->max_spr_depth  = 0;
   tree->mod->s_opt->max_rank_triple_move = 0;
+  tree->mod->s_opt->max_delta_lnL_spr_current = 0.0;
   
   Reset_Spr_List(tree->spr_list_all_edge,tree->size_spr_list_all_edge);
 
@@ -1905,99 +1906,8 @@ void Spr_List_Of_Trees(t_tree *tree)
         {
           Copy_Tree(tree_list[rk[list_size]],tree);                    
           
-          tree->mod->s_opt->max_depth_path            = 2;
-          tree->mod->s_opt->max_delta_lnL_spr         = 20.;
-          tree->mod->s_opt->spr_lnL                   = YES;
-          tree->mod->s_opt->spr_pars                  = NO;
-          tree->mod->s_opt->min_diff_lk_move          = 1.E-0;
-          tree->mod->s_opt->min_diff_lk_local         = 1.E-0;
-          tree->perform_spr_right_away                = YES;
-          tree->mod->s_opt->eval_list_regraft         = NO;
-          tree->mod->s_opt->max_delta_lnL_spr_current = 0.0;
-          tree->c_lnL                                 = lnL_list[list_size];
-
-          iter = 0;
-          do
-            {
-              Random_NNI((int)(0.5*tree->n_otu/(iter+1)),tree);
-              for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(0.1*iter+1),(phydbl)(1./(0.1*iter+1)));
-              Spr(tree->c_lnL,1.0,tree);
-              Optimize_Br_Len_Serie(1,tree);
-              
-              tree->mod->s_opt->max_depth_path = MAX(5,2*tree->mod->s_opt->max_spr_depth);
-              tree->mod->s_opt->max_delta_lnL_spr = MAX(20.,2.*tree->mod->s_opt->max_delta_lnL_spr_current);
-
-              if(tree->verbose > VL0 && tree->io->quiet == NO)
-                {
-                  PhyML_Printf("\n\t%3d lnL: %12.2f depth: %5d/%5d   # improvements: %3d",
-                               iter+1,
-                               tree->c_lnL,
-                               tree->mod->s_opt->max_spr_depth,
-                               tree->mod->s_opt->max_depth_path,
-                               tree->mod->s_opt->n_improvements);
-                }
-
-              if(tree->c_lnL > best_lnL)
-                {
-                  best_lnL = tree->c_lnL;
-                  Copy_Tree(tree,best_tree);
-                  if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf(" +");
-                  if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace);
-                }
-
-              
-              iter++;
-            }
-          while(tree->mod->s_opt->n_improvements > 0 && iter < (int)(0.2*tree->n_otu));
-          
-          n_trees++;
-          
-          if(tree->c_lnL > best_lnL)
-            {
-              best_lnL = tree->c_lnL;
-              Copy_Tree(tree,best_tree);
-              if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf(" +");
-              if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace);
-            }
-          
-          
-          Copy_Tree(tree,tree_list[rk[list_size]]);
-          lnL_list[rk[list_size]] = tree->c_lnL;
-        }
-      while(++list_size < list_size_second_round);
-
-      Free(rk);
-      rk = Ranks(lnL_list,max_list_size);
-      
-      list_size_second_round /= 2;
-    }
-  while(list_size_second_round > 1);
-
-  
-  Free(rk);
-  rk = Ranks(lnL_list,max_list_size);
-
-  Round_Optimize(tree,1000);
-
-
-  Copy_Tree(best_tree,tree_list[rk[0]]);
-
-
-  if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Fast optimisation of the best trees (SPR search)...\n");
-
-  do
-    {
-      if(rk) Free(rk);
-      rk = Ranks(lnL_list,max_list_size);
-      list_size = 0;
-      n_trees   = 0;
-
-      do
-        {
-          Copy_Tree(tree_list[rk[list_size]],tree);                    
-          
-          tree->mod->s_opt->max_depth_path            = 2;
-          tree->mod->s_opt->max_delta_lnL_spr         = 20.;
+          tree->mod->s_opt->max_depth_path            = 30;
+          tree->mod->s_opt->max_delta_lnL_spr         = 2000.;
           tree->mod->s_opt->spr_lnL                   = YES;
           tree->mod->s_opt->spr_pars                  = NO;
           tree->mod->s_opt->min_diff_lk_move          = 1.E-1;
@@ -2010,21 +1920,23 @@ void Spr_List_Of_Trees(t_tree *tree)
           iter = 0;
           do
             {
-              for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(iter+1),(phydbl)(1./(iter+1)));
+              Random_NNI((int)(0.2*tree->n_otu/(iter+1)),tree);
+              for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(0.5*iter+1),(phydbl)(1./(0.5*iter+1)));
               Spr(tree->c_lnL,1.0,tree);
               Optimize_Br_Len_Serie(1,tree);
               
-              tree->mod->s_opt->max_depth_path = MAX(5,3*tree->mod->s_opt->max_spr_depth);
-              tree->mod->s_opt->max_delta_lnL_spr = MAX(20.,3.*tree->mod->s_opt->max_delta_lnL_spr_current);
+              tree->mod->s_opt->max_depth_path = MAX(5,2*tree->mod->s_opt->max_spr_depth);
+              tree->mod->s_opt->max_delta_lnL_spr = MAX(20.,2.*tree->mod->s_opt->max_delta_lnL_spr_current);
 
               if(tree->verbose > VL0 && tree->io->quiet == NO)
                 {
-                  PhyML_Printf("\n\t%3d lnL: %12.2f depth: %5d/%5d   # improvements: %3d",
+                  PhyML_Printf("\n\t%3d lnL: %12.2f depth: %5d/%5d   # improvements: %3d delta_lnL: %10G",
                                iter+1,
                                tree->c_lnL,
                                tree->mod->s_opt->max_spr_depth,
                                tree->mod->s_opt->max_depth_path,
-                               tree->mod->s_opt->n_improvements);
+                               tree->mod->s_opt->n_improvements,
+                               tree->mod->s_opt->max_delta_lnL_spr);
                 }
 
               if(tree->c_lnL > best_lnL)
@@ -2038,7 +1950,7 @@ void Spr_List_Of_Trees(t_tree *tree)
               
               iter++;
             }
-          while(tree->mod->s_opt->n_improvements > 0);
+          while(tree->mod->s_opt->n_improvements > 0 && iter < (int)(0.5*tree->n_otu));
           
           n_trees++;
           
