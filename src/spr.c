@@ -1947,7 +1947,7 @@ void Spr_List_Of_Trees(t_tree *tree)
               
               iter++;
             }
-          while(tree->mod->s_opt->n_improvements > 0);
+          while(tree->mod->s_opt->n_improvements > 0 && iter < (int)(0.2*tree->n_otu));
           
           n_trees++;
           
