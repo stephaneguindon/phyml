@@ -1905,8 +1905,8 @@ void Spr_List_Of_Trees(t_tree *tree)
         {
           Copy_Tree(tree_list[rk[list_size]],tree);                    
           
-          tree->mod->s_opt->max_depth_path            = 20;
-          tree->mod->s_opt->max_delta_lnL_spr         = 200.;
+          tree->mod->s_opt->max_depth_path            = 2;
+          tree->mod->s_opt->max_delta_lnL_spr         = 20.;
           tree->mod->s_opt->spr_lnL                   = YES;
           tree->mod->s_opt->spr_pars                  = NO;
           tree->mod->s_opt->min_diff_lk_move          = 1.E-0;
@@ -1919,12 +1919,12 @@ void Spr_List_Of_Trees(t_tree *tree)
           iter = 0;
           do
             {
-              Randomize_Tree(tree,(int)(0.1*tree->n_otu/(iter+1)));
+              Random_NNI((int)(0.5*tree->n_otu/(iter+1)),tree);
               for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(0.1*iter+1),(phydbl)(1./(0.1*iter+1)));
               Spr(tree->c_lnL,1.0,tree);
               Optimize_Br_Len_Serie(1,tree);
               
-              tree->mod->s_opt->max_depth_path = MAX(10,2*tree->mod->s_opt->max_spr_depth);
+              tree->mod->s_opt->max_depth_path = MAX(5,2*tree->mod->s_opt->max_spr_depth);
               tree->mod->s_opt->max_delta_lnL_spr = MAX(20.,2.*tree->mod->s_opt->max_delta_lnL_spr_current);
 
               if(tree->verbose > VL0 && tree->io->quiet == NO)
@@ -1996,8 +1996,8 @@ void Spr_List_Of_Trees(t_tree *tree)
         {
           Copy_Tree(tree_list[rk[list_size]],tree);                    
           
-          tree->mod->s_opt->max_depth_path            = 20;
-          tree->mod->s_opt->max_delta_lnL_spr         = 200.;
+          tree->mod->s_opt->max_depth_path            = 2;
+          tree->mod->s_opt->max_delta_lnL_spr         = 20.;
           tree->mod->s_opt->spr_lnL                   = YES;
           tree->mod->s_opt->spr_pars                  = NO;
           tree->mod->s_opt->min_diff_lk_move          = 1.E-1;
@@ -2014,7 +2014,7 @@ void Spr_List_Of_Trees(t_tree *tree)
               Spr(tree->c_lnL,1.0,tree);
               Optimize_Br_Len_Serie(1,tree);
               
-              tree->mod->s_opt->max_depth_path = MAX(10,3*tree->mod->s_opt->max_spr_depth);
+              tree->mod->s_opt->max_depth_path = MAX(5,3*tree->mod->s_opt->max_spr_depth);
               tree->mod->s_opt->max_delta_lnL_spr = MAX(20.,3.*tree->mod->s_opt->max_delta_lnL_spr_current);
 
               if(tree->verbose > VL0 && tree->io->quiet == NO)
