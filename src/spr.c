@@ -1906,7 +1906,7 @@ void Spr_List_Of_Trees(t_tree *tree)
 
       do
         {
-          Copy_Tree(tree_list[rk[list_size]],tree);                    
+          Copy_Tree(tree_list[rk[list_size]],tree);
           
           tree->mod->s_opt->max_depth_path            = 30;
           tree->mod->s_opt->max_delta_lnL_spr         = 2000.;
@@ -1923,7 +1923,7 @@ void Spr_List_Of_Trees(t_tree *tree)
           do
             {
               Random_NNI((int)(0.5*tree->n_otu/(iter+1)),tree);
-              for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(0.1*iter+1),(phydbl)(1./(0.1*iter+1)));
+              for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(0.5*iter+1),(phydbl)(1./(0.5*iter+1)));
               Spr(tree->c_lnL,1.0,tree);
               Optimize_Br_Len_Serie(5,tree);
               
