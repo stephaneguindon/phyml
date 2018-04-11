@@ -1927,8 +1927,8 @@ void Spr_List_Of_Trees(t_tree *tree)
               Spr(tree->c_lnL,1.0,tree);
               Optimize_Br_Len_Serie(5,tree);
               
-              tree->mod->s_opt->max_depth_path = MAX(5,2*tree->mod->s_opt->max_spr_depth);
-              tree->mod->s_opt->max_delta_lnL_spr = MAX(10.,2.*tree->mod->s_opt->max_delta_lnL_spr_current);
+              tree->mod->s_opt->max_depth_path = MAX(10,3*tree->mod->s_opt->max_spr_depth);
+              tree->mod->s_opt->max_delta_lnL_spr = MAX(20.,3.*tree->mod->s_opt->max_delta_lnL_spr_current);
 
               if(tree->verbose > VL0 && tree->io->quiet == NO)
                 {
