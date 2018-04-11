@@ -44,7 +44,6 @@ int Simu(t_tree *tree, int n_step_max, phydbl delta_lnL, phydbl init_T, phydbl d
   do
     {
       old_loglk = tree->c_lnL;
-      for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(0.2*n_round+1),(phydbl)(1./(0.2*n_round+1)));
       Set_Both_Sides(NO,tree);
       tree->tip_root = Rand_Int(0,tree->n_otu-1);
       Lk(NULL,tree);
@@ -965,11 +964,12 @@ void NNI_Core(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_tree 
   /*    (v2->tax == YES && !strcmp(v2->name,"tax57"))) */
   /*   printf("\n. lk0: %G lk1: %G lk2: %G l0: %G l1: %G l2: %G",lk0,lk1,lk2,l0->v,l1->v,l2->v); */
 
+  /* printf("\n. a: %d d: %d -- lk0: %f lk1: %f lk2: %f p: %G %G %G %G",a->num,d->num,lk0,lk1,lk2,p_accept,l0->v,l1->v,l2->v); */
+
   p_accept = exp((lk1-lk0)/(tree->annealing_temp+1.E-6));
   if(Are_Equal(lk1,lk0,tree->mod->s_opt->min_diff_lk_local) && Are_Equal(tree->annealing_temp,0.0,1.E-3)) p_accept = .0;
   rnd = Uni();
   
-  /* printf("\n. a: %d d: %d -- lk0: %f lk1: %f lk2: %f p: %G %G %G %G",a->num,d->num,lk0,lk1,lk2,p_accept,l0->v,l1->v,l2->v); */
   
   if(rnd < p_accept && lk2 < lk1)
     {
