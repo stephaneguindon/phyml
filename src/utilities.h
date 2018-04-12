@@ -1277,6 +1277,8 @@ typedef struct __Option { /*! mostly used in 'help.c' */
   int                       ancestral;
   int                  has_io_weights;
   int                   tbe_bootstrap;/* Replace standard bootstrap with tbe bootstrap (only when b>0) */
+
+  int leave_duplicates; /* Leave duplicated sequences */
 }option;
 
 /*!********************************************************/

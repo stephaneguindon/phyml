@@ -128,6 +128,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
       {"json_trace",          no_argument,NULL,78},
       {"weights",             required_argument,NULL,79},
       {"tbe",                 no_argument,NULL,80},
+      {"leave_duplicates",    no_argument,NULL,81},
       {0,0,0,0}
     };
 
@@ -145,9 +146,14 @@ int Read_Command_Line(option *io, int argc, char **argv)
 
       switch(c)
 	{
+	case 81 :
+	  {
+	    io->leave_duplicates = YES;
+	    break;
+	  }
 	case 80 :
 	  {
-	    io->tbe_bootstrap = 1;
+	    io->tbe_bootstrap = YES;
 	    break;
 	  }
         case 79:

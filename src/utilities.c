@@ -1195,7 +1195,7 @@ char *Add_Taxa_To_Constraint_Tree(FILE *fp, calign *cdata)
     {
       if(line[i]=='(') open++;
       if(line[i]==')') open--;      
-      if(i > T_MAX_LINE) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+      if(i > T_MAX_LINE) assert(FALSE);
       i++;
     }
   long_line[i-1] = '\0';
@@ -2338,6 +2338,8 @@ void Remove_Duplicates(calign *data, t_mod *mod, option *io)
 {
   int n_duplicates,n_removed,n_otu_orig;
   align *tmp;
+
+  if(io->leave_duplicates == YES) return;
   
   n_otu_orig = data->n_otu;
   n_duplicates = 0;
