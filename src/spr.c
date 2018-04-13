@@ -1909,8 +1909,8 @@ void Spr_List_Of_Trees(t_tree *tree)
           do
             {
               /* Random_NNI((int)(1.0*tree->n_otu/(iter+1)),tree); */
-              Randomize_Tree(tree,(int)(0.2*tree->n_otu/(iter+1)));
-              for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(0.2*iter+1),(phydbl)(1./(0.2*iter+1)));
+              /* Randomize_Tree(tree,(int)(0.2*tree->n_otu/(iter+1))); */
+              for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(0.1*iter+1),(phydbl)(1./(0.1*iter+1)));
            
               Spr(tree->c_lnL,1.0,tree);
               Optimize_Br_Len_Serie(1,tree);
@@ -1946,7 +1946,7 @@ void Spr_List_Of_Trees(t_tree *tree)
               
               iter++;
             }
-          while(tree->mod->s_opt->n_improvements > 0 && iter < (int)(0.5*tree->n_otu));
+          while(tree->mod->s_opt->n_improvements > 0 && iter < (int)(tree->n_otu));
           
           n_trees++;
           
