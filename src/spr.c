@@ -544,8 +544,8 @@ void Test_One_Spr_Target_Recur(t_node *a, t_node *d, t_edge *pulled, t_node *lin
 
               bool go_to_next =
                 (tree->depth_curr_path < tree->mod->s_opt->max_depth_path &&
-                ((tree->mod->s_opt->spr_pars == NO  && move->lnL > tree->best_lnL - tree->mod->s_opt->max_delta_lnL_spr) ||
-                 tree->mod->s_opt->spr_pars == YES)) || (move && fabs(move->lnL - tree->best_lnL) < 1.E-3);
+                ((tree->mod->s_opt->spr_pars == NO  && move && move->lnL > tree->best_lnL - tree->mod->s_opt->max_delta_lnL_spr) ||
+                 tree->mod->s_opt->spr_pars == YES));
 
               /* bool go_to_next = tree->depth_curr_path < tree->mod->s_opt->max_depth_path; */
                            
@@ -611,24 +611,10 @@ t_spr *Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
 
   if(tree->mod->s_opt->spr_lnL == YES)
     {
-      /* Set_Scalar_Dbl_Min_Thresh(0.001,b_target->l); */
-      /* Set_Scalar_Dbl_Min_Thresh(0.001,b_residual->l); */
-
       Update_PMat_At_Given_Edge(b_target,tree);
       Update_PMat_At_Given_Edge(b_residual,tree);
       Update_Partial_Lk(tree,b_arrow,n_link);
       Lk(b_arrow,tree);
-      
-      /* if(b_target->left == polarity || b_target->rght == polarity) */
-      /*   { */
-      /*     Update_Partial_Lk(tree,b_target,n_link); */
-      /*     Br_Len_Opt(b_target,tree); */
-      /*   } */
-      /* else */
-      /*   { */
-      /*     Update_Partial_Lk(tree,b_residual,n_link); */
-      /*     Br_Len_Opt(b_residual,tree); */
-      /*   } */
     }
   else
     {
@@ -1912,8 +1898,8 @@ void Spr_List_Of_Trees(t_tree *tree)
           tree->mod->s_opt->max_delta_lnL_spr         = 50.;
           tree->mod->s_opt->spr_lnL                   = YES;
           tree->mod->s_opt->spr_pars                  = NO;
-          tree->mod->s_opt->min_diff_lk_move          = 1.E-2;
-          tree->mod->s_opt->min_diff_lk_local         = 1.E-2;
+          tree->mod->s_opt->min_diff_lk_move          = 1.E-0;
+          tree->mod->s_opt->min_diff_lk_local         = 1.E-0;
           tree->perform_spr_right_away                = YES;
           tree->mod->s_opt->eval_list_regraft         = NO;
           tree->mod->s_opt->max_delta_lnL_spr_current = 0.0;
@@ -1922,7 +1908,8 @@ void Spr_List_Of_Trees(t_tree *tree)
           iter = 0;
           do
             {
-              Random_NNI((int)(0.8*tree->n_otu/(iter+1)),tree);
+              /* Random_NNI((int)(1.0*tree->n_otu/(iter+1)),tree); */
+              Randomize_Tree(tree,(int)(0.2*tree->n_otu/(iter+1)));
               for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(0.2*iter+1),(phydbl)(1./(0.2*iter+1)));
            
               Spr(tree->c_lnL,1.0,tree);
@@ -1941,8 +1928,12 @@ void Spr_List_Of_Trees(t_tree *tree)
                                tree->mod->s_opt->max_delta_lnL_spr);
                 }
 
-              tree->mod->s_opt->max_depth_path = MAX(10,2*tree->mod->s_opt->max_spr_depth);
-              tree->mod->s_opt->max_delta_lnL_spr = MAX(20.,2.*tree->mod->s_opt->max_delta_lnL_spr_current);
+              tree->mod->s_opt->max_depth_path = MIN(30,MAX(10,2*tree->mod->s_opt->max_spr_depth));
+              tree->mod->s_opt->max_delta_lnL_spr = MAX(30.,2.*tree->mod->s_opt->max_delta_lnL_spr_current);
+              tree->mod->s_opt->min_diff_lk_move  *= 0.5;
+              tree->mod->s_opt->min_diff_lk_local *= 0.5;
+              tree->mod->s_opt->min_diff_lk_move = MAX(1.E-2,tree->mod->s_opt->min_diff_lk_move);
+              tree->mod->s_opt->min_diff_lk_local = MAX(1.E-2,tree->mod->s_opt->min_diff_lk_local);
 
               if(tree->c_lnL > best_lnL)
                 {
@@ -1984,10 +1975,10 @@ void Spr_List_Of_Trees(t_tree *tree)
   Free(rk);
   rk = Ranks(lnL_list,max_list_size);
 
+  Copy_Tree(best_tree,tree_list[rk[0]]);
+  Copy_Tree(best_tree,tree);
   Round_Optimize(tree,1000);
 
-
-  Copy_Tree(best_tree,tree_list[rk[0]]);
   
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Thorough optimisation of the best trees (SPR search)...\n");
   list_size = 0;
@@ -2015,7 +2006,6 @@ void Spr_List_Of_Trees(t_tree *tree)
       iter = 0;
       do
         {
-          for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(iter+1),(phydbl)(1./(iter+1)));
           Spr(tree->c_lnL,1.0,tree);
           Optimize_Br_Len_Serie(10,tree);
                               
