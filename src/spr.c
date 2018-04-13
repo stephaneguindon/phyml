@@ -1995,8 +1995,8 @@ void Spr_List_Of_Trees(t_tree *tree)
       tree->mod->s_opt->min_diff_lk_move          = 1.E-3;
       tree->mod->s_opt->min_diff_lk_local         = 1.E-3;
       tree->perform_spr_right_away                = YES;
-      /* tree->mod->s_opt->eval_list_regraft         = YES; */
-      tree->mod->s_opt->eval_list_regraft         = NO;
+      tree->mod->s_opt->eval_list_regraft         = YES;
+      /* tree->mod->s_opt->eval_list_regraft         = NO; */
       tree->mod->s_opt->max_delta_lnL_spr_current = 0.0;
       tree->c_lnL                                 = lnL_list[list_size];
       tree->mod->s_opt->min_n_triple_moves        = 10;
