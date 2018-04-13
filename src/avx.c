@@ -262,14 +262,15 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
   phydbl smallest_p_lk,largest_p_lk;
   phydbl p_lk_lim_inf;
   int *p_lk_loc;
-
+  short int p1_is_fully_ambiguous, p2_is_fully_ambiguous;
+  
   const unsigned int npattern = tree->n_pattern;
   const unsigned int ns = tree->mod->ns;
   const unsigned int ncatg = tree->mod->ras->n_catg;
 
   const unsigned int ncatgns =  ncatg * ns;
-  const unsigned int nsns =  ns * ns;
-    
+  const unsigned int nsns =  ns * ns;  
+  
   const unsigned int sz = (int)BYTE_ALIGN / 8;
   const unsigned nblocks = ns/sz;
 
@@ -285,7 +286,9 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
   tPij1 = tPij2               = NULL;
   sum_scale_v1 = sum_scale_v2 = NULL;
   p_lk_loc                    = NULL;
-
+  p1_is_fully_ambiguous       = NO;
+  p2_is_fully_ambiguous       = NO;
+  
   Set_All_Partial_Lk(&n_v1,&n_v2,
                      &p_lk,&sum_scale,&p_lk_loc,
                      &Pij1,&tPij1,&p_lk_v1,&sum_scale_v1,
@@ -310,95 +313,179 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
           for(i=0;i<ncatgns;++i) p_lk[site*ncatgns + i] = 1.0;
         }
       else
-        {
-          /* For all rate classes */
-          for(catg=0;catg<ncatg;++catg)
-            {              
-              for(k=0;k<nblocks;++k) _plk1[k] = _mm256_setzero_pd();
-              for(k=0;k<nblocks;++k) _plk2[k] = _mm256_setzero_pd();
-              
-              for(i=0;i<ns;++i)
-                {
-                  for(k=0;k<nblocks;++k) _x1[k] = _mm256_setzero_pd();
-                  for(k=0;k<nblocks;++k) _x2[k] = _mm256_setzero_pd();
+        {          
+          p1_is_fully_ambiguous = NO;
+          if(n_v1->tax == NO) { for(i=0;i<ns;++i) if(Are_Equal(p_lk_v1[site*ncatgns + 0*ns + i],1.0,1.E-5) == NO) break; }
+          else for(i=0;i<ns;++i) if(Are_Equal(p_lk_v1[site*ns + i],1.0,1.E-5) == NO) break;          
+          if(i==ns) p1_is_fully_ambiguous = YES;
+
+          p2_is_fully_ambiguous = NO;
+          if(n_v2->tax == NO) { for(i=0;i<ns;++i) if(Are_Equal(p_lk_v2[site*ncatgns + 0*ns + i],1.0,1.E-5) == NO) break; }
+          else for(i=0;i<ns;++i) if(Are_Equal(p_lk_v2[site*ns + i],1.0,1.E-5) == NO) break;          
+          if(i==ns) p2_is_fully_ambiguous = YES;
+
+
+          if(p1_is_fully_ambiguous == YES && p2_is_fully_ambiguous == YES)
+            {
+              for(i=0;i<ncatgns;++i) p_lk[site*ncatgns + i] = 1.0;
+            }
+          else
+            {
+          
+              /* For all rate classes */
+              for(catg=0;catg<ncatg;++catg)
+                {              
+                  for(k=0;k<nblocks;++k) _plk1[k] = _mm256_setzero_pd();
+                  for(k=0;k<nblocks;++k) _plk2[k] = _mm256_setzero_pd();
                   
-                  if(n_v1->tax == NO)
-                    {
-                      if(p_lk_v1[site*ncatgns + catg*ns + i] > 0.0)
-                        {
-                          for(k=0;k<nblocks;++k) _x1[k] = _mm256_mul_pd(_mm256_load_pd(tPij1 + catg*nsns + i*ns + sz*k),
-                                                                        _mm256_set1_pd(p_lk_v1[site*ncatgns + catg*ns + i]));
-                          
-                          for(k=0;k<nblocks;++k) _plk1[k] = _mm256_add_pd(_plk1[k],_x1[k]);
-                        }
-                    }                  
+                  // v1 side
+                  if(p1_is_fully_ambiguous == YES) for(k=0;k<nblocks;++k) _plk1[k] = _mm256_set1_pd(1.0);
                   else
                     {
-                      if(p_lk_v1[site*ns + i] > 0.0)
+                      for(i=0;i<ns;++i)
                         {
-                          for(k=0;k<nblocks;++k) _x1[k] = _mm256_mul_pd(_mm256_load_pd(tPij1 + catg*nsns + i*ns + sz*k),
-                                                                        _mm256_set1_pd(p_lk_v1[site*ns + i]));
+                          for(k=0;k<nblocks;++k) _x1[k] = _mm256_setzero_pd();
                           
-                          for(k=0;k<nblocks;++k) _plk1[k] = _mm256_add_pd(_plk1[k],_x1[k]);
+                          if(n_v1->tax == NO)
+                            {
+                              if(p_lk_v1[site*ncatgns + catg*ns + i] > 0.0)
+                                {
+                                  for(k=0;k<nblocks;++k) _x1[k] = _mm256_mul_pd(_mm256_load_pd(tPij1 + catg*nsns + i*ns + sz*k),
+                                                                                _mm256_set1_pd(p_lk_v1[site*ncatgns + catg*ns + i]));
+                                  
+                                  for(k=0;k<nblocks;++k) _plk1[k] = _mm256_add_pd(_plk1[k],_x1[k]);
+                                }
+                            }                  
+                          else
+                            {                      
+                              if(p_lk_v1[site*ns + i] > 0.0)
+                                {
+                                  for(k=0;k<nblocks;++k) _x1[k] = _mm256_mul_pd(_mm256_load_pd(tPij1 + catg*nsns + i*ns + sz*k),
+                                                                                _mm256_set1_pd(p_lk_v1[site*ns + i]));
+                                  
+                                  for(k=0;k<nblocks;++k) _plk1[k] = _mm256_add_pd(_plk1[k],_x1[k]);
+                                }
+                            }
                         }
                     }
                   
-                  if(n_v2->tax == NO)
-                    {
-                      if(p_lk_v2[site*ncatgns + catg*ns + i] > 0.0)
-                        {
-                          for(k=0;k<nblocks;++k) _x2[k] = _mm256_mul_pd(_mm256_load_pd(tPij2 + catg*nsns + i*ns + sz*k),
-                                                                        _mm256_set1_pd(p_lk_v2[site*ncatgns + catg*ns + i]));
-                          
-                          for(k=0;k<nblocks;++k) _plk2[k] = _mm256_add_pd(_plk2[k],_x2[k]);
-                        }
-                    }
+                  
+                  // v2 side
+                  if(p2_is_fully_ambiguous == YES) for(k=0;k<nblocks;++k) _plk2[k] = _mm256_set1_pd(1.0);
                   else
                     {
-                      if(p_lk_v2[site*ns + i] > 0.0)
+                      for(i=0;i<ns;++i)
                         {
-                          for(k=0;k<nblocks;++k) _x2[k] = _mm256_mul_pd(_mm256_load_pd(tPij2 + catg*nsns + i*ns + sz*k),
-                                                                        _mm256_set1_pd(p_lk_v2[site*ns + i]));
+                          for(k=0;k<nblocks;++k) _x2[k] = _mm256_setzero_pd();
                           
-                          for(k=0;k<nblocks;++k) _plk2[k] = _mm256_add_pd(_plk2[k],_x2[k]);
+                          if(n_v2->tax == NO)
+                            {
+                              if(p_lk_v2[site*ncatgns + catg*ns + i] > 0.0)
+                                {
+                                  for(k=0;k<nblocks;++k) _x2[k] = _mm256_mul_pd(_mm256_load_pd(tPij2 + catg*nsns + i*ns + sz*k),
+                                                                                _mm256_set1_pd(p_lk_v2[site*ncatgns + catg*ns + i]));
+                                  
+                                  for(k=0;k<nblocks;++k) _plk2[k] = _mm256_add_pd(_plk2[k],_x2[k]);
+                                }
+                            }                  
+                          else
+                            {                      
+                              if(p_lk_v2[site*ns + i] > 0.0)
+                                {
+                                  for(k=0;k<nblocks;++k) _x2[k] = _mm256_mul_pd(_mm256_load_pd(tPij2 + catg*nsns + i*ns + sz*k),
+                                                                                _mm256_set1_pd(p_lk_v2[site*ns + i]));
+                                  
+                                  for(k=0;k<nblocks;++k) _plk2[k] = _mm256_add_pd(_plk2[k],_x2[k]);
+                                }
+                            }
                         }
                     }
-                }
+                
               
-              for(k=0;k<nblocks;++k) _plk[k] = _mm256_mul_pd(_plk1[k],_plk2[k]);
-              
-              for(k=0;k<nblocks;++k) _mm256_store_pd(p_lk + site*ncatgns + catg*ns + sz*k,_plk[k]);
-              
-              
-              if(tree->scaling_method == SCALE_RATE_SPECIFIC)
-                {
-                  smallest_p_lk = BIG;
-                  for(i=0;i<ns;++i)
-                    if(p_lk[site*ncatgns+catg*ns+i] < smallest_p_lk)
-                      smallest_p_lk = p_lk[site*ncatgns+catg*ns+i] ;
+              /* for(i=0;i<ns;++i) */
+              /*   { */
+              /*     for(k=0;k<nblocks;++k) _x1[k] = _mm256_setzero_pd(); */
+              /*     for(k=0;k<nblocks;++k) _x2[k] = _mm256_setzero_pd(); */
                   
-                  /* Current scaling values at that site */
-                  sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[site*ncatg+catg]):(0);
-                  sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[site*ncatg+catg]):(0);
+              /*     if(n_v1->tax == NO) */
+              /*       { */
+              /*         if(p_lk_v1[site*ncatgns + catg*ns + i] > 0.0) */
+              /*           { */
+              /*             for(k=0;k<nblocks;++k) _x1[k] = _mm256_mul_pd(_mm256_load_pd(tPij1 + catg*nsns + i*ns + sz*k), */
+              /*                                                           _mm256_set1_pd(p_lk_v1[site*ncatgns + catg*ns + i])); */
+                          
+              /*             for(k=0;k<nblocks;++k) _plk1[k] = _mm256_add_pd(_plk1[k],_x1[k]); */
+              /*           } */
+              /*       }                   */
+              /*     else */
+              /*       {                       */
+              /*         if(p_lk_v1[site*ns + i] > 0.0) */
+              /*           { */
+              /*             for(k=0;k<nblocks;++k) _x1[k] = _mm256_mul_pd(_mm256_load_pd(tPij1 + catg*nsns + i*ns + sz*k), */
+              /*                                                           _mm256_set1_pd(p_lk_v1[site*ns + i])); */
+                          
+              /*             for(k=0;k<nblocks;++k) _plk1[k] = _mm256_add_pd(_plk1[k],_x1[k]); */
+              /*           } */
+              /*       } */
+                                    
+              /*     if(n_v2->tax == NO) */
+              /*       { */
+              /*         if(p_lk_v2[site*ncatgns + catg*ns + i] > 0.0) */
+              /*           { */
+              /*             for(k=0;k<nblocks;++k) _x2[k] = _mm256_mul_pd(_mm256_load_pd(tPij2 + catg*nsns + i*ns + sz*k), */
+              /*                                                           _mm256_set1_pd(p_lk_v2[site*ncatgns + catg*ns + i])); */
+                          
+              /*             for(k=0;k<nblocks;++k) _plk2[k] = _mm256_add_pd(_plk2[k],_x2[k]); */
+              /*           } */
+              /*       } */
+              /*     else */
+              /*       { */
+              /*         if(p_lk_v2[site*ns + i] > 0.0) */
+              /*           { */
+              /*             for(k=0;k<nblocks;++k) _x2[k] = _mm256_mul_pd(_mm256_load_pd(tPij2 + catg*nsns + i*ns + sz*k), */
+              /*                                                           _mm256_set1_pd(p_lk_v2[site*ns + i])); */
+                          
+              /*             for(k=0;k<nblocks;++k) _plk2[k] = _mm256_add_pd(_plk2[k],_x2[k]); */
+              /*           } */
+              /*       } */
+              /*   } */
+              
+                  for(k=0;k<nblocks;++k) _plk[k] = _mm256_mul_pd(_plk1[k],_plk2[k]);
                   
-                  sum_scale[site*ncatg+catg] = sum_scale_v1_val + sum_scale_v2_val;
-                  
-                  /* Scaling. We have p_lk_lim_inf = 2^-500. Consider for instance that
-                     smallest_p_lk = 2^-600, then curr_scaler_pow will be equal to 100, and
-                     each element in the partial likelihood vector will be multiplied by
-                     2^100. */
-                  if(smallest_p_lk < p_lk_lim_inf &&
-                     tree->mod->augmented == NO &&
-                     tree->apply_lk_scaling == YES)
+                  for(k=0;k<nblocks;++k) _mm256_store_pd(p_lk + site*ncatgns + catg*ns + sz*k,_plk[k]);
+                
+              
+                  if(tree->scaling_method == SCALE_RATE_SPECIFIC)
                     {
-                      int curr_scaler_pow;
-                      curr_scaler_pow = (int)(-500.*LOG2-log(smallest_p_lk))/LOG2;
-                      sum_scale[site*ncatg+catg] += curr_scaler_pow;
-                      for(i=0;i<ns;++i) Rate_Correction(curr_scaler_pow, p_lk + site*ncatgns + catg*ns + i);
-                    }
-                }            
-            }          
+                      smallest_p_lk = BIG;
+                      for(i=0;i<ns;++i)
+                        if(p_lk[site*ncatgns+catg*ns+i] < smallest_p_lk)
+                          smallest_p_lk = p_lk[site*ncatgns+catg*ns+i] ;
+                      
+                      /* Current scaling values at that site */
+                      sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[site*ncatg+catg]):(0);
+                      sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[site*ncatg+catg]):(0);
+                      
+                      sum_scale[site*ncatg+catg] = sum_scale_v1_val + sum_scale_v2_val;
+                      
+                      /* Scaling. We have p_lk_lim_inf = 2^-500. Consider for instance that
+                         smallest_p_lk = 2^-600, then curr_scaler_pow will be equal to 100, and
+                         each element in the partial likelihood vector will be multiplied by
+                         2^100. */
+                      if(smallest_p_lk < p_lk_lim_inf &&
+                         tree->mod->augmented == NO &&
+                         tree->apply_lk_scaling == YES)
+                        {
+                          int curr_scaler_pow;
+                          curr_scaler_pow = (int)(-500.*LOG2-log(smallest_p_lk))/LOG2;
+                          sum_scale[site*ncatg+catg] += curr_scaler_pow;
+                          for(i=0;i<ns;++i) Rate_Correction(curr_scaler_pow, p_lk + site*ncatgns + catg*ns + i);
+                        }
+                    }            
+                }          
+            }
         }
+      
       if(tree->scaling_method == SCALE_FAST)
         {
           sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[site]):(0);
