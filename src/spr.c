@@ -1926,8 +1926,8 @@ void Spr_List_Of_Trees(t_tree *tree)
                                tree->mod->s_opt->max_delta_lnL_spr);
                 }
 
-              tree->mod->s_opt->max_depth_path = MIN(30,MAX(5,2*tree->mod->s_opt->max_spr_depth));
-              tree->mod->s_opt->max_delta_lnL_spr = MAX(20.,2.*tree->mod->s_opt->max_delta_lnL_spr_current);
+              tree->mod->s_opt->max_depth_path = MIN(30,MAX(10,2*tree->mod->s_opt->max_spr_depth));
+              tree->mod->s_opt->max_delta_lnL_spr = MAX(50.,2.*tree->mod->s_opt->max_delta_lnL_spr_current);
               tree->mod->s_opt->min_diff_lk_move  *= 0.5;
               tree->mod->s_opt->min_diff_lk_local *= 0.5;
               tree->mod->s_opt->min_diff_lk_move = MAX(1.E-2,tree->mod->s_opt->min_diff_lk_move);
@@ -2036,7 +2036,6 @@ void Spr_List_Of_Trees(t_tree *tree)
               if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf(" +");
               if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace);
               for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(iter+1),(phydbl)(1./(iter+1)));
-              /* Random_NNI(0.2*tree->n_otu,tree); */
             }
           
           last_best_found++;
