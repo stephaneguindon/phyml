@@ -1910,7 +1910,7 @@ void Spr_List_Of_Trees(t_tree *tree)
           do
             {
            
-              for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(0.9*iter+1),(phydbl)(1./(0.9*iter+1)));
+              for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(0.2*iter+1),(phydbl)(1./(0.2*iter+1)));
               Spr(tree->c_lnL,1.0,tree);
               Optimize_Br_Len_Serie(5,tree);
               
@@ -2005,7 +2005,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       tree->mod->s_opt->max_rank_triple_move      = 0;
       tree->mod->s_opt->max_no_better_tree_found  = 10;
 
-      /* iter = 0; */
+      iter = 0;
       do
         {
           Spr(tree->c_lnL,1.0,tree);
