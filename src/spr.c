@@ -1899,8 +1899,8 @@ void Spr_List_Of_Trees(t_tree *tree)
           tree->mod->s_opt->max_delta_lnL_spr         = 50.;
           tree->mod->s_opt->spr_lnL                   = YES;
           tree->mod->s_opt->spr_pars                  = NO;
-          tree->mod->s_opt->min_diff_lk_move          = 2.E-0;
-          tree->mod->s_opt->min_diff_lk_local         = 2.E-0;
+          tree->mod->s_opt->min_diff_lk_move          = 1.E-0;
+          tree->mod->s_opt->min_diff_lk_local         = 1.E-0;
           tree->perform_spr_right_away                = YES;
           tree->mod->s_opt->eval_list_regraft         = NO;
           tree->mod->s_opt->max_delta_lnL_spr_current = 0.0;
@@ -1909,7 +1909,7 @@ void Spr_List_Of_Trees(t_tree *tree)
           iter = 0;
           do
             {
-           
+              Random_NNI((int)(0.2*tree->n_otu)/(iter+1),tree);
               for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(0.2*iter+1),(phydbl)(1./(0.2*iter+1)));
               Spr(tree->c_lnL,1.0,tree);
               Optimize_Br_Len_Serie(5,tree);
@@ -1927,12 +1927,12 @@ void Spr_List_Of_Trees(t_tree *tree)
                                tree->mod->s_opt->max_delta_lnL_spr);
                 }
 
-              tree->mod->s_opt->max_depth_path = MIN(30,MAX(10,2*tree->mod->s_opt->max_spr_depth));
-              tree->mod->s_opt->max_delta_lnL_spr = MAX(30.,2.*tree->mod->s_opt->max_delta_lnL_spr_current);
+              tree->mod->s_opt->max_depth_path = MIN(30,MAX(5,2*tree->mod->s_opt->max_spr_depth));
+              tree->mod->s_opt->max_delta_lnL_spr = MAX(10.,2.*tree->mod->s_opt->max_delta_lnL_spr_current);
               tree->mod->s_opt->min_diff_lk_move  *= 0.8;
               tree->mod->s_opt->min_diff_lk_local *= 0.8;
-              tree->mod->s_opt->min_diff_lk_move = MAX(1.E-1,tree->mod->s_opt->min_diff_lk_move);
-              tree->mod->s_opt->min_diff_lk_local = MAX(1.E-1,tree->mod->s_opt->min_diff_lk_local);
+              tree->mod->s_opt->min_diff_lk_move = MAX(1.E-2,tree->mod->s_opt->min_diff_lk_move);
+              tree->mod->s_opt->min_diff_lk_local = MAX(1.E-2,tree->mod->s_opt->min_diff_lk_local);
 
               if(tree->c_lnL > best_lnL)
                 {
