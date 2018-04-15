@@ -1927,7 +1927,7 @@ void Spr_List_Of_Trees(t_tree *tree)
                                tree->mod->s_opt->max_delta_lnL_spr);
                 }
 
-              tree->mod->s_opt->max_depth_path = MIN(30,MAX(5,2*tree->mod->s_opt->max_spr_depth));
+              tree->mod->s_opt->max_depth_path = MIN(30,MAX(10,2*tree->mod->s_opt->max_spr_depth));
               /* tree->mod->s_opt->max_delta_lnL_spr = MAX(50.,2.*tree->mod->s_opt->max_delta_lnL_spr_current); */
               /* tree->mod->s_opt->min_diff_lk_move  *= 0.8; */
               /* tree->mod->s_opt->min_diff_lk_local *= 0.8; */
