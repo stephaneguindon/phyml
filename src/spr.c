@@ -1899,8 +1899,8 @@ void Spr_List_Of_Trees(t_tree *tree)
           tree->mod->s_opt->max_delta_lnL_spr         = 50.;
           tree->mod->s_opt->spr_lnL                   = YES;
           tree->mod->s_opt->spr_pars                  = NO;
-          tree->mod->s_opt->min_diff_lk_move          = 5.E-0;
-          tree->mod->s_opt->min_diff_lk_local         = 5.E-0;
+          tree->mod->s_opt->min_diff_lk_move          = 2.E-0;
+          tree->mod->s_opt->min_diff_lk_local         = 2.E-0;
           tree->perform_spr_right_away                = YES;
           tree->mod->s_opt->eval_list_regraft         = NO;
           tree->mod->s_opt->max_delta_lnL_spr_current = 0.0;
@@ -1994,8 +1994,8 @@ void Spr_List_Of_Trees(t_tree *tree)
       tree->mod->s_opt->max_delta_lnL_spr         = 200.;
       tree->mod->s_opt->spr_lnL                   = YES;
       tree->mod->s_opt->spr_pars                  = NO;
-      tree->mod->s_opt->min_diff_lk_move          = 1.E-3;
-      tree->mod->s_opt->min_diff_lk_local         = 1.E-3;
+      tree->mod->s_opt->min_diff_lk_move          = 1.E-2;
+      tree->mod->s_opt->min_diff_lk_local         = 1.E-2;
       tree->perform_spr_right_away                = YES;
       tree->mod->s_opt->eval_list_regraft         = YES;
       /* tree->mod->s_opt->eval_list_regraft         = NO; */
@@ -2009,7 +2009,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       do
         {
           Spr(tree->c_lnL,1.0,tree);
-          Optimize_Br_Len_Serie(1,tree);
+          Optimize_Br_Len_Serie(5,tree);
                               
           if(tree->verbose > VL0 && tree->io->quiet == NO)
             {
