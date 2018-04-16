@@ -129,6 +129,8 @@ int Spr(phydbl init_lnL, phydbl prop_spr, t_tree *tree)
   Lk(NULL,tree);
   tree->best_lnL = tree->c_lnL;
 
+  /* PhyML_Printf("\n. init: %f",tree->c_lnL); */
+  
   for(i=0;i<MAX(1,(int)((2*tree->n_otu-3)*prop_spr));++i)
     {
       br = br_idx[i];
@@ -1807,6 +1809,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   phydbl *lnL_list,*max_delta_lnL_list,best_lnL;
   t_tree *best_tree;
   time_t t_cur;
+  phydbl mean_delta_lnL_spr;
   
   unsigned int no_improv  = 0;
   unsigned int list_size_first_round  = 1;
@@ -1896,36 +1899,53 @@ void Spr_List_Of_Trees(t_tree *tree)
           Copy_Tree(tree_list[rk[list_size]],tree);
           
           tree->mod->s_opt->max_depth_path            = 30;
-          tree->mod->s_opt->max_delta_lnL_spr         = 10000.;
+          tree->mod->s_opt->max_delta_lnL_spr         = 1000.;
           tree->mod->s_opt->spr_lnL                   = YES;
           tree->mod->s_opt->spr_pars                  = NO;
           tree->mod->s_opt->min_diff_lk_move          = 1.E-2;
           tree->mod->s_opt->min_diff_lk_local         = 1.E-2;
           tree->perform_spr_right_away                = YES;
-          tree->mod->s_opt->eval_list_regraft         = YES;
+          tree->mod->s_opt->eval_list_regraft         = NO;
           tree->mod->s_opt->max_delta_lnL_spr_current = 0.0;
           tree->c_lnL                                 = lnL_list[list_size];
-          tree->mod->s_opt->min_n_triple_moves        = 2;
-
+          tree->mod->s_opt->min_n_triple_moves        = 1;
+          mean_delta_lnL_spr                          = 0.0;
+          
           iter = 0;
           do
             {
-              for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(0.5*iter+1),(phydbl)(1./(0.5*iter+1)));
+              for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(1.0*iter+1),(phydbl)(1./(1.0*iter+1)));
               Spr(tree->c_lnL,1.0,tree);
-              Optimize_Br_Len_Serie(2,tree);
+              Optimize_Br_Len_Serie(5,tree);
               
               if(tree->verbose > VL0 && tree->io->quiet == NO)
                 {
                   time(&t_cur);
-                  PhyML_Printf("\n\t%5ds %3d lnL: %12.2f depth: %5d/%5d   # improvements: %3d delta_lnL: %10.2f",
+                  PhyML_Printf("\n\t%5ds %3d lnL: %12.2f depth: %5d/%5d   # improvements: %3d delta_lnL: %10.2f/%10.2f %d",
                                (int)(t_cur-tree->t_beg),
                                iter+1,
                                tree->c_lnL,
                                tree->mod->s_opt->max_spr_depth,
                                tree->mod->s_opt->max_depth_path,
                                tree->mod->s_opt->n_improvements,
-                               tree->mod->s_opt->max_delta_lnL_spr_current);
+                               tree->mod->s_opt->max_delta_lnL_spr_current,
+                               tree->mod->s_opt->max_delta_lnL_spr,
+                               iter%4);
                 }
+
+              if((iter%4) > 0 || iter == 0)
+                {
+                  mean_delta_lnL_spr += tree->mod->s_opt->max_delta_lnL_spr_current;
+                }
+              else if(iter > 0)
+                {
+                  mean_delta_lnL_spr /= 4.0;
+                  tree->mod->s_opt->max_delta_lnL_spr = MAX(10.,2.*mean_delta_lnL_spr);
+                  mean_delta_lnL_spr = tree->mod->s_opt->max_delta_lnL_spr_current;
+                }
+              
+              if(iter > (int)(0.1*tree->n_otu)) tree->mod->s_opt->eval_list_regraft = YES;
+
 
               tree->mod->s_opt->max_depth_path = MIN(30,MAX(10,2*tree->mod->s_opt->max_spr_depth));
               /* tree->mod->s_opt->max_delta_lnL_spr = MAX(50.,2.*tree->mod->s_opt->max_delta_lnL_spr_current); */
@@ -1991,7 +2011,7 @@ void Spr_List_Of_Trees(t_tree *tree)
       Copy_Tree(tree_list[rk[list_size]],tree);
        
       tree->mod->s_opt->max_depth_path            = 30;
-      tree->mod->s_opt->max_delta_lnL_spr         = 200.;
+      tree->mod->s_opt->max_delta_lnL_spr         = 50.;
       tree->mod->s_opt->spr_lnL                   = YES;
       tree->mod->s_opt->spr_pars                  = NO;
       tree->mod->s_opt->min_diff_lk_move          = 1.E-2;
