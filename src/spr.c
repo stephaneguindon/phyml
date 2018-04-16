@@ -1914,7 +1914,6 @@ void Spr_List_Of_Trees(t_tree *tree)
           iter = 0;
           do
             {
-              for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(1.0*iter+1),(phydbl)(1./(1.0*iter+1)));
               Spr(tree->c_lnL,1.0,tree);
               Optimize_Br_Len_Serie(5,tree);
               
@@ -1945,6 +1944,7 @@ void Spr_List_Of_Trees(t_tree *tree)
                 }
               
               if(iter > (int)(0.1*tree->n_otu)) tree->mod->s_opt->eval_list_regraft = YES;
+              else  for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(0.2*iter+1),(phydbl)(1./(0.2*iter+1)));
 
 
               tree->mod->s_opt->max_depth_path = MIN(30,MAX(10,2*tree->mod->s_opt->max_spr_depth));
@@ -1962,7 +1962,7 @@ void Spr_List_Of_Trees(t_tree *tree)
                   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf(" +");
                   if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace);
                   /* Randomize_Tree(tree,(int)(0.1*tree->n_otu)); */
-                  /* Random_NNI(0.2*tree->n_otu,tree); */
+                  Random_NNI(0.5*tree->n_otu,tree);
                 }
               
               no_improv++;
