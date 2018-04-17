@@ -1898,7 +1898,7 @@ void Spr_List_Of_Trees(t_tree *tree)
         {
           Copy_Tree(tree_list[rk[list_size]],tree);
           
-          tree->mod->s_opt->max_depth_path            = 30;
+          tree->mod->s_opt->max_depth_path            = 20;
           tree->mod->s_opt->max_delta_lnL_spr         = 1000.;
           tree->mod->s_opt->spr_lnL                   = YES;
           tree->mod->s_opt->spr_pars                  = NO;
