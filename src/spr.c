@@ -1840,8 +1840,8 @@ void Spr_List_Of_Trees(t_tree *tree)
   if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace);
 
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Score of initial tree: %12.2f",tree->c_lnL);
-  tree->mod->s_opt->min_diff_lk_move  = 1.E-0;
-  tree->mod->s_opt->min_diff_lk_local = 1.E-0;
+  tree->mod->s_opt->min_diff_lk_move  = 1.E-1;
+  tree->mod->s_opt->min_diff_lk_local = 1.E-1;
   Round_Optimize(tree,1000);
 
   best_lnL = tree->c_lnL;
@@ -1861,8 +1861,8 @@ void Spr_List_Of_Trees(t_tree *tree)
           Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
         }
       
-      tree->mod->s_opt->min_diff_lk_move  = 1.E-1;
-      tree->mod->s_opt->min_diff_lk_local = 1.E-1;
+      tree->mod->s_opt->min_diff_lk_move  = 1.E-2;
+      tree->mod->s_opt->min_diff_lk_local = 1.E-2;
       Simu(tree,100,10,0.0,0.1,(int)(tree->n_otu/2));
       // Optimize_Br_Len_Serie(1000,tree);
       /* Lk(NULL,tree); */
@@ -1887,6 +1887,12 @@ void Spr_List_Of_Trees(t_tree *tree)
     }
   while(++list_size < list_size_first_round);
       
+
+  tree->mod->s_opt->min_diff_lk_move  = 1.E-1;
+  tree->mod->s_opt->min_diff_lk_local = 1.E-1;
+  Copy_Tree(best_tree,tree);
+  Round_Optimize(tree,1000);
+
 
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Fast optimisation of the best trees (SPR search)...\n");
 
@@ -2022,6 +2028,7 @@ void Spr_List_Of_Trees(t_tree *tree)
 
   Copy_Tree(best_tree,tree_list[rk[0]]);
   Copy_Tree(best_tree,tree);
+
   Round_Optimize(tree,1000);
 
   

@@ -1198,6 +1198,7 @@ phydbl Invariant_Lk(int fact_sum_scale, int site, int *num_prec_issue, t_tree *t
                 }
               while(exponent != 0);
             }
+
           
           /* Update the value of site_lk */
           if(isinf(inv_site_lk)) // P(D|r=0) >> P(D|r>0) => assume P(D) = P(D|r=0)P(r=0)

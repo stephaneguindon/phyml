@@ -1088,7 +1088,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
 
 		io->mod->s_opt->opt_state_freq  = NO;
                 io->mod->e_frq->user_state_freq = YES;
-		
+
 		sscanf(optarg,"%lf,%lf,%lf,%lf",&val1,&val2,&val3,&val4);
 		io->mod->e_frq->user_b_freq->v[0] = (phydbl)val1;
 		io->mod->e_frq->user_b_freq->v[1] = (phydbl)val2;
@@ -1106,7 +1106,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
 		io->mod->e_frq->user_b_freq->v[2] /= sum;
 		io->mod->e_frq->user_b_freq->v[3] /= sum;
 		
-		
+                
 		if(io->mod->e_frq->user_b_freq->v[0] < .0 ||
 		   io->mod->e_frq->user_b_freq->v[1] < .0 ||
 		   io->mod->e_frq->user_b_freq->v[2] < .0 ||
