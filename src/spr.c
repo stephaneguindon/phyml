@@ -1816,7 +1816,7 @@ void Spr_List_Of_Trees(t_tree *tree)
   unsigned int list_size_second_round  = 1;
   unsigned int list_size_third_round  = 1;
   unsigned int last_best_found = 0;
-
+  unsigned int hit_zero_improv = 0;
 
   best_lnL      = UNLIKELY;
   tree->verbose = (tree->verbose == VL0) ? VL0 : VL1;
@@ -1911,6 +1911,8 @@ void Spr_List_Of_Trees(t_tree *tree)
           tree->mod->s_opt->min_n_triple_moves        = 1;
           mean_delta_lnL_spr                          = 0.0;
           lnL_inc                                     = DBL_MAX;
+          hit_zero_improv                             = 0;
+
           iter = 0;
           do
             {
@@ -1951,8 +1953,9 @@ void Spr_List_Of_Trees(t_tree *tree)
               else
                 {
                   tree->mod->s_opt->max_depth_path = MIN(30,MAX(10,2*tree->mod->s_opt->max_spr_depth));
-                  for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(0.2*iter+1),(phydbl)(1./(0.2*iter+1)));
                 }
+
+              /* for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(0.2*iter+1),(phydbl)(1./(0.2*iter+1))); */
 
               /* tree->mod->s_opt->max_delta_lnL_spr = MAX(50.,2.*tree->mod->s_opt->max_delta_lnL_spr_current); */
               /* tree->mod->s_opt->min_diff_lk_move  *= 0.8; */
@@ -1968,19 +1971,24 @@ void Spr_List_Of_Trees(t_tree *tree)
                   Copy_Tree(tree,best_tree);
                   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf(" +");
                   if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace);
-                  /* Randomize_Tree(tree,(int)(0.1*tree->n_otu)); */
-                  Random_NNI(0.2*tree->n_otu,tree);
+                  Random_NNI(0.5*tree->n_otu,tree);
+                  for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(2.),(phydbl)(1./2.));
                 }
               
               if(tree->mod->s_opt->n_improvements == 0)
                 {
-                  Random_NNI(0.2*tree->n_otu,tree);
+                  Random_NNI(0.5*tree->n_otu,tree);
+                  for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(2.),(phydbl)(1./2.));
+                  hit_zero_improv++;
                 }
               
               no_improv++;
               iter++;
             }
-          while((tree->mod->s_opt->n_improvements > 0 || fabs(lnL_inc) > 1.0) && iter < (int)(tree->n_otu) && no_improv < (int)(0.3*tree->n_otu));
+          while((tree->mod->s_opt->n_improvements > 0 || fabs(lnL_inc) > 1.0) &&
+                iter < (int)(tree->n_otu) &&
+                no_improv < (int)(0.3*tree->n_otu) &&
+                hit_zero_improv < 5);
           
           n_trees++;
           
