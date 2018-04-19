@@ -1853,40 +1853,91 @@ void Spr_List_Of_Trees(t_tree *tree)
   list_size = 0;
   do
     {
-      /* if(list_size > 0) */
-        {
-          Stepwise_Add_Pars(tree);
-          /* Spr_Pars(0,tree->n_otu,tree); */
-          /* Randomize_Tree(tree,(int)(0.1*tree->n_otu)); */
-          Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
-        }
+      Stepwise_Add_Pars(tree);
+      /* Spr_Pars(0,tree->n_otu,tree); */
+      /* Randomize_Tree(tree,(int)(0.1*tree->n_otu)); */
+      Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
       
-      tree->mod->s_opt->min_diff_lk_move  = 1.E-2;
-      tree->mod->s_opt->min_diff_lk_local = 1.E-2;
-      Simu(tree,100,10,0.0,0.1,(int)(tree->n_otu/2));
-      // Optimize_Br_Len_Serie(1000,tree);
-      /* Lk(NULL,tree); */
       
-      if(tree->verbose > VL0 && tree->io->quiet == NO)
-        {
-          PhyML_Printf("\n\t%3d      %12.2f ",list_size+1,tree->c_lnL);
-        }
+      tree->mod->s_opt->max_depth_path            = 10;
+      tree->mod->s_opt->max_delta_lnL_spr         = 100.;
+      tree->mod->s_opt->spr_lnL                   = YES;
+      tree->mod->s_opt->spr_pars                  = NO;
+      tree->mod->s_opt->min_diff_lk_move          = 1.E-1;
+      tree->mod->s_opt->min_diff_lk_local         = 1.E-1;
+      tree->perform_spr_right_away                = YES;
+      tree->mod->s_opt->eval_list_regraft         = NO;
+      tree->mod->s_opt->max_delta_lnL_spr_current = 0.0;
+      tree->c_lnL                                 = lnL_list[list_size];
+      tree->mod->s_opt->min_n_triple_moves        = 1;
+      mean_delta_lnL_spr                          = 0.0;
+      lnL_inc                                     = DBL_MAX;
+      hit_zero_improv                             = 0;
       
-      if(tree->c_lnL > best_lnL)
-        {
-          best_lnL = tree->c_lnL;
-          Copy_Tree(tree,best_tree);
-          if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf(" +");
-          if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace);
-        }
-      
-      Copy_Tree(tree,tree_list[list_size]);
-      lnL_list[list_size] = tree->c_lnL;
 
-      iter++;
+      iter = 0;
+      do
+        {
+          Spr(tree->c_lnL,1.0,tree);
+          Optimize_Br_Len_Serie(2,tree);
+          
+          if(tree->verbose > VL0 && tree->io->quiet == NO)
+            {
+              time(&t_cur);
+              PhyML_Printf("\n\t %5ds %3d lnL: %12.2f depth: %5d/%5d   # improvements: %5d delta_lnL: %10.2f/%10.2f %2c",
+                           (int)(t_cur-tree->t_beg),
+                           iter+1,
+                           tree->c_lnL,
+                           tree->mod->s_opt->max_spr_depth,
+                           tree->mod->s_opt->max_depth_path,
+                           tree->mod->s_opt->n_improvements,
+                           tree->mod->s_opt->max_delta_lnL_spr_current,
+                           tree->mod->s_opt->max_delta_lnL_spr,
+                           (iter > (int)(0.1*tree->n_otu)) ? '!':' ');
+            }
+          
+          if((iter%4) > 0 || iter == 0)
+            {
+              mean_delta_lnL_spr += tree->mod->s_opt->max_delta_lnL_spr_current;
+            }
+          else if(iter > 0)
+            {
+              mean_delta_lnL_spr /= 4.0;
+              tree->mod->s_opt->max_delta_lnL_spr = MAX(20.,2.*mean_delta_lnL_spr);
+              mean_delta_lnL_spr = tree->mod->s_opt->max_delta_lnL_spr_current;
+            }
+          
+          tree->mod->s_opt->max_depth_path = MIN(30,MAX(10,2*tree->mod->s_opt->max_spr_depth));
+            
+          
+          if(tree->c_lnL > best_lnL)
+            {
+              no_improv = 0;
+              lnL_inc = tree->c_lnL - best_lnL;
+              best_lnL = tree->c_lnL;
+              Copy_Tree(tree,best_tree);
+              if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf(" +");
+              if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace);
+            }
+          
+          if(tree->mod->s_opt->n_improvements == 0)
+            {
+              hit_zero_improv++;
+            }
+          
+          no_improv++;
+          iter++;
+        }
+      while(hit_zero_improv < 1);
+      
+      n_trees++;
+                
+      
+      Copy_Tree(tree,tree_list[rk[list_size]]);
+      lnL_list[rk[list_size]] = tree->c_lnL;
     }
   while(++list_size < list_size_first_round);
-      
+  
 
   tree->mod->s_opt->min_diff_lk_move  = 1.E-1;
   tree->mod->s_opt->min_diff_lk_local = 1.E-1;
