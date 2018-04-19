@@ -1303,6 +1303,11 @@ align **Get_Seq(option *io)
       Post_Process_Data(io);
     }
 
+  if(io->n_otu < 3)
+    {
+      PhyML_Fprintf(stderr,"\n. PhyML needs at least three sequences to perform an analysis.");
+      assert(FALSE);
+    }
 
   return io->data;
 }
@@ -1644,11 +1649,11 @@ int Get_Token(FILE *fp, char *token)
 align **Get_Seq_Phylip(option *io)
 {
   Read_Ntax_Len_Phylip(io->fp_in_align,&io->n_otu,&io->init_len);
-
+  
   if(io->n_otu > N_MAX_OTU)
     {
       PhyML_Fprintf(stderr,"\n. The number of taxa should not exceed %d",N_MAX_OTU);
-      Exit("\n");
+      assert(FALSE);
     }
   
   if(io->interleaved) io->data = Read_Seq_Interleaved(io);
@@ -4698,9 +4703,7 @@ option *PhyML_XML(char *xml_filename)
       
       if(mixt_tree->mod->s_opt->opt_topo)
         {
-          if(mixt_tree->mod->s_opt->topo_search      == NNI_MOVE) Simu_Loop(mixt_tree);
-          else if(mixt_tree->mod->s_opt->topo_search == SPR_MOVE) Speed_Spr_Loop(mixt_tree);
-          else                                                    Best_Of_NNI_And_SPR(mixt_tree);
+          Global_Spr_Search(mixt_tree);
         }
       else
         {

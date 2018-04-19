@@ -239,9 +239,7 @@ int main(int argc, char **argv)
 
                   if(tree->mod->s_opt->opt_topo)
 		    {
-		      if(tree->mod->s_opt->topo_search      == NNI_MOVE) Simu_Loop(tree);
-		      else if(tree->mod->s_opt->topo_search == SPR_MOVE) Speed_Spr_Loop(tree);
-		      else                                               Best_Of_NNI_And_SPR(tree);
+                      Global_Spr_Search(tree);
                       
                       if(tree->n_root) Add_Root(tree->a_edges[0],tree);
                     }

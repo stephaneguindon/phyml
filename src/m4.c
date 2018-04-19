@@ -138,7 +138,7 @@ int M4_main(int argc, char **argv)
 		  if(tree->mod->s_opt->opt_topo)
 		    {
 		      if(tree->mod->s_opt->topo_search      == NNI_MOVE) Simu_Loop(tree);
-		      else if(tree->mod->s_opt->topo_search == SPR_MOVE) Speed_Spr_Loop(tree);
+		      else if(tree->mod->s_opt->topo_search == SPR_MOVE) Global_Spr_Search(tree);
 		      else                                               Best_Of_NNI_And_SPR(tree);
 		    }
 		  else

@@ -21,7 +21,6 @@ the GNU public licence.  See http://www.opensource.org for details.
 
 void Simu_Loop(t_tree *tree)
 {
-  Spr_List_Of_Trees(tree);
   return;
 }
 
@@ -33,7 +32,6 @@ int Simu(t_tree *tree, int n_step_max, phydbl delta_lnL, phydbl init_T, phydbl d
   phydbl old_loglk,delta;
   unsigned int n_round;
   time_t t_cur;
-  int i;
   
   tree->c_lnL = UNLIKELY;
   delta = UNLIKELY;
@@ -885,7 +883,7 @@ void NNI_Core(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_tree 
   t_node *v1,*v2,*u,*dum;
   scalar_dbl *l0,*l1,*l2;
   phydbl p_accept;
-  int i,dir1, dir2;
+  int i;
   
   
   l0 = l1 = l2 = NULL;

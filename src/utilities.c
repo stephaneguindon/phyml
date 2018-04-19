@@ -2978,15 +2978,7 @@ void Bootstrap(t_tree *tree, int tbe_bootstrap)
 
       if(boot_tree->mod->s_opt->opt_topo)
         {
-          if(boot_tree->mod->s_opt->topo_search == NNI_MOVE)
-            {
-              Simu_Loop(boot_tree);
-            }
-          else if((boot_tree->mod->s_opt->topo_search == SPR_MOVE) ||
-                  (boot_tree->mod->s_opt->topo_search == BEST_OF_NNI_AND_SPR))
-            {
-              Speed_Spr_Loop(boot_tree);
-            }
+          Global_Spr_Search(boot_tree);
         }
       else
         {
@@ -7860,8 +7852,11 @@ phydbl Mean(phydbl *x, int n)
 
 void Best_Of_NNI_And_SPR(t_tree *tree)
 {
+  PhyML_Fprintf(stderr,"Best of NNI and SPR option is deprecated. PhyML nows only relies on SPR moves");
+  assert(FALSE);
+
   if(tree->mod->s_opt->random_input_tree)
-      Speed_Spr_Loop(tree); /* Don't do simultaneous NNIs if starting tree is random */
+      Global_Spr_Search(tree); /* Don't do simultaneous NNIs if starting tree is random */
   else
     {
       t_tree *ori_tree,*best_tree;
@@ -7915,7 +7910,7 @@ void Best_Of_NNI_And_SPR(t_tree *tree)
 
 
       // ****** Perform SPR ******
-      Speed_Spr_Loop(tree);
+      Global_Spr_Search(tree);
       spr_lnL = tree->c_lnL;
 
 
