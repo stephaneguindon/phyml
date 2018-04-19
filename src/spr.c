@@ -1930,15 +1930,15 @@ void Spr_List_Of_Trees(t_tree *tree)
         }
       while(hit_zero_improv < 1);
       
+  
       n_trees++;
-                
-      
-      Copy_Tree(tree,tree_list[rk[list_size]]);
-      lnL_list[rk[list_size]] = tree->c_lnL;
+                      
+      Copy_Tree(tree,tree_list[list_size]);
+      lnL_list[list_size] = tree->c_lnL;
     }
   while(++list_size < list_size_first_round);
   
-
+  
   tree->mod->s_opt->min_diff_lk_move  = 1.E-1;
   tree->mod->s_opt->min_diff_lk_local = 1.E-1;
   Copy_Tree(best_tree,tree);
