@@ -1972,7 +1972,7 @@ void Spr_List_Of_Trees(t_tree *tree)
           mean_delta_lnL_spr                          = 0.0;
           lnL_inc                                     = DBL_MAX;
           hit_zero_improv                             = 0;
-
+          
           iter = 0;
           do
             {
@@ -2045,10 +2045,9 @@ void Spr_List_Of_Trees(t_tree *tree)
               no_improv++;
               iter++;
             }
-          while((tree->mod->s_opt->n_improvements > 0 || fabs(lnL_inc) > 1.0) &&
-                iter < (int)(tree->n_otu) &&
-                no_improv < (int)(0.3*tree->n_otu) &&
-                hit_zero_improv < 5);
+          while(((tree->mod->s_opt->n_improvements > 0 || fabs(lnL_inc) > 1.0) &&
+                 (iter < (int)(tree->n_otu) && no_improv < (int)(0.3*tree->n_otu))) ||
+                hit_zero_improv < 3);
           
           n_trees++;
           
