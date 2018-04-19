@@ -182,7 +182,7 @@ void Usage()
   PhyML_Printf("%s\t\t- %sAmino-acid%s sequences: (Model) the equilibrium amino-acid frequencies are estimated using\n"
 "\t\t the frequencies defined by the substitution model.\n",FLAT,LINE,FLAT);
   PhyML_Printf("\n");
-  PhyML_Printf("\t\t%s\"fA,fC,fG,fT\"%s : only valid for nucleotide-based models. fA, fC, fG and fT are floating numbers that \n",LINE,FLAT);
+  PhyML_Printf("\t\t%sfA,fC,fG,fT%s : only valid for nucleotide-based models. fA, fC, fG and fT are floating numbers that \n",LINE,FLAT);
   PhyML_Printf("\t\t correspond to the frequencies of A, C, G and T respectively (WARNING: do not use any blank space between\n");
   PhyML_Printf("\t\t your values of nucleotide frequencies, only commas!)\n");
   PhyML_Printf("\n");

@@ -1926,23 +1926,23 @@ int DiscreteGamma (phydbl freqK[], phydbl rK[],
        for (i=0,t=0; i<K; i++) t+=rK[i];
        for (i=0; i<K; i++)     rK[i]*=factor/t;
      }
-   else {
-
-      lnga1=LnGamma(alfa+1);
-      for (i=0; i<K-1; i++)
-        {
-          freqK[i]=PointGamma((i+1.0)/K, alfa, beta);
-        }
-
-      for (i=0; i<K-1; i++)
-        {
-          freqK[i]=IncompleteGamma(freqK[i]*beta, alfa+1, lnga1);
-        }
-
-      rK[0] = freqK[0]*factor;
-      rK[K-1] = (1-freqK[K-2])*factor;
-      for (i=1; i<K-1; i++)  rK[i] = (freqK[i]-freqK[i-1])*factor;
-   }
+   else
+     {
+       lnga1=LnGamma(alfa+1);
+       for (i=0; i<K-1; i++)
+         {
+           freqK[i]=PointGamma((i+1.0)/K, alfa, beta);
+         }
+       
+       for (i=0; i<K-1; i++)
+         {
+           freqK[i]=IncompleteGamma(freqK[i]*beta, alfa+1, lnga1);
+         }
+       
+       rK[0] = freqK[0]*factor;
+       rK[K-1] = (1-freqK[K-2])*factor;
+       for (i=1; i<K-1; i++)  rK[i] = (freqK[i]-freqK[i-1])*factor;
+     }
    for (i=0; i<K; i++) freqK[i]=1.0/K;
    return (0);
 }

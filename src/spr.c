@@ -766,7 +766,7 @@ void Global_Spr_Search(t_tree *tree)
   Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
       
       
-  tree->mod->s_opt->max_depth_path            = 5;
+  tree->mod->s_opt->max_depth_path            = 30;
   tree->mod->s_opt->max_delta_lnL_spr         = 50.;
   tree->mod->s_opt->spr_lnL                   = YES;
   tree->mod->s_opt->spr_pars                  = NO;
@@ -802,6 +802,7 @@ void Global_Spr_Search(t_tree *tree)
                        (iter > (int)(0.1*tree->n_otu)) ? '!':' ');
         }
             
+      tree->mod->s_opt->max_depth_path = MIN(30,MAX(5,tree->mod->s_opt->max_spr_depth));
       
       if(tree->c_lnL > best_lnL)
         {
@@ -822,7 +823,7 @@ void Global_Spr_Search(t_tree *tree)
       no_improv++;
       iter++;
     }
-  while(hit_zero_improv < 3);
+  while(hit_zero_improv < 1);
         
   
   tree->mod->s_opt->min_diff_lk_move  = 1.E-1;
@@ -893,14 +894,14 @@ void Global_Spr_Search(t_tree *tree)
           Copy_Tree(tree,best_tree);
           if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf(" +");
           if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace);
-          Random_NNI(0.5*tree->n_otu,tree);
-          for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(2.),(phydbl)(1./2.));
+          Random_NNI(0.2*tree->n_otu,tree);
+          for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(3.),(phydbl)(1./3.));
         }
       
       if(tree->mod->s_opt->n_improvements == 0)
         {
-          Random_NNI(0.5*tree->n_otu,tree);
-          for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(2.),(phydbl)(1./2.));
+          Random_NNI(0.2*tree->n_otu,tree);
+          for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(3.),(phydbl)(1./3.));
           hit_zero_improv++;
         }
       
@@ -908,7 +909,7 @@ void Global_Spr_Search(t_tree *tree)
       iter++;
       
       if(fabs(lnL_inc < 1.0)) break;
-      if(hit_zero_improv > 4) break;
+      if(hit_zero_improv > 3) break;
       if(iter > (int)(0.5*tree->n_otu)) break;
     }
   while(1);
