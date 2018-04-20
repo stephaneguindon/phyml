@@ -767,7 +767,7 @@ void Global_Spr_Search(t_tree *tree)
       
       
   tree->mod->s_opt->max_depth_path            = 30;
-  tree->mod->s_opt->max_delta_lnL_spr         = 50.;
+  tree->mod->s_opt->max_delta_lnL_spr         = 500.;
   tree->mod->s_opt->spr_lnL                   = YES;
   tree->mod->s_opt->spr_pars                  = NO;
   tree->mod->s_opt->min_diff_lk_move          = 1.E-1;
@@ -804,6 +804,9 @@ void Global_Spr_Search(t_tree *tree)
             
       /* tree->mod->s_opt->max_depth_path = MIN(30,MAX(5,tree->mod->s_opt->max_spr_depth)); */
       tree->mod->s_opt->max_depth_path = MIN(30,MAX(10,MAX(2*tree->mod->s_opt->max_spr_depth,(int)(0.8*tree->mod->s_opt->max_depth_path))));
+      tree->mod->s_opt->max_delta_lnL_spr = MAX(50.,0.8*tree->mod->s_opt->max_delta_lnL_spr);
+
+
       for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(1.0*(iter+1)),(phydbl)(1./(1.0*(iter+1))));
       
       if(tree->c_lnL > best_lnL)
@@ -876,7 +879,7 @@ void Global_Spr_Search(t_tree *tree)
       else if(iter > 0)
         {
           mean_delta_lnL_spr /= 4.0;
-          tree->mod->s_opt->max_delta_lnL_spr = MAX(20.,2.*mean_delta_lnL_spr);
+          tree->mod->s_opt->max_delta_lnL_spr = MAX(50.,2.*mean_delta_lnL_spr);
           mean_delta_lnL_spr = tree->mod->s_opt->max_delta_lnL_spr_current;
         }
       
@@ -895,13 +898,13 @@ void Global_Spr_Search(t_tree *tree)
           Copy_Tree(tree,best_tree);
           if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf(" +");
           if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace);
-          Random_NNI(0.4*tree->n_otu,tree);
+          Random_NNI(0.2*tree->n_otu,tree);
           for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(3.),(phydbl)(1./3.));
         }
       
       if(tree->mod->s_opt->n_improvements == 0)
         {
-          Random_NNI(0.4*tree->n_otu,tree);
+          Random_NNI(0.2*tree->n_otu,tree);
           for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(3.),(phydbl)(1./3.));
           hit_zero_improv++;
         }
