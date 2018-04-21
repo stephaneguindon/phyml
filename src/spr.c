@@ -767,7 +767,7 @@ void Global_Spr_Search(t_tree *tree)
       
       
   tree->mod->s_opt->max_depth_path            = 30;
-  tree->mod->s_opt->max_delta_lnL_spr         = 500.;
+  tree->mod->s_opt->max_delta_lnL_spr         = 1000.;
   tree->mod->s_opt->spr_lnL                   = YES;
   tree->mod->s_opt->spr_pars                  = NO;
   tree->mod->s_opt->min_diff_lk_move          = 1.E-1;
@@ -807,10 +807,20 @@ void Global_Spr_Search(t_tree *tree)
         }
             
       /* tree->mod->s_opt->max_depth_path = MIN(30,MAX(5,tree->mod->s_opt->max_spr_depth)); */
-      tree->mod->s_opt->max_depth_path = MIN(30,MAX(5,MAX(2*tree->mod->s_opt->max_spr_depth,(int)(0.8*tree->mod->s_opt->max_depth_path))));
-      tree->mod->s_opt->max_delta_lnL_spr = MAX(20.,0.8*tree->mod->s_opt->max_delta_lnL_spr);
+      tree->mod->s_opt->max_depth_path = MIN(30,MAX(10,MAX(2*tree->mod->s_opt->max_spr_depth,(int)(0.8*tree->mod->s_opt->max_depth_path))));
 
-
+      if((iter%4) > 0 || iter == 0)
+        {
+          mean_delta_lnL_spr += tree->mod->s_opt->max_delta_lnL_spr_current;
+        }
+      else if(iter > 0)
+        {
+          mean_delta_lnL_spr /= 4.0;
+          tree->mod->s_opt->max_delta_lnL_spr = MAX(20.,MAX(1.5*mean_delta_lnL_spr,0.8*tree->mod->s_opt->max_delta_lnL_spr));
+          mean_delta_lnL_spr = tree->mod->s_opt->max_delta_lnL_spr_current;
+        }
+      
+      
       
       if(tree->c_lnL > best_lnL)
         {
