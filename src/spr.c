@@ -807,7 +807,7 @@ void Global_Spr_Search(t_tree *tree)
         }
             
       /* tree->mod->s_opt->max_depth_path = MIN(30,MAX(5,tree->mod->s_opt->max_spr_depth)); */
-      tree->mod->s_opt->max_depth_path = MIN(30,MAX(10,MAX(2*tree->mod->s_opt->max_spr_depth,(int)(0.8*tree->mod->s_opt->max_depth_path))));
+      tree->mod->s_opt->max_depth_path = MIN(30,MAX(10,MAX(2*tree->mod->s_opt->max_spr_depth,(int)(0.5*tree->mod->s_opt->max_depth_path))));
 
       if((iter%4) > 0 || iter == 0)
         {
