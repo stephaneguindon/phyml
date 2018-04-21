@@ -788,6 +788,9 @@ void Global_Spr_Search(t_tree *tree)
       Spr(tree->c_lnL,1.0,tree);
       Optimize_Br_Len_Serie(2,tree);
       
+      if(!(iter%15)) Round_Optimize(tree,1000);
+
+
       if(tree->verbose > VL0 && tree->io->quiet == NO)
         {
           time(&t_cur);
@@ -945,6 +948,8 @@ void Global_Spr_Search(t_tree *tree)
       Spr(tree->c_lnL,1.0,tree);
       Optimize_Br_Len_Serie(2,tree);
       
+      if(!(iter%15)) Round_Optimize(tree,1000);
+
       if(tree->verbose > VL0 && tree->io->quiet == NO)
         {
           time(&t_cur);
