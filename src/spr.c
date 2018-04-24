@@ -766,7 +766,7 @@ void Global_Spr_Search(t_tree *tree)
   Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
       
       
-  tree->mod->s_opt->max_depth_path            = 20;
+  tree->mod->s_opt->max_depth_path            = (int)(tree->n_otu/3+1);
   tree->mod->s_opt->max_delta_lnL_spr         = 1000.;
   tree->mod->s_opt->spr_lnL                   = YES;
   tree->mod->s_opt->spr_pars                  = NO;
