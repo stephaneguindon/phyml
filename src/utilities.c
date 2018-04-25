@@ -1384,6 +1384,8 @@ void Share_Spr_Struct(t_tree *t_full, t_tree *t_empt)
   t_empt->size_spr_list_one_edge = t_full->size_spr_list_one_edge;
   t_empt->spr_list_one_edge      = t_full->spr_list_one_edge;
   t_empt->best_spr      = t_full->best_spr;
+  t_empt->spr_list_all_edge = t_full->spr_list_all_edge;
+  t_empt->size_spr_list_all_edge = t_full->size_spr_list_all_edge;
 }
 
 //////////////////////////////////////////////////////////////
@@ -8163,6 +8165,7 @@ char *Bootstrap_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
   Unscale_Br_Len_Multiplier_Tree(tree);
   Br_Len_Not_Involving_Invar(tree);
   Make_Spr_List_One_Edge(tree);
+  Make_Spr_List_All_Edge(tree);
   Make_Best_Spr(tree);
 
   Set_Both_Sides(YES,tree);
@@ -8224,6 +8227,7 @@ char *aLRT_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
   Br_Len_Not_Involving_Invar(tree);
 
   Make_Spr_List_One_Edge(tree);
+  Make_Spr_List_All_Edge(tree);
   Make_Best_Spr(tree);
 
 #ifdef BEAGLE
