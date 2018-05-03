@@ -784,7 +784,7 @@ void Global_Spr_Search(t_tree *tree)
   iter = 0;
   do
     {
-      for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(0.2*iter+1),(phydbl)(1./(0.2*iter+1)));
+      for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(0.4*iter+1),(phydbl)(1./(0.4*iter+1)));
       Spr(tree->c_lnL,1.0,tree);
       Optimize_Br_Len_Serie(2,tree);
       
@@ -805,9 +805,8 @@ void Global_Spr_Search(t_tree *tree)
                        tree->mod->s_opt->max_delta_lnL_spr,
                        (!(iter%15)) ? '!':' ');
         }
-            
-      /* tree->mod->s_opt->max_depth_path = MIN(30,MAX(5,tree->mod->s_opt->max_spr_depth)); */
-      tree->mod->s_opt->max_depth_path = MAX(5,MAX(tree->mod->s_opt->max_spr_depth+2,(int)(0.8*tree->mod->s_opt->max_depth_path)));
+
+      tree->mod->s_opt->max_depth_path = MAX(5,MAX(tree->mod->s_opt->max_spr_depth+4,(int)(0.8*tree->mod->s_opt->max_depth_path)));
 
       if((iter%4) > 0 || iter == 0)
         {
@@ -816,7 +815,7 @@ void Global_Spr_Search(t_tree *tree)
       else if(iter > 0)
         {
           mean_delta_lnL_spr /= 4.0;
-          tree->mod->s_opt->max_delta_lnL_spr = MAX(20.,MAX(1.5*mean_delta_lnL_spr,0.5*tree->mod->s_opt->max_delta_lnL_spr));
+          tree->mod->s_opt->max_delta_lnL_spr = MAX(50.,MAX(1.5*mean_delta_lnL_spr,0.5*tree->mod->s_opt->max_delta_lnL_spr));
           mean_delta_lnL_spr = tree->mod->s_opt->max_delta_lnL_spr_current;
         }
       
@@ -891,7 +890,7 @@ void Global_Spr_Search(t_tree *tree)
          
         }
       
-      tree->mod->s_opt->max_depth_path     = MIN(30,MAX(10,MAX(2*tree->mod->s_opt->max_spr_depth,(int)(0.8*tree->mod->s_opt->max_depth_path))));
+      tree->mod->s_opt->max_depth_path     = MIN(30,MAX(5,MAX(2*tree->mod->s_opt->max_spr_depth,(int)(0.8*tree->mod->s_opt->max_depth_path))));
       tree->mod->s_opt->max_delta_lnL_spr  = MAX(50.,2.*tree->mod->s_opt->max_delta_lnL_spr_current);
       tree->mod->s_opt->min_n_triple_moves = MAX(5,2*tree->mod->s_opt->max_rank_triple_move);
       
