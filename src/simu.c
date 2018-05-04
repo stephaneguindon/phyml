@@ -40,6 +40,7 @@ int Simu(t_tree *tree, int n_step_max, phydbl delta_lnL, phydbl init_T, phydbl d
   tree->annealing_temp = init_T;
   do
     {
+      for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(0.2*n_round+1),(phydbl)(1./(0.2*n_round+1)));
       old_loglk = tree->c_lnL;
       Set_Both_Sides(NO,tree);
       tree->tip_root = Rand_Int(0,tree->n_otu-1);
@@ -66,11 +67,6 @@ int Simu(t_tree *tree, int n_step_max, phydbl delta_lnL, phydbl init_T, phydbl d
                    tree->n_otu);
 
       if((n_round >= n_step_max || tree->fully_nni_opt == YES) && Are_Equal(tree->annealing_temp,0.0,1.E-3) && delta < delta_lnL) break;
-
-
-      /* if(n_round == 30) break; */
-      /* time(&t_end); */
-      /* Print_Time_Info_Brief(t_beg,t_end); */
     }
   while(1);
 
@@ -930,11 +926,11 @@ void NNI_Core(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_tree 
   // Evaluate likelihood
   if(opt_edges == YES) Br_Len_Opt(b,tree);
   lk1 = Lk(b,tree);
-  if(lk1 > lk0 + tree->mod->s_opt->min_diff_lk_move)
-    {
-      tree->fully_nni_opt = NO;
-      return;
-    }
+  /* if(lk1 > lk0 + tree->mod->s_opt->min_diff_lk_move) */
+  /*   { */
+  /*     tree->fully_nni_opt = NO; */
+  /*     return; */
+  /*   } */
   l1 = Duplicate_Scalar_Dbl(b->l);
   // Unswap
   Swap(u,d,a,v1,tree);              
@@ -950,12 +946,12 @@ void NNI_Core(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_tree 
   // Evaluate likelihood
   if(opt_edges == YES) Br_Len_Opt(b,tree);
   lk2 = Lk(b,tree);
-  if(lk2 > lk0 + tree->mod->s_opt->min_diff_lk_move)
-    {
-      tree->fully_nni_opt = NO;
-      Free_Scalar_Dbl(l1);
-      return;
-    }
+  /* if(lk2 > lk0 + tree->mod->s_opt->min_diff_lk_move) */
+  /*   { */
+  /*     tree->fully_nni_opt = NO; */
+  /*     Free_Scalar_Dbl(l1); */
+  /*     return; */
+  /*   } */
   l2 = Duplicate_Scalar_Dbl(b->l);
   // Unswap
   Swap(u,d,a,v2,tree);

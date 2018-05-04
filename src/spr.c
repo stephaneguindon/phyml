@@ -145,8 +145,7 @@ int Spr(phydbl init_lnL, phydbl prop_spr, t_tree *tree)
 
   
   Free(br_idx);
-
-  
+    
   if(tree->mod->s_opt->n_improvements == 0 && tree->mod->s_opt->spr_lnL == YES)
     {
       Optimize_Br_Len_Serie(2,tree);
@@ -692,7 +691,6 @@ t_spr *Test_One_Spr_Target(t_edge *b_target, t_edge *b_arrow, t_node *n_link, t_
   move->n_opp_to_link = (n_link==b_arrow->left)?(b_arrow->rght):(b_arrow->left);
   
   rk = Include_One_Spr_To_List_Of_Spr(tree->spr_list_one_edge,tree->size_spr_list_one_edge,move,tree);
-  /* if(move->lnL > tree->spr_list_all_edge[tree->size_spr_list_all_edge-1]->lnL && tree->mod->s_opt->spr_lnL == YES) printf("\n. Should include to %p [%G]...",tree->spr_list_all_edge, move->lnL); */
   Include_One_Spr_To_List_Of_Spr(tree->spr_list_all_edge,tree->size_spr_list_all_edge,move,tree);
   
   Prune_Subtree(n_link,
@@ -761,17 +759,28 @@ void Global_Spr_Search(t_tree *tree)
   iter = 0;
 
   Stepwise_Add_Pars(tree);
-  /* Spr_Pars(0,tree->n_otu,tree); */
-  /* Randomize_Tree(tree,(int)(0.1*tree->n_otu)); */
+  Spr_Pars(0,tree->n_otu,tree);
   Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
+
+  tree->mod->s_opt->spr_lnL           = YES;
+  tree->mod->s_opt->spr_pars          = NO;
+  tree->mod->s_opt->min_diff_lk_move  = 1.E-2;
+  tree->mod->s_opt->min_diff_lk_local = 1.E-2;
+  tree->mod->s_opt->max_depth_path    = 15;
+  tree->mod->s_opt->max_delta_lnL_spr = 100.;
+  Spr(tree->c_lnL,1.0,tree);
+  tree->mod->s_opt->max_depth_path    = 5;
+  tree->mod->s_opt->max_delta_lnL_spr = 50.;
+  Spr(tree->c_lnL,1.0,tree);
+  best_lnL = tree->c_lnL;;
+  PhyML_Printf("\n. lnL: %.2f\n",tree->c_lnL);
       
-      
-  tree->mod->s_opt->max_depth_path            = MIN(30,(int)(tree->n_otu/4+1));
-  tree->mod->s_opt->max_delta_lnL_spr         = 1000.;
+  tree->mod->s_opt->max_depth_path            = MIN(20,(int)(tree->n_otu/4+1));
+  tree->mod->s_opt->max_delta_lnL_spr         = 100.;
   tree->mod->s_opt->spr_lnL                   = YES;
   tree->mod->s_opt->spr_pars                  = NO;
-  tree->mod->s_opt->min_diff_lk_move          = 1.E-2;
-  tree->mod->s_opt->min_diff_lk_local         = 1.E-2;
+  tree->mod->s_opt->min_diff_lk_move          = 1.E-1;
+  tree->mod->s_opt->min_diff_lk_local         = 1.E-1;
   tree->perform_spr_right_away                = YES;
   tree->mod->s_opt->eval_list_regraft         = NO;
   tree->mod->s_opt->max_delta_lnL_spr_current = 0.0;
@@ -785,7 +794,6 @@ void Global_Spr_Search(t_tree *tree)
   do
     {
       for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(0.2*iter+1),(phydbl)(1./(0.2*iter+1)));
-      Random_NNI((int)(tree->n_otu/(iter+1)),tree);
       Spr(tree->c_lnL,1.0,tree);
       Optimize_Br_Len_Serie(2,tree);
       
@@ -808,7 +816,7 @@ void Global_Spr_Search(t_tree *tree)
         }
 
       tree->mod->s_opt->max_depth_path = MAX(5,MAX(tree->mod->s_opt->max_spr_depth+4,(int)(0.8*tree->mod->s_opt->max_depth_path)));
-      tree->mod->s_opt->max_depth_path = MIN(30,tree->mod->s_opt->max_depth_path);
+      tree->mod->s_opt->max_depth_path = MIN(20,tree->mod->s_opt->max_depth_path);
       
       if((iter%4) > 0 || iter == 0)
         {
