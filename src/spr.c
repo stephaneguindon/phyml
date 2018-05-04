@@ -855,7 +855,7 @@ void Global_Spr_Search(t_tree *tree)
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Second round of optimization...\n");
   last_best_found = 0;
 
-  tree->mod->s_opt->max_depth_path            = (int)(tree->n_otu/5+1);
+  tree->mod->s_opt->max_depth_path            = MIN(20,(int)(tree->n_otu/5+1));
   tree->mod->s_opt->max_delta_lnL_spr         = MAX(50.,tree->mod->s_opt->max_delta_lnL_spr);
   tree->mod->s_opt->spr_lnL                   = YES;
   tree->mod->s_opt->spr_pars                  = NO;
