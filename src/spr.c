@@ -770,8 +770,8 @@ void Global_Spr_Search(t_tree *tree)
   tree->mod->s_opt->max_delta_lnL_spr         = 1000.;
   tree->mod->s_opt->spr_lnL                   = YES;
   tree->mod->s_opt->spr_pars                  = NO;
-  tree->mod->s_opt->min_diff_lk_move          = 1.E-1;
-  tree->mod->s_opt->min_diff_lk_local         = 1.E-1;
+  tree->mod->s_opt->min_diff_lk_move          = 1.E-2;
+  tree->mod->s_opt->min_diff_lk_local         = 1.E-2;
   tree->perform_spr_right_away                = YES;
   tree->mod->s_opt->eval_list_regraft         = NO;
   tree->mod->s_opt->max_delta_lnL_spr_current = 0.0;
@@ -785,6 +785,7 @@ void Global_Spr_Search(t_tree *tree)
   do
     {
       for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(0.2*iter+1),(phydbl)(1./(0.2*iter+1)));
+      Random_NNI((int)(tree->n_otu/(iter+1)),tree);
       Spr(tree->c_lnL,1.0,tree);
       Optimize_Br_Len_Serie(2,tree);
       
@@ -830,7 +831,6 @@ void Global_Spr_Search(t_tree *tree)
           Copy_Tree(tree,best_tree);
           if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf(" +");
           if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace);
-          Random_NNI((int)(tree->n_otu*0.2),tree);
         }
       
       if(tree->mod->s_opt->n_improvements == 0)
@@ -859,8 +859,8 @@ void Global_Spr_Search(t_tree *tree)
   tree->mod->s_opt->max_delta_lnL_spr         = MAX(50.,tree->mod->s_opt->max_delta_lnL_spr);
   tree->mod->s_opt->spr_lnL                   = YES;
   tree->mod->s_opt->spr_pars                  = NO;
-  tree->mod->s_opt->min_diff_lk_move          = 1.E-1;
-  tree->mod->s_opt->min_diff_lk_local         = 1.E-1;
+  tree->mod->s_opt->min_diff_lk_move          = 1.E-3;
+  tree->mod->s_opt->min_diff_lk_local         = 1.E-3;
   tree->perform_spr_right_away                = YES;
   tree->mod->s_opt->eval_list_regraft         = YES;
   tree->mod->s_opt->max_delta_lnL_spr_current = 0.0;
@@ -904,6 +904,7 @@ void Global_Spr_Search(t_tree *tree)
           if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf(" +");
           if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace);
           /* for(int i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v *= Rgamma((phydbl)(iter+1),(phydbl)(1./(iter+1))); */
+          /* Random_NNI((int)(tree->n_otu*0.2),tree); */
         }
       
       last_best_found++;
