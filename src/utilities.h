@@ -143,8 +143,8 @@ extern int TIME;
 #define  PINV_MIN 0.00001
 #define  PINV_MAX 0.99999
 
-#define RR_MIN 0.001
-#define RR_MAX 1000.0
+#define RR_MIN 0.0001
+#define RR_MAX 10000.0
 
 #define GAMMA_RR_UNSCALED_MIN 0.01
 #define GAMMA_RR_UNSCALED_MAX 200.

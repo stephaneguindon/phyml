@@ -761,7 +761,6 @@ void Global_Spr_Search(t_tree *tree)
   Stepwise_Add_Pars(tree);
   Spr_Pars(0,tree->n_otu,tree);
   Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
-  Randomize_Tree(tree,1000);
   
   tree->mod->s_opt->spr_lnL           = YES;
   tree->mod->s_opt->spr_pars          = NO;
