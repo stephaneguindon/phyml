@@ -757,20 +757,23 @@ void Global_Spr_Search(t_tree *tree)
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. First round of optimization...\n");
 
   iter = 0;
-
+  
   Stepwise_Add_Pars(tree);
   Spr_Pars(0,tree->n_otu,tree);
   Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
-
+  Randomize_Tree(tree,1000);
+  
   tree->mod->s_opt->spr_lnL           = YES;
   tree->mod->s_opt->spr_pars          = NO;
   tree->mod->s_opt->min_diff_lk_move  = 1.E-2;
   tree->mod->s_opt->min_diff_lk_local = 1.E-2;
-  tree->mod->s_opt->max_depth_path    = 15;
-  tree->mod->s_opt->max_delta_lnL_spr = 100.;
+  tree->mod->s_opt->eval_list_regraft = NO;
+  tree->mod->s_opt->min_n_triple_moves= 10;
+  tree->mod->s_opt->max_depth_path    = 50;
+  tree->mod->s_opt->max_delta_lnL_spr = 500.;
   Spr(tree->c_lnL,1.0,tree);
-  tree->mod->s_opt->max_depth_path    = 5;
-  tree->mod->s_opt->max_delta_lnL_spr = 50.;
+  tree->mod->s_opt->max_depth_path    = 25;
+  tree->mod->s_opt->max_delta_lnL_spr = 100.;
   Spr(tree->c_lnL,1.0,tree);
   best_lnL = tree->c_lnL;;
   PhyML_Printf("\n. lnL: %.2f\n",tree->c_lnL);
@@ -817,6 +820,7 @@ void Global_Spr_Search(t_tree *tree)
 
       tree->mod->s_opt->max_depth_path = MAX(5,MAX(tree->mod->s_opt->max_spr_depth+4,(int)(0.8*tree->mod->s_opt->max_depth_path)));
       tree->mod->s_opt->max_depth_path = MIN(20,tree->mod->s_opt->max_depth_path);
+
       
       if((iter%4) > 0 || iter == 0)
         {
@@ -828,7 +832,6 @@ void Global_Spr_Search(t_tree *tree)
           tree->mod->s_opt->max_delta_lnL_spr = MAX(50.,MAX(1.5*mean_delta_lnL_spr,0.5*tree->mod->s_opt->max_delta_lnL_spr));
           mean_delta_lnL_spr = tree->mod->s_opt->max_delta_lnL_spr_current;
         }
-      
       
       
       if(tree->c_lnL > best_lnL)
