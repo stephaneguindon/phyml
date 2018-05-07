@@ -769,18 +769,18 @@ void Global_Spr_Search(t_tree *tree)
   tree->mod->s_opt->eval_list_regraft = NO;
   tree->mod->s_opt->min_n_triple_moves= 10;
   tree->mod->s_opt->max_depth_path    = 50;
-  /* tree->mod->s_opt->max_delta_lnL_spr = 500.; */
-  tree->mod->s_opt->max_delta_lnL_spr = 10000.;
+  tree->mod->s_opt->max_delta_lnL_spr = 500.;
+  /* tree->mod->s_opt->max_delta_lnL_spr = 10000.; */
   Spr(tree->c_lnL,1.0,tree);
   tree->mod->s_opt->max_depth_path    = 25;
-  /* tree->mod->s_opt->max_delta_lnL_spr = 100.; */
-  tree->mod->s_opt->max_delta_lnL_spr = 10000.;
+  tree->mod->s_opt->max_delta_lnL_spr = 100.;
+  /* tree->mod->s_opt->max_delta_lnL_spr = 10000.; */
   Spr(tree->c_lnL,1.0,tree);
   best_lnL = tree->c_lnL;;
   PhyML_Printf("\n. lnL: %.2f\n",tree->c_lnL);
       
   tree->mod->s_opt->max_depth_path            = MIN(20,(int)(tree->n_otu/4+1));
-  tree->mod->s_opt->max_delta_lnL_spr         = 10000.;
+  tree->mod->s_opt->max_delta_lnL_spr         = 1000.;
   tree->mod->s_opt->spr_lnL                   = YES;
   tree->mod->s_opt->spr_pars                  = NO;
   tree->mod->s_opt->min_diff_lk_move          = 1.E-1;
@@ -830,7 +830,7 @@ void Global_Spr_Search(t_tree *tree)
       else if(iter > 0)
         {
           mean_delta_lnL_spr /= 4.0;
-          tree->mod->s_opt->max_delta_lnL_spr = MAX(100.,MAX(1.5*mean_delta_lnL_spr,0.5*tree->mod->s_opt->max_delta_lnL_spr));
+          tree->mod->s_opt->max_delta_lnL_spr = MAX(50.,MAX(2.0*mean_delta_lnL_spr,tree->mod->s_opt->max_delta_lnL_spr));
           mean_delta_lnL_spr = tree->mod->s_opt->max_delta_lnL_spr_current;
         }
       
