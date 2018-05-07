@@ -732,7 +732,7 @@ void Global_Spr_Search(t_tree *tree)
   phydbl best_lnL;
   t_tree *best_tree;
   time_t t_cur;
-  phydbl mean_delta_lnL_spr,lnL_inc;
+  phydbl mean_delta_lnL_spr,max_delta_lnL_spr,lnL_inc;
   
   unsigned int no_improv  = 0;
   unsigned int last_best_found = 0;
@@ -785,6 +785,7 @@ void Global_Spr_Search(t_tree *tree)
   tree->mod->s_opt->max_delta_lnL_spr_current = 0.0;
   tree->mod->s_opt->min_n_triple_moves        = 1;
   mean_delta_lnL_spr                          = 0.0;
+  max_delta_lnL_spr                           = 0.0;
   lnL_inc                                     = DBL_MAX;
   hit_zero_improv                             = 0;
   
@@ -821,12 +822,15 @@ void Global_Spr_Search(t_tree *tree)
       if((iter%4) > 0 || iter == 0)
         {
           mean_delta_lnL_spr += tree->mod->s_opt->max_delta_lnL_spr_current;
+          if(tree->mod->s_opt->max_delta_lnL_spr_current > max_delta_lnL_spr) max_delta_lnL_spr = tree->mod->s_opt->max_delta_lnL_spr_current;
         }
       else if(iter > 0)
         {
           mean_delta_lnL_spr /= 4.0;
-          tree->mod->s_opt->max_delta_lnL_spr = MAX(50.,MIN(2.0*mean_delta_lnL_spr,0.5*tree->mod->s_opt->max_delta_lnL_spr));
+          /* tree->mod->s_opt->max_delta_lnL_spr = MAX(50.,MIN(2.0*mean_delta_lnL_spr,0.5*tree->mod->s_opt->max_delta_lnL_spr)); */
+          tree->mod->s_opt->max_delta_lnL_spr = MAX(50.,2.*max_delta_lnL_spr);
           mean_delta_lnL_spr = tree->mod->s_opt->max_delta_lnL_spr_current;
+          max_delta_lnL_spr = 0.0;
         }
       
       
