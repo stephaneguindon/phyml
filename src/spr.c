@@ -732,7 +732,7 @@ void Global_Spr_Search(t_tree *tree)
   phydbl best_lnL;
   t_tree *best_tree;
   time_t t_cur;
-  phydbl mean_delta_lnL_spr,max_delta_lnL_spr,lnL_inc;
+  phydbl mean_delta_lnL_spr,max_delta_lnL_spr;
   
   unsigned int no_improv  = 0;
   unsigned int last_best_found = 0;
@@ -786,7 +786,6 @@ void Global_Spr_Search(t_tree *tree)
   tree->mod->s_opt->min_n_triple_moves        = 1;
   mean_delta_lnL_spr                          = 0.0;
   max_delta_lnL_spr                           = 0.0;
-  lnL_inc                                     = DBL_MAX;
   hit_zero_improv                             = 0;
   
   
@@ -837,7 +836,6 @@ void Global_Spr_Search(t_tree *tree)
       if(tree->c_lnL > best_lnL)
         {
           no_improv = 0;
-          lnL_inc = tree->c_lnL - best_lnL;
           best_lnL = tree->c_lnL;
           Copy_Tree(tree,best_tree);
           if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf(" +");

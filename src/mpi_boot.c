@@ -252,15 +252,7 @@ void Bootstrap_MPI(t_tree *tree, int tbe_bootstrap)
 
       if(boot_tree->mod->s_opt->opt_topo)
         {
-          if(boot_tree->mod->s_opt->topo_search == NNI_MOVE) 
-            {
-              Simu_Loop(boot_tree);
-            }
-          else if((boot_tree->mod->s_opt->topo_search == SPR_MOVE) ||
-                  (boot_tree->mod->s_opt->topo_search == BEST_OF_NNI_AND_SPR))
-            {
-              Speed_Spr_Loop(boot_tree);
-            }
+          Global_Spr_Search(boot_tree);
         }
       else
         {

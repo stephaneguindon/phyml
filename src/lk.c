@@ -638,7 +638,7 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
   phydbl *dot_prod = tree->dot_prod;
   phydbl *expl = tree->expl;
   phydbl *expld = expl + 1*ncatg*ns;
-  phydbl *expld2 = expl + 2*ncatg*ns;
+  /* phydbl *expld2 = expl + 2*ncatg*ns; */
   
   assert(isnan(*l) == FALSE);
 
