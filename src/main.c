@@ -52,6 +52,7 @@ int main(int argc, char **argv)
   char *most_likely_tree=NULL;
   int orig_random_input_tree;
 
+  
 #ifdef MPI
   int rc;
   rc = MPI_Init(&argc,&argv);
@@ -439,12 +440,22 @@ int main(int argc, char **argv)
   tree1 = Read_Tree_File_Phylip(fp_tree1);
   tree2 = Read_Tree_File_Phylip(fp_tree2);
 
-  Match_Nodes_In_Small_Tree(tree1,tree2);
 
-  For(i,2*tree1->n_otu-2)
-    {
-      printf("\n. Node %d in tree1 matches node %d in tree2",i,(tree1->noeud[i]->match_node)?(tree1->noeud[i]->match_node->num):(-1));
-    }
+  Prune_Tree(tree1,tree2);
+  Prune_Tree(tree2,tree1);
+  
+
+  PhyML_Printf("%s\n%s",
+               Write_Tree(tree1,NO),
+               Write_Tree(tree2,NO));
+               
+  
+  /* Match_Nodes_In_Small_Tree(tree1,tree2); */
+
+  /* For(i,2*tree1->n_otu-2) */
+  /*   { */
+  /*     printf("\n. Node %d in tree1 matches node %d in tree2",i,(tree1->noeud[i]->match_node)?(tree1->noeud[i]->match_node->num):(-1)); */
+  /*   } */
 
 
 

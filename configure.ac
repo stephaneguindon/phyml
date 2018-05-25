@@ -147,7 +147,6 @@ if test "$phycont" = yes; then
    AC_DEFINE([PHYCONT],[1],[PHYCONT tag on])
 fi
 
-
 AC_ARG_ENABLE([rf],[AS_HELP_STRING([--enable-rf],[Compile RF])],[rf=yes],[rf=no])
 AM_CONDITIONAL([WANT_RF], [test "$rf" = yes])
 if test "$rf" = yes; then
@@ -213,6 +212,7 @@ if test "$part" = no; then
 if test "$rwrap" = no; then
 if test "$phycont" = no; then
 if test "$test" = no; then
+if test "$rf" = no; then
 if test "$invitee" = no; then
 if test "$geo" = no; then
 if test "$evolve" = no; then
@@ -220,6 +220,7 @@ if test "$checkpoint" = no; then
 if test "$phyrex" = no; then
 if test "$date" = no; then
    AC_DEFINE([PHYML],[1],[PHYML tag on])
+fi
 fi
 fi
 fi

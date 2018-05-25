@@ -5443,7 +5443,6 @@ $as_echo "#define PHYCONT 1" >>confdefs.h
 
 fi
 
-
 # Check whether --enable-rf was given.
 if test "${enable_rf+set}" = set; then :
   enableval=$enable_rf; rf=yes
@@ -5625,6 +5624,7 @@ if test "$part" = no; then
 if test "$rwrap" = no; then
 if test "$phycont" = no; then
 if test "$test" = no; then
+if test "$rf" = no; then
 if test "$invitee" = no; then
 if test "$geo" = no; then
 if test "$evolve" = no; then
@@ -5634,6 +5634,7 @@ if test "$date" = no; then
 
 $as_echo "#define PHYML 1" >>confdefs.h
 
+fi
 fi
 fi
 fi

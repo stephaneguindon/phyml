@@ -4125,7 +4125,9 @@ void MCMC_Kappa(t_tree *mixt_tree)
 
   Switch_Eigen(YES,mixt_tree->mod);
 
-  tree = mixt_tree->next;
+  if(mixt_tree->is_mixt_tree == YES) tree = mixt_tree->next;
+  else tree = mixt_tree;
+  
   do
     {
       if(tree->is_mixt_tree == YES) tree = tree->next;
@@ -7829,6 +7831,7 @@ void MCMC_PHYREX_Insert_Hit(phydbl hr, int n_insert_disks, phydbl cur_rad, phydb
       
       /* Disks located just prior and after inserted disk */
       young_disk = disk->next;
+      assert(young_disk->n_ldsk_a);
 
       /* Make and initialize new disk */ 
       new_disk[j] = PHYREX_Make_Disk_Event(tree->mmod->n_dim,tree->n_otu);
@@ -7839,8 +7842,6 @@ void MCMC_PHYREX_Insert_Hit(phydbl hr, int n_insert_disks, phydbl cur_rad, phydb
       
       /* Insert it */
       PHYREX_Insert_Disk(new_disk[j],tree);
-
-      assert(young_disk->n_ldsk_a);
 
       /* Which lineage is going to be hit ? */
       hr += log(young_disk->n_ldsk_a);
@@ -8494,7 +8495,7 @@ void MCMC_PHYREX_Simulate_Backward(t_tree *tree)
   while(disk && disk->time > t) disk = disk->prev;
   target_disk = disk->next;
 
-  hr -= log(FABS((target_disk->prev->time - target_disk->time)/T));
+  hr -= log(fabs((target_disk->prev->time - target_disk->time)/T));
 
   bkp_disk = target_disk->prev;
 
@@ -8503,7 +8504,7 @@ void MCMC_PHYREX_Simulate_Backward(t_tree *tree)
 
   PHYREX_Simulate_Backward_Core(NO,target_disk,tree);
   
-  T =  PHYREX_Tree_Height(tree);
+  T = PHYREX_Tree_Height(tree);
   hr += log(FABS((target_disk->prev->time - target_disk->time)/T));
 
   new_alnL = Lk(NULL,tree);

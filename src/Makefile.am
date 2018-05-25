@@ -243,29 +243,38 @@ tiporder_LDADD = -lm
 else
 if WANT_RF
 rf_SOURCES = main.c \
-utilities.c utilities.h\
-optimiz.c optimiz.h\
-lk.c lk.h\
+utilities.c  utilities.h\
+optimiz.c  optimiz.h\
+lk.c  lk.h\
 bionj.c bionj.h\
-models.c models.h\
-free.c free.h\
-help.c help.h\
-simu.c simu.h\
-eigen.c eigen.h\
-pars.c pars.h\
-alrt.c alrt.h\
-interface.c interface.h\
-cl.c cl.h\
-mg.c mg.h\
-times.c times.h\
-mcmc.c mcmc.h\
-rates.c rates.h\
+models.c  models.h\
+free.c  free.h\
+help.c  help.h\
+simu.c  simu.h\
+eigen.c  eigen.h\
+pars.c  pars.h\
+alrt.c  alrt.h\
+interface.c  interface.h\
+cl.c  cl.h\
 spr.c spr.h\
-draw.c draw.h\
+draw.c  draw.h\
 stats.c stats.h\
-tbe.c tbe.h \
+rates.c rates.h\
+mcmc.c mcmc.h\
+times.c times.h\
 tiporder.c tiporder.h\
-m4.c m4.h
+mg.c mg.h\
+m4.c m4.h\
+io.c io.h\
+make.c make.h\
+nexus.c nexus.h\
+init.c init.h\
+xml.c xml.h\
+mixt.c mixt.h\
+tbe.c tbe.h \
+date.c date.h\
+sse.c sse.h\
+avx.c avx.h
 rf_LDADD = -lm
 else
 if WANT_MPI

@@ -8284,20 +8284,20 @@ void Find_Common_Tips(t_tree *tree1, t_tree *tree2)
 {
   int i,j;
 
-  for(i=0;i<tree1->n_otu;i++) tree1->a_nodes[i]->common = 0;
-  for(i=0;i<tree2->n_otu;i++) tree2->a_nodes[i]->common = 0;
-
+  for(i=0;i<tree1->n_otu;i++) tree1->a_nodes[i]->common = NO;
+  for(i=0;i<tree2->n_otu;i++) tree2->a_nodes[i]->common = NO;
+  
   for(i=0;i<tree1->n_otu;i++)
     {
       for(j=0;j<tree2->n_otu;j++)
-    {
-      if(!strcmp(tree1->a_nodes[i]->name,tree2->a_nodes[j]->name))
         {
-          tree1->a_nodes[i]->common = 1;
-          tree2->a_nodes[j]->common = 1;
-          break;
+          if(!strcmp(tree1->a_nodes[i]->name,tree2->a_nodes[j]->name))
+            {
+              tree1->a_nodes[i]->common = YES;
+              tree2->a_nodes[j]->common = YES;
+              break;
+            }
         }
-    }
     }
 }
 
@@ -9799,7 +9799,7 @@ void Prune_Tree(t_tree *big_tree, t_tree *small_tree)
   curr_ext_node = 0;
   curr_int_node = big_tree->n_otu;
   curr_br = 0;
-  For(i,big_tree->n_otu+n_pruned_nodes)
+  for(i=0;i<big_tree->n_otu+n_pruned_nodes;++i)
     {
       for(j=0;j<n_pruned_nodes;j++)
         if(!strcmp(pruned_nodes[j]->name,big_tree->a_nodes[i]->name))
@@ -9854,94 +9854,94 @@ void Match_Nodes_In_Small_Tree(t_tree *small_tree, t_tree *big_tree)
       PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
     }
-
+  
   Free_Bip(big_tree);
   Alloc_Bip(big_tree);
   Get_Bip(big_tree->a_nodes[0],big_tree->a_nodes[0]->v[0],big_tree);
-
+  
   Free_Bip(small_tree);
   Alloc_Bip(small_tree);
   Get_Bip(small_tree->a_nodes[0],small_tree->a_nodes[0]->v[0],small_tree);
-
+  
   if(!Check_Topo_Constraints(big_tree,small_tree))
     {
       PhyML_Printf("\n. small_tree and big_tree cannot have distinct topologies.");
       PhyML_Printf("\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
     }
-
+  
   For(i,2*small_tree->n_otu-1) small_tree->a_nodes[i]->match_node = NULL;
   For(i,2*big_tree->n_otu-1)   big_tree->a_nodes[i]->match_node   = NULL;
-
+  
   score = (int *)mCalloc(3,sizeof(int));
-
+  
   for(i=0;i<small_tree->n_otu;i++)
     {
       for(j=0;j<big_tree->n_otu;j++)
-    {
-      if(!strcmp(small_tree->a_nodes[i]->name,big_tree->a_nodes[j]->name))
         {
-          small_tree->a_nodes[i]->match_node = big_tree->a_nodes[j];
-          big_tree->a_nodes[j]->match_node   = small_tree->a_nodes[i];
-          break;
-        }
-    }
-    }
-
-  For(i,2*small_tree->n_otu-2)
-    {
-      if(small_tree->a_nodes[i]->tax == NO)
-    {
-      For(j,2*big_tree->n_otu-2)
-        {
-          if(big_tree->a_nodes[j]->tax == NO)
-        {
-          for(k=0;k<3;k++) score[k] = 0;
-
-          for(k=0;k<3;k++)
-            {
-              for(l=0;l<3;l++)
-            {
-              identical = 0;
-              For(m,small_tree->a_nodes[i]->bip_size[k])
-                {
-                  For(n,big_tree->a_nodes[j]->bip_size[l])
-                {
-                  if(!strcmp(small_tree->a_nodes[i]->bip_node[k][m]->name,big_tree->a_nodes[j]->bip_node[l][n]->name))
-                    {
-                      identical++;
-                      break;
-                    }
-                }
-                }
-              if(identical == small_tree->a_nodes[i]->bip_size[k])
-                {
-                  score[k]++;
-                }
-            }
-            }
-
-          /* printf("\n. [%d] [%d] %d %d %d -- %d %d %d",i,j, */
-          /* 	 score[0],score[1],score[2], */
-          /* 	 small_tree->a_nodes[i]->bip_size[0], */
-          /* 	 small_tree->a_nodes[i]->bip_size[1], */
-          /* 	 small_tree->a_nodes[i]->bip_size[2]); */
-
-          if(
-             score[0] == 1 &&
-             score[1] == 1 &&
-             score[2] == 1
-             )
+          if(!strcmp(small_tree->a_nodes[i]->name,big_tree->a_nodes[j]->name))
             {
               small_tree->a_nodes[i]->match_node = big_tree->a_nodes[j];
               big_tree->a_nodes[j]->match_node   = small_tree->a_nodes[i];
               break;
             }
         }
+    }
+  
+  For(i,2*small_tree->n_otu-2)
+    {
+      if(small_tree->a_nodes[i]->tax == NO)
+        {
+          For(j,2*big_tree->n_otu-2)
+            {
+              if(big_tree->a_nodes[j]->tax == NO)
+                {
+                  for(k=0;k<3;k++) score[k] = 0;
+                  
+                  for(k=0;k<3;k++)
+                    {
+                      for(l=0;l<3;l++)
+                        {
+                          identical = 0;
+                          For(m,small_tree->a_nodes[i]->bip_size[k])
+                            {
+                              For(n,big_tree->a_nodes[j]->bip_size[l])
+                                {
+                                  if(!strcmp(small_tree->a_nodes[i]->bip_node[k][m]->name,big_tree->a_nodes[j]->bip_node[l][n]->name))
+                                    {
+                                      identical++;
+                                      break;
+                                    }
+                                }
+                            }
+                          if(identical == small_tree->a_nodes[i]->bip_size[k])
+                            {
+                              score[k]++;
+                            }
+                        }
+                    }
+                  
+                  /* printf("\n. [%d] [%d] %d %d %d -- %d %d %d",i,j, */
+                  /* 	 score[0],score[1],score[2], */
+                  /* 	 small_tree->a_nodes[i]->bip_size[0], */
+                  /* 	 small_tree->a_nodes[i]->bip_size[1], */
+                  /* 	 small_tree->a_nodes[i]->bip_size[2]); */
+                  
+                  if(
+                     score[0] == 1 &&
+                     score[1] == 1 &&
+                     score[2] == 1
+                     )
+                    {
+                      small_tree->a_nodes[i]->match_node = big_tree->a_nodes[j];
+                      big_tree->a_nodes[j]->match_node   = small_tree->a_nodes[i];
+                      break;
+                    }
+                }
+            }
         }
     }
-    }
-
+  
   Free(score);
 }
 
