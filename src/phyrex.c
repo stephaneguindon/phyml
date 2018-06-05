@@ -21,8 +21,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int PHYREX_Main(int argc, char *argv[])
 {
-  return(PHYREX_Main_Estimate(argc,argv));
-  /* return(PHYREX_Main_Simulate(argc,argv)); */
+  /* return(PHYREX_Main_Estimate(argc,argv)); */
+  return(PHYREX_Main_Simulate(argc,argv));
 }
 
 //////////////////////////////////////////////////////////////
@@ -123,7 +123,7 @@ int PHYREX_Main_Estimate(int argc, char *argv[])
 
   PHYREX_Tree_Height(tree);
   
-  res = PHYREX_MCMC(tree);
+  /* res = PHYREX_MCMC(tree); */
 
   Free(res);  
 
@@ -153,8 +153,8 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   /* seed = 32076; /\* !!!!!!!!!! *\/ */
   srand(seed);
   
-  /* tree = PHYREX_Simulate(n_otus,n_sites,10.,10.,seed); */
-  tree = PHYREX_Simulate_Independent_Loci(n_otus,500,20.,20.,seed);
+  tree = PHYREX_Simulate(n_otus,n_sites,10.,10.,seed);
+  /* tree = PHYREX_Simulate_Independent_Loci(n_otus,500,20.,20.,seed); */
 
   disk = tree->disk;
   while(disk->prev) disk = disk->prev;
@@ -172,6 +172,8 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   sprintf(s+strlen(s),".%d.xml",tree->mod->io->r_seed);
   PHYREX_Print_MultiTypeTree_Config_File(n_sites,s,tree);
 
+
+  
   res = PHYREX_MCMC(tree);
 
   disk = tree->disk;
@@ -564,13 +566,13 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, int r_seed)
 
   PHYREX_Simulate_Backward_Core(YES,tree->disk,tree);
   /* mmod->samp_area = PHYREX_Simulate_Forward_Core(n_sites,tree); */
-  
-  PHYREX_Ldsk_To_Tree(tree);  
+  PHYREX_Ldsk_To_Tree(tree);
 
   Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
   Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
   RATES_Fill_Lca_Table(tree);
-
+  
+  
   /* min_rate = 1.E-5; */
   /* max_rate = 1.E-4; */
 
@@ -592,7 +594,15 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, int r_seed)
   Prepare_Tree_For_Lk(tree);
   Evolve(tree->data,tree->mod,0,tree);
 
-
+  tree->t_dir = (short int *)mCalloc((2*tree->n_otu-2)*(2*tree->n_otu-2),sizeof(short int));
+  Fill_Dir_Table(tree);
+  phydbl *gen_dist = Dist_Btw_Tips(tree);
+  PhyML_Printf("%G %G %G : ",mmod->lbda,mmod->mu,mmod->rad);
+  for(int i=0;i<tree->n_otu-1;++i) for(int j=i+1;j<tree->n_otu;++j) PhyML_Printf("%G ",gen_dist[i*tree->n_otu+j]);
+  PhyML_Printf(" : ",mmod->lbda,mmod->mu,mmod->rad);
+  for(int i=0;i<tree->n_otu-1;++i) for(int j=i+1;j<tree->n_otu;++j) PhyML_Printf("%G ",Euclidean_Dist(tree->a_nodes[i]->coord,tree->a_nodes[j]->coord));
+  Exit("\n");
+  
   if(tree->mod->s_opt->greedy) Init_Partial_Lk_Tips_Double(tree);
   else                         Init_Partial_Lk_Tips_Int(tree);
   Init_Partial_Lk_Loc(tree);

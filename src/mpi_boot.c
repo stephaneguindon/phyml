@@ -40,7 +40,7 @@ void Bootstrap_MPI(t_tree *tree, int tbe_bootstrap)
   if(tree->is_mixt_tree == YES)
     {
       PhyML_Printf("\n== Bootstrap option not yet available for partition/mixture analysis.");
-      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
+      assert(FALSE);
     }
 
   randomRecv = nbElem = bootRecv = 0;
@@ -68,6 +68,13 @@ void Bootstrap_MPI(t_tree *tree, int tbe_bootstrap)
 
   if (Global_myRank == 0)
     PhyML_Printf("\n. Non parametric bootstrap analysis \n");
+
+  if(Global_numTask <= 1)
+    {
+      PhyML_Printf("\n. The number of CPUs used in the MPI bootstrap analysis should be");
+      PhyML_Printf("\n. strictly greater than 1.");
+      assert(FALSE);
+    }
   
   //number of bootstraps for each process
   if (tree->mod->bootstrap%Global_numTask != 0) 

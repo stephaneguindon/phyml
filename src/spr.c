@@ -772,7 +772,6 @@ void Global_Spr_Search(t_tree *tree)
   tree->mod->s_opt->max_delta_lnL_spr = 10000.;
   Spr(tree->c_lnL,1.0,tree);
   best_lnL = tree->c_lnL;;
-  PhyML_Printf("\n. lnL: %.2f\n",tree->c_lnL);
       
   tree->mod->s_opt->max_depth_path            = MIN(20,(int)(tree->n_otu/4+1));
   tree->mod->s_opt->max_delta_lnL_spr         = 1000.;

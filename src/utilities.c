@@ -1,5 +1,4 @@
 /*
-
 PhyML:  a program that  computes maximum likelihood phylogenies from
 DNA or AA homologous sequences.
 
@@ -6078,6 +6077,8 @@ void Get_List_Of_Nodes_In_Polytomy(t_node *a, t_node *d, t_node ***list, int *si
 
 void Path_Length(t_node *dep, t_node *arr, phydbl *len, t_tree *tree)
 {
+  assert(tree->t_dir);
+  
   if(dep==arr) return;
   else
     {
@@ -9816,7 +9817,6 @@ void Prune_Tree(t_tree *big_tree, t_tree *small_tree)
 
   Reassign_Edge_Nums(big_tree->a_nodes[0],big_tree->a_nodes[0]->v[0],&curr_br,big_tree);
   
-
   big_tree->t_dir = (short int *)mCalloc((2*big_tree->n_otu-2)*(2*big_tree->n_otu-2),sizeof(short int));
   
   for(i=0;i<n_pruned_nodes;i++)
@@ -10255,7 +10255,6 @@ phydbl *Dist_Btw_Tips(t_tree *tree)
           dist[j*tree->n_otu+i] = dist[i*tree->n_otu+j];
         }
     }
-
 
   return(dist);
 

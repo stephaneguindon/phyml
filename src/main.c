@@ -325,6 +325,10 @@ int main(int argc, char **argv)
                   Free_Tree(tree);
                 } //Tree done
 
+              if(io->n_data_sets == 1) rewind(io->fp_out_tree);
+              if(most_likely_tree) PhyML_Fprintf(io->fp_out_tree,"%s\n",most_likely_tree);
+
+
               /* Launch bootstrap analysis */
               if(mod->bootstrap)
                 {
@@ -332,7 +336,7 @@ int main(int argc, char **argv)
 
 #ifdef MPI
                   MPI_Bcast (most_likely_tree, strlen(most_likely_tree)+1, MPI_CHAR, 0, MPI_COMM_WORLD);
-                  if(!io->quiet)  PhyML_Printf("\n\n. The bootstrap analysis will use %d CPUs.",Global_numTask);
+                  if(!io->quiet)  PhyML_Printf("\n\n. The bootstrap analysis will use %d CPU%c.",Global_numTask,Global_numTask>1?'s':'\0');
 #endif
                   
                   most_likely_tree = Bootstrap_From_String(most_likely_tree,cdata,mod,io);
