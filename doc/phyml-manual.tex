@@ -724,14 +724,14 @@ PhyML sources  must be compiled with  specific options to turn  on the parallel 
 with, say 100 replicates on 2 CPUs, can be done by typing the following command-line:
 \begin{verbatim}
 mpd &;
-mpirun -np 2 ./phyml -i seqfile -b 100;
+mpirun -np 2 ./phyml-mpi -i seqfile -b 100;
 \end{verbatim}
 The  first command  launches  the mpi  daemon  while the  second launches  the  analysis. Note  that
 launching the daemon needs to be done only once.  The output files are similar to the ones generated
 using the standard, non-parallel, analysis (see Section \ref{sec:input_output}). Note that running
 the program in batch mode, i.e.:
 \begin{verbatim}
-mpirun -np 2 ./phyml -i seqfile -b 100 &
+mpirun -np 2 ./phyml-mpi -i seqfile -b 100 &
 \end{verbatim}
 will probably NOT work. I do not know how to run a mpi process in batch mode yet. Suggestions welcome...
 Also, at the moment, the number of bootstrap replicates must be a multiple of the number of CPUs
