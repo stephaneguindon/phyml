@@ -597,7 +597,7 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, int r_seed)
   tree->t_dir = (short int *)mCalloc((2*tree->n_otu-2)*(2*tree->n_otu-2),sizeof(short int));
   Fill_Dir_Table(tree);
   phydbl *gen_dist = Dist_Btw_Tips(tree);
-  PhyML_Printf("%G %G %G : ",mmod->lbda,mmod->mu,mmod->rad);
+  PhyML_Printf("@@@ %G %G %G : ",mmod->lbda,mmod->mu,mmod->rad);
   for(int i=0;i<tree->n_otu-1;++i) for(int j=i+1;j<tree->n_otu;++j) PhyML_Printf("%G ",gen_dist[i*tree->n_otu+j]);
   PhyML_Printf(" : ",mmod->lbda,mmod->mu,mmod->rad);
   for(int i=0;i<tree->n_otu-1;++i) for(int j=i+1;j<tree->n_otu;++j) PhyML_Printf("%G ",Euclidean_Dist(tree->a_nodes[i]->coord,tree->a_nodes[j]->coord));

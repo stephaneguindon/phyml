@@ -145,12 +145,18 @@ void MIXT_Chain_Sprs(t_tree *mixt_tree)
       if(tree->next_mixt) tree->best_spr->next_mixt = tree->next_mixt->best_spr;
       if(tree->prev_mixt) tree->best_spr->prev_mixt = tree->prev_mixt->best_spr;
       
-      For(i,2*tree->n_otu-2)
+      for(i=0;i<2*tree->n_otu-2;++i)
         {
           if(tree->next)      tree->spr_list_one_edge[i]->next      = tree->next->spr_list_one_edge[i];
           if(tree->prev)      tree->spr_list_one_edge[i]->prev      = tree->prev->spr_list_one_edge[i];
           if(tree->next_mixt) tree->spr_list_one_edge[i]->next_mixt = tree->next_mixt->spr_list_one_edge[i];
           if(tree->prev_mixt) tree->spr_list_one_edge[i]->prev_mixt = tree->prev_mixt->spr_list_one_edge[i];
+
+          if(tree->next)      tree->spr_list_all_edge[i]->next      = tree->next->spr_list_all_edge[i];
+          if(tree->prev)      tree->spr_list_all_edge[i]->prev      = tree->prev->spr_list_all_edge[i];
+          if(tree->next_mixt) tree->spr_list_all_edge[i]->next_mixt = tree->next_mixt->spr_list_all_edge[i];
+          if(tree->prev_mixt) tree->spr_list_all_edge[i]->prev_mixt = tree->prev_mixt->spr_list_all_edge[i];
+
         }
       tree = tree->next;
     }
@@ -1571,6 +1577,25 @@ void MIXT_Graft_Subtree(t_edge *mixt_target, t_node *mixt_link, t_node *mixt_lin
     point to those of mixt_tree, they are set to OFF when calling
     Graft */
   MIXT_Turn_Branches_OnOff_In_One_Elem(ON,mixt_tree);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void MIXT_Multiply_Scalar_Dbl(scalar_dbl *this, phydbl scalar)
+{
+  if(this == NULL) return;
+  else
+    {
+      scalar_dbl *buff;
+      buff = this;
+      do
+        {
+          buff->v *= scalar;
+          buff = buff->next;
+        }
+      while(buff);
+    }
 }
 
 //////////////////////////////////////////////////////////////
