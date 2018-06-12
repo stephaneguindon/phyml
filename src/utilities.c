@@ -9006,8 +9006,13 @@ void Set_Model_Name(t_mod *mod)
       }
     case CUSTOMAA:
       {
-    strcpy(mod->modelname->s, "Custom");
-    break;
+        strcpy(mod->modelname->s, "Custom");
+        break;
+      }
+    case FLU:
+      {
+        strcpy(mod->modelname->s, "FLU");
+        break;
       }
     default:
       {

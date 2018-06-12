@@ -956,6 +956,11 @@ int Read_Command_Line(option *io, int argc, char **argv)
 		io->datatype              = AA;
 		io->mod->whichmodel       = CUSTOMAA;
 	      }
+	    else if(strcmp(optarg, "FLU") == 0)
+	      {
+		io->datatype              = AA;
+		io->mod->whichmodel       = FLU;
+	      }
 	    else
 	      {
 		PhyML_Printf("\n. The model name is incorrect. Please see the documentation.\n");
