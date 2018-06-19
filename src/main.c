@@ -115,6 +115,7 @@ int main(int argc, char **argv)
       mod = io->mod;
       orig_random_input_tree = io->mod->s_opt->random_input_tree;
       
+
       if(io->data)
         {
           if(io->n_data_sets > 1) PhyML_Printf("\n. Data set [#%d]\n",num_data_set+1);

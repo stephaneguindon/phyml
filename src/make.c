@@ -1001,7 +1001,6 @@ t_rmat *Make_Rmat(int ns)
   r_mat->qmat->v                = (phydbl *)mCalloc(ns*ns,sizeof(phydbl));
   r_mat->qmat_buff->v           = (phydbl *)mCalloc(ns*ns,sizeof(phydbl));
 
-
   return(r_mat);
 }
 

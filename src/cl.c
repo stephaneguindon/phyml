@@ -879,86 +879,103 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	    else if(strcmp(optarg, "DAYHOFF") == 0)
 	      {
 		io->datatype              = AA;
+		io->mod->ns               = 20;
 		io->mod->whichmodel       = DAYHOFF;
 	      }
 	    else if(strcmp (optarg, "JTT") == 0)
 	      {
 		io->datatype              = AA;
+		io->mod->ns               = 20;
 		io->mod->whichmodel       = JTT;
 	      }
 	    else if(strcmp(optarg, "MTREV") == 0)
 	      {
 		io->datatype             = AA;
+		io->mod->ns              = 20;
 		io->mod->whichmodel      = MTREV;
 	      }
 	    else if(strcmp (optarg, "LG") == 0)
 	      {
 		io->datatype              = AA;
+		io->mod->ns               = 20;
 		io->mod->whichmodel       = LG;
 	      }
 	    else if(strcmp (optarg, "WAG") == 0)
 	      {
 		io->datatype              = AA;
+		io->mod->ns               = 20;
 		io->mod->whichmodel       = WAG;
 	      }
 	    else if(strcmp(optarg, "DCMUT") == 0)
 	      {
 		io->datatype              = AA;
+		io->mod->ns               = 20;
 		io->mod->whichmodel       = DCMUT;
 	      }
 	    else if(strcmp (optarg, "RTREV") == 0)
 	      {
 		io->datatype              = AA;
+		io->mod->ns               = 20;
 		io->mod->whichmodel       = RTREV;
 	      }
 	    else if(strcmp(optarg, "CPREV") == 0)
 	      {
 		io->datatype              = AA;
+		io->mod->ns               = 20;
 		io->mod->whichmodel       = CPREV;
 	      }
 	    else if(strcmp(optarg, "VT") == 0)
 	      {
 		io->datatype              = AA;
+		io->mod->ns               = 20;
 		io->mod->whichmodel       = VT;
 	      }
 	    else if(strcmp(optarg, "BLOSUM62") == 0)
 	      {
 		io->datatype              = AA;
+		io->mod->ns               = 20;
 		io->mod->whichmodel       = BLOSUM62;
 	      }
 	    else if(strcmp(optarg, "MTMAM") == 0)
 	      {
 		io->datatype              = AA;
+		io->mod->ns               = 20;
 		io->mod->whichmodel       = MTMAM;
 	      }
 	    else if (strcmp(optarg,"MTART") == 0)
 	      {
 		io->datatype              = AA;
+		io->mod->ns               = 20;
 		io->mod->whichmodel       = MTART;
 	      }
 	    else if (strcmp(optarg,"HIVW") == 0)
 	      {
 		io->datatype              = AA;
+		io->mod->ns               = 20;
 		io->mod->whichmodel       = HIVW;
 	      }
 	    else if(strcmp(optarg, "HIVB") == 0)
 	      {
 		io->datatype              = AA;
+		io->mod->ns               = 20;
 		io->mod->whichmodel       = HIVB;
 	      }
 	    else if(strcmp(optarg, "AB") == 0)
 	      {
 		io->datatype              = AA;
+		io->mod->ns               = 20;
 		io->mod->whichmodel       = AB;
 	      }
 	    else if (strcmp(optarg, "CUSTOM") == 0)
 	      {
 		io->datatype              = AA;
+		io->mod->ns               = 20;
 		io->mod->whichmodel       = CUSTOMAA;
 	      }
 	    else if(strcmp(optarg, "FLU") == 0)
 	      {
 		io->datatype              = AA;
+		io->mod->ns               = 20;
 		io->mod->whichmodel       = FLU;
 	      }
 	    else
@@ -1577,7 +1594,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
       io->mod->s_opt->opt_rr = 1;
     }
   
-
+  
   return 1;
 }
 

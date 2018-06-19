@@ -1954,8 +1954,6 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
         }
       while(tree);
     }
-
-  t_tree *tree = mixt_tree->next;
   
   Free(tips);
   Free(nd_list);

@@ -3195,12 +3195,12 @@ void Map_Mutations(t_node *a, t_node *d, int sa, int sd, t_edge *b, int site, in
   int *mut; // Array of mutations
   int thismut;
   int n_mut_branch;
-  phydbl cr,rr;
   int n_iter;
   int first_mut;
   phydbl T;
   int ns,tax_idx;
-
+  phydbl rr;
+  
   ns = tree->mod->ns;
   
   all_probs = (phydbl *)mCalloc(ns*ns,sizeof(phydbl));
@@ -3208,22 +3208,16 @@ void Map_Mutations(t_node *a, t_node *d, int sa, int sd, t_edge *b, int site, in
   
   // Site relative rate
   rr = tree->mod->ras->gamma_rr->v[rcat];
-    
-#ifdef PHYTIME
-  cr = tree->rates->clock_r;
-#elif defined(PHYML)
-  cr = 0.0;
-#endif
-  
+      
   // Rate matrix
   Q = tree->mod->r_mat->qmat->v;
   
   // Length of the 'time' interval considered.
   T = 0.0;
 #ifdef PHYTIME
-  T = tree->rates->cur_l[d->num];
+  T = tree->rates->cur_l[d->num]*rr;
 #elif defined(PHYML)
-  T = b->l->v;
+  T = b->l->v*rr;
 #endif
   
   
