@@ -482,6 +482,8 @@ phydbl *DATE_MCMC(t_tree *tree)
   fp_stats = tree->io->fp_out_stats;
   fp_tree = tree->io->fp_out_tree;
 
+  if(tree->io->mutmap == YES) Make_MutMap(tree);
+
   TIMES_Randomize_Tree_With_Time_Constraints(tree->rates->a_cal[0],tree);
   
   mcmc = MCMC_Make_MCMC_Struct();
@@ -495,6 +497,7 @@ phydbl *DATE_MCMC(t_tree *tree)
   MCMC_Randomize_Rate_Across_Sites(tree);
   MCMC_Randomize_Rates(tree);
   
+
   n_vars                  = 10;
   adjust_len              = tree->io->mcmc->chain_len_burnin;
   mcmc->sample_interval   = tree->io->mcmc->sample_interval;
@@ -519,7 +522,7 @@ phydbl *DATE_MCMC(t_tree *tree)
   /* tree->bl_ndigits = 7; */
   RATES_Update_Cur_Bl(tree);
 
-  
+      
   PhyML_Printf("\n. AVX enabled: %s",
 #if defined(__AVX__)
                "yes"
@@ -541,6 +544,8 @@ phydbl *DATE_MCMC(t_tree *tree)
   PhyML_Printf("\n. log(Pr(Seq|Tree)) = %f",tree->c_lnL);
   PhyML_Printf("\n. log(Pr(Tree)) = %f",tree->rates->c_lnL_times);
     
+  
+  
   tree->extra_tree = Make_Tree_From_Scratch(tree->n_otu,tree->data);
   tree->extra_tree->mod = tree->mod;
   Copy_Tree(tree,tree->extra_tree);
@@ -558,8 +563,7 @@ phydbl *DATE_MCMC(t_tree *tree)
   tree->extra_tree->mcmc = mcmc;
   MCMC_Init_MCMC_Struct(NULL,NULL,mcmc);
   MCMC_Complete_MCMC(mcmc,tree->extra_tree);
-
- 
+      
   PhyML_Fprintf(fp_stats,"\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t",
                 "sample",
                 "lnL(posterior)",
@@ -647,9 +651,6 @@ phydbl *DATE_MCMC(t_tree *tree)
   i = 0;
   do { MCMC_Clock_R(tree); } while(i++ < 100);
 
-
-  
-  
   do
     {
       if(tree->mcmc->run > adjust_len) for(i=0;i<tree->mcmc->n_moves;i++) tree->mcmc->adjust_tuning[i] = NO;
@@ -673,9 +674,9 @@ phydbl *DATE_MCMC(t_tree *tree)
       else if(!strcmp(tree->mcmc->move_name[move],"times"))              MCMC_Times_All(tree);
       else if(!strcmp(tree->mcmc->move_name[move],"times_and_rates"))    MCMC_Times_And_Rates_All(tree);
       
-      else if(!strcmp(tree->mcmc->move_name[move],"spr"))                { MCMC_Prune_Regraft(tree); }
-      else if(!strcmp(tree->mcmc->move_name[move],"spr_local"))          { MCMC_Prune_Regraft_Local(tree);}
-      else if(!strcmp(tree->mcmc->move_name[move],"spr_weighted"))       { MCMC_Prune_Regraft_Weighted(tree);}
+      else if(!strcmp(tree->mcmc->move_name[move],"spr"))                MCMC_Prune_Regraft(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"spr_local"))          MCMC_Prune_Regraft_Local(tree);
+      else if(!strcmp(tree->mcmc->move_name[move],"spr_weighted"))       MCMC_Prune_Regraft_Weighted(tree);
 
       else if(!strcmp(tree->mcmc->move_name[move],"updown_t_cr"))        MCMC_Updown_T_Cr(tree);
       else if(!strcmp(tree->mcmc->move_name[move],"kappa"))              MCMC_Kappa(tree);
@@ -688,8 +689,18 @@ phydbl *DATE_MCMC(t_tree *tree)
       else if(!strcmp(tree->mcmc->move_name[move],"clade_change"))       MCMC_Clade_Change(tree);
       else continue;
 
-      /* PhyML_Fprintf(stderr,"\n. move: %s",tree->mcmc->move_name[move]); */      
-      
+      /* PhyML_Fprintf(stderr,"\n. move: %s",tree->mcmc->move_name[move]);       */
+
+      /* PhyML_Printf("\n. %d move: %s",tree->mcmc->run,tree->mcmc->move_name[move]);       */
+      /* PhyML_Printf("\n. root: %d v1: %d v2: %d b1->left: %d b1->rght: %d b2->left: %d b2->rght: %d",  */
+      /*              tree->n_root->num, */
+      /*              tree->n_root->v[1]->num, */
+      /*              tree->n_root->v[2]->num, */
+      /*              tree->n_root->b[1]->left->num, */
+      /*              tree->n_root->b[1]->rght->num, */
+      /*              tree->n_root->b[2]->left->num, */
+      /*              tree->n_root->b[2]->rght->num); */
+                   
       if(!RATES_Check_Edge_Length_Consistency(tree))
         {
           PhyML_Fprintf(stderr,"\n. Issue detected by RATES_Check_Edge_Length_Consistency(tree).");
@@ -832,8 +843,9 @@ phydbl *DATE_MCMC(t_tree *tree)
           fflush(NULL);
           RATES_Update_Cur_Bl(tree);
 
+          if(tree->io->mutmap == YES) Sample_Ancestral_Seq(YES,NO,tree);
+	          
           tree->mcmc->sample_num++;
-
         }
 
       tree->mcmc->run++;

@@ -3955,21 +3955,17 @@ void Read_Clade_Priors(char *file_name, t_tree *tree)
           PhyML_Printf("\n. WARNING: could not find any clade in the tree referred to with the following taxon names:");
           for(i=0;i<clade_size;i++) PhyML_Printf("\n. \"%s\"",clade_list[i]);
           PhyML_Printf("\n. .................................................................");
-          /* sleep(3); */
         }
       else
         {
           tree->rates->t_has_prior[node_num] = YES;
-          tree->rates->t_prior_min[node_num] = MIN(prior_low,prior_up);
-          tree->rates->t_prior_max[node_num] = MAX(prior_low,prior_up);
 
+          tree->rates->t_prior_min[node_num] = -MAX(prior_low,prior_up);
+          tree->rates->t_prior_max[node_num] = -MIN(prior_low,prior_up);
 
-              /* Sergei to add stuff here re calibration object */
-
-
-          if(FABS(prior_low - prior_up) < 1.E-6 && tree->a_nodes[node_num]->tax == YES)
-        tree->rates->nd_t[node_num] = prior_low;
-
+          if(fabs(prior_low - prior_up) < 1.E-6 && tree->a_nodes[node_num]->tax == YES)
+            tree->rates->nd_t[node_num] = prior_low;
+          
           PhyML_Printf("\n");
           PhyML_Printf("\n. [%3d]..................................................................",n_clade_priors);
           PhyML_Printf("\n. Node %4d matches the clade referred to with the following taxon names:",node_num);

@@ -5323,10 +5323,44 @@ void Graft_Subtree(t_edge *target, t_node *link, t_node *link_daughter, t_edge *
           if(target_nd == v1)                tree->e_root = residual;
           else if(target_nd == v2)           tree->e_root = target;
           else if(target_nd == tree->n_root) tree->e_root = b_up;
-
-          tree->n_root->v[1] = tree->e_root->left;
-          tree->n_root->v[2] = tree->e_root->rght;
         }
+      
+      tree->n_root->v[1] = tree->e_root->left;
+      tree->n_root->v[2] = tree->e_root->rght;
+      
+      tree->n_root->b[1]->left = tree->n_root;
+      tree->n_root->b[1]->rght = tree->n_root->v[1];      
+      tree->n_root->b[1]->p_lk_rght = tree->e_root->p_lk_left;
+      tree->n_root->b[1]->p_lk_tip_r = tree->e_root->p_lk_tip_l;      
+#ifdef BEAGLE
+      tree->n_root->b[1]->p_lk_rght_idx = tree->e_root->p_lk_left_idx;
+      tree->n_root->b[1]->p_lk_tip_idx = tree->e_root->p_lk_tip_idx;
+#endif
+      tree->n_root->b[1]->sum_scale_rght = tree->e_root->sum_scale_left;
+      tree->n_root->b[1]->sum_scale_rght_cat = tree->e_root->sum_scale_left_cat;
+      tree->n_root->b[1]->pars_r = tree->e_root->pars_l;
+      tree->n_root->b[1]->ui_r = tree->e_root->ui_l;
+      tree->n_root->b[1]->p_pars_r = tree->e_root->p_pars_l;
+      tree->n_root->b[1]->p_lk_loc_rght = tree->e_root->p_lk_loc_left;
+      tree->n_root->b[1]->patt_id_rght = tree->e_root->patt_id_left;
+
+      
+      tree->n_root->b[2]->left = tree->n_root;
+      tree->n_root->b[2]->rght = tree->n_root->v[2];
+      tree->n_root->b[2]->p_lk_rght = tree->e_root->p_lk_rght;
+      tree->n_root->b[2]->p_lk_tip_r = tree->e_root->p_lk_tip_r;      
+#ifdef BEAGLE
+      tree->n_root->b[2]->p_lk_rght_idx = tree->e_root->p_lk_rght_idx;
+      tree->n_root->b[2]->p_lk_tip_idx = tree->e_root->p_lk_tip_idx;
+#endif
+      tree->n_root->b[2]->sum_scale_rght = tree->e_root->sum_scale_rght;
+      tree->n_root->b[2]->sum_scale_rght_cat = tree->e_root->sum_scale_rght_cat;
+      tree->n_root->b[2]->pars_r = tree->e_root->pars_r;
+      tree->n_root->b[2]->ui_r = tree->e_root->ui_r;
+      tree->n_root->b[2]->p_pars_r = tree->e_root->p_pars_r;
+      tree->n_root->b[2]->p_lk_loc_rght = tree->e_root->p_lk_loc_rght;
+      tree->n_root->b[2]->patt_id_rght = tree->e_root->patt_id_rght;
+
       
       Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
       Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
@@ -6301,11 +6335,11 @@ void Reorganize_Edges_Given_Lk_Struct(t_tree *tree)
 {
   int j,i;
 
-  For(i,2*tree->n_otu-3)
-    {
+  for(i=0;i<2*tree->n_otu-1;++i)
+    {      
       if(tree->a_edges[i]->p_lk_left && tree->a_edges[i]->left->tax == YES)
         {
-          For(j,2*tree->n_otu-3)
+          for(j=0;j<2*tree->n_otu-1;++j)
             {
               if(!tree->a_edges[j]->p_lk_left && tree->a_edges[j]->left->tax == NO)
                 {
@@ -6322,7 +6356,7 @@ void Reorganize_Edges_Given_Lk_Struct(t_tree *tree)
       
       if(tree->a_edges[i]->p_lk_rght && tree->a_edges[i]->rght->tax == YES)
         {
-          For(j,2*tree->n_otu-3)
+          for(j=0;j<2*tree->n_otu-1;++j)
             {
               if(!tree->a_edges[j]->p_lk_left && tree->a_edges[j]->left->tax == NO)
                 {
@@ -9135,7 +9169,7 @@ void Get_Best_Root_Position(t_tree *tree)
 
       eps = 1.E-10;
       s = s_max = 0.0;
-      For(i,2*tree->n_otu-2)
+      for(i=0;i<2*tree->n_otu-2;++i)
         {
           for(j=0;j<3;j++)
             {
@@ -10075,14 +10109,6 @@ void Get_Edge_Binary_Coding_Number(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Make_MutMap(t_tree *tree)
-{
-  // (# of edges) X (# of sites) X (# mutation types: A<->C A<->G A<->T C<->G C<->T G<->T)
-  tree->mutmap = (int *)mCalloc((2*tree->n_otu-3)*(tree->n_pattern)*6,sizeof(int));
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
 
 int Get_Mutmap_Val(int edge, int site, int mut, t_tree *tree)
 {
@@ -12032,7 +12058,48 @@ t_clad *Duplicate_Clade(t_clad *from)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+char *Mutation_Id(int mut_idx, t_tree *tree)
+{
+  char *s,c;
+  int ns;
+
+  ns = tree->mod->ns;
+  
+  s = (char *)mCalloc(20,sizeof(char));
+
+  strcpy(s,"from ");
+  c = Reciproc_Assign_State((int)(mut_idx/ns),tree->mod->io->datatype);
+  sprintf(s+strlen(s),"%c",c);
+  strcat(s," to ");
+  c = Reciproc_Assign_State((int)(mut_idx%ns),tree->mod->io->datatype);
+  sprintf(s+strlen(s),"%c",c);
+  
+  return(s);
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+void Random_Tax_Idx(t_node *a, t_node *d, int *idx, t_tree *tree)
+{
+
+  if(d->tax == YES)
+    {
+      (*idx) = d->num;
+      return;
+    }
+  else
+    {
+      for(int i=0;i<3;++i)
+        {
+          if(d->v[i] != a && d->b[i] != tree->e_root)
+            {
+              Random_Tax_Idx(d,d->v[i],idx,tree);
+            }
+        }
+    }
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/

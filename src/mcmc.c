@@ -4849,7 +4849,7 @@ void MCMC_Birth_Death_Updown(t_tree *tree)
           tree->extra_tree->rates->death_rate = new_death_rate;
           tree->extra_tree->rates->birth_rate = new_birth_rate;
           TIMES_Lk_Times(NO,tree->extra_tree);
-          
+            
           if(!(tree->extra_tree->rates->c_lnL_times > UNLIKELY))
             {
               PhyML_Fprintf(stderr,"\n. glnL=%f",tree->extra_tree->rates->c_lnL_times);
@@ -4873,10 +4873,10 @@ void MCMC_Birth_Death_Updown(t_tree *tree)
               /*              cur_death_rate, */
               /*              new_death_rate); */
               
-              if(!strcmp(tree->mcmc->move_name[move],"tree_height")) { MCMC_Tree_Height(tree->extra_tree); i++; }
-              if(!strcmp(tree->mcmc->move_name[move],"times"))       { MCMC_Times_All(tree->extra_tree); i++; }
-              if(!strcmp(tree->mcmc->move_name[move],"spr"))         { MCMC_Prune_Regraft(tree->extra_tree); i++; }
-              if(!strcmp(tree->mcmc->move_name[move],"spr_local"))   { MCMC_Prune_Regraft_Local(tree->extra_tree); i++; }
+              if(!strcmp(tree->mcmc->move_name[move],"tree_height")) MCMC_Tree_Height(tree->extra_tree);
+              if(!strcmp(tree->mcmc->move_name[move],"times"))       MCMC_Times_All(tree->extra_tree);
+              if(!strcmp(tree->mcmc->move_name[move],"spr"))         MCMC_Prune_Regraft(tree->extra_tree);
+              if(!strcmp(tree->mcmc->move_name[move],"spr_local"))   MCMC_Prune_Regraft_Local(tree->extra_tree);
               
               if(!(tree->extra_tree->rates->c_lnL_times > UNLIKELY))
                 {
@@ -4885,6 +4885,7 @@ void MCMC_Birth_Death_Updown(t_tree *tree)
                   TIMES_Lk_Times(YES,tree->extra_tree);
                   Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
                 }
+              i++;
             }
           while(i < n_mcmc_steps);
           
@@ -5224,7 +5225,7 @@ void MCMC_Prune_Regraft(t_tree *tree)
           
       prune_daughter = prune->v[rnd_dir];
       cur_regraft_nd = prune->v[rnd_dir == dir_v1 ? dir_v2 : dir_v1];            
-
+      
       if(prune == tree->n_root)
         {
           if(prune_daughter == prune->v[dir_v1] && prune->v[dir_v2]->tax == YES)
@@ -5295,6 +5296,7 @@ void MCMC_Prune_Regraft(t_tree *tree)
       regraft_idx = Rand_Int(0,n_regraft_nd-1);      
       new_regraft_nd = Linked_List_Elem(regraft_idx,regraft_nd_list);      
       Free_Linked_List(regraft_nd_list);
+
             
       // Time of regraft node and corresponding (partial) Hastings ratio
       t_max = MIN(times[prune_daughter->num],times[cur_regraft_nd->num]);      
@@ -5943,7 +5945,7 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
       new_t = Uni()*(t_max-t_min) + t_min;
 
             
-      // Age of root node changes when pruned substree is on one side of that node
+      // Age of root node changes when pruned subtree is on one side of that node
       // Change here, not after the prune and regraft move
       /* if(prune == tree->n_root) */
       /*   { */
@@ -6021,8 +6023,7 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
                     prune_daughter,
                     residual,
                     new_regraft_nd,tree);
-      
-
+                         
       a = b = c = d = e = NULL;
       regraft_nd_list = NULL;
       e = new_regraft_nd;

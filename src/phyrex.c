@@ -498,7 +498,7 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, int r_seed)
   io->r_seed   = r_seed;
 
   io->n_otu    = n_otu;
-  io->init_len = 10; /* sequence length */
+  io->init_len = 1000; /* sequence length */
 
   io->data = Make_Empty_Alignment(io);
 
@@ -601,6 +601,13 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, int r_seed)
   for(int i=0;i<tree->n_otu-1;++i) for(int j=i+1;j<tree->n_otu;++j) PhyML_Printf("%G ",gen_dist[i*tree->n_otu+j]);
   PhyML_Printf(" : ",mmod->lbda,mmod->mu,mmod->rad);
   for(int i=0;i<tree->n_otu-1;++i) for(int j=i+1;j<tree->n_otu;++j) PhyML_Printf("%G ",Euclidean_Dist(tree->a_nodes[i]->coord,tree->a_nodes[j]->coord));
+  PhyML_Printf("\n");
+  for(int i=0;i<tree->n_otu-1;++i) PhyML_Printf("\n%s %G %G",
+                                                tree->a_nodes[i]->name,
+                                                tree->a_nodes[i]->coord->lonlat[0],
+                                                tree->a_nodes[i]->coord->lonlat[1]);
+  PhyML_Printf("\n\n");
+  Print_CSeq(stdout,NO,tree->data,tree);
   Exit("\n");
   
   if(tree->mod->s_opt->greedy) Init_Partial_Lk_Tips_Double(tree);

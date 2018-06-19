@@ -3251,6 +3251,68 @@ void MIXT_Set_Use_Eigen_Lr(int yn, t_tree *mixt_tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+void MIXT_Sample_Ancestral_Seq(int fullmutmap, int fromprior, t_tree *mixt_tree)
+{
+  t_tree *tree,*loc_mixt_tree;
+  phydbl r_mat_weight_sum, e_frq_weight_sum, sum_probas, *class_proba;
+  int i;
+  
+  r_mat_weight_sum = MIXT_Get_Sum_Chained_Scalar_Dbl(mixt_tree->next->mod->r_mat_weight);
+  e_frq_weight_sum = MIXT_Get_Sum_Chained_Scalar_Dbl(mixt_tree->next->mod->e_frq_weight);
+  sum_probas       = MIXT_Get_Sum_Of_Probas_Across_Mixtures(r_mat_weight_sum,e_frq_weight_sum,mixt_tree);
+
+
+  tree = mixt_tree;
+  loc_mixt_tree = tree;
+
+  // For each element in the partition (i.e., each gene), select a
+  // class of the mixture according to its post prob.
+  do
+    {
+      tree = loc_mixt_tree->next;
+
+      i = 0;
+      do
+        {
+          if(i == 0) class_proba = (phydbl *)mCalloc(1,sizeof(phydbl));
+          else class_proba = (phydbl *)mRealloc(class_proba,i+1,sizeof(phydbl));
+          
+          class_proba[i] =
+            tree->site_lk_cat[0] *
+            loc_mixt_tree->mod->ras->gamma_r_proba->v[tree->mod->ras->parent_class_number] *
+            tree->mod->r_mat_weight->v / r_mat_weight_sum *
+            tree->mod->e_frq_weight->v / e_frq_weight_sum /
+            sum_probas;
+          
+          tree = tree->next;
+          i++;
+        }
+      while(tree && tree->is_mixt_tree == NO);
+
+      tree = loc_mixt_tree->next;
+      i = Sample_i_With_Proba_pi(class_proba,i);
+
+      do
+        {
+          i--;
+          if(i < 0) break;
+          tree = tree->next;
+          assert(tree);
+        }
+      while(1);
+
+      assert(tree->is_mixt_tree == NO);
+      
+      Sample_Ancestral_Seq(fullmutmap,fromprior,tree);
+      
+      Free(class_proba);
+
+      loc_mixt_tree = loc_mixt_tree->next_mixt;
+    }
+  while(loc_mixt_tree);
+  
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

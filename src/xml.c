@@ -2295,6 +2295,17 @@ void DATE_XML(char *xml_filename)
   if(dum_string != NULL) mixt_tree->eval_alnL = NO;
 
 
+  dum_string = XML_Get_Attribute_Value(xnd,"mutmap");
+  if(dum_string != NULL)
+    {
+      int select = XML_Validate_Attr_Int(dum_string,6,
+                                         "true","yes","y",
+                                         "false","no","n");
+      if(select < 3) mixt_tree->io->mutmap = YES;
+      else mixt_tree->io->mutmap = NO;
+    }
+
+  
   
   
   // Looking for XML node with rate-across-lineage info
@@ -2429,8 +2440,8 @@ void DATE_XML(char *xml_filename)
   MIXT_Init_T_Beg(mixt_tree);
   MIXT_Chain_Edges(mixt_tree);
   MIXT_Chain_Nodes(mixt_tree);
-  Add_Root(mixt_tree->a_edges[0],mixt_tree);  
   Prepare_Tree_For_Lk(mixt_tree);
+  Add_Root(mixt_tree->a_edges[0],mixt_tree);  
   MIXT_Chain_All(mixt_tree);
   MIXT_Check_Edge_Lens_In_All_Elem(mixt_tree);
   MIXT_Turn_Branches_OnOff_In_All_Elem(ON,mixt_tree);

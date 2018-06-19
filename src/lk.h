@@ -79,8 +79,8 @@ phydbl Wrap_Diff_Lk_Norm_At_Given_Edge(t_edge *b, t_tree *tree, supert_tree *str
 phydbl Wrap_Lk_Rates(t_edge *b, t_tree *tree, supert_tree *stree);
 phydbl Wrap_Lk_Linreg(t_edge *b, t_tree *tree, supert_tree *stree);
 void Sample_Ancestral_Seq(int mutmap, int fromprior, t_tree *tree);
-void Map_Mutations(t_node *a, t_node *d, int sa, int sd, t_edge *b, int site, int rate_cat, int *muttype, phydbl *muttime, int *n_mut, t_tree *tree);
-void Sample_Ancestral_Seq_Pre(t_node *a, t_node *d, t_edge *b,int site, int rate_cat,int *muttype, phydbl *muttime, int *n_mut,int mutmap, int fromprior, t_tree *tree);
+void Map_Mutations(t_node *a, t_node *d, int sa, int sd, t_edge *b, int site, int rate_cat, int *muttype, phydbl *muttime, int *muttax, int *n_mut, t_tree *tree);
+void Sample_Ancestral_Seq_Pre(t_node *a, t_node *d, t_edge *b,int site, int rate_cat,int *muttype, phydbl *muttime, int *muttax, int *n_mut,int mutmap, int fromprior, t_tree *tree);
 phydbl Wrap_Lk_Times(t_edge *b, t_tree *tree, supert_tree *stree);
 phydbl Lk_LastFirst(t_tree *tree);
 int Check_Lk_At_Given_Edge(int verbose, t_tree *tree);
@@ -97,6 +97,7 @@ phydbl Lk_Core(int state, int ambiguity_check, short int derivative,
 phydbl Lk_Core_Eigen_Lr(phydbl *expl, phydbl *dot_prod, short int derivative, t_edge *b, t_tree *tree);
 phydbl Invariant_Lk(int fact_sum_scale, int site, int *num_prec_issue, t_tree *tree);
 void Composite_Lk(t_tree *tree);
+int Sample_Ancestral_Seq_Core(t_node *a, t_node *d, t_edge *b, int r_cat, int site, t_tree *tree);
 
 
 

@@ -2856,19 +2856,25 @@ phydbl Wrap_Diff_Lk_Norm_At_Given_Edge(t_edge *b, t_tree *tree, supert_tree *str
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Sample_Ancestral_Seq(int mutmap, int fromprior, t_tree *tree)
+void Sample_Ancestral_Seq(int fullmutmap, int fromprior, t_tree *tree)
 {
   int rate_cat;
   int i,j,k,l;
   phydbl *probs;
   phydbl sum;
-  phydbl u;
   int n_mut;
   FILE *fp;
   phydbl *muttime;
-  int *muttype;
-  char *s;
+  int *muttype,*muttax;
+  char *s,*mut_string;
   int *ordering;
+
+  
+  if(tree->is_mixt_tree == YES)
+    {
+      MIXT_Sample_Ancestral_Seq(fullmutmap,fromprior,tree);
+      return;
+    }
 
   probs = (phydbl *)mCalloc(tree->mod->ras->n_catg,sizeof(phydbl));
 
@@ -2878,26 +2884,28 @@ void Sample_Ancestral_Seq(int mutmap, int fromprior, t_tree *tree)
   muttype = (int *)mCalloc((2*tree->n_otu-3)*5, // At most 5 mutations per branch on average
                sizeof(int));
 
+  muttax = (int *)mCalloc((2*tree->n_otu-3)*5, // At most 5 mutations per branch on average
+                          sizeof(int));
+
   ordering = (int *)mCalloc((2*tree->n_otu-3)*5, // At most 5 mutations per branch on average
                 sizeof(int));
 
   s = (char *)mCalloc(T_MAX_NAME,sizeof(char));
 
-  For(i,2*tree->n_otu-1) 
+  for(i=0;i<2*tree->n_otu-1;++i)
     if(tree->a_nodes[i]->tax == NO)
       {
         tree->a_nodes[i]->c_seq_anc = (align *)mCalloc(1,sizeof(align));;
         tree->a_nodes[i]->c_seq_anc->state = (char *)mCalloc(tree->n_pattern,sizeof(char));
       }
 
-  if(fromprior == YES)
-    {
-      /* Update P(D_x|X=i) for each state i and node X */
-      Set_Both_Sides(YES,tree);
-      Lk(NULL,tree);
-    }
+   
+  /* Update P(D_x|X=i) for each state i and node X */
+  Set_Both_Sides(YES,tree);
+  Lk(NULL,tree);
 
-  for(i=0;i<tree->n_pattern;i++)
+
+  for(i=0;i<tree->n_pattern;++i)
     {
       /* Sample the rate class from its posterior density */
       for(j=0;j<tree->mod->ras->n_catg;j++)
@@ -2910,32 +2918,37 @@ void Sample_Ancestral_Seq(int mutmap, int fromprior, t_tree *tree)
             probs[j] = tree->mod->ras->gamma_r_proba->v[j];
         }
 
-
       /* Scale probas. */
       sum = .0;
       for(j=0;j<tree->mod->ras->n_catg;j++) sum += probs[j];
       for(j=0;j<tree->mod->ras->n_catg;j++) probs[j]/=sum;
 
-      /* CDF */
-      for(j=1;j<tree->mod->ras->n_catg;j++) probs[j] += probs[j-1];
-
-      /* Sample rate */
-      u = Uni();
-      rate_cat = -1;
-      for(j=0;j<tree->mod->ras->n_catg;j++)
-        if(probs[j] > u)
-          {
-            rate_cat = j;
-            break;
-          }
-      
+      rate_cat = Sample_i_With_Proba_pi(probs,tree->mod->ras->n_catg);
+           
       n_mut = 0;
-      Sample_Ancestral_Seq_Pre(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree->a_nodes[0]->b[0],
-                               i,rate_cat,
-                               muttype,muttime,&n_mut,
-                               mutmap,fromprior,tree);
-      
+      if(tree->n_root != NULL)
+        {          
+          Sample_Ancestral_Seq_Pre(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],
+                                   i,rate_cat,
+                                   muttype,muttime,muttax,&n_mut,
+                                   fullmutmap,fromprior,tree);
 
+          
+          Sample_Ancestral_Seq_Pre(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],
+                                   i,rate_cat,
+                                   muttype,muttime,muttax,&n_mut,
+                                   fullmutmap,fromprior,tree);
+
+
+        }
+      else
+        {
+          Sample_Ancestral_Seq_Pre(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree->a_nodes[0]->b[0],
+                                   i,rate_cat,
+                                   muttype,muttime,muttax,&n_mut,
+                                   fullmutmap,fromprior,tree);
+        }
+      
       for(j=0;j<n_mut;j++) ordering[j] = 0;
       
       for(j=0;j<n_mut-1;j++)
@@ -2947,26 +2960,28 @@ void Sample_Ancestral_Seq(int mutmap, int fromprior, t_tree *tree)
             }
         }
       
-      strcpy(s,"rosetta.");
+      strcpy(s,"mutmap.");
+      sprintf(s+strlen(s),"%d.",tree->io->r_seed);
       sprintf(s+strlen(s),"%d",i);
       fp = fopen(s,"a");
-      PhyML_Fprintf(fp,"\n-1 -1 -1.0 -1");
-
+      PhyML_Fprintf(fp,"\n-1 -1 -1.0 -1 %d",tree->mixt_tree ? tree->mixt_tree->mcmc->run : tree->mcmc->run);
+      
       for(j=0;j<n_mut;j++)
-    {
-      for(k=0;k<n_mut;k++)
         {
-          if(ordering[k] == j)
-        {
-          for(l=0;l<tree->data->init_len;l++) if(tree->data->sitepatt[l] == i) break;
-          PhyML_Fprintf(fp,"\n%4d %4d %12f %4d",j,muttype[k],muttime[k],l);
-          /* PhyML_Fprintf(fp,"\n%d",muttype[ordering[j]]); */
-          break;
+          for(k=0;k<n_mut;k++)
+            {
+              if(ordering[k] == j)
+                {
+                  for(l=0;l<tree->data->init_len;l++) if(tree->data->sitepatt[l] == i) break;
+                  mut_string = Mutation_Id(muttype[k],tree);
+                  PhyML_Fprintf(fp,"\n%4d %s %g %4d %s",j,mut_string,muttime[k],l,tree->a_nodes[muttax[k]]->name);
+                  Free(mut_string);
+                  break;
+                }
+            }
         }
-        }
-    }
-
-
+      
+      
       for(j=0;j<n_mut;j++)
         {
           muttype[j] = -2;
@@ -2975,10 +2990,11 @@ void Sample_Ancestral_Seq(int mutmap, int fromprior, t_tree *tree)
       
       fclose(fp);
     }
-
+  
   Free(s);
   Free(muttype);
   Free(muttime);
+  Free(muttax);
   Free(ordering);
   Free(probs);
 }
@@ -2987,143 +3003,56 @@ void Sample_Ancestral_Seq(int mutmap, int fromprior, t_tree *tree)
 //////////////////////////////////////////////////////////////
 
 void Sample_Ancestral_Seq_Pre(t_node *a, t_node *d, t_edge *b,
-                              int site, int rate_cat,
-                              int *muttype, phydbl *muttime, int *n_mut,
-                              int mutmap, int fromprior, t_tree *tree)
+                              int site, int r_cat,
+                              int *muttype, phydbl *muttime, int *muttax, int *n_mut,
+                              int fullmutmap, int fromprior, t_tree *tree)
 {
 
-  int i,j;
-  int sa,sd;
-  phydbl *Pij;
-  phydbl *p_lk;
-  int dim1, dim2, dim3;
-  phydbl sum;
-  phydbl u;
-  char *c;
-  phydbl *probs;
+  int i;
+  int sa, sd;
+  int ns;
+  phydbl *probs,sum;
 
-  probs = (phydbl *)mCalloc(tree->mod->ns,sizeof(phydbl));
+  /* PhyML_Printf("\n>> a: %d d: %d b->left: %d b->rght: %d",a?a->num:-1,d?d->num:-1,b?b->left->num:-1,b?b->rght->num:-1); */
 
-  if(a->tax)
-    c = a->c_seq->state+site*tree->mod->io->state_len;
-  /* c = tree->data->c_seq[a->num]->state+site*tree->mod->io->state_len; */
-  else
-    c = a->c_seq_anc->state+site*tree->mod->io->state_len;
-  /* c = tree->anc_data->c_seq[a->num-tree->n_otu]->state+site*tree->mod->io->state_len; */
+  ns = tree->mod->ns;
   
-  sa = Assign_State(c,
-                    tree->mod->io->datatype,
-                    tree->mod->io->state_len);
-  
-  if(sa == -1) /* c is an indel */
+  probs = (phydbl *)mCalloc(ns,sizeof(phydbl));
+
+  if(a->tax == TRUE) // Sample state at tip if observed state is ambiguous
     {
-      for(j=0;j<tree->mod->ns;j++) probs[j] = tree->mod->e_frq->pi->v[j];
-      
-      for(j=1;j<tree->mod->ns;j++) probs[j] += probs[j-1];
-      
-      u = Uni();
-      for(j=0;j<tree->mod->ns;j++)
-        if(probs[j] > u)
-          {
-            sa = j;
-            break;
-          }
-    }
-  
-  if(d->tax == NO) // Need to sample state at node d
-    {
-      
-      dim1 = tree->mod->ras->n_catg * tree->mod->ns;
-      dim2 = tree->mod->ns;
-      dim3 = tree->mod->ns * tree->mod->ns;
-      sum  = 0.0;
-            
-      Pij  = b->Pij_rr;
-      
-      if(d == b->left)
-        p_lk = b->p_lk_left;
-      else
-        p_lk = b->p_lk_rght;
-      
-      for(j=0;j<tree->mod->ns;j++) probs[j] = 0.0;
-      
-      /* Formula (10) in Nielsen's Mutation Maping paper, e.g. */
-      for(j=0;j<tree->mod->ns;j++)
-        {
-          if(fromprior == NO)
-            probs[j] =
-              p_lk[site*dim1+rate_cat*dim2+j] *
-              Pij[rate_cat*dim3+sa*dim2+j];
-          else
-            probs[j] = Pij[rate_cat*dim3+sa*dim2+j];
-        }
-      
-      /* Scale the probabilities */
+      assert(b);
+      if(a == b->left) for(i=0;i<ns;++i) probs[i] = b->p_lk_tip_l[site*ns+i];
+      else             for(i=0;i<ns;++i) probs[i] = b->p_lk_tip_r[site*ns+i];
+      for(i=0;i<ns;++i) probs[i] *= tree->mod->e_frq->pi->v[i];
       sum = 0.0;
-      for(j=0;j<tree->mod->ns;j++) sum += probs[j];
-      for(j=0;j<tree->mod->ns;j++) probs[j] /= sum;
-      
-      /* CDF */
-      for(j=1;j<tree->mod->ns;j++) probs[j] += probs[j-1];
-      
-      /* Sample state according to their posterior probas. */
-      sd = -1;
-      u = Uni();
-      for(j=0;j<tree->mod->ns;j++)
-        if(probs[j] > u)
-          {
-            sd = j;
-            break;
-          }
-      
-      /* Assign state */
-      /* tree->anc_data->c_seq[d->num-tree->n_otu]->state[site] = Reciproc_Assign_State(sd,tree->io->datatype); */
-      /* printf("\n<> %p",d->c_seq_anc); fflush(NULL); */
-      d->c_seq_anc->state[site] = Reciproc_Assign_State(sd,tree->io->datatype);
+      for(i=0;i<ns;++i) sum += probs[i];
+      for(i=0;i<ns;++i) probs[i] /= sum;
+      sa = Sample_i_With_Proba_pi(probs,ns);
+    }
+  else if(a == tree->n_root)
+    {
+      sa = Sample_Ancestral_Seq_Core(NULL,tree->n_root,NULL,r_cat,site,tree);
     }
   else
     {
-      c = d->c_seq->state+site*tree->mod->io->state_len;
-      /* c = tree->data->c_seq[d->num]->state+site*tree->mod->io->state_len; */
-      
-      sd = Assign_State(c,
+      sa = Assign_State(a->c_seq_anc->state + site,
                         tree->mod->io->datatype,
                         tree->mod->io->state_len);
-      
-      if(sd == -1) // c is an indel
-        {
-          for(j=0;j<tree->mod->ns;j++) probs[j] = tree->mod->e_frq->pi->v[j];
-          
-          for(j=1;j<tree->mod->ns;j++) probs[j] += probs[j-1];
-          
-          u = Uni();
-          for(j=0;j<tree->mod->ns;j++)
-            if(probs[j] > u)
-              {
-                sd = j;
-                break;
-              }
-        }
     }
+
+  sd = Sample_Ancestral_Seq_Core(a,d,b,r_cat,site,tree);
   
-  /* if(site == 92) */
-  /*   { */
-  /*     printf("\n. sa=%d (%s,%d) sd=%d (%s,%d) b->l->v=%f", */
-  /* 	     sa,a->tax?a->name:"",a->num,sd,d->tax?d->name:"",d->num,b->l->v); */
-  /*   } */
-  
-  if(mutmap == YES) Map_Mutations(a,d,sa,sd,b,site,rate_cat,muttype,muttime,n_mut,tree);
-  
-  Free(probs);
-  
+  if(fullmutmap == YES) Map_Mutations(a,d,sa,sd,b,site,r_cat,muttype,muttime,muttax,n_mut,tree);
+    
   if(d->tax) return;
   else
     {
-      for(i=0;i<3;i++)
+      for(i=0;i<3;++i)
         {
-          if(d->v[i] != a)
+          if(d->v[i] != a && d->b[i] != tree->e_root)
             {
-              Sample_Ancestral_Seq_Pre(d,d->v[i],d->b[i],site,rate_cat,muttype,muttime,n_mut,mutmap,fromprior,tree);
+              Sample_Ancestral_Seq_Pre(d,d->v[i],d->b[i],site,r_cat,muttype,muttime,muttax,n_mut,fullmutmap,fromprior,tree);
             }
         }
     }
@@ -3132,166 +3061,304 @@ void Sample_Ancestral_Seq_Pre(t_node *a, t_node *d, t_edge *b,
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Map_Mutations(t_node *a, t_node *d, int sa, int sd, t_edge *b, int site, int rate_cat, int *muttype, phydbl *muttime, int *n_mut, t_tree *tree)
+int Sample_Ancestral_Seq_Core(t_node *a, t_node *d, t_edge *b, int r_cat, int site, t_tree *tree)
+{
+  int i,j;
+  int ns;
+
+  ns = tree->mod->ns;
+  
+  int dim1 = tree->mod->ras->n_catg * ns;
+  int dim2 = ns;
+  int dim3 = ns * ns;
+  
+  phydbl *probs,*Pij,sum;
+  
+  int state;
+
+  
+  probs = (phydbl *)mCalloc(ns,sizeof(phydbl));
+  state = -1;
+
+  if(d->tax == YES)
+    {
+      assert(b);
+      if(d == b->left)      for(i=0;i<ns;++i) probs[i] = b->p_lk_tip_l[site*ns+i];
+      else if(d == b->rght) for(i=0;i<ns;++i) probs[i] = b->p_lk_tip_r[site*ns+i];
+      else assert(FALSE);
+      for(i=0;i<ns;++i) probs[i] *= tree->mod->e_frq->pi->v[i];
+      sum = 0.0;
+      for(i=0;i<ns;++i) sum += probs[i];
+      for(i=0;i<ns;++i) probs[i] /= sum;
+      state = Sample_i_With_Proba_pi(probs,ns);
+    }
+  else
+    {
+      if(a == NULL) // d is root node
+        {
+          assert(d == tree->n_root);
+          
+          phydbl r,l;
+          
+          Update_PMat_At_Given_Edge(tree->n_root->b[1],tree);
+          Update_PMat_At_Given_Edge(tree->n_root->b[2],tree);
+          
+          for(i=0;i<ns;++i)
+            {
+              if(tree->e_root->left == tree->n_root->v[1])
+                Pij = tree->n_root->b[1]->Pij_rr;
+              else
+                Pij = tree->n_root->b[2]->Pij_rr;
+              
+              l = 0.0;
+              for(j=0;j<ns;++j)
+                {
+                  if(tree->e_root->left->tax == NO)
+                    l += tree->e_root->p_lk_left[site*dim1+r_cat*dim2+j] * Pij[r_cat*dim3+i*dim2+j];
+                  else
+                    l += tree->e_root->p_lk_tip_l[site*dim2+j] * Pij[r_cat*dim3+i*dim2+j];
+                }
+              
+              
+              if(tree->e_root->rght == tree->n_root->v[1])
+                Pij = tree->n_root->b[1]->Pij_rr;
+              else
+                Pij = tree->n_root->b[2]->Pij_rr;
+              
+              r = 0.0;
+              for(j=0;j<ns;++j)
+                {
+                  if(tree->e_root->rght->tax == NO)
+                    r += tree->e_root->p_lk_rght[site*dim1+r_cat*dim2+j] * Pij[r_cat*dim3+i*dim2+j];
+                  else
+                    r += tree->e_root->p_lk_tip_r[site*dim2+j] * Pij[r_cat*dim3+i*dim2+j];
+                }
+              
+              probs[i] = r*l*tree->mod->e_frq->pi->v[i];
+            }
+          
+          sum = 0.0;
+          for(i=0;i<ns;++i) sum += probs[i];
+          for(i=0;i<ns;++i) probs[i] /= sum;
+          
+          state = Sample_i_With_Proba_pi(probs,ns);
+          
+          d->c_seq_anc->state[site] = Reciproc_Assign_State(state,tree->io->datatype);
+        }
+      else
+        {
+          assert(b);
+          
+          // State (already) sampled at node a
+          state = Assign_State(a->c_seq_anc->state + site,
+                               tree->mod->io->datatype,
+                               tree->mod->io->state_len);
+          
+          Pij = b->Pij_rr;
+                              
+          for(i=0;i<ns;++i)
+            {
+              if(d == b->left)
+                probs[i] = b->p_lk_left[site*dim1+r_cat*dim2+i] * Pij[r_cat*dim3+state*dim2+i];
+              else if(d == b->rght)
+                probs[i] = b->p_lk_rght[site*dim1+r_cat*dim2+i] * Pij[r_cat*dim3+state*dim2+i];
+              else assert(FALSE);
+            }
+          
+          sum = 0.0;
+          for(i=0;i<ns;++i) sum += probs[i];
+          for(i=0;i<ns;++i) probs[i] /= sum;
+          
+          state = Sample_i_With_Proba_pi(probs,ns);
+          
+          d->c_seq_anc->state[site] = Reciproc_Assign_State(state,tree->io->datatype);
+        }      
+    }
+
+  Free(probs);
+  return state;
+ 
+}
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Map_Mutations(t_node *a, t_node *d, int sa, int sd, t_edge *b, int site, int rcat, int *muttype, phydbl *muttime, int *muttax, int *n_mut, t_tree *tree)
 {
   int i,j;
   phydbl *probs,*all_probs;
-  int slast; // Last state visited
-  phydbl tlast, td;
+  int slast,snew; // Last state visited
+  phydbl tlast;
   phydbl *Q;
   phydbl u,sum;
   int *mut; // Array of mutations
   int thismut;
   int n_mut_branch;
-  phydbl br,cr,ta,gr;
+  phydbl cr,rr;
   int n_iter;
   int first_mut;
+  phydbl T;
+  int ns,tax_idx;
 
-  all_probs = (phydbl *)mCalloc(tree->mod->ns*tree->mod->ns,sizeof(phydbl));
-  mut = (int *)mCalloc(tree->mod->ns*tree->mod->ns,sizeof(int));
-
-  // Edge rate
-  br = tree->rates->br_r[d->num];
-
-  // Clock (i.e., overall) rate
-  cr = tree->rates->clock_r;
-
-  // Age of node a
-  ta = tree->rates->nd_t[a->num];
-
+  ns = tree->mod->ns;
+  
+  all_probs = (phydbl *)mCalloc(ns*ns,sizeof(phydbl));
+  mut = (int *)mCalloc(ns*ns,sizeof(int));
+  
   // Site relative rate
-  gr = tree->mod->ras->gamma_rr->v[rate_cat];
-
-
+  rr = tree->mod->ras->gamma_rr->v[rcat];
+    
+#ifdef PHYTIME
+  cr = tree->rates->clock_r;
+#elif defined(PHYML)
+  cr = 0.0;
+#endif
+  
   // Rate matrix
   Q = tree->mod->r_mat->qmat->v;
-
-  // Length of the 'time' interval considered: product of the branch length by the
-  // current relative rate at that site (set when sampling ancestral sequences)
-  td = b->l->v * gr;
+  
+  // Length of the 'time' interval considered.
+  T = 0.0;
+#ifdef PHYTIME
+  T = tree->rates->cur_l[d->num];
+#elif defined(PHYML)
+  T = b->l->v;
+#endif
+  
+  
+  /* PhyML_Printf("\n. Mutmap: a:%d d:%d ta:%G td:%G cr:%G rr:%G l:%G", */
+  /*              a?a->num:-1,d?d->num:-1, */
+  /*              tree->rates->nd_t[a->num], */
+  /*              tree->rates->nd_t[d->num], */
+  /*              cr,rr, */
+  /*              fabs(tree->rates->nd_t[a->num]-tree->rates->nd_t[d->num])*cr*rr); */
 
   // Matrix of change probabilities
-  for(i=0;i<tree->mod->ns;i++)
+  for(i=0;i<ns;i++)
     {
       // We only care about the non-diagonal elements here
-      for(j=0;j<tree->mod->ns;j++) all_probs[i*tree->mod->ns+j] = -Q[i*tree->mod->ns+j] / Q[i*tree->mod->ns+i];
+      for(j=0;j<ns;j++) all_probs[i*ns+j] = Q[i*ns+j];
+      
+      // Set the diagonal to 0 so that p(i->i)=0.0;
+      all_probs[i*ns+i] = 0.0;
 
-      // Set the diagonal to 0
-      all_probs[i*tree->mod->ns+i] = 0.0;
-
-      // \sum_{j != i} -q_{ij}/q_{ii}
+      // Normalise so that \sum_j p(i->j) = 1.0;
       sum = 0;
-      for(j=0;j<tree->mod->ns;j++) sum += all_probs[i*tree->mod->ns+j];
-
-      // Diagonal: 1 - \sum_{j != i} -q_{ij}/q_{ii}
-      all_probs[i*tree->mod->ns+i] = 1.-sum;
-
-      // Get the cumulative probas
-      for(j=1;j<tree->mod->ns;j++) all_probs[i*tree->mod->ns+j] += all_probs[i*tree->mod->ns+j-1];
+      for(j=0;j<ns;j++) sum += all_probs[i*ns+j];
+      for(j=0;j<ns;j++) all_probs[i*ns+j] /= sum;
     }
-
-  For(i,tree->mod->ns*tree->mod->ns) mut[i] = 0;
+  
+  for(i=0;i<ns*ns;++i) mut[i] = 0;
   tlast = .0;
   slast = sa;
+  snew  = sa;
   probs = NULL;
   n_mut_branch = 0;
   n_iter = 0;
   first_mut = YES;
-
+  
   do
     {
       if((sa != sd) && (first_mut == YES)) // ancestral and descendant states are distinct
-    {
-      // Sample a time for the first mutation conditional on at least one mutation
-      // occurring (see formula A2 in Nielsen's Genetics paper (2001))
-      u = Uni();
-      tlast = -log(1. - u*(1.-exp(Q[sa*tree->mod->ns+sa]*td)))/-Q[sa*tree->mod->ns+sa];
-    }
+        {
+          // Sample a time for the first mutation conditional on at least one mutation
+          // occurring (see formula 2.1 in Hobolth and Stone, 2009).
+          u = Uni();
+          tlast = -log(1. - u*(1.-exp(Q[sa*ns+sa]*T)))/-Q[sa*ns+sa];
+        }
       else
-    {
-      // Sample a time for the next mutation
-      tlast = tlast + Rexp(-Q[slast*tree->mod->ns+slast]);
-    }
-
+        {
+          // Sample a time for the next mutation
+          tlast = tlast + Rexp(-Q[slast*ns+slast]);
+        }
+      
       // Select the appropriate vector of change probabilities
-      probs = all_probs+slast*tree->mod->ns;
+      probs = all_probs+slast*ns;
+            
 
-      /* printf("\n. slast=%2d sd=%2d tlast=%12G td=%12G p=%12f rcat=%12f site=%4d", */
-      /* 	 slast,sd,tlast,td,-Q[slast*tree->mod->ns+slast], */
-      /* 	 tree->mod->ras->gamma_rr->v[rate_cat],site); */
-
+      /* printf("\n. sa=%2d sd=%2d slast=%2d tlast=%12G T=%12G  rcat=%2d site=%4d",sa,sd,slast,tlast,T,rcat,site); */
+      
       // The time for the next mutation does not exceed the length
       // of the time interval -> sample a new mutation event
-      if(tlast < td)
-    {
-      first_mut = NO;
+      if(tlast < T)
+        {
+          first_mut = NO;
+          
+          n_mut_branch++;
 
-      n_mut_branch++;
+          snew = Sample_i_With_Proba_pi(probs,ns);
+          
+          // Record mutation type
+          mut[slast*ns+snew]++;
+          
+          // Record mutation type in the site mutation array
+          thismut = slast*ns+snew;
+          
+          muttype[(*n_mut)+n_mut_branch-1] = thismut;
 
-      u = Uni();
-      for(i=0;i<tree->mod->ns;i++)
-        if(probs[i] > u)
-          {
-        // Record mutation type
-        mut[slast*tree->mod->ns+i]++;
+          // Record time of mutation
+          muttime[(*n_mut)+n_mut_branch-1] = tlast;
 
-        // Record mutation type in the site mutation array
-        thismut = MIN(i,slast) * tree->mod->ns + MAX(i,slast) - (MIN(i,slast)+1+(int)POW(MIN(i,slast)+1,2))/2;
-        muttype[(*n_mut)+n_mut_branch-1] = thismut;
+#ifdef PHYTIME
+          // Transform into time in calendar units
+          muttime[(*n_mut)+n_mut_branch-1] /= tree->rates->cur_l[d->num];
+          muttime[(*n_mut)+n_mut_branch-1] *= fabs(tree->rates->nd_t[a->num]-tree->rates->nd_t[d->num]);
+#endif
 
-        if((thismut > 5) || (thismut < 0))
-          {
-            PhyML_Fprintf(stderr,"\n. thismut = %d",thismut);
-            PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n\n",__FILE__,__LINE__);
-            Warn_And_Exit("");
-          }
+          tax_idx = -1;
+          Random_Tax_Idx(a,d,&tax_idx,tree);
+          muttax[(*n_mut)+n_mut_branch-1] = tax_idx;
 
-        // Record time of mutation
-        muttime[(*n_mut)+n_mut_branch-1] = ta + br*cr*gr;
-
-        // Update the last state
-        slast = i;
-        break;
-          }
-    }
-      else
-    {
-      if(slast == sd) break;
+          // Update the last state
+          slast = snew;
+        }
       else
         {
-          // Restart from the beginning
-          For(i,tree->mod->ns*tree->mod->ns) mut[i] = 0;
-          for(i=0;i<n_mut_branch;i++) muttype[(*n_mut)+n_mut_branch-1] = -2;
-          for(i=0;i<n_mut_branch;i++) muttime[(*n_mut)+n_mut_branch-1] = +1.;
-          tlast = 0.0;
-          slast = sa;
-          n_mut_branch = 0;
-          first_mut = YES;
-          n_iter++;
+          if(slast == sd) break;
+          else
+            {
+              // Restart from the beginning
+              for(i=0;i<ns*ns;++i) mut[i] = 0;
+              for(i=0;i<n_mut_branch;i++) muttype[(*n_mut)+n_mut_branch-1] = -2;
+              for(i=0;i<n_mut_branch;i++) muttime[(*n_mut)+n_mut_branch-1] = +1.;
+              tlast = 0.0;
+              slast = sa;
+              snew = sa;
+              n_mut_branch = 0;
+              first_mut = YES;
+              n_iter++;
+            }
         }
     }
-    }
-  while(1);
+  while(++n_iter < 10000);
 
+
+  if(n_iter == 10000)
+    {
+      PhyML_Printf("\n. sa=%2d sd=%2d slast=%2d tlast=%12G T=%12G  rcat=%12f site=%4d",sa,sd,slast,tlast,T,rcat,site);
+      assert(FALSE);
+    }
+  
   (*n_mut) += n_mut_branch;
+  
+  
+  /* for(i=0;i<ns;i++) */
+  /*   { */
+  /*     for(j=i+1;j<ns;j++) */
+  /*       { */
+  /*         if(mut[i*ns+j] + mut[j*ns+i] > 0) */
+  /*           { */
+  /*             thismut = MIN(i,j) * ns + MAX(i,j) - (MIN(i,j)+1+(int)POW(MIN(i,j)+1,2))/2; */
 
-
-  for(i=0;i<tree->mod->ns;i++)
-    {
-      for(j=i+1;j<tree->mod->ns;j++)
-    {
-      if(mut[i*tree->mod->ns+j] + mut[j*tree->mod->ns+i] > 0)
-        {
-          thismut = MIN(i,j) * tree->mod->ns + MAX(i,j) - (MIN(i,j)+1+(int)POW(MIN(i,j)+1,2))/2;
-          tree->mutmap[thismut*(tree->n_pattern)*(2*tree->n_otu-3) + b->num*(tree->n_pattern) + site]++;
-          /* if(site == 92) */
-          /* 	{ */
-          /* 	  printf("\nx sa=%d sd=%d mut=%d",sa,sd,thismut); */
-          /* 	} */
-        }
-    }
-    }
-
+  /*             if(tree->mixt_tree != NULL) */
+  /*               tree->mixt_tree->mutmap[thismut*(tree->n_pattern)*(2*tree->n_otu-3) + b->num*(tree->n_pattern) + site]++; */
+  /*             else */
+  /*               tree->mutmap[thismut*(tree->n_pattern)*(2*tree->n_otu-3) + b->num*(tree->n_pattern) + site]++; */
+  /*           } */
+  /*       } */
+  /*   } */
+  
   Free(all_probs);
   Free(mut);
 }
@@ -3308,7 +3375,7 @@ int Check_Lk_At_Given_Edge(int verbose, t_tree *tree)
   lk = (phydbl *)mCalloc(2*tree->n_otu-3,sizeof(phydbl));
 
   res = 0;
-  For(i,2*tree->n_otu-3)
+  for(i=0;i<2*tree->n_otu-3;++i)
     {
       lk[i] = Lk(tree->a_edges[i],tree);
       if(verbose == YES) PhyML_Printf("\n. Edge %3d %13G %f %13G",

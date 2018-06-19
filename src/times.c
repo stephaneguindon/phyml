@@ -1555,8 +1555,11 @@ void TIMES_Connect_List_Of_Taxa(t_node **tax_list, int list_size, phydbl t_mrca,
       if(times[n->num] < t_upper_bound) t_upper_bound = times[n->num];
     }
   
-  /* printf("\n. upper: %f lower: %f t_mrca: %f\n",t_upper_bound,t_lower_bound,t_mrca); */
-  assert(t_upper_bound > t_lower_bound);
+  if(!(t_upper_bound > t_lower_bound))
+    {
+      PhyML_Printf("\n. upper: %f lower: %f t_mrca: %f\n",t_upper_bound,t_lower_bound,t_mrca);      
+      assert(FALSE);
+    }
   
   // Get the list of current mrcas to all taxa in tax_list. There should be
   // at least one of these
@@ -1940,17 +1943,19 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
               tree->a_nodes[i]->v[1] = tree->prev->a_nodes[i]->v[1] ? tree->a_nodes[tree->prev->a_nodes[i]->v[1]->num] : NULL;
               tree->a_nodes[i]->v[2] = tree->prev->a_nodes[i]->v[2] ? tree->a_nodes[tree->prev->a_nodes[i]->v[2]->num] : NULL;
             }
+
           tree->num_curr_branch_available = 0;
           Connect_Edges_To_Nodes_Recur(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree);
-          Add_Root(tree->a_edges[tree->prev->e_root->num],tree);
           Reorganize_Edges_Given_Lk_Struct(tree);
           Init_Partial_Lk_Tips_Int(tree);
+          Add_Root(tree->a_edges[tree->prev->e_root->num],tree);
                    
           tree = tree->next;
         }
       while(tree);
     }
 
+  t_tree *tree = mixt_tree->next;
   
   Free(tips);
   Free(nd_list);

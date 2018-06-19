@@ -104,5 +104,6 @@ void MIXT_Restore_Partial_Scale(t_node *mixt_d, t_edge *mixt_b, t_tree *mixt_tre
 void MIXT_Set_Both_Sides(int yesno, t_tree *mixt_tree);
 void MIXT_Set_Br_Len(phydbl val, t_edge *mixt_b, t_tree *mixt_tree);
 void MIXT_Multiply_Scalar_Dbl(scalar_dbl *this, phydbl scalar);
+void MIXT_Sample_Ancestral_Seq(int mutmap, int fromprior, t_tree *mixt_tree);
 
 #endif

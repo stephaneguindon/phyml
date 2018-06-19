@@ -1713,3 +1713,17 @@ void Alloc_TBE_Matrices(int n_otu, short unsigned*** i_matrix, short unsigned***
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void Make_MutMap(t_tree *tree)
+{
+  // (# of edges) X (# of sites) X (# mutation types: A<->C A<->G A<->T C<->G C<->T G<->T)
+  do
+    {
+      tree->mutmap = (int *)mCalloc((2*tree->n_otu-3)*(tree->n_pattern)*6,sizeof(int));
+      tree = tree->next_mixt;
+    }
+  while(tree);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
