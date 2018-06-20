@@ -269,7 +269,7 @@ extern int TIME;
 #define  GOLDEN_C  (1.0-GOLDEN_R)
 #define  N_MAX_INSERT          20
 #define  N_MAX_OTU           4000
-#define  UNLIKELY          -1.e10
+#define  UNLIKELY          -1.e20
 #define  NJ_SEUIL             0.1
 #define  ROUND_MAX            100
 #define  DIST_MAX            2.00
@@ -2293,6 +2293,7 @@ void Remove_Duplicates(calign *data, t_mod *mod, option *io);
 short int Are_Sequences_Identical(align *seq1, align *seq2);
 char *Mutation_Id(int mut_idx, t_tree *tree);
 void Random_Tax_Idx(t_node *a, t_node *d, int *idx, t_tree *tree);
+void List_Taxa_In_Clade(t_node *a, t_node *d, t_tree *tree);
 
 #include "xml.h"
 #include "free.h"

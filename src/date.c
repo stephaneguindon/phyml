@@ -444,14 +444,14 @@ int DATE_Check_Calibration_Constraints(t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
+// Check that time constraints are satisfied. Note: it is a
+// requirement to verify that the age of the root node is also
+// within correct boundaries
 int DATE_Check_Time_Constraints(t_tree *tree)
 {
-  int i;
-
-  For(i,2*tree->n_otu-1)
+  for(int i=0;i<2*tree->n_otu-1;++i)
     {
-      if(tree->a_nodes[i] != tree->n_root && tree->a_nodes[i]->tax == NO)
+      if(tree->a_nodes[i]->tax == NO)
         {
           if(tree->rates->nd_t[i] > tree->rates->t_prior_max[i] ||
              tree->rates->nd_t[i] < tree->rates->t_prior_min[i])
@@ -605,7 +605,6 @@ phydbl *DATE_MCMC(t_tree *tree)
   else
     for(i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"nr%d\t",i);
 
-
   for(i=0;i<2*tree->n_otu-1;++i) if(tree->a_nodes[i]->tax == NO) PhyML_Fprintf(fp_stats,"t%d\t",i);
   
   PhyML_Fprintf(fp_stats,"accRT\t");
@@ -690,16 +689,6 @@ phydbl *DATE_MCMC(t_tree *tree)
       else continue;
 
       /* PhyML_Fprintf(stderr,"\n. move: %s",tree->mcmc->move_name[move]);       */
-
-      /* PhyML_Printf("\n. %d move: %s",tree->mcmc->run,tree->mcmc->move_name[move]);       */
-      /* PhyML_Printf("\n. root: %d v1: %d v2: %d b1->left: %d b1->rght: %d b2->left: %d b2->rght: %d",  */
-      /*              tree->n_root->num, */
-      /*              tree->n_root->v[1]->num, */
-      /*              tree->n_root->v[2]->num, */
-      /*              tree->n_root->b[1]->left->num, */
-      /*              tree->n_root->b[1]->rght->num, */
-      /*              tree->n_root->b[2]->left->num, */
-      /*              tree->n_root->b[2]->rght->num); */
                    
       if(!RATES_Check_Edge_Length_Consistency(tree))
         {
@@ -783,10 +772,9 @@ phydbl *DATE_MCMC(t_tree *tree)
           for(i=0;i<tree->rates->n_cal;++i)
             {
               t_cal *cal = tree->rates->a_cal[i];
-              /* PhyML_Fprintf(fp_stats,"%d\t",cal->current_clade_idx); */
-              PhyML_Fprintf(fp_stats,"%s\t",cal->clade_list[cal->current_clade_idx]->id);
+              PhyML_Fprintf(fp_stats,"%d\t",cal->current_clade_idx);
+              /* PhyML_Fprintf(fp_stats,"%s\t",cal->clade_list[cal->current_clade_idx]->id); */
             }
-
 
           if(tree->rates->model == THORNE ||
              tree->rates->model == LOGNORMAL ||

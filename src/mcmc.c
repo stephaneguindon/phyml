@@ -4674,7 +4674,7 @@ void MCMC_Death_Rate(t_tree *tree)
           tree->extra_tree->eval_glnL          = YES;
           tree->extra_tree->rates->c_lnL_rates = UNLIKELY;
           tree->extra_tree->c_lnL              = UNLIKELY;
-          
+
           TIMES_Randomize_Tree_With_Time_Constraints(tree->extra_tree->rates->a_cal[0],tree->extra_tree);
           tree->extra_tree->rates->birth_rate = tree->rates->birth_rate;
           tree->extra_tree->rates->death_rate = new_death_rate;
@@ -4684,8 +4684,21 @@ void MCMC_Death_Rate(t_tree *tree)
             {
               PhyML_Fprintf(stderr,"\n. glnL=%f",tree->extra_tree->rates->c_lnL_times);
               PhyML_Fprintf(stderr,"\n. death=%G birth=%G [%G]",new_death_rate,tree->rates->birth_rate,tree->extra_tree->rates->birth_rate);
+              PhyML_Fprintf(stderr,"\n");
+              for(int i=0;i<tree->extra_tree->rates->n_cal;++i)
+                {
+                  t_cal *cal = tree->extra_tree->rates->a_cal[i];
+                  PhyML_Fprintf(stderr,"\n. calibration %s applies to clade %s\t",cal->id,cal->clade_list[cal->current_clade_idx]->id);
+                  for(int j=0;j<cal->clade_list_size;++j)
+                    {
+                      t_clad *clade = cal->clade_list[j];
+                      PhyML_Fprintf(stderr,"time:%G\t",tree->extra_tree->rates->nd_t[clade->target_nd->num]);
+                    }
+                }
+
+              PhyML_Fprintf(stderr,"\n");
               TIMES_Lk_Times(YES,tree->extra_tree);
-              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+              assert(FALSE);
             }
                     
           i = 0;
@@ -4855,7 +4868,7 @@ void MCMC_Birth_Death_Updown(t_tree *tree)
               PhyML_Fprintf(stderr,"\n. glnL=%f",tree->extra_tree->rates->c_lnL_times);
               PhyML_Fprintf(stderr,"\n. death=%G birth=%G [%G]",new_death_rate,tree->rates->birth_rate,tree->extra_tree->rates->birth_rate);
               TIMES_Lk_Times(YES,tree->extra_tree);
-              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+              assert(FALSE);
             }
           
           

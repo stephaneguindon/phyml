@@ -697,7 +697,6 @@ phydbl TIMES_Lk_Times(int verbose, t_tree *tree)
   DATE_Assign_Primary_Calibration(tree);
   DATE_Update_T_Prior_MinMax(tree);
   tree->rates->c_lnL_times =  TIMES_Lk_Birth_Death(verbose,tree);
-  /* if(tree->rates->c_lnL_times > UNLIKELY) tree->rates->c_lnL_times  = -1.; */
   return(tree->rates->c_lnL_times);
 }
 
@@ -1381,17 +1380,35 @@ phydbl TIMES_Lk_Birth_Death(int verbose, t_tree *tree)
   
   if(b < d)
     {
-      if(verbose) printf("\n. b: %G d: %G",b,d);
+      tree->rates->c_lnL_times = UNLIKELY;
+      if(verbose) PhyML_Printf("\n. b < d");
       return UNLIKELY;
     }
   
+  // Verify that calibration constraints are satisfied
   for(i=0;i<2*tree->n_otu-1;++i)
     if(tree->a_nodes[i]->tax == NO)
       {
         if(tree->rates->nd_t[i] < tree->rates->t_prior_min[i] ||
            tree->rates->nd_t[i] > tree->rates->t_prior_max[i]) 
           {
-            if(verbose) printf("\n. node %d @ time %f min: %f max: %f",i,tree->rates->nd_t[i],tree->rates->t_prior_min[i],tree->rates->t_prior_max[i]);
+            tree->rates->c_lnL_times = UNLIKELY;
+            if(verbose)
+              {
+                PhyML_Printf("\n. Time outside calibration range : %G [%G,%G]",tree->rates->nd_t[i],tree->rates->t_prior_min[i],tree->rates->t_prior_max[i]);
+                PhyML_Printf("\n. Clade incriminated: ");
+                if(tree->a_nodes[i] == tree->n_root)
+                  {
+                    List_Taxa_In_Clade(tree->n_root,tree->n_root->v[1],tree);
+                    List_Taxa_In_Clade(tree->n_root,tree->n_root->v[2],tree);
+                  }
+                else
+                  {
+                    assert(tree->a_nodes[i]->anc);
+                    List_Taxa_In_Clade(tree->a_nodes[i]->anc,tree->a_nodes[i],tree);
+                  }
+                PhyML_Printf("\n");
+              }
             return UNLIKELY;
           }
       }
@@ -1417,9 +1434,18 @@ phydbl TIMES_Lk_Birth_Death(int verbose, t_tree *tree)
             // Equation 6 in Yang and Rannala, 1997 with rho=1
             logp_1t = 2.*logbmd - 2.*log(b-d*exp((d-b)*t)) + (d-b)*t;
             lnL += logb + logp_1t - lognut1; 
+
+            
+            if(!(lnL > UNLIKELY))
+              {
+                PhyML_Printf("\n. logb: %G pt: %G nut1: %G lognut1: %G t: %G logp_1t: %G\n",logb,pt,nut1,lognut1,t,logp_1t);
+                tree->rates->c_lnL_times = UNLIKELY;
+                return UNLIKELY;
+              }
           }
 
       lnL += LnGamma(n-1);
+
       
       /* t = FABS(tree->rates->nd_t[tree->n_root->num]); */
       /* lnL += -bmd*t - log(b-d*pow(expmbmd,t)); */
@@ -1447,6 +1473,13 @@ phydbl TIMES_Lk_Birth_Death(int verbose, t_tree *tree)
             // Equation 6 in Yang and Rannala, 1997 with rho=1
             logp_1t = - b*t;
             lnL += logb + logp_1t - lognut1; 
+
+            if(!(lnL > UNLIKELY))              
+              {
+                PhyML_Printf("\n. lognut1: %G t: %G logp_1t: %G",lognut1,t,logp_1t);
+                tree->rates->c_lnL_times = UNLIKELY;
+                return UNLIKELY;
+              }
           }
 
       lnL += LnGamma(n-1);
@@ -1466,7 +1499,8 @@ phydbl TIMES_Lk_Birth_Death(int verbose, t_tree *tree)
     }
   else if(b < bmin && d > dmin) 
     {
-      if(verbose) printf("\n. b: %G bmin: %G d: %G dmin: %G",b,bmin,d,dmin);
+      PhyML_Printf("\n. b: %G bmin: %G d: %G dmin: %G",b,bmin,d,dmin);
+      tree->rates->c_lnL_times = UNLIKELY;
       return UNLIKELY;
     }
   else if(Are_Equal(bmd,0.0,bmin/10.) == YES) // Critical birth-death process
@@ -1484,6 +1518,13 @@ phydbl TIMES_Lk_Birth_Death(int verbose, t_tree *tree)
             
             // Equation 7 in Yang and Rannala, 1997 with rho=1
             lnL += log((1.+d)/pow(1.+d*t,2)); 
+
+            if(!(lnL > UNLIKELY))              
+              {
+                PhyML_Printf("\n. logb: %G t: %G",logb,t);
+                tree->rates->c_lnL_times = UNLIKELY;
+                return UNLIKELY;
+              }
           }
 
       lnL += LnGamma(n-1);
@@ -1502,12 +1543,14 @@ phydbl TIMES_Lk_Birth_Death(int verbose, t_tree *tree)
     }
   else if(b < bmin && d < dmin) // Birth and death rates are below their limits
     {
-      if(verbose) printf("\n. b: %G bmin: %G d: %G dmin: %G",b,bmin,d,dmin);
+      PhyML_Fprintf(stderr,"\n. b: %G bmin: %G d: %G dmin: %G",b,bmin,d,dmin);
+      tree->rates->c_lnL_times = UNLIKELY;
       return -INFINITY;
     }
   else if(b > bmax && d > dmax)
     {
-      if(verbose) printf("\n. b: %G bmax: %G d: %G dmax: %G",b,bmax,d,dmax);
+      PhyML_Fprintf(stderr,"\n. b: %G bmax: %G d: %G dmax: %G",b,bmax,d,dmax);
+      tree->rates->c_lnL_times = UNLIKELY;
       return -INFINITY;
     }
   else
@@ -1515,15 +1558,14 @@ phydbl TIMES_Lk_Birth_Death(int verbose, t_tree *tree)
       assert(FALSE);
     }
 
-  if(isnan(lnL) || isinf(FABS(lnL)))
+  if(isnan(lnL) || isinf(fabs(lnL)) || !(lnL > UNLIKELY))
     {
-      if(verbose) printf("\n. lnL: %f",lnL);
+      PhyML_Fprintf(stderr,"\n. lnL times: %f",lnL);
       tree->rates->c_lnL_times = UNLIKELY;
       return UNLIKELY;
     }
 
   tree->rates->c_lnL_times = lnL;
-
 
   return(lnL);
 }
@@ -1644,7 +1686,8 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
   int i,j,nd_num,*cal_ordering,n_cal,swap,list_size,tmp,orig_is_mixt_tree,repeat,n_max_repeats,tip_num,*no_cal_tip_num,n_no_cal_tip_num,*permut;
   t_cal *cal;
   t_clad *clade;
-    
+  int idx;
+  
   assert(mixt_tree->rates);
   
   tips    = (t_node **)mCalloc(mixt_tree->n_otu,sizeof(t_node *));
@@ -1656,6 +1699,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
   n_max_repeats           = 1000;
   cal                     = NULL;
   clade                   = NULL;
+  idx                     = -1;
   
   // List node indices that are not in any calibration set
   no_cal_tip_num = NULL;
@@ -1679,7 +1723,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
           n_no_cal_tip_num++;
         }
     }
-  
+
   
   for(repeat=0;repeat<n_max_repeats;++repeat)
     {
@@ -1880,21 +1924,18 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       DATE_Assign_Primary_Calibration(mixt_tree);
       DATE_Update_T_Prior_MinMax(mixt_tree);
 
-      /* { */
-      /*   Print_Node(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree); */
-      /*   Print_Node(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree); */
-      /*   fflush(NULL); */
 
-      /*   int i; */
-      /*   for(i=0;i<mixt_tree->rates->n_cal;i++) */
-      /*     { */
-      /*       PhyML_Printf("\n. Node number to which calibration [%d] applies to is [%d]",i,Find_Clade(mixt_tree->rates->a_cal[i]->target_tax, */
-      /*                                                                                                mixt_tree->rates->a_cal[i]->n_target_tax, */
-      /*                                                                                                mixt_tree)); */
-      /*       PhyML_Printf("\n. Lower bound set to: %15f time units.",mixt_tree->rates->a_cal[i]->lower); */
-      /*       PhyML_Printf("\n. Upper bound set to: %15f time units.",mixt_tree->rates->a_cal[i]->upper); */
-      /*     } */
-      /* } */
+      /* for(int i=0;i<mixt_tree->rates->n_cal;i++) */
+      /*   { */
+      /*     cal   = mixt_tree->rates->a_cal[i]; */
+      /*     clade = cal->clade_list[cal->current_clade_idx]; */
+      /*     idx = Find_Clade(clade->tax_list,clade->n_tax,mixt_tree); */
+      /*     PhyML_Printf("\n. Node number to which calibration [%d] applies to is [%d]",i,idx); */
+      /*     PhyML_Printf("\n. Lower bound set to: %15f time units.",mixt_tree->rates->a_cal[i]->lower); */
+      /*     PhyML_Printf("\n. Upper bound set to: %15f time units.",mixt_tree->rates->a_cal[i]->upper); */
+      /*     PhyML_Printf("\n. t_prior_min: %G t_prior_max: %G",mixt_tree->rates->t_prior_min[idx],mixt_tree->rates->t_prior_max[idx]); */
+      /*     PhyML_Printf("\n. Time set to %G",mixt_tree->rates->nd_t[idx]); */
+      /*   } */
 
       if(!DATE_Check_Calibration_Constraints(mixt_tree))
         {
