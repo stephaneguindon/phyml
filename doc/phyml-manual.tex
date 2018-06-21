@@ -2206,8 +2206,8 @@ make;
 
 \subsubsection{Running  PhyTime} Passing  options and  running  PhyTime on  your data  set is  quite
 similar to running  PhyML using an XML parameter input file, i.e., a typical run would be launched
-using the following command: \x{./phytime --xml=./param.xml}, assuming that the \x{phytime} binary file is in the same
-directory as the XML control file \x{param.xml}, which happens to be the current directory here. The main
+using the following command: \x{./phytime --xml=./dating\_example.xml}, assuming that the \x{phytime} binary file is in the same
+directory as the XML control file \x{dating\_example.xml}, which happens to be the current directory here. The main
 differences between PhyML and PhyTime are explained below:
 \begin{itemize}
 \item Unlike PhyML, PhyTime requires calibration (along with genetic sequence) data as input. The format for
@@ -2246,11 +2246,13 @@ variation across lineages. Its only attribute is \x{model} which can take the fo
 
 The \x{clade}\index{PhyTime!clade} element is used to define a subset of taxa. Each of these taxa is
 given in a \x{taxon} element. The  value that each taxon takes is a string corresponding to the
-name of one of the sequences in the alignment file. In the example that follows, \x{Gymno\_Cycas}, \x{Gymno\_Ginko} and
-\x{Gymno\_Juniperus} are three taxa that define a clade called \x{CLADE1}. Note that  this clade may
-not be monophyletic. In fact it is not considered as such during the inference. The second important element is \x{calibration}. It
-defines time intervals corresponding to the time of diversification (i.e., the time of the most
-recent common ancestor) of the set of taxa the calibration points to. In other words, a given time
+name of one of the sequences in the alignment file. In the example that follows, \x{Gymno\_Araucaria},
+\x{Gymno\_Ginko}, \x{Gymno\_Juniperus} and
+\x{Gymno\_Juniperus} are three taxa that define a clade called \x{Gymno1}. Note that  this clade may
+not be monophyletic. In fact, it is not considered as such (i.e., monophyletic) during the
+inference. The second important element is \x{calibration}. It defines time intervals corresponding
+to the time of diversification (i.e., the time of the most recent common ancestor) of the set of
+taxa the calibration points to. In other words, a given time
 interval defines the calibration for the timing of the crown node of a given clade. Each interval is defined using 
 the \x{upper} and \x{lower} tags. The upper (resp. lower) bound for each interval corresponds to the amount of time elapsed
 in \x{upper} (resp. \x{lower}) time units.
@@ -2258,8 +2260,10 @@ in \x{upper} (resp. \x{lower}) time units.
 \vspace{0.2cm}
 \begin{Verbatim}[frame=single, label=Example of PhyTime XML file, samepage=true, baselinestretch=0.5,
   fontsize=\small, numbers=left]
-<phytime run.id="abc" output.file="def" mcmc.chain.len="1E+7" \
-mcmc.sample.every="100" mcmc.print.every="50" mcmc.burnin="10000">
+  <phytime run.id="June2018" output.file="out" \
+  mcmc.chain.len="1E+7" mcmc.sample.every="100" \
+  mcmc.print.every="50" mcmc.burnin="10000" \
+  mutmap="no">
 
   <!-- Tree topology -->
   <topology> 
@@ -2267,6 +2271,9 @@ mcmc.sample.every="100" mcmc.print.every="50" mcmc.burnin="10000">
   </topology>
   
 
+  <!-- Model of rate variation across lineages -->
+  <lineagerates model="lognormal"/>
+  
   <!-- Substitution model -->
   <ratematrices id="RM1">
     <instance id="M1" model="HKY85" optimise.tstv="no" tstv="4.0"/>
@@ -2290,6 +2297,7 @@ mcmc.sample.every="100" mcmc.print.every="50" mcmc.burnin="10000">
     <instance id="F1" optimise.freqs="no"/>
   </equfreqs>
 
+
   <!-- Vector of edge lengths -->
   <branchlengths id="BL1" >
     <instance id="L1" optimise.lens="no"/>
@@ -2297,7 +2305,7 @@ mcmc.sample.every="100" mcmc.print.every="50" mcmc.burnin="10000">
 
   <!-- Model assembly -->
   <partitionelem id="partition1" file.name="./seq.txt" \
-   data.type="nt" interleaved="no">
+  data.type="nt" interleaved="no">
     <mixtureelem list="T1, T1, T1"/>
     <mixtureelem list="M1, M1, M1"/>
     <mixtureelem list="F1, F1, F1"/>
@@ -2306,32 +2314,32 @@ mcmc.sample.every="100" mcmc.print.every="50" mcmc.burnin="10000">
   </partitionelem>
 \end{Verbatim}
 
-\begin{Verbatim}[frame=single, label=Example of PhyTime XML file (ctnd), samepage=true, baselinestretch=0.5,
+\begin{Verbatim}[frame=single, label=Example of PhyTime XML file, samepage=true, baselinestretch=0.5,
   fontsize=\small, numbers=left]
- 
-  <!-- Model of rate variation across lineages -->
-  <lineagerates model="clock"/>
-
-  <clade id="CLADE1">
-    <taxon value="Gymno_Cycas"/>
+  <clade id="Gymno1">
+    <taxon value="Gymno_Araucaria"/>
     <taxon value="Gymno_Ginkgo"/>
     <taxon value="Gymno_Juniperus"/>
+    <taxon value="Gymno_Sciadopitys"/>
   </clade>
-  <calibration id="CAL1">
-    <lower>290</lower>
-    <upper>452</upper>
-    <appliesto clade.id="CLADE1">
-    </appliesto>
+
+  <clade id="Gymno2">
+    <taxon value="Gymno_Araucaria"/>
+    <taxon value="Gymno_Juniperus"/>
+    <taxon value="Gymno_Sciadopitys"/>
+  </clade>
+  
+  <calibration id="cal1">
+    <lower>40</lower>
+    <upper>60</upper>
+    <appliesto clade.id="Gymno1" probability="0.8"/>
+    <appliesto clade.id="Gymno2" probability="0.2"/>
   </calibration>
 
-  <clade id="CLADE2">
-    <taxon value="Fagales_Juglans"/>
-    <taxon value="Ophioglossum"/>
-  </clade>
-  <calibration id="CAL2">
-    <lower>0</lower>
-    <upper>10000</upper>
-    <appliesto clade.id="CLADE2">
+  <calibration id="cal2">
+    <lower>50</lower>
+    <upper>200</upper>
+    <appliesto clade.id="Gymno1">
     </appliesto>
   </calibration>
 
@@ -2346,9 +2354,7 @@ might be shared by species A but not B nor C, while a second feature might be di
 not C. Assuming for simplicity that the true tree topology is ((A,B),C), then the first feature calibrates the most recent common ancestor (MRCA)\index{MRCA} of A and
 B. Indeed, this ancestor cannot be younger than the fossil itself because, if this was  the case, then
 A {\em and} B would display the morphological feature of interest. In a similar fashion, the second
-feature suggests that the calibration should instead apply to the MRCA of A, B and C. 
-
-Therefore, assuming  that the fossil was discovered in a
+feature suggests that the calibration should instead apply to the MRCA of A, B and C. Therefore, assuming  that the fossil was discovered in a
 well-defined geological layer which age range is known without ambiguity, there is still uncertainty
 around the node in the tree this time interval calibrates. In the particular example given above, it
 is not clear whether the calibration constraints applies to the node corresponding to the MRCA of A
@@ -2361,53 +2367,49 @@ MRCA of A, B and C.
 
 It is fairly straightforward to set up an analysis that incorporates probabilistic distributions on
 calibrations in PhyTime. The section of the XML file below gives a simple example whereby the
-calibration  ``\x{CAL1}'' applies to ``\x{CLADE1}'' (i.e., the smallest clade in the tree that
-displays the three taxa {\em Gymno\_Juniperus},
-  {\em Gymno\_Sciadopitys} and {\em Gymno\_Cycas}) with probability 0.2 and to ``\x{CLADE2}'' (i.e.,
-  the smallest clade that displays {\em  Gymno\_Juniperus} and {\em Gymno\_Sciadopitys}) with probability 0.8.
-Also, calibration \x{CAL2} applies to \x{CLADE3} with probability 1.0, which is implicit here and
+calibration  ``\x{cal1}'' applies to clade ``\x{Gymno1}'' (i.e., the smallest clade in the tree that
+displays the four corresponding taxa) with probability 0.8 and to clade ``\x{Gymno2}''  with probability 0.2.
+Also, calibration \x{cal2} applies to ``\x{Gymno1}'' with probability 1.0, which is implicit here and
 thus does not need to be specified in the XML file.
 
-
-
-\begin{Verbatim}[frame=single, label=Example of PhyTime XML file with calibration uncertainty, samepage=true, baselinestretch=0.5,
+\begin{Verbatim}[frame=single, label=Calibrating with uncertainty, samepage=true, baselinestretch=0.5,
   fontsize=\small, numbers=left]
-  ...
- 
-  <clade id="CLADE1">
-    <taxon value="Gymno_Juniperus"/>
-    <taxon value="Gymno_Sciadopitys"/>
-    <taxon value="Gymno_Cycas"/>
-  </clade>
-
-  <clade id="CLADE2">
+  <clade id="Gymno1">
+    <taxon value="Gymno_Araucaria"/>
+    <taxon value="Gymno_Ginkgo"/>
     <taxon value="Gymno_Juniperus"/>
     <taxon value="Gymno_Sciadopitys"/>
   </clade>
 
-  <clade id="CLADE3">
-    <taxon value="Fagales_Juglans"/>
-    <taxon value="Ophioglossum"/>
+  <clade id="Gymno2">
+    <taxon value="Gymno_Araucaria"/>
+    <taxon value="Gymno_Juniperus"/>
+    <taxon value="Gymno_Sciadopitys"/>
   </clade>
-
   
-  <calibration id="CAL1">
-    <lower>50</lower>
-    <upper>400</upper>
-    <appliesto clade.id="CLADE1" probability="0.2"/>
-    <appliesto clade.id="CLADE2" probability="0.8"/>
+  <calibration id="cal1">
+    <lower>40</lower>
+    <upper>60</upper>
+    <appliesto clade.id="Gymno1" probability="0.8"/>
+    <appliesto clade.id="Gymno2" probability="0.2"/>
   </calibration>
 
-  <calibration id="CAL2">
-    <lower>300</lower>
-    <upper>500</upper>
-    <appliesto clade.id="CLADE3">
+  <calibration id="cal2">
+    <lower>50</lower>
+    <upper>200</upper>
+    <appliesto clade.id="Gymno1">
     </appliesto>
   </calibration>
 
 </phytime>
 \end{Verbatim}
 
+Note that in this example, it can be the case that both \x{cal1} and \x{cal2} apply to the same
+clade (\x{Gymno1}). In that particular situation, the actual calibration interval 
+is conservative and derives from the overlap of the two calibration time intervals (one
+corresponding to \x{cal1}, the other to \x{cal2}). The MRCA of
+\x{Gymno\_Araucaria}, \x{Gymno\_Ginko}, \x{Gymno\_Juniperus} and \x{Gymno\_Juniperus} has an age
+that falls here in the $[50,60]$ interval.
 
 \subsubsection{MCMC settings}
 
@@ -2426,7 +2428,7 @@ run.id="example" output.file="small" mcmc.chain.len="1E+7"
 mcmc.sample.every="100" mcmc.print.every="50" mcmc.burnin="10000">
 \end{Verbatim}
 
-The vast majority of analyses will not warrant 1E+07 iterations  to converge to the target
+The  majority of analyses will not warrant 1E+07 iterations  to converge to the target
 distribution (i.e., converge to the solution). I thus recommend  monitoring each analysis by loading
 on a regular basis the statistics output file produced by PhyTime and interrupt the analysis once
 the effective sample sizes of all parameters have reached 200.  
@@ -2455,17 +2457,16 @@ lines of a corresponding XML file would then look as follows:
 
 \subsubsection{PhyTime output}
 
-The     program     PhyTime     generates     two     output     files.      Using the XML file
-given above, one of the output files is called  `\x{abc\_def\_phytime\_stats.txt}'. It lists the
+The     program     PhyTime     generates     two     output     files.      The statistics file
+is called  `\x{outputfile\_phytime\_stats\_runid.txt}'. It lists the
 node times  and (relative) substitution rates on edges  sampled during the  estimation process.   It
 also  gives the sampled values for other parameters, such as  the autocorrelation of rates
 (parameter `nu'), and the rate of evolution (parameter `clock') amongst others.   This output file
-can not be analysed with the program        Tracer\index{Tracer}        from         the
+can  be analysed with the program        Tracer\index{Tracer}        from         the
 BEAST\index{BEAST}        package (\url{http://beast.bio.ed.ac.uk/Main_Page}) or Icylog
-(\url{http://tgvaughan.github.io/icylog/}\index{Icylog}) as some of the columns display
-non-numerical variables. It is preferable to process this file using R here. Section
+(\url{http://tgvaughan.github.io/icylog/}\index{Icylog}). It is also possible to process this file using R here. Section
 \ref{sec:phytimeexample} of this document gives more information about the statistics output file.       The       second      file       is
-called `\x{abc\_def\_phytime\_trees.txt}'.  It is  the list of rooted trees that were  collected
+called `\x{outputfile\_phytime\_trees\_runid.txt}'.  It is  the list of rooted trees that were  collected
 during the estimation process, i.e., phylogenies sampled from the posterior density of trees.  This
 file can be processed   using   the   software   TreeAnnotator,   also  part   of   the   BEAST
 package   (see \url{http://beast.bio.ed.ac.uk/Main_Page}) in  order to generate  confidence sets for
@@ -2475,10 +2476,9 @@ the  node time estimates.
 \subsubsection{An example of PhyTime input and output files}\label{sec:phytimeexample}
 
 The directory \x{phyml/examples/phytime/} provides a sequence alignment (\x{seq.txt}) and an XML
-input file (\x{param.xml}) that can be used to run an analysis (using the following command:
-\x{phytime --xml=param.xml}). The XML file is very similar to that described above and will thus not
-be discussed further. The statistics output file is called \x{small\_example\_phytime\_stats.txt}. The
-columns of this file are as follows:
+input file (\x{dating\_example.xml}) that can be used to run an analysis (using the following command:
+\x{phytime --xml=dating\_example.xml}). The XML file is very similar to that described above and will thus not
+be discussed further. The columns of the statistics output file are as follows:
 \begin{itemize}
 \item \x{sample}: the index of the iteration in the MCMC algorithm. For instance, a sample value of
   100 means that 100 ``moves'' in the MCMC have been applied so far, one such move can correspond to
@@ -2504,15 +2504,15 @@ columns of this file are as follows:
   FreeRate model \cite{soubrier12} with three rate classes. These  columns give the values of
   these six parameters (though there are only four free parameters) sampled from the target
   (posterior) distribution.  
-\item \x{t(calib:CAL1\_clade:CLADE1)}: sampled age of the MRCA of \x{CLADE1} when calibration
-  \x{CAL1} applies to this particular node.
-\item \x{t(calib:CAL1\_clade:CLADE2)}: sampled age of the MRCA of \x{CLADE2} when calibration
-  \x{CAL1} applies to this node.
-\item \x{t(calib:CAL2\_clade:CLADE3)}: sampled age of the MRCA of \x{CLADE3} when calibration
-  \x{CAL2} applies to this node.
-\item \x{clade(calib:CAL1)}: the clade id (\x{CLADE1} or \x{CLADE2}) calibration \x{CAL1} applies
-  to.
-\item \x{clade(calib:CAL2)}: the clade id (\x{CLADE1} or \x{CLADE2}) calibration \x{CAL1} applies
+\item \x{t(calib:cal1\_clade:Gymno1)}: sampled age of the MRCA of \x{Gymno1} when calibration
+  \x{cal1} applies to this particular node.
+\item \x{t(calib:cal1\_clade:Gymno2)}: sampled age of the MRCA of \x{Gymno2} when calibration
+  \x{cal1} applies to this node.
+\item \x{t(calib:cal2\_clade:Gymno1)}: sampled age of the MRCA of \x{Gymno1} when calibration
+  \x{cal12} applies to this node.
+\item \x{clade(calib:cal1)}: the clade id (\x{Gymno1} or \x{Gymno2}) calibration \x{cal1} applies
+  to (0 for \x{Gymno1} and 1 for \x{Gymno2}).
+\item \x{clade(calib:cal2)}: the clade id calibration \x{cal2} applies
   to.
 \item \x{br0}, $\ldots$, \x{br41}: relative rate on all edges in the tree.
 \item \x{t22}, $\ldots$, \x{t42}: ages of all internal nodes.
@@ -2522,30 +2522,33 @@ columns of this file are as follows:
 
 The script below can be copied and pasted into R in order to produce the plots in Figure
 \ref{fig:phytimetrace} (assuming R was launched from the \x{phyml/examples/phytime} directory). The two plots at the top left and center give the trace of the node age of
-the MRCA of \x{CLADE1} when calibration \x{CAL1} applies to it (left) and that of \x{CLADE2} when
-the same calibration \x{CAL1} applies to it (centre). The plot on the top right gives the clade (which of
-\x{CLADE1} or \x{CLADE2}) the calibration \x{CAL1} applies to. The analysis of these  plots
-shows the impact of applying the calibration constraint to \x{CLADE1} and \x{CLADE2} alternatively.
-When \x{CAL1} applies to \x{CLADE2} (i.e., ({\em Gymno Juniperus} and {\em Gymno
-  Sciadopitys}) are pushed towards older values compared to the situation where the constraint applies
-to \x{CLADE1} ({\em Gymno Juniperus}, {\em Gymno Sciadopitys} and {\em Gymno Cycas}).
-This behaviour makes good sense since the taxa making up \x{CLADE2} define a substet of those making up \x{CLADE1}. As a consequence, when
-\x{CAL1} applies to \x{CLADE1}, the MRCA of \x{CLADE2} is ``free'' to wander towards younger
-ages. When this constraint applies to \x{CLADE2} instead, it pushes the age of that nodes (and that
-of the MRCA of \x{CLADE1}) towards older values, as expected.
+the MRCA of \x{Gymno1} when calibration \x{cal1} applies to it (left) and that of \x{Gymno2} when
+the same calibration \x{cal1} applies to it (centre). The plot on the top right gives the clade (which of
+\x{Gymno1} or \x{Gymno2}) the calibration \x{cal1} applies to.
+
+The analysis of these  plots
+shows the impact of applying the calibration constraint \x{cal1} to \x{Gymno1} and \x{Gymno2} alternatively.
+When \x{cal1} applies to \x{Gymno2} (i.e., ({\em Gymno Araucaria},  {\em Gymno Juniperus}, {\em Gymno
+  Sciadopitys})) the age of the MRCA of \x{Gymno1} ((i.e., ({\em Gymno\_Ginkgo}, {\em Gymno Araucaria},  {\em Gymno Juniperus}, {\em Gymno
+  Sciadopitys}) is  free to wander towards older values compared to the situation where both
+\x{cal1} and \x{cal2} apply to \x{Gymno1}. The age of the MRCA of \x{Gymno2} is here bound to fall in the
+$[40,60]$ time interval. When \x{cal1} applies to \x{Gymno1} instead, then the MRCA of that clade
+has to fall in the $[50,60]$ interval, while that of \x{Gymno2} has to be younger than the MRCA of \x{Gymno1}.
+
+
 
 \begin{Verbatim}[frame=single, label=R script to produce traces from the PhyTime statistics file, samepage=true, baselinestretch=0.5,
-  fontsize=\small, numbers=left]
-file=paste("dating_phytime_stats.txt",sep="");
+fontsize=\small, numbers=left]
+file=paste("out_phytime_stats_June2018.txt",sep="");
 d=read.table(file,header=T);
 idx=floor(0.1*length(d$sample)):length(d$sample)
 par(mfrow=c(2,3),mar=c(5,4,2,2));
-plot(d$sample[idx],d$t.calib.CAL1_clade.CLADE1.[idx],type="l",
-col="red",ylab="Time",xlab="Sample",main="Time CLADE1 under CAL1")
-plot(d$sample[idx],d$t.calib.CAL1_clade.CLADE2.[idx],type="l",
-col="red",ylab="Time",xlab="Sample",main="Time CLADE2 under CAL1")
-plot(d$sample[idx],d$clade.calib.CAL1.[idx],type="l",col="black",
-ylab="Clade",xlab="Sample",main="(1->CLADE1, 2->CLADE2)")
+plot(d$sample[idx],d$t.calib.cal1_clade.Gymno1.[idx],type="l",
+col="red",ylab="Time",xlab="Sample",main="Time Gymno1")
+plot(d$sample[idx],d$t.calib.cal1_clade.Gymno2.[idx],type="l",
+col="red",ylab="Time",xlab="Sample",main="Time Gymno2")
+plot(d$sample[idx],d$clade.calib.cal1.[idx],type="l",col="black",
+ylab="Clade",xlab="Sample",main="(0->Gymno1, 1->Gymno2)")
 plot(d$sample[idx],d$lnL.seq.[idx],type="l",col="orange",
 ylab="log(Probability)",xlab="Sample",main="Likelihood sequences")
 plot(d$sample[idx],d$lnL.posterior.[idx],type="l",col="orange",
@@ -2645,7 +2648,12 @@ The ``default citation'' is:
 substitution rates along lineages'', {\it Systematic Biology}, 2013. 62(1): 22-34.
 \end{itemize}
 
-An earlier article also described some of the methods implemented in PhyTime:
+If you are using mutliple calibrations on a given clade, please cite the following article:
+\begin{itemize}
+\item Guindon S. ``Accounting for calibration uncertainty: Bayesian molecular dating as a ``doubly intractable'' problem'', {\it Systematic Biology}, 2018. 67(4): 651-661.
+\end{itemize}
+
+An earlier article also describes some of the methods implemented in PhyTime:
 
 \begin{itemize}
 \item Guindon  S. ``Bayesian estimation of divergence  times from large data  sets'', {\it Molecular

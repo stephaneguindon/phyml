@@ -1,5 +1,5 @@
-<phytime run.id="June2018" output.file="out" mcmc.chain.len="1E+7" mcmc.sample.every="100"
-         mcmc.print.every="50" mcmc.burnin="10000" mutmap="no" r.seed="1">
+<phytime run.id="example" output.file="out" mcmc.chain.len="1E+7" mcmc.sample.every="100"
+         mcmc.print.every="50" mcmc.burnin="10000" mutmap="no">
 
   <!-- Tree topology -->
   <topology> 
@@ -7,6 +7,7 @@
   </topology>
   
 
+  <!-- Model of rate variation across lineages -->
   <lineagerates model="lognormal"/>
   
   <!-- Substitution model -->
@@ -47,26 +48,30 @@
     <mixtureelem list="L1, L1, L1"/>
   </partitionelem>
 
-
-  <clade id="CLADE1">
-    <taxon value="Gymno_Cycas"/>
+  <clade id="Gymno1">
+    <taxon value="Gymno_Araucaria"/>
     <taxon value="Gymno_Ginkgo"/>
     <taxon value="Gymno_Juniperus"/>
+    <taxon value="Gymno_Sciadopitys"/>
   </clade>
-  <calibration id="CAL1">
-    <lower>290</lower>
-    <upper>452</upper>
-    <appliesto clade.id="CLADE1">
-    </appliesto>
+
+  <clade id="Gymno2">
+    <taxon value="Gymno_Araucaria"/>
+    <taxon value="Gymno_Juniperus"/>
+    <taxon value="Gymno_Sciadopitys"/>
+  </clade>
+  
+  <calibration id="cal1">
+    <lower>40</lower>
+    <upper>60</upper>
+    <appliesto clade.id="Gymno1" probability="0.8"/>
+    <appliesto clade.id="Gymno2" probability="0.2"/>
   </calibration>
-  <clade id="CLADE2">
-    <taxon value="Fagales_Juglans"/>
-    <taxon value="Ophioglossum"/>
-  </clade>
-  <calibration id="CAL2">
-    <lower>0</lower>
-    <upper>10000</upper>
-    <appliesto clade.id="CLADE2">
+
+  <calibration id="cal2">
+    <lower>50</lower>
+    <upper>200</upper>
+    <appliesto clade.id="Gymno1">
     </appliesto>
   </calibration>
 

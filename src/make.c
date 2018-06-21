@@ -421,8 +421,6 @@ void Make_Extra_Edge_Lk(t_tree *tree)
         
   tree->patt_id_extra_0  = (int *)mCalloc(tree->data->crunch_len,sizeof(int));
 
-
-
   tree->div_post_pred_extra_1 = (short int *)mCalloc(ns,sizeof(short int));
 
   tree->sum_scale_cat_extra_1 = (int *)mCalloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(int));

@@ -1686,7 +1686,6 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
   int i,j,nd_num,*cal_ordering,n_cal,swap,list_size,tmp,orig_is_mixt_tree,repeat,n_max_repeats,tip_num,*no_cal_tip_num,n_no_cal_tip_num,*permut;
   t_cal *cal;
   t_clad *clade;
-  int idx;
   
   assert(mixt_tree->rates);
   
@@ -1699,7 +1698,6 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
   n_max_repeats           = 1000;
   cal                     = NULL;
   clade                   = NULL;
-  idx                     = -1;
   
   // List node indices that are not in any calibration set
   no_cal_tip_num = NULL;

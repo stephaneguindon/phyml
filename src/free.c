@@ -414,6 +414,20 @@ void Free_Tree_Lk(t_tree *mixt_tree)
       for(i=0;i<3;i++) Free(tree->log_lks_aLRT[i]);
       Free(tree->log_lks_aLRT);
 
+      Free(tree->div_post_pred_extra_0);
+      Free(tree->sum_scale_cat_extra_0);
+      Free(tree->sum_scale_extra_0);
+      Free(tree->patt_id_extra_0);
+      Free(tree->p_lk_extra_0);
+      Free(tree->p_lk_tip_extra_0);
+
+      Free(tree->div_post_pred_extra_1);
+      Free(tree->sum_scale_cat_extra_1);
+      Free(tree->sum_scale_extra_1);
+      Free(tree->patt_id_extra_1);
+      Free(tree->p_lk_extra_1);
+      Free(tree->p_lk_tip_extra_1);
+      
       Free(tree->unscaled_site_lk_cat);
       
       For(i,2*tree->n_otu-1) Free_NNI(tree->a_edges[i]->nni);
@@ -523,6 +537,7 @@ void Free_Edge_Lk(t_edge *b)
 {
   Free(b->tPij_rr);
   Free(b->Pij_rr);
+  
   Free_Edge_Lk_Left(b);
   Free_Edge_Lk_Rght(b);
 }
