@@ -3216,7 +3216,7 @@ void Map_Mutations(t_node *a, t_node *d, int sa, int sd, t_edge *b, int site, in
   T = 0.0;
 #ifdef PHYTIME
   T = tree->rates->cur_l[d->num]*rr;
-#elif defined(PHYML)
+#else
   T = b->l->v*rr;
 #endif
   
