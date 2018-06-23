@@ -1618,7 +1618,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   mcmc->is_burnin        = NO;
   mcmc->nd_t_digits      = 1;
   mcmc->chain_len        = 1E+8;
-  mcmc->sample_interval  = 1E+3;  
+  mcmc->sample_interval  = 1E+2;  
   mcmc->max_lag          = 1000;
   mcmc->sample_size      = mcmc->chain_len/mcmc->sample_interval;
   mcmc->sample_num       = 0;
@@ -1717,7 +1717,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   fflush(NULL);
 
 
-  PhyML_Fprintf(fp_stats,"\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s",
+  PhyML_Fprintf(fp_stats,"\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s",
                 "sample",
                 "lnP",
                 "alnL",
@@ -1735,6 +1735,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
                 "nCoal",
                 "nHit",
                 "rootTime",
+                "rootLat",
+                "rootLon",
                 "tstv",
                 "alpha",
                 "accLbda",
@@ -1877,7 +1879,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           disk = tree->disk;
           while(disk->prev) disk = disk->prev;
 
-          PhyML_Fprintf(fp_stats,"\n%6d\t%9.1f\t%9.1f\t%9.1f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%G\t%6d\t%6d\t%6d\t%8.1f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%G\t%G\t%G",
+          PhyML_Fprintf(fp_stats,"\n%6d\t%9.1f\t%9.1f\t%9.1f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%G\t%6d\t%6d\t%6d\t%8.1f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%G\t%G\t%G",
                         tree->mcmc->run,
                         tree->c_lnL+tree->mmod->c_lnL,
                         tree->c_lnL,
@@ -1895,6 +1897,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
                         PHYREX_Total_Number_Of_Coal_Disks(tree),
                         PHYREX_Total_Number_Of_Hit_Disks(tree),
                         disk->time,
+                        disk->ldsk->coord->lonlat[0],
+                        disk->ldsk->coord->lonlat[1],
                         tree->mod->kappa->v,
                         tree->mod->ras->alpha->v,
                         tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_lbda],
