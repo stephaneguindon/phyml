@@ -2445,7 +2445,7 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
       if(fabs(tree->c_lnL-old_lnL) < tol && tree->c_lnL > old_lnL) converged = YES;
       if(++iter == n_iter_max+20) converged = YES;
       if(fabs(u-v) < 1.E-3) converged = YES;
-      if(iter >= n_iter_max) PhyML_Fprintf(stderr,"l=%G lnL=%G",*l,tree->c_lnL);
+      if(iter >= n_iter_max) PhyML_Fprintf(stderr,"\n. Edge length optimization took too long... l=%G lnL=%G",*l,tree->c_lnL);
     }
   while(converged == NO);
 
