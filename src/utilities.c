@@ -551,11 +551,18 @@ void Get_Base_Freqs(calign *data)
   int i,j,k;
   phydbl A,C,G,T;
   phydbl fA,fC,fG,fT;
+  phydbl fA_old,fC_old,fG_old,fT_old;
+  phydbl diff;
   phydbl w;
 
   fA = fC = fG = fT = .25;
-
-  for(k=0;k<8;k++)
+  fA_old = fA;
+  fC_old = fC;
+  fG_old = fG;
+  fT_old = fT;
+  diff = 0.0;
+  k = 0;
+  do
     {
       A = C = G = T = .0;
       for(i=0;i<data->n_otu;i++)
@@ -604,11 +611,32 @@ void Get_Base_Freqs(calign *data)
                 }
             }
         }
+
+      fA_old = fA;
+      fC_old = fC;
+      fG_old = fG;
+      fT_old = fT;
+
       fA = A/(A+C+G+T);
       fC = C/(A+C+G+T);
       fG = G/(A+C+G+T);
       fT = T/(A+C+G+T);
+
+      diff =
+        pow(fA_old-fA,2) +
+        pow(fC_old-fC,2) +
+        pow(fG_old-fG,2) +
+        pow(fT_old-fT,2) ;
+        
+      k++;
+      if(k > 1000)
+        {
+          PhyML_Fprintf(stderr,"\n. Nucleotide frequency estimation did not converge...");
+          PhyML_Fprintf(stderr,"\n. fA: %f fC: %f fG: %f fT: %f diff: %f",fA,fC,fG,fT,diff);
+          assert(FALSE);
+        }
     }
+  while(diff > 1.E-10);
   
   data->obs_state_frq[0] = fA;
   data->obs_state_frq[1] = fC;

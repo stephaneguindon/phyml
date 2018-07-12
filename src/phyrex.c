@@ -1867,14 +1867,15 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       
       if(!(tree->mcmc->run%tree->mcmc->sample_interval))
         {
-          /* Lk(NULL,tree); */
+          Lk(NULL,tree);
 
-          /* RATES_Update_Cur_Bl(tree); */
-          /* char *s = Write_Tree(tree,NO); */
-          /* PhyML_Fprintf(fp_tree,"\n[%f %f] %s",s,tree->rates->nd_t[tree->n_root->num],tree->c_lnL); */
-          /* Free(s); */
-          /* fflush(NULL); */
+          RATES_Update_Cur_Bl(tree);
+          char *s = Write_Tree(tree,NO);
+          PhyML_Fprintf(fp_tree,"\n[%f %f] %s",tree->rates->nd_t[tree->n_root->num],tree->c_lnL,s);
+          Free(s);
+          fflush(NULL);
 
+          
           disk = tree->disk;
           while(disk->prev) disk = disk->prev;
 

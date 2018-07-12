@@ -757,7 +757,7 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
         }
 
       dlk /= lk;
-      d2lk /= lk;
+      /* d2lk /= lk; */
 
       dlnlk  += tree->data->wght[site] * dlk;
       d2lnlk += tree->data->wght[site] * d2lk - dlk*dlk;     
