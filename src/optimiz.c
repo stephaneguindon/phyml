@@ -2709,13 +2709,16 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
   int *permut;
   int n_r_mat;
   int i;
-
+  phydbl lk_new,lk_old;
+  
   Switch_Eigen(YES,mixt_tree->mod);
 
   n_r_mat = 0;
   tree    = mixt_tree;
   r_mat   = NULL;
   permut  = NULL;
+  lk_old  = UNLIKELY;
+  lk_new  = UNLIKELY;
   
   do
     {
@@ -2735,34 +2738,59 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
               (tree->mod->s_opt->opt_rr) &&
               (tree->mod->r_mat->n_diff_rr > 1)))
             {
-              int i;
+              int i,iter,failed;
 
-              permut = Permutate(tree->mod->r_mat->n_diff_rr);
+              iter = 0;
+              do
+                {
+                  lk_old = tree->c_lnL;
+                  failed = NO;
+                  
+                  if(tree->mod->r_mat->n_diff_rr > 2)
+                    {
+                      BFGS(mixt_tree,tree->mod->r_mat->rr_val->v,tree->mod->r_mat->n_diff_rr,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,YES,
+                           &Return_Abs_Lk,
+                           &Num_Derivative_Several_Param,
+                           &Lnsrch,&failed);
+                    }
+                  
+                  permut = Permutate(tree->mod->r_mat->n_diff_rr);
+                  
+
+                  for(i=0;i<tree->mod->r_mat->n_diff_rr;i++)
+                    if(permut[i] != 5)
+                      {
+                        Generic_Brent_Lk(&(tree->mod->r_mat->rr_val->v[permut[i]]),
+                                         RR_MIN,RR_MAX,
+                                         tree->mod->s_opt->min_diff_lk_local,
+                                         tree->mod->s_opt->brent_it_max,
+                                         tree->mod->s_opt->quickdirty,
+                                         Wrap_Lk,NULL,mixt_tree,NULL,NO);
+                        
+                      }
+
+                  if(verbose) Print_Lk(tree->mixt_tree?
+                                       tree->mixt_tree:
+                                       tree,"[GTR parameters     ]");
+                  
+                  lk_new = tree->c_lnL;
+
+                  
+                  Free(permut);
+
+                  assert(lk_new > lk_old - tree->mod->s_opt->min_diff_lk_local);
+                  if(lk_new > lk_old && fabs(lk_new-lk_old) < tree->mod->s_opt->min_diff_lk_local) break;
+                }
+              while(++iter < tree->mod->s_opt->brent_it_max);              
               
-              for(i=0;i<tree->mod->r_mat->n_diff_rr;i++)
-                if(permut[i] != 5)
-                  {
-                    Generic_Brent_Lk(&(tree->mod->r_mat->rr_val->v[permut[i]]),
-                                     RR_MIN,RR_MAX,
-                                     tree->mod->s_opt->min_diff_lk_local,
-                                     tree->mod->s_opt->brent_it_max,
-                                     tree->mod->s_opt->quickdirty,
-                                     Wrap_Lk,NULL,mixt_tree,NULL,NO);
-                    
-                  }
-              
-              Free(permut);
-          
-              if(verbose) Print_Lk(tree->mixt_tree?
-                                   tree->mixt_tree:
-                                   tree,"[GTR parameters     ]");
+              assert(iter < tree->mod->s_opt->brent_it_max);
               
             }
-    }
-
+        }
+      
       tree = tree->next;
       if(!tree) break;
-
+      
   }
   while(1);
 

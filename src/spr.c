@@ -754,8 +754,6 @@ void Global_Spr_Search(t_tree *tree)
 
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Score of first optimized tree: %.2f",tree->c_lnL);
 
-  if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. First round of optimization...\n");
-
   iter = 0;
   
   /* Stepwise_Add_Pars(tree); */
@@ -767,12 +765,14 @@ void Global_Spr_Search(t_tree *tree)
   tree->mod->s_opt->min_diff_lk_move  = 1.E-0;
   tree->mod->s_opt->min_diff_lk_local = 1.E-0;
   tree->mod->s_opt->eval_list_regraft = NO;
-  tree->mod->s_opt->min_n_triple_moves= 1+(int)tree->n_otu/10;
+  tree->mod->s_opt->min_n_triple_moves= 1;
   tree->mod->s_opt->max_depth_path    = 1+(int)tree->n_otu/3;
   tree->mod->s_opt->max_delta_lnL_spr = 10000.;
   Spr(tree->c_lnL,1.0,tree);
-  best_lnL = tree->c_lnL;;
+  best_lnL = tree->c_lnL;
       
+  if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Score after first round of SPRs: %.2f\n",tree->c_lnL);
+
   tree->mod->s_opt->max_depth_path            = MIN(20,(int)(tree->n_otu/4+1));
   tree->mod->s_opt->max_delta_lnL_spr         = 1000.;
   tree->mod->s_opt->spr_lnL                   = YES;
