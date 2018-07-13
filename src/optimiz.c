@@ -995,7 +995,7 @@ void Optimiz_Ext_Br(t_tree *tree)
 void Optimiz_All_Free_Param(t_tree *tree, int verbose)
 {
   int  init_both_sides;
-
+  
   if(!tree) return;
 
   if(tree->mixt_tree && tree->mod->ras->invar == YES) return;
@@ -1021,17 +1021,11 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
 
   if(tree->mod->use_m4mod)
     {
-      int failed,i;
+      int i;
 
       if(tree->mod->s_opt->opt_cov_delta)
         {
           Switch_Eigen(YES,tree->mod);
-
-    /* 	  Optimize_Single_Param_Generic(tree,&(tree->mod->m4mod->delta), */
-    /* 					0.01,10., */
-    /* 					tree->mod->s_opt->min_diff_lk_local, */
-    /* 					tree->mod->s_opt->brent_it_max, */
-    /* 					tree->mod->s_opt->quickdirty); */
 
           Generic_Brent_Lk(&(tree->mod->m4mod->delta),
                            0.01,10.,
@@ -1146,33 +1140,21 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
             {              
               Switch_Eigen(YES,tree->mod);
               
-              for(i=0;i<5;i++) tree->mod->m4mod->o_rr[i] = log(tree->mod->m4mod->o_rr[i]);
-              
-              failed = YES;
-              
-              BFGS(tree,tree->mod->m4mod->o_rr,5,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,YES,NO,
-                   &Return_Abs_Lk,
-                   &Num_Derivative_Several_Param,
-                   &Lnsrch,&failed);
-              
-              for(i=0;i<5;i++) tree->mod->m4mod->o_rr[i] = exp(tree->mod->m4mod->o_rr[i]);
+              int *permut = Permutate(tree->mod->r_mat->n_diff_rr);
               
               for(i=0;i<5;i++)
-                {
-                  /* 	      Optimize_Single_Param_Generic(tree,&(tree->mod->m4mod->o_rr[i]), */
-                  /* 					    1.E-20,1.E+10, */
-                  /* 					    tree->mod->s_opt->min_diff_lk_local, */
-                  /* 					    tree->mod->s_opt->brent_it_max, */
-                  /* 					    tree->mod->s_opt->quickdirty); */
-                  
-                  Generic_Brent_Lk(&(tree->mod->m4mod->o_rr[i]),
-                                   1.E-4,1.E+4,
-                                   tree->mod->s_opt->min_diff_lk_local,
-                                   tree->mod->s_opt->brent_it_max,
-                                   tree->mod->s_opt->quickdirty,
-                                   Wrap_Lk,NULL,tree,NULL,NO);
-                  
-                }
+                if(permut[i] != 5)
+                  {
+                    Generic_Brent_Lk(&(tree->mod->m4mod->o_rr[permut[i]]),
+                                     1.E-4,1.E+4,
+                                     tree->mod->s_opt->min_diff_lk_local,
+                                     tree->mod->s_opt->brent_it_max,
+                                     tree->mod->s_opt->quickdirty,
+                                     Wrap_Lk,NULL,tree,NULL,NO);
+                    
+                  }
+
+              Free(permut);
               
               if(verbose) Print_Lk(tree,"[GTR parameters     ]");
               
@@ -2724,6 +2706,7 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
 {
   t_tree *tree;
   t_rmat **r_mat;
+  int *permut;
   int n_r_mat;
   int i;
 
@@ -2732,7 +2715,8 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
   n_r_mat = 0;
   tree    = mixt_tree;
   r_mat   = NULL;
-
+  permut  = NULL;
+  
   do
     {
       if(tree->next) tree = tree->next;
@@ -2751,39 +2735,24 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
               (tree->mod->s_opt->opt_rr) &&
               (tree->mod->r_mat->n_diff_rr > 1)))
             {
-              int failed,i;
-              
-              for(i=0;i<tree->mod->r_mat->n_diff_rr;i++) tree->mod->r_mat->rr_val->v[i] = log(tree->mod->r_mat->rr_val->v[i]);
-              
-              failed = YES;
-              
-              /* BFGS(mixt_tree,tree->mod->r_mat->rr_val->v,tree->mod->r_mat->n_diff_rr,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,YES, */
-              if(tree->mod->r_mat->n_diff_rr > 2)
-                {
-                  BFGS(mixt_tree,tree->mod->r_mat->rr_val->v,tree->mod->r_mat->n_diff_rr,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,YES,NO,
-                       &Return_Abs_Lk,
-                       &Num_Derivative_Several_Param,
-                       &Lnsrch,&failed);
-                }
+              int i;
 
-              for(i=0;i<tree->mod->r_mat->n_diff_rr;i++) tree->mod->r_mat->rr_val->v[i] = exp(tree->mod->r_mat->rr_val->v[i]);
+              permut = Permutate(tree->mod->r_mat->n_diff_rr);
               
-
-              if(failed == YES)
-                {
-                  for(i=0;i<tree->mod->r_mat->n_diff_rr;i++)
-                    if(i != 5)
-                      {
-                        Generic_Brent_Lk(&(tree->mod->r_mat->rr_val->v[i]),
-                                         RR_MIN,RR_MAX,
-                                         tree->mod->s_opt->min_diff_lk_local,
-                                         tree->mod->s_opt->brent_it_max,
-                                         tree->mod->s_opt->quickdirty,
-                                         Wrap_Lk,NULL,mixt_tree,NULL,NO);
-                        
-                      }
-                }
+              for(i=0;i<tree->mod->r_mat->n_diff_rr;i++)
+                if(permut[i] != 5)
+                  {
+                    Generic_Brent_Lk(&(tree->mod->r_mat->rr_val->v[permut[i]]),
+                                     RR_MIN,RR_MAX,
+                                     tree->mod->s_opt->min_diff_lk_local,
+                                     tree->mod->s_opt->brent_it_max,
+                                     tree->mod->s_opt->quickdirty,
+                                     Wrap_Lk,NULL,mixt_tree,NULL,NO);
+                    
+                  }
               
+              Free(permut);
+          
               if(verbose) Print_Lk(tree->mixt_tree?
                                    tree->mixt_tree:
                                    tree,"[GTR parameters     ]");
@@ -3290,13 +3259,11 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
             {
               failed = YES;
 
-
               BFGS(mixt_tree,tree->mod->e_frq->pi_unscaled->v,tree->mod->ns,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,YES,
                    &Return_Abs_Lk,
                    &Num_Derivative_Several_Param,
                    &Lnsrch,&failed);
               
-
               if(failed == YES)
                 {
                   for(i=0;i<tree->mod->ns;++i)

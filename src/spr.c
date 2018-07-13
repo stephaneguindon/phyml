@@ -767,8 +767,8 @@ void Global_Spr_Search(t_tree *tree)
   tree->mod->s_opt->min_diff_lk_move  = 1.E-0;
   tree->mod->s_opt->min_diff_lk_local = 1.E-0;
   tree->mod->s_opt->eval_list_regraft = NO;
-  tree->mod->s_opt->min_n_triple_moves= 10;
-  tree->mod->s_opt->max_depth_path    = 50;
+  tree->mod->s_opt->min_n_triple_moves= 1+(int)tree->n_otu/10;
+  tree->mod->s_opt->max_depth_path    = 1+(int)tree->n_otu/3;
   tree->mod->s_opt->max_delta_lnL_spr = 10000.;
   Spr(tree->c_lnL,1.0,tree);
   best_lnL = tree->c_lnL;;
