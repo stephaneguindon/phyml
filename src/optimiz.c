@@ -2291,10 +2291,11 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
   phydbl a_,b_,A_,B_,C_,D_,root1,root2;
   short int ok1, ok2;
   // Warning: make sure eigen_lr vectors are already up-to-date 
-
+  
+  
   best_l = init_l = *l;
   best_lnL = old_lnL = init_lnL = tree->c_lnL;  
-  mult = 1.2;
+  mult = 3.;
   ok1 = ok2 = NO;
   a_ = b_ = A_ = B_ = D_ = root1 = root2 = -1.;
   u = v = fu = fv = dfu = dfv = -1.;
@@ -2378,12 +2379,20 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
       if(root1 > u && root1 < v) ok1 = YES;
       if(root2 > u && root2 < v) ok2 = YES;
       
-      if(ok1 == YES && ok2 == YES) new_l = root1 < root2 ? root1 : root2;
+      if(ok1 == YES && ok2 == YES)
+        {
+          /* new_l = root1 < root2 ? root1 : root2; */
+          if(fabs(dfu) < fabs(dfv))
+            new_l = root1 < root2 ? root1 : root2;
+          else
+            new_l = root1 < root2 ? root2 : root1;
+        }
+      
       else if(ok1 == YES) new_l = root1;
       else if(ok2 == YES) new_l = root2;
       else if(u/v > 1.1 || u/v < 0.9)
         {
-          PhyML_Printf("\n. iter=%4d u=%12G fu=%12G dfu=%12G v=%12G fv=%12G dfv=%12G root1=%12G root2=%12G",iter,u,fu,dfu,v,fv,dfv,root1,root2);
+          PhyML_Printf("\n. iter=%4d u=%12G fu=%12G dfu=%12G v=%12G fv=%12G dfv=%12G root1=%12G root2=%12G\n",iter,u,fu,dfu,v,fv,dfv,root1,root2);
           assert(FALSE);
         }
       

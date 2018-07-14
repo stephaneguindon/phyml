@@ -2294,6 +2294,7 @@ short int Are_Sequences_Identical(align *seq1, align *seq2);
 char *Mutation_Id(int mut_idx, t_tree *tree);
 void Random_Tax_Idx(t_node *a, t_node *d, int *idx, t_tree *tree);
 void List_Taxa_In_Clade(t_node *a, t_node *d, t_tree *tree);
+void Set_Scalar_Dbl_Max_Thresh(phydbl thresh, scalar_dbl *from);
 
 #include "xml.h"
 #include "free.h"

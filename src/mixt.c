@@ -1806,7 +1806,7 @@ void MIXT_Check_Edge_Lens_In_One_Elem(t_tree *mixt_tree)
     {
       if(tree->next && tree->next->is_mixt_tree == NO)
         {
-          For(i,2*tree->n_otu-1)
+          for(i=0;i<2*tree->n_otu-1;++i)
             {
               if(tree->a_edges[i]->l != tree->next->a_edges[i]->l)
                 {
