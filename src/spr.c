@@ -791,7 +791,7 @@ void Global_Spr_Search(t_tree *tree)
   iter = 0;
   do
     {
-      if(!(iter%3) && iter > 0)
+      if(!(iter%2) && iter > 0)
         {
           for(int i=0;i<2*tree->n_otu-3;++i) MIXT_Multiply_Scalar_Dbl(tree->a_edges[i]->l,Rgamma((phydbl)(0.2*iter+1),(phydbl)(1./(0.2*iter+1))));
           for(int i=0;i<2*tree->n_otu-3;++i) Set_Scalar_Dbl_Min_Thresh(tree->mod->l_min,tree->a_edges[i]->l);
@@ -815,7 +815,7 @@ void Global_Spr_Search(t_tree *tree)
                        tree->mod->s_opt->n_improvements,
                        tree->mod->s_opt->max_delta_lnL_spr_current,
                        tree->mod->s_opt->max_delta_lnL_spr,
-                       (!(iter%10)) ? '!':' ');
+                       (!(iter%10) && iter) ? '!':' ');
         }
 
       tree->mod->s_opt->max_depth_path = MAX(5,MAX(tree->mod->s_opt->max_spr_depth+4,(int)(0.8*tree->mod->s_opt->max_depth_path)));
