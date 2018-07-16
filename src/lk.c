@@ -572,7 +572,7 @@ if(tree->rates && tree->io->lk_approx == NORMAL)
           if(tree->mixt_tree != NULL)     len *= tree->mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number];
           if(len < tree->mod->l_min)      len = tree->mod->l_min;
           else if(len > tree->mod->l_max) len = tree->mod->l_max;
-          for(state=0;state<ns;++state) expl[catg*ns+state] = (phydbl)POW(tree->mod->eigen->e_val[state],len);
+          for(state=0;state<ns;++state)   expl[catg*ns+state] = exp(tree->mod->eigen->e_val[state]*len);
         }
     }
 
@@ -679,7 +679,8 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
       
       for(state=0;state<ns;++state) 
         {
-          ev = log(tree->mod->eigen->e_val[state]);
+          ev = tree->mod->eigen->e_val[state];
+          /* ev = log(tree->mod->eigen->e_val[state]); */
           expevlen = exp(ev*len);
 
           expl[0*ncatg*ns + catg*ns + state] = expevlen;
@@ -760,7 +761,7 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
       /* d2lk /= lk; */
 
       dlnlk  += tree->data->wght[site] * dlk;
-      d2lnlk += tree->data->wght[site] * d2lk - dlk*dlk;     
+      /* d2lnlk += tree->data->wght[site] * d2lk - dlk*dlk;      */
     }
 
   tree->c_dlnL  = dlnlk;

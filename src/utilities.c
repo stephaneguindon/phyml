@@ -3143,19 +3143,17 @@ phydbl Num_Derivatives_One_Param(phydbl (*func)(t_tree *tree), t_tree *tree,
 
   hh=stepsize;
 
-  if(!precise)
+  if(precise == NO)
     {
       param[which]   = param[which]+hh;
 
       if(logt == YES) for(i=0;i<n_param;i++) param[i] = exp(MIN(1.E+2,param[i]));
       for(i=0;i<n_param;i++) sign[i] = param[i] > .0 ? 1. : -1.;
-      if(is_positive == YES) for(i=0;i<n_param;i++) param[i] = FABS(param[i]);
+      if(is_positive == YES) for(i=0;i<n_param;i++) param[i] = fabs(param[i]);
       a[0][0]  = (*func)(tree);
       if(is_positive == YES) for(i=0;i<n_param;i++) param[i] *= sign[i];
       if(logt == YES) for(i=0;i<n_param;i++) param[i] = log(param[i]);
-
       /* printf("\n. f0=%f f1=%f hh=%G %f",f0,a[0][0],hh,param[which]); */
-
       a[0][0]  -= f0;
       a[0][0]  /= hh;
       param[which]   = param[which]-hh;
@@ -3382,7 +3380,7 @@ int Num_Derivative_Several_Param(t_tree *tree, phydbl *param, int n_param, phydb
                                                  stepsize,
                                                  logt,
                                                  &err,
-                                                 0,
+                                                 NO,
                                                  is_positive
                                                  );
     }

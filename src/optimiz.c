@@ -2283,7 +2283,7 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
   short int converged;
   phydbl init_lnL,old_lnL;
   int iter;
-  phydbl best_l, new_l, init_l, best_lnL;
+  phydbl best_l, new_l, init_l, init_dl, best_lnL;
   phydbl u, v;
   phydbl fu, fv;
   phydbl dfu, dfv;
@@ -2300,11 +2300,12 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
   a_ = b_ = A_ = B_ = D_ = root1 = root2 = -1.;
   u = v = fu = fv = dfu = dfv = -1.;
   new_l = -1.;
-
- 
-  // Find value of l where first derivative is < 0;
-  *l /= mult;
+  
   dLk(l,b,tree);
+  init_dl = tree->c_dlnL;
+  
+  // Find value of l where first derivative is < 0;
+  tree->c_dlnL = init_dl;
   while(tree->c_dlnL < 0.0)
     {
       *l /= mult;
@@ -2329,8 +2330,8 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
   
   
   // Find good upper bound
-  *l = best_l*mult;
-  dLk(l,b,tree);
+  *l = init_l;
+  tree->c_dlnL = init_dl;
   while(tree->c_dlnL > 0.0)
     {
       *l *= mult;
@@ -2379,14 +2380,7 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
       if(root1 > u && root1 < v) ok1 = YES;
       if(root2 > u && root2 < v) ok2 = YES;
       
-      if(ok1 == YES && ok2 == YES)
-        {
-          /* new_l = root1 < root2 ? root1 : root2; */
-          if(fabs(dfu) < fabs(dfv))
-            new_l = root1 < root2 ? root1 : root2;
-          else
-            new_l = root1 < root2 ? root2 : root1;
-        }      
+      if(ok1 == YES && ok2 == YES) new_l = root1 < root2 ? root1 : root2;
       else if(ok1 == YES) new_l = root1;
       else if(ok2 == YES) new_l = root2;
       else if(u/v > 1.1 || u/v < 0.9)
@@ -2764,7 +2758,6 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
                   
                   permut = Permutate(tree->mod->r_mat->n_diff_rr);
                   
-
                   for(i=0;i<tree->mod->r_mat->n_diff_rr;i++)
                     if(permut[i] != 5)
                       {
@@ -2790,9 +2783,14 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
                   if(lk_new > lk_old && fabs(lk_new-lk_old) < tree->mod->s_opt->min_diff_lk_local) break;
                 }
               while(++iter < tree->mod->s_opt->brent_it_max);              
-              
-              assert(iter < tree->mod->s_opt->brent_it_max);
-              
+                            
+              if(iter == tree->mod->s_opt->brent_it_max)
+                {
+                  if(tree->verbose > VL0)
+                    {
+                      PhyML_Printf("\n. Failed to optimize GTR parameters this round...");
+                    }
+                }              
             }
         }
       

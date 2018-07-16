@@ -50,8 +50,6 @@ int Eigen(int job, phydbl *A, int n, phydbl *rr, phydbl *ri,
     int low,hi,i,j,k, it, istate=0;
     phydbl tiny, t; 
 
-/*     tiny=SQRT(POW((phydbl)BASE,(phydbl)(1-(int)DIGITS))); */
-    /* tiny=FLT_MIN; */
     tiny = SMALL;
 
     
