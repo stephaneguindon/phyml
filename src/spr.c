@@ -737,7 +737,7 @@ void Global_Spr_Search(t_tree *tree)
   unsigned int no_improv  = 0;
   unsigned int last_best_found = 0;
   unsigned int hit_zero_improv = 0;
-  unsigned int freq = 4;
+  unsigned int freq = 3;
   
   best_lnL      = UNLIKELY;
   tree->verbose = (tree->verbose == VL0) ? VL0 : VL1;
@@ -753,7 +753,7 @@ void Global_Spr_Search(t_tree *tree)
   best_lnL = tree->c_lnL;
   Copy_Tree(tree,best_tree);
 
-  if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Score of first optimized tree: %.2f",tree->c_lnL);
+  if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Score of first optimized tree: %.2f\n",tree->c_lnL);
 
   iter = 0;
   
@@ -834,7 +834,7 @@ void Global_Spr_Search(t_tree *tree)
         {
           mean_delta_lnL_spr /= 4.0;
           /* tree->mod->s_opt->max_delta_lnL_spr = MAX(50.,MIN(2.0*mean_delta_lnL_spr,0.5*tree->mod->s_opt->max_delta_lnL_spr)); */
-          tree->mod->s_opt->max_delta_lnL_spr = MAX(50.,2.*max_delta_lnL_spr);
+          tree->mod->s_opt->max_delta_lnL_spr = MAX(20.,2.*max_delta_lnL_spr);
           mean_delta_lnL_spr = tree->mod->s_opt->max_delta_lnL_spr_current;
           max_delta_lnL_spr = 0.0;
         }
