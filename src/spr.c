@@ -797,6 +797,7 @@ void Global_Spr_Search(t_tree *tree)
   tree->mod->s_opt->eval_list_regraft         = NO;
   tree->mod->s_opt->max_delta_lnL_spr_current = 0.0;
   tree->mod->s_opt->min_n_triple_moves        = 1;
+  tree->mod->s_opt->max_spr_depth             = 0;
   mean_delta_lnL_spr                          = 0.0;
   max_delta_lnL_spr                           = 0.0;
   hit_zero_improv                             = 0;
@@ -829,8 +830,8 @@ void Global_Spr_Search(t_tree *tree)
                        tree->mod->s_opt->max_delta_lnL_spr,
                        (!(iter%10) && iter) ? '!':' ');
         }
-
-      tree->mod->s_opt->max_depth_path = MAX(5,(int)1.5*tree->mod->s_opt->deepest_path);
+      
+      tree->mod->s_opt->max_depth_path = MAX(5,(int)(1.5*tree->mod->s_opt->deepest_path));
       
       if(tree->c_lnL > best_lnL)
         {
