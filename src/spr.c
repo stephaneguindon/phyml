@@ -844,7 +844,7 @@ void Global_Spr_Search(t_tree *tree)
       
       iter++;
     }
-  while(tree->mod->s_opt->max_spr_depth >= curr_max_depth_path || iter < 3);
+  while(tree->mod->s_opt->max_spr_depth > curr_max_depth_path || iter < 3);
 
   
   tree->mod->s_opt->max_depth_path            = tree->mod->s_opt->deepest_path + 5;;
