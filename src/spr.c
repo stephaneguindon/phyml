@@ -786,7 +786,7 @@ void Global_Spr_Search(t_tree *tree)
   /* if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Score after first round of SPRs: %.2f\n",tree->c_lnL); */
 
 
-  tree->mod->s_opt->max_depth_path            = 5;
+  tree->mod->s_opt->max_depth_path            = 15;
   tree->mod->s_opt->max_delta_lnL_spr         = 10000.;
   tree->mod->s_opt->spr_lnL                   = YES;
   tree->mod->s_opt->spr_pars                  = NO;
