@@ -2380,7 +2380,10 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
       if(root1 > u && root1 < v) ok1 = YES;
       if(root2 > u && root2 < v) ok2 = YES;
       
-      if(ok1 == YES && ok2 == YES) new_l = root1 < root2 ? root1 : root2;
+      if(ok1 == YES && ok2 == YES)
+        {
+          new_l = root1 < root2 ? root1 : root2;
+        }
       else if(ok1 == YES) new_l = root1;
       else if(ok2 == YES) new_l = root2;
       else if(u/v > 1.1 || u/v < 0.9)
