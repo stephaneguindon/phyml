@@ -834,10 +834,10 @@ void Global_Spr_Search(t_tree *tree)
   while(tree->mod->s_opt->n_improvements > 5);
 
 
-  Random_Spr(1+(int)(0.1*tree->n_otu),tree);
+  /* Random_Spr(1+(int)(0.1*tree->n_otu),tree); */
 
   
-  tree->mod->s_opt->max_depth_path            = MAX(20,tree->mod->s_opt->max_depth_path);
+  tree->mod->s_opt->max_depth_path            = MAX(20,(int)(1.5*tree->mod->s_opt->max_depth_path));
   tree->mod->s_opt->max_delta_lnL_spr         = MAX(1000.,tree->mod->s_opt->max_delta_lnL_spr_current);
   tree->mod->s_opt->spr_lnL                   = YES;
   tree->mod->s_opt->spr_pars                  = NO;
