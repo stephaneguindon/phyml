@@ -159,7 +159,6 @@ void Init_Tree(t_tree *tree, int n_otu)
   tree->eval_rlnL                 = YES;
   tree->eval_glnL                 = YES;
   tree->scaling_method            = SCALE_FAST;
-  tree->perform_spr_right_away    = YES;
   tree->tip_root                  = 0;
   tree->n_edges_traversed         = 0;
   tree->fully_nni_opt             = NO;
@@ -746,7 +745,9 @@ void Set_Defaults_Optimiz(t_opt *s_opt)
   s_opt->spr_lnL              = NO;
   s_opt->min_depth_path       = 0;
   s_opt->eval_list_regraft    = NO;
-
+  s_opt->apply_spr_right_away = YES;
+  s_opt->apply_spr            = YES;
+  
   s_opt->max_depth_path            = 2000;
   s_opt->deepest_path              = 2000;
   s_opt->max_delta_lnL_spr         = 2000000.;
@@ -773,6 +774,8 @@ void Set_Defaults_Optimiz(t_opt *s_opt)
   s_opt->serial_free_rates       = YES;
 
   s_opt->curr_opt_free_rates     = NO;
+
+  
 }
 
 //////////////////////////////////////////////////////////////

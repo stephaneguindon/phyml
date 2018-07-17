@@ -783,7 +783,6 @@ typedef struct __Tree{
 
   int                  size_spr_list_one_edge;
   int                  size_spr_list_all_edge;
-  int                  perform_spr_right_away;
 
   time_t                                t_beg;
   time_t                            t_current;
@@ -1358,6 +1357,9 @@ typedef struct __Optimiz { /*! parameters to be optimised (mostly used in 'optim
   int      curr_opt_free_rates;
 
   int          nni_br_len_opt;
+
+  int    apply_spr_right_away;
+  int               apply_spr;
 }t_opt;
 
 /*!********************************************************/
