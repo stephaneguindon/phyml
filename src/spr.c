@@ -780,7 +780,7 @@ void Global_Spr_Search(t_tree *tree)
   tree->mod->s_opt->min_diff_lk_local  = 1.E-0;
   tree->mod->s_opt->eval_list_regraft  = NO;
   tree->mod->s_opt->min_n_triple_moves = 1;
-  tree->mod->s_opt->l_min_spr          = 1.E-4;
+  tree->mod->s_opt->l_min_spr          = 1.E-3;
   tree->mod->s_opt->max_depth_path     = MAX(20,1+(int)(tree->n_otu/3));
   tree->mod->s_opt->max_delta_lnL_spr  = 10000.;
   Spr(tree->c_lnL,1.0,tree);
@@ -792,7 +792,7 @@ void Global_Spr_Search(t_tree *tree)
   
   tree->mod->s_opt->max_depth_path            = MAX(20,1+(int)(tree->n_otu/5));
   tree->mod->s_opt->max_delta_lnL_spr         = 5000;
-  tree->mod->s_opt->l_min_spr                 = 1.E-2;
+  tree->mod->s_opt->l_min_spr                 = 1.E-3;
   tree->mod->s_opt->spr_lnL                   = YES;
   tree->mod->s_opt->spr_pars                  = NO;
   tree->mod->s_opt->min_diff_lk_move          = 1.E-1;
@@ -841,7 +841,7 @@ void Global_Spr_Search(t_tree *tree)
                        tree->mod->s_opt->l_min_spr);
         }
 
-      tree->mod->s_opt->l_min_spr /= 2.;
+      /* tree->mod->s_opt->l_min_spr /= 2.; */
       
       tree->mod->s_opt->max_depth_path = MAX(5,MAX(tree->mod->s_opt->max_spr_depth+4,(int)(0.8*tree->mod->s_opt->max_depth_path)));
        
@@ -877,7 +877,7 @@ void Global_Spr_Search(t_tree *tree)
       no_improv++;
       iter++;
     }
-  while(tree->mod->s_opt->n_improvements > 1 || freq > 1);
+  while(tree->mod->s_opt->n_improvements > 5 || freq > 1);
         
   
   tree->mod->s_opt->min_diff_lk_move  = 1.E-1;
