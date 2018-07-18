@@ -1360,6 +1360,8 @@ typedef struct __Optimiz { /*! parameters to be optimised (mostly used in 'optim
 
   int    apply_spr_right_away;
   int               apply_spr;
+
+  phydbl            l_min_spr;
 }t_opt;
 
 /*!********************************************************/
