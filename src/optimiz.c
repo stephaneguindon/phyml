@@ -2379,7 +2379,13 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
       ok2 = NO;
       if(root1 > u && root1 < v) ok1 = YES;
       if(root2 > u && root2 < v) ok2 = YES;
+
+      if(Are_Equal(root1,u,1.E-5) == YES) ok1 = YES;
+      if(Are_Equal(root2,u,1.E-5) == YES) ok2 = YES;
+      if(Are_Equal(root1,v,1.E-5) == YES) ok1 = YES;
+      if(Are_Equal(root2,v,1.E-5) == YES) ok2 = YES;
       
+
       if(ok1 == YES && ok2 == YES) new_l = root1 < root2 ? root1 : root2;
       else if(ok1 == YES) new_l = root1;
       else if(ok2 == YES) new_l = root2;
@@ -2389,6 +2395,7 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
           assert(FALSE);
         }
       
+
       *l = new_l;
       tree->n_tot_bl_opt++;
           
@@ -2401,12 +2408,6 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
           best_l   = *l;
         }
       
-      /* PhyML_Printf("\n. iter=%4d u=%12G fu=%12G dfu=%12G v=%12G fv=%12G dfv=%12G root1=%12G root2=%12G lnL:%G",iter,u,fu,dfu,v,fv,dfv,root1,root2,tree->c_lnL); */
-      
-      /* if(tree->c_lnL < old_lnL) */
-      /*   { */
-      /*     PhyML_Printf("\n>> iter=%4d u=%12G fu=%12G dfu=%12G v=%12G fv=%12G dfv=%12G root1=%12G root2=%12G lnL:%12G old_lnL:%12G",iter,u,fu,dfu,v,fv,dfv,root1,root2,tree->c_lnL,old_lnL); */
-      /*   } */
       
       if(tree->c_dlnL > 0.0)
         {
@@ -2426,14 +2427,20 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
       assert(dfu > 0.0);
       assert(dfv < 0.0);
       
-      if(fabs(tree->c_lnL-old_lnL) < tol && tree->c_lnL > old_lnL) converged = YES;
+      if(fabs(tree->c_lnL-old_lnL) < tol) converged = YES;
       if(++iter == n_iter_max+20) converged = YES;
-      if(fabs(u-v) < 1.E-3) converged = YES;
-      if(iter >= n_iter_max) PhyML_Fprintf(stderr,"\n. Edge length optimization took too long... l=%G lnL=%G",*l,tree->c_lnL);
+      if(iter >= n_iter_max) PhyML_Fprintf(stderr,"\n. Edge length optimization took too long... l=%G lnL=%G iter:%d u=%G v=%G root1=%G root2=%G dfu=%G dfv=%G fu=%G fv=%G diff=%G tol=%G",
+                                           *l,tree->c_lnL,iter,
+                                           u,v,
+                                           root1,root2,
+                                           dfu,dfv,
+                                           fu,fv,
+                                           tree->c_lnL-old_lnL,
+                                           tol);
     }
   while(converged == NO);
 
-
+  
   *l = best_l;
   tree->c_lnL = best_lnL;
 
