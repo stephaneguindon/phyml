@@ -781,7 +781,7 @@ void Global_Spr_Search(t_tree *tree)
   tree->mod->s_opt->eval_list_regraft  = NO;
   tree->mod->s_opt->min_n_triple_moves = 1;
   tree->mod->s_opt->l_min_spr          = 1.E-3;
-  tree->mod->s_opt->max_depth_path     = MAX(20,1+(int)(tree->n_otu/3));
+  tree->mod->s_opt->max_depth_path     = MIN(30,1+(int)(tree->n_otu/3));
   tree->mod->s_opt->max_delta_lnL_spr  = 10000.;
   Spr(tree->c_lnL,1.0,tree);
   Optimize_Br_Len_Serie(2,tree);
@@ -790,8 +790,8 @@ void Global_Spr_Search(t_tree *tree)
   /* if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Score after first round of SPRs: %.2f\n",tree->c_lnL); */
 
   
-  tree->mod->s_opt->max_depth_path            = MAX(20,1+(int)(tree->n_otu/5));
-  tree->mod->s_opt->max_delta_lnL_spr         = 5000;
+  tree->mod->s_opt->max_depth_path            = MIN(30,1+(int)(tree->n_otu/5));
+  tree->mod->s_opt->max_delta_lnL_spr         = 1000;
   tree->mod->s_opt->l_min_spr                 = 1.E-3;
   tree->mod->s_opt->spr_lnL                   = YES;
   tree->mod->s_opt->spr_pars                  = NO;
@@ -891,7 +891,7 @@ void Global_Spr_Search(t_tree *tree)
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Second round of optimization...\n");
   last_best_found = 0;
 
-  tree->mod->s_opt->max_depth_path            = MIN(20,(int)(1+tree->n_otu/3));
+  tree->mod->s_opt->max_depth_path            = MIN(30,(int)(1+tree->n_otu/4));
   tree->mod->s_opt->max_delta_lnL_spr         = MAX(100.,tree->mod->s_opt->max_delta_lnL_spr);
   tree->mod->s_opt->spr_lnL                   = YES;
   tree->mod->s_opt->spr_pars                  = NO;

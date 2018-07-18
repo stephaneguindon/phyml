@@ -663,8 +663,8 @@ void Set_Defaults_Model(t_mod *mod)
 
 
 #if !(defined PHYTIME || defined INVITEE)
-  mod->l_min = 1.E-10;
-  mod->l_max = 100.0;
+  mod->l_min = 1.E-8;
+  mod->l_max = 10.0;
 #else
   mod->l_min = 1.E-6;
   mod->l_max = 10.0;
