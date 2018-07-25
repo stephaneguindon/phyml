@@ -995,13 +995,14 @@ void Global_Spr_Search(t_tree *tree)
 
   last_best_found = 0;
 
-  tree->mod->s_opt->max_depth_path            = MIN(20,(int)(1+tree->n_otu/4));
+  /* tree->mod->s_opt->max_depth_path            = MIN(20,(int)(1+tree->n_otu/4)); */
+  tree->mod->s_opt->max_depth_path            = MAX(10,tree->mod->s_opt->max_depth_path);
   tree->mod->s_opt->max_delta_lnL_spr         = MAX(100.,tree->mod->s_opt->max_delta_lnL_spr);
   tree->mod->s_opt->spr_lnL                   = YES;
   tree->mod->s_opt->spr_pars                  = NO;
   tree->mod->s_opt->l_min_spr                 = 0.0;
-  tree->mod->s_opt->min_diff_lk_move          = 1.E-2;
-  tree->mod->s_opt->min_diff_lk_local         = 1.E-2;
+  tree->mod->s_opt->min_diff_lk_move          = 1.E-1;
+  tree->mod->s_opt->min_diff_lk_local         = 1.E-1;
   tree->mod->s_opt->apply_spr_right_away      = YES;
   tree->mod->s_opt->apply_spr                 = YES;
   tree->mod->s_opt->eval_list_regraft         = YES;
@@ -1015,7 +1016,7 @@ void Global_Spr_Search(t_tree *tree)
       Spr(tree->c_lnL,1.0,tree);
       Optimize_Br_Len_Serie(2,tree);
       
-      if(!(iter%10)) Round_Optimize(tree,1000);
+      if(!(iter%5)) Round_Optimize(tree,1000);
 
       if(tree->verbose > VL0 && tree->io->quiet == NO)
         {
@@ -1059,8 +1060,8 @@ void Global_Spr_Search(t_tree *tree)
 
   i = tree->verbose;
   tree->verbose = VL0;
-  tree->mod->s_opt->min_diff_lk_move  = 1.E-03;
-  tree->mod->s_opt->min_diff_lk_local = 1.E-03;
+  tree->mod->s_opt->min_diff_lk_move  = 1.E-3;
+  tree->mod->s_opt->min_diff_lk_local = 1.E-3;
   do
     {
       tree->mod->s_opt->fast_nni = NO;
