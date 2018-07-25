@@ -12,7 +12,7 @@ the GNU public licence.  See http://www.opensource.org for details.
 
 #include "optimiz.h"
 
-static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_tree *tree);
+static phydbl Br_Len_Spline(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_tree *tree);
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -647,7 +647,7 @@ phydbl Br_Len_Opt(t_edge *b, t_tree *tree)
   Set_Update_Eigen_Lr(NO,mixt_tree);
   Set_Use_Eigen_Lr(YES,mixt_tree);
     
-  Br_Len_Newton_Raphson(&(b->l->v),mixt_b,tree->mod->s_opt->brent_it_max,tree->mod->s_opt->min_diff_lk_local,mixt_tree);
+  Br_Len_Spline(&(b->l->v),mixt_b,tree->mod->s_opt->brent_it_max,tree->mod->s_opt->min_diff_lk_local,mixt_tree);
   
   Update_PMat_At_Given_Edge(mixt_b,mixt_tree);
   
@@ -711,7 +711,7 @@ void Round_Optimize(t_tree *tree, int n_round_max)
         }
 
       lk_new = tree->c_lnL;
-      /* printf("\n. [%d] new:%f old:%f each:%d",n_round,lk_new,lk_old,each); fflush(NULL); */
+      /* PhyML_Printf("\n. [%d] new:%f old:%f each:%d",n_round,lk_new,lk_old,each); */
 
       if(lk_new < lk_old - tree->mod->s_opt->min_diff_lk_local)
         {
@@ -2278,7 +2278,7 @@ int Optimiz_Alpha_And_Pinv(t_tree *mixt_tree, int verbose)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_tree *tree)
+static phydbl Br_Len_Spline(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_tree *tree)
 {
   short int converged;
   phydbl init_lnL,old_lnL;
@@ -2783,11 +2783,12 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
                   
                   lk_new = tree->c_lnL;
 
+                  /* PhyML_Printf("\n. lk_old: %f lk_new: %f %G",lk_old,lk_new,lk_new-lk_old); */
                   
                   Free(permut);
 
                   assert(lk_new > lk_old - tree->mod->s_opt->min_diff_lk_local);
-                  if(lk_new > lk_old && fabs(lk_new-lk_old) < tree->mod->s_opt->min_diff_lk_local) break;
+                  if(fabs(lk_new-lk_old) < tree->mod->s_opt->min_diff_lk_local) break;
                 }
               while(++iter < tree->mod->s_opt->brent_it_max);              
                             

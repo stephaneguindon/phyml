@@ -734,13 +734,13 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	      }
 	    else if((!strcmp(optarg,"nni")) || (!strcmp(optarg,"NNI")))
 	      {
-                PhyML_Printf("\n. The NNI option is deprecated. PhyML now uses a mix of SPRs and NNIs.");
+                PhyML_Printf("\n. The NNI option is deprecated. PhyML now uses a mix of SPR moves exclusively.");
 		io->mod->s_opt->topo_search         = NNI_MOVE;
 		io->mod->s_opt->random_input_tree   = 0;
 	      }
 	    else if((!strcmp(optarg,"best")) || (!strcmp(optarg,"BEST")))
 	      {
-                PhyML_Printf("\n. The BEST option is deprecated. PhyML now uses a mix of SPRs and NNIs.");
+                PhyML_Printf("\n. The BEST option is deprecated. PhyML now uses a mix of SPR moves exclusively.");
 		io->mod->s_opt->topo_search = BEST_OF_NNI_AND_SPR;
 		io->mod->s_opt->greedy      = (io->mod->s_opt->steph_spr)?(0):(1);
 	      }
@@ -1433,17 +1433,8 @@ int Read_Command_Line(option *io, int argc, char **argv)
       io->fp_out_ps = Openfile(io->out_ps_file,WRITE);
     }
 #endif 
-  
-  
+    
   if(io->datatype == UNDEFINED) io->datatype = NT;
-
-
-  if((io->mod->s_opt->n_rand_starts)           && 
-     (io->mod->s_opt->topo_search == NNI_MOVE) && 
-     (io->mod->s_opt->random_input_tree))
-    {
-      Warn_And_Exit("\n. The random starting tree option is only compatible with SPR based search options.\n"); 
-    }
   
   if ((io->datatype == NT) && (io->mod->whichmodel > 10))
     {

@@ -3232,11 +3232,7 @@ void Print_Settings(option *io)
     }
   
   if(io->mod->s_opt && io->mod->s_opt->opt_topo)
-    {
-      if(io->mod->s_opt->topo_search == NNI_MOVE) PhyML_Printf("\n        . Tree topology search:\t\t\t\t NNIs");
-      else if(io->mod->s_opt->topo_search == SPR_MOVE) PhyML_Printf("\n        . Tree topology search:\t\t\t\t SPRs");
-      else if(io->mod->s_opt->topo_search == BEST_OF_NNI_AND_SPR) PhyML_Printf("\n        . Tree topology search:\t\t\t\t Best of NNIs and SPRs");
-      
+    {      
       PhyML_Printf("\n        . Starting tree:\t\t\t\t %s",s);
 
       PhyML_Printf("\n        . Add random input tree:\t\t\t %s", (io->mod->s_opt->random_input_tree) ? "yes": "no");
@@ -3780,7 +3776,7 @@ t_tree *Read_User_Tree(calign *cdata, t_mod *mod, option *io)
 {
   t_tree *tree;
   
-  PhyML_Printf("\n. Reading tree..."); fflush(NULL);
+  PhyML_Printf("\n\n. Reading tree..."); fflush(NULL);
   if(io->n_trees == 1) rewind(io->fp_in_tree);
   tree = Read_Tree_File_Phylip(io->fp_in_tree);
   /* fclose(io->fp_in_tree); */
@@ -4219,11 +4215,6 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
   PhyML_Fprintf(fp,"\n. Starting tree: %s",
            mixt_tree->io->in_tree == 2?mixt_tree->io->in_tree_file:"BioNJ");
 
-  PhyML_Fprintf(fp,"\n. Tree topology search: %s",
-           mixt_tree->io->mod->s_opt->opt_topo==YES?
-           mixt_tree->io->mod->s_opt->topo_search==SPR_MOVE?"spr":
-           mixt_tree->io->mod->s_opt->topo_search==NNI_MOVE?"nni":
-           "spr+nni":"no");
 
   cpy_mixt_tree = mixt_tree;
 
@@ -5183,7 +5174,7 @@ void Make_Topology_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
             }
           else
             {
-              select = XML_Validate_Attr_Int(search,4,"spr","nni","best","none");
+              select = XML_Validate_Attr_Int(search,2,"spr","none");
               
               switch(select)
                 {
@@ -5194,18 +5185,6 @@ void Make_Topology_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
                     break;
                   }
                 case 1:
-                  {
-                    io->mod->s_opt->topo_search = NNI_MOVE;
-                    io->mod->s_opt->opt_topo    = YES;
-                    break;
-                  }
-                case 2:
-                  {
-                    io->mod->s_opt->topo_search = BEST_OF_NNI_AND_SPR;
-                    io->mod->s_opt->opt_topo    = YES;
-                    break;
-                  }
-                case 3:
                   {
                     io->mod->s_opt->opt_topo    = NO;
                     break;

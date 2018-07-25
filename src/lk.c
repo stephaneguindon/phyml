@@ -628,7 +628,7 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
 {
   unsigned int catg,state,site;
   phydbl len,rr;
-  phydbl lk,dlk,d2lk,dlnlk,d2lnlk;
+  phydbl lk,dlk,dlnlk,d2lnlk;
   phydbl ev,expevlen;
    
   const unsigned int ns = tree->mod->ns;
@@ -710,7 +710,7 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
           int l;
           int i,j;
           phydbl *U,*V,*Q;
-          printf("\n. l: %G dlk: %G d2lk: %G lk: %G",b->l->v,dlk,d2lk,lk);
+          printf("\n. l: %G dlk: %G lk: %G",b->l->v,dlk,lk);
           lk = 0.0;
           for(l=0;l<ns;++l)
             {
