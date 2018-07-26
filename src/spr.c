@@ -807,7 +807,7 @@ void Global_Spr_Search(t_tree *tree)
   mean_delta_lnL_spr                          = 0.0;
   max_delta_lnL_spr                           = 0.0;
   hit_zero_improv                             = 0;
-  tune_l_mult                                 = 0.1;
+  tune_l_mult                                 = 0.05;
   
   iter = 0;
   do
@@ -906,7 +906,7 @@ void Global_Spr_Search(t_tree *tree)
   max_delta_lnL_spr                           = 0.0;
   hit_zero_improv                             = 0;
   
-  iter = 0;
+  /* iter = 0; */
   do
     {
       if(!(iter%freq))
