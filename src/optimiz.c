@@ -656,13 +656,13 @@ phydbl Br_Len_Opt(t_edge *b, t_tree *tree)
   
   /* lk_begin = Lk(mixt_b,mixt_tree); */
   /* tree->n_tot_bl_opt += Generic_Brent_Lk(&(b->l->v), */
-  /*                  tree->mod->l_min, */
-  /*                  tree->mod->l_max, */
-  /*                  tree->mod->s_opt->min_diff_lk_local, */
-  /*                  tree->mod->s_opt->brent_it_max, */
-  /*                  tree->mod->s_opt->quickdirty, */
-  /*                  Wrap_Lk_At_Given_Edge, */
-  /*                  mixt_b,mixt_tree,NULL,NO); */
+  /*                                        tree->mod->l_min, */
+  /*                                        tree->mod->l_max, */
+  /*                                        tree->mod->s_opt->min_diff_lk_local, */
+  /*                                        tree->mod->s_opt->brent_it_max, */
+  /*                                        tree->mod->s_opt->quickdirty, */
+  /*                                        Wrap_Lk_At_Given_Edge, */
+  /*                                        mixt_b,mixt_tree,NULL,NO); */
 
   /* printf("\n. b->num: %4d l=%12G lnL: %12G",b->num,b->l->v,tree->c_lnL); */
   
@@ -704,6 +704,7 @@ void Round_Optimize(t_tree *tree, int n_round_max)
          (tree->io->quiet == NO)) Print_Lk(tree,"[Branch lengths     ]");
 
       
+
       if(!each)
         {
           each = 3;
@@ -711,8 +712,7 @@ void Round_Optimize(t_tree *tree, int n_round_max)
         }
 
       lk_new = tree->c_lnL;
-      /* PhyML_Printf("\n. [%d] new:%f old:%f each:%d",n_round,lk_new,lk_old,each); */
-
+      
       if(lk_new < lk_old - tree->mod->s_opt->min_diff_lk_local)
         {
           PhyML_Fprintf(stderr,"\n. lk_new = %f lk_old = %f diff = %f",lk_new,lk_old,lk_new-lk_old);
@@ -742,7 +742,6 @@ void Optimize_Br_Len_Serie(int n_max_iter, t_tree *tree)
   Lk(NULL,tree);
   
   lk_init = tree->c_lnL;
-
   
   if(tree->mod->gamma_mgf_bl == YES)
     {
@@ -2295,7 +2294,7 @@ static phydbl Br_Len_Spline(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_
   
   best_l = init_l = *l;
   best_lnL = old_lnL = init_lnL = tree->c_lnL;  
-  mult = 1.2;
+  mult = 5.;
   ok1 = ok2 = NO;
   a_ = b_ = A_ = B_ = D_ = root1 = root2 = -1.;
   u = v = fu = fv = dfu = dfv = -1.;
@@ -2303,6 +2302,7 @@ static phydbl Br_Len_Spline(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_
   
   dLk(l,b,tree);
   init_dl = tree->c_dlnL;
+
   
   // Find value of l where first derivative is < 0;
   tree->c_dlnL = init_dl;
@@ -2323,15 +2323,18 @@ static phydbl Br_Len_Spline(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_
           best_lnL = tree->c_lnL;
           best_l   = *l;
         }
+      /* PhyML_Printf("\n. u l: %f dlnL: %f lnL: %f",*l,tree->c_dlnL,tree->c_lnL); */
     }
   u = *l;
   fu = tree->c_lnL;
   dfu = tree->c_dlnL;
   
   
+  
   // Find good upper bound
   *l = init_l;
   tree->c_dlnL = init_dl;
+  tree->c_lnL = init_lnL;
   while(tree->c_dlnL > 0.0)
     {
       *l *= mult;
@@ -2349,17 +2352,29 @@ static phydbl Br_Len_Spline(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_
           best_lnL = tree->c_lnL;
           best_l   = *l;
         }
+      /* PhyML_Printf("\n. v l: %f dlnL: %f lnL: %f",*l,tree->c_dlnL,tree->c_lnL); */
     }
   v = *l;
   fv = tree->c_lnL;
   dfv = tree->c_dlnL;
 
 
+  
   /* PhyML_Printf("\n Begin NR loop (lnL: %12G dlnL: %12G d2lnL: %12G) l: %12G num: %d",tree->c_lnL,tree->c_dlnL,tree->c_d2lnL,*l,b->num); */
   converged = NO;
   iter = 0;
   do
     {
+      /* PhyML_Printf("\n. l=%12f lnL=%12f iter:%d u=%12f v=%12f root1=%12f root2=%12f dfu=%12f dfv=%12f fu=%12f fv=%12f diff=%12f tol=%12f init=%12f", */
+      /*              *l,tree->c_lnL,iter, */
+      /*              u,v, */
+      /*              root1,root2, */
+      /*              dfu,dfv, */
+      /*              fu,fv, */
+      /*              tree->c_lnL-old_lnL, */
+      /*              tol,init_l); */
+
+      /* PhyML_Printf("\n. l: %f dlnL: %f lnL: %f",*l,tree->c_dlnL,tree->c_lnL); */
       // Spline interpolation (https://en.wikipedia.org/wiki/Spline_interpolation)
       a_ = dfu*(v-u) - (fv-fu);
       b_ = -dfv*(v-u) + (fv-fu);
@@ -2427,7 +2442,8 @@ static phydbl Br_Len_Spline(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_
       assert(dfu > 0.0);
       assert(dfv < 0.0);
       
-      if(fabs(tree->c_lnL-old_lnL) < tol) converged = YES;
+
+ if(fabs(tree->c_lnL-old_lnL) < tol) converged = YES;
       if(++iter == n_iter_max+20) converged = YES;
       if(iter >= n_iter_max) PhyML_Fprintf(stderr,"\n. Edge length optimization took too long... l=%G lnL=%G iter:%d u=%G v=%G root1=%G root2=%G dfu=%G dfv=%G fu=%G fv=%G diff=%G tol=%G",
                                            *l,tree->c_lnL,iter,
@@ -2783,7 +2799,7 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
                   
                   lk_new = tree->c_lnL;
 
-                  /* PhyML_Printf("\n. lk_old: %f lk_new: %f %G",lk_old,lk_new,lk_new-lk_old); */
+                  PhyML_Printf("\n. GTR lk_old: %f lk_new: %f %G",lk_old,lk_new,lk_new-lk_old);
                   
                   Free(permut);
 
@@ -3278,6 +3294,7 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
   int i;
   int failed;
   phydbl lk_new,lk_old;
+  int *permut;
   
   Switch_Eigen(YES,mixt_tree->mod);
 
@@ -3315,14 +3332,16 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
                        &Num_Derivative_Several_Param,
                        &Lnsrch,&failed);
                   
+                  permut = Permutate(tree->mod->r_mat->n_diff_rr);
+
                   for(i=0;i<tree->mod->ns;++i)
                     {
                       phydbl a,c;
                       
-                      a = tree->mod->e_frq->pi_unscaled->v[i] * .1;
-                      c = tree->mod->e_frq->pi_unscaled->v[i] * 10.;
+                      a = tree->mod->e_frq->pi_unscaled->v[permut[i]] * .1;
+                      c = tree->mod->e_frq->pi_unscaled->v[permut[i]] * 10.;
                       
-                      Generic_Brent_Lk(&(tree->mod->e_frq->pi_unscaled->v[i]),
+                      Generic_Brent_Lk(&(tree->mod->e_frq->pi_unscaled->v[permut[i]]),
                                        a,c,
                                        tree->mod->s_opt->min_diff_lk_local,
                                        tree->mod->s_opt->brent_it_max,
@@ -3337,6 +3356,8 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
                     }
                   
                   lk_new = tree->c_lnL;
+
+                  PhyML_Printf("\n. FREQ lk_old: %f lk_new: %f %G",lk_old,lk_new,lk_new-lk_old);
 
                   assert(lk_new > lk_old - tree->mod->s_opt->min_diff_lk_local);
                   if(fabs(lk_new-lk_old) < tree->mod->s_opt->min_diff_lk_local) break;
