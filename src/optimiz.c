@@ -2798,8 +2798,6 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
                                        tree,"[GTR parameters     ]");
                   
                   lk_new = tree->c_lnL;
-
-                  PhyML_Printf("\n. GTR lk_old: %f lk_new: %f %G",lk_old,lk_new,lk_new-lk_old);
                   
                   Free(permut);
 
@@ -3356,8 +3354,6 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
                     }
                   
                   lk_new = tree->c_lnL;
-
-                  PhyML_Printf("\n. FREQ lk_old: %f lk_new: %f %G",lk_old,lk_new,lk_new-lk_old);
 
                   assert(lk_new > lk_old - tree->mod->s_opt->min_diff_lk_local);
                   if(fabs(lk_new-lk_old) < tree->mod->s_opt->min_diff_lk_local) break;
