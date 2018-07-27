@@ -775,17 +775,17 @@ void Global_Spr_Search(t_tree *tree)
   /* Spr_Pars(0,tree->n_otu,tree); */
   /* Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL); */
   
-  tree->mod->s_opt->spr_lnL            = YES;
-  tree->mod->s_opt->spr_pars           = NO;
-  tree->mod->s_opt->min_diff_lk_move   = 1.E-1;
-  tree->mod->s_opt->min_diff_lk_local  = 1.E-1;
-  tree->mod->s_opt->eval_list_regraft  = NO;
-  tree->mod->s_opt->min_n_triple_moves = 1;
-  tree->mod->s_opt->l_min_spr          = 1.E-6;
-  tree->mod->s_opt->max_depth_path     = MIN(20,1+(int)(tree->n_otu/5));
-  tree->mod->s_opt->max_delta_lnL_spr  = 1000.;
-  Spr(tree->c_lnL,1.0,tree);
-  best_lnL = tree->c_lnL;
+  /* tree->mod->s_opt->spr_lnL            = YES; */
+  /* tree->mod->s_opt->spr_pars           = NO; */
+  /* tree->mod->s_opt->min_diff_lk_move   = 1.E-1; */
+  /* tree->mod->s_opt->min_diff_lk_local  = 1.E-1; */
+  /* tree->mod->s_opt->eval_list_regraft  = NO; */
+  /* tree->mod->s_opt->min_n_triple_moves = 1; */
+  /* tree->mod->s_opt->l_min_spr          = 1.E-6; */
+  /* tree->mod->s_opt->max_depth_path     = MIN(20,1+(int)(tree->n_otu/5)); */
+  /* tree->mod->s_opt->max_delta_lnL_spr  = 1000.; */
+  /* Spr(tree->c_lnL,1.0,tree); */
+  /* best_lnL = tree->c_lnL; */
       
   /* if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Score after first round of SPRs: %.2f\n",tree->c_lnL); */
 
