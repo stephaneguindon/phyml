@@ -4991,7 +4991,7 @@ LDFLAGS="${ARGC_flag}"
 
 
 
-DEFAULT_C_FLAG="-std=c99 -O2 -fomit-frame-pointer -funroll-loops -Wall -Winline ${VECTOR_FLAG}"
+DEFAULT_C_FLAG="-std=c99 -O3 -fomit-frame-pointer -funroll-loops -Wall -Winline ${VECTOR_FLAG}"
 
 # Check whether --enable-debug was given.
 if test "${enable_debug+set}" = set; then :

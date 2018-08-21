@@ -812,6 +812,7 @@ void Global_Spr_Search(t_tree *tree)
   iter = 0;
   do
     {
+      
       if(!(iter%freq))
         {
           for(int i=0;i<2*tree->n_otu-3;++i) MIXT_Multiply_Scalar_Dbl(tree->a_edges[i]->l,Rgamma((phydbl)(tune_l_mult*iter+1),(phydbl)(1./(tune_l_mult*iter+1))));
@@ -823,13 +824,15 @@ void Global_Spr_Search(t_tree *tree)
       
       Spr(tree->c_lnL,1.0,tree);
       Optimize_Br_Len_Serie(2,tree);
+
       
       if(!(iter%5) && iter > 0) Round_Optimize(tree,1000);
+
 
       if(tree->verbose > VL0 && tree->io->quiet == NO)
         {
           time(&t_cur);
-          PhyML_Printf("\n\t%8ds %3d lnL: %12.1f depth: %5d/%5d   # improvements: %4d delta_lnL: %10.1f/%10.1f tune: %.1f %2c",
+          PhyML_Printf("\n\t%8ds %3d lnL: %12.1f depth: %5d/%5d   # improvements: %4d delta_lnL: %10.1f/%10.1f tune: %.2f %2c",
                        (int)(t_cur-tree->t_beg),
                        iter+1,
                        tree->c_lnL,

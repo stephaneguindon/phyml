@@ -1000,9 +1000,10 @@ void Free_Eigen(eigen *eigen_struct)
   Free(eigen_struct->space);
   Free(eigen_struct->e_val);
   Free(eigen_struct->e_val_im);
-  Free(eigen_struct->r_e_vect);
   Free(eigen_struct->r_e_vect_im);
   Free(eigen_struct->l_e_vect);
+  Free(eigen_struct->r_e_vect);
+  Free(eigen_struct->dum);
   Free(eigen_struct->q);
 
   if(eigen_struct->next) Free_Eigen(eigen_struct->next);

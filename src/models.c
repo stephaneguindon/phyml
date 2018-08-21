@@ -935,8 +935,10 @@ void Update_Eigen(t_mod *mod)
       
       /* compute eigenvectors/values */
       if(!Eigen(1,mod->r_mat->qmat_buff->v,mod->eigen->size,mod->eigen->e_val,
-                mod->eigen->e_val_im,mod->eigen->r_e_vect,
-                mod->eigen->r_e_vect_im,mod->eigen->space))
+                mod->eigen->e_val_im,
+                mod->eigen->r_e_vect,
+                mod->eigen->r_e_vect_im,
+                mod->eigen->space))
         {
           /* compute inverse(Vr) into Vi */
           For (i,mod->ns*mod->ns) mod->eigen->l_e_vect[i] = mod->eigen->r_e_vect[i];
@@ -970,41 +972,11 @@ void Update_Eigen(t_mod *mod)
             }
           for(i=0;i<mod->eigen->size;i++) mod->eigen->e_val[i] /= scalar;
           
-          /* compute the diagonal terms of exp(D) */
-          /* for(i=0;i<mod->ns;i++) mod->eigen->e_val[i] = (phydbl)exp(mod->eigen->e_val[i]); */
-
-      /* int j; */
-      /* double *U,*V,*R; */
-      /* double *expt; */
-      /* double *uexpt; */
-      /* int n; */
-
-      /* expt  = mod->eigen->e_val_im; */
-      /* uexpt = mod->eigen->r_e_vect_im; */
-      /* U     = mod->eigen->r_e_vect; */
-      /* V     = mod->eigen->l_e_vect; */
-      /* R     = mod->eigen->e_val; /\* exponential of the eigen value matrix *\/ */
-      /* n     = mod->ns; */
-
-      /* PhyML_Printf("\n"); */
-      /* PhyML_Printf("\n. Q\n"); */
-      /* for(i=0;i<n;i++) { for(j=0;j<n;j++) PhyML_Printf("%7.3f ",mod->eigen->q[i*n+j]); PhyML_Printf("\n"); } */
-      /* PhyML_Printf("\n. U\n"); */
-      /* for(i=0;i<n;i++) { for(j=0;j<n;j++) PhyML_Printf("%7.3f ",U[i*n+j]); PhyML_Printf("\n"); } */
-      /* PhyML_Printf("\n"); */
-      /* PhyML_Printf("\n. V\n"); */
-      /* for(i=0;i<n;i++) { for(j=0;j<n;j++) PhyML_Printf("%7.3f ",V[i*n+j]); PhyML_Printf("\n"); } */
-      /* PhyML_Printf("\n"); */
-      /* PhyML_Printf("\n. Eigen\n"); */
-      /* for(i=0;i<n;i++)  PhyML_Printf("%E ",mod->eigen->e_val[i]); */
-      /* PhyML_Printf("\n"); */
-
-/* 	  Exit("\n"); */
 #ifdef BEAGLE
           //Recall that BEAGLE is initialized *after* all the model parameters are set
           //IOW, this function may be called before BEAGLE is initialized ("chicken-egg")
           if(UNINITIALIZED != mod->b_inst)
-              update_beagle_eigen(mod);
+            update_beagle_eigen(mod);
 #endif
         }
       else
@@ -1100,7 +1072,6 @@ void Switch_From_Mod_To_M4mod(t_mod *mod)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 phydbl General_Dist(phydbl *F, t_mod *mod, eigen *eigen_struct)
 {

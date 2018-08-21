@@ -39,7 +39,7 @@ phydbl Lk_Given_Two_Seq(calign *data, int numseq1, int numseq2, phydbl dist, t_m
 void Unconstraint_Lk(t_tree *tree);
 void Update_Partial_Lk(t_tree *tree,t_edge *b_fcus,t_node *n);
 void Update_Partial_Lk_Generic(t_tree *tree,t_edge *b_fcus,t_node *n);
-void Default_Update_Partial_Lk(t_tree *tree,t_edge *b_fcus,t_node *n);
+/* void Default_Update_Partial_Lk(t_tree *tree,t_edge *b_fcus,t_node *n); */
 void Init_Partial_Lk_Tips_Double(t_tree *tree);
 void Init_Partial_Lk_Tips_Int(t_tree *tree);
 void Init_Partial_Lk_At_One_Node(t_node *a, t_tree *tree);
@@ -55,15 +55,10 @@ phydbl Update_Lk_At_Given_Edge(t_edge *b_fcus, t_tree *tree);
 void Update_Partial_Lk_Greedy(t_tree *tree, t_edge *b_fcus, t_node *n);
 void Get_All_Partial_Lk_Scale_Greedy(t_tree *tree, t_edge *b_fcus, t_node *a, t_node *d);
 phydbl Lk_Triplet(t_node *a, t_node *d, t_tree *tree);
-void Print_Lk_Given_Edge_Recurr(t_node *a, t_node *d, t_edge *b, t_tree *tree);
 phydbl *Post_Prob_Rates_At_Given_Edge(t_edge *b, phydbl *post_prob, t_tree *tree);
 phydbl Lk_With_MAP_Branch_Rates(t_tree *tree);
 void Init_Tips_At_One_Site_Generic_Int(char *state, int ns, int state_len, int pos, short int *p_pars);
 void Init_Tips_At_One_Site_Generic_Float(char *state, int ns, int state_len, int pos, phydbl *p_lk);
-void Alias_Subpatt(t_tree *tree);
-void Alias_One_Subpatt(t_node *a, t_node *d, t_tree *tree);
-void Alias_Subpatt_Post(t_node *a, t_node *d, t_tree *tree);
-void Alias_Subpatt_Pre(t_node *a, t_node *d, t_tree *tree);
 void Backup_Partial_Lk(t_node *d, t_edge *b, t_tree *tree);
 void Restore_Partial_Lk(t_node *d, t_edge *b, t_tree *tree);
 void Backup_Partial_Scale(t_node *d, t_edge *b, t_tree *tree);
@@ -78,23 +73,19 @@ phydbl Wrap_Geo_Lk(t_edge *b, t_tree *tree, supert_tree *stree);
 phydbl Wrap_Diff_Lk_Norm_At_Given_Edge(t_edge *b, t_tree *tree, supert_tree *stree);
 phydbl Wrap_Lk_Rates(t_edge *b, t_tree *tree, supert_tree *stree);
 phydbl Wrap_Lk_Linreg(t_edge *b, t_tree *tree, supert_tree *stree);
-void Sample_Ancestral_Seq(int mutmap, int fromprior, t_tree *tree);
-void Map_Mutations(t_node *a, t_node *d, int sa, int sd, t_edge *b, int site, int rate_cat, int *muttype, phydbl *muttime, int *muttax, int *n_mut, t_tree *tree);
-void Sample_Ancestral_Seq_Pre(t_node *a, t_node *d, t_edge *b,int site, int rate_cat,int *muttype, phydbl *muttime, int *muttax, int *n_mut,int mutmap, int fromprior, t_tree *tree);
 phydbl Wrap_Lk_Times(t_edge *b, t_tree *tree, supert_tree *stree);
 phydbl Lk_LastFirst(t_tree *tree);
 int Check_Lk_At_Given_Edge(int verbose, t_tree *tree);
-void Ancestral_Sequences_One_Node(t_node *mixt_d, t_tree *mixt_tree, int print);
-void Ancestral_Sequences(t_tree *tree, int print);
 void Stepwise_Add_Lk(t_tree *tree);
 void Update_Eigen_Lr(t_edge *b, t_tree *tree);
 phydbl dLk(phydbl *l, t_edge *b, t_tree *tree);
-phydbl Lk_Core(int state, int ambiguity_check, short int derivative,
+phydbl Lk_Core(int state, int ambiguity_check,
                              phydbl *p_lk_left, phydbl *p_lk_rght,
                              phydbl *Pij_rr,
                              t_edge *b,
                              t_tree *tree);
-phydbl Lk_Core_Eigen_Lr(phydbl *expl, phydbl *dot_prod, short int derivative, t_edge *b, t_tree *tree);
+/* void Lk_dLk_Core_Eigen_Lr(phydbl *expl, phydbl *dot_prod, t_edge *b, phydbl *lk, phydbl *dlk, t_tree *tree); */
+phydbl Lk_Core_Eigen_Lr(phydbl *expl, phydbl *dot_prod, t_edge *b, t_tree *tree);
 phydbl Invariant_Lk(int fact_sum_scale, int site, int *num_prec_issue, t_tree *tree);
 void Composite_Lk(t_tree *tree);
 int Sample_Ancestral_Seq_Core(t_node *a, t_node *d, t_edge *b, int r_cat, int site, t_tree *tree);
@@ -104,7 +95,8 @@ int Sample_Ancestral_Seq_Core(t_node *a, t_node *d, t_edge *b, int r_cat, int si
 
 
 
-phydbl Lk_Core_One_Class_Eigen_Lr(phydbl *dot_prod, phydbl *expl, int ns);
+/* phydbl Lk_Core_One_Class_Eigen_Lr(phydbl *dot_prod, phydbl *expl, int ns); */
+/* void Lk_dLk_Core_One_Class_Eigen_Lr(phydbl *dot_prod, phydbl *expl, unsigned int ns, phydbl *lk, phydbl *dlk); */
 phydbl Lk_Core_One_Class_No_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, phydbl *Pij,phydbl *pi, int ns, int ambiguity_check, int state);
 
 void Pull_Scaling_Factors(int site,t_edge *b,t_tree *tree);
@@ -122,6 +114,9 @@ void Rate_Correction(int exponent, phydbl *site_lk_cat);
 void Switch_Partial_Lk_Pre(t_node *a, t_node *d, t_edge *b, short int yesno, t_tree *tree);
 void Switch_Partial_Lk_Post(t_node *a, t_node *d, t_edge *b, short int yesno, t_tree *tree);
 
+/* void Partial_Lk_Inin(phydbl *Pij1, phydbl *plk1, phydbl *Pij2, phydbl *plk2, int ns, phydbl *plk0); */
+/* void Partial_Lk_Exex(phydbl *Pij1, int state1, phydbl *Pij2, int state2, int ns, phydbl *plk0); */
+/* void Partial_Lk_Exin(phydbl *Pij1, int state1, phydbl *Pij2, phydbl *plk2, int ns, phydbl *plk0); */
 
 
 #endif

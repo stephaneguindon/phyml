@@ -102,5 +102,6 @@ void JSON_Tree_Io(t_tree *tree, FILE *where);
 json_o *JSON_Tree_To_Object(t_tree *tree);
 json_o *JSON_Tree_To_Object_Light(t_tree *mixt_tree);
 scalar_dbl *Read_Io_Weights(option *io);
+void Print_Lk_Given_Edge_Recurr(t_node *a, t_node *d, t_edge *b, t_tree *tree);
 
 #endif

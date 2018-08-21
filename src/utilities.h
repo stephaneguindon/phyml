@@ -1138,9 +1138,10 @@ typedef struct __Eigen{
   int        *space_int;
   phydbl         *e_val; /*! eigen values (vector), real part. */
   phydbl      *e_val_im; /*! eigen values (vector), imaginary part */
-  phydbl      *r_e_vect; /*! right eigen vector (matrix), real part */
   phydbl   *r_e_vect_im; /*! right eigen vector (matrix), imaginary part */
   phydbl      *l_e_vect; /*! left eigen vector (matrix), real part */
+  phydbl      *r_e_vect; /*! right eigen vector (matrix), real part */
+  phydbl           *dum; /*! dummy ns*ns space */
 
   struct __Eigen  *prev;
   struct __Eigen  *next;
@@ -2299,6 +2300,16 @@ char *Mutation_Id(int mut_idx, t_tree *tree);
 void Random_Tax_Idx(t_node *a, t_node *d, int *idx, t_tree *tree);
 void List_Taxa_In_Clade(t_node *a, t_node *d, t_tree *tree);
 void Set_Scalar_Dbl_Max_Thresh(phydbl thresh, scalar_dbl *from);
+void Alias_Subpatt_Pre(t_node *a, t_node *d, t_tree *tree);
+void Alias_Subpatt_Post(t_node *a, t_node *d, t_tree *tree);
+void Alias_One_Subpatt(t_node *a, t_node *d, t_tree *tree);
+void Alias_Subpatt(t_tree *tree);
+void Map_Mutations(t_node *a, t_node *d, int sa, int sd, t_edge *b, int site, int rcat, int *muttype, phydbl *muttime, int *muttax, int *n_mut, t_tree *tree);
+int Sample_Ancestral_Seq_Core(t_node *a, t_node *d, t_edge *b, int r_cat, int site, t_tree *tree);
+void Sample_Ancestral_Seq_Pre(t_node *a, t_node *d, t_edge *b,int site, int r_cat,int *muttype, phydbl *muttime, int *muttax, int *n_mut,int fullmutmap, int fromprior, t_tree *tree);
+void Sample_Ancestral_Seq(int fullmutmap, int fromprior, t_tree *tree);
+void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print);
+void Ancestral_Sequences(t_tree *tree, int print);
 
 #include "xml.h"
 #include "free.h"

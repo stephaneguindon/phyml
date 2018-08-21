@@ -1065,11 +1065,25 @@ eigen *Make_Eigen_Struct(int ns)
   eig->space_int   = (int *)mCalloc(2*ns,sizeof(int));
   eig->e_val       = (phydbl *)mCalloc(ns,sizeof(phydbl));
   eig->e_val_im    = (phydbl *)mCalloc(ns,sizeof(phydbl));
-  eig->r_e_vect    = (phydbl *)mCalloc(ns*ns,sizeof(phydbl));
   eig->r_e_vect_im = (phydbl *)mCalloc(ns*ns,sizeof(phydbl));
-  eig->l_e_vect    = (phydbl *)mCalloc(ns*ns,sizeof(phydbl));
   eig->q           = (phydbl *)mCalloc(ns*ns,sizeof(phydbl));
 
+#if (defined(__AVX__) || defined(__SSE3__))
+#ifndef WIN32
+  if(posix_memalign((void **)&eig->r_e_vect,BYTE_ALIGN,ns*ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&eig->l_e_vect,BYTE_ALIGN,ns*ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&eig->dum,BYTE_ALIGN,ns*ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+#else
+  eig->r_e_vect = _aligned_malloc(ns*ns*sizeof(phydbl),BYTE_ALIGN);
+  eig->l_e_vect = _aligned_malloc(ns*ns*sizeof(phydbl),BYTE_ALIGN);
+  eig->dum      = _aligned_malloc(ns*ns*sizeof(phydbl),BYTE_ALIGN);
+#endif
+#else
+  eig->r_e_vect = (phydbl *)mCalloc(ns*ns,sizeof(phydbl));
+  eig->l_e_vect = (phydbl *)mCalloc(ns*ns,sizeof(phydbl));
+  eig->dum      = (phydbl *)mCalloc(ns*ns,sizeof(phydbl));
+#endif
+  
   Init_Eigen_Struct(eig);
 
   return eig;

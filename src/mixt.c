@@ -924,17 +924,17 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                   
                   if(tree->use_eigen_lr == YES)
                     {
-                      site_lk_cat = Lk_Core_Eigen_Lr(expl,dot_prod + site*ns,NO,b,tree);
+                      site_lk_cat = Lk_Core_Eigen_Lr(expl,dot_prod + site*ns,b,tree);
                     }
                   else
                     {
                       if(b->rght->tax == YES)
-                        site_lk_cat = Lk_Core(state,ambiguity_check,NO,
+                        site_lk_cat = Lk_Core(state,ambiguity_check,
                                               b->p_lk_left + site*ns,
                                               b->p_lk_tip_r + site*ns,
                                               b->Pij_rr,b,tree);
                       else
-                        site_lk_cat = Lk_Core(state,ambiguity_check,NO,
+                        site_lk_cat = Lk_Core(state,ambiguity_check,
                                               b->p_lk_left + site*ns,
                                               b->p_lk_rght  + site*ns,
                                               b->Pij_rr,b,tree);
@@ -2750,6 +2750,8 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
   cpy_mixt_b    = mixt_b;
   len           = -1.;
   
+  Exit("\n. MIXT_dLk needs rewriting...");
+
   if(mixt_tree->update_eigen_lr == YES) MIXT_Update_Eigen_Lr(mixt_b,mixt_tree);
     
   do /*! Consider each element of the data partition */
@@ -2862,10 +2864,11 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
                   expl                   = tree->expl;
                   expld                  = expl + 1*ns;
                   expld2                 = expl + 2*ns;
-                  
-                  dlk[class]  = Lk_Core_Eigen_Lr(expld ,dot_prod + site*ns,YES,b,tree);
-                  d2lk[class] = Lk_Core_Eigen_Lr(expld2,dot_prod + site*ns,YES,b,tree);
-                  lk[class]   = Lk_Core_Eigen_Lr(expl  ,dot_prod + site*ns,NO ,b,tree);
+
+                  /* !!!!!!!!!!!!!!! */
+                  /* dlk[class]  = Lk_Core_Eigen_Lr(expld ,dot_prod + site*ns,b,tree); */
+                  /* d2lk[class] = Lk_Core_Eigen_Lr(expld2,dot_prod + site*ns,b,tree); */
+                  /* lk[class]   = Lk_Core_Eigen_Lr(expl  ,dot_prod + site*ns,b,tree); */
                 
                   
                   sum_scale_left_cat[tree->mod->ras->parent_class_number] =

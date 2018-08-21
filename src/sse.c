@@ -149,6 +149,28 @@ phydbl SSE_Lk_Core_One_Class_Eigen_Lr(phydbl *dot_prod, phydbl *expl, int ns)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+void SSE_Lk_dLk_Core_One_Class_Eigen_Lr(phydbl *dot_prod, phydbl *expl, unsigned int ns, phydbl *lk, phydbl *dlk)
+{
+  unsigned int i;
+  __m128d _x,_y,_z;
+
+  _z = _mm_setzero_pd();
+
+  for(i=0;i<ns;++i)
+    {
+      _x = _mm_set1_pd(dot_prod[i]);      
+      _y = _mm_load_pd(expl + 2*i);
+
+      _z = _mm_add_pd(_z,_mm_mul_pd(_x,_y));
+    }
+  
+  *lk = ((double *)&_z)[0];
+  *dlk = ((double *)&_z)[1];
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 phydbl SSE_Lk_Core_One_Class_No_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, phydbl *Pij, phydbl *pi, int ns, int ambiguity_check, int state)
 {
   phydbl lk = 0.0;
