@@ -1020,9 +1020,11 @@ void Update_Eigen_Lr(t_edge *b, t_tree *tree)
               dot_prod[i] = left*rght;
             }
           dot_prod += ns;
-          if(b->left->tax == NO || catg == ncatg-1) p_lk_left += ns;
-          if(b->rght->tax == NO || catg == ncatg-1) p_lk_rght += ns;
+          if(b->left->tax == NO) p_lk_left += ns;
+          if(b->rght->tax == NO) p_lk_rght += ns;
         }        
+      if(b->left->tax == YES) p_lk_left += ns;
+      if(b->rght->tax == YES) p_lk_rght += ns;
     }
 }
 
@@ -1512,7 +1514,7 @@ static void Default_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
   int sum_scale_v1_val, sum_scale_v2_val;
   unsigned int i;
   unsigned int catg,site;
-  unsigned int v1_idx, v2_idx, p_idx;
+  unsigned int v1_idx, v2_idx, p_idx, v0_idx;
   unsigned int p1_is_fully_ambiguous,p2_is_fully_ambiguous;
   int ambiguity_check_v1,ambiguity_check_v2;
   int state_v1,state_v2;
@@ -1535,7 +1537,7 @@ static void Default_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
     }
 
   state_v1 = state_v2 = -1;
-  ambiguity_check_v1 = ambiguity_check_v2 = NO;
+  ambiguity_check_v1 = ambiguity_check_v2 = YES;
   sum_scale_v1_val = sum_scale_v2_val = 0;
   
   if(d->tax)
@@ -1553,6 +1555,7 @@ static void Default_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
   tPij1 = tPij2               = NULL;
   sum_scale_v1 = sum_scale_v2 = NULL;
   p_lk_loc                    = NULL;
+
   Set_All_Partial_Lk(&n_v1,&n_v2,
                      &p_lk,&sum_scale,&p_lk_loc,
                      &Pij1,&tPij1,&p_lk_v1,&sum_scale_v1,
@@ -1563,33 +1566,32 @@ static void Default_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
   /* For every site in the alignment */
   for(site=0;site<n_patterns;site++)
     {
+      v0_idx = site * ncatgns;
+      
       if(n_v1->tax == YES &&
          n_v2->tax == YES &&
          n_v1->c_seq->state[site] == 'X' &&
          n_v2->c_seq->state[site] == 'X')
         {
-          for(i=0;i<ncatgns;++i) p_lk[i] = 1.0;
-          p_lk += ncatgns;
+          for(i=0;i<ncatgns;++i) p_lk[v0_idx+i] = 1.0;
         }
       else
         {
+          v1_idx = n_v1->tax ? site*ns : site*ncatgns;
+          v2_idx = n_v2->tax ? site*ns : site*ncatgns;
+
           p1_is_fully_ambiguous = NO;
-          p_lk_v1 = p_lk_v1 + (int)(n_v1->tax ? site*ns : site*ncatgns);
-          for(i=0;i<ns;++i) if(Are_Equal(p_lk_v1[i],1.0,1.E-5) == NO) break;
+          for(i=0;i<ns;++i) if(Are_Equal(p_lk_v1[v1_idx+i],1.0,1.E-5) == NO) break;
           if(i==ns) p1_is_fully_ambiguous = YES;
-          p_lk_v1 = p_lk_v1 - (int)(n_v1->tax ? site*ns : site*ncatgns);
           
           p2_is_fully_ambiguous = NO;
-          p_lk_v2 = p_lk_v2 + (int)(n_v2->tax ? site*ns : site*ncatgns);
-          for(i=0;i<ns;++i) if(Are_Equal(p_lk_v2[i],1.0,1.E-5) == NO) break;
+          for(i=0;i<ns;++i) if(Are_Equal(p_lk_v2[v2_idx+i],1.0,1.E-5) == NO) break;
           if(i==ns) p2_is_fully_ambiguous = YES;
-          p_lk_v2 = p_lk_v2 - (int)(n_v2->tax ? site*ns : site*ncatgns);
           
           
           if(p1_is_fully_ambiguous == YES && p2_is_fully_ambiguous == YES)
             {
-              for(i=0;i<ncatgns;++i) p_lk[i] = 1.0;
-              p_lk += ncatgns;
+              for(i=0;i<ncatgns;++i) p_lk[v0_idx+i] = 1.0;
             }
           else
             {          
@@ -1626,33 +1628,33 @@ static void Default_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
                     {
                       Partial_Lk_Exex(Pij1 + p_idx,state_v1,
                                       Pij2 + p_idx,state_v2,
-                                      ns,p_lk);
+                                      ns,p_lk + v0_idx + catg*ns);
                     }
                   else if(ambiguity_check_v1 == YES && ambiguity_check_v2 == NO)
                     {
                       Partial_Lk_Exin(Pij2 + p_idx,state_v2,
                                       Pij1 + p_idx,p_lk_v1+v1_idx,
-                                      ns,p_lk);
+                                      ns,p_lk + v0_idx + catg*ns);
                     }
                   else if(ambiguity_check_v1 == NO && ambiguity_check_v2 == YES)
                     {
                       Partial_Lk_Exin(Pij1 + p_idx,state_v1,
                                       Pij2 + p_idx,p_lk_v2+v2_idx,
-                                      ns,p_lk);
+                                      ns,p_lk + v0_idx + catg*ns);
                     }
                   else
                     {
                       Partial_Lk_Inin(Pij1 + p_idx,p_lk_v1+v1_idx,
                                       Pij2 + p_idx,p_lk_v2+v2_idx,
-                                      ns,p_lk);
+                                      ns,p_lk + v0_idx + catg*ns);
                     }
                   
                   if(tree->scaling_method == SCALE_RATE_SPECIFIC)
                     {
                       smallest_p_lk = BIG;
                       for(i=0;i<ns;++i)
-                        if(p_lk[i] < smallest_p_lk)
-                          smallest_p_lk = p_lk[i];
+                        if(p_lk[v0_idx + catg*ns + i] < smallest_p_lk)
+                          smallest_p_lk = p_lk[v0_idx + catg*ns + i];
                                             
                       /* Current scaling values at that site */
                       sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[site*ncatg+catg]):(0);
@@ -1673,39 +1675,32 @@ static void Default_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
                           int curr_scaler_pow;
                           curr_scaler_pow = (int)(-500.*LOG2-log(smallest_p_lk))/LOG2;
                           sum_scale[site*ncatg+catg] += curr_scaler_pow;
-                          for(i=0;i<ns;++i) Rate_Correction(curr_scaler_pow, p_lk + i);
+                          for(i=0;i<ns;++i) Rate_Correction(curr_scaler_pow, p_lk + v0_idx + catg*ns + i);
                         }
-                    }
-                  
-                  p_lk += ns;
-                  
-                }
-                            
-              if(tree->scaling_method == SCALE_FAST)
-                {
-                  p_lk -= ncatgns;
-                  
-                  sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[site]):(0);
-                  sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[site]):(0);
-                  sum_scale[site] = sum_scale_v1_val + sum_scale_v2_val;
-                  
-                  largest_p_lk = -BIG;
-                  for(i=0;i<ncatgns;++i)
-                    if(p_lk[i] > largest_p_lk)
-                      largest_p_lk = p_lk[i];
-                  
-                  if(largest_p_lk < INV_TWO_TO_THE_LARGE &&
-                     tree->mod->augmented == NO &&
-                     tree->apply_lk_scaling == YES)
-                    {
-                      for(i=0;i<ncatgns;++i) p_lk[i] *= TWO_TO_THE_LARGE;
-                      sum_scale[site] += LARGE;
-                    }
-                  
-                  p_lk += ncatgns;
+                    }                                    
                 }
             }
         }
+
+      if(tree->scaling_method == SCALE_FAST)
+        {
+          sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[site]):(0);
+          sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[site]):(0);
+          sum_scale[site] = sum_scale_v1_val + sum_scale_v2_val;
+          
+          largest_p_lk = -BIG;
+          for(i=0;i<ncatgns;++i)
+            if(p_lk[v0_idx + i] > largest_p_lk)
+              largest_p_lk = p_lk[v0_idx + i];
+          
+          if(largest_p_lk < INV_TWO_TO_THE_LARGE &&
+             tree->mod->augmented == NO &&
+             tree->apply_lk_scaling == YES)
+            {
+              for(i=0;i<ncatgns;++i) p_lk[v0_idx + i] *= TWO_TO_THE_LARGE;
+              sum_scale[site] += LARGE;
+            }                  
+        }      
     }
 }
 

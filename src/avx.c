@@ -285,7 +285,7 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
   int sum_scale_v1_val, sum_scale_v2_val;
   unsigned int i,j,k;
   unsigned int catg,site;
-  unsigned int v1_idx,v2_idx,p_idx;
+  unsigned int v1_idx,v2_idx,p_idx,v0_idx;
   short int state_v1,state_v2;
   short int ambiguity_check_v1,ambiguity_check_v2;
   phydbl smallest_p_lk,largest_p_lk;
@@ -376,42 +376,39 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
   /* For every site in the alignment */
   for(site=0;site<npattern;++site)
     {
+      v0_idx = site * ncatgns;
+
       if(n_v1->tax == YES &&
          n_v2->tax == YES &&
          n_v1->c_seq->state[site] == 'X' &&
          n_v2->c_seq->state[site] == 'X')
         {
-          for(i=0;i<ncatgns;++i) plk0[i] = 1.0;
-          plk0 += ncatgns;
+          for(i=0;i<ncatgns;++i) plk0[v0_idx + i] = 1.0;
         }
       else
         {
+          v1_idx = n_v1->tax ? site*ns : site*ncatgns;
+          v2_idx = n_v2->tax ? site*ns : site*ncatgns;
+
           p1_is_fully_ambiguous = NO;
-          plk1 = plk1 + (int)(n_v1->tax ? site*ns : site*ncatgns);
-          for(i=0;i<ns;++i) if(Are_Equal(plk1[i],1.0,1.E-5) == NO) break;
+          for(i=0;i<ns;++i) if(Are_Equal(plk1[v1_idx+i],1.0,1.E-5) == NO) break;
           if(i==ns) p1_is_fully_ambiguous = YES;
-          plk1 = plk1 - (int)(n_v1->tax ? site*ns : site*ncatgns);
 
           p2_is_fully_ambiguous = NO;
-          plk2 = plk2 + (int)(n_v2->tax ? site*ns : site*ncatgns);
-          for(i=0;i<ns;++i) if(Are_Equal(plk2[i],1.0,1.E-5) == NO) break;
+          for(i=0;i<ns;++i) if(Are_Equal(plk2[v2_idx+i],1.0,1.E-5) == NO) break;
           if(i==ns) p2_is_fully_ambiguous = YES;
-          plk2 = plk2 - (int)(n_v2->tax ? site*ns : site*ncatgns);
           
           if(p1_is_fully_ambiguous == YES && p2_is_fully_ambiguous == YES)
             {
-              for(i=0;i<ncatgns;++i) plk0[i] = 1.0;
-              plk0 += ncatgns;
+              for(i=0;i<ncatgns;++i) plk0[v0_idx + i] = 1.0;
             }
           else
             {
               state_v1 = state_v2 = -1;
               ambiguity_check_v1 = ambiguity_check_v2 = YES;
               
-              /* n_v1 and n_v2 are tip nodes */
               if(n_v1 && n_v1->tax)
                 {
-                  /* Is the state at this tip ambiguous? */
                   ambiguity_check_v1 = n_v1->c_seq->is_ambigu[site];
                   if(ambiguity_check_v1 == NO) state_v1 = n_v1->c_seq->d_state[site];
                 }
@@ -422,7 +419,6 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
                   if(ambiguity_check_v2 == NO) state_v2 = n_v2->c_seq->d_state[site];
                 }
               
-              /* For all rate classes */
               for(catg=0;catg<ncatg;++catg)
                 {
                   v1_idx = n_v1->tax ? site*ns : site*ncatgns+catg*ns;
@@ -460,16 +456,15 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
                                           ns,_plk0);
                     }
                                     
-                  for(k=0;k<nblocks;++k) _mm256_store_pd(plk0+sz*k,_plk0[k]);
+                  for(k=0;k<nblocks;++k) _mm256_store_pd(plk0+v0_idx+catg*ns+sz*k,_plk0[k]);
               
 
                   if(tree->scaling_method == SCALE_RATE_SPECIFIC)
                     {
                       smallest_p_lk = BIG;
                       for(i=0;i<ns;++i)
-                        if(plk0[i] < smallest_p_lk)
-                          smallest_p_lk = plk0[i];
-
+                        if(plk0[v0_idx+catg*ns+i] < smallest_p_lk)
+                          smallest_p_lk = plk0[v0_idx+catg*ns+i];
                       
                       /* Current scaling values at that site */
                       sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[site*ncatg+catg]):(0);
@@ -488,39 +483,33 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
                           int curr_scaler_pow;
                           curr_scaler_pow = (int)(-500.*LOG2-log(smallest_p_lk))/LOG2;
                           sum_scale[site*ncatg+catg] += curr_scaler_pow;
-                          for(i=0;i<ns;++i) Rate_Correction(curr_scaler_pow, plk0 + i);
+                          for(i=0;i<ns;++i) Rate_Correction(curr_scaler_pow,plk0+v0_idx+catg*ns+i);
                         }
                     }
-
-                  plk0 += ns;
-                  
-                }
-              
-              if(tree->scaling_method == SCALE_FAST)
-                {
-                  plk0 -= ncatgns;
-                  
-                  sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[site]):(0);
-                  sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[site]):(0);
-                  sum_scale[site] = sum_scale_v1_val + sum_scale_v2_val;
-                  
-                  
-                  largest_p_lk = -BIG;
-                  for(i=0;i<ncatgns;++i)
-                    if(plk0[i] > largest_p_lk)
-                      largest_p_lk = plk0[i];
-                  
-                  if(largest_p_lk < INV_TWO_TO_THE_LARGE &&
-                     tree->mod->augmented == NO &&
-                     tree->apply_lk_scaling == YES)
-                    {
-                      for(i=0;i<ncatgns;++i) plk0[i] *= TWO_TO_THE_LARGE;
-                      sum_scale[site] += LARGE;
-                    }
-                  plk0 += ncatgns;
                 }
             }
-        }      
+        }   
+
+      if(tree->scaling_method == SCALE_FAST)
+        {
+          sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[site]):(0);
+          sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[site]):(0);
+          sum_scale[site] = sum_scale_v1_val + sum_scale_v2_val;
+          
+          
+          largest_p_lk = -BIG;
+          for(i=0;i<ncatgns;++i)
+            if(plk0[v0_idx+i] > largest_p_lk)
+              largest_p_lk = plk0[v0_idx+i];
+          
+          if(largest_p_lk < INV_TWO_TO_THE_LARGE &&
+             tree->mod->augmented == NO &&
+             tree->apply_lk_scaling == YES)
+            {
+              for(i=0;i<ncatgns;++i) plk0[v0_idx+i] *= TWO_TO_THE_LARGE;
+              sum_scale[site] += LARGE;
+            }
+        }
     }
 
   Free(_tPij1);
