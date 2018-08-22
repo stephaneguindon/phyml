@@ -15,10 +15,6 @@ the GNU public licence. See http://www.opensource.org for details.
 #include "assert.h"
 #include "avx.h"
 
-static void AVX_Partial_Lk_Exex(__m256d *_tPij1, int state1, __m256d *_tPij2, int state2, int ns, __m256d *plk0);
-static void AVX_Partial_Lk_Exin(__m256d *_tPij1, int state1, __m256d *_tPij2, __m256d *_plk2, __m256d *_pmat2plk2, int ns, __m256d *_plk0);
-static void AVX_Partial_Lk_Inin(__m256d *_tPij1, __m256d *_plk1, __m256d *_pmat1plk1, __m256d *_tPij2, __m256d *_plk2, __m256d *_pmat2plk2, int ns, __m256d *_plk0);
-static void AVX_Matrix_Vect_Prod(__m256d *_m_transpose,  __m256d *_v, int ns, __m256d *res);
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -35,12 +31,13 @@ void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree)
   unsigned const int ncatgns = ncatg * ns;
   unsigned const int nblocks = ns / sz;
 
-  phydbl *p_lk_left,*p_lk_rght,*pi,*dot_prod;
+  phydbl *p_lk_left,*p_lk_rght,*pi,*dot_prod,*p_lk_left_pi;
   phydbl *l_ev,*r_ev;
 
   __m256d *_l_ev,*_r_ev,*_p_lk_left,*_p_lk_rght,*_prod_left,*_prod_rght;
   
 #ifndef WIN32
+  if(posix_memalign((void **)&p_lk_left_pi,BYTE_ALIGN,(size_t) ns * sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   if(posix_memalign((void **)&l_ev,BYTE_ALIGN,(size_t) ns * ns * sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   if(posix_memalign((void **)&_l_ev,BYTE_ALIGN,(size_t) ns * ns / sz * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   if(posix_memalign((void **)&_r_ev,BYTE_ALIGN,(size_t) ns * ns / sz * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
@@ -49,13 +46,14 @@ void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree)
   if(posix_memalign((void **)&_prod_left,BYTE_ALIGN,(size_t) ns / sz * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   if(posix_memalign((void **)&_prod_rght,BYTE_ALIGN,(size_t) ns / sz * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 #else
-  l_ev       = _aligned_malloc(ns * ns * sizeof(phydbl),BYTE_ALIGN);
-  _l_ev      = _aligned_malloc(ns * ns / sz * sizeof(__m256d),BYTE_ALIGN);
-  _r_ev      = _aligned_malloc(ns * ns / sz * sizeof(__m256d),BYTE_ALIGN);
-  _p_lk_left = _aligned_malloc(ns / sz * sizeof(__m256d),BYTE_ALIGN);
-  _p_lk_rght = _aligned_malloc(ns / sz * sizeof(__m256d),BYTE_ALIGN);
-  _prod_left = _aligned_malloc(ns / sz * sizeof(__m256d),BYTE_ALIGN);
-  _prod_rght = _aligned_malloc(ns / sz * sizeof(__m256d),BYTE_ALIGN);
+  p_lk_left_pi = _aligned_malloc(ns * sizeof(phydbl),BYTE_ALIGN);
+  l_ev         = _aligned_malloc(ns * ns * sizeof(phydbl),BYTE_ALIGN);
+  _l_ev        = _aligned_malloc(ns * ns / sz * sizeof(__m256d),BYTE_ALIGN);
+  _r_ev        = _aligned_malloc(ns * ns / sz * sizeof(__m256d),BYTE_ALIGN);
+  _p_lk_left   = _aligned_malloc(ns / sz * sizeof(__m256d),BYTE_ALIGN);
+  _p_lk_rght   = _aligned_malloc(ns / sz * sizeof(__m256d),BYTE_ALIGN);
+  _prod_left   = _aligned_malloc(ns / sz * sizeof(__m256d),BYTE_ALIGN);
+  _prod_rght   = _aligned_malloc(ns / sz * sizeof(__m256d),BYTE_ALIGN);
 #endif
   
 
@@ -93,17 +91,19 @@ void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree)
     {
       for(catg=0;catg<ncatg;++catg)
         {
-          for(i=0;i<nblocks;++i)
-            {
-              // Dot product left partial likelihood with equilibrium freqs and load...
-              _p_lk_left[i] = _mm256_mul_pd(_mm256_load_pd(p_lk_left + i*sz),
-                                            _mm256_load_pd(pi + i*sz));
+          /* for(i=0;i<nblocks;++i) */
+          /*   { */
+          /*     // Dot product left partial likelihood with equilibrium freqs and load... */
+          /*     _p_lk_left[i] = _mm256_mul_pd(_mm256_load_pd(p_lk_left + i*sz), */
+          /*                                   _mm256_load_pd(pi + i*sz)); */
               // ...just load.
-              _p_lk_rght[i] = _mm256_load_pd(p_lk_rght + i*sz);              
-            }
+              /* _p_lk_rght[i] = _mm256_load_pd(p_lk_rght + i*sz);               */
+            /* } */
 
-          AVX_Matrix_Vect_Prod(_r_ev,_p_lk_left,ns,_prod_left);
-          AVX_Matrix_Vect_Prod(_l_ev,_p_lk_rght,ns,_prod_rght);
+          for(i=0;i<ns;++i) p_lk_left_pi[i] = p_lk_left[i] * pi[i];
+          
+          AVX_Matrix_Vect_Prod(_r_ev,p_lk_left_pi,ns,_prod_left);
+          AVX_Matrix_Vect_Prod(_l_ev,p_lk_rght,ns,_prod_rght);
           
           for(i=0;i<nblocks;++i) _mm256_store_pd(dot_prod + i*sz,_mm256_mul_pd(_prod_left[i],_prod_rght[i]));
 
@@ -123,6 +123,7 @@ void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree)
   Free(_p_lk_rght);
   Free(_prod_left);
   Free(_prod_rght);
+  Free(p_lk_left_pi);
 }
 
 //////////////////////////////////////////////////////////////
@@ -285,13 +286,10 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
   int sum_scale_v1_val, sum_scale_v2_val;
   unsigned int i,j,k;
   unsigned int catg,site;
-  unsigned int v1_idx,v2_idx,p_idx,v0_idx;
   short int state_v1,state_v2;
   short int ambiguity_check_v1,ambiguity_check_v2;
-  phydbl smallest_p_lk,largest_p_lk;
-  phydbl p_lk_lim_inf;
+  phydbl largest_p_lk;
   int *p_lk_loc;
-  short int p1_is_fully_ambiguous, p2_is_fully_ambiguous;
   
   const unsigned int npattern = tree->n_pattern;
   const unsigned int ns = tree->mod->ns;
@@ -303,7 +301,7 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
   const unsigned int sz = (int)BYTE_ALIGN / 8;
   const unsigned nblocks = ns/sz;
 
-  __m256d *_tPij1,*_tPij2,*_pmat1plk1,*_pmat2plk2,*_plk1,*_plk2,*_plk0;
+  __m256d *_tPij1,*_tPij2,*_pmat1plk1,*_pmat2plk2,*_plk0,*_init_tPij1,*_init_tPij2;
   
 #ifndef WIN32
   if(posix_memalign((void **)&_tPij1,BYTE_ALIGN,(size_t)(ncatg * nsns / sz) * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
@@ -311,31 +309,27 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
   if(posix_memalign((void **)&_pmat1plk1,BYTE_ALIGN,(size_t)ns / sz * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   if(posix_memalign((void **)&_pmat2plk2,BYTE_ALIGN,(size_t)ns / sz * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   if(posix_memalign((void **)&_plk0,BYTE_ALIGN,(size_t)(ns / sz) * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-  if(posix_memalign((void **)&_plk1,BYTE_ALIGN,(size_t)(ns / sz) * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-  if(posix_memalign((void **)&_plk2,BYTE_ALIGN,(size_t)(ns / sz) * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 #else
   _tPij1     = _aligned_malloc(ncatg * nsns / sz * sizeof(__m256d),BYTE_ALIGN);
   _tPij2     = _aligned_malloc(ncatg * nsns / sz * sizeof(__m256d),BYTE_ALIGN);
+  tPij1      = _aligned_malloc(ncatg * nsns / sz * sizeof(__m256d),BYTE_ALIGN);
+  tPij2      = _aligned_malloc(ncatg * nsns / sz * sizeof(__m256d),BYTE_ALIGN);
   _pmat1plk1 = _aligned_malloc(ns / sz * sizeof(__m256d),BYTE_ALIGN);
   _pmat2plk2 = _aligned_malloc(ns / sz * sizeof(__m256d),BYTE_ALIGN);
   _plk0      = _aligned_malloc(ns / sz * sizeof(__m256d),BYTE_ALIGN);
-  _plk1      = _aligned_malloc(ns / sz * sizeof(__m256d),BYTE_ALIGN);
-  _plk2      = _aligned_malloc(ns / sz * sizeof(__m256d),BYTE_ALIGN);
 #endif
 
-  
+  _init_tPij1 = _tPij1;
+  _init_tPij2 = _tPij2;
   
   sum_scale_v1_val            = 0;
   sum_scale_v2_val            = 0;
-  p_lk_lim_inf                = (phydbl)P_LK_LIM_INF;
   n_v1 = n_v2                 = NULL;
   plk0 = plk1 = plk2          = NULL;
   Pij1 = Pij2                 = NULL;
   tPij1 = tPij2               = NULL;
   sum_scale_v1 = sum_scale_v2 = NULL;
   p_lk_loc                    = NULL;
-  p1_is_fully_ambiguous       = NO;
-  p2_is_fully_ambiguous       = NO;
   state_v1 = state_v2         = -1;
 
   
@@ -361,10 +355,8 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
           _tPij2 += nblocks;
         }
     }
-  _tPij1 = _tPij1 - (int)(ncatg * nsns / sz);
-  _tPij2 = _tPij2 - (int)(ncatg * nsns / sz);
-  tPij1 -= ncatg * nsns;
-  tPij2 -= ncatg * nsns;
+  _tPij1 = _init_tPij1;
+  _tPij2 = _init_tPij2;
 
   if(tree->mod->augmented == YES)
     {
@@ -376,156 +368,99 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
   /* For every site in the alignment */
   for(site=0;site<npattern;++site)
     {
-      v0_idx = site * ncatgns;
-
-      if(n_v1->tax == YES &&
-         n_v2->tax == YES &&
-         n_v1->c_seq->state[site] == 'X' &&
-         n_v2->c_seq->state[site] == 'X')
+      state_v1 = state_v2 = -1;
+      ambiguity_check_v1 = ambiguity_check_v2 = YES;
+              
+      if(n_v1 && n_v1->tax)
         {
-          for(i=0;i<ncatgns;++i) plk0[v0_idx + i] = 1.0;
+          ambiguity_check_v1 = n_v1->c_seq->is_ambigu[site];
+          if(ambiguity_check_v1 == NO) state_v1 = n_v1->c_seq->d_state[site];
         }
-      else
+      
+      if(n_v2 && n_v2->tax)
         {
-          v1_idx = n_v1->tax ? site*ns : site*ncatgns;
-          v2_idx = n_v2->tax ? site*ns : site*ncatgns;
-
-          p1_is_fully_ambiguous = NO;
-          for(i=0;i<ns;++i) if(Are_Equal(plk1[v1_idx+i],1.0,1.E-5) == NO) break;
-          if(i==ns) p1_is_fully_ambiguous = YES;
-
-          p2_is_fully_ambiguous = NO;
-          for(i=0;i<ns;++i) if(Are_Equal(plk2[v2_idx+i],1.0,1.E-5) == NO) break;
-          if(i==ns) p2_is_fully_ambiguous = YES;
-          
-          if(p1_is_fully_ambiguous == YES && p2_is_fully_ambiguous == YES)
+          ambiguity_check_v2 = n_v2->c_seq->is_ambigu[site];
+          if(ambiguity_check_v2 == NO) state_v2 = n_v2->c_seq->d_state[site];
+        }
+      
+      _tPij1 = _init_tPij1;
+      _tPij2 = _init_tPij2;
+      
+      for(catg=0;catg<ncatg;++catg)
+        {                                                          
+          if(ambiguity_check_v1 == NO && ambiguity_check_v2 == NO)
             {
-              for(i=0;i<ncatgns;++i) plk0[v0_idx + i] = 1.0;
+              AVX_Partial_Lk_Exex(_tPij1,state_v1,
+                                  _tPij2,state_v2,
+                                  ns,_plk0);
+            }
+          else if(ambiguity_check_v1 == YES && ambiguity_check_v2 == NO)
+            {
+              AVX_Partial_Lk_Exin(_tPij2,state_v2,
+                                  _tPij1,plk1,_pmat1plk1,
+                                  ns,_plk0);
+            }
+          else if(ambiguity_check_v1 == NO && ambiguity_check_v2 == YES)
+            {
+              AVX_Partial_Lk_Exin(_tPij1,state_v1,
+                                  _tPij2,plk2,_pmat2plk2,
+                                  ns,_plk0);
             }
           else
             {
-              state_v1 = state_v2 = -1;
-              ambiguity_check_v1 = ambiguity_check_v2 = YES;
-              
-              if(n_v1 && n_v1->tax)
-                {
-                  ambiguity_check_v1 = n_v1->c_seq->is_ambigu[site];
-                  if(ambiguity_check_v1 == NO) state_v1 = n_v1->c_seq->d_state[site];
-                }
-              
-              if(n_v2 && n_v2->tax)
-                {
-                  ambiguity_check_v2 = n_v2->c_seq->is_ambigu[site];
-                  if(ambiguity_check_v2 == NO) state_v2 = n_v2->c_seq->d_state[site];
-                }
-              
-              for(catg=0;catg<ncatg;++catg)
-                {
-                  v1_idx = n_v1->tax ? site*ns : site*ncatgns+catg*ns;
-                  v2_idx = n_v2->tax ? site*ns : site*ncatgns+catg*ns;
-                  p_idx  = (int)(nsns*catg / sz);
-                                        
-                  for(k=0;k<nblocks;++k)
-                    {
-                      _plk1[k] = _mm256_load_pd(plk1 + v1_idx + k*sz);
-                      _plk2[k] = _mm256_load_pd(plk2 + v2_idx + k*sz);
-                    }
-                  
-                  if(ambiguity_check_v1 == NO && ambiguity_check_v2 == NO)
-                    {
-                      AVX_Partial_Lk_Exex(_tPij1 + p_idx,state_v1,
-                                          _tPij2 + p_idx,state_v2,
-                                          ns,_plk0);
-                    }
-                  else if(ambiguity_check_v1 == YES && ambiguity_check_v2 == NO)
-                    {
-                      AVX_Partial_Lk_Exin(_tPij2 + p_idx,state_v2,
-                                          _tPij1 + p_idx,_plk1,_pmat1plk1,
-                                          ns,_plk0);
-                    }
-                  else if(ambiguity_check_v1 == NO && ambiguity_check_v2 == YES)
-                    {
-                      AVX_Partial_Lk_Exin(_tPij1 + p_idx,state_v1,
-                                          _tPij2 + p_idx,_plk2,_pmat2plk2,
-                                          ns,_plk0);
-                    }
-                  else
-                    {
-                      AVX_Partial_Lk_Inin(_tPij1 + p_idx,_plk1,_pmat1plk1,
-                                          _tPij2 + p_idx,_plk2,_pmat2plk2,
-                                          ns,_plk0);
-                    }
-                                    
-                  for(k=0;k<nblocks;++k) _mm256_store_pd(plk0+v0_idx+catg*ns+sz*k,_plk0[k]);
-              
-
-                  if(tree->scaling_method == SCALE_RATE_SPECIFIC)
-                    {
-                      smallest_p_lk = BIG;
-                      for(i=0;i<ns;++i)
-                        if(plk0[v0_idx+catg*ns+i] < smallest_p_lk)
-                          smallest_p_lk = plk0[v0_idx+catg*ns+i];
-                      
-                      /* Current scaling values at that site */
-                      sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[site*ncatg+catg]):(0);
-                      sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[site*ncatg+catg]):(0);
-                      
-                      sum_scale[site*ncatg+catg] = sum_scale_v1_val + sum_scale_v2_val;
-                      
-                      /* Scaling. We have p_lk_lim_inf = 2^-500. Consider for instance that
-                         smallest_p_lk = 2^-600, then curr_scaler_pow will be equal to 100, and
-                         each element in the partial likelihood vector will be multiplied by
-                         2^100. */
-                      if(smallest_p_lk < p_lk_lim_inf &&
-                         tree->mod->augmented == NO &&
-                         tree->apply_lk_scaling == YES)
-                        {
-                          int curr_scaler_pow;
-                          curr_scaler_pow = (int)(-500.*LOG2-log(smallest_p_lk))/LOG2;
-                          sum_scale[site*ncatg+catg] += curr_scaler_pow;
-                          for(i=0;i<ns;++i) Rate_Correction(curr_scaler_pow,plk0+v0_idx+catg*ns+i);
-                        }
-                    }
-                }
+              AVX_Partial_Lk_Inin(_tPij1,plk1,_pmat1plk1,
+                                  _tPij2,plk2,_pmat2plk2,
+                                  ns,_plk0);
             }
-        }   
+          
+          for(k=0;k<nblocks;++k) _mm256_store_pd(plk0+sz*k,_plk0[k]);
+
+          _tPij1 += nsns / sz;
+          _tPij2 += nsns / sz;
+          plk0 += ns;
+          plk1 += (n_v1->tax) ? 0 : ns;
+          plk2 += (n_v2->tax) ? 0 : ns;
+        }
+   
+      plk1 += (n_v1->tax) ? ns : 0;
+      plk2 += (n_v2->tax) ? ns : 0;
 
       if(tree->scaling_method == SCALE_FAST)
         {
           sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[site]):(0);
           sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[site]):(0);
           sum_scale[site] = sum_scale_v1_val + sum_scale_v2_val;
-          
+
+          plk0 -= ncatgns;
           
           largest_p_lk = -BIG;
           for(i=0;i<ncatgns;++i)
-            if(plk0[v0_idx+i] > largest_p_lk)
-              largest_p_lk = plk0[v0_idx+i];
+            if(plk0[i] > largest_p_lk)
+              largest_p_lk = plk0[i];
           
           if(largest_p_lk < INV_TWO_TO_THE_LARGE &&
              tree->mod->augmented == NO &&
              tree->apply_lk_scaling == YES)
             {
-              for(i=0;i<ncatgns;++i) plk0[v0_idx+i] *= TWO_TO_THE_LARGE;
+              for(i=0;i<ncatgns;++i) plk0[i] *= TWO_TO_THE_LARGE;
               sum_scale[site] += LARGE;
             }
+
+          plk0 += ncatgns;
         }
     }
-
-  Free(_tPij1);
-  Free(_tPij2);
+  
+  Free(_init_tPij1);
+  Free(_init_tPij2);
   Free(_pmat1plk1);
   Free(_pmat2plk2);
-  Free(_plk0);
-  Free(_plk1);
-  Free(_plk2);
   
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-static void AVX_Partial_Lk_Exex(__m256d *_tPij1, int state1, __m256d *_tPij2, int state2, int ns, __m256d *plk0)
+void AVX_Partial_Lk_Exex(__m256d *_tPij1, int state1, __m256d *_tPij2, int state2, int ns, __m256d *plk0)
 {
   unsigned const int sz = (int)BYTE_ALIGN / 8;
   unsigned const int nblocks = ns / sz;
@@ -539,7 +474,7 @@ static void AVX_Partial_Lk_Exex(__m256d *_tPij1, int state1, __m256d *_tPij2, in
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-static void AVX_Partial_Lk_Exin(__m256d *_tPij1, int state1, __m256d *_tPij2, __m256d *_plk2, __m256d *_pmat2plk2, int ns, __m256d *_plk0)
+void AVX_Partial_Lk_Exin(__m256d *_tPij1, int state1, __m256d *_tPij2, phydbl *_plk2, __m256d *_pmat2plk2, int ns, __m256d *_plk0)
 {
   unsigned const int sz = (int)BYTE_ALIGN / 8;
   unsigned const int nblocks = ns / sz;
@@ -554,40 +489,35 @@ static void AVX_Partial_Lk_Exin(__m256d *_tPij1, int state1, __m256d *_tPij2, __
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-static void AVX_Partial_Lk_Inin(__m256d *_tPij1, __m256d *_plk1, __m256d *_pmat1plk1, __m256d *_tPij2, __m256d *_plk2, __m256d *_pmat2plk2, int ns, __m256d *_plk0)
+void AVX_Partial_Lk_Inin(__m256d *_tPij1, phydbl *plk1, __m256d *_pmat1plk1, __m256d *_tPij2, phydbl *plk2, __m256d *_pmat2plk2, int ns, __m256d *_plk0)
 {
   unsigned const int sz = (int)BYTE_ALIGN / 8;
   unsigned const int nblocks = ns / sz;
-  unsigned int i;
+  unsigned int i,j;
 
-  AVX_Matrix_Vect_Prod(_tPij1,_plk1,ns,_pmat1plk1);
-  AVX_Matrix_Vect_Prod(_tPij2,_plk2,ns,_pmat2plk2);
+  AVX_Matrix_Vect_Prod(_tPij1,plk1,ns,_pmat1plk1);
+  AVX_Matrix_Vect_Prod(_tPij2,plk2,ns,_pmat2plk2);
   
   for(i=0;i<nblocks;++i) _plk0[i] = _mm256_mul_pd(_pmat1plk1[i],_pmat2plk2[i]);
 }
 
-
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-static void AVX_Matrix_Vect_Prod(__m256d *_m_transpose,  __m256d *_v, int ns, __m256d *_u)
+void AVX_Matrix_Vect_Prod(__m256d *_m_transpose,  phydbl *_v, int ns, __m256d *_u)
 {
   unsigned const int sz = (int)BYTE_ALIGN / 8;
-  unsigned const int nblocks = ns / sz;
+  unsigned const int nblocks = ns / sz;  
   unsigned int i,j;  
-  __m256d _x,_y;
-    
-  for(j=0;j<nblocks;++j) _u[j] = _mm256_setzero_pd();
+  __m256d _x;
 
-  for(i=0;i<ns;++i) // for each column
+  for(i=0;i<nblocks;++i) _u[i] = _mm256_setzero_pd();
+
+  for(i=0;i<ns;++i)
     {
-      for(j=0;j<nblocks;++j) // for each block of sz rows
-        {
-          _x = _mm256_set1_pd(((double *)&_v[(int)(i/sz)])[i]);
-          _y = _mm256_mul_pd(*_m_transpose,_x);
-          _u[j] = _mm256_add_pd(_u[j],_y);
-          _m_transpose++;
-        }
+      _x = _mm256_set1_pd(_v[i]);
+      for(j=0;j<nblocks;++j) _u[j] = _mm256_add_pd(_u[j],_mm256_mul_pd(_m_transpose[j],_x));
+      _m_transpose = _m_transpose + nblocks;
     }
 }
 

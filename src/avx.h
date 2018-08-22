@@ -35,6 +35,10 @@ phydbl AVX_Lk_Core(int state, int ambiguity_check, t_edge *b, t_tree *tree);
 phydbl AVX_Lk_Core_Nucl(int state, int ambiguity_check, t_edge *b, t_tree *tree);
 phydbl AVX_Lk_Core_AA(int state, int ambiguity_check, t_edge *b, t_tree *tree);
 void AVX_Lk_dLk_Core_One_Class_Eigen_Lr(phydbl *dot_prod, phydbl *expl, unsigned int ns, phydbl *lk, phydbl *dlk);
+void AVX_Partial_Lk_Exex(__m256d *_tPij1, int state1, __m256d *_tPij2, int state2, int ns, __m256d *plk0);
+void AVX_Partial_Lk_Exin(__m256d *_tPij1, int state1, __m256d *_tPij2, phydbl *_plk2, __m256d *_pmat2plk2, int ns, __m256d *_plk0);
+void AVX_Partial_Lk_Inin(__m256d *_tPij1, phydbl *plk1, __m256d *_pmat1plk1, __m256d *_tPij2, phydbl *plk2, __m256d *_pmat2plk2, int ns, __m256d *_plk0);
+void AVX_Matrix_Vect_Prod(__m256d *_m_transpose,  phydbl *_v, int ns, __m256d *res);
 
 #endif
 #endif

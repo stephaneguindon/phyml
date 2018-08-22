@@ -89,6 +89,15 @@ phydbl Lk_Core_Eigen_Lr(phydbl *expl, phydbl *dot_prod, t_edge *b, t_tree *tree)
 phydbl Invariant_Lk(int fact_sum_scale, int site, int *num_prec_issue, t_tree *tree);
 void Composite_Lk(t_tree *tree);
 int Sample_Ancestral_Seq_Core(t_node *a, t_node *d, t_edge *b, int r_cat, int site, t_tree *tree);
+void Default_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d);
+void Lk_dLk_Core_Eigen_Lr(phydbl *expl, phydbl *dot_prod, t_edge *b, phydbl *lk, phydbl *dlk, t_tree *tree);
+void Lk_dLk_Core_One_Class_Eigen_Lr(phydbl *dot_prod, phydbl *expl, unsigned int ns, phydbl *lk, phydbl *dlk);
+phydbl Lk_Core_One_Class_Eigen_Lr(phydbl *dot_prod, phydbl *expl, int ns);
+void Core_Default_Update_Partial_Lk(const t_node *n_v1, const t_node *n_v2,
+                                    phydbl *plk0, const phydbl *plk1, const phydbl *plk2,
+                                    const phydbl *Pij1, const phydbl *Pij2,
+                                    int *sum_scale0, const int *sum_scale1, const int *sum_scale2,
+                                    const int ns, const int ncatg, const int npatterns, const int apply_scaling);
 
 
 
@@ -114,9 +123,9 @@ void Rate_Correction(int exponent, phydbl *site_lk_cat);
 void Switch_Partial_Lk_Pre(t_node *a, t_node *d, t_edge *b, short int yesno, t_tree *tree);
 void Switch_Partial_Lk_Post(t_node *a, t_node *d, t_edge *b, short int yesno, t_tree *tree);
 
-/* void Partial_Lk_Inin(phydbl *Pij1, phydbl *plk1, phydbl *Pij2, phydbl *plk2, int ns, phydbl *plk0); */
-/* void Partial_Lk_Exex(phydbl *Pij1, int state1, phydbl *Pij2, int state2, int ns, phydbl *plk0); */
-/* void Partial_Lk_Exin(phydbl *Pij1, int state1, phydbl *Pij2, phydbl *plk2, int ns, phydbl *plk0); */
+void Partial_Lk_Inin(const phydbl *Pij1, const phydbl *plk1, const phydbl *Pij2, const phydbl *plk2, const int ns, phydbl *plk0);
+void Partial_Lk_Exex(const phydbl *Pij1, const int state1, const phydbl *Pij2, const int state2, const int ns, phydbl *plk0);
+void Partial_Lk_Exin(const phydbl *Pij1, const int state1, const phydbl *Pij2, const phydbl *plk2, const int ns, phydbl *plk0);
 
 
 #endif
