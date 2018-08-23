@@ -641,7 +641,7 @@ phydbl Br_Len_Opt(t_edge *b, t_tree *tree)
 
   Set_Update_Eigen_Lr(YES,mixt_tree);
   Set_Use_Eigen_Lr(NO,mixt_tree);
-  
+
   lk_begin = Lk(mixt_b,mixt_tree); /* We can't assume that the log-lk value is up-to-date */
   
   Set_Update_Eigen_Lr(NO,mixt_tree);
@@ -694,7 +694,6 @@ void Round_Optimize(t_tree *tree, int n_round_max)
   each = 0;
 
 
-  
   while(n_round < n_round_max)
     {
       if(tree->mod->s_opt->opt_bl || tree->mod->s_opt->constrained_br_len) Optimize_Br_Len_Serie(n_round_max,tree);
@@ -737,7 +736,7 @@ void Optimize_Br_Len_Serie(int n_max_iter, t_tree *tree)
 {
   phydbl lk_init,lk_end;
   int iter;
-  
+
   Set_Both_Sides(NO,tree);
   Lk(NULL,tree);
   
@@ -903,7 +902,9 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
       
       for(i=0;i<3;++i)
         if(d->v[i] == a || d->b[i] == tree->e_root) 
-          Update_Partial_Lk(tree,d->b[i],d);
+          {
+            Update_Partial_Lk(tree,d->b[i],d);
+          }
     }
   else
     {

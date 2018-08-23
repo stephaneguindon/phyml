@@ -100,6 +100,31 @@ void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree)
 
       if(b->left->tax == YES) p_lk_left += ns;
       if(b->rght->tax == YES) p_lk_rght += ns;
+
+      p_lk_left -= b->left->tax ? ns : ns*ncatg;
+      p_lk_rght -= b->rght->tax ? ns : ns*ncatg;
+      dot_prod -= ns;
+
+      /* PhyML_Printf("\n. EIGEN %d [%g %g %g %g] %p: [%g %g %g %g] %p: [%g %g %g %g] ", */
+      /*              site, */
+      /*              dot_prod[0], */
+      /*              dot_prod[1], */
+      /*              dot_prod[2], */
+      /*              dot_prod[3], */
+      /*              p_lk_left, */
+      /*              p_lk_left[0], */
+      /*              p_lk_left[1], */
+      /*              p_lk_left[2], */
+      /*              p_lk_left[3], */
+      /*              p_lk_rght, */
+      /*              p_lk_rght[0], */
+      /*              p_lk_rght[1], */
+      /*              p_lk_rght[2], */
+      /*              p_lk_rght[3]); */
+
+      p_lk_left += b->left->tax ? ns : ns*ncatg;
+      p_lk_rght += b->rght->tax ? ns : ns*ncatg;
+      dot_prod += ns;
     }
 
   Free(l_ev);
@@ -411,7 +436,37 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
 
           plk0 += ncatgns;
         }
+
+      
+      plk0 -= ncatgns;
+      plk1 -= (n_v1->tax) ? ns : ncatgns;
+      plk2 -= (n_v2->tax) ? ns : ncatgns;
+      
+      /* PhyML_Printf("\n. PARTIAL site: %d plk0: %p [%g %g %g %g] plk1: %p [%g %g %g %g] plk2: %p [%g %g %g %g]", */
+      /*              site, */
+      /*              plk0, */
+      /*              plk0[0], */
+      /*              plk0[1], */
+      /*              plk0[2], */
+      /*              plk0[3], */
+      /*              plk1, */
+      /*              plk1[0], */
+      /*              plk1[1], */
+      /*              plk1[2], */
+      /*              plk1[3], */
+      /*              plk2, */
+      /*              plk2[0], */
+      /*              plk2[1], */
+      /*              plk2[2], */
+      /*              plk2[3] */
+      /*              ); */
+      
+      plk0 += ncatgns;
+      plk1 += (n_v1->tax) ? ns : ncatgns;
+      plk2 += (n_v2->tax) ? ns : ncatgns;
+
     }
+
   
   Free(_init_tPij1);
   Free(_init_tPij2);

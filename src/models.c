@@ -248,11 +248,11 @@ phydbl Get_Lambda_F84(phydbl *pi, phydbl *kappa)
 /*   8000 = 20x20x20 times the operation +                          */
 /********************************************************************/
 
-void PMat_Empirical(phydbl l, t_mod *mod, int pos, phydbl *Pij, phydbl *tPij)
+void PMat_Empirical(const phydbl l, const t_mod *mod, const int pos, phydbl *Pij, phydbl *tPij)
 {
   const unsigned int ns = mod->ns;
   unsigned int i, j, k;
-  phydbl *U,*V,*R;
+  const phydbl *U,*V,*R;
   phydbl *expt;
   phydbl *uexpt;
   phydbl sum;
@@ -265,10 +265,6 @@ void PMat_Empirical(phydbl l, t_mod *mod, int pos, phydbl *Pij, phydbl *tPij)
   V     = mod->eigen->l_e_vect;
   R     = mod->eigen->e_val; /* exponential of the eigen value matrix */
 
-  /* Initialize a rate-specific N*N matrix */
-  for(i=0;i<ns;++i) for(k=0;k<ns;k++) Pij[pos+ns*i+k] = .0;
-  /* compute POW(exp(D/mr),l) into mat_eDmrl */
-  /* for(k=0;k<ns;++k)  expt[k] = (phydbl)pow(R[k],l); */
   for(k=0;k<ns;++k)  expt[k] = exp(R[k]*l);
 
   /* multiply Vr*POW(exp(D/mr),l)*Vi into Pij */

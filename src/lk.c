@@ -785,10 +785,8 @@ phydbl Lk_Core(int state, int ambiguity_check,
         }
     }
   
-  // likelihood (or 1st, 2nd derivative) not rescaled here. Valid only if all partial likelihoods
-  // were scaled using the same factor, i.e., when scaling_method == SCALE_FAST. In this case, the
-  // scaling factors will cancel out in dlk/lk and d2lk/lk
-  res = site_lk;
+  if(tree->apply_lk_scaling == YES) res = site_lk / pow(2,tree->fact_sum_scale[site]);
+  else                              res = site_lk;
   
   log_site_lk = log(site_lk) - (phydbl)LOG2 * tree->fact_sum_scale[site]; // log_site_lk =  log(site_lk_scaled / 2^(left_subtree+right_subtree))
   tree->c_lnL_sorted[site] = log_site_lk;
@@ -1015,7 +1013,7 @@ void Update_Eigen_Lr(t_edge *b, t_tree *tree)
           dot_prod += ns;
           if(b->left->tax == NO) p_lk_left += ns;
           if(b->rght->tax == NO) p_lk_rght += ns;
-        }        
+        }
       if(b->left->tax == YES) p_lk_left += ns;
       if(b->rght->tax == YES) p_lk_rght += ns;
     }
