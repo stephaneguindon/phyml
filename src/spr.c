@@ -791,7 +791,8 @@ void Global_Spr_Search(t_tree *tree)
 
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Starting first round of SPRs...\n");
 
-  tree->mod->s_opt->max_depth_path            = MIN(30,1+(int)(tree->n_otu/5));
+  /* tree->mod->s_opt->max_depth_path            = MIN(30,1+(int)(tree->n_otu/5)); */
+  tree->mod->s_opt->max_depth_path            = 1+(int)(tree->n_otu/4);
   tree->mod->s_opt->max_delta_lnL_spr         = 1000;
   tree->mod->s_opt->l_min_spr                 = 1.E-3;
   tree->mod->s_opt->spr_lnL                   = YES;
