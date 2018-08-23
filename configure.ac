@@ -64,7 +64,7 @@ dnl LT_INIT
 dnl AC_PROG_LIBTOOL
 
 
-DEFAULT_C_FLAG="-std=c99 -O2 -fomit-frame-pointer -funroll-loops -Wall -Winline ${VECTOR_FLAG}"
+DEFAULT_C_FLAG="-std=c99 -O3 -fomit-frame-pointer -funroll-loops -Wall -Winline ${VECTOR_FLAG}"
 dnl default_C_FLAG="-O2 ${VECTOR_FLAG}"
 dnl DEFAULT_C_FLAG="-O3 -fPIC"
 

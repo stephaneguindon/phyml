@@ -3330,7 +3330,7 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
                        &Num_Derivative_Several_Param,
                        &Lnsrch,&failed);
                   
-                  permut = Permutate(tree->mod->r_mat->n_diff_rr);
+                  permut = Permutate(tree->mod->ns);
 
                   for(i=0;i<tree->mod->ns;++i)
                     {

@@ -257,6 +257,8 @@ void PMat_Empirical(phydbl l, t_mod *mod, int pos, phydbl *Pij, phydbl *tPij)
   phydbl *uexpt;
   phydbl sum;
 
+  assert(Pij);
+  
   expt  = mod->eigen->e_val_im;
   uexpt = mod->eigen->r_e_vect_im;
   U     = mod->eigen->r_e_vect;
@@ -272,63 +274,40 @@ void PMat_Empirical(phydbl l, t_mod *mod, int pos, phydbl *Pij, phydbl *tPij)
   /* multiply Vr*POW(exp(D/mr),l)*Vi into Pij */
   for(i=0;i<ns;i++) for (k=0;k<ns;k++) uexpt[i*ns+k] = U[i*ns+k] * expt[k];
 
+  Pij = Pij + pos;
+  if(tPij != NULL) tPij = tPij + pos;
+  
+  
   for(i=0;i<ns;++i)
     {
       for(j=0;j<ns;++j)
         {
+          Pij[j] = 0.0;
           for(k=0;k<ns;++k)
             {
-              Pij[pos+ns*i+j] += (uexpt[i*ns+k] * V[k*ns+j]);
+              Pij[j] += (uexpt[i*ns+k] * V[k*ns+j]);
             }
-          if(Pij[pos+ns*i+j] < SMALL_PIJ) Pij[pos+ns*i+j] = SMALL_PIJ;
+          if(Pij[j] < SMALL_PIJ) Pij[j] = SMALL_PIJ;
         }
-
       sum = 0.0;
-      for(j=0;j<ns;++j) sum += Pij[pos+ns*i+j];
-      for(j=0;j<ns;++j) Pij[pos+ns*i+j] /= sum;
+      for(j=0;j<ns;++j) sum += Pij[j];
+      for(j=0;j<ns;++j) Pij[j] /= sum;
+
+      Pij += ns;
     }
+  
+  Pij -= ns*ns;
 
-
-  if(tPij)
+  if(tPij != NULL)
     {
       for(i=0;i<ns;++i)
         {
           for(j=0;j<ns;++j)
             {
-              tPij[pos+ns*i+j] = Pij[pos+ns*j+i];
+              tPij[ns*i+j] = Pij[ns*j+i];
             }
         }
     }
-
-  /* PhyML_Printf("\n. l: %G",l); */
-  /* PhyML_Printf("\n. U\n"); */
-  /* for(i=0;i<ns;++i) */
-  /*   { */
-  /*     for(j=0;j<ns;++j) */
-  /*       { */
-  /*         PhyML_Printf("%5f ",U[ns*i+j]); */
-  /*       } */
-  /*     PhyML_Printf("\n"); */
-  /*   } */
-  /* PhyML_Printf("\n. V\n"); */
-  /* for(i=0;i<ns;++i) */
-  /*   { */
-  /*     for(j=0;j<ns;++j) */
-  /*       { */
-  /*         PhyML_Printf("%5f ",V[i*ns+j]); */
-  /*       } */
-  /*     PhyML_Printf("\n"); */
-  /*   } */
-  /* PhyML_Printf("\n. P\n"); */
-  /* for(i=0;i<ns;++i) */
-  /*   { */
-  /*     for(j=0;j<ns;++j) */
-  /*       { */
-  /*         PhyML_Printf("%5f ",Pij[pos+ns*j+i]); */
-  /*       } */
-  /*     PhyML_Printf("\n"); */
-  /*   } */
-
 }
 
 //////////////////////////////////////////////////////////////

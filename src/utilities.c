@@ -8311,6 +8311,7 @@ char *aLRT_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
   finalize_beagle_instance(tree);
 #endif
 
+  Free_One_Spr(tree->best_spr);
   Free_Spr_List_One_Edge(tree);
   Free_Spr_List_All_Edge(tree);
   Free_Triplet(tree->triplet_struct);

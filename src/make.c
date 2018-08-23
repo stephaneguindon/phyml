@@ -27,10 +27,10 @@ void Make_Tree_4_Lk(t_tree *tree, calign *cdata, int n_site)
 
 #if (defined(__AVX__) || defined(__SSE3__))
 #ifndef WIN32
-  if(posix_memalign((void **)&tree->eigen_lr_left,BYTE_ALIGN,(size_t)MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-  if(posix_memalign((void **)&tree->eigen_lr_rght,BYTE_ALIGN,(size_t)MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-  if(posix_memalign((void **)&tree->dot_prod,BYTE_ALIGN,(size_t)tree->n_pattern*tree->mod->ns*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-  if(posix_memalign((void **)&tree->expl,BYTE_ALIGN,(size_t)3*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&tree->eigen_lr_left,BYTE_ALIGN,(size_t)MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&tree->eigen_lr_rght,BYTE_ALIGN,(size_t)MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&tree->dot_prod,BYTE_ALIGN,(size_t)tree->n_pattern*tree->mod->ns*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&tree->expl,BYTE_ALIGN,(size_t)3*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 #else
   tree->eigen_lr_left = _aligned_malloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
   tree->eigen_lr_rght = _aligned_malloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
@@ -266,7 +266,7 @@ void Make_Edge_Lk_Left(t_edge *b, t_tree *tree)
         {
 #if (defined(__AVX__) || defined(__SSE3__))
 #ifndef WIN32
-          if(posix_memalign((void **)&b->p_lk_left,BYTE_ALIGN,(size_t)tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+          if(posix_memalign((void **)&b->p_lk_left,BYTE_ALIGN,(size_t)tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 #else
           b->p_lk_left = _aligned_malloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
 #endif
@@ -281,7 +281,7 @@ void Make_Edge_Lk_Left(t_edge *b, t_tree *tree)
           
 #if (defined(__AVX__) || defined(__SSE3__))
 #ifndef WIN32
-          if(posix_memalign((void **)&b->p_lk_tip_l,BYTE_ALIGN,(size_t)tree->data->crunch_len*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+          if(posix_memalign((void **)&b->p_lk_tip_l,BYTE_ALIGN,(size_t)tree->data->crunch_len*tree->mod->ns*sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 #else
           b->p_lk_tip_l = _aligned_malloc(tree->data->crunch_len*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
 #endif
@@ -302,7 +302,7 @@ void Make_Edge_Lk_Left(t_edge *b, t_tree *tree)
 
 #if (defined(__AVX__) || defined(__SSE3__))
 #ifndef WIN32
-      if(posix_memalign((void **)&b->p_lk_left,BYTE_ALIGN,(size_t)tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+      if(posix_memalign((void **)&b->p_lk_left,BYTE_ALIGN,(size_t)tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 #else
       b->p_lk_left = _aligned_malloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
 #endif
@@ -337,7 +337,7 @@ void Make_Edge_Lk_Rght(t_edge *b, t_tree *tree)
         {
 #if (defined(__AVX__) || defined(__SSE3__))
 #ifndef WIN32
-	  if(posix_memalign((void **)&b->p_lk_rght,BYTE_ALIGN,(size_t)tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+	  if(posix_memalign((void **)&b->p_lk_rght,BYTE_ALIGN,(size_t)tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 #else          
           b->p_lk_rght = _aligned_malloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
 #endif
@@ -350,7 +350,7 @@ void Make_Edge_Lk_Rght(t_edge *b, t_tree *tree)
         {
 #if (defined(__AVX__) || defined(__SSE3__))
 #ifndef WIN32
-          if(posix_memalign((void **)&b->p_lk_tip_r,BYTE_ALIGN,(size_t)tree->data->crunch_len*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+          if(posix_memalign((void **)&b->p_lk_tip_r,BYTE_ALIGN,(size_t)tree->data->crunch_len*tree->mod->ns*sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 #else
           b->p_lk_tip_r = _aligned_malloc(tree->data->crunch_len*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
 #endif
@@ -371,7 +371,7 @@ void Make_Edge_Lk_Rght(t_edge *b, t_tree *tree)
       b->sum_scale_rght = (int *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(int));
 #if (defined(__AVX__) || defined(__SSE3__))
 #ifndef WIN32
-      if(posix_memalign((void **)&b->p_lk_rght,BYTE_ALIGN,(size_t)tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+      if(posix_memalign((void **)&b->p_lk_rght,BYTE_ALIGN,(size_t)tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 #else
       b->p_lk_rght      = _aligned_malloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
 #endif
@@ -400,7 +400,7 @@ void Make_Extra_Edge_Lk(t_tree *tree)
 
 #if (defined(__AVX__) || defined(__SSE3__))
 #ifndef WIN32
-  if(posix_memalign((void **)&tree->p_lk_extra_0,BYTE_ALIGN,(size_t)tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&tree->p_lk_extra_0,BYTE_ALIGN,(size_t)tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 #else
   tree->p_lk_extra_0 = _aligned_malloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
 #endif
@@ -411,7 +411,7 @@ void Make_Extra_Edge_Lk(t_tree *tree)
   
 #if (defined(__AVX__) || defined(__SSE3__))
 #ifndef WIN32
-  if(posix_memalign((void **)&tree->p_lk_tip_extra_0,BYTE_ALIGN,(size_t)tree->data->crunch_len*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&tree->p_lk_tip_extra_0,BYTE_ALIGN,(size_t)tree->data->crunch_len*tree->mod->ns*sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 #else
   tree->p_lk_tip_extra_0 = _aligned_malloc(tree->data->crunch_len*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
 #endif
@@ -429,7 +429,7 @@ void Make_Extra_Edge_Lk(t_tree *tree)
 
 #if (defined(__AVX__) || defined(__SSE3__))
 #ifndef WIN32
-  if(posix_memalign((void **)&tree->p_lk_extra_1,BYTE_ALIGN,(size_t)tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&tree->p_lk_extra_1,BYTE_ALIGN,(size_t)tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 #else
   tree->p_lk_extra_1 = _aligned_malloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
 #endif
@@ -440,7 +440,7 @@ void Make_Extra_Edge_Lk(t_tree *tree)
   
 #if (defined(__AVX__) || defined(__SSE3__))
 #ifndef WIN32
-  if(posix_memalign((void **)&tree->p_lk_tip_extra_1,BYTE_ALIGN,(size_t)tree->data->crunch_len*tree->mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&tree->p_lk_tip_extra_1,BYTE_ALIGN,(size_t)tree->data->crunch_len*tree->mod->ns*sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 #else
   tree->p_lk_tip_extra_1 = _aligned_malloc(tree->data->crunch_len*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
 #endif
@@ -833,7 +833,7 @@ void Make_Model_Complete(t_mod *mod)
 
 #if (defined(__AVX__) || defined(__SSE3__))
 #ifndef WIN32
-  if(posix_memalign((void **)&mod->Pij_rr->v,BYTE_ALIGN,(size_t)mod->ras->n_catg*mod->ns*mod->ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&mod->Pij_rr->v,BYTE_ALIGN,(size_t)mod->ras->n_catg*mod->ns*mod->ns*sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 #else
   mod->Pij_rr->v = _aligned_malloc(mod->ras->n_catg*mod->ns*mod->ns*sizeof(phydbl),BYTE_ALIGN);
 #endif
@@ -949,7 +949,7 @@ t_efrq *Make_Efrq(int ns)
 
 #if (defined(__AVX__) || defined(__SSE3__))
 #ifndef WIN32
-  if(posix_memalign((void **)&e_frq->pi->v,BYTE_ALIGN,(size_t)ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&e_frq->pi->v,BYTE_ALIGN,(size_t)ns*sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 #else
   e_frq->pi->v = _aligned_malloc(ns * sizeof(phydbl),BYTE_ALIGN);
 #endif
@@ -1070,9 +1070,9 @@ eigen *Make_Eigen_Struct(int ns)
 
 #if (defined(__AVX__) || defined(__SSE3__))
 #ifndef WIN32
-  if(posix_memalign((void **)&eig->r_e_vect,BYTE_ALIGN,ns*ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-  if(posix_memalign((void **)&eig->l_e_vect,BYTE_ALIGN,ns*ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-  if(posix_memalign((void **)&eig->dum,BYTE_ALIGN,ns*ns*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&eig->r_e_vect,BYTE_ALIGN,ns*ns*sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&eig->l_e_vect,BYTE_ALIGN,ns*ns*sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&eig->dum,BYTE_ALIGN,ns*ns*sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 #else
   eig->r_e_vect = _aligned_malloc(ns*ns*sizeof(phydbl),BYTE_ALIGN);
   eig->l_e_vect = _aligned_malloc(ns*ns*sizeof(phydbl),BYTE_ALIGN);
