@@ -21,28 +21,26 @@ the GNU public licence. See http://www.opensource.org for details.
 
 void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree)
 {
-  unsigned int site,catg,state;
-  unsigned int i,j,k,l;
+  unsigned int site,catg;
+  unsigned int i,j;
   
   unsigned const int npattern = tree->n_pattern;
   unsigned const int ncatg = tree->mod->ras->n_catg;
   unsigned const int ns = tree->mod->ns;
   unsigned const int sz = (int)BYTE_ALIGN / 8;
-  unsigned const int ncatgns = ncatg * ns;
   unsigned const int nblocks = ns / sz;
 
-  phydbl *p_lk_left,*p_lk_rght,*pi,*dot_prod,*p_lk_left_pi;
+  const phydbl *p_lk_left,*p_lk_rght,*pi;
+  phydbl *dot_prod,*p_lk_left_pi;
   phydbl *l_ev,*r_ev;
 
-  __m256d *_l_ev,*_r_ev,*_p_lk_left,*_p_lk_rght,*_prod_left,*_prod_rght;
+  __m256d *_l_ev,*_r_ev,*_prod_left,*_prod_rght;
   
 #ifndef WIN32
   if(posix_memalign((void **)&p_lk_left_pi,BYTE_ALIGN,(size_t) ns * sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   if(posix_memalign((void **)&l_ev,BYTE_ALIGN,(size_t) ns * ns * sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   if(posix_memalign((void **)&_l_ev,BYTE_ALIGN,(size_t) ns * ns / sz * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   if(posix_memalign((void **)&_r_ev,BYTE_ALIGN,(size_t) ns * ns / sz * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-  if(posix_memalign((void **)&_p_lk_left,BYTE_ALIGN,(size_t) ns / sz * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-  if(posix_memalign((void **)&_p_lk_rght,BYTE_ALIGN,(size_t) ns / sz * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   if(posix_memalign((void **)&_prod_left,BYTE_ALIGN,(size_t) ns / sz * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   if(posix_memalign((void **)&_prod_rght,BYTE_ALIGN,(size_t) ns / sz * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 #else
@@ -50,8 +48,6 @@ void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree)
   l_ev         = _aligned_malloc(ns * ns * sizeof(phydbl),BYTE_ALIGN);
   _l_ev        = _aligned_malloc(ns * ns / sz * sizeof(__m256d),BYTE_ALIGN);
   _r_ev        = _aligned_malloc(ns * ns / sz * sizeof(__m256d),BYTE_ALIGN);
-  _p_lk_left   = _aligned_malloc(ns / sz * sizeof(__m256d),BYTE_ALIGN);
-  _p_lk_rght   = _aligned_malloc(ns / sz * sizeof(__m256d),BYTE_ALIGN);
   _prod_left   = _aligned_malloc(ns / sz * sizeof(__m256d),BYTE_ALIGN);
   _prod_rght   = _aligned_malloc(ns / sz * sizeof(__m256d),BYTE_ALIGN);
 #endif
@@ -91,15 +87,6 @@ void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree)
     {
       for(catg=0;catg<ncatg;++catg)
         {
-          /* for(i=0;i<nblocks;++i) */
-          /*   { */
-          /*     // Dot product left partial likelihood with equilibrium freqs and load... */
-          /*     _p_lk_left[i] = _mm256_mul_pd(_mm256_load_pd(p_lk_left + i*sz), */
-          /*                                   _mm256_load_pd(pi + i*sz)); */
-              // ...just load.
-              /* _p_lk_rght[i] = _mm256_load_pd(p_lk_rght + i*sz);               */
-            /* } */
-
           for(i=0;i<ns;++i) p_lk_left_pi[i] = p_lk_left[i] * pi[i];
           
           AVX_Matrix_Vect_Prod(_r_ev,p_lk_left_pi,ns,_prod_left);
@@ -119,8 +106,6 @@ void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree)
   Free(l_ev);
   Free(_l_ev);
   Free(_r_ev);
-  Free(_p_lk_left);
-  Free(_p_lk_rght);
   Free(_prod_left);
   Free(_prod_rght);
   Free(p_lk_left_pi);
@@ -129,7 +114,7 @@ void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-phydbl AVX_Lk_Core_One_Class_No_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, phydbl *Pij, phydbl *pi, int ns, int ambiguity_check, int observed_state)
+phydbl AVX_Lk_Core_One_Class_No_Eigen_Lr(const phydbl *p_lk_left, const phydbl *p_lk_rght, const phydbl *Pij, const phydbl *pi, const int ns, const int ambiguity_check, const int observed_state)
 {
   const unsigned int sz = (int)BYTE_ALIGN / 8;
   const unsigned nblocks = ns/sz;
@@ -188,7 +173,7 @@ phydbl AVX_Lk_Core_One_Class_No_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, p
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-phydbl AVX_Lk_Core_One_Class_Eigen_Lr(phydbl *dot_prod, phydbl *expl, unsigned int ns)
+phydbl AVX_Lk_Core_One_Class_Eigen_Lr(const phydbl *dot_prod, const phydbl *expl, const unsigned int ns)
 {
   unsigned int l;
   const unsigned int sz = (int)BYTE_ALIGN / 8;
@@ -206,7 +191,7 @@ phydbl AVX_Lk_Core_One_Class_Eigen_Lr(phydbl *dot_prod, phydbl *expl, unsigned i
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void AVX_Lk_dLk_Core_One_Class_Eigen_Lr(phydbl *dot_prod, phydbl *expl, unsigned int ns, phydbl *lk, phydbl *dlk)
+void AVX_Lk_dLk_Core_One_Class_Eigen_Lr(const phydbl *dot_prod, const phydbl *expl, const unsigned int ns, phydbl *lk, phydbl *dlk)
 {
   unsigned int i;
   const unsigned int sz = (int)BYTE_ALIGN / 8;
@@ -245,26 +230,6 @@ phydbl AVX_Vect_Norm(__m256d _z)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-__m256d AVX_Horizontal_Add(__m256d x[4])
-{
-  __m256d y[2],z[2];
-
-  // y[0] = [x00+x01;x10+x11;x02+x03;x12+x13]
-  y[0] = _mm256_hadd_pd(x[0], x[1]);
-  // y[1] = [x20+x21;x30+x31;x22+x23;x32+x33]
-  y[1] = _mm256_hadd_pd(x[2], x[3]);
-
-  // z[0] = [x00+x01;x10+x11;x22+x23;x32+x33]
-  /* z[0] = _mm256_blend_pd(y[0],y[1],0b1100); */
-  z[0] = _mm256_blend_pd(y[0],y[1],12);
-  // z[1] = [x02+x03;x12+x13;x20+x21;x30+x31]
-  z[1] = _mm256_permute2f128_pd(y[0],y[1],0x21);
-
-  return(_mm256_add_pd(z[0],z[1]));
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
 
 void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
 {
@@ -460,7 +425,7 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void AVX_Partial_Lk_Exex(__m256d *_tPij1, int state1, __m256d *_tPij2, int state2, int ns, __m256d *plk0)
+void AVX_Partial_Lk_Exex(const __m256d *_tPij1, const int state1, const __m256d *_tPij2, const int state2, const int ns, __m256d *plk0)
 {
   unsigned const int sz = (int)BYTE_ALIGN / 8;
   unsigned const int nblocks = ns / sz;
@@ -474,7 +439,7 @@ void AVX_Partial_Lk_Exex(__m256d *_tPij1, int state1, __m256d *_tPij2, int state
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void AVX_Partial_Lk_Exin(__m256d *_tPij1, int state1, __m256d *_tPij2, phydbl *_plk2, __m256d *_pmat2plk2, int ns, __m256d *_plk0)
+void AVX_Partial_Lk_Exin(const __m256d *_tPij1, const int state1, const __m256d *_tPij2, const phydbl *_plk2, __m256d *_pmat2plk2, const int ns, __m256d *_plk0)
 {
   unsigned const int sz = (int)BYTE_ALIGN / 8;
   unsigned const int nblocks = ns / sz;
@@ -489,11 +454,11 @@ void AVX_Partial_Lk_Exin(__m256d *_tPij1, int state1, __m256d *_tPij2, phydbl *_
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void AVX_Partial_Lk_Inin(__m256d *_tPij1, phydbl *plk1, __m256d *_pmat1plk1, __m256d *_tPij2, phydbl *plk2, __m256d *_pmat2plk2, int ns, __m256d *_plk0)
+void AVX_Partial_Lk_Inin(const __m256d *_tPij1, const phydbl *plk1, __m256d *_pmat1plk1, const __m256d *_tPij2, const phydbl *plk2, __m256d *_pmat2plk2, const int ns, __m256d *_plk0)
 {
   unsigned const int sz = (int)BYTE_ALIGN / 8;
   unsigned const int nblocks = ns / sz;
-  unsigned int i,j;
+  unsigned int i;
 
   AVX_Matrix_Vect_Prod(_tPij1,plk1,ns,_pmat1plk1);
   AVX_Matrix_Vect_Prod(_tPij2,plk2,ns,_pmat2plk2);
@@ -504,7 +469,7 @@ void AVX_Partial_Lk_Inin(__m256d *_tPij1, phydbl *plk1, __m256d *_pmat1plk1, __m
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void AVX_Matrix_Vect_Prod(__m256d *_m_transpose,  phydbl *_v, int ns, __m256d *_u)
+void AVX_Matrix_Vect_Prod(const __m256d *_m_transpose, const phydbl *_v, const int ns, __m256d *_u)
 {
   unsigned const int sz = (int)BYTE_ALIGN / 8;
   unsigned const int nblocks = ns / sz;  
@@ -519,6 +484,27 @@ void AVX_Matrix_Vect_Prod(__m256d *_m_transpose,  phydbl *_v, int ns, __m256d *_
       for(j=0;j<nblocks;++j) _u[j] = _mm256_add_pd(_u[j],_mm256_mul_pd(_m_transpose[j],_x));
       _m_transpose = _m_transpose + nblocks;
     }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+__m256d AVX_Horizontal_Add(const __m256d x[4])
+{
+  __m256d y[2],z[2];
+
+  // y[0] = [x00+x01;x10+x11;x02+x03;x12+x13]
+  y[0] = _mm256_hadd_pd(x[0], x[1]);
+  // y[1] = [x20+x21;x30+x31;x22+x23;x32+x33]
+  y[1] = _mm256_hadd_pd(x[2], x[3]);
+
+  // z[0] = [x00+x01;x10+x11;x22+x23;x32+x33]
+  /* z[0] = _mm256_blend_pd(y[0],y[1],0b1100); */
+  z[0] = _mm256_blend_pd(y[0],y[1],12);
+  // z[1] = [x02+x03;x12+x13;x20+x21;x30+x31]
+  z[1] = _mm256_permute2f128_pd(y[0],y[1],0x21);
+
+  return(_mm256_add_pd(z[0],z[1]));
 }
 
 #endif
