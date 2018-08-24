@@ -3004,9 +3004,9 @@ void Bootstrap(t_tree *tree, int tbe_bootstrap)
           MIXT_Set_Alias_Subpatt(NO,boot_tree);
         }
 
-      Switch_Eigen(YES,boot_tree->mod);                 
+      Set_Update_Eigen(YES,boot_tree->mod);                 
       Lk(NULL,boot_tree);
-      Switch_Eigen(NO,boot_tree->mod);
+      Set_Update_Eigen(NO,boot_tree->mod);
 
       if(boot_tree->mod->s_opt->opt_topo)
         {
@@ -7463,7 +7463,7 @@ void Evolve(calign *data, t_mod *mod, int first_site_pos, t_tree *tree)
   switch_to_yes = NO;
   if(tree->mod->gamma_mgf_bl == YES) switch_to_yes = YES;
 
-  Switch_Eigen(YES,mod);                 
+  Set_Update_Eigen(YES,mod);                 
 
   assert(first_site_pos < data->init_len);
   
@@ -10245,23 +10245,6 @@ void Connect_CSeqs_To_Nodes(calign *cdata, option *io, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Switch_Eigen(int state, t_mod *mod)
-{
-  t_mod *buff;
-
-  buff = mod;
-  do
-    {
-      buff->update_eigen = state;
-      buff = buff->next;
-      if(!buff) break;
-    }
-  while(1);
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
 void Set_Both_Sides(int yesno, t_tree *tree)
 {
   tree->both_sides = yesno;
@@ -10284,6 +10267,23 @@ void Set_Update_Eigen_Lr(int yesno, t_tree *tree)
 {
   tree->update_eigen_lr = yesno;
   if(tree->is_mixt_tree == YES) MIXT_Set_Update_Eigen_Lr(yesno,tree);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Set_Update_Eigen(int yesno, t_mod *mod)
+{
+  t_mod *buff;
+
+  buff = mod;
+  do
+    {
+      buff->update_eigen = yesno;
+      buff = buff->next;
+      if(!buff) break;
+    }
+  while(1);  
 }
 
 //////////////////////////////////////////////////////////////
@@ -12776,6 +12776,12 @@ void Map_Mutations(t_node *a, t_node *d, int sa, int sd, t_edge *b, int site, in
           
           n_mut_branch++;
 
+          if(n_mut_branch > 5 && n_mut_branch%10 == 0)
+            PhyML_Printf("\n. # of mutations on edge %d (length: %g) exceeds 5 (%d) ! The program will probably crash soon...:(",
+                         b->num,
+                         tree->rates ? tree->rates->cur_l[d->num] : b->l->v,
+                         n_mut_branch);
+          
           snew = Sample_i_With_Proba_pi(probs,ns);
           
           // Record mutation type

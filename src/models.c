@@ -871,8 +871,7 @@ void Update_Eigen(t_mod *mod)
       MIXT_Update_Eigen(mod);
       return;
     }
-
-
+  
   if(mod->update_eigen == YES)
     {
       //Update the Q-matrix first before computing the Eigen(because the Eigen is computed based on the Q-matrix)
@@ -975,7 +974,7 @@ void Switch_From_M4mod_To_Mod(t_mod *mod)
   mod->ns = mod->m4mod->n_o;
   for(i=0;i<mod->ns;i++) mod->e_frq->pi->v[i] = mod->m4mod->o_fq[i];
   mod->eigen->size = mod->ns;
-  Switch_Eigen(YES,mod);
+  Set_Update_Eigen(YES,mod);
 }
 
 //////////////////////////////////////////////////////////////
@@ -1043,7 +1042,7 @@ void Switch_From_Mod_To_M4mod(t_mod *mod)
   mod->ns = mod->m4mod->n_o * mod->m4mod->n_h;
   for(i=0;i<mod->ns;i++) mod->e_frq->pi->v[i] = mod->m4mod->o_fq[i%mod->m4mod->n_o] * mod->m4mod->h_fq[i/mod->m4mod->n_o];
   mod->eigen->size = mod->ns;
-  Switch_Eigen(YES,mod);
+  Set_Update_Eigen(YES,mod);
 }
 
 //////////////////////////////////////////////////////////////

@@ -44,7 +44,7 @@ void MCMC(t_tree *tree)
       MCMC_Read_Param_Vals(tree);
     }
 
-  Switch_Eigen(YES,tree->mod);
+  Set_Update_Eigen(YES,tree->mod);
 
   MCMC_Initialize_Param_Val(tree->mcmc,tree);
  
@@ -72,7 +72,7 @@ void MCMC(t_tree *tree)
 
   Set_Both_Sides(NO,tree);  
   Lk(NULL,tree);
-  Switch_Eigen(NO,tree->mod);
+  Set_Update_Eigen(NO,tree->mod);
   MCMC_Print_Param(tree->mcmc,tree);
   
 
@@ -4123,7 +4123,7 @@ void MCMC_Kappa(t_tree *mixt_tree)
   phydbl K;
   phydbl cur_lnL_data, new_lnL_data;
 
-  Switch_Eigen(YES,mixt_tree->mod);
+  Set_Update_Eigen(YES,mixt_tree->mod);
 
   if(mixt_tree->is_mixt_tree == YES) tree = mixt_tree->next;
   else tree = mixt_tree;
@@ -4178,7 +4178,7 @@ void MCMC_Kappa(t_tree *mixt_tree)
     }
   while(tree != NULL);
   
-  Switch_Eigen(NO,mixt_tree->mod);
+  Set_Update_Eigen(NO,mixt_tree->mod);
 }
 
 //////////////////////////////////////////////////////////////
@@ -4355,7 +4355,7 @@ void MCMC_Covarion_Rates(t_tree *tree)
 
   if(tree->mod->use_m4mod == NO) return;
 
-  Switch_Eigen(YES,tree->mod);
+  Set_Update_Eigen(YES,tree->mod);
 
   For(i,2*tree->n_otu-2) tree->rates->br_do_updt[i] = YES;
 
@@ -4394,7 +4394,7 @@ void MCMC_Covarion_Rates(t_tree *tree)
 				NULL,Wrap_Lk,tree->mcmc->move_type[tree->mcmc->num_move_cov_rates+class],NO,NULL,tree,NULL);
     }
 
-  Switch_Eigen(NO,tree->mod);
+  Set_Update_Eigen(NO,tree->mod);
 
 }
 
@@ -4406,11 +4406,11 @@ void MCMC_Covarion_Switch(t_tree *tree)
 {
   if(tree->mod->use_m4mod == NO) return;
 
-  Switch_Eigen(YES,tree->mod);
+  Set_Update_Eigen(YES,tree->mod);
   MCMC_Single_Param_Generic(&(tree->mod->m4mod->delta),0.01,+100.,tree->mcmc->num_move_cov_switch,
 			    NULL,&(tree->c_lnL),
 			    NULL,Wrap_Lk,tree->mcmc->move_type[tree->mcmc->num_move_cov_switch],NO,NULL,tree,NULL); 
-  Switch_Eigen(NO,tree->mod);
+  Set_Update_Eigen(NO,tree->mod);
 }
 
 //////////////////////////////////////////////////////////////

@@ -1025,7 +1025,7 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
 
       if(tree->mod->s_opt->opt_cov_delta)
         {
-          Switch_Eigen(YES,tree->mod);
+          Set_Update_Eigen(YES,tree->mod);
 
           Generic_Brent_Lk(&(tree->mod->m4mod->delta),
                            0.01,10.,
@@ -1040,7 +1040,7 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
               PhyML_Printf("[%10f]",tree->mod->m4mod->delta);
             }
 
-          Switch_Eigen(NO,tree->mod);
+          Set_Update_Eigen(NO,tree->mod);
 
         }
 
@@ -1049,7 +1049,7 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
         {
           int rcat;
           
-          Switch_Eigen(YES,tree->mod);
+          Set_Update_Eigen(YES,tree->mod);
           
           for(rcat=0;rcat<tree->mod->m4mod->n_h;rcat++)
             {
@@ -1097,14 +1097,14 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
                 }
             }
           
-          Switch_Eigen(NO,tree->mod);
+          Set_Update_Eigen(NO,tree->mod);
           
         }
       
       if(tree->mod->s_opt->opt_cov_alpha)
         {
           
-          Switch_Eigen(YES,tree->mod);
+          Set_Update_Eigen(YES,tree->mod);
           
           /* 	  Optimize_Single_Param_Generic(tree,&(tree->mod->m4mod->ras->alpha), */
           /* 					.01,10., */
@@ -1126,7 +1126,7 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
               PhyML_Printf("[%10f]",tree->mod->m4mod->alpha);
             }
           
-          Switch_Eigen(NO,tree->mod);
+          Set_Update_Eigen(NO,tree->mod);
           
         }
       
@@ -1138,7 +1138,7 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
         {
           if(tree->mod->whichmodel == GTR || tree->mod->whichmodel == CUSTOM)
             {              
-              Switch_Eigen(YES,tree->mod);
+              Set_Update_Eigen(YES,tree->mod);
               
               int *permut = Permutate(tree->mod->r_mat->n_diff_rr);
               
@@ -1158,7 +1158,7 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
               
               if(verbose) Print_Lk(tree,"[GTR parameters     ]");
               
-              Switch_Eigen(NO,tree->mod);
+              Set_Update_Eigen(NO,tree->mod);
             }
         }
     }
@@ -2210,7 +2210,7 @@ int Optimiz_Alpha_And_Pinv(t_tree *mixt_tree, int verbose)
   t_tree *tree;
   int i;
 
-  Switch_Eigen(NO,mixt_tree->mod);
+  Set_Update_Eigen(NO,mixt_tree->mod);
 
   alpha   = NULL;
   n_alpha = 0;
@@ -2728,7 +2728,7 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
   int i;
   phydbl lk_new,lk_old;
   
-  Switch_Eigen(YES,mixt_tree->mod);
+  Set_Update_Eigen(YES,mixt_tree->mod);
 
   n_r_mat = 0;
   tree    = mixt_tree;
@@ -2816,7 +2816,7 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
 
   if(r_mat) Free(r_mat);
 
-  Switch_Eigen(NO,mixt_tree->mod);
+  Set_Update_Eigen(NO,mixt_tree->mod);
 
 }
 
@@ -2830,7 +2830,7 @@ void Optimize_TsTv(t_tree *mixt_tree, int verbose)
   t_tree *tree;
   int i;
 
-  Switch_Eigen(YES,mixt_tree->mod);
+  Set_Update_Eigen(YES,mixt_tree->mod);
 
   tstv   = NULL;
   n_tstv = 0;
@@ -2880,7 +2880,7 @@ void Optimize_TsTv(t_tree *mixt_tree, int verbose)
   
   if(tstv) Free(tstv);
   
-  Switch_Eigen(NO,mixt_tree->mod);
+  Set_Update_Eigen(NO,mixt_tree->mod);
   
 }
 
@@ -2894,7 +2894,7 @@ void Optimize_Pinv(t_tree *mixt_tree, int verbose)
   t_tree *tree;
   int i;
 
-  Switch_Eigen(NO,mixt_tree->mod);
+  Set_Update_Eigen(NO,mixt_tree->mod);
 
   pinv   = NULL;
   n_pinv = 0;
@@ -2947,7 +2947,7 @@ void Optimize_Alpha(t_tree *mixt_tree, int verbose)
   t_tree *tree;
   int i;
 
-  Switch_Eigen(NO,mixt_tree->mod);
+  Set_Update_Eigen(NO,mixt_tree->mod);
 
   alpha   = NULL;
   n_alpha = 0;
@@ -3286,7 +3286,7 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
   phydbl lk_new,lk_old;
   int *permut;
   
-  Switch_Eigen(YES,mixt_tree->mod);
+  Set_Update_Eigen(YES,mixt_tree->mod);
 
   freqs   = NULL;
   n_freqs = 0;
@@ -3369,7 +3369,7 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
 
   if(freqs) Free(freqs);
 
-  Switch_Eigen(NO,mixt_tree->mod);
+  Set_Update_Eigen(NO,mixt_tree->mod);
 
 }
 
@@ -3380,7 +3380,7 @@ void Optimize_Rmat_Weights(t_tree *mixt_tree, int verbose)
 {
   scalar_dbl *r_mat_weight;
 
-  Switch_Eigen(NO,mixt_tree->mod);
+  Set_Update_Eigen(NO,mixt_tree->mod);
 
   if(mixt_tree->is_mixt_tree == NO) return;
 
@@ -3412,7 +3412,7 @@ void Optimize_Rmat_Weights(t_tree *mixt_tree, int verbose)
       while(r_mat_weight);
     }
 
-  Switch_Eigen(NO,mixt_tree->mod);
+  Set_Update_Eigen(NO,mixt_tree->mod);
 
 }
 
@@ -3423,7 +3423,7 @@ void Optimize_Efrq_Weights(t_tree *mixt_tree, int verbose)
 {
   scalar_dbl *e_frq_weight;
 
-  Switch_Eigen(NO,mixt_tree->mod);
+  Set_Update_Eigen(NO,mixt_tree->mod);
 
   if(mixt_tree->is_mixt_tree == NO) return;
 
@@ -3456,7 +3456,7 @@ void Optimize_Efrq_Weights(t_tree *mixt_tree, int verbose)
       while(e_frq_weight);
     }
 
-  Switch_Eigen(NO,mixt_tree->mod);
+  Set_Update_Eigen(NO,mixt_tree->mod);
 
 }
 
@@ -3472,7 +3472,7 @@ void Optimize_Lambda(t_tree *mixt_tree, int verbose)
   t_tree *tree;
   int i;
 
-  Switch_Eigen(YES,mixt_tree->mod);
+  Set_Update_Eigen(YES,mixt_tree->mod);
 
   lambda   = NULL;
   n_lambda = 0;
@@ -3515,7 +3515,7 @@ void Optimize_Lambda(t_tree *mixt_tree, int verbose)
 
   if(lambda) Free(lambda);
 
-  Switch_Eigen(NO,mixt_tree->mod);
+  Set_Update_Eigen(NO,mixt_tree->mod);
 
 }
 

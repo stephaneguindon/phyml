@@ -233,9 +233,9 @@ int main(int argc, char **argv)
 
 
                   
-                  Switch_Eigen(YES,tree->mod);                 
+                  Set_Update_Eigen(YES,tree->mod);                 
                   Lk(NULL,tree);
-                  Switch_Eigen(NO,tree->mod);
+                  Set_Update_Eigen(NO,tree->mod);
 
 
                   tree->n_tot_bl_opt = 0;

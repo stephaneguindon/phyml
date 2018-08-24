@@ -3428,7 +3428,7 @@ void M4_Init_Model(m4 *m4mod, calign *data, t_mod *mod)
   for(i=0;i<m4mod->n_h;i++) m4mod->multipl[i] = (phydbl)i;
   for(i=0;i<m4mod->n_h;i++) m4mod->multipl_unscaled[i] = (phydbl)i;
 
-  Switch_Eigen(YES,mod);
+  Set_Update_Eigen(YES,mod);
   M4_Update_Qmat(m4mod,mod);
 }
 

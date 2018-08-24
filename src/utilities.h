@@ -2235,7 +2235,6 @@ phydbl String_To_Dbl(char *string);
 int String_To_Int(char *string);
 char *To_Upper_String(char *in);
 void Connect_CSeqs_To_Nodes(calign *cdata, option *io, t_tree *tree);
-void Switch_Eigen(int state, t_mod *mod);
 void Joint_Proba_States_Left_Right(phydbl *Pij, phydbl *p_lk_left, phydbl *p_lk_rght,
                    vect_dbl *pi, int scale_left, int scale_rght,
                    phydbl *F, int n, int site, t_tree *tree);
@@ -2311,6 +2310,7 @@ void Sample_Ancestral_Seq_Pre(t_node *a, t_node *d, t_edge *b,int site, int r_ca
 void Sample_Ancestral_Seq(int fullmutmap, int fromprior, t_tree *tree);
 void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print);
 void Ancestral_Sequences(t_tree *tree, int print);
+void Set_Update_Eigen(int yesno, t_mod *mod);
 
 #include "xml.h"
 #include "free.h"

@@ -510,9 +510,9 @@ phydbl *DATE_MCMC(t_tree *tree)
   res = (phydbl *)mCalloc(tree->mcmc->chain_len / tree->mcmc->sample_interval * n_vars,sizeof(phydbl));
   
   Set_Both_Sides(YES,tree);
-  Switch_Eigen(YES,tree->mod);
+  Set_Update_Eigen(YES,tree->mod);
   Lk(NULL,tree);
-  Switch_Eigen(NO,tree->mod);
+  Set_Update_Eigen(NO,tree->mod);
   RATES_Lk_Rates(tree);
   DATE_Assign_Primary_Calibration(tree);
   TIMES_Lk_Times(NO,tree);
@@ -832,7 +832,8 @@ phydbl *DATE_MCMC(t_tree *tree)
           fflush(NULL);
           RATES_Update_Cur_Bl(tree);
 
-          if(tree->io->mutmap == YES) Sample_Ancestral_Seq(YES,NO,tree);
+          if(tree->mcmc->sample_num > tree->mcmc->chain_len_burnin &&
+             tree->io->mutmap == YES) Sample_Ancestral_Seq(YES,NO,tree);
 	          
           tree->mcmc->sample_num++;
         }
