@@ -5337,14 +5337,6 @@ void Graft_Subtree(t_edge *target, t_node *link, t_node *link_daughter, t_edge *
   Set_Edge_Dirs(residual,residual->left,residual->rght,tree);
   Set_Edge_Dirs(b_up,b_up->left,b_up->rght,tree);
 
-  /* printf("\n here %p target: %d [%p] eroot: %d [%p] target_nd: %d [%p] root: %d [%p]", */
-  /*        tree, */
-  /*        target?target->num:-1,target, */
-  /*        tree->e_root?tree->e_root->num:-1,tree->e_root, */
-  /*        target_nd?target_nd->num:-1,target_nd, */
-  /*        tree->n_root?tree->n_root->num:-1,tree->n_root); */
-  /* fflush(NULL); */
-
   if(tree->n_root != NULL)
     {
       if(target == tree->e_root)
@@ -8173,7 +8165,7 @@ t_tree *Dist_And_BioNJ(calign *cdata, t_mod *mod, option *io)
       tree = Make_Tree_From_Scratch(cdata->n_otu,cdata);
       tree->mat = NULL;
     }
-
+  
   return tree;
 }
 
@@ -8696,7 +8688,6 @@ void Branch_To_Time_Pre(t_node *a, t_node *d, t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void Branch_Lengths_To_Rate_Lengths(t_tree *tree)
 {

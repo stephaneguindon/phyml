@@ -151,6 +151,7 @@ int main(int argc, char **argv)
                     case 2 :          { tree = Read_User_Tree(cdata,mod,io); break; }
                     }
 
+
                   if(io->fp_in_constraint_tree != NULL)
                     {
                       char *s;
@@ -230,6 +231,8 @@ int main(int argc, char **argv)
                   if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
                                                      
 
+
+                  
                   Switch_Eigen(YES,tree->mod);                 
                   Lk(NULL,tree);
                   Switch_Eigen(NO,tree->mod);

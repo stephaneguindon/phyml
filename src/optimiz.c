@@ -736,7 +736,7 @@ void Optimize_Br_Len_Serie(int n_max_iter, t_tree *tree)
 {
   phydbl lk_init,lk_end;
   int iter;
-
+  
   Set_Both_Sides(NO,tree);
   Lk(NULL,tree);
   
@@ -2301,9 +2301,12 @@ static phydbl Br_Len_Spline(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_
   u = v = fu = fv = dfu = dfv = -1.;
   new_l = -1.;
   
+
   dLk(l,b,tree);
   init_dl = tree->c_dlnL;
 
+  if(*l > tree->mod->l_max) *l = 0.5*tree->mod->l_max;
+  if(*l < tree->mod->l_min) *l = 2.0*tree->mod->l_min;
   
   // Find value of l where first derivative is < 0;
   tree->c_dlnL = init_dl;
@@ -2361,7 +2364,8 @@ static phydbl Br_Len_Spline(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_
 
 
   
-  /* PhyML_Printf("\n Begin NR loop (lnL: %12G dlnL: %12G d2lnL: %12G) l: %12G num: %d",tree->c_lnL,tree->c_dlnL,tree->c_d2lnL,*l,b->num); */
+  /* PhyML_Printf("\n Begin NR loop (lnL: %12G dlnL: %12G) l: %12G num: %d",tree->c_lnL,tree->c_dlnL,*l,b->num); */
+
   converged = NO;
   iter = 0;
   do
@@ -2460,27 +2464,12 @@ static phydbl Br_Len_Spline(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_
   
   *l = best_l;
   tree->c_lnL = best_lnL;
-
-  /* printf("\n. *l=%12G lnL:%15G",*l,tree->c_lnL); */
-  
-  /* Set_Use_Eigen_Lr(NO,tree); */
-  /* tree->c_lnL = Lk(b,tree); */
-
-  /* printf("\n. init: %f current: %f l: %f",init_lnL,tree->c_lnL,b->l->v); */
-  /* Exit("\n"); */
-  /* assert(best_lnL > init_lnL-tol); */
-  
-  /* Set_Use_Eigen_Lr(YES,tree); */
-  /* dLk(l,b,tree); */
-  /* PhyML_Printf("\n End NR loop (lnL: %12G dlnL: %12G d2lnL: %12G) l: %12G",tree->c_lnL,tree->c_dlnL,tree->c_d2lnL,*l); */
+    
   if(iter == n_iter_max)
     {
       PhyML_Printf("\n. Too many iterations in edge length optimization routine (l=%G init=%G).\n",best_l,init_l);
       assert(FALSE);
     }
-
-  /* PhyML_Printf("\n. %d %G %G",tree->c_lnL > init_lnL,tree->c_lnL,init_lnL); */
-  /* assert(tree->c_lnL > init_lnL); */
   
   return tree->c_lnL;
 }
