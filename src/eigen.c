@@ -51,8 +51,7 @@ int Eigen(int job, phydbl *A, int n, phydbl *rr, phydbl *ri,
     phydbl tiny, t; 
 
     tiny = SMALL;
-
-    
+        
     balance(A,n,&low,&hi,work);
     elemhess(job,A,n,low,hi,vr,vi,(int*)(work+n));
     if (-1 == realeig(job,A,n,low,hi,rr,ri,vr,vi)) return (-1);

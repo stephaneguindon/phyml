@@ -1698,6 +1698,8 @@ matrix *ML_Dist(calign *data, t_mod *mod)
   F               = (phydbl *)mCalloc(mod->ns*mod->ns,sizeof(phydbl ));
   eigen_struct    = (eigen *)Make_Eigen_Struct(mod->ns);
 
+  Update_Eigen(mod);
+
   tmpdata->n_otu  = 2;
 
   tmpdata->crunch_len = data->crunch_len;
@@ -1763,6 +1765,8 @@ matrix *ML_Dist(calign *data, t_mod *mod)
           sum = 0.;
           for(i=0;i<mod->ns*mod->ns;++i) sum += F[i];
           
+          /* for(i=0;i<mod->ns*mod->ns;++i) PhyML_Printf("\n. %g",F[i]); */
+
           /* if(sum < .001) d_max = -1.; */
           if(sum < .001) d_max = init;
           else if((sum > 1. - .001) && (sum < 1. + .001)) Opt_Dist_F(&(d_max),F,mod);
@@ -2263,6 +2267,7 @@ phydbl Lk_Dist(phydbl *F, phydbl dist, t_mod *mod)
       if(len < mod->l_min)      len = mod->l_min;
       else if(len > mod->l_max) len = mod->l_max;
       PMat(len,mod,mod->ns*mod->ns*k,mod->Pij_rr->v,NULL);
+      /* PhyML_Printf("\n. p: %g len: %g",mod->Pij_rr->v[0],len); */
     }
 
   dim1 = mod->ns*mod->ns;
@@ -2281,6 +2286,7 @@ phydbl Lk_Dist(phydbl *F, phydbl dist, t_mod *mod)
             {
               pijk = mod->Pij_rr->v[dim1*k+dim2*i+j];              
               lnL += (F[dim1*k+dim2*i+j] + F[dim1*k+dim2*j+i]) * log(pi * pijk);
+              /* PhyML_Printf("\n. pijk: %g lnL: %g",pijk,lnL); */
             }
         }
     }
@@ -2293,6 +2299,7 @@ phydbl Lk_Dist(phydbl *F, phydbl dist, t_mod *mod)
         {
           pijk = mod->Pij_rr->v[dim1*k+dim2*i+i];
           lnL += F[dim1*k+dim2*i+i]* log(pi * pijk);
+          /* PhyML_Printf("\n. pijk: %g lnL: %g",pijk,lnL); */
         }
     }
 

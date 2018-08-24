@@ -1899,10 +1899,10 @@ phydbl Dist_F_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol, int n_iter_max,
   b=((ax > cx) ? ax : cx);
   x = w = v = bx;
   old_lnL = UNLIKELY;
-  fw = fv = fx = -Lk_Dist(F,FABS(bx),mod);
+  fw = fv = fx = -Lk_Dist(F,fabs(bx),mod);
   curr_lnL = init_lnL = -fw;
   
-  /* printf("\n. bx=%f f: %f %f %f %f fx: %f",bx,mod->e_frq->pi->v[0],mod->e_frq->pi->v[1],mod->e_frq->pi->v[2],mod->e_frq->pi->v[3],fx); */
+  /* PhyML_Printf("\n. bx=%f f: %f %f %f %f fx: %f",bx,mod->e_frq->pi->v[0],mod->e_frq->pi->v[1],mod->e_frq->pi->v[2],mod->e_frq->pi->v[3],fx); */
   assert(isnan(fx) == FALSE);
   assert(isinf(fx) == FALSE);
 
@@ -2006,6 +2006,8 @@ void Opt_Dist_F(phydbl *dist, phydbl *F, t_mod *mod)
   bx =  (*dist);
   cx = mod->l_max;
 
+  /* PhyML_Printf("\n. bx: %g",bx); */
+  
 /*   Dist_F_Brak(&ax,&bx,&cx,F,dist,mod); */
   Dist_F_Brent(ax,bx,cx,1.E-10,1000,dist,F,mod);
 }
@@ -2305,8 +2307,8 @@ static phydbl Br_Len_Spline(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_
   dLk(l,b,tree);
   init_dl = tree->c_dlnL;
 
-  if(*l > tree->mod->l_max) *l = 0.5*tree->mod->l_max;
-  if(*l < tree->mod->l_min) *l = 2.0*tree->mod->l_min;
+  if(*l > tree->mod->l_max) *l = 0.5;
+  if(*l < tree->mod->l_min) *l = 0.001;
   
   // Find value of l where first derivative is < 0;
   tree->c_dlnL = init_dl;

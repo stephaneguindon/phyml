@@ -2234,6 +2234,7 @@ void DATE_XML(char *xml_filename)
   mixt_tree = XML_Process_Base(xml_filename);
   assert(mixt_tree);
   
+  
   mixt_tree->rates = RATES_Make_Rate_Struct(mixt_tree->n_otu);
   RATES_Init_Rate_Struct(mixt_tree->rates,NULL,mixt_tree->n_otu);
 

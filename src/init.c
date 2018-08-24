@@ -1005,7 +1005,6 @@ void Init_Model(calign *data, t_mod *mod, option *io)
   mod->ns = io->mod->ns;
 
 
-
   if(io->datatype == GENERIC) mod->whichmodel = JC69;
 
   dr      = (phydbl *)mCalloc(  mod->ns,sizeof(phydbl));

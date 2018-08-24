@@ -484,6 +484,7 @@ phydbl *DATE_MCMC(t_tree *tree)
 
   if(tree->io->mutmap == YES) Make_MutMap(tree);
 
+  
   TIMES_Randomize_Tree_With_Time_Constraints(tree->rates->a_cal[0],tree);
   
   mcmc = MCMC_Make_MCMC_Struct();

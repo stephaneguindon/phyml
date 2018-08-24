@@ -282,6 +282,7 @@ void PMat_Empirical(const phydbl l, const t_mod *mod, const int pos, phydbl *Pij
           for(k=0;k<ns;++k)
             {
               Pij[j] += (uexpt[i*ns+k] * V[k*ns+j]);
+              /* PhyML_Printf("\n. P[j]: %g %g %g",Pij[j],uexpt[i*ns+k],V[k*ns+j]); */
             }
           if(Pij[j] < SMALL_PIJ) Pij[j] = SMALL_PIJ;
         }

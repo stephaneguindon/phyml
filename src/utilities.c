@@ -8149,10 +8149,10 @@ t_tree *Dist_And_BioNJ(calign *cdata, t_mod *mod, option *io)
   if(mod->s_opt->random_input_tree == NO)
     {
       if(!io->quiet) PhyML_Printf("\n\n. Computing pairwise distances...");
-
+      
       mat = ML_Dist(cdata,mod);
       Fill_Missing_Dist(mat);
-
+            
       if(!io->quiet) PhyML_Printf("\n\n. Building BioNJ tree...");
       mat->tree = Make_Tree_From_Scratch(cdata->n_otu,cdata);      
       Bionj(mat);
@@ -11311,6 +11311,22 @@ scalar_dbl *Duplicate_Scalar_Dbl(scalar_dbl *from)
   while(f);
 
   return(to);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+void Set_Scalar_Dbl(phydbl val, scalar_dbl *from)
+{
+  scalar_dbl *f;
+
+  f = from;
+  do
+    {
+      f->v = val;;
+      f = f->next;
+    }
+  while(f);
 }
 
 /*////////////////////////////////////////////////////////////
