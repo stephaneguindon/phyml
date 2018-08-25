@@ -761,6 +761,8 @@ void Global_Spr_Search(t_tree *tree)
 
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Score of initial tree: %.2f",tree->c_lnL);
 
+  for(i=0;i<2*tree->n_otu-3;++i) Set_Scalar_Dbl(Uni()*(1.0-0.001) + 0.001,tree->a_edges[i]->l);
+
   
   tree->mod->s_opt->min_diff_lk_move  = 1.E-1;
   tree->mod->s_opt->min_diff_lk_local = 1.E-1;
