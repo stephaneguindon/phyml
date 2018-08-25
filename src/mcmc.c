@@ -4254,13 +4254,13 @@ void MCMC_Free_Mixt_Rate(t_tree *tree)
       // Proposal is uniform. Determine upper and lower bounds.
       u = Uni();
       low_bound = (c2updt==0)?(.0):(y[c2updt-1]);
-      up_bound  = (c2updt==c-1)?(2.*y[c-2]):(y[c2updt+1]);
+      up_bound  = y[c2updt+1];
       y_cur = y[c2updt];
       y[c2updt] = low_bound + u*(up_bound - low_bound);
             
       // Hastings ratio
       if(c2updt == c-1)
-        hr = POW(y_cur/y[c-1],c-1);
+        hr = pow(y_cur/y[c-1],c-1);
       else
         hr = 1.0;
       

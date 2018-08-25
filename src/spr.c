@@ -886,12 +886,12 @@ void Global_Spr_Search(t_tree *tree)
       no_improv++;
       iter++;
     }
-  while(tree->mod->s_opt->n_improvements > 15);
+  while(tree->mod->s_opt->n_improvements > 5);
         
 
 
 
-  if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Second round of SPRs...\n");
+  if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n+ Second round of SPRs...\n");
 
   
   /* tree->mod->s_opt->max_depth_path            = MIN(30,1+(int)(tree->n_otu/5)); */

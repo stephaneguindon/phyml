@@ -2463,6 +2463,8 @@ static phydbl Br_Len_Spline(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_
     }
   while(converged == NO);
 
+  assert(*l < tree->mod->l_max + 1.E-20); 
+  assert(*l > tree->mod->l_min - 1.E-20); 
   
   *l = best_l;
   tree->c_lnL = best_lnL;
