@@ -763,7 +763,10 @@ void Global_Spr_Search(t_tree *tree)
 
   for(i=0;i<2*tree->n_otu-3;++i) Set_Scalar_Dbl(Uni()*(1.0-0.001) + 0.001,tree->a_edges[i]->l);
 
-  
+  Stepwise_Add_Pars(tree);
+  Spr_Pars(0,tree->n_otu,tree);
+  Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
+      
   tree->mod->s_opt->min_diff_lk_move  = 1.E-1;
   tree->mod->s_opt->min_diff_lk_local = 1.E-1;
   Round_Optimize(tree,1000);
