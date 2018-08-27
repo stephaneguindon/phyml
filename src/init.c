@@ -159,6 +159,7 @@ void Init_Tree(t_tree *tree, int n_otu)
   tree->eval_rlnL                 = YES;
   tree->eval_glnL                 = YES;
   tree->scaling_method            = SCALE_FAST;
+  tree->perform_spr_right_away    = YES;
   tree->tip_root                  = 0;
   tree->n_edges_traversed         = 0;
   tree->fully_nni_opt             = NO;
@@ -745,9 +746,7 @@ void Set_Defaults_Optimiz(t_opt *s_opt)
   s_opt->spr_lnL              = NO;
   s_opt->min_depth_path       = 0;
   s_opt->eval_list_regraft    = NO;
-  s_opt->apply_spr_right_away = YES;
-  s_opt->apply_spr            = YES;
-  
+
   s_opt->max_depth_path            = 2000;
   s_opt->deepest_path              = 2000;
   s_opt->max_delta_lnL_spr         = 2000000.;
@@ -774,8 +773,6 @@ void Set_Defaults_Optimiz(t_opt *s_opt)
   s_opt->serial_free_rates       = YES;
 
   s_opt->curr_opt_free_rates     = NO;
-  
-  s_opt->l_min_spr            = 0.0;
 }
 
 //////////////////////////////////////////////////////////////
@@ -1058,12 +1055,14 @@ void Init_Model(calign *data, t_mod *mod, option *io)
     {
       /* Set the substitution parameters to their default values
          if they are not fixed by the user */
+// VINCENT: Already fixed in function 'Set_Defaults_Model'
+/*
       if(mod->s_opt->opt_kappa == YES)
         {
           mod->kappa->v  = 4.0;
           mod->lambda->v = 1.0;
         }
-      
+*/    
       if(mod->whichmodel == CUSTOM)
         {
           for(i=0;i<6;i++) mod->r_mat->rr_val->v[i] = 1.0;
@@ -1097,9 +1096,11 @@ void Init_Model(calign *data, t_mod *mod, option *io)
   if(io->datatype == NT) /* Nucleotides */
     {
       /* init for nucleotides */
+// VINCENT: Already set in function 'Set_Defaults_Model'
+/*
       mod->lambda->v    = 1.;
+*/
       /* mod->update_eigen = YES; */
-
 
       if(mod->whichmodel == JC69)
         {
@@ -1140,29 +1141,45 @@ void Init_Model(calign *data, t_mod *mod, option *io)
       
       if(mod->whichmodel == TN93)
         {
-          if(mod->e_frq->user_state_freq == NO) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
-          else for(i=0;i<4;i++) mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
-          for(i=0;i<mod->ns;i++) mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
+          if(mod->e_frq->user_state_freq == NO)
+			Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
+          else
+			for(i=0;i<4;i++)
+				mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
+          for(i=0;i<mod->ns;i++)
+			mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
           mod->update_eigen = NO;
-          if(io->mod->s_opt->opt_kappa) io->mod->s_opt->opt_lambda = YES;
+          if(io->mod->s_opt->opt_kappa)
+			io->mod->s_opt->opt_lambda = YES;
         }
 
       if(mod->whichmodel == HKY85)
         {
-          if(mod->e_frq->user_state_freq == NO) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
-          else for(i=0;i<4;i++) mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
-          for(i=0;i<mod->ns;i++) mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
+          if(mod->e_frq->user_state_freq == NO)
+			Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
+          else
+			for(i=0;i<4;i++)
+				mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
+          for(i=0;i<mod->ns;i++)
+			mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
           mod->update_eigen = NO;
         }
       
       if(mod->whichmodel == GTR)
         {
-          if(mod->e_frq->user_state_freq == NO) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
-          else for(i=0;i<4;i++) mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
-          for(i=0;i<mod->ns;i++) mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
-          mod->kappa->v          = 1.;
-          mod->update_eigen      = NO;
-          io->mod->s_opt->opt_rr = YES;
+			if (mod->e_frq->user_state_freq == NO)
+				Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);
+			else
+			{
+				for(i=0;i<4;i++)
+					mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
+			}
+			for(i=0;i<mod->ns;i++)
+				mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
+			mod->kappa->v          = 1.;
+			mod->update_eigen      = NO;
+// VINCENT: do not necessarily optimize relative rate parameters, they could be set by user
+			//io->mod->s_opt->opt_rr = YES;
         }
       
       if(mod->whichmodel == CUSTOM)

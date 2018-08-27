@@ -193,11 +193,14 @@ void Launch_Interface(option *io)
   io->fp_out_tree  = Openfile(io->out_tree_file,1);
   io->fp_out_stats = Openfile(io->out_stats_file,1);
 
-  if(io->mod->whichmodel == GTR) 
-    {
-      /* Make_Custom_Model(io->mod); */
-      io->mod->s_opt->opt_rr = 1;
-    }
+// VINCENT: do not necessarily optimize relative rate parameters, they could be set by user
+	if(io->mod->whichmodel == GTR)
+	{
+		if (io->mod->s_opt->opt_subst_param)
+			io->mod->s_opt->opt_rr = YES;
+		else
+			io->mod->s_opt->opt_rr = NO;
+	}
 }
 
 //////////////////////////////////////////////////////////////

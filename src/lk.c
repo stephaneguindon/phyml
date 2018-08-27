@@ -572,7 +572,7 @@ if(tree->rates && tree->io->lk_approx == NORMAL)
           if(tree->mixt_tree != NULL)     len *= tree->mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number];
           if(len < tree->mod->l_min)      len = tree->mod->l_min;
           else if(len > tree->mod->l_max) len = tree->mod->l_max;
-          for(state=0;state<ns;++state)   expl[catg*ns+state] = exp(tree->mod->eigen->e_val[state]*len);
+          for(state=0;state<ns;++state) expl[catg*ns+state] = (phydbl)POW(tree->mod->eigen->e_val[state],len);
         }
     }
 
@@ -628,7 +628,7 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
 {
   unsigned int catg,state,site;
   phydbl len,rr;
-  phydbl lk,dlk,dlnlk,d2lnlk;
+  phydbl lk,dlk,d2lk,dlnlk,d2lnlk;
   phydbl ev,expevlen;
    
   const unsigned int ns = tree->mod->ns;
@@ -679,8 +679,7 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
       
       for(state=0;state<ns;++state) 
         {
-          ev = tree->mod->eigen->e_val[state];
-          /* ev = log(tree->mod->eigen->e_val[state]); */
+          ev = log(tree->mod->eigen->e_val[state]);
           expevlen = exp(ev*len);
 
           expl[0*ncatg*ns + catg*ns + state] = expevlen;
@@ -710,7 +709,7 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
           int l;
           int i,j;
           phydbl *U,*V,*Q;
-          printf("\n. l: %G dlk: %G lk: %G",b->l->v,dlk,lk);
+          printf("\n. l: %G dlk: %G d2lk: %G lk: %G",b->l->v,dlk,d2lk,lk);
           lk = 0.0;
           for(l=0;l<ns;++l)
             {
@@ -758,10 +757,10 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
         }
 
       dlk /= lk;
-      /* d2lk /= lk; */
+      d2lk /= lk;
 
       dlnlk  += tree->data->wght[site] * dlk;
-      /* d2lnlk += tree->data->wght[site] * d2lk - dlk*dlk;      */
+      d2lnlk += tree->data->wght[site] * d2lk - dlk*dlk;     
     }
 
   tree->c_dlnL  = dlnlk;
@@ -3217,7 +3216,7 @@ void Map_Mutations(t_node *a, t_node *d, int sa, int sd, t_edge *b, int site, in
   T = 0.0;
 #ifdef PHYTIME
   T = tree->rates->cur_l[d->num]*rr;
-#else
+#elif defined(PHYML)
   T = b->l->v*rr;
 #endif
   
