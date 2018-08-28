@@ -1210,6 +1210,8 @@ void Make_Spr_List_One_Edge(t_tree *tree)
       tree->spr_list_one_edge[i] = Make_One_Spr(tree);
       Init_One_Spr(tree->spr_list_one_edge[i]);
     }
+
+  tree->perform_spr_right_away = NO;
 }
 
 //////////////////////////////////////////////////////////////
@@ -1228,6 +1230,8 @@ void Make_Spr_List_All_Edge(t_tree *tree)
       tree->spr_list_all_edge[i] = Make_One_Spr(tree);
       Init_One_Spr(tree->spr_list_all_edge[i]);
     }
+
+  tree->perform_spr_right_away = NO;
 }
 
 //////////////////////////////////////////////////////////////

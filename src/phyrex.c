@@ -21,8 +21,8 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int PHYREX_Main(int argc, char *argv[])
 {
-  return(PHYREX_Main_Estimate(argc,argv));
-  /* return(PHYREX_Main_Simulate(argc,argv)); */
+  /* return(PHYREX_Main_Estimate(argc,argv)); */
+  return(PHYREX_Main_Simulate(argc,argv));
 }
 
 //////////////////////////////////////////////////////////////
@@ -67,6 +67,7 @@ int PHYREX_Main_Estimate(int argc, char *argv[])
   
   /* Allocate migrep model */
   tree->mmod = PHYREX_Make_Migrep_Model(n_dim);
+  PHYREX_Init_Migrep_Mod(tree->mmod,n_dim,10.0,10.0);
 
   tree->data      = cdata;
   tree->mod       = io->mod;
@@ -90,8 +91,6 @@ int PHYREX_Main_Estimate(int argc, char *argv[])
     }
   
   PHYREX_Read_Tip_Coordinates(ldsk_a,tree);
-
-  PHYREX_Init_Migrep_Mod(tree->mmod,n_dim,tree->mmod->lim->lonlat[0],tree->mmod->lim->lonlat[1]);
 
   tree->disk->ldsk_a = ldsk_a;
 
@@ -121,9 +120,10 @@ int PHYREX_Main_Estimate(int argc, char *argv[])
   Init_Model(tree->data,io->mod,io);
   Prepare_Tree_For_Lk(tree);
 
+
   PHYREX_Tree_Height(tree);
   
-  res = PHYREX_MCMC(tree);
+  /* res = PHYREX_MCMC(tree); */
 
   Free(res);  
 
@@ -172,6 +172,8 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   sprintf(s+strlen(s),".%d.xml",tree->mod->io->r_seed);
   PHYREX_Print_MultiTypeTree_Config_File(n_sites,s,tree);
 
+
+  
   res = PHYREX_MCMC(tree);
 
   disk = tree->disk;
@@ -1482,7 +1484,7 @@ phydbl PHYREX_Lk(t_tree *tree)
     {
       assert(disk);
       lnL = PHYREX_Lk_Core(disk,tree);
-      lnL += log_lbda - tree->mmod->lbda * fabs(disk->time - disk->next->time);
+      lnL += log_lbda - tree->mmod->lbda * FABS(disk->time - disk->next->time);
       tree->mmod->c_lnL += lnL;
       disk->c_lnL = tree->mmod->c_lnL;
       disk = disk->prev;
@@ -1548,7 +1550,6 @@ phydbl PHYREX_Lk_Core(t_dsk *disk, t_tree *tree)
 
   /* Likelihood for the disk center */
   for(i=0;i<tree->mmod->n_dim;i++) lnL -= log(tree->mmod->lim->lonlat[i]);
-  
   
   return(lnL);
 }
@@ -1617,7 +1618,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   mcmc->is_burnin        = NO;
   mcmc->nd_t_digits      = 1;
   mcmc->chain_len        = 1E+8;
-  mcmc->sample_interval  = 1E+2;  
+  mcmc->sample_interval  = 1E+3;  
   mcmc->max_lag          = 1000;
   mcmc->sample_size      = mcmc->chain_len/mcmc->sample_interval;
   mcmc->sample_num       = 0;
@@ -1716,7 +1717,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   fflush(NULL);
 
 
-  PhyML_Fprintf(fp_stats,"\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s",
+  PhyML_Fprintf(fp_stats,"\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s",
                 "sample",
                 "lnP",
                 "alnL",
@@ -1734,8 +1735,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
                 "nCoal",
                 "nHit",
                 "rootTime",
-                "rootLat",
-                "rootLon",
                 "tstv",
                 "alpha",
                 "accLbda",
@@ -1867,19 +1866,18 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       
       if(!(tree->mcmc->run%tree->mcmc->sample_interval))
         {
-          Lk(NULL,tree);
+          /* Lk(NULL,tree); */
 
-          RATES_Update_Cur_Bl(tree);
-          char *s = Write_Tree(tree,NO);
-          PhyML_Fprintf(fp_tree,"\n[%f %f] %s",tree->rates->nd_t[tree->n_root->num],tree->c_lnL,s);
-          Free(s);
-          fflush(NULL);
+          /* RATES_Update_Cur_Bl(tree); */
+          /* char *s = Write_Tree(tree,NO); */
+          /* PhyML_Fprintf(fp_tree,"\n[%f %f] %s",s,tree->rates->nd_t[tree->n_root->num],tree->c_lnL); */
+          /* Free(s); */
+          /* fflush(NULL); */
 
-          
           disk = tree->disk;
           while(disk->prev) disk = disk->prev;
 
-          PhyML_Fprintf(fp_stats,"\n%6d\t%9.1f\t%9.1f\t%9.1f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%G\t%6d\t%6d\t%6d\t%8.1f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%G\t%G\t%G",
+          PhyML_Fprintf(fp_stats,"\n%6d\t%9.1f\t%9.1f\t%9.1f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%G\t%6d\t%6d\t%6d\t%8.1f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%G\t%G\t%G",
                         tree->mcmc->run,
                         tree->c_lnL+tree->mmod->c_lnL,
                         tree->c_lnL,
@@ -1897,8 +1895,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
                         PHYREX_Total_Number_Of_Coal_Disks(tree),
                         PHYREX_Total_Number_Of_Hit_Disks(tree),
                         disk->time,
-                        disk->ldsk->coord->lonlat[0],
-                        disk->ldsk->coord->lonlat[1],
                         tree->mod->kappa->v,
                         tree->mod->ras->alpha->v,
                         tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_lbda],
@@ -3619,7 +3615,7 @@ int PHYREX_Is_In_Ldscape(t_ldsk *ldsk, t_phyrex_mod *mmod)
 {
   int j;
   for(j=0;j<mmod->n_dim;j++) if(ldsk->coord->lonlat[j] > mmod->lim->lonlat[j] ||
-                                ldsk->coord->lonlat[j] < 0.0) return NO;
+                        ldsk->coord->lonlat[j] < 0.0) return NO;
   return YES;
 }
 
@@ -3882,32 +3878,24 @@ void PHYREX_Read_Tip_Coordinates(t_ldsk **ldsk_a, t_tree *tree)
         PhyML_Fprintf(stderr,"\n. Could not find coordinates for '%s'.",tree->a_nodes[i]->name);
         Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
       }
-  
-  for(i=0;i<tree->n_otu;i++)
+
+  for(i=0;i<tree->n_otu;i++) 
     {
-      /* ldsk_a[i]->coord->lonlat[0] -= sw_lon; */
-      /* ldsk_a[i]->coord->lonlat[1] -= sw_lat; */
+      ldsk_a[i]->coord->lonlat[0] -= sw_lon;
+      ldsk_a[i]->coord->lonlat[1] -= sw_lat;
 
-      /* ldsk_a[i]->coord->lonlat[0] /= (ne_lon - sw_lon); */
-      /* ldsk_a[i]->coord->lonlat[1] /= (ne_lat - sw_lat); */
+      ldsk_a[i]->coord->lonlat[0] /= (ne_lon - sw_lon);
+      ldsk_a[i]->coord->lonlat[1] /= (ne_lat - sw_lat);
 
-      /* ldsk_a[i]->coord->lonlat[0] *= tree->mmod->lim->lonlat[0]; */
-      /* ldsk_a[i]->coord->lonlat[1] *= tree->mmod->lim->lonlat[1]; */
+      ldsk_a[i]->coord->lonlat[0] *= tree->mmod->lim->lonlat[0];
+      ldsk_a[i]->coord->lonlat[1] *= tree->mmod->lim->lonlat[1];
 
-      /* PhyML_Printf("\n. Scaled coordinates of '%-50s': %12f\t %12f", */
-      /*              tree->a_nodes[i]->name, */
-      /*              ldsk_a[i]->coord->lonlat[0], */
-      /*              ldsk_a[i]->coord->lonlat[1]); */
-
-      PhyML_Printf("\n. Coordinates of '%-50s': %12f\t %12f",
+      PhyML_Printf("\n. Scaled coordinates of '%-50s': %12f\t %12f",
                    tree->a_nodes[i]->name,
                    ldsk_a[i]->coord->lonlat[0],
                    ldsk_a[i]->coord->lonlat[1]);
     }
-  
-  tree->mmod->lim->lonlat[0] = ne_lon;
-  tree->mmod->lim->lonlat[1] = ne_lat;
-  
+
   Free(s);
   Free(done);
 }

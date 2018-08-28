@@ -144,7 +144,7 @@ extern int TIME;
 #define  PINV_MAX 0.99999
 
 #define RR_MIN 0.0001
-#define RR_MAX 1000.0
+#define RR_MAX 10000.0
 
 #define GAMMA_RR_UNSCALED_MIN 0.01
 #define GAMMA_RR_UNSCALED_MAX 200.
@@ -783,6 +783,7 @@ typedef struct __Tree{
 
   int                  size_spr_list_one_edge;
   int                  size_spr_list_all_edge;
+  int                  perform_spr_right_away;
 
   time_t                                t_beg;
   time_t                            t_current;
@@ -1357,11 +1358,6 @@ typedef struct __Optimiz { /*! parameters to be optimised (mostly used in 'optim
   int      curr_opt_free_rates;
 
   int          nni_br_len_opt;
-
-  int    apply_spr_right_away;
-  int               apply_spr;
-
-  phydbl            l_min_spr;
 }t_opt;
 
 /*!********************************************************/
@@ -2298,7 +2294,6 @@ short int Are_Sequences_Identical(align *seq1, align *seq2);
 char *Mutation_Id(int mut_idx, t_tree *tree);
 void Random_Tax_Idx(t_node *a, t_node *d, int *idx, t_tree *tree);
 void List_Taxa_In_Clade(t_node *a, t_node *d, t_tree *tree);
-void Set_Scalar_Dbl_Max_Thresh(phydbl thresh, scalar_dbl *from);
 
 #include "xml.h"
 #include "free.h"
