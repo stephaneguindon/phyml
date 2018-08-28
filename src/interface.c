@@ -1627,9 +1627,10 @@ void Launch_Interface_Branch_Support(option *io)
 
 
   strcpy(s,(io->mod->bootstrap > 0)?("yes"):("no"));
-  if(io->mod->bootstrap > 0) sprintf(s+strlen(s)," (%d replicate%s)",
+  if(io->mod->bootstrap > 0) sprintf(s+strlen(s)," (%d replicate%s%s)",
 					io->mod->bootstrap,
-					(io->mod->bootstrap>1)?("s"):(""));
+					(io->mod->bootstrap>1)?("s"):(""),
+					(io->tbe_bootstrap)?(", TBE"):(""));
   
   /*   PhyML_Printf("                [+] " */
   PhyML_Printf("                [B] "
@@ -1749,6 +1750,27 @@ void Launch_Interface_Branch_Support(option *io)
 		  io->print_boot_trees  = 0;
 		  io->fp_out_boot_tree  = NULL;
 		  io->fp_out_boot_stats = NULL;
+		  break;
+		}
+	      }
+
+	    PhyML_Printf("\n. Compute TBE instead of FBP ? (%s) > ",
+                         (io->tbe_bootstrap)?("Y/n"):("y/N"));
+
+	    if(!scanf("%c",&answer)) Exit("\n");
+	    if(answer == '\n') answer = (io->tbe_bootstrap)?('Y'):('N');
+	    else getchar();
+
+	    switch(answer)
+	      {
+	      case 'Y' : case 'y' :
+		{
+		  io->tbe_bootstrap = 1;
+		  break;
+		}
+	      case 'N' : case 'n' :
+		{
+		  io->tbe_bootstrap  = 0;
 		  break;
 		}
 	      }
