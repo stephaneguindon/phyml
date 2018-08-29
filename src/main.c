@@ -119,7 +119,6 @@ int main(int argc, char **argv)
       if(io->data)
         {
           if(io->n_data_sets > 1) PhyML_Printf("\n. Data set [#%d]\n",num_data_set+1);
-
           cdata = Compact_Data(io->data,io);
           
           Free_Seq(io->data,cdata->n_otu);
@@ -130,19 +129,20 @@ int main(int argc, char **argv)
 
               if(orig_random_input_tree == YES && io->n_trees > 1)
                 {
-                  PhyML_Printf("\n. Cannot combine random starting trees with multiple input trees.");
-                  assert(FALSE);
+                  PhyML_Printf("\n== Cannot combine random starting trees with multiple input trees.");
+                  Exit("\n");
                 }
 
               for(num_rand_tree=0;num_rand_tree<io->mod->s_opt->n_rand_starts;num_rand_tree++)
                 {
-                  if(io->mod->s_opt->random_input_tree) if(io->quiet == NO) PhyML_Printf("\n\n. [Random start %3d/%3d]",num_rand_tree+1,io->mod->s_opt->n_rand_starts);
+                  if((io->mod->s_opt->random_input_tree) && (io->mod->s_opt->topo_search != NNI_MOVE))
+                    if(!io->quiet) PhyML_Printf("\n\n. [Random start %3d/%3d]",num_rand_tree+1,io->mod->s_opt->n_rand_starts);
 
                   Init_Model(cdata,mod,io);
 
                   if(io->mod->use_m4mod) M4_Init_Model(mod->m4mod,cdata,mod);
 
-                  if(num_rand_tree == 0) Remove_Duplicates(cdata,mod,io);
+                  Remove_Duplicates(cdata,mod,io);
 
                   //Make the initial tree
                   switch(io->in_tree)
@@ -162,8 +162,8 @@ int main(int argc, char **argv)
 
                       if(io->cstr_tree->n_root != NULL)
                         {
-                          PhyML_Printf("\n. The constraint tree file must be unrooted");
-                          assert(FALSE);
+                          PhyML_Printf("\n== The constraint tree file must be unrooted");
+                          Exit("\n");
                         }
 
                       s = Add_Taxa_To_Constraint_Tree(io->fp_in_constraint_tree,cdata);
@@ -197,6 +197,7 @@ int main(int argc, char **argv)
 
                   if(mod->s_opt->random_input_tree)
                     {
+                      PhyML_Printf("\n");
                       Random_Tree(tree);
                     }
 
@@ -204,9 +205,9 @@ int main(int argc, char **argv)
 
                   if(io->cstr_tree && !Check_Topo_Constraints(tree,io->cstr_tree))
                     {
-                      PhyML_Printf("\n\n. The initial tree does not satisfy the topological constraint.");
-                      PhyML_Printf("\n. Please use the user input tree option with an adequate tree topology.");
-                      assert(FALSE);
+                      PhyML_Printf("\n\n== The initial tree does not satisfy the topological constraint.");
+                      PhyML_Printf("\n== Please use the user input tree option with an adequate tree topology.");
+                      Exit("\n");
                     }
 
                   Prepare_Tree_For_Lk(tree);
@@ -217,13 +218,13 @@ int main(int argc, char **argv)
 #ifdef BEAGLE
                   if(mod->bootstrap == YES)
                     {
-                      PhyML_Printf("\n. PhyML-BEAGLE does not support bootstrap analysis yet... ");
-                      assert(FALSE);
+                      PhyML_Printf("\n== PhyML-BEAGLE does not support bootstrap analysis yet... ");
+                      Exit("\n");
                     }
                   if(mod->ras->invar == YES)
                     {
-                      PhyML_Printf("\n. PhyML-BEAGLE does not support invariant site models yet... ");
-                      assert(FALSE);
+                      PhyML_Printf("\n== PhyML-BEAGLE does not support invariant site models yet... ");
+                      Exit("\n");
                     }
 #endif
 
@@ -364,16 +365,16 @@ int main(int argc, char **argv)
         }
     else
         {
-          PhyML_Printf("\n. No data was found.\n");
-          PhyML_Printf("\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
-          assert(FALSE);
+          PhyML_Printf("\n== No data was found.\n");
+          PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+          Exit("\n");
         }
       Free_Model_Complete(mod);
     }
 
   if(most_likely_tree) Free(most_likely_tree);
 
-  if(mod->s_opt->n_rand_starts > 1) PhyML_Printf("\n\n. Best log likelihood: %f.",best_lnL);
+  if(mod->s_opt->n_rand_starts > 1) PhyML_Printf("\n. Best log likelihood: %f\n",best_lnL);
 
   Free_Optimiz(mod->s_opt);
   M4_Free_M4_Model(mod->m4mod);

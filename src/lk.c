@@ -563,7 +563,7 @@ if(tree->rates && tree->io->lk_approx == NORMAL)
           if(tree->mixt_tree != NULL)     len *= tree->mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number];
           if(len < tree->mod->l_min)      len = tree->mod->l_min;
           else if(len > tree->mod->l_max) len = tree->mod->l_max;
-          for(state=0;state<ns;++state)   expl[catg*ns+state] = exp(tree->mod->eigen->e_val[state]*len);
+          for(state=0;state<ns;++state) expl[catg*ns+state] = (phydbl)POW(tree->mod->eigen->e_val[state],len);
         }
     }
 

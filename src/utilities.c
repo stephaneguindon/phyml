@@ -350,9 +350,9 @@ calign *Compact_Data(align **data, option *io)
   for(i=0;i<n_otu;i++) cdata_tmp->c_seq[i]->len = n_patt;
   for(i=0;i<n_otu;i++) cdata_tmp->c_seq[i]->num = i;
   
-  if(!io->quiet) PhyML_Printf("\n\n. %d patterns found (out of a total of %d sites).",n_patt,data[0]->len);
+  if(!io->quiet) PhyML_Printf("\n. %d patterns found (out of a total of %d sites). \n",n_patt,data[0]->len);
 
-  if((io->rm_ambigu == YES) && (n_ambigu > 0)) PhyML_Printf("\n. Removed %d columns of the alignment as they contain ambiguous characters (e.g., gaps).",n_ambigu);
+  if((io->rm_ambigu == YES) && (n_ambigu > 0)) PhyML_Printf("\n. Removed %d columns of the alignment as they contain ambiguous characters (e.g., gaps) \n",n_ambigu);
 
   n_invar=0.0;
   for(i=0;i<cdata_tmp->crunch_len;i++) if(cdata_tmp->invar[i] > -1.) n_invar+=cdata_tmp->wght[i];
@@ -360,9 +360,9 @@ calign *Compact_Data(align **data, option *io)
   if(io->quiet == NO) 
     {
       if((n_invar - ceil(n_invar)) < 1.E-10)     
-        PhyML_Printf("\n\n. %d sites without polymorphism (%.2f%c).",(int)n_invar,100.*(phydbl)n_invar/len,'%');
+        PhyML_Printf("\n. %d sites without polymorphism (%.2f%c).\n",(int)n_invar,100.*(phydbl)n_invar/len,'%');
       else
-        PhyML_Printf("\n\n. %f sites without polymorphism (%.2f%c).",n_invar,100.*(phydbl)n_invar/len,'%');
+        PhyML_Printf("\n. %f sites without polymorphism (%.2f%c).\n",n_invar,100.*(phydbl)n_invar/len,'%');
     }
 
   cdata_tmp->obs_pinvar = (phydbl)n_invar/len;
@@ -551,18 +551,11 @@ void Get_Base_Freqs(calign *data)
   int i,j,k;
   phydbl A,C,G,T;
   phydbl fA,fC,fG,fT;
-  phydbl fA_old,fC_old,fG_old,fT_old;
-  phydbl diff;
   phydbl w;
 
   fA = fC = fG = fT = .25;
-  fA_old = fA;
-  fC_old = fC;
-  fG_old = fG;
-  fT_old = fT;
-  diff = 0.0;
-  k = 0;
-  do
+
+  for(k=0;k<8;k++)
     {
       A = C = G = T = .0;
       for(i=0;i<data->n_otu;i++)
@@ -611,34 +604,11 @@ void Get_Base_Freqs(calign *data)
                 }
             }
         }
-
-      fA_old = fA;
-      fC_old = fC;
-      fG_old = fG;
-      fT_old = fT;
-
       fA = A/(A+C+G+T);
       fC = C/(A+C+G+T);
       fG = G/(A+C+G+T);
       fT = T/(A+C+G+T);
-
-      diff =
-        pow(fA_old-fA,2) +
-        pow(fC_old-fC,2) +
-        pow(fG_old-fG,2) +
-        pow(fT_old-fT,2) ;
-        
-      
-      k++;
-
-      if(k > 1000)
-        {
-          PhyML_Fprintf(stderr,"\n. Nucleotide frequency estimation did not converge...");
-          PhyML_Fprintf(stderr,"\n. fA: %f fC: %f fG: %f fT: %f diff: %f",fA,fC,fG,fT,diff);
-          assert(FALSE);
-        }
     }
-  while(diff > 1.E-4);
   
   data->obs_state_frq[0] = fA;
   data->obs_state_frq[1] = fC;
@@ -2384,8 +2354,6 @@ void Remove_Duplicates(calign *data, t_mod *mod, option *io)
             {
               if(Are_Sequences_Identical(data->c_seq[i],data->c_seq[j]) == YES)
                 {
-                  if(n_duplicates == 0) PhyML_Printf("\n");
-                  
                   data->c_seq[j]->is_duplicate = YES;
                   PhyML_Printf("\n. Removed taxon '%s' as it is a duplicate of taxon '%s'.",
                                data->c_seq[j]->name,data->c_seq[i]->name);
@@ -2417,7 +2385,7 @@ void Remove_Duplicates(calign *data, t_mod *mod, option *io)
             {
               if(data->c_seq[j]->is_duplicate == NO)
                 {
-                  tmp            = data->c_seq[i];
+                  tmp = data->c_seq[i];
                   data->c_seq[i] = data->c_seq[j];
                   data->c_seq[j] = tmp;
                   break;
@@ -2429,6 +2397,7 @@ void Remove_Duplicates(calign *data, t_mod *mod, option *io)
   data->n_otu -= data->n_rm;
   io->n_otu = data->n_otu;
 
+  if(n_duplicates > 0) PhyML_Printf("\n");
   
   /* for(int i=0; i < n_otu_orig; ++i) */
   /*   { */
@@ -3146,17 +3115,19 @@ phydbl Num_Derivatives_One_Param(phydbl (*func)(t_tree *tree), t_tree *tree,
 
   hh=stepsize;
 
-  if(precise == NO)
+  if(!precise)
     {
       param[which]   = param[which]+hh;
 
       if(logt == YES) for(i=0;i<n_param;i++) param[i] = exp(MIN(1.E+2,param[i]));
       for(i=0;i<n_param;i++) sign[i] = param[i] > .0 ? 1. : -1.;
-      if(is_positive == YES) for(i=0;i<n_param;i++) param[i] = fabs(param[i]);
+      if(is_positive == YES) for(i=0;i<n_param;i++) param[i] = FABS(param[i]);
       a[0][0]  = (*func)(tree);
       if(is_positive == YES) for(i=0;i<n_param;i++) param[i] *= sign[i];
       if(logt == YES) for(i=0;i<n_param;i++) param[i] = log(param[i]);
+
       /* printf("\n. f0=%f f1=%f hh=%G %f",f0,a[0][0],hh,param[which]); */
+
       a[0][0]  -= f0;
       a[0][0]  /= hh;
       param[which]   = param[which]-hh;
@@ -3383,7 +3354,7 @@ int Num_Derivative_Several_Param(t_tree *tree, phydbl *param, int n_param, phydb
                                                  stepsize,
                                                  logt,
                                                  &err,
-                                                 NO,
+                                                 0,
                                                  is_positive
                                                  );
     }
@@ -6799,7 +6770,7 @@ void Check_Memory_Amount(t_tree *tree)
   if(((phydbl)nbytes/(1.E+06)) > 256.)
 /*   if(((phydbl)nbytes/(1.E+06)) > 0.) */
     {
-      PhyML_Printf("\n\n. WARNING: this analysis requires at least %.0f MB of memory space.",(phydbl)nbytes/(1.E+06));
+      PhyML_Printf("\n\n. WARNING: this analysis requires at least %.0f MB of memory space.\n",(phydbl)nbytes/(1.E+06));
 #ifndef BATCH
 
       char answer;
@@ -6821,11 +6792,11 @@ void Check_Memory_Amount(t_tree *tree)
     }
   else if(((phydbl)nbytes/(1.E+06)) > 100.)
     {
-      if(!tree->io->quiet) PhyML_Printf("\n\n. WARNING: this analysis will use at least %.0f MB of memory space.",(phydbl)nbytes/(1.E+06));
+      if(!tree->io->quiet) PhyML_Printf("\n\n. WARNING: this analysis will use at least %.0f MB of memory space...\n",(phydbl)nbytes/(1.E+06));
     }
   else if(((phydbl)nbytes/(1.E+06)) > 1.)
     {
-      if(!tree->io->quiet) PhyML_Printf("\n\n. This analysis requires at least %.0f MB of memory space.",(phydbl)nbytes/(1.E+06));
+      if(!tree->io->quiet) PhyML_Printf("\n\n. This analysis requires at least %.0f MB of memory space.\n",(phydbl)nbytes/(1.E+06));
     }
 }
 
@@ -8149,7 +8120,7 @@ t_tree *Dist_And_BioNJ(calign *cdata, t_mod *mod, option *io)
   if(mod->s_opt->random_input_tree == NO)
     {
       if(!io->quiet) PhyML_Printf("\n\n. Computing pairwise distances...");
-      
+ 
       mat = ML_Dist(cdata,mod);
       Fill_Missing_Dist(mat);
             
@@ -11336,26 +11307,11 @@ void Set_Scalar_Dbl_Min_Thresh(phydbl thresh, scalar_dbl *from)
 {
   scalar_dbl *f;
 
+
   f = from;
   do
     {
       if(f->v < thresh) f->v = thresh;;
-      f = f->next;
-    }
-  while(f);
-}
-
-/*////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////*/
-
-void Set_Scalar_Dbl_Max_Thresh(phydbl thresh, scalar_dbl *from)
-{
-  scalar_dbl *f;
-
-  f = from;
-  do
-    {
-      if(f->v > thresh) f->v = thresh;;
       f = f->next;
     }
   while(f);

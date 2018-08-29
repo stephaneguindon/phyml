@@ -1808,7 +1808,7 @@ void MIXT_Check_Edge_Lens_In_One_Elem(t_tree *mixt_tree)
     {
       if(tree->next && tree->next->is_mixt_tree == NO)
         {
-          for(i=0;i<2*tree->n_otu-1;++i)
+          For(i,2*tree->n_otu-1)
             {
               if(tree->a_edges[i]->l != tree->next->a_edges[i]->l)
                 {
@@ -3272,7 +3272,7 @@ void MIXT_Sample_Ancestral_Seq(int fullmutmap, int fromprior, t_tree *mixt_tree)
   r_mat_weight_sum = MIXT_Get_Sum_Chained_Scalar_Dbl(mixt_tree->next->mod->r_mat_weight);
   e_frq_weight_sum = MIXT_Get_Sum_Chained_Scalar_Dbl(mixt_tree->next->mod->e_frq_weight);
   sum_probas       = MIXT_Get_Sum_Of_Probas_Across_Mixtures(r_mat_weight_sum,e_frq_weight_sum,mixt_tree);
-  class_proba      = NULL;
+
 
   tree = mixt_tree;
   loc_mixt_tree = tree;

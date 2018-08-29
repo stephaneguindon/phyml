@@ -2773,12 +2773,12 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
   if((tree->mod->whichmodel == K80)   ||
      (tree->mod->whichmodel == HKY85) ||
      (tree->mod->whichmodel == F84))
-    PhyML_Fprintf(fp_out,"\n. Transition/transversion ratio: \t%.3f",tree->mod->kappa->v);
+    PhyML_Fprintf(fp_out,"\n. Transition/transversion ratio: \t%.8f",tree->mod->kappa->v);
   else if(tree->mod->whichmodel == TN93)
     {
-      PhyML_Fprintf(fp_out,"\n. Transition/transversion ratio for purines: \t\t%.3f",
+      PhyML_Fprintf(fp_out,"\n. Transition/transversion ratio for purines: \t\t%.8f",
             tree->mod->kappa->v*2.*tree->mod->lambda->v/(1.+tree->mod->lambda->v));
-      PhyML_Fprintf(fp_out,"\n. Transition/transversion ratio for pyrimidines: \t%.3f",
+      PhyML_Fprintf(fp_out,"\n. Transition/transversion ratio for pyrimidines: \t%.8f",
           tree->mod->kappa->v*2./(1.+tree->mod->lambda->v));
     }
 
@@ -2801,17 +2801,17 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
               tree->mod->r_mat->rr_val->v,
               tree->mod->r_mat->rr_num->v,
               tree->mod->e_frq->pi->v,
-              tree->mod->r_mat->qmat->v);
+              tree->mod->r_mat->qmat->v,
+              tree->mod->s_opt->opt_rr);
 
       PhyML_Fprintf(fp_out,"\n");
       PhyML_Fprintf(fp_out,". GTR relative rate parameters : \n");
-      PhyML_Fprintf(fp_out,"  A <-> C   %8.5f\n",  tree->mod->r_mat->rr->v[0]);
-      PhyML_Fprintf(fp_out,"  A <-> G   %8.5f\n",  tree->mod->r_mat->rr->v[1]);
-      PhyML_Fprintf(fp_out,"  A <-> T   %8.5f\n",  tree->mod->r_mat->rr->v[2]);
-      PhyML_Fprintf(fp_out,"  C <-> G   %8.5f\n",  tree->mod->r_mat->rr->v[3]);
-      PhyML_Fprintf(fp_out,"  C <-> T   %8.5f\n",  tree->mod->r_mat->rr->v[4]);
-      PhyML_Fprintf(fp_out,"  G <-> T   %8.5f\n",tree->mod->r_mat->rr->v[5]);
-
+      PhyML_Fprintf(fp_out,"  A <-> C   %.8f\n",  tree->mod->r_mat->rr->v[0]);
+      PhyML_Fprintf(fp_out,"  A <-> G   %.8f\n",  tree->mod->r_mat->rr->v[1]);
+      PhyML_Fprintf(fp_out,"  A <-> T   %.8f\n",  tree->mod->r_mat->rr->v[2]);
+      PhyML_Fprintf(fp_out,"  C <-> G   %.8f\n",  tree->mod->r_mat->rr->v[3]);
+      PhyML_Fprintf(fp_out,"  C <-> T   %.8f\n",  tree->mod->r_mat->rr->v[4]);
+      PhyML_Fprintf(fp_out,"  G <-> T   %.8f\n",  tree->mod->r_mat->rr->v[5]);
 
       PhyML_Fprintf(fp_out,"\n. Instantaneous rate matrix : ");
       PhyML_Fprintf(fp_out,"\n  [A---------C---------G---------T------]\n");
@@ -2819,7 +2819,7 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
     {
       PhyML_Fprintf(fp_out,"  ");
       for(j=0;j<4;j++)
-        PhyML_Fprintf(fp_out,"%8.5f  ",tree->mod->r_mat->qmat->v[i*4+j]);
+        PhyML_Fprintf(fp_out,"%.8f  ",tree->mod->r_mat->qmat->v[i*4+j]);
       PhyML_Fprintf(fp_out,"\n");
     }
       PhyML_Fprintf(fp_out,"\n");
@@ -3232,7 +3232,11 @@ void Print_Settings(option *io)
     }
   
   if(io->mod->s_opt && io->mod->s_opt->opt_topo)
-    {      
+    {
+      if(io->mod->s_opt->topo_search == NNI_MOVE) PhyML_Printf("\n        . Tree topology search:\t\t\t\t NNIs");
+      else if(io->mod->s_opt->topo_search == SPR_MOVE) PhyML_Printf("\n        . Tree topology search:\t\t\t\t SPRs");
+      else if(io->mod->s_opt->topo_search == BEST_OF_NNI_AND_SPR) PhyML_Printf("\n        . Tree topology search:\t\t\t\t Best of NNIs and SPRs");
+      
       PhyML_Printf("\n        . Starting tree:\t\t\t\t %s",s);
 
       PhyML_Printf("\n        . Add random input tree:\t\t\t %s", (io->mod->s_opt->random_input_tree) ? "yes": "no");
@@ -3776,7 +3780,7 @@ t_tree *Read_User_Tree(calign *cdata, t_mod *mod, option *io)
 {
   t_tree *tree;
   
-  PhyML_Printf("\n\n. Reading tree..."); fflush(NULL);
+  PhyML_Printf("\n. Reading tree..."); fflush(NULL);
   if(io->n_trees == 1) rewind(io->fp_in_tree);
   tree = Read_Tree_File_Phylip(io->fp_in_tree);
   /* fclose(io->fp_in_tree); */
@@ -4215,6 +4219,11 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
   PhyML_Fprintf(fp,"\n. Starting tree: %s",
            mixt_tree->io->in_tree == 2?mixt_tree->io->in_tree_file:"BioNJ");
 
+  PhyML_Fprintf(fp,"\n. Tree topology search: %s",
+           mixt_tree->io->mod->s_opt->opt_topo==YES?
+           mixt_tree->io->mod->s_opt->topo_search==SPR_MOVE?"spr":
+           mixt_tree->io->mod->s_opt->topo_search==NNI_MOVE?"nni":
+           "spr+nni":"no");
 
   cpy_mixt_tree = mixt_tree;
 
@@ -5174,7 +5183,7 @@ void Make_Topology_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
             }
           else
             {
-              select = XML_Validate_Attr_Int(search,2,"spr","none");
+              select = XML_Validate_Attr_Int(search,4,"spr","nni","best","none");
               
               switch(select)
                 {
@@ -5185,6 +5194,18 @@ void Make_Topology_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
                     break;
                   }
                 case 1:
+                  {
+                    io->mod->s_opt->topo_search = NNI_MOVE;
+                    io->mod->s_opt->opt_topo    = YES;
+                    break;
+                  }
+                case 2:
+                  {
+                    io->mod->s_opt->topo_search = BEST_OF_NNI_AND_SPR;
+                    io->mod->s_opt->opt_topo    = YES;
+                    break;
+                  }
+                case 3:
                   {
                     io->mod->s_opt->opt_topo    = NO;
                     break;

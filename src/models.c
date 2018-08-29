@@ -104,7 +104,6 @@ void PMat_TN93(phydbl l, t_mod *mod, int pos, phydbl *Pij)
   kappa2 = mod->kappa->v*2./(1.+mod->lambda->v);
   kappa1 = kappa2 * mod->lambda->v;
 
-
   bt = l/(2.*(A*G*kappa1+C*T*kappa2+R*Y));
 
   a1t = kappa1;
@@ -114,7 +113,6 @@ void PMat_TN93(phydbl l, t_mod *mod, int pos, phydbl *Pij)
   e1 = (phydbl)exp(-a1t*R-bt*Y);
   e2 = (phydbl)exp(-a2t*Y-bt*R);
   e3 = (phydbl)exp(-bt);
-
 
   /*A->A*/Pij[pos + 4*0+0] = A+Y*A/R*e3+G/R*e1;
   /*A->C*/Pij[pos + 4*0+1] = C*(1-e3);
@@ -325,11 +323,11 @@ void PMat_Gamma(phydbl l, t_mod *mod, int pos, phydbl *Pij)
   uexpt = mod->eigen->r_e_vect_im;
   U     = mod->eigen->r_e_vect;
   V     = mod->eigen->l_e_vect;
-  R     = mod->eigen->e_val; /* eigen value matrix */
-  
+  R     = mod->eigen->e_val; /* exponential of the eigen value matrix */
+
   if(mod->ras->n_catg == 1) shape = 1.E+4;
-  else                      shape = mod->ras->alpha->v;
-  
+  else                 shape = mod->ras->alpha->v;
+
 
   for(i=0;i<n;i++) for(k=0;k<n;k++) Pij[pos+mod->ns*i+k] = .0;
 
@@ -340,7 +338,7 @@ void PMat_Gamma(phydbl l, t_mod *mod, int pos, phydbl *Pij)
     }
 
   /* Formula 13.42, page 220 of Felsenstein's book ``Inferring Phylogenies'' */
-  for(k=0;k<n;k++) expt[k] = pow(shape/(shape+R[k]*l),shape);
+  for(k=0;k<n;k++) expt[k] = POW(shape/(shape-log(R[k])*l),shape);
 
   /* multiply Vr*expt*Vi into Pij */
   for(i=0;i<n;i++) for(k=0;k<n;k++) uexpt[i*n+k] = U[i*n+k] * expt[k];
@@ -556,7 +554,7 @@ void Update_Qmat_Generic(phydbl *rr, phydbl *pi, int ns, phydbl *qmat)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Update_Qmat_GTR(phydbl *rr, phydbl *rr_val, int *rr_num, phydbl *pi, phydbl *qmat)
+void Update_Qmat_GTR(phydbl *rr, phydbl *rr_val, int *rr_num, phydbl *pi, phydbl *qmat, int opt_rr)
 {
   int i;
   phydbl mr;
@@ -865,13 +863,12 @@ void Update_Eigen(t_mod *mod)
   phydbl scalar;
   int i;
 
-
   if(mod->is_mixt_mod == YES)
     {
       MIXT_Update_Eigen(mod);
       return;
     }
-  
+
   if(mod->update_eigen == YES)
     {
       //Update the Q-matrix first before computing the Eigen(because the Eigen is computed based on the Q-matrix)
@@ -880,9 +877,9 @@ void Update_Eigen(t_mod *mod)
           if(mod->io->datatype == NT)
             {
               if(mod->whichmodel == GTR)
-                Update_Qmat_GTR(mod->r_mat->rr->v, mod->r_mat->rr_val->v, mod->r_mat->rr_num->v, mod->e_frq->pi->v, mod->r_mat->qmat->v);
+                Update_Qmat_GTR(mod->r_mat->rr->v, mod->r_mat->rr_val->v, mod->r_mat->rr_num->v, mod->e_frq->pi->v, mod->r_mat->qmat->v, mod->s_opt->opt_rr);
               else if(mod->whichmodel == CUSTOM)
-                Update_Qmat_GTR(mod->r_mat->rr->v, mod->r_mat->rr_val->v, mod->r_mat->rr_num->v, mod->e_frq->pi->v, mod->r_mat->qmat->v);
+                Update_Qmat_GTR(mod->r_mat->rr->v, mod->r_mat->rr_val->v, mod->r_mat->rr_num->v, mod->e_frq->pi->v, mod->r_mat->qmat->v, mod->s_opt->opt_rr);
               else if(mod->whichmodel == HKY85)
                 Update_Qmat_HKY(mod->kappa->v, mod->e_frq->pi->v, mod->r_mat->qmat->v);
               else /* Any other nucleotide-based t_mod */
@@ -909,6 +906,10 @@ void Update_Eigen(t_mod *mod)
         }
       
       /* compute eigenvectors/values */
+      /*       if(!EigenRealGeneral(mod->eigen->size,mod->r_mat->qmat,mod->eigen->e_val, */
+      /* 			  mod->eigen->e_val_im, mod->eigen->r_e_vect, */
+      /* 			  mod->eigen->space_int,mod->eigen->space)) */
+
       if(!Eigen(1,mod->r_mat->qmat_buff->v,mod->eigen->size,mod->eigen->e_val,
                 mod->eigen->e_val_im,
                 mod->eigen->r_e_vect,
@@ -924,8 +925,8 @@ void Update_Eigen(t_mod *mod)
               For(i,mod->eigen->size*mod->eigen->size) mod->r_mat->qmat_buff->v[i]  = mod->r_mat->qmat->v[i];
               For(i,mod->eigen->size*mod->eigen->size) mod->r_mat->qmat_buff->v[i] *= scalar;
               result = Eigen(1,mod->r_mat->qmat_buff->v,mod->eigen->size,mod->eigen->e_val,
-                             mod->eigen->e_val_im,mod->eigen->r_e_vect,
-                             mod->eigen->r_e_vect_im,mod->eigen->space);
+                     mod->eigen->e_val_im,mod->eigen->r_e_vect,
+                     mod->eigen->r_e_vect_im,mod->eigen->space);
               if (result == -1)
                 {
                   PhyML_Fprintf(stderr,"\n. Eigenvalues/vectors computation did not converge: computation cancelled."); 
@@ -991,8 +992,7 @@ void PMat_MGF_Gamma(phydbl *Pij, phydbl shape, phydbl scale, phydbl scaling_fact
   imbd  = mod->eigen->e_val_im;
 
   /* Get the eigenvalues of Q (not the exponentials) */
-  /* for(i=0;i<dim;i++) imbd[i]  = log(mod->eigen->e_val[i]); */
-  for(i=0;i<dim;i++) imbd[i]  = mod->eigen->e_val[i];
+  for(i=0;i<dim;i++) imbd[i]  = log(mod->eigen->e_val[i]);
 
   /* Multiply them by the scaling factor */
   for(i=0;i<dim;i++) imbd[i]  *= scaling_fact;
@@ -1087,7 +1087,7 @@ phydbl General_Dist(phydbl *F, t_mod *mod, eigen *eigen_struct)
        mod->eigen->r_e_vect_im,mod->eigen->space))
     {
       for(i=0;i<mod->ns;i++) mod->e_frq->pi->v[i] = mod_pi[i];
-      Update_Qmat_GTR(mod->r_mat->rr->v, mod->r_mat->rr_val->v, mod->r_mat->rr_num->v, mod->e_frq->pi->v, mod->r_mat->qmat->v);
+      Update_Qmat_GTR(mod->r_mat->rr->v, mod->r_mat->rr_val->v, mod->r_mat->rr_num->v, mod->e_frq->pi->v, mod->r_mat->qmat->v, mod->s_opt->opt_rr);
       Free(pi);
       Free(mod_pi);
       return -1.;
@@ -1098,16 +1098,18 @@ phydbl General_Dist(phydbl *F, t_mod *mod, eigen *eigen_struct)
   if(!Matinv(eigen_struct->l_e_vect,eigen_struct->size,eigen_struct->size,YES))
     {
       for(i=0;i<mod->ns;i++) mod->e_frq->pi->v[i] = mod_pi[i];
-      Update_Qmat_GTR(mod->r_mat->rr->v, mod->r_mat->rr_val->v, mod->r_mat->rr_num->v, mod->e_frq->pi->v, mod->r_mat->qmat->v);
+      Update_Qmat_GTR(mod->r_mat->rr->v, mod->r_mat->rr_val->v, mod->r_mat->rr_num->v, mod->e_frq->pi->v, mod->r_mat->qmat->v, mod->s_opt->opt_rr);
       Free(pi);
       Free(mod_pi);
       return -1.;
     }
 
+  /* log of eigen values */
   for(i=0;i<eigen_struct->size;i++)
     {
+/*       if(eigen_struct->e_val[i] < 0.0) eigen_struct->e_val[i] = 0.0001; */
       eigen_struct->e_val[i] = (phydbl)log(eigen_struct->e_val[i]);
-    }
+     }
 
   /* Matrix multiplications log(pi^{-1} x F) */
   for(i=0;i<eigen_struct->size;i++) for(j=0;j<eigen_struct->size;j++)
@@ -1129,9 +1131,6 @@ phydbl General_Dist(phydbl *F, t_mod *mod, eigen *eigen_struct)
 /*   dist /= sum_ev; */
   dist /= -4.;
 
-
-/*   for(i=0;i<mod->ns;i++) mod->e_frq->pi->v[i] = mod_pi[i]; */
-/*   Update_Qmat_GTR(mod); */
   Free(pi);
   Free(mod_pi);
   Free(F_phydbl);
@@ -1186,8 +1185,8 @@ phydbl GTR_Dist(phydbl *F, phydbl alpha, eigen *eigen_struct)
   /* Eigen decomposition of pi^{-1} x F */
   for(i=0;i<eigen_struct->size;i++) for(j=0;j<eigen_struct->size;j++) F_phydbl[eigen_struct->size*i+j] = F[eigen_struct->size*i+j];
   if(Eigen(1,F_phydbl,eigen_struct->size,eigen_struct->e_val,
-           eigen_struct->e_val_im,eigen_struct->r_e_vect,
-           eigen_struct->r_e_vect_im,eigen_struct->space))
+       eigen_struct->e_val_im,eigen_struct->r_e_vect,
+       eigen_struct->r_e_vect_im,eigen_struct->space))
     {
       Free(pi);
       return -1.;
@@ -1201,13 +1200,13 @@ phydbl GTR_Dist(phydbl *F, phydbl alpha, eigen *eigen_struct)
   for(i=0;i<eigen_struct->size;i++)
     {
       if(eigen_struct->e_val[i] < 0.0)
-        {
-          eigen_struct->e_val[i] = 0.0001;
-        }
+    {
+      eigen_struct->e_val[i] = 0.0001;
+    }
       if(alpha < .0)
-        eigen_struct->e_val[i] = (phydbl)log(eigen_struct->e_val[i]);
+    eigen_struct->e_val[i] = (phydbl)log(eigen_struct->e_val[i]);
       else
-        eigen_struct->e_val[i] = alpha * (1. - (phydbl)POW(eigen_struct->e_val[i],-1./alpha));
+    eigen_struct->e_val[i] = alpha * (1. - (phydbl)POW(eigen_struct->e_val[i],-1./alpha));
      }
 
   /* Matrix multiplications pi x log(pi^{-1} x F) */
