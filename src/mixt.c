@@ -3220,7 +3220,7 @@ void MIXT_Set_Update_Eigen(int yn, t_tree *mixt_tree)
   do
     {
       if(tree->is_mixt_tree == YES) tree = tree->next;        
-      Set_Update_Eigen(yn,tree);
+      Set_Update_Eigen(yn,tree->mod);
       tree = tree->next;
     }
   while(tree); 

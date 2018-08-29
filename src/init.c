@@ -665,7 +665,7 @@ void Set_Defaults_Model(t_mod *mod)
 
 #if !(defined PHYTIME || defined INVITEE)
   mod->l_min = 1.E-8;
-  mod->l_max = 10.0;
+  mod->l_max = 100.0;
 #else
   mod->l_min = 1.E-6;
   mod->l_max = 10.0;
@@ -1054,14 +1054,13 @@ void Init_Model(calign *data, t_mod *mod, option *io)
     {
       /* Set the substitution parameters to their default values
          if they are not fixed by the user */
-// VINCENT: Already fixed in function 'Set_Defaults_Model'
-/*
+
       if(mod->s_opt->opt_kappa == YES)
         {
           mod->kappa->v  = 4.0;
           mod->lambda->v = 1.0;
-        }
-*/    
+        }    
+
       if(mod->whichmodel == CUSTOM)
         {
           for(i=0;i<6;i++) mod->r_mat->rr_val->v[i] = 1.0;
@@ -1095,11 +1094,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
   if(io->datatype == NT) /* Nucleotides */
     {
       /* init for nucleotides */
-// VINCENT: Already set in function 'Set_Defaults_Model'
-/*
       mod->lambda->v    = 1.;
-*/
-      /* mod->update_eigen = YES; */
 
       if(mod->whichmodel == JC69)
         {
@@ -1166,19 +1161,17 @@ void Init_Model(calign *data, t_mod *mod, option *io)
       
       if(mod->whichmodel == GTR)
         {
-			if (mod->e_frq->user_state_freq == NO)
-				Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);
-			else
-			{
-				for(i=0;i<4;i++)
-					mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
-			}
-			for(i=0;i<mod->ns;i++)
-				mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
-			mod->kappa->v          = 1.;
-			mod->update_eigen      = NO;
-// VINCENT: do not necessarily optimize relative rate parameters, they could be set by user
-			//io->mod->s_opt->opt_rr = YES;
+          if (mod->e_frq->user_state_freq == NO)
+            Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);
+          else
+            {
+              for(i=0;i<4;i++)
+                mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
+            }
+          for(i=0;i<mod->ns;i++)
+            mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
+          mod->kappa->v     = 1.;
+          mod->update_eigen = NO;
         }
       
       if(mod->whichmodel == CUSTOM)
@@ -1188,7 +1181,6 @@ void Init_Model(calign *data, t_mod *mod, option *io)
           for(i=0;i<mod->ns;i++) mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
           mod->kappa->v     = 1.;
           mod->update_eigen = NO;
-          /* 	  io->mod->s_opt->opt_rr     = YES; */ /* What if the user decided not to optimise the rates? */
         }
       
       if(mod->whichmodel == GTR)

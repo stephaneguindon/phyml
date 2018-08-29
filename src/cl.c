@@ -817,225 +817,227 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	case 'm': case 5 :
 	  {
 	    if (!isalpha(optarg[0]))
-		{
-			strcpy(io->mod->custom_mod_string->s,optarg);
-			if (strlen(io->mod->custom_mod_string->s) != 6)
-			{
-				Warn_And_Exit("\n. The string should be of length 6.\n");
-			}
-			//else
-			//{
-				/* Make_Custom_Model(io->mod); */
-				/* Translate_Custom_Mod_String(io->mod); */
-			//}
+              {
+                strcpy(io->mod->custom_mod_string->s,optarg);
+                if (strlen(io->mod->custom_mod_string->s) != 6)
+                  {
+                    Warn_And_Exit("\n. The string should be of length 6.\n");
+                  }
+                //else
+                //{
+                /* Make_Custom_Model(io->mod); */
+                /* Translate_Custom_Mod_String(io->mod); */
+                //}
 		
-			io->datatype              = NT;
-			io->mod->whichmodel       = CUSTOM;
-			strcpy(io->mod->modelname->s, "custom");
-			io->mod->s_opt->opt_kappa = NO;
-			io->mod->s_opt->opt_rr    = YES;
-	    }
+                io->datatype              = NT;
+                io->mod->whichmodel       = CUSTOM;
+                strcpy(io->mod->modelname->s, "custom");
+                io->mod->s_opt->opt_kappa = NO;
+                io->mod->s_opt->opt_rr    = YES;
+              }
 	    else if (strcmp(optarg, "JC69") == 0)
-	    {
-			io->datatype              = NT;
-			io->mod->ns               = 4;
-			io->mod->whichmodel       = JC69;
-	    }
+              {
+                io->datatype              = NT;
+                io->mod->ns               = 4;
+                io->mod->whichmodel       = JC69;
+              }
 	    else if(strcmp(optarg, "K80") == 0)
-	    {
-			io->datatype              = NT;
-			io->mod->ns               = 4;
-			io->mod->whichmodel       = K80;
-	    }
+              {
+                io->datatype              = NT;
+                io->mod->ns               = 4;
+                io->mod->whichmodel       = K80;
+              }
 	    else if(strcmp(optarg, "F81") == 0)
-	    {
-			io->datatype              = NT;
-			io->mod->ns               = 4;
-			io->mod->whichmodel       = F81;
-	    }
+              {
+                io->datatype              = NT;
+                io->mod->ns               = 4;
+                io->mod->whichmodel       = F81;
+              }
 	    else if (strcmp(optarg, "HKY85") == 0)
-	    {
-			io->datatype              = NT;
-			io->mod->ns               = 4;
-			io->mod->whichmodel       = HKY85;
-	    }
+              {
+                io->datatype              = NT;
+                io->mod->ns               = 4;
+                io->mod->whichmodel       = HKY85;
+              }
 	    else if(strcmp(optarg, "F84") == 0)
-	    {
-			io->datatype              = NT;
-			io->mod->ns               = 4;
-			io->mod->whichmodel       = F84;
-	    }
+              {
+                io->datatype              = NT;
+                io->mod->ns               = 4;
+                io->mod->whichmodel       = F84;
+              }
 	    else if (strcmp (optarg,"TN93") == 0)
-	    {
-			io->datatype              = NT;
-			io->mod->ns               = 4;
-			io->mod->whichmodel       = TN93;
-	    }
+              {
+                io->datatype              = NT;
+                io->mod->ns               = 4;
+                io->mod->whichmodel       = TN93;
+              }
 	    else if(strncmp (optarg, "GTR", 3) == 0)
-	    {
-			io->datatype              = NT;
-			io->mod->ns               = 4;
-			io->mod->whichmodel       = GTR;
-// Added the possibility for users to set the GTR relative rate parameters
-// The format is the same as for equilibrium frequencies (6 values separated by commas)
-			if (strlen (optarg) > 3)
-			{
-				phydbl v;
-				int j=0;
-				const char *d = ",";
-				char *tok = strtok (optarg+3, d);
-				
-				io->mod->r_mat = (t_rmat *) Make_Rmat (io->mod->ns);
-				Init_Rmat (io->mod->r_mat);
-				Make_Custom_Model (io->mod);
-				
-				while (tok && j < 6)
-				{
-					v = strtod (tok, NULL);
-					if (v != 0)
-						io->mod->r_mat->rr->v[j] = v;
-					else
-					{
-						PhyML_Printf("\n. Invalid relative rate parameter value: '%s'.\n", tok);
-						Exit("\n");
-					}
-					tok = strtok (NULL, d);
-					j++;
-				}
-				// Not enough rate parameters
-				if (j<5)
-				{
-					Warn_And_Exit("\n. GTR requires at least 5 relative rate parameters.\n");
-				}
-				// Only 5 rate parameters provided by user => set G<->T to 1.0
-				else if (j<6)
-				{
-					io->mod->r_mat->rr->v[5] = 1.0;
-				}
-				// At least 6 parameters provided by user
-				// Check the last relative rate parameter (G <-> T) = 1.
-				// Otherwise scale them
-				else
-				{
-					if (io->mod->r_mat->rr->v[5] < 1.0 - DBL_EPSILON ||
-						io->mod->r_mat->rr->v[5] > 1.0 + DBL_EPSILON)
-					{
-						phydbl x = 1.0 / io->mod->r_mat->rr->v[5];
-						for (j=0; j<6; j++)
-						{
-							io->mod->r_mat->rr->v[j] = x * io->mod->r_mat->rr->v[j];
-						}
-					}
-				}
-			}
-	    }
+              {
+                io->datatype              = NT;
+                io->mod->ns               = 4;
+                io->mod->whichmodel       = GTR;
+                
+                // Added the possibility for users to set the GTR relative rate parameters
+                // The format is the same as for equilibrium frequencies (6 values separated by commas)
+                if (strlen (optarg) > 3)
+                  {
+                    phydbl v;
+                    int j=0;
+                    const char *d = ",";
+                    char *tok = strtok (optarg+3, d);
+                    
+                    io->mod->s_opt->opt_rr = NO;                    
+                    io->mod->r_mat = (t_rmat *) Make_Rmat (io->mod->ns);
+                    Init_Rmat (io->mod->r_mat);
+                    Make_Custom_Model (io->mod);
+                    
+                    while (tok && j < 6)
+                      {
+                        v = strtod (tok, NULL);
+                        if (v != 0)
+                          io->mod->r_mat->rr->v[j] = v;
+                        else
+                          {
+                            PhyML_Printf("\n. Invalid relative rate parameter value: '%s'.\n", tok);
+                            Exit("\n");
+                          }
+                        tok = strtok (NULL, d);
+                        j++;
+                      }
+                    // Not enough rate parameters
+                    if (j<5)
+                      {
+                        Warn_And_Exit("\n. GTR requires at least 5 relative rate parameters.\n");
+                      }
+                    // Only 5 rate parameters provided by user => set G<->T to 1.0
+                    else if (j<6)
+                      {
+                        io->mod->r_mat->rr->v[5] = 1.0;
+                      }
+                    // At least 6 parameters provided by user
+                    // Check the last relative rate parameter (G <-> T) = 1.
+                    // Otherwise scale them
+                    else
+                      {
+                        if (io->mod->r_mat->rr->v[5] < 1.0 - DBL_EPSILON ||
+                            io->mod->r_mat->rr->v[5] > 1.0 + DBL_EPSILON)
+                          {
+                            phydbl x = 1.0 / io->mod->r_mat->rr->v[5];
+                            for (j=0; j<6; j++)
+                              {
+                                io->mod->r_mat->rr->v[j] = x * io->mod->r_mat->rr->v[j];
+                              }
+                          }
+                      }
+                  }
+              }
 	    else if(strcmp(optarg, "DAYHOFF") == 0)
-	    {
-			io->datatype              = AA;
-			io->mod->ns               = 20;
-			io->mod->whichmodel       = DAYHOFF;
-	    }
+              {
+                io->datatype              = AA;
+                io->mod->ns               = 20;
+                io->mod->whichmodel       = DAYHOFF;
+              }
 	    else if(strcmp (optarg, "JTT") == 0)
-	    {
-			io->datatype              = AA;
-			io->mod->ns               = 20;
-			io->mod->whichmodel       = JTT;
-	    }
+              {
+                io->datatype              = AA;
+                io->mod->ns               = 20;
+                io->mod->whichmodel       = JTT;
+              }
 	    else if(strcmp(optarg, "MTREV") == 0)
-	    {
-			io->datatype             = AA;
-			io->mod->ns              = 20;
-			io->mod->whichmodel      = MTREV;
-	    }
+              {
+                io->datatype             = AA;
+                io->mod->ns              = 20;
+                io->mod->whichmodel      = MTREV;
+              }
 	    else if(strcmp (optarg, "LG") == 0)
-	    {
-			io->datatype              = AA;
-			io->mod->ns               = 20;
-			io->mod->whichmodel       = LG;
-	    }
+              {
+                io->datatype              = AA;
+                io->mod->ns               = 20;
+                io->mod->whichmodel       = LG;
+              }
 	    else if(strcmp (optarg, "WAG") == 0)
-	    {
-			io->datatype              = AA;
-			io->mod->ns               = 20;
-			io->mod->whichmodel       = WAG;
-	    }
+              {
+                io->datatype              = AA;
+                io->mod->ns               = 20;
+                io->mod->whichmodel       = WAG;
+              }
 	    else if(strcmp(optarg, "DCMUT") == 0)
-	    {
-			io->datatype              = AA;
-			io->mod->ns               = 20;
-			io->mod->whichmodel       = DCMUT;
-	    }
+              {
+                io->datatype              = AA;
+                io->mod->ns               = 20;
+                io->mod->whichmodel       = DCMUT;
+              }
 	    else if(strcmp (optarg, "RTREV") == 0)
-	    {
-			io->datatype              = AA;
-			io->mod->ns               = 20;
-			io->mod->whichmodel       = RTREV;
-	    }
+              {
+                io->datatype              = AA;
+                io->mod->ns               = 20;
+                io->mod->whichmodel       = RTREV;
+              }
 	    else if(strcmp(optarg, "CPREV") == 0)
-	    {
-			io->datatype              = AA;
-			io->mod->ns               = 20;
-			io->mod->whichmodel       = CPREV;
-	    }
+              {
+                io->datatype              = AA;
+                io->mod->ns               = 20;
+                io->mod->whichmodel       = CPREV;
+              }
 	    else if(strcmp(optarg, "VT") == 0)
-	    {
-			io->datatype              = AA;
-			io->mod->ns               = 20;
-			io->mod->whichmodel       = VT;
-	    }
+              {
+                io->datatype              = AA;
+                io->mod->ns               = 20;
+                io->mod->whichmodel       = VT;
+              }
 	    else if(strcmp(optarg, "BLOSUM62") == 0)
-	    {
-			io->datatype              = AA;
-			io->mod->ns               = 20;
-			io->mod->whichmodel       = BLOSUM62;
-	    }
+              {
+                io->datatype              = AA;
+                io->mod->ns               = 20;
+                io->mod->whichmodel       = BLOSUM62;
+              }
 	    else if(strcmp(optarg, "MTMAM") == 0)
-	    {
-			io->datatype              = AA;
-			io->mod->ns               = 20;
-			io->mod->whichmodel       = MTMAM;
-	    }
+              {
+                io->datatype              = AA;
+                io->mod->ns               = 20;
+                io->mod->whichmodel       = MTMAM;
+              }
 	    else if (strcmp(optarg,"MTART") == 0)
-	    {
-			io->datatype              = AA;
-			io->mod->ns               = 20;
-			io->mod->whichmodel       = MTART;
-	    }
+              {
+                io->datatype              = AA;
+                io->mod->ns               = 20;
+                io->mod->whichmodel       = MTART;
+              }
 	    else if (strcmp(optarg,"HIVW") == 0)
-	    {
-			io->datatype              = AA;
-			io->mod->ns               = 20;
-			io->mod->whichmodel       = HIVW;
-	    }
+              {
+                io->datatype              = AA;
+                io->mod->ns               = 20;
+                io->mod->whichmodel       = HIVW;
+              }
 	    else if(strcmp(optarg, "HIVB") == 0)
-	    {
-			io->datatype              = AA;
-			io->mod->ns               = 20;
-			io->mod->whichmodel       = HIVB;
-	    }
+              {
+                io->datatype              = AA;
+                io->mod->ns               = 20;
+                io->mod->whichmodel       = HIVB;
+              }
 	    else if(strcmp(optarg, "AB") == 0)
-	    {
-			io->datatype              = AA;
-			io->mod->ns               = 20;
-			io->mod->whichmodel       = AB;
-	    }
+              {
+                io->datatype              = AA;
+                io->mod->ns               = 20;
+                io->mod->whichmodel       = AB;
+              }
 	    else if (strcmp(optarg, "CUSTOM") == 0)
-	    {
-			io->datatype              = AA;
-			io->mod->ns               = 20;
-			io->mod->whichmodel       = CUSTOMAA;
-	    }
+              {
+                io->datatype              = AA;
+                io->mod->ns               = 20;
+                io->mod->whichmodel       = CUSTOMAA;
+              }
 	    else if(strcmp(optarg, "FLU") == 0)
-	    {
-			io->datatype              = AA;
-			io->mod->ns               = 20;
-			io->mod->whichmodel       = FLU;
-	    }
+              {
+                io->datatype              = AA;
+                io->mod->ns               = 20;
+                io->mod->whichmodel       = FLU;
+              }
 	    else
-	    {
-			PhyML_Printf("\n. The model name is incorrect. Please see the documentation.\n");
-			Exit("\n");
-	    }
+              {
+                PhyML_Printf("\n. The model name is incorrect. Please see the documentation.\n");
+                Exit("\n");
+              }
 
 	    Set_Model_Name(io->mod);
 	    
@@ -1062,7 +1064,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	    else
 	      {
 		io->mod->ras->alpha->v = (phydbl)atof(optarg);
-		io->mod->s_opt->opt_alpha  = 0;
+		io->mod->s_opt->opt_alpha  = NO;
 	      }
 	    break;
 	  }
@@ -1268,58 +1270,59 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	  
 	case 't':case 11:
 	  {
-		if ((io->mod->whichmodel != JC69) && (io->mod->whichmodel != F81) && (io->mod->whichmodel != GTR))
-	    {
-			if ((strcmp(optarg, "e") == 0) ||
-				(strcmp(optarg, "E") == 0) ||
-				(strcmp(optarg, "estimated") == 0) ||
-				(strcmp(optarg, "ESTIMATED") == 0))
-				{
-					io->mod->kappa->v = 4.0;
-					io->mod->s_opt->opt_kappa = YES;
-					if (io->mod->whichmodel == TN93)
-						io->mod->s_opt->opt_lambda   = YES;
-				}
-			else
-			{
-				io->mod->s_opt->opt_kappa  = NO;
-				io->mod->s_opt->opt_lambda = NO;
-// Added the 2 TsTv ratios for TN93
-// lambda is the ratio of both TsTv ratios
-// kappa is the mean of both TsTv ratios
-				if (io->mod->whichmodel == TN93)
-				{
-						double TsTvPur, TsTvPyr;
-						if(!isalpha(optarg[0]))
-							sscanf(optarg,"%lf,%lf",&TsTvPur,&TsTvPyr);
-						else
-						{
-							Warn_And_Exit("\n. The TN93 model requires 2 Ts/Tv ratios.\n");
-						}
-						if ( (TsTvPur < .0) || (TsTvPyr < .0) )
-						{
-							Warn_And_Exit("\n. The Ts/Tv ratio must be a positive number.\n");
-						}
-						io->mod->lambda->v = (phydbl) (TsTvPur / TsTvPyr);
-						io->mod->kappa->v = (phydbl) ( (TsTvPur + TsTvPyr) / 2.);
-				}
-				else
-				{
-// -- End TN93 rates for purines & pyrimidines
-					if (atof(optarg) < .0)
-					{
-						char choix;
-						PhyML_Printf("\n. The Ts/Tv ratio must be a positive number\n");
-						PhyML_Printf("\n. Type any key to exit.\n");
-						if(!scanf("%c",&choix)) Exit("\n");
-							Exit("\n");
-					}
-					else
-					{
-						io->mod->kappa->v = (phydbl)atof(optarg);
-					}
-				}
-			}
+            if ((io->mod->whichmodel != JC69) && (io->mod->whichmodel != F81) && (io->mod->whichmodel != GTR))
+              {
+                if ((strcmp(optarg, "e") == 0) ||
+                    (strcmp(optarg, "E") == 0) ||
+                    (strcmp(optarg, "estimated") == 0) ||
+                    (strcmp(optarg, "ESTIMATED") == 0))
+                  {
+                    io->mod->kappa->v = 4.0;
+                    io->mod->s_opt->opt_kappa = YES;
+                    if (io->mod->whichmodel == TN93)
+                      io->mod->s_opt->opt_lambda   = YES;
+                  }
+                else
+                  {
+                    io->mod->s_opt->opt_kappa  = NO;
+                    io->mod->s_opt->opt_lambda = NO;
+                    
+                    // Added the 2 TsTv ratios for TN93
+                    // lambda is the ratio of both TsTv ratios
+                    // kappa is the mean of both TsTv ratios
+                    if (io->mod->whichmodel == TN93)
+                      {
+                        double TsTvPur, TsTvPyr;
+                        if(!isalpha(optarg[0]))
+                          sscanf(optarg,"%lf,%lf",&TsTvPur,&TsTvPyr);
+                        else
+                          {
+                            Warn_And_Exit("\n. The TN93 model requires 2 Ts/Tv ratios.\n");
+                          }
+                        if ( (TsTvPur < .0) || (TsTvPyr < .0) )
+                          {
+                            Warn_And_Exit("\n. The Ts/Tv ratio must be a positive number.\n");
+                          }
+                        io->mod->lambda->v = (phydbl) (TsTvPur / TsTvPyr);
+                        io->mod->kappa->v = (phydbl) ( (TsTvPur + TsTvPyr) / 2.);
+                      }
+                    else
+                      {
+                        // -- End TN93 rates for purines & pyrimidines
+                        if (atof(optarg) < .0)
+                          {
+                            char choix;
+                            PhyML_Printf("\n. The Ts/Tv ratio must be a positive number\n");
+                            PhyML_Printf("\n. Type any key to exit.\n");
+                            if(!scanf("%c",&choix)) Exit("\n");
+                            Exit("\n");
+                          }
+                        else
+                          {
+                            io->mod->kappa->v = (phydbl)atof(optarg);
+                          }
+                      }
+                  }
 	      }
 	    break;
 	  }
@@ -1618,7 +1621,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
 
   if(io->mod->ras->n_catg == 1) io->mod->s_opt->opt_alpha = 0;
   
-  if(!io->mod->s_opt->opt_subst_param)
+  if(io->mod->s_opt->opt_subst_param == NO)
     {
       io->mod->s_opt->opt_alpha  = NO;
       io->mod->s_opt->opt_kappa  = NO;
@@ -1632,7 +1635,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
      io->mod->whichmodel != F84 &&
      io->mod->whichmodel != TN93)
     {
-      io->mod->s_opt->opt_kappa = 0;
+      io->mod->s_opt->opt_kappa = NO;
     }
   
   if(io->datatype == AA && io->mod->whichmodel == CUSTOMAA && !io->mod->fp_aa_rate_mat)
@@ -1656,19 +1659,11 @@ int Read_Command_Line(option *io, int argc, char **argv)
       io->fp_out_stats = Openfile(io->out_stats_file,writemode);
     }
 #endif
-  
 
 #if defined(PHYREX)
   if(io->fp_in_align != NULL) io->fp_out_summary = Openfile(io->out_summary_file,writemode);
 #endif
-  
-  if(io->mod->whichmodel == GTR) 
-    {
-      /* Make_Custom_Model(io->mod); */
-      io->mod->s_opt->opt_rr = 1;
-    }
-  
-  
+
   return 1;
 }
 

@@ -732,12 +732,13 @@ void Global_Spr_Search(t_tree *tree)
   phydbl best_lnL;
   t_tree *best_tree;
   time_t t_cur;
-  phydbl mean_delta_lnL_spr,max_delta_lnL_spr;
+  phydbl mean_delta_lnL_spr,max_delta_lnL_spr,tune_l_mult;
   
   unsigned int no_improv  = 0;
   unsigned int last_best_found = 0;
   unsigned int hit_zero_improv = 0;
-
+  unsigned int freq = 1;
+ 
   best_lnL      = UNLIKELY;
   tree->verbose = (tree->verbose == VL0) ? VL0 : VL1;
   best_tree     = Make_Tree_From_Scratch(tree->n_otu,tree->data);
@@ -766,7 +767,6 @@ void Global_Spr_Search(t_tree *tree)
   tree->mod->s_opt->max_depth_path            = MIN(40,1+(int)(tree->n_otu/4));
   tree->mod->s_opt->max_delta_lnL_spr         = 1000;
   tree->mod->s_opt->l_min_spr                 = 0.0;
-
   tree->mod->s_opt->spr_lnL                   = YES;
   tree->mod->s_opt->spr_pars                  = NO;
   tree->mod->s_opt->min_diff_lk_move          = 1.E-1;
@@ -778,7 +778,6 @@ void Global_Spr_Search(t_tree *tree)
   mean_delta_lnL_spr                          = 0.0;
   max_delta_lnL_spr                           = 0.0;
   hit_zero_improv                             = 0;
-
   tune_l_mult                                 = 0.05;
   best_lnL                                    = tree->c_lnL;
 
@@ -800,11 +799,8 @@ void Global_Spr_Search(t_tree *tree)
 
       Spr(tree->c_lnL,1.0,tree);
       Optimize_Br_Len_Serie(2,tree);
-
       
       if(!(iter%15)) Round_Optimize(tree,1000);
-
-
 
       if(tree->verbose > VL0 && tree->io->quiet == NO)
         {
@@ -864,8 +860,7 @@ void Global_Spr_Search(t_tree *tree)
   while(tree->mod->s_opt->n_improvements > 15);
         
 
-  if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Second round of SPRs...\n");
-
+  if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Second round of optimization...\n");
   
   tree->mod->s_opt->max_depth_path            = MAX(10,(int)(1.5*tree->mod->s_opt->max_depth_path));
   tree->mod->s_opt->l_min_spr                 = 1.E-4;
@@ -962,7 +957,7 @@ void Global_Spr_Search(t_tree *tree)
 
 
   
-  if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Second round of optimization...\n");
+  if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Third round of optimization...\n");
   last_best_found = 0;
 
 

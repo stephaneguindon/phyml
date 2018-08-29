@@ -1502,21 +1502,10 @@ void Default_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
   phydbl *Pij1,*Pij2;
   phydbl *tPij1,*tPij2;
   int *sum_scale, *sum_scale_v1, *sum_scale_v2;
-  int sum_scale_v1_val, sum_scale_v2_val;
-  unsigned int i;
-  unsigned int catg,site;
-  unsigned int v1_idx, v2_idx, p_idx, v0_idx;
-  unsigned int p1_is_fully_ambiguous,p2_is_fully_ambiguous;
-  int ambiguity_check_v1,ambiguity_check_v2;
-  int state_v1,state_v2;
-  phydbl smallest_p_lk,largest_p_lk;
-  phydbl p_lk_lim_inf;
   int *p_lk_loc;//Suppose site j, of a certain subtree, has "A" on one tip, and "C" on the other. If you come across this pattern again at site i<j, then you can simply copy the partial likelihoods
   
   const unsigned int ncatg = tree->mod->ras->n_catg;
   const unsigned int ns = tree->mod->ns;
-  const unsigned int ncatgns = ncatg * ns;//Dimension of a matrix L that holds rate-specific character likelihoods. IOW, L[ij] is the likelihood of character j in rate class i
-  const unsigned int nsns = ns * ns;//Dimensions of the transition prob. matrix
   const unsigned int n_patterns = tree->n_pattern;
 
 
@@ -1526,10 +1515,6 @@ void Default_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
     {
       assert(FALSE);
     }
-
-  state_v1 = state_v2 = -1;
-  ambiguity_check_v1 = ambiguity_check_v2 = YES;
-  sum_scale_v1_val = sum_scale_v2_val = 0;
   
   if(d->tax)
     {
@@ -1539,14 +1524,14 @@ void Default_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
     }
 
 
-  p_lk_lim_inf                = (phydbl)P_LK_LIM_INF;
   n_v1 = n_v2                 = NULL;
   p_lk = p_lk_v1 = p_lk_v2    = NULL;
   Pij1 = Pij2                 = NULL;
   tPij1 = tPij2               = NULL;
-  sum_scale_v1 = sum_scale_v2 = NULL;
   p_lk_loc                    = NULL;
-
+  sum_scale_v1                = NULL;
+  sum_scale_v2                = NULL;
+  
   Set_All_Partial_Lk(&n_v1,&n_v2,
                      &p_lk,&sum_scale,&p_lk_loc,
                      &Pij1,&tPij1,&p_lk_v1,&sum_scale_v1,
@@ -1575,7 +1560,7 @@ void Core_Default_Update_Partial_Lk(const t_node *n_v1, const t_node *n_v2,
   int state_v1,state_v2;
   int ambiguity_check_v1,ambiguity_check_v2;
   int sum_scale_v1_val, sum_scale_v2_val;
-  phydbl largest_p_lk,smallest_p_lk;
+  phydbl largest_p_lk;
   const phydbl *init_Pij1, *init_Pij2;
   
   ncatgns = ncatg*ns;

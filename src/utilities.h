@@ -1359,6 +1359,11 @@ typedef struct __Optimiz { /*! parameters to be optimised (mostly used in 'optim
   int      curr_opt_free_rates;
 
   int          nni_br_len_opt;
+
+  int    apply_spr_right_away;
+  int               apply_spr;
+
+  phydbl            l_min_spr;
 }t_opt;
 
 /*!********************************************************/
@@ -2272,6 +2277,7 @@ phydbl Scalar_Elem(int pos, scalar_dbl *scl);
 int Scalar_Len(scalar_dbl *scl);
 void Set_Scalar_Dbl(phydbl val, scalar_dbl *from);
 void Set_Scalar_Dbl_Min_Thresh(phydbl thresh, scalar_dbl *from);
+void Set_Scalar_Dbl_Max_Thresh(phydbl thresh, scalar_dbl *from);
 void List_Of_Regraft_Nodes(t_node *a, t_node *d, phydbl time_thresh, t_ll *list, t_tree *tree);
 void Push_Bottom_Linked_List(void *what, t_ll **list, bool remove_duplicates);
 void Remove_From_Linked_List(t_ll *elem, void *val, t_ll **list);
@@ -2295,7 +2301,6 @@ short int Are_Sequences_Identical(align *seq1, align *seq2);
 char *Mutation_Id(int mut_idx, t_tree *tree);
 void Random_Tax_Idx(t_node *a, t_node *d, int *idx, t_tree *tree);
 void List_Taxa_In_Clade(t_node *a, t_node *d, t_tree *tree);
-void Set_Scalar_Dbl_Max_Thresh(phydbl thresh, scalar_dbl *from);
 void Alias_Subpatt_Pre(t_node *a, t_node *d, t_tree *tree);
 void Alias_Subpatt_Post(t_node *a, t_node *d, t_tree *tree);
 void Alias_One_Subpatt(t_node *a, t_node *d, t_tree *tree);

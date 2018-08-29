@@ -11320,6 +11320,21 @@ void Set_Scalar_Dbl_Min_Thresh(phydbl thresh, scalar_dbl *from)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
+void Set_Scalar_Dbl_Max_Thresh(phydbl thresh, scalar_dbl *from)
+{
+  scalar_dbl *f;
+
+  f = from;
+  do
+    {
+      if(f->v > thresh) f->v = thresh;;
+      f = f->next;
+    }
+  while(f);
+}
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
 phydbl Scalar_Elem(int pos, scalar_dbl *scl)
 {
   scalar_dbl *loc;
