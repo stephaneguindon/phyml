@@ -1697,9 +1697,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
   PHYREX_Lk(tree);
 
-  Switch_Eigen(YES,tree->mod);
+  Set_Update_Eigen(YES,tree->mod);
   Lk(NULL,tree);
-  Switch_Eigen(NO,tree->mod);
+  Set_Update_Eigen(NO,tree->mod);
 
 
   disk = tree->disk;
