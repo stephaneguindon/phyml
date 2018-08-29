@@ -3297,38 +3297,55 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
           
           if((tree->mod->s_opt->opt_state_freq) && (tree->io->datatype == NT))
             {
-              failed = YES;
+              int iter;
 
-
-
+              iter = 0;
+              do
+                {
+                  lk_old = tree->c_lnL;
+                  failed = NO;
+                  
                   BFGS(mixt_tree,tree->mod->e_frq->pi_unscaled->v,tree->mod->ns,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,YES,
                        &Return_Abs_Lk,
                        &Num_Derivative_Several_Param,
                        &Lnsrch,&failed);
                   
                   permut = Permutate(tree->mod->ns);
-
-              if(failed == YES)
-                {
+                  
                   for(i=0;i<tree->mod->ns;++i)
                     {
                       phydbl a,c;
                       
-                      a = tree->mod->e_frq->pi_unscaled->v[i] * .1;
-                      c = tree->mod->e_frq->pi_unscaled->v[i] * 10.;
+                      a = tree->mod->e_frq->pi_unscaled->v[permut[i]] * .1;
+                      c = tree->mod->e_frq->pi_unscaled->v[permut[i]] * 10.;
                       
-                      Generic_Brent_Lk(&(tree->mod->e_frq->pi_unscaled->v[i]),
+                      Generic_Brent_Lk(&(tree->mod->e_frq->pi_unscaled->v[permut[i]]),
                                        a,c,
                                        tree->mod->s_opt->min_diff_lk_local,
                                        tree->mod->s_opt->brent_it_max,
                                        tree->mod->s_opt->quickdirty,
                                        Wrap_Lk,NULL,mixt_tree,NULL,NO);      
                     }
+                  
+                  
+                  if(verbose)
+                    {
+                      Print_Lk(mixt_tree,"[Nucleotide freqs.  ]");
+                    }
+                  
+                  lk_new = tree->c_lnL;
+                  
+                  assert(lk_new > lk_old - tree->mod->s_opt->min_diff_lk_local);
+                  if(fabs(lk_new-lk_old) < tree->mod->s_opt->min_diff_lk_local) break;
                 }
+              while(++iter < tree->mod->s_opt->brent_it_max);
               
-              if(verbose)
+              if(iter == tree->mod->s_opt->brent_it_max)
                 {
-                  Print_Lk(mixt_tree,"[Nucleotide freqs.  ]");
+                  if(tree->verbose > VL0)
+                    {
+                      PhyML_Printf("\n. Failed to optimize GTR parameters this round...");
+                    }
                 }
             }
         }
