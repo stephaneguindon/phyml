@@ -13,122 +13,132 @@ the GNU public licence. See http://www.opensource.org for details.
 #include "assert.h"
 #include "avx.h"
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
 #if defined(__AVX__)
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
 void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree)
 {
-  unsigned int site,catg,state;
-  int is_ambigu,observed_state;
-  unsigned int i,j,k,l;
+  unsigned int site,catg;
+  unsigned int i,j;
   
   unsigned const int npattern = tree->n_pattern;
   unsigned const int ncatg = tree->mod->ras->n_catg;
   unsigned const int ns = tree->mod->ns;
-  unsigned const int sz = (int)BYTE_ALIGN / 8;  
-  unsigned const int ncatgns = ncatg * ns;
+  unsigned const int sz = (int)BYTE_ALIGN / 8;
   unsigned const int nblocks = ns / sz;
 
-  __m256d _fplk[nblocks],_fplkev[sz],_colsum[nblocks];
-  phydbl *ev;
-      
-  assert(sz == 4);  
-  assert(tree->update_eigen_lr == YES);
-  observed_state = -1;
+  const phydbl *p_lk_left,*p_lk_rght,*pi;
+  phydbl *dot_prod,*p_lk_left_pi;
+  phydbl *l_ev,*r_ev;
+
+  __m256d *_l_ev,*_r_ev,*_prod_left,*_prod_rght;
   
-  ev = NULL;
 #ifndef WIN32
-  if(posix_memalign((void **)&ev,BYTE_ALIGN,(size_t)sz*sizeof(double))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&p_lk_left_pi,BYTE_ALIGN,(size_t) ns * sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&l_ev,BYTE_ALIGN,(size_t) ns * ns * sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&_l_ev,BYTE_ALIGN,(size_t) ns * ns / sz * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&_r_ev,BYTE_ALIGN,(size_t) ns * ns / sz * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&_prod_left,BYTE_ALIGN,(size_t) ns / sz * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&_prod_rght,BYTE_ALIGN,(size_t) ns / sz * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 #else
-  ev = _aligned_malloc(sz * sizeof(phydbl),BYTE_ALIGN);
+  p_lk_left_pi = _aligned_malloc(ns * sizeof(phydbl),BYTE_ALIGN);
+  l_ev         = _aligned_malloc(ns * ns * sizeof(phydbl),BYTE_ALIGN);
+  _l_ev        = _aligned_malloc(ns * ns / sz * sizeof(__m256d),BYTE_ALIGN);
+  _r_ev        = _aligned_malloc(ns * ns / sz * sizeof(__m256d),BYTE_ALIGN);
+  _prod_left   = _aligned_malloc(ns / sz * sizeof(__m256d),BYTE_ALIGN);
+  _prod_rght   = _aligned_malloc(ns / sz * sizeof(__m256d),BYTE_ALIGN);
 #endif
-    
+  
+
+  assert(sz == 4);
+  assert(tree->update_eigen_lr == YES);
+  
+  r_ev = tree->mod->eigen->r_e_vect;
+  
+  /* Copy transpose of matrix of left eigen vectors */
+  for(i=0;i<ns;++i)
+    for(j=0;j<ns;++j)
+      l_ev[i*ns+j] = tree->mod->eigen->l_e_vect[j*ns+i];
+  
+  /* Load into AVX registers */
+  for(i=0;i<ns;++i)
+    {
+      for(j=0;j<nblocks;++j)
+        {
+          _r_ev[i*nblocks+j] = _mm256_load_pd(r_ev + j*sz);
+          _l_ev[i*nblocks+j] = _mm256_load_pd(l_ev + j*sz);
+        }
+      r_ev += ns;
+      l_ev += ns;
+    }
+          
+  l_ev -= ns*ns;
+  r_ev -= ns*ns;
+  
+  p_lk_left = b->left->tax ? b->p_lk_tip_l : b->p_lk_left;
+  p_lk_rght = b->rght->tax ? b->p_lk_tip_r : b->p_lk_rght;
+  pi = tree->mod->e_frq->pi->v;
+  dot_prod = tree->dot_prod;
+  
   for(site=0;site<npattern;++site)
     {
-      is_ambigu = YES;
-      if(b->rght->tax == YES) is_ambigu = b->rght->c_seq->is_ambigu[site];
-      if(is_ambigu == NO) observed_state = b->rght->c_seq->d_state[site];
-
       for(catg=0;catg<ncatg;++catg)
         {
-          // Dot product left partial likelihood with equilibrium freqs
-          for(i=0;i<nblocks;++i) _fplk[i] = _mm256_mul_pd(_mm256_load_pd(&(b->p_lk_left[site*ncatgns + catg*ns + i*sz])),
-                                                          _mm256_load_pd(&(tree->mod->e_frq->pi->v[i*sz])));
+          for(i=0;i<ns;++i) p_lk_left_pi[i] = p_lk_left[i] * pi[i];
           
-          for(i=0;i<nblocks;++i) _colsum[i] = _mm256_setzero_pd();
-          // Multiply by matrix of right eigen vectors
-          // This matrix is made of nblocks*nblocks squares,
-          // each square being of 'area' sz*sz
-          for(i=0;i<nblocks;++i) // row 
-            {
-              for(j=0;j<nblocks;++j) // column
-                {
-                  for(k=0;k<sz;++k) // column in sz*sz square
-                    {
-                      for(l=0;l<sz;++l) // row in that same square
-                        {
-                          // Copy right eigen vector values column-by-column in block (i,j)
-                          ev[l] = tree->mod->eigen->r_e_vect[i*nblocks*sz*sz + j*sz + l*nblocks*sz + k];
-                        }
-                      _fplkev[k] = _mm256_mul_pd(_mm256_load_pd(ev),_fplk[i]);
-                    }
-                  _colsum[j] = _mm256_add_pd(_colsum[j],AVX_Horizontal_Add(_fplkev));
-                }
-            }          
-          for(j=0;j<nblocks;++j) _mm256_store_pd(&(tree->eigen_lr_left[catg*ns + j*sz]),_colsum[j]);
-
-
-          if(b->rght->tax == YES)
-            for(i=0;i<nblocks;++i) _fplk[i] = _mm256_load_pd(b->p_lk_tip_r + site*ns + i*sz); 
-          else
-            for(i=0;i<nblocks;++i) _fplk[i] = _mm256_load_pd(&(b->p_lk_rght[site*ncatgns + catg*ns + i*sz])); 
-
-          if(is_ambigu == YES)
-            {
-              for(i=0;i<nblocks;++i) _colsum[i] = _mm256_setzero_pd();
-              // Multiply by matrix of right eigen vectors
-              // This matrix is made of nblocks*nblocks squares,
-              // each square being of 'area' sz*sz
-              for(i=0;i<nblocks;++i) // row
-                {
-                  for(j=0;j<nblocks;++j) // column
-                    {
-                      for(l=0;l<sz;++l) // row in that same square
-                        {
-                          for(k=0;k<sz;++k) // column in sz*sz square
-                            {
-                              // Copy left eigen vector values column-by-column in block (i,j)
-                              ev[k] = tree->mod->eigen->l_e_vect[i*nblocks*sz*sz + j*sz + l*nblocks*sz + k];
-                            }                          
-                          _fplkev[l] = _mm256_mul_pd(_mm256_load_pd(ev),_fplk[j]);
-                        }
-                      _colsum[i] = _mm256_add_pd(_colsum[i],AVX_Horizontal_Add(_fplkev));
-                    }
-                }
-              for(j=0;j<nblocks;++j) _mm256_store_pd(&(tree->eigen_lr_rght[catg*ns + j*sz]),_colsum[j]);
-            }
-          else
-            {
-              for(state=0;state<ns;++state) tree->eigen_lr_rght[catg*ns + state] =
-                                              tree->mod->eigen->l_e_vect[state*ns + observed_state];
-            }
+          AVX_Matrix_Vect_Prod(_r_ev,p_lk_left_pi,ns,_prod_left);
+          AVX_Matrix_Vect_Prod(_l_ev,p_lk_rght,ns,_prod_rght);
           
-          for(j=0;j<nblocks;++j)
-            _mm256_store_pd(tree->dot_prod + site*ncatgns + catg*ns + j*sz,
-                            _mm256_mul_pd(_mm256_load_pd(tree->eigen_lr_rght + catg*ns + j*sz),
-                                          _mm256_load_pd(tree->eigen_lr_left + catg*ns + j*sz)));
-          
+          for(i=0;i<nblocks;++i) _mm256_store_pd(dot_prod + i*sz,_mm256_mul_pd(_prod_left[i],_prod_rght[i]));
+
+          dot_prod += ns;
+          if(b->left->tax == NO) p_lk_left += ns;
+          if(b->rght->tax == NO) p_lk_rght += ns;
         }
+
+      if(b->left->tax == YES) p_lk_left += ns;
+      if(b->rght->tax == YES) p_lk_rght += ns;
+
+      p_lk_left -= b->left->tax ? ns : ns*ncatg;
+      p_lk_rght -= b->rght->tax ? ns : ns*ncatg;
+      dot_prod -= ns;
+
+      /* PhyML_Printf("\n. EIGEN %d [%g %g %g %g] %p: [%g %g %g %g] %p: [%g %g %g %g] ", */
+      /*              site, */
+      /*              dot_prod[0], */
+      /*              dot_prod[1], */
+      /*              dot_prod[2], */
+      /*              dot_prod[3], */
+      /*              p_lk_left, */
+      /*              p_lk_left[0], */
+      /*              p_lk_left[1], */
+      /*              p_lk_left[2], */
+      /*              p_lk_left[3], */
+      /*              p_lk_rght, */
+      /*              p_lk_rght[0], */
+      /*              p_lk_rght[1], */
+      /*              p_lk_rght[2], */
+      /*              p_lk_rght[3]); */
+
+      p_lk_left += b->left->tax ? ns : ns*ncatg;
+      p_lk_rght += b->rght->tax ? ns : ns*ncatg;
+      dot_prod += ns;
     }
 
-  if(ev)  Free(ev);
+  Free(l_ev);
+  Free(_l_ev);
+  Free(_r_ev);
+  Free(_prod_left);
+  Free(_prod_rght);
+  Free(p_lk_left_pi);
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-phydbl AVX_Lk_Core_One_Class_No_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, phydbl *Pij, phydbl *pi, int ns, int ambiguity_check, int observed_state)
+phydbl AVX_Lk_Core_One_Class_No_Eigen_Lr(const phydbl *p_lk_left, const phydbl *p_lk_rght, const phydbl *Pij, const phydbl *pi, const int ns, const int ambiguity_check, const int observed_state)
 {
   const unsigned int sz = (int)BYTE_ALIGN / 8;
   const unsigned nblocks = ns/sz;
@@ -187,7 +197,7 @@ phydbl AVX_Lk_Core_One_Class_No_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, p
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-phydbl AVX_Lk_Core_One_Class_Eigen_Lr(phydbl *dot_prod, phydbl *expl, unsigned int ns)
+phydbl AVX_Lk_Core_One_Class_Eigen_Lr(const phydbl *dot_prod, const phydbl *expl, const unsigned int ns)
 {
   unsigned int l;
   const unsigned int sz = (int)BYTE_ALIGN / 8;
@@ -202,7 +212,33 @@ phydbl AVX_Lk_Core_One_Class_Eigen_Lr(phydbl *dot_prod, phydbl *expl, unsigned i
   return AVX_Vect_Norm(_x);
 }
  
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
+void AVX_Lk_dLk_Core_One_Class_Eigen_Lr(const phydbl *dot_prod, const phydbl *expl, const unsigned int ns, phydbl *lk, phydbl *dlk)
+{
+  unsigned int i;
+  const unsigned int sz = (int)BYTE_ALIGN / 8;
+  const unsigned nblocks = ns/sz*2;
+  __m256d _x,_y,_z;
+
+  _z = _mm256_setzero_pd();
+
+  for(i=0;i<nblocks;++i)
+    {
+      _x = _mm256_blend_pd(_mm256_set1_pd(dot_prod[2*i]),
+                           _mm256_set1_pd(dot_prod[2*i + 1]),12);
+      
+      _y = _mm256_load_pd(expl + 4*i);
+
+      _z = _mm256_add_pd(_z,_mm256_mul_pd(_x,_y));
+    }
+  
+  *lk = ((double *)&_z)[0] + ((double *)&_z)[2];
+  *dlk = ((double *)&_z)[1] + ((double *)&_z)[3];
+
+}
+ 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
@@ -213,27 +249,6 @@ phydbl AVX_Vect_Norm(__m256d _z)
   __m256d _y = _mm256_permute2f128_pd(_x,_x,0x21);
   _mm_store_sd(&r,_mm256_castpd256_pd128(_mm256_add_pd(_x,_y)));
   return r;
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-__m256d AVX_Horizontal_Add(__m256d x[4])
-{
-  __m256d y[2],z[2];
-
-  // y[0] = [x00+x01;x10+x11;x02+x03;x12+x13]
-  y[0] = _mm256_hadd_pd(x[0], x[1]);
-  // y[1] = [x20+x21;x30+x31;x22+x23;x32+x33]
-  y[1] = _mm256_hadd_pd(x[2], x[3]);
-
-  // z[0] = [x00+x01;x10+x11;x22+x23;x32+x33]
-  /* z[0] = _mm256_blend_pd(y[0],y[1],0b1100); */
-  z[0] = _mm256_blend_pd(y[0],y[1],12);
-  // z[1] = [x02+x03;x12+x13;x20+x21;x30+x31]
-  z[1] = _mm256_permute2f128_pd(y[0],y[1],0x21);
-
-  return(_mm256_add_pd(z[0],z[1]));
 }
 
 //////////////////////////////////////////////////////////////
@@ -252,50 +267,86 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
     n_v1   n_v2
 */
   t_node *n_v1, *n_v2;
-  phydbl *p_lk,*p_lk_v1,*p_lk_v2;
+  phydbl *plk0,*plk1,*plk2;
   phydbl *Pij1,*Pij2;
   phydbl *tPij1,*tPij2;
   int *sum_scale, *sum_scale_v1, *sum_scale_v2;
   int sum_scale_v1_val, sum_scale_v2_val;
-  unsigned int i,k;
+  unsigned int i,j,k;
   unsigned int catg,site;
-  phydbl smallest_p_lk,largest_p_lk;
-  phydbl p_lk_lim_inf;
+  short int state_v1,state_v2;
+  short int ambiguity_check_v1,ambiguity_check_v2;
+  phydbl largest_p_lk;
   int *p_lk_loc;
-  short int p1_is_fully_ambiguous, p2_is_fully_ambiguous;
   
   const unsigned int npattern = tree->n_pattern;
   const unsigned int ns = tree->mod->ns;
   const unsigned int ncatg = tree->mod->ras->n_catg;
 
   const unsigned int ncatgns =  ncatg * ns;
-  const unsigned int nsns =  ns * ns;  
+  const unsigned int nsns =  ns * ns;
   
   const unsigned int sz = (int)BYTE_ALIGN / 8;
   const unsigned nblocks = ns/sz;
 
-  __m256d _x1[nblocks], _x2[nblocks];
-  __m256d _plk[nblocks],_plk1[nblocks],_plk2[nblocks];
+  __m256d *_tPij1,*_tPij2,*_pmat1plk1,*_pmat2plk2,*_plk0,*_init_tPij1,*_init_tPij2;
+  
+#ifndef WIN32
+  if(posix_memalign((void **)&_tPij1,BYTE_ALIGN,(size_t)(ncatg * nsns / sz) * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&_tPij2,BYTE_ALIGN,(size_t)(ncatg * nsns / sz) * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&_pmat1plk1,BYTE_ALIGN,(size_t)ns / sz * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&_pmat2plk2,BYTE_ALIGN,(size_t)ns / sz * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&_plk0,BYTE_ALIGN,(size_t)(ns / sz) * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+#else
+  _tPij1     = _aligned_malloc(ncatg * nsns / sz * sizeof(__m256d),BYTE_ALIGN);
+  _tPij2     = _aligned_malloc(ncatg * nsns / sz * sizeof(__m256d),BYTE_ALIGN);
+  tPij1      = _aligned_malloc(ncatg * nsns / sz * sizeof(__m256d),BYTE_ALIGN);
+  tPij2      = _aligned_malloc(ncatg * nsns / sz * sizeof(__m256d),BYTE_ALIGN);
+  _pmat1plk1 = _aligned_malloc(ns / sz * sizeof(__m256d),BYTE_ALIGN);
+  _pmat2plk2 = _aligned_malloc(ns / sz * sizeof(__m256d),BYTE_ALIGN);
+  _plk0      = _aligned_malloc(ns / sz * sizeof(__m256d),BYTE_ALIGN);
+#endif
 
+  _init_tPij1 = _tPij1;
+  _init_tPij2 = _tPij2;
+  
   sum_scale_v1_val            = 0;
-  sum_scale_v2_val            = 0;  
-  p_lk_lim_inf                = (phydbl)P_LK_LIM_INF;
+  sum_scale_v2_val            = 0;
   n_v1 = n_v2                 = NULL;
-  p_lk = p_lk_v1 = p_lk_v2    = NULL;
+  plk0 = plk1 = plk2          = NULL;
   Pij1 = Pij2                 = NULL;
   tPij1 = tPij2               = NULL;
   sum_scale_v1 = sum_scale_v2 = NULL;
   p_lk_loc                    = NULL;
-  p1_is_fully_ambiguous       = NO;
-  p2_is_fully_ambiguous       = NO;
+  state_v1 = state_v2         = -1;
+
   
   Set_All_Partial_Lk(&n_v1,&n_v2,
-                     &p_lk,&sum_scale,&p_lk_loc,
-                     &Pij1,&tPij1,&p_lk_v1,&sum_scale_v1,
-                     &Pij2,&tPij2,&p_lk_v2,&sum_scale_v2,
+                     &plk0,&sum_scale,&p_lk_loc,
+                     &Pij1,&tPij1,&plk1,&sum_scale_v1,
+                     &Pij2,&tPij2,&plk2,&sum_scale_v2,
                      d,b,tree);
-  
-  if(tree->mod->augmented == YES && n_v1 && n_v1->tax == NO)
+ 
+  // Copy transpose of transition matrices into AVX registers
+  for(i=0;i<ncatg;++i)
+    {
+      for(j=0;j<ns;++j)
+        {
+          for(k=0;k<nblocks;++k)
+            {
+              _tPij1[k] = _mm256_load_pd(tPij1);
+              _tPij2[k] = _mm256_load_pd(tPij2);
+              tPij1 += sz;
+              tPij2 += sz;
+            }
+          _tPij1 += nblocks;
+          _tPij2 += nblocks;
+        }
+    }
+  _tPij1 = _init_tPij1;
+  _tPij2 = _init_tPij2;
+
+  if(tree->mod->augmented == YES)
     {
       PhyML_Printf("\n== AVX version of the Update_Partial_Lk function does not");
       PhyML_Printf("\n== allow augmented data.");
@@ -305,208 +356,209 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
   /* For every site in the alignment */
   for(site=0;site<npattern;++site)
     {
-      if(n_v1->tax == YES &&
-         n_v2->tax == YES &&
-         n_v1->c_seq->state[site] == 'X' &&
-         n_v2->c_seq->state[site] == 'X')
+      state_v1 = state_v2 = -1;
+      ambiguity_check_v1 = ambiguity_check_v2 = YES;
+              
+      if(n_v1 && n_v1->tax)
         {
-          for(i=0;i<ncatgns;++i) p_lk[site*ncatgns + i] = 1.0;
+          ambiguity_check_v1 = n_v1->c_seq->is_ambigu[site];
+          if(ambiguity_check_v1 == NO) state_v1 = n_v1->c_seq->d_state[site];
         }
-      else
-        {          
-          p1_is_fully_ambiguous = NO;
-          if(n_v1->tax == NO) { for(i=0;i<ns;++i) if(Are_Equal(p_lk_v1[site*ncatgns + 0*ns + i],1.0,1.E-5) == NO) break; }
-          else for(i=0;i<ns;++i) if(Are_Equal(p_lk_v1[site*ns + i],1.0,1.E-5) == NO) break;          
-          if(i==ns) p1_is_fully_ambiguous = YES;
-
-          p2_is_fully_ambiguous = NO;
-          if(n_v2->tax == NO) { for(i=0;i<ns;++i) if(Are_Equal(p_lk_v2[site*ncatgns + 0*ns + i],1.0,1.E-5) == NO) break; }
-          else for(i=0;i<ns;++i) if(Are_Equal(p_lk_v2[site*ns + i],1.0,1.E-5) == NO) break;          
-          if(i==ns) p2_is_fully_ambiguous = YES;
-
-
-          if(p1_is_fully_ambiguous == YES && p2_is_fully_ambiguous == YES)
+      
+      if(n_v2 && n_v2->tax)
+        {
+          ambiguity_check_v2 = n_v2->c_seq->is_ambigu[site];
+          if(ambiguity_check_v2 == NO) state_v2 = n_v2->c_seq->d_state[site];
+        }
+      
+      _tPij1 = _init_tPij1;
+      _tPij2 = _init_tPij2;
+      
+      for(catg=0;catg<ncatg;++catg)
+        {                                                          
+          if(ambiguity_check_v1 == NO && ambiguity_check_v2 == NO)
             {
-              for(i=0;i<ncatgns;++i) p_lk[site*ncatgns + i] = 1.0;
+              AVX_Partial_Lk_Exex(_tPij1,state_v1,
+                                  _tPij2,state_v2,
+                                  ns,_plk0);
+            }
+          else if(ambiguity_check_v1 == YES && ambiguity_check_v2 == NO)
+            {
+              AVX_Partial_Lk_Exin(_tPij2,state_v2,
+                                  _tPij1,plk1,_pmat1plk1,
+                                  ns,_plk0);
+            }
+          else if(ambiguity_check_v1 == NO && ambiguity_check_v2 == YES)
+            {
+              AVX_Partial_Lk_Exin(_tPij1,state_v1,
+                                  _tPij2,plk2,_pmat2plk2,
+                                  ns,_plk0);
             }
           else
             {
-          
-              /* For all rate classes */
-              for(catg=0;catg<ncatg;++catg)
-                {              
-                  for(k=0;k<nblocks;++k) _plk1[k] = _mm256_setzero_pd();
-                  for(k=0;k<nblocks;++k) _plk2[k] = _mm256_setzero_pd();
-                  
-                  // v1 side
-                  if(p1_is_fully_ambiguous == YES) for(k=0;k<nblocks;++k) _plk1[k] = _mm256_set1_pd(1.0);
-                  else
-                    {
-                      for(i=0;i<ns;++i)
-                        {
-                          for(k=0;k<nblocks;++k) _x1[k] = _mm256_setzero_pd();
-                          
-                          if(n_v1->tax == NO)
-                            {
-                              if(p_lk_v1[site*ncatgns + catg*ns + i] > 0.0)
-                                {
-                                  for(k=0;k<nblocks;++k) _x1[k] = _mm256_mul_pd(_mm256_load_pd(tPij1 + catg*nsns + i*ns + sz*k),
-                                                                                _mm256_set1_pd(p_lk_v1[site*ncatgns + catg*ns + i]));
-                                  
-                                  for(k=0;k<nblocks;++k) _plk1[k] = _mm256_add_pd(_plk1[k],_x1[k]);
-                                }
-                            }                  
-                          else
-                            {                      
-                              if(p_lk_v1[site*ns + i] > 0.0)
-                                {
-                                  for(k=0;k<nblocks;++k) _x1[k] = _mm256_mul_pd(_mm256_load_pd(tPij1 + catg*nsns + i*ns + sz*k),
-                                                                                _mm256_set1_pd(p_lk_v1[site*ns + i]));
-                                  
-                                  for(k=0;k<nblocks;++k) _plk1[k] = _mm256_add_pd(_plk1[k],_x1[k]);
-                                }
-                            }
-                        }
-                    }
-                  
-                  
-                  // v2 side
-                  if(p2_is_fully_ambiguous == YES) for(k=0;k<nblocks;++k) _plk2[k] = _mm256_set1_pd(1.0);
-                  else
-                    {
-                      for(i=0;i<ns;++i)
-                        {
-                          for(k=0;k<nblocks;++k) _x2[k] = _mm256_setzero_pd();
-                          
-                          if(n_v2->tax == NO)
-                            {
-                              if(p_lk_v2[site*ncatgns + catg*ns + i] > 0.0)
-                                {
-                                  for(k=0;k<nblocks;++k) _x2[k] = _mm256_mul_pd(_mm256_load_pd(tPij2 + catg*nsns + i*ns + sz*k),
-                                                                                _mm256_set1_pd(p_lk_v2[site*ncatgns + catg*ns + i]));
-                                  
-                                  for(k=0;k<nblocks;++k) _plk2[k] = _mm256_add_pd(_plk2[k],_x2[k]);
-                                }
-                            }                  
-                          else
-                            {                      
-                              if(p_lk_v2[site*ns + i] > 0.0)
-                                {
-                                  for(k=0;k<nblocks;++k) _x2[k] = _mm256_mul_pd(_mm256_load_pd(tPij2 + catg*nsns + i*ns + sz*k),
-                                                                                _mm256_set1_pd(p_lk_v2[site*ns + i]));
-                                  
-                                  for(k=0;k<nblocks;++k) _plk2[k] = _mm256_add_pd(_plk2[k],_x2[k]);
-                                }
-                            }
-                        }
-                    }
-                
-              
-              /* for(i=0;i<ns;++i) */
-              /*   { */
-              /*     for(k=0;k<nblocks;++k) _x1[k] = _mm256_setzero_pd(); */
-              /*     for(k=0;k<nblocks;++k) _x2[k] = _mm256_setzero_pd(); */
-                  
-              /*     if(n_v1->tax == NO) */
-              /*       { */
-              /*         if(p_lk_v1[site*ncatgns + catg*ns + i] > 0.0) */
-              /*           { */
-              /*             for(k=0;k<nblocks;++k) _x1[k] = _mm256_mul_pd(_mm256_load_pd(tPij1 + catg*nsns + i*ns + sz*k), */
-              /*                                                           _mm256_set1_pd(p_lk_v1[site*ncatgns + catg*ns + i])); */
-                          
-              /*             for(k=0;k<nblocks;++k) _plk1[k] = _mm256_add_pd(_plk1[k],_x1[k]); */
-              /*           } */
-              /*       }                   */
-              /*     else */
-              /*       {                       */
-              /*         if(p_lk_v1[site*ns + i] > 0.0) */
-              /*           { */
-              /*             for(k=0;k<nblocks;++k) _x1[k] = _mm256_mul_pd(_mm256_load_pd(tPij1 + catg*nsns + i*ns + sz*k), */
-              /*                                                           _mm256_set1_pd(p_lk_v1[site*ns + i])); */
-                          
-              /*             for(k=0;k<nblocks;++k) _plk1[k] = _mm256_add_pd(_plk1[k],_x1[k]); */
-              /*           } */
-              /*       } */
-                                    
-              /*     if(n_v2->tax == NO) */
-              /*       { */
-              /*         if(p_lk_v2[site*ncatgns + catg*ns + i] > 0.0) */
-              /*           { */
-              /*             for(k=0;k<nblocks;++k) _x2[k] = _mm256_mul_pd(_mm256_load_pd(tPij2 + catg*nsns + i*ns + sz*k), */
-              /*                                                           _mm256_set1_pd(p_lk_v2[site*ncatgns + catg*ns + i])); */
-                          
-              /*             for(k=0;k<nblocks;++k) _plk2[k] = _mm256_add_pd(_plk2[k],_x2[k]); */
-              /*           } */
-              /*       } */
-              /*     else */
-              /*       { */
-              /*         if(p_lk_v2[site*ns + i] > 0.0) */
-              /*           { */
-              /*             for(k=0;k<nblocks;++k) _x2[k] = _mm256_mul_pd(_mm256_load_pd(tPij2 + catg*nsns + i*ns + sz*k), */
-              /*                                                           _mm256_set1_pd(p_lk_v2[site*ns + i])); */
-                          
-              /*             for(k=0;k<nblocks;++k) _plk2[k] = _mm256_add_pd(_plk2[k],_x2[k]); */
-              /*           } */
-              /*       } */
-              /*   } */
-              
-                  for(k=0;k<nblocks;++k) _plk[k] = _mm256_mul_pd(_plk1[k],_plk2[k]);
-                  
-                  for(k=0;k<nblocks;++k) _mm256_store_pd(p_lk + site*ncatgns + catg*ns + sz*k,_plk[k]);
-                
-              
-                  if(tree->scaling_method == SCALE_RATE_SPECIFIC)
-                    {
-                      smallest_p_lk = BIG;
-                      for(i=0;i<ns;++i)
-                        if(p_lk[site*ncatgns+catg*ns+i] < smallest_p_lk)
-                          smallest_p_lk = p_lk[site*ncatgns+catg*ns+i] ;
-                      
-                      /* Current scaling values at that site */
-                      sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[site*ncatg+catg]):(0);
-                      sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[site*ncatg+catg]):(0);
-                      
-                      sum_scale[site*ncatg+catg] = sum_scale_v1_val + sum_scale_v2_val;
-                      
-                      /* Scaling. We have p_lk_lim_inf = 2^-500. Consider for instance that
-                         smallest_p_lk = 2^-600, then curr_scaler_pow will be equal to 100, and
-                         each element in the partial likelihood vector will be multiplied by
-                         2^100. */
-                      if(smallest_p_lk < p_lk_lim_inf &&
-                         tree->mod->augmented == NO &&
-                         tree->apply_lk_scaling == YES)
-                        {
-                          int curr_scaler_pow;
-                          curr_scaler_pow = (int)(-500.*LOG2-log(smallest_p_lk))/LOG2;
-                          sum_scale[site*ncatg+catg] += curr_scaler_pow;
-                          for(i=0;i<ns;++i) Rate_Correction(curr_scaler_pow, p_lk + site*ncatgns + catg*ns + i);
-                        }
-                    }            
-                }          
+              AVX_Partial_Lk_Inin(_tPij1,plk1,_pmat1plk1,
+                                  _tPij2,plk2,_pmat2plk2,
+                                  ns,_plk0);
             }
+          
+          for(k=0;k<nblocks;++k) _mm256_store_pd(plk0+sz*k,_plk0[k]);
+
+          _tPij1 += nsns / sz;
+          _tPij2 += nsns / sz;
+          plk0 += ns;
+          plk1 += (n_v1->tax) ? 0 : ns;
+          plk2 += (n_v2->tax) ? 0 : ns;
         }
-      
+   
+      plk1 += (n_v1->tax) ? ns : 0;
+      plk2 += (n_v2->tax) ? ns : 0;
+
       if(tree->scaling_method == SCALE_FAST)
         {
           sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[site]):(0);
-          sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[site]):(0);              
+          sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[site]):(0);
           sum_scale[site] = sum_scale_v1_val + sum_scale_v2_val;
+
+          plk0 -= ncatgns;
           
-          
-          largest_p_lk = -BIG; 
+          largest_p_lk = -BIG;
           for(i=0;i<ncatgns;++i)
-            if(p_lk[site*ncatgns+i] > largest_p_lk)
-              largest_p_lk = p_lk[site*ncatgns+i] ;
+            if(plk0[i] > largest_p_lk)
+              largest_p_lk = plk0[i];
           
           if(largest_p_lk < INV_TWO_TO_THE_LARGE &&
              tree->mod->augmented == NO &&
              tree->apply_lk_scaling == YES)
             {
-              for(i=0;i<ncatgns;++i) p_lk[site*ncatgns + i] *= TWO_TO_THE_LARGE;
+              for(i=0;i<ncatgns;++i) plk0[i] *= TWO_TO_THE_LARGE;
               sum_scale[site] += LARGE;
             }
+
+          plk0 += ncatgns;
         }
+
+      
+      plk0 -= ncatgns;
+      plk1 -= (n_v1->tax) ? ns : ncatgns;
+      plk2 -= (n_v2->tax) ? ns : ncatgns;
+      
+      /* PhyML_Printf("\n. PARTIAL site: %d plk0: %p [%g %g %g %g] plk1: %p [%g %g %g %g] plk2: %p [%g %g %g %g]", */
+      /*              site, */
+      /*              plk0, */
+      /*              plk0[0], */
+      /*              plk0[1], */
+      /*              plk0[2], */
+      /*              plk0[3], */
+      /*              plk1, */
+      /*              plk1[0], */
+      /*              plk1[1], */
+      /*              plk1[2], */
+      /*              plk1[3], */
+      /*              plk2, */
+      /*              plk2[0], */
+      /*              plk2[1], */
+      /*              plk2[2], */
+      /*              plk2[3] */
+      /*              ); */
+      
+      plk0 += ncatgns;
+      plk1 += (n_v1->tax) ? ns : ncatgns;
+      plk2 += (n_v2->tax) ? ns : ncatgns;
+
     }
+
+  
+  Free(_init_tPij1);
+  Free(_init_tPij2);
+  Free(_pmat1plk1);
+  Free(_pmat2plk2);
+  Free(_plk0);
+  
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void AVX_Partial_Lk_Exex(const __m256d *_tPij1, const int state1, const __m256d *_tPij2, const int state2, const int ns, __m256d *plk0)
+{
+  unsigned const int sz = (int)BYTE_ALIGN / 8;
+  unsigned const int nblocks = ns / sz;
+  unsigned int i;
+
+  _tPij1 = _tPij1 + state1 * nblocks;
+  _tPij2 = _tPij2 + state2 * nblocks;
+  for(i=0;i<nblocks;++i) plk0[i] = _mm256_mul_pd(_tPij1[i],_tPij2[i]);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void AVX_Partial_Lk_Exin(const __m256d *_tPij1, const int state1, const __m256d *_tPij2, const phydbl *_plk2, __m256d *_pmat2plk2, const int ns, __m256d *_plk0)
+{
+  unsigned const int sz = (int)BYTE_ALIGN / 8;
+  unsigned const int nblocks = ns / sz;
+  unsigned int i;
+  
+  _tPij1 = _tPij1 + state1 * nblocks;
+  AVX_Matrix_Vect_Prod(_tPij2,_plk2,ns,_pmat2plk2);
+  
+  for(i=0;i<nblocks;++i) _plk0[i] = _mm256_mul_pd(_tPij1[i],_pmat2plk2[i]);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void AVX_Partial_Lk_Inin(const __m256d *_tPij1, const phydbl *plk1, __m256d *_pmat1plk1, const __m256d *_tPij2, const phydbl *plk2, __m256d *_pmat2plk2, const int ns, __m256d *_plk0)
+{
+  unsigned const int sz = (int)BYTE_ALIGN / 8;
+  unsigned const int nblocks = ns / sz;
+  unsigned int i;
+
+  AVX_Matrix_Vect_Prod(_tPij1,plk1,ns,_pmat1plk1);
+  AVX_Matrix_Vect_Prod(_tPij2,plk2,ns,_pmat2plk2);
+  
+  for(i=0;i<nblocks;++i) _plk0[i] = _mm256_mul_pd(_pmat1plk1[i],_pmat2plk2[i]);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void AVX_Matrix_Vect_Prod(const __m256d *_m_transpose, const phydbl *_v, const int ns, __m256d *_u)
+{
+  unsigned const int sz = (int)BYTE_ALIGN / 8;
+  unsigned const int nblocks = ns / sz;  
+  unsigned int i,j;  
+  __m256d _x;
+
+  for(i=0;i<nblocks;++i) _u[i] = _mm256_setzero_pd();
+
+  for(i=0;i<ns;++i)
+    {
+      _x = _mm256_set1_pd(_v[i]);
+      for(j=0;j<nblocks;++j) _u[j] = _mm256_add_pd(_u[j],_mm256_mul_pd(_m_transpose[j],_x));
+      _m_transpose = _m_transpose + nblocks;
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+__m256d AVX_Horizontal_Add(const __m256d x[4])
+{
+  __m256d y[2],z[2];
+
+  // y[0] = [x00+x01;x10+x11;x02+x03;x12+x13]
+  y[0] = _mm256_hadd_pd(x[0], x[1]);
+  // y[1] = [x20+x21;x30+x31;x22+x23;x32+x33]
+  y[1] = _mm256_hadd_pd(x[2], x[3]);
+
+  // z[0] = [x00+x01;x10+x11;x22+x23;x32+x33]
+  /* z[0] = _mm256_blend_pd(y[0],y[1],0b1100); */
+  z[0] = _mm256_blend_pd(y[0],y[1],12);
+  // z[1] = [x02+x03;x12+x13;x20+x21;x30+x31]
+  z[1] = _mm256_permute2f128_pd(y[0],y[1],0x21);
+
+  return(_mm256_add_pd(z[0],z[1]));
 }
 
 #endif

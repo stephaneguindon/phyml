@@ -246,86 +246,63 @@ phydbl Get_Lambda_F84(phydbl *pi, phydbl *kappa)
 /*   8000 = 20x20x20 times the operation +                          */
 /********************************************************************/
 
-void PMat_Empirical(phydbl l, t_mod *mod, int pos, phydbl *Pij, phydbl *tPij)
+void PMat_Empirical(const phydbl l, const t_mod *mod, const int pos, phydbl *Pij, phydbl *tPij)
 {
   const unsigned int ns = mod->ns;
   unsigned int i, j, k;
-  phydbl *U,*V,*R;
+  const phydbl *U,*V,*R;
   phydbl *expt;
   phydbl *uexpt;
   phydbl sum;
 
+  assert(Pij);
+  
   expt  = mod->eigen->e_val_im;
   uexpt = mod->eigen->r_e_vect_im;
   U     = mod->eigen->r_e_vect;
   V     = mod->eigen->l_e_vect;
   R     = mod->eigen->e_val; /* exponential of the eigen value matrix */
 
-  /* Initialize a rate-specific N*N matrix */
-  for(i=0;i<ns;++i) for(k=0;k<ns;k++) Pij[pos+ns*i+k] = .0;
-  /* compute POW(exp(D/mr),l) into mat_eDmrl */
-  for(k=0;k<ns;++k)  expt[k] = (phydbl)pow(R[k],l);
+  for(k=0;k<ns;++k)  expt[k] = exp(R[k]*l);
 
   /* multiply Vr*POW(exp(D/mr),l)*Vi into Pij */
   for(i=0;i<ns;i++) for (k=0;k<ns;k++) uexpt[i*ns+k] = U[i*ns+k] * expt[k];
 
+  Pij = Pij + pos;
+  if(tPij != NULL) tPij = tPij + pos;
+  
+  
   for(i=0;i<ns;++i)
     {
       for(j=0;j<ns;++j)
         {
+          Pij[j] = 0.0;
           for(k=0;k<ns;++k)
             {
-              Pij[pos+ns*i+j] += (uexpt[i*ns+k] * V[k*ns+j]);
+              Pij[j] += (uexpt[i*ns+k] * V[k*ns+j]);
+              /* PhyML_Printf("\n. P[j]: %g %g %g",Pij[j],uexpt[i*ns+k],V[k*ns+j]); */
             }
-          if(Pij[pos+ns*i+j] < SMALL_PIJ) Pij[pos+ns*i+j] = SMALL_PIJ;
+          if(Pij[j] < SMALL_PIJ) Pij[j] = SMALL_PIJ;
         }
-
       sum = 0.0;
-      for(j=0;j<ns;++j) sum += Pij[pos+ns*i+j];
-      for(j=0;j<ns;++j) Pij[pos+ns*i+j] /= sum;
+      for(j=0;j<ns;++j) sum += Pij[j];
+      for(j=0;j<ns;++j) Pij[j] /= sum;
+
+      Pij += ns;
     }
+  
+  Pij -= ns*ns;
 
-
-  if(tPij)
+  if(tPij != NULL)
     {
       for(i=0;i<ns;++i)
         {
           for(j=0;j<ns;++j)
             {
-              tPij[pos+ns*i+j] = Pij[pos+ns*j+i];
+              tPij[ns*i+j] = Pij[ns*j+i];
             }
         }
     }
-
-  /* PhyML_Printf("\n. l: %G",l); */
-  /* PhyML_Printf("\n. U\n"); */
-  /* for(i=0;i<ns;++i) */
-  /*   { */
-  /*     for(j=0;j<ns;++j) */
-  /*       { */
-  /*         PhyML_Printf("%5f ",U[ns*i+j]); */
-  /*       } */
-  /*     PhyML_Printf("\n"); */
-  /*   } */
-  /* PhyML_Printf("\n. V\n"); */
-  /* for(i=0;i<ns;++i) */
-  /*   { */
-  /*     for(j=0;j<ns;++j) */
-  /*       { */
-  /*         PhyML_Printf("%5f ",V[i*ns+j]); */
-  /*       } */
-  /*     PhyML_Printf("\n"); */
-  /*   } */
-  /* PhyML_Printf("\n. P\n"); */
-  /* for(i=0;i<ns;++i) */
-  /*   { */
-  /*     for(j=0;j<ns;++j) */
-  /*       { */
-  /*         PhyML_Printf("%5f ",Pij[pos+ns*j+i]); */
-  /*       } */
-  /*     PhyML_Printf("\n"); */
-  /*   } */
-
 }
 
 //////////////////////////////////////////////////////////////
@@ -934,8 +911,10 @@ void Update_Eigen(t_mod *mod)
       /* 			  mod->eigen->space_int,mod->eigen->space)) */
 
       if(!Eigen(1,mod->r_mat->qmat_buff->v,mod->eigen->size,mod->eigen->e_val,
-                mod->eigen->e_val_im,mod->eigen->r_e_vect,
-                mod->eigen->r_e_vect_im,mod->eigen->space))
+                mod->eigen->e_val_im,
+                mod->eigen->r_e_vect,
+                mod->eigen->r_e_vect_im,
+                mod->eigen->space))
         {
           /* compute inverse(Vr) into Vi */
           For (i,mod->ns*mod->ns) mod->eigen->l_e_vect[i] = mod->eigen->r_e_vect[i];
@@ -969,41 +948,11 @@ void Update_Eigen(t_mod *mod)
             }
           for(i=0;i<mod->eigen->size;i++) mod->eigen->e_val[i] /= scalar;
           
-          /* compute the diagonal terms of exp(D) */
-          for(i=0;i<mod->ns;i++) mod->eigen->e_val[i] = (phydbl)exp(mod->eigen->e_val[i]);
-
-      /* int j; */
-      /* double *U,*V,*R; */
-      /* double *expt; */
-      /* double *uexpt; */
-      /* int n; */
-
-      /* expt  = mod->eigen->e_val_im; */
-      /* uexpt = mod->eigen->r_e_vect_im; */
-      /* U     = mod->eigen->r_e_vect; */
-      /* V     = mod->eigen->l_e_vect; */
-      /* R     = mod->eigen->e_val; /\* exponential of the eigen value matrix *\/ */
-      /* n     = mod->ns; */
-
-      /* PhyML_Printf("\n"); */
-      /* PhyML_Printf("\n. Q\n"); */
-      /* for(i=0;i<n;i++) { for(j=0;j<n;j++) PhyML_Printf("%7.3f ",mod->eigen->q[i*n+j]); PhyML_Printf("\n"); } */
-      /* PhyML_Printf("\n. U\n"); */
-      /* for(i=0;i<n;i++) { for(j=0;j<n;j++) PhyML_Printf("%7.3f ",U[i*n+j]); PhyML_Printf("\n"); } */
-      /* PhyML_Printf("\n"); */
-      /* PhyML_Printf("\n. V\n"); */
-      /* for(i=0;i<n;i++) { for(j=0;j<n;j++) PhyML_Printf("%7.3f ",V[i*n+j]); PhyML_Printf("\n"); } */
-      /* PhyML_Printf("\n"); */
-      /* PhyML_Printf("\n. Eigen\n"); */
-      /* for(i=0;i<n;i++)  PhyML_Printf("%E ",mod->eigen->e_val[i]); */
-      /* PhyML_Printf("\n"); */
-
-/* 	  Exit("\n"); */
 #ifdef BEAGLE
           //Recall that BEAGLE is initialized *after* all the model parameters are set
           //IOW, this function may be called before BEAGLE is initialized ("chicken-egg")
           if(UNINITIALIZED != mod->b_inst)
-              update_beagle_eigen(mod);
+            update_beagle_eigen(mod);
 #endif
         }
       else
@@ -1026,7 +975,7 @@ void Switch_From_M4mod_To_Mod(t_mod *mod)
   mod->ns = mod->m4mod->n_o;
   for(i=0;i<mod->ns;i++) mod->e_frq->pi->v[i] = mod->m4mod->o_fq[i];
   mod->eigen->size = mod->ns;
-  Switch_Eigen(YES,mod);
+  Set_Update_Eigen(YES,mod);
 }
 
 //////////////////////////////////////////////////////////////
@@ -1093,12 +1042,11 @@ void Switch_From_Mod_To_M4mod(t_mod *mod)
   mod->ns = mod->m4mod->n_o * mod->m4mod->n_h;
   for(i=0;i<mod->ns;i++) mod->e_frq->pi->v[i] = mod->m4mod->o_fq[i%mod->m4mod->n_o] * mod->m4mod->h_fq[i/mod->m4mod->n_o];
   mod->eigen->size = mod->ns;
-  Switch_Eigen(YES,mod);
+  Set_Update_Eigen(YES,mod);
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 phydbl General_Dist(phydbl *F, t_mod *mod, eigen *eigen_struct)
 {

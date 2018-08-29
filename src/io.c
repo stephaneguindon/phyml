@@ -4693,9 +4693,9 @@ option *PhyML_XML(char *xml_filename)
       Unscale_Br_Len_Multiplier_Tree(mixt_tree);
       Set_Both_Sides(YES,mixt_tree);
             
-      Switch_Eigen(YES,mixt_tree->mod);                 
+      Set_Update_Eigen(YES,mixt_tree->mod);                 
       Lk(NULL,mixt_tree);
-      Switch_Eigen(NO,mixt_tree->mod);
+      Set_Update_Eigen(NO,mixt_tree->mod);
       
       if(mixt_tree->mod->s_opt->opt_topo)
         {
@@ -6090,6 +6090,25 @@ void JSON_Tree_Io(t_tree *tree, FILE *where)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+void Print_Lk_Given_Edge_Recurr(t_node *a, t_node *d, t_edge *b, t_tree *tree)
+{
+  PhyML_Printf("\n___ Edge %3d (left=%3d rght=%3d) lnL=%f",
+     b->num,
+     b->left->num,
+     b->rght->num,
+     Lk(b,tree));
+
+  if(d->tax) return;
+  else
+    {
+      int i;
+      for(i=0;i<3;i++)
+    if(d->v[i] != a)
+      Print_Lk_Given_Edge_Recurr(d,d->v[i],d->b[i],tree);
+    }
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

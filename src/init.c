@@ -665,7 +665,7 @@ void Set_Defaults_Model(t_mod *mod)
 
 #if !(defined PHYTIME || defined INVITEE)
   mod->l_min = 1.E-8;
-  mod->l_max = 100.0;
+  mod->l_max = 10.0;
 #else
   mod->l_min = 1.E-6;
   mod->l_max = 10.0;
@@ -1000,7 +1000,6 @@ void Init_Model(calign *data, t_mod *mod, option *io)
 #endif
 
   mod->ns = io->mod->ns;
-
 
 
   if(io->datatype == GENERIC) mod->whichmodel = JC69;
@@ -3446,7 +3445,7 @@ void M4_Init_Model(m4 *m4mod, calign *data, t_mod *mod)
   for(i=0;i<m4mod->n_h;i++) m4mod->multipl[i] = (phydbl)i;
   for(i=0;i<m4mod->n_h;i++) m4mod->multipl_unscaled[i] = (phydbl)i;
 
-  Switch_Eigen(YES,mod);
+  Set_Update_Eigen(YES,mod);
   M4_Update_Qmat(m4mod,mod);
 }
 

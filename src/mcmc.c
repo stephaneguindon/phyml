@@ -44,7 +44,7 @@ void MCMC(t_tree *tree)
       MCMC_Read_Param_Vals(tree);
     }
 
-  Switch_Eigen(YES,tree->mod);
+  Set_Update_Eigen(YES,tree->mod);
 
   MCMC_Initialize_Param_Val(tree->mcmc,tree);
  
@@ -72,7 +72,7 @@ void MCMC(t_tree *tree)
 
   Set_Both_Sides(NO,tree);  
   Lk(NULL,tree);
-  Switch_Eigen(NO,tree->mod);
+  Set_Update_Eigen(NO,tree->mod);
   MCMC_Print_Param(tree->mcmc,tree);
   
 
@@ -4123,7 +4123,7 @@ void MCMC_Kappa(t_tree *mixt_tree)
   phydbl K;
   phydbl cur_lnL_data, new_lnL_data;
 
-  Switch_Eigen(YES,mixt_tree->mod);
+  Set_Update_Eigen(YES,mixt_tree->mod);
 
   if(mixt_tree->is_mixt_tree == YES) tree = mixt_tree->next;
   else tree = mixt_tree;
@@ -4178,7 +4178,7 @@ void MCMC_Kappa(t_tree *mixt_tree)
     }
   while(tree != NULL);
   
-  Switch_Eigen(NO,mixt_tree->mod);
+  Set_Update_Eigen(NO,mixt_tree->mod);
 }
 
 //////////////////////////////////////////////////////////////
@@ -4215,17 +4215,16 @@ void MCMC_Alpha(t_tree *tree)
 
 void MCMC_Free_Mixt_Rate(t_tree *tree)
 {
-  phydbl num,denom;
-  phydbl *z,*y;
-  phydbl y_cur,z_cur;
+  phydbl *u,*v,*f;
+  phydbl cur_val;
+  phydbl cur_A, new_A;
   phydbl low_bound,up_bound;
-  int c,i;
-  int c2updt; 
-  phydbl u;
-  phydbl hr;
+  unsigned int k,i,idx; 
+  phydbl hr,z;
   int n_moves;
   phydbl cur_lnL_data, new_lnL_data;
   phydbl ratio,alpha;
+
   
   tree->mod->ras->sort_rate_classes = YES;
   tree->mod->ras->normalise_rr      = YES;
@@ -4233,115 +4232,126 @@ void MCMC_Free_Mixt_Rate(t_tree *tree)
   cur_lnL_data = tree->c_lnL;
   new_lnL_data = UNLIKELY;
 
-  c = tree->mod->ras->n_catg;
+  k = tree->mod->ras->n_catg;
 
-  z = tree->mod->ras->gamma_rr_unscaled->v;
-  y = tree->mod->ras->gamma_r_proba_unscaled->v;
+  u = tree->mod->ras->gamma_r_proba_unscaled->v;
+  v = tree->mod->ras->gamma_rr_unscaled->v;
 
+  f = tree->mod->ras->gamma_r_proba->v;
 
+  
+  u[k-1] = 1.0;
+  v[k-1] = 1.0;
+  
   n_moves = 0;
   do
     {
       n_moves++;
 
-      // Update frequencies
+      z = Uni();
 
-      // Choose the class freq to update at random.
-      // Last class never chosen and corresponding
-      // unscaled freq should always be equal to 1.0
-      c2updt = Rand_Int(0,c-1); 
-            
-      // Proposal is uniform. Determine upper and lower bounds.
-      u = Uni();
-      low_bound = (c2updt==0)?(.0):(y[c2updt-1]);
-      up_bound  = (c2updt==c-1)?(2.*y[c-2]):(y[c2updt+1]);
-      y_cur = y[c2updt];
-      y[c2updt] = low_bound + u*(up_bound - low_bound);
-            
-      // Hastings ratio
-      if(c2updt == c-1)
-        hr = POW(y_cur/y[c-1],c-1);
+      if(z < 0.5)
+        {
+          // Update frequencies
+
+          cur_A = 0.0;
+          for(i=0;i<k;++i) cur_A += f[i]*u[i];
+
+          hr = +2.*log(cur_A);
+          for(i=0;i<k-1;++i) hr -= log(cur_A - f[i]*v[i]);
+
+          idx = Rand_Int(0,k-2); 
+                              
+          // Proposal is uniform. Determine upper and lower bounds.
+          z = Uni();
+          low_bound = (idx==0)?(.0):(u[idx-1]);
+          up_bound  = u[idx+1];
+          cur_val = u[idx];
+          u[idx] = low_bound + z*(up_bound - low_bound);
+          
+          new_lnL_data = Lk(NULL,tree);
+
+          new_A = 0.0;
+          for(i=0;i<k;++i) new_A += f[i]*u[i];
+
+          hr -= 2.*log(new_A);
+          for(i=0;i<k-1;++i) hr += log(new_A - f[i]*v[i]);
+
+          
+          /* Metropolis-Hastings step */
+          ratio = 0.;
+          ratio += (new_lnL_data - cur_lnL_data);
+          ratio += hr;
+          ratio = exp(ratio);
+          alpha = MIN(1.,ratio);
+          
+          /* printf("\nf class=%d new_val=%f cur_val=%f cur: %f -> new: %f",c2updt,y[c2updt],y_cur,cur_lnL_data,new_lnL_data); */
+          
+          z = Uni();
+          if(z > alpha) /* Reject */
+            {
+              u[idx] = cur_val;
+              Update_RAS(tree->mod);
+              tree->c_lnL = cur_lnL_data;
+            }
+          else /* Accept */
+            {
+              cur_lnL_data = new_lnL_data;
+            }
+          
+        }
       else
-        hr = 1.0;
-      
-      new_lnL_data = Lk(NULL,tree);
+        {
+          // Update rates
+          
+          cur_A = 0.0;
+          for(i=0;i<k;++i) cur_A += f[i]*u[i];
 
-      /* Metropolis-Hastings step */
-      ratio = 0.;
-      ratio += (new_lnL_data - cur_lnL_data);
-      ratio += log(hr);
-      ratio = exp(ratio);
-      alpha = MIN(1.,ratio);
-      
-      /* printf("\nf class=%d new_val=%f cur_val=%f cur: %f -> new: %f",c2updt,y[c2updt],y_cur,cur_lnL_data,new_lnL_data); */
+          hr = +2.*log(cur_A);
+          for(i=0;i<k-1;++i) hr -= log(cur_A - f[i]*v[i]);
 
-      u = Uni();
-      if(u > alpha) /* Reject */
- 	{
-	  y[c2updt] = y_cur;
-          Update_RAS(tree->mod);
-	  tree->c_lnL = cur_lnL_data;
-	}
-      else /* Accept */
-	{
-	  cur_lnL_data = new_lnL_data;
-	}
-      
+          idx = Rand_Int(0,k-2);
+                              
+          // Proposal is uniform. Determine upper and lower bounds.
+          z = Uni();
+          low_bound = (idx==0)?(.0):(v[idx-1]);
+          up_bound = v[idx+1];
+          cur_val = v[idx];
+          v[idx] = low_bound + z*(up_bound - low_bound);
+          
+          new_lnL_data = Lk(NULL,tree);
 
+          new_A = 0.0;
+          for(i=0;i<k;++i) new_A += f[i]*u[i];
 
+          hr -= 2.*log(new_A);
+          for(i=0;i<k-1;++i) hr += log(new_A - f[i]*v[i]);
 
-      // Update rates
+          
+          /* Metropolis-Hastings step */
+          ratio = 0.;
+          ratio += (new_lnL_data - cur_lnL_data);
+          ratio += hr;
+          ratio = exp(ratio);
+          alpha = MIN(1.,ratio);
+          
+          /* printf("\nf class=%d new_val=%f cur_val=%f cur: %f -> new: %f",c2updt,y[c2updt],y_cur,cur_lnL_data,new_lnL_data); */
+          
+          z = Uni();
+          if(z > alpha) /* Reject */
+            {
+              v[idx] = cur_val;
+              Update_RAS(tree->mod);
+              tree->c_lnL = cur_lnL_data;
+            }
+          else /* Accept */
+            {
+              cur_lnL_data = new_lnL_data;
+            }
 
-      // Choose the class unscaled rate to update at random.
-      // Last unscaled rate fixed to c throughout (hence c-2)      
-      c2updt = Rand_Int(0,c-1);
-      
-      denom = 0.0;
-      for(i=0;i<c;i++) denom += z[i]*y[i];
-      denom = pow(denom,c);
-
-      // Proposal move.
-      u = Uni();
-      low_bound = (c2updt==0)?(.0):(z[c2updt-1]);
-      up_bound = (c2updt==c-1)?(2.*z[c2updt-2]):(z[c2updt+1]);
-      z_cur = z[c2updt];
-      z[c2updt] = low_bound + u*(up_bound - low_bound);
-
-      
-      // Hastings ratio (remaining part)
-      num = 0.0;
-      for(i=0;i<c;i++) num += z[i]*y[i];
-      num = POW(num,c);
-      
-      hr = num/denom;
-      if(c2updt == c-1) hr *= z[c-1]/z_cur;
-      
-      new_lnL_data = Lk(NULL,tree);
-
-      // Metropolis-Hastings step
-      ratio = 0.;
-      ratio += (new_lnL_data - cur_lnL_data);
-      ratio += log(hr);
-
-      ratio = exp(ratio);
-      alpha = MIN(1.,ratio);
-
-      /* printf("\nr class=%d new_val=%f cur_val=%f cur: %f -> new: %f",c2updt,y[c2updt],y_cur,cur_lnL_data,new_lnL_data); */
-
-      u = Uni();
-      if(u > alpha)
-	{
-	  z[c2updt] = z_cur;
-          Update_RAS(tree->mod);
-	  tree->c_lnL = cur_lnL_data;
-	}
-      else
-	{
-	  cur_lnL_data = new_lnL_data;
-	}
-
+        }
     }
-  while(n_moves != c);
+  while(n_moves != k);
 }
 
 //////////////////////////////////////////////////////////////
@@ -4355,7 +4365,7 @@ void MCMC_Covarion_Rates(t_tree *tree)
 
   if(tree->mod->use_m4mod == NO) return;
 
-  Switch_Eigen(YES,tree->mod);
+  Set_Update_Eigen(YES,tree->mod);
 
   For(i,2*tree->n_otu-2) tree->rates->br_do_updt[i] = YES;
 
@@ -4394,7 +4404,7 @@ void MCMC_Covarion_Rates(t_tree *tree)
 				NULL,Wrap_Lk,tree->mcmc->move_type[tree->mcmc->num_move_cov_rates+class],NO,NULL,tree,NULL);
     }
 
-  Switch_Eigen(NO,tree->mod);
+  Set_Update_Eigen(NO,tree->mod);
 
 }
 
@@ -4406,11 +4416,11 @@ void MCMC_Covarion_Switch(t_tree *tree)
 {
   if(tree->mod->use_m4mod == NO) return;
 
-  Switch_Eigen(YES,tree->mod);
+  Set_Update_Eigen(YES,tree->mod);
   MCMC_Single_Param_Generic(&(tree->mod->m4mod->delta),0.01,+100.,tree->mcmc->num_move_cov_switch,
 			    NULL,&(tree->c_lnL),
 			    NULL,Wrap_Lk,tree->mcmc->move_type[tree->mcmc->num_move_cov_switch],NO,NULL,tree,NULL); 
-  Switch_Eigen(NO,tree->mod);
+  Set_Update_Eigen(NO,tree->mod);
 }
 
 //////////////////////////////////////////////////////////////

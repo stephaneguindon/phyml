@@ -2973,9 +2973,9 @@ void Bootstrap(t_tree *tree, int tbe_bootstrap)
           MIXT_Set_Alias_Subpatt(NO,boot_tree);
         }
 
-      Switch_Eigen(YES,boot_tree->mod);                 
+      Set_Update_Eigen(YES,boot_tree->mod);                 
       Lk(NULL,boot_tree);
-      Switch_Eigen(NO,boot_tree->mod);
+      Set_Update_Eigen(NO,boot_tree->mod);
 
       if(boot_tree->mod->s_opt->opt_topo)
         {
@@ -5308,14 +5308,6 @@ void Graft_Subtree(t_edge *target, t_node *link, t_node *link_daughter, t_edge *
   Set_Edge_Dirs(residual,residual->left,residual->rght,tree);
   Set_Edge_Dirs(b_up,b_up->left,b_up->rght,tree);
 
-  /* printf("\n here %p target: %d [%p] eroot: %d [%p] target_nd: %d [%p] root: %d [%p]", */
-  /*        tree, */
-  /*        target?target->num:-1,target, */
-  /*        tree->e_root?tree->e_root->num:-1,tree->e_root, */
-  /*        target_nd?target_nd->num:-1,target_nd, */
-  /*        tree->n_root?tree->n_root->num:-1,tree->n_root); */
-  /* fflush(NULL); */
-
   if(tree->n_root != NULL)
     {
       if(target == tree->e_root)
@@ -5748,7 +5740,6 @@ phydbl Triple_Dist_Approx(t_node *a, t_edge *b, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Make_Symmetric(phydbl **F, int size)
 {
   int i,j;
@@ -5765,7 +5756,6 @@ void Make_Symmetric(phydbl **F, int size)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void Round_Down_Freq_Patt(phydbl **F, t_tree *tree)
 {
@@ -5800,7 +5790,6 @@ phydbl Get_Sum_Of_Cells(phydbl *F, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Divide_Cells(phydbl **F, phydbl div, t_tree *tree)
 {
   int i,j;
@@ -5813,7 +5802,6 @@ void Divide_Cells(phydbl **F, phydbl div, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Divide_Mat_By_Vect(phydbl **F, phydbl *vect, int size)
 {
   int i,j;
@@ -5824,7 +5812,6 @@ void Divide_Mat_By_Vect(phydbl **F, phydbl *vect, int size)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void Multiply_Mat_By_Vect(phydbl **F, phydbl *vect, int size)
 {
@@ -7447,7 +7434,7 @@ void Evolve(calign *data, t_mod *mod, int first_site_pos, t_tree *tree)
   switch_to_yes = NO;
   if(tree->mod->gamma_mgf_bl == YES) switch_to_yes = YES;
 
-  Switch_Eigen(YES,mod);                 
+  Set_Update_Eigen(YES,mod);                 
 
   assert(first_site_pos < data->init_len);
   
@@ -8132,11 +8119,11 @@ t_tree *Dist_And_BioNJ(calign *cdata, t_mod *mod, option *io)
 
   if(mod->s_opt->random_input_tree == NO)
     {
-      if(!io->quiet) PhyML_Printf("\n. Computing pairwise distances...");
-
+      if(!io->quiet) PhyML_Printf("\n\n. Computing pairwise distances...");
+ 
       mat = ML_Dist(cdata,mod);
       Fill_Missing_Dist(mat);
-
+            
       if(!io->quiet) PhyML_Printf("\n\n. Building BioNJ tree...");
       mat->tree = Make_Tree_From_Scratch(cdata->n_otu,cdata);      
       Bionj(mat);
@@ -8149,7 +8136,7 @@ t_tree *Dist_And_BioNJ(calign *cdata, t_mod *mod, option *io)
       tree = Make_Tree_From_Scratch(cdata->n_otu,cdata);
       tree->mat = NULL;
     }
-
+  
   return tree;
 }
 
@@ -8287,6 +8274,7 @@ char *aLRT_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
   finalize_beagle_instance(tree);
 #endif
 
+  Free_One_Spr(tree->best_spr);
   Free_Spr_List_One_Edge(tree);
   Free_Spr_List_All_Edge(tree);
   Free_Triplet(tree->triplet_struct);
@@ -8671,7 +8659,6 @@ void Branch_To_Time_Pre(t_node *a, t_node *d, t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void Branch_Lengths_To_Rate_Lengths(t_tree *tree)
 {
@@ -10229,23 +10216,6 @@ void Connect_CSeqs_To_Nodes(calign *cdata, option *io, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Switch_Eigen(int state, t_mod *mod)
-{
-  t_mod *buff;
-
-  buff = mod;
-  do
-    {
-      buff->update_eigen = state;
-      buff = buff->next;
-      if(!buff) break;
-    }
-  while(1);
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
 void Set_Both_Sides(int yesno, t_tree *tree)
 {
   tree->both_sides = yesno;
@@ -10268,6 +10238,23 @@ void Set_Update_Eigen_Lr(int yesno, t_tree *tree)
 {
   tree->update_eigen_lr = yesno;
   if(tree->is_mixt_tree == YES) MIXT_Set_Update_Eigen_Lr(yesno,tree);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Set_Update_Eigen(int yesno, t_mod *mod)
+{
+  t_mod *buff;
+
+  buff = mod;
+  do
+    {
+      buff->update_eigen = yesno;
+      buff = buff->next;
+      if(!buff) break;
+    }
+  while(1);  
 }
 
 //////////////////////////////////////////////////////////////
@@ -11300,6 +11287,22 @@ scalar_dbl *Duplicate_Scalar_Dbl(scalar_dbl *from)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
+void Set_Scalar_Dbl(phydbl val, scalar_dbl *from)
+{
+  scalar_dbl *f;
+
+  f = from;
+  do
+    {
+      f->v = val;;
+      f = f->next;
+    }
+  while(f);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
 void Set_Scalar_Dbl_Min_Thresh(phydbl thresh, scalar_dbl *from)
 {
   scalar_dbl *f;
@@ -12128,8 +12131,1015 @@ void List_Taxa_In_Clade(t_node *a, t_node *d, t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+void Alias_Subpatt(t_tree *tree)
+{
+
+  if(tree->n_root && tree->ignore_root == NO)
+    {
+      Alias_Subpatt_Post(tree->n_root,tree->n_root->v[2],tree);
+      Alias_Subpatt_Post(tree->n_root,tree->n_root->v[1],tree);
+    }
+  else
+    {
+      Alias_Subpatt_Post(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree);
+      /* if(tree->both_sides)  */
+      Alias_Subpatt_Pre(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree);
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Alias_One_Subpatt(t_node *a, t_node *d, t_tree *tree)
+{
+  int i,j;
+  int *patt_id_v1, *patt_id_v2, *patt_id_d;
+  int *p_lk_loc_d, *p_lk_loc_v1, *p_lk_loc_v2;
+  t_node *v1, *v2;
+  t_edge *b0, *b1, *b2;
+  int curr_patt_id_v1, curr_patt_id_v2;
+  int curr_p_lk_loc_v1, curr_p_lk_loc_v2;
+  int num_subpatt;
+
+  b0 = b1 = b2 = NULL;
+
+  if(d->tax)
+    {
+      patt_id_d  = (d == d->b[0]->left)?(d->b[0]->patt_id_left):(d->b[0]->patt_id_rght);
+      p_lk_loc_d = (d == d->b[0]->left)?(d->b[0]->p_lk_loc_left):(d->b[0]->p_lk_loc_rght);
+
+      for(i=0;i<tree->n_pattern;i++)
+    {
+      for(j=0;j<tree->n_pattern;j++)
+        {
+          if(patt_id_d[i] == patt_id_d[j])
+        {
+          p_lk_loc_d[i] = j;
+          break;
+        }
+          if(j > i)
+        {
+          PhyML_Fprintf(stderr,"\n. Err in file %s at line %d\n\n",__FILE__,__LINE__);
+          Warn_And_Exit("");
+        }
+        }
+    }
+      return;
+    }
+  else
+    {
+      v1 = v2 = NULL;
+      for(i=0;i<3;i++)
+    {
+      if(d->v[i] != a && d->b[i] != tree->e_root)
+        {
+          if(!v1) { v1=d->v[i]; b1=d->b[i];}
+          else    { v2=d->v[i]; b2=d->b[i];}
+        }
+      else
+        {
+          b0 = d->b[i];
+        }
+    }
+
+
+      patt_id_v1  = (v1 == b1->left)?(b1->patt_id_left):(b1->patt_id_rght);
+      patt_id_v2  = (v2 == b2->left)?(b2->patt_id_left):(b2->patt_id_rght);
+      patt_id_d   = (d  == b0->left)?(b0->patt_id_left):(b0->patt_id_rght);
+      p_lk_loc_d  = (d  == b0->left)?(b0->p_lk_loc_left):(b0->p_lk_loc_rght);
+      p_lk_loc_v1 = (v1 == b1->left)?(b1->p_lk_loc_left):(b1->p_lk_loc_rght);
+      p_lk_loc_v2 = (v2 == b2->left)?(b2->p_lk_loc_left):(b2->p_lk_loc_rght);
+
+      num_subpatt = 0;
+      for(i=0;i<tree->n_pattern;i++)
+    {
+      curr_patt_id_v1  = patt_id_v1[i];
+      curr_patt_id_v2  = patt_id_v2[i];
+      curr_p_lk_loc_v1 = p_lk_loc_v1[i];
+      curr_p_lk_loc_v2 = p_lk_loc_v2[i];
+
+      p_lk_loc_d[i] = i;
+
+      if((curr_p_lk_loc_v1 == i) || (curr_p_lk_loc_v2 == i))
+        {
+          p_lk_loc_d[i] = i;
+          patt_id_d[i] = num_subpatt;
+          num_subpatt++;
+        }
+      else
+        if(curr_p_lk_loc_v1 == curr_p_lk_loc_v2)
+          {
+        p_lk_loc_d[i] = curr_p_lk_loc_v1;
+        patt_id_d[i] = patt_id_d[curr_p_lk_loc_v1];
+          }
+        else
+          {
+        for(j=MAX(curr_p_lk_loc_v1,curr_p_lk_loc_v2);j<tree->n_pattern;j++)
+          {
+            if((patt_id_v1[j] == curr_patt_id_v1) &&
+               (patt_id_v2[j] == curr_patt_id_v2))
+              {
+            p_lk_loc_d[i] = j;
+
+            if(j == i)
+              {
+                patt_id_d[i] = num_subpatt;
+                num_subpatt++;
+              }
+            else patt_id_d[i] = patt_id_d[j];
+            break;
+              }
+            if(j > i)
+              {
+                PhyML_Fprintf(stderr,"\n. Err in file %s at line %d\n\n",__FILE__,__LINE__);
+                Warn_And_Exit("");
+              }
+          }
+          }
+    }
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Alias_Subpatt_Post(t_node *a, t_node *d, t_tree *tree)
+{
+
+  if(d->tax) return;
+  else
+    {
+      int i;
+
+      for(i=0;i<3;i++)
+    {
+      if(d->v[i] != a && d->b[i] != tree->e_root)
+        {
+          Alias_Subpatt_Post(d,d->v[i],tree);
+        }
+    }
+      Alias_One_Subpatt(a, d, tree);
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Alias_Subpatt_Pre(t_node *a, t_node *d, t_tree *tree)
+{
+  if(d->tax) return;
+  else
+    {
+      int i;
+      
+      for(i=0;i<3;++i)
+        {
+          if(d->v[i] != a && d->b[i] != tree->e_root)
+            {
+              Alias_One_Subpatt(d->v[i],d,tree);
+              Alias_Subpatt_Pre(d,d->v[i],tree);
+            }
+        }
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Sample_Ancestral_Seq(int fullmutmap, int fromprior, t_tree *tree)
+{
+  int rate_cat;
+  int i,j,k,l;
+  phydbl *probs;
+  phydbl sum;
+  int n_mut;
+  FILE *fp;
+  phydbl *muttime;
+  int *muttype,*muttax;
+  char *s,*mut_string;
+  int *ordering;
+
+  
+  if(tree->is_mixt_tree == YES)
+    {
+      MIXT_Sample_Ancestral_Seq(fullmutmap,fromprior,tree);
+      return;
+    }
+
+  probs = (phydbl *)mCalloc(tree->mod->ras->n_catg,sizeof(phydbl));
+
+  muttime = (phydbl *)mCalloc((2*tree->n_otu-3)*5, // At most 5 mutations per branch on average
+               sizeof(phydbl));
+
+  muttype = (int *)mCalloc((2*tree->n_otu-3)*5, // At most 5 mutations per branch on average
+               sizeof(int));
+
+  muttax = (int *)mCalloc((2*tree->n_otu-3)*5, // At most 5 mutations per branch on average
+                          sizeof(int));
+
+  ordering = (int *)mCalloc((2*tree->n_otu-3)*5, // At most 5 mutations per branch on average
+                sizeof(int));
+
+  s = (char *)mCalloc(T_MAX_NAME,sizeof(char));
+
+  for(i=0;i<2*tree->n_otu-1;++i)
+    if(tree->a_nodes[i]->tax == NO)
+      {
+        tree->a_nodes[i]->c_seq_anc = (align *)mCalloc(1,sizeof(align));;
+        tree->a_nodes[i]->c_seq_anc->state = (char *)mCalloc(tree->n_pattern,sizeof(char));
+      }
+
+   
+  /* Update P(D_x|X=i) for each state i and node X */
+  Set_Both_Sides(YES,tree);
+  Lk(NULL,tree);
+
+
+  for(i=0;i<tree->n_pattern;++i)
+    {
+      /* Sample the rate class from its posterior density */
+      for(j=0;j<tree->mod->ras->n_catg;j++)
+        {
+          if(fromprior == NO)
+            probs[j] =
+              tree->unscaled_site_lk_cat[i*tree->mod->ras->n_catg+j]*
+              tree->mod->ras->gamma_r_proba->v[j];
+          else
+            probs[j] = tree->mod->ras->gamma_r_proba->v[j];
+        }
+
+      /* Scale probas. */
+      sum = .0;
+      for(j=0;j<tree->mod->ras->n_catg;j++) sum += probs[j];
+      for(j=0;j<tree->mod->ras->n_catg;j++) probs[j]/=sum;
+
+      rate_cat = Sample_i_With_Proba_pi(probs,tree->mod->ras->n_catg);
+           
+      n_mut = 0;
+      if(tree->n_root != NULL)
+        {          
+          Sample_Ancestral_Seq_Pre(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],
+                                   i,rate_cat,
+                                   muttype,muttime,muttax,&n_mut,
+                                   fullmutmap,fromprior,tree);
+
+          
+          Sample_Ancestral_Seq_Pre(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],
+                                   i,rate_cat,
+                                   muttype,muttime,muttax,&n_mut,
+                                   fullmutmap,fromprior,tree);
+
+
+        }
+      else
+        {
+          Sample_Ancestral_Seq_Pre(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree->a_nodes[0]->b[0],
+                                   i,rate_cat,
+                                   muttype,muttime,muttax,&n_mut,
+                                   fullmutmap,fromprior,tree);
+        }
+      
+      for(j=0;j<n_mut;j++) ordering[j] = 0;
+      
+      for(j=0;j<n_mut-1;j++)
+        {
+          for(k=j+1;k<n_mut;k++)
+            {
+              if(muttime[k] > muttime[j]) ordering[k]++;
+              else ordering[j]++;
+            }
+        }
+      
+      strcpy(s,"mutmap.");
+      sprintf(s+strlen(s),"%d.",tree->io->r_seed);
+      sprintf(s+strlen(s),"%d",i);
+      fp = fopen(s,"a");
+      PhyML_Fprintf(fp,"\n-1 -1 -1.0 -1 %d",tree->mixt_tree ? tree->mixt_tree->mcmc->run : tree->mcmc->run);
+      
+      for(j=0;j<n_mut;j++)
+        {
+          for(k=0;k<n_mut;k++)
+            {
+              if(ordering[k] == j)
+                {
+                  for(l=0;l<tree->data->init_len;l++) if(tree->data->sitepatt[l] == i) break;
+                  mut_string = Mutation_Id(muttype[k],tree);
+                  PhyML_Fprintf(fp,"\n%4d %s %g %4d %s",j,mut_string,muttime[k],l,tree->a_nodes[muttax[k]]->name);
+                  Free(mut_string);
+                  break;
+                }
+            }
+        }
+      
+      
+      for(j=0;j<n_mut;j++)
+        {
+          muttype[j] = -2;
+          muttime[j] = +1.;
+        }
+      
+      fclose(fp);
+    }
+  
+  Free(s);
+  Free(muttype);
+  Free(muttime);
+  Free(muttax);
+  Free(ordering);
+  Free(probs);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Sample_Ancestral_Seq_Pre(t_node *a, t_node *d, t_edge *b,
+                              int site, int r_cat,
+                              int *muttype, phydbl *muttime, int *muttax, int *n_mut,
+                              int fullmutmap, int fromprior, t_tree *tree)
+{
+
+  int i;
+  int sa, sd;
+  int ns;
+  phydbl *probs,sum;
+
+  /* PhyML_Printf("\n>> a: %d d: %d b->left: %d b->rght: %d",a?a->num:-1,d?d->num:-1,b?b->left->num:-1,b?b->rght->num:-1); */
+
+  ns = tree->mod->ns;
+  
+  probs = (phydbl *)mCalloc(ns,sizeof(phydbl));
+
+  if(a->tax == TRUE) // Sample state at tip if observed state is ambiguous
+    {
+      assert(b);
+      if(a == b->left) for(i=0;i<ns;++i) probs[i] = b->p_lk_tip_l[site*ns+i];
+      else             for(i=0;i<ns;++i) probs[i] = b->p_lk_tip_r[site*ns+i];
+      for(i=0;i<ns;++i) probs[i] *= tree->mod->e_frq->pi->v[i];
+      sum = 0.0;
+      for(i=0;i<ns;++i) sum += probs[i];
+      for(i=0;i<ns;++i) probs[i] /= sum;
+      sa = Sample_i_With_Proba_pi(probs,ns);
+    }
+  else if(a == tree->n_root)
+    {
+      sa = Sample_Ancestral_Seq_Core(NULL,tree->n_root,NULL,r_cat,site,tree);
+    }
+  else
+    {
+      sa = Assign_State(a->c_seq_anc->state + site,
+                        tree->mod->io->datatype,
+                        tree->mod->io->state_len);
+    }
+
+  sd = Sample_Ancestral_Seq_Core(a,d,b,r_cat,site,tree);
+  
+  if(fullmutmap == YES) Map_Mutations(a,d,sa,sd,b,site,r_cat,muttype,muttime,muttax,n_mut,tree);
+    
+  if(d->tax) return;
+  else
+    {
+      for(i=0;i<3;++i)
+        {
+          if(d->v[i] != a && d->b[i] != tree->e_root)
+            {
+              Sample_Ancestral_Seq_Pre(d,d->v[i],d->b[i],site,r_cat,muttype,muttime,muttax,n_mut,fullmutmap,fromprior,tree);
+            }
+        }
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+int Sample_Ancestral_Seq_Core(t_node *a, t_node *d, t_edge *b, int r_cat, int site, t_tree *tree)
+{
+  int i,j;
+  int ns;
+
+  ns = tree->mod->ns;
+  
+  int dim1 = tree->mod->ras->n_catg * ns;
+  int dim2 = ns;
+  int dim3 = ns * ns;
+  
+  phydbl *probs,*Pij,sum;
+  
+  int state;
+
+  
+  probs = (phydbl *)mCalloc(ns,sizeof(phydbl));
+  state = -1;
+
+  if(d->tax == YES)
+    {
+      assert(b);
+      if(d == b->left)      for(i=0;i<ns;++i) probs[i] = b->p_lk_tip_l[site*ns+i];
+      else if(d == b->rght) for(i=0;i<ns;++i) probs[i] = b->p_lk_tip_r[site*ns+i];
+      else assert(FALSE);
+      for(i=0;i<ns;++i) probs[i] *= tree->mod->e_frq->pi->v[i];
+      sum = 0.0;
+      for(i=0;i<ns;++i) sum += probs[i];
+      for(i=0;i<ns;++i) probs[i] /= sum;
+      state = Sample_i_With_Proba_pi(probs,ns);
+    }
+  else
+    {
+      if(a == NULL) // d is root node
+        {
+          assert(d == tree->n_root);
+          
+          phydbl r,l;
+          
+          Update_PMat_At_Given_Edge(tree->n_root->b[1],tree);
+          Update_PMat_At_Given_Edge(tree->n_root->b[2],tree);
+          
+          for(i=0;i<ns;++i)
+            {
+              if(tree->e_root->left == tree->n_root->v[1])
+                Pij = tree->n_root->b[1]->Pij_rr;
+              else
+                Pij = tree->n_root->b[2]->Pij_rr;
+              
+              l = 0.0;
+              for(j=0;j<ns;++j)
+                {
+                  if(tree->e_root->left->tax == NO)
+                    l += tree->e_root->p_lk_left[site*dim1+r_cat*dim2+j] * Pij[r_cat*dim3+i*dim2+j];
+                  else
+                    l += tree->e_root->p_lk_tip_l[site*dim2+j] * Pij[r_cat*dim3+i*dim2+j];
+                }
+              
+              
+              if(tree->e_root->rght == tree->n_root->v[1])
+                Pij = tree->n_root->b[1]->Pij_rr;
+              else
+                Pij = tree->n_root->b[2]->Pij_rr;
+              
+              r = 0.0;
+              for(j=0;j<ns;++j)
+                {
+                  if(tree->e_root->rght->tax == NO)
+                    r += tree->e_root->p_lk_rght[site*dim1+r_cat*dim2+j] * Pij[r_cat*dim3+i*dim2+j];
+                  else
+                    r += tree->e_root->p_lk_tip_r[site*dim2+j] * Pij[r_cat*dim3+i*dim2+j];
+                }
+              
+              probs[i] = r*l*tree->mod->e_frq->pi->v[i];
+            }
+          
+          sum = 0.0;
+          for(i=0;i<ns;++i) sum += probs[i];
+          for(i=0;i<ns;++i) probs[i] /= sum;
+          
+          state = Sample_i_With_Proba_pi(probs,ns);
+          
+          d->c_seq_anc->state[site] = Reciproc_Assign_State(state,tree->io->datatype);
+        }
+      else
+        {
+          assert(b);
+          
+          // State (already) sampled at node a
+          state = Assign_State(a->c_seq_anc->state + site,
+                               tree->mod->io->datatype,
+                               tree->mod->io->state_len);
+          
+          Pij = b->Pij_rr;
+                              
+          for(i=0;i<ns;++i)
+            {
+              if(d == b->left)
+                probs[i] = b->p_lk_left[site*dim1+r_cat*dim2+i] * Pij[r_cat*dim3+state*dim2+i];
+              else if(d == b->rght)
+                probs[i] = b->p_lk_rght[site*dim1+r_cat*dim2+i] * Pij[r_cat*dim3+state*dim2+i];
+              else assert(FALSE);
+            }
+          
+          sum = 0.0;
+          for(i=0;i<ns;++i) sum += probs[i];
+          for(i=0;i<ns;++i) probs[i] /= sum;
+          
+          state = Sample_i_With_Proba_pi(probs,ns);
+          
+          d->c_seq_anc->state[site] = Reciproc_Assign_State(state,tree->io->datatype);
+        }      
+    }
+
+  Free(probs);
+  return state;
+ 
+}
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Map_Mutations(t_node *a, t_node *d, int sa, int sd, t_edge *b, int site, int rcat, int *muttype, phydbl *muttime, int *muttax, int *n_mut, t_tree *tree)
+{
+  int i,j;
+  phydbl *probs,*all_probs;
+  int slast,snew; // Last state visited
+  phydbl tlast;
+  phydbl *Q;
+  phydbl u,sum;
+  int *mut; // Array of mutations
+  int thismut;
+  int n_mut_branch;
+  int n_iter;
+  int first_mut;
+  phydbl T;
+  int ns,tax_idx;
+  phydbl rr;
+  
+  ns = tree->mod->ns;
+  
+  all_probs = (phydbl *)mCalloc(ns*ns,sizeof(phydbl));
+  mut = (int *)mCalloc(ns*ns,sizeof(int));
+  
+  // Site relative rate
+  rr = tree->mod->ras->gamma_rr->v[rcat];
+      
+  // Rate matrix
+  Q = tree->mod->r_mat->qmat->v;
+  
+  // Length of the 'time' interval considered.
+  T = 0.0;
+#ifdef PHYTIME
+  T = tree->rates->cur_l[d->num]*rr;
+#else
+  T = b->l->v*rr;
+#endif
+  
+  
+  /* PhyML_Printf("\n. Mutmap: a:%d d:%d ta:%G td:%G cr:%G rr:%G l:%G", */
+  /*              a?a->num:-1,d?d->num:-1, */
+  /*              tree->rates->nd_t[a->num], */
+  /*              tree->rates->nd_t[d->num], */
+  /*              cr,rr, */
+  /*              fabs(tree->rates->nd_t[a->num]-tree->rates->nd_t[d->num])*cr*rr); */
+
+  // Matrix of change probabilities
+  for(i=0;i<ns;i++)
+    {
+      // We only care about the non-diagonal elements here
+      for(j=0;j<ns;j++) all_probs[i*ns+j] = Q[i*ns+j];
+      
+      // Set the diagonal to 0 so that p(i->i)=0.0;
+      all_probs[i*ns+i] = 0.0;
+
+      // Normalise so that \sum_j p(i->j) = 1.0;
+      sum = 0;
+      for(j=0;j<ns;j++) sum += all_probs[i*ns+j];
+      for(j=0;j<ns;j++) all_probs[i*ns+j] /= sum;
+    }
+  
+  for(i=0;i<ns*ns;++i) mut[i] = 0;
+  tlast = .0;
+  slast = sa;
+  snew  = sa;
+  probs = NULL;
+  n_mut_branch = 0;
+  n_iter = 0;
+  first_mut = YES;
+  
+  do
+    {
+      if((sa != sd) && (first_mut == YES)) // ancestral and descendant states are distinct
+        {
+          // Sample a time for the first mutation conditional on at least one mutation
+          // occurring (see formula 2.1 in Hobolth and Stone, 2009).
+          u = Uni();
+          tlast = -log(1. - u*(1.-exp(Q[sa*ns+sa]*T)))/-Q[sa*ns+sa];
+        }
+      else
+        {
+          // Sample a time for the next mutation
+          tlast = tlast + Rexp(-Q[slast*ns+slast]);
+        }
+      
+      // Select the appropriate vector of change probabilities
+      probs = all_probs+slast*ns;
+            
+
+      /* printf("\n. sa=%2d sd=%2d slast=%2d tlast=%12G T=%12G  rcat=%2d site=%4d",sa,sd,slast,tlast,T,rcat,site); */
+      
+      // The time for the next mutation does not exceed the length
+      // of the time interval -> sample a new mutation event
+      if(tlast < T)
+        {
+          first_mut = NO;
+          
+          n_mut_branch++;
+
+          if(n_mut_branch > 5 && n_mut_branch%10 == 0)
+            PhyML_Printf("\n. # of mutations on edge %d (length: %g) exceeds 5 (%d) ! The program will probably crash soon...:(",
+                         b->num,
+                         tree->rates ? tree->rates->cur_l[d->num] : b->l->v,
+                         n_mut_branch);
+          
+          snew = Sample_i_With_Proba_pi(probs,ns);
+          
+          // Record mutation type
+          mut[slast*ns+snew]++;
+          
+          // Record mutation type in the site mutation array
+          thismut = slast*ns+snew;
+          
+          muttype[(*n_mut)+n_mut_branch-1] = thismut;
+
+          // Record time of mutation
+          muttime[(*n_mut)+n_mut_branch-1] = tlast;
+
+#ifdef PHYTIME
+          // Transform into time in calendar units
+          muttime[(*n_mut)+n_mut_branch-1] /= tree->rates->cur_l[d->num];
+          muttime[(*n_mut)+n_mut_branch-1] *= fabs(tree->rates->nd_t[a->num]-tree->rates->nd_t[d->num]);
+#endif
+
+          tax_idx = -1;
+          Random_Tax_Idx(a,d,&tax_idx,tree);
+          muttax[(*n_mut)+n_mut_branch-1] = tax_idx;
+
+          // Update the last state
+          slast = snew;
+        }
+      else
+        {
+          if(slast == sd) break;
+          else
+            {
+              // Restart from the beginning
+              for(i=0;i<ns*ns;++i) mut[i] = 0;
+              for(i=0;i<n_mut_branch;i++) muttype[(*n_mut)+n_mut_branch-1] = -2;
+              for(i=0;i<n_mut_branch;i++) muttime[(*n_mut)+n_mut_branch-1] = +1.;
+              tlast = 0.0;
+              slast = sa;
+              snew = sa;
+              n_mut_branch = 0;
+              first_mut = YES;
+              n_iter++;
+            }
+        }
+    }
+  while(++n_iter < 10000);
+
+
+  if(n_iter == 10000)
+    {
+      PhyML_Printf("\n. sa=%2d sd=%2d slast=%2d tlast=%12G T=%12G  rcat=%12f site=%4d",sa,sd,slast,tlast,T,rcat,site);
+      assert(FALSE);
+    }
+  
+  (*n_mut) += n_mut_branch;
+  
+  
+  /* for(i=0;i<ns;i++) */
+  /*   { */
+  /*     for(j=i+1;j<ns;j++) */
+  /*       { */
+  /*         if(mut[i*ns+j] + mut[j*ns+i] > 0) */
+  /*           { */
+  /*             thismut = MIN(i,j) * ns + MAX(i,j) - (MIN(i,j)+1+(int)POW(MIN(i,j)+1,2))/2; */
+
+  /*             if(tree->mixt_tree != NULL) */
+  /*               tree->mixt_tree->mutmap[thismut*(tree->n_pattern)*(2*tree->n_otu-3) + b->num*(tree->n_pattern) + site]++; */
+  /*             else */
+  /*               tree->mutmap[thismut*(tree->n_pattern)*(2*tree->n_otu-3) + b->num*(tree->n_pattern) + site]++; */
+  /*           } */
+  /*       } */
+  /*   } */
+  
+  Free(all_probs);
+  Free(mut);
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+void Ancestral_Sequences(t_tree *tree, int print)
+{
+  int i;
+
+  if(print == YES)
+    {
+      PhyML_Printf("\n\n. Estimating ancestral sequences...");
+
+      strcpy(tree->io->out_ancestral_file,tree->io->out_file);
+      if(tree->io->append_run_ID) { strcat(tree->io->out_ancestral_file,"_"); strcat(tree->io->out_ancestral_file,tree->io->run_id_string); }
+      strcat(tree->io->out_ancestral_file,"_phyml_ancestral_seq.txt");
+      tree->io->fp_out_ancestral = Openfile(tree->io->out_ancestral_file,1);
+      
+
+      char *s = (char *)mCalloc((int)strlen(tree->io->in_align_file)+50,sizeof(char));
+      strcpy(s,tree->io->in_align_file);
+      strcat(s,"_phyml_ancestral_tree.txt");
+      FILE *fp = Openfile(s,WRITE);
+      
+      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\n\n");
+      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n. Printing marginal probabilities of ancestral sequences at each site");
+      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n. of the alignment and each node of the tree. The tree in Newick format");
+      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n. with internal nodes labels corresponding to those given below can be");
+      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n. found in the file '%s'.",s);
+      Free(s);
+      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\n");
+      PhyML_Fprintf(tree->io->fp_out_ancestral,"Site\tNodeLabel\t");
+      for(i=0;i<tree->mod->ns;i++) PhyML_Fprintf(tree->io->fp_out_ancestral,"%c\t",Reciproc_Assign_State(i,tree->io->datatype));
+      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n");
+
+      
+      short int bck_boot_val = tree->print_boot_val;
+      short int bck_alrt_val = tree->print_alrt_val;
+      
+      tree->print_node_num = YES;
+      tree->print_boot_val = NO;
+      tree->print_alrt_val = NO;
+      s = Write_Tree(tree,NO);
+      PhyML_Fprintf(fp,"%s",s);
+      tree->print_node_num = NO;
+      tree->print_boot_val = bck_boot_val;
+      tree->print_alrt_val = bck_alrt_val;
+
+      Free(s);
+      fclose(fp);
+    }
+
+  for(i=0;i<2*tree->n_otu-2;i++)
+    if(tree->a_nodes[i]->tax == NO)
+      Ancestral_Sequences_One_Node(tree->a_nodes[i],tree,print);
+
+  if(tree->n_root) Ancestral_Sequences_One_Node(tree->n_root,tree,print);
+
+
+  fclose(tree->io->fp_out_ancestral);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
+{
+  if(d->tax) return;
+  else
+    {
+      if(tree->is_mixt_tree) 
+        {
+          MIXT_Ancestral_Sequences_One_Node(d,tree,print);
+        }
+      else
+        {
+          t_node *v0,*v1,*v2; // three neighbours of d
+          t_edge *b0,*b1,*b2;
+          int i,j;
+          int catg;
+          phydbl p0, p1, p2;
+          phydbl *p;
+          int site,csite;
+          phydbl *p_lk0, *p_lk1, *p_lk2;
+          int *sum_scale0, *sum_scale1, *sum_scale2;
+          phydbl sum_probas;
+          phydbl *Pij0, *Pij1, *Pij2;          
+          phydbl inc,sum_scale;
+          FILE *fp;
+
+          unsigned const int ncatg = tree->mod->ras->n_catg;
+          unsigned const int ns = tree->mod->ns;
+          unsigned const int nsns = ns*ns;
+          unsigned const int ncatgns = ns*ncatg;
+
+
+          if(tree->scaling_method == SCALE_RATE_SPECIFIC)
+            {
+              PhyML_Fprintf(stderr,"\n. Likelihood rescaling method not compatible with the calculation of ancestral state probabilities.");
+              Exit("\n");
+            }
+
+          
+          if(!d) return;
+          
+          fp = tree->io->fp_out_ancestral;
+          assert(fp != NULL);
+
+          
+          p = (phydbl *)mCalloc(ns,sizeof(phydbl));
+              
+          for(site=0;site<tree->data->init_len;site++) // For each site in the current partition element
+            {
+              csite = tree->data->sitepatt[site];
+                                    
+              for(i=0;i<ns;i++) p[i] = .0;
+                  
+              v0 = d->v[0];
+              v1 = d->v[1];
+              v2 = d->v[2];
+              
+              b0 = d->b[0];
+              b1 = d->b[1];
+              b2 = d->b[2];
+              
+              Pij0 = b0->Pij_rr;
+              Pij1 = b1->Pij_rr;
+              Pij2 = b2->Pij_rr;
+
+              sum_scale = 0.0;
+              
+              if(v0 == b0->left)
+                {
+                  p_lk0 = b0->p_lk_left;
+                  sum_scale0 = b0->sum_scale_left;
+                }
+              else
+                {
+                  p_lk0 = b0->p_lk_rght;
+                  sum_scale0 = b0->sum_scale_rght;
+                }
+              
+              if(v1 == b1->left)
+                {
+                  p_lk1 = b1->p_lk_left;
+                  sum_scale1 = b1->sum_scale_left;
+                }
+              else
+                {
+                  p_lk1 = b1->p_lk_rght;
+                  sum_scale1 = b1->sum_scale_rght;
+                }
+              
+              if(v2 == b2->left)
+                {
+                  p_lk2 = b2->p_lk_left;
+                  sum_scale2 = b2->sum_scale_left;
+                }
+              else
+                {
+                  p_lk2 = b2->p_lk_rght;
+                  sum_scale2 = b2->sum_scale_rght;
+                }
+              
+
+              for(catg=0;catg<ncatg;++catg)
+                {
+                  for(i=0;i<ns;++i)
+                    {
+                      p0 = .0;
+                      if(v0->tax)
+                        {
+                          for(j=0;j<ns;++j)
+                            {
+                              p0 += v0->b[0]->p_lk_tip_r[csite*ns+j] * Pij0[catg*nsns+i*ns+j];
+                              /* if(isinf(p0) || isnan(p0) || p0 < SMALL) */
+                              if(isinf(p0) || isnan(p0)) 
+                               {
+                                  PhyML_Fprintf(stderr,"\n. p0: %G v0->b[0]->p_lk_tip_r[csite*ns+j]: %G Pij0[catg*nsns+i*ns+j]: %G\n",
+                                                p0,
+                                                v0->b[0]->p_lk_tip_r[csite*ns+j],
+                                                Pij0[catg*nsns+i*ns+j]);
+                                  Exit("\n");
+                                }
+                            }
+                        }
+                      else
+                        {
+                          for(j=0;j<ns;j++)
+                            {
+                              /* p0 += p_lk0[csite*ncatgns+catg*ns+j] * Pij0[catg*nsns+i*ns+j] / (phydbl)POW(2,sum_scale0[csite]); */
+                              p0 += p_lk0[csite*ncatgns+catg*ns+j] * Pij0[catg*nsns+i*ns+j];
+                              if(isinf(p0) || isnan(p0))
+                                {
+                                  PhyML_Fprintf(stderr,"\n. p0: %G p_lk0[csite*ncatgns+catg*ns+j]: %G Pij0[catg*nsns+i*ns+j]: %G (phydbl)POW(2,sum_scale0[csite*ncatg+catg]): %G sum_scale0: %d\n",
+                                                p0,
+                                                p_lk0[csite*ncatgns+catg*ns+j],
+                                                Pij0[catg*nsns+i*ns+j],
+                                                (phydbl)POW(2,sum_scale0[csite]),
+                                                sum_scale0[csite]);
+                                  Exit("\n");
+                                }
+                            }
+                          if(catg == 0 && i == 0) sum_scale += sum_scale0[csite];
+                        }
+                      
+                      p1 = .0;
+                      if(v1->tax)
+                        {
+                          for(j=0;j<ns;j++)
+                            {
+                              p1 += v1->b[0]->p_lk_tip_r[csite*ns+j] * Pij1[catg*nsns+i*ns+j];
+                              if(isinf(p1) || isnan(p1))
+                                {
+                                  PhyML_Fprintf(stderr,"\n. p1: %G v1->b[0]->p_lk_tip_r[csite*ns+j]: %G Pij1[catg*nsns+i*ns+j]: %G\n",
+                                                p1,
+                                                v1->b[0]->p_lk_tip_r[csite*ns+j],
+                                                Pij1[catg*nsns+i*ns+j]);
+                                  Exit("\n");
+                                }
+                            }
+                        }
+                      else
+                        {
+                          for(j=0;j<ns;j++)
+                            {
+                              p1 += p_lk1[csite*ncatgns+catg*ns+j] * Pij1[catg*nsns+i*ns+j];
+                              if(isinf(p1) || isnan(p1))
+                                {
+                                  PhyML_Fprintf(stderr,"\n. p1: %G p_lk1[csite*ncatgns+catg*ns+j]: %G Pij1[catg*nsns+i*ns+j]: %G (phydbl)POW(2,sum_scale1[csite*ncatg+catg]): %G\n",
+                                                p1,
+                                                p_lk1[csite*ncatgns+catg*ns+j],
+                                                Pij1[catg*nsns+i*ns+j],
+                                                (phydbl)POW(2,sum_scale1[csite]));
+                                  Exit("\n");
+                                }
+                            }
+                          if(catg == 0 && i == 0) sum_scale += sum_scale1[csite];
+                        }
+                      
+                      p2 = .0;
+                      if(v2->tax)
+                        {
+                          for(j=0;j<ns;j++)
+                            {
+                              p2 += v2->b[0]->p_lk_tip_r[csite*ns+j] * Pij2[catg*nsns+i*ns+j];
+                            }
+                        }
+                      else
+                        {
+                          for(j=0;j<ns;j++)
+                            {
+                              p2 += p_lk2[csite*ncatgns+catg*ns+j] * Pij2[catg*nsns+i*ns+j];
+                              if(isinf(p2) || isnan(p2))
+                                {
+                                  PhyML_Fprintf(stderr,"\n. p2: %G p_lk2[csite*ncatgns+catg*ns+j]: %G Pij2[catg*nsns+i*ns+j]: %G (phydbl)POW(2,sum_scale2[csite]): %G\n",
+                                                p2,
+                                                p_lk2[csite*ncatgns+catg*ns+j],
+                                                Pij2[catg*nsns+i*ns+j],
+                                                (phydbl)POW(2,sum_scale2[csite]));
+                                  Exit("\n");
+                                }
+                            }
+                          if(catg == 0 && i == 0) sum_scale += sum_scale2[csite];
+                        }
+                          
+                      inc =
+                        p0*p1*p2*
+                        tree->mod->e_frq->pi->v[i] *
+                        tree->mod->ras->gamma_r_proba->v[catg];
+
+                      p[i] += inc;                      
+
+                      
+                      if(isinf(p[i]) || isnan(p[i]))
+                        {
+                          PhyML_Fprintf(stderr,"\n. site: %4d p0: %G p1: %G p2: %G tree->mod->e_frq->pi->v[i]: %G tree->cur_site_lk[csite]: %G  tree->mod->ras->gamma_r_proba->v[catg]: %G tree->c_lnL_sorted[csite]: %G",
+                                       csite,
+                                       p0,p1,p2,
+                                       tree->mod->e_frq->pi->v[i] ,
+                                       tree->cur_site_lk[csite] ,
+                                       tree->mod->ras->gamma_r_proba->v[catg],
+                                       tree->c_lnL_sorted[csite]);
+                          Exit("\n");
+                        }
+                    }
+
+                  /* printf("\n. site: %d || %d %d %d", */
+                  /*        csite, */
+                  /*        v0->tax ? -1 : sum_scale0[csite*ncatg+catg], */
+                  /*        v1->tax ? -1 : sum_scale1[csite*ncatg+catg], */
+                  /*        v2->tax ? -1 : sum_scale2[csite*ncatg+catg]); */
+
+                }
+
+              for(i=0;i<ns;i++) p[i] = log(p[i]) - (phydbl)LOG2 * sum_scale;
+              for(i=0;i<ns;i++) p[i] -= tree->c_lnL_sorted[csite];
+              for(i=0;i<ns;i++) p[i] = exp(p[i]);
+              
+              /* sum_probas = 0.0; */
+              /* for(i=0;i<ns;i++) sum_probas += p[i]; */
+              /* for(i=0;i<ns;i++) p[i]/=sum_probas; */
+              
+              
+              if(print == YES)
+                {
+                  PhyML_Fprintf(fp,"%4d\t%9d\t",site+1,d->num);
+                  sum_probas = .0;
+                  for(i=0;i<ns;i++)
+                    {
+                      PhyML_Fprintf(fp,"%.4f\t",p[i]);
+                      sum_probas += p[i];
+                    }
+                  PhyML_Fprintf(fp,"\n");
+                  fflush(NULL);
+                  if(Are_Equal(sum_probas,1.0,0.01) == NO)
+                    {
+                      PhyML_Fprintf(stderr,"\n. Probabilities do not sum to 1.0! Aborting.");
+                      for(i=0;i<ns;++i) PhyML_Fprintf(stderr,"\n. p[%2d]=%G",i,p[i]);
+                      Exit("\n");
+                    }
+                }
+            }
+          Free(p);
+        }
+    }
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

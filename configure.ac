@@ -45,6 +45,7 @@ AC_FUNC_SETVBUF_REVERSED
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([floor pow rint sqrt strchr strstr])
 
+dnl DEFAULT_VECTOR_FLAG=
 dnl DEFAULT_VECTOR_FLAG=-mavx
 dnl DEFAULT_VECTOR_FLAG=-msse3
 DEFAULT_VECTOR_FLAG=-march=native
@@ -63,7 +64,9 @@ dnl LT_INIT
 dnl AC_PROG_LIBTOOL
 
 
-DEFAULT_C_FLAG="-std=c99 -O2 -fomit-frame-pointer -funroll-loops -Wall -Winline ${VECTOR_FLAG}"
+DEFAULT_C_FLAG="-std=c99 -O3 -fomit-frame-pointer -funroll-loops -Wall -Winline ${VECTOR_FLAG}"
+dnl default_C_FLAG="-O2 ${VECTOR_FLAG}"
+dnl DEFAULT_C_FLAG="-O3 -fPIC"
 
 AC_ARG_ENABLE([debug],
               [AS_HELP_STRING([--enable-debug],
@@ -82,7 +85,7 @@ AC_ARG_ENABLE([gprof],
               [AS_HELP_STRING([--enable-gprof],
                               [Remove optimization options and add profiling informations.])])
 AS_IF([test "x$enable_gprof" = "xyes"],
-      [CFLAGS="-g -pg -fno-inline ${VECTOR_FLAG}"],
+      [CFLAGS="-g -pg -fno-inline -fprofile-arcs -ftest-coverage ${VECTOR_FLAG}"],
       [AS_IF([test "x$enable_debug" = "xno"],[CFLAGS="${DEFAULT_C_FLAG}"])])
 
 AC_ARG_ENABLE([mpi],

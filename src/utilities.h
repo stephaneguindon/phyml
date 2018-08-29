@@ -1139,9 +1139,10 @@ typedef struct __Eigen{
   int        *space_int;
   phydbl         *e_val; /*! eigen values (vector), real part. */
   phydbl      *e_val_im; /*! eigen values (vector), imaginary part */
-  phydbl      *r_e_vect; /*! right eigen vector (matrix), real part */
   phydbl   *r_e_vect_im; /*! right eigen vector (matrix), imaginary part */
   phydbl      *l_e_vect; /*! left eigen vector (matrix), real part */
+  phydbl      *r_e_vect; /*! right eigen vector (matrix), real part */
+  phydbl           *dum; /*! dummy ns*ns space */
 
   struct __Eigen  *prev;
   struct __Eigen  *next;
@@ -2230,7 +2231,6 @@ phydbl String_To_Dbl(char *string);
 int String_To_Int(char *string);
 char *To_Upper_String(char *in);
 void Connect_CSeqs_To_Nodes(calign *cdata, option *io, t_tree *tree);
-void Switch_Eigen(int state, t_mod *mod);
 void Joint_Proba_States_Left_Right(phydbl *Pij, phydbl *p_lk_left, phydbl *p_lk_rght,
                    vect_dbl *pi, int scale_left, int scale_rght,
                    phydbl *F, int n, int site, t_tree *tree);
@@ -2270,6 +2270,7 @@ scalar_dbl *Duplicate_Scalar_Dbl(scalar_dbl *from);
 scalar_dbl *Read_Weights(option *io);
 phydbl Scalar_Elem(int pos, scalar_dbl *scl);
 int Scalar_Len(scalar_dbl *scl);
+void Set_Scalar_Dbl(phydbl val, scalar_dbl *from);
 void Set_Scalar_Dbl_Min_Thresh(phydbl thresh, scalar_dbl *from);
 void List_Of_Regraft_Nodes(t_node *a, t_node *d, phydbl time_thresh, t_ll *list, t_tree *tree);
 void Push_Bottom_Linked_List(void *what, t_ll **list, bool remove_duplicates);
@@ -2294,6 +2295,19 @@ short int Are_Sequences_Identical(align *seq1, align *seq2);
 char *Mutation_Id(int mut_idx, t_tree *tree);
 void Random_Tax_Idx(t_node *a, t_node *d, int *idx, t_tree *tree);
 void List_Taxa_In_Clade(t_node *a, t_node *d, t_tree *tree);
+void Set_Scalar_Dbl_Max_Thresh(phydbl thresh, scalar_dbl *from);
+void Alias_Subpatt_Pre(t_node *a, t_node *d, t_tree *tree);
+void Alias_Subpatt_Post(t_node *a, t_node *d, t_tree *tree);
+void Alias_One_Subpatt(t_node *a, t_node *d, t_tree *tree);
+void Alias_Subpatt(t_tree *tree);
+void Map_Mutations(t_node *a, t_node *d, int sa, int sd, t_edge *b, int site, int rcat, int *muttype, phydbl *muttime, int *muttax, int *n_mut, t_tree *tree);
+int Sample_Ancestral_Seq_Core(t_node *a, t_node *d, t_edge *b, int r_cat, int site, t_tree *tree);
+void Sample_Ancestral_Seq_Pre(t_node *a, t_node *d, t_edge *b,int site, int r_cat,int *muttype, phydbl *muttime, int *muttax, int *n_mut,int fullmutmap, int fromprior, t_tree *tree);
+void Sample_Ancestral_Seq(int fullmutmap, int fromprior, t_tree *tree);
+void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print);
+void Ancestral_Sequences(t_tree *tree, int print);
+void Set_Update_Eigen(int yesno, t_mod *mod);
+
 
 #include "xml.h"
 #include "free.h"

@@ -53,10 +53,9 @@ int Eigen(int job, phydbl *A, int n, phydbl *rr, phydbl *ri,
 /*     tiny=SQRT(POW((phydbl)BASE,(phydbl)(1-(int)DIGITS))); */
     /* tiny=FLT_MIN; */
     tiny = SMALL;
-
-    
+        
     balance(A,n,&low,&hi,work);
-    elemhess(job,A,n,low,hi,vr,vi, (int*)(work+n));
+    elemhess(job,A,n,low,hi,vr,vi,(int*)(work+n));
     if (-1 == realeig(job,A,n,low,hi,rr,ri,vr,vi)) return (-1);
     if (job) unbalance(n,vr,vi,low,hi,work);
     
@@ -463,7 +462,8 @@ void elemhess(int job,phydbl *mat,int n,int low,int hi, phydbl *vr,
     if (job) {
        for (i=0; i<n; i++) {
           for (j=0; j<n; j++) {
-             vr[pos(i,j,n)] = 0.0; vi[pos(i,j,n)] = 0.0;
+            vr[pos(i,j,n)] = 0.0;
+            vi[pos(i,j,n)] = 0.0;
           }
           vr[pos(i,i,n)] = 1.0;
        }

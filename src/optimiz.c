@@ -641,7 +641,7 @@ phydbl Br_Len_Opt(t_edge *b, t_tree *tree)
 
   Set_Update_Eigen_Lr(YES,mixt_tree);
   Set_Use_Eigen_Lr(NO,mixt_tree);
-  
+
   lk_begin = Lk(mixt_b,mixt_tree); /* We can't assume that the log-lk value is up-to-date */
   
   Set_Update_Eigen_Lr(NO,mixt_tree);
@@ -694,7 +694,6 @@ void Round_Optimize(t_tree *tree, int n_round_max)
   each = 0;
 
 
-  
   while(n_round < n_round_max)
     {
       if(tree->mod->s_opt->opt_bl || tree->mod->s_opt->constrained_br_len) Optimize_Br_Len_Serie(n_round_max,tree);
@@ -904,7 +903,9 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
       
       for(i=0;i<3;++i)
         if(d->v[i] == a || d->b[i] == tree->e_root) 
-          Update_Partial_Lk(tree,d->b[i],d);
+          {
+            Update_Partial_Lk(tree,d->b[i],d);
+          }
     }
   else
     {
@@ -1025,7 +1026,7 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
 
       if(tree->mod->s_opt->opt_cov_delta)
         {
-          Switch_Eigen(YES,tree->mod);
+          Set_Update_Eigen(YES,tree->mod);
 
     /* 	  Optimize_Single_Param_Generic(tree,&(tree->mod->m4mod->delta), */
     /* 					0.01,10., */
@@ -1046,7 +1047,7 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
               PhyML_Printf("[%10f]",tree->mod->m4mod->delta);
             }
 
-          Switch_Eigen(NO,tree->mod);
+          Set_Update_Eigen(NO,tree->mod);
 
         }
 
@@ -1055,7 +1056,7 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
         {
           int rcat;
           
-          Switch_Eigen(YES,tree->mod);
+          Set_Update_Eigen(YES,tree->mod);
           
           for(rcat=0;rcat<tree->mod->m4mod->n_h;rcat++)
             {
@@ -1103,14 +1104,14 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
                 }
             }
           
-          Switch_Eigen(NO,tree->mod);
+          Set_Update_Eigen(NO,tree->mod);
           
         }
       
       if(tree->mod->s_opt->opt_cov_alpha)
         {
           
-          Switch_Eigen(YES,tree->mod);
+          Set_Update_Eigen(YES,tree->mod);
           
           /* 	  Optimize_Single_Param_Generic(tree,&(tree->mod->m4mod->ras->alpha), */
           /* 					.01,10., */
@@ -1132,7 +1133,7 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
               PhyML_Printf("[%10f]",tree->mod->m4mod->alpha);
             }
           
-          Switch_Eigen(NO,tree->mod);
+          Set_Update_Eigen(NO,tree->mod);
           
         }
       
@@ -1144,7 +1145,7 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
         {
           if(tree->mod->whichmodel == GTR || tree->mod->whichmodel == CUSTOM)
             {              
-              Switch_Eigen(YES,tree->mod);
+              Set_Update_Eigen(YES,tree->mod);
               
               for(i=0;i<5;i++) tree->mod->m4mod->o_rr[i] = log(tree->mod->m4mod->o_rr[i]);
               
@@ -1176,7 +1177,7 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
               
               if(verbose) Print_Lk(tree,"[GTR parameters     ]");
               
-              Switch_Eigen(NO,tree->mod);
+              Set_Update_Eigen(NO,tree->mod);
             }
         }
     }
@@ -1917,10 +1918,10 @@ phydbl Dist_F_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol, int n_iter_max,
   b=((ax > cx) ? ax : cx);
   x = w = v = bx;
   old_lnL = UNLIKELY;
-  fw = fv = fx = -Lk_Dist(F,FABS(bx),mod);
+  fw = fv = fx = -Lk_Dist(F,fabs(bx),mod);
   curr_lnL = init_lnL = -fw;
   
-  /* printf("\n. bx=%f f: %f %f %f %f fx: %f",bx,mod->e_frq->pi->v[0],mod->e_frq->pi->v[1],mod->e_frq->pi->v[2],mod->e_frq->pi->v[3],fx); */
+  /* PhyML_Printf("\n. bx=%f f: %f %f %f %f fx: %f",bx,mod->e_frq->pi->v[0],mod->e_frq->pi->v[1],mod->e_frq->pi->v[2],mod->e_frq->pi->v[3],fx); */
   assert(isnan(fx) == FALSE);
   assert(isinf(fx) == FALSE);
 
@@ -2024,6 +2025,8 @@ void Opt_Dist_F(phydbl *dist, phydbl *F, t_mod *mod)
   bx =  (*dist);
   cx = mod->l_max;
 
+  /* PhyML_Printf("\n. bx: %g",bx); */
+  
 /*   Dist_F_Brak(&ax,&bx,&cx,F,dist,mod); */
   Dist_F_Brent(ax,bx,cx,1.E-10,1000,dist,F,mod);
 }
@@ -2226,7 +2229,7 @@ int Optimiz_Alpha_And_Pinv(t_tree *mixt_tree, int verbose)
   t_tree *tree;
   int i;
 
-  Switch_Eigen(NO,mixt_tree->mod);
+  Set_Update_Eigen(NO,mixt_tree->mod);
 
   alpha   = NULL;
   n_alpha = 0;
@@ -2312,13 +2315,19 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
 
   best_l = init_l = *l;
   best_lnL = old_lnL = init_lnL = tree->c_lnL;  
-  mult = 1.2;
+  mult = 2.;
   ok1 = ok2 = NO;
   a_ = b_ = A_ = B_ = D_ = root1 = root2 = -1.;
   u = v = fu = fv = dfu = dfv = -1.;
   new_l = -1.;
 
- 
+  dLk(l,b,tree);
+  init_dl = tree->c_dlnL;
+
+  if(*l > tree->mod->l_max) *l = 0.5;
+  if(*l < tree->mod->l_min) *l = 0.001;
+  
+
   // Find value of l where first derivative is < 0;
   *l /= mult;
   dLk(l,b,tree);
@@ -2370,8 +2379,10 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
   fv = tree->c_lnL;
   dfv = tree->c_dlnL;
 
+  
+  /* PhyML_Printf("\n Begin NR loop (lnL: %12G dlnL: %12G) l: %12G num: %d",tree->c_lnL,tree->c_dlnL,*l,b->num); */
 
-  /* PhyML_Printf("\n Begin NR loop (lnL: %12G dlnL: %12G d2lnL: %12G) l: %12G num: %d",tree->c_lnL,tree->c_dlnL,tree->c_d2lnL,*l,b->num); */
+
   converged = NO;
   iter = 0;
   do
@@ -2450,29 +2461,17 @@ static phydbl Br_Len_Newton_Raphson(phydbl *l, t_edge *b, int n_iter_max, phydbl
   while(converged == NO);
 
 
+  assert(*l < tree->mod->l_max + 1.E-20); 
+  assert(*l > tree->mod->l_min - 1.E-20); 
+ 
   *l = best_l;
   tree->c_lnL = best_lnL;
-
-  /* printf("\n. *l=%12G lnL:%15G",*l,tree->c_lnL); */
-  
-  /* Set_Use_Eigen_Lr(NO,tree); */
-  /* tree->c_lnL = Lk(b,tree); */
-
-  /* printf("\n. init: %f current: %f l: %f",init_lnL,tree->c_lnL,b->l->v); */
-  /* Exit("\n"); */
-  /* assert(best_lnL > init_lnL-tol); */
-  
-  /* Set_Use_Eigen_Lr(YES,tree); */
-  /* dLk(l,b,tree); */
-  /* PhyML_Printf("\n End NR loop (lnL: %12G dlnL: %12G d2lnL: %12G) l: %12G",tree->c_lnL,tree->c_dlnL,tree->c_d2lnL,*l); */
+    
   if(iter == n_iter_max)
     {
       PhyML_Printf("\n. Too many iterations in edge length optimization routine (l=%G init=%G).\n",best_l,init_l);
       assert(FALSE);
     }
-
-  /* PhyML_Printf("\n. %d %G %G",tree->c_lnL > init_lnL,tree->c_lnL,init_lnL); */
-  /* assert(tree->c_lnL > init_lnL); */
   
   return tree->c_lnL;
 }
@@ -2726,8 +2725,10 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
   t_rmat **r_mat;
   int n_r_mat;
   int i;
+  phydbl lk_new,lk_old;
+  
+  Set_Update_Eigen(YES,mixt_tree->mod);
 
-  Switch_Eigen(YES,mixt_tree->mod);
 
   n_r_mat = 0;
   tree    = mixt_tree;
@@ -2803,7 +2804,7 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
 
   if(r_mat) Free(r_mat);
 
-  Switch_Eigen(NO,mixt_tree->mod);
+  Set_Update_Eigen(NO,mixt_tree->mod);
 
 }
 
@@ -2817,7 +2818,7 @@ void Optimize_TsTv(t_tree *mixt_tree, int verbose)
   t_tree *tree;
   int i;
 
-  Switch_Eigen(YES,mixt_tree->mod);
+  Set_Update_Eigen(YES,mixt_tree->mod);
 
   tstv   = NULL;
   n_tstv = 0;
@@ -2867,7 +2868,7 @@ void Optimize_TsTv(t_tree *mixt_tree, int verbose)
   
   if(tstv) Free(tstv);
   
-  Switch_Eigen(NO,mixt_tree->mod);
+  Set_Update_Eigen(NO,mixt_tree->mod);
   
 }
 
@@ -2881,7 +2882,7 @@ void Optimize_Pinv(t_tree *mixt_tree, int verbose)
   t_tree *tree;
   int i;
 
-  Switch_Eigen(NO,mixt_tree->mod);
+  Set_Update_Eigen(NO,mixt_tree->mod);
 
   pinv   = NULL;
   n_pinv = 0;
@@ -2934,7 +2935,7 @@ void Optimize_Alpha(t_tree *mixt_tree, int verbose)
   t_tree *tree;
   int i;
 
-  Switch_Eigen(NO,mixt_tree->mod);
+  Set_Update_Eigen(NO,mixt_tree->mod);
 
   alpha   = NULL;
   n_alpha = 0;
@@ -3271,7 +3272,11 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
   int i;
   int failed;
 
-  Switch_Eigen(YES,mixt_tree->mod);
+  phydbl lk_new,lk_old;
+  int *permut;
+  
+  Set_Update_Eigen(YES,mixt_tree->mod);
+
 
   freqs   = NULL;
   n_freqs = 0;
@@ -3295,11 +3300,13 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
               failed = YES;
 
 
-              BFGS(mixt_tree,tree->mod->e_frq->pi_unscaled->v,tree->mod->ns,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,YES,
-                   &Return_Abs_Lk,
-                   &Num_Derivative_Several_Param,
-                   &Lnsrch,&failed);
-              
+
+                  BFGS(mixt_tree,tree->mod->e_frq->pi_unscaled->v,tree->mod->ns,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,YES,
+                       &Return_Abs_Lk,
+                       &Num_Derivative_Several_Param,
+                       &Lnsrch,&failed);
+                  
+                  permut = Permutate(tree->mod->ns);
 
               if(failed == YES)
                 {
@@ -3333,7 +3340,7 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
 
   if(freqs) Free(freqs);
 
-  Switch_Eigen(NO,mixt_tree->mod);
+  Set_Update_Eigen(NO,mixt_tree->mod);
 
 }
 
@@ -3344,7 +3351,7 @@ void Optimize_Rmat_Weights(t_tree *mixt_tree, int verbose)
 {
   scalar_dbl *r_mat_weight;
 
-  Switch_Eigen(NO,mixt_tree->mod);
+  Set_Update_Eigen(NO,mixt_tree->mod);
 
   if(mixt_tree->is_mixt_tree == NO) return;
 
@@ -3376,7 +3383,7 @@ void Optimize_Rmat_Weights(t_tree *mixt_tree, int verbose)
       while(r_mat_weight);
     }
 
-  Switch_Eigen(NO,mixt_tree->mod);
+  Set_Update_Eigen(NO,mixt_tree->mod);
 
 }
 
@@ -3387,7 +3394,7 @@ void Optimize_Efrq_Weights(t_tree *mixt_tree, int verbose)
 {
   scalar_dbl *e_frq_weight;
 
-  Switch_Eigen(NO,mixt_tree->mod);
+  Set_Update_Eigen(NO,mixt_tree->mod);
 
   if(mixt_tree->is_mixt_tree == NO) return;
 
@@ -3420,7 +3427,7 @@ void Optimize_Efrq_Weights(t_tree *mixt_tree, int verbose)
       while(e_frq_weight);
     }
 
-  Switch_Eigen(NO,mixt_tree->mod);
+  Set_Update_Eigen(NO,mixt_tree->mod);
 
 }
 
@@ -3436,7 +3443,7 @@ void Optimize_Lambda(t_tree *mixt_tree, int verbose)
   t_tree *tree;
   int i;
 
-  Switch_Eigen(YES,mixt_tree->mod);
+  Set_Update_Eigen(YES,mixt_tree->mod);
 
   lambda   = NULL;
   n_lambda = 0;
@@ -3479,7 +3486,7 @@ void Optimize_Lambda(t_tree *mixt_tree, int verbose)
 
   if(lambda) Free(lambda);
 
-  Switch_Eigen(NO,mixt_tree->mod);
+  Set_Update_Eigen(NO,mixt_tree->mod);
 
 }
 

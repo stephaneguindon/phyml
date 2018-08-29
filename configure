@@ -4991,7 +4991,7 @@ LDFLAGS="${ARGC_flag}"
 
 
 
-DEFAULT_C_FLAG="-std=c99 -O2 -fomit-frame-pointer -funroll-loops -Wall -Winline ${VECTOR_FLAG}"
+DEFAULT_C_FLAG="-std=c99 -O3 -fomit-frame-pointer -funroll-loops -Wall -Winline ${VECTOR_FLAG}"
 
 # Check whether --enable-debug was given.
 if test "${enable_debug+set}" = set; then :
@@ -5023,7 +5023,7 @@ if test "${enable_gprof+set}" = set; then :
 fi
 
 if test "x$enable_gprof" = "xyes"; then :
-  CFLAGS="-g -pg -fno-inline ${VECTOR_FLAG}"
+  CFLAGS="-g -pg -fno-inline -fprofile-arcs -ftest-coverage ${VECTOR_FLAG}"
 else
   if test "x$enable_debug" = "xno"; then :
   CFLAGS="${DEFAULT_C_FLAG}"
