@@ -832,7 +832,8 @@ phydbl *DATE_MCMC(t_tree *tree)
           fflush(NULL);
           RATES_Update_Cur_Bl(tree);
 
-          if(tree->mcmc->sample_num > tree->mcmc->chain_len_burnin &&
+          
+          if(tree->mcmc->run > tree->mcmc->chain_len_burnin &&
              tree->io->mutmap == YES) Sample_Ancestral_Seq(YES,NO,tree);
 	          
           tree->mcmc->sample_num++;
