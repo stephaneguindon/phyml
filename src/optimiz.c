@@ -2777,7 +2777,6 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
                     }
                   
                   if(failed == YES)  for(i=0;i<tree->mod->r_mat->n_diff_rr;i++) tree->mod->r_mat->rr_val->v[i] = opt_val[i];
-                                                                                  
 
                   permut = Permutate(tree->mod->r_mat->n_diff_rr);
                   
@@ -3295,7 +3294,8 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
   int failed;
   phydbl lk_new,lk_old;
   int *permut;
-  
+  phydbl *opt_val;
+
   Set_Update_Eigen(YES,mixt_tree->mod);
 
   freqs   = NULL;
@@ -3303,6 +3303,7 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
   tree    = mixt_tree;
   lk_old  = UNLIKELY;
   lk_new  = UNLIKELY;
+  opt_val = NULL;
 
   do
     {
@@ -3321,17 +3322,23 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
             {
               int iter;
 
+              opt_val = (phydbl *)mCalloc(tree->mod->ns,sizeof(phydbl));
+
               iter = 0;
               do
                 {
                   lk_old = tree->c_lnL;
                   failed = NO;
 
+                  for(i=0;i<tree->mod->ns;i++) opt_val[i] = tree->mod->e_frq->pi_unscaled->v[i];
+                  
                   BFGS(mixt_tree,tree->mod->e_frq->pi_unscaled->v,tree->mod->ns,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,YES,
                        &Return_Abs_Lk,
                        &Num_Derivative_Several_Param,
                        &Lnsrch,&failed);
                   
+                  if(failed == YES) for(i=0;i<tree->mod->ns;i++) tree->mod->e_frq->pi_unscaled->v[i] = opt_val[i];
+
                   permut = Permutate(tree->mod->ns);
 
                   for(i=0;i<tree->mod->ns;++i)
@@ -3362,6 +3369,8 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
                 }
               while(++iter < tree->mod->s_opt->brent_it_max);
 
+              Free(opt_val);
+              
               if(iter == tree->mod->s_opt->brent_it_max)
                 {
                   if(tree->verbose > VL0)
