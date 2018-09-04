@@ -2725,6 +2725,7 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
   int n_r_mat;
   int i;
   phydbl lk_new,lk_old;
+  phydbl *opt_val;
   
   Set_Update_Eigen(YES,mixt_tree->mod);
 
@@ -2734,9 +2735,11 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
   permut  = NULL;
   lk_old  = UNLIKELY;
   lk_new  = UNLIKELY;
+  opt_val = NULL;
   
   do
     {
+      
       if(tree->next) tree = tree->next;
       
       for(i=0;i<n_r_mat;i++) if(tree->mod->r_mat == r_mat[i]) break;
@@ -2755,6 +2758,8 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
             {
               int i,iter,failed;
 
+              opt_val = (phydbl *)mCalloc(tree->mod->r_mat->n_diff_rr,sizeof(phydbl));
+                
               iter = 0;
               do
                 {
@@ -2763,12 +2768,17 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
                   
                   if(tree->mod->r_mat->n_diff_rr > 2)
                     {
+                      for(i=0;i<tree->mod->r_mat->n_diff_rr;i++) opt_val[i] = tree->mod->r_mat->rr_val->v[i];
+                      
                       BFGS(mixt_tree,tree->mod->r_mat->rr_val->v,tree->mod->r_mat->n_diff_rr,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,YES,
                            &Return_Abs_Lk,
                            &Num_Derivative_Several_Param,
                            &Lnsrch,&failed);
                     }
                   
+                  if(failed == YES)  for(i=0;i<tree->mod->r_mat->n_diff_rr;i++) tree->mod->r_mat->rr_val->v[i] = opt_val[i];
+                                                                                  
+
                   permut = Permutate(tree->mod->r_mat->n_diff_rr);
                   
                   for(i=0;i<tree->mod->r_mat->n_diff_rr;i++)
@@ -2780,7 +2790,6 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
                                          tree->mod->s_opt->brent_it_max,
                                          tree->mod->s_opt->quickdirty,
                                          Wrap_Lk,NULL,mixt_tree,NULL,NO);
-                        
                       }
 
                   if(verbose) Print_Lk(tree->mixt_tree?
@@ -2796,6 +2805,8 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
                 }
               while(++iter < tree->mod->s_opt->brent_it_max);              
                             
+              Free(opt_val);
+
               if(iter == tree->mod->s_opt->brent_it_max)
                 {
                   if(tree->verbose > VL0)
@@ -2813,7 +2824,8 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
   while(1);
 
   if(r_mat) Free(r_mat);
-
+  
+  
   Set_Update_Eigen(NO,mixt_tree->mod);
 
 }
