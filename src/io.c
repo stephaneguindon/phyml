@@ -2806,12 +2806,12 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
 
       PhyML_Fprintf(fp_out,"\n");
       PhyML_Fprintf(fp_out,". GTR relative rate parameters : \n");
-      PhyML_Fprintf(fp_out,"  A <-> C   %.8f\n",  tree->mod->r_mat->rr->v[0]);
-      PhyML_Fprintf(fp_out,"  A <-> G   %.8f\n",  tree->mod->r_mat->rr->v[1]);
-      PhyML_Fprintf(fp_out,"  A <-> T   %.8f\n",  tree->mod->r_mat->rr->v[2]);
-      PhyML_Fprintf(fp_out,"  C <-> G   %.8f\n",  tree->mod->r_mat->rr->v[3]);
-      PhyML_Fprintf(fp_out,"  C <-> T   %.8f\n",  tree->mod->r_mat->rr->v[4]);
-      PhyML_Fprintf(fp_out,"  G <-> T   %.8f\n",  tree->mod->r_mat->rr->v[5]);
+      PhyML_Fprintf(fp_out,"  A <-> C   %8.5f\n",  tree->mod->r_mat->rr->v[0]);
+      PhyML_Fprintf(fp_out,"  A <-> G   %8.5f\n",  tree->mod->r_mat->rr->v[1]);
+      PhyML_Fprintf(fp_out,"  A <-> T   %8.5f\n",  tree->mod->r_mat->rr->v[2]);
+      PhyML_Fprintf(fp_out,"  C <-> G   %8.5f\n",  tree->mod->r_mat->rr->v[3]);
+      PhyML_Fprintf(fp_out,"  C <-> T   %8.5f\n",  tree->mod->r_mat->rr->v[4]);
+      PhyML_Fprintf(fp_out,"  G <-> T   %8.5f\n",  tree->mod->r_mat->rr->v[5]);
 
       PhyML_Fprintf(fp_out,"\n. Instantaneous rate matrix : ");
       PhyML_Fprintf(fp_out,"\n  [A---------C---------G---------T------]\n");
@@ -2819,7 +2819,7 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
     {
       PhyML_Fprintf(fp_out,"  ");
       for(j=0;j<4;j++)
-        PhyML_Fprintf(fp_out,"%.8f  ",tree->mod->r_mat->qmat->v[i*4+j]);
+        PhyML_Fprintf(fp_out,"%8.5f  ",tree->mod->r_mat->qmat->v[i*4+j]);
       PhyML_Fprintf(fp_out,"\n");
     }
       PhyML_Fprintf(fp_out,"\n");
