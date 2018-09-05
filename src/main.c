@@ -306,7 +306,7 @@ int main(int argc, char **argv)
                   Print_Fp_Out(io->fp_out_stats,t_beg,t_end,tree,
                                io,num_data_set+1,
                                (orig_random_input_tree == YES)?(num_rand_tree):(num_tree),
-                               (num_rand_tree == io->mod->s_opt->n_rand_starts-1)?(YES):(NO));
+                               (num_rand_tree == io->mod->s_opt->n_rand_starts-1)?(YES):(NO), io->precision);
 
                   if(tree->io->print_site_lnl) Print_Site_Lk(tree,io->fp_out_lk);
 

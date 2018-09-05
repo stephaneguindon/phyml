@@ -1279,7 +1279,8 @@ typedef struct __Option { /*! mostly used in 'help.c' */
   int                  has_io_weights;
   int                   tbe_bootstrap;/* Replace standard bootstrap with tbe bootstrap (only when b>0) */
 
-  int leave_duplicates; /* Leave duplicated sequences */
+  int                leave_duplicates;/* Leave duplicated sequences */
+  int                       precision;/* Decimal output precision for values in stats file */
 }option;
 
 /*!********************************************************/

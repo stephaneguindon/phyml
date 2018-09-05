@@ -184,10 +184,11 @@ int M4_main(int argc, char **argv)
 /* 		  JF(tree); */
 
 		  time(&t_end);
+
 		  Print_Fp_Out(io->fp_out_stats,t_beg,t_end,tree,
 			       io,num_data_set+1,
 			       (tree->mod->s_opt->n_rand_starts > 1)?
-			       (num_rand_tree):(num_tree),YES);
+			       (num_rand_tree):(num_tree),YES, io->precision);
 		  
 		  if(tree->io->print_site_lnl) Print_Site_Lk(tree,io->fp_out_lk);
 
