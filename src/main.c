@@ -24,7 +24,6 @@ the GNU public licence. See http://www.opensource.org for details.
 #include "alrt.h"
 #include "mixt.h"
 #include "invitee.h"
-//#include "geo.h"
 
 #ifdef MPI
 #include "mpi_boot.h"

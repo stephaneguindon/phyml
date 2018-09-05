@@ -653,6 +653,7 @@ date.c date.h\
 sse.c sse.h\
 avx.c avx.h\
 tbe.c tbe.h \
+ancestral.c ancestral.h \
 mixt.c mixt.h
 phyml_LDADD = -lm
 endif
