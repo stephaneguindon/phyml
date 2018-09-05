@@ -2661,217 +2661,295 @@ FILE *Openfile(char *filename, int mode)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option *io, int n_data_set, int num_tree, int add_citation)
+void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option *io, int n_data_set, int num_tree, int add_citation, int precision)
 {
-  char *s;
-  div_t hour,min;
-  int i;
+	char *s;
+	char format[8];
+	div_t hour,min;
+	int i, j;
 
-  if(n_data_set == 1)
-    {
-      rewind(fp_out);
-      Print_Banner_Small(fp_out);
-    }
+	if (precision > 0)
+		snprintf (format, 8, "%%.%df", precision);
+	
+	if(n_data_set == 1)
+	{
+		rewind(fp_out);
+		Print_Banner_Small(fp_out);
+	}
+	
+	PhyML_Fprintf(fp_out,"\n. Sequence filename: \t\t\t%s", Basename(io->in_align_file));
+	PhyML_Fprintf(fp_out,"\n. Data set: \t\t\t\t#%d",n_data_set);
 
-  PhyML_Fprintf(fp_out,"\n. Sequence filename: \t\t\t%s", Basename(io->in_align_file));
-  PhyML_Fprintf(fp_out,"\n. Data set: \t\t\t\t#%d",n_data_set);
+	if(io->mod->s_opt->random_input_tree) PhyML_Fprintf(fp_out,"\n. Random init tree: \t\t\t#%d",num_tree+1);
+	else if(io->n_trees > 1)              PhyML_Fprintf(fp_out,"\n. Starting tree number: \t\t#%d",num_tree+1);
 
-  if(io->mod->s_opt->random_input_tree) PhyML_Fprintf(fp_out,"\n. Random init tree: \t\t\t#%d",num_tree+1);
-  else if(io->n_trees > 1)              PhyML_Fprintf(fp_out,"\n. Starting tree number: \t\t#%d",num_tree+1);
-
-  if(io->mod->s_opt->opt_topo)
-    {
-      PhyML_Fprintf(fp_out,"\n. Tree topology search: \t\tSPRs");
-    }
-  else
-    {
-      PhyML_Fprintf(fp_out,"\n. Tree topology: \t\t\tfixed");
-    }
-
-
-  /* was after Sequence file ; moved here FLT */
-  s = (char *)mCalloc(T_MAX_LINE,sizeof(char));
-  if(io->in_tree == 2)
-    {
-      strcat(strcat(strcat(s,"user tree ("),io->in_tree_file),")");
-    }
-  else
-    {
-      if(!io->mod->s_opt->random_input_tree)
-        {
-          if(io->in_tree == 0) strcat(s,"BioNJ");
-          if(io->in_tree == 1) strcat(s,"parsimony");
-        }
-      else
-        strcat(s,"random tree");
-    }
-
-  PhyML_Fprintf(fp_out,"\n. Initial tree: \t\t\t%s",s);
-  Free(s);
-
-  if(tree->io->datatype == NT)
-    {
-      PhyML_Fprintf(fp_out,"\n. Model of nucleotides substitution: \t%s",tree->mod->modelname->s);
-      if(io->mod->whichmodel == CUSTOM)
-      PhyML_Fprintf(fp_out," (%s)",io->mod->custom_mod_string);
-    }
-  else if(tree->io->datatype == AA)
-    {
-      PhyML_Fprintf(fp_out,"\n. Model of amino acids substitution: \t%s",tree->mod->modelname->s);
-      if(io->mod->whichmodel == CUSTOMAA) PhyML_Fprintf(fp_out," (%s)",tree->mod->aa_rate_mat_file->s);
-    }
-  else
-    {
-      fprintf(fp_out,"\n. Substitution model: \t\t\t%s",tree->mod->modelname->s);
-    }
-
-
-  PhyML_Fprintf(fp_out,"\n. Number of taxa: \t\t\t%d",tree->n_otu);/*added FLT*/
-
-  PhyML_Fprintf(fp_out,"\n. Log-likelihood: \t\t\t%.5f",tree->c_lnL);/*was last ; moved here FLT*/
-
-  Unconstraint_Lk(tree);
-  PhyML_Fprintf(fp_out,"\n. Unconstrained log-likelihood: \t%.5f",tree->unconstraint_lk);
-
-  Composite_Lk(tree);
-  PhyML_Fprintf(fp_out,"\n. Composite log-likelihood: \t\t%.5f",tree->composite_lk);
-
-  
-  PhyML_Fprintf(fp_out,"\n. Parsimony: \t\t\t\t%d",tree->c_pars);
-
-  PhyML_Fprintf(fp_out,"\n. Tree size: \t\t\t\t%.5f",Get_Tree_Size(tree));
-
-  /* if(tree->mod->ras->n_catg > 1 && tree->mod->ras->free_mixt_rates == NO) */
-  if(tree->mod->ras->free_mixt_rates == NO)
-    {
-      PhyML_Fprintf(fp_out,"\n. Discrete gamma model: \t\t%s","Yes");
-      PhyML_Fprintf(fp_out,"\n  - Number of classes: \t\t\t%d",tree->mod->ras->n_catg);
-      PhyML_Fprintf(fp_out,"\n  - Gamma shape parameter: \t\t%.3f",tree->mod->ras->alpha->v);
-      for(i=0;i<tree->mod->ras->n_catg;i++)
-        {
-          PhyML_Fprintf(fp_out,"\n  - Relative rate in class %d: \t\t%.5f [freq=%4f] \t\t",i+1,tree->mod->ras->gamma_rr->v[i],tree->mod->ras->gamma_r_proba->v[i]);
-        }
-    }
-  else if(tree->mod->ras->free_mixt_rates == YES)
-    {
-      int *rk;
-      rk = Ranks(tree->mod->ras->gamma_rr->v,tree->mod->ras->n_catg);
-      PhyML_Fprintf(fp_out,"\n. FreeRate model: \t\t\t%s","Yes");
-      PhyML_Fprintf(fp_out,"\n  - Number of classes: \t\t\t%d",tree->mod->ras->n_catg);
-      for(i=0;i<tree->mod->ras->n_catg;i++)
-        {
-          PhyML_Fprintf(fp_out,"\n  - Relative rate in class %d: \t\t%.5f [freq=%4f] \t\t",i+1,tree->mod->ras->gamma_rr->v[rk[i]],tree->mod->ras->gamma_r_proba->v[rk[i]]);
-        }
-      Free(rk);
-    }
-
-  if(tree->mod->ras->invar) PhyML_Fprintf(fp_out,"\n. Proportion of invariant: \t\t%.3f",tree->mod->ras->pinvar->v);
-
-  if(tree->mod->gamma_mgf_bl == YES) PhyML_Fprintf(fp_out,"\n. Variance of branch lengths: \t\t%f",tree->mod->l_var_sigma);
-
-  /*was before Discrete gamma model ; moved here FLT*/
-  if((tree->mod->whichmodel == K80)   ||
-     (tree->mod->whichmodel == HKY85) ||
-     (tree->mod->whichmodel == F84))
-    PhyML_Fprintf(fp_out,"\n. Transition/transversion ratio: \t%.8f",tree->mod->kappa->v);
-  else if(tree->mod->whichmodel == TN93)
-    {
-      PhyML_Fprintf(fp_out,"\n. Transition/transversion ratio for purines: \t\t%.8f",
-            tree->mod->kappa->v*2.*tree->mod->lambda->v/(1.+tree->mod->lambda->v));
-      PhyML_Fprintf(fp_out,"\n. Transition/transversion ratio for pyrimidines: \t%.8f",
-          tree->mod->kappa->v*2./(1.+tree->mod->lambda->v));
-    }
-
-  if(tree->io->datatype == NT)
-    {
-      PhyML_Fprintf(fp_out,"\n. Nucleotides frequencies:");
-      PhyML_Fprintf(fp_out,"\n  - f(A)= %8.5f",tree->mod->e_frq->pi->v[0]);
-      PhyML_Fprintf(fp_out,"\n  - f(C)= %8.5f",tree->mod->e_frq->pi->v[1]);
-      PhyML_Fprintf(fp_out,"\n  - f(G)= %8.5f",tree->mod->e_frq->pi->v[2]);
-      PhyML_Fprintf(fp_out,"\n  - f(T)= %8.5f",tree->mod->e_frq->pi->v[3]);
-    }
-
-  /*****************************************/
-  if((tree->mod->whichmodel == GTR) ||
-     (tree->mod->whichmodel == CUSTOM))
-    {
-      int i,j;
-
-      Update_Qmat_GTR(tree->mod->r_mat->rr->v,
-              tree->mod->r_mat->rr_val->v,
-              tree->mod->r_mat->rr_num->v,
-              tree->mod->e_frq->pi->v,
-              tree->mod->r_mat->qmat->v,
-              tree->mod->s_opt->opt_rr);
-
-      PhyML_Fprintf(fp_out,"\n");
-      PhyML_Fprintf(fp_out,". GTR relative rate parameters : \n");
-      PhyML_Fprintf(fp_out,"  A <-> C   %8.5f\n",  tree->mod->r_mat->rr->v[0]);
-      PhyML_Fprintf(fp_out,"  A <-> G   %8.5f\n",  tree->mod->r_mat->rr->v[1]);
-      PhyML_Fprintf(fp_out,"  A <-> T   %8.5f\n",  tree->mod->r_mat->rr->v[2]);
-      PhyML_Fprintf(fp_out,"  C <-> G   %8.5f\n",  tree->mod->r_mat->rr->v[3]);
-      PhyML_Fprintf(fp_out,"  C <-> T   %8.5f\n",  tree->mod->r_mat->rr->v[4]);
-      PhyML_Fprintf(fp_out,"  G <-> T   %8.5f\n",  tree->mod->r_mat->rr->v[5]);
-
-      PhyML_Fprintf(fp_out,"\n. Instantaneous rate matrix : ");
-      PhyML_Fprintf(fp_out,"\n  [A---------C---------G---------T------]\n");
-      for(i=0;i<4;i++)
-    {
-      PhyML_Fprintf(fp_out,"  ");
-      for(j=0;j<4;j++)
-        PhyML_Fprintf(fp_out,"%8.5f  ",tree->mod->r_mat->qmat->v[i*4+j]);
-      PhyML_Fprintf(fp_out,"\n");
-    }
-      PhyML_Fprintf(fp_out,"\n");
-    }
-  /*****************************************/
-
-
-  if(io->ratio_test == 1)
-    {
-      PhyML_Fprintf(fp_out,". aLRT statistics to test branches");
-    }
-  else if(io->ratio_test == 2)
-    {
-      PhyML_Fprintf(fp_out,". aLRT branch supports (cubic approximation, mixture of Chi2s distribution)");
-    }
-
-
-  PhyML_Fprintf(fp_out,"\n");
-  PhyML_Fprintf(fp_out,"\n. Run ID:\t\t\t\t%s", (io->append_run_ID) ? (io->run_id_string): ("none"));
-  PhyML_Fprintf(fp_out,"\n. Random seed:\t\t\t\t%d", io->r_seed);
-  PhyML_Fprintf(fp_out,"\n. Subtree patterns aliasing:\t\t%s",io->do_alias_subpatt?"yes":"no");
-  PhyML_Fprintf(fp_out,"\n. Version:\t\t\t\t%s", VERSION);
-
-  hour = div(t_end-t_beg,3600);
-  min  = div(t_end-t_beg,60  );
-
-  min.quot -= hour.quot*60;
-
-  PhyML_Fprintf(fp_out,"\n. Time used:\t\t\t\t%dh%dm%ds (%d seconds)", hour.quot,min.quot,(int)(t_end-t_beg)%60,(int)(t_end-t_beg));
-
-
-  if(add_citation == YES)
-    {
-      PhyML_Fprintf(fp_out,"\n\n");
-      PhyML_Fprintf(fp_out," oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo\n");
-      PhyML_Fprintf(fp_out," Suggested citations:\n");
-      PhyML_Fprintf(fp_out," S. Guindon, JF. Dufayard, V. Lefort, M. Anisimova, W. Hordijk, O. Gascuel\n");
-      PhyML_Fprintf(fp_out," \"New algorithms and methods to estimate maximum-likelihood phylogenies: assessing the performance of PhyML 3.0.\"\n");
-      PhyML_Fprintf(fp_out," Systematic Biology. 2010. 59(3):307-321.\n");
-      PhyML_Fprintf(fp_out,"\n");
-      PhyML_Fprintf(fp_out," S. Guindon & O. Gascuel\n");
-      PhyML_Fprintf(fp_out," \"A simple, fast, and accurate algorithm to estimate large phylogenies by maximum likelihood\"\n");
-      PhyML_Fprintf(fp_out," Systematic Biology. 2003. 52(5):696-704.\n");
-      PhyML_Fprintf(fp_out," oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo\n");
-    }
-  else
-    {
-      PhyML_Fprintf(fp_out,"\n\n");
-      PhyML_Fprintf(fp_out," oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo\n");
-      PhyML_Fprintf(fp_out,"\n");
-
-    }
+	if(io->mod->s_opt->opt_topo)
+		PhyML_Fprintf(fp_out,"\n. Tree topology search: \t\tSPRs");
+	else
+		PhyML_Fprintf(fp_out,"\n. Tree topology: \t\t\tfixed");
+	
+	/* was after Sequence file ; moved here FLT */
+	s = (char *)mCalloc(T_MAX_LINE,sizeof(char));
+	if(io->in_tree == 2)
+	{
+		strcat(strcat(strcat(s,"user tree ("),io->in_tree_file),")");
+	}
+	else
+	{
+		if(!io->mod->s_opt->random_input_tree)
+		{
+			if(io->in_tree == 0) strcat(s,"BioNJ");
+			if(io->in_tree == 1) strcat(s,"parsimony");
+		}
+		else
+		strcat(s,"random tree");
+	}
+	
+	PhyML_Fprintf(fp_out,"\n. Initial tree: \t\t\t%s",s);
+	Free(s);
+	
+	if(tree->io->datatype == NT)
+	{
+		PhyML_Fprintf(fp_out,"\n. Model of nucleotides substitution: \t%s",tree->mod->modelname->s);
+		if(io->mod->whichmodel == CUSTOM)
+			PhyML_Fprintf(fp_out," (%s)",io->mod->custom_mod_string);
+	}
+	else if(tree->io->datatype == AA)
+	{
+		PhyML_Fprintf(fp_out,"\n. Model of amino acids substitution: \t%s",tree->mod->modelname->s);
+		if(io->mod->whichmodel == CUSTOMAA) PhyML_Fprintf(fp_out," (%s)",tree->mod->aa_rate_mat_file->s);
+	}
+	else
+	{
+		fprintf(fp_out,"\n. Substitution model: \t\t\t%s",tree->mod->modelname->s);
+	}
+	
+	PhyML_Fprintf(fp_out,"\n. Number of taxa: \t\t\t%d",tree->n_otu);/*added FLT*/
+	
+	PhyML_Fprintf(fp_out,"\n. Log-likelihood: \t\t\t%.5f",tree->c_lnL);/*was last ; moved here FLT*/
+	
+	Unconstraint_Lk(tree);
+	PhyML_Fprintf(fp_out,"\n. Unconstrained log-likelihood: \t%.5f",tree->unconstraint_lk);
+	
+	Composite_Lk(tree);
+	PhyML_Fprintf(fp_out,"\n. Composite log-likelihood: \t\t%.5f",tree->composite_lk);
+	
+	PhyML_Fprintf(fp_out,"\n. Parsimony: \t\t\t\t%d",tree->c_pars);
+	
+	PhyML_Fprintf(fp_out,"\n. Tree size: \t\t\t\t%.5f",Get_Tree_Size(tree));
+	
+	/* if(tree->mod->ras->n_catg > 1 && tree->mod->ras->free_mixt_rates == NO) */
+	if(tree->mod->ras->free_mixt_rates == NO)
+	{
+		PhyML_Fprintf(fp_out,"\n. Discrete gamma model: \t\t%s","Yes");
+		PhyML_Fprintf(fp_out,"\n  - Number of classes: \t\t\t%d",tree->mod->ras->n_catg);
+		PhyML_Fprintf(fp_out,"\n  - Gamma shape parameter: \t\t%.3f",tree->mod->ras->alpha->v);
+		for(i=0;i<tree->mod->ras->n_catg;i++)
+		{
+			PhyML_Fprintf(fp_out,"\n  - Relative rate in class %d: \t\t%.5f [freq=%4f] \t\t",i+1,tree->mod->ras->gamma_rr->v[i],tree->mod->ras->gamma_r_proba->v[i]);
+		}
+	}
+	else if(tree->mod->ras->free_mixt_rates == YES)
+	{
+		int *rk;
+		rk = Ranks(tree->mod->ras->gamma_rr->v,tree->mod->ras->n_catg);
+		PhyML_Fprintf(fp_out,"\n. FreeRate model: \t\t\t%s","Yes");
+		PhyML_Fprintf(fp_out,"\n  - Number of classes: \t\t\t%d",tree->mod->ras->n_catg);
+		for(i=0;i<tree->mod->ras->n_catg;i++)
+		{
+			PhyML_Fprintf(fp_out,"\n  - Relative rate in class %d: \t\t%.5f [freq=%4f] \t\t",i+1,tree->mod->ras->gamma_rr->v[rk[i]],tree->mod->ras->gamma_r_proba->v[rk[i]]);
+		}
+		Free(rk);
+	}
+	
+	if(tree->mod->ras->invar) PhyML_Fprintf(fp_out,"\n. Proportion of invariant: \t\t%.3f",tree->mod->ras->pinvar->v);
+	
+	if(tree->mod->gamma_mgf_bl == YES) PhyML_Fprintf(fp_out,"\n. Variance of branch lengths: \t\t%f",tree->mod->l_var_sigma);
+	
+	/*was before Discrete gamma model ; moved here FLT*/
+	if((tree->mod->whichmodel == K80)   ||
+		(tree->mod->whichmodel == HKY85) ||
+		(tree->mod->whichmodel == F84))
+	{
+		PhyML_Fprintf(fp_out,"\n. Transition/transversion ratio: \t");
+		if (precision > 0)
+			PhyML_Fprintf(fp_out,format,tree->mod->kappa->v);
+		else
+			PhyML_Fprintf(fp_out,"%.8f",tree->mod->kappa->v);
+	}
+	else if(tree->mod->whichmodel == TN93)
+	{
+		PhyML_Fprintf(fp_out,"\n. Transition/transversion ratio for purines: \t\t");
+		if (precision > 0)
+			PhyML_Fprintf(fp_out,format,tree->mod->kappa->v*2.*tree->mod->lambda->v/(1.+tree->mod->lambda->v));
+		else
+			PhyML_Fprintf(fp_out,"%.8f",tree->mod->kappa->v*2.*tree->mod->lambda->v/(1.+tree->mod->lambda->v));
+		
+		PhyML_Fprintf(fp_out,"\n. Transition/transversion ratio for pyrimidines: \t");
+		if (precision > 0)
+			PhyML_Fprintf(fp_out,format,tree->mod->kappa->v*2./(1.+tree->mod->lambda->v));
+		else
+			PhyML_Fprintf(fp_out,"%.8f",tree->mod->kappa->v*2./(1.+tree->mod->lambda->v));
+	}
+	
+	if(tree->io->datatype == NT)
+	{
+		PhyML_Fprintf(fp_out,"\n. Nucleotides frequencies:");
+		if (precision > 0)
+		{
+			PhyML_Fprintf(fp_out,"\n  - f(A)=  ");
+			PhyML_Fprintf(fp_out,format,tree->mod->e_frq->pi->v[0]);
+			PhyML_Fprintf(fp_out,"\n  - f(C)=  ");
+			PhyML_Fprintf(fp_out,format,tree->mod->e_frq->pi->v[1]);
+			PhyML_Fprintf(fp_out,"\n  - f(G)=  ");
+			PhyML_Fprintf(fp_out,format,tree->mod->e_frq->pi->v[2]);
+			PhyML_Fprintf(fp_out,"\n  - f(T)=  ");
+			PhyML_Fprintf(fp_out,format,tree->mod->e_frq->pi->v[3]);
+		}
+		else
+		{
+			PhyML_Fprintf(fp_out,"\n  - f(A)= %8.5f",tree->mod->e_frq->pi->v[0]);
+			PhyML_Fprintf(fp_out,"\n  - f(C)= %8.5f",tree->mod->e_frq->pi->v[1]);
+			PhyML_Fprintf(fp_out,"\n  - f(G)= %8.5f",tree->mod->e_frq->pi->v[2]);
+			PhyML_Fprintf(fp_out,"\n  - f(T)= %8.5f",tree->mod->e_frq->pi->v[3]);
+		}
+	}
+	
+	/*****************************************/
+	if((tree->mod->whichmodel == GTR) ||
+		(tree->mod->whichmodel == CUSTOM))
+	{
+		Update_Qmat_GTR(tree->mod->r_mat->rr->v,
+			tree->mod->r_mat->rr_val->v,
+			tree->mod->r_mat->rr_num->v,
+			tree->mod->e_frq->pi->v,
+			tree->mod->r_mat->qmat->v,
+			tree->mod->s_opt->opt_rr);
+		
+		PhyML_Fprintf(fp_out,"\n");
+		PhyML_Fprintf(fp_out,". GTR relative rate parameters :");
+		if (precision > 0)
+		{
+			PhyML_Fprintf(fp_out,"\n  A <-> C   ");
+			if (tree->mod->r_mat->rr->v[0] < 10)
+				PhyML_Fprintf(fp_out," ");
+			PhyML_Fprintf(fp_out,format,  tree->mod->r_mat->rr->v[0]);
+			PhyML_Fprintf(fp_out,"\n  A <-> G   ");
+			if (tree->mod->r_mat->rr->v[1] < 10)
+				PhyML_Fprintf(fp_out," ");
+			PhyML_Fprintf(fp_out,format,  tree->mod->r_mat->rr->v[1]);
+			PhyML_Fprintf(fp_out,"\n  A <-> T   ");
+			if (tree->mod->r_mat->rr->v[2] < 10)
+				PhyML_Fprintf(fp_out," ");
+			PhyML_Fprintf(fp_out,format,  tree->mod->r_mat->rr->v[2]);
+			PhyML_Fprintf(fp_out,"\n  C <-> G   ");
+			if (tree->mod->r_mat->rr->v[3] < 10)
+				PhyML_Fprintf(fp_out," ");
+			PhyML_Fprintf(fp_out,format,  tree->mod->r_mat->rr->v[3]);
+			PhyML_Fprintf(fp_out,"\n  C <-> T   ");
+			if (tree->mod->r_mat->rr->v[4] < 10)
+				PhyML_Fprintf(fp_out," ");
+			PhyML_Fprintf(fp_out,format,  tree->mod->r_mat->rr->v[4]);
+			PhyML_Fprintf(fp_out,"\n  G <-> T   ");
+			if (tree->mod->r_mat->rr->v[5] < 10)
+				PhyML_Fprintf(fp_out," ");
+			PhyML_Fprintf(fp_out,format,  tree->mod->r_mat->rr->v[5]);
+		}
+		else
+		{
+			PhyML_Fprintf(fp_out,"\n  A <-> C   %8.5f",  tree->mod->r_mat->rr->v[0]);
+			PhyML_Fprintf(fp_out,"\n  A <-> G   %8.5f",  tree->mod->r_mat->rr->v[1]);
+			PhyML_Fprintf(fp_out,"\n  A <-> T   %8.5f",  tree->mod->r_mat->rr->v[2]);
+			PhyML_Fprintf(fp_out,"\n  C <-> G   %8.5f",  tree->mod->r_mat->rr->v[3]);
+			PhyML_Fprintf(fp_out,"\n  C <-> T   %8.5f",  tree->mod->r_mat->rr->v[4]);
+			PhyML_Fprintf(fp_out,"\n  G <-> T   %8.5f",  tree->mod->r_mat->rr->v[5]);
+		}
+		
+		PhyML_Fprintf(fp_out,"\n. Instantaneous rate matrix : ");
+		if (precision > 0)
+		{
+			PhyML_Fprintf(fp_out,"\n  [A");
+			for(i=0;i<precision+4;i++)
+				PhyML_Fprintf(fp_out,"-");
+			PhyML_Fprintf(fp_out,"C");
+			for(i=0;i<precision+4;i++)
+				PhyML_Fprintf(fp_out,"-");
+			PhyML_Fprintf(fp_out,"G");
+			for(i=0;i<precision+4;i++)
+				PhyML_Fprintf(fp_out,"-");
+			PhyML_Fprintf(fp_out,"T");
+			for(i=0;i<precision+1;i++)
+				PhyML_Fprintf(fp_out,"-");
+			PhyML_Fprintf(fp_out,"]\n");
+			for(i=0;i<4;i++)
+			{
+				for(j=0;j<4;j++)
+				{
+					if (i == j)
+						PhyML_Fprintf(fp_out,"  ");
+					else
+						PhyML_Fprintf(fp_out,"   ");
+					PhyML_Fprintf(fp_out,format,tree->mod->r_mat->qmat->v[i*4+j]);
+				}
+				PhyML_Fprintf(fp_out,"\n");
+			}
+		}
+		else
+		{
+			PhyML_Fprintf(fp_out,"\n  [A---------C---------G---------T------]\n");
+			for(i=0;i<4;i++)
+			{
+				PhyML_Fprintf(fp_out,"  ");
+				for(j=0;j<4;j++)
+					PhyML_Fprintf(fp_out,"%8.5f  ",tree->mod->r_mat->qmat->v[i*4+j]);
+				PhyML_Fprintf(fp_out,"\n");
+			}
+		}
+		//PhyML_Fprintf(fp_out,"\n");
+	}
+	
+	/*****************************************/
+	if(io->ratio_test == 1)
+	{
+		PhyML_Fprintf(fp_out,". aLRT statistics to test branches");
+	}
+	else if(io->ratio_test == 2)
+	{
+		PhyML_Fprintf(fp_out,". aLRT branch supports (cubic approximation, mixture of Chi2s distribution)");
+	}
+	
+	PhyML_Fprintf(fp_out,"\n");
+	PhyML_Fprintf(fp_out,"\n. Run ID:\t\t\t\t%s", (io->append_run_ID) ? (io->run_id_string): ("none"));
+	PhyML_Fprintf(fp_out,"\n. Random seed:\t\t\t\t%d", io->r_seed);
+	PhyML_Fprintf(fp_out,"\n. Subtree patterns aliasing:\t\t%s",io->do_alias_subpatt?"yes":"no");
+	PhyML_Fprintf(fp_out,"\n. Version:\t\t\t\t%s", VERSION);
+	
+	hour = div(t_end-t_beg,3600);
+	min  = div(t_end-t_beg,60  );
+	min.quot -= hour.quot*60;
+	
+	PhyML_Fprintf(fp_out,"\n. Time used:\t\t\t\t%dh%dm%ds (%d seconds)", hour.quot,min.quot,(int)(t_end-t_beg)%60,(int)(t_end-t_beg));
+	
+	if(add_citation == YES)
+	{
+		PhyML_Fprintf(fp_out,"\n\n");
+		PhyML_Fprintf(fp_out," oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo\n");
+		PhyML_Fprintf(fp_out," Suggested citations:\n");
+		PhyML_Fprintf(fp_out," S. Guindon, JF. Dufayard, V. Lefort, M. Anisimova, W. Hordijk, O. Gascuel\n");
+		PhyML_Fprintf(fp_out," \"New algorithms and methods to estimate maximum-likelihood phylogenies: assessing the performance of PhyML 3.0.\"\n");
+		PhyML_Fprintf(fp_out," Systematic Biology. 2010. 59(3):307-321.\n");
+		PhyML_Fprintf(fp_out,"\n");
+		PhyML_Fprintf(fp_out," S. Guindon & O. Gascuel\n");
+		PhyML_Fprintf(fp_out," \"A simple, fast, and accurate algorithm to estimate large phylogenies by maximum likelihood\"\n");
+		PhyML_Fprintf(fp_out," Systematic Biology. 2003. 52(5):696-704.\n");
+		PhyML_Fprintf(fp_out," oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo\n");
+	}
+	else
+	{
+		PhyML_Fprintf(fp_out,"\n\n");
+		PhyML_Fprintf(fp_out," oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo\n");
+		PhyML_Fprintf(fp_out,"\n");
+	}
 }
 
 //////////////////////////////////////////////////////////////

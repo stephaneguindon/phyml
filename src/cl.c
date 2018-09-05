@@ -129,6 +129,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
       {"weights",             required_argument,NULL,79},
       {"tbe",                 no_argument,NULL,80},
       {"leave_duplicates",    no_argument,NULL,81},
+      {"precision",           required_argument,NULL,82},
       {0,0,0,0}
     };
 
@@ -146,6 +147,19 @@ int Read_Command_Line(option *io, int argc, char **argv)
 
       switch(c)
 	{
+	case 82 :
+	  {
+	    if ((!atoi(optarg)) || (atoi(optarg) < 1) || (atoi(optarg) > DECIMAL_DIG -3))
+	      {
+		    PhyML_Printf("\n. The number of digits must be [1 - %d]\n", DECIMAL_DIG -3);
+		    Exit("\n");
+	      }
+	    else 
+	      {
+		io->precision = atoi(optarg);
+	      }
+	    break;
+	  }
 	case 81 :
 	  {
 	    io->leave_duplicates = YES;
