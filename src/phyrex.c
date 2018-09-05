@@ -114,7 +114,7 @@ int PHYREX_Main_Estimate(int argc, char *argv[])
 
   tree->rates->bl_from_rt = YES;
   tree->rates->clock_r    = 0.01 / FABS(disk->time);
-  tree->rates->model      = STRICTCLOCK;
+  tree->rates->model      = LOGNORMAL;
   RATES_Update_Cur_Bl(tree);
 
   Init_Model(tree->data,io->mod,io);

@@ -2306,12 +2306,10 @@ void Alias_Subpatt_Post(t_node *a, t_node *d, t_tree *tree);
 void Alias_One_Subpatt(t_node *a, t_node *d, t_tree *tree);
 void Alias_Subpatt(t_tree *tree);
 void Map_Mutations(t_node *a, t_node *d, int sa, int sd, t_edge *b, int site, int rcat, int *muttype, phydbl *muttime, int *muttax, int *n_mut, t_tree *tree);
-int Sample_Ancestral_Seq_Core(t_node *a, t_node *d, t_edge *b, int r_cat, int site, t_tree *tree);
-void Sample_Ancestral_Seq_Pre(t_node *a, t_node *d, t_edge *b,int site, int r_cat,int *muttype, phydbl *muttime, int *muttax, int *n_mut,int fullmutmap, int fromprior, t_tree *tree);
-void Sample_Ancestral_Seq(int fullmutmap, int fromprior, t_tree *tree);
-void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print);
-void Ancestral_Sequences(t_tree *tree, int print);
 void Set_Update_Eigen(int yesno, t_mod *mod);
+int *Order_Int(const int *u, const int n);
+int *Order_Dbl(const phydbl *u, const int n);
+char Integer_To_IUPAC_Code(int x);
 
 
 #include "xml.h"
@@ -2332,6 +2330,7 @@ void Set_Update_Eigen(int yesno, t_mod *mod);
 #include "nexus.h"
 #include "init.h"
 #include "mcmc.h"
+#include "ancestral.h"
 
 #ifdef GEO
 #include "geo.h"
