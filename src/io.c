@@ -2668,14 +2668,13 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
 	div_t hour,min;
 	int i, j;
 
-	if (precision > 0)
-		snprintf (format, 8, "%%.%df", precision);
+	if (precision > 0) snprintf (format, 8, "%%.%df", precision);
 	
 	if(n_data_set == 1)
-	{
-		rewind(fp_out);
-		Print_Banner_Small(fp_out);
-	}
+          {
+            rewind(fp_out);
+            Print_Banner_Small(fp_out);
+          }
 	
 	PhyML_Fprintf(fp_out,"\n. Sequence filename: \t\t\t%s", Basename(io->in_align_file));
 	PhyML_Fprintf(fp_out,"\n. Data set: \t\t\t\t#%d",n_data_set);

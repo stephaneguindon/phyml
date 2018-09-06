@@ -605,7 +605,8 @@ void Set_Defaults_Input(option* io)
 #ifdef BEAGLE
   io->beagle_resource            = 0;
 #endif
-
+  io->precision                  = 0;
+  
   MCMC_Init_MCMC_Struct(NULL,io,io->mcmc);
   RATES_Init_Rate_Struct(io->rates,NULL,-1);
   io->rates->model               = LOGNORMAL;
