@@ -1112,8 +1112,14 @@ starting trees are printed in a separate tree file (see last row of Table \ref{t
 PhyML estimates ancestral sequences by calculating the {\em marginal} (as opposed to the {\em joint}) probability of each character
   state at each internal node of the phylogeny. These probabilities are given in the file
 \x{seq\_phyml\_ancestral\_seq.txt}. The bulk of this file is a table where each row corresponds to a
-site in the original alignment and a number corresponding labeling each internal node. It is relatively
-straightforward to identify which number corresponds to which node in the tree by examining the
+site in the original alignment and a number corresponding labeling each internal node. The different
+columns of that file give the probability of each character state given the data observed at the
+corresponding sites and the estimated phylogeny. When analysing nucleotide data, PhyML also outputs
+an extra column called MPEE\index{MPEE}\index{ancestral reconstruction}, which stands for minimum posterior expected error. This column gives the
+state, which can be a single nucleotide or a combination of more than one nucleotide, that is
+optimal under the MPEE criterion \cite{oliva18}.
+
+Also, it is relatively straightforward to identify which number corresponds to which node in the tree by examining the
 information provided in the Newick-formatted file \x{seq\_phyml\_ancestral\_tree.txt}.
 
 
@@ -2188,7 +2194,7 @@ compared to other software for molecular dating are:
   along any given branch) \cite{guindon13}.
 \item the opportunity to accomodate for uncertainty in calibration information. A single time
   constraint can apply to multiple clades with corresponding probabilities as determined from prior
-  analysis of fossil data \cite{guindon17}.
+  analysis of fossil data \cite{guindon18}.
 \end{itemize}
 
 \subsubsection{Installing PhyTime}
@@ -2436,7 +2442,7 @@ the effective sample sizes of all parameters have reached 200.
 The MCMC algorithm implemented in
 PhyTime relies on multiple operators that update different parameters, or the same parameter in
 different ways. The weights of these operators, i.e., the frequency with which they are applied,
-were adjusted for the analysis of the plant data set described in \cite{guindon17}. If you think
+were adjusted for the analysis of the plant data set described in \cite{guindon18}. If you think
 these default values are not suitable for your own analysis, please feel free to have a look at the
 function \x{MCMC\_Complete\_MCMC} in the file \x{mcmc.c} to make  the appropriate changes to the
 values of \x{mcmc->move\_weight[XXX]}, where \x{XXX} is the name of the operator. Alternatively, you
