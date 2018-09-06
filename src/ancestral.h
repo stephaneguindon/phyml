@@ -15,24 +15,7 @@ the GNU public licence. See http://www.opensource.org for details.
 #ifndef ANCESTRAL_H
 #define ANCESTRAL_H
 
-#include "spr.h"
 #include "utilities.h"
-#include "lk.h"
-#include "optimiz.h"
-#include "bionj.h"
-#include "models.h"
-#include "free.h"
-#include "help.h"
-#include "simu.h"
-#include "eigen.h"
-#include "pars.h"
-#include "alrt.h"
-#include "times.h"
-#include "m4.h"
-#include "draw.h"
-#include "rates.h"
-#include "stats.h"
-#include "phyrex.h"
 
 
 void Sample_Ancestral_Seq(int fullmutmap, int fromprior, t_tree *tree);

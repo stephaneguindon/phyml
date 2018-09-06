@@ -552,6 +552,7 @@ date.c date.h\
 tbe.c tbe.h \
 sse.c sse.h\
 avx.c avx.h\
+ancestral.c ancestral.h\
 phyrex.c phyrex.h
 else
 if WANT_BEAGLE

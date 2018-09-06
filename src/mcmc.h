@@ -15,28 +15,7 @@ the GNU public licence. See http://www.opensource.org for details.
 #ifndef MCMC_H
 #define MCMC_H
 
-#include "spr.h"
 #include "utilities.h"
-#include "lk.h"
-#include "optimiz.h"
-#include "bionj.h"
-#include "models.h"
-#include "free.h"
-#include "help.h"
-#include "simu.h"
-#include "eigen.h"
-#include "pars.h"
-#include "alrt.h"
-#include "times.h"
-#include "m4.h"
-#include "draw.h"
-#include "rates.h"
-#include "stats.h"
-#include "phyrex.h"
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <signal.h>
 
 void MCMC_Lexp(t_tree *tree);
 void MCMC_Print_Param(t_mcmc *mcmc, t_tree *tree);
