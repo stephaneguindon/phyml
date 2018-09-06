@@ -805,7 +805,7 @@ void Global_Spr_Search(t_tree *tree)
       if(tree->verbose > VL0 && tree->io->quiet == NO)
         {
           time(&t_cur);
-          PhyML_Printf("\n\t%8ds %3d lnL: %12.1f depth: %5d/%5d   # improvements: %4d delta_lnL: %10.1f/%10.1f tune: %.2f %2c",
+          PhyML_Printf("\n\t%8ds | %3d | lnL=%12.1f | depth=%5d/%5d | improvements=%4d | delta_lnL=%7.1f/%7.1f | tune=%.2f %2c",
                        (int)(t_cur-tree->t_beg),
                        iter+1,
                        tree->c_lnL,
@@ -898,7 +898,7 @@ void Global_Spr_Search(t_tree *tree)
       if(tree->verbose > VL0 && tree->io->quiet == NO)
         {
           time(&t_cur);
-          PhyML_Printf("\n\t%8ds %3d lnL: %12.2f depth: %5d/%5d   # improvements: %5d delta_lnL: %10.2f/%10.2f %2c",
+          PhyML_Printf("\n\t%8ds | %3d | lnL=%12.1f | depth=%5d/%5d | improvements=%4d | delta_lnL=%7.1f/%7.1f %2c",
                        (int)(t_cur-tree->t_beg),
                        iter+1,
                        tree->c_lnL,
@@ -986,7 +986,7 @@ void Global_Spr_Search(t_tree *tree)
       if(tree->verbose > VL0 && tree->io->quiet == NO)
         {
           time(&t_cur);
-          PhyML_Printf("\n\t%8ds %3d lnL: %12.2f depth: %5d/%5d   # improvements: %3d delta_lnL: %10.2f/%10.2f   # triple moves: %d %2c",
+          PhyML_Printf("\n\t%8ds | %3d | lnL=%12.1f | depth: %5d/%5d | improvements: %4d | delta_lnL=%7.1f/%7.1f | triple moves=%4d %2c",
                        (int)(t_cur-tree->t_beg),
                        iter+1,
                        tree->c_lnL,

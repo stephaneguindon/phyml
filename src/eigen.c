@@ -417,71 +417,86 @@ void unbalance(int n,phydbl *vr,phydbl *vi, int low, int hi, phydbl *scale)
 void elemhess(int job,phydbl *mat,int n,int low,int hi, phydbl *vr,
               phydbl *vi, int *work)
 {
-/* work[n] */
-    int i,j,m;
-    phydbl x,y;
-
-    for (m = low + 1; m < hi; m++) {
-        for (x = 0,i = m,j = m; j <= hi; j++) {
-            if (FABS(mat[pos(j,m-1,n)]) > FABS(x)) {
-                x = mat[pos(j,m-1,n)];
-                i = j;
+  /* work[n] */
+  unsigned int i,j,m;
+  phydbl x,y;
+  
+  for (m = low + 1; m < hi; m++)
+    {
+      for (x = 0,i = m,j = m; j <= hi; j++)
+        {
+          if (fabs(mat[pos(j,m-1,n)]) > fabs(x))
+            {
+              x = mat[pos(j,m-1,n)];
+              i = j;
             }
         }
 
-        if ((work[m] = i) != m) {
-            for (j = m - 1; j < n; j++) {
-               y = mat[pos(i,j,n)];
-               mat[pos(i,j,n)] = mat[pos(m,j,n)];
-               mat[pos(m,j,n)] = y;
-            }
+        if ((work[m] = i) != m)
+          {
+            for (j = m - 1; j < n; j++)
+              {
+                y = mat[pos(i,j,n)];
+                mat[pos(i,j,n)] = mat[pos(m,j,n)];
+                mat[pos(m,j,n)] = y;
+              }
+            
+            for (j = 0; j <= hi; j++)
+              {
+                y = mat[pos(j,i,n)];
+                mat[pos(j,i,n)] = mat[pos(j,m,n)];
+                mat[pos(j,m,n)] = y;
+              }
+          }
 
-            for (j = 0; j <= hi; j++) {
-               y = mat[pos(j,i,n)];
-               mat[pos(j,i,n)] = mat[pos(j,m,n)];
-               mat[pos(j,m,n)] = y;
-            }
-        }
-
-        if (FABS(x) > SMALL) {
-            for (i = m + 1; i <= hi; i++) {
-	      if (FABS(y = mat[pos(i,m-1,n)]) > SMALL) {
+        if (fabs(x) > SMALL)
+          {
+            for (i = m + 1; i <= hi; i++)
+              {
+                if (fabs(y = mat[pos(i,m-1,n)]) > SMALL)
+                  {
                     y = mat[pos(i,m-1,n)] = y / x;
-
+                    
                     for (j = m; j < n; j++) {
-                        mat[pos(i,j,n)] -= y * mat[pos(m,j,n)];
+                      mat[pos(i,j,n)] -= y * mat[pos(m,j,n)];
                     }
 
                     for (j = 0; j <= hi; j++) {
-                        mat[pos(j,m,n)] += y * mat[pos(j,i,n)];
+                      mat[pos(j,m,n)] += y * mat[pos(j,i,n)];
                     }
-                }
+                  }
             }
         }
     }
-    if (job) {
-       for (i=0; i<n; i++) {
-          for (j=0; j<n; j++) {
-            vr[pos(i,j,n)] = 0.0;
-            vi[pos(i,j,n)] = 0.0;
-          }
-          vr[pos(i,i,n)] = 1.0;
-       }
 
-       for (m = hi - 1; m > low; m--) {
-          for (i = m + 1; i <= hi; i++) {
-             vr[pos(i,m,n)] = mat[pos(i,m-1,n)];
-          }
-
-         if ((i = work[m]) != m) {
-            for (j = m; j <= hi; j++) {
-               vr[pos(m,j,n)] = vr[pos(i,j,n)];
-               vr[pos(i,j,n)] = 0.0;
-            }
-            vr[pos(i,m,n)] = 1.0;
-         }
+  if (job)
+    {
+      for (i=0; i<n; i++) {
+        for (j=0; j<n; j++) {
+          vr[pos(i,j,n)] = 0.0;
+          vi[pos(i,j,n)] = 0.0;
+        }
+        vr[pos(i,i,n)] = 1.0;
       }
-   }
+      
+      for (m = hi - 1; m > low; m--)
+        {
+          for (i = m + 1; i <= hi; i++)
+            {
+              vr[pos(i,m,n)] = mat[pos(i,m-1,n)];
+            }
+          
+          if ((i = work[m]) != m)
+            {
+              for (j = m; j <= hi; j++)
+                {
+                  vr[pos(m,j,n)] = vr[pos(i,j,n)];
+                  vr[pos(i,j,n)] = 0.0;
+                }
+              vr[pos(i,m,n)] = 1.0;
+            }
+        }
+    }
 }
 
 /*

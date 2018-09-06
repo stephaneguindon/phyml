@@ -1633,6 +1633,12 @@ int Read_Command_Line(option *io, int argc, char **argv)
       strcat(io->out_stats_file,".txt");
     }
 
+
+#ifdef PHYREX
+  strcat(io->out_summary_file,".txt");
+#endif
+
+  
   if(io->mod->ras->n_catg == 1) io->mod->s_opt->opt_alpha = 0;
   
   if(io->mod->s_opt->opt_subst_param == NO)
