@@ -759,9 +759,10 @@ void Global_Spr_Search(t_tree *tree)
   best_lnL = tree->c_lnL;
   Copy_Tree(tree,best_tree);
 
+
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Score of first optimized tree: %.2f",tree->c_lnL);
 
-
+  
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Starting first round of SPRs...\n");
 
   tree->mod->s_opt->max_depth_path            = MIN(40,1+(int)(tree->n_otu/4));
@@ -800,7 +801,7 @@ void Global_Spr_Search(t_tree *tree)
       Spr(tree->c_lnL,1.0,tree);
       Optimize_Br_Len_Serie(2,tree);
       
-      if(!(iter%15)) Round_Optimize(tree,1000);
+      if(!(iter%5) && iter > 0) Round_Optimize(tree,1000);
 
       if(tree->verbose > VL0 && tree->io->quiet == NO)
         {
@@ -818,10 +819,10 @@ void Global_Spr_Search(t_tree *tree)
                        (!(iter%5) && iter) ? '!':' ');
         }
 
-      if(tree->mod->s_opt->n_improvements > (int)(tree->n_otu/5))
-        {
-          tune_l_mult *= 1.2;
-        }
+      /* if(tree->mod->s_opt->n_improvements > (int)(tree->n_otu/5)) */
+      /*   { */
+      /*     tune_l_mult *= 1.2; */
+      /*   } */
       
       tree->mod->s_opt->max_depth_path = MAX(5,MAX(tree->mod->s_opt->max_spr_depth+4,(int)(0.8*tree->mod->s_opt->max_depth_path)));
        
@@ -986,7 +987,7 @@ void Global_Spr_Search(t_tree *tree)
       if(tree->verbose > VL0 && tree->io->quiet == NO)
         {
           time(&t_cur);
-          PhyML_Printf("\n\t%8ds | %3d | lnL=%12.1f | depth: %5d/%5d | improvements: %4d | delta_lnL=%7.1f/%7.1f | triple moves=%4d %2c",
+          PhyML_Printf("\n\t%8ds | %3d | lnL=%12.1f | depth=%5d/%5d | improvements=%4d | delta_lnL=%7.1f/%7.1f | triple moves=%4d %2c",
                        (int)(t_cur-tree->t_beg),
                        iter+1,
                        tree->c_lnL,

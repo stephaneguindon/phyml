@@ -4109,8 +4109,6 @@ option *Get_Input(int argc, char **argv)
 #elif (defined PHYTIME || defined INVITEE)
   rv = Read_Command_Line(io,argc,argv);
 #else
-  putchar('\n');
-
 
   switch (argc)
     {

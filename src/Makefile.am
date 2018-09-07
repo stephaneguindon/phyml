@@ -273,6 +273,7 @@ xml.c xml.h\
 mixt.c mixt.h\
 tbe.c tbe.h \
 date.c date.h\
+ancestral.c ancestral.h\
 sse.c sse.h\
 avx.c avx.h
 rf_LDADD = -lm

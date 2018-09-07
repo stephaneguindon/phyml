@@ -2312,6 +2312,7 @@ void Set_Update_Eigen(int yesno, t_mod *mod);
 int *Order_Int(const int *u, const int n);
 int *Order_Dbl(const phydbl *u, const int n);
 char Integer_To_IUPAC_Code(int x);
+void Shuffle_Sites(const phydbl prop, align **data, const int n_otu);
 
 
 #include "xml.h"

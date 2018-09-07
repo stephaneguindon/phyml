@@ -437,24 +437,39 @@ int main(int argc, char **argv)
 #elif(RF)
 int main(int argc, char **argv)
 {
-  t_tree *tree1, *tree2;
-  FILE *fp_tree1, *fp_tree2;
-  int i,j;
-
-  fp_tree1 = (FILE *)fopen(argv[1],"r");
-  fp_tree2 = (FILE *)fopen(argv[2],"r");
-
-  tree1 = Read_Tree_File_Phylip(fp_tree1);
-  tree2 = Read_Tree_File_Phylip(fp_tree2);
+  option *io;
+  int r_seed;
 
 
-  Prune_Tree(tree1,tree2);
-  Prune_Tree(tree2,tree1);
+  io = (option *)Get_Input(argc,argv);
+  if(!io) return(0);
+
+  r_seed = (io->r_seed < 0)?(time(NULL)):(io->r_seed);
+  srand(r_seed);
+  io->r_seed = r_seed;
+  
+  Get_Seq(io);
+  Shuffle_Sites(0.3,io->data,io->n_otu);
+  Print_Seq(stdout,io->data,io->n_otu);
+  
+  /* t_tree *tree1, *tree2; */
+  /* FILE *fp_tree1, *fp_tree2; */
+  /* int i,j; */
+
+  /* fp_tree1 = (FILE *)fopen(argv[1],"r"); */
+  /* fp_tree2 = (FILE *)fopen(argv[2],"r"); */
+
+  /* tree1 = Read_Tree_File_Phylip(fp_tree1); */
+  /* tree2 = Read_Tree_File_Phylip(fp_tree2); */
+
+
+  /* Prune_Tree(tree1,tree2); */
+  /* Prune_Tree(tree2,tree1); */
   
 
-  PhyML_Printf("%s\n%s",
-               Write_Tree(tree1,NO),
-               Write_Tree(tree2,NO));
+  /* PhyML_Printf("%s\n%s", */
+  /*              Write_Tree(tree1,NO), */
+  /*              Write_Tree(tree2,NO)); */
                
   
   /* Match_Nodes_In_Small_Tree(tree1,tree2); */

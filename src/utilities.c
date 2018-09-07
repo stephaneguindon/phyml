@@ -12471,10 +12471,33 @@ char Integer_To_IUPAC_Code(int x)
 
 }
 
-
-
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+void Shuffle_Sites(const phydbl prop, align **data, const int n_otu)
+{
+  unsigned int i,j,rand_otu;
+  phydbl u;
+  char c;
+  
+  for(j=0;j<data[0]->len;++j)
+    {
+      u = Uni();
+      if(u < prop)
+        {
+          for(i=0;i<n_otu;++i)
+            {
+              rand_otu = Rand_Int(0,n_otu-1);
+              
+              c                        = data[i]->state[j];
+              data[i]->state[j]        = data[rand_otu]->state[j];
+              data[rand_otu]->state[j] = c;
+
+            }
+        }
+    }
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////
