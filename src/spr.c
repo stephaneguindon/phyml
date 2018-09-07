@@ -761,7 +761,6 @@ void Global_Spr_Search(t_tree *tree)
 
 
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Score of first optimized tree: %.2f",tree->c_lnL);
-
   
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Starting first round of SPRs...\n");
 
@@ -770,8 +769,8 @@ void Global_Spr_Search(t_tree *tree)
   tree->mod->s_opt->l_min_spr                 = 0.0;
   tree->mod->s_opt->spr_lnL                   = YES;
   tree->mod->s_opt->spr_pars                  = NO;
-  tree->mod->s_opt->min_diff_lk_move          = 1.E-2;
-  tree->mod->s_opt->min_diff_lk_local         = 1.E-2;
+  tree->mod->s_opt->min_diff_lk_move          = 1.E-1;
+  tree->mod->s_opt->min_diff_lk_local         = 1.E-1;
   tree->perform_spr_right_away                = YES;
   tree->mod->s_opt->eval_list_regraft         = NO;
   tree->mod->s_opt->max_delta_lnL_spr_current = 0.0;
@@ -781,12 +780,10 @@ void Global_Spr_Search(t_tree *tree)
   hit_zero_improv                             = 0;
   tune_l_mult                                 = 0.05;
   best_lnL                                    = tree->c_lnL;
-
   
   iter = 0;
   do
     {
-
       
       if(!(iter%freq))
         {
@@ -824,7 +821,7 @@ void Global_Spr_Search(t_tree *tree)
           tune_l_mult *= 1.2;
         }
       
-      tree->mod->s_opt->max_depth_path = MAX(5,MAX(tree->mod->s_opt->max_spr_depth+4,(int)(0.8*tree->mod->s_opt->max_depth_path)));
+      tree->mod->s_opt->max_depth_path = MAX(5,MAX(tree->mod->s_opt->max_spr_depth+6,(int)(0.8*tree->mod->s_opt->max_depth_path)));
        
       if((iter%4) > 0 || iter == 0)
         {
@@ -867,8 +864,8 @@ void Global_Spr_Search(t_tree *tree)
   tree->mod->s_opt->l_min_spr                 = 1.E-4;
   tree->mod->s_opt->spr_lnL                   = YES;
   tree->mod->s_opt->spr_pars                  = NO;
-  tree->mod->s_opt->min_diff_lk_move          = 1.E-1;
-  tree->mod->s_opt->min_diff_lk_local         = 1.E-1;
+  tree->mod->s_opt->min_diff_lk_move          = 1.E-2;
+  tree->mod->s_opt->min_diff_lk_local         = 1.E-2;
   tree->mod->s_opt->apply_spr_right_away      = YES;
   tree->mod->s_opt->apply_spr                 = YES;
   tree->mod->s_opt->eval_list_regraft         = NO;
