@@ -296,7 +296,13 @@ void Usage()
   PhyML_Printf("\t\t%sNo interactive question for memory usage (for running in batch mode). Normal output otherwise.\n",FLAT);
   PhyML_Printf("\n");
 
-  #ifndef PHYTIME
+#ifndef PHYTIME
+  PhyML_Printf("%s\n\t--leave_duplicates%s\n",BOLD,FLAT);
+  PhyML_Printf("\t\t%sPhyML removes duplicate sequences by default. Use this option to leave them in.\n",FLAT);
+  PhyML_Printf("\n");
+#endif
+  
+#ifndef PHYTIME
   PhyML_Printf("%s\n\t--alias_subpatt%s\n",BOLD,FLAT);
   PhyML_Printf("\t\t%sSite aliasing is generalized at the subtree level. Sometimes lead to faster calculations.\n",FLAT);
   PhyML_Printf("\t\t%sSee Kosakovsky Pond SL, Muse SV, Sytematic Biology (2004) for an example.\n",FLAT);
