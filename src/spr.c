@@ -732,7 +732,7 @@ void Global_Spr_Search(t_tree *tree)
   phydbl best_lnL;
   t_tree *best_tree;
   time_t t_cur;
-  phydbl mean_delta_lnL_spr,max_delta_lnL_spr,tune_l_mult;
+  phydbl mean_delta_lnL_spr,max_delta_lnL_spr,tune_l_mult,bionj_lnL;
   
   unsigned int no_improv  = 0;
   unsigned int last_best_found = 0;
@@ -749,19 +749,29 @@ void Global_Spr_Search(t_tree *tree)
 
   for(i=0;i<2*tree->n_otu-3;++i) Set_Scalar_Dbl(Uni()*(1.0-0.001) + 0.001,tree->a_edges[i]->l);
 
-  Stepwise_Add_Pars(tree);
-  Spr_Pars(0,tree->n_otu,tree);
-  Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
-      
+  Lk(NULL,tree);
   tree->mod->s_opt->min_diff_lk_move  = 1.E-1;
   tree->mod->s_opt->min_diff_lk_local = 1.E-1;
   Round_Optimize(tree,1000);
   best_lnL = tree->c_lnL;
   Copy_Tree(tree,best_tree);
+  bionj_lnL = tree->c_lnL;
+  
+  Stepwise_Add_Pars(tree);
+  Spr_Pars(0,tree->n_otu,tree);
+  Add_BioNJ_Branch_Lengths(tree,tree->data,tree->mod,NULL);
+  tree->mod->s_opt->min_diff_lk_move  = 1.E-1;
+  tree->mod->s_opt->min_diff_lk_local = 1.E-1;
+  Round_Optimize(tree,1000);
+  best_lnL = tree->c_lnL;
+  Lk(NULL,tree);
 
+  if(bionj_lnL > tree->c_lnL) Copy_Tree(best_tree,tree);
 
+  
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Score of first optimized tree: %.2f",tree->c_lnL);
   
+
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Starting first round of SPRs...\n");
 
   tree->mod->s_opt->max_depth_path            = MIN(40,1+(int)(tree->n_otu/4));

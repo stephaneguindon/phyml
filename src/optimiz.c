@@ -689,6 +689,7 @@ void Round_Optimize(t_tree *tree, int n_round_max)
   n_round = 0;
   each = 0;
 
+  Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->verbose > VL2));
 
   while(n_round < n_round_max)
     {
@@ -721,7 +722,6 @@ void Round_Optimize(t_tree *tree, int n_round_max)
       each--;
     }
   
-  /* Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->verbose > VL2)); */
 
 }
 
@@ -2776,6 +2776,7 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
                            &Lnsrch,&failed);
                     }
                   
+                  
                   if(failed == YES)  for(i=0;i<tree->mod->r_mat->n_diff_rr;i++) tree->mod->r_mat->rr_val->v[i] = opt_val[i];
 
                   permut = Permutate(tree->mod->r_mat->n_diff_rr);
@@ -2802,7 +2803,7 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
                   assert(lk_new > lk_old - tree->mod->s_opt->min_diff_lk_local);
                   if(fabs(lk_new-lk_old) < tree->mod->s_opt->min_diff_lk_local) break;
                 }
-              while(++iter < tree->mod->s_opt->brent_it_max);              
+              while(++iter < tree->mod->s_opt->brent_it_max);
                             
               Free(opt_val);
 
