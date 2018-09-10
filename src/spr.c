@@ -747,7 +747,6 @@ void Global_Spr_Search(t_tree *tree)
 
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Score of initial tree: %.2f",tree->c_lnL);
 
-  for(i=0;i<2*tree->n_otu-3;++i) Set_Scalar_Dbl(Uni()*(1.0-0.001) + 0.001,tree->a_edges[i]->l);
 
   tree->mod->s_opt->min_diff_lk_move  = 1.E-1;
   tree->mod->s_opt->min_diff_lk_local = 1.E-1;
@@ -869,7 +868,7 @@ void Global_Spr_Search(t_tree *tree)
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Second round of optimization...\n");
   
   tree->mod->s_opt->max_depth_path            = MAX(10,(int)(1.5*tree->mod->s_opt->max_depth_path));
-  tree->mod->s_opt->l_min_spr                 = 1.E-4;
+  tree->mod->s_opt->l_min_spr                 = 0.0;
   tree->mod->s_opt->spr_lnL                   = YES;
   tree->mod->s_opt->spr_pars                  = NO;
   tree->mod->s_opt->min_diff_lk_move          = 1.E-2;
@@ -928,8 +927,7 @@ void Global_Spr_Search(t_tree *tree)
       else if(iter > 0)
         {
           mean_delta_lnL_spr /= 4.0;
-          /* tree->mod->s_opt->max_delta_lnL_spr = MAX(50.,MIN(2.0*mean_delta_lnL_spr,0.5*tree->mod->s_opt->max_delta_lnL_spr)); */
-          tree->mod->s_opt->max_delta_lnL_spr = MAX(50.,2.*max_delta_lnL_spr);
+          tree->mod->s_opt->max_delta_lnL_spr = MAX(20.,2.*max_delta_lnL_spr);
           mean_delta_lnL_spr = tree->mod->s_opt->max_delta_lnL_spr_current;
           max_delta_lnL_spr = 0.0;
         }
@@ -955,12 +953,10 @@ void Global_Spr_Search(t_tree *tree)
   while(tree->mod->s_opt->n_improvements > 1 && no_improv < 10);
         
   
-  tree->mod->s_opt->min_diff_lk_move  = 1.E-1;
-  tree->mod->s_opt->min_diff_lk_local = 1.E-1;
+  tree->mod->s_opt->min_diff_lk_move  = 1.E-2;
+  tree->mod->s_opt->min_diff_lk_local = 1.E-2;
   Copy_Tree(best_tree,tree);
   Round_Optimize(tree,1000);
-
-
 
   
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Third round of optimization...\n");
@@ -971,9 +967,9 @@ void Global_Spr_Search(t_tree *tree)
   tree->mod->s_opt->max_delta_lnL_spr         = MAX(100.,tree->mod->s_opt->max_delta_lnL_spr);
   tree->mod->s_opt->spr_lnL                   = YES;
   tree->mod->s_opt->spr_pars                  = NO;
-  tree->mod->s_opt->l_min_spr                 = 1.E-3;
-  tree->mod->s_opt->min_diff_lk_move          = 1.E-1;
-  tree->mod->s_opt->min_diff_lk_local         = 1.E-1;
+  tree->mod->s_opt->l_min_spr                 = 0.0;
+  tree->mod->s_opt->min_diff_lk_move          = 1.E-3;
+  tree->mod->s_opt->min_diff_lk_local         = 1.E-3;
   tree->mod->s_opt->apply_spr_right_away      = YES;
   tree->mod->s_opt->apply_spr                 = YES;
   tree->mod->s_opt->eval_list_regraft         = YES;
