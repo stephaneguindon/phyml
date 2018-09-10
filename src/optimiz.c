@@ -697,13 +697,11 @@ void Round_Optimize(t_tree *tree, int n_round_max)
       
       if((tree->mod->s_opt->opt_bl || tree->mod->s_opt->constrained_br_len) &&
          (tree->verbose > VL2) &&
-         (tree->io->quiet == NO)) Print_Lk(tree,"[Branch lengths     ]");
-
-      
+         (tree->io->quiet == NO)) Print_Lk(tree,"[Branch lengths     ]");     
 
       if(!each)
         {
-          each = 3;
+          each = 1;
           Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->verbose > VL2));
         }
 
@@ -715,14 +713,13 @@ void Round_Optimize(t_tree *tree, int n_round_max)
           assert(FALSE);
         }
       
-      if((FABS(lk_new - lk_old) < tree->mod->s_opt->min_diff_lk_local) && (each == 3)) break;
+      /* if((fabs(lk_new - lk_old) < tree->mod->s_opt->min_diff_lk_local) && (each == 3)) break; */
+      if(fabs(lk_new - lk_old) < tree->mod->s_opt->min_diff_lk_local) break;
       lk_old  = lk_new;
 
       n_round++;
       each--;
     }
-  
-
 }
 
 //////////////////////////////////////////////////////////////
@@ -1196,7 +1193,7 @@ void BFGS(t_tree *tree,
   phydbl den,fac,fad,fae,fp,stpmax,sum=0.0,sumdg,sumxi,temp,test,fret;
   phydbl *dg,*g,*hdg,**hessin,*pnew,*xi;
   phydbl fp_old;
-  phydbl *init,*sign;
+  phydbl *init;
 
   hessin = (phydbl **)mCalloc(n,sizeof(phydbl *));
   for(i=0;i<n;i++) hessin[i] = (phydbl *)mCalloc(n,sizeof(phydbl));
@@ -1206,7 +1203,6 @@ void BFGS(t_tree *tree,
   hdg  = (phydbl *)mCalloc(n,sizeof(phydbl ));
   xi   = (phydbl *)mCalloc(n,sizeof(phydbl ));
   init = (phydbl *)mCalloc(n,sizeof(phydbl ));
-  sign = (phydbl *)mCalloc(n,sizeof(phydbl ));
 
 
   for(i=0;i<n;i++) init[i] = p[i];
@@ -1266,14 +1262,9 @@ void BFGS(t_tree *tree,
             }
           
           if(logt == YES) for(i=0;i<n;i++) p[i] = exp(MIN(1.E+2,p[i]));
-          for(i=0;i<n;i++) sign[i] = p[i] > .0 ? 1. : -1.;
-          if(is_positive == YES) for(i=0;i<n;i++) p[i] = FABS(p[i]);
           (*func)(tree);
-          if(is_positive == YES) for(i=0;i<n;i++) p[i] *= sign[i];
           if(logt == YES) for(i=0;i<n;i++) p[i] = log(p[i]);
-          
-          if(is_positive == YES) for(i=0;i<n;i++) p[i] = FABS(p[i]);
-          
+                    
           for(i=0;i<n;i++) Free(hessin[i]);
           free(hessin);
           free(xi);
@@ -1282,7 +1273,6 @@ void BFGS(t_tree *tree,
           free(g);
           free(dg);
           free(init);
-          free(sign);
           return;
         }
       
@@ -1301,14 +1291,9 @@ void BFGS(t_tree *tree,
         {
           *failed = NO;
           if(logt == YES) for(i=0;i<n;i++) p[i] = exp(MIN(1.E+2,p[i]));
-          for(i=0;i<n;i++) sign[i] = p[i] > .0 ? 1. : -1.;
-          if(is_positive == YES) for(i=0;i<n;i++) p[i] = FABS(p[i]);
           (*func)(tree);
-          if(is_positive == YES) for(i=0;i<n;i++) p[i] *= sign[i];
           if(logt == YES) for(i=0;i<n;i++) p[i] = log(p[i]);
-          
-          if(is_positive == YES) for(i=0;i<n;i++) p[i] = FABS(p[i]);
-          
+                    
           for(i=0;i<n;i++) Free(hessin[i]);
           free(hessin);
           free(xi);
@@ -1317,7 +1302,6 @@ void BFGS(t_tree *tree,
           free(g);
           free(dg);
           free(init);
-          free(sign);
           return;
         }
 
@@ -1367,7 +1351,6 @@ void BFGS(t_tree *tree,
   free(hdg);
   free(g);
   free(dg);
-  free(sign);
 }
 
 #undef ITMAX
@@ -2293,7 +2276,7 @@ static phydbl Br_Len_Spline(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_
   
   best_l = init_l = *l;
   best_lnL = old_lnL = init_lnL = tree->c_lnL;  
-  mult = 2.;
+  mult = 5.;
   ok1 = ok2 = NO;
   a_ = b_ = A_ = B_ = D_ = root1 = root2 = -1.;
   u = v = fu = fv = dfu = dfv = -1.;
@@ -3337,6 +3320,7 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
                        &Return_Abs_Lk,
                        &Num_Derivative_Several_Param,
                        &Lnsrch,&failed);
+
                   
                   if(failed == YES) for(i=0;i<tree->mod->ns;i++) tree->mod->e_frq->pi_unscaled->v[i] = opt_val[i];
 
@@ -3376,7 +3360,7 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
                 {
                   if(tree->verbose > VL0)
                     {
-                      PhyML_Printf("\n. Failed to optimize GTR parameters this round...");
+                      PhyML_Printf("\n. Failed to optimize frequency parameters this round...");
                     }
                 }
             }
