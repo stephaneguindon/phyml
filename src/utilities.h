@@ -135,14 +135,17 @@ extern int TIME;
 #define  E_FRQ_MIN 0.01
 #define  E_FRQ_MAX 1.00
 
-#define  UNSCALED_E_FRQ_MIN 0.01
-#define  UNSCALED_E_FRQ_MAX 100.
+#define  UNSCALED_E_FRQ_MIN log(E_FRQ_MIN)
+#define  UNSCALED_E_FRQ_MAX log(E_FRQ_MAX)
 
 #define  TSTV_MIN 0.05
 #define  TSTV_MAX 20.0
 
 #define  PINV_MIN 0.00001
 #define  PINV_MAX 0.99999
+
+#define UNSCALED_RR_MIN log(RR_MIN)
+#define UNSCALED_RR_MAX log(RR_MAX)
 
 #define RR_MIN 0.01
 #define RR_MAX 100.0
@@ -996,8 +999,8 @@ typedef struct __Matrix { /*! mostly used in BIONJ */
 
 typedef struct __RateMatrix {
   int                    n_diff_rr; /*! number of different relative substitution rates in the custom model */
-  vect_dbl                     *rr; /*! relative rate parameters of the GTR or custom model (given by rr_val[rr_num[i]]) */
-  vect_dbl                 *rr_val; /*! relative rate parameters of the GTR or custom model */
+  vect_dbl                     *rr; /*! relative rate parameters of the GTR or custom model (rescaled) */
+  vect_dbl                 *rr_val; /*! log of relative rate parameters of the GTR or custom model (unscaled) */
   vect_int                 *rr_num;
   vect_int           *n_rr_per_cat; /*! number of rate parameters in each category */
   vect_dbl                   *qmat;

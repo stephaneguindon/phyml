@@ -1064,7 +1064,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
 
       if(mod->whichmodel == CUSTOM)
         {
-          for(i=0;i<6;i++) mod->r_mat->rr_val->v[i] = 1.0;
+          for(i=0;i<6;i++) mod->r_mat->rr_val->v[i] = 0.0;
 
           /* Condition below is true if custom model corresponds to TN93 or K80 */
           if(mod->r_mat->rr_num->v[AC] == mod->r_mat->rr_num->v[AT] &&
@@ -1073,19 +1073,19 @@ void Init_Model(calign *data, t_mod *mod, option *io)
              mod->r_mat->rr_num->v[AG] != mod->r_mat->rr_num->v[AC] &&
              mod->r_mat->rr_num->v[CT] != mod->r_mat->rr_num->v[AC]) 
             {
-              for(i=1;i<mod->r_mat->n_diff_rr;i++) mod->r_mat->rr_val->v[i] = 4.0;          
+              for(i=1;i<mod->r_mat->n_diff_rr;i++) mod->r_mat->rr_val->v[i] = log(4.0);          
             }
           else if(mod->r_mat->n_diff_rr == 6) /* Custom <-> GTR model */
             {
-              mod->r_mat->rr_val->v[AG] = 4.0;
-              mod->r_mat->rr_val->v[CT] = 4.0;
+              mod->r_mat->rr_val->v[AG] = log(4.0);
+              mod->r_mat->rr_val->v[CT] = log(4.0);
             }
         }
       else if(mod->whichmodel == GTR)
         {
-          for(i=0;i<6;i++) mod->r_mat->rr_val->v[i] = 1.0;
-          mod->r_mat->rr_val->v[AG] = 4.0;
-          mod->r_mat->rr_val->v[CT] = 4.0;
+          for(i=0;i<6;i++) mod->r_mat->rr_val->v[i] = 0.0;
+          mod->r_mat->rr_val->v[AG] = log(4.0);
+          mod->r_mat->rr_val->v[CT] = log(4.0);
         }
     }
   
@@ -1119,7 +1119,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
         {
           if(mod->e_frq->user_state_freq == NO) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
           else for(i=0;i<4;i++) mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
-          for(i=0;i<mod->ns;i++) mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
+          for(i=0;i<mod->ns;i++) mod->e_frq->pi_unscaled->v[i] = log(mod->e_frq->pi->v[i]);
           mod->kappa->v = 1.;
           mod->update_eigen = NO;
         }
@@ -1128,7 +1128,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
         {
           if(mod->e_frq->user_state_freq == NO) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
           else for(i=0;i<4;i++) mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
-          for(i=0;i<mod->ns;i++) mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
+          for(i=0;i<mod->ns;i++) mod->e_frq->pi_unscaled->v[i] = log(mod->e_frq->pi->v[i]);
           aux = ((mod->e_frq->pi->v[0]+mod->e_frq->pi->v[2])-(mod->e_frq->pi->v[1]+mod->e_frq->pi->v[3]))/(2.*mod->kappa->v);
           mod->lambda->v = ((mod->e_frq->pi->v[1]+mod->e_frq->pi->v[3]) + aux)/((mod->e_frq->pi->v[0]+mod->e_frq->pi->v[2]) - aux);
           mod->update_eigen = NO;
@@ -1137,12 +1137,12 @@ void Init_Model(calign *data, t_mod *mod, option *io)
       if(mod->whichmodel == TN93)
         {
           if(mod->e_frq->user_state_freq == NO)
-			Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
+            Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
           else
-			for(i=0;i<4;i++)
-				mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
+            for(i=0;i<4;i++)
+              mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
           for(i=0;i<mod->ns;i++)
-			mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
+            mod->e_frq->pi_unscaled->v[i] = log(mod->e_frq->pi->v[i]);
           mod->update_eigen = NO;
           if(io->mod->s_opt->opt_kappa)
 			io->mod->s_opt->opt_lambda = YES;
@@ -1151,12 +1151,12 @@ void Init_Model(calign *data, t_mod *mod, option *io)
       if(mod->whichmodel == HKY85)
         {
           if(mod->e_frq->user_state_freq == NO)
-			Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
+            Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
           else
-			for(i=0;i<4;i++)
-				mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
+            for(i=0;i<4;i++)
+              mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
           for(i=0;i<mod->ns;i++)
-			mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
+            mod->e_frq->pi_unscaled->v[i] = log(mod->e_frq->pi->v[i]);
           mod->update_eigen = NO;
         }
       
@@ -1165,12 +1165,10 @@ void Init_Model(calign *data, t_mod *mod, option *io)
           if (mod->e_frq->user_state_freq == NO)
             Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);
           else
-            {
-              for(i=0;i<4;i++)
-                mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
-            }
+            for(i=0;i<4;i++)
+              mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
           for(i=0;i<mod->ns;i++)
-            mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
+            mod->e_frq->pi_unscaled->v[i] = log(mod->e_frq->pi->v[i]);
           mod->kappa->v     = 1.;
           mod->update_eigen = NO;
         }
@@ -1179,7 +1177,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
         {
           if(mod->e_frq->user_state_freq == NO) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
           else for(i=0;i<4;i++) mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
-          for(i=0;i<mod->ns;i++) mod->e_frq->pi_unscaled->v[i] = mod->e_frq->pi->v[i] * 100.;
+          for(i=0;i<mod->ns;i++) mod->e_frq->pi_unscaled->v[i] = log(mod->e_frq->pi->v[i]);
           mod->kappa->v     = 1.;
           mod->update_eigen = NO;
         }
@@ -1389,7 +1387,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
       mod->s_opt->opt_kappa      = NO;
       mod->s_opt->opt_lambda     = NO;
       mod->update_eigen          = NO;
-      for(i=0;i<mod->ns*(mod->ns-1)/2;i++) mod->r_mat->rr_val->v[i] = 1.0;
+      for(i=0;i<mod->ns*(mod->ns-1)/2;i++) mod->r_mat->rr_val->v[i] = 0.0;
     }
   else
     {
@@ -1400,6 +1398,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
 
   if(!mod->use_m4mod) Set_Model_Parameters(mod);
 
+  
   Init_Eigen_Struct(mod->eigen);
 
   free(dr);

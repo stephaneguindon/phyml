@@ -3123,21 +3123,29 @@ void Switch_Partial_Lk_Pre(t_node *a, t_node *d, t_edge *b, short int yesno, t_t
 void Partial_Lk_Inin(const phydbl *Pij1, const phydbl *plk1, const phydbl *Pij2, const phydbl *plk2, const int ns, phydbl *plk0)
 {
   unsigned int i,j;
-  
-  for(i=0;i<ns;++i)
-    {
-      phydbl u1 = 0.0;
-      phydbl u2 = 0.0;
-      for(j=0;j<ns;++j)
-        {
-          u1 += Pij1[j] * plk1[j];
-          u2 += Pij2[j] * plk2[j];
-        }
-      Pij1 += ns;
-      Pij2 += ns;
-      plk0[i] = u1*u2;
-    }
 
+  for(i=0;i<ns;++i) if(plk1[i] > 1.0 || plk1[i] < 1.0 || plk2[i] > 1.0 || plk2[i] < 1.0) break; 
+
+  if(i != ns)
+    {
+      for(i=0;i<ns;++i)
+        {
+          phydbl u1 = 0.0;
+          phydbl u2 = 0.0;
+          for(j=0;j<ns;++j)
+            {
+              u1 += Pij1[j] * plk1[j];
+              u2 += Pij2[j] * plk2[j];
+            }
+          Pij1 += ns;
+          Pij2 += ns;
+          plk0[i] = u1*u2;
+        }
+    }
+  else
+    {
+      for(i=0;i<ns;++i) plk0[i] = 1.0;
+    }
 }
 
 //////////////////////////////////////////////////////////////

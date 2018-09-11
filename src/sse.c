@@ -442,14 +442,23 @@ void SSE_Partial_Lk_Exin(const __m128d *_tPij1, const int state1, const __m128d 
 
 void SSE_Partial_Lk_Inin(const __m128d *_tPij1, const phydbl *plk1, __m128d *_pmat1plk1, const __m128d *_tPij2, const phydbl *plk2, __m128d *_pmat2plk2, const int ns, __m128d *_plk0)
 {
+  unsigned int i;
   unsigned const int sz = (int)BYTE_ALIGN / 8;
   unsigned const int nblocks = ns / sz;
-  unsigned int i;
-
-  SSE_Matrix_Vect_Prod(_tPij1,plk1,ns,_pmat1plk1);
-  SSE_Matrix_Vect_Prod(_tPij2,plk2,ns,_pmat2plk2);
   
-  for(i=0;i<nblocks;++i) _plk0[i] = _mm_mul_pd(_pmat1plk1[i],_pmat2plk2[i]);
+  for(i=0;i<ns;++i) if(plk1[i] > 1.0 || plk1[i] < 1.0 || plk2[i] > 1.0 || plk2[i] < 1.0) break; 
+
+  if(i != ns)
+    {     
+      SSE_Matrix_Vect_Prod(_tPij1,plk1,ns,_pmat1plk1);
+      SSE_Matrix_Vect_Prod(_tPij2,plk2,ns,_pmat2plk2);
+      
+      for(i=0;i<nblocks;++i) _plk0[i] = _mm_mul_pd(_pmat1plk1[i],_pmat2plk2[i]);
+    }
+  else
+    {
+      for(i=0;i<nblocks;++i) _plk0[i] = _mm_set1_pd(1.0);      
+    }
 }
 
 //////////////////////////////////////////////////////////////

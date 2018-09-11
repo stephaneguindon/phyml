@@ -559,7 +559,7 @@ void Update_Qmat_GTR(phydbl *rr, phydbl *rr_val, int *rr_num, phydbl *pi, phydbl
   int i;
   phydbl mr;
 
-  for(i=0;i<6;i++) rr[i] = rr_val[rr_num[i]];
+  for(i=0;i<6;i++) rr[i] = exp(rr_val[rr_num[i]]);
   for(i=0;i<6;i++)
     if(rr[i] < 0.0)
       {
@@ -567,9 +567,10 @@ void Update_Qmat_GTR(phydbl *rr, phydbl *rr_val, int *rr_num, phydbl *pi, phydbl
         PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d (function '%s').\n",__FILE__,__LINE__,__FUNCTION__);
         Exit("");
       }
-  for(i=0;i<6;i++) rr[i] /= MAX(rr[5],RR_MIN);
+  for(i=0;i<6;i++) rr[i] /= rr[5];
   for(i=0;i<6;i++) if(rr[i] < RR_MIN) rr[i] = RR_MIN;
   for(i=0;i<6;i++) if(rr[i] > RR_MAX) rr[i] = RR_MAX;
+
 
   qmat[0*4+1] = (rr[0]*pi[1]);
   qmat[0*4+2] = (rr[1]*pi[2]);
@@ -777,10 +778,10 @@ void Update_Efrq(t_mod *mod)
 
   if((mod->io->datatype == NT) && (mod->s_opt->opt_state_freq == YES))
     {
+      for(i=0;i<mod->ns;i++) mod->e_frq->pi->v[i] = exp(mod->e_frq->pi_unscaled->v[i]);
       sum = 0.0;
-      for(i=0;i<mod->ns;i++) sum += fabs(mod->e_frq->pi_unscaled->v[i]);
-      for(i=0;i<mod->ns;i++) mod->e_frq->pi->v[i] = fabs(mod->e_frq->pi_unscaled->v[i])/sum;
-            
+      for(i=0;i<mod->ns;i++) sum += mod->e_frq->pi->v[i];
+      for(i=0;i<mod->ns;i++) mod->e_frq->pi->v[i] = mod->e_frq->pi->v[i]/sum;
 #ifdef BEAGLE
       if(UNINITIALIZED != mod->b_inst)
         update_beagle_efrqs(mod);
@@ -833,8 +834,8 @@ void Update_Boundaries(t_mod *mod)
 
   if(mod->whichmodel == CUSTOM || mod->whichmodel == GTR)
     {
-      for(i=0;i<6;i++) if(mod->r_mat->rr_val->v[i] < RR_MIN) mod->r_mat->rr_val->v[i] = RR_MIN;
-      for(i=0;i<6;i++) if(mod->r_mat->rr_val->v[i] > RR_MAX) mod->r_mat->rr_val->v[i] = RR_MAX;
+      for(i=0;i<6;i++) if(mod->r_mat->rr_val->v[i] < UNSCALED_RR_MIN) mod->r_mat->rr_val->v[i] = UNSCALED_RR_MIN;
+      for(i=0;i<6;i++) if(mod->r_mat->rr_val->v[i] > UNSCALED_RR_MAX) mod->r_mat->rr_val->v[i] = UNSCALED_RR_MAX;
     }
 
   for(i=0;i<mod->ns;i++)

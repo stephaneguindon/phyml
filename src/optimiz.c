@@ -689,6 +689,8 @@ void Round_Optimize(t_tree *tree, int n_round_max)
   n_round = 0;
   each = 0;
 
+  Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->verbose > VL2));
+
   while(n_round < n_round_max)
     {
       if(tree->mod->s_opt->opt_bl || tree->mod->s_opt->constrained_br_len) Optimize_Br_Len_Serie(n_round_max,tree);
@@ -993,6 +995,7 @@ void Optimiz_All_Free_Param(t_tree *tree, int verbose)
 
   init_both_sides  = tree->both_sides;
 
+
   Set_Both_Sides(NO,tree);
   Lk(NULL,tree);
 
@@ -1211,13 +1214,13 @@ void BFGS(t_tree *tree,
   fp=(*func)(tree);
   if(logt == YES) for(i=0;i<n;i++) p[i] = log(p[i]);
   
-  /* PhyML_Printf("\n. ENTER BFGS WITH: %f\n",fp); */
+  PhyML_Printf("\n. ENTER BFGS WITH: %f\n",fp);
   
   fp_old = fp;
   
   (*dfunc)(tree,p,n,step_size,logt,func,g,is_positive);
   
-  /* PhyML_Printf("\n. BFGS step_size: %f",step_size); */
+  PhyML_Printf("\n. BFGS step_size: %f",step_size);
 
   for (i=0;i<n;i++)
     {
@@ -1225,16 +1228,17 @@ void BFGS(t_tree *tree,
       hessin[i][i]=1.0;
       xi[i] = -g[i];
       sum += p[i]*p[i];
-      /* PhyML_Printf("\n. BFGS x[%d]: %f p[i]: %f",i,xi[i],p[i]); */
+      PhyML_Printf("\n. BFGS x[%d]: %f p[i]: %f",i,xi[i],p[i]);
     }
   
   stpmax=STPMX*MAX(SQRT(sum),(phydbl)n);
   for(its=1;its<=ITMAX;its++)
     {
-      /* PhyML_Printf("\n. BFGS -> %f stpmax: %f\n",tree->c_lnL,stpmax); */
       
       lnsrch(tree,n,p,fp,g,xi,pnew,&fret,stpmax,&check,logt,is_positive);
       
+      PhyML_Printf("\n. BFGS: %f stpmax: %f fret: %g\n",tree->c_lnL,stpmax,fret);
+
       fp_old = fp;
       fp = fret;
       
@@ -1248,10 +1252,11 @@ void BFGS(t_tree *tree,
       for (i=0;i<n;i++)
         {
           temp=xi[i]/MAX(p[i],1.0);
-          /* printf("\n. x[i]=%f p[i]=%f",xi[i],p[i]); */
+          printf("\n. x[i]=%f p[i]=%f",xi[i],p[i]);
           if (temp > test) test=temp;
         }
-      if (test < TOLX || (FABS(fp-fp_old) < difff && its > 1))
+      
+      if (test < TOLX || (fabs(fp-fp_old) < difff && its > 1))
         {
           if(fp > fp_old)
             {
@@ -1276,7 +1281,7 @@ void BFGS(t_tree *tree,
       
       for (i=0;i<n;i++) dg[i]=g[i];
       
-      (*dfunc)(tree,p,n,step_size,logt,func,g, is_positive);
+      (*dfunc)(tree,p,n,step_size,logt,func,g,is_positive);
       
       test=0.0;
       den=MAX(fret,1.0);
@@ -2706,7 +2711,7 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
   int n_r_mat;
   int i;
   phydbl lk_new,lk_old;
-  phydbl *opt_val;
+  /* phydbl *opt_val; */
   
   Set_Update_Eigen(YES,mixt_tree->mod);
 
@@ -2716,7 +2721,6 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
   permut  = NULL;
   lk_old  = UNLIKELY;
   lk_new  = UNLIKELY;
-  opt_val = NULL;
   
   do
     {
@@ -2738,27 +2742,42 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
               (tree->mod->r_mat->n_diff_rr > 1)))
             {
               int i,iter;
-
-              opt_val = (phydbl *)mCalloc(tree->mod->r_mat->n_diff_rr,sizeof(phydbl));
+              
+              /* opt_val = (phydbl *)mCalloc(tree->mod->r_mat->n_diff_rr,sizeof(phydbl)); */
                 
               iter = 0;
               do
                 {
                   lk_old = tree->c_lnL;
+                  /* int failed = NO; */
+                  
+                  /* if(tree->mod->r_mat->n_diff_rr > 2) */
+                  /*   { */
+                  /*     for(i=0;i<tree->mod->r_mat->n_diff_rr;i++) opt_val[i] = tree->mod->r_mat->rr_val->v[i]; */
+                      
+                  /*     BFGS(mixt_tree,tree->mod->r_mat->rr_val->v,tree->mod->r_mat->n_diff_rr,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-3,NO,NO, */
+                  /*          &Return_Abs_Lk, */
+                  /*          &Num_Derivative_Several_Param, */
+                  /*          &Lnsrch,&failed); */
 
+
+                  /*     if(failed == YES)  for(i=0;i<tree->mod->r_mat->n_diff_rr;i++) tree->mod->r_mat->rr_val->v[i] = opt_val[i]; */
+                  /*   } */
+                  
+                  
+                  
                   permut = Permutate(tree->mod->r_mat->n_diff_rr);
                   
                   for(i=0;i<tree->mod->r_mat->n_diff_rr;i++)
-                    if(permut[i] != 5)
-                      {
-                        Generic_Brent_Lk(&(tree->mod->r_mat->rr_val->v[permut[i]]),
-                                         RR_MIN,RR_MAX,
-                                         tree->mod->s_opt->min_diff_lk_local,
-                                         tree->mod->s_opt->brent_it_max,
-                                         tree->mod->s_opt->quickdirty,
-                                         Wrap_Lk,NULL,mixt_tree,NULL,NO);
-                      }
-
+                    {
+                      Generic_Brent_Lk(&(tree->mod->r_mat->rr_val->v[permut[i]]),
+                                       UNSCALED_RR_MIN,UNSCALED_RR_MAX,
+                                       tree->mod->s_opt->min_diff_lk_local,
+                                       tree->mod->s_opt->brent_it_max,
+                                       tree->mod->s_opt->quickdirty,
+                                       Wrap_Lk,NULL,mixt_tree,NULL,NO);
+                    }
+                  
                   if(verbose) Print_Lk(tree->mixt_tree?
                                        tree->mixt_tree:
                                        tree,"[GTR parameters     ]");
@@ -2774,9 +2793,9 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
                 }
               /* while(++iter < tree->mod->s_opt->brent_it_max); */
               while(++iter < 1);
-                            
-              Free(opt_val);
 
+              /* Free(opt_val); */
+              
               if(iter == tree->mod->s_opt->brent_it_max)
                 {
                   if(tree->verbose > VL0)
@@ -3258,100 +3277,102 @@ void Optimize_Free_Rate_Weights(t_tree *tree, int fast, int verbose)
 
 void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
 {
-  vect_dbl **freqs;
-  int n_freqs;
+  /* vect_dbl **freqs; */
+  /* int n_freqs; */
   t_tree *tree;
   int i;
   phydbl lk_new,lk_old;
   int *permut;
-  phydbl *opt_val;
+  /* phydbl *opt_val; */
 
   Set_Update_Eigen(YES,mixt_tree->mod);
 
-  freqs   = NULL;
-  n_freqs = 0;
+  /* freqs   = NULL; */
+  /* n_freqs = 0; */
   tree    = mixt_tree;
   lk_old  = UNLIKELY;
   lk_new  = UNLIKELY;
-  opt_val = NULL;
+  /* opt_val = NULL; */
 
   do
     {
       if(tree->next) tree = tree->next;
 
-      for(i=0;i<n_freqs;i++) if(tree->mod->e_frq->pi_unscaled == freqs[i]) break;
-
-      if(i == n_freqs)
+      if((tree->mod->s_opt->opt_state_freq) && (tree->io->datatype == NT))
         {
-          if(!freqs) freqs = (vect_dbl **)mCalloc(1,sizeof(vect_dbl *));
-          else       freqs = (vect_dbl **)mRealloc(freqs,n_freqs+1,sizeof(vect_dbl *));
-          freqs[n_freqs] = tree->mod->e_frq->pi_unscaled;
-          n_freqs++;
+          int iter;
           
-          if((tree->mod->s_opt->opt_state_freq) && (tree->io->datatype == NT))
+          /* opt_val = (phydbl *)mCalloc(tree->mod->ns,sizeof(phydbl)); */
+          
+          iter = 0;
+          do
             {
-              int iter;
-
-              opt_val = (phydbl *)mCalloc(tree->mod->ns,sizeof(phydbl));
-
-              iter = 0;
-              do
-                {
-                  lk_old = tree->c_lnL;
-
-                  permut = Permutate(tree->mod->ns);
-
-                  for(i=0;i<tree->mod->ns;++i)
-                    {
-                      phydbl a,c;
-                      
-                      a = tree->mod->e_frq->pi_unscaled->v[permut[i]] / 2.;
-                      c = tree->mod->e_frq->pi_unscaled->v[permut[i]] * 2.;
-                      
-                      Generic_Brent_Lk(&(tree->mod->e_frq->pi_unscaled->v[permut[i]]),
-                                       a,c,
-                                       tree->mod->s_opt->min_diff_lk_local,
-                                       tree->mod->s_opt->brent_it_max,
-                                       tree->mod->s_opt->quickdirty,
-                                       Wrap_Lk,NULL,mixt_tree,NULL,NO);      
-                    }
-                
+              lk_old = tree->c_lnL;
+              /* int failed = NO; */
+                  
+              /* for(i=0;i<tree->mod->ns;i++) opt_val[i] = tree->mod->e_frq->pi_unscaled->v[i]; */
               
-                  if(verbose)
-                    {
-                      Print_Lk(mixt_tree,"[Nucleotide freqs.  ]");
-                    }
-                  
-                  lk_new = tree->c_lnL;
+              /* BFGS(mixt_tree,tree->mod->e_frq->pi_unscaled->v,tree->mod->ns,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-2,NO,NO, */
+              /*      &Return_Abs_Lk, */
+              /*      &Num_Derivative_Several_Param, */
+              /*      &Lnsrch,&failed); */
 
+              
+              /* if(failed == YES) for(i=0;i<tree->mod->ns;i++) tree->mod->e_frq->pi_unscaled->v[i] = opt_val[i]; */
+
+                           
+              permut = Permutate(tree->mod->ns);
+              
+              for(i=0;i<tree->mod->ns;++i)
+                {
+                  /* phydbl a,c; */
                   
-                  assert(lk_new > lk_old - tree->mod->s_opt->min_diff_lk_local);
-                  if(fabs(lk_new-lk_old) < tree->mod->s_opt->min_diff_lk_local) break;
+                  /* a = tree->mod->e_frq->pi_unscaled->v[permut[i]] / 2.; */
+                  /* c = tree->mod->e_frq->pi_unscaled->v[permut[i]] * 2.; */
+                  
+                  Generic_Brent_Lk(&(tree->mod->e_frq->pi_unscaled->v[permut[i]]),
+                                   UNSCALED_E_FRQ_MIN,UNSCALED_E_FRQ_MAX,
+                                   tree->mod->s_opt->min_diff_lk_local,
+                                   tree->mod->s_opt->brent_it_max,
+                                   tree->mod->s_opt->quickdirty,
+                                   Wrap_Lk,NULL,mixt_tree,NULL,NO);      
                 }
-              /* while(++iter < tree->mod->s_opt->brent_it_max); */
-              while(++iter < 1);
-
-              Free(opt_val);
               
-              if(iter == tree->mod->s_opt->brent_it_max)
+              
+              if(verbose)
                 {
-                  if(tree->verbose > VL0)
-                    {
-                      PhyML_Printf("\n. Failed to optimize frequency parameters this round...");
-                    }
+                  Print_Lk(mixt_tree,"[Nucleotide freqs.  ]");
+                }
+              
+              lk_new = tree->c_lnL;
+              
+              
+              assert(lk_new > lk_old - tree->mod->s_opt->min_diff_lk_local);
+              if(fabs(lk_new-lk_old) < tree->mod->s_opt->min_diff_lk_local) break;
+            }
+          /* while(++iter < tree->mod->s_opt->brent_it_max); */
+          while(++iter < 1);
+          
+          /* Free(opt_val); */
+          
+          if(iter == tree->mod->s_opt->brent_it_max)
+            {
+              if(tree->verbose > VL0)
+                {
+                  PhyML_Printf("\n. Failed to optimize frequency parameters this round...");
                 }
             }
         }
+    
       
       tree = tree->next;
-
+      
     }
   while(tree);
-
-  if(freqs) Free(freqs);
-
+  
+  
   Set_Update_Eigen(NO,mixt_tree->mod);
-
+  
 }
 
 //////////////////////////////////////////////////////////////
