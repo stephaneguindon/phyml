@@ -689,8 +689,6 @@ void Round_Optimize(t_tree *tree, int n_round_max)
   n_round = 0;
   each = 0;
 
-  Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->verbose > VL2));
-
   while(n_round < n_round_max)
     {
       if(tree->mod->s_opt->opt_bl || tree->mod->s_opt->constrained_br_len) Optimize_Br_Len_Serie(n_round_max,tree);
@@ -2276,7 +2274,7 @@ static phydbl Br_Len_Spline(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_
   
   best_l = init_l = *l;
   best_lnL = old_lnL = init_lnL = tree->c_lnL;  
-  mult = 5.;
+  mult = 5.0;
   ok1 = ok2 = NO;
   a_ = b_ = A_ = B_ = D_ = root1 = root2 = -1.;
   u = v = fu = fv = dfu = dfv = -1.;
@@ -2461,9 +2459,9 @@ static phydbl Br_Len_Spline(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_
 //////////////////////////////////////////////////////////////
 
 int Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
-                        int n_iter_max, int quickdirty,
-                        phydbl (*obj_func)(t_edge *,t_tree *,supert_tree *),
-                        t_edge *branch, t_tree *tree, supert_tree *stree, int logt)
+                     int n_iter_max, int quickdirty,
+                     phydbl (*obj_func)(t_edge *,t_tree *,supert_tree *),
+                     t_edge *branch, t_tree *tree, supert_tree *stree, int logt)
 {
   int iter;
   phydbl a,b,d,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm;
@@ -2739,7 +2737,7 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
               (tree->mod->s_opt->opt_rr) &&
               (tree->mod->r_mat->n_diff_rr > 1)))
             {
-              int i,iter,failed;
+              int i,iter;
 
               opt_val = (phydbl *)mCalloc(tree->mod->r_mat->n_diff_rr,sizeof(phydbl));
                 
@@ -2747,20 +2745,6 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
               do
                 {
                   lk_old = tree->c_lnL;
-                  failed = NO;
-                  
-                  if(tree->mod->r_mat->n_diff_rr > 2)
-                    {
-                      for(i=0;i<tree->mod->r_mat->n_diff_rr;i++) opt_val[i] = tree->mod->r_mat->rr_val->v[i];
-                      
-                      BFGS(mixt_tree,tree->mod->r_mat->rr_val->v,tree->mod->r_mat->n_diff_rr,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,YES,
-                           &Return_Abs_Lk,
-                           &Num_Derivative_Several_Param,
-                           &Lnsrch,&failed);
-                    }
-                  
-                  
-                  if(failed == YES)  for(i=0;i<tree->mod->r_mat->n_diff_rr;i++) tree->mod->r_mat->rr_val->v[i] = opt_val[i];
 
                   permut = Permutate(tree->mod->r_mat->n_diff_rr);
                   
@@ -2783,10 +2767,13 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
                   
                   Free(permut);
 
+                  
                   assert(lk_new > lk_old - tree->mod->s_opt->min_diff_lk_local);
+
                   if(fabs(lk_new-lk_old) < tree->mod->s_opt->min_diff_lk_local) break;
                 }
-              while(++iter < tree->mod->s_opt->brent_it_max);
+              /* while(++iter < tree->mod->s_opt->brent_it_max); */
+              while(++iter < 1);
                             
               Free(opt_val);
 
@@ -3275,7 +3262,6 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
   int n_freqs;
   t_tree *tree;
   int i;
-  int failed;
   phydbl lk_new,lk_old;
   int *permut;
   phydbl *opt_val;
@@ -3312,17 +3298,6 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
               do
                 {
                   lk_old = tree->c_lnL;
-                  failed = NO;
-
-                  for(i=0;i<tree->mod->ns;i++) opt_val[i] = tree->mod->e_frq->pi_unscaled->v[i];
-                  
-                  BFGS(mixt_tree,tree->mod->e_frq->pi_unscaled->v,tree->mod->ns,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-5,NO,YES,
-                       &Return_Abs_Lk,
-                       &Num_Derivative_Several_Param,
-                       &Lnsrch,&failed);
-
-                  
-                  if(failed == YES) for(i=0;i<tree->mod->ns;i++) tree->mod->e_frq->pi_unscaled->v[i] = opt_val[i];
 
                   permut = Permutate(tree->mod->ns);
 
@@ -3330,8 +3305,8 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
                     {
                       phydbl a,c;
                       
-                      a = tree->mod->e_frq->pi_unscaled->v[permut[i]] * .1;
-                      c = tree->mod->e_frq->pi_unscaled->v[permut[i]] * 10.;
+                      a = tree->mod->e_frq->pi_unscaled->v[permut[i]] / 2.;
+                      c = tree->mod->e_frq->pi_unscaled->v[permut[i]] * 2.;
                       
                       Generic_Brent_Lk(&(tree->mod->e_frq->pi_unscaled->v[permut[i]]),
                                        a,c,
@@ -3349,10 +3324,12 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
                   
                   lk_new = tree->c_lnL;
 
+                  
                   assert(lk_new > lk_old - tree->mod->s_opt->min_diff_lk_local);
                   if(fabs(lk_new-lk_old) < tree->mod->s_opt->min_diff_lk_local) break;
                 }
-              while(++iter < tree->mod->s_opt->brent_it_max);
+              /* while(++iter < tree->mod->s_opt->brent_it_max); */
+              while(++iter < 1);
 
               Free(opt_val);
               
