@@ -1079,17 +1079,17 @@ void Init_Model(calign *data, t_mod *mod, option *io)
             {
               for(i=1;i<mod->r_mat->n_diff_rr;i++)
                 {
-                  mod->r_mat->rr_val->v[i] = log(4.0);
-                  mod->r_mat->rr->v[i] = 4.0;
+                  mod->r_mat->rr_val->v[i] = log(2.0);
+                  mod->r_mat->rr->v[i] = 2.0;
                 }
             }
           else if(mod->r_mat->n_diff_rr == 6) /* Custom <-> GTR model */
             {
-              mod->r_mat->rr_val->v[AG] = log(4.0);
-              mod->r_mat->rr_val->v[CT] = log(4.0);
+              mod->r_mat->rr_val->v[AG] = log(2.0);
+              mod->r_mat->rr_val->v[CT] = log(2.0);
 
-              mod->r_mat->rr->v[AG] = 4.0;
-              mod->r_mat->rr->v[CT] = 4.0;
+              mod->r_mat->rr->v[AG] = 2.0;
+              mod->r_mat->rr->v[CT] = 2.0;
             }
         }
       else if(mod->whichmodel == GTR)
@@ -1097,11 +1097,11 @@ void Init_Model(calign *data, t_mod *mod, option *io)
           for(i=0;i<6;i++) mod->r_mat->rr_val->v[i] = 0.0;
           for(i=0;i<6;i++) mod->r_mat->rr->v[i] = 1.0;
 
-          mod->r_mat->rr_val->v[AG] = log(4.0);
-          mod->r_mat->rr_val->v[CT] = log(4.0);
+          mod->r_mat->rr_val->v[AG] = log(2.0);
+          mod->r_mat->rr_val->v[CT] = log(2.0);
 
-          mod->r_mat->rr->v[AG] = 4.0;
-          mod->r_mat->rr->v[CT] = 4.0;
+          mod->r_mat->rr->v[AG] = 2.0;
+          mod->r_mat->rr->v[CT] = 2.0;
 }
     }
   

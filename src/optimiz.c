@@ -729,6 +729,16 @@ void Optimize_Br_Len_Serie(int n_max_iter, t_tree *tree)
 {
   phydbl lk_init,lk_end;
   int iter;
+
+
+  if(tree->n_tot_bl_opt == 0)
+    {
+      for(int i=0;i<2*tree->n_otu-3;++i) Set_Scalar_Dbl(0.001,tree->a_edges[i]->l);
+      for(int i=0;i<2*tree->n_otu-3;++i) Set_Scalar_Dbl_Min_Thresh(tree->mod->l_min,tree->a_edges[i]->l);
+      for(int i=0;i<2*tree->n_otu-3;++i) Set_Scalar_Dbl_Max_Thresh(tree->mod->l_max,tree->a_edges[i]->l);
+    }
+
+
   
   Set_Both_Sides(NO,tree);
   Lk(NULL,tree);
