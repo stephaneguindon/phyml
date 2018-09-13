@@ -567,10 +567,10 @@ void Update_Qmat_GTR(phydbl *rr, phydbl *rr_val, int *rr_num, phydbl *pi, phydbl
         PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d (function '%s').\n",__FILE__,__LINE__,__FUNCTION__);
         Exit("");
       }
+
   for(i=0;i<6;i++) rr[i] /= rr[5];
   for(i=0;i<6;i++) if(rr[i] < RR_MIN) rr[i] = RR_MIN;
   for(i=0;i<6;i++) if(rr[i] > RR_MAX) rr[i] = RR_MAX;
-
 
   qmat[0*4+1] = (rr[0]*pi[1]);
   qmat[0*4+2] = (rr[1]*pi[2]);
@@ -597,20 +597,6 @@ void Update_Qmat_GTR(phydbl *rr, phydbl *rr_val, int *rr_num, phydbl *pi, phydbl
   mr = .0;
   for(i=0;i<4;i++) mr += pi[i] * (-qmat[i*4+i]);
   for(i=0;i<16;i++) qmat[i] /= mr;
-
-  /* int j; */
-  /* printf("\n"); */
-  /* printf("\n. rr -- "); */
-  /* for(i=0;i<5;i++) printf(" %15f ",rr[i]); */
-  /* printf("\n"); */
-  /* for(i=0;i<4;i++) */
-  /*   { */
-  /*     printf("\n. [%15f] \t ",pi[i]); */
-  /*     for(j=0;j<4;j++) */
-  /* 	{ */
-  /* 	  printf(" %15f ",qmat[i*4+j]); */
-  /* 	} */
-  /*   } */
 }
 
 //////////////////////////////////////////////////////////////

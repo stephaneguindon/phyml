@@ -729,6 +729,15 @@ void Optimize_Br_Len_Serie(int n_max_iter, t_tree *tree)
 {
   phydbl lk_init,lk_end;
   int iter;
+
+  // Best to flatten out P matrices before edge length optimisation starts so as to make
+  // likelihood surface a bit smooth at first.
+  if(tree->n_tot_bl_opt == 0)
+    {
+      for(int i=0;i<2*tree->n_otu-3;++i) Set_Scalar_Dbl(1.0,tree->a_edges[i]->l);
+      for(int i=0;i<2*tree->n_otu-3;++i) Set_Scalar_Dbl_Min_Thresh(tree->mod->l_min,tree->a_edges[i]->l);
+      for(int i=0;i<2*tree->n_otu-3;++i) Set_Scalar_Dbl_Max_Thresh(tree->mod->l_max,tree->a_edges[i]->l);
+    }
   
   Set_Both_Sides(NO,tree);
   Lk(NULL,tree);
@@ -2279,7 +2288,7 @@ static phydbl Br_Len_Spline(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_
   
   best_l = init_l = *l;
   best_lnL = old_lnL = init_lnL = tree->c_lnL;  
-  mult = 5.0;
+  mult = 1.2;
   ok1 = ok2 = NO;
   a_ = b_ = A_ = B_ = D_ = root1 = root2 = -1.;
   u = v = fu = fv = dfu = dfv = -1.;
@@ -2323,6 +2332,7 @@ static phydbl Br_Len_Spline(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_
   *l = init_l;
   tree->c_dlnL = init_dl;
   tree->c_lnL = init_lnL;
+
   while(tree->c_dlnL > 0.0)
     {
       *l *= mult;
@@ -2432,7 +2442,7 @@ static phydbl Br_Len_Spline(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_
       assert(dfv < 0.0);
       
 
- if(fabs(tree->c_lnL-old_lnL) < tol) converged = YES;
+      if(fabs(tree->c_lnL-old_lnL) < tol) converged = YES;
       if(++iter == n_iter_max+20) converged = YES;
       if(iter >= n_iter_max) PhyML_Fprintf(stderr,"\n. Edge length optimization took too long... l=%G lnL=%G iter:%d u=%G v=%G root1=%G root2=%G dfu=%G dfv=%G fu=%G fv=%G diff=%G tol=%G",
                                            *l,tree->c_lnL,iter,
@@ -2442,6 +2452,7 @@ static phydbl Br_Len_Spline(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_
                                            fu,fv,
                                            tree->c_lnL-old_lnL,
                                            tol);
+      
     }
   while(converged == NO);
 
@@ -2770,12 +2781,15 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
                   
                   for(i=0;i<tree->mod->r_mat->n_diff_rr;i++)
                     {
-                      Generic_Brent_Lk(&(tree->mod->r_mat->rr_val->v[permut[i]]),
-                                       UNSCALED_RR_MIN,UNSCALED_RR_MAX,
-                                       tree->mod->s_opt->min_diff_lk_local,
-                                       tree->mod->s_opt->brent_it_max,
-                                       tree->mod->s_opt->quickdirty,
-                                       Wrap_Lk,NULL,mixt_tree,NULL,NO);
+                      if(permut[i] != 5)
+                        {
+                          Generic_Brent_Lk(&(tree->mod->r_mat->rr_val->v[permut[i]]),
+                                           UNSCALED_RR_MIN,UNSCALED_RR_MAX,
+                                           tree->mod->s_opt->min_diff_lk_local,
+                                           tree->mod->s_opt->brent_it_max,
+                                           tree->mod->s_opt->quickdirty,
+                                           Wrap_Lk,NULL,mixt_tree,NULL,NO);
+                        }
                     }
                   
                   if(verbose) Print_Lk(tree->mixt_tree?

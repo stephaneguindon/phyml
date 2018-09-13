@@ -181,7 +181,6 @@ int main(int argc, char **argv)
                     }
 
                   if(!tree) continue;
-
                   
                   time(&t_beg);
                   time(&(tree->t_beg));
@@ -192,6 +191,7 @@ int main(int argc, char **argv)
                   tree->n_pattern    = tree->data->crunch_len;
                   tree->n_root       = NULL;
                   tree->e_root       = NULL;
+                  tree->n_tot_bl_opt = 0;
 
                   Set_Both_Sides(YES,tree);
 
@@ -236,12 +236,10 @@ int main(int argc, char **argv)
                   Set_Update_Eigen(NO,tree->mod);
 
 
-                  tree->n_tot_bl_opt = 0;
 
                   if(tree->mod->s_opt->opt_topo)
 		    {
-                      Global_Spr_Search(tree);
-                      
+                      Global_Spr_Search(tree);                      
                       if(tree->n_root) Add_Root(tree->a_edges[0],tree);
                     }
                   else
@@ -249,10 +247,7 @@ int main(int argc, char **argv)
 #ifdef BEAGLE
                       tree->b_inst = create_beagle_instance(tree, io->quiet, io);
 #endif
-                      //Optimize Branch lengths?
-                      /* if(tree->mod->s_opt->opt_subst_param || tree->mod->s_opt->opt_bl)  */
-                        Round_Optimize(tree,ROUND_MAX);
-                       
+                      if(tree->mod->s_opt->opt_subst_param || tree->mod->s_opt->opt_bl) Round_Optimize(tree,ROUND_MAX);                      
                     }
 
                   
