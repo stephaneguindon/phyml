@@ -721,7 +721,7 @@ void Set_Defaults_Optimiz(t_opt *s_opt)
   s_opt->n_rand_starts        = 5;
   s_opt->brent_it_max         = BRENT_IT_MAX;
   s_opt->steph_spr            = YES;
-  s_opt->opt_br_len_mult      = NO;
+  s_opt->opt_br_len_mult      = YES;
   s_opt->min_n_triple_moves   = 20;
   s_opt->max_rank_triple_move = 0;
   s_opt->n_improvements       = 0;
@@ -1064,8 +1064,12 @@ void Init_Model(calign *data, t_mod *mod, option *io)
 
       if(mod->whichmodel == CUSTOM)
         {
-          for(i=0;i<6;i++) mod->r_mat->rr_val->v[i] = 0.0;
-
+          for(i=0;i<6;i++)
+            {
+              mod->r_mat->rr_val->v[i] = 0.0;
+              mod->r_mat->rr->v[i] = 1.0;
+            }
+          
           /* Condition below is true if custom model corresponds to TN93 or K80 */
           if(mod->r_mat->rr_num->v[AC] == mod->r_mat->rr_num->v[AT] &&
              mod->r_mat->rr_num->v[AT] == mod->r_mat->rr_num->v[CG] &&
@@ -1073,20 +1077,32 @@ void Init_Model(calign *data, t_mod *mod, option *io)
              mod->r_mat->rr_num->v[AG] != mod->r_mat->rr_num->v[AC] &&
              mod->r_mat->rr_num->v[CT] != mod->r_mat->rr_num->v[AC]) 
             {
-              for(i=1;i<mod->r_mat->n_diff_rr;i++) mod->r_mat->rr_val->v[i] = log(4.0);          
+              for(i=1;i<mod->r_mat->n_diff_rr;i++)
+                {
+                  mod->r_mat->rr_val->v[i] = log(4.0);
+                  mod->r_mat->rr->v[i] = 4.0;
+                }
             }
           else if(mod->r_mat->n_diff_rr == 6) /* Custom <-> GTR model */
             {
               mod->r_mat->rr_val->v[AG] = log(4.0);
               mod->r_mat->rr_val->v[CT] = log(4.0);
+
+              mod->r_mat->rr->v[AG] = 4.0;
+              mod->r_mat->rr->v[CT] = 4.0;
             }
         }
       else if(mod->whichmodel == GTR)
         {
           for(i=0;i<6;i++) mod->r_mat->rr_val->v[i] = 0.0;
+          for(i=0;i<6;i++) mod->r_mat->rr->v[i] = 1.0;
+
           mod->r_mat->rr_val->v[AG] = log(4.0);
           mod->r_mat->rr_val->v[CT] = log(4.0);
-        }
+
+          mod->r_mat->rr->v[AG] = 4.0;
+          mod->r_mat->rr->v[CT] = 4.0;
+}
     }
   
   if(mod->s_opt->opt_alpha)  mod->ras->alpha->v  = 1.0;
@@ -1388,6 +1404,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
       mod->s_opt->opt_lambda     = NO;
       mod->update_eigen          = NO;
       for(i=0;i<mod->ns*(mod->ns-1)/2;i++) mod->r_mat->rr_val->v[i] = 0.0;
+      for(i=0;i<mod->ns*(mod->ns-1)/2;i++) mod->r_mat->rr->v[i] = 1.0;
     }
   else
     {

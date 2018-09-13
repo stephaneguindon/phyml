@@ -425,7 +425,7 @@ void elemhess(int job,phydbl *mat,int n,int low,int hi, phydbl *vr,
     {
       for (x = 0,i = m,j = m; j <= hi; j++)
         {
-          if (fabs(mat[pos(j,m-1,n)]) > fabs(x))
+          if(fabs(mat[pos(j,m-1,n)]) > fabs(x))
             {
               x = mat[pos(j,m-1,n)];
               i = j;

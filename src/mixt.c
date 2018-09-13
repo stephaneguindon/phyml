@@ -691,7 +691,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
   len           = -1.;
   ns            = 0;
   
-  MIXT_Update_Br_Len_Multipliers(mixt_tree->mod);
+  /* MIXT_Update_Br_Len_Multipliers(mixt_tree->mod); */
 
 #if (defined PHYTIME || defined INVITEE || defined PHYREX || defined DATE)
   if((mixt_tree->rates) && (mixt_tree->rates->bl_from_rt)) MIXT_RATES_Update_Cur_Bl(mixt_tree);

@@ -729,15 +729,6 @@ void Optimize_Br_Len_Serie(int n_max_iter, t_tree *tree)
 {
   phydbl lk_init,lk_end;
   int iter;
-
-  // Best to flatten out P matrices before edge length optimisation starts so as to make
-  // likelihood surface a bit smooth at first.
-  if(tree->n_tot_bl_opt == 0)
-    {
-      for(int i=0;i<2*tree->n_otu-3;++i) Set_Scalar_Dbl(1.0,tree->a_edges[i]->l);
-      for(int i=0;i<2*tree->n_otu-3;++i) Set_Scalar_Dbl_Min_Thresh(tree->mod->l_min,tree->a_edges[i]->l);
-      for(int i=0;i<2*tree->n_otu-3;++i) Set_Scalar_Dbl_Max_Thresh(tree->mod->l_max,tree->a_edges[i]->l);
-    }
   
   Set_Both_Sides(NO,tree);
   Lk(NULL,tree);
@@ -769,7 +760,7 @@ void Optimize_Br_Len_Serie(int n_max_iter, t_tree *tree)
 
   iter = 0;
   do
-    {
+    {      
       lk_init = tree->c_lnL;
       if(tree->n_root && tree->ignore_root == NO)
         {
@@ -800,8 +791,13 @@ void Optimize_Br_Len_Serie(int n_max_iter, t_tree *tree)
           PhyML_Fprintf(stderr,"\n. lk_init: %f lk_end: %f",lk_init,lk_end);
           Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
         }
+
+      iter++;
+      
+      /* PhyML_Printf("\n. lnL: %f %f %f %d",tree->c_lnL,Rgamma((phydbl)(iter+1),(phydbl)(1./(iter+1))),(phydbl)(iter+1)*(phydbl)(1./(iter+1))*(phydbl)(1./(iter+1)),iter); */
+
     }
-  while(lk_end - lk_init > tree->mod->s_opt->min_diff_lk_local || ++iter > n_max_iter);
+  while(lk_end - lk_init > tree->mod->s_opt->min_diff_lk_local && iter < n_max_iter);
 }
 
 /*////////////////////////////////////////////////////////////
@@ -819,7 +815,8 @@ void Optimize_Br_Len_Multiplier(t_tree *mixt_tree, int verbose)
       if(tree->mod->s_opt->opt_br_len_mult == YES)
         {
           lk_init = Get_Lk(tree);
-          Generic_Brent_Lk(&(tree->mod->br_len_mult_unscaled->v),
+          /* Generic_Brent_Lk(&(tree->mod->br_len_mult_unscaled->v), */
+          Generic_Brent_Lk(&(tree->mod->br_len_mult->v),
                            1.E-2,1.E+1,
                            tree->mod->s_opt->min_diff_lk_local,
                            tree->mod->s_opt->brent_it_max,
@@ -2294,7 +2291,6 @@ static phydbl Br_Len_Spline(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_
   u = v = fu = fv = dfu = dfv = -1.;
   new_l = -1.;
   
-
   dLk(l,b,tree);
   init_dl = tree->c_dlnL;
 
@@ -2458,7 +2454,32 @@ static phydbl Br_Len_Spline(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_
 
   assert(*l < tree->mod->l_max + 1.E-20); 
   assert(*l > tree->mod->l_min - 1.E-20); 
-  
+
+  /* if(dfu > 1.) */
+  /*   { */
+  /*     PhyML_Printf("\n> [%4d] l=%f lnL=%f iter:%d u=%f v=%f root1=%f root2=%f dfu=%f dfv=%f fu=%f fv=%f diff=%f tol=%f init=%f", */
+  /*                  tree->n_tot_bl_opt, */
+  /*                  *l,tree->c_lnL,iter, */
+  /*                  u,v, */
+  /*                  root1,root2, */
+  /*                  dfu,dfv, */
+  /*                  fu,fv, */
+  /*                  tree->c_lnL-old_lnL, */
+  /*                  tol,init_l); */
+  /*   } */
+  /* if(dfv < -1) */
+  /*   { */
+  /*     PhyML_Printf("\n< [%4d] l=%f lnL=%f iter:%d u=%f v=%f root1=%f root2=%f dfu=%f dfv=%f fu=%f fv=%f diff=%f tol=%f init=%f", */
+  /*                  tree->n_tot_bl_opt, */
+  /*                  *l,tree->c_lnL,iter, */
+  /*                  u,v, */
+  /*                  root1,root2, */
+  /*                  dfu,dfv, */
+  /*                  fu,fv, */
+  /*                  tree->c_lnL-old_lnL, */
+  /*                  tol,init_l); */
+  /*   } */
+
   *l = best_l;
   tree->c_lnL = best_lnL;
     
@@ -2774,14 +2795,12 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
 
                   /*     if(failed == YES)  for(i=0;i<tree->mod->r_mat->n_diff_rr;i++) tree->mod->r_mat->rr_val->v[i] = opt_val[i]; */
                   /*   } */
-                  
-                  
-                  
+
                   permut = Permutate(tree->mod->r_mat->n_diff_rr);
                   
                   for(i=0;i<tree->mod->r_mat->n_diff_rr;i++)
                     {
-                      if(permut[i] != 5)
+                      if(permut[i] != 5) // Avoid identifiability issues by having one rr_val unchanged throughout.
                         {
                           Generic_Brent_Lk(&(tree->mod->r_mat->rr_val->v[permut[i]]),
                                            UNSCALED_RR_MIN,UNSCALED_RR_MAX,
