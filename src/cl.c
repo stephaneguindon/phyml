@@ -24,6 +24,13 @@ int Read_Command_Line(option *io, int argc, char **argv)
   int i;
   int writemode;
 
+  if(io->quiet == NO)
+    {
+      PhyML_Printf("\n. Command line: ");
+      for(i=0;i<argc;i++) PhyML_Printf("%s ",argv[i]);
+      PhyML_Printf("\n");
+    }
+
   writemode = WRITE;
 
   if(argc == 1) Exit("\n. No argument was passed to the program. Please check the documentation. \n");
@@ -826,25 +833,58 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	    break;
 	  }
 	case 'm': case 5 :
-	  {
+	  {            
 	    if (!isalpha(optarg[0]))
               {
-                strcpy(io->mod->custom_mod_string->s,optarg);
-                if (strlen(io->mod->custom_mod_string->s) != 6)
+                if(strchr(optarg,',') == NULL)
                   {
-                    Warn_And_Exit("\n. The string should be of length 6.\n");
+                    strcpy(io->mod->custom_mod_string->s,optarg);
+                    if (strlen(io->mod->custom_mod_string->s) != 6)
+                      {
+                        Warn_And_Exit("\n. The custom model string should be of length 6.\n");
+                      }
+                    
+                    io->datatype              = NT;
+                    io->mod->whichmodel       = CUSTOM;
+                    strcpy(io->mod->modelname->s, "custom");
+                    io->mod->s_opt->opt_kappa = NO;
+                    io->mod->s_opt->opt_rr    = YES;
                   }
-                //else
-                //{
-                /* Make_Custom_Model(io->mod); */
-                /* Translate_Custom_Mod_String(io->mod); */
-                //}
-		
-                io->datatype              = NT;
-                io->mod->whichmodel       = CUSTOM;
-                strcpy(io->mod->modelname->s, "custom");
-                io->mod->s_opt->opt_kappa = NO;
-                io->mod->s_opt->opt_rr    = YES;
+                else
+                  {
+                    phydbl v;
+                    int n_rr;
+                    const char *d = ",";
+                    char *tok = strtok(optarg, d);
+                    
+                    io->datatype           = NT;
+                    io->mod->ns            = 4;
+                    io->mod->whichmodel    = GTR;
+                    io->mod->s_opt->opt_rr = NO;                    
+
+                    io->mod->r_mat = (t_rmat *) Make_Rmat (io->mod->ns);
+                    Init_Rmat (io->mod->r_mat);
+                    Make_Custom_Model (io->mod);
+
+                    n_rr = 0;
+                    while(tok && n_rr < 6)
+                      {
+                        v = strtod(tok,NULL);
+                        if (v != 0)
+                          {
+                            io->mod->r_mat->rr->v[n_rr] = v;
+                            io->mod->r_mat->rr_val->v[n_rr] = log(v);
+                          }
+                        else
+                          {
+                            PhyML_Printf("\n. Invalid relative rate parameter value: '%s'.\n", tok);
+                            Exit("\n");
+                          }
+                        tok = strtok (NULL,d);
+                        n_rr++;
+                      }
+                    assert(n_rr == 5);
+                  }
               }
 	    else if (strcmp(optarg, "JC69") == 0)
               {
@@ -887,64 +927,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
                 io->datatype              = NT;
                 io->mod->ns               = 4;
                 io->mod->whichmodel       = GTR;
-                
-                // Added the possibility for users to set the GTR relative rate parameters
-                // The format is the same as for equilibrium frequencies (6 values separated by commas)
-                if (strlen (optarg) > 3)
-                  {
-                    phydbl v;
-                    int j=0;
-                    const char *d = ",";
-                    char *tok = strtok (optarg+3, d);
-                    
-                    io->mod->s_opt->opt_rr = NO;                    
-                    io->mod->r_mat = (t_rmat *) Make_Rmat (io->mod->ns);
-                    Init_Rmat (io->mod->r_mat);
-                    Make_Custom_Model (io->mod);
-                    
-                    while (tok && j < 6)
-                      {
-                        v = strtod (tok, NULL);
-                        if (v != 0)
-                          {
-                            io->mod->r_mat->rr->v[j] = v;
-                            io->mod->r_mat->rr_val->v[j] = log(v);
-                          }
-                        else
-                          {
-                            PhyML_Printf("\n. Invalid relative rate parameter value: '%s'.\n", tok);
-                            Exit("\n");
-                          }
-                        tok = strtok (NULL, d);
-                        j++;
-                      }
-                    // Not enough rate parameters
-                    if (j<5)
-                      {
-                        Warn_And_Exit("\n. GTR requires at least 5 relative rate parameters.\n");
-                      }
-                    // Only 5 rate parameters provided by user => set G<->T to 1.0
-                    else if (j<6)
-                      {
-                        io->mod->r_mat->rr->v[5] = 1.0;
-                        io->mod->r_mat->rr_val->v[5] = 0.0;
-                      }
-                    // At least 6 parameters provided by user
-                    // Check the last relative rate parameter (G <-> T) = 1.
-                    // Otherwise scale them
-                    else
-                      {
-                        if (io->mod->r_mat->rr->v[5] < 1.0 - DBL_EPSILON ||
-                            io->mod->r_mat->rr->v[5] > 1.0 + DBL_EPSILON)
-                          {
-                            phydbl x = 1.0 / io->mod->r_mat->rr->v[5];
-                            for (j=0; j<6; j++)
-                              {
-                                io->mod->r_mat->rr->v[j] = x * io->mod->r_mat->rr->v[j];
-                              }
-                          }
-                      }
-                  }
+                io->mod->s_opt->opt_rr    = YES;                
               }
 	    else if(strcmp(optarg, "DAYHOFF") == 0)
               {
@@ -1684,13 +1667,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
 #if defined(PHYREX)
   if(io->fp_in_align != NULL) io->fp_out_summary = Openfile(io->out_summary_file,writemode);
 #endif
-  if(io->quiet == NO)
-    {
-      PhyML_Printf("\n. Command line: ");
-      for(i=0;i<argc;i++) PhyML_Printf("%s ",argv[i]);
-      PhyML_Printf("\n");
-    }
-  
+
   return 1;
 }
 

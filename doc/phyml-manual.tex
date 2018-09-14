@@ -505,13 +505,15 @@ is absent and when tree topology modifications are to be done.
 \x{model\_name} : substitution model name.
 \begin{itemize}
 \item {\it Nucleotide-based models}: \x{HKY85} (default) \x{| JC69 |  K80 | F81 | F84 | TN93 | GTR |
-custom} \\  The \x{custom} option can be  used to define a  new substitution model. A  string of six
+    custom | r(ac),r(ag),r(at),r(cg),r(ct),r(gt)} \\ JC90, K80, F81. F84, TN93 and GTR denote the
+  ``standard'' substitution models. The \x{custom} option can be  used to define a  new substitution model. A  string of six
 digits  identifies  the model.  For  instance,  000000 corresponds  to  F81  (or  JC69 provided  the
 distribution of nucleotide  frequencies is uniform).  012345 corresponds to GTR.  This option can be
 used for encoding any model that is a nested within GTR. See Section \ref{sec:submenus} and Table \ref{tab:modelcode}. {\em NOTE:}
 the  substitution  parameters  of  the  custom  model  will be  optimised  so  as  to  maximise  the
-likelihood.  It is  possible  to  specify and  fix  (i.e., avoid  optimisation)  the  values of  the
-substitution rates only through the PHYLIP-like interface.
+likelihood.  Also, it is  possible  to  specify and  fix  (i.e., avoid  optimisation)  the  values of  the
+substitution rates in the GTR model by passing the corresponding five rates to the \x{-m}
+option. Commas are used to separate the five relative rates and no blank space should be introduced here.
 
 \item {\it Amino-acid based models}: \x{LG} (default) \x{| WAG | JTT | MtREV | Dayhoff | DCMut | RtREV
  | CpREV | VT | Blosum62 | MtMam | MtArt | HIVw |  HIVb | custom} \\
