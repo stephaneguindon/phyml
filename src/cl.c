@@ -906,7 +906,10 @@ int Read_Command_Line(option *io, int argc, char **argv)
                       {
                         v = strtod (tok, NULL);
                         if (v != 0)
-                          io->mod->r_mat->rr->v[j] = v;
+                          {
+                            io->mod->r_mat->rr->v[j] = v;
+                            io->mod->r_mat->rr_val->v[j] = log(v);
+                          }
                         else
                           {
                             PhyML_Printf("\n. Invalid relative rate parameter value: '%s'.\n", tok);
@@ -924,6 +927,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
                     else if (j<6)
                       {
                         io->mod->r_mat->rr->v[5] = 1.0;
+                        io->mod->r_mat->rr_val->v[5] = 0.0;
                       }
                     // At least 6 parameters provided by user
                     // Check the last relative rate parameter (G <-> T) = 1.

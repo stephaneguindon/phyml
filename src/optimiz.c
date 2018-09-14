@@ -681,15 +681,14 @@ phydbl Br_Len_Opt(t_edge *b, t_tree *tree)
 
 void Round_Optimize(t_tree *tree, int n_round_max)
 {
-  int n_round,each;
+  int n_round,each,freq;
   phydbl lk_old, lk_new;
 
   lk_new = tree->c_lnL;
   lk_old = UNLIKELY;
   n_round = 0;
   each = 0;
-
-  Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->verbose > VL2));
+  freq = 1;
 
   while(n_round < n_round_max)
     {
@@ -701,7 +700,7 @@ void Round_Optimize(t_tree *tree, int n_round_max)
 
       if(!each)
         {
-          each = 1;
+          each = freq;
           Optimiz_All_Free_Param(tree,(tree->io->quiet)?(0):(tree->verbose > VL2));
         }
 
@@ -713,8 +712,8 @@ void Round_Optimize(t_tree *tree, int n_round_max)
           assert(FALSE);
         }
       
-      /* if((fabs(lk_new - lk_old) < tree->mod->s_opt->min_diff_lk_local) && (each == 3)) break; */
-      if(fabs(lk_new - lk_old) < tree->mod->s_opt->min_diff_lk_local) break;
+      if((fabs(lk_new - lk_old) < tree->mod->s_opt->min_diff_lk_local) && (each == freq)) break;
+      /* if(fabs(lk_new - lk_old) < tree->mod->s_opt->min_diff_lk_local) break; */
       lk_old  = lk_new;
 
       n_round++;
@@ -731,12 +730,12 @@ void Optimize_Br_Len_Serie(int n_max_iter, t_tree *tree)
   int iter;
 
 
-  if(tree->n_tot_bl_opt == 0)
-    {
-      for(int i=0;i<2*tree->n_otu-3;++i) Set_Scalar_Dbl(0.001,tree->a_edges[i]->l);
-      for(int i=0;i<2*tree->n_otu-3;++i) Set_Scalar_Dbl_Min_Thresh(tree->mod->l_min,tree->a_edges[i]->l);
-      for(int i=0;i<2*tree->n_otu-3;++i) Set_Scalar_Dbl_Max_Thresh(tree->mod->l_max,tree->a_edges[i]->l);
-    }
+  /* if(tree->n_tot_bl_opt == 0) */
+  /*   { */
+  /*     for(int i=0;i<2*tree->n_otu-3;++i) Set_Scalar_Dbl(0.001,tree->a_edges[i]->l); */
+  /*     for(int i=0;i<2*tree->n_otu-3;++i) Set_Scalar_Dbl_Min_Thresh(tree->mod->l_min,tree->a_edges[i]->l); */
+  /*     for(int i=0;i<2*tree->n_otu-3;++i) Set_Scalar_Dbl_Max_Thresh(tree->mod->l_max,tree->a_edges[i]->l); */
+  /*   } */
 
 
   
@@ -2753,7 +2752,7 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
   int n_r_mat;
   int i;
   phydbl lk_new,lk_old;
-  /* phydbl *opt_val; */
+  phydbl *opt_val;
   
   Set_Update_Eigen(YES,mixt_tree->mod);
 
@@ -2785,13 +2784,13 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
             {
               int i,iter;
               
-              /* opt_val = (phydbl *)mCalloc(tree->mod->r_mat->n_diff_rr,sizeof(phydbl)); */
+              opt_val = (phydbl *)mCalloc(tree->mod->r_mat->n_diff_rr,sizeof(phydbl));
                 
               iter = 0;
               do
                 {
                   lk_old = tree->c_lnL;
-                  /* int failed = NO; */
+                  int failed = NO;
                   
                   /* if(tree->mod->r_mat->n_diff_rr > 2) */
                   /*   { */
@@ -2808,18 +2807,24 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
 
                   permut = Permutate(tree->mod->r_mat->n_diff_rr);
                   
+                  for(i=0;i<tree->mod->r_mat->n_diff_rr;i++) opt_val[i] = tree->mod->r_mat->rr_val->v[i];
+
+                  /* for(i=0;i<tree->mod->r_mat->n_diff_rr;i++) tree->mod->r_mat->rr_val->v[i] = 0.0; */
+                  
                   for(i=0;i<tree->mod->r_mat->n_diff_rr;i++)
+                    Generic_Brent_Lk(&(tree->mod->r_mat->rr_val->v[permut[i]]),
+                                     UNSCALED_RR_MIN,UNSCALED_RR_MAX,
+                                     tree->mod->s_opt->min_diff_lk_local,
+                                     tree->mod->s_opt->brent_it_max,
+                                     tree->mod->s_opt->quickdirty,
+                                     Wrap_Lk,NULL,mixt_tree,NULL,NO);                        
+                  
+                  if(tree->c_lnL < lk_old)
                     {
-                      if(permut[i] != 5) // Avoid identifiability issues by having one rr_val unchanged throughout.
-                        {
-                          Generic_Brent_Lk(&(tree->mod->r_mat->rr_val->v[permut[i]]),
-                                           UNSCALED_RR_MIN,UNSCALED_RR_MAX,
-                                           tree->mod->s_opt->min_diff_lk_local,
-                                           tree->mod->s_opt->brent_it_max,
-                                           tree->mod->s_opt->quickdirty,
-                                           Wrap_Lk,NULL,mixt_tree,NULL,NO);
-                        }
+                      for(i=0;i<tree->mod->r_mat->n_diff_rr;i++) tree->mod->r_mat->rr_val->v[i] = opt_val[i];
+                      Lk(NULL,tree);
                     }
+                  
                   
                   if(verbose) Print_Lk(tree->mixt_tree?
                                        tree->mixt_tree:
@@ -2837,7 +2842,7 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
               /* while(++iter < tree->mod->s_opt->brent_it_max); */
               while(++iter < 1);
 
-              /* Free(opt_val); */
+              Free(opt_val);
               
               if(iter == tree->mod->s_opt->brent_it_max)
                 {
