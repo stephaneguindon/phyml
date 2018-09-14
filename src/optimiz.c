@@ -2790,7 +2790,7 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
               do
                 {
                   lk_old = tree->c_lnL;
-                  int failed = NO;
+                  /* int failed = NO; */
                   
                   /* if(tree->mod->r_mat->n_diff_rr > 2) */
                   /*   { */
