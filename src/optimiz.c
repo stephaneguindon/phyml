@@ -2462,9 +2462,8 @@ static phydbl Br_Len_Spline(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_
     }
   while(converged == NO);
 
-
   /* PhyML_Printf("\n. l = %g l_max = %g diff=%g",*l,tree->mod->l_max,*l-tree->mod->l_max); */
-
+  
   assert(!(*l > tree->mod->l_max)); 
   assert(!(*l < tree->mod->l_min)); 
 
