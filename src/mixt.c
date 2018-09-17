@@ -3174,6 +3174,7 @@ void MIXT_Update_Eigen(t_mod *mixt_mod)
   do
     {
       if(mod->is_mixt_mod) mod = mod->next;
+      Update_Boundaries(mod);
       Update_Eigen(mod);
       mod = mod->next;
     }

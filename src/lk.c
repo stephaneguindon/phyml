@@ -1684,6 +1684,7 @@ matrix *ML_Dist(calign *data, t_mod *mod)
   eigen_struct    = (eigen *)Make_Eigen_Struct(mod->ns);
 
   Set_Update_Eigen(YES,mod);
+  Update_Boundaries(mod);
   Update_Eigen(mod);
 
   tmpdata->n_otu  = 2;

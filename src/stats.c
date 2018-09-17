@@ -3270,7 +3270,7 @@ phydbl Constraint_Normal_Trunc_Mean(phydbl wanted_mu, phydbl sd, phydbl min, phy
 //////////////////////////////////////////////////////////////
 
 
-int Matinv(phydbl *x, int n, int m, int verbose)
+int Matinv(phydbl *x, const int n, const int m, const int verbose)
 {
 
 /* x[n*m]  ... m>=n
@@ -3286,7 +3286,7 @@ int Matinv(phydbl *x, int n, int m, int verbose)
    
    irow = (int *)mCalloc(n,sizeof(int));
 
-   For (i,n)
+   for(i=0;i<n;++i)
      {
        xmax = 0.;
        for (j=i; j<n; j++)
@@ -3302,14 +3302,15 @@ int Matinv(phydbl *x, int n, int m, int verbose)
 	  Free(irow);
 	  if(verbose)
 	    {
-	      PhyML_Printf("\n== Determinant becomes zero at %3d!\t", i+1);
-	      PhyML_Printf("\n== Failed to invert the matrix.");
+	      PhyML_Printf("\n, xmax=%g",xmax);
+	      PhyML_Printf("\n. Determinant becomes zero at %3d!\t", i+1);
+	      PhyML_Printf("\n. Failed to invert the matrix.");
 	    }
 	  return(0);
 	}
       if (irow[i] != i)
 	{
-	  For (j,m)
+	  for (j=0;j<m;++j)
 	    {
 	      t = x[i*m+j];
 	      x[i*m+j] = x[irow[i]*m+j];
@@ -3317,7 +3318,7 @@ int Matinv(phydbl *x, int n, int m, int verbose)
 	    }
 	}
       t = 1./x[i*m+i];
-      For (j,n)
+      for (j=0;j<n;++j)
 	{
 	  if (j == i) continue;
 	  t1 = t*x[j*m+i];

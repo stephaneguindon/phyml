@@ -71,7 +71,7 @@ phydbl Prop_Log_Dnorm_Multi_Given_InvCov_Det(phydbl *x, phydbl *mu, phydbl *invc
 phydbl Log_Dnorm(phydbl x, phydbl mean, phydbl sd, int *err);
 phydbl tt800();
 phydbl Pnorm_Ihaka_Derived_From_Cody(phydbl x);
-int Matinv(phydbl *x, int n, int m, int verbose);
+int Matinv(phydbl *x, const int n, const int m, const int verbose);
 phydbl *Matrix_Mult(phydbl *A, phydbl *B, int nra, int nca, int nrb, int ncb);
 phydbl *Matrix_Transpose(phydbl *A, int dim);
 void Normal_Conditional(phydbl *mu, phydbl *cov, phydbl *a, int n, short int *is_1, int n1, phydbl *cond_mu, phydbl *cond_var);

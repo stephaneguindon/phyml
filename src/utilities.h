@@ -133,10 +133,11 @@ extern int TIME;
 #define  R_MAT_WEIGHT_MAX 100.
 
 #define  E_FRQ_MIN 0.01
-#define  E_FRQ_MAX 1.00
+#define  E_FRQ_MAX 0.99
 
-#define  UNSCALED_E_FRQ_MIN log(E_FRQ_MIN)
-#define  UNSCALED_E_FRQ_MAX log(E_FRQ_MAX)
+#define  UNSCALED_E_FRQ_MIN -1000.
+#define  UNSCALED_E_FRQ_MAX +10.
+
 
 #define  TSTV_MIN 0.05
 #define  TSTV_MAX 20.0

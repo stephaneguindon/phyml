@@ -764,14 +764,18 @@ void Update_Efrq(t_mod *mod)
 
   if((mod->io->datatype == NT) && (mod->s_opt->opt_state_freq == YES))
     {
-      for(i=0;i<mod->ns;i++) mod->e_frq->pi->v[i] = exp(mod->e_frq->pi_unscaled->v[i]);
+      for(i=0;i<mod->ns;++i) mod->e_frq->pi->v[i] = exp(mod->e_frq->pi_unscaled->v[i]);
       sum = 0.0;
-      for(i=0;i<mod->ns;i++) sum += mod->e_frq->pi->v[i];
-      for(i=0;i<mod->ns;i++) mod->e_frq->pi->v[i] = mod->e_frq->pi->v[i]/sum;
+      for(i=0;i<mod->ns;++i) sum += mod->e_frq->pi->v[i];
+      for(i=0;i<mod->ns;++i) mod->e_frq->pi->v[i] = mod->e_frq->pi->v[i]/sum;
+
 #ifdef BEAGLE
       if(UNINITIALIZED != mod->b_inst)
         update_beagle_efrqs(mod);
 #endif
+
+      for(i=0;i<mod->ns;++i) if(mod->e_frq->pi->v[i] < E_FRQ_MIN) mod->e_frq->pi->v[i] = E_FRQ_MIN;
+      for(i=0;i<mod->ns;++i) if(mod->e_frq->pi->v[i] > E_FRQ_MAX) mod->e_frq->pi->v[i] = E_FRQ_MAX;
     }
   
 }
@@ -822,6 +826,9 @@ void Update_Boundaries(t_mod *mod)
     {
       for(i=0;i<6;i++) if(mod->r_mat->rr_val->v[i] < UNSCALED_RR_MIN) mod->r_mat->rr_val->v[i] = UNSCALED_RR_MIN;
       for(i=0;i<6;i++) if(mod->r_mat->rr_val->v[i] > UNSCALED_RR_MAX) mod->r_mat->rr_val->v[i] = UNSCALED_RR_MAX;
+
+      for(i=0;i<6;i++) if(mod->r_mat->rr->v[i] < RR_MIN) mod->r_mat->rr->v[i] = RR_MIN;
+      for(i=0;i<6;i++) if(mod->r_mat->rr->v[i] > RR_MAX) mod->r_mat->rr->v[i] = RR_MAX;
     }
 
   for(i=0;i<mod->ns;i++)
@@ -831,6 +838,12 @@ void Update_Boundaries(t_mod *mod)
 
       if(mod->e_frq->pi_unscaled->v[i] > UNSCALED_E_FRQ_MAX)
         mod->e_frq->pi_unscaled->v[i] = UNSCALED_E_FRQ_MAX;
+
+      if(mod->e_frq->pi->v[i] < E_FRQ_MIN)
+        mod->e_frq->pi->v[i] = E_FRQ_MIN;
+
+      if(mod->e_frq->pi->v[i] > E_FRQ_MAX)
+        mod->e_frq->pi->v[i] = E_FRQ_MAX;
     }
   
   if(mod->r_mat_weight->v < R_MAT_WEIGHT_MIN) mod->r_mat_weight->v = R_MAT_WEIGHT_MIN;
@@ -849,6 +862,7 @@ void Update_Eigen(t_mod *mod)
   int result, n_iter;
   phydbl scalar;
   int i;
+
 
   if(mod->is_mixt_mod == YES)
     {
@@ -892,6 +906,11 @@ void Update_Eigen(t_mod *mod)
           mod->r_mat->qmat_buff->v[i] = mod->r_mat->qmat->v[i];
         }
       
+      /* For(i,mod->eigen->size*mod->eigen->size) PhyML_Printf("\n. qmat [%d,%d]=%f",i/mod->eigen->size,i%mod->eigen->size,mod->r_mat->qmat->v[i]); */
+      /* for(i=0;i<6;i++) PhyML_Printf("\n. rr: %f rr_Val: %f",mod->r_mat->rr_val->v[i],mod->r_mat->rr->v[i]); */
+      /* for(i=0;i<4;i++) PhyML_Printf("\n. f: %f %f",mod->e_frq->pi->v[i],mod->e_frq->pi_unscaled->v[i]); */
+      /* PhyML_Printf("\n"); */
+      
       /* compute eigenvectors/values */
       /*       if(!EigenRealGeneral(mod->eigen->size,mod->r_mat->qmat,mod->eigen->e_val, */
       /* 			  mod->eigen->e_val_im, mod->eigen->r_e_vect, */
@@ -909,11 +928,13 @@ void Update_Eigen(t_mod *mod)
             {
 	      PhyML_Printf("\n. Trying Q<-Q*scalar and then Root<-Root/scalar to fix this...\n");
               scalar += scalar / 3.;
+              For(i,mod->eigen->size*mod->eigen->size) PhyML_Printf("\n. qmat [%d,%d]=%f",i/mod->eigen->size,i%mod->eigen->size,mod->r_mat->qmat->v[i]);
+
               For(i,mod->eigen->size*mod->eigen->size) mod->r_mat->qmat_buff->v[i]  = mod->r_mat->qmat->v[i];
               For(i,mod->eigen->size*mod->eigen->size) mod->r_mat->qmat_buff->v[i] *= scalar;
               result = Eigen(1,mod->r_mat->qmat_buff->v,mod->eigen->size,mod->eigen->e_val,
-                     mod->eigen->e_val_im,mod->eigen->r_e_vect,
-                     mod->eigen->r_e_vect_im,mod->eigen->space);
+                             mod->eigen->e_val_im,mod->eigen->r_e_vect,
+                             mod->eigen->r_e_vect_im,mod->eigen->space);
               if (result == -1)
                 {
                   PhyML_Fprintf(stderr,"\n. Eigenvalues/vectors computation did not converge: computation cancelled."); 

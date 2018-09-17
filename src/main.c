@@ -150,8 +150,6 @@ int main(int argc, char **argv)
                     case 2 :          { tree = Read_User_Tree(cdata,mod,io); break; }
                     }
 
-
-
                   if(io->fp_in_constraint_tree != NULL)
                     {
                       char *s;
