@@ -141,7 +141,7 @@ int main(int argc, char **argv)
 
                   if(io->mod->use_m4mod) M4_Init_Model(mod->m4mod,cdata,mod);
 
-                  Remove_Duplicates(cdata,mod,io);
+                  Remove_Duplicates(cdata,io);
 
                   //Make the initial tree
                   switch(io->in_tree)
@@ -267,6 +267,7 @@ int main(int argc, char **argv)
                   Check_Br_Lens(tree);
                   Br_Len_Involving_Invar(tree);
                   Rescale_Br_Len_Multiplier_Tree(tree);
+                  
 
 #elif defined EVOLVE
                   Evolve(tree->data,tree->mod,tree);
@@ -289,6 +290,7 @@ int main(int argc, char **argv)
                       best_lnL = tree->c_lnL;
                       if(most_likely_tree) Free(most_likely_tree);
                       most_likely_tree = Write_Tree(tree,NO);
+                      
                     }
 
                   time(&t_end);
@@ -330,7 +332,7 @@ int main(int argc, char **argv)
 
 #ifdef MPI
                   MPI_Bcast (most_likely_tree, strlen(most_likely_tree)+1, MPI_CHAR, 0, MPI_COMM_WORLD);
-                  if(!io->quiet)  PhyML_Printf("\n\n. The bootstrap analysis will use %d CPU%c.",Global_numTask,Global_numTask>1?'s':'\0');
+                  if(!io->quiet) PhyML_Printf("\n\n. The bootstrap analysis will use %d CPU%c.",Global_numTask,Global_numTask>1?'s':'\0');
 #endif
                   
                   most_likely_tree = Bootstrap_From_String(most_likely_tree,cdata,mod,io);
@@ -347,6 +349,17 @@ int main(int argc, char **argv)
               /* Print the most likely tree in the output file */
               if(!io->quiet) PhyML_Printf("\n\n. Printing the most likely tree in file '%s'.", Basename(io->out_tree_file));
               if(io->n_data_sets == 1) rewind(io->fp_out_tree);
+
+              t_tree *dum;              
+              dum = Read_Tree(&most_likely_tree);
+              dum->data = cdata;
+              dum->mod  = mod;
+              Connect_CSeqs_To_Nodes(cdata,io,dum);
+              Insert_Duplicates(dum);
+              Free(most_likely_tree);
+              most_likely_tree = Write_Tree(dum,NO);
+              Free_Tree(dum);
+              
               PhyML_Fprintf(io->fp_out_tree,"%s\n",most_likely_tree);
 
               if(io->n_trees > 1 && io->n_data_sets > 1) break;
@@ -440,7 +453,7 @@ int main(int argc, char **argv)
   io->r_seed = r_seed;
   
   Get_Seq(io);
-  Shuffle_Sites(0.3,io->data,io->n_otu);
+  Shuffle_Sites(io->mod->ras->pinvar->v,io->data,io->n_otu);
   Print_Seq(stdout,io->data,io->n_otu);
   
   /* t_tree *tree1, *tree2; */

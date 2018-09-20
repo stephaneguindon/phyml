@@ -279,16 +279,20 @@ void Bootstrap_MPI(t_tree *tree, int tbe_bootstrap)
               boot_tree->a_nodes[0]->v[0],
               boot_tree);
 
-      if(!tbe_bootstrap){
-	Compare_Bip(tree,boot_tree,NO);
-      }else{
-	Compare_Bip_Distance(tree, boot_tree);
-      }
+      if(!tbe_bootstrap)
+        {
+          Compare_Bip(tree,boot_tree,NO);
+        }
+      else
+        {
+          Compare_Bip_Distance(tree, boot_tree);
+        }
       
       Br_Len_Involving_Invar(boot_tree);
 
       if(tree->io->print_boot_trees)
         {
+          Add_Duplicates(boot_tree);
           s = Write_Tree(boot_tree,NO);
           t=(char *)mCalloc(T_MAX_LINE,sizeof(char));
           Print_Fp_Out_Lines_MPI(boot_tree, tree->io, replicate+1, t);
@@ -378,19 +382,19 @@ fflush(stdout);
       Free (score_tot);
     }
   Free (score_par);
-
+  
   if (Global_myRank == 0)
     if(((bootRecv)%tree->io->boot_prog_every)) PhyML_Printf("] %4d/%4d\n ",bootRecv,tree->mod->bootstrap);
-
-PhyML_Printf("\n\n. Exiting bootstrap function normally."); fflush(NULL);
-tree->lock_topo = 1; /* Topology should not be modified afterwards */
-
+  
+  PhyML_Printf("\n\n. Exiting bootstrap function normally."); fflush(NULL);
+  tree->lock_topo = 1; /* Topology should not be modified afterwards */
+  
   if(tree->io->print_boot_trees)
     {
       fclose(tree->io->fp_out_boot_tree);
       fclose(tree->io->fp_out_boot_stats);
     }
-
+  
   Free_Calign(boot_data);
   Free(site_num);
 }

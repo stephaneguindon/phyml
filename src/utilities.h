@@ -2110,7 +2110,7 @@ void Hide_Ambiguities(calign *data);
 void Copy_Tree(t_tree *ori, t_tree *cpy);
 void Prune_Subtree(t_node *a,t_node *d,t_edge **target,t_edge **residual,t_tree *tree);
 void Graft_Subtree(t_edge *target, t_node *link, t_node *link_daughter, t_edge *residual, t_node *target_nd, t_tree *tree);
-void Reassign_Node_Nums(t_node *a,t_node *d,int *curr_ext_node,int *curr_int_node,t_tree *tree);
+void Reassign_Node_Nums(t_node *a,t_node *d, unsigned int *curr_ext_node, unsigned int *curr_int_node,t_tree *tree);
 void Reassign_Edge_Nums(t_node *a,t_node *d,int *curr_br,t_tree *tree);
 void Find_Mutual_Direction(t_node *n1,t_node *n2,short int *dir_n1_to_n2,short int *dir_n2_to_n1);
 void Update_Dir_To_Tips(t_node *a,t_node *d,t_tree *tree);
@@ -2303,7 +2303,7 @@ void Table_Bottom(unsigned int width);
 t_cal *Duplicate_Calib(t_cal *from);
 t_clad *Duplicate_Clade(t_clad *from);
 void Swap_Partial_Lk_Extra(t_edge *b, t_node *d, int whichone, t_tree *tree);
-void Remove_Duplicates(calign *data, t_mod *mod, option *io);
+void Remove_Duplicates(calign *data, option *io);
 short int Are_Sequences_Identical(align *seq1, align *seq2);
 char *Mutation_Id(int mut_idx, t_tree *tree);
 void Random_Tax_Idx(t_node *a, t_node *d, int *idx, t_tree *tree);
@@ -2318,6 +2318,8 @@ int *Order_Int(const int *u, const int n);
 int *Order_Dbl(const phydbl *u, const int n);
 char Integer_To_IUPAC_Code(int x);
 void Shuffle_Sites(const phydbl prop, align **data, const int n_otu);
+void Multiply_Scalar_Dbl(phydbl mult, scalar_dbl *x);
+void Insert_Duplicates(t_tree *tree);
 
 
 #include "xml.h"

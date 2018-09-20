@@ -24,13 +24,6 @@ int Read_Command_Line(option *io, int argc, char **argv)
   int i;
   int writemode;
 
-  if(io->quiet == NO)
-    {
-      PhyML_Printf("\n. Command line: ");
-      for(i=0;i<argc;i++) PhyML_Printf("%s ",argv[i]);
-      PhyML_Printf("\n");
-    }
-
   writemode = WRITE;
 
   if(argc == 1) Exit("\n. No argument was passed to the program. Please check the documentation. \n");
@@ -1667,6 +1660,14 @@ int Read_Command_Line(option *io, int argc, char **argv)
 #if defined(PHYREX)
   if(io->fp_in_align != NULL) io->fp_out_summary = Openfile(io->out_summary_file,writemode);
 #endif
+
+
+    if(io->quiet == NO)
+    {
+      PhyML_Printf("\n. Command line: ");
+      for(i=0;i<argc;i++) PhyML_Printf("%s ",argv[i]);
+      PhyML_Printf("\n");
+    }
 
   return 1;
 }

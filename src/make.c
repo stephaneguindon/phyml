@@ -169,6 +169,9 @@ t_edge *Make_Edge_Light(t_node *a, t_node *d, int num)
         (Set_Edge_Dirs(b,a,d,NULL)):
         (Set_Edge_Dirs(b,d,a,NULL));
 
+      assert(b->l_r > -1);
+      assert(b->r_l > -1);
+      
       b->l->v             = a->l[b->l_r];
       if(a->tax) b->l->v  = a->l[b->r_l];
       b->l_old->v         = b->l->v;
@@ -525,13 +528,14 @@ t_node *Make_Node_Light(int num)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-
 void Make_Node_Lk(t_node *n)
 {
 /*   n->n_ex_nodes = (int *)mCalloc(2,sizeof(int)); */
   return;
 }
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
 nexcom **Make_Nexus_Com()
 {
@@ -552,7 +556,6 @@ nexcom **Make_Nexus_Com()
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 nexparm *Make_Nexus_Parm()
 {
@@ -682,7 +685,7 @@ void Make_All_Tree_Edges(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-calign *Make_Calign(int n_otu, int crunch_len, int state_len, int init_len, char **sp_names)
+calign *Make_Calign(int n_otu, int crunch_len, int state_len, int init_len, char **sp_names_in, int n_rm, char **sp_names_out)
 {
   calign *cdata;
   int j;
@@ -695,16 +698,25 @@ calign *Make_Calign(int n_otu, int crunch_len, int state_len, int init_len, char
   cdata->invar         = (short int *)mCalloc(crunch_len,sizeof(short int));
   cdata->sitepatt      = (int *)mCalloc(init_len,sizeof(int ));
 
+  if(n_rm > 0) cdata->c_seq_rm = (align **)mCalloc(n_rm,sizeof(align *));
+
   for(j=0;j<n_otu;j++)
     {
       cdata->c_seq[j]            = (align *)mCalloc(1,sizeof(align));
-      cdata->c_seq[j]->name      = (char *)mCalloc((int)(strlen(sp_names[j])+1),sizeof(char));
-      strcpy(cdata->c_seq[j]->name,sp_names[j]);
+      cdata->c_seq[j]->name      = (char *)mCalloc((int)(strlen(sp_names_in[j])+1),sizeof(char));
+      strcpy(cdata->c_seq[j]->name,sp_names_in[j]);
       cdata->c_seq[j]->state     = (char *)mCalloc(crunch_len*state_len,sizeof(char));
       cdata->c_seq[j]->d_state   = (int *)mCalloc(crunch_len*state_len,sizeof(int));
       cdata->c_seq[j]->is_ambigu = (short int *)mCalloc(crunch_len,sizeof(short int));
     }
 
+  for(j=0;j<n_rm;j++)
+    {
+      cdata->c_seq_rm[j]->state     = (char *)mCalloc(crunch_len*state_len,sizeof(char));
+      cdata->c_seq_rm[j]->d_state   = (int *)mCalloc(crunch_len*state_len,sizeof(int));
+      cdata->c_seq_rm[j]->is_ambigu = (short int *)mCalloc(crunch_len,sizeof(short int));
+    }
+  
   return cdata;
 }
 

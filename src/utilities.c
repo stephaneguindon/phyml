@@ -219,7 +219,7 @@ calign *Compact_Data(align **data, option *io)
       strcpy(sp_names[i],data[i]->name);
     }
 
-  cdata_tmp = Make_Calign(n_otu,data[0]->len,io->state_len,data[0]->len,sp_names);
+  cdata_tmp = Make_Calign(n_otu,data[0]->len,io->state_len,data[0]->len,sp_names,0,NULL);
   Init_Calign(n_otu,data[0]->len,data[0]->len,cdata_tmp);
 
   proot = (pnode *)Create_Pnode(T_MAX_ALPHABET);
@@ -1998,24 +1998,48 @@ calign *Copy_Cseq(calign *ori, option *io)
 {
   calign *new;
   int i,j,k,n_otu,c_len;
-  char **sp_names;
+  char **sp_names_in,**sp_names_out;
 
   n_otu = ori->n_otu;
   c_len = ori->crunch_len;
 
-  sp_names = (char **)mCalloc(n_otu,sizeof(char *));
-  for(i=0;i<n_otu;i++)
+  sp_names_in = (char **)mCalloc(n_otu,sizeof(char *));
+  for(i=0;i<ori->n_otu;i++)
     {
-      sp_names[i] = (char *)mCalloc(strlen(ori->c_seq[i]->name)+1,sizeof(char));
-      strcpy(sp_names[i],ori->c_seq[i]->name);
+      sp_names_in[i] = (char *)mCalloc(strlen(ori->c_seq[i]->name)+1,sizeof(char));
+      strcpy(sp_names_in[i],ori->c_seq[i]->name);
     }
 
-  new = Make_Calign(n_otu,c_len+1,io->state_len,ori->init_len,sp_names);
+  sp_names_out = (char **)mCalloc(ori->n_rm,sizeof(char *));
+  for(i=0;i<ori->n_rm;i++)
+    {
+      sp_names_out[i] = (char *)mCalloc(strlen(ori->c_seq_rm[i]->name)+1,sizeof(char));
+      strcpy(sp_names_out[i],ori->c_seq_rm[i]->name);
+    }
+
+  
+  new = Make_Calign(n_otu,c_len+1,io->state_len,ori->init_len,sp_names_in,ori->n_rm,sp_names_out);
   Init_Calign(n_otu,c_len+1,ori->init_len,new);
 
+  for(i=0;i<ori->n_rm;++i)
+    {
+      strcpy(new->c_seq_rm[i]->name,ori->c_seq_rm[i]->name);
+      for(j=0;j<ori->crunch_len;j++)
+        {
+          for(k=0;k<io->state_len;++k)
+            new->c_seq_rm[i]->state[j*io->state_len+k] =
+              ori->c_seq_rm[i]->state[j*io->state_len+k]; 
+
+          new->c_seq_rm[i]->is_ambigu[j] = ori->c_seq_rm[i]->is_ambigu[j];
+        }
+      new->c_seq_rm[i]->len = ori->c_seq_rm[i]->len;
+      new->c_seq_rm[i]->state[c_len*io->state_len] = '\0';
+    }
+  
   new->obs_pinvar = ori->obs_pinvar;
 
-  for(i=0;i<n_otu;i++) new->c_seq[i]->num = ori->c_seq[i]->num;
+  for(i=0;i<ori->n_otu;i++) new->c_seq[i]->num = ori->c_seq[i]->num;
+  for(i=0;i<ori->n_rm;i++)  new->c_seq_rm[i]->num = ori->c_seq_rm[i]->num;
 
   for(i=0;i<ori->init_len;i++) new->sitepatt[i] = ori->sitepatt[i];
 
@@ -2052,8 +2076,11 @@ calign *Copy_Cseq(calign *ori, option *io)
   new->n_otu              = ori->n_otu;
   new->io                 = ori->io;
 
-  for(i=0;i<n_otu;i++) Free(sp_names[i]);
-  Free(sp_names);
+  for(i=0;i<ori->n_otu;i++) Free(sp_names_in[i]);
+  Free(sp_names_in);
+
+  for(i=0;i<ori->n_rm;i++) Free(sp_names_out[i]);
+  Free(sp_names_out);
 
   return new;
 }
@@ -2335,7 +2362,7 @@ short int Are_Sequences_Identical(align *seq1, align *seq2)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Remove_Duplicates(calign *data, t_mod *mod, option *io)
+void Remove_Duplicates(calign *data, option *io)
 {
   int n_duplicates,n_removed,n_otu_orig;
   align *tmp;
@@ -2355,7 +2382,7 @@ void Remove_Duplicates(calign *data, t_mod *mod, option *io)
               if(Are_Sequences_Identical(data->c_seq[i],data->c_seq[j]) == YES)
                 {
                   data->c_seq[j]->is_duplicate = YES;
-                  PhyML_Printf("\n. Removed taxon '%s' as it is a duplicate of taxon '%s'.",
+                  PhyML_Printf("\n. Note: taxon '%s' is a duplicate of taxon '%s'.",
                                data->c_seq[j]->name,data->c_seq[i]->name);
                   n_duplicates++;
                 }
@@ -2404,6 +2431,95 @@ void Remove_Duplicates(calign *data, t_mod *mod, option *io)
   /*     PhyML_Printf("\n. %s %d",data->c_seq[i]->name,data->c_seq[i]->is_duplicate); */
   /*   } */
 }
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Insert_Duplicates(t_tree *tree)
+{
+  unsigned int i,j;
+  unsigned int idx_new_edge,idx_new_node;
+  t_edge *link_daughter,*residual,**new_a_edges;
+  t_node *link,*daughter,**new_a_nodes;
+  
+  link_daughter = NULL;
+  residual      = NULL;
+  link          = NULL;
+  daughter      = NULL;
+  
+  new_a_nodes = (t_node **)mCalloc(2*tree->n_otu-1 + tree->data->n_rm * 2,sizeof(t_node *));
+
+  for(i=0;i<tree->n_otu;++i) new_a_nodes[i] = tree->a_nodes[i];
+  for(i=tree->n_otu;i<2*tree->n_otu-1;++i) new_a_nodes[i+tree->data->n_rm] = tree->a_nodes[i];
+
+  Free(tree->a_nodes);
+  tree->a_nodes = new_a_nodes;
+
+  new_a_edges = (t_edge **)mCalloc(2*tree->n_otu-1 + tree->data->n_rm * 2,sizeof(t_edge *));
+  for(i=0;i<2*tree->n_otu-1;++i) new_a_edges[i] = tree->a_edges[i];
+       
+  idx_new_edge = 0;
+  idx_new_node = 0;
+  
+  for(i=0;i<tree->data->n_rm;++i)
+    {
+      for(j=0;j<tree->n_otu;++j)
+        {          
+          if(Are_Sequences_Identical(tree->data->c_seq_rm[i],tree->a_nodes[j]->c_seq) == YES)
+            {
+              link = Make_Node_Light(tree->n_otu + tree->data->n_rm + i);
+              daughter = Make_Node_Light(tree->n_otu + i);
+
+              new_a_nodes[tree->n_otu+idx_new_node] = daughter;
+              new_a_nodes[2*tree->n_otu-1+tree->data->n_rm+idx_new_node] = link;
+              idx_new_node += 1;
+              
+              daughter->c_seq = tree->data->c_seq_rm[i];
+              
+              daughter->name = (char *)mCalloc((int)strlen(tree->data->c_seq_rm[i]->name)+1,sizeof(char));
+              daughter->ori_name = daughter->name;
+              strcpy(daughter->name,tree->data->c_seq_rm[i]->name);
+              
+              link->v[0] = daughter;
+              daughter->v[0] = link;
+
+              daughter->tax = YES;
+              link->tax     = NO;
+             
+              link_daughter = Make_Edge_Light(link,daughter,-1);
+              residual = Make_Edge_Light(link,daughter,-1);
+                           
+              new_a_edges[2*tree->n_otu-1+idx_new_edge]   = link_daughter;
+              new_a_edges[2*tree->n_otu-1+idx_new_edge+1] = residual;
+              idx_new_edge += 2;              
+              
+              Multiply_Scalar_Dbl(2.0,tree->a_nodes[j]->b[0]->l);
+              Graft_Subtree(tree->a_nodes[j]->b[0],
+                            link,
+                            daughter,
+                            residual,
+                            tree->a_nodes[j],
+                            tree);
+              
+              Set_Scalar_Dbl(tree->mod->l_min,tree->a_nodes[j]->b[0]->l);
+              Set_Scalar_Dbl(tree->mod->l_min,link_daughter->l);
+
+              break;
+            }
+        }
+    }
+
+  Free(tree->a_edges);
+  tree->a_edges = new_a_edges;
+
+  tree->n_otu += tree->data->n_rm;
+
+  for(i=0;i<2*tree->n_otu-1;++i) tree->a_nodes[i]->num = i;
+  
+  tree->num_curr_branch_available = 0;
+  Connect_Edges_To_Nodes_Recur(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree);
+}
+
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -4688,6 +4804,7 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
               cpy->a_nodes[i]->b[j] = NULL;
             }
         }
+      cpy->a_nodes[i]->c_seq = ori->a_nodes[i]->c_seq;
     }
 
   for(i=0;i<2*ori->n_otu-3;++i)
@@ -4747,8 +4864,9 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
   cpy->num_curr_branch_available = 0;
   cpy->t_beg                     = ori->t_beg;
   cpy->verbose                   = ori->verbose;
-
-
+  cpy->data                      = ori->data;
+  cpy->mod                       = ori->mod;
+  
 #ifdef BEAGLE
   cpy->b_inst = ori->b_inst;
 #endif
@@ -5369,6 +5487,7 @@ void Graft_Subtree(t_edge *target, t_node *link, t_node *link_daughter, t_edge *
     {
       if(target == tree->e_root)
         {
+          assert(target_nd);
           if(target_nd == v1)                tree->e_root = residual;
           else if(target_nd == v2)           tree->e_root = target;
           else if(target_nd == tree->n_root) tree->e_root = b_up;
@@ -5422,11 +5541,11 @@ void Graft_Subtree(t_edge *target, t_node *link, t_node *link_daughter, t_edge *
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Reassign_Node_Nums(t_node *a, t_node *d, int *curr_ext_node, int *curr_int_node, t_tree *tree)
+void Reassign_Node_Nums(t_node *a, t_node *d, unsigned int *curr_ext_node, unsigned int *curr_int_node, t_tree *tree)
 {
   t_node *buff;
   int i;
-
+  
   if(a->tax)
     {
       buff = tree->a_nodes[*curr_ext_node];
@@ -9184,7 +9303,8 @@ void Get_Best_Root_Position(t_tree *tree)
     {
       PhyML_Printf("\n. Tree already has a root.");
       PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-      Warn_And_Exit("\n. PhyML finished prematurely.");
+      PhyML_Printf("\n. PhyML finished prematurely.");
+      assert(FALSE);
     }
 
   has_outgrp = NO;
@@ -9843,7 +9963,8 @@ int Check_Topo_Constraints(t_tree *big_tree, t_tree *small_tree)
 void Prune_Tree(t_tree *big_tree, t_tree *small_tree)
 {
   int i,j;
-  int curr_ext_node, curr_int_node, curr_br, n_pruned_nodes;;
+  unsigned int curr_ext_node, curr_int_node;
+  int curr_br, n_pruned_nodes;;
   t_node **pruned_nodes;
   t_edge **residual_edges;
 
@@ -11339,6 +11460,22 @@ scalar_dbl *Duplicate_Scalar_Dbl(scalar_dbl *from)
   while(f);
 
   return(to);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+void Multiply_Scalar_Dbl(phydbl mult, scalar_dbl *x)
+{
+  scalar_dbl *y;
+
+  y = x;
+  do
+    {
+      y->v = y->v * mult;
+      y = y->next;
+    }
+  while(y);
 }
 
 /*////////////////////////////////////////////////////////////
