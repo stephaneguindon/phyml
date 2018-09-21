@@ -7163,10 +7163,14 @@ void MCMC_PHYREX_Delete_Disk(phydbl hr, int n_delete_disks, phydbl cur_lbda, phy
 
   T = PHYREX_Tree_Height(tree);
 
-  hr += LnChoose(n_valid_disks,n_delete_disks);
-  hr -= n_delete_disks * log(-T);
-  hr += LnFact(n_delete_disks);
+  /* hr += LnChoose(n_valid_disks,n_delete_disks); */
+  /* hr -= n_delete_disks * log(-T); */
+  /* hr += LnFact(n_delete_disks); */
+  
+  hr -= LnChoose(n_valid_disks,n_delete_disks);
+  hr += n_delete_disks * log(-T);
 
+  
   new_glnL = PHYREX_Lk(tree);
   ratio += (new_glnL - cur_glnL);
   ratio += hr;
@@ -7277,9 +7281,12 @@ void MCMC_PHYREX_Insert_Disk(phydbl hr, int n_insert_disks, phydbl cur_lbda, phy
       for(i=0;i<tree->mmod->n_dim;i++) hr -= log(1./tree->mmod->lim->lonlat[i]);
     }
 
-  hr -= LnChoose(n_valid_disks+n_insert_disks,n_insert_disks);
-  hr += n_insert_disks * log(-T);
-  hr -= LnFact(n_insert_disks);
+  /* hr -= LnChoose(n_valid_disks+n_insert_disks,n_insert_disks); */
+  /* hr += n_insert_disks * log(-T); */
+  /* hr -= LnFact(n_insert_disks); */
+
+  hr += LnChoose(n_valid_disks+n_insert_disks,n_insert_disks);
+  hr -= n_insert_disks * log(-T);
 
   new_glnL = PHYREX_Lk(tree);
   ratio = (new_glnL - cur_glnL);
