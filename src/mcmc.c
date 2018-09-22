@@ -7166,9 +7166,12 @@ void MCMC_PHYREX_Delete_Disk(phydbl hr, int n_delete_disks, phydbl cur_lbda, phy
   /* hr += LnChoose(n_valid_disks,n_delete_disks); */
   /* hr -= n_delete_disks * log(-T); */
   /* hr += LnFact(n_delete_disks); */
-  
-  hr -= LnChoose(n_valid_disks,n_delete_disks);
-  hr += n_delete_disks * log(-T);
+
+  // Pr(n -> n-k) i.e, denominator
+  hr += LnChoose(n_valid_disks,n_delete_disks);
+
+  // Pr(n-k -> n) i.e., numerator
+  hr += n_delete_disks * log(1./T);
 
   
   new_glnL = PHYREX_Lk(tree);
@@ -7285,9 +7288,13 @@ void MCMC_PHYREX_Insert_Disk(phydbl hr, int n_insert_disks, phydbl cur_lbda, phy
   /* hr += n_insert_disks * log(-T); */
   /* hr -= LnFact(n_insert_disks); */
 
-  hr += LnChoose(n_valid_disks+n_insert_disks,n_insert_disks);
-  hr -= n_insert_disks * log(-T);
+  // Pr(n+k -> n) i.e, numerator
+  hr -= LnChoose(n_valid_disks,n_insert_disks);
 
+  // Pr(n -> n+k) i.e., denominator
+  hr -= n_insert_disks * log(1./T);
+
+  
   new_glnL = PHYREX_Lk(tree);
   ratio = (new_glnL - cur_glnL);
   ratio += hr;
