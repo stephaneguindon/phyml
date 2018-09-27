@@ -2446,8 +2446,8 @@ static phydbl Br_Len_Spline(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_
       assert(u < v);
       assert(dfu > 0.0);
       assert(dfv < 0.0);
-      
 
+      if(u - v < DBL_MIN) converged = YES;
       if(fabs(tree->c_lnL-old_lnL) < tol) converged = YES;
       if(++iter == n_iter_max+20) converged = YES;
       if(iter >= n_iter_max) PhyML_Fprintf(stderr,"\n. Edge length optimization took too long... l=%G lnL=%G iter:%d u=%G v=%G root1=%G root2=%G dfu=%G dfv=%G fu=%G fv=%G diff=%G tol=%G",
