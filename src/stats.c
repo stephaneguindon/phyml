@@ -1772,12 +1772,13 @@ phydbl Bico(int n, int k)
 
 phydbl Factln(int n)
 {
-  static phydbl a[101];
+  /* static phydbl a[101]; */
   
-  if (n < 0)    { Warn_And_Exit("\n== Err: negative factorial in routine FACTLN"); }
-  if (n <= 1)     return 0.0;
-  if (n <= 100)   return (a[n]>SMALL) ? a[n] : (a[n]=Gammln(n+1.0));
-  else return     Gammln(n+1.0);
+  /* if (n < 0)    { Warn_And_Exit("\n== Err: negative factorial in routine FACTLN"); } */
+  /* if (n <= 1)     return 0.0; */
+  /* if (n <= 100)   return (a[n]>SMALL) ? a[n] : (a[n]=Gammln(n+1.0)); */
+  /* else return     Gammln(n+1.0); */
+  return Gammln(n+1.0);
 }
 
 //////////////////////////////////////////////////////////////
