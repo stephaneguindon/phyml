@@ -473,6 +473,9 @@ void MCMC_Single_Param_Generic(phydbl *val,
       if(tree->mcmc->always_yes == YES && new_lnLike > UNLIKELY) alpha = 1.0;
 
       u = Uni();
+
+      assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+      
       if(u > alpha) /* Reject */
 	{
 	  *val    = cur_val;
@@ -663,6 +666,8 @@ void MCMC_Clock_R(t_tree *tree)
       
       u = Uni();
       
+      assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+      
       if(u > alpha) /* Reject */
 	{
           /* PhyML_Printf("\n. reject"); */
@@ -841,6 +846,8 @@ void MCMC_GEO_Loc(t_tree *tree)
   alpha = MIN(1.,ratio);      
   u = Uni();
 
+  assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+  
   if(u > alpha) /* Reject */
     {
       For(i,2*tree->n_otu-1) tree->geo->idx_loc[i] = rec_loc[i];
@@ -972,6 +979,8 @@ void MCMC_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
       /*              cur_lnL_rate,new_lnL_rate, */
       /*              ratio); */
 
+      assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+      
       if(u > alpha) /* Reject */
 	{
 	  tree->rates->br_r[d->num] = cur_mu;	  
@@ -1214,6 +1223,8 @@ void MCMC_Times_And_Rates_Root(t_tree *tree)
       /*        cur_lnL_rate,new_lnL_rate, */
       /*        ratio); */
 
+      assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+
       if(u > alpha) /* Reject */
 	{
           tree->rates->nd_t[root->num] = t1_cur;
@@ -1377,6 +1388,8 @@ void MCMC_Times_And_Rates_Recur(t_node *a, t_node *d, int traversal, t_tree *tre
       alpha = MIN(1.,ratio);
       u = Uni();
 
+      assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+      
       if(u > alpha) /* Reject */
 	{
           /* printf("\n. rej"); */
@@ -1544,6 +1557,8 @@ void MCMC_Time_Recur(t_node *a, t_node *d, int traversal, t_tree *tree)
       ratio = exp(ratio);
       alpha = MIN(1.,ratio);
       u = Uni();
+
+      assert(isnan(u) == NO && isinf(fabs(u)) == NO);
 
       if(u > alpha) /* Reject */
 	{
@@ -1828,6 +1843,8 @@ void MCMC_Jump_Calibration(t_tree *tree)
           alpha = MIN(1.,ratio);
           u = Uni();
           
+          assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+
           if(u > alpha)
             {
               RATES_Reset_Times(tree);
@@ -1984,6 +2001,8 @@ void MCMC_Root_Time(t_tree *tree)
       /*        cur_lnL_rate,new_lnL_rate, */
       /*        ratio); */
 
+      assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+
       if(u > alpha) /* Reject */
 	{
 	  RATES_Reset_Times(tree);
@@ -2071,6 +2090,8 @@ void MCMC_Tree_Height(t_tree *tree)
   alpha = MIN(1.,ratio);
   u = Uni();
   
+  assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+
   if(u > alpha)
     {
       RATES_Reset_Times(tree);
@@ -2173,6 +2194,8 @@ void MCMC_Updown_T_Cr(t_tree *tree)
   /*        tree->rates->clock_r*mult, */
   /*        tree->rates->clock_r); */
 
+  assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+
   if(u > alpha)
     {
       /* printf(" reject"); */
@@ -2261,6 +2284,7 @@ void MCMC_Updown_T_Br(t_tree *tree)
   alpha = MIN(1.,ratio);
   u = Uni();
   
+  assert(isnan(u) == NO && isinf(fabs(u)) == NO);
 
   if(u > alpha)
     {
@@ -2335,6 +2359,8 @@ void MCMC_Subtree_Height(t_tree *tree)
   alpha = MIN(1.,ratio);
   u = Uni();
   
+  assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+
   if(u > alpha)
     {
       RATES_Reset_Times(tree);
@@ -2415,6 +2441,7 @@ void MCMC_Tree_Rates(t_tree *tree)
   alpha = MIN(1.,ratio);
   u = Uni();
   
+  assert(isnan(u) == NO && isinf(fabs(u)) == NO);
 
   if(u > alpha)
     {
@@ -2485,6 +2512,8 @@ void MCMC_Subtree_Rates(t_tree *tree)
   alpha = MIN(1.,ratio);
   u = Uni();
   
+  assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+
   if(u > alpha)
     {
       RATES_Reset_Rates(tree);
@@ -2570,6 +2599,8 @@ void MCMC_Swing(t_tree *tree)
   ratio = exp(ratio);
   alpha = MIN(1.,ratio);
   u = Uni();
+
+  assert(isnan(u) == NO && isinf(fabs(u)) == NO);
 
   if(u > alpha)
     {
@@ -2657,6 +2688,8 @@ void MCMC_Updown_Nu_Cr(t_tree *tree)
   alpha = MIN(1.,ratio);
   u = Uni();
   
+  assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+
   if(u > alpha)
     {
       tree->rates->clock_r *= mult;
@@ -2747,6 +2780,8 @@ void MCMC_Time_Slice(t_tree *tree)
   alpha = MIN(1.,ratio);
   u = Uni();
   
+  assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+
   if(u > alpha)
     {
       RATES_Reset_Times(tree);
@@ -4016,6 +4051,8 @@ void MCMC_One_Length(t_edge *b, t_tree *tree)
   
   u = Uni();
   
+  assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+
   if(u > alpha) /* Reject */
     {
       b->l->v = cur_l;
@@ -4063,6 +4100,8 @@ void MCMC_Scale_Br_Lens(t_tree *tree)
   
   u = Uni();
   
+  assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+
   if(u > alpha) /* Reject */
     {
       Restore_Br_Len(tree);
@@ -4162,6 +4201,9 @@ void MCMC_Kappa(t_tree *mixt_tree)
           alpha = MIN(1.,ratio);
           
           u = Uni();
+
+          assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+
           if(u > alpha) /* Reject */
             {
               tree->mod->kappa->v = cur_kappa;
@@ -4588,6 +4630,9 @@ void MCMC_Birth_Rate(t_tree *tree)
       /*        new_lnL_time); */
             
       u = Uni();
+
+      assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+
       if(u > alpha) /* Reject */
         {
           /* PhyML_Printf("  reject"); */
@@ -4768,6 +4813,9 @@ void MCMC_Death_Rate(t_tree *tree)
 
 
       u = Uni();
+
+      assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+
       if(u > alpha) /* Reject */
         {
           /* PhyML_Printf("  reject"); */
@@ -4946,6 +4994,9 @@ void MCMC_Birth_Death_Updown(t_tree *tree)
       
       
       u = Uni();
+
+      assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+
       if(u > alpha) /* Reject */
         {
           /* PhyML_Printf("  reject"); */
@@ -5017,6 +5068,9 @@ void MCMC_Nu(t_tree *tree)
       alpha = MIN(1.,ratio);
       
       u = Uni();
+
+      assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+
       if(u > alpha) /* Reject */
 	{
 	  tree->rates->nu          = cur_nu;
@@ -5075,6 +5129,9 @@ void MCMC_Clade_Change(t_tree *tree)
   alpha = MIN(1.,ratio);
   
   u = Uni();
+
+  assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+
   if(u > alpha) /* Reject */
     {
       /* printf("\n. reject\n"); */
@@ -5117,6 +5174,8 @@ void MCMC_All_Rates(t_tree *tree)
 
   alpha = MIN(1.,ratio);
   u = Uni();
+
+  assert(isnan(u) == NO && isinf(fabs(u)) == NO);
 
   if(u > alpha) /* Reject */
     {
@@ -5461,6 +5520,8 @@ void MCMC_Prune_Regraft(t_tree *tree)
       
       u = Uni();
 
+      assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+
       if(u > alpha)
         {
           // Reject
@@ -5735,6 +5796,8 @@ void MCMC_Prune_Regraft_Weighted(t_tree *tree)
       if(tree->mcmc->always_yes == YES && new_lnL_time > UNLIKELY) alpha = 1.0;
       
       u = Uni();
+
+      assert(isnan(u) == NO && isinf(fabs(u)) == NO);
 
       if(u > alpha)
         {
@@ -6172,6 +6235,8 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
       if(tree->mcmc->always_yes == YES && new_lnL_time > UNLIKELY) alpha = 1.0;
       
       u = Uni();
+
+      assert(isnan(u) == NO && isinf(fabs(u)) == NO);
 
       if(u > alpha)
         {
@@ -7208,6 +7273,8 @@ void MCMC_PHYREX_Delete_Disk(phydbl hr, int n_delete_disks, phydbl cur_lbda, phy
   
   /* printf("\n- Delete new_glnL: %f [%f] hr: %f u:%f alpha: %f",new_glnL,cur_glnL,hr,u,alpha); */
 
+  assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+
   if(u > alpha) /* Reject */
     {
       tree->mmod->lbda = cur_lbda;
@@ -7330,6 +7397,8 @@ void MCMC_PHYREX_Insert_Disk(phydbl hr, int n_insert_disks, phydbl cur_lbda, phy
   u = Uni();
   
   /* printf("\n+ Insert new_glnL: %f [%f] hr: %f u: %f alpha: %f",new_glnL,cur_glnL,hr,u,alpha); */
+
+  assert(isnan(u) == NO && isinf(fabs(u)) == NO);
 
   if(u > alpha) /* Reject */
     {
@@ -7479,6 +7548,8 @@ void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree)
   
   /* printf("\n- Move disk new_glnL: %f [%f] hr: %f u:%f alpha: %f",new_alnL,cur_alnL,hr,u,alpha); */
 
+  assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+
   if(u > alpha) /* Reject */
     {
       /* printf("- Reject"); */
@@ -7596,6 +7667,8 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree)
   /*              hr, */
   /*              new_glnL,cur_glnL, */
   /*              ratio) */
+
+  assert(isnan(u) == NO && isinf(fabs(u)) == NO);
 
   if(u > alpha) /* Reject */
     {
@@ -7738,6 +7811,8 @@ void MCMC_PHYREX_Swap_Disk(t_tree *tree)
       
       /* printf("\n- Swap new_glnL: %f [%f] hr: %f u:%f alpha: %f",new_glnL,cur_glnL,hr,u,alpha); */
       
+      assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+
       if(u > alpha) /* Reject */
         {
           /* printf("\n- Reject %f %f",target_disk->time,ori_time); */
@@ -7996,6 +8071,8 @@ void MCMC_PHYREX_Insert_Hit(phydbl hr, int n_insert_disks, phydbl cur_rad, phydb
   
   /* printf("\n- Insert hit %15f %15f %5d",new_glnL - cur_glnL, alpha, n_insert_disks); */
 
+  assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+
   if(u > alpha) /* Reject */
     {
       /* printf("+ Reject"); */
@@ -8183,6 +8260,8 @@ void MCMC_PHYREX_Delete_Hit(phydbl hr, int n_delete_disks, phydbl cur_rad, phydb
   u = Uni();
   
   /* printf("\n- Delete hit %15f %15f %5d",new_glnL - cur_glnL, alpha, n_delete_disks); */
+
+  assert(isnan(u) == NO && isinf(fabs(u)) == NO);
 
   if(u > alpha) /* Reject */
     {
@@ -8437,7 +8516,7 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
       PHYREX_Ldsk_To_Tree(tree);
       Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
       Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
-      RATES_Fill_Lca_Table(tree);
+      /* RATES_Fill_Lca_Table(tree); */
       RATES_Update_Cur_Bl(tree);
 
 
@@ -8462,6 +8541,8 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
       
       u = Uni();
       
+      assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+
       if(u > alpha) /* Reject */
         {
           new_path = PHYREX_Remove_Path(prune_daughter_ldsk,regraft_ldsk,&new_pos,tree);
@@ -8590,6 +8671,8 @@ void MCMC_PHYREX_Simulate_Backward(t_tree *tree)
     
   u = Uni();
         
+  assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+
   if(u > alpha) /* Reject */
     {
       disk = target_disk->prev;
@@ -8766,6 +8849,8 @@ void MCMC_PHYREX_Simulate_Backward_Plus(t_tree *tree)
     
   u = Uni();
         
+  assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+
   if(u > alpha) /* Reject */
     {
       tree->mmod->lbda = cur_lbda;
@@ -8937,6 +9022,8 @@ void MCMC_PHYREX_Lineage_Traj(t_tree *tree)
 
       u = Uni();
       
+      assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+
       if(u > alpha) /* Reject */
         {
           new_path = PHYREX_Remove_Path(start_ldsk,end_ldsk,&pos,tree);
@@ -9057,6 +9144,8 @@ void MCMC_PHYREX_Lbda_Times(t_tree *tree)
   alpha = MIN(1.,ratio);
 
   u = Uni();
+
+  assert(isnan(u) == NO && isinf(fabs(u)) == NO);
 
   if(u > alpha) /* Reject */
     {
@@ -9223,6 +9312,8 @@ void MCMC_PHYREX_Disk_Multi(t_tree *tree)
   
   /* printf("\n- Delete new_glnL: %f [%f] hr: %f u:%f alpha: %f",new_glnL,cur_glnL,hr,u,alpha); */
 
+  assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+
   if(u > alpha) /* Reject */
     {
       /* printf("- Reject"); */
@@ -9354,6 +9445,8 @@ void MCMC_PHYREX_Ldsk_Multi(t_tree *tree)
   u = Uni();
   
   /* printf("\n- Move_ldsk %15f",new_glnL-cur_glnL); */
+
+  assert(isnan(u) == NO && isinf(fabs(u)) == NO);
 
   if(u > alpha) /* Reject */
     {
@@ -9489,6 +9582,8 @@ void MCMC_PHYREX_Ldsk_And_Disk(t_tree *tree)
   
   /* printf("\n- Move_ldsk %15f",new_glnL-cur_glnL); */
 
+  assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+
   if(u > alpha) /* Reject */
     {
       /* printf("- Reject"); */
@@ -9614,6 +9709,8 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree)
       
       u = Uni();
       
+      assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+
       if(u > alpha) /* Reject */
         {
           PHYREX_Restore_Geo_Coord(disk->ldsk->coord);
@@ -9717,6 +9814,8 @@ void MCMC_PHYREX_Disk_Given_Ldsk(t_tree *tree)
       
       u = Uni();
       
+      assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+
       if(u > alpha) /* Reject */
         {
           PHYREX_Restore_Geo_Coord(disk->centr);
@@ -9793,7 +9892,7 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
       
       if(type < pindel) /* Insert */
         {
-          hr += log(FABS((t - disk->next->time)/T));
+          hr += log(fabs((t - disk->next->time)/T));
           hr -= log_one_on_T;
           
           young_disk = disk->next;
@@ -9877,6 +9976,8 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
           if(tree->mcmc->always_yes == YES && new_glnL > UNLIKELY) alpha = 1.0;
           
           u = Uni();
+
+          assert(isnan(u) == NO && isinf(fabs(u)) == NO);
           
           if(u > alpha) /* Reject */
             {
@@ -9969,6 +10070,8 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
           
           u = Uni();
           
+          assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+
           if(u > alpha) /* Reject */
             {
               PHYREX_Insert_Disk(target_disk,tree);
@@ -10078,6 +10181,8 @@ void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree)
           
           u = Uni();
           
+          assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+
           if(u > alpha) /* Reject */
             {
               PHYREX_Remove_Disk(new_disk);
@@ -10123,6 +10228,8 @@ void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree)
           
           u = Uni();
           
+          assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+
           if(u > alpha) /* Reject */
             {
               PHYREX_Insert_Disk(disk,tree);

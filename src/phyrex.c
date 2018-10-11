@@ -113,13 +113,12 @@ int PHYREX_Main_Estimate(int argc, char *argv[])
   while(disk->prev) disk = disk->prev;
 
   tree->rates->bl_from_rt = YES;
-  tree->rates->clock_r    = 0.01 / FABS(disk->time);
+  tree->rates->clock_r    = 0.01 / fabs(disk->time);
   tree->rates->model      = LOGNORMAL;
   RATES_Update_Cur_Bl(tree);
 
   Init_Model(tree->data,io->mod,io);
   Prepare_Tree_For_Lk(tree);
-
 
   PHYREX_Tree_Height(tree);
   
@@ -1679,9 +1678,10 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   /*                                                      Area_Of_Poly_Monte_Carlo(tree->mmod->samp_area->a_poly[i],tree->mmod->lim)); */
  
   /* Starting parameter values */
+  /* tree->mmod->lbda = 0.01; */
   tree->mmod->lbda = Uni()*(0.5 - 0.2) + 0.2;
   tree->mmod->mu   = Uni()*(0.6 - 0.3) + 0.3;
-  tree->mmod->rad  = Uni()*(4.0 - 2.0) + 2.0;
+  tree->mmod->rad  = Uni()*(3.0 - 1.0) + 1.0;
   PHYREX_Update_Sigsq(tree);
 
   /* tree->mmod->lbda = Uni()*(0.50 - 0.20) + 0.20; */
@@ -1701,7 +1701,27 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   Lk(NULL,tree);
   Set_Update_Eigen(NO,tree->mod);
 
+  
+  /* int iter = 0; */
+  /* do */
+  /*   { */
+  /*     MCMC_PHYREX_Prune_Regraft(tree); */
+  /*     MCMC_PHYREX_Scale_Times(tree); */
+  /*     MCMC_PHYREX_Move_Disk_Updown(tree); */
+  /*     MCMC_Kappa(tree); */
+  /*     MCMC_Rate_Across_Sites(tree); */
+  /*     MCMC_Rates_All(tree); */
+  /*     MCMC_Tree_Rates(tree); */
+  /*     PhyML_Printf("\n. c_lnL: %f",tree->c_lnL); */
+  /*     PHYREX_Ldsk_To_Tree(tree); */
+  /*     RATES_Update_Cur_Bl(tree); */
+  /*     PhyML_Printf("\n>X< %s",Write_Tree(tree,NO)); */
+  /*   } */
+  /* while(iter++ < 10000); */
 
+
+  Print_Model(tree->mod);
+  
   disk = tree->disk;
   while(disk->prev) disk = disk->prev;
 
@@ -1769,6 +1789,11 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   move             = -1;
   do
     {
+      
+      PHYREX_Ldsk_To_Tree(tree);
+      Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
+      Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
+      
 
       /* tree->mcmc->adjust_tuning[i] = NO; */
       if(mcmc->run > adjust_len) for(i=0;i<mcmc->n_moves;i++) tree->mcmc->adjust_tuning[i] = NO;
@@ -1796,9 +1821,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_rad"))
         MCMC_PHYREX_Radius(tree);
-
-      /* /\* if(!strcmp(tree->mcmc->move_name[move],"phyrex_sigsq")) *\/ */
-      /* /\*   MCMC_PHYREX_Sigsq(tree); *\/ */
 
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_disk"))
         MCMC_PHYREX_Indel_Disk(tree);
@@ -1856,6 +1878,12 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
       if(!strcmp(tree->mcmc->move_name[move],"ras"))
         MCMC_Rate_Across_Sites(tree);
+
+      if(!strcmp(tree->mcmc->move_name[move],"br_rate"))
+        MCMC_Rates_All(tree);
+      
+      if(!strcmp(tree->mcmc->move_name[move],"tree_rates"))
+        MCMC_Tree_Rates(tree);
 
       /* /\* if(!strcmp(tree->mcmc->move_name[move],"phyrex_ldscape_lim")) *\/ */
       /* /\*   MCMC_PHYREX_Ldscape_Limits(tree); *\/ */
@@ -2032,6 +2060,23 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           PhyML_Fprintf(fp_summary,"%d\t",tree->mcmc->run);
 
           PhyML_Fprintf(fp_summary,"\n\n");
+
+          if(tree->mcmc->sample_num == 0)
+            {
+              PhyML_Fprintf(fp_tree,"\n#NEXUS");
+              PhyML_Fprintf(fp_tree,"\nBEGIN TREES;");
+            }
+          else
+            {
+              fseek(fp_tree,-5,SEEK_CUR);
+            }
+
+          PHYREX_Ldsk_To_Tree(tree);  
+          RATES_Update_Cur_Bl(tree);
+          char *s = Write_Tree(tree,NO);
+          PhyML_Fprintf(fp_tree,"\ntree %d [&lnP=%f] = [&R]  %s",tree->mcmc->sample_num,tree->c_lnL,s);
+          Free(s);
+          PhyML_Fprintf(fp_tree,"\nEND;");          
 
           fflush(NULL);
                 
@@ -3497,6 +3542,7 @@ void PHYREX_Ldsk_To_Tree_Post(t_node *a, t_ldsk *ldsk, int *available, t_tree *t
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
 
 void PHYREX_Remove_Lindisk_Next(t_ldsk *ldsk, t_ldsk *rm)
 {
