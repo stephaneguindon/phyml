@@ -20,8 +20,8 @@ the GNU public licence.  See http://www.opensource.org for details.
 t_tree *Read_Tree(char **s_tree);
 void R_rtree(char *s_tree_a,char *s_tree_d,t_node *a,t_tree *tree,int *n_int,int *n_ext);
 void Read_Branch_Label(char *s_d,char *s_a,t_edge *b);
-void Read_Branch_Length(char *s_d,char *s_a,t_tree *tree);
-void Read_Node_Name(t_node *d,char *s_tree_d,t_tree *tree);
+void Read_Branch_Length(char *s_d, char *s_a, t_edge *b, t_tree *tree);
+void Read_Node_Name(t_node *d, char *s_tree_d, t_edge *b, t_tree *tree);
 void Clean_Multifurcation(char **subtrees,int current_deg,int end_deg);
 char **Sub_Trees(char *tree,int *degree);
 int Next_Par(char *s,int pos);

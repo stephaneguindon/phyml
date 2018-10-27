@@ -56,7 +56,7 @@ void RATES_Lk_Rates_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
     {
       PhyML_Fprintf(stderr,"\n. d=%d d->anc=%d a=%d root=%d",d->num,d->anc->num,a->num,tree->n_root->num);
       PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
-      Warn_And_Exit("");
+      assert(FALSE);
     }
 
   dt_a = -1.;
@@ -2460,6 +2460,8 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 
   if(tree->rates->br_do_updt[d->num] == YES)
     {
+
+
       tree->rates->br_do_updt[d->num] = NO;
 
       if(tree->rates->model == LOGNORMAL ||

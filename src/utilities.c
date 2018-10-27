@@ -718,11 +718,11 @@ void Swap_Nodes_On_Edges(t_edge *e1, t_edge *e2, int swap, t_tree *tree)
 {
   t_node *buff;
 
-  e1->left->l[e1->l_r] = e1->l->v;
-  e1->rght->l[e1->r_l] = e1->l->v;
+  e1->left->l[e1->l_r]->v = e1->l->v;
+  e1->rght->l[e1->r_l]->v = e1->l->v;
 
-  e2->left->l[e2->l_r] = e2->l->v;
-  e2->rght->l[e2->r_l] = e2->l->v;
+  e2->left->l[e2->l_r]->v = e2->l->v;
+  e2->rght->l[e2->r_l]->v = e2->l->v;
 
   printf("\n. Swap edge %d (%d %d) with %d (%d %d)",e1->num,e1->left->num,e1->rght->num,e2->num,e2->left->num,e2->rght->num);
 
@@ -768,28 +768,31 @@ void Connect_Edges_To_Nodes_Serial(t_tree *tree)
   
   for(i=0;i<tree->n_otu;i++)
     {
-      if(!tree->a_nodes[i]->tax) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-
+      assert(tree->a_nodes[i]->tax);
       assert(tree->a_nodes[i] != tree->a_nodes[i]->v[0]);
-      
+
+      // Required so that p_lk_tip_r corresponds to the sequence at tree->a_nodes[i]
+      if(tree->a_edges[i]->p_lk_tip_r != NULL)
+        assert(tree->a_edges[i]->rght == tree->a_nodes[i]);
+
       Connect_One_Edge_To_Two_Nodes(tree->a_nodes[i],
                                     tree->a_nodes[i]->v[0],
-                                    tree->a_edges[tree->num_curr_branch_available],
+                                    tree->a_edges[i],
                                     tree);
-      if(tree->n_otu == 2) break;
     }
 
   for(i=tree->n_otu;i<2*tree->n_otu-2;i++)
     {
-      if(tree->a_nodes[i] == tree->n_root) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+      assert(!tree->a_nodes[i]->tax);
 
       for(j=0;j<3;j++) 
         if(!tree->a_nodes[i]->b[j])
           {
             assert(tree->a_nodes[i] != tree->a_nodes[i]->v[j]);
+
             Connect_One_Edge_To_Two_Nodes(tree->a_nodes[i],
                                           tree->a_nodes[i]->v[j],
-                                          tree->a_edges[tree->num_curr_branch_available],
+                                          tree->a_edges[i],
                                           tree);
           }
     }
@@ -831,18 +834,35 @@ void Connect_One_Edge_To_Two_Nodes(t_node *a, t_node *d, t_edge *b, t_tree *tree
   dir_d_a = -1;
   for(i=0;i<3;i++) if(d->v[i] == a) { dir_d_a = i; break; }
 
-  if(dir_a_d == -1) Generic_Exit(__FILE__,__LINE__,__FUNCTION__); 
-  if(dir_d_a == -1) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
-
+  if(dir_a_d == -1 || dir_d_a == -1)
+    {
+      PhyML_Printf("\n. a:%d a->v[0]:%d a->v[1]:%d a->v[2]:%d  d:%d d->v[0]:%d d->v[1]:%d d->v[2]:%d",
+                   a->num,
+                   a->v[0]?a->v[0]->num:-1,
+                   a->v[1]?a->v[1]->num:-1,
+                   a->v[2]?a->v[2]->num:-1,
+                   d->num,
+                   d->v[0]?d->v[0]->num:-1,
+                   d->v[1]?d->v[1]->num:-1,
+                   d->v[2]?d->v[2]->num:-1);
+      assert(FALSE);
+    }
+  
   a->b[dir_a_d] = b;
   d->b[dir_d_a] = b;
-  b->num        = tree->num_curr_branch_available;
   b->left       = a;
   b->rght       = d;
   if(a->tax) {b->rght = a; b->left = d;} /* root */
   /* a tip is necessarily on the righthand side of the t_edge */
 
-  tree->num_curr_branch_available += 1;
+  if(a->tax == NO && d->tax == NO)
+    {
+      b->num = tree->num_curr_branch_available;
+      tree->num_curr_branch_available++;
+    }
+  else if(d->tax) b->num = d->num;
+  else if(a->tax) b->num = a->num;
+  else assert(FALSE);
 
   assert(a != d);
   
@@ -850,8 +870,8 @@ void Connect_One_Edge_To_Two_Nodes(t_node *a, t_node *d, t_edge *b, t_tree *tree
     (Set_Edge_Dirs(b,a,d,tree)):
     (Set_Edge_Dirs(b,d,a,tree));
 
-  b->l->v            = a->l[b->l_r];
-  if(a->tax) b->l->v = a->l[b->r_l];
+  b->l->v            = a->l[b->l_r]->v;
+  if(a->tax) b->l->v = a->l[b->r_l]->v;
   b->l_old->v        = b->l->v;
 }
 
@@ -6285,7 +6305,7 @@ void Path_Length(t_node *dep, t_node *arr, phydbl *len, t_tree *tree)
 
       if(next == tree->e_root)
         {
-          (*len) += (tree->n_root->l[1] + tree->n_root->l[2]);
+          (*len) += (tree->n_root->l[1]->v + tree->n_root->l[2]->v);
         }
       else
         {
@@ -7144,13 +7164,13 @@ void Update_Root_Pos(t_tree *tree)
 {
   if(tree->n_root_pos > -1.0)
     {
-      tree->n_root->l[2] = tree->e_root->l->v * tree->n_root_pos;
-      tree->n_root->l[1] = tree->e_root->l->v * (1.-tree->n_root_pos);
+      tree->n_root->l[2]->v = tree->e_root->l->v * tree->n_root_pos;
+      tree->n_root->l[1]->v = tree->e_root->l->v * (1.-tree->n_root_pos);
     }
   else
     {
-/*       tree->n_root->l[0] = tree->e_root->l->v / 2.; */
-/*       tree->n_root->l[1] = tree->e_root->l->v / 2.; */
+/*       tree->n_root->l[0]->v = tree->e_root->l->v / 2.; */
+/*       tree->n_root->l[1]->v = tree->e_root->l->v / 2.; */
     }
 }
 
@@ -7192,16 +7212,16 @@ void Add_Root(t_edge *target, t_tree *tree)
         {
           printf("\n. WARNING: you put the root at a weird position...");
         }
-/*       tree->n_root->l[0] = tree->e_root->l->v * (tree->n_root_pos/(1.+tree->n_root_pos)); */
-/*       tree->n_root->l[1] = tree->e_root->l->v - tree->n_root->l[0]; */
+/*       tree->n_root->l[0]->v = tree->e_root->l->v * (tree->n_root_pos/(1.+tree->n_root_pos)); */
+/*       tree->n_root->l[1]->v = tree->e_root->l->v - tree->n_root->l[0]; */
 
-      tree->n_root->l[2] = tree->e_root->l->v * tree->n_root_pos;
-      tree->n_root->l[1] = tree->e_root->l->v * (1. - tree->n_root_pos);
+      tree->n_root->l[2]->v = tree->e_root->l->v * tree->n_root_pos;
+      tree->n_root->l[1]->v = tree->e_root->l->v * (1. - tree->n_root_pos);
     }
   else
     {
-      tree->n_root->l[2] = tree->e_root->l->v / 2.;
-      tree->n_root->l[1] = tree->e_root->l->v / 2.;
+      tree->n_root->l[2]->v = tree->e_root->l->v / 2.;
+      tree->n_root->l[1]->v = tree->e_root->l->v / 2.;
       tree->n_root_pos = 0.5;
     }
 
@@ -7219,10 +7239,10 @@ void Add_Root(t_edge *target, t_tree *tree)
   b2->left = tree->n_root;
   b2->rght = tree->n_root->v[2];
 
-  b1->l->v     = tree->n_root->l[1];
-  b2->l->v     = tree->n_root->l[2];
-  b1->l_old->v = tree->n_root->l[1];
-  b2->l_old->v = tree->n_root->l[2];
+  b1->l->v     = tree->n_root->l[1]->v;
+  b2->l->v     = tree->n_root->l[2]->v;
+  b1->l_old->v = tree->n_root->l[1]->v;
+  b2->l_old->v = tree->n_root->l[2]->v;
 
   b1->l_r = 1;
   b2->l_r = 2;
@@ -8532,35 +8552,159 @@ phydbl Get_Tree_Size(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Dist_To_Root_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 {
   int i;
 
   if(b) d->dist_to_root = a->dist_to_root + b->l->v;
 
-
   if(d->tax) return;
   else
     {
       for(i=0;i<3;i++)
-    if((d->v[i] != a) && (d->b[i] != tree->e_root))
-      Dist_To_Root_Pre(d,d->v[i],d->b[i],tree);
+        if((d->v[i] != a) && (d->b[i] != tree->e_root))
+          Dist_To_Root_Pre(d,d->v[i],d->b[i],tree);
     }
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-void Dist_To_Root(t_node *n_root, t_tree *tree)
+void Dist_To_Root(t_tree *tree)
 {
-  /* n_root->v[2]->dist_to_root = tree->rates->cur_l[n_root->v[2]->num]; */
-  /* n_root->v[1]->dist_to_root = tree->rates->cur_l[n_root->v[1]->num]; */
-  n_root->v[2]->dist_to_root = tree->e_root->l->v * tree->n_root_pos;
-  n_root->v[1]->dist_to_root = tree->e_root->l->v * (1. - tree->n_root_pos);
-  Dist_To_Root_Pre(n_root,n_root->v[2],NULL,tree);
-  Dist_To_Root_Pre(n_root,n_root->v[1],NULL,tree);
+  tree->n_root->dist_to_root = 0.0;
+  tree->n_root->v[2]->dist_to_root = tree->n_root->l[1]->v;
+  tree->n_root->v[1]->dist_to_root = tree->n_root->l[2]->v;
+
+  Dist_To_Root_Pre(tree->n_root,tree->n_root->v[2],NULL,tree);
+  Dist_To_Root_Pre(tree->n_root,tree->n_root->v[1],NULL,tree);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Get_Node_Ranks_From_Dist_To_Root(t_tree *tree)
+{
+  int buff;
+  int i;
+  int swap = NO;
+  int *rk;
+
+  rk = (int *)mCalloc(2*tree->n_otu-1,sizeof(int));
+  
+  for(i=0;i<2*tree->n_otu-1;++i) rk[i] = i;
+  
+  do
+    {
+      swap = NO;
+      for(i=0;i<2*tree->n_otu-2;++i)
+	{
+	  if(tree->a_nodes[rk[i]]->dist_to_root >
+             tree->a_nodes[rk[i+1]]->dist_to_root) // Sort in ascending order
+	    {
+	      swap = YES;
+
+	      buff    = rk[i];
+	      rk[i]   = rk[i+1];
+	      rk[i+1] = buff;
+	    }	    
+	}
+    }
+  while(swap == YES);
+
+  for(i=0;i<2*tree->n_otu-1;++i) tree->a_nodes[i]->rk_next = NULL;
+
+  for(i=0;i<2*tree->n_otu-2;++i) tree->a_nodes[rk[i]]->rk_next = tree->a_nodes[rk[i+1]];
+  
+  tree->a_nodes[rk[2*tree->n_otu-2]]->rk_next = NULL;
+  
+  Free(rk);
+  
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Get_Node_Ranks_From_Times(t_tree *tree)
+{
+  int buff;
+  int i;
+  int swap = NO;
+  int *rk;
+
+  rk = (int *)mCalloc(2*tree->n_otu-1,sizeof(int));
+  
+  for(i=0;i<2*tree->n_otu-1;++i) rk[i] = i;
+  
+  do
+    {
+      swap = NO;
+      for(i=0;i<2*tree->n_otu-2;++i)
+	{
+	  if(tree->rates->nd_t[rk[i+1]] < tree->rates->nd_t[rk[i]]) // Sort in ascending order
+	    {
+	      swap = YES;
+
+	      buff    = rk[i];
+	      rk[i]   = rk[i+1];
+	      rk[i+1] = buff;
+	    }	    
+	}
+    }
+  while(swap == YES);
+
+  /* for(i=0;i<2*tree->n_otu-2;++i) PhyML_Printf("\n. Num: %4d time: %f tax: %d",tree->a_nodes[rk[i]]->num,tree->rates->nd_t[rk[i]],tree->a_nodes[rk[i]]->tax); */
+  
+  for(i=0;i<2*tree->n_otu-1;++i) tree->a_nodes[i]->rk_next = NULL;
+  for(i=0;i<2*tree->n_otu-1;++i) tree->a_nodes[i]->rk_prev = NULL;
+
+  for(i=0;i<2*tree->n_otu-2;++i) tree->a_nodes[rk[i]]->rk_next = tree->a_nodes[rk[i+1]];
+  for(i=0;i<2*tree->n_otu-2;++i) tree->a_nodes[rk[i+1]]->rk_prev = tree->a_nodes[rk[i]];
+  
+
+
+  Free(rk);
+  
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Get_Node_Ranks_From_Tip_Times(t_tree *tree)
+{
+  int buff;
+  int i;
+  int swap = NO;
+  int *rk;
+
+  rk = (int *)mCalloc(tree->n_otu,sizeof(int));
+  
+  for(i=0;i<tree->n_otu;++i) rk[i] = i;
+  
+  do
+    {
+      swap = NO;
+      for(i=0;i<tree->n_otu-1;++i)
+	{
+	  if(tree->rates->nd_t[rk[i+1]] < tree->rates->nd_t[rk[i]]) // Sort in ascending order
+	    {
+	      swap = YES;
+
+	      buff    = rk[i];
+	      rk[i]   = rk[i+1];
+	      rk[i+1] = buff;
+	    }	    
+	}
+    }
+  while(swap == YES);
+  
+  for(i=0;i<tree->n_otu;++i) tree->a_nodes[i]->rk_next = NULL;
+  for(i=0;i<tree->n_otu;++i) tree->a_nodes[i]->rk_prev = NULL;
+
+  for(i=0;i<tree->n_otu-1;++i) tree->a_nodes[rk[i]]->rk_next = tree->a_nodes[rk[i+1]];
+  for(i=0;i<tree->n_otu-1;++i) tree->a_nodes[rk[i+1]]->rk_prev = tree->a_nodes[rk[i]];
+  
+  Free(rk);
 }
 
 //////////////////////////////////////////////////////////////
@@ -8762,19 +8906,19 @@ int Edge_Num_To_Node_Num(int edge_num, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Time_To_Branch(t_tree *tree)
+void Time_To_Bl(t_tree *tree)
 {
-  Time_To_Branch_Pre(tree->n_root,tree->n_root->v[2],tree);
-  Time_To_Branch_Pre(tree->n_root,tree->n_root->v[1],tree);
-  tree->n_root->l[1] = tree->rates->nd_t[tree->n_root->v[1]->num] - tree->rates->nd_t[tree->n_root->num];
-  tree->n_root->l[2] = tree->rates->nd_t[tree->n_root->v[1]->num] - tree->rates->nd_t[tree->n_root->num];
-  tree->e_root->l->v = tree->n_root->l[1] + tree->n_root->l[2];
+  Time_To_Bl_Pre(tree->n_root,tree->n_root->v[2],tree);
+  Time_To_Bl_Pre(tree->n_root,tree->n_root->v[1],tree);
+  tree->n_root->l[1]->v = tree->rates->nd_t[tree->n_root->v[1]->num] - tree->rates->nd_t[tree->n_root->num];
+  tree->n_root->l[2]->v = tree->rates->nd_t[tree->n_root->v[1]->num] - tree->rates->nd_t[tree->n_root->num];
+  tree->e_root->l->v = tree->n_root->l[1]->v + tree->n_root->l[2]->v;
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Time_To_Branch_Pre(t_node *a, t_node *d, t_tree *tree)
+void Time_To_Bl_Pre(t_node *a, t_node *d, t_tree *tree)
 {
   int i;
   
@@ -8786,7 +8930,7 @@ void Time_To_Branch_Pre(t_node *a, t_node *d, t_tree *tree)
     {
       for(i=0;i<3;i++)
         if((d->v[i] != a) && (d->b[i] != tree->e_root))
-          Time_To_Branch_Pre(d,d->v[i],tree);
+          Time_To_Bl_Pre(d,d->v[i],tree);
     }
 }
 
@@ -8794,42 +8938,52 @@ void Time_To_Branch_Pre(t_node *a, t_node *d, t_tree *tree)
 //////////////////////////////////////////////////////////////
 
 // Assume an ultrametric tree.
-void Branch_To_Time(t_tree *tree)
+void Bl_To_Time(t_tree *tree)
 {
-  Branch_To_Time_Pre(tree->n_root,tree->n_root->v[2],tree);
-  Branch_To_Time_Pre(tree->n_root,tree->n_root->v[1],tree);
+  Bl_To_Time_Pre(tree->n_root,tree->n_root->v[2],tree);
+  Bl_To_Time_Pre(tree->n_root,tree->n_root->v[1],tree);
 
   tree->rates->nd_t[tree->n_root->num] =
     tree->rates->nd_t[tree->n_root->v[1]->num] -
-    tree->n_root->l[1];
+    tree->n_root->l[1]->v;
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Branch_To_Time_Pre(t_node *a, t_node *d, t_tree *tree)
+void Bl_To_Time_Pre(t_node *a, t_node *d, t_tree *tree)
 {
   int i;
 
   if(d->tax)
     {
+      // Warning: won't work if all tips don't have the same time stamp
       tree->rates->nd_t[d->num] = 0.0;
       return;
     }
   else
     {
-      for(i=0;i<3;i++)
-    if((d->v[i] != a) && (d->b[i] != tree->e_root))
-      {
-            Branch_To_Time_Pre(d,d->v[i],tree);
-          }
+      int dir1,dir2;
+      
+      for(i=0;i<3;++i)
+        if((d->v[i] != a) && (d->b[i] != tree->e_root))
+          Bl_To_Time_Pre(d,d->v[i],tree);
 
-      for(i=0;i<3;i++)
-    if((d->v[i] != a) && (d->b[i] != tree->e_root))
-      {
-            tree->rates->nd_t[d->num] = tree->rates->nd_t[d->v[i]->num] - d->b[i]->l->v;
-            break;
+      dir1 = dir2 = -1;
+      for(i=0;i<3;++i)
+        if((d->v[i] != a) && (d->b[i] != tree->e_root))
+          {
+            if(dir1 < 0) dir1 = i;
+            else dir2 = i;
           }
+      
+      tree->rates->nd_t[d->num] = .5*(tree->rates->nd_t[d->v[dir1]->num] +
+                                      tree->rates->nd_t[d->v[dir2]->num] -
+                                      (d->b[dir1]->l->v + d->b[dir2]->l->v)/tree->rates->clock_r) - SMALL;
+      // - SMALL is to make sure nd_t[d] is sitting "significantly" above nd_t[v1] and nd_t[v2]
+
+      if(tree->rates->nd_t[d->num] > MIN(tree->rates->nd_t[d->v[dir1]->num],tree->rates->nd_t[d->v[dir2]->num]))
+        tree->rates->nd_t[d->num] = MIN(tree->rates->nd_t[d->v[dir1]->num],tree->rates->nd_t[d->v[dir2]->num]);
     }
 }
 
@@ -8844,7 +8998,6 @@ void Branch_Lengths_To_Rate_Lengths(t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void Branch_Lengths_To_Rate_Lengths_Pre(t_node *a, t_node *d, t_tree *tree)
 {
@@ -9656,8 +9809,7 @@ void Get_Node_Ranks(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-void Get_Node_Ranks_Pre(t_node *a, t_node *d,t_tree *tree)
+void Get_Node_Ranks_Pre(t_node *a, t_node *d, t_tree *tree)
 {
   d->rank = a->rank+1;
 
@@ -9665,14 +9817,14 @@ void Get_Node_Ranks_Pre(t_node *a, t_node *d,t_tree *tree)
   else
     {
       int i;
-
+      
       for(i=0;i<3;i++)
-    {
-      if(d->v[i] != a && d->b[i] != tree->e_root)
         {
-          Get_Node_Ranks_Pre(d,d->v[i],tree);
+          if(d->v[i] != a && d->b[i] != tree->e_root)
+            {
+              Get_Node_Ranks_Pre(d,d->v[i],tree);
+            }
         }
-    }
     }
 }
 
@@ -9682,7 +9834,7 @@ void Get_Node_Ranks_Pre(t_node *a, t_node *d,t_tree *tree)
 void Log_Br_Len(t_tree *tree)
 {
   int i;
-  For(i,2*tree->n_otu-3) tree->a_edges[i]->l->v = log(tree->a_edges[i]->l->v);
+  for(i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->l->v = log(tree->a_edges[i]->l->v);
 }
 
 //////////////////////////////////////////////////////////////
@@ -10638,7 +10790,7 @@ void Random_SPRs_On_Rooted_Tree(t_tree *tree)
       /* Print_Node(tree->n_root,tree->n_root->v[1],tree); */
       /* Print_Node(tree->n_root,tree->n_root->v[2],tree); */
 
-      Time_To_Branch(tree);
+      Time_To_Bl(tree);
 
       /* GEO_Update_Occup(tree->geo,tree); */
       /* GEO_Lk(tree->geo,tree); */

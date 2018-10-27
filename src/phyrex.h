@@ -79,7 +79,7 @@ phydbl PHYREX_Neighborhood_Size_Regression(t_tree *tree);
 phydbl PHYREX_Neighborhood_Size(t_tree *tree);
 phydbl PHYREX_Update_Radius(t_tree *tree);
 phydbl PHYREX_Update_Sigsq(t_tree *tree);
-void PHYREX_Read_Tip_Coordinates(t_ldsk **ldsk_a, t_tree *tree);
+void PHYREX_Read_Tip_Coordinates(t_tree *tree);
 phydbl PHYREX_Sample_Rad_From_Prior(t_tree *tree);
 void MCMC_PHYREX_Sigsq(t_tree *tree);
 phydbl PHYREX_LnPrior_Sigsq(t_tree *tree);
@@ -110,7 +110,11 @@ int PHYREX_Number_Of_Sampled_Demes(t_tree *tree);
 phydbl PHYREX_Coalescence_Rate(t_tree *tree);
 t_tree *PHYREX_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl h, int r_seed);
 phydbl Prob_Two_Lineages_Coal_One_Event(phydbl w, phydbl h, phydbl mu, phydbl rad);
-
+void PHYREX_Tree_To_Ldsk(t_tree *tree);
+void PHYREX_Tree_To_Ldsk_Post(t_node *a, t_node *d, t_dsk *a_disk, t_tree *tree);
+void PHYREX_Make_And_Connect_Tip_Disks(t_tree *tree);
+void PHYREX_Simulate_Disk_And_Node_Times(t_tree *tree);
+int PHYREX_Number_Of_Outgoing_Ldsks(t_dsk *disk);
 
 
 

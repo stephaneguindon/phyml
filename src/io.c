@@ -33,96 +33,97 @@ t_tree *Read_Tree(char **s_tree)
   n_int = n_ext = 0;
 
   n_otu=0;
-  For(i,(int)strlen((*s_tree))) if((*s_tree)[i] == ',') n_otu++;
+  for(i=0;i<(int)strlen((*s_tree));++i) if((*s_tree)[i] == ',') n_otu++;
   n_otu+=1;
 
-
-  
   tree = Make_Tree_From_Scratch(n_otu,NULL);
   subs = Sub_Trees((*s_tree),&degree);
   Clean_Multifurcation(subs,degree,3);
 
-
     if(degree == 2)
-    {
-      /* Unroot_Tree(subs); */
-      /* degree = 3; */
-      /* root_node = tree->a_nodes[n_otu]; */
-      root_node      = tree->a_nodes[2*n_otu-2];
-      root_node->num = 2*n_otu-2;
-      tree->n_root   = root_node;
-      n_int         -= 1;
-    }
-  else
-    {
-      root_node      = tree->a_nodes[n_otu];
-      root_node->num = n_otu;
-      tree->n_root   = NULL;
-   }
+      {
+        /* Unroot_Tree(subs); */
+        /* degree = 3; */
+        /* root_node = tree->a_nodes[n_otu]; */
+        root_node      = tree->a_nodes[2*n_otu-2];
+        root_node->num = 2*n_otu-2;
+        tree->n_root   = root_node;
+        n_int         -= 1;
+      }
+    else
+      {
+        root_node      = tree->a_nodes[n_otu];
+        root_node->num = n_otu;
+        tree->n_root   = NULL;
+      }
 
-  if(degree > 3) /* Multifurcation at the root. Need to re-assemble the subtrees
-                    since Clean_Multifurcation added sets of parenthesis and
-                    the corresponding NULL edges */
-    {
-      degree = 3;
-      Free((*s_tree));
-      len = 0;
-      for(i=0;i<degree;i++) len += (strlen(subs[i])+1);
-      len += 5;
-      
-      (*s_tree) = (char *)mCalloc(len,sizeof(char));
-      
-      (*s_tree)[0] = '('; (*s_tree)[1] = '\0';
-      for(i=0;i<degree;i++)
-        {
-          strcat((*s_tree),subs[i]);
-          strcat((*s_tree),",\0");
-        }
-      
-      sprintf((*s_tree)+strlen((*s_tree))-1,"%s",");\0");
-      
-      i = 0;
-      while(subs[i] != NULL) Free(subs[i++]);
-      Free(subs);
-      
-      subs = Sub_Trees((*s_tree),&degree);
-    }
-  
-  root_node->tax = 0;
-  
-  tree->has_branch_lengths = 0;
-  tree->num_curr_branch_available = 0;
-  for(i=0;i<degree;i++) R_rtree((*s_tree),subs[i],root_node,tree,&n_int,&n_ext);
-  
-  i = degree;
-  while(subs[i] != NULL) Free(subs[i++]);
-  Free(subs);
-  
-  if(tree->n_root)
-    {
-      tree->e_root = tree->a_edges[tree->num_curr_branch_available];
-      
-      tree->n_root->v[2] = tree->n_root->v[0];
-      tree->n_root->v[0] = NULL;
-      
-      tree->n_root->l[2] = tree->n_root->l[0];
-      
-      for(i=0;i<3;i++) if(tree->n_root->v[2]->v[i] == tree->n_root) { tree->n_root->v[2]->v[i] = tree->n_root->v[1]; break; }
-      for(i=0;i<3;i++) if(tree->n_root->v[1]->v[i] == tree->n_root) { tree->n_root->v[1]->v[i] = tree->n_root->v[2]; break; }
-      
-      Connect_One_Edge_To_Two_Nodes(tree->n_root->v[2],
-                                    tree->n_root->v[1],
-                                    tree->e_root,
-                                    tree);
-      
-      tree->e_root->l->v = tree->n_root->l[2] + tree->n_root->l[1];
-      if(tree->e_root->l->v > 0.0)
-        tree->n_root_pos = tree->n_root->l[2] / tree->e_root->l->v;
-      else
-        tree->n_root_pos = .5;
-    }
-  
-  return tree;
+    if(degree > 3) /* Multifurcation at the root. Need to re-assemble the subtrees
+                      since Clean_Multifurcation added sets of parenthesis and
+                      the corresponding NULL edges */
+      {
+        degree = 3;
+        Free((*s_tree));
+        len = 0;
+        for(i=0;i<degree;i++) len += (strlen(subs[i])+1);
+        len += 5;
+        
+        (*s_tree) = (char *)mCalloc(len,sizeof(char));
+        
+        (*s_tree)[0] = '('; (*s_tree)[1] = '\0';
+        for(i=0;i<degree;i++)
+          {
+            strcat((*s_tree),subs[i]);
+            strcat((*s_tree),",\0");
+          }
+        
+        sprintf((*s_tree)+strlen((*s_tree))-1,"%s",");\0");
+        
+        i = 0;
+        while(subs[i] != NULL) Free(subs[i++]);
+        Free(subs);
+        
+        subs = Sub_Trees((*s_tree),&degree);
+      }
+    
+    root_node->tax = 0;
+    
+    tree->has_branch_lengths = 0;
+    /* tree->num_curr_branch_available = 0; */
+    tree->num_curr_branch_available = tree->n_otu;
+    for(i=0;i<degree;i++) R_rtree((*s_tree),subs[i],root_node,tree,&n_int,&n_ext);
+    
+    i = degree;
+    while(subs[i] != NULL) Free(subs[i++]);
+    Free(subs);
+    
+    if(tree->n_root)
+      {
+        tree->e_root = tree->a_edges[tree->num_curr_branch_available];
+        
+        tree->n_root->b[1] = tree->a_edges[tree->num_curr_branch_available+1];
+        tree->n_root->b[2] = tree->a_edges[tree->num_curr_branch_available+2];
+        
+        tree->n_root->v[2] = tree->n_root->v[0];
+        tree->n_root->v[0] = NULL;
+        
+        tree->n_root->l[2]->v = tree->n_root->l[0]->v;
+        
+        for(i=0;i<3;i++) if(tree->n_root->v[2]->v[i] == tree->n_root) { tree->n_root->v[2]->v[i] = tree->n_root->v[1]; break; }
+        for(i=0;i<3;i++) if(tree->n_root->v[1]->v[i] == tree->n_root) { tree->n_root->v[1]->v[i] = tree->n_root->v[2]; break; }
+        
+        Connect_One_Edge_To_Two_Nodes(tree->n_root->v[2],
+                                      tree->n_root->v[1],
+                                      tree->e_root,
+                                      tree);
+        
+        tree->e_root->l->v = tree->n_root->l[2]->v + tree->n_root->l[1]->v;
+        if(tree->e_root->l->v > 0.0)
+          tree->n_root_pos = tree->n_root->l[2]->v / tree->e_root->l->v;
+        else
+          tree->n_root_pos = .5;
+      }
+    
+    return tree;
 }
 
 //////////////////////////////////////////////////////////////
@@ -141,6 +142,7 @@ void R_rtree(char *s_tree_a, char *s_tree_d, t_node *a, t_tree *tree, int *n_int
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
     }
 
+  // Internal node
   if(s_tree_d[0] == '(')
     {
       char **subs;
@@ -161,25 +163,22 @@ void R_rtree(char *s_tree_a, char *s_tree_d, t_node *a, t_tree *tree, int *n_int
       d->tax = 0;
       b      = tree->a_edges[tree->num_curr_branch_available];
 
-      Read_Branch_Label(s_tree_d,s_tree_a,tree->a_edges[tree->num_curr_branch_available]);
-      Read_Branch_Length(s_tree_d,s_tree_a,tree);
+      Read_Branch_Label(s_tree_d,s_tree_a,b);
+      Read_Branch_Length(s_tree_d,s_tree_a,b,tree);
 
       for(i=0;i<3;i++)
         {
           if(!a->v[i])
             {
               a->v[i]=d;
-              d->l[0]=tree->a_edges[tree->num_curr_branch_available]->l->v;
-              a->l[i]=tree->a_edges[tree->num_curr_branch_available]->l->v;
+              d->l[0]->v = tree->a_edges[tree->num_curr_branch_available]->l->v;
+              a->l[i]->v = tree->a_edges[tree->num_curr_branch_available]->l->v;
               break;
             }
         }
       d->v[0]=a;
 
-      if(a != tree->n_root)
-        {
-          Connect_One_Edge_To_Two_Nodes(a,d,tree->a_edges[tree->num_curr_branch_available],tree);
-        }
+      if(a != tree->n_root) Connect_One_Edge_To_Two_Nodes(a,d,tree->a_edges[tree->num_curr_branch_available],tree);
 
       subs=Sub_Trees(s_tree_d,&degree);
 
@@ -224,6 +223,7 @@ void R_rtree(char *s_tree_a, char *s_tree_d, t_node *a, t_tree *tree, int *n_int
       Free(subs);
     }
 
+  // External node
   else
     {
       int i;
@@ -231,17 +231,17 @@ void R_rtree(char *s_tree_a, char *s_tree_d, t_node *a, t_tree *tree, int *n_int
       d      = tree->a_nodes[*n_ext];
       d->tax = 1;
 
-      Read_Node_Name(d,s_tree_d,tree);
-      Read_Branch_Label(s_tree_d,s_tree_a,tree->a_edges[tree->num_curr_branch_available]);
-      Read_Branch_Length(s_tree_d,s_tree_a,tree);
+      Read_Node_Name(d,s_tree_d,tree->a_edges[*n_ext],tree);
+      Read_Branch_Label(s_tree_d,s_tree_a,tree->a_edges[*n_ext]);
+      Read_Branch_Length(s_tree_d,s_tree_a,tree->a_edges[*n_ext],tree);
 
       for(i=0;i<3;i++)
         {
           if(!a->v[i])
             {
               a->v[i]=d;
-              d->l[0]=tree->a_edges[tree->num_curr_branch_available]->l->v;
-              a->l[i]=tree->a_edges[tree->num_curr_branch_available]->l->v;
+              d->l[0]->v = tree->a_edges[*n_ext]->l->v;
+              a->l[i]->v = tree->a_edges[*n_ext]->l->v;
               break;
             }
         }
@@ -249,7 +249,7 @@ void R_rtree(char *s_tree_a, char *s_tree_d, t_node *a, t_tree *tree, int *n_int
       
       if(a != tree->n_root)
         {
-          Connect_One_Edge_To_Two_Nodes(a,d,tree->a_edges[tree->num_curr_branch_available],tree);
+          Connect_One_Edge_To_Two_Nodes(a,d,tree->a_edges[*n_ext],tree);
         }
       
       d->num=*n_ext;
@@ -263,7 +263,6 @@ void R_rtree(char *s_tree_a, char *s_tree_d, t_node *a, t_tree *tree, int *n_int
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Read_Branch_Label(char *s_d, char *s_a, t_edge *b)
 {
   char *sub_tp;
@@ -271,7 +270,6 @@ void Read_Branch_Label(char *s_d, char *s_a, t_edge *b)
   int posp,posl;
 
   sub_tp = (char *)mCalloc(3+(int)strlen(s_d)+1,sizeof(char));
-  /* sub_tp = (char *)mCalloc(T_MAX_LINE,sizeof(char)); */
 
   sub_tp[0] = '(';
   sub_tp[1] = '\0';
@@ -300,26 +298,26 @@ void Read_Branch_Label(char *s_d, char *s_a, t_edge *b)
 
       posl = 0;
       do
-    {
-      b->labels[b->n_labels-1][posl] = p[posp];
-      posl++;
-      posp++;
-      if(p[posp] == '#')
         {
-          b->labels[b->n_labels-1][posl] = '\0';
-          b->n_labels++;
-          if(!(b->n_labels%BLOCK_LABELS)) Make_New_Edge_Label(b);
+          b->labels[b->n_labels-1][posl] = p[posp];
+          posl++;
           posp++;
-          posl=0;
+          if(p[posp] == '#')
+            {
+              b->labels[b->n_labels-1][posl] = '\0';
+              b->n_labels++;
+              if(!(b->n_labels%BLOCK_LABELS)) Make_New_Edge_Label(b);
+              posp++;
+              posl=0;
+            }
         }
-    }
       while((p[posp] != ':') &&
             (p[posp] != ',') &&
             (p[posp] != '('));
-
+      
       b->labels[b->n_labels-1][posl] = '\0';
     }
-
+  
   if(p)
     {
       /* if(b->n_labels == 1) */
@@ -330,11 +328,11 @@ void Read_Branch_Label(char *s_d, char *s_a, t_edge *b)
       /* 	  for(i=0;i<b->n_labels;i++) PhyML_Printf("'%s' ",b->labels[i]); */
       /* 	  PhyML_Printf("on t_edge %3d.",b->num); */
       /* 	} */
-
+      
       if(!strcmp(b->labels[0],"NULL"))
-    {
-      b->does_exist = NO;
-    }
+        {
+          b->does_exist = NO;
+        }
     }
   /* else */
   /*   { */
@@ -346,16 +344,12 @@ void Read_Branch_Label(char *s_d, char *s_a, t_edge *b)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Read_Branch_Length(char *s_d, char *s_a, t_tree *tree)
+void Read_Branch_Length(char *s_d, char *s_a, t_edge *b, t_tree *tree)
 {
   char *sub_tp;
   char *p;
-  t_edge *b;
   int i;
 
-  b = tree->a_edges[tree->num_curr_branch_available];
-
-  /* sub_tp = (char *)mCalloc(T_MAX_LINE,sizeof(char)); */
   sub_tp = (char *)mCalloc(10+strlen(s_d)+1,sizeof(char));
 
   for(i=0;i<b->n_labels;i++)
@@ -398,11 +392,11 @@ void Read_Branch_Length(char *s_d, char *s_a, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Read_Node_Name(t_node *d, char *s_tree_d, t_tree *tree)
+void Read_Node_Name(t_node *d, char *s_tree_d, t_edge *b, t_tree *tree)
 {
   int i;
 
-  if(!tree->a_edges[tree->num_curr_branch_available]->n_labels)
+  if(!b->n_labels)
     {
       d->name = (char *)mCalloc(strlen(s_tree_d)+1,sizeof(char ));
       strcpy(d->name,s_tree_d);

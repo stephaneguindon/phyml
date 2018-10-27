@@ -913,6 +913,7 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
         if(d->v[i] == a || d->b[i] == tree->e_root) 
           {
             Update_Partial_Lk(tree,d->b[i],d);
+            if(tree->io->mod->s_opt->opt_bl == YES) Br_Len_Opt(d->b[i],tree);
           }
     }
   else
@@ -927,6 +928,7 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
             }
         }
       Update_Partial_Lk(tree,b_fcus,d);
+      if(tree->io->mod->s_opt->opt_bl == YES) Br_Len_Opt(b_fcus,tree);
     }
 }
 

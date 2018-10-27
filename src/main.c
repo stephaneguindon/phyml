@@ -68,9 +68,9 @@ int main(int argc, char **argv)
   setvbuf(stdout,NULL,_IOFBF,2048);
 #endif
 
-  tree             = NULL;
-  mod              = NULL;
-  best_lnL         = UNLIKELY;
+  tree     = NULL;
+  mod      = NULL;
+  best_lnL = UNLIKELY;
 
 
   io = (option *)Get_Input(argc,argv);
@@ -228,13 +228,16 @@ int main(int argc, char **argv)
 
 #ifdef PHYML
                   if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
-                                                                       
+
+
+
+
+                  
                   Set_Update_Eigen(YES,tree->mod);                 
                   Lk(NULL,tree);
                   Set_Update_Eigen(NO,tree->mod);
 
-
-
+                  
                   if(tree->mod->s_opt->opt_topo)
 		    {
                       Global_Spr_Search(tree);                      
@@ -257,7 +260,7 @@ int main(int argc, char **argv)
                   Get_Tree_Size(tree);
                   PhyML_Printf("\n\n. Log likelihood of the current tree: %f.",tree->c_lnL);
 
-                          
+                  
                   if(tree->io->ancestral == YES) Ancestral_Sequences(tree,YES);
                   
                   /* Build_Distrib_Number_Of_Diff_States_Under_Model(tree); */

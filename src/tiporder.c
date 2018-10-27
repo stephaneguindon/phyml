@@ -194,7 +194,7 @@ the GNU public licence. See http://www.opensource.org for details.
 /*       tree->ps_tree = DR_Make_Tdraw_Struct(tree); */
 /*       DR_Init_Tdraw_Struct(tree->ps_tree); */
 /*       DR_Get_Tree_Box_Width(tree->ps_tree,tree); */
-/*       Dist_To_Root(tree->n_root,tree); */
+/*       Dist_To_Root(tree); */
 /*       tree->ps_tree->max_dist_to_root = DR_Get_Max_Dist_To_Root(tree); */
  
 /*       for(j=0;j<ref_tree->n_otu;j++) tree->io->z_scores[j] = ref_tree->io->z_scores[tree->a_nodes[j]->ext_node->num]; */
@@ -701,7 +701,7 @@ phydbl TIPO_Untangle_Tree(t_tree *tree)
 	  tree->ps_tree = DR_Make_Tdraw_Struct(tree);
 	  DR_Init_Tdraw_Struct(tree->ps_tree);
 	  DR_Get_Tree_Box_Width(tree->ps_tree,tree);
-	  Dist_To_Root(tree->n_root,tree);
+	  Dist_To_Root(tree);
 	  tree->ps_tree->max_dist_to_root = DR_Get_Max_Dist_To_Root(tree);
 	  for(i=0;i<tree->n_otu;i++) tree->ps_tree->ycoord[i] = tree->a_nodes[i]->y_rank * (int)(tree->ps_tree->page_height / (tree->n_otu));
 	  DR_Get_X_Coord(NO,tree->ps_tree,tree);

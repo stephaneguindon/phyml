@@ -446,6 +446,7 @@ phydbl Lk(t_edge *b, t_tree *tree)
   
   tree->old_lnL = tree->c_lnL;
   
+
 #ifdef PHYREX
   PHYREX_Ldsk_To_Tree(tree);
 #endif
@@ -569,6 +570,9 @@ if(tree->rates && tree->io->lk_approx == NORMAL)
 
   p_lk_left = b->p_lk_left;
   p_lk_rght = b->rght->tax ? b->p_lk_tip_r : b->p_lk_rght;
+
+  CALL++;
+  
   
   for(site=0;site<npatterns;++site)
     {
@@ -618,7 +622,7 @@ if(tree->rates && tree->io->lk_approx == NORMAL)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-// First and second derivative of the log-likelihood with respect
+// First derivative of the log-likelihood with respect
 // to the length of edge b
 phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
 {
@@ -638,7 +642,6 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
 
   if(*l < tree->mod->l_min)      *l = tree->mod->l_min;
   else if(*l > tree->mod->l_max) *l = tree->mod->l_max;      
-
 
   assert(b != NULL);
   
@@ -682,6 +685,8 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
     }
   
 
+  CALL++;
+  
   dlnlk  = 0.0;
   lnlk   = 0.0;
   
@@ -1538,6 +1543,11 @@ void Default_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
                      &Pij2,&tPij2,&p_lk_v2,&sum_scale_v2,
                      d,b,tree);
 
+  PhyML_Printf("\n. %p %p %p %p %p %p %p",
+               n_v1,n_v2,
+               p_lk,p_lk_v1,p_lk_v2,
+               Pij1,Pij2);
+  
   Core_Default_Update_Partial_Lk(n_v1,n_v2,
                                  p_lk,p_lk_v1,p_lk_v2,
                                  Pij1,Pij2,
@@ -2929,16 +2939,16 @@ void Set_All_Partial_Lk(t_node **n_v1, t_node **n_v2,
               *n_v1 = tree->n_root;
 #ifdef BEAGLE
               Set_Partial_Lk_One_Side(Pij1,tPij1,p_lk_v1,sum_scale_v1,d,
-                                (d == tree->n_root->v[1])?
-                                (tree->n_root->b[1]):
-                                (tree->n_root->b[2]),
-                                tree,child1_p_idx,Pij1_idx);
+                                      (d == tree->n_root->v[1])?
+                                      (tree->n_root->b[1]):
+                                      (tree->n_root->b[2]),
+                                      tree,child1_p_idx,Pij1_idx);
 #else
               Set_Partial_Lk_One_Side(Pij1,tPij1,p_lk_v1,sum_scale_v1,d,
-                                (d == tree->n_root->v[1])?
-                                (tree->n_root->b[1]):
-                                (tree->n_root->b[2]),
-                                tree);
+                                      (d == tree->n_root->v[1])?
+                                      (tree->n_root->b[1]):
+                                      (tree->n_root->b[2]),
+                                      tree);
 #endif
               for(i=0;i<3;i++)
                 {
@@ -3006,6 +3016,9 @@ void Set_All_Partial_Lk(t_node **n_v1, t_node **n_v2,
     }
 }
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 /*     |
        |
        |d
@@ -3017,9 +3030,6 @@ void Set_All_Partial_Lk(t_node **n_v1, t_node **n_v2,
 
   Returns p_lk and sum_scale for subtree with x as root, Pij for edge b
 */
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
 
 void Set_Partial_Lk_One_Side(phydbl **Pij, phydbl **tPij, phydbl **p_lk,  int **sum_scale, t_node *d, t_edge *b, t_tree *tree
 #ifdef BEAGLE
@@ -3046,6 +3056,7 @@ void Set_Partial_Lk_One_Side(phydbl **Pij, phydbl **tPij, phydbl **p_lk,  int **
 #ifdef BEAGLE
           *child_p_idx = b->rght->tax? b->p_lk_tip_idx: b->p_lk_rght_idx;
 #endif
+          assert(*p_lk);
         }
       else
         {
@@ -3054,6 +3065,7 @@ void Set_Partial_Lk_One_Side(phydbl **Pij, phydbl **tPij, phydbl **p_lk,  int **
 #ifdef BEAGLE
           *child_p_idx   = b->rght->tax? b->p_lk_tip_idx: b->p_lk_left_idx;
 #endif
+          assert(*p_lk);
         }
     }
   else
@@ -3125,6 +3137,7 @@ void Partial_Lk_Inin(const phydbl *Pij1, const phydbl *plk1, const phydbl *Pij2,
 {
   unsigned int i,j;
 
+  
   for(i=0;i<ns;++i) if(plk1[i] > 1.0 || plk1[i] < 1.0 || plk2[i] > 1.0 || plk2[i] < 1.0) break; 
 
   if(i != ns)
@@ -3133,11 +3146,13 @@ void Partial_Lk_Inin(const phydbl *Pij1, const phydbl *plk1, const phydbl *Pij2,
         {
           phydbl u1 = 0.0;
           phydbl u2 = 0.0;
+
           for(j=0;j<ns;++j)
             {
               u1 += Pij1[j] * plk1[j];
               u2 += Pij2[j] * plk2[j];
             }
+          
           Pij1 += ns;
           Pij2 += ns;
           plk0[i] = u1*u2;

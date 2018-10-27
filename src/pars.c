@@ -177,7 +177,7 @@ void Init_Ui_Tips(t_tree *tree)
               if(tree->a_nodes[i]->b[0]->rght->tax != 1)
                 {
                   PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
-                  Exit("\n");
+                  assert(FALSE);
                 }
               
               Init_Tips_At_One_Site_Nucleotides_Int(tree->a_nodes[i]->c_seq->state[curr_site],

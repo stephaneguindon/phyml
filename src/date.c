@@ -821,7 +821,7 @@ phydbl *DATE_MCMC(t_tree *tree)
             }
           
           
-          Time_To_Branch(tree);
+          Time_To_Bl(tree);
           tree->bl_ndigits = 3;
           /* RATES_Update_Cur_Bl(tree); */
           s_tree = Write_Tree(tree,NO);

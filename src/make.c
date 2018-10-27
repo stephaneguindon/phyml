@@ -172,8 +172,8 @@ t_edge *Make_Edge_Light(t_node *a, t_node *d, int num)
       assert(b->l_r > -1);
       assert(b->r_l > -1);
       
-      b->l->v             = a->l[b->l_r];
-      if(a->tax) b->l->v  = a->l[b->r_l];
+      b->l->v             = a->l[b->l_r]->v;
+      if(a->tax) b->l->v  = a->l[b->r_l]->v;
       b->l_old->v         = b->l->v;
     }
   else
@@ -509,17 +509,24 @@ t_nni *Make_NNI()
 
 t_node *Make_Node_Light(int num)
 {
- t_node *n;
-
+  t_node *n;
+  int i;
+  
   n           = (t_node *)mCalloc(1,sizeof(t_node));
   n->v        = (t_node **)mCalloc(3,sizeof(t_node *));
-  n->l        = (phydbl *)mCalloc(3,sizeof(phydbl));
   n->b        = (t_edge **)mCalloc(3,sizeof(t_edge *));
   n->score    = (phydbl *)mCalloc(3,sizeof(phydbl));
   n->s_ingrp  = (int *)mCalloc(3,sizeof(int));
   n->s_outgrp = (int *)mCalloc(3,sizeof(int));
   n->cal      = (t_cal **)mCalloc(MAX_N_CAL,sizeof(t_cal *));
- 
+  n->l        = (scalar_dbl **)mCalloc(3,sizeof(scalar_dbl *));
+
+  for(i=0;i<3;++i)
+    {
+      n->l[i] = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+      Init_Scalar_Dbl(n->l[i]);      
+    }
+  
   Init_Node_Light(n,num);
 
   return n;
@@ -1665,14 +1672,14 @@ t_ldsk *PHYREX_Make_Lindisk_Node(int n_dim)
 
 void PHYREX_Make_Lindisk_Next(t_ldsk *t)
 {
+  
   if(t->n_next == 0)
     t->next = (t_ldsk **)mCalloc(NEXT_BLOCK_SIZE,sizeof(t_ldsk *));
   else if(!(t->n_next%NEXT_BLOCK_SIZE))
     t->next = (t_ldsk **)mRealloc(t->next,t->n_next+NEXT_BLOCK_SIZE,sizeof(t_ldsk *));
 
   t->n_next++;
-  /* printf("\n. make next for ldsk %s n_next set to %d",t->coord->id,t->n_next); */
-  /* fflush(NULL); */
+  /* PhyML_Printf("\n. make next for ldsk %s n_next set to %d [%p] %d",t->coord->id,t->n_next,t->next,NEXT_BLOCK_SIZE); */
 }
 
 //////////////////////////////////////////////////////////////

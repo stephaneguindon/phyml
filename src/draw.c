@@ -22,7 +22,7 @@ void DR_Draw_Tree(char *file_name, t_tree *tree)
   tree->ps_tree = DR_Make_Tdraw_Struct(tree);
   DR_Init_Tdraw_Struct(tree->ps_tree);
   DR_Get_Tree_Box_Width(tree->ps_tree,tree);
-  Dist_To_Root(tree->n_root,tree);
+  Dist_To_Root(tree);
   tree->ps_tree->max_dist_to_root = DR_Get_Max_Dist_To_Root(tree);
   DR_Get_X_Coord(NO,tree->ps_tree,tree);
   DR_Get_Y_Coord(NO,tree->ps_tree,tree);
@@ -44,7 +44,7 @@ void DR_Get_Tree_Coord(t_tree *tree)
       PhyML_Printf("\n. Adding root before rendering the tree.");
       Add_Root(tree->a_edges[0],tree);
     }
-  Dist_To_Root(tree->n_root,tree);
+  Dist_To_Root(tree);
   tree->ps_tree->max_dist_to_root = DR_Get_Max_Dist_To_Root(tree);
   DR_Get_X_Coord(NO,tree->ps_tree,tree);
   DR_Get_Y_Coord(NO,tree->ps_tree,tree);

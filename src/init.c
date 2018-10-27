@@ -247,6 +247,9 @@ void Init_Node_Light(t_node *n, int num)
   n->next                   = NULL;
   n->prev                   = NULL;
   n->n_cal                  = 0;
+  n->ldsk                   = NULL;
+  n->rk_next                = NULL;
+  n->rk_prev                = NULL;
   /* n->next                 = NULL; */
   /* n->prev                 = NULL; */
 }
@@ -3475,9 +3478,10 @@ void GEO_Init_Coord(t_geo_coord *t, int n_dim)
 
 void PHYREX_Init_Disk_Event(t_dsk *t, int n_dim, t_phyrex_mod *mmod)
 {
-  t->prev  = NULL;
-  t->next  = NULL;
-  t->mmod  = NULL;
+  t->prev      = NULL;
+  t->next      = NULL;
+  t->mmod      = NULL;
+  t->age_fixed = NO;
   
   Random_String(t->id,3);
   GEO_Init_Coord(t->centr,n_dim);

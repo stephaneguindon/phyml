@@ -29,8 +29,9 @@ void Bionj(matrix *mat)
 
   Clean_Tree_Connections(mat->tree);  
   for(i=0;i<mat->tree->n_otu;i++) mat->tip_node[i] = mat->tree->a_nodes[i];
-  mat->tree->num_curr_branch_available = 0;
+  mat->tree->num_curr_branch_available = mat->tree->n_otu;
 
+  
   while(mat->r > 3)
     {
       x = y =  0;
@@ -45,7 +46,9 @@ void Bionj(matrix *mat)
       Update_Mat(mat,x,y,lx,ly,vxy,lamda);
       Update_Tree(mat,x,y,lx,ly,score);      
     }
+
   Finish(mat);
+
 }
   
 //////////////////////////////////////////////////////////////
@@ -90,11 +93,21 @@ void Finish(matrix *mat)
   ny->v[0] = new;
   nz->v[0] = new;
 
-  
-  Connect_One_Edge_To_Two_Nodes(new,nx,mat->tree->a_edges[mat->tree->num_curr_branch_available],mat->tree);
-  Connect_One_Edge_To_Two_Nodes(new,ny,mat->tree->a_edges[mat->tree->num_curr_branch_available],mat->tree);
-  Connect_One_Edge_To_Two_Nodes(new,nz,mat->tree->a_edges[mat->tree->num_curr_branch_available],mat->tree);
-  
+  if(nx->tax)
+    Connect_One_Edge_To_Two_Nodes(new,nx,mat->tree->a_edges[nx->num],mat->tree);
+  else
+    Connect_One_Edge_To_Two_Nodes(new,nx,mat->tree->a_edges[mat->tree->num_curr_branch_available],mat->tree);
+    
+  if(ny->tax)
+    Connect_One_Edge_To_Two_Nodes(new,ny,mat->tree->a_edges[ny->num],mat->tree);
+  else
+    Connect_One_Edge_To_Two_Nodes(new,ny,mat->tree->a_edges[mat->tree->num_curr_branch_available],mat->tree);
+    
+  if(nz->tax)
+    Connect_One_Edge_To_Two_Nodes(new,nz,mat->tree->a_edges[nz->num],mat->tree);
+  else
+    Connect_One_Edge_To_Two_Nodes(new,nz,mat->tree->a_edges[mat->tree->num_curr_branch_available],mat->tree);
+    
  
   nx->b[0]->l->v = .5*(dxy-dyz+dxz);
   ny->b[0]->l->v = .5*(dyz-dxz+dxy);
@@ -138,7 +151,6 @@ void Update_Mat(matrix *mat, int x, int y, phydbl lx, phydbl ly, phydbl vxy, phy
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Update_Tree(matrix *mat, int x, int y, phydbl lx, phydbl ly, phydbl score)
 {
   t_node *new, *nx, *ny;
@@ -151,10 +163,19 @@ void Update_Tree(matrix *mat, int x, int y, phydbl lx, phydbl ly, phydbl score)
   new->v[1]     = nx;
   new->v[2]     = ny;
   new->num      = mat->curr_int;
+  
 
-  Connect_One_Edge_To_Two_Nodes(new,nx,mat->tree->a_edges[mat->tree->num_curr_branch_available],mat->tree);
-  Connect_One_Edge_To_Two_Nodes(new,ny,mat->tree->a_edges[mat->tree->num_curr_branch_available],mat->tree);
+  if(nx->tax)
+    Connect_One_Edge_To_Two_Nodes(new,nx,mat->tree->a_edges[nx->num],mat->tree);
+  else
+    Connect_One_Edge_To_Two_Nodes(new,nx,mat->tree->a_edges[mat->tree->num_curr_branch_available],mat->tree);
 
+  if(ny->tax)
+    Connect_One_Edge_To_Two_Nodes(new,ny,mat->tree->a_edges[ny->num],mat->tree);
+  else
+    Connect_One_Edge_To_Two_Nodes(new,ny,mat->tree->a_edges[mat->tree->num_curr_branch_available],mat->tree);
+
+  
   nx->b[0]->l->v   = lx;
   ny->b[0]->l->v   = ly;
   
@@ -162,11 +183,11 @@ void Update_Tree(matrix *mat, int x, int y, phydbl lx, phydbl ly, phydbl score)
   new->b[2]->l->v  = ly;
   new->score[0] = score;
 
-  nx->l[0]      = lx;
-  ny->l[0]      = ly;
+  nx->l[0]->v      = lx;
+  ny->l[0]->v      = ly;
   
-  new->l[1]     = lx;
-  new->l[2]     = ly;
+  new->l[1]->v     = lx;
+  new->l[2]->v     = ly;
  
   mat->tip_node[x] = new;
   mat->on_off[y] = 0;

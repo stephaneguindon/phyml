@@ -98,17 +98,18 @@ void Free_Node(t_node *n)
 {
   Free(n->b);
   Free(n->v);
-  Free(n->l);
   Free(n->score);
   Free(n->s_ingrp);
   Free(n->s_outgrp);
   Free(n->cal);
-
+  Free(n->l);
+  
   if(n->c_seq_anc != NULL) 
     {
       Free(n->c_seq_anc->state);
       Free(n->c_seq_anc);
     }
+  
   if(n->ori_name) { Free(n->ori_name); n->ori_name = NULL; }
 
   /* if(n->name)     { Free(n->name);     n->name     = NULL; }  */
@@ -497,6 +498,8 @@ void Free_Extra_Edge_Lk(t_tree *tree)
 
 void Free_Edge_Lk_Rght(t_edge *b)
 {
+  assert(b);
+  
   Free(b->div_post_pred_rght);
 
   if(b->p_lk_rght)
@@ -707,7 +710,7 @@ void Free_Scalar_Dbl(scalar_dbl *v)
 {
   scalar_dbl *next;
   
-  /* assert(v); */
+  assert(v);
 
   next = v->next;
   do

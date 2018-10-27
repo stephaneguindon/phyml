@@ -68,8 +68,8 @@ void TIMES_Least_Square_Node_Times(t_edge *e_root, t_tree *tree)
 
   for(i=0;i<n-1;i++) { tree->rates->nd_t[tree->a_nodes[i]->num] = -x[i]; }
   tree->rates->nd_t[root->num] = -x[n-1];
-  tree->n_root->l[2] = tree->rates->nd_t[root->v[2]->num] - tree->rates->nd_t[root->num];
-  tree->n_root->l[1] = tree->rates->nd_t[root->v[1]->num] - tree->rates->nd_t[root->num];
+  tree->n_root->l[2]->v = tree->rates->nd_t[root->v[2]->num] - tree->rates->nd_t[root->num];
+  tree->n_root->l[1]->v = tree->rates->nd_t[root->v[1]->num] - tree->rates->nd_t[root->num];
   ////////////////////////////////////////
   return;
   ////////////////////////////////////////
@@ -746,7 +746,6 @@ void TIMES_Lk_Times_Trav(t_node *a, t_node *d, phydbl lim_inf, phydbl lim_sup, p
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 phydbl TIMES_Log_Number_Of_Ranked_Labelled_Histories(t_node *root, int per_slice, t_tree *tree)
 {
   int i;
@@ -1145,14 +1144,14 @@ void TIMES_Update_Node_Ordering(t_tree *tree)
   phydbl *t;
   int swap = NO;
 
-  For(i,2*tree->n_otu-1) tree->rates->t_rank[i] = i;
+  for(i=0;i<2*tree->n_otu-1;++i) tree->rates->t_rank[i] = i;
 
   t = tree->rates->nd_t;
 
   do
     {
       swap = NO;
-      For(i,2*tree->n_otu-2)
+      for(i=0;i<2*tree->n_otu-2;++i)
 	{
 	  if(t[tree->rates->t_rank[i]] > t[tree->rates->t_rank[i+1]]) // Sort in ascending order
 	    {
@@ -1165,9 +1164,6 @@ void TIMES_Update_Node_Ordering(t_tree *tree)
     }
   while(swap == YES);
 
-  /* For(i,2*tree->n_otu-1) PhyML_Printf("\n. node %3d time: %12f", */
-  /*                                     tree->rates->t_rank[i], */
-  /*                                     tree->rates->nd_t[tree->rates->t_rank[i]]); */
 }
 
 //////////////////////////////////////////////////////////////
@@ -1231,16 +1227,13 @@ void TIMES_Set_Calibration(t_tree *tree)
   TIMES_Set_All_Node_Priors(tree);
 }
 
-
-
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void TIMES_Record_Prior_Times(t_tree *tree)
 {
   int i;
-  For(i,2*tree->n_otu-1) 
+  for(i=0;i<2*tree->n_otu-1;++i) 
     {
       tree->rates->t_prior_min_ori[i] = tree->rates->t_prior_min[i];
       tree->rates->t_prior_max_ori[i] = tree->rates->t_prior_max[i];
