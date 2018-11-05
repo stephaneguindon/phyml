@@ -61,6 +61,7 @@ void Make_Tree_4_Lk(t_tree *tree, calign *cdata, int n_site)
       Init_Partial_Lk_Tips_Double(tree);
       Init_Partial_Lk_Loc(tree);
 
+      
       if(tree->n_root != NULL)
         {
           Free_Edge_Lk_Rght(tree->n_root->b[1]);
@@ -242,7 +243,7 @@ void Make_Edge_Lk(t_edge *b, t_tree *tree)
   b->Pij_rr = (phydbl *)mCalloc(tree->mod->ras->n_catg*tree->mod->ns*tree->mod->ns,sizeof(phydbl));
   b->tPij_rr = (phydbl *)mCalloc(tree->mod->ras->n_catg*tree->mod->ns*tree->mod->ns,sizeof(phydbl));
 #endif
-
+  
   Make_Edge_Lk_Left(b,tree);
   Make_Edge_Lk_Rght(b,tree);
 }

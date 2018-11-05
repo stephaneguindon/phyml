@@ -219,9 +219,9 @@ void Init_Ui_Tips(t_tree *tree)
     }
   
   
-  For(br,2*tree->n_otu-3)
+  for(br=0;br<2*tree->n_otu-3;++br)
     {
-      for(curr_site=0;curr_site<tree->data->crunch_len;curr_site++)
+      for(curr_site=0;curr_site<tree->data->crunch_len;++curr_site)
         {
           tree->a_edges[br]->pars_r[curr_site] = 0;
           tree->a_edges[br]->pars_l[curr_site] = 0;

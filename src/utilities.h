@@ -2308,7 +2308,7 @@ void Table_Bottom(unsigned int width);
 t_cal *Duplicate_Calib(t_cal *from);
 t_clad *Duplicate_Clade(t_clad *from);
 void Swap_Partial_Lk_Extra(t_edge *b, t_node *d, int whichone, t_tree *tree);
-void Remove_Duplicates(calign *data, option *io);
+void Remove_Duplicates(calign *data, option *io, t_tree *tree);
 short int Are_Sequences_Identical(align *seq1, align *seq2);
 char *Mutation_Id(int mut_idx, t_tree *tree);
 void Random_Tax_Idx(t_node *a, t_node *d, int *idx, t_tree *tree);

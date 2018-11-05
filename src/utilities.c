@@ -764,7 +764,6 @@ void Connect_Edges_To_Nodes_Serial(t_tree *tree)
   /* Reset */
   for(i=0;i<2*tree->n_otu-1;++i) for(j=0;j<3;j++) tree->a_nodes[i]->b[j] = NULL;
 
-  tree->num_curr_branch_available = 0;
   
   for(i=0;i<tree->n_otu;i++)
     {
@@ -772,14 +771,16 @@ void Connect_Edges_To_Nodes_Serial(t_tree *tree)
       assert(tree->a_nodes[i] != tree->a_nodes[i]->v[0]);
 
       // Required so that p_lk_tip_r corresponds to the sequence at tree->a_nodes[i]
-      if(tree->a_edges[i]->p_lk_tip_r != NULL)
-        assert(tree->a_edges[i]->rght == tree->a_nodes[i]);
+      if(tree->a_edges[i]->p_lk_tip_r != NULL) assert(tree->a_edges[i]->rght == tree->a_nodes[i]);
 
       Connect_One_Edge_To_Two_Nodes(tree->a_nodes[i],
                                     tree->a_nodes[i]->v[0],
                                     tree->a_edges[i],
                                     tree);
+      /* PhyML_Printf("\n. %3d EX branch num: %3d %d left: %d right: %d",i,tree->a_edges[i]->num,tree->num_curr_branch_available,tree->a_nodes[i]->num,tree->a_nodes[i]->v[0]->num); */
     }
+
+  tree->num_curr_branch_available = tree->n_otu;
 
   for(i=tree->n_otu;i<2*tree->n_otu-2;i++)
     {
@@ -792,8 +793,9 @@ void Connect_Edges_To_Nodes_Serial(t_tree *tree)
 
             Connect_One_Edge_To_Two_Nodes(tree->a_nodes[i],
                                           tree->a_nodes[i]->v[j],
-                                          tree->a_edges[i],
+                                          tree->a_edges[tree->num_curr_branch_available],
                                           tree);
+            /* PhyML_Printf("\n. %3d IN branch num: %3d %d left: %d right: %d",i,tree->a_edges[tree->num_curr_branch_available]->num,tree->num_curr_branch_available,tree->a_nodes[i]->num,tree->a_nodes[i]->v[0]->num); */
           }
     }
 }
@@ -2382,17 +2384,18 @@ short int Are_Sequences_Identical(align *seq1, align *seq2)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Remove_Duplicates(calign *data, option *io)
+void Remove_Duplicates(calign *data, option *io, t_tree *tree)
 {
-  int n_duplicates,n_removed,n_otu_orig;
+  int n_duplicates,n_removed,n_otu_orig,i,j;
   align *tmp;
-
+  char *s_tree;
+  
   if(io->leave_duplicates == YES) return;
   
   n_otu_orig = data->n_otu;
   n_duplicates = 0;
   
-  for(int i=0; i<data->n_otu-1; ++i)
+  for(i=0; i<data->n_otu-1; ++i)
     {
       if(data->c_seq[i]->is_duplicate == YES) continue;
       else
@@ -2402,6 +2405,7 @@ void Remove_Duplicates(calign *data, option *io)
               if(Are_Sequences_Identical(data->c_seq[i],data->c_seq[j]) == YES)
                 {
                   data->c_seq[j]->is_duplicate = YES;
+                  if(n_duplicates == 0) PhyML_Printf("\n");
                   PhyML_Printf("\n. Note: taxon '%s' is a duplicate of taxon '%s'.",
                                data->c_seq[j]->name,data->c_seq[i]->name);
                   n_duplicates++;
@@ -2411,7 +2415,7 @@ void Remove_Duplicates(calign *data, option *io)
     }
 
   n_removed = 0;
-  for(int i=0; i < n_otu_orig; ++i)
+  for(i=0; i < n_otu_orig; ++i)
     {
       if(data->c_seq[i]->is_duplicate == YES)
         {
@@ -2424,7 +2428,10 @@ void Remove_Duplicates(calign *data, option *io)
   
   data->n_rm = n_removed;
 
-  for(int i=0; i < n_otu_orig; ++i)
+  if(!n_removed) return;
+
+  
+  for(i=0; i < n_otu_orig; ++i)
     {
       if(data->c_seq[i]->is_duplicate == YES)
         {
@@ -2441,10 +2448,54 @@ void Remove_Duplicates(calign *data, option *io)
         }
     }
 
+  for(i=0;i<n_otu_orig;++i)
+    {
+      if(data->c_seq[i]->is_duplicate == YES)
+        {
+          for(j=0;j<n_otu_orig;++j)
+            {
+              if(!strcmp(tree->a_nodes[j]->name,data->c_seq[i]->name))
+                {
+                  Prune_Subtree(tree->a_nodes[j]->v[0],
+                                tree->a_nodes[j],
+                                NULL,NULL,tree);                        
+
+                  tree->a_nodes[tree->a_nodes[j]->v[0]->num] = NULL;
+                  tree->a_nodes[j] = NULL;
+                }
+            }
+        }
+    }
+
+  if(data->n_rm > 0)
+    {
+      t_node **new_a_nodes = (t_node **)mCalloc(2*(n_otu_orig-data->n_rm)-1,sizeof(t_node *));
+      
+      j = 0;
+      for(i=0;i<2*n_otu_orig-1;++i)
+        {
+          if(tree->a_nodes[i] != NULL)
+            {
+              new_a_nodes[j] = tree->a_nodes[i];
+              new_a_nodes[j]->num = j;
+              j++;
+            }
+        }
+
+      Free(tree->a_nodes);
+      tree->a_nodes = new_a_nodes;
+
+      tree->n_otu -= data->n_rm;
+      
+      Connect_Edges_To_Nodes_Serial(tree);
+    }
+
+
+
   data->n_otu -= data->n_rm;
   io->n_otu = data->n_otu;
-
-  if(n_duplicates > 0) PhyML_Printf("\n");
+  
+  /* if(n_duplicates > 0) PhyML_Printf("\n"); */
   
   /* for(int i=0; i < n_otu_orig; ++i) */
   /*   { */
@@ -10070,7 +10121,6 @@ int Check_Topo_Constraints(t_tree *big_tree, t_tree *small_tree)
   big_tree_cpy = Make_Tree_From_Scratch(big_tree->n_otu,NULL);
   Copy_Tree(big_tree,big_tree_cpy);
 
-
   Prune_Tree(big_tree_cpy,small_tree);
 
   /* For(i,2*small_tree->n_otu-3) printf("\nz %d . %d . %d", */
@@ -10087,8 +10137,8 @@ int Check_Topo_Constraints(t_tree *big_tree, t_tree *small_tree)
   Match_Tip_Numbers(small_tree,big_tree_cpy);
   Get_Bip(big_tree_cpy->a_nodes[0],big_tree_cpy->a_nodes[0]->v[0],big_tree_cpy);
 
-  For(i,2*big_tree_cpy->n_otu-3) big_tree_cpy->a_edges[i]->bip_score = 0;
-  For(i,2*small_tree->n_otu-3)   small_tree->a_edges[i]->bip_score = 0;
+  for(i=0;i<2*big_tree_cpy->n_otu-3;++i) big_tree_cpy->a_edges[i]->bip_score = 0;
+  for(i=0;i<2*small_tree->n_otu-3;++i)   small_tree->a_edges[i]->bip_score = 0;
 
   diffs = Compare_Bip(small_tree,big_tree_cpy,NO);
 

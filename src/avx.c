@@ -290,6 +290,7 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
   const unsigned nblocks = ns/sz;
 
   __m256d *_tPij1,*_tPij2,*_pmat1plk1,*_pmat2plk2,*_plk0,*_init_tPij1,*_init_tPij2;
+
   
 #ifndef WIN32
   if(posix_memalign((void **)&_tPij1,BYTE_ALIGN,(size_t)(ncatg * nsns / sz) * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);

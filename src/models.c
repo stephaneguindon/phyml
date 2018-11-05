@@ -280,7 +280,6 @@ void PMat_Empirical(const phydbl l, const t_mod *mod, const int pos, phydbl *Pij
           for(k=0;k<ns;++k)
             {
               Pij[j] += (uexpt[i*ns+k] * V[k*ns+j]);
-              /* PhyML_Printf("\n. P[j]: %g %g %g",Pij[j],uexpt[i*ns+k],V[k*ns+j]); */
             }
           if(Pij[j] < SMALL_PIJ) Pij[j] = SMALL_PIJ;
         }
@@ -901,6 +900,7 @@ void Update_Eigen(t_mod *mod)
       n_iter   = 0;
       result   = 0;
 
+      
       for(i=0;i<mod->ns*mod->ns;++i)
         {
           mod->r_mat->qmat_buff->v[i] = mod->r_mat->qmat->v[i];
@@ -923,7 +923,7 @@ void Update_Eigen(t_mod *mod)
                 mod->eigen->space))
         {
           /* compute inverse(Vr) into Vi */
-          For (i,mod->ns*mod->ns) mod->eigen->l_e_vect[i] = mod->eigen->r_e_vect[i];
+          for (i=0;i<mod->ns*mod->ns;++i) mod->eigen->l_e_vect[i] = mod->eigen->r_e_vect[i];
           while(!Matinv(mod->eigen->l_e_vect, mod->eigen->size, mod->eigen->size,YES))
             {
 	      PhyML_Printf("\n. Trying Q<-Q*scalar and then Root<-Root/scalar to fix this...\n");
@@ -969,7 +969,6 @@ void Update_Eigen(t_mod *mod)
           Warn_And_Exit("\n");
         }
     }
-
 }
 
 //////////////////////////////////////////////////////////////

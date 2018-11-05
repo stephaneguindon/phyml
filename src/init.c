@@ -1166,8 +1166,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
           for(i=0;i<mod->ns;i++)
             mod->e_frq->pi_unscaled->v[i] = log(mod->e_frq->pi->v[i]);
           mod->update_eigen = NO;
-          if(io->mod->s_opt->opt_kappa)
-			io->mod->s_opt->opt_lambda = YES;
+          if(io->mod->s_opt->opt_kappa) io->mod->s_opt->opt_lambda = YES;
         }
 
       if(mod->whichmodel == HKY85)
@@ -1420,7 +1419,6 @@ void Init_Model(calign *data, t_mod *mod, option *io)
     }
 
   if(!mod->use_m4mod) Set_Model_Parameters(mod);
-
   
   Init_Eigen_Struct(mod->eigen);
 

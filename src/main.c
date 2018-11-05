@@ -141,14 +141,14 @@ int main(int argc, char **argv)
 
                   if(io->mod->use_m4mod) M4_Init_Model(mod->m4mod,cdata,mod);
 
-                  Remove_Duplicates(cdata,io);
-
                   //Make the initial tree
                   switch(io->in_tree)
                     {
                     case 0 : case 1 : { tree = Dist_And_BioNJ(cdata,mod,io); break; }
                     case 2 :          { tree = Read_User_Tree(cdata,mod,io); break; }
                     }
+
+                  Remove_Duplicates(cdata,io,tree);
 
                   if(io->fp_in_constraint_tree != NULL)
                     {

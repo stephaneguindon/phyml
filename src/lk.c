@@ -476,12 +476,18 @@ if(tree->rates && tree->io->lk_approx == NORMAL)
      Update_Efrq(tree->mod);
      Update_Eigen(tree->mod);
    }
+
+ 
   
  if(tree->mod->s_opt->skip_tree_traversal == NO)
     {
       if(!b) //Update PMat for all edges
         {
-          for(br=0;br<2*tree->n_otu-3;++br) Update_PMat_At_Given_Edge(tree->a_edges[br],tree);
+          for(br=0;br<2*tree->n_otu-3;++br)
+            {
+              Update_PMat_At_Given_Edge(tree->a_edges[br],tree);
+            }
+          
           if(tree->n_root && tree->ignore_root == NO)
             {
               Update_PMat_At_Given_Edge(tree->n_root->b[1],tree);
@@ -1205,7 +1211,7 @@ void Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
     Alias_One_Subpatt((d==b->left)?(b->rght):(b->left),d,tree);
 
   if(d->tax) return;
-
+  
 #ifdef BEAGLE
   update_beagle_partials(tree, b, d);
 #else
@@ -2338,6 +2344,7 @@ void Init_Partial_Lk_Loc(t_tree *tree)
       patt_id_d = (d == d->b[0]->left)?(d->b[0]->patt_id_left):(d->b[0]->patt_id_rght);
       for(j=0;j<tree->n_pattern;j++)
         {
+          assert(tree->a_nodes[d->num]->c_seq);
           patt_id_d[j] = (int)tree->a_nodes[d->num]->c_seq->state[j];
         }
     }
