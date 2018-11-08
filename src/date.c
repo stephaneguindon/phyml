@@ -483,7 +483,6 @@ phydbl *DATE_MCMC(t_tree *tree)
   fp_tree = tree->io->fp_out_tree;
 
   if(tree->io->mutmap == YES) Make_MutMap(tree);
-
   
   TIMES_Randomize_Tree_With_Time_Constraints(tree->rates->a_cal[0],tree);
   
@@ -545,8 +544,7 @@ phydbl *DATE_MCMC(t_tree *tree)
   PhyML_Printf("\n. log(Pr(Seq|Tree)) = %f",tree->c_lnL);
   PhyML_Printf("\n. log(Pr(Tree)) = %f",tree->rates->c_lnL_times);
     
-  
-  
+    
   tree->extra_tree = Make_Tree_From_Scratch(tree->n_otu,tree->data);
   tree->extra_tree->mod = tree->mod;
   Copy_Tree(tree,tree->extra_tree);
