@@ -1003,8 +1003,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
 #endif
 
   mod->ns = io->mod->ns;
-
-
+  
   if(io->datatype == GENERIC) mod->whichmodel = JC69;
 
   dr      = (phydbl *)mCalloc(  mod->ns,sizeof(phydbl));
@@ -1416,11 +1415,11 @@ void Init_Model(calign *data, t_mod *mod, option *io)
       PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
-
-  if(!mod->use_m4mod) Set_Model_Parameters(mod);
   
   Init_Eigen_Struct(mod->eigen);
 
+  if(!mod->use_m4mod) Set_Model_Parameters(mod);
+  
   free(dr);
   free(di);
   free(space);

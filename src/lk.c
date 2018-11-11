@@ -1703,7 +1703,7 @@ matrix *ML_Dist(calign *data, t_mod *mod)
   Update_Boundaries(mod);
   Update_Eigen(mod);
 
-  tmpdata->n_otu  = 2;
+  tmpdata->n_otu = 2;
 
   tmpdata->crunch_len = data->crunch_len;
   tmpdata->init_len   = data->init_len;

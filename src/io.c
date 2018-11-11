@@ -2538,8 +2538,8 @@ void Print_Model(t_mod *mod)
 
   PhyML_Printf("\n. Eigen\n");
   For(i,2*mod->ns)       PhyML_Printf(" %f ",mod->eigen->space[i]);
-  PhyML_Printf("\n");
-  For(i,2*mod->ns)       PhyML_Printf(" %f ",mod->eigen->space_int[i]);
+  /* PhyML_Printf("\n"); */
+  /* For(i,2*mod->ns)       PhyML_Printf(" %f ",mod->eigen->space_int[i]); */
   PhyML_Printf("\n");
   for(i=0;i<mod->ns;i++)         PhyML_Printf(" %f ",mod->eigen->e_val[i]);
   PhyML_Printf("\n");
@@ -5159,7 +5159,6 @@ void Make_Efrq_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
     {
       mod->s_opt->opt_efrq_weight = NO;
     }
-
 }
 
 //////////////////////////////////////////////////////////////

@@ -2388,7 +2388,6 @@ void Remove_Duplicates(calign *data, option *io, t_tree *tree)
 {
   int n_duplicates,n_removed,n_otu_orig,i,j;
   align *tmp;
-  char *s_tree;
   
   if(io->leave_duplicates == YES) return;
   
@@ -4935,8 +4934,9 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
   cpy->num_curr_branch_available = 0;
   cpy->t_beg                     = ori->t_beg;
   cpy->verbose                   = ori->verbose;
-  cpy->data                      = ori->data;
-  cpy->mod                       = ori->mod;
+
+  if(ori->data) cpy->data = ori->data;
+  if(ori->mod) cpy->mod   = ori->mod;
   
 #ifdef BEAGLE
   cpy->b_inst = ori->b_inst;
@@ -8367,8 +8367,9 @@ t_tree *Dist_And_BioNJ(calign *cdata, t_mod *mod, option *io)
   if(mod->s_opt->random_input_tree == NO)
     {
       if(!io->quiet) PhyML_Printf("\n\n. Computing pairwise distances...");
- 
+
       mat = ML_Dist(cdata,mod);
+      
       Fill_Missing_Dist(mat);
             
       if(!io->quiet) PhyML_Printf("\n\n. Building BioNJ tree...");

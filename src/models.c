@@ -271,7 +271,7 @@ void PMat_Empirical(const phydbl l, const t_mod *mod, const int pos, phydbl *Pij
   Pij = Pij + pos;
   if(tPij != NULL) tPij = tPij + pos;
   
-  
+
   for(i=0;i<ns;++i)
     {
       for(j=0;j<ns;++j)
@@ -796,7 +796,7 @@ void Set_Model_Parameters(t_mod *mod)
 void Update_Boundaries(t_mod *mod)
 {
   int i;
-
+    
   if(mod->kappa->v > TSTV_MAX) mod->kappa->v = TSTV_MAX;
   if(mod->kappa->v < TSTV_MIN) mod->kappa->v = TSTV_MIN;
 
@@ -837,7 +837,7 @@ void Update_Boundaries(t_mod *mod)
 
       if(mod->e_frq->pi_unscaled->v[i] > UNSCALED_E_FRQ_MAX)
         mod->e_frq->pi_unscaled->v[i] = UNSCALED_E_FRQ_MAX;
-
+            
       if(mod->e_frq->pi->v[i] < E_FRQ_MIN)
         mod->e_frq->pi->v[i] = E_FRQ_MIN;
 
@@ -861,14 +861,7 @@ void Update_Eigen(t_mod *mod)
   int result, n_iter;
   phydbl scalar;
   int i;
-
-
-  if(mod->is_mixt_mod == YES)
-    {
-      MIXT_Update_Eigen(mod);
-      return;
-    }
-
+  
   if(mod->update_eigen == YES)
     {
       //Update the Q-matrix first before computing the Eigen(because the Eigen is computed based on the Q-matrix)

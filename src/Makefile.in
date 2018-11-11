@@ -616,7 +616,7 @@ am__phytime_SOURCES_DIST = main.c utilities.c utilities.h optimiz.c \
 	mcmc.c mcmc.h stats.c stats.h mg.c mg.h tiporder.c tiporder.h \
 	io.c io.h make.c make.h mixt.c mixt.h init.c init.h nexus.c \
 	nexus.h date.c date.h tbe.c tbe.h sse.c sse.h avx.c avx.h \
-	xml.c xml.h
+	ancestral.c ancestral.h xml.c xml.h
 @WANT_PHYTIME_TRUE@am_phytime_OBJECTS = main.$(OBJEXT) \
 @WANT_PHYTIME_TRUE@	utilities.$(OBJEXT) optimiz.$(OBJEXT) \
 @WANT_PHYTIME_TRUE@	lk.$(OBJEXT) bionj.$(OBJEXT) \
@@ -631,7 +631,8 @@ am__phytime_SOURCES_DIST = main.c utilities.c utilities.h optimiz.c \
 @WANT_PHYTIME_TRUE@	make.$(OBJEXT) mixt.$(OBJEXT) \
 @WANT_PHYTIME_TRUE@	init.$(OBJEXT) nexus.$(OBJEXT) \
 @WANT_PHYTIME_TRUE@	date.$(OBJEXT) tbe.$(OBJEXT) sse.$(OBJEXT) \
-@WANT_PHYTIME_TRUE@	avx.$(OBJEXT) xml.$(OBJEXT)
+@WANT_PHYTIME_TRUE@	avx.$(OBJEXT) ancestral.$(OBJEXT) \
+@WANT_PHYTIME_TRUE@	xml.$(OBJEXT)
 phytime_OBJECTS = $(am_phytime_OBJECTS)
 phytime_DEPENDENCIES =
 am__rf_SOURCES_DIST = main.c utilities.c utilities.h optimiz.c \
@@ -969,9 +970,10 @@ top_srcdir = @top_srcdir@
 @WANT_PHYTIME_TRUE@init.c init.h\
 @WANT_PHYTIME_TRUE@nexus.c nexus.h\
 @WANT_PHYTIME_TRUE@date.c date.h\
-@WANT_PHYTIME_TRUE@tbe.c tbe.h \
+@WANT_PHYTIME_TRUE@tbe.c tbe.h\
 @WANT_PHYTIME_TRUE@sse.c sse.h\
 @WANT_PHYTIME_TRUE@avx.c avx.h\
+@WANT_PHYTIME_TRUE@ancestral.c ancestral.h\
 @WANT_PHYTIME_TRUE@xml.c xml.h
 
 @WANT_PHYTIME_TRUE@phytime_LDADD = -lm

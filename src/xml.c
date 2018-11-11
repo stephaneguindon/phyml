@@ -746,7 +746,7 @@ t_tree *XML_Process_Base(char *xml_filename)
                       ////////////////////////////////////////
                       
                       else if(!strcmp(parent->name,"equfreqs"))
-                        {
+                        {                          
                           /* If n->ds == NULL, the corrresponding node data structure, n->ds, has not */
                           /* been initialized. If not, do nothing. */
                           if(instance->ds->obj == NULL)
@@ -2221,6 +2221,7 @@ void DATE_XML(char *xml_filename)
   FILE *fp_xml_in;
   xml_node *xnd,*xnd_dum,*xnd_clade,*xnd_cal,*xroot;
   t_tree *mixt_tree,*tree;
+  t_mod *mod;
   phydbl low,up,*res,alpha_proba_dbl;
   char *clade_name,*alpha_proba_string,*calib_id,*clade_id,*dum_string;
   int seed;
@@ -2390,6 +2391,7 @@ void DATE_XML(char *xml_filename)
         }
     }
   
+  
   // Looking for XML node with rate-across-lineage info
   xnd = XML_Search_Node_Name("calibration",YES,xroot);
 
@@ -2430,9 +2432,8 @@ void DATE_XML(char *xml_filename)
 	}
     }
 
-  
   MIXT_Check_Model_Validity(mixt_tree);
-  MIXT_Init_Model(mixt_tree);
+  MIXT_Init_Model(mixt_tree);  
   Print_Data_Structure(NO,stdout,mixt_tree);
   tree = MIXT_Starting_Tree(mixt_tree);
   Copy_Tree(tree,mixt_tree);

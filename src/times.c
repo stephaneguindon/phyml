@@ -1951,13 +1951,9 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       Exit("\n");
     }
 
-  /* for(j=0;j<mixt_tree->n_otu;j++) printf("\n. %s",mixt_tree->a_nodes[j]->name); */
-        
-  assert(i != 2*mixt_tree->n_otu-3);
+  /* assert(i != 2*mixt_tree->n_otu-3); */
 
   mixt_tree->is_mixt_tree = orig_is_mixt_tree;
-
-
   
   if(mixt_tree->is_mixt_tree == YES)
     {

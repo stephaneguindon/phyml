@@ -120,9 +120,10 @@ mixt.c mixt.h\
 init.c init.h\
 nexus.c nexus.h\
 date.c date.h\
-tbe.c tbe.h \
+tbe.c tbe.h\
 sse.c sse.h\
 avx.c avx.h\
+ancestral.c ancestral.h\
 xml.c xml.h
 phytime_LDADD = -lm
 else 
@@ -686,4 +687,3 @@ intro:
 	@echo ".: Building [$(bin_PROGRAMS)]. Version $(VERSION) :."
 	@echo ""
 	@echo ""
-

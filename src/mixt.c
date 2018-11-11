@@ -3170,7 +3170,6 @@ void MIXT_Update_Eigen(t_mod *mixt_mod)
 
   mod = mixt_mod;
 
-
   do
     {
       if(mod->is_mixt_mod) mod = mod->next;
@@ -3217,11 +3216,11 @@ void MIXT_Set_Update_Eigen(int yn, t_tree *mixt_tree)
 {
   t_tree *tree;
 
-  tree = mixt_tree->next;
+  tree = mixt_tree;
   do
     {
-      if(tree->is_mixt_tree == YES) tree = tree->next;        
       Set_Update_Eigen(yn,tree->mod);
+      PhyML_Printf("\n sEt UPDATE eigen to %d on %p --> %d",yn,tree->mod,tree->mod->update_eigen);
       tree = tree->next;
     }
   while(tree); 

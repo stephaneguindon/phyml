@@ -1285,6 +1285,8 @@ phydbl Dpois(phydbl x, phydbl param, int logit)
 {
   phydbl v;
 
+  assert(param > 0.0);
+
   if(x < .0) 
     {
       if(logit == YES) return(-INFINITY);
