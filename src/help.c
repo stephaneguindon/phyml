@@ -296,6 +296,10 @@ void Usage()
   PhyML_Printf("\t\t%sNo interactive question for memory usage (for running in batch mode). Normal output otherwise.\n",FLAT);
   PhyML_Printf("\n");
 
+  PhyML_Printf("%s\n\t--ancestral%s\n",BOLD,FLAT);
+  PhyML_Printf("\t\t%sReconstruct most probable ancestral sequences at each internal node.\n",FLAT);
+  PhyML_Printf("\n");
+
 #ifndef PHYTIME
   PhyML_Printf("%s\n\t--leave_duplicates%s\n",BOLD,FLAT);
   PhyML_Printf("\t\t%sPhyML removes duplicate sequences by default. Use this option to leave them in.\n",FLAT);

@@ -2221,7 +2221,6 @@ void DATE_XML(char *xml_filename)
   FILE *fp_xml_in;
   xml_node *xnd,*xnd_dum,*xnd_clade,*xnd_cal,*xroot;
   t_tree *mixt_tree,*tree;
-  t_mod *mod;
   phydbl low,up,*res,alpha_proba_dbl;
   char *clade_name,*alpha_proba_string,*calib_id,*clade_id,*dum_string;
   int seed;

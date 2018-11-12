@@ -263,6 +263,12 @@ int main(int argc, char **argv)
                   
                   if(tree->io->ancestral == YES) Ancestral_Sequences(tree,YES);
                   
+                  /* !!!!!!!!!!!!!!!!!!!!!!! */
+                  for(int i=0;i<100;++i) Sample_Ancestral_Seq(YES,NO,tree);
+
+
+
+
                   /* Build_Distrib_Number_Of_Diff_States_Under_Model(tree); */
                   /* Exit("\n"); */
 

@@ -7533,10 +7533,16 @@ void MCMC_PHYREX_Indel_Hit(t_tree *tree)
 
   if(n_disks_new < n_disks_cur)
     {
+      tree->mmod->rad += 0.1;
+      if(tree->mmod->rad > tree->mmod->max_rad) tree->mmod->rad = tree->mmod->max_rad;
+      if(tree->mmod->rad < tree->mmod->min_rad) tree->mmod->rad = tree->mmod->min_rad;
       MCMC_PHYREX_Delete_Hit(hr, n_disks_cur - n_disks_new, cur_rad, cur_mu, tree);
     }
   else
     {
+      tree->mmod->rad -= 0.1;
+      if(tree->mmod->rad > tree->mmod->max_rad) tree->mmod->rad = tree->mmod->max_rad;
+      if(tree->mmod->rad < tree->mmod->min_rad) tree->mmod->rad = tree->mmod->min_rad;
       MCMC_PHYREX_Insert_Hit(hr, n_disks_new - n_disks_cur, cur_rad, cur_mu, tree);
     }
   

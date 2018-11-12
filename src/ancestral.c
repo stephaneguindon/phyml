@@ -120,7 +120,8 @@ void Sample_Ancestral_Seq(int fullmutmap, int fromprior, t_tree *tree)
       sprintf(s+strlen(s),"%d.",tree->io->r_seed);
       sprintf(s+strlen(s),"%d",i);
       fp = fopen(s,"a");
-      PhyML_Fprintf(fp,"\n-1 -1 -1.0 -1 %d",tree->mixt_tree ? tree->mixt_tree->mcmc->run : tree->mcmc->run);
+      /* PhyML_Fprintf(fp,"\n-1 -1 -1.0 -1 %d",tree->mixt_tree ? tree->mixt_tree->mcmc->run : tree->mcmc->run); */
+      PhyML_Fprintf(fp,"\n-1 -1 -1.0 -1");
       
       for(j=0;j<n_mut;j++)
         {
@@ -306,7 +307,7 @@ int Sample_Ancestral_Seq_Core(t_node *a, t_node *d, t_edge *b, int r_cat, int si
           assert(b);
           
           // State (already) sampled at node a
-          state = Assign_State(a->c_seq_anc->state + site,
+          state = Assign_State((a->tax) ? (a->c_seq->state + site) : (a->c_seq_anc->state + site),
                                tree->mod->io->datatype,
                                tree->mod->io->state_len);
           
