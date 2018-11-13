@@ -183,12 +183,11 @@ int main(int argc, char **argv)
                   time(&t_beg);
                   time(&(tree->t_beg));
 
+                  
                   tree->mod          = mod;
                   tree->io           = io;
                   tree->data         = cdata;
                   tree->n_pattern    = tree->data->crunch_len;
-                  tree->n_root       = NULL;
-                  tree->e_root       = NULL;
                   tree->n_tot_bl_opt = 0;
 
                   Set_Both_Sides(YES,tree);
@@ -230,13 +229,10 @@ int main(int argc, char **argv)
                   if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
 
 
-
-
                   
                   Set_Update_Eigen(YES,tree->mod);                 
                   Lk(NULL,tree);
                   Set_Update_Eigen(NO,tree->mod);
-
                   
                   if(tree->mod->s_opt->opt_topo)
 		    {
@@ -261,12 +257,12 @@ int main(int argc, char **argv)
                   PhyML_Printf("\n\n. Log likelihood of the current tree: %f.",tree->c_lnL);
 
                   
-                  if(tree->io->ancestral == YES) Ancestral_Sequences(tree,YES);
-                  
+                  /* if(tree->io->ancestral == YES) Ancestral_Sequences(tree,YES); */
+
+
                   /* !!!!!!!!!!!!!!!!!!!!!!! */
                   for(int i=0;i<100;++i) Sample_Ancestral_Seq(YES,NO,tree);
-
-
+                  Exit("\n");
 
 
                   /* Build_Distrib_Number_Of_Diff_States_Under_Model(tree); */

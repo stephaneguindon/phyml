@@ -60,7 +60,6 @@ void Make_Tree_4_Lk(t_tree *tree, calign *cdata, int n_site)
 
       Init_Partial_Lk_Tips_Double(tree);
       Init_Partial_Lk_Loc(tree);
-
       
       if(tree->n_root != NULL)
         {
@@ -68,6 +67,25 @@ void Make_Tree_4_Lk(t_tree *tree, calign *cdata, int n_site)
           Free_Edge_Lk_Rght(tree->n_root->b[2]);
           Free_Edge_Loc_Rght(tree->n_root->b[1]);
           Free_Edge_Loc_Rght(tree->n_root->b[2]);
+
+          tree->n_root->b[1]->p_lk_rght  = tree->e_root->p_lk_left;
+          tree->n_root->b[2]->p_lk_rght  = tree->e_root->p_lk_rght;
+
+          tree->n_root->b[1]->p_lk_tip_r = tree->e_root->p_lk_tip_l;      
+          tree->n_root->b[2]->p_lk_tip_r = tree->e_root->p_lk_tip_r;
+          
+          tree->n_root->b[1]->div_post_pred_rght  = tree->e_root->div_post_pred_rght;
+          tree->n_root->b[2]->div_post_pred_rght  = tree->e_root->div_post_pred_left;
+
+          tree->n_root->b[1]->sum_scale_rght  = tree->e_root->sum_scale_rght;
+          tree->n_root->b[2]->sum_scale_rght  = tree->e_root->sum_scale_left;
+
+          tree->n_root->b[1]->sum_scale_rght_cat  = tree->e_root->sum_scale_rght_cat;
+          tree->n_root->b[2]->sum_scale_rght_cat  = tree->e_root->sum_scale_left_cat;
+
+          tree->n_root->b[1]->patt_id_rght  = tree->e_root->patt_id_rght;
+          tree->n_root->b[2]->patt_id_rght  = tree->e_root->patt_id_left;
+
         }
     }
 }

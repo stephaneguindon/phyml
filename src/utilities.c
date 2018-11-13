@@ -824,7 +824,7 @@ void Connect_One_Edge_To_Two_Nodes(t_node *a, t_node *d, t_edge *b, t_tree *tree
 {
   int i,dir_a_d,dir_d_a;
 
-  if(a == NULL || d == NULL || a->num == d->num) 
+  if(a == NULL || d == NULL || a->num == d->num || a == tree->n_root) 
     {
       PhyML_Fprintf(stderr,"\n. a: %d d: %d",a?a->num:-1,d?d->num:-1);
       assert(FALSE);
@@ -833,9 +833,9 @@ void Connect_One_Edge_To_Two_Nodes(t_node *a, t_node *d, t_edge *b, t_tree *tree
   dir_a_d = -1;
   for(i=0;i<3;i++) if(a->v[i] == d) { dir_a_d = i; break; }
 
-  dir_d_a = -1;
+  dir_d_a = -1;  
   for(i=0;i<3;i++) if(d->v[i] == a) { dir_d_a = i; break; }
-
+  
   if(dir_a_d == -1 || dir_d_a == -1)
     {
       PhyML_Printf("\n. a:%d a->v[0]:%d a->v[1]:%d a->v[2]:%d  d:%d d->v[0]:%d d->v[1]:%d d->v[2]:%d",

@@ -54,13 +54,17 @@ void Sample_Ancestral_Seq(int fullmutmap, int fromprior, t_tree *tree)
         tree->a_nodes[i]->c_seq_anc = (align *)mCalloc(1,sizeof(align));;
         tree->a_nodes[i]->c_seq_anc->state = (char *)mCalloc(tree->n_pattern,sizeof(char));
       }
-
-   
+  
   /* Update P(D_x|X=i) for each state i and node X */
   Set_Both_Sides(YES,tree);
   Lk(NULL,tree);
 
-
+  if(tree->n_root != NULL)
+    {
+      Update_PMat_At_Given_Edge(tree->n_root->b[1],tree);
+      Update_PMat_At_Given_Edge(tree->n_root->b[2],tree);
+    }
+  
   for(i=0;i<tree->n_pattern;++i)
     {
       /* Sample the rate class from its posterior density */
@@ -79,27 +83,30 @@ void Sample_Ancestral_Seq(int fullmutmap, int fromprior, t_tree *tree)
       for(j=0;j<tree->mod->ras->n_catg;j++) sum += probs[j];
       for(j=0;j<tree->mod->ras->n_catg;j++) probs[j]/=sum;
 
-      rate_cat = Sample_i_With_Proba_pi(probs,tree->mod->ras->n_catg);
-           
+      rate_cat = Sample_i_With_Proba_pi(probs,tree->mod->ras->n_catg);      
+      
       n_mut = 0;
       if(tree->n_root != NULL)
         {          
-          Sample_Ancestral_Seq_Pre(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],
+          Sample_Ancestral_Seq_Pre(tree->n_root,tree->n_root->v[1],
+                                   0.0,
+                                   tree->n_root->b[1],
                                    i,rate_cat,
                                    muttype,muttime,muttax,&n_mut,
                                    fullmutmap,fromprior,tree);
-
           
-          Sample_Ancestral_Seq_Pre(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],
+          Sample_Ancestral_Seq_Pre(tree->n_root,tree->n_root->v[2],
+                                   0.0,
+                                   tree->n_root->b[2],
                                    i,rate_cat,
                                    muttype,muttime,muttax,&n_mut,
                                    fullmutmap,fromprior,tree);
-
-
         }
       else
         {
-          Sample_Ancestral_Seq_Pre(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree->a_nodes[0]->b[0],
+          Sample_Ancestral_Seq_Pre(tree->a_nodes[0],tree->a_nodes[0]->v[0],
+                                   0.0,
+                                   tree->a_nodes[0]->b[0],
                                    i,rate_cat,
                                    muttype,muttime,muttax,&n_mut,
                                    fullmutmap,fromprior,tree);
@@ -159,7 +166,7 @@ void Sample_Ancestral_Seq(int fullmutmap, int fromprior, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Sample_Ancestral_Seq_Pre(t_node *a, t_node *d, t_edge *b,
+void Sample_Ancestral_Seq_Pre(t_node *a, t_node *d, phydbl Ta, t_edge *b,
                               int site, int r_cat,
                               int *muttype, phydbl *muttime, int *muttax, int *n_mut,
                               int fullmutmap, int fromprior, t_tree *tree)
@@ -185,6 +192,7 @@ void Sample_Ancestral_Seq_Pre(t_node *a, t_node *d, t_edge *b,
       sum = 0.0;
       for(i=0;i<ns;++i) sum += probs[i];
       for(i=0;i<ns;++i) probs[i] /= sum;
+
       sa = Sample_i_With_Proba_pi(probs,ns);
     }
   else if(a == tree->n_root)
@@ -200,7 +208,7 @@ void Sample_Ancestral_Seq_Pre(t_node *a, t_node *d, t_edge *b,
 
   sd = Sample_Ancestral_Seq_Core(a,d,b,r_cat,site,tree);
   
-  if(fullmutmap == YES) Map_Mutations(a,d,sa,sd,b,site,r_cat,muttype,muttime,muttax,n_mut,tree);
+  if(fullmutmap == YES) Map_Mutations(a,d,sa,sd,Ta,b,site,r_cat,muttype,muttime,muttax,n_mut,tree);
     
   if(d->tax) return;
   else
@@ -209,7 +217,7 @@ void Sample_Ancestral_Seq_Pre(t_node *a, t_node *d, t_edge *b,
         {
           if(d->v[i] != a && d->b[i] != tree->e_root)
             {
-              Sample_Ancestral_Seq_Pre(d,d->v[i],d->b[i],site,r_cat,muttype,muttime,muttax,n_mut,fullmutmap,fromprior,tree);
+              Sample_Ancestral_Seq_Pre(d,d->v[i],Ta+d->b[i]->l->v,d->b[i],site,r_cat,muttype,muttime,muttax,n_mut,fullmutmap,fromprior,tree);
             }
         }
     }
@@ -312,13 +320,17 @@ int Sample_Ancestral_Seq_Core(t_node *a, t_node *d, t_edge *b, int r_cat, int si
                                tree->mod->io->state_len);
           
           Pij = b->Pij_rr;
-                              
+          
           for(i=0;i<ns;++i)
             {
               if(d == b->left)
-                probs[i] = b->p_lk_left[site*dim1+r_cat*dim2+i] * Pij[r_cat*dim3+state*dim2+i];
+                {
+                  probs[i] = b->p_lk_left[site*dim1+r_cat*dim2+i] * Pij[r_cat*dim3+state*dim2+i];
+                }
               else if(d == b->rght)
-                probs[i] = b->p_lk_rght[site*dim1+r_cat*dim2+i] * Pij[r_cat*dim3+state*dim2+i];
+                {
+                  probs[i] = b->p_lk_rght[site*dim1+r_cat*dim2+i] * Pij[r_cat*dim3+state*dim2+i];
+                }
               else assert(FALSE);
             }
           
@@ -341,7 +353,7 @@ int Sample_Ancestral_Seq_Core(t_node *a, t_node *d, t_edge *b, int r_cat, int si
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Map_Mutations(t_node *a, t_node *d, int sa, int sd, t_edge *b, int site, int rcat, int *muttype, phydbl *muttime, int *muttax, int *n_mut, t_tree *tree)
+void Map_Mutations(t_node *a, t_node *d, int sa, int sd, phydbl Ta, t_edge *b, int site, int rcat, int *muttype, phydbl *muttime, int *muttax, int *n_mut, t_tree *tree)
 {
   int i,j;
   phydbl *probs,*all_probs;
@@ -377,7 +389,7 @@ void Map_Mutations(t_node *a, t_node *d, int sa, int sd, t_edge *b, int site, in
   T = b->l->v*rr;
 #endif
   
-  
+ 
   /* PhyML_Printf("\n. Mutmap: a:%d d:%d ta:%G td:%G cr:%G rr:%G l:%G", */
   /*              a?a->num:-1,d?d->num:-1, */
   /*              tree->rates->nd_t[a->num], */
@@ -461,6 +473,8 @@ void Map_Mutations(t_node *a, t_node *d, int sa, int sd, t_edge *b, int site, in
           // Transform into time in calendar units
           muttime[(*n_mut)+n_mut_branch-1] /= tree->rates->cur_l[d->num];
           muttime[(*n_mut)+n_mut_branch-1] *= fabs(tree->rates->nd_t[a->num]-tree->rates->nd_t[d->num]);
+#else
+          muttime[(*n_mut)+n_mut_branch-1] += Ta;
 #endif
 
           tax_idx = -1;
@@ -575,8 +589,14 @@ void Ancestral_Sequences(t_tree *tree, int print)
     if(tree->a_nodes[i]->tax == NO)
       Ancestral_Sequences_One_Node(tree->a_nodes[i],tree,print);
 
-  if(tree->n_root) Ancestral_Sequences_One_Node(tree->n_root,tree,print);
-
+  
+  if(tree->n_root)
+    {
+      PhyML_Printf("\n. PhyML only reconstructs ancestral sequences on unrooted tree for now.");
+      PhyML_Printf("\n. Please feel free to send me a pull request on Github regarding this.\n.");
+      assert(FALSE);
+      /* Ancestral_Sequences_One_Node(tree->n_root,tree,print); */
+    }
 
   fclose(tree->io->fp_out_ancestral);
 }

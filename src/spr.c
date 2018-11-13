@@ -742,7 +742,10 @@ void Global_Spr_Search(t_tree *tree)
   unsigned int hit_zero_improv = 0;
   unsigned int freq = 1;
   const unsigned int round_freq = 10;
-  
+
+  tree->n_root = NULL;
+  tree->e_root = NULL;
+
   best_lnL      = UNLIKELY;
   tree->verbose = (tree->verbose == VL0) ? VL0 : VL1;
   best_tree     = Make_Tree_From_Scratch(tree->n_otu,tree->data);

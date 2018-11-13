@@ -19,15 +19,15 @@ the GNU public licence. See http://www.opensource.org for details.
 
 
 void Sample_Ancestral_Seq(int fullmutmap, int fromprior, t_tree *tree);
-void Sample_Ancestral_Seq_Pre(t_node *a, t_node *d, t_edge *b,
-                              int site, int r_cat,
-                              int *muttype, phydbl *muttime, int *muttax, int *n_mut,
-                              int fullmutmap, int fromprior, t_tree *tree);
 int Sample_Ancestral_Seq_Core(t_node *a, t_node *d, t_edge *b, int r_cat, int site, t_tree *tree);
-void Map_Mutations(t_node *a, t_node *d, int sa, int sd, t_edge *b, int site, int rcat, int *muttype, phydbl *muttime, int *muttax, int *n_mut, t_tree *tree);
 void Ancestral_Sequences(t_tree *tree, int print);
 void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print);
 int MPEE_Score(const phydbl *alpha, int *idx, const phydbl *p, const int ns);
 int MPEE_Infer(const phydbl *p, const int ns);
+void Sample_Ancestral_Seq_Pre(t_node *a, t_node *d, phydbl Ta, t_edge *b,
+                              int site, int r_cat,
+                              int *muttype, phydbl *muttime, int *muttax, int *n_mut,
+                              int fullmutmap, int fromprior, t_tree *tree);
+void Map_Mutations(t_node *a, t_node *d, int sa, int sd, phydbl Ta, t_edge *b, int site, int rcat, int *muttype, phydbl *muttime, int *muttax, int *n_mut, t_tree *tree);
 
 #endif

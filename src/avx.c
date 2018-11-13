@@ -327,7 +327,7 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
                      &Pij1,&tPij1,&plk1,&sum_scale_v1,
                      &Pij2,&tPij2,&plk2,&sum_scale_v2,
                      d,b,tree);
- 
+
   // Copy transpose of transition matrices into AVX registers
   for(i=0;i<ncatg;++i)
     {
@@ -439,9 +439,9 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
         }
 
       
-      plk0 -= ncatgns;
-      plk1 -= (n_v1->tax) ? ns : ncatgns;
-      plk2 -= (n_v2->tax) ? ns : ncatgns;
+      /* plk0 -= ncatgns; */
+      /* plk1 -= (n_v1->tax) ? ns : ncatgns; */
+      /* plk2 -= (n_v2->tax) ? ns : ncatgns; */
       
       /* PhyML_Printf("\n. PARTIAL site: %d plk0: %p [%g %g %g %g] plk1: %p [%g %g %g %g] plk2: %p [%g %g %g %g]", */
       /*              site, */
@@ -462,9 +462,9 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
       /*              plk2[3] */
       /*              ); */
       
-      plk0 += ncatgns;
-      plk1 += (n_v1->tax) ? ns : ncatgns;
-      plk2 += (n_v2->tax) ? ns : ncatgns;
+      /* plk0 += ncatgns; */
+      /* plk1 += (n_v1->tax) ? ns : ncatgns; */
+      /* plk2 += (n_v2->tax) ? ns : ncatgns; */
 
     }
 

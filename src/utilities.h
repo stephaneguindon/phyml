@@ -2317,7 +2317,6 @@ void Alias_Subpatt_Pre(t_node *a, t_node *d, t_tree *tree);
 void Alias_Subpatt_Post(t_node *a, t_node *d, t_tree *tree);
 void Alias_One_Subpatt(t_node *a, t_node *d, t_tree *tree);
 void Alias_Subpatt(t_tree *tree);
-void Map_Mutations(t_node *a, t_node *d, int sa, int sd, t_edge *b, int site, int rcat, int *muttype, phydbl *muttime, int *muttax, int *n_mut, t_tree *tree);
 void Set_Update_Eigen(int yesno, t_mod *mod);
 int *Order_Int(const int *u, const int n);
 int *Order_Dbl(const phydbl *u, const int n);

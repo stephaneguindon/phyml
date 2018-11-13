@@ -115,12 +115,22 @@ t_tree *Read_Tree(char **s_tree)
                                       tree->n_root->v[1],
                                       tree->e_root,
                                       tree);
+
+        tree->n_root->b[1]->left = tree->n_root;
+        tree->n_root->b[2]->left = tree->n_root;
+
+        tree->n_root->b[1]->rght = tree->n_root->v[1];
+        tree->n_root->b[2]->rght = tree->n_root->v[2];
+
         
         tree->e_root->l->v = tree->n_root->l[2]->v + tree->n_root->l[1]->v;
         if(tree->e_root->l->v > 0.0)
           tree->n_root_pos = tree->n_root->l[2]->v / tree->e_root->l->v;
         else
           tree->n_root_pos = .5;
+
+        tree->n_root->b[1]->l->v = tree->n_root->l[1]->v;
+        tree->n_root->b[2]->l->v = tree->n_root->l[2]->v;
       }
     
     return tree;
@@ -792,7 +802,7 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
         {
           for(i=0;i<3;i++)
             {
-              if((fils->v[i] != pere) && (fils->b[i] != tree->e_root))
+              if(fils->b[i] != tree->e_root)
                 R_wtree(fils,fils->v[i],available,s_tree,tree);
               else p=i;
             }
@@ -812,8 +822,7 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
           PhyML_Fprintf(stderr,"\n. pere: %d fils=%d root=%d root->v[2]=%d root->v[1]=%d",pere->num,fils->num,tree->n_root->num,tree->n_root->v[2]->num,tree->n_root->v[1]->num);
           PhyML_Fprintf(stderr,"\n. fils=%p root=%p root->v[2]=%p root->v[1]=%p",fils,tree->n_root,tree->n_root->v[2],tree->n_root->v[1]);
           PhyML_Fprintf(stderr,"\n. tree->e_root=%p fils->b[0]=%p fils->b[1]=%p fils->b[2]=%p",tree->e_root,fils->b[0],fils->b[1],fils->b[2]);
-          PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
-          Exit("\n");
+          assert(FALSE);
         }
       
       last_len = (int)strlen(*s_tree);
@@ -2033,7 +2042,6 @@ char *Return_Tree_String_Phylip(FILE *fp_input_tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 t_tree *Read_Tree_File_Phylip(FILE *fp_input_tree)
 {

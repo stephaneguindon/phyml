@@ -476,8 +476,6 @@ if(tree->rates && tree->io->lk_approx == NORMAL)
      Update_Efrq(tree->mod);
      Update_Eigen(tree->mod);
    }
-
- 
   
  if(tree->mod->s_opt->skip_tree_traversal == NO)
     {
@@ -507,7 +505,7 @@ if(tree->rates && tree->io->lk_approx == NORMAL)
                 {
                   Post_Order_Lk(tree->n_root,tree->n_root->v[1],tree);
                   Post_Order_Lk(tree->n_root,tree->n_root->v[2],tree);
-                  
+
                   Update_Partial_Lk(tree,tree->n_root->b[1],tree->n_root);
                   Update_Partial_Lk(tree,tree->n_root->b[2],tree->n_root);
                   

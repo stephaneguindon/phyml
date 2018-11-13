@@ -509,12 +509,10 @@ phydbl *DATE_MCMC(t_tree *tree)
   res = (phydbl *)mCalloc(tree->mcmc->chain_len / tree->mcmc->sample_interval * n_vars,sizeof(phydbl));
   
   Set_Both_Sides(YES,tree);
-  PhyML_Printf("\n. Set update eigen to YES");
   Set_Update_Eigen(YES,tree->mod);
   Lk(NULL,tree);
   Set_Update_Eigen(NO,tree->mod);
 
-  Exit("\n");
   
   RATES_Lk_Rates(tree);
   DATE_Assign_Primary_Calibration(tree);
