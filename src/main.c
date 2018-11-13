@@ -257,7 +257,7 @@ int main(int argc, char **argv)
                   PhyML_Printf("\n\n. Log likelihood of the current tree: %f.",tree->c_lnL);
 
                   
-                  /* if(tree->io->ancestral == YES) Ancestral_Sequences(tree,YES); */
+                  if(tree->io->ancestral == YES) Ancestral_Sequences(tree,YES);
 
 
                   /* !!!!!!!!!!!!!!!!!!!!!!! */
