@@ -2814,17 +2814,20 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
                   for(i=0;i<tree->mod->r_mat->n_diff_rr;i++) opt_val[i] = tree->mod->r_mat->rr_val->v[i];
 
                   /* for(i=0;i<tree->mod->r_mat->n_diff_rr;i++) tree->mod->r_mat->rr_val->v[i] = 0.0; */
-
-                  a = tree->mod->r_mat->rr_val->v[permut[i]]/2.;
-                  b = tree->mod->r_mat->rr_val->v[permut[i]]*2.;
+                  
                   
                   for(i=0;i<tree->mod->r_mat->n_diff_rr;i++)
-                    Generic_Brent_Lk(&(tree->mod->r_mat->rr_val->v[permut[i]]),
+                    {
+                      a = tree->mod->r_mat->rr_val->v[permut[i]]/2.;
+                      b = tree->mod->r_mat->rr_val->v[permut[i]]*2.;
+
+                      Generic_Brent_Lk(&(tree->mod->r_mat->rr_val->v[permut[i]]),
                                      a,b,
                                      tree->mod->s_opt->min_diff_lk_local,
                                      tree->mod->s_opt->brent_it_max,
                                      tree->mod->s_opt->quickdirty,
                                      Wrap_Lk,NULL,mixt_tree,NULL,NO);                        
+                    }
                   
                   if(tree->c_lnL < lk_old)
                     {
