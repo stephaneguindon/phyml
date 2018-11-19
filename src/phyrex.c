@@ -1817,11 +1817,11 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_swap_disk"))
         MCMC_PHYREX_Swap_Disk(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr")) */
-      /*   MCMC_PHYREX_Prune_Regraft(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr"))
+        MCMC_PHYREX_Prune_Regraft(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"phyrex_scale_times"))
-        MCMC_PHYREX_Scale_Times(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_scale_times")) */
+      /*   MCMC_PHYREX_Scale_Times(tree); */
 
       /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_sim")) */
       /*   MCMC_PHYREX_Simulate_Backward(tree); */
@@ -1853,8 +1853,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_disk_serial"))
         MCMC_PHYREX_Indel_Disk_Serial(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_hit_serial")) */
-      /*   MCMC_PHYREX_Indel_Hit_Serial(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_hit_serial"))
+        MCMC_PHYREX_Indel_Hit_Serial(tree);
 
       if(!strcmp(tree->mcmc->move_name[move],"kappa"))
         MCMC_Kappa(tree);
@@ -4379,7 +4379,7 @@ t_ldsk *PHYREX_Generate_Path(t_ldsk *beg, t_ldsk *end, phydbl cur_n_evt, phydbl 
   /* How many hit events ? */
   if(cur_n_evt < SMALL)
     /* Not sure that rate is ok when considering landscape with boundaries... */
-    n_evt = Rpois(dt*2.*PHYREX_Rate_Per_Unit_Area(tree)*PI*POW(sd,2)*tree->mmod->mu); 
+    n_evt = Rpois(dt*2.*PHYREX_Rate_Per_Unit_Area(tree)*PI*pow(sd,2)*tree->mmod->mu); 
   else
     n_evt = Rpois(cur_n_evt);
 
@@ -4389,7 +4389,6 @@ t_ldsk *PHYREX_Generate_Path(t_ldsk *beg, t_ldsk *end, phydbl cur_n_evt, phydbl 
   ldsk_a = (t_ldsk **)mCalloc(n_evt,sizeof(t_ldsk *));
 
   for(i=0;i<n_evt;i++) time[i] =  Uni()*(beg->disk->time - end->disk->time) + end->disk->time;
-
   
   /* Bubble sort time in decreasing order */
   do
@@ -4459,11 +4458,13 @@ phydbl PHYREX_Path_Logdensity(t_ldsk *beg, t_ldsk *end, phydbl cur_n_evt, phydbl
 {
   int i,j,err,n_evt;
   t_ldsk *ldsk;
-  phydbl lnDens,mode,rate;
+  phydbl lnDens,mode,rate,dt;
   
   lnDens = 0.0;
   mode   = 0.0;
 
+  dt = fabs(end->disk->time - beg->disk->time);
+  
   n_evt = 0;
   ldsk = beg->prev;
   while(ldsk != end)
@@ -4507,7 +4508,7 @@ phydbl PHYREX_Path_Logdensity(t_ldsk *beg, t_ldsk *end, phydbl cur_n_evt, phydbl
 
   
   if(cur_n_evt < SMALL)
-    rate = 2.*PHYREX_Rate_Per_Unit_Area(tree)*PI*pow(sd,2)*tree->mmod->mu*fabs(end->disk->time - beg->disk->time);
+    rate = dt*2.*PHYREX_Rate_Per_Unit_Area(tree)*PI*pow(sd,2)*tree->mmod->mu;
   else
     rate = cur_n_evt;
 
@@ -4525,7 +4526,7 @@ phydbl PHYREX_Path_Logdensity(t_ldsk *beg, t_ldsk *end, phydbl cur_n_evt, phydbl
   
   if(rate > DBL_MIN) lnDens += Dpois(n_evt,rate,YES);
   lnDens += (n_evt) * log(1./fabs(end->disk->time - beg->disk->time));
-  lnDens += LnFact(n_evt);
+  /* lnDens += LnFact(n_evt); */
 
   /* PhyML_Printf("\n. dens: %f cur_n_evt: %f sd: %f mu: %f perunit: %f", */
   /*              lnDens, */
