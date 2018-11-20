@@ -2443,9 +2443,6 @@ static phydbl Br_Len_Spline(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_
         }
 
 
-      assert(u < v);
-      assert(dfu > 0.0);
-      assert(dfv < 0.0);
 
       if(u - v < DBL_MIN) converged = YES;
       if(fabs(tree->c_lnL-old_lnL) < tol) converged = YES;
@@ -2459,6 +2456,16 @@ static phydbl Br_Len_Spline(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_
                                            tree->c_lnL-old_lnL,
                                            tol);
       
+      if(converged == NO)
+        {
+          if(!(u < v)) PhyML_Printf("\n. u=%g v=%g.\n",u,v);
+          if(!(dfu > 0.0)) PhyML_Printf("\n. dfu=%g l=%g u=%g v=%g\n",dfu,*l,u,v);
+          if(!(dfv < 0.0)) PhyML_Printf("\n. dfv=%g l=%g u=%g v=%g\n",dfv,*l);
+          
+          assert(u < v);
+          assert(dfu > 0.0);
+          assert(dfv < 0.0);
+        }
     }
   while(converged == NO);
 

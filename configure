@@ -4974,7 +4974,7 @@ fi
 done
 
 
-DEFAULT_VECTOR_FLAG=-msse3
+DEFAULT_VECTOR_FLAG=-march=native
 # Check whether --enable-native was given.
 if test "${enable_native+set}" = set; then :
   enableval=$enable_native;

@@ -28,6 +28,7 @@ void SSE_Update_Eigen_Lr(t_edge *b, t_tree *tree)
   unsigned const int ns = tree->mod->ns;
   unsigned const int sz = (int)BYTE_ALIGN / 8;
   unsigned const int nblocks = ns / sz;
+  unsigned const int ncatgns = ncatg*ns;
 
   const phydbl *p_lk_left,*p_lk_rght,*pi;
   phydbl *dot_prod,*p_lk_left_pi;
@@ -84,22 +85,35 @@ void SSE_Update_Eigen_Lr(t_edge *b, t_tree *tree)
   
   for(site=0;site<npattern;++site)
     {
-      for(catg=0;catg<ncatg;++catg)
+      if(tree->data->wght[site] > SMALL)
         {
-          for(i=0;i<ns;++i) p_lk_left_pi[i] = p_lk_left[i] * pi[i];
+          for(catg=0;catg<ncatg;++catg)
+            {
+              for(i=0;i<ns;++i) p_lk_left_pi[i] = p_lk_left[i] * pi[i];
+              
+              SSE_Matrix_Vect_Prod(_r_ev,p_lk_left_pi,ns,_prod_left);
+              SSE_Matrix_Vect_Prod(_l_ev,p_lk_rght,ns,_prod_rght);
+              
+              for(i=0;i<nblocks;++i) _mm_store_pd(dot_prod + i*sz,_mm_mul_pd(_prod_left[i],_prod_rght[i]));
+              
+              dot_prod += ns;
+              if(b->left->tax == NO) p_lk_left += ns;
+              if(b->rght->tax == NO) p_lk_rght += ns;
+            }
           
-          SSE_Matrix_Vect_Prod(_r_ev,p_lk_left_pi,ns,_prod_left);
-          SSE_Matrix_Vect_Prod(_l_ev,p_lk_rght,ns,_prod_rght);
-          
-          for(i=0;i<nblocks;++i) _mm_store_pd(dot_prod + i*sz,_mm_mul_pd(_prod_left[i],_prod_rght[i]));
-
-          dot_prod += ns;
-          if(b->left->tax == NO) p_lk_left += ns;
-          if(b->rght->tax == NO) p_lk_rght += ns;
+          if(b->left->tax == YES) p_lk_left += ns;
+          if(b->rght->tax == YES) p_lk_rght += ns;
         }
+      else
+        {
+          if(b->left->tax == YES) p_lk_left += ns;
+          else p_lk_left += ncatgns;
 
-      if(b->left->tax == YES) p_lk_left += ns;
-      if(b->rght->tax == YES) p_lk_rght += ns;
+          if(b->rght->tax == YES) p_lk_rght += ns;          
+          else p_lk_rght += ncatgns;          
+
+          dot_prod += ncatgns;          
+        }
     }
 
   Free(l_ev);
