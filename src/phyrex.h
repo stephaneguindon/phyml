@@ -17,6 +17,7 @@ the GNU public licence. See http://www.opensource.org for details.
 
 #include "utilities.h"
 
+void PHYREX_XML(char *xml_filename);
 int PHYREX_Main(int argc, char **argv);
 int PHYREX_Main_Simulate(int argc, char **argv);
 int PHYREX_Main_Estimate(int argc, char **argv);
@@ -66,7 +67,7 @@ void PHYREX_Ldsk_To_Tree(t_tree *tree);
 void PHYREX_Ldsk_To_Tree_Post(t_node *a, t_ldsk *ldsk, int *available, t_tree *tree);
 phydbl PHYREX_Rnorm_Trunc(t_ldsk *ldsk, t_dsk *disk, t_phyrex_mod *mod);
 void PHYREX_Remove_Lindisk_Next(t_ldsk *ldsk, t_ldsk *rm);
-phydbl PHYREX_Simulate_Backward_Core(int new_loc, t_dsk *init_disk, t_tree *tree);
+phydbl PHYREX_Simulate_Backward_Core(t_dsk *init_disk, t_tree *tree);
 phydbl *PHYREX_Mean_Pairwise_Distance_Between_Lineage_Locations(t_tree *tree);
 phydbl PHYREX_Random_Select_Time_Between_Jumps(t_tree *tree);
 t_sarea *PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree);

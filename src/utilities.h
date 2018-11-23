@@ -708,7 +708,6 @@ typedef struct __Tree{
   struct __Tdraw                     *ps_tree; /*! structure for drawing trees in postscript format */
   struct __T_Rate                       *rates; /*! structure for handling rates of evolution */
   struct __Tmcmc                        *mcmc;
-  struct __Triplet            *triplet_struct;
   struct __Phylogeo                      *geo;
   struct __Migrep_Model                 *mmod;
   struct __Disk_Event             *young_disk; /*! Youngest disk (i.e., disk which age is the closest to present). Used in PhyREX */
@@ -1438,26 +1437,6 @@ typedef struct __SPR{
 
 /*!********************************************************/
 
-typedef struct __Triplet{
-  int    size;
-  phydbl *F_bc;
-  phydbl *F_cd;
-  phydbl *F_bd;
-  phydbl ****core;
-  phydbl ***p_one_site;
-  phydbl ***sum_p_one_site;
-  phydbl *pi_bc;
-  phydbl *pi_cd;
-  phydbl *pi_bd;
-  struct __Eigen *eigen_struct;
-  struct __Model *mod;
-
-  struct __Triplet *next;
-  struct __Triplet *prev;
-}triplet;
-
-/*!********************************************************/
-
 typedef struct __Pnode{
   struct __Pnode **next;
   int weight;
@@ -2184,7 +2163,6 @@ t_tree *Dist_And_BioNJ(calign *cdata,t_mod *mod,option *io);
 void Add_BioNJ_Branch_Lengths(t_tree *tree, calign *cdata, t_mod *mod, matrix *mat);
 char *Bootstrap_From_String(char *s_tree,calign *cdata,t_mod *mod,option *io);
 char *aLRT_From_String(char *s_tree,calign *cdata,t_mod *mod,option *io);
-void Prepare_Tree_For_Lk(t_tree *tree);
 void Find_Common_Tips(t_tree *tree1,t_tree *tree2);
 phydbl Get_Tree_Size(t_tree *tree);
 void Dist_To_Root_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree);

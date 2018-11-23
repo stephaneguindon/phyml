@@ -21,9 +21,342 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int PHYREX_Main(int argc, char *argv[])
 {
-  return(PHYREX_Main_Estimate(argc,argv));
-  /* return(PHYREX_Main_Simulate(argc,argv)); */
+
+  /* PHYREX_Main_Estimate(argc,argv); */
+  option *io;
+  io = Get_Input(argc,argv);
+  Free(io);
+  return(0);
 }
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void PHYREX_XML(char *xml_filename)
+{
+  FILE *fp_xml_in;
+  xml_node *xnd,*xroot;
+  t_tree *mixt_tree,*tree;
+  phydbl *res;
+  int seed;
+  char *dum_string;
+ 
+  mixt_tree = XML_Process_Base(xml_filename);
+  assert(mixt_tree);
+    
+  mixt_tree->rates = RATES_Make_Rate_Struct(mixt_tree->n_otu);
+  RATES_Init_Rate_Struct(mixt_tree->rates,NULL,mixt_tree->n_otu);
+
+  tree = mixt_tree;
+  do
+    {
+      // All rate stuctures point to the same object
+      tree->rates = mixt_tree->rates;
+      tree = tree->next;
+    }
+  while(tree);
+
+  
+  fp_xml_in = fopen(xml_filename,"r");
+  if(!fp_xml_in)
+    {
+      PhyML_Fprintf(stderr,"\n. Could not find the XML file '%s'.\n",xml_filename);
+      Exit("\n");
+    }
+
+  /* xroot = XML_Load_File(fp_xml_in); */
+  xroot = mixt_tree->xml_root;
+
+  if(xroot == NULL)
+    {
+      PhyML_Fprintf(stderr,"\n. Encountered an issue while loading the XML file.\n");
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
+
+  xnd = XML_Search_Node_Name("phyrex",NO,xroot);
+
+  if(xnd == NULL)
+    {
+      PhyML_Fprintf(stderr,"\n. Cound not find the \"root\" of the XML file (it should have \'phyrex\' as tag name).\n");
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
+
+  dum_string = XML_Get_Attribute_Value(xnd,"mcmc.chain.len");
+  if(dum_string != NULL) mixt_tree->io->mcmc->chain_len = (int)String_To_Dbl(dum_string);
+  
+  dum_string = XML_Get_Attribute_Value(xnd,"mcmc.sample.every");
+  if(dum_string != NULL) mixt_tree->io->mcmc->sample_interval = (int)String_To_Dbl(dum_string);
+
+  dum_string = XML_Get_Attribute_Value(xnd,"mcmc.print.every");
+  if(dum_string != NULL) mixt_tree->io->mcmc->print_every = (int)String_To_Dbl(dum_string);
+
+  dum_string = XML_Get_Attribute_Value(xnd,"mcmc.burnin");
+  if(dum_string != NULL) mixt_tree->io->mcmc->chain_len_burnin = (int)String_To_Dbl(dum_string);
+
+
+  dum_string = XML_Get_Attribute_Value(xnd,"ignore.sequences");
+  if(dum_string != NULL) mixt_tree->eval_alnL = NO;
+
+  dum_string = XML_Get_Attribute_Value(xnd,"ignore.seq");
+  if(dum_string != NULL) mixt_tree->eval_alnL = NO;
+
+  dum_string = XML_Get_Attribute_Value(xnd,"ignore.data");
+  if(dum_string != NULL) mixt_tree->eval_alnL = NO;
+
+
+  dum_string = XML_Get_Attribute_Value(xnd,"mutmap");
+  if(dum_string != NULL)
+    {
+      int select = XML_Validate_Attr_Int(dum_string,6,
+                                         "true","yes","y",
+                                         "false","no","n");
+      if(select < 3) mixt_tree->io->mutmap = YES;
+      else mixt_tree->io->mutmap = NO;
+    }
+
+    
+  // Looking for XML node with rate-across-lineage info
+  xnd = XML_Search_Node_Name("lineagerates",YES,xroot);
+  
+  if(xnd == NULL)
+    {
+      PhyML_Fprintf(stdout,"\n. The model of rate variation across lineages is not specified.");
+      PhyML_Fprintf(stdout,"\n. Using the geometric Brownian model (see Guindon, 2012, Syst. Biol.).\n");
+      mixt_tree->rates->model      = GUINDON;
+      mixt_tree->mod->gamma_mgf_bl = YES;
+      strcpy(mixt_tree->rates->model_name,"geometric Brownian"); 
+    }
+  else
+    {
+      char *model_name;
+      model_name = XML_Get_Attribute_Value(xnd,"model");
+
+      if(model_name == NULL)
+        {
+          PhyML_Fprintf(stderr,"\n. Please specify a model of rate variation across lineages,");
+          PhyML_Fprintf(stderr,"\n. e.g., <lineagerates model=\"geometricbrownian\"/>.");
+          PhyML_Fprintf(stderr,"\n. See the manual for more options.");
+          assert(FALSE);
+        }
+      else
+        {
+          if(!strcmp(model_name,"geometricbrownian"))
+            {
+              mixt_tree->rates->model      = GUINDON;
+              mixt_tree->mod->gamma_mgf_bl = YES;
+              strcpy(mixt_tree->rates->model_name,"geometric Brownian"); 
+            }
+          else if(!strcmp(model_name,"geometric"))
+            {
+              mixt_tree->rates->model      = GUINDON;
+              mixt_tree->mod->gamma_mgf_bl = YES;
+              strcpy(mixt_tree->rates->model_name,"geometric Brownian"); 
+            }
+          else if(!strcmp(model_name,"brownian"))
+            {
+              mixt_tree->rates->model      = GUINDON;
+              mixt_tree->mod->gamma_mgf_bl = YES;
+              strcpy(mixt_tree->rates->model_name,"geometric Brownian"); 
+            }
+          else if(!strcmp(model_name,"geo"))
+            {
+              mixt_tree->rates->model      = GUINDON;
+              mixt_tree->mod->gamma_mgf_bl = YES;
+              strcpy(mixt_tree->rates->model_name,"geometric Brownian"); 
+            }
+          else if(!strcmp(model_name,"lognormal"))
+            {
+              mixt_tree->rates->model      = LOGNORMAL;
+              mixt_tree->mod->gamma_mgf_bl = NO;
+              strcpy(mixt_tree->rates->model_name,"lognormal (uncorrelated)"); 
+            }
+          else if(!strcmp(model_name,"normal"))
+            {
+              mixt_tree->rates->model      = LOGNORMAL;
+              mixt_tree->mod->gamma_mgf_bl = NO;
+              strcpy(mixt_tree->rates->model_name,"lognormal (uncorrelated)"); 
+            }
+          else if(!strcmp(model_name,"strictclock"))
+            {
+              mixt_tree->rates->model      = STRICTCLOCK;
+              mixt_tree->mod->gamma_mgf_bl = NO;
+              strcpy(mixt_tree->rates->model_name,"strict clock"); 
+            }
+          else if(!strcmp(model_name,"clock"))
+            {
+              mixt_tree->rates->model      = STRICTCLOCK;
+              mixt_tree->mod->gamma_mgf_bl = NO;
+              strcpy(mixt_tree->rates->model_name,"strict clock"); 
+            }
+          else
+            {
+              assert(FALSE);
+            }
+        }
+    }
+  
+  
+  // Looking for calibration info
+  xnd = XML_Search_Node_Name("calibration",YES,xroot);
+
+  if(xnd == NULL)
+    {
+      PhyML_Fprintf(stderr,"\n. No calibration information seems to be provided.");
+      PhyML_Fprintf(stderr,"\n. Please amend your XML file. \n");
+      assert(FALSE);
+    }
+  else
+    {
+      assert(xnd->child);
+      if(XML_Search_Node_Name("upper",NO,xnd->child) == NULL && XML_Search_Node_Name("lower",NO,xnd->child) == NULL)
+        {
+          PhyML_Fprintf(stderr,"\n. There is no calibration information provided. \n");
+          PhyML_Fprintf(stderr,"\n. Please check your data. \n");
+          assert(FALSE);
+        }
+    }
+
+  
+
+  // Looking for coordinate file
+  xnd = XML_Search_Node_Name("coordinates",YES,xroot);
+
+  if(xnd == NULL)
+    {
+      PhyML_Fprintf(stderr,"\n. No spatial information (i.e., coordinates) seems to be provided.");
+      PhyML_Fprintf(stderr,"\n. Please amend your XML file. \n");
+      Exit("\n");
+    }
+  else
+    {
+      char *coord_file;
+      coord_file = XML_Get_Attribute_Value(xnd,"file.name");
+      
+      strcpy(mixt_tree->io->in_coord_file,coord_file);
+      mixt_tree->io->fp_in_coord = Openfile(mixt_tree->io->in_coord_file,READ);
+    }
+
+  seed = (mixt_tree->io->r_seed < 0)?(time(NULL)):(mixt_tree->io->r_seed);
+  srand(seed);
+  mixt_tree->io->r_seed = seed;
+
+  mixt_tree->mmod = PHYREX_Make_Migrep_Model(2);
+  PHYREX_Init_Migrep_Mod(mixt_tree->mmod,2,10.0,10.0);
+
+
+  MIXT_Check_Model_Validity(mixt_tree);
+  MIXT_Init_Model(mixt_tree);
+  Print_Data_Structure(NO,stdout,mixt_tree);
+  tree = MIXT_Starting_Tree(mixt_tree);
+  Copy_Tree(tree,mixt_tree);
+  Free_Tree(tree);
+  MIXT_Connect_Cseqs_To_Nodes(mixt_tree);
+  MIXT_Init_T_Beg(mixt_tree);  
+  MIXT_Make_Tree_For_Lk(mixt_tree);
+  MIXT_Make_Tree_For_Pars(mixt_tree);
+  MIXT_Make_Spr(mixt_tree);  
+  MIXT_Chain_All(mixt_tree);
+  Add_Root(mixt_tree->a_edges[0],mixt_tree);  
+  MIXT_Check_Edge_Lens_In_All_Elem(mixt_tree);
+  MIXT_Turn_Branches_OnOff_In_All_Elem(ON,mixt_tree);
+  MIXT_Check_Invar_Struct_In_Each_Partition_Elem(mixt_tree);
+  MIXT_Check_RAS_Struct_In_Each_Partition_Elem(mixt_tree);
+
+  XML_Read_Calibration(xroot,mixt_tree);
+  MIXT_Chain_Cal(mixt_tree);
+
+  TIMES_Randomize_Tree_With_Time_Constraints(mixt_tree->rates->a_cal[0],mixt_tree);
+
+  /* Create ldsks and connect tree tips to them */
+  /* once tip dates have been set properly (in */
+  /* TIMES_Randomize_Tree_With_Time_Constraints) */
+  PHYREX_Make_And_Connect_Tip_Disks(mixt_tree);
+
+  
+  /* Read spatial coordinates */
+  PHYREX_Read_Tip_Coordinates(mixt_tree);
+  
+  /* Initialize parameters of migrep model */
+  mixt_tree->mmod->lbda  = Uni()*(0.3 - 0.05) + 0.05;
+  mixt_tree->mmod->mu    = Uni()*(1.0 - 0.3)  + 0.3;
+  mixt_tree->mmod->rad   = Uni()*(5.0 - 1.5)  + 1.5;
+  mixt_tree->mmod->sigsq = PHYREX_Update_Sigsq(mixt_tree);
+
+  mixt_tree->rates->clock_r = 1.0E-6;
+  mixt_tree->rates->model   = LOGNORMAL;
+  
+  /* Random genealogy or user-defined tree */
+  switch(mixt_tree->io->in_tree)
+    {
+    case 0 : case 1 :
+      {
+        PHYREX_Simulate_Backward_Core(mixt_tree->young_disk,mixt_tree);
+        PHYREX_Ldsk_To_Tree(mixt_tree);
+        break;
+      }
+    case 2:
+      {
+        PHYREX_Tree_To_Ldsk(mixt_tree);
+        PHYREX_Simulate_Disk_And_Node_Times(mixt_tree);
+        break;
+      }
+    }
+
+  Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree);
+  Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);  
+
+  MIXT_Set_Ignore_Root(YES,mixt_tree);
+  
+  Set_Update_Eigen(YES,mixt_tree->mod);
+  Lk(NULL,mixt_tree);
+  Set_Update_Eigen(NO,mixt_tree->mod);
+    
+  res = PHYREX_MCMC(mixt_tree);
+  Free(res);  
+  
+  // Cleaning up...
+  RATES_Free_Rates(mixt_tree->rates);
+  RATES_Free_Rates(mixt_tree->extra_tree->rates);
+  MCMC_Free_MCMC(mixt_tree->mcmc);
+  MCMC_Free_MCMC(mixt_tree->extra_tree->mcmc);
+  Free_Mmod(mixt_tree->mmod);
+  Free_Spr_List_One_Edge(mixt_tree);
+  Free_Tree_Pars(mixt_tree);
+  Free_Tree_Lk(mixt_tree);
+
+  if(mixt_tree->io->fp_out_trees)      fclose(mixt_tree->io->fp_out_trees);
+  if(mixt_tree->io->fp_out_tree)       fclose(mixt_tree->io->fp_out_tree);
+  if(mixt_tree->io->fp_out_stats)      fclose(mixt_tree->io->fp_out_stats);
+  if(mixt_tree->io->fp_out_json_trace) fclose(mixt_tree->io->fp_out_json_trace);
+  Free_Input(mixt_tree->io);
+
+
+  tree = mixt_tree;
+  do
+    {
+      Free_Calign(tree->data);
+      tree = tree->next_mixt;
+    }
+  while(tree);
+
+  tree = mixt_tree;
+  do
+    {
+      Free_Optimiz(tree->mod->s_opt);
+      tree = tree->next;
+    }
+  while(tree);
+
+  
+  Free_Model_Complete(mixt_tree->mod);
+  Free_Model_Basic(mixt_tree->mod);
+  Free_Tree(mixt_tree->extra_tree);  
+  Free_Tree(mixt_tree);  
+  Free(res);
+  XML_Free_XML_Tree(xroot);
+  fclose(fp_xml_in);
+}
+
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -111,7 +444,7 @@ int PHYREX_Main_Estimate(int argc, char *argv[])
     {
     case 0 : case 1 :
       {
-        PHYREX_Simulate_Backward_Core(NO,tree->young_disk,tree);
+        PHYREX_Simulate_Backward_Core(tree->young_disk,tree);
         PHYREX_Ldsk_To_Tree(tree);
         break;
       }
@@ -128,8 +461,11 @@ int PHYREX_Main_Estimate(int argc, char *argv[])
   Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
 
   Init_Model(tree->data,io->mod,io);
-  Prepare_Tree_For_Lk(tree);
 
+  Make_Tree_For_Pars(tree);
+  Make_Tree_For_Lk(tree);
+  Make_Spr(tree);
+  
   // Update eigen and lk computation required for
   // computing eigen values/vectors etc.
   Set_Update_Eigen(YES,tree->mod);
@@ -205,7 +541,6 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   Free_Mmod(tree->mmod);
   Free_Spr_List_One_Edge(tree);
   Free_Spr_List_All_Edge(tree);
-  Free_Triplet(tree->triplet_struct);
   Free_Tree_Pars(tree);
   Free_Tree_Lk(tree);
   Free_Input(tree->io);
@@ -289,9 +624,9 @@ t_tree *PHYREX_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl
   tree->mod->whichmodel  = HKY85;
   tree->mod->kappa->v    = 4.0;
     
-  Prepare_Tree_For_Lk(tree);
-
-
+  Make_Tree_For_Pars(tree);
+  Make_Tree_For_Lk(tree);
+  Make_Spr(tree);
 
   // migrep model stuff */
   mmod = PHYREX_Make_Migrep_Model(n_dim);
@@ -386,7 +721,7 @@ t_tree *PHYREX_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl
   locus_idx = 0;
   do
     {
-      PHYREX_Simulate_Backward_Core(NO,tree->young_disk,tree);
+      PHYREX_Simulate_Backward_Core(tree->young_disk,tree);
   
       // Random selection of a pair. Print out physical distances
       // between tips and time of coalescence for this pair, at this
@@ -575,7 +910,7 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, int r_seed)
   /* neigh       = 2./mmod->mu; */
   /* mmod->sigsq = PHYREX_Update_Sigsq(tree); */
 
-  PHYREX_Simulate_Backward_Core(YES,tree->young_disk,tree);
+  PHYREX_Simulate_Backward_Core(tree->young_disk,tree);
   /* mmod->samp_area = PHYREX_Simulate_Forward_Core(n_sites,tree); */
   PHYREX_Ldsk_To_Tree(tree);
 
@@ -602,7 +937,9 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, int r_seed)
   tree->mod->whichmodel    = HKY85;
   tree->mod->kappa->v      = 4.0;
     
-  Prepare_Tree_For_Lk(tree);
+  Make_Tree_For_Pars(tree);
+  Make_Tree_For_Lk(tree);
+  Make_Spr(tree);
   Evolve(tree->data,tree->mod,0,tree);
 
   tree->t_dir = (short int *)mCalloc((2*tree->n_otu-2)*(2*tree->n_otu-2),sizeof(short int));
@@ -668,121 +1005,116 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, int r_seed)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 // Simulate Etheridge-Barton model backwards in time, following n_otu lineages
-// on a rectangle of dimension width x h
-phydbl PHYREX_Simulate_Backward_Core(int new_loc, t_dsk *init_disk, t_tree *tree)
+// on a rectangle.
+phydbl PHYREX_Simulate_Backward_Core(t_dsk *init_disk, t_tree *tree)
 {
   t_dsk *disk,*new_disk;
   int i,j;
-  phydbl prob_hit,u;
+  phydbl prob_hit,u,new_time;
   t_phyrex_mod *mmod;
-
+  t_node *n;
+  
   mmod = tree->mmod;
+  
+  Get_Node_Ranks_From_Tip_Times(tree);
 
-  if(new_loc == YES)
-    {
-      init_disk = PHYREX_Make_Disk_Event(mmod->n_dim,tree->n_otu);
-      PHYREX_Init_Disk_Event(init_disk,mmod->n_dim,NULL);
-      init_disk->time             = 0.0;
-      init_disk->mmod             = mmod;
-      init_disk->centr->lonlat[0] = .5*mmod->lim->lonlat[0];
-      init_disk->centr->lonlat[1] = .5*mmod->lim->lonlat[1];      
-      init_disk->n_ldsk_a         = tree->n_otu;  
-      tree->young_disk            = init_disk;
+  // Get to the youngest node
+  n = tree->a_nodes[0];
+  while(n->rk_next) n = n->rk_next;
 
-      for(i=0;i<tree->n_otu;++i) 
-        {
-          char *s;
-          init_disk->ldsk_a[i] = PHYREX_Make_Lindisk_Node(mmod->n_dim);
-          PHYREX_Init_Lindisk_Node(init_disk->ldsk_a[i],init_disk,mmod->n_dim);
-          s = (char *)mCalloc(strlen(init_disk->ldsk_a[i]->coord->id)+1+20,sizeof(char));
-          strcpy(s,init_disk->ldsk_a[i]->coord->id);
-          strcat(s,"_deme0\0");
-          Free(init_disk->ldsk_a[i]->coord->id);
-          init_disk->ldsk_a[i]->coord->id = s;
-        }
-      
-      /* PhyML_Printf("\n. WARNING: position of samples are not random."); */
-      /* Generate coordinates for the tip nodes (uniform distribution on the rectangle) */
-      for(i=0;i<tree->n_otu;i++)
-        {
-          init_disk->ldsk_a[i]->coord->lonlat[0] = Uni()*tree->mmod->lim->lonlat[0]; // longitude
-          init_disk->ldsk_a[i]->coord->lonlat[1] = Uni()*tree->mmod->lim->lonlat[1]; // latitude
-          /* init_disk->ldsk_a[i]->coord->lonlat[0] = (i/(int)SQRT(tree->n_otu)+1)*tree->mmod->lim->lonlat[0]/(SQRT(tree->n_otu)+1); // longitude */
-          /* init_disk->ldsk_a[i]->coord->lonlat[1] = (i%(int)SQRT(tree->n_otu)+1)*tree->mmod->lim->lonlat[1]/(SQRT(tree->n_otu)+1); // latitude */
-        }
-    }
- 
   disk = init_disk;
+
+  // Make sure at least one of the youngest nodes is on init_disk
+  for(i=0;i<init_disk->n_ldsk_a;++i) if(init_disk->ldsk_a[i]->nd == n) break;
+  assert(i != init_disk->n_ldsk_a);
+
   
   do
     {
       /* MRCA reached */
       if(PHYREX_Number_Of_Outgoing_Ldsks(disk) == 1) break;
 
-      /* Create new disk */
-      new_disk = PHYREX_Make_Disk_Event(mmod->n_dim,tree->n_otu);
-      PHYREX_Init_Disk_Event(new_disk,mmod->n_dim,NULL);
-      disk->prev = new_disk;      
-      new_disk->next = disk;
+      /* Proposed new time */
+      new_time = disk->time - Rexp(mmod->lbda);
 
-      /* Populate new_disk->ldsk_a array */
-      PHYREX_Update_Lindisk_List_Core(new_disk,tree);
-      
-      /* Time of next event */
-      new_disk->time = disk->time - Rexp(mmod->lbda);
-
-      /* Coordinates of new event */
-      new_disk->centr->lonlat[0] = Uni()*mmod->lim->lonlat[0];
-      new_disk->centr->lonlat[1] = Uni()*mmod->lim->lonlat[1];      
-            
-      new_disk->ldsk = NULL;
-
-      /* Which lineages in new_disk->ldsk_a are hit? */
-      for(i=0;i<new_disk->n_ldsk_a;++i)
+      /* New time is older than next sampled disk (disk->prev) */
+      if(disk->prev && new_time < disk->prev->time)
         {
-          prob_hit = -1.;
-          switch(mmod->name)
+          new_disk = disk->prev;
+          new_time = disk->prev->time;
+
+          /* Populate new_disk->ldsk_a array */
+          PHYREX_Update_Lindisk_List_Core(new_disk,tree);
+        }
+      else
+        {
+          /* Create new disk */
+          new_disk = PHYREX_Make_Disk_Event(mmod->n_dim,tree->n_otu);
+          PHYREX_Init_Disk_Event(new_disk,mmod->n_dim,NULL);
+
+          /* Coordinates of new event */
+          new_disk->centr->lonlat[0] = Uni()*mmod->lim->lonlat[0];
+          new_disk->centr->lonlat[1] = Uni()*mmod->lim->lonlat[1];      
+
+          /* Populate new_disk->ldsk_a array */
+          PHYREX_Update_Lindisk_List_Core(new_disk,tree);
+
+          new_disk->ldsk = NULL;
+          /* Which lineages in new_disk->ldsk_a are hit? */
+          for(i=0;i<new_disk->n_ldsk_a;++i)
             {
-            case PHYREX_UNIFORM: 
-              { 
-                prob_hit = mmod->mu; 
-                break; 
-              }
-            case PHYREX_NORMAL:  
-              { 
-                prob_hit = log(mmod->mu);
-                for(j=0;j<mmod->n_dim;++j)
-                  {                    
-                    prob_hit +=
-                      -pow(new_disk->ldsk_a[i]->coord->lonlat[j] -
-                           new_disk->centr->lonlat[j],2)/(2.*pow(mmod->rad,2));
-                  }
-                prob_hit = exp(prob_hit);
-                break; 
-              }
-            }
-          
-          if(PHYREX_Is_In_Disk(new_disk->ldsk_a[i]->coord,new_disk,mmod) == YES)
-            {
-              u = Uni();
-              if(!(u > prob_hit)) // disk->ldsk_a[i] is  hit
+              prob_hit = -1.;
+              switch(mmod->name)
                 {
-                  // new_disk->ldsk_a[i] is hit -> coalesce (or just jump) to parent (i.e., new_disk->ldsk)
-                  if(new_disk->ldsk == NULL)
+                case PHYREX_UNIFORM: 
+                  { 
+                    prob_hit = mmod->mu; 
+                    break; 
+                  }
+                case PHYREX_NORMAL:  
+                  { 
+                    prob_hit = log(mmod->mu);
+                    for(j=0;j<mmod->n_dim;++j)
+                      {                    
+                        prob_hit +=
+                          -pow(new_disk->ldsk_a[i]->coord->lonlat[j] -
+                               new_disk->centr->lonlat[j],2)/(2.*pow(mmod->rad,2));
+                      }
+                    prob_hit = exp(prob_hit);
+                    break; 
+                  }
+                }
+              
+              if(PHYREX_Is_In_Disk(new_disk->ldsk_a[i]->coord,new_disk,mmod) == YES)
+                {
+                  u = Uni();
+                  if(!(u > prob_hit)) // disk->ldsk_a[i] is  hit
                     {
-                      new_disk->ldsk = PHYREX_Make_Lindisk_Node(mmod->n_dim);
-                      PHYREX_Init_Lindisk_Node(new_disk->ldsk,new_disk,mmod->n_dim);
+                      // new_disk->ldsk_a[i] is hit -> coalesce (or just jump) to parent (i.e., new_disk->ldsk)
+                      if(new_disk->ldsk == NULL)
+                        {
+                          new_disk->ldsk = PHYREX_Make_Lindisk_Node(mmod->n_dim);
+                          PHYREX_Init_Lindisk_Node(new_disk->ldsk,new_disk,mmod->n_dim);
+                        }
+                      new_disk->ldsk_a[i]->prev = new_disk->ldsk;
+                      PHYREX_Make_Lindisk_Next(new_disk->ldsk);
+                      new_disk->ldsk->next[new_disk->ldsk->n_next-1] = new_disk->ldsk_a[i];
                     }
-                  new_disk->ldsk_a[i]->prev = new_disk->ldsk;
-                  PHYREX_Make_Lindisk_Next(new_disk->ldsk);
-                  new_disk->ldsk->next[new_disk->ldsk->n_next-1] = new_disk->ldsk_a[i];
                 }
             }
         }
+
+      /* Connect disk and new_disk */
+      disk->prev = new_disk;      
+      new_disk->next = disk;
+      
+      /* Time of next event */
+      new_disk->time = new_time;
+          
       disk = new_disk;
     }
   while(1);
-
+  
   disk->prev = NULL;
 
   /* PHYREX_Print_Struct('#',tree); */
@@ -1561,7 +1893,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   t_dsk *disk;
   FILE *fp_tree,*fp_stats,*fp_summary;
   phydbl *res;
-  phydbl true_root_x, true_root_y,true_lbda,true_mu,true_sigsq,true_neigh,fst_neigh,diversity,true_rad,true_height,true_rhoe,tot_samp_area;
+  phydbl true_root_x, true_root_y,true_lbda,true_mu,true_sigsq,true_neigh,fst_neigh,diversity,true_rad,true_height,true_rhoe;
   int adjust_len;
 
   fp_tree    = tree->io->fp_out_tree;
@@ -1592,12 +1924,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   adjust_len             = 1E+6;
 
   
-  tot_samp_area = 0.0;
-  /* if(tree->mmod->samp_area != NULL) */
-  /*   for(i=0;i<tree->mmod->samp_area->n_poly;i++) tot_samp_area += Area_Of_Poly_Monte_Carlo(tree->mmod->samp_area->a_poly[i],tree->mmod->lim); */
-
-
-
   MCMC_Complete_MCMC(mcmc,tree);
 
   n_vars = 12;
@@ -1772,11 +2098,10 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   do
     {
       
-      PHYREX_Ldsk_To_Tree(tree);
-      
+      MIXT_Propagate_Tree_Update(tree);
+      PHYREX_Ldsk_To_Tree(tree);      
       PHYREX_Check_Struct(tree);
-
-      
+           
       /* tree->mcmc->adjust_tuning[i] = NO; */
       if(mcmc->run > adjust_len) for(i=0;i<mcmc->n_moves;i++) tree->mcmc->adjust_tuning[i] = NO;
 
@@ -1956,93 +2281,93 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
           burnin = (int)(0.5*(tree->mcmc->run / tree->mcmc->sample_interval));
           
-          rewind(fp_summary);
+          /* rewind(fp_summary); */
 
-          PhyML_Fprintf(fp_summary,"\n# SampArea\t NDemes\t TrueLbda\t TrueMu\t TrueSig\t TrueRad\t TrueNeigh\t TrueRhoe\t \t ClockRate\t Diversity\t TrueInt\t TrueCoal\t TrueHits\t RegNeigh\t TrueXroot\t TrueYroot\t TrueHeight\t Lbda5\t Lbda50\t Lbda95\t LbdaMod \t Mu5\t Mu50\t Mu95\t  MuMod \t Sig5\t Sig50\t Sig95\t SigMod \t Neigh5\t Neigh50\t Neigh95\t NeighMod \t Rad5\t Rad50\t Rad95\t Int5\t Int50\t Int95\t Coal5\t Coal50\t Coal95\t Hit5\t Hit50\t Hit95\t Rhoe5\t Rhoe50\t Rhoe95\t CoalRate5\t CoalRate50\t CoalRate95\t ESSLbda \t ESSMu \t ESSSig \t Run");
+          /* PhyML_Fprintf(fp_summary,"\n# SampArea\t NDemes\t TrueLbda\t TrueMu\t TrueSig\t TrueRad\t TrueNeigh\t TrueRhoe\t \t ClockRate\t Diversity\t TrueInt\t TrueCoal\t TrueHits\t RegNeigh\t TrueXroot\t TrueYroot\t TrueHeight\t Lbda5\t Lbda50\t Lbda95\t LbdaMod \t Mu5\t Mu50\t Mu95\t  MuMod \t Sig5\t Sig50\t Sig95\t SigMod \t Neigh5\t Neigh50\t Neigh95\t NeighMod \t Rad5\t Rad50\t Rad95\t Int5\t Int50\t Int95\t Coal5\t Coal50\t Coal95\t Hit5\t Hit50\t Hit95\t Rhoe5\t Rhoe50\t Rhoe95\t CoalRate5\t CoalRate50\t CoalRate95\t ESSLbda \t ESSMu \t ESSSig \t Run"); */
           
-          PhyML_Fprintf(fp_summary,"\n %G\t %d\t %G\t %G\t %G\t %G\t %G\t %G\t %G\t %G\t %d\t %d\t %d\t %G\t %G\t %G\t %G\t ",
-                        tot_samp_area,
-                        n_demes,
-                        true_lbda,
-                        true_mu,
-                        true_sigsq,
-                        true_rad,
-                        true_neigh,
-                        true_rhoe,
-                        tree->rates->clock_r,
-                        diversity,
-                        true_nint,
-                        true_ncoal,
-                        true_nhits,
-                        fst_neigh,
-                        true_root_x,
-                        true_root_y,
-                        true_height);
+          /* PhyML_Fprintf(fp_summary,"\n %G\t %d\t %G\t %G\t %G\t %G\t %G\t %G\t %G\t %G\t %d\t %d\t %d\t %G\t %G\t %G\t %G\t ", */
+          /*               tot_samp_area, */
+          /*               n_demes, */
+          /*               true_lbda, */
+          /*               true_mu, */
+          /*               true_sigsq, */
+          /*               true_rad, */
+          /*               true_neigh, */
+          /*               true_rhoe, */
+          /*               tree->rates->clock_r, */
+          /*               diversity, */
+          /*               true_nint, */
+          /*               true_ncoal, */
+          /*               true_nhits, */
+          /*               fst_neigh, */
+          /*               true_root_x, */
+          /*               true_root_y, */
+          /*               true_height); */
           
-          PhyML_Fprintf(fp_summary,"%G\t %G\t %G\t %G\t",
-                        /* Lbda5 */  Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
-                        /* Lbda50 */ Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
-                        /* Lbda95 */ Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975),
-                        /* LbdaMod*/ tree->mcmc->mode[tree->mcmc->num_move_phyrex_lbda]);
+          /* PhyML_Fprintf(fp_summary,"%G\t %G\t %G\t %G\t", */
+          /*               /\* Lbda5 *\/  Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025), */
+          /*               /\* Lbda50 *\/ Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50), */
+          /*               /\* Lbda95 *\/ Quantile(res+0*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975), */
+          /*               /\* LbdaMod*\/ tree->mcmc->mode[tree->mcmc->num_move_phyrex_lbda]); */
           
-          PhyML_Fprintf(fp_summary,"%G\t %G\t %G\t %G\t",
-                        /* mu5 */   Quantile(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
-                        /* mu50 */  Quantile(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
-                        /* mu95 */  Quantile(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975),
-                        /* muMod */ 2./tree->mcmc->mode[tree->mcmc->num_move_phyrex_mu]);
+          /* PhyML_Fprintf(fp_summary,"%G\t %G\t %G\t %G\t", */
+          /*               /\* mu5 *\/   Quantile(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025), */
+          /*               /\* mu50 *\/  Quantile(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50), */
+          /*               /\* mu95 *\/  Quantile(res+1*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975), */
+          /*               /\* muMod *\/ 2./tree->mcmc->mode[tree->mcmc->num_move_phyrex_mu]); */
                     
-          PhyML_Fprintf(fp_summary,"%G\t %G\t %G\t %G\t",
-                        /* sig5 */   Quantile(res+2*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
-                        /* sig50*/   Quantile(res+2*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
-                        /* sig95*/   Quantile(res+2*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975),
-                        /* sigMod */ tree->mcmc->mode[tree->mcmc->num_move_phyrex_sigsq]);
+          /* PhyML_Fprintf(fp_summary,"%G\t %G\t %G\t %G\t", */
+          /*               /\* sig5 *\/   Quantile(res+2*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025), */
+          /*               /\* sig50*\/   Quantile(res+2*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50), */
+          /*               /\* sig95*\/   Quantile(res+2*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975), */
+          /*               /\* sigMod *\/ tree->mcmc->mode[tree->mcmc->num_move_phyrex_sigsq]); */
           
-          PhyML_Fprintf(fp_summary,"%G\t %G\t %G\t %G\t",
-                        /* Neigh5 */   Quantile(res+3*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
-                        /* Neigh50*/   Quantile(res+3*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
-                        /* Neigh95*/   Quantile(res+3*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975),
-                        /* NeighMod */ tree->mcmc->mode[tree->mcmc->num_move_phyrex_mu]);
+          /* PhyML_Fprintf(fp_summary,"%G\t %G\t %G\t %G\t", */
+          /*               /\* Neigh5 *\/   Quantile(res+3*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025), */
+          /*               /\* Neigh50*\/   Quantile(res+3*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50), */
+          /*               /\* Neigh95*\/   Quantile(res+3*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975), */
+          /*               /\* NeighMod *\/ tree->mcmc->mode[tree->mcmc->num_move_phyrex_mu]); */
 
           
-          PhyML_Fprintf(fp_summary,"%G\t %G\t %G\t",
-                        /* Rad5 */  Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
-                        /* Rad50 */ Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
-                        /* Rad95 */ Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975));
+          /* PhyML_Fprintf(fp_summary,"%G\t %G\t %G\t", */
+          /*               /\* Rad5 *\/  Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025), */
+          /*               /\* Rad50 *\/ Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50), */
+          /*               /\* Rad95 *\/ Quantile(res+4*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975)); */
 
 
-          PhyML_Fprintf(fp_summary,"%G\t %G\t %G\t",
-                        /* Int5 */  Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
-                        /* Int50 */ Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
-                        /* Int95 */ Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975));
+          /* PhyML_Fprintf(fp_summary,"%G\t %G\t %G\t", */
+          /*               /\* Int5 *\/  Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025), */
+          /*               /\* Int50 *\/ Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50), */
+          /*               /\* Int95 *\/ Quantile(res+5*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975)); */
 
-          PhyML_Fprintf(fp_summary,"%G\t %G\t %G\t",
-                        /* Coal5 */  Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
-                        /* Coal50 */ Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
-                        /* Coal95 */ Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975));
+          /* PhyML_Fprintf(fp_summary,"%G\t %G\t %G\t", */
+          /*               /\* Coal5 *\/  Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025), */
+          /*               /\* Coal50 *\/ Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50), */
+          /*               /\* Coal95 *\/ Quantile(res+6*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975)); */
 
-          PhyML_Fprintf(fp_summary,"%G\t %G\t %G\t",
-                        /* Hit5 */  Quantile(res+7*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
-                        /* Hit50 */ Quantile(res+7*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
-                        /* Hit95 */ Quantile(res+7*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975));
+          /* PhyML_Fprintf(fp_summary,"%G\t %G\t %G\t", */
+          /*               /\* Hit5 *\/  Quantile(res+7*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025), */
+          /*               /\* Hit50 *\/ Quantile(res+7*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50), */
+          /*               /\* Hit95 *\/ Quantile(res+7*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975)); */
                     
-          PhyML_Fprintf(fp_summary,"%G\t %G\t %G\t",
-                        /* rhoe5 */  Quantile(res+8*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
-                        /* rhoe50 */ Quantile(res+8*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
-                        /* rhoe95 */ Quantile(res+8*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975));
+          /* PhyML_Fprintf(fp_summary,"%G\t %G\t %G\t", */
+          /*               /\* rhoe5 *\/  Quantile(res+8*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025), */
+          /*               /\* rhoe50 *\/ Quantile(res+8*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50), */
+          /*               /\* rhoe95 *\/ Quantile(res+8*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975)); */
 
-          PhyML_Fprintf(fp_summary,"%G\t %G\t %G\t",
-                        /* CoalRate5 */  Quantile(res+9*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025),
-                        /* CoalRate50 */ Quantile(res+9*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50),
-                        /* CoalRate95 */ Quantile(res+9*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975));
+          /* PhyML_Fprintf(fp_summary,"%G\t %G\t %G\t", */
+          /*               /\* CoalRate5 *\/  Quantile(res+9*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.025), */
+          /*               /\* CoalRate50 *\/ Quantile(res+9*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.50), */
+          /*               /\* CoalRate95 *\/ Quantile(res+9*tree->mcmc->chain_len / tree->mcmc->sample_interval+burnin,tree->mcmc->run / tree->mcmc->sample_interval+1-burnin,0.975)); */
 
-          PhyML_Fprintf(fp_summary,"%G\t %G\t %G\t",
-                        tree->mcmc->ess[tree->mcmc->num_move_phyrex_lbda],
-                        tree->mcmc->ess[tree->mcmc->num_move_phyrex_mu],  
-                        tree->mcmc->ess[tree->mcmc->num_move_phyrex_sigsq]);
+          /* PhyML_Fprintf(fp_summary,"%G\t %G\t %G\t", */
+          /*               tree->mcmc->ess[tree->mcmc->num_move_phyrex_lbda], */
+          /*               tree->mcmc->ess[tree->mcmc->num_move_phyrex_mu],   */
+          /*               tree->mcmc->ess[tree->mcmc->num_move_phyrex_sigsq]); */
 
-          PhyML_Fprintf(fp_summary,"%d\t",tree->mcmc->run);
+          /* PhyML_Fprintf(fp_summary,"%d\t",tree->mcmc->run); */
 
-          PhyML_Fprintf(fp_summary,"\n\n");
+          /* PhyML_Fprintf(fp_summary,"\n\n"); */
 
           if(tree->mcmc->sample_num == 0)
             {
@@ -2085,7 +2410,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
   fclose(fp_tree);
   fclose(fp_stats);
-  fclose(fp_summary);
+  /* fclose(fp_summary); */
 
   return(res);
 }
@@ -3430,8 +3755,16 @@ void PHYREX_Ldsk_To_Tree(t_tree *tree)
   tree->n_root->b[1] = tree->a_edges[2*tree->n_otu-3];
   tree->n_root->b[2] = tree->a_edges[2*tree->n_otu-2];
 
+  tree->n_root->b[1]->left = tree->n_root;
+  tree->n_root->b[1]->rght = tree->n_root->v[1];
+
+  tree->n_root->b[2]->left = tree->n_root;
+  tree->n_root->b[2]->rght = tree->n_root->v[2];
+  
   Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
   Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
+  
+  MIXT_Propagate_Tree_Update(tree);  
 }
 
 /*////////////////////////////////////////////////////////////
@@ -3701,7 +4034,7 @@ void PHYREX_Simulate_Disk_And_Node_Times(t_tree *tree)
 // after that.
 void PHYREX_Make_And_Connect_Tip_Disks(t_tree *tree)
 {
-  t_dsk *disk;
+  t_dsk *disk,*new_disk;
   t_node *n;
   
   Get_Node_Ranks_From_Tip_Times(tree);
@@ -3709,12 +4042,13 @@ void PHYREX_Make_And_Connect_Tip_Disks(t_tree *tree)
   // Find most recent tip
   n = tree->a_nodes[0];
   while(n->rk_next) n = n->rk_next;
-
   
   // Create most recent disk
   disk = PHYREX_Make_Disk_Event(tree->mmod->n_dim,tree->n_otu);
   PHYREX_Init_Disk_Event(disk,tree->mmod->n_dim,NULL);
   disk->age_fixed = YES; // Sample disks have their ages fixed
+  disk->time = tree->rates->nd_t[n->num]; // Set time of youngest disk
+  PhyML_Fprintf(stdout,"\n. Youngest sampled disk time set to %f",disk->time);
   
   // ldsk_a[0] is connected to youngest tip
   disk->ldsk_a[0] = PHYREX_Make_Lindisk_Node(tree->mmod->n_dim);
@@ -3726,7 +4060,7 @@ void PHYREX_Make_And_Connect_Tip_Disks(t_tree *tree)
   
   // Set pointer to young_disk here and not elsewhere!
   tree->young_disk = disk;
-  
+  new_disk = NULL;
   do
     {
       assert(n->rk_prev);
@@ -3734,14 +4068,19 @@ void PHYREX_Make_And_Connect_Tip_Disks(t_tree *tree)
       // n and n->rk_prev have distinct time stamps -> they should be on two distinct disks
       if(Are_Equal(tree->rates->nd_t[n->num],tree->rates->nd_t[n->rk_prev->num],SMALL) == NO)
         {
-          disk = PHYREX_Make_Disk_Event(tree->mmod->n_dim,tree->n_otu);
-          PHYREX_Init_Disk_Event(disk,tree->mmod->n_dim,NULL);
-          disk->age_fixed = YES;
+          new_disk = PHYREX_Make_Disk_Event(tree->mmod->n_dim,tree->n_otu);
+          PHYREX_Init_Disk_Event(new_disk,tree->mmod->n_dim,NULL);
+          new_disk->age_fixed = YES;
           
-          disk->ldsk_a[0] = PHYREX_Make_Lindisk_Node(tree->mmod->n_dim);
-          disk->ldsk_a[0]->nd = n->rk_prev;
-          disk->ldsk_a[0]->disk = disk;
-          disk->n_ldsk_a = 1;
+          new_disk->ldsk_a[0] = PHYREX_Make_Lindisk_Node(tree->mmod->n_dim);
+          new_disk->ldsk_a[0]->nd = n->rk_prev;
+          new_disk->ldsk_a[0]->disk = disk;
+          new_disk->n_ldsk_a = 1;
+
+          new_disk->prev = disk;
+          disk->next = new_disk;
+
+          disk = new_disk;
         }
       // n and n->rk_prev have the same time stamp -> they sit on the same disk
       else
@@ -3751,12 +4090,16 @@ void PHYREX_Make_And_Connect_Tip_Disks(t_tree *tree)
           disk->ldsk_a[disk->n_ldsk_a]->disk = disk;
           disk->n_ldsk_a++;          
         }
+
+      // Set sampled disk time
+      disk->time = tree->rates->nd_t[n->rk_prev->num];
+      PhyML_Fprintf(stdout,"\n. Set sampled disk time to %15f",disk->time);
       
       n->rk_prev->ldsk = disk->ldsk_a[disk->n_ldsk_a-1];
       n = n->rk_prev;
     }
   while(n->rk_prev);
-  
+
 }
 
 /*////////////////////////////////////////////////////////////

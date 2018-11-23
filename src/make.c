@@ -14,10 +14,16 @@ the GNU public licence. See http://www.opensource.org for details.
 
 //////////////////////////////////////////////////////////////
 
-void Make_Tree_4_Lk(t_tree *tree, calign *cdata, int n_site)
+void Make_Tree_For_Lk(t_tree *tree)
 {
-  int i;
+  int i,n_site;
+  calign *cdata;
 
+  cdata = tree->data;
+  assert(cdata);
+
+  n_site = tree->data->init_len;
+  
   tree->c_lnL_sorted         = (phydbl *)mCalloc(tree->n_pattern,sizeof(phydbl));
   tree->cur_site_lk          = (phydbl *)mCalloc(tree->n_pattern,sizeof(phydbl));
   tree->old_site_lk          = (phydbl *)mCalloc(tree->n_pattern,sizeof(phydbl));
@@ -60,7 +66,6 @@ void Make_Tree_4_Lk(t_tree *tree, calign *cdata, int n_site)
 
       Init_Partial_Lk_Tips_Double(tree);
       Init_Partial_Lk_Loc(tree);
-
       
       if(tree->n_root != NULL)
         {
@@ -68,6 +73,24 @@ void Make_Tree_4_Lk(t_tree *tree, calign *cdata, int n_site)
           Free_Edge_Lk_Rght(tree->n_root->b[2]);
           Free_Edge_Loc_Rght(tree->n_root->b[1]);
           Free_Edge_Loc_Rght(tree->n_root->b[2]);
+
+          tree->n_root->b[1]->p_lk_rght  = tree->e_root->p_lk_left;
+          tree->n_root->b[2]->p_lk_rght  = tree->e_root->p_lk_rght;
+          
+          tree->n_root->b[1]->p_lk_tip_r = tree->e_root->p_lk_tip_l;      
+          tree->n_root->b[2]->p_lk_tip_r = tree->e_root->p_lk_tip_r;
+          
+          tree->n_root->b[1]->div_post_pred_rght  = tree->e_root->div_post_pred_rght;
+          tree->n_root->b[2]->div_post_pred_rght  = tree->e_root->div_post_pred_left;
+          
+          tree->n_root->b[1]->sum_scale_rght  = tree->e_root->sum_scale_rght;
+          tree->n_root->b[2]->sum_scale_rght  = tree->e_root->sum_scale_left;
+          
+          tree->n_root->b[1]->sum_scale_rght_cat  = tree->e_root->sum_scale_rght_cat;
+          tree->n_root->b[2]->sum_scale_rght_cat  = tree->e_root->sum_scale_left_cat;
+          
+          tree->n_root->b[1]->patt_id_rght  = tree->e_root->patt_id_rght;
+          tree->n_root->b[2]->patt_id_rght  = tree->e_root->patt_id_left;
         }
     }
 }
@@ -75,10 +98,15 @@ void Make_Tree_4_Lk(t_tree *tree, calign *cdata, int n_site)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-void Make_Tree_4_Pars(t_tree *tree, calign *cdata, int n_site)
+void Make_Tree_For_Pars(t_tree *tree)
 {
-  int i;
+  int i,n_site;
+  calign *cdata;
+
+  cdata = tree->data;
+  assert(cdata);
+
+  n_site = tree->data->init_len;
 
   assert(tree->mod);
   
@@ -86,6 +114,7 @@ void Make_Tree_4_Pars(t_tree *tree, calign *cdata, int n_site)
   tree->step_mat = (int *)mCalloc(tree->mod->ns * tree->mod->ns,sizeof(int));
 
   for(i=0;i<2*tree->n_otu-1;++i) Make_Edge_Pars(tree->a_edges[i],tree);
+
   Init_Ui_Tips(tree);
   Init_Partial_Pars_Tips(tree); /* Must be called after Init_Ui_Tips is called */
 
@@ -146,7 +175,7 @@ void Make_New_Edge_Label(t_edge *b)
 t_edge *Make_Edge_Light(t_node *a, t_node *d, int num)
 {
   t_edge *b;
-
+  
   b = (t_edge *)mCalloc(1,sizeof(t_edge));
 
   b->l = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
@@ -1115,54 +1144,6 @@ eigen *Make_Eigen_Struct(int ns)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-triplet *Make_Triplet_Struct(t_mod *mod)
-{
-  int i,j,k;
-  triplet *triplet_struct;
-
-  triplet_struct                  = (triplet *)mCalloc(1,sizeof(triplet));
-  triplet_struct->size            = mod->ns;
-  triplet_struct->pi_bc           = (phydbl *)mCalloc(mod->ns,sizeof(phydbl ));
-  triplet_struct->pi_cd           = (phydbl *)mCalloc(mod->ns,sizeof(phydbl ));
-  triplet_struct->pi_bd           = (phydbl *)mCalloc(mod->ns,sizeof(phydbl ));
-  triplet_struct->F_bc            = (phydbl *)mCalloc(mod->ns*mod->ns*mod->ras->n_catg,sizeof(phydbl));
-  triplet_struct->F_cd            = (phydbl *)mCalloc(mod->ns*mod->ns*mod->ras->n_catg,sizeof(phydbl));
-  triplet_struct->F_bd            = (phydbl *)mCalloc(mod->ns*mod->ns,sizeof(phydbl));
-  triplet_struct->core            = (phydbl ****)mCalloc(mod->ras->n_catg,sizeof(phydbl ***));
-  triplet_struct->p_one_site      = (phydbl ***)mCalloc(mod->ns,sizeof(phydbl **));
-  triplet_struct->sum_p_one_site  = (phydbl ***)mCalloc(mod->ns,sizeof(phydbl **));
-  triplet_struct->eigen_struct    = (eigen *)Make_Eigen_Struct(mod->ns);
-  triplet_struct->mod             = mod;
-
-  for(k=0;k<mod->ras->n_catg;k++)
-    {
-      triplet_struct->core[k]                = (phydbl ***)mCalloc(mod->ns,sizeof(phydbl **));
-      for(i=0;i<mod->ns;i++)
-    {
-      triplet_struct->core[k][i]         = (phydbl **)mCalloc(mod->ns,sizeof(phydbl *));
-      for(j=0;j<mod->ns;j++)
-        triplet_struct->core[k][i][j]    = (phydbl  *)mCalloc(mod->ns,sizeof(phydbl ));
-    }
-    }
-
-  for(i=0;i<mod->ns;i++)
-    {
-      triplet_struct->p_one_site[i]          = (phydbl **)mCalloc(mod->ns,sizeof(phydbl *));
-      for(j=0;j<mod->ns;j++)
-    triplet_struct->p_one_site[i][j]     = (phydbl  *)mCalloc(mod->ns,sizeof(phydbl ));
-    }
-
-  for(i=0;i<mod->ns;i++)
-    {
-      triplet_struct->sum_p_one_site[i]      = (phydbl **)mCalloc(mod->ns,sizeof(phydbl *));
-      for(j=0;j<mod->ns;j++)
-    triplet_struct->sum_p_one_site[i][j] = (phydbl  *)mCalloc(mod->ns,sizeof(phydbl ));
-    }
-
-  return triplet_struct;
-
-}
-
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
@@ -1229,6 +1210,16 @@ void Make_Best_Spr(t_tree *tree)
 {
   tree->best_spr = Make_One_Spr(tree);
   Init_One_Spr(tree->best_spr);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Make_Spr(t_tree *tree)
+{
+  Make_Spr_List_One_Edge(tree);
+  Make_Spr_List_All_Edge(tree);
+  Make_Best_Spr(tree);
 }
 
 //////////////////////////////////////////////////////////////
@@ -1351,7 +1342,7 @@ t_rate *RATES_Make_Rate_Struct(int n_otu)
       rates->t_prior_max_ori      = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
       rates->times_partial_proba  = (phydbl *)mCalloc(n_otu*n_otu,sizeof(phydbl));
       rates->numb_calib_chosen    = (int *)mCalloc(n_otu*n_otu,sizeof(phydbl));
-      rates->a_cal                = (t_cal **)mCalloc(n_otu-1,sizeof(t_cal *));
+      rates->a_cal                = (t_cal **)mCalloc(n_otu,sizeof(t_cal *));
       rates->model_name           = (char *)mCalloc(T_MAX_NAME,sizeof(char));
     }
 

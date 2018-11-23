@@ -267,11 +267,10 @@ void PMat_Empirical(const phydbl l, const t_mod *mod, const int pos, phydbl *Pij
 
   /* multiply Vr*POW(exp(D/mr),l)*Vi into Pij */
   for(i=0;i<ns;i++) for (k=0;k<ns;k++) uexpt[i*ns+k] = U[i*ns+k] * expt[k];
-
+  
   Pij = Pij + pos;
   if(tPij != NULL) tPij = tPij + pos;
   
-
   for(i=0;i<ns;++i)
     {
       for(j=0;j<ns;++j)
@@ -1222,7 +1221,6 @@ phydbl GTR_Dist(phydbl *F, phydbl alpha, eigen *eigen_struct)
   dist = .0;
   for(i=0;i<eigen_struct->size;i++) dist-=F[eigen_struct->size*i+i];
 
-/*   PhyML_Printf("\nDIST = %f\n",dist); Exit("\n"); */
 
   Free(pi);
   Free(F_phydbl);

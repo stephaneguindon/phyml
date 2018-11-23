@@ -810,10 +810,9 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
       if(p < 0)
         {
           PhyML_Fprintf(stderr,"\n. pere: %d fils=%d root=%d root->v[2]=%d root->v[1]=%d",pere->num,fils->num,tree->n_root->num,tree->n_root->v[2]->num,tree->n_root->v[1]->num);
-          PhyML_Fprintf(stderr,"\n. fils=%p root=%p root->v[2]=%p root->v[1]=%p",fils,tree->n_root,tree->n_root->v[2],tree->n_root->v[1]);
-          PhyML_Fprintf(stderr,"\n. tree->e_root=%p fils->b[0]=%p fils->b[1]=%p fils->b[2]=%p",tree->e_root,fils->b[0],fils->b[1],fils->b[2]);
-          PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
-          Exit("\n");
+          PhyML_Fprintf(stderr,"\n. fils=%d root=%d root->v[2]=%d root->v[1]=%d",fils->num,tree->n_root->num,tree->n_root->v[2]->num,tree->n_root->v[1]->num);
+          PhyML_Fprintf(stderr,"\n. tree->e_root=%d fils->b[0]=%d fils->b[1]=%d fils->b[2]=%d",tree->e_root->num,fils->b[0]->num,fils->b[1]->num,fils->b[2]->num);
+          assert(false);
         }
       
       last_len = (int)strlen(*s_tree);
@@ -4103,7 +4102,6 @@ option *Get_Input(int argc, char **argv)
 #elif (defined PHYTIME || defined INVITEE)
   rv = Read_Command_Line(io,argc,argv);
 #else
-
   switch (argc)
     {
     case 1:
@@ -4752,7 +4750,11 @@ option *PhyML_XML(char *xml_filename)
   
       MIXT_Connect_Cseqs_To_Nodes(mixt_tree);
       MIXT_Init_T_Beg(mixt_tree);
-      Prepare_Tree_For_Lk(mixt_tree);
+      
+      MIXT_Make_Tree_For_Pars(mixt_tree);
+      MIXT_Make_Tree_For_Lk(mixt_tree);
+      MIXT_Make_Spr(mixt_tree);
+      
       MIXT_Chain_All(mixt_tree);
       MIXT_Check_Edge_Lens_In_All_Elem(mixt_tree);
       MIXT_Turn_Branches_OnOff_In_All_Elem(ON,mixt_tree);
@@ -4815,7 +4817,6 @@ option *PhyML_XML(char *xml_filename)
       Print_Data_Structure(YES,mixt_tree->io->fp_out_stats,mixt_tree);
 
       Free_Spr_List_One_Edge(mixt_tree);
-      Free_Triplet(mixt_tree->triplet_struct);
       Free_Tree_Pars(mixt_tree);
       Free_Tree_Lk(mixt_tree);
     }

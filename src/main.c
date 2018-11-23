@@ -208,7 +208,9 @@ int main(int argc, char **argv)
                       Exit("\n");
                     }
 
-                  Prepare_Tree_For_Lk(tree);
+                  Make_Tree_For_Pars(tree);
+                  Make_Tree_For_Lk(tree);
+                  Make_Spr(tree);
                   Br_Len_Not_Involving_Invar(tree);
                   Unscale_Br_Len_Multiplier_Tree(tree);
 
@@ -318,7 +320,6 @@ int main(int argc, char **argv)
                   Free_One_Spr(tree->best_spr);
                   Free_Spr_List_One_Edge(tree);
                   Free_Spr_List_All_Edge(tree);
-                  Free_Triplet(tree->triplet_struct);
                   Free_Tree_Pars(tree);
                   Free_Tree_Lk(tree);
                   Free_Tree(tree);

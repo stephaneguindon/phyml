@@ -1303,7 +1303,6 @@ void Share_Lk_Struct(t_tree *t_full, t_tree *t_empt)
   t_empt->unscaled_site_lk_cat = t_full->unscaled_site_lk_cat;
   t_empt->cur_site_lk          = t_full->cur_site_lk;
   t_empt->old_site_lk          = t_full->old_site_lk;
-  t_empt->triplet_struct       = t_full->triplet_struct;
   t_empt->log_lks_aLRT         = t_full->log_lks_aLRT;
   t_empt->site_lk_cat          = t_full->site_lk_cat;
   t_empt->fact_sum_scale       = t_full->fact_sum_scale;
@@ -6569,6 +6568,8 @@ void Reorganize_Edges_Given_Lk_Struct(t_tree *tree)
 {
   int j,i;
 
+  if(tree->is_mixt_tree == YES) return;
+  
   for(i=0;i<2*tree->n_otu-1;++i)
     {      
       if(tree->a_edges[i]->p_lk_left && tree->a_edges[i]->left->tax == YES)
@@ -7362,8 +7363,9 @@ void Update_Ancestors(t_node *a, t_node *d, t_tree *tree)
   if(d == NULL)
     {
       PhyML_Printf("\n. d is NULL; a: %d root: %d",a->num,tree->n_root->num);
-      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
+      assert(FALSE);
     }
+
   d->anc = a;
 
   if(a == tree->n_root) a->anc = NULL;
@@ -8371,7 +8373,7 @@ t_tree *Dist_And_BioNJ(calign *cdata, t_mod *mod, option *io)
       mat = ML_Dist(cdata,mod);
       
       Fill_Missing_Dist(mat);
-            
+
       if(!io->quiet) PhyML_Printf("\n\n. Building BioNJ tree...");
       mat->tree = Make_Tree_From_Scratch(cdata->n_otu,cdata);      
       Bionj(mat);
@@ -8428,10 +8430,8 @@ char *Bootstrap_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
 
   Connect_CSeqs_To_Nodes(cdata,io,tree);
   if(tree->mod->s_opt->random_input_tree) Random_Tree(tree);
-  Make_Tree_4_Pars(tree,cdata,cdata->init_len);
-  Make_Tree_4_Lk(tree,cdata,cdata->init_len);
-  tree->triplet_struct = Make_Triplet_Struct(mod);
-  Init_Triplet_Struct(tree->triplet_struct);
+  Make_Tree_For_Pars(tree);
+  Make_Tree_For_Lk(tree);
   Unscale_Br_Len_Multiplier_Tree(tree);
   Br_Len_Not_Involving_Invar(tree);
   Make_Spr_List_One_Edge(tree);
@@ -8457,7 +8457,6 @@ char *Bootstrap_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
   Free_Spr_List_One_Edge(tree);
   Free_One_Spr(tree->best_spr);
   Free_Spr_List_All_Edge(tree);
-  Free_Triplet(tree->triplet_struct);
   Free_Tree_Pars(tree);
   Free_Tree_Lk(tree);
   Free_Tree(tree);
@@ -8490,10 +8489,8 @@ char *aLRT_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
 
   Connect_CSeqs_To_Nodes(cdata,io,tree);
   if(tree->mod->s_opt->random_input_tree) Random_Tree(tree);
-  Make_Tree_4_Pars(tree,cdata,cdata->init_len);
-  Make_Tree_4_Lk(tree,cdata,cdata->init_len);
-  tree->triplet_struct = Make_Triplet_Struct(mod);
-  Init_Triplet_Struct(tree->triplet_struct);
+  Make_Tree_For_Pars(tree);
+  Make_Tree_For_Lk(tree);
 
   Unscale_Br_Len_Multiplier_Tree(tree);
   Br_Len_Not_Involving_Invar(tree);
@@ -8525,29 +8522,11 @@ char *aLRT_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
   Free_One_Spr(tree->best_spr);
   Free_Spr_List_One_Edge(tree);
   Free_Spr_List_All_Edge(tree);
-  Free_Triplet(tree->triplet_struct);
   Free_Tree_Pars(tree);
   Free_Tree_Lk(tree);
   Free_Tree(tree);
 
   return s_tree;
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-void Prepare_Tree_For_Lk(t_tree *tree)
-{
-  Connect_CSeqs_To_Nodes(tree->data,tree->io,tree);
-  Make_Tree_4_Pars(tree,tree->data,tree->data->init_len);
-  Make_Tree_4_Lk(tree,tree->data,tree->data->init_len);
-  tree->triplet_struct = Make_Triplet_Struct(tree->mod);
-  Init_Triplet_Struct(tree->triplet_struct);
-  Make_Spr_List_One_Edge(tree);
-  Make_Spr_List_All_Edge(tree);
-  Make_Best_Spr(tree);
-
-  if(tree->is_mixt_tree == YES) MIXT_Prepare_Tree_For_Lk(tree);
 }
 
 //////////////////////////////////////////////////////////////
@@ -8836,13 +8815,8 @@ t_node *Find_Lca_Clade(t_node **node_list, int node_list_size, t_tree *tree)
   int *size;
   int i;
 
-  if(!tree->n_root)
-    {
-      PhyML_Printf("\n. The tree must be rooted in this function.");
-      PhyML_Printf("\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
-      Warn_And_Exit("\n. PhyML finished prematurely.");
-    }
-
+  assert(tree->n_root);
+  
   list = (t_node ***)mCalloc(node_list_size,sizeof(t_node **));
   for(i=0;i<node_list_size;i++) list[i] = (t_node **)mCalloc(2*tree->n_otu-1,sizeof(t_node *));
   size = (int *)mCalloc(node_list_size,sizeof(int));

@@ -285,6 +285,21 @@ void Post_Order_Lk(t_node *a, t_node *d, t_tree *tree)
 
   dir = -1;
   
+  /* PhyML_Printf("\n. %p a: %3d d: %3d root: %3d root->v1: %3d root->v2: %3d [%3d %3d %3d] (%3d %3d) (%3d %3d)", */
+  /*              tree, */
+  /*              a->num, */
+  /*              d->num, */
+  /*              tree->n_root?tree->n_root->num:-1, */
+  /*              tree->n_root->v[1]->num, */
+  /*              tree->n_root->v[2]->num, */
+  /*              d->v[0]?d->v[0]->num:-1, */
+  /*              d->v[1]?d->v[1]->num:-1, */
+  /*              d->v[2]?d->v[2]->num:-1, */
+  /*              tree->a_nodes[5]->num, */
+  /*              tree->a_nodes[5]->v[0]->num, */
+  /*              tree->mixt_tree? tree->mixt_tree->a_nodes[5]->num : -1, */
+  /*              tree->mixt_tree? tree->mixt_tree->a_nodes[5]->v[0]->num : -1); */
+  
   if(d->tax) return;
   else
     {
@@ -313,8 +328,22 @@ void Post_Order_Lk(t_node *a, t_node *d, t_tree *tree)
             }
         }
 
-      assert(dir > -1);
-
+      if(dir < 0)
+        {
+          PhyML_Printf("\n. a->num: %d d->num: %d d->v[0]->num: %d d->v[1]->num: %d d->v[2]->num: %d d->b[0]->num: %d d->b[1]->num: %d d->b[2]->num: %d root ? %d e_root ? %d\n",
+                       a?a->num:-1,
+                       d?d->num:1,
+                       d->v[0]?d->v[0]->num:-1,
+                       d->v[1]?d->v[1]->num:-1,
+                       d->v[2]?d->v[2]->num:-1,
+                       d->b[0]?d->b[0]->num:-1,
+                       d->b[1]?d->b[1]->num:-1,
+                       d->b[2]?d->b[2]->num:-1,
+                       tree->n_root?tree->n_root->num:-1,
+                       tree->e_root?tree->e_root->num:-1);
+          assert(FALSE);
+        }
+      
       if(tree->ignore_root == NO && d->b[dir] == tree->e_root)
         {
           if(d == tree->n_root->v[1]) Update_Partial_Lk(tree,tree->n_root->b[1],d);
@@ -434,6 +463,10 @@ phydbl Lk(t_edge *b, t_tree *tree)
       Optimize_Free_Rate_Weights(tree,YES,YES);
       tree->mod->s_opt->curr_opt_free_rates = YES;
     }
+
+#ifdef PHYREX
+  PHYREX_Ldsk_To_Tree(tree);
+#endif
   
   
   if(tree->is_mixt_tree == YES) 
@@ -446,10 +479,6 @@ phydbl Lk(t_edge *b, t_tree *tree)
   
   tree->old_lnL = tree->c_lnL;
   
-
-#ifdef PHYREX
-  PHYREX_Ldsk_To_Tree(tree);
-#endif
 
 
 #if (defined PHYTIME || defined INVITEE || defined PHYREX)
@@ -1982,7 +2011,6 @@ void Init_Partial_Lk_Tips_Double(t_tree *tree)
             Init_Tips_At_One_Site_Nucleotides_Float(tree->a_nodes[i]->c_seq->state[curr_site],
                                                     curr_site*dim1,
                                                     tree->a_nodes[i]->b[0]->p_lk_tip_r);
-
           else if(tree->io->datatype == AA)
             Init_Tips_At_One_Site_AA_Float(tree->a_nodes[i]->c_seq->state[curr_site],
                                            curr_site*dim1,
@@ -2259,8 +2287,8 @@ phydbl Lk_Dist(phydbl *F, phydbl dist, t_mod *mod)
 
   // Compute likelihood of the model made of the
   // first class of the mixture.
-  if(mod->is_mixt_mod == YES) mod = mod->next;
-  assert(mod);
+  /* if(mod->is_mixt_mod == YES) mod = mod->next; */
+  /* assert(mod); */
 
   if(mod->log_l == YES) dist = exp(dist);
 
