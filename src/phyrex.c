@@ -310,9 +310,6 @@ void PHYREX_XML(char *xml_filename)
   Set_Update_Eigen(YES,mixt_tree->mod);
   Lk(NULL,mixt_tree);
   Set_Update_Eigen(NO,mixt_tree->mod);
-
-  PhyML_Printf("\n. lnL: %f",mixt_tree->c_lnL);
-  Exit("\n");
   
   res = PHYREX_MCMC(mixt_tree);
   Free(res);  
@@ -1054,7 +1051,6 @@ phydbl PHYREX_Simulate_Backward_Core(t_dsk *init_disk, t_tree *tree)
       /* New time is older than next sampled disk (disk->prev) */
       if(disk->prev && new_time < disk->prev->time)
         {
-          /* PhyML_Printf("\n. HIT SAMPLE -> %p",disk->prev); */
           new_disk = disk->prev;
           new_time = disk->prev->time;
 
@@ -1074,10 +1070,9 @@ phydbl PHYREX_Simulate_Backward_Core(t_dsk *init_disk, t_tree *tree)
           new_disk = PHYREX_Make_Disk_Event(mmod->n_dim,tree->n_otu);
           PHYREX_Init_Disk_Event(new_disk,mmod->n_dim,NULL);
 
-          /* PhyML_Printf("\n. NEW DISK -> %p",new_disk); */
           /* new_disk->prev now points to previous sampled disk */
           new_disk->prev = disk->prev;
-          disk->next = new_disk;
+          if(disk->prev) disk->prev->next = new_disk;
           
           /* Connect disk and new_disk */
           disk->prev = new_disk;      
@@ -1138,7 +1133,6 @@ phydbl PHYREX_Simulate_Backward_Core(t_dsk *init_disk, t_tree *tree)
             }
         }
 
-          
       disk = new_disk;
     }
   while(1);
@@ -1798,7 +1792,7 @@ phydbl PHYREX_Lk(t_tree *tree)
     }
 
   PHYREX_Update_Lindisk_List(tree);
-  
+    
   disk = tree->young_disk->prev;
   do
     {
@@ -1830,6 +1824,7 @@ phydbl PHYREX_Lk_Core(t_dsk *disk, t_tree *tree)
   log_mu        = log(tree->mmod->mu);
   was_hit       = (disk->ldsk != NULL);
 
+  
   if(disk->ldsk != NULL)
     {
       for(i=0;i<disk->n_ldsk_a;++i) if(disk->ldsk_a[i]->prev == disk->ldsk) break;
@@ -2170,8 +2165,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_swap_disk"))
         MCMC_PHYREX_Swap_Disk(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr"))
-        MCMC_PHYREX_Prune_Regraft(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr")) */
+      /*   MCMC_PHYREX_Prune_Regraft(tree); */
 
       /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_scale_times")) */
       /*   MCMC_PHYREX_Scale_Times(tree); */
@@ -2182,11 +2177,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_sim_plus")) */
       /*   MCMC_PHYREX_Simulate_Backward_Plus(tree); */
 
-      if(!strcmp(tree->mcmc->move_name[move],"phyrex_traj"))
-        MCMC_PHYREX_Lineage_Traj(tree);
-
-      if(!strcmp(tree->mcmc->move_name[move],"phyrex_lbda_times"))
-        MCMC_PHYREX_Lbda_Times(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_traj")) */
+      /*   MCMC_PHYREX_Lineage_Traj(tree); */
 
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_disk_multi"))
         MCMC_PHYREX_Disk_Multi(tree);
@@ -2226,7 +2218,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
       /* PhyML_Printf("\n. %s",tree->mcmc->move_name[move]); */
 
-
       tree->mcmc->run++;
       MCMC_Get_Acc_Rates(tree->mcmc);
       
@@ -2243,7 +2234,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           disk = tree->young_disk;
           while(disk->prev) disk = disk->prev;
 
-          PhyML_Fprintf(fp_stats,"\n%6d\t%9.1f\t%9.1f\t%9.1f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%G\t%6d\t%6d\t%6d\t%8.1f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%G\t%G\t%G",                        
+          PhyML_Fprintf(fp_stats,"\n%6d\t%9.1f\t%9.1f\t%9.1f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%6.3f\t%G\t%6d\t%6d\t%6d\t%8.1f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%6.2f\t%G\t%G\t%G",                        
                         tree->mcmc->run,
                         tree->c_lnL+tree->mmod->c_lnL,
                         tree->c_lnL,
@@ -2274,7 +2265,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
                         tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_spr],
                         tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_traj],
                         tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_sim],
-                        tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_lbda_times],
                         tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_sim_plus],
                         tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_indel_hit_serial],
 
@@ -2407,8 +2397,11 @@ phydbl *PHYREX_MCMC(t_tree *tree)
               fseek(fp_tree,-5,SEEK_CUR);
             }
 
+          
           PHYREX_Ldsk_To_Tree(tree);  
-          RATES_Update_Cur_Bl(tree);
+          Time_To_Bl(tree);
+          tree->bl_ndigits = 3;
+          /* RATES_Update_Cur_Bl(tree); */
           char *s = Write_Tree(tree,NO);
           PhyML_Fprintf(fp_tree,"\ntree %d [&lnP=%f] = [&R]  %s",tree->mcmc->sample_num,tree->c_lnL,s);
           Free(s);
@@ -2993,15 +2986,6 @@ void PHYREX_Update_Lindisk_List_Core(t_dsk *disk, t_tree *tree)
   
   assert(disk->ldsk_a);
   
-  /* PhyML_Printf("\n. UPDATE_LINDISK 1 disk: %p n_ldsk_a: %d",disk,disk->n_ldsk_a); */
-  /* for(int i=0;i<disk->n_ldsk_a;++i) */
-  /*   PhyML_Printf("\n. UPDATE_LINDISK 1 disk: %p ldsk_a: %p nd_num: %d ldsk->disk: %p", */
-  /*                disk, */
-  /*                disk->ldsk_a[i], */
-  /*                disk->ldsk_a[i]->nd ? disk->ldsk_a[i]->nd->num : -1, */
-  /*                disk->ldsk_a[i]->disk); */
-
-
   // Set ldsk_a[i] to NULL if it does not point to a tip node
   for(i=0;i<tree->n_otu;++i)
     if(disk->ldsk_a[i] &&
@@ -3010,26 +2994,20 @@ void PHYREX_Update_Lindisk_List_Core(t_dsk *disk, t_tree *tree)
          disk->ldsk_a[i]->disk == disk))                           
       disk->ldsk_a[i] = NULL;
       
-
-  /* for(i=0;i<tree->n_otu;++i) disk->ldsk_a[i] = NULL; */
   
-  /* PhyML_Printf("\n. UPDATE_LINDISK 2 disk: %p",disk); */
   disk->n_ldsk_a = 0;
   for(i=0;i<tree->n_otu;++i)
     if(disk->ldsk_a[i] != NULL)
-      {
-        /* PhyML_Printf("\n. UPDATE_LINDISK 2 ldsk_a: %p time: %f",disk->ldsk_a[i],disk->time); */
         disk->n_ldsk_a++;
-      }
 
+  
   // Make sur the tip nodes are all at the top of ldsk_a
   for(i=0;i<disk->n_ldsk_a;++i) assert(disk->ldsk_a[i] != NULL);
   for(i=disk->n_ldsk_a;i<tree->n_otu;++i) assert(disk->ldsk_a[i] == NULL);
 
 
   for(i=0;i<disk->next->n_ldsk_a;++i)
-    {
-      
+    {      
       // disk->next->ldsk_a[i] does not coalesce or jump on disk->next
       // --> add it disk->ldsk_a array
       if((disk->next->ldsk_a[i]->prev != NULL &&
@@ -3062,9 +3040,6 @@ void PHYREX_Update_Lindisk_List_Core(t_dsk *disk, t_tree *tree)
                     tree->n_otu);
       assert(FALSE);
     }
-
-  /* PhyML_Printf("\n. UPDATE_LINDISK 2 n_ldsk_a: %d",disk->n_ldsk_a); */
-
 }
 
 /*////////////////////////////////////////////////////////////

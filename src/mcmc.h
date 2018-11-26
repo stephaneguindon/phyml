@@ -147,7 +147,6 @@ void MCMC_PHYREX_Delete_Hit(phydbl hr, int n_delete_disks, phydbl cur_rad, phydb
 void MCMC_PHYREX_Simulate_Backward(t_tree *tree);
 void MCMC_Update_Mode(int move_num, t_mcmc *mcmc, t_tree *tree);
 void MCMC_PHYREX_Lineage_Traj(t_tree *tree);
-void MCMC_PHYREX_Lbda_Times(t_tree *tree);
 void MCMC_PHYREX_Delete_Disk_Serial(t_tree *tree);
 void MCMC_PHYREX_Insert_Disk_Serial(t_tree *tree);
 void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree);
