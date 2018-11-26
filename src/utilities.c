@@ -12843,5 +12843,38 @@ void Shuffle_Sites(const phydbl prop, align **data, const int n_otu)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+phydbl Tree_Height(t_tree *tree)
+{
+  phydbl h;
+  t_node *n,*anc;
+  int i;
+  assert(tree->n_root != NULL);
+
+  h = 0;
+  n = tree->n_root;
+  anc = NULL;
+  
+  assert(n->tax == NO);
+
+  do
+    {
+      for(i=0;i<3;++i)
+        {
+          if(n->v[i] && n->v[i] != anc && n->b[i] != tree->e_root)
+            {
+              h += n->b[i]->l->v;
+              break;
+            }
+        }
+      
+      anc = n;
+      n = n->v[i];
+    }
+  while(n->tax == NO);
+
+  return h;
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/

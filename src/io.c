@@ -132,7 +132,7 @@ t_tree *Read_Tree(char **s_tree)
         tree->n_root->b[1]->l->v = tree->n_root->l[1]->v;
         tree->n_root->b[2]->l->v = tree->n_root->l[2]->v;
       }
-    
+
     return tree;
 }
 
@@ -657,7 +657,7 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
 #if !(defined PHYTIME || defined INVITEE)
   phydbl mean_len;
 #endif
-  
+
   format = (char *)mCalloc(100,sizeof(char));
 
   sprintf(format,"%%.%df",tree->bl_ndigits);
@@ -802,7 +802,7 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
         {
           for(i=0;i<3;i++)
             {
-              if(fils->b[i] != tree->e_root)
+              if(fils->v[i] != pere && fils->b[i] != tree->e_root)
                 R_wtree(fils,fils->v[i],available,s_tree,tree);
               else p=i;
             }

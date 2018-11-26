@@ -259,7 +259,6 @@ int main(int argc, char **argv)
                   
                   /* if(tree->io->ancestral == YES) Ancestral_Sequences(tree,YES); */
 
-
                   /* !!!!!!!!!!!!!!!!!!!!!!! */
                   for(int i=0;i<100;++i) Sample_Ancestral_Seq(YES,NO,tree);
                   Exit("\n");

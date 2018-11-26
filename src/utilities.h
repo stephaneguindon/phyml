@@ -2327,6 +2327,7 @@ void Insert_Duplicates(t_tree *tree);
 void Get_Node_Ranks_From_Dist_To_Root(t_tree *tree);
 void Get_Node_Ranks_From_Times(t_tree *tree);
 void Get_Node_Ranks_From_Tip_Times(t_tree *tree);
+phydbl Tree_Height(t_tree *tree);
 
 
 #include "xml.h"
