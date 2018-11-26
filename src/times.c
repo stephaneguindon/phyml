@@ -1906,10 +1906,9 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);
       mixt_tree->n_root->anc = NULL;
 
-      // Adding root edge
-      mixt_tree->num_curr_branch_available = 0;
-      Connect_Edges_To_Nodes_Recur(mixt_tree->a_nodes[0],mixt_tree->a_nodes[0]->v[0],mixt_tree);
+      Connect_Edges_To_Nodes_Serial(mixt_tree);
       
+      // Adding root edge
       for(i=0;i<2*mixt_tree->n_otu-3;++i)
         {
           if(((mixt_tree->a_edges[i]->left == mixt_tree->n_root->v[1]) || (mixt_tree->a_edges[i]->rght == mixt_tree->n_root->v[1])) &&
@@ -1967,33 +1966,10 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
   /* assert(i != 2*mixt_tree->n_otu-3); */
 
   mixt_tree->is_mixt_tree = orig_is_mixt_tree;
-  
-  if(mixt_tree->is_mixt_tree == YES)
-    {
-      t_tree *tree;
-      
-      // Propagate tree topology and reorganize partial lk struct along edges
-      tree = mixt_tree->next;
-      do
-        {
-          for(i=0;i<2*tree->n_otu-1;++i)
-            {
-              tree->a_nodes[i]->v[0] = tree->prev->a_nodes[i]->v[0] ? tree->a_nodes[tree->prev->a_nodes[i]->v[0]->num] : NULL;
-              tree->a_nodes[i]->v[1] = tree->prev->a_nodes[i]->v[1] ? tree->a_nodes[tree->prev->a_nodes[i]->v[1]->num] : NULL;
-              tree->a_nodes[i]->v[2] = tree->prev->a_nodes[i]->v[2] ? tree->a_nodes[tree->prev->a_nodes[i]->v[2]->num] : NULL;
-            }
 
-          tree->num_curr_branch_available = 0;
-          Connect_Edges_To_Nodes_Recur(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree);          
-          /* Reorganize_Edges_Given_Lk_Struct(tree); */
-          /* Init_Partial_Lk_Tips_Int(tree); */
-          Add_Root(tree->a_edges[tree->prev->e_root->num],tree);
-                   
-          tree = tree->next;
-        }
-      while(tree);
-    }
-  
+
+  MIXT_Propagate_Tree_Update(mixt_tree);
+    
   Free(tips);
   Free(nd_list);
   Free(no_cal_tip_num);

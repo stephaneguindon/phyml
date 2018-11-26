@@ -1240,6 +1240,7 @@ void Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
     Alias_One_Subpatt((d==b->left)?(b->rght):(b->left),d,tree);
 
   if(d->tax) return;
+
   
 #ifdef BEAGLE
   update_beagle_partials(tree, b, d);
@@ -1248,6 +1249,7 @@ void Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
     {
       if(tree->mod->ns == 4 || tree->mod->ns == 20)
         {
+                       
 #if (defined(__AVX__))
           AVX_Update_Partial_Lk(tree,b,d);
 #elif (defined(__SSE3__))
@@ -1990,6 +1992,8 @@ void Init_Partial_Lk_Tips_Double(t_tree *tree)
 {
   unsigned int curr_site,i,dim1;
 
+  if(tree->is_mixt_tree == YES) return;
+  
   dim1 = tree->mod->ns;
 
 
@@ -2006,7 +2010,7 @@ void Init_Partial_Lk_Tips_Double(t_tree *tree)
   for(curr_site=0;curr_site<tree->data->crunch_len;curr_site++)
     {
       for(i=0;i<tree->n_otu;i++)
-        {
+        {          
           if (tree->io->datatype == NT)
             Init_Tips_At_One_Site_Nucleotides_Float(tree->a_nodes[i]->c_seq->state[curr_site],
                                                     curr_site*dim1,
@@ -2015,7 +2019,7 @@ void Init_Partial_Lk_Tips_Double(t_tree *tree)
             Init_Tips_At_One_Site_AA_Float(tree->a_nodes[i]->c_seq->state[curr_site],
                                            curr_site*dim1,
                                            tree->a_nodes[i]->b[0]->p_lk_tip_r);
-
+          
           else if(tree->io->datatype == GENERIC)
             Init_Tips_At_One_Site_Generic_Float(tree->a_nodes[i]->c_seq->state+curr_site*tree->mod->io->state_len,
                                                 tree->mod->ns,
@@ -2023,11 +2027,6 @@ void Init_Partial_Lk_Tips_Double(t_tree *tree)
                                                 curr_site*dim1,
                                                 tree->a_nodes[i]->b[0]->p_lk_tip_r);
         }
-    }
-
-  if(tree->mod->use_m4mod)
-    {
-      M4_Init_Partial_Lk_Tips_Double(tree);
     }
 }
 
@@ -2037,6 +2036,8 @@ void Init_Partial_Lk_Tips_Double(t_tree *tree)
 void Init_Partial_Lk_Tips_Int(t_tree *tree)
 {
   int curr_site,i,dim1;
+
+  if(tree->is_mixt_tree == YES) return;
 
   dim1 = tree->mod->ns;
 
@@ -2097,10 +2098,6 @@ void Init_Partial_Lk_Tips_Int(t_tree *tree)
 #endif
       }
     }
-   if(tree->mod->use_m4mod)
-     {
-       M4_Init_Partial_Lk_Tips_Int(tree);
-     }
 }
 
 //////////////////////////////////////////////////////////////
@@ -2357,7 +2354,9 @@ void Init_Partial_Lk_Loc(t_tree *tree)
   t_node *d;
   int *patt_id_d;
 
-  For(i,2*tree->n_otu-1)
+  if(tree->is_mixt_tree == YES) return;
+  
+  for(i=0;i<2*tree->n_otu-1;++i)
     {
       for(j=0;j<tree->n_pattern;j++)
         {

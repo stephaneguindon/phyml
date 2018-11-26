@@ -327,7 +327,7 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
                      &Pij1,&tPij1,&plk1,&sum_scale_v1,
                      &Pij2,&tPij2,&plk2,&sum_scale_v2,
                      d,b,tree);
- 
+  
   // Copy transpose of transition matrices into AVX registers
   for(i=0;i<ncatg;++i)
     {
@@ -514,7 +514,7 @@ void AVX_Partial_Lk_Inin(const __m256d *_tPij1, const phydbl *plk1, __m256d *_pm
   unsigned int i;
   unsigned const int sz = (int)BYTE_ALIGN / 8;
   unsigned const int nblocks = ns / sz;
-  
+
   for(i=0;i<ns;++i) if(plk1[i] > 1.0 || plk1[i] < 1.0 || plk2[i] > 1.0 || plk2[i] < 1.0) break; 
 
   if(i != ns)

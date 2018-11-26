@@ -707,7 +707,6 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
   while(tree);
 
 
-  
   do /*! Consider each element of the data partition */
     {
       tree = mixt_tree->next;
@@ -3384,29 +3383,24 @@ void MIXT_Propagate_Tree_Update(t_tree *mixt_tree)
   do
     {
       for(i=0;i<2*mixt_tree->n_otu-1;++i)
-        {
-          tree->a_nodes[i]->b[0] = mixt_tree->a_nodes[i]->b[0] ? tree->a_edges[mixt_tree->a_nodes[i]->b[0]->num] : NULL;
-          tree->a_nodes[i]->b[1] = mixt_tree->a_nodes[i]->b[1] ? tree->a_edges[mixt_tree->a_nodes[i]->b[1]->num] : NULL;
-          tree->a_nodes[i]->b[2] = mixt_tree->a_nodes[i]->b[2] ? tree->a_edges[mixt_tree->a_nodes[i]->b[2]->num] : NULL;
-
+        {          
           tree->a_nodes[i]->v[0] = mixt_tree->a_nodes[i]->v[0] ? tree->a_nodes[mixt_tree->a_nodes[i]->v[0]->num] : NULL;
           tree->a_nodes[i]->v[1] = mixt_tree->a_nodes[i]->v[1] ? tree->a_nodes[mixt_tree->a_nodes[i]->v[1]->num] : NULL;
           tree->a_nodes[i]->v[2] = mixt_tree->a_nodes[i]->v[2] ? tree->a_nodes[mixt_tree->a_nodes[i]->v[2]->num] : NULL;
 
-          tree->rates->nd_t[i] = mixt_tree->rates->nd_t[i];
-        }
-      
-      for(i=0;i<2*mixt_tree->n_otu-1;++i)
-        {
-          tree->a_edges[i]->left = tree->a_nodes[mixt_tree->a_edges[i]->left->num];
-          tree->a_edges[i]->rght = tree->a_nodes[mixt_tree->a_edges[i]->rght->num];
+          if(tree->rates != NULL) tree->rates->nd_t[i] = mixt_tree->rates->nd_t[i];
         }
 
+      Connect_Edges_To_Nodes_Serial(tree);          
+
+      Reorganize_Edges_Given_Lk_Struct(tree);
+      Init_Partial_Lk_Tips_Double(tree);
+      
       if(mixt_tree->n_root != NULL)
         {
           tree->n_root = tree->a_nodes[mixt_tree->n_root->num];
           tree->e_root = tree->a_edges[mixt_tree->e_root->num];
-
+          
           tree->n_root->v[1] = tree->a_nodes[mixt_tree->n_root->v[1]->num];
           tree->n_root->v[2] = tree->a_nodes[mixt_tree->n_root->v[2]->num];
 

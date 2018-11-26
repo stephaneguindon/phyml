@@ -777,7 +777,6 @@ void Connect_Edges_To_Nodes_Serial(t_tree *tree)
                                     tree->a_nodes[i]->v[0],
                                     tree->a_edges[i],
                                     tree);
-      /* PhyML_Printf("\n. %3d EX branch num: %3d %d left: %d right: %d",i,tree->a_edges[i]->num,tree->num_curr_branch_available,tree->a_nodes[i]->num,tree->a_nodes[i]->v[0]->num); */
     }
 
   tree->num_curr_branch_available = tree->n_otu;
@@ -795,7 +794,6 @@ void Connect_Edges_To_Nodes_Serial(t_tree *tree)
                                           tree->a_nodes[i]->v[j],
                                           tree->a_edges[tree->num_curr_branch_available],
                                           tree);
-            /* PhyML_Printf("\n. %3d IN branch num: %3d %d left: %d right: %d",i,tree->a_edges[tree->num_curr_branch_available]->num,tree->num_curr_branch_available,tree->a_nodes[i]->num,tree->a_nodes[i]->v[0]->num); */
           }
     }
 }
@@ -2585,8 +2583,7 @@ void Insert_Duplicates(t_tree *tree)
 
   for(i=0;i<2*tree->n_otu-1;++i) tree->a_nodes[i]->num = i;
   
-  tree->num_curr_branch_available = 0;
-  Connect_Edges_To_Nodes_Recur(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree);
+  Connect_Edges_To_Nodes_Serial(tree);
 }
 
 
@@ -6548,8 +6545,7 @@ void Random_Tree(t_tree *tree)
   tree->a_nodes[list_of_nodes[0]]->v[0] = tree->a_nodes[list_of_nodes[1]];
   tree->a_nodes[list_of_nodes[1]]->v[0] = tree->a_nodes[list_of_nodes[0]];
 
-  tree->num_curr_branch_available = 0;
-  Connect_Edges_To_Nodes_Recur(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree);
+  Connect_Edges_To_Nodes_Serial(tree);
 
   For(i,2*tree->n_otu-3) if(tree->a_edges[i]->l->v < min_edge_len) tree->a_edges[i]->l->v = min_edge_len;
 
@@ -7547,9 +7543,7 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
       sprintf(tree->a_nodes[i]->name+1,"%d",i);
     }
   
-  
-  tree->num_curr_branch_available = 0;
-  Connect_Edges_To_Nodes_Recur(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree);
+  Connect_Edges_To_Nodes_Serial(tree);
   
   /* Add root */
   if(rooted)
