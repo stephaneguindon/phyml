@@ -12849,6 +12849,7 @@ phydbl Tree_Height(t_tree *tree)
   phydbl h;
   t_node *n,*anc;
   int i;
+
   assert(tree->n_root != NULL);
 
   h = 0;

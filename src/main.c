@@ -260,7 +260,12 @@ int main(int argc, char **argv)
                   /* if(tree->io->ancestral == YES) Ancestral_Sequences(tree,YES); */
 
                   /* !!!!!!!!!!!!!!!!!!!!!!! */
-                  for(int i=0;i<100;++i) Sample_Ancestral_Seq(YES,NO,tree);
+                  rewind(tree->io->fp_out_tree);
+                  for(int i=0;i<100;++i)
+                    {
+                      PhyML_Fprintf(tree->io->fp_out_tree,"\n%s",Write_Tree(tree,NO));
+                      Sample_Ancestral_Seq(YES,NO,tree);
+                    }
                   Exit("\n");
 
 
