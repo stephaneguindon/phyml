@@ -1481,7 +1481,9 @@ void Update_Partial_Lk_Generic(t_tree *tree, t_edge *b, t_node *d)
               sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[site*ncatg+catg]):(0);
               
               sum_scale[site*ncatg+catg] = sum_scale_v1_val + sum_scale_v2_val;
-              
+
+              assert(sum_scale[site] < 1024);
+
               /* Scaling. We have p_lk_lim_inf = 2^-500. Consider for instance that 
                  smallest_p_lk = 2^-600, then curr_scaler_pow will be equal to 100, and
                  each element in the partial likelihood vector will be multiplied by
@@ -1506,7 +1508,9 @@ void Update_Partial_Lk_Generic(t_tree *tree, t_edge *b, t_node *d)
           sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[site]):(0);
           sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[site]):(0);              
           sum_scale[site] = sum_scale_v1_val + sum_scale_v2_val;
-          
+
+          assert(sum_scale[site] < 1024);
+
           largest_p_lk = -BIG; 
           for(i=0;i<ns*ncatg;++i)
             if(p_lk[site*ncatgns+i] > largest_p_lk)

@@ -76,5 +76,9 @@ phydbl TIMES_Lk_Birth_Death(int verbose, t_tree *tree);
 int TIMES_Check_Node_Height_Ordering(t_tree *tree);
 int TIMES_Check_Node_Height_Ordering_Post(t_node *a, t_node *d, t_tree *tree);
 phydbl TIMES_Lk_Birth_Death_One_Node(phydbl t, phydbl min, phydbl max, t_tree *tree);
+phydbl TIMES_Least_Square_Criterion(t_tree *tree);
+void TIMES_Pre_Least_Square_Criterion(t_node *a, t_node *d, t_edge *b, phydbl *score, t_tree *tree);
+void TIMES_Post_Randomize_Node_Ages(t_node *a, t_node *d, t_tree *tree);
+void TIMES_Randomize_Node_Ages(t_tree *tree);
 
 #endif

@@ -349,6 +349,7 @@ xml.c xml.h\
 mixt.c mixt.h\
 sse.c sse.h\
 avx.c avx.h\
+ancestral.c ancestral.h\
 date.c date.h
 phyml_windows_LDADD = -lm
 else
@@ -369,6 +370,7 @@ interface.c  interface.h\
 cl.c  cl.h\
 spr.c spr.h\
 draw.c  draw.h\
+tbe.c tbe.h \
 stats.c stats.h\
 rates.c rates.h\
 mcmc.c mcmc.h\
@@ -378,11 +380,14 @@ mg.c mg.h\
 m4.c m4.h\
 io.c io.h\
 make.c make.h\
-tbe.c tbe.h \
 nexus.c nexus.h\
 init.c init.h\
 xml.c xml.h\
-mixt.c mixt.h
+mixt.c mixt.h\
+sse.c sse.h\
+avx.c avx.h\
+ancestral.c ancestral.h\
+date.c date.h
 test_LDADD = -lm
 else
 if WANT_INVITEE

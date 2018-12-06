@@ -24,7 +24,7 @@ void Free_All_Nodes_Light(t_tree *mixt_tree)
   tree = mixt_tree;
   do
     {
-      for(i=0;i<2*tree->n_otu-1;++i) Free_Node(tree->a_nodes[i]);
+      for(i=0;i<2*tree->n_otu-1;++i) if(tree->a_nodes[i] != NULL) Free_Node(tree->a_nodes[i]);
       Free(tree->a_nodes);
       tree = tree->next;
     }
@@ -44,15 +44,18 @@ void Free_All_Edges_Light(t_tree *mixt_tree)
 
   for(i=0;i<2*tree->n_otu-1;++i)
     {
-      Free_Scalar_Dbl(tree->a_edges[i]->l);
-      Free_Scalar_Dbl(tree->a_edges[i]->l_old);
-      Free_Scalar_Dbl(tree->a_edges[i]->l_var);
-      Free_Scalar_Dbl(tree->a_edges[i]->l_var_old);
+      if(tree->a_edges[i] != NULL)
+        {
+          Free_Scalar_Dbl(tree->a_edges[i]->l);
+          Free_Scalar_Dbl(tree->a_edges[i]->l_old);
+          Free_Scalar_Dbl(tree->a_edges[i]->l_var);
+          Free_Scalar_Dbl(tree->a_edges[i]->l_var_old);
+        }
     }
 
   do
     {
-      for(i=0;i<2*tree->n_otu-1;++i) Free_Edge(tree->a_edges[i]);
+      for(i=0;i<2*tree->n_otu-1;++i) if(tree->a_edges[i] != NULL) Free_Edge(tree->a_edges[i]);
       Free(tree->a_edges);
       tree = tree->next;
     }

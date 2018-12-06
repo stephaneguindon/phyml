@@ -208,6 +208,7 @@ int main(int argc, char **argv)
                       Exit("\n");
                     }
 
+                  Connect_CSeqs_To_Nodes(tree->data,tree->io,tree);
                   Make_Tree_For_Pars(tree);
                   Make_Tree_For_Lk(tree);
                   Make_Spr(tree);
@@ -265,15 +266,11 @@ int main(int argc, char **argv)
                   
                   if(tree->io->ancestral == YES) Ancestral_Sequences(tree,YES);
                   
-                  /* Build_Distrib_Number_Of_Diff_States_Under_Model(tree); */
-                  /* Exit("\n"); */
-
-
                   Check_Br_Lens(tree);
                   Br_Len_Involving_Invar(tree);
                   Rescale_Br_Len_Multiplier_Tree(tree);
                   
-
+                  
 #elif defined EVOLVE
                   Evolve(tree->data,tree->mod,tree);
                   Exit("\n. Exiting 'evolve'\n");
@@ -584,6 +581,28 @@ int main(int argc, char **argv)
 #include "xml.h"
 int main(int argc, char **argv)
 {
+  option *io = Get_Input(argc,argv);
+  char *s = (char *)mCalloc(5,sizeof(char));
+  int i;
+  
+  Get_Seq(io);
+  
+  for(i=0;i<io->n_otu;++i)
+    {      
+      PhyML_Printf("\n\n\n");
+      PhyML_Printf("\n<clade id=\"clad%d\">",i+1);
+      PhyML_Printf("\n<taxon value=\"%s\"/>",io->data[i]->name);
+      PhyML_Printf("\n</clade>");
+      PhyML_Printf("\n");
+      PhyML_Printf("\n<calibration id=\"cal%d\">",i+1);
+      strncpy(s,io->data[i]->name,4);
+      s[4]='\0';
+      PhyML_Printf("\n<lower>%s</lower>",s);
+      PhyML_Printf("\n<upper>%s</upper>",s);
+      PhyML_Printf("\n<appliesto clade.id=\"clad%d\"/>",i+1);
+      PhyML_Printf("\n</calibration>");
+    }
+
 }
 
 #elif(INVITEE)

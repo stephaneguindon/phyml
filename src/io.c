@@ -696,7 +696,7 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
         {
           (*s_tree)[(int)strlen(*s_tree)] = ':';
           
-#if !(defined PHYTIME || defined INVITEE || defined PHYREX)
+#if !(defined PHYTIME || defined PHYREX)
           if(tree->n_root == NULL)
             {
               if(tree->is_mixt_tree == NO) mean_len = fils->b[0]->l->v;
@@ -726,8 +726,9 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
             }
           else
             {
-              if(tree->rates) sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,tree->rates->cur_l[fils->num]));
-              /* sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,fils->b[0]->l->v)); */
+              /* if(tree->rates) sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,tree->rates->cur_l[fils->num])); */
+              /* else */
+              sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,fils->b[0]->l->v));
             }
 #endif
         }
@@ -4099,7 +4100,7 @@ option *Get_Input(int argc, char **argv)
 
 #ifdef MPI
   rv = Read_Command_Line(io,argc,argv);
-#elif (defined PHYTIME || defined INVITEE)
+#elif (defined PHYTIME || defined INVITEE || defined PHYREX || defined TEST)
   rv = Read_Command_Line(io,argc,argv);
 #else
   switch (argc)
@@ -5495,7 +5496,17 @@ void Generic_Exit(const char *file, int line, const char *function)
 {
   PhyML_Fprintf(stderr,"\n. Err. in file '%s' (line %d)",file,line);
   if(function != NULL) PhyML_Printf(", function '%s'",function);
+
+# if defined(PHYTIME)
+  PhyML_Fprintf(stderr,"\n. PhyTime finished prematurely.");
+# elif defined(PHYREX)
+  PhyML_Fprintf(stderr,"\n. PhyREX finished prematurely.");
+# elif defined(PHYML)
   PhyML_Fprintf(stderr,"\n. PhyML finished prematurely.");
+#else
+  PhyML_Fprintf(stderr,"\n. The execution finished prematurely.");
+#endif
+  
   Exit("\n");
 }
 

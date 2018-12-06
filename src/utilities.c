@@ -762,8 +762,7 @@ void Connect_Edges_To_Nodes_Serial(t_tree *tree)
   int i,j;
 
   /* Reset */
-  for(i=0;i<2*tree->n_otu-1;++i) for(j=0;j<3;j++) tree->a_nodes[i]->b[j] = NULL;
-
+  for(i=0;i<2*tree->n_otu-1;++i) for(j=0;j<3;j++) if(tree->a_nodes[i] != NULL) tree->a_nodes[i]->b[j] = NULL;
   
   for(i=0;i<tree->n_otu;i++)
     {
@@ -781,7 +780,7 @@ void Connect_Edges_To_Nodes_Serial(t_tree *tree)
 
   tree->num_curr_branch_available = tree->n_otu;
 
-  for(i=tree->n_otu;i<2*tree->n_otu-2;i++)
+  for(i=tree->n_otu;i<2*tree->n_otu-3;i++)
     {
       assert(!tree->a_nodes[i]->tax);
 
@@ -795,6 +794,23 @@ void Connect_Edges_To_Nodes_Serial(t_tree *tree)
                                           tree->a_edges[tree->num_curr_branch_available],
                                           tree);
           }
+    }
+
+  if(tree->n_root != NULL)
+    {
+      tree->a_edges[tree->num_curr_branch_available]->left = tree->n_root;
+      tree->a_edges[tree->num_curr_branch_available]->rght = tree->n_root->v[1];      
+      tree->n_root->b[1] = tree->a_edges[tree->num_curr_branch_available];
+      tree->a_edges[tree->num_curr_branch_available]->num = tree->num_curr_branch_available;
+      tree->num_curr_branch_available++;
+      
+      tree->a_edges[tree->num_curr_branch_available]->left = tree->n_root;
+      tree->a_edges[tree->num_curr_branch_available]->rght = tree->n_root->v[2];
+      tree->n_root->b[2] = tree->a_edges[tree->num_curr_branch_available];
+      tree->a_edges[tree->num_curr_branch_available]->num = tree->num_curr_branch_available;
+      tree->num_curr_branch_available++;
+
+
     }
 }
 
@@ -822,9 +838,11 @@ void Connect_One_Edge_To_Two_Nodes(t_node *a, t_node *d, t_edge *b, t_tree *tree
 {
   int i,dir_a_d,dir_d_a;
 
+  assert(a != tree->n_root);
+  
   if(a == NULL || d == NULL || a->num == d->num) 
     {
-      PhyML_Fprintf(stderr,"\n. a: %d d: %d",a?a->num:-1,d?d->num:-1);
+      PhyML_Fprintf(stderr,"\n. a: %d d: %d b: %d root: %d",a?a->num:-1,d?d->num:-1,b?b->num:-1,tree->n_root?tree->n_root->num:-1);
       assert(FALSE);
     }
 
@@ -836,7 +854,7 @@ void Connect_One_Edge_To_Two_Nodes(t_node *a, t_node *d, t_edge *b, t_tree *tree
 
   if(dir_a_d == -1 || dir_d_a == -1)
     {
-      PhyML_Printf("\n. a:%d a->v[0]:%d a->v[1]:%d a->v[2]:%d  d:%d d->v[0]:%d d->v[1]:%d d->v[2]:%d",
+      PhyML_Printf("\n. a:%d a->v[0]:%d a->v[1]:%d a->v[2]:%d  d:%d d->v[0]:%d d->v[1]:%d d->v[2]:%d root:%d",
                    a->num,
                    a->v[0]?a->v[0]->num:-1,
                    a->v[1]?a->v[1]->num:-1,
@@ -844,7 +862,8 @@ void Connect_One_Edge_To_Two_Nodes(t_node *a, t_node *d, t_edge *b, t_tree *tree
                    d->num,
                    d->v[0]?d->v[0]->num:-1,
                    d->v[1]?d->v[1]->num:-1,
-                   d->v[2]?d->v[2]->num:-1);
+                   d->v[2]?d->v[2]->num:-1,
+                   tree->n_root ? tree->n_root->num : -1);
       assert(FALSE);
     }
   
@@ -2446,20 +2465,18 @@ void Remove_Duplicates(calign *data, option *io, t_tree *tree)
 
   for(i=0;i<n_otu_orig;++i)
     {
-      if(data->c_seq[i]->is_duplicate == YES)
+      for(j=0;j<n_otu_orig;++j)
         {
-          for(j=0;j<n_otu_orig;++j)
+          if(data->c_seq[j]->is_duplicate == YES && !strcmp(tree->a_nodes[i]->name,data->c_seq[j]->name))
             {
-              if(!strcmp(tree->a_nodes[j]->name,data->c_seq[i]->name))
-                {
-                  Prune_Subtree(tree->a_nodes[j]->v[0],
-                                tree->a_nodes[j],
-                                NULL,NULL,tree);                        
-
-                  tree->a_nodes[tree->a_nodes[j]->v[0]->num] = NULL;
-                  tree->a_nodes[j] = NULL;
-                }
-            }
+              Prune_Subtree(tree->a_nodes[i]->v[0],
+                            tree->a_nodes[i],
+                            NULL,NULL,tree);                        
+              
+              tree->a_nodes[tree->a_nodes[i]->v[0]->num] = NULL;
+              tree->a_nodes[i] = NULL;
+              break;
+            }        
         }
     }
 
@@ -2505,7 +2522,7 @@ void Remove_Duplicates(calign *data, option *io, t_tree *tree)
 void Insert_Duplicates(t_tree *tree)
 {
   unsigned int i,j;
-  unsigned int idx_new_edge,idx_new_node;
+  unsigned int idx_new_edge,idx_new_node,idx_root;
   t_edge *link_daughter,*residual,**new_a_edges;
   t_node *link,*daughter,**new_a_nodes;
   
@@ -2513,6 +2530,7 @@ void Insert_Duplicates(t_tree *tree)
   residual      = NULL;
   link          = NULL;
   daughter      = NULL;
+  idx_root      = (tree->n_root) ? 1 : 3;
   
   new_a_nodes = (t_node **)mCalloc(2*tree->n_otu-1 + tree->data->n_rm * 2,sizeof(t_node *));
 
@@ -2522,9 +2540,10 @@ void Insert_Duplicates(t_tree *tree)
   Free(tree->a_nodes);
   tree->a_nodes = new_a_nodes;
 
-  new_a_edges = (t_edge **)mCalloc(2*tree->n_otu-1 + tree->data->n_rm * 2,sizeof(t_edge *));
+  new_a_edges = (t_edge **)mCalloc(2*tree->n_otu-1+tree->data->n_rm*2,sizeof(t_edge *));
   for(i=0;i<2*tree->n_otu-1;++i) new_a_edges[i] = tree->a_edges[i];
-       
+
+    
   idx_new_edge = 0;
   idx_new_node = 0;
   
@@ -2534,11 +2553,13 @@ void Insert_Duplicates(t_tree *tree)
         {          
           if(Are_Sequences_Identical(tree->data->c_seq_rm[i],tree->a_nodes[j]->c_seq) == YES)
             {
-              link = Make_Node_Light(tree->n_otu + tree->data->n_rm + i);
-              daughter = Make_Node_Light(tree->n_otu + i);
+              link = Make_Node_Light(2*tree->n_otu-idx_root+tree->data->n_rm+idx_new_node);
+              daughter = Make_Node_Light(tree->n_otu+idx_new_node);
 
               new_a_nodes[tree->n_otu+idx_new_node] = daughter;
-              new_a_nodes[2*tree->n_otu-1+tree->data->n_rm+idx_new_node] = link;
+              new_a_nodes[2*tree->n_otu-idx_root+tree->data->n_rm+idx_new_node] = link;
+
+
               idx_new_node += 1;
               
               daughter->c_seq = tree->data->c_seq_rm[i];
@@ -2556,8 +2577,9 @@ void Insert_Duplicates(t_tree *tree)
               link_daughter = Make_Edge_Light(link,daughter,-1);
               residual = Make_Edge_Light(link,daughter,-1);
                            
-              new_a_edges[2*tree->n_otu-1+idx_new_edge]   = link_daughter;
-              new_a_edges[2*tree->n_otu-1+idx_new_edge+1] = residual;
+              new_a_edges[2*tree->n_otu-idx_root+idx_new_edge]   = link_daughter;
+              new_a_edges[2*tree->n_otu-idx_root+idx_new_edge+1] = residual;
+
               idx_new_edge += 2;              
               
               Multiply_Scalar_Dbl(2.0,tree->a_nodes[j]->b[0]->l);
@@ -2581,7 +2603,7 @@ void Insert_Duplicates(t_tree *tree)
 
   tree->n_otu += tree->data->n_rm;
 
-  for(i=0;i<2*tree->n_otu-1;++i) tree->a_nodes[i]->num = i;
+  for(i=0;i<2*tree->n_otu-idx_root;++i) tree->a_nodes[i]->num = i;
   
   Connect_Edges_To_Nodes_Serial(tree);
 }
@@ -4840,7 +4862,6 @@ int Are_Compatible(char *statea, char *stateb, int stepsize, int datatype)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Hide_Ambiguities(calign *data)
 {
   int i;
@@ -4932,7 +4953,7 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
   cpy->verbose                   = ori->verbose;
 
   if(ori->data) cpy->data = ori->data;
-  if(ori->mod) cpy->mod   = ori->mod;
+  if(ori->mod)  cpy->mod  = ori->mod;
   
 #ifdef BEAGLE
   cpy->b_inst = ori->b_inst;
@@ -8677,8 +8698,6 @@ void Get_Node_Ranks_From_Times(t_tree *tree)
 	}
     }
   while(swap == YES);
-
-  /* for(i=0;i<2*tree->n_otu-2;++i) PhyML_Printf("\n. Num: %4d time: %f tax: %d",tree->a_nodes[rk[i]]->num,tree->rates->nd_t[rk[i]],tree->a_nodes[rk[i]]->tax); */
   
   for(i=0;i<2*tree->n_otu-1;++i) tree->a_nodes[i]->rk_next = NULL;
   for(i=0;i<2*tree->n_otu-1;++i) tree->a_nodes[i]->rk_prev = NULL;
@@ -8686,10 +8705,7 @@ void Get_Node_Ranks_From_Times(t_tree *tree)
   for(i=0;i<2*tree->n_otu-2;++i) tree->a_nodes[rk[i]]->rk_next = tree->a_nodes[rk[i+1]];
   for(i=0;i<2*tree->n_otu-2;++i) tree->a_nodes[rk[i+1]]->rk_prev = tree->a_nodes[rk[i]];
   
-
-
   Free(rk);
-  
 }
 
 //////////////////////////////////////////////////////////////
@@ -8960,51 +8976,7 @@ void Time_To_Bl_Pre(t_node *a, t_node *d, t_tree *tree)
 // Assume an ultrametric tree.
 void Bl_To_Time(t_tree *tree)
 {
-  Bl_To_Time_Pre(tree->n_root,tree->n_root->v[2],tree);
-  Bl_To_Time_Pre(tree->n_root,tree->n_root->v[1],tree);
-
-  tree->rates->nd_t[tree->n_root->num] =
-    tree->rates->nd_t[tree->n_root->v[1]->num] -
-    tree->n_root->l[1]->v;
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-void Bl_To_Time_Pre(t_node *a, t_node *d, t_tree *tree)
-{
-  int i;
-
-  if(d->tax)
-    {
-      // Warning: won't work if all tips don't have the same time stamp
-      tree->rates->nd_t[d->num] = 0.0;
-      return;
-    }
-  else
-    {
-      int dir1,dir2;
-      
-      for(i=0;i<3;++i)
-        if((d->v[i] != a) && (d->b[i] != tree->e_root))
-          Bl_To_Time_Pre(d,d->v[i],tree);
-
-      dir1 = dir2 = -1;
-      for(i=0;i<3;++i)
-        if((d->v[i] != a) && (d->b[i] != tree->e_root))
-          {
-            if(dir1 < 0) dir1 = i;
-            else dir2 = i;
-          }
-      
-      tree->rates->nd_t[d->num] = .5*(tree->rates->nd_t[d->v[dir1]->num] +
-                                      tree->rates->nd_t[d->v[dir2]->num] -
-                                      (d->b[dir1]->l->v + d->b[dir2]->l->v)/tree->rates->clock_r) - SMALL;
-      // - SMALL is to make sure nd_t[d] is sitting "significantly" above nd_t[v1] and nd_t[v2]
-
-      if(tree->rates->nd_t[d->num] > MIN(tree->rates->nd_t[d->v[dir1]->num],tree->rates->nd_t[d->v[dir2]->num]))
-        tree->rates->nd_t[d->num] = MIN(tree->rates->nd_t[d->v[dir1]->num],tree->rates->nd_t[d->v[dir2]->num]);
-    }
+  Least_Square_Node_Ages(tree);
 }
 
 //////////////////////////////////////////////////////////////
@@ -12811,5 +12783,42 @@ void Shuffle_Sites(const phydbl prop, align **data, const int n_otu)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+phydbl Tree_Height(t_tree *tree)
+{
+  phydbl h;
+  t_node *n,*anc;
+  int i;
+  assert(tree->n_root != NULL);
+
+  h = 0;
+  n = tree->n_root;
+  anc = NULL;
+  
+  assert(n->tax == NO);
+
+  do
+    {
+      for(i=0;i<3;++i)
+        {
+          if(n->v[i] && n->v[i] != anc && n->b[i] != tree->e_root)
+            {
+              h += n->b[i]->l->v;
+              break;
+            }
+        }
+      
+      anc = n;
+      n = n->v[i];
+    }
+  while(n->tax == NO);
+
+  return h;
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/

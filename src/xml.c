@@ -143,14 +143,18 @@ t_tree *XML_Process_Base(char *xml_filename)
 
 # if defined(PHYTIME)
   strcat(io->out_tree_file,"_phytime_tree");
-# else
+# elif defined(PHYREX)
+  strcat(io->out_tree_file,"_phyrex_tree");
+# elif defined(PHYML)
   strcat(io->out_tree_file,"_phyml_tree");
 #endif
 
 
 # if defined(PHYTIME)
   strcat(io->out_stats_file,"_phytime_stats");
-# else
+# elif defined(PHYREX)
+  strcat(io->out_stats_file,"_phyrex_stats");
+# elif defined(PHYML)
   strcat(io->out_stats_file,"_phyml_stats");
 #endif
 
@@ -2270,6 +2274,7 @@ void XML_Read_Calibration(xml_node *xroot, t_tree *tree)
           xnd_dum = xnd_cal->child;
           do
             {
+              clade_name = NULL;
               if(!strcmp("appliesto",xnd_dum->name)) 
                 {
                   clade_name = XML_Get_Attribute_Value(xnd_dum,"clade.id");
@@ -2345,11 +2350,18 @@ void XML_Read_Calibration(xml_node *xroot, t_tree *tree)
               xnd_dum = xnd_dum->next;
             }
           while(xnd_dum != NULL);
+          if(clade_name == NULL)
+            {
+              PhyML_Fprintf(stderr,"\n. Could not find calibration information for calibration `%s'",cal->id);
+              PhyML_Fprintf(stderr,"\n. Please amend your XML file.");
+              Exit("\n");
+            }
         }
       xnd = xnd->next;
     }
   while(xnd != NULL);
 
+  
   PhyML_Printf("\n\n.......................................................................");
   for(i=0;i<tree->rates->n_cal;++i)
     {

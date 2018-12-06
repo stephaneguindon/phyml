@@ -381,6 +381,8 @@ void SSE_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
           sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[site]):(0);
           sum_scale[site] = sum_scale_v1_val + sum_scale_v2_val;
 
+          assert(sum_scale[site] < 1024);
+
           plk0 -= ncatgns;
           
           largest_p_lk = -BIG;

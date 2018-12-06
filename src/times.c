@@ -24,8 +24,9 @@ the GNU public licence. See http://www.opensource.org for details.
 void TIMES_Least_Square_Node_Times(t_edge *e_root, t_tree *tree)
 {
 
-  /* Solve A.x = b, where x are the t_node time estimated
-     under the least square criterion.
+  /* Solve A.x = b, where x is the vector of times estimated
+     under the least square criterion and b is the vector
+     of edge lengths
 
      A is a n x n matrix, with n being the number of
      nodes in a rooted tree (i.e. 2*n_otu-1).
@@ -48,8 +49,8 @@ void TIMES_Least_Square_Node_Times(t_edge *e_root, t_tree *tree)
   
   root = tree->n_root;
 
-  TIMES_Least_Square_Node_Times_Pre(root,root->v[2],A,b,n,tree);
   TIMES_Least_Square_Node_Times_Pre(root,root->v[1],A,b,n,tree);
+  TIMES_Least_Square_Node_Times_Pre(root,root->v[2],A,b,n,tree);
   
   b[root->num] = tree->e_root->l->v/2.;
   
@@ -66,48 +67,21 @@ void TIMES_Least_Square_Node_Times(t_edge *e_root, t_tree *tree)
   for(i=0;i<n;i++) x[i] = .0;
   for(i=0;i<n;i++) for(j=0;j<n;j++) x[i] += A[i*n+j] * b[j];
 
-  for(i=0;i<n-1;i++) { tree->rates->nd_t[tree->a_nodes[i]->num] = -x[i]; }
+  for(i=0;i<n-1;i++) tree->rates->nd_t[tree->a_nodes[i]->num] = -x[i];
   tree->rates->nd_t[root->num] = -x[n-1];
   tree->n_root->l[2]->v = tree->rates->nd_t[root->v[2]->num] - tree->rates->nd_t[root->num];
   tree->n_root->l[1]->v = tree->rates->nd_t[root->v[1]->num] - tree->rates->nd_t[root->num];
-  ////////////////////////////////////////
-  return;
-  ////////////////////////////////////////
-
-  /* Rescale the t_node times such that the time at the root
-     is -100. This constraint implies that the clock rate
-     is fixed to the actual tree length divided by the tree
-     length measured in term of differences of t_node times */
-
-  phydbl scale_f,time_tree_length,tree_length;
-
-  scale_f = -100./tree->rates->nd_t[root->num];
-  For(i,2*tree->n_otu-1) tree->rates->nd_t[i] *= scale_f;
-  For(i,2*tree->n_otu-1) if(tree->rates->nd_t[i] > .0) tree->rates->nd_t[i] = .0;
-
-  time_tree_length = 0.0;
-  For(i,2*tree->n_otu-3)
-    if(tree->a_edges[i] != tree->e_root)
-      time_tree_length +=
-	FABS(tree->rates->nd_t[tree->a_edges[i]->left->num] -
-	     tree->rates->nd_t[tree->a_edges[i]->rght->num]);
-  time_tree_length += FABS(tree->rates->nd_t[root->num] - tree->rates->nd_t[root->v[2]->num]);
-  time_tree_length += FABS(tree->rates->nd_t[root->num] - tree->rates->nd_t[root->v[1]->num]);
-  
-  tree_length = 0.0;
-  For(i,2*tree->n_otu-3) tree_length += tree->a_edges[i]->l->v;
-
-  tree->rates->clock_r = tree_length / time_tree_length;
 
   Free(A);
   Free(b);
   Free(x);
 
+  return;
+  
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void TIMES_Least_Square_Node_Times_Pre(t_node *a, t_node *d, phydbl *A, phydbl *b, int n, t_tree *tree)
 {
@@ -123,15 +97,14 @@ void TIMES_Least_Square_Node_Times_Pre(t_node *a, t_node *d, phydbl *A, phydbl *
   else
     {
       int i;
-      
- 
-      for(i=0;i<3;i++)
+       
+      for(i=0;i<3;++i)
 	if((d->v[i] != a) && (d->b[i] != tree->e_root))
 	  TIMES_Least_Square_Node_Times_Pre(d,d->v[i],A,b,n,tree);
       
       A[d->num * n + d->num] = 1.;
       b[d->num] = .0;
-      for(i=0;i<3;i++)
+      for(i=0;i<3;++i)
 	{
 	  A[d->num * n + d->v[i]->num] = -1./3.;
 	  if(d->v[i] != a) b[d->num] += d->b[i]->l->v;
@@ -1684,7 +1657,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
   int i,j,nd_num,*cal_ordering,n_cal,swap,list_size,tmp,orig_is_mixt_tree,repeat,n_max_repeats,tip_num,*no_cal_tip_num,n_no_cal_tip_num,*permut,*tip_is_in_cal_clad;
   t_cal *cal;
   t_clad *clade;
-  
+
   assert(mixt_tree->rates);
   
   tips    = (t_node **)mCalloc(mixt_tree->n_otu,sizeof(t_node *));
@@ -1901,24 +1874,23 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       // Adding root node 
       mixt_tree->n_root = mixt_tree->a_nodes[2*mixt_tree->n_otu-2];
       mixt_tree->n_root->v[1]->v[0] = mixt_tree->n_root->v[2];
-      mixt_tree->n_root->v[2]->v[0] = mixt_tree->n_root->v[1];
+      mixt_tree->n_root->v[2]->v[0] = mixt_tree->n_root->v[1];    
       Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree);
       Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);
       mixt_tree->n_root->anc = NULL;
 
       Connect_Edges_To_Nodes_Serial(mixt_tree);
-      
+
       // Adding root edge
       for(i=0;i<2*mixt_tree->n_otu-3;++i)
         {
           if(((mixt_tree->a_edges[i]->left == mixt_tree->n_root->v[1]) || (mixt_tree->a_edges[i]->rght == mixt_tree->n_root->v[1])) &&
              ((mixt_tree->a_edges[i]->left == mixt_tree->n_root->v[2]) || (mixt_tree->a_edges[i]->rght == mixt_tree->n_root->v[2])))
             {
-              Add_Root(mixt_tree->a_edges[i],mixt_tree);
+              mixt_tree->e_root = mixt_tree->a_edges[i]; 
               break;
             }
         }
-      
       
       DATE_Assign_Primary_Calibration(mixt_tree);
       DATE_Update_T_Prior_MinMax(mixt_tree);
@@ -1966,7 +1938,6 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
   /* assert(i != 2*mixt_tree->n_otu-3); */
 
   mixt_tree->is_mixt_tree = orig_is_mixt_tree;
-
 
   MIXT_Propagate_Tree_Update(mixt_tree);
     
@@ -2022,10 +1993,86 @@ int TIMES_Check_Node_Height_Ordering_Post(t_node *a, t_node *d, t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+/* 
+   2n-2 edge lengths (in a rooted tree), n-1 internal node
+   ages. Return \sum_i (l_i - delta t_i)^2 where delta t_i is the
+   calendar time elapsed along the edge of length l_i  
+*/
+phydbl TIMES_Least_Square_Criterion(t_tree *tree)
+{
+  phydbl score;
+  score = 0.0;
+  assert(tree->n_root);
+  assert(tree->rates);
+  TIMES_Pre_Least_Square_Criterion(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],&score,tree);
+  TIMES_Pre_Least_Square_Criterion(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],&score,tree);
+  return(score);
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void TIMES_Pre_Least_Square_Criterion(t_node *a, t_node *d, t_edge *b, phydbl *score, t_tree *tree)
+{
+  int i;
+
+  (*score) += pow(b->l->v - fabs(tree->rates->nd_t[a->num] + tree->rates->nd_t[d->num])*tree->rates->clock_r,2);
+
+  if(d->tax) return;
+  
+  for(i=0;i<3;++i)
+    if(d->v[i] != a && d->b[i] != tree->e_root)
+      TIMES_Pre_Least_Square_Criterion(d,d->v[i],d->b[i],score,tree);  
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void TIMES_Randomize_Node_Ages(t_tree *tree)
+{
+  assert(tree->n_root);
+  assert(tree->rates);
+  TIMES_Post_Randomize_Node_Ages(tree->n_root,tree->n_root->v[1],tree);
+  TIMES_Post_Randomize_Node_Ages(tree->n_root,tree->n_root->v[2],tree);
+  tree->rates->nd_t[tree->n_root->num] =
+    MIN(tree->rates->nd_t[tree->n_root->v[1]->num],
+        tree->rates->nd_t[tree->n_root->v[2]->num])
+    - Rexp(1.);
+  /* PhyML_Printf("\n. RAND TIMES node %3d %15f",tree->n_root->num,tree->rates->nd_t[tree->n_root->num]); */
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void TIMES_Post_Randomize_Node_Ages(t_node *a, t_node *d, t_tree *tree)
+{
+  if(d->tax == YES) return;
+  else
+    {
+      int i,dir1,dir2;
+      
+      for(i=0;i<3;++i)
+        if(d->v[i] != a && d->b[i] != tree->e_root)
+          TIMES_Post_Randomize_Node_Ages(d,d->v[i],tree);
+
+      dir1 = dir2 = -1;
+      for(i=0;i<3;++i)
+        if(d->v[i] != a && d->b[i] != tree->e_root)
+          {
+            if(dir1 < 0) dir1 = i;
+            else dir2 = i;
+          }
+      
+      tree->rates->nd_t[d->num] =
+        MIN(tree->rates->nd_t[d->v[dir1]->num],
+            tree->rates->nd_t[d->v[dir2]->num])
+        - Rexp(1.);
+      /* PhyML_Printf("\n. RAND TIMES node %3d %15f",d->num,tree->rates->nd_t[d->num]); */
+    }
+}
+
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

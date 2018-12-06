@@ -179,7 +179,7 @@ void Init_Ui_Tips(t_tree *tree)
                   PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
                   assert(FALSE);
                 }
-              
+
               Init_Tips_At_One_Site_Nucleotides_Int(tree->a_nodes[i]->c_seq->state[curr_site],
                                                     0,
                                                     state_v);

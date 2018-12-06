@@ -677,9 +677,10 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
   /* MIXT_Update_Br_Len_Multipliers(mixt_tree->mod); */
 
 #if (defined PHYTIME || defined INVITEE || defined PHYREX || defined DATE)
-  if((mixt_tree->rates) && (mixt_tree->rates->bl_from_rt)) MIXT_RATES_Update_Cur_Bl(mixt_tree);
+  if((mixt_tree->rates) && (mixt_tree->rates->bl_from_rt)) RATES_Update_Cur_Bl(mixt_tree);
 #endif
 
+  
   /* Update RAS structure (mixt_tree level) */
   tree = mixt_tree;
   do
@@ -921,7 +922,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                                               b->Pij_rr,b,tree);
                     }
                 }
-                            
+              
               tree->apply_lk_scaling = YES;
 
               sum_scale_left_cat[tree->mod->ras->parent_class_number] =
@@ -939,11 +940,6 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                 sum_scale_rght_cat[tree->mod->ras->parent_class_number];
 
               site_lk_cat /= pow(2,sum);
-
-              /* printf("\n. site: %4d lk: %12G class: %3d sum: %12G", */
-              /*        site, */
-              /*        site_lk_cat, */
-              /*        tree->mod->ras->parent_class_number,sum); */
 
               tree->site_lk_cat[0] = site_lk_cat;
                       
@@ -975,13 +971,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                 tree->mod->r_mat_weight->v / r_mat_weight_sum *
                 tree->mod->e_frq_weight->v / e_frq_weight_sum /
                 sum_probas;
-              
-              /* printf("\n. site_lk: %G site_lk: %G [%G %G %G]", */
-              /*        tree->site_lk_cat[0],site_lk, */
-              /*        tree->mod->ras->gamma_r_proba->v[tree->mod->ras->parent_class_number], */
-              /*        tree->mod->r_mat_weight->v / r_mat_weight_sum , */
-              /*        tree->mod->e_frq_weight->v / e_frq_weight_sum ); */
-              
+                            
               tree = tree->next;
               b    = b->next;
             }
@@ -3398,6 +3388,12 @@ void MIXT_Propagate_Tree_Update(t_tree *mixt_tree)
       
       if(mixt_tree->n_root != NULL)
         {
+          assert(mixt_tree->e_root);
+          assert(mixt_tree->n_root->v[1]);
+          assert(mixt_tree->n_root->v[2]);
+          assert(mixt_tree->n_root->b[1]);
+          assert(mixt_tree->n_root->b[2]);
+          
           tree->n_root = tree->a_nodes[mixt_tree->n_root->num];
           tree->e_root = tree->a_edges[mixt_tree->e_root->num];
           
@@ -3420,14 +3416,52 @@ void MIXT_Propagate_Tree_Update(t_tree *mixt_tree)
       
     }
   while(tree);
-
-
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void MIXT_Set_Bl_From_Rt(int yn, t_tree *mixt_tree)
+{
+  t_tree *tree;
+
+  tree = mixt_tree;
+  do
+    {
+      assert(tree->rates);
+      tree->rates->bl_from_rt = yn;
+      tree = tree->next;
+    }
+  while(tree);  
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void MIXT_Copy_Tree(t_tree *ori, t_tree *cpy)
+{
+  int ori_is_mixt_tree,cpy_is_mixt_tree;
+  
+  do
+    {
+      ori_is_mixt_tree = ori->is_mixt_tree;
+      cpy_is_mixt_tree = cpy->is_mixt_tree;
+      
+      ori->is_mixt_tree = NO;
+      cpy->is_mixt_tree = NO;
+      
+      Copy_Tree(ori,cpy);
+
+      ori->is_mixt_tree = ori_is_mixt_tree;
+      cpy->is_mixt_tree = cpy_is_mixt_tree;
+      
+      ori = ori->next;
+      cpy = cpy->next;
+    }
+  while(ori);
+}
+
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

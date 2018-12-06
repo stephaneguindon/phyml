@@ -425,7 +425,6 @@ phydbl *Rnorm_Multid(phydbl *mu, phydbl *cov, int dim)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 phydbl Rnorm_Trunc_Inverse(phydbl mean, phydbl sd, phydbl min, phydbl max, int *error)
 {
 
@@ -475,138 +474,123 @@ phydbl Rnorm_Trunc_Inverse(phydbl mean, phydbl sd, phydbl min, phydbl max, int *
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+/* Borrowed from https://github.com/olafmersmann/truncnorm/blob/afc91b696db8a3feda25d39435fd979bacd962c6/src/rtruncnorm.c */
+
+phydbl Rnorm_Trunc_Algo1(phydbl alpha, phydbl beta)
+{
+  phydbl z = -DBL_MAX;
+  while(z < alpha || z > beta)
+    {
+      z = Rnorm(0.0,1.0);
+    }
+  return(z);
+}
+
+phydbl Rnorm_Trunc_Algo2(phydbl alpha, phydbl beta)
+{
+  phydbl z = 0.0;
+  phydbl d_alpha = Dnorm(alpha,0.0,1.0);
+  const double ub = alpha < 0.0 && beta > 0.0 ? M_1_SQRT_2PI : d_alpha;
+  do
+    {
+      z = Uni()*(beta-alpha) + alpha;
+    }
+  while(Uni() * ub > Dnorm(z,0.0,1.0));
+  return(z);
+}
+
+phydbl Rnorm_Trunc_Algo3(phydbl alpha, phydbl beta)
+{
+
+  phydbl z = alpha - 1.0;
+  while(z < alpha || z > beta)
+    {
+      z = Rnorm(0,1);
+      z = fabs(z);
+    }
+  return(z);
+}
+
+phydbl Rnorm_Trunc_Algo4(phydbl alpha, phydbl beta)
+{
+  phydbl z = 0.0;
+  const phydbl ainv = 1.0/alpha;
+  phydbl rho;
+  do
+    {
+      z = Rexp(ainv) + alpha;
+      rho = exp(-0.5 * pow((z-alpha),2));
+    }
+  while(Uni() > rho || z > beta);
+  return(z);
+}
+
 
 phydbl Rnorm_Trunc(phydbl mean, phydbl sd, phydbl min, phydbl max, int *error)
 {
+  phydbl alpha,beta;
+  phydbl d_alpha,d_beta;
+  phydbl z,ret_val;
+  
+  alpha = (min - mean)/sd;
+  beta  = (max - mean)/sd;
 
-  phydbl ret_val;
-  phydbl z, q, u, a;
-  phydbl z_min,z_max;
-  int n_max_iter,n_iter;
-  int algo;
+  d_alpha = Dnorm(alpha,0.0,1.0);
+  d_beta  = Dnorm(beta,0.0,1.0);
 
-  z          = 0.0;
-  *error     = NO;
-  ret_val    = INFINITY;
-  n_max_iter = 100000;
+  /* PhyML_Printf("\n. alpha: %f beta: %f d_alpha: %f d_beta: %f",alpha,beta,d_alpha,d_beta); */
 
-  if(sd < 1.E-100)
-    {
-      PhyML_Printf("\n. Small variance detected in Rnorm_Trunc.");
-      PhyML_Printf("\n. mean=%f sd=%f min=%f max=%f",mean,sd,min,max);
-      *error = YES;
-      return -1.0;
-    }
 
-  if(max < min)
-    {
-      PhyML_Printf("\n. Max < Min");
-      PhyML_Printf("\n. mean=%f sd=%f min=%f max=%f",mean,sd,min,max);
-      *error = YES;
-      return -1.0;
-    }
-
-  z_min = (min - mean)/sd;
-  z_max = (max - mean)/sd;
-
-  if(z_min < 0.0 && z_max > 0 && (z_max - z_min > SQRT(2*PI)))
-    {
-      algo = 0;
-    }
-  if((z_min > 0.0 || Are_Equal(z_min,0.0,1.E-10)) && z_max > z_min + 2.*SQRT(exp(1.0))/(z_min + SQRT(z_min*z_min+4.)) * exp((z_min*z_min - z_min*SQRT(z_min*z_min+4.))/4.))
-    {
-      algo = 1;
-    }
-  else if((z_max < 0.0 || Are_Equal(z_max,0.0,1.E-10)) && -z_min > -z_max + 2.*SQRT(exp(1.0))/(-z_max + SQRT(z_max*z_max+4.)) * exp((z_max*z_max - (-z_max)*SQRT(z_max*z_max+4.))/4.))
-    {
-      algo = 2;
-    }
+  if(beta < alpha) return NAN;
   else
     {
-      algo = 3;
+      if(alpha < 0.0 && beta > 0.0)
+        {
+          if(d_alpha < 0.15 || d_beta < 0.15)
+            {
+              z = Rnorm_Trunc_Algo1(alpha,beta);
+            }
+          else
+            {
+              z = Rnorm_Trunc_Algo2(alpha,beta);
+            }
+        }
+      else if(alpha > 0.0)
+        {
+          if(d_alpha / d_beta < 2.18)
+            {
+              z = Rnorm_Trunc_Algo2(alpha,beta);
+            }
+          else
+            {
+              if(alpha < 0.725)
+                {
+                  z = Rnorm_Trunc_Algo3(alpha,beta);
+                }
+              else
+                {
+                  z = Rnorm_Trunc_Algo4(alpha,beta);
+                }
+            }
+        }
+      else
+        {
+          if(d_beta / d_alpha < 2.18)
+            {
+              z = Rnorm_Trunc_Algo2(alpha,beta);
+            }
+          else if(beta > -0.725)
+            {
+              z = Rnorm_Trunc_Algo3(alpha,beta);
+            }
+          else
+            {              
+              z = Rnorm_Trunc_Algo4(alpha,beta);
+            }
+        }
     }
-
-
-  switch(algo)
-    {
-    case 0:
-      {
-        n_iter = 0;
-        do 
-          { 
-            z = Rnorm(0.0,1.0); 
-            n_iter++;
-            if(n_iter > n_max_iter)
-              {
-                PhyML_Printf("\n== Too many iterations in Rnorm_Trunc()");
-                *error = YES; 
-              }
-          }
-        while(z < z_min || z > z_max);
-        break;
-      }
-    case 1:
-      {
-        n_iter = 0;
-        do
-          {
-            a = (z_min + SQRT(z_min*z_min+4.))/2.;
-            q = Rexp(a) + z_min;
-            u = Uni();
-            n_iter++;
-            if(n_iter > n_max_iter)
-              {
-                PhyML_Printf("\n== Too many iterations in Rnorm_Trunc()");
-                *error = YES; 
-              }
-          }while(u > exp(-POW(q-a,2)/2.));
-        z = q;
-        break;
-      }
-    case 2:
-      {
-        n_iter = 0;
-        do
-          {
-            a = (-z_max + SQRT(z_max*z_max+4.))/2.;
-            q = Rexp(a) - z_max;
-            u = Uni();
-            n_iter++;
-            if(n_iter > n_max_iter)
-              {
-                PhyML_Printf("\n== Too many iterations in Rnorm_Trunc()");
-                *error = YES; 
-              }
-          }while(u > exp(-POW(q-a,2)/2.));
-        z = -q;
-        break;
-      }
-    case 3:
-      {
-        n_iter = 0;
-        do
-          {
-            z = Uni()*(z_max - z_min) + z_min;
-            if(z_min < 0.0 && z_max > 0.0) q = exp(-z*z/2.);
-            else if (z_max < 0.0) q = exp((z_max*z_max-z*z)/2.);
-            else q = exp((z_min*z_min-z*z)/2.);
-            u = Uni();
-            n_iter++;
-            if(n_iter > n_max_iter)
-              {
-                PhyML_Printf("\n== Too many iterations in Rnorm_Trunc()");
-                *error = YES; 
-              }
-          }while(u > q); 
-        break;
-      }
-
-    default: Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-
-    }
-
-  ret_val = z*sd+mean;
-
+  
+  ret_val = mean + sd*z;
   return ret_val;
 }
 
@@ -4604,7 +4588,7 @@ phydbl Inverse_Truncated_Normal(phydbl y, phydbl mu, phydbl sigma, phydbl lim_in
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-// Returns a vector with a permutation of all the integer from 0
+// Returns a vector with a permutation of all the integers from 0
 // to len-1. Fisher-Yates algorithm.
 
 int *Permutate(int len)

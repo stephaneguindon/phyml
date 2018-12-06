@@ -29,5 +29,6 @@ void Ancestral_Sequences(t_tree *tree, int print);
 void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print);
 int MPEE_Score(const phydbl *alpha, int *idx, const phydbl *p, const int ns);
 int MPEE_Infer(const phydbl *p, const int ns);
+void Reverse_Muttime(phydbl *muttime, int n_mut, t_tree *tree);
 
 #endif

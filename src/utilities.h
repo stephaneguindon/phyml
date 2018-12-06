@@ -391,7 +391,7 @@ typedef	double phydbl;
 #define LOGSMALL -690.
 
 
-#if !(defined PHYTIME || defined SERGEII)
+#if !(defined PHYTIME)
 #define BL_MIN 1.E-8
 #define BL_MAX 100.
 #else
@@ -415,6 +415,12 @@ typedef	double phydbl;
 
 #define LARGE 256
 #define TWO_TO_THE_LARGE 115792089237316195423570985008687907853269984665640564039457584007913129639936.0 /* 2^256 In R : sprintf("%.100f", 2^256)*/
+
+/* #define LARGE 128 */
+/* #define TWO_TO_THE_LARGE 340282366920938463463374607431768211456.0 /\* 2^128 In R : sprintf("%.100f", 2^128)*\/ */
+
+/* #define LARGE 320 */
+/* #define TWO_TO_THE_LARGE 2135987035920910082395021706169552114602704522356652769947041607822219725780640550022962086936576.0 */
 
 #define INV_TWO_TO_THE_LARGE (1./TWO_TO_THE_LARGE)
 
@@ -2305,6 +2311,7 @@ void Insert_Duplicates(t_tree *tree);
 void Get_Node_Ranks_From_Dist_To_Root(t_tree *tree);
 void Get_Node_Ranks_From_Times(t_tree *tree);
 void Get_Node_Ranks_From_Tip_Times(t_tree *tree);
+phydbl Tree_Height(t_tree *tree);
 
 
 #include "xml.h"

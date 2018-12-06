@@ -272,110 +272,107 @@ int Generic_Brak_Lk(phydbl *param,
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-phydbl Generic_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol,
-             phydbl *xmin, t_tree *tree, int n_iter_max,
-             int quickdirty)
+phydbl Generic_Brent(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
+                     int n_iter_max,
+                     phydbl (*obj_func)(t_tree *),
+                     t_tree *tree)
 {
   int iter;
   phydbl a,b,d,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm;
   phydbl e=0.0;
-  phydbl init_lnL;
-
-
+  phydbl old_score,init_score;
+  phydbl bx = *param;
+  int n_opt_step;
+  
+  n_opt_step = 0;
   d=0.0;
   a=((ax < cx) ? ax : cx);
   b=((ax > cx) ? ax : cx);
   x=w=v=bx;
-  (*xmin) = bx;
-  fw=fv=fx=-Lk(NULL,tree);
-  init_lnL = -fw;
-
-  /* PhyML_Printf("\n. init_lnL = %f a=%f b=%f c=%f\n",init_lnL,ax,bx,cx); */
-
-  for(iter=1;iter<=n_iter_max;iter++)
+  (*param) = bx;
+  fw=fv=fx=fu=(*obj_func)(tree);
+  init_score = old_score = fw;
+  
+  /* PhyML_Printf("\n. %p init_score=%f fu=%f ax=%f cx=%f param=%f",tree,init_score,fu,ax,cx,*param); */
+  
+  for(iter=1;iter<=BRENT_IT_MAX;iter++)
     {
       xm=0.5*(a+b);
-      tol2=2.0*(tol1=tol*FABS(x)+BRENT_ZEPS);
-
-
-      if(FABS(x - xm) <= (tol2 - 0.5 * (b - a)))
-    {
-      *xmin = x;
-      Lk(NULL,tree);
-      if(tree->c_lnL < init_lnL - tree->mod->s_opt->min_diff_lk_local)
+      tol2=2.0*(tol1=tol*x+BRENT_ZEPS);
+      
+      if((fabs(fu-old_score) < tol && iter > 1) || (iter > n_iter_max - 1))
         {
-          PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
-          Warn_And_Exit("");
+          (*param) = x;
+          fu = (*obj_func)(tree);
+          /* printf("\n. return %f [%f] %d",*param,fu,iter); */
+          return fu;
         }
-      return tree->c_lnL;
-    }
 
-      if(FABS(e) > tol1)
-    {
-      r=(x-w)*(fx-fv);
-      q=(x-v)*(fx-fw);
-      p=(x-v)*q-(x-w)*r;
-      q=2.0*(q-r);
-      if(q > 0.0) p = -p;
-      q=FABS(q);
-      etemp=e;
-      e=d;
-      if(FABS(p) >= FABS(0.5*q*etemp) || p <= q*(a-x) || p >= q*(b-x))
+      if(fabs(e) > tol1)
+        {
+          r=(x-w)*(fx-fv);
+          q=(x-v)*(fx-fw);
+          p=(x-v)*q-(x-w)*r;
+          q=2.0*(q-r);
+          if(q > 0.0) p = -p;
+          q=fabs(q);
+          etemp=e;
+          e=d;
+          if(fabs(p) >= fabs(0.5*q*etemp) || p <= q*(a-x) || p >= q*(b-x))
+            {
+              d=BRENT_CGOLD*(e=(x >= xm ? a-x : b-x));
+              /* PhyML_Printf("\n. Golden section step"); */
+            }
+          else
+            {
+              d=p/q;
+              u=x+d;
+              if (u-a < tol2 || b-u < tol2) d=SIGN(tol1,xm-x);
+              /* PhyML_Printf("\n. Parabolic step [e=%f]",e); */
+            }
+        }
+      else
         {
           d=BRENT_CGOLD*(e=(x >= xm ? a-x : b-x));
-/* 	      PhyML_Printf("Golden section step\n"); */
+          /* PhyML_Printf("\n. Golden section step (default) [e=%f tol1=%f a=%f b=%f d=%f x=%f]",e,tol1,a,b,d,x); */
+        }
+
+      u=(fabs(d) >= tol1 ? x+d : x+SIGN(tol1,d));
+      (*param) = u;
+      n_opt_step++;
+      old_score = fu;
+      fu = (*obj_func)(tree);
+      /* PhyML_Printf("\n. iter=%d/%d param=%f lnL=%f u: %f x: %f d: %f logt: %d",iter,BRENT_IT_MAX,*param,fu,u,x,d,logt); */
+
+      if(fu <= fx)
+        {
+          if(u >= x) a=x; else b=x;
+          SHFT(v,w,x,u)
+          SHFT(fv,fw,fx,fu)
         }
       else
         {
-          d=p/q;
-          u=x+d;
-          if (u-a < tol2 || b-u < tol2) d=SIGN(tol1,xm-x);
-/* 	      PhyML_Printf("Parabolic step [e=%f]\n",e); */
-        }
-        }
-      else
-    {
-      d=BRENT_CGOLD*(e=(x >= xm ? a-x : b-x));
-/* 	  PhyML_Printf("Golden section step (default) [e=%f tol1=%f a=%f b=%f d=%f]\n",e,tol1,a,b,d); */
-    }
-
-      u=(FABS(d) >= tol1 ? x+d : x+SIGN(tol1,d));
-      (*xmin) = FABS(u);
-      fu = -Lk(NULL,tree);
-
-      /* PhyML_Printf("\n. iter=%d/%d param=%f loglk=%f",iter,BRENT_IT_MAX,*xmin,tree->c_lnL); */
-
-/*       if(fu <= fx) */
-      if(fu < fx)
-    {
-/* 	  if(u >= x) a=x; else b=x; */
-      if(u > x) a=x; else b=x;
-      SHFT(v,w,x,u)
-      SHFT(fv,fw,fx,fu)
-    }
-      else
-    {
-      if (u < x) a=u; else b=u;
-/* 	  if (fu <= fw || w == x) */
-      if (fu < fw || FABS(w-x) < SMALL)
-        {
-          v=w;
-          w=u;
-          fv=fw;
-          fw=fu;
-        }
-/* 	  else if (fu <= fv || v == x || v == w) */
-      else if (fu < fv || FABS(v-x) < SMALL || FABS(v-w) < SMALL)
-        {
-          v=u;
-          fv=fu;
+          if (u < x) a=u; else b=u;
+          if (fu < fw || fabs(w-x) < SMALL)
+            {
+              v=w;
+              w=u;
+              fv=fw;
+              fw=fu;
+            }
+          /* 	  else if (fu <= fv || v == x || v == w) */
+          else if (fu < fv || fabs(v-x) < SMALL || fabs(v-w) < SMALL)
+            {
+              v=u;
+              fv=fu;
+            }
         }
     }
-    }
 
-  Exit("\n. Too many iterations in Generic_Brent !");
-  return(-1);
-  /* Not Reached ??  *xmin=x;   */
+  PhyML_Printf("\n. Too many iterations in Generic_Brent !");
+  assert(FALSE);
+  return((*obj_func)(tree));
+  /* Not Reached ??  *param=x;   */
   /* Not Reached ??  return fx; */
 }
 
@@ -1809,8 +1806,6 @@ int Lnsrch_Nonaligned(t_tree *tree, int n, phydbl **xold, phydbl fold,
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
-
 
 int Dist_F_Brak(phydbl *ax, phydbl *bx, phydbl *cx, phydbl *F, phydbl *param, t_mod *mod)
 {
@@ -3581,6 +3576,76 @@ void Optimize_Lambda(t_tree *mixt_tree, int verbose)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void Least_Square_Node_Ages(t_tree *tree)
+{
+
+  phydbl new_error,cur_error,sum_error;
+  int i,j;
+  phydbl young,old;
+  int dir1,dir2;
+  t_node *n;
+  
+  Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
+  Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);  
+
+  TIMES_Randomize_Node_Ages(tree);
+  
+  assert(fabs(tree->rates->nd_t[tree->n_root->num]) > SMALL);
+
+  cur_error = BIG;
+  new_error = BIG;
+  do
+    {
+      cur_error = new_error;
+      
+      sum_error = 0.0;
+      for(i=0;i<2*tree->n_otu-1;++i)
+        {
+          if(tree->a_nodes[i]->tax == NO)
+            {
+              n = tree->a_nodes[i];
+              
+              dir1 = dir2 = -1;
+              for(j=0;j<3;++j)
+                {
+                  if(n->v[j] != n->anc && n->b[j] != tree->e_root)
+                    {
+                      if(dir1 < 0) dir1 = j;
+                      else         dir2 = j;
+                    }
+                  else
+                    {
+                      if(n != tree->n_root) old = tree->rates->nd_t[n->anc->num];
+                      else old = 2.*tree->rates->nd_t[tree->n_root->num];
+                    }
+                }
+              
+              young = MIN(tree->rates->nd_t[n->v[dir1]->num],
+                          tree->rates->nd_t[n->v[dir2]->num]);
+              
+              sum_error += Generic_Brent(tree->rates->nd_t + i,
+                                         young,old,1.E-10,10000,
+                                         TIMES_Least_Square_Criterion,
+                                         tree);
+              
+              /* PhyML_Printf("\n. Node %3d%c time: %15f err: %15f young: %15f old: %15f %15f %15f", */
+              /*              i, */
+              /*              (n == tree->n_root)?'*':' ', */
+              /*              tree->rates->nd_t[i], */
+              /*              sum_error, */
+              /*              young,old, */
+              /*              tree->rates->nd_t[n->v[dir1]->num], */
+              /*              tree->rates->nd_t[n->v[dir2]->num]); */
+            }
+          if(RATES_Check_Node_Times(tree)) Exit("\n");
+        }
+      new_error = sum_error;
+      /* assert(new_error < cur_error+SMALL); */
+    }
+  while(fabs(new_error-cur_error) > 1.E-10);
+
+}
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

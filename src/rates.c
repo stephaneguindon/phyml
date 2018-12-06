@@ -777,7 +777,6 @@ phydbl RATES_Check_Mean_Rates_True(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 int RATES_Check_Node_Times(t_tree *tree)
 {
   int err;
@@ -2400,8 +2399,7 @@ void RATES_Posterior_Time_Root(t_tree *tree)
 
 void RATES_Update_Cur_Bl(t_tree *tree)
 {
-
-  /* RATES_Update_Norm_Fact(tree); */
+  
   RATES_Update_Cur_Bl_Pre(tree->n_root,tree->n_root->v[2],NULL,tree);
   RATES_Update_Cur_Bl_Pre(tree->n_root,tree->n_root->v[1],NULL,tree);
   
@@ -2460,8 +2458,6 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 
   if(tree->rates->br_do_updt[d->num] == YES)
     {
-
-
       tree->rates->br_do_updt[d->num] = NO;
 
       if(tree->rates->model == LOGNORMAL ||
@@ -2489,7 +2485,9 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
       if(tree->rates->model == LOGNORMAL)
         {
           rr = rd;
-          tree->rates->cur_l[d->num] = dt*rr*cr;          
+          tree->rates->cur_l[d->num] = dt*rr*cr;
+          /* PhyML_Printf("\n. a: %d d: %d rr: %f dt: %f cr: %f tree: %p",a->num,d->num,rr,dt,cr,tree); */
+          
         }
 
       if(tree->rates->model == THORNE)
@@ -2510,7 +2508,6 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
                             dt,ra,rd,nu,m,v,
                             a==tree->n_root,
                             d==tree->n_root);
-              /* assert(FALSE); */
             }
                     
 	  m *= cr*dt; // the actual rate average is m * cr. We multiply by dt in order to derive the value for the branch length

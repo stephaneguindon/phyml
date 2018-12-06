@@ -67,7 +67,7 @@ void PHYREX_Ldsk_To_Tree(t_tree *tree);
 void PHYREX_Ldsk_To_Tree_Post(t_node *a, t_ldsk *ldsk, int *available, t_tree *tree);
 phydbl PHYREX_Rnorm_Trunc(t_ldsk *ldsk, t_dsk *disk, t_phyrex_mod *mod);
 void PHYREX_Remove_Lindisk_Next(t_ldsk *ldsk, t_ldsk *rm);
-phydbl PHYREX_Simulate_Backward_Core(t_dsk *init_disk, t_tree *tree);
+phydbl PHYREX_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_mergers, t_tree *tree);
 phydbl *PHYREX_Mean_Pairwise_Distance_Between_Lineage_Locations(t_tree *tree);
 phydbl PHYREX_Random_Select_Time_Between_Jumps(t_tree *tree);
 t_sarea *PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree);
@@ -116,7 +116,7 @@ void PHYREX_Tree_To_Ldsk_Post(t_node *a, t_node *d, t_dsk *a_disk, t_tree *tree)
 void PHYREX_Make_And_Connect_Tip_Disks(t_tree *tree);
 void PHYREX_Simulate_Disk_And_Node_Times(t_tree *tree);
 int PHYREX_Number_Of_Outgoing_Ldsks(t_dsk *disk);
-
+t_ldsk *PHYREX_Random_Select_Outgoing_Ldsk(t_dsk *disk);
 
 
 #endif
