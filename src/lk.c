@@ -285,6 +285,21 @@ void Post_Order_Lk(t_node *a, t_node *d, t_tree *tree)
 
   dir = -1;
   
+  /* PhyML_Printf("\n. %p a: %3d d: %3d root: %3d root->v1: %3d root->v2: %3d [%3d %3d %3d] (%3d %3d) (%3d %3d)", */
+  /*              tree, */
+  /*              a->num, */
+  /*              d->num, */
+  /*              tree->n_root?tree->n_root->num:-1, */
+  /*              tree->n_root->v[1]->num, */
+  /*              tree->n_root->v[2]->num, */
+  /*              d->v[0]?d->v[0]->num:-1, */
+  /*              d->v[1]?d->v[1]->num:-1, */
+  /*              d->v[2]?d->v[2]->num:-1, */
+  /*              tree->a_nodes[5]->num, */
+  /*              tree->a_nodes[5]->v[0]->num, */
+  /*              tree->mixt_tree? tree->mixt_tree->a_nodes[5]->num : -1, */
+  /*              tree->mixt_tree? tree->mixt_tree->a_nodes[5]->v[0]->num : -1); */
+  
   if(d->tax) return;
   else
     {
@@ -313,8 +328,22 @@ void Post_Order_Lk(t_node *a, t_node *d, t_tree *tree)
             }
         }
 
-      assert(dir > -1);
-
+      if(dir < 0)
+        {
+          PhyML_Printf("\n. a->num: %d d->num: %d d->v[0]->num: %d d->v[1]->num: %d d->v[2]->num: %d d->b[0]->num: %d d->b[1]->num: %d d->b[2]->num: %d root ? %d e_root ? %d\n",
+                       a?a->num:-1,
+                       d?d->num:1,
+                       d->v[0]?d->v[0]->num:-1,
+                       d->v[1]?d->v[1]->num:-1,
+                       d->v[2]?d->v[2]->num:-1,
+                       d->b[0]?d->b[0]->num:-1,
+                       d->b[1]?d->b[1]->num:-1,
+                       d->b[2]?d->b[2]->num:-1,
+                       tree->n_root?tree->n_root->num:-1,
+                       tree->e_root?tree->e_root->num:-1);
+          assert(FALSE);
+        }
+      
       if(tree->ignore_root == NO && d->b[dir] == tree->e_root)
         {
           if(d == tree->n_root->v[1]) Update_Partial_Lk(tree,tree->n_root->b[1],d);
@@ -434,6 +463,10 @@ phydbl Lk(t_edge *b, t_tree *tree)
       Optimize_Free_Rate_Weights(tree,YES,YES);
       tree->mod->s_opt->curr_opt_free_rates = YES;
     }
+
+#ifdef PHYREX
+  PHYREX_Ldsk_To_Tree(tree);
+#endif
   
   
   if(tree->is_mixt_tree == YES) 
@@ -446,9 +479,6 @@ phydbl Lk(t_edge *b, t_tree *tree)
   
   tree->old_lnL = tree->c_lnL;
   
-#ifdef PHYREX
-  PHYREX_Ldsk_To_Tree(tree);
-#endif
 
 
 #if (defined PHYTIME || defined INVITEE || defined PHYREX)
@@ -475,12 +505,18 @@ if(tree->rates && tree->io->lk_approx == NORMAL)
      Update_Efrq(tree->mod);
      Update_Eigen(tree->mod);
    }
+
+ 
   
  if(tree->mod->s_opt->skip_tree_traversal == NO)
     {
       if(!b) //Update PMat for all edges
         {
-          for(br=0;br<2*tree->n_otu-3;++br) Update_PMat_At_Given_Edge(tree->a_edges[br],tree);
+          for(br=0;br<2*tree->n_otu-3;++br)
+            {
+              Update_PMat_At_Given_Edge(tree->a_edges[br],tree);
+            }
+          
           if(tree->n_root && tree->ignore_root == NO)
             {
               Update_PMat_At_Given_Edge(tree->n_root->b[1],tree);
@@ -569,6 +605,9 @@ if(tree->rates && tree->io->lk_approx == NORMAL)
 
   p_lk_left = b->p_lk_left;
   p_lk_rght = b->rght->tax ? b->p_lk_tip_r : b->p_lk_rght;
+
+  CALL++;
+  
   
   for(site=0;site<npatterns;++site)
     {
@@ -615,7 +654,7 @@ if(tree->rates && tree->io->lk_approx == NORMAL)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-// First and second derivative of the log-likelihood with respect
+// First derivative of the log-likelihood with respect
 // to the length of edge b
 phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
 {
@@ -635,7 +674,6 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
 
   if(*l < tree->mod->l_min)      *l = tree->mod->l_min;
   else if(*l > tree->mod->l_max) *l = tree->mod->l_max;      
-
 
   assert(b != NULL);
   
@@ -679,6 +717,8 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
     }
   
 
+  CALL++;
+  
   dlnlk  = 0.0;
   lnlk   = 0.0;
   
@@ -1219,6 +1259,7 @@ void Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
 
   if(d->tax) return;
 
+  
 #ifdef BEAGLE
   update_beagle_partials(tree, b, d);
 #else
@@ -1226,6 +1267,7 @@ void Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
     {
       if(tree->mod->ns == 4 || tree->mod->ns == 20)
         {
+                       
 #if (defined(__AVX__))
           AVX_Update_Partial_Lk(tree,b,d);
 #elif (defined(__SSE3__))
@@ -1485,12 +1527,15 @@ void Update_Partial_Lk_Generic(t_tree *tree, t_edge *b, t_node *d)
               sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[site]):(0);              
               sum_scale[site] = sum_scale_v1_val + sum_scale_v2_val;
               
-              largest_p_lk = -BIG; 
-              for(i=0;i<ns*ncatg;++i)
-                if(p_lk[site*ncatgns+i] > largest_p_lk)
-                  largest_p_lk = p_lk[site*ncatgns+i] ;
-              
-              if(largest_p_lk < INV_TWO_TO_THE_LARGE &&
+              sum_scale[site*ncatg+catg] = sum_scale_v1_val + sum_scale_v2_val;
+
+              assert(sum_scale[site] < 1024);
+
+              /* Scaling. We have p_lk_lim_inf = 2^-500. Consider for instance that 
+                 smallest_p_lk = 2^-600, then curr_scaler_pow will be equal to 100, and
+                 each element in the partial likelihood vector will be multiplied by
+                 2^100. */
+              if(smallest_p_lk < (phydbl)P_LK_LIM_INF &&
                  tree->mod->augmented == NO &&
                  tree->apply_lk_scaling == YES)
                 {
@@ -1501,8 +1546,25 @@ void Update_Partial_Lk_Generic(t_tree *tree, t_edge *b, t_node *d)
         }
       else
         {
-          for(i=0;i<ns*ncatg;++i) p_lk[site*ncatgns + i] = 0.0;
-        }
+          sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[site]):(0);
+          sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[site]):(0);              
+          sum_scale[site] = sum_scale_v1_val + sum_scale_v2_val;
+
+          assert(sum_scale[site] < 1024);
+
+          largest_p_lk = -BIG; 
+          for(i=0;i<ns*ncatg;++i)
+            if(p_lk[site*ncatgns+i] > largest_p_lk)
+              largest_p_lk = p_lk[site*ncatgns+i] ;
+          
+          if(largest_p_lk < INV_TWO_TO_THE_LARGE &&
+             tree->mod->augmented == NO &&
+             tree->apply_lk_scaling == YES)
+            {
+              for(i=0;i<ns*ncatg;++i) p_lk[site*ncatgns + i] *= TWO_TO_THE_LARGE;
+              sum_scale[site] += LARGE;
+            }
+        }     
     }
 }
 
@@ -1563,6 +1625,11 @@ void Default_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
                      &Pij2,&tPij2,&p_lk_v2,&sum_scale_v2,
                      d,b,tree);
 
+  PhyML_Printf("\n. %p %p %p %p %p %p %p",
+               n_v1,n_v2,
+               p_lk,p_lk_v1,p_lk_v2,
+               Pij1,Pij2);
+  
   Core_Default_Update_Partial_Lk(n_v1,n_v2,
                                  p_lk,p_lk_v1,p_lk_v2,
                                  Pij1,Pij2,
@@ -1723,7 +1790,7 @@ matrix *ML_Dist(calign *data, t_mod *mod)
   Update_Boundaries(mod);
   Update_Eigen(mod);
 
-  tmpdata->n_otu  = 2;
+  tmpdata->n_otu = 2;
 
   tmpdata->crunch_len = data->crunch_len;
   tmpdata->init_len   = data->init_len;
@@ -1981,6 +2048,8 @@ void Init_Partial_Lk_Tips_Double(t_tree *tree)
 {
   unsigned int curr_site,i,dim1;
 
+  if(tree->is_mixt_tree == YES) return;
+  
   dim1 = tree->mod->ns;
 
 
@@ -1997,17 +2066,16 @@ void Init_Partial_Lk_Tips_Double(t_tree *tree)
   for(curr_site=0;curr_site<tree->data->crunch_len;curr_site++)
     {
       for(i=0;i<tree->n_otu;i++)
-        {
+        {          
           if (tree->io->datatype == NT)
             Init_Tips_At_One_Site_Nucleotides_Float(tree->a_nodes[i]->c_seq->state[curr_site],
                                                     curr_site*dim1,
                                                     tree->a_nodes[i]->b[0]->p_lk_tip_r);
-
           else if(tree->io->datatype == AA)
             Init_Tips_At_One_Site_AA_Float(tree->a_nodes[i]->c_seq->state[curr_site],
                                            curr_site*dim1,
                                            tree->a_nodes[i]->b[0]->p_lk_tip_r);
-
+          
           else if(tree->io->datatype == GENERIC)
             Init_Tips_At_One_Site_Generic_Float(tree->a_nodes[i]->c_seq->state+curr_site*tree->mod->io->state_len,
                                                 tree->mod->ns,
@@ -2015,11 +2083,6 @@ void Init_Partial_Lk_Tips_Double(t_tree *tree)
                                                 curr_site*dim1,
                                                 tree->a_nodes[i]->b[0]->p_lk_tip_r);
         }
-    }
-
-  if(tree->mod->use_m4mod)
-    {
-      M4_Init_Partial_Lk_Tips_Double(tree);
     }
 }
 
@@ -2029,6 +2092,8 @@ void Init_Partial_Lk_Tips_Double(t_tree *tree)
 void Init_Partial_Lk_Tips_Int(t_tree *tree)
 {
   int curr_site,i,dim1;
+
+  if(tree->is_mixt_tree == YES) return;
 
   dim1 = tree->mod->ns;
 
@@ -2089,10 +2154,6 @@ void Init_Partial_Lk_Tips_Int(t_tree *tree)
 #endif
       }
     }
-   if(tree->mod->use_m4mod)
-     {
-       M4_Init_Partial_Lk_Tips_Int(tree);
-     }
 }
 
 //////////////////////////////////////////////////////////////
@@ -2279,8 +2340,8 @@ phydbl Lk_Dist(phydbl *F, phydbl dist, t_mod *mod)
 
   // Compute likelihood of the model made of the
   // first class of the mixture.
-  if(mod->is_mixt_mod == YES) mod = mod->next;
-  assert(mod);
+  /* if(mod->is_mixt_mod == YES) mod = mod->next; */
+  /* assert(mod); */
 
   if(mod->log_l == YES) dist = exp(dist);
 
@@ -2349,7 +2410,9 @@ void Init_Partial_Lk_Loc(t_tree *tree)
   t_node *d;
   int *patt_id_d;
 
-  For(i,2*tree->n_otu-1)
+  if(tree->is_mixt_tree == YES) return;
+  
+  for(i=0;i<2*tree->n_otu-1;++i)
     {
       for(j=0;j<tree->n_pattern;j++)
         {
@@ -2364,6 +2427,7 @@ void Init_Partial_Lk_Loc(t_tree *tree)
       patt_id_d = (d == d->b[0]->left)?(d->b[0]->patt_id_left):(d->b[0]->patt_id_rght);
       for(j=0;j<tree->n_pattern;j++)
         {
+          assert(tree->a_nodes[d->num]->c_seq);
           patt_id_d[j] = (int)tree->a_nodes[d->num]->c_seq->state[j];
         }
     }
@@ -2965,16 +3029,16 @@ void Set_All_Partial_Lk(t_node **n_v1, t_node **n_v2,
               *n_v1 = tree->n_root;
 #ifdef BEAGLE
               Set_Partial_Lk_One_Side(Pij1,tPij1,p_lk_v1,sum_scale_v1,d,
-                                (d == tree->n_root->v[1])?
-                                (tree->n_root->b[1]):
-                                (tree->n_root->b[2]),
-                                tree,child1_p_idx,Pij1_idx);
+                                      (d == tree->n_root->v[1])?
+                                      (tree->n_root->b[1]):
+                                      (tree->n_root->b[2]),
+                                      tree,child1_p_idx,Pij1_idx);
 #else
               Set_Partial_Lk_One_Side(Pij1,tPij1,p_lk_v1,sum_scale_v1,d,
-                                (d == tree->n_root->v[1])?
-                                (tree->n_root->b[1]):
-                                (tree->n_root->b[2]),
-                                tree);
+                                      (d == tree->n_root->v[1])?
+                                      (tree->n_root->b[1]):
+                                      (tree->n_root->b[2]),
+                                      tree);
 #endif
               for(i=0;i<3;i++)
                 {
@@ -3042,6 +3106,9 @@ void Set_All_Partial_Lk(t_node **n_v1, t_node **n_v2,
     }
 }
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 /*     |
        |
        |d
@@ -3053,9 +3120,6 @@ void Set_All_Partial_Lk(t_node **n_v1, t_node **n_v2,
 
   Returns p_lk and sum_scale for subtree with x as root, Pij for edge b
 */
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
 
 void Set_Partial_Lk_One_Side(phydbl **Pij, phydbl **tPij, phydbl **p_lk,  int **sum_scale, t_node *d, t_edge *b, t_tree *tree
 #ifdef BEAGLE
@@ -3082,6 +3146,7 @@ void Set_Partial_Lk_One_Side(phydbl **Pij, phydbl **tPij, phydbl **p_lk,  int **
 #ifdef BEAGLE
           *child_p_idx = b->rght->tax? b->p_lk_tip_idx: b->p_lk_rght_idx;
 #endif
+          assert(*p_lk);
         }
       else
         {
@@ -3090,6 +3155,7 @@ void Set_Partial_Lk_One_Side(phydbl **Pij, phydbl **tPij, phydbl **p_lk,  int **
 #ifdef BEAGLE
           *child_p_idx   = b->rght->tax? b->p_lk_tip_idx: b->p_lk_left_idx;
 #endif
+          assert(*p_lk);
         }
     }
   else
@@ -3161,6 +3227,7 @@ void Partial_Lk_Inin(const phydbl *Pij1, const phydbl *plk1, const phydbl *Pij2,
 {
   unsigned int i,j;
 
+  
   for(i=0;i<ns;++i) if(plk1[i] > 1.0 || plk1[i] < 1.0 || plk2[i] > 1.0 || plk2[i] < 1.0) break; 
 
   if(i != ns)
@@ -3169,11 +3236,13 @@ void Partial_Lk_Inin(const phydbl *Pij1, const phydbl *plk1, const phydbl *Pij2,
         {
           phydbl u1 = 0.0;
           phydbl u2 = 0.0;
+
           for(j=0;j<ns;++j)
             {
               u1 += Pij1[j] * plk1[j];
               u2 += Pij2[j] * plk2[j];
             }
+          
           Pij1 += ns;
           Pij2 += ns;
           plk0[i] = u1*u2;

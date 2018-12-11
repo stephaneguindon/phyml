@@ -247,8 +247,7 @@ void Bootstrap_MPI(t_tree *tree, int tbe_bootstrap)
       Fill_Dir_Table(boot_tree);
       Update_Dirs(boot_tree);
 
-      if(tree->mod->s_opt->greedy) Init_Partial_Lk_Tips_Double(boot_tree);
-      else                         Init_Partial_Lk_Tips_Int(boot_tree);
+      Init_Partial_Lk_Tips_Double(boot_tree);
       Init_Ui_Tips(boot_tree);
       Init_Partial_Pars_Tips(boot_tree);
       Br_Len_Not_Involving_Invar(boot_tree);

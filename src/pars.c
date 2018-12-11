@@ -177,9 +177,9 @@ void Init_Ui_Tips(t_tree *tree)
               if(tree->a_nodes[i]->b[0]->rght->tax != 1)
                 {
                   PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
-                  Exit("\n");
+                  assert(FALSE);
                 }
-              
+
               Init_Tips_At_One_Site_Nucleotides_Int(tree->a_nodes[i]->c_seq->state[curr_site],
                                                     0,
                                                     state_v);
@@ -219,9 +219,9 @@ void Init_Ui_Tips(t_tree *tree)
     }
   
   
-  For(br,2*tree->n_otu-3)
+  for(br=0;br<2*tree->n_otu-3;++br)
     {
-      for(curr_site=0;curr_site<tree->data->crunch_len;curr_site++)
+      for(curr_site=0;curr_site<tree->data->crunch_len;++curr_site)
         {
           tree->a_edges[br]->pars_r[curr_site] = 0;
           tree->a_edges[br]->pars_l[curr_site] = 0;

@@ -261,6 +261,16 @@ int Read_Command_Line(option *io, int argc, char **argv)
             Free_Input(io);
             DATE_XML(optarg);
             return 0;
+
+#elif defined(PHYREX)
+
+            Free_Optimiz(io->mod->s_opt);
+            M4_Free_M4_Model(io->mod->m4mod);
+            Free_Model_Basic(io->mod);
+            Free_Input(io);
+            PHYREX_XML(optarg);
+            return 0;
+            
 #endif
             break;
 	  }
@@ -716,8 +726,8 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	  }
 	case 18 :
 	  {
-	    io->mod->s_opt->steph_spr = 0;
-	    io->mod->s_opt->greedy    = 1;
+	    io->mod->s_opt->steph_spr = NO;
+	    io->mod->s_opt->greedy    = YES;
 	    break;
 	  }
 	case 19 :
@@ -727,12 +737,12 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	  }
 	case 20 :
 	  {
-	    io->mod->s_opt->random_input_tree = 1;
+	    io->mod->s_opt->random_input_tree = YES;
 	    break;
 	  }
 	case 21 :
 	  {
-	    io->mod->s_opt->random_input_tree = 1;
+	    io->mod->s_opt->random_input_tree = YES;
 	    io->mod->s_opt->n_rand_starts = atoi(optarg);
 	    if(io->mod->s_opt->n_rand_starts < 1) Exit("\n. Number of random starting trees must be > 0.\n\n");
 	  }

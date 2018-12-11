@@ -21,7 +21,6 @@ void MCMC_Lexp(t_tree *tree);
 void MCMC_Print_Param(t_mcmc *mcmc, t_tree *tree);
 t_mcmc *MCMC_Make_MCMC_Struct();
 void MCMC_Free_MCMC(t_mcmc *mcmc);
-void MCMC(t_tree *tree);
 void MCMC_Alpha(t_tree *tree);
 void MCMC_Randomize_Branch_Lengths(t_tree *tree);
 void MCMC_Randomize_Node_Times(t_tree *tree);
@@ -148,7 +147,6 @@ void MCMC_PHYREX_Delete_Hit(phydbl hr, int n_delete_disks, phydbl cur_rad, phydb
 void MCMC_PHYREX_Simulate_Backward(t_tree *tree);
 void MCMC_Update_Mode(int move_num, t_mcmc *mcmc, t_tree *tree);
 void MCMC_PHYREX_Lineage_Traj(t_tree *tree);
-void MCMC_PHYREX_Lbda_Times(t_tree *tree);
 void MCMC_PHYREX_Delete_Disk_Serial(t_tree *tree);
 void MCMC_PHYREX_Insert_Disk_Serial(t_tree *tree);
 void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree);

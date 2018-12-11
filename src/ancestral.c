@@ -122,6 +122,8 @@ void Sample_Ancestral_Seq(int fullmutmap, int fromprior, t_tree *tree)
       fp = fopen(s,"a");
       PhyML_Fprintf(fp,"\n-1 -1 -1.0 -1 %d",tree->mixt_tree ? tree->mixt_tree->mcmc->run : tree->mcmc->run);
       
+      Reverse_Muttime(muttime,n_mut,tree);
+
       for(j=0;j<n_mut;j++)
         {
           for(k=0;k<n_mut;k++)
@@ -997,6 +999,17 @@ int MPEE_Score(const phydbl *alpha, int *idx, const phydbl *p, const int ns)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+void Reverse_Muttime(phydbl *muttime, int n_mut, t_tree *tree)
+{
+  phydbl h;
+  int i;  
+  h = Tree_Height(tree);
+  for(i=0;i<n_mut;++i) muttime[i] = h - muttime[i];
+  
+}
+
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

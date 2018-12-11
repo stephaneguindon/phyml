@@ -64,7 +64,6 @@ void MIXT_Chain_Vector_Dbl(vect_dbl *curr, vect_dbl *next);
 void MIXT_Chain_Sprs(t_tree *tree);
 void MIXT_Chain_Nodes(t_tree *tree);
 void MIXT_Chain_Edges(t_tree *tree);
-void MIXT_Chain_Triplets(t_tree *tree);
 phydbl MIXT_Get_Mean_Edge_Len(t_edge *mixt_b, t_tree *tree);
 phydbl MIXT_Get_Sum_Chained_Scalar_Dbl(scalar_dbl *s);
 phydbl MIXT_Get_Sum_Of_Probas_Across_Mixtures(phydbl r_mat_weight_sum, phydbl e_frq_weight_sum, t_tree *mixt_tree);
@@ -106,5 +105,13 @@ void MIXT_Set_Br_Len(phydbl val, t_edge *mixt_b, t_tree *mixt_tree);
 void MIXT_Multiply_Scalar_Dbl(scalar_dbl *this, phydbl scalar);
 void MIXT_Sample_Ancestral_Seq(int mutmap, int fromprior, t_tree *mixt_tree);
 void MIXT_Set_Update_Eigen(int yn, t_tree *mixt_tree);
+void MIXT_Set_Ignore_Root(int yesno, t_tree *mixt_tree);
+void MIXT_Make_Spr(t_tree *mixt_tree);
+void MIXT_Make_Tree_For_Lk(t_tree *mixt_tree);
+void MIXT_Make_Tree_For_Pars(t_tree *mixt_tree);
+void MIXT_Connect_Tip_Disks(t_tree *mixt_tree);
+void MIXT_Propagate_Tree_Update(t_tree *mixt_tree);
+void MIXT_Set_Bl_From_Rt(int yn, t_tree *mixt_tree);
+void MIXT_Copy_Tree(t_tree *ori, t_tree *cpy);
 
 #endif

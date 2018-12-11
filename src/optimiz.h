@@ -128,8 +128,6 @@ int Generic_Brak(phydbl *param,
 		 phydbl *fa, phydbl *fb, phydbl *fc,
 		 phydbl lim_inf, phydbl lim_sup,
 		 t_tree *tree);
-phydbl Generic_Brent(phydbl ax, phydbl bx, phydbl cx, phydbl tol, 
-		     phydbl *xmin, t_tree *tree, int n_iter_max,int quickdirty);
 void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tree);
 void Optimize_Global_Rate(t_tree *tree);
 phydbl Fast_Br_Len(t_edge *b, t_tree *tree, int approx);
@@ -179,6 +177,8 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose);
 void Optimize_Free_Rate_Weights(t_tree *tree, int fast, int verbose);
 void Optimize_Free_Rate_Rr(t_tree *tree, int fast, int verbose);
 void Optimize_Br_Len_Multiplier(t_tree *tree, int verbose);
+phydbl Generic_Brent(phydbl *param, phydbl ax, phydbl cx, phydbl tol,int n_iter_max,phydbl (*obj_func)(t_tree *),t_tree *tree);
+void Least_Square_Node_Ages(t_tree *tree);
 
 #endif
 

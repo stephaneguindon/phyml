@@ -267,10 +267,9 @@ void PMat_Empirical(const phydbl l, const t_mod *mod, const int pos, phydbl *Pij
 
   /* multiply Vr*POW(exp(D/mr),l)*Vi into Pij */
   for(i=0;i<ns;i++) for (k=0;k<ns;k++) uexpt[i*ns+k] = U[i*ns+k] * expt[k];
-
+  
   Pij = Pij + pos;
   if(tPij != NULL) tPij = tPij + pos;
-  
   
   for(i=0;i<ns;++i)
     {
@@ -280,7 +279,6 @@ void PMat_Empirical(const phydbl l, const t_mod *mod, const int pos, phydbl *Pij
           for(k=0;k<ns;++k)
             {
               Pij[j] += (uexpt[i*ns+k] * V[k*ns+j]);
-              /* PhyML_Printf("\n. P[j]: %g %g %g",Pij[j],uexpt[i*ns+k],V[k*ns+j]); */
             }
           if(Pij[j] < SMALL_PIJ) Pij[j] = SMALL_PIJ;
         }
@@ -797,7 +795,7 @@ void Set_Model_Parameters(t_mod *mod)
 void Update_Boundaries(t_mod *mod)
 {
   int i;
-
+    
   if(mod->kappa->v > TSTV_MAX) mod->kappa->v = TSTV_MAX;
   if(mod->kappa->v < TSTV_MIN) mod->kappa->v = TSTV_MIN;
 
@@ -838,7 +836,7 @@ void Update_Boundaries(t_mod *mod)
 
       if(mod->e_frq->pi_unscaled->v[i] > UNSCALED_E_FRQ_MAX)
         mod->e_frq->pi_unscaled->v[i] = UNSCALED_E_FRQ_MAX;
-
+            
       if(mod->e_frq->pi->v[i] < E_FRQ_MIN)
         mod->e_frq->pi->v[i] = E_FRQ_MIN;
 
@@ -862,14 +860,7 @@ void Update_Eigen(t_mod *mod)
   int result, n_iter;
   phydbl scalar;
   int i;
-
-
-  if(mod->is_mixt_mod == YES)
-    {
-      MIXT_Update_Eigen(mod);
-      return;
-    }
-
+  
   if(mod->update_eigen == YES)
     {
       //Update the Q-matrix first before computing the Eigen(because the Eigen is computed based on the Q-matrix)
@@ -901,6 +892,7 @@ void Update_Eigen(t_mod *mod)
       n_iter   = 0;
       result   = 0;
 
+      
       for(i=0;i<mod->ns*mod->ns;++i)
         {
           mod->r_mat->qmat_buff->v[i] = mod->r_mat->qmat->v[i];
@@ -923,7 +915,7 @@ void Update_Eigen(t_mod *mod)
                 mod->eigen->space))
         {
           /* compute inverse(Vr) into Vi */
-          For (i,mod->ns*mod->ns) mod->eigen->l_e_vect[i] = mod->eigen->r_e_vect[i];
+          for (i=0;i<mod->ns*mod->ns;++i) mod->eigen->l_e_vect[i] = mod->eigen->r_e_vect[i];
           while(!Matinv(mod->eigen->l_e_vect, mod->eigen->size, mod->eigen->size,YES))
             {
 	      PhyML_Printf("\n. Trying Q<-Q*scalar and then Root<-Root/scalar to fix this...\n");
@@ -969,7 +961,6 @@ void Update_Eigen(t_mod *mod)
           Warn_And_Exit("\n");
         }
     }
-
 }
 
 //////////////////////////////////////////////////////////////
@@ -1230,7 +1221,6 @@ phydbl GTR_Dist(phydbl *F, phydbl alpha, eigen *eigen_struct)
   dist = .0;
   for(i=0;i<eigen_struct->size;i++) dist-=F[eigen_struct->size*i+i];
 
-/*   PhyML_Printf("\nDIST = %f\n",dist); Exit("\n"); */
 
   Free(pi);
   Free(F_phydbl);

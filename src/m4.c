@@ -126,7 +126,9 @@ int M4_main(int argc, char **argv)
 
 		  if((!num_data_set) && (!num_tree) && (!num_rand_tree)) Check_Memory_Amount(tree);
 
-		  Prepare_Tree_For_Lk(tree);
+                  Make_Tree_For_Pars(tree);
+                  Make_Tree_For_Lk(tree);
+                  Make_Spr(tree);
 		 
 		  if(io->do_alias_subpatt)
 		    {
@@ -203,7 +205,6 @@ int M4_main(int argc, char **argv)
 		  Free_Spr_List_One_Edge(tree);
 		  Free_One_Spr(tree->best_spr);
 		  if(tree->mat) Free_Mat(tree->mat);
-		  Free_Triplet(tree->triplet_struct);
 		  Free_Tree_Pars(tree);
 		  Free_Tree_Lk(tree);
 		  Free_Tree(tree);
@@ -1181,8 +1182,8 @@ void M4_Site_Branch_Classification_Experiment(t_tree *tree)
   /* Allocate memory and initialize likelihood structure with
      simulated sequences (i.e., columns are not compressed)
   */
-  Make_Tree_4_Pars(tree,cpy_data,cpy_data->init_len);
-  Make_Tree_4_Lk(tree,cpy_data,cpy_data->init_len);
+  Make_Tree_For_Pars(tree);
+  Make_Tree_For_Lk(tree);
 
   /* Estimate model parameters */
   PhyML_Printf("\n. Estimating model parameters...\n");
@@ -1391,8 +1392,8 @@ void M4_Detect_Site_Switches_Experiment(t_tree *tree)
   /* Allocate memory and initialize likelihood structure with
      simulated sequences (i.e., columns are not compressed)
   */
-  Make_Tree_4_Pars(tree,cpy_data,cpy_data->init_len);
-  Make_Tree_4_Lk(tree,cpy_data,cpy_data->init_len);
+  Make_Tree_For_Pars(tree);
+  Make_Tree_For_Lk(tree);
 
  
   n_iter = 0;
@@ -1434,8 +1435,8 @@ void M4_Detect_Site_Switches_Experiment(t_tree *tree)
   tree->data      = ori_data;
   tree->n_pattern = tree->data->crunch_len;
 
-  Make_Tree_4_Pars(tree,ori_data,ori_data->init_len);
-  Make_Tree_4_Lk(tree,ori_data,ori_data->init_len);
+  Make_Tree_For_Pars(tree);
+  Make_Tree_For_Lk(tree);
 
   tree->mod = nocov_mod;
   For(i,2*tree->n_otu-3) tree->a_edges[i]->l->v = nocov_bl[i];  
@@ -1516,8 +1517,8 @@ void M4_Posterior_Prediction_Experiment(t_tree *tree)
   /* Allocate memory and initialize likelihood structure with
      simulated sequences (i.e., columns are not compressed)
   */
-  Make_Tree_4_Pars(tree,cpy_data,cpy_data->init_len);
-  Make_Tree_4_Lk(tree,cpy_data,cpy_data->init_len);
+  Make_Tree_For_Pars(tree);
+  Make_Tree_For_Lk(tree);
 
   /* Go back to the original data set */
   tree->data      = ori_data;

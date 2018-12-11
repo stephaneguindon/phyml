@@ -48,7 +48,6 @@ t_efrq *Make_Efrq(int ns);
 t_rmat *Make_Rmat(int ns);
 option *Make_Input();
 eigen *Make_Eigen_Struct(int ns);
-triplet *Make_Triplet_Struct(t_mod *mod);
 void Make_Short_L(t_tree *tree);
 void Make_RAS_Complete(t_ras *ras);
 t_ras *Make_RAS_Basic();
@@ -56,7 +55,8 @@ void Make_Best_Spr(t_tree *tree);
 void Make_Spr_List_One_Edge(t_tree *tree);
 void Make_Spr_List_All_Edge(t_tree *tree);
 t_spr *Make_One_Spr(t_tree *tree);
-void Make_Tree_4_Pars(t_tree *tree, calign *cdata, int n_site);
+void Make_Tree_For_Pars(t_tree *tree);
+void Make_Tree_For_Lk(t_tree *tree);
 t_string *Make_String(int len);
 t_mcmc *MCMC_Make_MCMC_Struct();
 void Make_Tree_4_Lk(t_tree *tree,calign *cdata,int n_site);
@@ -83,4 +83,5 @@ t_clad *Make_Clade();
 void Alloc_TBE_Matrices(int n_otu,  short unsigned*** i_matrix, short unsigned*** c_matrix,short unsigned*** hamming,
 			short unsigned** min_dist, short unsigned**  min_dist_edge, int** cluster_sizes);
 void Make_Extra_Edge_Lk(t_tree *tree);
+void Make_Spr(t_tree *tree);
 #endif

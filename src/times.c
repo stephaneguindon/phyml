@@ -19,13 +19,12 @@ the GNU public licence. See http://www.opensource.org for details.
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-
 void TIMES_Least_Square_Node_Times(t_edge *e_root, t_tree *tree)
 {
 
-  /* Solve A.x = b, where x are the t_node time estimated
-     under the least square criterion.
+  /* Solve A.x = b, where x is the vector of times estimated
+     under the least square criterion and b is the vector
+     of edge lengths
 
      A is a n x n matrix, with n being the number of
      nodes in a rooted tree (i.e. 2*n_otu-1).
@@ -48,8 +47,8 @@ void TIMES_Least_Square_Node_Times(t_edge *e_root, t_tree *tree)
   
   root = tree->n_root;
 
-  TIMES_Least_Square_Node_Times_Pre(root,root->v[2],A,b,n,tree);
   TIMES_Least_Square_Node_Times_Pre(root,root->v[1],A,b,n,tree);
+  TIMES_Least_Square_Node_Times_Pre(root,root->v[2],A,b,n,tree);
   
   b[root->num] = tree->e_root->l->v/2.;
   
@@ -66,48 +65,21 @@ void TIMES_Least_Square_Node_Times(t_edge *e_root, t_tree *tree)
   for(i=0;i<n;i++) x[i] = .0;
   for(i=0;i<n;i++) for(j=0;j<n;j++) x[i] += A[i*n+j] * b[j];
 
-  for(i=0;i<n-1;i++) { tree->rates->nd_t[tree->a_nodes[i]->num] = -x[i]; }
+  for(i=0;i<n-1;i++) tree->rates->nd_t[tree->a_nodes[i]->num] = -x[i];
   tree->rates->nd_t[root->num] = -x[n-1];
-  tree->n_root->l[2] = tree->rates->nd_t[root->v[2]->num] - tree->rates->nd_t[root->num];
-  tree->n_root->l[1] = tree->rates->nd_t[root->v[1]->num] - tree->rates->nd_t[root->num];
-  ////////////////////////////////////////
-  return;
-  ////////////////////////////////////////
-
-  /* Rescale the t_node times such that the time at the root
-     is -100. This constraint implies that the clock rate
-     is fixed to the actual tree length divided by the tree
-     length measured in term of differences of t_node times */
-
-  phydbl scale_f,time_tree_length,tree_length;
-
-  scale_f = -100./tree->rates->nd_t[root->num];
-  For(i,2*tree->n_otu-1) tree->rates->nd_t[i] *= scale_f;
-  For(i,2*tree->n_otu-1) if(tree->rates->nd_t[i] > .0) tree->rates->nd_t[i] = .0;
-
-  time_tree_length = 0.0;
-  For(i,2*tree->n_otu-3)
-    if(tree->a_edges[i] != tree->e_root)
-      time_tree_length +=
-	FABS(tree->rates->nd_t[tree->a_edges[i]->left->num] -
-	     tree->rates->nd_t[tree->a_edges[i]->rght->num]);
-  time_tree_length += FABS(tree->rates->nd_t[root->num] - tree->rates->nd_t[root->v[2]->num]);
-  time_tree_length += FABS(tree->rates->nd_t[root->num] - tree->rates->nd_t[root->v[1]->num]);
-  
-  tree_length = 0.0;
-  For(i,2*tree->n_otu-3) tree_length += tree->a_edges[i]->l->v;
-
-  tree->rates->clock_r = tree_length / time_tree_length;
+  tree->n_root->l[2]->v = tree->rates->nd_t[root->v[2]->num] - tree->rates->nd_t[root->num];
+  tree->n_root->l[1]->v = tree->rates->nd_t[root->v[1]->num] - tree->rates->nd_t[root->num];
 
   Free(A);
   Free(b);
   Free(x);
 
+  return;
+  
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void TIMES_Least_Square_Node_Times_Pre(t_node *a, t_node *d, phydbl *A, phydbl *b, int n, t_tree *tree)
 {
@@ -123,15 +95,14 @@ void TIMES_Least_Square_Node_Times_Pre(t_node *a, t_node *d, phydbl *A, phydbl *
   else
     {
       int i;
-      
- 
-      for(i=0;i<3;i++)
+       
+      for(i=0;i<3;++i)
 	if((d->v[i] != a) && (d->b[i] != tree->e_root))
 	  TIMES_Least_Square_Node_Times_Pre(d,d->v[i],A,b,n,tree);
       
       A[d->num * n + d->num] = 1.;
       b[d->num] = .0;
-      for(i=0;i<3;i++)
+      for(i=0;i<3;++i)
 	{
 	  A[d->num * n + d->v[i]->num] = -1./3.;
 	  if(d->v[i] != a) b[d->num] += d->b[i]->l->v;
@@ -746,7 +717,6 @@ void TIMES_Lk_Times_Trav(t_node *a, t_node *d, phydbl lim_inf, phydbl lim_sup, p
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 phydbl TIMES_Log_Number_Of_Ranked_Labelled_Histories(t_node *root, int per_slice, t_tree *tree)
 {
   int i;
@@ -1145,14 +1115,14 @@ void TIMES_Update_Node_Ordering(t_tree *tree)
   phydbl *t;
   int swap = NO;
 
-  For(i,2*tree->n_otu-1) tree->rates->t_rank[i] = i;
+  for(i=0;i<2*tree->n_otu-1;++i) tree->rates->t_rank[i] = i;
 
   t = tree->rates->nd_t;
 
   do
     {
       swap = NO;
-      For(i,2*tree->n_otu-2)
+      for(i=0;i<2*tree->n_otu-2;++i)
 	{
 	  if(t[tree->rates->t_rank[i]] > t[tree->rates->t_rank[i+1]]) // Sort in ascending order
 	    {
@@ -1165,9 +1135,6 @@ void TIMES_Update_Node_Ordering(t_tree *tree)
     }
   while(swap == YES);
 
-  /* For(i,2*tree->n_otu-1) PhyML_Printf("\n. node %3d time: %12f", */
-  /*                                     tree->rates->t_rank[i], */
-  /*                                     tree->rates->nd_t[tree->rates->t_rank[i]]); */
 }
 
 //////////////////////////////////////////////////////////////
@@ -1231,16 +1198,13 @@ void TIMES_Set_Calibration(t_tree *tree)
   TIMES_Set_All_Node_Priors(tree);
 }
 
-
-
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void TIMES_Record_Prior_Times(t_tree *tree)
 {
   int i;
-  For(i,2*tree->n_otu-1) 
+  for(i=0;i<2*tree->n_otu-1;++i) 
     {
       tree->rates->t_prior_min_ori[i] = tree->rates->t_prior_min[i];
       tree->rates->t_prior_max_ori[i] = tree->rates->t_prior_max[i];
@@ -1579,100 +1543,107 @@ void TIMES_Connect_List_Of_Taxa(t_node **tax_list, int list_size, phydbl t_mrca,
   int i,j,n_anc,*permut;
   t_node *n,**anc,*new_mrca;
 
-  t_lower_bound = t_mrca;
-  t_upper_bound = 0.0;
-  n             = NULL;
-  anc           = NULL;
-  new_mrca      = NULL;
-  permut        = NULL;
-  
-  // Find the upper bound for all the new node ages that 
-  // will be created in this function
-  for(i=0;i<list_size;i++)
+  // Calibration of a tip node
+  if(list_size == 1)
     {
-      n = tax_list[i];
-      while(n->v[0] != NULL) n = n->v[0];
-      if(times[n->num] < t_upper_bound) t_upper_bound = times[n->num];
-    }
-  
-  if(!(t_upper_bound > t_lower_bound))
-    {
-      PhyML_Printf("\n. upper: %f lower: %f t_mrca: %f\n",t_upper_bound,t_lower_bound,t_mrca);      
-      assert(FALSE);
-    }
-  
-  // Get the list of current mrcas to all taxa in tax_list. There should be
-  // at least one of these
-  n_anc = 0;
-  for(i=0;i<list_size;i++)
-    {
-      n = tax_list[i];
-      while(n->v[0] != NULL) n = n->v[0];
-      for(j=0;j<n_anc;j++) if(anc[j] == n) break;
-      if(j == n_anc)
-        {
-          if(n_anc == 0) anc = (t_node **)mCalloc(1,sizeof(t_node *));
-          else           anc = (t_node **)mRealloc(anc,n_anc+1,sizeof(t_node *));
-          anc[n_anc] = n;
-          n_anc++;
-        }
-    }
-
-  /* printf("\n. n_anc: %d",n_anc); */
-  /* for(i=0;i<n_anc;i++) PhyML_Printf("\n. anc: %d",anc[i]->num); */
-  
-  if(n_anc == 1) // All the nodes in tax_list are already connected. Bail out.
-    {
-      Free(anc);
+      times[tax_list[0]->num] = t_mrca;
       return;
     }
-  
-  // Connect randomly and set ages
-  /* permut = Permutate(n_anc); */
-  permut = (int *)mCalloc(n_anc,sizeof(int));
-  for(i=0;i<n_anc;i++) permut[i] = i;
-  i = 0;
-  do
+  else
     {
-      new_mrca               = mixt_tree->a_nodes[*nd_num];
-      anc[permut[i]]->v[0]   = new_mrca;
-      anc[permut[i+1]]->v[0] = new_mrca;
-      new_mrca->v[1]         = anc[permut[i]];
-      new_mrca->v[2]         = anc[permut[i+1]];
-      new_mrca->v[0]         = NULL;
-      up                     = MIN(times[new_mrca->v[1]->num],times[new_mrca->v[2]->num]);
-      lo                     = up - (up - t_mrca)/10.;
-      times[new_mrca->num]   = Uni()*(up - lo) + lo;
-
-      /* times[new_mrca->num]   = t_upper_bound - ((phydbl)(i+1.)/n_anc)*(t_upper_bound - t_lower_bound); */
-
-
-      /* printf("\n. new_mrca->num: %d time: %f [%f %f] t_mrca: %f %d connect to %d %d %d [%f %f]", */
-      /*        new_mrca->num, */
-      /*        times[new_mrca->num], */
-      /*        t_lower_bound, */
-      /*        t_upper_bound, */
-      /*        t_mrca, */
-      /*        new_mrca->num, */
-      /*        new_mrca->v[0] ? new_mrca->v[0]->num : -1, */
-      /*        new_mrca->v[1] ? new_mrca->v[1]->num : -1, */
-      /*        new_mrca->v[2] ? new_mrca->v[2]->num : -1, */
-      /*        times[new_mrca->v[1]->num], */
-      /*        times[new_mrca->v[2]->num] */
-      /*        ); */
-      /* fflush(NULL); */
-
-      anc[permut[i+1]] = new_mrca;
-      i++;
-      (*nd_num) += 1;
-      if(n_anc == i+1) { times[new_mrca->num] = t_mrca; break; }
+      t_lower_bound = t_mrca;
+      t_upper_bound = 0.0;
+      n             = NULL;
+      anc           = NULL;
+      new_mrca      = NULL;
+      permut        = NULL;
+      
+      // Find the upper bound for all the new node ages that 
+      // will be created in this function
+      for(i=0;i<list_size;i++)
+        {
+          n = tax_list[i];
+          while(n->v[0] != NULL) n = n->v[0];
+          if(times[n->num] < t_upper_bound) t_upper_bound = times[n->num];
+        }
+      
+      if(t_upper_bound < t_lower_bound)
+        {
+          PhyML_Printf("\n. upper: %f lower: %f t_mrca: %f\n",t_upper_bound,t_lower_bound,t_mrca);
+          assert(FALSE);
+        }
+      
+      // Get the list of current mrcas to all taxa in tax_list. There should be
+      // at least one of these
+      n_anc = 0;
+      for(i=0;i<list_size;i++)
+        {
+          n = tax_list[i];
+          while(n->v[0] != NULL) n = n->v[0];
+          for(j=0;j<n_anc;j++) if(anc[j] == n) break;
+          if(j == n_anc)
+            {
+              if(n_anc == 0) anc = (t_node **)mCalloc(1,sizeof(t_node *));
+              else           anc = (t_node **)mRealloc(anc,n_anc+1,sizeof(t_node *));
+              anc[n_anc] = n;
+              n_anc++;
+            }
+        }
+      
+      /* printf("\n. n_anc: %d",n_anc); */
+      /* for(i=0;i<n_anc;i++) PhyML_Printf("\n. anc: %d",anc[i]->num); */
+      
+      if(n_anc == 1) // All the nodes in tax_list are already connected. Bail out.
+        {
+          Free(anc);
+          return;
+        }
+      
+      // Connect randomly and set ages
+      /* permut = Permutate(n_anc); */
+      permut = (int *)mCalloc(n_anc,sizeof(int));
+      for(i=0;i<n_anc;i++) permut[i] = i;
+      i = 0;
+      do
+        {
+          new_mrca               = mixt_tree->a_nodes[*nd_num];
+          anc[permut[i]]->v[0]   = new_mrca;
+          anc[permut[i+1]]->v[0] = new_mrca;
+          new_mrca->v[1]         = anc[permut[i]];
+          new_mrca->v[2]         = anc[permut[i+1]];
+          new_mrca->v[0]         = NULL;
+          up                     = MIN(times[new_mrca->v[1]->num],times[new_mrca->v[2]->num]);
+          lo                     = up - (up - t_mrca)/10.;
+          times[new_mrca->num]   = Uni()*(up - lo) + lo;
+          
+          /* times[new_mrca->num]   = t_upper_bound - ((phydbl)(i+1.)/n_anc)*(t_upper_bound - t_lower_bound); */
+                    
+          /* printf("\n. new_mrca->num: %d time: %f [%f %f] t_mrca: %f %d connect to %d %d %d [%f %f]", */
+          /*        new_mrca->num, */
+          /*        times[new_mrca->num], */
+          /*        t_lower_bound, */
+          /*        t_upper_bound, */
+          /*        t_mrca, */
+          /*        new_mrca->num, */
+          /*        new_mrca->v[0] ? new_mrca->v[0]->num : -1, */
+          /*        new_mrca->v[1] ? new_mrca->v[1]->num : -1, */
+          /*        new_mrca->v[2] ? new_mrca->v[2]->num : -1, */
+          /*        times[new_mrca->v[1]->num], */
+          /*        times[new_mrca->v[2]->num] */
+          /*        ); */
+          /* fflush(NULL); */
+          
+          anc[permut[i+1]] = new_mrca;
+          i++;
+          (*nd_num) += 1;
+          if(n_anc == i+1) { times[new_mrca->num] = t_mrca; break; }
+        }
+      while(1);
+      
+      Free(permut);
+      Free(anc);
     }
-  while(1);
-  
-  Free(permut);
-  Free(anc);
 }
-  
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 // Generate a  random rooted tree with node ages fullfiling the
@@ -1681,15 +1652,16 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
 {
   t_node **tips,**nd_list;
   phydbl *times,*cal_times,time_oldest_cal;
-  int i,j,nd_num,*cal_ordering,n_cal,swap,list_size,tmp,orig_is_mixt_tree,repeat,n_max_repeats,tip_num,*no_cal_tip_num,n_no_cal_tip_num,*permut;
+  int i,j,nd_num,*cal_ordering,n_cal,swap,list_size,tmp,orig_is_mixt_tree,repeat,n_max_repeats,tip_num,*no_cal_tip_num,n_no_cal_tip_num,*permut,*tip_is_in_cal_clad;
   t_cal *cal;
   t_clad *clade;
-  
+
   assert(mixt_tree->rates);
   
   tips    = (t_node **)mCalloc(mixt_tree->n_otu,sizeof(t_node *));
   nd_list = (t_node **)mCalloc(mixt_tree->n_otu,sizeof(t_node *));
-  
+  tip_is_in_cal_clad = (int *)mCalloc(mixt_tree->n_otu,sizeof(t_node *));
+                                      
   times                   = mixt_tree->rates->nd_t;
   orig_is_mixt_tree       = mixt_tree->is_mixt_tree;
   mixt_tree->is_mixt_tree = NO;
@@ -1697,6 +1669,23 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
   cal                     = NULL;
   clade                   = NULL;
   
+
+  // Is tip in calibrated clade or not?
+  for(i=0;i<mixt_tree->n_otu;++i)
+    {
+      cal = cal_list;
+      while(cal != NULL)
+        {
+          clade = cal->clade_list[cal->current_clade_idx];
+          for(j=0;j<clade->n_tax;++j) if(clade->tip_list[j] == mixt_tree->a_nodes[i]) break;
+          if(j != clade->n_tax) break;
+          cal = cal->next;
+        }
+      
+      if(cal != NULL) tip_is_in_cal_clad[i] = YES;
+      else tip_is_in_cal_clad[i] = NO;
+    }
+
   // List node indices that are not in any calibration set
   no_cal_tip_num = NULL;
   n_no_cal_tip_num = 0;
@@ -1747,10 +1736,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
             }
           cal = cal->next;
         }
- 
-      /* printf("\n. n_cal : %d",n_cal); fflush(NULL); */
-      /* Exit("\n"); */
-     
+      
       cal_ordering = (int *)mCalloc(n_cal,sizeof(int));
       for(i=0;i<n_cal;++i) cal_ordering[i] = i;
       
@@ -1771,7 +1757,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
         }
       while(swap == YES);
       
-      for(i=0;i<n_cal-1;i++) assert(cal_times[cal_ordering[i]] > cal_times[cal_ordering[i+1]]);
+      for(i=0;i<n_cal-1;i++) assert(!(cal_times[cal_ordering[i]] < cal_times[cal_ordering[i+1]]));
               
       // Connect taxa that appear in every primary calibrations
       for(i=0;i<n_cal;++i)
@@ -1825,25 +1811,16 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
               list_size++;
               assert(list_size <= mixt_tree->n_otu);
             }
-          
-
-          
-          /* for(j=0;j<n_cal;j++) */
-          /*   { */
-          /*     printf("\n. %d -> %f", */
-          /*            cal_ordering[j], */
-          /*            cal_times[cal_ordering[j]]); */
-          /*     fflush(NULL); */
-          /*   } */
-
-          /* for(j=0;j<list_size;j++) PhyML_Printf("\n. %s [%d]",nd_list[j]->name,nd_list[j]->num); */
-          /* PhyML_Printf("\n. Time: %f [%f %f]\n", */
+                    
+          /* PhyML_Printf("\n"); */
+          /* PhyML_Printf("\n. Time: %f [%f %f]", */
           /*              cal_times[cal_ordering[i]], */
           /*              cal->lower, */
           /*              cal->upper); */
           
-          /* for(k=0;k<list_size;k++) printf("\n@ %s",nd_list[k]->name); */
-          /* printf("\n"); */
+          /* for(int k=0;k<list_size;k++) PhyML_Printf("\n@ %s",nd_list[k]->name); */
+          /* PhyML_Printf("\n. list_size: %d",list_size); */
+          /* PhyML_Printf("\n"); */
 
           TIMES_Connect_List_Of_Taxa(nd_list, 
                                      list_size,
@@ -1863,14 +1840,13 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       list_size = 0;
       for(i=0;i<mixt_tree->n_otu;++i)
         {
-          if(tips[i]->v[0] == NULL) // Tip is not connected yet
+          if(tip_is_in_cal_clad[tips[i]->num] == NO) // Tip is not in a calibrated clade
             {
               nd_list[list_size] = tips[i];
               list_size++;
               assert(list_size <= mixt_tree->n_otu);
             }
         }
-
 
       
       cal = cal_list;
@@ -1897,43 +1873,42 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       // Adding root node 
       mixt_tree->n_root = mixt_tree->a_nodes[2*mixt_tree->n_otu-2];
       mixt_tree->n_root->v[1]->v[0] = mixt_tree->n_root->v[2];
-      mixt_tree->n_root->v[2]->v[0] = mixt_tree->n_root->v[1];
+      mixt_tree->n_root->v[2]->v[0] = mixt_tree->n_root->v[1];    
       Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree);
       Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);
       mixt_tree->n_root->anc = NULL;
 
+      Connect_Edges_To_Nodes_Serial(mixt_tree);
+
       // Adding root edge
-      mixt_tree->num_curr_branch_available = 0;
-      Connect_Edges_To_Nodes_Recur(mixt_tree->a_nodes[0],mixt_tree->a_nodes[0]->v[0],mixt_tree);
-      
       for(i=0;i<2*mixt_tree->n_otu-3;++i)
         {
           if(((mixt_tree->a_edges[i]->left == mixt_tree->n_root->v[1]) || (mixt_tree->a_edges[i]->rght == mixt_tree->n_root->v[1])) &&
              ((mixt_tree->a_edges[i]->left == mixt_tree->n_root->v[2]) || (mixt_tree->a_edges[i]->rght == mixt_tree->n_root->v[2])))
             {
-              Add_Root(mixt_tree->a_edges[i],mixt_tree);
+              mixt_tree->e_root = mixt_tree->a_edges[i]; 
               break;
             }
         }
-      
       
       DATE_Assign_Primary_Calibration(mixt_tree);
       DATE_Update_T_Prior_MinMax(mixt_tree);
 
 
-      /* for(int i=0;i<mixt_tree->rates->n_cal;i++) */
-      /*   { */
-      /*     cal   = mixt_tree->rates->a_cal[i]; */
-      /*     clade = cal->clade_list[cal->current_clade_idx]; */
-      /*     idx = Find_Clade(clade->tax_list,clade->n_tax,mixt_tree); */
-      /*     PhyML_Printf("\n. Node number to which calibration [%d] applies to is [%d]",i,idx); */
-      /*     PhyML_Printf("\n. Lower bound set to: %15f time units.",mixt_tree->rates->a_cal[i]->lower); */
-      /*     PhyML_Printf("\n. Upper bound set to: %15f time units.",mixt_tree->rates->a_cal[i]->upper); */
-      /*     PhyML_Printf("\n. t_prior_min: %G t_prior_max: %G",mixt_tree->rates->t_prior_min[idx],mixt_tree->rates->t_prior_max[idx]); */
-      /*     PhyML_Printf("\n. Time set to %G",mixt_tree->rates->nd_t[idx]); */
-      /*   } */
-
-      if(!DATE_Check_Calibration_Constraints(mixt_tree))
+      for(int i=0;i<mixt_tree->rates->n_cal;i++)
+        {
+          int idx;
+          cal   = mixt_tree->rates->a_cal[i];
+          clade = cal->clade_list[cal->current_clade_idx];
+          idx = Find_Clade(clade->tax_list,clade->n_tax,mixt_tree);
+          PhyML_Printf("\n. Calibration %3d | Node number to which calibration applies is [%d]",i,idx);
+          PhyML_Printf("\n. Calibration %3d | Lower bound set to: %15f time units.",i,mixt_tree->rates->a_cal[i]->lower);
+          PhyML_Printf("\n. Calibration %3d | Upper bound set to: %15f time units.",i,mixt_tree->rates->a_cal[i]->upper);
+          PhyML_Printf("\n. Calibration %3d | t_prior_min: %G t_prior_max: %G",i,mixt_tree->rates->t_prior_min[idx],mixt_tree->rates->t_prior_max[idx]);
+          PhyML_Printf("\n. Calibration %3d | Time set to %G",i,mixt_tree->rates->nd_t[idx]);
+        }
+      
+    if(!DATE_Check_Calibration_Constraints(mixt_tree))
         {
           /* PhyML_Printf("\n. Could not generate tree (DATE_Check_Calibration_Constraints)\n\n"); */
         }
@@ -1944,6 +1919,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       else break; // Tree successfully generated
     }
 
+    
   if(repeat == n_max_repeats)
     {
       PhyML_Fprintf(stderr,"\n\n");
@@ -1958,43 +1934,16 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       Exit("\n");
     }
 
-  /* for(j=0;j<mixt_tree->n_otu;j++) printf("\n. %s",mixt_tree->a_nodes[j]->name); */
-        
-  assert(i != 2*mixt_tree->n_otu-3);
+  /* assert(i != 2*mixt_tree->n_otu-3); */
 
   mixt_tree->is_mixt_tree = orig_is_mixt_tree;
 
-
-  
-  if(mixt_tree->is_mixt_tree == YES)
-    {
-      t_tree *tree;
-      
-      // Propagate tree topology and reorganize partial lk struct along edges
-      tree = mixt_tree->next;
-      do
-        {
-          for(i=0;i<2*tree->n_otu-1;++i)
-            {
-              tree->a_nodes[i]->v[0] = tree->prev->a_nodes[i]->v[0] ? tree->a_nodes[tree->prev->a_nodes[i]->v[0]->num] : NULL;
-              tree->a_nodes[i]->v[1] = tree->prev->a_nodes[i]->v[1] ? tree->a_nodes[tree->prev->a_nodes[i]->v[1]->num] : NULL;
-              tree->a_nodes[i]->v[2] = tree->prev->a_nodes[i]->v[2] ? tree->a_nodes[tree->prev->a_nodes[i]->v[2]->num] : NULL;
-            }
-
-          tree->num_curr_branch_available = 0;
-          Connect_Edges_To_Nodes_Recur(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree);
-          Reorganize_Edges_Given_Lk_Struct(tree);
-          Init_Partial_Lk_Tips_Int(tree);
-          Add_Root(tree->a_edges[tree->prev->e_root->num],tree);
-                   
-          tree = tree->next;
-        }
-      while(tree);
-    }
-  
+  MIXT_Propagate_Tree_Update(mixt_tree);
+    
   Free(tips);
   Free(nd_list);
   Free(no_cal_tip_num);
+  Free(tip_is_in_cal_clad);
 }
 
 //////////////////////////////////////////////////////////////
@@ -2043,10 +1992,86 @@ int TIMES_Check_Node_Height_Ordering_Post(t_node *a, t_node *d, t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+/* 
+   2n-2 edge lengths (in a rooted tree), n-1 internal node
+   ages. Return \sum_i (l_i - delta t_i)^2 where delta t_i is the
+   calendar time elapsed along the edge of length l_i  
+*/
+phydbl TIMES_Least_Square_Criterion(t_tree *tree)
+{
+  phydbl score;
+  score = 0.0;
+  assert(tree->n_root);
+  assert(tree->rates);
+  TIMES_Pre_Least_Square_Criterion(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],&score,tree);
+  TIMES_Pre_Least_Square_Criterion(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],&score,tree);
+  return(score);
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void TIMES_Pre_Least_Square_Criterion(t_node *a, t_node *d, t_edge *b, phydbl *score, t_tree *tree)
+{
+  int i;
+
+  (*score) += pow(b->l->v - fabs(tree->rates->nd_t[a->num] + tree->rates->nd_t[d->num])*tree->rates->clock_r,2);
+
+  if(d->tax) return;
+  
+  for(i=0;i<3;++i)
+    if(d->v[i] != a && d->b[i] != tree->e_root)
+      TIMES_Pre_Least_Square_Criterion(d,d->v[i],d->b[i],score,tree);  
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void TIMES_Randomize_Node_Ages(t_tree *tree)
+{
+  assert(tree->n_root);
+  assert(tree->rates);
+  TIMES_Post_Randomize_Node_Ages(tree->n_root,tree->n_root->v[1],tree);
+  TIMES_Post_Randomize_Node_Ages(tree->n_root,tree->n_root->v[2],tree);
+  tree->rates->nd_t[tree->n_root->num] =
+    MIN(tree->rates->nd_t[tree->n_root->v[1]->num],
+        tree->rates->nd_t[tree->n_root->v[2]->num])
+    - Rexp(1.);
+  /* PhyML_Printf("\n. RAND TIMES node %3d %15f",tree->n_root->num,tree->rates->nd_t[tree->n_root->num]); */
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void TIMES_Post_Randomize_Node_Ages(t_node *a, t_node *d, t_tree *tree)
+{
+  if(d->tax == YES) return;
+  else
+    {
+      int i,dir1,dir2;
+      
+      for(i=0;i<3;++i)
+        if(d->v[i] != a && d->b[i] != tree->e_root)
+          TIMES_Post_Randomize_Node_Ages(d,d->v[i],tree);
+
+      dir1 = dir2 = -1;
+      for(i=0;i<3;++i)
+        if(d->v[i] != a && d->b[i] != tree->e_root)
+          {
+            if(dir1 < 0) dir1 = i;
+            else dir2 = i;
+          }
+      
+      tree->rates->nd_t[d->num] =
+        MIN(tree->rates->nd_t[d->v[dir1]->num],
+            tree->rates->nd_t[d->v[dir2]->num])
+        - Rexp(1.);
+      /* PhyML_Printf("\n. RAND TIMES node %3d %15f",d->num,tree->rates->nd_t[d->num]); */
+    }
+}
+
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

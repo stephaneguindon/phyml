@@ -68,9 +68,9 @@ int main(int argc, char **argv)
   setvbuf(stdout,NULL,_IOFBF,2048);
 #endif
 
-  tree             = NULL;
-  mod              = NULL;
-  best_lnL         = UNLIKELY;
+  tree     = NULL;
+  mod      = NULL;
+  best_lnL = UNLIKELY;
 
 
   io = (option *)Get_Input(argc,argv);
@@ -141,14 +141,14 @@ int main(int argc, char **argv)
 
                   if(io->mod->use_m4mod) M4_Init_Model(mod->m4mod,cdata,mod);
 
-                  Remove_Duplicates(cdata,io);
-
                   //Make the initial tree
                   switch(io->in_tree)
                     {
                     case 0 : case 1 : { tree = Dist_And_BioNJ(cdata,mod,io); break; }
                     case 2 :          { tree = Read_User_Tree(cdata,mod,io); break; }
                     }
+
+                  Remove_Duplicates(cdata,io,tree);
 
                   if(io->fp_in_constraint_tree != NULL)
                     {
@@ -208,7 +208,10 @@ int main(int argc, char **argv)
                       Exit("\n");
                     }
 
-                  Prepare_Tree_For_Lk(tree);
+                  Connect_CSeqs_To_Nodes(tree->data,tree->io,tree);
+                  Make_Tree_For_Pars(tree);
+                  Make_Tree_For_Lk(tree);
+                  Make_Spr(tree);
                   Br_Len_Not_Involving_Invar(tree);
                   Unscale_Br_Len_Multiplier_Tree(tree);
 
@@ -228,13 +231,16 @@ int main(int argc, char **argv)
 
 #ifdef PHYML
                   if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
-                                                                       
+
+
+
+
+                  
                   Set_Update_Eigen(YES,tree->mod);                 
                   Lk(NULL,tree);
                   Set_Update_Eigen(NO,tree->mod);
 
-
-
+                  
                   if(tree->mod->s_opt->opt_topo)
 		    {
                       Global_Spr_Search(tree);                      
@@ -257,18 +263,14 @@ int main(int argc, char **argv)
                   Get_Tree_Size(tree);
                   PhyML_Printf("\n\n. Log likelihood of the current tree: %f.",tree->c_lnL);
 
-                          
+                  
                   if(tree->io->ancestral == YES) Ancestral_Sequences(tree,YES);
                   
-                  /* Build_Distrib_Number_Of_Diff_States_Under_Model(tree); */
-                  /* Exit("\n"); */
-
-
                   Check_Br_Lens(tree);
                   Br_Len_Involving_Invar(tree);
                   Rescale_Br_Len_Multiplier_Tree(tree);
                   
-
+                  
 #elif defined EVOLVE
                   Evolve(tree->data,tree->mod,tree);
                   Exit("\n. Exiting 'evolve'\n");
@@ -315,7 +317,6 @@ int main(int argc, char **argv)
                   Free_One_Spr(tree->best_spr);
                   Free_Spr_List_One_Edge(tree);
                   Free_Spr_List_All_Edge(tree);
-                  Free_Triplet(tree->triplet_struct);
                   Free_Tree_Pars(tree);
                   Free_Tree_Lk(tree);
                   Free_Tree(tree);
@@ -580,6 +581,28 @@ int main(int argc, char **argv)
 #include "xml.h"
 int main(int argc, char **argv)
 {
+  option *io = Get_Input(argc,argv);
+  char *s = (char *)mCalloc(5,sizeof(char));
+  int i;
+  
+  Get_Seq(io);
+  
+  for(i=0;i<io->n_otu;++i)
+    {      
+      PhyML_Printf("\n\n\n");
+      PhyML_Printf("\n<clade id=\"clad%d\">",i+1);
+      PhyML_Printf("\n<taxon value=\"%s\"/>",io->data[i]->name);
+      PhyML_Printf("\n</clade>");
+      PhyML_Printf("\n");
+      PhyML_Printf("\n<calibration id=\"cal%d\">",i+1);
+      strncpy(s,io->data[i]->name,4);
+      s[4]='\0';
+      PhyML_Printf("\n<lower>%d</lower>",atoi(s)-2017);
+      PhyML_Printf("\n<upper>%d</upper>",atoi(s)-2017);
+      PhyML_Printf("\n<appliesto clade.id=\"clad%d\"/>",i+1);
+      PhyML_Printf("\n</calibration>");
+    }
+
 }
 
 #elif(INVITEE)

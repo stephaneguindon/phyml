@@ -77,15 +77,6 @@ void Init_String(t_string *ts)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Init_Triplet_Struct(triplet *t)
-{
-  t->next = NULL;
-  t->prev = NULL;
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
 void Init_Efrq(phydbl *b_frq, t_efrq *f)
 {
   f->user_state_freq      = NO;
@@ -173,7 +164,6 @@ void Init_Tree(t_tree *tree, int n_otu)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Init_Edge_Light(t_edge *b, int num)
 {
   b->num                  = num;
@@ -247,6 +237,9 @@ void Init_Node_Light(t_node *n, int num)
   n->next                   = NULL;
   n->prev                   = NULL;
   n->n_cal                  = 0;
+  n->ldsk                   = NULL;
+  n->rk_next                = NULL;
+  n->rk_prev                = NULL;
   /* n->next                 = NULL; */
   /* n->prev                 = NULL; */
 }
@@ -664,7 +657,7 @@ void Set_Defaults_Model(t_mod *mod)
   mod->br_len_mult->v = 1.0;
 
 
-#if !(defined PHYTIME || defined INVITEE)
+#if !(defined PHYTIME || defined PHYREX)
   mod->l_min = 1.E-8;
   mod->l_max = 100.0;
 #else
@@ -1001,8 +994,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
 #endif
 
   mod->ns = io->mod->ns;
-
-
+  
   if(io->datatype == GENERIC) mod->whichmodel = JC69;
 
   dr      = (phydbl *)mCalloc(  mod->ns,sizeof(phydbl));
@@ -1163,8 +1155,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
           for(i=0;i<mod->ns;i++)
             mod->e_frq->pi_unscaled->v[i] = log(mod->e_frq->pi->v[i]);
           mod->update_eigen = NO;
-          if(io->mod->s_opt->opt_kappa)
-			io->mod->s_opt->opt_lambda = YES;
+          if(io->mod->s_opt->opt_kappa) io->mod->s_opt->opt_lambda = YES;
         }
 
       if(mod->whichmodel == HKY85)
@@ -1415,12 +1406,11 @@ void Init_Model(calign *data, t_mod *mod, option *io)
       PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
-
-  if(!mod->use_m4mod) Set_Model_Parameters(mod);
-
   
   Init_Eigen_Struct(mod->eigen);
 
+  if(!mod->use_m4mod) Set_Model_Parameters(mod);
+  
   free(dr);
   free(di);
   free(space);
@@ -3475,9 +3465,10 @@ void GEO_Init_Coord(t_geo_coord *t, int n_dim)
 
 void PHYREX_Init_Disk_Event(t_dsk *t, int n_dim, t_phyrex_mod *mmod)
 {
-  t->prev  = NULL;
-  t->next  = NULL;
-  t->mmod  = NULL;
+  t->prev      = NULL;
+  t->next      = NULL;
+  t->mmod      = NULL;
+  t->age_fixed = NO;
   
   Random_String(t->id,3);
   GEO_Init_Coord(t->centr,n_dim);

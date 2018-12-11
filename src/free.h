@@ -52,7 +52,6 @@ void Free_Eigen(eigen *eigen_struct);
 void Free_One_Spr(t_spr *this_spr);
 void Free_Spr_List_One_Edge(t_tree *tree);
 void Free_Spr_List_All_Edge(t_tree *mixt_tree);
-void Free_Triplet(triplet *t);
 void Free_Actual_CSeq(calign *data);
 void Free_Prefix_Tree(pnode *n,int size);
 void Free_Pnode(pnode *n);

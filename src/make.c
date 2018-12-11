@@ -14,10 +14,16 @@ the GNU public licence. See http://www.opensource.org for details.
 
 //////////////////////////////////////////////////////////////
 
-void Make_Tree_4_Lk(t_tree *tree, calign *cdata, int n_site)
+void Make_Tree_For_Lk(t_tree *tree)
 {
-  int i;
+  int i,n_site;
+  calign *cdata;
 
+  cdata = tree->data;
+  assert(cdata);
+
+  n_site = tree->data->init_len;
+  
   tree->c_lnL_sorted         = (phydbl *)mCalloc(tree->n_pattern,sizeof(phydbl));
   tree->cur_site_lk          = (phydbl *)mCalloc(tree->n_pattern,sizeof(phydbl));
   tree->old_site_lk          = (phydbl *)mCalloc(tree->n_pattern,sizeof(phydbl));
@@ -60,13 +66,31 @@ void Make_Tree_4_Lk(t_tree *tree, calign *cdata, int n_site)
 
       Init_Partial_Lk_Tips_Double(tree);
       Init_Partial_Lk_Loc(tree);
-
+      
       if(tree->n_root != NULL)
         {
           Free_Edge_Lk_Rght(tree->n_root->b[1]);
           Free_Edge_Lk_Rght(tree->n_root->b[2]);
           Free_Edge_Loc_Rght(tree->n_root->b[1]);
           Free_Edge_Loc_Rght(tree->n_root->b[2]);
+
+          tree->n_root->b[1]->p_lk_rght  = tree->e_root->p_lk_left;
+          tree->n_root->b[2]->p_lk_rght  = tree->e_root->p_lk_rght;
+          
+          tree->n_root->b[1]->p_lk_tip_r = tree->e_root->p_lk_tip_l;      
+          tree->n_root->b[2]->p_lk_tip_r = tree->e_root->p_lk_tip_r;
+          
+          tree->n_root->b[1]->div_post_pred_rght  = tree->e_root->div_post_pred_rght;
+          tree->n_root->b[2]->div_post_pred_rght  = tree->e_root->div_post_pred_left;
+          
+          tree->n_root->b[1]->sum_scale_rght  = tree->e_root->sum_scale_rght;
+          tree->n_root->b[2]->sum_scale_rght  = tree->e_root->sum_scale_left;
+          
+          tree->n_root->b[1]->sum_scale_rght_cat  = tree->e_root->sum_scale_rght_cat;
+          tree->n_root->b[2]->sum_scale_rght_cat  = tree->e_root->sum_scale_left_cat;
+          
+          tree->n_root->b[1]->patt_id_rght  = tree->e_root->patt_id_rght;
+          tree->n_root->b[2]->patt_id_rght  = tree->e_root->patt_id_left;
         }
     }
 }
@@ -74,14 +98,23 @@ void Make_Tree_4_Lk(t_tree *tree, calign *cdata, int n_site)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-void Make_Tree_4_Pars(t_tree *tree, calign *cdata, int n_site)
+void Make_Tree_For_Pars(t_tree *tree)
 {
-  int i;
+  int i,n_site;
+  calign *cdata;
+
+  cdata = tree->data;
+  assert(cdata);
+
+  n_site = tree->data->init_len;
+
+  assert(tree->mod);
+  
   tree->site_pars = (int *)mCalloc(tree->n_pattern,sizeof(int));
   tree->step_mat = (int *)mCalloc(tree->mod->ns * tree->mod->ns,sizeof(int));
 
-  For(i,2*tree->n_otu-1) Make_Edge_Pars(tree->a_edges[i],tree);
+  for(i=0;i<2*tree->n_otu-1;++i) Make_Edge_Pars(tree->a_edges[i],tree);
+
   Init_Ui_Tips(tree);
   Init_Partial_Pars_Tips(tree); /* Must be called after Init_Ui_Tips is called */
 
@@ -142,7 +175,7 @@ void Make_New_Edge_Label(t_edge *b)
 t_edge *Make_Edge_Light(t_node *a, t_node *d, int num)
 {
   t_edge *b;
-
+  
   b = (t_edge *)mCalloc(1,sizeof(t_edge));
 
   b->l = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
@@ -172,8 +205,8 @@ t_edge *Make_Edge_Light(t_node *a, t_node *d, int num)
       assert(b->l_r > -1);
       assert(b->r_l > -1);
       
-      b->l->v             = a->l[b->l_r];
-      if(a->tax) b->l->v  = a->l[b->r_l];
+      b->l->v             = a->l[b->l_r]->v;
+      if(a->tax) b->l->v  = a->l[b->r_l]->v;
       b->l_old->v         = b->l->v;
     }
   else
@@ -242,7 +275,7 @@ void Make_Edge_Lk(t_edge *b, t_tree *tree)
   b->Pij_rr = (phydbl *)mCalloc(tree->mod->ras->n_catg*tree->mod->ns*tree->mod->ns,sizeof(phydbl));
   b->tPij_rr = (phydbl *)mCalloc(tree->mod->ras->n_catg*tree->mod->ns*tree->mod->ns,sizeof(phydbl));
 #endif
-
+  
   Make_Edge_Lk_Left(b,tree);
   Make_Edge_Lk_Rght(b,tree);
 }
@@ -509,17 +542,24 @@ t_nni *Make_NNI()
 
 t_node *Make_Node_Light(int num)
 {
- t_node *n;
-
+  t_node *n;
+  int i;
+  
   n           = (t_node *)mCalloc(1,sizeof(t_node));
   n->v        = (t_node **)mCalloc(3,sizeof(t_node *));
-  n->l        = (phydbl *)mCalloc(3,sizeof(phydbl));
   n->b        = (t_edge **)mCalloc(3,sizeof(t_edge *));
   n->score    = (phydbl *)mCalloc(3,sizeof(phydbl));
   n->s_ingrp  = (int *)mCalloc(3,sizeof(int));
   n->s_outgrp = (int *)mCalloc(3,sizeof(int));
   n->cal      = (t_cal **)mCalloc(MAX_N_CAL,sizeof(t_cal *));
- 
+  n->l        = (scalar_dbl **)mCalloc(3,sizeof(scalar_dbl *));
+
+  for(i=0;i<3;++i)
+    {
+      n->l[i] = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
+      Init_Scalar_Dbl(n->l[i]);      
+    }
+  
   Init_Node_Light(n,num);
 
   return n;
@@ -1107,54 +1147,6 @@ eigen *Make_Eigen_Struct(int ns)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-triplet *Make_Triplet_Struct(t_mod *mod)
-{
-  int i,j,k;
-  triplet *triplet_struct;
-
-  triplet_struct                  = (triplet *)mCalloc(1,sizeof(triplet));
-  triplet_struct->size            = mod->ns;
-  triplet_struct->pi_bc           = (phydbl *)mCalloc(mod->ns,sizeof(phydbl ));
-  triplet_struct->pi_cd           = (phydbl *)mCalloc(mod->ns,sizeof(phydbl ));
-  triplet_struct->pi_bd           = (phydbl *)mCalloc(mod->ns,sizeof(phydbl ));
-  triplet_struct->F_bc            = (phydbl *)mCalloc(mod->ns*mod->ns*mod->ras->n_catg,sizeof(phydbl));
-  triplet_struct->F_cd            = (phydbl *)mCalloc(mod->ns*mod->ns*mod->ras->n_catg,sizeof(phydbl));
-  triplet_struct->F_bd            = (phydbl *)mCalloc(mod->ns*mod->ns,sizeof(phydbl));
-  triplet_struct->core            = (phydbl ****)mCalloc(mod->ras->n_catg,sizeof(phydbl ***));
-  triplet_struct->p_one_site      = (phydbl ***)mCalloc(mod->ns,sizeof(phydbl **));
-  triplet_struct->sum_p_one_site  = (phydbl ***)mCalloc(mod->ns,sizeof(phydbl **));
-  triplet_struct->eigen_struct    = (eigen *)Make_Eigen_Struct(mod->ns);
-  triplet_struct->mod             = mod;
-
-  for(k=0;k<mod->ras->n_catg;k++)
-    {
-      triplet_struct->core[k]                = (phydbl ***)mCalloc(mod->ns,sizeof(phydbl **));
-      for(i=0;i<mod->ns;i++)
-    {
-      triplet_struct->core[k][i]         = (phydbl **)mCalloc(mod->ns,sizeof(phydbl *));
-      for(j=0;j<mod->ns;j++)
-        triplet_struct->core[k][i][j]    = (phydbl  *)mCalloc(mod->ns,sizeof(phydbl ));
-    }
-    }
-
-  for(i=0;i<mod->ns;i++)
-    {
-      triplet_struct->p_one_site[i]          = (phydbl **)mCalloc(mod->ns,sizeof(phydbl *));
-      for(j=0;j<mod->ns;j++)
-    triplet_struct->p_one_site[i][j]     = (phydbl  *)mCalloc(mod->ns,sizeof(phydbl ));
-    }
-
-  for(i=0;i<mod->ns;i++)
-    {
-      triplet_struct->sum_p_one_site[i]      = (phydbl **)mCalloc(mod->ns,sizeof(phydbl *));
-      for(j=0;j<mod->ns;j++)
-    triplet_struct->sum_p_one_site[i][j] = (phydbl  *)mCalloc(mod->ns,sizeof(phydbl ));
-    }
-
-  return triplet_struct;
-
-}
-
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
@@ -1221,6 +1213,16 @@ void Make_Best_Spr(t_tree *tree)
 {
   tree->best_spr = Make_One_Spr(tree);
   Init_One_Spr(tree->best_spr);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Make_Spr(t_tree *tree)
+{
+  Make_Spr_List_One_Edge(tree);
+  Make_Spr_List_All_Edge(tree);
+  Make_Best_Spr(tree);
 }
 
 //////////////////////////////////////////////////////////////
@@ -1343,7 +1345,7 @@ t_rate *RATES_Make_Rate_Struct(int n_otu)
       rates->t_prior_max_ori      = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
       rates->times_partial_proba  = (phydbl *)mCalloc(n_otu*n_otu,sizeof(phydbl));
       rates->numb_calib_chosen    = (int *)mCalloc(n_otu*n_otu,sizeof(phydbl));
-      rates->a_cal                = (t_cal **)mCalloc(n_otu-1,sizeof(t_cal *));
+      rates->a_cal                = (t_cal **)mCalloc(n_otu,sizeof(t_cal *));
       rates->model_name           = (char *)mCalloc(T_MAX_NAME,sizeof(char));
     }
 
@@ -1668,14 +1670,14 @@ t_ldsk *PHYREX_Make_Lindisk_Node(int n_dim)
 
 void PHYREX_Make_Lindisk_Next(t_ldsk *t)
 {
+  
   if(t->n_next == 0)
     t->next = (t_ldsk **)mCalloc(NEXT_BLOCK_SIZE,sizeof(t_ldsk *));
   else if(!(t->n_next%NEXT_BLOCK_SIZE))
     t->next = (t_ldsk **)mRealloc(t->next,t->n_next+NEXT_BLOCK_SIZE,sizeof(t_ldsk *));
 
   t->n_next++;
-  /* printf("\n. make next for ldsk %s n_next set to %d",t->coord->id,t->n_next); */
-  /* fflush(NULL); */
+  /* PhyML_Printf("\n. make next for ldsk %s n_next set to %d [%p] %d",t->coord->id,t->n_next,t->next,NEXT_BLOCK_SIZE); */
 }
 
 //////////////////////////////////////////////////////////////

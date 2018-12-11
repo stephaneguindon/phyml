@@ -132,6 +132,10 @@ phydbl *Random_Walk_Bridged_Generate(phydbl start, phydbl end, phydbl var, int n
 phydbl Dnbinom(phydbl x, phydbl n, phydbl p, int logit);
 phydbl Rnbinom(phydbl n, phydbl p);
 phydbl Erf(phydbl x);
+phydbl Rnorm_Trunc_Algo1(phydbl alpha, phydbl beta);
+phydbl Rnorm_Trunc_Algo2(phydbl alpha, phydbl beta);
+phydbl Rnorm_Trunc_Algo3(phydbl alpha, phydbl beta);
+phydbl Rnorm_Trunc_Algo4(phydbl alpha, phydbl beta);
 
 
 

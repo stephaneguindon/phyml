@@ -24,7 +24,7 @@ void Free_All_Nodes_Light(t_tree *mixt_tree)
   tree = mixt_tree;
   do
     {
-      for(i=0;i<2*tree->n_otu-1;++i) Free_Node(tree->a_nodes[i]);
+      for(i=0;i<2*tree->n_otu-1;++i) if(tree->a_nodes[i] != NULL) Free_Node(tree->a_nodes[i]);
       Free(tree->a_nodes);
       tree = tree->next;
     }
@@ -44,15 +44,18 @@ void Free_All_Edges_Light(t_tree *mixt_tree)
 
   for(i=0;i<2*tree->n_otu-1;++i)
     {
-      Free_Scalar_Dbl(tree->a_edges[i]->l);
-      Free_Scalar_Dbl(tree->a_edges[i]->l_old);
-      Free_Scalar_Dbl(tree->a_edges[i]->l_var);
-      Free_Scalar_Dbl(tree->a_edges[i]->l_var_old);
+      if(tree->a_edges[i] != NULL)
+        {
+          Free_Scalar_Dbl(tree->a_edges[i]->l);
+          Free_Scalar_Dbl(tree->a_edges[i]->l_old);
+          Free_Scalar_Dbl(tree->a_edges[i]->l_var);
+          Free_Scalar_Dbl(tree->a_edges[i]->l_var_old);
+        }
     }
 
   do
     {
-      for(i=0;i<2*tree->n_otu-1;++i) Free_Edge(tree->a_edges[i]);
+      for(i=0;i<2*tree->n_otu-1;++i) if(tree->a_edges[i] != NULL) Free_Edge(tree->a_edges[i]);
       Free(tree->a_edges);
       tree = tree->next;
     }
@@ -98,17 +101,18 @@ void Free_Node(t_node *n)
 {
   Free(n->b);
   Free(n->v);
-  Free(n->l);
   Free(n->score);
   Free(n->s_ingrp);
   Free(n->s_outgrp);
   Free(n->cal);
-
+  Free(n->l);
+  
   if(n->c_seq_anc != NULL) 
     {
       Free(n->c_seq_anc->state);
       Free(n->c_seq_anc);
     }
+  
   if(n->ori_name) { Free(n->ori_name); n->ori_name = NULL; }
 
   /* if(n->name)     { Free(n->name);     n->name     = NULL; }  */
@@ -164,7 +168,6 @@ void Free_Partial_Lk(phydbl *p_lk, int len, int n_catg)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void Free_Tree(t_tree *mixt_tree)
 {
@@ -405,36 +408,35 @@ void Free_Tree_Lk(t_tree *mixt_tree)
       Free(tree->old_site_lk);
       Free(tree->site_lk_cat);
       Free(tree->fact_sum_scale);
-      Free(tree->eigen_lr_left);
-      Free(tree->eigen_lr_rght);
-      Free(tree->dot_prod);
-      Free(tree->expl);
-      
-      for(i=0;i<3;i++) Free(tree->log_lks_aLRT[i]);
-      Free(tree->log_lks_aLRT);
-
-      Free(tree->div_post_pred_extra_0);
-      Free(tree->sum_scale_cat_extra_0);
-      Free(tree->sum_scale_extra_0);
-      Free(tree->patt_id_extra_0);
-      Free(tree->p_lk_extra_0);
-      Free(tree->p_lk_tip_extra_0);
-
-      Free(tree->div_post_pred_extra_1);
-      Free(tree->sum_scale_cat_extra_1);
-      Free(tree->sum_scale_extra_1);
-      Free(tree->patt_id_extra_1);
-      Free(tree->p_lk_extra_1);
-      Free(tree->p_lk_tip_extra_1);
-      
       Free(tree->unscaled_site_lk_cat);
-      
-      For(i,2*tree->n_otu-1) Free_NNI(tree->a_edges[i]->nni);
-  
+
       if(tree->is_mixt_tree == NO)
         {
-          For(i,2*tree->n_otu-3) Free_Edge_Lk(tree->a_edges[i]);
-          For(i,2*tree->n_otu-3) Free_Edge_Loc(tree->a_edges[i]);
+          Free(tree->eigen_lr_left);
+          Free(tree->eigen_lr_rght);
+          Free(tree->dot_prod);
+          Free(tree->expl);
+          
+          for(i=0;i<3;i++) Free(tree->log_lks_aLRT[i]);
+          Free(tree->log_lks_aLRT);
+          
+          Free(tree->div_post_pred_extra_0);
+          Free(tree->sum_scale_cat_extra_0);
+          Free(tree->sum_scale_extra_0);
+          Free(tree->patt_id_extra_0);
+          Free(tree->p_lk_extra_0);
+          Free(tree->p_lk_tip_extra_0);
+          
+          Free(tree->div_post_pred_extra_1);
+          Free(tree->sum_scale_cat_extra_1);
+          Free(tree->sum_scale_extra_1);
+          Free(tree->patt_id_extra_1);
+          Free(tree->p_lk_extra_1);
+          Free(tree->p_lk_tip_extra_1);
+                    
+          for(i=0;i<2*tree->n_otu-1;++i) Free_NNI(tree->a_edges[i]->nni);          
+          for(i=0;i<2*tree->n_otu-3;++i) Free_Edge_Lk(tree->a_edges[i]);
+          for(i=0;i<2*tree->n_otu-3;++i) Free_Edge_Loc(tree->a_edges[i]);
           
           if(tree->n_root != NULL)
             {
@@ -457,10 +459,10 @@ void Free_Tree_Lk(t_tree *mixt_tree)
         }
       
       tree = tree->next;
-
+      
     }
   while(tree);
-
+  
 }
 
 //////////////////////////////////////////////////////////////
@@ -497,6 +499,8 @@ void Free_Extra_Edge_Lk(t_tree *tree)
 
 void Free_Edge_Lk_Rght(t_edge *b)
 {
+  assert(b);
+  
   Free(b->div_post_pred_rght);
 
   if(b->p_lk_rght)
@@ -707,7 +711,7 @@ void Free_Scalar_Dbl(scalar_dbl *v)
 {
   scalar_dbl *next;
   
-  /* assert(v); */
+  assert(v);
 
   next = v->next;
   do
@@ -1070,54 +1074,6 @@ void Free_Spr_List_All_Edge(t_tree *mixt_tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
-
-void Free_Triplet(triplet *t)
-{
-  int i,j,k;
-
-  Free(t->F_bc);
-  Free(t->F_cd);
-  Free(t->F_bd);
-  Free(t->pi_bc);
-  Free(t->pi_cd);
-  Free(t->pi_bd);
-
-  for(k=0;k<t->mod->ras->n_catg;++k)
-    {
-      for(i=0;i<t->size;++i)
-        {
-          for(j=0;j<t->size;++j) Free(t->core[k][i][j]);
-          Free(t->core[k][i]);
-        }
-      Free(t->core[k]);
-    }
-  Free(t->core);
-  
-  for(i=0;i<t->size;++i)
-    {
-      for(j=0;j<t->size;++j) Free(t->p_one_site[i][j]);
-      Free(t->p_one_site[i]);
-    }
-  Free(t->p_one_site);
-  
-  for(i=0;i<t->size;++i)
-    {
-      for(j=0;j<t->size;++j) Free(t->sum_p_one_site[i][j]);
-      Free(t->sum_p_one_site[i]);
-    }
-  Free(t->sum_p_one_site);
-
-  Free_Eigen(t->eigen_struct);
-  
-  if(t->next) Free_Triplet(t->next);
-  
-  Free(t);
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
 
 void Free_Actual_CSeq(calign *data)
 {

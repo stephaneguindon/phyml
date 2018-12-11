@@ -33,96 +33,97 @@ t_tree *Read_Tree(char **s_tree)
   n_int = n_ext = 0;
 
   n_otu=0;
-  For(i,(int)strlen((*s_tree))) if((*s_tree)[i] == ',') n_otu++;
+  for(i=0;i<(int)strlen((*s_tree));++i) if((*s_tree)[i] == ',') n_otu++;
   n_otu+=1;
 
-
-  
   tree = Make_Tree_From_Scratch(n_otu,NULL);
   subs = Sub_Trees((*s_tree),&degree);
   Clean_Multifurcation(subs,degree,3);
 
-
     if(degree == 2)
-    {
-      /* Unroot_Tree(subs); */
-      /* degree = 3; */
-      /* root_node = tree->a_nodes[n_otu]; */
-      root_node      = tree->a_nodes[2*n_otu-2];
-      root_node->num = 2*n_otu-2;
-      tree->n_root   = root_node;
-      n_int         -= 1;
-    }
-  else
-    {
-      root_node      = tree->a_nodes[n_otu];
-      root_node->num = n_otu;
-      tree->n_root   = NULL;
-   }
+      {
+        /* Unroot_Tree(subs); */
+        /* degree = 3; */
+        /* root_node = tree->a_nodes[n_otu]; */
+        root_node      = tree->a_nodes[2*n_otu-2];
+        root_node->num = 2*n_otu-2;
+        tree->n_root   = root_node;
+        n_int         -= 1;
+      }
+    else
+      {
+        root_node      = tree->a_nodes[n_otu];
+        root_node->num = n_otu;
+        tree->n_root   = NULL;
+      }
 
-  if(degree > 3) /* Multifurcation at the root. Need to re-assemble the subtrees
-                    since Clean_Multifurcation added sets of parenthesis and
-                    the corresponding NULL edges */
-    {
-      degree = 3;
-      Free((*s_tree));
-      len = 0;
-      for(i=0;i<degree;i++) len += (strlen(subs[i])+1);
-      len += 5;
-      
-      (*s_tree) = (char *)mCalloc(len,sizeof(char));
-      
-      (*s_tree)[0] = '('; (*s_tree)[1] = '\0';
-      for(i=0;i<degree;i++)
-        {
-          strcat((*s_tree),subs[i]);
-          strcat((*s_tree),",\0");
-        }
-      
-      sprintf((*s_tree)+strlen((*s_tree))-1,"%s",");\0");
-      
-      i = 0;
-      while(subs[i] != NULL) Free(subs[i++]);
-      Free(subs);
-      
-      subs = Sub_Trees((*s_tree),&degree);
-    }
-  
-  root_node->tax = 0;
-  
-  tree->has_branch_lengths = 0;
-  tree->num_curr_branch_available = 0;
-  for(i=0;i<degree;i++) R_rtree((*s_tree),subs[i],root_node,tree,&n_int,&n_ext);
-  
-  i = degree;
-  while(subs[i] != NULL) Free(subs[i++]);
-  Free(subs);
-  
-  if(tree->n_root)
-    {
-      tree->e_root = tree->a_edges[tree->num_curr_branch_available];
-      
-      tree->n_root->v[2] = tree->n_root->v[0];
-      tree->n_root->v[0] = NULL;
-      
-      tree->n_root->l[2] = tree->n_root->l[0];
-      
-      for(i=0;i<3;i++) if(tree->n_root->v[2]->v[i] == tree->n_root) { tree->n_root->v[2]->v[i] = tree->n_root->v[1]; break; }
-      for(i=0;i<3;i++) if(tree->n_root->v[1]->v[i] == tree->n_root) { tree->n_root->v[1]->v[i] = tree->n_root->v[2]; break; }
-      
-      Connect_One_Edge_To_Two_Nodes(tree->n_root->v[2],
-                                    tree->n_root->v[1],
-                                    tree->e_root,
-                                    tree);
-      
-      tree->e_root->l->v = tree->n_root->l[2] + tree->n_root->l[1];
-      if(tree->e_root->l->v > 0.0)
-        tree->n_root_pos = tree->n_root->l[2] / tree->e_root->l->v;
-      else
-        tree->n_root_pos = .5;
-    }
-  
-  return tree;
+    if(degree > 3) /* Multifurcation at the root. Need to re-assemble the subtrees
+                      since Clean_Multifurcation added sets of parenthesis and
+                      the corresponding NULL edges */
+      {
+        degree = 3;
+        Free((*s_tree));
+        len = 0;
+        for(i=0;i<degree;i++) len += (strlen(subs[i])+1);
+        len += 5;
+        
+        (*s_tree) = (char *)mCalloc(len,sizeof(char));
+        
+        (*s_tree)[0] = '('; (*s_tree)[1] = '\0';
+        for(i=0;i<degree;i++)
+          {
+            strcat((*s_tree),subs[i]);
+            strcat((*s_tree),",\0");
+          }
+        
+        sprintf((*s_tree)+strlen((*s_tree))-1,"%s",");\0");
+        
+        i = 0;
+        while(subs[i] != NULL) Free(subs[i++]);
+        Free(subs);
+        
+        subs = Sub_Trees((*s_tree),&degree);
+      }
+    
+    root_node->tax = 0;
+    
+    tree->has_branch_lengths = 0;
+    /* tree->num_curr_branch_available = 0; */
+    tree->num_curr_branch_available = tree->n_otu;
+    for(i=0;i<degree;i++) R_rtree((*s_tree),subs[i],root_node,tree,&n_int,&n_ext);
+    
+    i = degree;
+    while(subs[i] != NULL) Free(subs[i++]);
+    Free(subs);
+    
+    if(tree->n_root)
+      {
+        tree->e_root = tree->a_edges[tree->num_curr_branch_available];
+        
+        tree->n_root->b[1] = tree->a_edges[tree->num_curr_branch_available+1];
+        tree->n_root->b[2] = tree->a_edges[tree->num_curr_branch_available+2];
+        
+        tree->n_root->v[2] = tree->n_root->v[0];
+        tree->n_root->v[0] = NULL;
+        
+        tree->n_root->l[2]->v = tree->n_root->l[0]->v;
+        
+        for(i=0;i<3;i++) if(tree->n_root->v[2]->v[i] == tree->n_root) { tree->n_root->v[2]->v[i] = tree->n_root->v[1]; break; }
+        for(i=0;i<3;i++) if(tree->n_root->v[1]->v[i] == tree->n_root) { tree->n_root->v[1]->v[i] = tree->n_root->v[2]; break; }
+        
+        Connect_One_Edge_To_Two_Nodes(tree->n_root->v[2],
+                                      tree->n_root->v[1],
+                                      tree->e_root,
+                                      tree);
+        
+        tree->e_root->l->v = tree->n_root->l[2]->v + tree->n_root->l[1]->v;
+        if(tree->e_root->l->v > 0.0)
+          tree->n_root_pos = tree->n_root->l[2]->v / tree->e_root->l->v;
+        else
+          tree->n_root_pos = .5;
+      }
+    
+    return tree;
 }
 
 //////////////////////////////////////////////////////////////
@@ -141,6 +142,7 @@ void R_rtree(char *s_tree_a, char *s_tree_d, t_node *a, t_tree *tree, int *n_int
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
     }
 
+  // Internal node
   if(s_tree_d[0] == '(')
     {
       char **subs;
@@ -161,25 +163,22 @@ void R_rtree(char *s_tree_a, char *s_tree_d, t_node *a, t_tree *tree, int *n_int
       d->tax = 0;
       b      = tree->a_edges[tree->num_curr_branch_available];
 
-      Read_Branch_Label(s_tree_d,s_tree_a,tree->a_edges[tree->num_curr_branch_available]);
-      Read_Branch_Length(s_tree_d,s_tree_a,tree);
+      Read_Branch_Label(s_tree_d,s_tree_a,b);
+      Read_Branch_Length(s_tree_d,s_tree_a,b,tree);
 
       for(i=0;i<3;i++)
         {
           if(!a->v[i])
             {
               a->v[i]=d;
-              d->l[0]=tree->a_edges[tree->num_curr_branch_available]->l->v;
-              a->l[i]=tree->a_edges[tree->num_curr_branch_available]->l->v;
+              d->l[0]->v = tree->a_edges[tree->num_curr_branch_available]->l->v;
+              a->l[i]->v = tree->a_edges[tree->num_curr_branch_available]->l->v;
               break;
             }
         }
       d->v[0]=a;
 
-      if(a != tree->n_root)
-        {
-          Connect_One_Edge_To_Two_Nodes(a,d,tree->a_edges[tree->num_curr_branch_available],tree);
-        }
+      if(a != tree->n_root) Connect_One_Edge_To_Two_Nodes(a,d,tree->a_edges[tree->num_curr_branch_available],tree);
 
       subs=Sub_Trees(s_tree_d,&degree);
 
@@ -224,6 +223,7 @@ void R_rtree(char *s_tree_a, char *s_tree_d, t_node *a, t_tree *tree, int *n_int
       Free(subs);
     }
 
+  // External node
   else
     {
       int i;
@@ -231,17 +231,17 @@ void R_rtree(char *s_tree_a, char *s_tree_d, t_node *a, t_tree *tree, int *n_int
       d      = tree->a_nodes[*n_ext];
       d->tax = 1;
 
-      Read_Node_Name(d,s_tree_d,tree);
-      Read_Branch_Label(s_tree_d,s_tree_a,tree->a_edges[tree->num_curr_branch_available]);
-      Read_Branch_Length(s_tree_d,s_tree_a,tree);
+      Read_Node_Name(d,s_tree_d,tree->a_edges[*n_ext],tree);
+      Read_Branch_Label(s_tree_d,s_tree_a,tree->a_edges[*n_ext]);
+      Read_Branch_Length(s_tree_d,s_tree_a,tree->a_edges[*n_ext],tree);
 
       for(i=0;i<3;i++)
         {
           if(!a->v[i])
             {
               a->v[i]=d;
-              d->l[0]=tree->a_edges[tree->num_curr_branch_available]->l->v;
-              a->l[i]=tree->a_edges[tree->num_curr_branch_available]->l->v;
+              d->l[0]->v = tree->a_edges[*n_ext]->l->v;
+              a->l[i]->v = tree->a_edges[*n_ext]->l->v;
               break;
             }
         }
@@ -249,7 +249,7 @@ void R_rtree(char *s_tree_a, char *s_tree_d, t_node *a, t_tree *tree, int *n_int
       
       if(a != tree->n_root)
         {
-          Connect_One_Edge_To_Two_Nodes(a,d,tree->a_edges[tree->num_curr_branch_available],tree);
+          Connect_One_Edge_To_Two_Nodes(a,d,tree->a_edges[*n_ext],tree);
         }
       
       d->num=*n_ext;
@@ -263,7 +263,6 @@ void R_rtree(char *s_tree_a, char *s_tree_d, t_node *a, t_tree *tree, int *n_int
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Read_Branch_Label(char *s_d, char *s_a, t_edge *b)
 {
   char *sub_tp;
@@ -271,7 +270,6 @@ void Read_Branch_Label(char *s_d, char *s_a, t_edge *b)
   int posp,posl;
 
   sub_tp = (char *)mCalloc(3+(int)strlen(s_d)+1,sizeof(char));
-  /* sub_tp = (char *)mCalloc(T_MAX_LINE,sizeof(char)); */
 
   sub_tp[0] = '(';
   sub_tp[1] = '\0';
@@ -300,26 +298,26 @@ void Read_Branch_Label(char *s_d, char *s_a, t_edge *b)
 
       posl = 0;
       do
-    {
-      b->labels[b->n_labels-1][posl] = p[posp];
-      posl++;
-      posp++;
-      if(p[posp] == '#')
         {
-          b->labels[b->n_labels-1][posl] = '\0';
-          b->n_labels++;
-          if(!(b->n_labels%BLOCK_LABELS)) Make_New_Edge_Label(b);
+          b->labels[b->n_labels-1][posl] = p[posp];
+          posl++;
           posp++;
-          posl=0;
+          if(p[posp] == '#')
+            {
+              b->labels[b->n_labels-1][posl] = '\0';
+              b->n_labels++;
+              if(!(b->n_labels%BLOCK_LABELS)) Make_New_Edge_Label(b);
+              posp++;
+              posl=0;
+            }
         }
-    }
       while((p[posp] != ':') &&
             (p[posp] != ',') &&
             (p[posp] != '('));
-
+      
       b->labels[b->n_labels-1][posl] = '\0';
     }
-
+  
   if(p)
     {
       /* if(b->n_labels == 1) */
@@ -330,11 +328,11 @@ void Read_Branch_Label(char *s_d, char *s_a, t_edge *b)
       /* 	  for(i=0;i<b->n_labels;i++) PhyML_Printf("'%s' ",b->labels[i]); */
       /* 	  PhyML_Printf("on t_edge %3d.",b->num); */
       /* 	} */
-
+      
       if(!strcmp(b->labels[0],"NULL"))
-    {
-      b->does_exist = NO;
-    }
+        {
+          b->does_exist = NO;
+        }
     }
   /* else */
   /*   { */
@@ -346,16 +344,12 @@ void Read_Branch_Label(char *s_d, char *s_a, t_edge *b)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Read_Branch_Length(char *s_d, char *s_a, t_tree *tree)
+void Read_Branch_Length(char *s_d, char *s_a, t_edge *b, t_tree *tree)
 {
   char *sub_tp;
   char *p;
-  t_edge *b;
   int i;
 
-  b = tree->a_edges[tree->num_curr_branch_available];
-
-  /* sub_tp = (char *)mCalloc(T_MAX_LINE,sizeof(char)); */
   sub_tp = (char *)mCalloc(10+strlen(s_d)+1,sizeof(char));
 
   for(i=0;i<b->n_labels;i++)
@@ -398,11 +392,11 @@ void Read_Branch_Length(char *s_d, char *s_a, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Read_Node_Name(t_node *d, char *s_tree_d, t_tree *tree)
+void Read_Node_Name(t_node *d, char *s_tree_d, t_edge *b, t_tree *tree)
 {
   int i;
 
-  if(!tree->a_edges[tree->num_curr_branch_available]->n_labels)
+  if(!b->n_labels)
     {
       d->name = (char *)mCalloc(strlen(s_tree_d)+1,sizeof(char ));
       strcpy(d->name,s_tree_d);
@@ -594,14 +588,14 @@ char *Write_Tree(t_tree *tree, int custom)
                 (!tree->a_nodes[tree->n_otu+i]->v[1]) ||
                 (!tree->a_nodes[tree->n_otu+i]->v[2])) i++;
           
-          R_wtree(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[0],&available,&s,tree);
-          R_wtree(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[1],&available,&s,tree);
-          R_wtree(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[2],&available,&s,tree);
+          R_wtree(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[0],tree->a_nodes[tree->n_otu+i]->b[0],&available,&s,tree);
+          R_wtree(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[1],tree->a_nodes[tree->n_otu+i]->b[1],&available,&s,tree);
+          R_wtree(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[2],tree->a_nodes[tree->n_otu+i]->b[2],&available,&s,tree);
         }
       else
         {
-          R_wtree(tree->n_root,tree->n_root->v[2],&available,&s,tree);
-          R_wtree(tree->n_root,tree->n_root->v[1],&available,&s,tree);
+          R_wtree(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],&available,&s,tree);
+          R_wtree(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],&available,&s,tree);
         }
     }
   else
@@ -623,8 +617,8 @@ char *Write_Tree(t_tree *tree, int custom)
         }
       else
         {
-          R_wtree_Custom(tree->n_root,tree->n_root->v[2],&available,&s,&pos,tree);
           R_wtree_Custom(tree->n_root,tree->n_root->v[1],&available,&s,&pos,tree);
+          R_wtree_Custom(tree->n_root,tree->n_root->v[2],&available,&s,&pos,tree);
         }
 
     }
@@ -645,14 +639,12 @@ char *Write_Tree(t_tree *tree, int custom)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *tree)
+void R_wtree(t_node *pere, t_node *fils, t_edge *b, int *available, char **s_tree, t_tree *tree)
 {
   int i,p;
   char *format;
   int last_len;
-#if !(defined PHYTIME || defined INVITEE)
   phydbl mean_len;
-#endif
   
   format = (char *)mCalloc(100,sizeof(char));
 
@@ -702,40 +694,9 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
         {
           (*s_tree)[(int)strlen(*s_tree)] = ':';
           
-#if !(defined PHYTIME || defined INVITEE)
-          if(tree->n_root == NULL)
-            {
-              if(tree->is_mixt_tree == NO) mean_len = fils->b[0]->l->v;
-              else mean_len = MIXT_Get_Mean_Edge_Len(fils->b[0],tree);
-              sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,mean_len));
-            }
-          else
-            {
-              if(pere == tree->n_root)
-                {
-                  phydbl root_pos = (fils == tree->n_root->v[2])?(tree->n_root_pos):(1.-tree->n_root_pos);
-                  if(tree->is_mixt_tree == NO) mean_len = tree->e_root->l->v;
-                  else mean_len = MIXT_Get_Mean_Edge_Len(tree->e_root,tree);
-                  sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,mean_len) * root_pos);
-                }
-              else
-                {
-                  if(tree->is_mixt_tree == NO) mean_len = fils->b[0]->l->v;                  
-                  else mean_len = MIXT_Get_Mean_Edge_Len(fils->b[0],tree);
-                  sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,mean_len));
-                }
-            }
-#else
-          if(tree->n_root == NULL)
-            {
-              sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,fils->b[0]->l->v));
-            }
-          else
-            {
-              if(tree->rates) sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,tree->rates->cur_l[fils->num]));
-              /* sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,fils->b[0]->l->v)); */
-            }
-#endif
+          if(tree->is_mixt_tree == NO) mean_len = b->l->v;
+          else mean_len = MIXT_Get_Mean_Edge_Len(b,tree);
+          sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,mean_len));
         }
       
       /* strcat(*s_tree,","); */
@@ -760,9 +721,8 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
       if(*available < (int)T_MAX_NAME)
         {
           (*s_tree) = (char *)mRealloc(*s_tree,(int)strlen(*s_tree)+3*(int)T_MAX_NAME,sizeof(char));
-          For(i,3*(int)T_MAX_NAME) (*s_tree)[(int)strlen(*s_tree)+i] = '\0';
+          for(i=0;i<3*(int)T_MAX_NAME;++i) (*s_tree)[(int)strlen(*s_tree)+i] = '\0';
           (*available) = 3*(int)T_MAX_NAME;
-          /* printf("\n. ++ 0 Available = %d",(*available)); */
         }
 #endif
       
@@ -774,52 +734,29 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
 #ifndef MPI
       (*available) -= 1;
       
-      /* printf("\n1 Available = %d [%d %d]",(*available),(int)strlen(*s_tree),last_len); */
-      /* printf("\n1 %s [%d,%d]",*s_tree,(int)(int)strlen(*s_tree),*available); */
       
       if(*available < (int)T_MAX_NAME)
         {
           (*s_tree) = (char *)mRealloc(*s_tree,(int)strlen(*s_tree)+3*(int)T_MAX_NAME,sizeof(char));
           For(i,3*(int)T_MAX_NAME) (*s_tree)[(int)strlen(*s_tree)+i] = '\0';
           (*available) = 3*(int)T_MAX_NAME;
-          /* printf("\n. ++ 1 Available = %d",(*available)); */
         }
 #endif
-      /* (*available)--; */
-      
-      /* if(*available < (int)T_MAX_NAME/2) */
-      /* 	{ */
-      /* 	  (*s_tree) = (char *)mRealloc(*s_tree,*pos+(int)T_MAX_NAME,sizeof(char)); */
-      /* 	  (*available) = (int)T_MAX_NAME; */
-      /* 	} */
       
       
-      if(tree->n_root != NULL)
+      for(i=0;i<3;i++)
         {
-          for(i=0;i<3;i++)
-            {
-              if((fils->v[i] != pere) && (fils->b[i] != tree->e_root))
-                R_wtree(fils,fils->v[i],available,s_tree,tree);
-              else p=i;
-            }
-        }
-      else
-        {
-          for(i=0;i<3;i++)
-            {
-              if(fils->v[i] != pere)
-                R_wtree(fils,fils->v[i],available,s_tree,tree);
-              else p=i;
-            }
+          if((fils->v[i] != pere) && (fils->b[i] != tree->e_root))
+            R_wtree(fils,fils->v[i],fils->b[i],available,s_tree,tree);
+          else p=i;        
         }
       
       if(p < 0)
         {
           PhyML_Fprintf(stderr,"\n. pere: %d fils=%d root=%d root->v[2]=%d root->v[1]=%d",pere->num,fils->num,tree->n_root->num,tree->n_root->v[2]->num,tree->n_root->v[1]->num);
-          PhyML_Fprintf(stderr,"\n. fils=%p root=%p root->v[2]=%p root->v[1]=%p",fils,tree->n_root,tree->n_root->v[2],tree->n_root->v[1]);
-          PhyML_Fprintf(stderr,"\n. tree->e_root=%p fils->b[0]=%p fils->b[1]=%p fils->b[2]=%p",tree->e_root,fils->b[0],fils->b[1],fils->b[2]);
-          PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
-          Exit("\n");
+          PhyML_Fprintf(stderr,"\n. fils=%d root=%d root->v[2]=%d root->v[1]=%d",fils->num,tree->n_root->num,tree->n_root->v[2]->num,tree->n_root->v[1]->num);
+          PhyML_Fprintf(stderr,"\n. tree->e_root=%d fils->b[0]=%d fils->b[1]=%d fils->b[2]=%d",tree->e_root->num,fils->b[0]->num,fils->b[1]->num,fils->b[2]->num);
+          assert(false);
         }
       
       last_len = (int)strlen(*s_tree);
@@ -851,60 +788,16 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
           
           (*s_tree)[(int)strlen(*s_tree)] = ':';
           
-#if !(defined PHYTIME || defined INVITEE)
-          if(!tree->n_root)
-            {
-              if(tree->is_mixt_tree == NO)
-                {
-                  mean_len = fils->b[p]->l->v;
-                }
-              else mean_len = MIXT_Get_Mean_Edge_Len(fils->b[p],tree);
-              sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,mean_len));
-            }
-          else
-            {
-              if(pere == tree->n_root)
-                {
-                  phydbl root_pos = (fils == tree->n_root->v[2])?(tree->n_root_pos):(1.-tree->n_root_pos);
-                  
-                  if(tree->is_mixt_tree == NO)
-                    {
-                      mean_len = (tree->e_root)?(tree->e_root->l->v):(-1.0);
-                    }
-                  else mean_len = MIXT_Get_Mean_Edge_Len(tree->e_root,tree);
-                  sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,mean_len) * root_pos);
-                }
-              else
-                {
-                  if(tree->is_mixt_tree == NO)
-                    {
-                      mean_len = fils->b[p]->l->v;
-                    }
-                  else mean_len = MIXT_Get_Mean_Edge_Len(fils->b[p],tree);
-                  sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,mean_len));
-                }
-            }
-#else
-          if(tree->n_root == NULL)
-            {
-              sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,fils->b[p]->l->v));
-            }
-          else
-            {
-	      if(tree->rates) sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,tree->rates->cur_l[fils->num]));
-              /* sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,fils->b[p]->l->v)); */
-            }
-#endif
+          if(tree->is_mixt_tree == NO) mean_len = b->l->v;
+          else mean_len = MIXT_Get_Mean_Edge_Len(b,tree);
+          sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,mean_len));
         }
       
-      /* strcat(*s_tree,","); */
       (*s_tree)[(int)strlen(*s_tree)] = ',';
 
 #ifndef MPI
       (*available) -= ((int)strlen(*s_tree) - last_len);
 
-      /* printf("\n2 Available = %d [%d %d]",(*available),(int)strlen(*s_tree),last_len); */
-      /* printf("\n2 %s [%d,%d]",*s_tree,(int)(int)strlen(*s_tree),*available); */
 
       if(*available < 0)
         {
@@ -916,17 +809,11 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
       if(*available < (int)T_MAX_NAME)
         {
           (*s_tree) = (char *)mRealloc(*s_tree,(int)strlen(*s_tree)+3*(int)T_MAX_NAME,sizeof(char));
-          For(i,3*(int)T_MAX_NAME) (*s_tree)[(int)strlen(*s_tree)+i] = '\0';
+          for(i=0;i<3*(int)T_MAX_NAME;++i) (*s_tree)[(int)strlen(*s_tree)+i] = '\0';
           (*available) = 3*(int)T_MAX_NAME;
-          /* printf("\n. ++ 2 Available = %d",(*available)); */
         }
 #endif
 
-      /* if(*available < (int)T_MAX_NAME/2) */
-      /* 	{ */
-      /* 	  (*s_tree) = (char *)mRealloc(*s_tree,*pos+(int)T_MAX_NAME,sizeof(char)); */
-      /* 	  (*available) = (int)T_MAX_NAME; */
-      /* 	} */
     }
 
   Free(format);
@@ -934,7 +821,6 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void R_wtree_Custom(t_node *pere, t_node *fils, int *available, char **s_tree, int *pos, t_tree *tree)
 {
@@ -988,7 +874,7 @@ void R_wtree_Custom(t_node *pere, t_node *fils, int *available, char **s_tree, i
       strcat(*s_tree,":");
       (*pos)++;
 
-#if !(defined PHYTIME || defined INVITEE)
+#if !(defined PHYTIME || defined INVITEE || defined PHYREX)
       if(!tree->n_root)
         {
           (*pos) += sprintf(*s_tree+*pos,format,fils->b[0]->l->v);
@@ -1116,7 +1002,7 @@ void R_wtree_Custom(t_node *pere, t_node *fils, int *available, char **s_tree, i
       strcat(*s_tree,":");
       (*pos)++;
 
-#if !(defined PHYTIME || defined INVITEE)
+#if !(defined PHYTIME || defined INVITEE || defined PHYREX)
       if(!tree->n_root)
         {
           (*pos) += sprintf(*s_tree+*pos,format,fils->b[p]->l->v);
@@ -2544,8 +2430,8 @@ void Print_Model(t_mod *mod)
 
   PhyML_Printf("\n. Eigen\n");
   For(i,2*mod->ns)       PhyML_Printf(" %f ",mod->eigen->space[i]);
-  PhyML_Printf("\n");
-  For(i,2*mod->ns)       PhyML_Printf(" %f ",mod->eigen->space_int[i]);
+  /* PhyML_Printf("\n"); */
+  /* For(i,2*mod->ns)       PhyML_Printf(" %f ",mod->eigen->space_int[i]); */
   PhyML_Printf("\n");
   for(i=0;i<mod->ns;i++)         PhyML_Printf(" %f ",mod->eigen->e_val[i]);
   PhyML_Printf("\n");
@@ -4106,10 +3992,9 @@ option *Get_Input(int argc, char **argv)
 
 #ifdef MPI
   rv = Read_Command_Line(io,argc,argv);
-#elif (defined PHYTIME || defined INVITEE)
+#elif (defined PHYTIME || defined INVITEE || defined PHYREX || defined TEST)
   rv = Read_Command_Line(io,argc,argv);
 #else
-
   switch (argc)
     {
     case 1:
@@ -4758,7 +4643,11 @@ option *PhyML_XML(char *xml_filename)
   
       MIXT_Connect_Cseqs_To_Nodes(mixt_tree);
       MIXT_Init_T_Beg(mixt_tree);
-      Prepare_Tree_For_Lk(mixt_tree);
+      
+      MIXT_Make_Tree_For_Pars(mixt_tree);
+      MIXT_Make_Tree_For_Lk(mixt_tree);
+      MIXT_Make_Spr(mixt_tree);
+      
       MIXT_Chain_All(mixt_tree);
       MIXT_Check_Edge_Lens_In_All_Elem(mixt_tree);
       MIXT_Turn_Branches_OnOff_In_All_Elem(ON,mixt_tree);
@@ -4821,7 +4710,6 @@ option *PhyML_XML(char *xml_filename)
       Print_Data_Structure(YES,mixt_tree->io->fp_out_stats,mixt_tree);
 
       Free_Spr_List_One_Edge(mixt_tree);
-      Free_Triplet(mixt_tree->triplet_struct);
       Free_Tree_Pars(mixt_tree);
       Free_Tree_Lk(mixt_tree);
     }
@@ -5165,7 +5053,6 @@ void Make_Efrq_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
     {
       mod->s_opt->opt_efrq_weight = NO;
     }
-
 }
 
 //////////////////////////////////////////////////////////////
@@ -5501,7 +5388,17 @@ void Generic_Exit(const char *file, int line, const char *function)
 {
   PhyML_Fprintf(stderr,"\n. Err. in file '%s' (line %d)",file,line);
   if(function != NULL) PhyML_Printf(", function '%s'",function);
+
+# if defined(PHYTIME)
+  PhyML_Fprintf(stderr,"\n. PhyTime finished prematurely.");
+# elif defined(PHYREX)
+  PhyML_Fprintf(stderr,"\n. PhyREX finished prematurely.");
+# elif defined(PHYML)
   PhyML_Fprintf(stderr,"\n. PhyML finished prematurely.");
+#else
+  PhyML_Fprintf(stderr,"\n. The execution finished prematurely.");
+#endif
+  
   Exit("\n");
 }
 

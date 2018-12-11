@@ -30,6 +30,273 @@ int DATE_Main(int argc, char **argv)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void DATE_XML(char *xml_filename)
+{
+  FILE *fp_xml_in;
+  xml_node *xnd,*xroot;
+  t_tree *mixt_tree,*tree;
+  phydbl *res;
+  int seed;
+  char *dum_string;
+ 
+  mixt_tree = XML_Process_Base(xml_filename);
+  assert(mixt_tree);
+    
+  mixt_tree->rates = RATES_Make_Rate_Struct(mixt_tree->n_otu);
+  RATES_Init_Rate_Struct(mixt_tree->rates,NULL,mixt_tree->n_otu);
+
+  tree = mixt_tree;
+  do
+    {
+      // All rate stuctures point to the same object
+      tree->rates = mixt_tree->rates;
+      tree = tree->next;
+    }
+  while(tree);
+
+  
+  fp_xml_in = fopen(xml_filename,"r");
+  if(!fp_xml_in)
+    {
+      PhyML_Fprintf(stderr,"\n. Could not find the XML file '%s'.\n",xml_filename);
+      Exit("\n");
+    }
+
+  /* xroot = XML_Load_File(fp_xml_in); */
+  xroot = mixt_tree->xml_root;
+
+  if(xroot == NULL)
+    {
+      PhyML_Fprintf(stderr,"\n. Encountered an issue while loading the XML file.\n");
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
+
+  xnd = XML_Search_Node_Name("phytime",NO,xroot);
+
+  if(xnd == NULL)
+    {
+      PhyML_Fprintf(stderr,"\n. Cound not find the \"root\" of the XML file (it should have \'phytime\' as tag name).\n");
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
+
+  dum_string = XML_Get_Attribute_Value(xnd,"mcmc.chain.len");
+  if(dum_string != NULL) mixt_tree->io->mcmc->chain_len = (int)String_To_Dbl(dum_string);
+  
+  dum_string = XML_Get_Attribute_Value(xnd,"mcmc.sample.every");
+  if(dum_string != NULL) mixt_tree->io->mcmc->sample_interval = (int)String_To_Dbl(dum_string);
+
+  dum_string = XML_Get_Attribute_Value(xnd,"mcmc.print.every");
+  if(dum_string != NULL) mixt_tree->io->mcmc->print_every = (int)String_To_Dbl(dum_string);
+
+  dum_string = XML_Get_Attribute_Value(xnd,"mcmc.burnin");
+  if(dum_string != NULL) mixt_tree->io->mcmc->chain_len_burnin = (int)String_To_Dbl(dum_string);
+
+
+  dum_string = XML_Get_Attribute_Value(xnd,"ignore.sequences");
+  if(dum_string != NULL) mixt_tree->eval_alnL = NO;
+
+  dum_string = XML_Get_Attribute_Value(xnd,"ignore.seq");
+  if(dum_string != NULL) mixt_tree->eval_alnL = NO;
+
+  dum_string = XML_Get_Attribute_Value(xnd,"ignore.data");
+  if(dum_string != NULL) mixt_tree->eval_alnL = NO;
+
+
+  dum_string = XML_Get_Attribute_Value(xnd,"mutmap");
+  if(dum_string != NULL)
+    {
+      int select = XML_Validate_Attr_Int(dum_string,6,
+                                         "true","yes","y",
+                                         "false","no","n");
+      if(select < 3) mixt_tree->io->mutmap = YES;
+      else mixt_tree->io->mutmap = NO;
+    }
+
+  
+  
+  
+  // Looking for XML node with rate-across-lineage info
+  xnd = XML_Search_Node_Name("lineagerates",YES,xroot);
+
+  
+  if(xnd == NULL)
+    {
+      PhyML_Fprintf(stdout,"\n. The model of rate variation across lineages is not specified.");
+      PhyML_Fprintf(stdout,"\n. Using the geometric Brownian model (see Guindon, 2012, Syst. Biol.).\n");
+      mixt_tree->rates->model      = GUINDON;
+      mixt_tree->mod->gamma_mgf_bl = YES;
+      strcpy(mixt_tree->rates->model_name,"geometric Brownian"); 
+    }
+  else
+    {
+      char *model_name;
+      model_name = XML_Get_Attribute_Value(xnd,"model");
+
+      if(model_name == NULL)
+        {
+          PhyML_Fprintf(stderr,"\n. Please specify a model of rate variation across lineages,");
+          PhyML_Fprintf(stderr,"\n. e.g., <lineagerates model=\"geometricbrownian\"/>.");
+          PhyML_Fprintf(stderr,"\n. See the manual for more options.");
+          assert(FALSE);
+        }
+      else
+        {
+          if(!strcmp(model_name,"geometricbrownian"))
+            {
+              mixt_tree->rates->model      = GUINDON;
+              mixt_tree->mod->gamma_mgf_bl = YES;
+              strcpy(mixt_tree->rates->model_name,"geometric Brownian"); 
+            }
+          else if(!strcmp(model_name,"geometric"))
+            {
+              mixt_tree->rates->model      = GUINDON;
+              mixt_tree->mod->gamma_mgf_bl = YES;
+              strcpy(mixt_tree->rates->model_name,"geometric Brownian"); 
+            }
+          else if(!strcmp(model_name,"brownian"))
+            {
+              mixt_tree->rates->model      = GUINDON;
+              mixt_tree->mod->gamma_mgf_bl = YES;
+              strcpy(mixt_tree->rates->model_name,"geometric Brownian"); 
+            }
+          else if(!strcmp(model_name,"geo"))
+            {
+              mixt_tree->rates->model      = GUINDON;
+              mixt_tree->mod->gamma_mgf_bl = YES;
+              strcpy(mixt_tree->rates->model_name,"geometric Brownian"); 
+            }
+          else if(!strcmp(model_name,"lognormal"))
+            {
+              mixt_tree->rates->model      = LOGNORMAL;
+              mixt_tree->mod->gamma_mgf_bl = NO;
+              strcpy(mixt_tree->rates->model_name,"lognormal (uncorrelated)"); 
+            }
+          else if(!strcmp(model_name,"normal"))
+            {
+              mixt_tree->rates->model      = LOGNORMAL;
+              mixt_tree->mod->gamma_mgf_bl = NO;
+              strcpy(mixt_tree->rates->model_name,"lognormal (uncorrelated)"); 
+            }
+          else if(!strcmp(model_name,"strictclock"))
+            {
+              mixt_tree->rates->model      = STRICTCLOCK;
+              mixt_tree->mod->gamma_mgf_bl = NO;
+              strcpy(mixt_tree->rates->model_name,"strict clock"); 
+            }
+          else if(!strcmp(model_name,"clock"))
+            {
+              mixt_tree->rates->model      = STRICTCLOCK;
+              mixt_tree->mod->gamma_mgf_bl = NO;
+              strcpy(mixt_tree->rates->model_name,"strict clock"); 
+            }
+          else
+            {
+              assert(FALSE);
+            }
+        }
+    }
+  
+  
+  // Looking for calibration info
+  xnd = XML_Search_Node_Name("calibration",YES,xroot);
+
+  if(xnd == NULL)
+    {
+      PhyML_Fprintf(stderr,"\n. No calibration information seems to be provided.");
+      PhyML_Fprintf(stderr,"\n. Please amend your XML file. \n");
+      assert(FALSE);
+    }
+  else
+    {
+      assert(xnd->child);
+      if(XML_Search_Node_Name("upper",NO,xnd->child) == NULL && XML_Search_Node_Name("lower",NO,xnd->child) == NULL)
+	{
+	  PhyML_Fprintf(stderr,"\n. There is no calibration information provided. \n");
+	  PhyML_Fprintf(stderr,"\n. Please check your data. \n");
+          assert(FALSE);
+	}
+    }
+
+  
+
+  MIXT_Check_Model_Validity(mixt_tree);
+  MIXT_Init_Model(mixt_tree);  
+  Print_Data_Structure(NO,stdout,mixt_tree);
+  tree = MIXT_Starting_Tree(mixt_tree);
+  Copy_Tree(tree,mixt_tree);
+  Free_Tree(tree);
+  MIXT_Connect_Cseqs_To_Nodes(mixt_tree);
+  MIXT_Init_T_Beg(mixt_tree);
+  MIXT_Chain_Edges(mixt_tree);
+  MIXT_Chain_Nodes(mixt_tree);
+  MIXT_Make_Tree_For_Pars(mixt_tree);
+  MIXT_Make_Tree_For_Lk(mixt_tree);
+  MIXT_Chain_All(mixt_tree);
+  Add_Root(mixt_tree->a_edges[0],mixt_tree);  
+  MIXT_Check_Edge_Lens_In_All_Elem(mixt_tree);
+  MIXT_Turn_Branches_OnOff_In_All_Elem(ON,mixt_tree);
+  MIXT_Check_Invar_Struct_In_Each_Partition_Elem(mixt_tree);
+  MIXT_Check_RAS_Struct_In_Each_Partition_Elem(mixt_tree);
+
+
+  XML_Read_Calibration(xroot,mixt_tree);
+                          
+  seed = (mixt_tree->io->r_seed < 0)?(time(NULL)):(mixt_tree->io->r_seed);
+  srand(seed);
+  mixt_tree->io->r_seed = seed;
+
+  MIXT_Chain_Cal(mixt_tree);
+
+  res = DATE_MCMC(mixt_tree);
+
+
+  // Cleaning up...
+  RATES_Free_Rates(mixt_tree->rates);
+  RATES_Free_Rates(mixt_tree->extra_tree->rates);
+  MCMC_Free_MCMC(mixt_tree->mcmc);
+  MCMC_Free_MCMC(mixt_tree->extra_tree->mcmc);
+  Free_Mmod(mixt_tree->mmod);
+  Free_Spr_List_One_Edge(mixt_tree);
+  Free_Tree_Pars(mixt_tree);
+  Free_Tree_Lk(mixt_tree);
+
+  if(mixt_tree->io->fp_out_trees)      fclose(mixt_tree->io->fp_out_trees);
+  if(mixt_tree->io->fp_out_tree)       fclose(mixt_tree->io->fp_out_tree);
+  if(mixt_tree->io->fp_out_stats)      fclose(mixt_tree->io->fp_out_stats);
+  if(mixt_tree->io->fp_out_json_trace) fclose(mixt_tree->io->fp_out_json_trace);
+  Free_Input(mixt_tree->io);
+
+
+  tree = mixt_tree;
+  do
+    {
+      Free_Calign(tree->data);
+      tree = tree->next_mixt;
+    }
+  while(tree);
+
+  tree = mixt_tree;
+  do
+    {
+      Free_Optimiz(tree->mod->s_opt);
+      tree = tree->next;
+    }
+  while(tree);
+
+  
+  Free_Model_Complete(mixt_tree->mod);
+  Free_Model_Basic(mixt_tree->mod);
+  Free_Tree(mixt_tree->extra_tree);  
+  Free_Tree(mixt_tree);  
+  Free(res);
+  XML_Free_XML_Tree(xroot);
+  fclose(fp_xml_in);
+}
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 // Update t_prior_min and t_prior_max on a given ranked tree
 // given (primary and secondary) calibration information.
 // Make sure secondary and primary calibration are up-to-date
@@ -37,7 +304,6 @@ void DATE_Update_T_Prior_MinMax(t_tree *tree)
 {
   int i,j;
 
-  /* printf("\n"); */
   
   for(i=tree->n_otu;i<2*tree->n_otu-1;++i) // All internal nodes 
     {
@@ -54,61 +320,6 @@ void DATE_Update_T_Prior_MinMax(t_tree *tree)
         }
     }
 
-  /* // TO DO: chain t_rank */
-  /* TIMES_Update_Node_Ordering(tree); */
-  /* rk = tree->rates->t_rank; */
-
-  /* for(i=0;i<tree->n_otu-2;i++) */
-  /*   { */
-  /*     /\* printf("\n> [%3d] t:%f|%f -- min:%f|%f", *\/ */
-  /*     /\*        tree->a_nodes[rk[i+1]]->num, *\/ */
-  /*     /\*        tree->rates->nd_t[rk[i]], *\/ */
-  /*     /\*        tree->rates->nd_t[rk[i+1]], *\/ */
-  /*     /\*        tree->rates->t_prior_min[rk[i]], *\/ */
-  /*     /\*        tree->rates->t_prior_min[rk[i+1]]); *\/ */
-
-  /*     if(tree->rates->t_prior_min[rk[i+1]] < tree->rates->t_prior_min[rk[i]]) */
-  /*       { */
-  /*         /\* printf("  --> %f",tree->rates->t_prior_min[rk[i]]); *\/ */
-  /*         tree->rates->t_prior_min[rk[i+1]] = tree->rates->t_prior_min[rk[i]]; */
-  /*       } */
-  /*   } */
-  
-
-  /* for(i=tree->n_otu-2;i>0;i--) */
-  /*   { */
-  /*     /\* printf("\n< [%3d] t:%f|%f -- max:%f|%f", *\/ */
-  /*     /\*        tree->a_nodes[rk[i-1]]->num, *\/ */
-  /*     /\*        tree->rates->nd_t[rk[i]], *\/ */
-  /*     /\*        tree->rates->nd_t[rk[i-1]], *\/ */
-  /*     /\*        tree->rates->t_prior_max[rk[i]], *\/ */
-  /*     /\*        tree->rates->t_prior_max[rk[i-1]]); *\/ */
-  /*     if(tree->rates->t_prior_max[rk[i-1]] > tree->rates->t_prior_max[rk[i]]) */
-  /*       { */
-  /*         /\* printf("  --> %f ",tree->rates->t_prior_max[rk[i]]); *\/ */
-  /*         tree->rates->t_prior_max[rk[i-1]] = tree->rates->t_prior_max[rk[i]]; */
-  /*       } */
-  /*   } */
-    
-  /* /\* for(i=tree->n_otu;i<2*tree->n_otu-1;i++) *\/ */
-  /* /\*   { *\/ */
-  /* /\*     if(tree->rates->t_prior_min[i] > tree->rates->t_prior_max[i]) *\/ */
-  /* /\*       { *\/ */
-  /* /\*         PhyML_Printf("\n. i: %d t_prior_min: %f t_prior_max: %f", *\/ */
-  /* /\*                      i, *\/ */
-  /* /\*                      tree->rates->t_prior_min[i], *\/ */
-  /* /\*                      tree->rates->t_prior_max[i]); *\/ */
-  /* /\*         Generic_Exit(__FILE__,__LINE__,__FUNCTION__); *\/ */
-  /* /\*       } *\/ */
-  /* /\*   } *\/ */
-  
-  /* /\* printf("\n. min:%f max:%f rk: %d n_cal: %d low: %f up: %f", *\/ */
-  /* /\*        tree->rates->t_prior_min[tree->n_root->num], *\/ */
-  /* /\*        tree->rates->t_prior_max[tree->n_root->num], *\/ */
-  /* /\*        tree->rates->t_rank[tree->n_root->num], *\/ */
-  /* /\*        tree->a_nodes[tree->n_root->num]->n_cal, *\/ */
-  /* /\*        tree->a_nodes[tree->n_root->num]->n_cal > 0 ? tree->a_nodes[tree->n_root->num]->cal[0]->lower : -1, *\/ */
-  /* /\*        tree->a_nodes[tree->n_root->num]->n_cal > 0 ? tree->a_nodes[tree->n_root->num]->cal[0]->upper : -1); *\/ */
 }
 
 //////////////////////////////////////////////////////////////
@@ -483,7 +694,6 @@ phydbl *DATE_MCMC(t_tree *tree)
   fp_tree = tree->io->fp_out_tree;
 
   if(tree->io->mutmap == YES) Make_MutMap(tree);
-
   
   TIMES_Randomize_Tree_With_Time_Constraints(tree->rates->a_cal[0],tree);
   
@@ -513,6 +723,8 @@ phydbl *DATE_MCMC(t_tree *tree)
   Set_Update_Eigen(YES,tree->mod);
   Lk(NULL,tree);
   Set_Update_Eigen(NO,tree->mod);
+
+  
   RATES_Lk_Rates(tree);
   DATE_Assign_Primary_Calibration(tree);
   TIMES_Lk_Times(NO,tree);
@@ -545,8 +757,7 @@ phydbl *DATE_MCMC(t_tree *tree)
   PhyML_Printf("\n. log(Pr(Seq|Tree)) = %f",tree->c_lnL);
   PhyML_Printf("\n. log(Pr(Tree)) = %f",tree->rates->c_lnL_times);
     
-  
-  
+    
   tree->extra_tree = Make_Tree_From_Scratch(tree->n_otu,tree->data);
   tree->extra_tree->mod = tree->mod;
   Copy_Tree(tree,tree->extra_tree);
@@ -821,7 +1032,7 @@ phydbl *DATE_MCMC(t_tree *tree)
             }
           
           
-          Time_To_Branch(tree);
+          Time_To_Bl(tree);
           tree->bl_ndigits = 3;
           /* RATES_Update_Cur_Bl(tree); */
           s_tree = Write_Tree(tree,NO);

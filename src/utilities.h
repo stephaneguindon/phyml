@@ -89,8 +89,8 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #endif
 
 
-extern int CALL;
-extern int TIME;
+int CALL;
+int TIME;
 
 #define AC 0
 #define AG 1
@@ -391,7 +391,7 @@ typedef	double phydbl;
 #define LOGSMALL -690.
 
 
-#if !(defined PHYTIME || defined SERGEII)
+#if !(defined PHYTIME)
 #define BL_MIN 1.E-8
 #define BL_MAX 100.
 #else
@@ -415,6 +415,12 @@ typedef	double phydbl;
 
 #define LARGE 256
 #define TWO_TO_THE_LARGE 115792089237316195423570985008687907853269984665640564039457584007913129639936.0 /* 2^256 In R : sprintf("%.100f", 2^256)*/
+
+/* #define LARGE 128 */
+/* #define TWO_TO_THE_LARGE 340282366920938463463374607431768211456.0 /\* 2^128 In R : sprintf("%.100f", 2^128)*\/ */
+
+/* #define LARGE 320 */
+/* #define TWO_TO_THE_LARGE 2135987035920910082395021706169552114602704522356652769947041607822219725780640550022962086936576.0 */
 
 #define INV_TWO_TO_THE_LARGE (1./TWO_TO_THE_LARGE)
 
@@ -522,6 +528,10 @@ typedef struct __Node {
   struct __Node                *next_mixt; /*! Next mixture tree*/
   struct __Node                *prev_mixt; /*! Parent mixture tree */
   struct __Calibration              **cal; /*! List of calibration constraints attached to this node */
+  struct __Lindisk_Node             *ldsk; /*! Used in PhyREX. Lineage/Disk this node corresponds to */
+  struct __Node                  *rk_next; /*! Next node in the list of ranked nodes (from oldest to youngest) */
+  struct __Node                  *rk_prev; /*! Previous node in the list of ranked nodes (from oldest to youngest) */
+
 
   int                           *bip_size; /*! Size of each of the three lists from bip_node */
   int                                 num; /*! t_node number */
@@ -532,7 +542,7 @@ typedef struct __Node {
   int                               n_cal; /*! Number of calibration constraints */
 
   phydbl                           *score; /*! score used in BioNJ to determine the best pair of nodes to agglomerate */
-  phydbl                               *l; /*! lengths of the (three or one) branche(s) connected this t_node */
+  scalar_dbl                          **l; /*! lengths of the (three or one) branche(s) connected this t_node */
   phydbl                     dist_to_root; /*! distance to the root t_node */
 
   short int                        common;
@@ -704,10 +714,9 @@ typedef struct __Tree{
   struct __Tdraw                     *ps_tree; /*! structure for drawing trees in postscript format */
   struct __T_Rate                       *rates; /*! structure for handling rates of evolution */
   struct __Tmcmc                        *mcmc;
-  struct __Triplet            *triplet_struct;
   struct __Phylogeo                      *geo;
   struct __Migrep_Model                 *mmod;
-  struct __Disk_Event                   *disk;
+  struct __Disk_Event             *young_disk; /*! Youngest disk (i.e., disk which age is the closest to present). Used in PhyREX */
   struct __XML_node                 *xml_root;
   struct __Generic_LL              *edge_list;
   struct __Generic_LL              *node_list;
@@ -1434,26 +1443,6 @@ typedef struct __SPR{
 
 /*!********************************************************/
 
-typedef struct __Triplet{
-  int    size;
-  phydbl *F_bc;
-  phydbl *F_cd;
-  phydbl *F_bd;
-  phydbl ****core;
-  phydbl ***p_one_site;
-  phydbl ***sum_p_one_site;
-  phydbl *pi_bc;
-  phydbl *pi_cd;
-  phydbl *pi_bd;
-  struct __Eigen *eigen_struct;
-  struct __Model *mod;
-
-  struct __Triplet *next;
-  struct __Triplet *prev;
-}triplet;
-
-/*!********************************************************/
-
 typedef struct __Pnode{
   struct __Pnode **next;
   int weight;
@@ -1493,10 +1482,9 @@ typedef struct __Tdraw {
   int         page_height;
   int      tree_box_width;
 
-  int         *cdf_mat;
+  int            *cdf_mat;
   phydbl       *cdf_mat_x;
   phydbl       *cdf_mat_y;
-
 
   phydbl max_dist_to_root;
 }tdraw;
@@ -1696,7 +1684,6 @@ typedef struct __Tmcmc {
   int num_move_phyrex_sigsq;
   int num_move_phyrex_sim;
   int num_move_phyrex_traj;
-  int num_move_phyrex_lbda_times;
   int num_move_phyrex_indel_disk_serial;
   int num_move_phyrex_sim_plus;
   int num_move_phyrex_indel_hit_serial;
@@ -1942,16 +1929,18 @@ typedef struct __Migrep_Model{
 /*!********************************************************/
 
 typedef struct __Disk_Event{
-  struct __Geo_Coord           *centr;
-  phydbl                         time;
-  struct __Disk_Event           *next;
-  struct __Disk_Event           *prev;
-  struct __Lindisk_Node      **ldsk_a; // array of lindisk nodes corresponding to this disk event
-  int                        n_ldsk_a; // size of ldsk_a
-  struct __Lindisk_Node         *ldsk;
-  struct __Migrep_Model         *mmod;
-  char                            *id;
-  phydbl                        c_lnL;
+  struct __Geo_Coord      *centr;
+  phydbl                    time;
+  struct __Disk_Event      *next;
+  struct __Disk_Event      *prev;
+  struct __Lindisk_Node **ldsk_a; // array of lindisk nodes corresponding to this disk event.
+  int                   n_ldsk_a; // size of ldsk_a.
+  struct __Lindisk_Node    *ldsk;
+  struct __Migrep_Model    *mmod;
+  char                       *id;
+
+  phydbl                   c_lnL;
+  short int            age_fixed; // time is fixed for disks corresponding to samples.
 }t_dsk;
 
 /*!********************************************************/
@@ -2179,18 +2168,17 @@ t_tree *Dist_And_BioNJ(calign *cdata,t_mod *mod,option *io);
 void Add_BioNJ_Branch_Lengths(t_tree *tree, calign *cdata, t_mod *mod, matrix *mat);
 char *Bootstrap_From_String(char *s_tree,calign *cdata,t_mod *mod,option *io);
 char *aLRT_From_String(char *s_tree,calign *cdata,t_mod *mod,option *io);
-void Prepare_Tree_For_Lk(t_tree *tree);
 void Find_Common_Tips(t_tree *tree1,t_tree *tree2);
 phydbl Get_Tree_Size(t_tree *tree);
-void Dist_To_Root_Pre(t_node *a,t_node *d,t_edge *b,t_tree *tree);
-void Dist_To_Root(t_node *n_root,t_tree *tree);
+void Dist_To_Root_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree);
+void Dist_To_Root(t_tree *tree);
 char *Basename(char *path);
 t_node *Find_Lca_Pair_Of_Nodes(t_node *n1,t_node *n2,t_tree *tree);
 t_node *Find_Lca_Clade(t_node **node_list,int node_list_size,t_tree *tree);
 int Get_List_Of_Ancestors(t_node *ref_node,t_node **list,int *size,t_tree *tree);
 int Edge_Num_To_Node_Num(int edge_num,t_tree *tree);
-void Time_To_Branch(t_tree *tree);
-void Time_To_Branch_Pre(t_node *a,t_node *d,t_tree *tree);
+void Time_To_Bl(t_tree *tree);
+void Time_To_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree);
 void Branch_Lengths_To_Rate_Lengths(t_tree *tree);
 void Branch_Lengths_To_Rate_Lengths_Pre(t_node *a,t_node *d,t_tree *tree);
 int Find_Clade(char **tax_name_list,int list_size,t_tree *tree);
@@ -2248,8 +2236,8 @@ void Joint_Proba_States_Left_Right(phydbl *Pij, phydbl *p_lk_left, phydbl *p_lk_
                    phydbl *F, int n, int site, t_tree *tree);
 void Set_Both_Sides(int yesno, t_tree *tree);
 void Set_D_States(calign *data, int datatype, int stepsize);
-void Branch_To_Time(t_tree *tree);
-void Branch_To_Time_Pre(t_node *a, t_node *d, t_tree *tree);
+void Bl_To_Time(t_tree *tree);
+void Bl_To_Time_Pre(t_node *a, t_node *d, t_tree *tree);
 void Path_Length(t_node *dep, t_node *arr, phydbl *len, t_tree *tree);
 phydbl *Dist_Btw_Tips(t_tree *tree);
 void Random_SPRs_On_Rooted_Tree(t_tree *tree);
@@ -2303,7 +2291,7 @@ void Table_Bottom(unsigned int width);
 t_cal *Duplicate_Calib(t_cal *from);
 t_clad *Duplicate_Clade(t_clad *from);
 void Swap_Partial_Lk_Extra(t_edge *b, t_node *d, int whichone, t_tree *tree);
-void Remove_Duplicates(calign *data, option *io);
+void Remove_Duplicates(calign *data, option *io, t_tree *tree);
 short int Are_Sequences_Identical(align *seq1, align *seq2);
 char *Mutation_Id(int mut_idx, t_tree *tree);
 void Random_Tax_Idx(t_node *a, t_node *d, int *idx, t_tree *tree);
@@ -2320,6 +2308,12 @@ char Integer_To_IUPAC_Code(int x);
 void Shuffle_Sites(const phydbl prop, align **data, const int n_otu);
 void Multiply_Scalar_Dbl(phydbl mult, scalar_dbl *x);
 void Insert_Duplicates(t_tree *tree);
+void Get_Node_Ranks_From_Dist_To_Root(t_tree *tree);
+void Get_Node_Ranks_From_Times(t_tree *tree);
+void Get_Node_Ranks_From_Tip_Times(t_tree *tree);
+phydbl Tree_Height(t_tree *tree);
+void Post_Inflate_Times_To_Get_Reasonnable_Edge_Lengths(t_node *a, t_node *d, t_edge *b, phydbl min_l, t_tree *tree);
+void  Inflate_Times_To_Get_Reasonnable_Edge_Lengths(phydbl min_l, t_tree *tree);
 
 
 #include "xml.h"

@@ -547,8 +547,11 @@ void PhyTime_XML(char *xml_file)
   tree -> n_pattern   = tree -> data -> crunch_len / tree -> io -> state_len;
   
   Set_Both_Sides(YES, tree);
-  Prepare_Tree_For_Lk(tree);
+  Make_Tree_For_Pars(tree);
+  Make_Tree_For_Lk(tree);
+  Make_Spr(tree);
 
+  
 
   //calculate the probabilities of each combination of calibrations:
   TIMES_Calib_Partial_Proba(tree);

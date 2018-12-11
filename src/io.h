@@ -20,15 +20,14 @@ the GNU public licence.  See http://www.opensource.org for details.
 t_tree *Read_Tree(char **s_tree);
 void R_rtree(char *s_tree_a,char *s_tree_d,t_node *a,t_tree *tree,int *n_int,int *n_ext);
 void Read_Branch_Label(char *s_d,char *s_a,t_edge *b);
-void Read_Branch_Length(char *s_d,char *s_a,t_tree *tree);
-void Read_Node_Name(t_node *d,char *s_tree_d,t_tree *tree);
+void Read_Branch_Length(char *s_d, char *s_a, t_edge *b, t_tree *tree);
+void Read_Node_Name(t_node *d, char *s_tree_d, t_edge *b, t_tree *tree);
 void Clean_Multifurcation(char **subtrees,int current_deg,int end_deg);
 char **Sub_Trees(char *tree,int *degree);
 int Next_Par(char *s,int pos);
 void Print_List(t_ll *list);
 void Print_Tree(FILE *fp,t_tree *tree);
 char *Write_Tree(t_tree *tree,int custom);
-void R_wtree(t_node *pere,t_node *fils,int *available,char **s_tree,t_tree *tree);
 void R_wtree_Custom(t_node *pere,t_node *fils,int *available,char **s_tree,int *pos,t_tree *tree);
 void Detect_Align_File_Format(option *io);
 void Detect_Tree_File_Format(option *io);
@@ -104,5 +103,6 @@ json_o *JSON_Tree_To_Object(t_tree *tree);
 json_o *JSON_Tree_To_Object_Light(t_tree *mixt_tree);
 scalar_dbl *Read_Io_Weights(option *io);
 void Print_Lk_Given_Edge_Recurr(t_node *a, t_node *d, t_edge *b, t_tree *tree);
+void R_wtree(t_node *pere, t_node *fils, t_edge *b, int *available, char **s_tree, t_tree *tree);
 
 #endif
