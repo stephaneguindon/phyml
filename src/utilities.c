@@ -3160,31 +3160,22 @@ void Bootstrap(t_tree *tree, int tbe_bootstrap)
       Set_Both_Sides(YES,boot_tree);
 
       if((boot_tree->mod->s_opt->random_input_tree) && (boot_tree->mod->s_opt->topo_search == SPR_MOVE)) Random_Tree(boot_tree);
-
       
       Connect_CSeqs_To_Nodes(boot_data,tree->io,boot_tree);
 
-      Make_Tree_For_Pars(boot_tree);
-      Make_Tree_For_Lk(boot_tree);
-      Make_Spr(boot_tree);
+      /* Make_Tree_For_Pars(boot_tree); */
+      /* Make_Tree_For_Lk(boot_tree); */
+      /* Make_Spr(boot_tree); */
 
-      /* Check_Br_Lens(boot_tree); */
-      /* Share_Lk_Struct(tree,boot_tree); */
-      /* Share_Spr_Struct(tree,boot_tree); */
-      /* Share_Pars_Struct(tree,boot_tree); */
+      Check_Br_Lens(boot_tree);
+      Share_Lk_Struct(tree,boot_tree);
+      Share_Spr_Struct(tree,boot_tree);
+      Share_Pars_Struct(tree,boot_tree);
       Update_Dirs(boot_tree);
-      /* Init_Partial_Lk_Tips_Double(boot_tree); */
-      /* Init_Ui_Tips(boot_tree); */
-      /* Init_Partial_Pars_Tips(boot_tree); */
-
+      Init_Partial_Lk_Tips_Double(boot_tree);
+      Init_Ui_Tips(boot_tree);
+      Init_Partial_Pars_Tips(boot_tree);
       Br_Len_Not_Involving_Invar(boot_tree);
-
-      
-      Set_Update_Eigen(YES,boot_tree->mod);                 
-      Set_Both_Sides(YES,boot_tree);                 
-      Lk(NULL,boot_tree);
-      Check_Lk_At_Given_Edge(YES,boot_tree);
-
 
       
       if(boot_tree->io->do_alias_subpatt)

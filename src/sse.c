@@ -332,87 +332,96 @@ void SSE_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
   /* For every site in the alignment */
   for(site=0;site<npattern;++site)
     {
-      state_v1 = state_v2 = -1;
-      ambiguity_check_v1 = ambiguity_check_v2 = YES;
+      if(tree->data->wght[site] > SMALL)
+        {
+          state_v1 = state_v2 = -1;
+          ambiguity_check_v1 = ambiguity_check_v2 = YES;
+          
+          if(n_v1 && n_v1->tax)
+            {
+              ambiguity_check_v1 = n_v1->c_seq->is_ambigu[site];
+              if(ambiguity_check_v1 == NO) state_v1 = n_v1->c_seq->d_state[site];
+            }
+          
+          if(n_v2 && n_v2->tax)
+            {
+              ambiguity_check_v2 = n_v2->c_seq->is_ambigu[site];
+              if(ambiguity_check_v2 == NO) state_v2 = n_v2->c_seq->d_state[site];
+            }
+          
+          _tPij1 = _init_tPij1;
+          _tPij2 = _init_tPij2;
+          
+          for(catg=0;catg<ncatg;++catg)
+            {                                                          
+              if(ambiguity_check_v1 == NO && ambiguity_check_v2 == NO)
+                {
+                  SSE_Partial_Lk_Exex(_tPij1,state_v1,
+                                      _tPij2,state_v2,
+                                      ns,_plk0);
+                }
+              else if(ambiguity_check_v1 == YES && ambiguity_check_v2 == NO)
+                {
+                  SSE_Partial_Lk_Exin(_tPij2,state_v2,
+                                      _tPij1,plk1,_pmat1plk1,
+                                      ns,_plk0);
+                }
+              else if(ambiguity_check_v1 == NO && ambiguity_check_v2 == YES)
+                {
+                  SSE_Partial_Lk_Exin(_tPij1,state_v1,
+                                      _tPij2,plk2,_pmat2plk2,
+                                      ns,_plk0);
+                }
+              else
+                {
+                  SSE_Partial_Lk_Inin(_tPij1,plk1,_pmat1plk1,
+                                      _tPij2,plk2,_pmat2plk2,
+                                      ns,_plk0);
+                }
               
-      if(n_v1 && n_v1->tax)
-        {
-          ambiguity_check_v1 = n_v1->c_seq->is_ambigu[site];
-          if(ambiguity_check_v1 == NO) state_v1 = n_v1->c_seq->d_state[site];
-        }
-      
-      if(n_v2 && n_v2->tax)
-        {
-          ambiguity_check_v2 = n_v2->c_seq->is_ambigu[site];
-          if(ambiguity_check_v2 == NO) state_v2 = n_v2->c_seq->d_state[site];
-        }
-      
-      _tPij1 = _init_tPij1;
-      _tPij2 = _init_tPij2;
-      
-      for(catg=0;catg<ncatg;++catg)
-        {                                                          
-          if(ambiguity_check_v1 == NO && ambiguity_check_v2 == NO)
-            {
-              SSE_Partial_Lk_Exex(_tPij1,state_v1,
-                                  _tPij2,state_v2,
-                                  ns,_plk0);
-            }
-          else if(ambiguity_check_v1 == YES && ambiguity_check_v2 == NO)
-            {
-              SSE_Partial_Lk_Exin(_tPij2,state_v2,
-                                  _tPij1,plk1,_pmat1plk1,
-                                  ns,_plk0);
-            }
-          else if(ambiguity_check_v1 == NO && ambiguity_check_v2 == YES)
-            {
-              SSE_Partial_Lk_Exin(_tPij1,state_v1,
-                                  _tPij2,plk2,_pmat2plk2,
-                                  ns,_plk0);
-            }
-          else
-            {
-              SSE_Partial_Lk_Inin(_tPij1,plk1,_pmat1plk1,
-                                  _tPij2,plk2,_pmat2plk2,
-                                  ns,_plk0);
+              for(k=0;k<nblocks;++k) _mm_store_pd(plk0+sz*k,_plk0[k]);
+              
+              _tPij1 += nsns / sz;
+              _tPij2 += nsns / sz;
+              plk0 += ns;
+              plk1 += (n_v1->tax) ? 0 : ns;
+              plk2 += (n_v2->tax) ? 0 : ns;
             }
           
-          for(k=0;k<nblocks;++k) _mm_store_pd(plk0+sz*k,_plk0[k]);
-
-          _tPij1 += nsns / sz;
-          _tPij2 += nsns / sz;
-          plk0 += ns;
-          plk1 += (n_v1->tax) ? 0 : ns;
-          plk2 += (n_v2->tax) ? 0 : ns;
-        }
-   
-      plk1 += (n_v1->tax) ? ns : 0;
-      plk2 += (n_v2->tax) ? ns : 0;
-
-      if(tree->scaling_method == SCALE_FAST)
-        {
-          sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[site]):(0);
-          sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[site]):(0);
-          sum_scale[site] = sum_scale_v1_val + sum_scale_v2_val;
-
-          assert(sum_scale[site] < 1024);
-
-          plk0 -= ncatgns;
+          plk1 += (n_v1->tax) ? ns : 0;
+          plk2 += (n_v2->tax) ? ns : 0;
           
-          largest_p_lk = -BIG;
-          for(i=0;i<ncatgns;++i)
-            if(plk0[i] > largest_p_lk)
-              largest_p_lk = plk0[i];
-          
-          if(largest_p_lk < INV_TWO_TO_THE_LARGE &&
-             tree->mod->augmented == NO &&
-             tree->apply_lk_scaling == YES)
+          if(tree->scaling_method == SCALE_FAST)
             {
-              for(i=0;i<ncatgns;++i) plk0[i] *= TWO_TO_THE_LARGE;
-              sum_scale[site] += LARGE;
+              sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[site]):(0);
+              sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[site]):(0);
+              sum_scale[site] = sum_scale_v1_val + sum_scale_v2_val;
+              
+              assert(sum_scale[site] < 1024);
+              
+              plk0 -= ncatgns;
+              
+              largest_p_lk = -BIG;
+              for(i=0;i<ncatgns;++i)
+                if(plk0[i] > largest_p_lk)
+                  largest_p_lk = plk0[i];
+              
+              if(largest_p_lk < INV_TWO_TO_THE_LARGE &&
+                 tree->mod->augmented == NO &&
+                 tree->apply_lk_scaling == YES)
+                {
+                  for(i=0;i<ncatgns;++i) plk0[i] *= TWO_TO_THE_LARGE;
+                  sum_scale[site] += LARGE;
+                }
+              
+              plk0 += ncatgns;
             }
-
+        }
+      else
+        {
           plk0 += ncatgns;
+          plk1 += (n_v1->tax) ? ns : ncatgns;
+          plk2 += (n_v2->tax) ? ns : ncatgns;        
         }
     }
   

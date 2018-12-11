@@ -386,69 +386,88 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
               ambiguity_check_v2 = n_v2->c_seq->is_ambigu[site];
               if(ambiguity_check_v2 == NO) state_v2 = n_v2->c_seq->d_state[site];
             }
-          
-          for(k=0;k<nblocks;++k) _mm256_store_pd(plk0+sz*k,_plk0[k]);
 
-          _tPij1 += nsns / sz;
-          _tPij2 += nsns / sz;
-          plk0 += ns;
-          plk1 += (n_v1->tax) ? 0 : ns;
-          plk2 += (n_v2->tax) ? 0 : ns;
-        }
-   
-      plk1 += (n_v1->tax) ? ns : 0;
-      plk2 += (n_v2->tax) ? ns : 0;
+          _tPij1 = _init_tPij1;
+          _tPij2 = _init_tPij2;
+      
+          for(catg=0;catg<ncatg;++catg)
+            {                                                          
+              if(ambiguity_check_v1 == NO && ambiguity_check_v2 == NO)
+                {
+                  AVX_Partial_Lk_Exex(_tPij1,state_v1,
+                                      _tPij2,state_v2,
+                                      ns,_plk0);
+                }
+              else if(ambiguity_check_v1 == YES && ambiguity_check_v2 == NO)
+                {
+                  AVX_Partial_Lk_Exin(_tPij2,state_v2,
+                                      _tPij1,plk1,_pmat1plk1,
+                                      ns,_plk0);
+                }
+              else if(ambiguity_check_v1 == NO && ambiguity_check_v2 == YES)
+                {
+                  AVX_Partial_Lk_Exin(_tPij1,state_v1,
+                                      _tPij2,plk2,_pmat2plk2,
+                                      ns,_plk0);
+                }
+              else
+                {
+                  AVX_Partial_Lk_Inin(_tPij1,plk1,_pmat1plk1,
+                                      _tPij2,plk2,_pmat2plk2,
+                                      ns,_plk0);
+                }
+                            
+              for(k=0;k<nblocks;++k) _mm256_store_pd(plk0+sz*k,_plk0[k]);
 
-      if(tree->scaling_method == SCALE_FAST)
-        {
-          sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[site]):(0);
-          sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[site]):(0);
-          sum_scale[site] = sum_scale_v1_val + sum_scale_v2_val;
-
-          if(sum_scale[site] >= 1024)
-            {
-              plk0 -= ncatgns;
-              plk1 -= (n_v1->tax) ? ns : ncatgns;
-              plk2 -= (n_v2->tax) ? ns : ncatgns;      
-              PhyML_Printf("\n. PARTIAL site: %d plk0: %p [%g %g %g %g] plk1: %p [%g %g %g %g] plk2: %p [%g %g %g %g]",
-                           site,
-                           plk0,
-                           plk0[0],
-                           plk0[1],
-                           plk0[2],
-                           plk0[3],
-                           plk1,
-                           plk1[0],
-                           plk1[1],
-                           plk1[2],
-                           plk1[3],
-                           plk2,
-                           plk2[0],
-                           plk2[1],
-                           plk2[2],
-                           plk2[3]
-                           );
-              PhyML_Printf("\n. PARTIAL site: %d d: %d n_v1: %d n_v2: %d",site,d->num,n_v1->num,n_v2->num);
-              PhyML_Printf("\n. PARTIAL site: %d sum n: %d sum n_v1: %d sum n_v2: %d",site,sum_scale[site],sum_scale_v1_val,sum_scale_v2_val);
-
-              plk0 += ncatgns;
-              plk1 += (n_v1->tax) ? ns : ncatgns;
-              plk2 += (n_v2->tax) ? ns : ncatgns;
-              /* Exit("\n"); */
+              _tPij1 += nsns / sz;
+              _tPij2 += nsns / sz;
+              plk0 += ns;
+              plk1 += (n_v1->tax) ? 0 : ns;
+              plk2 += (n_v2->tax) ? 0 : ns;
             }
-          
-          plk0 -= ncatgns;
+   
           plk1 += (n_v1->tax) ? ns : 0;
           plk2 += (n_v2->tax) ? ns : 0;
-          
+
           if(tree->scaling_method == SCALE_FAST)
             {
               sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[site]):(0);
               sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[site]):(0);
               sum_scale[site] = sum_scale_v1_val + sum_scale_v2_val;
               
-              plk0 -= ncatgns;
+              if(sum_scale[site] >= 1024)
+                {
+                  plk0 -= ncatgns;
+                  plk1 -= (n_v1->tax) ? ns : ncatgns;
+                  plk2 -= (n_v2->tax) ? ns : ncatgns;      
+                  PhyML_Fprintf(stderr,"\n. PARTIAL site: %d plk0: %p [%g %g %g %g] plk1: %p [%g %g %g %g] plk2: %p [%g %g %g %g]",
+                                site,
+                                plk0,
+                                plk0[0],
+                                plk0[1],
+                                plk0[2],
+                                plk0[3],
+                                plk1,
+                                plk1[0],
+                                plk1[1],
+                                plk1[2],
+                                plk1[3],
+                                plk2,
+                                plk2[0],
+                                plk2[1],
+                                plk2[2],
+                                plk2[3]
+                                );
+                  PhyML_Fprintf(stderr,"\n. PARTIAL site: %d d: %d n_v1: %d n_v2: %d",site,d->num,n_v1->num,n_v2->num);
+                  PhyML_Fprintf(stderr,"\n. PARTIAL site: %d sum n: %d sum n_v1: %d sum n_v2: %d",site,sum_scale[site],sum_scale_v1_val,sum_scale_v2_val);
+                  
+                  plk0 += ncatgns;
+                  plk1 += (n_v1->tax) ? ns : ncatgns;
+                  plk2 += (n_v2->tax) ? ns : ncatgns;
+                  /* Exit("\n"); */
+                }
               
+              plk0 -= ncatgns;
               largest_p_lk = -BIG;
               for(i=0;i<ncatgns;++i)
                 if(plk0[i] > largest_p_lk)
@@ -464,36 +483,6 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
               
               plk0 += ncatgns;
             }
-                
-          /* plk0 -= ncatgns; */
-          /* plk1 -= (n_v1->tax) ? ns : ncatgns; */
-          /* plk2 -= (n_v2->tax) ? ns : ncatgns; */
-          /* PhyML_Printf("\n. PARTIAL site: %3d b %3d [%d,%d] node %3d plk0: [%g %g %g %g] v1 %3d (%s) plk1: [%g %g %g %g] v2 %3d (%s) plk2: [%g %g %g %g]", */
-          /*              site, */
-          /*              b->num, */
-          /*              b->left->num, */
-          /*              b->rght->num, */
-          /*              d->num, */
-          /*              plk0[0], */
-          /*              plk0[1], */
-          /*              plk0[2], */
-          /*              plk0[3], */
-          /*              n_v1->num, */
-          /*              n_v1->tax ? n_v1->name : "xxx", */
-          /*              plk1[0], */
-          /*              plk1[1], */
-          /*              plk1[2], */
-          /*              plk1[3], */
-          /*              n_v2->num, */
-          /*              n_v2->tax ? n_v2->name : "xxx", */
-          /*              plk2[0], */
-          /*              plk2[1], */
-          /*              plk2[2], */
-          /*              plk2[3] */
-          /*              ); */
-          /* plk0 += ncatgns; */
-          /* plk1 += (n_v1->tax) ? ns : ncatgns; */
-          /* plk2 += (n_v2->tax) ? ns : ncatgns; */
         }
       else
         {
@@ -502,8 +491,6 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
           plk2 += (n_v2->tax) ? ns : ncatgns;          
         }
     }
-
-  
   Free(_init_tPij1);
   Free(_init_tPij2);
   Free(_pmat1plk1);

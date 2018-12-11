@@ -782,8 +782,7 @@ phydbl Lk_Core(int state, int ambiguity_check,
           if(ns == 4 || ns == 20)
             {
 #if (defined(__AVX__))
-              tree->site_lk_cat[catg] = AVX_Lk_Core_One_Class_No_Eigen_Lr(p_lk_left,p_lk_rght,Pij_rr,pi,ns,ambiguity_check,state);
-              
+              tree->site_lk_cat[catg] = AVX_Lk_Core_One_Class_No_Eigen_Lr(p_lk_left,p_lk_rght,Pij_rr,pi,ns,ambiguity_check,state);              
 #elif (defined(__SSE3__))
               tree->site_lk_cat[catg] = SSE_Lk_Core_One_Class_No_Eigen_Lr(p_lk_left,p_lk_rght,Pij_rr,pi,ns,ambiguity_check,state);
 #else
@@ -829,7 +828,7 @@ phydbl Lk_Core(int state, int ambiguity_check,
   
   if(tree->apply_lk_scaling == YES) res = site_lk / pow(2,tree->fact_sum_scale[site]);
   else                              res = site_lk;
-  
+
   log_site_lk = log(site_lk) - (phydbl)LOG2 * tree->fact_sum_scale[site]; // log_site_lk =  log(site_lk_scaled / 2^(left_subtree+right_subtree))
   tree->c_lnL_sorted[site] = log_site_lk;
   tree->c_lnL += tree->data->wght[site] * log_site_lk;
@@ -1358,6 +1357,7 @@ void Update_Partial_Lk_Generic(t_tree *tree, t_edge *b, t_node *d)
   tPij1 = tPij2               = NULL;
   sum_scale_v1 = sum_scale_v2 = NULL;
   p_lk_loc                    = NULL;
+  smallest_p_lk               = BIG;
 
   Set_All_Partial_Lk(&n_v1,&n_v2,
                      &p_lk,&sum_scale,&p_lk_loc,
@@ -1405,7 +1405,7 @@ void Update_Partial_Lk_Generic(t_tree *tree, t_edge *b, t_node *d)
             {
               if(tree->mod->ras->skip_rate_cat[catg] == YES) continue;
               
-              smallest_p_lk  =  BIG;
+              smallest_p_lk = BIG;
               
               /* For all the states at node d */
               for(i=0;i<tree->mod->ns;i++)
@@ -1528,42 +1528,26 @@ void Update_Partial_Lk_Generic(t_tree *tree, t_edge *b, t_node *d)
               sum_scale[site] = sum_scale_v1_val + sum_scale_v2_val;
               
               sum_scale[site*ncatg+catg] = sum_scale_v1_val + sum_scale_v2_val;
-
+              
               assert(sum_scale[site] < 1024);
 
-              /* Scaling. We have p_lk_lim_inf = 2^-500. Consider for instance that 
-                 smallest_p_lk = 2^-600, then curr_scaler_pow will be equal to 100, and
-                 each element in the partial likelihood vector will be multiplied by
-                 2^100. */
-              if(smallest_p_lk < (phydbl)P_LK_LIM_INF &&
+              largest_p_lk = -BIG; 
+              for(i=0;i<ns*ncatg;++i)
+                if(p_lk[site*ncatgns+i] > largest_p_lk)
+                  largest_p_lk = p_lk[site*ncatgns+i] ;
+              
+              if(largest_p_lk < INV_TWO_TO_THE_LARGE &&
                  tree->mod->augmented == NO &&
                  tree->apply_lk_scaling == YES)
                 {
                   for(i=0;i<ns*ncatg;++i) p_lk[site*ncatgns + i] *= TWO_TO_THE_LARGE;
                   sum_scale[site] += LARGE;
-                }
+                }              
             }     
         }
       else
         {
-          sum_scale_v1_val = (sum_scale_v1)?(sum_scale_v1[site]):(0);
-          sum_scale_v2_val = (sum_scale_v2)?(sum_scale_v2[site]):(0);              
-          sum_scale[site] = sum_scale_v1_val + sum_scale_v2_val;
-
-          assert(sum_scale[site] < 1024);
-
-          largest_p_lk = -BIG; 
-          for(i=0;i<ns*ncatg;++i)
-            if(p_lk[site*ncatgns+i] > largest_p_lk)
-              largest_p_lk = p_lk[site*ncatgns+i] ;
-          
-          if(largest_p_lk < INV_TWO_TO_THE_LARGE &&
-             tree->mod->augmented == NO &&
-             tree->apply_lk_scaling == YES)
-            {
-              for(i=0;i<ns*ncatg;++i) p_lk[site*ncatgns + i] *= TWO_TO_THE_LARGE;
-              sum_scale[site] += LARGE;
-            }
+          for(i=0;i<ns*ncatg;++i) p_lk[site*ncatgns + i] = 0.0;
         }     
     }
 }
@@ -1624,11 +1608,6 @@ void Default_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
                      &Pij1,&tPij1,&p_lk_v1,&sum_scale_v1,
                      &Pij2,&tPij2,&p_lk_v2,&sum_scale_v2,
                      d,b,tree);
-
-  PhyML_Printf("\n. %p %p %p %p %p %p %p",
-               n_v1,n_v2,
-               p_lk,p_lk_v1,p_lk_v2,
-               Pij1,Pij2);
   
   Core_Default_Update_Partial_Lk(n_v1,n_v2,
                                  p_lk,p_lk_v1,p_lk_v2,
