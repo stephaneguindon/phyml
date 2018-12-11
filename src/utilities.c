@@ -2055,9 +2055,10 @@ calign *Copy_Cseq(calign *ori, option *io)
       strcpy(sp_names_out[i],ori->c_seq_rm[i]->name);
     }
 
-  
+
   new = Make_Calign(n_otu,c_len+1,io->state_len,ori->init_len,sp_names_in,ori->n_rm,sp_names_out);
   Init_Calign(n_otu,c_len+1,ori->init_len,new);
+
 
   for(i=0;i<ori->n_rm;++i)
     {
@@ -3079,11 +3080,12 @@ void Bootstrap(t_tree *tree, int tbe_bootstrap)
   Get_Bip(tree->a_nodes[0],tree->a_nodes[0]->v[0],tree);
 
   n_site = 0;
-  for(j=0;j<tree->data->crunch_len;j++) For(k,tree->data->wght[j])
-    {
-      site_num[n_site] = j;
-      n_site++;
-    }
+  for(j=0;j<tree->data->crunch_len;j++)
+    For(k,tree->data->wght[j])
+      {
+        site_num[n_site] = j;
+        n_site++;
+      }
 
   boot_data = Copy_Cseq(tree->data,tree->io);
 
@@ -3148,7 +3150,6 @@ void Bootstrap(t_tree *tree, int tbe_bootstrap)
       boot_tree->io                   = tree->io;
       boot_tree->data                 = boot_data;
       boot_tree->verbose              = VL0;
-      /* boot_tree->verbose              = VL3; */
       boot_tree->n_pattern            = boot_tree->data->crunch_len;
       boot_tree->io->print_site_lnl   = NO;
       boot_tree->io->print_trace      = NO;
@@ -3162,17 +3163,30 @@ void Bootstrap(t_tree *tree, int tbe_bootstrap)
 
       
       Connect_CSeqs_To_Nodes(boot_data,tree->io,boot_tree);
-      Check_Br_Lens(boot_tree);
-      Share_Lk_Struct(tree,boot_tree);
-      Share_Spr_Struct(tree,boot_tree);
-      Share_Pars_Struct(tree,boot_tree);
-      Update_Dirs(boot_tree);
 
-      Init_Partial_Lk_Tips_Double(boot_tree);
-      Init_Ui_Tips(boot_tree);
-      Init_Partial_Pars_Tips(boot_tree);
+      Make_Tree_For_Pars(boot_tree);
+      Make_Tree_For_Lk(boot_tree);
+      Make_Spr(boot_tree);
+
+      /* Check_Br_Lens(boot_tree); */
+      /* Share_Lk_Struct(tree,boot_tree); */
+      /* Share_Spr_Struct(tree,boot_tree); */
+      /* Share_Pars_Struct(tree,boot_tree); */
+      Update_Dirs(boot_tree);
+      /* Init_Partial_Lk_Tips_Double(boot_tree); */
+      /* Init_Ui_Tips(boot_tree); */
+      /* Init_Partial_Pars_Tips(boot_tree); */
+
       Br_Len_Not_Involving_Invar(boot_tree);
 
+      
+      Set_Update_Eigen(YES,boot_tree->mod);                 
+      Set_Both_Sides(YES,boot_tree);                 
+      Lk(NULL,boot_tree);
+      Check_Lk_At_Given_Edge(YES,boot_tree);
+
+
+      
       if(boot_tree->io->do_alias_subpatt)
         {
           MIXT_Set_Alias_Subpatt(YES,boot_tree);

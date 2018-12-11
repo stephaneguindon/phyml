@@ -3658,7 +3658,6 @@ void Init_Calign(int n_otu, int crunch_len, int init_len, calign *this)
   this->init_len    = init_len;
   this->format      = 0;
   this->io_wght     = NULL;
-  this->c_seq_rm    = NULL;
   
   for(int i=0; i<n_otu; ++i) Init_Cseq(this->c_seq[i]);
 
