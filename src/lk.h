@@ -97,7 +97,8 @@ void Core_Default_Update_Partial_Lk(const t_node *n_v1, const t_node *n_v2,
                                     phydbl *plk0, const phydbl *plk1, const phydbl *plk2,
                                     const phydbl *Pij1, const phydbl *Pij2,
                                     int *sum_scale0, const int *sum_scale1, const int *sum_scale2,
-                                    const int ns, const int ncatg, const int npatterns, const int apply_scaling);
+                                    const int ns, const int ncatg, const int npatterns, const int apply_scaling,
+                                    const phydbl *wght);
 
 
 
