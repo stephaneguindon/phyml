@@ -66,13 +66,12 @@ void Bootstrap_MPI(t_tree *tree, int tbe_bootstrap)
 
   boot_data = Copy_Cseq(tree->data,tree->io);
 
-  if (Global_myRank == 0)
-    PhyML_Printf("\n. Non parametric bootstrap analysis \n");
+  if (Global_myRank == 0) PhyML_Printf("\n. Non parametric bootstrap analysis \n");
 
   if(Global_numTask <= 1)
     {
       PhyML_Printf("\n. The number of CPUs used in the MPI bootstrap analysis should be");
-      PhyML_Printf("\n. strictly greater than 1.");
+      PhyML_Printf("\n. strictly greater than 1 (it is equal to %d here).",Global_numTask);
       assert(FALSE);
     }
   
@@ -252,9 +251,9 @@ void Bootstrap_MPI(t_tree *tree, int tbe_bootstrap)
       Init_Partial_Pars_Tips(boot_tree);
       Br_Len_Not_Involving_Invar(boot_tree);
       
-      Switch_Eigen(YES,boot_tree->mod);                 
+      Set_Update_Eigen(YES,boot_tree->mod);                 
       Lk(NULL,boot_tree);
-      Switch_Eigen(NO,boot_tree->mod);
+      Set_Update_Eigen(NO,boot_tree->mod);
 
       if(boot_tree->mod->s_opt->opt_topo)
         {
@@ -291,7 +290,7 @@ void Bootstrap_MPI(t_tree *tree, int tbe_bootstrap)
 
       if(tree->io->print_boot_trees)
         {
-          Add_Duplicates(boot_tree);
+          Insert_Duplicates(boot_tree);
           s = Write_Tree(boot_tree,NO);
           t=(char *)mCalloc(T_MAX_LINE,sizeof(char));
           Print_Fp_Out_Lines_MPI(boot_tree, tree->io, replicate+1, t);
