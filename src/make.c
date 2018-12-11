@@ -743,7 +743,7 @@ calign *Make_Calign(int n_otu, int crunch_len, int state_len, int init_len, char
       cdata->c_seq[j]            = (align *)mCalloc(1,sizeof(align));
       cdata->c_seq[j]->name      = (char *)mCalloc((int)(strlen(sp_names_in[j])+1),sizeof(char));
       strcpy(cdata->c_seq[j]->name,sp_names_in[j]);
-      cdata->c_seq[j]->state     = (char *)mCalloc(crunch_len*state_len,sizeof(char));
+      cdata->c_seq[j]->state     = (char *)mCalloc(crunch_len*state_len+1,sizeof(char));
       cdata->c_seq[j]->d_state   = (int *)mCalloc(crunch_len*state_len,sizeof(int));
       cdata->c_seq[j]->is_ambigu = (short int *)mCalloc(crunch_len,sizeof(short int));
     }
@@ -751,7 +751,9 @@ calign *Make_Calign(int n_otu, int crunch_len, int state_len, int init_len, char
   for(j=0;j<n_rm;j++)
     {
       cdata->c_seq_rm[j]            = (align *)mCalloc(1,sizeof(align));
-      cdata->c_seq_rm[j]->state     = (char *)mCalloc(crunch_len*state_len,sizeof(char));
+      cdata->c_seq_rm[j]->name      = (char *)mCalloc((int)(strlen(sp_names_out[j])+1),sizeof(char));
+      strcpy(cdata->c_seq_rm[j]->name,sp_names_out[j]);
+      cdata->c_seq_rm[j]->state     = (char *)mCalloc(crunch_len*state_len+1,sizeof(char));
       cdata->c_seq_rm[j]->d_state   = (int *)mCalloc(crunch_len*state_len,sizeof(int));
       cdata->c_seq_rm[j]->is_ambigu = (short int *)mCalloc(crunch_len,sizeof(short int));
       cdata->c_seq_rm[j]->name      = (char *)mCalloc((int)(strlen(sp_names_out[j])+1),sizeof(char));

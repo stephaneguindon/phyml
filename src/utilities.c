@@ -3109,8 +3109,10 @@ void Bootstrap(t_tree *tree, int tbe_bootstrap)
       init_len = 0;
       for(j=0;j<boot_data->crunch_len;j++) init_len += boot_data->wght[j];
 
+      
       if(init_len != tree->data->init_len) Exit("\n. Pb. when copying sequences\n");
 
+      
       if(tree->io->datatype == NT)      Get_Base_Freqs(boot_data);
       else if(tree->io->datatype == AA) Get_AA_Freqs(boot_data);
 
@@ -3159,6 +3161,7 @@ void Bootstrap(t_tree *tree, int tbe_bootstrap)
 
       if((boot_tree->mod->s_opt->random_input_tree) && (boot_tree->mod->s_opt->topo_search == SPR_MOVE)) Random_Tree(boot_tree);
 
+      
       Connect_CSeqs_To_Nodes(boot_data,tree->io,boot_tree);
 
       Make_Tree_For_Pars(boot_tree);
