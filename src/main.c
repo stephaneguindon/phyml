@@ -233,13 +233,10 @@ int main(int argc, char **argv)
                   if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
 
 
-
-
                   
                   Set_Update_Eigen(YES,tree->mod);                 
                   Lk(NULL,tree);
                   Set_Update_Eigen(NO,tree->mod);
-
                   
                   if(tree->mod->s_opt->opt_topo)
 		    {

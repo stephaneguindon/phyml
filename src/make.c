@@ -16,13 +16,12 @@ the GNU public licence. See http://www.opensource.org for details.
 
 void Make_Tree_For_Lk(t_tree *tree)
 {
-  int i,n_site;
+  int i;
   calign *cdata;
 
   cdata = tree->data;
   assert(cdata);
 
-  n_site = tree->data->init_len;
   
   tree->c_lnL_sorted         = (phydbl *)mCalloc(tree->n_pattern,sizeof(phydbl));
   tree->cur_site_lk          = (phydbl *)mCalloc(tree->n_pattern,sizeof(phydbl));
@@ -100,13 +99,12 @@ void Make_Tree_For_Lk(t_tree *tree)
 
 void Make_Tree_For_Pars(t_tree *tree)
 {
-  int i,n_site;
+  int i;
   calign *cdata;
 
   cdata = tree->data;
   assert(cdata);
 
-  n_site = tree->data->init_len;
 
   assert(tree->mod);
   
@@ -752,9 +750,11 @@ calign *Make_Calign(int n_otu, int crunch_len, int state_len, int init_len, char
 
   for(j=0;j<n_rm;j++)
     {
+      cdata->c_seq_rm[j]            = (align *)mCalloc(1,sizeof(align));
       cdata->c_seq_rm[j]->state     = (char *)mCalloc(crunch_len*state_len,sizeof(char));
       cdata->c_seq_rm[j]->d_state   = (int *)mCalloc(crunch_len*state_len,sizeof(int));
       cdata->c_seq_rm[j]->is_ambigu = (short int *)mCalloc(crunch_len,sizeof(short int));
+      cdata->c_seq_rm[j]->name      = (char *)mCalloc((int)(strlen(sp_names_out[j])+1),sizeof(char));
     }
   
   return cdata;
