@@ -8944,29 +8944,28 @@ int Edge_Num_To_Node_Num(int edge_num, t_tree *tree)
 
 void Time_To_Bl(t_tree *tree)
 {
-  Time_To_Bl_Pre(tree->n_root,tree->n_root->v[2],tree);
-  Time_To_Bl_Pre(tree->n_root,tree->n_root->v[1],tree);
+  Time_To_Bl_Pre(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
+  Time_To_Bl_Pre(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
   tree->n_root->l[1]->v = tree->rates->nd_t[tree->n_root->v[1]->num] - tree->rates->nd_t[tree->n_root->num];
-  tree->n_root->l[2]->v = tree->rates->nd_t[tree->n_root->v[1]->num] - tree->rates->nd_t[tree->n_root->num];
+  tree->n_root->l[2]->v = tree->rates->nd_t[tree->n_root->v[2]->num] - tree->rates->nd_t[tree->n_root->num];
   tree->e_root->l->v = tree->n_root->l[1]->v + tree->n_root->l[2]->v;
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Time_To_Bl_Pre(t_node *a, t_node *d, t_tree *tree)
+void Time_To_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 {
   int i;
-  
-  /* tree->rates->cur_l[d->num] = FABS(tree->rates->nd_t[d->num] - tree->rates->nd_t[a->num]); */
-  tree->rates->cur_l[d->num] = tree->rates->nd_t[d->num] - tree->rates->nd_t[a->num];
+
+  b->l->v = tree->rates->nd_t[d->num] - tree->rates->nd_t[a->num];
   
   if(d->tax) return;
   else
     {
       for(i=0;i<3;i++)
         if((d->v[i] != a) && (d->b[i] != tree->e_root))
-          Time_To_Bl_Pre(d,d->v[i],tree);
+          Time_To_Bl_Pre(d,d->v[i],d->b[i],tree);
     }
 }
 
@@ -12818,7 +12817,63 @@ phydbl Tree_Height(t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+/* Adjust node ages so that every edge in tree has length > min_l. Assume strict 
+   molecular clock
+*/
+void  Inflate_Times_To_Get_Reasonnable_Edge_Lengths(phydbl min_l, t_tree *tree)
+{
+  phydbl l1,l2;
+  
+  Post_Inflate_Times_To_Get_Reasonnable_Edge_Lengths(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],min_l,tree);
+  Post_Inflate_Times_To_Get_Reasonnable_Edge_Lengths(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],min_l,tree);
 
+  l1 = (tree->rates->nd_t[tree->n_root->v[1]->num] - tree->rates->nd_t[tree->n_root->num]) * tree->rates->clock_r;
+  l2 = (tree->rates->nd_t[tree->n_root->v[2]->num] - tree->rates->nd_t[tree->n_root->num]) * tree->rates->clock_r;
+  
+  if(MIN(l1,l2) < min_l)
+    {
+      tree->rates->nd_t[tree->n_root->num] = -(min_l / tree->rates->clock_r -
+                                               MIN(tree->rates->nd_t[tree->n_root->v[1]->num],
+                                                   tree->rates->nd_t[tree->n_root->v[2]->num]));
+    }
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+void Post_Inflate_Times_To_Get_Reasonnable_Edge_Lengths(t_node *a, t_node *d, t_edge *b, phydbl min_l, t_tree *tree)
+{
+  if(d->tax == YES) return;
+  else
+    {
+      int i,dir1,dir2;
+      phydbl l1,l2;
+
+      for(i=0;i<3;++i)
+        if(d->v[i] != a && d->b[i] != tree->e_root)
+          Post_Inflate_Times_To_Get_Reasonnable_Edge_Lengths(d,d->v[i],d->b[i],min_l,tree);
+      
+      dir1 = dir2 = -1;
+      for(i=0;i<3;++i)
+        {
+          if(d->v[i] != a && d->b[i] != tree->e_root)
+            {
+              if(dir1 < 0) dir1 = i;
+              else         dir2 = i;
+            }
+        }
+
+      l1 = (tree->rates->nd_t[d->v[dir1]->num] - tree->rates->nd_t[d->num]) * tree->rates->clock_r;
+      l2 = (tree->rates->nd_t[d->v[dir2]->num] - tree->rates->nd_t[d->num]) * tree->rates->clock_r;
+
+      if(MIN(l1,l2) < min_l)
+        {
+          tree->rates->nd_t[d->num] = -(min_l / tree->rates->clock_r - MIN(tree->rates->nd_t[d->v[dir1]->num],tree->rates->nd_t[d->v[dir2]->num]));
+        }
+      
+    }
+  
+}
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/

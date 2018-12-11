@@ -19,8 +19,6 @@ the GNU public licence. See http://www.opensource.org for details.
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-
 void TIMES_Least_Square_Node_Times(t_edge *e_root, t_tree *tree)
 {
 
@@ -1814,7 +1812,8 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
               assert(list_size <= mixt_tree->n_otu);
             }
                     
-          /* PhyML_Printf("\n. Time: %f [%f %f]\n", */
+          /* PhyML_Printf("\n"); */
+          /* PhyML_Printf("\n. Time: %f [%f %f]", */
           /*              cal_times[cal_ordering[i]], */
           /*              cal->lower, */
           /*              cal->upper); */

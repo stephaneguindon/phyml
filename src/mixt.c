@@ -1020,7 +1020,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
               PhyML_Fprintf(stderr,"\n. pinv = %G",mixt_tree->mod->ras->pinvar->v);
               PhyML_Fprintf(stderr,"\n. bl mult = %G",mixt_tree->mod->br_len_mult->v);
               PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d.\n",__FILE__,__LINE__);
-              Exit("\n");
+              /* Exit("\n"); */
             }
                     
           // ... or using the log-likelihood

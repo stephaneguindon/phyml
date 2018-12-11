@@ -280,7 +280,7 @@ phydbl Generic_Brent(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
   int iter;
   phydbl a,b,d,etemp,fu,fv,fw,fx,p,q,r,tol1,tol2,u,v,w,x,xm;
   phydbl e=0.0;
-  phydbl old_score,init_score;
+  phydbl old_score;
   phydbl bx = *param;
   int n_opt_step;
   
@@ -291,7 +291,7 @@ phydbl Generic_Brent(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
   x=w=v=bx;
   (*param) = bx;
   fw=fv=fx=fu=(*obj_func)(tree);
-  init_score = old_score = fw;
+  old_score = fw;
   
   /* PhyML_Printf("\n. %p init_score=%f fu=%f ax=%f cx=%f param=%f",tree,init_score,fu,ax,cx,*param); */
   
@@ -3605,6 +3605,7 @@ void Least_Square_Node_Ages(t_tree *tree)
           if(tree->a_nodes[i]->tax == NO)
             {
               n = tree->a_nodes[i];
+              old = -1.;
               
               dir1 = dir2 = -1;
               for(j=0;j<3;++j)
@@ -3640,6 +3641,16 @@ void Least_Square_Node_Ages(t_tree *tree)
             }
           if(RATES_Check_Node_Times(tree)) Exit("\n");
         }
+
+      sum_error += Generic_Brent(&(tree->rates->clock_r),
+                                 tree->rates->min_clock,
+                                 tree->rates->max_clock,
+                                 1.E-10,10000,
+                                 TIMES_Least_Square_Criterion,
+                                 tree);
+
+      /* PhyML_Printf("\n clock_r: %g",tree->rates->clock_r); */
+      
       new_error = sum_error;
       /* assert(new_error < cur_error+SMALL); */
     }

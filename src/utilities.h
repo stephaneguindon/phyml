@@ -2178,7 +2178,7 @@ t_node *Find_Lca_Clade(t_node **node_list,int node_list_size,t_tree *tree);
 int Get_List_Of_Ancestors(t_node *ref_node,t_node **list,int *size,t_tree *tree);
 int Edge_Num_To_Node_Num(int edge_num,t_tree *tree);
 void Time_To_Bl(t_tree *tree);
-void Time_To_Bl_Pre(t_node *a,t_node *d,t_tree *tree);
+void Time_To_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree);
 void Branch_Lengths_To_Rate_Lengths(t_tree *tree);
 void Branch_Lengths_To_Rate_Lengths_Pre(t_node *a,t_node *d,t_tree *tree);
 int Find_Clade(char **tax_name_list,int list_size,t_tree *tree);
@@ -2312,6 +2312,8 @@ void Get_Node_Ranks_From_Dist_To_Root(t_tree *tree);
 void Get_Node_Ranks_From_Times(t_tree *tree);
 void Get_Node_Ranks_From_Tip_Times(t_tree *tree);
 phydbl Tree_Height(t_tree *tree);
+void Post_Inflate_Times_To_Get_Reasonnable_Edge_Lengths(t_node *a, t_node *d, t_edge *b, phydbl min_l, t_tree *tree);
+void  Inflate_Times_To_Get_Reasonnable_Edge_Lengths(phydbl min_l, t_tree *tree);
 
 
 #include "xml.h"

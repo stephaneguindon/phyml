@@ -588,14 +588,14 @@ char *Write_Tree(t_tree *tree, int custom)
                 (!tree->a_nodes[tree->n_otu+i]->v[1]) ||
                 (!tree->a_nodes[tree->n_otu+i]->v[2])) i++;
           
-          R_wtree(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[0],&available,&s,tree);
-          R_wtree(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[1],&available,&s,tree);
-          R_wtree(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[2],&available,&s,tree);
+          R_wtree(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[0],tree->a_nodes[tree->n_otu+i]->b[0],&available,&s,tree);
+          R_wtree(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[1],tree->a_nodes[tree->n_otu+i]->b[1],&available,&s,tree);
+          R_wtree(tree->a_nodes[tree->n_otu+i],tree->a_nodes[tree->n_otu+i]->v[2],tree->a_nodes[tree->n_otu+i]->b[2],&available,&s,tree);
         }
       else
         {
-          R_wtree(tree->n_root,tree->n_root->v[2],&available,&s,tree);
-          R_wtree(tree->n_root,tree->n_root->v[1],&available,&s,tree);
+          R_wtree(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],&available,&s,tree);
+          R_wtree(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],&available,&s,tree);
         }
     }
   else
@@ -617,8 +617,8 @@ char *Write_Tree(t_tree *tree, int custom)
         }
       else
         {
-          R_wtree_Custom(tree->n_root,tree->n_root->v[2],&available,&s,&pos,tree);
           R_wtree_Custom(tree->n_root,tree->n_root->v[1],&available,&s,&pos,tree);
+          R_wtree_Custom(tree->n_root,tree->n_root->v[2],&available,&s,&pos,tree);
         }
 
     }
@@ -639,14 +639,12 @@ char *Write_Tree(t_tree *tree, int custom)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *tree)
+void R_wtree(t_node *pere, t_node *fils, t_edge *b, int *available, char **s_tree, t_tree *tree)
 {
   int i,p;
   char *format;
   int last_len;
-#if !(defined PHYTIME || defined INVITEE)
   phydbl mean_len;
-#endif
   
   format = (char *)mCalloc(100,sizeof(char));
 
@@ -696,41 +694,9 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
         {
           (*s_tree)[(int)strlen(*s_tree)] = ':';
           
-#if !(defined PHYTIME || defined PHYREX)
-          if(tree->n_root == NULL)
-            {
-              if(tree->is_mixt_tree == NO) mean_len = fils->b[0]->l->v;
-              else mean_len = MIXT_Get_Mean_Edge_Len(fils->b[0],tree);
-              sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,mean_len));
-            }
-          else
-            {
-              if(pere == tree->n_root)
-                {
-                  phydbl root_pos = (fils == tree->n_root->v[2])?(tree->n_root_pos):(1.-tree->n_root_pos);
-                  if(tree->is_mixt_tree == NO) mean_len = tree->e_root->l->v;
-                  else mean_len = MIXT_Get_Mean_Edge_Len(tree->e_root,tree);
-                  sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,mean_len) * root_pos);
-                }
-              else
-                {
-                  if(tree->is_mixt_tree == NO) mean_len = fils->b[0]->l->v;                  
-                  else mean_len = MIXT_Get_Mean_Edge_Len(fils->b[0],tree);
-                  sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,mean_len));
-                }
-            }
-#else
-          if(tree->n_root == NULL)
-            {
-              sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,fils->b[0]->l->v));
-            }
-          else
-            {
-              /* if(tree->rates) sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,tree->rates->cur_l[fils->num])); */
-              /* else */
-              sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,fils->b[0]->l->v));
-            }
-#endif
+          if(tree->is_mixt_tree == NO) mean_len = b->l->v;
+          else mean_len = MIXT_Get_Mean_Edge_Len(b,tree);
+          sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,mean_len));
         }
       
       /* strcat(*s_tree,","); */
@@ -755,9 +721,8 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
       if(*available < (int)T_MAX_NAME)
         {
           (*s_tree) = (char *)mRealloc(*s_tree,(int)strlen(*s_tree)+3*(int)T_MAX_NAME,sizeof(char));
-          For(i,3*(int)T_MAX_NAME) (*s_tree)[(int)strlen(*s_tree)+i] = '\0';
+          for(i=0;i<3*(int)T_MAX_NAME;++i) (*s_tree)[(int)strlen(*s_tree)+i] = '\0';
           (*available) = 3*(int)T_MAX_NAME;
-          /* printf("\n. ++ 0 Available = %d",(*available)); */
         }
 #endif
       
@@ -769,43 +734,21 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
 #ifndef MPI
       (*available) -= 1;
       
-      /* printf("\n1 Available = %d [%d %d]",(*available),(int)strlen(*s_tree),last_len); */
-      /* printf("\n1 %s [%d,%d]",*s_tree,(int)(int)strlen(*s_tree),*available); */
       
       if(*available < (int)T_MAX_NAME)
         {
           (*s_tree) = (char *)mRealloc(*s_tree,(int)strlen(*s_tree)+3*(int)T_MAX_NAME,sizeof(char));
           For(i,3*(int)T_MAX_NAME) (*s_tree)[(int)strlen(*s_tree)+i] = '\0';
           (*available) = 3*(int)T_MAX_NAME;
-          /* printf("\n. ++ 1 Available = %d",(*available)); */
         }
 #endif
-      /* (*available)--; */
-      
-      /* if(*available < (int)T_MAX_NAME/2) */
-      /* 	{ */
-      /* 	  (*s_tree) = (char *)mRealloc(*s_tree,*pos+(int)T_MAX_NAME,sizeof(char)); */
-      /* 	  (*available) = (int)T_MAX_NAME; */
-      /* 	} */
       
       
-      if(tree->n_root != NULL)
+      for(i=0;i<3;i++)
         {
-          for(i=0;i<3;i++)
-            {
-              if((fils->v[i] != pere) && (fils->b[i] != tree->e_root))
-                R_wtree(fils,fils->v[i],available,s_tree,tree);
-              else p=i;
-            }
-        }
-      else
-        {
-          for(i=0;i<3;i++)
-            {
-              if(fils->v[i] != pere)
-                R_wtree(fils,fils->v[i],available,s_tree,tree);
-              else p=i;
-            }
+          if((fils->v[i] != pere) && (fils->b[i] != tree->e_root))
+            R_wtree(fils,fils->v[i],fils->b[i],available,s_tree,tree);
+          else p=i;        
         }
       
       if(p < 0)
@@ -845,60 +788,16 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
           
           (*s_tree)[(int)strlen(*s_tree)] = ':';
           
-#if !(defined PHYTIME || defined INVITEE || defined PHYREX)
-          if(!tree->n_root)
-            {
-              if(tree->is_mixt_tree == NO)
-                {
-                  mean_len = fils->b[p]->l->v;
-                }
-              else mean_len = MIXT_Get_Mean_Edge_Len(fils->b[p],tree);
-              sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,mean_len));
-            }
-          else
-            {
-              if(pere == tree->n_root)
-                {
-                  phydbl root_pos = (fils == tree->n_root->v[2])?(tree->n_root_pos):(1.-tree->n_root_pos);
-                  
-                  if(tree->is_mixt_tree == NO)
-                    {
-                      mean_len = (tree->e_root)?(tree->e_root->l->v):(-1.0);
-                    }
-                  else mean_len = MIXT_Get_Mean_Edge_Len(tree->e_root,tree);
-                  sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,mean_len) * root_pos);
-                }
-              else
-                {
-                  if(tree->is_mixt_tree == NO)
-                    {
-                      mean_len = fils->b[p]->l->v;
-                    }
-                  else mean_len = MIXT_Get_Mean_Edge_Len(fils->b[p],tree);
-                  sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,mean_len));
-                }
-            }
-#else
-          if(tree->n_root == NULL)
-            {
-              sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,fils->b[p]->l->v));
-            }
-          else
-            {
-	      if(tree->rates) sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,tree->rates->cur_l[fils->num]));
-              /* sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,fils->b[p]->l->v)); */
-            }
-#endif
+          if(tree->is_mixt_tree == NO) mean_len = b->l->v;
+          else mean_len = MIXT_Get_Mean_Edge_Len(b,tree);
+          sprintf(*s_tree+(int)strlen(*s_tree),format,MAX(0.0,mean_len));
         }
       
-      /* strcat(*s_tree,","); */
       (*s_tree)[(int)strlen(*s_tree)] = ',';
 
 #ifndef MPI
       (*available) -= ((int)strlen(*s_tree) - last_len);
 
-      /* printf("\n2 Available = %d [%d %d]",(*available),(int)strlen(*s_tree),last_len); */
-      /* printf("\n2 %s [%d,%d]",*s_tree,(int)(int)strlen(*s_tree),*available); */
 
       if(*available < 0)
         {
@@ -910,17 +809,11 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
       if(*available < (int)T_MAX_NAME)
         {
           (*s_tree) = (char *)mRealloc(*s_tree,(int)strlen(*s_tree)+3*(int)T_MAX_NAME,sizeof(char));
-          For(i,3*(int)T_MAX_NAME) (*s_tree)[(int)strlen(*s_tree)+i] = '\0';
+          for(i=0;i<3*(int)T_MAX_NAME;++i) (*s_tree)[(int)strlen(*s_tree)+i] = '\0';
           (*available) = 3*(int)T_MAX_NAME;
-          /* printf("\n. ++ 2 Available = %d",(*available)); */
         }
 #endif
 
-      /* if(*available < (int)T_MAX_NAME/2) */
-      /* 	{ */
-      /* 	  (*s_tree) = (char *)mRealloc(*s_tree,*pos+(int)T_MAX_NAME,sizeof(char)); */
-      /* 	  (*available) = (int)T_MAX_NAME; */
-      /* 	} */
     }
 
   Free(format);
@@ -928,7 +821,6 @@ void R_wtree(t_node *pere, t_node *fils, int *available, char **s_tree, t_tree *
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void R_wtree_Custom(t_node *pere, t_node *fils, int *available, char **s_tree, int *pos, t_tree *tree)
 {

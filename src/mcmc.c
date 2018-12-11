@@ -7109,13 +7109,13 @@ void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree)
   block         = 100;
   all_disks     = NULL;
   log_lbda      = tree->mmod->lbda;
-
+  
   if(tree->young_disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   disk = tree->young_disk->prev;
   n_all_disks = 0;
   do
     {
-      if(disk->ldsk && disk->ldsk->n_next > 1) /* Moving disks other than coalescent is pointless */
+      if(disk->ldsk && disk->ldsk->n_next > 1 && disk->age_fixed == NO) /* Moving disks other than coalescent is pointless */
         {
           if(!n_all_disks) all_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
           else if(!(n_all_disks%block)) all_disks = (t_dsk **)mRealloc(all_disks,n_all_disks+block,sizeof(t_dsk *));
@@ -7146,6 +7146,7 @@ void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree)
           max = target_disk[i]->next->time;
           min = target_disk[i]->prev->time;
           new_time = Uni()*(max - min) + min;
+          /* PhyML_Printf("\n. disk: %s max: %f min: %f curr_time: %f new_time: %f",target_disk[i]->id,max,min,target_disk[i]->time,new_time); */
         }
       else
         {
@@ -7153,19 +7154,23 @@ void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree)
 
           max = target_disk[i]->next->time;
 
-          cur_plusmin = FABS(ori_time[i] - max);
+          cur_plusmin = fabs(ori_time[i] - max);
           new_plusmin = Rexp(1./cur_plusmin);
 
           new_time = max - new_plusmin;
 
+          /* PhyML_Printf("\n. disk: %s max: %f new_plusmin: %f",target_disk[i]->id,max,new_plusmin); */
+
           hr += log(Dexp(cur_plusmin,1./new_plusmin));
           hr -= log(Dexp(new_plusmin,1./cur_plusmin));
 
-          new_glnL -= (log_lbda - FABS(ori_time[i]-max)*tree->mmod->lbda);
-          new_glnL += (log_lbda - FABS(new_time   -max)*tree->mmod->lbda);
+          new_glnL -= (log_lbda - fabs(ori_time[i]-max)*tree->mmod->lbda);
+          new_glnL += (log_lbda - fabs(new_time   -max)*tree->mmod->lbda);
         }
             
       target_disk[i]->time = new_time;
+      PHYREX_Ldsk_To_Tree(tree);      
+      PHYREX_Check_Struct(tree);
     }
   
 
@@ -7250,7 +7255,9 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree)
   t_dsk  *disk;
   phydbl K;
   phydbl cur_lbda, new_lbda;
+  phydbl cur_clock_r, new_clock_r;
 
+  
   disk            = NULL;
   cur_alnL        = tree->c_lnL;
   new_alnL        = tree->c_lnL;
@@ -7261,7 +7268,9 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree)
   K               = tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_scale_times];
   cur_lbda        = tree->mmod->lbda;
   new_lbda        = tree->mmod->lbda;
-
+  cur_clock_r     = tree->rates->clock_r;
+  new_clock_r     = tree->rates->clock_r;
+  
   u = Uni();
   scale_fact_times = exp(K*(u-.5));
   
@@ -7271,8 +7280,12 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree)
   disk = tree->young_disk->prev;
   do
     {
-      disk->time = disk->time * scale_fact_times;
-      n_disks++;
+      if(disk->age_fixed == NO)
+        {
+          disk->time = disk->time * scale_fact_times;
+          n_disks++;
+        }
+      
       disk = disk->prev;
     }
   while(disk);
@@ -7287,7 +7300,11 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree)
   new_lbda = cur_lbda * (1./scale_fact_times);
   hr += log(1./scale_fact_times);
   tree->mmod->lbda = new_lbda;
-
+  
+  new_clock_r = cur_clock_r * (1./scale_fact_times);
+  hr += log(1./scale_fact_times);
+  tree->rates->clock_r = new_clock_r;
+  
   new_glnL = PHYREX_Lk(tree);
   new_alnL = Lk(NULL,tree);
 
@@ -7313,12 +7330,13 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree)
   if(u > alpha) /* Reject */
     {
       tree->mmod->lbda = cur_lbda;
+      tree->rates->clock_r = cur_clock_r;
 
       /* printf("- Reject");       */
       disk = tree->young_disk->prev;
       do
         {
-          disk->time /= scale_fact_times;
+          if(disk->age_fixed == NO) disk->time /= scale_fact_times;
           disk = disk->prev;
         }
       while(disk);
@@ -8592,7 +8610,7 @@ void MCMC_PHYREX_Lineage_Traj(t_tree *tree)
   t_dsk  *disk,**valid_disks;
   t_ldsk *start_ldsk,*end_ldsk,*cur_path,*new_path,*ldsk,*ldsk_dum;
   int j,block,n_valid_disks;
-  phydbl rate,dt,sizeT;
+  phydbl dt,sizeT;
   int n_hits,n_iter,cur_path_len,new_path_len;
   int pos,*permut;
 
@@ -8653,7 +8671,7 @@ void MCMC_PHYREX_Lineage_Traj(t_tree *tree)
       sizeT        = PHYREX_Time_Tree_Length(tree);
       dt           = fabs(start_ldsk->disk->time - end_ldsk->disk->time);
       cur_path_len = PHYREX_Path_Len(start_ldsk,end_ldsk)-2;
-      rate         = (phydbl)(n_hits - cur_path_len)/(sizeT - dt);
+      /* rate         = (phydbl)(n_hits - cur_path_len)/(sizeT - dt); */
 
       
       /* PhyML_Printf("\n. start_ldsk: %p end_ldsk: %p",start_ldsk,end_ldsk); */

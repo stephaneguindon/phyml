@@ -597,8 +597,8 @@ int main(int argc, char **argv)
       PhyML_Printf("\n<calibration id=\"cal%d\">",i+1);
       strncpy(s,io->data[i]->name,4);
       s[4]='\0';
-      PhyML_Printf("\n<lower>%s</lower>",s);
-      PhyML_Printf("\n<upper>%s</upper>",s);
+      PhyML_Printf("\n<lower>%d</lower>",atoi(s)-2017);
+      PhyML_Printf("\n<upper>%d</upper>",atoi(s)-2017);
       PhyML_Printf("\n<appliesto clade.id=\"clad%d\"/>",i+1);
       PhyML_Printf("\n</calibration>");
     }

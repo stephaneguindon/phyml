@@ -28,7 +28,6 @@ int Next_Par(char *s,int pos);
 void Print_List(t_ll *list);
 void Print_Tree(FILE *fp,t_tree *tree);
 char *Write_Tree(t_tree *tree,int custom);
-void R_wtree(t_node *pere,t_node *fils,int *available,char **s_tree,t_tree *tree);
 void R_wtree_Custom(t_node *pere,t_node *fils,int *available,char **s_tree,int *pos,t_tree *tree);
 void Detect_Align_File_Format(option *io);
 void Detect_Tree_File_Format(option *io);
@@ -104,5 +103,6 @@ json_o *JSON_Tree_To_Object(t_tree *tree);
 json_o *JSON_Tree_To_Object_Light(t_tree *mixt_tree);
 scalar_dbl *Read_Io_Weights(option *io);
 void Print_Lk_Given_Edge_Recurr(t_node *a, t_node *d, t_edge *b, t_tree *tree);
+void R_wtree(t_node *pere, t_node *fils, t_edge *b, int *available, char **s_tree, t_tree *tree);
 
 #endif
