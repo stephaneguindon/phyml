@@ -1219,11 +1219,11 @@ phydbl Invariant_Lk(int fact_sum_scale, int site, int *num_prec_issue, t_tree *t
           if(isinf(inv_site_lk)) // P(D|r=0) >> P(D|r>0) => assume P(D) = P(D|r=0)P(r=0)
             {
               int i;
-              PhyML_Printf("\n. fact_sum_scale: %d",fact_sum_scale);              
-              PhyML_Printf("\n. pi: %f",tree->mod->e_frq->pi->v[tree->data->invar[site]]);              
-              for(i=0;i<tree->mod->ns;i++) PhyML_Printf("\n. pi %d: %f",i,tree->mod->e_frq->pi->v[i]);
-              PhyML_Printf("\n. Numerical precision issue alert.");
-              PhyML_Printf("\n. File %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
+              PhyML_Fprintf(stderr,"\n. fact_sum_scale: %d",fact_sum_scale);              
+              PhyML_Fprintf(stderr,"\n. pi: %f",tree->mod->e_frq->pi->v[tree->data->invar[site]]);              
+              for(i=0;i<tree->mod->ns;i++) PhyML_Fprintf(stderr,"\n. pi %d: %f",i,tree->mod->e_frq->pi->v[i]);
+              PhyML_Fprintf(stderr,"\n. Numerical precision issue alert.");
+              PhyML_Fprintf(stderr,"\n. File %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
               (*num_prec_issue) = YES;
             }
         }
