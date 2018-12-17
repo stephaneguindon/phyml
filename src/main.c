@@ -261,11 +261,14 @@ int main(int argc, char **argv)
 
                   /* !!!!!!!!!!!!!!!!!!!!!!! */
                   rewind(tree->io->fp_out_tree);
+                  PhyML_Fprintf(tree->io->fp_out_tree,"\n#NEXUS");
+                  PhyML_Fprintf(tree->io->fp_out_tree,"\nBEGIN TREES;");
                   for(int i=0;i<100;++i)
                     {
-                      PhyML_Fprintf(tree->io->fp_out_tree,"\n%s",Write_Tree(tree,NO));
+                      PhyML_Fprintf(tree->io->fp_out_tree,"\ntree %d [&lnP=%f] = [&R] %s",i,tree->c_lnL,Write_Tree(tree,NO));
                       Sample_Ancestral_Seq(YES,NO,tree);
                     }
+                  PhyML_Fprintf(tree->io->fp_out_tree,"\nEND;");
                   Exit("\n");
 
 
