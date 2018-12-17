@@ -1540,7 +1540,7 @@ phydbl TIMES_Lk_Birth_Death(int verbose, t_tree *tree)
 void TIMES_Connect_List_Of_Taxa(t_node **tax_list, int list_size, phydbl t_mrca, phydbl *times, int *nd_num, t_tree *mixt_tree)
 {
   phydbl t_upper_bound, t_lower_bound,up,lo;
-  int i,j,n_anc,*permut;
+  int i,j,n_anc,*permut,rand_idx;
   t_node *n,**anc,*new_mrca;
 
   // Calibration of a tip node
@@ -1600,9 +1600,9 @@ void TIMES_Connect_List_Of_Taxa(t_node **tax_list, int list_size, phydbl t_mrca,
         }
       
       // Connect randomly and set ages
-      /* permut = Permutate(n_anc); */
-      permut = (int *)mCalloc(n_anc,sizeof(int));
-      for(i=0;i<n_anc;i++) permut[i] = i;
+      permut = Permutate(n_anc);
+      /* permut = (int *)mCalloc(n_anc,sizeof(int)); */
+      /* for(i=0;i<n_anc;i++) permut[i] = i; */
       i = 0;
       do
         {
@@ -1613,7 +1613,7 @@ void TIMES_Connect_List_Of_Taxa(t_node **tax_list, int list_size, phydbl t_mrca,
           new_mrca->v[2]         = anc[permut[i+1]];
           new_mrca->v[0]         = NULL;
           up                     = MIN(times[new_mrca->v[1]->num],times[new_mrca->v[2]->num]);
-          lo                     = up - (up - t_mrca)/10.;
+          lo                     = up - (up - t_mrca)/5.;
           times[new_mrca->num]   = Uni()*(up - lo) + lo;
           
           /* times[new_mrca->num]   = t_upper_bound - ((phydbl)(i+1.)/n_anc)*(t_upper_bound - t_lower_bound); */
@@ -1632,8 +1632,15 @@ void TIMES_Connect_List_Of_Taxa(t_node **tax_list, int list_size, phydbl t_mrca,
           /*        times[new_mrca->v[2]->num] */
           /*        ); */
           /* fflush(NULL); */
-          
+
           anc[permut[i+1]] = new_mrca;
+
+          rand_idx = Rand_Int(i+1,n_anc-1);
+          n                     = anc[permut[i+1]];
+          anc[permut[i+1]]      = anc[permut[rand_idx]];
+          anc[permut[rand_idx]] = n;
+
+          
           i++;
           (*nd_num) += 1;
           if(n_anc == i+1) { times[new_mrca->num] = t_mrca; break; }
@@ -1658,8 +1665,8 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
 
   assert(mixt_tree->rates);
   
-  tips    = (t_node **)mCalloc(mixt_tree->n_otu,sizeof(t_node *));
-  nd_list = (t_node **)mCalloc(mixt_tree->n_otu,sizeof(t_node *));
+  tips               = (t_node **)mCalloc(mixt_tree->n_otu,sizeof(t_node *));
+  nd_list            = (t_node **)mCalloc(2*mixt_tree->n_otu-1,sizeof(t_node *));
   tip_is_in_cal_clad = (int *)mCalloc(mixt_tree->n_otu,sizeof(t_node *));
                                       
   times                   = mixt_tree->rates->nd_t;
@@ -1855,7 +1862,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
           clade = cal->clade_list[cal->current_clade_idx];
           nd_list[list_size] = clade->tip_list[0];
           list_size++;
-          assert(list_size <= mixt_tree->n_otu);
+          assert(list_size <= 2*mixt_tree->n_otu-1);
           cal = cal->next;
         }
       while(cal);
@@ -1864,7 +1871,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       
       TIMES_Connect_List_Of_Taxa(nd_list,
                                  list_size,
-                                 1.5*time_oldest_cal,
+                                 10.*time_oldest_cal,
                                  times,
                                  &nd_num,
                                  mixt_tree);

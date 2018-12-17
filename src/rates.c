@@ -32,11 +32,7 @@ phydbl RATES_Lk_Rates(t_tree *tree)
   RATES_Lk_Rates_Pre(tree->n_root,tree->n_root->v[2],NULL,tree);
   RATES_Lk_Rates_Pre(tree->n_root,tree->n_root->v[1],NULL,tree);
 
-  if(isnan(tree->rates->c_lnL_rates))
-    {
-      PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d (function '%s')\n",__FILE__,__LINE__,__FUNCTION__);
-      Exit("\n");
-    }
+  if(isnan(tree->rates->c_lnL_rates)) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
   return tree->rates->c_lnL_rates;
 }
@@ -2400,25 +2396,23 @@ void RATES_Posterior_Time_Root(t_tree *tree)
 void RATES_Update_Cur_Bl(t_tree *tree)
 {
   
-  RATES_Update_Cur_Bl_Pre(tree->n_root,tree->n_root->v[2],NULL,tree);
-  RATES_Update_Cur_Bl_Pre(tree->n_root,tree->n_root->v[1],NULL,tree);
+  RATES_Update_Cur_Bl_Pre(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
+  RATES_Update_Cur_Bl_Pre(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
   
   if(tree->mod && tree->mod->log_l == YES)
     {
       tree->e_root->l->v = 
-	exp(tree->rates->cur_l[tree->n_root->v[2]->num]) +
-	exp(tree->rates->cur_l[tree->n_root->v[1]->num]) ;
+	exp(tree->n_root->b[1]->l->v) +
+	exp(tree->n_root->b[2]->l->v) ;
       tree->e_root->l->v = log(tree->e_root->l->v);
     }
   else
     {
-      tree->e_root->l->v = 
-	tree->rates->cur_l[tree->n_root->v[2]->num] +
-	tree->rates->cur_l[tree->n_root->v[1]->num] ;
+      tree->e_root->l->v = tree->n_root->b[1]->l->v + tree->n_root->b[2]->l->v;
     }
 
   tree->rates->u_cur_l[tree->e_root->num] = tree->e_root->l->v;
-  tree->n_root_pos = tree->rates->cur_l[tree->n_root->v[2]->num] / tree->e_root->l->v;
+  tree->n_root_pos = tree->n_root->b[2]->l->v / tree->e_root->l->v;
   
   if(tree->rates->model == GUINDON)
     {
@@ -2485,9 +2479,8 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
       if(tree->rates->model == LOGNORMAL)
         {
           rr = rd;
-          tree->rates->cur_l[d->num] = dt*rr*cr;
-          /* PhyML_Printf("\n. a: %d d: %d rr: %f dt: %f cr: %f tree: %p",a->num,d->num,rr,dt,cr,tree); */
-          
+          tree->rates->cur_l[d->num] = dt*rr*cr;          
+          /* PhyML_Printf("\n. a: %d d: %d rr: %f dt: %f cr: %f tree: %p",a->num,d->num,rr,dt,cr,tree); */    
         }
 
       if(tree->rates->model == THORNE)

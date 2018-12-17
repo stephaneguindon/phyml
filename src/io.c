@@ -3829,7 +3829,7 @@ void PhyML_Fprintf(FILE *fp, char *format, ...)
       va_end(ptr);
 #endif
 
-  /* fflush (NULL); */
+  fflush (NULL);
 }
 
 //////////////////////////////////////////////////////////////

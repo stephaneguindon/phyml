@@ -4960,8 +4960,11 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
   cpy->t_beg                     = ori->t_beg;
   cpy->verbose                   = ori->verbose;
 
-  if(ori->data) cpy->data = ori->data;
-  if(ori->mod)  cpy->mod  = ori->mod;
+  /* only stick to copying tree topology. Don't copy data or model or it will
+     screw up a mixt_tree analyis 
+  */
+  /* if(ori->data) cpy->data = ori->data; */
+  /* if(ori->mod)  cpy->mod  = ori->mod; */
   
 #ifdef BEAGLE
   cpy->b_inst = ori->b_inst;

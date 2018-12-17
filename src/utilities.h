@@ -727,6 +727,7 @@ typedef struct __Tree{
   short int                         eval_glnL; /*! Evaluate tree likelihood */
   short int                    scaling_method;
   short int                     fully_nni_opt;
+  short int                 numerical_warning;
   
   short int                      use_eigen_lr;
   int                            is_mixt_tree;

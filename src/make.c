@@ -1312,8 +1312,8 @@ t_rate *RATES_Make_Rate_Struct(int n_otu)
       rates->mean_l               = (phydbl *)mCalloc(2*n_otu-2,sizeof(phydbl));
       rates->ml_l                 = (phydbl *)mCalloc(2*n_otu-2,sizeof(phydbl));
       rates->cur_l                = (phydbl *)mCalloc(2*n_otu-2,sizeof(phydbl));
-      rates->u_ml_l               = (phydbl *)mCalloc(2*n_otu-3,sizeof(phydbl));
-      rates->u_cur_l              = (phydbl *)mCalloc(2*n_otu-3,sizeof(phydbl));
+      rates->u_ml_l               = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
+      rates->u_cur_l              = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
       rates->cov_r                = (phydbl *)mCalloc((2*n_otu-2)*(2*n_otu-2),sizeof(phydbl));
       rates->cond_var             = (phydbl *)mCalloc(2*n_otu-2,sizeof(phydbl));
       rates->mean_r               = (phydbl *)mCalloc(2*n_otu-2,sizeof(phydbl));

@@ -449,21 +449,23 @@ phydbl Lk(t_edge *b, t_tree *tree)
 {
   unsigned int br,catg,state,ambiguity_check,site;
   phydbl len,*expl,*dot_prod,*p_lk_left,*p_lk_rght;  
+
   const unsigned int ns = tree->mod->ns;
   const unsigned int ncatg = tree->mod->ras->n_catg;
   const unsigned int npatterns = tree->n_pattern;
   const unsigned int nsncatg = ns * ncatg;
 
+  tree->numerical_warning = NO;
   
   if(tree->eval_alnL == NO) return UNLIKELY;
-
+  
   if(b == NULL && tree->mod->s_opt->curr_opt_free_rates == YES)
     {
       tree->mod->s_opt->curr_opt_free_rates = NO;
       Optimize_Free_Rate_Weights(tree,YES,YES);
       tree->mod->s_opt->curr_opt_free_rates = YES;
     }
-
+  
 #ifdef PHYREX
   PHYREX_Ldsk_To_Tree(tree);
 #endif
@@ -599,7 +601,7 @@ if(tree->rates && tree->io->lk_approx == NORMAL)
           if(tree->mixt_tree != NULL)     len *= tree->mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number];
           if(len < tree->mod->l_min)      len = tree->mod->l_min;
           else if(len > tree->mod->l_max) len = tree->mod->l_max;
-          for(state=0;state<ns;++state) expl[catg*ns+state] = (phydbl)POW(tree->mod->eigen->e_val[state],len);
+          for(state=0;state<ns;++state) expl[catg*ns+state] = (phydbl)pow(tree->mod->eigen->e_val[state],len);
         }
     }
 
@@ -669,6 +671,8 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
 
   phydbl *dot_prod = tree->dot_prod;
   phydbl *expl = tree->expl;
+
+  tree->numerical_warning = NO;
   
   assert(isnan(*l) == FALSE);
 
@@ -715,10 +719,7 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
           expl[catg*2*ns + 2*state + 1] = expevlen*ev*rr;
         }
     }
-  
-
-  CALL++;
-  
+    
   dlnlk  = 0.0;
   lnlk   = 0.0;
   
@@ -829,6 +830,12 @@ phydbl Lk_Core(int state, int ambiguity_check,
   if(tree->apply_lk_scaling == YES) res = site_lk / pow(2,tree->fact_sum_scale[site]);
   else                              res = site_lk;
 
+  if(site_lk < SMALL)
+    {
+      site_lk = SMALL;
+      tree->numerical_warning = YES;
+    }
+  
   log_site_lk = log(site_lk) - (phydbl)LOG2 * tree->fact_sum_scale[site]; // log_site_lk =  log(site_lk_scaled / 2^(left_subtree+right_subtree))
   tree->c_lnL_sorted[site] = log_site_lk;
   tree->c_lnL += tree->data->wght[site] * log_site_lk;
@@ -904,6 +911,12 @@ phydbl Lk_Core_Eigen_Lr(phydbl *expl, phydbl *dot_prod, t_edge *b, t_tree *tree)
             break;
           }
         }
+    }
+
+  if(site_lk < SMALL)
+    {
+      site_lk = SMALL;
+      tree->numerical_warning = YES;
     }
 
   // likelihood (or 1st, 2nd derivative) not rescaled here. Valid only if all partial likelihoods
@@ -992,6 +1005,12 @@ void Lk_dLk_Core_Eigen_Lr(phydbl *expl, phydbl *dot_prod, t_edge *b, phydbl *lk,
             break;
           }
         }
+    }
+
+  if(*lk < SMALL)
+    {
+      *lk = SMALL;
+      tree->numerical_warning = YES;
     }
 }
 
@@ -1167,7 +1186,10 @@ phydbl Lk_Core_One_Class_No_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, phydb
           if(p_lk_rght[k] > .0) /* Only bother ascending into the subtrees if the likelihood of state k, at site "site*dim2" is > 0 */
             {
               sum = .0;
-              for(l=0;l<ns;l++) sum += Pij[l] * p_lk_left[l];                       
+              for(l=0;l<ns;l++)
+                {
+                  sum += Pij[l] * p_lk_left[l];
+                }
               lk += sum * pi[k] * p_lk_rght[k];
             }
           Pij += ns;
@@ -1214,7 +1236,6 @@ phydbl Invariant_Lk(int fact_sum_scale, int site, int *num_prec_issue, t_tree *t
               while(exponent != 0);
             }
 
-          
           /* Update the value of site_lk */
           if(isinf(inv_site_lk)) // P(D|r=0) >> P(D|r>0) => assume P(D) = P(D|r=0)P(r=0)
             {
@@ -2154,6 +2175,9 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
       MIXT_Update_PMat_At_Given_Edge(b_fcus,tree);
       return;
     }
+
+  if(tree->mixt_tree != NULL) assert(tree->mod->ras->n_catg == 1);
+    
 
   if(tree->io->mod->gamma_mgf_bl == YES) Set_Br_Len_Var(b_fcus,tree);
 

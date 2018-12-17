@@ -685,7 +685,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
   tree = mixt_tree;
   do
     {
-      if(!cpy_mixt_b) Update_RAS(tree->mod);
+      Update_RAS(tree->mod);
       tree = tree->next_mixt;
     }
   while(tree);
@@ -708,8 +708,64 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
   while(tree);
 
 
+  if(!cpy_mixt_b)
+    {
+      for(br=0;br<2*mixt_tree->n_otu-3;++br) MIXT_Update_PMat_At_Given_Edge(mixt_tree->a_edges[br],mixt_tree);
+      
+      if(mixt_tree->n_root && mixt_tree->ignore_root == NO)
+        {
+          MIXT_Update_PMat_At_Given_Edge(mixt_tree->n_root->b[1],mixt_tree);
+          MIXT_Update_PMat_At_Given_Edge(mixt_tree->n_root->b[2],mixt_tree);
+        }
+    }
+  else
+    {
+      MIXT_Update_PMat_At_Given_Edge(mixt_b,mixt_tree);
+    }
+
+  if(!cpy_mixt_b)
+    {
+      if(mixt_tree->n_root != NULL)
+        {
+          if(mixt_tree->ignore_root == NO)
+            {                  
+              MIXT_Post_Order_Lk(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);
+              MIXT_Post_Order_Lk(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree);
+              
+              MIXT_Update_Partial_Lk(mixt_tree,mixt_tree->n_root->b[1],mixt_tree->n_root);
+              MIXT_Update_Partial_Lk(mixt_tree,mixt_tree->n_root->b[2],mixt_tree->n_root);
+              
+              if(mixt_tree->both_sides == YES)
+                {
+                  MIXT_Pre_Order_Lk(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);              
+                  MIXT_Pre_Order_Lk(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree);
+                }
+            }
+          else
+            {
+              MIXT_Post_Order_Lk(mixt_tree->e_root->rght,mixt_tree->e_root->left,mixt_tree);              
+              MIXT_Post_Order_Lk(mixt_tree->e_root->left,mixt_tree->e_root->rght,mixt_tree);
+              
+              if(mixt_tree->both_sides == YES)
+                {
+                  MIXT_Pre_Order_Lk(mixt_tree->e_root->rght,mixt_tree->e_root->left,mixt_tree);
+                  MIXT_Pre_Order_Lk(mixt_tree->e_root->left,mixt_tree->e_root->rght,mixt_tree);
+                }
+            }
+        }
+      else
+        {
+          MIXT_Post_Order_Lk(mixt_tree->a_nodes[0],mixt_tree->a_nodes[0]->v[0],mixt_tree);
+          if(mixt_tree->both_sides == YES)
+            {
+              MIXT_Pre_Order_Lk(mixt_tree->a_nodes[0],mixt_tree->a_nodes[0]->v[0],mixt_tree);
+            }
+        }
+    }
+  
   do /*! Consider each element of the data partition */
     {
+      mixt_tree->c_lnL = 0.0;
       tree = mixt_tree->next;
       do
         {
@@ -719,72 +775,6 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
       while(tree && tree->is_mixt_tree == NO);
             
       Set_Br_Len_Var(mixt_b,mixt_tree);
-
-      if(!cpy_mixt_b)
-        {
-          for(br=0;br<2*mixt_tree->n_otu-3;++br) Update_PMat_At_Given_Edge(mixt_tree->a_edges[br],mixt_tree);
-
-          if(mixt_tree->n_root && mixt_tree->ignore_root == NO)
-            {
-              Update_PMat_At_Given_Edge(mixt_tree->n_root->b[1],mixt_tree);
-              Update_PMat_At_Given_Edge(mixt_tree->n_root->b[2],mixt_tree);
-            }
-        }
-      else
-        {
-          Update_PMat_At_Given_Edge(mixt_b,mixt_tree);
-        }
-            
-      if(!cpy_mixt_b)
-        {
-          if(mixt_tree->n_root != NULL)
-            {
-              if(mixt_tree->ignore_root == NO)
-                {                  
-                  MIXT_Post_Order_Lk(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);
-                  MIXT_Post_Order_Lk(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree);
-                  
-                  MIXT_Update_Partial_Lk(mixt_tree,mixt_tree->n_root->b[1],mixt_tree->n_root);
-                  MIXT_Update_Partial_Lk(mixt_tree,mixt_tree->n_root->b[2],mixt_tree->n_root);
-                
-                  if(mixt_tree->both_sides == YES)
-                    {
-                      MIXT_Pre_Order_Lk(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);              
-                      MIXT_Pre_Order_Lk(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree);
-                    }
-                }
-              else
-                {
-                  MIXT_Post_Order_Lk(mixt_tree->e_root->rght,
-                                     mixt_tree->e_root->left,
-                                     mixt_tree);
-
-                  MIXT_Post_Order_Lk(mixt_tree->e_root->left,
-                                     mixt_tree->e_root->rght,
-                                     mixt_tree);
-
-                  if(mixt_tree->both_sides == YES)
-                    {
-                      MIXT_Pre_Order_Lk(mixt_tree->e_root->rght,
-                                         mixt_tree->e_root->left,
-                                         mixt_tree);
-                      MIXT_Pre_Order_Lk(mixt_tree->e_root->left,
-                                         mixt_tree->e_root->rght,
-                                         mixt_tree);
-                    }
-                }
-            }
-          else
-            {
-              MIXT_Post_Order_Lk(mixt_tree->a_nodes[0],mixt_tree->a_nodes[0]->v[0],mixt_tree);
-              if(mixt_tree->both_sides == YES)
-                {
-                  MIXT_Pre_Order_Lk(mixt_tree->a_nodes[0],
-                                    mixt_tree->a_nodes[0]->v[0],
-                                    mixt_tree);
-                }
-            }
-        }
 
       if(!cpy_mixt_b) 
         {
@@ -845,7 +835,13 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
         }
       while(tree && tree->is_mixt_tree == NO);
 
-
+      tree = mixt_tree;
+      do
+        {
+          tree->numerical_warning = NO;
+          tree = tree->next;
+        }
+      while(tree);
 
       mixt_tree->c_lnL = .0;
       
@@ -923,6 +919,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                     }
                 }
               
+              
               tree->apply_lk_scaling = YES;
 
               sum_scale_left_cat[tree->mod->ras->parent_class_number] =
@@ -939,8 +936,16 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                 sum_scale_left_cat[tree->mod->ras->parent_class_number] +
                 sum_scale_rght_cat[tree->mod->ras->parent_class_number];
 
+              if(sum > 1024.)
+                {
+                  /* PhyML_Fprintf(stderr,"\n. Numerical precision issue detected (sum = %g)!!!",sum); */
+                  sum = 1023.;
+                  tree->mixt_tree->numerical_warning = YES;
+                  tree->numerical_warning = YES;
+                }
+              
               site_lk_cat /= pow(2,sum);
-
+              
               tree->site_lk_cat[0] = site_lk_cat;
                       
               tree = tree->next;
@@ -995,7 +1000,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                     }
                 }
 
-              /*! 'tree' will give the correct state frequencies (as opposed to mixt_tree */
+              /*! 'tree' will give the correct state frequencies (as opposed to mixt_tree) */
               inv_site_lk = Invariant_Lk(0,site,&num_prec_issue,tree);
 
               if(num_prec_issue == YES) // inv_site_lk >> site_lk
@@ -1008,20 +1013,25 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                 }
             }
 
-          log_site_lk = log(site_lk);
-          
-          if(isinf(log_site_lk) || isnan(log_site_lk))
+          if(site_lk < SMALL)
             {
-              PhyML_Fprintf(stderr,"\n. site = %d",site);
-              PhyML_Fprintf(stderr,"\n. invar = %d",mixt_tree->data->invar[site]);
-              PhyML_Fprintf(stderr,"\n. mixt = %d",mixt_tree->is_mixt_tree);
-              PhyML_Fprintf(stderr,"\n. lk = %G log(lk) = %f < %G",site_lk,log_site_lk,-BIG);
-              for(class=0;class<mixt_tree->mod->ras->n_catg;class++) PhyML_Fprintf(stderr,"\n. rr=%f p=%f",mixt_tree->mod->ras->gamma_rr->v[class],mixt_tree->mod->ras->gamma_r_proba->v[class]);
-              PhyML_Fprintf(stderr,"\n. pinv = %G",mixt_tree->mod->ras->pinvar->v);
-              PhyML_Fprintf(stderr,"\n. bl mult = %G",mixt_tree->mod->br_len_mult->v);
-              PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d.\n",__FILE__,__LINE__);
+              /* PhyML_Fprintf(stderr,"\n. site = %d",site); */
+              /* PhyML_Fprintf(stderr,"\n. invar = %d",mixt_tree->data->invar[site]); */
+              /* PhyML_Fprintf(stderr,"\n. mixt = %d",mixt_tree->is_mixt_tree); */
+              /* PhyML_Fprintf(stderr,"\n. lk = %G log(lk) = %f < %G",site_lk,log_site_lk,-BIG); */
+              /* for(class=0;class<mixt_tree->mod->ras->n_catg;class++) PhyML_Fprintf(stderr,"\n. rr=%f p=%f",mixt_tree->mod->ras->gamma_rr->v[class],mixt_tree->mod->ras->gamma_r_proba->v[class]); */
+              /* PhyML_Fprintf(stderr,"\n. pinv = %G",mixt_tree->mod->ras->pinvar->v); */
+              /* PhyML_Fprintf(stderr,"\n. bl mult = %G",mixt_tree->mod->br_len_mult->v); */
+              /* PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d.\n",__FILE__,__LINE__); */
               /* Exit("\n"); */
+              
+              site_lk = SMALL;
+              mixt_tree->numerical_warning = YES;
             }
+
+          log_site_lk = log(site_lk);
+
+          
                     
           // ... or using the log-likelihood
           if(isinf(site_lk) || isnan(site_lk))

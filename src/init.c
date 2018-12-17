@@ -155,6 +155,7 @@ void Init_Tree(t_tree *tree, int n_otu)
   tree->n_edges_traversed         = 0;
   tree->fully_nni_opt             = NO;
   tree->n_tot_bl_opt              = 0;
+  tree->numerical_warning         = NO;
   
 #ifdef BEAGLE
   tree->b_inst                    = UNINITIALIZED;
@@ -3485,7 +3486,7 @@ void PHYREX_Init_Migrep_Mod(t_phyrex_mod *t, int n_dim, phydbl max_lat, phydbl m
 
   t->name             = PHYREX_NORMAL;
   t->n_dim            = n_dim;
-  t->safe_phyrex      = NO;
+  t->safe_phyrex      = YES;
   
   t->lim->lonlat[0]   = max_lat;
   t->lim->lonlat[1]   = max_lon;
