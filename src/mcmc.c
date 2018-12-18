@@ -8055,14 +8055,22 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
 
       /* Prune and regraft */
       cur_path_len = PHYREX_Path_Len(prune_daughter_ldsk,prune_ldsk)-2;      
-      hr += PHYREX_Path_Logdensity(prune_daughter_ldsk,prune_ldsk,cur_path_len,1.*tree->mmod->rad,tree);
+      new_path_len = Rpois(cur_path_len+1);
+
+      hr -= Dpois(new_path_len,cur_path_len+1,YES);
+      hr += Dpois(cur_path_len,new_path_len+1,YES);
+
+      hr -= (new_path_len) * log(1./fabs(prune_daughter_ldsk->disk->time - regraft_ldsk->disk->time));
+      hr += (cur_path_len) * log(1./fabs(prune_daughter_ldsk->disk->time - prune_ldsk->disk->time));
+
+     
+      hr += PHYREX_Path_Logdensity(prune_daughter_ldsk,prune_ldsk,1.*tree->mmod->rad,tree);
       
       new_path = PHYREX_Generate_Path(prune_daughter_ldsk,regraft_ldsk,cur_path_len,1.0*tree->mmod->rad,tree);
       cur_path = PHYREX_Remove_Path(prune_daughter_ldsk,prune_ldsk,&cur_pos,tree);
       PHYREX_Insert_Path(prune_daughter_ldsk,regraft_ldsk,new_path,regraft_ldsk->n_next,tree);
 
-      new_path_len = PHYREX_Path_Len(prune_daughter_ldsk,regraft_ldsk)-2;
-      hr -= PHYREX_Path_Logdensity(prune_daughter_ldsk,regraft_ldsk,new_path_len,1.0*tree->mmod->rad,tree);
+      hr -= PHYREX_Path_Logdensity(prune_daughter_ldsk,regraft_ldsk,1.0*tree->mmod->rad,tree);
             
       PHYREX_Ldsk_To_Tree(tree);
       Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
@@ -8208,16 +8216,21 @@ void MCMC_PHYREX_Lineage_Traj(t_tree *tree)
       new_glnL -= PHYREX_Lk_Range(start_ldsk->disk,end_ldsk->disk,tree);
       
       cur_path_len = PHYREX_Path_Len(start_ldsk,end_ldsk)-2;
-      
-      /* PhyML_Printf("\n. start_ldsk: %p end_ldsk: %p",start_ldsk,end_ldsk); */
-      hr += PHYREX_Path_Logdensity(start_ldsk,end_ldsk,cur_path_len,1.*tree->mmod->rad,tree);
+      new_path_len = Rpois(cur_path_len+1);
 
-      new_path = PHYREX_Generate_Path(start_ldsk,end_ldsk,cur_path_len,1.*tree->mmod->rad,tree);
+      hr -= Dpois(new_path_len,cur_path_len+1,YES);
+      hr += Dpois(cur_path_len,new_path_len+1,YES);
+
+      hr -= (new_path_len) * log(1./fabs(start_ldsk->disk->time - end_ldsk->disk->time));
+      hr += (cur_path_len) * log(1./fabs(start_ldsk->disk->time - end_ldsk->disk->time));
+      
+      hr += PHYREX_Path_Logdensity(start_ldsk,end_ldsk,1.*tree->mmod->rad,tree);
+
+      new_path = PHYREX_Generate_Path(start_ldsk,end_ldsk,new_path_len,1.*tree->mmod->rad,tree);
       cur_path = PHYREX_Remove_Path(start_ldsk,end_ldsk,&pos,tree);
       PHYREX_Insert_Path(start_ldsk,end_ldsk,new_path,pos,tree);
 
-      new_path_len = PHYREX_Path_Len(start_ldsk,end_ldsk)-2;
-      hr -= PHYREX_Path_Logdensity(start_ldsk,end_ldsk,new_path_len,1.*tree->mmod->rad,tree);
+      hr -= PHYREX_Path_Logdensity(start_ldsk,end_ldsk,1.*tree->mmod->rad,tree);
 
       new_glnL += PHYREX_Lk_Range(start_ldsk->disk,end_ldsk->disk,tree);
       tree->mmod->c_lnL = new_glnL;

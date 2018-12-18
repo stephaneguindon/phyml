@@ -91,7 +91,7 @@ void PHYREX_Insert_Ldsk_In_Next_List(t_ldsk *ins, int pos, t_ldsk *where);
 t_ldsk *PHYREX_Remove_Path(t_ldsk *beg, t_ldsk *end, int *pos_end, t_tree *tree);
 void PHYREX_Insert_Path(t_ldsk *beg, t_ldsk *end, t_ldsk *path, int pos, t_tree *tree);
 t_ldsk *PHYREX_Generate_Path(t_ldsk *beg, t_ldsk *end, phydbl n_evt, phydbl sd, t_tree *tree);
-phydbl PHYREX_Path_Logdensity(t_ldsk *beg, t_ldsk *end, phydbl cur_n_evt, phydbl sd, t_tree *tree);
+phydbl PHYREX_Path_Logdensity(t_ldsk *beg, t_ldsk *end, phydbl sd, t_tree *tree);
 phydbl PHYREX_Time_Tree_Length(t_tree *tree);
 void PHYREX_Time_Tree_Length_Pre(t_ldsk *a, t_ldsk *d, phydbl *len, t_tree *tree);
 int PHYREX_Is_On_Path(t_ldsk *target, t_ldsk *beg, t_ldsk *end);

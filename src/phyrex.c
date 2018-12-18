@@ -4617,9 +4617,9 @@ phydbl PHYREX_Effective_Density(t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-t_ldsk *PHYREX_Generate_Path(t_ldsk *beg, t_ldsk *end, phydbl cur_n_evt, phydbl sd, t_tree *tree)
+t_ldsk *PHYREX_Generate_Path(t_ldsk *beg, t_ldsk *end, phydbl n_evt, phydbl sd, t_tree *tree)
 {
-  int n_evt,i,j,swap,err;
+  int i,j,swap,err;
   phydbl dt,*time,dum,mode;
   t_ldsk *path,**ldsk_a;
   t_dsk *disk;
@@ -4627,9 +4627,6 @@ t_ldsk *PHYREX_Generate_Path(t_ldsk *beg, t_ldsk *end, phydbl cur_n_evt, phydbl 
   dt = fabs(beg->disk->time - end->disk->time);
   path = NULL;
   
-  /* How many hit events ? */
-  n_evt = Rpois(cur_n_evt+1);
-
   if(n_evt == 0) return(NULL); // path is set to NULL
 
   time   = (phydbl *)mCalloc(n_evt,sizeof(phydbl));
@@ -4701,7 +4698,7 @@ t_ldsk *PHYREX_Generate_Path(t_ldsk *beg, t_ldsk *end, phydbl cur_n_evt, phydbl 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-phydbl PHYREX_Path_Logdensity(t_ldsk *beg, t_ldsk *end, phydbl cur_n_evt, phydbl sd, t_tree *tree)
+phydbl PHYREX_Path_Logdensity(t_ldsk *beg, t_ldsk *end, phydbl sd, t_tree *tree)
 {
   int i,j,err,n_evt;
   t_ldsk *ldsk;
@@ -4752,32 +4749,6 @@ phydbl PHYREX_Path_Logdensity(t_ldsk *beg, t_ldsk *end, phydbl cur_n_evt, phydbl
           j++;
         }
     }
-
-  
-  rate = cur_n_evt+1;
-
-  /* PhyML_Printf("\n. PATH sd: %f rate: %f mu: %f", */
-  /*              sd, */
-  /*              rate, */
-  /*              tree->mmod->mu); */
-  /* PhyML_Printf("\n>> dens: %f cur_n_evt: %f sd: %f mu: %f perunit: %f", */
-  /*              lnDens, */
-  /*              cur_n_evt, */
-  /*              sd, */
-  /*              tree->mmod->mu, */
-  /*              PHYREX_Rate_Per_Unit_Area(tree)); */
-
-  
-  if(rate > DBL_MIN) lnDens += Dpois(n_evt,rate,YES);
-  lnDens += (n_evt) * log(1./fabs(end->disk->time - beg->disk->time));
-  /* lnDens += LnFact(n_evt); */
-
-  /* PhyML_Printf("\n. dens: %f cur_n_evt: %f sd: %f mu: %f perunit: %f", */
-  /*              lnDens, */
-  /*              cur_n_evt, */
-  /*              sd, */
-  /*              tree->mmod->mu, */
-  /*              PHYREX_Rate_Per_Unit_Area(tree)); */
   
   return(lnDens);
 }
@@ -5306,7 +5277,7 @@ int PHYREX_Number_Of_Outgoing_Ldsks(t_dsk *disk)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
-/* Select unifirmly at random a lineage going "out of" disk */
+/* Select uniformly at random a lineage going "out of" disk */
 t_ldsk *PHYREX_Random_Select_Outgoing_Ldsk(t_dsk *disk)
 {
   int i,*permut,n_ldsk_a_out;
