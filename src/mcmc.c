@@ -7772,7 +7772,7 @@ void MCMC_PHYREX_Delete_Hit(phydbl hr, int n_delete_disks, phydbl cur_rad, phydb
 
       /* Part of the Hastings ratio corresponding to the probability of selecting */
       /* target_disk->ldsk->next[0] to be hit (reverse move) */ 
-      hr += log(1./target_disk[j]->next->n_ldsk_a);
+      /* hr += log(1./target_disk[j]->next->n_ldsk_a); */
       
       /* Density for position of the displaced ldsk */
       for(i=0;i<tree->mmod->n_dim;i++)
@@ -9104,7 +9104,7 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
 
           /* Part of the Hastings ratio corresponding to the probability of selecting */
           /* one of target_disk->n_ldsk_a to be hit */ 
-          hr += log(1./target_disk->prev->n_ldsk_a);
+          /* hr += log(1./target_disk->prev->n_ldsk_a); */
           
 
           /* Density for position of the displaced ldsk */

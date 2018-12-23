@@ -1985,7 +1985,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   /* Starting parameter values */
   tree->mmod->lbda = Uni()*(0.5 - 0.2) + 0.2;
   tree->mmod->mu   = Uni()*(0.6 - 0.3) + 0.3;
-  tree->mmod->rad  = Uni()*(3.0 - 1.0) + 1.0;
+  tree->mmod->rad  = Uni()*(1.5 - 1.0) + 1.0;
   PHYREX_Update_Sigsq(tree);
   
   MIXT_Set_Bl_From_Rt(YES,tree);
@@ -2057,7 +2057,14 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   PhyML_Fprintf(fp_stats,"%s\t","tuneMu");
   
   for(i=0;i<mcmc->n_moves;i++) tree->mcmc->start_ess[i] = YES;
- 
+
+
+  /* !!!!!!!!!!!!!!!!!!!!!! */
+  tree->mcmc->always_yes = YES;
+  MCMC_PHYREX_Insert_Disk(1.0,2000,tree->mmod->lbda,tree->mmod->mu,tree->mmod->rad,tree);
+  tree->mcmc->always_yes = NO;
+
+  
   PHYREX_Lk(tree);        
   Set_Update_Eigen(YES,tree->mod);
   Lk(NULL,tree);
