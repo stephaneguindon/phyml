@@ -6876,8 +6876,7 @@ void MCMC_PHYREX_Delete_Disk(phydbl hr, int n_delete_disks, phydbl cur_lbda, phy
   // Pr(n-k -> n) i.e., numerator
   hr += n_delete_disks * log(1./T);
   hr += LnFact(n_delete_disks);
-  
-  
+    
   new_glnL = PHYREX_Lk(tree);
   ratio += (new_glnL - cur_glnL);
   ratio += hr;

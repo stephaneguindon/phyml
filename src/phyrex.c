@@ -1985,7 +1985,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   /* Starting parameter values */
   tree->mmod->lbda = Uni()*(0.5 - 0.2) + 0.2;
   tree->mmod->mu   = Uni()*(0.6 - 0.3) + 0.3;
-  tree->mmod->rad  = Uni()*(1.5 - 1.0) + 1.0;
+  tree->mmod->rad  = Uni()*(3.0 - 2.0) + 2.0;
   PHYREX_Update_Sigsq(tree);
   
   MIXT_Set_Bl_From_Rt(YES,tree);
@@ -2114,11 +2114,11 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_rad"))
         MCMC_PHYREX_Radius(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_disk"))
-        MCMC_PHYREX_Indel_Disk(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_disk")) */
+      /*   MCMC_PHYREX_Indel_Disk(tree); */
 
-      if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_hit"))
-        MCMC_PHYREX_Indel_Hit(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_hit")) */
+      /*   MCMC_PHYREX_Indel_Hit(tree); */
 
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_move_disk_ud"))
         MCMC_PHYREX_Move_Disk_Updown(tree);

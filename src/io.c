@@ -3050,29 +3050,28 @@ void Print_Freq(t_tree *tree)
       }
     case AA:
       {
-    PhyML_Printf("A : %f\n",tree->mod->e_frq->pi->v[0]);
-    PhyML_Printf("R : %f\n",tree->mod->e_frq->pi->v[1]);
-    PhyML_Printf("N : %f\n",tree->mod->e_frq->pi->v[2]);
-    PhyML_Printf("D : %f\n",tree->mod->e_frq->pi->v[3]);
-    PhyML_Printf("C : %f\n",tree->mod->e_frq->pi->v[4]);
-    PhyML_Printf("Q : %f\n",tree->mod->e_frq->pi->v[5]);
-    PhyML_Printf("E : %f\n",tree->mod->e_frq->pi->v[6]);
-    PhyML_Printf("G : %f\n",tree->mod->e_frq->pi->v[7]);
-    PhyML_Printf("H : %f\n",tree->mod->e_frq->pi->v[8]);
-    PhyML_Printf("I : %f\n",tree->mod->e_frq->pi->v[9]);
-    PhyML_Printf("L : %f\n",tree->mod->e_frq->pi->v[10]);
-    PhyML_Printf("K : %f\n",tree->mod->e_frq->pi->v[11]);
-    PhyML_Printf("M : %f\n",tree->mod->e_frq->pi->v[12]);
-    PhyML_Printf("F : %f\n",tree->mod->e_frq->pi->v[13]);
-    PhyML_Printf("P : %f\n",tree->mod->e_frq->pi->v[14]);
-    PhyML_Printf("S : %f\n",tree->mod->e_frq->pi->v[15]);
-    PhyML_Printf("T : %f\n",tree->mod->e_frq->pi->v[16]);
-    PhyML_Printf("W : %f\n",tree->mod->e_frq->pi->v[17]);
-    PhyML_Printf("Y : %f\n",tree->mod->e_frq->pi->v[18]);
-    PhyML_Printf("V : %f\n",tree->mod->e_frq->pi->v[19]);
-
-    PhyML_Printf("N : %f\n",tree->mod->e_frq->pi->v[20]);
-    break;
+        PhyML_Printf("A : %f\n",tree->mod->e_frq->pi->v[0]);
+        PhyML_Printf("R : %f\n",tree->mod->e_frq->pi->v[1]);
+        PhyML_Printf("N : %f\n",tree->mod->e_frq->pi->v[2]);
+        PhyML_Printf("D : %f\n",tree->mod->e_frq->pi->v[3]);
+        PhyML_Printf("C : %f\n",tree->mod->e_frq->pi->v[4]);
+        PhyML_Printf("Q : %f\n",tree->mod->e_frq->pi->v[5]);
+        PhyML_Printf("E : %f\n",tree->mod->e_frq->pi->v[6]);
+        PhyML_Printf("G : %f\n",tree->mod->e_frq->pi->v[7]);
+        PhyML_Printf("H : %f\n",tree->mod->e_frq->pi->v[8]);
+        PhyML_Printf("I : %f\n",tree->mod->e_frq->pi->v[9]);
+        PhyML_Printf("L : %f\n",tree->mod->e_frq->pi->v[10]);
+        PhyML_Printf("K : %f\n",tree->mod->e_frq->pi->v[11]);
+        PhyML_Printf("M : %f\n",tree->mod->e_frq->pi->v[12]);
+        PhyML_Printf("F : %f\n",tree->mod->e_frq->pi->v[13]);
+        PhyML_Printf("P : %f\n",tree->mod->e_frq->pi->v[14]);
+        PhyML_Printf("S : %f\n",tree->mod->e_frq->pi->v[15]);
+        PhyML_Printf("T : %f\n",tree->mod->e_frq->pi->v[16]);
+        PhyML_Printf("W : %f\n",tree->mod->e_frq->pi->v[17]);
+        PhyML_Printf("Y : %f\n",tree->mod->e_frq->pi->v[18]);
+        PhyML_Printf("V : %f\n",tree->mod->e_frq->pi->v[19]);        
+        PhyML_Printf("N : %f\n",tree->mod->e_frq->pi->v[20]);
+        break;
       }
     default : {break;}
     }

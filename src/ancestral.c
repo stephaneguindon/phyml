@@ -848,6 +848,11 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
                     {
                       PhyML_Fprintf(fp,"%4c",Integer_To_IUPAC_Code(MPEE_Infer(p,ns)));
                     }
+                  else
+                    {
+                      PhyML_Fprintf(stderr,"\n. Ancestral inference of amino-acid not fully implemented yet.");
+                      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+                    }
 
                   PhyML_Fprintf(fp,"\n");
                 }
