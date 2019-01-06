@@ -7232,13 +7232,13 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree)
   hr += (n_disks)*log(scale_fact_times);
 
   /* Adjust the value of lambda */
-  new_lbda = cur_lbda * (1./scale_fact_times);
-  hr += log(1./scale_fact_times);
-  tree->mmod->lbda = new_lbda;
+  /* new_lbda = cur_lbda * (1./scale_fact_times); */
+  /* hr += log(1./scale_fact_times); */
+  /* tree->mmod->lbda = new_lbda; */
   
-  new_clock_r = cur_clock_r * (1./scale_fact_times);
-  hr += log(1./scale_fact_times);
-  tree->rates->clock_r = new_clock_r;
+  /* new_clock_r = cur_clock_r * (1./scale_fact_times); */
+  /* hr += log(1./scale_fact_times); */
+  /* tree->rates->clock_r = new_clock_r; */
   
   new_glnL = PHYREX_Lk(tree);
   new_alnL = Lk(NULL,tree);

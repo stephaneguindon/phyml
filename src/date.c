@@ -305,7 +305,7 @@ void DATE_Update_T_Prior_MinMax(t_tree *tree)
   int i,j;
 
   
-  for(i=tree->n_otu;i<2*tree->n_otu-1;++i) // All internal nodes 
+  for(i=0;i<2*tree->n_otu-1;++i) // All nodes 
     {
       tree->rates->t_prior_max[i] = 0.0;
       tree->rates->t_prior_min[i] = -INFINITY;
@@ -314,12 +314,12 @@ void DATE_Update_T_Prior_MinMax(t_tree *tree)
         {
           for(j=0;j<tree->a_nodes[i]->n_cal;++j)
             {
+              PhyML_Printf("\n. upper: %f lower: %f",tree->a_nodes[i]->cal[j]->upper,tree->a_nodes[i]->cal[j]->lower);
               tree->rates->t_prior_max[i] = MIN(tree->rates->t_prior_max[i],tree->a_nodes[i]->cal[j]->upper);
               tree->rates->t_prior_min[i] = MAX(tree->rates->t_prior_min[i],tree->a_nodes[i]->cal[j]->lower);
             }         
         }
     }
-
 }
 
 //////////////////////////////////////////////////////////////

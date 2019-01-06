@@ -320,10 +320,6 @@ void PHYREX_XML(char *xml_filename)
   Set_Update_Eigen(NO,mixt_tree->mod);
   PhyML_Printf("\n. Init lnPr(seq|phylo): %f lnPr(coor|phylo): %f",mixt_tree->c_lnL,mixt_tree->mmod->c_lnL);
 
-
-
-
-  
   res = PHYREX_MCMC(mixt_tree);
   Free(res);  
   
@@ -1989,7 +1985,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   PHYREX_Update_Sigsq(tree);
   
   MIXT_Set_Bl_From_Rt(YES,tree);
-      
+
+  
   PhyML_Fprintf(fp_stats,"\n# before rand glnL: %f alnL: %f",tree->mmod->c_lnL,tree->c_lnL);
   PhyML_Fprintf(fp_stats,"\n# ninter: %d",PHYREX_Total_Number_Of_Intervals(tree));
   PhyML_Fprintf(fp_stats,"\n# ncoal: %d",PHYREX_Total_Number_Of_Coal_Disks(tree));
@@ -2058,12 +2055,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   
   for(i=0;i<mcmc->n_moves;i++) tree->mcmc->start_ess[i] = YES;
 
-
-  /* !!!!!!!!!!!!!!!!!!!!!! */
-  tree->mcmc->always_yes = YES;
-  MCMC_PHYREX_Insert_Disk(1.0,2000,tree->mmod->lbda,tree->mmod->mu,tree->mmod->rad,tree);
-  tree->mcmc->always_yes = NO;
-
   
   PHYREX_Lk(tree);        
   Set_Update_Eigen(YES,tree->mod);
@@ -2114,11 +2105,11 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_rad"))
         MCMC_PHYREX_Radius(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_disk")) */
-      /*   MCMC_PHYREX_Indel_Disk(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_disk"))
+        MCMC_PHYREX_Indel_Disk(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_hit")) */
-      /*   MCMC_PHYREX_Indel_Hit(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_hit"))
+        MCMC_PHYREX_Indel_Hit(tree);
 
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_move_disk_ud"))
         MCMC_PHYREX_Move_Disk_Updown(tree);
@@ -2138,8 +2129,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_sim_plus")) */
       /*   MCMC_PHYREX_Simulate_Backward_Plus(tree); */
 
-      if(!strcmp(tree->mcmc->move_name[move],"phyrex_traj"))
-        MCMC_PHYREX_Lineage_Traj(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_traj")) */
+      /*   MCMC_PHYREX_Lineage_Traj(tree); */
 
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_disk_multi"))
         MCMC_PHYREX_Disk_Multi(tree);
@@ -2156,11 +2147,11 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_disk_given_ldsk"))
         MCMC_PHYREX_Disk_Given_Ldsk(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_disk_serial"))
-        MCMC_PHYREX_Indel_Disk_Serial(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_disk_serial")) */
+      /*   MCMC_PHYREX_Indel_Disk_Serial(tree); */
 
-      if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_hit_serial"))
-        MCMC_PHYREX_Indel_Hit_Serial(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_hit_serial")) */
+      /*   MCMC_PHYREX_Indel_Hit_Serial(tree); */
 
       if(!strcmp(tree->mcmc->move_name[move],"kappa"))
         MCMC_Kappa(tree);
