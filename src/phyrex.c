@@ -2034,7 +2034,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   PhyML_Fprintf(fp_stats,"%s\t","rootLon");
   PhyML_Fprintf(fp_stats,"%s\t","tstv");
   PhyML_Fprintf(fp_stats,"%s\t","alpha");
-  for(int i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"br%d\t",i);
+  /* for(int i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"br%d\t",i); */
   PhyML_Fprintf(fp_stats,"%s\t","accLbda");
   PhyML_Fprintf(fp_stats,"%s\t","accMu");
   PhyML_Fprintf(fp_stats,"%s\t","accRad");
@@ -2129,8 +2129,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_sim_plus")) */
       /*   MCMC_PHYREX_Simulate_Backward_Plus(tree); */
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_traj")) */
-      /*   MCMC_PHYREX_Lineage_Traj(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_traj"))
+        MCMC_PHYREX_Lineage_Traj(tree);
 
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_disk_multi"))
         MCMC_PHYREX_Disk_Multi(tree);
@@ -2147,11 +2147,11 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_disk_given_ldsk"))
         MCMC_PHYREX_Disk_Given_Ldsk(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_disk_serial")) */
-      /*   MCMC_PHYREX_Indel_Disk_Serial(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_disk_serial"))
+        MCMC_PHYREX_Indel_Disk_Serial(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_hit_serial")) */
-      /*   MCMC_PHYREX_Indel_Hit_Serial(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_hit_serial"))
+        MCMC_PHYREX_Indel_Hit_Serial(tree);
 
       if(!strcmp(tree->mcmc->move_name[move],"kappa"))
         MCMC_Kappa(tree);
@@ -2241,7 +2241,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%g\t",disk->ldsk->coord->lonlat[1]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mod->kappa->v);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mod->ras->alpha->v);
-          for(int i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->rates->br_r[i]);
+          /* for(int i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->rates->br_r[i]); */
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_lbda]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_mu]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_rad]);

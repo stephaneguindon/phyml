@@ -7232,13 +7232,13 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree)
   hr += (n_disks)*log(scale_fact_times);
 
   /* Adjust the value of lambda */
-  /* new_lbda = cur_lbda * (1./scale_fact_times); */
-  /* hr += log(1./scale_fact_times); */
-  /* tree->mmod->lbda = new_lbda; */
+  new_lbda = cur_lbda * (1./scale_fact_times);
+  hr += log(1./scale_fact_times);
+  tree->mmod->lbda = new_lbda;
   
-  /* new_clock_r = cur_clock_r * (1./scale_fact_times); */
-  /* hr += log(1./scale_fact_times); */
-  /* tree->rates->clock_r = new_clock_r; */
+  new_clock_r = cur_clock_r * (1./scale_fact_times);
+  hr += log(1./scale_fact_times);
+  tree->rates->clock_r = new_clock_r;
   
   new_glnL = PHYREX_Lk(tree);
   new_alnL = Lk(NULL,tree);
@@ -8061,8 +8061,10 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
 
       hr -= (new_path_len) * log(1./fabs(prune_daughter_ldsk->disk->time - regraft_ldsk->disk->time));
       hr += (cur_path_len) * log(1./fabs(prune_daughter_ldsk->disk->time - prune_ldsk->disk->time));
-
      
+      hr -= LnFact(new_path_len);
+      hr += LnFact(cur_path_len);
+
       hr += PHYREX_Path_Logdensity(prune_daughter_ldsk,prune_ldsk,1.*tree->mmod->rad,tree);
       
       new_path = PHYREX_Generate_Path(prune_daughter_ldsk,regraft_ldsk,cur_path_len,1.0*tree->mmod->rad,tree);
@@ -8223,6 +8225,9 @@ void MCMC_PHYREX_Lineage_Traj(t_tree *tree)
       hr -= (new_path_len) * log(1./fabs(start_ldsk->disk->time - end_ldsk->disk->time));
       hr += (cur_path_len) * log(1./fabs(start_ldsk->disk->time - end_ldsk->disk->time));
       
+      hr -= LnFact(new_path_len);
+      hr += LnFact(cur_path_len);
+
       hr += PHYREX_Path_Logdensity(start_ldsk,end_ldsk,1.*tree->mmod->rad,tree);
 
       new_path = PHYREX_Generate_Path(start_ldsk,end_ldsk,new_path_len,1.*tree->mmod->rad,tree);
