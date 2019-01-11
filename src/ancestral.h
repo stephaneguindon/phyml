@@ -29,6 +29,6 @@ void Sample_Ancestral_Seq_Pre(t_node *a, t_node *d, phydbl Ta, t_edge *b,
                               int *muttype, phydbl *muttime, int *muttax, int *n_mut,
                               int fullmutmap, int fromprior, t_tree *tree);
 void Map_Mutations(t_node *a, t_node *d, int sa, int sd, phydbl Ta, t_edge *b, int site, int rcat, int *muttype, phydbl *muttime, int *muttax, int *n_mut, t_tree *tree);
-void Reverse_Muttime(phydbl *muttime, int n_mut, t_tree *tree);
+void Reverse_Muttime(phydbl *muttime, int n_mut, phydbl rr, t_tree *tree);
 
 #endif

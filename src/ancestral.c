@@ -123,7 +123,7 @@ void Sample_Ancestral_Seq(int fullmutmap, int fromprior, t_tree *tree)
             }
         }
 
-      Reverse_Muttime(muttime,n_mut,tree);
+      Reverse_Muttime(muttime,n_mut,tree->mod->ras->gamma_rr->v[rate_cat],tree);
       
       strcpy(s,"mutmap.");
       sprintf(s+strlen(s),"%d.",tree->io->r_seed);
@@ -177,7 +177,7 @@ void Sample_Ancestral_Seq_Pre(t_node *a, t_node *d, phydbl Ta, t_edge *b,
   int i;
   int sa, sd;
   int ns;
-  phydbl *probs,sum,newTa;
+  phydbl *probs,sum;
 
 
   ns = tree->mod->ns;
@@ -213,16 +213,16 @@ void Sample_Ancestral_Seq_Pre(t_node *a, t_node *d, phydbl Ta, t_edge *b,
     
   if(d->tax) return;
   else
-    {
-      for(i=0;i<3;++i) if(a->v[i] == d) { newTa = Ta+a->b[i]->l->v*tree->mod->ras->gamma_rr->v[r_cat]; break; } 
-      assert(i!=3);
-      
-      
+    {      
       for(i=0;i<3;++i)
         {
           if(d->v[i] != a && d->b[i] != tree->e_root)
             {
-              Sample_Ancestral_Seq_Pre(d,d->v[i],newTa,d->b[i],site,r_cat,muttype,muttime,muttax,n_mut,fullmutmap,fromprior,tree);
+              Sample_Ancestral_Seq_Pre(d,
+                                       d->v[i],
+                                       Ta + d->b[i]->l->v * tree->mod->ras->gamma_rr->v[r_cat],
+                                       d->b[i],
+                                       site,r_cat,muttype,muttime,muttax,n_mut,fullmutmap,fromprior,tree);
             }
         }
     }
@@ -393,7 +393,10 @@ void Map_Mutations(t_node *a, t_node *d, int sa, int sd, phydbl Ta, t_edge *b, i
 #else
   T = b->l->v*rr;
 #endif
-    
+
+
+  assert(T > 0.0);
+  
   /* PhyML_Printf("\n. Mutmap: a:%d d:%d ta:%G td:%G cr:%G rr:%G l:%G", */
   /*              a?a->num:-1,d?d->num:-1, */
   /*              tree->rates->nd_t[a->num], */
@@ -470,19 +473,20 @@ void Map_Mutations(t_node *a, t_node *d, int sa, int sd, phydbl Ta, t_edge *b, i
           
           muttype[(*n_mut)+n_mut_branch-1] = thismut;
 
-          // Record time of mutation
+          // Record time of mutation (0 is root and time is increasing towards tips)
           muttime[(*n_mut)+n_mut_branch-1] = tlast;
-
-          assert(muttime[(*n_mut)+n_mut_branch-1] < 0.36);
           
 #ifdef PHYTIME
           // Transform into time in calendar units
           muttime[(*n_mut)+n_mut_branch-1] /= tree->rates->cur_l[d->num];
           muttime[(*n_mut)+n_mut_branch-1] *= fabs(tree->rates->nd_t[a->num]-tree->rates->nd_t[d->num]);
 #else
+          // Time expressed in molecular unit
           muttime[(*n_mut)+n_mut_branch-1] += Ta;
+          assert(muttime[(*n_mut)+n_mut_branch-1] > 0.0);
 #endif
 
+          
           tax_idx = -1;
           Random_Tax_Idx(a,d,&tax_idx,tree);
           muttax[(*n_mut)+n_mut_branch-1] = tax_idx;
@@ -1025,11 +1029,12 @@ int MPEE_Score(const phydbl *alpha, int *idx, const phydbl *p, const int ns)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-void Reverse_Muttime(phydbl *muttime, int n_mut, t_tree *tree)
+void Reverse_Muttime(phydbl *muttime, int n_mut, phydbl rr, t_tree *tree)
 {
   phydbl h;
   int i;  
   h = Tree_Height(tree);
+  h *= rr;
   for(i=0;i<n_mut;++i) muttime[i] = h - muttime[i];
   
 }
