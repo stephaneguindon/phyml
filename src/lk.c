@@ -816,6 +816,9 @@ phydbl Lk_Core(int state, int ambiguity_check,
         {
         case YES :         
           {
+            assert(isinf(inv_site_lk));
+            tree->fact_sum_scale[site] = 0;
+            inv_site_lk = Invariant_Lk(0,site,&num_prec_issue,tree);
             site_lk = inv_site_lk * tree->mod->ras->pinvar->v;
             break;
           }
@@ -902,6 +905,9 @@ phydbl Lk_Core_Eigen_Lr(phydbl *expl, phydbl *dot_prod, t_edge *b, t_tree *tree)
         {
         case YES :
           {
+            assert(isinf(inv_site_lk));
+            tree->fact_sum_scale[site] = 0;
+            inv_site_lk = Invariant_Lk(0,site,&num_prec_issue,tree);
             site_lk = inv_site_lk * tree->mod->ras->pinvar->v;
             break;
           }
