@@ -287,7 +287,10 @@ void PHYREX_XML(char *xml_filename)
   mixt_tree->rates->clock_r = 1.0E-6;
   mixt_tree->rates->model   = LOGNORMAL;
 
-
+  /* !!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+  mixt_tree->mmod->lbda = 1.0;
+  mixt_tree->mmod->mu   = 0.5;
+  mixt_tree->mmod->rad  = 1.0;
   
   /* Random genealogy or user-defined tree */
   switch(mixt_tree->io->in_tree)
@@ -306,6 +309,7 @@ void PHYREX_XML(char *xml_filename)
     }
   
 
+  
   Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree);
   Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);  
 
@@ -433,7 +437,6 @@ int PHYREX_Main_Estimate(int argc, char *argv[])
 
   /* Create ldsks and connect tree tips to them */
   PHYREX_Make_And_Connect_Tip_Disks(tree);
-
   PHYREX_Read_Tip_Coordinates(tree);
 
   
@@ -1009,8 +1012,8 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, int r_seed)
 // on a rectangle.
 phydbl PHYREX_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_mergers, t_tree *tree)
 {
-  t_dsk *disk,*new_disk;
-  int i,j;
+  t_dsk *disk,*new_disk,*oldest_disk;
+  int i,j,reached_oldest_disk;
   phydbl prob_hit,u,new_time;
   t_phyrex_mod *mmod;
   t_node *n;
@@ -1018,44 +1021,44 @@ phydbl PHYREX_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_merger
   mmod = tree->mmod;
   
   Get_Node_Ranks_From_Tip_Times(tree);
-
-
-  /* disk = tree->young_disk; */
-  /* do */
-  /*   { */
-  /*     PhyML_Printf("\n. SIMULATE BEFORE Disk %p @ time: %f n_ldsk_a: %d",disk,disk->time,disk->n_ldsk_a); */
-  /*     for(int i=0;i<disk->n_ldsk_a;++i) PhyML_Printf("\n. SIMULATE BEFORE ldsk_a: %p nd: %d ldsk->disk: %p",disk->ldsk_a[i],disk->ldsk_a[i]->nd ? disk->ldsk_a[i]->nd->num : -1, disk->ldsk_a[i]->disk); */
-  /*     disk = disk->prev; */
-  /*   } */
-  /* while(disk); */
-
   
   // Get to the youngest node
   n = tree->a_nodes[0];
   while(n->rk_next) n = n->rk_next;
 
-  disk = init_disk;
-
+  disk = init_disk;  
   // Make sure at least one of the youngest nodes is on init_disk
   for(i=0;i<init_disk->n_ldsk_a;++i) if(init_disk->ldsk_a[i]->nd == n) break;
   assert(i != init_disk->n_ldsk_a);
   
+  // Get to the oldest sampled disk
+  disk = init_disk;
+  while(disk->prev) disk = disk->prev;
+  oldest_disk = disk;
+  reached_oldest_disk = NO;
+  if(init_disk->prev == NULL) reached_oldest_disk = YES; // Only one sampled disk
+  
+  
+  disk = init_disk;  
   do
-    {
+    {      
       /* MRCA reached */
-      if(PHYREX_Number_Of_Outgoing_Ldsks(disk) == 1) break;
+      if(PHYREX_Number_Of_Outgoing_Ldsks(disk) == 1 && reached_oldest_disk == YES) break;
 
       /* Proposed new time */
       new_time = disk->time - Rexp(mmod->lbda);
-      
-      /* PhyML_Printf("\n. SIMULATE current disk: %p proposed time: %f",disk,new_time); */
-      
-      /* New time is older than next sampled disk (disk->prev) */
+            
+      /* New time is older than previous sampled disk (disk->prev) */
       if(disk->prev && new_time < disk->prev->time)
         {
           new_disk = disk->prev;
           new_time = disk->prev->time;
 
+          // Reached oldest disk -> set it to NULL
+          // so as to indicate that it is ok to stop
+          // the simulation, continue otherwise
+          if(new_disk == oldest_disk) reached_oldest_disk = YES;
+          
           /* Connect disk and new_disk */
           disk->prev = new_disk;      
           new_disk->next = disk;
@@ -1089,7 +1092,7 @@ phydbl PHYREX_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_merger
 
           /* Populate new_disk->ldsk_a array */
           PHYREX_Update_Lindisk_List_Core(new_disk,tree);
-
+          
           new_disk->ldsk = NULL;
           /* Which lineages in new_disk->ldsk_a are hit? */
           for(i=0;i<new_disk->n_ldsk_a;++i)
@@ -1116,35 +1119,41 @@ phydbl PHYREX_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_merger
                   }
                 }
               
-              if(PHYREX_Is_In_Disk(new_disk->ldsk_a[i]->coord,new_disk,mmod) == YES)
+              u = Uni();
+              if(!(u > prob_hit)) // disk->ldsk_a[i] is  hit
                 {
-                  u = Uni();
-                  if(!(u > prob_hit)) // disk->ldsk_a[i] is  hit
+                  // new_disk->ldsk_a[i] is hit -> coalesce (or just jump) to parent (i.e., new_disk->ldsk)
+                  if(new_disk->ldsk == NULL)
                     {
-                      // new_disk->ldsk_a[i] is hit -> coalesce (or just jump) to parent (i.e., new_disk->ldsk)
-                      if(new_disk->ldsk == NULL)
+                      new_disk->ldsk = PHYREX_Make_Lindisk_Node(mmod->n_dim);
+                      PHYREX_Init_Lindisk_Node(new_disk->ldsk,new_disk,mmod->n_dim);
+                      
+                      // Generate coordinates for newly created ldsk
+                      switch(tree->mmod->name)
                         {
-                          new_disk->ldsk = PHYREX_Make_Lindisk_Node(mmod->n_dim);
-                          PHYREX_Init_Lindisk_Node(new_disk->ldsk,new_disk,mmod->n_dim);
+                        case PHYREX_UNIFORM:
+                          {
+                            PHYREX_Runif_Rectangle_Overlap(new_disk->ldsk,new_disk,tree->mmod);
+                            break;
+                          }
+                        case PHYREX_NORMAL:
+                          {
+                            PHYREX_Rnorm_Trunc(new_disk->ldsk,new_disk,tree->mmod);
+                            break;
+                          }
                         }
-                      new_disk->ldsk_a[i]->prev = new_disk->ldsk;
-                      PHYREX_Make_Lindisk_Next(new_disk->ldsk);
-                      new_disk->ldsk->next[new_disk->ldsk->n_next-1] = new_disk->ldsk_a[i];
                     }
+                  new_disk->ldsk_a[i]->prev = new_disk->ldsk;
+                  PHYREX_Make_Lindisk_Next(new_disk->ldsk);
+                  new_disk->ldsk->next[new_disk->ldsk->n_next-1] = new_disk->ldsk_a[i];
                 }
-              if(new_disk->ldsk && new_disk->ldsk->n_next == 2 && avoid_multiple_mergers == YES) break; // Multiple mergers disabled !
             }
         }
 
       disk = new_disk;
     }
-  while(1);
-  
+  while(1);  
   disk->prev = NULL;
-
-  /* PHYREX_Print_Struct('#',tree); */
-  /* Exit("\n"); */
-
   return(-1.);
 }
 
@@ -1645,7 +1654,7 @@ t_sarea *PHYREX_Simulate_Forward_Core(int n_sites, t_tree *tree)
         }
     }
 
-  tree->young_disk             = disk;
+  tree->young_disk       = disk;
   disk->ldsk_a           = ldsk_a_tips;
   disk->mmod             = tree->mmod;
   disk->centr->lonlat[0] = .5*tree->mmod->lim->lonlat[0];
@@ -1801,6 +1810,11 @@ phydbl PHYREX_Lk(t_tree *tree)
   do
     {
       assert(disk);
+      if(disk->time > disk->next->time)
+        {
+          tree->mmod->c_lnL = UNLIKELY;
+          return tree->mmod->c_lnL;
+        }
       lnL = PHYREX_Lk_Core(disk,tree);
       lnL += log_lbda - tree->mmod->lbda * fabs(disk->time - disk->next->time);
       if(disk->time > disk->next->time)
@@ -1812,7 +1826,7 @@ phydbl PHYREX_Lk(t_tree *tree)
       disk = disk->prev;
     }
   while(disk);
-
+  
   if(isinf(tree->mmod->c_lnL) || isnan(tree->mmod->c_lnL)) tree->mmod->c_lnL = UNLIKELY;
 
   return(tree->mmod->c_lnL);
@@ -1832,21 +1846,12 @@ phydbl PHYREX_Lk_Core(t_dsk *disk, t_tree *tree)
   log_mu        = log(tree->mmod->mu);
   was_hit       = (disk->ldsk != NULL);
 
+  if(disk->age_fixed == YES) return 0.0;
+  
   if(disk->ldsk != NULL)
     {
       for(i=0;i<disk->n_ldsk_a;++i) if(disk->ldsk_a[i]->prev == disk->ldsk) break;
-      if(i == disk->n_ldsk_a)
-        {
-          PhyML_Fprintf(stderr,"\n. disk: %p ldsk: %p time: %f [young_disk: %p]",disk,disk->ldsk,disk->time,tree->young_disk);
-          for(i=0;i<disk->n_ldsk_a;++i)
-            {
-              PhyML_Fprintf(stderr,"\n. [%3d] ldsk_a: %p",i,disk->ldsk_a[i]);
-              PhyML_Fprintf(stderr,"%c",disk->ldsk_a[i]->nd->tax ? '*' : ' '); 
-              PhyML_Fprintf(stderr," ldsk_a->prev->disk: %p time: %f",disk->ldsk_a[i]->prev->disk,disk->ldsk_a[i]->prev->disk->time);
-           }
-          for(i=0;i<disk->ldsk->n_next;++i) PhyML_Fprintf(stderr,"\n. ldsk->next[%d]: %p",i,disk->ldsk->next[i]);
-          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);            
-        }
+      assert(i != disk->n_ldsk_a);
     }
 
   for(i=0;i<disk->n_ldsk_a;++i)
@@ -1857,23 +1862,17 @@ phydbl PHYREX_Lk_Core(t_dsk *disk, t_tree *tree)
           return(UNLIKELY);     
         }
       
-      if(was_hit && disk->ldsk_a[i]->prev == disk->ldsk)
-        {
-          for(k=0;k<disk->ldsk->n_next;k++)
-            {
-              log_prob_hit = log_mu;
-              for(j=0;j<tree->mmod->n_dim;j++)
-                log_prob_hit += -pow(disk->ldsk->next[k]->coord->lonlat[j] - disk->centr->lonlat[j],2)/two_theta_two;
+      log_prob_hit = log_mu;
+      for(j=0;j<tree->mmod->n_dim;j++)
+        log_prob_hit += -pow(disk->ldsk_a[i]->coord->lonlat[j] - disk->centr->lonlat[j],2)/two_theta_two;
 
-              lnL += log_prob_hit;
-            }
-        }
-      else
+      
+      if(disk->ldsk_a[i]->prev == disk->ldsk) // disk->ldsk_a[i] was hit
         {
-          log_prob_hit = log_mu;
-          for(j=0;j<tree->mmod->n_dim;j++)
-            log_prob_hit += -pow(disk->ldsk_a[i]->coord->lonlat[j] - disk->centr->lonlat[j],2)/two_theta_two;
-          
+          lnL += log_prob_hit;
+        }
+      else // disk->ldsk_a[i] was not hit
+        {
           lnL += log(1. - exp(log_prob_hit));
         }
     }
@@ -1892,7 +1891,7 @@ phydbl PHYREX_Lk_Core(t_dsk *disk, t_tree *tree)
     }
 
   /* Likelihood for the disk center */
-  for(i=0;i<tree->mmod->n_dim;i++) lnL -= log(tree->mmod->lim->lonlat[i]);
+  for(j=0;j<tree->mmod->n_dim;j++) lnL -= log(tree->mmod->lim->lonlat[j]);
   
   return(lnL);
 }
@@ -1918,6 +1917,7 @@ phydbl PHYREX_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
   do
     {
       assert(disk);
+      if(disk->time > disk->next->time) return UNLIKELY;
       PHYREX_Update_Lindisk_List_Core(disk,tree);
       lnL += PHYREX_Lk_Core(disk,tree);
       lnL += log_lbda - tree->mmod->lbda * fabs(disk->time - disk->next->time);
@@ -2052,10 +2052,17 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   PhyML_Fprintf(fp_stats,"%s\t","tuneLbda");
   PhyML_Fprintf(fp_stats,"%s\t","tuneRad");
   PhyML_Fprintf(fp_stats,"%s\t","tuneMu");
+  PhyML_Fprintf(fp_stats,"%s\t","c0");
+  PhyML_Fprintf(fp_stats,"%s\t","c1");
   
   for(i=0;i<mcmc->n_moves;i++) tree->mcmc->start_ess[i] = YES;
 
+  /* !!!!!!!!!!!!!!!!!!! */
+  tree->mmod->lbda = 1.0;
+  tree->mmod->mu   = 0.5;
+  tree->mmod->rad  = 1.0;
   
+      
   PHYREX_Lk(tree);        
   Set_Update_Eigen(YES,tree->mod);
   Lk(NULL,tree);
@@ -2074,6 +2081,10 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);            
     }
   
+  tree->eval_alnL = YES;
+  tree->eval_glnL = YES;
+  tree->eval_rlnL = YES;
+
   Set_Both_Sides(NO,tree);
   mcmc->always_yes = NO;
   move             = -1;
@@ -2096,6 +2107,16 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       
       assert(!(move == tree->mcmc->n_moves));
       
+
+      /* tree->mmod->lbda = 1.0; */
+      /* tree->mmod->mu   = 0.5; */
+      /* tree->mmod->rad  = 1.0; */
+
+      /* PHYREX_Strip_And_Reconnect_Tree(tree); */
+      /* PHYREX_Simulate_Backward_Core(tree->young_disk,NO,tree); */
+      /* PHYREX_Ldsk_To_Tree(tree); */
+        
+      
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_lbda"))
         MCMC_PHYREX_Lbda(tree);
 
@@ -2104,6 +2125,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_rad"))
         MCMC_PHYREX_Radius(tree);
+
+      /* PhyML_Printf("\n"); */
+      /* PHYREX_Print_Struct('*',tree); */
 
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_disk"))
         MCMC_PHYREX_Indel_Disk(tree);
@@ -2122,12 +2146,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_scale_times"))
         MCMC_PHYREX_Scale_Times(tree);
-
-      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_sim")) */
-      /*   MCMC_PHYREX_Simulate_Backward(tree); */
-
-      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_sim_plus")) */
-      /*   MCMC_PHYREX_Simulate_Backward_Plus(tree); */
 
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_traj"))
         MCMC_PHYREX_Lineage_Traj(tree);
@@ -2153,6 +2171,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_hit_serial"))
         MCMC_PHYREX_Indel_Hit_Serial(tree);
 
+      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_add_remove_jump")) */
+      /*   MCMC_PHYREX_Add_Remove_Jump(tree); */
+
       if(!strcmp(tree->mcmc->move_name[move],"kappa"))
         MCMC_Kappa(tree);
 
@@ -2168,10 +2189,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"clock"))
         MCMC_Clock_R(tree);
 
-      /* /\* if(!strcmp(tree->mcmc->move_name[move],"phyrex_ldscape_lim")) *\/ */
-      /* /\*   MCMC_PHYREX_Ldscape_Limits(tree); *\/ */
-
-      /* PhyML_Printf("\n. %s",tree->mcmc->move_name[move]); */
+      /* /\* !!!!!!!!!!!!! *\/ */
+      /* PHYREX_Lk(tree); */
+      /* Lk(NULL,tree); */
 
       if(tree->mmod->safe_phyrex == YES)
         {
@@ -2259,6 +2279,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_lbda]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_rad]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_mu]);
+          PhyML_Fprintf(fp_stats,"%g\t",tree->young_disk->prev->centr->lonlat[0]);
+          PhyML_Fprintf(fp_stats,"%g\t",tree->young_disk->prev->centr->lonlat[1]);
 
           
           res[0 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = tree->mmod->lbda; 
@@ -2479,10 +2501,9 @@ void PHYREX_Remove_Disk(t_dsk *disk)
   prev = disk->prev;
   next = disk->next;
 
-  assert(!(prev == NULL));
-  assert(!(next == NULL));    
+  assert(next != NULL);
   
-  prev->next = next;
+  if(prev != NULL) prev->next = next;
   next->prev = prev;
 }
 
@@ -2868,7 +2889,8 @@ void PHYREX_Update_Lindisk_List_Core(t_dsk *disk, t_tree *tree)
     if(disk->ldsk_a[i] &&
        !(disk->ldsk_a[i]->nd != NULL &&
          disk->ldsk_a[i]->nd->tax == YES &&
-         disk->ldsk_a[i]->disk == disk))                           
+         disk->age_fixed == YES &&
+         disk->ldsk_a[i]->disk == disk))
       disk->ldsk_a[i] = NULL;
       
   
@@ -2903,8 +2925,8 @@ void PHYREX_Update_Lindisk_List_Core(t_dsk *disk, t_tree *tree)
       disk->ldsk_a[disk->n_ldsk_a] = disk->next->ldsk;
       disk->n_ldsk_a++;
     }
-  
 
+  
   if(disk->n_ldsk_a == 0 || disk->n_ldsk_a > tree->n_otu) 
     {
       PhyML_Fprintf(stderr,"\n. disk: %s (%p) time: %f next: %s disk->n_ldsk_a: %d coord: %s n_otu: %d",
@@ -2982,55 +3004,58 @@ void PHYREX_Print_Struct(char sign, t_tree *tree)
   PHYREX_Update_Lindisk_List(tree);
 
   disk = tree->young_disk;
-  while(disk->prev) disk = disk->prev;
+  /* while(disk->prev) disk = disk->prev; */
   do
     {
-      PhyML_Printf("\n%c Disk: %s @ %7.3f has %3s on it is_coal? %2d rad: %f coord ",
-             sign,
-             disk->id,
-             disk->time,disk->ldsk?disk->ldsk->coord->id:NULL,
-             disk->ldsk?disk->ldsk->n_next:-1,
-             tree->mmod->rad); fflush(NULL);
-      for(j=0;j<tree->mmod->n_dim;j++) PhyML_Printf(" %f",disk->centr->lonlat[j]);
-      fflush(NULL);
+      PhyML_Printf("\n%c Disk: %s @ %7.3f has %3s on it is_coal? %2d rad: %f age fixed? %d #out: %d",
+                   sign,
+                   disk->id,
+                   disk->time,disk->ldsk?disk->ldsk->coord->id:NULL,
+                   disk->ldsk?disk->ldsk->n_next:-1,
+                   tree->mmod->rad,
+                   disk->age_fixed,
+                   PHYREX_Number_Of_Outgoing_Ldsks(disk)); 
+      /* for(j=0;j<tree->mmod->n_dim;j++) PhyML_Printf(" %f",disk->centr->lonlat[j]); */
+      /* fflush(NULL); */
 
 
       for(i=0;i<disk->n_ldsk_a;i++)
         {
           ldisk = disk->ldsk_a[i];
 
-          PhyML_Printf("\n%c ldisk: %s prev: %s",
+          PhyML_Printf("\n%c ldisk: %s%c prev: %s",
                        sign,
                        ldisk->coord->id,
+                       (ldisk->nd && ldisk->nd->tax == YES && ldisk->disk == disk) ? '*' : ' ',
                        ldisk->prev ? ldisk->prev->coord->id : NULL);
           fflush(NULL);
           
-          for(j=0;j<tree->mmod->n_dim;j++) 
-            {
-              PhyML_Printf(" %f",ldisk->coord->lonlat[j]);
-              fflush(NULL);
+          /* for(j=0;j<tree->mmod->n_dim;j++) */
+          /*   { */
+          /*     PhyML_Printf(" %f",ldisk->coord->lonlat[j]); */
+          /*     fflush(NULL); */
 
-              if(FABS(ldisk->coord->lonlat[j] - ldisk->disk->centr->lonlat[j]) > 2.*tree->mmod->rad &&
-                 ldisk->disk->ldsk == ldisk) PhyML_Printf(" ! ");
+          /*     if(FABS(ldisk->coord->lonlat[j] - ldisk->disk->centr->lonlat[j]) > 2.*tree->mmod->rad && */
+          /*        ldisk->disk->ldsk == ldisk) PhyML_Printf(" ! "); */
 
-              if(ldisk->prev)
-                {
-                  if(ldisk->coord->lonlat[j] < ldisk->prev->disk->centr->lonlat[j] - tree->mmod->rad) PhyML_Printf(" #a ");
-                  if(ldisk->coord->lonlat[j] > ldisk->prev->disk->centr->lonlat[j] + tree->mmod->rad) PhyML_Printf(" #b ");
-                }
+          /*     if(ldisk->prev) */
+          /*       { */
+          /*         if(ldisk->coord->lonlat[j] < ldisk->prev->disk->centr->lonlat[j] - tree->mmod->rad) PhyML_Printf(" #a "); */
+          /*         if(ldisk->coord->lonlat[j] > ldisk->prev->disk->centr->lonlat[j] + tree->mmod->rad) PhyML_Printf(" #b "); */
+          /*       } */
 
-              if(ldisk->next)
-                {
-                  if(ldisk->coord->lonlat[j] < ldisk->disk->centr->lonlat[j] - tree->mmod->rad) PhyML_Printf(" $a ");
-                  if(ldisk->coord->lonlat[j] > ldisk->disk->centr->lonlat[j] + tree->mmod->rad) PhyML_Printf(" $b ");
-                }
-            }
-        }
+          /*     if(ldisk->next) */
+          /*       { */
+          /*         if(ldisk->coord->lonlat[j] < ldisk->disk->centr->lonlat[j] - tree->mmod->rad) PhyML_Printf(" $a "); */
+          /*         if(ldisk->coord->lonlat[j] > ldisk->disk->centr->lonlat[j] + tree->mmod->rad) PhyML_Printf(" $b "); */
+          /*       } */
+    }
 
-      fflush(NULL);
-      disk = disk->next;      
+
+      disk = disk->prev;      
     }
   while(disk);
+  PhyML_Printf("\n. End of struct");
 }
 
 /*////////////////////////////////////////////////////////////
@@ -3597,7 +3622,8 @@ void PHYREX_Ldsk_To_Tree(t_tree *tree)
   int i,j;
   t_dsk *disk;
   t_ldsk *root_ldsk;
-
+  int n_tax;
+  
   /* Reset */
   for(i=0;i<2*tree->n_otu-1;++i) 
     {
@@ -3609,7 +3635,8 @@ void PHYREX_Ldsk_To_Tree(t_tree *tree)
     }
 
   // Erase all connections to internal nodes
-  disk = tree->young_disk->prev;
+  n_tax = 0;
+  disk = tree->young_disk;
   do
     {
       if(disk->ldsk)
@@ -3620,7 +3647,8 @@ void PHYREX_Ldsk_To_Tree(t_tree *tree)
       disk = disk->prev;
     }
   while(disk->prev);
-
+  
+  
   // Make sure oldest disk has a ldsk on it
   assert(disk->ldsk);
   root_ldsk = disk->ldsk;
@@ -3631,6 +3659,7 @@ void PHYREX_Ldsk_To_Tree(t_tree *tree)
   i = 2*tree->n_otu-3;
   tree->num_curr_branch_available = 0;
   PHYREX_Ldsk_To_Tree_Post(tree->n_root,root_ldsk,&i,tree);
+
 
   for(i=0;i<tree->n_otu;++i) assert(tree->a_nodes[i]->v[0]);
 
@@ -3693,25 +3722,24 @@ void PHYREX_Ldsk_To_Tree_Post(t_node *a, t_ldsk *ldsk, int *available, t_tree *t
   else
     {
       t_node *parent,*son;
-      int n_next;
+      int idx_next;
       t_ldsk *t;
 
       parent       = a;
       parent->v[1] = NULL;
       parent->v[2] = NULL;
-      n_next       = 0;
+      idx_next     = 0;
       do
         {
-          t = ldsk->next[n_next]; 
+          t = ldsk->next[idx_next]; 
 
           // Descend along that lineage as long as
           // one has not reached a tip (t->next == NULL)
           // or a coalescent event (t->n_next > 1)
-          while(t->next && t->n_next == 1) t = t->next[0];
+          while(t->next && t->n_next <= 1) t = t->next[0];
 
-          /* PhyML_Printf("\n. t->coord: %s t->disk->time: %f t->nd: %p",t->coord->id,t->disk->time,t->nd); */
           
-          if(t->nd == NULL) // t->disk is a sample disk
+          if(t->nd == NULL) // t->disk is not a sampled disk
             {
               assert(t->disk->age_fixed == NO);
               son = tree->a_nodes[*available];
@@ -3719,13 +3747,14 @@ void PHYREX_Ldsk_To_Tree_Post(t_node *a, t_ldsk *ldsk, int *available, t_tree *t
             }
           else
             {
+              assert(t->disk->age_fixed == YES);
               son = t->nd;
             }
                     
           PHYREX_Ldsk_To_Tree_Post(son,t,available,tree);          
 
           // Resolve multifurcation
-          if(parent->v[2] != NULL && n_next >= 2) 
+          if(parent->v[2] != NULL && idx_next >= 2) 
             {
               t_node *new_parent;
 
@@ -3740,9 +3769,9 @@ void PHYREX_Ldsk_To_Tree_Post(t_node *a, t_ldsk *ldsk, int *available, t_tree *t
               son->v[0]              = new_parent;
               new_parent->v[1]->v[0] = new_parent;
               
-              /* PhyML_Printf("\n# connect %d to %d",parent->num,new_parent->num); */
-              /* PhyML_Printf("\n# connect %d to %d",new_parent->num,new_parent->v[1]->num); */
-              /* PhyML_Printf("\n# connect %d to %d",new_parent->num,new_parent->v[2]->num); */
+              /* PhyML_Printf("\n[] connect %d to %d",parent->num,new_parent->num); */
+              /* PhyML_Printf("\n[] connect %d to %d",new_parent->num,new_parent->v[1]->num); */
+              /* PhyML_Printf("\n[] connect %d to %d",new_parent->num,new_parent->v[2]->num); */
               
               tree->rates->nd_t[new_parent->num] = ldsk->disk->time;
 
@@ -3754,12 +3783,12 @@ void PHYREX_Ldsk_To_Tree_Post(t_node *a, t_ldsk *ldsk, int *available, t_tree *t
               if(!parent->v[1]) parent->v[1] = son;
               else              parent->v[2] = son;
               
-              /* printf("\n. connect %d to %d",parent->num,son->num); */
+              /* printf("\n[] connect %d to %d",parent->num,son->num); */
             }
 
-          n_next++;
+          idx_next++;
         }
-      while(n_next != ldsk->n_next);
+      while(idx_next != ldsk->n_next);
     }
 }
 
@@ -5308,7 +5337,80 @@ t_ldsk *PHYREX_Random_Select_Outgoing_Ldsk(t_dsk *disk)
   return(target_ldsk);
 }
 
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/* Remove and free all disks and ldsks except for sampled disks.
+   Connect the sampled disks together */
+ 
+void PHYREX_Strip_And_Reconnect_Tree(t_tree *tree)
+{
+  t_dsk *disk,*prev;
+  int i,orig_size;
+  
+  disk = tree->young_disk;
+  do
+    {
+      if(disk->age_fixed == YES)
+        {
+          orig_size = disk->n_ldsk_a;
+          for(i=0;i<orig_size;++i)
+            {
+              if(disk->ldsk_a[i] &&
+                 disk->ldsk_a[i]->disk != disk)
+                {
+                  disk->ldsk_a[i] = NULL;
+                  disk->n_ldsk_a--;
+                }
+            }
+          for(i=0;i<disk->n_ldsk_a;++i) disk->ldsk_a[i]->prev = NULL;
+        }
+      disk = disk->prev;
+    }
+  while(disk);
+
+  disk = tree->young_disk;
+  do
+    {
+      prev = disk->prev;
+      if(disk->age_fixed == NO)
+        {
+          PHYREX_Remove_Disk(disk);
+          Free_Ldisk(disk->ldsk);
+          Free_Disk(disk);
+        }
+      disk = prev;
+    }
+  while(disk);
+
+
+  /* disk = tree->young_disk; */
+  /* do */
+  /*   { */
+  /*     PhyML_Printf("\n. %s %d",disk->id,disk->age_fixed); */
+  /*     if(disk->age_fixed == YES) */
+  /*       { */
+  /*         for(i=0;i<disk->n_ldsk_a;++i) */
+  /*           { */
+  /*             PhyML_Printf("\n. %s %f %s",disk->id,disk->time,disk->ldsk_a[i] ? disk->ldsk_a[i]->coord->id : "?"); */
+  /*           } */
+  /*       } */
+  /*     disk = disk->prev; */
+  /*   } */
+  /* while(disk); */
+  
+}
 
 /*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/

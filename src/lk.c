@@ -457,7 +457,7 @@ phydbl Lk(t_edge *b, t_tree *tree)
 
   tree->numerical_warning = NO;
   
-  if(tree->eval_alnL == NO) return UNLIKELY;
+  /* if(tree->eval_alnL == NO) return UNLIKELY; */
   
   if(b == NULL && tree->mod->s_opt->curr_opt_free_rates == YES)
     {
@@ -1269,7 +1269,7 @@ phydbl Invariant_Lk(int fact_sum_scale, int site, int *num_prec_issue, t_tree *t
 
 void Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
 {
-  if(tree->eval_alnL == NO) return;
+  /* if(tree->eval_alnL == NO) return; */
   if(b->left == d && b->update_partial_lk_left == NO) return;
   if(b->rght == d && b->update_partial_lk_rght == NO) return;
   

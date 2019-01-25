@@ -157,6 +157,7 @@ void MCMC_PHYREX_Ldsk_Multi(t_tree *tree);
 void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree);
 void MCMC_PHYREX_Disk_Given_Ldsk(t_tree *tree);
 void MCMC_PHYREX_Ldsk_And_Disk(t_tree *tree);
+void MCMC_PHYREX_Add_Remove_Jump(t_tree *tree);
 void MCMC_Death_Rate(t_tree *tree);
 void MCMC_Times_All(t_tree *tree);
 void MCMC_Prune_Regraft(t_tree *tree);

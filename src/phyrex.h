@@ -117,6 +117,7 @@ void PHYREX_Make_And_Connect_Tip_Disks(t_tree *tree);
 void PHYREX_Simulate_Disk_And_Node_Times(t_tree *tree);
 int PHYREX_Number_Of_Outgoing_Ldsks(t_dsk *disk);
 t_ldsk *PHYREX_Random_Select_Outgoing_Ldsk(t_dsk *disk);
+void PHYREX_Strip_And_Reconnect_Tree(t_tree *tree);
 
 
 #endif
