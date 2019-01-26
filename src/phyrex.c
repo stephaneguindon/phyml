@@ -287,10 +287,6 @@ void PHYREX_XML(char *xml_filename)
   mixt_tree->rates->clock_r = 1.0E-6;
   mixt_tree->rates->model   = LOGNORMAL;
 
-  /* !!!!!!!!!!!!!!!!!!!!!!!!!!!! */
-  mixt_tree->mmod->lbda = 1.0;
-  mixt_tree->mmod->mu   = 0.5;
-  mixt_tree->mmod->rad  = 1.0;
   
   /* Random genealogy or user-defined tree */
   switch(mixt_tree->io->in_tree)
@@ -2056,12 +2052,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   PhyML_Fprintf(fp_stats,"%s\t","c1");
   
   for(i=0;i<mcmc->n_moves;i++) tree->mcmc->start_ess[i] = YES;
-
-  /* !!!!!!!!!!!!!!!!!!! */
-  tree->mmod->lbda = 1.0;
-  tree->mmod->mu   = 0.5;
-  tree->mmod->rad  = 1.0;
-  
       
   PHYREX_Lk(tree);        
   Set_Update_Eigen(YES,tree->mod);
@@ -2171,8 +2161,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_hit_serial"))
         MCMC_PHYREX_Indel_Hit_Serial(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_add_remove_jump")) */
-      /*   MCMC_PHYREX_Add_Remove_Jump(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_add_remove_jump"))
+        MCMC_PHYREX_Add_Remove_Jump(tree);
 
       if(!strcmp(tree->mcmc->move_name[move],"kappa"))
         MCMC_Kappa(tree);
@@ -2189,9 +2179,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"clock"))
         MCMC_Clock_R(tree);
 
-      /* /\* !!!!!!!!!!!!! *\/ */
-      /* PHYREX_Lk(tree); */
-      /* Lk(NULL,tree); */
 
       if(tree->mmod->safe_phyrex == YES)
         {

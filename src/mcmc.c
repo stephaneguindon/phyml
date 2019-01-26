@@ -9383,10 +9383,6 @@ void MCMC_PHYREX_Add_Remove_Jump(t_tree *tree)
             {
               new_glnL += PHYREX_Lk_Range(target_disk,new_ldsk->prev->disk,tree);
               tree->mmod->c_lnL = new_glnL;
-
-              /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
-              /* new_glnL = PHYREX_Lk(tree); */
-
             }
           
           ratio  = (new_glnL - cur_glnL);
