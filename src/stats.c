@@ -347,7 +347,7 @@ phydbl Rgamma(phydbl shape, phydbl scale)
 
 phydbl Rexp(phydbl lambda)
 {
-  return -log(Uni()+1.E-30)/lambda;
+  return -log(Uni()+SMALL)/lambda;
 }
 
 /*////////////////////////////////////////////////////////////

@@ -6650,11 +6650,9 @@ void MCMC_PHYREX_Indel_Disk(t_tree *tree)
   phydbl cur_lbda,new_lbda;
   phydbl cur_mu,new_mu;
   phydbl cur_rad,new_rad;
-  phydbl T;
-  
-  T = PHYREX_Tree_Height(tree);
-  T = fabs(T);
-
+  phydbl scale;
+  t_dsk *disk;
+    
   hr = 0.0;
 
   new_lbda = tree->mmod->lbda;
@@ -6689,9 +6687,35 @@ void MCMC_PHYREX_Indel_Disk(t_tree *tree)
   new_n_disk = (int)Rpois(cur_n_disk+1);
   hr += Dpois(cur_n_disk,new_n_disk+1,YES);
   hr -= Dpois(new_n_disk,cur_n_disk+1,YES);
+
+  scale = 1.3;
+  if(new_n_disk < cur_n_disk) scale = 1./scale;
   
-  if(new_n_disk < cur_n_disk) MCMC_PHYREX_Delete_Disk(hr, cur_n_disk - new_n_disk , cur_lbda, cur_mu, cur_rad, tree);
-  else                        MCMC_PHYREX_Insert_Disk(hr, new_n_disk - cur_n_disk,  cur_lbda, cur_mu, cur_rad, tree);
+  disk = tree->young_disk->prev;
+  do
+    {
+      if(disk->age_fixed == NO)
+        {
+          disk->time = disk->time * scale;
+          hr += log(scale);
+        }
+      
+      disk = disk->prev;
+    }
+  while(disk);
+  hr -= 2.*log(scale);
+
+  /* !!!!!!!!!!!! node heights change here -> account for change in p(seq|phy) */
+
+  
+  if(new_n_disk < cur_n_disk)
+    {
+      MCMC_PHYREX_Delete_Disk(hr, cur_n_disk - new_n_disk , cur_lbda, cur_mu, cur_rad, tree);
+    }
+  else
+    {
+      MCMC_PHYREX_Insert_Disk(hr, new_n_disk - cur_n_disk,  cur_lbda, cur_mu, cur_rad, tree);
+    }
 }
 #endif
 
@@ -6782,10 +6806,6 @@ void MCMC_PHYREX_Delete_Disk(phydbl hr, int n_delete_disks, phydbl cur_lbda, phy
   T = fabs(T);
 
   
-  /* hr += LnChoose(n_valid_disks,n_delete_disks); */
-  /* hr -= n_delete_disks * log(T); */
-  /* hr += LnFact(n_delete_disks); */
-
   // Pr(n -> n-k) i.e, denominator
   hr += LnChoose(n_valid_disks,n_delete_disks);
   
@@ -7327,7 +7347,9 @@ void MCMC_PHYREX_Indel_Hit(t_tree *tree)
   phydbl hr;
   phydbl cur_rad, new_rad;
   phydbl cur_mu, new_mu;
+  phydbl scale;
 
+  
   hr      = 0.0;
   new_rad = tree->mmod->rad;
   cur_rad = tree->mmod->rad;
@@ -7360,6 +7382,25 @@ void MCMC_PHYREX_Indel_Hit(t_tree *tree)
   hr += Dpois(n_disks_cur,n_disks_new+1,YES);
   hr -= Dpois(n_disks_new,n_disks_cur+1,YES);
 
+  scale = 1.3;
+  if(n_disks_new < n_disks_cur) scale = 1./scale;
+  
+  disk = tree->young_disk->prev;
+  do
+    {
+      if(disk->age_fixed == NO)
+        {
+          disk->time = disk->time * scale;
+          hr += log(scale);
+        }
+      
+      disk = disk->prev;
+    }
+  while(disk);
+  hr -= 2.*log(scale);
+  
+  /* !!!!!!!!!!!! node heights change here -> account for change in p(seq|phy) */
+
   if(n_disks_new < n_disks_cur)
     {
       MCMC_PHYREX_Delete_Hit(hr, n_disks_cur - n_disks_new, cur_rad, cur_mu, tree);
@@ -7369,11 +7410,6 @@ void MCMC_PHYREX_Indel_Hit(t_tree *tree)
       MCMC_PHYREX_Insert_Hit(hr, n_disks_new - n_disks_cur, cur_rad, cur_mu, tree);
     }
   
-  /* phydbl u = Uni(); */
-  /* if(u < 0.5) */
-  /*   MCMC_PHYREX_Delete_Hit(hr, 1, cur_rad, cur_mu, tree); */
-  /* else */
-  /*   MCMC_PHYREX_Insert_Hit(hr, 1, cur_rad, cur_mu, tree); */
 }
 #endif
 
@@ -7448,9 +7484,7 @@ void MCMC_PHYREX_Insert_Hit(phydbl hr, int n_insert_disks, phydbl cur_rad, phydb
 
       /* Which lineage is going to be hit ? */    
       /* hit_ldsk_idx = Rand_Int(0,old_disk->n_ldsk_a-1); */
-      /* Term below should not be accounted for in the Hastings ratio */
-      /* as the same term appears in the reverse move. */
-      /* hr -= log(1./old_disk->n_ldsk_a); */
+      hr -= log(1./old_disk->n_ldsk_a);
       
       young_ldsk[j] = PHYREX_Random_Select_Outgoing_Ldsk(young_disk);
       old_ldsk[j]   = young_ldsk[j]->prev;
@@ -7673,7 +7707,7 @@ void MCMC_PHYREX_Delete_Hit(phydbl hr, int n_delete_disks, phydbl cur_rad, phydb
 
       /* Part of the Hastings ratio corresponding to the probability of selecting */
       /* target_disk->ldsk->next[0] to be hit (reverse move) */ 
-      /* hr += log(1./target_disk[j]->next->n_ldsk_a); */
+      hr += log(1./target_disk[j]->next->n_ldsk_a);
       
       /* Density for position of the displaced ldsk */
       for(i=0;i<tree->mmod->n_dim;i++)
@@ -7736,7 +7770,6 @@ void MCMC_PHYREX_Delete_Hit(phydbl hr, int n_delete_disks, phydbl cur_rad, phydb
       tree->mmod->rad = cur_rad;
       tree->mmod->mu = cur_mu;
       
-      /* printf("- Reject"); */
       for(j=n_delete_disks-1;j>=0;j--) 
         {
           PHYREX_Insert_Disk(target_disk[j],tree);      
@@ -7749,8 +7782,6 @@ void MCMC_PHYREX_Delete_Hit(phydbl hr, int n_delete_disks, phydbl cur_rad, phydb
     }
   else
     {
-      /* printf(" ***"); */
-
       for(j=0;j<n_delete_disks;j++) Free_Disk(target_disk[j]);
       for(j=0;j<n_delete_disks;j++) Free_Ldisk(target_ldsk[j]);
       tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_indel_hit]++;
@@ -7960,7 +7991,7 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
 
       hr -= (new_path_len) * log(1./fabs(prune_daughter_ldsk->disk->time - regraft_ldsk->disk->time));
       hr += (cur_path_len) * log(1./fabs(prune_daughter_ldsk->disk->time - prune_ldsk->disk->time));
-     
+
       hr -= LnFact(new_path_len);
       hr += LnFact(cur_path_len);
 
@@ -8851,7 +8882,7 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
       type = Uni();
       
       if(type < pindel) /* Insert */
-        {
+        {          
           t = Uni()*T;
           disk = tree->young_disk->prev;
           while(disk && disk->time > t) disk = disk->prev;
@@ -8869,10 +8900,10 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
           new_disk = PHYREX_Make_Disk_Event(tree->mmod->n_dim,tree->n_otu);
           PHYREX_Init_Disk_Event(new_disk,tree->mmod->n_dim,tree->mmod);
           new_disk->time = t;
-          
+
           /* Which lineage is going to be hit ? */
           /* hit_ldsk_idx = Rand_Int(0,old_disk->n_ldsk_a-1); */
-          /* hr -= log(1./old_disk->n_ldsk_a); */
+           hr -= log(1./old_disk->n_ldsk_a);
           
           /* young_ldsk = old_disk->ldsk_a[hit_ldsk_idx]; */
           young_ldsk = PHYREX_Random_Select_Outgoing_Ldsk(young_disk);
@@ -9029,7 +9060,7 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
 
           /* Part of the Hastings ratio corresponding to the probability of selecting */
           /* one of target_disk->n_ldsk_a to be hit */ 
-          /* hr += log(1./target_disk->prev->n_ldsk_a); */
+          hr += log(1./target_disk->prev->n_ldsk_a);
           
 
           /* Density for position of the displaced ldsk */
@@ -9182,7 +9213,7 @@ void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree)
           
           assert(n_valid_disks);
           hr += log(1./n_valid_disks);
-                   
+          
           if(tree->eval_glnL == YES)
             {
               new_glnL += PHYREX_Lk_Range(young_disk,old_disk,tree);
