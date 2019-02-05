@@ -2066,6 +2066,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   PhyML_Fprintf(fp_stats,"%s\t","tuneLbda");
   PhyML_Fprintf(fp_stats,"%s\t","tuneRad");
   PhyML_Fprintf(fp_stats,"%s\t","tuneMu");
+  PhyML_Fprintf(fp_stats,"%s\t","tuneIndelDisk");
+  PhyML_Fprintf(fp_stats,"%s\t","tuneIndelHit");
+  PhyML_Fprintf(fp_stats,"%s\t","tuneLdskGivenDisk");
   PhyML_Fprintf(fp_stats,"%s\t","c0");
   PhyML_Fprintf(fp_stats,"%s\t","c1");
   
@@ -2155,11 +2158,11 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_swap_disk"))
         MCMC_PHYREX_Swap_Disk(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr"))
-        MCMC_PHYREX_Prune_Regraft(tree);
-
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_scale_times"))
         MCMC_PHYREX_Scale_Times(tree);
+
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr"))
+        MCMC_PHYREX_Prune_Regraft(tree);
 
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_traj"))
         MCMC_PHYREX_Lineage_Traj(tree);
@@ -2185,8 +2188,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_hit_serial"))
         MCMC_PHYREX_Indel_Hit_Serial(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_add_remove_jump")) */
-      /*   MCMC_PHYREX_Add_Remove_Jump(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_add_remove_jump"))
+        MCMC_PHYREX_Add_Remove_Jump(tree);
 
       /* if(!strcmp(tree->mcmc->move_name[move],"kappa")) */
       /*   MCMC_Kappa(tree); */
@@ -2294,6 +2297,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_lbda]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_rad]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_mu]);
+          PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_indel_disk]);
+          PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_indel_hit]);
+          PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_ldsk_given_disk]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->young_disk->prev->centr->lonlat[0]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->young_disk->prev->centr->lonlat[1]);
 
@@ -4650,7 +4656,10 @@ t_ldsk *PHYREX_Generate_Path(t_ldsk *beg, t_ldsk *end, phydbl n_evt, phydbl sd, 
   phydbl dt,*time,dum,mode;
   t_ldsk *path,**ldsk_a;
   t_dsk *disk;
+  phydbl X,Y,Xp,Yp;
+  phydbl slope,inter;
 
+  
   dt = fabs(beg->disk->time - end->disk->time);
   path = NULL;
   
@@ -4700,9 +4709,20 @@ t_ldsk *PHYREX_Generate_Path(t_ldsk *beg, t_ldsk *end, phydbl n_evt, phydbl sd, 
   /* Instantiate path */
   for(i=0;i<tree->mmod->n_dim;i++)
     {
+      X = end->coord->lonlat[i];
+      Y = end->disk->time;
+
+      Xp = beg->coord->lonlat[i];
+      Yp = beg->disk->time;
+
+      slope = (Yp-Y)/(Xp-X);
+      inter = Y - slope*X;
+
       for(j=0;j<n_evt;j++)
         {
-          mode = (end->coord->lonlat[i] - beg->coord->lonlat[i])/(n_evt+1.-j) + beg->coord->lonlat[i];          
+          /* mode = (end->coord->lonlat[i] - beg->coord->lonlat[i])/(n_evt+1.-j) + beg->coord->lonlat[i]; */
+          mode = (ldsk_a[j]->disk->time - inter)/slope;
+
           ldsk_a[j]->coord->lonlat[i] = Rnorm_Trunc(mode,
                                                     sd,
                                                     0.0,
@@ -4730,6 +4750,8 @@ phydbl PHYREX_Path_Logdensity(t_ldsk *beg, t_ldsk *end, phydbl sd, t_tree *tree)
   int i,j,err,n_evt;
   t_ldsk *ldsk;
   phydbl lnDens,mode,rate,dt;
+  phydbl X,Y,Xp,Yp;
+  phydbl slope,inter;
   
   lnDens = 0.0;
   mode   = 0.0;
@@ -4751,6 +4773,15 @@ phydbl PHYREX_Path_Logdensity(t_ldsk *beg, t_ldsk *end, phydbl sd, t_tree *tree)
       j    = 0;
       ldsk = beg->prev;
 
+      X = end->coord->lonlat[i];
+      Y = end->disk->time;
+
+      Xp = beg->coord->lonlat[i];
+      Yp = beg->disk->time;
+
+      slope = (Yp-Y)/(Xp-X);
+      inter = Y - slope*X;
+
       // Density up to the last jump (to end ldsk) which should
       // not be accounted for (it is not part of the simulation
       // when randomly generating a path using PHYREX_Generate_Path
@@ -4758,8 +4789,10 @@ phydbl PHYREX_Path_Logdensity(t_ldsk *beg, t_ldsk *end, phydbl sd, t_tree *tree)
         {
           assert(ldsk != NULL);
           
-          mode = (end->coord->lonlat[i] - beg->coord->lonlat[i])/(n_evt+1.-j) + beg->coord->lonlat[i];         
+          /* mode = (end->coord->lonlat[i] - beg->coord->lonlat[i])/(n_evt+1.-j) + beg->coord->lonlat[i]; */
 
+          mode = (ldsk->disk->time - inter)/slope;
+          
           lnDens += Log_Dnorm_Trunc(ldsk->coord->lonlat[i],
                                     mode,
                                     sd,
@@ -4967,7 +5000,7 @@ phydbl PHYREX_Dist_To_Lca(t_ldsk *d, t_ldsk *lca)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-phydbl PHYREX_Dist_Between_Two_Ldsk(t_ldsk *n1,  t_ldsk *n2, t_tree *tree)
+phydbl PHYREX_Dist_Between_Two_Ldsk(t_ldsk *n1, t_ldsk *n2, t_tree *tree)
 {
   t_ldsk *lca;
 
