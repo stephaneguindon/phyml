@@ -2081,6 +2081,11 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   PhyML_Fprintf(fp_stats,"%s\t","rootldsk1");
   
   for(i=0;i<mcmc->n_moves;i++) tree->mcmc->start_ess[i] = YES;
+
+  /* !!!!!!!!!!!!!!!!!!!!!!!!!1 */
+  tree->mmod->lbda = 1.0;
+  tree->mmod->mu   = 1.0;
+  tree->mmod->rad  = 1.0;
   
   PHYREX_Lk(tree);        
   Set_Update_Eigen(YES,tree->mod);
@@ -2100,9 +2105,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);            
     }
   
-  tree->eval_alnL = YES;
+  tree->eval_alnL = NO;
   tree->eval_glnL = YES;
-  tree->eval_rlnL = YES;
+  tree->eval_rlnL = NO;
 
   Set_Both_Sides(NO,tree);
   mcmc->always_yes = NO;
@@ -2133,9 +2138,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
         }
 
       
-      /* tree->mmod->lbda = 1.0; */
-      /* tree->mmod->mu   = 0.5; */
-      /* tree->mmod->rad  = 1.5; */
+      tree->mmod->lbda = 1.0;
+      tree->mmod->mu   = 0.5;
+      tree->mmod->rad  = 1.5;
 
       
       /* PHYREX_Strip_And_Reconnect_Tree(tree); */
@@ -2143,14 +2148,17 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       /* PHYREX_Ldsk_To_Tree(tree); */
 
       
-      if(!strcmp(tree->mcmc->move_name[move],"phyrex_lbda"))
-        MCMC_PHYREX_Lbda(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_lbda")) */
+      /*   MCMC_PHYREX_Lbda(tree); */
 
-      if(!strcmp(tree->mcmc->move_name[move],"phyrex_mu"))
-        MCMC_PHYREX_Mu(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_mu")) */
+      /*   MCMC_PHYREX_Mu(tree); */
 
-      if(!strcmp(tree->mcmc->move_name[move],"phyrex_rad"))
-        MCMC_PHYREX_Radius(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_rad")) */
+      /*   MCMC_PHYREX_Radius(tree); */
+
+      /* PhyML_Printf("\n"); */
+      /* PHYREX_Print_Struct('*',tree); */
 
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_disk"))
         MCMC_PHYREX_Indel_Disk(tree);
@@ -2197,24 +2205,24 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_add_remove_jump"))
         MCMC_PHYREX_Add_Remove_Jump(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"kappa"))
-        MCMC_Kappa(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"kappa")) */
+      /*   MCMC_Kappa(tree); */
 
-      if(!strcmp(tree->mcmc->move_name[move],"ras"))
-        MCMC_Rate_Across_Sites(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"ras")) */
+      /*   MCMC_Rate_Across_Sites(tree); */
 
-      if(!strcmp(tree->mcmc->move_name[move],"br_rate"))
-        MCMC_Rates_All(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"br_rate")) */
+      /*   MCMC_Rates_All(tree); */
       
-      if(!strcmp(tree->mcmc->move_name[move],"tree_rates"))
-        MCMC_Tree_Rates(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"tree_rates")) */
+      /*   MCMC_Tree_Rates(tree); */
 
-      if(!strcmp(tree->mcmc->move_name[move],"clock"))
-        MCMC_Clock_R(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"clock")) */
+      /*   MCMC_Clock_R(tree); */
 
 
       /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1 */
-      /* PHYREX_Lk(tree); */
+      PHYREX_Lk(tree);
       /* Lk(NULL,tree); */
       
       if(tree->mmod->safe_phyrex == YES)
@@ -4745,9 +4753,11 @@ t_ldsk *PHYREX_Generate_Path(t_ldsk *young, t_ldsk *old, phydbl n_evt, phydbl sd
           
 
           ldsk_a[j]->disk->centr->lonlat[i] = Rnorm_Trunc(ldsk_a[j]->coord->lonlat[i],
+          /* ldsk_a[j]->disk->centr->lonlat[i] = Rnorm_Trunc(mode, */
                                                           sd,
                                                           0.0,
                                                           tree->mmod->lim->lonlat[i],&err);
+          /* ldsk_a[j]->disk->centr->lonlat[i] = Uni()*tree->mmod->lim->lonlat[i]; */
         }
     }
 
@@ -4816,10 +4826,11 @@ phydbl PHYREX_Path_Logdensity(t_ldsk *young, t_ldsk *old, phydbl sd, t_tree *tre
 
           lnDens += Log_Dnorm_Trunc(ldsk->disk->centr->lonlat[i],
                                     ldsk->coord->lonlat[i],
+                                    /* mode, */
                                     sd,
                                     0.0,
                                     tree->mmod->lim->lonlat[i],&err);
-
+          /* lnDens += log(1./tree->mmod->lim->lonlat[i]); */
           ldsk = ldsk->prev;
           j++;
         }
