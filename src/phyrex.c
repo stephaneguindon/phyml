@@ -287,11 +287,6 @@ void PHYREX_XML(char *xml_filename)
   mixt_tree->rates->clock_r = 1.0E-6;
   mixt_tree->rates->model   = LOGNORMAL;
 
-  /* !!!!!!!!!!!!!!!!!!!!!!!!!1 */
-  mixt_tree->mmod->lbda = 0.3;
-  mixt_tree->mmod->mu   = 0.5;
-  mixt_tree->mmod->rad  = 2.0;
-
   
   /* Random genealogy or user-defined tree */
   switch(mixt_tree->io->in_tree)
@@ -2082,10 +2077,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   
   for(i=0;i<mcmc->n_moves;i++) tree->mcmc->start_ess[i] = YES;
 
-  /* !!!!!!!!!!!!!!!!!!!!!!!!!1 */
-  tree->mmod->lbda = 1.0;
-  tree->mmod->mu   = 1.0;
-  tree->mmod->rad  = 1.0;
   
   PHYREX_Lk(tree);        
   Set_Update_Eigen(YES,tree->mod);
@@ -2105,9 +2096,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);            
     }
   
-  tree->eval_alnL = NO;
+  tree->eval_alnL = YES;
   tree->eval_glnL = YES;
-  tree->eval_rlnL = NO;
+  tree->eval_rlnL = YES;
 
   Set_Both_Sides(NO,tree);
   mcmc->always_yes = NO;
@@ -2138,9 +2129,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
         }
 
       
-      tree->mmod->lbda = 1.0;
-      tree->mmod->mu   = 0.5;
-      tree->mmod->rad  = 1.5;
+      /* tree->mmod->lbda = 1.0; */
+      /* tree->mmod->mu   = 0.5; */
+      /* tree->mmod->rad  = 1.5; */
 
       
       /* PHYREX_Strip_And_Reconnect_Tree(tree); */
@@ -2205,24 +2196,24 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_add_remove_jump"))
         MCMC_PHYREX_Add_Remove_Jump(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"kappa")) */
-      /*   MCMC_Kappa(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"kappa"))
+        MCMC_Kappa(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"ras")) */
-      /*   MCMC_Rate_Across_Sites(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"ras"))
+        MCMC_Rate_Across_Sites(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"br_rate")) */
-      /*   MCMC_Rates_All(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"br_rate"))
+        MCMC_Rates_All(tree);
       
-      /* if(!strcmp(tree->mcmc->move_name[move],"tree_rates")) */
-      /*   MCMC_Tree_Rates(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"tree_rates"))
+        MCMC_Tree_Rates(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"clock")) */
-      /*   MCMC_Clock_R(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"clock"))
+        MCMC_Clock_R(tree);
 
 
       /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1 */
-      PHYREX_Lk(tree);
+      /* PHYREX_Lk(tree); */
       /* Lk(NULL,tree); */
       
       if(tree->mmod->safe_phyrex == YES)
