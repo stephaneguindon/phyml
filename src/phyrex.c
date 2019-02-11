@@ -2139,14 +2139,14 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       /* PHYREX_Ldsk_To_Tree(tree); */
 
       
-      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_lbda")) */
-      /*   MCMC_PHYREX_Lbda(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_lbda"))
+        MCMC_PHYREX_Lbda(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_mu")) */
-      /*   MCMC_PHYREX_Mu(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_mu"))
+        MCMC_PHYREX_Mu(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_rad")) */
-      /*   MCMC_PHYREX_Radius(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_rad"))
+        MCMC_PHYREX_Radius(tree);
 
       /* PhyML_Printf("\n"); */
       /* PHYREX_Print_Struct('*',tree); */
