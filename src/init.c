@@ -1055,6 +1055,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
           mod->lambda->v = 1.0;
         }    
 
+
       if(mod->whichmodel == CUSTOM)
         {
           for(i=0;i<6;i++)
@@ -1107,7 +1108,6 @@ void Init_Model(calign *data, t_mod *mod, option *io)
   if(io->datatype == NT) /* Nucleotides */
     {
       /* init for nucleotides */
-      mod->lambda->v    = 1.;
 
       if(mod->whichmodel == JC69)
         {
@@ -1157,6 +1157,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
             mod->e_frq->pi_unscaled->v[i] = log(mod->e_frq->pi->v[i]);
           mod->update_eigen = NO;
           if(io->mod->s_opt->opt_kappa) io->mod->s_opt->opt_lambda = YES;
+
         }
 
       if(mod->whichmodel == HKY85)

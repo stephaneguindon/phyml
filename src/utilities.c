@@ -905,7 +905,7 @@ void Update_Dirs(t_tree *tree)
 
   b = NULL;
   buff = -1;
-  For(i,2*tree->n_otu-3)
+  for(i=0;i<2*tree->n_otu-3;++i)
     {
       b = tree->a_edges[i];
 
