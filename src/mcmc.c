@@ -8197,7 +8197,7 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
           sum = 0.0;
           for(i=0;i<n_valid_disks;i++) prob_disks[i] /= max_dist;
 
-          param_exp = 0.5;
+          param_exp = 1.;
           for(i=0;i<n_valid_disks;i++) prob_disks[i] = Dexp(prob_disks[i],param_exp);
 
           sum = 0.0;
@@ -8290,13 +8290,13 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
 
       new_path_len = cur_path_len;
       
-      hr += PHYREX_Path_Logdensity(prune_daughter_ldsk,prune_ldsk,0.1*tree->mmod->rad,tree);
+      hr += PHYREX_Path_Logdensity(prune_daughter_ldsk,prune_ldsk,1.0*tree->mmod->rad,tree);
       
-      new_path = PHYREX_Generate_Path(prune_daughter_ldsk,regraft_ldsk,cur_path_len,0.1*tree->mmod->rad,tree);
+      new_path = PHYREX_Generate_Path(prune_daughter_ldsk,regraft_ldsk,cur_path_len,1.0*tree->mmod->rad,tree);
       cur_path = PHYREX_Remove_Path(prune_daughter_ldsk,prune_ldsk,&cur_pos,tree);
       PHYREX_Insert_Path(prune_daughter_ldsk,regraft_ldsk,new_path,regraft_ldsk->n_next,tree);
 
-      hr -= PHYREX_Path_Logdensity(prune_daughter_ldsk,regraft_ldsk,0.1*tree->mmod->rad,tree);
+      hr -= PHYREX_Path_Logdensity(prune_daughter_ldsk,regraft_ldsk,1.0*tree->mmod->rad,tree);
             
 
       PHYREX_Ldsk_To_Tree(tree);
@@ -8376,13 +8376,13 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
       ratio = exp(ratio);
       alpha = MIN(1.,ratio);
       
-      /* PhyML_Printf("\nYYY %12f %12f %4d %4d %12f %12f", */
-      /*              prune_daughter_ldsk->disk->time - prune_ldsk->disk->time, */
-      /*              prune_daughter_ldsk->disk->time - regraft_ldsk->disk->time, */
-      /*              cur_path_len, */
-      /*              new_path_len, */
-      /*              PHYREX_Dist_Between_Two_Ldsk(regraft_ldsk,prune_ldsk,tree), */
-      /*              alpha); */
+      PhyML_Printf("\nYYY %12f %12f %4d %4d %12f %12f",
+                   prune_daughter_ldsk->disk->time - prune_ldsk->disk->time,
+                   prune_daughter_ldsk->disk->time - regraft_ldsk->disk->time,
+                   cur_path_len,
+                   new_path_len,
+                   PHYREX_Dist_Between_Two_Ldsk(regraft_ldsk,prune_ldsk,tree),
+                   alpha);
 
 
       /* Always accept move */

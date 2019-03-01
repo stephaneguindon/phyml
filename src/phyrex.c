@@ -21,10 +21,10 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int PHYREX_Main(int argc, char *argv[])
 {
-  /* PHYREX_Main_Simulate(argc,argv); */
-  option *io;
-  io = Get_Input(argc,argv);
-  Free(io);
+  PHYREX_Main_Simulate(argc,argv);
+  /* option *io; */
+  /* io = Get_Input(argc,argv); */
+  /* Free(io); */
   return(0);
 }
 
@@ -965,11 +965,9 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, int r_seed)
   Evolve(tree->data,tree->mod,0,tree);
 
   PhyML_Printf("@@@ %G %G %G : ",mmod->lbda,mmod->mu,mmod->rad);
-  for(int i=0;i<tree->n_otu-1;++i) for(int j=i+1;j<tree->n_otu;++j) PhyML_Printf("\n## %G %G",
-                                                                                 PHYREX_Dist_Between_Two_Ldsk(tree->a_nodes[i]->ldsk,tree->a_nodes[j]->ldsk,tree),
-                                                                                 Euclidean_Dist(tree->a_nodes[i]->ldsk->coord,tree->a_nodes[j]->ldsk->coord));
-  /* PhyML_Printf(" : ",mmod->lbda,mmod->mu,mmod->rad); */
-  /* for(int i=0;i<tree->n_otu-1;++i) for(int j=i+1;j<tree->n_otu;++j) PhyML_Printf("%G ",Euclidean_Dist(tree->a_nodes[i]->ldsk->coord,tree->a_nodes[j]->ldsk->coord)); */
+  for(int i=0;i<tree->n_otu-1;++i) for(int j=i+1;j<tree->n_otu;++j) PhyML_Printf("%G ",PHYREX_Dist_Between_Two_Ldsk(tree->a_nodes[i]->ldsk,tree->a_nodes[j]->ldsk,tree));
+  PhyML_Printf(" : ",mmod->lbda,mmod->mu,mmod->rad);
+  for(int i=0;i<tree->n_otu-1;++i) for(int j=i+1;j<tree->n_otu;++j) PhyML_Printf("%G ",Euclidean_Dist(tree->a_nodes[i]->ldsk->coord,tree->a_nodes[j]->ldsk->coord));
   PhyML_Printf("\n");
   for(int i=0;i<tree->n_otu-1;++i) PhyML_Printf("\n%s %G %G",
                                                 tree->a_nodes[i]->name,
@@ -4854,16 +4852,17 @@ t_ldsk *PHYREX_Generate_Path(t_ldsk *young, t_ldsk *old, phydbl n_evt, phydbl sd
                                                     0.0,
                                                     tree->mmod->lim->lonlat[i],&err);
           
-
-          ldsk_a[j]->disk->centr->lonlat[i] = Rnorm_Trunc(mode,
-                                                          sd,
-                                                          0.0,
-                                                          tree->mmod->lim->lonlat[i],&err);
-
-          /* ldsk_a[j]->disk->centr->lonlat[i] = Rnorm_Trunc(ldsk_a[j]->coord->lonlat[i], */
+          
+          /* ldsk_a[j]->disk->centr->lonlat[i] = Rnorm_Trunc(mode, */
           /*                                                 sd, */
           /*                                                 0.0, */
           /*                                                 tree->mmod->lim->lonlat[i],&err); */
+
+          
+          ldsk_a[j]->disk->centr->lonlat[i] = Rnorm_Trunc(ldsk_a[j]->coord->lonlat[i],
+                                                          sd,
+                                                          0.0,
+                                                          tree->mmod->lim->lonlat[i],&err);
         }
     }
   
@@ -4928,17 +4927,17 @@ phydbl PHYREX_Path_Logdensity(t_ldsk *young, t_ldsk *old, phydbl sd, t_tree *tre
                                     0.0,
                                     tree->mmod->lim->lonlat[i],&err);
 
-          lnDens += Log_Dnorm_Trunc(ldsk->disk->centr->lonlat[i],
-                                    mode,
-                                    sd,
-                                    0.0,
-                                    tree->mmod->lim->lonlat[i],&err);
-
           /* lnDens += Log_Dnorm_Trunc(ldsk->disk->centr->lonlat[i], */
-          /*                           ldsk->coord->lonlat[i], */
+          /*                           mode, */
           /*                           sd, */
           /*                           0.0, */
           /*                           tree->mmod->lim->lonlat[i],&err); */
+
+          lnDens += Log_Dnorm_Trunc(ldsk->disk->centr->lonlat[i],
+                                    ldsk->coord->lonlat[i],
+                                    sd,
+                                    0.0,
+                                    tree->mmod->lim->lonlat[i],&err);
           /* lnDens += log(1./tree->mmod->lim->lonlat[i]); */
 
           ldsk = ldsk->prev;
