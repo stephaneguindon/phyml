@@ -235,7 +235,7 @@ void TIMES_Set_All_Node_Priors(t_tree *tree)
   if(!tree->rates->t_has_prior[tree->n_root->num])
     {
       min_prior = 1.E+10;
-      For(i,2*tree->n_otu-2)
+      for(i=0;i<2*tree->n_otu-2;++i)
 	{
 	  if(tree->rates->t_has_prior[i])
 	    {

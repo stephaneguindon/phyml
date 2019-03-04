@@ -21,10 +21,10 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int PHYREX_Main(int argc, char *argv[])
 {
-  PHYREX_Main_Simulate(argc,argv);
-  /* option *io; */
-  /* io = Get_Input(argc,argv); */
-  /* Free(io); */
+  /* PHYREX_Main_Simulate(argc,argv); */
+  option *io;
+  io = Get_Input(argc,argv);
+  Free(io);
   return(0);
 }
 
@@ -1883,7 +1883,8 @@ phydbl PHYREX_Lk_Core(t_dsk *disk, t_tree *tree)
   if(disk->ldsk != NULL)
     {
       for(i=0;i<disk->n_ldsk_a;++i) if(disk->ldsk_a[i]->prev == disk->ldsk) break;
-      assert(i != disk->n_ldsk_a);
+      if(i == disk->n_ldsk_a) return UNLIKELY;
+      /* assert(i != disk->n_ldsk_a); */
     }
 
   for(i=0;i<disk->n_ldsk_a;++i)
@@ -2102,6 +2103,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   PhyML_Fprintf(fp_stats,"%s\t","accInDelHit");
   PhyML_Fprintf(fp_stats,"%s\t","accScaleTime");
   PhyML_Fprintf(fp_stats,"%s\t","accSPR");
+  PhyML_Fprintf(fp_stats,"%s\t","accSPRlocal");
   PhyML_Fprintf(fp_stats,"%s\t","accPath");
   PhyML_Fprintf(fp_stats,"%s\t","accIndelDiskSerial");
   PhyML_Fprintf(fp_stats,"%s\t","accIndelHitSerial");
@@ -2147,9 +2149,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);            
     }
   
-  tree->eval_alnL = NO;
+  tree->eval_alnL = YES;
   tree->eval_glnL = YES;
-  tree->eval_rlnL = NO;
+  tree->eval_rlnL = YES;
 
   Set_Both_Sides(NO,tree);
   mcmc->always_yes = NO;
@@ -2180,9 +2182,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
         }
 
       
-      tree->mmod->lbda = 1.0;
-      tree->mmod->mu   = 0.5;
-      tree->mmod->rad  = 1.5;
+      /* tree->mmod->lbda = 1.0; */
+      /* tree->mmod->mu   = 0.5; */
+      /* tree->mmod->rad  = 1.5; */
 
 
       /* if(tree->mcmc->run == 0) */
@@ -2193,14 +2195,14 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       /*   } */
       
       
-      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_lbda")) */
-      /*   MCMC_PHYREX_Lbda(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_lbda"))
+        MCMC_PHYREX_Lbda(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_mu")) */
-      /*   MCMC_PHYREX_Mu(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_mu"))
+        MCMC_PHYREX_Mu(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_rad")) */
-      /*   MCMC_PHYREX_Radius(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_rad"))
+        MCMC_PHYREX_Radius(tree);
 
       /* PhyML_Printf("\n"); */
       /* PHYREX_Print_Struct('*',tree); */
@@ -2222,6 +2224,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr"))
         MCMC_PHYREX_Prune_Regraft(tree);
+
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr_local"))
+        MCMC_PHYREX_Prune_Regraft_Local(tree);
 
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_traj"))
         MCMC_PHYREX_Lineage_Traj(tree);
@@ -2250,24 +2255,24 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_add_remove_jump"))
         MCMC_PHYREX_Add_Remove_Jump(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"kappa")) */
-      /*   MCMC_Kappa(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"kappa"))
+        MCMC_Kappa(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"ras")) */
-      /*   MCMC_Rate_Across_Sites(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"ras"))
+        MCMC_Rate_Across_Sites(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"br_rate")) */
-      /*   MCMC_Rates_All(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"br_rate"))
+        MCMC_Rates_All(tree);
       
-      /* if(!strcmp(tree->mcmc->move_name[move],"tree_rates")) */
-      /*   MCMC_Tree_Rates(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"tree_rates"))
+        MCMC_Tree_Rates(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"clock")) */
-      /*   MCMC_Clock_R(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"clock"))
+        MCMC_Clock_R(tree);
 
 
       /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1 */
-      PHYREX_Lk(tree);
+      /* PHYREX_Lk(tree); */
       /* Lk(NULL,tree); */
       
       if(tree->mmod->safe_phyrex == YES)
@@ -2341,6 +2346,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_indel_hit]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_scale_times]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_spr]);
+          PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_spr_local]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_traj]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_indel_disk_serial]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_indel_hit_serial]);

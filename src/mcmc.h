@@ -172,4 +172,5 @@ void MCMC_Times_And_Rates_Recur(t_node *a, t_node *d, int traversal, t_tree *tre
 void MCMC_Times_And_Rates_All(t_tree *tree);
 void MCMC_Times_And_Rates_Root(t_tree *tree);
 void MCMC_Clade_Change(t_tree *tree);
+void MCMC_PHYREX_Prune_Regraft_Local(t_tree *tree);
 #endif
