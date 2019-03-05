@@ -2199,9 +2199,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_rad"))
         MCMC_PHYREX_Radius(tree);
 
-      /* PhyML_Printf("\n"); */
-      /* PHYREX_Print_Struct('*',tree); */
-
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_disk"))
         MCMC_PHYREX_Indel_Disk(tree);
 
