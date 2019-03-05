@@ -310,7 +310,7 @@ void PHYREX_XML(char *xml_filename)
   MIXT_Set_Bl_From_Rt(YES,mixt_tree);
 
    
-  PHYREX_Check_Struct(mixt_tree);
+  assert(PHYREX_Check_Struct(mixt_tree));
   PHYREX_Lk(mixt_tree);        
   Set_Update_Eigen(YES,mixt_tree->mod);
   Lk(NULL,mixt_tree);
@@ -2161,7 +2161,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       
       MIXT_Propagate_Tree_Update(tree);
       PHYREX_Ldsk_To_Tree(tree);      
-      PHYREX_Check_Struct(tree);
+      assert(PHYREX_Check_Struct(tree));
  
       if(mcmc->run > adjust_len)
         for(i=0;i<mcmc->n_moves;i++) tree->mcmc->adjust_tuning[i] = NO;
@@ -3002,15 +3002,14 @@ void PHYREX_Update_Lindisk_List_Core(t_dsk *disk, t_tree *tree)
        !(disk->ldsk_a[i]->nd != NULL &&
          disk->ldsk_a[i]->nd->tax == YES &&
          disk->age_fixed == YES &&
-         disk->ldsk_a[i]->disk == disk))
+         disk->ldsk_a[i]->disk == disk))      
       disk->ldsk_a[i] = NULL;
-      
+  
   
   disk->n_ldsk_a = 0;
   for(i=0;i<tree->n_otu;++i)
     if(disk->ldsk_a[i] != NULL)
-        disk->n_ldsk_a++;
-
+      disk->n_ldsk_a++;
   
   // Make sur the tip nodes are all at the top of ldsk_a
   for(i=0;i<disk->n_ldsk_a;++i) assert(disk->ldsk_a[i] != NULL);
@@ -3037,18 +3036,22 @@ void PHYREX_Update_Lindisk_List_Core(t_dsk *disk, t_tree *tree)
       disk->ldsk_a[disk->n_ldsk_a] = disk->next->ldsk;
       disk->n_ldsk_a++;
     }
-
   
   if(disk->n_ldsk_a == 0 || disk->n_ldsk_a > tree->n_otu) 
     {
-      PhyML_Fprintf(stderr,"\n. disk: %s (%p) time: %f next: %s (%f) prev: %s (%f) disk->n_ldsk_a: %d coord: %s n_otu: %d",
+      PhyML_Fprintf(stderr,"\n. disk: %s (%p,%d) time: %f next: %s (%f,%d,%c,%d) prev: %s (%f,%d) disk->n_ldsk_a: %d coord: %s n_otu: %d",
                     disk->id,
                     disk,
+                    disk->age_fixed,
                     disk->time,
                     disk->next ? disk->next->id : "??",
                     disk->next ? disk->next->time : 0.0,
+                    disk->next ? disk->next->n_ldsk_a : -1,
+                    disk->next->ldsk ? 'y' : 'n',
+                    disk->next->ldsk ?  disk->next->ldsk->n_next : -1,
                     disk->prev ? disk->prev->id : "??",
                     disk->prev ? disk->prev->time : 0.0,
+                    disk->prev ? disk->prev->n_ldsk_a : -1,
                     disk->n_ldsk_a,
                     disk->ldsk?disk->ldsk->coord->id:"??",
                     tree->n_otu);
@@ -3176,7 +3179,7 @@ void PHYREX_Print_Struct(char sign, t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-void PHYREX_Check_Struct(t_tree *tree)
+int PHYREX_Check_Struct(t_tree *tree)
 {
   int i;
   t_ldsk *ldisk;
@@ -3190,55 +3193,22 @@ void PHYREX_Check_Struct(t_tree *tree)
         {
           if(ldisk->prev->disk->time > ldisk->disk->time)
             {
-              PhyML_Printf("\n. ldisk->id: %s ldisk->prev->id: %s ldsk->disk->time: %f  ldsk->prev->disk->time: %f ldisk->prev->disk: %s ldisk->disk: %s",
-                           ldisk->coord->id,
-                           ldisk->prev->coord->id,
-                           ldisk->disk->time,
-                           ldisk->prev->disk->time,
-                           ldisk->prev->disk->id,
-                           ldisk->disk->id);
-              assert(FALSE);
+              /* PhyML_Printf("\n. ldisk->id: %s ldisk->prev->id: %s ldsk->disk->time: %f  ldsk->prev->disk->time: %f ldisk->prev->disk: %s ldisk->disk: %s", */
+              /*              ldisk->coord->id, */
+              /*              ldisk->prev->coord->id, */
+              /*              ldisk->disk->time, */
+              /*              ldisk->prev->disk->time, */
+              /*              ldisk->prev->disk->id, */
+              /*              ldisk->disk->id); */
+              /* assert(FALSE); */
+              return 0;
             }
           ldisk = ldisk->prev;
         }
       while(ldisk->prev);
     }
 
-
-
-  /* disk = tree->young_disk; */
-  /* while(disk->prev) disk = disk->prev; */
-  /* do */
-  /*   { */
-  /*     PHYREX_Update_Lindisk_List(tree); */
-
-  /*     for(i=0;i<disk->n_ldsk_a;i++) */
-  /*       { */
-  /*         ldisk = disk->ldsk_a[i]; */
-  /*         if(ldisk->prev != NULL) */
-  /*           { */
-  /*             for(j=0;j<tree->mmod->n_dim;j++) */
-  /*               { */
-  /*                 if(fabs(ldisk->coord->lonlat[j] -  */
-  /*                         ldisk->prev->coord->lonlat[j]) > 2.*tree->mmod->rad) */
-  /*                   { */
-  /*                     PHYREX_Print_Struct('=',tree); */
-  /*                     PhyML_Fprintf(stderr,"\n. %f %f %f", */
-  /*                                   ldisk->coord->lonlat[j],  */
-  /*                                   ldisk->prev->coord->lonlat[j], */
-  /*                                   2.*tree->mmod->rad); */
-  /*                     PhyML_Fprintf(stderr,"\n. Radius: %f",tree->mmod->rad); */
-  /*                     PhyML_Fprintf(stderr,"\n. Check ldsk %s",ldisk->coord->id); */
-  /*                     PhyML_Fprintf(stderr,"\n. Centr: %f",ldisk->prev->disk->centr->lonlat[j]); */
-  /*                     assert(FALSE); */
-  /*                   } */
-  /*               } */
-  /*           } */
-  /*       } */
-
-  /*     disk = disk->next;       */
-  /*   } */
-  /* while(disk); */
+  return 1;
 }
 
 /*////////////////////////////////////////////////////////////

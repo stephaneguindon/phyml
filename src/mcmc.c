@@ -7416,8 +7416,6 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree)
   tree->mcmc->run_move[tree->mcmc->num_move_phyrex_scale_times]++;
   
   u = Uni();
-  /* scale_fact_times = exp(K*(u-.5)); */
-  /* !!!!!!!!!!!!!!!!!!!!!!!1 */
   scale_fact_times = exp(1.*(u-.5));
   
   n_disks = 0;
@@ -7428,9 +7426,13 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree)
       disk = disk->prev;
     }
   while(disk);
-
+  
   PHYREX_Scale_All(scale_fact_times,tree);
-
+  if(!PHYREX_Check_Struct(tree))
+    {
+      PHYREX_Scale_All(1./scale_fact_times,tree);
+      return;
+    }
   
   /* The Hastings ratio involves (n_disk-2) when considering a uniform distrib
      for the multiplier, which is not the case here.

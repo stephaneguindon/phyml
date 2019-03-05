@@ -39,7 +39,7 @@ void PHYREX_Update_Lindisk_List_Pre(t_dsk *disk, t_tree *tree);
 void PHYREX_Connect_Ldsk_Given_Disk(t_dsk **disk, int n_disk, t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y);
 void PHYREX_Print_Struct(char sign, t_tree *tree);
 phydbl PHYREX_Uniform_Path_Density(t_ldsk *y_ldsk, t_ldsk *o_ldsk, t_tree *tree);
-void PHYREX_Check_Struct(t_tree *tree);
+int PHYREX_Check_Struct(t_tree *tree);
 void PHYREX_Store_Geo_Coord(t_geo_coord *t);
 void PHYREX_Restore_Geo_Coord(t_geo_coord *t);
 int PHYREX_Total_Number_Of_Intervals(t_tree *tree);
