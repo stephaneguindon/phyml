@@ -489,7 +489,6 @@ int PHYREX_Main_Estimate(int argc, char *argv[])
 int PHYREX_Main_Simulate(int argc, char *argv[])
 {
   t_tree *tree;
-  phydbl *res;
   int seed,pid,i;
   char *s;
   t_dsk *disk;
@@ -524,8 +523,6 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   sprintf(s+strlen(s),".%d.xml",tree->mod->io->r_seed);
   PHYREX_Print_MultiTypeTree_Config_File(n_sites,s,tree);
 
-  /* res = PHYREX_MCMC(tree); */
-
   disk = tree->young_disk;
   for(i=0;i<disk->n_ldsk_a;i++) Free_Ldisk(disk->ldsk_a[i]);
   while(disk->prev)
@@ -552,7 +549,6 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   Free_Model_Basic(tree->mod);
   Free_Calign(tree->data);
   Free_Tree(tree);
-  Free(res);  
   Free(s);
 
   return 0;
@@ -1864,8 +1860,8 @@ phydbl PHYREX_Lk(t_tree *tree)
 
 phydbl PHYREX_Lk_Core(t_dsk *disk, t_tree *tree)
 {
-  phydbl lnL,log_prob_hit,log_mu,log_dens_coal;
-  int was_hit,i,j,k,err;
+  phydbl lnL,log_prob_hit,log_mu;
+  int was_hit,i,j,err;
   phydbl two_theta_two;
 
   two_theta_two = 2.*pow(tree->mmod->rad,2);
@@ -2002,7 +1998,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   phydbl *res;
   int adjust_len;
   t_dsk *disk;
-  int dum;
   
   fp_tree    = tree->io->fp_out_tree;
   fp_stats   = tree->io->fp_out_stats;
@@ -3004,8 +2999,7 @@ void PHYREX_Update_Lindisk_List_Core(t_dsk *disk, t_tree *tree)
          disk->age_fixed == YES &&
          disk->ldsk_a[i]->disk == disk))      
       disk->ldsk_a[i] = NULL;
-  
-  
+    
   disk->n_ldsk_a = 0;
   for(i=0;i<tree->n_otu;++i)
     if(disk->ldsk_a[i] != NULL)
@@ -3015,7 +3009,6 @@ void PHYREX_Update_Lindisk_List_Core(t_dsk *disk, t_tree *tree)
   for(i=0;i<disk->n_ldsk_a;++i) assert(disk->ldsk_a[i] != NULL);
   for(i=disk->n_ldsk_a;i<tree->n_otu;++i) assert(disk->ldsk_a[i] == NULL);
 
-  
   for(i=0;i<disk->next->n_ldsk_a;++i)
     {      
       // disk->next->ldsk_a[i] does not coalesce or jump on disk->next
@@ -3036,6 +3029,15 @@ void PHYREX_Update_Lindisk_List_Core(t_dsk *disk, t_tree *tree)
       disk->ldsk_a[disk->n_ldsk_a] = disk->next->ldsk;
       disk->n_ldsk_a++;
     }
+
+  /* PhyML_Printf("\n"); */
+  /* for(i=0;i<disk->n_ldsk_a;++i) PhyML_Printf("\n. Disk %s [%12f] ldsk_a: %s (%3d)",disk->id,disk->time,disk->ldsk_a[i]->coord->id,disk->ldsk_a[i]->nd ? disk->ldsk_a[i]->nd->tax : -1); */
+  /* if(disk->ldsk != NULL) PhyML_Printf("\n* Has %s on it (next: %s @ %12f %s)", */
+  /*                                     disk->ldsk->coord->id, */
+  /*                                     disk->ldsk->next[0]->coord->id, */
+  /*                                     disk->ldsk->next[0]->disk->time, */
+  /*                                     disk->ldsk->next[0]->prev->coord->id); */
+  /* PhyML_Printf("\n. n_ldsk_a: %d",disk->n_ldsk_a); */
   
   if(disk->n_ldsk_a == 0 || disk->n_ldsk_a > tree->n_otu) 
     {
@@ -3116,7 +3118,7 @@ void PHYREX_Connect_Ldsk_Given_Disk(t_dsk **disk, int n_disk, t_ldsk *y_ldsk, t_
 void PHYREX_Print_Struct(char sign, t_tree *tree)
 {
   t_dsk *disk;
-  int i,j;
+  int i;
   t_ldsk *ldisk;
 
   PHYREX_Update_Lindisk_List(tree);
@@ -3390,7 +3392,6 @@ phydbl PHYREX_Runif_Rectangle_Overlap(t_ldsk *ldsk, t_dsk *disk, t_phyrex_mod *m
  
 phydbl PHYREX_Rnorm_Trunc(t_ldsk *ldsk, t_dsk *disk, t_phyrex_mod *mmod)
 {
-  phydbl up, down, left, rght;
   int i,err;
 
   err = NO;
@@ -3714,7 +3715,6 @@ void PHYREX_Ldsk_To_Tree(t_tree *tree)
   int i,j;
   t_dsk *disk;
   t_ldsk *root_ldsk;
-  int n_tax;
   
   /* Reset */
   for(i=0;i<2*tree->n_otu-1;++i) 
@@ -3727,7 +3727,6 @@ void PHYREX_Ldsk_To_Tree(t_tree *tree)
     }
 
   // Erase all connections to internal nodes
-  n_tax = 0;
   disk = tree->young_disk;
   do
     {
@@ -4739,13 +4738,12 @@ phydbl PHYREX_Effective_Density(t_tree *tree)
 t_ldsk *PHYREX_Generate_Path(t_ldsk *young, t_ldsk *old, phydbl n_evt, phydbl sd, t_tree *tree)
 {
   int i,j,swap,err;
-  phydbl dt,*time,dum,mode;
+  phydbl *time,dum,mode;
   t_ldsk *path,**ldsk_a;
   t_dsk *disk;
   phydbl X,Y,Xp,Yp;
   phydbl slope,inter;
   
-  dt          = fabs(young->disk->time - old->disk->time);
   path        = NULL;
   
   if(n_evt == 0) return(NULL); // path is set to NULL
@@ -4855,15 +4853,13 @@ phydbl PHYREX_Path_Logdensity(t_ldsk *young, t_ldsk *old, phydbl sd, t_tree *tre
 {
   int i,j,err;
   t_ldsk *ldsk;
-  phydbl lnDens,mode,rate,dt;
+  phydbl lnDens,mode;
   phydbl X,Y,Xp,Yp;
   phydbl slope,inter;
   int dir_to_young;
   
   lnDens = 0.0;
   mode   = 0.0;
-
-  dt = fabs(old->disk->time - young->disk->time);
     
   for(i=0;i<tree->mmod->n_dim;i++)
     {     
@@ -4934,11 +4930,10 @@ void PHYREX_Sample_Path(t_ldsk *young, t_ldsk *old, phydbl sd, phydbl *global_hr
   phydbl new_glnL,cur_glnL;
   phydbl u,alpha,ratio,hr;
   int n_mcmc_iter;
-  int i,k,err;
+  int i,err;
   t_ldsk *ldsk;
   int accept,reject;
-  int path_len,dir_ol_yg;
-  t_ldsk *yg, *ol;
+  int path_len;
   
 
   path_len = PHYREX_Path_Len(young,old)-2;
@@ -5758,7 +5753,6 @@ void PHYREX_Scale_All(phydbl scale, t_tree *tree)
       PHYREX_Insert_Disk(sorted_disk[i],tree);
     }
 
-  PHYREX_Update_Lindisk_List(tree);
   Free(sorted_disk);
 }
 
