@@ -2144,9 +2144,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);            
     }
   
-  tree->eval_alnL = YES;
+  tree->eval_alnL = NO;
   tree->eval_glnL = YES;
-  tree->eval_rlnL = YES;
+  tree->eval_rlnL = NO;
 
   Set_Both_Sides(NO,tree);
   mcmc->always_yes = NO;
@@ -2177,9 +2177,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
         }
 
       
-      /* tree->mmod->lbda = 1.0; */
-      /* tree->mmod->mu   = 0.5; */
-      /* tree->mmod->rad  = 1.5; */
+      tree->mmod->lbda = 1.0;
+      tree->mmod->mu   = 0.5;
+      tree->mmod->rad  = 1.5;
 
 
       /* if(tree->mcmc->run == 0) */
@@ -2190,14 +2190,14 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       /*   } */
       
       
-      if(!strcmp(tree->mcmc->move_name[move],"phyrex_lbda"))
-        MCMC_PHYREX_Lbda(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_lbda")) */
+      /*   MCMC_PHYREX_Lbda(tree); */
 
-      if(!strcmp(tree->mcmc->move_name[move],"phyrex_mu"))
-        MCMC_PHYREX_Mu(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_mu")) */
+      /*   MCMC_PHYREX_Mu(tree); */
 
-      if(!strcmp(tree->mcmc->move_name[move],"phyrex_rad"))
-        MCMC_PHYREX_Radius(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_rad")) */
+      /*   MCMC_PHYREX_Radius(tree); */
 
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_disk"))
         MCMC_PHYREX_Indel_Disk(tree);
@@ -2247,24 +2247,24 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_add_remove_jump"))
         MCMC_PHYREX_Add_Remove_Jump(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"kappa"))
-        MCMC_Kappa(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"kappa")) */
+      /*   MCMC_Kappa(tree); */
 
-      if(!strcmp(tree->mcmc->move_name[move],"ras"))
-        MCMC_Rate_Across_Sites(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"ras")) */
+      /*   MCMC_Rate_Across_Sites(tree); */
 
-      if(!strcmp(tree->mcmc->move_name[move],"br_rate"))
-        MCMC_Rates_All(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"br_rate")) */
+      /*   MCMC_Rates_All(tree); */
       
-      if(!strcmp(tree->mcmc->move_name[move],"tree_rates"))
-        MCMC_Tree_Rates(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"tree_rates")) */
+      /*   MCMC_Tree_Rates(tree); */
 
-      if(!strcmp(tree->mcmc->move_name[move],"clock"))
-        MCMC_Clock_R(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"clock")) */
+      /*   MCMC_Clock_R(tree); */
 
 
       /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1 */
-      /* PHYREX_Lk(tree); */
+      PHYREX_Lk(tree);
       /* Lk(NULL,tree); */
       
       if(tree->mmod->safe_phyrex == YES)
@@ -4795,6 +4795,7 @@ t_ldsk *PHYREX_Generate_Path(t_ldsk *young, t_ldsk *old, phydbl n_evt, phydbl sd
 
       for(j=0;j<n_evt;j++)
         {
+
           if(j == 0)
             {
               Xp = young->coord->lonlat[i];
@@ -4802,6 +4803,7 @@ t_ldsk *PHYREX_Generate_Path(t_ldsk *young, t_ldsk *old, phydbl n_evt, phydbl sd
             }
           else
             {
+              assert(ldsk_a[j]->n_next == 1);
               Xp = ldsk_a[j]->next[0]->coord->lonlat[i];
               Yp = ldsk_a[j]->next[0]->disk->time;
             }
