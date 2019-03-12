@@ -21,12 +21,11 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int PHYREX_Main(int argc, char *argv[])
 {
-
-  /* PHYREX_Main_Estimate(argc,argv); */
-  option *io;
-  io = Get_Input(argc,argv);
-  Free(io);
-  return(0);
+  PHYREX_Main_Simulate(argc,argv);
+  /* option *io; */
+  /* io = Get_Input(argc,argv); */
+  /* Free(io); */
+  /* return(0); */
 }
 
 //////////////////////////////////////////////////////////////
@@ -819,7 +818,7 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, int r_seed)
   calign *cdata;
   /* phydbl max_mu, min_mu; */
   /* phydbl max_rad, min_rad; */
-  /* phydbl min_rate, max_rate; */
+  phydbl min_rate, max_rate;
   /* phydbl min_lbda, max_lbda; */
   phydbl min_neigh, max_neigh;
   /* phydbl min_sigsq, max_sigsq; */
@@ -919,14 +918,14 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, int r_seed)
   RATES_Fill_Lca_Table(tree);
   
   
-  /* min_rate = 1.E-5; */
-  /* max_rate = 1.E-4; */
+  min_rate = 1.E-5;
+  max_rate = 1.E-4;
 
   T = PHYREX_Tree_Height(tree);
 
   tree->rates->bl_from_rt = YES;
-  /* tree->rates->clock_r    = Uni()*(max_rate - min_rate) + min_rate; */
-  tree->rates->clock_r    = 0.01/FABS(T);
+  tree->rates->clock_r    = Uni()*(max_rate - min_rate) + min_rate;
+  /* tree->rates->clock_r    = 0.01/FABS(T); */
   tree->rates->model      = STRICTCLOCK;
 
   RATES_Update_Cur_Bl(tree);
