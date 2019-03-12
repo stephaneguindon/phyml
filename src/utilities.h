@@ -1680,6 +1680,7 @@ typedef struct __Tmcmc {
   int num_move_phyrex_swap_disk;
   int num_move_phyrex_indel_hit;
   int num_move_phyrex_spr;
+  int num_move_phyrex_spr_local;
   int num_move_phyrex_scale_times;
   int num_move_phyrex_ldscape_lim;
   int num_move_phyrex_sigsq;
