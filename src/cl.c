@@ -1295,17 +1295,21 @@ int Read_Command_Line(option *io, int argc, char **argv)
                       {
                         double TsTvPur, TsTvPyr;
                         if(!isalpha(optarg[0]))
-                          sscanf(optarg,"%lf,%lf",&TsTvPur,&TsTvPyr);
+                          {
+                            sscanf(optarg,"%lf,%lf",&TsTvPur,&TsTvPyr);
+                          }
                         else
                           {
-                            Warn_And_Exit("\n. The TN93 model requires 2 Ts/Tv ratios.\n");
+                            PhyML_Fprintf(stderr,"\n. The TN93 model requires two Ts/Tv ratios.\n");
+                            Exit("\n");
                           }
                         if ( (TsTvPur < .0) || (TsTvPyr < .0) )
                           {
-                            Warn_And_Exit("\n. The Ts/Tv ratio must be a positive number.\n");
+                            PhyML_Fprintf(stderr,"\n. The Ts/Tv ratio must be a positive number.\n");
+                            Exit("\n");
                           }
-                        io->mod->lambda->v = (phydbl) (TsTvPur / TsTvPyr);
-                        io->mod->kappa->v = (phydbl) ( (TsTvPur + TsTvPyr) / 2.);
+                        io->mod->lambda->v = (phydbl)(TsTvPur / TsTvPyr);
+                        io->mod->kappa->v = (phydbl)((TsTvPur + TsTvPyr)/2.);
                       }
                     else
                       {

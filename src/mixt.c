@@ -655,7 +655,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
   t_tree *tree,*cpy_mixt_tree;
   t_edge *b,*cpy_mixt_b;
   phydbl sum_lnL;
-  unsigned int site, class, br, ns;
+  unsigned int site, br, ns;
   phydbl *sum_scale_left_cat,*sum_scale_rght_cat;
   phydbl sum;
   phydbl site_lk_cat,site_lk,log_site_lk,inv_site_lk;
@@ -958,7 +958,6 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
 
           tree    = mixt_tree->next;
           b       = mixt_b->next;
-          class   = 0;
           site_lk = .0;
 
           do
