@@ -21,19 +21,11 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int PHYREX_Main(int argc, char *argv[])
 {
-<<<<<<< HEAD
   PHYREX_Main_Simulate(argc,argv);
   /* option *io; */
   /* io = Get_Input(argc,argv); */
   /* Free(io); */
   /* return(0); */
-=======
-  /* PHYREX_Main_Simulate(argc,argv); */
-  option *io;
-  io = Get_Input(argc,argv);
-  Free(io);
-  return(0);
->>>>>>> c8ba968e0cf14affccb3d7f68bc05e2010265c38
 }
 
 //////////////////////////////////////////////////////////////
@@ -944,10 +936,9 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, int r_seed)
   Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
   Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
   RATES_Fill_Lca_Table(tree);
-  
-  
+    
   min_rate = 1.E-5;
-  max_rate = 1.E-4;
+  max_rate = 1.E-5;
 
   T = PHYREX_Tree_Height(tree);
 
