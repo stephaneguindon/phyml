@@ -39,7 +39,7 @@ void PHYREX_Update_Lindisk_List_Pre(t_dsk *disk, t_tree *tree);
 void PHYREX_Connect_Ldsk_Given_Disk(t_dsk **disk, int n_disk, t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y);
 void PHYREX_Print_Struct(char sign, t_tree *tree);
 phydbl PHYREX_Uniform_Path_Density(t_ldsk *y_ldsk, t_ldsk *o_ldsk, t_tree *tree);
-void PHYREX_Check_Struct(t_tree *tree);
+int PHYREX_Check_Struct(t_tree *tree);
 void PHYREX_Store_Geo_Coord(t_geo_coord *t);
 void PHYREX_Restore_Geo_Coord(t_geo_coord *t);
 int PHYREX_Total_Number_Of_Intervals(t_tree *tree);
@@ -119,6 +119,9 @@ int PHYREX_Number_Of_Outgoing_Ldsks(t_dsk *disk);
 t_ldsk *PHYREX_Random_Select_Outgoing_Ldsk(t_dsk *disk);
 void PHYREX_Strip_And_Reconnect_Tree(t_tree *tree);
 void PHYREX_Scale_All(phydbl scale, t_tree *tree);
-
+void PHYREX_Sample_Path(t_ldsk *young, t_ldsk *old, phydbl sd, phydbl *global_hr, t_tree *tree);
+void  PHYREX_Update_Lindisk_List_Range(t_dsk *young, t_dsk *old, t_tree *tree);
+phydbl PHYREX_Lk_Core_Range(t_dsk *young, t_dsk *old, t_tree *tree);
+int PHYREX_Number_Of_Intervals_Range(t_dsk *young, t_dsk *old, t_tree *tree);
 
 #endif

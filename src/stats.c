@@ -1269,7 +1269,19 @@ phydbl Dpois(phydbl x, phydbl param, int logit)
 {
   phydbl v;
 
-  assert(param > 0.0);
+  if(param < SMALL)
+    {
+      if(x < SMALL)
+        {
+          if(logit) return 0.0;
+          else return 1.0;
+        }
+      else
+        {
+          if(logit) return -INFINITY;
+          else return 0.0;
+        }
+    }
 
   if(x < .0) 
     {
@@ -1289,14 +1301,7 @@ phydbl Dpois(phydbl x, phydbl param, int logit)
         {
           PhyML_Printf("\n. WARNING v=%f x=%f param=%f",v,x,param);
           v = exp(500);
-        }
-      
-      /*   PhyML_Printf("\n. Poi %f %f (x=%f param=%f)", */
-      /* 	 v, */
-      /* 	 POW(param,x) * exp(-param) / exp(LnGamma(x+1)), */
-      /* 	 x,param); */
-      /*   return POW(param,x) * exp(-param) / exp(LnGamma(x+1)); */
-  
+        }  
       return v;
     }
   return(-1.0);
@@ -4954,9 +4959,9 @@ phydbl Euclidean_Dist(t_geo_coord *x, t_geo_coord *y)
   if(x->dim != y->dim) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
   
   dist = 0.0;
-  for(i=0;i<x->dim;i++) dist += POW(x->lonlat[i]-y->lonlat[i],2);
+  for(i=0;i<x->dim;i++) dist += pow(x->lonlat[i]-y->lonlat[i],2);
 
-  return(SQRT(dist));
+  return(sqrt(dist));
 }
 
 /*////////////////////////////////////////////////////////////
