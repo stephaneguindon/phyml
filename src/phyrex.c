@@ -897,6 +897,12 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, int r_seed)
   mmod->gen_cal_time *= 1./mmod->lbda;
 
 
+  /* !!!!!!!!!!!!!!!!!!!! */
+  mmod->mu = Uni()*(1.0-0.1) + 0.1;
+  mmod->rad = Uni()*(3.0-0.5) + 0.5;
+  mmod->lbda = Uni()*(3.0-0.2) + 0.2;
+
+  
   /* Prepare start disk */
   tree->young_disk = PHYREX_Make_Disk_Event(tree->mmod->n_dim,tree->n_otu);
   tree->young_disk->time = 0.0;
