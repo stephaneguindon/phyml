@@ -2155,7 +2155,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
     {
       
       MIXT_Propagate_Tree_Update(tree);
-      PHYREX_Ldsk_To_Tree(tree);      
+      /* PHYREX_Ldsk_To_Tree(tree);       */
       assert(PHYREX_Check_Struct(tree));
  
       if(mcmc->run > adjust_len)
@@ -2172,7 +2172,12 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       
       if(!(tree->mcmc->run%tree->mcmc->print_every))
         {
-          PhyML_Fprintf(stdout,"\n. %10d %30s %20f %20f",tree->mcmc->run,tree->mcmc->move_name[move],tree->mmod->c_lnL,tree->c_lnL);
+          PhyML_Fprintf(stdout,"\n. %10d %30s %20f %20f %20f",
+                        tree->mcmc->run,
+                        tree->mcmc->move_name[move],
+                        tree->mmod->c_lnL,
+                        tree->c_lnL,
+                        tree->mmod->c_lnL+tree->c_lnL+tree->rates->c_lnL_rates);
           if(tree->numerical_warning == YES) PhyML_Fprintf(stdout," -- WARNING: numerical precision issue detected...");
         }
 
@@ -2309,7 +2314,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
           PhyML_Fprintf(fp_stats,"\n");
           PhyML_Fprintf(fp_stats,"%6d\t",tree->mcmc->run);
-          PhyML_Fprintf(fp_stats,"%g\t",tree->c_lnL+tree->mmod->c_lnL);
+          PhyML_Fprintf(fp_stats,"%g\t",tree->c_lnL+tree->mmod->c_lnL+tree->rates->c_lnL_rates);
           PhyML_Fprintf(fp_stats,"%g\t",tree->c_lnL);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->c_lnL);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->lbda);
