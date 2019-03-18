@@ -279,9 +279,9 @@ void PHYREX_XML(char *xml_filename)
   PHYREX_Read_Tip_Coordinates(mixt_tree);
   
   /* Initialize parameters of migrep model */
-  mixt_tree->mmod->lbda  = Uni()*(0.3 - 0.05) + 0.05;
-  mixt_tree->mmod->mu    = Uni()*(1.0 - 0.3)  + 0.3;
-  mixt_tree->mmod->rad   = Uni()*(5.0 - 1.5)  + 1.5;
+  mixt_tree->mmod->lbda = Uni()*(3.0 - 1.0) + 1.0;
+  mixt_tree->mmod->mu   = Uni()*(0.6 - 0.2) + 0.3;
+  mixt_tree->mmod->rad  = Uni()*(1.5 - 0.5) + 0.5;
   mixt_tree->mmod->sigsq = PHYREX_Update_Sigsq(mixt_tree);
   mixt_tree->rates->clock_r = 1.0E-6;
   mixt_tree->rates->model   = LOGNORMAL;
@@ -2035,9 +2035,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
 
   /* Starting parameter values */
-  tree->mmod->lbda = Uni()*(0.5 - 0.2) + 0.2;
-  tree->mmod->mu   = Uni()*(0.6 - 0.3) + 0.3;
-  tree->mmod->rad  = Uni()*(3.0 - 2.0) + 2.0;
+  tree->mmod->lbda = Uni()*(3.0 - 1.0) + 1.0;
+  tree->mmod->mu   = Uni()*(0.6 - 0.2) + 0.3;
+  tree->mmod->rad  = Uni()*(1.5 - 0.5) + 0.5;
   PHYREX_Update_Sigsq(tree);
   
   MIXT_Set_Bl_From_Rt(YES,tree);
