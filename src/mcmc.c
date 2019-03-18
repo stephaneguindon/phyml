@@ -7349,7 +7349,7 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree)
   tree->mcmc->run_move[tree->mcmc->num_move_phyrex_scale_times]++;
   
   u = Uni();
-  scale_fact_times = exp(2.*(u-.5));
+  scale_fact_times = exp(1.*(u-.5));
   
   PHYREX_Scale_All(scale_fact_times,tree);
   if(!PHYREX_Check_Struct(tree))
@@ -8017,7 +8017,7 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
       block              = 100;
       cur_pos            = -1;
       new_pos            = -1;
-      param_exp          = 0.1;
+      param_exp          = 1.0;
       num_regraft_disk   = -1;
       num_prune_disk     = -1;
       
