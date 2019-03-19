@@ -6689,7 +6689,7 @@ void MCMC_PHYREX_Indel_Disk(t_tree *tree)
   new_rad  = tree->mmod->rad;
   cur_rad  = tree->mmod->rad;
 
-  /* new_lbda = cur_lbda * exp(0.5*(Uni()-.5)); */
+  /* new_lbda = cur_lbda * exp(1.0*(Uni()-.5)); */
   /* hr += log(new_lbda/cur_lbda); */
 
   /* new_mu = cur_mu * exp(0.5*(Uni()-.5)); */
