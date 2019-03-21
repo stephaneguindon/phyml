@@ -279,9 +279,9 @@ void PHYREX_XML(char *xml_filename)
   PHYREX_Read_Tip_Coordinates(mixt_tree);
   
   /* Initialize parameters of migrep model */
-  mixt_tree->mmod->lbda = Uni()*(3.0 - 1.0) + 1.0;
+  mixt_tree->mmod->lbda = Uni()*(20.0 - 10.0) + 10.0;
   mixt_tree->mmod->mu   = Uni()*(0.6 - 0.2) + 0.3;
-  mixt_tree->mmod->rad  = Uni()*(1.5 - 0.5) + 0.5;
+  mixt_tree->mmod->rad  = Uni()*(3.0 - 1.5) + 1.5;
   mixt_tree->mmod->sigsq = PHYREX_Update_Sigsq(mixt_tree);
   mixt_tree->rates->clock_r = 1.0E-6;
   mixt_tree->rates->model   = LOGNORMAL;
@@ -435,9 +435,9 @@ int PHYREX_Main_Estimate(int argc, char *argv[])
 
   
   /* Initialize parameters of migrep model */
-  tree->mmod->lbda  = Uni()*(0.3 - 0.05) + 0.05;
-  tree->mmod->mu    = Uni()*(1.0 - 0.3)  + 0.3;
-  tree->mmod->rad   = Uni()*(5.0 - 1.5)  + 1.5;
+  tree->mmod->lbda = Uni()*(20.0 - 10.0) + 10.0;
+  tree->mmod->mu   = Uni()*(0.6 - 0.2) + 0.3;
+  tree->mmod->rad  = Uni()*(3.0 - 1.5) + 1.5;
   tree->mmod->sigsq = PHYREX_Update_Sigsq(tree);
 
   tree->rates->clock_r = 1.0E-1;
@@ -962,7 +962,7 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, int r_seed)
 
   PhyML_Printf("@@@ %G %G %G : ",mmod->lbda,mmod->mu,mmod->rad);
   for(int i=0;i<tree->n_otu-1;++i) for(int j=i+1;j<tree->n_otu;++j) PhyML_Printf("%G ",PHYREX_Dist_Between_Two_Ldsk(tree->a_nodes[i]->ldsk,tree->a_nodes[j]->ldsk,tree));
-  PhyML_Printf(" : ",mmod->lbda,mmod->mu,mmod->rad);
+  PhyML_Printf(" : ");
   for(int i=0;i<tree->n_otu-1;++i) for(int j=i+1;j<tree->n_otu;++j) PhyML_Printf("%G ",Euclidean_Dist(tree->a_nodes[i]->ldsk->coord,tree->a_nodes[j]->ldsk->coord));
   PhyML_Printf("\n");
   for(int i=0;i<tree->n_otu-1;++i) PhyML_Printf("\n%s %G %G",
@@ -2035,9 +2035,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
 
   /* Starting parameter values */
-  tree->mmod->lbda = Uni()*(3.0 - 1.0) + 1.0;
+  tree->mmod->lbda = Uni()*(20.0 - 10.0) + 10.0;
   tree->mmod->mu   = Uni()*(0.6 - 0.2) + 0.3;
-  tree->mmod->rad  = Uni()*(1.5 - 0.5) + 0.5;
+  tree->mmod->rad  = Uni()*(3.0 - 1.5) + 1.5;
   PHYREX_Update_Sigsq(tree);
   
   MIXT_Set_Bl_From_Rt(YES,tree);
@@ -2066,6 +2066,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   PhyML_Fprintf(fp_stats,"\n# start mu: %f",tree->mmod->mu);
   PhyML_Fprintf(fp_stats,"\n# start rad: %f",tree->mmod->rad);
   fflush(NULL);
+
 
   PhyML_Fprintf(fp_stats,"\n");
   PhyML_Fprintf(fp_stats,"%s\t","sample");
@@ -2108,6 +2109,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   PhyML_Fprintf(fp_stats,"%s\t","accLdskMulti");
   PhyML_Fprintf(fp_stats,"%s\t","accDiskMulti");
   PhyML_Fprintf(fp_stats,"%s\t","accMoveDiskUD");
+  PhyML_Fprintf(fp_stats,"%s\t","accAddRemoveJump");
   PhyML_Fprintf(fp_stats,"%s\t","tuneLbda");
   PhyML_Fprintf(fp_stats,"%s\t","tuneRad");
   PhyML_Fprintf(fp_stats,"%s\t","tuneMu");
@@ -2353,6 +2355,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_ldsk_multi]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_disk_multi]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_move_disk_ud]);
+          PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_add_remove_jump]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_lbda]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_rad]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_mu]);
