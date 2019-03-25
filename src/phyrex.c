@@ -2157,9 +2157,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
     {
       
       MIXT_Propagate_Tree_Update(tree);
-      /* PHYREX_Ldsk_To_Tree(tree);       */
+      /* PHYREX_Ldsk_To_Tree(tree); */
       assert(PHYREX_Check_Struct(tree));
- 
+
       if(mcmc->run > adjust_len)
         for(i=0;i<mcmc->n_moves;i++) tree->mcmc->adjust_tuning[i] = NO;
       else
@@ -2184,9 +2184,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
         }
 
       
-      /* tree->mmod->lbda = 1.0; */
+      /* tree->mmod->lbda = 25.0; */
       /* tree->mmod->mu   = 0.5; */
-      /* tree->mmod->rad  = 1.5; */
+      /* tree->mmod->rad  = 0.4; */
 
 
       /* if(tree->mcmc->run == 0) */
@@ -2276,32 +2276,32 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       
       if(tree->mmod->safe_phyrex == YES)
         {
-          phydbl c_lnL = tree->c_lnL;
-          Lk(NULL,tree);
-          if(Are_Equal(c_lnL,tree->c_lnL,1.E-5) == NO)
-            {
-              PhyML_Fprintf(stderr,"\n. Problem detected with move %s",tree->mcmc->move_name[move]);
-              PhyML_Fprintf(stderr,"\n. c_lnL: %f -> %f",c_lnL,tree->c_lnL);
-              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-            }
+          /* phydbl c_lnL = tree->c_lnL; */
+          /* Lk(NULL,tree); */
+          /* if(Are_Equal(c_lnL,tree->c_lnL,1.E-5) == NO) */
+          /*   { */
+          /*     PhyML_Fprintf(stderr,"\n. Problem detected with move %s",tree->mcmc->move_name[move]); */
+          /*     PhyML_Fprintf(stderr,"\n. c_lnL: %f -> %f",c_lnL,tree->c_lnL); */
+          /*     Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
+          /*   } */
 
           phydbl g_lnL = tree->mmod->c_lnL;
           PHYREX_Lk(tree);
           if(Are_Equal(g_lnL,tree->mmod->c_lnL,1.E-5) == NO)
             {
-              PhyML_Fprintf(stderr,"\n. Problem detected with move %s",tree->mcmc->move_name[move]);
+              PhyML_Fprintf(stderr,"\n. Problem detected with move %s. Iteration %d",tree->mcmc->move_name[move],tree->mcmc->run);
               PhyML_Fprintf(stderr,"\n. g_lnL: %f -> %f [%g]",g_lnL,tree->mmod->c_lnL,g_lnL-tree->mmod->c_lnL);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
 
-          phydbl r_lnL = tree->rates->c_lnL_rates;
-          RATES_Lk_Rates(tree);
-          if(Are_Equal(r_lnL,tree->rates->c_lnL_rates,1.E-5) == NO)
-            {
-              PhyML_Fprintf(stderr,"\n. Problem detected with move %s",tree->mcmc->move_name[move]);
-              PhyML_Fprintf(stderr,"\n. r_lnL: %f -> %f [%g]",r_lnL,tree->rates->c_lnL_rates,r_lnL-tree->rates->c_lnL_rates);
-              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-            }
+          /* phydbl r_lnL = tree->rates->c_lnL_rates; */
+          /* RATES_Lk_Rates(tree); */
+          /* if(Are_Equal(r_lnL,tree->rates->c_lnL_rates,1.E-5) == NO) */
+          /*   { */
+          /*     PhyML_Fprintf(stderr,"\n. Problem detected with move %s",tree->mcmc->move_name[move]); */
+          /*     PhyML_Fprintf(stderr,"\n. r_lnL: %f -> %f [%g]",r_lnL,tree->rates->c_lnL_rates,r_lnL-tree->rates->c_lnL_rates); */
+          /*     Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
+          /*   } */
         }
       
       tree->mcmc->run++;
@@ -5709,24 +5709,33 @@ void PHYREX_Strip_And_Reconnect_Tree(t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-void PHYREX_Scale_All(phydbl scale, t_tree *tree)
+int PHYREX_Scale_All(phydbl scale, t_dsk *start_disk, t_tree *tree)
 {
   t_dsk *disk;
   t_dsk **sorted_disk;
-  int n_disk,sorted,i;
+  int n_disk,n_disk_scaled,sorted,i;
 
-  n_disk = 0;
-  disk = tree->young_disk->prev;
+  n_disk        = 0;
+  n_disk_scaled = 0;
+
+  disk = start_disk->prev;
+  assert(disk);
+  
   do
     {      
-      if(disk->age_fixed == NO) disk->time = disk->time * scale;
+      if(disk->age_fixed == NO)
+        {
+          disk->time = disk->time * scale + start_disk->time * (1.-scale);
+          n_disk_scaled++;
+        }
+      
       n_disk++;
       disk = disk->prev;
     }
   while(disk);
 
   sorted_disk = (t_dsk **)mCalloc(n_disk,sizeof(t_dsk *));
-  disk = tree->young_disk->prev;
+  disk = start_disk->prev;
   n_disk = 0;
   do
     {
@@ -5761,6 +5770,8 @@ void PHYREX_Scale_All(phydbl scale, t_tree *tree)
     }
 
   Free(sorted_disk);
+
+  return(n_disk_scaled);
 }
 
 
