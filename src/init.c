@@ -128,8 +128,6 @@ void Init_Tree(t_tree *tree, int n_otu)
   tree->n_root_pos                = -1.;
   tree->write_labels              = YES;
   tree->write_br_lens             = YES;
-  tree->print_boot_val            = NO;
-  tree->print_alrt_val            = NO;
   tree->num_curr_branch_available = 0;
   tree->tip_order_score           = .0;
   tree->write_tax_names           = YES;
@@ -557,7 +555,7 @@ void Set_Defaults_Input(option* io)
   io->tree                       = NULL;
   io->mod                        = NULL;
   strcpy(io->nt_or_cd,"nucleotides");
-  io->tbe_bootstrap              = 0;
+  io->tbe_bootstrap              = NO;
   io->n_data_sets                = 1;
   io->interleaved                = 1;
   io->in_tree                    = 0;
@@ -596,6 +594,13 @@ void Set_Defaults_Input(option* io)
   io->ancestral                  = NO;
   io->use_xml                    = NO;
   io->has_io_weights             = NO;
+  io->do_boot                    = NO;
+  io->do_alrt                    = YES;
+  io->do_tbe                     = NO;
+  io->print_node_num             = NO;
+  io->print_support_val          = NO;
+  io->n_boot_replicates          = 0;
+  
 #ifdef BEAGLE
   io->beagle_resource            = 0;
 #endif
@@ -641,7 +646,6 @@ void Set_Defaults_Model(t_mod *mod)
   mod->e_frq_weight->v         = 1.0;
   mod->r_mat_weight->v         = 1.0;
 
-  mod->bootstrap               = 0;
   mod->ns                      = 4;
   mod->use_m4mod               = NO;
   mod->ras->gamma_median       = NO;

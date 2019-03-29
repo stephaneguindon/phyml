@@ -83,7 +83,7 @@ int main(int argc, char **argv)
       Free(io);
       return(0);
     }
-
+  
 #ifdef EVOLVE
   io->colalias = NO;
 #endif
@@ -327,7 +327,7 @@ int main(int argc, char **argv)
 
 
               /* Launch bootstrap analysis */
-              if(mod->bootstrap)
+              if(io->do_boot || io->do_tbe)
                 {
                   if(!io->quiet) PhyML_Printf("\n\n. Launch bootstrap analysis on the most likely tree...");
 
@@ -347,14 +347,22 @@ int main(int argc, char **argv)
                     most_likely_tree = aLRT_From_String(most_likely_tree,cdata,mod,io);
                   }
 
+
               /* Print the most likely tree in the output file */
               if(!io->quiet) PhyML_Printf("\n\n. Printing the most likely tree in file '%s'.", Basename(io->out_tree_file));
               if(io->n_data_sets == 1) rewind(io->fp_out_tree);
-
-              t_tree *dum;              
+              
+              t_tree *dum;
+              PhyML_Printf("\n. Reading most likely");
               dum = Read_Tree(&most_likely_tree);
+              {
+                int i;
+                for(i=0;i<2*dum->n_otu-3;++i)
+                  PhyML_Printf("\n. Edge %d %f",dum->a_edges[i]->num,dum->a_edges[i]->support_val);
+              }
               dum->data = cdata;
               dum->mod  = mod;
+              dum->io   = io;
               Connect_CSeqs_To_Nodes(cdata,io,dum);
               Insert_Duplicates(dum);
               Free(most_likely_tree);

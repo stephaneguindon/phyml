@@ -157,7 +157,7 @@ void Launch_Interface(option *io)
       io->fp_out_trees = Openfile(io->out_trees_file,1);
     }
 
-  if((io->print_boot_trees) && (io->mod->bootstrap > 0))
+  if((io->print_boot_trees) && (io->n_boot_replicates > 0))
     {
       strcpy(io->out_boot_tree_file,io->in_align_file);
       strcat(io->out_boot_tree_file,"_phyml_boot_trees.txt");
@@ -476,7 +476,7 @@ void Launch_Interface_Data_Type(option *io)
 	  }
 	#endif
 
-	if((io->mod->bootstrap > 1) && (io->n_data_sets > 1))
+	if((io->do_boot || io->do_tbe) && (io->n_data_sets > 1))
 	  {
 	    PhyML_Printf("\n. Bootstrap option is not allowed with multiple data sets !\n");
 	    PhyML_Printf("\n. Type any key to exit.");
@@ -1629,11 +1629,11 @@ void Launch_Interface_Branch_Support(option *io)
   PhyML_Printf("\n");
 
 
-  strcpy(s,(io->mod->bootstrap > 0)?("yes"):("no"));
-  if(io->mod->bootstrap > 0) sprintf(s+strlen(s)," (%d replicate%s%s)",
-					io->mod->bootstrap,
-					(io->mod->bootstrap>1)?("s"):(""),
-					(io->tbe_bootstrap)?(", TBE"):(""));
+  strcpy(s,(io->do_boot || io->do_tbe)?("yes"):("no"));
+  if(io->n_boot_replicates > 0) sprintf(s+strlen(s)," (%d replicate%s%s)",
+					io->n_boot_replicates,
+					(io->n_boot_replicates>1)?("s"):(""),
+					(io->do_tbe)?(", TBE"):(""));
   
   /*   PhyML_Printf("                [+] " */
   PhyML_Printf("                [B] "
@@ -1692,7 +1692,7 @@ void Launch_Interface_Branch_Support(option *io)
 
     case 'B' :
       {
-	if(io->mod->bootstrap > 0) io->mod->bootstrap = 0;
+	if(io->n_boot_replicates > 0) io->n_boot_replicates = 0;
 	else
 	  {
 	    char *r;
@@ -1722,7 +1722,7 @@ void Launch_Interface_Branch_Support(option *io)
 		PhyML_Printf("\n. Enter a new value > ");
 		Getstring_Stdin(r);
 	      }
-	    io->mod->bootstrap = atoi(r);
+	    io->n_boot_replicates = atoi(r);
 
 	    PhyML_Printf("\n. Print bootstrap trees (and statistics) ? (%s) > ",
                          (io->print_boot_trees)?("Y/n"):("y/N"));
@@ -1758,22 +1758,24 @@ void Launch_Interface_Branch_Support(option *io)
 	      }
 
 	    PhyML_Printf("\n. Compute TBE instead of FBP ? (%s) > ",
-                         (io->tbe_bootstrap)?("Y/n"):("y/N"));
+                         (io->do_tbe)?("Y/n"):("y/N"));
 
 	    if(!scanf("%c",&answer)) Exit("\n");
-	    if(answer == '\n') answer = (io->tbe_bootstrap)?('Y'):('N');
+	    if(answer == '\n') answer = (io->do_tbe)?('Y'):('N');
 	    else getchar();
 
 	    switch(answer)
 	      {
 	      case 'Y' : case 'y' :
 		{
-		  io->tbe_bootstrap = 1;
+		  io->do_tbe = YES;
+		  io->do_boot = NO;
 		  break;
 		}
 	      case 'N' : case 'n' :
 		{
-		  io->tbe_bootstrap  = 0;
+		  io->do_tbe = NO;
+		  io->do_boot = YES;
 		  break;
 		}
 	      }
@@ -1783,7 +1785,11 @@ void Launch_Interface_Branch_Support(option *io)
       }
     case 'A' :
       {
-	io->mod->bootstrap = 0;
+        io->do_boot = NO;
+        io->do_tbe  = NO;
+        io->do_alrt = YES;
+        
+	io->n_boot_replicates = 0;
 
 	switch(io->ratio_test)
 	  {

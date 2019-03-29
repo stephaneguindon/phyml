@@ -164,7 +164,9 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	  }
 	case 80 :
 	  {
-	    io->tbe_bootstrap = YES;
+	    io->do_tbe = YES;
+	    io->do_boot = NO;
+            io->do_alrt = NO;
 	    break;
 	  }
         case 79:
@@ -1083,9 +1085,10 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	      {
 		if((int)String_To_Dbl(optarg) > 0)
 		  {
-		    io->ratio_test       = 0;
-		    io->mod->bootstrap   = (int)atoi(optarg);
-		    io->print_boot_trees = 1;
+                    io->do_alrt           = NO;
+		    io->ratio_test        = 0;
+		    io->n_boot_replicates = (int)atoi(optarg);
+		    io->print_boot_trees  = 1;
 		    
 		    if(io->n_data_sets > 1)
 		      {
@@ -1098,13 +1101,17 @@ int Read_Command_Line(option *io, int argc, char **argv)
 		  }
 		else if (atoi(optarg)==0)
 		  {
-		    io->mod->bootstrap = 0;
-		    io->ratio_test     = 0;
+		    io->do_alrt    = NO;
+                    io->do_tbe     = NO;
+                    io->do_boot    = NO;
+		    io->ratio_test = 0;
 		  }
 		else
 		  {
-		    io->mod->bootstrap = 0;
-		    io->ratio_test     = -(int)atoi(optarg);
+                    io->do_alrt = YES;
+                    io->do_tbe  = NO;
+                    io->do_boot = NO;
+		    io->ratio_test = -(int)atoi(optarg);
 		  }
 	      }
 	    break;
@@ -1503,6 +1510,16 @@ int Read_Command_Line(option *io, int argc, char **argv)
       /* io->mod->s_opt->opt_bl   = NO; */
     }
 
+  if(io->do_tbe == YES)
+    {
+      io->do_alrt = NO;
+      io->do_boot = NO;
+    }
+  else
+    {
+      if(io->do_alrt == NO) io->do_boot = YES;        
+    }
+  
 #ifndef PHYML
   if((open_ps_file) || (io->m4_model == YES))
     {
@@ -1591,7 +1608,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
       io->fp_out_trees = Openfile(io->out_trees_file,1);
     }
   
-  if((io->print_boot_trees) && (io->mod->bootstrap > 0) && (io->fp_in_align != NULL))
+  if((io->print_boot_trees) && (io->do_boot == YES) && (io->fp_in_align != NULL))
     {
       strcpy(io->out_boot_tree_file,io->in_align_file);
       strcat(io->out_boot_tree_file,"_phyml_boot_trees");

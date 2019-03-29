@@ -556,17 +556,14 @@ void Ancestral_Sequences(t_tree *tree, int print)
       PhyML_Fprintf(tree->io->fp_out_ancestral,"\n");
 
       
-      short int bck_boot_val = tree->print_boot_val;
-      short int bck_alrt_val = tree->print_alrt_val;
+      short int bck_support  = tree->io->print_support_val;
       
-      tree->print_node_num = YES;
-      tree->print_boot_val = NO;
-      tree->print_alrt_val = NO;
+      tree->io->print_node_num = YES;
+      tree->io->print_support_val = NO;
       s = Write_Tree(tree,NO);
       PhyML_Fprintf(fp,"%s",s);
-      tree->print_node_num = NO;
-      tree->print_boot_val = bck_boot_val;
-      tree->print_alrt_val = bck_alrt_val;
+      tree->io->print_node_num = NO;
+      tree->io->print_support_val = bck_support;
 
       Free(s);
       fclose(fp);

@@ -20,7 +20,7 @@ the GNU public licence. See http://www.opensource.org for details.
    if tbe_bootstrap == 0 => Classical FBP (Felsenstein bootstrap proportions) 
    else => TBE (Transfer bootstrap expectation)
 */
-void Bootstrap_MPI(t_tree *tree, int tbe_bootstrap)
+void Bootstrap_MPI(t_tree *tree)
 {
   int *site_num, n_site;
   int replicate,j,k;
@@ -45,11 +45,9 @@ void Bootstrap_MPI(t_tree *tree, int tbe_bootstrap)
 
   randomRecv = nbElem = bootRecv = 0;
 
-  tree->print_boot_val       = !tbe_bootstrap;
-  tree->print_tbe_val        = tbe_bootstrap;
+  tree->io->print_support_val = YES;
   
-  tree->print_alrt_val       = 0;
-  boot_tree                  = NULL;
+  boot_tree = NULL;
 
   site_num = (int *)mCalloc(tree->data->init_len,sizeof(int));
   
@@ -78,7 +76,7 @@ void Bootstrap_MPI(t_tree *tree, int tbe_bootstrap)
   //number of bootstraps for each process
   if (tree->mod->bootstrap%Global_numTask != 0) 
     {
-      nbRep = (tree->mod->bootstrap / Global_numTask) + 1;
+      nbRep = (tree->io->n_boot_replicates / Global_numTask) + 1;
       tree->mod->bootstrap = nbRep * Global_numTask;
       if (Global_myRank == 0) {
         PhyML_Printf("\n. The number of replicates is not a multiple of %d CPUs.\n", Global_numTask);
@@ -86,7 +84,7 @@ void Bootstrap_MPI(t_tree *tree, int tbe_bootstrap)
       }
     }
   else
-    nbRep = tree->mod->bootstrap/Global_numTask;
+    nbRep = tree->io->n_boot_replicates/Global_numTask;
   
   //Bip score
   if (Global_myRank == 0) 
@@ -105,7 +103,7 @@ void Bootstrap_MPI(t_tree *tree, int tbe_bootstrap)
   if (Global_myRank == 0)
     PhyML_Printf("\n  [");
 
-  For(replicate, nbRep)
+  for(replicate=0;replicate<nbRep;++replicate)
     {
       for(j=0;j<boot_data->crunch_len;j++) boot_data->wght[j] = 0;
 
@@ -277,14 +275,16 @@ void Bootstrap_MPI(t_tree *tree, int tbe_bootstrap)
               boot_tree->a_nodes[0]->v[0],
               boot_tree);
 
-      if(!tbe_bootstrap)
+      if(tree->io->do_boot)
         {
           Compare_Bip(tree,boot_tree,NO);
         }
-      else
+      else if(tree->io->do_tbe)
         {
           Compare_Bip_Distance(tree, boot_tree);
         }
+      else assert(FALSE);
+        
       
       Br_Len_Involving_Invar(boot_tree);
 

@@ -718,12 +718,6 @@ void Swap_Nodes_On_Edges(t_edge *e1, t_edge *e2, int swap, t_tree *tree)
 {
   t_node *buff;
 
-  e1->left->l[e1->l_r]->v = e1->l->v;
-  e1->rght->l[e1->r_l]->v = e1->l->v;
-
-  e2->left->l[e2->l_r]->v = e2->l->v;
-  e2->rght->l[e2->r_l]->v = e2->l->v;
-
   printf("\n. Swap edge %d (%d %d) with %d (%d %d)",e1->num,e1->left->num,e1->rght->num,e2->num,e2->left->num,e2->rght->num);
 
   if(swap == NO)
@@ -778,6 +772,7 @@ void Connect_Edges_To_Nodes_Serial(t_tree *tree)
                                     tree);
     }
 
+
   tree->num_curr_branch_available = tree->n_otu;
 
   for(i=tree->n_otu;i<2*tree->n_otu-3;i++)
@@ -809,8 +804,6 @@ void Connect_Edges_To_Nodes_Serial(t_tree *tree)
       tree->n_root->b[2] = tree->a_edges[tree->num_curr_branch_available];
       tree->a_edges[tree->num_curr_branch_available]->num = tree->num_curr_branch_available;
       tree->num_curr_branch_available++;
-
-
     }
 }
 
@@ -889,9 +882,7 @@ void Connect_One_Edge_To_Two_Nodes(t_node *a, t_node *d, t_edge *b, t_tree *tree
     (Set_Edge_Dirs(b,a,d,tree)):
     (Set_Edge_Dirs(b,d,a,tree));
 
-  b->l->v            = a->l[b->l_r]->v;
-  if(a->tax) b->l->v = a->l[b->r_l]->v;
-  b->l_old->v        = b->l->v;
+  b->l_old->v = b->l->v;
 }
 
 //////////////////////////////////////////////////////////////
@@ -2522,7 +2513,7 @@ void Remove_Duplicates(calign *data, option *io, t_tree *tree)
 
 void Insert_Duplicates(t_tree *tree)
 {
-  unsigned int i,j;
+  unsigned int i,j,k;
   unsigned int idx_new_edge,idx_new_node,idx_root;
   t_edge *link_daughter,*residual,**new_a_edges;
   t_node *link,*daughter,**new_a_nodes;
@@ -2538,6 +2529,9 @@ void Insert_Duplicates(t_tree *tree)
   for(i=0;i<tree->n_otu;++i) new_a_nodes[i] = tree->a_nodes[i];
   for(i=tree->n_otu;i<2*tree->n_otu-1;++i) new_a_nodes[i+tree->data->n_rm] = tree->a_nodes[i];
 
+  Print_Tree_Structure(tree);
+  PhyML_Printf("\n << ");
+
   Free(tree->a_nodes);
   tree->a_nodes = new_a_nodes;
 
@@ -2547,19 +2541,24 @@ void Insert_Duplicates(t_tree *tree)
     
   idx_new_edge = 0;
   idx_new_node = 0;
-  
+
   for(i=0;i<tree->data->n_rm;++i)
     {
       for(j=0;j<tree->n_otu;++j)
         {          
           if(Are_Sequences_Identical(tree->data->c_seq_rm[i],tree->a_nodes[j]->c_seq) == YES)
             {
-              link = Make_Node_Light(2*tree->n_otu-idx_root+tree->data->n_rm+idx_new_node);
+              link = Make_Node_Light(2*tree->n_otu-idx_root+tree->data->n_rm+idx_new_node+1);
               daughter = Make_Node_Light(tree->n_otu+idx_new_node);
 
-              new_a_nodes[tree->n_otu+idx_new_node] = daughter;
-              new_a_nodes[2*tree->n_otu-idx_root+tree->data->n_rm+idx_new_node] = link;
+              PhyML_Printf("\n. link: %d[->%d] daughter: %d[->%d]",
+                           link->num,
+                           2*tree->n_otu-idx_root+tree->data->n_rm+idx_new_node+1,
+                           daughter->num,
+                           tree->n_otu+idx_new_node);
 
+              new_a_nodes[tree->n_otu+idx_new_node] = daughter;
+              new_a_nodes[2*tree->n_otu-idx_root+tree->data->n_rm+idx_new_node+1] = link;
 
               idx_new_node += 1;
               
@@ -2571,6 +2570,8 @@ void Insert_Duplicates(t_tree *tree)
               
               link->v[0] = daughter;
               daughter->v[0] = link;
+              daughter->v[1] = NULL;
+              daughter->v[2] = NULL;
 
               daughter->tax = YES;
               link->tax     = NO;
@@ -2583,6 +2584,12 @@ void Insert_Duplicates(t_tree *tree)
 
               idx_new_edge += 2;              
               
+              Set_Scalar_Dbl(tree->mod->l_min,link_daughter->l);
+              Set_Scalar_Dbl(tree->mod->l_min,residual->l);
+              
+              PhyML_Printf("\n. BEFORE  target: %f",
+                           tree->a_nodes[j]->b[0]->l->v);
+
               Multiply_Scalar_Dbl(2.0,tree->a_nodes[j]->b[0]->l);
               Graft_Subtree(tree->a_nodes[j]->b[0],
                             link,
@@ -2591,13 +2598,27 @@ void Insert_Duplicates(t_tree *tree)
                             tree->a_nodes[j],
                             tree);
               
-              Set_Scalar_Dbl(tree->mod->l_min,tree->a_nodes[j]->b[0]->l);
-              Set_Scalar_Dbl(tree->mod->l_min,link_daughter->l);
+              PhyML_Printf("\n. daughter: %d v0: %d v1: %d v2: %d",daughter->num,daughter->v[0] ? daughter->v[0]->num : -1,daughter->v[1] ? daughter->v[1]->num : -1,daughter->v[2] ? daughter->v[2]->num : -1);
+              PhyML_Printf("\n. link: %d v0: %d v1: %d v2: %d",link->num,link->v[0]->num,link->v[1]->num,link->v[2]->num);
 
+              {
+                PhyML_Printf("\n. residual: %f target: %f link: %f",
+                             residual->l->v,
+                             tree->a_nodes[j]->b[0]->l->v,
+                             link_daughter->l->v);
+                             
+                for(int k=0;k<3;++k)
+                  {
+                    PhyML_Printf("\n. >> %f",link->l[k]->v);
+                  }
+              }
+              
               break;
+              
             }
         }
     }
+
 
   Free(tree->a_edges);
   tree->a_edges = new_a_edges;
@@ -2607,6 +2628,8 @@ void Insert_Duplicates(t_tree *tree)
   for(i=0;i<2*tree->n_otu-idx_root;++i) tree->a_nodes[i]->num = i;
   
   Connect_Edges_To_Nodes_Serial(tree);
+  for(i=0;i<2*tree->n_otu-idx_root;++i) PhyML_Printf("\n. L: %f",tree->a_edges[i]->l->v);;
+  Print_Tree_Structure(tree);
 }
 
 
@@ -3048,7 +3071,7 @@ void Clean_Tree_Connections(t_tree *tree)
    if tbe_bootstrap == 0  => Classical FBP (Felsenstein bootstrap proportions) 
    else => TBE (Transfer bootstrap expectation)
 */
-void Bootstrap(t_tree *tree, int tbe_bootstrap)
+void Bootstrap(t_tree *tree)
 {
   int *site_num, n_site;
   int replicate,j,k;
@@ -3067,11 +3090,10 @@ void Bootstrap(t_tree *tree, int tbe_bootstrap)
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
     }
 
-  tree->print_boot_val = !tbe_bootstrap;
-  tree->print_tbe_val = tbe_bootstrap;
+
+  tree->io->print_support_val = YES;
   
-  tree->print_alrt_val = 0;
-  boot_tree            = NULL;
+  boot_tree = NULL;
 
   site_num = (int *)mCalloc(tree->data->init_len,sizeof(int));
 
@@ -3092,7 +3114,7 @@ void Bootstrap(t_tree *tree, int tbe_bootstrap)
   PhyML_Printf("\n\n. Non parametric bootstrap analysis \n\n");
   PhyML_Printf("  [");
 
-  for(replicate=0;replicate<tree->mod->bootstrap;replicate++)
+  for(replicate=0;replicate<tree->io->n_boot_replicates;replicate++)
     {
       for(j=0;j<boot_data->crunch_len;j++) boot_data->wght[j] = 0;
 
@@ -3202,19 +3224,15 @@ void Bootstrap(t_tree *tree, int tbe_bootstrap)
         }
 
       Free_Bip(boot_tree);
-
       Alloc_Bip(boot_tree);
-
       Match_Tip_Numbers(tree,boot_tree);
-
       Get_Bip(boot_tree->a_nodes[0],
               boot_tree->a_nodes[0]->v[0],
               boot_tree);
-      if(!tbe_bootstrap){
-	Compare_Bip(tree,boot_tree,NO);
-      }else{
-	Compare_Bip_Distance(tree, boot_tree);
-      }
+
+      if(tree->io->do_boot)     Compare_Bip(tree,boot_tree,NO);
+      else if(tree->io->do_tbe) Compare_Bip_Distance(tree, boot_tree);
+      else assert(FALSE);
 
       Check_Br_Lens(boot_tree);
       Br_Len_Involving_Invar(boot_tree);
@@ -3238,15 +3256,15 @@ void Bootstrap(t_tree *tree, int tbe_bootstrap)
 #endif
       if(!((replicate+1)%tree->io->boot_prog_every))
         {
-          PhyML_Printf("] %4d/%4d\n  ",replicate+1,tree->mod->bootstrap);
-          if(replicate != tree->mod->bootstrap-1) PhyML_Printf("[");
+          PhyML_Printf("] %4d/%4d\n  ",replicate+1,tree->io->n_boot_replicates);
+          if(replicate != tree->io->n_boot_replicates-1) PhyML_Printf("[");
         }
 
       Free_Tree(boot_tree);
       Free_Model(boot_mod);
     }
 
-  if(((replicate)%tree->io->boot_prog_every)) PhyML_Printf("] %4d/%4d\n ",replicate,tree->mod->bootstrap);
+  if(((replicate)%tree->io->boot_prog_every)) PhyML_Printf("] %4d/%4d\n ",replicate,tree->io->n_boot_replicates);
 
   tree->lock_topo = YES; /* Topology should not be modified afterwards */
 
@@ -3705,7 +3723,6 @@ void Record_Model(t_mod *ori, t_mod *cpy)
   cpy->mod_num              = ori->mod_num;
   cpy->whichmodel           = ori->whichmodel;
   cpy->update_eigen         = ori->update_eigen;
-  cpy->bootstrap            = ori->bootstrap;
   cpy->ras->invar           = ori->ras->invar;
   cpy->r_mat->n_diff_rr     = ori->r_mat->n_diff_rr;
   cpy->l_min                = ori->l_min;
@@ -4044,6 +4061,8 @@ int Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only)
   int different,identical;
   int n_edges;
 
+
+
   /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
   /* WARNING: call Match_Tip_Numbers and Get_Bip before using this function. */
   /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
@@ -4068,9 +4087,10 @@ int Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only)
       b1 = tree1->a_edges[i];
       bip_size1 = MIN(b1->left->bip_size[b1->l_r],b1->rght->bip_size[b1->r_l]);
       
+
       if(bip_size1 > 1 && ((on_existing_edges_only == YES && b1->does_exist) || (on_existing_edges_only == NO)))
         {
-          For(j,2*tree2->n_otu-3)
+          for(j=0;j<2*tree2->n_otu-3;++j)
             {
               b2 = tree2->a_edges[j];
               bip_size2 = MIN(b2->left->bip_size[b2->l_r],b2->rght->bip_size[b2->r_l]);
@@ -4243,7 +4263,7 @@ void Test_Multiple_Data_Set_Format(option *io)
 
   Free(line);
 
-  if((io->mod->bootstrap > 1) && (io->n_trees > 1))
+  if((io->do_boot || io->do_tbe) && (io->n_trees > 1))
     Warn_And_Exit("\n. Bootstrap option is not allowed with multiple input trees !\n");
 
   rewind(io->fp_in_tree);
@@ -4917,6 +4937,7 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
       cpy->a_edges[i]->l_r              = ori->a_edges[i]->l_r;
       cpy->a_edges[i]->r_l              = ori->a_edges[i]->r_l;
       cpy->a_edges[i]->does_exist       = ori->a_edges[i]->does_exist;
+      cpy->a_edges[i]->support_val      = ori->a_edges[i]->support_val;
 
 #ifdef BEAGLE
       cpy->a_edges[i]->p_lk_left_idx    = ori->a_edges[i]->p_lk_left_idx;
@@ -5538,12 +5559,14 @@ void Graft_Subtree(t_edge *target, t_node *link, t_node *link_daughter, t_edge *
       {
         v2->v[i] = link;
         v2->b[i] = residual;
+        v2->l[i] = residual->l;
         break;
       }
   assert(i<3);
   
   link->v[dir_v2] = v2;
   link->b[dir_v2] = residual;
+  link->l[dir_v2] = residual->l;
 
   residual->left  = link;
   residual->rght  = v2;
@@ -5553,6 +5576,7 @@ void Graft_Subtree(t_edge *target, t_node *link, t_node *link_daughter, t_edge *
 
   link->v[dir_v1] = v1;
   link->b[dir_v1] = target;
+  link->l[dir_v1] = target->l;
 
 
   for(i=0;i<3;i++)
@@ -5561,6 +5585,17 @@ void Graft_Subtree(t_edge *target, t_node *link, t_node *link_daughter, t_edge *
         v1->v[i] = link;
         break;
       }
+
+
+  for(i=0;i<3;i++)
+    if(link->v[i] == link_daughter)
+      {
+        v2->v[i] = link;
+        v2->b[i] = residual;
+        v2->l[i] = residual->l;
+        break;
+      }
+  assert(i<3);
 
   if(target->l->onoff == ON)
     {
@@ -8449,11 +8484,13 @@ char *Bootstrap_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
       Exit("");
     }
 
-  tree->mod         = mod;
-  tree->io          = io;
-  tree->data        = cdata;
-  tree->n_pattern   = tree->data->crunch_len;
-
+  tree->mod                   = mod;
+  tree->io                    = io;
+  tree->data                  = cdata;
+  tree->n_pattern             = tree->data->crunch_len;
+  tree->io->print_support_val = YES;
+  
+  
   Connect_CSeqs_To_Nodes(cdata,io,tree);
   if(tree->mod->s_opt->random_input_tree) Random_Tree(tree);
   Make_Tree_For_Pars(tree);
@@ -8468,15 +8505,16 @@ char *Bootstrap_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
   Lk(NULL,tree);
 
 #ifdef MPI
-  Bootstrap_MPI(tree, io->tbe_bootstrap);
+  Bootstrap_MPI(tree);
 #else
-  Bootstrap(tree, io->tbe_bootstrap);
+  Bootstrap(tree);
 #endif
 
   Free(s_tree);
 
   Rescale_Br_Len_Multiplier_Tree(tree);
   Br_Len_Involving_Invar(tree);
+  Collect_Edge_Support_Values(tree);
 
   s_tree = Write_Tree(tree,NO);
 
@@ -8538,6 +8576,7 @@ char *aLRT_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
 
   Rescale_Br_Len_Multiplier_Tree(tree);
   Br_Len_Involving_Invar(tree);
+  Collect_Edge_Support_Values(tree);
 
   s_tree = Write_Tree(tree,NO);
 
