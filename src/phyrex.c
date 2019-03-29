@@ -943,8 +943,8 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, int r_seed)
   Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
   RATES_Fill_Lca_Table(tree);
     
-  min_rate = 1.E-5;
-  max_rate = 1.E-5;
+  min_rate = 1.E-4;
+  max_rate = 1.E-4;
 
   T = PHYREX_Tree_Height(tree);
 
@@ -965,8 +965,11 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, int r_seed)
   Make_Spr(tree);
   Evolve(tree->data,tree->mod,0,tree);
 
+  matrix *m = ML_Dist(tree->data,tree->mod);
+
   PhyML_Printf("@@@ %G %G %G : ",mmod->lbda,mmod->mu,mmod->rad);
-  for(int i=0;i<tree->n_otu-1;++i) for(int j=i+1;j<tree->n_otu;++j) PhyML_Printf("%G ",PHYREX_Dist_Between_Two_Ldsk(tree->a_nodes[i]->ldsk,tree->a_nodes[j]->ldsk,tree));
+  /* for(int i=0;i<tree->n_otu-1;++i) for(int j=i+1;j<tree->n_otu;++j) PhyML_Printf("%G ",PHYREX_Dist_Between_Two_Ldsk(tree->a_nodes[i]->ldsk,tree->a_nodes[j]->ldsk,tree)); */
+  for(int i=0;i<tree->n_otu-1;++i) for(int j=i+1;j<tree->n_otu;++j) PhyML_Printf("%G ",m->dist[i][j]);
   PhyML_Printf(" : ",mmod->lbda,mmod->mu,mmod->rad);
   for(int i=0;i<tree->n_otu-1;++i) for(int j=i+1;j<tree->n_otu;++j) PhyML_Printf("%G ",Euclidean_Dist(tree->a_nodes[i]->ldsk->coord,tree->a_nodes[j]->ldsk->coord));
   PhyML_Printf("\n");

@@ -2475,24 +2475,33 @@ void Print_Mat(matrix *mat)
   PhyML_Printf("%d",mat->n_otu);
   PhyML_Printf("\n");
   
-  for(i=0;i<mat->n_otu;i++)
-    {
-      for(j=0;j<13;j++)
-        {
-          if(j>=(int)strlen(mat->name[i])) putchar(' ');
-          else putchar(mat->name[i][j]);
-        }
+  /* for(i=0;i<mat->n_otu;i++) */
+  /*   { */
+  /*     for(j=0;j<13;j++) */
+  /*       { */
+  /*         if(j>=(int)strlen(mat->name[i])) putchar(' '); */
+  /*         else putchar(mat->name[i][j]); */
+  /*       } */
       
-      for(j=0;j<mat->n_otu;j++)
+  /*     for(j=0;j<mat->n_otu;j++) */
+  /*       { */
+  /*         char s[2]="-"; */
+  /*         if(mat->dist[i][j] < .0) */
+  /*           PhyML_Printf("%12s",s); */
+  /*         else */
+  /*           PhyML_Printf("%12f",mat->dist[i][j]); */
+  /*       } */
+  /*     PhyML_Printf("\n"); */
+  /*   } */
+
+  for(i=0;i<mat->n_otu-1;++i)
+    {
+      for(j=i+1;j<mat->n_otu;++j)
         {
-          char s[2]="-";
-          if(mat->dist[i][j] < .0)
-            PhyML_Printf("%12s",s);
-          else
-            PhyML_Printf("%12f",mat->dist[i][j]);
+          PhyML_Printf("\n. %s %s %f",mat->name[i],mat->name[j],mat->dist[i][j]);
         }
-      PhyML_Printf("\n");
     }
+
 }
 
 //////////////////////////////////////////////////////////////
