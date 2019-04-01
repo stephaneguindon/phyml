@@ -203,9 +203,7 @@ t_edge *Make_Edge_Light(t_node *a, t_node *d, int num)
       assert(b->l_r > -1);
       assert(b->r_l > -1);
       
-      b->l->v             = a->l[b->l_r]->v;
-      if(a->tax) b->l->v  = a->l[b->r_l]->v;
-      b->l_old->v         = b->l->v;
+      b->l_old->v = b->l->v;
     }
   else
     {
@@ -550,14 +548,7 @@ t_node *Make_Node_Light(int num)
   n->s_ingrp  = (int *)mCalloc(3,sizeof(int));
   n->s_outgrp = (int *)mCalloc(3,sizeof(int));
   n->cal      = (t_cal **)mCalloc(MAX_N_CAL,sizeof(t_cal *));
-  n->l        = (scalar_dbl **)mCalloc(3,sizeof(scalar_dbl *));
 
-  for(i=0;i<3;++i)
-    {
-      n->l[i] = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
-      Init_Scalar_Dbl(n->l[i]);      
-    }
-  
   Init_Node_Light(n,num);
 
   return n;

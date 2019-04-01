@@ -40,89 +40,90 @@ t_tree *Read_Tree(char **s_tree)
   subs = Sub_Trees((*s_tree),&degree);
   Clean_Multifurcation(subs,degree,3);
 
-    if(degree == 2)
-      {
-        /* Unroot_Tree(subs); */
-        /* degree = 3; */
-        /* root_node = tree->a_nodes[n_otu]; */
-        root_node      = tree->a_nodes[2*n_otu-2];
-        root_node->num = 2*n_otu-2;
-        tree->n_root   = root_node;
-        n_int         -= 1;
-      }
-    else
-      {
-        root_node      = tree->a_nodes[n_otu];
-        root_node->num = n_otu;
-        tree->n_root   = NULL;
-      }
+  if(degree == 2)
+    {
+      /* Unroot_Tree(subs); */
+      /* degree = 3; */
+      /* root_node = tree->a_nodes[n_otu]; */
 
-    if(degree > 3) /* Multifurcation at the root. Need to re-assemble the subtrees
-                      since Clean_Multifurcation added sets of parenthesis and
-                      the corresponding NULL edges */
-      {
-        degree = 3;
-        Free((*s_tree));
-        len = 0;
-        for(i=0;i<degree;i++) len += (strlen(subs[i])+1);
-        len += 5;
-        
-        (*s_tree) = (char *)mCalloc(len,sizeof(char));
-        
-        (*s_tree)[0] = '('; (*s_tree)[1] = '\0';
-        for(i=0;i<degree;i++)
-          {
-            strcat((*s_tree),subs[i]);
-            strcat((*s_tree),",\0");
-          }
-        
-        sprintf((*s_tree)+strlen((*s_tree))-1,"%s",");\0");
-        
-        i = 0;
-        while(subs[i] != NULL) Free(subs[i++]);
-        Free(subs);
-        
-        subs = Sub_Trees((*s_tree),&degree);
-      }
+      root_node      = tree->a_nodes[2*n_otu-2];
+      root_node->num = 2*n_otu-2;
+      tree->n_root   = root_node;
+      n_int         -= 1;
+    }
+  else
+    {
+      root_node      = tree->a_nodes[n_otu];
+      root_node->num = n_otu;
+      tree->n_root   = NULL;
+    }
+  
+  if(degree > 3) /* Multifurcation at the root. Need to re-assemble the subtrees
+                    since Clean_Multifurcation added sets of parenthesis and
+                    the corresponding NULL edges */
+    {
+      degree = 3;
+      Free((*s_tree));
+      len = 0;
+      for(i=0;i<degree;i++) len += (strlen(subs[i])+1);
+      len += 5;
+      
+      (*s_tree) = (char *)mCalloc(len,sizeof(char));
+      
+      (*s_tree)[0] = '('; (*s_tree)[1] = '\0';
+      for(i=0;i<degree;i++)
+        {
+          strcat((*s_tree),subs[i]);
+          strcat((*s_tree),",\0");
+        }
+      
+      sprintf((*s_tree)+strlen((*s_tree))-1,"%s",");\0");
+      
+      i = 0;
+      while(subs[i] != NULL) Free(subs[i++]);
+      Free(subs);
+      
+      subs = Sub_Trees((*s_tree),&degree);
+    }
+  
+  root_node->tax = 0;
     
-    root_node->tax = 0;
-    
-    tree->has_branch_lengths = 0;
-    tree->num_curr_branch_available = tree->n_otu;
-    for(i=0;i<degree;i++) R_rtree((*s_tree),subs[i],root_node,tree,&n_int,&n_ext);
-    
-    i = degree;
-    while(subs[i] != NULL) Free(subs[i++]);
-    Free(subs);
-    
-    if(tree->n_root)
-      {
-        tree->e_root = tree->a_edges[tree->num_curr_branch_available];
-        
-        tree->n_root->b[1] = tree->a_edges[tree->num_curr_branch_available+1];
-        tree->n_root->b[2] = tree->a_edges[tree->num_curr_branch_available+2];
-        
-        tree->n_root->v[2] = tree->n_root->v[0];
-        tree->n_root->v[0] = NULL;
-        
-        tree->n_root->l[2]->v = tree->n_root->l[0]->v;
-        
-        for(i=0;i<3;i++) if(tree->n_root->v[2]->v[i] == tree->n_root) { tree->n_root->v[2]->v[i] = tree->n_root->v[1]; break; }
-        for(i=0;i<3;i++) if(tree->n_root->v[1]->v[i] == tree->n_root) { tree->n_root->v[1]->v[i] = tree->n_root->v[2]; break; }
-        
-        Connect_One_Edge_To_Two_Nodes(tree->n_root->v[2],
-                                      tree->n_root->v[1],
-                                      tree->e_root,
-                                      tree);
-        
-        tree->e_root->l->v = tree->n_root->l[2]->v + tree->n_root->l[1]->v;
-        if(tree->e_root->l->v > 0.0)
-          tree->n_root_pos = tree->n_root->l[2]->v / tree->e_root->l->v;
-        else
-          tree->n_root_pos = .5;
-      }
-    
-    return tree;
+  tree->has_branch_lengths = 0;
+  tree->num_curr_branch_available = tree->n_otu;
+  for(i=0;i<degree;i++) R_rtree((*s_tree),subs[i],root_node,tree,&n_int,&n_ext);
+  
+  i = degree;
+  while(subs[i] != NULL) Free(subs[i++]);
+  Free(subs);
+  
+  if(tree->n_root)
+    {
+      tree->e_root = tree->a_edges[tree->num_curr_branch_available];
+      
+      tree->n_root->b[1] = tree->a_edges[tree->num_curr_branch_available+1];
+      tree->n_root->b[2] = tree->a_edges[tree->num_curr_branch_available+2];
+      
+      tree->n_root->v[2] = tree->n_root->v[0];
+      tree->n_root->v[0] = NULL;
+      
+      tree->n_root->b[2]->l->v = tree->n_root->b[0]->l->v;
+      
+      for(i=0;i<3;i++) if(tree->n_root->v[2]->v[i] == tree->n_root) { tree->n_root->v[2]->v[i] = tree->n_root->v[1]; break; }
+      for(i=0;i<3;i++) if(tree->n_root->v[1]->v[i] == tree->n_root) { tree->n_root->v[1]->v[i] = tree->n_root->v[2]; break; }
+      
+      Connect_One_Edge_To_Two_Nodes(tree->n_root->v[2],
+                                    tree->n_root->v[1],
+                                    tree->e_root,
+                                    tree);
+      
+      tree->e_root->l->v = tree->n_root->b[2]->l->v + tree->n_root->b[1]->l->v;
+      if(tree->e_root->l->v > 0.0)
+        tree->n_root_pos = tree->n_root->b[2]->l->v / tree->e_root->l->v;
+      else
+        tree->n_root_pos = .5;
+    }
+  
+  return tree;
 }
 
 //////////////////////////////////////////////////////////////
@@ -171,8 +172,6 @@ void R_rtree(char *s_tree_a, char *s_tree_d, t_node *a, t_tree *tree, int *n_int
           if(!a->v[i])
             {
               a->v[i]=d;
-              d->l[0]->v = tree->a_edges[tree->num_curr_branch_available]->l->v;
-              a->l[i]->v = tree->a_edges[tree->num_curr_branch_available]->l->v;
               break;
             }
         }
@@ -240,8 +239,6 @@ void R_rtree(char *s_tree_a, char *s_tree_d, t_node *a, t_tree *tree, int *n_int
           if(!a->v[i])
             {
               a->v[i]=d;
-              d->l[0]->v = tree->a_edges[*n_ext]->l->v;
-              a->l[i]->v = tree->a_edges[*n_ext]->l->v;
               break;
             }
         }
@@ -3938,11 +3935,13 @@ void Print_Tree_Structure(t_tree* tree)
   PhyML_Fprintf(stdout,"\n. n_otu: %d",tree->n_otu);
   for(i=0; i<2*tree->n_otu-3; ++i)
     {
-      PhyML_Fprintf(stdout,"\n. Edge %3d, Length: %f LeftNode %3d, RightNode %3d",
+      PhyML_Fprintf(stdout,"\n. Edge %3d, Length: %f LeftNode %3d [%s], RightNode %3d [%s]",
                     tree->a_edges[i]->num,
                     tree->a_edges[i]->l->v,
                     tree->a_edges[i]->left->num,
-                    tree->a_edges[i]->rght->num);
+                    tree->a_edges[i]->left->tax ? tree->a_edges[i]->left->name : "",
+                    tree->a_edges[i]->rght->num,
+                    tree->a_edges[i]->rght->tax ? tree->a_edges[i]->rght->name : "");
     }
   for(i=0; i<2*tree->n_otu-2; ++i)
     {

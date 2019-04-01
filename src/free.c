@@ -105,7 +105,6 @@ void Free_Node(t_node *n)
   Free(n->s_ingrp);
   Free(n->s_outgrp);
   Free(n->cal);
-  Free(n->l);
   
   if(n->c_seq_anc != NULL) 
     {

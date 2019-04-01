@@ -1510,6 +1510,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
       /* io->mod->s_opt->opt_bl   = NO; */
     }
 
+  
   if(io->do_tbe == YES)
     {
       io->do_alrt = NO;
@@ -1517,7 +1518,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
     }
   else
     {
-      if(io->do_alrt == NO) io->do_boot = YES;        
+      if(io->do_alrt == NO && io->n_boot_replicates > 0) io->do_boot = YES;        
     }
   
 #ifndef PHYML

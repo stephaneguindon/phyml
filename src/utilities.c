@@ -758,6 +758,8 @@ void Connect_Edges_To_Nodes_Serial(t_tree *tree)
   /* Reset */
   for(i=0;i<2*tree->n_otu-1;++i) for(j=0;j<3;j++) if(tree->a_nodes[i] != NULL) tree->a_nodes[i]->b[j] = NULL;
   
+  tree->num_curr_branch_available = 0;
+
   for(i=0;i<tree->n_otu;i++)
     {
       assert(tree->a_nodes[i]->tax);
@@ -768,25 +770,24 @@ void Connect_Edges_To_Nodes_Serial(t_tree *tree)
 
       Connect_One_Edge_To_Two_Nodes(tree->a_nodes[i],
                                     tree->a_nodes[i]->v[0],
-                                    tree->a_edges[i],
+                                    tree->a_nodes[i]->b[0],
                                     tree);
     }
 
 
-  tree->num_curr_branch_available = tree->n_otu;
 
   for(i=tree->n_otu;i<2*tree->n_otu-3;i++)
     {
       assert(!tree->a_nodes[i]->tax);
 
       for(j=0;j<3;j++) 
-        if(!tree->a_nodes[i]->b[j])
+        /* if(!tree->a_nodes[i]->b[j]) */
+        if(tree->a_nodes[i]->v[j])
           {
-            assert(tree->a_nodes[i] != tree->a_nodes[i]->v[j]);
-
+            assert(tree->a_nodes[i]->b[j]);
             Connect_One_Edge_To_Two_Nodes(tree->a_nodes[i],
                                           tree->a_nodes[i]->v[j],
-                                          tree->a_edges[tree->num_curr_branch_available],
+                                          tree->a_nodes[i]->b[j],
                                           tree);
           }
     }
@@ -2523,14 +2524,19 @@ void Insert_Duplicates(t_tree *tree)
   link          = NULL;
   daughter      = NULL;
   idx_root      = (tree->n_root) ? 1 : 3;
+
+  PhyML_Printf("\n >> ");
+  Print_Tree_Structure(tree);
+  PhyML_Printf("\n << ");
   
   new_a_nodes = (t_node **)mCalloc(2*tree->n_otu-1 + tree->data->n_rm * 2,sizeof(t_node *));
 
   for(i=0;i<tree->n_otu;++i) new_a_nodes[i] = tree->a_nodes[i];
-  for(i=tree->n_otu;i<2*tree->n_otu-1;++i) new_a_nodes[i+tree->data->n_rm] = tree->a_nodes[i];
-
-  Print_Tree_Structure(tree);
-  PhyML_Printf("\n << ");
+  for(i=tree->n_otu;i<2*tree->n_otu-1;++i)
+    {
+      new_a_nodes[i+tree->data->n_rm] = tree->a_nodes[i];
+      new_a_nodes[i+tree->data->n_rm]->num = i+tree->data->n_rm;
+    }
 
   Free(tree->a_nodes);
   tree->a_nodes = new_a_nodes;
@@ -2551,11 +2557,12 @@ void Insert_Duplicates(t_tree *tree)
               link = Make_Node_Light(2*tree->n_otu-idx_root+tree->data->n_rm+idx_new_node+1);
               daughter = Make_Node_Light(tree->n_otu+idx_new_node);
 
-              PhyML_Printf("\n. link: %d[->%d] daughter: %d[->%d]",
+              PhyML_Printf("\n. link: %d[->%d] daughter: %d[->%d] %s",
                            link->num,
                            2*tree->n_otu-idx_root+tree->data->n_rm+idx_new_node+1,
                            daughter->num,
-                           tree->n_otu+idx_new_node);
+                           tree->n_otu+idx_new_node,
+                           tree->data->c_seq_rm[i]->name);
 
               new_a_nodes[tree->n_otu+idx_new_node] = daughter;
               new_a_nodes[2*tree->n_otu-idx_root+tree->data->n_rm+idx_new_node+1] = link;
@@ -2582,12 +2589,14 @@ void Insert_Duplicates(t_tree *tree)
               new_a_edges[2*tree->n_otu-idx_root+idx_new_edge]   = link_daughter;
               new_a_edges[2*tree->n_otu-idx_root+idx_new_edge+1] = residual;
 
+              PhyML_Printf("\n. link_daughter idx: %d",2*tree->n_otu-idx_root+idx_new_edge);
               idx_new_edge += 2;              
               
               Set_Scalar_Dbl(tree->mod->l_min,link_daughter->l);
-              Set_Scalar_Dbl(tree->mod->l_min,residual->l);
               
-              PhyML_Printf("\n. BEFORE  target: %f",
+              PhyML_Printf("\n. BEFORE target->left: %d target->rght: %d l: %f",
+                           tree->a_nodes[j]->b[0]->left->num,
+                           tree->a_nodes[j]->b[0]->rght->num,
                            tree->a_nodes[j]->b[0]->l->v);
 
               Multiply_Scalar_Dbl(2.0,tree->a_nodes[j]->b[0]->l);
@@ -2597,22 +2606,24 @@ void Insert_Duplicates(t_tree *tree)
                             residual,
                             tree->a_nodes[j],
                             tree);
-              
-              PhyML_Printf("\n. daughter: %d v0: %d v1: %d v2: %d",daughter->num,daughter->v[0] ? daughter->v[0]->num : -1,daughter->v[1] ? daughter->v[1]->num : -1,daughter->v[2] ? daughter->v[2]->num : -1);
-              PhyML_Printf("\n. link: %d v0: %d v1: %d v2: %d",link->num,link->v[0]->num,link->v[1]->num,link->v[2]->num);
+              Set_Scalar_Dbl(tree->a_nodes[j]->b[0]->l->v,residual->l);
+              Set_Scalar_Dbl(tree->mod->l_min,tree->a_nodes[j]->b[0]->l);
 
-              {
-                PhyML_Printf("\n. residual: %f target: %f link: %f",
-                             residual->l->v,
-                             tree->a_nodes[j]->b[0]->l->v,
-                             link_daughter->l->v);
-                             
-                for(int k=0;k<3;++k)
-                  {
-                    PhyML_Printf("\n. >> %f",link->l[k]->v);
-                  }
-              }
-              
+              PhyML_Printf("\n. target->left: %d target->rght: %d",tree->a_nodes[j]->b[0]->left->num,tree->a_nodes[j]->b[0]->rght->num);
+              PhyML_Printf("\n. residual: left: %d right: %d",
+                           residual->left->num,
+                           residual->rght->num);              
+              PhyML_Printf("\n. daughter: %d v0: %d v1: %d v2: %d",
+                           daughter->num,
+                           daughter->v[0] ? daughter->v[0]->num : -1,
+                           daughter->v[1] ? daughter->v[1]->num : -1,
+                           daughter->v[2] ? daughter->v[2]->num : -1);
+              PhyML_Printf("\n. link: %d v0: %d v1: %d v2: %d",
+                           link->num,
+                           link->v[0]->num,
+                           link->v[1]->num,
+                           link->v[2]->num);
+              for(k=0;k<3;++k) PhyML_Printf("\n. link->l[%d]: %f",k,link->b[k]->l->v);
               break;
               
             }
@@ -2626,9 +2637,11 @@ void Insert_Duplicates(t_tree *tree)
   tree->n_otu += tree->data->n_rm;
 
   for(i=0;i<2*tree->n_otu-idx_root;++i) tree->a_nodes[i]->num = i;
+
   
+  for(i=0;i<2*tree->n_otu-idx_root;++i) PhyML_Printf("\n< L: %f",tree->a_edges[i]->l->v);;
   Connect_Edges_To_Nodes_Serial(tree);
-  for(i=0;i<2*tree->n_otu-idx_root;++i) PhyML_Printf("\n. L: %f",tree->a_edges[i]->l->v);;
+  for(i=0;i<2*tree->n_otu-idx_root;++i) PhyML_Printf("\n> L: %f",tree->a_edges[i]->l->v);;
   Print_Tree_Structure(tree);
 }
 
@@ -4910,7 +4923,6 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
           if(ori->a_nodes[i]->v[j])
             {
               cpy->a_nodes[i]->v[j] = cpy->a_nodes[ori->a_nodes[i]->v[j]->num];
-              cpy->a_nodes[i]->l[j] = ori->a_nodes[i]->l[j];
               cpy->a_nodes[i]->b[j] = cpy->a_edges[ori->a_nodes[i]->b[j]->num];
             }
           else
@@ -5559,14 +5571,12 @@ void Graft_Subtree(t_edge *target, t_node *link, t_node *link_daughter, t_edge *
       {
         v2->v[i] = link;
         v2->b[i] = residual;
-        v2->l[i] = residual->l;
         break;
       }
   assert(i<3);
   
   link->v[dir_v2] = v2;
   link->b[dir_v2] = residual;
-  link->l[dir_v2] = residual->l;
 
   residual->left  = link;
   residual->rght  = v2;
@@ -5576,7 +5586,6 @@ void Graft_Subtree(t_edge *target, t_node *link, t_node *link_daughter, t_edge *
 
   link->v[dir_v1] = v1;
   link->b[dir_v1] = target;
-  link->l[dir_v1] = target->l;
 
 
   for(i=0;i<3;i++)
@@ -5586,16 +5595,6 @@ void Graft_Subtree(t_edge *target, t_node *link, t_node *link_daughter, t_edge *
         break;
       }
 
-
-  for(i=0;i<3;i++)
-    if(link->v[i] == link_daughter)
-      {
-        v2->v[i] = link;
-        v2->b[i] = residual;
-        v2->l[i] = residual->l;
-        break;
-      }
-  assert(i<3);
 
   if(target->l->onoff == ON)
     {
@@ -6419,7 +6418,7 @@ void Path_Length(t_node *dep, t_node *arr, phydbl *len, t_tree *tree)
 
       if(next == tree->e_root)
         {
-          (*len) += (tree->n_root->l[1]->v + tree->n_root->l[2]->v);
+          (*len) += (tree->n_root->b[1]->l->v + tree->n_root->b[2]->l->v);
         }
       else
         {
@@ -7279,8 +7278,8 @@ void Update_Root_Pos(t_tree *tree)
 {
   if(tree->n_root_pos > -1.0)
     {
-      tree->n_root->l[2]->v = tree->e_root->l->v * tree->n_root_pos;
-      tree->n_root->l[1]->v = tree->e_root->l->v * (1.-tree->n_root_pos);
+      tree->n_root->b[2]->l->v = tree->e_root->l->v * tree->n_root_pos;
+      tree->n_root->b[1]->l->v = tree->e_root->l->v * (1.-tree->n_root_pos);
     }
   else
     {
@@ -7327,16 +7326,14 @@ void Add_Root(t_edge *target, t_tree *tree)
         {
           printf("\n. WARNING: you put the root at a weird position...");
         }
-/*       tree->n_root->l[0]->v = tree->e_root->l->v * (tree->n_root_pos/(1.+tree->n_root_pos)); */
-/*       tree->n_root->l[1]->v = tree->e_root->l->v - tree->n_root->l[0]; */
 
-      tree->n_root->l[2]->v = tree->e_root->l->v * tree->n_root_pos;
-      tree->n_root->l[1]->v = tree->e_root->l->v * (1. - tree->n_root_pos);
+      tree->n_root->b[2]->l->v = tree->e_root->l->v * tree->n_root_pos;
+      tree->n_root->b[1]->l->v = tree->e_root->l->v * (1. - tree->n_root_pos);
     }
   else
     {
-      tree->n_root->l[2]->v = tree->e_root->l->v / 2.;
-      tree->n_root->l[1]->v = tree->e_root->l->v / 2.;
+      tree->n_root->b[2]->l->v = tree->e_root->l->v / 2.;
+      tree->n_root->b[1]->l->v = tree->e_root->l->v / 2.;
       tree->n_root_pos = 0.5;
     }
 
@@ -7354,10 +7351,10 @@ void Add_Root(t_edge *target, t_tree *tree)
   b2->left = tree->n_root;
   b2->rght = tree->n_root->v[2];
 
-  b1->l->v     = tree->n_root->l[1]->v;
-  b2->l->v     = tree->n_root->l[2]->v;
-  b1->l_old->v = tree->n_root->l[1]->v;
-  b2->l_old->v = tree->n_root->l[2]->v;
+  b1->l->v     = tree->n_root->b[1]->l->v;
+  b2->l->v     = tree->n_root->b[2]->l->v;
+  b1->l_old->v = tree->n_root->b[1]->l->v;
+  b2->l_old->v = tree->n_root->b[2]->l->v;
 
   b1->l_r = 1;
   b2->l_r = 2;
@@ -8669,8 +8666,8 @@ void Dist_To_Root_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 void Dist_To_Root(t_tree *tree)
 {
   tree->n_root->dist_to_root = 0.0;
-  tree->n_root->v[2]->dist_to_root = tree->n_root->l[1]->v;
-  tree->n_root->v[1]->dist_to_root = tree->n_root->l[2]->v;
+  tree->n_root->v[2]->dist_to_root = tree->n_root->b[1]->l->v;
+  tree->n_root->v[1]->dist_to_root = tree->n_root->b[2]->l->v;
 
   Dist_To_Root_Pre(tree->n_root,tree->n_root->v[2],NULL,tree);
   Dist_To_Root_Pre(tree->n_root,tree->n_root->v[1],NULL,tree);
@@ -8996,9 +8993,9 @@ void Time_To_Bl(t_tree *tree)
 {
   Time_To_Bl_Pre(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
   Time_To_Bl_Pre(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
-  tree->n_root->l[1]->v = tree->rates->nd_t[tree->n_root->v[1]->num] - tree->rates->nd_t[tree->n_root->num];
-  tree->n_root->l[2]->v = tree->rates->nd_t[tree->n_root->v[2]->num] - tree->rates->nd_t[tree->n_root->num];
-  tree->e_root->l->v = tree->n_root->l[1]->v + tree->n_root->l[2]->v;
+  tree->n_root->b[1]->l->v = tree->rates->nd_t[tree->n_root->v[1]->num] - tree->rates->nd_t[tree->n_root->num];
+  tree->n_root->b[2]->l->v = tree->rates->nd_t[tree->n_root->v[2]->num] - tree->rates->nd_t[tree->n_root->num];
+  tree->e_root->l->v = tree->n_root->b[1]->l->v + tree->n_root->b[2]->l->v;
 }
 
 //////////////////////////////////////////////////////////////
@@ -9253,7 +9250,6 @@ void Copy_Tree_Topology_With_Labels(t_tree *ori, t_tree *cpy)
           if(ori->a_nodes[i]->v[j])
             {
               cpy->a_nodes[i]->v[j] = cpy->a_nodes[ori->a_nodes[i]->v[j]->num];
-              cpy->a_nodes[i]->l[j] = ori->a_nodes[i]->l[j];
             }
           else
             cpy->a_nodes[i]->v[j] = NULL;
