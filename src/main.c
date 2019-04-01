@@ -144,6 +144,7 @@ int main(int argc, char **argv)
 
                   if(io->mod->use_m4mod) M4_Init_Model(mod->m4mod,cdata,mod);
 
+
                   //Make the initial tree
                   switch(io->in_tree)
                     {
@@ -151,7 +152,7 @@ int main(int argc, char **argv)
                     case 2 :          { tree = Read_User_Tree(cdata,mod,io); break; }
                     }
 
-                  Remove_Duplicates(cdata,io,tree);
+                  if(io->mod->s_opt->opt_topo == YES) Remove_Duplicates(cdata,io,tree);
 
                   if(io->fp_in_constraint_tree != NULL)
                     {
@@ -353,13 +354,7 @@ int main(int argc, char **argv)
               if(io->n_data_sets == 1) rewind(io->fp_out_tree);
               
               t_tree *dum;
-              PhyML_Printf("\n. Reading most likely");
               dum = Read_Tree(&most_likely_tree);
-              {
-                int i;
-                for(i=0;i<2*dum->n_otu-3;++i)
-                  PhyML_Printf("\n. Edge %d %f",dum->a_edges[i]->num,dum->a_edges[i]->support_val);
-              }
               dum->data = cdata;
               dum->mod  = mod;
               dum->io   = io;

@@ -312,7 +312,7 @@ void Read_Branch_Support(char *s_d, char *s_a, t_edge *b, t_tree *tree)
 
   if(p)
     {
-      PhyML_Printf("\n. READ SUPPORT for s_d: %s b: %f",s_d,atof((char *)p+(int)strlen(sub_tp)));
+      /* PhyML_Printf("\n. READ SUPPORT for s_d: %s b: %f",s_d,atof((char *)p+(int)strlen(sub_tp))); */
       b->support_val = atof((char *)p+(int)strlen(sub_tp));
     }
 
@@ -349,7 +349,7 @@ void Read_Branch_Length(char *s_d, char *s_a, t_edge *b, t_tree *tree)
       while(p[0] != ':') p++;
       p++;
       b->l->v = atof((char *)p);
-      PhyML_Printf("\n. READ LENGTH for s_d: %s l: %f",s_d,b->l->v);
+      /* PhyML_Printf("\n. READ LENGTH for s_d: %s l: %f",s_d,b->l->v); */
       tree->has_branch_lengths = YES;
       b->does_exist = YES;
     }
@@ -972,7 +972,6 @@ void R_wtree(t_node *pere, t_node *fils, t_edge *b, int *available, char **s_tre
           /*     sprintf(*s_tree+(int)strlen(*s_tree),"%d",fils->num); */
           /*   } */
           
-          PhyML_Printf("\n. PRINT ? %d %f [%d]",tree->io->print_support_val,fils->b[p]->support_val,fils->b[p]->num);
           if(tree->io->print_support_val == YES)
             {
               if(tree->io->do_boot == YES)
@@ -3945,11 +3944,14 @@ void Print_Tree_Structure(t_tree* tree)
     }
   for(i=0; i<2*tree->n_otu-2; ++i)
     {
-      PhyML_Fprintf(stdout,"\n. Node %3d v0: %3d v1: %3d v2: %3d",
+      PhyML_Fprintf(stdout,"\n. Node %3d v0: %3d v1: %3d v2: %3d b0: %3d b1: %3d b2: %3d",
                     tree->a_nodes[i]->num,
                     tree->a_nodes[i]->v[0] ? tree->a_nodes[i]->v[0]->num : -1,
                     tree->a_nodes[i]->v[1] ? tree->a_nodes[i]->v[1]->num : -1,
-                    tree->a_nodes[i]->v[2] ? tree->a_nodes[i]->v[2]->num : -1);
+                    tree->a_nodes[i]->v[2] ? tree->a_nodes[i]->v[2]->num : -1,
+                    tree->a_nodes[i]->v[0] ? tree->a_nodes[i]->b[0]->num : -1,
+                    tree->a_nodes[i]->v[1] ? tree->a_nodes[i]->b[1]->num : -1,
+                    tree->a_nodes[i]->v[2] ? tree->a_nodes[i]->b[2]->num : -1);
     }
 }
 //////////////////////////////////////////////////////////////

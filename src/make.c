@@ -192,7 +192,8 @@ t_edge *Make_Edge_Light(t_node *a, t_node *d, int num)
 
   if(a && b)
     {
-      b->left = a;  b->rght = d;
+      b->left = a;
+      b->rght = d;
       if(a->tax) {b->rght = a; b->left = d;} /* root */
       /* a tip is necessary on the right side of the t_edge */
 
@@ -747,7 +748,6 @@ calign *Make_Calign(int n_otu, int crunch_len, int state_len, int init_len, char
       cdata->c_seq_rm[j]->state     = (char *)mCalloc(crunch_len*state_len+1,sizeof(char));
       cdata->c_seq_rm[j]->d_state   = (int *)mCalloc(crunch_len*state_len,sizeof(int));
       cdata->c_seq_rm[j]->is_ambigu = (short int *)mCalloc(crunch_len,sizeof(short int));
-      cdata->c_seq_rm[j]->name      = (char *)mCalloc((int)(strlen(sp_names_out[j])+1),sizeof(char));
     }
   
   return cdata;

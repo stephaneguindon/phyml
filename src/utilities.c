@@ -749,7 +749,9 @@ void Swap_Nodes_On_Edges(t_edge *e1, t_edge *e2, int swap, t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /* As opposed to Connect_Edges_To_Nodes_Recur, the ordering of 
-   edges connected to tips does not depend on the topology
+   edges connected to tips does not depend on the topology.
+   Use this function when you just have a table of edges not 
+   not connected to any node and the reciprocal is true.
 */
 void Connect_Edges_To_Nodes_Serial(t_tree *tree)
 {
@@ -758,8 +760,6 @@ void Connect_Edges_To_Nodes_Serial(t_tree *tree)
   /* Reset */
   for(i=0;i<2*tree->n_otu-1;++i) for(j=0;j<3;j++) if(tree->a_nodes[i] != NULL) tree->a_nodes[i]->b[j] = NULL;
   
-  tree->num_curr_branch_available = 0;
-
   for(i=0;i<tree->n_otu;i++)
     {
       assert(tree->a_nodes[i]->tax);
@@ -770,24 +770,25 @@ void Connect_Edges_To_Nodes_Serial(t_tree *tree)
 
       Connect_One_Edge_To_Two_Nodes(tree->a_nodes[i],
                                     tree->a_nodes[i]->v[0],
-                                    tree->a_nodes[i]->b[0],
+                                    tree->a_edges[i],
                                     tree);
     }
 
 
+  tree->num_curr_branch_available = tree->n_otu;
 
   for(i=tree->n_otu;i<2*tree->n_otu-3;i++)
     {
       assert(!tree->a_nodes[i]->tax);
 
       for(j=0;j<3;j++) 
-        /* if(!tree->a_nodes[i]->b[j]) */
-        if(tree->a_nodes[i]->v[j])
+        if(!tree->a_nodes[i]->b[j])
           {
-            assert(tree->a_nodes[i]->b[j]);
+            assert(tree->a_nodes[i] != tree->a_nodes[i]->v[j]);
+
             Connect_One_Edge_To_Two_Nodes(tree->a_nodes[i],
                                           tree->a_nodes[i]->v[j],
-                                          tree->a_nodes[i]->b[j],
+                                          tree->a_edges[tree->num_curr_branch_available],
                                           tree);
           }
     }
@@ -2047,10 +2048,9 @@ calign *Copy_Cseq(calign *ori, option *io)
       strcpy(sp_names_out[i],ori->c_seq_rm[i]->name);
     }
 
-
   new = Make_Calign(n_otu,c_len+1,io->state_len,ori->init_len,sp_names_in,ori->n_rm,sp_names_out);
+  new->n_rm = ori->n_rm;
   Init_Calign(n_otu,c_len+1,ori->init_len,new);
-
 
   for(i=0;i<ori->n_rm;++i)
     {
@@ -2465,7 +2465,8 @@ void Remove_Duplicates(calign *data, option *io, t_tree *tree)
               Prune_Subtree(tree->a_nodes[i]->v[0],
                             tree->a_nodes[i],
                             NULL,NULL,tree);                        
-              
+
+              Free_Edge(tree->a_nodes[i]->b[0]);              
               tree->a_nodes[tree->a_nodes[i]->v[0]->num] = NULL;
               tree->a_nodes[i] = NULL;
               break;
@@ -2496,8 +2497,6 @@ void Remove_Duplicates(calign *data, option *io, t_tree *tree)
       Connect_Edges_To_Nodes_Serial(tree);
     }
 
-
-
   data->n_otu -= data->n_rm;
   io->n_otu = data->n_otu;
   
@@ -2514,7 +2513,7 @@ void Remove_Duplicates(calign *data, option *io, t_tree *tree)
 
 void Insert_Duplicates(t_tree *tree)
 {
-  unsigned int i,j,k;
+  unsigned int i,j;
   unsigned int idx_new_edge,idx_new_node,idx_root;
   t_edge *link_daughter,*residual,**new_a_edges;
   t_node *link,*daughter,**new_a_nodes;
@@ -2524,10 +2523,6 @@ void Insert_Duplicates(t_tree *tree)
   link          = NULL;
   daughter      = NULL;
   idx_root      = (tree->n_root) ? 1 : 3;
-
-  PhyML_Printf("\n >> ");
-  Print_Tree_Structure(tree);
-  PhyML_Printf("\n << ");
   
   new_a_nodes = (t_node **)mCalloc(2*tree->n_otu-1 + tree->data->n_rm * 2,sizeof(t_node *));
 
@@ -2557,13 +2552,6 @@ void Insert_Duplicates(t_tree *tree)
               link = Make_Node_Light(2*tree->n_otu-idx_root+tree->data->n_rm+idx_new_node+1);
               daughter = Make_Node_Light(tree->n_otu+idx_new_node);
 
-              PhyML_Printf("\n. link: %d[->%d] daughter: %d[->%d] %s",
-                           link->num,
-                           2*tree->n_otu-idx_root+tree->data->n_rm+idx_new_node+1,
-                           daughter->num,
-                           tree->n_otu+idx_new_node,
-                           tree->data->c_seq_rm[i]->name);
-
               new_a_nodes[tree->n_otu+idx_new_node] = daughter;
               new_a_nodes[2*tree->n_otu-idx_root+tree->data->n_rm+idx_new_node+1] = link;
 
@@ -2576,6 +2564,9 @@ void Insert_Duplicates(t_tree *tree)
               strcpy(daughter->name,tree->data->c_seq_rm[i]->name);
               
               link->v[0] = daughter;
+              link->v[1] = NULL;
+              link->v[2] = NULL;
+
               daughter->v[0] = link;
               daughter->v[1] = NULL;
               daughter->v[2] = NULL;
@@ -2583,22 +2574,25 @@ void Insert_Duplicates(t_tree *tree)
               daughter->tax = YES;
               link->tax     = NO;
              
-              link_daughter = Make_Edge_Light(link,daughter,-1);
-              residual = Make_Edge_Light(link,daughter,-1);
-                           
+              link_daughter = Make_Edge_Light(link,daughter,2*tree->n_otu-idx_root+idx_new_edge);
+              residual = Make_Edge_Light(daughter,link,2*tree->n_otu-idx_root+idx_new_edge+1);
+
               new_a_edges[2*tree->n_otu-idx_root+idx_new_edge]   = link_daughter;
               new_a_edges[2*tree->n_otu-idx_root+idx_new_edge+1] = residual;
 
-              PhyML_Printf("\n. link_daughter idx: %d",2*tree->n_otu-idx_root+idx_new_edge);
+              new_a_edges[2*tree->n_otu-idx_root+idx_new_edge]->rght = daughter;
+              new_a_edges[2*tree->n_otu-idx_root+idx_new_edge]->left = link;
+
+              new_a_edges[2*tree->n_otu-idx_root+idx_new_edge+1]->rght = link;
+              new_a_edges[2*tree->n_otu-idx_root+idx_new_edge+1]->left = tree->a_nodes[j]->b[0]->left;
+
+              daughter->b[0] = link_daughter;
+              link->b[0] = link_daughter;
+
               idx_new_edge += 2;              
               
               Set_Scalar_Dbl(tree->mod->l_min,link_daughter->l);
               
-              PhyML_Printf("\n. BEFORE target->left: %d target->rght: %d l: %f",
-                           tree->a_nodes[j]->b[0]->left->num,
-                           tree->a_nodes[j]->b[0]->rght->num,
-                           tree->a_nodes[j]->b[0]->l->v);
-
               Multiply_Scalar_Dbl(2.0,tree->a_nodes[j]->b[0]->l);
               Graft_Subtree(tree->a_nodes[j]->b[0],
                             link,
@@ -2608,22 +2602,8 @@ void Insert_Duplicates(t_tree *tree)
                             tree);
               Set_Scalar_Dbl(tree->a_nodes[j]->b[0]->l->v,residual->l);
               Set_Scalar_Dbl(tree->mod->l_min,tree->a_nodes[j]->b[0]->l);
-
-              PhyML_Printf("\n. target->left: %d target->rght: %d",tree->a_nodes[j]->b[0]->left->num,tree->a_nodes[j]->b[0]->rght->num);
-              PhyML_Printf("\n. residual: left: %d right: %d",
-                           residual->left->num,
-                           residual->rght->num);              
-              PhyML_Printf("\n. daughter: %d v0: %d v1: %d v2: %d",
-                           daughter->num,
-                           daughter->v[0] ? daughter->v[0]->num : -1,
-                           daughter->v[1] ? daughter->v[1]->num : -1,
-                           daughter->v[2] ? daughter->v[2]->num : -1);
-              PhyML_Printf("\n. link: %d v0: %d v1: %d v2: %d",
-                           link->num,
-                           link->v[0]->num,
-                           link->v[1]->num,
-                           link->v[2]->num);
-              for(k=0;k<3;++k) PhyML_Printf("\n. link->l[%d]: %f",k,link->b[k]->l->v);
+              residual->support_val = -1.;
+              
               break;
               
             }
@@ -2637,12 +2617,6 @@ void Insert_Duplicates(t_tree *tree)
   tree->n_otu += tree->data->n_rm;
 
   for(i=0;i<2*tree->n_otu-idx_root;++i) tree->a_nodes[i]->num = i;
-
-  
-  for(i=0;i<2*tree->n_otu-idx_root;++i) PhyML_Printf("\n< L: %f",tree->a_edges[i]->l->v);;
-  Connect_Edges_To_Nodes_Serial(tree);
-  for(i=0;i<2*tree->n_otu-idx_root;++i) PhyML_Printf("\n> L: %f",tree->a_edges[i]->l->v);;
-  Print_Tree_Structure(tree);
 }
 
 
@@ -3116,14 +3090,14 @@ void Bootstrap(t_tree *tree)
 
   n_site = 0;
   for(j=0;j<tree->data->crunch_len;j++)
-    For(k,tree->data->wght[j])
+    for(k=0;k<tree->data->wght[j];++k)
       {
         site_num[n_site] = j;
         n_site++;
       }
 
   boot_data = Copy_Cseq(tree->data,tree->io);
-
+  
   PhyML_Printf("\n\n. Non parametric bootstrap analysis \n\n");
   PhyML_Printf("  [");
 
