@@ -959,7 +959,8 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, int r_seed)
   tree->mod->ras->n_catg   = 1;
   tree->mod->whichmodel    = HKY85;
   tree->mod->kappa->v      = 4.0;
-    
+  tree->data->init_len     = 50;
+  
   Make_Tree_For_Pars(tree);
   Make_Tree_For_Lk(tree);
   Make_Spr(tree);
@@ -973,10 +974,15 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, int r_seed)
   PhyML_Printf(" : ",mmod->lbda,mmod->mu,mmod->rad);
   for(int i=0;i<tree->n_otu-1;++i) for(int j=i+1;j<tree->n_otu;++j) PhyML_Printf("%G ",Euclidean_Dist(tree->a_nodes[i]->ldsk->coord,tree->a_nodes[j]->ldsk->coord));
   PhyML_Printf("\n");
+  /* for(int i=0;i<tree->n_otu-1;++i) PhyML_Printf("\n%s %G %G", */
+  /*                                               tree->a_nodes[i]->name, */
+  /*                                               tree->a_nodes[i]->ldsk->coord->lonlat[0], */
+  /*                                               tree->a_nodes[i]->ldsk->coord->lonlat[1]);  */
   for(int i=0;i<tree->n_otu-1;++i) PhyML_Printf("\n%s %G %G",
                                                 tree->a_nodes[i]->name,
                                                 tree->a_nodes[i]->ldsk->coord->lonlat[0],
                                                 tree->a_nodes[i]->ldsk->coord->lonlat[1]);
+
   PhyML_Printf("\n\n");
   Print_CSeq(stdout,NO,tree->data,tree);
   Exit("\n");
