@@ -55,11 +55,24 @@ void Free_All_Edges_Light(t_tree *mixt_tree)
 
   do
     {
-      for(i=0;i<2*tree->n_otu-1;++i) if(tree->a_edges[i] != NULL) Free_Edge(tree->a_edges[i]);
+      for(i=0;i<2*tree->n_otu-1;++i)
+        if(tree->a_edges[i] != NULL)
+          Free_Edge(tree->a_edges[i]);
       Free(tree->a_edges);
       tree = tree->next;
     }
   while(tree);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Free_Edge_Length(t_edge *b)
+{
+  if(b->l) Free_Scalar_Dbl(b->l);
+  if(b->l_old) Free_Scalar_Dbl(b->l_old);
+  if(b->l_var) Free_Scalar_Dbl(b->l_var);
+  if(b->l_var_old) Free_Scalar_Dbl(b->l_var_old);
 }
 
 //////////////////////////////////////////////////////////////

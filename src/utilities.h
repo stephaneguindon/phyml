@@ -2321,6 +2321,9 @@ void Get_Node_Ranks_From_Tip_Times(t_tree *tree);
 phydbl Tree_Height(t_tree *tree);
 void Post_Inflate_Times_To_Get_Reasonnable_Edge_Lengths(t_node *a, t_node *d, t_edge *b, phydbl min_l, t_tree *tree);
 void  Inflate_Times_To_Get_Reasonnable_Edge_Lengths(phydbl min_l, t_tree *tree);
+void Refactor_Tree(t_tree *tree);
+void Refactor_External(t_node *a, t_node *d, int *idx, t_tree *tree);
+void Refactor_Internal(t_node *a, t_node *d, t_edge *b, int *idx_nd, int *idx_br, t_tree *tree);
 
 
 #include "xml.h"
