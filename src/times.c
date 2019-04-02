@@ -67,8 +67,8 @@ void TIMES_Least_Square_Node_Times(t_edge *e_root, t_tree *tree)
 
   for(i=0;i<n-1;i++) tree->rates->nd_t[tree->a_nodes[i]->num] = -x[i];
   tree->rates->nd_t[root->num] = -x[n-1];
-  tree->n_root->l[2]->v = tree->rates->nd_t[root->v[2]->num] - tree->rates->nd_t[root->num];
-  tree->n_root->l[1]->v = tree->rates->nd_t[root->v[1]->num] - tree->rates->nd_t[root->num];
+  tree->n_root->b[2]->l->v = tree->rates->nd_t[root->v[2]->num] - tree->rates->nd_t[root->num];
+  tree->n_root->b[1]->l->v = tree->rates->nd_t[root->v[1]->num] - tree->rates->nd_t[root->num];
 
   Free(A);
   Free(b);

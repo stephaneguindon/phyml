@@ -183,12 +183,9 @@ void Update_Tree(matrix *mat, int x, int y, phydbl lx, phydbl ly, phydbl score)
   new->b[2]->l->v  = ly;
   new->score[0] = score;
 
-  nx->l[0]->v      = lx;
-  ny->l[0]->v      = ly;
-  
-  new->l[1]->v     = lx;
-  new->l[2]->v     = ly;
- 
+  nx->b[0]->l->v   = lx;
+  ny->b[0]->l->v   = ly;
+   
   mat->tip_node[x] = new;
   mat->on_off[y] = 0;
   mat->curr_int++;

@@ -104,5 +104,7 @@ json_o *JSON_Tree_To_Object_Light(t_tree *mixt_tree);
 scalar_dbl *Read_Io_Weights(option *io);
 void Print_Lk_Given_Edge_Recurr(t_node *a, t_node *d, t_edge *b, t_tree *tree);
 void R_wtree(t_node *pere, t_node *fils, t_edge *b, int *available, char **s_tree, t_tree *tree);
+void Read_Branch_Support(char *s_d, char *s_a, t_edge *b, t_tree *tree);
+void Collect_Edge_Support_Values(t_tree *tree);
 
 #endif

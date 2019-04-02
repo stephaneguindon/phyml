@@ -180,7 +180,7 @@ void aLRT(t_tree *tree)
   Br_Len_Not_Involving_Invar(tree);
 //  Print_All_Edge_Likelihoods(tree);
   /* aLRT support will label each internal branch */
-  tree->print_alrt_val = YES;
+  tree->io->print_support_val = YES;
 
   /* The topology will not be modified when assessing the branch support. We make sure that it will
      not be modified afterwards by locking the topology */
@@ -208,15 +208,17 @@ void aLRT(t_tree *tree)
   MIXT_Set_Alias_Subpatt(NO,tree);
   Update_Dirs(tree);
   
-  For(i,2*tree->n_otu-3)
-    if((!tree->a_edges[i]->left->tax) && (!tree->a_edges[i]->rght->tax))
-      {
-        /* Compute likelihoods for each of the three configuration */
-        NNI_Neigh_BL(tree->a_edges[i],tree);
-        /* Compute the corresponding statistical support */
-        Compute_Likelihood_Ratio_Test(tree->a_edges[i],tree);
-      }
-  
+  for(i=0;i<2*tree->n_otu-3;++i)
+    {
+      if((!tree->a_edges[i]->left->tax) && (!tree->a_edges[i]->rght->tax))
+        {
+          /* Compute likelihoods for each of the three configuration */
+          NNI_Neigh_BL(tree->a_edges[i],tree);
+          /* Compute the corresponding statistical support */
+          Compute_Likelihood_Ratio_Test(tree->a_edges[i],tree);
+        }
+    }
+      
   tree->lock_topo = YES;
   
   Br_Len_Involving_Invar(tree);
