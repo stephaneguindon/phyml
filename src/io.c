@@ -35,7 +35,7 @@ t_tree *Read_Tree(char **s_tree)
   n_otu=0;
   for(i=0;i<(int)strlen((*s_tree));++i) if((*s_tree)[i] == ',') n_otu++;
   n_otu+=1;
-
+  
   tree = Make_Tree_From_Scratch(n_otu,NULL);
   subs = Sub_Trees((*s_tree),&degree);
   Clean_Multifurcation(subs,degree,3);
@@ -3935,24 +3935,30 @@ void Print_Tree_Structure(t_tree* tree)
   PhyML_Fprintf(stdout,"\n. n_otu: %d",tree->n_otu);
   for(i=0; i<2*tree->n_otu-3; ++i)
     {
-      PhyML_Fprintf(stdout,"\n. Edge %3d, Length: %f LeftNode %3d [%s], RightNode %3d [%s]",
-                    tree->a_edges[i]->num,
-                    tree->a_edges[i]->l->v,
-                    tree->a_edges[i]->left->num,
-                    tree->a_edges[i]->left->tax ? tree->a_edges[i]->left->name : "",
-                    tree->a_edges[i]->rght->num,
-                    tree->a_edges[i]->rght->tax ? tree->a_edges[i]->rght->name : "");
+      if(tree->a_edges[i])
+        PhyML_Fprintf(stdout,"\n. Edge %p %3d, Length: %f LeftNode %3d [%s], RightNode %3d [%s]",
+                      tree->a_edges[i],
+                      tree->a_edges[i]->num,
+                      tree->a_edges[i]->l->v,
+                      tree->a_edges[i]->left->num,
+                      tree->a_edges[i]->left->tax ? tree->a_edges[i]->left->name : "",
+                      tree->a_edges[i]->rght->num,
+                      tree->a_edges[i]->rght->tax ? tree->a_edges[i]->rght->name : "");
+      else PhyML_Fprintf(stdout,"\n. NULL");
     }
   for(i=0; i<2*tree->n_otu-2; ++i)
     {
-      PhyML_Fprintf(stdout,"\n. Node %3d v0: %3d v1: %3d v2: %3d b0: %3d b1: %3d b2: %3d",
-                    tree->a_nodes[i]->num,
-                    tree->a_nodes[i]->v[0] ? tree->a_nodes[i]->v[0]->num : -1,
-                    tree->a_nodes[i]->v[1] ? tree->a_nodes[i]->v[1]->num : -1,
-                    tree->a_nodes[i]->v[2] ? tree->a_nodes[i]->v[2]->num : -1,
-                    tree->a_nodes[i]->v[0] ? tree->a_nodes[i]->b[0]->num : -1,
-                    tree->a_nodes[i]->v[1] ? tree->a_nodes[i]->b[1]->num : -1,
-                    tree->a_nodes[i]->v[2] ? tree->a_nodes[i]->b[2]->num : -1);
+      if(tree->a_nodes[i])
+        PhyML_Fprintf(stdout,"\n. Node %p %3d v0: %3d v1: %3d v2: %3d b0: %3d b1: %3d b2: %3d",
+                      tree->a_nodes[i],
+                      tree->a_nodes[i]->num,
+                      tree->a_nodes[i]->v[0] ? tree->a_nodes[i]->v[0]->num : -1,
+                      tree->a_nodes[i]->v[1] ? tree->a_nodes[i]->v[1]->num : -1,
+                      tree->a_nodes[i]->v[2] ? tree->a_nodes[i]->v[2]->num : -1,
+                      tree->a_nodes[i]->v[0] ? tree->a_nodes[i]->b[0]->num : -1,
+                      tree->a_nodes[i]->v[1] ? tree->a_nodes[i]->b[1]->num : -1,
+                      tree->a_nodes[i]->v[2] ? tree->a_nodes[i]->b[2]->num : -1);
+      else PhyML_Fprintf(stdout,"\n. NULL");
     }
 }
 //////////////////////////////////////////////////////////////

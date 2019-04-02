@@ -105,7 +105,6 @@ void Make_Tree_For_Pars(t_tree *tree)
   cdata = tree->data;
   assert(cdata);
 
-
   assert(tree->mod);
   
   tree->site_pars = (int *)mCalloc(tree->n_pattern,sizeof(int));
@@ -221,6 +220,7 @@ t_edge *Make_Edge_Light(t_node *a, t_node *d, int num)
 
 void Make_Edge_Pars(t_edge *b, t_tree *tree)
 {
+  assert(b);
   Make_Edge_Pars_Left(b,tree);
   Make_Edge_Pars_Rght(b,tree);
 }
@@ -697,8 +697,8 @@ void Make_All_Tree_Nodes(t_tree *tree)
   for(i=0;i<2*tree->n_otu-1;++i)
     {
       tree->a_nodes[i] = (t_node *)Make_Node_Light(i);
-      if(i < tree->n_otu) tree->a_nodes[i]->tax = 1;
-      else                tree->a_nodes[i]->tax = 0;
+      if(i < tree->n_otu) tree->a_nodes[i]->tax = YES;
+      else                tree->a_nodes[i]->tax = NO;
     }
 }
 
