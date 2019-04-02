@@ -542,7 +542,6 @@ typedef struct __Node {
   int                               n_cal; /*! Number of calibration constraints */
 
   phydbl                           *score; /*! score used in BioNJ to determine the best pair of nodes to agglomerate */
-  scalar_dbl                          **l; /*! lengths of the (three or one) branche(s) connected this t_node */
   phydbl                     dist_to_root; /*! distance to the root t_node */
 
   short int                        common;
@@ -674,6 +673,8 @@ typedef struct __Edge {
 
   phydbl                       ratio_test; /*! approximate likelihood ratio test */
   phydbl                   alrt_statistic; /*! aLRT statistic */
+  phydbl                      support_val;
+
 
   char                           **labels; /*! string of characters that labels the corresponding t_edge */
   int                            n_labels; /*! number of labels */
@@ -742,10 +743,6 @@ typedef struct __Tree{
   int                                  n_swap; /*! number of NNIs performed */
   int                               n_pattern; /*! number of distinct site patterns */
   int                      has_branch_lengths; /*! =1 iff input tree displays branch lengths */
-  short int                    print_tbe_val;  /*! if print_tbe_val=1,  the TBE bootstrap values are printed */
-  short int                    print_boot_val; /*! if print_boot_val=1, the bootstrap values are printed */
-  short int                    print_alrt_val; /*! if print_alrt_val=1, the aLRT values are printed */
-  short int                    print_node_num; /*! print node numbers if print_node_num=1 */
   short int                        both_sides; /*! both_sides=1 -> a pre-order and a post-order tree
                           traversals are required to compute the likelihood
                           of every subtree in the phylogeny*/
@@ -1108,7 +1105,6 @@ typedef struct __Model {
   int                    augmented;
   int                           ns; /*! number of states (4 for ADN, 20 for AA) */
 
-  int                    bootstrap; /*! Number of bootstrap replicates (0 : no bootstrap analysis is launched) */
   int                    use_m4mod; /*! Use a Makrkov modulated Markov model ? */
 
   scalar_dbl                *kappa; /*! transition/transversion rate */
@@ -1297,6 +1293,15 @@ typedef struct __Option { /*! mostly used in 'help.c' */
 
   int                leave_duplicates;/* Leave duplicated sequences */
   int                       precision;/* Decimal output precision for values in stats file */
+  int               n_boot_replicates;
+  
+  short int            print_node_num; /*! print node numbers if print_node_num=1 */
+  short int         print_support_val;
+  
+  short int                    do_tbe;
+  short int                   do_boot;
+  short int                   do_alrt;
+
 }option;
 
 /*!********************************************************/
@@ -1680,6 +1685,7 @@ typedef struct __Tmcmc {
   int num_move_phyrex_swap_disk;
   int num_move_phyrex_indel_hit;
   int num_move_phyrex_spr;
+  int num_move_phyrex_spr_local;
   int num_move_phyrex_scale_times;
   int num_move_phyrex_ldscape_lim;
   int num_move_phyrex_sigsq;
@@ -2066,7 +2072,7 @@ int Assign_State(char *c,int datatype,int stepsize);
 char Reciproc_Assign_State(int i_state,int datatype);
 int Assign_State_With_Ambiguity(char *c,int datatype,int stepsize);
 void Clean_Tree_Connections(t_tree *tree);
-void Bootstrap(t_tree *tree, int tbe_bootstrap);
+void Bootstrap(t_tree *tree);
 void Br_Len_Involving_Invar(t_tree *tree);
 void Br_Len_Not_Involving_Invar(t_tree *tree);
 void Getstring_Stdin(char *s);
@@ -2316,6 +2322,9 @@ void Get_Node_Ranks_From_Tip_Times(t_tree *tree);
 phydbl Tree_Height(t_tree *tree);
 void Post_Inflate_Times_To_Get_Reasonnable_Edge_Lengths(t_node *a, t_node *d, t_edge *b, phydbl min_l, t_tree *tree);
 void  Inflate_Times_To_Get_Reasonnable_Edge_Lengths(phydbl min_l, t_tree *tree);
+void Refactor_Tree(t_tree *tree);
+void Refactor_External(t_node *a, t_node *d, int *idx, t_tree *tree);
+void Refactor_Internal(t_node *a, t_node *d, t_edge *b, int *idx_nd, int *idx_br, t_tree *tree);
 
 
 #include "xml.h"

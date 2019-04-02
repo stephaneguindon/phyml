@@ -718,12 +718,6 @@ void Swap_Nodes_On_Edges(t_edge *e1, t_edge *e2, int swap, t_tree *tree)
 {
   t_node *buff;
 
-  e1->left->l[e1->l_r]->v = e1->l->v;
-  e1->rght->l[e1->r_l]->v = e1->l->v;
-
-  e2->left->l[e2->l_r]->v = e2->l->v;
-  e2->rght->l[e2->r_l]->v = e2->l->v;
-
   printf("\n. Swap edge %d (%d %d) with %d (%d %d)",e1->num,e1->left->num,e1->rght->num,e2->num,e2->left->num,e2->rght->num);
 
   if(swap == NO)
@@ -755,7 +749,9 @@ void Swap_Nodes_On_Edges(t_edge *e1, t_edge *e2, int swap, t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /* As opposed to Connect_Edges_To_Nodes_Recur, the ordering of 
-   edges connected to tips does not depend on the topology
+   edges connected to tips does not depend on the topology.
+   Use this function when you just have a table of edges not 
+   not connected to any node and the reciprocal is true.
 */
 void Connect_Edges_To_Nodes_Serial(t_tree *tree)
 {
@@ -777,6 +773,7 @@ void Connect_Edges_To_Nodes_Serial(t_tree *tree)
                                     tree->a_edges[i],
                                     tree);
     }
+
 
   tree->num_curr_branch_available = tree->n_otu;
 
@@ -809,8 +806,6 @@ void Connect_Edges_To_Nodes_Serial(t_tree *tree)
       tree->n_root->b[2] = tree->a_edges[tree->num_curr_branch_available];
       tree->a_edges[tree->num_curr_branch_available]->num = tree->num_curr_branch_available;
       tree->num_curr_branch_available++;
-
-
     }
 }
 
@@ -889,9 +884,7 @@ void Connect_One_Edge_To_Two_Nodes(t_node *a, t_node *d, t_edge *b, t_tree *tree
     (Set_Edge_Dirs(b,a,d,tree)):
     (Set_Edge_Dirs(b,d,a,tree));
 
-  b->l->v            = a->l[b->l_r]->v;
-  if(a->tax) b->l->v = a->l[b->r_l]->v;
-  b->l_old->v        = b->l->v;
+  b->l_old->v = b->l->v;
 }
 
 //////////////////////////////////////////////////////////////
@@ -905,7 +898,7 @@ void Update_Dirs(t_tree *tree)
 
   b = NULL;
   buff = -1;
-  For(i,2*tree->n_otu-3)
+  for(i=0;i<2*tree->n_otu-3;++i)
     {
       b = tree->a_edges[i];
 
@@ -2055,10 +2048,9 @@ calign *Copy_Cseq(calign *ori, option *io)
       strcpy(sp_names_out[i],ori->c_seq_rm[i]->name);
     }
 
-
   new = Make_Calign(n_otu,c_len+1,io->state_len,ori->init_len,sp_names_in,ori->n_rm,sp_names_out);
+  new->n_rm = ori->n_rm;
   Init_Calign(n_otu,c_len+1,ori->init_len,new);
-
 
   for(i=0;i<ori->n_rm;++i)
     {
@@ -2403,13 +2395,15 @@ short int Are_Sequences_Identical(align *seq1, align *seq2)
 
 void Remove_Duplicates(calign *data, option *io, t_tree *tree)
 {
-  int n_duplicates,n_removed,n_otu_orig,i,j;
+  int n_duplicates,n_removed,n_otu_orig,i,j,idx;
   align *tmp;
+  t_edge *res_edge;
   
   if(io->leave_duplicates == YES) return;
   
   n_otu_orig = data->n_otu;
   n_duplicates = 0;
+  idx = -1;
   
   for(i=0; i<data->n_otu-1; ++i)
     {
@@ -2464,57 +2458,54 @@ void Remove_Duplicates(calign *data, option *io, t_tree *tree)
         }
     }
 
+  
   for(i=0;i<n_otu_orig;++i)
     {
       for(j=0;j<n_otu_orig;++j)
         {
           if(data->c_seq[j]->is_duplicate == YES && !strcmp(tree->a_nodes[i]->name,data->c_seq[j]->name))
             {
-              Prune_Subtree(tree->a_nodes[i]->v[0],
-                            tree->a_nodes[i],
-                            NULL,NULL,tree);                        
-              
-              tree->a_nodes[tree->a_nodes[i]->v[0]->num] = NULL;
-              tree->a_nodes[i] = NULL;
-              break;
-            }        
+              if(tree->a_nodes[i]->b[0] != tree->e_root)
+                {
+                  Prune_Subtree(tree->a_nodes[i]->v[0],
+                                tree->a_nodes[i],
+                                NULL,&res_edge,tree);                        
+                  
+                  assert(tree->a_edges[tree->a_nodes[i]->b[0]->num] == tree->a_nodes[i]->b[0]);
+                  idx = tree->a_nodes[i]->b[0]->num;
+                  Free_Edge_Length(tree->a_nodes[i]->b[0]);
+                  Free_Edge(tree->a_nodes[i]->b[0]);
+                  tree->a_edges[idx] = NULL;
+                  idx = res_edge->num;
+                  assert(tree->a_edges[res_edge->num] == res_edge);
+                  Free_Edge_Length(res_edge);
+                  Free_Edge(res_edge);
+                  tree->a_edges[idx] = NULL;
+                  
+                  idx = tree->a_nodes[i]->v[0]->num;
+                  Free_Node(tree->a_nodes[i]->v[0]);
+                  tree->a_nodes[idx] = NULL;
+                  
+                  Free_Node(tree->a_nodes[i]);
+                  tree->a_nodes[i] = NULL;
+                  
+                  break;
+                }
+            }
         }
     }
+
+  tree->a_nodes[2*tree->n_otu-2 - 2*data->n_rm] = tree->a_nodes[2*tree->n_otu-2];
+  tree->a_edges[2*tree->n_otu-3 - 2*data->n_rm] = tree->a_edges[2*tree->n_otu-3];
+  tree->a_edges[2*tree->n_otu-2 - 2*data->n_rm] = tree->a_edges[2*tree->n_otu-2];
 
   if(data->n_rm > 0)
     {
-      t_node **new_a_nodes = (t_node **)mCalloc(2*(n_otu_orig-data->n_rm)-1,sizeof(t_node *));
-      
-      j = 0;
-      for(i=0;i<2*n_otu_orig-1;++i)
-        {
-          if(tree->a_nodes[i] != NULL)
-            {
-              new_a_nodes[j] = tree->a_nodes[i];
-              new_a_nodes[j]->num = j;
-              j++;
-            }
-        }
-
-      Free(tree->a_nodes);
-      tree->a_nodes = new_a_nodes;
-
       tree->n_otu -= data->n_rm;
-      
-      Connect_Edges_To_Nodes_Serial(tree);
+      Refactor_Tree(tree);      
+      data->n_otu = tree->n_otu;
+      io->n_otu = tree->n_otu;
     }
-
-
-
-  data->n_otu -= data->n_rm;
-  io->n_otu = data->n_otu;
-  
-  /* if(n_duplicates > 0) PhyML_Printf("\n"); */
-  
-  /* for(int i=0; i < n_otu_orig; ++i) */
-  /*   { */
-  /*     PhyML_Printf("\n. %s %d",data->c_seq[i]->name,data->c_seq[i]->is_duplicate); */
-  /*   } */
 }
 
 //////////////////////////////////////////////////////////////
@@ -2524,19 +2515,27 @@ void Insert_Duplicates(t_tree *tree)
 {
   unsigned int i,j;
   unsigned int idx_new_edge,idx_new_node,idx_root;
-  t_edge *link_daughter,*residual,**new_a_edges;
-  t_node *link,*daughter,**new_a_nodes;
+  t_edge *link_daughter,*residual,**new_a_edges,*b1,*b2;
+  t_node *link,*daughter,**new_a_nodes,*n0;
   
   link_daughter = NULL;
   residual      = NULL;
   link          = NULL;
   daughter      = NULL;
   idx_root      = (tree->n_root) ? 1 : 3;
+
+  n0 = tree->a_nodes[2*tree->n_otu-2];
+  b1 = tree->a_edges[2*tree->n_otu-2];
+  b2 = tree->a_edges[2*tree->n_otu-3];
   
   new_a_nodes = (t_node **)mCalloc(2*tree->n_otu-1 + tree->data->n_rm * 2,sizeof(t_node *));
 
   for(i=0;i<tree->n_otu;++i) new_a_nodes[i] = tree->a_nodes[i];
-  for(i=tree->n_otu;i<2*tree->n_otu-1;++i) new_a_nodes[i+tree->data->n_rm] = tree->a_nodes[i];
+  for(i=tree->n_otu;i<2*tree->n_otu-1;++i)
+    {
+      new_a_nodes[i+tree->data->n_rm] = tree->a_nodes[i];
+      new_a_nodes[i+tree->data->n_rm]->num = i+tree->data->n_rm;
+    }
 
   Free(tree->a_nodes);
   tree->a_nodes = new_a_nodes;
@@ -2547,19 +2546,18 @@ void Insert_Duplicates(t_tree *tree)
     
   idx_new_edge = 0;
   idx_new_node = 0;
-  
+
   for(i=0;i<tree->data->n_rm;++i)
     {
       for(j=0;j<tree->n_otu;++j)
         {          
           if(Are_Sequences_Identical(tree->data->c_seq_rm[i],tree->a_nodes[j]->c_seq) == YES)
             {
-              link = Make_Node_Light(2*tree->n_otu-idx_root+tree->data->n_rm+idx_new_node);
+              link = Make_Node_Light(2*tree->n_otu-idx_root+tree->data->n_rm+idx_new_node+1);
               daughter = Make_Node_Light(tree->n_otu+idx_new_node);
 
               new_a_nodes[tree->n_otu+idx_new_node] = daughter;
-              new_a_nodes[2*tree->n_otu-idx_root+tree->data->n_rm+idx_new_node] = link;
-
+              new_a_nodes[2*tree->n_otu-idx_root+tree->data->n_rm+idx_new_node+1] = link;
 
               idx_new_node += 1;
               
@@ -2570,18 +2568,34 @@ void Insert_Duplicates(t_tree *tree)
               strcpy(daughter->name,tree->data->c_seq_rm[i]->name);
               
               link->v[0] = daughter;
+              link->v[1] = NULL;
+              link->v[2] = NULL;
+
               daughter->v[0] = link;
+              daughter->v[1] = NULL;
+              daughter->v[2] = NULL;
 
               daughter->tax = YES;
               link->tax     = NO;
              
-              link_daughter = Make_Edge_Light(link,daughter,-1);
-              residual = Make_Edge_Light(link,daughter,-1);
-                           
+              link_daughter = Make_Edge_Light(link,daughter,2*tree->n_otu-idx_root+idx_new_edge);
+              residual = Make_Edge_Light(daughter,link,2*tree->n_otu-idx_root+idx_new_edge+1);
+              
               new_a_edges[2*tree->n_otu-idx_root+idx_new_edge]   = link_daughter;
               new_a_edges[2*tree->n_otu-idx_root+idx_new_edge+1] = residual;
 
+              new_a_edges[2*tree->n_otu-idx_root+idx_new_edge]->rght = daughter;
+              new_a_edges[2*tree->n_otu-idx_root+idx_new_edge]->left = link;
+
+              new_a_edges[2*tree->n_otu-idx_root+idx_new_edge+1]->rght = link;
+              new_a_edges[2*tree->n_otu-idx_root+idx_new_edge+1]->left = tree->a_nodes[j]->b[0]->left;
+
+              daughter->b[0] = link_daughter;
+              link->b[0] = link_daughter;
+
               idx_new_edge += 2;              
+              
+              Set_Scalar_Dbl(tree->mod->l_min,link_daughter->l);
               
               Multiply_Scalar_Dbl(2.0,tree->a_nodes[j]->b[0]->l);
               Graft_Subtree(tree->a_nodes[j]->b[0],
@@ -2590,23 +2604,27 @@ void Insert_Duplicates(t_tree *tree)
                             residual,
                             tree->a_nodes[j],
                             tree);
-              
+              Set_Scalar_Dbl(tree->a_nodes[j]->b[0]->l->v,residual->l);
               Set_Scalar_Dbl(tree->mod->l_min,tree->a_nodes[j]->b[0]->l);
-              Set_Scalar_Dbl(tree->mod->l_min,link_daughter->l);
-
+              residual->support_val = -1.;
+              
               break;
+              
             }
         }
     }
+
 
   Free(tree->a_edges);
   tree->a_edges = new_a_edges;
 
   tree->n_otu += tree->data->n_rm;
-
-  for(i=0;i<2*tree->n_otu-idx_root;++i) tree->a_nodes[i]->num = i;
+    
+  Refactor_Tree(tree);      
   
-  Connect_Edges_To_Nodes_Serial(tree);
+  tree->a_nodes[2*tree->n_otu-2] = n0;
+  tree->a_edges[2*tree->n_otu-2] = b1;
+  tree->a_edges[2*tree->n_otu-3] = b2;
 }
 
 
@@ -3048,7 +3066,7 @@ void Clean_Tree_Connections(t_tree *tree)
    if tbe_bootstrap == 0  => Classical FBP (Felsenstein bootstrap proportions) 
    else => TBE (Transfer bootstrap expectation)
 */
-void Bootstrap(t_tree *tree, int tbe_bootstrap)
+void Bootstrap(t_tree *tree)
 {
   int *site_num, n_site;
   int replicate,j,k;
@@ -3067,11 +3085,10 @@ void Bootstrap(t_tree *tree, int tbe_bootstrap)
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
     }
 
-  tree->print_boot_val = !tbe_bootstrap;
-  tree->print_tbe_val = tbe_bootstrap;
+
+  tree->io->print_support_val = YES;
   
-  tree->print_alrt_val = 0;
-  boot_tree            = NULL;
+  boot_tree = NULL;
 
   site_num = (int *)mCalloc(tree->data->init_len,sizeof(int));
 
@@ -3081,18 +3098,18 @@ void Bootstrap(t_tree *tree, int tbe_bootstrap)
 
   n_site = 0;
   for(j=0;j<tree->data->crunch_len;j++)
-    For(k,tree->data->wght[j])
+    for(k=0;k<tree->data->wght[j];++k)
       {
         site_num[n_site] = j;
         n_site++;
       }
 
   boot_data = Copy_Cseq(tree->data,tree->io);
-
+  
   PhyML_Printf("\n\n. Non parametric bootstrap analysis \n\n");
   PhyML_Printf("  [");
 
-  for(replicate=0;replicate<tree->mod->bootstrap;replicate++)
+  for(replicate=0;replicate<tree->io->n_boot_replicates;replicate++)
     {
       for(j=0;j<boot_data->crunch_len;j++) boot_data->wght[j] = 0;
 
@@ -3202,19 +3219,15 @@ void Bootstrap(t_tree *tree, int tbe_bootstrap)
         }
 
       Free_Bip(boot_tree);
-
       Alloc_Bip(boot_tree);
-
       Match_Tip_Numbers(tree,boot_tree);
-
       Get_Bip(boot_tree->a_nodes[0],
               boot_tree->a_nodes[0]->v[0],
               boot_tree);
-      if(!tbe_bootstrap){
-	Compare_Bip(tree,boot_tree,NO);
-      }else{
-	Compare_Bip_Distance(tree, boot_tree);
-      }
+
+      if(tree->io->do_boot)     Compare_Bip(tree,boot_tree,NO);
+      else if(tree->io->do_tbe) Compare_Bip_Distance(tree, boot_tree);
+      else assert(FALSE);
 
       Check_Br_Lens(boot_tree);
       Br_Len_Involving_Invar(boot_tree);
@@ -3238,15 +3251,15 @@ void Bootstrap(t_tree *tree, int tbe_bootstrap)
 #endif
       if(!((replicate+1)%tree->io->boot_prog_every))
         {
-          PhyML_Printf("] %4d/%4d\n  ",replicate+1,tree->mod->bootstrap);
-          if(replicate != tree->mod->bootstrap-1) PhyML_Printf("[");
+          PhyML_Printf("] %4d/%4d\n  ",replicate+1,tree->io->n_boot_replicates);
+          if(replicate != tree->io->n_boot_replicates-1) PhyML_Printf("[");
         }
 
       Free_Tree(boot_tree);
       Free_Model(boot_mod);
     }
 
-  if(((replicate)%tree->io->boot_prog_every)) PhyML_Printf("] %4d/%4d\n ",replicate,tree->mod->bootstrap);
+  if(((replicate)%tree->io->boot_prog_every)) PhyML_Printf("] %4d/%4d\n ",replicate,tree->io->n_boot_replicates);
 
   tree->lock_topo = YES; /* Topology should not be modified afterwards */
 
@@ -3705,7 +3718,6 @@ void Record_Model(t_mod *ori, t_mod *cpy)
   cpy->mod_num              = ori->mod_num;
   cpy->whichmodel           = ori->whichmodel;
   cpy->update_eigen         = ori->update_eigen;
-  cpy->bootstrap            = ori->bootstrap;
   cpy->ras->invar           = ori->ras->invar;
   cpy->r_mat->n_diff_rr     = ori->r_mat->n_diff_rr;
   cpy->l_min                = ori->l_min;
@@ -4044,6 +4056,8 @@ int Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only)
   int different,identical;
   int n_edges;
 
+
+
   /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
   /* WARNING: call Match_Tip_Numbers and Get_Bip before using this function. */
   /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
@@ -4068,9 +4082,10 @@ int Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only)
       b1 = tree1->a_edges[i];
       bip_size1 = MIN(b1->left->bip_size[b1->l_r],b1->rght->bip_size[b1->r_l]);
       
+
       if(bip_size1 > 1 && ((on_existing_edges_only == YES && b1->does_exist) || (on_existing_edges_only == NO)))
         {
-          For(j,2*tree2->n_otu-3)
+          for(j=0;j<2*tree2->n_otu-3;++j)
             {
               b2 = tree2->a_edges[j];
               bip_size2 = MIN(b2->left->bip_size[b2->l_r],b2->rght->bip_size[b2->r_l]);
@@ -4243,7 +4258,7 @@ void Test_Multiple_Data_Set_Format(option *io)
 
   Free(line);
 
-  if((io->mod->bootstrap > 1) && (io->n_trees > 1))
+  if((io->do_boot || io->do_tbe) && (io->n_trees > 1))
     Warn_And_Exit("\n. Bootstrap option is not allowed with multiple input trees !\n");
 
   rewind(io->fp_in_tree);
@@ -4890,7 +4905,6 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
           if(ori->a_nodes[i]->v[j])
             {
               cpy->a_nodes[i]->v[j] = cpy->a_nodes[ori->a_nodes[i]->v[j]->num];
-              cpy->a_nodes[i]->l[j] = ori->a_nodes[i]->l[j];
               cpy->a_nodes[i]->b[j] = cpy->a_edges[ori->a_nodes[i]->b[j]->num];
             }
           else
@@ -4917,6 +4931,7 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
       cpy->a_edges[i]->l_r              = ori->a_edges[i]->l_r;
       cpy->a_edges[i]->r_l              = ori->a_edges[i]->r_l;
       cpy->a_edges[i]->does_exist       = ori->a_edges[i]->does_exist;
+      cpy->a_edges[i]->support_val      = ori->a_edges[i]->support_val;
 
 #ifdef BEAGLE
       cpy->a_edges[i]->p_lk_left_idx    = ori->a_edges[i]->p_lk_left_idx;
@@ -5561,6 +5576,7 @@ void Graft_Subtree(t_edge *target, t_node *link, t_node *link_daughter, t_edge *
         v1->v[i] = link;
         break;
       }
+
 
   if(target->l->onoff == ON)
     {
@@ -6384,7 +6400,7 @@ void Path_Length(t_node *dep, t_node *arr, phydbl *len, t_tree *tree)
 
       if(next == tree->e_root)
         {
-          (*len) += (tree->n_root->l[1]->v + tree->n_root->l[2]->v);
+          (*len) += (tree->n_root->b[1]->l->v + tree->n_root->b[2]->l->v);
         }
       else
         {
@@ -6579,7 +6595,7 @@ void Random_Tree(t_tree *tree)
 
   Connect_Edges_To_Nodes_Serial(tree);
 
-  For(i,2*tree->n_otu-3) if(tree->a_edges[i]->l->v < min_edge_len) tree->a_edges[i]->l->v = min_edge_len;
+  for(i=0;i<2*tree->n_otu-3;++i) if(tree->a_edges[i]->l->v < min_edge_len) tree->a_edges[i]->l->v = min_edge_len;
 
   Free(is_available);
   Free(list_of_nodes);
@@ -7244,8 +7260,8 @@ void Update_Root_Pos(t_tree *tree)
 {
   if(tree->n_root_pos > -1.0)
     {
-      tree->n_root->l[2]->v = tree->e_root->l->v * tree->n_root_pos;
-      tree->n_root->l[1]->v = tree->e_root->l->v * (1.-tree->n_root_pos);
+      tree->n_root->b[2]->l->v = tree->e_root->l->v * tree->n_root_pos;
+      tree->n_root->b[1]->l->v = tree->e_root->l->v * (1.-tree->n_root_pos);
     }
   else
     {
@@ -7292,16 +7308,14 @@ void Add_Root(t_edge *target, t_tree *tree)
         {
           printf("\n. WARNING: you put the root at a weird position...");
         }
-/*       tree->n_root->l[0]->v = tree->e_root->l->v * (tree->n_root_pos/(1.+tree->n_root_pos)); */
-/*       tree->n_root->l[1]->v = tree->e_root->l->v - tree->n_root->l[0]; */
 
-      tree->n_root->l[2]->v = tree->e_root->l->v * tree->n_root_pos;
-      tree->n_root->l[1]->v = tree->e_root->l->v * (1. - tree->n_root_pos);
+      tree->n_root->b[2]->l->v = tree->e_root->l->v * tree->n_root_pos;
+      tree->n_root->b[1]->l->v = tree->e_root->l->v * (1. - tree->n_root_pos);
     }
   else
     {
-      tree->n_root->l[2]->v = tree->e_root->l->v / 2.;
-      tree->n_root->l[1]->v = tree->e_root->l->v / 2.;
+      tree->n_root->b[2]->l->v = tree->e_root->l->v / 2.;
+      tree->n_root->b[1]->l->v = tree->e_root->l->v / 2.;
       tree->n_root_pos = 0.5;
     }
 
@@ -7319,10 +7333,10 @@ void Add_Root(t_edge *target, t_tree *tree)
   b2->left = tree->n_root;
   b2->rght = tree->n_root->v[2];
 
-  b1->l->v     = tree->n_root->l[1]->v;
-  b2->l->v     = tree->n_root->l[2]->v;
-  b1->l_old->v = tree->n_root->l[1]->v;
-  b2->l_old->v = tree->n_root->l[2]->v;
+  b1->l->v     = tree->n_root->b[1]->l->v;
+  b2->l->v     = tree->n_root->b[2]->l->v;
+  b1->l_old->v = tree->n_root->b[1]->l->v;
+  b2->l_old->v = tree->n_root->b[2]->l->v;
 
   b1->l_r = 1;
   b2->l_r = 2;
@@ -7426,7 +7440,7 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
   tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
   RATES_Init_Rate_Struct(tree->rates,tree->io->rates,tree->n_otu);
   
-  For(i,2*tree->n_otu-2)
+  for(i=0;i<2*tree->n_otu-2;++i)
     {
       tree->a_nodes[i]->v[1] = NULL;
       tree->a_nodes[i]->v[2] = NULL;
@@ -7444,7 +7458,7 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
   
   n_nonconnected = 2*n_otu-2;
   
-  For(i,2*tree->n_otu-2) nonconnected[i] = i;
+  for(i=0;i<2*tree->n_otu-2;++i) nonconnected[i] = i;
   
   available_nodes[0] = 2*n_otu-2;
   
@@ -8449,11 +8463,13 @@ char *Bootstrap_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
       Exit("");
     }
 
-  tree->mod         = mod;
-  tree->io          = io;
-  tree->data        = cdata;
-  tree->n_pattern   = tree->data->crunch_len;
-
+  tree->mod                   = mod;
+  tree->io                    = io;
+  tree->data                  = cdata;
+  tree->n_pattern             = tree->data->crunch_len;
+  tree->io->print_support_val = YES;
+  
+  
   Connect_CSeqs_To_Nodes(cdata,io,tree);
   if(tree->mod->s_opt->random_input_tree) Random_Tree(tree);
   Make_Tree_For_Pars(tree);
@@ -8468,15 +8484,16 @@ char *Bootstrap_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
   Lk(NULL,tree);
 
 #ifdef MPI
-  Bootstrap_MPI(tree, io->tbe_bootstrap);
+  Bootstrap_MPI(tree);
 #else
-  Bootstrap(tree, io->tbe_bootstrap);
+  Bootstrap(tree);
 #endif
 
   Free(s_tree);
 
   Rescale_Br_Len_Multiplier_Tree(tree);
   Br_Len_Involving_Invar(tree);
+  Collect_Edge_Support_Values(tree);
 
   s_tree = Write_Tree(tree,NO);
 
@@ -8538,6 +8555,7 @@ char *aLRT_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
 
   Rescale_Br_Len_Multiplier_Tree(tree);
   Br_Len_Involving_Invar(tree);
+  Collect_Edge_Support_Values(tree);
 
   s_tree = Write_Tree(tree,NO);
 
@@ -8630,8 +8648,8 @@ void Dist_To_Root_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 void Dist_To_Root(t_tree *tree)
 {
   tree->n_root->dist_to_root = 0.0;
-  tree->n_root->v[2]->dist_to_root = tree->n_root->l[1]->v;
-  tree->n_root->v[1]->dist_to_root = tree->n_root->l[2]->v;
+  tree->n_root->v[2]->dist_to_root = tree->n_root->b[1]->l->v;
+  tree->n_root->v[1]->dist_to_root = tree->n_root->b[2]->l->v;
 
   Dist_To_Root_Pre(tree->n_root,tree->n_root->v[2],NULL,tree);
   Dist_To_Root_Pre(tree->n_root,tree->n_root->v[1],NULL,tree);
@@ -8957,9 +8975,9 @@ void Time_To_Bl(t_tree *tree)
 {
   Time_To_Bl_Pre(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
   Time_To_Bl_Pre(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
-  tree->n_root->l[1]->v = tree->rates->nd_t[tree->n_root->v[1]->num] - tree->rates->nd_t[tree->n_root->num];
-  tree->n_root->l[2]->v = tree->rates->nd_t[tree->n_root->v[2]->num] - tree->rates->nd_t[tree->n_root->num];
-  tree->e_root->l->v = tree->n_root->l[1]->v + tree->n_root->l[2]->v;
+  tree->n_root->b[1]->l->v = tree->rates->nd_t[tree->n_root->v[1]->num] - tree->rates->nd_t[tree->n_root->num];
+  tree->n_root->b[2]->l->v = tree->rates->nd_t[tree->n_root->v[2]->num] - tree->rates->nd_t[tree->n_root->num];
+  tree->e_root->l->v = tree->n_root->b[1]->l->v + tree->n_root->b[2]->l->v;
 }
 
 //////////////////////////////////////////////////////////////
@@ -9214,7 +9232,6 @@ void Copy_Tree_Topology_With_Labels(t_tree *ori, t_tree *cpy)
           if(ori->a_nodes[i]->v[j])
             {
               cpy->a_nodes[i]->v[j] = cpy->a_nodes[ori->a_nodes[i]->v[j]->num];
-              cpy->a_nodes[i]->l[j] = ori->a_nodes[i]->l[j];
             }
           else
             cpy->a_nodes[i]->v[j] = NULL;
@@ -10525,7 +10542,7 @@ void Connect_CSeqs_To_Nodes(calign *cdata, option *io, t_tree *tree)
       PhyML_Printf("\n. Number of taxa in the tree: %d, number of sequences: %d.",n_otu_tree,n_otu_cdata);
       Warn_And_Exit("\n. The number of tips in the tree is not the same as the number of sequences\n");
     }
-  
+
   for(i=0;i<n_otu_tree;i++)
     {
       for(j=0;j<n_otu_cdata;j++)
@@ -12888,3 +12905,127 @@ void Post_Inflate_Times_To_Get_Reasonnable_Edge_Lengths(t_node *a, t_node *d, t_
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+/* Given a up-to-date values of n->v[i] and n->b[i] for i=0,1,2 
+   and node n in the tree, this function returns up-to-date values
+   of a_nodes and a_edges array (whereby a_edges[b->num] = b and 
+   a_nodes[n->num] = n, for all b and n in the tree) and updates
+   n->num and b->num accordingly.
+*/
+void Refactor_Tree(t_tree *tree)
+{
+  int i,idx_nd,idx_br;
+
+  idx_nd = idx_br = 0;
+  
+  for(i=0;i<tree->n_otu;++i)
+    if(tree->a_nodes[i] != NULL)
+      {
+        Refactor_External(tree->a_nodes[i],
+                          tree->a_nodes[i]->v[0],
+                          &idx_nd,tree);
+        break;
+      }
+
+               
+  assert(i < tree->n_otu);
+  assert(idx_nd == tree->n_otu);
+  idx_br = idx_nd;
+  
+  for(i=0;i<tree->n_otu;++i)
+    if(tree->a_nodes[i] != NULL)
+      {
+        Refactor_Internal(tree->a_nodes[i],
+                          tree->a_nodes[i]->v[0],
+                          tree->a_nodes[i]->b[0],
+                          &idx_nd,
+                          &idx_br,
+                          tree);
+        break;
+      }
+}
+
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+void Refactor_External(t_node *a, t_node *d, int *idx, t_tree *tree)
+{
+
+  if(a->tax == YES)
+    {
+      tree->a_nodes[*idx] = a;
+      tree->a_edges[*idx] = a->b[0];
+      a->num = *idx;
+      a->b[0]->num = *idx;
+      (*idx)+=1;      
+    }  
+
+  if(d->tax == YES)
+    {
+      tree->a_nodes[*idx] = d;
+      tree->a_edges[*idx] = d->b[0];
+      d->num = *idx;
+      d->b[0]->num = *idx;
+      (*idx)+=1;
+      return;
+    }
+  else
+    {
+      for(int i=0;i<3;++i)
+        {
+          if(d->v[i] != a && d->b[i] != tree->e_root)
+            {
+              Refactor_External(d,d->v[i],idx,tree);
+            }    
+        }
+    }
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+void Refactor_Internal(t_node *a, t_node *d, t_edge *b, int *idx_nd, int *idx_br, t_tree *tree)
+{
+  if(d->tax == YES) return;
+  else
+    {
+      tree->a_nodes[*idx_nd] = d;
+      d->num = *idx_nd;
+      (*idx_nd)+=1;
+
+      if(a->tax == NO) // b is an external edge
+        {          
+          tree->a_edges[*idx_br] = b;
+          b->num = *idx_br;
+          (*idx_br)+=1;
+        }
+      
+      for(int i=0;i<3;++i)
+        {
+          if(d->v[i] != a && d->b[i] != tree->e_root)
+            {
+              Refactor_Internal(d,d->v[i],d->b[i],idx_nd,idx_br,tree);
+            }
+        }      
+    }
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+

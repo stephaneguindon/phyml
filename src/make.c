@@ -105,7 +105,6 @@ void Make_Tree_For_Pars(t_tree *tree)
   cdata = tree->data;
   assert(cdata);
 
-
   assert(tree->mod);
   
   tree->site_pars = (int *)mCalloc(tree->n_pattern,sizeof(int));
@@ -192,7 +191,8 @@ t_edge *Make_Edge_Light(t_node *a, t_node *d, int num)
 
   if(a && b)
     {
-      b->left = a;  b->rght = d;
+      b->left = a;
+      b->rght = d;
       if(a->tax) {b->rght = a; b->left = d;} /* root */
       /* a tip is necessary on the right side of the t_edge */
 
@@ -203,9 +203,7 @@ t_edge *Make_Edge_Light(t_node *a, t_node *d, int num)
       assert(b->l_r > -1);
       assert(b->r_l > -1);
       
-      b->l->v             = a->l[b->l_r]->v;
-      if(a->tax) b->l->v  = a->l[b->r_l]->v;
-      b->l_old->v         = b->l->v;
+      b->l_old->v = b->l->v;
     }
   else
     {
@@ -222,6 +220,7 @@ t_edge *Make_Edge_Light(t_node *a, t_node *d, int num)
 
 void Make_Edge_Pars(t_edge *b, t_tree *tree)
 {
+  assert(b);
   Make_Edge_Pars_Left(b,tree);
   Make_Edge_Pars_Rght(b,tree);
 }
@@ -550,14 +549,7 @@ t_node *Make_Node_Light(int num)
   n->s_ingrp  = (int *)mCalloc(3,sizeof(int));
   n->s_outgrp = (int *)mCalloc(3,sizeof(int));
   n->cal      = (t_cal **)mCalloc(MAX_N_CAL,sizeof(t_cal *));
-  n->l        = (scalar_dbl **)mCalloc(3,sizeof(scalar_dbl *));
 
-  for(i=0;i<3;++i)
-    {
-      n->l[i] = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
-      Init_Scalar_Dbl(n->l[i]);      
-    }
-  
   Init_Node_Light(n,num);
 
   return n;
@@ -705,8 +697,8 @@ void Make_All_Tree_Nodes(t_tree *tree)
   for(i=0;i<2*tree->n_otu-1;++i)
     {
       tree->a_nodes[i] = (t_node *)Make_Node_Light(i);
-      if(i < tree->n_otu) tree->a_nodes[i]->tax = 1;
-      else                tree->a_nodes[i]->tax = 0;
+      if(i < tree->n_otu) tree->a_nodes[i]->tax = YES;
+      else                tree->a_nodes[i]->tax = NO;
     }
 }
 
@@ -756,7 +748,6 @@ calign *Make_Calign(int n_otu, int crunch_len, int state_len, int init_len, char
       cdata->c_seq_rm[j]->state     = (char *)mCalloc(crunch_len*state_len+1,sizeof(char));
       cdata->c_seq_rm[j]->d_state   = (int *)mCalloc(crunch_len*state_len,sizeof(int));
       cdata->c_seq_rm[j]->is_ambigu = (short int *)mCalloc(crunch_len,sizeof(short int));
-      cdata->c_seq_rm[j]->name      = (char *)mCalloc((int)(strlen(sp_names_out[j])+1),sizeof(char));
     }
   
   return cdata;
