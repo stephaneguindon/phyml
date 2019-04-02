@@ -549,6 +549,11 @@ void Ancestral_Sequences(t_tree *tree, int print)
       PhyML_Fprintf(tree->io->fp_out_ancestral,"\n. with internal nodes labels corresponding to those given below can be");
       PhyML_Fprintf(tree->io->fp_out_ancestral,"\n. found in the file '%s'.",s);
       Free(s);
+      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n");
+      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n. Recommended citation if using the MPEE criterion for the inference:");
+      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n. Oliva, et al., \"Accounting for ambiguity in ancestral sequence reconstruction\"");
+      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n. Bioinformatics, 2019.");
+      
       PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\n");
       PhyML_Fprintf(tree->io->fp_out_ancestral,"Site\tNodeLabel\t");
       for(i=0;i<tree->mod->ns;i++) PhyML_Fprintf(tree->io->fp_out_ancestral,"%c\t",Reciproc_Assign_State(i,tree->io->datatype));
