@@ -540,7 +540,6 @@ t_nni *Make_NNI()
 t_node *Make_Node_Light(int num)
 {
   t_node *n;
-  int i;
   
   n           = (t_node *)mCalloc(1,sizeof(t_node));
   n->v        = (t_node **)mCalloc(3,sizeof(t_node *));
