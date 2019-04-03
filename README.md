@@ -31,7 +31,7 @@ the phyml binary in the `src/` directory.
 
 
 
-### 2. You have cloned PhyML from GitHub
+### 2. You cloned PhyML from GitHub
 
 To install any program that is part of the PhyML package, type the following command:
 
