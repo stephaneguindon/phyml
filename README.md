@@ -1,5 +1,5 @@
 
-### 1. You downloaded a stable release  of PhyML from [https://github.com/stephaneguindon/phyml/releases](https://github.com/stephaneguindon/phyml/releases) 
+### 1. You downloaded a stable release  of PhyML from [here](https://github.com/stephaneguindon/phyml/releases) 
 
 To install any program that is part of the PhyML package, type the following commands:
 
