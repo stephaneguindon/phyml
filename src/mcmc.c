@@ -6568,6 +6568,7 @@ void MCMC_PHYREX_Lbda(t_tree *tree)
                             tree->mcmc->move_type[tree->mcmc->num_move_phyrex_lbda],
                             NO,NULL,tree,NULL);
 
+
   /* phydbl u,alpha,ratio; */
   /* phydbl cur_glnL, new_glnL, hr; */
   /* phydbl cur_lbda, new_lbda; */

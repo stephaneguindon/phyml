@@ -421,13 +421,13 @@ void Free_Tree_Lk(t_tree *mixt_tree)
       Free(tree->site_lk_cat);
       Free(tree->fact_sum_scale);
       Free(tree->unscaled_site_lk_cat);
+      Free(tree->expl);
 
       if(tree->is_mixt_tree == NO)
         {
           Free(tree->eigen_lr_left);
           Free(tree->eigen_lr_rght);
           Free(tree->dot_prod);
-          Free(tree->expl);
           
           for(i=0;i<3;i++) Free(tree->log_lks_aLRT[i]);
           Free(tree->log_lks_aLRT);

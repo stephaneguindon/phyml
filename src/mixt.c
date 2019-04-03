@@ -2520,6 +2520,18 @@ void MIXT_Make_Tree_For_Lk(t_tree *mixt_tree)
           tree->site_lk_cat          = (phydbl *)mCalloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(phydbl));
           tree->unscaled_site_lk_cat = (phydbl *)mCalloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->n_pattern,sizeof(phydbl));
           tree->fact_sum_scale       = (int *)mCalloc(tree->n_pattern,sizeof(int));
+
+
+#if (defined(__AVX__) || defined(__SSE3__))
+#ifndef WIN32
+          if(posix_memalign((void **)&tree->expl,BYTE_ALIGN,(size_t)2*tree->mod->n_mixt_classes*tree->mod->ns*sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+#else
+          tree->expl = _aligned_malloc(2*tree->mod->n_mixt_classes*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
+#endif
+#else
+          tree->expl = (phydbl *)mCalloc(2*tree->mod->n_mixt_classes*tree->mod->ns,sizeof(phydbl));
+#endif
+
         }
       
       tree = tree->next;
@@ -2848,7 +2860,7 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
               len = 0.0;
             }
           
-          expl = tree->expl;
+          expl = mixt_tree->expl;
           
           for(state=0;state<tree->mod->ns;++state) 
             {
@@ -2890,7 +2902,7 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
                   tree->curr_site        = site;
                   tree->apply_lk_scaling = NO;
                   dot_prod               = tree->dot_prod + site * ns;
-                  expl                   = tree->expl;
+                  expl                   = mixt_tree->expl;
                   
                   if(tree->mod->io->datatype == NT || tree->mod->io->datatype == AA)
                     {
@@ -2933,8 +2945,8 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
                   
                   mult = pow(2,sum);
                   
-                  lk[class]   /= mult;
-                  dlk[class]  /= mult;
+                  lk[class]  /= mult;
+                  dlk[class] /= mult;
 
                   class++;
                 }
@@ -3126,6 +3138,8 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
   mixt_tree = cpy_mixt_tree;
   mixt_b    = cpy_mixt_b;
 
+  PhyML_Printf("\n. edge %p mixt_c_lnL: %f",mixt_b,mixt_tree->c_lnL);
+  
   return mixt_tree->c_lnL;
 }
 
