@@ -2877,8 +2877,8 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
           
           for(class=0;class<nclasses;++class)
             {
-              dlk[class]  = 0.0;
-              lk[class]   = 0.0;
+              dlk[class] = 0.0;
+              lk[class]  = 0.0;
             }
           
           class = 0;

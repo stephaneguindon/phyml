@@ -1696,9 +1696,8 @@ int Read_Command_Line(option *io, int argc, char **argv)
 
     if(io->quiet == NO)
     {
-      PhyML_Printf("\n. Command line: ");
+      PhyML_Printf("\n\n. Command line: ");
       for(i=0;i<argc;i++) PhyML_Printf("%s ",argv[i]);
-      PhyML_Printf("\n");
     }
 
   return 1;

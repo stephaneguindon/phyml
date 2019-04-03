@@ -64,23 +64,21 @@ void Bootstrap_MPI(t_tree *tree)
 
   boot_data = Copy_Cseq(tree->data,tree->io);
 
-  if (Global_myRank == 0) PhyML_Printf("\n. Non parametric bootstrap analysis \n");
-
   if(Global_numTask <= 1)
     {
-      PhyML_Printf("\n. The number of CPUs used in the MPI bootstrap analysis should be");
+      PhyML_Printf("\n\n. The number of CPUs used in the MPI bootstrap analysis should be");
       PhyML_Printf("\n. strictly greater than 1 (it is equal to %d here).",Global_numTask);
       assert(FALSE);
     }
   
   //number of bootstraps for each process
-  if (tree->mod->bootstrap%Global_numTask != 0) 
+  if (tree->io->n_boot_replicates%Global_numTask != 0) 
     {
       nbRep = (tree->io->n_boot_replicates / Global_numTask) + 1;
-      tree->mod->bootstrap = nbRep * Global_numTask;
+      tree->io->n_boot_replicates = nbRep * Global_numTask;
       if (Global_myRank == 0) {
-        PhyML_Printf("\n. The number of replicates is not a multiple of %d CPUs.\n", Global_numTask);
-        PhyML_Printf("\n. Will run %d replicates.\n", tree->mod->bootstrap);
+        PhyML_Printf("\n\n. The number of replicates is not a multiple of %d CPUs.\n", Global_numTask);
+        PhyML_Printf("\n. Will run %d replicates.\n", tree->io->n_boot_replicates);
       }
     }
   else
@@ -111,10 +109,10 @@ void Bootstrap_MPI(t_tree *tree)
       if (Global_myRank == 0) 
         {
           // Compute number of data to send
-          if (tree->mod->bootstrap - randomRecv > Global_numTask)
+          if (tree->io->n_boot_replicates - randomRecv > Global_numTask)
             nbElem = Global_numTask;
           else
-            nbElem = tree->mod->bootstrap - randomRecv;
+            nbElem = tree->io->n_boot_replicates - randomRecv;
           
           for(i=0;i<nbElem;i++) 
             {
@@ -303,15 +301,15 @@ void Bootstrap_MPI(t_tree *tree)
             PhyML_Printf(".");
 	    if(!((bootRecv)%tree->io->boot_prog_every)) 
 	      {
-		PhyML_Printf("] %4d/%4d\n  ",bootRecv,tree->mod->bootstrap);
-		if(bootRecv != tree->mod->bootstrap) PhyML_Printf("[");
+		PhyML_Printf("] %4d/%4d\n  ",bootRecv,tree->io->n_boot_replicates);
+		if(bootRecv != tree->io->n_boot_replicates) PhyML_Printf("[");
 	      }
 	    
             // Compute number of bootstraps to receive
-            if (tree->mod->bootstrap - bootRecv > Global_numTask)
+            if (tree->io->n_boot_replicates - bootRecv > Global_numTask)
               nbElem = Global_numTask;
             else
-              nbElem = tree->mod->bootstrap - bootRecv + 1;
+              nbElem = tree->io->n_boot_replicates - bootRecv + 1;
               
             bootStr=(char *)mCalloc(T_MAX_LINE,sizeof(char));
             for (i=1; i<nbElem; i++) 
@@ -339,8 +337,8 @@ void Bootstrap_MPI(t_tree *tree)
 		bootRecv++;
 		PhyML_Printf(".");
 		if(!((bootRecv)%tree->io->boot_prog_every)) {
-		  PhyML_Printf("] %4d/%4d\n  ",bootRecv,tree->mod->bootstrap);
-		  if(bootRecv != tree->mod->bootstrap) PhyML_Printf("[");
+		  PhyML_Printf("] %4d/%4d\n  ",bootRecv,tree->io->n_boot_replicates);
+		  if(bootRecv != tree->io->n_boot_replicates) PhyML_Printf("[");
 		}
 	      }
             Free(bootStr);
@@ -382,7 +380,7 @@ fflush(stdout);
   Free (score_par);
   
   if (Global_myRank == 0)
-    if(((bootRecv)%tree->io->boot_prog_every)) PhyML_Printf("] %4d/%4d\n ",bootRecv,tree->mod->bootstrap);
+    if(((bootRecv)%tree->io->boot_prog_every)) PhyML_Printf("] %4d/%4d\n ",bootRecv,tree->io->n_boot_replicates);
   
   PhyML_Printf("\n\n. Exiting bootstrap function normally."); fflush(NULL);
   tree->lock_topo = 1; /* Topology should not be modified afterwards */

@@ -30,6 +30,7 @@ void Make_Tree_For_Lk(t_tree *tree)
   tree->unscaled_site_lk_cat = (phydbl *)mCalloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->n_pattern,sizeof(phydbl));
   tree->fact_sum_scale       = (int *)mCalloc(tree->n_pattern,sizeof(int));
 
+  
 #if (defined(__AVX__) || defined(__SSE3__))
 #ifndef WIN32
   if(posix_memalign((void **)&tree->eigen_lr_left,BYTE_ALIGN,(size_t)MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);

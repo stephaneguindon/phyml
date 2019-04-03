@@ -62,7 +62,7 @@ int main(int argc, char **argv)
     }
   if(MPI_Comm_size(MPI_COMM_WORLD,&Global_numTask) != MPI_SUCCESS) MPI_Abort(MPI_COMM_WORLD, rc);
   if(MPI_Comm_rank(MPI_COMM_WORLD,&Global_myRank) != MPI_SUCCESS) MPI_Abort(MPI_COMM_WORLD, rc);
-  PhyML_Fprintf(stdout,"\n. Running the analysis on %d CPU%s %d",
+  PhyML_Fprintf(stdout,"\n\n. Running the analysis on %d CPU%s.",
                 Global_numTask,
                 Global_numTask>1?"s.":".");
 #endif

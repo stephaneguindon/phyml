@@ -696,7 +696,8 @@ exceeds 256MB and will not output the progression of the log-likelihood scores o
 
 \item \x{--ancestral} \index{command-line options!\x{--ancestral}}\\
 PhyML calculates the marginal probabilities of each character state at each internal node and each
-site of the sequence alignment.
+site of the sequence alignment. It then uses the ``Minimum Posterior Expected Error'' criterion to
+infer ancestral sequences. Works for both nucleotide and amino-acid data.
 
 
 \item \x{--leave\_duplicates} \index{command-line options!\x{--leave\_duplicates}}\\
@@ -1116,10 +1117,10 @@ PhyML estimates ancestral sequences by calculating the {\em marginal} (as oppose
 \x{seq\_phyml\_ancestral\_seq.txt}. The bulk of this file is a table where each row corresponds to a
 site in the original alignment and a number corresponding labeling each internal node. The different
 columns of that file give the probability of each character state given the data observed at the
-corresponding sites and the estimated phylogeny. When analysing nucleotide data, PhyML also outputs
-an extra column called MPEE\index{MPEE}\index{ancestral reconstruction}, which stands for minimum posterior expected error. This column gives the
-state, which can be a single nucleotide or a combination of more than one nucleotide, that is
-optimal under the MPEE criterion \cite{oliva18}.
+corresponding sites and the estimated phylogeny. PhyML also outputs
+an extra column called MPEE\index{MPEE}\index{ancestral reconstruction}, which stands for Minimum Posterior Expected Error. This column gives the
+state, which can be a single nucleotide/amino-acid or a combination of more than one nucleotide/amino-acid, that is
+optimal under the MPEE criterion \cite{oliva19}.
 
 Also, it is relatively straightforward to identify which number corresponds to which node in the tree by examining the
 information provided in the Newick-formatted file \x{seq\_phyml\_ancestral\_tree.txt}.
