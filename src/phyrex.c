@@ -496,8 +496,9 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
 
   s = (char *)mCalloc(T_MAX_NAME,sizeof(char));
 
-  pid     = getpid();
-  seed    = pid;
+  /* pid     = getpid(); */
+  /* seed    = pid; */
+  seed    = (int)atoi(argv[3]);
   n_otus  = (int)atoi(argv[1]);
   n_sites = (int)atoi(argv[2]);
 
