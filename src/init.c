@@ -537,7 +537,8 @@ void Set_Defaults_Input(option* io)
   io->fp_out_boot_tree           = NULL;
   io->fp_out_boot_stats          = NULL;
   io->fp_out_stats               = NULL;
-  io->fp_out_ancestral           = NULL;
+  io->fp_out_ancestral_seq       = NULL;
+  io->fp_out_ancestral_tree      = NULL;
   io->fp_in_coord                = NULL;
   io->fp_out_trace               = NULL;
   io->fp_weight_file             = NULL;

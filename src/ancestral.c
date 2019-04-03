@@ -530,48 +530,62 @@ void Ancestral_Sequences(t_tree *tree, int print)
 
   if(print == YES)
     {
+
       PhyML_Printf("\n\n. Estimating ancestral sequences...");
 
-      strcpy(tree->io->out_ancestral_file,tree->io->out_file);
-      if(tree->io->append_run_ID) { strcat(tree->io->out_ancestral_file,"_"); strcat(tree->io->out_ancestral_file,tree->io->run_id_string); }
-      strcat(tree->io->out_ancestral_file,"_phyml_ancestral_seq.txt");
-      tree->io->fp_out_ancestral = Openfile(tree->io->out_ancestral_file,1);
+      strcpy(tree->io->out_ancestral_seq_file,tree->io->out_file);
+      strcat(tree->io->out_ancestral_seq_file,"_phyml_ancestral_");
+      if(tree->io->append_run_ID)
+        {
+          strcat(tree->io->out_ancestral_seq_file,tree->io->run_id_string);
+          strcat(tree->io->out_ancestral_seq_file,"_");
+        }
+      strcat(tree->io->out_ancestral_seq_file,"seq.txt");
+      tree->io->fp_out_ancestral_seq = Openfile(tree->io->out_ancestral_seq_file,1);
       
 
-      char *s = (char *)mCalloc((int)strlen(tree->io->in_align_file)+50,sizeof(char));
-      strcpy(s,tree->io->in_align_file);
-      strcat(s,"_phyml_ancestral_tree.txt");
-      FILE *fp = Openfile(s,WRITE);
-      
-      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\n\n");
-      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n. Printing marginal probabilities of ancestral sequences at each site");
-      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n. of the alignment and each node of the tree. The tree in Newick format");
-      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n. with internal nodes labels corresponding to those given below can be");
-      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n. found in the file '%s'.",s);
-      Free(s);
-      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n");
-      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n. Recommended citation if using the MPEE criterion for the inference:");
-      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n. Oliva, et al., \"Accounting for ambiguity in ancestral sequence reconstruction\"");
-      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n. Bioinformatics, 2019.");
-      
-      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n\n");
-      PhyML_Fprintf(tree->io->fp_out_ancestral,"Site\tNodeLabel\t");
-      for(i=0;i<tree->mod->ns;i++) PhyML_Fprintf(tree->io->fp_out_ancestral,"%c\t",Reciproc_Assign_State(i,tree->io->datatype));
-      if(tree->io->datatype == NT) PhyML_Fprintf(tree->io->fp_out_ancestral,"MPEE\t");
-      PhyML_Fprintf(tree->io->fp_out_ancestral,"\n");
+      strcpy(tree->io->out_ancestral_tree_file,tree->io->out_file);
+      strcat(tree->io->out_ancestral_tree_file,"_phyml_ancestral_");
+      if(tree->io->append_run_ID)
+        {
+          strcat(tree->io->out_ancestral_tree_file,tree->io->run_id_string);
+          strcat(tree->io->out_ancestral_tree_file,"_");
+        }
+      strcat(tree->io->out_ancestral_tree_file,"tree.txt");
+      tree->io->fp_out_ancestral_tree = Openfile(tree->io->out_ancestral_tree_file,1);
 
       
-      short int bck_support  = tree->io->print_support_val;
+      PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"\n\n\n");
+      PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"\n. Printing marginal probabilities of ancestral sequences at each site");
+      PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"\n. of the alignment and each node of the tree. The tree in Newick format");
+      PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"\n. with internal nodes labels corresponding to those given below can be");
+      PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"\n. found in the file '%s'.",tree->io->out_ancestral_tree_file);
+      PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"\n");
+      PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"\n");
+      PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"\n. Recommended citation when using the MPEE criterion:");
+      PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"\n. Oliva A., Pulicani S., Lefort V., Brehelin L., Gascuel O. and S. Guindon,");
+      PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"\n. \"Accounting for ambiguity in ancestral sequence reconstruction\",");
+      PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"\n. Bioinformatics, 2019.");
+      PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"\n");
+      
+      PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"\n\n");
+      PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"Site\tNodeLabel\t");
+      for(i=0;i<tree->mod->ns;i++) PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"%c\t",Reciproc_Assign_State(i,tree->io->datatype));
+      PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"MPEE\t");
+      PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"\n");
+
+      
+      short int bck_support = tree->io->print_support_val;
       
       tree->io->print_node_num = YES;
       tree->io->print_support_val = NO;
-      s = Write_Tree(tree,NO);
-      PhyML_Fprintf(fp,"%s",s);
+      char *s = Write_Tree(tree,NO);
+      PhyML_Fprintf(tree->io->fp_out_ancestral_tree,"%s",s);
       tree->io->print_node_num = NO;
       tree->io->print_support_val = bck_support;
 
       Free(s);
-      fclose(fp);
+      fclose(tree->io->fp_out_ancestral_tree);
     }
 
   for(i=0;i<2*tree->n_otu-2;i++)
@@ -581,7 +595,7 @@ void Ancestral_Sequences(t_tree *tree, int print)
   if(tree->n_root) Ancestral_Sequences_One_Node(tree->n_root,tree,print);
 
 
-  fclose(tree->io->fp_out_ancestral);
+  fclose(tree->io->fp_out_ancestral_seq);
 }
 
 //////////////////////////////////////////////////////////////
@@ -627,7 +641,7 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
           
           if(!d) return;
           
-          fp = tree->io->fp_out_ancestral;
+          fp = tree->io->fp_out_ancestral_seq;
           assert(fp != NULL);
 
           
@@ -846,15 +860,7 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
                       Exit("\n");
                     }
 
-                  if(ns == 4)
-                    {
-                      PhyML_Fprintf(fp,"%4c",Integer_To_IUPAC_Code(MPEE_Infer(p,ns)));
-                    }
-                  else
-                    {
-                      PhyML_Fprintf(stderr,"\n. Ancestral inference of amino-acid not fully implemented yet.");
-                      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-                    }
+                  PhyML_Fprintf(fp,"%s",Bit_To_Character_String(Integer_To_Bit(MPEE_Infer(p,ns),ns),ns));
 
                   PhyML_Fprintf(fp,"\n");
                 }
@@ -995,9 +1001,13 @@ int MPEE_Score(const phydbl *alpha, int *idx, const phydbl *p, const int ns)
   res = 0;
   for(i=0;i<min_idx+1;++i)
     {
-      res += (int)pow(2,idx[i]);
+      res += (int)pow(2,ns-1-idx[i]);
     }
-    
+  /* If best score ambiguity level is say 2 and A and G have highest
+     posterior probs, then res = 2^(4-1-0) + 2^(4-1-2) = 10, which is
+     bit representation is [1,0,1,0]
+  */
+  
   Free(mpee_score);
   Free(cdf_sorted);
   

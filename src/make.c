@@ -1062,7 +1062,8 @@ option *Make_Input()
   io->out_file                          = (char *)mCalloc(T_MAX_FILE,sizeof(char));
   io->out_tree_file                     = (char *)mCalloc(T_MAX_FILE,sizeof(char));
   io->out_trees_file                    = (char *)mCalloc(T_MAX_FILE,sizeof(char));
-  io->out_ancestral_file                = (char *)mCalloc(T_MAX_FILE,sizeof(char));
+  io->out_ancestral_seq_file            = (char *)mCalloc(T_MAX_FILE,sizeof(char));
+  io->out_ancestral_tree_file           = (char *)mCalloc(T_MAX_FILE,sizeof(char));
   io->out_boot_tree_file                = (char *)mCalloc(T_MAX_FILE,sizeof(char));
   io->out_boot_stats_file               = (char *)mCalloc(T_MAX_FILE,sizeof(char));
   io->out_stats_file                    = (char *)mCalloc(T_MAX_FILE,sizeof(char));

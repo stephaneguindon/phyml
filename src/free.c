@@ -941,7 +941,8 @@ void Free_Input(option *io)
       Free(io->out_ps_file);
       Free(io->out_trace_file);
       Free(io->out_json_trace_file);
-      Free(io->out_ancestral_file);
+      Free(io->out_ancestral_seq_file);
+      Free(io->out_ancestral_tree_file);
       Free(io->nt_or_cd);
       Free(io->run_id_string);
       Free(io->clade_list_file);

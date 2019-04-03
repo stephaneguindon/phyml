@@ -2555,7 +2555,7 @@ void MIXT_Ancestral_Sequences_One_Node(t_node *mixt_d, t_tree *mixt_tree, int pr
 
       curr_mixt_tree = mixt_tree;
       curr_mixt_d    = mixt_d;
-      fp             = mixt_tree->io->fp_out_ancestral;
+      fp             = mixt_tree->io->fp_out_ancestral_seq;
 
 
       do /* For each partition element */

@@ -12784,6 +12784,90 @@ char Integer_To_IUPAC_Code(int x)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
+int *Integer_To_Bit(int val, const int ns)
+{
+  assert(ns > 0);
+  
+  int *res;
+  unsigned int mask = 1U << (ns-1);
+  int i;
+
+  res = (int *)mCalloc(ns,sizeof(int));
+  
+  for(i=0;i<ns;++i)
+    {
+      res[i] = (val & mask) ? 1 : 0;
+      val <<= 1;
+    }
+
+  return res;
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+char *Bit_To_Character_String(int *bit, int ns)
+{
+  
+  assert(ns == 4 || ns == 20);
+
+  char *s;
+  int idx;
+  
+  s = (char *)mCalloc(2*ns,sizeof(char));
+  
+  switch(ns)
+    {
+    case 4 :
+      {
+        char alphabet[4]="ACGT";
+        idx = 0;
+        for(int i=0;i<4;++i)
+          {
+            if(bit[i]==1)
+              {
+                if(idx==0) s[idx++]=alphabet[i];
+                else
+                  {
+                    s[idx]=',';
+                    s[idx+1]=alphabet[i];
+                    idx+=2;
+                  }
+              }
+          }
+        s[idx]='\0';
+        break;
+      }
+    case 20 :
+      {
+        char alphabet[20]="ARNDCQEGHILKMFPSTWYV";
+        idx = 0;
+        for(int i=0;i<20;++i)
+          {
+            if(bit[i]==1)
+              {
+                if(idx==0) s[idx++]=alphabet[i];
+                else
+                  {
+                    s[idx]=',';
+                    s[idx+1]=alphabet[i];
+                    idx+=2;
+                  }
+              }
+          }
+        s[idx]='\0';
+        break;
+      }
+    default : Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
+  return s;
+}
+
+
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
 void Shuffle_Sites(const phydbl prop, align **data, const int n_otu)
 {
   unsigned int i,j,rand_otu;

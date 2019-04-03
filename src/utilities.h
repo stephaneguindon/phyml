@@ -1221,8 +1221,11 @@ typedef struct __Option { /*! mostly used in 'help.c' */
   char                  *out_ps_file; /*! name of the file in which tree(s) is(are) written */
   FILE                    *fp_out_ps;
 
-  char           *out_ancestral_file; /*! name of the file containing the ancestral sequences */
-  FILE             *fp_out_ancestral; /*! pointer to the file containing the ancestral sequences */
+  char       *out_ancestral_seq_file; /*! name of the file containing the ancestral sequences */
+  char      *out_ancestral_tree_file; /*! name of the file containing the tree with internal node labelled according to refs in ancestral_seq_file */
+
+  FILE         *fp_out_ancestral_seq; /*! pointer to the file containing the ancestral sequences */
+  FILE        *fp_out_ancestral_tree; /*! pointer to the file containing the tree with labels on internal nodes  */
 
   char                *in_coord_file; /*! name of input file containing coordinates */
   FILE                  *fp_in_coord; /*! pointer to the file containing coordinates */
@@ -2325,6 +2328,8 @@ void  Inflate_Times_To_Get_Reasonnable_Edge_Lengths(phydbl min_l, t_tree *tree);
 void Refactor_Tree(t_tree *tree);
 void Refactor_External(t_node *a, t_node *d, int *idx, t_tree *tree);
 void Refactor_Internal(t_node *a, t_node *d, t_edge *b, int *idx_nd, int *idx_br, t_tree *tree);
+int *Integer_To_Bit(int val, const int ns);
+char *Bit_To_Character_String(int *bit, int ns);
 
 
 #include "xml.h"

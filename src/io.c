@@ -926,7 +926,7 @@ void R_wtree(t_node *pere, t_node *fils, t_edge *b, int *available, char **s_tre
       if(*available < (int)T_MAX_NAME)
         {
           (*s_tree) = (char *)mRealloc(*s_tree,(int)strlen(*s_tree)+3*(int)T_MAX_NAME,sizeof(char));
-          For(i,3*(int)T_MAX_NAME) (*s_tree)[(int)strlen(*s_tree)+i] = '\0';
+          for(i=0;i<3*(int)T_MAX_NAME;++i) (*s_tree)[(int)strlen(*s_tree)+i] = '\0';
           (*available) = 3*(int)T_MAX_NAME;
         }
 #endif
@@ -953,25 +953,7 @@ void R_wtree(t_node *pere, t_node *fils, t_edge *b, int *available, char **s_tre
       
       
       if((fils->b) && (tree->write_br_lens == YES))
-        {
-          /* if(tree->io->print_boot_val == YES) */
-          /*   { */
-          /*     sprintf(*s_tree+(int)strlen(*s_tree),"%d",fils->b[p]->bip_score); */
-          /*   } */
-          /* else if(tree->io->print_tbe_val == YES) */
-          /*   { */
-	  /*     int pminus1=MIN(fils->b[p]->left->bip_size[fils->b[p]->l_r], fils->b[p]->rght->bip_size[fils->b[p]->r_l])-1; */
-          /*     sprintf(*s_tree+(int)strlen(*s_tree),"%f",1-((fils->b[p]->tdist_score)/(tree->mod->bootstrap*1.0))/pminus1); */
-          /*   } */
-          /* else if(tree->io->print_alrt_val == YES) */
-          /*   { */
-          /*     sprintf(*s_tree+(int)strlen(*s_tree),"%f",fils->b[p]->ratio_test); */
-          /*   } */
-          /* else if(tree->io->print_node_num == YES) */
-          /*   { */
-          /*     sprintf(*s_tree+(int)strlen(*s_tree),"%d",fils->num); */
-          /*   } */
-          
+        {          
           if(tree->io->print_support_val == YES)
             {
               if(tree->io->do_boot == YES)
@@ -982,6 +964,10 @@ void R_wtree(t_node *pere, t_node *fils, t_edge *b, int *available, char **s_tre
                 {
                   sprintf(*s_tree+(int)strlen(*s_tree),"%f",fils->b[p]->support_val);
                 }
+            }
+          if(tree->io->print_node_num == YES)
+            {
+              sprintf(*s_tree+(int)strlen(*s_tree),"%d",fils->num);
             }
 
 
