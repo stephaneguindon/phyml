@@ -1,5 +1,5 @@
 
-### You downloaded a stable release  of PhyML from [https://github.com/stephaneguindon/phyml/releases](https://github.com/stephaneguindon/phyml/releases) 
+### 1. You downloaded a stable release  of PhyML from [https://github.com/stephaneguindon/phyml/releases](https://github.com/stephaneguindon/phyml/releases) 
 
 To install any program that is part of the PhyML package, type the following commands:
 
@@ -26,12 +26,12 @@ make;
 
 If you are using a Mac computer, you will need to install the package pkg-config. The
 following command should set you up (provided Homebrew is installed on your Mac...):
-brew install pkg-config; Next, typing './configure --enable-XXXX; make;' should generate
-the phyml binary in the src/ directory.
+brew install pkg-config; Next, typing `./configure --enable-XXXX; make;` should generate
+the phyml binary in the `src/` directory.
 
 
 
-### You have cloned PhyML from GitHub
+### 2. You have cloned PhyML from GitHub
 
 To install any program that is part of the PhyML package, type the following command:
 
