@@ -1,9 +1,0 @@
-#!/bin/bash -x
-
-aclocal;
-autoheader;
-autoconf -f;
-automake -f --add-missing;
-./configure --enable-rwrap;
-make clean;
-make;
