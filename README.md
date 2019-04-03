@@ -46,7 +46,7 @@ to install the packages autoconf automake and pkg-config. On a Mac, the followin
 should set you up (provided Homebrew is installed on your Mac...): brew install pkg-config
 autoconf automake;
 
-Next, typing './configure --enable-XXXX; make;' should generate the phyml binary in the src/
+Next, typing `./configure --enable-XXXX; make;` should generate the phyml binary in the src/
 directory, where XXXX is phyml or phyrex or phytime.
 
 
