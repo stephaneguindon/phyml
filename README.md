@@ -1,5 +1,5 @@
 
-# You downloaded a stable release  of PhyML from [https://github.com/stephaneguindon/phyml/releases](https://github.com/stephaneguindon/phyml/releases) 
+### You downloaded a stable release  of PhyML from [https://github.com/stephaneguindon/phyml/releases](https://github.com/stephaneguindon/phyml/releases) 
 
 To install any program that is part of the PhyML package, type the following commands:
 
@@ -31,7 +31,7 @@ the phyml binary in the src/ directory.
 
 
 
-# You have cloned PhyML from GitHub
+### You have cloned PhyML from GitHub
 
 To install any program that is part of the PhyML package, type the following command:
 
