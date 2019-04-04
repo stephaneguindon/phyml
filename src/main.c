@@ -263,7 +263,7 @@ int main(int argc, char **argv)
                   Lk(NULL,tree);
                   Pars(NULL,tree);
                   Get_Tree_Size(tree);
-                  PhyML_Printf("\n\n. Log likelihood of the current tree: %f.",tree->c_lnL);
+                  PhyML_Printf("\n\n. Log likelihood of the current tree: %.*f.",DECIMAL_DIG,tree->c_lnL);
 
                   if(tree->io->ancestral == YES) Ancestral_Sequences(tree,YES);
                   

@@ -664,7 +664,7 @@ void Set_Defaults_Model(t_mod *mod)
 
 
 #if !(defined PHYTIME || defined PHYREX)
-  mod->l_min = 1.E-8;
+  mod->l_min = 1.E-15;
   mod->l_max = 100.0;
 #else
   mod->l_min = 1.E-6;
