@@ -2798,17 +2798,17 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
   
   PhyML_Fprintf(fp_out,"\n. Number of taxa: \t\t\t%d",tree->n_otu);/*added FLT*/
   
-  PhyML_Fprintf(fp_out,"\n. Log-likelihood: \t\t\t%.10f",tree->c_lnL);/*was last ; moved here FLT*/
+  PhyML_Fprintf(fp_out,"\n. Log-likelihood: \t\t\t%.5f",tree->c_lnL);/*was last ; moved here FLT*/
   
   Unconstraint_Lk(tree);
-  PhyML_Fprintf(fp_out,"\n. Unconstrained log-likelihood: \t%f",tree->unconstraint_lk);
+  PhyML_Fprintf(fp_out,"\n. Unconstrained log-likelihood: \t%.5f",tree->unconstraint_lk);
   
   Composite_Lk(tree);
-  PhyML_Fprintf(fp_out,"\n. Composite log-likelihood: \t\t%f",tree->composite_lk);
+  PhyML_Fprintf(fp_out,"\n. Composite log-likelihood: \t\t%.5f",tree->composite_lk);
   
   PhyML_Fprintf(fp_out,"\n. Parsimony: \t\t\t\t%d",tree->c_pars);
   
-  PhyML_Fprintf(fp_out,"\n. Tree size: \t\t\t\t%f",Get_Tree_Size(tree));
+  PhyML_Fprintf(fp_out,"\n. Tree size: \t\t\t\t%.5f",Get_Tree_Size(tree));
   
 	/* if(tree->mod->ras->n_catg > 1 && tree->mod->ras->free_mixt_rates == NO) */
   if(tree->mod->ras->free_mixt_rates == NO)

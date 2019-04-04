@@ -13,9 +13,9 @@ script:
   - export PATH=$HOME/local/bin:$PATH
 
 # install testiphy
-  - cd
-  - git clone https://gitlab.com/testiphy/testiphy.git
+#  - cd
+#  - git clone https://gitlab.com/testiphy/testiphy.git
 
 # run testiphy
-  - cd testiphy
-  - ./testiphy phyml
+#  - cd testiphy
+#  - ./testiphy phyml
