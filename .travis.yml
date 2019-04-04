@@ -8,6 +8,15 @@ script:
   - ./configure
   - make
   - sudo make install
+  - ./configure --enable-mpi
+  - make clean
+  - make
+  - ./configure --enable-phyrex
+  - make clean
+  - make
+  - ./configure --enable-phytime
+  - make clean
+  - make
   
 # put the installed binary into the $PATH
   - export PATH=$HOME/local/bin:$PATH
