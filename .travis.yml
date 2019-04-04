@@ -7,7 +7,6 @@ os:
   - osx
   
 compiler:
-  - mpicc
   - gcc
 
 script:
@@ -16,9 +15,6 @@ script:
   - ./configure
   - make
   - sudo make install
-  - ./configure --enable-mpi
-  - make clean
-  - make
   - ./configure --enable-phyrex
   - make clean
   - make
