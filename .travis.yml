@@ -2,6 +2,14 @@ sudo: required
 cache: apt
 language: c
 
+os:
+  - linux
+  - osx
+  
+compiler:
+  - mpicc
+  - gcc
+
 script:
 # build and install software into $HOME/local
   - ./autogen.sh
