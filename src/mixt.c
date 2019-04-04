@@ -3307,6 +3307,7 @@ void MIXT_Sample_Ancestral_Seq(int fullmutmap, int fromprior, t_tree *mixt_tree)
     {
       tree = loc_mixt_tree->next;
 
+      class_proba = NULL;
       i = 0;
       do
         {
