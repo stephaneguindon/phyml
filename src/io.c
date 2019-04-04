@@ -2798,7 +2798,7 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
   
   PhyML_Fprintf(fp_out,"\n. Number of taxa: \t\t\t%d",tree->n_otu);/*added FLT*/
   
-  PhyML_Fprintf(fp_out,"\n. Log-likelihood: \t\t\t%f",tree->c_lnL);/*was last ; moved here FLT*/
+  PhyML_Fprintf(fp_out,"\n. Log-likelihood: \t\t\t%.10f",tree->c_lnL);/*was last ; moved here FLT*/
   
   Unconstraint_Lk(tree);
   PhyML_Fprintf(fp_out,"\n. Unconstrained log-likelihood: \t%f",tree->unconstraint_lk);
