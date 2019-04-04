@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/stephaneguindon/phyml.svg?branch=master)](https://travis-ci.org/stephaneguindon/phyml.svg?branch=master)
+[![Build Status](https://travis-ci.org/stephaneguindon/phyml.svg?branch=master)](https://travis-ci.org/stephaneguindon/phyml)
 
 ### 1. You downloaded a stable release  of PhyML from [here](https://github.com/stephaneguindon/phyml/releases) 
 
