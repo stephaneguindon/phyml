@@ -7269,7 +7269,7 @@ void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree)
         }
       else
         {
-          phydbl new_plusmin, cur_plusmin;
+          /* phydbl new_plusmin, cur_plusmin; */
 
           max = target_disk[i]->next->time;
 
@@ -8028,12 +8028,12 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
   t_dsk  *disk,*regraft_disk,**valid_disks,*oldest_disk;
   t_ldsk *prune_ldsk,*regraft_ldsk,*prune_ldsk_daughter,*cur_path,*new_path,*ldsk,*ldsk_dum,**valid_ldsks;
   phydbl *prob_disks_prune,*prob_disks_regraft;
-  int i,block,n_valid_disks,prune_next_num,num_regraft_disk,num_prune_disk,n_valid_ldsks;
-  phydbl sum;
+  int i,block,n_valid_disks,num_regraft_disk,num_prune_disk,n_valid_ldsks;
   phydbl max_dist, param_exp;
   int cur_path_len;
   int n_iter;
   int cur_pos,new_pos;
+  phydbl sum;
 
   n_iter = MIN(10,1+(int)(tree->n_otu/10));
 
@@ -8352,10 +8352,9 @@ void MCMC_PHYREX_Prune_Regraft_Local(t_tree *tree)
   phydbl cur_glnL, new_glnL;
   phydbl cur_alnL, new_alnL;
   phydbl cur_rlnL, new_rlnL;
-  t_dsk  *disk,*prune_disk,*regraft_disk,*oldest_disk,**valid_disks;
+  t_dsk  *disk,*regraft_disk,*oldest_disk,**valid_disks;
   t_ldsk *prune_ldsk,*prune_ldsk_daughter,*regraft_ldsk,*cur_path,**valid_ldsks;
-  int i,block,n_valid_disks,prune_next_num,n_prune_ldsks,n_valid_ldsks;
-  phydbl sum;
+  int i,block,n_valid_disks,n_valid_ldsks;
   int n_iter;
   int cur_pos,new_pos;
 
@@ -8575,7 +8574,6 @@ void MCMC_PHYREX_Prune_Regraft_Local(t_tree *tree)
 void MCMC_PHYREX_Lineage_Traj(t_tree *tree)
 {
   phydbl u,alpha,ratio,hr;
-  phydbl dt;
   phydbl cur_glnL, new_glnL;
   t_dsk  *disk,**valid_disks;
   t_ldsk *old_ldsk,*young_ldsk,*cur_path,*new_path,*ldsk,*ldsk_dum;
@@ -8637,7 +8635,7 @@ void MCMC_PHYREX_Lineage_Traj(t_tree *tree)
       while(young_ldsk->n_next == 1) young_ldsk = young_ldsk->next[0];
 
       
-      dt = fabs(young_ldsk->disk->time - old_ldsk->disk->time);
+      /* dt = fabs(young_ldsk->disk->time - old_ldsk->disk->time); */
       
       assert(young_ldsk != NULL); 
 
