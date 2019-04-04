@@ -1,0 +1,21 @@
+sudo: required
+cache: apt
+language: c
+
+script:
+# build and install software into $HOME/local
+  - ./autogen.sh
+  - ./configure
+  - make
+  - sudo make install
+  
+# put the installed binary into the $PATH
+  - export PATH=$HOME/local/bin:$PATH
+
+# install testiphy
+  - cd
+  - git clone https://gitlab.com/testiphy/testiphy.git
+
+# run testiphy
+  - cd testiphy
+  - ./testiphy <software name>
