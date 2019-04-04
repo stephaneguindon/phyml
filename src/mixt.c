@@ -1042,6 +1042,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
               mixt_tree->cur_site_lk[site] = site_lk;
             }
           
+
           /* Multiply log likelihood by the number of times this site pattern is found in the data */
           mixt_tree->c_lnL_sorted[site] = mixt_tree->data->wght[site]*log_site_lk;
 
@@ -2810,8 +2811,8 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
       tree = mixt_tree->next;
       do
         {
-          tree->c_lnL   = .0;
-          tree->c_dlnL  = .0;
+          tree->c_lnL  = .0;
+          tree->c_dlnL = .0;
           tree = tree->next;
         }
       while(tree && tree->is_mixt_tree == NO);
@@ -2899,10 +2900,9 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
             {
               if(tree->mod->ras->invar == NO && tree->data->wght[tree->curr_site] > SMALL)
                 {
-                  tree->curr_site        = site;
-                  tree->apply_lk_scaling = NO;
-                  dot_prod               = tree->dot_prod + site * ns;
-                  expl                   = mixt_tree->expl;
+                  tree->curr_site = site;
+                  dot_prod        = tree->dot_prod + site * ns;
+                  expl            = mixt_tree->expl + 2*ns*class;
                   
                   if(tree->mod->io->datatype == NT || tree->mod->io->datatype == AA)
                     {
@@ -2942,6 +2942,8 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
                   sum =
                     sum_scale_left_cat[tree->mod->ras->parent_class_number] +
                     sum_scale_rght_cat[tree->mod->ras->parent_class_number];
+                  
+                  assert(sum < 1024);
                   
                   mult = pow(2,sum);
                   
@@ -3032,10 +3034,6 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
             }
 
 
-
-          
-          /* printf("\n. dlnlk: %f d2lnlk: %f wght: %f site_dlk: %f site_d2lk: %f",dlnlk,d2lnlk,mixt_tree->data->wght[site],site_dlk,site_d2lk); */
-
           log_site_lk = log(site_lk);
 
           if(isinf(log_site_lk) || isnan(log_site_lk))
@@ -3050,11 +3048,9 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
               PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d.\n",__FILE__,__LINE__);
               Exit("\n");
             }
-          
-          mixt_tree->c_lnL  += mixt_tree->data->wght[site]*log_site_lk;
-          /* Note: no need to 'remove' in two terms below part of scaling factor that is 
-             common to all classes of the mixtures. Indeed, this factor cancels out in 
-             site_dlk/site_lk as well as in site_d2lk/site_lk */
+
+
+          mixt_tree->c_lnL  += mixt_tree->data->wght[site] * log_site_lk;
           mixt_tree->c_dlnL += mixt_tree->data->wght[site] * ( site_dlk / site_lk );
         }
       
@@ -3063,7 +3059,6 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
 
       Free(lk);
       Free(dlk);
-
       
       mixt_tree = mixt_tree->next_mixt;
       mixt_b    = mixt_b->next_mixt;
@@ -3071,7 +3066,8 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
   while(mixt_tree);
 
 
-  // mixt_tree across all partition elements have the same c_dlnL
+  // Sum c_dlnL across all partition element and set each c_dlnL equal to
+  // this sum  
   mixt_tree = cpy_mixt_tree;
   mixt_b    = cpy_mixt_b;
 
@@ -3092,32 +3088,10 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
   while(mixt_tree);
 
 
-  // mixt_tree across all partition elements have the same c_d2lnL
   mixt_tree = cpy_mixt_tree;
   mixt_b    = cpy_mixt_b;
 
-  sum = .0;
-  do
-    {
-      sum += mixt_tree->c_d2lnL;
-      mixt_tree = mixt_tree->next_mixt;
-    }
-  while(mixt_tree);
-
-  mixt_tree = cpy_mixt_tree;
-  do
-    {
-      mixt_tree->c_d2lnL = sum;
-      mixt_tree = mixt_tree->next_mixt;
-    }
-  while(mixt_tree);
-
-
-
-  // mixt_tree across all partition elements have the same c_lnL
-  mixt_tree = cpy_mixt_tree;
-  mixt_b    = cpy_mixt_b;
-
+  // Do the same with likelihood values
   sum = .0;
   do
     {
@@ -3134,12 +3108,9 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
     }
   while(mixt_tree);
 
-
   mixt_tree = cpy_mixt_tree;
   mixt_b    = cpy_mixt_b;
 
-  PhyML_Printf("\n. edge %p mixt_c_lnL: %f",mixt_b,mixt_tree->c_lnL);
-  
   return mixt_tree->c_lnL;
 }
 

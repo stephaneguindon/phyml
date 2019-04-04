@@ -660,6 +660,7 @@ phydbl Br_Len_Opt(t_edge *b, t_tree *tree)
   /* printf("\n. b->num: %4d l=%12G lnL: %12G",b->num,b->l->v,tree->c_lnL); */
   
 
+  /* lk_end = Lk(mixt_b,mixt_tree); /\* We can't assume that the log-lk value is up-to-date *\/ */
   lk_end = mixt_tree->c_lnL;
   
   if(lk_end < lk_begin - tree->mod->s_opt->min_diff_lk_local)

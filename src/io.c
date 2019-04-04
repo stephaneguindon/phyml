@@ -4871,7 +4871,9 @@ option *PhyML_XML(char *xml_filename)
       Set_Update_Eigen(YES,mixt_tree->mod);                 
       Lk(NULL,mixt_tree);
       Set_Update_Eigen(NO,mixt_tree->mod);
-      
+
+
+
       if(mixt_tree->mod->s_opt->opt_topo)
         {
           Global_Spr_Search(mixt_tree);
