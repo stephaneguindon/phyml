@@ -691,6 +691,7 @@ void Round_Optimize(t_tree *tree, int n_round_max)
   while(n_round < n_round_max)
     {
       if(tree->mod->s_opt->opt_bl || tree->mod->s_opt->constrained_br_len) Optimize_Br_Len_Serie(n_round_max,tree);
+
       
       if((tree->mod->s_opt->opt_bl || tree->mod->s_opt->constrained_br_len) &&
          (tree->verbose > VL2) &&
@@ -788,7 +789,10 @@ void Optimize_Br_Len_Serie(int n_max_iter, t_tree *tree)
         }
       else
         {
-          Optimize_Br_Len_Serie_Post(tree->a_nodes[tree->tip_root],tree->a_nodes[tree->tip_root]->v[0],tree->a_nodes[tree->tip_root]->b[0],tree);
+          Optimize_Br_Len_Serie_Post(tree->a_nodes[tree->tip_root],
+                                     tree->a_nodes[tree->tip_root]->v[0],
+                                     tree->a_nodes[tree->tip_root]->b[0],
+                                     tree);
         }
       
       lk_end = tree->c_lnL;
@@ -800,7 +804,8 @@ void Optimize_Br_Len_Serie(int n_max_iter, t_tree *tree)
         }
 
       iter++;
-      
+
+
       /* PhyML_Printf("\n. lnL: %f %f %f %d",tree->c_lnL,Rgamma((phydbl)(iter+1),(phydbl)(1./(iter+1))),(phydbl)(iter+1)*(phydbl)(1./(iter+1))*(phydbl)(1./(iter+1)),iter); */
 
     }

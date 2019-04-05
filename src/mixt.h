@@ -113,5 +113,6 @@ void MIXT_Connect_Tip_Disks(t_tree *mixt_tree);
 void MIXT_Propagate_Tree_Update(t_tree *mixt_tree);
 void MIXT_Set_Bl_From_Rt(int yn, t_tree *mixt_tree);
 void MIXT_Copy_Tree(t_tree *ori, t_tree *cpy);
+void MIXT_Init_NNI_Score(phydbl val, t_edge *mixt_b, t_tree *mixt_tree);
 
 #endif

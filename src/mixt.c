@@ -1623,7 +1623,7 @@ void MIXT_Br_Len_Involving_Invar(t_tree *mixt_tree)
   int i;
   scalar_dbl *l;
 
-  For(i,2*mixt_tree->n_otu-1) 
+  for(i=0;i<2*mixt_tree->n_otu-1;++i) 
     {
       l = mixt_tree->a_edges[i]->l;
       do
@@ -1643,7 +1643,7 @@ void MIXT_Br_Len_Not_Involving_Invar(t_tree *mixt_tree)
   int i;
   scalar_dbl *l;
 
-  For(i,2*mixt_tree->n_otu-1) 
+  for(i=0;i<2*mixt_tree->n_otu-1;++i) 
     {
       l = mixt_tree->a_edges[i]->l;
       do
@@ -1663,7 +1663,7 @@ phydbl MIXT_Unscale_Br_Len_Multiplier_Tree(t_tree *mixt_tree)
   int i;
   scalar_dbl *l;
 
-  For(i,2*mixt_tree->n_otu-1) 
+  for(i=0;i<2*mixt_tree->n_otu-1;++i) 
     {
       l = mixt_tree->a_edges[i]->l;
       do
@@ -1684,7 +1684,7 @@ phydbl MIXT_Rescale_Br_Len_Multiplier_Tree(t_tree *mixt_tree)
   int i;
   scalar_dbl *l;
 
-  For(i,2*mixt_tree->n_otu-1) 
+  for(i=0;i<2*mixt_tree->n_otu-1;++i) 
     {
       l = mixt_tree->a_edges[i]->l;
       do
@@ -1706,7 +1706,7 @@ phydbl MIXT_Rescale_Free_Rate_Tree(t_tree *mixt_tree)
   t_edge *b;
 
   side_effect = NO;
-  For(i,2*mixt_tree->n_otu-1)
+  for(i=0;i<2*mixt_tree->n_otu-1;++i)
     {
       b = mixt_tree->a_edges[i]->next;
 
@@ -1787,7 +1787,7 @@ void MIXT_Check_Edge_Lens_In_One_Elem(t_tree *mixt_tree)
     {
       if(tree->next && tree->next->is_mixt_tree == NO)
         {
-          For(i,2*tree->n_otu-1)
+          for(i=0;i<2*tree->n_otu-1;++i)
             {
               if(tree->a_edges[i]->l != tree->next->a_edges[i]->l)
                 {
@@ -2532,7 +2532,11 @@ void MIXT_Make_Tree_For_Lk(t_tree *mixt_tree)
 #else
           tree->expl = (phydbl *)mCalloc(2*tree->mod->n_mixt_classes*tree->mod->ns,sizeof(phydbl));
 #endif
+          
+          for(int i=0;i<2*tree->n_otu-1;++i) Make_Edge_NNI(tree->a_edges[i]);
 
+          tree->log_lks_aLRT = (phydbl **)mCalloc(3,sizeof(phydbl *));
+          for(int i=0;i<3;i++) tree->log_lks_aLRT[i] = (phydbl *)mCalloc(tree->data->init_len,sizeof(phydbl));
         }
       
       tree = tree->next;
@@ -2885,8 +2889,8 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
       
       for(site=0;site<mixt_tree->n_pattern;++site)
         {
-          b     = mixt_b->next;
-          tree  = mixt_tree->next;
+          b    = mixt_b->next;
+          tree = mixt_tree->next;
           
           for(class=0;class<nclasses;++class)
             {
@@ -2943,7 +2947,13 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
                     sum_scale_left_cat[tree->mod->ras->parent_class_number] +
                     sum_scale_rght_cat[tree->mod->ras->parent_class_number];
                   
-                  assert(sum < 1024);
+                  if(sum > 1024.)
+                    {
+                      /* PhyML_Fprintf(stderr,"\n. Numerical precision issue detected (sum = %g)!!!",sum); */
+                      sum = 1023.;
+                      tree->mixt_tree->numerical_warning = YES;
+                      tree->numerical_warning = YES;
+                    }
                   
                   mult = pow(2,sum);
                   
@@ -3436,6 +3446,8 @@ void MIXT_Set_Bl_From_Rt(int yn, t_tree *mixt_tree)
 void MIXT_Copy_Tree(t_tree *ori, t_tree *cpy)
 {
   int ori_is_mixt_tree,cpy_is_mixt_tree;
+
+  if(cpy == NULL) return;
   
   do
     {
@@ -3453,12 +3465,35 @@ void MIXT_Copy_Tree(t_tree *ori, t_tree *cpy)
       ori = ori->next;
       cpy = cpy->next;
     }
-  while(ori);
+  while(cpy && ori);
 }
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
+void MIXT_Init_NNI_Score(phydbl val, t_edge *mixt_b, t_tree *mixt_tree)
+{
+  t_edge *b;
+  t_tree *tree;
+
+  tree = mixt_tree->next;
+  b = mixt_b->next;
+  do
+    {
+      if(tree->is_mixt_tree)
+        {
+          tree = tree->next;
+          b = b->next;
+        }
+      
+      Init_NNI_Score(val,b,tree);
+      tree = tree->next;
+      b = b->next;
+    }
+  while(tree);
+  
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

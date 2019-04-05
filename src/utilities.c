@@ -4898,6 +4898,12 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
 {
   int i,j;
 
+  if(ori->is_mixt_tree == YES)
+    {
+      MIXT_Copy_Tree(ori,cpy);
+      return;
+    }
+  
   for(i=0;i<2*ori->n_otu-2;++i)
     {
       for(j=0;j<3;++j)
@@ -4984,8 +4990,6 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
 #ifdef BEAGLE
   cpy->b_inst = ori->b_inst;
 #endif
-
-  if(cpy->next) Copy_Tree(cpy,cpy->next);
 }
 
 //////////////////////////////////////////////////////////////
@@ -9982,7 +9986,7 @@ phydbl Rescale_Br_Len_Multiplier_Tree(t_tree *tree)
       return(-1.);
     }
 
-  For(i,2*tree->n_otu-1) tree->a_edges[i]->l->v *= tree->mod->br_len_mult->v;
+  for(i=0;i<2*tree->n_otu-1;++i) tree->a_edges[i]->l->v *= tree->mod->br_len_mult->v;
   return(-1.);
 }
 

@@ -368,10 +368,10 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   v_init             = Duplicate_Scalar_Dbl(b_fcus->l_var);
   lk_init            = tree->c_lnL;
   lk_temp            = UNLIKELY;
-  b_fcus->nni->score = .0;
   lk0 = lk1 = lk2    = UNLIKELY;
   v1 = v2 = v3 = v4  = NULL;
-
+  Init_NNI_Score(0.0,b_fcus,tree);
+  
   /*! vertices */
   v1 = b_fcus->left->v[b_fcus->l_v1];
   v2 = b_fcus->left->v[b_fcus->l_v2];
@@ -438,7 +438,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
           Exit("\n");
         }
     }
-  while(FABS(lk_temp-lk0) > tree->mod->s_opt->min_diff_lk_global);
+  while(fabs(lk_temp-lk0) > tree->mod->s_opt->min_diff_lk_global);
   //until no significative improvement is detected
   
   lk0 = tree->c_lnL;

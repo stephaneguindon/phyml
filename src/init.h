@@ -71,5 +71,6 @@ void Init_Efrqs_Using_Observed_Freqs(t_efrq *f, phydbl *o, int ns);
 void Init_Calign(int n_otu, int crunch_len, int init_len, calign *this);
 void Init_Linked_List(t_ll *list);
 void Init_Target_Tip(t_clad *clade, t_tree *tree);
+void Init_NNI_Score(phydbl val, t_edge *b, t_tree *tree);
 
 #endif
