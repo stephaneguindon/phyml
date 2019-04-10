@@ -380,13 +380,13 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
 
   if(v1->num < v2->num)
     {
-      PhyML_Fprintf(stderr,"\n== Err. in file %s at line %d\n\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n\n",__FILE__,__LINE__);
       Exit("");
     }
 
   if(v3->num < v4->num)
     {
-      PhyML_Fprintf(stderr,"\n== Err. in file %s at line %d\n\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n\n",__FILE__,__LINE__);
       Exit("");
     }
 
@@ -417,24 +417,24 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
         if(b_fcus->left->v[i] != b_fcus->rght) //Only consider left_1 and left_2
           {
             Update_Partial_Lk(tree,b_fcus->left->b[i],b_fcus->left);
-            lk_temp = Br_Len_Opt(b_fcus->left->b[i],tree);
+            lk_temp = Br_Len_Opt(&(b_fcus->left->b[i]->l->v),b_fcus->left->b[i],tree);
           }
 
       Update_Partial_Lk(tree,b_fcus,b_fcus->left);
-      lk_temp = Br_Len_Opt(b_fcus,tree);
+      lk_temp = Br_Len_Opt(&(b_fcus->l->v),b_fcus,tree);
 
       for(i=0;i<3;i++)
         if(b_fcus->rght->v[i] != b_fcus->left) //Only consider right_1 and right_2
           {
             Update_Partial_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
-            lk_temp = Br_Len_Opt(b_fcus->rght->b[i],tree);
+            lk_temp = Br_Len_Opt(&(b_fcus->rght->b[i]->l->v),b_fcus->rght->b[i],tree);
           }
       Update_Partial_Lk(tree,b_fcus,b_fcus->rght);
 
       if(lk_temp < lk0 - tree->mod->s_opt->min_diff_lk_local)
         {
-          PhyML_Fprintf(stderr,"\n== lk_temp = %f lk0 = %f\n",lk_temp,lk0);
-          PhyML_Fprintf(stderr,"\n== Err. in file %s at line %d\n\n",__FILE__,__LINE__);
+          PhyML_Fprintf(stderr,"\n. lk_temp = %f lk0 = %f\n",lk_temp,lk0);
+          PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n\n",__FILE__,__LINE__);
           Exit("\n");
         }
     }
@@ -479,8 +479,8 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   MIXT_Set_Alias_Subpatt(NO,tree);
   if((lk_temp > lk_init + tree->mod->s_opt->min_diff_lk_local) || (lk_temp < lk_init - tree->mod->s_opt->min_diff_lk_local))
     {
-      PhyML_Fprintf(stderr,"\n== lk_temp = %f lk_init = %f",lk_temp,lk_init);
-      PhyML_Fprintf(stderr,"\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      PhyML_Fprintf(stderr,"\n. lk_temp = %f lk_init = %f",lk_temp,lk_init);
+      PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
       Exit("\n");
     }
 
@@ -513,26 +513,26 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
         if(b_fcus->left->v[i] != b_fcus->rght)
           {
             Update_Partial_Lk(tree,b_fcus->left->b[i],b_fcus->left);
-            lk_temp = Br_Len_Opt(b_fcus->left->b[i],tree);
+            lk_temp = Br_Len_Opt(&(b_fcus->left->b[i]->l->v),b_fcus->left->b[i],tree);
           }
       
       Update_Partial_Lk(tree,b_fcus,b_fcus->left);
-      lk_temp = Br_Len_Opt(b_fcus,tree);
+      lk_temp = Br_Len_Opt(&(b_fcus->l->v),b_fcus,tree);
       
       for(i=0;i<3;i++)
         if(b_fcus->rght->v[i] != b_fcus->left)
           {
             Update_Partial_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
-            lk_temp = Br_Len_Opt(b_fcus->rght->b[i],tree);
+            lk_temp = Br_Len_Opt(&(b_fcus->rght->b[i]->l->v),b_fcus->rght->b[i],tree);
           }
       
       Update_Partial_Lk(tree,b_fcus,b_fcus->rght);
       
       if(lk_temp < lk1 - tree->mod->s_opt->min_diff_lk_local)
         {
-          PhyML_Fprintf(stderr,"\n== lk_temp = %f lk1 = %f\n",lk_temp,lk1);
-          PhyML_Fprintf(stderr,"\n== Err in file %s at line %d\n\n",__FILE__,__LINE__);
-          Warn_And_Exit("");
+          PhyML_Fprintf(stderr,"\n. lk_temp = %f lk1 = %f\n",lk_temp,lk1);
+          PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n\n",__FILE__,__LINE__);
+          Exit("");
         }
     }
   while(FABS(lk_temp-lk1) > tree->mod->s_opt->min_diff_lk_global);
@@ -612,7 +612,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
         if(b_fcus->left->v[i] != b_fcus->rght)
           {
             Update_Partial_Lk(tree,b_fcus->left->b[i],b_fcus->left);
-            lk_temp = Br_Len_Opt(b_fcus->left->b[i],tree);
+            lk_temp = Br_Len_Opt(&(b_fcus->left->b[i]->l->v),b_fcus->left->b[i],tree);
             
             if(lk_temp < lk2 - tree->mod->s_opt->min_diff_lk_local)
               {
@@ -623,7 +623,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
               }
           }
       Update_Partial_Lk(tree,b_fcus,b_fcus->left);
-      lk_temp = Br_Len_Opt(b_fcus,tree);
+      lk_temp = Br_Len_Opt(&(b_fcus->l->v),b_fcus,tree);
       
       if(lk_temp < lk2 - tree->mod->s_opt->min_diff_lk_local)
         {
@@ -637,7 +637,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
         if(b_fcus->rght->v[i] != b_fcus->left)
           {
             Update_Partial_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
-            lk_temp = Br_Len_Opt(b_fcus->rght->b[i],tree);
+            lk_temp = Br_Len_Opt(&(b_fcus->rght->b[i]->l->v),b_fcus->rght->b[i],tree);
             
             if(lk_temp < lk2 - tree->mod->s_opt->min_diff_lk_local)
               {
@@ -844,18 +844,18 @@ void Make_Target_Swap(t_tree *tree, t_edge *b_fcus, int swaptodo)
         if(b_fcus->left->v[i] != b_fcus->rght)
           {
             Update_Partial_Lk(tree,b_fcus->left->b[i],b_fcus->left);
-            lk_temp = Br_Len_Opt(b_fcus->left->b[i],tree);
+            lk_temp = Br_Len_Opt(&(b_fcus->left->b[i]->l->v),b_fcus->left->b[i],tree);
           }
 
 
       Update_Partial_Lk(tree,b_fcus,b_fcus->left);
-      lk_temp = Br_Len_Opt(b_fcus,tree);
+      lk_temp = Br_Len_Opt(&(b_fcus->l->v),b_fcus,tree);
 
       for(i=0;i<3;i++)
         if(b_fcus->rght->v[i] != b_fcus->left)
           {
             Update_Partial_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
-            lk_temp = Br_Len_Opt(b_fcus->rght->b[i],tree);
+            lk_temp = Br_Len_Opt(&(b_fcus->rght->b[i]->l->v),b_fcus->rght->b[i],tree);
           }
 
       Update_Partial_Lk(tree,b_fcus,b_fcus->rght);

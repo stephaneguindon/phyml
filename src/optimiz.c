@@ -598,7 +598,7 @@ phydbl Fast_Br_Len(t_edge *b, t_tree *tree, int approx)
   tree->mod->s_opt->min_diff_lk_local = 1.E-1;      
 
   if(tree->is_mixt_tree) MIXT_Br_Len_Opt(b,tree);   
-  else Br_Len_Opt(b,tree);
+  else Br_Len_Opt(&(b->l->v),b,tree);
 
   tree->mod->s_opt->min_diff_lk_local = init_min_diff_lk_local;
 
@@ -608,70 +608,61 @@ phydbl Fast_Br_Len(t_edge *b, t_tree *tree, int approx)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-phydbl Br_Len_Opt(t_edge *b, t_tree *tree)
+phydbl Br_Len_Opt(phydbl *l, t_edge *b, t_tree *tree)
 {
   phydbl lk_begin, lk_end;
-  t_edge *mixt_b;
-  t_tree *mixt_tree;
 
   
-  if(tree->is_mixt_tree == YES)
+  if(tree->is_mixt_tree == YES && tree->ignore_mixt_info == NO)
     {
       MIXT_Br_Len_Opt(b,tree);
       return tree->c_lnL;
     }
 
-  lk_begin  = UNLIKELY;
-  lk_end    = UNLIKELY;
-  
-  mixt_tree = tree;
-  while(mixt_tree->prev != NULL) mixt_tree = mixt_tree->prev; 
-  
-  mixt_b = b;
-  while(mixt_b->prev != NULL) mixt_b = mixt_b->prev; 
-  
-  if(b->l->onoff == OFF) return mixt_tree->c_lnL;
+  if(b->l->onoff == OFF) return tree->c_lnL;
 
-  Set_Update_Eigen_Lr(YES,mixt_tree);
-  Set_Use_Eigen_Lr(NO,mixt_tree);
-
-  lk_begin = Lk(mixt_b,mixt_tree); /* We can't assume that the log-lk value is up-to-date */
+  lk_begin = UNLIKELY;
+  lk_end   = UNLIKELY;
   
-  Set_Update_Eigen_Lr(NO,mixt_tree);
-  Set_Use_Eigen_Lr(YES,mixt_tree);
+  Set_Update_Eigen_Lr(YES,tree);
+  Set_Use_Eigen_Lr(NO,tree);
+
+  lk_begin = Lk(b,tree); /* We can't assume that the log-lk value is up-to-date */
+  
+  Set_Update_Eigen_Lr(NO,tree);
+  Set_Use_Eigen_Lr(YES,tree);
     
-  Br_Len_Spline(&(b->l->v),mixt_b,tree->mod->s_opt->brent_it_max,tree->mod->s_opt->min_diff_lk_local,mixt_tree);
+  Br_Len_Spline(l,b,tree->mod->s_opt->brent_it_max,tree->mod->s_opt->min_diff_lk_local,tree);
   
-  Update_PMat_At_Given_Edge(mixt_b,mixt_tree);
+  Update_PMat_At_Given_Edge(b,tree);
   
-  Set_Update_Eigen_Lr(NO,mixt_tree);
-  Set_Use_Eigen_Lr(NO,mixt_tree);
+  Set_Update_Eigen_Lr(NO,tree);
+  Set_Use_Eigen_Lr(NO,tree);
   
-  /* lk_begin = Lk(mixt_b,mixt_tree); */
-  /* tree->n_tot_bl_opt += Generic_Brent_Lk(&(b->l->v), */
+  /* lk_begin = Lk(b,tree); */
+  /* tree->n_tot_bl_opt += Generic_Brent_Lk(l, */
   /*                                        tree->mod->l_min, */
   /*                                        tree->mod->l_max, */
   /*                                        tree->mod->s_opt->min_diff_lk_local, */
   /*                                        tree->mod->s_opt->brent_it_max, */
   /*                                        tree->mod->s_opt->quickdirty, */
   /*                                        Wrap_Lk_At_Given_Edge, */
-  /*                                        mixt_b,mixt_tree,NULL,NO); */
+  /*                                        b,tree,NULL,NO); */
 
   /* printf("\n. b->num: %4d l=%12G lnL: %12G",b->num,b->l->v,tree->c_lnL); */
   
 
-  /* lk_end = Lk(mixt_b,mixt_tree); /\* We can't assume that the log-lk value is up-to-date *\/ */
-  lk_end = mixt_tree->c_lnL;
+  /* lk_end = Lk(b,tree); /\* We can't assume that the log-lk value is up-to-date *\/ */
+  lk_end = tree->c_lnL;
   
   if(lk_end < lk_begin - tree->mod->s_opt->min_diff_lk_local)
     {
-      PhyML_Fprintf(stderr,"\n. l: %f var:%f",b->l->v,b->l_var->v);
       PhyML_Fprintf(stderr,"\n. lk_beg = %f lk_end = %f",lk_begin, lk_end);
       PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d",__FILE__,__LINE__);
       Exit("\n");
     }
 
-  return mixt_tree->c_lnL;
+  return tree->c_lnL;
 }
 
 //////////////////////////////////////////////////////////////
@@ -889,7 +880,7 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
       return;
     }
 
-  if(tree->io->mod->s_opt->opt_bl == YES) Br_Len_Opt(b_fcus,tree);
+  if(tree->io->mod->s_opt->opt_bl == YES) Br_Len_Opt(&(b_fcus->l->v),b_fcus,tree);
 
   if(tree->c_lnL < lk_init - tree->mod->s_opt->min_diff_lk_local)
     {
@@ -916,7 +907,7 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
         if(d->v[i] == a || d->b[i] == tree->e_root) 
           {
             Update_Partial_Lk(tree,d->b[i],d);
-            if(tree->io->mod->s_opt->opt_bl == YES) Br_Len_Opt(d->b[i],tree);
+            if(tree->io->mod->s_opt->opt_bl == YES) Br_Len_Opt(&(d->b[i]->l->v),d->b[i],tree);
           }
     }
   else
@@ -931,7 +922,7 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
             }
         }
       Update_Partial_Lk(tree,b_fcus,d);
-      if(tree->io->mod->s_opt->opt_bl == YES) Br_Len_Opt(b_fcus,tree);
+      if(tree->io->mod->s_opt->opt_bl == YES) Br_Len_Opt(&(b_fcus->l->v),b_fcus,tree);
     }
 }
 
@@ -956,7 +947,7 @@ void Optimiz_Ext_Br(t_tree *tree)
           l_init = Duplicate_Scalar_Dbl(b->l);          
           v_init = Duplicate_Scalar_Dbl(b->l_var);          
           
-          Br_Len_Opt(b,tree);
+          Br_Len_Opt(&(b->l->v),b,tree);
           
           if(b->nni->best_l == NULL)
             {
@@ -2294,7 +2285,9 @@ static phydbl Br_Len_Spline(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_
   phydbl a_,b_,A_,B_,C_,D_,root1,root2;
   short int ok1, ok2;
   // Warning: make sure eigen_lr vectors are already up-to-date 
-  
+
+  Set_Use_Eigen_Lr(YES,tree);
+
   
   best_l = init_l = *l;
   best_lnL = old_lnL = init_lnL = tree->c_lnL;  
@@ -2306,7 +2299,7 @@ static phydbl Br_Len_Spline(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_
   
   dLk(l,b,tree);
   init_dl = tree->c_dlnL;
-
+  
   if(*l > tree->mod->l_max) *l = 0.5;
   if(*l < tree->mod->l_min) *l = 0.001;
   
@@ -2322,14 +2315,12 @@ static phydbl Br_Len_Spline(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_
           tree->c_lnL = best_lnL;
           return best_lnL;
         }
-      Set_Use_Eigen_Lr(YES,tree);
       dLk(l,b,tree);
       if(tree->c_lnL > best_lnL)
         {
           best_lnL = tree->c_lnL;
           best_l   = *l;
         }
-      /* PhyML_Printf("\n. u l: %f dlnL: %f lnL: %f",*l,tree->c_dlnL,tree->c_lnL); */
     }
   u = *l;
   fu = tree->c_lnL;
@@ -2352,14 +2343,12 @@ static phydbl Br_Len_Spline(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_
           tree->c_lnL = best_lnL;
           return best_lnL;
         }
-      Set_Use_Eigen_Lr(YES,tree);
       dLk(l,b,tree);
       if(tree->c_lnL > best_lnL)
         {
           best_lnL = tree->c_lnL;
           best_l   = *l;
         }
-      /* PhyML_Printf("\n. v l: %f dlnL: %f lnL: %f",*l,tree->c_dlnL,tree->c_lnL); */
     }
   v = *l;
   fv = tree->c_lnL;
@@ -2423,15 +2412,13 @@ static phydbl Br_Len_Spline(phydbl *l, t_edge *b, int n_iter_max, phydbl tol, t_
       tree->n_tot_bl_opt++;
           
       old_lnL = tree->c_lnL;
-      Set_Use_Eigen_Lr(YES,tree);
       dLk(l,b,tree);
       if(tree->c_lnL > best_lnL)
         {
           best_lnL = tree->c_lnL;
           best_l   = *l;
         }
-      
-      
+            
       if(tree->c_dlnL > 0.0)
         {
           u = new_l;

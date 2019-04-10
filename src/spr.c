@@ -745,13 +745,13 @@ void Global_Spr_Search(t_tree *tree)
   
   best_lnL      = UNLIKELY;
   tree->verbose = (tree->verbose == VL0) ? VL0 : VL1;
-  best_tree     = Make_Tree_From_Scratch(tree->n_otu,tree->data);
+  best_tree     = Duplicate_Tree(tree);
     
   if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace);
 
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Score of initial tree: %.2f",tree->c_lnL);
 
-
+                 
   tree->mod->s_opt->min_diff_lk_move  = 1.E-1;
   tree->mod->s_opt->min_diff_lk_local = 1.E-1;
   Round_Optimize(tree,1000);
@@ -854,8 +854,6 @@ void Global_Spr_Search(t_tree *tree)
     }
   while(tree->mod->s_opt->n_improvements > 15 && no_improv < 10);
         
-
-  Round_Optimize(tree,1000);
 
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Second round of optimization...\n");
 
@@ -1002,11 +1000,10 @@ void Global_Spr_Search(t_tree *tree)
       iter++;
     }
   while(tree->mod->s_opt->n_improvements > 0 && last_best_found <= tree->mod->s_opt->max_no_better_tree_found);
- 
+
   Copy_Tree(best_tree,tree);
   
   if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf("\n\n. Final optimisation steps...\n");
-
   
   i = tree->verbose;
   tree->verbose = VL0;
@@ -1021,7 +1018,6 @@ void Global_Spr_Search(t_tree *tree)
   while(1);
   tree->verbose = i;
   
-
   Free_Tree(best_tree);
 
   return;
@@ -1202,7 +1198,7 @@ int Evaluate_List_Of_Regraft_Pos_Triple(t_spr **spr_list, int list_size, t_tree 
                */
               recorded = YES;
               
-              Br_Len_Opt(init_target,tree);
+              Br_Len_Opt(&(init_target->l->v),init_target,tree);
 
               /*! Record branch length at prune site */
               if(recorded_l == NULL)

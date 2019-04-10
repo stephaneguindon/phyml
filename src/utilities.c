@@ -1565,7 +1565,7 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
         }
       else 
         {
-          lk1 = Br_Len_Opt(b_fcus,tree);
+          lk1 = Br_Len_Opt(&(b_fcus->l->v),b_fcus,tree);
         }
     }
 
@@ -1604,7 +1604,7 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
         }
       else 
         {
-          lk2 = Br_Len_Opt(b_fcus,tree);
+          lk2 = Br_Len_Opt(&(b_fcus->l->v),b_fcus,tree);
         }
     }
 
@@ -1654,7 +1654,7 @@ void NNI(t_tree *tree, t_edge *b_fcus, int do_swap)
         }
       else 
         {
-          lk0 = Br_Len_Opt(b_fcus,tree);
+          lk0 = Br_Len_Opt(&(b_fcus->l->v),b_fcus,tree);
         }
     }
 
@@ -4898,12 +4898,12 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
 {
   int i,j;
 
-  if(ori->is_mixt_tree == YES)
+  if(ori->is_mixt_tree == YES || cpy->is_mixt_tree)
     {
       MIXT_Copy_Tree(ori,cpy);
       return;
     }
-  
+
   for(i=0;i<2*ori->n_otu-2;++i)
     {
       for(j=0;j<3;++j)
@@ -4981,15 +4981,21 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
   cpy->t_beg                     = ori->t_beg;
   cpy->verbose                   = ori->verbose;
 
-  /* only stick to copying tree topology. Don't copy data or model or it will
-     screw up a mixt_tree analyis 
-  */
-  /* if(ori->data) cpy->data = ori->data; */
-  /* if(ori->mod)  cpy->mod  = ori->mod; */
   
 #ifdef BEAGLE
   cpy->b_inst = ori->b_inst;
 #endif
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+t_tree *Duplicate_Tree(t_tree *ori)
+{
+  if(ori->is_mixt_tree == YES) return MIXT_Duplicate_Tree(ori);
+  t_tree *cpy = Make_Tree_From_Scratch(ori->n_otu,ori->data);
+  Copy_Tree(ori,cpy);
+  return(cpy);
 }
 
 //////////////////////////////////////////////////////////////
@@ -5964,15 +5970,15 @@ phydbl Triple_Dist(t_node *a, t_tree *tree)
 
       Update_Partial_Lk(tree,a->b[0],a);
       /* Fast_Br_Len(a->b[0],tree,YES); */
-      Br_Len_Opt(a->b[0],tree);
+      Br_Len_Opt(&(a->b[0]->l->v),a->b[0],tree);
       
       Update_Partial_Lk(tree,a->b[1],a);
       /* Fast_Br_Len(a->b[1],tree,YES); */
-      Br_Len_Opt(a->b[1],tree);
+      Br_Len_Opt(&(a->b[1]->l->v),a->b[1],tree);
 
       Update_Partial_Lk(tree,a->b[2],a);
       /* Fast_Br_Len(a->b[2],tree,YES); */
-      Br_Len_Opt(a->b[2],tree);
+      Br_Len_Opt(&(a->b[2]->l->v),a->b[2],tree);
         
       
       Update_Partial_Lk(tree,a->b[1],a);
@@ -10597,16 +10603,7 @@ void Set_Update_Eigen_Lr(int yesno, t_tree *tree)
 
 void Set_Update_Eigen(int yesno, t_mod *mod)
 {
-  t_mod *buff;
-
-  buff = mod;
-  do
-    {
-      buff->update_eigen = yesno;
-      buff = buff->next;
-      if(!buff) break;
-    }
-  while(1);  
+  MIXT_Set_Update_Eigen(yesno,mod);
 }
 
 //////////////////////////////////////////////////////////////
@@ -10863,9 +10860,9 @@ void Best_Root_Position_IL_Model(t_tree *tree)
           /* Optimize_Br_Len_Serie(2,tree); */
 
           Update_Partial_Lk(tree,tree->n_root->b[1],tree->n_root);
-          Br_Len_Opt(tree->n_root->b[1],tree);
+          Br_Len_Opt(&(tree->n_root->b[1]->l->v),tree->n_root->b[1],tree);
           Update_Partial_Lk(tree,tree->n_root->b[2],tree->n_root);
-          Br_Len_Opt(tree->n_root->b[2],tree);
+          Br_Len_Opt(&(tree->n_root->b[2]->l->v),tree->n_root->b[2],tree);
 
           PhyML_Printf(" -- lnL: %20f",tree->c_lnL);
           if(tree->c_lnL > best_lnL)
@@ -10879,9 +10876,9 @@ void Best_Root_Position_IL_Model(t_tree *tree)
       Set_Both_Sides(YES,tree);
       Lk(NULL,tree);
       Update_Partial_Lk(tree,tree->n_root->b[1],tree->n_root);
-      Br_Len_Opt(tree->n_root->b[1],tree);
+      Br_Len_Opt(&(tree->n_root->b[1]->l->v),tree->n_root->b[1],tree);
       Update_Partial_Lk(tree,tree->n_root->b[2],tree->n_root);
-      Br_Len_Opt(tree->n_root->b[2],tree);
+      Br_Len_Opt(&(tree->n_root->b[2]->l->v),tree->n_root->b[2],tree);
       tree->ignore_root = YES;
     }
 }

@@ -139,6 +139,7 @@ void Init_Tree(t_tree *tree, int n_otu)
   tree->apply_lk_scaling          = YES;
   tree->dp                        = 0;
   tree->ignore_root               = YES;
+  tree->ignore_mixt_info          = NO;
   tree->annealing_temp            = 0.;
   tree->both_sides                = NO;
   tree->json_num                  = 0;
@@ -664,7 +665,7 @@ void Set_Defaults_Model(t_mod *mod)
 
 
 #if !(defined PHYTIME || defined PHYREX)
-  mod->l_min = 1.E-15;
+  mod->l_min = 1.E-8;
   mod->l_max = 100.0;
 #else
   mod->l_min = 1.E-6;

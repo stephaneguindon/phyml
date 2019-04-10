@@ -104,7 +104,7 @@ void MIXT_Set_Both_Sides(int yesno, t_tree *mixt_tree);
 void MIXT_Set_Br_Len(phydbl val, t_edge *mixt_b, t_tree *mixt_tree);
 void MIXT_Multiply_Scalar_Dbl(scalar_dbl *this, phydbl scalar);
 void MIXT_Sample_Ancestral_Seq(int mutmap, int fromprior, t_tree *mixt_tree);
-void MIXT_Set_Update_Eigen(int yn, t_tree *mixt_tree);
+void MIXT_Set_Update_Eigen(int yn, t_mod *mixt_mod);
 void MIXT_Set_Ignore_Root(int yesno, t_tree *mixt_tree);
 void MIXT_Make_Spr(t_tree *mixt_tree);
 void MIXT_Make_Tree_For_Lk(t_tree *mixt_tree);
@@ -114,5 +114,6 @@ void MIXT_Propagate_Tree_Update(t_tree *mixt_tree);
 void MIXT_Set_Bl_From_Rt(int yn, t_tree *mixt_tree);
 void MIXT_Copy_Tree(t_tree *ori, t_tree *cpy);
 void MIXT_Init_NNI_Score(phydbl val, t_edge *mixt_b, t_tree *mixt_tree);
+t_tree *MIXT_Duplicate_Tree(t_tree *ori);
 
 #endif

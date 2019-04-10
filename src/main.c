@@ -182,6 +182,7 @@ int main(int argc, char **argv)
                       if(tree->has_branch_lengths == NO) Add_BioNJ_Branch_Lengths(tree,cdata,mod,NULL);
                     }
 
+                  
                   if(!tree) continue;
                   
                   time(&t_beg);

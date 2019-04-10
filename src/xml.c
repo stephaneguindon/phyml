@@ -130,10 +130,7 @@ t_tree *XML_Process_Base(char *xml_filename)
     }
 
   s = XML_Get_Attribute_Value(p_elem,"r.seed");
-  if(s && strlen(s)>0)
-    {
-      io->r_seed = (int)atoi(s);
-    }
+  if(s && strlen(s)>0) io->r_seed = (int)atoi(s);
 
   strcpy(io->out_file,outputfile);
   strcpy(io->out_tree_file,outputfile);
@@ -945,7 +942,7 @@ t_tree *XML_Process_Base(char *xml_filename)
                                   lens_size += 2*tree->n_otu-1;
                                 }
                               
-                              For(i,2*tree->n_otu-1)
+                              for(i=0;i<2*tree->n_otu-1;++i)
                                 {
                                   lens[i] = (scalar_dbl *)mCalloc(1,sizeof(scalar_dbl));
                                   Init_Scalar_Dbl(lens[i]);
@@ -1121,6 +1118,11 @@ t_tree *XML_Process_Base(char *xml_filename)
 
   if(!io->mod->s_opt->random_input_tree) io->mod->s_opt->n_rand_starts = 1;
 
+
+  /* int r_seed = (io->r_seed < 0)?(time(NULL)):(io->r_seed); */
+  /* srand(r_seed); */
+  /* io->r_seed = r_seed; */
+  
   Free(component);
   Free(class_num);
   

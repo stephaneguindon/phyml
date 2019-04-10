@@ -860,7 +860,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
                     phydbl v;
                     int n_rr;
                     const char *d = ",";
-                    char *tok = strtok(optarg, d);
+                    char *tok = strtok(optarg,d);
                     
                     io->datatype           = NT;
                     io->mod->ns            = 4;

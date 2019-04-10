@@ -454,7 +454,7 @@ phydbl Lk(t_edge *b, t_tree *tree)
   const unsigned int ncatg = tree->mod->ras->n_catg;
   const unsigned int npatterns = tree->n_pattern;
   const unsigned int nsncatg = ns * ncatg;
-
+  
   tree->numerical_warning = NO;
   
   /* if(tree->eval_alnL == NO) return UNLIKELY; */
@@ -794,6 +794,7 @@ phydbl Lk_Core(int state, int ambiguity_check,
             {
               tree->site_lk_cat[catg] = Lk_Core_One_Class_No_Eigen_Lr(p_lk_left,p_lk_rght,Pij_rr,pi,ns, ambiguity_check, state);
             }
+          
           Pij_rr += nsns;
           if(b->left->tax == NO) p_lk_left += ns;
           if(b->rght->tax == NO) p_lk_rght += ns;
@@ -2174,7 +2175,6 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
 
   assert(b_fcus);
   assert(tree);
-
   
   if(tree->is_mixt_tree == YES)
     {

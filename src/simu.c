@@ -832,12 +832,12 @@ void NNI_Traversal(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_
   
   if(d->tax == YES)
     {
-      if(opt_edges == YES) Br_Len_Opt(b,tree);
+      if(opt_edges == YES) Br_Len_Opt(&(b->l->v),b,tree);
       return;
     }
   else if(a->tax == YES)
     {
-      if(opt_edges == YES && a->tax == YES)  Br_Len_Opt(b,tree);
+      if(opt_edges == YES && a->tax == YES)  Br_Len_Opt(&(b->l->v),b,tree);
       for(i=0;i<3;++i)
         if(d->v[i] != a)
           {
@@ -910,7 +910,7 @@ void NNI_Core(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_tree 
   u = NULL;
   for(i=0;i<3;++i) if(a->v[i] != d && a->v[i] != v) { u = a->v[i]; break; }
   
-  if(opt_edges == YES) Br_Len_Opt(b,tree);
+  if(opt_edges == YES) Br_Len_Opt(&(b->l->v),b,tree);
   lk0 = Lk(b,tree);
   l0 = Duplicate_Scalar_Dbl(b->l);
   
@@ -924,7 +924,7 @@ void NNI_Core(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_tree 
   // Update partial likelihood looking down
   Update_Partial_Lk(tree,b,d);
   // Evaluate likelihood
-  if(opt_edges == YES) Br_Len_Opt(b,tree);
+  if(opt_edges == YES) Br_Len_Opt(&(b->l->v),b,tree);
   lk1 = Lk(b,tree);
   /* if(lk1 > lk0 + tree->mod->s_opt->min_diff_lk_move) */
   /*   { */
@@ -944,7 +944,7 @@ void NNI_Core(t_node *a, t_node *d, t_node *v, t_edge *b, int opt_edges, t_tree 
   // Update partial likelihood looking down
   Update_Partial_Lk(tree,b,d);
   // Evaluate likelihood
-  if(opt_edges == YES) Br_Len_Opt(b,tree);
+  if(opt_edges == YES) Br_Len_Opt(&(b->l->v),b,tree);
   lk2 = Lk(b,tree);
   /* if(lk2 > lk0 + tree->mod->s_opt->min_diff_lk_move) */
   /*   { */

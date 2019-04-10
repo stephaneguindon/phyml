@@ -824,6 +824,7 @@ typedef struct __Tree{
   phydbl                                   *K; /*! a vector of the norm.constants for the node times prior. */
 
   short int                       ignore_root;
+  short int                  ignore_mixt_info;
 #ifdef BEAGLE
   int                                  b_inst; /*! The BEAGLE instance id associated with this tree. */
 #endif
@@ -2330,6 +2331,7 @@ void Refactor_External(t_node *a, t_node *d, int *idx, t_tree *tree);
 void Refactor_Internal(t_node *a, t_node *d, t_edge *b, int *idx_nd, int *idx_br, t_tree *tree);
 int *Integer_To_Bit(int val, const int ns);
 char *Bit_To_Character_String(int *bit, int ns);
+t_tree *Duplicate_Tree(t_tree *ori);
 
 
 #include "xml.h"
