@@ -2366,7 +2366,6 @@ t_tree *MIXT_Starting_Tree(t_tree *mixt_tree)
           {
             assert(mixt_tree->io->fp_in_tree);
             
-            // Copy user tree to all tree structures
             tree = Read_User_Tree(mixt_tree->io->cdata,
                                   mixt_tree->mod,
                                   mixt_tree->io);

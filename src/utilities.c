@@ -4898,7 +4898,7 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
 {
   int i,j;
 
-  if(ori->is_mixt_tree == YES || cpy->is_mixt_tree)
+  if(ori->is_mixt_tree == YES || cpy->is_mixt_tree == YES)
     {
       MIXT_Copy_Tree(ori,cpy);
       return;
@@ -4959,6 +4959,7 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
       strcpy(cpy->a_nodes[i]->name,ori->a_nodes[i]->name);
     }
 
+  
   if(ori->n_root)
     {
       cpy->e_root = cpy->a_edges[ori->e_root->num];
@@ -7300,6 +7301,7 @@ void Add_Root(t_edge *target, t_tree *tree)
   if(!tree->a_nodes[2*tree->n_otu-2]) tree->n_root = (t_node *)Make_Node_Light(2*tree->n_otu-2);
   else                                tree->n_root = tree->a_nodes[2*tree->n_otu-2];
 
+
   tree->a_nodes[2*tree->n_otu-2] = tree->n_root;
 
   tree->n_root->tax = 0;
@@ -7311,6 +7313,13 @@ void Add_Root(t_edge *target, t_tree *tree)
 
   /* tree->n_root->b[2] = tree->e_root; */
   /* tree->n_root->b[1] = tree->e_root; */
+
+  b1 = tree->a_edges[2*tree->n_otu-3];
+  b2 = tree->a_edges[2*tree->n_otu-2];
+
+  tree->n_root->b[0] = NULL;
+  tree->n_root->b[1] = b1;
+  tree->n_root->b[2] = b2;
 
   if(tree->n_root_pos > -1.0)
     {
@@ -7329,12 +7338,6 @@ void Add_Root(t_edge *target, t_tree *tree)
       tree->n_root_pos = 0.5;
     }
 
-  b1 = tree->a_edges[2*tree->n_otu-3];
-  b2 = tree->a_edges[2*tree->n_otu-2];
-
-  tree->n_root->b[0] = NULL;
-  tree->n_root->b[1] = b1;
-  tree->n_root->b[2] = b2;
 
   b1->num  = tree->num_curr_branch_available;
   b2->num  = tree->num_curr_branch_available+1;

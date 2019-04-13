@@ -7228,8 +7228,6 @@ void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree)
 
   if(!n_all_disks) return;
   
-  tree->mcmc->run_move[tree->mcmc->num_move_phyrex_move_disk_ud]++;
-
   n_move_disks = Rand_Int(1,(int)(n_all_disks));
   
   target_disk = (t_dsk **)mCalloc(n_all_disks,sizeof(t_dsk *));
@@ -7238,7 +7236,9 @@ void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree)
   permut = Permutate(n_all_disks);
 
   for(i=0;i<n_move_disks;i++)
-    {      
+    {
+      tree->mcmc->run_move[tree->mcmc->num_move_phyrex_move_disk_ud]++;
+
       new_alnL      = tree->c_lnL;
       cur_alnL      = tree->c_lnL;
       new_glnL      = tree->mmod->c_lnL;
