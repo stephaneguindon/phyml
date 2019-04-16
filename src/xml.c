@@ -2334,11 +2334,11 @@ void XML_Read_Calibration(xml_node *xroot, t_tree *tree)
                           strcpy(clade->id,clade_id);
                           
                           nd_num = Find_Clade(clade->tax_list,clade_size,tree);
-                          clade->target_nd = tree->a_nodes[nd_num];
-                          
+
+                          clade->target_nd = tree->a_nodes[nd_num];      
                           clade->tip_list = Make_Target_Tip(clade->n_tax);
                           Init_Target_Tip(clade,tree);
-
+                          
                           Free(xclade);
                         }
                       else
@@ -2383,6 +2383,23 @@ void XML_Read_Calibration(xml_node *xroot, t_tree *tree)
           PhyML_Printf("\n.......................................................................");
         }
     }
+
+  for(i=0;i<tree->rates->n_cal;++i)
+    {
+      cal = tree->rates->a_cal[i];
+      for(j=0;j<cal->clade_list_size;j++)
+        {
+          clade = cal->clade_list[j];
+          if(clade->target_nd->tax == YES && cal->upper < SMALL_DBL)
+            {
+              tree->rates->is_asynchronous = YES;
+              break;
+            }
+        }
+    }
+
+  PhyML_Printf("\n\n");
+  PhyML_Printf("\n. Is asynchronous: %s",tree->rates->is_asynchronous ? "yes" : "no");
 }
 
 //////////////////////////////////////////////////////////////

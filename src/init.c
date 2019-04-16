@@ -930,6 +930,7 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
     }
   
   rates->update_time_norm_const = NO;
+  rates->is_asynchronous = NO;
 }
 
 //////////////////////////////////////////////////////////////

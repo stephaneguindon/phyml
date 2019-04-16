@@ -1810,6 +1810,7 @@ phydbl PHYREX_Lk(t_tree *tree)
   phydbl lnL;
   phydbl log_lbda;
   t_dsk *disk;
+  int n_intervals;
   
   assert(!tree->young_disk->next);
   assert(tree->young_disk->prev);
@@ -1831,6 +1832,7 @@ phydbl PHYREX_Lk(t_tree *tree)
   PHYREX_Update_Lindisk_List(tree);
   tree->mmod->c_lnL += PHYREX_Lk_Core(tree->young_disk,tree);
 
+  n_intervals = 0;
   disk = tree->young_disk->prev;
   do
     {
@@ -1841,13 +1843,14 @@ phydbl PHYREX_Lk(t_tree *tree)
           return tree->mmod->c_lnL;
         }
       lnL = PHYREX_Lk_Core(disk,tree);
-      lnL += log_lbda - tree->mmod->lbda * fabs(disk->time - disk->next->time);
       tree->mmod->c_lnL += lnL;
-
+      if(disk->age_fixed == NO) n_intervals++;
       if(disk->prev == NULL) break;
       disk = disk->prev;      
     }
   while(1);
+
+  tree->mmod->c_lnL += n_intervals * log_lbda - tree->mmod->lbda*(tree->young_disk->time - disk->time);
 
   if(isinf(tree->mmod->c_lnL) || isnan(tree->mmod->c_lnL)) tree->mmod->c_lnL = UNLIKELY;
 
@@ -1929,6 +1932,7 @@ phydbl PHYREX_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
 {
   t_dsk *disk;
   phydbl lnL,log_lbda;
+  int n_intervals;
   
   assert(young);
   
@@ -1938,7 +1942,8 @@ phydbl PHYREX_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
 
   PHYREX_Update_Lindisk_List_Core(young,tree);
   lnL += PHYREX_Lk_Core(young,tree);
-  
+
+  n_intervals = 0;
   disk = young->prev;
   do
     {
@@ -1946,12 +1951,14 @@ phydbl PHYREX_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
       if(disk->time > disk->next->time) return UNLIKELY;
       PHYREX_Update_Lindisk_List_Core(disk,tree);
       lnL += PHYREX_Lk_Core(disk,tree);
-      lnL += log_lbda - tree->mmod->lbda * fabs(disk->time - disk->next->time);
+      if(disk->age_fixed == NO) n_intervals++;
       if(disk == old) break;
       disk = disk->prev;
     }
   while(disk);
       
+  lnL += n_intervals * log_lbda - tree->mmod->lbda*(young->time - old->time);
+
   return(lnL);
 }
 
@@ -2091,6 +2098,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   PhyML_Fprintf(fp_stats,"%s\t","tstv");
   PhyML_Fprintf(fp_stats,"%s\t","alpha");
   /* for(int i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"br%d\t",i); */
+  PhyML_Fprintf(fp_stats,"%s\t","MeanBr");
   PhyML_Fprintf(fp_stats,"%s\t","accLbda");
   PhyML_Fprintf(fp_stats,"%s\t","accMu");
   PhyML_Fprintf(fp_stats,"%s\t","accRad");
@@ -2126,6 +2134,10 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   
   for(i=0;i<mcmc->n_moves;i++) tree->mcmc->start_ess[i] = YES;
 
+
+  /* /\* !!!!!!!!!!!!!!!! *\/ */
+  /* tree->mmod->lbda = 50; */
+
   
   PHYREX_Lk(tree);        
   Set_Update_Eigen(YES,tree->mod);
@@ -2149,6 +2161,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   tree->eval_glnL = YES;
   tree->eval_rlnL = YES;
 
+
   Set_Both_Sides(NO,tree);
   mcmc->always_yes = NO;
   move             = -1;
@@ -2156,7 +2169,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
     {
       
       MIXT_Propagate_Tree_Update(tree);
-      /* PHYREX_Ldsk_To_Tree(tree); */
       assert(PHYREX_Check_Struct(tree));
 
       if(mcmc->run > adjust_len)
@@ -2182,10 +2194,11 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           if(tree->numerical_warning == YES) PhyML_Fprintf(stdout," -- WARNING: numerical precision issue detected...");
         }
 
+
       
-      /* tree->mmod->lbda = 25.0; */
-      /* tree->mmod->mu   = 0.5; */
-      /* tree->mmod->rad  = 0.4; */
+      /* tree->mmod->lbda = 5.0; */
+      /* tree->mmod->mu   = 0.3; */
+      /* tree->mmod->rad  = 2.0; */
 
 
       /* if(tree->mcmc->run == 0) */
@@ -2337,6 +2350,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%g\t",tree->mod->kappa->v);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mod->ras->alpha->v);
           /* for(int i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->rates->br_r[i]); */
+          PhyML_Fprintf(fp_stats,"%g\t",RATES_Get_Mean_Rate_In_Subtree(tree->n_root,tree));
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_lbda]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_mu]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_rad]);
@@ -3009,7 +3023,7 @@ void PHYREX_Update_Lindisk_List_Core(t_dsk *disk, t_tree *tree)
     if(disk->ldsk_a[i] != NULL)
       disk->n_ldsk_a++;
   
-  // Make sur the tip nodes are all at the top of ldsk_a
+  // Make sure the tip nodes are all at the top of ldsk_a
   for(i=0;i<disk->n_ldsk_a;++i) assert(disk->ldsk_a[i] != NULL);
   for(i=disk->n_ldsk_a;i<tree->n_otu;++i) assert(disk->ldsk_a[i] == NULL);
 

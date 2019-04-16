@@ -3675,7 +3675,21 @@ phydbl RATES_Get_Mean_Rate_In_Subtree(t_node *root, t_tree *tree)
 
 void RATES_Get_Mean_Rate_In_Subtree_Pre(t_node *a, t_node *d, phydbl *sum, int *n, t_tree *tree)
 {
-  (*sum) += exp(tree->rates->nd_r[d->num]);
+  /* (*sum) += exp(tree->rates->nd_r[d->num]); */
+  
+  if(tree->rates->model == LOGNORMAL ||
+     tree->rates->model == THORNE ||
+     tree->rates->model == STRICTCLOCK)
+    {
+      (*sum) += tree->rates->br_r[d->num];
+    }
+  else if(tree->rates->model == GUINDON)
+    {
+      (*sum) += tree->rates->nd_r[d->num];
+    }
+
+  else assert(FALSE);
+
   (*n)   += 1;
 
   if(d->tax == YES)  return;
