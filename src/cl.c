@@ -867,9 +867,9 @@ int Read_Command_Line(option *io, int argc, char **argv)
                     io->mod->whichmodel    = GTR;
                     io->mod->s_opt->opt_rr = NO;                    
 
-                    io->mod->r_mat = (t_rmat *) Make_Rmat (io->mod->ns);
-                    Init_Rmat (io->mod->r_mat);
-                    Make_Custom_Model (io->mod);
+                    io->mod->r_mat = (t_rmat *)Make_Rmat(io->mod->ns);
+                    Init_Rmat(io->mod->r_mat);
+                    Make_Custom_Model(io->mod);
 
                     n_rr = 0;
                     while(tok && n_rr < 6)
@@ -888,8 +888,8 @@ int Read_Command_Line(option *io, int argc, char **argv)
                         tok = strtok (NULL,d);
                         n_rr++;
                       }
-                    assert(n_rr == 5);
-                  }
+                    assert(n_rr <= 6);
+                  }                
               }
 	    else if (strcmp(optarg, "JC69") == 0)
               {
