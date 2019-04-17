@@ -565,7 +565,7 @@ void Update_Qmat_GTR(phydbl *rr, phydbl *rr_val, int *rr_num, phydbl *pi, phydbl
         PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d (function '%s').\n",__FILE__,__LINE__,__FUNCTION__);
         Exit("");
       }
-
+  
   for(i=0;i<6;i++) rr[i] /= rr[5];
   for(i=0;i<6;i++) if(rr[i] < RR_MIN) rr[i] = RR_MIN;
   for(i=0;i<6;i++) if(rr[i] > RR_MAX) rr[i] = RR_MAX;
@@ -595,6 +595,13 @@ void Update_Qmat_GTR(phydbl *rr, phydbl *rr_val, int *rr_num, phydbl *pi, phydbl
   mr = .0;
   for(i=0;i<4;i++) mr += pi[i] * (-qmat[i*4+i]);
   for(i=0;i<16;i++) qmat[i] /= mr;
+  /* PhyML_Printf("\n. rr[0]=%f rr[1]=%f rr[2]=%f rr[3]=%f rr[4]=%f rr[5]=%f", */
+  /*              rr[0], */
+  /*              rr[1], */
+  /*              rr[2], */
+  /*              rr[3], */
+  /*              rr[4], */
+  /*              rr[5]); */
 }
 
 //////////////////////////////////////////////////////////////

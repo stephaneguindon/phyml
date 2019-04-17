@@ -830,7 +830,7 @@ phydbl Lk_Core(int state, int ambiguity_check,
           }
         }
     }
-  
+
   if(tree->apply_lk_scaling == YES) res = site_lk / pow(2,tree->fact_sum_scale[site]);
   else                              res = site_lk;
 

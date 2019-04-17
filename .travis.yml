@@ -31,6 +31,5 @@ script:
 
 # run testiphy
   - cd testiphy
-# test 3 fails although by a very short diff in lk scores...
-  - rm -rf tests/likelihood/3
+#  - rm -rf tests/likelihood/3
   - ./testiphy phyml
