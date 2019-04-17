@@ -1628,7 +1628,7 @@ typedef struct __T_Rate {
   struct __T_Rate *prev;
 
   short int is_asynchronous;
-  
+  short int clock_r_fixed;
 }t_rate;
 
 /*!********************************************************/

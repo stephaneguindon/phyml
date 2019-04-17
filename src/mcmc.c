@@ -264,7 +264,8 @@ void MCMC_Clock_R(t_tree *tree)
   int move_num;
   phydbl K;
 
-   
+  if(tree->rates->clock_r_fixed == YES) return;
+  
   new_clock_r  = tree->rates->clock_r;
   cur_clock_r  = tree->rates->clock_r;
   min          = tree->rates->min_clock;
@@ -1770,13 +1771,16 @@ void MCMC_Updown_T_Cr(t_tree *tree)
   floor = 0.0;
   Scale_Subtree_Height(tree->n_root,mult,floor,&n_nodes,tree);
 
-  tree->rates->clock_r /= mult;
-  if(tree->rates->clock_r < tree->rates->min_clock || tree->rates->clock_r > tree->rates->max_clock)
+  if(tree->rates->clock_r_fixed == NO)
     {
-      tree->rates->clock_r *= mult;
-      RATES_Reset_Times(tree);
-      tree->mcmc->run_move[tree->mcmc->num_move_updown_t_cr]++;
-      return;
+      tree->rates->clock_r /= mult;
+      if(tree->rates->clock_r < tree->rates->min_clock || tree->rates->clock_r > tree->rates->max_clock)
+        {
+          tree->rates->clock_r *= mult;
+          RATES_Reset_Times(tree);
+          tree->mcmc->run_move[tree->mcmc->num_move_updown_t_cr]++;
+          return;
+        }
     }
   
   if(tree->eval_rlnL == YES) new_lnL_rate = RATES_Lk_Rates(tree);
@@ -1816,7 +1820,7 @@ void MCMC_Updown_T_Cr(t_tree *tree)
     {
       /* printf(" reject"); */
       RATES_Reset_Times(tree);
-      tree->rates->clock_r *= mult;
+      if(tree->rates->clock_r_fixed == NO) tree->rates->clock_r *= mult;
       tree->rates->c_lnL_rates = cur_lnL_rate;
       tree->rates->c_lnL_times = cur_lnL_time;
       if(tree->rates->model == GUINDON && tree->eval_alnL == YES)
@@ -2032,21 +2036,24 @@ void MCMC_Tree_Rates(t_tree *tree)
   if(n_nodes != 2*tree->n_otu-2) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
 
   /* Divide clock_r */
-  /* tree->rates->clock_r /= mult; */
-  /* if(tree->rates->clock_r < tree->rates->min_clock || tree->rates->clock_r > tree->rates->max_clock) */
-  /*   { */
-  /*     tree->rates->clock_r = init_clock; */
-  /*     RATES_Reset_Rates(tree); */
-  /*     return; */
-  /*   } */
-
-  /* if((tree->rates->model == GUINDON && tree->eval_alnL == YES) || (tree->rates->is_asynchronous == YES)) */
+  if(tree->rates->clock_r_fixed == NO)
+    {
+      tree->rates->clock_r /= mult;
+      if(tree->rates->clock_r < tree->rates->min_clock || tree->rates->clock_r > tree->rates->max_clock)
+        {
+          tree->rates->clock_r = init_clock;
+          RATES_Reset_Rates(tree);
+          return;
+        }
+    }
+  
+  if((tree->rates->model == GUINDON && tree->eval_alnL == YES) || (tree->rates->is_asynchronous == YES) || (tree->rates->clock_r_fixed == YES))
     {
       RATES_Update_Cur_Bl(tree);
       new_lnL_seq = Lk(NULL,tree);
     }
-  /* else */
-  /*   new_lnL_seq = cur_lnL_seq; */
+  else
+    new_lnL_seq = cur_lnL_seq;
   
   new_lnL_rate = RATES_Lk_Rates(tree);
 
@@ -2266,14 +2273,18 @@ void MCMC_Updown_Nu_Cr(t_tree *tree)
   /*     return; */
   /*   } */
 
-  tree->rates->clock_r /= mult;
-  if(tree->rates->clock_r < tree->rates->min_clock || tree->rates->clock_r > tree->rates->max_clock)
+
+  if(tree->rates->clock_r_fixed == NO)
     {
-      tree->rates->clock_r *= mult;
-      RATES_Reset_Rates(tree);
-      Restore_Br_Len(tree);
-      tree->mcmc->run_move[tree->mcmc->num_move_updown_nu_cr]++;
-      return;
+      tree->rates->clock_r /= mult;
+      if(tree->rates->clock_r < tree->rates->min_clock || tree->rates->clock_r > tree->rates->max_clock)
+        {
+          tree->rates->clock_r *= mult;
+          RATES_Reset_Rates(tree);
+          Restore_Br_Len(tree);
+          tree->mcmc->run_move[tree->mcmc->num_move_updown_nu_cr]++;
+          return;
+        }
     }
 
   tree->rates->nu *= mult;
@@ -2309,7 +2320,7 @@ void MCMC_Updown_Nu_Cr(t_tree *tree)
 
   if(u > alpha)
     {
-      tree->rates->clock_r *= mult;
+      if(tree->rates->clock_r_fixed == NO) tree->rates->clock_r *= mult;
       tree->rates->nu /= mult;
       RATES_Reset_Rates(tree);
       Restore_Br_Len(tree);
@@ -3326,10 +3337,10 @@ void MCMC_Randomize_Nu(t_tree *tree)
 
 
 void MCMC_Randomize_Clock_Rate(t_tree *tree)
-{
+{  
   phydbl u;
   u = Uni();
-  tree->rates->clock_r = u * (1.0 - tree->rates->min_clock) + tree->rates->min_clock;
+  if(tree->rates->clock_r_fixed == NO) tree->rates->clock_r = u * (1.0 - tree->rates->min_clock) + tree->rates->min_clock;
 }
 
 //////////////////////////////////////////////////////////////

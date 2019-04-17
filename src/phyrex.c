@@ -193,6 +193,30 @@ void PHYREX_XML(char *xml_filename)
             }
         }
     }
+
+
+
+    // Looking for XML node with rate-across-lineage info
+  xnd = XML_Search_Node_Name("clockrate",YES,xroot);
+  
+  if(xnd != NULL)
+    {
+      char *value = XML_Get_Attribute_Value(xnd,"value");
+      
+      if(value == NULL)
+        {
+          PhyML_Fprintf(stderr,"\n. Please specify a value for the average rate of substitution (clockrate),");
+          PhyML_Fprintf(stderr,"\n. e.g., <clockrate value=\"1E-5\"/>.");
+          PhyML_Fprintf(stderr,"\n. See the manual for more options.");
+          assert(FALSE);
+        }
+      else
+        {
+          mixt_tree->rates->clock_r       = atof(value);
+          mixt_tree->rates->clock_r_fixed = YES;
+        }
+    }
+
   
   
   // Looking for calibration info
@@ -282,8 +306,6 @@ void PHYREX_XML(char *xml_filename)
   mixt_tree->mmod->mu   = Uni()*(0.6 - 0.2) + 0.3;
   mixt_tree->mmod->rad  = Uni()*(3.0 - 1.5) + 1.5;
   mixt_tree->mmod->sigsq = PHYREX_Update_Sigsq(mixt_tree);
-  mixt_tree->rates->clock_r = 1.0E-6;
-  mixt_tree->rates->model   = LOGNORMAL;
 
   
   /* Random genealogy or user-defined tree */
