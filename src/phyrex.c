@@ -2105,11 +2105,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   PhyML_Fprintf(fp_stats,"%s\t","clock");
   PhyML_Fprintf(fp_stats,"%s\t","modLbda");
   PhyML_Fprintf(fp_stats,"%s\t","mu");
-  PhyML_Fprintf(fp_stats,"%s\t","modNeigh");
-  PhyML_Fprintf(fp_stats,"%s\t","sigsq");
-  PhyML_Fprintf(fp_stats,"%s\t","modSigsq");
-  PhyML_Fprintf(fp_stats,"%s\t","rad");
   PhyML_Fprintf(fp_stats,"%s\t","neigh");
+  PhyML_Fprintf(fp_stats,"%s\t","sigsq");
+  PhyML_Fprintf(fp_stats,"%s\t","rad");
   PhyML_Fprintf(fp_stats,"%s\t","rhoe");
   PhyML_Fprintf(fp_stats,"%s\t","nInt");
   PhyML_Fprintf(fp_stats,"%s\t","nCoal");
@@ -2355,13 +2353,11 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->c_lnL);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->lbda);
           PhyML_Fprintf(fp_stats,"%g\t",tree->rates->clock_r);
-          PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->mode[tree->mcmc->num_move_phyrex_lbda]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->mu);
-          PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->mode[tree->mcmc->num_move_phyrex_mu]);
+          PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Neighborhood_Size(tree));
           PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Update_Sigsq(tree));
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->mode[tree->mcmc->num_move_phyrex_sigsq]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->rad);
-          PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Neighborhood_Size(tree));
           PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Effective_Density(tree));
           PhyML_Fprintf(fp_stats,"%d\t",PHYREX_Total_Number_Of_Intervals(tree));
           PhyML_Fprintf(fp_stats,"%d\t",PHYREX_Total_Number_Of_Coal_Disks(tree));

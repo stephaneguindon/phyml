@@ -2420,7 +2420,7 @@ corresponding to \x{cal1}, the other to \x{cal2}). The MRCA of
 \x{Gymno\_Araucaria}, \x{Gymno\_Ginko}, \x{Gymno\_Juniperus} and \x{Gymno\_Juniperus} has an age
 that falls here in the $[50,60]$ interval.
 
-\subsubsection{MCMC settings}
+\subsubsection{MCMC settings}\label{sec:phytimesettings}
 
 PhyTime estimates the joint posterior distribution  of the phylogenetic model parameters  using an
 MCMC algorithm. This algorithm relies on sampling values of these parameters iteratively. The
@@ -2756,10 +2756,12 @@ statistical phylogeographic framework''. 2014. Systematic Biology.
 
 
 
-\subsection{PhyREX}\index{PhyRex} PhyREX is a program that implements the spatial
+\subsection{PhyREX}\index{PhyREX} PhyREX is a program that implements the spatial
 $\Lambda$-Fleming-Viot model
-\cite{etheridge2008,berestycki2009,barton2010,barton2010b,veber2012,barton2013} or \sfv\ for short. 
-According to this model, the spatial distribution of individuals in a population is uniform and does
+\cite{etheridge2008,berestycki2009,barton2010,barton2010b,veber2012,barton2013} or \sfv\ for short.
+This model can be thought of as a structured-coalescent where space is considered as continuous
+rather than organized into separate demes.
+Under the \sfv\ model, the spatial distribution of individuals in a population is uniform and does
 not change during the course of evolution, as opposed to other models such as the very popular
 isolation by distance model proposed by Wright and Mal\'ecot. The \sfv\ model  does not
 suffer from the ``pain in the torus'' \cite{felsenstein1975} and clumps of individuals with
@@ -2789,10 +2791,13 @@ make;
 \subsubsection{Running PhyREX}
 
 Example input files for PhyREX can be found in the \x{examples/phyrex\_input\_files/} directory.
-PhyRex takes as input a sequence alignment, in a PhyML-compatible format as well as a text file
-giving the spatial coordinates of each taxon in two dimension. A example of the coordinates file is given
+PhyREX takes as input a XML file (See Section \ref{sec:xmlio}), in a PhyML-compatible format. This
+file defines the models and various parameter settings for conducting an analysis. We give more
+information below about this file. The XML file gives the names of a sequence alignment file in the
+standard PHYLIP (or NEXUS) format along with a file providing the spatial coordinates of the
+corresponding sequences.  An example of the coordinates file is given
 below:
-\begin{Verbatim}[frame=single, label=Valid PhyRex spatial location file, samepage=true, baselinestretch=0.5]
+\begin{Verbatim}[frame=single, label=Valid PhyREX spatial location file, samepage=true, baselinestretch=0.5]
 # state.name lon lat
 |SouthWest| 0 0
 |NorthEast| 10 10 
@@ -2819,18 +2824,85 @@ corresponding indeed to these two particular points and should thus not be omitt
 row give the coordinates of each taxon. Every taxon in the sequence file should also be listed in
 the coordinate file.
 
-PhyRex uses the same command-line arguments as that used with PhyML. The only exception being the
-mandatory argument corresponding to the coordinate file. A typical command-line will this look as
-follows: \x{./phyrex -i sequence\_file --coord\_file=./spatial\_location\_file -c 3 --freerates
-  --il}. With this particular set of options, the sequence alignment will be analysed under a
-FreeRate  model \cite{soubrier12} with three rate classes and a covarion-like model of rate variation
-across lineaged \cite{guindon13}. Please note that the command-line option \x{--coord\_file} is mandatory.
+Below is an excerpt of a XML file that can be used as input to run a PhyREX analysis. The \sfv\
+model parameters are estimated using a Bayesian sampler which hyperparameters (number of
+samples, frequency at which samples are collected, length of the ``burnin'' phase, etc.) are set
+through the corresponding XML attributes (see \ref{sec:phytimesettings}). PhyREX is similar to
+PhyTime in the sense that substitution rates and times are separate parameters. The rates can
+vary across lineages (using for instance a log-normal model) or not (strict clock). In case all
+sequences were collected at (approximately) the same time, it is recommended to set the average
+rate of evolution to a specific value (\x{<clockrate value="1E-4"/>}). Yet, with serially-sampled
+data, the average rate of evolution can be estimated directly from the data and setting it to
+a particular value is thus not mandatory. Finally, it is necessary to give information about the
+time at which each sequence was collected. This is done through seeting appropriate calibration
+constraints. From a technical perspective, these constraints apply to clades where each clade here
+is a single tip.
+
+
+\begin{Verbatim}[frame=single, label=Example (excerpt) of PhyREX XML file, samepage=true, baselinestretch=0.5,
+  fontsize=\small, numbers=left]
+  <phyrex run.id="example" output.file="out"
+  mcmc.chain.len="1E+7"
+  mcmc.sample.every="500"
+  mcmc.print.every="100"
+  mcmc.burnin="10000"
+  mutmap="no">
+  
+  <!-- ``Standard'' stuff goes here, i.e., <topology>, -->
+  <!-- <partitionelem>, etc -->
+  
+  <!-- Model of rate variation across lineages -->
+  <lineagerates model="lognormal"/>
+  
+  <!-- Set the average (clock) rate of substitution -->
+  <!-- to a fixed value (optional) -->
+  <clockrate value="1E-4"/>
+
+  <-- File where 2-D spatial coordinates are found --> 
+  <coordinates id="coordinates" file.name="./usa_coord.txt"/>
+
+  <!-- Set the date for each tip. Useful in serial sample -->
+  <!-- analysis -->
+  <clade id="clad1">
+  <taxon value="CY130177|South_Carolina|12_13|H1N1"/>
+  </clade>
+
+  <!-- Clade 1 (made of a single sequence) has time set to 0 -->
+  <calibration id="cal1">
+    <lower>0</lower>
+    <upper>0</upper>
+    <appliesto clade.id="clad1"/>
+  </calibration>
+
+  
+  <clade id="clad2">
+  <taxon value="KF647978|Idaho|12_13|H1N1"/>
+  </clade>
+  
+  <!-- Clade 2 has time set to 10 -->
+  <calibration id="cal2">
+    <lower>10</lower>
+    <upper>10</upper>
+    <appliesto clade.id="clad2"/>
+  </calibration>
+  
+  <!-- More calibration info goes here. At least, one -->
+  <!-- calibrated clade per tip. -->  
+  
+\end{Verbatim}
+
+
+
+
+
 
 PhyREX generates correlated samples from the posterior distribution of the \sfv\ model
 parameters. The estimated distributions and related summary statistics can be monitored during the
 analysis using the MCMC vizualization software Icylog. Figure \ref{fig:phyrextrace} shows the traces
 for two parameters after about an hour of calculation on the example data set (36 taxa, 50
-geographic locations).
+geographic locations). The names of the sampled parameters are self-explanatory. However, if you
+are unsure about the precise definition of one of these parameters or have any questions regarding
+how to interpret the results returned by PhyREX, please do not hesitate to contact me (\url{guindon@lirmm.fr}).
 
 \begin{figure}
 \begin{center}
@@ -2842,6 +2914,15 @@ geographic locations).
 the dispersal intensity (bottom) are shown here.} 
 \label{fig:phyrextrace}
 \end{figure}
+
+\subsubsection{Citing PhyREX}
+
+The ``default citation'' is:
+
+\begin{itemize}
+\item Guindon S.,  H Guo, D Welch. ``Demographic inference under the coalescent in a spatial
+  continuum'', {\it Theoretical Population Biology}, 2016, 111:43-50.
+\end{itemize}
 
 \section{Recommendations on program usage}\label{sec:progusage}
 
