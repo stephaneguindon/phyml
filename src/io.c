@@ -3386,6 +3386,8 @@ void Print_Settings(option *io)
 
   PhyML_Printf("\n        . Optimise branch lengths:\t\t\t %s", (io->mod->s_opt && io->mod->s_opt->opt_bl) ? "yes": "no");
 
+  PhyML_Printf("\n        . Minimum length of an edge:\t\t\t %g",io->mod->l_min);
+
   answer = 0;
   if(io->mod->s_opt &&
      (io->mod->s_opt->opt_alpha  ||

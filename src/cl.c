@@ -127,6 +127,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
       {"tbe",                 no_argument,NULL,80},
       {"leave_duplicates",    no_argument,NULL,81},
       {"precision",           required_argument,NULL,82},
+      {"l_min",               required_argument,NULL,83},
       {0,0,0,0}
     };
 
@@ -144,6 +145,11 @@ int Read_Command_Line(option *io, int argc, char **argv)
 
       switch(c)
 	{
+        case 83 :
+          {
+            io->mod->l_min = String_To_Dbl(optarg);
+            break;
+          }
 	case 82 :
 	  {
 	    if ((!atoi(optarg)) || (atoi(optarg) < 1) || (atoi(optarg) > DECIMAL_DIG -3))

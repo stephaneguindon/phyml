@@ -434,7 +434,7 @@ t_tree *XML_Process_Base(char *xml_filename)
       mixt_tree->n_pattern = io->cdata->crunch_len;
       
       /*! Remove branch lengths from mixt_tree */
-      For(i,2*mixt_tree->n_otu-1)
+      for(i=0;i<2*mixt_tree->n_otu-1;++i)
         {
           Free_Scalar_Dbl(mixt_tree->a_edges[i]->l);
           Free_Scalar_Dbl(mixt_tree->a_edges[i]->l_old);
@@ -972,6 +972,15 @@ t_tree *XML_Process_Base(char *xml_filename)
                                       Exit("\n");
                                     }
                                 }
+
+                              char *l_min = NULL;
+                              l_min = XML_Get_Attribute_Value(instance,"l.min");
+                              
+                              if(l_min)
+                                {
+                                  iomod->l_min = String_To_Dbl(l_min);
+                                }
+
                               
                               char *opt_bl = NULL;
                               opt_bl = XML_Get_Attribute_Value(instance,"optimise.lens");
