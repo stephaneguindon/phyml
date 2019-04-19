@@ -26,10 +26,9 @@ script:
   - export PATH=$HOME/local/bin:$PATH
 
 # install testiphy
-#  - cd
-#  - git clone https://gitlab.com/testiphy/testiphy.git
+  - cd
+  - git clone https://gitlab.com/testiphy/testiphy.git
 
 # run testiphy
-#  - cd testiphy
-#  - rm -rf tests/likelihood/3
-#  - ./testiphy phyml
+  - cd testiphy
+  - ./testiphy phyml
