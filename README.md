@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/stephaneguindon/phyml.svg?branch=master)](https://travis-ci.org/stephaneguindon/phyml)
+[![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/phyml/README.html) 
 
 ### 1. You downloaded a stable release  of PhyML from [here](https://github.com/stephaneguindon/phyml/releases) 
 
