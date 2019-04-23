@@ -6247,7 +6247,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_disk_given_ldsk]       = 1.5;
   mcmc->move_weight[mcmc->num_move_phyrex_ldsk_and_disk]         = 0.5;
   mcmc->move_weight[mcmc->num_move_phyrex_ldsk_multi]            = 0.5;
-  mcmc->move_weight[mcmc->num_move_phyrex_disk_multi]            = 0.5;
+  mcmc->move_weight[mcmc->num_move_phyrex_disk_multi]            = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_add_remove_jump]       = 3.0;
 
 # else
@@ -8982,7 +8982,7 @@ void MCMC_PHYREX_Ldsk_Multi(t_tree *tree)
   if(!n_all_disks) return;
   
   /* n_move_ldsk = Rand_Int(1,1+(int)(n_all_disks/10)); */
-  n_move_ldsk = MIN(10,(int)(1.+0.1*n_all_disks));
+  n_move_ldsk = MIN(5,(int)(1.+0.1*n_all_disks));
   /* n_move_ldsk = (int)(1+n_all_disks/10); */
   /* n_move_ldsk = n_all_disks; */
   

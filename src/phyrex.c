@@ -2103,7 +2103,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   PhyML_Fprintf(fp_stats,"%s\t","glnL");
   PhyML_Fprintf(fp_stats,"%s\t","lbda");
   PhyML_Fprintf(fp_stats,"%s\t","clock");
-  PhyML_Fprintf(fp_stats,"%s\t","modLbda");
   PhyML_Fprintf(fp_stats,"%s\t","mu");
   PhyML_Fprintf(fp_stats,"%s\t","neigh");
   PhyML_Fprintf(fp_stats,"%s\t","sigsq");
@@ -2356,7 +2355,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->mu);
           PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Neighborhood_Size(tree));
           PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Update_Sigsq(tree));
-          PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->mode[tree->mcmc->num_move_phyrex_sigsq]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->rad);
           PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Effective_Density(tree));
           PhyML_Fprintf(fp_stats,"%d\t",PHYREX_Total_Number_Of_Intervals(tree));
