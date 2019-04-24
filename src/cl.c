@@ -1300,6 +1300,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
                   {
                     io->mod->s_opt->opt_kappa  = NO;
                     io->mod->s_opt->opt_lambda = NO;
+
                     
                     // Added the 2 TsTv ratios for TN93
                     // lambda is the ratio of both TsTv ratios
@@ -1307,6 +1308,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
                     if (io->mod->whichmodel == TN93)
                       {
                         double TsTvPur, TsTvPyr;
+                        TsTvPur = TsTvPyr = -1.;
                         if(!isalpha(optarg[0]))
                           {
                             sscanf(optarg,"%lf,%lf",&TsTvPur,&TsTvPyr);

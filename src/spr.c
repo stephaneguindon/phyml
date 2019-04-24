@@ -1124,8 +1124,8 @@ void Speed_Spr(t_tree *tree, phydbl prop_spr, int max_cycles, phydbl delta_lnL)
 
       /* Exit if no improvements after complete optimization */
       if(step+1 > max_cycles) break;
-      if((tree->mod->s_opt->spr_pars == NO)  && (FABS(old_lnL-tree->c_lnL)   < delta_lnL)) break;
-      if((tree->mod->s_opt->spr_pars == YES) && (FABS(old_pars-tree->c_pars) < 1)) break;
+      if((tree->mod->s_opt->spr_pars == NO)  && (fabs(old_lnL-tree->c_lnL)   < delta_lnL)) break;
+      if((tree->mod->s_opt->spr_pars == YES) && (fabs((phydbl)(old_pars-tree->c_pars)) < 1)) break;
       if(!tree->mod->s_opt->n_improvements) break;
     }
   while(1);
@@ -1807,7 +1807,7 @@ void Spr_Pars(int threshold, int n_round_max, t_tree *tree)
       curr_pars = tree->c_pars;
       Speed_Spr(tree,1.0,1,0.0);      
     }
-  while(tree->mod->s_opt->n_improvements && FABS(tree->c_pars - curr_pars) > threshold && round++ < n_round_max);
+  while(tree->mod->s_opt->n_improvements && fabs((phydbl)(tree->c_pars - curr_pars)) > threshold && round++ < n_round_max);
 }
 
 //////////////////////////////////////////////////////////////

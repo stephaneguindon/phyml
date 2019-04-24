@@ -31,7 +31,7 @@
 #define DIGITS 53 
 */
 
-#define MAXITER    30    /* max2. no. of iterations to converge */
+#define MAXITER    1000    /* max2. no. of iterations to converge */
 
 #define pos(i,j,n)      ((i)*(n)+(j))
 
@@ -50,7 +50,7 @@ int Eigen(int job, phydbl *A, int n, phydbl *rr, phydbl *ri,
     int low,hi,i,j,k, it, istate=0;
     phydbl tiny, t; 
 
-/*     tiny=SQRT(POW((phydbl)BASE,(phydbl)(1-(int)DIGITS))); */
+    /* tiny=SQRT(POW((phydbl)BASE,(phydbl)(1-(int)DIGITS))); */
     /* tiny=FLT_MIN; */
     tiny = SMALL;
         
@@ -513,6 +513,7 @@ int realeig(int job,phydbl *mat,int n,int low, int hi, phydbl *valr,
   /* phydbl precision  = POW((phydbl)BASE,(phydbl)(1-(int)DIGITS)); */
   phydbl precision  = SMALL;
   
+
   eps = precision;
   for (i=0; i<n; i++)
     {
@@ -530,97 +531,107 @@ int realeig(int job,phydbl *mat,int n,int low, int hi, phydbl *valr,
   t = 0;
   en = hi;
   
-  while (en >= low) {
-    niter = 0;
-    for (;;) {
-      
-      /* look for single small subdiagonal element */
-      
-      for (l = en; l > low; l--) {
-        s = fabs(mat[pos(l-1,l-1,n)]) + fabs(mat[pos(l,l,n)]);
-        if (fabs(s) < SMALL) s = norm;
-        if (fabs(mat[pos(l,l-1,n)]) <= eps * s) break;
-      }
-      
-      /* form shift */
-      
-      x = mat[pos(en,en,n)];
-      
-      if (l == en) {             /* one root found */
-        valr[en] = x + t;
-        if (job) mat[pos(en,en,n)] = x + t;
-        en--;
-        break;
-      }
-      
-      y = mat[pos(en-1,en-1,n)];
-      w = mat[pos(en,en-1,n)] * mat[pos(en-1,en,n)];
-      
-      if (l == en - 1) {                /* two roots found */
-        p = (y - x) / 2;
-        q = p * p + w;
-        z = SQRT(fabs(q));
-        x += t;
-        if (job) {
-          mat[pos(en,en,n)] = x;
-          mat[pos(en-1,en-1,n)] = y + t;
-        }
-        if (q < 0) {                /* complex pair */
-          valr[en-1] = x+p;
-          vali[en-1] = z;
-          valr[en] = x+p;
-          vali[en] = -z;
-        }
-        else {                      /* real pair */
-          z = (p < 0) ? p - z : p + z;
-          valr[en-1] = x + z;
-          valr[en] = (fabs(z) < SMALL) ? x + z : x - w / z;
-          if (job) {
-            x = mat[pos(en,en-1,n)];
-            s = fabs(x) + fabs(z);
-            p = x / s;
-            q = z / s;
-            r = SQRT(p*p+q*q);
-            p /= r;
-            q /= r;
-            for (j = en - 1; j < n; j++) {
-              z = mat[pos(en-1,j,n)];
-              mat[pos(en-1,j,n)] = q * z + p *
-                mat[pos(en,j,n)];
-              mat[pos(en,j,n)] = q * mat[pos(en,j,n)] - p*z;
-            }
-            for (i = 0; i <= en; i++) {
-              z = mat[pos(i,en-1,n)];
-              mat[pos(i,en-1,n)] = q * z + p * mat[pos(i,en,n)];
-              mat[pos(i,en,n)] = q * mat[pos(i,en,n)] - p*z;
-            }
-            for (i = low; i <= hi; i++) {
-              z = vr[pos(i,en-1,n)];
-              vr[pos(i,en-1,n)] = q*z + p*vr[pos(i,en,n)];
-              vr[pos(i,en,n)] = q*vr[pos(i,en,n)] - p*z;
-            }
+  while (en >= low)
+    {
+      niter = 0;
+      for (;;) {
+        
+        /* look for single small subdiagonal element */
+        
+        for (l = en; l > low; l--)
+          {
+            s = fabs(mat[pos(l-1,l-1,n)]) + fabs(mat[pos(l,l,n)]);
+            if (fabs(s) < SMALL) s = norm;
+            if (fabs(mat[pos(l,l-1,n)]) <= eps * s) break;
           }
+        
+        /* form shift */
+        
+        x = mat[pos(en,en,n)];
+        
+        if (l == en)
+          {             /* one root found */
+            valr[en] = x + t;
+            if (job) mat[pos(en,en,n)] = x + t;
+            en--;
+            break;
+          }
+        
+        y = mat[pos(en-1,en-1,n)];
+        w = mat[pos(en,en-1,n)] * mat[pos(en-1,en,n)];
+        
+        if (l == en - 1)
+          {                /* two roots found */
+            p = (y - x) / 2;
+            q = p * p + w;
+            z = SQRT(fabs(q));
+            x += t;
+            if (job)
+              {
+                mat[pos(en,en,n)] = x;
+                mat[pos(en-1,en-1,n)] = y + t;
+              }
+            if (q < 0)
+              {                /* complex pair */
+                valr[en-1] = x+p;
+                vali[en-1] = z;
+                valr[en] = x+p;
+                vali[en] = -z;
+              }
+            else
+              {                      /* real pair */
+                z = (p < 0) ? p - z : p + z;
+                valr[en-1] = x + z;
+                valr[en] = (fabs(z) < SMALL) ? x + z : x - w / z;
+                if (job) {
+                  x = mat[pos(en,en-1,n)];
+                  s = fabs(x) + fabs(z);
+                  p = x / s;
+                  q = z / s;
+                  r = SQRT(p*p+q*q);
+                  p /= r;
+                  q /= r;
+                  for (j = en - 1; j < n; j++)
+                    {
+                      z = mat[pos(en-1,j,n)];
+                      mat[pos(en-1,j,n)] = q * z + p *
+                        mat[pos(en,j,n)];
+                      mat[pos(en,j,n)] = q * mat[pos(en,j,n)] - p*z;
+                    }
+                  for (i = 0; i <= en; i++)
+                    {
+                      z = mat[pos(i,en-1,n)];
+                      mat[pos(i,en-1,n)] = q * z + p * mat[pos(i,en,n)];
+                      mat[pos(i,en,n)] = q * mat[pos(i,en,n)] - p*z;
+                    }
+                  for (i = low; i <= hi; i++)
+                    {
+                      z = vr[pos(i,en-1,n)];
+                      vr[pos(i,en-1,n)] = q*z + p*vr[pos(i,en,n)];
+                      vr[pos(i,en,n)] = q*vr[pos(i,en,n)] - p*z;
+                    }
+                }
+              }
+            en -= 2;
+            break;
+          }
+        if (niter == MAXITER) return(-1);
+        if (niter != 0 && niter % 10 == 0) {
+          t += x;
+          for (i = low; i <= en; i++) mat[pos(i,i,n)] -= x;
+          s = fabs(mat[pos(en,en-1,n)]) + fabs(mat[pos(en-1,en-2,n)]);
+          x = y = 0.75 * s;
+          w = -0.4375 * s * s;
         }
-        en -= 2;
-        break;
-      }
-      if (niter == MAXITER) return(-1);
-      if (niter != 0 && niter % 10 == 0) {
-        t += x;
-        for (i = low; i <= en; i++) mat[pos(i,i,n)] -= x;
-        s = fabs(mat[pos(en,en-1,n)]) + fabs(mat[pos(en-1,en-2,n)]);
-        x = y = 0.75 * s;
-        w = -0.4375 * s * s;
-      }
-      niter++;
-      /* look for two consecutive small subdiagonal elements */
-      for (m = en - 2; m >= l; m--) {
-        z = mat[pos(m,m,n)];
-        r = x - z;
-        s = y - z;
-        p = (r * s - w) / mat[pos(m+1,m,n)] + mat[pos(m,m+1,n)];
-        q = mat[pos(m+1,m+1,n)] - z - r - s;
-        r = mat[pos(m+2,m+1,n)];
+        niter++;
+        /* look for two consecutive small subdiagonal elements */
+        for (m = en - 2; m >= l; m--) {
+          z = mat[pos(m,m,n)];
+          r = x - z;
+          s = y - z;
+          p = (r * s - w) / mat[pos(m+1,m,n)] + mat[pos(m,m+1,n)];
+          q = mat[pos(m+1,m+1,n)] - z - r - s;
+          r = mat[pos(m+2,m+1,n)];
         s = fabs(p) + fabs(q) + fabs(r);
         p /= s;
         q /= s;

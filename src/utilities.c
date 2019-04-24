@@ -153,7 +153,6 @@ void Set_Edge_Dirs(t_edge *b, t_node *a, t_node *d, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Restrict_To_Coding_Position(align **data, option *io)
 {
   int i,j,curr_pos;
@@ -161,19 +160,20 @@ void Restrict_To_Coding_Position(align **data, option *io)
   if(io->codpos != -1)
     {
       for(i=0;i<io->n_otu;i++)
-    {
-      curr_pos = 0;
-      for(j=io->codpos-1;j<data[i]->len;j+=3)
         {
-          data[i]->state[curr_pos] = data[i]->state[j];
-          curr_pos++;
+          curr_pos = 0;
+          for(j=io->codpos-1;j<data[i]->len;j+=3)
+            {
+              data[i]->state[curr_pos] = data[i]->state[j];
+              curr_pos++;
+            }
+          data[i]->len /= 3;
         }
-      data[i]->len /= 3;
-    }
     }
 }
 
-
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
 void Uppercase(char *ch)
 {
@@ -183,7 +183,6 @@ void Uppercase(char *ch)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void Lowercase(char *ch)
 {
@@ -286,7 +285,7 @@ calign *Compact_Data(align **data, option *io)
               if(which_patt == n_patt-1) /* New pattern found */
                 {
                   n_patt--;
-                  k=n_patt;
+                  k = n_patt;
                 }
               else
                 {
@@ -305,6 +304,8 @@ calign *Compact_Data(align **data, option *io)
                                cdata_tmp->c_seq[j]->state+n_patt*io->state_len,
                                io->state_len);
               
+              for(j=0;j<n_otu;j++) cdata_tmp->c_seq[j]->state[n_patt*io->state_len+1] = '\0';
+
               for(i=0;i<n_otu;i++)
                 {
                   for(j=0;j<n_otu;j++)
@@ -3656,7 +3657,7 @@ int Compare_Two_States(char *state1, char *state2, int state_size)
 void Copy_One_State(char *from, char *to, int state_size)
 {
   int i;
-  for(i=0;i<state_size;i++) to[i] = from[i];
+  for(i=0;i<state_size;++i) to[i] = from[i];
 }
 
 //////////////////////////////////////////////////////////////
@@ -4599,7 +4600,9 @@ int Are_Compatible(char *statea, char *stateb, int stepsize, int datatype)
     }
   else if(datatype == AA)
     {
-      a = statea[0]; b = stateb[0];
+      a = statea[0];
+      b = stateb[0];
+
       switch(a)
         {
         case 'A' :
