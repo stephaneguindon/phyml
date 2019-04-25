@@ -896,159 +896,166 @@ int Read_Command_Line(option *io, int argc, char **argv)
                       }
                     assert(n_rr <= 6);
                   }                
-              }
-	    else if (strcmp(optarg, "JC69") == 0)
+              }         
+            else
               {
-                io->datatype              = NT;
-                io->mod->ns               = 4;
-                io->mod->whichmodel       = JC69;
-              }
-	    else if(strcmp(optarg, "K80") == 0)
-              {
-                io->datatype              = NT;
-                io->mod->ns               = 4;
-                io->mod->whichmodel       = K80;
-              }
-	    else if(strcmp(optarg, "F81") == 0)
-              {
-                io->datatype              = NT;
-                io->mod->ns               = 4;
-                io->mod->whichmodel       = F81;
-              }
-	    else if (strcmp(optarg, "HKY85") == 0)
-              {
-                io->datatype              = NT;
-                io->mod->ns               = 4;
-                io->mod->whichmodel       = HKY85;
-              }
-	    else if(strcmp(optarg, "F84") == 0)
-              {
-                io->datatype              = NT;
-                io->mod->ns               = 4;
-                io->mod->whichmodel       = F84;
-              }
-	    else if (strcmp (optarg,"TN93") == 0)
-              {
-                io->datatype              = NT;
-                io->mod->ns               = 4;
-                io->mod->whichmodel       = TN93;
-              }
-	    else if(strncmp (optarg, "GTR", 3) == 0)
-              {
-                io->datatype              = NT;
-                io->mod->ns               = 4;
-                io->mod->whichmodel       = GTR;
-                io->mod->s_opt->opt_rr    = YES;                
-              }
-	    else if(strcmp(optarg, "DAYHOFF") == 0)
-              {
-                io->datatype              = AA;
-                io->mod->ns               = 20;
-                io->mod->whichmodel       = DAYHOFF;
-              }
-	    else if(strcmp (optarg, "JTT") == 0)
-              {
-                io->datatype              = AA;
-                io->mod->ns               = 20;
-                io->mod->whichmodel       = JTT;
-              }
-	    else if(strcmp(optarg, "MTREV") == 0)
-              {
-                io->datatype             = AA;
-                io->mod->ns              = 20;
-                io->mod->whichmodel      = MTREV;
-              }
-	    else if(strcmp (optarg, "LG") == 0)
-              {
-                io->datatype              = AA;
-                io->mod->ns               = 20;
-                io->mod->whichmodel       = LG;
-              }
-	    else if(strcmp (optarg, "WAG") == 0)
-              {
-                io->datatype              = AA;
-                io->mod->ns               = 20;
-                io->mod->whichmodel       = WAG;
-              }
-	    else if(strcmp(optarg, "DCMUT") == 0)
-              {
-                io->datatype              = AA;
-                io->mod->ns               = 20;
-                io->mod->whichmodel       = DCMUT;
-              }
-	    else if(strcmp (optarg, "RTREV") == 0)
-              {
-                io->datatype              = AA;
-                io->mod->ns               = 20;
-                io->mod->whichmodel       = RTREV;
-              }
-	    else if(strcmp(optarg, "CPREV") == 0)
-              {
-                io->datatype              = AA;
-                io->mod->ns               = 20;
-                io->mod->whichmodel       = CPREV;
-              }
-	    else if(strcmp(optarg, "VT") == 0)
-              {
-                io->datatype              = AA;
-                io->mod->ns               = 20;
-                io->mod->whichmodel       = VT;
-              }
-	    else if(strcmp(optarg, "BLOSUM62") == 0)
-              {
-                io->datatype              = AA;
-                io->mod->ns               = 20;
-                io->mod->whichmodel       = BLOSUM62;
-              }
-	    else if(strcmp(optarg, "MTMAM") == 0)
-              {
-                io->datatype              = AA;
-                io->mod->ns               = 20;
-                io->mod->whichmodel       = MTMAM;
-              }
-	    else if (strcmp(optarg,"MTART") == 0)
-              {
-                io->datatype              = AA;
-                io->mod->ns               = 20;
-                io->mod->whichmodel       = MTART;
-              }
-	    else if (strcmp(optarg,"HIVW") == 0)
-              {
-                io->datatype              = AA;
-                io->mod->ns               = 20;
-                io->mod->whichmodel       = HIVW;
-              }
-	    else if(strcmp(optarg, "HIVB") == 0)
-              {
-                io->datatype              = AA;
-                io->mod->ns               = 20;
-                io->mod->whichmodel       = HIVB;
-              }
-	    else if(strcmp(optarg, "AB") == 0)
-              {
-                io->datatype              = AA;
-                io->mod->ns               = 20;
-                io->mod->whichmodel       = AB;
-              }
-	    else if (strcmp(optarg, "CUSTOM") == 0)
-              {
-                io->datatype              = AA;
-                io->mod->ns               = 20;
-                io->mod->whichmodel       = CUSTOMAA;
-              }
-	    else if(strcmp(optarg, "FLU") == 0)
-              {
-                io->datatype              = AA;
-                io->mod->ns               = 20;
-                io->mod->whichmodel       = FLU;
-              }
-	    else
-              {
-                PhyML_Printf("\n. The model name is incorrect. Please see the documentation.\n");
-                Exit("\n");
-              }
+                char *s = To_Upper_String(optarg);
 
-	    Set_Model_Name(io->mod);
+                if (strcmp(s, "JC69") == 0)
+                  {
+                    io->datatype              = NT;
+                    io->mod->ns               = 4;
+                    io->mod->whichmodel       = JC69;
+                  }
+                else if(strcmp(s, "K80") == 0)
+                  {
+                    io->datatype              = NT;
+                    io->mod->ns               = 4;
+                    io->mod->whichmodel       = K80;
+                  }
+                else if(strcmp(s, "F81") == 0)
+                  {
+                    io->datatype              = NT;
+                    io->mod->ns               = 4;
+                    io->mod->whichmodel       = F81;
+                  }
+                else if (strcmp(s, "HKY85") == 0)
+                  {
+                    io->datatype              = NT;
+                    io->mod->ns               = 4;
+                    io->mod->whichmodel       = HKY85;
+                  }
+                else if(strcmp(s, "F84") == 0)
+                  {
+                    io->datatype              = NT;
+                    io->mod->ns               = 4;
+                    io->mod->whichmodel       = F84;
+                  }
+                else if (strcmp(s,"TN93") == 0)
+                  {
+                    io->datatype              = NT;
+                    io->mod->ns               = 4;
+                    io->mod->whichmodel       = TN93;
+                  }
+                else if(strncmp(s, "GTR", 3) == 0)
+                  {
+                    io->datatype              = NT;
+                    io->mod->ns               = 4;
+                    io->mod->whichmodel       = GTR;
+                    io->mod->s_opt->opt_rr    = YES;                
+                  }
+                else if(strcmp(s, "DAYHOFF") == 0)
+                  {
+                    io->datatype              = AA;
+                    io->mod->ns               = 20;
+                    io->mod->whichmodel       = DAYHOFF;
+                  }
+                else if(strcmp(s, "JTT") == 0)
+                  {
+                    io->datatype              = AA;
+                    io->mod->ns               = 20;
+                    io->mod->whichmodel       = JTT;
+                  }
+                else if(strcmp(s, "MTREV") == 0)
+                  {
+                    io->datatype             = AA;
+                    io->mod->ns              = 20;
+                    io->mod->whichmodel      = MTREV;
+                  }
+                else if(strcmp(s, "LG") == 0)
+                  {
+                    io->datatype              = AA;
+                    io->mod->ns               = 20;
+                    io->mod->whichmodel       = LG;
+                  }
+                else if(strcmp(s, "WAG") == 0)
+                  {
+                    io->datatype              = AA;
+                    io->mod->ns               = 20;
+                    io->mod->whichmodel       = WAG;
+                  }
+                else if(strcmp(s, "DCMUT") == 0)
+                  {
+                    io->datatype              = AA;
+                    io->mod->ns               = 20;
+                    io->mod->whichmodel       = DCMUT;
+                  }
+                else if(strcmp(s, "RTREV") == 0)
+                  {
+                    io->datatype              = AA;
+                    io->mod->ns               = 20;
+                    io->mod->whichmodel       = RTREV;
+                  }
+                else if(strcmp(s, "CPREV") == 0)
+                  {
+                    io->datatype              = AA;
+                    io->mod->ns               = 20;
+                    io->mod->whichmodel       = CPREV;
+                  }
+                else if(strcmp(s, "VT") == 0)
+                  {
+                    io->datatype              = AA;
+                    io->mod->ns               = 20;
+                    io->mod->whichmodel       = VT;
+                  }
+                else if(strcmp(s, "BLOSUM62") == 0)
+                  {
+                    io->datatype              = AA;
+                    io->mod->ns               = 20;
+                    io->mod->whichmodel       = BLOSUM62;
+                  }
+                else if(strcmp(s, "MTMAM") == 0)
+                  {
+                    io->datatype              = AA;
+                    io->mod->ns               = 20;
+                    io->mod->whichmodel       = MTMAM;
+                  }
+                else if (strcmp(s,"MTART") == 0)
+                  {
+                    io->datatype              = AA;
+                    io->mod->ns               = 20;
+                    io->mod->whichmodel       = MTART;
+                  }
+                else if (strcmp(s,"HIVW") == 0)
+                  {
+                    io->datatype              = AA;
+                    io->mod->ns               = 20;
+                    io->mod->whichmodel       = HIVW;
+                  }
+                else if(strcmp(s, "HIVB") == 0)
+                  {
+                    io->datatype              = AA;
+                    io->mod->ns               = 20;
+                    io->mod->whichmodel       = HIVB;
+                  }
+                else if(strcmp(s, "AB") == 0)
+                  {
+                    io->datatype              = AA;
+                    io->mod->ns               = 20;
+                    io->mod->whichmodel       = AB;
+                  }
+                else if (strcmp(s, "CUSTOM") == 0)
+                  {
+                    io->datatype              = AA;
+                    io->mod->ns               = 20;
+                    io->mod->whichmodel       = CUSTOMAA;
+                  }
+                else if(strcmp(s, "FLU") == 0)
+                  {
+                    io->datatype              = AA;
+                    io->mod->ns               = 20;
+                    io->mod->whichmodel       = FLU;
+                  }
+                else
+                  {
+                    PhyML_Printf("\n. The model name is incorrect. Please see the documentation.\n");
+                    Exit("\n");
+                  }
+                Free(s);
+              }
+          
+            
+            Set_Model_Name(io->mod);
 	    
 	    break;
 	  }

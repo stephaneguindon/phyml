@@ -958,7 +958,7 @@ typedef struct __Align {
   char             *name; /*! sequence name */
   int                len; /*! sequence length */
   char            *state; /*! sequence itself */
-  int           *d_state; /*! sequence itself (digits) */
+  short int     *d_state; /*! sequence itself (digits) */
   short int   *is_ambigu; /*! is_ambigu[site] = 1 if state[site] is an ambiguous character. 0 otherwise */
   short int is_duplicate;
   int                num;
