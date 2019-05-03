@@ -2217,7 +2217,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
 
       
-      tree->mmod->lbda = 35.0;
+      /* tree->mmod->lbda = 35.0; */
       tree->mmod->mu   = 0.3;
       tree->mmod->rad  = 0.5;
 
@@ -2230,8 +2230,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       /*   } */
       
       
-      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_lbda")) */
-      /*   MCMC_PHYREX_Lbda(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_lbda"))
+        MCMC_PHYREX_Lbda(tree);
 
       /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_mu")) */
       /*   MCMC_PHYREX_Mu(tree); */
