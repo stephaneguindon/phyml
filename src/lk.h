@@ -79,11 +79,7 @@ int Check_Lk_At_Given_Edge(int verbose, t_tree *tree);
 void Stepwise_Add_Lk(t_tree *tree);
 void Update_Eigen_Lr(t_edge *b, t_tree *tree);
 phydbl dLk(phydbl *l, t_edge *b, t_tree *tree);
-phydbl Lk_Core(int state, int ambiguity_check,
-                             phydbl *p_lk_left, phydbl *p_lk_rght,
-                             phydbl *Pij_rr,
-                             t_edge *b,
-                             t_tree *tree);
+phydbl Lk_Core(int state, int ambiguity_check,phydbl *p_lk_left, phydbl *p_lk_rght,phydbl *Pij_rr,phydbl *tPij_rr,t_edge *b,t_tree *tree);
 /* void Lk_dLk_Core_Eigen_Lr(phydbl *expl, phydbl *dot_prod, t_edge *b, phydbl *lk, phydbl *dlk, t_tree *tree); */
 phydbl Lk_Core_Eigen_Lr(phydbl *expl, phydbl *dot_prod, t_edge *b, t_tree *tree);
 phydbl Invariant_Lk(int fact_sum_scale, int site, int *num_prec_issue, t_tree *tree);

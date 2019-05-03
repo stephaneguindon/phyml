@@ -911,12 +911,12 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                         site_lk_cat = Lk_Core(state,ambiguity_check,
                                               b->p_lk_left + site*ns,
                                               b->p_lk_tip_r + site*ns,
-                                              b->Pij_rr,b,tree);
+                                              b->Pij_rr,b->tPij_rr,b,tree);
                       else
                         site_lk_cat = Lk_Core(state,ambiguity_check,
                                               b->p_lk_left + site*ns,
                                               b->p_lk_rght  + site*ns,
-                                              b->Pij_rr,b,tree);
+                                              b->Pij_rr,b->tPij_rr,b,tree);
                     }
                 }
               

@@ -46,9 +46,11 @@ AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([floor pow rint sqrt strchr strstr])
 
 dnl DEFAULT_VECTOR_FLAG=
-dnl DEFAULT_VECTOR_FLAG=-mavx
+dnl DEFAULT_VECTOR_FLAG="-mavx -mfma"
 dnl DEFAULT_VECTOR_FLAG=-msse3
-DEFAULT_VECTOR_FLAG=-march=native
+DEFAULT_VECTOR_FLAG="-march=native"
+
+
 AC_ARG_ENABLE([native],
               [AS_HELP_STRING([--disable-native],
                               [Remove AVX or SSE compilation options.])])
@@ -64,9 +66,11 @@ dnl LT_INIT
 dnl AC_PROG_LIBTOOL
 
 
-DEFAULT_C_FLAG="-std=c99 -O3 -fomit-frame-pointer -funroll-loops -Wall -Winline ${VECTOR_FLAG}"
-dnl default_C_FLAG="-O2 ${VECTOR_FLAG}"
-dnl DEFAULT_C_FLAG="-O3 -fPIC"
+dnl DEFAULT_C_FLAG="-fno-inline-functions -fno-inline-functions-called-once -fno-optimize-sibling-calls -O2 -fno-omit-frame-pointer -g ${VECTOR_FLAG}"
+DEFAULT_C_FLAG="-std=c99 -O3 -fomit-frame-pointer -funroll-loops -Wall -Winline -finline ${VECTOR_FLAG}"
+dnl DEFAULT_C_FLAG="-O2 ${VECTOR_FLAG}"
+dnl DEFAULT_C_FLAG="${VECTOR_FLAG}"
+dnl DEFAULT_C_FLAG="-pthread  -O3 -g -ffunction-sections -fdata-sections"
 
 AC_ARG_ENABLE([debug],
               [AS_HELP_STRING([--enable-debug],
@@ -105,7 +109,7 @@ AM_CONDITIONAL([WANT_WIN], [test "$enable_win" = yes])
 
 
 AC_ARG_ENABLE([beagle], [AS_HELP_STRING([--enable-beagle], [Compute likelihoods using BEAGLE library.])], [beagle=yes],[beagle=no])
-AS_IF([test "x$enable_beagle" = "xyes"],[PKG_CHECK_MODULES(BEAGLE, hmsbeagle-1)])
+AS_IF([test "x$enable_beagle" = "xyes"],[PKG_CHECK_MODULES([BEAGLE],[hmsbeagle-1])])
 AS_IF([test "x$enable_beagle" = "xyes"],
       [CFLAGS="${CFLAGS} ${BEAGLE_CFLAGS} ${BEAGLE_LIBS} -lstdc++"],
       [CFLAGS=${CFLAGS}])

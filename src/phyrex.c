@@ -2258,6 +2258,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr_local"))
         MCMC_PHYREX_Prune_Regraft_Local(tree);
 
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_sim"))
+        MCMC_PHYREX_Simulate_Backward(tree);
+
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_traj"))
         MCMC_PHYREX_Lineage_Traj(tree);
       

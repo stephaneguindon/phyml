@@ -2755,10 +2755,10 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
   if(io->mod->s_opt->random_input_tree) PhyML_Fprintf(fp_out,"\n. Random init tree: \t\t\t#%d",num_tree+1);
   else if(io->n_trees > 1)              PhyML_Fprintf(fp_out,"\n. Starting tree number: \t\t#%d",num_tree+1);
   
-  if(io->mod->s_opt->opt_topo)
-    PhyML_Fprintf(fp_out,"\n. Tree topology search: \t\tSPRs");
-  else
-    PhyML_Fprintf(fp_out,"\n. Tree topology: \t\t\tfixed");
+  /* if(io->mod->s_opt->opt_topo) */
+  /*   PhyML_Fprintf(fp_out,"\n. Tree topology search: \t\tSPRs"); */
+  /* else */
+  /*   PhyML_Fprintf(fp_out,"\n. Tree topology: \t\t\tfixed"); */
   
   /* was after Sequence file ; moved here FLT */
   s = (char *)mCalloc(T_MAX_LINE,sizeof(char));
@@ -3370,9 +3370,9 @@ void Print_Settings(option *io)
   
   if(io->mod->s_opt && io->mod->s_opt->opt_topo)
     {
-      if(io->mod->s_opt->topo_search == NNI_MOVE) PhyML_Printf("\n        . Tree topology search:\t\t\t\t NNIs");
-      else if(io->mod->s_opt->topo_search == SPR_MOVE) PhyML_Printf("\n        . Tree topology search:\t\t\t\t SPRs");
-      else if(io->mod->s_opt->topo_search == BEST_OF_NNI_AND_SPR) PhyML_Printf("\n        . Tree topology search:\t\t\t\t Best of NNIs and SPRs");
+      /* if(io->mod->s_opt->topo_search == NNI_MOVE) PhyML_Printf("\n        . Tree topology search:\t\t\t\t NNIs"); */
+      /* else if(io->mod->s_opt->topo_search == SPR_MOVE) PhyML_Printf("\n        . Tree topology search:\t\t\t\t SPRs"); */
+      /* else if(io->mod->s_opt->topo_search == BEST_OF_NNI_AND_SPR) PhyML_Printf("\n        . Tree topology search:\t\t\t\t Best of NNIs and SPRs"); */
       
       PhyML_Printf("\n        . Starting tree:\t\t\t\t %s",s);
 

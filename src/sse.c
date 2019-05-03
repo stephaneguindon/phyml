@@ -170,13 +170,12 @@ void SSE_Lk_dLk_Core_One_Class_Eigen_Lr(phydbl *dot_prod, phydbl *expl, unsigned
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-phydbl SSE_Lk_Core_One_Class_No_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, phydbl *Pij, phydbl *pi, int ns, int ambiguity_check, int state)
+phydbl SSE_Lk_Core_One_Class_No_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, phydbl *Pij, phydbl *tPij, phydbl *pi, int ns, int ambiguity_check, int state)
 {
-  phydbl lk = 0.0;
-  phydbl dum = 0.0;
+  phydbl lk,dum;
   const unsigned int sz = (int)BYTE_ALIGN / 8;
   const unsigned nblocks = ns/sz;
-  unsigned int i,j,k;
+  unsigned int i,j;
   __m128d _plk;
   __m128d _plk_l[nblocks],_plk_r[nblocks];
   
@@ -184,47 +183,65 @@ phydbl SSE_Lk_Core_One_Class_No_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, p
   
   if(ambiguity_check == NO) // tip case.
     {
-      for(i=0;i<nblocks;++i) _plk_l[i] = _mm_load_pd(p_lk_left + i*sz);      
-      for(i=0;i<nblocks;++i) _plk_r[i] = _mm_load_pd(Pij + state*ns + i*sz);
-      for(i=0;i<nblocks;++i) _plk_r[i] = _mm_mul_pd(_plk_r[i],_mm_set1_pd(pi[state]));
-      for(i=0;i<nblocks;++i) _plk_r[i] = _mm_mul_pd(_plk_r[i],_plk_l[i]);
+      for(i=0;i<nblocks;++i)
+        {
+          _plk_l[i] = _mm_load_pd(p_lk_left);      
+          _plk_r[i] = _mm_load_pd(Pij + state*ns);
+          p_lk_left += sz;
+          Pij += sz;
+        }
+      
+      for(i=0;i<nblocks;++i)
+        {
+          _plk_r[i] = _mm_mul_pd(_plk_r[i],_mm_set1_pd(pi[state]));
+          _plk_r[i] = _mm_mul_pd(_plk_r[i],_plk_l[i]);
+        }
+      
       _plk = _mm_setzero_pd();
-      for(i=0;i<nblocks;++i) _plk = _mm_add_pd(_plk,_plk_r[i]);
-      _plk = _mm_hadd_pd(_plk,_plk);
-      _mm_store_sd(&lk,_plk);
+      lk = 0.0;
+      for(i=0;i<nblocks;++i)
+        {
+          _plk = _mm_hadd_pd(_plk_r[i],_plk_r[i]);
+          _mm_store_sd(&dum,_plk);
+          lk += dum;
+        }
+      return lk;
     }
   else
     {
-      __m128d _pij[sz]; 
-      __m128d _pijplk[sz];
+      __m128d _pij[nblocks],_pijplk[nblocks]; 
 
-      for(i=0;i<nblocks;++i) _plk_r[i] = _mm_load_pd(p_lk_rght + i*sz);
-      for(i=0;i<nblocks;++i) _plk_r[i] = _mm_mul_pd(_plk_r[i],_mm_load_pd(pi + i*sz));
-      for(i=0;i<nblocks;++i) _plk_l[i] = _mm_load_pd(p_lk_left + i*sz);
-
-      for(j=0;j<nblocks;++j)
+      for(i=0;i<nblocks;++i)
         {
-          for(i=0;i<sz;++i) _pijplk[i] = _mm_setzero_pd();
+          _plk_r[i] = _mm_mul_pd(_mm_load_pd(p_lk_rght),_mm_load_pd(pi));
+          p_lk_rght += sz;
+          pi += sz;
+        }
 
-          for(i=0;i<nblocks;++i)
+      for(i=0;i<nblocks;++i) _pijplk[i] = _mm_setzero_pd();
+
+      for(i=0;i<ns;++i)
+        {
+          for(j=0;j<nblocks;++j)
             {
-              for(k=0;k<sz;++k)
-                {
-                  _pij[k] = _mm_load_pd(Pij + j*nblocks*sz*sz + i*sz + k*ns);
-                  _pij[k] = _mm_mul_pd(_pij[k],_plk_l[i]);
-                  _pijplk[k] = _mm_add_pd(_pijplk[k],_pij[k]);
-                }
+              _pij[j] = _mm_load_pd(tPij);
+              tPij += sz;
+              
+              _pijplk[j] = _mm_add_pd(_pijplk[j],_mm_mul_pd(_pij[j],_mm_set1_pd(p_lk_left[i])));
             }
-          
-          _plk = _mm_setzero_pd();
-          for(k=0;k<sz;++k) _plk = _mm_hadd_pd(_plk,_pijplk[k]);
-          
-          _plk = _mm_mul_pd(_plk,_plk_r[j]);
-          _mm_store_sd(&dum,_mm_hadd_pd(_plk,_plk));
+        }
+
+      lk = 0.0;
+      for(i=0;i<nblocks;++i)
+        {
+          _plk = _mm_mul_pd(_pijplk[i],_plk_r[i]);
+          _plk = _mm_hadd_pd(_plk,_plk);
+          _mm_store_sd(&dum,_plk);
           lk += dum;
         }
+      return lk;
     }
-  return lk;
+  return UNLIKELY;
 }
 
 //////////////////////////////////////////////////////////////

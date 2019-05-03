@@ -10104,6 +10104,158 @@ void MCMC_PHYREX_Add_Remove_Jump(t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+
+#ifdef PHYREX
+void MCMC_PHYREX_Simulate_Backward(t_tree *tree)
+{
+  phydbl u,alpha,ratio,hr,t;
+  phydbl Told,Tyoung;
+  phydbl cur_alnL, new_alnL;
+  phydbl cur_glnL, new_glnL;
+  phydbl cur_rlnL, new_rlnL;
+  t_dsk  *disk,*bkp_disk,*target_disk;
+  t_ldsk **bkp_ldsk;
+  int i;
+  t_node *n;
+  
+  tree->mcmc->run_move[tree->mcmc->num_move_phyrex_sim]++;
+
+  disk        = NULL;
+  bkp_disk    = NULL;
+  target_disk = NULL;
+  bkp_ldsk    = NULL;
+
+  new_alnL      = tree->c_lnL;
+  cur_alnL      = tree->c_lnL;
+  cur_glnL      = tree->mmod->c_lnL;
+  new_glnL      = tree->mmod->c_lnL;
+  new_rlnL       = tree->rates->c_lnL_rates;
+  cur_rlnL       = tree->rates->c_lnL_rates;
+  hr            = 0.0;
+  ratio         = 0.0;
+  t             = 0.0;
+
+
+  Get_Node_Ranks_From_Tip_Times(tree);
+  
+  // Get to the oldest sampled disk
+  n = tree->a_nodes[0];
+  while(n->rk_prev && n->rk_prev->tax == YES) n = n->rk_prev;
+  Tyoung = n->ldsk->disk->time;
+  
+
+  
+  /* Chop off the tree at time t and simulate upwards from here */
+  Told = PHYREX_Tree_Height(tree);
+
+  t = Uni()*(Tyoung-Told) + Told;
+  
+  disk = tree->young_disk->prev;
+  while(disk && disk->time > t) disk = disk->prev;
+  target_disk = disk->next;
+
+  hr -= log(fabs((target_disk->prev->time - target_disk->time)/(Tyoung-Told)));
+
+  bkp_disk = target_disk->prev;
+
+  bkp_ldsk = (t_ldsk **)mCalloc(target_disk->n_ldsk_a,sizeof(t_ldsk *));
+  for(i=0;i<target_disk->n_ldsk_a;i++) bkp_ldsk[i] = target_disk->ldsk_a[i]->prev;
+
+  
+  PHYREX_Simulate_Backward_Core(target_disk,NO,tree);
+  PHYREX_Ldsk_To_Tree(tree);
+
+  
+  Told = PHYREX_Tree_Height(tree);
+  hr += log(fabs((target_disk->prev->time - target_disk->time)/(Tyoung-Told)));
+
+
+  if(tree->eval_alnL == YES) new_alnL = Lk(NULL,tree);
+  if(tree->eval_rlnL == YES) new_rlnL = RATES_Lk_Rates(tree);
+      
+  ratio += (new_alnL - cur_alnL);
+  ratio += (new_rlnL - cur_rlnL);
+  ratio += hr;
+  
+  ratio = exp(ratio);
+  alpha = MIN(1.,ratio);
+    
+ /* Always accept move */
+  if(tree->mcmc->always_yes == YES) alpha = 1.0;
+    
+  u = Uni();
+        
+  if(u > alpha) /* Reject */
+    {
+      disk = target_disk->prev;
+      while(disk->prev)
+        {
+          disk = disk->prev;
+          if(disk->next->ldsk != NULL) Free_Ldisk(disk->next->ldsk);
+          Free_Disk(disk->next);
+        }
+
+      /* Root */
+      Free_Ldisk(disk->ldsk);
+      Free_Disk(disk);
+
+      target_disk->prev = bkp_disk;
+      for(i=0;i<target_disk->n_ldsk_a;i++) target_disk->ldsk_a[i]->prev = bkp_ldsk[i];
+      
+      if(tree->mmod->safe_phyrex == YES)
+        {
+          new_alnL = Lk(NULL,tree);
+          if(Are_Equal(new_alnL,cur_alnL,1.E-3) == NO)
+            {
+              PhyML_Fprintf(stderr,"\n. new_alnL: %f cur_alnL: %f",new_alnL,cur_alnL);
+              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+            }
+        
+          
+          new_glnL = PHYREX_Lk(tree);
+          
+          if(Are_Equal(new_glnL,cur_glnL,1.E-3) == NO)
+            {
+              PhyML_Fprintf(stderr,"\n. new_glnL: %f cur_glnL: %f",new_glnL,cur_glnL);
+              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+            }
+        }
+      else
+        {
+          PHYREX_Lk(tree);
+          tree->c_lnL       = cur_alnL;
+          tree->mmod->c_lnL = cur_glnL;
+        }
+    }
+  else
+    {
+      /* Accept */
+      disk = bkp_disk;
+      while(disk->prev)
+        {
+          disk = disk->prev;
+          if(disk->next->ldsk != NULL) Free_Ldisk(disk->next->ldsk);
+          Free_Disk(disk->next);
+        }
+      
+      /* Root */
+      Free_Ldisk(disk->ldsk);
+      Free_Disk(disk);
+
+      /* Likelihood needs to be updated */
+      PHYREX_Lk(tree);
+
+      tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_sim]++;
+    }
+  
+
+  Free(bkp_ldsk);
+}
+#endif
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

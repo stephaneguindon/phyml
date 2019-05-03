@@ -103,30 +103,6 @@ void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree)
           
           if(b->left->tax == YES) p_lk_left += ns;
           if(b->rght->tax == YES) p_lk_rght += ns;
-          
-          /* p_lk_left -= b->left->tax ? ns : ns*ncatg; */
-          /* p_lk_rght -= b->rght->tax ? ns : ns*ncatg; */
-          /* dot_prod -= ns; */          
-          /* PhyML_Printf("\n. EIGEN %d [%g %g %g %g] %p: [%g %g %g %g] %p: [%g %g %g %g] ", */
-          /*              site, */
-          /*              dot_prod[0], */
-          /*              dot_prod[1], */
-          /*              dot_prod[2], */
-          /*              dot_prod[3], */
-          /*              p_lk_left, */
-          /*              p_lk_left[0], */
-          /*              p_lk_left[1], */
-          /*              p_lk_left[2], */
-          /*              p_lk_left[3], */
-          /*              p_lk_rght, */
-          /*              p_lk_rght[0], */
-          /*              p_lk_rght[1], */
-          /*              p_lk_rght[2], */
-          /*              p_lk_rght[3]); */
-          
-          /* p_lk_left += b->left->tax ? ns : ns*ncatg; */
-          /* p_lk_rght += b->rght->tax ? ns : ns*ncatg; */
-          /* dot_prod += ns; */
         }
       else
         {
@@ -151,62 +127,113 @@ void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-phydbl AVX_Lk_Core_One_Class_No_Eigen_Lr(const phydbl *p_lk_left, const phydbl *p_lk_rght, const phydbl *Pij, const phydbl *pi, const int ns, const int ambiguity_check, const int observed_state)
+phydbl AVX_Lk_Core_One_Class_No_Eigen_Lr(const phydbl *p_lk_left, const phydbl *p_lk_rght, const phydbl *Pij, const phydbl *tPij, const phydbl *pi, const int ns, const int ambiguity_check, const int observed_state)
 {
   const unsigned int sz = (int)BYTE_ALIGN / 8;
   const unsigned nblocks = ns/sz;
 
-  __m256d _plk_l[nblocks],_plk_r[nblocks];
-  __m256d _plk; // parent partial likelihood
-
-  /* [ Pi . Lkr ]' x Pij x Lkl */
-
-  if(ambiguity_check == NO) // tip case.
+  if(nblocks == 1)
     {
-      unsigned int i;
-      for(i=0;i<nblocks;++i) _plk_l[i] = _mm256_load_pd(p_lk_left + i*sz);
-      for(i=0;i<nblocks;++i) _plk_r[i] = _mm256_load_pd(Pij + observed_state*ns + i*sz);
-      for(i=0;i<nblocks;++i) _plk_r[i] = _mm256_mul_pd(_plk_r[i],_mm256_set1_pd(pi[observed_state]));
-      for(i=0;i<nblocks;++i) _plk_r[i] = _mm256_mul_pd(_plk_r[i],_plk_l[i]);
-      _plk = _mm256_setzero_pd();
-      for(i=0;i<nblocks;++i) _plk = _mm256_add_pd(_plk,_plk_r[i]);
-      return AVX_Vect_Norm(_plk);
+      __m256d _plk_r,_plk_l;
+
+      if(ambiguity_check == NO) // tip case.
+        {
+          Pij += observed_state*ns;
+          _plk_r = _mm256_mul_pd(_mm256_load_pd(Pij),_mm256_load_pd(p_lk_left));
+          return pi[observed_state] * AVX_Vect_Norm(_plk_r);
+        }
+      else
+        {
+          unsigned int i;
+          __m256d _pijplk,_pij;
+          
+          _plk_r  = _mm256_mul_pd(_mm256_load_pd(p_lk_rght),_mm256_load_pd(pi));
+          _pijplk = _mm256_setzero_pd();
+          
+          for(i=0;i<ns;++i)
+            {
+              _pij = _mm256_load_pd(tPij);
+              
+              
+#if (defined(__FMA__))
+              _pijplk = _mm256_fmadd_pd(_pij,_mm256_set1_pd(p_lk_left[i]),_pijplk);
+#else
+              _pijplk = _mm256_add_pd(_pijplk,_mm256_mul_pd(_pij,_mm256_set1_pd(p_lk_left[i])));
+#endif
+              tPij += ns;
+            }
+          
+          _plk_l = _mm256_mul_pd(_pijplk,_plk_r);      
+          
+          return(AVX_Vect_Norm(_plk_l));
+        }
+      return UNLIKELY;
     }
   else
     {
-      unsigned int i,j,k;
-      __m256d _pij[sz]; 
-      __m256d _pijplk[sz];
-      phydbl lk=.0;
+      __m256d _plk_l[nblocks],_plk_r[nblocks];
+      __m256d _plk;
 
-      for(i=0;i<nblocks;++i) _plk_r[i] = _mm256_load_pd(p_lk_rght + i*sz);
-      for(i=0;i<nblocks;++i) _plk_r[i] = _mm256_mul_pd(_plk_r[i],_mm256_load_pd(pi + i*sz));
-      for(i=0;i<nblocks;++i) _plk_l[i] = _mm256_load_pd(p_lk_left + i*sz);
-
-      for(j=0;j<nblocks;++j)
+      /* [ Pi . Lkr ]' x Pij x Lkl */
+      
+      if(ambiguity_check == NO) // tip case.
         {
-          for(i=0;i<sz;++i) _pijplk[i] = _mm256_setzero_pd();
-
+          unsigned int i;
+          
+          Pij += observed_state*ns;
+          
           for(i=0;i<nblocks;++i)
             {
-              for(k=0;k<sz;++k)
+              _plk_l[i] = _mm256_load_pd(p_lk_left);
+              _plk_r[i] = _mm256_load_pd(Pij);
+              _plk_r[i] = _mm256_mul_pd(_plk_r[i],_plk_l[i]);
+              p_lk_left += sz;
+              Pij += sz;
+            }
+          
+          _plk = _mm256_setzero_pd();
+          for(i=0;i<nblocks;++i) _plk = _mm256_add_pd(_plk,_plk_r[i]);
+          return pi[observed_state] * AVX_Vect_Norm(_plk);
+        }
+      else
+        {
+          unsigned int i,j;
+          __m256d _pij[nblocks],_pijplk[nblocks];
+          phydbl lk;
+          
+          for(i=0;i<nblocks;++i)
+            {
+              _plk_r[i] = _mm256_mul_pd(_mm256_load_pd(p_lk_rght),_mm256_load_pd(pi));
+              p_lk_rght += sz;
+              pi += sz;
+            }
+          
+          for(i=0;i<nblocks;++i) _pijplk[i] = _mm256_setzero_pd();
+          
+          for(i=0;i<ns;++i)
+            {
+              for(j=0;j<nblocks;++j)
                 {
-                  _pij[k] = _mm256_load_pd(Pij + j*nblocks*sz*sz + i*sz + k*ns);
-                  _pij[k] = _mm256_mul_pd(_pij[k],_plk_l[i]);
-                  _pijplk[k] = _mm256_add_pd(_pijplk[k],_pij[k]);
+                  _pij[j] = _mm256_load_pd(tPij);
+                  tPij += sz;
+                  
+#if (defined(__FMA__))
+                  _pijplk[j] = _mm256_fmadd_pd(_pij[j],_mm256_set1_pd(p_lk_left[i]),_pijplk[j]);
+#else
+                  _pijplk[j] = _mm256_add_pd(_pijplk[j],_mm256_mul_pd(_pij[j],_mm256_set1_pd(p_lk_left[i])));
+#endif
                 }
             }
           
-          _plk = AVX_Horizontal_Add(_pijplk);
-          _plk = _mm256_mul_pd(_plk,_plk_r[j]);
-
-          lk += AVX_Vect_Norm(_plk);
+          lk = 0.0;
+          for(i=0;i<nblocks;++i) lk += AVX_Vect_Norm(_mm256_mul_pd(_pijplk[i],_plk_r[i]));
+          return lk;
         }
-      return lk;
+      
+      return UNLIKELY;
     }
-  return UNLIKELY;
 }
- 
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
@@ -217,8 +244,20 @@ phydbl AVX_Lk_Core_One_Class_Eigen_Lr(const phydbl *dot_prod, const phydbl *expl
   const unsigned nblocks = ns/sz;
   __m256d _prod[nblocks],_x;
   
-  for(l=0;l<nblocks;++l) _prod[l] = _mm256_load_pd(dot_prod + l*sz);
-  if(expl != NULL) for(l=0;l<nblocks;++l) _prod[l] = _mm256_mul_pd(_prod[l],_mm256_load_pd(expl + l*sz));
+  for(l=0;l<nblocks;++l)
+    {
+      _prod[l] = _mm256_load_pd(dot_prod); dot_prod += sz;
+    }
+
+  if(expl != NULL)
+    {
+      for(l=0;l<nblocks;++l)
+        {
+          _prod[l] = _mm256_mul_pd(_prod[l],_mm256_load_pd(expl));
+          expl += sz;
+        }
+    }
+  
   _x = _mm256_setzero_pd();
   for(l=0;l<nblocks;++l) _x = _mm256_add_pd(_x,_prod[l]);
   
@@ -244,7 +283,11 @@ void AVX_Lk_dLk_Core_One_Class_Eigen_Lr(const phydbl *dot_prod, const phydbl *ex
       
       _y = _mm256_load_pd(expl + 4*i);
 
+#if (defined(__FMA__))
+      _z = _mm256_fmadd_pd(_x,_y,_z);
+#else
       _z = _mm256_add_pd(_z,_mm256_mul_pd(_x,_y));
+#endif
     }
   
   *lk = ((double *)&_z)[0] + ((double *)&_z)[2];
@@ -257,11 +300,19 @@ void AVX_Lk_dLk_Core_One_Class_Eigen_Lr(const phydbl *dot_prod, const phydbl *ex
 
 phydbl AVX_Vect_Norm(__m256d _z)
 {
-  phydbl r;
-  __m256d _x = _mm256_hadd_pd(_z,_z);
-  __m256d _y = _mm256_permute2f128_pd(_x,_x,0x21);
-  _mm_store_sd(&r,_mm256_castpd256_pd128(_mm256_add_pd(_x,_y)));
-  return r;
+  __m128d vlow  = _mm256_castpd256_pd128(_z);
+  __m128d vhigh = _mm256_extractf128_pd(_z, 1); // high 128
+  vlow  = _mm_add_pd(vlow, vhigh);     // reduce down to 128
+  
+  __m128d high64 = _mm_unpackhi_pd(vlow, vlow);
+  return  _mm_cvtsd_f64(_mm_add_sd(vlow, high64));
+
+      
+  /* phydbl r; */
+  /* __m256d _x = _mm256_hadd_pd(_z,_z); */
+  /* __m256d _y = _mm256_permute2f128_pd(_x,_x,0x21); */
+  /* _mm_store_sd(&r,_mm256_castpd256_pd128(_mm256_add_pd(_x,_y))); */
+  /* return r; */
 }
 
 //////////////////////////////////////////////////////////////
@@ -580,7 +631,14 @@ void AVX_Matrix_Vect_Prod(const __m256d *_m_transpose, const phydbl *_v, const i
   for(i=0;i<ns;++i)
     {
       _x = _mm256_set1_pd(_v[i]);
-      for(j=0;j<nblocks;++j) _u[j] = _mm256_add_pd(_u[j],_mm256_mul_pd(_m_transpose[j],_x));
+      for(j=0;j<nblocks;++j)
+        {
+#if (defined(__FMA__))
+          _u[j] = _mm256_fmadd_pd(_m_transpose[j],_x,_u[j]);
+#else
+          _u[j] = _mm256_add_pd(_u[j],_mm256_mul_pd(_m_transpose[j],_x));
+#endif
+        }
       _m_transpose = _m_transpose + nblocks;
     }
 }

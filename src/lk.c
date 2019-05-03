@@ -635,15 +635,15 @@ if(tree->rates && tree->io->lk_approx == NORMAL)
         }
       else
         {
+          if(tree->data->wght[site] > SMALL) Lk_Core(state,ambiguity_check,p_lk_left,p_lk_rght,b->Pij_rr,b->tPij_rr,b,tree);
+
           if(b->rght->tax == YES)
             {
-              if(tree->data->wght[site] > SMALL) Lk_Core(state,ambiguity_check,p_lk_left,p_lk_rght,b->Pij_rr,b,tree);
               p_lk_left += nsncatg;
               p_lk_rght += ns;
             }
           else
             {
-              if(tree->data->wght[site] > SMALL) Lk_Core(state,ambiguity_check,p_lk_left,p_lk_rght,b->Pij_rr,b,tree);
               p_lk_left += nsncatg;
               p_lk_rght += nsncatg;
             }
@@ -760,6 +760,7 @@ phydbl dLk(phydbl *l, t_edge *b, t_tree *tree)
 phydbl Lk_Core(int state, int ambiguity_check,
                phydbl *p_lk_left, phydbl *p_lk_rght,
                phydbl *Pij_rr,
+               phydbl *tPij_rr,
                t_edge *b,
                t_tree *tree)
 {
@@ -782,12 +783,12 @@ phydbl Lk_Core(int state, int ambiguity_check,
         {
           if(ns == 4 || ns == 20)
             {
-#if (defined(__AVX__))
-              tree->site_lk_cat[catg] = AVX_Lk_Core_One_Class_No_Eigen_Lr(p_lk_left,p_lk_rght,Pij_rr,pi,ns,ambiguity_check,state);              
+#if (defined(__AVX__) || defined(__AVX2__))
+                  tree->site_lk_cat[catg] = AVX_Lk_Core_One_Class_No_Eigen_Lr(p_lk_left,p_lk_rght,Pij_rr,tPij_rr,pi,ns,ambiguity_check,state);
 #elif (defined(__SSE3__))
-              tree->site_lk_cat[catg] = SSE_Lk_Core_One_Class_No_Eigen_Lr(p_lk_left,p_lk_rght,Pij_rr,pi,ns,ambiguity_check,state);
+                  tree->site_lk_cat[catg] = SSE_Lk_Core_One_Class_No_Eigen_Lr(p_lk_left,p_lk_rght,Pij_rr,tPij_rr,pi,ns,ambiguity_check,state);
 #else
-              tree->site_lk_cat[catg] = Lk_Core_One_Class_No_Eigen_Lr(p_lk_left,p_lk_rght,Pij_rr,pi,ns,ambiguity_check,state);
+                  tree->site_lk_cat[catg] = Lk_Core_One_Class_No_Eigen_Lr(p_lk_left,p_lk_rght,Pij_rr,pi,ns,ambiguity_check,state);
 #endif
             }
           else
@@ -796,6 +797,7 @@ phydbl Lk_Core(int state, int ambiguity_check,
             }
           
           Pij_rr += nsns;
+          tPij_rr += nsns;
           if(b->left->tax == NO) p_lk_left += ns;
           if(b->rght->tax == NO) p_lk_rght += ns;
         }
@@ -871,7 +873,7 @@ phydbl Lk_Core_Eigen_Lr(phydbl *expl, phydbl *dot_prod, t_edge *b, t_tree *tree)
         {
           if(tree->mod->io->datatype == NT || tree->mod->io->datatype == AA)
             {
-#if (defined(__AVX__))
+#if (defined(__AVX__) || defined(__AVX2__))
               tree->site_lk_cat[catg] = AVX_Lk_Core_One_Class_Eigen_Lr(dot_prod,expl ? expl : NULL,ns);
 #elif (defined(__SSE3__))
               tree->site_lk_cat[catg] = SSE_Lk_Core_One_Class_Eigen_Lr(dot_prod,expl ? expl : NULL,ns);
@@ -962,7 +964,7 @@ void Lk_dLk_Core_Eigen_Lr(phydbl *expl, phydbl *dot_prod, t_edge *b, phydbl *lk,
         {
           if(tree->mod->io->datatype == NT || tree->mod->io->datatype == AA)
             {
-#if (defined(__AVX__))
+#if (defined(__AVX__) || defined(__AVX2__))
               AVX_Lk_dLk_Core_One_Class_Eigen_Lr(dot_prod,
                                                  expl ? expl : NULL,
                                                  ns,&core_lk,&core_dlk);
@@ -1045,7 +1047,7 @@ void Update_Eigen_Lr(t_edge *b, t_tree *tree)
 
   if(tree->mod->ns == 4 || tree->mod->ns == 20)
     {
-#if (defined(__AVX__))
+#if (defined(__AVX__) || defined(__AVX2__))
       AVX_Update_Eigen_Lr(b,tree);
       return;
 #elif (defined(__SSE3__))
@@ -1294,8 +1296,7 @@ void Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
     {
       if(tree->mod->ns == 4 || tree->mod->ns == 20)
         {
-                       
-#if (defined(__AVX__))
+#if (defined(__AVX__) || defined(__AVX2__))
           AVX_Update_Partial_Lk(tree,b,d);
 #elif (defined(__SSE3__))
           SSE_Update_Partial_Lk(tree,b,d);
