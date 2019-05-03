@@ -108,11 +108,11 @@ AS_IF([test "x$enable_win" = "xyes"],AC_DEFINE([WIN32],[1],[WIN32 tag on]))
 AM_CONDITIONAL([WANT_WIN], [test "$enable_win" = yes])
 
 
-AC_ARG_ENABLE([beagle], [AS_HELP_STRING([--enable-beagle], [Compute likelihoods using BEAGLE library.])], [beagle=yes],[beagle=no])
-AS_IF([test "x$enable_beagle" = "xyes"],[PKG_CHECK_MODULES([BEAGLE],[hmsbeagle-1])])
-AS_IF([test "x$enable_beagle" = "xyes"],
-      [CFLAGS="${CFLAGS} ${BEAGLE_CFLAGS} ${BEAGLE_LIBS} -lstdc++"],
-      [CFLAGS=${CFLAGS}])
+dnl AC_ARG_ENABLE([beagle], [AS_HELP_STRING([--enable-beagle], [Compute likelihoods using BEAGLE library.])], [beagle=yes],[beagle=no])
+dnl AS_IF([test "x$enable_beagle" = "xyes"],[PKG_CHECK_MODULES([BEAGLE],[hmsbeagle-1])])
+dnl AS_IF([test "x$enable_beagle" = "xyes"],
+dnl       [CFLAGS="${CFLAGS} ${BEAGLE_CFLAGS} ${BEAGLE_LIBS} -lstdc++"],
+dnl       [CFLAGS=${CFLAGS}])
 AS_IF([test "x$enable_beagle" = "xyes"], AC_DEFINE([BEAGLE],[1],[BEAGLE tag on]))
 AM_CONDITIONAL([WANT_BEAGLE], [test "$enable_beagle" = yes])
 

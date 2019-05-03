@@ -466,6 +466,7 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
                   AVX_Partial_Lk_Inin(_tPij1,plk1,_pmat1plk1,
                                       _tPij2,plk2,_pmat2plk2,
                                       ns,_plk0);
+                  
                 }
                             
               for(k=0;k<nblocks;++k) _mm256_store_pd(plk0+sz*k,_plk0[k]);
