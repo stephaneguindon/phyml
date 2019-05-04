@@ -2239,11 +2239,11 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_rad")) */
       /*   MCMC_PHYREX_Radius(tree); */
 
-      if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_disk"))
-        MCMC_PHYREX_Indel_Disk(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_disk")) */
+      /*   MCMC_PHYREX_Indel_Disk(tree); */
 
-      if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_hit"))
-        MCMC_PHYREX_Indel_Hit(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_hit")) */
+      /*   MCMC_PHYREX_Indel_Hit(tree); */
 
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_move_disk_ud"))
         MCMC_PHYREX_Move_Disk_Updown(tree);
@@ -2254,14 +2254,14 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_scale_times"))
         MCMC_PHYREX_Scale_Times(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr"))
-        MCMC_PHYREX_Prune_Regraft(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr")) */
+      /*   MCMC_PHYREX_Prune_Regraft(tree); */
 
-      if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr_local"))
-        MCMC_PHYREX_Prune_Regraft_Local(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr_local")) */
+      /*   MCMC_PHYREX_Prune_Regraft_Local(tree); */
 
-      if(!strcmp(tree->mcmc->move_name[move],"phyrex_sim"))
-        MCMC_PHYREX_Simulate_Backward(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_sim")) */
+      /*   MCMC_PHYREX_Simulate_Backward(tree); */
 
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_traj"))
         MCMC_PHYREX_Lineage_Traj(tree);
