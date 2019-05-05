@@ -7456,6 +7456,7 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree)
   
   if(tree->eval_glnL == YES)
     {
+      
       PHYREX_Lk(tree);
       new_glnL = tree->mmod->c_lnL;
     }
