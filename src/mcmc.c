@@ -7408,6 +7408,7 @@ void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree)
 void MCMC_PHYREX_Scale_Times(t_tree *tree)
 {
   phydbl u,alpha,ratio;
+  phydbl cur_height;
   phydbl cur_glnL, new_glnL, hr;
   phydbl cur_alnL, new_alnL;
   phydbl cur_rlnL, new_rlnL;
@@ -7424,7 +7425,8 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree)
   cur_rlnL     = tree->rates->c_lnL_rates;
   hr           = 0.0;
   ratio        = 0.0;
-
+  cur_height = fabs(PHYREX_Tree_Height(tree));
+  
   tree->mcmc->run_move[tree->mcmc->num_move_phyrex_scale_times]++;
   
   u = Uni();
@@ -7456,9 +7458,12 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree)
   
   if(tree->eval_glnL == YES)
     {
-      
-      PHYREX_Lk(tree);
-      new_glnL = tree->mmod->c_lnL;
+      /* PHYREX_Lk(tree); */
+      /* new_glnL = tree->mmod->c_lnL; */
+
+      new_glnL = cur_glnL - (-tree->mmod->lbda * cur_height);
+      new_glnL += -tree->mmod->lbda * fabs(PHYREX_Tree_Height(tree));
+      tree->mmod->c_lnL = new_glnL;
     }
   
   if(tree->eval_alnL == YES) new_alnL = Lk(NULL,tree);
