@@ -9238,8 +9238,8 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree)
   if(!n_all_disks) return;
   
   /* n_move_ldsk = Rand_Int(1,1+(int)(n_all_disks/5)); */
-  n_move_ldsk = MIN(10,(int)(1.+0.1*n_all_disks));
-  /* n_move_ldsk = 1+(int)(n_all_disks/10); */
+  /* n_move_ldsk = MIN(10,(int)(1.+0.1*n_all_disks)); */
+  n_move_ldsk = 1+(int)(n_all_disks/10);
   
   permut = Permutate(n_all_disks);
   cur_glnL = tree->mmod->c_lnL;
@@ -9354,8 +9354,8 @@ void MCMC_PHYREX_Disk_Given_Ldsk(t_tree *tree)
   if(!n_all_disks) return;
   
   /* n_move_ldsk = Rand_Int(1,1+(int)(n_all_disks/10)); */
-  n_move_ldsk = MIN(10,(int)(1+0.1*n_all_disks));
-  /* n_move_ldsk = (int)(1+n_all_disks/10); */
+  /* n_move_ldsk = MIN(10,(int)(1+0.1*n_all_disks)); */
+  n_move_ldsk = (int)(1+n_all_disks/10);
   
   permut = Permutate(n_all_disks);
 
@@ -9378,35 +9378,35 @@ void MCMC_PHYREX_Disk_Given_Ldsk(t_tree *tree)
 
       for(j=0;j<tree->mmod->n_dim;j++)
         {
-          if(disk->ldsk == NULL)
+          /* if(disk->ldsk == NULL) */
             disk->centr->lonlat[j] = Uni()*tree->mmod->lim->lonlat[j];
             
-          else
-            {
-              /* c: center; o: pos of direct ldsk ancestor */
-              c = disk->ldsk->coord->lonlat[j];
+          /* else */
+          /*   { */
+          /*     /\* c: center; o: pos of direct ldsk ancestor *\/ */
+          /*     c = disk->ldsk->coord->lonlat[j]; */
               
-              err = NO;
-              disk->centr->lonlat[j] =
-                Rnorm_Trunc(c,
-                            2.*tree->mmod->rad,
-                            0.0,
-                            tree->mmod->lim->lonlat[j],&err);
+          /*     err = NO; */
+          /*     disk->centr->lonlat[j] = */
+          /*       Rnorm_Trunc(c, */
+          /*                   2.*tree->mmod->rad, */
+          /*                   0.0, */
+          /*                   tree->mmod->lim->lonlat[j],&err); */
               
-              if(err == YES) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+          /*     if(err == YES) Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
               
-              hr -= Log_Dnorm_Trunc(disk->centr->lonlat[j],
-                                    c,
-                                    2.*tree->mmod->rad,
-                                    0.0,
-                                    tree->mmod->lim->lonlat[j],&err);
+          /*     hr -= Log_Dnorm_Trunc(disk->centr->lonlat[j], */
+          /*                           c, */
+          /*                           2.*tree->mmod->rad, */
+          /*                           0.0, */
+          /*                           tree->mmod->lim->lonlat[j],&err); */
               
-              hr += Log_Dnorm_Trunc(disk->centr->cpy->lonlat[j],
-                                    c,
-                                    2.*tree->mmod->rad,
-                                    0.0,
-                                    tree->mmod->lim->lonlat[j],&err);
-            }
+          /*     hr += Log_Dnorm_Trunc(disk->centr->cpy->lonlat[j], */
+          /*                           c, */
+          /*                           2.*tree->mmod->rad, */
+          /*                           0.0, */
+          /*                           tree->mmod->lim->lonlat[j],&err); */
+          /*   } */
         }
       
       if(tree->eval_glnL == YES)

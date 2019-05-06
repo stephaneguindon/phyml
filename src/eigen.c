@@ -50,9 +50,9 @@ int Eigen(int job, phydbl *A, int n, phydbl *rr, phydbl *ri,
     int low,hi,i,j,k, it, istate=0;
     phydbl tiny, t; 
 
-    /* tiny=SQRT(POW((phydbl)BASE,(phydbl)(1-(int)DIGITS))); */
+    tiny=SQRT(POW((phydbl)BASE,(phydbl)(1-(int)DIGITS)));
     /* tiny=FLT_MIN; */
-    tiny = SMALL;
+    /* tiny = SMALL; */
         
     balance(A,n,&low,&hi,work);
     elemhess(job,A,n,low,hi,vr,vi,(int*)(work+n));
@@ -510,8 +510,8 @@ int realeig(int job,phydbl *mat,int n,int low, int hi, phydbl *valr,
   complex v;
   phydbl p=.0,q=.0,r=.0,s=.0,t,w,x,y,z=0,ra,sa,norm,eps;
   int niter,en,i,j,k,l,m;
-  /* phydbl precision  = POW((phydbl)BASE,(phydbl)(1-(int)DIGITS)); */
-  phydbl precision  = SMALL;
+  phydbl precision  = POW((phydbl)BASE,(phydbl)(1-(int)DIGITS));
+  /* phydbl precision  = SMALL; */
   
 
   eps = precision;

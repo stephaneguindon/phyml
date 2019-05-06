@@ -456,9 +456,9 @@ int PHYREX_Main_Estimate(int argc, char *argv[])
 
   
   /* Initialize parameters of migrep model */
-  tree->mmod->lbda = Uni()*(20.0 - 10.0) + 10.0;
+  tree->mmod->lbda = Uni()*(400.0 - 300.0) + 300.0;
   tree->mmod->mu   = Uni()*(0.6 - 0.2) + 0.3;
-  tree->mmod->rad  = Uni()*(3.0 - 1.5) + 1.5;
+  tree->mmod->rad  = Uni()*(1.0 - 0.5) + 0.5;
   tree->mmod->sigsq = PHYREX_Update_Sigsq(tree);
 
   tree->rates->clock_r = 1.0E-1;
@@ -1873,7 +1873,7 @@ phydbl PHYREX_Lk(t_tree *tree)
   while(1);
 
   tree->mmod->c_lnL += n_intervals * log_lbda - tree->mmod->lbda*(tree->young_disk->time - disk->time);
-
+  
   if(isinf(tree->mmod->c_lnL) || isnan(tree->mmod->c_lnL)) tree->mmod->c_lnL = UNLIKELY;
 
   return(tree->mmod->c_lnL);
@@ -2063,9 +2063,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
 
   /* Starting parameter values */
-  tree->mmod->lbda = Uni()*(20.0 - 10.0) + 10.0;
+  tree->mmod->lbda = Uni()*(400.0 - 300.0) + 300.0;
   tree->mmod->mu   = Uni()*(0.6 - 0.2) + 0.3;
-  tree->mmod->rad  = Uni()*(3.0 - 1.5) + 1.5;
+  tree->mmod->rad  = Uni()*(1.5 - 0.5) + 0.5;
   PHYREX_Update_Sigsq(tree);
   
   MIXT_Set_Bl_From_Rt(YES,tree);
@@ -2155,7 +2155,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
 
   /* !!!!!!!!!!!!!!!! */
-  tree->mmod->lbda = 35.0;
+  tree->mmod->lbda = 300.0;
   tree->mmod->mu   = 0.3;
   tree->mmod->rad  = 0.5;
 
@@ -2239,11 +2239,11 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_rad")) */
       /*   MCMC_PHYREX_Radius(tree); */
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_disk")) */
-      /*   MCMC_PHYREX_Indel_Disk(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_disk"))
+        MCMC_PHYREX_Indel_Disk(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_hit")) */
-      /*   MCMC_PHYREX_Indel_Hit(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_hit"))
+        MCMC_PHYREX_Indel_Hit(tree);
 
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_move_disk_ud"))
         MCMC_PHYREX_Move_Disk_Updown(tree);
@@ -2254,11 +2254,11 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_scale_times"))
         MCMC_PHYREX_Scale_Times(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr")) */
-      /*   MCMC_PHYREX_Prune_Regraft(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr"))
+        MCMC_PHYREX_Prune_Regraft(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr_local")) */
-      /*   MCMC_PHYREX_Prune_Regraft_Local(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr_local"))
+        MCMC_PHYREX_Prune_Regraft_Local(tree);
 
       /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_sim")) */
       /*   MCMC_PHYREX_Simulate_Backward(tree); */
