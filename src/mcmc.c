@@ -7386,7 +7386,7 @@ void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree)
       
       u = Uni();
       
-      if(target_disk[i]->prev == NULL) PhyML_Printf("\n- Move disk new_glnL: %f [%f] hr: %f u:%f alpha: %f",new_glnL,cur_glnL,hr,u,alpha);
+      /* if(target_disk[i]->prev == NULL) PhyML_Printf("\n- Move disk new_glnL: %f [%f] hr: %f u:%f alpha: %f",new_glnL,cur_glnL,hr,u,alpha); */
       
       assert(isnan(u) == NO && isinf(fabs(u)) == NO);
       
