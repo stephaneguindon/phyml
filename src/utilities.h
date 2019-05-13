@@ -724,6 +724,7 @@ typedef struct __Tree{
   struct __Phylogeo                      *geo;
   struct __Migrep_Model                 *mmod;
   struct __Disk_Event             *young_disk; /*! Youngest disk (i.e., disk which age is the closest to present). Used in PhyREX */
+  struct __Disk_Event          *old_samp_disk; /*! Oldest sampled disk. Used in PhyREX */
   struct __XML_node                 *xml_root;
   struct __Generic_LL              *edge_list;
   struct __Generic_LL              *node_list;

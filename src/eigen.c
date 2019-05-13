@@ -31,7 +31,7 @@
 #define DIGITS 53 
 */
 
-#define MAXITER    1000    /* max2. no. of iterations to converge */
+#define MAXITER    10000    /* max2. no. of iterations to converge */
 
 #define pos(i,j,n)      ((i)*(n)+(j))
 
@@ -510,8 +510,8 @@ int realeig(int job,phydbl *mat,int n,int low, int hi, phydbl *valr,
   complex v;
   phydbl p=.0,q=.0,r=.0,s=.0,t,w,x,y,z=0,ra,sa,norm,eps;
   int niter,en,i,j,k,l,m;
-  phydbl precision  = POW((phydbl)BASE,(phydbl)(1-(int)DIGITS));
-  /* phydbl precision  = SMALL; */
+  /* phydbl precision  = POW((phydbl)BASE,(phydbl)(1-(int)DIGITS)); */
+  phydbl precision  = SMALL;
   
 
   eps = precision;

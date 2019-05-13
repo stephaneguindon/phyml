@@ -294,7 +294,7 @@ phydbl Rgamma(phydbl shape, phydbl scale)
       {
 	/* Step 6: calculation of v and quotient q */
 	v = t / (s + s);
-	if (FABS(v) <= 0.25)
+	if (fabs(v) <= 0.25)
           q = q0 + 0.5 * t * t * ((((((a7 * v + a6) * v + a5) * v + a4) * v
                                     + a3) * v + a2) * v + a1) * v;
 	else
@@ -322,7 +322,7 @@ phydbl Rgamma(phydbl shape, phydbl scale)
 	if (t >= -0.71874483771719) {
 	    /* Step 10:	 calculation of v and quotient q */
 	    v = t / (s + s);
-	    if (FABS(v) <= 0.25)
+	    if (fabs(v) <= 0.25)
 		q = q0 + 0.5 * t * t *
 		    ((((((a7 * v + a6) * v + a5) * v + a4) * v + a3) * v
 		      + a2) * v + a1) * v;
@@ -333,7 +333,7 @@ phydbl Rgamma(phydbl shape, phydbl scale)
 	    if (q > 0.0) {
 		w = exp(q)-1.0;
 		/* if t is rejected sample again at step 8 */
-		if (c * FABS(u) <= w * exp(e - 0.5 * t * t))
+		if (c * fabs(u) <= w * exp(e - 0.5 * t * t))
 		    break;
 	    }
 	}
@@ -994,7 +994,7 @@ phydbl Log_Dnorm_Trunc(phydbl x, phydbl mean, phydbl sd, phydbl lo, phydbl up, i
       log_dens -= log(cdf_up - cdf_lo);
     }
 
-  if(isnan(log_dens) || isinf(FABS(log_dens)))
+  if(isnan(log_dens) || isinf(fabs(log_dens)))
     {
       PhyML_Printf("\n. x=%f mean=%f sd=%f lo=%f up=%f cdf_lo=%G CDF_up=%G log_dens=%G",x,mean,sd,lo,up,cdf_lo,cdf_up,log_dens);
       PhyML_Printf("\n. Warning in file %s at line %d\n",__FILE__,__LINE__);
@@ -1019,7 +1019,7 @@ phydbl Dnorm_Trunc(phydbl x, phydbl mean, phydbl sd, phydbl lo, phydbl up)
 
   dens /= (cdf_up - cdf_lo);
 
-  if(isnan(dens) || isinf(FABS(dens)))
+  if(isnan(dens) || isinf(fabs(dens)))
     {
       PhyML_Printf("\n== mean=%f sd=%f lo=%f up=%f cdf_lo=%G CDF_up=%G",mean,sd,lo,up,cdf_lo,cdf_up);
       PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
@@ -1061,7 +1061,7 @@ phydbl Dnorm_Multi(phydbl *x, phydbl *mu, phydbl *cov, int size, int _log)
   density = size * LOG2PI + log(det) + buff2[0];
   density /= -2.;
 
-/*   density = (1./(POW(2.*PI,size/2.)*SQRT(FABS(det)))) * exp(-0.5*buff2[0]); */
+/*   density = (1./(POW(2.*PI,size/2.)*SQRT(fabs(det)))) * exp(-0.5*buff2[0]); */
 
   Free(xmmu);
   Free(invcov);
@@ -1605,7 +1605,7 @@ l4:
    s5=(84+264*a+c*(175+606*a))/2520;
    s6=(120+c*(346+127*c))/5040;
    ch+=t*(1+0.5*t*s1-b*c*(s1-b*(s2-b*(s3-b*(s4-b*(s5-b*s6))))));
-   if (FABS(q/ch-1) > e) goto l4;
+   if (fabs(q/ch-1) > e) goto l4;
 
    return (phydbl)(ch);
 }
@@ -2139,7 +2139,7 @@ phydbl *Hessian(t_tree *tree)
 	  lnL1 = Lk(tree->a_edges[i],tree);
 	  tree->a_edges[i]->l->v = ori_bl[i];
 	  inc[i] *= 1.1;
-	}while((FABS(lnL1 - ori_lnL) < 1.E-1) && 
+	}while((fabs(lnL1 - ori_lnL) < 1.E-1) && 
 	       (tree->a_edges[i]->l->v+inc[i] < tree->mod->l_max));
       inc[i] /= 1.1;
     }
@@ -2306,7 +2306,7 @@ phydbl *Hessian(t_tree *tree)
 	
 /* 	    printf("\n* l=%G eps=%f lnL=%f lnL1=%f lnL2=%f var=%f",tree->a_edges[i]->l->v,eps,lnL,lnL1,lnL2,hessian[i*dim+i]); */
 	    eps *= 5.;
-	  }while(FABS(lnL2 - lnL) < 1.E-3);
+	  }while(fabs(lnL2 - lnL) < 1.E-3);
 
 	hessian[i*dim+i] = -1.0 / hessian[i*dim+i];
 
@@ -2379,7 +2379,7 @@ phydbl *Hessian(t_tree *tree)
     {
       for(j=0;j<dim;j++)
 	{
-	  if(FABS(hessian[i*dim+j]-hessian[j*dim+i]) > 1.E-3)
+	  if(fabs(hessian[i*dim+j]-hessian[j*dim+i]) > 1.E-3)
 	    {
 	      PhyML_Printf("\n. Hessian not symmetrical.");
 	      PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
@@ -2531,7 +2531,7 @@ phydbl *Gradient(t_tree *tree)
     {
       if(is_ok[i] == NO)
 	{
-	  eps = FABS(0.2 * tree->a_edges[i]->l->v);
+	  eps = fabs(0.2 * tree->a_edges[i]->l->v);
 	  lnL  = Lk(tree->a_edges[i],tree);	
 	  tree->a_edges[i]->l->v += eps;
 	  lnL1 = Lk(tree->a_edges[i],tree);
@@ -2633,14 +2633,14 @@ phydbl *Hessian_Seo(t_tree *tree)
     {
       if(tree->a_edges[i]->l->v*(1.-eps) > l_inf)
 	{
-	  inc_plus[i]  = FABS(eps * MAX(tree->mod->l_min,tree->a_edges[i]->l->v));
-	  inc_minus[i] = FABS(eps * MAX(tree->mod->l_min,tree->a_edges[i]->l->v));
+	  inc_plus[i]  = fabs(eps * MAX(tree->mod->l_min,tree->a_edges[i]->l->v));
+	  inc_minus[i] = fabs(eps * MAX(tree->mod->l_min,tree->a_edges[i]->l->v));
 	  is_ok[i]     = YES;
 	}
       else
 	{
-	  inc_plus[i]  = FABS(0.2 * MAX(tree->mod->l_min,tree->a_edges[i]->l->v));
-	  inc_minus[i] = FABS(0.2 * MAX(tree->mod->l_min,tree->a_edges[i]->l->v));
+	  inc_plus[i]  = fabs(0.2 * MAX(tree->mod->l_min,tree->a_edges[i]->l->v));
+	  inc_minus[i] = fabs(0.2 * MAX(tree->mod->l_min,tree->a_edges[i]->l->v));
 	  is_ok[i]     = NO;
     }
 
@@ -2656,7 +2656,7 @@ phydbl *Hessian_Seo(t_tree *tree)
 	  lnL1 = Lk(tree->a_edges[i],tree);
 	  tree->a_edges[i]->l->v = ori_bl[i];
 	  inc_plus[i] *= 1.1;
-	}while((FABS(lnL1 - ori_lnL) < 1.E-1) && (tree->a_edges[i]->l->v+inc_plus[i] < tree->mod->l_max));
+	}while((fabs(lnL1 - ori_lnL) < 1.E-1) && (tree->a_edges[i]->l->v+inc_plus[i] < tree->mod->l_max));
       inc_plus[i] /= 1.1;
     }
 
@@ -2668,7 +2668,7 @@ phydbl *Hessian_Seo(t_tree *tree)
 	  lnL1 = Lk(tree->a_edges[i],tree);
 	  tree->a_edges[i]->l->v = ori_bl[i];
 	  inc_minus[i] *= 1.1;
-	}while((FABS(lnL1 - ori_lnL) < 1.E-1) && 
+	}while((fabs(lnL1 - ori_lnL) < 1.E-1) && 
 	       (tree->a_edges[i]->l->v -inc_minus[i] > tree->mod->l_min));
       inc_minus[i] /= 1.1;
     }
@@ -2795,7 +2795,7 @@ phydbl *Hessian_Seo(t_tree *tree)
     {
       for(j=0;j<dim;j++)
 	{
-	  if(FABS(hessian[i*dim+j]-hessian[j*dim+i]) > 1.E-3)
+	  if(fabs(hessian[i*dim+j]-hessian[j*dim+i]) > 1.E-3)
 	    {
 	      PhyML_Printf("\n== Hessian not symmetrical.");
 	      PhyML_Printf("\n== Err in file %s at line %d\n",__FILE__,__LINE__);
@@ -2911,7 +2911,7 @@ phydbl *Hessian_Log(t_tree *tree)
     {
       if(tree->a_edges[i]->l->v > 3.0/(phydbl)tree->data->init_len)
 	{
-	  inc[i] = FABS(eps * tree->a_edges[i]->l->v);
+	  inc[i] = fabs(eps * tree->a_edges[i]->l->v);
 	  ok_edges[n_ok_edges] = i;
 	  n_ok_edges++;
 	  is_ok[i] = 1;
@@ -3282,9 +3282,9 @@ int Matinv(phydbl *x, const int n, const int m, const int verbose)
      {
        xmax = 0.;
        for (j=i; j<n; j++)
-         if (xmax < FABS(x[j*m+i]))
+         if (xmax < fabs(x[j*m+i]))
 	   {
-	     xmax = FABS(x[j*m+i]);
+	     xmax = fabs(x[j*m+i]);
 	     irow[i]=j;
 	   }
 
@@ -3294,7 +3294,7 @@ int Matinv(phydbl *x, const int n, const int m, const int verbose)
 	  Free(irow);
 	  if(verbose)
 	    {
-	      PhyML_Printf("\n, xmax=%g",xmax);
+	      PhyML_Printf("\n. xmax=%g",xmax);
 	      PhyML_Printf("\n. Determinant becomes zero at %3d!\t", i+1);
 	      PhyML_Printf("\n. Failed to invert the matrix.");
 	    }
@@ -3645,7 +3645,7 @@ void Normal_Conditional(phydbl *mu, phydbl *cov, phydbl *a, int n, short int *is
 /*   for(i=0;i<n1;i++) */
 /*     { */
 /*       for(j=i;j<n1;j++) */
-/* 	if(FABS(cond_cov_norder[i*n1+j] - cond_cov_norder[j*n1+i]) > 1.E-3) */
+/* 	if(fabs(cond_cov_norder[i*n1+j] - cond_cov_norder[j*n1+i]) > 1.E-3) */
 /* 	  { */
 /* 	    PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__); */
 /* 	    Warn_And_Exit(""); */
@@ -3656,7 +3656,7 @@ void Normal_Conditional(phydbl *mu, phydbl *cov, phydbl *a, int n, short int *is
   for(i=0;i<n;i++)
     {
       for(j=i+1;j<n;j++)
-	if(FABS(cond_cov[i*n+j] - cond_cov[j*n+i]) > 1.E-3)
+	if(fabs(cond_cov[i*n+j] - cond_cov[j*n+i]) > 1.E-3)
 	  {
 	    PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
 	    Warn_And_Exit("");
@@ -4299,7 +4299,7 @@ void Integrated_Brownian_Bridge_Moments(phydbl x_beg, phydbl x_end,
   /* phydbl sumsum; */
   phydbl scaled_var;
 
-  scaled_var = brownian_var/FABS(x_end - x_beg);
+  scaled_var = brownian_var/fabs(x_end - x_beg);
 
   n_breaks = 100;
 
@@ -4343,7 +4343,7 @@ void Integrated_Brownian_Bridge_Moments(phydbl x_beg, phydbl x_end,
   /* 	} */
       
   /*     sum = 0.0; */
-  /*     For(j,n_breaks+2) sum += FABS(y[j]); */
+  /*     For(j,n_breaks+2) sum += fabs(y[j]); */
   /*     y_mean[i] = sum/(n_breaks+2); */
   /*   } */
 

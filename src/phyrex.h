@@ -123,5 +123,11 @@ void PHYREX_Sample_Path(t_ldsk *young, t_ldsk *old, phydbl sd, phydbl *global_hr
 void  PHYREX_Update_Lindisk_List_Range(t_dsk *young, t_dsk *old, t_tree *tree);
 phydbl PHYREX_Lk_Core_Range(t_dsk *young, t_dsk *old, t_tree *tree);
 int PHYREX_Number_Of_Intervals_Range(t_dsk *young, t_dsk *old, t_tree *tree);
+void PHYREX_Oldest_Sampled_Disk(t_tree *tree);
+phydbl PHYREX_Time_Of_Descendants(t_ldsk *ldsk, t_tree *tree);
+phydbl PHYREX_Time_Of_Prev_Sampled_Disk(t_dsk *disk, t_tree *tree);
+phydbl PHYREX_Time_Of_Next_Sampled_Disk(t_dsk *disk, t_tree *tree);
+phydbl PHYREX_Lk_Time_Component(t_tree *tree);
+phydbl PHYREX_Lk_Space_Component(t_tree *tree);
 
 #endif

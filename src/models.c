@@ -928,7 +928,6 @@ void Update_Eigen(t_mod *mod)
 	      PhyML_Printf("\n. Trying Q<-Q*scalar and then Root<-Root/scalar to fix this...\n");
               scalar += scalar / 3.;
               For(i,mod->eigen->size*mod->eigen->size) PhyML_Printf("\n. qmat [%d,%d]=%f",i/mod->eigen->size,i%mod->eigen->size,mod->r_mat->qmat->v[i]);
-
               For(i,mod->eigen->size*mod->eigen->size) mod->r_mat->qmat_buff->v[i]  = mod->r_mat->qmat->v[i];
               For(i,mod->eigen->size*mod->eigen->size) mod->r_mat->qmat_buff->v[i] *= scalar;
               result = Eigen(1,mod->r_mat->qmat_buff->v,mod->eigen->size,mod->eigen->e_val,
@@ -940,7 +939,7 @@ void Update_Eigen(t_mod *mod)
                   Exit("\n");
                 }
               else if (result == 1)
-		{
+	        {
                   PhyML_Fprintf(stderr,"\n. Complex eigenvalues/vectors: computation cancelled.");
                   Exit("\n");
                 }
