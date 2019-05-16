@@ -7794,8 +7794,7 @@ void MCMC_PHYREX_Insert_Hit(phydbl hr, int n_insert_disks, phydbl cur_rad, phydb
       PHYREX_Insert_Disk(new_disk[j],tree);
 
       /* Which lineage is going to be hit ? */    
-      /* hit_ldsk_idx = Rand_Int(0,old_disk->n_ldsk_a-1); */
-      hr -= log(1./old_disk->n_ldsk_a);
+      hr -= log(1./PHYREX_Number_Of_Outgoing_Ldsks(young_disk));
       
       young_ldsk[j] = PHYREX_Random_Select_Outgoing_Ldsk(young_disk);
       old_ldsk[j]   = young_ldsk[j]->prev;
@@ -8007,7 +8006,7 @@ void MCMC_PHYREX_Delete_Hit(phydbl hr, int n_delete_disks, phydbl cur_rad, phydb
 
       /* Part of the Hastings ratio corresponding to the probability of selecting */
       /* target_disk->ldsk->next[0] to be hit (reverse move) */ 
-      hr += log(1./target_disk[j]->next->n_ldsk_a);
+      hr += log(1./target_disk[j]->n_ldsk_a);
       
       /* Density for position of the displaced ldsk */
       for(i=0;i<tree->mmod->n_dim;i++)
@@ -8175,7 +8174,6 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
       while(prune_ldsk_daughter->n_next == 1) prune_ldsk_daughter = prune_ldsk_daughter->next[0];
 
      
-
       /* Get a ldsk to reattach the pruned lineage to */
       disk = tree->young_disk->prev;
       n_valid_disks = 0;
@@ -8405,8 +8403,6 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
         }
       else
         {
-          cur_glnL = new_glnL;
-          
           ldsk = cur_path;
           while(ldsk)
             {
@@ -8643,7 +8639,6 @@ void MCMC_PHYREX_Prune_Regraft_Local(t_tree *tree)
         }
       else
         {
-          cur_glnL = new_glnL;                    
           tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_spr_local]++;
         }
     }
@@ -8763,6 +8758,14 @@ void MCMC_PHYREX_Lineage_Traj(t_tree *tree)
           /* new_glnL += PHYREX_Lk_Range(young_ldsk->disk,old_ldsk->disk,tree); */
           /* tree->mmod->c_lnL = new_glnL; */
           new_glnL = PHYREX_Lk(tree);
+
+          if(new_glnL < UNLIKELY + 1.0)
+            {
+              PhyML_Printf("\n. young_ldsk->disk->time: %f old_ldsk->disk->time: %f",
+                           young_ldsk->disk->time,
+                           old_ldsk->disk->time);
+              assert(FALSE);
+            }
         }
 
       ratio += (new_glnL - cur_glnL);
@@ -8809,7 +8812,6 @@ void MCMC_PHYREX_Lineage_Traj(t_tree *tree)
             }
           
           tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_traj]++;
-          cur_glnL = new_glnL;
         }
 
     }
@@ -9520,8 +9522,7 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
           new_disk->time = t;
 
           /* Which lineage is going to be hit ? */
-          /* hit_ldsk_idx = Rand_Int(0,old_disk->n_ldsk_a-1); */
-           hr -= log(1./old_disk->n_ldsk_a);
+          hr -= log(1./PHYREX_Number_Of_Outgoing_Ldsks(young_disk));
           
           /* young_ldsk = old_disk->ldsk_a[hit_ldsk_idx]; */
           young_ldsk = PHYREX_Random_Select_Outgoing_Ldsk(young_disk);
@@ -9531,8 +9532,9 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
           
           if(old_ldsk->disk->time > young_ldsk->disk->time) 
             {
-              PhyML_Printf("\n. young_ldsk: %f",young_ldsk->disk->time);
-              PhyML_Printf("\n. old_ldsk: %f",old_ldsk->disk->time);
+              PhyML_Printf("\n. iter: %d",i);
+              PhyML_Printf("\n. young_disk: %f old_disk: %f",young_disk->time,old_disk->time);
+              PhyML_Printf("\n. young_ldsk: %f old_ldsk: %f",young_ldsk->disk->time,old_ldsk->disk->time);
               assert(FALSE);
             }
           
@@ -9586,6 +9588,15 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
               /* new_glnL += PHYREX_Lk_Range(young_ldsk->disk,old_ldsk->disk,tree); */
               /* tree->mmod->c_lnL = new_glnL; */
               new_glnL = PHYREX_Lk(tree);
+
+              if(new_glnL < UNLIKELY + 1.)
+                {
+                  PhyML_Printf("\n. Insert\n");
+                  PhyML_Printf("\n. iter: %d",i);
+                  PhyML_Printf("\n. young_disk: %f old_disk: %f",young_disk->time,old_disk->time);
+                  PhyML_Printf("\n. young_ldsk: %f old_ldsk: %f",young_ldsk->disk->time,old_ldsk->disk->time);
+                  assert(FALSE);
+                }
             }
           
           
@@ -9626,6 +9637,15 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
               /* tree->mmod->c_lnL = cur_glnL; */
               PHYREX_Lk(tree);
               
+              if(tree->mmod->c_lnL < UNLIKELY + 1.)
+                {
+                  PhyML_Printf("\n. Insert\n");
+                  PhyML_Printf("\n. iter: %d",i);
+                  PhyML_Printf("\n. young_disk: %f old_disk: %f",young_disk->time,old_disk->time);
+                  PhyML_Printf("\n. young_ldsk: %f old_ldsk: %f",young_ldsk->disk->time,old_ldsk->disk->time);
+                  assert(FALSE);
+                }
+
               Free_Disk(new_disk);
               Free_Ldisk(new_ldsk);
 
@@ -9672,7 +9692,7 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
 
           /* Part of the Hastings ratio corresponding to the probability of selecting */
           /* one of target_disk->n_ldsk_a to be hit */ 
-          hr += log(1./target_disk->prev->n_ldsk_a);
+          hr += log(1./target_disk->n_ldsk_a);
           
 
           /* Density for position of the displaced ldsk */
@@ -9708,6 +9728,15 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
               /* new_glnL += PHYREX_Lk_Range(target_disk->next,target_disk->ldsk->prev->disk,tree); */
               /* tree->mmod->c_lnL = new_glnL; */
               new_glnL = PHYREX_Lk(tree);
+
+              if(new_glnL < UNLIKELY + 1.)
+                {
+                  PhyML_Printf("\n. Delete\n");
+                  PhyML_Printf("\n. iter: %d",i);
+                  PhyML_Printf("\n. young_ldsk: %f old_ldsk: %f",young_ldsk->disk->time,old_ldsk->disk->time);
+                  assert(FALSE);
+                }
+
             }
           
 
@@ -9735,7 +9764,15 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
               /* PHYREX_Lk_Range(target_disk->next,target_disk->ldsk->prev->disk,tree); */
               /* tree->mmod->c_lnL = cur_glnL; */
               PHYREX_Lk(tree);
-            }
+
+              if(tree->mmod->c_lnL < UNLIKELY + 1.)
+                {
+                  PhyML_Printf("\n. Delete\n");
+                  PhyML_Printf("\n. iter: %d",i);
+                  PhyML_Printf("\n. young_ldsk: %f old_ldsk: %f",young_ldsk->disk->time,old_ldsk->disk->time);
+                  assert(FALSE);
+                }
+}
           else
             {
               Free_Ldisk(target_disk->ldsk);
