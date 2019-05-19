@@ -1838,6 +1838,7 @@ int PHYREX_Is_In_Disk(t_geo_coord *coord, t_dsk *disk, t_phyrex_mod *mmod)
 phydbl PHYREX_Lk(t_tree *tree)
 {
   t_dsk *disk;
+  int n_evt;
   
   assert(!tree->young_disk->next);
   assert(tree->young_disk->prev);
@@ -1852,10 +1853,13 @@ phydbl PHYREX_Lk(t_tree *tree)
 
   PHYREX_Update_Lindisk_List(tree);
   tree->mmod->c_lnL += PHYREX_Lk_Core(tree->young_disk,tree);
-
+  
+  n_evt = 0;
   disk = tree->young_disk->prev;
   do
     {
+      if(disk->age_fixed == NO) n_evt++;
+
       assert(disk);
       if(disk->time > disk->next->time)
         {
@@ -1870,8 +1874,10 @@ phydbl PHYREX_Lk(t_tree *tree)
     }
   while(1);
 
-  tree->mmod->c_lnL += PHYREX_Lk_Time_Component(tree);
-  
+  /* tree->mmod->c_lnL += PHYREX_Lk_Time_Component(tree); */
+
+  tree->mmod->c_lnL += n_evt * log(tree->mmod->lbda) - tree->mmod->lbda * fabs(tree->young_disk->time - disk->time);
+    
   if(isinf(tree->mmod->c_lnL) || isnan(tree->mmod->c_lnL)) tree->mmod->c_lnL = UNLIKELY;
 
   return(tree->mmod->c_lnL);
@@ -1953,7 +1959,8 @@ phydbl PHYREX_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
 {
   t_dsk *disk;
   phydbl lnL;
-
+  int n_evt;
+  
   return(PHYREX_Lk(tree));
   
   assert(young);
@@ -1963,9 +1970,11 @@ phydbl PHYREX_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
   PHYREX_Update_Lindisk_List_Core(young,tree);
   lnL += PHYREX_Lk_Core(young,tree);
 
+  n_evt = 0;
   disk = young->prev;
   do
     {
+      if(disk->age_fixed == NO) n_evt++;      
       assert(disk);
       if(disk->time > disk->next->time) return UNLIKELY;
       PHYREX_Update_Lindisk_List_Core(disk,tree);
@@ -1975,8 +1984,9 @@ phydbl PHYREX_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
     }
   while(disk);
 
-  lnL += PHYREX_Lk_Time_Component(tree);
-  
+  /* lnL += PHYREX_Lk_Time_Component(tree); */
+  lnL += n_evt * log(tree->mmod->lbda) - tree->mmod->lbda * fabs(young->time - old->time);
+ 
   return(lnL);
 }
 
