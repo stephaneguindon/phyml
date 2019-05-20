@@ -302,12 +302,12 @@ void PHYREX_XML(char *xml_filename)
   PHYREX_Read_Tip_Coordinates(mixt_tree);
   
   /* Initialize parameters of migrep model */
-  mixt_tree->mmod->lbda = 1.0;
-  mixt_tree->mmod->mu   = 0.5;
-  mixt_tree->mmod->rad  = 1.5;
-  /* mixt_tree->mmod->lbda = Uni()*(10.0 - 1.0) + 1.0; */
-  /* mixt_tree->mmod->mu   = Uni()*(0.6 - 0.2) + 0.2; */
-  /* mixt_tree->mmod->rad  = Uni()*(3.0 - 1.5) + 1.5; */
+  /* mixt_tree->mmod->lbda = 1.0; */
+  /* mixt_tree->mmod->mu   = 0.5; */
+  /* mixt_tree->mmod->rad  = 1.5; */
+  mixt_tree->mmod->lbda = Uni()*(20.0 - 10.0) + 10.0;
+  mixt_tree->mmod->mu   = Uni()*(0.6 - 0.2) + 0.2;
+  mixt_tree->mmod->rad  = Uni()*(1.0 - 0.6) + 0.6;
   mixt_tree->mmod->sigsq = PHYREX_Update_Sigsq(mixt_tree);
 
   
@@ -2069,12 +2069,12 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
 
   /* Starting parameter values */
-  /* tree->mmod->lbda = Uni()*(400.0 - 300.0) + 300.0; */
-  /* tree->mmod->mu   = Uni()*(0.6 - 0.2) + 0.3; */
-  /* tree->mmod->rad  = Uni()*(1.5 - 0.5) + 0.5; */
-  tree->mmod->lbda = 1.0;
-  tree->mmod->mu   = 0.5;
-  tree->mmod->rad  = 1.5;
+  tree->mmod->lbda = Uni()*(30.0 - 20.0) + 20.0;
+  tree->mmod->mu   = Uni()*(0.6 - 0.2) + 0.3;
+  tree->mmod->rad  = Uni()*(1.0 - 0.6) + 0.6;
+  /* tree->mmod->lbda = 1.0; */
+  /* tree->mmod->mu   = 0.5; */
+  /* tree->mmod->rad  = 1.5; */
 
 
   PHYREX_Update_Sigsq(tree);
@@ -2166,10 +2166,10 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   for(i=0;i<mcmc->n_moves;i++) tree->mcmc->start_ess[i] = YES;
 
 
-  /* !!!!!!!!!!!!!!!! */
-  tree->mmod->lbda = 1.0;
-  tree->mmod->mu   = 0.5;
-  tree->mmod->rad  = 1.5;
+  /* /\* !!!!!!!!!!!!!!!! *\/ */
+  /* tree->mmod->lbda = 1.0; */
+  /* tree->mmod->mu   = 0.5; */
+  /* tree->mmod->rad  = 1.5; */
   
   PHYREX_Lk(tree);        
   Set_Update_Eigen(YES,tree->mod);
@@ -2296,24 +2296,24 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_add_remove_jump"))
         MCMC_PHYREX_Add_Remove_Jump(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"kappa")) */
-      /*   MCMC_Kappa(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"kappa"))
+        MCMC_Kappa(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"ras")) */
-      /*   MCMC_Rate_Across_Sites(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"ras"))
+        MCMC_Rate_Across_Sites(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"br_rate")) */
-      /*   MCMC_Rates_All(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"br_rate"))
+        MCMC_Rates_All(tree);
       
-      /* if(!strcmp(tree->mcmc->move_name[move],"tree_rates")) */
-      /*   MCMC_Tree_Rates(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"tree_rates"))
+        MCMC_Tree_Rates(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"clock")) */
-      /*   MCMC_Clock_R(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"clock"))
+        MCMC_Clock_R(tree);
 
 
       /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1 */
-      PHYREX_Lk(tree);
+      /* PHYREX_Lk(tree); */
       /* Lk(NULL,tree); */
       
       if(tree->mmod->c_lnL < UNLIKELY || tree->c_lnL < UNLIKELY)
