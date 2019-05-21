@@ -302,6 +302,7 @@ void PHYREX_XML(char *xml_filename)
   PHYREX_Read_Tip_Coordinates(mixt_tree);
   
   /* Initialize parameters of migrep model */
+  /* !!!!!!!!!!!!!!!!!!!!!! */
   /* mixt_tree->mmod->lbda = 1.0; */
   /* mixt_tree->mmod->mu   = 0.5; */
   /* mixt_tree->mmod->rad  = 1.5; */
@@ -460,12 +461,12 @@ int PHYREX_Main_Estimate(int argc, char *argv[])
 
   
   /* Initialize parameters of migrep model */
-  tree->mmod->lbda = 1.0;
-  tree->mmod->mu   = 0.5;
-  tree->mmod->rad  = 1.5;
-  /* tree->mmod->lbda = Uni()*(400.0 - 300.0) + 300.0; */
-  /* tree->mmod->mu   = Uni()*(0.6 - 0.2) + 0.3; */
-  /* tree->mmod->rad  = Uni()*(1.0 - 0.5) + 0.5; */
+  /* tree->mmod->lbda = 1.0; */
+  /* tree->mmod->mu   = 0.5; */
+  /* tree->mmod->rad  = 1.5; */
+  tree->mmod->lbda = Uni()*(40.0 - 20.0) + 20.0;
+  tree->mmod->mu   = Uni()*(0.6 - 0.2) + 0.2;
+  tree->mmod->rad  = Uni()*(1.0 - 0.5) + 0.5;
   tree->mmod->sigsq = PHYREX_Update_Sigsq(tree);
 
   tree->rates->clock_r = 1.0E-1;
@@ -2069,12 +2070,12 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
 
   /* Starting parameter values */
-  tree->mmod->lbda = Uni()*(30.0 - 20.0) + 20.0;
-  tree->mmod->mu   = Uni()*(0.6 - 0.2) + 0.3;
-  tree->mmod->rad  = Uni()*(1.0 - 0.6) + 0.6;
-  /* tree->mmod->lbda = 1.0; */
-  /* tree->mmod->mu   = 0.5; */
-  /* tree->mmod->rad  = 1.5; */
+  /* tree->mmod->lbda = Uni()*(30.0 - 20.0) + 20.0; */
+  /* tree->mmod->mu   = Uni()*(0.6 - 0.2) + 0.3; */
+  /* tree->mmod->rad  = Uni()*(1.0 - 0.6) + 0.6; */
+  tree->mmod->lbda = 1.0;
+  tree->mmod->mu   = 0.5;
+  tree->mmod->rad  = 1.5;
 
 
   PHYREX_Update_Sigsq(tree);
@@ -2166,7 +2167,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   for(i=0;i<mcmc->n_moves;i++) tree->mcmc->start_ess[i] = YES;
 
 
-  /* /\* !!!!!!!!!!!!!!!! *\/ */
+  /* /\* /\\* !!!!!!!!!!!!!!!! *\\/ *\/ */
   /* tree->mmod->lbda = 1.0; */
   /* tree->mmod->mu   = 0.5; */
   /* tree->mmod->rad  = 1.5; */
