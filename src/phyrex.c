@@ -306,9 +306,9 @@ void PHYREX_XML(char *xml_filename)
   /* mixt_tree->mmod->lbda = 1.0; */
   /* mixt_tree->mmod->mu   = 0.5; */
   /* mixt_tree->mmod->rad  = 1.5; */
-  mixt_tree->mmod->lbda = Uni()*(20.0 - 10.0) + 10.0;
+  mixt_tree->mmod->lbda = Uni()*(5.0 - 1.0) + 1.0;
   mixt_tree->mmod->mu   = Uni()*(0.6 - 0.2) + 0.2;
-  mixt_tree->mmod->rad  = Uni()*(1.0 - 0.6) + 0.6;
+  mixt_tree->mmod->rad  = Uni()*(2.0 - 1.0) + 1.0;
   mixt_tree->mmod->sigsq = PHYREX_Update_Sigsq(mixt_tree);
 
   
@@ -464,9 +464,9 @@ int PHYREX_Main_Estimate(int argc, char *argv[])
   /* tree->mmod->lbda = 1.0; */
   /* tree->mmod->mu   = 0.5; */
   /* tree->mmod->rad  = 1.5; */
-  tree->mmod->lbda = Uni()*(40.0 - 20.0) + 20.0;
+  tree->mmod->lbda = Uni()*(5.0 - 1.0) + 1.0;
   tree->mmod->mu   = Uni()*(0.6 - 0.2) + 0.2;
-  tree->mmod->rad  = Uni()*(1.0 - 0.5) + 0.5;
+  tree->mmod->rad  = Uni()*(2.0 - 1.0) + 1.0;
   tree->mmod->sigsq = PHYREX_Update_Sigsq(tree);
 
   tree->rates->clock_r = 1.0E-1;
