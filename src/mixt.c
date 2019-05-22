@@ -892,8 +892,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
               expl                   = tree->expl;
               dot_prod               = tree->dot_prod;
               
-              if(!(tree->mod->ras->invar == YES && mixt_tree->is_mixt_tree == YES) &&
-                 (tree->data->wght[tree->curr_site] > SMALL))
+              if(!(tree->mod->ras->invar == YES && mixt_tree->is_mixt_tree == YES) && (tree->data->wght[tree->curr_site] > SMALL))
                 {
                   if((b->rght->tax) && (tree->mod->s_opt->greedy == NO))
                     {
@@ -2976,6 +2975,7 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
                     }
                   
                   tree->apply_lk_scaling = YES;
+
                   
                   sum_scale_left_cat[tree->mod->ras->parent_class_number] =
                     (b->sum_scale_left)?
@@ -3006,11 +3006,11 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
                   lk[class]  /= mult;
                   dlk[class] /= mult;
                   
-                  class++;
                 }
               
               tree = tree->next;
               b    = b->next;
+              class++;
               
             }
           while(tree && tree->is_mixt_tree == NO); 
@@ -3027,7 +3027,7 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
           
           do
             {              
-              if(mixt_tree->mod->ras->invar == NO && mixt_tree->data->wght[tree->curr_site] > SMALL)
+              if(tree->mod->ras->invar == NO && mixt_tree->data->wght[tree->curr_site] > SMALL)
                 {
                   site_lk +=
                     lk[class] *
@@ -3044,24 +3044,23 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
                     tree->mod->r_mat_weight->v / r_mat_weight_sum *
                     tree->mod->e_frq_weight->v / e_frq_weight_sum /
                     sum_probas;
-                  
-                  
-                  /* PhyML_Printf("\n. MIXT_DLK site: %d mixt_tree: %p tree: %p class: %d l: %p lk: %g", */
+                                    
+                  /* PhyML_Printf("\n. MIXT_DLK site: %d mixt_tree: %p tree: %p class: %d l: %p lk: %g dlk: %g", */
                   /*              site, */
                   /*              mixt_tree, */
                   /*              tree, */
                   /*              class, */
                   /*              l, */
-                  /*              lk[class]); */
+                  /*              lk[class], */
+                  /*              dlk[class]); */
                   
-                  class++;
                 }
               
+              class++;
               tree = tree->next;
             }
           while(tree && tree->is_mixt_tree == NO);
-          
-          /* printf("\nc site: %4d l:%15G lk:%15G dlk:%15G d2lk:%15G",site,mixt_b->l->v,site_lk,site_dlk,site_d2lk); */
+
           
           
           /* Scaling for invariants */
@@ -3116,6 +3115,8 @@ phydbl MIXT_dLk(phydbl *l, t_edge *mixt_b, t_tree *mixt_tree)
           
           mixt_tree->c_lnL  += mixt_tree->data->wght[site] * log_site_lk;
           mixt_tree->c_dlnL += mixt_tree->data->wght[site] * ( site_dlk / site_lk );
+
+          /* PhyML_Printf("\n. site: %4d lnL: %15f dlnL: %15f",site,site_lk,site_dlk); */
         }
       
       Free(sum_scale_left_cat);

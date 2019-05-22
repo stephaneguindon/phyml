@@ -7048,14 +7048,12 @@ void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree)
   phydbl cur_rlnL, new_rlnL;
   phydbl *ori_time,new_time,cur_time;
   phydbl max, min;
-  phydbl tree_height;
   t_dsk  *disk,**target_disk,**all_disks;
   int i,block,n_all_disks,n_move_disks,*permut,update_alnL;
 
   disk          = NULL;
   block         = 100;
   all_disks     = NULL;
-  tree_height   = fabs(PHYREX_Tree_Height(tree));
   
   disk = tree->young_disk->prev;
   n_all_disks = 0;
@@ -7126,9 +7124,7 @@ void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree)
 
           /* new_time = max - new_plusmin; */
           new_time = max - Rexp(K*tree->mmod->lbda);
-          
-          tree_height = fabs(new_time);
-          
+                    
           /* hr += log(Dexp(cur_plusmin,1./new_plusmin)); */
           /* hr -= log(Dexp(new_plusmin,1./cur_plusmin)); */
           
@@ -7171,9 +7167,7 @@ void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree)
           /* printf("- Reject"); */
           
           target_disk[i]->time = ori_time[i];
-          
-          if(target_disk[i]->prev == NULL) tree_height = fabs(ori_time[i]);
-          
+                    
           tree->mmod->c_lnL        = cur_glnL;
           tree->c_lnL              = cur_alnL;
           tree->rates->c_lnL_rates = cur_rlnL;
@@ -7205,10 +7199,9 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree)
   phydbl cur_rlnL, new_rlnL;
   phydbl scale_fact_times;
   int n_disks;
-  t_dsk  *disk,*start_disk;
+  t_dsk  *start_disk;
   phydbl K;
   
-  disk       = NULL;
   cur_alnL   = tree->c_lnL;
   new_alnL   = tree->c_lnL;
   new_glnL   = tree->mmod->c_lnL;
@@ -9113,10 +9106,10 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree)
 #ifdef PHYREX
 void MCMC_PHYREX_Disk_Given_Ldsk(t_tree *tree)
 {
-  phydbl u,alpha,ratio,hr,c;
+  phydbl u,alpha,ratio,hr;
   phydbl cur_glnL, new_glnL;
   t_dsk  *disk,**all_disks;
-  int i,j,n_all_disks,block,n_move_ldsk,*permut,err;
+  int i,j,n_all_disks,block,n_move_ldsk,*permut;
 
   block       = 100;
   all_disks   = NULL;

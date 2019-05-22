@@ -2765,8 +2765,7 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
   lk_new  = UNLIKELY;
   
   do
-    {
-      
+    {      
       if(tree->next) tree = tree->next;
       
       for(i=0;i<n_r_mat;i++) if(tree->mod->r_mat == r_mat[i]) break;
@@ -2790,7 +2789,7 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
               iter = 0;
               do
                 {
-                  lk_old = tree->c_lnL;
+                  lk_old = mixt_tree->c_lnL;
                   int failed = NO;
                   
                   if(tree->mod->r_mat->n_diff_rr > 2)
@@ -2829,7 +2828,7 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
                   if(tree->c_lnL < lk_old)
                     {
                       for(i=0;i<tree->mod->r_mat->n_diff_rr;i++) tree->mod->r_mat->rr_val->v[i] = opt_val[i];
-                      Lk(NULL,tree);
+                      Lk(NULL,mixt_tree);
                     }
                   
                   
@@ -2837,13 +2836,17 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
                                        tree->mixt_tree:
                                        tree,"[GTR parameters     ]");
                   
-                  lk_new = tree->c_lnL;
+                  lk_new = mixt_tree->c_lnL;
                   
                   Free(permut);
 
                   
-                  assert(lk_new > lk_old - tree->mod->s_opt->min_diff_lk_local);
-
+                  if(lk_new < lk_old - tree->mod->s_opt->min_diff_lk_global)
+                    {
+                      PhyML_Printf("\n. lk_new: %f lk_old: %f",lk_new,lk_old);
+                      assert(FALSE);
+                    }
+                  
                   if(fabs(lk_new-lk_old) < tree->mod->s_opt->min_diff_lk_local) break;
                 }
               /* while(++iter < tree->mod->s_opt->brent_it_max); */
