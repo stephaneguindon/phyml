@@ -152,9 +152,7 @@ phydbl RATES_Lk_Rates_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl n
       {
         int err;
         phydbl log_br_r_d = log(br_r_d);
-        // log(density(log(Relative Rate)));
-        log_dens = Log_Dnorm_Trunc(log_br_r_d,1.0,tree->rates->nu,tree->rates->min_rate,tree->rates->max_rate,&err);
-        // log(density(Rate));
+        log_dens = Log_Dnorm_Trunc(log_br_r_d,0.0,tree->rates->nu,tree->rates->min_rate,tree->rates->max_rate,&err);
         log_dens -= log_br_r_d;
 	break;
       }
