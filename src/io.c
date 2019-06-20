@@ -1729,8 +1729,8 @@ align **Get_Seq_Phylip(option *io)
       assert(FALSE);
     }
   
-  if(io->interleaved) io->data = Read_Seq_Interleaved(io);
-  else                io->data = Read_Seq_Sequential(io);
+  if(io->interleaved == YES) io->data = Read_Seq_Interleaved(io);
+  else                       io->data = Read_Seq_Sequential(io);
 
   return io->data;
 }

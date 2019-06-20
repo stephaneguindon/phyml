@@ -2403,6 +2403,9 @@ void Remove_Duplicates(calign *data, option *io, t_tree *tree)
   if(io->leave_duplicates == YES) return;
   
   n_otu_orig = data->n_otu;
+
+  if(n_otu_orig < 4) return;
+
   n_duplicates = 0;
   idx = -1;
   
@@ -2434,6 +2437,11 @@ void Remove_Duplicates(calign *data, option *io, t_tree *tree)
           else data->c_seq_rm = (align **)mRealloc(data->c_seq_rm,n_removed+1,sizeof(align *));
           data->c_seq_rm[n_removed] = data->c_seq[i];
           n_removed++;
+          if(n_otu_orig - n_removed == 3)
+            {
+              for(j=i+1; j < n_otu_orig; ++j) data->c_seq[j]->is_duplicate = NO;
+              i = n_otu_orig+1;
+            }
         }
     }
   
@@ -7442,7 +7450,6 @@ void Update_Ancestors(t_node *a, t_node *d, t_tree *tree)
 //////////////////////////////////////////////////////////////
 
 /* Generate a random unrooted tree with 'n_otu' OTUs */
-#if (defined PHYTIME || defined INVITEE)
 t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
 {
   t_tree *tree;
@@ -7454,7 +7461,7 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
   tree = Make_Tree_From_Scratch(n_otu,NULL);
 
   tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
-  RATES_Init_Rate_Struct(tree->rates,tree->io->rates,tree->n_otu);
+  RATES_Init_Rate_Struct(tree->rates,NULL,tree->n_otu);
   
   for(i=0;i<2*tree->n_otu-2;++i)
     {
@@ -7501,7 +7508,7 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
       u = rand();
       u /= RAND_MAX;
       
-      if(FABS(lambda - mu) > 1.E-4)
+      if(fabs(lambda - mu) > 1.E-4)
         t[i] = (log(phi-u*rho*lambda) - log(phi-u*rho*lambda + u*(lambda-mu)))/(mu-lambda); /* Equation 15 */
       else
         t[i] = u / (1.+lambda*rho*(1-u)); /* Equation 17 */
@@ -7639,7 +7646,7 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
   
   return tree;
 }
-#endif
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 

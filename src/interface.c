@@ -1430,17 +1430,22 @@ void Launch_Interface_Topo_Search(option *io)
       char *s;
       
       s = (char *)mCalloc(T_MAX_OPTION,sizeof(char));
+
+      io->mod->s_opt->topo_search == SPR_MOVE;
+        
       if(io->mod->s_opt->topo_search == NNI_MOVE)
 	{
-	  strcpy(s,"NNI moves (fast, approximate)\0");
+	  /* strcpy(s,"NNI moves (fast, approximate)\0"); */
+	  strcpy(s,"SPR moves\0");
 	}
       else if(io->mod->s_opt->topo_search == SPR_MOVE)
 	{
-	  strcpy(s,"SPR moves (slow, accurate)\0");
+	  strcpy(s,"SPR moves\0");
 	}
       else if(io->mod->s_opt->topo_search == BEST_OF_NNI_AND_SPR)
 	{
-	  strcpy(s,"Best of NNI and SPR \0");
+	  strcpy(s,"SPR moves\0");
+	  /* strcpy(s,"Best of NNI and SPR \0"); */
 	}
 
       PhyML_Printf("                [S] "
