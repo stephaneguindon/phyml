@@ -1431,7 +1431,7 @@ void Launch_Interface_Topo_Search(option *io)
       
       s = (char *)mCalloc(T_MAX_OPTION,sizeof(char));
 
-      io->mod->s_opt->topo_search == SPR_MOVE;
+      io->mod->s_opt->topo_search = SPR_MOVE;
         
       if(io->mod->s_opt->topo_search == NNI_MOVE)
 	{

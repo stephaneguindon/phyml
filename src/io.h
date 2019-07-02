@@ -106,5 +106,12 @@ void Print_Lk_Given_Edge_Recurr(t_node *a, t_node *d, t_edge *b, t_tree *tree);
 void R_wtree(t_node *pere, t_node *fils, t_edge *b, int *available, char **s_tree, t_tree *tree);
 void Read_Branch_Support(char *s_d, char *s_a, t_edge *b, t_tree *tree);
 void Collect_Edge_Support_Values(t_tree *tree);
+void PHYREX_Output_Tree_Structure(FILE *fp, t_tree *tree);
+void PHYREX_Output_Ldsk(FILE *fp, t_ldsk *ldsk);
+void PHYREX_Output_Tree_Pre(FILE *fp, t_ldsk *ldsk, t_tree *tree);
+void PHYREX_Output_All_Disks(FILE *fp, t_dsk *root_disk, t_tree *tree);
+void PHYREX_Output_One_Disk(FILE *fp, t_dsk *disk);
+t_tree *PHYREX_Read_In_Tree_Structure(FILE *fp);
+void PHYREX_Read_In_Ldsk_Pre(FILE *fp, t_ldsk *parent_ldsk);
 
 #endif

@@ -6304,14 +6304,131 @@ void Collect_Edge_Support_Values(t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+void PHYREX_Output_Tree_Structure(FILE *fp, t_tree *tree)
+{
+  t_dsk *disk;
+
+  disk = tree->young_disk;
+  while(disk->prev != NULL) disk = disk->prev;
+
+  assert(disk->ldsk);
+  assert(disk->ldsk->n_next > 0);
+
+  PHYREX_Output_Ldsk(fp,disk->ldsk);
+  for(int i=0;i<disk->ldsk->n_next;++i) PHYREX_Output_Tree_Pre(fp,disk->ldsk->next[i],tree);
+
+  PHYREX_Output_All_Disks(fp,disk,tree);
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+void PHYREX_Output_Ldsk(FILE *fp, t_ldsk *ldsk)
+{
+  PhyML_Fprintf(fp,"\n");
+  PhyML_Fprintf(fp,"%s ",ldsk->coord->id);
+
+  if(ldsk->n_next > 0)
+    {
+      for(int i=0;i<ldsk->n_next;++i)
+        {
+          PhyML_Fprintf(fp,"%s ",ldsk->next[i]->coord->id);
+        }
+    }
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+void PHYREX_Output_Tree_Pre(FILE *fp, t_ldsk *ldsk, t_tree *tree)
+{
+  if(ldsk->n_next == 0) return;
+  else
+    {
+      PHYREX_Output_Ldsk(fp,ldsk);
+      for(int i=0;i<ldsk->n_next;++i)
+        {
+          PHYREX_Output_Tree_Pre(fp,ldsk->next[i],tree);
+        }
+    }
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+void PHYREX_Output_All_Disks(FILE *fp, t_dsk *root_disk, t_tree *tree)
+{
+  t_dsk *disk;
+
+  disk = root_disk;
+  while(disk != NULL)
+    {
+      PHYREX_Output_One_Disk(fp,disk);
+      disk = disk->next;
+    }
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+void PHYREX_Output_One_Disk(FILE *fp, t_dsk *disk)
+{
+  PhyML_Fprintf(fp,"\n");
+  PhyML_Fprintf(fp,"%s ",disk->id);
+  PhyML_Fprintf(fp," %f",disk->time);
+  PhyML_Fprintf(fp,"%f %f ",disk->centr->lonlat[0],disk->centr->lonlat[1]);
+  PhyML_Fprintf(fp,"%d ",disk->n_ldsk_a);
+  for(int i=0;i<disk->n_ldsk_a;++i)
+    {
+      PhyML_Fprintf(fp,"%s ",disk->ldsk_a[i]->coord->id);
+      PhyML_Fprintf(fp,"%f %f ",disk->ldsk_a[i]->coord->lonlat[0],disk->ldsk_a[i]->coord->lonlat[1]);
+    }
+
+}
+  
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+t_tree *PHYREX_Read_In_Tree_Structure(FILE *fp)
+{
+  t_ldsk *ldsk;
+
+  ldsk = PHYREX_Make_Lindisk_Node(2);
+  PHYREX_Read_In_Ldsk_Pre(fp,ldsk);
+
+  return(NULL);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+void PHYREX_Read_In_Ldsk_Pre(FILE *fp, t_ldsk *parent_ldsk)
+{
+  char c;
+  int n_next;
+  t_ldsk *ldsk;
+  
+  if(fscanf(fp,"%s ",parent_ldsk->coord->id) != 1) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);;
+  
+  do
+    {
+      if(fscanf(fp,"%c",&c) != 1) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+      if(c != '\n')
+        {
+          PHYREX_Make_Lindisk_Next(parent_ldsk);
+          ldsk = PHYREX_Make_Lindisk_Node(2);
+          n_next = parent_ldsk->n_next;
+          parent_ldsk->next[n_next-1] = ldsk;
+          ldsk->prev = parent_ldsk;
+          if(fscanf(fp,"%s ",parent_ldsk->next[n_next-1]->coord->id) != 1) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+        }
+    }
+  while(c != '\n');
+  
+  for(int i=0;i<parent_ldsk->n_next;++i) PHYREX_Read_In_Ldsk_Pre(fp,parent_ldsk->next[i]);
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////
