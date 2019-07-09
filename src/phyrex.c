@@ -2033,7 +2033,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   phydbl *res;
   int adjust_len;
   t_dsk *disk;
-  
+
+
   fp_tree    = tree->io->fp_out_tree;
   fp_stats   = tree->io->fp_out_stats;
 
@@ -2361,7 +2362,15 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!(tree->mcmc->run%tree->mcmc->sample_interval))
         {
 
-          /* PHYREX_Output_Tree_Structure(stdout,tree); */
+          FILE *fp;
+          fp = fopen("file.txt","w");
+          PHYREX_Output_Tree_Structure(fp,tree);
+          fclose(fp);
+          fp = fopen("file.txt","r");
+          PHYREX_Input_Tree_Structure(fp);
+          fclose(fp);
+          Exit("\n");
+
           
           disk = tree->young_disk;
           while(disk->prev) disk = disk->prev;
@@ -5930,6 +5939,27 @@ phydbl PHYREX_Lk_Time_Component(t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+t_ldsk *PHYREX_Find_Ldsk_From_Id(char *id, t_ldsk *root)
+{
+  t_ldsk *ldsk;
+
+  ldsk = NULL;
+  
+  if(!strcmp(root->coord->id,id)) return(root);
+
+  if(root->n_next == 0) return(NULL);
+  
+  for(int i=0;i<root->n_next;++i)
+    {
+      ldsk = PHYREX_Find_Ldsk_From_Id(id,root->next[i]);
+      if(ldsk != NULL) break;
+    }
+  
+  return(ldsk);
+}
+
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

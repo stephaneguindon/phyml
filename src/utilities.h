@@ -1113,7 +1113,7 @@ typedef struct __Model {
   int                    augmented;
   int                           ns; /*! number of states (4 for ADN, 20 for AA) */
 
-  int                    use_m4mod; /*! Use a Makrkov modulated Markov model ? */
+  int                    use_m4mod; /*! Use a Markov modulated Markov model ? */
 
   scalar_dbl                *kappa; /*! transition/transversion rate */
   scalar_dbl               *lambda; /*! parameter used to define the ts/tv ratios in the F84 and TN93 models */

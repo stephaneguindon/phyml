@@ -161,9 +161,17 @@ t_tree *XML_Process_Base(char *xml_filename)
 
   strcat(io->out_stats_file,".txt");
   strcat(io->out_tree_file,".txt");
- 
-  io->fp_out_tree  = Openfile(io->out_tree_file,1);
-  io->fp_out_stats = Openfile(io->out_stats_file,1);
+
+  if(XML_Search_Node_Attribute_Value("add","true",NO,root) != NULL)
+    {
+      io->fp_out_tree  = Openfile(io->out_tree_file,APPEND);
+      io->fp_out_stats = Openfile(io->out_stats_file,APPEND);
+    }
+  else
+    {
+      io->fp_out_tree  = Openfile(io->out_tree_file,WRITE);
+      io->fp_out_stats = Openfile(io->out_stats_file,WRITE);
+    }
 
   s = XML_Get_Attribute_Value(p_elem,"print.trace");
 
@@ -1517,6 +1525,21 @@ int XML_Set_Attribute(xml_node *n, char *attr_name, char *attr_value)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+int XML_Add_Attribute(xml_node *n, char *attr_name, char *attr_value)
+{
+  xml_attr *attr;
+  
+  attr = n->attr;
+  while(attr->next != NULL) attr = attr->next;
+  assert(attr);
+
+  attr->next = XML_Make_Attribute(attr,attr_name,attr_value);
+  XML_Init_Attribute(attr);
+  n->n_attr++;
+
+  return(0);
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
@@ -1529,7 +1552,6 @@ int XML_Set_Node_Id(xml_node *n, char *id)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 int XML_Set_Node_Value(xml_node *n, char *val)
 {
@@ -2119,7 +2141,7 @@ void XML_Write_XML_Node(FILE *fp, int *indent, xml_node *root)
   int i;
 
   s = (char *)mCalloc((*indent)+1,sizeof(char));
-  For(i,(*indent)) s[i]='\t';
+  for(i=0;i<(*indent);++i) s[i]='\t';
   s[i]='\0';
 
 
@@ -2151,9 +2173,7 @@ void XML_Write_XML_Node(FILE *fp, int *indent, xml_node *root)
       PhyML_Fprintf(fp,"/>");
     }
 
-  if(n->next)
-    XML_Write_XML_Node(fp,indent,n->next);
-  
+  if(n->next) XML_Write_XML_Node(fp,indent,n->next);  
 
   Free(s);
 }

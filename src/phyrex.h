@@ -129,5 +129,6 @@ phydbl PHYREX_Time_Of_Prev_Sampled_Disk(t_dsk *disk, t_tree *tree);
 phydbl PHYREX_Time_Of_Next_Sampled_Disk(t_dsk *disk, t_tree *tree);
 phydbl PHYREX_Lk_Time_Component(t_tree *tree);
 phydbl PHYREX_Lk_Space_Component(t_tree *tree);
+t_ldsk *PHYREX_Find_Ldsk_From_Id(char *id, t_ldsk *root);
 
 #endif

@@ -41,6 +41,7 @@ int XML_Number_Of_Taxa_In_Clade(xml_node *n_clade);
 char **XML_Read_Clade(xml_node *n_clade, t_tree *tree);
 void DATE_XML(char *xml_filename);
 void XML_Read_Calibration(xml_node *root, t_tree *tree);
+int XML_Add_Attribute(xml_node *n, char *attr_name, char *attr_value);
 
 
 #endif

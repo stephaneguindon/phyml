@@ -4011,7 +4011,6 @@ void PhyML_Printf(char *format, ...)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void PhyML_Fprintf(FILE *fp, char *format, ...)
 {
   va_list ptr;
@@ -4034,6 +4033,30 @@ void PhyML_Fprintf(FILE *fp, char *format, ...)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+int PhyML_Fscanf(FILE *fp, char *format, ...)
+{
+  va_list ptr;
+  int rv;
+  
+#ifdef MPI
+  if(Global_myRank == 0)
+    {
+      va_start (ptr, format);
+      rv = vfscanf(fp,format,ptr); 
+      if(!rv) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+      va_end(ptr);
+    }
+#else
+  va_start (ptr, format);
+  rv = vfscanf(fp,format,ptr);
+  if(!rv) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  va_end(ptr);
+#endif
+
+  return(rv);      
+}
+
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -5116,6 +5139,153 @@ void Make_Ratematrix_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
         }
     }
 
+  if(mod->whichmodel == GTR || mod->whichmodel == CUSTOM)
+    {
+      xml_node *rr;
+      char *val;
+      phydbl v;
+      
+      rr = XML_Search_Node_Name("rr",YES,instance);
+
+      if(rr != NULL)
+        {
+          mod->r_mat = (t_rmat *)Make_Rmat(mod->ns);
+          Init_Rmat(mod->r_mat);
+          Make_Custom_Model(mod);
+
+          
+          // A<->C
+          val = XML_Get_Attribute_Value(rr,"AC");
+          if(val == NULL)
+            {
+              PhyML_Printf("\n. Please specify the relative rate of substitution between A and T");
+              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+            }
+          else
+            {
+              v = strtod(val,NULL);
+              if(v != 0 && v > 0.0)
+                {
+                  mod->r_mat->rr->v[0] = v;
+                  mod->r_mat->rr_val->v[0] = log(v);
+                }
+              else
+                {
+                  PhyML_Printf("\n. Invalid relative rate parameter value: '%s'.\n", val);
+                  Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+                }
+            }
+
+          // A<->G
+          val = XML_Get_Attribute_Value(rr,"AG");
+          if(val == NULL)
+            {
+              PhyML_Printf("\n. Please specify the relative rate of substitution between A and T");
+              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+            }
+          else
+            {
+              v = strtod(val,NULL);
+              if(v != 0 && v > 0.0)
+                {
+                  mod->r_mat->rr->v[1] = v;
+                  mod->r_mat->rr_val->v[1] = log(v);
+                }
+              else
+                {
+                  PhyML_Printf("\n. Invalid relative rate parameter value: '%s'.\n", val);
+                  Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+                }
+            }
+
+          // A<->T
+          val = XML_Get_Attribute_Value(rr,"AT");
+          if(val == NULL)
+            {
+              PhyML_Printf("\n. Please specify the relative rate of substitution between A and T");
+              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+            }
+          else
+            {
+              v = strtod(val,NULL);
+              if(v != 0 && v > 0.0)
+                {
+                  mod->r_mat->rr->v[2] = v;
+                  mod->r_mat->rr_val->v[2] = log(v);
+                }
+              else
+                {
+                  PhyML_Printf("\n. Invalid relative rate parameter value: '%s'.\n", val);
+                  Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+                }
+            }
+
+          // C<->G
+          val = XML_Get_Attribute_Value(rr,"CG");
+          if(val == NULL)
+            {
+              PhyML_Printf("\n. Please specify the relative rate of substitution between A and T");
+              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+            }
+          else
+            {
+              v = strtod(val,NULL);
+              if(v != 0 && v > 0.0)
+                {
+                  mod->r_mat->rr->v[3] = v;
+                  mod->r_mat->rr_val->v[3] = log(v);
+                }
+              else
+                {
+                  PhyML_Printf("\n. Invalid relative rate parameter value: '%s'.\n", val);
+                  Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+                }
+            }
+          
+
+          // C<->T
+          val = XML_Get_Attribute_Value(rr,"CT");
+          if(val == NULL)
+            {
+              PhyML_Printf("\n. Please specify the relative rate of substitution between A and T");
+              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+            }
+          else
+            {
+              v = strtod(val,NULL);
+              if(v != 0 && v > 0.0)
+                {
+                  mod->r_mat->rr->v[4] = v;
+                  mod->r_mat->rr_val->v[4] = log(v);
+                }
+              else
+                {
+                  PhyML_Printf("\n. Invalid relative rate parameter value: '%s'.\n", val);
+                  Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+                }
+            }
+
+          // G<->T
+          val = XML_Get_Attribute_Value(rr,"GT");
+
+          if(val != NULL)
+            {
+              v = strtod(val,NULL);
+              if(v != 0 && v > 0.0)
+                {
+                  mod->r_mat->rr->v[5] = v;
+                  mod->r_mat->rr_val->v[5] = log(v);
+                }
+              else
+                {
+                  PhyML_Printf("\n. Invalid relative rate parameter value: '%s'.\n", val);
+                  Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+                }
+            }
+        }
+    }
+
+  
   /*! Custom model for nucleotide sequences. Read the corresponding
     code. */
   if(mod->whichmodel == CUSTOM)
@@ -6301,6 +6471,27 @@ void Collect_Edge_Support_Values(t_tree *tree)
     }
 }
 
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+void PHYREX_Output_Model_Full_State(FILE *fp, t_tree *tree)
+{
+  PhyML_Fprintf(fp,"\n%f",tree->mmod->lbda);
+  PhyML_Fprintf(fp,"\n%f",tree->mmod->rad);
+  PhyML_Fprintf(fp,"\n%f",tree->mmod->mu);
+
+  PhyML_Fprintf(fp,"\n%s",tree->mod->ns);
+  PhyML_Fprintf(fp,"\n%s",tree->mod->modelname);
+  PhyML_Fprintf(fp,"\n%s",tree->mod->custom_mod_string);
+
+  PhyML_Fprintf(fp,"\n%f",tree->mod->kappa->v);
+  PhyML_Fprintf(fp,"\n%f",tree->mod->lambda->v);
+  PhyML_Fprintf(fp,"\n%f",tree->mod->br_len_mult->v);
+  PhyML_Fprintf(fp,"\n%f",tree->mod->br_len_mult_unscaled->v);
+  PhyML_Fprintf(fp,"\n%f",tree->mod->mr->v);
+  
+  PHYREX_Output_Tree_Structure(fp,tree);
+}
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
@@ -6315,122 +6506,136 @@ void PHYREX_Output_Tree_Structure(FILE *fp, t_tree *tree)
   assert(disk->ldsk);
   assert(disk->ldsk->n_next > 0);
 
-  PHYREX_Output_Ldsk(fp,disk->ldsk);
-  for(int i=0;i<disk->ldsk->n_next;++i) PHYREX_Output_Tree_Pre(fp,disk->ldsk->next[i],tree);
+  PhyML_Fprintf(fp,"\nbegin");
+  PhyML_Fprintf(fp,"\n%d %d",tree->n_otu,tree->mmod->n_dim);
 
-  PHYREX_Output_All_Disks(fp,disk,tree);
-}
-
-/*////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////*/
-
-void PHYREX_Output_Ldsk(FILE *fp, t_ldsk *ldsk)
-{
-  PhyML_Fprintf(fp,"\n");
-  PhyML_Fprintf(fp,"%s ",ldsk->coord->id);
-
-  if(ldsk->n_next > 0)
+  do
     {
-      for(int i=0;i<ldsk->n_next;++i)
+      PhyML_Fprintf(fp,"\n");
+      PhyML_Fprintf(fp,"%s ",disk->id);
+      PhyML_Fprintf(fp,"%f ",disk->time);
+      PhyML_Fprintf(fp,"%f %f ",disk->centr->lonlat[0],disk->centr->lonlat[1]);
+      if(disk->ldsk != NULL)
         {
-          PhyML_Fprintf(fp,"%s ",ldsk->next[i]->coord->id);
+          PhyML_Fprintf(fp,"*%s ",disk->ldsk->coord->id);
+          PhyML_Fprintf(fp,"%f %f ",disk->ldsk->coord->lonlat[0],disk->ldsk->coord->lonlat[1]);
         }
-    }
-}
-
-/*////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////*/
-
-void PHYREX_Output_Tree_Pre(FILE *fp, t_ldsk *ldsk, t_tree *tree)
-{
-  if(ldsk->n_next == 0) return;
-  else
-    {
-      PHYREX_Output_Ldsk(fp,ldsk);
-      for(int i=0;i<ldsk->n_next;++i)
+      for(int i=0;i<disk->n_ldsk_a;++i)
         {
-          PHYREX_Output_Tree_Pre(fp,ldsk->next[i],tree);
+          PhyML_Fprintf(fp,"%s ",disk->ldsk_a[i]->coord->id);
         }
-    }
-}
-
-/*////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////*/
-
-void PHYREX_Output_All_Disks(FILE *fp, t_dsk *root_disk, t_tree *tree)
-{
-  t_dsk *disk;
-
-  disk = root_disk;
-  while(disk != NULL)
-    {
-      PHYREX_Output_One_Disk(fp,disk);
+      
       disk = disk->next;
     }
+  while(disk);
+
+  PhyML_Fprintf(fp,"\nend");
+  fflush(NULL);
 }
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-void PHYREX_Output_One_Disk(FILE *fp, t_dsk *disk)
+void PHYREX_Input_Tree_Structure(FILE *fp)
 {
-  PhyML_Fprintf(fp,"\n");
-  PhyML_Fprintf(fp,"%s ",disk->id);
-  PhyML_Fprintf(fp," %f",disk->time);
-  PhyML_Fprintf(fp,"%f %f ",disk->centr->lonlat[0],disk->centr->lonlat[1]);
-  PhyML_Fprintf(fp,"%d ",disk->n_ldsk_a);
-  for(int i=0;i<disk->n_ldsk_a;++i)
-    {
-      PhyML_Fprintf(fp,"%s ",disk->ldsk_a[i]->coord->id);
-      PhyML_Fprintf(fp,"%f %f ",disk->ldsk_a[i]->coord->lonlat[0],disk->ldsk_a[i]->coord->lonlat[1]);
-    }
-
-}
-  
-/*////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////*/
-
-t_tree *PHYREX_Read_In_Tree_Structure(FILE *fp)
-{
-  t_ldsk *ldsk;
-
-  ldsk = PHYREX_Make_Lindisk_Node(2);
-  PHYREX_Read_In_Ldsk_Pre(fp,ldsk);
-
-  return(NULL);
-}
-
-/*////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////*/
-
-void PHYREX_Read_In_Ldsk_Pre(FILE *fp, t_ldsk *parent_ldsk)
-{
-  char c;
-  int n_next;
-  t_ldsk *ldsk;
-  
-  if(fscanf(fp,"%s ",parent_ldsk->coord->id) != 1) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);;
+  char *tk,*s,delim[4]="\n\r ";
+  int n,n_otu,n_dim,idx;
+  t_dsk *disk;
+  t_ldsk *new_ldsk,*root_ldsk,*ldsk;
+    
+  s = (char *)mCalloc(T_MAX_LINE,sizeof(char));
   
   do
     {
-      if(fscanf(fp,"%c",&c) != 1) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-      if(c != '\n')
+      if(fgets(s,T_MAX_LINE,fp) == NULL) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
+  while(strstr(s,"begin") == NULL);
+
+  if(fgets(s,T_MAX_LINE,fp) == NULL) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+
+  tk = strtok(s,delim);
+  n_otu = strtod(tk,NULL);
+  
+  tk = strtok(NULL,delim);
+  n_dim = strtod(tk,NULL);
+
+  
+  root_ldsk = NULL;
+  new_ldsk = NULL;
+  while(fgets(s,T_MAX_LINE,fp) != NULL)
+    {
+      tk = strtok(s,delim);
+      if(strcmp(tk,"end") && tk != NULL)
         {
-          PHYREX_Make_Lindisk_Next(parent_ldsk);
-          ldsk = PHYREX_Make_Lindisk_Node(2);
-          n_next = parent_ldsk->n_next;
-          parent_ldsk->next[n_next-1] = ldsk;
-          ldsk->prev = parent_ldsk;
-          if(fscanf(fp,"%s ",parent_ldsk->next[n_next-1]->coord->id) != 1) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+          disk = PHYREX_Make_Disk_Event(n_dim,n_otu);
+          strcpy(disk->id,tk);
+
+          tk = strtok(NULL,delim);
+          disk->time = strtold(tk,NULL);
+
+          tk = strtok(NULL,delim);
+          disk->centr->lonlat[0] = strtold(tk,NULL);
+          tk = strtok(NULL,delim);
+          disk->centr->lonlat[1] = strtold(tk,NULL);
+          
+
+          tk = strtok(NULL,delim);
+          if(tk[0] == '*') // disk has ldsk on it 
+            {
+              if(root_ldsk == NULL)
+                {
+                  disk->ldsk = PHYREX_Make_Lindisk_Node(n_dim);
+                  disk->ldsk->disk = disk;
+                  root_ldsk = disk->ldsk;                  
+                }
+              else
+                {
+                  disk->ldsk = PHYREX_Find_Ldsk_From_Id(tk+1,root_ldsk);
+                  assert(disk->ldsk != NULL);
+                }
+              
+              strcpy(disk->ldsk->coord->id,tk+1);
+
+              tk = strtok(NULL,delim);
+              disk->ldsk->coord->lonlat[0] = strtold(tk,NULL);
+              tk = strtok(NULL,delim);
+              disk->ldsk->coord->lonlat[1] = strtold(tk,NULL);
+              
+
+              do
+                {
+                  tk = strtok(NULL,delim);
+                  if(tk == NULL) break;
+                  new_ldsk = PHYREX_Make_Lindisk_Node(n_dim);
+                  strcpy(new_ldsk->coord->id,tk);
+                  PHYREX_Make_Lindisk_Next(disk->ldsk);
+                  disk->ldsk->next[disk->ldsk->n_next-1] = new_ldsk;
+                  disk->ldsk_a[disk->ldsk->n_next-1] = new_ldsk;
+                  new_ldsk->prev = disk->ldsk;
+                }
+              while(tk);
+            }
+          else
+            {
+              idx = 0;
+              do
+                {
+                  tk = strtok(NULL,delim);
+                  if(tk == NULL) break;
+                  ldsk = PHYREX_Find_Ldsk_From_Id(tk,root_ldsk);
+                  assert(ldsk);
+                  disk->ldsk_a[idx] = ldsk;
+                  idx++;                    
+                }
+              while(tk);
+
+            }
         }
     }
-  while(c != '\n');
-  
-  for(int i=0;i<parent_ldsk->n_next;++i) PHYREX_Read_In_Ldsk_Pre(fp,parent_ldsk->next[i]);
+         
+  Free(s);
 }
 
-/*////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////
