@@ -8,7 +8,7 @@
 xml_node *XML_Load_File(FILE *fp);
 int XML_Add_Character(int c, char  **bufptr, char **buffer, int *bufsize);
 int XML_Parse_Element(FILE *fp, xml_node *n);
-int XML_Set_Attribute(xml_node *n, char *attr_name, char *attr_value);
+int XML_Make_And_Set_Attribute(xml_node *n, char *attr_name, char *attr_value);
 xml_attr *XML_Make_Attribute(xml_attr *prev, char *attr_name, char *attr_value);
 void XML_Make_Node_Id(xml_node *n, char *id);
 int XML_Set_Node_Id(xml_node *n, char *id);
@@ -42,6 +42,10 @@ char **XML_Read_Clade(xml_node *n_clade, t_tree *tree);
 void DATE_XML(char *xml_filename);
 void XML_Read_Calibration(xml_node *root, t_tree *tree);
 int XML_Add_Attribute(xml_node *n, char *attr_name, char *attr_value);
+xml_node *XML_Add_Node(xml_node *parent, char *nd_name);
+void XML_Write_Node_Value(FILE *fp, char *indent, xml_node *n);
+void XML_Update_XML_Struct_Given_Model_Params(t_tree *tree);
+int XML_Set_Attribute_Value(xml_node *n, char *attr_name, char *attr_value);
 
 
 #endif

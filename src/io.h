@@ -109,5 +109,7 @@ void Collect_Edge_Support_Values(t_tree *tree);
 void PHYREX_Output_Tree_Structure(FILE *fp, t_tree *tree);
 void PHYREX_Input_Tree_Structure(FILE *fp);
 int PhyML_Fscanf(FILE *fp, char *format, ...);
+char *PHYREX_Print_Tree_Structure(t_tree *tree);
+void PHYREX_Check_Point(FILE *fp, t_tree *tree);
 
 #endif

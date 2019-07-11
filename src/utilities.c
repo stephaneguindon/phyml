@@ -835,6 +835,7 @@ void Connect_One_Edge_To_Two_Nodes(t_node *a, t_node *d, t_edge *b, t_tree *tree
   int i,dir_a_d,dir_d_a;
 
   assert(a != tree->n_root);
+  assert(b);
   
   if(a == NULL || d == NULL || a->num == d->num) 
     {
@@ -2396,7 +2397,7 @@ short int Are_Sequences_Identical(align *seq1, align *seq2)
 
 void Remove_Duplicates(calign *data, option *io, t_tree *tree)
 {
-  int n_duplicates,n_removed,n_otu_orig,i,j,idx;
+  int n_duplicates,n_removed,n_otu_orig,i,j,k,idx;
   align *tmp;
   t_edge *res_edge;
   
@@ -2414,14 +2415,20 @@ void Remove_Duplicates(calign *data, option *io, t_tree *tree)
       if(data->c_seq[i]->is_duplicate == YES) continue;
       else
         {
-          for(int j=i+1; j < data->n_otu; ++j)
+          for(j=i+1; j < data->n_otu; ++j)
             {
               if(Are_Sequences_Identical(data->c_seq[i],data->c_seq[j]) == YES)
                 {
-                  data->c_seq[j]->is_duplicate = YES;
+                  for(k=0;k<n_otu_orig;++k) if(!strcmp(tree->a_nodes[k]->name,data->c_seq[j]->name)) break;
+                  assert(k < n_otu_orig);
+
+                  if(tree->a_nodes[k]->b[0] != tree->e_root) data->c_seq[j]->is_duplicate = YES;
+                  else data->c_seq[i]->is_duplicate = YES;
+                  
                   if(n_duplicates == 0) PhyML_Printf("\n");
                   PhyML_Printf("\n. Note: taxon '%s' is a duplicate of taxon '%s'.",
                                data->c_seq[j]->name,data->c_seq[i]->name);
+
                   n_duplicates++;
                 }
             }
@@ -2472,34 +2479,33 @@ void Remove_Duplicates(calign *data, option *io, t_tree *tree)
     {
       for(j=0;j<n_otu_orig;++j)
         {
-          if(data->c_seq[j]->is_duplicate == YES && !strcmp(tree->a_nodes[i]->name,data->c_seq[j]->name))
+          if(data->c_seq[j]->is_duplicate == YES &&
+             !strcmp(tree->a_nodes[i]->name,data->c_seq[j]->name) &&
+             tree->a_nodes[i]->b[0] != tree->e_root)
             {
-              if(tree->a_nodes[i]->b[0] != tree->e_root)
-                {
-                  Prune_Subtree(tree->a_nodes[i]->v[0],
-                                tree->a_nodes[i],
-                                NULL,&res_edge,tree);                        
-                  
-                  assert(tree->a_edges[tree->a_nodes[i]->b[0]->num] == tree->a_nodes[i]->b[0]);
-                  idx = tree->a_nodes[i]->b[0]->num;
-                  Free_Edge_Length(tree->a_nodes[i]->b[0]);
-                  Free_Edge(tree->a_nodes[i]->b[0]);
-                  tree->a_edges[idx] = NULL;
-                  idx = res_edge->num;
-                  assert(tree->a_edges[res_edge->num] == res_edge);
-                  Free_Edge_Length(res_edge);
-                  Free_Edge(res_edge);
-                  tree->a_edges[idx] = NULL;
-                  
-                  idx = tree->a_nodes[i]->v[0]->num;
-                  Free_Node(tree->a_nodes[i]->v[0]);
-                  tree->a_nodes[idx] = NULL;
-                  
-                  Free_Node(tree->a_nodes[i]);
-                  tree->a_nodes[i] = NULL;
-                  
-                  break;
-                }
+              Prune_Subtree(tree->a_nodes[i]->v[0],
+                            tree->a_nodes[i],
+                            NULL,&res_edge,tree);                        
+              
+              assert(tree->a_edges[tree->a_nodes[i]->b[0]->num] == tree->a_nodes[i]->b[0]);
+              idx = tree->a_nodes[i]->b[0]->num;
+              Free_Edge_Length(tree->a_nodes[i]->b[0]);
+              Free_Edge(tree->a_nodes[i]->b[0]);
+              tree->a_edges[idx] = NULL;
+              idx = res_edge->num;
+              assert(tree->a_edges[res_edge->num] == res_edge);
+              Free_Edge_Length(res_edge);
+              Free_Edge(res_edge);
+              tree->a_edges[idx] = NULL;
+              
+              idx = tree->a_nodes[i]->v[0]->num;
+              Free_Node(tree->a_nodes[i]->v[0]);
+              tree->a_nodes[idx] = NULL;
+              
+              Free_Node(tree->a_nodes[i]);
+              tree->a_nodes[i] = NULL;
+              
+              break;
             }
         }
     }
@@ -13003,7 +13009,7 @@ void Post_Inflate_Times_To_Get_Reasonnable_Edge_Lengths(t_node *a, t_node *d, t_
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
-/* Given a up-to-date values of n->v[i] and n->b[i] for i=0,1,2 
+/* Given an up-to-date values of n->v[i] and n->b[i] for i=0,1,2 
    and node n in the tree, this function returns up-to-date values
    of a_nodes and a_edges array (whereby a_edges[b->num] = b and 
    a_nodes[n->num] = n, for all b and n in the tree) and updates
@@ -13012,7 +13018,7 @@ void Post_Inflate_Times_To_Get_Reasonnable_Edge_Lengths(t_node *a, t_node *d, t_
 void Refactor_Tree(t_tree *tree)
 {
   int i,idx_nd,idx_br;
-
+  
   idx_nd = idx_br = 0;
   
   for(i=0;i<tree->n_otu;++i)

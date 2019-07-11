@@ -46,8 +46,6 @@ the GNU public licence. See http://www.opensource.org for details.
     #define __FMA__ 1
 #endif
 
-
-
 extern int n_sec1;
 extern int n_sec2;
 

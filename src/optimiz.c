@@ -2766,7 +2766,7 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
   
   do
     {      
-      if(tree->next) tree = tree->next;
+      if(tree->is_mixt_tree == YES) tree = tree->next;
       
       for(i=0;i<n_r_mat;i++) if(tree->mod->r_mat == r_mat[i]) break;
       

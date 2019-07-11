@@ -2364,12 +2364,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
           FILE *fp;
           fp = fopen("file.txt","w");
-          PHYREX_Output_Tree_Structure(fp,tree);
+          PHYREX_Check_Point(fp,tree);
           fclose(fp);
-          fp = fopen("file.txt","r");
-          PHYREX_Input_Tree_Structure(fp);
-          fclose(fp);
-          Exit("\n");
+          /* Exit("\n"); */
 
           
           disk = tree->young_disk;

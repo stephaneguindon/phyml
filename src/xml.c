@@ -620,8 +620,7 @@ t_tree *XML_Process_Base(char *xml_filename)
                           if(tree->n_pattern != tree->prev->n_pattern) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
                         }
                       
-                      /*! Read a component
-                       */
+                      /*! Read a component */
                       component[i] = '\0';
                       if(j != (int)strlen(list)-1) i = 0;
                                             
@@ -1458,7 +1457,7 @@ int XML_Parse_Element(FILE *fp, xml_node *n)
         }
 
       /* printf("\n. Setting attribute '%s=%s' to node '%s'",name,value,n->name); */
-      XML_Set_Attribute(n,name,value);
+      XML_Make_And_Set_Attribute(n,name,value);
 
       if(c == '>') break;
 
@@ -1492,7 +1491,7 @@ xml_attr *XML_Search_Attribute(xml_node *n, char *target_attr_name)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-int XML_Set_Attribute(xml_node *n, char *attr_name, char *attr_value)
+int XML_Make_And_Set_Attribute(xml_node *n, char *attr_name, char *attr_value)
 {
   xml_attr *prev;
   char *s;
@@ -1525,6 +1524,25 @@ int XML_Set_Attribute(xml_node *n, char *attr_name, char *attr_value)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+int XML_Set_Attribute_Value(xml_node *n, char *attr_name, char *attr_value)
+{
+  xml_attr *attr;
+  char *s;
+
+  attr = XML_Search_Attribute(n,attr_name);
+  if(attr == NULL) return(-1);
+  
+  s = To_Lower_String(attr_value);
+  strcpy(attr->value,s);
+
+  Free(s);
+  
+  return(0);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 int XML_Add_Attribute(xml_node *n, char *attr_name, char *attr_value)
 {
   xml_attr *attr;
@@ -1538,6 +1556,17 @@ int XML_Add_Attribute(xml_node *n, char *attr_name, char *attr_value)
   n->n_attr++;
 
   return(0);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+xml_node *XML_Add_Node(xml_node *parent, char *nd_name)
+{
+  xml_node *n;
+  n = XML_Make_Node(nd_name);
+  XML_Init_Node(parent,n,nd_name);  
+  return(n);
 }
 
 //////////////////////////////////////////////////////////////
@@ -2150,34 +2179,51 @@ void XML_Write_XML_Node(FILE *fp, int *indent, xml_node *root)
   n = root;
   
   PhyML_Fprintf(fp,"<%s",n->name);
-
+  
   attr = n->attr;  
   while(attr)
     {
       PhyML_Fprintf(fp," %s=\"%s\"",attr->name,attr->value);
-      fflush(NULL);
       attr = attr->next;
     }
+  PhyML_Fprintf(fp,">");
 
-  
+  if(n->value != NULL) XML_Write_Node_Value(fp,s,n);
+
   if(n->child)
     {
       (*indent)++;
-      PhyML_Fprintf(fp,">");
       XML_Write_XML_Node(fp,indent,n->child);
-      PhyML_Fprintf(fp,"\n%s</%s>\n",s,n->name);
       (*indent)--;
     }
-  else
-    {
-      PhyML_Fprintf(fp,"/>");
-    }
+
+  PhyML_Fprintf(fp,"\n%s</%s>",s,n->name);
+
+  PhyML_Fprintf(fp,"\n");
 
   if(n->next) XML_Write_XML_Node(fp,indent,n->next);  
 
   Free(s);
 }
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void XML_Write_Node_Value(FILE *fp, char *indent, xml_node *n)
+{
+  PhyML_Fprintf(fp,"\n");
+  
+  char *tk = strtok(n->value,"\n");
+
+  do
+    {
+      PhyML_Fprintf(fp,"%s%s",indent,tk);
+      tk = strtok(NULL,"\n");
+      if(tk != NULL) PhyML_Fprintf(fp,"\n");
+    }
+  while(tk != NULL);
+
+}
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
@@ -2433,6 +2479,102 @@ void XML_Read_Calibration(xml_node *xroot, t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void XML_Update_XML_Struct_Given_Model_Params(t_tree *tree)
+{
+  xml_node *parent,*child,*x;
+  char *s,*val;
+  t_ds *ds;
+  
+  val = (char *)mCalloc(T_MAX_LINE,sizeof(char));
+  
+  parent = XML_Search_Node_Name("ratematrices",YES,tree->xml_root);
+  if(parent != NULL)
+    {
+      child = parent->child;
+      
+      assert(child != NULL);
+
+      do
+        {
+          ds = child->ds;
+
+          assert(ds);
+          
+          
+          x = XML_Search_Node_Name("rr",YES,child); 
+          if(x != NULL)
+            {
+              s = XML_Get_Attribute_Value(child,"AC");
+              if(s != NULL)
+                {
+                  sprintf(val,"%f",((t_rmat *)(ds->obj))->rr->v[0]);
+                  XML_Set_Attribute_Value(child,"AC",val);
+                }
+
+              s = XML_Get_Attribute_Value(child,"AG");
+              if(s != NULL)
+                {
+                  sprintf(val,"%f",((t_rmat *)(ds->obj))->rr->v[1]);
+                  XML_Set_Attribute_Value(child,"AC",val);
+                }
+
+              s = XML_Get_Attribute_Value(child,"AT");
+              if(s != NULL)
+                {
+                  sprintf(val,"%f",((t_rmat *)(ds->obj))->rr->v[2]);
+                  XML_Set_Attribute_Value(child,"AT",val);
+                }
+
+              s = XML_Get_Attribute_Value(child,"CG");
+              if(s != NULL)
+                {
+                  sprintf(val,"%f",((t_rmat *)(ds->obj))->rr->v[3]);
+                  XML_Set_Attribute_Value(child,"CG",val);
+                }
+
+              s = XML_Get_Attribute_Value(child,"CT");
+              if(s != NULL)
+                {
+                  sprintf(val,"%f",((t_rmat *)(ds->obj))->rr->v[4]);
+                  XML_Set_Attribute_Value(child,"CT",val);
+                }
+            }
+
+
+          ds = ds->next;
+          assert(ds);
+          
+          s = XML_Get_Attribute_Value(child,"tstv");
+          if(s != NULL)
+            {
+              sprintf(val,"%f",((scalar_dbl *)(ds->obj))->v);
+              XML_Set_Attribute_Value(child,"tstv",val);
+            }
+
+
+          
+          child = child->next;
+        }
+      while(child);
+
+      
+
+
+
+
+
+    }
+
+
+
+
+
+
+}
+
+
+
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

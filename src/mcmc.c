@@ -3825,6 +3825,7 @@ void MCMC_Kappa(t_tree *mixt_tree)
   
   do
     {
+      if(tree->is_mixt_tree == YES) tree = tree->next;
       
       cur_kappa     = -1.0;
       new_kappa     = -1.0;
@@ -3850,7 +3851,6 @@ void MCMC_Kappa(t_tree *mixt_tree)
           
           ratio += (new_lnL_seq - cur_lnL_seq);
           
-          /* printf("\n. cur_k: %f new_k: %f cur: %f new: %f",cur_kappa,new_kappa,cur_lnL_seq,new_lnL_seq); */
           
           ratio = exp(ratio);
           alpha = MIN(1.,ratio);
@@ -3869,6 +3869,9 @@ void MCMC_Kappa(t_tree *mixt_tree)
             {
               mixt_tree->mcmc->acc_move[mixt_tree->mcmc->num_move_kappa]++;
             }
+          
+          /* PhyML_Printf("\n. MCMC cur_k: %f new_k: %f cur: %f new: %f k: %f",cur_kappa,new_kappa,cur_lnL_seq,new_lnL_seq,tree->mod->kappa->v); */
+
         }
       mixt_tree->mcmc->run_move[mixt_tree->mcmc->num_move_kappa]++;
       tree = tree->next_mixt;
@@ -3877,6 +3880,87 @@ void MCMC_Kappa(t_tree *mixt_tree)
   
   Set_Update_Eigen(NO,mixt_tree->mod);
 }
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+// Potentially one set of relative rate parameters for each tree in a mixture -> update each of them
+/* void MCMC_RR(t_tree *mixt_tree) */
+/* { */
+/*   t_tree *tree; */
+/*   phydbl cur_rr,new_rr; */
+/*   phydbl u,alpha,ratio; */
+/*   phydbl min_rr,max_rr; */
+/*   phydbl K; */
+/*   phydbl cur_lnL_seq, new_lnL_seq; */
+/*   t_rmat **r_mat; */
+/*   int i; */
+  
+/*   Set_Update_Eigen(YES,mixt_tree->mod); */
+
+/*   tree = mixt_tree; */
+  
+/*   do */
+/*     { */
+/*       if(tree->is_mixt_tree == YES) tree = tree->next; */
+
+       
+/*       for(i=0;i<n_r_mat;++i) */
+/*         { */
+          
+        
+/*       cur_rr     = -1.0; */
+/*       new_rr     = -1.0; */
+/*       ratio         =  0.0; */
+      
+/*       K = 1.0; */
+
+/*       cur_lnL_seq = mixt_tree->c_lnL; */
+/*       new_lnL_seq = UNLIKELY; */
+      
+/*       cur_rr    = tree->mod->kappa->v; */
+      
+/*       min_kappa = 0.1; */
+/*       max_kappa = 10.; */
+
+/*       MCMC_Make_Move(&cur_kappa,&new_kappa,min_kappa,max_kappa,&ratio,K,mixt_tree->mcmc->move_type[mixt_tree->mcmc->num_move_kappa]); */
+      
+/*       if(new_kappa < max_kappa && new_kappa > min_kappa)  */
+/*         { */
+/*           tree->mod->kappa->v = new_kappa; */
+          
+/*           new_lnL_seq = Lk(NULL,mixt_tree); */
+          
+/*           ratio += (new_lnL_seq - cur_lnL_seq); */
+          
+          
+/*           ratio = exp(ratio); */
+/*           alpha = MIN(1.,ratio); */
+          
+/*           u = Uni(); */
+
+/*           assert(isnan(u) == NO && isinf(fabs(u)) == NO); */
+
+/*           if(u > alpha) /\* Reject *\/ */
+/*             { */
+/*               tree->mod->kappa->v = cur_kappa; */
+/*               mixt_tree->c_lnL    = cur_lnL_seq; */
+/*               Update_Eigen(mixt_tree->mod); */
+/*             } */
+/*           else */
+/*             { */
+/*               mixt_tree->mcmc->acc_move[mixt_tree->mcmc->num_move_kappa]++; */
+/*             } */
+          
+/*           /\* PhyML_Printf("\n. MCMC cur_k: %f new_k: %f cur: %f new: %f k: %f",cur_kappa,new_kappa,cur_lnL_seq,new_lnL_seq,tree->mod->kappa->v); *\/ */
+
+/*         } */
+/*       mixt_tree->mcmc->run_move[mixt_tree->mcmc->num_move_kappa]++; */
+/*       tree = tree->next_mixt; */
+/*     } */
+/*   while(tree != NULL); */
+  
+/*   Set_Update_Eigen(NO,mixt_tree->mod); */
+/* } */
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

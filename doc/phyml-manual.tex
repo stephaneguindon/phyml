@@ -1635,7 +1635,7 @@ PhyML in batch mode.
 
 \end{itemize}
 \subsubsection{{\tt topology} component}\index{XML options!{\tt topology} component}
-Options:
+Each instance of the \x{topology} component (there should be only one...) has the following options:
 \begin{itemize}
 \item \x{init.tree="bionj"|"user"|"random"}.  Starting tree. Default is \x{bionj}.
 \item \x{n.rand.starts="X"}.  Number of random starting trees. Default is 5.
@@ -1659,7 +1659,7 @@ Options:
 \end{Verbatim}
 
 \subsubsection{{\tt ratematrices} component}\index{XML options!{\tt ratematrices} component}\label{sec:xmlratematrices}
-Options:
+Each instance of a \x{ratematrices} component have the following options:
 \begin{itemize}
 \item \x{model="JC69"|"K80"|"F81"|"F84"|"HKY85"|"TN93"|"GTR"|"custom"} for nucleotide data. The default is \x{"HKY85"}.\\
 \x{model="LG"|"WAG"|"JTT"|"MtREV"|"Dayhoff"|"DCMut"|"RtREV"|"CpREV"|"VT"}\\\x{|"Blosum62"|"MtMam"|"MtArt"|"HIVw"|"HIVb"|"customaa"}
@@ -1680,7 +1680,11 @@ for amino-acid sequences. The default is \x{"LG"}.
   given value.
 \end{itemize}
 
-The {\tt ratematrices} component has the attribute {\tt optimise.weights=yes/no} (default is {\tt
+An instance of a \x{ratematrices} component where a GTR or a custom model of substitutions between
+nucleotides is used can have a \x{rr} component associated to it in order to specificy the relative
+rates of substitutions (see example below). 
+
+Also, the {\tt ratematrices} component has the attribute {\tt optimise.weights=yes/no} (default is {\tt
   no}). If {\tt optimise.weights=yes}, then the probabilities (or weights) or each matrix in the
 set of matrices defined by this component (see Equation \ref{equ:weights}), will be estimated from the data.
 
@@ -1690,6 +1694,7 @@ set of matrices defined by this component (see Equation \ref{equ:weights}), will
 
   <ratematrices id="RM1" optimise.weights="yes">
     <instance id="M1" model="custom" model.code="000000"/>
+      <rr AC="1.2" AG="1.5" AT="2.3" CT="1.2" CG="1.5"/>
     <instance id="M2" model="GTR" optimise.rr="yes"/>
     <instance id="M3" model="WAG"/>
   </ratematrices>
@@ -1697,7 +1702,7 @@ set of matrices defined by this component (see Equation \ref{equ:weights}), will
 \end{Verbatim}
 
 \subsubsection{{\tt equfreqs} component}\index{XML options!{\tt equfreqs} component}
-Options:
+Each instance of a \x{equfreqs} component has the following options:
 \begin{itemize}
 \item \x{base.freqs="a,b,c,d"} where \x{a-d} are nucleotide frequencies. Make sure that these
   frequencies are separated by comas and no space character is inserted.
@@ -1744,11 +1749,11 @@ Options:
 \end{Verbatim}
 
 \subsubsection{{\tt siterates} component}\index{XML options!{\tt siterates} component}
-Options:
+Each instance defines a class of relative rate of substitution. It has the following options:
 \begin{itemize}
 \item \x{value="val"}, where \x{"val"} is the relative substitution rate for the corresponding class.
 \end{itemize}
-A \x{siterate} component generally includes a \x{weights} element that specifies the probabilitic
+A \x{siterates} component generally includes a \x{weights} element that specifies the probabilitic
 distribution of the relative rates. The available options for such element are:
 \begin{itemize}
 \item \x{family="gamma|gamma+inv|freerates"}. \x{gamma} indicates that the distribution of the

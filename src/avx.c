@@ -468,11 +468,12 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
                                       ns,_plk0);
                   
                 }
-                            
-              for(k=0;k<nblocks;++k) _mm256_store_pd(plk0+sz*k,_plk0[k]);
 
+              for(k=0;k<nblocks;++k) _mm256_store_pd(plk0+sz*k,_plk0[k]);
+              
               _tPij1 += nsns / sz;
               _tPij2 += nsns / sz;
+              
               plk0 += ns;
               plk1 += (n_v1->tax) ? 0 : ns;
               plk2 += (n_v2->tax) ? 0 : ns;
