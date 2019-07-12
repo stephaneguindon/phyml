@@ -2301,6 +2301,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"kappa"))
         MCMC_Kappa(tree);
 
+      if(!strcmp(tree->mcmc->move_name[move],"rr"))
+        MCMC_RR(tree);
+            
       if(!strcmp(tree->mcmc->move_name[move],"ras"))
         MCMC_Rate_Across_Sites(tree);
 

@@ -556,7 +556,7 @@ void Update_Qmat_GTR(phydbl *rr, phydbl *rr_val, int *rr_num, phydbl *pi, phydbl
 {
   int i;
   phydbl mr;
-
+  
   for(i=0;i<6;i++) rr[i] = exp(rr_val[rr_num[i]]);
   for(i=0;i<6;i++)
     if(rr[i] < 0.0)

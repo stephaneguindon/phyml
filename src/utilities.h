@@ -1665,6 +1665,7 @@ typedef struct __Tmcmc {
   int num_move_time_slice;
   int num_move_subtree_height;
   int num_move_kappa;
+  int num_move_rr;  
   int num_move_spr;
   int num_move_spr_weighted;
   int num_move_spr_local;

@@ -174,4 +174,6 @@ void MCMC_Times_And_Rates_Root(t_tree *tree);
 void MCMC_Clade_Change(t_tree *tree);
 void MCMC_PHYREX_Prune_Regraft_Local(t_tree *tree);
 void MCMC_PHYREX_Simulate_Backward(t_tree *tree);
+void MCMC_RR(t_tree *mixt_tree);
+
 #endif

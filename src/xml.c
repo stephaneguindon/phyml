@@ -2500,44 +2500,44 @@ void XML_Update_XML_Struct_Given_Model_Params(t_tree *tree)
           ds = child->ds;
 
           assert(ds);
-          
-          
+                    
           x = XML_Search_Node_Name("rr",YES,child); 
+
           if(x != NULL)
             {
-              s = XML_Get_Attribute_Value(child,"AC");
+              s = XML_Get_Attribute_Value(x,"AC");
               if(s != NULL)
                 {
                   sprintf(val,"%f",((t_rmat *)(ds->obj))->rr->v[0]);
-                  XML_Set_Attribute_Value(child,"AC",val);
+                  XML_Set_Attribute_Value(x,"AC",val);
                 }
 
-              s = XML_Get_Attribute_Value(child,"AG");
+              s = XML_Get_Attribute_Value(x,"AG");
               if(s != NULL)
                 {
                   sprintf(val,"%f",((t_rmat *)(ds->obj))->rr->v[1]);
-                  XML_Set_Attribute_Value(child,"AC",val);
+                  XML_Set_Attribute_Value(x,"AC",val);
                 }
 
-              s = XML_Get_Attribute_Value(child,"AT");
+              s = XML_Get_Attribute_Value(x,"AT");
               if(s != NULL)
                 {
                   sprintf(val,"%f",((t_rmat *)(ds->obj))->rr->v[2]);
-                  XML_Set_Attribute_Value(child,"AT",val);
+                  XML_Set_Attribute_Value(x,"AT",val);
                 }
 
-              s = XML_Get_Attribute_Value(child,"CG");
+              s = XML_Get_Attribute_Value(x,"CG");
               if(s != NULL)
                 {
                   sprintf(val,"%f",((t_rmat *)(ds->obj))->rr->v[3]);
-                  XML_Set_Attribute_Value(child,"CG",val);
+                  XML_Set_Attribute_Value(x,"CG",val);
                 }
 
-              s = XML_Get_Attribute_Value(child,"CT");
+              s = XML_Get_Attribute_Value(x,"CT");
               if(s != NULL)
                 {
                   sprintf(val,"%f",((t_rmat *)(ds->obj))->rr->v[4]);
-                  XML_Set_Attribute_Value(child,"CT",val);
+                  XML_Set_Attribute_Value(x,"CT",val);
                 }
             }
 
