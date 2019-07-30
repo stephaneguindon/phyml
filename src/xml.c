@@ -834,20 +834,26 @@ t_tree *XML_Process_Base(char *xml_filename)
                               
                               ds->obj = (t_ras *)iomod->ras;
                               
-                              ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
+                              ds->next = (t_ds *)mCalloc(1,sizeof(t_ds));
                               ds = ds->next;
-                              ds->obj = (int *)(&iomod->s_opt->opt_alpha);
+                              ds->obj  = (int *)(&iomod->s_opt->opt_alpha);
                               
-                              ds->next      = (t_ds *)mCalloc(1,sizeof(t_ds));
+                              ds->next = (t_ds *)mCalloc(1,sizeof(t_ds));
                               ds = ds->next;
-                              ds->obj = (int *)(&iomod->s_opt->opt_free_mixt_rates);
+                              ds->obj  = (int *)(&iomod->s_opt->opt_free_mixt_rates);
                             }
                           else /*! Connect ras struct to an already defined one. Same for opt_alpha & opt_free_mixt_rates */
                             {
-                              if(iomod->ras != (t_ras *)parent->ds->obj) Free_RAS(iomod->ras);
-                              iomod->ras = (t_ras *)parent->ds->obj;
-                              iomod->s_opt->opt_alpha = *((int *)parent->ds->next->obj);
-                              iomod->s_opt->opt_free_mixt_rates = *((int *)parent->ds->next->next->obj);
+                              ds = parent->ds;
+                              
+                              if(iomod->ras != (t_ras *)ds->obj) Free_RAS(iomod->ras);
+                              iomod->ras = (t_ras *)ds->obj;
+
+                              ds = ds->next;
+                              iomod->s_opt->opt_alpha = *((int *)ds->obj);
+
+                              ds = ds->next;
+                              iomod->s_opt->opt_free_mixt_rates = *((int *)ds->obj);
                             }
                           
                           rate_value = XML_Get_Attribute_Value(instance,"init.value");
@@ -2485,6 +2491,7 @@ void XML_Update_XML_Struct_Given_Model_Params(t_tree *tree)
   xml_node *parent,*child,*x;
   char *s,*val;
   t_ds *ds;
+  phydbl v;
   
   val = (char *)mCalloc(T_MAX_LINE,sizeof(char));
   
@@ -2551,19 +2558,102 @@ void XML_Update_XML_Struct_Given_Model_Params(t_tree *tree)
               sprintf(val,"%f",((scalar_dbl *)(ds->obj))->v);
               XML_Set_Attribute_Value(child,"tstv",val);
             }
-
-
           
           child = child->next;
         }
       while(child);
+    }
+
+
+  parent = XML_Search_Node_Name("siterates",YES,tree->xml_root);
+
+  if(parent != NULL)
+    {
+      child = parent->child;      
+      assert(child != NULL);
+
+      int class = 0;
+      do
+        {
+          s = XML_Get_Attribute_Value(child,"init.value");
+          if(s != NULL)
+            {
+              v = atof(s);
+              if(Are_Equal(v,0.0,1E-20) == NO)
+                {
+                  sprintf(val,"%f",((t_ras *)(parent->ds->obj))->gamma_rr->v[class]);
+                  XML_Set_Attribute_Value(child,"init.value",val);
+                  class++;                  
+                }
+            }
+        
+          child = child->next;          
+        }
+      while(child);
+
+
+      child = XML_Search_Node_Name("weights",YES,parent);
+      assert(child != NULL);
+      s = XML_Get_Attribute_Value(child,"family");
+      assert(s != NULL);
+      if(!strcmp(s,"gamma"))
+        {
+          s = XML_Get_Attribute_Value(child,"alpha");
+          if(s != NULL)
+            {
+              sprintf(val,"%f",((t_ras *)(parent->ds->obj))->alpha->v);
+              XML_Set_Attribute_Value(child,"alpha",val);
+            }
+        }
+      else if(!strcmp(s,"gamma+inv"))
+        {
+          s = XML_Get_Attribute_Value(child,"alpha");
+          if(s != NULL)
+            {
+              sprintf(val,"%f",((t_ras *)(parent->ds->obj))->alpha->v);
+              XML_Set_Attribute_Value(child,"alpha",val);
+              
+              sprintf(val,"%f",((t_ras *)(parent->ds->obj))->pinvar->v);
+              XML_Set_Attribute_Value(child,"pinv",val);
+            }
+        }
 
       
+      child = XML_Search_Node_Name("weights",YES,parent);
+      child = child->child;
+      assert(child);
 
-
-
-
-
+      
+      class = 0;
+      do
+        {
+          // Find the rate class that this weight instance points to
+          s = XML_Get_Attribute_Value(child,"appliesto");
+          assert(s);
+          x = XML_Search_Node_Attribute_Value("id",s,YES,parent);
+          assert(x);
+          
+          s = XML_Get_Attribute_Value(x,"init.value");
+          if(s != NULL)
+            {
+              v = atof(s);
+              if(Are_Equal(v,0.0,1E-20) == NO)
+                {
+                  sprintf(val,"%f",((t_ras *)(parent->ds->obj))->gamma_r_proba->v[class]);
+                  XML_Set_Attribute_Value(child,"value",val);
+                  class++;
+                }
+              else
+                {
+                  sprintf(val,"%f",0.0);
+                  XML_Set_Attribute_Value(child,"value",val);                  
+                }
+            }
+          child = child->next;
+        }
+      while(child);
+      
+      
     }
 
 

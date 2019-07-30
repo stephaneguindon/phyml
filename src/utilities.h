@@ -1732,6 +1732,7 @@ typedef struct __Tmcmc {
 
   int *adjust_tuning;
   int n_moves;
+  int move_idx;
   int randomize;
   int norm_freq;
   int run;

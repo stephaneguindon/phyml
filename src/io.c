@@ -6465,6 +6465,7 @@ void PHYREX_Check_Point(FILE *fp, t_tree *tree)
   s = PHYREX_Print_Tree_Structure(tree);
   XML_Set_Node_Value(n,s);
   XML_Update_XML_Struct_Given_Model_Params(tree);
+  /* XML_Update_XML_Struct_Given_MCMC_Params(tree); */
   XML_Write_XML_Graph(fp,tree->xml_root);
 }
 #endif

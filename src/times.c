@@ -1743,7 +1743,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
             }
           cal = cal->next;
         }
-      
+
       cal_ordering = (int *)mCalloc(n_cal,sizeof(int));
       for(i=0;i<n_cal;++i) cal_ordering[i] = i;
       
@@ -1766,6 +1766,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       
       for(i=0;i<n_cal-1;i++) assert(!(cal_times[cal_ordering[i]] < cal_times[cal_ordering[i+1]]));
               
+      
       // Connect taxa that appear in every primary calibrations
       for(i=0;i<n_cal;++i)
         {
@@ -1808,7 +1809,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
             }
           
 
-          // Add all the taxa that are  in the calibration set of cal
+          // Add all the taxa that are in the calibration set of cal
           // This should be done here so that the last node in nd_list
           // belongs to the taxa in the calibration
           clade = cal->clade_list[cal->current_clade_idx];
@@ -1868,10 +1869,11 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       while(cal);
 
       /* for(i=0;i<list_size;i++) printf("\n# To connect: %d lower: %f",nd_list[i]->num,time_oldest_cal); */
+
       
       TIMES_Connect_List_Of_Taxa(nd_list,
                                  list_size,
-                                 10.*time_oldest_cal,
+                                 10.*time_oldest_cal-1.E-3, // 1.E-3 required in case time_oldest_cal = 0.
                                  times,
                                  &nd_num,
                                  mixt_tree);
