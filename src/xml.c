@@ -2306,7 +2306,7 @@ char **XML_Read_Clade(xml_node *xnd_clade, t_tree *tree)
 void XML_Read_Calibration(xml_node *xroot, t_tree *tree)
 {
   xml_node *xnd_clade,*xnd_cal,*xnd,*xnd_dum;
-  phydbl low,up,alpha_proba_dbl;
+  phydbl low,up,alpha_proba_dbl,t,t_ref;
   t_cal *cal;
   t_clad *clade;
   char *calib_id,*clade_id,*clade_name,*alpha_proba_string;
@@ -2465,20 +2465,37 @@ void XML_Read_Calibration(xml_node *xroot, t_tree *tree)
         }
     }
 
+
+  t_ref = t = -1.;
+  
   for(i=0;i<tree->rates->n_cal;++i)
     {
       cal = tree->rates->a_cal[i];
       for(j=0;j<cal->clade_list_size;j++)
         {
           clade = cal->clade_list[j];
-          if(clade->target_nd->tax == YES && cal->upper < SMALL_DBL)
+          if(clade->target_nd->tax == YES)
             {
-              tree->rates->is_asynchronous = YES;
-              break;
+              if(t_ref < -.5)
+                {
+                  t_ref = Uni()*(cal->upper - cal->lower) + cal->lower;
+                  t_ref = fabs(t_ref);
+                }
+              else
+                {
+                  t = Uni()*(cal->upper - cal->lower) + cal->lower;
+                  t = fabs(t);
+
+                  if(Are_Equal(t,t_ref,1.E-10) == NO)
+                    {
+                      tree->rates->is_asynchronous = YES;
+                      break;
+                    }
+                }                    
             }
         }
     }
-
+  
   PhyML_Printf("\n\n");
   PhyML_Printf("\n. Is asynchronous: %s",tree->rates->is_asynchronous ? "yes" : "no");
 }
