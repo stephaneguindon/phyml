@@ -80,5 +80,11 @@ phydbl TIMES_Least_Square_Criterion(t_tree *tree);
 void TIMES_Pre_Least_Square_Criterion(t_node *a, t_node *d, t_edge *b, phydbl *score, t_tree *tree);
 void TIMES_Post_Randomize_Node_Ages(t_node *a, t_node *d, t_tree *tree);
 void TIMES_Randomize_Node_Ages(t_tree *tree);
+int TIMES_Calibrations_Apply_To_Tips_Only(t_tree *tree);
+void TIMES_Randomize_Tip_Times_Given_Calibrations(t_tree *tree);
+void TIMES_Time_To_Bl(t_tree *tree);
+void TIMES_Time_To_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree);
+void TIMES_Bl_To_Times_Post(t_node *a, t_node *d, t_edge *b, t_tree *tree);
+void TIMES_Bl_To_Times(t_tree *tree);
 
 #endif

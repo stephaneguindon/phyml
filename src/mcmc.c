@@ -264,6 +264,7 @@ void MCMC_Clock_R(t_tree *tree)
   int move_num;
   phydbl K;
 
+  if(tree->eval_alnL == NO) return;
   if(tree->rates->clock_r_fixed == YES) return;
   
   new_clock_r  = tree->rates->clock_r;
@@ -292,10 +293,6 @@ void MCMC_Clock_R(t_tree *tree)
       ratio += (new_lnL_data - cur_lnL_data);
       ratio += (new_lnL_rate - cur_lnL_rate);
             
-      /* PhyML_Printf("\n. new_lnL_data: %f cur_lnL_data: %f",new_lnL_data,cur_lnL_data); */
-      /* PhyML_Printf("\n. new_lnL_rate: %f cur_lnL_rate: %f",new_lnL_rate,cur_lnL_rate); */
-      /* PhyML_Printf("\n. new_clock_r: %g cur_clock_r: %g",new_clock_r,cur_clock_r); */
-
       ratio = exp(ratio);
       alpha = MIN(1.,ratio);
       
@@ -539,6 +536,7 @@ void MCMC_Sample_Joint_Rates_Prior(t_tree *tree)
 
 void MCMC_Rates_All(t_tree *tree)
 {
+  if(tree->eval_alnL == NO) return;
   Set_Both_Sides(NO,tree);
   Lk(NULL,tree);
   MCMC_One_Rate(tree->n_root,tree->n_root->v[1],YES,tree);
@@ -2008,7 +2006,8 @@ void MCMC_Tree_Rates(t_tree *tree)
   phydbl cur_lnL_seq,new_lnL_seq;
   int n_nodes;
   phydbl init_clock;
-  
+
+  if(tree->eval_alnL == NO) return;
   if(tree->rates->model == STRICTCLOCK) return;
 
   RATES_Record_Rates(tree);
@@ -2047,7 +2046,9 @@ void MCMC_Tree_Rates(t_tree *tree)
         }
     }
   
-  if((tree->rates->model == GUINDON && tree->eval_alnL == YES) || (tree->rates->is_asynchronous == YES) || (tree->rates->clock_r_fixed == YES))
+  if((tree->rates->model == GUINDON && tree->eval_alnL == YES) ||
+     (tree->rates->is_asynchronous == YES) ||
+     (tree->rates->clock_r_fixed == YES))
     {
       RATES_Update_Cur_Bl(tree);
       new_lnL_seq = Lk(NULL,tree);
@@ -2480,7 +2481,6 @@ void MCMC_Print_Param_Stdin(t_mcmc *mcmc, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void MCMC_Print_Param(t_mcmc *mcmc, t_tree *tree)
 {
   int i;
@@ -2849,7 +2849,7 @@ void MCMC_Print_Param(t_mcmc *mcmc, t_tree *tree)
       /* fclose(fp); */
       
       // TREES
-      Time_To_Bl(tree);
+      TIMES_Time_To_Bl(tree);
       tree->bl_ndigits = 3;
       s_tree = Write_Tree(tree,NO);
       tree->bl_ndigits = 7;
@@ -3820,7 +3820,8 @@ void MCMC_Kappa(t_tree *mixt_tree)
   phydbl K;
   phydbl cur_lnL_seq, new_lnL_seq;
 
-
+  if(mixt_tree->eval_alnL == NO) return;
+  
   Set_Update_Eigen(YES,mixt_tree->mod);
 
   tree = mixt_tree;
@@ -3900,8 +3901,9 @@ void MCMC_RR(t_tree *mixt_tree)
   phydbl cur_lnL_seq, new_lnL_seq;
   t_rmat **r_mat;
   int i;
-  
-  
+
+  if(mixt_tree->eval_alnL == NO) return;
+
   Set_Update_Eigen(YES,mixt_tree->mod);
 
   tree    = mixt_tree;
@@ -7165,8 +7167,7 @@ void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree)
   n_all_disks = 0;
   do
     {
-      /* if(disk->ldsk && disk->ldsk->n_next > 1 && disk->age_fixed == NO) /\* Moving disks other than coalescent is pointless *\/ */
-      if(disk->age_fixed == NO) /* Moving disks other than coalescent is pointless */
+      if((disk->age_fixed) == NO && !(disk->ldsk && disk->ldsk->n_next > 1 && tree->mod->s_opt->opt_bl == NO))
         {
           if(!n_all_disks) all_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
           else if(!(n_all_disks%block)) all_disks = (t_dsk **)mRealloc(all_disks,n_all_disks+block,sizeof(t_dsk *));
@@ -7308,6 +7309,8 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree)
   t_dsk  *start_disk;
   phydbl K;
   
+  if(tree->mod->s_opt->opt_bl == NO) return;
+
   cur_alnL   = tree->c_lnL;
   new_alnL   = tree->c_lnL;
   new_glnL   = tree->mmod->c_lnL;
@@ -7422,10 +7425,13 @@ void MCMC_PHYREX_Swap_Disk(t_tree *tree)
       /* Record disk with a lineage displacement or coalescent that is not the root disk and not a disk with sampled taxa on it */
       if(disk && disk->prev && disk->ldsk && disk->ldsk->n_next >= 1 && disk->age_fixed == NO)
         {
-          if(!n_valid_disks) valid_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
-          else if(!(n_valid_disks%block)) valid_disks = (t_dsk **)mRealloc(valid_disks,n_valid_disks+block,sizeof(t_dsk *));
-          valid_disks[n_valid_disks] = disk;
-          n_valid_disks++;
+          if(!(disk->ldsk->n_next > 1 && tree->mod->s_opt->opt_bl == NO))
+            {
+              if(!n_valid_disks) valid_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
+              else if(!(n_valid_disks%block)) valid_disks = (t_dsk **)mRealloc(valid_disks,n_valid_disks+block,sizeof(t_dsk *));
+              valid_disks[n_valid_disks] = disk;
+              n_valid_disks++;
+            }
         }
       disk = disk->prev;
     }

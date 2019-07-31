@@ -43,8 +43,10 @@ void PHYREX_XML(char *xml_filename)
   mixt_tree = XML_Process_Base(xml_filename);
   assert(mixt_tree);
     
+
   mixt_tree->rates = RATES_Make_Rate_Struct(mixt_tree->n_otu);
   RATES_Init_Rate_Struct(mixt_tree->rates,NULL,mixt_tree->n_otu);
+
 
   tree = mixt_tree;
   do
@@ -94,15 +96,18 @@ void PHYREX_XML(char *xml_filename)
 
 
   dum_string = XML_Get_Attribute_Value(xnd,"ignore.sequences");
-  if(dum_string != NULL) mixt_tree->eval_alnL = NO;
+  if(!dum_string) dum_string = XML_Get_Attribute_Value(xnd,"ignore.seq");
+  if(!dum_string) dum_string = XML_Get_Attribute_Value(xnd,"ignore.data");
 
-  dum_string = XML_Get_Attribute_Value(xnd,"ignore.seq");
-  if(dum_string != NULL) mixt_tree->eval_alnL = NO;
-
-  dum_string = XML_Get_Attribute_Value(xnd,"ignore.data");
-  if(dum_string != NULL) mixt_tree->eval_alnL = NO;
-
-
+  if(dum_string != NULL)
+    {
+      int select = XML_Validate_Attr_Int(dum_string,6,
+                                         "true","yes","y",
+                                         "false","no","n");
+      if(select < 3) mixt_tree->eval_alnL = NO;
+      else mixt_tree->eval_alnL = YES;
+    }
+  
   dum_string = XML_Get_Attribute_Value(xnd,"mutmap");
   if(dum_string != NULL)
     {
@@ -281,16 +286,28 @@ void PHYREX_XML(char *xml_filename)
   MIXT_Make_Tree_For_Pars(mixt_tree);
   MIXT_Make_Spr(mixt_tree);  
   MIXT_Chain_All(mixt_tree);
-  /* if(mixt_tree->io->in_tree < 2) Add_Root(mixt_tree->a_edges[0],mixt_tree); */
   MIXT_Check_Edge_Lens_In_All_Elem(mixt_tree);
   MIXT_Turn_Branches_OnOff_In_All_Elem(ON,mixt_tree);
   MIXT_Check_Invar_Struct_In_Each_Partition_Elem(mixt_tree);
   MIXT_Check_RAS_Struct_In_Each_Partition_Elem(mixt_tree);
-  
+              
   XML_Read_Calibration(xroot,mixt_tree);
   MIXT_Chain_Cal(mixt_tree);
 
-  TIMES_Randomize_Tree_With_Time_Constraints(mixt_tree->rates->a_cal[0],mixt_tree);
+  if(TIMES_Calibrations_Apply_To_Tips_Only(mixt_tree) == YES &&
+     mixt_tree->mod->s_opt->opt_topo == NO)
+    {
+      TIMES_Randomize_Tip_Times_Given_Calibrations(mixt_tree); // Topology is unchanged
+      TIMES_Bl_To_Times(mixt_tree);
+      Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree);
+      Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);
+    }
+  else
+    {
+      TIMES_Randomize_Tree_With_Time_Constraints(mixt_tree->rates->a_cal[0],mixt_tree);
+    }
+  
+  MIXT_Propagate_Tree_Update(mixt_tree);
 
   /* Create ldsks and connect tree tips to them */
   /* once tip dates have been set properly (in */
@@ -311,6 +328,8 @@ void PHYREX_XML(char *xml_filename)
   mixt_tree->mmod->rad  = Uni()*(2.0 - 1.0) + 1.0;
   mixt_tree->mmod->sigsq = PHYREX_Update_Sigsq(mixt_tree);
 
+
+
   
   /* Random genealogy or user-defined tree */
   switch(mixt_tree->io->in_tree)
@@ -327,6 +346,7 @@ void PHYREX_XML(char *xml_filename)
         break;
       }
     }
+
   
   Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree);
   Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);  
@@ -2072,9 +2092,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
 
   /* Starting parameter values */
-  tree->mmod->lbda = Uni()*(30.0 - 20.0) + 20.0;
+  tree->mmod->lbda = Uni()*(10.0 - 5.0) + 5.0;
   tree->mmod->mu   = Uni()*(0.6 - 0.2) + 0.3;
-  tree->mmod->rad  = Uni()*(1.0 - 0.6) + 0.6;
+  tree->mmod->rad  = Uni()*(3.0 - 1.0) + 1.0;
   /* tree->mmod->lbda = 15.0; */
   /* tree->mmod->mu   = 0.3; */
   /* tree->mmod->rad  = 0.5; */
@@ -2195,11 +2215,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);            
     }
   
-  tree->eval_alnL = YES;
-  tree->eval_glnL = YES;
-  tree->eval_rlnL = YES;
-
-
   Set_Both_Sides(NO,tree);
   mcmc->always_yes = NO;
   move             = -1;
@@ -2245,8 +2260,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           /* PHYREX_Simulate_Backward_Core(tree->young_disk,NO,tree); */
           /* PHYREX_Ldsk_To_Tree(tree); */
         /* } */
-      
-      
+            
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_lbda"))
         MCMC_PHYREX_Lbda(tree);
 
@@ -2323,14 +2337,19 @@ phydbl *PHYREX_MCMC(t_tree *tree)
         MCMC_Clock_R(tree);
 
 
-      /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1 */
+      /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
       /* PHYREX_Lk(tree); */
       /* Lk(NULL,tree); */
       
+      /* PhyML_Printf("\n. Move: %s tree->mmod->c_lnL: %f tree->c_lnL: %f", */
+      /*              tree->mcmc->move_name[move], */
+      /*              tree->mmod->c_lnL,Lk(NULL,tree)); */
+
       if(tree->mmod->c_lnL < UNLIKELY || tree->c_lnL < UNLIKELY)
         {
-          PhyML_Printf("\n. tree->mmod->c_lnL: %f tree->c_lnL: %f",tree->mmod->c_lnL,tree->c_lnL);
-          PhyML_Printf("\n. Move: %s",tree->mcmc->move_name[move]);
+          PhyML_Printf("\n. Move: %s tree->mmod->c_lnL: %f tree->c_lnL: %f",
+                       tree->mcmc->move_name[move],
+                       tree->mmod->c_lnL,tree->c_lnL);
           assert(FALSE);
         }
 
@@ -2473,7 +2492,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
           
           PHYREX_Ldsk_To_Tree(tree);
-          Time_To_Bl(tree);
+          TIMES_Time_To_Bl(tree);
           tree->bl_ndigits = 3;
           /* RATES_Update_Cur_Bl(tree); */
           char *s = Write_Tree(tree,NO);
@@ -3963,7 +3982,6 @@ void PHYREX_Tree_To_Ldsk(t_tree *tree)
   
   assert(tree->n_root);
   assert(tree->young_disk);
-
   
   // Initialise root disk
   a_disk = PHYREX_Make_Disk_Event(tree->mmod->n_dim,tree->n_otu);

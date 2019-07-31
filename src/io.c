@@ -91,13 +91,15 @@ t_tree *Read_Tree(char **s_tree)
   tree->has_branch_lengths = 0;
   tree->num_curr_branch_available = tree->n_otu;
   for(i=0;i<degree;i++) R_rtree((*s_tree),subs[i],root_node,tree,&n_int,&n_ext);
-  
+
   i = degree;
   while(subs[i] != NULL) Free(subs[i++]);
   Free(subs);
   
+  
   if(tree->n_root)
     {
+
       if(tree->n_root->v[1]->tax == NO && tree->n_root->v[2]->tax == NO)
         {
           tree->e_root       = tree->a_edges[tree->num_curr_branch_available];
@@ -117,6 +119,11 @@ t_tree *Read_Tree(char **s_tree)
       tree->n_root->v[2]->v[0] = tree->n_root->v[1];
       tree->n_root->v[1]->v[0] = tree->n_root->v[2];
 
+      // Reading edge lengths
+      subs = Sub_Trees((*s_tree),&degree);
+      Read_Branch_Length(subs[0],(*s_tree),tree->n_root->b[1],tree);
+      Read_Branch_Length(subs[1],(*s_tree),tree->n_root->b[2],tree);
+      Free(subs);
       
       Connect_One_Edge_To_Two_Nodes(tree->n_root->v[2],
                                     tree->n_root->v[1],
@@ -128,6 +135,11 @@ t_tree *Read_Tree(char **s_tree)
         tree->n_root_pos = tree->n_root->b[2]->l->v / tree->e_root->l->v;
       else
         tree->n_root_pos = .5;
+
+
+      Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
+      Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
+
     }
 
   return tree;
@@ -170,7 +182,6 @@ void R_rtree(char *s_tree_a, char *s_tree_d, t_node *a, t_tree *tree, int *n_int
       d->num = n_otu + *n_int;
       d->tax = 0;
       b      = tree->a_edges[tree->num_curr_branch_available];
-
       
       Read_Branch_Support(s_tree_d,s_tree_a,b,tree);
       Read_Branch_Length(s_tree_d,s_tree_a,b,tree);
@@ -187,7 +198,7 @@ void R_rtree(char *s_tree_a, char *s_tree_d, t_node *a, t_tree *tree, int *n_int
             {
               if(!a->v[i])
                 {
-                  a->v[i]=d;
+                  a->v[i] = d;
                   break;
                 }
             }
@@ -686,7 +697,7 @@ char *Write_Tree(t_tree *tree, int custom)
     }
 
   s[(int)strlen(s)-1]=')';
-  if(tree->io->print_node_num == YES)
+  if(tree->io && tree->io->print_node_num == YES)
     {
       if(!tree->n_root)
         sprintf(s+(int)strlen(s),"%d",tree->a_nodes[tree->n_otu+i]->num);
@@ -827,8 +838,8 @@ void R_wtree(t_node *pere, t_node *fils, t_edge *b, int *available, char **s_tre
       
       
       if((fils->b) && (tree->write_br_lens == YES))
-        {          
-          if(tree->io->print_support_val == YES)
+        {
+          if(tree->io && tree->io->print_support_val == YES)
             {
               if(tree->io->do_boot == YES)
                 {
@@ -839,7 +850,7 @@ void R_wtree(t_node *pere, t_node *fils, t_edge *b, int *available, char **s_tre
                   sprintf(*s_tree+(int)strlen(*s_tree),"%f",fils->b[p]->support_val);
                 }
             }
-          if(tree->io->print_node_num == YES)
+          if(tree->io && tree->io->print_node_num == YES)
             {
               sprintf(*s_tree+(int)strlen(*s_tree),"%d",fils->num);
             }

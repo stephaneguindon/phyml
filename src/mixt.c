@@ -2368,6 +2368,7 @@ t_tree *MIXT_Starting_Tree(t_tree *mixt_tree)
             tree = Read_User_Tree(mixt_tree->io->cdata,
                                   mixt_tree->mod,
                                   mixt_tree->io);
+            
             break;
           }
         case 1: case 0:

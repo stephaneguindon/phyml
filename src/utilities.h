@@ -2031,9 +2031,6 @@ typedef struct __JSON_Array {
 /*!********************************************************/
 
 void Unroot_Tree(char **subtrees);
-void Init_Tree(t_tree *tree,int n_otu);
-void Init_Edge_Light(t_edge *b,int num);
-void Init_Node_Light(t_node *n,int num);
 void Set_Edge_Dirs(t_edge *b,t_node *a,t_node *d,t_tree *tree);
 void Init_Nexus_Format(nexcom **com);
 void Restrict_To_Coding_Position(align **data,option *io);
@@ -2074,9 +2071,6 @@ void Update_SubTree_Partial_Lk(t_edge *b_fcus,t_node *a,t_node *d,t_tree *tree);
 void Copy_Seq_Names_To_Tip_Labels(t_tree *tree,calign *data);
 calign *Copy_Cseq(calign *ori,option *io);
 int Filexists(char *filename);
-matrix *K80_dist(calign *data,phydbl g_shape);
-matrix *JC69_Dist(calign *data,t_mod *mod);
-matrix *Hamming_Dist(calign *data,t_mod *mod);
 int Is_Invar(int patt_num,int stepsize,int datatype,calign *data);
 int Is_Ambigu(char *state,int datatype,int stepsize);
 void Check_Ambiguities(calign *data,int datatype,int stepsize);
@@ -2130,11 +2124,7 @@ void Init_Eigen_Struct(eigen *this);
 phydbl Triple_Dist(t_node *a,t_tree *tree);
 phydbl Triple_Dist_Approx(t_node *a, t_edge *b, t_tree *tree);
 void Make_Symmetric(phydbl **F,int size);
-void Round_Down_Freq_Patt(phydbl **F,t_tree *tree);
-phydbl Get_Sum_Of_Cells(phydbl *F,t_tree *tree);
-void Divide_Cells(phydbl **F,phydbl div,t_tree *tree);
 void Divide_Mat_By_Vect(phydbl **F,phydbl *vect,int size);
-void Multiply_Mat_By_Vect(phydbl **F,phydbl *vect,int size);
 void Found_In_Subtree(t_node *a,t_node *d,t_node *target,int *match,t_tree *tree);
 void Get_List_Of_Target_Edges(t_node *a,t_node *d,t_edge **list,int *list_size,t_tree *tree);
 void Fix_All(t_tree *tree);
@@ -2178,13 +2168,8 @@ void Site_Diversity_Pre(t_node *a,t_node *d,t_edge *b,t_tree *tree);
 void Subtree_Union(t_node *n,t_edge *b_fcus,t_tree *tree);
 void Binary_Decomposition(int value,int *bit_vect,int size);
 void Print_Diversity_Header(FILE *fp,t_tree *tree);
-phydbl Univariate_Kernel_Density_Estimate(phydbl where,phydbl *x,int sample_size);
-phydbl Multivariate_Kernel_Density_Estimate(phydbl *where,phydbl **x,int sample_size,int vect_size);
-phydbl Var(phydbl *x,int n);
-phydbl Mean(phydbl *x,int n);
 void Best_Of_NNI_And_SPR(t_tree *tree);
 int Polint(phydbl *xa,phydbl *ya,int n,phydbl x,phydbl *y,phydbl *dy);
-void JF(t_tree *tree);
 t_tree *Dist_And_BioNJ(calign *cdata,t_mod *mod,option *io);
 void Add_BioNJ_Branch_Lengths(t_tree *tree, calign *cdata, t_mod *mod, matrix *mat);
 char *Bootstrap_From_String(char *s_tree,calign *cdata,t_mod *mod,option *io);
@@ -2198,8 +2183,6 @@ t_node *Find_Lca_Pair_Of_Nodes(t_node *n1,t_node *n2,t_tree *tree);
 t_node *Find_Lca_Clade(t_node **node_list,int node_list_size,t_tree *tree);
 int Get_List_Of_Ancestors(t_node *ref_node,t_node **list,int *size,t_tree *tree);
 int Edge_Num_To_Node_Num(int edge_num,t_tree *tree);
-void Time_To_Bl(t_tree *tree);
-void Time_To_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree);
 void Branch_Lengths_To_Rate_Lengths(t_tree *tree);
 void Branch_Lengths_To_Rate_Lengths_Pre(t_node *a,t_node *d,t_tree *tree);
 int Find_Clade(char **tax_name_list,int list_size,t_tree *tree);
@@ -2257,11 +2240,8 @@ void Joint_Proba_States_Left_Right(phydbl *Pij, phydbl *p_lk_left, phydbl *p_lk_
                    phydbl *F, int n, int site, t_tree *tree);
 void Set_Both_Sides(int yesno, t_tree *tree);
 void Set_D_States(calign *data, int datatype, int stepsize);
-void Bl_To_Time(t_tree *tree);
-void Bl_To_Time_Pre(t_node *a, t_node *d, t_tree *tree);
 void Path_Length(t_node *dep, t_node *arr, phydbl *len, t_tree *tree);
 phydbl *Dist_Btw_Tips(t_tree *tree);
-void Random_SPRs_On_Rooted_Tree(t_tree *tree);
 void Best_Root_Position_IL_Model(t_tree *tree);
 void Set_Br_Len_Var(t_edge *b, t_tree *tree);
 void Check_Br_Lens(t_tree *tree);
@@ -2341,6 +2321,9 @@ void Refactor_Internal(t_node *a, t_node *d, t_edge *b, int *idx_nd, int *idx_br
 int *Integer_To_Bit(int val, const int ns);
 char *Bit_To_Character_String(int *bit, int ns);
 t_tree *Duplicate_Tree(t_tree *ori);
+matrix *K80_dist(calign *data, phydbl g_shape);
+matrix *JC69_Dist(calign *data, t_mod *mod);
+matrix *Hamming_Dist(calign *data, t_mod *mod);
 
 
 #include "xml.h"

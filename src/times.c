@@ -1664,6 +1664,16 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
   t_clad *clade;
 
   assert(mixt_tree->rates);
+
+  if(mixt_tree->mod->s_opt->opt_topo == NO)
+    {
+      PhyML_Fprintf(stderr,"\n. Fixing the tree topology is only allowed when calibrating tip nodes exclusively");
+      PhyML_Fprintf(stderr,"\n. You are most likely calibrating here the MRCA of at least one clade with more than two tips.");
+      PhyML_Fprintf(stderr,"\n. It is difficult to set the age of that clade within the limit of the calibration constraints,");
+      PhyML_Fprintf(stderr,"\n. and fix the tree topology at the same time. Please contact me (guindon@lirmm.fr) for a more");
+      PhyML_Fprintf(stderr,"\n. detailed diagnostic.");
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
   
   tips               = (t_node **)mCalloc(mixt_tree->n_otu,sizeof(t_node *));
   nd_list            = (t_node **)mCalloc(2*mixt_tree->n_otu-1,sizeof(t_node *));
@@ -1877,8 +1887,6 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
                                  times,
                                  &nd_num,
                                  mixt_tree);
-      
-            
       // Adding root node 
       mixt_tree->n_root = mixt_tree->a_nodes[2*mixt_tree->n_otu-2];
       mixt_tree->n_root->v[1]->v[0] = mixt_tree->n_root->v[2];
@@ -1886,9 +1894,9 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree);
       Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);
       mixt_tree->n_root->anc = NULL;
-
+      
       Connect_Edges_To_Nodes_Serial(mixt_tree);
-
+      
       // Adding root edge
       for(i=0;i<2*mixt_tree->n_otu-3;++i)
         {
@@ -1902,7 +1910,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       
       DATE_Assign_Primary_Calibration(mixt_tree);
       DATE_Update_T_Prior_MinMax(mixt_tree);
-
+      
 
       for(int i=0;i<mixt_tree->rates->n_cal;i++)
         {
@@ -1946,8 +1954,6 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
   /* assert(i != 2*mixt_tree->n_otu-3); */
 
   mixt_tree->is_mixt_tree = orig_is_mixt_tree;
-
-  MIXT_Propagate_Tree_Update(mixt_tree);
     
   Free(tips);
   Free(nd_list);
@@ -2083,7 +2089,180 @@ void TIMES_Post_Randomize_Node_Ages(t_node *a, t_node *d, t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+int TIMES_Calibrations_Apply_To_Tips_Only(t_tree *tree)
+{
+  t_cal *cal;
+  t_clad *clade;
+
+  cal = tree->rates->a_cal[0];
+  assert(cal);
+  
+  do
+    {
+      clade = cal->clade_list[cal->current_clade_idx];
+      if(clade->n_tax > 1) break;
+      cal = cal->next;
+    }
+  while(cal);
+
+  if(cal == NULL) return YES;
+
+  return NO;
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void TIMES_Randomize_Tip_Times_Given_Calibrations(t_tree *tree)
+{
+  
+  t_cal *cal;
+  t_clad *clade;
+
+  cal = tree->rates->a_cal[0];
+  assert(cal);
+  
+  do
+    {
+      clade = cal->clade_list[cal->current_clade_idx];
+
+      if(clade->n_tax == 1)
+        {
+          assert(clade->target_nd->tax == YES);
+          tree->rates->nd_t[clade->target_nd->num] = Uni()*(cal->upper - cal->lower) + cal->lower;
+        }
+      
+      cal = cal->next;
+    }
+  while(cal);
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void TIMES_Time_To_Bl(t_tree *tree)
+{
+  TIMES_Time_To_Bl_Pre(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
+  TIMES_Time_To_Bl_Pre(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
+  tree->n_root->b[1]->l->v = tree->rates->nd_t[tree->n_root->v[1]->num] - tree->rates->nd_t[tree->n_root->num];
+  tree->n_root->b[2]->l->v = tree->rates->nd_t[tree->n_root->v[2]->num] - tree->rates->nd_t[tree->n_root->num];
+  tree->e_root->l->v = tree->n_root->b[1]->l->v + tree->n_root->b[2]->l->v;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void TIMES_Time_To_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
+{
+  int i;
+
+  b->l->v = tree->rates->nd_t[d->num] - tree->rates->nd_t[a->num];
+  
+  if(d->tax) return;
+  else
+    {
+      for(i=0;i<3;i++)
+        if((d->v[i] != a) && (d->b[i] != tree->e_root))
+          TIMES_Time_To_Bl_Pre(d,d->v[i],d->b[i],tree);
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void TIMES_Bl_To_Times(t_tree *tree)
+{
+  t_node *v1,*v2;
+  int dir1,dir2;
+  phydbl t1,t2;
+  
+  TIMES_Bl_To_Times_Post(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
+  TIMES_Bl_To_Times_Post(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
+
+  dir1 = 1;
+  dir2 = 2;
+  
+  v1 = tree->n_root->v[dir1];
+  v2 = tree->n_root->v[dir2];
+  
+  t1 = tree->rates->nd_t[v1->num] - MIXT_Get_Mean_Edge_Len(tree->n_root->b[1],tree) / (tree->rates->clock_r * tree->rates->br_r[v1->num]);
+  t2 = tree->rates->nd_t[v2->num] - MIXT_Get_Mean_Edge_Len(tree->n_root->b[2],tree) / (tree->rates->clock_r * tree->rates->br_r[v2->num]);
+  
+  if(Are_Equal(t1,t2,1.E-10) == NO)
+    {
+      PhyML_Fprintf(stderr,"\n. It looks as if the edge lengths suplied do not define an ultrametric tree.");
+      PhyML_Fprintf(stderr,"\n. Please amend these lengths so as it becomes straightforward to transform your tree");
+      PhyML_Fprintf(stderr,"\n. into a time-tree. Please contact me (guindon@lirmm.fr) for more information.");
+      PhyML_Fprintf(stderr,"\n. l1: %f l2: %f",MIXT_Get_Mean_Edge_Len(tree->n_root->b[1],tree),MIXT_Get_Mean_Edge_Len(tree->n_root->b[2],tree));
+      PhyML_Fprintf(stderr,"\n. t1: %f t2: %f",tree->rates->nd_t[v1->num],tree->rates->nd_t[v2->num]);
+      PhyML_Fprintf(stderr,"\n. rr1: %f rr2: %f",tree->rates->br_r[v1->num],tree->rates->br_r[v2->num]);
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+    }
+      
+  tree->rates->nd_t[tree->n_root->num] = t1;
+  
+  
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void TIMES_Bl_To_Times_Post(t_node *a, t_node *d, t_edge *b, t_tree *tree)
+{
+  if(d->tax == YES) return;
+  else
+    {
+      t_node *v1,*v2;
+      int dir1,dir2;
+      phydbl t1,t2;
+      
+      dir1 = dir2 = -1;
+      for(int i=0;i<3;i++)
+        if((d->v[i] != a) && (d->b[i] != tree->e_root))
+          {
+            TIMES_Bl_To_Times_Post(d,d->v[i],d->b[i],tree);
+            if(dir1 < 0) dir1 = i;
+            else dir2 = i;
+          }
+      
+      v1 = d->v[dir1];
+      v2 = d->v[dir2];
+      
+      t1 = tree->rates->nd_t[v1->num] - MIXT_Get_Mean_Edge_Len(d->b[dir1],tree) / (tree->rates->clock_r * tree->rates->br_r[v1->num]);
+      t2 = tree->rates->nd_t[v2->num] - MIXT_Get_Mean_Edge_Len(d->b[dir2],tree) / (tree->rates->clock_r * tree->rates->br_r[v2->num]);
+
+      if(Are_Equal(t1,t2,1.E-10) == NO)
+        {
+          PhyML_Fprintf(stderr,"\n. It looks at if the edge lengths suplied do not define an ultrametric tree.");
+          PhyML_Fprintf(stderr,"\n. Please amend these lengths so as it becomes straightforward to transform your tree");
+          PhyML_Fprintf(stderr,"\n. into a time-tree.");
+          PhyML_Fprintf(stderr,"\n. l1: %f l2: %f",MIXT_Get_Mean_Edge_Len(d->b[dir1],tree),MIXT_Get_Mean_Edge_Len(d->b[dir2],tree));
+          PhyML_Fprintf(stderr,"\n. t1: %f t2: %f",tree->rates->nd_t[v1->num],tree->rates->nd_t[v2->num]);
+          PhyML_Fprintf(stderr,"\n. rr1: %f rr2: %f",tree->rates->br_r[v1->num],tree->rates->br_r[v2->num]);
+          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+        }
+      
+      tree->rates->nd_t[d->num] = t1;
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+  

@@ -4921,49 +4921,60 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
       return;
     }
 
-  for(i=0;i<2*ori->n_otu-2;++i)
-    {
-      for(j=0;j<3;++j)
+  for(i=0;i<2*ori->n_otu-1;++i)
+    {      
+      if(ori->a_nodes[i] != NULL)
         {
-          if(ori->a_nodes[i]->v[j])
+          cpy->a_nodes[i]->anc =
+            (ori->a_nodes[i]->anc != NULL) ?
+            cpy->a_nodes[ori->a_nodes[i]->anc->num] :
+            NULL;
+          
+          for(j=0;j<3;++j)
             {
-              cpy->a_nodes[i]->v[j] = cpy->a_nodes[ori->a_nodes[i]->v[j]->num];
-              cpy->a_nodes[i]->b[j] = cpy->a_edges[ori->a_nodes[i]->b[j]->num];
-            }
-          else
-            {
-              cpy->a_nodes[i]->v[j] = NULL;
-              cpy->a_nodes[i]->b[j] = NULL;
+              if(ori->a_nodes[i]->v[j] != NULL)
+                {
+                  cpy->a_nodes[i]->v[j] = cpy->a_nodes[ori->a_nodes[i]->v[j]->num];
+                  cpy->a_nodes[i]->b[j] = cpy->a_edges[ori->a_nodes[i]->b[j]->num];
+                }
+              else
+                {
+                  cpy->a_nodes[i]->v[j] = NULL;
+                  cpy->a_nodes[i]->b[j] = NULL;
+                }
             }
         }
       cpy->a_nodes[i]->c_seq = ori->a_nodes[i]->c_seq;
     }
 
-  for(i=0;i<2*ori->n_otu-3;++i)
+  for(i=0;i<2*ori->n_otu-1;++i)
     {
-      cpy->a_edges[i]->l->v             = ori->a_edges[i]->l->v;
-      cpy->a_edges[i]->l_old->v         = ori->a_edges[i]->l_old->v;
-      cpy->a_edges[i]->l_var->v         = ori->a_edges[i]->l_var->v;
-      cpy->a_edges[i]->l_var_old->v     = ori->a_edges[i]->l_var_old->v;
-      cpy->a_edges[i]->left             = ori->a_edges[i]->left ? cpy->a_nodes[ori->a_edges[i]->left->num] : NULL;
-      cpy->a_edges[i]->rght             = ori->a_edges[i]->rght ? cpy->a_nodes[ori->a_edges[i]->rght->num] : NULL;
-      cpy->a_edges[i]->l_v1             = ori->a_edges[i]->l_v1;
-      cpy->a_edges[i]->l_v2             = ori->a_edges[i]->l_v2;
-      cpy->a_edges[i]->r_v1             = ori->a_edges[i]->r_v1;
-      cpy->a_edges[i]->r_v2             = ori->a_edges[i]->r_v2;
-      cpy->a_edges[i]->l_r              = ori->a_edges[i]->l_r;
-      cpy->a_edges[i]->r_l              = ori->a_edges[i]->r_l;
-      cpy->a_edges[i]->does_exist       = ori->a_edges[i]->does_exist;
-      cpy->a_edges[i]->support_val      = ori->a_edges[i]->support_val;
-
+      if(ori->a_edges[i] != NULL)
+        {
+          cpy->a_edges[i]->l->v             = ori->a_edges[i]->l->v;
+          cpy->a_edges[i]->l_old->v         = ori->a_edges[i]->l_old->v;
+          cpy->a_edges[i]->l_var->v         = ori->a_edges[i]->l_var->v;
+          cpy->a_edges[i]->l_var_old->v     = ori->a_edges[i]->l_var_old->v;
+          cpy->a_edges[i]->left             = ori->a_edges[i]->left ? cpy->a_nodes[ori->a_edges[i]->left->num] : NULL;
+          cpy->a_edges[i]->rght             = ori->a_edges[i]->rght ? cpy->a_nodes[ori->a_edges[i]->rght->num] : NULL;
+          cpy->a_edges[i]->l_v1             = ori->a_edges[i]->l_v1;
+          cpy->a_edges[i]->l_v2             = ori->a_edges[i]->l_v2;
+          cpy->a_edges[i]->r_v1             = ori->a_edges[i]->r_v1;
+          cpy->a_edges[i]->r_v2             = ori->a_edges[i]->r_v2;
+          cpy->a_edges[i]->l_r              = ori->a_edges[i]->l_r;
+          cpy->a_edges[i]->r_l              = ori->a_edges[i]->r_l;
+          cpy->a_edges[i]->does_exist       = ori->a_edges[i]->does_exist;
+          cpy->a_edges[i]->support_val      = ori->a_edges[i]->support_val;
+          
 #ifdef BEAGLE
-      cpy->a_edges[i]->p_lk_left_idx    = ori->a_edges[i]->p_lk_left_idx;
-      cpy->a_edges[i]->p_lk_rght_idx    = ori->a_edges[i]->p_lk_rght_idx;
-      cpy->a_edges[i]->p_lk_tip_idx     = ori->a_edges[i]->p_lk_tip_idx;
+          cpy->a_edges[i]->p_lk_left_idx    = ori->a_edges[i]->p_lk_left_idx;
+          cpy->a_edges[i]->p_lk_rght_idx    = ori->a_edges[i]->p_lk_rght_idx;
+          cpy->a_edges[i]->p_lk_tip_idx     = ori->a_edges[i]->p_lk_tip_idx;
 #endif
+        }
     }
-
-
+      
+      
   for(i=0;i<ori->n_otu;++i)
     {
       cpy->a_nodes[i]->tax = YES;
@@ -4979,26 +4990,17 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
   
   if(ori->n_root)
     {
-      cpy->e_root = cpy->a_edges[ori->e_root->num];
-      cpy->n_root = cpy->a_nodes[ori->n_root->num];
-      Add_Root(cpy->e_root,cpy);
-    }
-  else
-    {
-      cpy->a_edges[2*cpy->n_otu-3]->l->v           = ori->a_edges[2*cpy->n_otu-3]->l->v;
-      cpy->a_edges[2*cpy->n_otu-3]->l_old->v       = ori->a_edges[2*cpy->n_otu-3]->l_old->v;
-      cpy->a_edges[2*cpy->n_otu-3]->l_var->v       = ori->a_edges[2*cpy->n_otu-3]->l_var->v;
-      cpy->a_edges[2*cpy->n_otu-3]->l_var_old->v   = ori->a_edges[2*cpy->n_otu-3]->l_var_old->v;
-      cpy->a_edges[2*cpy->n_otu-2]->l->v           = ori->a_edges[2*cpy->n_otu-2]->l->v;
-      cpy->a_edges[2*cpy->n_otu-2]->l_old->v       = ori->a_edges[2*cpy->n_otu-2]->l_old->v;
-      cpy->a_edges[2*cpy->n_otu-2]->l_var->v       = ori->a_edges[2*cpy->n_otu-2]->l_var->v;
-      cpy->a_edges[2*cpy->n_otu-2]->l_var_old->v   = ori->a_edges[2*cpy->n_otu-2]->l_var_old->v;
+      cpy->e_root     = cpy->a_edges[ori->e_root->num];
+      cpy->n_root     = cpy->a_nodes[ori->n_root->num];
+      cpy->n_root_pos = ori->n_root_pos;
+      
+      cpy->n_root->b[1] = cpy->a_edges[ori->n_root->b[1]->num];
+      cpy->n_root->b[2] = cpy->a_edges[ori->n_root->b[2]->num];
     }
 
   cpy->num_curr_branch_available = 0;
   cpy->t_beg                     = ori->t_beg;
   cpy->verbose                   = ori->verbose;
-
   
 #ifdef BEAGLE
   cpy->b_inst = ori->b_inst;
@@ -6076,51 +6078,6 @@ void Make_Symmetric(phydbl **F, int size)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Round_Down_Freq_Patt(phydbl **F, t_tree *tree)
-{
-  int i,j;
-
-  for(i=0;i<tree->mod->ns;i++)
-    {
-      for(j=0;j<tree->mod->ns;j++)
-    {
-      (*F)[tree->mod->ns*i+j] = RINT((*F)[tree->mod->ns*i+j]);
-    }
-    }
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-
-phydbl Get_Sum_Of_Cells(phydbl *F, t_tree *tree)
-{
-  int i,j;
-  phydbl sum = .0;
-
-  for(i=0;i<tree->mod->ns;i++)
-    for(j=0;j<tree->mod->ns;j++)
-    sum += F[tree->mod->ns*i+j];
-
-  return sum;
-}
-
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-void Divide_Cells(phydbl **F, phydbl div, t_tree *tree)
-{
-  int i,j;
-
-  for(i=0;i<tree->mod->ns;i++)
-    for(j=0;j<tree->mod->ns;j++)
-    (*F)[tree->mod->ns*i+j] /= div;
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
 void Divide_Mat_By_Vect(phydbl **F, phydbl *vect, int size)
 {
   int i,j;
@@ -6132,18 +6089,6 @@ void Divide_Mat_By_Vect(phydbl **F, phydbl *vect, int size)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Multiply_Mat_By_Vect(phydbl **F, phydbl *vect, int size)
-{
-  int i,j;
-  for(i=0;i<size;i++)
-    for(j=0;j<size;j++)
-    (*F)[size*i+j] = (*F)[size*i+j] * vect[j];
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-
 void Found_In_Subtree(t_node *a, t_node *d, t_node *target, int *match, t_tree *tree)
 {
   if(d->tax) return;
@@ -6152,12 +6097,16 @@ void Found_In_Subtree(t_node *a, t_node *d, t_node *target, int *match, t_tree *
       int i;
       if(d == target) *match =  1;
       for(i=0;i<3;i++)
-    {
-      if(d->v[i] != a)
-        Found_In_Subtree(d,d->v[i],target,match,tree);
-    }
+        {
+          if(d->v[i] != a)
+            Found_In_Subtree(d,d->v[i],target,match,tree);
+        }
     }
 }
+
+
+
+
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -7347,6 +7296,10 @@ void Add_Root(t_edge *target, t_tree *tree)
 
       tree->n_root->b[2]->l->v = tree->e_root->l->v * tree->n_root_pos;
       tree->n_root->b[1]->l->v = tree->e_root->l->v * (1. - tree->n_root_pos);
+      PhyML_Printf("\n. ROOTPOS: %f L: %f L2: %f",
+                   tree->n_root_pos,
+                   tree->e_root->l->v,
+                   tree->n_root->b[2]->l->v);
     }
   else
     {
@@ -8072,126 +8025,6 @@ void Print_Diversity_Header(FILE *fp, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-/* Estimation of density using kernel smoothing.
-- where : point where I want to estimate the density,
-- x : data vector,
-- sample_size :  number of data points in x
-*/
-phydbl Univariate_Kernel_Density_Estimate(phydbl where, phydbl *x, int sample_size)
-{
-  phydbl sd,h;
-  phydbl density,sqrt2pi,cons;
-  int i;
-
-  sqrt2pi = 2.506628;
-
-  sd = SQRT(Var(x,sample_size));
-  h = 1.06 * sd * POW(sample_size,-1./5.); /* Quick and dirty way to set the bandwidth */
-
-  cons = (1./sample_size) * (1./h) * (1./sqrt2pi);
-
-  density = .0;
-  for(i=0;i<sample_size;i++) density += exp(-0.5 * POW((x[i] - where)/h,2));
-  density *= cons;
-
-  return density;
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-
-/* Estimation of a multivariate density using kernel smoothing.
-
-- where : vector where I want to estimate the density,
-- x : data matrix, i.e., sample of vectors,
-- sample_size : number of vectors,
-- vect_size : vector length.
-
-See "Multivariate Density Estimation" by David Scott. pp 150.
-*/
-phydbl Multivariate_Kernel_Density_Estimate(phydbl *where, phydbl **x, int sample_size, int vect_size)
-{
-  phydbl sd,*h,cons,density,tmp;
-  phydbl _2pi;
-  int i,j;
-
-  h = (phydbl *)mCalloc(vect_size,sizeof(phydbl));
-
-  _2pi = 6.283185;
-
-  for(i=0;i<vect_size;i++)
-    {
-      sd = SQRT(Var(x[i],sample_size));
-/*       h[i] = POW(4./(vect_size+2.),1./(vect_size+4)) * sd * POW(sample_size,-1./(vect_size+4)); */
-      h[i] = sd * POW(sample_size,-1./(vect_size+4));
-/*       PhyML_Printf("\n. sd = %f, h[i] = %f",sd,h[i]); */
-    }
-
-  cons = sample_size;
-  for(i=0;i<vect_size;i++) cons *= h[i];
-  cons *= POW(_2pi,vect_size/2.);
-  cons = 1./cons;
-
-  density = .0;
-  for(i=0;i<sample_size;i++)
-    {
-      tmp = 1.0;
-      for(j=0;j<vect_size;j++)
-    {
-      tmp *= exp(-0.5 * POW((x[j][i] - where[j])/h[j],2));
-    }
-      density += tmp;
-    }
-
-  density *= cons;
-
-  Free(h);
-
-  return density;
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-
-phydbl Var(phydbl *x, int n)
-{
-  phydbl mean, sum2;
-  int i;
-
-  mean = Mean(x,n);
-
-  sum2 = .0;
-  for(i=0;i<n;i++) sum2 += x[i] * x[i];
-
-  return (1./n) * (sum2 - n * POW(mean,2));
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-
-phydbl Mean(phydbl *x, int n)
-{
-  int i;
-  phydbl sum;
-
-  sum = .0;
-
-  for(i=0;i<n;i++) sum += x[i];
-
-  return sum / n;
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
 void Best_Of_NNI_And_SPR(t_tree *tree)
 {
   PhyML_Fprintf(stderr,"Best of NNI and SPR option is deprecated. PhyML nows only relies on SPR moves");
@@ -8372,60 +8205,6 @@ int Polint(phydbl *xa, phydbl *ya, int n, phydbl x, phydbl *y, phydbl *dy)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
-
-void JF(t_tree *tree)
-{
-  //printing loglk for each site, to compute SH-like tests */
-  phydbl sum=0.0;
-  PhyML_Printf("\n\nSITES LKS:\n");
-  int n_patterns = (int)FLOOR(tree->n_pattern);
-  int site=0;
-  for(site=0;site<n_patterns;site++) {
-    int wei=0;
-    For(wei,tree->data->wght[site]) {
-      PhyML_Printf("%f\n",tree->c_lnL_sorted[site]);
-      sum+=tree->c_lnL_sorted[site];
-    }
-  }
-
-  PhyML_Printf("\n\nsum=%f\n\n",sum);
-  int i=0;
-  For(i,2*tree->n_otu-3)
-    {
-      if((!tree->a_edges[i]->left->tax) && (!tree->a_edges[i]->rght->tax))
-        {
-          PhyML_Printf("%3d %f %f %f\n",
-                       tree->a_edges[i]->bip_score,tree->a_edges[i]->alrt_statistic, tree->a_edges[i]->ratio_test,tree->a_edges[i]->l->v);
-        }
-    }
-
-
-/*   //printing loglk for each site, to compute SH-like tests */
-/*   phydbl sum=0.0; */
-/*   PhyML_Printf("\n\nSITES LKS:\n"); */
-/*   int n_patterns = (int)FLOOR(tree->n_pattern); */
-/*   int site=0; */
-/*   for(site=0;site<n_patterns;site++) { */
-/*     int wei=0; */
-/*     For(wei,tree->data->wght[site]) { */
-/*       PhyML_Printf("%f\n",tree->c_lnL_sorted[site] / tree->data->wght[site]); */
-/*       sum+=tree->c_lnL_sorted[site] / tree->data->wght[site]; */
-/*     } */
-/*   } */
-
-/*   PhyML_Printf("\n\nsum=%f\n\n",sum); */
-
-/*   int i=0; */
-/*   For(i,2*tree->n_otu-3) */
-/*     { */
-/*       if((!tree->a_edges[i]->left->tax) && (!tree->a_edges[i]->rght->tax)) */
-/* 	{ */
-/* 	  PhyML_Printf("%3d %f %f %f\n", */
-/* 		 tree->a_edges[i]->bip_score,tree->a_edges[i]->alrt_statistic, tree->a_edges[i]->ratio_test,tree->a_edges[i]->l->v); */
-/* 	} */
-/*     } */
-}
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -8762,7 +8541,7 @@ void Get_Node_Ranks_From_Times(t_tree *tree)
 
   for(i=0;i<2*tree->n_otu-2;++i) tree->a_nodes[rk[i]]->rk_next = tree->a_nodes[rk[i+1]];
   for(i=0;i<2*tree->n_otu-2;++i) tree->a_nodes[rk[i+1]]->rk_prev = tree->a_nodes[rk[i]];
-  
+
   Free(rk);
 }
 
@@ -8995,45 +8774,6 @@ int Edge_Num_To_Node_Num(int edge_num, t_tree *tree)
   node_num = (b->left == b->rght->anc)?(b->rght->num):(b->left->num);
 
   return node_num;
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-void Time_To_Bl(t_tree *tree)
-{
-  Time_To_Bl_Pre(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
-  Time_To_Bl_Pre(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
-  tree->n_root->b[1]->l->v = tree->rates->nd_t[tree->n_root->v[1]->num] - tree->rates->nd_t[tree->n_root->num];
-  tree->n_root->b[2]->l->v = tree->rates->nd_t[tree->n_root->v[2]->num] - tree->rates->nd_t[tree->n_root->num];
-  tree->e_root->l->v = tree->n_root->b[1]->l->v + tree->n_root->b[2]->l->v;
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-void Time_To_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
-{
-  int i;
-
-  b->l->v = tree->rates->nd_t[d->num] - tree->rates->nd_t[a->num];
-  
-  if(d->tax) return;
-  else
-    {
-      for(i=0;i<3;i++)
-        if((d->v[i] != a) && (d->b[i] != tree->e_root))
-          Time_To_Bl_Pre(d,d->v[i],d->b[i],tree);
-    }
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-// Assume an ultrametric tree.
-void Bl_To_Time(t_tree *tree)
-{
-  Least_Square_Node_Ages(tree);
 }
 
 //////////////////////////////////////////////////////////////
@@ -10645,197 +10385,6 @@ phydbl *Dist_Btw_Tips(t_tree *tree)
     }
 
   return(dist);
-
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-void Random_SPRs_On_Rooted_Tree(t_tree *tree)
-{
-  int i,j;
-  t_node *a, *d, *v1, *v2,*target_nd;
-  phydbl u;
-  phydbl lim_sup,lim_inf;
-  t_edge *residual,*nouse;
-  phydbl new_t;
-  int err;
-  int ok_dir,dir12,dir21;
-
-  /* printf("\n. >>>>>>>>>>>>>>.\n"); */
-  /* Print_Node(tree->n_root,tree->n_root->v[1],tree); */
-  /* Print_Node(tree->n_root,tree->n_root->v[2],tree); */
-  /* printf("\n. >>>>>>>>>>>>>>."); */
-  /* GEO_Update_Occup(tree->geo,tree); */
-  /* GEO_Lk(tree->geo,tree); */
-  /* PhyML_Printf("\n>> Init loglk: %f",tree->geo->c_lnL); */
-
-
-  target_nd = NULL;
-  residual = NULL;
-  nouse = NULL;
-  a = d = v1 = v2 = NULL;
-  for(i=0;i<tree->n_otu;i++) // We will perform tree->n_otu random SPRs
-    {
-      a = tree->a_nodes[Rand_Int(tree->n_otu,2*tree->n_otu-3)];
-
-      if(a == tree->n_root)
-        {
-          PhyML_Printf("\n. Err. in file %s at line %d (function '%s') \n",__FILE__,__LINE__,__FUNCTION__);
-          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-        }
-      /* if(a == tree->n_root->v[1] || a == tree->n_root->v[2]) continue; */
-
-      v1 = v2 = NULL;
-      for(j=0;j<3;j++)
-        {
-          if(a->v[j] != a->anc && a->b[j] != tree->e_root)
-            {
-              if(!v1) v1 = a->v[j];
-              else    v2 = a->v[j];
-            }
-        }
-
-      u = Uni();
-      if(u < .5) d = v1;
-      else       d = v2;
-
-
-      for(j=0;j<3;j++) if(a->v[j] == d && a->b[j] == tree->e_root) break;
-      if(j != 3) continue;
-
-      lim_sup = tree->rates->nd_t[d->num];
-      lim_inf = tree->rates->nd_t[tree->n_root->num];
-
-      phydbl scale = Uni()*(50.-5.)+5.;
-      scale = 50;
-      err = NO;
-      new_t = Rnorm_Trunc(tree->rates->nd_t[a->num],
-                          FABS(tree->rates->nd_t[tree->n_root->num]/scale),
-                          lim_inf,
-                          lim_sup,
-                          &err);
-
-
-      if(err == YES) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-
-      if(new_t < tree->rates->nd_t[a->num])
-        {
-          target_nd = a;
-          do
-            {
-              if(tree->rates->nd_t[target_nd->anc->num] < new_t)
-                {
-                  if(target_nd == a)
-                    {
-                      if(v1 == d) target_nd = v2;
-                      else        target_nd = v1;
-                    }
-                  break;
-                }
-              else
-                {
-                  target_nd = target_nd->anc;
-                }
-            }
-          while(1);
-        }
-      else
-        {
-          if(v1 == d) target_nd = v2;
-          else        target_nd = v1;
-
-          do
-            {
-              if(tree->rates->nd_t[target_nd->num] > new_t)
-                {
-                  break;
-                }
-              else
-                {
-                  v1 = v2 = NULL;
-                  for(j=0;j<3;j++)
-                    {
-                      if(target_nd->v[j] != target_nd->anc)
-                        {
-                          if(!v1) v1 = target_nd->v[j];
-                          else    v2 = target_nd->v[j];
-                        }
-                    }
-                  u = Uni();
-                  if(u < 0.5) target_nd = v1;
-                  else        target_nd = v2;
-                }
-            }while(1);
-        }
-
-      ok_dir = -1;
-      for(j=0;j<3;j++) if(target_nd->v[j] == target_nd->anc || target_nd->b[j] == tree->e_root) ok_dir = j;
-
-      dir12 = -1;
-      for(j=0;j<3;j++) if(tree->n_root->v[1]->v[j] == tree->n_root->v[2]) dir12 = j;
-
-      if(dir12 == -1) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);        
-
-      dir21 = -1;
-      for(j=0;j<3;j++) if(tree->n_root->v[2]->v[j] == tree->n_root->v[1]) dir21 = j;
-
-      if(dir21 == -1) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-
-
-
-      /* a = tree->a_nodes[101]; */
-      /* d = tree->a_nodes[105]; */
-      /* target_nd = tree->a_nodes[105]; */
-      /* printf("\n pull %d %d target %d",a->num,d->num,target_nd->num); */
-      /* printf("\n. %d %d %d",tree->n_root->num,tree->n_root->v[1]->num,tree->n_root->v[2]->num); */
-      /* printf("\n. %d %d",tree->e_root->num,target_nd->b[ok_dir]->num); */
-
-      Prune_Subtree(a,d,&nouse,&residual,tree);
-
-      Graft_Subtree(target_nd->b[ok_dir],a,NULL,residual,NULL,tree);
-
-      tree->rates->nd_t[a->num] = new_t;
-
-      if(target_nd == tree->n_root->v[1])
-        {
-          tree->n_root->v[1] = a;
-          tree->e_root = tree->n_root->v[2]->b[dir21];
-        }
-
-      if(target_nd == tree->n_root->v[2])
-        {
-          tree->n_root->v[2] = a;
-          tree->e_root = tree->n_root->v[1]->b[dir12];
-        }
-
-      if(tree->n_root->v[1] == NULL)
-        {
-          tree->n_root->v[1] = tree->n_root->v[2]->v[dir21];
-          tree->e_root = tree->n_root->v[2]->b[dir21];
-        }
-
-      if(tree->n_root->v[2] == NULL)
-        {
-          tree->n_root->v[2] = tree->n_root->v[1]->v[dir12];
-          tree->e_root = tree->n_root->v[1]->b[dir12];
-        }
-
-      Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
-      Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
-      tree->n_root->anc = NULL;
-
-      /* Print_Node(tree->n_root,tree->n_root->v[1],tree); */
-      /* Print_Node(tree->n_root,tree->n_root->v[2],tree); */
-
-      Time_To_Bl(tree);
-
-      /* GEO_Update_Occup(tree->geo,tree); */
-      /* GEO_Lk(tree->geo,tree); */
-      /* PhyML_Printf("\nxx Init loglk: %f",tree->geo->c_lnL); */
-
-    }
-
 
 }
 

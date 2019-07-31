@@ -2413,9 +2413,9 @@ void XML_Read_Calibration(xml_node *xroot, t_tree *tree)
                             }
                           clade->id = (char *)mCalloc(strlen(clade_id)+1,sizeof(char));
                           strcpy(clade->id,clade_id);
-                          
-                          nd_num = Find_Clade(clade->tax_list,clade_size,tree);
 
+                          nd_num = Find_Clade(clade->tax_list,clade_size,tree);
+                          
                           clade->target_nd = tree->a_nodes[nd_num];      
                           clade->tip_list = Make_Target_Tip(clade->n_tax);
                           Init_Target_Tip(clade,tree);
