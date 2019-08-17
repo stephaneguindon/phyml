@@ -337,8 +337,11 @@ void DATE_Assign_Primary_Calibration(t_tree *tree)
   for(i=0;i<tree->rates->n_cal;++i)
     {
       cal = tree->rates->a_cal[i];
-      clade = cal->clade_list[cal->current_clade_idx];
-      clade->target_nd = NULL;
+      if(cal->clade_list != NULL)
+        {
+          clade = cal->clade_list[cal->current_clade_idx];
+          clade->target_nd = NULL;
+        }
     }
   
   for(i=0;i<2*tree->n_otu-1;++i) 
@@ -351,26 +354,30 @@ void DATE_Assign_Primary_Calibration(t_tree *tree)
   for(i=0;i<tree->rates->n_cal;++i)
     {
       cal = tree->rates->a_cal[i];
-      clade = cal->clade_list[cal->current_clade_idx];
 
-      node_num = Find_Clade(clade->tax_list,
-                            clade->n_tax,
-                            tree);
-
-      clade->target_nd = tree->a_nodes[node_num];
-      
-      idx = tree->a_nodes[node_num]->n_cal;
-      tree->a_nodes[node_num]->cal[idx] = tree->rates->a_cal[i];
-      tree->a_nodes[node_num]->n_cal++;
-      
-
-      if(tree->a_nodes[node_num]->n_cal == MAX_N_CAL)
+      if(cal->clade_list != NULL)
         {
-          PhyML_Fprintf(stderr,"\n. A node cannot have more than %d calibration",MAX_N_CAL); 
-          PhyML_Fprintf(stderr,"\n. constraints attached to it. Feel free to increase the"); 
-          PhyML_Fprintf(stderr,"\n. value of the variable MAX_N_CAL in utilities.h if");
-          PhyML_Fprintf(stderr,"\n. necessary.");
-          Exit("\n");
+          clade = cal->clade_list[cal->current_clade_idx];
+
+          node_num = Find_Clade(clade->tax_list,
+                                clade->n_tax,
+                                tree);
+
+          clade->target_nd = tree->a_nodes[node_num];
+      
+          idx = tree->a_nodes[node_num]->n_cal;
+          tree->a_nodes[node_num]->cal[idx] = tree->rates->a_cal[i];
+          tree->a_nodes[node_num]->n_cal++;
+      
+
+          if(tree->a_nodes[node_num]->n_cal == MAX_N_CAL)
+            {
+              PhyML_Fprintf(stderr,"\n. A node cannot have more than %d calibration",MAX_N_CAL); 
+              PhyML_Fprintf(stderr,"\n. constraints attached to it. Feel free to increase the"); 
+              PhyML_Fprintf(stderr,"\n. value of the variable MAX_N_CAL in utilities.h if");
+              PhyML_Fprintf(stderr,"\n. necessary.");
+              Exit("\n");
+            }
         }
     }
 }

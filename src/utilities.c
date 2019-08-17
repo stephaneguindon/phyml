@@ -8841,7 +8841,7 @@ int Find_Clade(char **tax_name_list, int list_size, t_tree *tree)
         {
           PhyML_Printf("\n. Problem with the calibration file.");
           PhyML_Printf("\n. Could not find taxon with name '%s' in the sequence or tree file.",tax_name_list[i]);
-          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+          /* Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
         }
     }
 

@@ -1942,7 +1942,8 @@ typedef struct __Migrep_Model{
   int                    safe_phyrex;
   phydbl             soft_bound_area;
 
-  struct __Geo_Coord            *lim; // max longitude and lattitude (the min are both set to zero)                       
+  struct __Geo_Coord            *lim_up; // max longitude and lattitude                        
+  struct __Geo_Coord            *lim_do; // min longitude and lattitude                        
 
   struct __SampArea       *samp_area;
 }t_phyrex_mod;

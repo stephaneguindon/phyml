@@ -16,6 +16,14 @@ the GNU public licence.  See http://www.opensource.org for details.
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+void Free_Clade(t_clad *this)
+{
+  Free(this);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 void Free_All_Nodes_Light(t_tree *mixt_tree)
 {
   int i;
@@ -1449,7 +1457,8 @@ void Free_Poly(t_poly *p)
 void Free_Mmod(t_phyrex_mod *mmod)
 {
   if(mmod == NULL) return;
-  Free_Geo_Coord(mmod->lim);
+  Free_Geo_Coord(mmod->lim_up);
+  Free_Geo_Coord(mmod->lim_do);
   Free(mmod);
 }
 

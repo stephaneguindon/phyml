@@ -3489,7 +3489,7 @@ void PHYREX_Init_Disk_Event(t_dsk *t, int n_dim, t_phyrex_mod *mmod)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void PHYREX_Init_Migrep_Mod(t_phyrex_mod *t, int n_dim, phydbl max_lat, phydbl max_lon)
+void PHYREX_Init_Migrep_Mod(t_phyrex_mod *t, int n_dim, phydbl min_lat, phydbl min_lon, phydbl max_lat, phydbl max_lon)
 {
   assert(n_dim == 2);
 
@@ -3497,8 +3497,11 @@ void PHYREX_Init_Migrep_Mod(t_phyrex_mod *t, int n_dim, phydbl max_lat, phydbl m
   t->n_dim            = n_dim;
   t->safe_phyrex      = NO;
   
-  t->lim->lonlat[0]   = max_lat;
-  t->lim->lonlat[1]   = max_lon;
+  t->lim_up->lonlat[0]   = max_lat;
+  t->lim_up->lonlat[1]   = max_lon;
+
+  t->lim_do->lonlat[0]   = min_lat;
+  t->lim_do->lonlat[1]   = min_lon;
 
   t->lbda             = 1.E-2;
   t->min_lbda         = 1.E-6;
@@ -3511,8 +3514,8 @@ void PHYREX_Init_Migrep_Mod(t_phyrex_mod *t, int n_dim, phydbl max_lat, phydbl m
   t->prior_param_mu   = 1.000;
 
   t->min_rad           = 0.0;
-  t->max_rad           = 0.25*(max_lat+max_lon);
-  t->rad               = .10*(max_lat+max_lon);
+  t->max_rad           = 10.*((max_lat-min_lat)+(max_lon-min_lon));
+  t->rad               = 0.10*((max_lat-min_lat)+(max_lon-min_lon));
   t->prior_param_rad   = 0.5;
   t->update_rad        = NO;
 

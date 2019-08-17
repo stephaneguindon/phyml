@@ -2350,10 +2350,17 @@ void XML_Read_Calibration(xml_node *xroot, t_tree *tree)
           cal->lower = -up;
           cal->upper = -low;
           cal->is_primary = YES;
-          
+
           tree->rates->a_cal[tree->rates->n_cal] = cal;
           tree->rates->n_cal++;
-                          
+          
+          if(tree->rates->n_cal > 10 * tree->n_otu)
+            {
+              PhyML_Fprintf(stderr,"\n. There are too many clades defined that are not found in the tree..."); 
+              PhyML_Fprintf(stderr,"\n. Please remove some of them.");
+              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+            }
+          
           xnd_dum = xnd_cal->child;
           do
             {
@@ -2390,15 +2397,6 @@ void XML_Read_Calibration(xml_node *xroot, t_tree *tree)
                           clade_size = XML_Number_Of_Taxa_In_Clade(xnd_clade->child);
 
                           clade = Make_Clade();
-
-                          if(cal->clade_list_size == 0) cal->clade_list = (t_clad **)mCalloc(1,sizeof(t_clad *));
-                          else cal->clade_list = (t_clad **)mRealloc(cal->clade_list,cal->clade_list_size+1,sizeof(t_clad *));
-                          if(cal->clade_list_size == 0) cal->alpha_proba_list = (phydbl *)mCalloc(1,sizeof(phydbl));
-                          else cal->alpha_proba_list = (phydbl *)mRealloc(cal->alpha_proba_list,cal->clade_list_size+1,sizeof(phydbl));
-                          
-                          cal->clade_list[cal->clade_list_size] = clade;
-                          cal->alpha_proba_list[cal->clade_list_size] = alpha_proba_dbl;
-                          cal->clade_list_size++;                          
                             
                           clade->n_tax = clade_size;
                           clade->tax_list = (char **)mCalloc(clade_size,sizeof(char *));
@@ -2416,9 +2414,25 @@ void XML_Read_Calibration(xml_node *xroot, t_tree *tree)
 
                           nd_num = Find_Clade(clade->tax_list,clade_size,tree);
                           
-                          clade->target_nd = tree->a_nodes[nd_num];      
-                          clade->tip_list = Make_Target_Tip(clade->n_tax);
-                          Init_Target_Tip(clade,tree);
+                          if(nd_num > -1)
+                            {
+                              clade->target_nd = tree->a_nodes[nd_num];      
+                              clade->tip_list = Make_Target_Tip(clade->n_tax);
+                              Init_Target_Tip(clade,tree);
+
+                              if(cal->clade_list_size == 0) cal->clade_list = (t_clad **)mCalloc(1,sizeof(t_clad *));
+                              else cal->clade_list = (t_clad **)mRealloc(cal->clade_list,cal->clade_list_size+1,sizeof(t_clad *));
+                              if(cal->clade_list_size == 0) cal->alpha_proba_list = (phydbl *)mCalloc(1,sizeof(phydbl));
+                              else cal->alpha_proba_list = (phydbl *)mRealloc(cal->alpha_proba_list,cal->clade_list_size+1,sizeof(phydbl));
+                              
+                              cal->clade_list[cal->clade_list_size] = clade;
+                              cal->alpha_proba_list[cal->clade_list_size] = alpha_proba_dbl;
+                              cal->clade_list_size++;
+                            }
+                          else
+                            {
+                              Free_Clade(clade);
+                            }
                           
                           Free(xclade);
                         }

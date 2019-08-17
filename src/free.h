@@ -96,4 +96,5 @@ void Free_TBE_Matrices(int n_otu,  short unsigned*** i_matrix, short unsigned***
 		       short unsigned**  min_dist_edge, int** cluster_sizes);
 void Free_Extra_Edge_Lk(t_tree *tree);
 void Free_Edge_Length(t_edge *b);
+void Free_Clade(t_clad *this);
 #endif

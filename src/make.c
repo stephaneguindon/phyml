@@ -1336,7 +1336,7 @@ t_rate *RATES_Make_Rate_Struct(int n_otu)
       rates->t_prior_max_ori      = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
       rates->times_partial_proba  = (phydbl *)mCalloc(n_otu*n_otu,sizeof(phydbl));
       rates->numb_calib_chosen    = (int *)mCalloc(n_otu*n_otu,sizeof(phydbl));
-      rates->a_cal                = (t_cal **)mCalloc(n_otu,sizeof(t_cal *));
+      rates->a_cal                = (t_cal **)mCalloc(10*n_otu,sizeof(t_cal *));
       rates->model_name           = (char *)mCalloc(T_MAX_NAME,sizeof(char));
     }
 
@@ -1626,7 +1626,8 @@ t_phyrex_mod *PHYREX_Make_Migrep_Model(int dim)
 {
   t_phyrex_mod *t;
   t = (t_phyrex_mod *)mCalloc(1,sizeof(t_phyrex_mod));
-  t->lim = GEO_Make_Geo_Coord(dim);
+  t->lim_up = GEO_Make_Geo_Coord(dim);
+  t->lim_do = GEO_Make_Geo_Coord(dim);
   return(t);
 }
 

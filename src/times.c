@@ -1691,8 +1691,11 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
   for(i=0;i<mixt_tree->n_otu;++i)
     {
       cal = cal_list;
+      clade = NULL;
       while(cal != NULL)
         {
+          while(cal && cal->clade_list == NULL) cal = cal->next;
+          if(cal == NULL) break;
           clade = cal->clade_list[cal->current_clade_idx];
           for(j=0;j<clade->n_tax;++j) if(clade->tip_list[j] == mixt_tree->a_nodes[i]) break;
           if(j != clade->n_tax) break;
@@ -1711,6 +1714,8 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       cal = cal_list;
       while(cal != NULL)
         {
+          while(cal && cal->clade_list == NULL) cal = cal->next;
+          if(cal == NULL) break;
           clade = cal->clade_list[cal->current_clade_idx];
           for(j=0;j<clade->n_tax;++j) if(clade->tip_list[j] == mixt_tree->a_nodes[i]) break;
           if(j != clade->n_tax) break;
@@ -1822,31 +1827,24 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
           // Add all the taxa that are in the calibration set of cal
           // This should be done here so that the last node in nd_list
           // belongs to the taxa in the calibration
-          clade = cal->clade_list[cal->current_clade_idx];
-          for(j=0;j<clade->n_tax;j++)
+
+          if(cal->clade_list != NULL)
             {
-              nd_list[list_size] = tips[clade->tip_list[j]->num];
-              list_size++;
-              assert(list_size <= mixt_tree->n_otu);
+              clade = cal->clade_list[cal->current_clade_idx];
+              for(j=0;j<clade->n_tax;j++)
+                {
+                  nd_list[list_size] = tips[clade->tip_list[j]->num];
+                  list_size++;
+                  assert(list_size <= mixt_tree->n_otu);
+                }
+
+              TIMES_Connect_List_Of_Taxa(nd_list, 
+                                         list_size,
+                                         cal_times[cal_ordering[i]], 
+                                         times, 
+                                         &nd_num,
+                                         mixt_tree);
             }
-                    
-          /* PhyML_Printf("\n"); */
-          /* PhyML_Printf("\n. Time: %f [%f %f]", */
-          /*              cal_times[cal_ordering[i]], */
-          /*              cal->lower, */
-          /*              cal->upper); */
-          
-          /* for(int k=0;k<list_size;k++) PhyML_Printf("\n@ %s",nd_list[k]->name); */
-          /* PhyML_Printf("\n. list_size: %d",list_size); */
-          /* PhyML_Printf("\n"); */
-
-          TIMES_Connect_List_Of_Taxa(nd_list, 
-                                     list_size,
-                                     cal_times[cal_ordering[i]], 
-                                     times, 
-                                     &nd_num,
-                                     mixt_tree);
-
         }
       
       Free(cal_times);
@@ -1870,6 +1868,8 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       cal = cal_list;
       do
         {
+          while(cal && cal->clade_list == NULL) cal = cal->next;
+          if(cal == NULL) break;
           clade = cal->clade_list[cal->current_clade_idx];
           nd_list[list_size] = clade->tip_list[0];
           list_size++;
@@ -1916,13 +1916,17 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
         {
           int idx;
           cal   = mixt_tree->rates->a_cal[i];
-          clade = cal->clade_list[cal->current_clade_idx];
-          idx = Find_Clade(clade->tax_list,clade->n_tax,mixt_tree);
-          PhyML_Printf("\n. Calibration %3d | Node number to which calibration applies is [%d]",i,idx);
-          PhyML_Printf("\n. Calibration %3d | Lower bound set to: %15f time units.",i,mixt_tree->rates->a_cal[i]->lower);
-          PhyML_Printf("\n. Calibration %3d | Upper bound set to: %15f time units.",i,mixt_tree->rates->a_cal[i]->upper);
-          PhyML_Printf("\n. Calibration %3d | t_prior_min: %G t_prior_max: %G",i,mixt_tree->rates->t_prior_min[idx],mixt_tree->rates->t_prior_max[idx]);
-          PhyML_Printf("\n. Calibration %3d | Time set to %G",i,mixt_tree->rates->nd_t[idx]);
+
+          if(cal->clade_list != NULL)
+            {
+              clade = cal->clade_list[cal->current_clade_idx];
+              idx = Find_Clade(clade->tax_list,clade->n_tax,mixt_tree);
+              PhyML_Printf("\n. Calibration %3d | Node number to which calibration applies is [%d]",i,idx);
+              PhyML_Printf("\n. Calibration %3d | Lower bound set to: %15f time units.",i,mixt_tree->rates->a_cal[i]->lower);
+              PhyML_Printf("\n. Calibration %3d | Upper bound set to: %15f time units.",i,mixt_tree->rates->a_cal[i]->upper);
+              PhyML_Printf("\n. Calibration %3d | t_prior_min: %G t_prior_max: %G",i,mixt_tree->rates->t_prior_min[idx],mixt_tree->rates->t_prior_max[idx]);
+              PhyML_Printf("\n. Calibration %3d | Time set to %G",i,mixt_tree->rates->nd_t[idx]);
+            }
         }
       
     if(!DATE_Check_Calibration_Constraints(mixt_tree))
@@ -2097,11 +2101,14 @@ int TIMES_Calibrations_Apply_To_Tips_Only(t_tree *tree)
 
   cal = tree->rates->a_cal[0];
   assert(cal);
+  clade = NULL;
   
   do
     {
+      while(cal && cal->clade_list == NULL) cal = cal->next;
+      if(cal == NULL) break;
       clade = cal->clade_list[cal->current_clade_idx];
-      if(clade->n_tax > 1) break;
+      if(clade && clade->n_tax > 1) break;
       cal = cal->next;
     }
   while(cal);
