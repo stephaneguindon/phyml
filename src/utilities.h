@@ -1713,6 +1713,7 @@ typedef struct __Tmcmc {
   int num_move_phyrex_disk_given_ldsk;
   int num_move_phyrex_add_remove_jump;
   int num_move_clade_change;
+  int num_move_phyrex_ldsk_tip_to_root;
 
   int nd_t_digits;
   int *monitor;

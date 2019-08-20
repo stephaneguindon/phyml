@@ -4955,7 +4955,11 @@ phydbl Euclidean_Dist(t_geo_coord *x, t_geo_coord *y)
   int i;
   phydbl dist;
   
-  if(x->dim != y->dim) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
+  if(x->dim != y->dim)
+    {
+      PhyML_Printf("\n. x->dim: %d y->dim: %d",x->dim,y->dim);
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
+    }
   
   dist = 0.0;
   for(i=0;i<x->dim;i++) dist += pow(x->lonlat[i]-y->lonlat[i],2);

@@ -129,5 +129,7 @@ phydbl PHYREX_Time_Of_Next_Sampled_Disk(t_dsk *disk, t_tree *tree);
 phydbl PHYREX_Lk_Time_Component(t_tree *tree);
 phydbl PHYREX_Lk_Space_Component(t_tree *tree);
 t_ldsk *PHYREX_Find_Ldsk_From_Id(char *id, t_ldsk *root);
+t_geo_coord *PHYREX_Mean_Next_Loc(t_ldsk *ldsk, t_tree *tree);
+phydbl PHYREX_Realized_Siqsq(t_tree *tree);
 
 #endif
