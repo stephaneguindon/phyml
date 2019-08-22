@@ -20,7 +20,7 @@ the GNU public licence. See http://www.opensource.org for details.
 void PHYREX_XML(char *xml_filename);
 int PHYREX_Main(int argc, char **argv);
 int PHYREX_Main_Simulate(int argc, char **argv);
-t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl width, phydbl height, int r_seed);
+t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, phydbl rad, phydbl mu, int r_seed);
 phydbl PHYREX_Lk(t_tree *tree);
 phydbl PHYREX_Wrap_Lk(t_edge *b, t_tree *tree, supert_tree *stree);
 phydbl *PHYREX_MCMC(t_tree *tree);

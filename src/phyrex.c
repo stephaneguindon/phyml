@@ -21,10 +21,10 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int PHYREX_Main(int argc, char *argv[])
 {
-  /* PHYREX_Main_Simulate(argc,argv); */
-  option *io;
-  io = Get_Input(argc,argv);
-  Free(io);
+  PHYREX_Main_Simulate(argc,argv);
+  /* option *io; */
+  /* io = Get_Input(argc,argv); */
+  /* Free(io); */
   return(0);
 }
 
@@ -421,35 +421,28 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   char *s;
   t_dsk *disk;
   int n_sites,n_otus;
-
+  phydbl width,height;
+  phydbl lbda, rad,mu;
+  
   s = (char *)mCalloc(T_MAX_NAME,sizeof(char));
 
   pid     = getpid();
   seed    = pid;
   n_otus  = (int)atoi(argv[1]);
-  n_sites = (int)atoi(argv[2]);
+  /* n_sites = (int)atoi(argv[2]); */
+  n_sites = 1;
+  width   = (phydbl)atof(argv[2]); 
+  height  = (phydbl)atof(argv[3]); 
+  lbda    = (phydbl)atof(argv[4]);
+  rad     = (phydbl)atof(argv[5]);
+  mu      = (phydbl)atof(argv[6]);
 
+  
   printf("\n. seed: %d",seed);
   srand(seed);
   
-  tree = PHYREX_Simulate(n_otus,n_sites,10.,10.,seed);
+  tree = PHYREX_Simulate(n_otus,n_sites,width,height,lbda,rad,mu,seed);
   /* tree = PHYREX_Simulate_Independent_Loci(n_otus,500,20.,20.,seed); */
-
-  disk = tree->young_disk;
-  while(disk->prev) disk = disk->prev;
-
-  strcpy(s,"phyrex_trees");
-  sprintf(s+strlen(s),".%d",tree->mod->io->r_seed);
-  tree->io->fp_out_tree = Openfile(s,WRITE);
-  strcpy(s,"phyrex_stats");
-  sprintf(s+strlen(s),".%d",tree->mod->io->r_seed);
-  tree->io->fp_out_stats = Openfile(s,WRITE);
-  strcpy(s,"phyrex_summary");
-  sprintf(s+strlen(s),".%d",tree->mod->io->r_seed);
-  tree->io->fp_out_summary = Openfile(s,WRITE);
-  strcpy(s,"phyrex_mtt");
-  sprintf(s+strlen(s),".%d.xml",tree->mod->io->r_seed);
-  PHYREX_Print_MultiTypeTree_Config_File(n_sites,s,tree);
 
   disk = tree->young_disk;
   for(i=0;i<disk->n_ldsk_a;i++) Free_Ldisk(disk->ldsk_a[i]);
@@ -465,7 +458,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   Free_Disk(disk);
 
   RATES_Free_Rates(tree->rates);
-  MCMC_Free_MCMC(tree->mcmc);
+  /* MCMC_Free_MCMC(tree->mcmc); */
   Free_Mmod(tree->mmod);
   Free_Spr_List_One_Edge(tree);
   Free_Spr_List_All_Edge(tree);
@@ -730,7 +723,7 @@ t_tree *PHYREX_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl
 // Simulate Etheridge-Barton model backwards in time, following n_otu lineages
 // on a rectangle of dimension width w x h
 // See Kelleher, Barton & Etheridge, Bioinformatics, 2013.
-t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, int r_seed)
+t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, phydbl rad, phydbl mu, int r_seed)
 {  
   t_tree *tree;
   int n_dim,i;
@@ -740,18 +733,9 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, int r_seed)
   t_mod *mod;
   t_opt *s_opt;
   calign *cdata;
-  /* phydbl max_mu, min_mu; */
-  /* phydbl max_rad, min_rad; */
-  /* phydbl min_rate, max_rate; */
-  /* phydbl min_lbda, max_lbda; */
-  phydbl min_neigh, max_neigh;
-  /* phydbl min_sigsq, max_sigsq; */
-  phydbl area, neigh;
   phydbl T;
-  phydbl Ne,maxNe,minNe;
 
   n_dim = 2; // 2-dimensional landscape
-  area  = w * h;
 
   io    = (option *)Make_Input();
   mod   = (t_mod *)Make_Model_Basic();
@@ -796,27 +780,13 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, int r_seed)
   tree->mmod = mmod;
   PHYREX_Init_Migrep_Mod(mmod,n_dim,0.0,0.0,w,h);
 
+  mmod->lbda = lbda;
+  mmod->rad = rad;
+  mmod->mu = mu;
+  mmod->sigsq = PHYREX_Update_Sigsq(tree);
 
-  do
-    {
-      /* Effective population size */
-      minNe = 100.; maxNe = 5000.;
-      Ne = Uni() * (maxNe - minNe) + minNe;
-      
-      /* Neighborhood size */
-      max_neigh = 0.01*Ne; min_neigh = 0.001*Ne;
-      neigh = Uni()*(max_neigh - min_neigh)  + min_neigh;
-    }
-  while(neigh < 2.0);
+
   
-  /* Death parameter */
-  mmod->mu = 2./neigh;
-
-  /* Theta (radius) */
-  mmod->rad = Uni()*(3.5 - 0.5) + 0.5;
-  mmod->sigsq = neigh / (4.*PI*Ne/area);
-  mmod->lbda = area * mmod->sigsq / (4.*PI*mmod->mu*pow(mmod->rad,4));
-  mmod->rho = Uni()*(10.0 - 0.1) + 0.1;
   // Duration of a generation in number of events
   mmod->gen_cal_time = 1./(2.*mmod->mu*pow(mmod->rad,2)/pow(w*h,2)*
                            (sqrt(2.)*mmod->rad*exp(-.5*pow(h/mmod->rad,2)) + h*sqrt(PI)*erf(sqrt(2.)*h/(2.*mmod->rad)) - sqrt(2.)*mmod->rad)*
@@ -872,7 +842,7 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, int r_seed)
   T = PHYREX_Tree_Height(tree);
 
   tree->rates->bl_from_rt = YES;
-  tree->rates->clock_r    = 0.01/fabs(T);
+  tree->rates->clock_r    = 1.0;
   tree->rates->model      = STRICTCLOCK;
 
   RATES_Update_Cur_Bl(tree);
@@ -888,35 +858,31 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, int r_seed)
   Make_Spr(tree);
   Evolve(tree->data,tree->mod,0,tree);
 
-  PhyML_Printf("@@@ %G %G %G : ",mmod->lbda,mmod->mu,mmod->rad);
-  for(int i=0;i<tree->n_otu-1;++i) for(int j=i+1;j<tree->n_otu;++j) PhyML_Printf("%G ",PHYREX_Dist_Between_Two_Ldsk(tree->a_nodes[i]->ldsk,tree->a_nodes[j]->ldsk,tree));
-  PhyML_Printf(" : ");
-  for(int i=0;i<tree->n_otu-1;++i) for(int j=i+1;j<tree->n_otu;++j) PhyML_Printf("%G ",Euclidean_Dist(tree->a_nodes[i]->ldsk->coord,tree->a_nodes[j]->ldsk->coord));
-  PhyML_Printf("\n");
-  for(int i=0;i<tree->n_otu-1;++i) PhyML_Printf("\n%s %G %G",
-                                                tree->a_nodes[i]->name,
-                                                tree->a_nodes[i]->ldsk->coord->lonlat[0],
-                                                tree->a_nodes[i]->ldsk->coord->lonlat[1]);
-  PhyML_Printf("\n\n");
-  Print_CSeq(stdout,NO,tree->data,tree);
-  Exit("\n");
+  /* PhyML_Printf("@@@ %G %G %G : ",mmod->lbda,mmod->mu,mmod->rad); */
+  /* for(int i=0;i<tree->n_otu-1;++i) for(int j=i+1;j<tree->n_otu;++j) PhyML_Printf("%G ",PHYREX_Dist_Between_Two_Ldsk(tree->a_nodes[i]->ldsk,tree->a_nodes[j]->ldsk,tree)); */
+  /* PhyML_Printf(" : "); */
+  /* for(int i=0;i<tree->n_otu-1;++i) for(int j=i+1;j<tree->n_otu;++j) PhyML_Printf("%G ",Euclidean_Dist(tree->a_nodes[i]->ldsk->coord,tree->a_nodes[j]->ldsk->coord)); */
+  /* PhyML_Printf("\n"); */
+  /* for(int i=0;i<tree->n_otu-1;++i) PhyML_Printf("\n%s %G %G", */
+  /*                                               tree->a_nodes[i]->name, */
+  /*                                               tree->a_nodes[i]->ldsk->coord->lonlat[0], */
+  /*                                               tree->a_nodes[i]->ldsk->coord->lonlat[1]); */
+  /* PhyML_Printf("\n\n"); */
+  /* Print_CSeq(stdout,NO,tree->data,tree); */
+  /* Exit("\n"); */
   
-  Init_Partial_Lk_Tips_Double(tree);
-  Init_Partial_Lk_Loc(tree);
+  /* Init_Partial_Lk_Tips_Double(tree); */
+  /* Init_Partial_Lk_Loc(tree); */
 
   disk = tree->young_disk->prev;
   while(disk->prev) disk = disk->prev;
   
-  PhyML_Printf("\n. Useful parameters: lambda=%G; mu=%G; rad=%G; clockr=%G; sigsq=%G; neigh=%G; N=%G; rhoe=%G",
+  PhyML_Printf("\n. Useful parameters: lambda=%G; mu=%G; rad=%G; clockr=%G; sigsq=%G",
                mmod->lbda,
                mmod->mu,
                mmod->rad,
                tree->rates->clock_r,
-               mmod->sigsq,
-               neigh,
-               area*neigh/(4*PI*mmod->sigsq),
-               neigh/(4.*PI*mmod->sigsq));
-  fflush(NULL);
+               mmod->sigsq);
 
   PhyML_Printf("\n. Useful statistics: t.root=%f n.int=%d n.coal=%d n.hit=%d root.x=%f root.y=%f nt.div=%f\n",
                disk->time,
@@ -4368,7 +4334,7 @@ phydbl PHYREX_Update_Sigsq(t_tree *tree)
     {
     case PHYREX_UNIFORM: { return(-1.0); break;}
     case PHYREX_NORMAL:  
-      { 
+      {
         return(4.*PI*
                PHYREX_Rate_Per_Unit_Area(tree) *
                pow(tree->mmod->rad,4)*
