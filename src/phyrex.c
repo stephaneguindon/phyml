@@ -3132,14 +3132,15 @@ int PHYREX_Check_Struct(t_tree *tree)
         {
           if(ldisk->prev->disk->time > ldisk->disk->time)
             {
-              /* PhyML_Printf("\n. ldisk->id: %s ldisk->prev->id: %s ldsk->disk->time: %f  ldsk->prev->disk->time: %f ldisk->prev->disk: %s ldisk->disk: %s", */
-              /*              ldisk->coord->id, */
-              /*              ldisk->prev->coord->id, */
-              /*              ldisk->disk->time, */
-              /*              ldisk->prev->disk->time, */
-              /*              ldisk->prev->disk->id, */
-              /*              ldisk->disk->id); */
-              /* assert(FALSE); */
+              PhyML_Printf("\n. ldisk->id: %s ldisk->prev->id: %s ldsk->disk->time: %f  ldsk->prev->disk->time: %f diff: %g ldisk->prev->disk: %s ldisk->disk: %s",
+                           ldisk->coord->id,
+                           ldisk->prev->coord->id,
+                           ldisk->disk->time,
+                           ldisk->prev->disk->time,
+                           ldisk->prev->disk->time-ldisk->disk->time,
+                           ldisk->prev->disk->id,
+                           ldisk->disk->id);
+              assert(FALSE);
               return 0;
             }
           ldisk = ldisk->prev;
@@ -3861,21 +3862,24 @@ void PHYREX_Tree_To_Ldsk(t_tree *tree)
     }
   
   a_disk->ldsk->nd = tree->n_root;
+  a_disk->time = tree->rates->nd_t[tree->n_root->num];
 
   /* Inflate_Times_To_Get_Reasonnable_Edge_Lengths(1.E-3,tree); */
   Get_Node_Ranks_From_Times(tree);
-  
+
   PHYREX_Tree_To_Ldsk_Post(tree->n_root,tree->n_root->v[1],a_disk,tree);
   PHYREX_Tree_To_Ldsk_Post(tree->n_root,tree->n_root->v[2],a_disk,tree);
 
-  // Create a doubly-chained list of disks, one for each internal node
+  // Create a doubly-chained list of disks
   disk = a_disk;
   disk->time = tree->rates->nd_t[tree->n_root->num];
   n = tree->n_root;
   while(n->rk_next)
     {
       // Only jump to next disk if n and n->rk_next are on distinct disks
-      if(n->ldsk->disk != n->rk_next->ldsk->disk)
+      // If n->ldsk == n->rk_next->ldsk then n->ldsk->disk and n->rk_next->ldsk->disk
+      // are the same disk (multiple merger)
+      if((n->ldsk->disk != n->rk_next->ldsk->disk) && (n->ldsk != n->rk_next->ldsk))
         {
           disk->next = n->rk_next->ldsk->disk;          
           disk->next->prev = disk;
@@ -3885,9 +3889,13 @@ void PHYREX_Tree_To_Ldsk(t_tree *tree)
       
       n = n->rk_next;
     }
+
   
   // Fill in ldsk_a arrays throughout the tree
   PHYREX_Update_Lindisk_List(tree);
+
+  assert(tree->young_disk->prev);
+
 }
 
 /*////////////////////////////////////////////////////////////
@@ -3901,11 +3909,11 @@ void PHYREX_Tree_To_Ldsk_Post(t_node *a, t_node *d, t_dsk *a_disk, t_tree *tree)
   assert(d);
   assert(a_disk);
   
-  PHYREX_Make_Lindisk_Next(a_disk->ldsk);
   
   if(d->tax)
     {
       assert(d->ldsk);
+      PHYREX_Make_Lindisk_Next(a_disk->ldsk);
       d->ldsk->prev = a_disk->ldsk;
       a_disk->ldsk->next[a_disk->ldsk->n_next-1] = d->ldsk;
       a_disk->ldsk->next[a_disk->ldsk->n_next-1]->nd = d;      
@@ -3913,46 +3921,66 @@ void PHYREX_Tree_To_Ldsk_Post(t_node *a, t_node *d, t_dsk *a_disk, t_tree *tree)
     }
   else
     {
-      t_dsk *d_disk;
-      
-      // Make and initialize descendent disk
-      d_disk = PHYREX_Make_Disk_Event(tree->mmod->n_dim,tree->n_otu);
-      assert(d_disk);
-      PHYREX_Init_Disk_Event(d_disk,tree->mmod->n_dim,NULL);
-            
-      d_disk->ldsk = PHYREX_Make_Lindisk_Node(tree->mmod->n_dim);
-      PHYREX_Init_Lindisk_Node(d_disk->ldsk,d_disk,tree->mmod->n_dim);
-      
-      // Initialize centre of event on the root disk
-      d_disk->centr->lonlat[0] = Uni()*(tree->mmod->lim_up->lonlat[0]-tree->mmod->lim_do->lonlat[0])+tree->mmod->lim_do->lonlat[0];
-      d_disk->centr->lonlat[1] = Uni()*(tree->mmod->lim_up->lonlat[1]-tree->mmod->lim_do->lonlat[1])+tree->mmod->lim_do->lonlat[1];      
-      
-      /* Its location */
-      switch(tree->mmod->name)
+      if(tree->rates->nd_t[d->num] > tree->rates->nd_t[a->num])
         {
-        case PHYREX_UNIFORM:
-          {
-            PHYREX_Runif_Rectangle_Overlap(d_disk->ldsk,d_disk,tree->mmod);
-            break;
-          }
-        case PHYREX_NORMAL:
-          {
-            PHYREX_Rnorm_Trunc(d_disk->ldsk,d_disk,tree->mmod);
-            break;
-          }
-        }
-      
-      d_disk->ldsk->nd = d;
-      d->ldsk = d_disk->ldsk;
+          t_dsk *d_disk;
+          
+          PHYREX_Make_Lindisk_Next(a_disk->ldsk);
 
-      a_disk->ldsk->next[a_disk->ldsk->n_next-1] = d_disk->ldsk;
-      d_disk->ldsk->prev = a_disk->ldsk;
-
-      for(i=0;i<3;++i)
-        {
-          if(d->v[i] != a && d->b[i] != tree->e_root)
+          // Make and initialize descendent disk
+          d_disk = PHYREX_Make_Disk_Event(tree->mmod->n_dim,tree->n_otu);
+          assert(d_disk);
+          PHYREX_Init_Disk_Event(d_disk,tree->mmod->n_dim,NULL);
+          
+          d_disk->time = tree->rates->nd_t[d->num];
+          
+          d_disk->ldsk = PHYREX_Make_Lindisk_Node(tree->mmod->n_dim);
+          PHYREX_Init_Lindisk_Node(d_disk->ldsk,d_disk,tree->mmod->n_dim);
+          
+          // Initialize centre of event on the root disk
+          d_disk->centr->lonlat[0] = Uni()*(tree->mmod->lim_up->lonlat[0]-tree->mmod->lim_do->lonlat[0])+tree->mmod->lim_do->lonlat[0];
+          d_disk->centr->lonlat[1] = Uni()*(tree->mmod->lim_up->lonlat[1]-tree->mmod->lim_do->lonlat[1])+tree->mmod->lim_do->lonlat[1];      
+          
+          /* Its location */
+          switch(tree->mmod->name)
             {
-              PHYREX_Tree_To_Ldsk_Post(d,d->v[i],d_disk,tree);
+            case PHYREX_UNIFORM:
+              {
+                PHYREX_Runif_Rectangle_Overlap(d_disk->ldsk,d_disk,tree->mmod);
+                break;
+              }
+            case PHYREX_NORMAL:
+              {
+                PHYREX_Rnorm_Trunc(d_disk->ldsk,d_disk,tree->mmod);
+                break;
+              }
+            }
+          
+          d_disk->ldsk->nd = d;
+          d->ldsk = d_disk->ldsk;
+          
+          a_disk->ldsk->next[a_disk->ldsk->n_next-1] = d_disk->ldsk;
+          d_disk->ldsk->prev = a_disk->ldsk;
+          
+          for(i=0;i<3;++i)
+            {
+              if(d->v[i] != a && d->b[i] != tree->e_root)
+                {
+                  PHYREX_Tree_To_Ldsk_Post(d,d->v[i],d_disk,tree);
+                }
+            }
+
+        }
+      else // time[d] == time[a] -> add lineage to a_disk instead of creating d_disk
+        {
+          d->ldsk = a_disk->ldsk;
+
+          for(i=0;i<3;++i)
+            {
+              if(d->v[i] != a && d->b[i] != tree->e_root)
+                {
+                  PHYREX_Tree_To_Ldsk_Post(d,d->v[i],a_disk,tree);
+                }
             }
         } 
     }
