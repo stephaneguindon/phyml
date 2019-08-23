@@ -21,10 +21,10 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int PHYREX_Main(int argc, char *argv[])
 {
-  PHYREX_Main_Simulate(argc,argv);
-  /* option *io; */
-  /* io = Get_Input(argc,argv); */
-  /* Free(io); */
+  /* PHYREX_Main_Simulate(argc,argv); */
+  option *io;
+  io = Get_Input(argc,argv);
+  Free(io);
   return(0);
 }
 

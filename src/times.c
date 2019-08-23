@@ -2239,7 +2239,7 @@ void TIMES_Bl_To_Times_Post(t_node *a, t_node *d, t_edge *b, t_tree *tree)
       t1 = tree->rates->nd_t[v1->num] - MIXT_Get_Mean_Edge_Len(d->b[dir1],tree) / (tree->rates->clock_r * tree->rates->br_r[v1->num]);
       t2 = tree->rates->nd_t[v2->num] - MIXT_Get_Mean_Edge_Len(d->b[dir2],tree) / (tree->rates->clock_r * tree->rates->br_r[v2->num]);
 
-      if(Are_Equal(t1,t2,1.E-10) == NO)
+      if(Are_Equal(t1,t2,1.E-6) == NO)
         {
           PhyML_Fprintf(stderr,"\n. It looks at if the edge lengths suplied do not define an ultrametric tree.");
           PhyML_Fprintf(stderr,"\n. Please amend these lengths so as it becomes straightforward to transform your tree");
@@ -2247,6 +2247,7 @@ void TIMES_Bl_To_Times_Post(t_node *a, t_node *d, t_edge *b, t_tree *tree)
           PhyML_Fprintf(stderr,"\n. l1: %f l2: %f",MIXT_Get_Mean_Edge_Len(d->b[dir1],tree),MIXT_Get_Mean_Edge_Len(d->b[dir2],tree));
           PhyML_Fprintf(stderr,"\n. t1: %f t2: %f",tree->rates->nd_t[v1->num],tree->rates->nd_t[v2->num]);
           PhyML_Fprintf(stderr,"\n. rr1: %f rr2: %f",tree->rates->br_r[v1->num],tree->rates->br_r[v2->num]);
+          PhyML_Fprintf(stderr,"\n. est: %f %f diff: %G",t1,t2,t1-t2);
           Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
         }
       

@@ -585,9 +585,26 @@ int main(int argc, char **argv)
 #include "xml.h"
 int main(int argc, char **argv)
 {
-  t_tree *tree;
-  tree = Generate_Random_Tree_From_Scratch(20,YES);
-  PhyML_Printf("\n. %s",Write_Tree(tree,NO));
+  option *io;
+  int i;
+  
+  io = (option *)Get_Input(argc,argv);
+  if(!io) return(0);
+
+  Get_Seq(io);
+
+  for(i=0;i<io->n_otu;i++)
+    {
+      PhyML_Printf("\n<clade id=\"clad%d\">",i+1);
+      PhyML_Printf("\n\t<taxon value=\"%s\"/>",io->data[i]->name);
+      PhyML_Printf("\n</clade>");
+      PhyML_Printf("\n<calibration id=\"cal%d\">",i+1);
+      PhyML_Printf("\n\t<lower>0.0</lower>");
+      PhyML_Printf("\n\t<upper>0.0</upper>");
+      PhyML_Printf("\n\t<appliesto clade.id=\"clad%d\"/>",i+1);
+      PhyML_Printf("\n</calibration>");
+    }
+  
 }
 
 #elif(INVITEE)
