@@ -2257,7 +2257,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->mu);
           PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Neighborhood_Size(tree));
           PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Update_Sigsq(tree));
-          PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Realized_Siqsq(tree));
+          PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Realized_Sigsq(tree));
           PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->rad);
           PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Effective_Density(tree));
           PhyML_Fprintf(fp_stats,"%d\t",PHYREX_Total_Number_Of_Intervals(tree));
@@ -5887,7 +5887,7 @@ t_geo_coord *PHYREX_Mean_Next_Loc(t_ldsk *ldsk, t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-phydbl PHYREX_Realized_Siqsq(t_tree *tree)
+phydbl PHYREX_Realized_Sigsq(t_tree *tree)
 {
   t_dsk *disk,*root_disk;
   int i;
@@ -5901,9 +5901,9 @@ phydbl PHYREX_Realized_Siqsq(t_tree *tree)
   sum = 0.0;
   for(i=0;i<disk->n_ldsk_a;++i) sum += pow(Euclidean_Dist(root_disk->ldsk->coord,disk->ldsk_a[i]->coord),2);
   
-  sum /= 2.*disk->n_ldsk_a;
+  sum /= (2.*disk->n_ldsk_a*fabs(root_disk->time));
 
-  return((1./fabs(root_disk->time))*sqrt(sum));
+  return(sum);
 
 }
 
