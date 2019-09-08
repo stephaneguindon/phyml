@@ -570,7 +570,7 @@ void Ancestral_Sequences(t_tree *tree, int print)
       
       PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"\n\n");
       PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"Site\tNodeLabel\t");
-      for(i=0;i<tree->mod->ns;i++) PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"%c\t",Reciproc_Assign_State(i,tree->io->datatype));
+      for(i=0;i<tree->mod->ns;i++) PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"%10c\t",Reciproc_Assign_State(i,tree->io->datatype));
       PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"MPEE\t");
       PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"\n");
 
@@ -850,7 +850,7 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
                   sum_probas = .0;
                   for(i=0;i<ns;i++)
                     {
-                      PhyML_Fprintf(fp,"%.4f\t",p[i]);
+                      PhyML_Fprintf(fp,"%10g\t",p[i]);
                       sum_probas += p[i];
                     }
                   if(Are_Equal(sum_probas,1.0,0.01) == NO)
