@@ -288,7 +288,7 @@ void Bootstrap_MPI(t_tree *tree)
 
       if(tree->io->print_boot_trees)
         {
-          Insert_Duplicates(boot_tree);
+          /* Insert_Duplicates(boot_tree); */
           s = Write_Tree(boot_tree,NO);
           t=(char *)mCalloc(T_MAX_LINE,sizeof(char));
           Print_Fp_Out_Lines_MPI(boot_tree, tree->io, replicate+1, t);

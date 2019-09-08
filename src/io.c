@@ -3925,6 +3925,8 @@ int PhyML_Fscanf(FILE *fp, char *format, ...)
 {
   va_list ptr;
   int rv;
+
+  rv = -1;
   
 #ifdef MPI
   if(Global_myRank == 0)
