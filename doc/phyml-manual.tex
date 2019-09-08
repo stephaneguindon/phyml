@@ -2795,7 +2795,7 @@ make;
 
 \subsubsection{Running PhyREX}
 
-Example input files for PhyREX can be found in the \x{examples/phyrex\_input\_files/} directory.
+Example input files for PhyREX can be found in the \x{examples/phyrex/} directory.
 PhyREX takes as input a XML file (See Section \ref{sec:xmlio}), in a PhyML-compatible format. This
 file defines the models and various parameter settings for conducting an analysis. We give more
 information below about this file. The XML file gives the names of a sequence alignment file in the
@@ -2820,14 +2820,15 @@ pfrnpk 4.117791 4.489819
 elwdvr 5.649958 4.824092 
 lptxiv 4.563302 4.005124 
 \end{Verbatim}
-The first row in this file gives the names of the columns. It starts with the `\#' character signaling a
-comment. The second and third rows define the limits of the population's habitat. At the
-moment, this habitat is assumed to be a rectangle. The position in space of that rectangle are
-determined by the coordinates of the bottom-left corner (\x{|SouthWest| 0 0}) and the top-right
-one (\x{|NorthEast| 10 10}). The `\x{|}' characters help  identify the terms in the list of coordinate
-corresponding indeed to these two particular points and should thus not be omitted. The remaining
-row give the coordinates of each taxon. Every taxon in the sequence file should also be listed in
-the coordinate file.
+This first column in this  file gives the sequence names, the second is  the longitude and the third
+column gives the latitude. The first row in this file gives the names of the columns. It starts with
+the  `\#' character  signaling  a comment.  The  second and  third  rows define  the  limits of  the
+population's habitat.  At the moment,  this habitat is  assumed to be  a rectangle. The  position in
+space of that rectangle are determined by  the coordinates of the bottom-left corner (\x{|SouthWest|
+0 0}) and the top-right one (\x{|NorthEast| 10  10}). The `\x{|}' characters help identify the terms
+in the list of coordinate corresponding indeed to these two particular points and should thus not be
+omitted. The  remaining row give  the coordinates of  each taxon. Every  taxon in the  sequence file
+should also be listed in the coordinate file.
 
 Below is an excerpt of a XML file that can be used as input to run a PhyREX analysis. The \sfv\
 model parameters are estimated using a Bayesian sampler which hyperparameters (number of

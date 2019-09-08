@@ -487,7 +487,7 @@ phydbl Lk(t_edge *b, t_tree *tree)
   if((tree->rates) && (tree->rates->bl_from_rt)) RATES_Update_Cur_Bl(tree);
 #endif
 
-if(tree->rates && tree->io->lk_approx == NORMAL)
+  if(tree->rates && tree->io && tree->io->lk_approx == NORMAL)
     {
 #ifdef BEAGLE
       Warn_And_Exit(TODO_BEAGLE);
@@ -2185,7 +2185,6 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
 
   if(tree->mixt_tree != NULL) assert(tree->mod->ras->n_catg == 1);
     
-
   if(tree->io->mod->gamma_mgf_bl == YES) Set_Br_Len_Var(b_fcus,tree);
 
   l_min = tree->mod->l_min;

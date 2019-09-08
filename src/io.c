@@ -6488,7 +6488,7 @@ void PHYREX_Check_Point(FILE *fp, t_tree *tree)
 void PHYREX_Input_Tree_Structure(FILE *fp)
 {
   char *tk,*s,delim[4]="\n\r ";
-  int n,n_otu,n_dim,idx;
+  int n_otu,n_dim,idx;
   t_dsk *disk;
   t_ldsk *new_ldsk,*root_ldsk,*ldsk;
     
@@ -6588,6 +6588,19 @@ void PHYREX_Input_Tree_Structure(FILE *fp)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+void Output_Scalar_Dbl(scalar_dbl *t, char *sep, FILE *fp)
+{
+  scalar_dbl *l;
+  l = t;
+  do
+    {
+      PhyML_Fprintf(fp,"%g%s",l->v,sep);
+      l = l->next;
+    }
+  while(l);
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

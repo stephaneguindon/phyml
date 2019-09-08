@@ -3473,7 +3473,7 @@ void RATES_Reset_Times(t_tree *mixt_tree)
   do
     {
       tree->rates->nd_t_recorded = NO;
-      For(i,2*tree->n_otu-1) tree->rates->nd_t[i] = tree->rates->buff_t[i];
+      for(i=0;i<2*tree->n_otu-1;++i) tree->rates->nd_t[i] = tree->rates->buff_t[i];
       tree = tree->next;
     }
   while(tree);
@@ -3754,40 +3754,51 @@ void RATES_Get_Survival_Ranks(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-int RATES_Check_Edge_Length_Consistency(t_tree *tree)
+int RATES_Check_Edge_Length_Consistency(t_tree *mixt_tree)
 {
   int i;
+  t_tree *tree;
 
-  for(i=0;i<2*tree->n_otu-3;++i)
+  tree = mixt_tree;
+  
+  do
     {
-      if(tree->a_edges[i]->left->anc == tree->a_edges[i]->rght)
+      if(tree->is_mixt_tree == YES) tree = tree->next;
+      
+      for(i=0;i<2*tree->n_otu-3;++i)
         {
-          if(Are_Equal(tree->rates->cur_l[tree->a_edges[i]->left->num],
-                       tree->a_edges[i]->l->v,
-                       1.E-5) == NO)
+          if(tree->a_edges[i]->left->anc == tree->a_edges[i]->rght)
             {
-              PhyML_Fprintf(stderr,"\n. cur_l: %G l: %G is_root: %d",
-                            tree->rates->cur_l[tree->a_edges[i]->left->num],
-                            tree->a_edges[i]->l->v,
-                            tree->a_edges[i] == tree->e_root);
-              return 0;
+              if(Are_Equal(tree->rates->cur_l[tree->a_edges[i]->left->num],
+                           tree->a_edges[i]->l->v,
+                           1.E-5) == NO)
+                {
+                  PhyML_Fprintf(stderr,"\n. cur_l: %G l: %G is_root: %d",
+                                tree->rates->cur_l[tree->a_edges[i]->left->num],
+                                tree->a_edges[i]->l->v,
+                                tree->a_edges[i] == tree->e_root);
+                  return 0;
+                }
+            }
+          
+          if(tree->a_edges[i]->rght->anc == tree->a_edges[i]->left)
+            {
+              if(Are_Equal(tree->rates->cur_l[tree->a_edges[i]->rght->num],
+                           tree->a_edges[i]->l->v,
+                           1.E-5) == NO)
+                {
+                  PhyML_Fprintf(stderr,"\n. cur_l: %G l: %G is_root: %d",
+                                tree->rates->cur_l[tree->a_edges[i]->rght->num],
+                                tree->a_edges[i]->l->v,
+                                tree->a_edges[i] == tree->e_root);
+                  return 0;
+                }
             }
         }
 
-      if(tree->a_edges[i]->rght->anc == tree->a_edges[i]->left)
-        {
-          if(Are_Equal(tree->rates->cur_l[tree->a_edges[i]->rght->num],
-                       tree->a_edges[i]->l->v,
-                       1.E-5) == NO)
-            {
-              PhyML_Fprintf(stderr,"\n. cur_l: %G l: %G is_root: %d",
-                            tree->rates->cur_l[tree->a_edges[i]->rght->num],
-                            tree->a_edges[i]->l->v,
-                            tree->a_edges[i] == tree->e_root);
-              return 0;
-            }
-        }
+      tree = tree->next;
     }
+  while(tree);
 
   return 1;
   

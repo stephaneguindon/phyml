@@ -684,7 +684,7 @@ void Translate_Custom_Mod_String(t_mod *mod)
 
 // Update rate across sites distribution settings.
 
-void Update_RAS(t_mod *mod)
+int Update_RAS(t_mod *mod)
 {
   phydbl sum;
   int i;
@@ -755,14 +755,14 @@ void Update_RAS(t_mod *mod)
       update_beagle_ras(mod);
 #endif
 
+  return 1;
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Update_Efrq(t_mod *mod)
+int Update_Efrq(t_mod *mod)
 {
-
   unsigned int i;
   phydbl sum;
 
@@ -781,24 +781,27 @@ void Update_Efrq(t_mod *mod)
       for(i=0;i<mod->ns;++i) if(mod->e_frq->pi->v[i] < E_FRQ_MIN) mod->e_frq->pi->v[i] = E_FRQ_MIN;
       for(i=0;i<mod->ns;++i) if(mod->e_frq->pi->v[i] > E_FRQ_MAX) mod->e_frq->pi->v[i] = E_FRQ_MAX;
     }
-  
+
+  return 1;
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Set_Model_Parameters(t_mod *mod)
+int Set_Model_Parameters(t_mod *mod)
 {
-  Update_Boundaries(mod);
-  Update_RAS(mod);
-  Update_Efrq(mod);
-  Update_Eigen(mod);
+  if(!Update_Boundaries(mod)) return 0;
+  if(!Update_RAS(mod))        return 0;
+  if(!Update_Efrq(mod))       return 0;
+  if(!Update_Eigen(mod))      return 0;
+  if(mod->is_mixt_mod == YES) MIXT_Set_Model_Parameters(mod);
+  return 1;
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Update_Boundaries(t_mod *mod)
+int Update_Boundaries(t_mod *mod)
 {
   int i;
     
@@ -856,15 +859,17 @@ void Update_Boundaries(t_mod *mod)
   if(mod->e_frq_weight->v < E_FRQ_WEIGHT_MIN) mod->e_frq_weight->v = E_FRQ_WEIGHT_MIN;
   if(mod->e_frq_weight->v > E_FRQ_WEIGHT_MAX) mod->e_frq_weight->v = E_FRQ_WEIGHT_MAX;
 
+  
+  return 1;
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Update_Eigen(t_mod *mod)
+int Update_Eigen(t_mod *mod)
 {
   int result, n_iter;
-  phydbl scalar;
+  phydbl scalar,eig_res;
   int i;
   
   if(mod->update_eigen == YES)
@@ -914,11 +919,12 @@ void Update_Eigen(t_mod *mod)
       /* 			  mod->eigen->e_val_im, mod->eigen->r_e_vect, */
       /* 			  mod->eigen->space_int,mod->eigen->space)) */
 
-      if(!Eigen(1,mod->r_mat->qmat_buff->v,mod->eigen->size,mod->eigen->e_val,
-                mod->eigen->e_val_im,
-                mod->eigen->r_e_vect,
-                mod->eigen->r_e_vect_im,
-                mod->eigen->space))
+      eig_res = Eigen(1,mod->r_mat->qmat_buff->v,mod->eigen->size,mod->eigen->e_val,
+                      mod->eigen->e_val_im,
+                      mod->eigen->r_e_vect,
+                      mod->eigen->r_e_vect_im,
+                      mod->eigen->space);
+      if(eig_res == 0)
         {
           /* compute inverse(Vr) into Vi */
           for (i=0;i<mod->ns*mod->ns;++i) mod->eigen->l_e_vect[i] = mod->eigen->r_e_vect[i];
@@ -960,12 +966,26 @@ void Update_Eigen(t_mod *mod)
             update_beagle_eigen(mod);
 #endif
         }
-      else
+      else if(eig_res == -1)
         {
-          PhyML_Fprintf(stderr,"\n. Eigenvalues/vectors computation does not converge : computation cancelled");
-          Warn_And_Exit("\n");
+          PhyML_Fprintf(stderr,"\n. kappa: %f",mod->kappa->v);
+          for(int i=0;i<mod->ns;++i)
+            {
+              for(int j=0;j<mod->ns;++j)
+                {
+                  PhyML_Fprintf(stderr,"\n. Q[%d,%d]=%g",i,j,mod->r_mat->qmat->v[i*mod->ns+j]);
+                }
+            }
+          
+          PhyML_Fprintf(stderr,"\n. Eigenvalues/vectors computation does not converge. Computation cancelled.");
+          return 0;
+        }
+      else if(eig_res == 1)
+        {
+          PhyML_Fprintf(stderr,"\n. WARNING: imaginary eigenvectors not null.");
         }
     }
+  return 1;
 }
 
 //////////////////////////////////////////////////////////////

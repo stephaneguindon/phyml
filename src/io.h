@@ -111,5 +111,6 @@ void PHYREX_Input_Tree_Structure(FILE *fp);
 int PhyML_Fscanf(FILE *fp, char *format, ...);
 char *PHYREX_Print_Tree_Structure(t_tree *tree);
 void PHYREX_Check_Point(FILE *fp, t_tree *tree);
+void Output_Scalar_Dbl(scalar_dbl *t, char *sep, FILE *fp);
 
 #endif

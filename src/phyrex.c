@@ -289,7 +289,8 @@ void PHYREX_XML(char *xml_filename)
   MIXT_Turn_Branches_OnOff_In_All_Elem(ON,mixt_tree);
   MIXT_Check_Invar_Struct_In_Each_Partition_Elem(mixt_tree);
   MIXT_Check_RAS_Struct_In_Each_Partition_Elem(mixt_tree);
-              
+
+  
   XML_Read_Calibration(xroot,mixt_tree);
   MIXT_Chain_Cal(mixt_tree);
 
@@ -1994,9 +1995,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%s\t","rootTime");
       PhyML_Fprintf(fp_stats,"%s\t","rootLon");
       PhyML_Fprintf(fp_stats,"%s\t","rootLat");
-      PhyML_Fprintf(fp_stats,"%s\t","tstv");
+      for(int i=0;i<Scalar_Len(tree->mod->kappa);++i) PhyML_Fprintf(fp_stats,"tstv%d\t",i);
       PhyML_Fprintf(fp_stats,"%s\t","alpha");
-      /* for(int i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"br%d\t",i); */
       PhyML_Fprintf(fp_stats,"%s\t","MeanBr");
       PhyML_Fprintf(fp_stats,"%s\t","accLbda");
       PhyML_Fprintf(fp_stats,"%s\t","accMu");
@@ -2054,12 +2054,14 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);            
     }
   
+
   Set_Both_Sides(NO,tree);
   mcmc->always_yes = NO;
   move             = -1;
   do
     {
       
+
       MIXT_Propagate_Tree_Update(tree);
       assert(PHYREX_Check_Struct(tree));
 
@@ -2166,7 +2168,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
       if(!strcmp(tree->mcmc->move_name[move],"kappa"))
         MCMC_Kappa(tree);
-
+      
       if(!strcmp(tree->mcmc->move_name[move],"rr"))
         MCMC_RR(tree);
             
@@ -2187,9 +2189,10 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       /* PHYREX_Lk(tree); */
       /* Lk(NULL,tree); */
       
-      /* PhyML_Printf("\n. Move: %s tree->mmod->c_lnL: %f tree->c_lnL: %f", */
+      /* PhyML_Printf("\n. Move: %s tree->mmod->c_lnL: %f kappa: %f", */
       /*              tree->mcmc->move_name[move], */
-      /*              tree->mmod->c_lnL,Lk(NULL,tree)); */
+      /*              tree->mmod->c_lnL, */
+      /*              tree->mod->kappa->v); */
 
       if(tree->mmod->c_lnL < UNLIKELY || tree->c_lnL < UNLIKELY)
         {
@@ -2266,7 +2269,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%g\t",disk->time);
           PhyML_Fprintf(fp_stats,"%gf\t",disk->ldsk->coord->lonlat[0]);
           PhyML_Fprintf(fp_stats,"%g\t",disk->ldsk->coord->lonlat[1]);
-          PhyML_Fprintf(fp_stats,"%g\t",tree->mod->kappa->v);
+          Output_Scalar_Dbl(tree->mod->kappa,"\t",fp_stats);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mod->ras->alpha->v);
           /* for(int i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->rates->br_r[i]); */
           PhyML_Fprintf(fp_stats,"%g\t",RATES_Get_Mean_Rate_In_Subtree(tree->n_root,tree));

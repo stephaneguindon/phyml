@@ -5673,7 +5673,6 @@ void Graft_Subtree(t_edge *target, t_node *link, t_node *link_daughter, t_edge *
       tree->n_root->b[2]->p_pars_r = tree->e_root->p_pars_r;
       tree->n_root->b[2]->p_lk_loc_rght = tree->e_root->p_lk_loc_rght;
       tree->n_root->b[2]->patt_id_rght = tree->e_root->patt_id_rght;
-
       
       Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
       Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
@@ -7711,7 +7710,8 @@ void Evolve(calign *data, t_mod *mod, int first_site_pos, t_tree *tree)
   
   for(site=first_site_pos;site<data->init_len;++site)
     {
-      Set_Model_Parameters(mod);
+      if(!Set_Model_Parameters(mod)) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+        
 
      /* Pick the rate class */
       root_state = root_rate_class = -1;

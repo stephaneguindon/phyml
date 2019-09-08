@@ -699,9 +699,13 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
       
       if(!cpy_mixt_b)
         {
-          Update_Boundaries(tree->mod);
-          Update_Efrq(tree->mod);
-          Update_Eigen(tree->mod);
+          if(!Update_Boundaries(tree->mod) ||
+             !Update_Efrq(tree->mod) ||
+             !Update_Eigen(tree->mod))
+            {
+              PhyML_Fprintf(stderr,"\n. move: %s",mixt_tree->mcmc->move_name[mixt_tree->mcmc->move_idx]);
+              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+            }
         }
       
       tree = tree->next;
@@ -3253,6 +3257,24 @@ void MIXT_Set_Both_Sides(int yesno, t_tree *mixt_tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+void MIXT_Set_Model_Parameters(t_mod *mixt_mod)
+{
+  t_mod *mod = mixt_mod->next;
+
+  if(mod != NULL)
+    {
+      do
+        {
+          Set_Model_Parameters(mod);
+          mod = mod->next;
+        }
+      while(mod);
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 void MIXT_Update_Eigen(t_mod *mixt_mod)
 {
   t_mod *mod;
@@ -3262,8 +3284,8 @@ void MIXT_Update_Eigen(t_mod *mixt_mod)
   do
     {
       if(mod->is_mixt_mod) mod = mod->next;
-      Update_Boundaries(mod);
-      Update_Eigen(mod);
+      if(!Update_Boundaries(mod)) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+      if(!Update_Eigen(mod)) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
       mod = mod->next;
     }
   while(mod);
@@ -3550,6 +3572,13 @@ void MIXT_Copy_Tree(t_tree *ori, t_tree *cpy)
           cpy = cpy->next;
         }
       while(cpy);      
+    }
+  else if(ori->is_mixt_tree == YES && cpy->is_mixt_tree == NO)
+    {
+      ori_is_mixt_tree = ori->is_mixt_tree;      
+      ori->is_mixt_tree = NO;
+      Copy_Tree(ori,cpy);
+      ori->is_mixt_tree = ori_is_mixt_tree;
     }
 }
 

@@ -59,38 +59,38 @@ int Eigen(int job, phydbl *A, int n, phydbl *rr, phydbl *ri,
     if (-1 == realeig(job,A,n,low,hi,rr,ri,vr,vi)) return (-1);
     if (job) unbalance(n,vr,vi,low,hi,work);
     
-/* sort, added by Z. Yang */
-   for (i=0; i<n; ++i)
-     {
-       for (j=i+1,it=i,t=rr[i]; j<n; ++j)
-         if (t<rr[j])
-           {
-             t=rr[j];
-             it=j;
-           }
-       rr[it]=rr[i];
-       rr[i]=t;
-       t=ri[it];
-       ri[it]=ri[i];
-       ri[i]=t;
-       
-       for (k=0; k<n; ++k)
-         {
-           t=vr[k*n+it];
-           vr[k*n+it]=vr[k*n+i];
-           vr[k*n+i]=t;
-           
-           t=vi[k*n+it];
-           vi[k*n+it]=vi[k*n+i];
-           vi[k*n+i]=t;
-         }
-       if (fabs(ri[i])>tiny) istate=1;
-     }
-   
+    /* sort, added by Z. Yang */
+    for (i=0; i<n; ++i)
+      {
+        for (j=i+1,it=i,t=rr[i]; j<n; ++j)
+          if (t<rr[j])
+            {
+              t=rr[j];
+              it=j;
+            }
+        rr[it]=rr[i];
+        rr[i]=t;
+        t=ri[it];
+        ri[it]=ri[i];
+        ri[i]=t;
+        
+        for (k=0; k<n; ++k)
+          {
+            t=vr[k*n+it];
+            vr[k*n+it]=vr[k*n+i];
+            vr[k*n+i]=t;
+            
+            t=vi[k*n+it];
+            vi[k*n+it]=vi[k*n+i];
+            vi[k*n+i]=t;
+          }
+        if (fabs(ri[i])>tiny) istate=1;
+      }
+    
    return (istate) ;
 }
 
-/* complex funcctions
+/* complex functions
  */
 
 complex compl (phydbl re,phydbl im)
@@ -510,8 +510,8 @@ int realeig(int job,phydbl *mat,int n,int low, int hi, phydbl *valr,
   complex v;
   phydbl p=.0,q=.0,r=.0,s=.0,t,w,x,y,z=0,ra,sa,norm,eps;
   int niter,en,i,j,k,l,m;
-  /* phydbl precision  = POW((phydbl)BASE,(phydbl)(1-(int)DIGITS)); */
-  phydbl precision  = SMALL;
+  phydbl precision  = POW((phydbl)BASE,(phydbl)(1-(int)DIGITS)); // Won't pass testiphy...
+  /* phydbl precision  = SMALL; */
   
 
   eps = precision;

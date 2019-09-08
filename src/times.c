@@ -1891,12 +1891,11 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       mixt_tree->n_root = mixt_tree->a_nodes[2*mixt_tree->n_otu-2];
       mixt_tree->n_root->v[1]->v[0] = mixt_tree->n_root->v[2];
       mixt_tree->n_root->v[2]->v[0] = mixt_tree->n_root->v[1];    
-      Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree);
-      Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);
       mixt_tree->n_root->anc = NULL;
       
       Connect_Edges_To_Nodes_Serial(mixt_tree);
       
+
       // Adding root edge
       for(i=0;i<2*mixt_tree->n_otu-3;++i)
         {
@@ -1908,26 +1907,28 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
             }
         }
       
+      Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree);
+      Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);
       DATE_Assign_Primary_Calibration(mixt_tree);
       DATE_Update_T_Prior_MinMax(mixt_tree);
       
 
-      for(int i=0;i<mixt_tree->rates->n_cal;i++)
-        {
-          int idx;
-          cal   = mixt_tree->rates->a_cal[i];
+      /* for(int i=0;i<mixt_tree->rates->n_cal;i++) */
+      /*   { */
+      /*     int idx; */
+      /*     cal   = mixt_tree->rates->a_cal[i]; */
 
-          if(cal->clade_list != NULL)
-            {
-              clade = cal->clade_list[cal->current_clade_idx];
-              idx = Find_Clade(clade->tax_list,clade->n_tax,mixt_tree);
-              PhyML_Printf("\n. Calibration %3d | Node number to which calibration applies is [%d]",i,idx);
-              PhyML_Printf("\n. Calibration %3d | Lower bound set to: %15f time units.",i,mixt_tree->rates->a_cal[i]->lower);
-              PhyML_Printf("\n. Calibration %3d | Upper bound set to: %15f time units.",i,mixt_tree->rates->a_cal[i]->upper);
-              PhyML_Printf("\n. Calibration %3d | t_prior_min: %G t_prior_max: %G",i,mixt_tree->rates->t_prior_min[idx],mixt_tree->rates->t_prior_max[idx]);
-              PhyML_Printf("\n. Calibration %3d | Time set to %G",i,mixt_tree->rates->nd_t[idx]);
-            }
-        }
+      /*     if(cal->clade_list != NULL) */
+      /*       { */
+      /*         clade = cal->clade_list[cal->current_clade_idx]; */
+      /*         idx = Find_Clade(clade->tax_list,clade->n_tax,mixt_tree); */
+      /*         PhyML_Printf("\n. Calibration %3d | Node number to which calibration applies is [%d]",i,idx); */
+      /*         PhyML_Printf("\n. Calibration %3d | Lower bound set to: %15f time units.",i,mixt_tree->rates->a_cal[i]->lower); */
+      /*         PhyML_Printf("\n. Calibration %3d | Upper bound set to: %15f time units.",i,mixt_tree->rates->a_cal[i]->upper); */
+      /*         PhyML_Printf("\n. Calibration %3d | t_prior_min: %G t_prior_max: %G",i,mixt_tree->rates->t_prior_min[idx],mixt_tree->rates->t_prior_max[idx]); */
+      /*         PhyML_Printf("\n. Calibration %3d | Time set to %G",i,mixt_tree->rates->nd_t[idx]); */
+      /*       } */
+      /*   } */
       
     if(!DATE_Check_Calibration_Constraints(mixt_tree))
         {
