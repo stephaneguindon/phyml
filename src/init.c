@@ -721,7 +721,7 @@ void Set_Defaults_Optimiz(t_opt *s_opt)
   s_opt->n_rand_starts        = 5;
   s_opt->brent_it_max         = BRENT_IT_MAX;
   s_opt->steph_spr            = YES;
-  s_opt->opt_br_len_mult      = YES;
+  s_opt->opt_br_len_mult      = NO;
   s_opt->min_n_triple_moves   = 20;
   s_opt->max_rank_triple_move = 0;
   s_opt->n_improvements       = 0;
