@@ -2897,16 +2897,36 @@ is a single tip.
   
 \end{Verbatim}
 
-
-
-
-
-
 PhyREX generates correlated samples from the posterior distribution of the \sfv\ model
 parameters. The estimated distributions and related summary statistics can be monitored during the
 analysis using the MCMC vizualization software Icylog. Figure \ref{fig:phyrextrace} shows the traces
 for two parameters after about an hour of calculation on the example data set (36 taxa, 50
-geographic locations). The names of the sampled parameters are self-explanatory. However, if you
+geographic locations). Most of the names of the sampled parameters are self-explanatory but some of
+them (listed below) need explanations:
+\begin{itemize}
+\item \texttt{lnP} : log-posterior.
+\item \texttt{alnL} : logarithm of the probability of the sequence alignment given the current tree.
+\item \texttt{glnL} : logarithm of the probability of the current tree and location data. 
+\item \texttt{clock} : substitution rate
+\item \texttt{lbda} : value of $\lambda$, the rate at which REX events take place in the \sfv~model.
+\item \texttt{mu} : value of $\mu$, the term governing the probability for the lineage to be hit by
+  a REX event.
+\item \texttt{rad} : value of the parameter $\theta$, i.e., the radius parameter in the \sfv~model.
+\item \texttt{neigh} : neighborhood size (equal to $2/\mu$ under the \sfv~model).
+\item \texttt{rhoe} : effective population density.
+\item \texttt{sigsq} : $\sigma^2 := 4\theta^4\lambda \pi \mu /s$ where $s$ is the surface of the habitat.
+\item \texttt{sigsqobs} : mean, taken over the (most recent) tips, of one half (in a two-dimensional space) times the Euclidean distance
+  covered in one unit of time, squared.
+\item \texttt{dispdist} : mean, taken over the (most recent) tips, of the Haversine distance
+  covered in one unit of time.
+\item \texttt{nInt} : number of REX events.
+\item \texttt{nCoal} : number of coalescent events.
+\item \texttt{nHit} : number of REX events where a single lineage was hit.
+\item \texttt{rootTime} : time at the root node.
+\item \texttt{rootLon} : longitude of the root node location.
+\item \texttt{rootLat} : latitude of the root node location.
+\end{itemize}
+If you
 are unsure about the precise definition of one of these parameters or have any questions regarding
 how to interpret the results returned by PhyREX, please do not hesitate to contact me (\url{guindon@lirmm.fr}).
 

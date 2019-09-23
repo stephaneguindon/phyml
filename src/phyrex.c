@@ -365,6 +365,7 @@ void PHYREX_XML(char *xml_filename)
   Set_Update_Eigen(NO,mixt_tree->mod);
   PhyML_Printf("\n. Init lnPr(seq|phylo): %f lnPr(coor|phylo): %f",mixt_tree->c_lnL,mixt_tree->mmod->c_lnL);
   PhyML_Printf("\n. Random seed: %d",mixt_tree->io->r_seed);
+
   
   res = PHYREX_MCMC(mixt_tree);
   Free(res);  
@@ -734,7 +735,7 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda
   t_mod *mod;
   t_opt *s_opt;
   calign *cdata;
-  phydbl T;
+  /* phydbl T; */
 
   n_dim = 2; // 2-dimensional landscape
 
@@ -840,7 +841,7 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda
   /* min_rate = 1.E-5; */
   /* max_rate = 1.E-4; */
 
-  T = PHYREX_Tree_Height(tree);
+  /* T = PHYREX_Tree_Height(tree); */
 
   tree->rates->bl_from_rt = YES;
   tree->rates->clock_r    = 1.0;
@@ -1980,15 +1981,17 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%s\t","lnP");
       PhyML_Fprintf(fp_stats,"%s\t","alnL");
       PhyML_Fprintf(fp_stats,"%s\t","glnL");
-      PhyML_Fprintf(fp_stats,"%s\t","tlnL");
-      PhyML_Fprintf(fp_stats,"%s\t","lbda");
       PhyML_Fprintf(fp_stats,"%s\t","clock");
+      PhyML_Fprintf(fp_stats,"%s\t","lbda");
       PhyML_Fprintf(fp_stats,"%s\t","mu");
+      PhyML_Fprintf(fp_stats,"%s\t","rad");
+
       PhyML_Fprintf(fp_stats,"%s\t","neigh");
+      PhyML_Fprintf(fp_stats,"%s\t","rhoe");
+
       PhyML_Fprintf(fp_stats,"%s\t","sigsq");
       PhyML_Fprintf(fp_stats,"%s\t","sigsqobs");
-      PhyML_Fprintf(fp_stats,"%s\t","rad");
-      PhyML_Fprintf(fp_stats,"%s\t","rhoe");
+      PhyML_Fprintf(fp_stats,"%s\t","dispdist");
       PhyML_Fprintf(fp_stats,"%s\t","nInt");
       PhyML_Fprintf(fp_stats,"%s\t","nCoal");
       PhyML_Fprintf(fp_stats,"%s\t","nHit");
@@ -2025,12 +2028,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%s\t","tuneLdskGivenDisk");
       PhyML_Fprintf(fp_stats,"%s\t","tuneIndelDiskSerial");
       PhyML_Fprintf(fp_stats,"%s\t","tuneIndelHitSerial");
-      PhyML_Fprintf(fp_stats,"%s\t","c0");
-      PhyML_Fprintf(fp_stats,"%s\t","c1");
-      PhyML_Fprintf(fp_stats,"%s\t","rootc0");
-      PhyML_Fprintf(fp_stats,"%s\t","rootc1");
-      PhyML_Fprintf(fp_stats,"%s\t","rootldsk0");
-      PhyML_Fprintf(fp_stats,"%s\t","rootldsk1");
     }
   
 
@@ -2254,20 +2251,20 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%g\t",tree->c_lnL+tree->mmod->c_lnL+tree->rates->c_lnL_rates);
           PhyML_Fprintf(fp_stats,"%g\t",tree->c_lnL);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->c_lnL);
-          PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Lk_Time_Component(tree));
-          PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->lbda);
           PhyML_Fprintf(fp_stats,"%g\t",tree->rates->clock_r);
+          PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->lbda);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->mu);
+          PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->rad);
           PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Neighborhood_Size(tree));
+          PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Effective_Density(tree));
           PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Update_Sigsq(tree));
           PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Realized_Sigsq(tree));
-          PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->rad);
-          PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Effective_Density(tree));
+          PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Realized_Dispersal_Dist(tree));
           PhyML_Fprintf(fp_stats,"%d\t",PHYREX_Total_Number_Of_Intervals(tree));
           PhyML_Fprintf(fp_stats,"%d\t",PHYREX_Total_Number_Of_Coal_Disks(tree));
           PhyML_Fprintf(fp_stats,"%d\t",PHYREX_Total_Number_Of_Hit_Disks(tree));
           PhyML_Fprintf(fp_stats,"%g\t",disk->time);
-          PhyML_Fprintf(fp_stats,"%gf\t",disk->ldsk->coord->lonlat[0]);
+          PhyML_Fprintf(fp_stats,"%g\t",disk->ldsk->coord->lonlat[0]);
           PhyML_Fprintf(fp_stats,"%g\t",disk->ldsk->coord->lonlat[1]);
           Output_Scalar_Dbl(tree->mod->kappa,"\t",fp_stats);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mod->ras->alpha->v);
@@ -2300,18 +2297,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_ldsk_given_disk]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_indel_disk_serial]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_indel_hit_serial]);
-          PhyML_Fprintf(fp_stats,"%g\t",tree->young_disk->prev->centr->lonlat[0]);
-          PhyML_Fprintf(fp_stats,"%g\t",tree->young_disk->prev->centr->lonlat[1]);
-
-          {
-            t_dsk *disk;
-            disk = tree->young_disk->prev;
-            while(disk->prev) disk = disk->prev;
-            PhyML_Fprintf(fp_stats,"%g\t",disk->centr->lonlat[0]);
-            PhyML_Fprintf(fp_stats,"%g\t",disk->centr->lonlat[1]);            
-            PhyML_Fprintf(fp_stats,"%g\t",disk->ldsk->coord->lonlat[0]);
-            PhyML_Fprintf(fp_stats,"%g\t",disk->ldsk->coord->lonlat[1]);            
-          }
 
           
           
@@ -5889,28 +5874,70 @@ t_geo_coord *PHYREX_Mean_Next_Loc(t_ldsk *ldsk, t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
-
+// realized sigsq = (1/d) E(\sum_x D_x^2), where $D_x$ is the
+// square euclidean distance along the x-axis between the
+// location of a lineage at time $t$ and time $t+1$.
 phydbl PHYREX_Realized_Sigsq(t_tree *tree)
 {
   t_dsk *disk,*root_disk;
   int i;
   phydbl sum;
+  phydbl t_root, t_tip;
   
   disk = tree->young_disk;
   while(disk->prev) disk = disk->prev;
   root_disk = disk;
   
+  t_root = root_disk->time;
+  t_tip = tree->young_disk->time;
+  assert(t_tip - t_root > 0.0);
+  
   disk = tree->young_disk;
   sum = 0.0;
-  for(i=0;i<disk->n_ldsk_a;++i) sum += pow(Euclidean_Dist(root_disk->ldsk->coord,disk->ldsk_a[i]->coord),2);
+  for(i=0;i<disk->n_ldsk_a;++i)
+    sum += pow(Euclidean_Dist(root_disk->ldsk->coord,disk->ldsk_a[i]->coord) / (t_tip - t_root),2);
   
-  sum /= (2.*disk->n_ldsk_a*fabs(root_disk->time));
+  return(sum/(tree->mmod->n_dim * disk->n_ldsk_a));
+}
 
-  return(sum);
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+// Mean Haversine distance (in km) per year between root and tips on the most recent disk 
+phydbl PHYREX_Realized_Dispersal_Dist(t_tree *tree)
+{
+  t_dsk *disk,*root_disk;
+  phydbl dist,t_tip,t_root;
+  int i;
+  
+  disk = tree->young_disk;
+  while(disk->prev) disk = disk->prev;
+  root_disk = disk;
 
+  t_root = root_disk->time;
+  t_tip = tree->young_disk->time;
+  assert(t_tip - t_root > 0.0);
+  
+  disk = tree->young_disk;
+  dist = 0.0;
+  for(i=0;i<disk->n_ldsk_a;++i)
+    {
+      dist += Haversine_Distance(root_disk->ldsk->coord->lonlat[0],
+                                 root_disk->ldsk->coord->lonlat[1],
+                                 disk->ldsk_a[i]->coord->lonlat[0],
+                                 disk->ldsk_a[i]->coord->lonlat[1])/(t_tip - t_root);
+        
+    }
+  
+  return(dist/disk->n_ldsk_a);
 }
 
 
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

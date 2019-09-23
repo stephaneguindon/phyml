@@ -2326,6 +2326,7 @@ t_tree *Duplicate_Tree(t_tree *ori);
 matrix *K80_dist(calign *data, phydbl g_shape);
 matrix *JC69_Dist(calign *data, t_mod *mod);
 matrix *Hamming_Dist(calign *data, t_mod *mod);
+phydbl Haversine_Distance(phydbl lon1, phydbl lat1, phydbl lon2, phydbl lat2);
 
 
 #include "xml.h"

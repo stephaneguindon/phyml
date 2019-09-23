@@ -12665,6 +12665,29 @@ void Refactor_Internal(t_node *a, t_node *d, t_edge *b, int *idx_nd, int *idx_br
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+// Haversine distance between (lon1,lat1) and (lon2,lat2) where
+// coordinates are expressed using decimals
+phydbl Haversine_Distance(phydbl lon1, phydbl lat1, phydbl lon2, phydbl lat2)
+{
+
+  phydbl R = 6371.; // Earth radius, in km
+  phydbl a,b;
+  
+  lon1 = lon1 * PI / 180.;
+  lat1 = lat1 * PI / 180.;
+
+  lon2 = lon2 * PI / 180.;
+  lat2 = lat2 * PI / 180.;
+
+  a = pow(sin(.5*(lat2-lat1)),2);
+  a += cos(lat1)*cos(lat2)*pow(sin(.5*(lon2-lon1)),2);
+
+  b = 2.*atan2(sqrt(a),sqrt(1.-a));
+
+  return(R * b);
+}
+
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////
