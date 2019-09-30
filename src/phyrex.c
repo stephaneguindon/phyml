@@ -294,6 +294,7 @@ void PHYREX_XML(char *xml_filename)
   XML_Read_Calibration(xroot,mixt_tree);
   MIXT_Chain_Cal(mixt_tree);
 
+
   if(TIMES_Calibrations_Apply_To_Tips_Only(mixt_tree) == YES &&
      mixt_tree->mod->s_opt->opt_topo == NO)
     {
@@ -348,7 +349,6 @@ void PHYREX_XML(char *xml_filename)
         break;
       }
     }
-
   
   Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree);
   Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);  
@@ -2062,6 +2062,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       MIXT_Propagate_Tree_Update(tree);
       assert(PHYREX_Check_Struct(tree));
 
+      
       if(mcmc->run > mcmc->chain_len_burnin)
         for(i=0;i<mcmc->n_moves;i++) tree->mcmc->adjust_tuning[i] = NO;
       else
@@ -2242,7 +2243,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           /* fclose(fp); */
           /* Exit("\n"); */
 
-          
           disk = tree->young_disk;
           while(disk->prev) disk = disk->prev;
 
@@ -3852,6 +3852,7 @@ void PHYREX_Tree_To_Ldsk(t_tree *tree)
   a_disk->ldsk->nd = tree->n_root;
   a_disk->time = tree->rates->nd_t[tree->n_root->num];
 
+  
   /* Inflate_Times_To_Get_Reasonnable_Edge_Lengths(1.E-3,tree); */
   Get_Node_Ranks_From_Times(tree);
 
@@ -4514,8 +4515,8 @@ phydbl PHYREX_Rate_Per_Unit_Area(t_tree *tree)
 phydbl PHYREX_Tree_Height(t_tree *tree)
 {
   t_dsk *disk;
-
-  disk = tree->young_disk;
+  
+  disk = tree->young_disk;  
   while(disk && disk->prev) disk = disk->prev;
   
   return(disk->time);
