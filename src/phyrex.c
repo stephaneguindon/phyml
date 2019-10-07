@@ -1990,7 +1990,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%s\t","rhoe");
 
       PhyML_Fprintf(fp_stats,"%s\t","sigsq");
-      PhyML_Fprintf(fp_stats,"%s\t","sigsqobs");
+      PhyML_Fprintf(fp_stats,"%s\t","realsigsqroot");
+      PhyML_Fprintf(fp_stats,"%s\t","realsigsqtips");
       PhyML_Fprintf(fp_stats,"%s\t","dispdist");
       PhyML_Fprintf(fp_stats,"%s\t","nInt");
       PhyML_Fprintf(fp_stats,"%s\t","nCoal");
@@ -2258,7 +2259,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Neighborhood_Size(tree));
           PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Effective_Density(tree));
           PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Update_Sigsq(tree));
-          PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Realized_Sigsq(tree));
+          PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Root_To_Tip_Realized_Sigsq(tree));
+          PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Tip_To_Root_Realized_Sigsq(tree));
           PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Realized_Dispersal_Dist(tree));
           PhyML_Fprintf(fp_stats,"%d\t",PHYREX_Total_Number_Of_Intervals(tree));
           PhyML_Fprintf(fp_stats,"%d\t",PHYREX_Total_Number_Of_Coal_Disks(tree));
@@ -5878,7 +5880,7 @@ t_geo_coord *PHYREX_Mean_Next_Loc(t_ldsk *ldsk, t_tree *tree)
 // realized sigsq = (1/d) E(\sum_x D_x^2), where $D_x$ is the
 // square euclidean distance along the x-axis between the
 // location of a lineage at time $t$ and time $t+1$.
-phydbl PHYREX_Realized_Sigsq(t_tree *tree)
+phydbl PHYREX_Root_To_Tip_Realized_Sigsq(t_tree *tree)
 {
   t_dsk *disk,*root_disk;
   int i;
@@ -5932,9 +5934,28 @@ phydbl PHYREX_Realized_Dispersal_Dist(t_tree *tree)
   return(dist/disk->n_ldsk_a);
 }
 
-
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+phydbl PHYREX_Tip_To_Root_Realized_Sigsq(t_tree *tree)
+{
+  t_dsk *disk;
+  phydbl sigsq;
+  int i;
+  
+  disk = tree->young_disk;
+  sigsq = 0.0;
+  for(i=0;i<disk->n_ldsk_a;++i)
+    {
+      sigsq +=
+        pow(Euclidean_Dist(disk->ldsk_a[i]->coord,
+                           disk->ldsk_a[i]->prev->coord)/fabs(disk->time - disk->ldsk_a[i]->prev->disk->time),2);
+    }
+  
+  return(sigsq/(tree->mmod->n_dim*disk->n_ldsk_a));
+}
+
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////
