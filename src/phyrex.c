@@ -5884,8 +5884,10 @@ phydbl PHYREX_Root_To_Tip_Realized_Sigsq(t_tree *tree)
 {
   t_dsk *disk,*root_disk;
   int i;
-  phydbl sum;
+  phydbl res,*sigsq;
   phydbl t_root, t_tip;
+
+  sigsq = (phydbl *)mCalloc(tree->young_disk->n_ldsk_a,sizeof(phydbl));
   
   disk = tree->young_disk;
   while(disk->prev) disk = disk->prev;
@@ -5896,11 +5898,14 @@ phydbl PHYREX_Root_To_Tip_Realized_Sigsq(t_tree *tree)
   assert(t_tip - t_root > 0.0);
   
   disk = tree->young_disk;
-  sum = 0.0;
   for(i=0;i<disk->n_ldsk_a;++i)
-    sum += pow(Euclidean_Dist(root_disk->ldsk->coord,disk->ldsk_a[i]->coord) / (t_tip - t_root),2);
+    sigsq[i] = pow(Euclidean_Dist(root_disk->ldsk->coord,disk->ldsk_a[i]->coord) / (t_tip - t_root),2);
+
+  res = Quantile(sigsq,disk->n_ldsk_a,0.5);
   
-  return(sum/(tree->mmod->n_dim * disk->n_ldsk_a));
+  Free(sigsq);
+  
+  return(res/tree->mmod->n_dim);
 }
 
 /*////////////////////////////////////////////////////////////
@@ -5919,7 +5924,7 @@ phydbl PHYREX_Realized_Dispersal_Dist(t_tree *tree)
   t_root = root_disk->time;
   t_tip = tree->young_disk->time;
   assert(t_tip - t_root > 0.0);
-  
+  \
   disk = tree->young_disk;
   dist = 0.0;
   for(i=0;i<disk->n_ldsk_a;++i)
@@ -5940,19 +5945,26 @@ phydbl PHYREX_Realized_Dispersal_Dist(t_tree *tree)
 phydbl PHYREX_Tip_To_Root_Realized_Sigsq(t_tree *tree)
 {
   t_dsk *disk;
-  phydbl sigsq;
+  phydbl *sigsq,res;
   int i;
+
+
+  sigsq = (phydbl *)mCalloc(tree->young_disk->n_ldsk_a,sizeof(phydbl));
   
   disk = tree->young_disk;
-  sigsq = 0.0;
   for(i=0;i<disk->n_ldsk_a;++i)
     {
-      sigsq +=
+      sigsq[i] =
         pow(Euclidean_Dist(disk->ldsk_a[i]->coord,
                            disk->ldsk_a[i]->prev->coord)/fabs(disk->time - disk->ldsk_a[i]->prev->disk->time),2);
+                   
     }
+
+  res = Quantile(sigsq,disk->n_ldsk_a,0.5);
+
+  Free(sigsq);
   
-  return(sigsq/(tree->mmod->n_dim*disk->n_ldsk_a));
+  return(res/tree->mmod->n_dim);
 }
 
 
