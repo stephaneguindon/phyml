@@ -1992,6 +1992,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%s\t","sigsq");
       PhyML_Fprintf(fp_stats,"%s\t","realsigsqroot");
       PhyML_Fprintf(fp_stats,"%s\t","realsigsqtips");
+      PhyML_Fprintf(fp_stats,"%s\t","realsigsqtipsbis");
       PhyML_Fprintf(fp_stats,"%s\t","dispdist");
       PhyML_Fprintf(fp_stats,"%s\t","nInt");
       PhyML_Fprintf(fp_stats,"%s\t","nCoal");
@@ -2261,6 +2262,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Update_Sigsq(tree));
           PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Root_To_Tip_Realized_Sigsq(tree));
           PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Tip_To_Root_Realized_Sigsq(tree));
+          PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Tip_To_Root_Realized_Bis_Sigsq(tree));
           PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Realized_Dispersal_Dist(tree));
           PhyML_Fprintf(fp_stats,"%d\t",PHYREX_Total_Number_Of_Intervals(tree));
           PhyML_Fprintf(fp_stats,"%d\t",PHYREX_Total_Number_Of_Coal_Disks(tree));
@@ -5965,6 +5967,28 @@ phydbl PHYREX_Tip_To_Root_Realized_Sigsq(t_tree *tree)
   Free(sigsq);
   
   return(res/tree->mmod->n_dim);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+phydbl PHYREX_Tip_To_Root_Realized_Bis_Sigsq(t_tree *tree)
+{
+  t_dsk *disk;
+  phydbl sumdist,sumt;
+  int i;
+
+  sumdist = 0.0;
+  sumt = 0.0;
+  disk = tree->young_disk;
+  for(i=0;i<disk->n_ldsk_a;++i)
+    {
+      sumdist += Euclidean_Dist(disk->ldsk_a[i]->coord,
+                                disk->ldsk_a[i]->prev->coord);
+      sumt += fabs(disk->time - disk->ldsk_a[i]->prev->disk->time);                   
+    }
+  
+  return(pow(sumdist/sumt,2)/tree->mmod->n_dim);
 }
 
 
