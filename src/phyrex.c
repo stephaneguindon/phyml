@@ -21,16 +21,20 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int PHYREX_Main(int argc, char *argv[])
 {
-  /* PHYREX_Main_Simulate(argc,argv); */
+#if (defined PHYREXSIM)
+  PHYREX_Main_Simulate(argc,argv);
+#elif (defined PHYREX)
   option *io;
   io = Get_Input(argc,argv);
   Free(io);
+#endif
   return(0);
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYREX)
 void PHYREX_XML(char *xml_filename)
 {
   FILE *fp_xml_in;
@@ -412,6 +416,7 @@ void PHYREX_XML(char *xml_filename)
   XML_Free_XML_Tree(xroot);
   fclose(fp_xml_in);
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -785,6 +790,16 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda
   mmod->lbda = lbda;
   mmod->rad = rad;
   mmod->mu = mu;
+
+  if(mmod->lbda > mmod->max_lbda) mmod->lbda = mmod->max_lbda;
+  if(mmod->rad > mmod->max_rad) mmod->rad = mmod->max_rad;
+  if(mmod->mu > mmod->max_mu) mmod->mu = mmod->max_mu;
+
+  if(mmod->lbda < mmod->min_lbda) mmod->lbda = mmod->min_lbda;
+  if(mmod->rad < mmod->min_rad) mmod->rad = mmod->min_rad;
+  if(mmod->mu < mmod->min_mu) mmod->mu = mmod->min_mu;
+
+
   mmod->sigsq = PHYREX_Update_Sigsq(tree);
 
 
@@ -1894,6 +1909,7 @@ phydbl PHYREX_Lk_Core_Range(t_dsk *young, t_dsk *old, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYREX)
 phydbl *PHYREX_MCMC(t_tree *tree)
 {
   t_mcmc *mcmc;
@@ -2355,6 +2371,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
   return(res);
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

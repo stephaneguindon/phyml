@@ -625,7 +625,7 @@ int main(int argc, char **argv)
   return 1;
 }
 
-#elif(PHYREX)
+#elif(defined PHYREX || PHYREXSIM)
 #include "phyrex.h"
 int main(int argc, char **argv)
 {

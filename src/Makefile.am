@@ -3,13 +3,13 @@
 
 DEFS = $(REVISION)
 
+if WANT_PHYML
+bin_PROGRAMS = phyml
+PROG = PHYML
+else
 if WANT_PHYTIME
 bin_PROGRAMS = phytime
 PROG = PHYTIME
-else
-if WANT_PHYTIME
-bin_PROGRAMS = phyml
-PROG = PHYML
 else
 if WANT_PHYCONT
 bin_PROGRAMS = phycont
@@ -66,6 +66,10 @@ if WANT_PHYREX
 bin_PROGRAMS = phyrex
 PROG = PHYREX
 else
+if WANT_PHYREXSIM
+bin_PROGRAMS = phyrexsim
+PROG = PHYREXSIM
+else
 if WANT_DATE
 bin_PROGRAMS = date
 PROG = DATE
@@ -89,6 +93,8 @@ endif
 endif
 endif
 endif
+endif
+
 
 if WANT_PHYTIME
 phytime_SOURCES = main.c \
@@ -562,6 +568,45 @@ sse.c sse.h\
 avx.c avx.h\
 ancestral.c ancestral.h\
 phyrex.c phyrex.h
+phyrex_LDADD = -lm 
+else
+if WANT_PHYREXSIM
+phyrexsim_SOURCES = main.c\
+utilities.c  utilities.h\
+optimiz.c  optimiz.h\
+lk.c  lk.h\
+bionj.c bionj.h\
+models.c  models.h\
+free.c  free.h\
+help.c  help.h\
+simu.c  simu.h\
+eigen.c  eigen.h\
+pars.c  pars.h\
+alrt.c  alrt.h\
+interface.c  interface.h\
+cl.c  cl.h\
+spr.c spr.h\
+draw.c  draw.h\
+stats.c stats.h\
+rates.c rates.h\
+mcmc.c mcmc.h\
+times.c times.h\
+tiporder.c tiporder.h\
+mg.c mg.h\
+m4.c m4.h\
+io.c io.h\
+make.c make.h\
+nexus.c nexus.h\
+init.c init.h\
+xml.c xml.h\
+mixt.c mixt.h\
+date.c date.h\
+tbe.c tbe.h \
+sse.c sse.h\
+avx.c avx.h\
+ancestral.c ancestral.h\
+phyrex.c phyrex.h
+phyrexsim_LDADD = -lm
 else
 if WANT_BEAGLE
 phyml_beagle_SOURCES = main.c \
@@ -680,7 +725,7 @@ endif
 endif
 endif
 endif
-# endif
+endif
 
 
 all-am:	intro $(bin_PROGRAMS)
@@ -690,6 +735,6 @@ all-am:	intro $(bin_PROGRAMS)
 intro:	
 	@echo ""
 	@echo ""
-	@echo ".: Building [$(bin_PROGRAMS)]. Version $(VERSION) :."
+	@echo ".:  Building [$(bin_PROGRAMS)]. Version $(VERSION) :."
 	@echo ""
 	@echo ""

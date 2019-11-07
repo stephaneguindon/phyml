@@ -197,6 +197,12 @@ if test "$phyrex" = yes; then
    AC_DEFINE([PHYREX],[1],[PHYREX tag on])
 fi
 
+AC_ARG_ENABLE([phyrexsim],[AS_HELP_STRING([--enable-phyrexsim],[Compile phyrexsim])],[phyrexsim=yes],[phyrexsim=no])
+AM_CONDITIONAL([WANT_PHYREXSIM], [test "$phyrexsim" = yes])
+if test "$phyrexsim" = yes; then
+   AC_DEFINE([PHYREXSIM],[1],[PHYREXSIM tag on])
+fi
+
 dnl AS_IF([test "x$enable_phyrex" = "xyes"],[PKG_CHECK_MODULES([GTK], [gtk+-3.0])])
 dnl AS_IF([test "x$enable_phyrex" = "xyes"],[PKG_CHECK_MODULES([CAIRO], [cairo])])
 dnl AS_IF([test "x$enable_phyrex" = "xyes"],[CFLAGS="${CFLAGS} `pkg-config --cflags --libs gtk+-3.0`"])
@@ -210,9 +216,6 @@ if test "$date" = yes; then
    AC_DEFINE([DATE],[1],[DATE tag on])
 fi
 
-
-
-
 if test "$phytime" = no; then
 if test "$tiporder" = no; then
 if test "$part" = no; then
@@ -225,8 +228,10 @@ if test "$geo" = no; then
 if test "$evolve" = no; then
 if test "$checkpoint" = no; then
 if test "$phyrex" = no; then
+if test "$phyrexsim" = no; then
 if test "$date" = no; then
    AC_DEFINE([PHYML],[1],[PHYML tag on])
+fi
 fi
 fi
 fi
