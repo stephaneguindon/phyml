@@ -894,6 +894,10 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda
   disk = tree->young_disk->prev;
   while(disk->prev) disk = disk->prev;
   
+  PhyML_Printf("\n. Parameter boundaries: lambda:[%G,%G]; mu=[%G,%G]; rad=[%G,%G]",
+               mmod->min_lbda,mmod->max_lbda,
+               mmod->min_mu,mmod->max_mu,
+               mmod->min_rad,mmod->max_rad);
   PhyML_Printf("\n. Useful parameters: lambda=%G; mu=%G; rad=%G; clockr=%G; sigsq=%G",
                mmod->lbda,
                mmod->mu,
