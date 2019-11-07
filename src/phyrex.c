@@ -424,7 +424,7 @@ void PHYREX_XML(char *xml_filename)
 int PHYREX_Main_Simulate(int argc, char *argv[])
 {
   t_tree *tree;
-  int seed,pid,i;
+  int seed,i;
   char *s;
   t_dsk *disk;
   int n_sites,n_otus;
@@ -433,16 +433,14 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   
   s = (char *)mCalloc(T_MAX_NAME,sizeof(char));
 
-  pid     = getpid();
-  seed    = pid;
   n_otus  = (int)atoi(argv[1]);
-  /* n_sites = (int)atoi(argv[2]); */
   n_sites = 1;
   width   = (phydbl)atof(argv[2]); 
   height  = (phydbl)atof(argv[3]); 
   lbda    = (phydbl)atof(argv[4]);
   rad     = (phydbl)atof(argv[5]);
   mu      = (phydbl)atof(argv[6]);
+  seed    = (int)atoi(argv[7]);
 
   
   printf("\n. seed: %d",seed);
