@@ -766,13 +766,13 @@ phydbl Lk_Core(int state, int ambiguity_check,
 {
   phydbl site_lk,res,*pi,*site_lk_cat,log_site_lk;
   unsigned int catg;
-  int num_prec_issue;
   
   const unsigned int ns    = tree->mod->ns;
   const unsigned int ncatg = tree->mod->ras->n_catg;
   const unsigned int site  = tree->curr_site;  
   const unsigned nsns      = ns*ns;
 
+  
   assert(tree->data->wght[site] > SMALL);
   
   pi = tree->mod->e_frq->pi->v;
@@ -812,7 +812,7 @@ phydbl Lk_Core(int state, int ambiguity_check,
 
   if(tree->mod->ras->invar == YES)
     {
-      num_prec_issue = NO;
+      int num_prec_issue = NO;
       phydbl inv_site_lk = Invariant_Lk(tree->fact_sum_scale[site],site,&num_prec_issue,tree);
 
       switch(num_prec_issue)
@@ -831,6 +831,7 @@ phydbl Lk_Core(int state, int ambiguity_check,
             break;
           }
         }
+
     }
 
   if(tree->apply_lk_scaling == YES) res = site_lk / pow(2,tree->fact_sum_scale[site]);
@@ -841,13 +842,13 @@ phydbl Lk_Core(int state, int ambiguity_check,
       site_lk = SMALL;
       tree->numerical_warning = YES;
     }
+
   
   log_site_lk = log(site_lk) - (phydbl)LOG2 * tree->fact_sum_scale[site]; // log_site_lk =  log(site_lk_scaled / 2^(left_subtree+right_subtree))
   tree->c_lnL_sorted[site] = log_site_lk;
   tree->c_lnL += tree->data->wght[site] * log_site_lk;
   tree->cur_site_lk[site] = exp(log_site_lk); // note to self : add opt out option to avoid calculating this if not necessary
     
-
   /* printf("\n. clnL: %f",tree->c_lnL); */
   return res;
 }
@@ -1230,7 +1231,7 @@ phydbl Invariant_Lk(int fact_sum_scale, int site, int *num_prec_issue, t_tree *t
         {
           inv_site_lk = tree->mod->e_frq->pi->v[tree->data->invar[site]];
           
-          /* printf("\n. inv_site_lk = %f [%c] [%d]",inv_site_lk,tree->data->c_seq[0]->state[site],tree->data->invar[site]); */
+          /* printf("\n. inv_site_lk = %f [%c] [%d] invar: %d",inv_site_lk,tree->data->c_seq[0]->state[site],tree->data->invar[site],tree->data->invar[site]); */
 
           if(tree->apply_lk_scaling == YES)
             {

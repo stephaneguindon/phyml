@@ -835,35 +835,58 @@ void Ancestral_Sequences_One_Node(t_node *d, t_tree *tree, int print)
 
                 }
 
+              if(tree->mod->ras->invar == YES)
+                {
+                  int num_prec_issue = NO;
+                  phydbl inv_site_lk = Invariant_Lk(sum_scale,csite,&num_prec_issue,tree);
+
+
+                  switch(num_prec_issue)
+                    {
+                    case YES :         
+                      {
+                        assert(isinf(inv_site_lk));
+                        inv_site_lk = Invariant_Lk(0,csite,&num_prec_issue,tree);
+                        for(i=0;i<ns;i++) p[i] = inv_site_lk * tree->mod->ras->pinvar->v * tree->mod->e_frq->pi->v[i];
+                        break;
+                      }
+                    case NO : 
+                      {
+                        for(i=0;i<ns;i++) p[i] = p[i] * (1.-tree->mod->ras->pinvar->v) + inv_site_lk * tree->mod->ras->pinvar->v * tree->mod->e_frq->pi->v[i];
+                        break;
+                      }
+                    }
+
+                }
+
+              
               for(i=0;i<ns;i++) p[i] = log(p[i]) - (phydbl)LOG2 * sum_scale;
               for(i=0;i<ns;i++) p[i] -= tree->c_lnL_sorted[csite];
               for(i=0;i<ns;i++) p[i] = exp(p[i]);
+
+
               
               /* sum_probas = 0.0; */
               /* for(i=0;i<ns;i++) sum_probas += p[i]; */
               /* for(i=0;i<ns;i++) p[i]/=sum_probas; */
               
+              sum_probas = 0.0;
+              for(i=0;i<ns;i++) sum_probas += p[i];
+              if(Are_Equal(sum_probas,1.0,0.01) == NO)
+                {
+                  PhyML_Fprintf(stderr,"\n. Probabilities do not sum to 1.0! Aborting.");
+                  for(i=0;i<ns;++i) PhyML_Fprintf(stderr,"\n. p[%2d]=%G",i,p[i]);
+                  Exit("\n");
+                }
               
               if(print == YES)
                 {
-                  PhyML_Fprintf(fp,"%4d\t%9d\t",site+1,d->num);
-                  sum_probas = .0;
-                  for(i=0;i<ns;i++)
-                    {
-                      PhyML_Fprintf(fp,"%10g\t",p[i]);
-                      sum_probas += p[i];
-                    }
-                  if(Are_Equal(sum_probas,1.0,0.01) == NO)
-                    {
-                      PhyML_Fprintf(stderr,"\n. Probabilities do not sum to 1.0! Aborting.");
-                      for(i=0;i<ns;++i) PhyML_Fprintf(stderr,"\n. p[%2d]=%G",i,p[i]);
-                      Exit("\n");
-                    }
-
+                  PhyML_Fprintf(fp,"%4d\t%9d\t",site+1,d->num);                  
+                  for(i=0;i<ns;i++) PhyML_Fprintf(fp,"%10g\t",p[i]);
                   PhyML_Fprintf(fp,"%s",Bit_To_Character_String(Integer_To_Bit(MPEE_Infer(p,ns),ns),ns));
-
                   PhyML_Fprintf(fp,"\n");
                 }
+
               
               
             }
