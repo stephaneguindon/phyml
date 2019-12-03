@@ -3622,7 +3622,7 @@ void MCMC_Kappa(t_tree *mixt_tree)
       cur_kappa   = tree->mod->kappa->v;
       
       min_kappa = 0.1;
-      max_kappa = 10.;
+      max_kappa = 100.;
 
       MCMC_Make_Move(&cur_kappa,&new_kappa,min_kappa,max_kappa,&ratio,K,mixt_tree->mcmc->move_type[mixt_tree->mcmc->num_move_kappa]);
       

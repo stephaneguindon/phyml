@@ -1667,7 +1667,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
 
   if(mixt_tree->mod->s_opt->opt_topo == NO)
     {
-      PhyML_Fprintf(stderr,"\n. Fixing the tree topology is only allowed when calibrating tip nodes exclusively");
+      PhyML_Fprintf(stderr,"\n. Fixing the tree topology is only allowed when calibrating tip nodes only.");
       PhyML_Fprintf(stderr,"\n. You are most likely calibrating here the MRCA of at least one clade with more than two tips.");
       PhyML_Fprintf(stderr,"\n. It is difficult to set the age of that clade within the limit of the calibration constraints,");
       PhyML_Fprintf(stderr,"\n. and fix the tree topology at the same time. Please contact me (guindon@lirmm.fr) for a more");
