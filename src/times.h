@@ -86,5 +86,6 @@ void TIMES_Time_To_Bl(t_tree *tree);
 void TIMES_Time_To_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree);
 void TIMES_Bl_To_Times_Post(t_node *a, t_node *d, t_edge *b, t_tree *tree);
 void TIMES_Bl_To_Times(t_tree *tree);
+phydbl TIMES_Tree_Length(t_tree *tree);
 
 #endif

@@ -2000,6 +2000,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%s\t","alnL");
       PhyML_Fprintf(fp_stats,"%s\t","glnL");
       PhyML_Fprintf(fp_stats,"%s\t","clock");
+      PhyML_Fprintf(fp_stats,"%s\t","evolrate");
       PhyML_Fprintf(fp_stats,"%s\t","lbda");
       PhyML_Fprintf(fp_stats,"%s\t","mu");
       PhyML_Fprintf(fp_stats,"%s\t","rad");
@@ -2007,7 +2008,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%s\t","neigh");
       PhyML_Fprintf(fp_stats,"%s\t","rhoe");
 
-      PhyML_Fprintf(fp_stats,"%s\t","sigsq");
+      PhyML_Fprintf(fp_stats,"%s\t","sigSq");
       PhyML_Fprintf(fp_stats,"%s\t","realsigsqroot");
       PhyML_Fprintf(fp_stats,"%s\t","realsigsqtips");
       PhyML_Fprintf(fp_stats,"%s\t","realsigsqtipsbis");
@@ -2272,6 +2273,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%g\t",tree->c_lnL);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->c_lnL);
           PhyML_Fprintf(fp_stats,"%g\t",tree->rates->clock_r);
+          PhyML_Fprintf(fp_stats,"%g\t",RATES_Realized_Substitution_Rate(tree));
           PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->lbda);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->mu);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->rad);
@@ -4447,6 +4449,7 @@ void PHYREX_Read_Tip_Coordinates(t_tree *tree)
   do
     {
       if(fscanf(fp,"%s",s) == EOF) break;
+      PhyML_Printf("\n s=%s",s);
       for(i=0;i<strlen(s);++i) if(s[i] == '#') break; /* skip comment */
       if(i != strlen(s)) continue;
       
@@ -4472,6 +4475,12 @@ void PHYREX_Read_Tip_Coordinates(t_tree *tree)
               found_ne = YES;
               if(fscanf(fp,"%lf",&(ne_lon)) == EOF) break;
               if(fscanf(fp,"%lf",&(ne_lat)) == EOF) break;
+            }
+          else /* Haven't found any match but still need to skip long and lat for unsampled location */
+            {
+              phydbl dum;
+              if(fscanf(fp,"%lf",&dum) == EOF) break;
+              if(fscanf(fp,"%lf",&dum) == EOF) break;
             }
         }
     }
@@ -5931,7 +5940,7 @@ phydbl PHYREX_Root_To_Tip_Realized_Sigsq(t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
-// Mean Haversine distance (in km) per year between root and tips on the most recent disk 
+// Mean Haversine distance (in km) per year (measured on path between root and tips on the most recent disk) 
 phydbl PHYREX_Realized_Dispersal_Dist(t_tree *tree)
 {
   t_dsk *disk,*root_disk;

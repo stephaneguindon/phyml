@@ -1059,7 +1059,6 @@ void TIMES_Set_Root_Given_Tip_Dates(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Get_Survival_Duration(t_tree *tree)
 {
   Get_Survival_Duration_Post(tree->n_root,tree->n_root->v[2],tree);
@@ -2174,6 +2173,28 @@ void TIMES_Time_To_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
         if((d->v[i] != a) && (d->b[i] != tree->e_root))
           TIMES_Time_To_Bl_Pre(d,d->v[i],d->b[i],tree);
     }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl TIMES_Tree_Length(t_tree *tree)
+{
+  phydbl sum;
+
+  assert(tree->rates);
+  assert(tree->e_root);
+  
+  sum = 0.0;
+  for(int i=0;i<2*tree->n_otu-1;++i)
+    if(tree->a_edges[i] != tree->e_root)
+      sum += fabs(tree->rates->nd_t[tree->a_edges[i]->left->num]-
+                  tree->rates->nd_t[tree->a_edges[i]->rght->num]);
+
+  sum += fabs(tree->rates->nd_t[tree->n_root->num] - tree->rates->nd_t[tree->n_root->v[1]->num]);
+  sum += fabs(tree->rates->nd_t[tree->n_root->num] - tree->rates->nd_t[tree->n_root->v[2]->num]);
+
+  return(sum);
 }
 
 //////////////////////////////////////////////////////////////

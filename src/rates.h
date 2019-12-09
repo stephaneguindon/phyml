@@ -182,5 +182,6 @@ void RATES_Set_Birth_Rate_Boundaries(t_tree *tree);
 void RATES_Copy_Rate_Struct(t_rate *from, t_rate *to, int n_otu);
 void RATES_Duplicate_Calib_Struct(t_tree *from, t_tree *to);
 int RATES_Check_Edge_Length_Consistency(t_tree *tree);
+phydbl RATES_Realized_Substitution_Rate(t_tree *tree);
 
 #endif

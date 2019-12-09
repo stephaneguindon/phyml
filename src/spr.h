@@ -36,15 +36,6 @@ int  Perform_SPR_Moves (t_tree *tree, int max_size);
 int  Perform_Best_SPR  (t_tree *tree, int max_size);
 int  Perform_One_SPR   (t_tree *tree, int max_size);
 
-void Calc_Tree_Length (t_edge *e_prune, t_node *v_prune, t_tree *tree);
-void Tree_Length      (t_node *v_prune, t_node *u_prune, t_node *v_n, t_node *v_n_1,
-		       t_node *v_nx1, t_node *v_0, t_node *u_n, phydbl d_up_v_1,
-		       phydbl d_uu, phydbl d_L_1, int n, t_tree *tree);
-int  Est_Lk_Change    (t_edge *e_prune, t_node *v_prune, t_tree *tree);
-int  Best_Lk_Change   (t_edge *e_prune, t_node *v_prune, t_tree *tree);
-void Make_Move        (_move_ *move, int type, t_tree *tree);
-int  Find_Optim_Local (t_tree *tree);
-int  Find_Optim_Globl (t_tree *tree);
 void Prune            (t_edge *e, t_node *v, t_edge **e_connect, t_edge **e_avail,
 		       t_tree *tree);
 void Regraft          (t_edge *e, t_node *v, t_edge *avail, t_tree *tree);
