@@ -761,7 +761,7 @@ phydbl *DATE_MCMC(t_tree *tree)
 
   /* Time_To_Branch(tree); */
   /* tree->bl_ndigits = 1; */
-  /* printf("\n. Random init tree: %s",Write_Tree(tree,NO)); */
+  /* printf("\n. Random init tree: %s",Write_Tree(tree)); */
   /* tree->bl_ndigits = 7; */
   RATES_Update_Cur_Bl(tree);
 
@@ -1075,7 +1075,7 @@ phydbl *DATE_MCMC(t_tree *tree)
           TIMES_Time_To_Bl(tree);
           tree->bl_ndigits = 3;
           /* RATES_Update_Cur_Bl(tree); */
-          s_tree = Write_Tree(tree,NO);
+          s_tree = Write_Tree(tree);
           tree->bl_ndigits = 7;
           PhyML_Fprintf(fp_tree,"\ntree %d [&lnP=%f] = [&R] %s",tree->mcmc->sample_num,tree->c_lnL,s_tree);          
           Free(s_tree);

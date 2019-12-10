@@ -3249,7 +3249,7 @@ void Bootstrap(t_tree *tree)
 
       if(tree->io->print_boot_trees)
         {
-          s = Write_Tree(boot_tree,NO);
+          s = Write_Tree(boot_tree);
           PhyML_Fprintf(tree->io->fp_out_boot_tree,"%s\n",s);
           Free(s);
           Print_Fp_Out_Lines(tree->io->fp_out_boot_stats,0,0,boot_tree,tree->io,replicate+1);
@@ -7769,7 +7769,7 @@ void Evolve(calign *data, t_mod *mod, int first_site_pos, t_tree *tree)
                    mod,
                    tree);
 
-/*       PhyML_Printf("%s\n",Write_Tree(tree,NO)); */
+/*       PhyML_Printf("%s\n",Write_Tree(tree)); */
 
       data->wght[site] = 1;
     }
@@ -8315,7 +8315,7 @@ char *Bootstrap_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
   Br_Len_Involving_Invar(tree);
   Collect_Edge_Support_Values(tree);
 
-  s_tree = Write_Tree(tree,NO);
+  s_tree = Write_Tree(tree);
 
   Free_Spr_List_One_Edge(tree);
   Free_One_Spr(tree->best_spr);
@@ -8377,7 +8377,7 @@ char *aLRT_From_String(char *s_tree, calign *cdata, t_mod *mod, option *io)
   Br_Len_Involving_Invar(tree);
   Collect_Edge_Support_Values(tree);
 
-  s_tree = Write_Tree(tree,NO);
+  s_tree = Write_Tree(tree);
 
 #ifdef BEAGLE
   finalize_beagle_instance(tree);
@@ -8658,7 +8658,7 @@ t_node *Find_Lca_Pair_Of_Nodes(t_node *n1, t_node *n2, t_tree *tree)
 
   if(lca == NULL)
     {
-      PhyML_Printf("\n. %s",Write_Tree(tree,NO));
+      PhyML_Printf("\n. %s",Write_Tree(tree));
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
     }
   return lca;
@@ -9892,8 +9892,8 @@ int Check_Topo_Constraints(t_tree *big_tree, t_tree *small_tree)
   diffs = Compare_Bip(small_tree,big_tree_cpy,NO);
 
   /* printf("\n"); */
-  /* printf("\n. %s",Write_Tree(big_tree_cpy,NO)); */
-  /* printf("\n. %s",Write_Tree(small_tree,NO)); */
+  /* printf("\n. %s",Write_Tree(big_tree_cpy)); */
+  /* printf("\n. %s",Write_Tree(small_tree)); */
   /* printf("\n. diffs=%d",diffs); */
 
 

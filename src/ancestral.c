@@ -579,7 +579,7 @@ void Ancestral_Sequences(t_tree *tree, int print)
       
       tree->io->print_node_num = YES;
       tree->io->print_support_val = NO;
-      char *s = Write_Tree(tree,NO);
+      char *s = Write_Tree(tree);
       PhyML_Fprintf(tree->io->fp_out_ancestral_tree,"%s",s);
       tree->io->print_node_num = NO;
       tree->io->print_support_val = bck_support;

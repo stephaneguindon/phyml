@@ -293,7 +293,7 @@ int main(int argc, char **argv)
                     {
                       best_lnL = tree->c_lnL;
                       if(most_likely_tree) Free(most_likely_tree);
-                      most_likely_tree = Write_Tree(tree,NO);
+                      most_likely_tree = Write_Tree(tree);
                       
                     }
 
@@ -362,7 +362,7 @@ int main(int argc, char **argv)
               Connect_CSeqs_To_Nodes(cdata,io,dum);
               Insert_Duplicates(dum);
               Free(most_likely_tree);
-              most_likely_tree = Write_Tree(dum,NO);
+              most_likely_tree = Write_Tree(dum);
               Free_Tree(dum);
               
               PhyML_Fprintf(io->fp_out_tree,"%s\n",most_likely_tree);
@@ -477,8 +477,8 @@ int main(int argc, char **argv)
   
 
   /* PhyML_Printf("%s\n%s", */
-  /*              Write_Tree(tree1,NO), */
-  /*              Write_Tree(tree2,NO)); */
+  /*              Write_Tree(tree1), */
+  /*              Write_Tree(tree2)); */
                
   
   /* Match_Nodes_In_Small_Tree(tree1,tree2); */

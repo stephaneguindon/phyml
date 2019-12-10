@@ -2661,7 +2661,7 @@ void Pull_Scaling_Factors(int site, t_edge *b, t_tree *tree)
                 
                 if(sum < .0)
                   {
-                    PhyML_Fprintf(stderr,"\n. tree: %s\n",Write_Tree(tree,NO));
+                    PhyML_Fprintf(stderr,"\n. tree: %s\n",Write_Tree(tree));
                     PhyML_Fprintf(stderr,"\n. b->num = %d  sum = %G root ? %d",sum,b->num,b == tree->e_root);
                     PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d.\n",__FILE__,__LINE__);
                     Exit("\n");

@@ -1084,7 +1084,7 @@ void Speed_Spr(t_tree *tree, phydbl prop_spr, int max_cycles, phydbl delta_lnL)
       
       if(tree->io->print_trace)
         {
-          char *s = Write_Tree(tree,NO);
+          char *s = Write_Tree(tree);
           PhyML_Fprintf(tree->io->fp_out_trace,"[%f]%s\n",tree->c_lnL,s); fflush(tree->io->fp_out_trace);
           if((tree->io->print_site_lnl) && (!tree->mod->s_opt->spr_pars))
             {
@@ -2051,7 +2051,7 @@ void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int d
 
       if(tree->io->print_trace)
         {
-          char *s = Write_Tree(tree,NO);
+          char *s = Write_Tree(tree);
           PhyML_Fprintf(tree->io->fp_out_trace,"[%f]%s\n",tree->c_lnL,s); fflush(tree->io->fp_out_trace);
           if((tree->io->print_site_lnl) && (!tree->mod->s_opt->spr_pars))
             {

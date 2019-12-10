@@ -693,7 +693,7 @@ t_tree *PHYREX_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl
       
       RATES_Update_Cur_Bl(tree);
 
-      char *s = Write_Tree(tree,NO);
+      char *s = Write_Tree(tree);
       PhyML_Printf("\n. #@# tree: %s",s);
       Free(s);
 
@@ -914,7 +914,7 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda
   
   
   PhyML_Printf("\n. Tree: ");
-  PhyML_Printf("\n. %s \n",Write_Tree(tree,NO));
+  PhyML_Printf("\n. %s \n",Write_Tree(tree));
 
   PhyML_Printf("\n. Spatial coordinates: ");
   for(i=0;i<tree->n_otu;i++)
@@ -2258,12 +2258,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!(tree->mcmc->run%tree->mcmc->sample_interval))
         {
 
-          /* FILE *fp; */
-          /* fp = fopen("file.txt","w"); */
-          /* PHYREX_Check_Point(fp,tree); */
-          /* fclose(fp); */
-          /* Exit("\n"); */
-
           disk = tree->young_disk;
           while(disk->prev) disk = disk->prev;
 
@@ -2355,7 +2349,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           TIMES_Time_To_Bl(tree);
           tree->bl_ndigits = 3;
           /* RATES_Update_Cur_Bl(tree); */
-          char *s = Write_Tree(tree,NO);
+          char *s = Write_Tree(tree);
           PhyML_Fprintf(fp_tree,"\ntree %d [&lnP=%f] = [&R]  %s",tree->mcmc->sample_num,tree->c_lnL,s);
           Free(s);
           PhyML_Fprintf(fp_tree,"\nEND;");
@@ -4281,7 +4275,7 @@ phydbl PHYREX_Neighborhood_Size_Regression(t_tree *tree)
           anc = Find_Lca_Pair_Of_Nodes(tree->a_nodes[i],tree->a_nodes[j],tree);
           if(anc == NULL) 
             {
-              PhyML_Fprintf(stderr,"\n. %s",Write_Tree(tree,NO));
+              PhyML_Fprintf(stderr,"\n. %s",Write_Tree(tree));
               PhyML_Fprintf(stderr,"\n. %s %s",tree->a_nodes[i]->name,tree->a_nodes[j]->name);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);            
             }
@@ -4335,7 +4329,7 @@ void PHYREX_Rand_Pairs_Coal_Times_Dist(t_tree *tree)
       anc = Find_Lca_Pair_Of_Nodes(tree->a_nodes[i],tree->a_nodes[j],tree);
       if(anc == NULL) 
         {
-          PhyML_Fprintf(stderr,"\n. %s",Write_Tree(tree,NO));
+          PhyML_Fprintf(stderr,"\n. %s",Write_Tree(tree));
           PhyML_Fprintf(stderr,"\n. %s %s",tree->a_nodes[i]->name,tree->a_nodes[j]->name);
           Generic_Exit(__FILE__,__LINE__,__FUNCTION__);            
         }

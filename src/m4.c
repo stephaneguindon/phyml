@@ -179,7 +179,7 @@ int M4_main(int argc, char **argv)
 		      best_lnL = tree->c_lnL;
 		      Br_Len_Involving_Invar(tree);
 		      if(most_likely_tree) Free(most_likely_tree);
-		      most_likely_tree = Write_Tree(tree,NO);
+		      most_likely_tree = Write_Tree(tree);
 		      Get_Tree_Size(tree);
 		    }
 
@@ -929,7 +929,7 @@ void M4_Compute_Posterior_Mean_Rates(phydbl ***post_probs, t_tree *tree)
 
   /* Print the tree */
   PhyML_Fprintf(tree->io->fp_out_tree,"Constrained tree with corrected branch lengths = ");
-  s = Write_Tree(tree,NO);
+  s = Write_Tree(tree);
   PhyML_Fprintf(tree->io->fp_out_tree,"%s\n",s);
   Free(s);
   tree->ps_tree = DR_Make_Tdraw_Struct(tree);
@@ -1003,7 +1003,7 @@ void M4_Compute_Posterior_Mean_Rates(phydbl ***post_probs, t_tree *tree)
 	}
 
       PhyML_Fprintf(tree->io->fp_out_tree,"tree %d = ",patt+1);
-      s = Write_Tree(tree,NO);
+      s = Write_Tree(tree);
       PhyML_Fprintf(tree->io->fp_out_tree,"%s\n",s);
       Free(s);
       DR_Print_Tree_Postscript(tree->ps_page_number++,YES,tree->io->fp_out_ps,tree);
@@ -1035,7 +1035,7 @@ void M4_Compute_Posterior_Mean_Rates(phydbl ***post_probs, t_tree *tree)
       tree->a_edges[br]->l->v = mean_br_len[br];
     }
   PhyML_Fprintf(tree->io->fp_out_tree,"Mean branch lengths=");
-  s = Write_Tree(tree,NO);
+  s = Write_Tree(tree);
   PhyML_Fprintf(tree->io->fp_out_tree,"%s\n",s);
   Free(s);
 /*   DR_Print_Tree_Postscript(tree->ps_page_number++,tree->io->fp_out_ps,tree); */

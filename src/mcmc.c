@@ -2623,7 +2623,7 @@ void MCMC_Print_Param(t_mcmc *mcmc, t_tree *tree)
       // TREES
       TIMES_Time_To_Bl(tree);
       tree->bl_ndigits = 3;
-      s_tree = Write_Tree(tree,NO);
+      s_tree = Write_Tree(tree);
       tree->bl_ndigits = 7;
       PhyML_Fprintf(mcmc->out_fp_trees,"TREE %8d [%f] = [&R] %s\n",mcmc->run,tree->c_lnL,s_tree);
       Free(s_tree);

@@ -27,7 +27,7 @@ char **Sub_Trees(char *tree,int *degree);
 int Next_Par(char *s,int pos);
 void Print_List(t_ll *list);
 void Print_Tree(FILE *fp,t_tree *tree);
-char *Write_Tree(t_tree *tree,int custom);
+char *Write_Tree(t_tree *tree);
 void R_wtree_Custom(t_node *pere,t_node *fils,int *available,char **s_tree,int *pos,t_tree *tree);
 void Detect_Align_File_Format(option *io);
 void Detect_Tree_File_Format(option *io);

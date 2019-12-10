@@ -1155,7 +1155,7 @@ t_tree *GEO_Simulate(t_geo *t, int n_otu)
     FABS(tree->rates->nd_t[tree->n_root->v[2]->num] -
          tree->rates->nd_t[tree->n_root->num]) / tree->e_root->l->v;
 
-  /* printf("\n. %s ",Write_Tree(tree,NO)); */
+  /* printf("\n. %s ",Write_Tree(tree)); */
 
   DR_Draw_Tree("essai.ps",tree);
 
