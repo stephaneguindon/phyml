@@ -15,6 +15,7 @@ the GNU public licence. See http://www.opensource.org for details.
 #ifndef UTILITIES_H
 #define UTILITIES_H
 
+#define _POSIX_C_SOURCE 200112L
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -180,6 +181,9 @@ int TIME;
 #define T_MAX_TOKEN     200
 #define T_MAX_ID_COORD  10
 #define T_MAX_ID_DISK   10
+#define T_MAX_KEY 200
+#define T_MAX_VAL 1000
+
 
 #define N_MAX_MIXT_CLASSES 1000
 
@@ -258,14 +262,11 @@ int TIME;
 
 #define  T_MAX_FILE           200
 #define  T_MAX_LINE       2000000
-#define  T_MAX_NAME           100
+#define  T_MAX_NAME          1000
 #define  T_MAX_ID              20
 #define  T_MAX_SEQ        2000000
 #define  T_MAX_OPTION         100
-#define  T_MAX_LABEL           10
 #define  T_MAX_STATE            5
-#define  N_MAX_LABEL           10
-#define  BLOCK_LABELS         100
 
 #define  NODE_DEG_MAX        2000
 #define  BRENT_IT_MAX        1000
@@ -535,12 +536,13 @@ typedef struct __Node {
   struct __Lindisk_Node             *ldsk; /*! Used in PhyREX. Lineage/Disk this node corresponds to */
   struct __Node                  *rk_next; /*! Next node in the list of ranked nodes (from oldest to youngest) */
   struct __Node                  *rk_prev; /*! Previous node in the list of ranked nodes (from oldest to youngest) */
+  struct __Label                   *label;
 
 
   int                           *bip_size; /*! Size of each of the three lists from bip_node */
   int                                 num; /*! t_node number */
   int                                 tax; /*! tax = 1 -> external node, else -> internal t_node */
-  int                        check_branch; /*! check_branch=1 is the corresponding branch is labelled with '*' */
+
   char                              *name; /*! taxon name (if exists) */
   char                          *ori_name; /*! taxon name (if exists) */
   int                               n_cal; /*! Number of calibration constraints */
@@ -595,7 +597,8 @@ typedef struct __Edge {
   struct __Edge                     *prev;
   struct __Edge                *next_mixt;
   struct __Edge                *prev_mixt;
-
+  struct __Label                   *label;
+  
   int                                 num; /*! branch number */
   scalar_dbl                           *l; /*! branch length */
   scalar_dbl                      *best_l; /*! best branch length found so far */
@@ -680,8 +683,6 @@ typedef struct __Edge {
   phydbl                      support_val;
 
 
-  char                           **labels; /*! string of characters that labels the corresponding t_edge */
-  int                            n_labels; /*! number of labels */
   int                             n_jumps; /*! number of jumps of substitution rates */
 
   int                    *n_diff_states_l; /*! Number of different states found in the subtree on the left of this edge */
@@ -692,6 +693,8 @@ typedef struct __Edge {
   short int        update_partial_lk_left;
   short int        update_partial_lk_rght;
 
+  
+  
 }t_edge;
 
 /*!********************************************************/
@@ -2028,6 +2031,18 @@ typedef struct __JSON_Array {
 }json_a;
 
 /*!********************************************************/
+
+
+typedef struct __Label{
+  char *key;
+  char *val;
+  char sep;
+  struct __Label    *next;
+}t_label;
+
+
+
+
 /*!********************************************************/
 /*!********************************************************/
 /*!********************************************************/
@@ -2328,6 +2343,7 @@ matrix *JC69_Dist(calign *data, t_mod *mod);
 matrix *Hamming_Dist(calign *data, t_mod *mod);
 phydbl Haversine_Distance(phydbl lon1, phydbl lat1, phydbl lon2, phydbl lat2);
 phydbl Tree_Length(t_tree *tree);
+void Remove_Duplicates_From_Tree(calign *data, t_tree *tree);
 
 
 #include "xml.h"

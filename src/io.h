@@ -19,7 +19,7 @@ the GNU public licence.  See http://www.opensource.org for details.
 
 t_tree *Read_Tree(char **s_tree);
 void R_rtree(char *s_tree_a,char *s_tree_d,t_node *a,t_tree *tree,int *n_int,int *n_ext);
-void Read_Branch_Label(char *s_d,char *s_a,t_edge *b);
+void Read_Node_Label(char *s_d, char *s_a, t_node *n);
 void Read_Branch_Length(char *s_d, char *s_a, t_edge *b, t_tree *tree);
 void Read_Node_Name(t_node *d, char *s_tree_d, t_edge *b, t_tree *tree);
 void Clean_Multifurcation(char **subtrees,int current_deg,int end_deg);
@@ -112,5 +112,7 @@ int PhyML_Fscanf(FILE *fp, char *format, ...);
 char *PHYREX_Print_Tree_Structure(t_tree *tree);
 void PHYREX_Check_Point(FILE *fp, t_tree *tree);
 void Output_Scalar_Dbl(scalar_dbl *t, char *sep, FILE *fp);
+t_label *Read_Labels(char *s);
+void Print_Labels(FILE *fp_where, char *s_where, t_label *label);
 
 #endif

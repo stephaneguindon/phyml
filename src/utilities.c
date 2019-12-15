@@ -2030,27 +2030,28 @@ void Copy_Seq_Names_To_Tip_Labels(t_tree *tree, calign *data)
 calign *Copy_Cseq(calign *ori, option *io)
 {
   calign *new;
-  int i,j,k,n_otu,c_len;
+  int i,j,k,n_otu,n_rm,c_len;
   char **sp_names_in,**sp_names_out;
 
   n_otu = ori->n_otu;
   c_len = ori->crunch_len;
-
-  sp_names_in = (char **)mCalloc(n_otu,sizeof(char *));
-  for(i=0;i<ori->n_otu;i++)
+  n_rm = ori->n_rm;
+  
+  sp_names_in = (char **)mCalloc(n_otu+n_rm,sizeof(char *));
+  for(i=0;i<n_otu+n_rm;i++)
     {
       sp_names_in[i] = (char *)mCalloc(strlen(ori->c_seq[i]->name)+1,sizeof(char));
       strcpy(sp_names_in[i],ori->c_seq[i]->name);
     }
 
-  sp_names_out = (char **)mCalloc(ori->n_rm,sizeof(char *));
+  sp_names_out = (char **)mCalloc(n_rm,sizeof(char *));
   for(i=0;i<ori->n_rm;i++)
     {
       sp_names_out[i] = (char *)mCalloc(strlen(ori->c_seq_rm[i]->name)+1,sizeof(char));
       strcpy(sp_names_out[i],ori->c_seq_rm[i]->name);
     }
 
-  new = Make_Calign(n_otu,c_len+1,io->state_len,ori->init_len,sp_names_in,ori->n_rm,sp_names_out);
+  new = Make_Calign(n_otu+n_rm,c_len+1,io->state_len,ori->init_len,sp_names_in,ori->n_rm,sp_names_out);
   new->n_rm = ori->n_rm;
   Init_Calign(n_otu,c_len+1,ori->init_len,new);
 
@@ -2067,6 +2068,7 @@ calign *Copy_Cseq(calign *ori, option *io)
         }
       new->c_seq_rm[i]->len = ori->c_seq_rm[i]->len;
       new->c_seq_rm[i]->state[c_len*io->state_len] = '\0';
+      new->c_seq_rm[i]->is_duplicate = YES;
     }
   
   new->obs_pinvar = ori->obs_pinvar;
@@ -2097,18 +2099,21 @@ calign *Copy_Cseq(calign *ori, option *io)
     {
       new->c_seq[i]->len = ori->c_seq[i]->len;
       strcpy(new->c_seq[i]->name,ori->c_seq[i]->name);
+      new->c_seq[i]->is_duplicate = NO;
     }
   
   for(i=0;i<ori->n_otu;i++) new->c_seq[i]->state[c_len*io->state_len] = '\0';
 
   for(i=0;i<T_MAX_ALPHABET;i++) new->obs_state_frq[i] = ori->obs_state_frq[i];
 
-  new->init_len           = ori->init_len;
-  new->clean_len          = ori->clean_len;
-  new->crunch_len         = ori->crunch_len;
-  new->n_otu              = ori->n_otu;
-  new->io                 = ori->io;
+  new->init_len   = ori->init_len;
+  new->clean_len  = ori->clean_len;
+  new->crunch_len = ori->crunch_len;
+  new->n_otu      = ori->n_otu;
+  new->io         = ori->io;
 
+  for(i=n_otu;i<n_otu+n_rm;++i) new->c_seq[i] = new->c_seq_rm[i-n_otu];
+  
   for(i=0;i<ori->n_otu;i++) Free(sp_names_in[i]);
   Free(sp_names_in);
 
@@ -2397,9 +2402,8 @@ short int Are_Sequences_Identical(align *seq1, align *seq2)
 
 void Remove_Duplicates(calign *data, option *io, t_tree *tree)
 {
-  int n_duplicates,n_removed,n_otu_orig,i,j,k,idx;
+  int n_duplicates,n_removed,n_otu_orig,i,j,k;
   align *tmp;
-  t_edge *res_edge;
   
   if(io->leave_duplicates == YES) return;
   
@@ -2408,7 +2412,6 @@ void Remove_Duplicates(calign *data, option *io, t_tree *tree)
   if(n_otu_orig < 4) return;
 
   n_duplicates = 0;
-  idx = -1;
   
   for(i=0; i<data->n_otu-1; ++i)
     {
@@ -2474,6 +2477,24 @@ void Remove_Duplicates(calign *data, option *io, t_tree *tree)
         }
     }
 
+  Remove_Duplicates_From_Tree(data,tree);
+
+  data->n_otu = tree->n_otu;
+  io->n_otu = tree->n_otu;
+  
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Remove_Duplicates_From_Tree(calign *data, t_tree *tree)
+{
+  int i,j;
+  int n_otu_orig,idx;
+  t_edge *res_edge;
+
+  n_otu_orig = tree->n_otu;
+  idx = -1;
   
   for(i=0;i<n_otu_orig;++i)
     {
@@ -2518,9 +2539,8 @@ void Remove_Duplicates(calign *data, option *io, t_tree *tree)
     {
       tree->n_otu -= data->n_rm;
       Refactor_Tree(tree);      
-      data->n_otu = tree->n_otu;
-      io->n_otu = tree->n_otu;
     }
+  
 }
 
 //////////////////////////////////////////////////////////////
@@ -3161,12 +3181,11 @@ void Bootstrap(t_tree *tree)
 
       Init_Model(boot_data,boot_mod,tree->io);
 
-      if(tree->io->mod->use_m4mod) M4_Init_Model(boot_mod->m4mod,boot_data,boot_mod);
-
       if(tree->io->in_tree == 2)
         {
           rewind(tree->io->fp_in_tree);
           boot_tree = Read_Tree_File_Phylip(tree->io->fp_in_tree);
+          Remove_Duplicates_From_Tree(boot_data,boot_tree);
         }
       else
         {
@@ -3254,10 +3273,6 @@ void Bootstrap(t_tree *tree)
           Free(s);
           Print_Fp_Out_Lines(tree->io->fp_out_boot_stats,0,0,boot_tree,tree->io,replicate+1);
         }
-
-      /*       rf = .0; */
-      /*       For(j,2*tree->n_otu-3)  */
-      /* 	rf += tree->a_edges[j]->bip_score; */
 
 
       PhyML_Printf(".");
@@ -3699,7 +3714,6 @@ t_mod *Copy_Model(t_mod *ori)
   
   Make_Model_Complete(cpy);
   Record_Model(ori,cpy);
-  /* cpy->m4mod = M4_Copy_M4_Model(ori, ori->m4mod); */
 
 #ifdef BEAGLE
   cpy->b_inst              = ori->b_inst;
@@ -7620,81 +7634,6 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-void Random_Lineage_Rates(t_node *a, t_node *d, t_edge *b, phydbl stick_prob, phydbl *rates, int curr_rate, int n_rates, t_tree *tree)
-{
-  phydbl uni;
-  int new_rate;
-  int i;
-
-
-  if(b)
-    {
-      uni  = rand();
-      uni /= RAND_MAX;
-
-      if(uni > stick_prob) /* Randomly pick a new rate */
-    {
-      uni  = rand();
-      uni /= RAND_MAX;
-      uni = (phydbl)(uni * (n_rates-1));
-      if(uni-(int)(uni) > 0.5-BIG) new_rate = (int)(uni)+1;
-      else new_rate = (int)(uni);
-    }
-      else
-    {
-      new_rate = curr_rate;
-    }
-
-      for(i=0;i<3;i++)
-    if(a->v[i] == d)
-      {
-        a->b[i]->l->v *= rates[new_rate];
-        break;
-      }
-
-      for(i=0;i<3;i++)
-    if(a->v[i] == d)
-      {
-        if(!(a->b[i]->n_labels%BLOCK_LABELS)) Make_New_Edge_Label(a->b[i]);
-        if(rates[new_rate] > 1.0)      strcpy(a->b[i]->labels[a->b[i]->n_labels],"FAST");
-        else if(rates[new_rate] < 1.0) strcpy(a->b[i]->labels[a->b[i]->n_labels],"SLOW");
-        else                           strcpy(a->b[i]->labels[a->b[i]->n_labels],"MEDIUM");
-        a->b[i]->n_labels++;
-        break;
-      }
-      curr_rate = new_rate;
-    }
-
-  if(d->tax) return;
-  else
-    {
-      for(i=0;i<3;i++)
-    if(d->v[i] != a)
-      Random_Lineage_Rates(d,d->v[i],d->b[i],stick_prob,rates,curr_rate,n_rates,tree);
-    }
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-t_edge *Find_Edge_With_Label(char *label, t_tree *tree)
-{
-  int i,j;
-
-  For(i,2*tree->n_otu-3)
-    {
-      For(j,tree->a_edges[i]->n_labels)
-    {
-      if(!strcmp(tree->a_edges[i]->labels[j],label)) return tree->a_edges[i];
-    }
-    }
-  return NULL;
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
 void Evolve(calign *data, t_mod *mod, int first_site_pos, t_tree *tree)
 {
   int root_state, root_rate_class;
@@ -7822,16 +7761,6 @@ void Evolve_Recur(t_node *a, t_node *d, t_edge *b, int a_state, int r_class, int
   /*              b->Pij_rr[r_class*dim1+a_state*dim2+2], */
   /*              b->Pij_rr[r_class*dim1+a_state*dim2+3]); */
 
-  if(mod->use_m4mod)
-    {
-      phydbl rrate; /* relative rate of substitutions */
-
-      rrate = mod->m4mod->multipl[(int)d_state/mod->m4mod->n_o];
-      if(!(b->n_labels%BLOCK_LABELS)) Make_New_Edge_Label(b);
-      if(rrate > 1.0) strcpy(b->labels[b->n_labels],"FASTER");
-      else strcpy(b->labels[b->n_labels],"SLOWER");
-      b->n_labels++;
-    }
 
   if(d->tax)
     {
@@ -8150,9 +8079,6 @@ void Best_Of_NNI_And_SPR(t_tree *tree)
 
       Free_Model_Complete(ori_mod);
       Free_Model_Complete(best_mod);
-
-      M4_Free_M4_Model(ori_mod->m4mod);
-      M4_Free_M4_Model(best_mod->m4mod);
 
       Free_Model_Basic(ori_mod);
       Free_Model_Basic(best_mod);
@@ -9214,7 +9140,6 @@ void Translate_Tax_Names(char **tax_names, t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 /*!
   Skip coment in NEXUS file.
@@ -12591,7 +12516,6 @@ void Refactor_Tree(t_tree *tree)
         break;
       }
 
-               
   assert(i < tree->n_otu);
   assert(idx_nd == tree->n_otu);
   idx_br = idx_nd;

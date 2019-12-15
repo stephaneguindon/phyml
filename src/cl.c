@@ -245,7 +245,6 @@ int Read_Command_Line(option *io, int argc, char **argv)
 #ifdef INVITEE
             
             Free_Optimiz(io->mod->s_opt);
-            M4_Free_M4_Model(io->mod->m4mod);
             Free_Model_Basic(io->mod);
             Free_Input(io);
             PhyTime_XML(optarg);
@@ -254,7 +253,6 @@ int Read_Command_Line(option *io, int argc, char **argv)
 #elif defined(PHYML)
            
             Free_Optimiz(io->mod->s_opt);
-            M4_Free_M4_Model(io->mod->m4mod);
             Free_Model_Basic(io->mod);
             Free_Input(io);
             io = PhyML_XML(optarg);
@@ -264,7 +262,6 @@ int Read_Command_Line(option *io, int argc, char **argv)
 #elif defined(PHYTIME)
 
             Free_Optimiz(io->mod->s_opt);
-            M4_Free_M4_Model(io->mod->m4mod);
             Free_Model_Basic(io->mod);
             Free_Input(io);
             DATE_XML(optarg);
@@ -273,7 +270,6 @@ int Read_Command_Line(option *io, int argc, char **argv)
 #elif defined(PHYREX)
 
             Free_Optimiz(io->mod->s_opt);
-            M4_Free_M4_Model(io->mod->m4mod);
             Free_Model_Basic(io->mod);
             Free_Input(io);
             PHYREX_XML(optarg);

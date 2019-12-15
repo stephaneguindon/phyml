@@ -142,10 +142,8 @@ int main(int argc, char **argv)
 
                   Init_Model(cdata,mod,io);
 
-                  if(io->mod->use_m4mod) M4_Init_Model(mod->m4mod,cdata,mod);
 
-
-                  //Make the initial tree
+                  // Make the initial tree
                   switch(io->in_tree)
                     {
                     case 0 : case 1 : { tree = Dist_And_BioNJ(cdata,mod,io); break; }
@@ -385,7 +383,6 @@ int main(int argc, char **argv)
   if(mod->s_opt->n_rand_starts > 1) PhyML_Printf("\n. Best log likelihood: %f\n",best_lnL);
 
   Free_Optimiz(mod->s_opt);
-  M4_Free_M4_Model(mod->m4mod);
   Free_Model_Basic(mod);
 
   if(io->fp_in_constraint_tree) fclose(io->fp_in_constraint_tree);
@@ -587,6 +584,7 @@ int main(int argc, char **argv)
 {
   option *io;
   int i;
+  int year;
   
   io = (option *)Get_Input(argc,argv);
   if(!io) return(0);
@@ -595,12 +593,13 @@ int main(int argc, char **argv)
 
   for(i=0;i<io->n_otu;i++)
     {
+      sscanf(io->data[i]->name,"%d",&year);
       PhyML_Printf("\n<clade id=\"clad%d\">",i+1);
       PhyML_Printf("\n\t<taxon value=\"%s\"/>",io->data[i]->name);
       PhyML_Printf("\n</clade>");
       PhyML_Printf("\n<calibration id=\"cal%d\">",i+1);
-      PhyML_Printf("\n\t<lower>0.0</lower>");
-      PhyML_Printf("\n\t<upper>0.0</upper>");
+      PhyML_Printf("\n\t<lower>%d</lower>",2020-year);
+      PhyML_Printf("\n\t<upper>%d</upper>",2020-year);
       PhyML_Printf("\n\t<appliesto clade.id=\"clad%d\"/>",i+1);
       PhyML_Printf("\n</calibration>");
     }

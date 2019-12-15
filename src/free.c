@@ -86,24 +86,9 @@ void Free_Edge_Length(t_edge *b)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Free_Edge_Labels(t_edge *b)
-{
-  int i;
-
-  if(b->labels)
-    {
-      For(i,b->n_labels-(b->n_labels%BLOCK_LABELS)+BLOCK_LABELS) Free(b->labels[i]);
-      Free(b->labels);
-      b->labels = NULL;
-    }
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
 void Free_Edge(t_edge *b)
 {
-  Free_Edge_Labels(b);
+  Free_Label(b->label);
   Free_Edge_Core(b);
 }
 
@@ -126,6 +111,7 @@ void Free_Node(t_node *n)
   Free(n->s_ingrp);
   Free(n->s_outgrp);
   Free(n->cal);
+  Free_Label(n->label);
   
   if(n->c_seq_anc != NULL) 
     {
@@ -144,7 +130,6 @@ void Free_Node(t_node *n)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void Free_Mat(matrix *mat)
 {
@@ -360,7 +345,7 @@ void Free_Tree_Pars(t_tree *mixt_tree)
       Free(tree->step_mat);
       Free(tree->site_pars);
       
-      For(i,2*tree->n_otu-3) 
+      for(i=0;i<2*tree->n_otu-3;++i) 
         {
           Free_Edge_Pars(tree->a_edges[i]);
         }
@@ -898,7 +883,6 @@ void Free_Model(t_mod *mod)
 {
   Free_Custom_Model(mod);
   Free_Model_Complete(mod);
-  if(mod->m4mod) M4_Free_M4_Model(mod->m4mod);
   Free_Model_Basic(mod);
   /* Free(mod); */
 }
@@ -1267,34 +1251,6 @@ void MCMC_Free_MCMC(t_mcmc *mcmc)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-void M4_Free_M4_Model(m4 *m4mod)
-{
-  int i;
-
-  if(m4mod->o_mats)
-    {
-      for(i=0;i<m4mod->n_h;i++) Free(m4mod->o_mats[i]);
-      Free(m4mod->o_mats);
-      Free(m4mod->h_mat);
-      Free(m4mod->o_rr);
-      Free(m4mod->h_rr);
-      Free(m4mod->o_fq);
-      Free(m4mod->h_fq);
-      Free(m4mod->multipl);
-      Free(m4mod->multipl_unscaled);
-      Free(m4mod->h_fq_unscaled);
-    }
-
-  Free(m4mod);
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
 void RATES_Free_Rates(t_rate *rates)
 {
   if(rates->is_allocated == YES)
@@ -1541,6 +1497,16 @@ void Free_TBE_Matrices(int n_otu,  short unsigned*** i_matrix, short unsigned***
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void Free_Label(t_label *lab)
+{
+  if(lab == NULL) return;
+  Free(lab->key);
+  Free(lab->val);
+  if(lab->next != NULL) Free_Label(lab->next);
+  Free(lab);
+}
+
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

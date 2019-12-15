@@ -53,7 +53,6 @@ int Init_Qmat_AB(phydbl *daa, phydbl *pi);
 void XML_Init_Attribute(xml_attr *attr);
 void Init_String(t_string *ts);
 void Init_Efrq(phydbl *b_frq, t_efrq *f);
-void M4_Init_Model(m4 *m4mod, calign *data, t_mod *mod);
 void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu);
 void Init_Rmat(t_rmat *rmat);
 void Init_MGF_Bl(t_tree *tree);

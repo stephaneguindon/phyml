@@ -1139,36 +1139,6 @@ void TIMES_Update_Node_Ordering(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void TIMES_Label_Edges_With_Calibration_Intervals(t_tree *tree)
-{
-  char *s;
-  int i;
-
-  s = (char *)mCalloc(T_MAX_LINE,sizeof(char));
-  
-  tree->write_labels = YES;
-
-  For(i,2*tree->n_otu-2)
-    {
-      if(tree->a_nodes[i]->tax == NO)
-        {
-          if(tree->rates->t_has_prior[i] == YES && tree->a_nodes[i]->b[0] != tree->e_root)
-            {
-              tree->a_nodes[i]->b[0]->n_labels = 1;
-              Make_New_Edge_Label(tree->a_nodes[i]->b[0]);
-              sprintf(s,"'>%f<%f'",FABS(tree->rates->t_prior_max[i])/100.,FABS(tree->rates->t_prior_min[i])/100.);
-              tree->a_nodes[i]->b[0]->labels[0] = (char *)mCalloc(strlen(s)+1,sizeof(char));
-              strcpy(tree->a_nodes[i]->b[0]->labels[0],s);
-            }
-        }
-    }
-  
-  Free(s);
-
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
 
 void TIMES_Set_Calibration(t_tree *tree)
 {

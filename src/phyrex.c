@@ -1948,6 +1948,21 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   mcmc->sample_size      = mcmc->chain_len/mcmc->sample_interval;
   mcmc->sample_num       = 0;
   disk                   = NULL;
+
+
+  
+  PhyML_Fprintf(fp_tree,"#NEXUS");
+  PhyML_Fprintf(fp_tree,"\n\nBegin taxa;");
+  PhyML_Fprintf(fp_tree,"\n\tDimensions ntax=%d;",tree->n_otu);
+  PhyML_Fprintf(fp_tree,"\n\tTaxlabels");
+  for(int i=0;i<tree->n_otu;++i)
+    {
+      PhyML_Fprintf(fp_tree,"\n\t\t'%s'",tree->a_nodes[i]->name);
+    }
+  PhyML_Fprintf(fp_tree,"\n\t;");
+  PhyML_Fprintf(fp_tree,"\n\tend;");
+  PhyML_Fprintf(fp_tree,"\n\n");
+  PhyML_Fprintf(fp_tree,"Begin trees;");
   
   MCMC_Complete_MCMC(mcmc,tree);
 
@@ -2004,10 +2019,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%s\t","lbda");
       PhyML_Fprintf(fp_stats,"%s\t","mu");
       PhyML_Fprintf(fp_stats,"%s\t","rad");
-
       PhyML_Fprintf(fp_stats,"%s\t","neigh");
       PhyML_Fprintf(fp_stats,"%s\t","rhoe");
-
       PhyML_Fprintf(fp_stats,"%s\t","sigSq");
       PhyML_Fprintf(fp_stats,"%s\t","realsigsqroot");
       PhyML_Fprintf(fp_stats,"%s\t","realsigsqtips");
@@ -2020,8 +2033,15 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%s\t","rootLon");
       PhyML_Fprintf(fp_stats,"%s\t","rootLat");
       for(int i=0;i<Scalar_Len(tree->mod->kappa);++i) PhyML_Fprintf(fp_stats,"tstv%d\t",i);
-      PhyML_Fprintf(fp_stats,"%s\t","alpha");
+      if(tree->mod->ras->free_mixt_rates == NO) PhyML_Fprintf(fp_stats,"alpha\t");
+      else
+        {
+          for(int i=0;i<tree->mod->ras->n_catg;++i) PhyML_Fprintf(fp_stats,"p(%d)\t",i+1);
+          for(int i=0;i<tree->mod->ras->n_catg;++i) PhyML_Fprintf(fp_stats,"rr(%d)\t",i+1);
+        }
+
       PhyML_Fprintf(fp_stats,"%s\t","MeanBr");
+      PhyML_Fprintf(fp_stats,"%s\t","TreeLen");
       PhyML_Fprintf(fp_stats,"%s\t","accLbda");
       PhyML_Fprintf(fp_stats,"%s\t","accMu");
       PhyML_Fprintf(fp_stats,"%s\t","accRad");
@@ -2285,9 +2305,14 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%g\t",disk->ldsk->coord->lonlat[0]);
           PhyML_Fprintf(fp_stats,"%g\t",disk->ldsk->coord->lonlat[1]);
           Output_Scalar_Dbl(tree->mod->kappa,"\t",fp_stats);
-          PhyML_Fprintf(fp_stats,"%g\t",tree->mod->ras->alpha->v);
-          /* for(int i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->rates->br_r[i]); */
+          if(tree->mod->ras->free_mixt_rates == NO) PhyML_Fprintf(fp_stats,"%g\t",tree->mod->ras->alpha->v);
+          else
+            {
+              for(int i=0;i<tree->mod->ras->n_catg;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->mod->ras->gamma_r_proba->v[i]);
+              for(int i=0;i<tree->mod->ras->n_catg;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->mod->ras->gamma_rr->v[i]);
+            }
           PhyML_Fprintf(fp_stats,"%g\t",RATES_Get_Mean_Rate_In_Subtree(tree->n_root,tree));
+          PhyML_Fprintf(fp_stats,"%g\t",Tree_Length(tree));
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_lbda]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_mu]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_rad]);
@@ -2348,11 +2373,11 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           PHYREX_Ldsk_To_Tree(tree);
           TIMES_Time_To_Bl(tree);
           tree->bl_ndigits = 3;
-          /* RATES_Update_Cur_Bl(tree); */
+          PHYREX_Label_Nodes_With_Locations(tree);
+          PHYREX_Label_Edges(tree);
           char *s = Write_Tree(tree);
           PhyML_Fprintf(fp_tree,"\ntree %d [&lnP=%f] = [&R]  %s",tree->mcmc->sample_num,tree->c_lnL,s);
           Free(s);
-          PhyML_Fprintf(fp_tree,"\nEND;");
 
           fflush(NULL);
                 
@@ -6013,11 +6038,110 @@ phydbl PHYREX_Tip_To_Root_Realized_Bis_Sigsq(t_tree *tree)
   return(pow(sumdist/sumt,2)/tree->mmod->n_dim);
 }
 
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+void PHYREX_Label_Nodes_With_Locations(t_tree *tree)
+{
+  t_dsk *disk;
+  t_node *n;
+
+  for(int i=0;i<tree->n_otu;++i)
+    {
+      if(tree->a_nodes[i]->label == NULL)
+        {
+          tree->a_nodes[i]->label = Make_Label();
+          tree->a_nodes[i]->label->next = Make_Label();
+        }
+      
+      sprintf(tree->a_nodes[i]->label->key,"&location");
+      sprintf(tree->a_nodes[i]->label->val,"{%f,%f}",
+              tree->a_nodes[i]->ldsk->coord->lonlat[1],
+              tree->a_nodes[i]->ldsk->coord->lonlat[0]);
+      sprintf(tree->a_nodes[i]->label->next->key,"location");
+      sprintf(tree->a_nodes[i]->label->next->val,"{%f,%f}",
+              tree->a_nodes[i]->ldsk->coord->lonlat[1],
+              tree->a_nodes[i]->ldsk->coord->lonlat[0]);
+    }
+
+  disk = tree->young_disk->prev;
+
+  do
+    {
+      if(disk->ldsk && disk->ldsk->nd != NULL)
+        {
+          n = disk->ldsk->nd;
+          if(n->label == NULL)
+            {
+              n->label = Make_Label();
+              n->label->next = Make_Label();
+            }
+
+          sprintf(n->label->key,"&location");
+          sprintf(n->label->val,"{%f,%f}",
+                  disk->ldsk->coord->lonlat[1],
+                  disk->ldsk->coord->lonlat[0]);
+          sprintf(n->label->next->key,"location");
+          sprintf(n->label->next->val,"{%f,%f}",
+                  disk->ldsk->coord->lonlat[1],
+                  disk->ldsk->coord->lonlat[0]);
+
+          /* Print same label on all internal nodes with exactly the */
+          /* same coalescence time. */
+          for(int i=tree->n_otu;i<2*tree->n_otu-1;++i)
+            {
+              if(tree->a_nodes[i] != n &&
+                 Are_Equal(tree->rates->nd_t[i],
+                           tree->rates->nd_t[n->num],
+                           1.E-10) == YES)
+                {
+                  n = tree->a_nodes[i];
+                  if(n->label == NULL)
+                    {
+                      n->label = Make_Label();
+                      n->label->next = Make_Label();
+                    }
+                  
+                  sprintf(n->label->key,"&location");
+                  sprintf(n->label->val,"{%f,%f}",
+                          disk->ldsk->coord->lonlat[1],
+                          disk->ldsk->coord->lonlat[0]);
+                  sprintf(n->label->next->key,"location");
+                  sprintf(n->label->next->val,"{%f,%f}",
+                          disk->ldsk->coord->lonlat[1],
+                          disk->ldsk->coord->lonlat[0]);
+                }
+            }
+        }
+      
+      disk = disk->prev;
+    }
+  while(disk);
+}
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
-/*////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////*/
+
+void PHYREX_Label_Edges(t_tree *tree)
+{
+  for(int i=0;i<2*tree->n_otu-1;++i)
+    {
+      if(tree->a_edges[i]->label == NULL)
+        {
+          tree->a_edges[i]->label = Make_Label();
+          tree->a_edges[i]->label->next = Make_Label();
+        }
+      
+      sprintf(tree->a_edges[i]->label->key,"&rate");
+      sprintf(tree->a_edges[i]->label->val,"0");
+      
+      sprintf(tree->a_edges[i]->label->next->key,"location.rate");
+      sprintf(tree->a_edges[i]->label->next->val,"0");
+    }
+
+
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

@@ -66,7 +66,6 @@ phydbl TIMES_Lk_Yule_Root_Marginal(t_tree *tree);
 phydbl TIMES_Lk_Yule_Joint(t_tree *tree);
 void TIMES_Update_Node_Ordering(t_tree *tree);
 phydbl TIMES_Lk_Yule_Order(t_tree *tree);
-void TIMES_Label_Edges_With_Calibration_Intervals(t_tree *tree);
 void TIMES_Record_Prior_Times(t_tree *tree);
 void TIMES_Reset_Prior_Times(t_tree *tree);
 phydbl TIMES_Lk_Yule_Order_Root_Cond(t_tree *tree);

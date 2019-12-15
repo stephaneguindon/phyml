@@ -18,7 +18,6 @@ the GNU public licence.  See http://www.opensource.org for details.
 #include "utilities.h"
 
 void Make_All_Edges_Lk(t_node *a,t_node *d,t_tree *tree);
-void Make_New_Edge_Label(t_edge *b);
 t_edge *Make_Edge_Light(t_node *a,t_node *d,int num);
 void Make_Edge_Pars(t_edge *b,t_tree *tree);
 void Make_Edge_Pars_Left(t_edge *b,t_tree *tree);
@@ -84,4 +83,5 @@ void Alloc_TBE_Matrices(int n_otu,  short unsigned*** i_matrix, short unsigned**
 			short unsigned** min_dist, short unsigned**  min_dist_edge, int** cluster_sizes);
 void Make_Extra_Edge_Lk(t_tree *tree);
 void Make_Spr(t_tree *tree);
+t_label *Make_Label();
 #endif

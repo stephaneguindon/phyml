@@ -23,7 +23,6 @@ void Free_Mat(matrix *mat);
 void Free_Partial_Lk(phydbl *p_lk,int len,int n_catg);
 void Free_Tree(t_tree *tree);
 void Free_Bip(t_tree *tree);
-void Free_Edge_Labels(t_edge *b);
 void Free_Edge(t_edge *b);
 void Free_Node(t_node *n);
 void Free_Calign(calign *data);
@@ -70,7 +69,6 @@ void Free_Vect_Int(vect_int *v);
 void Free_Scalar_Dbl(scalar_dbl *v);
 void Free_Scalar_Int(scalar_int *v);
 void Free_Edge_Core(t_edge *b);
-void M4_Free_M4_Model(m4 *m4mod);
 void RATES_Free_Rates(t_rate *rates);
 void Free_Calib(t_cal *cal);
 void Free_Edge_Lk_Left(t_edge *b);
@@ -97,4 +95,5 @@ void Free_TBE_Matrices(int n_otu,  short unsigned*** i_matrix, short unsigned***
 void Free_Extra_Edge_Lk(t_tree *tree);
 void Free_Edge_Length(t_edge *b);
 void Free_Clade(t_clad *this);
+void Free_Label(t_label *lab);
 #endif

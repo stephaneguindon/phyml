@@ -113,7 +113,6 @@ interface.c interface.h\
 cl.c cl.h\
 spr.c spr.h\
 times.c times.h\
-m4.c m4.h\
 draw.c draw.h\
 rates.c rates.h\
 mcmc.c mcmc.h\
@@ -150,7 +149,6 @@ interface.c interface.h\
 cl.c cl.h\
 spr.c spr.h\
 times.c times.h\
-m4.c m4.h\
 draw.c draw.h\
 rates.c rates.h\
 mcmc.c mcmc.h\
@@ -185,7 +183,6 @@ else
 # times.c times.h\
 # tiporder.c tiporder.h\
 # mg.c mg.h\
-# m4.c m4.h\
 # io.c io.h\
 # make.c make.h\
 # nexus.c nexus.h\
@@ -214,7 +211,6 @@ interface.c interface.h\
 cl.c cl.h\
 mg.c mg.h\
 spr.c spr.h\
-m4.c m4.h\
 tbe.c tbe.h \
 draw.c draw.h\
 stats.c stats.h\
@@ -242,7 +238,6 @@ times.c times.h\
 mcmc.c mcmc.h\
 rates.c rates.h\
 spr.c spr.h\
-m4.c m4.h\
 draw.c draw.h\
 stats.c stats.h\
 tiporder.c tiporder.h
@@ -271,7 +266,6 @@ mcmc.c mcmc.h\
 times.c times.h\
 tiporder.c tiporder.h\
 mg.c mg.h\
-m4.c m4.h\
 io.c io.h\
 make.c make.h\
 nexus.c nexus.h\
@@ -308,7 +302,6 @@ mcmc.c mcmc.h\
 times.c times.h\
 tiporder.c tiporder.h\
 mg.c mg.h\
-m4.c m4.h\
 io.c io.h\
 make.c make.h\
 nexus.c nexus.h\
@@ -347,7 +340,6 @@ mcmc.c mcmc.h\
 times.c times.h\
 tiporder.c tiporder.h\
 mg.c mg.h\
-m4.c m4.h\
 io.c io.h\
 make.c make.h\
 nexus.c nexus.h\
@@ -384,7 +376,6 @@ mcmc.c mcmc.h\
 times.c times.h\
 tiporder.c tiporder.h\
 mg.c mg.h\
-m4.c m4.h\
 io.c io.h\
 make.c make.h\
 nexus.c nexus.h\
@@ -420,7 +411,6 @@ mcmc.c mcmc.h\
 times.c times.h\
 tiporder.c tiporder.h\
 mg.c mg.h\
-m4.c m4.h\
 io.c io.h\
 make.c make.h\
 nexus.c nexus.h\
@@ -455,7 +445,6 @@ mcmc.c mcmc.h\
 times.c times.h\
 tiporder.c tiporder.h\
 mg.c mg.h\
-m4.c m4.h\
 io.c io.h\
 make.c make.h\
 nexus.c nexus.h\
@@ -487,7 +476,6 @@ mcmc.c mcmc.h\
 times.c times.h\
 tiporder.c tiporder.h\
 mg.c mg.h\
-m4.c m4.h\
 io.c io.h\
 make.c make.h\
 tbe.c tbe.h \
@@ -521,7 +509,6 @@ mcmc.c mcmc.h\
 times.c times.h\
 tiporder.c tiporder.h\
 mg.c mg.h\
-m4.c m4.h\
 io.c io.h\
 make.c make.h\
 tbe.c tbe.h \
@@ -555,7 +542,6 @@ mcmc.c mcmc.h\
 times.c times.h\
 tiporder.c tiporder.h\
 mg.c mg.h\
-m4.c m4.h\
 io.c io.h\
 make.c make.h\
 nexus.c nexus.h\
@@ -593,7 +579,6 @@ mcmc.c mcmc.h\
 times.c times.h\
 tiporder.c tiporder.h\
 mg.c mg.h\
-m4.c m4.h\
 io.c io.h\
 make.c make.h\
 nexus.c nexus.h\
@@ -632,7 +617,6 @@ times.c times.h\
 tiporder.c tiporder.h\
 mg.c mg.h\
 tbe.c tbe.h \
-m4.c m4.h\
 io.c io.h\
 make.c make.h\
 nexus.c nexus.h\
@@ -665,7 +649,6 @@ mcmc.c mcmc.h\
 times.c times.h\
 tiporder.c tiporder.h\
 mg.c mg.h\
-m4.c m4.h\
 io.c io.h\
 make.c make.h\
 nexus.c nexus.h\
@@ -697,7 +680,6 @@ rates.c rates.h\
 mcmc.c mcmc.h\
 times.c times.h\
 tiporder.c tiporder.h\
-m4.c m4.h\
 io.c io.h\
 make.c make.h\
 nexus.c nexus.h\

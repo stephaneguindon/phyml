@@ -786,7 +786,6 @@ void M4_Post_Prob_H_Class_Edge_Site(t_edge *b, phydbl ****integral, phydbl *post
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 phydbl ***M4_Compute_Proba_Hidden_States_On_Edges(t_tree *tree)
 {
   int i;

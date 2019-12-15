@@ -3607,36 +3607,6 @@ void RATES_Set_Birth_Rate_Boundaries(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void RATES_Write_Mean_R_On_Edge_Label(t_node *a, t_node *d, t_edge *b, t_tree *tree)
-{
-
-  if(b) 
-    {
-      if(!b->labels) 
-	{
-	  Make_New_Edge_Label(b);	
-	  b->n_labels++;
-	}
-      sprintf(b->labels[0],"%f",tree->rates->mean_r[d->num] / (phydbl)(tree->mcmc->run/tree->mcmc->sample_interval+1.));
-    }
-
-  if(d->tax) return;
-  else
-    {
-      int i;
-      for(i=0;i<3;i++)
-	{
-	  if((d->v[i] != a) && (d->b[i] != tree->e_root))
-	    {
-	      RATES_Write_Mean_R_On_Edge_Label(d,d->v[i],d->b[i],tree);
-	    }
-	}
-    }
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
 phydbl RATES_Get_Mean_Rate_In_Subtree(t_node *root, t_tree *tree)
 {
   phydbl sum;
@@ -3692,7 +3662,7 @@ void RATES_Get_Mean_Rate_In_Subtree_Pre(t_node *a, t_node *d, phydbl *sum, int *
 
   else assert(FALSE);
 
-  (*n)   += 1;
+  (*n) += 1;
 
   if(d->tax == YES)  return;
   else

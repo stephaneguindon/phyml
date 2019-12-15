@@ -373,16 +373,6 @@ void PMat_Gamma(phydbl l, t_mod *mod, int pos, phydbl *Pij)
       PhyML_Printf("\n. Pij\n");
       for(i=0;i<n;i++) { For (j,n) PhyML_Printf("%f ",Pij[pos+mod->ns*i+j]); PhyML_Printf("\n"); }
       PhyML_Printf("\n. sum = %f",sum);
-      if(mod->m4mod)
-        {
-          int i;
-          PhyML_Printf("\n. mod->m4mod->ras->alpha = %f",mod->m4mod->alpha);
-          PhyML_Printf("\n. mod->m4mod->delta = %f",mod->m4mod->delta);
-          for(i=0;i<mod->m4mod->n_h;i++)
-        {
-          PhyML_Printf("\n. mod->m4mod->multipl[%d] = %f",i,mod->m4mod->multipl[i]);
-        }
-        }
       PhyML_Fprintf(stderr,"\n. l=%f",l);
       PhyML_Fprintf(stderr,"\n. Err in file %s at line %d\n\n",__FILE__,__LINE__);
       Warn_And_Exit("");
@@ -875,29 +865,22 @@ int Update_Eigen(t_mod *mod)
   if(mod->update_eigen == YES)
     {
       //Update the Q-matrix first before computing the Eigen(because the Eigen is computed based on the Q-matrix)
-      if(mod->use_m4mod == NO)
+      if(mod->io->datatype == NT)
         {
-          if(mod->io->datatype == NT)
-            {
-              if(mod->whichmodel == GTR)
-                Update_Qmat_GTR(mod->r_mat->rr->v, mod->r_mat->rr_val->v, mod->r_mat->rr_num->v, mod->e_frq->pi->v, mod->r_mat->qmat->v, mod->s_opt->opt_rr);
-              else if(mod->whichmodel == CUSTOM)
-                Update_Qmat_GTR(mod->r_mat->rr->v, mod->r_mat->rr_val->v, mod->r_mat->rr_num->v, mod->e_frq->pi->v, mod->r_mat->qmat->v, mod->s_opt->opt_rr);
-              else if(mod->whichmodel == HKY85)
-                Update_Qmat_HKY(mod->kappa->v, mod->e_frq->pi->v, mod->r_mat->qmat->v);
-              else /* Any other nucleotide-based t_mod */
-                Update_Qmat_HKY(mod->kappa->v, mod->e_frq->pi->v, mod->r_mat->qmat->v);
-            }
-          else if(mod->io->datatype == GENERIC)
-            {
-              Update_Qmat_Generic(mod->r_mat->rr_val->v,mod->e_frq->pi->v,mod->ns,mod->r_mat->qmat->v);
-            }
+          if(mod->whichmodel == GTR)
+            Update_Qmat_GTR(mod->r_mat->rr->v, mod->r_mat->rr_val->v, mod->r_mat->rr_num->v, mod->e_frq->pi->v, mod->r_mat->qmat->v, mod->s_opt->opt_rr);
+          else if(mod->whichmodel == CUSTOM)
+            Update_Qmat_GTR(mod->r_mat->rr->v, mod->r_mat->rr_val->v, mod->r_mat->rr_num->v, mod->e_frq->pi->v, mod->r_mat->qmat->v, mod->s_opt->opt_rr);
+          else if(mod->whichmodel == HKY85)
+            Update_Qmat_HKY(mod->kappa->v, mod->e_frq->pi->v, mod->r_mat->qmat->v);
+          else /* Any other nucleotide-based t_mod */
+            Update_Qmat_HKY(mod->kappa->v, mod->e_frq->pi->v, mod->r_mat->qmat->v);
         }
-      else
+      else if(mod->io->datatype == GENERIC)
         {
-          M4_Update_Qmat(mod->m4mod,mod);
+          Update_Qmat_Generic(mod->r_mat->rr_val->v,mod->e_frq->pi->v,mod->ns,mod->r_mat->qmat->v);
         }
-
+      
       //Now compute the eigen vectors and values
       scalar   = 1.0;
       n_iter   = 0;
