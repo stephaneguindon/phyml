@@ -1964,7 +1964,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   PhyML_Fprintf(fp_tree,"\n\n");
   PhyML_Fprintf(fp_tree,"\nBegin trees;");
   PhyML_Fprintf(fp_tree,"\n\tTranslate");
-  for(int i=0;i<tree->n_otu;++i) PhyML_Fprintf(fp_tree,"\n\t%d'%s'",i+1,tree->a_nodes[i]->name);
+  for(int i=0;i<tree->n_otu;++i) PhyML_Fprintf(fp_tree,"\n\t%d '%s'",i+1,tree->a_nodes[i]->name);
   PhyML_Fprintf(fp_tree,"\n;");
 
 
