@@ -1962,7 +1962,14 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   PhyML_Fprintf(fp_tree,"\n\t;");
   PhyML_Fprintf(fp_tree,"\n\tend;");
   PhyML_Fprintf(fp_tree,"\n\n");
-  PhyML_Fprintf(fp_tree,"Begin trees;");
+  PhyML_Fprintf(fp_tree,"\nBegin trees;");
+  PhyML_Fprintf(fp_tree,"\n\tTranslate");
+  for(int i=0;i<tree->n_otu;++i) PhyML_Fprintf(fp_tree,"\n\t%d'%s'",i+1,tree->a_nodes[i]->name);
+  PhyML_Fprintf(fp_tree,"\n;");
+
+
+
+
   
   MCMC_Complete_MCMC(mcmc,tree);
 
@@ -2373,10 +2380,12 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           PHYREX_Ldsk_To_Tree(tree);
           TIMES_Time_To_Bl(tree);
           tree->bl_ndigits = 3;
+          tree->write_tax_names = NO;
           PHYREX_Label_Nodes_With_Locations(tree);
           PHYREX_Label_Edges(tree);
           char *s = Write_Tree(tree);
           PhyML_Fprintf(fp_tree,"\ntree %d [&lnP=%f] = [&R]  %s",tree->mcmc->sample_num,tree->c_lnL,s);
+          tree->write_tax_names = YES;
           Free(s);
 
           fflush(NULL);
