@@ -1964,7 +1964,11 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   PhyML_Fprintf(fp_tree,"\n\n");
   PhyML_Fprintf(fp_tree,"\nBegin trees;");
   PhyML_Fprintf(fp_tree,"\n\tTranslate");
-  for(int i=0;i<tree->n_otu;++i) PhyML_Fprintf(fp_tree,"\n\t%d '%s',",i+1,tree->a_nodes[i]->name);
+  for(int i=0;i<tree->n_otu;++i)
+    {
+      PhyML_Fprintf(fp_tree,"\n\t%d '%s'",i+1,tree->a_nodes[i]->name);
+      if(i<tree->n_otu-1) PhyML_Fprintf(fp_tree,",");
+    }
   PhyML_Fprintf(fp_tree,"\n;");
 
 
@@ -2366,16 +2370,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           /* for(i=0;i<tree->mcmc->n_moves;i++) if(tree->mcmc->start_ess[i] == YES) MCMC_Update_Effective_Sample_Size(i,tree->mcmc,tree); */
           /* for(i=0;i<tree->mcmc->n_moves;i++) MCMC_Update_Mode(i,tree->mcmc,tree); */
           
-          /* if(tree->mcmc->sample_num == 0) */
-          /*   { */
-          /*     PhyML_Fprintf(fp_tree,"\n#NEXUS"); */
-          /*     PhyML_Fprintf(fp_tree,"\nBEGIN TREES;"); */
-          /*   } */
-          /* else */
-          /*   { */
-          /*     fseek(fp_tree,-5,SEEK_CUR); */
-          /*   } */
-
           
           PHYREX_Ldsk_To_Tree(tree);
           TIMES_Time_To_Bl(tree);
@@ -2385,6 +2379,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           PHYREX_Label_Edges(tree);
           char *s = Write_Tree(tree);
           PhyML_Fprintf(fp_tree,"\ntree %d [&lnP=%f] = [&R]  %s",tree->mcmc->sample_num,tree->c_lnL,s);
+          PhyML_Fprintf(fp_tree,"\nend;");
+          fseek(fp_tree,-5,SEEK_END);
           tree->write_tax_names = YES;
           Free(s);
 
