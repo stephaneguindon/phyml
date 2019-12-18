@@ -1909,8 +1909,15 @@ typedef struct __Phylogeo{
 /*!********************************************************/
 // Structure for the Etheridge-Barton migration/reproduction model
 typedef struct __Migrep_Model{
+  struct __Geo_Coord            *lim_up; // max longitude and lattitude                        
+  struct __Geo_Coord            *lim_do; // min longitude and lattitude                        
+  struct __SampArea       *samp_area;
+
   int                           name;
   int                          n_dim;
+  int                    safe_phyrex;
+  int           max_num_of_intervals;
+  int                     update_rad;
 
   phydbl                        lbda; // rate at which events occur
   phydbl                    min_lbda; // min of rate at which events occur
@@ -1926,7 +1933,6 @@ typedef struct __Migrep_Model{
   phydbl                     min_rad; // min of radius of the migrep disk 
   phydbl                     max_rad; // max of radius of the migrep disk 
   phydbl             prior_param_rad; // parameter of the parameter for the prior on radius
-  int                     update_rad;
 
   phydbl                       sigsq; // parent to offspring distance variance (i.e., gene flow) parameter. 
   phydbl                   min_sigsq; // min 
@@ -1943,13 +1949,9 @@ typedef struct __Migrep_Model{
   phydbl               c_ln_prior_mu; // current value of log prior for the prior on mu
   phydbl            c_ln_prior_sigsq; // current value of log prior for the prior on sigsq=4.pi.lbda.mu.rad^4
 
-  int                    safe_phyrex;
   phydbl             soft_bound_area;
 
-  struct __Geo_Coord            *lim_up; // max longitude and lattitude                        
-  struct __Geo_Coord            *lim_do; // min longitude and lattitude                        
 
-  struct __SampArea       *samp_area;
 }t_phyrex_mod;
 
 /*!********************************************************/

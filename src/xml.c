@@ -173,6 +173,7 @@ t_tree *XML_Process_Base(char *xml_filename)
       io->fp_out_stats = Openfile(io->out_stats_file,WRITE);
     }
 
+               
   s = XML_Get_Attribute_Value(p_elem,"print.trace");
 
   if(s)
@@ -2347,8 +2348,8 @@ void XML_Read_Calibration(xml_node *xroot, t_tree *tree)
                           
           cal->clade_list_size = 0;
           cal->current_clade_idx = 0;
-          cal->lower = -up;
-          cal->upper = -low;
+          cal->lower = low;
+          cal->upper = up;
           cal->is_primary = YES;
 
           tree->rates->a_cal[tree->rates->n_cal] = cal;

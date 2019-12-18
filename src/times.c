@@ -1832,7 +1832,6 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
               assert(list_size <= mixt_tree->n_otu);
             }
         }
-
       
       cal = cal_list;
       do
@@ -1856,6 +1855,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
                                  times,
                                  &nd_num,
                                  mixt_tree);
+
       // Adding root node 
       mixt_tree->n_root = mixt_tree->a_nodes[2*mixt_tree->n_otu-2];
       mixt_tree->n_root->v[1]->v[0] = mixt_tree->n_root->v[2];
@@ -1899,7 +1899,7 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       /*       } */
       /*   } */
       
-    if(!DATE_Check_Calibration_Constraints(mixt_tree))
+      if(!DATE_Check_Calibration_Constraints(mixt_tree))
         {
           /* PhyML_Printf("\n. Could not generate tree (DATE_Check_Calibration_Constraints)\n\n"); */
         }
@@ -1922,6 +1922,17 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
       PhyML_Fprintf(stderr,"\n. {X,Z,Y} (noted as [c,d]), i.e., b cannot be smaller (older) than c. ");
       PhyML_Fprintf(stderr,"\n. Also, please remember that the present time corresponds to a time");
       PhyML_Fprintf(stderr,"\n. value equal to zero and past events have negative time values.");
+
+      PhyML_Fprintf(stderr,"\n\n");
+      if(!DATE_Check_Calibration_Constraints(mixt_tree))
+        {
+          PhyML_Fprintf(stderr,"\n. Could not generate tree (DATE_Check_Calibration_Constraints)\n\n");
+        }
+      else if(!DATE_Check_Time_Constraints(mixt_tree))
+        {
+          PhyML_Fprintf(stderr,"\n. Could not generate tree (DATE_Check_Time_Constraints)\n\n");
+        }
+
       Exit("\n");
     }
 

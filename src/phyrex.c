@@ -360,6 +360,7 @@ void PHYREX_XML(char *xml_filename)
   MIXT_Set_Ignore_Root(YES,mixt_tree);
   MIXT_Set_Bl_From_Rt(YES,mixt_tree);
 
+
   PHYREX_Oldest_Sampled_Disk(mixt_tree);
   
   assert(PHYREX_Check_Struct(mixt_tree));
@@ -1724,13 +1725,18 @@ phydbl PHYREX_Lk(t_tree *tree)
 {
   t_dsk *disk;
   int n_evt;
+
   
   assert(!tree->young_disk->next);
   assert(tree->young_disk->prev);
   
   tree->mmod->c_lnL = 0.0;
 
-  tree->mmod->c_lnL += PHYREX_LnPrior_Radius(tree);
+  if(PHYREX_Total_Number_Of_Intervals(tree) > tree->mmod->max_num_of_intervals)
+   {
+     tree->mmod->c_lnL = UNLIKELY;
+     return UNLIKELY;
+   }
   
   if(isinf(tree->mmod->c_lnL) || isnan(tree->mmod->c_lnL)) 
     {
@@ -1921,7 +1927,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   phydbl *res;
   t_dsk *disk;
 
-
   fp_tree    = tree->io->fp_out_tree;
   fp_stats   = tree->io->fp_out_stats;
 
@@ -1948,9 +1953,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   mcmc->sample_size      = mcmc->chain_len/mcmc->sample_interval;
   mcmc->sample_num       = 0;
   disk                   = NULL;
-
-
-  
+    
   PhyML_Fprintf(fp_tree,"#NEXUS");
   PhyML_Fprintf(fp_tree,"\n\nBegin taxa;");
   PhyML_Fprintf(fp_tree,"\n\tDimensions ntax=%d;",tree->n_otu);
@@ -1985,7 +1988,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   /* Starting parameter values */
   
   /* tree->mmod->lbda = Uni()*(tree->mmod->max_lbda - tree->mmod->min_lbda) + tree->mmod->min_lbda; */
-  tree->mmod->lbda = (phydbl)(tree->n_otu) / fabs(PHYREX_Tree_Height(tree));
+  tree->mmod->lbda = (phydbl)(tree->n_otu) / (1.0+fabs(PHYREX_Tree_Height(tree)));
   tree->mmod->mu   = Uni()*(tree->mmod->max_mu - tree->mmod->min_mu) + tree->mmod->min_mu;
   tree->mmod->rad  = Uni()*(tree->mmod->max_rad - tree->mmod->min_rad) + tree->mmod->min_rad;
 
@@ -2007,9 +2010,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       PhyML_Fprintf(fp_stats,"\n# fst-based estimate of neighborhood size: %f",PHYREX_Neighborhood_Size_Regression(tree));
       PhyML_Fprintf(fp_stats,"\n# nucleotide diversity: %f",Nucleotide_Diversity(tree->data));
       PhyML_Fprintf(fp_stats,"\n# length of a generation: %G time units",PHYREX_Generation_Length(tree));
-      PhyML_Fprintf(fp_stats,"\n# clock rate: %G subst. per time unit",tree->rates->clock_r);
-      
-      
+      PhyML_Fprintf(fp_stats,"\n# clock rate: %G subst. per time unit",tree->rates->clock_r);      
       PhyML_Fprintf(fp_stats,"\n# after rand glnL: %f alnL: %f",tree->mmod->c_lnL,tree->c_lnL);
       PhyML_Fprintf(fp_stats,"\n# ninter: %d",PHYREX_Total_Number_Of_Intervals(tree));
       PhyML_Fprintf(fp_stats,"\n# ncoal: %d",PHYREX_Total_Number_Of_Coal_Disks(tree));
@@ -2017,6 +2018,14 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       PhyML_Fprintf(fp_stats,"\n# start lbda: %f",tree->mmod->lbda);
       PhyML_Fprintf(fp_stats,"\n# start mu: %f",tree->mmod->mu);
       PhyML_Fprintf(fp_stats,"\n# start rad: %f",tree->mmod->rad);
+      PhyML_Fprintf(fp_stats,"\n# dist. in tree: ");
+      for(int i=0;i<tree->n_otu-1;++i) for(int j=i+1;j<tree->n_otu;++j) PhyML_Fprintf(fp_stats,"%G ",PHYREX_Dist_Between_Two_Ldsk(tree->a_nodes[i]->ldsk,tree->a_nodes[j]->ldsk,tree));
+      PhyML_Fprintf(fp_stats,"\n# dist. in space: ");
+      for(int i=0;i<tree->n_otu-1;++i) for(int j=i+1;j<tree->n_otu;++j) PhyML_Fprintf(fp_stats,"%G ",Euclidean_Dist(tree->a_nodes[i]->ldsk->coord,tree->a_nodes[j]->ldsk->coord));
+      PhyML_Printf("\n");
+
+
+      
       fflush(NULL);
       
       
@@ -2142,7 +2151,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           if(tree->numerical_warning == YES) PhyML_Fprintf(stdout," -- WARNING: numerical precision issue detected...");
         }
 
-
       
       /* tree->mmod->lbda = 1.0; */
       /* tree->mmod->mu   = 0.5; */
@@ -2163,13 +2171,12 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_rad"))
         MCMC_PHYREX_Radius(tree);
-    
-      
+          
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_disk"))
         MCMC_PHYREX_Indel_Disk(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_hit")) */
-      /*   MCMC_PHYREX_Indel_Hit(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_hit"))
+        MCMC_PHYREX_Indel_Hit(tree);
 
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_move_disk_ud"))
         MCMC_PHYREX_Move_Disk_Updown(tree);
@@ -4473,7 +4480,6 @@ void PHYREX_Read_Tip_Coordinates(t_tree *tree)
   do
     {
       if(fscanf(fp,"%s",s) == EOF) break;
-      PhyML_Printf("\n s=%s",s);
       for(i=0;i<strlen(s);++i) if(s[i] == '#') break; /* skip comment */
       if(i != strlen(s)) continue;
       
@@ -4482,8 +4488,9 @@ void PHYREX_Read_Tip_Coordinates(t_tree *tree)
       if(i != tree->n_otu) /* Found a match */
         {
           assert(tree->a_nodes[i]->ldsk);
-          if(fscanf(fp,"%lf",&(tree->a_nodes[i]->ldsk->coord->lonlat[0])) == EOF) break;
-          if(fscanf(fp,"%lf",&(tree->a_nodes[i]->ldsk->coord->lonlat[1])) == EOF) break;          
+          // First column: latitude, second one: longitude
+          if(fscanf(fp,"%lf",&(tree->a_nodes[i]->ldsk->coord->lonlat[1])) == EOF) break;
+          if(fscanf(fp,"%lf",&(tree->a_nodes[i]->ldsk->coord->lonlat[0])) == EOF) break;          
           done[i] = YES;
         }
       else
@@ -4491,14 +4498,14 @@ void PHYREX_Read_Tip_Coordinates(t_tree *tree)
           if(!strcmp(s,"|SouthWest|") || !strcmp(s,"|southwest|") || !strcmp(s,"|Southwest|"))
             {
               found_sw = YES;
-              if(fscanf(fp,"%lf",&(sw_lon)) == EOF) break;
               if(fscanf(fp,"%lf",&(sw_lat)) == EOF) break;              
+              if(fscanf(fp,"%lf",&(sw_lon)) == EOF) break;
             }
           else if(!strcmp(s,"|NorthEast|") || !strcmp(s,"|northeast|") || !strcmp(s,"|Northeast|"))
             {
               found_ne = YES;
-              if(fscanf(fp,"%lf",&(ne_lon)) == EOF) break;
               if(fscanf(fp,"%lf",&(ne_lat)) == EOF) break;
+              if(fscanf(fp,"%lf",&(ne_lon)) == EOF) break;
             }
           else /* Haven't found any match but still need to skip long and lat for unsampled location */
             {
@@ -5278,7 +5285,7 @@ phydbl PHYREX_Dist_Between_Two_Ldsk(t_ldsk *n1, t_ldsk *n2, t_tree *tree)
   t_ldsk *lca;
 
   lca = PHYREX_Find_Lca_Pair_Of_Ldsk(n1,n2,tree);
-
+  
   return(PHYREX_Dist_To_Lca(n1,lca)+PHYREX_Dist_To_Lca(n2,lca));
 }
 

@@ -329,7 +329,7 @@ void DATE_Update_T_Prior_MinMax(t_tree *tree)
   
   for(i=0;i<2*tree->n_otu-1;++i) // All nodes 
     {
-      tree->rates->t_prior_max[i] = 0.0;
+      tree->rates->t_prior_max[i] = +INFINITY;
       tree->rates->t_prior_min[i] = -INFINITY;
 
       if(tree->a_nodes[i]->n_cal > 0) // Primary calibration found on that node
@@ -695,7 +695,11 @@ int DATE_Check_Time_Constraints(t_tree *tree)
           if(tree->rates->nd_t[i] > tree->rates->t_prior_max[i] ||
              tree->rates->nd_t[i] < tree->rates->t_prior_min[i])
             {
-              /* PhyML_Printf("\n. Node %d t: %f min:%f max:%f",i,tree->rates->nd_t[i],tree->rates->t_prior_min[i],tree->rates->t_prior_max[i]); */
+              /* PhyML_Printf("\n!!! Node %d t: %f min:%f max:%f", */
+              /*              i, */
+              /*              tree->rates->nd_t[i], */
+              /*              tree->rates->t_prior_min[i], */
+              /*              tree->rates->t_prior_max[i]); */
               return 0;
             }
         }
