@@ -2385,7 +2385,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           PHYREX_Label_Nodes_With_Locations(tree);
           PHYREX_Label_Edges(tree);
           char *s = Write_Tree(tree);
-          PhyML_Fprintf(fp_tree,"\ntree %d [&lnP=%f] = [&R]  %s",tree->mcmc->sample_num,tree->c_lnL,s);
+          PhyML_Fprintf(fp_tree,"\ntree %d [&lnP=%f,precision={1.e-1,1e-02,1e-01}] = [&R] %s",tree->mcmc->sample_num,tree->c_lnL,s);
           PhyML_Fprintf(fp_tree,"\nend;");
           fseek(fp_tree,-5,SEEK_END);
           tree->write_tax_names = YES;
@@ -6057,7 +6057,11 @@ void PHYREX_Label_Nodes_With_Locations(t_tree *tree)
 {
   t_dsk *disk;
   t_node *n;
+  phydbl lon,lat;
 
+
+  lon = lat = -1.;
+  
   for(int i=0;i<tree->n_otu;++i)
     {
       if(tree->a_nodes[i]->label == NULL)
@@ -6065,15 +6069,14 @@ void PHYREX_Label_Nodes_With_Locations(t_tree *tree)
           tree->a_nodes[i]->label = Make_Label();
           tree->a_nodes[i]->label->next = Make_Label();
         }
-      
+
+      lat = tree->a_nodes[i]->ldsk->coord->lonlat[1];
+      lon = tree->a_nodes[i]->ldsk->coord->lonlat[0];
+
       sprintf(tree->a_nodes[i]->label->key,"&location");
-      sprintf(tree->a_nodes[i]->label->val,"{%f,%f}",
-              tree->a_nodes[i]->ldsk->coord->lonlat[1],
-              tree->a_nodes[i]->ldsk->coord->lonlat[0]);
+      sprintf(tree->a_nodes[i]->label->val,"{%f,%f}",lat,lon);
       sprintf(tree->a_nodes[i]->label->next->key,"location");
-      sprintf(tree->a_nodes[i]->label->next->val,"{%f,%f}",
-              tree->a_nodes[i]->ldsk->coord->lonlat[1],
-              tree->a_nodes[i]->ldsk->coord->lonlat[0]);
+      sprintf(tree->a_nodes[i]->label->next->val,"{%f,%f}",lat,lon);
     }
 
   disk = tree->young_disk->prev;
@@ -6089,14 +6092,13 @@ void PHYREX_Label_Nodes_With_Locations(t_tree *tree)
               n->label->next = Make_Label();
             }
 
+          lat = disk->ldsk->coord->lonlat[1];
+          lon = disk->ldsk->coord->lonlat[0];
+
           sprintf(n->label->key,"&location");
-          sprintf(n->label->val,"{%f,%f}",
-                  disk->ldsk->coord->lonlat[1],
-                  disk->ldsk->coord->lonlat[0]);
+          sprintf(n->label->val,"{%f,%f}",lat,lon);
           sprintf(n->label->next->key,"location");
-          sprintf(n->label->next->val,"{%f,%f}",
-                  disk->ldsk->coord->lonlat[1],
-                  disk->ldsk->coord->lonlat[0]);
+          sprintf(n->label->next->val,"{%f,%f}",lat,lon);
 
           /* Print same label on all internal nodes with exactly the */
           /* same coalescence time. */
@@ -6113,15 +6115,14 @@ void PHYREX_Label_Nodes_With_Locations(t_tree *tree)
                       n->label = Make_Label();
                       n->label->next = Make_Label();
                     }
+
+                  lat = disk->ldsk->coord->lonlat[1];
+                  lon = disk->ldsk->coord->lonlat[0];
                   
                   sprintf(n->label->key,"&location");
-                  sprintf(n->label->val,"{%f,%f}",
-                          disk->ldsk->coord->lonlat[1],
-                          disk->ldsk->coord->lonlat[0]);
+                  sprintf(n->label->val,"{%f,%f}",lat,lon);
                   sprintf(n->label->next->key,"location");
-                  sprintf(n->label->next->val,"{%f,%f}",
-                          disk->ldsk->coord->lonlat[1],
-                          disk->ldsk->coord->lonlat[0]);
+                  sprintf(n->label->next->val,"{%f,%f}",lat,lon);
                 }
             }
         }
@@ -6145,10 +6146,10 @@ void PHYREX_Label_Edges(t_tree *tree)
         }
       
       sprintf(tree->a_edges[i]->label->key,"&rate");
-      sprintf(tree->a_edges[i]->label->val,"0");
+      sprintf(tree->a_edges[i]->label->val,"0.0");
       
       sprintf(tree->a_edges[i]->label->next->key,"location.rate");
-      sprintf(tree->a_edges[i]->label->next->val,"0");
+      sprintf(tree->a_edges[i]->label->next->val,"0.0");
     }
 
 

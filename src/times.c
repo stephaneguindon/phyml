@@ -1521,7 +1521,7 @@ void TIMES_Connect_List_Of_Taxa(t_node **tax_list, int list_size, phydbl t_mrca,
   else
     {
       t_lower_bound = t_mrca;
-      t_upper_bound = 0.0;
+      t_upper_bound = +INFINITY;
       n             = NULL;
       anc           = NULL;
       new_mrca      = NULL;

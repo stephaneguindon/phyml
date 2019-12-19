@@ -7209,12 +7209,14 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree)
     {
       new_height = cur_height * scale_fact_times + fabs(start_disk->time) * (1. - scale_fact_times);
       
-      new_glnL -= -tree->mmod->lbda * cur_height;
-      new_glnL += -tree->mmod->lbda * new_height;
-      tree->mmod->c_lnL = new_glnL;
+      /* Not so simple with serially sampled data... */
+      /* new_glnL = cur_glnL; */
+      /* new_glnL -= -tree->mmod->lbda * cur_height; */
+      /* new_glnL += -tree->mmod->lbda * new_height; */
+      /* tree->mmod->c_lnL = new_glnL; */
 
-      /* PHYREX_Lk(tree); */
-      /* new_glnL = tree->mmod->c_lnL; */
+      PHYREX_Lk(tree);
+      new_glnL = tree->mmod->c_lnL;
     }
   
   if(tree->eval_alnL == YES) new_alnL = Lk(NULL,tree);
