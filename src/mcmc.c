@@ -7161,7 +7161,7 @@ void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree)
 void MCMC_PHYREX_Scale_Times(t_tree *tree)
 {
   phydbl u,alpha,ratio;
-  phydbl cur_height,new_height;
+  /* phydbl cur_height,new_height; */
   phydbl cur_glnL, new_glnL, hr;
   phydbl cur_alnL, new_alnL;
   phydbl cur_rlnL, new_rlnL;
@@ -7180,7 +7180,7 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree)
   cur_rlnL   = tree->rates->c_lnL_rates;
   hr         = 0.0;
   ratio      = 0.0;
-  cur_height = fabs(PHYREX_Tree_Height(tree));
+  /* cur_height = fabs(PHYREX_Tree_Height(tree)); */
   K          = tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_scale_times];
   
   tree->mcmc->run_move[tree->mcmc->num_move_phyrex_scale_times]++;
@@ -7207,7 +7207,7 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree)
   
   if(tree->eval_glnL == YES)
     {
-      new_height = cur_height * scale_fact_times + fabs(start_disk->time) * (1. - scale_fact_times);
+      /* new_height = cur_height * scale_fact_times + fabs(start_disk->time) * (1. - scale_fact_times); */
       
       /* Not so simple with serially sampled data... */
       /* new_glnL = cur_glnL; */
@@ -8554,7 +8554,6 @@ void MCMC_PHYREX_Lineage_Traj(t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-
 #ifdef PHYREX
 void MCMC_PHYREX_Disk_Multi(t_tree *tree)
 {
@@ -8578,10 +8577,14 @@ void MCMC_PHYREX_Disk_Multi(t_tree *tree)
   n_all_disks = 0;
   do
     {
-      if(!n_all_disks) all_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
-      else if(!(n_all_disks%block)) all_disks = (t_dsk **)mRealloc(all_disks,n_all_disks+block,sizeof(t_dsk *));
-      all_disks[n_all_disks] = disk;
-      n_all_disks++;
+      if(disk->age_fixed == NO)
+        {
+          if(!n_all_disks) all_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
+          else if(!(n_all_disks%block)) all_disks = (t_dsk **)mRealloc(all_disks,n_all_disks+block,sizeof(t_dsk *));
+          all_disks[n_all_disks] = disk;
+          n_all_disks++;
+        }
+      
       disk = disk->prev;
     }
   while(disk);
@@ -8593,11 +8596,12 @@ void MCMC_PHYREX_Disk_Multi(t_tree *tree)
   /* n_move_disks = Rand_Int(1,1+(int)(n_all_disks/10)); */
   /* n_move_disks = MIN(10,(int)(1.+0.1*n_all_disks)); */
   n_move_disks = (int)(1+n_all_disks/20);
-
+  
   permut = Permutate(n_all_disks);
 
   for(i=0;i<n_move_disks;i++)
     {
+      
       target_disk[i] = all_disks[permut[i]];
   
       assert(target_disk[i]);

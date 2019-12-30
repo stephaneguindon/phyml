@@ -330,9 +330,11 @@ void PHYREX_XML(char *xml_filename)
   
   /* Initialize parameters of migrep model */
   /* mixt_tree->mmod->lbda = Uni()*(mixt_tree->mmod->max_lbda - mixt_tree->mmod->min_lbda) + mixt_tree->mmod->min_lbda; */
+  /* mixt_tree->mmod->mu   = Uni()*(mixt_tree->mmod->max_mu - mixt_tree->mmod->min_mu) + mixt_tree->mmod->min_mu; */
+  /* mixt_tree->mmod->rad  = Uni()*(mixt_tree->mmod->max_rad - mixt_tree->mmod->max_rad/2.) + mixt_tree->mmod->max_rad/2.; */
   mixt_tree->mmod->lbda = 1.0;
-  mixt_tree->mmod->mu   = Uni()*(mixt_tree->mmod->max_mu - mixt_tree->mmod->min_mu) + mixt_tree->mmod->min_mu;
-  mixt_tree->mmod->rad  = Uni()*(mixt_tree->mmod->max_rad - mixt_tree->mmod->min_rad) + mixt_tree->mmod->min_rad;
+  mixt_tree->mmod->mu   = 0.9;
+  mixt_tree->mmod->rad  = mixt_tree->mmod->max_rad/2.;
   mixt_tree->mmod->sigsq = PHYREX_Update_Sigsq(mixt_tree);
 
 
@@ -362,7 +364,7 @@ void PHYREX_XML(char *xml_filename)
 
 
   PHYREX_Oldest_Sampled_Disk(mixt_tree);
-  
+
   assert(PHYREX_Check_Struct(mixt_tree));
   PHYREX_Lk(mixt_tree);        
   Set_Update_Eigen(YES,mixt_tree->mod);
@@ -1986,12 +1988,16 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
 
   /* Starting parameter values */
-  
-  /* tree->mmod->lbda = Uni()*(tree->mmod->max_lbda - tree->mmod->min_lbda) + tree->mmod->min_lbda; */
-  tree->mmod->lbda = (phydbl)(tree->n_otu) / (1.0+fabs(PHYREX_Tree_Height(tree)));
-  tree->mmod->mu   = Uni()*(tree->mmod->max_mu - tree->mmod->min_mu) + tree->mmod->min_mu;
-  tree->mmod->rad  = Uni()*(tree->mmod->max_rad - tree->mmod->min_rad) + tree->mmod->min_rad;
 
+  /* tree->mmod->lbda = Uni()*(tree->mmod->max_lbda - tree->mmod->min_lbda) + tree->mmod->min_lbda; */
+  /* tree->mmod->lbda = (phydbl)(tree->n_otu) / (1.0+fabs(PHYREX_Tree_Height(tree))); */
+  /* tree->mmod->mu   = Uni()*(tree->mmod->max_mu - tree->mmod->min_mu) + tree->mmod->min_mu; */
+  /* tree->mmod->rad  = Uni()*(tree->mmod->max_rad - tree->mmod->max_rad/2.) + tree->mmod->max_rad/2.; */
+  tree->mmod->lbda = 1.0;
+  tree->mmod->mu   = 0.9;
+  tree->mmod->rad  = tree->mmod->max_rad/2.;
+
+  
   PHYREX_Update_Sigsq(tree);
   
   MIXT_Set_Bl_From_Rt(YES,tree);
@@ -2400,6 +2406,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
     }
   while(tree->mcmc->run < tree->mcmc->chain_len);
 
+  PhyML_Fprintf(stdout,"\n. The analysis completed !");
+  
   fclose(fp_tree);
   fclose(fp_stats);
   /* fclose(fp_summary); */
@@ -3166,7 +3174,8 @@ int PHYREX_Check_Struct(t_tree *tree)
 {
   int i;
   t_ldsk *ldisk;
-
+  t_dsk *disk;
+  
   // Check times
   for(i=0;i<tree->n_otu;++i)
     {
@@ -3192,6 +3201,25 @@ int PHYREX_Check_Struct(t_tree *tree)
       while(ldisk->prev);
     }
 
+
+  /* disk = tree->young_disk; */
+  /* do */
+  /*   { */
+  /*     for(int i=0;i<tree->mmod->n_dim;++i) */
+  /*       if(disk->centr->lonlat[i] > tree->mmod->lim_up->lonlat[i] || */
+  /*          disk->centr->lonlat[i] < tree->mmod->lim_do->lonlat[i]) */
+  /*         { */
+  /*           PhyML_Printf("\n. center: %f lim.inf: %f lim.up: %f", */
+  /*                        disk->centr->lonlat[i], */
+  /*                        tree->mmod->lim_do->lonlat[i], */
+  /*                        tree->mmod->lim_up->lonlat[i]); */
+  /*           return(0); */
+  /*         } */
+  /*     disk = disk->prev; */
+  /*   } */
+  /* while(disk); */
+
+  
   return 1;
 }
 
