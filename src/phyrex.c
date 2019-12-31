@@ -1746,6 +1746,8 @@ phydbl PHYREX_Lk(t_tree *tree)
       return tree->mmod->c_lnL;
     }
 
+  /* tree->mmod->c_lnL += PHYREX_LnPrior_Radius(tree); */
+  
   PHYREX_Update_Lindisk_List(tree);
   tree->mmod->c_lnL += PHYREX_Lk_Core(tree->young_disk,tree);
   
@@ -2051,6 +2053,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%s\t","realsigsqroot");
       PhyML_Fprintf(fp_stats,"%s\t","realsigsqtips");
       PhyML_Fprintf(fp_stats,"%s\t","realsigsqtipsbis");
+      PhyML_Fprintf(fp_stats,"%s\t","realsigsqtipster");
       PhyML_Fprintf(fp_stats,"%s\t","dispdist");
       PhyML_Fprintf(fp_stats,"%s\t","nInt");
       PhyML_Fprintf(fp_stats,"%s\t","nCoal");
@@ -2321,6 +2324,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Root_To_Tip_Realized_Sigsq(tree));
           PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Tip_To_Root_Realized_Sigsq(tree));
           PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Tip_To_Root_Realized_Bis_Sigsq(tree));
+          PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Tip_To_Root_Realized_Ter_Sigsq(tree));
           PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Realized_Dispersal_Dist(tree));
           PhyML_Fprintf(fp_stats,"%d\t",PHYREX_Total_Number_Of_Intervals(tree));
           PhyML_Fprintf(fp_stats,"%d\t",PHYREX_Total_Number_Of_Coal_Disks(tree));
@@ -3174,7 +3178,7 @@ int PHYREX_Check_Struct(t_tree *tree)
 {
   int i;
   t_ldsk *ldisk;
-  t_dsk *disk;
+  /* t_dsk *disk; */
   
   // Check times
   for(i=0;i<tree->n_otu;++i)
@@ -6076,6 +6080,27 @@ phydbl PHYREX_Tip_To_Root_Realized_Bis_Sigsq(t_tree *tree)
     }
   
   return(pow(sumdist/sumt,2)/tree->mmod->n_dim);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+phydbl PHYREX_Tip_To_Root_Realized_Ter_Sigsq(t_tree *tree)
+{
+  t_ldsk *ldsk;
+  phydbl mean;
+  int i;
+
+  mean = 0.0;
+  for(i=0;i<tree->young_disk->n_ldsk_a;++i)
+    {
+      ldsk = tree->young_disk->ldsk_a[i];
+      while(fabs(ldsk->prev->disk->time-tree->young_disk->ldsk_a[i]->disk->time) < 1.0 && ldsk) ldsk = ldsk->prev;
+      if(ldsk == NULL) return(-1.);
+      mean += pow(Euclidean_Dist(ldsk->coord,tree->young_disk->ldsk_a[i]->coord),2);
+    }
+  
+  return(mean/(tree->young_disk->n_ldsk_a*tree->mmod->n_dim));
 }
 
 /*////////////////////////////////////////////////////////////

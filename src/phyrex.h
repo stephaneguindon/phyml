@@ -136,5 +136,6 @@ phydbl PHYREX_Realized_Dispersal_Dist(t_tree *tree);
 phydbl PHYREX_Tip_To_Root_Realized_Bis_Sigsq(t_tree *tree);
 void PHYREX_Label_Nodes_With_Locations(t_tree *tree);
 void PHYREX_Label_Edges(t_tree *tree);
+phydbl PHYREX_Tip_To_Root_Realized_Ter_Sigsq(t_tree *tree);
 
 #endif
