@@ -562,10 +562,15 @@ void Ancestral_Sequences(t_tree *tree, int print)
       PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"\n. found in the file '%s'.",tree->io->out_ancestral_tree_file);
       PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"\n");
       PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"\n");
-      PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"\n. Recommended citation when using the MPEE criterion:");
+      PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"\n. Ancestral reconstruction is conducted based on the \"Minimum Posterior Expected");
+      PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"\n. Error\" (MPEE) criterion, which accomodates for uncertainty in the selection of ");
+      PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"\n. ancestral character states.");
+      PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"\n");
+      PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"\n");
+      PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"\n. Recommended citation:");
       PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"\n. Oliva A., Pulicani S., Lefort V., Brehelin L., Gascuel O. and S. Guindon,");
       PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"\n. \"Accounting for ambiguity in ancestral sequence reconstruction\",");
-      PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"\n. Bioinformatics, 2019.");
+      PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"\n. Bioinformatics, Volume 35, Issue 21, 1 November 2019.");
       PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"\n");
       
       PhyML_Fprintf(tree->io->fp_out_ancestral_seq,"\n\n");

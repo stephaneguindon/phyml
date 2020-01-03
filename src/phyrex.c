@@ -1746,7 +1746,7 @@ phydbl PHYREX_Lk(t_tree *tree)
       return tree->mmod->c_lnL;
     }
 
-  /* tree->mmod->c_lnL += PHYREX_LnPrior_Radius(tree); */
+  tree->mmod->c_lnL += PHYREX_LnPrior_Radius(tree);
   
   PHYREX_Update_Lindisk_List(tree);
   tree->mmod->c_lnL += PHYREX_Lk_Core(tree->young_disk,tree);
@@ -2163,7 +2163,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       
       /* tree->mmod->lbda = 1.0; */
       /* tree->mmod->mu   = 0.5; */
-      /* tree->mmod->rad  = 1.5; */
+      /* tree->mmod->rad  = 1.; */
 
       /* if(tree->mcmc->run == 0) */
         /* { */
