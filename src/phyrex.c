@@ -6069,17 +6069,29 @@ phydbl PHYREX_Tip_To_Root_Realized_Bis_Sigsq(t_tree *tree)
   phydbl sumdist,sumt;
   int i;
 
+  /* sumdist = 0.0; */
+  /* sumt = 0.0; */
+  /* disk = tree->young_disk; */
+  /* for(i=0;i<disk->n_ldsk_a;++i) */
+  /*   { */
+  /*     sumdist += Euclidean_Dist(disk->ldsk_a[i]->coord, */
+  /*                               disk->ldsk_a[i]->prev->coord); */
+  /*     sumt += fabs(disk->time - disk->ldsk_a[i]->prev->disk->time);                    */
+  /*   } */
+  
+  /* return(pow(sumdist/sumt,2)/tree->mmod->n_dim); */
+
   sumdist = 0.0;
   sumt = 0.0;
   disk = tree->young_disk;
   for(i=0;i<disk->n_ldsk_a;++i)
     {
-      sumdist += Euclidean_Dist(disk->ldsk_a[i]->coord,
-                                disk->ldsk_a[i]->prev->coord);
-      sumt += fabs(disk->time - disk->ldsk_a[i]->prev->disk->time);                   
+      sumdist += pow(Euclidean_Dist(disk->ldsk_a[i]->coord,
+                                    disk->ldsk_a[i]->prev->coord),2);
+      sumt += tree->mmod->n_dim * fabs(disk->time - disk->ldsk_a[i]->prev->disk->time);                   
     }
   
-  return(pow(sumdist/sumt,2)/tree->mmod->n_dim);
+  return(sumdist/sumt);
 }
 
 /*////////////////////////////////////////////////////////////
@@ -6088,7 +6100,7 @@ phydbl PHYREX_Tip_To_Root_Realized_Bis_Sigsq(t_tree *tree)
 phydbl PHYREX_Tip_To_Root_Realized_Ter_Sigsq(t_tree *tree)
 {
   t_ldsk *ldsk;
-  phydbl mean;
+  phydbl mean,dist;
   int i;
 
   mean = 0.0;
@@ -6097,7 +6109,18 @@ phydbl PHYREX_Tip_To_Root_Realized_Ter_Sigsq(t_tree *tree)
       ldsk = tree->young_disk->ldsk_a[i];
       while(fabs(ldsk->prev->disk->time-tree->young_disk->ldsk_a[i]->disk->time) < 1.0 && ldsk) ldsk = ldsk->prev;
       if(ldsk == NULL) return(-1.);
-      mean += pow(Euclidean_Dist(ldsk->coord,tree->young_disk->ldsk_a[i]->coord),2);
+      dist = Euclidean_Dist(ldsk->coord,tree->young_disk->ldsk_a[i]->coord);
+      mean += pow(dist,2);
+      
+      /* PhyML_Printf("\n. %3d (%12f %12f) (%12f %12f) dist: %12f mean: %12f", */
+      /*              i, */
+      /*              tree->young_disk->ldsk_a[i]->coord->lonlat[0], */
+      /*              tree->young_disk->ldsk_a[i]->coord->lonlat[1], */
+      /*              ldsk->coord->lonlat[0],                   */
+      /*              ldsk->coord->lonlat[1], */
+      /*              Euclidean_Dist(ldsk->coord,tree->young_disk->ldsk_a[i]->coord), */
+      /*              mean); */
+                   
     }
   
   return(mean/(tree->young_disk->n_ldsk_a*tree->mmod->n_dim));
