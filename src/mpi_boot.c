@@ -185,8 +185,6 @@ void Bootstrap_MPI(t_tree *tree)
 				     requires to leave the value of io unchanged during the boostrap. */
       Init_Model(boot_data,boot_mod,tree->io);
 
-      if(tree->io->mod->use_m4mod) M4_Init_Model(boot_mod->m4mod,boot_data,boot_mod);
-
       if(tree->io->in_tree == 2)
         {
 	  switch(tree->io->tree_file_format)
@@ -289,7 +287,7 @@ void Bootstrap_MPI(t_tree *tree)
       if(tree->io->print_boot_trees)
         {
           /* Insert_Duplicates(boot_tree); */
-          s = Write_Tree(boot_tree,NO);
+          s = Write_Tree(boot_tree);
           t=(char *)mCalloc(T_MAX_LINE,sizeof(char));
           Print_Fp_Out_Lines_MPI(boot_tree, tree->io, replicate+1, t);
           

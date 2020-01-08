@@ -335,6 +335,7 @@ void PHYREX_XML(char *xml_filename)
   mixt_tree->mmod->lbda = 1.0;
   mixt_tree->mmod->mu   = 0.9;
   mixt_tree->mmod->rad  = mixt_tree->mmod->max_rad/2.;
+  /* mixt_tree->mmod->rad  = 4.0; */
   mixt_tree->mmod->sigsq = PHYREX_Update_Sigsq(mixt_tree);
 
 
@@ -687,7 +688,7 @@ t_tree *PHYREX_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl
       /* tree->rates->clock_r    = 1.E-0/FABS(T); // fast */
       /* tree->rates->clock_r    = 1.E-1/FABS(T); // medium */
       /* tree->rates->clock_r = 1.E-7; // slow; */
-      tree->rates->clock_r = 1.E-4; // medium;
+      tree->rates->clock_r = 1.E-3; // medium;
       /* tree->rates->clock_r = 1.E-2; // fast; */
 
       
@@ -759,7 +760,7 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda
   io->r_seed   = r_seed;
 
   io->n_otu    = n_otu;
-  io->init_len = 1000; /* sequence length */
+  io->init_len = 500; /* sequence length */
 
   io->data = Make_Empty_Alignment(io);
 
@@ -860,7 +861,7 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda
   /* T = PHYREX_Tree_Height(tree); */
 
   tree->rates->bl_from_rt = YES;
-  tree->rates->clock_r    = 1.0;
+  tree->rates->clock_r    = 1.0E-3;
   tree->rates->model      = STRICTCLOCK;
 
   RATES_Update_Cur_Bl(tree);
@@ -886,7 +887,7 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda
   /*                                               tree->a_nodes[i]->ldsk->coord->lonlat[0], */
   /*                                               tree->a_nodes[i]->ldsk->coord->lonlat[1]); */
   /* PhyML_Printf("\n\n"); */
-  /* Print_CSeq(stdout,NO,tree->data,tree); */
+  Print_CSeq(stdout,NO,tree->data,tree);
   /* Exit("\n"); */
   
   /* Init_Partial_Lk_Tips_Double(tree); */
@@ -922,12 +923,24 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda
   PhyML_Printf("\n. Spatial coordinates: ");
   for(i=0;i<tree->n_otu;i++)
     {
-      PhyML_Printf("\n. %15s: [%12f ; %12f]",
+      PhyML_Printf("\n%15s %12f %12f",
                    tree->young_disk->ldsk_a[i]->nd->name,
                    tree->young_disk->ldsk_a[i]->coord->lonlat[0],                   
                    tree->young_disk->ldsk_a[i]->coord->lonlat[1]);
     }
   PhyML_Printf("\n");
+  
+  for(int i=0;i<io->n_otu;i++)
+    {
+      PhyML_Printf("\n<clade id=\"clad%d\">",i+1);
+      PhyML_Printf("\n\t<taxon value=\"%s\"/>",tree->a_nodes[i]->name);
+      PhyML_Printf("\n</clade>");
+      PhyML_Printf("\n<calibration id=\"cal%d\">",i+1);
+      PhyML_Printf("\n\t<lower>0.0</lower>");
+      PhyML_Printf("\n\t<upper>0.0</upper>");
+      PhyML_Printf("\n\t<appliesto clade.id=\"clad%d\"/>",i+1);
+      PhyML_Printf("\n</calibration>");
+    }
 
   return(tree);
 }
@@ -1995,9 +2008,10 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   /* tree->mmod->lbda = (phydbl)(tree->n_otu) / (1.0+fabs(PHYREX_Tree_Height(tree))); */
   /* tree->mmod->mu   = Uni()*(tree->mmod->max_mu - tree->mmod->min_mu) + tree->mmod->min_mu; */
   /* tree->mmod->rad  = Uni()*(tree->mmod->max_rad - tree->mmod->max_rad/2.) + tree->mmod->max_rad/2.; */
-  tree->mmod->lbda = 1.0;
-  tree->mmod->mu   = 0.9;
-  tree->mmod->rad  = tree->mmod->max_rad/2.;
+  /* tree->mmod->lbda = 1.0; */
+  /* tree->mmod->mu   = 0.9; */
+  /* tree->mmod->rad  = tree->mmod->max_rad/2.; */
+  /* tree->mmod->rad  = 4.0; */
 
   
   PHYREX_Update_Sigsq(tree);
@@ -2127,10 +2141,26 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   move             = -1;
   do
     {
-      
-
       MIXT_Propagate_Tree_Update(tree);
       assert(PHYREX_Check_Struct(tree));
+
+      if(tree->mcmc->run == 10000)
+        {
+          /* mcmc->move_weight[mcmc->num_move_phyrex_spr] = 0.0; */
+          /* mcmc->move_weight[mcmc->num_move_phyrex_spr_local] = 0.0; */
+          /* mcmc->move_weight[mcmc->num_move_phyrex_traj] = 0.0; */
+          /* mcmc->move_weight[mcmc->num_move_phyrex_indel_disk] = 0.0; */
+          /* mcmc->move_weight[mcmc->num_move_phyrex_indel_hit] = 0.0; */
+          /* mcmc->move_weight[mcmc->num_move_phyrex_indel_hit_serial] = 0.0; */
+          /* mcmc->move_weight[mcmc->num_move_phyrex_ldsk_and_disk] = 0.0; */
+          /* mcmc->move_weight[mcmc->num_move_phyrex_ldsk_multi] = 0.0; */
+          /* mcmc->move_weight[mcmc->num_move_phyrex_disk_multi] = 0.0; */
+          /* mcmc->move_weight[mcmc->num_move_phyrex_ldsk_tip_to_root] = 0.0; */
+          phydbl sum = 0.0;
+          for(i=0;i<mcmc->n_moves;i++) sum += mcmc->move_weight[i];
+          for(i=0;i<mcmc->n_moves;i++) mcmc->move_weight[i] /= sum;
+          for(i=1;i<mcmc->n_moves;i++) mcmc->move_weight[i] += mcmc->move_weight[i-1];
+        }
 
       
       if(mcmc->run > mcmc->chain_len_burnin)
@@ -2164,7 +2194,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       /* tree->mmod->lbda = 1.0; */
       /* tree->mmod->mu   = 0.5; */
       /* tree->mmod->rad  = 1.; */
-
+      tree->rates->clock_r = 1.0E-4;
+      
       /* if(tree->mcmc->run == 0) */
         /* { */
           /* PHYREX_Strip_And_Reconnect_Tree(tree); */
@@ -2247,8 +2278,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"tree_rates"))
         MCMC_Tree_Rates(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"clock"))
-        MCMC_Clock_R(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"clock")) */
+      /*   MCMC_Clock_R(tree); */
 
 
       /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
@@ -6107,8 +6138,11 @@ phydbl PHYREX_Tip_To_Root_Realized_Ter_Sigsq(t_tree *tree)
   for(i=0;i<tree->young_disk->n_ldsk_a;++i)
     {
       ldsk = tree->young_disk->ldsk_a[i];
-      while(fabs(ldsk->prev->disk->time-tree->young_disk->ldsk_a[i]->disk->time) < 1.0 && ldsk) ldsk = ldsk->prev;
-      if(ldsk == NULL) return(-1.);
+      while(ldsk && ldsk->prev && fabs(ldsk->prev->disk->time-tree->young_disk->ldsk_a[i]->disk->time) < 1.0)
+        {
+          ldsk = ldsk->prev;
+          if(ldsk == NULL) return(-1.);
+        }
       dist = Euclidean_Dist(ldsk->coord,tree->young_disk->ldsk_a[i]->coord);
       mean += pow(dist,2);
       

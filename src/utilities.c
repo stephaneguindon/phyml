@@ -31,11 +31,14 @@ phydbl String_To_Dbl(char *string)
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
     }
 
+  errno = !ERANGE;
   buff = strtod(string,&endptr);
 
   if(string == endptr || errno == ERANGE)
     {
       PhyML_Printf("\n. Error in translating string '%s' to double.",string);
+      PhyML_Printf("\n. %d",errno == ERANGE);
+      PhyML_Printf("\n. buff = %f",buff);
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
     }
   return buff;
@@ -55,6 +58,7 @@ int String_To_Int(char *string)
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
     }
 
+  errno = !ERANGE;
   buff = (int)strtol(string,&endptr, 10);
 
   if(string == endptr || errno == ERANGE)
