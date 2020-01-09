@@ -3448,7 +3448,7 @@ void PHYREX_Init_Migrep_Mod(t_phyrex_mod *t, int n_dim, phydbl min_lat, phydbl m
 
   t->name             = PHYREX_NORMAL;
   t->n_dim            = n_dim;
-  t->safe_phyrex      = YES;
+  t->safe_phyrex      = NO;
   
   t->lim_up->lonlat[0]   = max_lat;
   t->lim_up->lonlat[1]   = max_lon;

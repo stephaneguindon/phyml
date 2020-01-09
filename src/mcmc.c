@@ -364,7 +364,6 @@ void MCMC_GEO_Lbda(t_tree *mixt_tree)
   tree = mixt_tree;
   do
     {
-
       MCMC_Single_Param_Generic(&(tree->geo->lbda),
                                 mixt_tree->geo->min_lbda,
                                 mixt_tree->geo->max_lbda,
@@ -6708,14 +6707,14 @@ void MCMC_PHYREX_Indel_Disk(t_tree *tree)
   new_rad  = tree->mmod->rad;
   cur_rad  = tree->mmod->rad;
 
-  new_lbda = cur_lbda * exp(1.0*(Uni()-.5));
-  hr += log(new_lbda/cur_lbda);
+  /* new_lbda = cur_lbda * exp(1.0*(Uni()-.5)); */
+  /* hr += log(new_lbda/cur_lbda); */
 
-  new_mu = cur_mu * exp(0.5*(Uni()-.5));
-  hr += log(new_mu/cur_mu);
+  /* new_mu = cur_mu * exp(0.5*(Uni()-.5)); */
+  /* hr += log(new_mu/cur_mu); */
 
-  new_rad = cur_rad * exp(0.5*(Uni()-.5));
-  hr += log(new_rad/cur_rad);
+  /* new_rad = cur_rad * exp(0.5*(Uni()-.5)); */
+  /* hr += log(new_rad/cur_rad); */
 
   if(new_rad > tree->mmod->max_rad || new_rad < tree->mmod->min_rad)     return;
   if(new_mu > tree->mmod->max_mu || new_mu < tree->mmod->min_mu)         return;
@@ -7430,14 +7429,14 @@ void MCMC_PHYREX_Indel_Hit(t_tree *tree)
   new_mu  = tree->mmod->mu;
   cur_mu  = tree->mmod->mu;
   
-  new_lbda = cur_lbda * exp(1.0*(Uni()-.5));
-  hr += log(new_lbda/cur_lbda);
+  /* new_lbda = cur_lbda * exp(1.0*(Uni()-.5)); */
+  /* hr += log(new_lbda/cur_lbda); */
 
-  new_mu = cur_mu * exp(0.5*(Uni()-.5));
-  hr += log(new_mu/cur_mu);
+  /* new_mu = cur_mu * exp(0.5*(Uni()-.5)); */
+  /* hr += log(new_mu/cur_mu); */
 
-  new_rad = cur_rad * exp(0.5*(Uni()-.5));
-  hr += log(new_rad/cur_rad);
+  /* new_rad = cur_rad * exp(0.5*(Uni()-.5)); */
+  /* hr += log(new_rad/cur_rad); */
 
   if(new_rad > tree->mmod->max_rad || new_rad < tree->mmod->min_rad)     return;
   if(new_mu > tree->mmod->max_mu || new_mu < tree->mmod->min_mu)         return;
@@ -7446,13 +7445,6 @@ void MCMC_PHYREX_Indel_Hit(t_tree *tree)
   tree->mmod->lbda = new_lbda;
   tree->mmod->mu   = new_mu;
   tree->mmod->rad  = new_rad;
-
-
-  if(new_rad > tree->mmod->max_rad || new_rad < tree->mmod->min_rad) return; 
-  if(new_mu > tree->mmod->max_mu || new_mu < tree->mmod->min_mu)     return; 
-
-  tree->mmod->rad = new_rad;
-  tree->mmod->mu  = new_mu;
 
 
   disk = tree->young_disk->prev;
@@ -7464,9 +7456,9 @@ void MCMC_PHYREX_Indel_Hit(t_tree *tree)
     }
   while(disk);
   
-  n_disks_new = (int)Rpois(n_disks_cur+0.01);
-  hr += Dpois(n_disks_cur,n_disks_new+0.01,YES);
-  hr -= Dpois(n_disks_new,n_disks_cur+0.01,YES);
+  n_disks_new = (int)Rpois(n_disks_cur+SMALL);
+  hr += Dpois(n_disks_cur,n_disks_new+SMALL,YES);
+  hr -= Dpois(n_disks_new,n_disks_cur+SMALL,YES);
 
   if(n_disks_new < n_disks_cur)
     {
@@ -7768,7 +7760,7 @@ void MCMC_PHYREX_Delete_Hit(phydbl hr, int n_delete_disks, phydbl cur_lbda, phyd
 
       /* Part of the Hastings ratio corresponding to the probability of selecting */
       /* target_disk->ldsk->next[0] to be hit (reverse move) */ 
-      /* hr += log(1./target_disk[j]->next->n_ldsk_a); */
+      hr += log(1./target_disk[j]->next->n_ldsk_a);
       
       /* Density for position of the displaced ldsk */
       for(i=0;i<tree->mmod->n_dim;i++)
