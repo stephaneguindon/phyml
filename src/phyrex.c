@@ -21,13 +21,13 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int PHYREX_Main(int argc, char *argv[])
 {
-#if (defined PHYREXSIM)
+/* #if (defined PHYREXSIM) */
   PHYREX_Main_Simulate(argc,argv);
-#elif (defined PHYREX)
-  option *io;
-  io = Get_Input(argc,argv);
-  Free(io);
-#endif
+/* #elif (defined PHYREX) */
+/*   option *io; */
+/*   io = Get_Input(argc,argv); */
+/*   Free(io); */
+/* #endif */
   return(0);
 }
 
@@ -857,10 +857,10 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda
   /* min_rate = 1.E-5; */
   /* max_rate = 1.E-4; */
 
-  /* T = PHYREX_Tree_Height(tree); */
+  phydbl T = PHYREX_Tree_Height(tree);
 
   tree->rates->bl_from_rt = YES;
-  tree->rates->clock_r    = 1.0E-3;
+  tree->rates->clock_r    = 0.1/fabs(2.*T);
   tree->rates->model      = STRICTCLOCK;
 
   RATES_Update_Cur_Bl(tree);
@@ -876,17 +876,19 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda
   Make_Spr(tree);
   Evolve(tree->data,tree->mod,0,tree);
 
-  /* PhyML_Printf("@@@ %G %G %G : ",mmod->lbda,mmod->mu,mmod->rad); */
-  /* for(int i=0;i<tree->n_otu-1;++i) for(int j=i+1;j<tree->n_otu;++j) PhyML_Printf("%G ",PHYREX_Dist_Between_Two_Ldsk(tree->a_nodes[i]->ldsk,tree->a_nodes[j]->ldsk,tree)); */
-  /* PhyML_Printf(" : "); */
-  /* for(int i=0;i<tree->n_otu-1;++i) for(int j=i+1;j<tree->n_otu;++j) PhyML_Printf("%G ",Euclidean_Dist(tree->a_nodes[i]->ldsk->coord,tree->a_nodes[j]->ldsk->coord)); */
-  /* PhyML_Printf("\n"); */
-  /* for(int i=0;i<tree->n_otu-1;++i) PhyML_Printf("\n%s %G %G", */
-  /*                                               tree->a_nodes[i]->name, */
-  /*                                               tree->a_nodes[i]->ldsk->coord->lonlat[0], */
-  /*                                               tree->a_nodes[i]->ldsk->coord->lonlat[1]); */
-  /* PhyML_Printf("\n\n"); */
+  PhyML_Printf("@@@ %G %G %G : ",mmod->lbda,mmod->mu,mmod->rad);
+  for(int i=0;i<tree->n_otu-1;++i) for(int j=i+1;j<tree->n_otu;++j) PhyML_Printf("%G ",PHYREX_Dist_Between_Two_Ldsk(tree->a_nodes[i]->ldsk,tree->a_nodes[j]->ldsk,tree));
+  PhyML_Printf(" : ");
+  for(int i=0;i<tree->n_otu-1;++i) for(int j=i+1;j<tree->n_otu;++j) PhyML_Printf("%G ",Euclidean_Dist(tree->a_nodes[i]->ldsk->coord,tree->a_nodes[j]->ldsk->coord));
+  PhyML_Printf("\n");
+  for(int i=0;i<tree->n_otu-1;++i) PhyML_Printf("\n%20s %12G %12G",
+                                                tree->a_nodes[i]->name,
+                                                tree->a_nodes[i]->ldsk->coord->lonlat[0],
+                                                tree->a_nodes[i]->ldsk->coord->lonlat[1]);
+  PhyML_Printf("\n\n");
+  PhyML_Printf(">> SEQUENCES\n");
   Print_CSeq(stdout,NO,tree->data,tree);
+  PhyML_Printf("<< SEQUENCES");
   /* Exit("\n"); */
   
   /* Init_Partial_Lk_Tips_Double(tree); */
@@ -916,30 +918,30 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda
                Nucleotide_Diversity(tree->data));
   
   
-  PhyML_Printf("\n. Tree: ");
-  PhyML_Printf("\n. %s \n",Write_Tree(tree));
+  /* PhyML_Printf("\n. Tree: "); */
+  /* PhyML_Printf("\n. %s \n",Write_Tree(tree)); */
 
-  PhyML_Printf("\n. Spatial coordinates: ");
-  for(i=0;i<tree->n_otu;i++)
-    {
-      PhyML_Printf("\n%15s %12f %12f",
-                   tree->young_disk->ldsk_a[i]->nd->name,
-                   tree->young_disk->ldsk_a[i]->coord->lonlat[0],                   
-                   tree->young_disk->ldsk_a[i]->coord->lonlat[1]);
-    }
-  PhyML_Printf("\n");
+  /* PhyML_Printf("\n. Spatial coordinates: "); */
+  /* for(i=0;i<tree->n_otu;i++) */
+  /*   { */
+  /*     PhyML_Printf("\n%15s %12f %12f", */
+  /*                  tree->young_disk->ldsk_a[i]->nd->name, */
+  /*                  tree->young_disk->ldsk_a[i]->coord->lonlat[0],                    */
+  /*                  tree->young_disk->ldsk_a[i]->coord->lonlat[1]); */
+  /*   } */
+  /* PhyML_Printf("\n"); */
   
-  for(int i=0;i<io->n_otu;i++)
-    {
-      PhyML_Printf("\n<clade id=\"clad%d\">",i+1);
-      PhyML_Printf("\n\t<taxon value=\"%s\"/>",tree->a_nodes[i]->name);
-      PhyML_Printf("\n</clade>");
-      PhyML_Printf("\n<calibration id=\"cal%d\">",i+1);
-      PhyML_Printf("\n\t<lower>0.0</lower>");
-      PhyML_Printf("\n\t<upper>0.0</upper>");
-      PhyML_Printf("\n\t<appliesto clade.id=\"clad%d\"/>",i+1);
-      PhyML_Printf("\n</calibration>");
-    }
+  /* for(int i=0;i<io->n_otu;i++) */
+  /*   { */
+  /*     PhyML_Printf("\n<clade id=\"clad%d\">",i+1); */
+  /*     PhyML_Printf("\n\t<taxon value=\"%s\"/>",tree->a_nodes[i]->name); */
+  /*     PhyML_Printf("\n</clade>"); */
+  /*     PhyML_Printf("\n<calibration id=\"cal%d\">",i+1); */
+  /*     PhyML_Printf("\n\t<lower>0.0</lower>"); */
+  /*     PhyML_Printf("\n\t<upper>0.0</upper>"); */
+  /*     PhyML_Printf("\n\t<appliesto clade.id=\"clad%d\"/>",i+1); */
+  /*     PhyML_Printf("\n</calibration>"); */
+  /*   } */
 
   return(tree);
 }
