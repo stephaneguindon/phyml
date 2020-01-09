@@ -2199,7 +2199,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       /* tree->mmod->lbda = 2.0; */
       /* tree->mmod->mu   = 0.5; */
       /* tree->mmod->rad  = 1.; */
-      tree->rates->clock_r = 1.0E-3;
+      /* tree->rates->clock_r = 1.0E-3; */
       
       /* if(tree->mcmc->run == 0) */
         /* { */
@@ -2283,8 +2283,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"tree_rates"))
         MCMC_Tree_Rates(tree);
 
-      /* if(!strcmp(tree->mcmc->move_name[move],"clock")) */
-      /*   MCMC_Clock_R(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"clock"))
+        MCMC_Clock_R(tree);
 
 
       /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
