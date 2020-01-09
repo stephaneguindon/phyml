@@ -329,13 +329,12 @@ void PHYREX_XML(char *xml_filename)
                          mixt_tree->mmod->lim_up->lonlat[1]);
   
   /* Initialize parameters of migrep model */
-  /* mixt_tree->mmod->lbda = Uni()*(mixt_tree->mmod->max_lbda - mixt_tree->mmod->min_lbda) + mixt_tree->mmod->min_lbda; */
-  /* mixt_tree->mmod->mu   = Uni()*(mixt_tree->mmod->max_mu - mixt_tree->mmod->min_mu) + mixt_tree->mmod->min_mu; */
+  mixt_tree->mmod->lbda = Uni()*(mixt_tree->mmod->max_lbda - mixt_tree->mmod->min_lbda) + mixt_tree->mmod->min_lbda;
+  mixt_tree->mmod->mu   = Uni()*(mixt_tree->mmod->max_mu - mixt_tree->mmod->min_mu) + mixt_tree->mmod->min_mu;
   /* mixt_tree->mmod->rad  = Uni()*(mixt_tree->mmod->max_rad - mixt_tree->mmod->max_rad/2.) + mixt_tree->mmod->max_rad/2.; */
-  mixt_tree->mmod->lbda = 2.0;
-  mixt_tree->mmod->mu   = 0.9;
+  /* mixt_tree->mmod->lbda = 2.0; */
+  /* mixt_tree->mmod->mu   = 0.9; */
   mixt_tree->mmod->rad  = mixt_tree->mmod->max_rad/2.;
-  /* mixt_tree->mmod->rad  = 4.0; */
   mixt_tree->mmod->sigsq = PHYREX_Update_Sigsq(mixt_tree);
 
 
