@@ -21,13 +21,13 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int PHYREX_Main(int argc, char *argv[])
 {
-/* #if (defined PHYREXSIM) */
+#if (defined PHYREXSIM)
   PHYREX_Main_Simulate(argc,argv);
-/* #elif (defined PHYREX) */
-/*   option *io; */
-/*   io = Get_Input(argc,argv); */
-/*   Free(io); */
-/* #endif */
+#elif (defined PHYREX)
+  option *io;
+  io = Get_Input(argc,argv);
+  Free(io);
+#endif
   return(0);
 }
 
@@ -201,32 +201,39 @@ void PHYREX_XML(char *xml_filename)
               assert(FALSE);
             }
         }
+      
     }
-
-
-
-    // Looking for XML node with rate-across-lineage info
+  
+  // Looking for XML node with rate-across-lineage info
   xnd = XML_Search_Node_Name("clockrate",YES,xroot);
   
   if(xnd != NULL)
     {
-      char *value = XML_Get_Attribute_Value(xnd,"value");
-      
-      if(value == NULL)
+      char *clock_r;
+      clock_r = XML_Get_Attribute_Value(xnd,"value");
+      if(clock_r == NULL) clock_r = XML_Get_Attribute_Value(xnd,"clock.val");
+      if(clock_r == NULL) clock_r = XML_Get_Attribute_Value(xnd,"val");
+      if(clock_r != NULL)
         {
-          PhyML_Fprintf(stderr,"\n. Please specify a value for the average rate of substitution (clockrate),");
-          PhyML_Fprintf(stderr,"\n. e.g., <clockrate value=\"1E-5\"/>.");
-          PhyML_Fprintf(stderr,"\n. See the manual for more options.");
-          assert(FALSE);
+          mixt_tree->rates->clock_r = String_To_Dbl(clock_r);
         }
-      else
+      
+      char *opt_clock;
+      opt_clock = XML_Get_Attribute_Value(xnd,"optimise.clock");
+      if(opt_clock == NULL) opt_clock = XML_Get_Attribute_Value(xnd,"optimize.clock");
+      if(opt_clock == NULL) opt_clock = XML_Get_Attribute_Value(xnd,"optimize.rate");
+      if(opt_clock == NULL) opt_clock = XML_Get_Attribute_Value(xnd,"opt.clock");
+      
+      if(opt_clock != NULL)
         {
-          mixt_tree->rates->clock_r       = atof(value);
-          mixt_tree->rates->clock_r_fixed = YES;
+          int select = XML_Validate_Attr_Int(opt_clock,6,
+                                             "true","yes","y",
+                                             "false","no","n");
+          if(select < 3)  mixt_tree->mod->s_opt->opt_clock_r = YES;
+          else mixt_tree->mod->s_opt->opt_clock_r = NO;
         }
     }
 
-  
   
   // Looking for calibration info
   xnd = XML_Search_Node_Name("calibration",YES,xroot);
@@ -881,15 +888,14 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda
   PhyML_Printf(" : ");
   for(int i=0;i<tree->n_otu-1;++i) for(int j=i+1;j<tree->n_otu;++j) PhyML_Printf("%G ",Euclidean_Dist(tree->a_nodes[i]->ldsk->coord,tree->a_nodes[j]->ldsk->coord));
   PhyML_Printf("\n");
-  for(int i=0;i<tree->n_otu-1;++i) PhyML_Printf("\n%20s %12G %12G",
-                                                tree->a_nodes[i]->name,
-                                                tree->a_nodes[i]->ldsk->coord->lonlat[0],
-                                                tree->a_nodes[i]->ldsk->coord->lonlat[1]);
+  for(int i=0;i<tree->n_otu;++i) PhyML_Printf("\n%20s %12G %12G",
+                                              tree->a_nodes[i]->name,
+                                              tree->a_nodes[i]->ldsk->coord->lonlat[0],
+                                              tree->a_nodes[i]->ldsk->coord->lonlat[1]);
   PhyML_Printf("\n\n");
   PhyML_Printf(">> SEQUENCES\n");
   Print_CSeq(stdout,NO,tree->data,tree);
   PhyML_Printf("<< SEQUENCES");
-  /* Exit("\n"); */
   
   /* Init_Partial_Lk_Tips_Double(tree); */
   /* Init_Partial_Lk_Loc(tree); */
@@ -917,6 +923,7 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda
                disk->ldsk->coord->lonlat[1],
                Nucleotide_Diversity(tree->data));
   
+  Exit("\n");
   
   /* PhyML_Printf("\n. Tree: "); */
   /* PhyML_Printf("\n. %s \n",Write_Tree(tree)); */
@@ -1964,6 +1971,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       mcmc = tree->mcmc;
     }
 
+  
   mcmc->io               = NULL;
   mcmc->is               = NO;
   mcmc->run              = 0;

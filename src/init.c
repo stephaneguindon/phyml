@@ -727,6 +727,7 @@ void Set_Defaults_Optimiz(t_opt *s_opt)
   s_opt->max_rank_triple_move = 0;
   s_opt->n_improvements       = 0;
   s_opt->max_spr_depth        = 0;
+  s_opt->opt_clock_r          = YES;
   
   s_opt->min_diff_lk_local    = 1.E-03;
   s_opt->min_diff_lk_global   = 1.E-03;
@@ -860,7 +861,6 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
   rates->clock_r       = 1.E-4;
   rates->min_clock     = 1.E-10;
   rates->max_clock     = 1.E+0;
-  rates->clock_r_fixed = NO;
   
   /* rates->clock_r       = 3.E-4; */
   /* rates->max_clock     = 1.E-3; */
@@ -3489,7 +3489,7 @@ void PHYREX_Init_Migrep_Mod(t_phyrex_mod *t, int n_dim, phydbl min_lat, phydbl m
 
   t->samp_area       = NULL;
 
-  t->max_num_of_intervals = 2000000;
+  t->max_num_of_intervals = 1000;
 }
 
 //////////////////////////////////////////////////////////////

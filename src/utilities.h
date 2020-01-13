@@ -1319,23 +1319,24 @@ typedef struct __Option { /*! mostly used in 'help.c' */
 /*!********************************************************/
 
 typedef struct __Optimiz { /*! parameters to be optimised (mostly used in 'optimiz.c') */
-  int                opt_alpha; /*! =1 -> the gamma shape parameter is optimised */
-  int                opt_kappa; /*! =1 -> the ts/tv ratio parameter is optimised */
-  int               opt_lambda; /*! =1 -> the F84|TN93 model specific parameter is optimised */
-  int               opt_pinvar; /*! =1 -> the proportion of invariants is optimised */
-  int           opt_state_freq; /*! =1 -> the nucleotide frequencies are optimised */
-  int                   opt_rr; /*! =1 -> the relative rate parameters of the GTR or the customn model are optimised */
-  int          opt_subst_param; /*! if opt_topo=0 and opt_subst_param=1 -> the numerical parameters of the
+  short int                opt_alpha; /*! =1 -> the gamma shape parameter is optimised */
+  short int                opt_kappa; /*! =1 -> the ts/tv ratio parameter is optimised */
+  short int               opt_lambda; /*! =1 -> the F84|TN93 model specific parameter is optimised */
+  short int               opt_pinvar; /*! =1 -> the proportion of invariants is optimised */
+  short int           opt_state_freq; /*! =1 -> the nucleotide frequencies are optimised */
+  short int                   opt_rr; /*! =1 -> the relative rate parameters of the GTR or the customn model are optimised */
+  short int          opt_subst_param; /*! if opt_topo=0 and opt_subst_param=1 -> the numerical parameters of the
                    model are optimised. if opt_topo=0 and opt_free_param=0 -> no parameter is
                    optimised */
-  int            opt_cov_delta;
-  int            opt_cov_alpha;
-  int       opt_cov_free_rates;
+  short int            opt_cov_delta;
+  short int            opt_cov_alpha;
+  short int       opt_cov_free_rates;
+  
+  short int              opt_clock_r;
 
-
-  int                   opt_bl; /*! =1 -> the branch lengths are optimised */
-  int                 opt_topo; /*! =1 -> the tree topology is optimised */
-  int              topo_search;
+  short int                   opt_bl; /*! =1 -> the branch lengths are optimised */
+  short int                 opt_topo; /*! =1 -> the tree topology is optimised */
+  short int              topo_search;
   phydbl               init_lk; /*! initial loglikelihood value */
   int                 n_it_max; /*! maximum bnumber of iteration during an optimisation step */
   int                 last_opt; /*! =1 -> the numerical parameters are optimised further while the
@@ -1636,7 +1637,6 @@ typedef struct __T_Rate {
   struct __T_Rate *prev;
 
   short int is_asynchronous;
-  short int clock_r_fixed;
 }t_rate;
 
 /*!********************************************************/
