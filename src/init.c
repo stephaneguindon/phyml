@@ -3489,7 +3489,7 @@ void PHYREX_Init_Migrep_Mod(t_phyrex_mod *t, int n_dim, phydbl min_lat, phydbl m
 
   t->samp_area       = NULL;
 
-  t->max_num_of_intervals = 1000;
+  t->max_num_of_intervals = 5000;
 }
 
 //////////////////////////////////////////////////////////////

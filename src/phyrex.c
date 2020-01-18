@@ -339,12 +339,10 @@ void PHYREX_XML(char *xml_filename)
   /* mixt_tree->mmod->lbda = Uni()*(mixt_tree->mmod->max_lbda - mixt_tree->mmod->min_lbda) + mixt_tree->mmod->min_lbda; */
   /* mixt_tree->mmod->mu   = Uni()*(mixt_tree->mmod->max_mu - mixt_tree->mmod->min_mu) + mixt_tree->mmod->min_mu; */
   /* mixt_tree->mmod->rad  = Uni()*(mixt_tree->mmod->max_rad - mixt_tree->mmod->max_rad/2.) + mixt_tree->mmod->max_rad/2.; */
-  mixt_tree->mmod->lbda = 1.0;
-  mixt_tree->mmod->mu   = 0.5;
-  mixt_tree->mmod->rad  = mixt_tree->mmod->max_rad/2.;
+  mixt_tree->mmod->lbda = 1.;
+  mixt_tree->mmod->mu   = 1.;
+  mixt_tree->mmod->rad  = mixt_tree->mmod->max_rad/1.;
   mixt_tree->mmod->sigsq = PHYREX_Update_Sigsq(mixt_tree);
-
-
 
   
   /* Random genealogy or user-defined tree */
@@ -368,7 +366,6 @@ void PHYREX_XML(char *xml_filename)
 
   MIXT_Set_Ignore_Root(YES,mixt_tree);
   MIXT_Set_Bl_From_Rt(YES,mixt_tree);
-
 
   PHYREX_Oldest_Sampled_Disk(mixt_tree);
 
@@ -1882,6 +1879,8 @@ phydbl PHYREX_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
   
   /* return(PHYREX_Lk(tree)); */
   
+  if(PHYREX_Total_Number_Of_Intervals(tree) > tree->mmod->max_num_of_intervals) return UNLIKELY;
+
   assert(young);
 
   lnL  = 0.0;

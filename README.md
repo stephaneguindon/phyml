@@ -1,7 +1,31 @@
+
 [![Build Status](https://travis-ci.org/stephaneguindon/phyml.svg?branch=master)](https://travis-ci.org/stephaneguindon/phyml)
 [![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/phyml/README.html) 
 
-### 1. You downloaded a stable release  of PhyML from [here](https://github.com/stephaneguindon/phyml/releases) 
+
+### Overview
+
+PhyML is a software package that uses modern statistical approaches to analyse alignments of nucleotide or amino acid sequences in a phylogenetic
+framework. The main tool in this package builds phylogenies under the maximum likelihood criterion. It implements a large number of substitution
+models coupled to efficient options to search the space of phylogenetic tree topologies. PhyTime is another tool in the PhyML package that focuses
+on divergence date estimation in a Bayesian setting. The main strengths of PhyTime lies in its ability to accomodate unertrainty in fossil calibration
+and the use of realistic models of rate variation along the tree. Finally, PhyREX fits the spatial-Lambda-Fleming-Viot
+model to geo-referenced genetic data. This model is similar to the structured coalescent but assumes that individuals are distributed along a spatial continuum rather
+than discrete demes.
+
+### Citations
+
+..* New algorithms and methods to estimate maximum-likelihood phylogenies: assessing the performance of PhyML 3.0
+S Guindon, JF Dufayard, V Lefort, M Anisimova, W Hordijk, O Gascuel
+Systematic Biology 59 (3), 307-321, 2010.
+..* Accounting for calibration uncertainty: Bayesian molecular dating as a “doubly intractable” problem
+S Guindon Systematic Biology 67 (4), 651–661, 2018.
+..* Demographic inference under the coalescent in a spatial continuum S Guindon, H Guo, D Welch Theoretical population biology 111, 43-50, 2016.
+
+
+### Installation
+
+## You downloaded a stable release  of PhyML from [here](https://github.com/stephaneguindon/phyml/releases) 
 
 To install any program that is part of the PhyML package, type the following commands:
 
@@ -33,7 +57,7 @@ the phyml binary in the `src/` directory.
 
 
 
-### 2. You cloned PhyML from GitHub
+## You cloned PhyML from GitHub
 
 To install any program that is part of the PhyML package, type the following command:
 
