@@ -11,7 +11,7 @@ models coupled to efficient options to search the space of phylogenetic tree top
 on divergence date estimation in a Bayesian setting. The main strengths of PhyTime lies in its ability to accommodate for uncertrainty in the placement of fossil calibration
 and the use of realistic models of rate variation along the tree. Finally, PhyREX fits the spatial-Lambda-Fleming-Viot
 model to geo-referenced genetic data. This model is similar to the structured coalescent but assumes that individuals are distributed along a spatial continuum rather
-than discrete demes. PHyTime can be used to estimate population densities and rates of dispersal. Its output can be processed by treeannotator (from the BEAST package) as well as
+than discrete demes. PhyTime can be used to estimate population densities and rates of dispersal. Its output can be processed by treeannotator (from the BEAST package) as well as
 SPREAD.
 
 ### Citations
