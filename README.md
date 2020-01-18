@@ -15,17 +15,14 @@ than discrete demes.
 
 ### Citations
 
-..* New algorithms and methods to estimate maximum-likelihood phylogenies: assessing the performance of PhyML 3.0
-S Guindon, JF Dufayard, V Lefort, M Anisimova, W Hordijk, O Gascuel
-Systematic Biology 59 (3), 307-321, 2010.
-..* Accounting for calibration uncertainty: Bayesian molecular dating as a “doubly intractable” problem
-S Guindon Systematic Biology 67 (4), 651–661, 2018.
+..* New algorithms and methods to estimate maximum-likelihood phylogenies: assessing the performance of PhyML 3.0 S Guindon, JF Dufayard, V Lefort, M Anisimova, W Hordijk, O Gascuel Systematic Biology 59 (3), 307-321, 2010.
+..* Accounting for calibration uncertainty: Bayesian molecular dating as a “doubly intractable” problem S Guindon Systematic Biology 67 (4), 651–661, 2018.
 ..* Demographic inference under the coalescent in a spatial continuum S Guindon, H Guo, D Welch Theoretical population biology 111, 43-50, 2016.
 
 
 ### Installation
 
-## You downloaded a stable release  of PhyML from [here](https://github.com/stephaneguindon/phyml/releases) 
+#### You downloaded a stable release  of PhyML from [here](https://github.com/stephaneguindon/phyml/releases) 
 
 To install any program that is part of the PhyML package, type the following commands:
 
@@ -57,7 +54,7 @@ the phyml binary in the `src/` directory.
 
 
 
-## You cloned PhyML from GitHub
+#### You cloned PhyML from GitHub
 
 To install any program that is part of the PhyML package, type the following command:
 
