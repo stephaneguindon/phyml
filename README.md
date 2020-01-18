@@ -8,10 +8,11 @@
 PhyML is a software package that uses modern statistical approaches to analyse alignments of nucleotide or amino acid sequences in a phylogenetic
 framework. The main tool in this package builds phylogenies under the maximum likelihood criterion. It implements a large number of substitution
 models coupled to efficient options to search the space of phylogenetic tree topologies. PhyTime is another tool in the PhyML package that focuses
-on divergence date estimation in a Bayesian setting. The main strengths of PhyTime lies in its ability to accomodate unertrainty in fossil calibration
+on divergence date estimation in a Bayesian setting. The main strengths of PhyTime lies in its ability to accommodate for uncertrainty in the placement of fossil calibration
 and the use of realistic models of rate variation along the tree. Finally, PhyREX fits the spatial-Lambda-Fleming-Viot
 model to geo-referenced genetic data. This model is similar to the structured coalescent but assumes that individuals are distributed along a spatial continuum rather
-than discrete demes.
+than discrete demes. PHyTime can be used to estimate population densities and rates of dispersal. Its output can be processed by treeannotator (from the BEAST package) and
+SPREAD.
 
 ### Citations
 
