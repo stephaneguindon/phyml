@@ -1,5 +1,5 @@
-<phyrex run.id="example" output.file="out" mcmc.chain.len="1E+7" mcmc.sample.every="500"
-        mcmc.print.every="100" mcmc.burnin="10000" mutmap="no">
+<phyrex run.id="example" output.file="out" mcmc.chain.len="1E+7" mcmc.sample.every="1000"
+        mcmc.print.every="1000" mcmc.burnin="1E+5" mutmap="no">
 
   <!-- Tree topology -->
   <topology> 
@@ -11,8 +11,10 @@
   <lineagerates model="lognormal"/>
 
   <!-- Average (clock) rate of substitution -->
-  <clockrate value="1E-4"/>
+  <clockrate value="1" optimize.clock="false"/>
   
+  <!-- Model of rate variation across lineages -->
+  <lineagerates model="lognormal"/>
   
   <!-- Substitution model -->
   <ratematrices id="RM1">
