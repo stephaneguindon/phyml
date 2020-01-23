@@ -1229,48 +1229,47 @@ phydbl Statistics_To_SH(t_tree *tree)
       /*! compute results and increment if needed */
       delta_local=0.0;
       if (lk0>=lk1 && lk0>=lk2)
-    {
-      if (lk1>=lk2)
         {
-          delta_local=lk0-lk1;
+          if (lk1>=lk2)
+            {
+              delta_local=lk0-lk1;
+            }
+          else
+            {
+              delta_local=lk0-lk2;
+            }
         }
-      else
-        {
-          delta_local=lk0-lk2;
-        }
-    }
       else if(lk1>=lk0 && lk1>=lk2)
-    {
-      if (lk0>=lk2)
         {
-          delta_local=lk1-lk0;
+          if (lk0>=lk2)
+            {
+              delta_local=lk1-lk0;
+            }
+          else
+            {
+              delta_local=lk1-lk2;
+            }
         }
       else
         {
-          delta_local=lk1-lk2;
+          if (lk1>=lk0)            
+            {
+              delta_local=lk2-lk1;
+            }
+          else
+            {
+              delta_local=lk2-lk0;
+            }
         }
-    }
-      else
-    {
-      if (lk1>=lk0)
-
-        {
-          delta_local=lk2-lk1;
-        }
-      else
-        {
-          delta_local=lk2-lk0;
-        }
-    }
-
+      
       if (delta>(delta_local+0.1))
         {
           nb++;
         }
     }
-
+  
   res= nb/occurence;
-
+  
   return res;
 }
 
