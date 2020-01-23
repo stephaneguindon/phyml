@@ -97,6 +97,7 @@ void Integrated_Geometric_Brownian_Bridge_Moments(phydbl T, phydbl A, phydbl B, 
 void Integrated_Geometric_Brownian_Bridge_Mean(phydbl T, phydbl A, phydbl B, phydbl u, phydbl *mean);
 void Integrated_Geometric_Brownian_Bridge_Var(phydbl T, phydbl A, phydbl B, phydbl u, phydbl *mean);
 int Sample_i_With_Proba_pi(phydbl *pi, int len);
+int* Sample_n_i_With_Proba_pi(phydbl *pi, int len,int n_elts);
 phydbl Quantile(phydbl *x, int len, phydbl p);
 phydbl Prob(phydbl *x, int len, phydbl z);
 phydbl Inverse_Truncated_Normal(phydbl y, phydbl mu, phydbl sigma, phydbl lim_inf, phydbl lim_sup);

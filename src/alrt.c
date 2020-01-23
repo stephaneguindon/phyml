@@ -1082,6 +1082,7 @@ phydbl Statistics_to_RELL(t_tree *tree)
   phydbl lk2=0.0;
   int position = -1;
   t_tree *buff_tree;
+  int* samples;
 
   /*! 1000 times */
   for(i=0;i<occurence;i++)
@@ -1097,15 +1098,17 @@ phydbl Statistics_to_RELL(t_tree *tree)
           pi = (phydbl *)mCalloc(tree->data->crunch_len,sizeof(phydbl));
           for(site=0;site<tree->n_pattern;site++) pi[site] = tree->data->wght[site] / (phydbl)tree->data->init_len;
 
+	  samples = Sample_n_i_With_Proba_pi(pi,tree->n_pattern,tree->data->init_len);
           For(site, tree->data->init_len)
             {
-              position = Sample_i_With_Proba_pi(pi,tree->n_pattern);
+              position = samples[site];
               lk0+=tree->log_lks_aLRT[0][position];
               lk1+=tree->log_lks_aLRT[1][position];
               lk2+=tree->log_lks_aLRT[2][position];
             }
           if (lk0>=lk1 && lk0>=lk2) nb++;
           tree = tree->next_mixt;
+	  Free(samples);
           Free(pi);
         }
       while(tree);
@@ -1141,7 +1144,7 @@ phydbl Statistics_To_SH(t_tree *tree)
   phydbl delta=0.0;
   t_tree *buff_tree;
   phydbl *pi;
-
+  int* samples;
 
   /*! Compute the total log-lk of each NNI position */
   buff_tree = tree;
@@ -1206,16 +1209,18 @@ phydbl Statistics_To_SH(t_tree *tree)
           pi = (phydbl *)mCalloc(tree->data->crunch_len,sizeof(phydbl));
           for(site=0;site<tree->n_pattern;site++) pi[site] = tree->data->wght[site] / (phydbl)tree->data->init_len;
 
+	  samples = Sample_n_i_With_Proba_pi(pi,tree->n_pattern,tree->data->init_len);
           /*! Shuffle the data */
           For(site, tree->data->init_len)
             {
-              position = Sample_i_With_Proba_pi(pi,tree->n_pattern);
+              position = samples[site];
               lk0+=tree->log_lks_aLRT[0][position];
               lk1+=tree->log_lks_aLRT[1][position];
               lk2+=tree->log_lks_aLRT[2][position];
             }
 
           tree = tree->next_mixt;
+	  Free(samples);
           Free(pi);
         }
       while(tree);
