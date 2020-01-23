@@ -4490,7 +4490,7 @@ int Sample_i_With_Proba_pi(phydbl *pi, int len)
   cum_pi = (phydbl *)mCalloc(len,sizeof(phydbl));
 
   u = .0;
-  for(i=0;i<len;i++) u += pi[i];  
+  for(i=0;i<len;i++) u += pi[i];
   for(i=0;i<len;i++) cum_pi[i] = pi[i] / u;
   for(i=1;i<len;i++) cum_pi[i] += cum_pi[i-1];
 
@@ -4516,6 +4516,103 @@ int Sample_i_With_Proba_pi(phydbl *pi, int len)
 
   return(i);
 }
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+// Same method as previous one, but returning n_elts sampled
+// elements at once, avoiding to recreate cum_pi for each sample.
+// Alias Method (https://en.wikipedia.org/wiki/Alias_method)
+// Inspired from:
+// https://jugit.fz-juelich.de/mlz/ransampl/blob/master/lib/ransampl.c
+// and
+// https://possiblywrong.wordpress.com/2012/02/05/the-alias-method-and-double-precision/
+int* Sample_n_i_With_Proba_pi(phydbl *pi, int len, int n_elts)
+{
+  int i,n;
+  phydbl sum;
+  int *sampled;
+  int *alias;
+  phydbl *prob, *p;
+  int *small, *large;
+  int num_small = 0, num_large = 0;
+  int a, g;
+  
+  alias = mCalloc(len, sizeof(int));
+  prob = mCalloc(len, sizeof(phydbl));
+  p = mCalloc(len, sizeof(phydbl));
+  small = mCalloc(len, sizeof(int));
+  large = mCalloc(len, sizeof(int));
+  
+  sampled = (int *)mCalloc(n_elts,sizeof(int));
+  
+  sum = .0;
+  for(i=0;i<len;i++)
+    {
+      if( pi[i]<0 )
+	{
+	  PhyML_Printf("\n== Probability < 0");
+	  PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+	  Exit("\n");
+	}
+      sum += pi[i];
+    }
+
+  if(sum == 0. )
+    {
+      PhyML_Printf("\n== Sum of probabilities is 0");
+      PhyML_Printf("\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
+      Exit("\n");
+    }
+  
+  for(i=0;i<len;i++) p[i] = pi[i] * len / sum;
+
+  num_small = 0;
+  num_large = 0;
+  for ( i=len-1; i>=0; --i )
+    {
+      if ( p[i]<1 )
+	small[num_small++] = i;
+      else
+	large[num_large++] = i;
+    }
+
+  while ( num_small && num_large )
+    {
+      a = small[--num_small];
+      g = large[--num_large];
+      prob[a] = p[a];
+      alias[a] = g;
+      p[g] = p[g] + p[a] - 1;
+      if ( p[g] < 1 )
+	small[num_small++] = g;
+      else
+	large[num_large++] = g;
+    }
+
+  while ( num_large )
+    prob[ large[--num_large] ] = 1;
+
+  while ( num_small )
+      prob[ small[--num_small] ] = 1;
+
+  Free( p );
+  Free( small );
+  Free( large );
+
+  for(n=0; n<n_elts;n++)
+    {
+      phydbl r1 = Uni();
+      phydbl r2 = Uni();
+      i = (int) (len * r1);
+      sampled[n] = (r2 < prob[i] ? i : alias[i]);
+    }
+
+  Free(alias );
+  Free(prob );
+  
+  return(sampled);
+}
+
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
