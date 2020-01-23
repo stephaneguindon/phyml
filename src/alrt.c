@@ -1073,7 +1073,7 @@ phydbl Statistics_To_Probabilities(phydbl in)
 phydbl Statistics_to_RELL(t_tree *tree)
 {
   int i;
-  int occurence=1000;
+  int occurence=10000;
   phydbl nb=0.0;
   phydbl res,*pi;
   int site;
@@ -1100,9 +1100,9 @@ phydbl Statistics_to_RELL(t_tree *tree)
           For(site, tree->data->init_len)
             {
               position = Sample_i_With_Proba_pi(pi,tree->n_pattern);
-              lk0+=tree->log_lks_aLRT[0][position];
-              lk1+=tree->log_lks_aLRT[1][position];
-              lk2+=tree->log_lks_aLRT[2][position];
+              lk0+=tree->log_lks_aLRT[0][position] / tree->data->wght[position];
+              lk1+=tree->log_lks_aLRT[1][position] / tree->data->wght[position];
+              lk2+=tree->log_lks_aLRT[2][position] / tree->data->wght[position];
             }
           if (lk0>=lk1 && lk0>=lk2) nb++;
           tree = tree->next_mixt;
@@ -1126,7 +1126,7 @@ phydbl Statistics_to_RELL(t_tree *tree)
 phydbl Statistics_To_SH(t_tree *tree)
 {
   int i;
-  int occurence=1000;
+  int occurence=10000;
   phydbl nb=0.0;
   phydbl res;
   int site;
@@ -1149,9 +1149,9 @@ phydbl Statistics_To_SH(t_tree *tree)
     {
       For(site, tree->n_pattern)
         {
-          c0+=tree->log_lks_aLRT[0][site] / tree->data->wght[site];
-          c1+=tree->log_lks_aLRT[1][site] / tree->data->wght[site];
-          c2+=tree->log_lks_aLRT[2][site] / tree->data->wght[site];
+          c0+=tree->log_lks_aLRT[0][site];
+          c1+=tree->log_lks_aLRT[1][site];
+          c2+=tree->log_lks_aLRT[2][site];
         }
       tree = tree->next_mixt;
     }
@@ -1210,9 +1210,9 @@ phydbl Statistics_To_SH(t_tree *tree)
           For(site, tree->data->init_len)
             {
               position = Sample_i_With_Proba_pi(pi,tree->n_pattern);
-              lk0+=tree->log_lks_aLRT[0][position];
-              lk1+=tree->log_lks_aLRT[1][position];
-              lk2+=tree->log_lks_aLRT[2][position];
+              lk0+=tree->log_lks_aLRT[0][position] / tree->data->wght[position];
+              lk1+=tree->log_lks_aLRT[1][position] / tree->data->wght[position];
+              lk2+=tree->log_lks_aLRT[2][position] / tree->data->wght[position];
             }
 
           tree = tree->next_mixt;
