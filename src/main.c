@@ -582,52 +582,52 @@ int main(int argc, char **argv)
 #include "xml.h"
 int main(int argc, char **argv)
 {
-  /* option *io; */
-  /* int i; */
-  /* int year; */
-  
-  /* io = (option *)Get_Input(argc,argv); */
-  /* if(!io) return(0); */
-
-  /* Get_Seq(io); */
-
-  /* for(i=0;i<io->n_otu;i++) */
-  /*   { */
-  /*     sscanf(io->data[i]->name,"%d",&year); */
-  /*     PhyML_Printf("\n<clade id=\"clad%d\">",i+1); */
-  /*     PhyML_Printf("\n\t<taxon value=\"%s\"/>",io->data[i]->name); */
-  /*     PhyML_Printf("\n</clade>"); */
-  /*     PhyML_Printf("\n<calibration id=\"cal%d\">",i+1); */
-  /*     PhyML_Printf("\n\t<lower>%d</lower>",year); */
-  /*     PhyML_Printf("\n\t<upper>%d</upper>",year); */
-  /*     PhyML_Printf("\n\t<appliesto clade.id=\"clad%d\"/>",i+1); */
-  /*     PhyML_Printf("\n</calibration>"); */
-  /*   } */
-
-  FILE *fp;
-  char *name,*date;
+  option *io;
   int i;
+  int year;
   
-  name = (char *)mCalloc(T_MAX_NAME,sizeof(char));
-  date = (char *)mCalloc(T_MAX_NAME,sizeof(char));
+  io = (option *)Get_Input(argc,argv);
+  if(!io) return(0);
 
-  i = 0;
-  fp = Openfile(argv[1],READ);
-  do
+  Get_Seq(io);
+
+  for(i=0;i<io->n_otu;i++)
     {
-      if(fscanf(fp,"%s",name) == EOF) break;
-      if(fscanf(fp,"%s",date) == EOF) break;
+      sscanf(io->data[i]->name,"%d",&year);
       PhyML_Printf("\n<clade id=\"clad%d\">",i+1);
-      PhyML_Printf("\n\t<taxon value=\"%s\"/>",name);
+      PhyML_Printf("\n\t<taxon value=\"%s\"/>",io->data[i]->name);
       PhyML_Printf("\n</clade>");
       PhyML_Printf("\n<calibration id=\"cal%d\">",i+1);
-      PhyML_Printf("\n\t<lower>%s</lower>",date);
-      PhyML_Printf("\n\t<upper>%s</upper>",date);
+      PhyML_Printf("\n\t<lower>%d</lower>",year);
+      PhyML_Printf("\n\t<upper>%d</upper>",year);
       PhyML_Printf("\n\t<appliesto clade.id=\"clad%d\"/>",i+1);
       PhyML_Printf("\n</calibration>");
-      ++i;
     }
-  while(1);
+
+  /* FILE *fp; */
+  /* char *name,*date; */
+  /* int i; */
+  
+  /* name = (char *)mCalloc(T_MAX_NAME,sizeof(char)); */
+  /* date = (char *)mCalloc(T_MAX_NAME,sizeof(char)); */
+
+  /* i = 0; */
+  /* fp = Openfile(argv[1],READ); */
+  /* do */
+  /*   { */
+  /*     if(fscanf(fp,"%s",name) == EOF) break; */
+  /*     if(fscanf(fp,"%s",date) == EOF) break; */
+  /*     PhyML_Printf("\n<clade id=\"clad%d\">",i+1); */
+  /*     PhyML_Printf("\n\t<taxon value=\"%s\"/>",name); */
+  /*     PhyML_Printf("\n</clade>"); */
+  /*     PhyML_Printf("\n<calibration id=\"cal%d\">",i+1); */
+  /*     PhyML_Printf("\n\t<lower>%s</lower>",date); */
+  /*     PhyML_Printf("\n\t<upper>%s</upper>",date); */
+  /*     PhyML_Printf("\n\t<appliesto clade.id=\"clad%d\"/>",i+1); */
+  /*     PhyML_Printf("\n</calibration>"); */
+  /*     ++i; */
+  /*   } */
+  /* while(1); */
   
 }
 
