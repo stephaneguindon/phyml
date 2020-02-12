@@ -569,8 +569,10 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	case 37 :
 	  {
 	    io->mod->s_opt->opt_cov_free_rates = YES;
+#ifdef M4
 	    io->mod->m4mod->use_cov_alpha      = NO;
 	    io->mod->m4mod->use_cov_free       = YES;
+#endif
 	    break;
 	  }
 	case 36 :
@@ -582,8 +584,9 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	  }
 	case 35 :
 	  {
+#ifdef M4
 	    io->mod->m4mod->n_h = (int)atoi(optarg);
-	    
+
 	    if(io->mod->m4mod->n_h < 1)
 	      {
 		char choix;
@@ -592,10 +595,12 @@ int Read_Command_Line(option *io, int argc, char **argv)
 		if(!scanf("%c",&choix)) Exit("\n");
 		Exit("\n");
 	      }
+#endif
 	    break;
 	  }
 	case 34 :
 	  {
+#ifdef M4
 	    io->mod->m4mod->use_cov_alpha = YES;
 	    io->mod->m4mod->use_cov_free  = NO;
 	    
@@ -618,10 +623,12 @@ int Read_Command_Line(option *io, int argc, char **argv)
 		    Exit("\n");
 		  }
 	      }
+#endif
 	    break;
 	  }
 	case 33 :
 	  {
+#ifdef M4
 	    if(!strcmp(optarg,"e") || !strcmp(optarg,"E") ||
 	       !strcmp(optarg,"estimated") || !strcmp(optarg,"ESTIMATED"))
 	      {
@@ -641,6 +648,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
 		    Exit("\n");
 		  }
 	      }
+#endif
 	    break;
 	  }
 	case 32 :
@@ -778,8 +786,10 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	      {
 		io->datatype        = NT;
 		io->mod->ns         = 4;
-		io->mod->m4mod->n_o = 4;
-		
+#ifdef M4
+                io->mod->m4mod->n_o = 4;
+#endif
+                
 		if((io->mod->whichmodel == LG)        ||
 		   (io->mod->whichmodel == WAG)       ||
 		   (io->mod->whichmodel == DAYHOFF)   ||
@@ -807,8 +817,10 @@ int Read_Command_Line(option *io, int argc, char **argv)
 		io->datatype              = AA;
 		io->mod->s_opt->opt_kappa = NO;
 		io->mod->ns               = 20;
+#ifdef M4
 		io->mod->m4mod->n_o       = 20;
-
+#endif
+                
 		if(
 		   (io->mod->whichmodel == JC69)   ||
 		   (io->mod->whichmodel == K80)    ||
@@ -1547,14 +1559,6 @@ int Read_Command_Line(option *io, int argc, char **argv)
   
   
   if(io->datatype == UNDEFINED) io->datatype = NT;
-
-
-  if((io->mod->s_opt->n_rand_starts)           && 
-     (io->mod->s_opt->topo_search == NNI_MOVE) && 
-     (io->mod->s_opt->random_input_tree))
-    {
-      Warn_And_Exit("\n. The random starting tree option is only compatible with SPR based search options.\n"); 
-    }
   
   if ((io->datatype == NT) && (io->mod->whichmodel > 10))
     {
@@ -1583,8 +1587,10 @@ int Read_Command_Line(option *io, int argc, char **argv)
   if((io->mod->s_opt->opt_cov_free_rates) && (io->mod->s_opt->opt_cov_alpha))
     {
       io->mod->s_opt->opt_cov_free_rates = 1;
+#ifdef M4
       io->mod->m4mod->use_cov_alpha      = 0;
       io->mod->m4mod->use_cov_free       = 1;
+#endif
     }
   
   if(io->print_site_lnl && io->fp_in_align != NULL)

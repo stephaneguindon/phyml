@@ -142,6 +142,9 @@ int main(int argc, char **argv)
 
                   Init_Model(cdata,mod,io);
 
+#ifdef M4
+                  if(io->mod->use_m4mod) M4_Init_Model(mod->m4mod,cdata,mod);
+#endif
 
                   // Make the initial tree
                   switch(io->in_tree)
@@ -195,12 +198,6 @@ int main(int argc, char **argv)
                   tree->n_tot_bl_opt = 0;
 
                   Set_Both_Sides(YES,tree);
-
-                  if(mod->s_opt->random_input_tree)
-                    {
-                      PhyML_Printf("\n");
-                      Random_Tree(tree);
-                    }
 
                   if((!num_data_set) && (!num_tree) && (!num_rand_tree)) Check_Memory_Amount(tree);
 

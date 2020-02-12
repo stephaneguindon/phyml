@@ -438,6 +438,7 @@ void Read_Node_Label(char *s_d, char *s_a, t_node *n)
     }
   
   Free(sub_tp);
+  Free(s_lab);
 }
 
 //////////////////////////////////////////////////////////////

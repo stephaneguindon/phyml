@@ -2409,6 +2409,7 @@ void Remove_Duplicates(calign *data, option *io, t_tree *tree)
   int n_duplicates,n_removed,n_otu_orig,i,j,k;
   align *tmp;
   
+  if(data->n_rm > 0) return; // Already removed duplicates 
   if(io->leave_duplicates == YES) return;
   
   n_otu_orig = data->n_otu;
@@ -2485,7 +2486,7 @@ void Remove_Duplicates(calign *data, option *io, t_tree *tree)
 
   data->n_otu = tree->n_otu;
   io->n_otu = tree->n_otu;
-  
+
 }
 
 //////////////////////////////////////////////////////////////
@@ -8174,6 +8175,7 @@ t_tree *Dist_And_BioNJ(calign *cdata, t_mod *mod, option *io)
   else
     {
       tree = Make_Tree_From_Scratch(cdata->n_otu,cdata);
+      Random_Tree(tree);
       tree->mat = NULL;
     }
   

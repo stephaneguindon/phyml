@@ -3489,7 +3489,7 @@ void PHYREX_Init_Migrep_Mod(t_phyrex_mod *t, int n_dim, phydbl min_lat, phydbl m
 
   t->samp_area       = NULL;
 
-  t->max_num_of_intervals = 5000;
+  t->max_num_of_intervals = 8000;
 }
 
 //////////////////////////////////////////////////////////////
@@ -3664,6 +3664,55 @@ void Init_NNI_Score(phydbl val, t_edge *b, t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+#ifdef M4
+void M4_Init_Model(m4 *m4mod, calign *data, t_mod *mod)
+{
+  int i,j,ct;
+  phydbl fq;
+
+  if(mod->io->datatype == NT)      m4mod->n_o = 4;
+  else if(mod->io->datatype == AA) m4mod->n_o = 20;
+  else
+    {
+      PhyML_Fprintf(stderr,"\n. Not implemented yet.");
+      PhyML_Fprintf(stderr,"\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+      Warn_And_Exit("");
+    }
+
+  mod->ns = m4mod->n_o * m4mod->n_h;
+
+  for(i=0;i<m4mod->n_o;i++) m4mod->o_fq[i] = mod->e_frq->pi->v[i]; /*! At that stage, the mod->pi vector as been initialized
+                                                             under a standard non covarion type of model. Use these
+                                                             frequencies as they have been set according to the
+                                                             nucleotide substitution model chosen (e.g., 1/4 for JC69). !*/
+  For(i,(int)(m4mod->n_h)) m4mod->multipl[i] = 1.;
+  
+  ct = 0;
+  for(i=0;i<m4mod->n_o-1;i++)
+    {
+      for(j=i+1;j<m4mod->n_o;j++)
+        {
+          m4mod->o_rr[ct] = MAX(mod->r_mat->qmat->v[i*m4mod->n_o+j],1.E-5);
+          ct++;
+        }
+    }
+
+  For(i,(int)(m4mod->n_h*(m4mod->n_h-1)/2)) m4mod->h_rr[i] = 1.;
+  fq = (phydbl)(1./m4mod->n_h);
+
+  if(mod->s_opt->opt_cov_delta) m4mod->delta = 1.0;
+  if(mod->s_opt->opt_cov_alpha) m4mod->alpha = 1.0;
+  for(i=0;i<m4mod->n_h;i++) m4mod->h_fq[i] = fq;
+  for(i=0;i<m4mod->n_h;i++) m4mod->h_fq_unscaled[i] = 1.0;
+  for(i=0;i<m4mod->n_h;i++) m4mod->multipl[i] = (phydbl)i;
+  for(i=0;i<m4mod->n_h;i++) m4mod->multipl_unscaled[i] = (phydbl)i;
+
+  Set_Update_Eigen(YES,mod);
+  M4_Update_Qmat(m4mod,mod);
+}
+#endif
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
