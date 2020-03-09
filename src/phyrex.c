@@ -2158,24 +2158,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       MIXT_Propagate_Tree_Update(tree);
       assert(PHYREX_Check_Struct(tree));
 
-      if(tree->mcmc->run == 10000)
-        {
-          /* mcmc->move_weight[mcmc->num_move_phyrex_spr] = 0.0; */
-          /* mcmc->move_weight[mcmc->num_move_phyrex_spr_local] = 0.0; */
-          /* mcmc->move_weight[mcmc->num_move_phyrex_traj] = 0.0; */
-          /* mcmc->move_weight[mcmc->num_move_phyrex_indel_disk] = 0.0; */
-          /* mcmc->move_weight[mcmc->num_move_phyrex_indel_hit] = 0.0; */
-          /* mcmc->move_weight[mcmc->num_move_phyrex_indel_hit_serial] = 0.0; */
-          /* mcmc->move_weight[mcmc->num_move_phyrex_ldsk_and_disk] = 0.0; */
-          /* mcmc->move_weight[mcmc->num_move_phyrex_ldsk_multi] = 0.0; */
-          /* mcmc->move_weight[mcmc->num_move_phyrex_disk_multi] = 0.0; */
-          /* mcmc->move_weight[mcmc->num_move_phyrex_ldsk_tip_to_root] = 0.0; */
-          phydbl sum = 0.0;
-          for(i=0;i<mcmc->n_moves;i++) sum += mcmc->move_weight[i];
-          for(i=0;i<mcmc->n_moves;i++) mcmc->move_weight[i] /= sum;
-          for(i=1;i<mcmc->n_moves;i++) mcmc->move_weight[i] += mcmc->move_weight[i-1];
-        }
-
       
       if(mcmc->run > mcmc->chain_len_burnin)
         for(i=0;i<mcmc->n_moves;i++) tree->mcmc->adjust_tuning[i] = NO;
