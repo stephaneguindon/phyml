@@ -596,7 +596,7 @@ t_tree *PHYREX_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl
   mmod->sigsq = 4.*pow(mmod->rad,4)*mmod->lbda*PI*mmod->mu/area * mmod->gen_cal_time;
 
  
-  phydbl p = Prob_Two_Lineages_Coal_One_Event(w,h,mmod->mu,mmod->rad);
+  phydbl p = Prob_Two_Random_Lineages_Coal_One_Event(w,h,mmod->mu,mmod->rad);
   printf("\n. p.sim: %G p.appx: %G",p,4.*pow(mmod->mu,2)*pow(PI,2)*pow(mmod->rad,4)/(pow(w*h,2)));
   phydbl rhoe = 1./(1.-exp(-mmod->lbda*p*mmod->gen_cal_time));
   rhoe /= area;
@@ -845,6 +845,14 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda
       tree->young_disk->ldsk_a[i]->coord->lonlat[1] = Uni()*(tree->mmod->lim_up->lonlat[1]-tree->mmod->lim_do->lonlat[1])+tree->mmod->lim_do->lonlat[1]; // latitude
     }
 
+  /* /\* !!!!!!!!!!!!!!!!!!!!!!!!!! *\/ */
+  /* /\* Fix coordinates of first two tips *\/ */
+  /* tree->young_disk->ldsk_a[0]->coord->lonlat[0] = (tree->mmod->lim_up->lonlat[0]+tree->mmod->lim_do->lonlat[0])/2; // longitude */
+  /* tree->young_disk->ldsk_a[0]->coord->lonlat[1] = (tree->mmod->lim_up->lonlat[1]+tree->mmod->lim_do->lonlat[1])/2; // latitude */
+  /* tree->young_disk->ldsk_a[1]->coord->lonlat[0] = (tree->mmod->lim_up->lonlat[1]+tree->mmod->lim_do->lonlat[1])/2 + 1; // longitude */
+  /* tree->young_disk->ldsk_a[1]->coord->lonlat[1] = (tree->mmod->lim_up->lonlat[1]+tree->mmod->lim_do->lonlat[1])/2 + 1; // latitude */
+
+  
   for(i=0;i<tree->n_otu;i++)
     {
       tree->young_disk->ldsk_a[i]->nd = tree->a_nodes[i];
@@ -994,6 +1002,7 @@ phydbl PHYREX_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_merger
       /* Proposed new time */
       new_time = disk->time - Rexp(mmod->lbda);
 
+
       lnL += log(mmod->lbda) - mmod->lbda * fabs(disk->time - new_time);
       
       /* New time is older than previous sampled disk (disk->prev) */
@@ -1115,6 +1124,9 @@ phydbl PHYREX_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_merger
     }
   while(1);  
   disk->prev = NULL;
+
+  /* /\* !!!!!!!!!!! *\/ */
+  /* PHYREX_Sum_Coal_Rate(init_disk->ldsk_a[0],init_disk->ldsk_a[1],100,tree); */
 
   return(lnL);
 }
@@ -2622,13 +2634,13 @@ void PHYREX_Remove_Disk(t_dsk *disk)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-/* Insert disk event based on its time. Insertion above the root is not permitted  
+/* Insert disk event based on its time. Insertion above the root is permitted  
 */
 void PHYREX_Insert_Disk(t_dsk *ins, t_tree *tree)
 {
   t_dsk *disk;
 
-  assert(!(ins == NULL));
+  assert(ins != NULL);
   
   disk = tree->young_disk;
   while(disk->prev != NULL && disk->prev->time > ins->time) disk = disk->prev;
@@ -5608,8 +5620,7 @@ phydbl PHYREX_Coalescence_Rate(t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-
-phydbl Prob_Two_Lineages_Coal_One_Event(phydbl w, phydbl h, phydbl mu, phydbl rad)
+phydbl Prob_Two_Random_Lineages_Coal_One_Event(phydbl w, phydbl h, phydbl mu, phydbl rad)
 {
   phydbl cx,cy;
   phydbl l1x,l1y;
@@ -5649,6 +5660,44 @@ phydbl Prob_Two_Lineages_Coal_One_Event(phydbl w, phydbl h, phydbl mu, phydbl ra
   
   return((phydbl)n_hit/n_trials);
 }
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+phydbl PHYREX_Prob_Two_Lineages_Coal(t_ldsk *l0, t_ldsk *l1, t_tree *tree)
+{
+  phydbl eucl,prob,area,W,H;
+
+  assert(tree->mmod->n_dim == 2);
+
+  W = (tree->mmod->lim_up->lonlat[0]-tree->mmod->lim_do->lonlat[0]);
+  H = (tree->mmod->lim_up->lonlat[1]-tree->mmod->lim_do->lonlat[1]);
+  
+  area = W*H;  
+
+  eucl = Euclidean_Dist(l0->coord,l1->coord);
+  
+  prob = 0.0;
+  prob += 2.*log(tree->mmod->mu);
+  prob += 2.*log(tree->mmod->rad);
+  prob += log(PI);
+  prob -= log(4.*area);
+  prob -= 0.25*eucl*eucl/(tree->mmod->rad*tree->mmod->rad);
+
+
+  prob +=
+    log(erf((l0->coord->lonlat[0] + l1->coord->lonlat[0])/(2.*tree->mmod->rad)) +
+        erf((2.*W - l0->coord->lonlat[0] - l1->coord->lonlat[0])/(2.*tree->mmod->rad)));
+
+  prob +=
+    log(erf((l0->coord->lonlat[1] + l1->coord->lonlat[1])/(2.*tree->mmod->rad)) +
+        erf((2.*H - l0->coord->lonlat[1] - l1->coord->lonlat[1])/(2.*tree->mmod->rad)));
+
+  prob = exp(prob);
+  
+  return(prob);
+}
+
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
@@ -6263,6 +6312,116 @@ void PHYREX_Label_Edges(t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+void PHYREX_Integrated_Coal_Rate(t_ldsk *l0, t_ldsk *l1, phydbl T, t_tree *tree)
+{
+  t_ldsk *baseline;
+  phydbl integrated_coal_rate,njumps,coaltime;
+  int coal;
+  
+  PhyML_Printf("\n# ");
+
+
+  coal = -1;
+  baseline = l0;
+  integrated_coal_rate = 0.0;
+  njumps = 0.0;
+  coaltime = 0.0;
+  do
+    {
+      if(l0->prev->disk->time > l1->prev->disk->time)
+        {
+          assert(coal == -1);
+          integrated_coal_rate +=
+            tree->mmod->lbda * PHYREX_Prob_Two_Lineages_Coal(l0,l1,tree) *
+            fabs(baseline->disk->time - MAX(l0->prev->disk->time,l1->prev->disk->time));
+          
+          njumps+=1.0;
+          baseline = l0->prev;
+
+          l0 = l0->prev;
+        }
+      else if(l0->prev->disk->time < l1->prev->disk->time)
+        {
+          assert(coal == -1);
+          integrated_coal_rate += 
+            tree->mmod->lbda * PHYREX_Prob_Two_Lineages_Coal(l0,l1,tree) *
+            fabs(baseline->disk->time - MAX(l0->prev->disk->time,l1->prev->disk->time));
+          
+          njumps+=1.0;
+          baseline = l1->prev;
+          
+          l1 = l1->prev;
+        }
+      else
+        {
+          assert(l0->prev);
+          assert(l1->prev);
+          assert(l0->prev == l1->prev);
+          coaltime = l0->prev->disk->time;
+          if(coaltime > T)
+            {
+              coal = 1;
+            }
+          else
+            {
+              coal = 0;
+              integrated_coal_rate += 
+                tree->mmod->lbda * PHYREX_Prob_Two_Lineages_Coal(l0,l1,tree) *
+                fabs(baseline->disk->time - T);              
+            }
+                        
+          l0->prev = NULL;
+          l1->prev = NULL;
+        }    
+    }
+  while(l0->prev && l1->prev);
+  
+  PhyML_Printf("%d %f %g %f",
+               coal,
+               integrated_coal_rate,
+               njumps,
+               coaltime);
+  PhyML_Printf("\n");
+  Exit("\n");
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+// Calculation of Pr(T>n) where T is the proba of coalescence
+void PHYREX_Sum_Coal_Rate(t_ldsk *l0, t_ldsk *l1, int n, t_tree *tree)
+{
+  t_dsk *disk;
+  phydbl prod_one_min_coal_prob;
+  int coal,n_evts;
+
+  
+  PhyML_Printf("\n# ");
+
+  prod_one_min_coal_prob = 0.0;
+  n_evts = 1;
+  coal = 0;
+  disk = tree->young_disk->prev;
+  do
+    {
+
+      if(n_evts <= n) prod_one_min_coal_prob += log(1. - PHYREX_Prob_Two_Lineages_Coal(l0,l1,tree));
+      
+      if(l0->prev == disk->ldsk) l0 = disk->ldsk;
+      if(l1->prev == disk->ldsk) l1 = disk->ldsk;
+      if(l0 == l1 && n_evts <= n) coal = 1;
+      disk = disk->prev;
+      n_evts++;
+    }
+  while(disk);
+
+  prod_one_min_coal_prob = exp(prod_one_min_coal_prob);
+  
+  PhyML_Printf("%d %d %f",coal,n_evts,prod_one_min_coal_prob);
+  PhyML_Printf("\n");
+  Exit("\n");
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

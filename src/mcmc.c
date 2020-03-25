@@ -6889,7 +6889,7 @@ void MCMC_PHYREX_Insert_Disk(phydbl hr, int n_insert_disks, phydbl cur_lbda, phy
   phydbl T,t;
   phydbl cur_glnL, new_glnL;
   phydbl u,alpha,ratio;
-  int i,j,n_valid_disks;
+  int i,j,n_valid_disks,num_prec_issue;
 
   tree->mcmc->run_move[tree->mcmc->num_move_phyrex_indel_disk]++;
 
@@ -6901,10 +6901,11 @@ void MCMC_PHYREX_Insert_Disk(phydbl hr, int n_insert_disks, phydbl cur_lbda, phy
       return; 
     }
 
-  disk     = NULL;
-  new_glnL = tree->mmod->c_lnL;
-  cur_glnL = tree->mmod->c_lnL;
-  ratio    = 0.0;
+  disk           = NULL;
+  new_glnL       = tree->mmod->c_lnL;
+  cur_glnL       = tree->mmod->c_lnL;
+  ratio          = 0.0;
+  num_prec_issue = NO;
 
   if(tree->young_disk->next) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
@@ -6925,9 +6926,23 @@ void MCMC_PHYREX_Insert_Disk(phydbl hr, int n_insert_disks, phydbl cur_lbda, phy
 
   for(j=0;j<n_insert_disks;j++)
     {
-      t = Uni()*(tree->young_disk->time - T) + T;
-      disk = tree->young_disk->prev;
-      while(disk && disk->time > t) disk = disk->prev;
+      num_prec_issue = NO;
+      do
+        {
+          t = Uni()*(tree->young_disk->time-T) + T;
+          disk = tree->young_disk->prev;
+          while(disk && disk->time > t) disk = disk->prev;
+          
+          if(!(disk->time != t))
+            {
+              PhyML_Printf("\n. Numerical precision issue in indel_hit_serial");              
+              num_prec_issue = YES;
+            }
+        }while(num_prec_issue == YES);
+
+
+
+
       assert(disk->next);
       target_disk[j] = disk->next;
       
@@ -7485,7 +7500,7 @@ void MCMC_PHYREX_Insert_Hit(phydbl hr, int n_insert_disks, phydbl cur_lbda, phyd
   phydbl T,t;
   phydbl cur_glnL, new_glnL;
   phydbl u,alpha,ratio;
-  int i,j,*dir_old_young,n_valid_disks,err;
+  int i,j,*dir_old_young,n_valid_disks,err,num_prec_issue;
 
   tree->mcmc->run_move[tree->mcmc->num_move_phyrex_indel_hit]++;
 
@@ -7498,10 +7513,11 @@ void MCMC_PHYREX_Insert_Hit(phydbl hr, int n_insert_disks, phydbl cur_lbda, phyd
     }
 
 
-  disk      = NULL;
-  new_glnL  = tree->mmod->c_lnL;
-  cur_glnL  = tree->mmod->c_lnL;
-  ratio     = 0.0;
+  disk           = NULL;
+  new_glnL       = tree->mmod->c_lnL;
+  cur_glnL       = tree->mmod->c_lnL;
+  ratio          = 0.0;
+  num_prec_issue = NO;
   
   disk = tree->young_disk->prev;
   n_valid_disks = 0;
@@ -7524,9 +7540,20 @@ void MCMC_PHYREX_Insert_Hit(phydbl hr, int n_insert_disks, phydbl cur_lbda, phyd
   for(j=0;j<n_insert_disks;j++)
     {  
       /* Time of insertion of new disk */
-      t = Uni()*(tree->young_disk->time-T) + T;
-      disk = tree->young_disk;
-      while(disk && disk->time > t) disk = disk->prev;
+      num_prec_issue = NO;
+      do
+        {
+          t = Uni()*(tree->young_disk->time-T) + T;
+          disk = tree->young_disk->prev;
+          while(disk && disk->time > t) disk = disk->prev;
+          
+          if(!(disk->time != t))
+            {
+              PhyML_Printf("\n. Numerical precision issue in indel_hit_serial");              
+              num_prec_issue = YES;
+            }
+        }while(num_prec_issue == YES);
+
       
       /* Disks located just prior and after inserted disk */
       young_disk = disk->next;
@@ -7544,6 +7571,9 @@ void MCMC_PHYREX_Insert_Hit(phydbl hr, int n_insert_disks, phydbl cur_lbda, phyd
       
       /* Insert it */
       PHYREX_Insert_Disk(new_disk[j],tree);
+
+      assert(new_disk[j]->next == young_disk);
+      assert(new_disk[j]->prev == old_disk);
 
       /* Which lineage is going to be hit ? */    
       hr -= log(1./PHYREX_Number_Of_Outgoing_Ldsks(young_disk));
@@ -9237,20 +9267,22 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
   phydbl ratio, u, alpha, hr, type;
   phydbl cur_glnL, new_glnL;
   phydbl T,t,pindel;
-  int n_valid_disks;
+  int n_valid_disks,num_prec_issue;
   
-  cur_glnL     = tree->mmod->c_lnL;
-  new_glnL     = tree->mmod->c_lnL;
-  hr           = 0.0;
-  ratio        = 0.0;
-  type         = -1.0;
-  n_trials     = 1 + (int)(0.1*PHYREX_Total_Number_Of_Intervals(tree));
-  T            = PHYREX_Tree_Height(tree);
-  pindel       = 0.5;
-  block        = 50;
+  cur_glnL       = tree->mmod->c_lnL;
+  new_glnL       = tree->mmod->c_lnL;
+  hr             = 0.0;
+  ratio          = 0.0;
+  type           = -1.0;
+  n_trials       = 1 + (int)(0.1*PHYREX_Total_Number_Of_Intervals(tree));
+  T              = PHYREX_Tree_Height(tree);
+  pindel         = 0.5;
+  block          = 50;
+  num_prec_issue = NO;
   
   for(i=0;i<n_trials;i++)
     {
+      
       tree->mcmc->run_move[tree->mcmc->num_move_phyrex_indel_hit_serial]++;
       
       cur_glnL = tree->mmod->c_lnL;
@@ -9262,9 +9294,20 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
       
       if(type < pindel) /* Insert */
         {          
-          t = Uni()*(tree->young_disk->time-T) + T;
-          disk = tree->young_disk->prev;
-          while(disk && disk->time > t) disk = disk->prev;
+
+          num_prec_issue = NO;
+          do
+            {
+              t = Uni()*(tree->young_disk->time-T) + T;
+              disk = tree->young_disk->prev;
+              while(disk && disk->time > t) disk = disk->prev;
+              
+              if(!(disk->time != t))
+                {
+                  PhyML_Printf("\n. Numerical precision issue in indel_hit_serial");              
+                  num_prec_issue = YES;
+                }
+            }while(num_prec_issue == YES);
           
           assert(disk->next);
 
@@ -9311,6 +9354,8 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
           /* Insert disk */
           PHYREX_Insert_Disk(new_disk,tree);
           
+          assert(new_disk->next == young_disk);
+          assert(new_disk->prev == old_disk);
           
           for(j=0;j<tree->mmod->n_dim;j++)
             {
@@ -9375,6 +9420,9 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
 
               PHYREX_Remove_Disk(new_disk);
               
+              assert(old_disk->next == young_disk);
+              assert(young_disk->prev == old_disk);
+
               PHYREX_Lk_Range(young_ldsk->disk,old_ldsk->disk,tree);
               tree->mmod->c_lnL = cur_glnL;
               /* PHYREX_Lk(tree); */
@@ -9392,6 +9440,7 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
       else /* Remove hit */
 
         {
+
           disk = tree->young_disk->prev;
           valid_disks = NULL;
           n_valid_disks = 0;
@@ -9409,12 +9458,14 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
           while(disk);
           
           if(n_valid_disks == 0) continue;
-          
           hr -= log(1./n_valid_disks);
           
           target_disk = valid_disks[Rand_Int(0,n_valid_disks-1)];
           Free(valid_disks);
 
+          young_disk = target_disk->next;
+          old_disk = target_disk->prev;
+          
           assert(target_disk->age_fixed == NO);
           
           old_ldsk   = target_disk->ldsk->prev;
@@ -9468,7 +9519,7 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
           ratio = exp(ratio);
           alpha = MIN(1.,ratio);
 
-          /* PhyML_Printf("\n- new_glnL: %f cur_glnL: %f hr: %f alpha: %f",new_glnL,cur_glnL,hr,alpha); */
+          /* PhyML_Printf("\n- new_glnL: %f cur_glnL: %f hr: %f alpha: %f target->time: %f",new_glnL,cur_glnL,hr,alpha,target_disk->time); */
           
           /* Always accept move */
           if(tree->mcmc->always_yes == YES && new_glnL > UNLIKELY) alpha = 1.0;
@@ -9480,9 +9531,13 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
           if(u > alpha) /* Reject */
             {
               PHYREX_Insert_Disk(target_disk,tree);
+
+              assert(target_disk->next == young_disk);
+              assert(target_disk->prev == old_disk);
+              
               old_ldsk->next[dir_old_young] = target_disk->ldsk;
               young_ldsk->prev              = target_disk->ldsk;
-                            
+              
               PHYREX_Lk_Range(target_disk->next,target_disk->ldsk->prev->disk,tree);
               tree->mmod->c_lnL = cur_glnL;
               /* PHYREX_Lk(tree); */
@@ -9506,26 +9561,27 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
 void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree)
 {
   t_dsk *disk,*new_disk,*target_disk,**valid_disks,*young_disk,*old_disk;
-  int i,j,n_trials,n_valid_disks,block;
+  int i,j,n_trials,n_valid_disks,block,num_prec_issue;
   phydbl ratio, u, alpha, hr, type;
   phydbl cur_glnL, new_glnL;
   phydbl log_lk_centr;
   phydbl T,t,pindel;
 
-  cur_glnL     = tree->mmod->c_lnL;
-  new_glnL     = tree->mmod->c_lnL;
-  hr           = 0.0;
-  ratio        = 0.0;
-  type         = -1.0;
-  n_trials     = (int)(1.+0.1*PHYREX_Total_Number_Of_Intervals(tree));
-  T            = PHYREX_Tree_Height(tree);
-  pindel       = 0.5;
-  disk         = NULL;
-  new_disk     = NULL;
-  target_disk  = NULL;
-  young_disk   = NULL;
-  old_disk     = NULL;
-  block        = 50;
+  cur_glnL       = tree->mmod->c_lnL;
+  new_glnL       = tree->mmod->c_lnL;
+  hr             = 0.0;
+  ratio          = 0.0;
+  type           = -1.0;
+  n_trials       = (int)(1.+0.1*PHYREX_Total_Number_Of_Intervals(tree));
+  T              = PHYREX_Tree_Height(tree);
+  pindel         = 0.5;
+  disk           = NULL;
+  new_disk       = NULL;
+  target_disk    = NULL;
+  young_disk     = NULL;
+  old_disk       = NULL;
+  block          = 50;
+  num_prec_issue = NO;
   
   log_lk_centr = 0.0;
   for(j=0;j<tree->mmod->n_dim;j++) log_lk_centr += log(1./(tree->mmod->lim_up->lonlat[j]-tree->mmod->lim_do->lonlat[j]));
@@ -9545,9 +9601,19 @@ void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree)
       
       if(type < pindel) /* Insert */
         {
-          t = Uni()*(tree->young_disk->time-T) + T;
-          disk = tree->young_disk->prev;
-          while(disk && disk->time > t) disk = disk->prev;
+          num_prec_issue = NO;
+          do
+            {
+              t = Uni()*(tree->young_disk->time-T) + T;
+              disk = tree->young_disk->prev;
+              while(disk && disk->time > t) disk = disk->prev;
+              
+              if(!(disk->time != t))
+                {
+                  PhyML_Printf("\n. Numerical precision issue in indel_hit_serial");              
+                  num_prec_issue = YES;
+                }
+            }while(num_prec_issue == YES);
 
           young_disk = disk->next;
           old_disk   = disk;
@@ -9564,6 +9630,9 @@ void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree)
           PHYREX_Init_Disk_Event(new_disk,tree->mmod->n_dim,tree->mmod);
           new_disk->time = t;
           PHYREX_Insert_Disk(new_disk,tree);
+
+          assert(new_disk->next == young_disk);
+          assert(new_disk->prev == old_disk);
           
           for(j=0;j<tree->mmod->n_dim;j++) new_disk->centr->lonlat[j] = Uni()*(tree->mmod->lim_up->lonlat[j]-tree->mmod->lim_do->lonlat[j])+tree->mmod->lim_do->lonlat[j];
 

@@ -109,7 +109,7 @@ phydbl PHYREX_Generation_Length(t_tree *tree);
 int PHYREX_Number_Of_Sampled_Demes(t_tree *tree);
 phydbl PHYREX_Coalescence_Rate(t_tree *tree);
 t_tree *PHYREX_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl h, int r_seed);
-phydbl Prob_Two_Lineages_Coal_One_Event(phydbl w, phydbl h, phydbl mu, phydbl rad);
+phydbl Prob_Two_Random_Lineages_Coal_One_Event(phydbl w, phydbl h, phydbl mu, phydbl rad);
 void PHYREX_Tree_To_Ldsk(t_tree *tree);
 void PHYREX_Tree_To_Ldsk_Post(t_node *a, t_node *d, t_dsk *a_disk, t_tree *tree);
 void PHYREX_Make_And_Connect_Tip_Disks(t_tree *tree);
@@ -137,5 +137,8 @@ phydbl PHYREX_Tip_To_Root_Realized_Bis_Sigsq(t_tree *tree);
 void PHYREX_Label_Nodes_With_Locations(t_tree *tree);
 void PHYREX_Label_Edges(t_tree *tree);
 phydbl PHYREX_Tip_To_Root_Realized_Ter_Sigsq(t_tree *tree);
+void PHYREX_Integrated_Coal_Rate(t_ldsk *l0, t_ldsk *l1, phydbl T, t_tree *tree);
+phydbl PHYREX_Prob_Two_Lineages_Coal(t_ldsk *l0, t_ldsk *l1, t_tree *tree);
+void PHYREX_Sum_Coal_Rate(t_ldsk *l0, t_ldsk *l1, int n, t_tree *tree);
 
 #endif

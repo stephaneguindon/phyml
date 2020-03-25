@@ -544,48 +544,56 @@ phydbl Rnorm_Trunc(phydbl mean, phydbl sd, phydbl min, phydbl max, int *error)
   if(beta < alpha) return NAN;
   else
     {
-      if(alpha < 0.0 && beta > 0.0)
+      if(!(alpha > 0.0) && !(beta < 0.0))
         {
-          if(d_alpha < 0.15 || d_beta < 0.15)
+          if(!(d_alpha > 0.15) || !(d_beta > 0.15))
             {
               z = Rnorm_Trunc_Algo1(alpha,beta);
+              return(mean + sd * z);
             }
           else
             {
               z = Rnorm_Trunc_Algo2(alpha,beta);
+              return(mean + sd * z);
             }
         }
       else if(alpha > 0.0)
         {
-          if(d_alpha / d_beta < 2.18)
+          if(!(d_alpha / d_beta > 2.18))
             {
               z = Rnorm_Trunc_Algo2(alpha,beta);
+              return(mean + sd * z);
             }
           else
             {
-              if(alpha < 0.725)
+              if(!(alpha > 0.725))
                 {
                   z = Rnorm_Trunc_Algo3(alpha,beta);
+                  return(mean + sd * z);
                 }
               else
                 {
                   z = Rnorm_Trunc_Algo4(alpha,beta);
+                  return(mean + sd * z);
                 }
             }
         }
       else
         {
-          if(d_beta / d_alpha < 2.18)
+          if(!(d_beta / d_alpha > 2.18))
             {
               z = Rnorm_Trunc_Algo2(alpha,beta);
+              return(mean - sd * z);
             }
           else if(beta > -0.725)
             {
               z = Rnorm_Trunc_Algo3(alpha,beta);
+              return(mean - sd * z);
             }
           else
             {              
               z = Rnorm_Trunc_Algo4(alpha,beta);
+              return(mean - sd * z);
             }
         }
     }
