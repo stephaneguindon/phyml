@@ -6926,16 +6926,17 @@ void MCMC_PHYREX_Insert_Disk(phydbl hr, int n_insert_disks, phydbl cur_lbda, phy
 
   for(j=0;j<n_insert_disks;j++)
     {
-      num_prec_issue = NO;
       do
         {
+          num_prec_issue = NO;
           t = Uni()*(tree->young_disk->time-T) + T;
           disk = tree->young_disk->prev;
           while(disk && disk->time > t) disk = disk->prev;
           
           if(!(disk->time != t))
             {
-              PhyML_Printf("\n. Numerical precision issue in indel_hit_serial");              
+              PhyML_Printf("\n. Numerical precision issue in insert_disk");              
+              PhyML_Printf("\n. t=%g disk->time=%g diff=%g",t,disk->time,t-disk->time);              
               num_prec_issue = YES;
             }
         }while(num_prec_issue == YES);
@@ -7540,16 +7541,17 @@ void MCMC_PHYREX_Insert_Hit(phydbl hr, int n_insert_disks, phydbl cur_lbda, phyd
   for(j=0;j<n_insert_disks;j++)
     {  
       /* Time of insertion of new disk */
-      num_prec_issue = NO;
       do
         {
+          num_prec_issue = NO;
           t = Uni()*(tree->young_disk->time-T) + T;
           disk = tree->young_disk->prev;
           while(disk && disk->time > t) disk = disk->prev;
           
           if(!(disk->time != t))
             {
-              PhyML_Printf("\n. Numerical precision issue in indel_hit_serial");              
+              PhyML_Printf("\n. Numerical precision issue in insert_hit");              
+              PhyML_Printf("\n. t=%g disk->time=%g diff=%g",t,disk->time,t-disk->time);              
               num_prec_issue = YES;
             }
         }while(num_prec_issue == YES);
@@ -9293,11 +9295,10 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
       type = Uni();
       
       if(type < pindel) /* Insert */
-        {          
-
-          num_prec_issue = NO;
+        {
           do
             {
+              num_prec_issue = NO;
               t = Uni()*(tree->young_disk->time-T) + T;
               disk = tree->young_disk->prev;
               while(disk && disk->time > t) disk = disk->prev;
@@ -9305,6 +9306,7 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
               if(!(disk->time != t))
                 {
                   PhyML_Printf("\n. Numerical precision issue in indel_hit_serial");              
+                  PhyML_Printf("\n. t=%g disk->time=%g",t,disk->time);              
                   num_prec_issue = YES;
                 }
             }while(num_prec_issue == YES);
@@ -9601,16 +9603,17 @@ void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree)
       
       if(type < pindel) /* Insert */
         {
-          num_prec_issue = NO;
           do
             {
+              num_prec_issue = NO;
               t = Uni()*(tree->young_disk->time-T) + T;
               disk = tree->young_disk->prev;
               while(disk && disk->time > t) disk = disk->prev;
               
               if(!(disk->time != t))
                 {
-                  PhyML_Printf("\n. Numerical precision issue in indel_hit_serial");              
+                  PhyML_Printf("\n. Numerical precision issue in indel_disk_serial");              
+                  PhyML_Printf("\n. t=%g disk->time=%g diff=%d",t,disk->time,t-disk->time);              
                   num_prec_issue = YES;
                 }
             }while(num_prec_issue == YES);
