@@ -271,8 +271,9 @@ void MCMC_Clock_R(t_tree *tree)
   int move_num;
   phydbl K;
 
-  
-  if(tree->eval_alnL == NO) return;
+
+  /* PhyML_Printf("\n. %d %d",tree->eval_alnL,tree->mod->s_opt->opt_clock_r); */
+  /* if(tree->eval_alnL == NO) return; */
   if(tree->mod->s_opt->opt_clock_r == NO) return;
   
   new_clock_r  = tree->rates->clock_r;
