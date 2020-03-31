@@ -2887,9 +2887,16 @@ void Print_Settings(option *io)
     PhyML_Printf("\n        . Proportion of invariable sites:\t\t %f", io->mod->ras->pinvar->v);
 
 
+  if(io->mod->ras->free_mixt_rates == NO)
+    PhyML_Printf("\n        . RAS model:\t\t\t\t\t discrete Gamma");
+  else
+    PhyML_Printf("\n        . RAS model:\t\t\t\t\t FreeRate");
+
   PhyML_Printf("\n        . Number of subst. rate catgs:\t\t\t %d", io->mod->ras->n_catg);
+
   if(io->mod->ras->n_catg > 1)
     {
+        
       if(io->mod->ras->free_mixt_rates == NO)
         {
           if(io->mod->s_opt && io->mod->s_opt->opt_alpha)
