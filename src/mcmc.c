@@ -273,7 +273,6 @@ void MCMC_Clock_R(t_tree *tree)
 
 
   /* PhyML_Printf("\n. %d %d",tree->eval_alnL,tree->mod->s_opt->opt_clock_r); */
-  /* if(tree->eval_alnL == NO) return; */
   if(tree->mod->s_opt->opt_clock_r == NO) return;
   
   new_clock_r  = tree->rates->clock_r;
@@ -9585,11 +9584,10 @@ void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree)
   old_disk       = NULL;
   block          = 50;
   num_prec_issue = NO;
+  disk           = NULL;
   
   log_lk_centr = 0.0;
   for(j=0;j<tree->mmod->n_dim;j++) log_lk_centr += log(1./(tree->mmod->lim_up->lonlat[j]-tree->mmod->lim_do->lonlat[j]));
-
-  disk = tree->young_disk->prev;
 
   for(i=0;i<n_trials;i++)
     {

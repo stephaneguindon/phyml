@@ -518,7 +518,7 @@ void Traverse_Prefix_Tree(int site, int seqnum, int *patt_num, int *n_patt, alig
   else
     {
       int next_state;
-      
+
       next_state = -1;
       next_state = Assign_State_With_Ambiguity(data[seqnum+1]->state+site,
                                                io->datatype,
@@ -3054,7 +3054,7 @@ int Assign_State_With_Ambiguity(char *c, int datatype, int stepsize)
         case 'X' : case '?' : case '-' : {state[0]=T_MAX_ALPHABET-1; break;}
         default  :
           {
-            PhyML_Printf("\n. Unknown character state : %c\n",state[0]);
+            PhyML_Printf("\n. Unknown character state : '%c'\n",state[0]);
             Warn_And_Exit("\n. Init failed (data type supposed to be amino-acids)\n");
             break;
           }

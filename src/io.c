@@ -962,7 +962,7 @@ void Post_Process_Data(option *io)
     {
       for(j=0;j<io->n_otu;++j)
         {
-          if((io->data[j]->state[i] == '?') || (io->data[j]->state[i] == '-')) io->data[j]->state[i] = 'X';
+          if((io->data[j]->state[i] == '*') || (io->data[j]->state[i] == '?') || (io->data[j]->state[i] == '-')) io->data[j]->state[i] = 'X';
           if((io->datatype == NT) && (io->data[j]->state[i] == 'N')) io->data[j]->state[i] = 'X';
           if(io->data[j]->state[i] == 'U') io->data[j]->state[i] = 'T';
         }
@@ -1296,6 +1296,7 @@ align **Get_Seq_Phylip(option *io)
   if(io->interleaved == YES) io->data = Read_Seq_Interleaved(io);
   else                       io->data = Read_Seq_Sequential(io);
 
+
   return io->data;
 }
 
@@ -1431,7 +1432,6 @@ align **Read_Seq_Interleaved(option *io)
           end = 1;
           if((i != io->n_otu) && (i != io->n_otu-1))
             {
-              PhyML_Fprintf(stderr,"\n. i:%d n_otu:%d",i,io->n_otu);
               PhyML_Fprintf(stderr,"\n. Err.: problem with species %s's sequence.\n",data[i]->name);
               PhyML_Fprintf(stderr,"\n. Observed sequence length: %d, expected length: %d\n",data[i]->len, io->init_len * io->state_len);
               Exit("");

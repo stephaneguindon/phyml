@@ -61,7 +61,7 @@ void Init_Tips_At_One_Site_Nucleotides_Float(char state, int pos, phydbl *p_lk)
       p_lk[pos+0]=p_lk[pos+1]=p_lk[pos+2]=p_lk[pos+3]=1.;break;
     default :
       {
-        PhyML_Fprintf(stderr,"\n. Unknown character state : %c\n",state);
+        PhyML_Fprintf(stderr,"\n. Unknown character state : '%c'.\n",state);
         Exit("\n. Init failed (data type supposed to be DNA)\n");
         break;
       }
@@ -109,7 +109,7 @@ void Init_Tips_At_One_Site_Nucleotides_Int(char state, int pos, short int *p_par
       p_pars[pos+0]=p_pars[pos+1]=p_pars[pos+2]=p_pars[pos+3]=1;break;
     default :
       {
-        PhyML_Fprintf(stderr,"\n. Unknown character state : %c\n",state);
+        PhyML_Fprintf(stderr,"\n. Unknown character state : '%c'.\n",state);
         Exit("\n. Init failed (data type supposed to be DNA)\n");
         break;
       }
@@ -153,7 +153,7 @@ void Init_Tips_At_One_Site_AA_Float(char aa, int pos, phydbl *p_lk)
   case 'X' : case '?' : case '-' : for(i=0;i<20;i++) p_lk[pos+i] = 1.; break;
   default :
     {
-      PhyML_Fprintf(stderr,"\n. Unknown character state : %c\n",aa);
+      PhyML_Fprintf(stderr,"\n. Unknown character state : '%c'.\n",aa);
       Exit("\n. Init failed (data type supposed to be amino-acids)\n");
       break;
     }
@@ -197,7 +197,7 @@ void Init_Tips_At_One_Site_AA_Int(char aa, int pos, short int *p_pars)
   case 'X' : case '?' : case '-' : for(i=0;i<20;i++) p_pars[pos+i] = 1; break;
   default :
     {
-      PhyML_Fprintf(stderr,"\n. Unknown character state : %c\n",aa);
+      PhyML_Fprintf(stderr,"\n. Unknown character state : '%c'.\n",aa);
       Exit("\n. Init failed (data type supposed to be amino-acids)\n");
       break;
     }
