@@ -3473,7 +3473,7 @@ void PHYREX_Init_Migrep_Mod(t_phyrex_mod *t, int n_dim, phydbl min_lat, phydbl m
   /* t->prior_param_rad   = 1./(0.01*((max_lat-min_lat)+(max_lon-min_lon))); */
   t->prior_param_rad   = 1./(0.1*((max_lat-min_lat)+(max_lon-min_lon)));
   t->update_rad        = NO;
-
+  
   t->min_sigsq         = 0.0;
   t->max_sigsq         = 1.E+2;
   t->sigsq             = 1.0;
@@ -3489,7 +3489,7 @@ void PHYREX_Init_Migrep_Mod(t_phyrex_mod *t, int n_dim, phydbl min_lat, phydbl m
 
   t->samp_area       = NULL;
 
-  t->max_num_of_intervals = 10000;
+  t->max_num_of_intervals = 1000000;
 }
 
 //////////////////////////////////////////////////////////////

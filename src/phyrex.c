@@ -343,6 +343,7 @@ void PHYREX_XML(char *xml_filename)
   /* mixt_tree->mmod->lbda = 1.; */
   /* mixt_tree->mmod->mu   = 1.; */
   /* mixt_tree->mmod->rad  = mixt_tree->mmod->max_rad/1.; */
+
   mixt_tree->mmod->sigsq = PHYREX_Update_Sigsq(mixt_tree);
 
   
@@ -362,9 +363,11 @@ void PHYREX_XML(char *xml_filename)
       }
     }
   
+
   Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree);
   Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);  
 
+  
   MIXT_Set_Ignore_Root(YES,mixt_tree);
   MIXT_Set_Bl_From_Rt(YES,mixt_tree);
 
@@ -377,7 +380,8 @@ void PHYREX_XML(char *xml_filename)
   Set_Update_Eigen(NO,mixt_tree->mod);
   PhyML_Printf("\n. Init lnPr(seq|phylo): %f lnPr(coor|phylo): %f",mixt_tree->c_lnL,mixt_tree->mmod->c_lnL);
   PhyML_Printf("\n. Random seed: %d",mixt_tree->io->r_seed);
-
+  Exit("\n");
+  
   
   res = PHYREX_MCMC(mixt_tree);
   Free(res);  
@@ -992,6 +996,7 @@ phydbl PHYREX_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_merger
   if(init_disk->prev == NULL) reached_oldest_disk = YES; // Only one sampled disk
   
 
+  
   lnL = 0.0;
   disk = init_disk;
   do
@@ -1002,8 +1007,8 @@ phydbl PHYREX_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_merger
       /* Proposed new time */
       new_time = disk->time - Rexp(mmod->lbda);
 
-
       lnL += log(mmod->lbda) - mmod->lbda * fabs(disk->time - new_time);
+      PhyML_Printf("\n>> LnL: %f",lnL);
       
       /* New time is older than previous sampled disk (disk->prev) */
       if(disk->prev && new_time < disk->prev->time)
@@ -4624,8 +4629,10 @@ void PHYREX_Read_Tip_Coordinates(t_tree *tree)
   tree->mmod->lim_do->lonlat[0] = sw_lon;
   tree->mmod->lim_do->lonlat[1] = sw_lat;
   
+
   Free(s);
   Free(done);
+
 }
 
 /*////////////////////////////////////////////////////////////
