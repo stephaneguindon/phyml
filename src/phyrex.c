@@ -380,8 +380,6 @@ void PHYREX_XML(char *xml_filename)
   Set_Update_Eigen(NO,mixt_tree->mod);
   PhyML_Printf("\n. Init lnPr(seq|phylo): %f lnPr(coor|phylo): %f",mixt_tree->c_lnL,mixt_tree->mmod->c_lnL);
   PhyML_Printf("\n. Random seed: %d",mixt_tree->io->r_seed);
-  Exit("\n");
-  
   
   res = PHYREX_MCMC(mixt_tree);
   Free(res);  
@@ -1008,7 +1006,6 @@ phydbl PHYREX_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_merger
       new_time = disk->time - Rexp(mmod->lbda);
 
       lnL += log(mmod->lbda) - mmod->lbda * fabs(disk->time - new_time);
-      PhyML_Printf("\n>> LnL: %f",lnL);
       
       /* New time is older than previous sampled disk (disk->prev) */
       if(disk->prev && new_time < disk->prev->time)
