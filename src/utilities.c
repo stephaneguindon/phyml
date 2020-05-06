@@ -8366,7 +8366,6 @@ phydbl Get_Tree_Size(t_tree *tree)
       tree_size += tree->n_root->b[2]->l->v;
     }
 
-
 /*   For(i,2*tree->n_otu-3)  */
 /*     tree_size +=  */
 /*     FABS(tree->rates->nd_t[tree->a_edges[i]->left->num] -  */
