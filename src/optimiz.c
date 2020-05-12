@@ -3366,15 +3366,17 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
           iter = 0;
           do
             {
-              lk_old = tree->c_lnL;
+              lk_old = mixt_tree->c_lnL;
               int failed = NO;
                   
               for(i=0;i<tree->mod->ns;i++) opt_val[i] = tree->mod->e_frq->pi_unscaled->v[i];
               
+              /* PhyML_Printf("\n. -- BFGS lk=%f",mixt_tree->c_lnL); */
               BFGS(mixt_tree,tree->mod->e_frq->pi_unscaled->v,tree->mod->ns,1.e-5,tree->mod->s_opt->min_diff_lk_local,1.e-2,NO,NO,
                    &Return_Abs_Lk,
                    &Num_Derivative_Several_Param,
                    &Lnsrch,&failed);
+              /* PhyML_Printf("\n. ++ BFGS lk=%f",mixt_tree->c_lnL); */
 
               
               if(failed == YES) for(i=0;i<tree->mod->ns;i++) tree->mod->e_frq->pi_unscaled->v[i] = opt_val[i];
@@ -3389,6 +3391,7 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
                   a = tree->mod->e_frq->pi_unscaled->v[permut[i]] / 2.;
                   c = tree->mod->e_frq->pi_unscaled->v[permut[i]] * 2.;
                   
+                  /* PhyML_Printf("\n. -- lk=%f",mixt_tree->c_lnL); */
                   Generic_Brent_Lk(&(tree->mod->e_frq->pi_unscaled->v[permut[i]]),
                                    /* UNSCALED_E_FRQ_MIN,UNSCALED_E_FRQ_MAX, */
                                    a,c,
@@ -3396,6 +3399,7 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
                                    tree->mod->s_opt->brent_it_max,
                                    tree->mod->s_opt->quickdirty,
                                    Wrap_Lk,NULL,mixt_tree,NULL,NO);      
+                  /* PhyML_Printf("\n. ++ lk=%f",mixt_tree->c_lnL); */
                 }
               
               
@@ -3404,9 +3408,9 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
                   Print_Lk(mixt_tree,"[Nucleotide freqs.  ]");
                 }
               
-              lk_new = tree->c_lnL;
+              lk_new = mixt_tree->c_lnL;
               
-              
+              /* PhyML_Printf("\n. lk_new=%f lk_old=%f",lk_new,lk_old); */
               assert(lk_new > lk_old - tree->mod->s_opt->min_diff_lk_local);
               if(fabs(lk_new-lk_old) < tree->mod->s_opt->min_diff_lk_local) break;
             }
@@ -3539,46 +3543,46 @@ void Optimize_Lambda(t_tree *mixt_tree, int verbose)
   lambda   = NULL;
   n_lambda = 0;
   tree     = mixt_tree;
-
+  
   do
     {
       if(tree->next) tree = tree->next;
-
+      
       for(i=0;i<n_lambda;i++) if(tree->mod->lambda == lambda[i]) break;
-
+      
       if(i == n_lambda)
-    {
-      if(!lambda) lambda = (scalar_dbl **)mCalloc(1,sizeof(scalar_dbl *));
-      else        lambda = (scalar_dbl **)mRealloc(lambda,n_lambda+1,sizeof(scalar_dbl *));
-      lambda[n_lambda] = tree->mod->lambda;
-      n_lambda++;
-
-      if(tree->mod->s_opt->opt_lambda)
         {
-          Generic_Brent_Lk(&(tree->mod->lambda->v),
-                           0.001,100.,
-                           tree->mod->s_opt->min_diff_lk_local,
-                           tree->mod->s_opt->brent_it_max,
-                           tree->mod->s_opt->quickdirty,
-                           Wrap_Lk,NULL,mixt_tree,NULL,NO);
+          if(!lambda) lambda = (scalar_dbl **)mCalloc(1,sizeof(scalar_dbl *));
+          else        lambda = (scalar_dbl **)mRealloc(lambda,n_lambda+1,sizeof(scalar_dbl *));
+          lambda[n_lambda] = tree->mod->lambda;
+          n_lambda++;
           
-          if(verbose)
-        {
-          Print_Lk(mixt_tree,"[Lambda             ]");
-          PhyML_Printf("[%10f]",tree->mod->lambda->v);
+          if(tree->mod->s_opt->opt_lambda)
+            {
+              Generic_Brent_Lk(&(tree->mod->lambda->v),
+                               0.001,100.,
+                               tree->mod->s_opt->min_diff_lk_local,
+                               tree->mod->s_opt->brent_it_max,
+                               tree->mod->s_opt->quickdirty,
+                               Wrap_Lk,NULL,mixt_tree,NULL,NO);
+              
+              if(verbose)
+                {
+                  Print_Lk(mixt_tree,"[Lambda             ]");
+                  PhyML_Printf("[%10f]",tree->mod->lambda->v);
+                }
+            }
         }
-        }
-    }
-
+      
       tree = tree->next;
-
+      
     }
   while(tree);
-
+  
   if(lambda) Free(lambda);
-
+  
   Set_Update_Eigen(NO,mixt_tree->mod);
-
+  
 }
 
 //////////////////////////////////////////////////////////////
