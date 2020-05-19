@@ -1716,7 +1716,13 @@ void Print_Site_Lk(t_tree *tree, FILE *fp)
   char *s;
   phydbl postmean,sum;
 
-  if(tree->io->print_site_lnl == NO) assert(FALSE);
+  if(tree->is_mixt_tree == YES)
+    {
+      MIXT_Print_Site_Lk(tree,fp);
+      return;
+    }
+  
+  assert(tree->io->print_site_lnl == YES);
 
   if(!tree->io->print_trace)
     {
@@ -1774,8 +1780,7 @@ void Print_Site_Lk(t_tree *tree, FILE *fp)
       Init_Ui_Tips(tree);
 
       for(site=0;site<tree->data->init_len;site++)
-        {
-                    
+        {                    
           PhyML_Fprintf(fp,"%-12d",site+1);
           
 	  PhyML_Fprintf(fp,"%-15g",tree->cur_site_lk[tree->data->sitepatt[site]]);      

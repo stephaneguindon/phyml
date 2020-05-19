@@ -10767,7 +10767,6 @@ int Number_Of_Diff_States_One_Site(int site, t_tree *tree)
 {
   int n_states;
 
-
   Number_Of_Diff_States_One_Site_Post(tree->a_nodes[0],
                                       tree->a_nodes[0]->v[0],
                                       tree->a_nodes[0]->b[0],

@@ -948,6 +948,8 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                   tree->numerical_warning = YES;
                 }
               
+              tree->unscaled_site_lk_cat[site] = site_lk_cat;
+              
               site_lk_cat /= pow(2,sum);
               
               tree->site_lk_cat[0] = site_lk_cat;
@@ -3650,6 +3652,150 @@ t_tree *MIXT_Duplicate_Tree(t_tree *ori)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void MIXT_Print_Site_Lk(t_tree *mixt_tree, FILE *fp)
+{
+  t_tree *tree;
+  int site,catg;
+  char *s;
+  phydbl postmean,sum;
+  
+  assert(mixt_tree->is_mixt_tree == YES);
+  assert(mixt_tree->io->print_site_lnl == YES);
+
+  
+  if(!mixt_tree->io->print_trace)
+    {
+      tree = mixt_tree;
+      do
+        {
+          PhyML_Fprintf(fp,"Note : P(D|M) is the probability of site D given the model M (i.e., the site likelihood)\n");
+          if(tree->mod->ras->n_catg > 1 || tree->mod->ras->invar)
+            {
+              PhyML_Fprintf(fp,"P*(D|M,rr[x]) is the scaled probability of site D given the model M and the relative rate\n");
+              PhyML_Fprintf(fp,"of evolution rr[x], where x is the class of rate to be considered.\n");
+              PhyML_Fprintf(fp,"The actual conditional probability is given by P*(D|M,rr[x])/2^F, where\n");
+              PhyML_Fprintf(fp,"F is the scaling factor (see column 'Scaler').\n");
+              PhyML_Fprintf(fp,"For invariant sites, P(D|M,rr[0]=0) is the actual conditional probability\n");
+              PhyML_Fprintf(fp,"(i.e., it is not scaled).\n");
+              break;
+            }
+          tree = tree->next_mixt;
+        }
+      while(tree);
+      PhyML_Fprintf(fp,"\n");
+    
+
+      s = (char *)mCalloc(T_MAX_LINE,sizeof(char));
+
+      do
+        {
+          PhyML_Fprintf(fp,"Alignment file name: %s\n\n",mixt_tree->io->in_align_file);
+
+          sprintf(s,"Site");
+          PhyML_Fprintf(fp, "%-12s",s);
+          
+          sprintf(s,"P(D|M)");
+          PhyML_Fprintf(fp,"%-15s",s);
+          
+          sprintf(s,"Scaler");
+          PhyML_Fprintf(fp,"%-7s",s);
+          
+          sprintf(s,"Pattern");
+          PhyML_Fprintf(fp, "%-9s",s);
+          
+          if(mixt_tree->mod->ras->n_catg > 1)
+            {
+              for(catg=0;catg<mixt_tree->mod->ras->n_catg;catg++)
+                {
+                  sprintf(s,"P*(D|M,rr[%d]=%5.4f)",catg+1,mixt_tree->mod->ras->gamma_rr->v[catg]);
+                  PhyML_Fprintf(fp,"%-23s",s);
+                }
+              
+              sprintf(s,"Posterior mean");
+              PhyML_Fprintf(fp,"%-22s",s);
+            }
+          
+          
+          if(mixt_tree->mod->ras->invar)
+            {
+              sprintf(s,"P(D|M,rr[0]=0)");
+              PhyML_Fprintf(fp,"%-16s",s);
+            }
+          
+          sprintf(s,"NDistinctStates");
+          PhyML_Fprintf(fp,"%-16s",s);
+          
+          PhyML_Fprintf(fp,"\n");
+          
+          assert(mixt_tree->next->is_mixt_tree == NO);
+          Init_Ui_Tips(mixt_tree->next);
+          
+          for(site=0;site<mixt_tree->data->init_len;site++)
+            {                    
+              PhyML_Fprintf(fp,"%-12d",site+1);
+              
+              PhyML_Fprintf(fp,"%-15g",mixt_tree->cur_site_lk[mixt_tree->data->sitepatt[site]]);      
+              
+              PhyML_Fprintf(fp,"%-7d",mixt_tree->fact_sum_scale[mixt_tree->data->sitepatt[site]]);      
+              
+              PhyML_Fprintf(fp,"%-9d",mixt_tree->data->sitepatt[site]);
+              
+              if(mixt_tree->mod->ras->n_catg > 1)
+                {
+                  tree = mixt_tree->next;
+                  do
+                    {
+                      PhyML_Fprintf(fp,"%-23g",tree->unscaled_site_lk_cat[tree->data->sitepatt[site]]);
+                      tree = tree->next;
+                    }
+                  while(tree && tree->is_mixt_tree == NO);
+
+                  
+                  tree = mixt_tree->next;
+                  postmean = .0;
+                  sum = .0;
+                  do
+                    {
+                      postmean +=
+                        mixt_tree->mod->ras->gamma_rr->v[tree->mod->ras->parent_class_number] *
+                        tree->unscaled_site_lk_cat[tree->data->sitepatt[site]] *
+                        mixt_tree->mod->ras->gamma_r_proba->v[tree->mod->ras->parent_class_number];
+
+                      sum +=
+                        tree->unscaled_site_lk_cat[tree->data->sitepatt[site]] *
+                        mixt_tree->mod->ras->gamma_r_proba->v[tree->mod->ras->parent_class_number];
+
+                      tree = tree->next;
+                    }
+                  while(tree && tree->is_mixt_tree == NO);
+                  
+                  postmean /= sum;
+                  
+                  PhyML_Fprintf(fp,"%-22g",postmean);
+                }
+              
+              if(mixt_tree->mod->ras->invar)
+                {
+                  if((phydbl)mixt_tree->data->invar[mixt_tree->data->sitepatt[site]] > -0.5)
+                    PhyML_Fprintf(fp,"%-16g",mixt_tree->mod->e_frq->pi->v[mixt_tree->data->invar[mixt_tree->data->sitepatt[site]]]);
+                  else
+                    PhyML_Fprintf(fp,"%-16g",0.0);
+                }
+              
+              assert(mixt_tree->next != NULL);
+              PhyML_Fprintf(fp,"%-16d",Number_Of_Diff_States_One_Site(mixt_tree->data->sitepatt[site],mixt_tree->next));
+              
+              PhyML_Fprintf(fp,"\n");
+            }
+          Free(s);
+          
+          mixt_tree = mixt_tree->next_mixt;
+        }
+      while(mixt_tree);
+    }
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

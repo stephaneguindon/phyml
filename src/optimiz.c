@@ -2816,7 +2816,7 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
                   for(i=0;i<tree->mod->r_mat->n_diff_rr;i++)
                     {
                       a = tree->mod->r_mat->rr_val->v[permut[i]]/2.;
-                      b = tree->mod->r_mat->rr_val->v[permut[i]]*2.;
+                      b = tree->mod->r_mat->rr_val->v[permut[i]]*2.+1.;
 
                       Generic_Brent_Lk(&(tree->mod->r_mat->rr_val->v[permut[i]]),
                                      a,b,
@@ -2825,8 +2825,9 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
                                      tree->mod->s_opt->quickdirty,
                                      Wrap_Lk,NULL,mixt_tree,NULL,NO);                        
                     }
+
                   
-                  if(tree->c_lnL < lk_old)
+                  if(mixt_tree->c_lnL < lk_old)
                     {
                       for(i=0;i<tree->mod->r_mat->n_diff_rr;i++) tree->mod->r_mat->rr_val->v[i] = opt_val[i];
                       Lk(NULL,mixt_tree);
@@ -3063,6 +3064,7 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
   t_tree *tree;
   int fast;
   int i,pos,failed;
+  int *permut;
   phydbl lk_before, lk_after;
   tree = mixt_tree;
 
@@ -3075,11 +3077,11 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
           if(tree->mod->s_opt->serial_free_rates == YES)
             {
               fast = YES;
-              lk_before = mixt_tree->c_lnL;
+              lk_before = tree->c_lnL;
               Optimize_Free_Rate_Weights(tree,fast,verbose);
-              lk_after = mixt_tree->c_lnL;
+              lk_after = tree->c_lnL;
               Optimize_Free_Rate_Rr(tree,fast,verbose);
-              lk_after = mixt_tree->c_lnL;
+              lk_after = tree->c_lnL;
 
               if(lk_after < lk_before - tree->mod->s_opt->min_diff_lk_global)
                 {
@@ -3091,36 +3093,82 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
 
           if(FABS(lk_before - lk_after) > 0.001)
             {
-              phydbl **x;
-              x = (phydbl **)mCalloc(2*tree->n_otu-3 + 2*tree->mod->ras->n_catg,sizeof(phydbl *));
-              pos = 0;
+              phydbl **x,*cpy;
               
-              lk_before = mixt_tree->c_lnL;
+              x = (phydbl **)mCalloc(2*tree->mod->ras->n_catg,sizeof(phydbl *));
+              cpy = (phydbl *)mCalloc(2*tree->mod->ras->n_catg,sizeof(phydbl));
 
-              /* For(i,2*tree->n_otu-3) x[pos++] = &(tree->a_edges[i]->l->v); */
+              
+              lk_before = tree->c_lnL;
+
+              pos = 0;
               for(i=0;i<tree->mod->ras->n_catg;i++) x[pos++] = tree->mod->ras->gamma_rr_unscaled->v+i;
               for(i=0;i<tree->mod->ras->n_catg;i++) x[pos++] = tree->mod->ras->gamma_r_proba_unscaled->v+i;
 
-              /* For(i,2*tree->n_otu-3 + 2*tree->mod->ras->n_catg) *(x[i]) = log(MAX(1.E-10,*(x[i]))); */
-              /* For(i,2*tree->mod->ras->n_catg) printf("\n:: %12f",*(x[i])); fflush(NULL); */
-              For(i,2*tree->mod->ras->n_catg) *(x[i]) = log(MAX(1.E-10,*(x[i])));
-              /* For(i,2*tree->mod->ras->n_catg) printf("\n>> %12f",*(x[i])); fflush(NULL); */
-              /* For(i,2*tree->mod->ras->n_catg) printf("\n<> %12f",*(x[i])); fflush(NULL); */
+              pos = 0;
+              for(i=0;i<tree->mod->ras->n_catg;i++) cpy[pos++] = tree->mod->ras->gamma_rr_unscaled->v[i];
+              for(i=0;i<tree->mod->ras->n_catg;i++) cpy[pos++] = tree->mod->ras->gamma_r_proba_unscaled->v[i];
+
+              
+              for(i=0;i<2*tree->mod->ras->n_catg;++i) *(x[i]) = log(MAX(1.E-10,*(x[i])));
 
               failed = YES;
-              /* BFGS_Nonaligned(tree,x,2*tree->n_otu-3 + 2*tree->mod->ras->n_catg,1.e-5,tree->mod->s_opt->min_diff_lk_global,1.e-5,YES, */
               BFGS_Nonaligned(tree,x,2*tree->mod->ras->n_catg,1.e-5,tree->mod->s_opt->min_diff_lk_global,1.e-5,YES,NO,
                               &Return_Abs_Lk,
                               &Num_Derivative_Several_Param_Nonaligned,
                               &Lnsrch_Nonaligned,&failed);
 
 
-              /* For(i,2*tree->n_otu-3 + 2*tree->mod->ras->n_catg) *(x[i]) = exp(*(x[i])); */
-              For(i,2*tree->mod->ras->n_catg) *(x[i]) = exp(MIN(1.E+2,*(x[i])));
+              for(i=0;i<2*tree->mod->ras->n_catg;++i) *(x[i]) = exp(MIN(1.E+2,*(x[i])));
 
-              lk_after = mixt_tree->c_lnL;
 
-              /* For(i,2*tree->mod->ras->n_catg) printf("\n>< %12f",*(x[i])); fflush(NULL); */
+              if(failed == YES)
+                {
+                  pos = 0;
+                  for(i=0;i<tree->mod->ras->n_catg;i++) tree->mod->ras->gamma_rr_unscaled->v[i] = cpy[pos++];
+                  for(i=0;i<tree->mod->ras->n_catg;i++) tree->mod->ras->gamma_r_proba_unscaled->v[i] = cpy[pos++];
+
+                  permut = Permutate(tree->mod->ras->n_catg);
+
+                  
+                  for(i=0;i<tree->mod->ras->n_catg;++i)
+                    {
+                      phydbl a,c;
+                      
+                      a = tree->mod->ras->gamma_rr_unscaled->v[permut[i]] / 2.;
+                      c = tree->mod->ras->gamma_rr_unscaled->v[permut[i]] * 2.+1;
+                      
+                      Generic_Brent_Lk(&(tree->mod->ras->gamma_rr_unscaled->v[permut[i]]),
+                                       a,c,
+                                       tree->mod->s_opt->min_diff_lk_local,
+                                       tree->mod->s_opt->brent_it_max,
+                                       tree->mod->s_opt->quickdirty,
+                                       Wrap_Lk,NULL,mixt_tree,NULL,NO);      
+                      /* PhyML_Printf("\n. ++ lk=%f",mixt_tree->c_lnL); */
+                    }
+
+                  for(i=0;i<tree->mod->ras->n_catg;++i)
+                    {
+                      phydbl a,c;
+                      
+                      a = tree->mod->ras->gamma_r_proba_unscaled->v[permut[i]] / 2.;
+                      c = tree->mod->ras->gamma_r_proba_unscaled->v[permut[i]] * 2.;
+                      
+                      Generic_Brent_Lk(&(tree->mod->ras->gamma_r_proba_unscaled->v[permut[i]]),
+                                       a,c,
+                                       tree->mod->s_opt->min_diff_lk_local,
+                                       tree->mod->s_opt->brent_it_max,
+                                       tree->mod->s_opt->quickdirty,
+                                       Wrap_Lk,NULL,mixt_tree,NULL,NO);      
+                      /* PhyML_Printf("\n. ++ lk=%f",mixt_tree->c_lnL); */
+                    }                  
+
+                  Free(permut);
+                                
+                }
+
+              
+              lk_after = tree->c_lnL;
 
               if(lk_after < lk_before - tree->mod->s_opt->min_diff_lk_global)
                 {
@@ -3130,6 +3178,7 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
                 }
 
               Free(x);
+              Free(cpy);
             }
 
 
@@ -3177,7 +3226,7 @@ void Optimize_Free_Rate_Rr(t_tree *tree, int fast, int verbose)
           phydbl a,c;
           
           a = tree->mod->ras->gamma_rr_unscaled->v[i] * .1;
-          c = tree->mod->ras->gamma_rr_unscaled->v[i] * 10.;
+          c = tree->mod->ras->gamma_rr_unscaled->v[i] * 10.+1;
           
           Generic_Brent_Lk(&(tree->mod->ras->gamma_rr_unscaled->v[i]),
                            a,c,
@@ -3207,7 +3256,7 @@ void Optimize_Free_Rate_Rr(t_tree *tree, int fast, int verbose)
                              tree->mod->ras->gamma_r_proba->v,
                              tree->mod->ras->n_catg);
 
-          For(i,2*tree->n_otu-1) tree->a_edges[i]->l->v *= (wm * tree->mod->ras->free_rate_mr->v);
+          for(i=0;i<2*tree->n_otu-1;++i) tree->a_edges[i]->l->v *= (wm * tree->mod->ras->free_rate_mr->v);
         }
 
       /* tree->mod->s_opt->curr_opt_free_rates = NO; */
@@ -3221,7 +3270,7 @@ void Optimize_Free_Rate_Rr(t_tree *tree, int fast, int verbose)
           phydbl a,c;
           
           a = tree->mod->ras->gamma_rr_unscaled->v[i] * .1;
-          c = tree->mod->ras->gamma_rr_unscaled->v[i] * 10.;
+          c = tree->mod->ras->gamma_rr_unscaled->v[i] * 10.+1.;
                     
           Generic_Brent_Lk(&(tree->mod->ras->gamma_rr_unscaled->v[i]),
                            a,c,
@@ -3297,7 +3346,7 @@ void Optimize_Free_Rate_Weights(t_tree *tree, int fast, int verbose)
       phydbl a,c;
       
       a = tree->mod->ras->gamma_r_proba_unscaled->v[i] * .1;
-      c = tree->mod->ras->gamma_r_proba_unscaled->v[i] * 10.;
+      c = tree->mod->ras->gamma_r_proba_unscaled->v[i] * 10.+1;
             
       Generic_Brent_Lk(&(tree->mod->ras->gamma_r_proba_unscaled->v[i]),
                        a,c,
@@ -3389,7 +3438,7 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
                   phydbl a,c;
                   
                   a = tree->mod->e_frq->pi_unscaled->v[permut[i]] / 2.;
-                  c = tree->mod->e_frq->pi_unscaled->v[permut[i]] * 2.;
+                  c = tree->mod->e_frq->pi_unscaled->v[permut[i]] * 2.+1;
                   
                   /* PhyML_Printf("\n. -- lk=%f",mixt_tree->c_lnL); */
                   Generic_Brent_Lk(&(tree->mod->e_frq->pi_unscaled->v[permut[i]]),
@@ -3401,7 +3450,8 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
                                    Wrap_Lk,NULL,mixt_tree,NULL,NO);      
                   /* PhyML_Printf("\n. ++ lk=%f",mixt_tree->c_lnL); */
                 }
-              
+
+              Free(permut);
               
               if(verbose)
                 {
@@ -3503,7 +3553,7 @@ void Optimize_Efrq_Weights(t_tree *mixt_tree, int verbose)
           phydbl a,c;
           
           a = e_frq_weight->v * .1;
-          c = e_frq_weight->v * 10.;
+          c = e_frq_weight->v * 10.+1;
           
           Generic_Brent_Lk(&(e_frq_weight->v),
                            a,c,

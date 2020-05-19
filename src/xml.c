@@ -212,7 +212,24 @@ t_tree *XML_Process_Base(char *xml_filename)
           io->fp_out_json_trace = Openfile(io->out_json_trace_file,READWRITE);
         }
     }
+
+  s = XML_Get_Attribute_Value(p_elem,"print.site.lk");
   
+  if(s)
+    {
+      select = XML_Validate_Attr_Int(s,6,
+                                     "true","yes","y",
+                                     "false","no","n");
+      if(select < 3) io->print_site_lnl = YES;
+      
+      strcpy(io->out_lk_file,outputfile);
+      strcat(io->out_lk_file, "_phyml_lk");
+      if(io->append_run_ID) { strcat(io->out_lk_file,"_"); strcat(io->out_lk_file,io->run_id_string); }
+      strcat(io->out_lk_file, ".txt");
+      io->fp_out_lk = Openfile(io->out_lk_file,WRITE);
+    }
+
+      
   s = XML_Get_Attribute_Value(p_elem,"branch.test");
   if(s)
     {
@@ -368,22 +385,8 @@ t_tree *XML_Process_Base(char *xml_filename)
       
       /*! Open pointer to alignment
        */
-      io->fp_in_align = Openfile(io->in_align_file,0);
+      io->fp_in_align = Openfile(io->in_align_file,READ);
       
-
-      s = XML_Get_Attribute_Value(p_elem,"print.site.lk");
-      if(s)
-        {
-          select = XML_Validate_Attr_Int(s,6,
-                                         "true","yes","y",
-                                         "false","no","n");
-          if(select < 3) io->print_site_lnl = YES;
-
-          strcpy(io->out_lk_file,io->in_align_file);
-          strcat(io->out_lk_file, "_phyml_lk.txt");
-          io->fp_out_lk = Openfile(io->out_lk_file,1);
-        }
-
 
       /*! Load sequence file
        */
