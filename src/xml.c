@@ -1036,7 +1036,7 @@ t_tree *XML_Process_Base(char *xml_filename)
                             }
                           else
                             {
-                              For(i,2*tree->n_otu-1)
+                              for(i=0;i<2*tree->n_otu-1;++i)
                                 {
                                   Free_Scalar_Dbl(tree->a_edges[i]->l);
                                   Free_Scalar_Dbl(tree->a_edges[i]->l_old);

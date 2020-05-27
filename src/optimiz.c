@@ -2778,10 +2778,10 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
           r_mat[n_r_mat] = tree->mod->r_mat;
           n_r_mat++;
           
-          if((tree->mod->whichmodel == GTR) ||
+          if((tree->mod->s_opt->opt_rr) &&
+             ((tree->mod->whichmodel == GTR) ||
              ((tree->mod->whichmodel == CUSTOM) &&
-              (tree->mod->s_opt->opt_rr) &&
-              (tree->mod->r_mat->n_diff_rr > 1)))
+              (tree->mod->r_mat->n_diff_rr > 1))))
             {
               int i,iter;
               

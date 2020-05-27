@@ -4700,6 +4700,7 @@ void Make_Ratematrix_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
 
       opt_rr = XML_Get_Attribute_Value(instance,"optimise.rr");
 
+
       if(opt_rr)
         {
           if(!strcmp(opt_rr,"yes") || !strcmp(opt_rr,"true"))
