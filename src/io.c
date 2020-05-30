@@ -1716,6 +1716,9 @@ void Print_Site_Lk(t_tree *tree, FILE *fp)
   char *s;
   phydbl postmean,sum;
 
+  assert(fp);
+  rewind(fp);
+  
   if(tree->is_mixt_tree == YES)
     {
       MIXT_Print_Site_Lk(tree,fp);

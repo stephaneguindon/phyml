@@ -296,10 +296,11 @@ int main(int argc, char **argv)
                                    io,num_data_set+1,
                                    (orig_random_input_tree == YES)?(num_rand_tree):(num_tree),
                                    (num_rand_tree == io->mod->s_opt->n_rand_starts-1)?(YES):(NO), io->precision);
+
+                      if(tree->io->print_site_lnl) Print_Site_Lk(tree,io->fp_out_lk);
                     }
 
 
-                  if(tree->io->print_site_lnl) Print_Site_Lk(tree,io->fp_out_lk);
 
                   /* Start from BioNJ tree */
                   if((num_rand_tree == io->mod->s_opt->n_rand_starts-1) && (tree->mod->s_opt->random_input_tree))
