@@ -4109,7 +4109,7 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
              tree->mod->whichmodel != JC69 &&
              tree->mod->whichmodel != K80)
             {
-              PhyML_Fprintf(fp,"\n   Optimise nucletide freq.:\t%20s",tree->mod->s_opt->opt_state_freq?"yes":"no");
+              PhyML_Fprintf(fp,"\n   Optimise nucleotide freq.:\t%20s",tree->mod->s_opt->opt_state_freq?"yes":"no");
               if(final == YES)
                 {
                   PhyML_Fprintf(fp,"\n   Freq(A):\t\t\t%20.2f",tree->mod->e_frq->pi->v[0]);
