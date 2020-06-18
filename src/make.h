@@ -84,4 +84,5 @@ void Alloc_TBE_Matrices(int n_otu,  short unsigned*** i_matrix, short unsigned**
 void Make_Extra_Edge_Lk(t_tree *tree);
 void Make_Spr(t_tree *tree);
 t_label *Make_Label();
+void Make_Contrasts(t_tree *tree);
 #endif

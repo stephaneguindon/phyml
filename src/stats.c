@@ -938,6 +938,8 @@ phydbl Dnorm(phydbl x, phydbl mean, phydbl sd)
 
   /* dens = -(.5*LOG2PI+log(sd))  - .5*POW(x-mean,2)/POW(sd,2); */
   /* return exp(dens); */
+
+  if(sd < SMALL && fabs(x-mean) < SMALL) return(1.0);
   
   x = (x-mean)/sd;
 
@@ -954,6 +956,8 @@ phydbl Log_Dnorm(phydbl x, phydbl mean, phydbl sd, int *err)
   phydbl dens;
 
   *err = NO;
+
+  if(sd < SMALL && fabs(x-mean) < SMALL) return(0.0);
 
   x = (x-mean)/sd;
   
@@ -978,6 +982,8 @@ phydbl Log_Dnorm_Trunc(phydbl x, phydbl mean, phydbl sd, phydbl lo, phydbl up, i
 
   if(x < lo || x > up) return -230.;
 
+  if(sd < SMALL && fabs(x-mean) < SMALL) return(0.0);
+  
   *err = NO;
   cdf_lo = cdf_up = 0.0;
 
@@ -1020,6 +1026,8 @@ phydbl Dnorm_Trunc(phydbl x, phydbl mean, phydbl sd, phydbl lo, phydbl up)
 {
   phydbl dens;
   phydbl cdf_up, cdf_lo;
+
+  if(sd < SMALL && fabs(x-mean) < SMALL) return(1.0);
 
   dens   = Dnorm(x,mean,sd);
   cdf_up = Pnorm(up,mean,sd);

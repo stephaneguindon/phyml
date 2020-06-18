@@ -96,4 +96,5 @@ void Free_Extra_Edge_Lk(t_tree *tree);
 void Free_Edge_Length(t_edge *b);
 void Free_Clade(t_clad *this);
 void Free_Label(t_label *lab);
+void Free_Contrasts(t_ctrst *ctrst);
 #endif

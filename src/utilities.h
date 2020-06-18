@@ -97,6 +97,10 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 int CALL;
 int TIME;
 
+#define SLFV_GAUSSIAN 0 /* Spatial Lambda-Fleming-Viot model (Gaussian) */
+#define SLFV_UNIFORM 1 /* Spatial Lambda-Fleming-Viot model (Uniform) */
+#define BMP  2 /* Brownian Motion Phylogeography */
+
 #define AC 0
 #define AG 1
 #define AT 2
@@ -729,7 +733,8 @@ typedef struct __Tree{
   struct __XML_node                 *xml_root;
   struct __Generic_LL              *edge_list;
   struct __Generic_LL              *node_list;
-
+  struct __Independent_Contrasts       *ctrst; /*! Pointer to data structure used for independent contrasts */
+  
 
   short int                         eval_alnL; /*! Evaluate likelihood for genetic data */
   short int                         eval_rlnL; /*! Evaluate likelihood for rates along the tree */
@@ -1902,7 +1907,6 @@ typedef struct __Phylogeo{
   phydbl                dum; // dummy parameter use to assess non-identifiability issues
   phydbl            min_dum;
   phydbl            max_dum;
-
   
 }t_geo;
 
@@ -1913,7 +1917,7 @@ typedef struct __Migrep_Model{
   struct __Geo_Coord            *lim_do; // min longitude and lattitude                        
   struct __SampArea       *samp_area;
 
-  int                           name;
+  short int                       id;
   int                          n_dim;
   int                    safe_phyrex;
   int           max_num_of_intervals;
@@ -1942,6 +1946,9 @@ typedef struct __Migrep_Model{
   phydbl                         rho; // intensity parameter of the Poisson point processs
   phydbl                gen_cal_time; // duration of one generation in calendar time unit
 
+
+
+  
   
   phydbl                       c_lnL; // current value of log-likelihood 
   phydbl              c_ln_prior_rad; // current value of log prior for the prior on radius
@@ -1970,6 +1977,15 @@ typedef struct __Disk_Event{
   phydbl                   c_lnL;
   short int            age_fixed; // time is fixed for disks corresponding to samples.
 }t_dsk;
+
+/*!********************************************************/
+
+// Data structure for implementing Felsenstein's independent contrasts likelihood calculation
+// Use the same notation as that in the 1973 article (Am J Hum Genet 25:471-492)
+typedef struct __Independent_Contrasts{
+  phydbl *x;
+  phydbl *tprime;
+}t_ctrst;
 
 /*!********************************************************/
 
@@ -2374,6 +2390,8 @@ void Remove_Duplicates_From_Tree(calign *data, t_tree *tree);
 
 #ifdef PHYREX
 #include "phyrex.h"
+#include "bmp.h"
+#include "slfv.h"
 #endif
 
 #ifdef MPI

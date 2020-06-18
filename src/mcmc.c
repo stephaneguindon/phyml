@@ -6178,7 +6178,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_lbda]                  = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_mu]                    = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_rad]                   = 1.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_sigsq]                 = 0.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_sigsq]                 = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_disk]            = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_hit]             = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ud]          = 2.0;
@@ -6285,8 +6285,8 @@ void MCMC_Copy_To_New_Param_Val(t_mcmc *mcmc, t_tree *tree)
   mcmc->sampled_val[mcmc->num_move_geo_dum*mcmc->sample_size+mcmc->sample_num]      = tree->geo ? tree->geo->dum   : -1.;  
   #ifdef PHYREX
   mcmc->sampled_val[mcmc->num_move_phyrex_lbda*mcmc->sample_size+mcmc->sample_num]  = tree->mmod ? tree->mmod->lbda               : -1.;
-  mcmc->sampled_val[mcmc->num_move_phyrex_mu*mcmc->sample_size+mcmc->sample_num]    = tree->mmod ? PHYREX_Neighborhood_Size(tree) : -1.;  
-  mcmc->sampled_val[mcmc->num_move_phyrex_sigsq*mcmc->sample_size+mcmc->sample_num] = tree->mmod ? PHYREX_Update_Sigsq(tree)      : -1.;
+  mcmc->sampled_val[mcmc->num_move_phyrex_mu*mcmc->sample_size+mcmc->sample_num]    = tree->mmod ? SLFV_Neighborhood_Size(tree)   : -1.;  
+  mcmc->sampled_val[mcmc->num_move_phyrex_sigsq*mcmc->sample_size+mcmc->sample_num] = tree->mmod ? SLFV_Update_Sigsq(tree)        : -1.;
   mcmc->sampled_val[mcmc->num_move_phyrex_rad*mcmc->sample_size+mcmc->sample_num]   = tree->mmod ? tree->mmod->rad                : -1.;
   #endif
 }
@@ -6618,53 +6618,6 @@ void MCMC_PHYREX_Radius(t_tree *tree)
                             tree->mcmc->move_type[tree->mcmc->num_move_phyrex_rad],
                             NO,NULL,tree,NULL);
 
-  /* phydbl u,alpha,ratio; */
-  /* phydbl cur_glnL, new_glnL, hr; */
-  /* phydbl cur_rad, new_rad; */
-  /* phydbl K; */
-
-  /* tree->mcmc->run_move[tree->mcmc->num_move_phyrex_rad]++; */
-
-  /* new_glnL  = tree->mmod->c_lnL; */
-  /* cur_glnL  = tree->mmod->c_lnL; */
-  /* hr        = 0.0; */
-  /* ratio     = 0.0; */
-  /* cur_rad  = tree->mmod->rad; */
-  /* new_rad  = tree->mmod->rad; */
-  /* K         = tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_rad]; */
-
-  /* MCMC_Make_Move(&cur_rad,&new_rad,tree->mmod->min_rad,tree->mmod->max_rad,&ratio,K,tree->mcmc->move_type[tree->mcmc->num_move_phyrex_rad]); */
-  
-  /* if(new_rad < tree->mmod->max_rad && new_rad > tree->mmod->min_rad) */
-  /*   { */
-  /*     tree->mmod->rad = new_rad; */
-      
-  /*     if(tree->eval_glnL == YES) new_glnL = PHYREX_Lk(tree); */
-
-  /*     ratio += (new_glnL - cur_glnL); */
-  /*     ratio += hr; */
-  
-  /*     ratio = exp(ratio); */
-  /*     alpha = MIN(1.,ratio); */
-
-
-  /*     PhyML_Printf("\n. new_rad: %12f cur_rad: %12f new_glnL: %12f cur_glnL: %12f",new_rad,cur_rad,new_glnL,cur_glnL); */
-      
-  /*     /\* Always accept move *\/ */
-  /*     if(tree->mcmc->always_yes == YES && new_glnL > UNLIKELY) alpha = 1.0; */
-      
-  /*     u = Uni(); */
-      
-  /*     if(u > alpha) /\* Reject *\/ */
-  /*       { */
-  /*         tree->mmod->rad = cur_rad; */
-  /*         tree->mmod->c_lnL = cur_glnL; */
-  /*       } */
-  /*     else */
-  /*       { */
-  /*         tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_rad]++; */
-  /*       } */
-  /*   } */
 }
 #endif 
 
@@ -6674,17 +6627,17 @@ void MCMC_PHYREX_Radius(t_tree *tree)
 #ifdef PHYREX
 void MCMC_PHYREX_Sigsq(t_tree *tree)
 {
-  tree->mmod->update_rad = YES;
-  MCMC_Single_Param_Generic(&(tree->mmod->sigsq),
-                            tree->mmod->min_sigsq,
-                            tree->mmod->max_sigsq,
-                            tree->mcmc->num_move_phyrex_sigsq,
-                            NULL,&(tree->mmod->c_lnL),
-                            NULL,(tree->eval_glnL == YES) ? PHYREX_Wrap_Lk : NULL,
-                            tree->mcmc->move_type[tree->mcmc->num_move_phyrex_sigsq],
-                            NO,NULL,tree,NULL);
-  tree->mmod->rad = PHYREX_Update_Radius(tree);
-  tree->mmod->update_rad = NO;
+  if(tree->mmod->id == BMP)
+    {
+      MCMC_Single_Param_Generic(&(tree->mmod->sigsq),
+                                tree->mmod->min_sigsq,
+                                tree->mmod->max_sigsq,
+                                tree->mcmc->num_move_phyrex_sigsq,
+                                NULL,&(tree->mmod->c_lnL),
+                                NULL,(tree->eval_glnL == YES) ? PHYREX_Wrap_Lk : NULL,
+                                tree->mcmc->move_type[tree->mcmc->num_move_phyrex_sigsq],
+                                NO,NULL,tree,NULL);
+    }
 }
 #endif 
 

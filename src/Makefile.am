@@ -553,7 +553,9 @@ tbe.c tbe.h \
 sse.c sse.h\
 avx.c avx.h\
 ancestral.c ancestral.h\
-phyrex.c phyrex.h
+phyrex.c phyrex.h\
+slfv.c slfv.h\
+bmp.c bmp.h
 phyrex_LDADD = -lm 
 else
 if WANT_PHYREXSIM

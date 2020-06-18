@@ -3446,15 +3446,35 @@ void PHYREX_Init_Migrep_Mod(t_phyrex_mod *t, int n_dim, phydbl min_lat, phydbl m
 {
   assert(n_dim == 2);
 
-  t->name             = PHYREX_NORMAL;
-  t->n_dim            = n_dim;
-  t->safe_phyrex      = NO;
+  if(t->id == -1) t->id = SLFV_GAUSSIAN;
+  t->n_dim              = n_dim;
   
   t->lim_up->lonlat[0]   = max_lat;
   t->lim_up->lonlat[1]   = max_lon;
 
   t->lim_do->lonlat[0]   = min_lat;
   t->lim_do->lonlat[1]   = min_lon;
+
+  t->min_rad           = 0.0;
+  t->max_rad           = 1.0*((max_lat-min_lat)+(max_lon-min_lon));
+  t->rad               = 0.01*((max_lat-min_lat)+(max_lon-min_lon));
+  t->prior_param_rad   = 1./(0.1*((max_lat-min_lat)+(max_lon-min_lon)));
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void PHYREX_Set_Default_Migrep_Mod(t_phyrex_mod *t)
+{
+
+  t->id          = -1;
+  t->safe_phyrex = NO;
+  
+  t->lim_up->lonlat[0]   = 100.;
+  t->lim_up->lonlat[1]   = 100.;
+
+  t->lim_do->lonlat[0]   = 0.0;
+  t->lim_do->lonlat[1]   = 0.0;
 
   t->lbda             = 1.E-2;
   t->min_lbda         = 1.E-6;
@@ -3467,11 +3487,9 @@ void PHYREX_Init_Migrep_Mod(t_phyrex_mod *t, int n_dim, phydbl min_lat, phydbl m
   t->prior_param_mu   = 1.000;
 
   t->min_rad           = 0.0;
-  t->max_rad           = 1.0*((max_lat-min_lat)+(max_lon-min_lon));
-  /* t->max_rad           = 10.0*((max_lat-min_lat)+(max_lon-min_lon)); */
-  t->rad               = 0.01*((max_lat-min_lat)+(max_lon-min_lon));
-  /* t->prior_param_rad   = 1./(0.01*((max_lat-min_lat)+(max_lon-min_lon))); */
-  t->prior_param_rad   = 1./(0.1*((max_lat-min_lat)+(max_lon-min_lon)));
+  t->max_rad           = 100.;
+  t->rad               = 4.;
+  t->prior_param_rad   = 1.;
   t->update_rad        = NO;
   
   t->min_sigsq         = 0.0;
@@ -3490,6 +3508,7 @@ void PHYREX_Init_Migrep_Mod(t_phyrex_mod *t, int n_dim, phydbl min_lat, phydbl m
   t->samp_area       = NULL;
 
   t->max_num_of_intervals = 1000000;
+
 }
 
 //////////////////////////////////////////////////////////////
@@ -3715,13 +3734,26 @@ void M4_Init_Model(m4 *m4mod, calign *data, t_mod *mod)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
 
+// Initialise x values using coordinates at the tip nodes along
+// one dimension (with index dim_idx)
+void BMP_Init_Contrasts(int dim_idx, t_tree *tree)
+{
+  for(int i=0;i<tree->n_otu;++i)
+    {
+      tree->ctrst->x[i] = tree->a_nodes[i]->ldsk->coord->lonlat[dim_idx];
+      tree->ctrst->tprime[i] = tree->rates->nd_t[i];
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 

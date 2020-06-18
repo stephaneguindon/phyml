@@ -135,17 +135,23 @@ void Usage()
 
   PhyML_Printf("%s\n\t-m (or --model) %smodel%s\n",BOLD,LINE,FLAT);
   PhyML_Printf("\t\tmodel%s : substitution model name.\n",FLAT);
-  PhyML_Printf("\t\t%s- %sNucleotide%s-based models : %sHKY85%s (default) | %sJC69%s | %sK80%s | %sF81%s | %sF84%s | %sTN93%s | %sGTR%s | %scustom (*)%s\n",
-	 FLAT,LINE,FLAT,LINE,FLAT,LINE,FLAT,LINE,FLAT,LINE,FLAT,LINE,FLAT,LINE,FLAT,LINE,FLAT,LINE,FLAT);
+  PhyML_Printf("\t\t%s- %sNucleotide%s-based models : %sHKY85%s (default) | %sJC69%s | %sK80%s | %sF81%s | %sF84%s \n",
+               FLAT,
+               LINE,FLAT,
+               LINE,FLAT,
+               LINE,FLAT,
+               LINE,FLAT,
+               LINE,FLAT,
+               LINE,FLAT);
+  PhyML_Printf("\t\t %sTN93%s | %sGTR%s | %scustom (*)%s\n",
+               LINE,FLAT,
+               LINE,FLAT,
+               LINE,FLAT);
   PhyML_Printf("\t\t(*) : for the custom option, a string of six digits identifies the model. For instance, 000000\n");
   PhyML_Printf("\t\t corresponds to F81 (or JC69 provided the distribution of nucleotide frequencies is uniform).\n");
   PhyML_Printf("\t\t 012345 corresponds to GTR. This option can be used for encoding any model that is a nested within GTR.\n");
   PhyML_Printf("\n");
-  PhyML_Printf("\t\t%s- %sAmino-acid%s based models : %sLG%s (default) | %sWAG%s | %sJTT%s | %sMtREV%s | %sDayhoff%s | %sDCMut%s | %sRtREV%s | %sCpREV%s | %sVT%s | %sAB%s\n",FLAT,
-	 LINE,FLAT,
-	 LINE,FLAT,
-	 LINE,FLAT,
-	 LINE,FLAT,
+  PhyML_Printf("\t\t%s- %sAmino-acid%s based models : %sLG%s (default) | %sWAG%s | %sJTT%s | %sMtREV%s | %sDayhoff%s | %sDCMut%s \n",FLAT,
 	 LINE,FLAT,
 	 LINE,FLAT,
 	 LINE,FLAT,
@@ -153,10 +159,15 @@ void Usage()
 	 LINE,FLAT,
 	 LINE,FLAT,
 	 LINE,FLAT);
-  PhyML_Printf("\t\t %sBlosum62%s | %sMtMam%s | %sMtArt%s | %sHIVw%s |  %sHIVb%s | %scustom%s\n",
+  PhyML_Printf("\t\t %sRtREV%s | %sCpREV%s | %sVT%s | %sAB%s | %sBlosum62%s | %sMtMam%s | %sMtArt%s\n",
 	 LINE,FLAT,
 	 LINE,FLAT,
 	 LINE,FLAT,
+	 LINE,FLAT,
+	 LINE,FLAT,
+	 LINE,FLAT,
+	 LINE,FLAT);
+  PhyML_Printf("\t\t %sHIVw%s |  %sHIVb%s | %scustom%s\n",
 	 LINE,FLAT,
 	 LINE,FLAT,
 	 LINE,FLAT);
