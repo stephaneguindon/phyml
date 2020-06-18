@@ -6523,66 +6523,14 @@ void MCMC_Read_Param_Vals(t_tree *tree)
 #ifdef PHYREX
 void MCMC_PHYREX_Lbda(t_tree *tree)
 {
-  /* MCMC_Single_Param_Generic(&(tree->mmod->lbda), */
-  /*                           tree->mmod->min_lbda, */
-  /*                           tree->mmod->max_lbda, */
-  /*                           tree->mcmc->num_move_phyrex_lbda, */
-  /*                           NULL,&(tree->mmod->c_lnL), */
-  /*                           NULL,(tree->eval_glnL == YES) ? PHYREX_Wrap_Lk : NULL, */
-  /*                           tree->mcmc->move_type[tree->mcmc->num_move_phyrex_lbda], */
-  /*                           NO,NULL,tree,NULL); */
-
-
-  phydbl u,alpha,ratio;
-  phydbl cur_glnL, new_glnL, hr;
-  phydbl cur_lbda, new_lbda;
-  phydbl K;
-
-  tree->mcmc->run_move[tree->mcmc->num_move_phyrex_lbda]++;
-
-  new_glnL  = tree->mmod->c_lnL;
-  cur_glnL  = tree->mmod->c_lnL;
-  hr        = 0.0;
-  ratio     = 0.0;
-  cur_lbda  = tree->mmod->lbda;
-  new_lbda  = tree->mmod->lbda;
-  K         = tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_lbda];
-
-  MCMC_Make_Move(&cur_lbda,&new_lbda,tree->mmod->min_lbda,tree->mmod->max_lbda,&ratio,K,tree->mcmc->move_type[tree->mcmc->num_move_phyrex_lbda]);
-  
-  if(new_lbda < tree->mmod->max_lbda && new_lbda > tree->mmod->min_lbda)
-    {
-      tree->mmod->lbda = new_lbda;
-      
-      if(tree->eval_glnL == YES) new_glnL = PHYREX_Lk(tree);
-
-      ratio += (new_glnL - cur_glnL);
-      ratio += hr;
-  
-      ratio = exp(ratio);
-      alpha = MIN(1.,ratio);
-
-
-      /* PhyML_Printf("\n. cur_lbda: %12f new_lbda: %12f cur_glnL: %12f new_glnL: %12f  K=%g [%d/%d]", */
-      /*              cur_lbda,new_lbda,cur_glnL,new_glnL,K, */
-      /*              tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_lbda], */
-      /*              tree->mcmc->run_move[tree->mcmc->num_move_phyrex_lbda]); */
-      
-      /* Always accept move */
-      if(tree->mcmc->always_yes == YES && new_glnL > UNLIKELY) alpha = 1.0;
-      
-      u = Uni();
-      
-      if(u > alpha) /* Reject */
-        {
-          tree->mmod->lbda = cur_lbda;
-          tree->mmod->c_lnL = cur_glnL;
-        }
-      else
-        {
-          tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_lbda]++;
-        }
-    }
+  MCMC_Single_Param_Generic(&(tree->mmod->lbda),
+                            tree->mmod->min_lbda,
+                            tree->mmod->max_lbda,
+                            tree->mcmc->num_move_phyrex_lbda,
+                            NULL,&(tree->mmod->c_lnL),
+                            NULL,(tree->eval_glnL == YES) ? PHYREX_Wrap_Lk : NULL,
+                            tree->mcmc->move_type[tree->mcmc->num_move_phyrex_lbda],
+                            NO,NULL,tree,NULL);
 }
 #endif
 
