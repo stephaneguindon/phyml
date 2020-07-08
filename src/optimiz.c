@@ -2658,7 +2658,7 @@ void Round_Optimize_Node_Heights(t_tree *tree)
                        Wrap_Lk,NULL,tree,NULL,NO);
 
       printf("\n. cur_lnL=%f new_lnL=%f clock_r=%G root height=%f",
-         cur_lnL,new_lnL,tree->rates->clock_r,tree->rates->nd_t[tree->n_root->num]);
+         cur_lnL,new_lnL,tree->rates->clock_r,tree->times->nd_t[tree->n_root->num]);
       new_lnL = tree->c_lnL;
       n_iter++;
       if(n_iter > 100) break;
@@ -2674,11 +2674,11 @@ void Opt_Node_Heights_Recurr(t_tree *tree)
   Opt_Node_Heights_Recurr_Pre(tree->n_root,tree->n_root->v[2],tree);
   Opt_Node_Heights_Recurr_Pre(tree->n_root,tree->n_root->v[1],tree);
 
-  Generic_Brent_Lk(&(tree->rates->nd_t[tree->n_root->num]),
-                   MIN(tree->rates->t_prior_max[tree->n_root->num],
-                       MIN(tree->rates->nd_t[tree->n_root->v[2]->num],
-                           tree->rates->nd_t[tree->n_root->v[1]->num])),
-                   tree->rates->t_prior_min[tree->n_root->num],
+  Generic_Brent_Lk(&(tree->times->nd_t[tree->n_root->num]),
+                   MIN(tree->times->t_prior_max[tree->n_root->num],
+                       MIN(tree->times->nd_t[tree->n_root->v[2]->num],
+                           tree->times->nd_t[tree->n_root->v[1]->num])),
+                   tree->times->t_prior_min[tree->n_root->num],
                    tree->mod->s_opt->min_diff_lk_local,
                    tree->mod->s_opt->brent_it_max,
                    tree->mod->s_opt->quickdirty,
@@ -2710,15 +2710,15 @@ void Opt_Node_Heights_Recurr_Pre(t_node *a, t_node *d, t_tree *tree)
       Opt_Node_Heights_Recurr_Pre(d,v2,tree);
       Opt_Node_Heights_Recurr_Pre(d,v3,tree);
 
-      t0 = tree->rates->nd_t[a->num];
-      t2 = tree->rates->nd_t[v2->num];
-      t3 = tree->rates->nd_t[v3->num];
+      t0 = tree->times->nd_t[a->num];
+      t2 = tree->times->nd_t[v2->num];
+      t3 = tree->times->nd_t[v3->num];
 
       t_min = t0;
       t_max = MIN(t2,t3);
 
-      t_min = MAX(t_min,tree->rates->t_prior_min[d->num]);
-      t_max = MIN(t_max,tree->rates->t_prior_max[d->num]);
+      t_min = MAX(t_min,tree->times->t_prior_min[d->num]);
+      t_max = MIN(t_max,tree->times->t_prior_max[d->num]);
 
       t_min += tree->rates->min_dt;
       t_max -= tree->rates->min_dt;
@@ -2729,14 +2729,14 @@ void Opt_Node_Heights_Recurr_Pre(t_node *a, t_node *d, t_tree *tree)
           Exit("\n");
         }
 
-      Generic_Brent_Lk(&(tree->rates->nd_t[d->num]),
+      Generic_Brent_Lk(&(tree->times->nd_t[d->num]),
                        t_min,t_max,
                        tree->mod->s_opt->min_diff_lk_local,
                        tree->mod->s_opt->brent_it_max,
                        tree->mod->s_opt->quickdirty,
                        Wrap_Lk,NULL,tree,NULL,NO);
 
-      /* printf("\n. t%d = %f [%f;%f] lnL = %f",d->num,tree->rates->nd_t[d->num],t_min,t_max,tree->c_lnL); */
+      /* printf("\n. t%d = %f [%f;%f] lnL = %f",d->num,tree->times->nd_t[d->num],t_min,t_max,tree->c_lnL); */
 
     }
 }
@@ -3652,7 +3652,7 @@ void Least_Square_Node_Ages(t_tree *tree)
 
   TIMES_Randomize_Node_Ages(tree);
   
-  assert(fabs(tree->rates->nd_t[tree->n_root->num]) > SMALL);
+  assert(fabs(tree->times->nd_t[tree->n_root->num]) > SMALL);
 
   cur_error = BIG;
   new_error = BIG;
@@ -3678,15 +3678,15 @@ void Least_Square_Node_Ages(t_tree *tree)
                     }
                   else
                     {
-                      if(n != tree->n_root) old = tree->rates->nd_t[n->anc->num];
-                      else old = 2.*tree->rates->nd_t[tree->n_root->num];
+                      if(n != tree->n_root) old = tree->times->nd_t[n->anc->num];
+                      else old = 2.*tree->times->nd_t[tree->n_root->num];
                     }
                 }
               
-              young = MIN(tree->rates->nd_t[n->v[dir1]->num],
-                          tree->rates->nd_t[n->v[dir2]->num]);
+              young = MIN(tree->times->nd_t[n->v[dir1]->num],
+                          tree->times->nd_t[n->v[dir2]->num]);
               
-              sum_error += Generic_Brent(tree->rates->nd_t + i,
+              sum_error += Generic_Brent(tree->times->nd_t + i,
                                          young,old,1.E-10,10000,
                                          TIMES_Least_Square_Criterion,
                                          tree);
@@ -3694,11 +3694,11 @@ void Least_Square_Node_Ages(t_tree *tree)
               /* PhyML_Printf("\n. Node %3d%c time: %15f err: %15f young: %15f old: %15f %15f %15f", */
               /*              i, */
               /*              (n == tree->n_root)?'*':' ', */
-              /*              tree->rates->nd_t[i], */
+              /*              tree->times->nd_t[i], */
               /*              sum_error, */
               /*              young,old, */
-              /*              tree->rates->nd_t[n->v[dir1]->num], */
-              /*              tree->rates->nd_t[n->v[dir2]->num]); */
+              /*              tree->times->nd_t[n->v[dir1]->num], */
+              /*              tree->times->nd_t[n->v[dir2]->num]); */
             }
           if(RATES_Check_Node_Times(tree)) Exit("\n");
         }

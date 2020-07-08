@@ -12,16 +12,16 @@ the GNU public licence. See http://www.opensource.org for details.
 
 #include <config.h>
 
-#ifndef BMP_H
-#define BMP_H
+#ifndef RW_H
+#define RW_H
 
 #include "utilities.h"
 
-int BMP_Main(int argc, char **argv);
-phydbl BMP_Independent_Contrasts(t_tree *tree);
-void BMP_Independent_Contrasts_Post(t_node *a, t_node *d, phydbl *lnP, t_tree *tree);
-phydbl BMP_Forward_Lk(t_tree *tree);
-void BMP_Forward_Lk_Pre(t_node *a, t_node *d, phydbl *lnP, t_tree *tree);
-phydbl BMP_Lk(t_tree *tree);
+int RW_Main(int argc, char **argv);
+phydbl RW_Independent_Contrasts(t_tree *tree);
+void RW_Independent_Contrasts_Post(t_node *a, t_node *d, phydbl *lnP, t_tree *tree);
+phydbl RW_Forward_Lk(t_tree *tree);
+void RW_Forward_Lk_Pre(t_node *a, t_node *d, phydbl *lnP, t_tree *tree);
+phydbl RW_Lk(t_tree *tree);
 
 #endif

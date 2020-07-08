@@ -7451,7 +7451,10 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
 
   tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
   RATES_Init_Rate_Struct(tree->rates,NULL,tree->n_otu);
-  
+
+  tree->times = TIMES_Make_Time_Struct(tree->n_otu);
+  TIMES_Init_Time_Struct(tree->times,NULL,tree->n_otu);
+
   for(i=0;i<2*tree->n_otu-2;++i)
     {
       tree->a_nodes[i]->v[1] = NULL;
@@ -7542,7 +7545,7 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
       tree->a_nodes[n1]->v[0] = curr_n;
       tree->a_nodes[n2]->v[0] = curr_n;
       
-      tree->rates->nd_t[curr_n->num] = t[n_connected/2];
+      tree->times->nd_t[curr_n->num] = t[n_connected/2];
       
       available_nodes[n_available] = tree->a_nodes[n1]->num;
       for(i=0;i<n_available;i++)
@@ -7560,7 +7563,7 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
       
     }while(n_connected < 2*tree->n_otu-2);
   
-  For(i,2*tree->n_otu-2) tmp[i] = tree->rates->nd_t[i];
+  For(i,2*tree->n_otu-2) tmp[i] = tree->times->nd_t[i];
   
   /* Unroot the tree */
   root->v[2]->v[0] = root->v[2];
@@ -7584,7 +7587,7 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
         }
       else
         {
-          tree->rates->nd_t[i]  = tmp[internal_nodes[n_internal]->num];
+          tree->times->nd_t[i]  = tmp[internal_nodes[n_internal]->num];
           tree->a_nodes[i]      = internal_nodes[n_internal++];
           tree->a_nodes[i]->tax = 0;
         }
@@ -7592,7 +7595,7 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
       tree->a_nodes[i]->num = i;
     }
   
-  for(i=0;i<tree->n_otu;i++) tree->rates->nd_t[i] = 0.0;
+  for(i=0;i<tree->n_otu;i++) tree->times->nd_t[i] = 0.0;
   
   for(i=0;i<tree->n_otu;i++)
     {
@@ -8368,8 +8371,8 @@ phydbl Get_Tree_Size(t_tree *tree)
 
 /*   For(i,2*tree->n_otu-3)  */
 /*     tree_size +=  */
-/*     FABS(tree->rates->nd_t[tree->a_edges[i]->left->num] -  */
-/* 	 tree->rates->nd_t[tree->a_edges[i]->rght->num]); */
+/*     FABS(tree->times->nd_t[tree->a_edges[i]->left->num] -  */
+/* 	 tree->times->nd_t[tree->a_edges[i]->rght->num]); */
 
   tree->size = tree_size;
   return tree_size;
@@ -8467,7 +8470,7 @@ void Get_Node_Ranks_From_Times(t_tree *tree)
       swap = NO;
       for(i=0;i<2*tree->n_otu-2;++i)
 	{
-	  if(tree->rates->nd_t[rk[i+1]] < tree->rates->nd_t[rk[i]]) // Sort in ascending order
+	  if(tree->times->nd_t[rk[i+1]] < tree->times->nd_t[rk[i]]) // Sort in ascending order
 	    {
 	      swap = YES;
 
@@ -8507,7 +8510,7 @@ void Get_Node_Ranks_From_Tip_Times(t_tree *tree)
       swap = NO;
       for(i=0;i<tree->n_otu-1;++i)
 	{
-	  if(tree->rates->nd_t[rk[i+1]] < tree->rates->nd_t[rk[i]]) // Sort in ascending order
+	  if(tree->times->nd_t[rk[i+1]] < tree->times->nd_t[rk[i]]) // Sort in ascending order
 	    {
 	      swap = YES;
 
@@ -9390,11 +9393,11 @@ int Scale_Subtree_Height(t_node *a, phydbl K, phydbl floor, int *n_nodes, t_tree
 
   new_height = .0;
 
-  if(!(tree->rates->nd_t[a->num] > floor)) new_height = K*(tree->rates->nd_t[a->num]-floor)+floor;
+  if(!(tree->times->nd_t[a->num] > floor)) new_height = K*(tree->times->nd_t[a->num]-floor)+floor;
 
   if(a == tree->n_root)
     {
-      tree->rates->nd_t[tree->n_root->num] = new_height;
+      tree->times->nd_t[tree->n_root->num] = new_height;
       *n_nodes = 1;
       
       Scale_Node_Heights_Post(tree->n_root,tree->n_root->v[2],K,floor,n_nodes,tree);
@@ -9404,10 +9407,10 @@ int Scale_Subtree_Height(t_node *a, phydbl K, phydbl floor, int *n_nodes, t_tree
     {
       int i;
       
-      if(new_height < tree->rates->nd_t[a->anc->num]) return 0;
+      if(new_height < tree->times->nd_t[a->anc->num]) return 0;
       else
         {
-          tree->rates->nd_t[a->num] = new_height;
+          tree->times->nd_t[a->num] = new_height;
           *n_nodes = 1;
         }
       
@@ -9436,21 +9439,21 @@ void Scale_Node_Heights_Post(t_node *a, t_node *d, phydbl K, phydbl floor, int *
     {
       int i;
       
-      /* It is tempting to set floor = tree->rates->t_prior_max[d->num]; but
+      /* It is tempting to set floor = tree->times->t_prior_max[d->num]; but
          it then becomes possible for nodes with different floor values
          to have their orders interverted (i.e., ancestor below descendant)
       */
-      if((tree->rates->nd_t[d->num] > floor) == NO) // If node is strictly older than floor
+      if((tree->times->nd_t[d->num] > floor) == NO) // If node is strictly older than floor
         {
-          tree->rates->nd_t[d->num] = K*(tree->rates->nd_t[d->num]-floor)+floor;
+          tree->times->nd_t[d->num] = K*(tree->times->nd_t[d->num]-floor)+floor;
           *n_nodes = *n_nodes+1;
         }
       
-      if(tree->rates->nd_t[d->num] < tree->rates->nd_t[a->num])
+      if(tree->times->nd_t[d->num] < tree->times->nd_t[a->num])
         {
           PhyML_Printf("\n. K = %f floor = %f t_prior_max(a) = %f t_prior_max(d) = %f a->t = %f d->t %f",
-                       K,floor,tree->rates->t_prior_max[a->num],tree->rates->t_prior_max[d->num],
-                       tree->rates->nd_t[a->num],tree->rates->nd_t[d->num]);
+                       K,floor,tree->times->t_prior_max[a->num],tree->times->t_prior_max[d->num],
+                       tree->times->nd_t[a->num],tree->times->nd_t[d->num]);
           PhyML_Printf("\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
           Warn_And_Exit("\n. PhyML finished prematurely.");
         }
@@ -10042,7 +10045,7 @@ void Find_Surviving_Edges_In_Small_Tree(t_tree *small_tree, t_tree *big_tree)
 
   Match_Nodes_In_Small_Tree(small_tree,big_tree);
 
-  For(i,2*small_tree->n_otu-1) small_tree->rates->has_survived[i] = NO;
+  For(i,2*small_tree->n_otu-1) small_tree->times->has_survived[i] = NO;
 
   Find_Surviving_Edges_In_Small_Tree_Post(big_tree->n_root,big_tree->n_root->v[2],small_tree,big_tree);
   Find_Surviving_Edges_In_Small_Tree_Post(big_tree->n_root,big_tree->n_root->v[1],small_tree,big_tree);
@@ -10056,7 +10059,7 @@ void Find_Surviving_Edges_In_Small_Tree_Post(t_node *a, t_node *d, t_tree *small
 {
   if(d->match_node && !a->match_node)
     {
-      small_tree->rates->has_survived[d->match_node->num] = YES;
+      small_tree->times->has_survived[d->match_node->num] = YES;
     }
 
   if(d->tax == YES) return;
@@ -11707,14 +11710,14 @@ void Random_Walk_Along_Tree_On_Radius(t_node *a, t_node *d, t_edge *b, phydbl *r
   /*        *radius, */
   /*        b->l->v); fflush(NULL); */
   
-  /* if(tree->rates->nd_t[a->num] < tree->rates->nd_t[d->num]) */
+  /* if(tree->times->nd_t[a->num] < tree->times->nd_t[d->num]) */
   /*   { */
   /*     printf("\n. a: %d d: %d radius: %f l: %f [%f] -- %f | %f [%d]", */
   /*            a->num, */
   /*            d->num, */
   /*            *radius, */
   /*            b->l->v, */
-  /*            FABS(tree->rates->nd_t[a->num] - tree->rates->nd_t[d->num]) * tree->rates->clock_r * tree->rates->br_r[d->num], */
+  /*            FABS(tree->times->nd_t[a->num] - tree->times->nd_t[d->num]) * tree->rates->clock_r * tree->rates->br_r[d->num], */
   /*            tree->rates->cur_l[d->num], */
   /*            tree->rates->cur_l[a->num], */
   /*            b == tree->e_root); fflush(NULL); */
@@ -11726,7 +11729,7 @@ void Random_Walk_Along_Tree_On_Radius(t_node *a, t_node *d, t_edge *b, phydbl *r
   /*            d->num, */
   /*            *radius, */
   /*            b->l->v, */
-  /*            FABS(tree->rates->nd_t[a->num] - tree->rates->nd_t[d->num]) * tree->rates->clock_r * tree->rates->br_r[a->num], */
+  /*            FABS(tree->times->nd_t[a->num] - tree->times->nd_t[d->num]) * tree->rates->clock_r * tree->rates->br_r[a->num], */
   /*            tree->rates->cur_l[d->num], */
   /*            tree->rates->cur_l[a->num], */
   /*            b == tree->e_root); fflush(NULL); */
@@ -11744,8 +11747,8 @@ void Random_Walk_Along_Tree_On_Radius(t_node *a, t_node *d, t_edge *b, phydbl *r
   if(*radius < 0.0)
     {
       *target_edge = b;
-      ta = tree->rates->nd_t[a->num];
-      td = tree->rates->nd_t[d->num];
+      ta = tree->times->nd_t[a->num];
+      td = tree->times->nd_t[d->num];
 
       if(b != tree->e_root)
         {
@@ -11797,7 +11800,7 @@ void Random_Walk_Along_Tree_On_Radius(t_node *a, t_node *d, t_edge *b, phydbl *r
         }
       else
         {
-          phydbl t_root = tree->rates->nd_t[tree->n_root->num];
+          phydbl t_root = tree->times->nd_t[tree->n_root->num];
           
           // target falls on edge below root leading to node a
           if(delta < tree->rates->cur_l[a->num])
@@ -11814,8 +11817,8 @@ void Random_Walk_Along_Tree_On_Radius(t_node *a, t_node *d, t_edge *b, phydbl *r
               if(u < .5)
                 {
                   // target falls on edge below root leading to node d
-                  /* *target_time = tree->rates->nd_t[tree->n_root->num] + (delta - tree->rates->cur_l[a->num])/(tree->rates->clock_r * tree->rates->br_r[d->num]); */
-                  *target_time = tree->rates->nd_t[tree->n_root->num] + (delta - tree->rates->cur_l[a->num])/(tree->rates->cur_l[d->num] / fabs(t_root-td));
+                  /* *target_time = tree->times->nd_t[tree->n_root->num] + (delta - tree->rates->cur_l[a->num])/(tree->rates->clock_r * tree->rates->br_r[d->num]); */
+                  *target_time = tree->times->nd_t[tree->n_root->num] + (delta - tree->rates->cur_l[a->num])/(tree->rates->cur_l[d->num] / fabs(t_root-td));
                   *target_nd = d;
                   /* printf("\nq %G %G", */
                   /*        tree->rates->clock_r * tree->rates->br_r[d->num], */
@@ -11825,7 +11828,7 @@ void Random_Walk_Along_Tree_On_Radius(t_node *a, t_node *d, t_edge *b, phydbl *r
               else
                 {
                   // target falls above root
-                  *target_time = tree->rates->nd_t[tree->n_root->num] - (delta - tree->rates->cur_l[a->num])/tree->rates->clock_r;
+                  *target_time = tree->times->nd_t[tree->n_root->num] - (delta - tree->rates->cur_l[a->num])/tree->rates->clock_r;
                   *target_nd = tree->n_root;                  
                   /* PhyML_Fprintf(stderr,"\n>> ta: %f td: %f new_time: %f delta: %f c: %f",ta,td,*target_time,delta,tree->rates->clock_r); */
                 }
@@ -12449,14 +12452,14 @@ void  Inflate_Times_To_Get_Reasonnable_Edge_Lengths(phydbl min_l, t_tree *tree)
   Post_Inflate_Times_To_Get_Reasonnable_Edge_Lengths(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],min_l,tree);
   Post_Inflate_Times_To_Get_Reasonnable_Edge_Lengths(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],min_l,tree);
 
-  l1 = (tree->rates->nd_t[tree->n_root->v[1]->num] - tree->rates->nd_t[tree->n_root->num]) * tree->rates->clock_r;
-  l2 = (tree->rates->nd_t[tree->n_root->v[2]->num] - tree->rates->nd_t[tree->n_root->num]) * tree->rates->clock_r;
+  l1 = (tree->times->nd_t[tree->n_root->v[1]->num] - tree->times->nd_t[tree->n_root->num]) * tree->rates->clock_r;
+  l2 = (tree->times->nd_t[tree->n_root->v[2]->num] - tree->times->nd_t[tree->n_root->num]) * tree->rates->clock_r;
   
   if(MIN(l1,l2) < min_l)
     {
-      tree->rates->nd_t[tree->n_root->num] = -(min_l / tree->rates->clock_r -
-                                               MIN(tree->rates->nd_t[tree->n_root->v[1]->num],
-                                                   tree->rates->nd_t[tree->n_root->v[2]->num]));
+      tree->times->nd_t[tree->n_root->num] = -(min_l / tree->rates->clock_r -
+                                               MIN(tree->times->nd_t[tree->n_root->v[1]->num],
+                                                   tree->times->nd_t[tree->n_root->v[2]->num]));
     }
 }
 
@@ -12485,12 +12488,12 @@ void Post_Inflate_Times_To_Get_Reasonnable_Edge_Lengths(t_node *a, t_node *d, t_
             }
         }
 
-      l1 = (tree->rates->nd_t[d->v[dir1]->num] - tree->rates->nd_t[d->num]) * tree->rates->clock_r;
-      l2 = (tree->rates->nd_t[d->v[dir2]->num] - tree->rates->nd_t[d->num]) * tree->rates->clock_r;
+      l1 = (tree->times->nd_t[d->v[dir1]->num] - tree->times->nd_t[d->num]) * tree->rates->clock_r;
+      l2 = (tree->times->nd_t[d->v[dir2]->num] - tree->times->nd_t[d->num]) * tree->rates->clock_r;
 
       if(MIN(l1,l2) < min_l)
         {
-          tree->rates->nd_t[d->num] = -(min_l / tree->rates->clock_r - MIN(tree->rates->nd_t[d->v[dir1]->num],tree->rates->nd_t[d->v[dir2]->num]));
+          tree->times->nd_t[d->num] = -(min_l / tree->rates->clock_r - MIN(tree->times->nd_t[d->v[dir1]->num],tree->times->nd_t[d->v[dir2]->num]));
         }
       
     }

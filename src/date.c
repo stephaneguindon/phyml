@@ -46,6 +46,9 @@ void DATE_XML(char *xml_filename)
   mixt_tree->rates = RATES_Make_Rate_Struct(mixt_tree->n_otu);
   RATES_Init_Rate_Struct(mixt_tree->rates,NULL,mixt_tree->n_otu);
 
+  mixt_tree->times = TIMES_Make_Time_Struct(mixt_tree->n_otu);
+  TIMES_Init_Time_Struct(mixt_tree->times,NULL,mixt_tree->n_otu);
+
   tree = mixt_tree;
   do
     {
@@ -276,6 +279,8 @@ void DATE_XML(char *xml_filename)
   // Cleaning up...
   RATES_Free_Rates(mixt_tree->rates);
   RATES_Free_Rates(mixt_tree->extra_tree->rates);
+  TIMES_Free_Times(mixt_tree->times);
+  TIMES_Free_Times(mixt_tree->extra_tree->times);
   MCMC_Free_MCMC(mixt_tree->mcmc);
   MCMC_Free_MCMC(mixt_tree->extra_tree->mcmc);
   Free_Mmod(mixt_tree->mmod);
@@ -329,15 +334,15 @@ void DATE_Update_T_Prior_MinMax(t_tree *tree)
   
   for(i=0;i<2*tree->n_otu-1;++i) // All nodes 
     {
-      tree->rates->t_prior_max[i] = +INFINITY;
-      tree->rates->t_prior_min[i] = -INFINITY;
+      tree->times->t_prior_max[i] = +INFINITY;
+      tree->times->t_prior_min[i] = -INFINITY;
 
       if(tree->a_nodes[i]->n_cal > 0) // Primary calibration found on that node
         {
           for(j=0;j<tree->a_nodes[i]->n_cal;++j)
             {
-              tree->rates->t_prior_max[i] = MIN(tree->rates->t_prior_max[i],tree->a_nodes[i]->cal[j]->upper);
-              tree->rates->t_prior_min[i] = MAX(tree->rates->t_prior_min[i],tree->a_nodes[i]->cal[j]->lower);
+              tree->times->t_prior_max[i] = MIN(tree->times->t_prior_max[i],tree->a_nodes[i]->cal[j]->upper);
+              tree->times->t_prior_min[i] = MAX(tree->times->t_prior_min[i],tree->a_nodes[i]->cal[j]->lower);
             }         
         }
     }
@@ -355,9 +360,9 @@ void DATE_Assign_Primary_Calibration(t_tree *tree)
   clade = NULL;
   cal  = NULL;
   
-  for(i=0;i<tree->rates->n_cal;++i)
+  for(i=0;i<tree->times->n_cal;++i)
     {
-      cal = tree->rates->a_cal[i];
+      cal = tree->times->a_cal[i];
       if(cal->clade_list != NULL)
         {
           clade = cal->clade_list[cal->current_clade_idx];
@@ -372,9 +377,9 @@ void DATE_Assign_Primary_Calibration(t_tree *tree)
       tree->a_nodes[i]->n_cal  = 0;
     }
   
-  for(i=0;i<tree->rates->n_cal;++i)
+  for(i=0;i<tree->times->n_cal;++i)
     {
-      cal = tree->rates->a_cal[i];
+      cal = tree->times->a_cal[i];
 
       if(cal->clade_list != NULL)
         {
@@ -387,7 +392,7 @@ void DATE_Assign_Primary_Calibration(t_tree *tree)
           clade->target_nd = tree->a_nodes[node_num];
       
           idx = tree->a_nodes[node_num]->n_cal;
-          tree->a_nodes[node_num]->cal[idx] = tree->rates->a_cal[i];
+          tree->a_nodes[node_num]->cal[idx] = tree->times->a_cal[i];
           tree->a_nodes[node_num]->n_cal++;
       
 
@@ -424,8 +429,8 @@ phydbl *DATE_Splitted_Calibration(t_tree *tree)
     {
       if(tree->a_nodes[i] != tree->n_root)
         {
-          minmax[len]   = MAX(tree->rates->t_prior_min[i],tree->rates->nd_t[tree->n_root->num]);
-          minmax[len+1] = tree->rates->t_prior_max[i];        
+          minmax[len]   = MAX(tree->times->t_prior_min[i],tree->times->nd_t[tree->n_root->num]);
+          minmax[len+1] = tree->times->t_prior_max[i];        
           len+=2;
         }
     }
@@ -509,7 +514,7 @@ phydbl DATE_J_Sum_Product(t_tree *tree)
     {
       prod = 1.0;
       fact = 1;
-      ans = DATE_J_Sum_Product_Pre(tree->a_nodes[tree->rates->t_rank[rk]], // Oldest node after root (as rk=1)
+      ans = DATE_J_Sum_Product_Pre(tree->a_nodes[tree->times->t_rank[rk]], // Oldest node after root (as rk=1)
                                    idx,
                                    -1,
                                    prod,fact,&total,splitted_cal,rk,tree);
@@ -543,8 +548,8 @@ int DATE_J_Sum_Product_Pre(t_node *d, int split_idx_d, int split_idx_a, phydbl p
         int local_ans;
 
         // Calculate J for this time interval
-        prod *= DATE_J(tree->rates->birth_rate, 
-                       tree->rates->death_rate,
+        prod *= DATE_J(tree->times->birth_rate, 
+                       tree->times->death_rate,
                        FABS(splitted_cal[split_idx_d+1]),
                        FABS(splitted_cal[split_idx_d]));
         
@@ -556,7 +561,7 @@ int DATE_J_Sum_Product_Pre(t_node *d, int split_idx_d, int split_idx_a, phydbl p
         
         prod /= fact;
                 
-        if(tree->rates->t_rank[tree->n_otu-2] == d->num) // Youngest internal node 
+        if(tree->times->t_rank[tree->n_otu-2] == d->num) // Youngest internal node 
           {
             (*total) += prod;
             return 0;
@@ -565,7 +570,7 @@ int DATE_J_Sum_Product_Pre(t_node *d, int split_idx_d, int split_idx_a, phydbl p
         idx = split_idx_d;
         do
           {
-            local_ans = DATE_J_Sum_Product_Pre(tree->a_nodes[tree->rates->t_rank[rk+1]],
+            local_ans = DATE_J_Sum_Product_Pre(tree->a_nodes[tree->times->t_rank[rk+1]],
                                                idx,
                                                split_idx_d,
                                                prod,fact,total,splitted_cal,rk+1,tree);
@@ -604,7 +609,7 @@ int DATE_Is_Split_Accessible(t_node *d, int which, phydbl *splitted_cal, t_tree 
 
   assert(d->tax == NO);
 
-  eps = FABS(tree->rates->t_prior_min[d->num]) / 1.E+6;
+  eps = FABS(tree->times->t_prior_min[d->num]) / 1.E+6;
 
   assert(eps > MDBL_MIN);
 
@@ -612,20 +617,20 @@ int DATE_Is_Split_Accessible(t_node *d, int which, phydbl *splitted_cal, t_tree 
   if(Are_Equal(splitted_cal[which],0.0,eps) && Are_Equal(splitted_cal[which+1],0.0,eps)) return +1;
 
 
-  if(Are_Equal(tree->rates->t_prior_min[d->num],splitted_cal[which],eps)   ||
-     Are_Equal(tree->rates->t_prior_max[d->num],splitted_cal[which+1],eps) ||
-     (tree->rates->t_prior_min[d->num] < splitted_cal[which] && 
-      tree->rates->t_prior_max[d->num] > splitted_cal[which+1]))                   return  0; // splitted interval is within [t_prior_min,t_prior_max]
-  else if(Are_Equal(tree->rates->t_prior_max[d->num],splitted_cal[which],eps) ||
-          splitted_cal[which] > tree->rates->t_prior_max[d->num])                  return +1; // splitted interval is younger than [t_prior_min,t_prior_max]
-  else if(Are_Equal(tree->rates->t_prior_min[d->num],splitted_cal[which+1],eps) ||
-          splitted_cal[which+1] < tree->rates->t_prior_min[d->num])                return -1; // splitted interval is older than [t_prior_min,t_prior_max]
+  if(Are_Equal(tree->times->t_prior_min[d->num],splitted_cal[which],eps)   ||
+     Are_Equal(tree->times->t_prior_max[d->num],splitted_cal[which+1],eps) ||
+     (tree->times->t_prior_min[d->num] < splitted_cal[which] && 
+      tree->times->t_prior_max[d->num] > splitted_cal[which+1]))                   return  0; // splitted interval is within [t_prior_min,t_prior_max]
+  else if(Are_Equal(tree->times->t_prior_max[d->num],splitted_cal[which],eps) ||
+          splitted_cal[which] > tree->times->t_prior_max[d->num])                  return +1; // splitted interval is younger than [t_prior_min,t_prior_max]
+  else if(Are_Equal(tree->times->t_prior_min[d->num],splitted_cal[which+1],eps) ||
+          splitted_cal[which+1] < tree->times->t_prior_min[d->num])                return -1; // splitted interval is older than [t_prior_min,t_prior_max]
   else
     {
       PhyML_Printf("\n. d->num: %d d->tax: %d",d->num,d->tax);
       PhyML_Printf("\n. t_prior_min: %f t_prior_max: %f",
-                   tree->rates->t_prior_min[d->num],
-                   tree->rates->t_prior_max[d->num]);
+                   tree->times->t_prior_min[d->num],
+                   tree->times->t_prior_max[d->num]);
       PhyML_Printf("\n. splitted_cal_min: %f splitted_cal_max: %f",
                    splitted_cal[which],
                    splitted_cal[which+1]);      
@@ -692,14 +697,14 @@ int DATE_Check_Time_Constraints(t_tree *tree)
     {
       if(tree->a_nodes[i]->tax == NO)
         {
-          if(tree->rates->nd_t[i] > tree->rates->t_prior_max[i] ||
-             tree->rates->nd_t[i] < tree->rates->t_prior_min[i])
+          if(tree->times->nd_t[i] > tree->times->t_prior_max[i] ||
+             tree->times->nd_t[i] < tree->times->t_prior_min[i])
             {
               /* PhyML_Printf("\n!!! Node %d t: %f min:%f max:%f", */
               /*              i, */
-              /*              tree->rates->nd_t[i], */
-              /*              tree->rates->t_prior_min[i], */
-              /*              tree->rates->t_prior_max[i]); */
+              /*              tree->times->nd_t[i], */
+              /*              tree->times->t_prior_min[i], */
+              /*              tree->times->t_prior_max[i]); */
               return 0;
             }
         }
@@ -727,7 +732,7 @@ phydbl *DATE_MCMC(t_tree *tree)
 
   if(tree->io->mutmap == YES) Make_MutMap(tree);
   
-  TIMES_Randomize_Tree_With_Time_Constraints(tree->rates->a_cal[0],tree);
+  TIMES_Randomize_Tree_With_Time_Constraints(tree->times->a_cal[0],tree);
   MIXT_Propagate_Tree_Update(tree);
 
   
@@ -789,24 +794,30 @@ phydbl *DATE_MCMC(t_tree *tree)
   PhyML_Printf("\n. Ignore sequences: %s",tree->eval_alnL == YES ? "no" : "yes");
   PhyML_Printf("\n. Model of variation of rates across lineages: %s",tree->rates->model_name);
   PhyML_Printf("\n. log(Pr(Seq|Tree)) = %f",tree->c_lnL);
-  PhyML_Printf("\n. log(Pr(Tree)) = %f",tree->rates->c_lnL_times);
+  PhyML_Printf("\n. log(Pr(Tree)) = %f",tree->times->c_lnL_times);
     
     
   tree->extra_tree = Make_Tree_From_Scratch(tree->n_otu,tree->data);
   tree->extra_tree->mod = tree->mod;
   Copy_Tree(tree,tree->extra_tree);
+
   tree->extra_tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
   RATES_Init_Rate_Struct(tree->extra_tree->rates,NULL,tree->n_otu);
   RATES_Copy_Rate_Struct(tree->rates,tree->extra_tree->rates,tree->n_otu);
   tree->extra_tree->rates->model = LOGNORMAL;
+
+  tree->extra_tree->times = TIMES_Make_Time_Struct(tree->n_otu);
+  TIMES_Init_Time_Struct(tree->extra_tree->times,NULL,tree->n_otu);
+  TIMES_Copy_Time_Struct(tree->times,tree->extra_tree->times,tree->n_otu);
+
   RATES_Duplicate_Calib_Struct(tree,tree->extra_tree);
   MIXT_Chain_Cal(tree->extra_tree);  
   DATE_Assign_Primary_Calibration(tree->extra_tree);
-  TIMES_Randomize_Tree_With_Time_Constraints(tree->extra_tree->rates->a_cal[0],tree->extra_tree);
+  TIMES_Randomize_Tree_With_Time_Constraints(tree->extra_tree->times->a_cal[0],tree->extra_tree);
   
   
   TIMES_Lk_Times(NO,tree->extra_tree);
-  PhyML_Printf("\n. log(Pr(extra tree)) = %f",tree->extra_tree->rates->c_lnL_times);
+  PhyML_Printf("\n. log(Pr(extra tree)) = %f",tree->extra_tree->times->c_lnL_times);
   mcmc = MCMC_Make_MCMC_Struct();
   tree->extra_tree->mcmc = mcmc;
   MCMC_Init_MCMC_Struct(NULL,NULL,mcmc);
@@ -828,9 +839,9 @@ phydbl *DATE_MCMC(t_tree *tree)
   for(i=0;i<tree->mod->ras->n_catg;i++) PhyML_Fprintf(fp_stats,"pr%d\t",i);
 
 
-  for(i=0;i<tree->rates->n_cal;++i)
+  for(i=0;i<tree->times->n_cal;++i)
     {
-      t_cal *cal = tree->rates->a_cal[i];
+      t_cal *cal = tree->times->a_cal[i];
       for(j=0;j<cal->clade_list_size;++j)
         {
           t_clad *clade = cal->clade_list[j];
@@ -838,9 +849,9 @@ phydbl *DATE_MCMC(t_tree *tree)
         }
     }
 
-  for(i=0;i<tree->rates->n_cal;++i)
+  for(i=0;i<tree->times->n_cal;++i)
     {
-      t_cal *cal = tree->rates->a_cal[i];
+      t_cal *cal = tree->times->a_cal[i];
       PhyML_Fprintf(fp_stats,"clade(calib:%s)\t",cal->id);
     }
 
@@ -961,10 +972,10 @@ phydbl *DATE_MCMC(t_tree *tree)
         }
       
       
-      if(!(tree->rates->c_lnL_times > UNLIKELY))
+      if(!(tree->times->c_lnL_times > UNLIKELY))
         {
           PhyML_Fprintf(stderr,"\n. move: %s",tree->mcmc->move_name[move]);
-          PhyML_Fprintf(stderr,"\n. glnL=%f",tree->rates->c_lnL_times);
+          PhyML_Fprintf(stderr,"\n. glnL=%f",tree->times->c_lnL_times);
           assert(FALSE);
         }
 
@@ -975,7 +986,7 @@ phydbl *DATE_MCMC(t_tree *tree)
           phydbl mean_r,post;
 
           mean_r = RATES_Average_Substitution_Rate(tree);
-          post = Get_Lk(tree) + tree->rates->c_lnL_times + tree->rates->c_lnL_rates;
+          post = Get_Lk(tree) + tree->times->c_lnL_times + tree->rates->c_lnL_rates;
 
           if(tree->mcmc->run < adjust_len) PhyML_Printf("\nx");
           else PhyML_Printf("\n.");
@@ -983,9 +994,9 @@ phydbl *DATE_MCMC(t_tree *tree)
                        tree->mcmc->run,
                        post,
                        Get_Lk(tree),
-                       tree->rates->c_lnL_times,
+                       tree->times->c_lnL_times,
                        tree->rates->c_lnL_rates,
-                       fabs(tree->rates->nd_t[tree->n_root->num]),                       
+                       fabs(tree->times->nd_t[tree->n_root->num]),                       
                        (int)time(NULL) - t_beg,
                        mean_r,
                        tree->mcmc->move_name[move]);
@@ -996,18 +1007,18 @@ phydbl *DATE_MCMC(t_tree *tree)
           phydbl mean_r,post;
           
           mean_r = RATES_Average_Substitution_Rate(tree);
-          post = Get_Lk(tree) + tree->rates->c_lnL_times + tree->rates->c_lnL_rates;
+          post = Get_Lk(tree) + tree->times->c_lnL_times + tree->rates->c_lnL_rates;
           
           PhyML_Fprintf(fp_stats,"\n%6d\t%9.1f\t%9.1f\t%9.1f\t%9.1f\t%12G\t%12G\t%12G\t%12G\t%12G\t%12G\t",
                         tree->mcmc->run,
                         post,
                         Get_Lk(tree),
-                        tree->rates->c_lnL_times,
+                        tree->times->c_lnL_times,
                         tree->rates->c_lnL_rates,
-                        tree->rates->birth_rate,
-                        tree->rates->death_rate,
+                        tree->times->birth_rate,
+                        tree->times->death_rate,
                         mean_r,
-                        fabs(tree->rates->nd_t[tree->n_root->num]),
+                        fabs(tree->times->nd_t[tree->n_root->num]),
                         tree->next->mod->kappa->v,
                         tree->rates->nu);
           
@@ -1015,19 +1026,19 @@ phydbl *DATE_MCMC(t_tree *tree)
           for(i=0;i<tree->mod->ras->n_catg;i++) PhyML_Fprintf(fp_stats,"%G\t",tree->mod->ras->gamma_r_proba->v[i]);
 
 
-          for(i=0;i<tree->rates->n_cal;i++)
+          for(i=0;i<tree->times->n_cal;i++)
             {
-              t_cal *cal = tree->rates->a_cal[i];
+              t_cal *cal = tree->times->a_cal[i];
               for(j=0;j<cal->clade_list_size;++j)
                 {
                   t_clad *clade = cal->clade_list[j];
-                  PhyML_Fprintf(fp_stats,"%G\t",fabs(tree->rates->nd_t[clade->target_nd->num]));
+                  PhyML_Fprintf(fp_stats,"%G\t",fabs(tree->times->nd_t[clade->target_nd->num]));
                 }
             }
           
-          for(i=0;i<tree->rates->n_cal;++i)
+          for(i=0;i<tree->times->n_cal;++i)
             {
-              t_cal *cal = tree->rates->a_cal[i];
+              t_cal *cal = tree->times->a_cal[i];
               PhyML_Fprintf(fp_stats,"%d\t",cal->current_clade_idx);
               /* PhyML_Fprintf(fp_stats,"%s\t",cal->clade_list[cal->current_clade_idx]->id); */
             }
@@ -1039,7 +1050,7 @@ phydbl *DATE_MCMC(t_tree *tree)
           else
             for(i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"%G\t",tree->rates->nd_r[i]);
             
-          for(i=0;i<2*tree->n_otu-1;++i) if(tree->a_nodes[i]->tax == NO) PhyML_Fprintf(fp_stats,"%G\t",fabs(tree->rates->nd_t[i]));
+          for(i=0;i<2*tree->n_otu-1;++i) if(tree->a_nodes[i]->tax == NO) PhyML_Fprintf(fp_stats,"%G\t",fabs(tree->times->nd_t[i]));
 
           PhyML_Fprintf(fp_stats,"%G\t",tree->mcmc->acc_rate[tree->mcmc->num_move_times_and_rates_root]);
           PhyML_Fprintf(fp_stats,"%G\t",tree->mcmc->tune_move[tree->mcmc->num_move_times_and_rates_root]);
@@ -1108,7 +1119,7 @@ phydbl *DATE_MCMC(t_tree *tree)
 // Update the list of nodes that are younger than lim
 void DATE_List_Of_Nodes_Younger_Than(t_node *a, t_node *d, phydbl lim, t_ll **list, t_tree *tree)
 {
-  if(tree->rates->nd_t[d->num] > lim) Push_Bottom_Linked_List(d,list,YES);
+  if(tree->times->nd_t[d->num] > lim) Push_Bottom_Linked_List(d,list,YES);
   
   if(d->tax == YES) return;
   else
@@ -1135,7 +1146,7 @@ void DATE_List_Of_Nodes_Younger_Than(t_node *a, t_node *d, phydbl lim, t_ll **li
 // not younger than lim
 void DATE_List_Of_Nodes_And_Ancestors_Younger_Than(t_node *a, t_node *d, phydbl lim, t_ll **list, t_tree *tree)
 {
-  if(tree->rates->nd_t[d->num] > lim && a != NULL && tree->rates->nd_t[a->num] > lim) Push_Bottom_Linked_List(d,list,YES);
+  if(tree->times->nd_t[d->num] > lim && a != NULL && tree->times->nd_t[a->num] > lim) Push_Bottom_Linked_List(d,list,YES);
   
   if(d->tax == YES) return;
   else
@@ -1191,10 +1202,10 @@ t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, phydbl *
       n = prune;
       while(n)
         {
-          for(i=0;i<tree->rates->n_cal;++i)
+          for(i=0;i<tree->times->n_cal;++i)
             {
               // That node is the LCA of calibration a_cal[i]
-              cal = tree->rates->a_cal[i];
+              cal = tree->times->a_cal[i];
               clade = cal->clade_list[cal->current_clade_idx];
               
               if(n == clade->target_nd)
@@ -1220,8 +1231,8 @@ t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, phydbl *
 
                   
                   // Maximum of the lower bounds for calibration intervals
-                  /* if(is_clade_affected == YES) *t_min = MAX(*t_min,tree->rates->a_cal[i]->lower); */
-                  if(is_clade_affected == YES) *t_min = MAX(*t_min,tree->rates->t_prior_min[n->num]);
+                  /* if(is_clade_affected == YES) *t_min = MAX(*t_min,tree->times->a_cal[i]->lower); */
+                  if(is_clade_affected == YES) *t_min = MAX(*t_min,tree->times->t_prior_min[n->num]);
                 }
             }
           n = n->anc;
@@ -1231,7 +1242,7 @@ t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, phydbl *
   // Find the oldest internal node within intervals defined by
   // calibrations affected by the pruning.
   n = prune_daughter;
-  while(n->anc && !(tree->rates->nd_t[n->anc->num] < *t_min))
+  while(n->anc && !(tree->times->nd_t[n->anc->num] < *t_min))
     {
       n = n->anc;
       assert(n);
@@ -1240,7 +1251,7 @@ t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, phydbl *
 
   if(verbose)
     {
-      PhyML_Printf("\n. Apical: %d @ time %f min: %f",n->num,tree->rates->nd_t[n->num],*t_min);
+      PhyML_Printf("\n. Apical: %d @ time %f min: %f",n->num,tree->times->nd_t[n->num],*t_min);
       fflush(NULL);
     }
   
@@ -1256,7 +1267,7 @@ t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, phydbl *
       do
         {
           x = (t_node *)ll->v;
-          PhyML_Printf("\nx Inlist %d @ %f",x->num,tree->rates->nd_t[x->num]);
+          PhyML_Printf("\nx Inlist %d @ %f",x->num,tree->times->nd_t[x->num]);
           ll = ll->next;
         }
       while(ll != NULL);
@@ -1269,9 +1280,9 @@ t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, phydbl *
   out = NULL;
   while(n)
     {
-      for(i=0;i<tree->rates->n_cal;i++)
+      for(i=0;i<tree->times->n_cal;i++)
         {
-          cal = tree->rates->a_cal[i];
+          cal = tree->times->a_cal[i];
           clade = cal->clade_list[cal->current_clade_idx];
 
           if(n->anc && n->anc == clade->target_nd)
@@ -1297,7 +1308,7 @@ t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, phydbl *
                         {
                           DATE_List_Of_Nodes_And_Ancestors_Younger_Than(n->anc,
                                                                         n->anc->v[j],
-                                                                        tree->rates->a_cal[i]->upper,
+                                                                        tree->times->a_cal[i]->upper,
                                                                         &out,
                                                                         tree);
                           break;
@@ -1310,8 +1321,8 @@ t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, phydbl *
     }
 
   // Remove nodes that are `strictly' younger than prune_daughter
-  DATE_List_Of_Nodes_And_Ancestors_Younger_Than(tree->n_root,tree->n_root->v[1],tree->rates->nd_t[prune_daughter->num],&out,tree);
-  DATE_List_Of_Nodes_And_Ancestors_Younger_Than(tree->n_root,tree->n_root->v[2],tree->rates->nd_t[prune_daughter->num],&out,tree);
+  DATE_List_Of_Nodes_And_Ancestors_Younger_Than(tree->n_root,tree->n_root->v[1],tree->times->nd_t[prune_daughter->num],&out,tree);
+  DATE_List_Of_Nodes_And_Ancestors_Younger_Than(tree->n_root,tree->n_root->v[2],tree->times->nd_t[prune_daughter->num],&out,tree);
 
   // Remove nodes that are below prune_daughter (prune_daughter included)
   DATE_List_Of_Nodes_Younger_Than(prune,prune_daughter,-INFINITY,&out,tree);
@@ -1329,7 +1340,7 @@ t_ll *DATE_List_Of_Regraft_Nodes(t_node *prune, t_node *prune_daughter, phydbl *
       do
         {
           t_node *x = (t_node *)ll->v;
-          PhyML_Printf("\nx Outlist %d @ %f",x->num,tree->rates->nd_t[x->num]);
+          PhyML_Printf("\nx Outlist %d @ %f",x->num,tree->times->nd_t[x->num]);
           ll = ll->next;
         }
       while(ll != NULL);
@@ -1383,9 +1394,9 @@ phydbl DATE_Lk_Calib(t_tree *tree)
   t_cal *cal;
 
   lnL = 0.0;
-  for(i=0;i<tree->rates->n_cal;++i)
+  for(i=0;i<tree->times->n_cal;++i)
     {
-      cal = tree->rates->a_cal[i];
+      cal = tree->times->a_cal[i];
       lnL += LOG(cal->alpha_proba_list[cal->current_clade_idx]);
     }
   

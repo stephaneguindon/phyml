@@ -126,8 +126,7 @@ phydbl SLFV_Path_Logdensity(t_ldsk *young, t_ldsk *old, phydbl sd, t_tree *tree)
   mode   = 0.0;
     
   for(i=0;i<tree->mmod->n_dim;i++)
-    {     
-
+    {
       j    = 0;
       ldsk = young->prev;
 
@@ -355,7 +354,7 @@ t_ldsk *SLFV_Generate_Path(t_ldsk *young, t_ldsk *old, phydbl n_evt, phydbl sd, 
   phydbl X,Y,Xp,Yp;
   phydbl slope,inter;
   
-  path        = NULL;
+  path = NULL;
   
   if(n_evt == 0) return(NULL); // path is set to NULL
 
@@ -781,6 +780,7 @@ phydbl SLFV_Lk_Gaussian(t_tree *tree)
   tree->mmod->c_lnL += PHYREX_LnPrior_Radius(tree);
   
   PHYREX_Update_Lindisk_List(tree);
+
   tree->mmod->c_lnL += SLFV_Lk_Gaussian_Core(tree->young_disk,tree);
   
   n_evt = 0;
@@ -1507,7 +1507,7 @@ phydbl SLFV_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_mergers,
                     prob_hit = mmod->mu; 
                     break; 
                   }
-                case SLFV_GAUSSIAN : case BMP :  
+                case SLFV_GAUSSIAN : case RW :  
                   { 
                     prob_hit = log(mmod->mu);
                     for(j=0;j<mmod->n_dim;++j)
@@ -1520,6 +1520,7 @@ phydbl SLFV_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_mergers,
                     break; 
                   }
                 }
+
               
               u = Uni();
               if(!(u > prob_hit)) // disk->ldsk_a[i] is  hit
@@ -1539,7 +1540,7 @@ phydbl SLFV_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_mergers,
                             PHYREX_Runif_Rectangle_Overlap(new_disk->ldsk,new_disk,tree->mmod);
                             break;
                           }
-                        case SLFV_GAUSSIAN : case BMP :
+                        case SLFV_GAUSSIAN : case RW :
                           {
                             PHYREX_Rnorm_Trunc(new_disk->ldsk,new_disk,tree->mmod);
                             for(j=0;j<tree->mmod->n_dim;++j)
@@ -1560,6 +1561,7 @@ phydbl SLFV_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_mergers,
                 {
                   lnL += log(1. - prob_hit);
                 }
+              if(new_disk->ldsk && new_disk->ldsk->n_next == 2 && avoid_multiple_mergers == YES) break;
             }
         }
 
@@ -1621,7 +1623,10 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
   
   tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
   RATES_Init_Rate_Struct(tree->rates,io->rates,tree->n_otu);
-  
+
+  tree->times = TIMES_Make_Time_Struct(tree->n_otu);
+  TIMES_Init_Time_Struct(tree->times,io->times,tree->n_otu);
+
   tree->data      = cdata;
   tree->mod       = mod;
   tree->io        = io;
@@ -1853,7 +1858,10 @@ t_tree *SLFV_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl h
   tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
   io->rates->model = STRICTCLOCK;
   RATES_Init_Rate_Struct(tree->rates,io->rates,tree->n_otu);
-    
+
+  tree->times = TIMES_Make_Time_Struct(tree->n_otu);
+  TIMES_Init_Time_Struct(tree->times,io->times,tree->n_otu);
+  
   tree->data      = cdata;
   tree->mod       = mod;
   tree->io        = io;

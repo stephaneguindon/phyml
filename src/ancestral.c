@@ -381,10 +381,10 @@ void Map_Mutations(t_node *a, t_node *d, int sa, int sd, t_edge *b, int site, in
   
   /* PhyML_Printf("\n. Mutmap: a:%d d:%d ta:%G td:%G cr:%G rr:%G l:%G", */
   /*              a?a->num:-1,d?d->num:-1, */
-  /*              tree->rates->nd_t[a->num], */
-  /*              tree->rates->nd_t[d->num], */
+  /*              tree->times->nd_t[a->num], */
+  /*              tree->times->nd_t[d->num], */
   /*              cr,rr, */
-  /*              fabs(tree->rates->nd_t[a->num]-tree->rates->nd_t[d->num])*cr*rr); */
+  /*              fabs(tree->times->nd_t[a->num]-tree->times->nd_t[d->num])*cr*rr); */
 
   // Matrix of change probabilities
   for(i=0;i<ns;i++)
@@ -461,7 +461,7 @@ void Map_Mutations(t_node *a, t_node *d, int sa, int sd, t_edge *b, int site, in
 #ifdef PHYTIME
           // Transform into time in calendar units
           muttime[(*n_mut)+n_mut_branch-1] /= tree->rates->cur_l[d->num];
-          muttime[(*n_mut)+n_mut_branch-1] *= fabs(tree->rates->nd_t[a->num]-tree->rates->nd_t[d->num]);
+          muttime[(*n_mut)+n_mut_branch-1] *= fabs(tree->times->nd_t[a->num]-tree->times->nd_t[d->num]);
 #endif
 
           tax_idx = -1;

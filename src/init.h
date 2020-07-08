@@ -54,6 +54,7 @@ void XML_Init_Attribute(xml_attr *attr);
 void Init_String(t_string *ts);
 void Init_Efrq(phydbl *b_frq, t_efrq *f);
 void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu);
+void TIMES_Init_Time_Struct(t_time *times, t_time *existing_time, int n_otu);
 void Init_Rmat(t_rmat *rmat);
 void Init_MGF_Bl(t_tree *tree);
 int Init_Qmat_FLU(phydbl *daa, phydbl *pi);
@@ -72,7 +73,7 @@ void Init_Linked_List(t_ll *list);
 void Init_Target_Tip(t_clad *clade, t_tree *tree);
 void Init_NNI_Score(phydbl val, t_edge *b, t_tree *tree);
 void M4_Init_Model(m4 *m4mod, calign *data, t_mod *mod);
-void BMP_Init_Contrasts(int dim_idx, t_tree *tree);
+void RW_Init_Contrasts(int dim_idx, t_tree *tree);
 void PHYREX_Set_Default_Migrep_Mod(t_phyrex_mod *t);
 
 #endif

@@ -612,6 +612,8 @@ void Set_Defaults_Input(option* io)
   MCMC_Init_MCMC_Struct(NULL,io,io->mcmc);
   RATES_Init_Rate_Struct(io->rates,NULL,-1);
   io->rates->model               = LOGNORMAL;
+  TIMES_Init_Time_Struct(io->times,NULL,-1);
+  io->times->model               = COALESCENT;
 }
 
 //////////////////////////////////////////////////////////////
@@ -835,25 +837,13 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
 
   rates->met_within_gibbs = NO;
   rates->c_lnL_rates      = UNLIKELY;
-  rates->c_lnL_times      = UNLIKELY;
-  rates->c_lnL_jps        = UNLIKELY;
   rates->adjust_rates     = 0;
   rates->use_rates        = 1;
   rates->lexp             = 1.E-3;
   rates->norm_fact        = 1.0;
   rates->inflate_var      = 1.0;
-  rates->nd_t_recorded    = NO;
   rates->br_r_recorded    = NO;
 
-  rates->birth_rate       = 1.E-1;
-  rates->birth_rate_min   = 1.E-6;
-  rates->birth_rate_max   = 1.E+0;
-  rates->birth_rate_pivot = 1.E-1;
-
-  rates->death_rate       = 1.E-1;
-  rates->death_rate_min   = 1.E-6;
-  rates->death_rate_max   = 1.E+0;
-  rates->death_rate_pivot = 1.E-1;
 
   rates->max_rate  = 100.0;
   rates->min_rate  = 0.001;
@@ -862,20 +852,10 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
   rates->min_clock     = 1.E-10;
   rates->max_clock     = 1.E+0;
   
-  /* rates->clock_r       = 3.E-4; */
-  /* rates->max_clock     = 1.E-3; */
-  /* rates->min_clock     = 1.E-5; */
-
   rates->nu            = 1.0E-1;
   rates->min_nu        = 0.0;
   rates->max_nu        = 2.0;
   
-  /* rates->max_nu        = 2.0; */
-
-  /* rates->nu            = 1.E-4; */
-  /* rates->max_nu        = 1.E-1; */
-  /* rates->min_nu        = 1.E-5; */
-
   rates->min_dt        = 0.0;
 
   rates->step_rate     = 1.E-4;
@@ -884,11 +864,8 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
 
   rates->update_mean_l = NO;
   rates->update_cov_l  = NO;
-  rates->n_cal         = 0;
 
   rates->p_max         = 0.01;
-
-  rates->true_tree_size = 0.0;
 
   if(n_otu > 0)
     {
@@ -896,8 +873,6 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
       
       for(i=0;i<2*n_otu-2;++i)
         {
-          rates->n_jps[i]  =  -1;
-          rates->t_jps[i]  =  -1;
           rates->mean_r[i] = 1.0;
           rates->mean_l[i] = 0.0;
           rates->cur_l[i]  = 0.01;
@@ -908,31 +883,77 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
           rates->nd_r[i]   = 1.0;
           rates->br_r[i]   = 1.0;
           
-          rates->mean_t[i] = 0.0;
-          rates->nd_t[i]   = 0.0;
-          rates->true_t[i] = 0.0;
+          
+          rates->br_do_updt[i] = YES;
+        }
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void TIMES_Init_Time_Struct(t_time *times, t_time *existing_times, int n_otu)
+{
+  if(existing_times && existing_times->model != -1)
+    {
+      times->model = existing_times->model;
+    }
+  else
+    {
+      times->model = NONE;
+    }
+
+  times->scaled_pop_size  = 1.0;
+  
+  times->c_lnL_times      = UNLIKELY;
+  times->c_lnL_times      = UNLIKELY;
+  times->c_lnL_jps        = UNLIKELY;
+  times->nd_t_recorded    = NO;
+
+  times->birth_rate       = 1.E-1;
+  times->birth_rate_min   = 1.E-6;
+  times->birth_rate_max   = 1.E+0;
+  times->birth_rate_pivot = 1.E-1;
+
+  times->death_rate       = 1.E-1;
+  times->death_rate_min   = 1.E-6;
+  times->death_rate_min   = 1.E+0;
+  times->death_rate_pivot = 1.E-1;
+
+  if(n_otu > 0)
+    {
+      
+      for(int i=0;i<2*n_otu-2;++i)
+        {
+          times->n_jps[i]  =  -1;
+          times->t_jps[i]  =  -1;
+        }
+      
+      for(int i=0;i<2*n_otu-1;++i)
+        {
+          times->mean_t[i] = 0.0;
+          times->nd_t[i]   = 0.0;
+          times->true_t[i] = 0.0;
           if(i < n_otu)
             {
-              rates->t_has_prior[i] = YES;
-              rates->t_prior_max[i] = 0.0;
-              rates->t_prior_min[i] = 0.0;
+              times->t_has_prior[i] = YES;
+              times->t_prior_max[i] = 0.0;
+              times->t_prior_min[i] = 0.0;
             }
           else
             {
-              rates->t_has_prior[i] = NO;
-              rates->t_prior_max[i] =  0.0;
-              rates->t_prior_min[i] = -BIG;
+              times->t_has_prior[i] = NO;
+              times->t_prior_max[i] =  0.0;
+              times->t_prior_min[i] = -BIG;
             }
           
-          rates->br_do_updt[i] = YES;
-          rates->has_survived[i] = NO;
-          
-          rates->t_rank[i] = i;
+          times->has_survived[i] = NO;          
+          times->t_rank[i] = i;
         }
     }
   
-  rates->update_time_norm_const = NO;
-  rates->is_asynchronous = NO;
+  times->update_time_norm_const = NO;
+  times->is_asynchronous = NO;
 }
 
 //////////////////////////////////////////////////////////////
@@ -3459,6 +3480,7 @@ void PHYREX_Init_Migrep_Mod(t_phyrex_mod *t, int n_dim, phydbl min_lat, phydbl m
   t->max_rad           = 1.0*((max_lat-min_lat)+(max_lon-min_lon));
   t->rad               = 0.01*((max_lat-min_lat)+(max_lon-min_lon));
   t->prior_param_rad   = 1./(0.1*((max_lat-min_lat)+(max_lon-min_lon)));
+
 }
 
 //////////////////////////////////////////////////////////////
@@ -3476,12 +3498,12 @@ void PHYREX_Set_Default_Migrep_Mod(t_phyrex_mod *t)
   t->lim_do->lonlat[0]   = 0.0;
   t->lim_do->lonlat[1]   = 0.0;
 
-  t->lbda             = 1.E-2;
+  t->lbda             = 1.E-0;
   t->min_lbda         = 1.E-6;
   t->max_lbda         = 1.E+4;
   t->prior_param_lbda = 1.0;
 
-  t->mu               = 0.400;
+  t->mu               = 0.800;
   t->min_mu           = 0.000;
   t->max_mu           = 1.000;
   t->prior_param_mu   = 1.000;
@@ -3622,8 +3644,8 @@ void Init_Calibration(t_cal *cal)
 void Init_All_Calibration(t_tree *tree)
 {
   int i;
-  assert(tree->rates && tree->rates->a_cal);
-  For(i,2*tree->n_otu-1) Init_Calibration(tree->rates->a_cal[i]);
+  assert(tree->rates && tree->times->a_cal);
+  For(i,2*tree->n_otu-1) Init_Calibration(tree->times->a_cal[i]);
 }
 
 //////////////////////////////////////////////////////////////
@@ -3737,12 +3759,16 @@ void M4_Init_Model(m4 *m4mod, calign *data, t_mod *mod)
 
 // Initialise x values using coordinates at the tip nodes along
 // one dimension (with index dim_idx)
-void BMP_Init_Contrasts(int dim_idx, t_tree *tree)
+void RW_Init_Contrasts(int dim_idx, t_tree *tree)
 {
   for(int i=0;i<tree->n_otu;++i)
     {
       tree->ctrst->x[i] = tree->a_nodes[i]->ldsk->coord->lonlat[dim_idx];
-      tree->ctrst->tprime[i] = tree->rates->nd_t[i];
+    }
+  
+  for(int i=0;i<2*tree->n_otu-1;++i)
+    {
+      tree->ctrst->tprime[i] = tree->times->nd_t[i];
     }
 }
 

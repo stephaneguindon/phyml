@@ -124,6 +124,9 @@ void PhyTime_XML(char *xml_file)
   tree -> rates = RATES_Make_Rate_Struct(io -> n_otu);                                    
   RATES_Init_Rate_Struct(tree -> rates, io -> rates, tree -> n_otu);
 
+  tree -> times = TIMES_Make_Time_Struct(io -> n_otu);                                    
+  TIMES_Init_Time_Struct(tree -> times, io -> times, tree -> n_otu);
+
   //reading seed:
   if(XML_Search_Attribute(n_r, "seed")) io -> r_seed = String_To_Dbl(XML_Search_Attribute(n_r, "seed") -> value);
    
@@ -1088,7 +1091,7 @@ phydbl K_Constant_Prior_Times_Log(t_tree *tree)
 				t_slice_max_f[i], 
 				t_slice_min_f[i], 
 				t_prior_max[i + n_otu], 
-				MAX(t_prior_min[i + n_otu],tree->rates->nd_t[tree->n_root->num]));   
+				MAX(t_prior_min[i + n_otu],tree->times->nd_t[tree->n_root->num]));   
 
        	      /* printf("\n. [START] log(g_i) [%f] \n", log_g_i); */
 
@@ -1237,7 +1240,7 @@ phydbl K_Constant_Prior_Times_Log(t_tree *tree)
 					t_slice_max_f[i], 
 					t_slice_min_f[i], 
 					t_prior_max[i + n_otu], 
-					MAX(t_prior_min[i + n_otu],tree->rates->nd_t[tree->n_root->num]));
+					MAX(t_prior_min[i + n_otu],tree->times->nd_t[tree->n_root->num]));
    
                               /* printf("\n. [START] log(g_i) [%f] \n", log_g_i); */
                               
@@ -1380,7 +1383,7 @@ phydbl K_Constant_Prior_Times_Log(t_tree *tree)
 					t_slice_max_f[i], 
 					t_slice_min_f[i], 
 					t_prior_max[i + n_otu], 
-					MAX(t_prior_min[i + n_otu],tree->rates->nd_t[tree->n_root->num]));   
+					MAX(t_prior_min[i + n_otu],tree->times->nd_t[tree->n_root->num]));   
                               /* printf("\n. [START] log(g_i) [%f] \n", log_g_i); */
                               
                               K_part = exp(K_part + log_g_i + scl_const);
@@ -1531,7 +1534,7 @@ phydbl K_Constant_Prior_Times_Log(t_tree *tree)
 					t_slice_max_f[i], 
 					t_slice_min_f[i], 
 					t_prior_max[i + n_otu], 
-					MAX(t_prior_min[i + n_otu],tree->rates->nd_t[tree->n_root->num]));   
+					MAX(t_prior_min[i + n_otu],tree->times->nd_t[tree->n_root->num]));   
                           /* printf("\n. [START] log(g_i) [%f] \n", log_g_i); */
                           
                           K_part = exp(K_part + log_g_i + scl_const);
@@ -2328,28 +2331,28 @@ void TIMES_Set_All_Node_Priors_S(int *result, t_tree *tree)
   TIMES_Set_All_Node_Priors_Bottom_Up_S(tree->n_root,tree->n_root->v[2], result, tree);
   TIMES_Set_All_Node_Priors_Bottom_Up_S(tree->n_root,tree->n_root->v[1], result, tree);
 
-  tree->rates->t_prior_max[tree->n_root->num] =
-    MIN(tree->rates->t_prior_max[tree->n_root->num],
-        MIN(tree->rates->t_prior_max[tree->n_root->v[2]->num],
-            tree->rates->t_prior_max[tree->n_root->v[1]->num]));
+  tree->times->t_prior_max[tree->n_root->num] =
+    MIN(tree->times->t_prior_max[tree->n_root->num],
+        MIN(tree->times->t_prior_max[tree->n_root->v[2]->num],
+            tree->times->t_prior_max[tree->n_root->v[1]->num]));
 
 
   /* Set all t_prior_min values */
-  if(!tree->rates->t_has_prior[tree->n_root->num])
+  if(!tree->times->t_has_prior[tree->n_root->num])
     {
       min_prior = 1.E+10;
       For(i,2*tree->n_otu-2)
         {
-          if(tree->rates->t_has_prior[i])
+          if(tree->times->t_has_prior[i])
             {
-              if(tree->rates->t_prior_min[i] < min_prior)
-        	min_prior = tree->rates->t_prior_min[i];
+              if(tree->times->t_prior_min[i] < min_prior)
+        	min_prior = tree->times->t_prior_min[i];
             }
         }
-      tree->rates->t_prior_min[tree->n_root->num] = 2.0 * min_prior;
+      tree->times->t_prior_min[tree->n_root->num] = 2.0 * min_prior;
     }
   
-  if(tree->rates->t_prior_min[tree->n_root->num] > 0.0)
+  if(tree->times->t_prior_min[tree->n_root->num] > 0.0)
     {
        *result = FALSE;
     }
@@ -2390,16 +2393,16 @@ void TIMES_Set_All_Node_Priors_Bottom_Up_S(t_node *a, t_node *d, int *result, t_
 	  else    v2 = d->v[i];
 	}
       
-      if(tree->rates->t_has_prior[d->num] == YES)
+      if(tree->times->t_has_prior[d->num] == YES)
 	{
-	  t_sup = MIN(tree->rates->t_prior_max[d->num],
-		      MIN(tree->rates->t_prior_max[v1->num],
-			  tree->rates->t_prior_max[v2->num]));
+	  t_sup = MIN(tree->times->t_prior_max[d->num],
+		      MIN(tree->times->t_prior_max[v1->num],
+			  tree->times->t_prior_max[v2->num]));
 
-	  tree->rates->t_prior_max[d->num] = t_sup;
+	  tree->times->t_prior_max[d->num] = t_sup;
 
 
-	  if(tree->rates->t_prior_max[d->num] < tree->rates->t_prior_min[d->num])
+	  if(tree->times->t_prior_max[d->num] < tree->times->t_prior_min[d->num])
 	    {
 
               *result = FALSE;
@@ -2408,9 +2411,9 @@ void TIMES_Set_All_Node_Priors_Bottom_Up_S(t_node *a, t_node *d, int *result, t_
 	}
       else
 	{
-	  tree->rates->t_prior_max[d->num] = 
-	    MIN(tree->rates->t_prior_max[v1->num],
-		tree->rates->t_prior_max[v2->num]);
+	  tree->times->t_prior_max[d->num] = 
+	    MIN(tree->times->t_prior_max[v1->num],
+		tree->times->t_prior_max[v2->num]);
 	}
     }
 }
@@ -2426,12 +2429,12 @@ void TIMES_Set_All_Node_Priors_Top_Down_S(t_node *a, t_node *d, int *result, t_t
     {
       int i;      
       
-      if(tree->rates->t_has_prior[d->num] == YES)
+      if(tree->times->t_has_prior[d->num] == YES)
 	{
-	  tree->rates->t_prior_min[d->num] = MAX(tree->rates->t_prior_min[d->num],tree->rates->t_prior_min[a->num]);
+	  tree->times->t_prior_min[d->num] = MAX(tree->times->t_prior_min[d->num],tree->times->t_prior_min[a->num]);
 	  
 
-	  if(tree->rates->t_prior_max[d->num] < tree->rates->t_prior_min[d->num])
+	  if(tree->times->t_prior_max[d->num] < tree->times->t_prior_min[d->num])
 	    {
 
               *result = FALSE;
@@ -2440,7 +2443,7 @@ void TIMES_Set_All_Node_Priors_Top_Down_S(t_node *a, t_node *d, int *result, t_t
 	}
       else
 	{
-	  tree->rates->t_prior_min[d->num] = tree->rates->t_prior_min[a->num];
+	  tree->times->t_prior_min[d->num] = tree->times->t_prior_min[a->num];
 	}
             
       for(i=0;i<3;i++)

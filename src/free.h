@@ -69,7 +69,7 @@ void Free_Vect_Int(vect_int *v);
 void Free_Scalar_Dbl(scalar_dbl *v);
 void Free_Scalar_Int(scalar_int *v);
 void Free_Edge_Core(t_edge *b);
-void RATES_Free_Rates(t_rate *rates);
+void Free_Rates(t_rate *rates);
 void Free_Calib(t_cal *cal);
 void Free_Edge_Lk_Left(t_edge *b);
 void Free_Edge_Lk_Rght(t_edge *b);
@@ -97,4 +97,6 @@ void Free_Edge_Length(t_edge *b);
 void Free_Clade(t_clad *this);
 void Free_Label(t_label *lab);
 void Free_Contrasts(t_ctrst *ctrst);
+void TIMES_Free_Times(t_time *times);
+
 #endif

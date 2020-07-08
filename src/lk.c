@@ -2535,7 +2535,7 @@ phydbl Wrap_Lk_Rates(t_edge *b, t_tree *tree, supert_tree *stree)
 phydbl Wrap_Lk_Times(t_edge *b, t_tree *tree, supert_tree *stree)
 {
   TIMES_Lk_Times(NO,tree);
-  return tree->rates->c_lnL_times;
+  return tree->times->c_lnL_times;
 }
 
 //////////////////////////////////////////////////////////////

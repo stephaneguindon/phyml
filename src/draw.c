@@ -184,7 +184,7 @@ void DR_Print_Tree_Postscript_Pre(t_node *a, t_node *d, t_edge *b, int render_na
   
   /* val = tree->rates->mean_r[d->num] / (phydbl)(tree->mcmc->run/tree->mcmc->sample_interval+1.); */
   /* val = tree->rates->mean_r[d->num]; */
-  /* val = tree->rates->has_survived[d->num]; */
+  /* val = tree->times->has_survived[d->num]; */
   /* if(val > 0.5) {R=1.; G=.0; B=0.;} */
   /* val = tree->geo->ldscape[tree->geo->idx_loc[d->num]*tree->geo->n_dim+0] + 2.5; */
   val = tree->geo->coord_loc[tree->geo->idx_loc[d->num]]->lonlat[0] + 2.5;
@@ -245,7 +245,7 @@ void DR_Print_Tree_Postscript_Pre(t_node *a, t_node *d, t_edge *b, int render_na
   /* 		w->ycoord[d->num]); */
 
 
-  if(tree->rates && tree->rates->has_survived[d->num] == YES)
+  if(tree->rates && tree->times->has_survived[d->num] == YES)
     {
       PhyML_Fprintf(fp," /Helvetica findfont 16 scalefont\n");
       PhyML_Fprintf(fp,"setfont\n");

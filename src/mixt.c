@@ -520,10 +520,10 @@ void MIXT_Chain_Cal(t_tree *mixt_tree)
 {
   int i;
 
-  for(i=0;i<mixt_tree->rates->n_cal-1;i++) 
+  for(i=0;i<mixt_tree->times->n_cal-1;i++) 
     {
-      mixt_tree->rates->a_cal[i]->next   = mixt_tree->rates->a_cal[i+1];
-      mixt_tree->rates->a_cal[i+1]->prev = mixt_tree->rates->a_cal[i];
+      mixt_tree->times->a_cal[i]->next   = mixt_tree->times->a_cal[i+1];
+      mixt_tree->times->a_cal[i+1]->prev = mixt_tree->times->a_cal[i];
     }
 }
 
@@ -3473,7 +3473,7 @@ void MIXT_Propagate_Tree_Update(t_tree *mixt_tree)
           tree->a_nodes[i]->v[1] = mixt_tree->a_nodes[i]->v[1] ? tree->a_nodes[mixt_tree->a_nodes[i]->v[1]->num] : NULL;
           tree->a_nodes[i]->v[2] = mixt_tree->a_nodes[i]->v[2] ? tree->a_nodes[mixt_tree->a_nodes[i]->v[2]->num] : NULL;
 
-          if(tree->rates != NULL) tree->rates->nd_t[i] = mixt_tree->rates->nd_t[i];
+          if(tree->times != NULL) tree->times->nd_t[i] = mixt_tree->times->nd_t[i];
         }
 
       Connect_Edges_To_Nodes_Serial(tree);          

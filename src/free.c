@@ -908,7 +908,6 @@ void Free(void *p)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Free_Input(option *io)
 {
   int i;
@@ -916,6 +915,7 @@ void Free_Input(option *io)
   do
     {
       RATES_Free_Rates(io->rates);
+      TIMES_Free_Times(io->times);
       MCMC_Free_MCMC(io->mcmc);
       Free(io->in_align_file);
       Free(io->in_tree_file);
@@ -1221,9 +1221,6 @@ void XML_Free_XML_Ds(t_ds *ds)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
 void MCMC_Free_MCMC(t_mcmc *mcmc)
 {
   int i;
@@ -1251,30 +1248,50 @@ void MCMC_Free_MCMC(t_mcmc *mcmc)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+void TIMES_Free_Times(t_time *times)
+{
+  Free(times->buff_t);
+  Free(times->nd_t);
+  Free(times->true_t);
+  Free(times->t_prior);
+  Free(times->t_mean);
+  Free(times->t_prior_min);
+  Free(times->t_prior_max);
+  Free(times->t_floor);
+  Free(times->t_has_prior);
+  Free(times->t_rank);
+  Free(times->mean_t);  
+  Free(times->t_prior_min_ori);
+  Free(times->t_prior_max_ori);
+  Free(times->times_partial_proba);  
+  Free(times->calib_prob);
+  Free(times->numb_calib_chosen);
+  for(int i=0;i<times->n_cal;i++) Free_Calib(times->a_cal[i]);
+  Free(times->a_cal);
+  Free(times->has_survived);
+  Free(times->n_jps);
+  Free(times->t_jps);
+  Free(times->time_slice_lims);
+  Free(times->n_time_slice_spans);
+  Free(times->curr_slice);
+  Free(times->has_survived);
+  Free(times);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 void RATES_Free_Rates(t_rate *rates)
 {
   if(rates->is_allocated == YES)
     {
-      int i;
       Free(rates->nd_r);
       Free(rates->br_r);
       Free(rates->buff_nd_r);
       Free(rates->buff_br_r);
       Free(rates->true_r);
-      Free(rates->buff_t);
-      Free(rates->nd_t);
-      Free(rates->true_t);
-      Free(rates->t_prior);
-      Free(rates->t_mean);
-      Free(rates->t_prior_min);
-      Free(rates->t_prior_max);
-      Free(rates->t_floor);
-      Free(rates->t_has_prior);
-      Free(rates->t_rank);
       Free(rates->dens);
       Free(rates->triplet);
-      Free(rates->n_jps);
-      Free(rates->t_jps);
       Free(rates->cond_var);
       Free(rates->invcov);
       Free(rates->ml_l);
@@ -1295,26 +1312,12 @@ void RATES_Free_Rates(t_rate *rates)
       Free(rates->cov_l);
       Free(rates->mean_l);
       Free(rates->mean_r);
-      Free(rates->mean_t);
       Free(rates->grad_l);
       Free(rates->reg_coeff);
       Free(rates->br_do_updt);
       Free(rates->cur_gamma_prior_mean);
       Free(rates->cur_gamma_prior_var);
       Free(rates->n_tips_below);
-      Free(rates->time_slice_lims);
-      Free(rates->n_time_slice_spans);
-      Free(rates->curr_slice);
-      Free(rates->has_survived);
-      Free(rates->survival_rank);
-      Free(rates->survival_dur);
-      Free(rates->calib_prob);
-      Free(rates->t_prior_min_ori);
-      Free(rates->t_prior_max_ori);
-      Free(rates->times_partial_proba);
-      Free(rates->numb_calib_chosen);
-      for(i=0;i<rates->n_cal;i++) Free_Calib(rates->a_cal[i]);
-      Free(rates->a_cal);
       Free(rates->model_name);
     }
   Free(rates);

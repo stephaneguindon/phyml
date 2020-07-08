@@ -176,5 +176,6 @@ void MCMC_PHYREX_Prune_Regraft_Local(t_tree *tree);
 void MCMC_PHYREX_Simulate_Backward(t_tree *tree);
 void MCMC_RR(t_tree *mixt_tree);
 void MCMC_PHYREX_Ldsk_Tip_To_Root(t_tree *tree);
+void MCMC_PHYREX_Neff(t_tree *tree);
 
 #endif

@@ -1982,7 +1982,7 @@ void Print_CSeq_Select(FILE *fp, int compressed, calign *cdata, t_tree *tree)
   eps = 1.E-6;
   n_otu = 0;
   for(i=0;i<cdata->n_otu;i++)
-    if(tree->rates->nd_t[i] < tree->rates->time_slice_lims[slice] + eps)
+    if(tree->times->nd_t[i] < tree->times->time_slice_lims[slice] + eps)
       n_otu++;
 
   PhyML_Fprintf(fp,"%d\t%d\n",n_otu,cdata->init_len);
@@ -1991,7 +1991,7 @@ void Print_CSeq_Select(FILE *fp, int compressed, calign *cdata, t_tree *tree)
 
   for(i=0;i<n_otu;i++)
     {
-      if(tree->rates->nd_t[i] < tree->rates->time_slice_lims[slice] + eps)
+      if(tree->times->nd_t[i] < tree->times->time_slice_lims[slice] + eps)
     {
       for(j=0;j<50;j++)
         {
@@ -2055,10 +2055,10 @@ void Print_Node(t_node *a, t_node *d, t_tree *tree)
   PhyML_Printf("Node nums: %3d %3d  (dir:%3d) (a->anc:%3d) (d->anc:%3d) ta:%8.4f td:%8.4f t_min:%6.2f t_max:%6.2f",
                a->num,d->num,dir,a->anc?a->anc->num:(-1),
                d->anc?d->anc->num:(-1),
-               tree->rates?tree->rates->nd_t[a->num]:-1.,
-               tree->rates?tree->rates->nd_t[d->num]:-1.,
-               tree->rates?tree->rates->t_prior_min[a->num]:-1.,
-               tree->rates?tree->rates->t_prior_max[a->num]:-1.);
+               tree->rates?tree->times->nd_t[a->num]:-1.,
+               tree->rates?tree->times->nd_t[d->num]:-1.,
+               tree->rates?tree->times->t_prior_min[a->num]:-1.,
+               tree->rates?tree->times->t_prior_max[a->num]:-1.);
 
   PhyML_Printf(" names = '%10s' '%10s' ; ",a->name,d->name);
   for(i=0;i<3;i++) if(a->v[i] == d)
@@ -3726,13 +3726,13 @@ void Read_Clade_Priors(char *file_name, t_tree *tree)
         }
       else
         {
-          tree->rates->t_has_prior[node_num] = YES;
+          tree->times->t_has_prior[node_num] = YES;
 
-          tree->rates->t_prior_min[node_num] = -MAX(prior_low,prior_up);
-          tree->rates->t_prior_max[node_num] = -MIN(prior_low,prior_up);
+          tree->times->t_prior_min[node_num] = -MAX(prior_low,prior_up);
+          tree->times->t_prior_max[node_num] = -MIN(prior_low,prior_up);
 
           if(fabs(prior_low - prior_up) < 1.E-6 && tree->a_nodes[node_num]->tax == YES)
-            tree->rates->nd_t[node_num] = prior_low;
+            tree->times->nd_t[node_num] = prior_low;
           
           PhyML_Printf("\n");
           PhyML_Printf("\n. [%3d]..................................................................",n_clade_priors);

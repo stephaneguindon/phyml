@@ -2106,7 +2106,7 @@ void Prune_Regraft_Time_Tree(t_tree *tree)
   t_edge *target, *ori_target, *residual,*regraft_edge;
   phydbl regraft_t_min,regraft_t_max;
   
-  times = tree->rates->nd_t;
+  times = tree->times->nd_t;
   
   do
     {
@@ -2120,7 +2120,7 @@ void Prune_Regraft_Time_Tree(t_tree *tree)
           
           cur_lnL_seq  = tree->c_lnL;
           new_lnL_seq  = UNLIKELY;
-          cur_lnL_time = tree->rates->c_lnL_times;
+          cur_lnL_time = tree->times->c_lnL_times;
           new_lnL_time = UNLIKELY;
           
           regraft_edge   = NULL;
@@ -2269,10 +2269,10 @@ void Prune_Regraft_Time_Tree(t_tree *tree)
                                 new_regraft_nd->anc ? new_regraft_nd->anc->num : -1,
                                 new_regraft_nd->anc ? times[new_regraft_nd->anc->num] : +1.,
                                 prune->num,
-                                tree->rates->t_prior_min[prune->num],
-                                tree->rates->t_prior_max[prune->num],
-                                tree->rates->t_prior_min[new_regraft_nd->num],
-                                tree->rates->t_prior_max[new_regraft_nd->num]);
+                                tree->times->t_prior_min[prune->num],
+                                tree->times->t_prior_max[prune->num],
+                                tree->times->t_prior_min[new_regraft_nd->num],
+                                tree->times->t_prior_max[new_regraft_nd->num]);
                   PhyML_Fprintf(stderr,"\n== root: %d %d %d",tree->n_root->num,tree->n_root->v[1]->num,tree->n_root->v[2]->num);
                   Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
                 }
@@ -2305,7 +2305,7 @@ void Prune_Regraft_Time_Tree(t_tree *tree)
                   TIMES_Lk_Times(NO,tree); 
                   
                   
-                  if(!(tree->rates->c_lnL_times > UNLIKELY))
+                  if(!(tree->times->c_lnL_times > UNLIKELY))
                     {
                       printf("\n== time prune: %f",times[prune->num]);
                       printf("\n== time prune_daughter: %f",times[prune_daughter->num]);
@@ -2318,10 +2318,10 @@ void Prune_Regraft_Time_Tree(t_tree *tree)
                       TIMES_Lk_Times(YES,tree); 
                       fflush(NULL);
                     }
-                  assert(tree->rates->c_lnL_times > UNLIKELY);
+                  assert(tree->times->c_lnL_times > UNLIKELY);
                   
                   tree->c_lnL              = cur_lnL_seq;
-                  tree->rates->c_lnL_times = cur_lnL_time;
+                  tree->times->c_lnL_times = cur_lnL_time;
                 }
               else
                 {

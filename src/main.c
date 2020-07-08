@@ -596,8 +596,8 @@ int main(int argc, char **argv)
       PhyML_Printf("\n\t<taxon value=\"%s\"/>",io->data[i]->name);
       PhyML_Printf("\n</clade>");
       PhyML_Printf("\n<calibration id=\"cal%d\">",i+1);
-      PhyML_Printf("\n\t<lower>%d</lower>",year);
-      PhyML_Printf("\n\t<upper>%d</upper>",year);
+      PhyML_Printf("\n\t<lower>%d</lower>",0);
+      PhyML_Printf("\n\t<upper>%d</upper>",0);
       PhyML_Printf("\n\t<appliesto clade.id=\"clad%d\"/>",i+1);
       PhyML_Printf("\n</calibration>");
     }

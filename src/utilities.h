@@ -99,7 +99,8 @@ int TIME;
 
 #define SLFV_GAUSSIAN 0 /* Spatial Lambda-Fleming-Viot model (Gaussian) */
 #define SLFV_UNIFORM 1 /* Spatial Lambda-Fleming-Viot model (Uniform) */
-#define BMP  2 /* Brownian Motion Phylogeography */
+#define RW  2 /* standard Brownian diffusion model in phylogeography */
+#define RRW  3 /* Lemey's relaxed random walk */
 
 #define AC 0
 #define AG 1
@@ -338,6 +339,8 @@ int TIME;
 #define AB        27
 // Amino acid ordering:
 // Ala Arg Asn Asp Cys Gln Glu Gly His Ile Leu Lys Met Phe Pro Ser Thr Trp Tyr Val
+
+#define COALESCENT 0
 
 #define COMPOUND_COR   0
 #define COMPOUND_NOCOR 1
@@ -724,7 +727,8 @@ typedef struct __Tree{
   struct __SPR            **spr_list_all_edge;
   struct __SPR                      *best_spr;
   struct __Tdraw                     *ps_tree; /*! structure for drawing trees in postscript format */
-  struct __T_Rate                       *rates; /*! structure for handling rates of evolution */
+  struct __T_Rate                      *rates; /*! structure for handling rates of evolution */
+  struct __T_Time                      *times; /*! structure for handling node ages */
   struct __Tmcmc                        *mcmc;
   struct __Phylogeo                      *geo;
   struct __Migrep_Model                 *mmod;
@@ -1189,6 +1193,7 @@ typedef struct __Option { /*! mostly used in 'help.c' */
   struct __Option              *prev;
   struct __Tmcmc               *mcmc;
   struct __T_Rate             *rates;
+  struct __T_Time             *times;
   
   int                    interleaved; /*! interleaved or sequential sequence file format ? */
   int                        in_tree; /*! =1 iff a user input tree is used as input */
@@ -1519,21 +1524,9 @@ typedef struct __T_Rate {
   phydbl lexp; /*! Parameter of the exponential distribution that governs the rate at which substitution between rate classes ocur */
   phydbl alpha;
   phydbl less_likely;
-  phydbl birth_rate;
-  phydbl birth_rate_min;
-  phydbl birth_rate_max;
-  phydbl birth_rate_pivot;
-  phydbl death_rate;
-  phydbl death_rate_min;
-  phydbl death_rate_max;
-  phydbl death_rate_pivot;
-  phydbl min_rate;
-  phydbl max_rate;
   phydbl c_lnL1;
   phydbl c_lnL2;
   phydbl c_lnL_rates; /*! Prob(Br len | time stamps, model of rate evolution) */
-  phydbl c_lnL_times; /*! Prob(time stamps) */
-  phydbl c_lnL_jps; /*! Prob(# Jumps | time stamps, rates, model of rate evolution) */
   phydbl clock_r; /*! Mean substitution rate, i.e., 'molecular clock' rate */
   phydbl min_clock;
   phydbl max_clock;
@@ -1549,12 +1542,12 @@ typedef struct __T_Rate {
   phydbl covdet;
   phydbl sum_invalid_areas;
 
+  phydbl min_rate;
+  phydbl max_rate;
 
   phydbl     *nd_r;  /*! Current rates at nodes */
   phydbl     *br_r;  /*! Current rates along edges */
-  phydbl     *nd_t; /*! Current t_node times */
   phydbl     *triplet;
-  phydbl     *true_t; /*! true t_node times (including root node) */
   phydbl     *true_r; /*! true t_edge rates (on rooted tree) */
   phydbl     *buff_t;
   phydbl     *buff_br_r;
@@ -1567,7 +1560,6 @@ typedef struct __T_Rate {
   phydbl     *invcov;
   phydbl     *cov_r;
   phydbl     *mean_r; /*! average values of br_r taken across the sampled values during the MCMC */
-  phydbl     *mean_t; /*! average values of nd_t taken across the sampled values during the MCMC */
   phydbl     *_2n_vect1;
   phydbl     *_2n_vect2;
   phydbl     *_2n_vect3;
@@ -1579,20 +1571,10 @@ typedef struct __T_Rate {
   phydbl     *trip_reg_coeff;
   phydbl     *cond_var;
   phydbl     *reg_coeff;
-  phydbl     *t_prior;
-  phydbl     *t_prior_min;
-  phydbl     *t_prior_max;
-  phydbl     *t_floor;
-  phydbl     *t_mean;
-  int        *t_rank; /* rank of nodes, e.g., tree->nd_a[tree->rates->t_rank[0]] is the oldest node */
   phydbl     *mean_l;
   phydbl     *cov_l;
   phydbl     *grad_l; /* gradient */
   phydbl     inflate_var;
-  phydbl     *time_slice_lims;
-  phydbl     *survival_rank;
-  phydbl     *survival_dur;
-  phydbl     *calib_prob;
 
   int adjust_rates; /*! if = 1, branch rates are adjusted such that a modification of a given t_node time
                does not modify any branch lengths */
@@ -1607,42 +1589,86 @@ typedef struct __T_Rate {
   int update_mean_l;
   int update_cov_l;
 
-  int *n_jps;
-  int *t_jps;
-  int n_time_slices;
-  int *n_time_slice_spans;
-  int *curr_slice;
   int *n_tips_below;
 
-  short int *t_has_prior;
   struct __Node **lca; /*! 2-way table of common ancestral nodes for each pair of nodes */
 
   short int *br_do_updt;
   phydbl *cur_gamma_prior_mean;
   phydbl *cur_gamma_prior_var;
 
-  short int nd_t_recorded;
   short int br_r_recorded;
-
-  int *has_survived;
-
-  struct __Calibration **a_cal; /* array of calibration data */
-  int                    n_cal; /* number of elements in a_cal */
-
-  phydbl     *t_prior_min_ori;
-  phydbl     *t_prior_max_ori;
-  phydbl     *times_partial_proba;
 
   phydbl log_K_cur;
   int cur_comb_numb;
-  int *numb_calib_chosen;
-  int update_time_norm_const;
 
   struct __T_Rate *next;
   struct __T_Rate *prev;
 
-  short int is_asynchronous;
 }t_rate;
+
+/*!********************************************************/
+
+typedef struct __T_Time {
+  phydbl *nd_t; /*! Current t_node times */
+  phydbl *buff_t; /*! Current t_node times */
+  phydbl *true_t; /*! Current t_node times */
+
+  phydbl c_lnL_times; /*! Prob(time stamps) */
+  phydbl c_lnL_jps; /*! Prob(# Jumps | time stamps, rates, model of rate evolution) */
+
+  phydbl scaled_pop_size; // Product of effective population size with length of a generation in calendar time unit
+
+  phydbl birth_rate;
+  phydbl birth_rate_min;
+  phydbl birth_rate_max;
+  phydbl birth_rate_pivot;
+
+  phydbl death_rate;
+  phydbl death_rate_min;
+  phydbl death_rate_max;
+  phydbl death_rate_pivot;
+
+  phydbl *t_prior;
+  phydbl *t_prior_min;
+  phydbl *t_prior_max;
+  phydbl *t_floor;
+  phydbl *t_mean;
+  int    *t_rank; /* rank of nodes, e.g., tree->nd_a[tree->rates->t_rank[0]] is the oldest node */
+  
+  short int nd_t_recorded;
+
+  short int is_asynchronous;
+
+  phydbl *time_slice_lims;
+  phydbl *calib_prob;
+
+  struct __Calibration **a_cal; /* array of calibration data */
+  int n_cal; /* number of elements in a_cal */
+
+  phydbl *t_prior_min_ori;
+  phydbl *t_prior_max_ori;
+  phydbl *times_partial_proba;
+
+  int *has_survived;
+
+  int *n_jps;
+  int *t_jps;
+
+  int *numb_calib_chosen;
+
+  int n_time_slices;
+  int *n_time_slice_spans;
+  int *curr_slice;
+
+  short int *t_has_prior;
+
+  phydbl *mean_t; /*! average values of nd_t taken across the sampled values during the MCMC */
+
+  int model;
+
+  int update_time_norm_const;
+}t_time;
 
 /*!********************************************************/
 
@@ -1709,6 +1735,7 @@ typedef struct __Tmcmc {
   int num_move_phyrex_scale_times;
   int num_move_phyrex_ldscape_lim;
   int num_move_phyrex_sigsq;
+  int num_move_phyrex_neff;
   int num_move_phyrex_sim;
   int num_move_phyrex_traj;
   int num_move_phyrex_indel_disk_serial;
@@ -1945,10 +1972,6 @@ typedef struct __Migrep_Model{
 
   phydbl                         rho; // intensity parameter of the Poisson point processs
   phydbl                gen_cal_time; // duration of one generation in calendar time unit
-
-
-
-  
   
   phydbl                       c_lnL; // current value of log-likelihood 
   phydbl              c_ln_prior_rad; // current value of log prior for the prior on radius

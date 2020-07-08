@@ -17,7 +17,7 @@ the GNU public licence. See http://www.opensource.org for details.
 
 #include "utilities.h"
 
-int  TIMES_main(int argc, char **argv);
+int  TIMES_Main(int argc, char **argv);
 void TIMES_Bl_From_T_Post(t_node *a, t_node *d, t_edge *b, t_tree *tree);
 void TIMES_Bl_From_T(t_tree *tree);
 void TIMES_Optimize_Node_Times_Serie(t_node *a, t_node *d, t_tree *tree);
@@ -86,5 +86,8 @@ void TIMES_Time_To_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree);
 void TIMES_Bl_To_Times_Post(t_node *a, t_node *d, t_edge *b, t_tree *tree);
 void TIMES_Bl_To_Times(t_tree *tree);
 phydbl TIMES_Tree_Length(t_tree *tree);
+void TIMES_Copy_Time_Struct(t_time *from, t_time *to, int n_otu);
+phydbl TIMES_Lk_Coalescent(t_tree *tree);
+phydbl TIMES_Wrap_Lk_Coalescent(t_edge *b, t_tree *tree, supert_tree *stree);
 
 #endif

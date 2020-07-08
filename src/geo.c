@@ -58,8 +58,13 @@ int GEO_Estimate(int argc, char **argv)
 
   Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
   Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);		
+
   tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
   RATES_Init_Rate_Struct(tree->rates,NULL,tree->n_otu);
+
+  tree->times = TIMES_Make_Time_Struct(tree->n_otu);
+  TIMES_Init_Time_Struct(tree->times,NULL,tree->n_otu);
+  
   Branch_To_Time(tree);
 
   tree->geo = t;
@@ -213,7 +218,7 @@ int GEO_Simulate_Estimate(int argc, char **argv)
   phydbl scale;
   scale = exp(Rnorm(0,0.2));
   PhyML_Printf("\n. Scale: %f",scale);
-  For(i,2*tree->n_otu-1) tree->rates->nd_t[i] *= scale;
+  For(i,2*tree->n_otu-1) tree->times->nd_t[i] *= scale;
   
 
   phydbl *tree_dist,*geo_dist;
@@ -567,7 +572,7 @@ void GEO_Update_Sorted_Nd(t_geo *t, t_tree *tree)
       swap = NO;
       For(i,2*tree->n_otu-2) 
         {
-          if(tree->rates->nd_t[t->sorted_nd[i+1]->num] < tree->rates->nd_t[t->sorted_nd[i]->num])
+          if(tree->times->nd_t[t->sorted_nd[i+1]->num] < tree->times->nd_t[t->sorted_nd[i]->num])
             {
               buff              = t->sorted_nd[i];
               t->sorted_nd[i]   = t->sorted_nd[i+1];
@@ -703,8 +708,8 @@ phydbl GEO_Lk(t_geo *t, t_tree *tree)
       /* if(i < 2) */
       /*   { */
       /*     printf("\n. t0: %f t1: %f  R: %f tau: %f sigma: %f lbda: %f x1: %f y1: %f x2: %f y2: %f log0: %d loc1: %d rij: %G fij: %G", */
-      /*            tree->rates->nd_t[t->sorted_nd[i-1]->num], */
-      /*            tree->rates->nd_t[t->sorted_nd[i]->num], */
+      /*            tree->times->nd_t[t->sorted_nd[i-1]->num], */
+      /*            tree->times->nd_t[t->sorted_nd[i]->num], */
       /*            R, */
       /*            t->tau,                  */
       /*            t->lbda,                  */
@@ -729,7 +734,7 @@ phydbl GEO_Lk(t_geo *t, t_tree *tree)
       /*   } */
 
       
-      /* printf("\n. %d %d (%d) %f %p %p \n",i,curr_n->num,curr_n->tax,tree->rates->nd_t[curr_n->num],curr_n->v[1],curr_n->v[2]); */
+      /* printf("\n. %d %d (%d) %f %p %p \n",i,curr_n->num,curr_n->tax,tree->times->nd_t[curr_n->num],curr_n->v[1],curr_n->v[2]); */
 
       v1 = v2 = NULL;
       for(j=0;j<3;j++) 
@@ -749,12 +754,12 @@ phydbl GEO_Lk(t_geo *t, t_tree *tree)
       /*        t->ldscape[arr*t->n_dim+0]-t->ldscape[dep*t->n_dim+0], */
       /*        t->ldscape[arr*t->n_dim+1]-t->ldscape[dep*t->n_dim+1]); */
 
-      loglk -= R * FABS(tree->rates->nd_t[curr_n->num] - tree->rates->nd_t[prev_n->num]);
+      loglk -= R * FABS(tree->times->nd_t[curr_n->num] - tree->times->nd_t[prev_n->num]);
       loglk += log(t->r_mat[dep * t->ldscape_sz + arr]);
 
       /* printf("\n <> %d %f %f %d %d v1:%d v2:%d anc:%d %d %d %d", */
       /*        curr_n->num, */
-      /*        R * FABS(tree->rates->nd_t[curr_n->num] - tree->rates->nd_t[prev_n->num]), */
+      /*        R * FABS(tree->times->nd_t[curr_n->num] - tree->times->nd_t[prev_n->num]), */
       /*        log(t->r_mat[dep * t->ldscape_sz + arr]), */
       /*        dep,arr,v1->num,v2->num,curr_n->anc->num,curr_n->v[0]->num,curr_n->v[1]->num,curr_n->v[2]->num); */
 
@@ -906,13 +911,18 @@ t_tree *GEO_Simulate(t_geo *t, int n_otu)
   int swap;
 
   tree = Make_Tree_From_Scratch(n_otu,NULL);
+
   tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
   RATES_Init_Rate_Struct(tree->rates,NULL,tree->n_otu);
+
+  tree->times = TIMES_Make_Time_Struct(tree->n_otu);
+  TIMES_Init_Time_Struct(tree->times,NULL,tree->n_otu);
+
   tree->n_root = tree->a_nodes[2*tree->n_otu-2]; // Set the root node to the last element in the list of nodes
   tree->geo = t;
 
 
-  For(i,2*tree->n_otu-2) tree->rates->nd_t[i] = -1.;
+  For(i,2*tree->n_otu-2) tree->times->nd_t[i] = -1.;
 
   occup = (int *)mCalloc(t->ldscape_sz,sizeof(int));
   
@@ -958,7 +968,7 @@ t_tree *GEO_Simulate(t_geo *t, int n_otu)
       /* printf("\n. [%d] Select node %d (location %d)",n_branching_nodes,branching_nodes[hit]->num,t->idx_loc[branching_nodes[hit]->num]); */
 
       // Set the time for the branching node
-      tree->rates->nd_t[branching_nodes[hit]->num] = time;
+      tree->times->nd_t[branching_nodes[hit]->num] = time;
 
 
       /* printf("\n. Set its time to %f",time); */
@@ -1062,11 +1072,11 @@ t_tree *GEO_Simulate(t_geo *t, int n_otu)
 
 
   // Set the times at the tips
-  For(i,2*tree->n_otu-1) if(tree->rates->nd_t[i] < 0.0) tree->rates->nd_t[i] = time;
+  For(i,2*tree->n_otu-1) if(tree->times->nd_t[i] < 0.0) tree->times->nd_t[i] = time;
   
   // Reverse time scale
-  For(i,2*tree->n_otu-1) tree->rates->nd_t[i] -= time;
-  /* For(i,2*tree->n_otu-1) tree->rates->nd_t[i] = FABS(tree->rates->nd_t[i]); */
+  For(i,2*tree->n_otu-1) tree->times->nd_t[i] -= time;
+  /* For(i,2*tree->n_otu-1) tree->times->nd_t[i] = FABS(tree->times->nd_t[i]); */
 
   //  Bubble sort to put all the tips at the top of the tree->a_nodes array
   do
@@ -1080,9 +1090,9 @@ t_tree *GEO_Simulate(t_geo *t, int n_otu)
               tree->a_nodes[i+1] = tree->a_nodes[i];
               tree->a_nodes[i]   = buff_nd;
 
-              buff_t                 = tree->rates->nd_t[i+1];
-              tree->rates->nd_t[i+1] = tree->rates->nd_t[i];
-              tree->rates->nd_t[i]   = buff_t;
+              buff_t                 = tree->times->nd_t[i+1];
+              tree->times->nd_t[i+1] = tree->times->nd_t[i];
+              tree->times->nd_t[i]   = buff_t;
 
               buff_l      = t->idx_loc[i+1];
               t->idx_loc[i+1] = t->idx_loc[i];
@@ -1114,7 +1124,7 @@ t_tree *GEO_Simulate(t_geo *t, int n_otu)
   /*            tree->a_nodes[i]->v[0] ? tree->a_nodes[i]->v[0]->num : -1, */
   /*            tree->a_nodes[i]->v[1] ? tree->a_nodes[i]->v[1]->num : -1, */
   /*            tree->a_nodes[i]->v[2] ? tree->a_nodes[i]->v[2]->num : -1, */
-  /*            tree->rates->nd_t[i]);              */
+  /*            tree->times->nd_t[i]);              */
     /* } */
 
 
@@ -1135,25 +1145,25 @@ t_tree *GEO_Simulate(t_geo *t, int n_otu)
 
   For(i,2*tree->n_otu-3)
     {
-      tree->a_edges[i]->l->v = FABS(tree->rates->nd_t[tree->a_edges[i]->left->num] - 
-                                    tree->rates->nd_t[tree->a_edges[i]->rght->num]);
+      tree->a_edges[i]->l->v = FABS(tree->times->nd_t[tree->a_edges[i]->left->num] - 
+                                    tree->times->nd_t[tree->a_edges[i]->rght->num]);
     }
 
   tree->e_root->l->v =
-    FABS(tree->rates->nd_t[tree->n_root->v[1]->num] -
-         tree->rates->nd_t[tree->n_root->num]) +
-    FABS(tree->rates->nd_t[tree->n_root->v[2]->num] -
-         tree->rates->nd_t[tree->n_root->num]);
+    FABS(tree->times->nd_t[tree->n_root->v[1]->num] -
+         tree->times->nd_t[tree->n_root->num]) +
+    FABS(tree->times->nd_t[tree->n_root->v[2]->num] -
+         tree->times->nd_t[tree->n_root->num]);
   
-  tree->n_root->l[1] = FABS(tree->rates->nd_t[tree->n_root->v[1]->num] -
-                            tree->rates->nd_t[tree->n_root->num]);
+  tree->n_root->l[1] = FABS(tree->times->nd_t[tree->n_root->v[1]->num] -
+                            tree->times->nd_t[tree->n_root->num]);
 
-  tree->n_root->l[2] = FABS(tree->rates->nd_t[tree->n_root->v[2]->num] -
-                            tree->rates->nd_t[tree->n_root->num]);
+  tree->n_root->l[2] = FABS(tree->times->nd_t[tree->n_root->v[2]->num] -
+                            tree->times->nd_t[tree->n_root->num]);
 
   tree->n_root_pos = 
-    FABS(tree->rates->nd_t[tree->n_root->v[2]->num] -
-         tree->rates->nd_t[tree->n_root->num]) / tree->e_root->l->v;
+    FABS(tree->times->nd_t[tree->n_root->v[2]->num] -
+         tree->times->nd_t[tree->n_root->num]) / tree->e_root->l->v;
 
   /* printf("\n. %s ",Write_Tree(tree)); */
 

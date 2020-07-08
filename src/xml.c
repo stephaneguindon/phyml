@@ -2351,10 +2351,10 @@ void XML_Read_Calibration(xml_node *xroot, t_tree *tree)
           cal->upper = up;
           cal->is_primary = YES;
 
-          tree->rates->a_cal[tree->rates->n_cal] = cal;
-          tree->rates->n_cal++;
+          tree->times->a_cal[tree->times->n_cal] = cal;
+          tree->times->n_cal++;
           
-          if(tree->rates->n_cal > 10 * tree->n_otu)
+          if(tree->times->n_cal > 10 * tree->n_otu)
             {
               PhyML_Fprintf(stderr,"\n. There are too many clades defined that are not found in the tree..."); 
               PhyML_Fprintf(stderr,"\n. Please remove some of them.");
@@ -2460,9 +2460,9 @@ void XML_Read_Calibration(xml_node *xroot, t_tree *tree)
 
   
   PhyML_Printf("\n\n.......................................................................");
-  for(i=0;i<tree->rates->n_cal;++i)
+  for(i=0;i<tree->times->n_cal;++i)
     {
-      cal = tree->rates->a_cal[i];
+      cal = tree->times->a_cal[i];
 
       phydbl sum = 0.0;
       for(j=0;j<cal->clade_list_size;j++) sum += cal->alpha_proba_list[j];
@@ -2482,9 +2482,9 @@ void XML_Read_Calibration(xml_node *xroot, t_tree *tree)
 
   t_ref = t = -1.;
   
-  for(i=0;i<tree->rates->n_cal;++i)
+  for(i=0;i<tree->times->n_cal;++i)
     {
-      cal = tree->rates->a_cal[i];
+      cal = tree->times->a_cal[i];
       for(j=0;j<cal->clade_list_size;j++)
         {
           clade = cal->clade_list[j];
@@ -2502,7 +2502,7 @@ void XML_Read_Calibration(xml_node *xroot, t_tree *tree)
 
                   if(Are_Equal(t,t_ref,1.E-10) == NO)
                     {
-                      tree->rates->is_asynchronous = YES;
+                      tree->times->is_asynchronous = YES;
                       break;
                     }
                 }                    
@@ -2511,7 +2511,7 @@ void XML_Read_Calibration(xml_node *xroot, t_tree *tree)
     }
   
   PhyML_Printf("\n\n");
-  PhyML_Printf("\n. Is asynchronous: %s",tree->rates->is_asynchronous ? "yes" : "no");
+  PhyML_Printf("\n. Is asynchronous: %s",tree->times->is_asynchronous ? "yes" : "no");
 }
 
 //////////////////////////////////////////////////////////////
