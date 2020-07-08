@@ -1634,7 +1634,7 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
 
 
   /* Allocate migrep model */
-  mmod = PHYREX_Make_Migrep_Model(n_dim);
+  mmod = PHYREX_Make_Migrep_Model(tree->n_otu,n_dim);
   tree->mmod = mmod;
   PHYREX_Init_Migrep_Mod(mmod,n_dim,0.0,0.0,w,h);
 
@@ -1878,7 +1878,7 @@ t_tree *SLFV_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl h
   Make_Spr(tree);
 
   // migrep model stuff */
-  mmod = PHYREX_Make_Migrep_Model(n_dim);
+  mmod = PHYREX_Make_Migrep_Model(tree->n_otu,n_dim);
   tree->mmod = mmod;
   PHYREX_Init_Migrep_Mod(mmod,n_dim,0.0,0.0,w,h);
 

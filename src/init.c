@@ -3486,27 +3486,28 @@ void PHYREX_Init_Migrep_Mod(t_phyrex_mod *t, int n_dim, phydbl min_lat, phydbl m
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void PHYREX_Set_Default_Migrep_Mod(t_phyrex_mod *t)
+void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
 {
-
+  for(int i=0;i<2*n_otu-1;++i) t->sigsq_scale[i] = 1.0;
+  
   t->id          = -1;
   t->safe_phyrex = NO;
   
-  t->lim_up->lonlat[0]   = 100.;
-  t->lim_up->lonlat[1]   = 100.;
+  t->lim_up->lonlat[0] = 100.;
+  t->lim_up->lonlat[1] = 100.;
 
-  t->lim_do->lonlat[0]   = 0.0;
-  t->lim_do->lonlat[1]   = 0.0;
+  t->lim_do->lonlat[0] = 0.0;
+  t->lim_do->lonlat[1] = 0.0;
 
-  t->lbda             = 1.E-0;
-  t->min_lbda         = 1.E-6;
-  t->max_lbda         = 1.E+4;
-  t->prior_param_lbda = 1.0;
+  t->lbda              = 1.E-0;
+  t->min_lbda          = 1.E-6;
+  t->max_lbda          = 1.E+4;
+  t->prior_param_lbda  = 1.0;
 
-  t->mu               = 0.800;
-  t->min_mu           = 0.000;
-  t->max_mu           = 1.000;
-  t->prior_param_mu   = 1.000;
+  t->mu                = 0.800;
+  t->min_mu            = 0.000;
+  t->max_mu            = 1.000;
+  t->prior_param_mu    = 1.000;
 
   t->min_rad           = 0.0;
   t->max_rad           = 100.;
@@ -3519,18 +3520,14 @@ void PHYREX_Set_Default_Migrep_Mod(t_phyrex_mod *t)
   t->sigsq             = 1.0;
   t->prior_param_sigsq = 10.0;
   
+  t->c_lnL             = UNLIKELY;
+  t->c_ln_prior_rad    = UNLIKELY;
+  t->c_ln_prior_lbda   = UNLIKELY;
+  t->c_ln_prior_mu     = UNLIKELY;
 
-  t->c_lnL           = UNLIKELY;
-  t->c_ln_prior_rad  = UNLIKELY;
-  t->c_ln_prior_lbda = UNLIKELY;
-  t->c_ln_prior_mu   = UNLIKELY;
-
-  t->soft_bound_area = 0.1;
-
-  t->samp_area       = NULL;
+  t->soft_bound_area   = 0.1;
 
   t->max_num_of_intervals = 1000000;
-
 }
 
 //////////////////////////////////////////////////////////////

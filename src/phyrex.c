@@ -53,9 +53,9 @@ void PHYREX_XML(char *xml_filename)
   mixt_tree->times = TIMES_Make_Time_Struct(mixt_tree->n_otu);
   TIMES_Init_Time_Struct(mixt_tree->times,NULL,mixt_tree->n_otu);
 
-  mixt_tree->mmod = PHYREX_Make_Migrep_Model(2);
+  mixt_tree->mmod = PHYREX_Make_Migrep_Model(mixt_tree->n_otu,2);
   mixt_tree->mmod->n_dim = 2;
-  PHYREX_Set_Default_Migrep_Mod(mixt_tree->mmod);
+  PHYREX_Set_Default_Migrep_Mod(mixt_tree->n_otu,mixt_tree->mmod);
   
   tree = mixt_tree;
   do
@@ -222,7 +222,8 @@ void PHYREX_XML(char *xml_filename)
       if(modname != NULL)
         {
           if(!strcmp(xnd->attr->value,"slfv")) mixt_tree->mmod->id = SLFV_GAUSSIAN;
-          else if(!strcmp(xnd->attr->value,"bmp")) mixt_tree->mmod->id = RW;
+          else if(!strcmp(xnd->attr->value,"rw")) mixt_tree->mmod->id = RW;
+          else if(!strcmp(xnd->attr->value,"rrw")) mixt_tree->mmod->id = RRW;
           else assert(FALSE);
         }
     }
@@ -364,7 +365,7 @@ void PHYREX_XML(char *xml_filename)
   if(mixt_tree->mmod->id == SLFV_GAUSSIAN || mixt_tree->mmod->id == SLFV_UNIFORM)
     mixt_tree->mmod->rad  = 0.1*((mixt_tree->mmod->lim_up->lonlat[0]-mixt_tree->mmod->lim_do->lonlat[0])+
                                  (mixt_tree->mmod->lim_up->lonlat[1]-mixt_tree->mmod->lim_do->lonlat[1]));
-  else if(mixt_tree->mmod->id == RW)
+  else if(mixt_tree->mmod->id == RW || mixt_tree->mmod->id == RRW)
     mixt_tree->mmod->rad  = 2.0*((mixt_tree->mmod->lim_up->lonlat[0]-mixt_tree->mmod->lim_do->lonlat[0])+
                                  (mixt_tree->mmod->lim_up->lonlat[1]-mixt_tree->mmod->lim_do->lonlat[1]));
   else assert(FALSE);
@@ -397,7 +398,7 @@ void PHYREX_XML(char *xml_filename)
 
   PHYREX_Oldest_Sampled_Disk(mixt_tree);
 
-  if(mixt_tree->mmod->id == RW)
+  if(mixt_tree->mmod->id == RW || mixt_tree->mmod->id == RRW)
     {
       Make_Contrasts(mixt_tree);
       mixt_tree->mmod->max_num_of_intervals = 3*tree->n_otu-2;
@@ -573,6 +574,11 @@ phydbl PHYREX_Lk(t_tree *tree)
         return(RW_Lk(tree));
         break;
       }
+    case RRW :
+      {
+        return(RRW_Lk(tree));
+        break;
+      }
     default : assert(FALSE);
     }
 }
@@ -595,6 +601,11 @@ phydbl PHYREX_Lk_Core(t_dsk *disk, t_tree *tree)
           return(RW_Lk(tree));
           break;
         }
+    case RRW :
+        {
+          return(RRW_Lk(tree));
+          break;
+        }
     default : assert(FALSE);
     }
 }
@@ -615,6 +626,11 @@ phydbl PHYREX_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
     case RW :
         {
           return(RW_Lk(tree));
+          break;
+        }
+    case RRW :
+        {
+          return(RRW_Lk(tree));
           break;
         }
     default : assert(FALSE);
@@ -780,6 +796,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%s\t","accMoveDiskUD");
       PhyML_Fprintf(fp_stats,"%s\t","accAddRemoveJump");
       PhyML_Fprintf(fp_stats,"%s\t","accLdskTipToRoot");
+      PhyML_Fprintf(fp_stats,"%s\t","accSigsqScale");
       PhyML_Fprintf(fp_stats,"%s\t","tuneLbda");
       PhyML_Fprintf(fp_stats,"%s\t","tuneRad");
       PhyML_Fprintf(fp_stats,"%s\t","tuneMu");
@@ -906,6 +923,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_move_disk_ud]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_add_remove_jump]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_ldsk_tip_to_root]);
+          PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_sigsq_scale]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_lbda]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_rad]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_mu]);
@@ -1955,7 +1973,8 @@ phydbl PHYREX_Wrap_Prior_Radius(t_edge *e, t_tree *tree, supert_tree *st)
 
 phydbl PHYREX_LnPrior_Lbda(t_tree *tree)
 {
-  if(tree->mmod->id == RW) return(0.0);
+  if(tree->mmod->id == RW)  return(0.0);
+  if(tree->mmod->id == RRW) return(0.0);
   
   if(tree->mmod->lbda < tree->mmod->min_lbda) return UNLIKELY;
   if(tree->mmod->lbda > tree->mmod->max_lbda) return UNLIKELY;
@@ -1977,7 +1996,8 @@ phydbl PHYREX_LnPrior_Lbda(t_tree *tree)
 
 phydbl PHYREX_LnPrior_Mu(t_tree *tree)
 {
-  if(tree->mmod->id == RW) return(0.0);
+  if(tree->mmod->id == RW)  return(0.0);
+  if(tree->mmod->id == RRW) return(0.0);
 
   if(tree->mmod->mu < tree->mmod->min_mu) return UNLIKELY;
   if(tree->mmod->mu > tree->mmod->max_mu) return UNLIKELY;
@@ -1994,7 +2014,8 @@ phydbl PHYREX_LnPrior_Mu(t_tree *tree)
 
 phydbl PHYREX_LnPrior_Radius(t_tree *tree)
 {
-  if(tree->mmod->id == RW) return(0.0);
+  if(tree->mmod->id == RW)  return(0.0);
+  if(tree->mmod->id == RRW) return(0.0);
 
   if(tree->mmod->rad < tree->mmod->min_rad) return UNLIKELY;
   if(tree->mmod->rad > tree->mmod->max_rad) return UNLIKELY;
@@ -3739,7 +3760,7 @@ int PHYREX_Scale_All(phydbl scale, t_dsk *start_disk, t_tree *tree)
   Free(sorted_disk);
 
   if(tree->mmod->id == SLFV_GAUSSIAN || tree->mmod->id == SLFV_UNIFORM) return(n_disks_scaled);
-  else if(tree->mmod->id == RW) return(n_nodes_scaled);
+  else if(tree->mmod->id == RW || tree->mmod->id == RRW) return(n_nodes_scaled);
   else return(-1);
 }
 
@@ -4215,7 +4236,7 @@ phydbl PHYREX_Path_Logdensity(t_ldsk *young, t_ldsk *old, phydbl sd, t_tree *tre
         return(SLFV_Path_Logdensity(young,old,sd,tree));
         break;
       }      
-    case RW :
+    case RW : case RRW :
       {
         return(0.0);
         break;
@@ -4238,7 +4259,7 @@ void PHYREX_Sample_Path(t_ldsk *young, t_ldsk *old, phydbl sd, phydbl *global_hr
         break;
       }
       
-    case RW :
+    case RW : case RRW :
       {
         assert(FALSE);
         break;
@@ -4259,7 +4280,7 @@ t_ldsk *PHYREX_Generate_Path(t_ldsk *young, t_ldsk *old, phydbl n_evt, phydbl sd
         return(SLFV_Generate_Path(young,old,n_evt,sd,tree));
         break;
       }      
-    case RW :
+    case RW : case RRW : 
       {
         return(SLFV_Generate_Path(young,old,0,sd,tree));
         break;
@@ -4282,7 +4303,7 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda
         break;
       }
       
-    case RW :
+    case RW : case RRW : 
       {
         assert(FALSE);
         break;
@@ -4305,7 +4326,7 @@ void PHYREX_Simulate_Backward_Core(t_dsk *disk,int avoid_multiple_mergers, t_tre
         break;
       }
       
-    case RW :
+    case RW : case RRW : 
       {
         SLFV_Simulate_Backward_Core(disk,avoid_multiple_mergers,tree);
         break;
@@ -4329,7 +4350,7 @@ phydbl PHYREX_Update_Sigsq(t_tree *tree)
         break; 
       }
 
-    case RW :
+    case RW : case RRW :
       {
         return(tree->mmod->sigsq);
         break;

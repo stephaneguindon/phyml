@@ -555,7 +555,8 @@ avx.c avx.h\
 ancestral.c ancestral.h\
 phyrex.c phyrex.h\
 slfv.c slfv.h\
-bmp.c bmp.h
+rw.c rw.h\
+rrw.c rrw.h
 phyrex_LDADD = -lm 
 else
 if WANT_PHYREXSIM

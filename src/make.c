@@ -1613,12 +1613,13 @@ t_geo_coord *GEO_Make_Geo_Coord(int dim)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-t_phyrex_mod *PHYREX_Make_Migrep_Model(int dim)
+t_phyrex_mod *PHYREX_Make_Migrep_Model(int n_otu,int dim)
 {
   t_phyrex_mod *t;
   t = (t_phyrex_mod *)mCalloc(1,sizeof(t_phyrex_mod));
   t->lim_up = GEO_Make_Geo_Coord(dim);
   t->lim_do = GEO_Make_Geo_Coord(dim);
+  t->sigsq_scale = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
   return(t);
 }
 

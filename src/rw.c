@@ -10,7 +10,7 @@ the GNU public licence. See http://www.opensource.org for details.
 
 */
 
-#include "bmp.h"
+#include "rw.h"
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -40,11 +40,10 @@ phydbl RW_Lk(t_tree *tree)
       /* assert(fwd_lk < ic_lk); */
     /* } */
   
-  /* tree->mmod->c_lnL = fwd_lk - ic_lk + coal_lk; */
-  tree->mmod->c_lnL = fwd_lk + coal_lk;
+  tree->mmod->c_lnL = fwd_lk - ic_lk + coal_lk;
+  /* tree->mmod->c_lnL = fwd_lk + coal_lk; */
   /* tree->mmod->c_lnL = coal_lk; */
-  
-  
+    
   return(tree->mmod->c_lnL);
 }
 

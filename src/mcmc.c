@@ -5973,6 +5973,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->num_move_phyrex_add_remove_jump   = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_clade_change             = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_phyrex_ldsk_tip_to_root  = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_phyrex_sigsq_scale       = mcmc->n_moves; mcmc->n_moves += 1;
     
   mcmc->run_move       = (int *)mCalloc(mcmc->n_moves,sizeof(int));
   mcmc->acc_move       = (int *)mCalloc(mcmc->n_moves,sizeof(int));
@@ -6056,6 +6057,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   strcpy(mcmc->move_name[mcmc->num_move_phyrex_add_remove_jump],"phyrex_add_remove_jump");
   strcpy(mcmc->move_name[mcmc->num_move_clade_change],"clade_change");
   strcpy(mcmc->move_name[mcmc->num_move_phyrex_ldsk_tip_to_root],"phyrex_ldsk_tip_to_root");
+  strcpy(mcmc->move_name[mcmc->num_move_phyrex_sigsq_scale],"phyrex_sigsq_scale");
 
 
   for(i=0;i<mcmc->n_moves;i++) mcmc->move_type[i] = -1;
@@ -6097,6 +6099,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_type[mcmc->num_move_phyrex_indel_hit] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_phyrex_indel_disk] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_phyrex_ldsk_tip_to_root] = MCMC_MOVE_SCALE_THORNE;
+  mcmc->move_type[mcmc->num_move_phyrex_sigsq_scale] = MCMC_MOVE_SCALE_THORNE;
 
   /* We start with small tuning parameter values in order to have inflated ESS
      for clock_r */
@@ -6204,6 +6207,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_disk_multi]            = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_add_remove_jump]       = 3.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldsk_tip_to_root]      = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_sigsq_scale]           = 1.0;
 
 # else
 
@@ -6233,6 +6237,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_disk_multi]            = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_add_remove_jump]       = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldsk_tip_to_root]      = 0.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_sigsq_scale]           = 0.0;
 #endif
 
   sum = 0.0;
@@ -7179,7 +7184,6 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree)
   /*              ratio,scale_fact_times); */
 
   assert(isnan(u) == NO && isinf(fabs(u)) == NO);
-
   
   if(u > alpha) /* Reject */
     {
@@ -10179,6 +10183,71 @@ void MCMC_PHYREX_Ldsk_Tip_To_Root(t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+#ifdef PHYREX
+void MCMC_PHYREX_Sigsq_Scale(t_tree *tree)
+{
+  int i,*permut;
+  phydbl m;
+  phydbl cur_lnL_geo,new_lnL_geo;
+  phydbl cur_scale,new_scale;
+  phydbl alpha,ratio,u,K,hr;
+
+  if(tree->mmod->id != RRW) return;
+
+  K = 1.0;
+  permut = Permutate(2*tree->n_otu-1);
+  
+  for(i=0;i<2*tree->n_otu-1;++i)
+    {
+      tree->mcmc->run_move[tree->mcmc->num_move_phyrex_sigsq_scale]++;
+      
+      hr    = 0.0;
+      ratio = 0.0;
+      
+      cur_lnL_geo = tree->mmod->c_lnL;
+      new_lnL_geo = tree->mmod->c_lnL;
+
+      cur_scale   = tree->mmod->sigsq_scale[permut[i]];
+      
+      m = exp(K*(Uni()-.5));
+      new_scale = m * cur_scale;
+      hr += log(m);
+
+      tree->mmod->sigsq_scale[permut[i]] = new_scale;
+      
+      if(tree->eval_glnL == YES) new_lnL_geo = PHYREX_Lk(tree);
+
+      ratio += (new_lnL_geo - cur_lnL_geo);
+
+      ratio += hr;
+
+      ratio = exp(ratio);
+      alpha = MIN(1.,ratio);
+
+        /* Always accept move */
+      if(tree->mcmc->always_yes == YES && new_lnL_geo > UNLIKELY) alpha = 1.0;
+
+      u = Uni();
+
+      assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+      
+      if(u > alpha) /* Reject */
+        {
+          tree->mmod->c_lnL = cur_lnL_geo;
+          tree->mmod->sigsq_scale[permut[i]] = cur_scale;
+        }
+      else
+        {
+          tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_sigsq_scale]++;
+        }    
+    }
+
+  Free(permut);
+
+}
+#endif
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

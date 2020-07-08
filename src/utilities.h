@@ -1749,6 +1749,7 @@ typedef struct __Tmcmc {
   int num_move_phyrex_add_remove_jump;
   int num_move_clade_change;
   int num_move_phyrex_ldsk_tip_to_root;
+  int num_move_phyrex_sigsq_scale;
 
   int nd_t_digits;
   int *monitor;
@@ -1940,10 +1941,10 @@ typedef struct __Phylogeo{
 /*!********************************************************/
 // Structure for the Etheridge-Barton migration/reproduction model
 typedef struct __Migrep_Model{
-  struct __Geo_Coord            *lim_up; // max longitude and lattitude                        
-  struct __Geo_Coord            *lim_do; // min longitude and lattitude                        
-  struct __SampArea       *samp_area;
-
+  struct __Geo_Coord         *lim_up; // max longitude and lattitude                        
+  struct __Geo_Coord         *lim_do; // min longitude and lattitude                        
+  phydbl                *sigsq_scale; // Scaling factors for the variance parameter in RRW model
+  
   short int                       id;
   int                          n_dim;
   int                    safe_phyrex;
@@ -2413,7 +2414,8 @@ void Remove_Duplicates_From_Tree(calign *data, t_tree *tree);
 
 #ifdef PHYREX
 #include "phyrex.h"
-#include "bmp.h"
+#include "rw.h"
+#include "rrw.h"
 #include "slfv.h"
 #endif
 

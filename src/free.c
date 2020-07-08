@@ -1418,6 +1418,7 @@ void Free_Mmod(t_phyrex_mod *mmod)
   if(mmod == NULL) return;
   Free_Geo_Coord(mmod->lim_up);
   Free_Geo_Coord(mmod->lim_do);
+  Free(mmod->sigsq_scale);
   Free(mmod);
 }
 
