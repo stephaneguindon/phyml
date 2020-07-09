@@ -1973,6 +1973,7 @@ typedef struct __Migrep_Model{
 
   phydbl                         rho; // intensity parameter of the Poisson point processs
   phydbl                gen_cal_time; // duration of one generation in calendar time unit
+  phydbl                          nu; // parameter of hyperprior on sigsq_scale (see Eq. (1) in Lemey et al., 2010).
   
   phydbl                       c_lnL; // current value of log-likelihood 
   phydbl              c_ln_prior_rad; // current value of log prior for the prior on radius

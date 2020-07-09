@@ -206,8 +206,7 @@ void PHYREX_XML(char *xml_filename)
             {
               assert(FALSE);
             }
-        }
-      
+        }      
     }
 
   // Spatial model
@@ -358,6 +357,7 @@ void PHYREX_XML(char *xml_filename)
                          mixt_tree->mmod->lim_up->lonlat[1]);
 
   
+
   /* Initialize parameters of migrep model */
   mixt_tree->mmod->lbda = 1.;
   mixt_tree->mmod->mu   = 0.8;
@@ -391,7 +391,6 @@ void PHYREX_XML(char *xml_filename)
 
   Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree);
   Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);  
-
   
   MIXT_Set_Ignore_Root(YES,mixt_tree);
   MIXT_Set_Bl_From_Rt(YES,mixt_tree);
@@ -805,6 +804,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%s\t","tuneLdskGivenDisk");
       PhyML_Fprintf(fp_stats,"%s\t","tuneIndelDiskSerial");
       PhyML_Fprintf(fp_stats,"%s\t","tuneIndelHitSerial");
+      for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"s%d\t",i);
     }
   
 
@@ -932,6 +932,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_ldsk_given_disk]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_indel_disk_serial]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_indel_hit_serial]);
+          for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->sigsq_scale[i]);
           
           /* res[0 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = tree->mmod->lbda;  */
           /* res[1 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = tree->mmod->mu;  */
@@ -1033,7 +1034,10 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_add_remove_jump"))
         MCMC_PHYREX_Add_Remove_Jump(tree);
-              
+
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_sigsq_scale"))
+        MCMC_PHYREX_Sigsq_Scale(tree);
+
       if(!strcmp(tree->mcmc->move_name[move],"kappa"))
         MCMC_Kappa(tree);
       

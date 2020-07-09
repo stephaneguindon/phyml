@@ -6593,7 +6593,7 @@ void MCMC_PHYREX_Radius(t_tree *tree)
 #ifdef PHYREX
 void MCMC_PHYREX_Sigsq(t_tree *tree)
 {
-  if(tree->mmod->id == RW)
+  if(tree->mmod->id == RW || tree->mmod->id == RRW)
     {
       MCMC_Single_Param_Generic(&(tree->mmod->sigsq),
                                 tree->mmod->min_sigsq,
@@ -6613,7 +6613,7 @@ void MCMC_PHYREX_Sigsq(t_tree *tree)
 #ifdef PHYREX
 void MCMC_PHYREX_Neff(t_tree *tree)
 {
-  if(tree->mmod->id == RW)
+  if(tree->mmod->id == RW || tree->mmod->id == RRW)
     {
       MCMC_Single_Param_Generic(&(tree->times->scaled_pop_size),
                                 0.0,
@@ -8531,7 +8531,7 @@ void MCMC_PHYREX_Disk_Multi(t_tree *tree)
   int i,j,block,n_all_disks,n_move_disks,*permut;
   int err;
 
-  /* if(tree->mmod->id == RW) return; */
+  /* if(tree->mmod->id == RW || tree->mmod->id == RRW) return; */
 
   disk          = NULL;
   new_glnL      = tree->mmod->c_lnL;
@@ -8811,7 +8811,7 @@ void MCMC_PHYREX_Ldsk_And_Disk(t_tree *tree)
   int i,j,block,n_all_disks,n_move_ldsk,*permut;
   int err;
 
-  /* if(tree->mmod->id == RW) return; */
+  /* if(tree->mmod->id == RW || tree->mmod->id == RRW) return; */
 
   disk          = NULL;
   new_glnL      = tree->mmod->c_lnL;
@@ -8957,7 +8957,7 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree)
   t_dsk  *disk,**all_disks;
   int i,j,err,n_all_disks,block,n_move_ldsk,*permut;
 
-  /* if(tree->mmod->id == RW) return; */
+  /* if(tree->mmod->id == RW || tree->mmod->id == RRW) return; */
 
   block       = 100;
   all_disks   = NULL;
@@ -9081,7 +9081,7 @@ void MCMC_PHYREX_Disk_Given_Ldsk(t_tree *tree)
   t_dsk  *disk,**all_disks;
   int i,j,n_all_disks,block,n_move_ldsk,*permut;
 
-  /* if(tree->mmod->id == RW) return; */
+  /* if(tree->mmod->id == RW || tree->mmod->id == RRW) return; */
 
   block       = 100;
   all_disks   = NULL;
@@ -10196,9 +10196,9 @@ void MCMC_PHYREX_Sigsq_Scale(t_tree *tree)
   if(tree->mmod->id != RRW) return;
 
   K = 1.0;
-  permut = Permutate(2*tree->n_otu-1);
+  permut = Permutate(2*tree->n_otu-2);
   
-  for(i=0;i<2*tree->n_otu-1;++i)
+  for(i=0;i<2*tree->n_otu-2;++i)
     {
       tree->mcmc->run_move[tree->mcmc->num_move_phyrex_sigsq_scale]++;
       
