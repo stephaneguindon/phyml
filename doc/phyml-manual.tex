@@ -93,6 +93,7 @@ the GNU public licence. See http://www.opensource.org for details.
 \item { St\'ephane Guindon, Wim Hordjik} and { Olivier Gascuel} conceived the SPR-based tree search algorithm.
 \item { Maria Anisimova} and { Olivier Gascuel} conceived the aLRT method for branch support.
 \item { St\'ephane Guindon, Franck Lethiec}, Jean-Francois Dufayard and Vincent Lefort implemented PhyML.
+\item St\'ephane Guindon implemented PhyloGeo, PhyREX and PhyTime.
 \item { Jean-Francois Dufayard} created the benchmark and implemented the tools that are used to check
   PhyML accuracy and performances.
 \item { Vincent Lefort, St\'ephane Guindon, Patrice Duroux} and { Olivier Gascuel} conceived and
@@ -220,6 +221,11 @@ mpirun -n 4 ./phyml-mpi -i myseq -b 100
 
 \subsection{Installing PhyML-BEAGLE}\label{sec:install-phyml-beagle}
 
+{\em Note: I haven't found the time nor the resources to make sure the code of PhyML stays
+  compatible with the BEAGLE library. Please do not hesitate at all to contact me if you'd
+  like to contribute here.}
+\\
+\\
 PhyML  can use  the  BEAGLE\cite{ayres12}  library for  the  likelihood computation.  BEAGLE
 provides provides  significant speed-up: the  single core  version of PhyML-BEAGLE  can be up  to 10
 times  faster  than  PhyML  on  a  single   core  and  up  to  150  times  on  Graphical  Processing
@@ -1207,7 +1213,7 @@ the possible combinations of 3 rates, 2 matrices and 2 vectors of frequencies.
 % \{R_3,M_2,F_1\}$ and $\mathcal{C}_{12} = \{R_3,M_2,F_2\}$.
 
 
-\subsection{Partitions}\index{partitionned analysis}\index{data partitions}
+\subsection{Partitionned (i.e., multiple-gene) analyses}\index{partitionned analysis}\index{data partitions}\index{multiple-gene analysis}
 
 We first introduce some terms of vocabulary that have not been presented before. A partitionned data
 set, also referred to as partition, is a  set of partition elements.  Typically, a partitionned data
