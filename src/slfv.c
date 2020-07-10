@@ -656,7 +656,6 @@ phydbl SLFV_Lk_Gaussian_Range(t_dsk *young, t_dsk *old, t_tree *tree)
 
   lnL  = 0.0;
 
-  PHYREX_Update_Lindisk_List_Core(young,tree);
   lnL += SLFV_Lk_Gaussian_Core(young,tree);
 
   dt = 0.0;
@@ -672,7 +671,6 @@ phydbl SLFV_Lk_Gaussian_Range(t_dsk *young, t_dsk *old, t_tree *tree)
 
       assert(disk);
       if(disk->time > disk->next->time) return UNLIKELY;
-      PHYREX_Update_Lindisk_List_Core(disk,tree);
       lnL += SLFV_Lk_Gaussian_Core(disk,tree);
       if(disk == old) break;
       disk = disk->prev;

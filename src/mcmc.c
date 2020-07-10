@@ -9660,6 +9660,7 @@ void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree)
           PHYREX_Init_Disk_Event(new_disk,tree->mmod->n_dim,tree->mmod);
           new_disk->time = t;
           PHYREX_Insert_Disk(new_disk,tree);
+          PHYREX_Update_Lindisk_List_Core(new_disk,tree);
 
           assert(new_disk->next == young_disk);
           assert(new_disk->prev == old_disk);
