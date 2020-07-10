@@ -6977,7 +6977,7 @@ void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree)
   phydbl *ori_time,new_time,cur_time;
   phydbl max, min;
   t_dsk  *disk,**target_disk,**all_disks;
-  int i,block,n_all_disks,n_move_disks,*permut,update_alnL;
+  int i,j,block,n_all_disks,n_move_disks,*permut,update_alnL;
 
   disk          = NULL;
   block         = 100;
@@ -7029,8 +7029,7 @@ void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree)
       
       ori_time[i] = target_disk[i]->time;
       cur_time = target_disk[i]->time;
-      
-      
+            
       if(target_disk[i]->prev)
         {
           max = target_disk[i]->next->time;
@@ -7068,9 +7067,15 @@ void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree)
 
         }
       
-
       target_disk[i]->time = new_time;
-    
+
+      if(target_disk[i]->ldsk && target_disk[i]->ldsk->nd)
+        {
+          for(j=0;j<2*tree->n_otu-1;++j)            
+            if(tree->a_nodes[j]->ldsk == target_disk[i]->ldsk)
+              tree->times->nd_t[j] = new_time;
+        }
+
       if(tree->eval_glnL == YES) new_glnL = PHYREX_Lk(tree);
       if(tree->eval_alnL == YES && update_alnL == YES) new_alnL = Lk(NULL,tree);
       if(tree->eval_rlnL == YES && update_alnL == YES) new_rlnL = RATES_Lk_Rates(tree);
@@ -7098,6 +7103,13 @@ void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree)
           
           target_disk[i]->time = ori_time[i];
                     
+          if(target_disk[i]->ldsk && target_disk[i]->ldsk->nd)
+            {
+              for(j=0;j<2*tree->n_otu-1;++j)
+                if(tree->a_nodes[j]->ldsk == target_disk[i]->ldsk)
+                  tree->times->nd_t[j] = ori_time[i];
+            }
+              
           tree->mmod->c_lnL        = cur_glnL;
           tree->c_lnL              = cur_alnL;
           tree->rates->c_lnL_rates = cur_rlnL;
@@ -7165,7 +7177,8 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree)
   hr += (n_disks)*log(scale_fact_times);
 
   PHYREX_Update_Lindisk_List(tree);
-
+  PHYREX_Ldsk_To_Tree(tree);
+  
   if(tree->eval_glnL == YES) new_glnL = PHYREX_Lk(tree);  
   if(tree->eval_alnL == YES) new_alnL = Lk(NULL,tree);
   if(tree->eval_rlnL == YES) new_rlnL = RATES_Lk_Rates(tree);
@@ -7197,6 +7210,7 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree)
     {
       PHYREX_Scale_All(1./scale_fact_times,start_disk,tree);
       PHYREX_Update_Lindisk_List(tree);
+      PHYREX_Ldsk_To_Tree(tree);
       tree->mmod->c_lnL        = cur_glnL;
       tree->c_lnL              = cur_alnL;        
       tree->rates->c_lnL_rates = cur_rlnL;
@@ -7306,6 +7320,13 @@ void MCMC_PHYREX_Swap_Disk(t_tree *tree)
       PHYREX_Insert_Disk(target_disk,tree);
       PHYREX_Update_Lindisk_List_Range(ldsk_next->disk,target_disk->ldsk->prev->disk,tree);
 
+      if(target_disk->ldsk && target_disk->ldsk->nd)
+        {
+          for(i=0;i<2*tree->n_otu-1;++i)            
+            if(tree->a_nodes[i]->ldsk == target_disk->ldsk)
+              tree->times->nd_t[i] = t;
+        }
+      
       if(tree->eval_glnL == YES)
         {
           if(tree->mmod->id == SLFV_UNIFORM || tree->mmod->id == SLFV_GAUSSIAN)
@@ -7346,6 +7367,13 @@ void MCMC_PHYREX_Swap_Disk(t_tree *tree)
           target_disk->time = ori_time;
           target_disk->prev = ori_disk_old;
           target_disk->next = ori_disk_young;
+
+          if(target_disk->ldsk && target_disk->ldsk->nd)
+            {
+              for(i=0;i<2*tree->n_otu-1;++i)            
+                if(tree->a_nodes[i]->ldsk == target_disk->ldsk)
+                  tree->times->nd_t[i] = ori_time;
+            }
 
           PHYREX_Insert_Disk(target_disk,tree);          
           PHYREX_Update_Lindisk_List_Range(ldsk_next->disk,target_disk->ldsk->prev->disk,tree);
@@ -9819,7 +9847,6 @@ void MCMC_PHYREX_Add_Remove_Jump(t_tree *tree)
       
       target_disk = valid_disks[Rand_Int(0,n_valid_disks-1)];
       Free(valid_disks);
-
       
       if(target_disk->ldsk == NULL) // Add jump
         {
@@ -9872,7 +9899,8 @@ void MCMC_PHYREX_Add_Remove_Jump(t_tree *tree)
                                     tree->mmod->lim_up->lonlat[j],&err);
             }
           
-          PHYREX_Update_Lindisk_List_Range(target_disk,new_ldsk->prev->disk,tree);
+          /* PHYREX_Update_Lindisk_List_Range(target_disk,new_ldsk->prev->disk,tree); */
+          PHYREX_Update_Lindisk_List(tree);
 
           if(tree->eval_glnL == YES)
             {
@@ -9903,7 +9931,8 @@ void MCMC_PHYREX_Add_Remove_Jump(t_tree *tree)
               new_ldsk->prev->next[dir_next] = target_ldsk;
               target_disk->ldsk = NULL;
 
-              PHYREX_Update_Lindisk_List_Range(target_disk,new_ldsk->prev->disk,tree);
+              PHYREX_Update_Lindisk_List(tree);
+              /* PHYREX_Update_Lindisk_List_Range(target_disk,new_ldsk->prev->disk,tree); */
 
               // !!!!!!!! Really necessary?
               if(tree->mmod->id == SLFV_UNIFORM || tree->mmod->id == SLFV_GAUSSIAN)
@@ -9953,7 +9982,8 @@ void MCMC_PHYREX_Add_Remove_Jump(t_tree *tree)
           target_ldsk->next[0]->prev = target_ldsk->prev;
           target_disk->ldsk = NULL;
           
-          PHYREX_Update_Lindisk_List_Range(target_disk,target_ldsk->prev->disk,tree);
+          PHYREX_Update_Lindisk_List(tree);
+          /* PHYREX_Update_Lindisk_List_Range(target_disk,target_ldsk->prev->disk,tree); */
           
           if(tree->eval_glnL == YES)
             {
@@ -9984,7 +10014,8 @@ void MCMC_PHYREX_Add_Remove_Jump(t_tree *tree)
               target_ldsk->next[0]->prev = target_ldsk;              
               target_disk->ldsk = target_ldsk;
               
-              PHYREX_Update_Lindisk_List_Range(target_disk,target_ldsk->prev->disk,tree);
+              PHYREX_Update_Lindisk_List(tree);
+              /* PHYREX_Update_Lindisk_List_Range(target_disk,target_ldsk->prev->disk,tree); */
 
               if(tree->mmod->id == SLFV_UNIFORM || tree->mmod->id == SLFV_GAUSSIAN)
                 {

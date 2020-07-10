@@ -2335,7 +2335,6 @@ void PHYREX_Ldsk_To_Tree(t_tree *tree)
 
   Connect_Edges_To_Nodes_Serial(tree);
 
-
   tree->e_root = NULL;
   for(i=0;i<2*tree->n_otu-3;++i)
     {
@@ -2393,8 +2392,7 @@ void PHYREX_Ldsk_To_Tree_Post(t_node *a, t_ldsk *ldsk, int *available, t_tree *t
           // Descend along that lineage as long as
           // one has not reached a tip (t->next == NULL)
           // or a coalescent event (t->n_next > 1)
-          while(t->next && t->n_next <= 1) t = t->next[0];
-          
+          while(t->next && t->n_next <= 1) t = t->next[0];          
           
           if(t->nd == NULL) // t->disk is not a sampled disk
             {

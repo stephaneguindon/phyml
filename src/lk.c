@@ -465,13 +465,16 @@ phydbl Lk(t_edge *b, t_tree *tree)
       Optimize_Free_Rate_Weights(tree,YES,YES);
       tree->mod->s_opt->curr_opt_free_rates = YES;
     }
-
+  
+  
+  
   if(tree->is_mixt_tree == YES) 
     {
 #ifdef BEAGLE
       Warn_And_Exit(TODO_BEAGLE);
 #endif
-      return MIXT_Lk(b,tree);
+      MIXT_Lk(b,tree);
+      return tree->c_lnL;
     }
   
   tree->old_lnL = tree->c_lnL;

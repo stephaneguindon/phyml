@@ -24,8 +24,8 @@ phydbl RRW_Lk(t_tree *tree)
   assert(tree->mmod->id == RRW);
 
   #ifdef PHYREX
-  PHYREX_Update_Lindisk_List(tree);  
-  PHYREX_Ldsk_To_Tree(tree);
+  /* PHYREX_Update_Lindisk_List(tree);   */
+  /* PHYREX_Ldsk_To_Tree(tree); */
   if(PHYREX_Total_Number_Of_Intervals(tree) > tree->mmod->max_num_of_intervals) return UNLIKELY;
   #endif
   
