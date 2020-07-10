@@ -465,12 +465,7 @@ phydbl Lk(t_edge *b, t_tree *tree)
       Optimize_Free_Rate_Weights(tree,YES,YES);
       tree->mod->s_opt->curr_opt_free_rates = YES;
     }
-  
-#ifdef PHYREX
-  PHYREX_Ldsk_To_Tree(tree);
-#endif
-  
-  
+
   if(tree->is_mixt_tree == YES) 
     {
 #ifdef BEAGLE
@@ -481,7 +476,6 @@ phydbl Lk(t_edge *b, t_tree *tree)
   
   tree->old_lnL = tree->c_lnL;
   
-
 
 #if (defined PHYTIME || defined INVITEE || defined PHYREX)
   if((tree->rates) && (tree->rates->bl_from_rt)) RATES_Update_Cur_Bl(tree);
@@ -496,9 +490,8 @@ phydbl Lk(t_edge *b, t_tree *tree)
       return tree->c_lnL;
     }
   
- expl     = tree->expl;
- dot_prod = tree->dot_prod;
- 
+  expl     = tree->expl;
+  dot_prod = tree->dot_prod;
  
  if(b == NULL)
    {
@@ -508,7 +501,6 @@ phydbl Lk(t_edge *b, t_tree *tree)
      Update_Eigen(tree->mod);
    }
 
- 
   
  if(tree->mod->s_opt->skip_tree_traversal == NO)
     {

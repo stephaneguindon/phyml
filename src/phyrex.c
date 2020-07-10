@@ -1114,6 +1114,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   while(tree->mcmc->run < tree->mcmc->chain_len);
 
   PhyML_Fprintf(stdout,"\n. The analysis completed !");
+
   
   fclose(fp_tree);
   fclose(fp_stats);
@@ -1495,7 +1496,9 @@ int PHYREX_Get_Next_Direction(t_ldsk *young, t_ldsk *old)
 void  PHYREX_Update_Lindisk_List_Range(t_dsk *young, t_dsk *old, t_tree *tree)
 {
   t_dsk *disk;
-
+  
+  assert(young->time > old->time);
+  
   disk = young;
   do
     {
@@ -2313,7 +2316,6 @@ void PHYREX_Ldsk_To_Tree(t_tree *tree)
   i = 2*tree->n_otu-3;
   tree->num_curr_branch_available = 0;
   PHYREX_Ldsk_To_Tree_Post(tree->n_root,root_ldsk,&i,tree);
-
 
   for(i=0;i<tree->n_otu;++i) assert(tree->a_nodes[i]->v[0]);
 

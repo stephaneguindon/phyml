@@ -21,11 +21,9 @@ phydbl RW_Lk(t_tree *tree)
   
   assert(tree->mmod->id == RW);
 
-  #ifdef PHYREX
-  PHYREX_Update_Lindisk_List(tree);  
-  PHYREX_Ldsk_To_Tree(tree);
+#ifdef PHYREX
   if(PHYREX_Total_Number_Of_Intervals(tree) > tree->mmod->max_num_of_intervals) return UNLIKELY;
-  #endif
+#endif
   
   fwd_lk = RW_Forward_Lk(tree);
   coal_lk = TIMES_Lk_Coalescent(tree);
