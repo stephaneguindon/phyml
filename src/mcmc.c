@@ -9143,6 +9143,8 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree)
       ratio = exp(ratio);
       alpha = MIN(1.,ratio);
       
+      if(disk->prev == NULL) PhyML_Printf("\n. new: %f cur:%f hr: %f",new_glnL,cur_glnL,hr);
+
       u = Uni();
       
       assert(isnan(u) == NO && isinf(fabs(u)) == NO);

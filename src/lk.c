@@ -602,8 +602,6 @@ phydbl Lk(t_edge *b, t_tree *tree)
 
   p_lk_left = b->p_lk_left;
   p_lk_rght = b->rght->tax ? b->p_lk_tip_r : b->p_lk_rght;
-
-  CALL++;
   
   
   for(site=0;site<npatterns;++site)
