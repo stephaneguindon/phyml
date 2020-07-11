@@ -775,7 +775,7 @@ phydbl SLFV_Lk_Gaussian(t_tree *tree)
       return tree->mmod->c_lnL;
     }
 
-  tree->mmod->c_lnL += PHYREX_LnPrior_Radius(tree);
+  /* tree->mmod->c_lnL += PHYREX_LnPrior_Radius(tree); */
   
   PHYREX_Update_Lindisk_List(tree);
 

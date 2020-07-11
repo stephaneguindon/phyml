@@ -93,10 +93,6 @@ static inline int isinf_d  (double      x) { return isnan (x - x); }
 static inline int isinf_ld (long double x) { return isnan (x - x); }
 #endif
 
-
-int CALL;
-int TIME;
-
 #define SLFV_GAUSSIAN 0 /* Spatial Lambda-Fleming-Viot model (Gaussian) */
 #define SLFV_UNIFORM 1 /* Spatial Lambda-Fleming-Viot model (Uniform) */
 #define RW  2 /* standard Brownian diffusion model in phylogeography */

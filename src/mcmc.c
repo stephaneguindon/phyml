@@ -8636,7 +8636,7 @@ void MCMC_PHYREX_Disk_Multi(t_tree *tree)
   
   /* n_move_disks = Rand_Int(1,1+(int)(n_all_disks/10)); */
   /* n_move_disks = MIN(10,(int)(1.+0.1*n_all_disks)); */
-  n_move_disks = (int)(1+n_all_disks/20);
+  n_move_disks = (int)(1+n_all_disks/50);
   
   permut = Permutate(n_all_disks);
 
@@ -8767,7 +8767,7 @@ void MCMC_PHYREX_Ldsk_Multi(t_tree *tree)
   if(tree->mmod->id == RW || tree->mmod->id == RRW)
     {
       rad = 0.0;
-      for(j=0;j<tree->mmod->n_dim;j++) rad += 0.1 * (tree->mmod->lim_up->lonlat[j]-tree->mmod->lim_do->lonlat[j]);
+      for(j=0;j<tree->mmod->n_dim;j++) rad += 0.01 * (tree->mmod->lim_up->lonlat[j]-tree->mmod->lim_do->lonlat[j]);
       rad /= tree->mmod->n_dim;
     }
   
@@ -8794,7 +8794,7 @@ void MCMC_PHYREX_Ldsk_Multi(t_tree *tree)
 
   if(!n_all_disks) return;
   
-  n_move_ldsk = (int)(1+n_all_disks/20);
+  n_move_ldsk = (int)(1+n_all_disks/50);
   
   target_disk = (t_dsk **)mCalloc(n_all_disks,sizeof(t_dsk *));
 
@@ -9039,7 +9039,7 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree)
   if(tree->mmod->id == RW || tree->mmod->id == RRW)
     {
       rad = 0.0;
-      for(j=0;j<tree->mmod->n_dim;j++) rad += 0.1 * (tree->mmod->lim_up->lonlat[j]-tree->mmod->lim_do->lonlat[j]);
+      for(j=0;j<tree->mmod->n_dim;j++) rad += 0.01 * (tree->mmod->lim_up->lonlat[j]-tree->mmod->lim_do->lonlat[j]);
       rad /= tree->mmod->n_dim;
     }
     
@@ -9076,8 +9076,8 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree)
       
       disk = all_disks[permut[i]];
             
-      hr       = 0.0;
-      ratio    = 0.0;
+      hr    = 0.0;
+      ratio = 0.0;
       
       PHYREX_Store_Geo_Coord(disk->ldsk->coord);
             
@@ -9093,7 +9093,15 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree)
       
       for(j=0;j<tree->mmod->n_dim;j++)
         {
-          c = disk->centr->lonlat[j];
+
+          if(tree->mmod->id == SLFV_UNIFORM || tree->mmod->id == SLFV_GAUSSIAN)
+            {
+              c = disk->centr->lonlat[j];
+            }
+          else if(tree->mmod->id == RW || tree->mmod->id == RRW)
+            {
+              c = disk->ldsk->coord->lonlat[j];
+            }
           
           err = NO;
           disk->ldsk->coord->lonlat[j] =

@@ -363,8 +363,8 @@ void PHYREX_XML(char *xml_filename)
   mixt_tree->mmod->mu   = 0.8;
 
   if(mixt_tree->mmod->id == SLFV_GAUSSIAN || mixt_tree->mmod->id == SLFV_UNIFORM)
-    mixt_tree->mmod->rad  = 0.1*((mixt_tree->mmod->lim_up->lonlat[0]-mixt_tree->mmod->lim_do->lonlat[0])+
-                                 (mixt_tree->mmod->lim_up->lonlat[1]-mixt_tree->mmod->lim_do->lonlat[1]));
+    mixt_tree->mmod->rad  = 0.05*((mixt_tree->mmod->lim_up->lonlat[0]-mixt_tree->mmod->lim_do->lonlat[0])+
+                                  (mixt_tree->mmod->lim_up->lonlat[1]-mixt_tree->mmod->lim_do->lonlat[1]));
   else if(mixt_tree->mmod->id == RW || mixt_tree->mmod->id == RRW)
     mixt_tree->mmod->rad  = 2.0*((mixt_tree->mmod->lim_up->lonlat[0]-mixt_tree->mmod->lim_do->lonlat[0])+
                                  (mixt_tree->mmod->lim_up->lonlat[1]-mixt_tree->mmod->lim_do->lonlat[1]));
@@ -561,6 +561,7 @@ int PHYREX_Is_In_Disk(t_geo_coord *coord, t_dsk *disk, t_phyrex_mod *mmod)
 
 phydbl PHYREX_Lk(t_tree *tree)
 {
+
   switch(tree->mmod->id)
     {
     case SLFV_GAUSSIAN : case SLFV_UNIFORM :
@@ -588,6 +589,7 @@ phydbl PHYREX_Lk(t_tree *tree)
 
 phydbl PHYREX_Lk_Core(t_dsk *disk, t_tree *tree)
 {
+
   switch(tree->mmod->id)
     {
     case SLFV_GAUSSIAN : case SLFV_UNIFORM :
@@ -614,7 +616,8 @@ phydbl PHYREX_Lk_Core(t_dsk *disk, t_tree *tree)
 // Warning: the calculation below does not incoporate time information
 // since things get messy when considering serial samples
 phydbl PHYREX_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
-{
+{  
+    
   switch(tree->mmod->id)
     {
     case SLFV_GAUSSIAN : case SLFV_UNIFORM :
