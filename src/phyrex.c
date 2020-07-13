@@ -400,8 +400,8 @@ void PHYREX_XML(char *xml_filename)
   if(mixt_tree->mmod->id == RW || mixt_tree->mmod->id == RRW)
     {
       Make_Contrasts(mixt_tree);
-      mixt_tree->mmod->max_num_of_intervals = 3*tree->n_otu-2;
-  }
+      mixt_tree->mmod->max_num_of_intervals = 3*mixt_tree->n_otu-2;
+    }
 
   assert(PHYREX_Check_Struct(mixt_tree));
   PHYREX_Lk(mixt_tree);
@@ -807,7 +807,10 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%s\t","tuneLdskGivenDisk");
       PhyML_Fprintf(fp_stats,"%s\t","tuneIndelDiskSerial");
       PhyML_Fprintf(fp_stats,"%s\t","tuneIndelHitSerial");
-      for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"s%d\t",i);
+      for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"s%d%c\t",
+                                                       i,
+                                                       (tree->a_nodes[i]==tree->n_root->v[1] ||
+                                                        tree->a_nodes[i]==tree->n_root->v[2]) ? '*' : ' ');
     }
   
 

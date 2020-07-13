@@ -6619,8 +6619,8 @@ void MCMC_PHYREX_Neff(t_tree *tree)
                                 0.0,
                                 1.E+6,
                                 tree->mcmc->num_move_phyrex_neff,
-                                NULL,&(tree->times->c_lnL_times),
-                                NULL,(tree->eval_glnL == YES) ? TIMES_Wrap_Lk_Coalescent : NULL,
+                                NULL,&(tree->mmod->c_lnL),
+                                NULL,(tree->eval_glnL == YES) ? PHYREX_Wrap_Lk : NULL,
                                 tree->mcmc->move_type[tree->mcmc->num_move_phyrex_neff],
                                 NO,NULL,tree,NULL);
     }
@@ -9032,7 +9032,8 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree)
   all_disks   = NULL;
   n_all_disks = 0;
   c           = -1.;
-  K           = tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_ldsk_given_disk];
+  /* K           = tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_ldsk_given_disk]; */
+  K           = 1.0;
   rad         = tree->mmod->rad;
 
 
@@ -9103,6 +9104,7 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree)
               c = disk->ldsk->coord->lonlat[j];
             }
           
+
           err = NO;
           disk->ldsk->coord->lonlat[j] =
             Rnorm_Trunc(c,
@@ -9110,6 +9112,7 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree)
                         tree->mmod->lim_do->lonlat[j],
                         tree->mmod->lim_up->lonlat[j],&err);
           
+
           if(err == YES) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
           hr -= Log_Dnorm_Trunc(disk->ldsk->coord->lonlat[j],
@@ -9143,7 +9146,6 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree)
       ratio = exp(ratio);
       alpha = MIN(1.,ratio);
       
-      if(disk->prev == NULL) PhyML_Printf("\n. new: %f cur:%f hr: %f",new_glnL,cur_glnL,hr);
 
       u = Uni();
       
@@ -10361,35 +10363,39 @@ void MCMC_PHYREX_Sigsq_Scale(t_tree *tree)
       
       m = exp(K*(Uni()-.5));
       new_scale = m * cur_scale;
-      hr += log(m);
 
-      tree->mmod->sigsq_scale[permut[i]] = new_scale;
-      
-      if(tree->eval_glnL == YES) new_lnL_geo = PHYREX_Lk(tree);
-
-      ratio += (new_lnL_geo - cur_lnL_geo);
-
-      ratio += hr;
-
-      ratio = exp(ratio);
-      alpha = MIN(1.,ratio);
-
-        /* Always accept move */
-      if(tree->mcmc->always_yes == YES && new_lnL_geo > UNLIKELY) alpha = 1.0;
-
-      u = Uni();
-
-      assert(isnan(u) == NO && isinf(fabs(u)) == NO);
-      
-      if(u > alpha) /* Reject */
+      if(new_scale > tree->mmod->sigsq_scale_min && new_scale < tree->mmod->sigsq_scale_max)
         {
-          tree->mmod->c_lnL = cur_lnL_geo;
-          tree->mmod->sigsq_scale[permut[i]] = cur_scale;
+          hr += log(m);
+          
+          tree->mmod->sigsq_scale[permut[i]] = new_scale;
+          
+          if(tree->eval_glnL == YES) new_lnL_geo = PHYREX_Lk(tree);
+          
+          ratio += (new_lnL_geo - cur_lnL_geo);
+          
+          ratio += hr;
+          
+          ratio = exp(ratio);
+          alpha = MIN(1.,ratio);
+          
+          /* Always accept move */
+          if(tree->mcmc->always_yes == YES && new_lnL_geo > UNLIKELY) alpha = 1.0;
+          
+          u = Uni();
+          
+          assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+          
+          if(u > alpha) /* Reject */
+            {
+              tree->mmod->c_lnL = cur_lnL_geo;
+              tree->mmod->sigsq_scale[permut[i]] = cur_scale;
+            }
+          else
+            {
+              tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_sigsq_scale]++;
+            }
         }
-      else
-        {
-          tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_sigsq_scale]++;
-        }    
     }
 
   Free(permut);

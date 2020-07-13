@@ -1940,6 +1940,9 @@ typedef struct __Migrep_Model{
   struct __Geo_Coord         *lim_up; // max longitude and lattitude                        
   struct __Geo_Coord         *lim_do; // min longitude and lattitude                        
   phydbl                *sigsq_scale; // Scaling factors for the variance parameter in RRW model
+
+  phydbl             sigsq_scale_min;
+  phydbl             sigsq_scale_max;
   
   short int                       id;
   int                          n_dim;

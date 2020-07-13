@@ -28,7 +28,7 @@ the GNU public licence. See http://www.opensource.org for details.
 #define BootTreeTag 0
 #define BootStatTag 1
 
-int Global_numTask, Global_myRank;
+extern int Global_numTask, Global_myRank;
 
 
 void Bootstrap_MPI(t_tree *tree);
