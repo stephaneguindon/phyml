@@ -12,6 +12,10 @@ the GNU public licence. See http://www.opensource.org for details.
 
 #include "mpi_boot.h"
 
+int Global_numTask;
+int Global_myRank;
+
+
 /* #ifdef MPI */
 
 /*********************************************************/

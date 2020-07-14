@@ -359,14 +359,14 @@ void PHYREX_XML(char *xml_filename)
   
 
   /* Initialize parameters of migrep model */
-  mixt_tree->mmod->lbda = 1.;
-  mixt_tree->mmod->mu   = 0.8;
+  mixt_tree->mmod->lbda = 10.0;
+  mixt_tree->mmod->mu   = 1.0;
 
   if(mixt_tree->mmod->id == SLFV_GAUSSIAN || mixt_tree->mmod->id == SLFV_UNIFORM)
     mixt_tree->mmod->rad  = 0.05*((mixt_tree->mmod->lim_up->lonlat[0]-mixt_tree->mmod->lim_do->lonlat[0])+
                                   (mixt_tree->mmod->lim_up->lonlat[1]-mixt_tree->mmod->lim_do->lonlat[1]));
   else if(mixt_tree->mmod->id == RW || mixt_tree->mmod->id == RRW)
-    mixt_tree->mmod->rad  = 2.0*((mixt_tree->mmod->lim_up->lonlat[0]-mixt_tree->mmod->lim_do->lonlat[0])+
+    mixt_tree->mmod->rad  = 1.0*((mixt_tree->mmod->lim_up->lonlat[0]-mixt_tree->mmod->lim_do->lonlat[0])+
                                  (mixt_tree->mmod->lim_up->lonlat[1]-mixt_tree->mmod->lim_do->lonlat[1]));
   else assert(FALSE);
 
@@ -378,7 +378,7 @@ void PHYREX_XML(char *xml_filename)
     {
     case 0 : case 1 :
       {
-        PHYREX_Simulate_Backward_Core(mixt_tree->young_disk,YES,mixt_tree);
+        PHYREX_Simulate_Backward_Core(mixt_tree->young_disk,NO,mixt_tree);
         PHYREX_Ldsk_To_Tree(mixt_tree);
         break;
       }
@@ -391,6 +391,9 @@ void PHYREX_XML(char *xml_filename)
 
   Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree);
   Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);  
+
+  mixt_tree->mmod->rad = 0.1;
+
   
   MIXT_Set_Ignore_Root(YES,mixt_tree);
   MIXT_Set_Bl_From_Rt(YES,mixt_tree);
@@ -749,6 +752,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%s\t","lnP");
       PhyML_Fprintf(fp_stats,"%s\t","alnL");
       PhyML_Fprintf(fp_stats,"%s\t","glnL");
+      PhyML_Fprintf(fp_stats,"%s\t","coalescent");
       PhyML_Fprintf(fp_stats,"%s\t","clock");
       PhyML_Fprintf(fp_stats,"%s\t","evolrate");
       PhyML_Fprintf(fp_stats,"%s\t","lbda");
@@ -881,6 +885,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%g\t",tree->c_lnL+tree->mmod->c_lnL+tree->rates->c_lnL_rates);
           PhyML_Fprintf(fp_stats,"%g\t",tree->c_lnL);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->c_lnL);
+          PhyML_Fprintf(fp_stats,"%g\t",tree->times->c_lnL_times);
           PhyML_Fprintf(fp_stats,"%g\t",tree->rates->clock_r);
           PhyML_Fprintf(fp_stats,"%g\t",RATES_Realized_Substitution_Rate(tree));
           PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->lbda);
@@ -975,6 +980,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           tree->mcmc->sample_num++;
         }
 
+      
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_lbda"))
         MCMC_PHYREX_Lbda(tree);
       

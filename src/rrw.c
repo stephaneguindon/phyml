@@ -20,12 +20,10 @@ phydbl RRW_Lk(t_tree *tree)
   phydbl d_fwd,d_ic,d_coal,d_sigsq_scale;
   phydbl t_dum;
   int idx_dum;
-  
+      
   assert(tree->mmod->id == RRW);
 
   #ifdef PHYREX
-  /* PHYREX_Update_Lindisk_List(tree); */
-  /* PHYREX_Ldsk_To_Tree(tree); */
   if(PHYREX_Total_Number_Of_Intervals(tree) > tree->mmod->max_num_of_intervals) return UNLIKELY;
   #endif
   
@@ -41,7 +39,6 @@ phydbl RRW_Lk(t_tree *tree)
   // Make sure node times are set back to their original values
   assert(fabs(t_dum - tree->times->nd_t[idx_dum]) < 1.E-4);
 
-  tree->times->c_lnL_times = d_coal;
   /* tree->mmod->c_lnL = d_fwd - d_ic + d_coal + d_sigsq_scale; */
   tree->mmod->c_lnL = d_fwd + d_coal + d_sigsq_scale;
     
