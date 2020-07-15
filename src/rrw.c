@@ -39,8 +39,8 @@ phydbl RRW_Lk(t_tree *tree)
   // Make sure node times are set back to their original values
   assert(fabs(t_dum - tree->times->nd_t[idx_dum]) < 1.E-4);
 
-  /* tree->mmod->c_lnL = d_fwd - d_ic + d_coal + d_sigsq_scale; */
-  tree->mmod->c_lnL = d_fwd + d_coal + d_sigsq_scale;
+  tree->mmod->c_lnL = d_fwd - d_ic + d_coal + d_sigsq_scale;
+  /* tree->mmod->c_lnL = d_fwd + d_coal + d_sigsq_scale; */
     
   return(tree->mmod->c_lnL);
 }

@@ -3066,7 +3066,7 @@ int Assign_State_With_Ambiguity(char *c, int datatype, int stepsize)
       if(Is_Ambigu(c,GENERIC,stepsize)) state[0] = T_MAX_ALPHABET-1;
       else
         {
-          char format[6];
+          char format[20];
           sprintf(format,"%%%dd",stepsize);
           if(!sscanf(c,format,state))
             {
@@ -4891,7 +4891,7 @@ int Are_Compatible(char *statea, char *stateb, int stepsize, int datatype)
       else
         {
           int a,b;
-          char format[6];
+          char format[20];
           
           sprintf(format,"%%%dd",stepsize);
           
