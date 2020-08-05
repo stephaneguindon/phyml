@@ -716,7 +716,7 @@ typedef struct __Tree{
   struct __Tree                    *next_mixt; /*! set to NULL by default. Used for mixture models */
   struct __Tree                    *prev_mixt; /*! set to NULL by default. Used for mixture models */
   struct __Tree                    *mixt_tree; /*! set to NULL by default. Used for mixture models */
-  struct __Tree                   *extra_tree; /*! set to NULL by default. Used a latent variable in molecular dating */
+  struct __Tree                   *aux_tree; /*! set to NULL by default. Used a latent variable in molecular dating */
   struct __Option                         *io; /*! input/output */
   struct __Matrix                        *mat; /*! pairwise distance matrix */
   struct __Node                   **curr_path; /*! list of nodes that form a path in the tree */

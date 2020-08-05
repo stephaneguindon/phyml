@@ -104,7 +104,7 @@ void Init_Tree(t_tree *tree, int n_otu)
   tree->mixt_tree                 = NULL;
   tree->geo                       = NULL;
   tree->xml_root                  = NULL;
-  tree->extra_tree                = NULL;
+  tree->aux_tree                = NULL;
   tree->verbose                   = VL3;
   tree->edge_list                 = NULL;
   tree->node_list                 = NULL;

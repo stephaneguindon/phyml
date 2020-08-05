@@ -31,16 +31,16 @@ phydbl RRW_Lk(t_tree *tree)
   t_dum = tree->times->nd_t[idx_dum];
   d_fwd = RRW_Forward_Lk(tree);
   d_coal = TIMES_Lk_Coalescent(tree);
-  RRW_Rescale_Times(YES,tree);
-  d_ic = RW_Independent_Contrasts(tree);
-  RRW_Rescale_Times(NO,tree);
+  /* RRW_Rescale_Times(YES,tree); */
+  /* d_ic = RW_Independent_Contrasts(tree); */
+  /* RRW_Rescale_Times(NO,tree); */
   d_sigsq_scale = RRW_Prior_Sigsq_Scale(tree);
   
   // Make sure node times are set back to their original values
   assert(fabs(t_dum - tree->times->nd_t[idx_dum]) < 1.E-4);
 
-  tree->mmod->c_lnL = d_fwd - d_ic + d_coal + d_sigsq_scale;
-  /* tree->mmod->c_lnL = d_fwd + d_coal + d_sigsq_scale; */
+  /* tree->mmod->c_lnL = d_fwd - d_ic + d_coal + d_sigsq_scale; */
+  tree->mmod->c_lnL = d_fwd + d_coal + d_sigsq_scale;
     
   return(tree->mmod->c_lnL);
 }

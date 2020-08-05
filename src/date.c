@@ -278,11 +278,11 @@ void DATE_XML(char *xml_filename)
 
   // Cleaning up...
   RATES_Free_Rates(mixt_tree->rates);
-  RATES_Free_Rates(mixt_tree->extra_tree->rates);
+  RATES_Free_Rates(mixt_tree->aux_tree->rates);
   TIMES_Free_Times(mixt_tree->times);
-  TIMES_Free_Times(mixt_tree->extra_tree->times);
+  TIMES_Free_Times(mixt_tree->aux_tree->times);
   MCMC_Free_MCMC(mixt_tree->mcmc);
-  MCMC_Free_MCMC(mixt_tree->extra_tree->mcmc);
+  MCMC_Free_MCMC(mixt_tree->aux_tree->mcmc);
   Free_Mmod(mixt_tree->mmod);
   Free_Spr_List_One_Edge(mixt_tree);
   Free_Tree_Pars(mixt_tree);
@@ -314,7 +314,7 @@ void DATE_XML(char *xml_filename)
   
   Free_Model_Complete(mixt_tree->mod);
   Free_Model_Basic(mixt_tree->mod);
-  Free_Tree(mixt_tree->extra_tree);  
+  Free_Tree(mixt_tree->aux_tree);  
   Free_Tree(mixt_tree);  
   Free(res);
   XML_Free_XML_Tree(xroot);
@@ -797,31 +797,31 @@ phydbl *DATE_MCMC(t_tree *tree)
   PhyML_Printf("\n. log(Pr(Tree)) = %f",tree->times->c_lnL_times);
     
     
-  tree->extra_tree = Make_Tree_From_Scratch(tree->n_otu,tree->data);
-  tree->extra_tree->mod = tree->mod;
-  Copy_Tree(tree,tree->extra_tree);
+  tree->aux_tree = Make_Tree_From_Scratch(tree->n_otu,tree->data);
+  tree->aux_tree->mod = tree->mod;
+  Copy_Tree(tree,tree->aux_tree);
 
-  tree->extra_tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
-  RATES_Init_Rate_Struct(tree->extra_tree->rates,NULL,tree->n_otu);
-  RATES_Copy_Rate_Struct(tree->rates,tree->extra_tree->rates,tree->n_otu);
-  tree->extra_tree->rates->model = LOGNORMAL;
+  tree->aux_tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
+  RATES_Init_Rate_Struct(tree->aux_tree->rates,NULL,tree->n_otu);
+  RATES_Copy_Rate_Struct(tree->rates,tree->aux_tree->rates,tree->n_otu);
+  tree->aux_tree->rates->model = LOGNORMAL;
 
-  tree->extra_tree->times = TIMES_Make_Time_Struct(tree->n_otu);
-  TIMES_Init_Time_Struct(tree->extra_tree->times,NULL,tree->n_otu);
-  TIMES_Copy_Time_Struct(tree->times,tree->extra_tree->times,tree->n_otu);
+  tree->aux_tree->times = TIMES_Make_Time_Struct(tree->n_otu);
+  TIMES_Init_Time_Struct(tree->aux_tree->times,NULL,tree->n_otu);
+  TIMES_Copy_Time_Struct(tree->times,tree->aux_tree->times,tree->n_otu);
 
-  RATES_Duplicate_Calib_Struct(tree,tree->extra_tree);
-  MIXT_Chain_Cal(tree->extra_tree);  
-  DATE_Assign_Primary_Calibration(tree->extra_tree);
-  TIMES_Randomize_Tree_With_Time_Constraints(tree->extra_tree->times->a_cal[0],tree->extra_tree);
+  RATES_Duplicate_Calib_Struct(tree,tree->aux_tree);
+  MIXT_Chain_Cal(tree->aux_tree);  
+  DATE_Assign_Primary_Calibration(tree->aux_tree);
+  TIMES_Randomize_Tree_With_Time_Constraints(tree->aux_tree->times->a_cal[0],tree->aux_tree);
   
   
-  TIMES_Lk_Times(NO,tree->extra_tree);
-  PhyML_Printf("\n. log(Pr(extra tree)) = %f",tree->extra_tree->times->c_lnL_times);
+  TIMES_Lk_Times(NO,tree->aux_tree);
+  PhyML_Printf("\n. log(Pr(extra tree)) = %f",tree->aux_tree->times->c_lnL_times);
   mcmc = MCMC_Make_MCMC_Struct();
-  tree->extra_tree->mcmc = mcmc;
+  tree->aux_tree->mcmc = mcmc;
   MCMC_Init_MCMC_Struct(NULL,NULL,mcmc);
-  MCMC_Complete_MCMC(mcmc,tree->extra_tree);
+  MCMC_Complete_MCMC(mcmc,tree->aux_tree);
       
   PhyML_Fprintf(fp_stats,"\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t",
                 "sample",

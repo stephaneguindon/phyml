@@ -303,7 +303,6 @@ void PHYREX_XML(char *xml_filename)
   srand(seed);
   mixt_tree->io->r_seed = seed;
 
-  
   MIXT_Check_Model_Validity(mixt_tree);
   MIXT_Init_Model(mixt_tree);
   Print_Data_Structure(NO,stdout,mixt_tree);
@@ -321,11 +320,9 @@ void PHYREX_XML(char *xml_filename)
   MIXT_Turn_Branches_OnOff_In_All_Elem(ON,mixt_tree);
   MIXT_Check_Invar_Struct_In_Each_Partition_Elem(mixt_tree);
   MIXT_Check_RAS_Struct_In_Each_Partition_Elem(mixt_tree);
-
   
   XML_Read_Calibration(xroot,mixt_tree);
   MIXT_Chain_Cal(mixt_tree);
-
 
   if(TIMES_Calibrations_Apply_To_Tips_Only(mixt_tree) == YES &&
      mixt_tree->mod->s_opt->opt_topo == NO)
@@ -342,21 +339,53 @@ void PHYREX_XML(char *xml_filename)
   
   MIXT_Propagate_Tree_Update(mixt_tree);
 
+  mixt_tree->aux_tree = Make_Tree_From_Scratch(mixt_tree->n_otu,mixt_tree->data);
+  mixt_tree->aux_tree->mod = mixt_tree->mod;
+  mixt_tree->aux_tree->io = mixt_tree->io;
+  
+  mixt_tree->aux_tree->mmod = PHYREX_Make_Migrep_Model(mixt_tree->n_otu,2);
+  mixt_tree->aux_tree->mmod->n_dim = 2;
+  PHYREX_Set_Default_Migrep_Mod(mixt_tree->n_otu,mixt_tree->aux_tree->mmod);
+  mixt_tree->aux_tree->mmod->id = mixt_tree->mmod->id; 
+
+  
+  Copy_Tree(mixt_tree,mixt_tree->aux_tree);
+
+  mixt_tree->aux_tree->rates = RATES_Make_Rate_Struct(mixt_tree->n_otu);
+  RATES_Init_Rate_Struct(mixt_tree->aux_tree->rates,NULL,mixt_tree->n_otu);
+  RATES_Copy_Rate_Struct(mixt_tree->rates,mixt_tree->aux_tree->rates,mixt_tree->n_otu);
+  mixt_tree->aux_tree->rates->model = LOGNORMAL;
+
+  mixt_tree->aux_tree->times = TIMES_Make_Time_Struct(mixt_tree->n_otu);
+  TIMES_Init_Time_Struct(mixt_tree->aux_tree->times,NULL,mixt_tree->n_otu);
+  TIMES_Copy_Time_Struct(mixt_tree->times,mixt_tree->aux_tree->times,mixt_tree->n_otu);
+
+  RATES_Duplicate_Calib_Struct(mixt_tree,mixt_tree->aux_tree);
+  MIXT_Chain_Cal(mixt_tree->aux_tree);  
+  DATE_Assign_Primary_Calibration(mixt_tree->aux_tree);
+
+  mixt_tree->aux_tree->mcmc = MCMC_Make_MCMC_Struct();
+  MCMC_Init_MCMC_Struct(NULL,NULL,mixt_tree->aux_tree->mcmc);
+  MCMC_Complete_MCMC(mixt_tree->aux_tree->mcmc,mixt_tree->aux_tree);
+
+
   /* Create ldsks and connect tree tips to them */
   /* once tip dates have been set properly (in */
   /* TIMES_Randomize_Tree_With_Time_Constraints) */
   PHYREX_Make_And_Connect_Tip_Disks(mixt_tree);
+  PHYREX_Make_And_Connect_Tip_Disks(mixt_tree->aux_tree);
 
   
   /* Read spatial coordinates */
   PHYREX_Read_Tip_Coordinates(mixt_tree);
+  PHYREX_Read_Tip_Coordinates(mixt_tree->aux_tree);
+
   PHYREX_Init_Migrep_Mod(mixt_tree->mmod,2,
                          mixt_tree->mmod->lim_do->lonlat[0],
                          mixt_tree->mmod->lim_do->lonlat[1],
                          mixt_tree->mmod->lim_up->lonlat[0],
                          mixt_tree->mmod->lim_up->lonlat[1]);
 
-  
 
   /* Initialize parameters of migrep model */
   mixt_tree->mmod->lbda = 10.0;
@@ -372,6 +401,12 @@ void PHYREX_XML(char *xml_filename)
 
   mixt_tree->mmod->sigsq = PHYREX_Update_Sigsq(mixt_tree);
 
+
+  mixt_tree->aux_tree->mmod->lbda  = mixt_tree->mmod->lbda;
+  mixt_tree->aux_tree->mmod->mu    = mixt_tree->mmod->mu;
+  mixt_tree->aux_tree->mmod->rad   = mixt_tree->mmod->rad;
+  mixt_tree->aux_tree->mmod->sigsq = mixt_tree->mmod->sigsq;
+  
   
   /* Random genealogy or user-defined tree */
   switch(mixt_tree->io->in_tree)
@@ -393,19 +428,27 @@ void PHYREX_XML(char *xml_filename)
   Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);  
 
   mixt_tree->mmod->rad = 0.1;
-
   
   MIXT_Set_Ignore_Root(YES,mixt_tree);
   MIXT_Set_Bl_From_Rt(YES,mixt_tree);
 
   PHYREX_Oldest_Sampled_Disk(mixt_tree);
+  PHYREX_Oldest_Sampled_Disk(mixt_tree->aux_tree);
 
   if(mixt_tree->mmod->id == RW || mixt_tree->mmod->id == RRW)
     {
       Make_Contrasts(mixt_tree);
+      Make_Contrasts(mixt_tree->aux_tree);
       mixt_tree->mmod->max_num_of_intervals = 3*mixt_tree->n_otu-2;
+      mixt_tree->aux_tree->mmod->max_num_of_intervals = 3*mixt_tree->n_otu-2;
     }
 
+  PHYREX_Simulate_Backward_Core(mixt_tree->aux_tree->young_disk,NO,mixt_tree->aux_tree);
+  PHYREX_Ldsk_To_Tree(mixt_tree->aux_tree);
+  Update_Ancestors(mixt_tree->aux_tree->n_root,mixt_tree->aux_tree->n_root->v[2],mixt_tree->aux_tree);
+  Update_Ancestors(mixt_tree->aux_tree->n_root,mixt_tree->aux_tree->n_root->v[1],mixt_tree->aux_tree);  
+
+  
   assert(PHYREX_Check_Struct(mixt_tree));
   PHYREX_Lk(mixt_tree);
   Set_Update_Eigen(YES,mixt_tree->mod);
@@ -419,11 +462,11 @@ void PHYREX_XML(char *xml_filename)
   
   // Cleaning up...
   RATES_Free_Rates(mixt_tree->rates);
-  RATES_Free_Rates(mixt_tree->extra_tree->rates);
+  RATES_Free_Rates(mixt_tree->aux_tree->rates);
   TIMES_Free_Times(mixt_tree->times);
-  TIMES_Free_Times(mixt_tree->extra_tree->times);
+  TIMES_Free_Times(mixt_tree->aux_tree->times);
   MCMC_Free_MCMC(mixt_tree->mcmc);
-  MCMC_Free_MCMC(mixt_tree->extra_tree->mcmc);
+  MCMC_Free_MCMC(mixt_tree->aux_tree->mcmc);
   Free_Mmod(mixt_tree->mmod);
   Free_Spr_List_One_Edge(mixt_tree);
   Free_Tree_Pars(mixt_tree);
@@ -455,7 +498,7 @@ void PHYREX_XML(char *xml_filename)
   
   Free_Model_Complete(mixt_tree->mod);
   Free_Model_Basic(mixt_tree->mod);
-  Free_Tree(mixt_tree->extra_tree);  
+  Free_Tree(mixt_tree->aux_tree);  
   Free_Tree(mixt_tree);  
   Free(res);
   XML_Free_XML_Tree(xroot);
@@ -2923,6 +2966,8 @@ void PHYREX_Read_Tip_Coordinates(t_tree *tree)
   fp   = tree->io->fp_in_coord;
   done = (int *)mCalloc(tree->n_otu,sizeof(int));
 
+  rewind(fp);
+  
   found_sw = NO;
   found_ne = NO;
 
