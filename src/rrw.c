@@ -17,7 +17,7 @@ the GNU public licence. See http://www.opensource.org for details.
 
 phydbl RRW_Lk(t_tree *tree)
 {
-  phydbl d_fwd,d_ic,d_coal,d_sigsq_scale;
+  phydbl d_fwd,d_coal,d_sigsq_scale;
   phydbl t_dum;
   int idx_dum;
       
@@ -31,15 +31,11 @@ phydbl RRW_Lk(t_tree *tree)
   t_dum = tree->times->nd_t[idx_dum];
   d_fwd = RRW_Forward_Lk(tree);
   d_coal = TIMES_Lk_Coalescent(tree);
-  /* RRW_Rescale_Times(YES,tree); */
-  /* d_ic = RW_Independent_Contrasts(tree); */
-  /* RRW_Rescale_Times(NO,tree); */
   d_sigsq_scale = RRW_Prior_Sigsq_Scale(tree);
   
   // Make sure node times are set back to their original values
   assert(fabs(t_dum - tree->times->nd_t[idx_dum]) < 1.E-4);
 
-  /* tree->mmod->c_lnL = d_fwd - d_ic + d_coal + d_sigsq_scale; */
   tree->mmod->c_lnL = d_fwd + d_coal + d_sigsq_scale;
     
   return(tree->mmod->c_lnL);
@@ -98,34 +94,15 @@ void RRW_Rescale_Times_Pre(t_node *a, t_node *d, phydbl cur_ta, int prod, t_tree
 
 phydbl RRW_Forward_Lk(t_tree *tree)
 {
-  phydbl lnP,la,ld,sd;
-  int i,err;
+  phydbl lnP;
+  int i;
 
   lnP = 0.0;
+
   RRW_Forward_Lk_Pre(tree->n_root,tree->n_root->v[1],&lnP,tree);
   RRW_Forward_Lk_Pre(tree->n_root,tree->n_root->v[2],&lnP,tree);
-  
 
-  for(i=0;i<tree->mmod->n_dim;++i)
-    {
-      ld = tree->n_root->v[1]->ldsk->coord->lonlat[i];
-      la = tree->n_root->ldsk->coord->lonlat[i];
-      sd = sqrt(tree->mmod->sigsq *
-                tree->mmod->sigsq_scale[tree->n_root->v[1]->num] *
-                fabs(tree->times->nd_t[tree->n_root->v[1]->num]-tree->times->nd_t[tree->n_root->num]));
-      
-      lnP += Log_Dnorm(ld,la,sd,&err);
-
-      
-      ld = tree->n_root->v[2]->ldsk->coord->lonlat[i];
-      la = tree->n_root->ldsk->coord->lonlat[i];
-      sd = sqrt(tree->mmod->sigsq*
-                tree->mmod->sigsq_scale[tree->n_root->v[2]->num] *
-                fabs(tree->times->nd_t[tree->n_root->v[2]->num]-tree->times->nd_t[tree->n_root->num]));
-      
-      lnP += Log_Dnorm(ld,la,sd,&err);
-    }
-  
+  // Density for the root location
   for(i=0;i<tree->mmod->n_dim;++i) lnP -= log(tree->mmod->lim_up->lonlat[i]-tree->mmod->lim_do->lonlat[i]);
   return(lnP);
 }
@@ -135,20 +112,9 @@ phydbl RRW_Forward_Lk(t_tree *tree)
 
 void RRW_Forward_Lk_Pre(t_node *a, t_node *d, phydbl *lnP, t_tree *tree)
 {
-  int i,err;
-  phydbl ld,la,sd;
-  
-  sd = sqrt(tree->mmod->sigsq *
-            tree->mmod->sigsq_scale[d->num] *
-            fabs(tree->times->nd_t[d->num]-tree->times->nd_t[a->num]));
+  int i;
 
-  for(i=0;i<tree->mmod->n_dim;++i)
-    {
-      ld = d->ldsk->coord->lonlat[i];
-      la = a->ldsk->coord->lonlat[i];
-      
-      *lnP += Log_Dnorm(ld,la,sd,&err);
-    }
+  *lnP += RRW_Forward_Lk_Path(a,d,tree);
   
   if(d->tax) return;
   else
@@ -165,6 +131,43 @@ void RRW_Forward_Lk_Pre(t_node *a, t_node *d, phydbl *lnP, t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+phydbl RRW_Forward_Lk_Path(t_node *a, t_node *d, t_tree *tree)
+{
+  t_ldsk *ldsk;
+  phydbl lnP,sd,ld,la;
+  int i,err;
+
+  lnP = 0.0;
+  
+  ldsk = d->ldsk;
+
+  if(a->ldsk == d->ldsk) return(0.0); // multifurcation
+                              
+  do
+    {
+      assert(ldsk->prev);
+      
+      sd = sqrt(tree->mmod->sigsq *
+                tree->mmod->sigsq_scale[d->num] *
+                fabs(ldsk->disk->time-ldsk->prev->disk->time));
+      
+      for(i=0;i<tree->mmod->n_dim;++i)
+        {
+          ld = ldsk->coord->lonlat[i];
+          la = ldsk->prev->coord->lonlat[i];
+          
+          lnP += Log_Dnorm(ld,la,sd,&err);
+        }
+      
+
+      ldsk = ldsk->prev;
+    }
+  while(ldsk != a->ldsk);
+
+  return(lnP);
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

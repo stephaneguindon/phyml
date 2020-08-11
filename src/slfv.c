@@ -1488,11 +1488,10 @@ phydbl SLFV_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_mergers,
           for(j=0;j<mmod->n_dim;++j) new_disk->centr->lonlat[j] = Uni()*(mmod->lim_up->lonlat[j]-mmod->lim_do->lonlat[j])+mmod->lim_do->lonlat[j];
 
           for(j=0;j<mmod->n_dim;++j) lnL += log(1./(mmod->lim_up->lonlat[j]-mmod->lim_do->lonlat[j]));
-
           
           /* Populate new_disk->ldsk_a array */
-          PHYREX_Update_Lindisk_List_Core(new_disk,tree);
-          
+          PHYREX_Update_Lindisk_List_Core(new_disk,tree);          
+
           new_disk->ldsk = NULL;
           /* Which lineages in new_disk->ldsk_a are hit? */
           for(i=0;i<new_disk->n_ldsk_a;++i)
@@ -1524,6 +1523,7 @@ phydbl SLFV_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_mergers,
               if(!(u > prob_hit)) // disk->ldsk_a[i] is  hit
                 {
                   lnL += log(prob_hit); 
+
                   // new_disk->ldsk_a[i] is hit -> coalesce (or just jump) to parent (i.e., new_disk->ldsk)
                   if(new_disk->ldsk == NULL)
                     {
@@ -1559,6 +1559,7 @@ phydbl SLFV_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_mergers,
                 {
                   lnL += log(1. - prob_hit);
                 }
+              
               if(new_disk->ldsk && new_disk->ldsk->n_next == 2 && avoid_multiple_mergers == YES) break;
             }
         }

@@ -374,7 +374,6 @@ void PHYREX_XML(char *xml_filename)
   /* TIMES_Randomize_Tree_With_Time_Constraints) */
   PHYREX_Make_And_Connect_Tip_Disks(mixt_tree);
   PHYREX_Make_And_Connect_Tip_Disks(mixt_tree->aux_tree);
-
   
   /* Read spatial coordinates */
   PHYREX_Read_Tip_Coordinates(mixt_tree);
@@ -426,9 +425,7 @@ void PHYREX_XML(char *xml_filename)
 
   Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree);
   Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);  
-
-  mixt_tree->mmod->rad = 0.1;
-  
+    
   MIXT_Set_Ignore_Root(YES,mixt_tree);
   MIXT_Set_Bl_From_Rt(YES,mixt_tree);
 
@@ -447,7 +444,6 @@ void PHYREX_XML(char *xml_filename)
   PHYREX_Ldsk_To_Tree(mixt_tree->aux_tree);
   Update_Ancestors(mixt_tree->aux_tree->n_root,mixt_tree->aux_tree->n_root->v[2],mixt_tree->aux_tree);
   Update_Ancestors(mixt_tree->aux_tree->n_root,mixt_tree->aux_tree->n_root->v[1],mixt_tree->aux_tree);  
-
   
   assert(PHYREX_Check_Struct(mixt_tree));
   PHYREX_Lk(mixt_tree);
@@ -456,7 +452,7 @@ void PHYREX_XML(char *xml_filename)
   Set_Update_Eigen(NO,mixt_tree->mod);
   PhyML_Printf("\n. Init lnPr(seq|phylo): %f lnPr(coor|phylo): %f",mixt_tree->c_lnL,mixt_tree->mmod->c_lnL);
   PhyML_Printf("\n. Random seed: %d",mixt_tree->io->r_seed);
-    
+
   res = PHYREX_MCMC(mixt_tree);
   Free(res);  
   
@@ -1090,8 +1086,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_add_remove_jump"))
         MCMC_PHYREX_Add_Remove_Jump(tree);
 
-      if(!strcmp(tree->mcmc->move_name[move],"phyrex_sigsq_scale"))
-        MCMC_PHYREX_Sigsq_Scale(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_sigsq_scale")) */
+      /*   MCMC_PHYREX_Sigsq_Scale(tree); */
 
       if(!strcmp(tree->mcmc->move_name[move],"kappa"))
         MCMC_Kappa(tree);
@@ -1161,9 +1157,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       
       tree->mcmc->run++;
       MCMC_Get_Acc_Rates(tree->mcmc);
-      
-      
-      
+            
       (void)signal(SIGINT,MCMC_Terminate);
     }
   while(tree->mcmc->run < tree->mcmc->chain_len);
@@ -2371,20 +2365,20 @@ void PHYREX_Ldsk_To_Tree(t_tree *tree)
   i = 2*tree->n_otu-3;
   tree->num_curr_branch_available = 0;
   PHYREX_Ldsk_To_Tree_Post(tree->n_root,root_ldsk,&i,tree);
-
+  
   for(i=0;i<tree->n_otu;++i) assert(tree->a_nodes[i]->v[0]);
-
-  for(i=0;i<3;++i) 
-    if(tree->n_root->v[2]->v[i] == tree->n_root) 
-      { 
-        tree->n_root->v[2]->v[i] = tree->n_root->v[1]; 
-        break; 
-      }
 
   for(i=0;i<3;++i) 
     if(tree->n_root->v[1]->v[i] == tree->n_root) 
       { 
         tree->n_root->v[1]->v[i] = tree->n_root->v[2]; 
+        break; 
+      }
+
+  for(i=0;i<3;++i) 
+    if(tree->n_root->v[2]->v[i] == tree->n_root) 
+      { 
+        tree->n_root->v[2]->v[i] = tree->n_root->v[1]; 
         break; 
       }
 
@@ -2539,11 +2533,12 @@ void PHYREX_Tree_To_Ldsk(t_tree *tree)
         PHYREX_Runif_Rectangle_Overlap(a_disk->ldsk,a_disk,tree->mmod);
         break;
       }
-    case SLFV_GAUSSIAN:
+    case SLFV_GAUSSIAN : case RW : case RRW:
       {
         PHYREX_Rnorm_Trunc(a_disk->ldsk,a_disk,tree->mmod);
         break;
       }
+    default : assert(FALSE);
     }
   
   a_disk->ldsk->nd = tree->n_root;
@@ -2635,11 +2630,12 @@ void PHYREX_Tree_To_Ldsk_Post(t_node *a, t_node *d, t_dsk *a_disk, t_tree *tree)
                 PHYREX_Runif_Rectangle_Overlap(d_disk->ldsk,d_disk,tree->mmod);
                 break;
               }
-            case SLFV_GAUSSIAN:
+            case SLFV_GAUSSIAN: case RW: case RRW:
               {
                 PHYREX_Rnorm_Trunc(d_disk->ldsk,d_disk,tree->mmod);
                 break;
               }
+            default : assert(FALSE);
             }
           
           d_disk->ldsk->nd = d;

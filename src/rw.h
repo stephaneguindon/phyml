@@ -19,8 +19,6 @@ the GNU public licence. See http://www.opensource.org for details.
 
 phydbl RW_Independent_Contrasts(t_tree *tree);
 void RW_Independent_Contrasts_Post(t_node *a, t_node *d, phydbl *lnP, t_tree *tree);
-phydbl RW_Forward_Lk(t_tree *tree);
-void RW_Forward_Lk_Pre(t_node *a, t_node *d, phydbl *lnP, t_tree *tree);
 phydbl RW_Lk(t_tree *tree);
 
 #endif

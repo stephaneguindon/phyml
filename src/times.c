@@ -897,7 +897,130 @@ phydbl TIMES_Lk_Coalescent(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-  phydbl TIMES_Lk_Uniform_Core(t_tree *tree)
+void TIMES_Simulate_Coalescent(t_tree *tree)
+{
+  t_node *n;
+  phydbl t,dt,Ne,*times,u,coal_rate,prob_coal;
+  int n_lineages,*permut,available_idx,i;
+  t_ll *lineages;
+  t_node *v1, *v2, *a;
+  
+  Ne = tree->times->scaled_pop_size;
+  times = tree->times->nd_t;
+  lineages = NULL;
+  
+  Get_Node_Ranks_From_Tip_Times(tree);
+
+
+  // Start from the most recent tip (or set of tips)
+  n = tree->a_nodes[tree->n_otu-1];
+  do n = n->rk_next; while(n->rk_next);
+  
+  n_lineages = 0;
+  available_idx = tree->n_otu;
+  dt = 0.0;
+  t = tree->times->nd_t[n->num];
+  do
+    {
+      if(n->tax == YES)
+        {
+          Push_Bottom_Linked_List(n,&lineages,NO);
+          n_lineages++;
+        }
+      
+      coal_rate = n_lineages * (n_lineages - 1.) / (2.*Ne);
+
+      // Proba next coalescent event is in [T[n->num],T[n->rk_prev->num] 
+      prob_coal = 1. - exp(-coal_rate * fabs(times[n->num] - (n->rk_prev ? times[n->rk_prev->num] : -INFINITY)));
+            
+      u = Uni();
+      
+      if(!(u > prob_coal))
+        {
+          dt = Rexp_Trunc(coal_rate,
+                          0.0,
+                          times[n->num] - (n->rk_prev ? times[n->rk_prev->num] : -INFINITY));
+                          
+          t = t - dt;
+                    
+          permut = Permutate(n_lineages);
+
+          a = tree->a_nodes[available_idx];
+          v1 = Linked_List_Elem(permut[0],lineages);
+          v2 = Linked_List_Elem(permut[1],lineages);
+          available_idx++;
+
+          a->v[0]  = NULL;
+          a->v[1]  = v1;
+          a->v[2]  = v2;
+          v1->v[0] = a;
+          v2->v[0] = a;
+
+          times[a->num] = t;
+          
+          Remove_From_Linked_List(NULL,v1,&lineages);
+          Remove_From_Linked_List(NULL,v2,&lineages);
+          Push_Bottom_Linked_List(a,&lineages,NO);
+
+          a->rk_prev = n->rk_prev;
+          n->rk_prev = a;
+          a->rk_next = n;
+          
+          n_lineages--;
+        }
+      
+      n = n->rk_prev;
+      t = tree->times->nd_t[n->num];
+    }
+  while(!(n_lineages == 1 && n->rk_prev == NULL));
+
+  for(i=0;i<3;++i) 
+    if(tree->n_root->v[1]->v[i] == tree->n_root) 
+      { 
+        tree->n_root->v[1]->v[i] = tree->n_root->v[2]; 
+        break; 
+      }
+  
+  for(i=0;i<3;++i) 
+    if(tree->n_root->v[2]->v[i] == tree->n_root) 
+      { 
+        tree->n_root->v[2]->v[i] = tree->n_root->v[1]; 
+        break; 
+      }
+  
+  Connect_Edges_To_Nodes_Serial(tree);
+  
+  tree->e_root = NULL;
+  for(i=0;i<2*tree->n_otu-3;++i)
+    {
+      if((tree->a_edges[i]->left == tree->n_root->v[1] && tree->a_edges[i]->rght == tree->n_root->v[2]) ||
+         (tree->a_edges[i]->left == tree->n_root->v[2] && tree->a_edges[i]->rght == tree->n_root->v[1]))
+        {        
+          tree->e_root = tree->a_edges[i];
+          break;
+        }
+    }
+  assert(!(tree->e_root == NULL));
+  
+  tree->n_root->b[1] = tree->a_edges[2*tree->n_otu-3];
+  tree->n_root->b[2] = tree->a_edges[2*tree->n_otu-2];
+  
+  tree->n_root->b[1]->left = tree->n_root;
+  tree->n_root->b[1]->rght = tree->n_root->v[1];
+  
+  tree->n_root->b[2]->left = tree->n_root;
+  tree->n_root->b[2]->rght = tree->n_root->v[2];
+  
+  Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
+  Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
+  
+  MIXT_Propagate_Tree_Update(tree);  
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl TIMES_Lk_Uniform_Core(t_tree *tree)
 {  
   phydbl logn;
 
