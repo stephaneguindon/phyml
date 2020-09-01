@@ -869,9 +869,15 @@ phydbl TIMES_Lk_Coalescent(t_tree *tree)
   t_node *n;
   int n_lineages;
   phydbl lnP;
+
+  if(tree->times->scaled_pop_size > tree->times->scaled_pop_size_max ||
+     tree->times->scaled_pop_size < tree->times->scaled_pop_size_min)
+    {
+      tree->times->c_lnL_times = -INFINITY;
+      return(tree->times->c_lnL_times);
+    }
   
   Get_Node_Ranks_From_Times(tree);
-
 
   lnP = 0.0;
   n_lineages = 1;
@@ -888,10 +894,45 @@ phydbl TIMES_Lk_Coalescent(t_tree *tree)
 
   lnP -= (tree->n_otu-1) * log(tree->times->scaled_pop_size);
   
+  if(tree->times->augmented_coalescent == YES)
+    {
+      int n_hits;
+      t_dsk *disk;
+      phydbl dt;
+      
+      disk = tree->young_disk;
+      assert(disk);
+
+      n_hits = 0;
+      dt = 0.0;
+      do
+        {
+          if(disk->ldsk && disk->ldsk->n_next == 1)
+            {
+              n_hits++;
+              assert(disk->next);
+              dt += fabs(disk->time - disk->next->time);
+            }
+          
+          if(disk->ldsk && disk->ldsk->n_next > 1)
+            {
+              lnP += LnGamma(n_hits+1);
+              assert(disk->next);
+              dt += fabs(disk->time - disk->next->time);
+              assert(dt>0.0);
+              lnP -= n_hits*log(dt);
+              dt = 0.0;
+              n_hits = 0;
+            }
+          
+          disk = disk->prev;
+        }
+      while(disk);
+    }    
+  
   tree->times->c_lnL_times = lnP;
-  
-  return(lnP);
-  
+
+  return(lnP);  
 }
 
 //////////////////////////////////////////////////////////////
@@ -904,6 +945,7 @@ void TIMES_Simulate_Coalescent(t_tree *tree)
   int n_lineages,*permut,available_idx,i;
   t_ll *lineages;
   t_node *v1, *v2, *a;
+  
   
   Ne = tree->times->scaled_pop_size;
   times = tree->times->nd_t;
@@ -2399,6 +2441,10 @@ void TIMES_Copy_Time_Struct(t_time *from, t_time *to, int n_otu)
   to->nd_t_recorded = from->nd_t_recorded;
   to->update_time_norm_const = from->update_time_norm_const;
 
+  to->scaled_pop_size = from->scaled_pop_size;
+  to->scaled_pop_size_min = from->scaled_pop_size_min;
+  to->scaled_pop_size_max = from->scaled_pop_size_max;
+  
   for(i=0;i<2*n_otu-1;++i) to->nd_t[i] = from->nd_t[i];
   for(i=0;i<2*n_otu-1;++i) to->buff_t[i] = from->buff_t[i];
   for(i=0;i<2*n_otu-1;++i) to->true_t[i] = from->true_t[i];

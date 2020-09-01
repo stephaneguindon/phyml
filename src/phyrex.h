@@ -37,12 +37,13 @@ void PHYREX_Update_Lindisk_List_Pre(t_dsk *disk, t_tree *tree);
 void PHYREX_Connect_Ldsk_Given_Disk(t_dsk **disk, int n_disk, t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y);
 void PHYREX_Print_Struct(char sign, t_tree *tree);
 phydbl PHYREX_Uniform_Path_Density(t_ldsk *y_ldsk, t_ldsk *o_ldsk, t_tree *tree);
-int PHYREX_Check_Struct(t_tree *tree);
+int PHYREX_Check_Struct(t_tree *tree, int exit);
 void PHYREX_Store_Geo_Coord(t_geo_coord *t);
 void PHYREX_Restore_Geo_Coord(t_geo_coord *t);
 int PHYREX_Total_Number_Of_Intervals(t_tree *tree);
 int PHYREX_Total_Number_Of_Coal_Disks(t_tree *tree);
 int PHYREX_Total_Number_Of_Hit_Disks(t_tree *tree);
+int PHYREX_Total_Number_Of_Floating_Disks(t_tree *tree);
 phydbl PHYREX_Log_Dunif_Rectangle_Overlap(t_ldsk *ldsk, t_dsk *disk, t_phyrex_mod *mmod);
 phydbl PHYREX_Runif_Rectangle_Overlap(t_ldsk *ldsk, t_dsk *disk, t_phyrex_mod *mod);
 int PHYREX_One_New_Traj(t_ldsk *y_ldsk, t_ldsk *o_ldsk, int dir_o_y, t_dsk *xtra_dsk, int n_cur_disk, t_tree *tree);
@@ -128,5 +129,7 @@ t_ldsk *PHYREX_Generate_Path(t_ldsk *young, t_ldsk *old, phydbl n_evt, phydbl sd
 void PHYREX_Simulate_Backward_Core(t_dsk *disk,int avoid_multiple_mergers, t_tree *tree);
 t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, phydbl rad, phydbl mu, int r_seed, int modid);
 phydbl PHYREX_Update_Sigsq(t_tree *tree);
+void PHYREX_Get_Baselines(t_tree *tree);
+void PHYREX_Get_Baselines_Post(t_ldsk *ldsk, t_tree *tree);
 
 #endif

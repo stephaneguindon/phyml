@@ -611,9 +611,9 @@ void Set_Defaults_Input(option* io)
   
   MCMC_Init_MCMC_Struct(NULL,io,io->mcmc);
   RATES_Init_Rate_Struct(io->rates,NULL,-1);
-  io->rates->model               = LOGNORMAL;
+  io->rates->model_id = LOGNORMAL;
   TIMES_Init_Time_Struct(io->times,NULL,-1);
-  io->times->model               = COALESCENT;
+  io->times->model_id = COALESCENT;
 }
 
 //////////////////////////////////////////////////////////////
@@ -680,7 +680,6 @@ void Set_Defaults_Model(t_mod *mod)
 
   mod->br_len_mult->v          = 1.0;
   mod->br_len_mult_unscaled->v = 1.0;
-  mod->augmented               = NO;
 }
 
 //////////////////////////////////////////////////////////////
@@ -826,13 +825,13 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
 {
   int i;
 
-  if(existing_rates && existing_rates->model != -1)
+  if(existing_rates && existing_rates->model_id != -1)
     {
-      rates->model = existing_rates->model;
+      rates->model_id = existing_rates->model_id;
     }
   else
     {
-      rates->model = NONE;
+      rates->model_id = NONE;
     }
 
   rates->met_within_gibbs = NO;
@@ -894,16 +893,18 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
 
 void TIMES_Init_Time_Struct(t_time *times, t_time *existing_times, int n_otu)
 {
-  if(existing_times && existing_times->model != -1)
+  if(existing_times && existing_times->model_id != -1)
     {
-      times->model = existing_times->model;
+      times->model_id = existing_times->model_id;
     }
   else
     {
-      times->model = NONE;
+      times->model_id = COALESCENT;
     }
 
-  times->scaled_pop_size  = 1.0;
+  times->scaled_pop_size      = 1.0;
+  times->scaled_pop_size_min  = 0.0;
+  times->scaled_pop_size_max  = 1.E+6;
   
   times->c_lnL_times      = UNLIKELY;
   times->c_lnL_times      = UNLIKELY;
@@ -954,6 +955,7 @@ void TIMES_Init_Time_Struct(t_time *times, t_time *existing_times, int n_otu)
   
   times->update_time_norm_const = NO;
   times->is_asynchronous = NO;
+  times->augmented_coalescent = NO;
 }
 
 //////////////////////////////////////////////////////////////
@@ -3467,7 +3469,7 @@ void PHYREX_Init_Migrep_Mod(t_phyrex_mod *t, int n_dim, phydbl min_lat, phydbl m
 {
   assert(n_dim == 2);
 
-  if(t->id == -1) t->id = SLFV_GAUSSIAN;
+  if(t->model_id == -1) t->model_id = SLFV_GAUSSIAN;
   t->n_dim              = n_dim;
   
   t->lim_up->lonlat[0]   = max_lat;
@@ -3480,7 +3482,6 @@ void PHYREX_Init_Migrep_Mod(t_phyrex_mod *t, int n_dim, phydbl min_lat, phydbl m
   t->max_rad           = 1.0*((max_lat-min_lat)+(max_lon-min_lon));
   t->rad               = 0.01*((max_lat-min_lat)+(max_lon-min_lon));
   t->prior_param_rad   = 1./(0.1*((max_lat-min_lat)+(max_lon-min_lon)));
-
 }
 
 //////////////////////////////////////////////////////////////
@@ -3493,8 +3494,8 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->sigsq_scale_min = 0.01;
   t->sigsq_scale_max = 100.;
   
-  t->id          = -1;
-  t->safe_phyrex = NO;
+  t->model_id    = -1;
+  t->safe_phyrex = YES;
   
   t->lim_up->lonlat[0] = 100.;
   t->lim_up->lonlat[1] = 100.;
@@ -3531,7 +3532,6 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->c_ln_prior_mu     = UNLIKELY;
 
   t->soft_bound_area   = 0.1;
-
   
   t->max_num_of_intervals = 1000000;
 }

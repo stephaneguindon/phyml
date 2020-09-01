@@ -21,7 +21,7 @@ phydbl RRW_Lk(t_tree *tree)
   phydbl t_dum;
   int idx_dum;
       
-  assert(tree->mmod->id == RRW);
+  assert(tree->mmod->model_id == RRW);
 
   #ifdef PHYREX
   if(PHYREX_Total_Number_Of_Intervals(tree) > tree->mmod->max_num_of_intervals) return UNLIKELY;
@@ -32,13 +32,27 @@ phydbl RRW_Lk(t_tree *tree)
   d_fwd = RRW_Forward_Lk(tree);
   d_coal = TIMES_Lk_Coalescent(tree);
   d_sigsq_scale = RRW_Prior_Sigsq_Scale(tree);
-  
+
   // Make sure node times are set back to their original values
   assert(fabs(t_dum - tree->times->nd_t[idx_dum]) < 1.E-4);
 
   tree->mmod->c_lnL = d_fwd + d_coal + d_sigsq_scale;
-    
+  
   return(tree->mmod->c_lnL);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl RRW_Independent_Contrasts(t_tree *tree)
+{
+  phydbl lnL;
+  
+  RRW_Rescale_Times(YES,tree);
+  lnL = RW_Independent_Contrasts(tree);
+  RRW_Rescale_Times(NO,tree);
+
+  return(lnL);
 }
 
 //////////////////////////////////////////////////////////////
@@ -135,11 +149,11 @@ void RRW_Forward_Lk_Pre(t_node *a, t_node *d, phydbl *lnP, t_tree *tree)
 phydbl RRW_Forward_Lk_Path(t_node *a, t_node *d, t_tree *tree)
 {
   t_ldsk *ldsk;
-  phydbl lnP,sd,ld,la;
+  phydbl lnP,sd,ld,la,eps;
   int i,err;
 
   lnP = 0.0;
-  
+  eps = 1.E-5;
   ldsk = d->ldsk;
 
   if(a->ldsk == d->ldsk) return(0.0); // multifurcation
@@ -147,10 +161,12 @@ phydbl RRW_Forward_Lk_Path(t_node *a, t_node *d, t_tree *tree)
   do
     {
       assert(ldsk->prev);
-      
-      sd = sqrt(tree->mmod->sigsq *
-                tree->mmod->sigsq_scale[d->num] *
-                fabs(ldsk->disk->time-ldsk->prev->disk->time));
+
+      sd = log(tree->mmod->sigsq) + log(tree->mmod->sigsq_scale[d->num]) + log(fabs(ldsk->disk->time-ldsk->prev->disk->time));
+      sd = exp(sd);
+      /* sd = sqrt(MAX(eps,tree->mmod->sigsq * */
+      /*               tree->mmod->sigsq_scale[d->num] * */
+      /*               fabs(ldsk->disk->time-ldsk->prev->disk->time))); */
       
       for(i=0;i<tree->mmod->n_dim;++i)
         {
@@ -158,9 +174,23 @@ phydbl RRW_Forward_Lk_Path(t_node *a, t_node *d, t_tree *tree)
           la = ldsk->prev->coord->lonlat[i];
           
           lnP += Log_Dnorm(ld,la,sd,&err);
+
+          /* if(tree->mcmc && tree->mcmc->run > 27000) */
+          /*   { */
+          /*     PhyML_Printf("\n. a=%d d=%d lnP=%f sigsq=%f %f sd=%f t=%f tt=%f ld=%f la=%f dnorm=%f", */
+          /*                  a->num, */
+          /*                  d->num, */
+          /*                  lnP, */
+          /*                  tree->mmod->sigsq, */
+          /*                  tree->mmod->sigsq_scale[d->num], */
+          /*                  sd, */
+          /*                  ldsk->disk->time, */
+          /*                  ldsk->prev->disk->time, */
+          /*                  ld,la,Log_Dnorm(ld,la,sd,&err)); */
+          /*   } */
         }
       
-
+      
       ldsk = ldsk->prev;
     }
   while(ldsk != a->ldsk);

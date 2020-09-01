@@ -111,7 +111,7 @@ phydbl RATES_Lk_Rates_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl n
 
   dt_d = MAX(0.5,dt_d); // We give only one decimal when printing out node heights. It is therefore a fair approximation
 
-  switch(tree->rates->model)
+  switch(tree->rates->model_id)
     {
     case THORNE :
       {
@@ -261,7 +261,7 @@ void RATES_Update_Triplet(t_node *n, t_tree *tree)
       n0  = tree->times->n_jps[tree->n_root->v[2]->num];
       n1  = tree->times->n_jps[tree->n_root->v[1]->num];
 
-      switch(tree->rates->model)
+      switch(tree->rates->model_id)
 	{
 	case COMPOUND_COR : case COMPOUND_NOCOR : 
 	  {
@@ -576,7 +576,7 @@ void RATES_Copy_Rate_Struct(t_rate *from, t_rate *to, int n_otu)
   to->use_rates = from->use_rates;
   to->bl_from_rt = from->bl_from_rt;
   to->approx = from->approx;
-  to->model = from->model;
+  to->model_id = from->model_id;
   to->is_allocated = from->is_allocated;
   to->met_within_gibbs = from->met_within_gibbs;
   
@@ -941,12 +941,12 @@ void RATES_Expect_Number_Subst(phydbl t_beg, phydbl t_end, phydbl r_beg,  int *n
 {
   phydbl curr_r, curr_t, next_t;
 
-  switch(rates->model)
+  switch(rates->model_id)
     {
     case COMPOUND_COR:case COMPOUND_NOCOR:
       {
 	/* Compound Poisson */
-	if(rates->model == COMPOUND_COR)
+	if(rates->model_id == COMPOUND_COR)
 	  {
 	    curr_r  = r_beg;
 	    *mean_r = r_beg;
@@ -2374,7 +2374,7 @@ void RATES_Update_Cur_Bl(t_tree *tree)
   tree->rates->u_cur_l[tree->e_root->num] = tree->e_root->l->v;
   tree->n_root_pos = tree->n_root->b[2]->l->v / tree->e_root->l->v;
   
-  if(tree->rates->model == GUINDON)
+  if(tree->rates->model_id == GUINDON)
     {
       phydbl t0,t1,t2;
       t_node *n0, *n1;
@@ -2414,14 +2414,14 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
     {
       tree->rates->br_do_updt[d->num] = NO;
 
-      if(tree->rates->model == LOGNORMAL ||
-         tree->rates->model == THORNE ||
-         tree->rates->model == STRICTCLOCK)
+      if(tree->rates->model_id == LOGNORMAL ||
+         tree->rates->model_id == THORNE ||
+         tree->rates->model_id == STRICTCLOCK)
         {
           rd = tree->rates->br_r[d->num];
           ra = tree->rates->br_r[a->num];
         }
-      else if(tree->rates->model == GUINDON)
+      else if(tree->rates->model_id == GUINDON)
         {
           rd = tree->rates->nd_r[d->num];
           ra = tree->rates->nd_r[a->num];
@@ -2435,20 +2435,20 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
       nu = tree->rates->nu;
       rr = -1.0;
       
-      if(tree->rates->model == LOGNORMAL)
+      if(tree->rates->model_id == LOGNORMAL)
         {
           rr = rd;
           tree->rates->cur_l[d->num] = dt*rr*cr;          
           /* PhyML_Printf("\n. a: %d d: %d rr: %f dt: %f cr: %f tree: %p",a->num,d->num,rr,dt,cr,tree); */    
         }
 
-      if(tree->rates->model == THORNE)
+      if(tree->rates->model_id == THORNE)
         {
           rr = (ra+rd)/2.;          
           tree->rates->cur_l[d->num] = dt*rr*cr;
         }
       
-      if(tree->rates->model == GUINDON)
+      if(tree->rates->model_id == GUINDON)
 	{
 	  phydbl m,v;
 
@@ -2471,7 +2471,7 @@ void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 	  tree->rates->cur_l[d->num] = tree->rates->cur_gamma_prior_mean[d->num]; // Required for having proper branch lengths in Write_Tree function
 	}
       
-      if(tree->rates->model == STRICTCLOCK)
+      if(tree->rates->model_id == STRICTCLOCK)
         {
           tree->rates->cur_l[d->num] = dt*cr;          
         }
@@ -3493,8 +3493,8 @@ void RATES_Set_Clock_And_Nu_Max(t_tree *tree)
   phydbl tune;
   phydbl pa,pb;
 
-  if(tree->rates->model == THORNE || 
-     tree->rates->model == GUINDON)
+  if(tree->rates->model_id == THORNE || 
+     tree->rates->model_id == GUINDON)
     {
       tune  = 1.05;
       r_max = tree->rates->max_rate;     
@@ -3612,13 +3612,13 @@ void RATES_Get_Mean_Rate_In_Subtree_Pre(t_node *a, t_node *d, phydbl *sum, int *
 {
   /* (*sum) += exp(tree->rates->nd_r[d->num]); */
   
-  if(tree->rates->model == LOGNORMAL ||
-     tree->rates->model == THORNE ||
-     tree->rates->model == STRICTCLOCK)
+  if(tree->rates->model_id == LOGNORMAL ||
+     tree->rates->model_id == THORNE ||
+     tree->rates->model_id == STRICTCLOCK)
     {
       (*sum) += tree->rates->br_r[d->num];
     }
-  else if(tree->rates->model == GUINDON)
+  else if(tree->rates->model_id == GUINDON)
     {
       (*sum) += tree->rates->nd_r[d->num];
     }

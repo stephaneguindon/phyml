@@ -20,7 +20,7 @@ phydbl RW_Lk(t_tree *tree)
 {
   phydbl fwd_lk,coal_lk;
   
-  assert(tree->mmod->id == RW);
+  assert(tree->mmod->model_id == RW);
 
 #ifdef PHYREX
   if(PHYREX_Total_Number_Of_Intervals(tree) > tree->mmod->max_num_of_intervals) return UNLIKELY;

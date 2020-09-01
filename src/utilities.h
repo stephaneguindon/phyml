@@ -99,6 +99,9 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define RW  2 /* standard Brownian diffusion model in phylogeography */
 #define RRW  3 /* Lemey's relaxed random walk */
 
+#define BIRTHDEATH 0
+#define COALESCENT 1
+
 #define AC 0
 #define AG 1
 #define AT 2
@@ -115,8 +118,13 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #endif
 
 #ifndef M_1_SQRT_2PI
-#define M_1_SQRT_2PI	0.398942280401432677939946059934	/* 1/sqrt(2pi) */
+#define M_1_SQRT_2PI	0.398942280401432677939946059934	/* 1/sqrt(2*pi) */
 #endif
+
+#ifndef LOG_SQRT_2PI
+#define LOG_SQRT_2PI	0.91893853320467266954	/* log(sqrt(2*pi)) */
+#endif
+
 
 // verbose levels
 #define VL0 0
@@ -337,7 +345,6 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 // Amino acid ordering:
 // Ala Arg Asn Asp Cys Gln Glu Gly His Ile Leu Lys Met Phe Pro Ser Thr Trp Tyr Val
 
-#define COALESCENT 0
 
 #define COMPOUND_COR   0
 #define COMPOUND_NOCOR 1
@@ -346,7 +353,6 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define THORNE         4
 #define GUINDON        5
 #define STRICTCLOCK    6
-#define BIRTHDEATH     7
 #define NONE          -1
 
 #define ALRTSTAT       1
@@ -716,7 +722,7 @@ typedef struct __Tree{
   struct __Tree                    *next_mixt; /*! set to NULL by default. Used for mixture models */
   struct __Tree                    *prev_mixt; /*! set to NULL by default. Used for mixture models */
   struct __Tree                    *mixt_tree; /*! set to NULL by default. Used for mixture models */
-  struct __Tree                   *aux_tree; /*! set to NULL by default. Used a latent variable in molecular dating */
+  struct __Tree                    **aux_tree; /*! set to NULL by default. Used a latent variable in molecular dating */
   struct __Option                         *io; /*! input/output */
   struct __Matrix                        *mat; /*! pairwise distance matrix */
   struct __Node                   **curr_path; /*! list of nodes that form a path in the tree */
@@ -1578,7 +1584,7 @@ typedef struct __T_Rate {
   int use_rates; /*! if = 0, branch lengths are expressed as differences between t_node times */
   int bl_from_rt; /*! if =1, branch lengths are obtained as the product of cur_r and t */
   int approx;
-  int model; /*! Model number */
+  int model_id; /*! Model number */
   char *model_name;
   int is_allocated;
   int met_within_gibbs;
@@ -1615,6 +1621,8 @@ typedef struct __T_Time {
   phydbl c_lnL_jps; /*! Prob(# Jumps | time stamps, rates, model of rate evolution) */
 
   phydbl scaled_pop_size; // Product of effective population size with length of a generation in calendar time unit
+  phydbl scaled_pop_size_min; 
+  phydbl scaled_pop_size_max; 
 
   phydbl birth_rate;
   phydbl birth_rate_min;
@@ -1662,9 +1670,12 @@ typedef struct __T_Time {
 
   phydbl *mean_t; /*! average values of nd_t taken across the sampled values during the MCMC */
 
-  int model;
+  int model_id;
 
   int update_time_norm_const;
+
+  short int augmented_coalescent;
+
 }t_time;
 
 /*!********************************************************/
@@ -1732,7 +1743,7 @@ typedef struct __Tmcmc {
   int num_move_phyrex_scale_times;
   int num_move_phyrex_ldscape_lim;
   int num_move_phyrex_sigsq;
-  int num_move_phyrex_neff;
+  int num_move_time_neff;
   int num_move_phyrex_sim;
   int num_move_phyrex_traj;
   int num_move_phyrex_indel_disk_serial;
@@ -1945,7 +1956,7 @@ typedef struct __Migrep_Model{
   phydbl             sigsq_scale_min;
   phydbl             sigsq_scale_max;
   
-  short int                       id;
+  short int                 model_id;
   int                          n_dim;
   int                    safe_phyrex;
   int           max_num_of_intervals;
@@ -1982,8 +1993,6 @@ typedef struct __Migrep_Model{
   phydbl            c_ln_prior_sigsq; // current value of log prior for the prior on sigsq=4.pi.lbda.mu.rad^4
 
   phydbl             soft_bound_area;
-
-
 }t_phyrex_mod;
 
 /*!********************************************************/
@@ -2026,6 +2035,7 @@ typedef struct __Geo_Coord{
 
 typedef struct __Lindisk_Node{
   struct __Disk_Event     *disk;
+  struct __Disk_Event *baseline;
   struct __Lindisk_Node  **next;
   struct __Lindisk_Node   *prev;
   struct __Geo_Coord     *coord; 

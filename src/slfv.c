@@ -506,7 +506,7 @@ phydbl SLFV_Sample_Rad_From_Prior(t_tree *tree)
 
 phydbl SLFV_Update_Radius(t_tree *tree)
 {
-  switch(tree->mmod->id)
+  switch(tree->mmod->model_id)
     {
     case SLFV_UNIFORM: { return(-1.0); break;}
     case SLFV_GAUSSIAN:  
@@ -531,7 +531,7 @@ phydbl SLFV_Generation_Length(t_tree *tree)
 
 phydbl SLFV_Neighborhood_Size(t_tree *tree)
 {
-  switch(tree->mmod->id)
+  switch(tree->mmod->model_id)
     {
     case SLFV_UNIFORM: { return(1./tree->mmod->mu); break; }
     case SLFV_GAUSSIAN:  { return(2./tree->mmod->mu); break; }
@@ -544,7 +544,7 @@ phydbl SLFV_Neighborhood_Size(t_tree *tree)
 
 phydbl SLFV_Update_Sigsq(t_tree *tree)
 {  
-  switch(tree->mmod->id)
+  switch(tree->mmod->model_id)
     {
     case SLFV_UNIFORM : { return(-1.0); break;}
     case SLFV_GAUSSIAN :  
@@ -633,8 +633,8 @@ phydbl SLFV_Neighborhood_Size_Regression(t_tree *tree)
 
 phydbl SLFV_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
 {
-  if(tree->mmod->id == SLFV_GAUSSIAN) return(SLFV_Lk_Gaussian_Range(young,old,tree));
-  else if(tree->mmod->id == SLFV_UNIFORM) assert(FALSE);
+  if(tree->mmod->model_id == SLFV_GAUSSIAN) return(SLFV_Lk_Gaussian_Range(young,old,tree));
+  else if(tree->mmod->model_id == SLFV_UNIFORM) assert(FALSE);
   else assert(FALSE);
   return(-1.);
 }
@@ -929,7 +929,7 @@ t_sarea *SLFV_Simulate_Forward_Core(int n_sites, t_tree *tree)
               lx = disk->ldsk_a[i]->coord->lonlat[0];
               ly = disk->ldsk_a[i]->coord->lonlat[1];
               
-              switch(mmod->id)
+              switch(mmod->model_id)
                 {
                 case SLFV_UNIFORM:
                   {
@@ -977,7 +977,7 @@ t_sarea *SLFV_Simulate_Forward_Core(int n_sites, t_tree *tree)
               ly = disk->ldsk_a[i]->coord->lonlat[1];
               
               prob_death = 0.0;
-              switch(mmod->id)
+              switch(mmod->model_id)
                 {
                 case SLFV_UNIFORM:
                   {
@@ -1042,7 +1042,7 @@ t_sarea *SLFV_Simulate_Forward_Core(int n_sites, t_tree *tree)
               
               
               /* Generate new location */
-              switch(mmod->id)
+              switch(mmod->model_id)
                 {
                 case SLFV_UNIFORM: { PHYREX_Runif_Rectangle_Overlap(new_ldsk,new_disk,mmod); break; }
                 case SLFV_GAUSSIAN:  { PHYREX_Rnorm_Trunc(new_ldsk,new_disk,mmod); break; }
@@ -1497,7 +1497,7 @@ phydbl SLFV_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_mergers,
           for(i=0;i<new_disk->n_ldsk_a;++i)
             {
               prob_hit = -1.;
-              switch(mmod->id)
+              switch(mmod->model_id)
                 {
                 case SLFV_UNIFORM : 
                   { 
@@ -1531,7 +1531,7 @@ phydbl SLFV_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_mergers,
                       PHYREX_Init_Lindisk_Node(new_disk->ldsk,new_disk,mmod->n_dim);
                       
                       // Generate coordinates for newly created ldsk
-                      switch(tree->mmod->id)
+                      switch(tree->mmod->model_id)
                         {
                         case SLFV_UNIFORM :
                           {
@@ -1718,7 +1718,7 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
 
   tree->rates->bl_from_rt = YES;
   tree->rates->clock_r    = 0.1/fabs(2.*T);
-  tree->rates->model      = STRICTCLOCK;
+  tree->rates->model_id      = STRICTCLOCK;
 
   RATES_Update_Cur_Bl(tree);
 
@@ -1855,7 +1855,7 @@ t_tree *SLFV_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl h
   Random_Tree(tree);
   Connect_CSeqs_To_Nodes(cdata,io,tree);
   tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
-  io->rates->model = STRICTCLOCK;
+  io->rates->model_id = STRICTCLOCK;
   RATES_Init_Rate_Struct(tree->rates,io->rates,tree->n_otu);
 
   tree->times = TIMES_Make_Time_Struct(tree->n_otu);
