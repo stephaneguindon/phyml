@@ -955,8 +955,8 @@ void TIMES_Simulate_Coalescent(t_tree *tree)
 
 
   // Start from the most recent tip (or set of tips)
-  n = tree->a_nodes[tree->n_otu-1];
-  do n = n->rk_next; while(n->rk_next);
+  n = tree->a_nodes[tree->n_otu-1];  
+  while(n->rk_next) n = n->rk_next;
   
   n_lineages = 0;
   available_idx = tree->n_otu;

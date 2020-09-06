@@ -174,20 +174,6 @@ phydbl RRW_Forward_Lk_Path(t_node *a, t_node *d, t_tree *tree)
           la = ldsk->prev->coord->lonlat[i];
           
           lnP += Log_Dnorm(ld,la,sd,&err);
-
-          /* if(tree->mcmc && tree->mcmc->run > 27000) */
-          /*   { */
-          /*     PhyML_Printf("\n. a=%d d=%d lnP=%f sigsq=%f %f sd=%f t=%f tt=%f ld=%f la=%f dnorm=%f", */
-          /*                  a->num, */
-          /*                  d->num, */
-          /*                  lnP, */
-          /*                  tree->mmod->sigsq, */
-          /*                  tree->mmod->sigsq_scale[d->num], */
-          /*                  sd, */
-          /*                  ldsk->disk->time, */
-          /*                  ldsk->prev->disk->time, */
-          /*                  ld,la,Log_Dnorm(ld,la,sd,&err)); */
-          /*   } */
         }
       
       

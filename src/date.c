@@ -201,6 +201,36 @@ void DATE_XML(char *xml_filename)
     }
   
   
+  // Looking for XML node with rate-across-lineage info
+  xnd = XML_Search_Node_Name("clockrate",YES,xroot);
+  
+  if(xnd != NULL)
+    {
+      char *clock_r;
+      clock_r = XML_Get_Attribute_Value(xnd,"value");
+      if(clock_r == NULL) clock_r = XML_Get_Attribute_Value(xnd,"clock.val");
+      if(clock_r == NULL) clock_r = XML_Get_Attribute_Value(xnd,"val");
+      if(clock_r != NULL)
+        {
+          mixt_tree->rates->clock_r = String_To_Dbl(clock_r);
+        }
+      
+      char *opt_clock;
+      opt_clock = XML_Get_Attribute_Value(xnd,"optimise.clock");
+      if(opt_clock == NULL) opt_clock = XML_Get_Attribute_Value(xnd,"optimize.clock");
+      if(opt_clock == NULL) opt_clock = XML_Get_Attribute_Value(xnd,"optimize.rate");
+      if(opt_clock == NULL) opt_clock = XML_Get_Attribute_Value(xnd,"opt.clock");
+      
+      if(opt_clock != NULL)
+        {
+          int select = XML_Validate_Attr_Int(opt_clock,6,
+                                             "true","yes","y",
+                                             "false","no","n");
+          if(select < 3)  mixt_tree->mod->s_opt->opt_clock_r = YES;
+          else mixt_tree->mod->s_opt->opt_clock_r = NO;
+        }
+    }
+
   // Looking for calibration info
   xnd = XML_Search_Node_Name("calibration",YES,xroot);
 

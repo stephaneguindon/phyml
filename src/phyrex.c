@@ -832,6 +832,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%s\t","lnP");
       PhyML_Fprintf(fp_stats,"%s\t","alnL");
       PhyML_Fprintf(fp_stats,"%s\t","glnL");
+      PhyML_Fprintf(fp_stats,"%s\t","rlnL");
       PhyML_Fprintf(fp_stats,"%s\t","coalescent");
       PhyML_Fprintf(fp_stats,"%s\t","clock");
       PhyML_Fprintf(fp_stats,"%s\t","evolrate");
@@ -860,7 +861,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           for(int i=0;i<tree->mod->ras->n_catg;++i) PhyML_Fprintf(fp_stats,"p(%d)\t",i+1);
           for(int i=0;i<tree->mod->ras->n_catg;++i) PhyML_Fprintf(fp_stats,"rr(%d)\t",i+1);
         }
-
+      PhyML_Fprintf(fp_stats,"%s\t","Nu");
       PhyML_Fprintf(fp_stats,"%s\t","MeanBr");
       PhyML_Fprintf(fp_stats,"%s\t","TreeLen");
       PhyML_Fprintf(fp_stats,"%s\t","accLbda");
@@ -891,9 +892,13 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%s\t","tuneLdskGivenDisk");
       PhyML_Fprintf(fp_stats,"%s\t","tuneIndelDiskSerial");
       PhyML_Fprintf(fp_stats,"%s\t","tuneIndelHitSerial");
+      /* for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"s%d%c\t", */
+      /*                                                  i, */
+      /*                                                  (tree->a_nodes[i]==tree->n_root->v[1] || */
+      /*                                                   tree->a_nodes[i]==tree->n_root->v[2]) ? '*' : ' '); */
       for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"s%d%c\t",
                                                        i,
-                                                       (tree->a_nodes[i]==tree->n_root->v[1] ||
+                                                       (tree->a_nodes[i]==tree->n_root->v[1] || 
                                                         tree->a_nodes[i]==tree->n_root->v[2]) ? '*' : ' ');
     }
   
@@ -964,6 +969,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%g\t",tree->c_lnL+tree->mmod->c_lnL+tree->rates->c_lnL_rates);
           PhyML_Fprintf(fp_stats,"%g\t",tree->c_lnL);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->c_lnL);
+          PhyML_Fprintf(fp_stats,"%g\t",tree->rates->c_lnL_rates);          
           PhyML_Fprintf(fp_stats,"%g\t",tree->times->c_lnL_times);
           PhyML_Fprintf(fp_stats,"%g\t",tree->rates->clock_r);
           PhyML_Fprintf(fp_stats,"%g\t",RATES_Realized_Substitution_Rate(tree));
@@ -992,6 +998,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
               for(int i=0;i<tree->mod->ras->n_catg;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->mod->ras->gamma_r_proba->v[i]);
               for(int i=0;i<tree->mod->ras->n_catg;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->mod->ras->gamma_rr->v[i]);
             }
+          PhyML_Fprintf(fp_stats,"%g\t",tree->rates->nu);
           PhyML_Fprintf(fp_stats,"%g\t",RATES_Get_Mean_Rate_In_Subtree(tree->n_root,tree));
           PhyML_Fprintf(fp_stats,"%g\t",Tree_Length(tree));
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_lbda]);
@@ -1022,8 +1029,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_ldsk_given_disk]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_indel_disk_serial]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_indel_hit_serial]);
-          for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->sigsq_scale[i]);
-          
+
+          for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"%g\t",log(tree->rates->br_r[i]));          
           /* res[0 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = tree->mmod->lbda;  */
           /* res[1 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = tree->mmod->mu;  */
           /* res[2 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = PHYREX_Update_Sigsq(tree);  */
@@ -1146,6 +1153,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
       if(!strcmp(tree->mcmc->move_name[move],"clock"))
         MCMC_Clock_R(tree);
+
+      if(!strcmp(tree->mcmc->move_name[move],"nu"))
+        MCMC_Nu(tree);
 
       
       /* PhyML_Printf("\n. Move: %s tree->mmod->c_lnL: %f kappa: %f", */

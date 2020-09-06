@@ -844,8 +844,8 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
   rates->br_r_recorded    = NO;
 
 
-  rates->max_rate  = 100.0;
-  rates->min_rate  = 0.001;
+  rates->max_rate  = 1.E+8;
+  rates->min_rate  = 1.E-8;
 
   rates->clock_r       = 1.E-4;
   rates->min_clock     = 1.E-10;
@@ -902,9 +902,9 @@ void TIMES_Init_Time_Struct(t_time *times, t_time *existing_times, int n_otu)
       times->model_id = COALESCENT;
     }
 
-  times->scaled_pop_size      = 1.0;
+  times->scaled_pop_size      = 100.0;
   times->scaled_pop_size_min  = 0.0;
-  times->scaled_pop_size_max  = 1.E+6;
+  times->scaled_pop_size_max  = 1.E+3;
   
   times->c_lnL_times      = UNLIKELY;
   times->c_lnL_times      = UNLIKELY;

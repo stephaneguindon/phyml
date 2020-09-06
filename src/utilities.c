@@ -9484,9 +9484,10 @@ int Scale_Subtree_Rates(t_node *a, phydbl mult, int *n_nodes, t_tree *tree)
     }
   else
     {
-      for(i=0;i<3;i++) if((a->v[i] != a->anc) &&
-          (a->b[i] != tree->e_root) &&
-          (res == 1)) res = Scale_Subtree_Rates_Post(a,a->v[i],mult,n_nodes,tree);
+      for(i=0;i<3;i++)
+        if((a->v[i] != a->anc) &&
+           (a->b[i] != tree->e_root) &&
+           (res == 1)) res = Scale_Subtree_Rates_Post(a,a->v[i],mult,n_nodes,tree);
       return res;
     }
 }

@@ -23,8 +23,7 @@ the GNU public licence. See http://www.opensource.org for details.
 //////////////////////////////////////////////////////////////
 
 phydbl RATES_Lk_Rates(t_tree *tree)
-{
-  
+{  
   if(tree->eval_rlnL == NO) return UNLIKELY;
 
   tree->rates->c_lnL_rates  = .0;
@@ -152,7 +151,8 @@ phydbl RATES_Lk_Rates_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl n
       {
         int err;
         phydbl log_br_r_d = log(br_r_d);
-        log_dens = Log_Dnorm_Trunc(log_br_r_d,0.0,tree->rates->nu,tree->rates->min_rate,tree->rates->max_rate,&err);
+        /* log_dens = Log_Dnorm_Trunc(log_br_r_d,0.0,tree->rates->nu,tree->rates->min_rate,tree->rates->max_rate,&err); */
+        log_dens = Log_Dnorm(log_br_r_d,0.0,tree->rates->nu,&err);
         log_dens -= log_br_r_d;
 	break;
       }
