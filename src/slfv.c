@@ -119,7 +119,7 @@ phydbl SLFV_Path_Logdensity(t_ldsk *young, t_ldsk *old, phydbl sd, t_tree *tree)
   t_ldsk *ldsk;
   phydbl lnDens,mode,var;
   phydbl X,Y,Xp,Yp;
-  phydbl slope,inter;
+  /* phydbl slope,inter,mode; */
   int dir_to_young;
   phydbl dt_young,dt_old,sum;
   phydbl pos;
@@ -358,7 +358,7 @@ t_ldsk *SLFV_Generate_Path(t_ldsk *young, t_ldsk *old, int n_evt, phydbl sd, t_t
   t_ldsk *path,**ldsk_a;
   t_dsk *disk;
   phydbl X,Y,Xp,Yp;
-  phydbl slope,inter;
+  /* phydbl slope,inter; */
   phydbl dt_young,dt_old,sum;
   phydbl pos;
   

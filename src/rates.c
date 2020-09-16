@@ -150,7 +150,7 @@ phydbl RATES_Lk_Rates_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl n
     case LOGNORMAL :
       {
         int err;
-        phydbl log_br_r_d = log(br_r_d);
+        /* phydbl log_br_r_d = log(br_r_d); */
 
         /* log_dens = Log_Dnorm_Trunc(log_br_r_d,0.0,tree->rates->nu,log(tree->rates->min_rate),log(tree->rates->max_rate),&err); */
         /* log_dens -= log_br_r_d; */
