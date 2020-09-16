@@ -108,7 +108,7 @@ phydbl RATES_Lk_Rates_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl n
   min_r     = tree->rates->min_rate;
   max_r     = tree->rates->max_rate;
 
-  dt_d = MAX(0.5,dt_d); // We give only one decimal when printing out node heights. It is therefore a fair approximation
+  /* dt_d = MAX(0.5,dt_d); // We give only one decimal when printing out node heights. It is therefore a fair approximation */
 
   switch(tree->rates->model_id)
     {
@@ -151,10 +151,16 @@ phydbl RATES_Lk_Rates_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl n
       {
         int err;
         phydbl log_br_r_d = log(br_r_d);
-        /* log_dens = Log_Dnorm_Trunc(log_br_r_d,0.0,tree->rates->nu,tree->rates->min_rate,tree->rates->max_rate,&err); */
-        log_dens = Log_Dnorm(log_br_r_d,0.0,tree->rates->nu,&err);
-        log_dens -= log_br_r_d;
-	break;
+
+        /* log_dens = Log_Dnorm_Trunc(log_br_r_d,0.0,tree->rates->nu,log(tree->rates->min_rate),log(tree->rates->max_rate),&err); */
+        /* log_dens -= log_br_r_d; */
+
+        /* log_dens = Log_Dnorm(log_br_r_d,0.0,tree->rates->nu,&err); */
+        /* log_dens -= log_br_r_d; */
+
+        log_dens = Log_Dnorm(br_r_d,1.0,tree->rates->nu,&err);
+
+        break;
       }
     case STRICTCLOCK :
       {

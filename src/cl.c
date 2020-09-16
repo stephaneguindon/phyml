@@ -23,9 +23,11 @@ int Read_Command_Line(option *io, int argc, char **argv)
   int idx;
   int i;
   int writemode;
-
+  short int opt_m;
+  
   writemode = WRITE;
-
+  opt_m = 0;
+  
   if(argc == 1) Exit("\n. No argument was passed to the program. Please check the documentation. \n");
   PhyML_Printf("",writemode);
   
@@ -141,7 +143,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
 
     do
     {     
-      c = getopt_long(argc,argv,"qi:d:m:b:n:t:f:zk:v:c:a:u:ho:s:x:g:l:ep",longopts,&idx);
+      c = getopt_long(argc,argv,"qi:d:t:m:b:n:f:zk:v:c:a:u:ho:s:x:g:l:ep",longopts,&idx);
 
       switch(c)
 	{
@@ -852,7 +854,8 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	    break;
 	  }
 	case 'm': case 5 :
-	  {            
+	  {
+            opt_m = 1;
 	    if (!isalpha(optarg[0]))
               {
                 if(strchr(optarg,',') == NULL)
@@ -1299,7 +1302,13 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	  
 	case 't':case 11:
 	  {
-            if ((io->mod->whichmodel != JC69) && (io->mod->whichmodel != F81) && (io->mod->whichmodel != GTR))
+            if(opt_m == 0)
+              {
+                PhyML_Fprintf(stderr,"\n. Please use the -m option before -t in the command line.");
+                Exit("\n");
+              }
+            
+            if((io->mod->whichmodel != JC69) && (io->mod->whichmodel != F81) && (io->mod->whichmodel != GTR))
               {
                 if ((strcmp(optarg, "e") == 0) ||
                     (strcmp(optarg, "E") == 0) ||
@@ -1308,15 +1317,13 @@ int Read_Command_Line(option *io, int argc, char **argv)
                   {
                     io->mod->kappa->v = 4.0;
                     io->mod->s_opt->opt_kappa = YES;
-                    if (io->mod->whichmodel == TN93)
-                      io->mod->s_opt->opt_lambda   = YES;
+                    if(io->mod->whichmodel == TN93) io->mod->s_opt->opt_lambda = YES;
                   }
                 else
                   {
                     io->mod->s_opt->opt_kappa  = NO;
                     io->mod->s_opt->opt_lambda = NO;
 
-                    
                     // Added the 2 TsTv ratios for TN93
                     // lambda is the ratio of both TsTv ratios
                     // kappa is the mean of both TsTv ratios
@@ -1330,12 +1337,16 @@ int Read_Command_Line(option *io, int argc, char **argv)
                           }
                         else
                           {
-                            PhyML_Fprintf(stderr,"\n. The TN93 model requires two Ts/Tv ratios.\n");
+                            PhyML_Fprintf(stderr,"\n. The TN93 model requires two ts/tv ratios.\n");
                             Exit("\n");
                           }
                         if ( (TsTvPur < .0) || (TsTvPyr < .0) )
                           {
-                            PhyML_Fprintf(stderr,"\n. The Ts/Tv ratio must be a positive number.\n");
+                            PhyML_Fprintf(stderr,"\n. ts/tv for purines: %f",TsTvPur);
+                            PhyML_Fprintf(stderr,"\n. ts/tv for pyrimidines: %f",TsTvPyr);
+                            PhyML_Fprintf(stderr,"\n. The TN93 model requires two ts/tv ratios");
+                            PhyML_Fprintf(stderr,"\n. The command-line option should look as follows: ... -t 3.5,4.3 ... ");
+                            PhyML_Fprintf(stderr,"\n. The ts/tv ratio must be a positive number.\n");
                             Exit("\n");
                           }
                         io->mod->lambda->v = (phydbl)(TsTvPur / TsTvPyr);
@@ -1347,7 +1358,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
                         if (atof(optarg) < .0)
                           {
                             char choix;
-                            PhyML_Printf("\n. The Ts/Tv ratio must be a positive number\n");
+                            PhyML_Printf("\n. The ts/tv ratio must be a positive number\n");
                             PhyML_Printf("\n. Type any key to exit.\n");
                             if(!scanf("%c",&choix)) Exit("\n");
                             Exit("\n");

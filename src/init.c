@@ -851,7 +851,7 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
   rates->min_clock     = 1.E-10;
   rates->max_clock     = 1.E+0;
   
-  rates->nu            = 1.0E-1;
+  rates->nu            = 1.0E-0;
   rates->min_nu        = 0.0;
   rates->max_nu        = 2.0;
   
@@ -904,7 +904,7 @@ void TIMES_Init_Time_Struct(t_time *times, t_time *existing_times, int n_otu)
 
   times->scaled_pop_size      = 100.0;
   times->scaled_pop_size_min  = 0.0;
-  times->scaled_pop_size_max  = 1.E+3;
+  times->scaled_pop_size_max  = 1.E+5;
   
   times->c_lnL_times      = UNLIKELY;
   times->c_lnL_times      = UNLIKELY;

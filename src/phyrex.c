@@ -423,8 +423,8 @@ void PHYREX_XML(char *xml_filename)
     mixt_tree->mmod->rad  = 0.05*((mixt_tree->mmod->lim_up->lonlat[0]-mixt_tree->mmod->lim_do->lonlat[0])+
                                   (mixt_tree->mmod->lim_up->lonlat[1]-mixt_tree->mmod->lim_do->lonlat[1]));
   else if(mixt_tree->mmod->model_id == RW || mixt_tree->mmod->model_id == RRW)
-    mixt_tree->mmod->rad  = 1.0*((mixt_tree->mmod->lim_up->lonlat[0]-mixt_tree->mmod->lim_do->lonlat[0])+
-                                 (mixt_tree->mmod->lim_up->lonlat[1]-mixt_tree->mmod->lim_do->lonlat[1]));
+    mixt_tree->mmod->rad  = 1.00*((mixt_tree->mmod->lim_up->lonlat[0]-mixt_tree->mmod->lim_do->lonlat[0])+
+                                  (mixt_tree->mmod->lim_up->lonlat[1]-mixt_tree->mmod->lim_do->lonlat[1]));
   else assert(FALSE);
 
   mixt_tree->mmod->sigsq = PHYREX_Update_Sigsq(mixt_tree);
@@ -443,7 +443,11 @@ void PHYREX_XML(char *xml_filename)
     {
     case 0 : case 1 :
       {
-        PHYREX_Simulate_Backward_Core(mixt_tree->young_disk,NO,mixt_tree);
+        if(mixt_tree->mmod->model_id == RW || mixt_tree->mmod->model_id == RRW)
+          PHYREX_Simulate_Backward_Core(mixt_tree->young_disk,YES,mixt_tree);
+        else
+          PHYREX_Simulate_Backward_Core(mixt_tree->young_disk,NO,mixt_tree);
+
         PHYREX_Ldsk_To_Tree(mixt_tree);
         break;
       }
@@ -469,13 +473,14 @@ void PHYREX_XML(char *xml_filename)
       Make_Contrasts(mixt_tree);
       Make_Contrasts(mixt_tree->aux_tree[0]);
 
-      mixt_tree->mmod->max_num_of_intervals = 3*mixt_tree->n_otu-2;
-      mixt_tree->aux_tree[0]->mmod->max_num_of_intervals = 3*mixt_tree->n_otu-2;
+      mixt_tree->mmod->max_num_of_intervals = 4*mixt_tree->n_otu;
+      mixt_tree->aux_tree[0]->mmod->max_num_of_intervals = 4*mixt_tree->n_otu;
 
       mixt_tree->times->augmented_coalescent = YES;
       mixt_tree->aux_tree[0]->times->augmented_coalescent = YES;
       
       PHYREX_Simulate_Backward_Core(mixt_tree->aux_tree[0]->young_disk,NO,mixt_tree->aux_tree[0]);
+
       PHYREX_Ldsk_To_Tree(mixt_tree->aux_tree[0]);
       Update_Ancestors(mixt_tree->aux_tree[0]->n_root,mixt_tree->aux_tree[0]->n_root->v[2],mixt_tree->aux_tree[0]);
       Update_Ancestors(mixt_tree->aux_tree[0]->n_root,mixt_tree->aux_tree[0]->n_root->v[1],mixt_tree->aux_tree[0]);  
@@ -680,14 +685,9 @@ phydbl PHYREX_Lk_Core(t_dsk *disk, t_tree *tree)
         return(SLFV_Lk_Gaussian_Core(disk,tree));
         break;
       }
-    case RW :
+    case RW : case RRW : 
         {
-          return(RW_Lk(tree));
-          break;
-        }
-    case RRW :
-        {
-          return(RRW_Lk(tree));
+          return(RRW_Lk_Core(disk,tree));
           break;
         }
     default : assert(FALSE);
@@ -709,15 +709,15 @@ phydbl PHYREX_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
         break;
       }
     case RW :
-        {
-          return(RW_Lk(tree));
-          break;
-        }
+      {
+        return(RW_Lk_Range(young,old,tree));
+        break;
+      }
     case RRW :
-        {
-          return(RRW_Lk(tree));
-          break;
-        }
+      {
+        return(RRW_Lk_Range(young,old,tree));
+        break;
+      }
     default : assert(FALSE);
     }
   
@@ -1066,7 +1066,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           tree->mcmc->sample_num++;
         }
 
-      
+
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_lbda"))
         MCMC_PHYREX_Lbda(tree);
       
@@ -1628,7 +1628,7 @@ void  PHYREX_Update_Lindisk_List_Range(t_dsk *young, t_dsk *old, t_tree *tree)
       if(disk == old) break;      
       disk = disk->prev;
     }
-  while(1);  
+  while(disk);  
 }
 
 /*////////////////////////////////////////////////////////////
@@ -2015,6 +2015,27 @@ int PHYREX_Total_Number_Of_Hit_Disks(t_tree *tree)
   while(disk)
     {
       if(disk->ldsk) n_hit_disks++;
+      disk = disk->prev;
+    }
+  return(n_hit_disks);
+
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+int PHYREX_Total_Number_Of_Single_Hit_Disks(t_tree *tree)
+{
+  t_dsk *disk;
+  int n_hit_disks;
+
+  assert(!(tree->young_disk->next));
+
+  disk = tree->young_disk;
+  n_hit_disks = 0;
+  while(disk)
+    {
+      if(disk->ldsk && disk->ldsk->n_next == 1) n_hit_disks++;
       disk = disk->prev;
     }
   return(n_hit_disks);
@@ -4489,7 +4510,7 @@ t_ldsk *PHYREX_Generate_Path(t_ldsk *young, t_ldsk *old, phydbl n_evt, phydbl sd
       }      
     case RW : case RRW : 
       {
-        return(SLFV_Generate_Path(young,old,0,sd,tree));
+        return(SLFV_Generate_Path(young,old,n_evt,sd,tree));
         break;
       }
     default : assert(FALSE);

@@ -90,5 +90,6 @@ void TIMES_Copy_Time_Struct(t_time *from, t_time *to, int n_otu);
 phydbl TIMES_Lk_Coalescent(t_tree *tree);
 phydbl TIMES_Wrap_Lk_Coalescent(t_edge *b, t_tree *tree, supert_tree *stree);
 void TIMES_Simulate_Coalescent(t_tree *tree);
+phydbl TIMES_Lk_Coalescent_Range(t_dsk *young, t_dsk *old, t_tree *tree);
 
 #endif

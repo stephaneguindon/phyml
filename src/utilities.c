@@ -8460,10 +8460,18 @@ void Get_Node_Ranks_From_Times(t_tree *tree)
   int i;
   int swap = NO;
   int *rk;
+  phydbl eps;
 
+  eps = 1.0;
+  
   rk = (int *)mCalloc(2*tree->n_otu-1,sizeof(int));
   
   for(i=0;i<2*tree->n_otu-1;++i) rk[i] = i;
+
+  
+  tree->times->nd_t[tree->n_root->num] -= eps; // Used in order to break ties at root node
+  // so that all nodes descend from root->rk_next
+
   
   do
     {
@@ -8482,12 +8490,15 @@ void Get_Node_Ranks_From_Times(t_tree *tree)
     }
   while(swap == YES);
   
+  tree->times->nd_t[tree->n_root->num] += eps;
+
+
   for(i=0;i<2*tree->n_otu-1;++i) tree->a_nodes[i]->rk_next = NULL;
   for(i=0;i<2*tree->n_otu-1;++i) tree->a_nodes[i]->rk_prev = NULL;
 
   for(i=0;i<2*tree->n_otu-2;++i) tree->a_nodes[rk[i]]->rk_next = tree->a_nodes[rk[i+1]];
   for(i=0;i<2*tree->n_otu-2;++i) tree->a_nodes[rk[i+1]]->rk_prev = tree->a_nodes[rk[i]];
-
+  
   Free(rk);
 }
 
