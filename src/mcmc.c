@@ -9096,9 +9096,6 @@ void MCMC_PHYREX_Lineage_Traj(t_tree *tree)
       /* dt = fabs(young_ldsk->disk->time - old_ldsk->disk->time); */
       
       assert(young_ldsk != NULL); 
-
-      oldest_disk = NULL;
-      youngest_disk = NULL;
       
       new_glnL = cur_glnL;
       if(tree->eval_glnL == YES) new_glnL -= PHYREX_Lk_Range(young_ldsk->disk,old_ldsk->disk,tree);

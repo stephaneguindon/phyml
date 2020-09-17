@@ -969,8 +969,7 @@ phydbl TIMES_Lk_Coalescent(t_tree *tree)
 
 phydbl TIMES_Lk_Coalescent_Range(t_dsk *young, t_dsk *old, t_tree *tree)
 {
-  t_node *n;
-  int n_lineages,i;
+  int n_lineages;
   phydbl lnP,Ne;
   t_dsk *disk;
 
