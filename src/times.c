@@ -889,13 +889,20 @@ phydbl TIMES_Lk_Coalescent(t_tree *tree)
       else n_lineages++;
       
       lnP += -n_lineages * (n_lineages-1.) / (2.*Ne) * fabs(tree->times->nd_t[n->num] - tree->times->nd_t[n->rk_next->num]);
+
+      /* PhyML_Printf("\n! Disk=%5s time=%14f n_lineages=%4d lnP=%14f Z=%14f", */
+      /*              n->ldsk->disk->id, */
+      /*              tree->times->nd_t[n->num], */
+      /*              n_lineages, */
+      /*              lnP, */
+      /*              -n_lineages * (n_lineages-1.) / (2.*Ne) * fabs(tree->times->nd_t[n->num] - tree->times->nd_t[n->rk_next->num])); */
       
       n = n->rk_next;
     }
 
   lnP -= (tree->n_otu-1) * log(Ne);
   
-  if(tree->times->augmented_coalescent == YES)
+  /* if(tree->times->augmented_coalescent == YES) */
     {
       int n_hits;
       t_dsk *disk;
@@ -972,11 +979,21 @@ phydbl TIMES_Lk_Coalescent_Range(t_dsk *young, t_dsk *old, t_tree *tree)
   
   lnP = 0.0;
   disk = young->prev;
+  /* disk = tree->young_disk->prev; */
   do
     {
-      n_lineages = disk->n_ldsk_a;
-      
+      n_lineages = disk->next->n_ldsk_a;
+      n_lineages -= (disk->next->ldsk ? (disk->next->ldsk->n_next -1) : 0);
+                     
       lnP += -n_lineages * (n_lineages-1.) / (2.*Ne) * fabs(disk->time - disk->next->time);
+
+      /* PhyML_Printf("\n> Disk=%5s time=%14f n_lineages=%4d lnP=%14f Z=%14f [%d]", */
+      /*              disk->id, */
+      /*              disk->time, */
+      /*              n_lineages, */
+      /*              lnP, */
+      /*              -n_lineages * (n_lineages-1.) / (2.*Ne) * fabs(disk->time - disk->next->time), */
+      /*              (disk->ldsk ? (disk->ldsk->n_next -1) : 0)); */
 
       disk = disk->prev;
     }
@@ -994,6 +1011,7 @@ phydbl TIMES_Lk_Coalescent_Range(t_dsk *young, t_dsk *old, t_tree *tree)
       phydbl dt,Z;
       
       disk = young->prev;
+      /* disk = tree->young_disk->prev; */
       
       /* PhyML_Printf("\n\n -----"); */
       n_hits = 0;
