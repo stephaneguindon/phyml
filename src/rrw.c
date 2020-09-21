@@ -62,9 +62,13 @@ phydbl RRW_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
   phydbl lnP;
   
   lnP = 0.0;
-  lnP += RRW_Forward_Lk_Range(young,old,tree);
+  
+  /* lnP += RRW_Forward_Lk_Range(young,old,tree); */
+  /* lnP += TIMES_Lk_Coalescent_Range(young,old,tree); */
+
+  /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+  lnP += RRW_Forward_Lk_Range(young,NULL,tree);
   lnP += TIMES_Lk_Coalescent_Range(young,old,tree);
-  /* lnP += TIMES_Lk_Coalescent(tree); */
 
 
   /* PhyML_Printf("\n. RANGE = %f",TIMES_Lk_Coalescent_Range(young,old,tree)); */

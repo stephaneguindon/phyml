@@ -8398,16 +8398,18 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
   phydbl cur_glnL, new_glnL;
   phydbl cur_alnL, new_alnL;
   phydbl cur_rlnL, new_rlnL;
-  t_dsk  *disk,*regraft_disk,**valid_disks,*oldest_disk,*youngest_disk;
-  t_ldsk *prune_ldsk,*regraft_ldsk,*prune_ldsk_daughter,*cur_path,*new_path,*ldsk,*ldsk_dum,**valid_ldsks;
+  t_dsk  *disk,*regraft_disk,**valid_disks,*oldest_disk,*youngest_disk,*regraft_disk_prev,*regraft_disk_next;
+  t_ldsk *prune_ldsk,*regraft_ldsk,*prune_ldsk_daughter,*cur_path,*new_path,*ldsk,*ldsk_dum,**valid_ldsks,*regraft_ldsk_prev,*regraft_ldsk_next,*prune_ldsk_prev,*prune_ldsk_next;
   phydbl *prob_disks_prune,*prob_disks_regraft;
-  int i,block,n_valid_disks,num_regraft_disk,num_prune_disk,n_valid_ldsks;
+  int i,j,block,n_valid_disks,num_regraft_disk,num_prune_disk,n_valid_ldsks,err;
   phydbl max_dist, param_exp;
+  short int dir_regraft_prev_next,dir_prune_prev_next;
   int cur_path_len;
   int n_iter;
   int cur_pos,new_pos;
   phydbl sum,rad;
   phydbl dt_orig,dt_new;
+  phydbl T,c;
   
   if(tree->mod->s_opt->opt_topo == NO) return;
 
@@ -8442,9 +8444,14 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
       new_pos            = -1;
       param_exp          = 1.0;
       num_regraft_disk   = -1;
-      num_prune_disk     = -1;
+      num_prune_disk        = -1;
+      prune_ldsk_next       = NULL;
+      prune_ldsk_prev       = NULL;
+      regraft_ldsk_next     = NULL;
+      regraft_ldsk_prev     = NULL;
+      dir_prune_prev_next   = -1;
+      dir_regraft_prev_next = -1;
       
-
       if(tree->eval_glnL == YES) assert(cur_glnL > UNLIKELY);
       if(tree->eval_alnL == YES) assert(cur_alnL > UNLIKELY);
       if(tree->eval_rlnL == YES) assert(cur_rlnL > UNLIKELY);
@@ -8459,17 +8466,13 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
           /* Include only disks with displacement that are coalescent events */
           if(disk->ldsk != NULL && disk->ldsk->n_next > 1)
             {
-              /* Root has degree 2: don't pull any lineage */
-              if(!(disk->prev == NULL && disk->ldsk->n_next == 2))
+              if(!n_valid_ldsks) valid_ldsks = (t_ldsk **)mCalloc(disk->ldsk->n_next,sizeof(t_ldsk *));
+              else valid_ldsks = (t_ldsk **)mRealloc(valid_ldsks,n_valid_ldsks+disk->ldsk->n_next,sizeof(t_ldsk *));
+              for(i=0;i<disk->ldsk->n_next;++i)
                 {
-                  if(!n_valid_ldsks) valid_ldsks = (t_ldsk **)mCalloc(disk->ldsk->n_next,sizeof(t_ldsk *));
-                  else valid_ldsks = (t_ldsk **)mRealloc(valid_ldsks,n_valid_ldsks+disk->ldsk->n_next,sizeof(t_ldsk *));
-                  for(i=0;i<disk->ldsk->n_next;++i)
-                    {
-                      valid_ldsks[n_valid_ldsks] = disk->ldsk->next[i];
-                      n_valid_ldsks++;
-                    }
-                }
+                  valid_ldsks[n_valid_ldsks] = disk->ldsk->next[i];
+                  n_valid_ldsks++;
+                }                
             }
           disk = disk->prev;
         }
@@ -8479,115 +8482,153 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
       
       prune_ldsk_daughter = valid_ldsks[Rand_Int(0,n_valid_ldsks-1)];
       prune_ldsk = prune_ldsk_daughter->prev;
-      hr -= log(1./(phydbl)(n_valid_ldsks));
       Free(valid_ldsks);
 
+      
+      hr -= log(1./(phydbl)(n_valid_ldsks));
+      if(prune_ldsk->n_next > 2) hr += log(1./(phydbl)(n_valid_ldsks+1));
+      else hr += log(1./(phydbl)(n_valid_ldsks));
+
+
+      /* Pruning at root if degree==2 leads to invalid tree */
+      if(prune_ldsk == tree->n_root->ldsk && prune_ldsk->n_next == 2) continue;
+                 
       /* prune_ldsk_daughter is the next coalescent event or tip node */
       while(prune_ldsk_daughter->n_next == 1) prune_ldsk_daughter = prune_ldsk_daughter->next[0];
 
-      /* Get a ldsk to reattach the pruned lineage to */
-      disk = tree->young_disk->prev;
-      n_valid_disks = 0;
-      do
-        {
-          /* Include only disks with displacement that are not younger
-             than prune_ldsk_daughter and different from prune_ldsk */
-          if((disk->ldsk != NULL) &&
-             (disk->ldsk->n_next >= 1) &&
-             (disk->time < prune_ldsk_daughter->disk->time) && 
-             (PHYREX_Is_On_Path(disk->ldsk,prune_ldsk_daughter,prune_ldsk) == NO))
-            {
-              if(!n_valid_disks) 
-                {
-                  valid_disks        = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
-                  prob_disks_prune   = (phydbl *)mCalloc(block,sizeof(phydbl));
-                }
-              else if(!(n_valid_disks%block)) 
-                {
-                  valid_disks        = (t_dsk **)mRealloc(valid_disks,n_valid_disks+block,sizeof(t_dsk *));
-                  prob_disks_prune   = (phydbl *)mRealloc(prob_disks_prune,n_valid_disks+block,sizeof(phydbl));
-                }
-
-              valid_disks[n_valid_disks] = disk;
-
-              prob_disks_prune[n_valid_disks] = PHYREX_Dist_Between_Two_Ldsk(disk->ldsk,prune_ldsk,tree);
-              
-              n_valid_disks++;
-            }
-          disk = disk->prev;
-        }
-      while(disk);
+      /* Time of regraft_disk */
+      T = Uni()*(prune_ldsk_daughter->disk->time - tree->n_root->ldsk->disk->time) + tree->n_root->ldsk->disk->time;
       
-      assert(n_valid_disks);
-
-      if(n_valid_disks > 1)
-        {
-          max_dist = -INFINITY;
-          for(i=0;i<n_valid_disks;i++) if(prob_disks_prune[i] > max_dist) max_dist = prob_disks_prune[i];
-          
-          sum = 0.0;
-          for(i=0;i<n_valid_disks;i++) prob_disks_prune[i] /= max_dist;
-          
-          for(i=0;i<n_valid_disks;i++) prob_disks_prune[i] = Dexp(prob_disks_prune[i],param_exp);
-          
-          sum = 0.0;
-          for(i=0;i<n_valid_disks;i++) sum += prob_disks_prune[i];
-          for(i=0;i<n_valid_disks;i++) prob_disks_prune[i] /= sum;
-          
-          num_regraft_disk = Sample_i_With_Proba_pi(prob_disks_prune,n_valid_disks);
-          regraft_disk = valid_disks[num_regraft_disk];
-          regraft_ldsk = regraft_disk->ldsk;
-          
-          /* Prob of selecting this node as regraft site */
-          hr -= log(prob_disks_prune[num_regraft_disk]);
-        }
+      disk = prune_ldsk_daughter->disk;
+      while(disk->time > T) disk = disk->prev;
+      assert(disk);
+      regraft_disk_next = disk->next;
+      regraft_disk_prev = disk;
       
-      Free(prob_disks_prune);
-      Free(valid_disks);
             
+      /* Which lineage is going to be hit ? */
+      regraft_ldsk_next = PHYREX_Random_Select_Outgoing_Ldsk(regraft_disk_next);
+      if(PHYREX_Is_On_Path(regraft_ldsk_next,prune_ldsk_daughter,prune_ldsk) == YES) continue;
 
-      if(n_valid_disks == 1) return;
+      hr -= log(1./PHYREX_Number_Of_Outgoing_Ldsks(regraft_disk_next));
+      hr += log(1./PHYREX_Number_Of_Outgoing_Ldsks(prune_ldsk->disk));
+
+      regraft_ldsk_prev = regraft_ldsk_next->prev;
       
+      assert(regraft_ldsk_prev != regraft_ldsk_next);
 
-      /* oldest_disk = (regraft_disk->time < prune_ldsk->disk->time) ? (regraft_disk) : (prune_ldsk->disk); */
+      /* Direction from old to young ldsk */
+      dir_regraft_prev_next = PHYREX_Get_Next_Direction(regraft_ldsk_next,regraft_ldsk_prev);
+      assert(dir_regraft_prev_next != -1);
 
 
+      /* Create regraft disk */
+      regraft_disk = PHYREX_Make_Disk_Event(tree->mmod->n_dim,tree->n_otu);
+      PHYREX_Init_Disk_Event(regraft_disk,tree->mmod->n_dim,tree->mmod);
+      regraft_disk->time = T;
+
+      /* Make and initialize regraft_ldsk */
+      regraft_ldsk = PHYREX_Make_Lindisk_Node(tree->mmod->n_dim);
+      PHYREX_Init_Lindisk_Node(regraft_ldsk,regraft_disk,tree->mmod->n_dim);
+      PHYREX_Make_Lindisk_Next(regraft_ldsk);
+      regraft_disk->ldsk = regraft_ldsk;
+
+      
+      /* Range of disks that require updating */
       oldest_disk = NULL;
       youngest_disk = NULL;
 
-      if(tree->mmod->model_id == SLFV_UNIFORM || tree->mmod->model_id == SLFV_GAUSSIAN)
-        {
-          oldest_disk = (regraft_disk->time < prune_ldsk->disk->time) ? (regraft_disk) : (prune_ldsk->disk);
-          youngest_disk = prune_ldsk_daughter->disk;
-        }
-      else if(tree->mmod->model_id == RW || tree->mmod->model_id == RRW)
-        {
-          if(regraft_ldsk->disk->time < prune_ldsk->disk->time) disk = regraft_ldsk->disk;
-          else disk = prune_ldsk->disk;
-          if(disk->prev) do { disk = disk->prev; } while(disk->prev && ((disk->ldsk && disk->ldsk->n_next < 2) || !disk->ldsk)); 
-          oldest_disk = disk;
-          assert(oldest_disk);
-          
-          disk = prune_ldsk_daughter->disk;
-          while(disk->next && ((disk->ldsk && disk->ldsk->n_next < 2) || !disk->ldsk)) disk = disk->next;
-          youngest_disk = disk;
-          assert(youngest_disk);
-        }
+      disk = prune_ldsk->disk;
+      if(disk->prev) do { disk = disk->prev; } while(disk->prev && ((disk->ldsk && disk->ldsk->n_next < 2) || !disk->ldsk)); 
+      oldest_disk = disk;
+      disk = regraft_ldsk_prev->disk;
+      while(disk->prev && ((disk->ldsk && disk->ldsk->n_next < 2) || !disk->ldsk)) { disk = disk->prev; } 
+      if(disk->time < oldest_disk->time) oldest_disk = disk;
+      assert(oldest_disk);
 
+      
+      disk = prune_ldsk_daughter->disk;
+      while(disk->next && ((disk->ldsk && disk->ldsk->n_next < 2) || !disk->ldsk)) disk = disk->next;
+      youngest_disk = disk;
+      assert(youngest_disk);
 
       new_glnL = cur_glnL;
-      if(tree->eval_glnL == YES)
+      if(tree->eval_glnL == YES) new_glnL -= PHYREX_Lk_Range(youngest_disk,oldest_disk,tree);
+
+      
+      /* Connect regraft_ldsk */
+      regraft_ldsk->prev                             = regraft_ldsk_prev;
+      regraft_ldsk->next[0]                          = regraft_ldsk_next;
+      regraft_ldsk_next->prev                        = regraft_ldsk;  
+      regraft_ldsk_prev->next[dir_regraft_prev_next] = regraft_ldsk;
+      
+      /* Insert regraft_disk */
+      PHYREX_Insert_Disk(regraft_disk,tree);
+      
+      assert(regraft_disk->next == regraft_disk_next);
+      assert(regraft_disk->prev == regraft_disk_prev);
+
+
+      /* Set new position of regraft_ldsk */
+      for(j=0;j<tree->mmod->n_dim;j++)
         {
-          new_glnL -= PHYREX_Lk_Range(youngest_disk,oldest_disk,tree);
+          regraft_disk->centr->lonlat[j] = Uni()*(tree->mmod->lim_up->lonlat[j]-tree->mmod->lim_do->lonlat[j])+tree->mmod->lim_do->lonlat[j];
+          hr -= log(1./(tree->mmod->lim_up->lonlat[j]-tree->mmod->lim_do->lonlat[j]));
+                    
+          if(tree->mmod->model_id == SLFV_GAUSSIAN || tree->mmod->model_id == SLFV_UNIFORM)
+            {
+              c = regraft_disk->centr->lonlat[j];
+              
+              err = NO;
+              regraft_ldsk->coord->lonlat[j] = Rnorm_Trunc(c,
+                                                           1.0*rad,
+                                                           tree->mmod->lim_do->lonlat[j],
+                                                           tree->mmod->lim_up->lonlat[j],&err);
+              
+              if(err == YES) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+              
+              hr -= Log_Dnorm_Trunc(regraft_ldsk->coord->lonlat[j],
+                                    c,
+                                    1.0*rad,
+                                    tree->mmod->lim_do->lonlat[j],
+                                    tree->mmod->lim_up->lonlat[j],&err);
+              
+            }
+          else if(tree->mmod->model_id == RW || tree->mmod->model_id == RRW)
+            {
+              phydbl dta,dtd,sum,sd;
+              
+              dta = fabs(regraft_ldsk->prev->disk->time - regraft_ldsk->disk->time);
+              dtd = fabs(regraft_ldsk->disk->time - regraft_ldsk->next[0]->disk->time);
+              sum = dta+dtd;
+              
+              c = (dtd/sum)*regraft_ldsk->prev->coord->lonlat[j] + (dta/sum)*regraft_ldsk->next[0]->coord->lonlat[j];
+              sd = sqrt((dta*dtd)/sum*tree->mmod->sigsq);
+                  
+              err = NO;
+              regraft_ldsk->coord->lonlat[j] = Rnorm_Trunc(c,
+                                                       sd,
+                                                       tree->mmod->lim_do->lonlat[j],
+                                                       tree->mmod->lim_up->lonlat[j],&err);
+              
+              if(err == YES) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+              
+              hr -= Log_Dnorm_Trunc(regraft_ldsk->coord->lonlat[j],
+                                    c,
+                                    sd,
+                                    tree->mmod->lim_do->lonlat[j],
+                                    tree->mmod->lim_up->lonlat[j],&err);
+            }
+          else c = -1.;          
         }
 
-      dt_orig = fabs(prune_ldsk_daughter->disk->time - prune_ldsk->disk->time);
-      dt_new  = fabs(prune_ldsk_daughter->disk->time - regraft_ldsk->disk->time);
-      
       /* Prune and regraft */
       cur_path_len = PHYREX_Path_Len(prune_ldsk_daughter,prune_ldsk)-2;
       
       hr += PHYREX_Path_Logdensity(prune_ldsk_daughter,prune_ldsk,1.0*rad,tree);
+
+      dt_orig = fabs(prune_ldsk_daughter->disk->time - prune_ldsk->disk->time);
+      dt_new  = fabs(prune_ldsk_daughter->disk->time - regraft_ldsk->disk->time);
       
       new_path = PHYREX_Generate_Path(prune_ldsk_daughter,regraft_ldsk,(int)(cur_path_len*dt_new/dt_orig),1.0*rad,tree);
       cur_path = PHYREX_Remove_Path(prune_ldsk_daughter,prune_ldsk,&cur_pos,tree);
@@ -8598,81 +8639,29 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
 
       hr -= PHYREX_Path_Logdensity(prune_ldsk_daughter,regraft_ldsk,1.0*rad,tree);
 
-      PHYREX_Update_Lindisk_List_Range(prune_ldsk_daughter->disk,oldest_disk,tree);
+      /* prune_ldsk had outdegree 2, now has outdegree 1 -> remove corresponding disk */
+      if(prune_ldsk->n_next == 1)
+        {
+          prune_ldsk_prev = prune_ldsk->prev;
+          prune_ldsk_next = prune_ldsk->next[0];
+
+          dir_prune_prev_next = PHYREX_Get_Next_Direction(prune_ldsk,prune_ldsk_prev);
+          assert(dir_prune_prev_next != -1);
+
+          prune_ldsk_prev->next[dir_prune_prev_next] = prune_ldsk_next;
+          prune_ldsk_next->prev                      = prune_ldsk_prev;
+          
+          PHYREX_Remove_Disk(prune_ldsk->disk);
+        }
+      
+      PHYREX_Update_Lindisk_List_Range(youngest_disk,oldest_disk,tree);
 
       PHYREX_Ldsk_To_Tree(tree);
       Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
       Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
       RATES_Update_Cur_Bl(tree);
 
-      assert(isinf(hr) == NO);
-      
-      /* Number of ldsk which can be pruned (reverse move) */
-      if(regraft_disk->prev == NULL && regraft_ldsk->n_next == 3) // regraft_ldsk is root & went from 2 to 3 outgoing lineages
-        n_valid_ldsks+=3;
-      if(prune_ldsk->prev == NULL && prune_ldsk->n_next == 2) // prune_ldsk is root & went from 3 to 2 outgoing lineages
-        n_valid_ldsks-=3;
-      if(regraft_ldsk->n_next == 2) n_valid_ldsks += 2;
-      if(prune_ldsk->n_next == 1) n_valid_ldsks -= 2;
-        
-      assert(n_valid_ldsks > 0);
-      hr += log(1./(phydbl)(n_valid_ldsks));
 
-      /* Get a ldsk to reattach the pruned lineage to (reverse move) */
-      disk = tree->young_disk->prev;
-      n_valid_disks = 0;
-      do
-        {
-          /* Include only disks with displacement that are not younger
-             than prune_ldsk_daughter and different from prune_ldsk */
-          if((disk->ldsk != NULL) &&
-             (disk->ldsk->n_next >= 1) &&
-             (disk->time < prune_ldsk_daughter->disk->time) && 
-             (PHYREX_Is_On_Path(disk->ldsk,prune_ldsk_daughter,regraft_ldsk) == NO))
-            {
-              if(!n_valid_disks) 
-                {
-                  valid_disks        = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
-                  prob_disks_regraft = (phydbl *)mCalloc(block,sizeof(phydbl));
-                }
-              else if(!(n_valid_disks%block)) 
-                {
-                  valid_disks        = (t_dsk **)mRealloc(valid_disks,n_valid_disks+block,sizeof(t_dsk *));
-                  prob_disks_regraft = (phydbl *)mRealloc(prob_disks_regraft,n_valid_disks+block,sizeof(phydbl));
-                }
-
-              valid_disks[n_valid_disks] = disk;
-
-              prob_disks_regraft[n_valid_disks] = PHYREX_Dist_Between_Two_Ldsk(disk->ldsk,regraft_ldsk,tree);
-
-              if(disk == prune_ldsk->disk) num_prune_disk = n_valid_disks;
-              
-              n_valid_disks++;
-            }
-          disk = disk->prev;
-        }
-      while(disk);
-      
-      max_dist = -INFINITY;
-      for(i=0;i<n_valid_disks;i++) if(prob_disks_regraft[i] > max_dist) max_dist = prob_disks_regraft[i];
-      
-      sum = 0.0;
-      for(i=0;i<n_valid_disks;i++) prob_disks_regraft[i] /= max_dist;
-      
-      for(i=0;i<n_valid_disks;i++) prob_disks_regraft[i] = Dexp(prob_disks_regraft[i],param_exp);
-      
-      sum = 0.0;
-      for(i=0;i<n_valid_disks;i++) sum += prob_disks_regraft[i];
-      for(i=0;i<n_valid_disks;i++) prob_disks_regraft[i] /= sum;
-      
-      
-      assert(num_prune_disk > -1);
-      /* Prob of selecting this node as regraft site (reverse move) */
-      hr += log(prob_disks_regraft[num_prune_disk]);
-    
-      Free(prob_disks_regraft);
-      Free(valid_disks);
-      
       if(tree->eval_glnL == YES)
         {
           new_glnL += PHYREX_Lk_Range(youngest_disk,oldest_disk,tree);
@@ -8725,10 +8714,25 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
 
       if(u > alpha) /* Reject */
         {
-          new_path = PHYREX_Remove_Path(prune_ldsk_daughter,regraft_ldsk,&new_pos,tree);                    
-          PHYREX_Insert_Path(prune_ldsk_daughter,prune_ldsk,cur_path,cur_pos,tree);
+          PhyML_Printf("\n. REJECT");
+          if(prune_ldsk->n_next == 1)
+            {
+              prune_ldsk_prev->next[dir_prune_prev_next] = prune_ldsk;
+              prune_ldsk_next->prev                      = prune_ldsk;
                     
-          PHYREX_Update_Lindisk_List_Range(prune_ldsk_daughter->disk,oldest_disk,tree);
+              PHYREX_Insert_Disk(prune_ldsk->disk,tree);              
+            }
+
+          new_path = PHYREX_Remove_Path(prune_ldsk_daughter,regraft_ldsk,&new_pos,tree);                    
+
+          PHYREX_Insert_Path(prune_ldsk_daughter,prune_ldsk,cur_path,cur_pos,tree);          
+
+          assert(regraft_disk->ldsk->n_next == 1);
+          regraft_ldsk_next->prev = regraft_ldsk_prev;
+          regraft_ldsk_prev->next[dir_regraft_prev_next] = regraft_ldsk_next;
+          PHYREX_Remove_Disk(regraft_disk);
+          
+          PHYREX_Update_Lindisk_List_Range(youngest_disk,oldest_disk,tree);
 
           PHYREX_Ldsk_To_Tree(tree);
           Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
@@ -8751,6 +8755,7 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
         }
       else
         {
+          PhyML_Printf("\n. ACCEPT");
           ldsk = cur_path;
           while(ldsk)
             {
@@ -9896,8 +9901,7 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
   rad            = tree->mmod->rad;
   
   for(i=0;i<n_trials;i++)
-    {
-      
+    {      
       tree->mcmc->run_move[tree->mcmc->num_move_phyrex_indel_hit_serial]++;
       
       cur_glnL = tree->mmod->c_lnL;
