@@ -106,17 +106,20 @@ void Print_Lk_Given_Edge_Recurr(t_node *a, t_node *d, t_edge *b, t_tree *tree);
 void R_wtree(t_node *pere, t_node *fils, t_edge *b, int *available, char **s_tree, t_tree *tree);
 void Read_Branch_Support(char *s_d, char *s_a, t_edge *b, t_tree *tree);
 void Collect_Edge_Support_Values(t_tree *tree);
-void PHYREX_Output_Tree_Structure(FILE *fp, t_tree *tree);
-void PHYREX_Input_Tree_Structure(FILE *fp);
 int PhyML_Fscanf(FILE *fp, char *format, ...);
-char *PHYREX_Print_Tree_Structure(t_tree *tree);
-void PHYREX_Check_Point(FILE *fp, t_tree *tree);
 void Output_Scalar_Dbl(scalar_dbl *t, char *sep, FILE *fp);
 t_label *Read_Labels(char *s);
 void Print_Labels(FILE *fp_where, char *s_where, t_label *label);
+
+#ifdef PHYREX
 void PHYREX_Print_MultiTypeTree_Config_File(int n_sites, char *filename, t_tree *tree);
 void PHYREX_Print_MCMC_Tree(t_tree *tree);
 void PHYREX_Print_MCMC_Stats(t_tree *tree);
 void PHYREX_Print_MCMC_Summary(t_tree *tree);
+void PHYREX_Output_Tree_Structure(FILE *fp, t_tree *tree);
+void PHYREX_Input_Tree_Structure(FILE *fp);
+char *PHYREX_Print_Tree_Structure(t_tree *tree);
+void PHYREX_Check_Point(FILE *fp, t_tree *tree);
+#endif
 
 #endif

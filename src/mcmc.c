@@ -133,9 +133,11 @@ void MCMC_Single_Param_Generic(phydbl *val,
   tree->mcmc->run_move[move_num]++;
   tree->mcmc->run++;
 
+#ifdef PHYREX
   PHYREX_Print_MCMC_Stats(tree);
   PHYREX_Print_MCMC_Tree(tree);
   PHYREX_Print_MCMC_Summary(tree);
+#endif
 }
 
 //////////////////////////////////////////////////////////////
@@ -331,9 +333,11 @@ void MCMC_Clock_R(t_tree *tree)
   tree->mcmc->run++;
   tree->mcmc->run_move[move_num]++;
 
+#ifdef PHYREX
   PHYREX_Print_MCMC_Stats(tree);
   PHYREX_Print_MCMC_Tree(tree);
   PHYREX_Print_MCMC_Summary(tree);
+#endif
 }
 
 //////////////////////////////////////////////////////////////
@@ -647,7 +651,9 @@ void MCMC_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
 	  tree->c_lnL               = cur_lnL_seq;
 	  tree->rates->c_lnL_rates  = cur_lnL_rate;
 
+#if (defined PHYREX)
           PHYREX_Update_Ldsk_Rates_Given_One_Edge(d,tree);
+#endif
           RATES_Update_Edge_Lengths(tree);
 	  Update_PMat_At_Given_Edge(b,tree);          
         }
@@ -658,9 +664,12 @@ void MCMC_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
 
       tree->mcmc->run_move[move_num]++;
       tree->mcmc->run++;
+
+#ifdef PHYREX
       PHYREX_Print_MCMC_Stats(tree);
       PHYREX_Print_MCMC_Tree(tree);
       PHYREX_Print_MCMC_Summary(tree);
+#endif
     }
 
   
@@ -844,8 +853,10 @@ void MCMC_Times_And_Rates_Root(t_tree *tree)
         }
       else assert(FALSE);
 
+#if (defined PHYREX)
       PHYREX_Update_Ldsk_Rates_Given_One_Edge(v2,tree);
       PHYREX_Update_Ldsk_Rates_Given_One_Edge(v3,tree);
+#endif
       RATES_Update_Edge_Lengths(tree);
          
       if(tree->eval_glnL == YES) new_lnL_time = TIMES_Lk_Times(NO,tree); 
@@ -891,8 +902,10 @@ void MCMC_Times_And_Rates_Root(t_tree *tree)
             }
           else assert(FALSE);
           
+#if (defined PHYREX)
           PHYREX_Update_Ldsk_Rates_Given_One_Edge(v2,tree);
           PHYREX_Update_Ldsk_Rates_Given_One_Edge(v3,tree);
+#endif
           RATES_Update_Edge_Lengths(tree);
 
           tree->rates->c_lnL_rates = cur_lnL_rate;
@@ -909,9 +922,12 @@ void MCMC_Times_And_Rates_Root(t_tree *tree)
       tree->mcmc->run_move[move_num]+=1;
 
       tree->mcmc->run++;
+
+#ifdef PHYREX
       PHYREX_Print_MCMC_Stats(tree);
       PHYREX_Print_MCMC_Tree(tree);
       PHYREX_Print_MCMC_Summary(tree);
+#endif
     }   
 }
 
@@ -1023,9 +1039,11 @@ void MCMC_Times_And_Rates_Recur(t_node *a, t_node *d, int traversal, t_tree *tre
         }
       else assert(FALSE);
 
+#if (defined PHYREX)
       PHYREX_Update_Ldsk_Rates_Given_One_Edge(d,tree);
       PHYREX_Update_Ldsk_Rates_Given_One_Edge(v2,tree);
       PHYREX_Update_Ldsk_Rates_Given_One_Edge(v3,tree);
+#endif
 
       if(tree->eval_glnL == YES) new_lnL_time = TIMES_Lk_Times(NO,tree);
       if(tree->eval_rlnL == YES) new_lnL_rate = RATES_Lk_Rates(tree);
@@ -1069,10 +1087,11 @@ void MCMC_Times_And_Rates_Recur(t_node *a, t_node *d, int traversal, t_tree *tre
             }
           else assert(FALSE);
           
+#if (defined PHYREX)
           PHYREX_Update_Ldsk_Rates_Given_One_Edge(d,tree);
           PHYREX_Update_Ldsk_Rates_Given_One_Edge(v2,tree);
           PHYREX_Update_Ldsk_Rates_Given_One_Edge(v3,tree);
-          
+#endif          
           RATES_Update_Edge_Lengths(tree);
 
           tree->rates->c_lnL_rates = cur_lnL_rate;
@@ -1086,9 +1105,12 @@ void MCMC_Times_And_Rates_Recur(t_node *a, t_node *d, int traversal, t_tree *tre
 	}
 
       tree->mcmc->run++;
+
+#ifdef PHYREX
       PHYREX_Print_MCMC_Stats(tree);
       PHYREX_Print_MCMC_Tree(tree);
       PHYREX_Print_MCMC_Summary(tree);
+#endif
     }
   
   tree->mcmc->run_move[move_num]++;
@@ -1318,9 +1340,12 @@ void MCMC_Time_Recur(t_node *a, t_node *d, int traversal, t_tree *tree)
   tree->mcmc->run_move[move_num]++;
 
   tree->mcmc->run++;
+
+#ifdef PHYREX
   PHYREX_Print_MCMC_Stats(tree);
   PHYREX_Print_MCMC_Tree(tree);
   PHYREX_Print_MCMC_Summary(tree);
+#endif
 
   if(traversal == YES)
     {
@@ -1472,9 +1497,13 @@ void MCMC_Root_Time(t_tree *tree)
       tree->mcmc->run_move[move_num]+=1;
 
       tree->mcmc->run++;
+
+#ifdef PHYREX
       PHYREX_Print_MCMC_Stats(tree);
       PHYREX_Print_MCMC_Tree(tree);
       PHYREX_Print_MCMC_Summary(tree);
+#endif
+
     }
 }
 
@@ -1558,9 +1587,12 @@ void MCMC_Tree_Height(t_tree *tree)
 
   tree->mcmc->run_move[tree->mcmc->num_move_tree_height]++;
   tree->mcmc->run++;
+
+#ifdef PHYREX
   PHYREX_Print_MCMC_Stats(tree);
   PHYREX_Print_MCMC_Tree(tree);
   PHYREX_Print_MCMC_Summary(tree);
+#endif
 }
 
 //////////////////////////////////////////////////////////////
@@ -1670,9 +1702,12 @@ void MCMC_Updown_T_Cr(t_tree *tree)
 
   tree->mcmc->run_move[tree->mcmc->num_move_updown_t_cr]++;
   tree->mcmc->run++;
+
+#ifdef PHYREX
   PHYREX_Print_MCMC_Stats(tree);
   PHYREX_Print_MCMC_Tree(tree);
   PHYREX_Print_MCMC_Summary(tree);
+#endif
 }
 
 //////////////////////////////////////////////////////////////
@@ -1756,9 +1791,12 @@ void MCMC_Updown_T_Br(t_tree *tree)
 
   tree->mcmc->run_move[tree->mcmc->num_move_updown_t_br]++;
   tree->mcmc->run++;
+
+#ifdef PHYREX
   PHYREX_Print_MCMC_Stats(tree);
   PHYREX_Print_MCMC_Tree(tree);
   PHYREX_Print_MCMC_Summary(tree);
+#endif
 }
 
 //////////////////////////////////////////////////////////////
@@ -1835,9 +1873,13 @@ void MCMC_Subtree_Height(t_tree *tree)
 
   tree->mcmc->run_move[tree->mcmc->num_move_subtree_height]++;
   tree->mcmc->run++;
+
+#ifdef PHYREX
   PHYREX_Print_MCMC_Stats(tree);
   PHYREX_Print_MCMC_Tree(tree);
   PHYREX_Print_MCMC_Summary(tree);
+#endif
+
 }
 
 //////////////////////////////////////////////////////////////
@@ -1890,7 +1932,9 @@ void MCMC_Tree_Rates(t_tree *tree)
         {
           tree->rates->clock_r = init_clock;
           RATES_Reset_Rates(tree);
+#if (defined PHYREX)
           PHYREX_Update_Ldsk_Rates_Given_Edges(tree);
+#endif
           return;
         }
     }
@@ -1924,7 +1968,9 @@ void MCMC_Tree_Rates(t_tree *tree)
     {
       tree->rates->clock_r = init_clock;
       RATES_Reset_Rates(tree);
+#if (defined PHYREX)
       PHYREX_Update_Ldsk_Rates_Given_Edges(tree);
+#endif
       tree->rates->c_lnL_rates = cur_lnL_rate;
       if(tree->rates->model_id == GUINDON ||
          (tree->times->is_asynchronous == YES) ||
@@ -1940,9 +1986,13 @@ void MCMC_Tree_Rates(t_tree *tree)
     }
 
   tree->mcmc->run++;
+
+#ifdef PHYREX
   PHYREX_Print_MCMC_Stats(tree);
   PHYREX_Print_MCMC_Tree(tree);
   PHYREX_Print_MCMC_Summary(tree);
+#endif
+
 }
 
 //////////////////////////////////////////////////////////////
@@ -1981,7 +2031,9 @@ void MCMC_Subtree_Rates(t_tree *tree)
       return;
     }
 
+#if (defined PHYREX)
   PHYREX_Update_Ldsk_Rates_Given_Edges(tree);
+#endif
 
   if(tree->eval_rlnL == YES) new_lnL_rate = RATES_Lk_Rates(tree);
   if(tree->eval_alnL == YES) new_lnL_seq  = Lk(NULL,tree);
@@ -2004,7 +2056,9 @@ void MCMC_Subtree_Rates(t_tree *tree)
   if(u > alpha)
     {
       RATES_Reset_Rates(tree);
+#if (defined PHYREX)
       PHYREX_Update_Ldsk_Rates_Given_Edges(tree);
+#endif
       Restore_Br_Len(tree);
       tree->rates->c_lnL_rates = cur_lnL_rate;
       tree->c_lnL = cur_lnL_seq;
@@ -2017,9 +2071,13 @@ void MCMC_Subtree_Rates(t_tree *tree)
   tree->mcmc->run_move[tree->mcmc->num_move_subtree_rates]++;
 
   tree->mcmc->run++;
+
+#ifdef PHYREX
   PHYREX_Print_MCMC_Stats(tree);
   PHYREX_Print_MCMC_Tree(tree);
   PHYREX_Print_MCMC_Summary(tree);
+#endif
+
 }
 
 //////////////////////////////////////////////////////////////
@@ -2080,7 +2138,9 @@ void MCMC_Swing(t_tree *tree)
         }
     }
 
+#if (defined PHYREX)
   PHYREX_Update_Ldsk_Rates_Given_One_Edge(tree->a_nodes[i],tree);
+#endif
 
   RATES_Update_Edge_Lengths(tree);
   if(tree->eval_alnL == YES) new_lnL_seq = Lk(NULL,tree);
@@ -2100,7 +2160,9 @@ void MCMC_Swing(t_tree *tree)
     {
       RATES_Reset_Times(tree);
       RATES_Reset_Rates(tree);
+#if (defined PHYREX)
       PHYREX_Update_Ldsk_Rates_Given_One_Edge(tree->a_nodes[i],tree);
+#endif
       Restore_Br_Len(tree);
       tree->c_lnL = cur_lnL_seq;
       tree->rates->c_lnL_rates = cur_lnL_rate;
@@ -2112,9 +2174,13 @@ void MCMC_Swing(t_tree *tree)
     }
 
   tree->mcmc->run++;
+
+#ifdef PHYREX
   PHYREX_Print_MCMC_Stats(tree);
   PHYREX_Print_MCMC_Tree(tree);
   PHYREX_Print_MCMC_Summary(tree);
+#endif
+
 }
 
 //////////////////////////////////////////////////////////////
@@ -2208,9 +2274,12 @@ void MCMC_Updown_Nu_Cr(t_tree *tree)
   tree->mcmc->run_move[tree->mcmc->num_move_updown_nu_cr]++;
 
   tree->mcmc->run++;
+
+#ifdef PHYREX
   PHYREX_Print_MCMC_Stats(tree);
   PHYREX_Print_MCMC_Tree(tree);
   PHYREX_Print_MCMC_Summary(tree);
+#endif
 }
 
 //////////////////////////////////////////////////////////////
@@ -2310,9 +2379,13 @@ void MCMC_Time_Slice(t_tree *tree)
   tree->mcmc->run_move[tree->mcmc->num_move_time_slice]++;
 
   tree->mcmc->run++;
+
+#ifdef PHYREX
   PHYREX_Print_MCMC_Stats(tree);
   PHYREX_Print_MCMC_Tree(tree);
   PHYREX_Print_MCMC_Summary(tree);
+#endif
+
 }
 
 //////////////////////////////////////////////////////////////
@@ -3140,7 +3213,9 @@ void MCMC_Randomize_Rates_Pre(t_node *a, t_node *d, t_tree *tree)
     
   tree->rates->br_r[d->num] = Rnorm_Trunc(mean_r,sd_r,min_r,max_r,&err);
 
+#if (defined PHYREX)
   PHYREX_Update_Ldsk_Rates_Given_One_Edge(tree->a_nodes[d->num],tree);
+#endif
   
   if(err == YES)
     {
@@ -3761,9 +3836,12 @@ void MCMC_Kappa(t_tree *mixt_tree)
       mixt_tree->mcmc->run_move[mixt_tree->mcmc->num_move_kappa]++;
 
       mixt_tree->mcmc->run++;
+
+#ifdef PHYREX
       PHYREX_Print_MCMC_Stats(mixt_tree);
       PHYREX_Print_MCMC_Tree(mixt_tree);
       PHYREX_Print_MCMC_Summary(mixt_tree);
+#endif
       
       tree = tree->next;
     }
@@ -3861,9 +3939,13 @@ void MCMC_RR(t_tree *mixt_tree)
                     }
                   
                   mixt_tree->mcmc->run++;
+
+#ifdef PHYREX
                   PHYREX_Print_MCMC_Stats(mixt_tree);
                   PHYREX_Print_MCMC_Tree(mixt_tree);
                   PHYREX_Print_MCMC_Summary(mixt_tree);
+#endif
+
                   /* PhyML_Printf("\n. MCMC cur_rr: %f new_rr: %f cur: %f new: %f",cur_rr,new_rr,cur_lnL_seq,new_lnL_seq); */
                 }
             }
@@ -4024,9 +4106,12 @@ void MCMC_Free_Mixt_Rate(t_tree *mixt_tree)
                 }
               
               mixt_tree->mcmc->run++;
+
+#ifdef PHYREX
               PHYREX_Print_MCMC_Stats(mixt_tree);
               PHYREX_Print_MCMC_Tree(mixt_tree);
               PHYREX_Print_MCMC_Summary(mixt_tree);
+#endif
             }
           else
             {
@@ -4101,9 +4186,12 @@ void MCMC_Free_Mixt_Rate(t_tree *mixt_tree)
                 }
 
               mixt_tree->mcmc->run++;              
+
+#ifdef PHYREX
               PHYREX_Print_MCMC_Stats(mixt_tree);
               PHYREX_Print_MCMC_Tree(mixt_tree);
               PHYREX_Print_MCMC_Summary(mixt_tree);
+#endif
             }
         }
       while(n_moves != k);
@@ -4362,9 +4450,12 @@ void MCMC_Birth_Rate(t_tree *tree)
     }
   tree->mcmc->run_move[tree->mcmc->num_move_birth_rate]++;
   tree->mcmc->run++;
+
+#ifdef PHYREX
   PHYREX_Print_MCMC_Stats(tree);
   PHYREX_Print_MCMC_Tree(tree);
   PHYREX_Print_MCMC_Summary(tree);
+#endif
 }
 
 //////////////////////////////////////////////////////////////
@@ -4549,9 +4640,12 @@ void MCMC_Death_Rate(t_tree *tree)
     }
   tree->mcmc->run_move[tree->mcmc->num_move_death_rate]++;
   tree->mcmc->run++;
+
+#ifdef PHYREX
   PHYREX_Print_MCMC_Stats(tree);
   PHYREX_Print_MCMC_Tree(tree);
   PHYREX_Print_MCMC_Summary(tree);
+#endif
 }
 
 //////////////////////////////////////////////////////////////
@@ -4735,9 +4829,12 @@ void MCMC_Birth_Death_Updown(t_tree *tree)
     }
   tree->mcmc->run_move[tree->mcmc->num_move_birth_death_updown]++;
   tree->mcmc->run++;
+
+#ifdef PHYREX
   PHYREX_Print_MCMC_Stats(tree);
   PHYREX_Print_MCMC_Tree(tree);
   PHYREX_Print_MCMC_Summary(tree);
+#endif
 }
 
 //////////////////////////////////////////////////////////////
@@ -4809,9 +4906,12 @@ void MCMC_Nu(t_tree *tree)
     }
   tree->mcmc->run_move[tree->mcmc->num_move_nu]++;
   tree->mcmc->run++;
+
+#ifdef PHYREX
   PHYREX_Print_MCMC_Stats(tree);
   PHYREX_Print_MCMC_Tree(tree);
   PHYREX_Print_MCMC_Summary(tree);
+#endif
 }
 
 //////////////////////////////////////////////////////////////
@@ -4874,9 +4974,13 @@ void MCMC_Clade_Change(t_tree *tree)
     }
   tree->mcmc->run_move[tree->mcmc->num_move_clade_change]++;
   tree->mcmc->run++;
+
+#ifdef PHYREX
   PHYREX_Print_MCMC_Stats(tree);
   PHYREX_Print_MCMC_Tree(tree);
   PHYREX_Print_MCMC_Summary(tree);
+#endif
+
 }
 
 
@@ -4922,9 +5026,13 @@ void MCMC_All_Rates(t_tree *tree)
     }
 
   tree->mcmc->run++;
+
+#ifdef PHYREX
   PHYREX_Print_MCMC_Stats(tree);
   PHYREX_Print_MCMC_Tree(tree);
   PHYREX_Print_MCMC_Summary(tree);
+#endif
+
 }
 
 //////////////////////////////////////////////////////////////
@@ -4947,7 +5055,9 @@ void MCMC_Sim_Rate(t_node *a, t_node *d, t_tree *tree)
   else
     {
       tree->rates->br_r[d->num] = Rnorm_Trunc(mean,sd,tree->rates->min_rate,tree->rates->max_rate,&err);
+#if (defined PHYREX)
       PHYREX_Update_Ldsk_Rates_Given_One_Edge(d,tree);
+#endif
       if(err == YES) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
     }
         
@@ -5316,9 +5426,12 @@ void MCMC_Prune_Regraft(t_tree *tree)
         }      
 
       tree->mcmc->run++;
+
+#ifdef PHYREX
       PHYREX_Print_MCMC_Stats(tree);
       PHYREX_Print_MCMC_Tree(tree);
       PHYREX_Print_MCMC_Summary(tree);
+#endif
 
     }
   /* Free(prob_idx); */
@@ -5599,9 +5712,12 @@ void MCMC_Prune_Regraft_Weighted(t_tree *tree)
         }
 
       tree->mcmc->run++;
+
+#ifdef PHYREX
       PHYREX_Print_MCMC_Stats(tree);
       PHYREX_Print_MCMC_Tree(tree);
       PHYREX_Print_MCMC_Summary(tree);
+#endif
 
     }
 }
@@ -6047,9 +6163,12 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
         }
 
       tree->mcmc->run++;
+
+#ifdef PHYREX
       PHYREX_Print_MCMC_Stats(tree);
       PHYREX_Print_MCMC_Tree(tree);
       PHYREX_Print_MCMC_Summary(tree);
+#endif
     }
 }
   
@@ -6487,7 +6606,9 @@ void MCMC_Slice_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
     {
       tree->rates->br_r[d->num] = L;
       tree->rates->br_do_updt[d->num] = YES;
+#if (defined PHYREX)
       PHYREX_Update_Ldsk_Rates_Given_One_Edge(d,tree);
+#endif
       RATES_Update_Edge_Lengths(tree);
       Lk(b,tree);
       RATES_Lk_Rates(tree);
@@ -6502,7 +6623,9 @@ void MCMC_Slice_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
     {
       tree->rates->br_r[d->num] = R;
       tree->rates->br_do_updt[d->num] = YES;
+#if (defined PHYREX)
       PHYREX_Update_Ldsk_Rates_Given_One_Edge(d,tree);
+#endif
       RATES_Update_Edge_Lengths(tree);
       Lk(b,tree);
       RATES_Lk_Rates(tree);
@@ -6520,7 +6643,9 @@ void MCMC_Slice_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
 
       tree->rates->br_r[d->num] = x1;
       tree->rates->br_do_updt[d->num] = YES;
+#if (defined PHYREX)
       PHYREX_Update_Ldsk_Rates_Given_One_Edge(d,tree);
+#endif
       RATES_Update_Edge_Lengths(tree);
       Lk(b,tree);
       RATES_Lk_Rates(tree);
