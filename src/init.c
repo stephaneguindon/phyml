@@ -126,7 +126,7 @@ void Init_Tree(t_tree *tree, int n_otu)
   tree->best_pars                 = 1E+5;
   tree->n_pattern                 = -1;
   tree->n_root_pos                = -1.;
-  tree->write_labels              = YES;
+  tree->print_labels              = YES;
   tree->write_br_lens             = YES;
   tree->num_curr_branch_available = 0;
   tree->tip_order_score           = .0;
@@ -231,6 +231,7 @@ void Init_Node_Light(t_node *n, int num)
   n->y_rank_max             = 0.;
   n->y_rank_min             = 0.;
   n->anc                    = NULL;
+  n->b_anc                    = NULL;
   n->rank                   = 0;
   n->match_node             = NULL;
   n->id_rank                = 0;
@@ -851,9 +852,9 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
   rates->min_clock     = 1.E-10;
   rates->max_clock     = 1.E+0;
   
-  rates->nu            = 1.0E-0;
+  rates->nu            = 2.0;
   rates->min_nu        = 0.0;
-  rates->max_nu        = 2.0;
+  rates->max_nu        = 5.0;
   
   rates->min_dt        = 0.0;
 
@@ -902,9 +903,9 @@ void TIMES_Init_Time_Struct(t_time *times, t_time *existing_times, int n_otu)
       times->model_id = COALESCENT;
     }
 
-  times->scaled_pop_size      = 100.0;
-  times->scaled_pop_size_min  = 0.0;
-  times->scaled_pop_size_max  = 1.E+5;
+  times->scaled_pop_size     = 1.0;
+  times->scaled_pop_size_min = 0.0;
+  times->scaled_pop_size_max = 1.E+5;
   
   times->c_lnL_times      = UNLIKELY;
   times->c_lnL_times      = UNLIKELY;
@@ -3521,10 +3522,10 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   
   t->min_sigsq         = 0.0;
   t->max_sigsq         = 1.E+2;
-  t->sigsq             = 1.0;
+  t->sigsq             = 1.;
   t->prior_param_sigsq = 10.0;
   
-  t->nu                = 1.0;
+  t->nu                = 1.0E-0;
 
   t->c_lnL             = UNLIKELY;
   t->c_ln_prior_rad    = UNLIKELY;
@@ -3548,6 +3549,7 @@ void PHYREX_Init_Lindisk_Node(t_ldsk *t, t_dsk *disk, int n_dim)
   t->nd      = NULL;
   t->is_hit  = NO;
   t->n_next  = 0;
+  t->rr      = 1.0;
   GEO_Init_Coord(t->coord,    n_dim);
   GEO_Init_Coord(t->cpy_coord,n_dim);
 }

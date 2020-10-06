@@ -2300,7 +2300,7 @@ void Prune_Regraft_Time_Tree(t_tree *tree)
                                 prune_daughter,residual,prune == tree->n_root ? tree->n_root : cur_regraft_nd,tree);
                   
                   RATES_Reset_Times(tree);
-                  RATES_Update_Cur_Bl(tree);
+                  RATES_Update_Edge_Lengths(tree);
                   DATE_Assign_Primary_Calibration(tree);
                   TIMES_Lk_Times(NO,tree); 
                   

@@ -131,8 +131,8 @@ void RATES_Free_Rates(t_rate *rates);
 void RATES_Initialize_True_Rates(t_tree *tree);
 void RATES_Posterior_Times(t_tree *tree);
 void RATES_Posterior_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree);
-void RATES_Update_Cur_Bl(t_tree *tree);
-void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree);
+void RATES_Update_Edge_Lengths(t_tree *tree);
+void RATES_Update_Edge_Lengths_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree);
 void RATES_Get_Cov_Matrix_Rooted(phydbl *unroot_cov, t_tree *tree);
 void RATES_Get_Cov_Matrix_Rooted_Pre(t_node *a, t_node *d, t_edge *b, phydbl *cov, t_tree *tree);
 void RATES_Bl_To_Ml(t_tree *tree);
@@ -182,5 +182,6 @@ void RATES_Copy_Rate_Struct(t_rate *from, t_rate *to, int n_otu);
 void RATES_Duplicate_Calib_Struct(t_tree *from, t_tree *to);
 int RATES_Check_Edge_Length_Consistency(t_tree *tree);
 phydbl RATES_Realized_Substitution_Rate(t_tree *tree);
+void RATES_Update_One_Edge_Length(t_edge *b, t_tree *tree);
 
 #endif

@@ -1396,7 +1396,6 @@ void Free_Ldisk(t_ldsk *t)
       if(t->cpy_coord) Free_Geo_Coord(t->cpy_coord);
       Free(t);
     }
-
 }
 
 //////////////////////////////////////////////////////////////

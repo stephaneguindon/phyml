@@ -5057,7 +5057,6 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
   assert(a);
   assert(d);
   assert(tree);
-
   
   if(tree->n_root && a == tree->n_root) 
     {
@@ -5111,7 +5110,6 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
 
   if(target)   (*target)   = b1;
   if(residual) (*residual) = b2;
-
 
   a->v[dir_v1] = NULL;
   a->v[dir_v2] = NULL;
@@ -5392,8 +5390,8 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
           tree->n_root->v[2] = buff_nd;
         }
 
-      Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
-      Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
+      Update_Ancestors(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
+      Update_Ancestors(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
       tree->n_root->anc = NULL;
     }
 
@@ -5434,7 +5432,7 @@ void Graft_Subtree(t_edge *target, t_node *link, t_node *link_daughter, t_edge *
   assert(link);
   assert(tree);
   assert(target);
-    
+  
   if(link == tree->n_root)
     {
       assert(link_daughter);
@@ -5693,8 +5691,8 @@ void Graft_Subtree(t_edge *target, t_node *link, t_node *link_daughter, t_edge *
       tree->n_root->b[2]->p_lk_loc_rght = tree->e_root->p_lk_loc_rght;
       tree->n_root->b[2]->patt_id_rght = tree->e_root->patt_id_rght;
       
-      Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
-      Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
+      Update_Ancestors(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
+      Update_Ancestors(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
       tree->n_root->anc = NULL;
     }
 
@@ -6176,7 +6174,7 @@ phydbl Tree_Length(t_tree *tree)
   phydbl sum;
 
   sum = 0.0;
-  for(int i=0;i<2*tree->n_otu-3;++i) sum += MIXT_Get_Mean_Edge_Len(tree->a_edges[i],tree);
+  for(int i=0;i<2*tree->n_otu-1;++i) if(tree->a_edges[i] != tree->e_root) sum += MIXT_Get_Mean_Edge_Len(tree->a_edges[i],tree);
   return(sum);
 }
 
@@ -7403,8 +7401,8 @@ void Add_Root(t_edge *target, t_tree *tree)
       b2->patt_id_rght = tree->e_root->patt_id_rght;
     }
 
-  Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
-  Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
+  Update_Ancestors(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
+  Update_Ancestors(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
   tree->n_root->anc = NULL;
 
   if(tree->is_mixt_tree == YES) MIXT_Add_Root(target,tree);
@@ -7413,25 +7411,27 @@ void Add_Root(t_edge *target, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Update_Ancestors(t_node *a, t_node *d, t_tree *tree)
+void Update_Ancestors(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 {
+
   if(d == NULL)
     {
       PhyML_Printf("\n. d is NULL; a: %d root: %d",a->num,tree->n_root->num);
       assert(FALSE);
     }
-
+  
   d->anc = a;
-
+  d->b_anc = b;
+  
+  
   if(a == tree->n_root) a->anc = NULL;
 
   if(d->tax) return;
   else
     {
-      int i;
-      for(i=0;i<3;i++)
+      for(int i=0;i<3;i++)
         if((d->v[i] != a) && (d->b[i] != tree->e_root))
-          Update_Ancestors(d,d->v[i],tree);
+          Update_Ancestors(d,d->v[i],d->b[i],tree);
     }
 }
 
@@ -7656,7 +7656,7 @@ void Evolve(calign *data, t_mod *mod, int first_site_pos, t_tree *tree)
   data->n_otu = tree->n_otu;
   data->io    = tree->io;
 
-  if(mod->use_m4mod) tree->write_labels = YES;
+  if(mod->use_m4mod) tree->print_labels = YES;
 
   Set_Br_Len_Var(NULL,tree);
 

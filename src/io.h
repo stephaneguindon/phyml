@@ -114,5 +114,9 @@ void PHYREX_Check_Point(FILE *fp, t_tree *tree);
 void Output_Scalar_Dbl(scalar_dbl *t, char *sep, FILE *fp);
 t_label *Read_Labels(char *s);
 void Print_Labels(FILE *fp_where, char *s_where, t_label *label);
+void PHYREX_Print_MultiTypeTree_Config_File(int n_sites, char *filename, t_tree *tree);
+void PHYREX_Print_MCMC_Tree(t_tree *tree);
+void PHYREX_Print_MCMC_Stats(t_tree *tree);
+void PHYREX_Print_MCMC_Summary(t_tree *tree);
 
 #endif

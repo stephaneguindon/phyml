@@ -481,7 +481,7 @@ phydbl Lk(t_edge *b, t_tree *tree)
   
 
 #if (defined PHYTIME || defined INVITEE || defined PHYREX)
-  if((tree->rates) && (tree->rates->bl_from_rt)) RATES_Update_Cur_Bl(tree);
+  if((tree->rates) && (tree->rates->bl_from_rt)) RATES_Update_Edge_Lengths(tree);
 #endif
 
   if(tree->rates && tree->io && tree->io->lk_approx == NORMAL)
@@ -2891,7 +2891,11 @@ void Set_All_Partial_Lk(t_node **n_v1, t_node **n_v2,
                   Set_Partial_Lk_One_Side(Pij2,tPij2,p_lk_v2,sum_scale_v2,d,d->b[i],tree);
 #endif
                 }
-              else assert(FALSE);
+              else
+                {
+                  PhyML_Printf("\n. Issue detected with node %d.\n",d->num);
+                  assert(FALSE);
+                }
             }
         }
     }

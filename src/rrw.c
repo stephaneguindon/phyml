@@ -23,7 +23,6 @@ phydbl RRW_Lk(t_tree *tree)
   
   assert(tree->mmod->model_id == RRW);
 
-
   d_fwd         = 0.0;
   d_coal        = 0.0;
   d_sigsq_scale = 0.0;
@@ -43,14 +42,13 @@ phydbl RRW_Lk(t_tree *tree)
 
   d_coal = TIMES_Lk_Coalescent(tree);
 
-  d_sigsq_scale = RRW_Prior_Sigsq_Scale(tree);
-
+  /* !!!!!!!!!!!!!!!!!!!!!!! */
+  /* d_sigsq_scale = RRW_Prior_Sigsq_Scale(tree); */
   
   // Make sure node times are set back to their original values
   assert(fabs(t_dum - tree->times->nd_t[idx_dum]) < 1.E-4);
 
   tree->mmod->c_lnL = d_fwd + d_coal + d_sigsq_scale;
-  
   return(tree->mmod->c_lnL);
 }
 
@@ -63,12 +61,12 @@ phydbl RRW_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
   
   lnP = 0.0;
   
-  /* lnP += RRW_Forward_Lk_Range(young,old,tree); */
-  /* lnP += TIMES_Lk_Coalescent_Range(young,old,tree); */
-
   /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
-  lnP += RRW_Forward_Lk_Range(young,NULL,tree);
+  lnP += RRW_Forward_Lk_Range(young,old,tree);
   lnP += TIMES_Lk_Coalescent_Range(young,old,tree);
+
+  /* lnP += RRW_Forward_Lk_Range(young,NULL,tree); */
+  /* lnP += TIMES_Lk_Coalescent(tree); */
 
 
   /* PhyML_Printf("\n. RANGE = %f",TIMES_Lk_Coalescent_Range(young,old,tree)); */
@@ -93,7 +91,7 @@ phydbl RRW_Lk_Core(t_dsk *disk, t_tree *tree)
   if(disk->age_fixed == YES) return 0.0;
 
   lnP = 0.0;
-  
+
   if(disk->ldsk != NULL)
     {
       for(i=0;i<disk->ldsk->n_next;++i)
@@ -205,7 +203,6 @@ phydbl RRW_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
   eps = 1.E-5;
   ldsk = d;
 
-  assert(!(a->disk->time > d->disk->time));
   assert(a!=d);
   
   do
@@ -233,6 +230,14 @@ phydbl RRW_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
           assert(!Are_Equal(la,0.0,1.E-5));
 
           lnP += Log_Dnorm(ld,la,sd,&err);
+
+          if(isinf(lnP)) return(UNLIKELY);
+
+          if(isnan(lnP))
+            {
+              PhyML_Printf("\n. la=%f ld=%f sd=%f dt=[%f,%f] sigsq=%f",la,ld,sd,ldsk->disk->time,ldsk->prev->disk->time,tree->mmod->sigsq);
+              assert(FALSE);
+            }
         }
 
       ldsk = ldsk->prev;

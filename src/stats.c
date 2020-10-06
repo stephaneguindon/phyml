@@ -957,8 +957,12 @@ phydbl Log_Dnorm(phydbl x, phydbl mean, phydbl sd, int *err)
 
   *err = NO;
 
-  if(sd < SMALL && fabs(x-mean) < SMALL) return(0.0);
-
+  if(sd < SMALL)
+    {
+      if(fabs(x-mean) < SMALL) return(0.0);
+      else return(-INFINITY);
+    }
+  
   x = (x-mean)/sd;
   
   dens = -LOG_SQRT_2PI - x*x*0.5 - log(sd);

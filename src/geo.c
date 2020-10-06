@@ -56,8 +56,8 @@ int GEO_Estimate(int argc, char **argv)
 
   tree = Read_Tree_File_Phylip(fp); /* Read it */
 
-  Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
-  Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);		
+  Update_Ancestors(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
+  Update_Ancestors(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);		
 
   tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
   RATES_Init_Rate_Struct(tree->rates,NULL,tree->n_otu);
@@ -1176,8 +1176,8 @@ t_tree *GEO_Simulate(t_geo *t, int n_otu)
   /*          t->ldscape[t->idx_loc[i]*t->n_dim+1]); */
 
   
-  Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
-  Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);		
+  Update_Ancestors(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
+  Update_Ancestors(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);		
 
   Free(branching_nodes);
   Free(p_branch);

@@ -93,7 +93,6 @@ void PHYREX_Get_List_Of_Ancestors(t_ldsk *start, t_ldsk ***list, int *len, t_tre
 phydbl PHYREX_Dist_To_Lca(t_ldsk *d, t_ldsk *lca);
 phydbl PHYREX_Dist_Between_Two_Ldsk(t_ldsk *n1,  t_ldsk *n2, t_tree *tree);
 phydbl PHYREX_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree);
-void PHYREX_Print_MultiTypeTree_Config_File(int n_sites, char *filename, t_tree *tree);
 int PHYREX_Number_Of_Sampled_Demes(t_tree *tree);
 void PHYREX_Tree_To_Ldsk(t_tree *tree);
 void PHYREX_Tree_To_Ldsk_Post(t_node *a, t_node *d, t_dsk *a_disk, t_tree *tree);
@@ -131,5 +130,10 @@ phydbl PHYREX_Update_Sigsq(t_tree *tree);
 void PHYREX_Get_Baselines(t_tree *tree);
 void PHYREX_Get_Baselines_Post(t_ldsk *ldsk, t_tree *tree);
 int PHYREX_Total_Number_Of_Single_Hit_Disks(t_tree *tree);
+t_edge *PHYREX_Edge_Between_Two_Ldsks(t_ldsk *a, t_ldsk *d, t_tree *tree);
+void PHYREX_Update_Node_Times_Given_Disks(t_tree *tree);
+void PHYREX_Update_Ldsk_Rates_Given_Edges(t_tree *tree);
+void PHYREX_Update_Edge_Rates_Given_Ldsks(t_tree *tree);
+void PHYREX_Update_Ldsk_Rates_Given_One_Edge(t_node *d, t_tree *tree);
 
 #endif

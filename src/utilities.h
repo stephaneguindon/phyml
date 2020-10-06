@@ -155,7 +155,7 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 
 
 #define  TSTV_MIN 0.05
-#define  TSTV_MAX 20.0
+#define  TSTV_MAX 100.0
 
 #define  PINV_MIN 0.00001
 #define  PINV_MAX 0.99999
@@ -532,6 +532,7 @@ typedef struct __Node {
   struct __Node               ***bip_node; /*! three lists of pointer to tip nodes. One list for each direction */
   struct __Edge                       **b; /*! table of pointers to neighbor branches */
   struct __Node                      *anc; /*! direct ancestor t_node (for rooted tree only) */
+  struct __Edge                    *b_anc; /*! edge between this node and its direct ancestor (for rooted tree only) */
   struct __Node                 *ext_node;
   struct __Node               *match_node;
   struct __Align                   *c_seq; /*! corresponding compressed sequence */
@@ -774,7 +775,7 @@ typedef struct __Tree{
   int                                      dp; /*! Data partition */
   int                               s_mod_num; /*! Substitution model number */
   int                               lock_topo; /*! = 1 any subsequent topological modification will be banished */
-  int                            write_labels;
+  int                            print_labels;
   int                           write_br_lens;
   int                                 *mutmap; /*! Mutational map */
   int                                json_num;
@@ -2042,6 +2043,7 @@ typedef struct __Lindisk_Node{
   struct __Geo_Coord *cpy_coord; 
   short int              is_hit;
   int                    n_next;
+  phydbl                     rr;
   struct __Node             *nd;
 }t_ldsk;
 
@@ -2223,7 +2225,7 @@ void Warn_And_Exit(const char *s);
 void Randomize_Sequence_Order(calign *cdata);
 void Update_Root_Pos(t_tree *tree);
 void Add_Root(t_edge *target,t_tree *tree);
-void Update_Ancestors(t_node *a,t_node *d,t_tree *tree);
+void Update_Ancestors(t_node *a, t_node *d, t_edge *b, t_tree *tree);
 #if (defined PHYTIME || defined SERGEII)
 t_tree *Generate_Random_Tree_From_Scratch(int n_otu,int rooted);
 #endif

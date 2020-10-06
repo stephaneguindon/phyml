@@ -131,8 +131,8 @@ void PhyTime_XML(char *xml_file)
   if(XML_Search_Attribute(n_r, "seed")) io -> r_seed = String_To_Dbl(XML_Search_Attribute(n_r, "seed") -> value);
    
   //TO DO: check that the tree has a root
-  Update_Ancestors(io -> tree -> n_root, io -> tree -> n_root -> v[2], io -> tree);
-  Update_Ancestors(io -> tree -> n_root, io -> tree -> n_root -> v[1], io -> tree);
+  Update_Ancestors(io -> tree -> n_root, io -> tree -> n_root -> v[2], io -> tree -> n_root -> b[2], io -> tree);
+  Update_Ancestors(io -> tree -> n_root, io -> tree -> n_root -> v[1], io -> tree -> n_root -> b[1], io -> tree);
 		  
 
   ////////////////////////////////////////////////////////////////////////////

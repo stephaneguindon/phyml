@@ -1721,8 +1721,8 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
   SLFV_Simulate_Backward_Core(tree->young_disk,NO,tree);
 
   PHYREX_Ldsk_To_Tree(tree);
-  Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
-  Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
+  Update_Ancestors(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
+  Update_Ancestors(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
   RATES_Fill_Lca_Table(tree);
   
   
@@ -1735,7 +1735,7 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
   tree->rates->clock_r    = 0.1/fabs(2.*T);
   tree->rates->model_id      = STRICTCLOCK;
 
-  RATES_Update_Cur_Bl(tree);
+  RATES_Update_Edge_Lengths(tree);
 
   Init_Model(cdata,mod,io);
 
@@ -2015,8 +2015,8 @@ t_tree *SLFV_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl h
       PHYREX_Ldsk_To_Tree(tree);  
 
       
-      Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
-      Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
+      Update_Ancestors(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
+      Update_Ancestors(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
       RATES_Fill_Lca_Table(tree);
 
 
@@ -2032,7 +2032,7 @@ t_tree *SLFV_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl h
       PhyML_Printf("\n. #!# mutation rate at that locus: %G subst. per time unit",tree->rates->clock_r);
       subst_rate += tree->rates->clock_r;
       
-      RATES_Update_Cur_Bl(tree);
+      RATES_Update_Edge_Lengths(tree);
 
       char *s = Write_Tree(tree);
       PhyML_Printf("\n. #@# tree: %s",s);

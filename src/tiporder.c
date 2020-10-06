@@ -189,7 +189,7 @@ the GNU public licence. See http://www.opensource.org for details.
 /*       RATES_Init_Rate_Struct(tree->rates,tree->n_otu); */
 /*       TIMES_Least_Square_Node_Times(tree->e_root,tree); */
 /*       TIMES_Adjust_Node_Times(tree); */
-/*       RATES_Update_Cur_Bl(tree); */
+/*       RATES_Update_Edge_Lengths(tree); */
 
 /*       tree->ps_tree = DR_Make_Tdraw_Struct(tree); */
 /*       DR_Init_Tdraw_Struct(tree->ps_tree); */
@@ -223,7 +223,7 @@ the GNU public licence. See http://www.opensource.org for details.
 /*   RATES_Init_Rate_Struct(tree->rates,tree->n_otu); */
 /*   TIMES_Least_Square_Node_Times(tree->e_root,tree); */
 /*   TIMES_Adjust_Node_Times(tree); */
-/*   RATES_Update_Cur_Bl(tree); */
+/*   RATES_Update_Edge_Lengths(tree); */
 /*   DR_Init_Tdraw_Struct(tree->ps_tree); */
 /*   DR_Get_Tree_Box_Width(tree->ps_tree,tree); */
 /*   Dist_To_Root(tree->n_root,tree); */
@@ -303,8 +303,8 @@ int TIPO_main(int argc, char **argv)
 /* Z_scores have already been recorder here */
 void TIPO_Get_Min_Number_Of_Tip_Permut(t_tree *tree)
 {
-  Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
-  Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
+  Update_Ancestors(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
+  Update_Ancestors(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
 
   Free_Bip(tree);
   Alloc_Bip(tree);
@@ -697,7 +697,7 @@ phydbl TIPO_Untangle_Tree(t_tree *tree)
 	  TIMES_Init_Time_Struct(tree->times,tree->io->times,tree->n_otu);
 	  TIMES_Least_Square_Node_Times(tree->e_root,tree);
 	  TIMES_Adjust_Node_Times(tree);
-	  RATES_Update_Cur_Bl(tree);
+	  RATES_Update_Edge_Lengths(tree);
 
 	  DR_Print_Postscript_Header(1,ps_tree);
 	  tree->ps_tree = DR_Make_Tdraw_Struct(tree);

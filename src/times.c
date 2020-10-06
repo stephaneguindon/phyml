@@ -889,7 +889,7 @@ phydbl TIMES_Lk_Coalescent(t_tree *tree)
       else n_lineages++;
       
       lnP += -n_lineages * (n_lineages-1.) / (2.*Ne) * fabs(tree->times->nd_t[n->num] - tree->times->nd_t[n->rk_next->num]);
-
+      
       /* PhyML_Printf("\n! Disk=%5s time=%14f n_lineages=%4d lnP=%14f Z=%14f", */
       /*              n->ldsk->disk->id, */
       /*              tree->times->nd_t[n->num], */
@@ -897,12 +897,13 @@ phydbl TIMES_Lk_Coalescent(t_tree *tree)
       /*              lnP, */
       /*              -n_lineages * (n_lineages-1.) / (2.*Ne) * fabs(tree->times->nd_t[n->num] - tree->times->nd_t[n->rk_next->num])); */
       
+      assert((isnan(lnP) || isinf(lnP)) == FALSE);
       n = n->rk_next;
     }
 
   lnP -= (tree->n_otu-1) * log(Ne);
   
-  /* if(tree->times->augmented_coalescent == YES) */
+  if(tree->times->augmented_coalescent == YES)
     {
       int n_hits;
       t_dsk *disk;
@@ -932,7 +933,7 @@ phydbl TIMES_Lk_Coalescent(t_tree *tree)
               /*              disk->n_ldsk_a); */
             }
           
-          if((disk->ldsk && disk->ldsk->n_next > 1) || (disk->age_fixed == YES))
+          if((n_hits > 0) && ((disk->ldsk && disk->ldsk->n_next > 1) || (disk->age_fixed == YES)))
             {
               Z = LnGamma(n_hits+1);
               assert(disk->next);
@@ -994,6 +995,7 @@ phydbl TIMES_Lk_Coalescent_Range(t_dsk *young, t_dsk *old, t_tree *tree)
       /*              -n_lineages * (n_lineages-1.) / (2.*Ne) * fabs(disk->time - disk->next->time), */
       /*              (disk->ldsk ? (disk->ldsk->n_next -1) : 0)); */
 
+      assert((isnan(lnP) || isinf(lnP)) == FALSE);
       disk = disk->prev;
     }
   while(disk != NULL && disk != old->prev);
@@ -1002,7 +1004,7 @@ phydbl TIMES_Lk_Coalescent_Range(t_dsk *young, t_dsk *old, t_tree *tree)
   lnP -= (tree->n_otu-1) * log(Ne);
 
 
-  /* PhyML_Printf("\n. young=%s [%f] old=%s [%f]",young->id,young->time,old->id,old->time); */
+  /* /\* PhyML_Printf("\n. young=%s [%f] old=%s [%f]",young->id,young->time,old->id,old->time); *\/ */
   if(tree->times->augmented_coalescent == YES)
     {
       int n_hits;
@@ -1033,7 +1035,7 @@ phydbl TIMES_Lk_Coalescent_Range(t_dsk *young, t_dsk *old, t_tree *tree)
               /*              disk->n_ldsk_a); */
             }
           
-          if((disk->ldsk && disk->ldsk->n_next > 1) || (disk->age_fixed == YES))
+          if((n_hits > 0) && ((disk->ldsk && disk->ldsk->n_next > 1) || (disk->age_fixed == YES)))
             {
               Z = LnGamma(n_hits+1);
               assert(disk->next);
@@ -1180,8 +1182,8 @@ void TIMES_Simulate_Coalescent(t_tree *tree)
   tree->n_root->b[2]->left = tree->n_root;
   tree->n_root->b[2]->rght = tree->n_root->v[2];
   
-  Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
-  Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
+  Update_Ancestors(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
+  Update_Ancestors(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
   
   MIXT_Propagate_Tree_Update(tree);  
 }
@@ -2163,8 +2165,8 @@ void TIMES_Randomize_Tree_With_Time_Constraints(t_cal *cal_list, t_tree *mixt_tr
             }
         }
       
-      Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree);
-      Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree);
+      Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree->n_root->b[2],mixt_tree);
+      Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree->n_root->b[1],mixt_tree);
       DATE_Assign_Primary_Calibration(mixt_tree);
       DATE_Update_T_Prior_MinMax(mixt_tree);
       
