@@ -770,10 +770,9 @@ phydbl PHYREX_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
 phydbl *PHYREX_MCMC(t_tree *tree)
 {
   t_mcmc *mcmc;
-  int move,i,n_vars;
+  int move,i;
   phydbl u;
-  t_dsk *disk;
-
+  
   if(tree->io->mcmc == NULL)
     {
       mcmc = MCMC_Make_MCMC_Struct();
@@ -796,7 +795,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   mcmc->max_lag          = 1000;
   mcmc->sample_size      = mcmc->chain_len/mcmc->sample_interval;
   mcmc->sample_num       = 0;
-  disk                   = NULL;
       
   MCMC_Complete_MCMC(mcmc,tree);
   

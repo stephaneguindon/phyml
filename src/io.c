@@ -6402,6 +6402,7 @@ void Print_Labels(FILE *fp_where, char *s_where, t_label *label)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
+#if (defined PHYREX)
 void PHYREX_Print_MultiTypeTree_Config_File(int n_sites, char *filename, t_tree *tree)
 {
   int i, j, n_demes;
@@ -6600,10 +6601,12 @@ void PHYREX_Print_MultiTypeTree_Config_File(int n_sites, char *filename, t_tree 
 
   fclose(fp);
 }
+#endif
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
+#if (defined PHYREX)
 void PHYREX_Print_MCMC_Stats(t_tree *tree)
 {
   FILE *fp_stats;
@@ -6806,10 +6809,12 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       tree->mcmc->sample_num++;
     }
 }
+#endif
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
+#if (defined PHYREX)
 void PHYREX_Print_MCMC_Tree(t_tree *tree)
 {
   FILE *fp_tree;
@@ -6856,10 +6861,12 @@ void PHYREX_Print_MCMC_Tree(t_tree *tree)
       fflush(NULL);                
     }
 }
+#endif
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
+#if (defined PHYREX)
 void PHYREX_Print_MCMC_Summary(t_tree *tree)
 {
   
@@ -6875,6 +6882,7 @@ void PHYREX_Print_MCMC_Summary(t_tree *tree)
       if(tree->numerical_warning == YES) PhyML_Fprintf(stdout," -- WARNING: numerical precision issue detected...");
     }
 }
+#endif
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/

@@ -618,7 +618,9 @@ void MCMC_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
       tree->rates->br_r[d->num] = new_mu;      
       tree->rates->br_do_updt[d->num] = YES;
       
+#if (defined PHYREX)
       PHYREX_Update_Ldsk_Rates_Given_One_Edge(d,tree);
+#endif
       
       if(tree->eval_alnL == YES) new_lnL_seq  = Lk(b,tree);
       if(tree->eval_rlnL == YES) new_lnL_rate = RATES_Lk_Rates(tree);
@@ -1874,7 +1876,9 @@ void MCMC_Tree_Rates(t_tree *tree)
       return;
     }
 
+#if (defined PHYREX)
   PHYREX_Update_Ldsk_Rates_Given_Edges(tree);
+#endif
 
   if(n_nodes != 2*tree->n_otu-2) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
 
