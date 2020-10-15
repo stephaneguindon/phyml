@@ -663,9 +663,16 @@ phydbl TIMES_Lk_Yule_Order(t_tree *tree)
 
 phydbl TIMES_Lk_Times(int verbose, t_tree *tree)
 {
-  DATE_Assign_Primary_Calibration(tree);
-  DATE_Update_T_Prior_MinMax(tree);
-  tree->times->c_lnL_times =  TIMES_Lk_Birth_Death(verbose,tree);
+  if(tree->times->model_id == COALESCENT)
+    {
+      tree->times->c_lnL_times =  TIMES_Lk_Coalescent(tree);
+    }
+  else
+    {
+      DATE_Assign_Primary_Calibration(tree);
+      DATE_Update_T_Prior_MinMax(tree);
+      tree->times->c_lnL_times =  TIMES_Lk_Birth_Death(verbose,tree);
+    }
   return(tree->times->c_lnL_times);
 }
 
@@ -865,7 +872,7 @@ phydbl TIMES_Wrap_Lk_Coalescent(t_edge *b, t_tree *tree, supert_tree *stree)
 ////////////////////////////////////////////////////////////*/
 
 phydbl TIMES_Lk_Coalescent(t_tree *tree)
-{
+{  
   t_node *n;
   int n_lineages;
   phydbl lnP,Ne;
@@ -2460,9 +2467,6 @@ phydbl TIMES_Tree_Length(t_tree *tree)
     if(tree->a_edges[i] != tree->e_root)
       sum += fabs(tree->times->nd_t[tree->a_edges[i]->left->num]-
                   tree->times->nd_t[tree->a_edges[i]->rght->num]);
-
-  sum += fabs(tree->times->nd_t[tree->n_root->num] - tree->times->nd_t[tree->n_root->v[1]->num]);
-  sum += fabs(tree->times->nd_t[tree->n_root->num] - tree->times->nd_t[tree->n_root->v[2]->num]);
 
   return(sum);
 }

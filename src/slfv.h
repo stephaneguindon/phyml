@@ -20,9 +20,9 @@ the GNU public licence. See http://www.opensource.org for details.
 phydbl SLFV_Prob_Two_Lineages_Coal(t_ldsk *l0, t_ldsk *l1, t_tree *tree);
 phydbl SLFV_Prob_Two_Random_Lineages_Coal_One_Event(phydbl w, phydbl h, phydbl mu, phydbl rad);
 phydbl SLFV_Coalescence_Rate(t_tree *tree);
-phydbl SLFV_Path_Logdensity(t_ldsk *beg, t_ldsk *end, phydbl sd, t_tree *tree);
-void SLFV_Sample_Path(t_ldsk *young, t_ldsk *old, phydbl sd, phydbl *global_hr, t_tree *tree);
-t_ldsk *SLFV_Generate_Path(t_ldsk *beg, t_ldsk *end, int n_evt, phydbl sd, t_tree *tree);
+phydbl SLFV_Path_Logdensity(t_ldsk *beg, t_ldsk *end, phydbl *sd, t_tree *tree);
+void SLFV_Sample_Path(t_ldsk *young, t_ldsk *old, phydbl *sd, phydbl *global_hr, t_tree *tree);
+t_ldsk *SLFV_Generate_Path(t_ldsk *beg, t_ldsk *end, int n_evt, phydbl *sd, t_tree *tree);
 phydbl SLFV_Effective_Density(t_tree *tree);
 phydbl SLFV_Rate_Per_Unit_Area(t_tree *tree);
 phydbl SLFV_Sample_Rad_From_Prior(t_tree *tree);

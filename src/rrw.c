@@ -49,6 +49,7 @@ phydbl RRW_Lk(t_tree *tree)
   assert(fabs(t_dum - tree->times->nd_t[idx_dum]) < 1.E-4);
 
   tree->mmod->c_lnL = d_fwd + d_coal + d_sigsq_scale;
+
   return(tree->mmod->c_lnL);
 }
 
@@ -60,19 +61,16 @@ phydbl RRW_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
   phydbl lnP;
   
   lnP = 0.0;
-  
-  /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+
   lnP += RRW_Forward_Lk_Range(young,old,tree);
   lnP += TIMES_Lk_Coalescent_Range(young,old,tree);
 
   /* lnP += RRW_Forward_Lk_Range(young,NULL,tree); */
   /* lnP += TIMES_Lk_Coalescent(tree); */
 
-
   /* PhyML_Printf("\n. RANGE = %f",TIMES_Lk_Coalescent_Range(young,old,tree)); */
   /* PhyML_Printf("\n. FULL = %f",TIMES_Lk_Coalescent(tree)); */
   /* Exit("\n"); */
-
   
   return(lnP);
 }
@@ -99,6 +97,9 @@ phydbl RRW_Lk_Core(t_dsk *disk, t_tree *tree)
           lnP += RRW_Forward_Lk_Path(disk->ldsk,disk->ldsk->next[i],tree);
         }
     }
+
+  assert(disk->next);  
+  disk->cum_lnL = disk->next->cum_lnL + lnP;
 
   return(lnP);
 }
@@ -206,23 +207,19 @@ phydbl RRW_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
   do
     {
       assert(ldsk->prev);
-
-      sd = log(tree->mmod->sigsq) + log(fabs(ldsk->disk->time-ldsk->prev->disk->time));
-      sd = exp(sd);
       
       for(i=0;i<tree->mmod->n_dim;++i)
         {
+          sd = log(tree->mmod->sigsq[i]) + log(fabs(ldsk->disk->time-ldsk->prev->disk->time));
+          sd = sqrt(exp(sd));
+          
           ld = ldsk->coord->lonlat[i];
           la = ldsk->prev->coord->lonlat[i];
 
-          if(ld > tree->mmod->lim_up->lonlat[i] || ld < tree->mmod->lim_do->lonlat[i])
-            {
-              return UNLIKELY;
-            }
-          if(la > tree->mmod->lim_up->lonlat[i] || la < tree->mmod->lim_do->lonlat[i])
-            {
-              return UNLIKELY;
-            }
+          if(ld > tree->mmod->lim_up->lonlat[i] ||
+             ld < tree->mmod->lim_do->lonlat[i] ||
+             la > tree->mmod->lim_up->lonlat[i] ||
+             la < tree->mmod->lim_do->lonlat[i]) return UNLIKELY;
           
           assert(!Are_Equal(ld,0.0,1.E-5));
           assert(!Are_Equal(la,0.0,1.E-5));

@@ -844,28 +844,27 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
   rates->inflate_var      = 1.0;
   rates->br_r_recorded    = NO;
 
-
-  rates->max_rate  = 1.E+8;
-  rates->min_rate  = 1.E-8;
-
-  rates->clock_r       = 1.E-4;
-  rates->min_clock     = 1.E-10;
-  rates->max_clock     = 1.E+0;
+  rates->clock_r          = 1.E-5;
+  rates->min_clock        = 1.E-10;
+  rates->max_clock        = 1.E+0;
   
-  rates->nu            = 2.0;
-  rates->min_nu        = 0.0;
-  rates->max_nu        = 5.0;
+  rates->max_rate         = 1.E+3;
+  rates->min_rate         = 1.E-6;
+
+  rates->nu               = 1.0;
+  rates->min_nu           = 0.0;
+  rates->max_nu           = 1.0E+3;
   
-  rates->min_dt        = 0.0;
+  rates->min_dt           = 0.0;
 
-  rates->step_rate     = 1.E-4;
-  rates->approx        = 1;
-  rates->bl_from_rt    = NO;
+  rates->step_rate        = 1.E-4;
+  rates->approx           = 1;
+  rates->bl_from_rt       = NO;
 
-  rates->update_mean_l = NO;
-  rates->update_cov_l  = NO;
+  rates->update_mean_l    = NO;
+  rates->update_cov_l     = NO;
 
-  rates->p_max         = 0.01;
+  rates->p_max            = 0.01;
 
   if(n_otu > 0)
     {
@@ -880,10 +879,8 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
       
       for(i=0;i<2*n_otu-1;++i)
         {
-          rates->nd_r[i]   = 1.0;
-          rates->br_r[i]   = 1.0;
-          
-          
+          rates->nd_r[i] = 1.0;
+          rates->br_r[i] = 1.0;
           rates->br_do_updt[i] = YES;
         }
     }
@@ -903,7 +900,7 @@ void TIMES_Init_Time_Struct(t_time *times, t_time *existing_times, int n_otu)
       times->model_id = COALESCENT;
     }
 
-  times->scaled_pop_size     = 1.0;
+  times->scaled_pop_size     = 1.E+2;
   times->scaled_pop_size_min = 0.0;
   times->scaled_pop_size_max = 1.E+5;
   
@@ -3456,6 +3453,7 @@ void PHYREX_Init_Disk_Event(t_dsk *t, int n_dim, t_phyrex_mod *mmod)
   t->next      = NULL;
   t->mmod      = NULL;
   t->age_fixed = NO;
+  t->cum_lnL   = 0.0;
   
   Random_String(t->id,3);
   GEO_Init_Coord(t->centr,n_dim);
@@ -3522,8 +3520,10 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   
   t->min_sigsq         = 0.0;
   t->max_sigsq         = 1.E+2;
-  t->sigsq             = 1.;
   t->prior_param_sigsq = 10.0;
+
+  assert(t->n_dim > 0);
+  for(int i=0;i<t->n_dim;++i) t->sigsq[i] = 3.0;
   
   t->nu                = 1.0E-0;
 

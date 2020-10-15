@@ -102,7 +102,6 @@ void MCMC_One_Node_Rate(t_node *a, t_node *d, int traversal, t_tree *tree);
 void MCMC_Tree_Rates_Bis(t_tree *tree);
 void MCMC_Slice_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree);
 void MCMC_Updown_Nu_Cr(t_tree *tree);
-void MCMC_All_Rates(t_tree *tree);
 void MCMC_Alpha(t_tree *tree);
 void MCMC_Kappa(t_tree *tree);
 void MCMC_Rate_Across_Sites(t_tree *tree);

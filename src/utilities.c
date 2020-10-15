@@ -6174,7 +6174,14 @@ phydbl Tree_Length(t_tree *tree)
   phydbl sum;
 
   sum = 0.0;
-  for(int i=0;i<2*tree->n_otu-1;++i) if(tree->a_edges[i] != tree->e_root) sum += MIXT_Get_Mean_Edge_Len(tree->a_edges[i],tree);
+  for(int i=0;i<2*tree->n_otu-1;++i)
+    {
+      if(tree->a_edges[i] != tree->n_root->b[1] && tree->a_edges[i] != tree->n_root->b[2])
+        {
+          sum += MIXT_Get_Mean_Edge_Len(tree->a_edges[i],tree);
+        }
+    }
+  
   return(sum);
 }
 
@@ -11925,9 +11932,17 @@ t_cal *Duplicate_Calib(t_cal *from)
   to->id = (char *)mCalloc(strlen(from->id)+1,sizeof(char)); 
   strcpy(to->id,from->id);
 
-  to->alpha_proba_list = (phydbl *)mCalloc(from->clade_list_size,sizeof(phydbl));
-  to->clade_list = (t_clad **)mCalloc(from->clade_list_size,sizeof(t_clad *));
-
+  if(from->clade_list_size > 0)
+    {
+      to->alpha_proba_list = (phydbl *)mCalloc(from->clade_list_size,sizeof(phydbl));    
+      to->clade_list = (t_clad **)mCalloc(from->clade_list_size,sizeof(t_clad *));
+    }
+  else
+    {
+      to->alpha_proba_list = NULL;
+      to->clade_list = NULL;    
+    }
+  
   for(i=0;i<from->clade_list_size;++i)
     {
       to->alpha_proba_list[i] = from->alpha_proba_list[i];

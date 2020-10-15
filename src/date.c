@@ -231,6 +231,11 @@ void DATE_XML(char *xml_filename)
       if(clock_r != NULL)
         {
           mixt_tree->rates->clock_r = String_To_Dbl(clock_r);
+          for(int i=0;i<2*mixt_tree->n_otu-1;++i)
+            {
+              mixt_tree->rates->br_r[i] = mixt_tree->rates->clock_r;
+              mixt_tree->rates->nd_r[i] = mixt_tree->rates->clock_r;
+            }
         }
       
       char *opt_clock;
@@ -244,7 +249,7 @@ void DATE_XML(char *xml_filename)
           int select = XML_Validate_Attr_Int(opt_clock,6,
                                              "true","yes","y",
                                              "false","no","n");
-          if(select < 3)  mixt_tree->mod->s_opt->opt_clock_r = YES;
+          if(select < 3) mixt_tree->mod->s_opt->opt_clock_r = YES;
           else mixt_tree->mod->s_opt->opt_clock_r = NO;
         }
     }
@@ -813,7 +818,7 @@ phydbl *DATE_MCMC(t_tree *tree)
   Set_Update_Eigen(NO,tree->mod);
 
   
-  RATES_Lk_Rates(tree);
+  RATES_Lk(tree);
   DATE_Assign_Primary_Calibration(tree);
   TIMES_Lk_Times(NO,tree);
 

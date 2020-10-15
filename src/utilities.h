@@ -1948,7 +1948,7 @@ typedef struct __Phylogeo{
 }t_geo;
 
 /*!********************************************************/
-// Structure for the Etheridge-Barton migration/reproduction model
+// Data structure for the migration/reproduction model
 typedef struct __Migrep_Model{
   struct __Geo_Coord         *lim_up; // max longitude and lattitude                        
   struct __Geo_Coord         *lim_do; // min longitude and lattitude                        
@@ -1978,7 +1978,7 @@ typedef struct __Migrep_Model{
   phydbl                     max_rad; // max of radius of the migrep disk 
   phydbl             prior_param_rad; // parameter of the parameter for the prior on radius
 
-  phydbl                       sigsq; // parent to offspring distance variance (i.e., gene flow) parameter. 
+  phydbl                      *sigsq; // parent to offspring distance variance (i.e., gene flow) parameter. First elem is for latitude, second is for longitude 
   phydbl                   min_sigsq; // min 
   phydbl                   max_sigsq; // max  
   phydbl           prior_param_sigsq; // parameter of the parameter for the prior 
@@ -2009,7 +2009,7 @@ typedef struct __Disk_Event{
   struct __Migrep_Model    *mmod;
   char                       *id;
 
-  phydbl                   c_lnL;
+  phydbl                 cum_lnL; // cumulative log-likelihood
   short int            age_fixed; // time is fixed for disks corresponding to samples.
 }t_dsk;
 
