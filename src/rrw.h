@@ -26,6 +26,7 @@ phydbl RRW_Independent_Contrasts(t_tree *tree);
 phydbl RRW_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree);
 phydbl RRW_Forward_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree);
 phydbl RRW_Lk_Core(t_dsk *disk, t_tree *tree);
+void RRW_Generate_Ldsk_New_Location(t_ldsk *l, t_ldsk *prev_l, phydbl rad, phydbl *hr, int dim_idx, t_tree *tree);
 
 
 #endif

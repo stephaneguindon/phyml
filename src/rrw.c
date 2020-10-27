@@ -40,15 +40,13 @@ phydbl RRW_Lk(t_tree *tree)
     }
 #endif
 
-  d_coal = TIMES_Lk_Coalescent(tree);
-
   /* !!!!!!!!!!!!!!!!!!!!!!! */
   /* d_sigsq_scale = RRW_Prior_Sigsq_Scale(tree); */
   
   // Make sure node times are set back to their original values
   assert(fabs(t_dum - tree->times->nd_t[idx_dum]) < 1.E-4);
 
-  tree->mmod->c_lnL = d_fwd + d_coal + d_sigsq_scale;
+  tree->mmod->c_lnL = d_fwd + d_sigsq_scale;
 
   return(tree->mmod->c_lnL);
 }
@@ -59,19 +57,9 @@ phydbl RRW_Lk(t_tree *tree)
 phydbl RRW_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
 {
   phydbl lnP;
-  
-  lnP = 0.0;
+ 
+  lnP = RRW_Forward_Lk_Range(young,old,tree);  
 
-  lnP += RRW_Forward_Lk_Range(young,old,tree);
-  lnP += TIMES_Lk_Coalescent_Range(young,old,tree);
-
-  /* lnP += RRW_Forward_Lk_Range(young,NULL,tree); */
-  /* lnP += TIMES_Lk_Coalescent(tree); */
-
-  /* PhyML_Printf("\n. RANGE = %f",TIMES_Lk_Coalescent_Range(young,old,tree)); */
-  /* PhyML_Printf("\n. FULL = %f",TIMES_Lk_Coalescent(tree)); */
-  /* Exit("\n"); */
-  
   return(lnP);
 }
 
@@ -97,9 +85,6 @@ phydbl RRW_Lk_Core(t_dsk *disk, t_tree *tree)
           lnP += RRW_Forward_Lk_Path(disk->ldsk,disk->ldsk->next[i],tree);
         }
     }
-
-  assert(disk->next);  
-  disk->cum_lnL = disk->next->cum_lnL + lnP;
 
   return(lnP);
 }
@@ -171,15 +156,17 @@ void RRW_Rescale_Times_Pre(t_node *a, t_node *d, phydbl cur_ta, int prod, t_tree
 
 phydbl RRW_Forward_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
 {
-  phydbl lnP;
+  phydbl lnP,disk_lnP;
   t_dsk *disk;
-  
+
+  disk_lnP = 0.0;
   lnP = 0.0;
   disk = young;
   
   do
     {
-      lnP += RRW_Lk_Core(disk,tree);
+      disk_lnP = RRW_Lk_Core(disk,tree);
+      lnP += disk_lnP;
       
       if(old && disk == old) break;
       
@@ -196,7 +183,7 @@ phydbl RRW_Forward_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
 phydbl RRW_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
 {
   t_ldsk *ldsk;
-  phydbl lnP,sd,ld,la;
+  phydbl lnP,sd,ld,la,disk_lnP;
   int i,err;
 
   lnP = 0.0;
@@ -207,7 +194,8 @@ phydbl RRW_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
   do
     {
       assert(ldsk->prev);
-      
+
+      disk_lnP = 0.0;
       for(i=0;i<tree->mmod->n_dim;++i)
         {
           sd = log(tree->mmod->sigsq[i]) + log(fabs(ldsk->disk->time-ldsk->prev->disk->time));
@@ -216,15 +204,15 @@ phydbl RRW_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
           ld = ldsk->coord->lonlat[i];
           la = ldsk->prev->coord->lonlat[i];
 
-          if(ld > tree->mmod->lim_up->lonlat[i] ||
-             ld < tree->mmod->lim_do->lonlat[i] ||
-             la > tree->mmod->lim_up->lonlat[i] ||
-             la < tree->mmod->lim_do->lonlat[i]) return UNLIKELY;
+          /* if(ld > tree->mmod->lim_up->lonlat[i] || */
+          /*    ld < tree->mmod->lim_do->lonlat[i] || */
+          /*    la > tree->mmod->lim_up->lonlat[i] || */
+          /*    la < tree->mmod->lim_do->lonlat[i]) return UNLIKELY; */
           
-          assert(!Are_Equal(ld,0.0,1.E-5));
-          assert(!Are_Equal(la,0.0,1.E-5));
+          /* assert(!Are_Equal(ld,0.0,1.E-5)); */
+          /* assert(!Are_Equal(la,0.0,1.E-5)); */
 
-          lnP += Log_Dnorm(ld,la,sd,&err);
+          disk_lnP += Log_Dnorm(ld,la,sd,&err);
 
           if(isinf(lnP)) return(UNLIKELY);
 
@@ -235,6 +223,8 @@ phydbl RRW_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
             }
         }
 
+      lnP += disk_lnP;
+            
       ldsk = ldsk->prev;
       assert(ldsk);
     }
@@ -245,6 +235,101 @@ phydbl RRW_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void RRW_Generate_Ldsk_New_Location(t_ldsk *l, t_ldsk *prev_l, phydbl rad, phydbl *hr, int dim_idx, t_tree *tree)
+{
+  phydbl dta,dtd,sum,sd,c,new_loc,w;
+  int err,i;
+
+  err = NO;              
+  
+  if(l->prev != NULL)
+    {
+      dta = fabs(l->prev->disk->time - l->disk->time);
+      
+      if(dta<SMALL)
+        {
+          l->coord->lonlat[dim_idx] = l->prev->coord->lonlat[dim_idx];
+          return;
+        }
+      
+      sum = 0.0;
+      for(i=0;i<l->n_next;++i)
+        {
+          dtd = fabs(l->disk->time - l->next[i]->disk->time);
+          w = dta/(dta+dtd);
+          sum += w;
+        }
+
+      c = 0.0;
+      sd = 0.0;
+      for(i=0;i<l->n_next;++i)
+        {
+          dtd = fabs(l->disk->time - l->next[i]->disk->time);
+          w = dta/(dta+dtd)/sum;
+          c += w*((dtd/(dta+dtd))*l->prev->coord->lonlat[dim_idx] + (dta/(dta+dtd))*l->next[i]->coord->lonlat[dim_idx]);
+          sd += w*sqrt((dta*dtd)/(dta+dtd)*rad);
+        }
+      
+      assert((isnan(c) && isnan(sd)) == false);
+
+      new_loc = Rnorm(c,sd);
+      
+      /* Forward move */
+      (*hr) -= Log_Dnorm(new_loc,c,sd,&err);
+      
+      if(prev_l != NULL && prev_l != l)
+        {
+          /* Reverse move */
+          dta = fabs(prev_l->prev->disk->time - prev_l->disk->time);
+
+          sum = 0.0;
+          for(i=0;i<prev_l->n_next;++i)
+            {
+              dtd = fabs(prev_l->disk->time - prev_l->next[i]->disk->time);
+              w = dta/(dta+dtd);
+              sum += w;
+            }
+          
+          c = 0.0;
+          sd = 0.0;
+          for(i=0;i<prev_l->n_next;++i)
+            {
+              dtd = fabs(prev_l->disk->time - prev_l->next[i]->disk->time);
+              w = dta/(dta+dtd)/sum;
+              c += w*((dtd/(dta+dtd))*prev_l->prev->coord->lonlat[dim_idx] + (dta/(dta+dtd))*prev_l->next[i]->coord->lonlat[dim_idx]);
+              sd += w*sqrt((dta*dtd)/(dta+dtd)*rad);
+            }
+        }
+          
+      assert((isnan(c) && isnan(sd)) == false);
+
+      (*hr) += Log_Dnorm(prev_l->coord->lonlat[dim_idx],c,sd,&err);
+      l->coord->lonlat[dim_idx] = new_loc;
+    }
+  else
+    {
+      sd = sqrt(rad);
+      c = l->coord->lonlat[dim_idx];
+  
+      new_loc = Rnorm(c,sd);
+      
+      /* Forward move */
+      (*hr) -= Log_Dnorm(new_loc,c,sd,&err);
+      
+      if(prev_l != NULL)
+        {
+          c = new_loc;
+          
+          /* Reverse move */
+          (*hr) += Log_Dnorm(prev_l->coord->lonlat[dim_idx],c,sd,&err); 
+        }
+          
+      l->coord->lonlat[dim_idx] = new_loc;          
+    }
+  assert(err == NO);
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

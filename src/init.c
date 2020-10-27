@@ -121,6 +121,7 @@ void Init_Tree(t_tree *tree, int n_otu)
   tree->best_lnL                  = UNLIKELY;
   tree->old_lnL                   = UNLIKELY;
   tree->c_lnL                     = UNLIKELY;
+  tree->p_lnL                     = UNLIKELY;
   tree->sum_min_sum_scale         = .0;
   tree->n_swap                    = 0;
   tree->best_pars                 = 1E+5;
@@ -836,7 +837,8 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
     }
 
   rates->met_within_gibbs = NO;
-  rates->c_lnL_rates      = UNLIKELY;
+  rates->c_lnL      = UNLIKELY;
+  rates->p_lnL      = UNLIKELY;
   rates->adjust_rates     = 0;
   rates->use_rates        = 1;
   rates->lexp             = 1.E-3;
@@ -844,14 +846,14 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
   rates->inflate_var      = 1.0;
   rates->br_r_recorded    = NO;
 
-  rates->clock_r          = 1.E-5;
+  rates->clock_r          = 1.E-3;
   rates->min_clock        = 1.E-10;
   rates->max_clock        = 1.E+0;
   
   rates->max_rate         = 1.E+3;
-  rates->min_rate         = 1.E-6;
+  rates->min_rate         = 1.E-3;
 
-  rates->nu               = 1.0;
+  rates->nu               = 3.0;
   rates->min_nu           = 0.0;
   rates->max_nu           = 1.0E+3;
   
@@ -900,14 +902,14 @@ void TIMES_Init_Time_Struct(t_time *times, t_time *existing_times, int n_otu)
       times->model_id = COALESCENT;
     }
 
-  times->scaled_pop_size     = 1.E+2;
+  times->scaled_pop_size     = 1.E+0;
   times->scaled_pop_size_min = 0.0;
   times->scaled_pop_size_max = 1.E+5;
   
-  times->c_lnL_times      = UNLIKELY;
-  times->c_lnL_times      = UNLIKELY;
-  times->c_lnL_jps        = UNLIKELY;
-  times->nd_t_recorded    = NO;
+  times->c_lnL         = UNLIKELY;
+  times->p_lnL         = UNLIKELY;
+  times->c_lnL_jps     = UNLIKELY;
+  times->nd_t_recorded = NO;
 
   times->birth_rate       = 1.E-1;
   times->birth_rate_min   = 1.E-6;
@@ -3453,7 +3455,8 @@ void PHYREX_Init_Disk_Event(t_dsk *t, int n_dim, t_phyrex_mod *mmod)
   t->next      = NULL;
   t->mmod      = NULL;
   t->age_fixed = NO;
-  t->cum_lnL   = 0.0;
+  t->cum_glnL  = 0.0;
+  t->cum_tlnL  = 0.0;
   
   Random_String(t->id,3);
   GEO_Init_Coord(t->centr,n_dim);
@@ -3469,18 +3472,22 @@ void PHYREX_Init_Migrep_Mod(t_phyrex_mod *t, int n_dim, phydbl min_lat, phydbl m
   assert(n_dim == 2);
 
   if(t->model_id == -1) t->model_id = SLFV_GAUSSIAN;
-  t->n_dim              = n_dim;
+
+  t->n_dim = n_dim;
   
-  t->lim_up->lonlat[0]   = max_lat;
-  t->lim_up->lonlat[1]   = max_lon;
+  if(t->sampling_scheme == -1) t->sampling_scheme = SPATIAL_SAMPLING_DETECTION;
+  if(t->use_locations == -1) t->use_locations = YES;
+  
+  t->lim_up->lonlat[0] = max_lat;
+  t->lim_up->lonlat[1] = max_lon;
 
-  t->lim_do->lonlat[0]   = min_lat;
-  t->lim_do->lonlat[1]   = min_lon;
+  t->lim_do->lonlat[0] = min_lat;
+  t->lim_do->lonlat[1] = min_lon;
 
-  t->min_rad           = 0.0;
-  t->max_rad           = 1.0*((max_lat-min_lat)+(max_lon-min_lon));
-  t->rad               = 0.01*((max_lat-min_lat)+(max_lon-min_lon));
-  t->prior_param_rad   = 1./(0.1*((max_lat-min_lat)+(max_lon-min_lon)));
+  t->min_rad = 0.0;
+  t->max_rad = 1.0*((max_lat-min_lat)+(max_lon-min_lon));
+  t->rad = 0.01*((max_lat-min_lat)+(max_lon-min_lon));
+  t->prior_param_rad = 1./(0.1*((max_lat-min_lat)+(max_lon-min_lon)));
 }
 
 //////////////////////////////////////////////////////////////
@@ -3493,8 +3500,10 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->sigsq_scale_min = 0.01;
   t->sigsq_scale_max = 100.;
   
-  t->model_id    = -1;
-  t->safe_phyrex = YES;
+  t->model_id = -1;
+  t->use_locations = -1;
+  t->sampling_scheme = -1;
+  t->safe_phyrex = NO;
   
   t->lim_up->lonlat[0] = 100.;
   t->lim_up->lonlat[1] = 100.;
@@ -3525,16 +3534,17 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   assert(t->n_dim > 0);
   for(int i=0;i<t->n_dim;++i) t->sigsq[i] = 3.0;
   
-  t->nu                = 1.0E-0;
+  t->nu = 1.0E-0;
 
-  t->c_lnL             = UNLIKELY;
-  t->c_ln_prior_rad    = UNLIKELY;
-  t->c_ln_prior_lbda   = UNLIKELY;
-  t->c_ln_prior_mu     = UNLIKELY;
+  t->c_lnL = UNLIKELY;
+  t->p_lnL = UNLIKELY;
+  t->c_ln_prior_rad = UNLIKELY;
+  t->c_ln_prior_lbda = UNLIKELY;
+  t->c_ln_prior_mu = UNLIKELY;
 
-  t->soft_bound_area   = 0.1;
+  t->soft_bound_area = 0.1;
   
-  t->max_num_of_intervals = 1000000;
+  t->max_num_of_intervals = 10000000;
 }
 
 //////////////////////////////////////////////////////////////

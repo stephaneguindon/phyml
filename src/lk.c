@@ -454,6 +454,8 @@ phydbl Lk(t_edge *b, t_tree *tree)
   const unsigned int ncatg = tree->mod->ras->n_catg;
   const unsigned int npatterns = tree->n_pattern;
   const unsigned int nsncatg = ns * ncatg;
+
+  tree->p_lnL = tree->c_lnL;
   
   tree->numerical_warning = NO;
   
@@ -2518,7 +2520,7 @@ phydbl Wrap_Lk_At_Given_Edge(t_edge *b, t_tree *tree, supert_tree *stree)
 phydbl Wrap_Lk_Rates(t_edge *b, t_tree *tree, supert_tree *stree)
 {
   RATES_Lk(tree);
-  return tree->rates->c_lnL_rates;
+  return tree->rates->c_lnL;
 }
 
 //////////////////////////////////////////////////////////////
@@ -2526,8 +2528,8 @@ phydbl Wrap_Lk_Rates(t_edge *b, t_tree *tree, supert_tree *stree)
 
 phydbl Wrap_Lk_Times(t_edge *b, t_tree *tree, supert_tree *stree)
 {
-  TIMES_Lk_Times(NO,tree);
-  return tree->times->c_lnL_times;
+  TIMES_Lk(tree);
+  return tree->times->c_lnL;
 }
 
 //////////////////////////////////////////////////////////////

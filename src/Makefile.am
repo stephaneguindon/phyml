@@ -554,6 +554,7 @@ sse.c sse.h\
 avx.c avx.h\
 ancestral.c ancestral.h\
 phyrex.c phyrex.h\
+location.c location.h\
 slfv.c slfv.h\
 rw.c rw.h\
 rrw.c rrw.h

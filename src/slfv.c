@@ -117,14 +117,14 @@ phydbl SLFV_Path_Logdensity(t_ldsk *young, t_ldsk *old, phydbl *sd, t_tree *tree
 {
   int i,j,err;
   t_ldsk *ldsk;
-  phydbl lnDens,mode,var;
+  phydbl lnP,mode,var;
   phydbl X,Y,Xp,Yp;
   /* phydbl slope,inter,mode; */
   int dir_to_young;
   phydbl dt_young,dt_old,sum;
   phydbl pos;
   
-  lnDens = 0.0;
+  lnP = 0.0;
   mode   = 0.0;
     
   for(i=0;i<tree->mmod->n_dim;i++)
@@ -163,13 +163,13 @@ phydbl SLFV_Path_Logdensity(t_ldsk *young, t_ldsk *old, phydbl *sd, t_tree *tree
           
           assert(ldsk != NULL);
                     
-          lnDens += Log_Dnorm_Trunc(ldsk->coord->lonlat[i],
+          lnP += Log_Dnorm_Trunc(ldsk->coord->lonlat[i],
                                     mode,
                                     sqrt(var),
                                     tree->mmod->lim_do->lonlat[i],
                                     tree->mmod->lim_up->lonlat[i],&err);
 
-          /* lnDens += Log_Dnorm(ldsk->coord->lonlat[i], */
+          /* lnP += Log_Dnorm(ldsk->coord->lonlat[i], */
           /*                     mode, */
           /*                     sqrt(var), */
           /*                     &err); */
@@ -179,18 +179,18 @@ phydbl SLFV_Path_Logdensity(t_ldsk *young, t_ldsk *old, phydbl *sd, t_tree *tree
           else if(ldsk->coord->lonlat[i] < tree->mmod->lim_do->lonlat[i]) pos = tree->mmod->lim_do->lonlat[i];
           else pos = ldsk->coord->lonlat[i];
           
-          lnDens += Log_Dnorm_Trunc(ldsk->disk->centr->lonlat[i],
-                                    pos,
-                                    sd[i],
-                                    tree->mmod->lim_do->lonlat[i],
-                                    tree->mmod->lim_up->lonlat[i],&err);
+          lnP += Log_Dnorm_Trunc(ldsk->disk->centr->lonlat[i],
+                                 pos,
+                                 sd[i],
+                                 tree->mmod->lim_do->lonlat[i],
+                                 tree->mmod->lim_up->lonlat[i],&err);
 
           ldsk = ldsk->prev;
           j++;
         }
     }
   
-  return(lnDens);
+  return(lnP);
 }
 
 /*////////////////////////////////////////////////////////////
@@ -217,8 +217,7 @@ void SLFV_Sample_Path(t_ldsk *young, t_ldsk *old, phydbl *sd, phydbl *global_hr,
   n_mcmc_iter = 0;
   accept = reject = 0;
   do
-    {
-          
+    {          
       ldsk = young->prev;
       do
         {
@@ -647,10 +646,27 @@ phydbl SLFV_Neighborhood_Size_Regression(t_tree *tree)
 
 phydbl SLFV_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
 {
-  if(tree->mmod->model_id == SLFV_GAUSSIAN) return(SLFV_Lk_Gaussian_Range(young,old,tree));
-  else if(tree->mmod->model_id == SLFV_UNIFORM) assert(FALSE);
-  else assert(FALSE);
-  return(-1.);
+  phydbl lnP;
+
+  lnP = UNLIKELY;
+  
+  switch(tree->mmod->model_id)
+    {
+    case SLFV_GAUSSIAN :
+      {
+        lnP = SLFV_Lk_Gaussian_Range(young,old,tree);
+        break;
+      }
+    case SLFV_UNIFORM :
+      {
+        PhyML_Fprintf(stderr,"\n. SLFV model with rectangle is not implemented. Sorry...");
+        assert(false);
+        break;
+      }      
+    default : break;
+    }
+
+  return(lnP);
 }
 
 /*////////////////////////////////////////////////////////////
@@ -659,16 +675,15 @@ phydbl SLFV_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
 phydbl SLFV_Lk_Gaussian_Range(t_dsk *young, t_dsk *old, t_tree *tree)
 {
   t_dsk *disk;
-  phydbl lnL,dt;
+  phydbl lnL,dt,disk_lnL;
   int n_evt;
-  
-  
+    
   assert(young);
 
   lnL  = 0.0;
-
   lnL += SLFV_Lk_Gaussian_Core(young,tree);
 
+  disk_lnL = 0.0;
   dt = 0.0;
   n_evt = 0;
   disk = young->prev;
@@ -682,7 +697,11 @@ phydbl SLFV_Lk_Gaussian_Range(t_dsk *young, t_dsk *old, t_tree *tree)
 
       assert(disk);
       if(disk->time > disk->next->time) return UNLIKELY;
-      lnL += SLFV_Lk_Gaussian_Core(disk,tree);
+      disk_lnL = SLFV_Lk_Gaussian_Core(disk,tree);
+      lnL += disk_lnL;
+
+      if(disk->next != NULL) disk->cum_glnL = disk->next->cum_glnL + disk_lnL;      
+
       if(disk == old) break;
       disk = disk->prev;
     }
@@ -758,9 +777,6 @@ phydbl SLFV_Lk_Gaussian_Core(t_dsk *disk, t_tree *tree)
   /* Likelihood for the disk center */
   for(j=0;j<tree->mmod->n_dim;j++) lnL += log(1./(tree->mmod->lim_up->lonlat[j]-tree->mmod->lim_do->lonlat[j]));
 
-  assert(disk->next);  
-  disk->cum_lnL = disk->next->cum_lnL + lnL;
-
   return(lnL);
 }
 
@@ -817,8 +833,7 @@ phydbl SLFV_Lk_Gaussian(t_tree *tree)
     }
   while(1);
 
-  tree->mmod->c_lnL += PHYREX_Lk_Time_Component(tree);
-
+  /* tree->mmod->c_lnL += TIMES_Lk_SLFV(tree); */
   /* tree->mmod->c_lnL += n_evt * log(tree->mmod->lbda) - tree->mmod->lbda * fabs(tree->young_disk->time - disk->time); */
     
   if(isinf(tree->mmod->c_lnL) || isnan(tree->mmod->c_lnL)) tree->mmod->c_lnL = UNLIKELY;
@@ -1448,7 +1463,7 @@ phydbl SLFV_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_mergers,
   oldest_disk = disk;
   reached_oldest_disk = NO;
   if(init_disk->prev == NULL) reached_oldest_disk = YES; // Only one sampled disk
-  
+
   lnL = 0.0;
   disk = init_disk;
   do
@@ -2174,3 +2189,39 @@ void SLFV_Sum_Coal_Rate(t_ldsk *l0, t_ldsk *l1, int n, t_tree *tree)
   PhyML_Printf("\n");
   Exit("\n");
 }
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+void SLFV_Generate_Ldsk_New_Location(t_ldsk *l, t_ldsk *prev_l, phydbl rad, phydbl *hr, int dim_idx, t_tree *tree)
+{
+  int err;
+  phydbl new_c,new_l,c;
+
+  err = NO;
+
+  /* Forward move */
+  new_c = Uni()*(tree->mmod->lim_up->lonlat[dim_idx]-tree->mmod->lim_do->lonlat[dim_idx])+tree->mmod->lim_do->lonlat[dim_idx];
+  (*hr) -= log(1./(tree->mmod->lim_up->lonlat[dim_idx]-tree->mmod->lim_do->lonlat[dim_idx]));
+  c = new_c;
+  new_l = Rnorm_Trunc(c,rad,tree->mmod->lim_do->lonlat[dim_idx],tree->mmod->lim_up->lonlat[dim_idx],&err);
+  (*hr) -= Log_Dnorm_Trunc(new_l,c,rad,tree->mmod->lim_do->lonlat[dim_idx],tree->mmod->lim_up->lonlat[dim_idx],&err);
+  
+  /* Reverse move */
+  c = prev_l->disk->centr->lonlat[dim_idx];
+  (*hr) += Log_Dnorm_Trunc(prev_l->coord->lonlat[dim_idx],c,rad,tree->mmod->lim_do->lonlat[dim_idx],tree->mmod->lim_up->lonlat[dim_idx],&err);
+  
+  l->disk->centr->lonlat[dim_idx] = new_c;
+  l->coord->lonlat[dim_idx] = new_l;
+  
+  assert(err == NO);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/

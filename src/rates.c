@@ -26,14 +26,15 @@ phydbl RATES_Lk(t_tree *tree)
 {  
   if(tree->eval_rlnL == NO) return UNLIKELY;
 
-  tree->rates->c_lnL_rates  = .0;
+  tree->rates->p_lnL = tree->rates->c_lnL;
 
+  tree->rates->c_lnL  = .0;
   RATES_Lk_Pre(tree->n_root,tree->n_root->v[2],NULL,tree);
   RATES_Lk_Pre(tree->n_root,tree->n_root->v[1],NULL,tree);
 
-  if(isnan(tree->rates->c_lnL_rates)) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(isnan(tree->rates->c_lnL)) assert(false);
   
-  return tree->rates->c_lnL_rates;
+  return tree->rates->c_lnL;
 }
 
 //////////////////////////////////////////////////////////////
@@ -73,10 +74,10 @@ void RATES_Lk_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
   n_d  = tree->times->n_jps[d->num];
 
   log_dens = RATES_Lk_Core(mu_a,mu_d,r_a,r_d,n_a,n_d,dt_a,dt_d,tree);
-  tree->rates->c_lnL_rates += log_dens;
-  /* PhyML_Printf("\n. logR: %f [%f %f]",tree->rates->c_lnL_rates,mu_a,mu_d); */
+  tree->rates->c_lnL += log_dens;
+  /* PhyML_Printf("\n. logR: %f [%f %f]",tree->rates->c_lnL,mu_a,mu_d); */
 
-  if(isnan(tree->rates->c_lnL_rates))
+  if(isnan(tree->rates->c_lnL))
     {
       PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
       MCMC_Print_Param(tree->mcmc,tree);
@@ -189,8 +190,7 @@ phydbl RATES_Lk_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl nd_r_d,
                     tree->mcmc->run,
                     br_r_d,br_r_a,dt_d,dt_a,tree->rates->nu,log_dens,
                     sd,mean);
-      PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
-      Exit("\n");
+      assert(false);
     }
 
   return log_dens;
@@ -204,7 +204,7 @@ phydbl RATES_Lk_Change_One_Rate(t_node *d, phydbl new_rate, t_tree *tree)
   tree->rates->br_r[d->num] = new_rate;
   RATES_Update_Triplet(d,tree);
   RATES_Update_Triplet(d->anc,tree);
-  return(tree->rates->c_lnL_rates);
+  return(tree->rates->c_lnL);
 }
 
 //////////////////////////////////////////////////////////////
@@ -233,7 +233,7 @@ phydbl RATES_Lk_Change_One_Time(t_node *n, phydbl new_t, t_tree *tree)
 	  else RATES_Update_Triplet(tree->n_root,tree);
 	}
     }
-  return(tree->rates->c_lnL_rates);
+  return(tree->rates->c_lnL);
 }
 
 //////////////////////////////////////////////////////////////
@@ -376,7 +376,7 @@ void RATES_Update_Triplet(t_node *n, t_tree *tree)
       new_triplet = mu1_mu0 + mu2_mu0;
     }
 
-  tree->rates->c_lnL_rates = tree->rates->c_lnL_rates + new_triplet - curr_triplet;
+  tree->rates->c_lnL = tree->rates->c_lnL + new_triplet - curr_triplet;
   tree->rates->triplet[n->num] = new_triplet;
 }
 
@@ -419,7 +419,7 @@ void RATES_Copy_Rate_Struct(t_rate *from, t_rate *to, int n_otu)
   to->c_lnL1 = from->c_lnL1;
   to->c_lnL2 = from->c_lnL2;
 
-  to->c_lnL_rates = from->c_lnL_rates;
+  to->c_lnL = from->c_lnL;
   
   to->clock_r = from->clock_r;
   to->min_clock = from->min_clock;
@@ -1229,9 +1229,9 @@ void RATES_Posterior_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
     {
       
       cur_lnL_data = tree->c_lnL;
-      cur_lnL_rate = tree->rates->c_lnL_rates;
+      cur_lnL_rate = tree->rates->c_lnL;
       new_lnL_data = tree->c_lnL;
-      new_lnL_rate = tree->rates->c_lnL_rates;
+      new_lnL_rate = tree->rates->c_lnL;
 
       tree->rates->br_r[d->num] = rd;
       RATES_Normalise_Rates(tree);
@@ -1250,7 +1250,7 @@ void RATES_Posterior_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
 	  new_lnL_rate += (Log_Dnorm_Trunc(U2,rd,sd2,r_min,r_max,&err) + Log_Dnorm_Trunc(U3,rd,sd3,r_min,r_max,&err));
 	}
 
-      tree->rates->c_lnL_rates = new_lnL_rate;
+      tree->rates->c_lnL = new_lnL_rate;
       
       /* printf("\n. %f %f sd1=%f U1=%f rd=%f ra=%f a=%d d=%d [%f] [%f %f]", */
       /* 	     new_lnL_rate,RATES_Lk(tree),sd1,U1,rd,ra,a->num,d->num,tree->rates->br_r[tree->n_root->num], */
@@ -1285,7 +1285,7 @@ void RATES_Posterior_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
       if(u > MIN(1.,ratio))
 	{
 	  tree->rates->br_r[d->num] = U1; /* reject */
-	  tree->rates->c_lnL_rates        = cur_lnL_rate;
+	  tree->rates->c_lnL        = cur_lnL_rate;
 	  tree->c_lnL               = cur_lnL_data;
 	  RATES_Update_Edge_Lengths(tree);
 	  Update_PMat_At_Given_Edge(b,tree);
@@ -1696,9 +1696,9 @@ void RATES_Posterior_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
   RATES_Update_Edge_Lengths(tree);
   
   cur_lnL_data = tree->c_lnL;
-  cur_lnL_rate = tree->rates->c_lnL_rates;
+  cur_lnL_rate = tree->rates->c_lnL;
   new_lnL_data = tree->c_lnL;
-  new_lnL_rate = tree->rates->c_lnL_rates;
+  new_lnL_rate = tree->rates->c_lnL;
   
   /* !!!!!!!!!!!!!!!!! */
   /* tree->both_sides = NO; */
@@ -1744,7 +1744,7 @@ void RATES_Posterior_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree)
   if(u > MIN(1.,ratio))
     {
       tree->times->nd_t[d->num] = t1; /* reject */
-      tree->rates->c_lnL_rates        = cur_lnL_rate;
+      tree->rates->c_lnL        = cur_lnL_rate;
       tree->c_lnL               = cur_lnL_data;
       RATES_Update_Edge_Lengths(tree);
       if(tree->io->lk_approx == EXACT) 
@@ -1906,7 +1906,7 @@ void RATES_Posterior_Time_Root(t_tree *tree)
   RATES_Update_Edge_Lengths(tree);
 
   cur_lnL_data = tree->c_lnL;
-  cur_lnL_rate = tree->rates->c_lnL_rates;
+  cur_lnL_rate = tree->rates->c_lnL;
   new_lnL_data = tree->c_lnL;
   
   new_lnL_data = Lk(NULL,tree);
@@ -1922,7 +1922,7 @@ void RATES_Posterior_Time_Root(t_tree *tree)
   if(u > MIN(1.,ratio))
     {
       tree->times->nd_t[root->num] = t0; /* reject */
-      tree->rates->c_lnL_rates     = cur_lnL_rate;
+      tree->rates->c_lnL     = cur_lnL_rate;
       tree->c_lnL                  = cur_lnL_data;
     }
   else

@@ -820,7 +820,7 @@ phydbl *DATE_MCMC(t_tree *tree)
   
   RATES_Lk(tree);
   DATE_Assign_Primary_Calibration(tree);
-  TIMES_Lk_Times(NO,tree);
+  TIMES_Lk(tree);
 
   /* Time_To_Branch(tree); */
   /* tree->bl_ndigits = 1; */
@@ -848,7 +848,7 @@ phydbl *DATE_MCMC(t_tree *tree)
   PhyML_Printf("\n. Ignore sequences: %s",tree->eval_alnL == YES ? "no" : "yes");
   PhyML_Printf("\n. Model of variation of rates across lineages: %s",tree->rates->model_name);
   PhyML_Printf("\n. log(Pr(Seq|Tree)) = %f",tree->c_lnL);
-  PhyML_Printf("\n. log(Pr(Tree)) = %f",tree->times->c_lnL_times);
+  PhyML_Printf("\n. log(Pr(Tree)) = %f",tree->times->c_lnL);
     
   
   tree->aux_tree = (t_tree **)mCalloc(1,sizeof(t_tree *));
@@ -871,9 +871,8 @@ phydbl *DATE_MCMC(t_tree *tree)
   DATE_Assign_Primary_Calibration(tree->aux_tree[0]);
   TIMES_Randomize_Tree_With_Time_Constraints(tree->aux_tree[0]->times->a_cal[0],tree->aux_tree[0]);
   
-  
-  TIMES_Lk_Times(NO,tree->aux_tree[0]);
-  PhyML_Printf("\n. log(Pr(extra tree)) = %f",tree->aux_tree[0]->times->c_lnL_times);
+  TIMES_Lk(tree->aux_tree[0]);
+  PhyML_Printf("\n. log(Pr(extra tree)) = %f",tree->aux_tree[0]->times->c_lnL);
   mcmc = MCMC_Make_MCMC_Struct();
   tree->aux_tree[0]->mcmc = mcmc;
   MCMC_Init_MCMC_Struct(NULL,NULL,mcmc);
@@ -1028,10 +1027,10 @@ phydbl *DATE_MCMC(t_tree *tree)
         }
       
       
-      if(!(tree->times->c_lnL_times > UNLIKELY))
+      if(!(tree->times->c_lnL > UNLIKELY))
         {
           PhyML_Fprintf(stderr,"\n. move: %s",tree->mcmc->move_name[move]);
-          PhyML_Fprintf(stderr,"\n. glnL=%f",tree->times->c_lnL_times);
+          PhyML_Fprintf(stderr,"\n. glnL=%f",tree->times->c_lnL);
           assert(FALSE);
         }
 
@@ -1042,7 +1041,7 @@ phydbl *DATE_MCMC(t_tree *tree)
           phydbl mean_r,post;
 
           mean_r = RATES_Average_Substitution_Rate(tree);
-          post = Get_Lk(tree) + tree->times->c_lnL_times + tree->rates->c_lnL_rates;
+          post = Get_Lk(tree) + tree->times->c_lnL + tree->rates->c_lnL;
 
           if(tree->mcmc->run < adjust_len) PhyML_Printf("\nx");
           else PhyML_Printf("\n.");
@@ -1050,8 +1049,8 @@ phydbl *DATE_MCMC(t_tree *tree)
                        tree->mcmc->run,
                        post,
                        Get_Lk(tree),
-                       tree->times->c_lnL_times,
-                       tree->rates->c_lnL_rates,
+                       tree->times->c_lnL,
+                       tree->rates->c_lnL,
                        fabs(tree->times->nd_t[tree->n_root->num]),                       
                        (int)time(NULL) - t_beg,
                        mean_r,
@@ -1063,14 +1062,14 @@ phydbl *DATE_MCMC(t_tree *tree)
           phydbl mean_r,post;
           
           mean_r = RATES_Average_Substitution_Rate(tree);
-          post = Get_Lk(tree) + tree->times->c_lnL_times + tree->rates->c_lnL_rates;
+          post = Get_Lk(tree) + tree->times->c_lnL + tree->rates->c_lnL;
           
           PhyML_Fprintf(fp_stats,"\n%6d\t%9.1f\t%9.1f\t%9.1f\t%9.1f\t%12G\t%12G\t%12G\t%12G\t%12G\t%12G\t",
                         tree->mcmc->run,
                         post,
                         Get_Lk(tree),
-                        tree->times->c_lnL_times,
-                        tree->rates->c_lnL_rates,
+                        tree->times->c_lnL,
+                        tree->rates->c_lnL,
                         tree->times->birth_rate,
                         tree->times->death_rate,
                         mean_r,

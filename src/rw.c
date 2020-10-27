@@ -18,23 +18,7 @@ the GNU public licence. See http://www.opensource.org for details.
 
 phydbl RW_Lk(t_tree *tree)
 {
-  phydbl fwd_lk,coal_lk;
-  
-  assert(tree->mmod->model_id == RW);
-
-#ifdef PHYREX
-  if(PHYREX_Total_Number_Of_Intervals(tree) > tree->mmod->max_num_of_intervals) return UNLIKELY;
-#endif
-
-  fwd_lk = 0.0;
-  coal_lk = 0.0;
-  
-  fwd_lk = RRW_Forward_Lk_Range(tree->young_disk,NULL,tree);
-  coal_lk = TIMES_Lk_Coalescent(tree);
-
-  tree->mmod->c_lnL = fwd_lk + coal_lk;
-  /* tree->mmod->c_lnL = coal_lk; */
-
+  RRW_Lk(tree);
   return(tree->mmod->c_lnL);
 }
 
@@ -44,11 +28,7 @@ phydbl RW_Lk(t_tree *tree)
 phydbl RW_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
 {
   phydbl lnP;
-  
-  lnP = 0.0;
-  lnP += RRW_Forward_Lk_Range(young,old,tree);
-  lnP += TIMES_Lk_Coalescent_Range(young,old,tree);
-
+  lnP = RRW_Lk_Range(young,old,tree);
   return(lnP);
 }
 

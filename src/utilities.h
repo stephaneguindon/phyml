@@ -94,13 +94,12 @@ static inline int isinf_d  (double      x) { return isnan (x - x); }
 static inline int isinf_ld (long double x) { return isnan (x - x); }
 #endif
 
-#define SLFV_GAUSSIAN 0 /* Spatial Lambda-Fleming-Viot model (Gaussian) */
-#define SLFV_UNIFORM 1 /* Spatial Lambda-Fleming-Viot model (Uniform) */
-#define RW  2 /* standard Brownian diffusion model in phylogeography */
-#define RRW  3 /* Lemey's relaxed random walk */
-
 #define BIRTHDEATH 0
 #define COALESCENT 1
+#define SLFV_GAUSSIAN 2 /* Spatial Lambda-Fleming-Viot model (Gaussian) */
+#define SLFV_UNIFORM 3 /* Spatial Lambda-Fleming-Viot model (Uniform) */
+#define RW  4 /* standard Brownian diffusion model in phylogeography */
+#define RRW  5 /* Lemey's relaxed random walk */
 
 #define AC 0
 #define AG 1
@@ -237,6 +236,10 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #ifndef FALSE
 #define  FALSE 0
 #endif
+
+#define SPATIAL_SAMPLING_DETECTION 0
+#define SPATIAL_SAMPLING_SURVEY 1
+
 
 #define  ON  1
 #define  OFF 0
@@ -791,6 +794,7 @@ typedef struct __Tree{
   phydbl                             best_lnL; /*! highest value of the loglikelihood found so far */
   int                               best_pars; /*! highest value of the parsimony found so far */
   phydbl                                c_lnL; /*! loglikelihood */
+  phydbl                                p_lnL; /*! loglikelihood (previous value) */
   phydbl                              old_lnL; /*! old loglikelihood */
   phydbl                    sum_min_sum_scale; /*! common factor of scaling factors */
   phydbl                        *c_lnL_sorted; /*! used to compute c_lnL by adding sorted terms to minimize CPU errors */
@@ -1530,7 +1534,8 @@ typedef struct __T_Rate {
   phydbl less_likely;
   phydbl c_lnL1;
   phydbl c_lnL2;
-  phydbl c_lnL_rates; /*! Prob(Br len | time stamps, model of rate evolution) */
+  phydbl c_lnL; /*! Current value of Prob(Br len | time stamps, model of rate evolution) */
+  phydbl p_lnL; /*! Previous value of c_lnL */
   phydbl clock_r; /*! Mean substitution rate, i.e., 'molecular clock' rate */
   phydbl min_clock;
   phydbl max_clock;
@@ -1618,7 +1623,8 @@ typedef struct __T_Time {
   phydbl *buff_t; /*! Current t_node times */
   phydbl *true_t; /*! Current t_node times */
 
-  phydbl c_lnL_times; /*! Prob(time stamps) */
+  phydbl c_lnL; /*! Prob(time stamps) */
+  phydbl p_lnL; /*! Previous value of Prob(time stamps) */
   phydbl c_lnL_jps; /*! Prob(# Jumps | time stamps, rates, model of rate evolution) */
 
   phydbl scaled_pop_size; // Product of effective population size with length of a generation in calendar time unit
@@ -1934,6 +1940,7 @@ typedef struct __Phylogeo{
   phydbl           max_lbda;
 
   phydbl              c_lnL;
+  phydbl              p_lnL;
 
   struct __Node **sorted_nd; // Table of nodes sorted wrt their heights.
 
@@ -1988,12 +1995,16 @@ typedef struct __Migrep_Model{
   phydbl                          nu; // parameter of hyperprior on sigsq_scale (see Eq. (1) in Lemey et al., 2010).
   
   phydbl                       c_lnL; // current value of log-likelihood 
+  phydbl                       p_lnL; // previous value of log-likelihood 
   phydbl              c_ln_prior_rad; // current value of log prior for the prior on radius
   phydbl             c_ln_prior_lbda; // current value of log prior for the prior on lbda
   phydbl               c_ln_prior_mu; // current value of log prior for the prior on mu
   phydbl            c_ln_prior_sigsq; // current value of log prior for the prior on sigsq=4.pi.lbda.mu.rad^4
 
   phydbl             soft_bound_area;
+
+  short int          sampling_scheme;
+  short int            use_locations;
 }t_phyrex_mod;
 
 /*!********************************************************/
@@ -2009,7 +2020,8 @@ typedef struct __Disk_Event{
   struct __Migrep_Model    *mmod;
   char                       *id;
 
-  phydbl                 cum_lnL; // cumulative log-likelihood
+  phydbl                cum_glnL; // cumulative log-likelihood (locations)
+  phydbl                cum_tlnL; // cumulative log-likelihood (times);
   short int            age_fixed; // time is fixed for disks corresponding to samples.
 }t_dsk;
 
@@ -2399,6 +2411,8 @@ matrix *Hamming_Dist(calign *data, t_mod *mod);
 phydbl Haversine_Distance(phydbl lon1, phydbl lat1, phydbl lon2, phydbl lat2);
 phydbl Tree_Length(t_tree *tree);
 void Remove_Duplicates_From_Tree(calign *data, t_tree *tree);
+void Reset_Lk(t_tree *tree);
+void Set_Lk(t_tree *tree);
 
 
 #include "xml.h"
@@ -2430,6 +2444,7 @@ void Remove_Duplicates_From_Tree(calign *data, t_tree *tree);
 #include "rw.h"
 #include "rrw.h"
 #include "slfv.h"
+#include "location.h"
 #endif
 
 #ifdef MPI
