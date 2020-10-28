@@ -1463,7 +1463,9 @@ void MCMC_Root_Time(t_tree *tree)
       
       if(tree->eval_glnL == YES)
         {
+#ifdef PHYREX
           new_lnL_loc = LOCATION_Lk(tree); 
+#endif
           new_lnL_time = TIMES_Lk(tree);
         }
       
