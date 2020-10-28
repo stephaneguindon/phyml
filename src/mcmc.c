@@ -6400,7 +6400,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_lbda]                  = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_mu]                    = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_rad]                   = 1.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_sigsq]                 = 2.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_sigsq]                 = 1.0;
   mcmc->move_weight[mcmc->num_move_time_neff]                    = 2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_disk]            = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_hit]             = 1.0;
@@ -6408,10 +6408,10 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_swap_disk]             = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_spr]                   = 2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_spr_local]             = 3.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           = 2.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldscape_lim]           = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 0.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 2.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_sim_plus]              = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_disk_serial]     = 2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_hit_serial]      = 2.0;
@@ -11505,7 +11505,7 @@ void MCMC_PHYREX_Ldsk_Tip_To_Root(t_tree *tree)
   phydbl u,alpha,ratio,hr,K,*rad;
   phydbl cur_glnL, new_glnL;
   t_ldsk *ldsk;
-  int i,j,err;
+  int i,j,err,n_moves,*permut;
   
   if(tree->mmod->use_locations == NO) return;
 
@@ -11519,9 +11519,13 @@ void MCMC_PHYREX_Ldsk_Tip_To_Root(t_tree *tree)
   if(tree->mmod->model_id == RW || tree->mmod->model_id == RRW) for(j=0;j<tree->mmod->n_dim;++j) rad[j] = K*tree->mmod->sigsq[j];
   else for(j=0;j<tree->mmod->n_dim;++j) rad[j] = 4.*tree->mmod->rad;
 
-  for(i=0;i<tree->n_otu;++i)
+  n_moves = (int)(1+Rand_Int(0,1+0.2*tree->n_otu));
+
+  permut = Permutate(tree->n_otu);
+  
+  for(i=0;i<n_moves;++i)
     {
-      ldsk = tree->a_nodes[i]->ldsk->prev;
+      ldsk = tree->a_nodes[permut[i]]->ldsk->prev;
       
       do
         {      
@@ -11587,6 +11591,7 @@ void MCMC_PHYREX_Ldsk_Tip_To_Root(t_tree *tree)
     }
   
   Free(rad);
+  Free(permut);
 }
 #endif
 
