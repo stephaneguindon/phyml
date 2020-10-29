@@ -1591,7 +1591,6 @@ void PHYREX_Print_Struct(char sign, t_tree *tree)
 int PHYREX_Check_Struct(t_tree *tree, int exit)
 {
   int i;
-  t_ldsk *ldisk;
   t_dsk *disk;
 
   disk = tree->young_disk;
@@ -1617,33 +1616,53 @@ int PHYREX_Check_Struct(t_tree *tree, int exit)
   while(disk);
   
   // Check times
-  for(i=0;i<tree->n_otu;++i)
+  /* for(i=0;i<tree->n_otu;++i) */
+  /*   { */
+  /*     ldisk = tree->a_nodes[i]->ldsk; */
+  /*     assert(ldisk); */
+  /*     do */
+  /*       {           */
+  /*         if(ldisk->prev->disk->time > ldisk->disk->time) */
+  /*           { */
+  /*             if(exit == YES) */
+  /*               { */
+  /*                 PhyML_Printf("\n. ldisk->id: %s ldisk->prev->id: %s ldsk->disk->time: %f  ldsk->prev->disk->time: %f diff: %g ldisk->prev->disk: %s ldisk->disk: %s", */
+  /*                              ldisk->coord->id, */
+  /*                              ldisk->prev->coord->id, */
+  /*                              ldisk->disk->time, */
+  /*                              ldisk->prev->disk->time, */
+  /*                              ldisk->prev->disk->time-ldisk->disk->time, */
+  /*                              ldisk->prev->disk->id, */
+  /*                              ldisk->disk->id); */
+  /*                 assert(FALSE); */
+  /*               } */
+  /*             return 0; */
+  /*           } */
+  /*         ldisk = ldisk->prev; */
+  /*       } */
+  /*     while(ldisk->prev); */
+  /*   } */
+
+  disk = tree->young_disk;
+  do
     {
-      ldisk = tree->a_nodes[i]->ldsk;
-      assert(ldisk);
-      do
-        {          
-          if(ldisk->prev->disk->time > ldisk->disk->time)
+      if(disk->ldsk != NULL)
+        {
+          for(i=0;i<disk->ldsk->n_next;++i)
             {
-              if(exit == YES)
+              if(disk->ldsk->next[i]->disk->time < disk->time)
                 {
-                  PhyML_Printf("\n. ldisk->id: %s ldisk->prev->id: %s ldsk->disk->time: %f  ldsk->prev->disk->time: %f diff: %g ldisk->prev->disk: %s ldisk->disk: %s",
-                               ldisk->coord->id,
-                               ldisk->prev->coord->id,
-                               ldisk->disk->time,
-                               ldisk->prev->disk->time,
-                               ldisk->prev->disk->time-ldisk->disk->time,
-                               ldisk->prev->disk->id,
-                               ldisk->disk->id);
-                  assert(FALSE);
+                  if(exit == YES) assert(FALSE);
+                  return(0);
                 }
-              return 0;
             }
-          ldisk = ldisk->prev;
         }
-      while(ldisk->prev);
+      disk = disk->prev;
     }
-  return 1;
+  while(disk);
+
+
+  return(1);
 }
 
 /*////////////////////////////////////////////////////////////

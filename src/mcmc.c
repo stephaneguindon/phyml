@@ -1376,7 +1376,7 @@ void MCMC_Root_Time(t_tree *tree)
   phydbl ratio,alpha;
   phydbl t2,t3;
   t_node *v2,*v3;
-  phydbl K,scale;
+  phydbl K,R;
   int move_num;
   t_node *root;
 
@@ -1434,13 +1434,16 @@ void MCMC_Root_Time(t_tree *tree)
       PhyML_Fprintf(stderr,"\n. prior_min = %f prior_max = %f",tree->times->t_prior_min[root->num],tree->times->t_prior_max[root->num]);
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
     }
-
-  u = Uni();
-  K = MIN(LOG2 / (t_max - t1_cur),1.E+1);
-  scale = exp(K*(u-.5));
-  t1_new = t_max - (t_max - t1_cur)*scale;
-  ratio += log(scale);
   
+  K = LOG2 / (t_max-t1_cur);
+  assert((isinf(K) || isnan(K)) == false);
+  t1_new = Rexp(K);
+  t1_new = t_max - t1_new;
+  R = (t_max-t1_cur)/(t_max-t1_new);
+  ratio += log(R) - (R-1./R)*LOG2;
+
+
+
   /* MCMC_Make_Move(&t1_cur,&t1_new,t_min,t_max,&ratio,K,tree->mcmc->move_type[move_num]); */
   /* t1_new = Uni()*(t_max-t_min) + t_min; */
   
@@ -3510,7 +3513,12 @@ void MCMC_Adjust_Tuning_Parameter(int move, t_mcmc *mcmc)
       if(mcmc->run < (int)(0.01*mcmc->chain_len)) scale = 1.5;
       else scale = 1.2;
 
-      if(!strcmp(mcmc->move_name[move],"tree_height"))
+      if(!strcmp(mcmc->move_name[move],"phyrex_scale_times"))
+        {
+          scale = 1.1;
+        }
+
+        if(!strcmp(mcmc->move_name[move],"tree_height"))
 	{
 	  rate_inf = 0.234;
 	  rate_sup = 0.234;
@@ -6337,18 +6345,18 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
 	  }
 	case MCMC_MOVE_SCALE_GAMMA:
 	  {
-	    mcmc->tune_move[i] = 1.0;
+	    mcmc->tune_move[i] = 2.0;
 	    /* mcmc->tune_move[i] = 10.0; */
 	    break;
 	  }
 	case MCMC_MOVE_SCALE_THORNE:
 	  {
-	    mcmc->tune_move[i] = 1.0;
+	    mcmc->tune_move[i] = 2.0;
 	    break;
 	  }
         default :
           {
-            mcmc->tune_move[i] = 1.0;
+            mcmc->tune_move[i] = 2.0;
 	    break;
           }
 	}
@@ -6400,8 +6408,8 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_lbda]                  = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_mu]                    = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_rad]                   = 1.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_sigsq]                 = 1.0;
-  mcmc->move_weight[mcmc->num_move_time_neff]                    = 2.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_sigsq]                 = 2.0;
+  mcmc->move_weight[mcmc->num_move_time_neff]                    = 4.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_disk]            = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_hit]             = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ud]          = 1.0;
@@ -7764,19 +7772,19 @@ void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree)
         }
       else
         {
-          phydbl K,scale;
+          phydbl K,R;
           
-          max = target_disk[i]->next->time;
-          scale = -1.;
-          
-          K = MIN(LOG2 / (max - cur_time),1.E+1);
-          scale = exp(K*(Uni()-.5));
-          new_time = scale*cur_time + max*(1.-scale);
-          hr += log(scale);
-          
+          max = target_disk[i]->next->time;          
+          K = LOG2 / (max-cur_time);
+          assert((isinf(K) || isnan(K)) == false);
+          new_time = Rexp(K);
+          new_time = max - new_time;
+          R = (max-cur_time)/(max-new_time);
+          hr += log(R) - (R-1./R)*LOG2;
+                 
           if(isnan(new_time))
             {
-              PhyML_Printf("\n. max=%f cur_time=%f scale=%f new_time=%f",max,cur_time,scale,new_time);
+              PhyML_Printf("\n. max=%f cur_time=%f K=%f new_time=%f",max,cur_time,K,new_time);
               assert(FALSE);
             }
         }
@@ -7896,12 +7904,14 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree, short int print)
 
   u = Uni();
   scale_fact_times = exp(K*(u-.5));
+
   
-  start_disk = tree->old_samp_disk;
+  /* start_disk = tree->old_samp_disk; */
+  start_disk = tree->young_disk;
   assert(start_disk);
   
   n_disks = PHYREX_Scale_All(scale_fact_times,start_disk,tree);
-  
+
   if(!PHYREX_Check_Struct(tree,NO))
     {
       PHYREX_Scale_All(1./scale_fact_times,start_disk,tree);
@@ -7910,7 +7920,6 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree, short int print)
     }
 
   if(tree->eval_alnL == YES) tree->rates->clock_r /= scale_fact_times;
-
   
   /* The Hastings ratio has (n_disk-2) (instead of n_disk) when considering a uniform distrib
      for the multiplier, which is not the case here.
@@ -7920,7 +7929,7 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree, short int print)
   else
     hr += n_disks*log(scale_fact_times);
 
-  /* Relative ordering of disks do not change, only times */
+  PHYREX_Update_Lindisk_List(tree);
   PHYREX_Update_Node_Times_Given_Disks(tree);
   RATES_Normalise_Rates(tree);
   
@@ -7964,6 +7973,7 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree, short int print)
   if(u > alpha) /* Reject */
     {
       PHYREX_Scale_All(1./scale_fact_times,start_disk,tree);      
+      PHYREX_Update_Lindisk_List(tree);
       if(tree->eval_alnL == YES) tree->rates->clock_r *= scale_fact_times;      
       RATES_Reset_Rates(tree);
       PHYREX_Update_Node_Times_Given_Disks(tree);
