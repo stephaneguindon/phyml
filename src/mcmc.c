@@ -6366,7 +6366,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_nd_r]                  = 0.0;
   mcmc->move_weight[mcmc->num_move_times]                 = 1.0;
   mcmc->move_weight[mcmc->num_move_times_and_rates]       = 5.0;
-  mcmc->move_weight[mcmc->num_move_root_time]             = 1.0;
+  mcmc->move_weight[mcmc->num_move_root_time]             = 10.0;
   mcmc->move_weight[mcmc->num_move_clock_r]               = 1.0;
   mcmc->move_weight[mcmc->num_move_tree_height]           = 1.0;
   mcmc->move_weight[mcmc->num_move_time_slice]            = 0.0;
@@ -6423,13 +6423,13 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_sim_plus]              = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_disk_serial]     = 2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_hit_serial]      = 2.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_ldsk_given_disk]       = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_ldsk_given_disk]       = 2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_disk_given_ldsk]       = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldsk_and_disk]         = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldsk_multi]            = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_disk_multi]            = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_add_remove_jump]       = 1.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_ldsk_tip_to_root]      = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_ldsk_tip_to_root]      = 2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_sigsq_scale]           = 1.0;
 
 # else
@@ -7019,7 +7019,6 @@ void MCMC_PHYREX_Sigsq(t_tree *tree)
       int i;
       
       ratio = 0.0;
-      
       K = tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_sigsq];
       
       min_sigsq = tree->mmod->min_sigsq;
@@ -7036,6 +7035,7 @@ void MCMC_PHYREX_Sigsq(t_tree *tree)
           cur_sigsq = tree->mmod->sigsq[i];
           new_sigsq = tree->mmod->sigsq[i];
 
+          ratio = 0.0;
           MCMC_Make_Move(&cur_sigsq,&new_sigsq,min_sigsq,max_sigsq,&ratio,K,tree->mcmc->move_type[tree->mcmc->num_move_phyrex_sigsq]);
           
           if(new_sigsq < max_sigsq && new_sigsq > min_sigsq)
@@ -7906,8 +7906,8 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree, short int print)
   scale_fact_times = exp(K*(u-.5));
 
   
-  /* start_disk = tree->old_samp_disk; */
-  start_disk = tree->young_disk;
+  start_disk = tree->old_samp_disk;
+  /* start_disk = tree->young_disk; */
   assert(start_disk);
   
   n_disks = PHYREX_Scale_All(scale_fact_times,start_disk,tree);
