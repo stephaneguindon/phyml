@@ -3096,6 +3096,20 @@ void MCMC_Randomize_Rate_Across_Sites(t_tree *tree)
       tree->mod->ras->gamma_r_proba_unscaled->v[tree->mod->ras->n_catg-1] = 1.;
       for(i=0;i<tree->mod->ras->n_catg-1;i++) tree->mod->ras->gamma_rr_unscaled->v[i] = (phydbl)i+0.1; /* Do not randomize those as their ordering matter */
       tree->mod->ras->gamma_rr_unscaled->v[tree->mod->ras->n_catg-1] = (phydbl)tree->mod->ras->n_catg;
+
+      for(i=0;i<tree->mod->ras->n_catg;i++)
+        {
+          PhyML_Printf("\n>> %f %f",
+                       tree->mod->ras->gamma_r_proba_unscaled->v[i],
+                       tree->mod->ras->gamma_rr_unscaled->v[i]);
+        }
+      Update_RAS(tree->mod);
+      for(i=0;i<tree->mod->ras->n_catg;i++)
+        {
+          PhyML_Printf("\n<< %f %f",
+                       tree->mod->ras->gamma_r_proba_unscaled->v[i],
+                       tree->mod->ras->gamma_rr_unscaled->v[i]);
+        }
     }
   else
     {
@@ -4012,8 +4026,7 @@ void MCMC_Free_Mixt_Rate(t_tree *mixt_tree)
   tree = mixt_tree;
 
   do
-    {
-      
+    {      
       tree->mod->ras->sort_rate_classes = YES;
       tree->mod->ras->normalise_rr      = YES;
 
@@ -4027,12 +4040,10 @@ void MCMC_Free_Mixt_Rate(t_tree *mixt_tree)
       u = tree->mod->ras->gamma_r_proba_unscaled->v;
       v = tree->mod->ras->gamma_rr_unscaled->v;
 
-
       // Setting the values of the unscaled rr freq as is done below
       // does not lead to changing the likelihood.
       u[0] = f[0];
       for(i=1;i<k;++i) u[i] = u[i-1] + f[i];      
-
             
       n_moves = 0;
       do
@@ -4061,6 +4072,7 @@ void MCMC_Free_Mixt_Rate(t_tree *mixt_tree)
               u[idx] = low_bound + z*(up_bound - low_bound);
 
               Update_RAS(tree->mod);
+
               for(i=0;i<k;++i)
                 {
                   if(u[i] < GAMMA_RR_UNSCALED_MIN || u[i] > GAMMA_RR_UNSCALED_MAX) break;
@@ -4095,6 +4107,7 @@ void MCMC_Free_Mixt_Rate(t_tree *mixt_tree)
                       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
                     }
 
+                  
                   /* phydbl cur_lk = cur_lnL_seq; */
                   /* phydbl new_lk = Lk(NULL,mixt_tree); */
                   /* if(Are_Equal(cur_lk,new_lk,1.E-5) == NO) */
@@ -4130,6 +4143,7 @@ void MCMC_Free_Mixt_Rate(t_tree *mixt_tree)
               
               idx = Rand_Int(0,k-2);
               
+
               // Proposal is uniform. Determine upper and lower bounds.
               z = Uni();
               low_bound = (idx==0)?(.0):(v[idx-1]);
@@ -4138,6 +4152,7 @@ void MCMC_Free_Mixt_Rate(t_tree *mixt_tree)
               v[idx] = low_bound + z*(up_bound - low_bound);
               
               Update_RAS(tree->mod);
+
               for(i=0;i<k;++i)
                 {
                   if(u[i] < GAMMA_RR_UNSCALED_MIN || u[i] > GAMMA_RR_UNSCALED_MAX) break;
@@ -4174,7 +4189,7 @@ void MCMC_Free_Mixt_Rate(t_tree *mixt_tree)
                       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
                     }
 
-
+                  
                   /* phydbl cur_lk = cur_lnL_seq; */
                   /* phydbl new_lk = Lk(NULL,mixt_tree); */
                   /* if(Are_Equal(cur_lk,new_lk,1.E-5) == NO) */

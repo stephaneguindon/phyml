@@ -704,6 +704,7 @@ int Update_RAS(t_mod *mod)
             mod->ras->gamma_r_proba_unscaled->v[mod->ras->n_catg-1];
         }
 
+#ifndef PHYREX
       do
         {
           sum = .0;
@@ -716,10 +717,10 @@ int Update_RAS(t_mod *mod)
           for(i=0;i<mod->ras->n_catg;i++) mod->ras->gamma_r_proba->v[i]/=sum;
         }
       while((sum > 1.01) || (sum < 0.99));
-
+#endif
+      
 
       // Update class rates
-
       if(mod->ras->normalise_rr == YES)
         {
           sum = .0;
