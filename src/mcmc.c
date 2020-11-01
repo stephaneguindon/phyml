@@ -3513,16 +3513,19 @@ void MCMC_Adjust_Tuning_Parameter(int move, t_mcmc *mcmc)
       if(mcmc->run < (int)(0.01*mcmc->chain_len)) scale = 1.5;
       else scale = 1.2;
 
-      if(!strcmp(mcmc->move_name[move],"phyrex_scale_times"))
-        {
-          scale = 1.1;
-        }
-
-        if(!strcmp(mcmc->move_name[move],"tree_height"))
+      rate_inf = rate_sup = 0.234;
+      
+      
+      if(!strcmp(mcmc->move_name[move],"tree_height"))
 	{
 	  rate_inf = 0.234;
 	  rate_sup = 0.234;
 	}
+      else if(!strcmp(mcmc->move_name[move],"phyrex_scale_times"))
+        {
+	  rate_inf = 0.1;
+	  rate_sup = 0.1;
+        }
       else if(!strcmp(mcmc->move_name[move],"subtree_height"))
 	{
 	  rate_inf = 0.2;
@@ -3591,13 +3594,18 @@ void MCMC_Adjust_Tuning_Parameter(int move, t_mcmc *mcmc)
 	}
       else if(!strcmp(mcmc->move_name[move],"phyrex_ldsk_given_disk"))
 	{
-	  rate_inf = 0.234;
-	  rate_sup = 0.234;
+	  rate_inf = 0.1;
+	  rate_sup = 0.1;
 	}
       else if(!strcmp(mcmc->move_name[move],"phyrex_disk_given_ldsk"))
 	{
 	  rate_inf = 0.234;
 	  rate_sup = 0.234;
+	}
+      else if(!strcmp(mcmc->move_name[move],"phyrex_ldsk_tip_to_root"))
+	{
+	  rate_inf = 0.1;
+	  rate_sup = 0.1;
 	}
       else
 	{
@@ -6366,7 +6374,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_nd_r]                  = 0.0;
   mcmc->move_weight[mcmc->num_move_times]                 = 1.0;
   mcmc->move_weight[mcmc->num_move_times_and_rates]       = 5.0;
-  mcmc->move_weight[mcmc->num_move_root_time]             = 10.0;
+  mcmc->move_weight[mcmc->num_move_root_time]             = 3.0;
   mcmc->move_weight[mcmc->num_move_clock_r]               = 1.0;
   mcmc->move_weight[mcmc->num_move_tree_height]           = 1.0;
   mcmc->move_weight[mcmc->num_move_time_slice]            = 0.0;
@@ -6416,7 +6424,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_swap_disk]             = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_spr]                   = 2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_spr_local]             = 3.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           = 3.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldscape_lim]           = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 1.0;
@@ -7928,6 +7936,10 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree, short int print)
     hr += (n_disks-1)*log(scale_fact_times);
   else
     hr += n_disks*log(scale_fact_times);
+  /* if(tree->eval_alnL == YES) */
+  /*   hr += (n_disks)*log(scale_fact_times); */
+  /* else */
+  /*   hr += (n_disks+1)*log(scale_fact_times); */
 
   PHYREX_Update_Lindisk_List(tree);
   PHYREX_Update_Node_Times_Given_Disks(tree);
@@ -7974,7 +7986,7 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree, short int print)
     {
       PHYREX_Scale_All(1./scale_fact_times,start_disk,tree);      
       PHYREX_Update_Lindisk_List(tree);
-      if(tree->eval_alnL == YES) tree->rates->clock_r *= scale_fact_times;      
+      if(tree->eval_alnL == YES) tree->rates->clock_r *= scale_fact_times;
       RATES_Reset_Rates(tree);
       PHYREX_Update_Node_Times_Given_Disks(tree);
       RATES_Update_Edge_Lengths(tree);
