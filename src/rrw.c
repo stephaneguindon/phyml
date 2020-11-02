@@ -31,7 +31,7 @@ phydbl RRW_Lk(t_tree *tree)
   t_dum = tree->times->nd_t[idx_dum];
 
   d_fwd = RRW_Forward_Lk_Range(tree->young_disk,NULL,tree);
-
+  
 #ifdef PHYREX
   if(PHYREX_Total_Number_Of_Intervals(tree) > tree->mmod->max_num_of_intervals)
     {
@@ -57,9 +57,7 @@ phydbl RRW_Lk(t_tree *tree)
 phydbl RRW_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
 {
   phydbl lnP;
- 
-  lnP = RRW_Forward_Lk_Range(young,old,tree);  
-
+  lnP = RRW_Forward_Lk_Range(young,old,tree);
   return(lnP);
 }
 
