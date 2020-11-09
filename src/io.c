@@ -6650,8 +6650,8 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%s\t","glnL");
           PhyML_Fprintf(fp_stats,"%s\t","rlnL");
           PhyML_Fprintf(fp_stats,"%s\t","coalescent");
-          PhyML_Fprintf(fp_stats,"%s\t","clock");
-          PhyML_Fprintf(fp_stats,"%s\t","evolRate");
+          PhyML_Fprintf(fp_stats,"%s\t","clockRate");
+          PhyML_Fprintf(fp_stats,"%s\t","meanRate");
           PhyML_Fprintf(fp_stats,"%s\t","meanBr");
           PhyML_Fprintf(fp_stats,"%s\t","lbda");
           PhyML_Fprintf(fp_stats,"%s\t","mu");

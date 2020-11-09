@@ -846,9 +846,12 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
   rates->inflate_var      = 1.0;
   rates->br_r_recorded    = NO;
 
-  rates->clock_r          = 1.E-3;
-  rates->min_clock        = 1.E-10;
-  rates->max_clock        = 1.E+0;
+  /* Important to start from high subst. rate to ``reveal'' time structure */
+  /* Low rate, and thus old root, makes serially sampled data look like */
+  /* tips all have the same age. */
+  rates->clock_r          = 1.E-1;
+  rates->min_clock        = 1.E-8;
+  rates->max_clock        = 1.E+2;
   
   rates->max_rate         = 1.E+1;
   rates->min_rate         = 1.E-1;
@@ -902,7 +905,7 @@ void TIMES_Init_Time_Struct(t_time *times, t_time *existing_times, int n_otu)
       times->model_id = COALESCENT;
     }
 
-  times->scaled_pop_size     = 1.E+0;
+  times->scaled_pop_size     = 1.E+2;
   times->scaled_pop_size_min = 0.0;
   times->scaled_pop_size_max = 1.E+4;
   
@@ -3503,7 +3506,7 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->model_id = -1;
   t->use_locations = -1;
   t->sampling_scheme = -1;
-  t->safe_phyrex = NO;
+  t->safe_phyrex = YES;
   
   t->lim_up->lonlat[0] = 100.;
   t->lim_up->lonlat[1] = 100.;

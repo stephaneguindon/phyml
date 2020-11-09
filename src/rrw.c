@@ -17,19 +17,10 @@ the GNU public licence. See http://www.opensource.org for details.
 
 phydbl RRW_Lk(t_tree *tree)
 {
-  phydbl d_fwd,d_coal,d_sigsq_scale;
-  phydbl t_dum;
-  int idx_dum;
+  phydbl d_fwd;
   
   assert(tree->mmod->model_id == RRW);
-
-  d_fwd         = 0.0;
-  d_coal        = 0.0;
-  d_sigsq_scale = 0.0;
   
-  idx_dum = Rand_Int(0,2*tree->n_otu-3);
-  t_dum = tree->times->nd_t[idx_dum];
-
   d_fwd = RRW_Forward_Lk_Range(tree->young_disk,NULL,tree);
   
 #ifdef PHYREX
@@ -40,13 +31,7 @@ phydbl RRW_Lk(t_tree *tree)
     }
 #endif
 
-  /* !!!!!!!!!!!!!!!!!!!!!!! */
-  /* d_sigsq_scale = RRW_Prior_Sigsq_Scale(tree); */
-  
-  // Make sure node times are set back to their original values
-  assert(fabs(t_dum - tree->times->nd_t[idx_dum]) < 1.E-4);
-
-  tree->mmod->c_lnL = d_fwd + d_sigsq_scale;
+  tree->mmod->c_lnL = d_fwd;
 
   return(tree->mmod->c_lnL);
 }

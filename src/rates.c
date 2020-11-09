@@ -164,10 +164,8 @@ phydbl RATES_Lk_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl nd_r_d,
     case LOGNORMAL :
       {
         int err;
-
         phydbl log_br_r_d = log(br_r_d);
         log_dens = Log_Dnorm(log_br_r_d,-tree->rates->nu*tree->rates->nu/2.,tree->rates->nu,&err);
-        /* log_dens = Log_Dnorm(log_br_r_d,0.0,sqrt(tree->rates->nu),&err); */
         log_dens -= log_br_r_d;
         break;
       }
@@ -907,6 +905,9 @@ void RATES_Normalise_Rates(t_tree *tree)
   phydbl scale,dt,T;
   int i;
 
+  /* !!!!!!!!!!!!!!!!!!!!1 */
+  return;
+  
   scale = 0.0;
   dt = 0.0;
   T = 0.0;
