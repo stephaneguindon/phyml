@@ -6865,7 +6865,7 @@ void MCMC_PHYREX_Sigsq(t_tree *tree)
       cur_sigsq    = -1.0;
       new_sigsq    = -1.0;
       ratio        = 0.0;
-      n_mcmc_steps = 1000;
+      n_mcmc_steps = 200;
       aux_tree     = tree->aux_tree[0];
       K            = tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_sigsq];
       neff_orig    = aux_tree->times->scaled_pop_size;
@@ -7124,7 +7124,7 @@ void MCMC_PHYREX_Neff(t_tree *tree)
       cur_neff    = -1.0;
       new_neff    = -1.0;
       ratio        = 0.0;
-      n_mcmc_steps = 1000;
+      n_mcmc_steps = 500;
       aux_tree     = tree->aux_tree[0];
       K            = tree->mcmc->tune_move[tree->mcmc->num_move_time_neff];
       neff_orig    = aux_tree->times->scaled_pop_size;
@@ -7136,8 +7136,8 @@ void MCMC_PHYREX_Neff(t_tree *tree)
       
       Set_Lk(tree);
 
-      cur_lnL = tree->mmod->c_lnL;
-      new_lnL = tree->mmod->c_lnL;
+      cur_lnL = tree->times->c_lnL;
+      new_lnL = tree->times->c_lnL;
       
       cur_lnL_aux = UNLIKELY;
       new_lnL_aux = UNLIKELY;
