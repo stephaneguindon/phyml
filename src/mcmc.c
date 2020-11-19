@@ -3513,6 +3513,11 @@ void MCMC_Adjust_Tuning_Parameter(int move, t_mcmc *mcmc)
 	  rate_inf = 0.234;
 	  rate_sup = 0.234;
         }
+      else if(!strcmp(mcmc->move_name[move],"phyrex_spr_slide"))
+        {
+	  rate_inf = 0.1;
+	  rate_sup = 0.1;
+        }
       else
 	{
 	  rate_inf = 0.234; // Gareth Robert's magic number !
@@ -8756,6 +8761,8 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
       dir_prune_daughter = PHYREX_Get_Next_Direction(prune_ldsk_daughter,prune_ldsk);
       assert(dir_prune_daughter > -1);
       
+      if(tree->mmod->model_id == RW || tree->mmod->model_id == RRW) for(j=0;j<tree->mmod->n_dim;j++) hr += RRW_Density_Ldsk_Location(prune_ldsk,rad[j],j,tree);
+
       /* Time of regraft_disk */
       /* T = Uni()*(prune_ldsk_daughter->disk->time - tree->n_root->ldsk->disk->time) + tree->n_root->ldsk->disk->time; */
       /* Proposed T has a proba K to be older than root time */
@@ -8866,7 +8873,10 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
               if(tree->mmod->model_id == SLFV_GAUSSIAN || tree->mmod->model_id == SLFV_UNIFORM)
                 SLFV_Generate_Ldsk_New_Location(regraft_ldsk,prune_ldsk,rad[j],&hr,j,tree);
               else if(tree->mmod->model_id == RW || tree->mmod->model_id == RRW)
-                RRW_Generate_Ldsk_New_Location(regraft_ldsk,prune_ldsk,rad[j],&hr,j,tree);
+                {
+                  RRW_Generate_Ldsk_New_Location(regraft_ldsk,rad[j],j,tree);
+                  hr -= RRW_Density_Ldsk_Location(regraft_ldsk,rad[j],j,tree);
+                }
             }
         }
       
@@ -9088,7 +9098,7 @@ void MCMC_PHYREX_Prune_Regraft_Slide(t_tree *tree)
   
   if(tree->mod->s_opt->opt_topo == NO) return;
 
-  K = 0.05;
+  K = tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_spr_slide];
   
   n_iter = (int)(1+Rand_Int(0,0.2*tree->n_otu));
 
@@ -9189,13 +9199,15 @@ void MCMC_PHYREX_Prune_Regraft_Slide(t_tree *tree)
 
       dir_prune_daughter = PHYREX_Get_Next_Direction(prune_ldsk_daughter,prune_ldsk);
       assert(dir_prune_daughter > -1);
+            
+      for(j=0;j<tree->mmod->n_dim;j++) hr += RRW_Density_Ldsk_Location(prune_ldsk,rad[j],j,tree);
       
-
       /* Set time of regraft_ldsk */
       cur_t = prune_ldsk->disk->time;
       new_t = Rnorm_Trunc(cur_t,K,-TWO_TO_THE_LARGE,prune_ldsk_daughter->disk->time,&err);
       hr -= Log_Dnorm_Trunc(new_t,cur_t,K,-TWO_TO_THE_LARGE,prune_ldsk_daughter->disk->time,&err);
       hr += Log_Dnorm_Trunc(cur_t,new_t,K,-TWO_TO_THE_LARGE,prune_ldsk_daughter->disk->time,&err);
+
       
       /* New time is older than current time, climb up the tree */
       if(new_t < cur_t)
@@ -9233,7 +9245,12 @@ void MCMC_PHYREX_Prune_Regraft_Slide(t_tree *tree)
               hr -= log(1./ldsk->n_next);
               ldsk = ldsk->next[i];
             }
-          if(ldsk == NULL) continue;
+          if(ldsk == NULL)
+            {
+              root_ldsk->prev = NULL;
+              root_ldsk->disk->prev = NULL;
+              continue;
+            }
           else
             {
               regraft_ldsk_next = ldsk;
@@ -9262,7 +9279,7 @@ void MCMC_PHYREX_Prune_Regraft_Slide(t_tree *tree)
       oldest_disk = NULL;
       youngest_disk = NULL;
       
-      
+
       ldsk = prune_ldsk;
       if(ldsk->prev) do { ldsk = ldsk->prev; } while(ldsk->prev && ldsk->n_next < 2);
       oldest_disk = ldsk->disk;
@@ -9314,7 +9331,10 @@ void MCMC_PHYREX_Prune_Regraft_Slide(t_tree *tree)
               if(tree->mmod->model_id == SLFV_GAUSSIAN || tree->mmod->model_id == SLFV_UNIFORM)
                 SLFV_Generate_Ldsk_New_Location(regraft_ldsk,prune_ldsk,rad[j],&hr,j,tree);
               else if(tree->mmod->model_id == RW || tree->mmod->model_id == RRW)
-                RRW_Generate_Ldsk_New_Location(regraft_ldsk,prune_ldsk,rad[j],&hr,j,tree);
+                {
+                  RRW_Generate_Ldsk_New_Location(regraft_ldsk,rad[j],j,tree);
+                  hr -= RRW_Density_Ldsk_Location(regraft_ldsk,rad[j],j,tree);
+                }
             }
         }
       
@@ -9494,6 +9514,8 @@ void MCMC_PHYREX_Prune_Regraft_Slide(t_tree *tree)
         }
       
       PHYREX_Remove_Disk(a_root_dsk);
+
+      assert(tree->n_root->ldsk->disk->prev == NULL);
       
       tree->mcmc->run++;
       PHYREX_Print_MCMC_Stats(tree);
@@ -9660,6 +9682,9 @@ void MCMC_PHYREX_Prune_Regraft_Local(t_tree *tree)
       
       /* prune_ldsk_daughter is the next coalescent event or tip node */
       while(prune_ldsk_daughter->n_next == 1) prune_ldsk_daughter = prune_ldsk_daughter->next[0];
+
+      for(j=0;j<tree->mmod->n_dim;j++) hr += RRW_Density_Ldsk_Location(prune_ldsk,rad[j],j,tree);
+
 
       /* Fill in array of valid ldsks for regraft sites */
       n_regraft_ldsks = 0;
@@ -9829,7 +9854,10 @@ void MCMC_PHYREX_Prune_Regraft_Local(t_tree *tree)
               if(tree->mmod->model_id == SLFV_GAUSSIAN || tree->mmod->model_id == SLFV_UNIFORM)
                 SLFV_Generate_Ldsk_New_Location(regraft_ldsk,prune_ldsk,rad[j],&hr,j,tree);
               else if(tree->mmod->model_id == RW || tree->mmod->model_id == RRW)
-                RRW_Generate_Ldsk_New_Location(regraft_ldsk,prune_ldsk,rad[j],&hr,j,tree);
+                {
+                  RRW_Generate_Ldsk_New_Location(regraft_ldsk,rad[j],j,tree);
+                  hr -= RRW_Density_Ldsk_Location(regraft_ldsk,rad[j],j,tree);
+                }
             }
         }
       
@@ -10536,7 +10564,11 @@ void MCMC_PHYREX_Ldsk_Multi(t_tree *tree)
           if(tree->mmod->model_id == SLFV_GAUSSIAN || tree->mmod->model_id == SLFV_UNIFORM)
             SLFV_Generate_Ldsk_New_Location(target_disk[i]->ldsk,target_disk[i]->ldsk,rad,&hr,j,tree);
           else if(tree->mmod->model_id == RW || tree->mmod->model_id == RRW)
-            RRW_Generate_Ldsk_New_Location(target_disk[i]->ldsk,target_disk[i]->ldsk,rad,&hr,j,tree);
+            {
+              hr += RRW_Density_Ldsk_Location(target_disk[i]->ldsk,rad,j,tree);
+              RRW_Generate_Ldsk_New_Location(target_disk[i]->ldsk,rad,j,tree);
+              hr -= RRW_Density_Ldsk_Location(target_disk[i]->ldsk,rad,j,tree);
+            }
         }
     }
   Free(permut);
@@ -10802,7 +10834,11 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree)
           if(tree->mmod->model_id == SLFV_GAUSSIAN || tree->mmod->model_id == SLFV_UNIFORM)
             SLFV_Generate_Ldsk_New_Location(disk->ldsk,disk->ldsk,rad[j],&hr,j,tree);
           else if(tree->mmod->model_id == RW || tree->mmod->model_id == RRW)
-            RRW_Generate_Ldsk_New_Location(disk->ldsk,disk->ldsk,rad[j],&hr,j,tree);          
+            {
+              hr += RRW_Density_Ldsk_Location(disk->ldsk,rad[j],j,tree);
+              RRW_Generate_Ldsk_New_Location(disk->ldsk,rad[j],j,tree);
+              hr -= RRW_Density_Ldsk_Location(disk->ldsk,rad[j],j,tree);
+            }
         }
       
       if(tree->eval_glnL == YES)
@@ -12046,7 +12082,11 @@ void MCMC_PHYREX_Ldsk_Tip_To_Root(t_tree *tree)
               if(tree->mmod->model_id == SLFV_GAUSSIAN || tree->mmod->model_id == SLFV_UNIFORM)
                 SLFV_Generate_Ldsk_New_Location(ldsk,ldsk,rad[j],&hr,j,tree);
               else if(tree->mmod->model_id == RW || tree->mmod->model_id == RRW)
-                RRW_Generate_Ldsk_New_Location(ldsk,ldsk,rad[j],&hr,j,tree);
+                {
+                  hr += RRW_Density_Ldsk_Location(ldsk,rad[j],j,tree);
+                  RRW_Generate_Ldsk_New_Location(ldsk,rad[j],j,tree);
+                  hr -= RRW_Density_Ldsk_Location(ldsk,rad[j],j,tree);
+                }
             }
           
           if(tree->eval_glnL == YES)
@@ -12105,6 +12145,9 @@ void MCMC_PHYREX_Sigsq_Scale(t_tree *tree)
   phydbl cur_scale,new_scale;
   phydbl alpha,ratio,u,K,hr;
 
+  /* !!!!!!!!!!!!!!!!!!!!1 */
+  return;
+  
 
   if(tree->mmod->use_locations == NO) return;
   if(tree->mmod->model_id != RRW) return;

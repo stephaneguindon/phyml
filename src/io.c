@@ -6707,25 +6707,25 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%s\t","tuneScaleTime");
 
 
-          for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"sigsq%d%c\t",
-                                                           i,
-                                                           (tree->a_nodes[i]==tree->n_root->v[1] ||
-                                                            tree->a_nodes[i]==tree->n_root->v[2]) ? '*' : ' ');
+          /* for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"sigsq%d%c\t", */
+          /*                                                  i, */
+          /*                                                  (tree->a_nodes[i]==tree->n_root->v[1] || */
+          /*                                                   tree->a_nodes[i]==tree->n_root->v[2]) ? '*' : ' '); */
 
           /* for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"dt%d%c\t", */
           /*                                                  i, */
           /*                                                  (tree->a_nodes[i]==tree->n_root->v[1] || */
           /*                                                   tree->a_nodes[i]==tree->n_root->v[2]) ? '*' : ' '); */
 
-          for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"lat%d%c\t",
-                                                           i,
-                                                           (tree->a_nodes[i]==tree->n_root->v[1] ||
-                                                            tree->a_nodes[i]==tree->n_root->v[2]) ? '*' : ' ');
+          /* for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"lat%d%c\t", */
+          /*                                                  i, */
+          /*                                                  (tree->a_nodes[i]==tree->n_root->v[1] || */
+          /*                                                   tree->a_nodes[i]==tree->n_root->v[2]) ? '*' : ' '); */
 
-          for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"lon%d%c\t",
-                                                           i,
-                                                           (tree->a_nodes[i]==tree->n_root->v[1] ||
-                                                            tree->a_nodes[i]==tree->n_root->v[2]) ? '*' : ' ');
+          /* for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"lon%d%c\t", */
+          /*                                                  i, */
+          /*                                                  (tree->a_nodes[i]==tree->n_root->v[1] || */
+          /*                                                   tree->a_nodes[i]==tree->n_root->v[2]) ? '*' : ' '); */
         }
     }
 
@@ -6799,10 +6799,10 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_br_r]);
       PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_scale_times]);
       
-      for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->sigsq_scale[i]);
+      /* for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->sigsq_scale[i]); */
       /* for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->times->nd_t[i]-tree->times->nd_t[tree->a_nodes[i]->anc->num]); */
-      for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->a_nodes[i]->ldsk->coord->lonlat[0]);
-      for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->a_nodes[i]->ldsk->coord->lonlat[1]);
+      /* for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->a_nodes[i]->ldsk->coord->lonlat[0]); */
+      /* for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->a_nodes[i]->ldsk->coord->lonlat[1]); */
 
       /* res[0 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = tree->mmod->lbda;  */
       /* res[1 * tree->mcmc->chain_len / tree->mcmc->sample_interval +  tree->mcmc->run / tree->mcmc->sample_interval] = tree->mmod->mu;  */
