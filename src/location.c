@@ -21,8 +21,6 @@ the GNU public licence. See http://www.opensource.org for details.
 
 phydbl LOCATION_Lk(t_tree *tree)
 {
-  tree->mmod->p_lnL = tree->mmod->c_lnL;
-
   if(tree->mmod->use_locations == NO)
     {
       tree->mmod->c_lnL = 0.0;

@@ -53,7 +53,7 @@ To install the MPI version of PhyML, type the following commands:
 
 ```bash
 autoreconf -i;
-./configure --enable-mpi --enable-phyml;
+./configure --enable-phyml-mpi;
 make;
 ```
 

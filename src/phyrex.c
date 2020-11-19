@@ -816,6 +816,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   
   MIXT_Set_Bl_From_Rt(YES,tree);
   PHYREX_Update_Ldsk_Rates_Given_Edges(tree);
+  PHYREX_Update_Ldsk_Sigsq_Given_Edges(tree);
   
   for(i=0;i<mcmc->n_moves;i++) tree->mcmc->start_ess[i] = YES;
     
@@ -877,6 +878,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_swap_disk")) MCMC_PHYREX_Swap_Disk(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_scale_times")) MCMC_PHYREX_Scale_Times(tree,NO);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr")) MCMC_PHYREX_Prune_Regraft(tree);
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr_slide")) MCMC_PHYREX_Prune_Regraft_Slide(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr_local")) MCMC_PHYREX_Prune_Regraft_Local(tree);
       if(!strcmp(tree->mcmc->move_name[move],"root_time")) MCMC_Root_Time(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_traj")) MCMC_PHYREX_Lineage_Traj(tree);
@@ -889,7 +891,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_disk_serial")) MCMC_PHYREX_Indel_Disk_Serial(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_hit_serial")) MCMC_PHYREX_Indel_Hit_Serial(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_add_remove_jump")) MCMC_PHYREX_Add_Remove_Jump(tree);
-      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_sigsq_scale")) MCMC_PHYREX_Sigsq_Scale(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_sigsq_scale")) MCMC_PHYREX_Sigsq_Scale(tree);
       if(!strcmp(tree->mcmc->move_name[move],"kappa")) MCMC_Kappa(tree);
       if(!strcmp(tree->mcmc->move_name[move],"rr")) MCMC_RR(tree);
       if(!strcmp(tree->mcmc->move_name[move],"ras")) MCMC_Rate_Across_Sites(tree);
@@ -3337,7 +3339,7 @@ int PHYREX_Number_Of_Outgoing_Ldsks(t_dsk *disk)
 ////////////////////////////////////////////////////////////*/
 /* Select uniformly at random a lineage going "out of" disk (towards the past) */
 t_ldsk *PHYREX_Random_Select_Outgoing_Ldsk(t_dsk *disk)
-{
+{  
   int i,*permut,n_ldsk_a_out;
   t_ldsk **ldsk_a_out,*target_ldsk;
 
@@ -4199,6 +4201,44 @@ void PHYREX_Update_Edge_Rates_Given_Ldsks(t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /* Make sure node times and tree topology are in sync with ldsk structure */
+void PHYREX_Update_Edge_Sigsq_Given_Ldsks(t_tree *tree)
+{
+  t_dsk *disk;
+  int i;
+  t_node *n;
+  
+  disk = tree->young_disk;
+  if(disk == NULL) return;
+
+  Get_Node_Ranks_From_Times(tree);
+
+  do
+    {
+      if(disk->age_fixed == YES)
+        {
+          for(i=0;i<disk->n_ldsk_a;++i)
+            {
+              if(disk->ldsk_a[i]->nd != NULL && disk->ldsk_a[i]->nd->tax == YES)
+                {
+                  tree->mmod->sigsq_scale[disk->ldsk_a[i]->nd->num] = disk->ldsk_a[i]->sigsq; 
+                }
+            }
+        }
+      else if(disk->ldsk->n_next > 1)
+        {
+          n = disk->ldsk->nd;
+          while(n && n->ldsk == disk->ldsk) { tree->mmod->sigsq_scale[n->num] = disk->ldsk->sigsq; n = n->rk_next; }
+          n = disk->ldsk->nd;
+          while(n && n->ldsk == disk->ldsk) { tree->mmod->sigsq_scale[n->num] = disk->ldsk->sigsq; n = n->rk_prev; }          
+        }    
+      disk = disk->prev;
+    }
+  while(disk);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/* Make sure node times and tree topology are in sync with ldsk structure */
 void PHYREX_Update_Ldsk_Rates_Given_Edges(t_tree *tree)
 {
   int i;
@@ -4210,6 +4250,24 @@ void PHYREX_Update_Ldsk_Rates_Given_Edges(t_tree *tree)
       if(tree->a_nodes[i] != tree->n_root)
         {
           PHYREX_Update_Ldsk_Rates_Given_One_Edge(tree->a_nodes[i],tree);
+        }
+    }
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/* Make sure node times and tree topology are in sync with ldsk structure */
+void PHYREX_Update_Ldsk_Sigsq_Given_Edges(t_tree *tree)
+{
+  int i;
+  
+  if(tree->young_disk == NULL) return;
+
+  for(i=0;i<2*tree->n_otu-1;++i)
+    {
+      if(tree->a_nodes[i] != tree->n_root)
+        {
+          PHYREX_Update_Ldsk_Sigsq_Given_One_Edge(tree->a_nodes[i],tree);
         }
     }
 }
@@ -4233,6 +4291,29 @@ void PHYREX_Update_Ldsk_Rates_Given_One_Edge(t_node *d, t_tree *tree)
   while(ldsk->nd != a)
     {
       ldsk->rr = tree->rates->br_r[d->num];
+      ldsk = ldsk->prev;
+    }
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+void PHYREX_Update_Ldsk_Sigsq_Given_One_Edge(t_node *d, t_tree *tree)
+{
+  t_ldsk *ldsk;
+  t_node *a;
+
+  if(tree->young_disk == NULL) return;
+  
+  a = d->anc;
+  assert(a);
+  
+  ldsk = d->ldsk;
+  assert(ldsk);
+
+  while(ldsk->nd != a)
+    {
+      ldsk->sigsq = tree->mmod->sigsq_scale[d->num];
       ldsk = ldsk->prev;
     }
 }

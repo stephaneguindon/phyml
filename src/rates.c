@@ -26,8 +26,6 @@ phydbl RATES_Lk(t_tree *tree)
 {  
   if(tree->eval_rlnL == NO) return UNLIKELY;
 
-  tree->rates->p_lnL = tree->rates->c_lnL;
-
   tree->rates->c_lnL  = .0;
   RATES_Lk_Pre(tree->n_root,tree->n_root->v[2],NULL,tree);
   RATES_Lk_Pre(tree->n_root,tree->n_root->v[1],NULL,tree);

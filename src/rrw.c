@@ -17,11 +17,15 @@ the GNU public licence. See http://www.opensource.org for details.
 
 phydbl RRW_Lk(t_tree *tree)
 {
-  phydbl d_fwd;
+  phydbl d_fwd,d_sigsq_scale;
+
+  d_fwd = 0.0;
+  d_sigsq_scale = 0.0;
   
   assert(tree->mmod->model_id == RRW);
   
   d_fwd = RRW_Forward_Lk_Range(tree->young_disk,NULL,tree);
+  d_sigsq_scale = RRW_Prior_Sigsq_Scale(tree);
   
 #ifdef PHYREX
   if(PHYREX_Total_Number_Of_Intervals(tree) > tree->mmod->max_num_of_intervals)
@@ -31,7 +35,7 @@ phydbl RRW_Lk(t_tree *tree)
     }
 #endif
 
-  tree->mmod->c_lnL = d_fwd;
+  tree->mmod->c_lnL = d_fwd + d_sigsq_scale;
 
   return(tree->mmod->c_lnL);
 }
@@ -43,6 +47,7 @@ phydbl RRW_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
 {
   phydbl lnP;
   lnP = RRW_Forward_Lk_Range(young,old,tree);
+  lnP += RRW_Prior_Sigsq_Scale(tree); /* Not optimal but ok. Should have RRW_Prior_Sigsq_Scale_Range(young,old,tree) instead here */
   return(lnP);
 }
 
@@ -91,15 +96,20 @@ phydbl RRW_Independent_Contrasts(t_tree *tree)
 
 phydbl RRW_Prior_Sigsq_Scale(t_tree *tree)
 {
-  phydbl lnP;
-
+  phydbl lnP,sd;
+  int err;
+  
   lnP = 0.0;
+  err = NO;
+  sd  = 2.0;
   
   for(int i=0;i<2*tree->n_otu-2;++i)
     {
-      lnP += log(Dgamma(tree->mmod->sigsq_scale[i],
-                        tree->mmod->nu/2.,
-                        2./tree->mmod->nu));
+      /* lnP += log(Dgamma(tree->mmod->sigsq_scale[i], */
+      /*                   tree->mmod->nu/2., */
+      /*                   2./tree->mmod->nu)); */
+      lnP += Log_Dnorm(log(tree->mmod->sigsq_scale[i]),-sd*sd/2.,sd,&err);
+      lnP -= log(tree->mmod->sigsq_scale[i]);
     }
   
   return(lnP);
@@ -168,10 +178,16 @@ phydbl RRW_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
   t_ldsk *ldsk;
   phydbl lnP,sd,ld,la,disk_lnP;
   int i,err;
+  t_node *nd_d;
 
+  
   lnP = 0.0;
-  ldsk = d;
 
+  ldsk = d;
+  while(ldsk->n_next == 1) ldsk = ldsk->next[0];
+  nd_d = ldsk->nd;
+  
+  ldsk = d;
   assert(a!=d);
   
   do
@@ -181,7 +197,8 @@ phydbl RRW_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
       disk_lnP = 0.0;
       for(i=0;i<tree->mmod->n_dim;++i)
         {
-          sd = log(tree->mmod->sigsq[i]) + log(fabs(ldsk->disk->time-ldsk->prev->disk->time));
+          sd = log(tree->mmod->sigsq[i]) + log(tree->mmod->sigsq_scale[nd_d->num]) + log(fabs(ldsk->disk->time-ldsk->prev->disk->time));
+          /* sd = log(tree->mmod->sigsq[i]) + log(fabs(ldsk->disk->time-ldsk->prev->disk->time)); */
           sd = sqrt(exp(sd));
           
           ld = ldsk->coord->lonlat[i];
@@ -286,9 +303,39 @@ void RRW_Generate_Ldsk_New_Location(t_ldsk *l, t_ldsk *prev_l, phydbl rad, phydb
         }
           
       assert((isnan(c) && isnan(sd)) == false);
-
+      
       (*hr) += Log_Dnorm(prev_l->coord->lonlat[dim_idx],c,sd,&err);
       l->coord->lonlat[dim_idx] = new_loc;
+
+
+
+
+      /* dta = fabs(l->prev->disk->time - l->disk->time); */
+      
+      /* if(dta<SMALL) */
+      /*   { */
+      /*     l->coord->lonlat[dim_idx] = l->prev->coord->lonlat[dim_idx]; */
+      /*     return; */
+      /*   } */
+
+      /* c = l->prev->coord->lonlat[dim_idx]; */
+      /* sd = sqrt(rad*dta); */
+      /* assert((isnan(c) && isnan(sd)) == false); */
+
+      /* new_loc = Rnorm(c,sd); */
+      
+      /* /\* Forward move *\/ */
+      /* (*hr) -= Log_Dnorm(new_loc,c,sd,&err); */
+
+
+      /* /\* Backward move *\/ */
+      /* c = prev_l->prev->coord->lonlat[dim_idx]; */
+      /* sd = sqrt(rad*dta); */
+      /* assert((isnan(c) && isnan(sd)) == false); */
+
+      /* (*hr) += Log_Dnorm(prev_l->coord->lonlat[dim_idx],c,sd,&err); */
+      
+      /* l->coord->lonlat[dim_idx] = new_loc; */
     }
   else
     {

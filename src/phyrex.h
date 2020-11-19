@@ -135,5 +135,8 @@ void PHYREX_Update_Node_Times_Given_Disks(t_tree *tree);
 void PHYREX_Update_Ldsk_Rates_Given_Edges(t_tree *tree);
 void PHYREX_Update_Edge_Rates_Given_Ldsks(t_tree *tree);
 void PHYREX_Update_Ldsk_Rates_Given_One_Edge(t_node *d, t_tree *tree);
+void PHYREX_Update_Edge_Sigsq_Given_Ldsks(t_tree *tree);
+void PHYREX_Update_Ldsk_Sigsq_Given_One_Edge(t_node *d, t_tree *tree);
+void PHYREX_Update_Ldsk_Sigsq_Given_Edges(t_tree *tree);
 
 #endif

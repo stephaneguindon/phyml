@@ -454,8 +454,6 @@ phydbl Lk(t_edge *b, t_tree *tree)
   const unsigned int ncatg = tree->mod->ras->n_catg;
   const unsigned int npatterns = tree->n_pattern;
   const unsigned int nsncatg = ns * ncatg;
-
-  tree->p_lnL = tree->c_lnL;
   
   tree->numerical_warning = NO;
   

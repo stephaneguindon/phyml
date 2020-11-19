@@ -1746,6 +1746,7 @@ typedef struct __Tmcmc {
   int num_move_phyrex_swap_disk;
   int num_move_phyrex_indel_hit;
   int num_move_phyrex_spr;
+  int num_move_phyrex_spr_slide;
   int num_move_phyrex_spr_local;
   int num_move_phyrex_scale_times;
   int num_move_phyrex_ldscape_lim;
@@ -2056,6 +2057,7 @@ typedef struct __Lindisk_Node{
   short int              is_hit;
   int                    n_next;
   phydbl                     rr;
+  phydbl                  sigsq;
   struct __Node             *nd;
 }t_ldsk;
 

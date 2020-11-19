@@ -135,6 +135,7 @@ void MCMC_PHYREX_Triplet(t_tree *tree);
 void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree);
 void MCMC_PHYREX_Swap_Disk(t_tree *tree);
 void MCMC_PHYREX_Prune_Regraft(t_tree *tree);
+void MCMC_PHYREX_Prune_Regraft_Slide(t_tree *tree);
 void MCMC_PHYREX_Scale_Times(t_tree *tree, short int print);
 void MCMC_PHYREX_Ldscape_Limits(t_tree *tree);
 void MCMC_PHYREX_Indel_Disk(t_tree *tree);

@@ -2580,8 +2580,6 @@ void TIMES_Copy_Time_Struct(t_time *from, t_time *to, int n_otu)
 
 phydbl TIMES_Lk(t_tree *tree)
 {
-  tree->times->p_lnL = tree->times->c_lnL;
-  
   switch(tree->times->model_id)
     {
     case COALESCENT :
