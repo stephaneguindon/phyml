@@ -866,7 +866,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       tree->mcmc->move_idx = move;
       
       assert(!(move == tree->mcmc->n_moves));
-            
+      
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_lbda")) MCMC_PHYREX_Lbda(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_mu")) MCMC_PHYREX_Mu(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_rad")) MCMC_PHYREX_Radius(tree);
@@ -898,11 +898,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"br_rate")) MCMC_Rates_All(tree);
       if(!strcmp(tree->mcmc->move_name[move],"clock")) MCMC_Clock_R(tree);
       if(!strcmp(tree->mcmc->move_name[move],"nu")) MCMC_Nu(tree);
-
-      /* PhyML_Printf("\n. Move: %s tree->mmod->c_lnL: %f kappa: %f", */
-      /*              tree->mcmc->move_name[move], */
-      /*              tree->mmod->c_lnL, */
-      /*              tree->mod->kappa->v); */
 
       if(tree->mmod->c_lnL < UNLIKELY || tree->c_lnL < UNLIKELY)
         {
@@ -964,6 +959,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           
           assert(PHYREX_Check_Struct(tree,YES));
         }
+
       
       MCMC_Get_Acc_Rates(tree->mcmc);
             
