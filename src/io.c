@@ -6690,7 +6690,6 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%s\t","accScaleTime");
           PhyML_Fprintf(fp_stats,"%s\t","accSPR");
           PhyML_Fprintf(fp_stats,"%s\t","accSPRsLide");
-          PhyML_Fprintf(fp_stats,"%s\t","accSPRlocal");
           PhyML_Fprintf(fp_stats,"%s\t","accPath");
           PhyML_Fprintf(fp_stats,"%s\t","accIndelDiskSerial");
           PhyML_Fprintf(fp_stats,"%s\t","accIndelHitSerial");
@@ -6783,7 +6782,6 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_scale_times]);
       PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_spr]);
       PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_spr_slide]);
-      PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_spr_local]);
       PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_traj]);
       PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_indel_disk_serial]);
       PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_indel_hit_serial]);
