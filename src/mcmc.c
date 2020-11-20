@@ -8756,8 +8756,8 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
                       break;
                     }
                 }
+              if(i != disk->ldsk->n_next) break;
             }
-          if(i != disk->ldsk->n_next) break;
           disk = disk->prev;
         }
       while(disk);
@@ -9202,8 +9202,8 @@ void MCMC_PHYREX_Prune_Regraft_Slide(t_tree *tree)
                       break;
                     }
                 }
+              if(i != disk->ldsk->n_next) break;
             }
-          if(i != disk->ldsk->n_next) break;
           disk = disk->prev;
         }
       while(disk);
