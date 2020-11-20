@@ -6338,7 +6338,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_spr]                   = 4.0;
   mcmc->move_weight[mcmc->num_move_phyrex_spr_slide]             = 3.0;
   mcmc->move_weight[mcmc->num_move_phyrex_spr_local]             = 1.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldscape_lim]           = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 1.0;
@@ -7813,8 +7813,6 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree, short int print)
 
   tree->mcmc->run_move[tree->mcmc->num_move_phyrex_scale_times]++;
 
-  RATES_Record_Rates(tree);
-
   u = Uni();
   scale_fact_times = exp(K*(u-.5));
 
@@ -7824,7 +7822,10 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree, short int print)
   
   n_disks = PHYREX_Scale_All(scale_fact_times,start_disk,tree);
 
-  if(n_disks < 0) return; // Root age cannot be younger than age of oldest sample
+  if(n_disks < 0)
+    {
+      return; // Root age cannot be younger than age of oldest sample
+    }
   
   if(tree->eval_alnL == YES && tree->mod->s_opt->opt_clock_r == YES) tree->rates->clock_r /= scale_fact_times;
 
@@ -7832,7 +7833,7 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree, short int print)
      tree->rates->clock_r < tree->rates->min_clock ||
      tree->rates->clock_r > tree->rates->max_clock)
     {
-      PHYREX_Scale_All(1./scale_fact_times,start_disk,tree);
+      n_disks = PHYREX_Scale_All(1./scale_fact_times,start_disk,tree);
       if(tree->eval_alnL == YES && tree->mod->s_opt->opt_clock_r == YES) tree->rates->clock_r *= scale_fact_times;
       return;
     }
@@ -7884,15 +7885,17 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree, short int print)
   
   if(u > alpha) /* Reject */
     {
+      PhyML_Printf("\n. Reject");
       PHYREX_Scale_All(1./scale_fact_times,start_disk,tree);      
-      PHYREX_Update_Lindisk_List(tree);
       if(tree->eval_alnL == YES && tree->mod->s_opt->opt_clock_r == YES) tree->rates->clock_r *= scale_fact_times;
+      PHYREX_Update_Lindisk_List(tree);
       PHYREX_Update_Node_Times_Given_Disks(tree);
       RATES_Update_Edge_Lengths(tree);
       Reset_Lk(tree);
     }
   else
     {
+      PhyML_Printf("\n. Accept");
       tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_scale_times]++;
     }
 

@@ -3425,27 +3425,15 @@ int PHYREX_Scale_All(phydbl scale, t_dsk *start_disk, t_tree *tree)
   t_dsk *disk;
   t_dsk **sorted_disk;
   int n_disk,n_disks_scaled,n_nodes_scaled,n_hits_scaled,sorted,i;
-  phydbl age_oldest_sample,root_t;
   
   n_disk            = 0;
   n_disks_scaled    = 0;
   n_nodes_scaled    = 0;
   n_hits_scaled     = 0;
-  age_oldest_sample = INFINITY;
-  root_t            = tree->n_root->ldsk->disk->time;
   
   disk = start_disk->prev;
   assert(disk);
   
-  do
-    {      
-      if(disk->age_fixed == YES) age_oldest_sample = disk->time;
-      disk = disk->prev;
-    }
-  while(disk);
-
-  if((root_t * scale + start_disk->time * (1.-scale)) > age_oldest_sample) return(-1);
-
   disk = start_disk->prev;
   do
     {      
@@ -3461,8 +3449,6 @@ int PHYREX_Scale_All(phydbl scale, t_dsk *start_disk, t_tree *tree)
       disk = disk->prev;
     }
   while(disk);
-
-
 
   
   sorted_disk = (t_dsk **)mCalloc(n_disk,sizeof(t_dsk *));
