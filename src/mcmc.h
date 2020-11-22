@@ -94,7 +94,6 @@ void MCMC_Print_Param_Stdin(t_mcmc *mcmc, t_tree *tree);
 void MCMC_Subtree_Rates(t_tree *tree);
 void MCMC_Get_Acc_Rates(t_mcmc *mcmc);
 void MCMC_Update_Effective_Sample_Size(int move_num, t_mcmc *mcmc, t_tree *tree);
-void MCMC_Initialize_Param_Val(t_mcmc *mcmc, t_tree *tree);
 void MCMC_Terminate();
 void MCMC_Copy_To_New_Param_Val(t_mcmc *mcmc, t_tree *tree);
 void MCMC_Randomize_Node_Rates(t_tree *tree);
