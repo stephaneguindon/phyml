@@ -25,7 +25,8 @@ phydbl RRW_Lk(t_tree *tree)
   assert(tree->mmod->model_id == RRW);
   
   d_fwd = RRW_Forward_Lk_Range(tree->young_disk,NULL,tree);
-  /* d_sigsq_scale = RRW_Prior_Sigsq_Scale(tree); */
+  d_sigsq_scale = RRW_Prior_Sigsq_Scale(tree);
+
   
 #ifdef PHYREX
   if(PHYREX_Total_Number_Of_Intervals(tree) > tree->mmod->max_num_of_intervals)
@@ -98,6 +99,9 @@ phydbl RRW_Prior_Sigsq_Scale(t_tree *tree)
 {
   phydbl lnP,sd;
   int err;
+
+  /* !!!!!!!!!!!!!!!! */
+  return(-1.);
   
   lnP = 0.0;
   err = NO;
@@ -198,7 +202,6 @@ phydbl RRW_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
       for(i=0;i<tree->mmod->n_dim;++i)
         {
           sd = log(tree->mmod->sigsq[i]) + log(tree->mmod->sigsq_scale[nd_d->num]) + log(fabs(ldsk->disk->time-ldsk->prev->disk->time));
-          /* sd = log(tree->mmod->sigsq[i]) + log(fabs(ldsk->disk->time-ldsk->prev->disk->time)); */
           sd = sqrt(exp(sd));
           
           ld = ldsk->coord->lonlat[i];
@@ -214,7 +217,7 @@ phydbl RRW_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
 
           disk_lnP += Log_Dnorm(ld,la,sd,&err);
 
-          if(isinf(lnP)) return(UNLIKELY);
+          if(isinf(lnP) || isnan(lnP)) return(UNLIKELY);
 
           if(isnan(lnP))
             {
@@ -243,7 +246,7 @@ phydbl RRW_Density_Ldsk_Location(t_ldsk *l, phydbl rad, int dim_idx, t_tree *tre
 
   err = NO;  
   
-  if(l->prev != NULL)
+  if(l->prev != NULL && l->next != NULL)
     {
       dta = fabs(l->prev->disk->time - l->disk->time);
       
@@ -269,14 +272,24 @@ phydbl RRW_Density_Ldsk_Location(t_ldsk *l, phydbl rad, int dim_idx, t_tree *tre
       
       assert((isnan(c) && isnan(sd)) == false);
 
+      /* PhyML_Printf("\n. loc: %f c: %f sd: %f dens=%f",l->coord->lonlat[dim_idx],c,sd,Log_Dnorm(l->coord->lonlat[dim_idx],c,sd,&err)); */
+
       return(Log_Dnorm(l->coord->lonlat[dim_idx],c,sd,&err));
     }
-  else
+  else if(l->prev == NULL && l->next != NULL)
     {
       sd = sqrt(rad);
       c = l->coord->lonlat[dim_idx];
       return(Log_Dnorm(l->coord->lonlat[dim_idx],c,sd,&err));
     }
+  else if(l->prev != NULL && l->next == NULL)
+    {
+      sd = sqrt(rad);
+      c = l->coord->lonlat[dim_idx];
+      return(Log_Dnorm(l->coord->lonlat[dim_idx],c,sd,&err));
+    }
+  else assert(false);
+  
   assert(err == NO);
   return(-1.);
 }
@@ -291,7 +304,7 @@ void RRW_Generate_Ldsk_New_Location(t_ldsk *l, phydbl rad, int dim_idx, t_tree *
 
   err = NO;              
   
-  if(l->prev != NULL)
+  if(l->prev != NULL && l->next != NULL)
     {
       dta = fabs(l->prev->disk->time - l->disk->time);
       
@@ -324,14 +337,25 @@ void RRW_Generate_Ldsk_New_Location(t_ldsk *l, phydbl rad, int dim_idx, t_tree *
       new_loc = Rnorm(c,sd);
       
       l->coord->lonlat[dim_idx] = new_loc;
+
+      /* PhyML_Printf("\n. GENERATE loc: %f c: %f sd: %f",l->coord->lonlat[dim_idx],c,sd); */
+
     }
-  else
+  else if(l->prev == NULL && l->next != NULL)
     {
       sd = sqrt(rad);
       c = l->coord->lonlat[dim_idx];
       new_loc = Rnorm(c,sd);      
       l->coord->lonlat[dim_idx] = new_loc;          
     }
+  else if(l->prev != NULL && l->next == NULL)
+    {
+      sd = sqrt(rad);
+      c = l->coord->lonlat[dim_idx];
+      new_loc = Rnorm(c,sd);      
+      l->coord->lonlat[dim_idx] = new_loc;
+    }
+  else assert(false);
   assert(err == NO);
 }
 

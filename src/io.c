@@ -6699,8 +6699,31 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%s\t","accLdskTipToRoot");
           PhyML_Fprintf(fp_stats,"%s\t","accSigsqScale");
           PhyML_Fprintf(fp_stats,"%s\t","accBrR");
-          PhyML_Fprintf(fp_stats,"%s\t","tuneScaleTime");
 
+          PhyML_Fprintf(fp_stats,"%s\t","tuneSlide");
+
+          PhyML_Fprintf(fp_stats,"%s\t","accAuxUpDown");
+          PhyML_Fprintf(fp_stats,"%s\t","accAuxRootTime");
+          PhyML_Fprintf(fp_stats,"%s\t","accAuxSPR");
+          PhyML_Fprintf(fp_stats,"%s\t","accAuxSlide");
+          PhyML_Fprintf(fp_stats,"%s\t","accAuxTipToRoot");
+          PhyML_Fprintf(fp_stats,"%s\t","accAuxLdskGivenDisk");
+
+          PhyML_Fprintf(fp_stats,"%s\t","tuneAuxSlide");
+
+          PhyML_Fprintf(fp_stats,"%s\t","aux0RootLon");
+          PhyML_Fprintf(fp_stats,"%s\t","aux0RootLat");
+          PhyML_Fprintf(fp_stats,"%s\t","aux0RootTime");
+
+          PhyML_Fprintf(fp_stats,"%s\t","aux1RootLon");
+          PhyML_Fprintf(fp_stats,"%s\t","aux1RootLat");
+          PhyML_Fprintf(fp_stats,"%s\t","aux1RootTime");
+
+          PhyML_Fprintf(fp_stats,"%s\t","aux0LocLnL");
+          PhyML_Fprintf(fp_stats,"%s\t","aux0TimeLnL");
+
+          PhyML_Fprintf(fp_stats,"%s\t","aux1LocLnL");
+          PhyML_Fprintf(fp_stats,"%s\t","aux1TimeLnL");
 
           /* for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"sigsq%d%c\t", */
           /*                                                  i, */
@@ -6787,8 +6810,33 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_ldsk_tip_to_root]);
       PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_sigsq_scale]);
       PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_br_r]);
-      PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_scale_times]);
-      
+
+      PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_spr_slide]);
+
+
+      PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[0]->mcmc->acc_rate[tree->aux_tree[0]->mcmc->num_move_phyrex_move_disk_ud]);
+      PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[0]->mcmc->acc_rate[tree->aux_tree[0]->mcmc->num_move_root_time]);
+      PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[0]->mcmc->acc_rate[tree->aux_tree[0]->mcmc->num_move_phyrex_spr]);
+      PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[0]->mcmc->acc_rate[tree->aux_tree[0]->mcmc->num_move_phyrex_spr_slide]);
+      PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[0]->mcmc->acc_rate[tree->aux_tree[0]->mcmc->num_move_phyrex_ldsk_tip_to_root]);
+      PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[0]->mcmc->acc_rate[tree->aux_tree[0]->mcmc->num_move_phyrex_ldsk_given_disk]);
+
+      PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[0]->mcmc->tune_move[tree->aux_tree[0]->mcmc->num_move_phyrex_spr_slide]);
+
+      PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[0]->n_root->ldsk->coord->lonlat[0]);
+      PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[0]->n_root->ldsk->coord->lonlat[1]);
+      PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[0]->n_root->ldsk->disk->time);
+
+      PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[1]->n_root->ldsk->coord->lonlat[0]);
+      PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[1]->n_root->ldsk->coord->lonlat[1]);
+      PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[1]->n_root->ldsk->disk->time);
+
+      PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[0]->mmod->c_lnL);
+      PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[0]->times->c_lnL);
+
+      PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[1]->mmod->c_lnL);
+      PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[1]->times->c_lnL);
+
       /* for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->sigsq_scale[i]); */
       /* for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->times->nd_t[i]-tree->times->nd_t[tree->a_nodes[i]->anc->num]); */
       /* for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->a_nodes[i]->ldsk->coord->lonlat[0]); */

@@ -176,5 +176,6 @@ void MCMC_RR(t_tree *mixt_tree);
 void MCMC_PHYREX_Ldsk_Tip_To_Root(t_tree *tree);
 void MCMC_PHYREX_Neff(t_tree *tree);
 void MCMC_PHYREX_Sigsq_Scale(t_tree *tree);
+void MCMC_PHYREX_Ldsk_Tips(t_tree *tree);
 
 #endif

@@ -410,7 +410,7 @@ void PHYREX_XML(char *xml_filename)
       mixt_tree->aux_tree[0] = Make_Tree_From_Scratch(mixt_tree->n_otu,mixt_tree->data);
       mixt_tree->aux_tree[0]->mod = mixt_tree->mod;
       mixt_tree->aux_tree[0]->io = mixt_tree->io;
-      
+        
       mixt_tree->aux_tree[0]->mmod = PHYREX_Make_Migrep_Model(mixt_tree->n_otu,2);
       mixt_tree->aux_tree[0]->mmod->n_dim = 2;
       PHYREX_Set_Default_Migrep_Mod(mixt_tree->n_otu,mixt_tree->aux_tree[0]->mmod);
@@ -435,6 +435,40 @@ void PHYREX_XML(char *xml_filename)
       mixt_tree->aux_tree[0]->mcmc = MCMC_Make_MCMC_Struct();
       MCMC_Init_MCMC_Struct(NULL,NULL,mixt_tree->aux_tree[0]->mcmc);
       MCMC_Complete_MCMC(mixt_tree->aux_tree[0]->mcmc,mixt_tree->aux_tree[0]);
+      mixt_tree->aux_tree[0]->mcmc->chain_len_burnin = mixt_tree->io->mcmc->chain_len_burnin;
+
+
+
+      /* Auxilliary tree for updating effective pop density */
+      mixt_tree->aux_tree[1] = Make_Tree_From_Scratch(mixt_tree->n_otu,mixt_tree->data);
+      mixt_tree->aux_tree[1]->mod = mixt_tree->mod;
+      mixt_tree->aux_tree[1]->io = mixt_tree->io;
+      
+      mixt_tree->aux_tree[1]->mmod = PHYREX_Make_Migrep_Model(mixt_tree->n_otu,2);
+      mixt_tree->aux_tree[1]->mmod->n_dim = 2;
+      PHYREX_Set_Default_Migrep_Mod(mixt_tree->n_otu,mixt_tree->aux_tree[1]->mmod);
+      mixt_tree->aux_tree[1]->mmod->model_id = mixt_tree->mmod->model_id; 
+      mixt_tree->aux_tree[1]->mmod->use_locations = mixt_tree->mmod->use_locations;
+      
+      Copy_Tree(mixt_tree,mixt_tree->aux_tree[1]);
+      
+      mixt_tree->aux_tree[1]->rates = RATES_Make_Rate_Struct(mixt_tree->n_otu);
+      RATES_Init_Rate_Struct(mixt_tree->aux_tree[1]->rates,NULL,mixt_tree->n_otu);
+      RATES_Copy_Rate_Struct(mixt_tree->rates,mixt_tree->aux_tree[1]->rates,mixt_tree->n_otu);
+      mixt_tree->aux_tree[1]->rates->model_id = LOGNORMAL;
+      
+      mixt_tree->aux_tree[1]->times = TIMES_Make_Time_Struct(mixt_tree->n_otu);
+      TIMES_Init_Time_Struct(mixt_tree->aux_tree[1]->times,NULL,mixt_tree->n_otu);
+      TIMES_Copy_Time_Struct(mixt_tree->times,mixt_tree->aux_tree[1]->times,mixt_tree->n_otu);
+      
+      RATES_Duplicate_Calib_Struct(mixt_tree,mixt_tree->aux_tree[1]);
+      MIXT_Chain_Cal(mixt_tree->aux_tree[1]);  
+      DATE_Assign_Primary_Calibration(mixt_tree->aux_tree[1]);
+      
+      mixt_tree->aux_tree[1]->mcmc = MCMC_Make_MCMC_Struct();
+      MCMC_Init_MCMC_Struct(NULL,NULL,mixt_tree->aux_tree[1]->mcmc);
+      MCMC_Complete_MCMC(mixt_tree->aux_tree[1]->mcmc,mixt_tree->aux_tree[1]);
+      mixt_tree->aux_tree[1]->mcmc->chain_len_burnin = mixt_tree->io->mcmc->chain_len_burnin;
     }
 
   
@@ -443,10 +477,12 @@ void PHYREX_XML(char *xml_filename)
   /* TIMES_Randomize_Tree_With_Time_Constraints) */
   PHYREX_Make_And_Connect_Tip_Disks(mixt_tree);
   if(mixt_tree->aux_tree && mixt_tree->aux_tree[0]) PHYREX_Make_And_Connect_Tip_Disks(mixt_tree->aux_tree[0]);
+  if(mixt_tree->aux_tree && mixt_tree->aux_tree[1]) PHYREX_Make_And_Connect_Tip_Disks(mixt_tree->aux_tree[1]);
   
   /* Read spatial coordinates */
   PHYREX_Read_Tip_Coordinates(mixt_tree);
   if(mixt_tree->aux_tree && mixt_tree->aux_tree[0]) PHYREX_Read_Tip_Coordinates(mixt_tree->aux_tree[0]);
+  if(mixt_tree->aux_tree && mixt_tree->aux_tree[1]) PHYREX_Read_Tip_Coordinates(mixt_tree->aux_tree[1]);
 
   PHYREX_Init_Migrep_Mod(mixt_tree->mmod,2,
                          mixt_tree->mmod->lim_do->lonlat[0],
@@ -477,7 +513,16 @@ void PHYREX_XML(char *xml_filename)
       mixt_tree->aux_tree[0]->mmod->sigsq[0] = mixt_tree->mmod->sigsq[0];
       for(int i=1;i<mixt_tree->mmod->n_dim;++i) mixt_tree->aux_tree[0]->mmod->sigsq[i] = mixt_tree->mmod->sigsq[0];
     }
-    
+  
+  if(mixt_tree->aux_tree && mixt_tree->aux_tree[1])
+    {
+      mixt_tree->aux_tree[1]->mmod->lbda  = mixt_tree->mmod->lbda;
+      mixt_tree->aux_tree[1]->mmod->mu    = mixt_tree->mmod->mu;
+      mixt_tree->aux_tree[1]->mmod->rad   = mixt_tree->mmod->rad;
+      mixt_tree->aux_tree[1]->mmod->sigsq[0] = mixt_tree->mmod->sigsq[0];
+      for(int i=1;i<mixt_tree->mmod->n_dim;++i) mixt_tree->aux_tree[1]->mmod->sigsq[i] = mixt_tree->mmod->sigsq[0];
+    }
+
   /* Random genealogy or user-defined tree */
   switch(mixt_tree->io->in_tree)
     {
@@ -510,24 +555,35 @@ void PHYREX_XML(char *xml_filename)
   PHYREX_Oldest_Sampled_Disk(mixt_tree);
   if(mixt_tree->aux_tree && mixt_tree->aux_tree[0])
     PHYREX_Oldest_Sampled_Disk(mixt_tree->aux_tree[0]);
+  if(mixt_tree->aux_tree && mixt_tree->aux_tree[1])
+    PHYREX_Oldest_Sampled_Disk(mixt_tree->aux_tree[1]);
 
   if(mixt_tree->mmod->model_id == RW || mixt_tree->mmod->model_id == RRW)
     {
       Make_Contrasts(mixt_tree);
       Make_Contrasts(mixt_tree->aux_tree[0]);
+      Make_Contrasts(mixt_tree->aux_tree[1]);
 
       mixt_tree->times->augmented_coalescent = NO;
       mixt_tree->aux_tree[0]->times->augmented_coalescent = NO;
+      mixt_tree->aux_tree[1]->times->augmented_coalescent = NO;
 
       PHYREX_Remove_All_Disks_Except_Coal_And_Tips(mixt_tree);
       
       PHYREX_Simulate_Backward_Core(mixt_tree->aux_tree[0]->young_disk,YES,mixt_tree->aux_tree[0]);
+      PHYREX_Simulate_Backward_Core(mixt_tree->aux_tree[1]->young_disk,YES,mixt_tree->aux_tree[1]);
       
       PHYREX_Ldsk_To_Tree(mixt_tree->aux_tree[0]);
+      PHYREX_Ldsk_To_Tree(mixt_tree->aux_tree[1]);
+
       PHYREX_Remove_All_Disks_Except_Coal_And_Tips(mixt_tree->aux_tree[0]);            
+      PHYREX_Remove_All_Disks_Except_Coal_And_Tips(mixt_tree->aux_tree[1]);            
       
       Update_Ancestors(mixt_tree->aux_tree[0]->n_root,mixt_tree->aux_tree[0]->n_root->v[2],mixt_tree->aux_tree[0]->n_root->b[2],mixt_tree->aux_tree[0]);
       Update_Ancestors(mixt_tree->aux_tree[0]->n_root,mixt_tree->aux_tree[0]->n_root->v[1],mixt_tree->aux_tree[0]->n_root->b[1],mixt_tree->aux_tree[0]);  
+
+      Update_Ancestors(mixt_tree->aux_tree[1]->n_root,mixt_tree->aux_tree[1]->n_root->v[2],mixt_tree->aux_tree[1]->n_root->b[2],mixt_tree->aux_tree[1]);
+      Update_Ancestors(mixt_tree->aux_tree[1]->n_root,mixt_tree->aux_tree[1]->n_root->v[1],mixt_tree->aux_tree[1]->n_root->b[1],mixt_tree->aux_tree[1]);  
 
     }
   
@@ -551,6 +607,7 @@ void PHYREX_XML(char *xml_filename)
   // Cleaning up...
   RATES_Free_Rates(mixt_tree->rates);
   if(mixt_tree->aux_tree && mixt_tree->aux_tree[0]) RATES_Free_Rates(mixt_tree->aux_tree[0]->rates);
+  if(mixt_tree->aux_tree && mixt_tree->aux_tree[1]) RATES_Free_Rates(mixt_tree->aux_tree[1]->rates);
   TIMES_Free_Times(mixt_tree->times);
   if(mixt_tree->aux_tree && mixt_tree->aux_tree[0]) TIMES_Free_Times(mixt_tree->aux_tree[0]->times);
   if(mixt_tree->aux_tree && mixt_tree->aux_tree[1]) TIMES_Free_Times(mixt_tree->aux_tree[1]->times);
@@ -898,7 +955,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"clock")) MCMC_Clock_R(tree);
       if(!strcmp(tree->mcmc->move_name[move],"nu")) MCMC_Nu(tree);
 
-
+      
       if(tree->mmod->c_lnL < UNLIKELY || tree->c_lnL < UNLIKELY)
         {
           PhyML_Printf("\n. Move: %s tree->mmod->c_lnL: %f tree->c_lnL: %f",

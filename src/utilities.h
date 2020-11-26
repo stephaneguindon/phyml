@@ -1765,6 +1765,7 @@ typedef struct __Tmcmc {
   int num_move_clade_change;
   int num_move_phyrex_ldsk_tip_to_root;
   int num_move_phyrex_sigsq_scale;
+  int num_move_phyrex_ldsk_tips;
 
   int nd_t_digits;
   int *monitor;

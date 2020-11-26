@@ -907,7 +907,7 @@ void TIMES_Init_Time_Struct(t_time *times, t_time *existing_times, int n_otu)
 
   times->scaled_pop_size     = 1.E+2;
   times->scaled_pop_size_min = 0.0;
-  times->scaled_pop_size_max = 1.E+4;
+  times->scaled_pop_size_max = 1.E+8;
   
   times->c_lnL         = UNLIKELY;
   times->p_lnL         = UNLIKELY;
@@ -3531,12 +3531,12 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->update_rad        = NO;
   
   t->min_sigsq         = 0.0;
-  t->max_sigsq         = 1.E+5;
+  t->max_sigsq         = 1.E+7;
   t->prior_param_sigsq = 10.0;
 
   assert(t->n_dim > 0);
-  /* for(int i=0;i<t->n_dim;++i) t->sigsq[i] = (t->max_sigsq-t->min_sigsq)/2.; */
-  for(int i=0;i<t->n_dim;++i) t->sigsq[i] = 1.;
+  /* for(int i=0;i<t->n_dim;++i) t->sigsq[i] = t->min_sigsq + (t->max_sigsq-t->min_sigsq)/20.; */
+  for(int i=0;i<t->n_dim;++i) t->sigsq[i] = 1.0;
   
   t->nu = 1.0E-0;
 
@@ -3586,8 +3586,8 @@ void MCMC_Init_MCMC_Struct(char *filename, option *io, t_mcmc *mcmc)
   mcmc->chain_len_burnin = 1E+4;
   mcmc->randomize        = YES;
   mcmc->norm_freq        = 1E+3;
-  mcmc->max_tune         = 1.E+20;
-  mcmc->min_tune         = 1.E-10;
+  mcmc->max_tune         = 1.E+6;
+  mcmc->min_tune         = 1.E-6;
   mcmc->print_every      = 2;
   mcmc->is_burnin        = NO;
   mcmc->nd_t_digits      = 4;

@@ -21,6 +21,10 @@ the GNU public licence. See http://www.opensource.org for details.
 
 phydbl LOCATION_Lk(t_tree *tree)
 {
+  phydbl lnP;
+
+  lnP = 0.0;
+  
   if(tree->mmod->use_locations == NO)
     {
       tree->mmod->c_lnL = 0.0;
@@ -31,7 +35,7 @@ phydbl LOCATION_Lk(t_tree *tree)
     {
     case SLFV_GAUSSIAN :
       {
-        tree->mmod->c_lnL = SLFV_Lk_Gaussian(tree);
+        lnP = SLFV_Lk_Gaussian(tree);
         break;
       }
     case SLFV_UNIFORM :
@@ -42,17 +46,21 @@ phydbl LOCATION_Lk(t_tree *tree)
       }
     case RRW :
       {
-        tree->mmod->c_lnL = RRW_Lk(tree);
+        lnP = RRW_Lk(tree);
         break;
       }
     case RW :
       {
-        tree->mmod->c_lnL = RW_Lk(tree);
+        lnP = RW_Lk(tree);
         break;
       }      
     default : assert(false);
     }
 
+  if(isinf(lnP) || isnan(lnP)) lnP = UNLIKELY;
+  
+  tree->mmod->c_lnL = lnP;
+  
   return(tree->mmod->c_lnL);
       
 }
