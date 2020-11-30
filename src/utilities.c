@@ -11311,29 +11311,10 @@ int Linked_List_Len(t_ll *list)
 void Push_Bottom_Linked_List(void *what, t_ll **list, bool remove_duplicates)
 {
   t_ll *new,*ll;
-
-  /* { */
-  /*   if(*list) */
-  /*     { */
-  /*       t_node *n = what; */
-  /*       t_node *m = (*list)?(*list)->tail->v:NULL; */
-  /*       t_node *o = (*list)?(*list)->head->v:NULL; */
-  /*       printf("\n. before: push node %d bot %d head: %d --",n?n->num:-1,m?m->num:-1,o?o->num:-1); */
-  /*     } */
-  /*   else */
-  /*     { */
-  /*       printf("\n. "); */
-  /*     } */
-  /* } */
-
-  /* if(*list == NULL) printf("\n"); */
   
   new = (t_ll *)mCalloc(1,sizeof(t_ll));  
   new->v = (void *)what;
   
-  /* t_node *n = what; */
-  /* printf("\n push node %p list: %p %p",new,*list,(*list)?(*list)->head:NULL); */
-
 
   // First elem of list
   if(*list == NULL) 

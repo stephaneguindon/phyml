@@ -886,9 +886,10 @@ phydbl TIMES_Lk_Coalescent(t_tree *tree)
           return(UNLIKELY);
         }
       
-      /* PhyML_Printf("\n! Disk=%5s time=%14f n_lineages=%4d lnP=%14f Z=%14f", */
+      /* PhyML_Printf("\n! Disk=%5s Ne=%f dt=%14f n_lineages=%4d lnP=%14f Z=%14f", */
       /*              n->ldsk->disk->id, */
-      /*              tree->times->nd_t[n->num], */
+      /*              Ne, */
+      /*              fabs(tree->times->nd_t[n->num] - tree->times->nd_t[n->rk_next->num]), */
       /*              n_lineages, */
       /*              lnP, */
       /*              -n_lineages * (n_lineages-1.) / (2.*Ne) * fabs(tree->times->nd_t[n->num] - tree->times->nd_t[n->rk_next->num])); */
@@ -898,63 +899,64 @@ phydbl TIMES_Lk_Coalescent(t_tree *tree)
     }
 
   lnP -= (tree->n_otu-1) * log(Ne);
+  /* PhyML_Printf("\n. FINAL: %f",lnP); */
   
-  if(tree->times->augmented_coalescent == YES)
-    {
-      int n_hits;
-      t_dsk *disk;
-      phydbl dt,Z;
+  /* if(tree->times->augmented_coalescent == YES) */
+  /*   { */
+  /*     int n_hits; */
+  /*     t_dsk *disk; */
+  /*     phydbl dt,Z; */
       
-      disk = tree->young_disk->prev;
-      assert(disk);
+  /*     disk = tree->young_disk->prev; */
+  /*     assert(disk); */
 
-      /* PhyML_Printf("\n\n ====="); */
+  /*     /\* PhyML_Printf("\n\n ====="); *\/ */
 
-      n_hits = 0;
-      dt = 0.0;
-      do
-        {
-          Z = 0.0;
-          if(disk->ldsk && disk->ldsk->n_next == 1)
-            {
-              n_hits++;
-              assert(disk->next);
-              dt += fabs(disk->time - disk->next->time);
-              /* PhyML_Printf("\n. T disk=%s time=%f Z=%f lnP=%f n_next=%d n_lineages=%d", */
-              /*              disk->id, */
-              /*              disk->time, */
-              /*              Z, */
-              /*              lnP, */
-              /*              disk->ldsk ? disk->ldsk->n_next : 0, */
-              /*              disk->n_ldsk_a); */
-            }
+  /*     n_hits = 0; */
+  /*     dt = 0.0; */
+  /*     do */
+  /*       { */
+  /*         Z = 0.0; */
+  /*         if(disk->ldsk && disk->ldsk->n_next == 1) */
+  /*           { */
+  /*             n_hits++; */
+  /*             assert(disk->next); */
+  /*             dt += fabs(disk->time - disk->next->time); */
+  /*             /\* PhyML_Printf("\n. T disk=%s time=%f Z=%f lnP=%f n_next=%d n_lineages=%d", *\/ */
+  /*             /\*              disk->id, *\/ */
+  /*             /\*              disk->time, *\/ */
+  /*             /\*              Z, *\/ */
+  /*             /\*              lnP, *\/ */
+  /*             /\*              disk->ldsk ? disk->ldsk->n_next : 0, *\/ */
+  /*             /\*              disk->n_ldsk_a); *\/ */
+  /*           } */
           
-          if((n_hits > 0) && ((disk->ldsk && disk->ldsk->n_next > 1) || (disk->age_fixed == YES)))
-            {
-              Z = LnGamma(n_hits+1);
-              assert(disk->next);
-              dt += fabs(disk->time - disk->next->time);
-              assert(dt>0.0);
-              Z -= n_hits*log(dt);
-              dt = 0.0;
-              n_hits = 0;
-              lnP += Z;
-              /* PhyML_Printf("\n. T disk=%s time=%f Z=%f lnP=%f n_next=%d n_lineages=%d", */
-              /*              disk->id, */
-              /*              disk->time, */
-              /*              Z, */
-              /*              lnP, */
-              /*              disk->ldsk ? disk->ldsk->n_next : 0, */
-              /*              disk->n_ldsk_a); */
-            }
+  /*         if((n_hits > 0) && ((disk->ldsk && disk->ldsk->n_next > 1) || (disk->age_fixed == YES))) */
+  /*           { */
+  /*             Z = LnGamma(n_hits+1); */
+  /*             assert(disk->next); */
+  /*             dt += fabs(disk->time - disk->next->time); */
+  /*             assert(dt>0.0); */
+  /*             Z -= n_hits*log(dt); */
+  /*             dt = 0.0; */
+  /*             n_hits = 0; */
+  /*             lnP += Z; */
+  /*             /\* PhyML_Printf("\n. T disk=%s time=%f Z=%f lnP=%f n_next=%d n_lineages=%d", *\/ */
+  /*             /\*              disk->id, *\/ */
+  /*             /\*              disk->time, *\/ */
+  /*             /\*              Z, *\/ */
+  /*             /\*              lnP, *\/ */
+  /*             /\*              disk->ldsk ? disk->ldsk->n_next : 0, *\/ */
+  /*             /\*              disk->n_ldsk_a); *\/ */
+  /*           } */
           
-          disk = disk->prev;
-        }
-      while(disk);
+  /*         disk = disk->prev; */
+  /*       } */
+  /*     while(disk); */
 
-      /* PhyML_Printf("\n. T lnP=%f",lnP); */
+  /*     /\* PhyML_Printf("\n. T lnP=%f",lnP); *\/ */
 
-    }
+  /*   } */
   
   tree->times->c_lnL = lnP;
 
@@ -1002,44 +1004,44 @@ phydbl TIMES_Lk_Coalescent_Range(t_dsk *young, t_dsk *old, t_tree *tree)
   lnP -= (tree->n_otu-1) * log(Ne);
 
 
-  if(tree->times->augmented_coalescent == YES)
-    {
-      int n_hits;
-      t_dsk *disk;
-      phydbl dt,Z;
+  /* if(tree->times->augmented_coalescent == YES) */
+  /*   { */
+  /*     int n_hits; */
+  /*     t_dsk *disk; */
+  /*     phydbl dt,Z; */
       
-      disk = young->prev;
-      /* disk = tree->young_disk->prev; */
+  /*     disk = young->prev; */
+  /*     /\* disk = tree->young_disk->prev; *\/ */
       
-      /* PhyML_Printf("\n\n -----"); */
-      n_hits = 0;
-      dt = 0.0;
-      do
-        {
-          Z = 0.0;
+  /*     /\* PhyML_Printf("\n\n -----"); *\/ */
+  /*     n_hits = 0; */
+  /*     dt = 0.0; */
+  /*     do */
+  /*       { */
+  /*         Z = 0.0; */
 
-          if(disk->ldsk && disk->ldsk->n_next == 1)
-            {
-              n_hits++;
-              assert(disk->next);
-              dt += fabs(disk->time - disk->next->time);
-            }
+  /*         if(disk->ldsk && disk->ldsk->n_next == 1) */
+  /*           { */
+  /*             n_hits++; */
+  /*             assert(disk->next); */
+  /*             dt += fabs(disk->time - disk->next->time); */
+  /*           } */
           
-          if((n_hits > 0) && ((disk->ldsk && disk->ldsk->n_next > 1) || (disk->age_fixed == YES)))
-            {
-              Z = LnGamma(n_hits+1);
-              assert(disk->next);
-              dt += fabs(disk->time - disk->next->time);
-              assert(dt>0.0);
-              Z -= n_hits*log(dt);
-              dt = 0.0;
-              n_hits = 0;
-              lnP+=Z;
-            }
-          disk = disk->prev;
-        }
-      while(disk != NULL && disk != old->prev);
-    }
+  /*         if((n_hits > 0) && ((disk->ldsk && disk->ldsk->n_next > 1) || (disk->age_fixed == YES))) */
+  /*           { */
+  /*             Z = LnGamma(n_hits+1); */
+  /*             assert(disk->next); */
+  /*             dt += fabs(disk->time - disk->next->time); */
+  /*             assert(dt>0.0); */
+  /*             Z -= n_hits*log(dt); */
+  /*             dt = 0.0; */
+  /*             n_hits = 0; */
+  /*             lnP+=Z; */
+  /*           } */
+  /*         disk = disk->prev; */
+  /*       } */
+  /*     while(disk != NULL && disk != old->prev); */
+  /*   } */
 
   return(lnP);
 }

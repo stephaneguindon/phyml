@@ -6650,6 +6650,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%s\t","glnL");
           PhyML_Fprintf(fp_stats,"%s\t","rlnL");
           PhyML_Fprintf(fp_stats,"%s\t","coalescent");
+          PhyML_Fprintf(fp_stats,"%s\t","sumLnL");
           PhyML_Fprintf(fp_stats,"%s\t","clockRate");
           PhyML_Fprintf(fp_stats,"%s\t","meanRate");
           PhyML_Fprintf(fp_stats,"%s\t","meanBr");
@@ -6721,9 +6722,11 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
 
           PhyML_Fprintf(fp_stats,"%s\t","aux0LocLnL");
           PhyML_Fprintf(fp_stats,"%s\t","aux0TimeLnL");
+          PhyML_Fprintf(fp_stats,"%s\t","aux0SumLnL");
 
           PhyML_Fprintf(fp_stats,"%s\t","aux1LocLnL");
           PhyML_Fprintf(fp_stats,"%s\t","aux1TimeLnL");
+          PhyML_Fprintf(fp_stats,"%s\t","aux1SumLnL");
 
           /* for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"sigsq%d%c\t", */
           /*                                                  i, */
@@ -6761,6 +6764,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->c_lnL);
       PhyML_Fprintf(fp_stats,"%g\t",tree->rates->c_lnL);          
       PhyML_Fprintf(fp_stats,"%g\t",tree->times->c_lnL);
+      PhyML_Fprintf(fp_stats,"%g\t",tree->times->c_lnL+tree->mmod->c_lnL);
       PhyML_Fprintf(fp_stats,"%g\t",tree->rates->clock_r);
       PhyML_Fprintf(fp_stats,"%g\t",RATES_Realized_Substitution_Rate(tree));
       PhyML_Fprintf(fp_stats,"%g\t",RATES_Get_Mean_Rate_In_Subtree(tree->n_root,tree));
@@ -6833,9 +6837,11 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
 
       PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[0]->mmod->c_lnL);
       PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[0]->times->c_lnL);
+      PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[0]->mmod->c_lnL+tree->aux_tree[0]->times->c_lnL);
 
       PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[1]->mmod->c_lnL);
       PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[1]->times->c_lnL);
+      PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[1]->mmod->c_lnL+tree->aux_tree[1]->times->c_lnL);
 
       /* for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->sigsq_scale[i]); */
       /* for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->times->nd_t[i]-tree->times->nd_t[tree->a_nodes[i]->anc->num]); */

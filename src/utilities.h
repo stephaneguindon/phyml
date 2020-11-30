@@ -2015,6 +2015,7 @@ typedef struct __Disk_Event{
   phydbl                    time;
   struct __Disk_Event      *next;
   struct __Disk_Event      *prev;
+  struct __Disk_Event       *img;
   struct __Lindisk_Node **ldsk_a; // array of lindisk nodes corresponding to this disk event.
   int                   n_ldsk_a; // size of ldsk_a.
   struct __Lindisk_Node    *ldsk;
@@ -2052,6 +2053,7 @@ typedef struct __Lindisk_Node{
   struct __Disk_Event *baseline;
   struct __Lindisk_Node  **next;
   struct __Lindisk_Node   *prev;
+  struct __Lindisk_Node    *img;
   struct __Geo_Coord     *coord; 
   struct __Geo_Coord *cpy_coord; 
   short int              is_hit;

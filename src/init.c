@@ -907,7 +907,7 @@ void TIMES_Init_Time_Struct(t_time *times, t_time *existing_times, int n_otu)
 
   times->scaled_pop_size     = 1.E+2;
   times->scaled_pop_size_min = 0.0;
-  times->scaled_pop_size_max = 1.E+8;
+  times->scaled_pop_size_max = 1.E+3;
   
   times->c_lnL         = UNLIKELY;
   times->p_lnL         = UNLIKELY;
@@ -3456,6 +3456,7 @@ void PHYREX_Init_Disk_Event(t_dsk *t, int n_dim, t_phyrex_mod *mmod)
 {
   t->prev      = NULL;
   t->next      = NULL;
+  t->img       = NULL;
   t->mmod      = NULL;
   t->age_fixed = NO;
   t->cum_glnL  = 0.0;
@@ -3531,12 +3532,12 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->update_rad        = NO;
   
   t->min_sigsq         = 0.0;
-  t->max_sigsq         = 1.E+7;
+  t->max_sigsq         = 1.E+3;
   t->prior_param_sigsq = 10.0;
 
   assert(t->n_dim > 0);
   /* for(int i=0;i<t->n_dim;++i) t->sigsq[i] = t->min_sigsq + (t->max_sigsq-t->min_sigsq)/20.; */
-  for(int i=0;i<t->n_dim;++i) t->sigsq[i] = 1.0;
+  for(int i=0;i<t->n_dim;++i) t->sigsq[i] = 10.0;
   
   t->nu = 1.0E-0;
 
@@ -3559,7 +3560,8 @@ void PHYREX_Init_Lindisk_Node(t_ldsk *t, t_dsk *disk, int n_dim)
   t->disk    = disk;
   /* disk->ldsk = t; */
   t->prev    = NULL;
-  t->next    = NULL;  
+  t->next    = NULL;
+  t->img     = NULL;
   t->nd      = NULL;
   t->is_hit  = NO;
   t->n_next  = 0;

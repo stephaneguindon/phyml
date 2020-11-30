@@ -955,7 +955,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"clock")) MCMC_Clock_R(tree);
       if(!strcmp(tree->mcmc->move_name[move],"nu")) MCMC_Nu(tree);
 
-      
       if(tree->mmod->c_lnL < UNLIKELY || tree->c_lnL < UNLIKELY)
         {
           PhyML_Printf("\n. Move: %s tree->mmod->c_lnL: %f tree->c_lnL: %f",
@@ -4359,3 +4358,75 @@ void PHYREX_Update_Ldsk_Sigsq_Given_One_Edge(t_node *d, t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+void PHYREX_Duplicate_Ldsk_Struct(t_tree *from, t_tree *where)  
+{
+  t_dsk *cpy_disk,*disk;
+  t_ldsk *cpy_ldsk,*ldsk;
+  int i;
+  
+  disk = from->n_root->ldsk->disk;
+
+  do
+    {
+      disk->img = PHYREX_Make_Disk_Event(from->mmod->n_dim,from->n_otu);
+      PHYREX_Init_Disk_Event(disk->img,from->mmod->n_dim,from->mmod);
+
+      disk->img->n_ldsk_a = disk->n_ldsk_a;
+      disk->img->age_fixed = disk->age_fixed;
+      disk->img->time = disk->time;
+
+      for(i=0;i<from->mmod->n_dim;++i) disk->img->centr->lonlat[i] = disk->centr->lonlat[i]; 
+
+      if(disk->ldsk != NULL)
+        {
+          disk->img->ldsk = PHYREX_Make_Lindisk_Node(from->mmod->n_dim);
+          PHYREX_Init_Lindisk_Node(disk->img->ldsk,disk->img,from->mmod->n_dim);
+
+          for(i=0;i<from->mmod->n_dim;++i) disk->img->ldsk->coord->lonlat[i] = disk->ldsk->coord->lonlat[i];
+
+          disk->ldsk->img = disk->img->ldsk;
+          disk->ldsk->img->n_next = disk->ldsk->n_next;
+          for(i=0;i<disk->ldsk->n_next;++i) PHYREX_Make_Lindisk_Next(disk->ldsk->img);
+
+          disk->ldsk->img->prev = disk->ldsk->prev->img;
+
+          if(disk->ldsk->nd != NULL)
+            {
+              disk->ldsk->img->nd = where->a_nodes[disk->ldsk->nd->num];
+              where->a_nodes[disk->ldsk->nd->num]->ldsk = disk->ldsk->img;
+            }
+          
+          disk->ldsk->img->rr = disk->ldsk->rr;
+          disk->ldsk->img->sigsq = disk->ldsk->sigsq;
+        }
+      
+      if(disk->age_fixed == YES)
+        {
+          for(i=0;i<disk->n_ldsk_a;++i) disk->img->ldsk_a[i] = disk->ldsk_a[i]->img;
+        }
+        
+      disk->img->prev = disk->prev->img;
+      disk->prev->img->next = disk->img;
+      
+      disk = disk->next;
+    }
+  while(disk != NULL);
+  
+  
+  disk = from->n_root->ldsk->disk;  
+  do
+    {
+      if(disk->ldsk != NULL)
+        {
+          assert(disk->ldsk->n_next == disk->ldsk->img->n_next);
+          for(i=0;i<disk->ldsk->n_next;++i) disk->ldsk->img->next[i] = disk->ldsk->next[i]->img;
+        }
+      
+      disk = disk->next;      
+    }
+  while(disk);
+
+  where->young_disk = from->young_disk->img;
+  PHYREX_Update_Lindisk_List(where);
+}
