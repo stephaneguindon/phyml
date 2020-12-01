@@ -562,7 +562,7 @@ void MCMC_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
       r_max        = tree->rates->max_rate;
       ratio        = 0.0;
       move_num     = tree->mcmc->num_move_br_r;
-      K            = 1.0;
+      K            = 0.1;
       cur_lnL_seq  = tree->c_lnL;
       new_lnL_seq  = UNLIKELY;
       cur_lnL_rate = tree->rates->c_lnL;
@@ -4674,7 +4674,7 @@ void MCMC_Nu(t_tree *tree)
   ratio = 0.0;
 
   K = tree->mcmc->tune_move[tree->mcmc->num_move_nu];
-
+  
   cur_lnL_rate = tree->rates->c_lnL;
   new_lnL_rate = UNLIKELY;
 
@@ -4703,7 +4703,7 @@ void MCMC_Nu(t_tree *tree)
     }
 
   if(tree->eval_rlnL == YES) ratio += (new_lnL_rate - cur_lnL_rate);
-  if(tree->eval_alnL == YES) ratio += (new_lnL_seq - cur_lnL_seq);
+  if(tree->eval_alnL == YES && tree->rates->model_id == GUINDON) ratio += (new_lnL_seq - cur_lnL_seq);
   
   ratio = exp(ratio);
   alpha = MIN(1.,ratio);
