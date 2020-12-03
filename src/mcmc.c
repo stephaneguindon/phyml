@@ -575,7 +575,7 @@ void MCMC_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
           tree->rates->br_r[d->num] = new_mu;      
           tree->rates->br_do_updt[d->num] = YES;
           
-          if(tree->eval_alnL == YES) new_lnL_seq  = Lk(b,tree);
+          if(tree->eval_alnL == YES) new_lnL_seq  = Lk(NULL,tree);
           if(tree->eval_rlnL == YES) new_lnL_rate = RATES_Lk(tree);
         }  
 
@@ -600,8 +600,6 @@ void MCMC_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
           tree->rates->br_r[d->num] = cur_mu;	  
           tree->c_lnL               = cur_lnL_seq;
           tree->rates->c_lnL        = cur_lnL_rate;
-          RATES_Update_One_Edge_Length(b,tree);
-          Update_PMat_At_Given_Edge(b,tree);          
         }
       else
         {
@@ -7698,7 +7696,7 @@ void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree)
           target_disk[i]->time = ori_time[i];
           PHYREX_Update_Node_Times_Given_Disks(tree);
           RATES_Reset_Rates(tree);
-          RATES_Update_Edge_Lengths(tree);
+          /* RATES_Update_Edge_Lengths(tree); */
           Reset_Lk(tree);
         }
       else
