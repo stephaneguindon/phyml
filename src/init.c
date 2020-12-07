@@ -907,7 +907,7 @@ void TIMES_Init_Time_Struct(t_time *times, t_time *existing_times, int n_otu)
 
   times->scaled_pop_size     = 1.E+2;
   times->scaled_pop_size_min = 0.0;
-  times->scaled_pop_size_max = 1.E+3;
+  times->scaled_pop_size_max = 1.E+4;
   
   times->c_lnL         = UNLIKELY;
   times->p_lnL         = UNLIKELY;
