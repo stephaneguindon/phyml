@@ -1374,7 +1374,7 @@ void Free_Geo_Coord(t_geo_coord *t)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-void Free_Disk(t_dsk *t)
+void PHYREX_Free_Disk(t_dsk *t)
 {
   Free_Geo_Coord(t->centr);
   Free(t->ldsk_a);
@@ -1385,7 +1385,7 @@ void Free_Disk(t_dsk *t)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-void Free_Ldisk(t_ldsk *t)
+void PHYREX_Free_Ldisk(t_ldsk *t)
 {
   if(t == NULL) return;
   else
@@ -1396,6 +1396,33 @@ void Free_Ldisk(t_ldsk *t)
       Free(t);
     }
 }
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void PHYREX_Free_Ldsk_Struct(t_tree *tree)
+{
+  t_dsk *disk,*next;
+  int i;
+  
+  assert(tree);
+  assert(tree->n_root);
+  assert(tree->n_root->ldsk);
+  assert(tree->n_root->ldsk->disk);
+  
+  disk = tree->n_root->ldsk->disk;
+  do
+    {
+      if(disk->ldsk) PHYREX_Free_Ldisk(disk->ldsk);
+      next = disk->next;
+      PHYREX_Free_Disk(disk);
+      disk = next;
+    }
+  while(disk);
+
+  for(i=0;i<tree->n_otu;++i) PHYREX_Free_Ldisk(tree->a_nodes[i]->ldsk);
+}
+
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

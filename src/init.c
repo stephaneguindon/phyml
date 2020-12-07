@@ -1144,6 +1144,8 @@ void Init_Model(calign *data, t_mod *mod, option *io)
     {
       /* init for nucleotides */
 
+      for(i=0;i<mod->ns;i++) mod->e_frq->pi->v[i] = 1./(phydbl)mod->ns;
+      
       if(mod->whichmodel == JC69)
         {
           mod->e_frq->pi->v[0] = mod->e_frq->pi->v[1] = mod->e_frq->pi->v[2] = mod->e_frq->pi->v[3] = .25;

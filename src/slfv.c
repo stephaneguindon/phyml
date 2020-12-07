@@ -1388,7 +1388,7 @@ t_sarea *SLFV_Simulate_Forward_Core(int n_sites, t_tree *tree)
       if((disk->prev->ldsk != NULL) && (disk->prev->ldsk->n_next == 0))
         {
           /* printf("\n. free %s @ %f",disk->ldsk->coord->id,disk->time); */
-          Free_Ldisk(disk->prev->ldsk);
+          PHYREX_Free_Ldisk(disk->prev->ldsk);
           disk->prev->ldsk = NULL;
         }
 
@@ -2057,8 +2057,8 @@ t_tree *SLFV_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl h
       while(disk->prev)
         {
           disk = disk->prev;
-          if(disk->next->ldsk != NULL) Free_Ldisk(disk->next->ldsk);
-          Free_Disk(disk->next);
+          if(disk->next->ldsk != NULL) PHYREX_Free_Ldisk(disk->next->ldsk);
+          PHYREX_Free_Disk(disk->next);
         }
 
       locus_idx++;

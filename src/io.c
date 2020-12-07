@@ -6712,14 +6712,6 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
 
           PhyML_Fprintf(fp_stats,"%s\t","tuneAuxSlide");
 
-          PhyML_Fprintf(fp_stats,"%s\t","aux0RootLon");
-          PhyML_Fprintf(fp_stats,"%s\t","aux0RootLat");
-          PhyML_Fprintf(fp_stats,"%s\t","aux0RootTime");
-
-          PhyML_Fprintf(fp_stats,"%s\t","aux1RootLon");
-          PhyML_Fprintf(fp_stats,"%s\t","aux1RootLat");
-          PhyML_Fprintf(fp_stats,"%s\t","aux1RootTime");
-
           PhyML_Fprintf(fp_stats,"%s\t","aux0LocLnL");
           PhyML_Fprintf(fp_stats,"%s\t","aux0TimeLnL");
           PhyML_Fprintf(fp_stats,"%s\t","aux0SumLnL");
@@ -6826,14 +6818,6 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[0]->mcmc->acc_rate[tree->aux_tree[0]->mcmc->num_move_phyrex_ldsk_given_disk]);
 
       PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[0]->mcmc->tune_move[tree->aux_tree[0]->mcmc->num_move_phyrex_spr_slide]);
-
-      PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[0]->n_root->ldsk->coord->lonlat[0]);
-      PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[0]->n_root->ldsk->coord->lonlat[1]);
-      PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[0]->n_root->ldsk->disk->time);
-
-      PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[1]->n_root->ldsk->coord->lonlat[0]);
-      PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[1]->n_root->ldsk->coord->lonlat[1]);
-      PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[1]->n_root->ldsk->disk->time);
 
       PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[0]->mmod->c_lnL);
       PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[0]->times->c_lnL);

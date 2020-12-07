@@ -70,7 +70,7 @@ phydbl RRW_Lk_Core(t_dsk *disk, t_tree *tree)
   if(disk->ldsk != NULL)
     {
       for(i=0;i<disk->ldsk->n_next;++i)
-        {
+        {          
           lnP += RRW_Forward_Lk_Path(disk->ldsk,disk->ldsk->next[i],tree);
         }
     }
@@ -184,6 +184,8 @@ phydbl RRW_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
   int i,err;
   t_node *nd_d;
 
+  assert(a != NULL);
+  assert(d != NULL);
   
   lnP = 0.0;
 
