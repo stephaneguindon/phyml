@@ -1451,7 +1451,6 @@ void PHYREX_Update_Lindisk_List_Core(t_dsk *disk, t_tree *tree)
   if(!disk->next) return;
   
   assert(disk->ldsk_a);
-
   
   // Set ldsk_a[i] to NULL if it does not point to a tip node
   for(i=0;i<tree->n_otu;++i)
@@ -1460,12 +1459,16 @@ void PHYREX_Update_Lindisk_List_Core(t_dsk *disk, t_tree *tree)
          disk->ldsk_a[i]->nd->tax == YES &&
          disk->age_fixed == YES &&
          disk->ldsk_a[i]->disk == disk))      
-      disk->ldsk_a[i] = NULL;
-    
+      {
+        disk->ldsk_a[i] = NULL;
+      }
+  
   disk->n_ldsk_a = 0;
   for(i=0;i<tree->n_otu;++i)
     if(disk->ldsk_a[i] != NULL)
-      disk->n_ldsk_a++;
+      {
+        disk->n_ldsk_a++;
+      }
   
   // Make sure the tip nodes are all at the top of ldsk_a
   for(i=0;i<disk->n_ldsk_a;++i) assert(disk->ldsk_a[i] != NULL);
@@ -1480,9 +1483,10 @@ void PHYREX_Update_Lindisk_List_Core(t_dsk *disk, t_tree *tree)
          (disk->next->ldsk_a[i]->prev == NULL))
         {
           disk->ldsk_a[disk->n_ldsk_a] = disk->next->ldsk_a[i];
-          disk->n_ldsk_a++;
+          disk->n_ldsk_a++;          
         }
     }
+
 
   // A jump or coalescence has occurred on disk->next
   // --> add the lineage to disk->ldsk_a array
@@ -1499,8 +1503,9 @@ void PHYREX_Update_Lindisk_List_Core(t_dsk *disk, t_tree *tree)
   /*                                     disk->ldsk->next[0]->coord->id, */
   /*                                     disk->ldsk->next[0]->disk->time, */
   /*                                     disk->ldsk->next[0]->prev->coord->id); */
-  /* PhyML_Printf("\n. n_ldsk_a: %d",disk->n_ldsk_a); */
+
   
+
   if(disk->n_ldsk_a == 0 || disk->n_ldsk_a > tree->n_otu) 
     {
       PhyML_Fprintf(stderr,"\n. disk: %s (%p,%d) time: %f next: %s (%f,%d,%c,%d) prev: %s (%f,%d) disk->n_ldsk_a: %d coord: %s n_otu: %d",
@@ -4374,8 +4379,7 @@ void PHYREX_Duplicate_Ldsk_Struct(t_tree *from, t_tree *where)
     {
       disk->img = PHYREX_Make_Disk_Event(from->mmod->n_dim,from->n_otu);
       PHYREX_Init_Disk_Event(disk->img,where->mmod->n_dim,where->mmod);
-      
-      disk->img->n_ldsk_a = disk->n_ldsk_a;
+        
       disk->img->age_fixed = disk->age_fixed;
       disk->img->time = disk->time;
 
@@ -4408,9 +4412,9 @@ void PHYREX_Duplicate_Ldsk_Struct(t_tree *from, t_tree *where)
       
       if(disk->age_fixed == YES)
         {
-          for(i=0;i<disk->n_ldsk_a;++i)
+          for(i=0;i<from->n_otu;++i)
             {
-              if(disk->ldsk_a[i]->n_next == 0)
+              if(disk->ldsk_a[i] && disk->ldsk_a[i]->n_next == 0 && disk->ldsk_a[i]->disk == disk)
                 {
                   assert(disk->ldsk_a[i]->nd != NULL);
 
@@ -4450,7 +4454,6 @@ void PHYREX_Duplicate_Ldsk_Struct(t_tree *from, t_tree *where)
   disk = from->n_root->ldsk->disk;  
   do
     {
-
       if(disk->ldsk != NULL)
         {
           assert(disk->ldsk->img->n_next == disk->ldsk->n_next); 
@@ -4463,9 +4466,25 @@ void PHYREX_Duplicate_Ldsk_Struct(t_tree *from, t_tree *where)
       disk = disk->next;
     }
   while(disk);
-
   
   where->young_disk = from->young_disk->img;
   PHYREX_Update_Lindisk_List(where);
-  PHYREX_Ldsk_To_Tree(where);  
+  PHYREX_Ldsk_To_Tree(where);
+  
 }
+
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
