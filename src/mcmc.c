@@ -6639,10 +6639,10 @@ void MCMC_PHYREX_Sigsq(t_tree *tree)
       K            = tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_sigsq];
       neff_orig    = tree->times->scaled_pop_size;
       hr           = 0.0;
-      n_mcmc_steps = aux_tree->mcmc->run + tree->n_otu*20;
+      n_mcmc_steps = aux_tree->mcmc->run + tree->n_otu*5;
       
       /* Perform small jumps in order to facilitate convergence of inner sampler */
-      K = 1.0;
+      K = 0.1;
       
       dim_idx = Rand_Int(0,tree->mmod->n_dim-1);
       
@@ -6936,11 +6936,11 @@ void MCMC_PHYREX_Neff(t_tree *tree)
       aux_tree     = tree->aux_tree[1];
       sigsq_orig   = tree->mmod->sigsq[0];
       hr           = 0.0;
-      n_mcmc_steps = aux_tree->mcmc->run + tree->n_otu*20;
+      n_mcmc_steps = aux_tree->mcmc->run + tree->n_otu*5;
       aux_above_truth = 0;
       
       /* Perform small jumps in order to facilitate convergence of inner sampler */
-      K = 1.0;
+      K = 0.1;
       
       Set_Lk(tree);
 
@@ -9048,10 +9048,7 @@ void MCMC_PHYREX_Prune_Regraft_Slide(t_tree *tree)
   
   if(tree->mod->s_opt->opt_topo == NO) return;
 
-  /* Beware of indefinitely adapting tuning parameter !!!!! */
-  if(tree->mcmc->run < tree->mcmc->chain_len_burnin) tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_spr_slide] = (tree->young_disk->time - tree->n_root->ldsk->disk->time)/10.;
-  K = tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_spr_slide];
-
+  K = (tree->young_disk->time - tree->n_root->ldsk->disk->time)/10.;
   
   n_iter = (int)(1+Rand_Int(0,0.2*tree->n_otu));
 

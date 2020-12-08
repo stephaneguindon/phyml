@@ -1449,6 +1449,7 @@ void PHYREX_Update_Lindisk_List_Core(t_dsk *disk, t_tree *tree)
 
   if(!disk) return;
   if(!disk->next) return;
+
   
   assert(disk->ldsk_a);
   
@@ -1487,7 +1488,7 @@ void PHYREX_Update_Lindisk_List_Core(t_dsk *disk, t_tree *tree)
         }
     }
 
-
+  
   // A jump or coalescence has occurred on disk->next
   // --> add the lineage to disk->ldsk_a array
   if(disk->next->ldsk != NULL)
@@ -1495,6 +1496,7 @@ void PHYREX_Update_Lindisk_List_Core(t_dsk *disk, t_tree *tree)
       disk->ldsk_a[disk->n_ldsk_a] = disk->next->ldsk;
       disk->n_ldsk_a++;
     }
+
 
   /* PhyML_Printf("\n"); */
   /* for(i=0;i<disk->n_ldsk_a;++i) PhyML_Printf("\n. Disk %s [%12f] ldsk_a: %s (%3d)",disk->id,disk->time,disk->ldsk_a[i]->coord->id,disk->ldsk_a[i]->nd ? disk->ldsk_a[i]->nd->tax : -1); */
@@ -1505,7 +1507,6 @@ void PHYREX_Update_Lindisk_List_Core(t_dsk *disk, t_tree *tree)
   /*                                     disk->ldsk->next[0]->prev->coord->id); */
 
   
-
   if(disk->n_ldsk_a == 0 || disk->n_ldsk_a > tree->n_otu) 
     {
       PhyML_Fprintf(stderr,"\n. disk: %s (%p,%d) time: %f next: %s (%f,%d,%c,%d) prev: %s (%f,%d) disk->n_ldsk_a: %d coord: %s n_otu: %d",
@@ -4380,6 +4381,7 @@ void PHYREX_Duplicate_Ldsk_Struct(t_tree *from, t_tree *where)
       disk->img = PHYREX_Make_Disk_Event(from->mmod->n_dim,from->n_otu);
       PHYREX_Init_Disk_Event(disk->img,where->mmod->n_dim,where->mmod);
         
+      disk->img->n_ldsk_a = disk->n_ldsk_a;
       disk->img->age_fixed = disk->age_fixed;
       disk->img->time = disk->time;
 
@@ -4466,11 +4468,10 @@ void PHYREX_Duplicate_Ldsk_Struct(t_tree *from, t_tree *where)
       disk = disk->next;
     }
   while(disk);
-  
+
   where->young_disk = from->young_disk->img;
   PHYREX_Update_Lindisk_List(where);
-  PHYREX_Ldsk_To_Tree(where);
-  
+  PHYREX_Ldsk_To_Tree(where);  
 }
 
 
