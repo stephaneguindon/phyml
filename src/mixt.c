@@ -1051,10 +1051,8 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
 
           /* Multiply log likelihood by the number of times this site pattern is found in the data */
           mixt_tree->c_lnL_sorted[site] = mixt_tree->data->wght[site]*log_site_lk;
-
           
           mixt_tree->c_lnL += mixt_tree->data->wght[site]*log_site_lk;
-
         }
 
       Free(sum_scale_left_cat);

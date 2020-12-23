@@ -454,6 +454,7 @@ phydbl Lk(t_edge *b, t_tree *tree)
   const unsigned int ncatg = tree->mod->ras->n_catg;
   const unsigned int npatterns = tree->n_pattern;
   const unsigned int nsncatg = ns * ncatg;
+
   
   tree->numerical_warning = NO;
   
@@ -465,9 +466,7 @@ phydbl Lk(t_edge *b, t_tree *tree)
       Optimize_Free_Rate_Weights(tree,YES,YES);
       tree->mod->s_opt->curr_opt_free_rates = YES;
     }
-  
-  
-  
+    
   if(tree->is_mixt_tree == YES) 
     {
 #ifdef BEAGLE
@@ -628,6 +627,8 @@ phydbl Lk(t_edge *b, t_tree *tree)
       else
         {
           if(tree->data->wght[site] > SMALL) Lk_Core(state,ambiguity_check,p_lk_left,p_lk_rght,b->Pij_rr,b->tPij_rr,b,tree);
+
+          PhyML_Printf("\n> site: %4d lnL: %f",site,tree->c_lnL);
 
           if(b->rght->tax == YES)
             {
@@ -1307,9 +1308,6 @@ void Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
       Update_Partial_Lk_Generic(tree,b,d);
     }
 #endif
-
-
-  //  Print_Edge_Likelihoods(tree, b, false);
 }
 
 //////////////////////////////////////////////////////////////
@@ -2166,9 +2164,24 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
   phydbl len;
   phydbl l_min, l_max;
   phydbl shape, scale, mean, var;
-
+  
+  if(b_fcus->Pij_rr == NULL)
+    {
+      PhyML_Printf("\n. b_fcus is e_root ? %d node left: %d node rght: %d left is root ? %d right is root ? %d [%p] [%d]",
+                   (b_fcus == tree->e_root) ? 1 : 0,
+                   b_fcus->left->num,
+                   b_fcus->rght->num,
+                   (b_fcus->left == tree->n_root) ? 1 : 0,
+                   (b_fcus->rght == tree->n_root) ? 1 : 0,
+                   tree->aux_tree,
+                   tree->eval_alnL);
+      assert(false);
+    }
+  
   assert(b_fcus);
   assert(tree);
+  assert(b_fcus->Pij_rr);
+  assert(tree->eval_alnL == YES);
   
   if(tree->is_mixt_tree == YES)
     {

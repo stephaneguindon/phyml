@@ -104,7 +104,7 @@ void Init_Tree(t_tree *tree, int n_otu)
   tree->mixt_tree                 = NULL;
   tree->geo                       = NULL;
   tree->xml_root                  = NULL;
-  tree->aux_tree                = NULL;
+  tree->aux_tree                  = NULL;
   tree->verbose                   = VL3;
   tree->edge_list                 = NULL;
   tree->node_list                 = NULL;
@@ -907,7 +907,7 @@ void TIMES_Init_Time_Struct(t_time *times, t_time *existing_times, int n_otu)
 
   times->scaled_pop_size     = 1.E+2;
   times->scaled_pop_size_min = 0.0;
-  times->scaled_pop_size_max = 1.E+4;
+  times->scaled_pop_size_max = 1.E+3;
   
   times->c_lnL         = UNLIKELY;
   times->p_lnL         = UNLIKELY;

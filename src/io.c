@@ -6742,12 +6742,12 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
         }
     }
 
-  if(!(tree->mcmc->run%tree->mcmc->sample_interval))
+  if(!(tree->mcmc->run%tree->mcmc->sample_interval) && tree->mcmc->sample_interval > 0)
     {
-      Lk(NULL,tree);
-      TIMES_Lk(tree);
-      RATES_Lk(tree);
-      LOCATION_Lk(tree);
+      /* Lk(NULL,tree); */
+      /* TIMES_Lk(tree); */
+      /* RATES_Lk(tree); */
+      /* LOCATION_Lk(tree); */
       
       PhyML_Fprintf(fp_stats,"\n");
       PhyML_Fprintf(fp_stats,"%6d\t",tree->mcmc->run);
@@ -6888,7 +6888,7 @@ void PHYREX_Print_MCMC_Tree(t_tree *tree)
       PhyML_Fprintf(fp_tree,"\n;");
     }
 
-  if(!(tree->mcmc->run%tree->mcmc->sample_interval))
+  if(!(tree->mcmc->run%tree->mcmc->sample_interval) && tree->mcmc->sample_interval > 0)
     {
       PHYREX_Ldsk_To_Tree(tree);
       TIMES_Time_To_Bl(tree);
@@ -6914,7 +6914,7 @@ void PHYREX_Print_MCMC_Tree(t_tree *tree)
 #if (defined PHYREX)
 void PHYREX_Print_MCMC_Summary(t_tree *tree)
 {  
-  if(!(tree->mcmc->run%tree->mcmc->print_every))
+  if(!(tree->mcmc->run%tree->mcmc->print_every) && tree->mcmc->print_every > 0)
     {
       PhyML_Fprintf(stdout,"\n. %10d %30s %20f %20f %20f %20f %15f",
                     tree->mcmc->run,

@@ -444,6 +444,8 @@ void RATES_Copy_Rate_Struct(t_rate *from, t_rate *to, int n_otu)
   to->log_K_cur = from->log_K_cur;
   to->cur_comb_numb = from->cur_comb_numb;
 
+  to->norm_fact = from->norm_fact;
+  
   for(i=0;i<2*n_otu-1;++i) to->nd_r[i] = from->nd_r[i];
   for(i=0;i<2*n_otu-1;++i) to->br_r[i] = from->br_r[i];
   for(i=0;i<2*n_otu-1;++i) to->buff_br_r[i] = from->buff_br_r[i];
@@ -1106,7 +1108,7 @@ void RATES_Update_One_Edge_Length(t_edge *b, t_tree *tree)
           tree->e_root->l_var->v = 
             pow((t1-t0)/(t1+t2-2.*t0),2)*tree->rates->cur_gamma_prior_var[n0->num] +
             pow((t2-t0)/(t1+t2-2.*t0),2)*tree->rates->cur_gamma_prior_var[n1->num];
-        }      
+        }
     }
   else
     {

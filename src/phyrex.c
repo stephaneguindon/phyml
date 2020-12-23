@@ -405,70 +405,51 @@ void PHYREX_XML(char *xml_filename)
   if(mixt_tree->mmod->model_id == RRW || mixt_tree->mmod->model_id == RW)
     {
       mixt_tree->aux_tree = (t_tree **)mCalloc(2,sizeof(t_tree *));
-      
-      /* Auxilliary tree for updating dispersal parameter in RRW and RW models */
-      mixt_tree->aux_tree[0] = Make_Tree_From_Scratch(mixt_tree->n_otu,mixt_tree->data);
-      mixt_tree->aux_tree[0]->mod = mixt_tree->mod;
-      mixt_tree->aux_tree[0]->io = mixt_tree->io;
-        
-      mixt_tree->aux_tree[0]->mmod = PHYREX_Make_Migrep_Model(mixt_tree->n_otu,2);
-      mixt_tree->aux_tree[0]->mmod->n_dim = 2;
-      PHYREX_Set_Default_Migrep_Mod(mixt_tree->n_otu,mixt_tree->aux_tree[0]->mmod);
-      mixt_tree->aux_tree[0]->mmod->model_id = mixt_tree->mmod->model_id; 
-      mixt_tree->aux_tree[0]->mmod->use_locations = mixt_tree->mmod->use_locations;
-      
-      Copy_Tree(mixt_tree,mixt_tree->aux_tree[0]);
-      
-      mixt_tree->aux_tree[0]->rates = RATES_Make_Rate_Struct(mixt_tree->n_otu);
-      RATES_Init_Rate_Struct(mixt_tree->aux_tree[0]->rates,NULL,mixt_tree->n_otu);
-      RATES_Copy_Rate_Struct(mixt_tree->rates,mixt_tree->aux_tree[0]->rates,mixt_tree->n_otu);
-      mixt_tree->aux_tree[0]->rates->model_id = LOGNORMAL;
-      
-      mixt_tree->aux_tree[0]->times = TIMES_Make_Time_Struct(mixt_tree->n_otu);
-      TIMES_Init_Time_Struct(mixt_tree->aux_tree[0]->times,NULL,mixt_tree->n_otu);
-      TIMES_Copy_Time_Struct(mixt_tree->times,mixt_tree->aux_tree[0]->times,mixt_tree->n_otu);
-      
-      RATES_Duplicate_Calib_Struct(mixt_tree,mixt_tree->aux_tree[0]);
-      MIXT_Chain_Cal(mixt_tree->aux_tree[0]);  
-      DATE_Assign_Primary_Calibration(mixt_tree->aux_tree[0]);
-      
-      mixt_tree->aux_tree[0]->mcmc = MCMC_Make_MCMC_Struct();
-      MCMC_Init_MCMC_Struct(NULL,NULL,mixt_tree->aux_tree[0]->mcmc);
-      MCMC_Complete_MCMC(mixt_tree->aux_tree[0]->mcmc,mixt_tree->aux_tree[0]);
-      mixt_tree->aux_tree[0]->mcmc->chain_len_burnin = mixt_tree->io->mcmc->chain_len_burnin;
 
 
+      /* Auxilliary tree for updating dispersal parameter in RRW and RW models first (i=0) and pop. size after (i=1) */
+      for(int i=0;i<2;++i)
+        {
+          t_tree *aux_tree;
+          
+          mixt_tree->aux_tree[i] = Make_Tree_From_Scratch(mixt_tree->n_otu,mixt_tree->data);
+          aux_tree = mixt_tree->aux_tree[i];
+          
+          aux_tree->mod = mixt_tree->mod;
+          aux_tree->io = mixt_tree->io;
+          
+          aux_tree->mmod = PHYREX_Make_Migrep_Model(mixt_tree->n_otu,2);
+          aux_tree->mmod->n_dim = 2;
+          PHYREX_Set_Default_Migrep_Mod(mixt_tree->n_otu,aux_tree->mmod);
+          aux_tree->mmod->model_id = mixt_tree->mmod->model_id; 
+          aux_tree->mmod->use_locations = mixt_tree->mmod->use_locations;
+          
+          Copy_Tree(mixt_tree,aux_tree);
 
-      /* Auxilliary tree for updating effective pop density */
-      mixt_tree->aux_tree[1] = Make_Tree_From_Scratch(mixt_tree->n_otu,mixt_tree->data);
-      mixt_tree->aux_tree[1]->mod = mixt_tree->mod;
-      mixt_tree->aux_tree[1]->io = mixt_tree->io;
+          aux_tree->rates = RATES_Make_Rate_Struct(mixt_tree->n_otu);
+          RATES_Init_Rate_Struct(aux_tree->rates,NULL,mixt_tree->n_otu);
+          RATES_Copy_Rate_Struct(mixt_tree->rates,aux_tree->rates,mixt_tree->n_otu);
+          aux_tree->rates->model_id = LOGNORMAL;
       
-      mixt_tree->aux_tree[1]->mmod = PHYREX_Make_Migrep_Model(mixt_tree->n_otu,2);
-      mixt_tree->aux_tree[1]->mmod->n_dim = 2;
-      PHYREX_Set_Default_Migrep_Mod(mixt_tree->n_otu,mixt_tree->aux_tree[1]->mmod);
-      mixt_tree->aux_tree[1]->mmod->model_id = mixt_tree->mmod->model_id; 
-      mixt_tree->aux_tree[1]->mmod->use_locations = mixt_tree->mmod->use_locations;
-      
-      Copy_Tree(mixt_tree,mixt_tree->aux_tree[1]);
-      
-      mixt_tree->aux_tree[1]->rates = RATES_Make_Rate_Struct(mixt_tree->n_otu);
-      RATES_Init_Rate_Struct(mixt_tree->aux_tree[1]->rates,NULL,mixt_tree->n_otu);
-      RATES_Copy_Rate_Struct(mixt_tree->rates,mixt_tree->aux_tree[1]->rates,mixt_tree->n_otu);
-      mixt_tree->aux_tree[1]->rates->model_id = LOGNORMAL;
-      
-      mixt_tree->aux_tree[1]->times = TIMES_Make_Time_Struct(mixt_tree->n_otu);
-      TIMES_Init_Time_Struct(mixt_tree->aux_tree[1]->times,NULL,mixt_tree->n_otu);
-      TIMES_Copy_Time_Struct(mixt_tree->times,mixt_tree->aux_tree[1]->times,mixt_tree->n_otu);
-      
-      RATES_Duplicate_Calib_Struct(mixt_tree,mixt_tree->aux_tree[1]);
-      MIXT_Chain_Cal(mixt_tree->aux_tree[1]);  
-      DATE_Assign_Primary_Calibration(mixt_tree->aux_tree[1]);
-      
-      mixt_tree->aux_tree[1]->mcmc = MCMC_Make_MCMC_Struct();
-      MCMC_Init_MCMC_Struct(NULL,NULL,mixt_tree->aux_tree[1]->mcmc);
-      MCMC_Complete_MCMC(mixt_tree->aux_tree[1]->mcmc,mixt_tree->aux_tree[1]);
-      mixt_tree->aux_tree[1]->mcmc->chain_len_burnin = mixt_tree->io->mcmc->chain_len_burnin;
+          aux_tree->times = TIMES_Make_Time_Struct(mixt_tree->n_otu);
+          TIMES_Init_Time_Struct(aux_tree->times,NULL,mixt_tree->n_otu);
+          TIMES_Copy_Time_Struct(mixt_tree->times,aux_tree->times,mixt_tree->n_otu);
+          
+          RATES_Duplicate_Calib_Struct(mixt_tree,aux_tree);
+          MIXT_Chain_Cal(aux_tree);  
+          DATE_Assign_Primary_Calibration(aux_tree);
+          
+          aux_tree->data = mixt_tree->data;
+          aux_tree->n_pattern = mixt_tree->n_pattern;
+          Connect_CSeqs_To_Nodes(mixt_tree->data,mixt_tree->io,aux_tree);
+          Share_Lk_Struct(mixt_tree->next,aux_tree);
+          
+          aux_tree->mcmc = MCMC_Make_MCMC_Struct();
+          MCMC_Init_MCMC_Struct(NULL,NULL,aux_tree->mcmc);
+          MCMC_Complete_MCMC(aux_tree->mcmc,aux_tree);
+          aux_tree->mcmc->chain_len_burnin = mixt_tree->io->mcmc->chain_len_burnin;
+          aux_tree->mcmc->run = 1;
+        }
     }
 
   
@@ -1450,6 +1431,7 @@ void PHYREX_Update_Lindisk_List_Core(t_dsk *disk, t_tree *tree)
   if(!disk) return;
   if(!disk->next) return;
 
+  /* PhyML_Printf("\n. Time: %f",disk->time); */
   
   assert(disk->ldsk_a);
   
@@ -1470,6 +1452,8 @@ void PHYREX_Update_Lindisk_List_Core(t_dsk *disk, t_tree *tree)
       {
         disk->n_ldsk_a++;
       }
+
+  /* PhyML_Printf(" [%d]",disk->n_ldsk_a); */
   
   // Make sure the tip nodes are all at the top of ldsk_a
   for(i=0;i<disk->n_ldsk_a;++i) assert(disk->ldsk_a[i] != NULL);
@@ -1488,6 +1472,8 @@ void PHYREX_Update_Lindisk_List_Core(t_dsk *disk, t_tree *tree)
         }
     }
 
+  /* PhyML_Printf(" <%d>",disk->n_ldsk_a); */
+
   
   // A jump or coalescence has occurred on disk->next
   // --> add the lineage to disk->ldsk_a array
@@ -1497,6 +1483,7 @@ void PHYREX_Update_Lindisk_List_Core(t_dsk *disk, t_tree *tree)
       disk->n_ldsk_a++;
     }
 
+  /* PhyML_Printf(" !%d!",disk->n_ldsk_a); */
 
   /* PhyML_Printf("\n"); */
   /* for(i=0;i<disk->n_ldsk_a;++i) PhyML_Printf("\n. Disk %s [%12f] ldsk_a: %s (%3d)",disk->id,disk->time,disk->ldsk_a[i]->coord->id,disk->ldsk_a[i]->nd ? disk->ldsk_a[i]->nd->tax : -1); */
@@ -4468,7 +4455,8 @@ void PHYREX_Duplicate_Ldsk_Struct(t_tree *from, t_tree *where)
       disk = disk->next;
     }
   while(disk);
-
+  
+  where->old_samp_disk = from->old_samp_disk->img;
   where->young_disk = from->young_disk->img;
   PHYREX_Update_Lindisk_List(where);
   PHYREX_Ldsk_To_Tree(where);  

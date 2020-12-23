@@ -21,6 +21,7 @@ phydbl LOCATION_Lk(t_tree *tree);
 phydbl LOCATION_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree);
 phydbl LOCATION_Lk_Core(t_dsk *disk, t_tree *tree);
 void LOCATION_Sample_Path(t_ldsk *young, t_ldsk *old, phydbl *sd, phydbl *global_hr, t_tree *tree);
+phydbl LOCATION_Lk_Path(t_dsk *young, t_dsk *old, t_tree *tree);
 
 
 #endif

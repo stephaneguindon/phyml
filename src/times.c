@@ -899,8 +899,10 @@ phydbl TIMES_Lk_Coalescent(t_tree *tree)
     }
 
   lnP -= (tree->n_otu-1) * log(Ne);
-  /* PhyML_Printf("\n. FINAL: %f",lnP); */
-  
+
+  /* lnP += TIMES_Prior_Ne(tree); */
+
+    
   /* if(tree->times->augmented_coalescent == YES) */
   /*   { */
   /*     int n_hits; */
@@ -1003,6 +1005,7 @@ phydbl TIMES_Lk_Coalescent_Range(t_dsk *young, t_dsk *old, t_tree *tree)
   
   lnP -= (tree->n_otu-1) * log(Ne);
 
+  /* lnP += TIMES_Prior_Ne(tree); */
 
   /* if(tree->times->augmented_coalescent == YES) */
   /*   { */
@@ -1044,6 +1047,14 @@ phydbl TIMES_Lk_Coalescent_Range(t_dsk *young, t_dsk *old, t_tree *tree)
   /*   } */
 
   return(lnP);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl TIMES_Prior_Ne(t_tree *tree)
+{
+  return(log(Dexp(tree->times->scaled_pop_size,1.0)));
 }
 
 //////////////////////////////////////////////////////////////

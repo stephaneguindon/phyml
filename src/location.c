@@ -99,6 +99,37 @@ phydbl LOCATION_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+phydbl LOCATION_Lk_Path(t_dsk *young, t_dsk *old, t_tree *tree)
+{    
+  if(tree->mmod->use_locations == NO) return(0.0);
+
+  switch(tree->mmod->model_id)
+    {
+    case SLFV_GAUSSIAN : 
+      {
+        return(SLFV_Lk_Gaussian_Range(young,old,tree));
+        break;
+      }
+    case SLFV_UNIFORM :
+      {
+        PhyML_Fprintf(stderr,"\n. SLFV model with rectangle is not implemented. Sorry...");
+        assert(false);
+        break;
+      }
+    case RW : case RRW : 
+      {
+        return(RRW_Forward_Lk_Path(old->ldsk,young->ldsk,tree));
+        break;
+      }
+    default : assert(FALSE);
+    }
+  
+  return(-1.);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 phydbl LOCATION_Lk_Core(t_dsk *disk, t_tree *tree)
 {
   phydbl lnL;

@@ -18,7 +18,7 @@ the GNU public licence. See http://www.opensource.org for details.
 phydbl RRW_Lk(t_tree *tree)
 {
   phydbl d_fwd,d_sigsq_scale;
-
+  
   d_fwd = 0.0;
   d_sigsq_scale = 0.0;
   
@@ -47,6 +47,7 @@ phydbl RRW_Lk(t_tree *tree)
 phydbl RRW_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
 {
   phydbl lnP;
+
   lnP = RRW_Forward_Lk_Range(young,old,tree);
   lnP += RRW_Prior_Sigsq_Scale(tree); /* Not optimal but ok. Should have RRW_Prior_Sigsq_Scale_Range(young,old,tree) instead here */
   return(lnP);
@@ -218,7 +219,7 @@ phydbl RRW_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
           /* assert(!Are_Equal(la,0.0,1.E-5)); */
 
           disk_lnP += Log_Dnorm(ld,la,sd,&err);
-
+          
           if(isinf(lnP) || isnan(lnP)) return(UNLIKELY);
 
           if(isnan(lnP))

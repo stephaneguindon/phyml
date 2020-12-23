@@ -94,6 +94,7 @@ phydbl TIMES_Lk_SLFV(t_tree *tree);
 phydbl TIMES_Lk_SLFV_Range(t_dsk *young, t_dsk *old, t_tree *tree);
 phydbl TIMES_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree);
 phydbl TIMES_Lk(t_tree *tree);
+phydbl TIMES_Prior_Ne(t_tree *tree);
 
 
 #endif

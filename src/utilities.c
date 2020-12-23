@@ -1327,7 +1327,7 @@ void Share_Lk_Struct(t_tree *t_full, t_tree *t_empt)
   t_empt->dot_prod             = t_full->dot_prod;
   t_empt->expl                 = t_full->expl;
 
-  For(i,2*n_otu-3)
+  for(i=0;i<2*n_otu-1;++i)
     {
       b_f = t_full->a_edges[i];
       b_e = t_empt->a_edges[i];
@@ -1345,57 +1345,57 @@ void Share_Lk_Struct(t_tree *t_full, t_tree *t_empt)
       n_e = t_empt->a_nodes[i];
 
       for(j=0;j<3;j++)
-    {
-      if(n_f->b[j]->left == n_f)
         {
-          if(n_e->b[j]->left == n_e)
-        {
-          n_e->b[j]->p_lk_left          = n_f->b[j]->p_lk_left;
-          n_e->b[j]->p_lk_loc_left      = n_f->b[j]->p_lk_loc_left;
-          n_e->b[j]->patt_id_left       = n_f->b[j]->patt_id_left;
-          n_e->b[j]->sum_scale_left     = n_f->b[j]->sum_scale_left;
-          n_e->b[j]->sum_scale_left_cat = n_f->b[j]->sum_scale_left_cat;
-          n_e->b[j]->p_lk_tip_l         = n_f->b[j]->p_lk_tip_l;
-        }
+          if(n_f->b[j]->left == n_f)
+            {
+              if(n_e->b[j]->left == n_e)
+                {
+                  n_e->b[j]->p_lk_left          = n_f->b[j]->p_lk_left;
+                  n_e->b[j]->p_lk_loc_left      = n_f->b[j]->p_lk_loc_left;
+                  n_e->b[j]->patt_id_left       = n_f->b[j]->patt_id_left;
+                  n_e->b[j]->sum_scale_left     = n_f->b[j]->sum_scale_left;
+                  n_e->b[j]->sum_scale_left_cat = n_f->b[j]->sum_scale_left_cat;
+                  n_e->b[j]->p_lk_tip_l         = n_f->b[j]->p_lk_tip_l;
+                }
+              else
+                {
+                  n_e->b[j]->p_lk_rght          = n_f->b[j]->p_lk_left;
+                  n_e->b[j]->p_lk_loc_rght      = n_f->b[j]->p_lk_loc_left;
+                  n_e->b[j]->patt_id_rght       = n_f->b[j]->patt_id_left;
+                  n_e->b[j]->sum_scale_rght     = n_f->b[j]->sum_scale_left;
+                  n_e->b[j]->sum_scale_rght_cat = n_f->b[j]->sum_scale_left_cat;
+                  n_e->b[j]->p_lk_tip_r         = n_f->b[j]->p_lk_tip_l;
+                }
+            }
           else
-        {
-          n_e->b[j]->p_lk_rght          = n_f->b[j]->p_lk_left;
-          n_e->b[j]->p_lk_loc_rght      = n_f->b[j]->p_lk_loc_left;
-          n_e->b[j]->patt_id_rght       = n_f->b[j]->patt_id_left;
-          n_e->b[j]->sum_scale_rght     = n_f->b[j]->sum_scale_left;
-          n_e->b[j]->sum_scale_rght_cat = n_f->b[j]->sum_scale_left_cat;
-          n_e->b[j]->p_lk_tip_r         = n_f->b[j]->p_lk_tip_l;
-        }
-        }
-      else
-        {
-          if(n_e->b[j]->rght == n_e)
-        {
-          n_e->b[j]->p_lk_rght          = n_f->b[j]->p_lk_rght;
-          n_e->b[j]->p_lk_loc_rght      = n_f->b[j]->p_lk_loc_rght;
-          n_e->b[j]->patt_id_rght       = n_f->b[j]->patt_id_rght;
-          n_e->b[j]->sum_scale_rght     = n_f->b[j]->sum_scale_rght;
-          n_e->b[j]->sum_scale_rght_cat = n_f->b[j]->sum_scale_rght_cat;
-          n_e->b[j]->p_lk_tip_r         = n_f->b[j]->p_lk_tip_r;
-        }
-          else
-        {
-          n_e->b[j]->p_lk_left          = n_f->b[j]->p_lk_rght;
-          n_e->b[j]->p_lk_loc_left      = n_f->b[j]->p_lk_loc_rght;
-          n_e->b[j]->patt_id_left       = n_f->b[j]->patt_id_rght;
-          n_e->b[j]->sum_scale_left     = n_f->b[j]->sum_scale_rght;
-          n_e->b[j]->sum_scale_left_cat = n_f->b[j]->sum_scale_rght_cat;
-          n_e->b[j]->p_lk_tip_l         = n_f->b[j]->p_lk_tip_r;
-        }
+            {
+              if(n_e->b[j]->rght == n_e)
+                {
+                  n_e->b[j]->p_lk_rght          = n_f->b[j]->p_lk_rght;
+                  n_e->b[j]->p_lk_loc_rght      = n_f->b[j]->p_lk_loc_rght;
+                  n_e->b[j]->patt_id_rght       = n_f->b[j]->patt_id_rght;
+                  n_e->b[j]->sum_scale_rght     = n_f->b[j]->sum_scale_rght;
+                  n_e->b[j]->sum_scale_rght_cat = n_f->b[j]->sum_scale_rght_cat;
+                  n_e->b[j]->p_lk_tip_r         = n_f->b[j]->p_lk_tip_r;
+                }
+              else
+                {
+                  n_e->b[j]->p_lk_left          = n_f->b[j]->p_lk_rght;
+                  n_e->b[j]->p_lk_loc_left      = n_f->b[j]->p_lk_loc_rght;
+                  n_e->b[j]->patt_id_left       = n_f->b[j]->patt_id_rght;
+                  n_e->b[j]->sum_scale_left     = n_f->b[j]->sum_scale_rght;
+                  n_e->b[j]->sum_scale_left_cat = n_f->b[j]->sum_scale_rght_cat;
+                  n_e->b[j]->p_lk_tip_l         = n_f->b[j]->p_lk_tip_r;
+                }
+            }
         }
     }
-    }
-
+  
   for(i=0;i<n_otu;i++)
     {
       n_f = t_full->a_nodes[i];
       n_e = t_empt->a_nodes[i];
-
+      
       if(n_f->b[0]->rght == n_f)
         {
           n_e->b[0]->p_lk_rght          = n_f->b[0]->p_lk_rght;
