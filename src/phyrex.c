@@ -907,6 +907,12 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       tree->mcmc->move_idx = move;
       
       assert(!(move == tree->mcmc->n_moves));
+
+
+      phydbl prev_lnL = tree->c_lnL;
+      phydbl prev_loc_lnL = tree->mmod->c_lnL;
+      phydbl prev_rates_lnL = tree->rates->c_lnL;
+      phydbl prev_times_lnL = tree->times->c_lnL;
       
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_lbda")) MCMC_PHYREX_Lbda(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_mu")) MCMC_PHYREX_Mu(tree);
@@ -946,9 +952,29 @@ phydbl *PHYREX_MCMC(t_tree *tree)
                        tree->mmod->c_lnL,tree->c_lnL);
           assert(FALSE);
         }
-
+      
+      phydbl new_lnL = tree->c_lnL;
+      phydbl new_loc_lnL = tree->mmod->c_lnL;
+      phydbl new_rates_lnL = tree->rates->c_lnL;
+      phydbl new_times_lnL = tree->times->c_lnL;
+      if((tree->mcmc->run > 100000) && (new_lnL < prev_lnL - 100))
+        {
+          PhyML_Fprintf(stdout,"\n. new_lnL: %f prev_lnL: %f",new_lnL,prev_lnL);          
+          PhyML_Fprintf(stdout,"\n. new_lnL: %f prev_lnL: %f",new_loc_lnL,prev_loc_lnL);          
+          PhyML_Fprintf(stdout,"\n. new_lnL: %f prev_lnL: %f",new_rates_lnL,prev_rates_lnL);          
+          PhyML_Fprintf(stdout,"\n. new_lnL: %f prev_lnL: %f",new_times_lnL,prev_times_lnL);          
+          PhyML_Fprintf(stdout,"\n. Problem detected with move %s",tree->mcmc->move_name[move]);
+          /* assert(false); */
+        }
+      
       if(tree->mmod->safe_phyrex == YES)
         {
+          if(Are_Equal(RATES_Realized_Substitution_Rate(tree),tree->rates->clock_r,1.E-1)== NO)
+            {
+              PhyML_Fprintf(stderr,"\n. Problem detected with move %s",tree->mcmc->move_name[move]);          
+              assert(false);
+            }
+          
           phydbl c_lnL = tree->c_lnL;
           Lk(NULL,tree);
           if(Are_Equal(c_lnL,tree->c_lnL,1.E-5) == NO)

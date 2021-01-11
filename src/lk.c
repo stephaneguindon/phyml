@@ -628,8 +628,6 @@ phydbl Lk(t_edge *b, t_tree *tree)
         {
           if(tree->data->wght[site] > SMALL) Lk_Core(state,ambiguity_check,p_lk_left,p_lk_rght,b->Pij_rr,b->tPij_rr,b,tree);
 
-          PhyML_Printf("\n> site: %4d lnL: %f",site,tree->c_lnL);
-
           if(b->rght->tax == YES)
             {
               p_lk_left += nsncatg;

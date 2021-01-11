@@ -1652,6 +1652,7 @@ void RATES_Check_Lk_Rates(t_tree *tree, int *err)
 
 phydbl RATES_Realized_Substitution_Rate(t_tree *tree)
 {
+  RATES_Update_Edge_Lengths(tree);
   return(Tree_Length(tree)/TIMES_Tree_Length(tree));  
 }
 
