@@ -1276,7 +1276,7 @@ void MCMC_Root_Time(t_tree *tree)
   phydbl ratio,alpha,hr;
   phydbl t2,t3;
   t_node *v2,*v3;
-  phydbl K,R;
+  phydbl K,R,rate_exp;
   int move_num;
   t_node *root;
 
@@ -1335,11 +1335,21 @@ void MCMC_Root_Time(t_tree *tree)
       PhyML_Fprintf(stderr,"\n. prior_min = %f prior_max = %f",tree->times->t_prior_min[root->num],tree->times->t_prior_max[root->num]);
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
     }
+
+  rate_exp = 1000.;
+  if(t_max - t1_cur > 0.0) rate_exp = LOG2/(t_max - t1_cur);
+  if(rate_exp > 100.) rate_exp = 100;
   
-  assert((t_max - t1_cur) > 0.0);
-  t1_new = t_max - Rexp(LOG2/(t_max - t1_cur));
-  hr -= log(Dexp(t_max - t1_new,LOG2/(t_max - t1_cur)));
-  hr += log(Dexp(t_max - t1_cur,LOG2/(t_max - t1_new)));
+  t1_new = t_max - Rexp(rate_exp);
+  hr -= log(Dexp(t_max - t1_new,rate_exp));
+
+  rate_exp = 1000.;
+  if(t_max - t1_new > 0.0) rate_exp = LOG2/(t_max - t1_new);
+  if(rate_exp > 100.) rate_exp = 100;
+
+  hr += log(Dexp(t_max - t1_cur,rate_exp));
+
+
   if(isnan(t1_new))
     {
       PhyML_Printf("\n. t_max=%f t1_cur=%f t1_new=%f",t_max,t1_cur,t1_new);
@@ -8577,7 +8587,7 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
   int cur_pos,new_pos;
   phydbl *rad;
   phydbl dt_orig,dt_new;
-  phydbl T,K;
+  phydbl T,K,rate_exp;
   
   if(tree->mod->s_opt->opt_topo == NO) return;
 
@@ -8641,7 +8651,6 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
       if(tree->eval_glnL == YES) assert(cur_glnL > UNLIKELY);
       if(tree->eval_alnL == YES) assert(cur_alnL > UNLIKELY);
       if(tree->eval_rlnL == YES) assert(cur_rlnL > UNLIKELY);
-
       
       if(tree->young_disk->next) assert(FALSE);
 
@@ -8711,10 +8720,21 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
       /* T = prune_ldsk_daughter->disk->time - Rexp(-log(K)/(prune_ldsk_daughter->disk->time - tree->n_root->ldsk->disk->time)); */
       /* hr -= log(Dexp(prune_ldsk_daughter->disk->time-T,-log(K)/(prune_ldsk_daughter->disk->time - tree->n_root->ldsk->disk->time))); */
       /* hr += log(Dexp(prune_ldsk_daughter->disk->time-prune_ldsk->disk->time,-log(K)/(prune_ldsk_daughter->disk->time - tree->n_root->ldsk->disk->time))); */
-      T = prune_ldsk_daughter->disk->time - Rexp(-log(K)/(prune_ldsk_daughter->disk->time - prune_ldsk->disk->time));
-      hr -= log(Dexp(prune_ldsk_daughter->disk->time-T,-log(K)/(prune_ldsk_daughter->disk->time - prune_ldsk->disk->time)));
-      hr += log(Dexp(prune_ldsk_daughter->disk->time-prune_ldsk->disk->time,-log(K)/(prune_ldsk_daughter->disk->time - T)));
 
+      rate_exp = 1000.;
+      if(prune_ldsk_daughter->disk->time - prune_ldsk->disk->time > 0.0) rate_exp = -log(K)/(prune_ldsk_daughter->disk->time - prune_ldsk->disk->time);
+      if(rate_exp > 100.) rate_exp = 100.;
+             
+      T = prune_ldsk_daughter->disk->time - Rexp(rate_exp);
+      hr -= log(Dexp(prune_ldsk_daughter->disk->time-T,rate_exp));
+
+      rate_exp = 1000.;
+      if(prune_ldsk_daughter->disk->time - T > 0.0) rate_exp = -log(K)/(prune_ldsk_daughter->disk->time - T);
+      if(rate_exp > 100.) rate_exp = 100.;
+
+      hr += log(Dexp(prune_ldsk_daughter->disk->time-prune_ldsk->disk->time,rate_exp));
+
+      
       disk = prune_ldsk_daughter->disk;
       while(disk->time > T) disk = disk->prev;
       assert(disk);
@@ -8979,6 +8999,19 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
         {
           tree->mmod->c_lnL = new_glnL;
           tree->times->c_lnL = new_tlnL;
+
+          if(!(new_tlnL > UNLIKELY && new_glnL > UNLIKELY))
+            {
+              PhyML_Printf("\n. [%d/%d] tlnL: %f->%f glnL: %f->%f alnL: %f->%f rlnL: %f->%f hr: %f",
+                           n_iter,(int)(1+0.2*tree->n_otu),
+                           cur_tlnL,new_tlnL,
+                           cur_glnL,new_glnL,
+                           cur_alnL,new_alnL,
+                           cur_rlnL,new_rlnL,
+                           hr);
+              
+              assert(false);
+            }
           
           ldsk = cur_path;
           while(ldsk)

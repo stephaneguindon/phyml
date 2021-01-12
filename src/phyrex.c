@@ -945,27 +945,17 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"clock")) MCMC_Clock_R(tree);
       if(!strcmp(tree->mcmc->move_name[move],"nu")) MCMC_Nu(tree);
 
-      if(tree->mmod->c_lnL < UNLIKELY || tree->c_lnL < UNLIKELY)
+      if(tree->mmod->c_lnL < UNLIKELY || tree->c_lnL < UNLIKELY || tree->rates->c_lnL < UNLIKELY || tree->times->c_lnL < UNLIKELY)
         {
           PhyML_Printf("\n. Move: %s tree->mmod->c_lnL: %f tree->c_lnL: %f",
                        tree->mcmc->move_name[move],
-                       tree->mmod->c_lnL,tree->c_lnL);
+                       tree->mmod->c_lnL,
+                       tree->c_lnL,
+                       tree->rates->c_lnL,
+                       tree->times->c_lnL);
           assert(FALSE);
         }
       
-      phydbl new_lnL = tree->c_lnL;
-      phydbl new_loc_lnL = tree->mmod->c_lnL;
-      phydbl new_rates_lnL = tree->rates->c_lnL;
-      phydbl new_times_lnL = tree->times->c_lnL;
-      if((tree->mcmc->run > 100000) && (new_lnL < prev_lnL - 100))
-        {
-          PhyML_Fprintf(stdout,"\n. new_lnL: %f prev_lnL: %f",new_lnL,prev_lnL);          
-          PhyML_Fprintf(stdout,"\n. new_lnL: %f prev_lnL: %f",new_loc_lnL,prev_loc_lnL);          
-          PhyML_Fprintf(stdout,"\n. new_lnL: %f prev_lnL: %f",new_rates_lnL,prev_rates_lnL);          
-          PhyML_Fprintf(stdout,"\n. new_lnL: %f prev_lnL: %f",new_times_lnL,prev_times_lnL);          
-          PhyML_Fprintf(stdout,"\n. Problem detected with move %s",tree->mcmc->move_name[move]);
-          /* assert(false); */
-        }
       
       if(tree->mmod->safe_phyrex == YES)
         {
