@@ -6650,7 +6650,7 @@ void MCMC_PHYREX_Sigsq(t_tree *tree)
       K            = tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_sigsq];
       neff_orig    = tree->times->scaled_pop_size;
       hr           = 0.0;
-      n_mcmc_steps = tree->n_otu*10;
+      n_mcmc_steps = tree->n_otu*100;
             
       for(move=0;move<aux_tree->mcmc->n_moves;move++) aux_tree->mcmc->move_weight[move] = 0.0;
       for(move=0;move<aux_tree->mcmc->n_moves;move++)
@@ -6931,7 +6931,7 @@ void MCMC_PHYREX_Neff(t_tree *tree)
       aux_tree     = tree->aux_tree[1];
       sigsq_orig   = tree->mmod->sigsq[0];
       hr           = 0.0;
-      n_mcmc_steps = tree->n_otu*10;
+      n_mcmc_steps = tree->n_otu*100;
       
       for(move=0;move<aux_tree->mcmc->n_moves;move++) aux_tree->mcmc->move_weight[move] = 0.0;
       for(move=0;move<aux_tree->mcmc->n_moves;move++)
