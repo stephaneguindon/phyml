@@ -909,10 +909,10 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       assert(!(move == tree->mcmc->n_moves));
 
 
-      phydbl prev_lnL = tree->c_lnL;
-      phydbl prev_loc_lnL = tree->mmod->c_lnL;
-      phydbl prev_rates_lnL = tree->rates->c_lnL;
-      phydbl prev_times_lnL = tree->times->c_lnL;
+      /* phydbl prev_lnL = tree->c_lnL; */
+      /* phydbl prev_loc_lnL = tree->mmod->c_lnL; */
+      /* phydbl prev_rates_lnL = tree->rates->c_lnL; */
+      /* phydbl prev_times_lnL = tree->times->c_lnL; */
       
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_lbda")) MCMC_PHYREX_Lbda(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_mu")) MCMC_PHYREX_Mu(tree);
@@ -924,7 +924,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_move_disk_ud")) MCMC_PHYREX_Move_Disk_Updown(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_swap_disk")) MCMC_PHYREX_Swap_Disk(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_scale_times")) MCMC_PHYREX_Scale_Times(tree,NO);
-      if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr")) MCMC_PHYREX_Prune_Regraft(tree);
+      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr")) MCMC_PHYREX_Prune_Regraft(tree); */
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr_slide")) MCMC_PHYREX_Prune_Regraft_Slide(tree);
       if(!strcmp(tree->mcmc->move_name[move],"root_time")) MCMC_Root_Time(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_traj")) MCMC_PHYREX_Lineage_Traj(tree);
@@ -2994,8 +2994,7 @@ phydbl PHYREX_Tree_Height(t_tree *tree)
   t_dsk *disk;
   
   disk = tree->young_disk;  
-  while(disk && disk->prev) disk = disk->prev;
-  
+  while(disk && disk->prev) disk = disk->prev;  
   return(disk->time);
 }
 
@@ -3778,7 +3777,7 @@ phydbl PHYREX_Realized_Dispersal_Dist(t_tree *tree)
   t_root = root_disk->time;
   t_tip = tree->young_disk->time;
   assert(t_tip - t_root > 0.0);
-  \
+  
   disk = tree->young_disk;
   dist = 0.0;
   for(i=0;i<disk->n_ldsk_a;++i)

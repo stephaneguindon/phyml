@@ -23,14 +23,21 @@ the GNU public licence. See http://www.opensource.org for details.
 //////////////////////////////////////////////////////////////
 
 phydbl RATES_Lk(t_tree *tree)
-{  
+{
+  int err,sd;
+  
   if(tree->eval_rlnL == NO) return UNLIKELY;
 
   tree->rates->c_lnL  = .0;
   RATES_Lk_Pre(tree->n_root,tree->n_root->v[2],NULL,tree);
   RATES_Lk_Pre(tree->n_root,tree->n_root->v[1],NULL,tree);
 
-  if(isnan(tree->rates->c_lnL)) assert(false);
+  err = NO;
+  sd = 1.;
+  tree->rates->c_lnL += Log_Dnorm(log(tree->rates->br_r[tree->n_root->num]),-sd*sd/2.,sd,&err);
+  tree->rates->c_lnL -= log(tree->rates->br_r[tree->n_root->num]);
+  
+  if(isnan(tree->rates->c_lnL) || err == YES) assert(false);
   
   return tree->rates->c_lnL;
 }
@@ -56,11 +63,11 @@ void RATES_Lk_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
   dt_a = -1.;
   if(a != tree->n_root) dt_a = tree->times->nd_t[a->num] - tree->times->nd_t[a->anc->num];
 
-  if(a == tree->n_root)
-    {
-      tree->rates->br_r[a->num] = 1.0;
-      tree->rates->nd_r[a->num] = 1.0;
-    }
+  /* if(a == tree->n_root) */
+  /*   { */
+  /*     tree->rates->br_r[a->num] = 1.0; */
+  /*     tree->rates->nd_r[a->num] = 1.0; */
+  /*   } */
   
   mu_a = tree->rates->br_r[a->num];
   r_a  = tree->rates->nd_r[a->num];
