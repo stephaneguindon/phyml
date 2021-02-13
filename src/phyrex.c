@@ -924,7 +924,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_move_disk_ud")) MCMC_PHYREX_Move_Disk_Updown(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_swap_disk")) MCMC_PHYREX_Swap_Disk(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_scale_times")) MCMC_PHYREX_Scale_Times(tree,NO);
-      /* if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr")) MCMC_PHYREX_Prune_Regraft(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr")) MCMC_PHYREX_Prune_Regraft(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr_slide")) MCMC_PHYREX_Prune_Regraft_Slide(tree);
       if(!strcmp(tree->mcmc->move_name[move],"root_time")) MCMC_Root_Time(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_traj")) MCMC_PHYREX_Lineage_Traj(tree);
