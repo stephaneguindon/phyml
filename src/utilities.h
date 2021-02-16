@@ -1702,6 +1702,9 @@ typedef struct __Tmcmc {
   int *move_type;
   char **move_name;
 
+  time_t time_beg;
+  time_t time_end;
+  
   int num_move_nd_r;
   int num_move_br_r;
   int num_move_times;

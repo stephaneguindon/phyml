@@ -852,7 +852,10 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   mcmc->max_lag          = 1000;
   mcmc->sample_size      = mcmc->chain_len/mcmc->sample_interval;
   mcmc->sample_num       = 0;
-      
+
+  time(&(mcmc->time_beg));
+  time(&(mcmc->time_end));
+
   MCMC_Complete_MCMC(mcmc,tree);
   
   MIXT_Set_Bl_From_Rt(YES,tree);
@@ -884,6 +887,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   PHYREX_Print_MCMC_Stats(tree);
   PHYREX_Print_MCMC_Tree(tree);
   PHYREX_Print_MCMC_Summary(tree);
+  
   
   Set_Both_Sides(NO,tree);
   mcmc->always_yes = NO;

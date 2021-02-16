@@ -6645,6 +6645,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           
           PhyML_Fprintf(fp_stats,"\n");
           PhyML_Fprintf(fp_stats,"%s\t","sample");
+          PhyML_Fprintf(fp_stats,"%s\t","speed");
           PhyML_Fprintf(fp_stats,"%s\t","lnP");
           PhyML_Fprintf(fp_stats,"%s\t","alnL");
           PhyML_Fprintf(fp_stats,"%s\t","glnL");
@@ -6748,9 +6749,12 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       /* TIMES_Lk(tree); */
       /* RATES_Lk(tree); */
       /* LOCATION_Lk(tree); */
+
+      time(&(tree->mcmc->time_end));
       
       PhyML_Fprintf(fp_stats,"\n");
       PhyML_Fprintf(fp_stats,"%6d\t",tree->mcmc->run);
+      PhyML_Fprintf(fp_stats,"%g\t",difftime(tree->mcmc->time_end,tree->mcmc->time_beg)/(phydbl)tree->mcmc->sample_interval);
       PhyML_Fprintf(fp_stats,"%g\t",tree->c_lnL+tree->mmod->c_lnL+tree->rates->c_lnL+tree->times->c_lnL);
       PhyML_Fprintf(fp_stats,"%g\t",tree->c_lnL);
       PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->c_lnL);
@@ -6848,10 +6852,13 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       /* for(i=0;i<tree->mcmc->n_moves;i++) if(tree->mcmc->start_ess[i] == YES) MCMC_Update_Effective_Sample_Size(i,tree->mcmc,tree); */
       /* for(i=0;i<tree->mcmc->n_moves;i++) MCMC_Update_Mode(i,tree->mcmc,tree); */
       
-      fflush(NULL);                
+      fflush(NULL);
+      
+      time(&(tree->mcmc->time_beg));
       
       tree->mcmc->sample_num++;
     }
+  
 }
 #endif
 
