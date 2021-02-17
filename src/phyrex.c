@@ -3767,36 +3767,45 @@ phydbl PHYREX_Root_To_Tip_Realized_Sigsq(t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
-// Mean Haversine distance (in km) per year (measured on path between root and tips on the most recent disk) 
+// Mean Haversine distance (in km) per year (measured on all paths between each internal node and its children) 
 phydbl PHYREX_Realized_Dispersal_Dist(t_tree *tree)
 {
   t_dsk *disk,*root_disk;
-  phydbl dist,t_tip,t_root;
-  int i;
+  phydbl dist,dt;
+  int n,i;
   
   disk = tree->young_disk;
   while(disk->prev) disk = disk->prev;
   root_disk = disk;
 
-  t_root = root_disk->time;
-  t_tip = tree->young_disk->time;
-  assert(t_tip - t_root > 0.0);
   
-  disk = tree->young_disk;
   dist = 0.0;
-  for(i=0;i<disk->n_ldsk_a;++i)
+  n = 0;
+  disk = root_disk;
+  do
     {
-      dist += Haversine_Distance(root_disk->ldsk->coord->lonlat[0],
-                                 root_disk->ldsk->coord->lonlat[1],
-                                 disk->ldsk_a[i]->coord->lonlat[0],
-                                 disk->ldsk_a[i]->coord->lonlat[1])/(t_tip - t_root);
-        
+      if(disk->ldsk != NULL)
+        {
+          for(i=0;i<disk->ldsk->n_next;++i)
+            {
+              dt = disk->ldsk->next[i]->disk->time - disk->time;
+              n++;
+              
+              dist +=
+                Haversine_Distance(disk->ldsk->coord->lonlat[0], 
+                                   disk->ldsk->coord->lonlat[1],
+                                   disk->ldsk->next[i]->coord->lonlat[0],
+                                   disk->ldsk->next[i]->coord->lonlat[1])/dt;
+                
+            }
+        }
+      disk = disk->next;
     }
-  
-  return(dist/disk->n_ldsk_a);
+  while(disk);
+  return(dist/(phydbl)n);
 }
 
-/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
 phydbl PHYREX_Tip_To_Root_Realized_Sigsq(t_tree *tree)
