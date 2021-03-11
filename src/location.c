@@ -19,6 +19,8 @@ the GNU public licence. See http://www.opensource.org for details.
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#ifdef PHYREX
+
 phydbl LOCATION_Lk(t_tree *tree)
 {
   phydbl lnP;
@@ -191,3 +193,5 @@ void LOCATION_Sample_Path(t_ldsk *young, t_ldsk *old, phydbl *sd, phydbl *global
     default : assert(FALSE);
     }
 }
+
+#endif
