@@ -47,7 +47,6 @@ void TIMES_Set_Floor(t_tree *tree);
 void TIMES_Set_Floor_Post(t_node *a, t_node *d, t_tree *tree);
 phydbl TIMES_Log_Conditional_Uniform_Density(t_tree *tree);
 phydbl TIMES_Log_Yule(t_tree *tree);
-phydbl TIMES_Lk_Times(int verbose, t_tree *tree);
 void TIMES_Lk_Times_Trav(t_node *a, t_node *d, phydbl lim_inf, phydbl lim_sup, phydbl *logdens, t_tree *tree);
 phydbl TIMES_Log_Number_Of_Ranked_Labelled_Histories(t_node *root, int per_slice, t_tree *tree);
 void TIMES_Log_Number_Of_Ranked_Labelled_Histories_Post(t_node *a, t_node *d, int per_slice, phydbl *logn, t_tree *tree);
@@ -91,5 +90,11 @@ phydbl TIMES_Lk_Coalescent(t_tree *tree);
 phydbl TIMES_Wrap_Lk_Coalescent(t_edge *b, t_tree *tree, supert_tree *stree);
 void TIMES_Simulate_Coalescent(t_tree *tree);
 phydbl TIMES_Lk_Coalescent_Range(t_dsk *young, t_dsk *old, t_tree *tree);
+phydbl TIMES_Lk_SLFV(t_tree *tree);
+phydbl TIMES_Lk_SLFV_Range(t_dsk *young, t_dsk *old, t_tree *tree);
+phydbl TIMES_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree);
+phydbl TIMES_Lk(t_tree *tree);
+phydbl TIMES_Prior_Ne(t_tree *tree);
+
 
 #endif

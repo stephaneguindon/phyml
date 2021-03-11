@@ -104,7 +104,7 @@ void Init_Tree(t_tree *tree, int n_otu)
   tree->mixt_tree                 = NULL;
   tree->geo                       = NULL;
   tree->xml_root                  = NULL;
-  tree->aux_tree                = NULL;
+  tree->aux_tree                  = NULL;
   tree->verbose                   = VL3;
   tree->edge_list                 = NULL;
   tree->node_list                 = NULL;
@@ -121,12 +121,13 @@ void Init_Tree(t_tree *tree, int n_otu)
   tree->best_lnL                  = UNLIKELY;
   tree->old_lnL                   = UNLIKELY;
   tree->c_lnL                     = UNLIKELY;
+  tree->p_lnL                     = UNLIKELY;
   tree->sum_min_sum_scale         = .0;
   tree->n_swap                    = 0;
   tree->best_pars                 = 1E+5;
   tree->n_pattern                 = -1;
   tree->n_root_pos                = -1.;
-  tree->write_labels              = YES;
+  tree->print_labels              = YES;
   tree->write_br_lens             = YES;
   tree->num_curr_branch_available = 0;
   tree->tip_order_score           = .0;
@@ -231,6 +232,7 @@ void Init_Node_Light(t_node *n, int num)
   n->y_rank_max             = 0.;
   n->y_rank_min             = 0.;
   n->anc                    = NULL;
+  n->b_anc                    = NULL;
   n->rank                   = 0;
   n->match_node             = NULL;
   n->id_rank                = 0;
@@ -835,7 +837,8 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
     }
 
   rates->met_within_gibbs = NO;
-  rates->c_lnL_rates      = UNLIKELY;
+  rates->c_lnL      = UNLIKELY;
+  rates->p_lnL      = UNLIKELY;
   rates->adjust_rates     = 0;
   rates->use_rates        = 1;
   rates->lexp             = 1.E-3;
@@ -843,28 +846,30 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
   rates->inflate_var      = 1.0;
   rates->br_r_recorded    = NO;
 
-
-  rates->max_rate  = 1.E+8;
-  rates->min_rate  = 1.E-8;
-
-  rates->clock_r       = 1.E-4;
-  rates->min_clock     = 1.E-10;
-  rates->max_clock     = 1.E+0;
+  /* Important to start from high subst. rate to ``reveal'' time structure */
+  /* Low rate, and thus old root, makes serially sampled data look like */
+  /* tips all have the same age. */
+  rates->clock_r          = 1.E-1;
+  rates->min_clock        = 1.E-8;
+  rates->max_clock        = 1.E+2;
   
-  rates->nu            = 1.0E-0;
-  rates->min_nu        = 0.0;
-  rates->max_nu        = 2.0;
+  rates->max_rate         = 1.E+1;
+  rates->min_rate         = 1.E-1;
+
+  rates->nu               = 3.0;
+  rates->min_nu           = 0.0;
+  rates->max_nu           = 1.0E+3;
   
-  rates->min_dt        = 0.0;
+  rates->min_dt           = 0.0;
 
-  rates->step_rate     = 1.E-4;
-  rates->approx        = 1;
-  rates->bl_from_rt    = NO;
+  rates->step_rate        = 1.E-4;
+  rates->approx           = 1;
+  rates->bl_from_rt       = NO;
 
-  rates->update_mean_l = NO;
-  rates->update_cov_l  = NO;
+  rates->update_mean_l    = NO;
+  rates->update_cov_l     = NO;
 
-  rates->p_max         = 0.01;
+  rates->p_max            = 0.01;
 
   if(n_otu > 0)
     {
@@ -879,10 +884,8 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
       
       for(i=0;i<2*n_otu-1;++i)
         {
-          rates->nd_r[i]   = 1.0;
-          rates->br_r[i]   = 1.0;
-          
-          
+          rates->nd_r[i] = 1.0;
+          rates->br_r[i] = 1.0;
           rates->br_do_updt[i] = YES;
         }
     }
@@ -902,14 +905,14 @@ void TIMES_Init_Time_Struct(t_time *times, t_time *existing_times, int n_otu)
       times->model_id = COALESCENT;
     }
 
-  times->scaled_pop_size      = 100.0;
-  times->scaled_pop_size_min  = 0.0;
-  times->scaled_pop_size_max  = 1.E+5;
+  times->scaled_pop_size     = 1.E+2;
+  times->scaled_pop_size_min = 0.0;
+  times->scaled_pop_size_max = 1.E+3;
   
-  times->c_lnL_times      = UNLIKELY;
-  times->c_lnL_times      = UNLIKELY;
-  times->c_lnL_jps        = UNLIKELY;
-  times->nd_t_recorded    = NO;
+  times->c_lnL         = UNLIKELY;
+  times->p_lnL         = UNLIKELY;
+  times->c_lnL_jps     = UNLIKELY;
+  times->nd_t_recorded = NO;
 
   times->birth_rate       = 1.E-1;
   times->birth_rate_min   = 1.E-6;
@@ -1141,6 +1144,8 @@ void Init_Model(calign *data, t_mod *mod, option *io)
     {
       /* init for nucleotides */
 
+      for(i=0;i<mod->ns;i++) mod->e_frq->pi->v[i] = 1./(phydbl)mod->ns;
+      
       if(mod->whichmodel == JC69)
         {
           mod->e_frq->pi->v[0] = mod->e_frq->pi->v[1] = mod->e_frq->pi->v[2] = mod->e_frq->pi->v[3] = .25;
@@ -3453,8 +3458,11 @@ void PHYREX_Init_Disk_Event(t_dsk *t, int n_dim, t_phyrex_mod *mmod)
 {
   t->prev      = NULL;
   t->next      = NULL;
+  t->img       = NULL;
   t->mmod      = NULL;
   t->age_fixed = NO;
+  t->cum_glnL  = 0.0;
+  t->cum_tlnL  = 0.0;
   
   Random_String(t->id,3);
   GEO_Init_Coord(t->centr,n_dim);
@@ -3470,18 +3478,22 @@ void PHYREX_Init_Migrep_Mod(t_phyrex_mod *t, int n_dim, phydbl min_lat, phydbl m
   assert(n_dim == 2);
 
   if(t->model_id == -1) t->model_id = SLFV_GAUSSIAN;
-  t->n_dim              = n_dim;
+
+  t->n_dim = n_dim;
   
-  t->lim_up->lonlat[0]   = max_lat;
-  t->lim_up->lonlat[1]   = max_lon;
+  if(t->sampling_scheme == -1) t->sampling_scheme = SPATIAL_SAMPLING_DETECTION;
+  if(t->use_locations == -1) t->use_locations = YES;
+  
+  t->lim_up->lonlat[0] = max_lat;
+  t->lim_up->lonlat[1] = max_lon;
 
-  t->lim_do->lonlat[0]   = min_lat;
-  t->lim_do->lonlat[1]   = min_lon;
+  t->lim_do->lonlat[0] = min_lat;
+  t->lim_do->lonlat[1] = min_lon;
 
-  t->min_rad           = 0.0;
-  t->max_rad           = 1.0*((max_lat-min_lat)+(max_lon-min_lon));
-  t->rad               = 0.01*((max_lat-min_lat)+(max_lon-min_lon));
-  t->prior_param_rad   = 1./(0.1*((max_lat-min_lat)+(max_lon-min_lon)));
+  t->min_rad = 0.0;
+  t->max_rad = 1.0*((max_lat-min_lat)+(max_lon-min_lon));
+  t->rad = 0.01*((max_lat-min_lat)+(max_lon-min_lon));
+  t->prior_param_rad = 1./(0.1*((max_lat-min_lat)+(max_lon-min_lon)));
 }
 
 //////////////////////////////////////////////////////////////
@@ -3489,13 +3501,15 @@ void PHYREX_Init_Migrep_Mod(t_phyrex_mod *t, int n_dim, phydbl min_lat, phydbl m
 
 void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
 {
-  for(int i=0;i<2*n_otu-2;++i) t->sigsq_scale[i] = 1.0;
+  for(int i=0;i<2*n_otu-1;++i) t->sigsq_scale[i] = 1.0;
 
   t->sigsq_scale_min = 0.01;
   t->sigsq_scale_max = 100.;
   
-  t->model_id    = -1;
-  t->safe_phyrex = YES;
+  t->model_id = -1;
+  t->use_locations = -1;
+  t->sampling_scheme = -1;
+  t->safe_phyrex = NO;
   
   t->lim_up->lonlat[0] = 100.;
   t->lim_up->lonlat[1] = 100.;
@@ -3520,20 +3534,24 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->update_rad        = NO;
   
   t->min_sigsq         = 0.0;
-  t->max_sigsq         = 1.E+2;
-  t->sigsq             = 1.0;
+  t->max_sigsq         = 1.E+3;
   t->prior_param_sigsq = 10.0;
-  
-  t->nu                = 1.0;
 
-  t->c_lnL             = UNLIKELY;
-  t->c_ln_prior_rad    = UNLIKELY;
-  t->c_ln_prior_lbda   = UNLIKELY;
-  t->c_ln_prior_mu     = UNLIKELY;
-
-  t->soft_bound_area   = 0.1;
+  assert(t->n_dim > 0);
+  /* for(int i=0;i<t->n_dim;++i) t->sigsq[i] = t->min_sigsq + (t->max_sigsq-t->min_sigsq)/20.; */
+  for(int i=0;i<t->n_dim;++i) t->sigsq[i] = 10.0;
   
-  t->max_num_of_intervals = 1000000;
+  t->nu = 1.0E-0;
+
+  t->c_lnL = UNLIKELY;
+  t->p_lnL = UNLIKELY;
+  t->c_ln_prior_rad = UNLIKELY;
+  t->c_ln_prior_lbda = UNLIKELY;
+  t->c_ln_prior_mu = UNLIKELY;
+
+  t->soft_bound_area = 0.1;
+  
+  t->max_num_of_intervals = 10000000;
 }
 
 //////////////////////////////////////////////////////////////
@@ -3544,10 +3562,13 @@ void PHYREX_Init_Lindisk_Node(t_ldsk *t, t_dsk *disk, int n_dim)
   t->disk    = disk;
   /* disk->ldsk = t; */
   t->prev    = NULL;
-  t->next    = NULL;  
+  t->next    = NULL;
+  t->img     = NULL;
   t->nd      = NULL;
   t->is_hit  = NO;
   t->n_next  = 0;
+  t->rr      = 1.0;
+  t->sigsq   = 1.0;
   GEO_Init_Coord(t->coord,    n_dim);
   GEO_Init_Coord(t->cpy_coord,n_dim);
 }
@@ -3569,8 +3590,8 @@ void MCMC_Init_MCMC_Struct(char *filename, option *io, t_mcmc *mcmc)
   mcmc->chain_len_burnin = 1E+4;
   mcmc->randomize        = YES;
   mcmc->norm_freq        = 1E+3;
-  mcmc->max_tune         = 1.E+20;
-  mcmc->min_tune         = 1.E-10;
+  mcmc->max_tune         = 1.E+6;
+  mcmc->min_tune         = 1.E-6;
   mcmc->print_every      = 2;
   mcmc->is_burnin        = NO;
   mcmc->nd_t_digits      = 4;

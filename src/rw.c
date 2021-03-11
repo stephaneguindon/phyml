@@ -18,23 +18,7 @@ the GNU public licence. See http://www.opensource.org for details.
 
 phydbl RW_Lk(t_tree *tree)
 {
-  phydbl fwd_lk,coal_lk;
-  
-  assert(tree->mmod->model_id == RW);
-
-#ifdef PHYREX
-  if(PHYREX_Total_Number_Of_Intervals(tree) > tree->mmod->max_num_of_intervals) return UNLIKELY;
-#endif
-
-  fwd_lk = 0.0;
-  coal_lk = 0.0;
-  
-  fwd_lk = RRW_Forward_Lk_Range(tree->young_disk,NULL,tree);
-  coal_lk = TIMES_Lk_Coalescent(tree);
-
-  tree->mmod->c_lnL = fwd_lk + coal_lk;
-  /* tree->mmod->c_lnL = coal_lk; */
-
+  RRW_Lk(tree);
   return(tree->mmod->c_lnL);
 }
 
@@ -44,11 +28,7 @@ phydbl RW_Lk(t_tree *tree)
 phydbl RW_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
 {
   phydbl lnP;
-  
-  lnP = 0.0;
-  lnP += RRW_Forward_Lk_Range(young,old,tree);
-  lnP += TIMES_Lk_Coalescent_Range(young,old,tree);
-
+  lnP = RRW_Lk_Range(young,old,tree);
   return(lnP);
 }
 
@@ -68,8 +48,8 @@ phydbl RW_Independent_Contrasts(t_tree *tree)
   for(int i=0;i<tree->mmod->n_dim;++i)
     {
       RW_Init_Contrasts(i,tree);
-      RW_Independent_Contrasts_Post(tree->n_root,tree->n_root->v[1],&lnP,tree);
-      RW_Independent_Contrasts_Post(tree->n_root,tree->n_root->v[2],&lnP,tree);
+      RW_Independent_Contrasts_Post(tree->n_root,tree->n_root->v[1],tree->mmod->sigsq[i],&lnP,tree);
+      RW_Independent_Contrasts_Post(tree->n_root,tree->n_root->v[2],tree->mmod->sigsq[i],&lnP,tree);
  
       n1 = tree->n_root->v[1];
       n2 = tree->n_root->v[2];
@@ -89,7 +69,7 @@ phydbl RW_Independent_Contrasts(t_tree *tree)
       // t6'
       tree->ctrst->tprime[tree->n_root->num] = tree->times->nd_t[tree->n_root->num] + (v1*v2)/(v1+v2);
       
-      s = tree->mmod->sigsq;
+      s = tree->mmod->sigsq[i];
       lnP -= log(sqrt(2.*PI*s*(v1+v2)));
       lnP -= (1./(2.*s*(v1+v2)))*u*u;
     }
@@ -100,13 +80,13 @@ phydbl RW_Independent_Contrasts(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void RW_Independent_Contrasts_Post(t_node *a, t_node *d, phydbl *lnP, t_tree *tree)
+void RW_Independent_Contrasts_Post(t_node *a, t_node *d, phydbl sd, phydbl *lnP, t_tree *tree)
 {
   if(d->tax == YES) return;
   else
     {
       t_node *n1,*n2;
-      phydbl v1,v2,u,s;
+      phydbl v1,v2,u;
       
       n1 = n2 = NULL;
       for(int i=0;i<3;++i)
@@ -115,7 +95,7 @@ void RW_Independent_Contrasts_Post(t_node *a, t_node *d, phydbl *lnP, t_tree *tr
             {
               if(!n1) n1 = d->v[i];
               else    n2 = d->v[i];
-              RW_Independent_Contrasts_Post(d,d->v[i],lnP,tree);
+              RW_Independent_Contrasts_Post(d,d->v[i],sd,lnP,tree);
             }          
         }
       
@@ -134,9 +114,8 @@ void RW_Independent_Contrasts_Post(t_node *a, t_node *d, phydbl *lnP, t_tree *tr
       // t6'
       tree->ctrst->tprime[d->num] = tree->times->nd_t[d->num] + (v1*v2)/(v1+v2);
       
-      s = tree->mmod->sigsq;
-      *lnP -= log(sqrt(2.*PI*s*(v1+v2)));
-      *lnP -= (1./(2.*s*(v1+v2)))*u*u;
+      *lnP -= log(sqrt(2.*PI*sd*(v1+v2)));
+      *lnP -= (1./(2.*sd*(v1+v2)))*u*u;
     }
 }
 

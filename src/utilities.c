@@ -1327,7 +1327,7 @@ void Share_Lk_Struct(t_tree *t_full, t_tree *t_empt)
   t_empt->dot_prod             = t_full->dot_prod;
   t_empt->expl                 = t_full->expl;
 
-  For(i,2*n_otu-3)
+  for(i=0;i<2*n_otu-1;++i)
     {
       b_f = t_full->a_edges[i];
       b_e = t_empt->a_edges[i];
@@ -1345,57 +1345,57 @@ void Share_Lk_Struct(t_tree *t_full, t_tree *t_empt)
       n_e = t_empt->a_nodes[i];
 
       for(j=0;j<3;j++)
-    {
-      if(n_f->b[j]->left == n_f)
         {
-          if(n_e->b[j]->left == n_e)
-        {
-          n_e->b[j]->p_lk_left          = n_f->b[j]->p_lk_left;
-          n_e->b[j]->p_lk_loc_left      = n_f->b[j]->p_lk_loc_left;
-          n_e->b[j]->patt_id_left       = n_f->b[j]->patt_id_left;
-          n_e->b[j]->sum_scale_left     = n_f->b[j]->sum_scale_left;
-          n_e->b[j]->sum_scale_left_cat = n_f->b[j]->sum_scale_left_cat;
-          n_e->b[j]->p_lk_tip_l         = n_f->b[j]->p_lk_tip_l;
-        }
+          if(n_f->b[j]->left == n_f)
+            {
+              if(n_e->b[j]->left == n_e)
+                {
+                  n_e->b[j]->p_lk_left          = n_f->b[j]->p_lk_left;
+                  n_e->b[j]->p_lk_loc_left      = n_f->b[j]->p_lk_loc_left;
+                  n_e->b[j]->patt_id_left       = n_f->b[j]->patt_id_left;
+                  n_e->b[j]->sum_scale_left     = n_f->b[j]->sum_scale_left;
+                  n_e->b[j]->sum_scale_left_cat = n_f->b[j]->sum_scale_left_cat;
+                  n_e->b[j]->p_lk_tip_l         = n_f->b[j]->p_lk_tip_l;
+                }
+              else
+                {
+                  n_e->b[j]->p_lk_rght          = n_f->b[j]->p_lk_left;
+                  n_e->b[j]->p_lk_loc_rght      = n_f->b[j]->p_lk_loc_left;
+                  n_e->b[j]->patt_id_rght       = n_f->b[j]->patt_id_left;
+                  n_e->b[j]->sum_scale_rght     = n_f->b[j]->sum_scale_left;
+                  n_e->b[j]->sum_scale_rght_cat = n_f->b[j]->sum_scale_left_cat;
+                  n_e->b[j]->p_lk_tip_r         = n_f->b[j]->p_lk_tip_l;
+                }
+            }
           else
-        {
-          n_e->b[j]->p_lk_rght          = n_f->b[j]->p_lk_left;
-          n_e->b[j]->p_lk_loc_rght      = n_f->b[j]->p_lk_loc_left;
-          n_e->b[j]->patt_id_rght       = n_f->b[j]->patt_id_left;
-          n_e->b[j]->sum_scale_rght     = n_f->b[j]->sum_scale_left;
-          n_e->b[j]->sum_scale_rght_cat = n_f->b[j]->sum_scale_left_cat;
-          n_e->b[j]->p_lk_tip_r         = n_f->b[j]->p_lk_tip_l;
-        }
-        }
-      else
-        {
-          if(n_e->b[j]->rght == n_e)
-        {
-          n_e->b[j]->p_lk_rght          = n_f->b[j]->p_lk_rght;
-          n_e->b[j]->p_lk_loc_rght      = n_f->b[j]->p_lk_loc_rght;
-          n_e->b[j]->patt_id_rght       = n_f->b[j]->patt_id_rght;
-          n_e->b[j]->sum_scale_rght     = n_f->b[j]->sum_scale_rght;
-          n_e->b[j]->sum_scale_rght_cat = n_f->b[j]->sum_scale_rght_cat;
-          n_e->b[j]->p_lk_tip_r         = n_f->b[j]->p_lk_tip_r;
-        }
-          else
-        {
-          n_e->b[j]->p_lk_left          = n_f->b[j]->p_lk_rght;
-          n_e->b[j]->p_lk_loc_left      = n_f->b[j]->p_lk_loc_rght;
-          n_e->b[j]->patt_id_left       = n_f->b[j]->patt_id_rght;
-          n_e->b[j]->sum_scale_left     = n_f->b[j]->sum_scale_rght;
-          n_e->b[j]->sum_scale_left_cat = n_f->b[j]->sum_scale_rght_cat;
-          n_e->b[j]->p_lk_tip_l         = n_f->b[j]->p_lk_tip_r;
-        }
+            {
+              if(n_e->b[j]->rght == n_e)
+                {
+                  n_e->b[j]->p_lk_rght          = n_f->b[j]->p_lk_rght;
+                  n_e->b[j]->p_lk_loc_rght      = n_f->b[j]->p_lk_loc_rght;
+                  n_e->b[j]->patt_id_rght       = n_f->b[j]->patt_id_rght;
+                  n_e->b[j]->sum_scale_rght     = n_f->b[j]->sum_scale_rght;
+                  n_e->b[j]->sum_scale_rght_cat = n_f->b[j]->sum_scale_rght_cat;
+                  n_e->b[j]->p_lk_tip_r         = n_f->b[j]->p_lk_tip_r;
+                }
+              else
+                {
+                  n_e->b[j]->p_lk_left          = n_f->b[j]->p_lk_rght;
+                  n_e->b[j]->p_lk_loc_left      = n_f->b[j]->p_lk_loc_rght;
+                  n_e->b[j]->patt_id_left       = n_f->b[j]->patt_id_rght;
+                  n_e->b[j]->sum_scale_left     = n_f->b[j]->sum_scale_rght;
+                  n_e->b[j]->sum_scale_left_cat = n_f->b[j]->sum_scale_rght_cat;
+                  n_e->b[j]->p_lk_tip_l         = n_f->b[j]->p_lk_tip_r;
+                }
+            }
         }
     }
-    }
-
+  
   for(i=0;i<n_otu;i++)
     {
       n_f = t_full->a_nodes[i];
       n_e = t_empt->a_nodes[i];
-
+      
       if(n_f->b[0]->rght == n_f)
         {
           n_e->b[0]->p_lk_rght          = n_f->b[0]->p_lk_rght;
@@ -5057,7 +5057,6 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
   assert(a);
   assert(d);
   assert(tree);
-
   
   if(tree->n_root && a == tree->n_root) 
     {
@@ -5111,7 +5110,6 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
 
   if(target)   (*target)   = b1;
   if(residual) (*residual) = b2;
-
 
   a->v[dir_v1] = NULL;
   a->v[dir_v2] = NULL;
@@ -5392,8 +5390,8 @@ void Prune_Subtree(t_node *a, t_node *d, t_edge **target, t_edge **residual, t_t
           tree->n_root->v[2] = buff_nd;
         }
 
-      Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
-      Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
+      Update_Ancestors(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
+      Update_Ancestors(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
       tree->n_root->anc = NULL;
     }
 
@@ -5434,7 +5432,7 @@ void Graft_Subtree(t_edge *target, t_node *link, t_node *link_daughter, t_edge *
   assert(link);
   assert(tree);
   assert(target);
-    
+  
   if(link == tree->n_root)
     {
       assert(link_daughter);
@@ -5693,8 +5691,8 @@ void Graft_Subtree(t_edge *target, t_node *link, t_node *link_daughter, t_edge *
       tree->n_root->b[2]->p_lk_loc_rght = tree->e_root->p_lk_loc_rght;
       tree->n_root->b[2]->patt_id_rght = tree->e_root->patt_id_rght;
       
-      Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
-      Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
+      Update_Ancestors(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
+      Update_Ancestors(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
       tree->n_root->anc = NULL;
     }
 
@@ -6176,7 +6174,14 @@ phydbl Tree_Length(t_tree *tree)
   phydbl sum;
 
   sum = 0.0;
-  for(int i=0;i<2*tree->n_otu-3;++i) sum += MIXT_Get_Mean_Edge_Len(tree->a_edges[i],tree);
+  for(int i=0;i<2*tree->n_otu-1;++i)
+    {
+      if(tree->a_edges[i] != tree->n_root->b[1] && tree->a_edges[i] != tree->n_root->b[2])
+        {
+          sum += MIXT_Get_Mean_Edge_Len(tree->a_edges[i],tree);
+        }
+    }
+  
   return(sum);
 }
 
@@ -7403,8 +7408,8 @@ void Add_Root(t_edge *target, t_tree *tree)
       b2->patt_id_rght = tree->e_root->patt_id_rght;
     }
 
-  Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
-  Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
+  Update_Ancestors(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
+  Update_Ancestors(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
   tree->n_root->anc = NULL;
 
   if(tree->is_mixt_tree == YES) MIXT_Add_Root(target,tree);
@@ -7413,25 +7418,27 @@ void Add_Root(t_edge *target, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Update_Ancestors(t_node *a, t_node *d, t_tree *tree)
+void Update_Ancestors(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 {
+
   if(d == NULL)
     {
       PhyML_Printf("\n. d is NULL; a: %d root: %d",a->num,tree->n_root->num);
       assert(FALSE);
     }
-
+  
   d->anc = a;
-
+  d->b_anc = b;
+  
+  
   if(a == tree->n_root) a->anc = NULL;
 
   if(d->tax) return;
   else
     {
-      int i;
-      for(i=0;i<3;i++)
+      for(int i=0;i<3;i++)
         if((d->v[i] != a) && (d->b[i] != tree->e_root))
-          Update_Ancestors(d,d->v[i],tree);
+          Update_Ancestors(d,d->v[i],d->b[i],tree);
     }
 }
 
@@ -7656,7 +7663,7 @@ void Evolve(calign *data, t_mod *mod, int first_site_pos, t_tree *tree)
   data->n_otu = tree->n_otu;
   data->io    = tree->io;
 
-  if(mod->use_m4mod) tree->write_labels = YES;
+  if(mod->use_m4mod) tree->print_labels = YES;
 
   Set_Br_Len_Var(NULL,tree);
 
@@ -11304,29 +11311,10 @@ int Linked_List_Len(t_ll *list)
 void Push_Bottom_Linked_List(void *what, t_ll **list, bool remove_duplicates)
 {
   t_ll *new,*ll;
-
-  /* { */
-  /*   if(*list) */
-  /*     { */
-  /*       t_node *n = what; */
-  /*       t_node *m = (*list)?(*list)->tail->v:NULL; */
-  /*       t_node *o = (*list)?(*list)->head->v:NULL; */
-  /*       printf("\n. before: push node %d bot %d head: %d --",n?n->num:-1,m?m->num:-1,o?o->num:-1); */
-  /*     } */
-  /*   else */
-  /*     { */
-  /*       printf("\n. "); */
-  /*     } */
-  /* } */
-
-  /* if(*list == NULL) printf("\n"); */
   
   new = (t_ll *)mCalloc(1,sizeof(t_ll));  
   new->v = (void *)what;
   
-  /* t_node *n = what; */
-  /* printf("\n push node %p list: %p %p",new,*list,(*list)?(*list)->head:NULL); */
-
 
   // First elem of list
   if(*list == NULL) 
@@ -11925,9 +11913,17 @@ t_cal *Duplicate_Calib(t_cal *from)
   to->id = (char *)mCalloc(strlen(from->id)+1,sizeof(char)); 
   strcpy(to->id,from->id);
 
-  to->alpha_proba_list = (phydbl *)mCalloc(from->clade_list_size,sizeof(phydbl));
-  to->clade_list = (t_clad **)mCalloc(from->clade_list_size,sizeof(t_clad *));
-
+  if(from->clade_list_size > 0)
+    {
+      to->alpha_proba_list = (phydbl *)mCalloc(from->clade_list_size,sizeof(phydbl));    
+      to->clade_list = (t_clad **)mCalloc(from->clade_list_size,sizeof(t_clad *));
+    }
+  else
+    {
+      to->alpha_proba_list = NULL;
+      to->clade_list = NULL;    
+    }
+  
   for(i=0;i<from->clade_list_size;++i)
     {
       to->alpha_proba_list[i] = from->alpha_proba_list[i];
@@ -12642,11 +12638,28 @@ phydbl Haversine_Distance(phydbl lon1, phydbl lat1, phydbl lon2, phydbl lat2)
   return(R * b);
 }
 
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+void Reset_Lk(t_tree *tree)
+{
+  tree->c_lnL = tree->p_lnL;
+  if(tree->mmod) tree->mmod->c_lnL = tree->mmod->p_lnL;
+  if(tree->times) tree->times->c_lnL = tree->times->p_lnL;
+  if(tree->rates) tree->rates->c_lnL = tree->rates->p_lnL;
+}
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
-/*////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////*/
+
+void Set_Lk(t_tree *tree)
+{
+  tree->p_lnL = tree->c_lnL;
+  if(tree->mmod) tree->mmod->p_lnL = tree->mmod->c_lnL;
+  if(tree->times) tree->times->p_lnL = tree->times->c_lnL;
+  if(tree->rates) tree->rates->p_lnL = tree->rates->c_lnL;
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

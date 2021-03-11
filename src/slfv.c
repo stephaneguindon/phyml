@@ -113,18 +113,18 @@ phydbl SLFV_Coalescence_Rate(t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 // Log-density of path, conditionned on its length
-phydbl SLFV_Path_Logdensity(t_ldsk *young, t_ldsk *old, phydbl sd, t_tree *tree)
+phydbl SLFV_Path_Logdensity(t_ldsk *young, t_ldsk *old, phydbl *sd, t_tree *tree)
 {
   int i,j,err;
   t_ldsk *ldsk;
-  phydbl lnDens,mode,var;
+  phydbl lnP,mode,var;
   phydbl X,Y,Xp,Yp;
   /* phydbl slope,inter,mode; */
   int dir_to_young;
   phydbl dt_young,dt_old,sum;
   phydbl pos;
   
-  lnDens = 0.0;
+  lnP = 0.0;
   mode   = 0.0;
     
   for(i=0;i<tree->mmod->n_dim;i++)
@@ -159,17 +159,17 @@ phydbl SLFV_Path_Logdensity(t_ldsk *young, t_ldsk *old, phydbl sd, t_tree *tree)
           sum = dt_young + dt_old;
           
           mode = (dt_young/sum)*X + (dt_old/sum)*Xp;
-          var = dt_young*dt_old/sum * sd * sd; 
+          var = dt_young*dt_old/sum * sd[i] * sd[i]; 
           
           assert(ldsk != NULL);
                     
-          lnDens += Log_Dnorm_Trunc(ldsk->coord->lonlat[i],
+          lnP += Log_Dnorm_Trunc(ldsk->coord->lonlat[i],
                                     mode,
                                     sqrt(var),
                                     tree->mmod->lim_do->lonlat[i],
                                     tree->mmod->lim_up->lonlat[i],&err);
 
-          /* lnDens += Log_Dnorm(ldsk->coord->lonlat[i], */
+          /* lnP += Log_Dnorm(ldsk->coord->lonlat[i], */
           /*                     mode, */
           /*                     sqrt(var), */
           /*                     &err); */
@@ -179,24 +179,24 @@ phydbl SLFV_Path_Logdensity(t_ldsk *young, t_ldsk *old, phydbl sd, t_tree *tree)
           else if(ldsk->coord->lonlat[i] < tree->mmod->lim_do->lonlat[i]) pos = tree->mmod->lim_do->lonlat[i];
           else pos = ldsk->coord->lonlat[i];
           
-          lnDens += Log_Dnorm_Trunc(ldsk->disk->centr->lonlat[i],
-                                    pos,
-                                    sd,
-                                    tree->mmod->lim_do->lonlat[i],
-                                    tree->mmod->lim_up->lonlat[i],&err);
+          lnP += Log_Dnorm_Trunc(ldsk->disk->centr->lonlat[i],
+                                 pos,
+                                 sd[i],
+                                 tree->mmod->lim_do->lonlat[i],
+                                 tree->mmod->lim_up->lonlat[i],&err);
 
           ldsk = ldsk->prev;
           j++;
         }
     }
   
-  return(lnDens);
+  return(lnP);
 }
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-void SLFV_Sample_Path(t_ldsk *young, t_ldsk *old, phydbl sd, phydbl *global_hr, t_tree *tree)
+void SLFV_Sample_Path(t_ldsk *young, t_ldsk *old, phydbl *sd, phydbl *global_hr, t_tree *tree)
 {
   phydbl new_ldsk_pos,cur_ldsk_pos;
   phydbl new_centr_pos,cur_centr_pos;
@@ -217,8 +217,7 @@ void SLFV_Sample_Path(t_ldsk *young, t_ldsk *old, phydbl sd, phydbl *global_hr, 
   n_mcmc_iter = 0;
   accept = reject = 0;
   do
-    {
-          
+    {          
       ldsk = young->prev;
       do
         {
@@ -246,7 +245,7 @@ void SLFV_Sample_Path(t_ldsk *young, t_ldsk *old, phydbl sd, phydbl *global_hr, 
               new_centr_pos = Uni() * (tree->mmod->lim_up->lonlat[i]-tree->mmod->lim_do->lonlat[i])+tree->mmod->lim_do->lonlat[i];
               
               new_ldsk_pos = Rnorm_Trunc(new_centr_pos,
-                                         sd,
+                                         sd[i],
                                          tree->mmod->lim_do->lonlat[i],
                                          tree->mmod->lim_up->lonlat[i],&err);
               
@@ -281,7 +280,7 @@ void SLFV_Sample_Path(t_ldsk *young, t_ldsk *old, phydbl sd, phydbl *global_hr, 
               
               hr -= Log_Dnorm_Trunc(new_ldsk_pos,
                                     new_centr_pos,
-                                    sd,
+                                    sd[i],
                                     tree->mmod->lim_do->lonlat[i],
                                     tree->mmod->lim_up->lonlat[i],&err);
               
@@ -294,7 +293,7 @@ void SLFV_Sample_Path(t_ldsk *young, t_ldsk *old, phydbl sd, phydbl *global_hr, 
               
               hr += Log_Dnorm_Trunc(cur_ldsk_pos,
                                     cur_centr_pos,
-                                    sd,
+                                    sd[i],
                                     tree->mmod->lim_do->lonlat[i],
                                     tree->mmod->lim_up->lonlat[i],&err);
               
@@ -351,7 +350,7 @@ void SLFV_Sample_Path(t_ldsk *young, t_ldsk *old, phydbl sd, phydbl *global_hr, 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-t_ldsk *SLFV_Generate_Path(t_ldsk *young, t_ldsk *old, int n_evt, phydbl sd, t_tree *tree)
+t_ldsk *SLFV_Generate_Path(t_ldsk *young, t_ldsk *old, int n_evt, phydbl *sd, t_tree *tree)
 {
   int i,j,swap,err;
   phydbl *time,dum,mode,var;
@@ -445,7 +444,7 @@ t_ldsk *SLFV_Generate_Path(t_ldsk *young, t_ldsk *old, int n_evt, phydbl sd, t_t
           sum = dt_young + dt_old;
           
           mode = (dt_young/sum)*X + (dt_old/sum)*Xp;
-          var = dt_young*dt_old/sum * sd * sd; 
+          var = dt_young*dt_old/sum * sd[i] * sd[i]; 
           
           
           /* ldsk_a[j]->coord->lonlat[i] = Rnorm(mode,sqrt(var)); */
@@ -453,9 +452,6 @@ t_ldsk *SLFV_Generate_Path(t_ldsk *young, t_ldsk *old, int n_evt, phydbl sd, t_t
                                                      sqrt(var),
                                                      tree->mmod->lim_do->lonlat[i],
                                                      tree->mmod->lim_up->lonlat[i],&err);
-
-          
-
           
           pos = 0.0;
           if(ldsk_a[j]->coord->lonlat[i] > tree->mmod->lim_up->lonlat[i]) pos = tree->mmod->lim_up->lonlat[i];
@@ -463,7 +459,7 @@ t_ldsk *SLFV_Generate_Path(t_ldsk *young, t_ldsk *old, int n_evt, phydbl sd, t_t
           else pos = ldsk_a[j]->coord->lonlat[i];
 
           ldsk_a[j]->disk->centr->lonlat[i] = Rnorm_Trunc(pos,
-                                                          sd,
+                                                          sd[i],
                                                           tree->mmod->lim_do->lonlat[i],
                                                           tree->mmod->lim_up->lonlat[i],&err);
         }
@@ -528,7 +524,7 @@ phydbl SLFV_Update_Radius(t_tree *tree)
     case SLFV_UNIFORM: { return(-1.0); break;}
     case SLFV_GAUSSIAN:  
       { 
-        return(POW(tree->mmod->sigsq/(SLFV_Rate_Per_Unit_Area(tree)*4.*PI*tree->mmod->mu),0.25));
+        return(POW(tree->mmod->sigsq[0]/(SLFV_Rate_Per_Unit_Area(tree)*4.*PI*tree->mmod->mu),0.25));
         break; 
       }
     }
@@ -650,10 +646,27 @@ phydbl SLFV_Neighborhood_Size_Regression(t_tree *tree)
 
 phydbl SLFV_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
 {
-  if(tree->mmod->model_id == SLFV_GAUSSIAN) return(SLFV_Lk_Gaussian_Range(young,old,tree));
-  else if(tree->mmod->model_id == SLFV_UNIFORM) assert(FALSE);
-  else assert(FALSE);
-  return(-1.);
+  phydbl lnP;
+
+  lnP = UNLIKELY;
+  
+  switch(tree->mmod->model_id)
+    {
+    case SLFV_GAUSSIAN :
+      {
+        lnP = SLFV_Lk_Gaussian_Range(young,old,tree);
+        break;
+      }
+    case SLFV_UNIFORM :
+      {
+        PhyML_Fprintf(stderr,"\n. SLFV model with rectangle is not implemented. Sorry...");
+        assert(false);
+        break;
+      }      
+    default : break;
+    }
+
+  return(lnP);
 }
 
 /*////////////////////////////////////////////////////////////
@@ -662,16 +675,15 @@ phydbl SLFV_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
 phydbl SLFV_Lk_Gaussian_Range(t_dsk *young, t_dsk *old, t_tree *tree)
 {
   t_dsk *disk;
-  phydbl lnL,dt;
+  phydbl lnL,dt,disk_lnL;
   int n_evt;
-  
-  
+    
   assert(young);
 
   lnL  = 0.0;
-
   lnL += SLFV_Lk_Gaussian_Core(young,tree);
 
+  disk_lnL = 0.0;
   dt = 0.0;
   n_evt = 0;
   disk = young->prev;
@@ -685,7 +697,11 @@ phydbl SLFV_Lk_Gaussian_Range(t_dsk *young, t_dsk *old, t_tree *tree)
 
       assert(disk);
       if(disk->time > disk->next->time) return UNLIKELY;
-      lnL += SLFV_Lk_Gaussian_Core(disk,tree);
+      disk_lnL = SLFV_Lk_Gaussian_Core(disk,tree);
+      lnL += disk_lnL;
+
+      if(disk->next != NULL) disk->cum_glnL = disk->next->cum_glnL + disk_lnL;      
+
       if(disk == old) break;
       disk = disk->prev;
     }
@@ -760,7 +776,7 @@ phydbl SLFV_Lk_Gaussian_Core(t_dsk *disk, t_tree *tree)
 
   /* Likelihood for the disk center */
   for(j=0;j<tree->mmod->n_dim;j++) lnL += log(1./(tree->mmod->lim_up->lonlat[j]-tree->mmod->lim_do->lonlat[j]));
-  
+
   return(lnL);
 }
 
@@ -817,8 +833,7 @@ phydbl SLFV_Lk_Gaussian(t_tree *tree)
     }
   while(1);
 
-  tree->mmod->c_lnL += PHYREX_Lk_Time_Component(tree);
-
+  /* tree->mmod->c_lnL += TIMES_Lk_SLFV(tree); */
   /* tree->mmod->c_lnL += n_evt * log(tree->mmod->lbda) - tree->mmod->lbda * fabs(tree->young_disk->time - disk->time); */
     
   if(isinf(tree->mmod->c_lnL) || isnan(tree->mmod->c_lnL)) tree->mmod->c_lnL = UNLIKELY;
@@ -1373,7 +1388,7 @@ t_sarea *SLFV_Simulate_Forward_Core(int n_sites, t_tree *tree)
       if((disk->prev->ldsk != NULL) && (disk->prev->ldsk->n_next == 0))
         {
           /* printf("\n. free %s @ %f",disk->ldsk->coord->id,disk->time); */
-          Free_Ldisk(disk->prev->ldsk);
+          PHYREX_Free_Ldisk(disk->prev->ldsk);
           disk->prev->ldsk = NULL;
         }
 
@@ -1448,7 +1463,7 @@ phydbl SLFV_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_mergers,
   oldest_disk = disk;
   reached_oldest_disk = NO;
   if(init_disk->prev == NULL) reached_oldest_disk = YES; // Only one sampled disk
-  
+
   lnL = 0.0;
   disk = init_disk;
   do
@@ -1665,9 +1680,7 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
   if(mmod->mu < mmod->min_mu) mmod->mu = mmod->min_mu;
 
 
-  mmod->sigsq = SLFV_Update_Sigsq(tree);
-
-
+  mmod->sigsq[0] = SLFV_Update_Sigsq(tree);
   
   // Duration of a generation in number of events
   mmod->gen_cal_time = 1./(2.*mmod->mu*pow(mmod->rad,2)/pow(w*h,2)*
@@ -1721,8 +1734,8 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
   SLFV_Simulate_Backward_Core(tree->young_disk,NO,tree);
 
   PHYREX_Ldsk_To_Tree(tree);
-  Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
-  Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
+  Update_Ancestors(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
+  Update_Ancestors(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
   RATES_Fill_Lca_Table(tree);
   
   
@@ -1735,7 +1748,7 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
   tree->rates->clock_r    = 0.1/fabs(2.*T);
   tree->rates->model_id      = STRICTCLOCK;
 
-  RATES_Update_Cur_Bl(tree);
+  RATES_Update_Edge_Lengths(tree);
 
   Init_Model(cdata,mod,io);
 
@@ -1777,7 +1790,7 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
                mmod->mu,
                mmod->rad,
                tree->rates->clock_r,
-               mmod->sigsq);
+               mmod->sigsq[0]);
 
   PhyML_Printf("\n. Useful statistics: t.root=%f n.int=%d n.coal=%d n.hit=%d root.x=%f root.y=%f nt.div=%f\n",
                disk->time,
@@ -1926,7 +1939,7 @@ t_tree *SLFV_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl h
   mmod->gen_cal_time *= 1./mmod->lbda;
 
   /* Dispersal parameter (per generation) */
-  mmod->sigsq = 4.*pow(mmod->rad,4)*mmod->lbda*PI*mmod->mu/area * mmod->gen_cal_time;
+  mmod->sigsq[0] = 4.*pow(mmod->rad,4)*mmod->lbda*PI*mmod->mu/area * mmod->gen_cal_time;
 
  
   phydbl p = SLFV_Prob_Two_Random_Lineages_Coal_One_Event(w,h,mmod->mu,mmod->rad);
@@ -1939,7 +1952,7 @@ t_tree *SLFV_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl h
                mmod->mu,
                mmod->rad,
                tree->rates->clock_r,
-               mmod->sigsq,
+               mmod->sigsq[0],
                2./mmod->mu,
                (1./(1.-exp(-4.*pow(mmod->mu,2)*pow(PI,2)*pow(mmod->rad,4)/(pow(w*h,2))*mmod->lbda*mmod->gen_cal_time)))/area,
                rhoe,
@@ -2015,8 +2028,8 @@ t_tree *SLFV_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl h
       PHYREX_Ldsk_To_Tree(tree);  
 
       
-      Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
-      Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
+      Update_Ancestors(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
+      Update_Ancestors(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
       RATES_Fill_Lca_Table(tree);
 
 
@@ -2032,7 +2045,7 @@ t_tree *SLFV_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl h
       PhyML_Printf("\n. #!# mutation rate at that locus: %G subst. per time unit",tree->rates->clock_r);
       subst_rate += tree->rates->clock_r;
       
-      RATES_Update_Cur_Bl(tree);
+      RATES_Update_Edge_Lengths(tree);
 
       char *s = Write_Tree(tree);
       PhyML_Printf("\n. #@# tree: %s",s);
@@ -2044,8 +2057,8 @@ t_tree *SLFV_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl h
       while(disk->prev)
         {
           disk = disk->prev;
-          if(disk->next->ldsk != NULL) Free_Ldisk(disk->next->ldsk);
-          Free_Disk(disk->next);
+          if(disk->next->ldsk != NULL) PHYREX_Free_Ldisk(disk->next->ldsk);
+          PHYREX_Free_Disk(disk->next);
         }
 
       locus_idx++;
@@ -2176,3 +2189,39 @@ void SLFV_Sum_Coal_Rate(t_ldsk *l0, t_ldsk *l1, int n, t_tree *tree)
   PhyML_Printf("\n");
   Exit("\n");
 }
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+void SLFV_Generate_Ldsk_New_Location(t_ldsk *l, t_ldsk *prev_l, phydbl rad, phydbl *hr, int dim_idx, t_tree *tree)
+{
+  int err;
+  phydbl new_c,new_l,c;
+
+  err = NO;
+
+  /* Forward move */
+  new_c = Uni()*(tree->mmod->lim_up->lonlat[dim_idx]-tree->mmod->lim_do->lonlat[dim_idx])+tree->mmod->lim_do->lonlat[dim_idx];
+  (*hr) -= log(1./(tree->mmod->lim_up->lonlat[dim_idx]-tree->mmod->lim_do->lonlat[dim_idx]));
+  c = new_c;
+  new_l = Rnorm_Trunc(c,rad,tree->mmod->lim_do->lonlat[dim_idx],tree->mmod->lim_up->lonlat[dim_idx],&err);
+  (*hr) -= Log_Dnorm_Trunc(new_l,c,rad,tree->mmod->lim_do->lonlat[dim_idx],tree->mmod->lim_up->lonlat[dim_idx],&err);
+  
+  /* Reverse move */
+  c = prev_l->disk->centr->lonlat[dim_idx];
+  (*hr) += Log_Dnorm_Trunc(prev_l->coord->lonlat[dim_idx],c,rad,tree->mmod->lim_do->lonlat[dim_idx],tree->mmod->lim_up->lonlat[dim_idx],&err);
+  
+  l->disk->centr->lonlat[dim_idx] = new_c;
+  l->coord->lonlat[dim_idx] = new_l;
+  
+  assert(err == NO);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/

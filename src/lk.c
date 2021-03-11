@@ -454,6 +454,7 @@ phydbl Lk(t_edge *b, t_tree *tree)
   const unsigned int ncatg = tree->mod->ras->n_catg;
   const unsigned int npatterns = tree->n_pattern;
   const unsigned int nsncatg = ns * ncatg;
+
   
   tree->numerical_warning = NO;
   
@@ -465,9 +466,7 @@ phydbl Lk(t_edge *b, t_tree *tree)
       Optimize_Free_Rate_Weights(tree,YES,YES);
       tree->mod->s_opt->curr_opt_free_rates = YES;
     }
-  
-  
-  
+    
   if(tree->is_mixt_tree == YES) 
     {
 #ifdef BEAGLE
@@ -481,7 +480,7 @@ phydbl Lk(t_edge *b, t_tree *tree)
   
 
 #if (defined PHYTIME || defined INVITEE || defined PHYREX)
-  if((tree->rates) && (tree->rates->bl_from_rt)) RATES_Update_Cur_Bl(tree);
+  if((tree->rates) && (tree->rates->bl_from_rt)) RATES_Update_Edge_Lengths(tree);
 #endif
 
   if(tree->rates && tree->io && tree->io->lk_approx == NORMAL)
@@ -1307,9 +1306,6 @@ void Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
       Update_Partial_Lk_Generic(tree,b,d);
     }
 #endif
-
-
-  //  Print_Edge_Likelihoods(tree, b, false);
 }
 
 //////////////////////////////////////////////////////////////
@@ -2166,9 +2162,24 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
   phydbl len;
   phydbl l_min, l_max;
   phydbl shape, scale, mean, var;
-
+  
+  if(b_fcus->Pij_rr == NULL)
+    {
+      PhyML_Printf("\n. b_fcus is e_root ? %d node left: %d node rght: %d left is root ? %d right is root ? %d [%p] [%d]",
+                   (b_fcus == tree->e_root) ? 1 : 0,
+                   b_fcus->left->num,
+                   b_fcus->rght->num,
+                   (b_fcus->left == tree->n_root) ? 1 : 0,
+                   (b_fcus->rght == tree->n_root) ? 1 : 0,
+                   tree->aux_tree,
+                   tree->eval_alnL);
+      assert(false);
+    }
+  
   assert(b_fcus);
   assert(tree);
+  assert(b_fcus->Pij_rr);
+  assert(tree->eval_alnL == YES);
   
   if(tree->is_mixt_tree == YES)
     {
@@ -2517,8 +2528,8 @@ phydbl Wrap_Lk_At_Given_Edge(t_edge *b, t_tree *tree, supert_tree *stree)
 
 phydbl Wrap_Lk_Rates(t_edge *b, t_tree *tree, supert_tree *stree)
 {
-  RATES_Lk_Rates(tree);
-  return tree->rates->c_lnL_rates;
+  RATES_Lk(tree);
+  return tree->rates->c_lnL;
 }
 
 //////////////////////////////////////////////////////////////
@@ -2526,8 +2537,8 @@ phydbl Wrap_Lk_Rates(t_edge *b, t_tree *tree, supert_tree *stree)
 
 phydbl Wrap_Lk_Times(t_edge *b, t_tree *tree, supert_tree *stree)
 {
-  TIMES_Lk_Times(NO,tree);
-  return tree->times->c_lnL_times;
+  TIMES_Lk(tree);
+  return tree->times->c_lnL;
 }
 
 //////////////////////////////////////////////////////////////
@@ -2891,7 +2902,11 @@ void Set_All_Partial_Lk(t_node **n_v1, t_node **n_v2,
                   Set_Partial_Lk_One_Side(Pij2,tPij2,p_lk_v2,sum_scale_v2,d,d->b[i],tree);
 #endif
                 }
-              else assert(FALSE);
+              else
+                {
+                  PhyML_Printf("\n. Issue detected with node %d.\n",d->num);
+                  assert(FALSE);
+                }
             }
         }
     }

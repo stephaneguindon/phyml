@@ -46,8 +46,8 @@ void RATES_Adjust_Rates_Local(t_node *a, t_node *d, t_edge *b1, t_tree *tree);
 void RATES_Record_T(t_tree *tree);
 void RATES_Restore_T(t_tree *tree);
 void RATES_Monte_Carlo_Mean_Rates_Core(phydbl t_lim_sup, phydbl t_lim_inf, phydbl *curr_rate, phydbl *mean_rate, phydbl lexp, phydbl alpha);
-phydbl RATES_Lk_Rates(t_tree *tree);
-void RATES_Lk_Rates_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree);
+phydbl RATES_Lk(t_tree *tree);
+void RATES_Lk_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree);
 void RATES_Fill_Node_Rates_Pre(t_node *a, t_node *d, t_edge *b, phydbl *node_r, t_tree *tree);
 void RATES_Fill_Node_Rates(phydbl *node_r, t_tree *tree);
 void RATES_Optimize_Node_Times_Serie_Fixed_Br_Len(t_node *a, t_node *d, t_tree *tree);
@@ -93,7 +93,7 @@ phydbl RATES_Dmu1_And_Mu2_One_Jump_Old(phydbl mu1, phydbl mu2, phydbl a, phydbl 
 
 phydbl RATES_Dmu2_And_Min_N_Given_Mu1(phydbl mu1, phydbl mu2, phydbl dt1, phydbl dt2, int n_min, phydbl a, phydbl b, phydbl lexp);
 phydbl RATES_Dmu2_And_Mu1_Given_N(phydbl mu1, phydbl mu2, phydbl dt1, phydbl dt2, int n, phydbl a, phydbl b, phydbl lexp);
-phydbl RATES_Lk_Rates_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl nd_r_d, int n_a, int n_d, phydbl dt_a, phydbl dt_d, t_tree *tree);
+phydbl RATES_Lk_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl nd_r_d, int n_a, int n_d, phydbl dt_a, phydbl dt_d, t_tree *tree);
 void RATES_Init_Triplets(t_tree *tree);
 phydbl RATES_Lk_Change_One_Time(t_node *n, phydbl new_t, t_tree *tree);
 void RATES_Update_Triplet(t_node *n, t_tree *tree);
@@ -131,8 +131,8 @@ void RATES_Free_Rates(t_rate *rates);
 void RATES_Initialize_True_Rates(t_tree *tree);
 void RATES_Posterior_Times(t_tree *tree);
 void RATES_Posterior_One_Time(t_node *a, t_node *d, int traversal, t_tree *tree);
-void RATES_Update_Cur_Bl(t_tree *tree);
-void RATES_Update_Cur_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree);
+void RATES_Update_Edge_Lengths(t_tree *tree);
+void RATES_Update_Edge_Lengths_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree);
 void RATES_Get_Cov_Matrix_Rooted(phydbl *unroot_cov, t_tree *tree);
 void RATES_Get_Cov_Matrix_Rooted_Pre(t_node *a, t_node *d, t_edge *b, phydbl *cov, t_tree *tree);
 void RATES_Bl_To_Ml(t_tree *tree);
@@ -182,5 +182,8 @@ void RATES_Copy_Rate_Struct(t_rate *from, t_rate *to, int n_otu);
 void RATES_Duplicate_Calib_Struct(t_tree *from, t_tree *to);
 int RATES_Check_Edge_Length_Consistency(t_tree *tree);
 phydbl RATES_Realized_Substitution_Rate(t_tree *tree);
+void RATES_Update_One_Edge_Length(t_edge *b, t_tree *tree);
+void RATES_Check_Rates(t_tree *tree);
+void RATES_Update_Normalization_Factor(t_tree *tree);
 
 #endif

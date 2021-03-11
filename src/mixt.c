@@ -678,7 +678,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
   /* MIXT_Update_Br_Len_Multipliers(mixt_tree->mod); */
 
 #if (defined PHYTIME || defined INVITEE || defined PHYREX || defined DATE)
-  if((mixt_tree->rates) && (mixt_tree->rates->bl_from_rt)) RATES_Update_Cur_Bl(mixt_tree);
+  if((mixt_tree->rates) && (mixt_tree->rates->bl_from_rt)) RATES_Update_Edge_Lengths(mixt_tree);
 #endif
 
   
@@ -1051,10 +1051,8 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
 
           /* Multiply log likelihood by the number of times this site pattern is found in the data */
           mixt_tree->c_lnL_sorted[site] = mixt_tree->data->wght[site]*log_site_lk;
-
           
           mixt_tree->c_lnL += mixt_tree->data->wght[site]*log_site_lk;
-
         }
 
       Free(sum_scale_left_cat);
@@ -2219,14 +2217,14 @@ void MIXT_Add_Root(t_edge *mixt_b, t_tree *mixt_tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void MIXT_RATES_Update_Cur_Bl(t_tree *mixt_tree)
+void MIXT_RATES_Update_Edge_Lengths(t_tree *mixt_tree)
 {
   t_tree *tree;
 
   tree = mixt_tree->next;
   do
     {
-      RATES_Update_Cur_Bl(tree);
+      RATES_Update_Edge_Lengths(tree);
       tree = tree->next;
     }
   while(tree);
@@ -3504,8 +3502,8 @@ void MIXT_Propagate_Tree_Update(t_tree *mixt_tree)
           tree->n_root->b[2]->rght = tree->n_root->v[2];
         }
       
-      Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
-      Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);
+      Update_Ancestors(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
+      Update_Ancestors(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
 
       tree = tree->next;
       

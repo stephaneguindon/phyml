@@ -2120,7 +2120,7 @@ void Prune_Regraft_Time_Tree(t_tree *tree)
           
           cur_lnL_seq  = tree->c_lnL;
           new_lnL_seq  = UNLIKELY;
-          cur_lnL_time = tree->times->c_lnL_times;
+          cur_lnL_time = tree->times->c_lnL;
           new_lnL_time = UNLIKELY;
           
           regraft_edge   = NULL;
@@ -2278,7 +2278,7 @@ void Prune_Regraft_Time_Tree(t_tree *tree)
                 }
               
               DATE_Assign_Primary_Calibration(tree);
-              new_lnL_time = TIMES_Lk_Times(NO,tree); 
+              new_lnL_time = TIMES_Lk(tree); 
               
               if(new_lnL_time > UNLIKELY)
                 {
@@ -2300,12 +2300,12 @@ void Prune_Regraft_Time_Tree(t_tree *tree)
                                 prune_daughter,residual,prune == tree->n_root ? tree->n_root : cur_regraft_nd,tree);
                   
                   RATES_Reset_Times(tree);
-                  RATES_Update_Cur_Bl(tree);
+                  RATES_Update_Edge_Lengths(tree);
                   DATE_Assign_Primary_Calibration(tree);
-                  TIMES_Lk_Times(NO,tree); 
+                  TIMES_Lk(tree); 
                   
                   
-                  if(!(tree->times->c_lnL_times > UNLIKELY))
+                  if(!(tree->times->c_lnL > UNLIKELY))
                     {
                       printf("\n== time prune: %f",times[prune->num]);
                       printf("\n== time prune_daughter: %f",times[prune_daughter->num]);
@@ -2315,13 +2315,13 @@ void Prune_Regraft_Time_Tree(t_tree *tree)
                              prune_daughter->v[dir_prune]->num,
                              cur_regraft_nd->num,
                              new_regraft_nd->num);
-                      TIMES_Lk_Times(YES,tree); 
+                      TIMES_Lk(tree); 
                       fflush(NULL);
                     }
-                  assert(tree->times->c_lnL_times > UNLIKELY);
+                  assert(tree->times->c_lnL > UNLIKELY);
                   
                   tree->c_lnL              = cur_lnL_seq;
-                  tree->times->c_lnL_times = cur_lnL_time;
+                  tree->times->c_lnL = cur_lnL_time;
                 }
               else
                 {

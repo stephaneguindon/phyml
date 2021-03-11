@@ -92,12 +92,12 @@ AS_IF([test "x$enable_gprof" = "xyes"],
       [CFLAGS="-g -pg -fno-inline -fprofile-arcs -ftest-coverage ${VECTOR_FLAG}"],
       [AS_IF([test "x$enable_debug" = "xno"],[CFLAGS="${DEFAULT_C_FLAG}"])])
 
-AC_ARG_ENABLE([mpi],
-              [AS_HELP_STRING([--enable-mpi],
+AC_ARG_ENABLE([phyml-mpi],
+              [AS_HELP_STRING([--enable-phyml-mpi],
                               [Compile with mpicc instead of gcc.])])
-AS_IF([test "x$enable_mpi" = "xyes"],[CC="mpicc"])
-AS_IF([test "x$enable_mpi" = "xyes"],AC_DEFINE([MPI],[1],[MPI tag on]))
-AM_CONDITIONAL([WANT_MPI], [test "$enable_mpi" = yes])
+AS_IF([test "x$enable_phyml_mpi" = "xyes"],[CC="mpicc"])
+AS_IF([test "x$enable_phyml_mpi" = "xyes"],AC_DEFINE([MPI],[1],[MPI tag on]))
+AM_CONDITIONAL([WANT_MPI], [test "$enable_phyml_mpi" = yes])
 
 
 AC_ARG_ENABLE([win],

@@ -127,7 +127,7 @@ void DATE_XML(char *xml_filename)
     {
       PhyML_Fprintf(stdout,"\n. The model of rate variation across lineages is not specified.");
       PhyML_Fprintf(stdout,"\n. Using the geometric Brownian model (see Guindon, 2012, Syst. Biol.).\n");
-      mixt_tree->rates->model_id      = GUINDON;
+      mixt_tree->rates->model_id = GUINDON;
       mixt_tree->mod->gamma_mgf_bl = YES;
       strcpy(mixt_tree->rates->model_name,"geometric Brownian"); 
     }
@@ -147,51 +147,69 @@ void DATE_XML(char *xml_filename)
         {
           if(!strcmp(model_name,"geometricbrownian"))
             {
-              mixt_tree->rates->model_id      = GUINDON;
+              mixt_tree->rates->model_id = GUINDON;
               mixt_tree->mod->gamma_mgf_bl = YES;
-              strcpy(mixt_tree->rates->model_name,"geometric Brownian"); 
+              strcpy(mixt_tree->rates->model_name,"integrated"); 
             }
           else if(!strcmp(model_name,"geometric"))
             {
-              mixt_tree->rates->model_id      = GUINDON;
+              mixt_tree->rates->model_id = GUINDON;
               mixt_tree->mod->gamma_mgf_bl = YES;
-              strcpy(mixt_tree->rates->model_name,"geometric Brownian"); 
+              strcpy(mixt_tree->rates->model_name,"integrated"); 
             }
-          else if(!strcmp(model_name,"brownian"))
+          else if(!strcmp(model_name,"integrated"))
             {
-              mixt_tree->rates->model_id      = GUINDON;
+              mixt_tree->rates->model_id = GUINDON;
               mixt_tree->mod->gamma_mgf_bl = YES;
-              strcpy(mixt_tree->rates->model_name,"geometric Brownian"); 
+              strcpy(mixt_tree->rates->model_name,"integrated"); 
             }
           else if(!strcmp(model_name,"geo"))
             {
-              mixt_tree->rates->model_id      = GUINDON;
+              mixt_tree->rates->model_id = GUINDON;
               mixt_tree->mod->gamma_mgf_bl = YES;
-              strcpy(mixt_tree->rates->model_name,"geometric Brownian"); 
+              strcpy(mixt_tree->rates->model_name,"integrated"); 
             }
           else if(!strcmp(model_name,"lognormal"))
             {
-              mixt_tree->rates->model_id      = LOGNORMAL;
+              mixt_tree->rates->model_id = LOGNORMAL;
               mixt_tree->mod->gamma_mgf_bl = NO;
               strcpy(mixt_tree->rates->model_name,"lognormal (uncorrelated)"); 
             }
           else if(!strcmp(model_name,"normal"))
             {
-              mixt_tree->rates->model_id      = LOGNORMAL;
+              mixt_tree->rates->model_id = LOGNORMAL;
               mixt_tree->mod->gamma_mgf_bl = NO;
               strcpy(mixt_tree->rates->model_name,"lognormal (uncorrelated)"); 
             }
           else if(!strcmp(model_name,"strictclock"))
             {
-              mixt_tree->rates->model_id      = STRICTCLOCK;
+              mixt_tree->rates->model_id = STRICTCLOCK;
               mixt_tree->mod->gamma_mgf_bl = NO;
               strcpy(mixt_tree->rates->model_name,"strict clock"); 
             }
           else if(!strcmp(model_name,"clock"))
             {
-              mixt_tree->rates->model_id      = STRICTCLOCK;
+              mixt_tree->rates->model_id = STRICTCLOCK;
               mixt_tree->mod->gamma_mgf_bl = NO;
               strcpy(mixt_tree->rates->model_name,"strict clock"); 
+            }
+          else if(!strcmp(model_name,"thorne"))
+            {
+              mixt_tree->rates->model_id = THORNE;
+              mixt_tree->mod->gamma_mgf_bl = NO;
+              strcpy(mixt_tree->rates->model_name,"autocorrelated"); 
+            }
+          else if(!strcmp(model_name,"autocorrelated"))
+            {
+              mixt_tree->rates->model_id = THORNE;
+              mixt_tree->mod->gamma_mgf_bl = NO;
+              strcpy(mixt_tree->rates->model_name,"autocorrelated"); 
+            }
+          else if(!strcmp(model_name,"autocorr"))
+            {
+              mixt_tree->rates->model_id = THORNE;
+              mixt_tree->mod->gamma_mgf_bl = NO;
+              strcpy(mixt_tree->rates->model_name,"autocorrelated"); 
             }
           else
             {
@@ -213,6 +231,11 @@ void DATE_XML(char *xml_filename)
       if(clock_r != NULL)
         {
           mixt_tree->rates->clock_r = String_To_Dbl(clock_r);
+          for(int i=0;i<2*mixt_tree->n_otu-1;++i)
+            {
+              mixt_tree->rates->br_r[i] = mixt_tree->rates->clock_r;
+              mixt_tree->rates->nd_r[i] = mixt_tree->rates->clock_r;
+            }
         }
       
       char *opt_clock;
@@ -226,7 +249,7 @@ void DATE_XML(char *xml_filename)
           int select = XML_Validate_Attr_Int(opt_clock,6,
                                              "true","yes","y",
                                              "false","no","n");
-          if(select < 3)  mixt_tree->mod->s_opt->opt_clock_r = YES;
+          if(select < 3) mixt_tree->mod->s_opt->opt_clock_r = YES;
           else mixt_tree->mod->s_opt->opt_clock_r = NO;
         }
     }
@@ -795,15 +818,15 @@ phydbl *DATE_MCMC(t_tree *tree)
   Set_Update_Eigen(NO,tree->mod);
 
   
-  RATES_Lk_Rates(tree);
+  RATES_Lk(tree);
   DATE_Assign_Primary_Calibration(tree);
-  TIMES_Lk_Times(NO,tree);
+  TIMES_Lk(tree);
 
   /* Time_To_Branch(tree); */
   /* tree->bl_ndigits = 1; */
   /* printf("\n. Random init tree: %s",Write_Tree(tree)); */
   /* tree->bl_ndigits = 7; */
-  RATES_Update_Cur_Bl(tree);
+  RATES_Update_Edge_Lengths(tree);
 
       
   PhyML_Printf("\n. AVX enabled: %s",
@@ -825,7 +848,7 @@ phydbl *DATE_MCMC(t_tree *tree)
   PhyML_Printf("\n. Ignore sequences: %s",tree->eval_alnL == YES ? "no" : "yes");
   PhyML_Printf("\n. Model of variation of rates across lineages: %s",tree->rates->model_name);
   PhyML_Printf("\n. log(Pr(Seq|Tree)) = %f",tree->c_lnL);
-  PhyML_Printf("\n. log(Pr(Tree)) = %f",tree->times->c_lnL_times);
+  PhyML_Printf("\n. log(Pr(Tree)) = %f",tree->times->c_lnL);
     
   
   tree->aux_tree = (t_tree **)mCalloc(1,sizeof(t_tree *));
@@ -848,9 +871,8 @@ phydbl *DATE_MCMC(t_tree *tree)
   DATE_Assign_Primary_Calibration(tree->aux_tree[0]);
   TIMES_Randomize_Tree_With_Time_Constraints(tree->aux_tree[0]->times->a_cal[0],tree->aux_tree[0]);
   
-  
-  TIMES_Lk_Times(NO,tree->aux_tree[0]);
-  PhyML_Printf("\n. log(Pr(extra tree)) = %f",tree->aux_tree[0]->times->c_lnL_times);
+  TIMES_Lk(tree->aux_tree[0]);
+  PhyML_Printf("\n. log(Pr(extra tree)) = %f",tree->aux_tree[0]->times->c_lnL);
   mcmc = MCMC_Make_MCMC_Struct();
   tree->aux_tree[0]->mcmc = mcmc;
   MCMC_Init_MCMC_Struct(NULL,NULL,mcmc);
@@ -1005,10 +1027,10 @@ phydbl *DATE_MCMC(t_tree *tree)
         }
       
       
-      if(!(tree->times->c_lnL_times > UNLIKELY))
+      if(!(tree->times->c_lnL > UNLIKELY))
         {
           PhyML_Fprintf(stderr,"\n. move: %s",tree->mcmc->move_name[move]);
-          PhyML_Fprintf(stderr,"\n. glnL=%f",tree->times->c_lnL_times);
+          PhyML_Fprintf(stderr,"\n. glnL=%f",tree->times->c_lnL);
           assert(FALSE);
         }
 
@@ -1019,7 +1041,7 @@ phydbl *DATE_MCMC(t_tree *tree)
           phydbl mean_r,post;
 
           mean_r = RATES_Average_Substitution_Rate(tree);
-          post = Get_Lk(tree) + tree->times->c_lnL_times + tree->rates->c_lnL_rates;
+          post = Get_Lk(tree) + tree->times->c_lnL + tree->rates->c_lnL;
 
           if(tree->mcmc->run < adjust_len) PhyML_Printf("\nx");
           else PhyML_Printf("\n.");
@@ -1027,8 +1049,8 @@ phydbl *DATE_MCMC(t_tree *tree)
                        tree->mcmc->run,
                        post,
                        Get_Lk(tree),
-                       tree->times->c_lnL_times,
-                       tree->rates->c_lnL_rates,
+                       tree->times->c_lnL,
+                       tree->rates->c_lnL,
                        fabs(tree->times->nd_t[tree->n_root->num]),                       
                        (int)time(NULL) - t_beg,
                        mean_r,
@@ -1040,14 +1062,14 @@ phydbl *DATE_MCMC(t_tree *tree)
           phydbl mean_r,post;
           
           mean_r = RATES_Average_Substitution_Rate(tree);
-          post = Get_Lk(tree) + tree->times->c_lnL_times + tree->rates->c_lnL_rates;
+          post = Get_Lk(tree) + tree->times->c_lnL + tree->rates->c_lnL;
           
           PhyML_Fprintf(fp_stats,"\n%6d\t%9.1f\t%9.1f\t%9.1f\t%9.1f\t%12G\t%12G\t%12G\t%12G\t%12G\t%12G\t",
                         tree->mcmc->run,
                         post,
                         Get_Lk(tree),
-                        tree->times->c_lnL_times,
-                        tree->rates->c_lnL_rates,
+                        tree->times->c_lnL,
+                        tree->rates->c_lnL,
                         tree->times->birth_rate,
                         tree->times->death_rate,
                         mean_r,
@@ -1122,14 +1144,14 @@ phydbl *DATE_MCMC(t_tree *tree)
           
           TIMES_Time_To_Bl(tree);
           tree->bl_ndigits = 3;
-          /* RATES_Update_Cur_Bl(tree); */
+          /* RATES_Update_Edge_Lengths(tree); */
           s_tree = Write_Tree(tree);
           tree->bl_ndigits = 7;
           PhyML_Fprintf(fp_tree,"\ntree %d [&lnP=%f] = [&R] %s",tree->mcmc->sample_num,tree->c_lnL,s_tree);          
           Free(s_tree);
           PhyML_Fprintf(fp_tree,"\nEND;");          
           fflush(NULL);
-          RATES_Update_Cur_Bl(tree);
+          RATES_Update_Edge_Lengths(tree);
 
           
           if(tree->mcmc->run > tree->mcmc->chain_len_burnin &&

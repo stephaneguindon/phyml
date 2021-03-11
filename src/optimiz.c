@@ -3647,8 +3647,8 @@ void Least_Square_Node_Ages(t_tree *tree)
   int dir1,dir2;
   t_node *n;
   
-  Update_Ancestors(tree->n_root,tree->n_root->v[2],tree);
-  Update_Ancestors(tree->n_root,tree->n_root->v[1],tree);  
+  Update_Ancestors(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
+  Update_Ancestors(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);  
 
   TIMES_Randomize_Node_Ages(tree);
   

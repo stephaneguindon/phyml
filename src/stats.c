@@ -391,10 +391,8 @@ phydbl Rnorm(phydbl mean, phydbl sd)
 
   res = u1*sd+mean;
 
-  if(isnan(res) || isinf(res))
-    {
-      printf("\n. res=%f sd=%f mean=%f u1=%f u2=%f",res,sd,mean,u1,u2);
-    }
+  if(isnan(res) || isinf(res)) printf("\n. res=%f sd=%f mean=%f u1=%f u2=%f",res,sd,mean,u1,u2);
+
   return res;
 }
 
@@ -957,8 +955,12 @@ phydbl Log_Dnorm(phydbl x, phydbl mean, phydbl sd, int *err)
 
   *err = NO;
 
-  if(sd < SMALL && fabs(x-mean) < SMALL) return(0.0);
-
+  if(sd < SMALL)
+    {
+      if(fabs(x-mean) < SMALL) return(0.0);
+      else return(-INFINITY);
+    }
+  
   x = (x-mean)/sd;
   
   dens = -LOG_SQRT_2PI - x*x*0.5 - log(sd);

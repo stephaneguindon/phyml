@@ -94,7 +94,6 @@ void MCMC_Print_Param_Stdin(t_mcmc *mcmc, t_tree *tree);
 void MCMC_Subtree_Rates(t_tree *tree);
 void MCMC_Get_Acc_Rates(t_mcmc *mcmc);
 void MCMC_Update_Effective_Sample_Size(int move_num, t_mcmc *mcmc, t_tree *tree);
-void MCMC_Initialize_Param_Val(t_mcmc *mcmc, t_tree *tree);
 void MCMC_Terminate();
 void MCMC_Copy_To_New_Param_Val(t_mcmc *mcmc, t_tree *tree);
 void MCMC_Randomize_Node_Rates(t_tree *tree);
@@ -102,7 +101,6 @@ void MCMC_One_Node_Rate(t_node *a, t_node *d, int traversal, t_tree *tree);
 void MCMC_Tree_Rates_Bis(t_tree *tree);
 void MCMC_Slice_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree);
 void MCMC_Updown_Nu_Cr(t_tree *tree);
-void MCMC_All_Rates(t_tree *tree);
 void MCMC_Alpha(t_tree *tree);
 void MCMC_Kappa(t_tree *tree);
 void MCMC_Rate_Across_Sites(t_tree *tree);
@@ -136,6 +134,7 @@ void MCMC_PHYREX_Triplet(t_tree *tree);
 void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree);
 void MCMC_PHYREX_Swap_Disk(t_tree *tree);
 void MCMC_PHYREX_Prune_Regraft(t_tree *tree);
+void MCMC_PHYREX_Prune_Regraft_Slide(t_tree *tree);
 void MCMC_PHYREX_Scale_Times(t_tree *tree, short int print);
 void MCMC_PHYREX_Ldscape_Limits(t_tree *tree);
 void MCMC_PHYREX_Indel_Disk(t_tree *tree);
@@ -172,11 +171,12 @@ void MCMC_Times_And_Rates_Recur(t_node *a, t_node *d, int traversal, t_tree *tre
 void MCMC_Times_And_Rates_All(t_tree *tree);
 void MCMC_Times_And_Rates_Root(t_tree *tree);
 void MCMC_Clade_Change(t_tree *tree);
-void MCMC_PHYREX_Prune_Regraft_Local(t_tree *tree);
 void MCMC_PHYREX_Simulate_Backward(t_tree *tree);
 void MCMC_RR(t_tree *mixt_tree);
 void MCMC_PHYREX_Ldsk_Tip_To_Root(t_tree *tree);
 void MCMC_PHYREX_Neff(t_tree *tree);
 void MCMC_PHYREX_Sigsq_Scale(t_tree *tree);
+void MCMC_PHYREX_Ldsk_Tips(t_tree *tree);
+void MCMC_PHYREX_Exchange_Core(t_tree *aux_tree);
 
 #endif
