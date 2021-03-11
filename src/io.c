@@ -6721,10 +6721,10 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%s\t","aux1TimeLnL");
           PhyML_Fprintf(fp_stats,"%s\t","aux1SumLnL");
 
-          /* for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"sigsq%d%c\t", */
-          /*                                                  i, */
-          /*                                                  (tree->a_nodes[i]==tree->n_root->v[1] || */
-          /*                                                   tree->a_nodes[i]==tree->n_root->v[2]) ? '*' : ' '); */
+          for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"sigsq%d%c\t",
+                                                           i,
+                                                           (tree->a_nodes[i]==tree->n_root->v[1] ||
+                                                            tree->a_nodes[i]==tree->n_root->v[2]) ? '*' : ' ');
 
           /* for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"dt%d%c\t", */
           /*                                                  i, */
@@ -6831,7 +6831,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[1]->times->c_lnL);
       PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[1]->mmod->c_lnL+tree->aux_tree[1]->times->c_lnL);
 
-      /* for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->sigsq_scale[i]); */
+      for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->sigsq_scale[i]);
       /* for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->times->nd_t[i]-tree->times->nd_t[tree->a_nodes[i]->anc->num]); */
       /* for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->a_nodes[i]->ldsk->coord->lonlat[0]); */
       /* for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->a_nodes[i]->ldsk->coord->lonlat[1]); */

@@ -100,9 +100,6 @@ phydbl RRW_Prior_Sigsq_Scale(t_tree *tree)
 {
   phydbl lnP,sd;
   int err;
-
-  /* !!!!!!!!!!!!!!!! */
-  return(-1.);
   
   lnP = 0.0;
   err = NO;
