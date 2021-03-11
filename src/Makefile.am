@@ -694,6 +694,7 @@ sse.c sse.h\
 avx.c avx.h\
 tbe.c tbe.h \
 ancestral.c ancestral.h \
+location.c location.h \
 mixt.c mixt.h
 phyml_LDADD = -lm
 endif
