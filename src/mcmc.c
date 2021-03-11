@@ -8656,6 +8656,7 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
       regraft_ldsk_next->prev                        = regraft_ldsk;
       regraft_ldsk_prev->next[dir_regraft_prev_next] = regraft_ldsk;
       regraft_ldsk->rr                               = prune_ldsk->rr;
+      regraft_ldsk->sigsq                            = prune_ldsk->sigsq;
       
       /* Temporary connections */
       PHYREX_Make_Lindisk_Next(regraft_ldsk);
@@ -9172,6 +9173,7 @@ void MCMC_PHYREX_Prune_Regraft_Slide(t_tree *tree)
       regraft_ldsk_next->prev                        = regraft_ldsk;
       regraft_ldsk_prev->next[dir_regraft_prev_next] = regraft_ldsk;
       regraft_ldsk->rr                               = prune_ldsk->rr;
+      regraft_ldsk->sigsq                            = prune_ldsk->sigsq;
       
       /* Temporary connections */
       PHYREX_Make_Lindisk_Next(regraft_ldsk);
@@ -11517,8 +11519,6 @@ void MCMC_PHYREX_Sigsq_Scale(t_tree *tree)
       PHYREX_Print_MCMC_Summary(tree);  
     }
   Free(permut);
-
-  PHYREX_Update_Ldsk_Sigsq_Given_Edges(tree);
 }
 #endif
 
