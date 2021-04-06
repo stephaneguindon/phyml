@@ -108,8 +108,13 @@ phydbl RRW_Prior_Sigsq_Scale(t_tree *tree)
   for(int i=0;i<2*tree->n_otu-2;++i)
     {
       /* lnP += log(Dgamma(tree->mmod->sigsq_scale[i], */
-      /*                   tree->mmod->nu/2., */
-      /*                   2./tree->mmod->nu)); */
+      /*                   2., */
+      /*                   1./2.)); */
+
+      /* lnP += log(Dgamma(tree->mmod->sigsq_scale[i], */
+      /*                   10., */
+      /*                   1./10.)); */
+
       lnP += Log_Dnorm(log(tree->mmod->sigsq_scale[i]),-sd*sd/2.,sd,&err);
       lnP -= log(tree->mmod->sigsq_scale[i]);
     }
@@ -241,7 +246,7 @@ phydbl RRW_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
 
 phydbl RRW_Density_Ldsk_Location(t_ldsk *l, phydbl rad, int dim_idx, t_tree *tree)
 {
-  phydbl dta,dtd,sum,sd,c,w;
+  phydbl dta,dtd,sd,c;
   int err,i;
 
   err = NO;  
@@ -252,24 +257,13 @@ phydbl RRW_Density_Ldsk_Location(t_ldsk *l, phydbl rad, int dim_idx, t_tree *tre
       
       if(dta<SMALL) return(1.0);
       
-      sum = 0.0;
-      for(i=0;i<l->n_next;++i)
-        {
-          dtd = fabs(l->disk->time - l->next[i]->disk->time);
-          w = dta/(dta+dtd);
-          sum += w;
-        }
-
       c = 0.0;
       sd = 0.0;
       for(i=0;i<l->n_next;++i)
         {
           dtd = fabs(l->disk->time - l->next[i]->disk->time);
-          w = dta/(dta+dtd)/sum;
-          c += w*((dtd/(dta+dtd))*l->prev->coord->lonlat[dim_idx] + (dta/(dta+dtd))*l->next[i]->coord->lonlat[dim_idx]);
-          sd += w*sqrt((dta*dtd)/(dta+dtd)*rad);
-          /* c += (1./(phydbl)l->n_next)*((dtd/(dta+dtd))*l->prev->coord->lonlat[dim_idx] + (dta/(dta+dtd))*l->next[i]->coord->lonlat[dim_idx]); */
-          /* sd += (1./(phydbl)l->n_next)*sqrt((dta*dtd)/(dta+dtd)*rad); */
+          c += (1./(phydbl)l->n_next)*((dtd/(dta+dtd))*l->prev->coord->lonlat[dim_idx] + (dta/(dta+dtd))*l->next[i]->coord->lonlat[dim_idx]);
+          sd += (1./(phydbl)l->n_next)*sqrt((dta*dtd)/(dta+dtd)*rad);
         }
       
       assert((isnan(c) && isnan(sd)) == false);
@@ -301,7 +295,7 @@ phydbl RRW_Density_Ldsk_Location(t_ldsk *l, phydbl rad, int dim_idx, t_tree *tre
 
 void RRW_Generate_Ldsk_New_Location(t_ldsk *l, phydbl rad, int dim_idx, t_tree *tree)
 {
-  phydbl dta,dtd,sum,sd,c,new_loc,w;
+  phydbl dta,dtd,sd,c,new_loc;
   int err,i;
 
   err = NO;              
@@ -316,24 +310,13 @@ void RRW_Generate_Ldsk_New_Location(t_ldsk *l, phydbl rad, int dim_idx, t_tree *
           return;
         }
       
-      sum = 0.0;
-      for(i=0;i<l->n_next;++i)
-        {
-          dtd = fabs(l->disk->time - l->next[i]->disk->time);
-          w = dta/(dta+dtd);
-          sum += w;
-        }
-
       c = 0.0;
       sd = 0.0;
       for(i=0;i<l->n_next;++i)
         {
           dtd = fabs(l->disk->time - l->next[i]->disk->time);
-          w = dta/(dta+dtd)/sum;
-          c += w*((dtd/(dta+dtd))*l->prev->coord->lonlat[dim_idx] + (dta/(dta+dtd))*l->next[i]->coord->lonlat[dim_idx]);
-          sd += w*sqrt((dta*dtd)/(dta+dtd)*rad);
-          /* c += (1./(phydbl)l->n_next)*((dtd/(dta+dtd))*l->prev->coord->lonlat[dim_idx] + (dta/(dta+dtd))*l->next[i]->coord->lonlat[dim_idx]); */
-          /* sd += (1./(phydbl)l->n_next)*sqrt((dta*dtd)/(dta+dtd)*rad); */
+          c += (1./(phydbl)l->n_next)*((dtd/(dta+dtd))*l->prev->coord->lonlat[dim_idx] + (dta/(dta+dtd))*l->next[i]->coord->lonlat[dim_idx]);
+          sd += (1./(phydbl)l->n_next)*sqrt((dta*dtd)/(dta+dtd)*rad);            
         }
       
       assert((isnan(c) && isnan(sd)) == false);

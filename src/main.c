@@ -145,7 +145,7 @@ int main(int argc, char **argv)
 #ifdef M4
                   if(io->mod->use_m4mod) M4_Init_Model(mod->m4mod,cdata,mod);
 #endif
-
+                  
                   // Make the initial tree
                   switch(io->in_tree)
                     {
@@ -232,12 +232,10 @@ int main(int argc, char **argv)
 #ifdef PHYML
                   if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace); 
 
-
                   
                   Set_Update_Eigen(YES,tree->mod);                 
                   Lk(NULL,tree);
                   Set_Update_Eigen(NO,tree->mod);
-                  
                   
                   if(tree->mod->s_opt->opt_topo)
 		    {

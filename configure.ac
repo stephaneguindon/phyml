@@ -49,6 +49,7 @@ dnl DEFAULT_VECTOR_FLAG=
 dnl DEFAULT_VECTOR_FLAG="-mavx -mfma"
 dnl DEFAULT_VECTOR_FLAG=-msse3
 DEFAULT_VECTOR_FLAG="-march=native"
+dnl DEFAULT_VECTOR_FLAG="-march=skylake -mprefer-vector-width=256"
 
 
 AC_ARG_ENABLE([native],

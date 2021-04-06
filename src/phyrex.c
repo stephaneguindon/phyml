@@ -913,6 +913,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       assert(!(move == tree->mcmc->n_moves));
 
 
+      /* tree->mmod->use_locations = NO; */
+
       /* phydbl prev_lnL = tree->c_lnL; */
       /* phydbl prev_loc_lnL = tree->mmod->c_lnL; */
       /* phydbl prev_rates_lnL = tree->rates->c_lnL; */
@@ -959,10 +961,11 @@ phydbl *PHYREX_MCMC(t_tree *tree)
                        tree->times->c_lnL);
           assert(FALSE);
         }
-      
-      
+            
       if(tree->mmod->safe_phyrex == YES)
         {
+          short int failed = NO;
+
           if(Are_Equal(RATES_Realized_Substitution_Rate(tree),tree->rates->clock_r,1.E-1)== NO)
             {
               PhyML_Fprintf(stderr,"\n. Problem detected with move %s",tree->mcmc->move_name[move]);          
@@ -973,28 +976,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           Lk(NULL,tree);
           if(Are_Equal(c_lnL,tree->c_lnL,1.E-5) == NO)
             {
-              PhyML_Fprintf(stderr,"\n. Problem detected with move %s",tree->mcmc->move_name[move]);
-              PhyML_Fprintf(stderr,"\n. c_lnL: %f -> %f",c_lnL,tree->c_lnL);
-              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-            }
-
-          phydbl r_lnL = tree->rates->c_lnL;
-          RATES_Lk(tree);
-          if(Are_Equal(r_lnL,tree->rates->c_lnL,1.E-5) == NO)
-            {
-              PhyML_Fprintf(stderr,"\n. Problem detected with move %s",tree->mcmc->move_name[move]);
-              PhyML_Fprintf(stderr,"\n. r_lnL: %f -> %f [%g]",r_lnL,tree->rates->c_lnL,r_lnL-tree->rates->c_lnL);
-              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-            }
-
-          phydbl t_lnL = tree->times->c_lnL;
-          TIMES_Lk(tree);
-
-          if(Are_Equal(t_lnL,tree->times->c_lnL,1.E-4) == NO)
-            {
-              PhyML_Fprintf(stdout,"\n. Problem detected with move %s. Iteration %d",tree->mcmc->move_name[move],tree->mcmc->run);
-              PhyML_Fprintf(stdout,"\n. t_lnL: %f -> %f [%g]",t_lnL,tree->times->c_lnL,t_lnL-tree->times->c_lnL);
-              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+              PhyML_Fprintf(stdout,"\n. a_lnL: %f -> %f [%g]",c_lnL,tree->c_lnL,c_lnL-tree->c_lnL);
+              failed = YES;
             }
 
           phydbl g_lnL = tree->mmod->c_lnL;
@@ -1002,8 +985,29 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
           if(Are_Equal(g_lnL,tree->mmod->c_lnL,1.E-4) == NO)
             {
-              PhyML_Fprintf(stdout,"\n. Problem detected with move %s. Iteration %d",tree->mcmc->move_name[move],tree->mcmc->run);
               PhyML_Fprintf(stdout,"\n. g_lnL: %f -> %f [%g]",g_lnL,tree->mmod->c_lnL,g_lnL-tree->mmod->c_lnL);
+              failed = YES;
+            }
+
+          phydbl r_lnL = tree->rates->c_lnL;
+          RATES_Lk(tree);
+          if(Are_Equal(r_lnL,tree->rates->c_lnL,1.E-5) == NO)
+            {
+              PhyML_Fprintf(stderr,"\n. r_lnL: %f -> %f [%g]",r_lnL,tree->rates->c_lnL,r_lnL-tree->rates->c_lnL);
+              failed = YES;
+            }
+
+          phydbl t_lnL = tree->times->c_lnL;
+          TIMES_Lk(tree);
+          if(Are_Equal(t_lnL,tree->times->c_lnL,1.E-4) == NO)
+            {
+              PhyML_Fprintf(stdout,"\n. t_lnL: %f -> %f [%g]",t_lnL,tree->times->c_lnL,t_lnL-tree->times->c_lnL);
+              failed = YES;
+            }
+
+          if(failed == YES)
+            {
+              PhyML_Fprintf(stderr,"\n. Problem detected with move %s",tree->mcmc->move_name[move]);          
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
           
@@ -2393,7 +2397,7 @@ void PHYREX_Ldsk_To_Tree_Post(t_node *a, t_ldsk *ldsk, int *available, t_tree *t
               assert(t->disk->age_fixed == YES);
               son = t->nd;
             }
-                    
+
           PHYREX_Ldsk_To_Tree_Post(son,t,available,tree);          
 
           // Resolve multifurcation
@@ -4309,10 +4313,7 @@ void PHYREX_Update_Ldsk_Rates_Given_Edges(t_tree *tree)
 
   for(i=0;i<2*tree->n_otu-1;++i)
     {
-      if(tree->a_nodes[i] != tree->n_root)
-        {
-          PHYREX_Update_Ldsk_Rates_Given_One_Edge(tree->a_nodes[i],tree);
-        }
+      PHYREX_Update_Ldsk_Rates_Given_One_Edge(tree->a_nodes[i],tree);
     }
 }
 
@@ -4327,10 +4328,7 @@ void PHYREX_Update_Ldsk_Sigsq_Given_Edges(t_tree *tree)
 
   for(i=0;i<2*tree->n_otu-1;++i)
     {
-      if(tree->a_nodes[i] != tree->n_root)
-        {
-          PHYREX_Update_Ldsk_Sigsq_Given_One_Edge(tree->a_nodes[i],tree);
-        }
+      PHYREX_Update_Ldsk_Sigsq_Given_One_Edge(tree->a_nodes[i],tree);
     }
 }
 
@@ -4345,16 +4343,14 @@ void PHYREX_Update_Ldsk_Rates_Given_One_Edge(t_node *d, t_tree *tree)
   if(tree->young_disk == NULL) return;
   
   a = d->anc;
-  assert(a);
   
   ldsk = d->ldsk;
   assert(ldsk);
   
-  while(ldsk->nd != a)
+  while(ldsk && ldsk->nd != a)
     {
       ldsk->rr = tree->rates->br_r[d->num];
       ldsk = ldsk->prev;
-      assert(ldsk);
     }
 }
 
@@ -4369,12 +4365,11 @@ void PHYREX_Update_Ldsk_Sigsq_Given_One_Edge(t_node *d, t_tree *tree)
   if(tree->young_disk == NULL) return;
   
   a = d->anc;
-  assert(a);
   
   ldsk = d->ldsk;
   assert(ldsk);
 
-  while(ldsk->nd != a)
+  while(ldsk && ldsk->nd != a)
     {
       ldsk->sigsq = tree->mmod->sigsq_scale[d->num];
       ldsk = ldsk->prev;

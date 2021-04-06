@@ -80,7 +80,6 @@ void RATES_Lk_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 
   log_dens = RATES_Lk_Core(mu_a,mu_d,r_a,r_d,n_a,n_d,dt_a,dt_d,tree);
   tree->rates->c_lnL += log_dens;
-  /* PhyML_Printf("\n. logR: %f [%f %f]",tree->rates->c_lnL,mu_a,mu_d); */
 
   if(isnan(tree->rates->c_lnL))
     {
@@ -171,6 +170,7 @@ phydbl RATES_Lk_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl nd_r_d,
         int err;
         phydbl log_br_r_d = log(br_r_d);
         log_dens = Log_Dnorm(log_br_r_d,-tree->rates->nu*tree->rates->nu/2.,tree->rates->nu,&err);
+        /* log_dens = Log_Dnorm(log_br_r_d,-tree->rates->nu*tree->rates->nu*dt_d*dt_d/2.,sqrt(tree->rates->nu*tree->rates->nu*dt_d),&err); */
         log_dens -= log_br_r_d;
         break;
       }
