@@ -11551,7 +11551,7 @@ void MCMC_PHYREX_Sigsq_Scale(t_tree *tree)
   if(tree->mmod->use_locations == NO) return;
   if(tree->mmod->model_id != RRW) return;
 
-  K = 1.0;
+  K = 0.1;
   permut = Permutate(2*tree->n_otu-2);
   n_iter = (int)(1+0.2*tree->n_otu);
 
