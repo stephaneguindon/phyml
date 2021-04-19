@@ -99,24 +99,26 @@ phydbl RRW_Independent_Contrasts(t_tree *tree)
 phydbl RRW_Prior_Sigsq_Scale(t_tree *tree)
 {
   phydbl lnP,sd;
-  int err;
+  /* int err; */
+
+  if(tree->mmod->sigsq_scale == NULL) return(-1.);
   
   lnP = 0.0;
-  err = NO;
+  /* err = NO; */
   sd  = 2.0;
   
   for(int i=0;i<2*tree->n_otu-2;++i)
     {
-      /* lnP += log(Dgamma(tree->mmod->sigsq_scale[i], */
-      /*                   2., */
-      /*                   1./2.)); */
+      lnP += log(Dgamma(tree->mmod->sigsq_scale[i],
+                        1./sd,
+                        sd));
 
       /* lnP += log(Dgamma(tree->mmod->sigsq_scale[i], */
       /*                   10., */
       /*                   1./10.)); */
 
-      lnP += Log_Dnorm(log(tree->mmod->sigsq_scale[i]),-sd*sd/2.,sd,&err);
-      lnP -= log(tree->mmod->sigsq_scale[i]);
+      /* lnP += Log_Dnorm(log(tree->mmod->sigsq_scale[i]),-sd*sd/2.,sd,&err); */
+      /* lnP -= log(tree->mmod->sigsq_scale[i]); */
     }
   
   return(lnP);

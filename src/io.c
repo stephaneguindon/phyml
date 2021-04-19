@@ -6651,7 +6651,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%s\t","glnL");
           PhyML_Fprintf(fp_stats,"%s\t","rlnL");
           PhyML_Fprintf(fp_stats,"%s\t","coalescent");
-          PhyML_Fprintf(fp_stats,"%s\t","sumLnL");
+          PhyML_Fprintf(fp_stats,"%s\t","rrwLnL");
           PhyML_Fprintf(fp_stats,"%s\t","clockRate");
           PhyML_Fprintf(fp_stats,"%s\t","meanRate");
           PhyML_Fprintf(fp_stats,"%s\t","meanBr");
@@ -6722,7 +6722,8 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%s\t","aux1SumLnL");
 
           PhyML_Fprintf(fp_stats,"sigsqTip\t");
-          PhyML_Fprintf(fp_stats,"sigsqAnc\t");
+          PhyML_Fprintf(fp_stats,"sigsqRoot1\t");
+          PhyML_Fprintf(fp_stats,"sigsqRoot2\t");
 
 
 
@@ -6765,7 +6766,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->c_lnL);
       PhyML_Fprintf(fp_stats,"%g\t",tree->rates->c_lnL);          
       PhyML_Fprintf(fp_stats,"%g\t",tree->times->c_lnL);
-      PhyML_Fprintf(fp_stats,"%g\t",tree->times->c_lnL+tree->mmod->c_lnL);
+      PhyML_Fprintf(fp_stats,"%g\t",RRW_Prior_Sigsq_Scale(tree));
       PhyML_Fprintf(fp_stats,"%g\t",tree->rates->clock_r);
       PhyML_Fprintf(fp_stats,"%g\t",RATES_Realized_Substitution_Rate(tree));
       PhyML_Fprintf(fp_stats,"%g\t",RATES_Get_Mean_Rate_In_Subtree(tree->n_root,tree));
@@ -6837,7 +6838,8 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[1]->mmod->c_lnL+tree->aux_tree[1]->times->c_lnL);
 
       PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->sigsq_scale[0]);
-      PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->sigsq_scale[tree->n_otu]);
+      PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->sigsq_scale[tree->n_root->v[1]->num]);
+      PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->sigsq_scale[tree->n_root->v[2]->num]);
       /* for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->sigsq_scale[i]); */
       /* for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->times->nd_t[i]-tree->times->nd_t[tree->a_nodes[i]->anc->num]); */
       /* for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->a_nodes[i]->ldsk->coord->lonlat[0]); */

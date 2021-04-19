@@ -11570,7 +11570,7 @@ void MCMC_PHYREX_Sigsq_Scale(t_tree *tree)
       cur_glnL_aux = UNLIKELY;
       new_glnL_aux = UNLIKELY;
 
-      cur_scale   = tree->mmod->sigsq_scale[permut[i]];
+      cur_scale = tree->mmod->sigsq_scale[permut[i]];
       
       m = exp(K*(Uni()-.5));
       new_scale = m * cur_scale;
