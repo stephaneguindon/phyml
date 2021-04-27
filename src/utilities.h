@@ -99,7 +99,8 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define SLFV_GAUSSIAN 2 /* Spatial Lambda-Fleming-Viot model (Gaussian) */
 #define SLFV_UNIFORM 3 /* Spatial Lambda-Fleming-Viot model (Uniform) */
 #define RW  4 /* standard Brownian diffusion model in phylogeography */
-#define RRW  5 /* Lemey's relaxed random walk */
+#define RRW_GAMMA  5 /* Lemey's relaxed random walk (Gamma distributed relative diffusion rates) */
+#define RRW_LOGNORMAL  6 /* Lemey's relaxed random walk (Lognormal distributed relative diffusion rates) */
 
 #define AC 0
 #define AG 1

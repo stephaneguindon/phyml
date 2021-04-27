@@ -1534,7 +1534,7 @@ phydbl SLFV_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_mergers,
                     prob_hit = mmod->mu; 
                     break; 
                   }
-                case SLFV_GAUSSIAN : case RW : case RRW :  
+                case SLFV_GAUSSIAN : case RW : case RRW_GAMMA : case RRW_LOGNORMAL :  
                   { 
                     prob_hit = log(mmod->mu);
                     for(j=0;j<mmod->n_dim;++j)
@@ -1568,7 +1568,7 @@ phydbl SLFV_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_mergers,
                             PHYREX_Runif_Rectangle_Overlap(new_disk->ldsk,new_disk,tree->mmod);
                             break;
                           }
-                        case SLFV_GAUSSIAN : case RW : case RRW :
+                        case SLFV_GAUSSIAN : case RW : case RRW_GAMMA : case RRW_LOGNORMAL :
                           {
                             PHYREX_Rnorm_Trunc(new_disk->ldsk,new_disk,tree->mmod);
                             for(j=0;j<tree->mmod->n_dim;++j)

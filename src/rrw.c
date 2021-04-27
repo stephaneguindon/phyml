@@ -22,7 +22,7 @@ phydbl RRW_Lk(t_tree *tree)
   d_fwd = 0.0;
   d_sigsq_scale = 0.0;
   
-  assert(tree->mmod->model_id == RRW);
+  assert(tree->mmod->model_id == RRW_GAMMA || tree->mmod->model_id == RRW_LOGNORMAL);
   
   d_fwd = RRW_Forward_Lk_Range(tree->young_disk,NULL,tree);
   d_sigsq_scale = RRW_Prior_Sigsq_Scale(tree);
@@ -99,26 +99,29 @@ phydbl RRW_Independent_Contrasts(t_tree *tree)
 phydbl RRW_Prior_Sigsq_Scale(t_tree *tree)
 {
   phydbl lnP,sd;
-  /* int err; */
+  int err;
 
   if(tree->mmod->sigsq_scale == NULL) return(-1.);
   
   lnP = 0.0;
-  /* err = NO; */
+  err = NO;
   sd  = 2.0;
   
+  if(tree->mmod->model_id == RW) return(-1.0);
+                                              
   for(int i=0;i<2*tree->n_otu-2;++i)
     {
-      lnP += log(Dgamma(tree->mmod->sigsq_scale[i],
-                        1./sd,
-                        sd));
-
-      /* lnP += log(Dgamma(tree->mmod->sigsq_scale[i], */
-      /*                   10., */
-      /*                   1./10.)); */
-
-      /* lnP += Log_Dnorm(log(tree->mmod->sigsq_scale[i]),-sd*sd/2.,sd,&err); */
-      /* lnP -= log(tree->mmod->sigsq_scale[i]); */
+      if(tree->mmod->model_id == RRW_GAMMA)
+        {
+          lnP += log(Dgamma(tree->mmod->sigsq_scale[i],
+                            1./sd,
+                            sd));
+        }
+      else if(tree->mmod->model_id == RRW_LOGNORMAL)
+        {
+          lnP += Log_Dnorm(log(tree->mmod->sigsq_scale[i]),-sd*sd/2.,sd,&err);
+          lnP -= log(tree->mmod->sigsq_scale[i]);
+        }
     }
   
   return(lnP);
@@ -350,5 +353,14 @@ void RRW_Generate_Ldsk_New_Location(t_ldsk *l, phydbl rad, int dim_idx, t_tree *
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+short int RRW_Is_Rw(t_phyrex_mod *mod)
+{
+  if(mod->model_id == RW ||
+     mod->model_id == RRW_GAMMA ||
+     mod->model_id == RRW_LOGNORMAL) return(YES);
+  return(NO);
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

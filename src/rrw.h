@@ -28,6 +28,7 @@ phydbl RRW_Forward_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree);
 phydbl RRW_Lk_Core(t_dsk *disk, t_tree *tree);
 void RRW_Generate_Ldsk_New_Location(t_ldsk *l, phydbl rad,  int dim_idx, t_tree *tree);
 phydbl RRW_Density_Ldsk_Location(t_ldsk *l, phydbl rad, int dim_idx, t_tree *tree);
+short int RRW_Is_Rw(t_phyrex_mod *mod);
 
 
 #endif
