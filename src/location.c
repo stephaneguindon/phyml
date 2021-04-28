@@ -25,10 +25,6 @@ phydbl LOCATION_Lk(t_tree *tree)
 {
   phydbl lnP;
 
-  /* /\* !!!!!!!!!!!!!!!!! *\/ */
-  /* tree->mmod->c_lnL = 0.0; */
-  /* return(0.0); */
-  
   lnP = 0.0;
   
   if(tree->mmod->use_locations == NO)
@@ -134,6 +130,37 @@ phydbl LOCATION_Lk_Path(t_dsk *young, t_dsk *old, t_tree *tree)
     }
   
   return(-1.);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl LOCATION_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
+{
+  phydbl lnL;
+
+  lnL = UNLIKELY;
+  switch(tree->mmod->model_id)
+    {
+    case SLFV_GAUSSIAN : 
+      {
+        assert(false);
+        break;
+      }
+    case SLFV_UNIFORM :
+      {
+        assert(false);
+        break;
+      }
+    case RW : case RRW_GAMMA : case RRW_LOGNORMAL : 
+        {
+          lnL = RRW_Forward_Lk_Path(a,d,tree);
+          break;
+        }
+    default : assert(FALSE);
+    }
+  
+  return lnL;
 }
 
 //////////////////////////////////////////////////////////////

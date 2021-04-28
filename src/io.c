@@ -6651,7 +6651,6 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%s\t","glnL");
           PhyML_Fprintf(fp_stats,"%s\t","rlnL");
           PhyML_Fprintf(fp_stats,"%s\t","coalescent");
-          PhyML_Fprintf(fp_stats,"%s\t","rrwLnL");
           PhyML_Fprintf(fp_stats,"%s\t","clockRate");
           PhyML_Fprintf(fp_stats,"%s\t","meanRate");
           PhyML_Fprintf(fp_stats,"%s\t","meanBr");
@@ -6766,7 +6765,6 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->c_lnL);
       PhyML_Fprintf(fp_stats,"%g\t",tree->rates->c_lnL);          
       PhyML_Fprintf(fp_stats,"%g\t",tree->times->c_lnL);
-      PhyML_Fprintf(fp_stats,"%g\t",RRW_Prior_Sigsq_Scale(tree));
       PhyML_Fprintf(fp_stats,"%g\t",tree->rates->clock_r);
       PhyML_Fprintf(fp_stats,"%g\t",RATES_Realized_Substitution_Rate(tree));
       PhyML_Fprintf(fp_stats,"%g\t",RATES_Get_Mean_Rate_In_Subtree(tree->n_root,tree));

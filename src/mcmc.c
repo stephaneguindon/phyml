@@ -6258,6 +6258,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_add_remove_jump]       = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldsk_tip_to_root]      = 5.0;
   mcmc->move_weight[mcmc->num_move_phyrex_sigsq_scale]           = 0.1;
+  /* mcmc->move_weight[mcmc->num_move_phyrex_sigsq_scale]           = 5.0; */
   mcmc->move_weight[mcmc->num_move_phyrex_ldsk_tips]             = 1.0;
 
 
@@ -11550,25 +11551,27 @@ void MCMC_PHYREX_Sigsq_Scale(t_tree *tree)
   if(RRW_Is_Rw(tree->mmod) == NO || tree->mmod->model_id == RW) return;
 
   K = 0.1;
+  /* K = 2.0; */
   permut = Permutate(2*tree->n_otu-2);
   n_iter = (int)(1+0.2*tree->n_otu);
 
   for(i=0;i<n_iter;++i)
     {
+      
       tree->mcmc->run_move[tree->mcmc->num_move_phyrex_sigsq_scale]++;
       
       hr    = 0.0;
       ratio = 0.0;
       
       Set_Lk(tree);
-
+      
       cur_lnL_geo = tree->mmod->c_lnL;
-      new_lnL_geo = UNLIKELY;
-
+      new_lnL_geo = tree->mmod->c_lnL;
+      
       cur_glnL_aux = UNLIKELY;
       new_glnL_aux = UNLIKELY;
-
-      cur_scale = tree->mmod->sigsq_scale[permut[i]];
+      
+      cur_scale = tree->mmod->sigsq_scale[tree->a_nodes[permut[i]]->num];
       
       m = exp(K*(Uni()-.5));
       new_scale = m * cur_scale;
@@ -11584,22 +11587,39 @@ void MCMC_PHYREX_Sigsq_Scale(t_tree *tree)
               for(int j=0;j<aux_tree->mmod->n_dim;++j) aux_tree->mmod->sigsq[j] = tree->mmod->sigsq[j];
 
               for(int j=0;j<2*aux_tree->n_otu-2;++j) aux_tree->mmod->sigsq_scale[j] = tree->mmod->sigsq_scale[j];
-              aux_tree->mmod->sigsq_scale[permut[i]] = new_scale;
+              aux_tree->mmod->sigsq_scale[tree->a_nodes[permut[i]]->num] = new_scale;
               
               aux_tree->times->scaled_pop_size = tree->times->scaled_pop_size;
 
               MCMC_PHYREX_Exchange_Core(aux_tree);
               
-              aux_tree->mmod->sigsq_scale[permut[i]] = cur_scale;
+              aux_tree->mmod->sigsq_scale[tree->a_nodes[permut[i]]->num] = cur_scale;
               cur_glnL_aux = LOCATION_Lk(aux_tree);
+              new_glnL_aux = cur_glnL_aux;
               
-              aux_tree->mmod->sigsq[permut[i]] = new_scale;
-              new_glnL_aux = LOCATION_Lk(aux_tree);
+              aux_tree->mmod->sigsq[tree->a_nodes[permut[i]]->num] = cur_scale;
+              new_glnL_aux -= LOCATION_Forward_Lk_Path(aux_tree->a_nodes[tree->a_nodes[permut[i]]->num]->ldsk->prev,
+                                                       aux_tree->a_nodes[tree->a_nodes[permut[i]]->num]->ldsk,
+                                                       tree);
+
+              aux_tree->mmod->sigsq[tree->a_nodes[permut[i]]->num] = new_scale;
+              new_glnL_aux += LOCATION_Forward_Lk_Path(aux_tree->a_nodes[tree->a_nodes[permut[i]]->num]->ldsk->prev,
+                                                       aux_tree->a_nodes[tree->a_nodes[permut[i]]->num]->ldsk,
+                                                       tree);
             }
 
-          hr += log(m);        
-          tree->mmod->sigsq_scale[permut[i]] = new_scale;          
-          if(tree->eval_glnL == YES) new_lnL_geo = LOCATION_Lk(tree);
+          hr += log(m);
+
+          tree->mmod->sigsq_scale[tree->a_nodes[permut[i]]->num] = cur_scale;
+          if(tree->eval_glnL == YES) new_lnL_geo -= LOCATION_Forward_Lk_Path(tree->a_nodes[tree->a_nodes[permut[i]]->num]->ldsk->prev,
+                                                                             tree->a_nodes[tree->a_nodes[permut[i]]->num]->ldsk,
+                                                                             tree);
+
+          tree->mmod->sigsq_scale[tree->a_nodes[permut[i]]->num] = new_scale;
+          if(tree->eval_glnL == YES) new_lnL_geo += LOCATION_Forward_Lk_Path(tree->a_nodes[tree->a_nodes[permut[i]]->num]->ldsk->prev,
+                                                                             tree->a_nodes[tree->a_nodes[permut[i]]->num]->ldsk,
+                                                                             tree);
+          
         }
 
       ratio = 0.0;
@@ -11618,11 +11638,12 @@ void MCMC_PHYREX_Sigsq_Scale(t_tree *tree)
       
       if(u > alpha) /* Reject */
         {
-          tree->mmod->sigsq_scale[permut[i]] = cur_scale;
+          tree->mmod->sigsq_scale[tree->a_nodes[permut[i]]->num] = cur_scale;
           Reset_Lk(tree);
         }
       else
         {
+          tree->mmod->c_lnL = new_lnL_geo;
           tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_sigsq_scale]++;
         }
       

@@ -568,8 +568,7 @@ void PHYREX_XML(char *xml_filename)
       Update_Ancestors(mixt_tree->aux_tree[1]->n_root,mixt_tree->aux_tree[1]->n_root->v[1],mixt_tree->aux_tree[1]->n_root->b[1],mixt_tree->aux_tree[1]);  
 
     }
-  
-
+    
   assert(PHYREX_Check_Struct(mixt_tree,YES));
   LOCATION_Lk(mixt_tree);
   TIMES_Lk(mixt_tree);
@@ -585,7 +584,7 @@ void PHYREX_XML(char *xml_filename)
   PhyML_Printf("\n. Init lnP(coord|phylo): %f",mixt_tree->mmod->c_lnL);
   PhyML_Printf("\n. Init lnP(phylo): %f",mixt_tree->times->c_lnL);
   PhyML_Printf("\n. Random seed: %d",mixt_tree->io->r_seed);
-
+  
   res = PHYREX_MCMC(mixt_tree);
   Free(res);
   
@@ -3791,8 +3790,8 @@ phydbl PHYREX_Realized_Dispersal_Dist(t_tree *tree)
   while(disk->prev) disk = disk->prev;
   root_disk = disk;
 
-  
   dist = 0.0;
+  dt = 0.0;
   n = 0;
   disk = root_disk;
   do
@@ -3801,21 +3800,21 @@ phydbl PHYREX_Realized_Dispersal_Dist(t_tree *tree)
         {
           for(i=0;i<disk->ldsk->n_next;++i)
             {
-              dt = disk->ldsk->next[i]->disk->time - disk->time;
+              dt += disk->ldsk->next[i]->disk->time - disk->time;
               n++;
               
               dist +=
                 Haversine_Distance(disk->ldsk->coord->lonlat[0], 
                                    disk->ldsk->coord->lonlat[1],
                                    disk->ldsk->next[i]->coord->lonlat[0],
-                                   disk->ldsk->next[i]->coord->lonlat[1])/dt;
-                
+                                   disk->ldsk->next[i]->coord->lonlat[1]);
             }
         }
       disk = disk->next;
     }
   while(disk);
-  return(dist/(phydbl)n);
+  /* return(dist/(phydbl)n); */
+  return(dist/dt);
 }
 
 ////////////////////////////////////////////////////////////
