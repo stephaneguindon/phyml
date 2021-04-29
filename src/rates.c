@@ -58,7 +58,7 @@ phydbl RATES_Clock_R_Prior(t_tree *tree)
   phydbl mean,sd,lnP;
   int err;
 
-  if(tree->rates->clock_r_has_prior == NO) return(0.0);
+  if(tree->rates->clock_r_has_prior == NO) return(UNLIKELY);
   
   err = NO;
   lnP = 0.0;

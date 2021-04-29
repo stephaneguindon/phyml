@@ -266,7 +266,7 @@ void MCMC_Clock_R(t_tree *tree)
   cur_lnL_seq    = tree->c_lnL;
   new_lnL_seq    = UNLIKELY;
 
-  cur_lnL_rates  = RATES_Clock_R_Prior(tree);
+  cur_lnL_rates  = tree->rates->c_lnL;
   new_lnL_rates  = UNLIKELY;
   
   MCMC_Make_Move(&cur_clock_r,&new_clock_r,min,max,&ratio,K,tree->mcmc->move_type[move_num]);
@@ -275,7 +275,7 @@ void MCMC_Clock_R(t_tree *tree)
     {      
       tree->rates->clock_r = new_clock_r;
       if(tree->eval_alnL == YES) new_lnL_seq = Lk(NULL,tree);
-      if(tree->eval_rlnL == YES) new_lnL_rates = RATES_Clock_R_Prior(tree);
+      if(tree->eval_rlnL == YES) new_lnL_rates = RATES_Lk(tree);
     }
 
   ratio += (new_lnL_seq - cur_lnL_seq);
@@ -290,6 +290,7 @@ void MCMC_Clock_R(t_tree *tree)
     {
       tree->rates->clock_r = cur_clock_r;
       tree->c_lnL          = cur_lnL_seq;
+      tree->rates->c_lnL   = cur_lnL_rates;
       RATES_Update_Edge_Lengths(tree);
     }
   else
