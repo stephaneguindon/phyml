@@ -1538,6 +1538,9 @@ typedef struct __T_Rate {
   phydbl c_lnL; /*! Current value of Prob(Br len | time stamps, model of rate evolution) */
   phydbl p_lnL; /*! Previous value of c_lnL */
   phydbl clock_r; /*! Mean substitution rate, i.e., 'molecular clock' rate */
+  phydbl clock_r_prior_mean;
+  phydbl clock_r_prior_var;
+  short int clock_r_has_prior;
   phydbl min_clock;
   phydbl max_clock;
   phydbl lbda_nu;

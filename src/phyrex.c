@@ -320,6 +320,40 @@ void PHYREX_XML(char *xml_filename)
           if(select < 3)  mixt_tree->mod->s_opt->opt_clock_r = YES;
           else mixt_tree->mod->s_opt->opt_clock_r = NO;
         }
+
+      char *prior_mean;
+      prior_mean = XML_Get_Attribute_Value(xnd,"prior.mean");
+      if(prior_mean != NULL)
+        {
+          mixt_tree->rates->clock_r_has_prior = YES;
+          mixt_tree->rates->clock_r_prior_mean = String_To_Dbl(prior_mean);
+          if(mixt_tree->rates->clock_r_prior_mean < 0.0 || mixt_tree->rates->clock_r_prior_mean > 1000.)
+            {
+              PhyML_Printf("\n. Prior mean for clock rate should be set to a value in [0,1000.]");
+              assert(false);
+            }
+        }
+
+      char *prior_var;
+      prior_var = XML_Get_Attribute_Value(xnd,"prior.var");
+      if(prior_var != NULL)
+        {
+          mixt_tree->rates->clock_r_has_prior = YES;
+          mixt_tree->rates->clock_r_prior_var = String_To_Dbl(prior_var);
+          if(mixt_tree->rates->clock_r_prior_var < 0.0 || mixt_tree->rates->clock_r_prior_var > 1000.)
+            {
+              PhyML_Printf("\n. Prior variance for clock rate should be set to a value in [0,1000.]");
+              assert(false);
+            }
+        }
+      
+      if((prior_var && !prior_mean) ||
+         (!prior_var && prior_mean))
+        {
+          PhyML_Printf("\n. Could not read the prior mean or variance for the clock rate in your XML file.");
+          PhyML_Printf("\n. Please use ``prior.mean='value', prior.var='value'.");
+          assert(false);
+        }
     }
 
   
@@ -530,7 +564,8 @@ void PHYREX_XML(char *xml_filename)
     
   MCMC_Randomize_Rate_Across_Sites(mixt_tree);
   MCMC_Randomize_Rates(mixt_tree);
-
+  MCMC_Randomize_Clock_Rate(mixt_tree);
+  
   MIXT_Set_Ignore_Root(YES,mixt_tree);
   MIXT_Set_Bl_From_Rt(YES,mixt_tree);
 
@@ -568,7 +603,7 @@ void PHYREX_XML(char *xml_filename)
       Update_Ancestors(mixt_tree->aux_tree[1]->n_root,mixt_tree->aux_tree[1]->n_root->v[1],mixt_tree->aux_tree[1]->n_root->b[1],mixt_tree->aux_tree[1]);  
 
     }
-    
+
   assert(PHYREX_Check_Struct(mixt_tree,YES));
   LOCATION_Lk(mixt_tree);
   TIMES_Lk(mixt_tree);
@@ -583,6 +618,7 @@ void PHYREX_XML(char *xml_filename)
   PhyML_Printf("\n. Init lnP(rates|phylo): %f",mixt_tree->rates->c_lnL);
   PhyML_Printf("\n. Init lnP(coord|phylo): %f",mixt_tree->mmod->c_lnL);
   PhyML_Printf("\n. Init lnP(phylo): %f",mixt_tree->times->c_lnL);
+  PhyML_Printf("\n. Init clock rate: %f",mixt_tree->rates->clock_r);
   PhyML_Printf("\n. Random seed: %d",mixt_tree->io->r_seed);
   
   res = PHYREX_MCMC(mixt_tree);
@@ -890,7 +926,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   PHYREX_Print_MCMC_Stats(tree);
   PHYREX_Print_MCMC_Tree(tree);
   PHYREX_Print_MCMC_Summary(tree);
-  
   
   Set_Both_Sides(NO,tree);
   mcmc->always_yes = NO;
@@ -4397,24 +4432,23 @@ void PHYREX_Duplicate_Ldsk_Struct(t_tree *from, t_tree *where)
   do
     {
       disk->img = PHYREX_Make_Disk_Event(from->mmod->n_dim,from->n_otu);
-      PHYREX_Init_Disk_Event(disk->img,where->mmod->n_dim,where->mmod);
-        
+      PHYREX_Init_Disk_Event(disk->img,from->mmod->n_dim,from->mmod);
+
       disk->img->n_ldsk_a = disk->n_ldsk_a;
       disk->img->age_fixed = disk->age_fixed;
       disk->img->time = disk->time;
 
-      for(j=0;j<from->mmod->n_dim;++j) disk->img->centr->lonlat[j] = disk->centr->lonlat[j]; 
+      for(i=0;i<from->mmod->n_dim;++i) disk->img->centr->lonlat[i] = disk->centr->lonlat[i]; 
 
       if(disk->ldsk != NULL)
         {
           disk->img->ldsk = PHYREX_Make_Lindisk_Node(from->mmod->n_dim);
           PHYREX_Init_Lindisk_Node(disk->img->ldsk,disk->img,from->mmod->n_dim);
           
-          for(j=0;j<from->mmod->n_dim;++j) disk->img->ldsk->coord->lonlat[j] = disk->ldsk->coord->lonlat[j];
-
           disk->ldsk->img = disk->img->ldsk;
           disk->ldsk->img->disk = disk->img;
-          
+
+          for(i=0;i<from->mmod->n_dim;++i) disk->ldsk->img->coord->lonlat[i] = disk->ldsk->coord->lonlat[i];
           for(i=0;i<disk->ldsk->n_next;++i) PHYREX_Make_Lindisk_Next(disk->ldsk->img);
           
           if(disk->ldsk->prev != NULL) disk->ldsk->img->prev = disk->ldsk->prev->img;

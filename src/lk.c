@@ -638,7 +638,7 @@ phydbl Lk(t_edge *b, t_tree *tree)
               p_lk_left += nsncatg;
               p_lk_rght += nsncatg;
             }
-        }    
+        }
     }
 #endif
 

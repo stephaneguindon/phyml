@@ -185,5 +185,6 @@ phydbl RATES_Realized_Substitution_Rate(t_tree *tree);
 void RATES_Update_One_Edge_Length(t_edge *b, t_tree *tree);
 void RATES_Check_Rates(t_tree *tree);
 void RATES_Update_Normalization_Factor(t_tree *tree);
+phydbl RATES_Clock_R_Prior(t_tree *tree);
 
 #endif

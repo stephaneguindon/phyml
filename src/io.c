@@ -6930,7 +6930,7 @@ void PHYREX_Print_MCMC_Summary(t_tree *tree)
 {  
   if(!(tree->mcmc->run%tree->mcmc->print_every) && tree->mcmc->print_every > 0)
     {
-      PhyML_Fprintf(stdout,"\n. %10d %30s %20f %20f %20f %20f %15f",
+      PhyML_Fprintf(stdout,"\n. %10d %25s %18f %18f %18f %18f %12f",
                     tree->mcmc->run,
                     tree->mcmc->move_idx > -1 ? tree->mcmc->move_name[tree->mcmc->move_idx] : "",
                     tree->mmod->c_lnL,

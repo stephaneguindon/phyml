@@ -837,8 +837,8 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
     }
 
   rates->met_within_gibbs = NO;
-  rates->c_lnL      = UNLIKELY;
-  rates->p_lnL      = UNLIKELY;
+  rates->c_lnL            = UNLIKELY;
+  rates->p_lnL            = UNLIKELY;
   rates->adjust_rates     = 0;
   rates->use_rates        = 1;
   rates->lexp             = 1.E-3;
@@ -852,6 +852,10 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
   rates->clock_r          = 1.E-1;
   rates->min_clock        = 1.E-8;
   rates->max_clock        = 1.E+2;
+
+  rates->clock_r_has_prior  = NO;
+  rates->clock_r_prior_mean = -1.0;
+  rates->clock_r_prior_var  = -1.0;
   
   rates->max_rate         = 1.E+1;
   rates->min_rate         = 1.E-1;
@@ -3509,7 +3513,7 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->model_id = -1;
   t->use_locations = -1;
   t->sampling_scheme = -1;
-  t->safe_phyrex = NO;
+  t->safe_phyrex = YES;
   
   t->lim_up->lonlat[0] = 100.;
   t->lim_up->lonlat[1] = 100.;

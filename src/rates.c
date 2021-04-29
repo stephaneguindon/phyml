@@ -24,22 +24,60 @@ the GNU public licence. See http://www.opensource.org for details.
 
 phydbl RATES_Lk(t_tree *tree)
 {
-  int err,sd;
+  int err;
+  phydbl sd;
   
   if(tree->eval_rlnL == NO) return UNLIKELY;
 
   tree->rates->c_lnL  = .0;
+
   RATES_Lk_Pre(tree->n_root,tree->n_root->v[2],NULL,tree);
   RATES_Lk_Pre(tree->n_root,tree->n_root->v[1],NULL,tree);
-
+  
   err = NO;
+
   sd = 1.;
   tree->rates->c_lnL += Log_Dnorm(log(tree->rates->br_r[tree->n_root->num]),-sd*sd/2.,sd,&err);
   tree->rates->c_lnL -= log(tree->rates->br_r[tree->n_root->num]);
+
+  if(tree->rates->clock_r_has_prior == YES)
+    {
+      tree->rates->c_lnL += RATES_Clock_R_Prior(tree);      
+    }
   
   if(isnan(tree->rates->c_lnL) || err == YES) assert(false);
   
   return tree->rates->c_lnL;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl RATES_Clock_R_Prior(t_tree *tree)
+{
+  phydbl mean,sd,lnP;
+  int err;
+
+  if(tree->rates->clock_r_has_prior == NO) return(0.0);
+  
+  err = NO;
+  lnP = 0.0;
+  
+  mean = log(tree->rates->clock_r_prior_mean);
+  sd = sqrt(tree->rates->clock_r_prior_var);
+  
+  lnP += Log_Dnorm(log(tree->rates->clock_r),mean-sd*sd/2.,sd,&err);
+  lnP -= log(tree->rates->clock_r);
+
+  /* PhyML_Printf("\n. prior mean: %f var: %f || mean: %f sd: %f [%f] lnL: %f", */
+  /*              tree->rates->clock_r_prior_mean, */
+  /*              tree->rates->clock_r_prior_var, */
+  /*              mean, */
+  /*              sd, */
+  /*              log(tree->rates->clock_r), */
+  /*              lnP); */
+
+  return(lnP);
 }
 
 //////////////////////////////////////////////////////////////
@@ -416,6 +454,10 @@ void RATES_Copy_Rate_Struct(t_rate *from, t_rate *to, int n_otu)
   to->min_nu = from->min_nu;
   to->max_nu = from->max_nu;
 
+  to->clock_r_has_prior = from->clock_r_has_prior;
+  to->clock_r_prior_mean = from->clock_r_prior_mean;  
+  to->clock_r_prior_var = from->clock_r_prior_var;  
+  
   to->min_rate = from->min_rate;
   to->max_rate = from->max_rate;
 
