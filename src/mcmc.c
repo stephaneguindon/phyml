@@ -11859,7 +11859,7 @@ void MCMC_PHYREX_Exchange_Core(t_tree *aux_tree)
   aux_tree->mcmc->sample_interval  = -1;
   aux_tree->mcmc->print_every      = -1;
 
-  n_mcmc_steps = aux_tree->n_otu*3;
+  n_mcmc_steps = aux_tree->n_otu*10;
   /* n_mcmc_steps = aux_tree->n_otu*3; /\* !!!!!!!!!!!!!!! *\/ */
 
   TIMES_Lk(aux_tree);
