@@ -72,9 +72,6 @@ phydbl LOCATION_Lk(t_tree *tree)
 
 phydbl LOCATION_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
 {    
-  /* /\* !!!!!!!!!!!!!!!!! *\/ */
-  /* return(0.0); */
-
   if(tree->mmod->use_locations == NO) return(0.0);
 
   switch(tree->mmod->model_id)

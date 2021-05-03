@@ -23,7 +23,9 @@ phydbl RRW_Lk(t_tree *tree)
   d_fwd = 0.0;
   
   assert(RRW_Is_Rw(tree->mmod) == YES);
-  
+
+  RRW_Update_Normalization_Factor(tree);
+
   d_fwd = RRW_Forward_Lk_Range(tree->young_disk,NULL,tree);
 
 #ifdef PHYREX
@@ -45,6 +47,7 @@ phydbl RRW_Lk(t_tree *tree)
    relative diffusion rates on a range of disks */
 phydbl RRW_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
 {
+  RRW_Update_Normalization_Factor(tree);
   return(RRW_Forward_Lk_Range(young,old,tree));
 }
 
@@ -64,12 +67,15 @@ phydbl RRW_Forward_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
     {
       disk_lnP = RRW_Lk_Core(disk,tree);
       lnP += disk_lnP;
-
+      
       if(old && disk == old) break;
       
       disk = disk->prev;
     }  
   while(disk);
+
+  /* /\* !!!!!!!!!!!!!!!!!!!!! *\/ */
+  /* lnP += RRW_Prior_Sigsq_Scale(tree); */
 
   return(lnP);
 }
@@ -94,9 +100,7 @@ phydbl RRW_Prior_Sigsq_Scale(t_tree *tree)
     {
       if(tree->mmod->model_id == RRW_GAMMA)
         {
-          lnP += log(Dgamma(tree->mmod->sigsq_scale[i],
-                            1./sd,
-                            sd));
+          lnP += log(Dgamma(tree->mmod->sigsq_scale[i],1./sd,sd));
         }
       else if(tree->mmod->model_id == RRW_LOGNORMAL)
         {
@@ -104,7 +108,7 @@ phydbl RRW_Prior_Sigsq_Scale(t_tree *tree)
           lnP -= log(tree->mmod->sigsq_scale[i]);
         }
     }
-  
+
   return(lnP);
 }
 
@@ -150,6 +154,7 @@ phydbl RRW_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
   lnP = 0.0;
   hyper_sd  = 2.0; /* Hyper-parameter controling the variability of relative diffusion rates across edges */
   
+
   ldsk = d;
   while(ldsk->n_next == 1) ldsk = ldsk->next[0];
   nd_d = ldsk->nd;
@@ -163,7 +168,6 @@ phydbl RRW_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
 
       disk_lnP = 0.0;
 
-      /* PhyML_Printf("\n. nd_d: %4d time: %12f",nd_d->num,ldsk->disk->time); */
 
       if(tree->mmod->model_id == RRW_GAMMA)
         {
@@ -174,10 +178,15 @@ phydbl RRW_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
           disk_lnP += Log_Dnorm(log(tree->mmod->sigsq_scale[nd_d->num]),-hyper_sd*hyper_sd/2.,hyper_sd,&err);
           disk_lnP -= log(tree->mmod->sigsq_scale[nd_d->num]);
         }
-
+      
       for(i=0;i<tree->mmod->n_dim;++i)
         {
-          sd = log(tree->mmod->sigsq[i]) + log(tree->mmod->sigsq_scale[nd_d->num]) + log(fabs(ldsk->disk->time-ldsk->prev->disk->time));
+          sd =
+            log(tree->mmod->sigsq[i]) +
+            log(tree->mmod->sigsq_scale[nd_d->num]) +
+            log(tree->mmod->rrw_norm_fact) +
+            log(fabs(ldsk->disk->time-ldsk->prev->disk->time));
+
           sd = sqrt(exp(sd));
           
           ld = ldsk->coord->lonlat[i];
@@ -365,3 +374,46 @@ short int RRW_Is_Rw(t_phyrex_mod *mod)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void RRW_Update_Normalization_Factor(t_tree *tree)
+{
+  phydbl dt,rdt,T,RT;
+  int i;
+
+  rdt = 0.0;
+  dt  = 0.0;
+  T   = 0.0;
+  RT  = 0.0;
+  
+  for(i=0;i<2*tree->n_otu-2;++i)
+    {
+      assert(tree->a_nodes[i] != tree->n_root);
+      dt = fabs(tree->times->nd_t[i] - tree->times->nd_t[tree->a_nodes[i]->anc->num]);
+      rdt = dt*tree->mmod->sigsq_scale[tree->a_nodes[i]->num];
+      T+=dt;
+      RT+=rdt;
+    }
+  tree->mmod->rrw_norm_fact = T/RT;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl RRW_Mean_Displacement_Rate(t_tree *tree)
+{
+  phydbl dt,disp;
+
+  disp = 0.0;
+  dt = 0.0;
+  for(int i=0;i<2*tree->n_otu-2;++i)
+    {
+      assert(tree->a_nodes[i] != tree->n_root);
+      dt += fabs(tree->times->nd_t[i] - tree->times->nd_t[tree->a_nodes[i]->anc->num]);
+      disp +=
+        fabs(tree->times->nd_t[i] - tree->times->nd_t[tree->a_nodes[i]->anc->num]) *
+        tree->mmod->sigsq_scale[tree->a_nodes[i]->num]*
+        (tree->mmod->sigsq[0]+tree->mmod->sigsq[1])*
+        tree->mmod->rrw_norm_fact;
+    }
+  return(disp/dt);
+}

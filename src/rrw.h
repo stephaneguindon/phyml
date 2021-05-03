@@ -29,6 +29,8 @@ void RRW_Generate_Ldsk_New_Location(t_ldsk *l, phydbl rad,  int dim_idx, t_tree 
 phydbl RRW_Density_Ldsk_Location(t_ldsk *l, phydbl rad, int dim_idx, t_tree *tree);
 short int RRW_Is_Rw(t_phyrex_mod *mod);
 phydbl RRW_Prior_Sigsq_Scale(t_tree *tree);
+void RRW_Update_Normalization_Factor(t_tree *tree);
+phydbl RRW_Mean_Displacement_Rate(t_tree *tree);
 
 
 #endif

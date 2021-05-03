@@ -139,5 +139,6 @@ void PHYREX_Update_Edge_Sigsq_Given_Ldsks(t_tree *tree);
 void PHYREX_Update_Ldsk_Sigsq_Given_One_Edge(t_node *d, t_tree *tree);
 void PHYREX_Update_Ldsk_Sigsq_Given_Edges(t_tree *tree);
 void PHYREX_Duplicate_Ldsk_Struct(t_tree *from, t_tree *where);
+phydbl PHYREX_Get_Posterior(t_tree *tree);
 
 #endif

@@ -565,6 +565,7 @@ void PHYREX_XML(char *xml_filename)
   MCMC_Randomize_Rate_Across_Sites(mixt_tree);
   MCMC_Randomize_Rates(mixt_tree);
   MCMC_Randomize_Clock_Rate(mixt_tree);
+  MCMC_Randomize_Sigsq_Scale(mixt_tree);
   
   MIXT_Set_Ignore_Root(YES,mixt_tree);
   MIXT_Set_Bl_From_Rt(YES,mixt_tree);
@@ -4527,9 +4528,29 @@ void PHYREX_Duplicate_Ldsk_Struct(t_tree *from, t_tree *where)
   PHYREX_Ldsk_To_Tree(where);  
 }
 
-
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+phydbl PHYREX_Get_Posterior(t_tree *tree)
+{
+  phydbl lnP;
+
+  lnP = 0.0;
+  lnP += tree->c_lnL;
+  lnP += tree->rates->c_lnL;
+  lnP += tree->times->c_lnL;
+  lnP += tree->mmod->c_lnL;
+
+  if(tree->mmod->sampling_scheme == SPATIAL_SAMPLING_SURVEY &&
+     (tree->mmod->model_id == RRW_LOGNORMAL ||
+      tree->mmod->model_id == RRW_GAMMA))
+    {
+      lnP -= RRW_Prior_Sigsq_Scale(tree);
+    }
+  
+  return(lnP);
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

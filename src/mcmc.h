@@ -178,5 +178,6 @@ void MCMC_PHYREX_Neff(t_tree *tree);
 void MCMC_PHYREX_Sigsq_Scale(t_tree *tree);
 void MCMC_PHYREX_Ldsk_Tips(t_tree *tree);
 void MCMC_PHYREX_Exchange_Core(t_tree *aux_tree);
+void MCMC_Randomize_Sigsq_Scale(t_tree *tree);
 
 #endif

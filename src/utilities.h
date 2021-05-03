@@ -1971,6 +1971,8 @@ typedef struct __Migrep_Model{
 
   phydbl             sigsq_scale_min;
   phydbl             sigsq_scale_max;
+
+  phydbl               rrw_norm_fact;
   
   short int                 model_id;
   int                          n_dim;

@@ -6645,15 +6645,17 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           
           PhyML_Fprintf(fp_stats,"\n");
           PhyML_Fprintf(fp_stats,"%s\t","sample");
-          PhyML_Fprintf(fp_stats,"%s\t","speed");
-          PhyML_Fprintf(fp_stats,"%s\t","lnP");
-          PhyML_Fprintf(fp_stats,"%s\t","alnL");
-          PhyML_Fprintf(fp_stats,"%s\t","glnL");
-          PhyML_Fprintf(fp_stats,"%s\t","rlnL");
-          PhyML_Fprintf(fp_stats,"%s\t","coalescent");
-          PhyML_Fprintf(fp_stats,"%s\t","clockRate");
-          PhyML_Fprintf(fp_stats,"%s\t","meanRate");
-          PhyML_Fprintf(fp_stats,"%s\t","meanBr");
+          PhyML_Fprintf(fp_stats,"%s\t","lnPost");
+          PhyML_Fprintf(fp_stats,"%s\t","lnAlgn");
+          PhyML_Fprintf(fp_stats,"%s\t","lnSpac");
+          PhyML_Fprintf(fp_stats,"%s\t","lnRate");
+          PhyML_Fprintf(fp_stats,"%s\t","lnTime");
+          PhyML_Fprintf(fp_stats,"%s\t","lnDisp");
+          PhyML_Fprintf(fp_stats,"%s\t","substRate");
+          PhyML_Fprintf(fp_stats,"%s\t","treeLenDivTime");
+          PhyML_Fprintf(fp_stats,"%s\t","meanSubstRate");
+          PhyML_Fprintf(fp_stats,"%s\t","diffRate");
+          PhyML_Fprintf(fp_stats,"%s\t","meandiffRate");
           PhyML_Fprintf(fp_stats,"%s\t","lbda");
           PhyML_Fprintf(fp_stats,"%s\t","mu");
           PhyML_Fprintf(fp_stats,"%s\t","rad");
@@ -6685,6 +6687,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           /* PhyML_Fprintf(fp_stats,"%s\t","accInDelDisk"); */
           /* PhyML_Fprintf(fp_stats,"%s\t","accInDelHit"); */
           /* PhyML_Fprintf(fp_stats,"%s\t","accScaleTime"); */
+          PhyML_Fprintf(fp_stats,"%s\t","speed");
           PhyML_Fprintf(fp_stats,"%s\t","accSPR");
           PhyML_Fprintf(fp_stats,"%s\t","accSPRsLide");
           /* PhyML_Fprintf(fp_stats,"%s\t","accPath"); */
@@ -6720,7 +6723,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%s\t","aux1TimeLnL");
           PhyML_Fprintf(fp_stats,"%s\t","aux1SumLnL");
 
-          PhyML_Fprintf(fp_stats,"sigsqTip\t");
+          for(int i=0;i<tree->n_otu;++i) PhyML_Fprintf(fp_stats,"sigsqTip%d\t",i);
           PhyML_Fprintf(fp_stats,"sigsqRoot1\t");
           PhyML_Fprintf(fp_stats,"sigsqRoot2\t");
 
@@ -6759,15 +6762,17 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       
       PhyML_Fprintf(fp_stats,"\n");
       PhyML_Fprintf(fp_stats,"%6d\t",tree->mcmc->run);
-      PhyML_Fprintf(fp_stats,"%g\t",difftime(tree->mcmc->time_end,tree->mcmc->time_beg)/(phydbl)tree->mcmc->sample_interval);
-      PhyML_Fprintf(fp_stats,"%g\t",tree->c_lnL+tree->mmod->c_lnL+tree->rates->c_lnL+tree->times->c_lnL);
+      PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Get_Posterior(tree));
       PhyML_Fprintf(fp_stats,"%g\t",tree->c_lnL);
       PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->c_lnL);
       PhyML_Fprintf(fp_stats,"%g\t",tree->rates->c_lnL);          
       PhyML_Fprintf(fp_stats,"%g\t",tree->times->c_lnL);
+      PhyML_Fprintf(fp_stats,"%g\t",RRW_Prior_Sigsq_Scale(tree));
       PhyML_Fprintf(fp_stats,"%g\t",tree->rates->clock_r);
       PhyML_Fprintf(fp_stats,"%g\t",RATES_Realized_Substitution_Rate(tree));
       PhyML_Fprintf(fp_stats,"%g\t",RATES_Get_Mean_Rate_In_Subtree(tree->n_root,tree));
+      PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->sigsq[0]+tree->mmod->sigsq[1]);
+      PhyML_Fprintf(fp_stats,"%g\t",RRW_Mean_Displacement_Rate(tree));
       PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->lbda);
       PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->mu);
       PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->rad);
@@ -6799,6 +6804,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       /* PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_indel_disk]); */
       /* PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_indel_hit]); */
       /* PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_scale_times]); */
+      PhyML_Fprintf(fp_stats,"%g\t",difftime(tree->mcmc->time_end,tree->mcmc->time_beg)/(phydbl)tree->mcmc->sample_interval);
       PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_spr]);
       PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_spr_slide]);
       /* PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_traj]); */
@@ -6835,7 +6841,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[1]->times->c_lnL);
       PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[1]->mmod->c_lnL+tree->aux_tree[1]->times->c_lnL);
 
-      PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->sigsq_scale[0]);
+      for(int i=0;i<tree->n_otu;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->sigsq_scale[i]);
       PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->sigsq_scale[tree->n_root->v[1]->num]);
       PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->sigsq_scale[tree->n_root->v[2]->num]);
       /* for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->sigsq_scale[i]); */
@@ -6936,7 +6942,7 @@ void PHYREX_Print_MCMC_Summary(t_tree *tree)
                     tree->mmod->c_lnL,
                     tree->times->c_lnL,
                     tree->c_lnL,
-                    tree->mmod->c_lnL+tree->c_lnL+tree->rates->c_lnL+tree->times->c_lnL,
+                    PHYREX_Get_Posterior(tree),
                     tree->times->nd_t[tree->n_root->num]);
       if(tree->numerical_warning == YES) PhyML_Fprintf(stdout," -- WARNING: numerical precision issue detected...");
     }
