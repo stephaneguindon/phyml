@@ -12652,12 +12652,32 @@ void Reset_Lk(t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
+void Reset_Prior(t_tree *tree)
+{
+  if(tree->mmod) tree->mmod->c_lnP = tree->mmod->p_lnP;
+  if(tree->times) tree->times->c_lnP = tree->times->p_lnP;
+  if(tree->rates) tree->rates->c_lnP = tree->rates->p_lnP;
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
 void Set_Lk(t_tree *tree)
 {
   tree->p_lnL = tree->c_lnL;
   if(tree->mmod) tree->mmod->p_lnL = tree->mmod->c_lnL;
   if(tree->times) tree->times->p_lnL = tree->times->c_lnL;
   if(tree->rates) tree->rates->p_lnL = tree->rates->c_lnL;
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+void Set_Prior(t_tree *tree)
+{
+  if(tree->mmod) tree->mmod->p_lnP = tree->mmod->c_lnP;
+  if(tree->times) tree->times->p_lnP = tree->times->c_lnP;
+  if(tree->rates) tree->rates->p_lnP = tree->rates->c_lnP;
 }
 
 /*////////////////////////////////////////////////////////////

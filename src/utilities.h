@@ -1535,8 +1535,13 @@ typedef struct __T_Rate {
   phydbl less_likely;
   phydbl c_lnL1;
   phydbl c_lnL2;
-  phydbl c_lnL; /*! Current value of Prob(Br len | time stamps, model of rate evolution) */
+
+  phydbl c_lnL; /*! Current value of ProbDens(Br len | time stamps, model of rate evolution) */
   phydbl p_lnL; /*! Previous value of c_lnL */
+
+  phydbl c_lnP; /*! Current value of ProbDens(time stamps, model of rate evolution) */
+  phydbl p_lnP; /*! Previous value of c_lnP */
+
   phydbl clock_r; /*! Mean substitution rate, i.e., 'molecular clock' rate */
   phydbl clock_r_prior_mean;
   phydbl clock_r_prior_var;
@@ -1627,8 +1632,11 @@ typedef struct __T_Time {
   phydbl *buff_t; /*! Current t_node times */
   phydbl *true_t; /*! Current t_node times */
 
-  phydbl c_lnL; /*! Prob(time stamps) */
-  phydbl p_lnL; /*! Previous value of Prob(time stamps) */
+  phydbl c_lnL; /*! ProbDens(time stamps|param) */
+  phydbl c_lnP; /*! ProbDens(param) */
+  phydbl p_lnL; /*! Previous value of Prob(time stamps|param) */
+  phydbl p_lnP; /*! Previous value of Prob(param) */
+
   phydbl c_lnL_jps; /*! Prob(# Jumps | time stamps, rates, model of rate evolution) */
 
   phydbl scaled_pop_size; // Product of effective population size with length of a generation in calendar time unit
@@ -1687,6 +1695,8 @@ typedef struct __T_Time {
 
   short int augmented_coalescent;
 
+  phydbl neff_prior_mean;
+  
 }t_time;
 
 /*!********************************************************/
@@ -1947,8 +1957,11 @@ typedef struct __Phylogeo{
   phydbl           min_lbda;
   phydbl           max_lbda;
 
-  phydbl              c_lnL;
-  phydbl              p_lnL;
+  phydbl              c_lnL; // ProbDens(location|param) 
+  phydbl              p_lnL; // Previous value of c_lnL
+
+  phydbl              c_lnP; // ProbDens(param)
+  phydbl              p_lnP; // Previous value of p_lnP
 
   struct __Node **sorted_nd; // Table of nodes sorted wrt their heights.
 
@@ -2006,6 +2019,11 @@ typedef struct __Migrep_Model{
   
   phydbl                       c_lnL; // current value of log-likelihood 
   phydbl                       p_lnL; // previous value of log-likelihood 
+
+  phydbl                       c_lnP; // current value of log-prior
+  phydbl                       p_lnP; // previous value of log-prior 
+
+
   phydbl              c_ln_prior_rad; // current value of log prior for the prior on radius
   phydbl             c_ln_prior_lbda; // current value of log prior for the prior on lbda
   phydbl               c_ln_prior_mu; // current value of log prior for the prior on mu
@@ -2015,6 +2033,9 @@ typedef struct __Migrep_Model{
 
   short int          sampling_scheme;
   short int            use_locations;
+
+  phydbl             disp_prior_mean;
+
 }t_phyrex_mod;
 
 /*!********************************************************/
@@ -2426,6 +2447,8 @@ phydbl Tree_Length(t_tree *tree);
 void Remove_Duplicates_From_Tree(calign *data, t_tree *tree);
 void Reset_Lk(t_tree *tree);
 void Set_Lk(t_tree *tree);
+void Reset_Prior(t_tree *tree);
+void Set_Prior(t_tree *tree);
 
 
 #include "xml.h"

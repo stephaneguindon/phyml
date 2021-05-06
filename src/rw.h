@@ -21,5 +21,7 @@ phydbl RW_Independent_Contrasts(t_tree *tree);
 void RW_Independent_Contrasts_Post(t_node *a, t_node *d, phydbl sd, phydbl *lnP, t_tree *tree);
 phydbl RW_Lk(t_tree *tree);
 phydbl RW_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree);
+phydbl RW_Prior_Sigsq(t_tree *tree);
+phydbl RW_Prior(t_tree *tree);
 
 #endif

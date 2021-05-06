@@ -839,6 +839,8 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
   rates->met_within_gibbs = NO;
   rates->c_lnL            = UNLIKELY;
   rates->p_lnL            = UNLIKELY;
+  rates->c_lnP            = UNLIKELY;
+  rates->p_lnP            = UNLIKELY;
   rates->adjust_rates     = 0;
   rates->use_rates        = 1;
   rates->lexp             = 1.E-3;
@@ -915,6 +917,9 @@ void TIMES_Init_Time_Struct(t_time *times, t_time *existing_times, int n_otu)
   
   times->c_lnL         = UNLIKELY;
   times->p_lnL         = UNLIKELY;
+  times->c_lnP         = UNLIKELY;
+  times->p_lnP         = UNLIKELY;
+
   times->c_lnL_jps     = UNLIKELY;
   times->nd_t_recorded = NO;
 
@@ -963,6 +968,8 @@ void TIMES_Init_Time_Struct(t_time *times, t_time *existing_times, int n_otu)
   times->update_time_norm_const = NO;
   times->is_asynchronous = NO;
   times->augmented_coalescent = NO;
+
+  times->neff_prior_mean = 1.0;
 }
 
 //////////////////////////////////////////////////////////////
@@ -3508,14 +3515,14 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   for(int i=0;i<2*n_otu-1;++i) t->sigsq_scale[i] = 1.0;
 
   t->sigsq_scale_min = 0.01;
-  t->sigsq_scale_max = 100.;
+  t->sigsq_scale_max = 10.;
 
   t->rrw_norm_fact = 1.0;
   
   t->model_id = -1;
   t->use_locations = -1;
   t->sampling_scheme = -1;
-  t->safe_phyrex = YES;
+  t->safe_phyrex = NO;
   
   t->lim_up->lonlat[0] = 100.;
   t->lim_up->lonlat[1] = 100.;
@@ -3540,7 +3547,7 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->update_rad        = NO;
   
   t->min_sigsq         = 0.0;
-  t->max_sigsq         = 1.E+3;
+  t->max_sigsq         = 1.E+2;
   t->prior_param_sigsq = 10.0;
 
   assert(t->n_dim > 0);
@@ -3551,6 +3558,8 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
 
   t->c_lnL = UNLIKELY;
   t->p_lnL = UNLIKELY;
+  t->c_lnP = UNLIKELY;
+  t->p_lnP = UNLIKELY;
   t->c_ln_prior_rad = UNLIKELY;
   t->c_ln_prior_lbda = UNLIKELY;
   t->c_ln_prior_mu = UNLIKELY;
@@ -3558,6 +3567,8 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->soft_bound_area = 0.1;
   
   t->max_num_of_intervals = 10000000;
+
+  t->disp_prior_mean = 1.0;
 }
 
 //////////////////////////////////////////////////////////////

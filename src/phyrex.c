@@ -282,6 +282,15 @@ void PHYREX_XML(char *xml_filename)
               assert(FALSE);
             }
         }
+
+
+      char *prior;
+      prior = XML_Get_Attribute_Value(xnd,"dispersal.prior.mean");
+
+      if(prior != NULL)
+        {
+          mixt_tree->mmod->disp_prior_mean = String_To_Dbl(prior);
+        }
     }
   else
     {
@@ -291,6 +300,29 @@ void PHYREX_XML(char *xml_filename)
     }
 
 
+  // Looking for XML node with tree generating model info
+  xnd = XML_Search_Node_Name("treegenerating",YES,xroot);
+
+  if(xnd != NULL)
+    {
+      char *treemodel;
+      treemodel = XML_Get_Attribute_Value(xnd,"model");
+      if(strcmp(treemodel,"coalescent"))
+        {
+          PhyML_Printf("\n. Please use model=``coalescent'' in your XML file");
+          assert(false);
+        }
+      
+      char *prior;
+      prior = XML_Get_Attribute_Value(xnd,"neff.prior.mean");
+
+      if(prior != NULL)
+        {
+          mixt_tree->times->neff_prior_mean = String_To_Dbl(prior);
+        }
+    }
+
+  
   
   // Looking for XML node with rate-across-lineage info
   xnd = XML_Search_Node_Name("clockrate",YES,xroot);
@@ -609,16 +641,22 @@ void PHYREX_XML(char *xml_filename)
   LOCATION_Lk(mixt_tree);
   TIMES_Lk(mixt_tree);
   RATES_Lk(mixt_tree);
+  LOCATION_Prior(mixt_tree);
+  TIMES_Prior(mixt_tree);
+  RATES_Prior(mixt_tree);
   Set_Update_Eigen(YES,mixt_tree->mod);
   Lk(NULL,mixt_tree);
   Set_Update_Eigen(NO,mixt_tree->mod);
   char *s = LOCATION_Model_Id(mixt_tree->mmod);
   PhyML_Printf("\n. Spatial diffusion model: %s",s);
   Free(s);
-  PhyML_Printf("\n. Init lnP(seq|phylo): %f",mixt_tree->c_lnL);
-  PhyML_Printf("\n. Init lnP(rates|phylo): %f",mixt_tree->rates->c_lnL);
-  PhyML_Printf("\n. Init lnP(coord|phylo): %f",mixt_tree->mmod->c_lnL);
-  PhyML_Printf("\n. Init lnP(phylo): %f",mixt_tree->times->c_lnL);
+  PhyML_Printf("\n. Init lnL(seq|phylo): %f",mixt_tree->c_lnL);
+  PhyML_Printf("\n. Init lnL(rates|phylo): %f",mixt_tree->rates->c_lnL);
+  PhyML_Printf("\n. Init lnL(coord|phylo): %f",mixt_tree->mmod->c_lnL);
+  PhyML_Printf("\n. Init lnL(phylo): %f",mixt_tree->times->c_lnL);
+  PhyML_Printf("\n. Init lnP(rates|phylo): %f",mixt_tree->rates->c_lnP);
+  PhyML_Printf("\n. Init lnP(coord|phylo): %f",mixt_tree->mmod->c_lnP);
+  PhyML_Printf("\n. Init lnP(phylo): %f",mixt_tree->times->c_lnP);
   PhyML_Printf("\n. Init clock rate: %f",mixt_tree->rates->clock_r);
   PhyML_Printf("\n. Random seed: %d",mixt_tree->io->r_seed);
   
@@ -4536,17 +4574,18 @@ phydbl PHYREX_Get_Posterior(t_tree *tree)
   phydbl lnP;
 
   lnP = 0.0;
+
+  // Likelihoods
   lnP += tree->c_lnL;
   lnP += tree->rates->c_lnL;
   lnP += tree->times->c_lnL;
   lnP += tree->mmod->c_lnL;
 
-  if(tree->mmod->sampling_scheme == SPATIAL_SAMPLING_SURVEY &&
-     (tree->mmod->model_id == RRW_LOGNORMAL ||
-      tree->mmod->model_id == RRW_GAMMA))
-    {
-      lnP -= RRW_Prior_Sigsq_Scale(tree);
-    }
+  // Priors
+  lnP += tree->rates->c_lnP;
+  lnP += tree->times->c_lnP;
+  lnP += tree->mmod->c_lnP;
+
   
   return(lnP);
 }

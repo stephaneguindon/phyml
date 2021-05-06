@@ -20,14 +20,14 @@ phydbl RRW_Lk(t_tree *tree)
 {
   phydbl d_fwd;
   
-  d_fwd = 0.0;
+  d_fwd = UNLIKELY;
   
   assert(RRW_Is_Rw(tree->mmod) == YES);
 
   RRW_Update_Normalization_Factor(tree);
 
   d_fwd = RRW_Forward_Lk_Range(tree->young_disk,NULL,tree);
-
+  
 #ifdef PHYREX
   if(PHYREX_Total_Number_Of_Intervals(tree) > tree->mmod->max_num_of_intervals)
     {
@@ -39,6 +39,14 @@ phydbl RRW_Lk(t_tree *tree)
   tree->mmod->c_lnL = d_fwd;
 
   return(tree->mmod->c_lnL);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl RRW_Prior(t_tree *tree)
+{
+  return(RW_Prior_Sigsq(tree) + RRW_Prior_Sigsq_Scale(tree));
 }
 
 //////////////////////////////////////////////////////////////
@@ -74,8 +82,6 @@ phydbl RRW_Forward_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
     }  
   while(disk);
 
-  /* /\* !!!!!!!!!!!!!!!!!!!!! *\/ */
-  /* lnP += RRW_Prior_Sigsq_Scale(tree); */
 
   return(lnP);
 }
@@ -87,12 +93,12 @@ phydbl RRW_Prior_Sigsq_Scale(t_tree *tree)
 {
   phydbl lnP,sd;
   int err;
-
+  
   if(tree->mmod->sigsq_scale == NULL) return(-1.);
   
   lnP = 0.0;
   err = NO;
-  sd  = 2.0;
+  sd  = 2.0; // Value of hyper-prior governing the variance of relative dispersal rates across lineages
   
   if(tree->mmod->model_id == RW) return(-1.0);
                                               
@@ -144,7 +150,7 @@ phydbl RRW_Lk_Core(t_dsk *disk, t_tree *tree)
 phydbl RRW_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
 {
   t_ldsk *ldsk;
-  phydbl lnP,ld,la,disk_lnP,sd,hyper_sd;
+  phydbl lnP,ld,la,disk_lnP,sd;
   int i,err;
   t_node *nd_d;
 
@@ -152,9 +158,7 @@ phydbl RRW_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
   assert(d != NULL);
   
   lnP = 0.0;
-  hyper_sd  = 2.0; /* Hyper-parameter controling the variability of relative diffusion rates across edges */
   
-
   ldsk = d;
   while(ldsk->n_next == 1) ldsk = ldsk->next[0];
   nd_d = ldsk->nd;
@@ -167,17 +171,6 @@ phydbl RRW_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
       assert(ldsk->prev);
 
       disk_lnP = 0.0;
-
-
-      if(tree->mmod->model_id == RRW_GAMMA)
-        {
-          disk_lnP += log(Dgamma(tree->mmod->sigsq_scale[nd_d->num],1./hyper_sd,hyper_sd));
-        }
-      else if(tree->mmod->model_id == RRW_LOGNORMAL)
-        {
-          disk_lnP += Log_Dnorm(log(tree->mmod->sigsq_scale[nd_d->num]),-hyper_sd*hyper_sd/2.,hyper_sd,&err);
-          disk_lnP -= log(tree->mmod->sigsq_scale[nd_d->num]);
-        }
       
       for(i=0;i<tree->mmod->n_dim;++i)
         {

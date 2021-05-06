@@ -23,6 +23,55 @@ the GNU public licence. See http://www.opensource.org for details.
 
 phydbl LOCATION_Lk(t_tree *tree)
 {
+  phydbl lnL;
+
+  lnL = UNLIKELY;
+  
+  if(tree->mmod->use_locations == NO)
+    {
+      tree->mmod->c_lnL = 0.0;
+      return(tree->mmod->c_lnL);
+    }
+
+  switch(tree->mmod->model_id)
+    {
+    case SLFV_GAUSSIAN :
+      {
+        lnL = SLFV_Lk_Gaussian(tree);
+        break;
+      }
+    case SLFV_UNIFORM :
+      {
+        PhyML_Fprintf(stderr,"\n. SLFV model with rectangle is not implemented. Sorry...");
+        assert(false);
+        break;
+      }
+    case RRW_GAMMA : case RRW_LOGNORMAL :
+      {
+        lnL = RRW_Lk(tree);
+        break;
+      }
+    case RW :
+      {
+        lnL = RW_Lk(tree);
+        break;
+      }      
+    default : assert(false);
+    }
+
+  if(isinf(lnL) || isnan(lnL)) lnL = UNLIKELY;
+  
+  tree->mmod->c_lnL = lnL;
+  
+  return(tree->mmod->c_lnL);
+      
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl LOCATION_Prior(t_tree *tree)
+{
   phydbl lnP;
 
   lnP = 0.0;
@@ -37,34 +86,33 @@ phydbl LOCATION_Lk(t_tree *tree)
     {
     case SLFV_GAUSSIAN :
       {
-        lnP = SLFV_Lk_Gaussian(tree);
+        lnP = UNLIKELY;
         break;
       }
     case SLFV_UNIFORM :
       {
-        PhyML_Fprintf(stderr,"\n. SLFV model with rectangle is not implemented. Sorry...");
-        assert(false);
+        lnP = UNLIKELY;
         break;
       }
     case RRW_GAMMA : case RRW_LOGNORMAL :
       {
-        lnP = RRW_Lk(tree);
+        lnP = RRW_Prior(tree);
         break;
       }
     case RW :
       {
-        lnP = RW_Lk(tree);
+        lnP = RW_Prior(tree);
         break;
-      }      
+      }
     default : assert(false);
     }
 
   if(isinf(lnP) || isnan(lnP)) lnP = UNLIKELY;
   
-  tree->mmod->c_lnL = lnP;
+  tree->mmod->c_lnP = lnP;
   
-  return(tree->mmod->c_lnL);
-      
+  return(tree->mmod->c_lnP);
+
 }
 
 //////////////////////////////////////////////////////////////

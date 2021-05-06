@@ -885,22 +885,12 @@ phydbl TIMES_Lk_Coalescent(t_tree *tree)
           tree->times->c_lnL = UNLIKELY;
           return(UNLIKELY);
         }
-      
-      /* PhyML_Printf("\n! Disk=%5s Ne=%f dt=%14f n_lineages=%4d lnP=%14f Z=%14f", */
-      /*              n->ldsk->disk->id, */
-      /*              Ne, */
-      /*              fabs(tree->times->nd_t[n->num] - tree->times->nd_t[n->rk_next->num]), */
-      /*              n_lineages, */
-      /*              lnP, */
-      /*              -n_lineages * (n_lineages-1.) / (2.*Ne) * fabs(tree->times->nd_t[n->num] - tree->times->nd_t[n->rk_next->num])); */
-      
+            
       assert((isnan(lnP) || isinf(lnP)) == FALSE);
       n = n->rk_next;
     }
 
   lnP -= (tree->n_otu-1) * log(Ne);
-
-  /* lnP += TIMES_Prior_Ne(tree); */
 
     
   /* if(tree->times->augmented_coalescent == YES) */
@@ -1005,56 +995,47 @@ phydbl TIMES_Lk_Coalescent_Range(t_dsk *young, t_dsk *old, t_tree *tree)
   
   lnP -= (tree->n_otu-1) * log(Ne);
 
-  /* lnP += TIMES_Prior_Ne(tree); */
-
-  /* if(tree->times->augmented_coalescent == YES) */
-  /*   { */
-  /*     int n_hits; */
-  /*     t_dsk *disk; */
-  /*     phydbl dt,Z; */
-      
-  /*     disk = young->prev; */
-  /*     /\* disk = tree->young_disk->prev; *\/ */
-      
-  /*     /\* PhyML_Printf("\n\n -----"); *\/ */
-  /*     n_hits = 0; */
-  /*     dt = 0.0; */
-  /*     do */
-  /*       { */
-  /*         Z = 0.0; */
-
-  /*         if(disk->ldsk && disk->ldsk->n_next == 1) */
-  /*           { */
-  /*             n_hits++; */
-  /*             assert(disk->next); */
-  /*             dt += fabs(disk->time - disk->next->time); */
-  /*           } */
-          
-  /*         if((n_hits > 0) && ((disk->ldsk && disk->ldsk->n_next > 1) || (disk->age_fixed == YES))) */
-  /*           { */
-  /*             Z = LnGamma(n_hits+1); */
-  /*             assert(disk->next); */
-  /*             dt += fabs(disk->time - disk->next->time); */
-  /*             assert(dt>0.0); */
-  /*             Z -= n_hits*log(dt); */
-  /*             dt = 0.0; */
-  /*             n_hits = 0; */
-  /*             lnP+=Z; */
-  /*           } */
-  /*         disk = disk->prev; */
-  /*       } */
-  /*     while(disk != NULL && disk != old->prev); */
-  /*   } */
-
   return(lnP);
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-phydbl TIMES_Prior_Ne(t_tree *tree)
+phydbl TIMES_Prior_Coalescent(t_tree *tree)
 {
-  return(log(Dexp(tree->times->scaled_pop_size,1.0)));
+  phydbl lbda;
+  lbda = 1./tree->times->neff_prior_mean;
+  return(log(lbda)-lbda*tree->times->scaled_pop_size);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl TIMES_Prior(t_tree *tree)
+{
+  tree->times->c_lnP = UNLIKELY;
+    
+  switch(tree->times->model_id)
+    {
+    case COALESCENT :
+      {
+        tree->times->c_lnP = TIMES_Prior_Coalescent(tree);
+        break;
+      }
+    case SLFV_GAUSSIAN : case SLFV_UNIFORM :
+      {
+        tree->times->c_lnP = TIMES_Prior_SLFV(tree);
+        break;
+      }
+    case BIRTHDEATH : 
+      {
+        tree->times->c_lnP = UNLIKELY;
+        break;
+      }     
+    default : break;
+    }
+
+  return(tree->times->c_lnP);
 }
 
 //////////////////////////////////////////////////////////////
@@ -2638,6 +2619,14 @@ phydbl TIMES_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
     default : break;
     }
   return(-1.);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl TIMES_Prior_SLFV(t_tree *tree)
+{
+  return(UNLIKELY);
 }
 
 //////////////////////////////////////////////////////////////

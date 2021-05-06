@@ -31,6 +31,8 @@ short int RRW_Is_Rw(t_phyrex_mod *mod);
 phydbl RRW_Prior_Sigsq_Scale(t_tree *tree);
 void RRW_Update_Normalization_Factor(t_tree *tree);
 phydbl RRW_Mean_Displacement_Rate(t_tree *tree);
+phydbl RRW_Prior_Sigsq(t_tree *tree);
+phydbl RRW_Prior(t_tree *tree);
 
 
 #endif
