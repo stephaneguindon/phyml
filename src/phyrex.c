@@ -471,11 +471,11 @@ void PHYREX_XML(char *xml_filename)
 
   if(RRW_Is_Rw(mixt_tree->mmod) == YES)
     {
-      mixt_tree->aux_tree = (t_tree **)mCalloc(2,sizeof(t_tree *));
+      mixt_tree->aux_tree = (t_tree **)mCalloc(3,sizeof(t_tree *));
 
 
       /* Auxilliary tree for updating dispersal parameter in RRW and RW models first (i=0) and pop. size after (i=1) */
-      for(int i=0;i<2;++i)
+      for(int i=0;i<3;++i)
         {
           t_tree *aux_tree;
           
@@ -524,13 +524,11 @@ void PHYREX_XML(char *xml_filename)
   /* once tip dates have been set properly (in */
   /* TIMES_Randomize_Tree_With_Time_Constraints) */
   PHYREX_Make_And_Connect_Tip_Disks(mixt_tree);
-  if(mixt_tree->aux_tree && mixt_tree->aux_tree[0]) PHYREX_Make_And_Connect_Tip_Disks(mixt_tree->aux_tree[0]);
-  if(mixt_tree->aux_tree && mixt_tree->aux_tree[1]) PHYREX_Make_And_Connect_Tip_Disks(mixt_tree->aux_tree[1]);
+  for(int i=0;i<3;++i) if(mixt_tree->aux_tree && mixt_tree->aux_tree[i]) PHYREX_Make_And_Connect_Tip_Disks(mixt_tree->aux_tree[i]);
   
   /* Read spatial coordinates */
   PHYREX_Read_Tip_Coordinates(mixt_tree);
-  if(mixt_tree->aux_tree && mixt_tree->aux_tree[0]) PHYREX_Read_Tip_Coordinates(mixt_tree->aux_tree[0]);
-  if(mixt_tree->aux_tree && mixt_tree->aux_tree[1]) PHYREX_Read_Tip_Coordinates(mixt_tree->aux_tree[1]);
+  for(int i=0;i<3;++i) if(mixt_tree->aux_tree && mixt_tree->aux_tree[i]) PHYREX_Read_Tip_Coordinates(mixt_tree->aux_tree[i]);
 
   PHYREX_Init_Migrep_Mod(mixt_tree->mmod,2,
                          mixt_tree->mmod->lim_do->lonlat[0],
@@ -552,24 +550,19 @@ void PHYREX_XML(char *xml_filename)
   
   mixt_tree->mmod->sigsq[0] = PHYREX_Update_Sigsq(mixt_tree);
   for(int i=1;i<mixt_tree->mmod->n_dim;++i) mixt_tree->mmod->sigsq[i] = mixt_tree->mmod->sigsq[0];
-  
-  if(mixt_tree->aux_tree && mixt_tree->aux_tree[0])
+
+  for(int i=0;i<3;++i)
     {
-      mixt_tree->aux_tree[0]->mmod->lbda  = mixt_tree->mmod->lbda;
-      mixt_tree->aux_tree[0]->mmod->mu    = mixt_tree->mmod->mu;
-      mixt_tree->aux_tree[0]->mmod->rad   = mixt_tree->mmod->rad;
-      mixt_tree->aux_tree[0]->mmod->sigsq[0] = mixt_tree->mmod->sigsq[0];
-      for(int i=1;i<mixt_tree->mmod->n_dim;++i) mixt_tree->aux_tree[0]->mmod->sigsq[i] = mixt_tree->mmod->sigsq[0];
+      if(mixt_tree->aux_tree && mixt_tree->aux_tree[i])
+        {
+          mixt_tree->aux_tree[i]->mmod->lbda  = mixt_tree->mmod->lbda;
+          mixt_tree->aux_tree[i]->mmod->mu    = mixt_tree->mmod->mu;
+          mixt_tree->aux_tree[i]->mmod->rad   = mixt_tree->mmod->rad;
+          mixt_tree->aux_tree[i]->mmod->sigsq[0] = mixt_tree->mmod->sigsq[0];
+          for(int j=1;j<mixt_tree->mmod->n_dim;++j) mixt_tree->aux_tree[i]->mmod->sigsq[j] = mixt_tree->mmod->sigsq[0];
+        }
     }
   
-  if(mixt_tree->aux_tree && mixt_tree->aux_tree[1])
-    {
-      mixt_tree->aux_tree[1]->mmod->lbda  = mixt_tree->mmod->lbda;
-      mixt_tree->aux_tree[1]->mmod->mu    = mixt_tree->mmod->mu;
-      mixt_tree->aux_tree[1]->mmod->rad   = mixt_tree->mmod->rad;
-      mixt_tree->aux_tree[1]->mmod->sigsq[0] = mixt_tree->mmod->sigsq[0];
-      for(int i=1;i<mixt_tree->mmod->n_dim;++i) mixt_tree->aux_tree[1]->mmod->sigsq[i] = mixt_tree->mmod->sigsq[0];
-    }
 
   /* Random genealogy or user-defined tree */
   switch(mixt_tree->io->in_tree)
@@ -603,38 +596,27 @@ void PHYREX_XML(char *xml_filename)
   MIXT_Set_Bl_From_Rt(YES,mixt_tree);
 
   PHYREX_Oldest_Sampled_Disk(mixt_tree);
-  if(mixt_tree->aux_tree && mixt_tree->aux_tree[0])
-    PHYREX_Oldest_Sampled_Disk(mixt_tree->aux_tree[0]);
-  if(mixt_tree->aux_tree && mixt_tree->aux_tree[1])
-    PHYREX_Oldest_Sampled_Disk(mixt_tree->aux_tree[1]);
+  for(int i=0;i<3;++i) if(mixt_tree->aux_tree && mixt_tree->aux_tree[i]) PHYREX_Oldest_Sampled_Disk(mixt_tree->aux_tree[i]);
 
   if(RRW_Is_Rw(mixt_tree->mmod) == YES)
     {
       Make_Contrasts(mixt_tree);
-      Make_Contrasts(mixt_tree->aux_tree[0]);
-      Make_Contrasts(mixt_tree->aux_tree[1]);
+      for(int i=0;i<3;++i) Make_Contrasts(mixt_tree->aux_tree[i]);
+      
 
       mixt_tree->times->augmented_coalescent = NO;
-      mixt_tree->aux_tree[0]->times->augmented_coalescent = NO;
-      mixt_tree->aux_tree[1]->times->augmented_coalescent = NO;
+      for(int i=0;i<3;++i) mixt_tree->aux_tree[i]->times->augmented_coalescent = NO;
 
       PHYREX_Remove_All_Disks_Except_Coal_And_Tips(mixt_tree);
       
-      PHYREX_Simulate_Backward_Core(mixt_tree->aux_tree[0]->young_disk,YES,mixt_tree->aux_tree[0]);
-      PHYREX_Simulate_Backward_Core(mixt_tree->aux_tree[1]->young_disk,YES,mixt_tree->aux_tree[1]);
-      
-      PHYREX_Ldsk_To_Tree(mixt_tree->aux_tree[0]);
-      PHYREX_Ldsk_To_Tree(mixt_tree->aux_tree[1]);
-
-      PHYREX_Remove_All_Disks_Except_Coal_And_Tips(mixt_tree->aux_tree[0]);            
-      PHYREX_Remove_All_Disks_Except_Coal_And_Tips(mixt_tree->aux_tree[1]);            
-      
-      Update_Ancestors(mixt_tree->aux_tree[0]->n_root,mixt_tree->aux_tree[0]->n_root->v[2],mixt_tree->aux_tree[0]->n_root->b[2],mixt_tree->aux_tree[0]);
-      Update_Ancestors(mixt_tree->aux_tree[0]->n_root,mixt_tree->aux_tree[0]->n_root->v[1],mixt_tree->aux_tree[0]->n_root->b[1],mixt_tree->aux_tree[0]);  
-
-      Update_Ancestors(mixt_tree->aux_tree[1]->n_root,mixt_tree->aux_tree[1]->n_root->v[2],mixt_tree->aux_tree[1]->n_root->b[2],mixt_tree->aux_tree[1]);
-      Update_Ancestors(mixt_tree->aux_tree[1]->n_root,mixt_tree->aux_tree[1]->n_root->v[1],mixt_tree->aux_tree[1]->n_root->b[1],mixt_tree->aux_tree[1]);  
-
+      for(int i=0;i<3;++i)
+        {
+          PHYREX_Simulate_Backward_Core(mixt_tree->aux_tree[i]->young_disk,YES,mixt_tree->aux_tree[i]);
+          PHYREX_Ldsk_To_Tree(mixt_tree->aux_tree[i]);
+          PHYREX_Remove_All_Disks_Except_Coal_And_Tips(mixt_tree->aux_tree[i]);
+          Update_Ancestors(mixt_tree->aux_tree[i]->n_root,mixt_tree->aux_tree[i]->n_root->v[2],mixt_tree->aux_tree[i]->n_root->b[2],mixt_tree->aux_tree[i]);
+          Update_Ancestors(mixt_tree->aux_tree[i]->n_root,mixt_tree->aux_tree[i]->n_root->v[1],mixt_tree->aux_tree[i]->n_root->b[1],mixt_tree->aux_tree[i]);  
+        }
     }
 
   assert(PHYREX_Check_Struct(mixt_tree,YES));
@@ -665,17 +647,13 @@ void PHYREX_XML(char *xml_filename)
   
   // Cleaning up...
   PHYREX_Free_Ldsk_Struct(mixt_tree);
-  if(mixt_tree->aux_tree && mixt_tree->aux_tree[0]) PHYREX_Free_Ldsk_Struct(mixt_tree->aux_tree[0]);
-  if(mixt_tree->aux_tree && mixt_tree->aux_tree[1]) PHYREX_Free_Ldsk_Struct(mixt_tree->aux_tree[1]);
+  for(int i=0;i<3;++i) if(mixt_tree->aux_tree && mixt_tree->aux_tree[i]) PHYREX_Free_Ldsk_Struct(mixt_tree->aux_tree[i]);
   RATES_Free_Rates(mixt_tree->rates);
-  if(mixt_tree->aux_tree && mixt_tree->aux_tree[0]) RATES_Free_Rates(mixt_tree->aux_tree[0]->rates);
-  if(mixt_tree->aux_tree && mixt_tree->aux_tree[1]) RATES_Free_Rates(mixt_tree->aux_tree[1]->rates);
+  for(int i=0;i<3;++i) if(mixt_tree->aux_tree && mixt_tree->aux_tree[i]) RATES_Free_Rates(mixt_tree->aux_tree[i]->rates);
   TIMES_Free_Times(mixt_tree->times);
-  if(mixt_tree->aux_tree && mixt_tree->aux_tree[0]) TIMES_Free_Times(mixt_tree->aux_tree[0]->times);
-  if(mixt_tree->aux_tree && mixt_tree->aux_tree[1]) TIMES_Free_Times(mixt_tree->aux_tree[1]->times);
+  for(int i=0;i<3;++i) if(mixt_tree->aux_tree && mixt_tree->aux_tree[i]) TIMES_Free_Times(mixt_tree->aux_tree[i]->times);
   MCMC_Free_MCMC(mixt_tree->mcmc);
-  if(mixt_tree->aux_tree && mixt_tree->aux_tree[0]) MCMC_Free_MCMC(mixt_tree->aux_tree[0]->mcmc);
-  if(mixt_tree->aux_tree && mixt_tree->aux_tree[1]) MCMC_Free_MCMC(mixt_tree->aux_tree[1]->mcmc);
+  for(int i=0;i<3;++i) if(mixt_tree->aux_tree && mixt_tree->aux_tree[i]) MCMC_Free_MCMC(mixt_tree->aux_tree[i]->mcmc);
   Free_Mmod(mixt_tree->mmod);
   Free_Spr_List_One_Edge(mixt_tree);
   Free_Tree_Pars(mixt_tree);
@@ -707,10 +685,8 @@ void PHYREX_XML(char *xml_filename)
   
   Free_Model_Complete(mixt_tree->mod);
   Free_Model_Basic(mixt_tree->mod);
-  if(mixt_tree->aux_tree && mixt_tree->aux_tree[0]) MCMC_Free_MCMC(mixt_tree->aux_tree[0]->mcmc);
-  if(mixt_tree->aux_tree && mixt_tree->aux_tree[1]) MCMC_Free_MCMC(mixt_tree->aux_tree[1]->mcmc);
-  if(mixt_tree->aux_tree && mixt_tree->aux_tree[0]) Free_Tree(mixt_tree->aux_tree[0]);  
-  if(mixt_tree->aux_tree && mixt_tree->aux_tree[1]) Free_Tree(mixt_tree->aux_tree[1]);  
+  for(int i=0;i<3;++i) if(mixt_tree->aux_tree && mixt_tree->aux_tree[i]) MCMC_Free_MCMC(mixt_tree->aux_tree[i]->mcmc);
+  for(int i=0;i<3;++i) if(mixt_tree->aux_tree && mixt_tree->aux_tree[i]) Free_Tree(mixt_tree->aux_tree[i]);  
   Free_Tree(mixt_tree);  
   Free(res);
   XML_Free_XML_Tree(xroot);
