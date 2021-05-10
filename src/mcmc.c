@@ -11784,6 +11784,7 @@ void MCMC_PHYREX_Sigsq_Scale(t_tree *tree)
       tree->mmod->sigsq_scale[i] = new_scale;
     }
   
+
   if(i == 2*tree->n_otu-2)
     {
       if(tree->mmod->sampling_scheme == SPATIAL_SAMPLING_SURVEY)
