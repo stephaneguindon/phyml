@@ -632,6 +632,8 @@ void PHYREX_XML(char *xml_filename)
   char *s = LOCATION_Model_Id(mixt_tree->mmod);
   PhyML_Printf("\n. Spatial diffusion model: %s",s);
   Free(s);
+  PhyML_Printf("\n. Neff prior mean: %f",mixt_tree->times->neff_prior_mean);
+  PhyML_Printf("\n. Dispersal distance prior mean: %f",mixt_tree->mmod->disp_prior_mean);
   PhyML_Printf("\n. Init lnL(seq|phylo): %f",mixt_tree->c_lnL);
   PhyML_Printf("\n. Init lnL(rates|phylo): %f",mixt_tree->rates->c_lnL);
   PhyML_Printf("\n. Init lnL(coord|phylo): %f",mixt_tree->mmod->c_lnL);
@@ -1808,7 +1810,6 @@ void PHYREX_Store_Geo_Coord(t_geo_coord *t)
 void PHYREX_Restore_Geo_Coord(t_geo_coord *t)
 {
   int i;
-
   for(i=0;i<t->dim;i++) t->lonlat[i] = t->cpy->lonlat[i];  
   t->dim = t->cpy->dim;
   strcpy(t->id,t->cpy->id);

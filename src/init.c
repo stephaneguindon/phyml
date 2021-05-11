@@ -911,8 +911,8 @@ void TIMES_Init_Time_Struct(t_time *times, t_time *existing_times, int n_otu)
       times->model_id = COALESCENT;
     }
 
-  times->scaled_pop_size     = 1.E+2;
-  times->scaled_pop_size_min = 0.0;
+  times->scaled_pop_size     = 1.E+1;
+  times->scaled_pop_size_min = 1.E-1;
   times->scaled_pop_size_max = 1.E+3;
   
   times->c_lnL         = UNLIKELY;
@@ -3522,7 +3522,7 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->model_id = -1;
   t->use_locations = -1;
   t->sampling_scheme = -1;
-  t->safe_phyrex = NO;
+  t->safe_phyrex = YES;
   
   t->lim_up->lonlat[0] = 100.;
   t->lim_up->lonlat[1] = 100.;
@@ -3547,7 +3547,7 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->update_rad        = NO;
   
   t->min_sigsq         = 0.0;
-  t->max_sigsq         = 1.E+2;
+  t->max_sigsq         = 1.E+1;
   t->prior_param_sigsq = 10.0;
 
   assert(t->n_dim > 0);

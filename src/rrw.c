@@ -254,7 +254,7 @@ void RRW_Rescale_Times_Pre(t_node *a, t_node *d, phydbl cur_ta, int prod, t_tree
 
 phydbl RRW_Density_Ldsk_Location(t_ldsk *l, phydbl rad, int dim_idx, t_tree *tree)
 {
-  phydbl dta,dtd,sd,c;
+  phydbl dta,dtd,sd,c,sumd,sum;
   int err,i;
 
   err = NO;  
@@ -264,6 +264,21 @@ phydbl RRW_Density_Ldsk_Location(t_ldsk *l, phydbl rad, int dim_idx, t_tree *tre
       dta = fabs(l->prev->disk->time - l->disk->time);
       
       if(dta<SMALL) return(1.0);
+
+      sumd = 0.0;
+      for(i=0;i<l->n_next;++i)
+        {
+          dtd = fabs(l->disk->time - l->next[i]->disk->time);
+          sumd += dtd;
+        }
+
+      sum = 0.0;
+      for(i=0;i<l->n_next;++i)
+        {
+          dtd = fabs(l->disk->time - l->next[i]->disk->time);
+          sum += exp(-dtd/sumd);
+        }
+
       
       c = 0.0;
       sd = 0.0;
@@ -272,6 +287,8 @@ phydbl RRW_Density_Ldsk_Location(t_ldsk *l, phydbl rad, int dim_idx, t_tree *tre
           dtd = fabs(l->disk->time - l->next[i]->disk->time);
           c += (1./(phydbl)l->n_next)*((dtd/(dta+dtd))*l->prev->coord->lonlat[dim_idx] + (dta/(dta+dtd))*l->next[i]->coord->lonlat[dim_idx]);
           sd += (1./(phydbl)l->n_next)*sqrt((dta*dtd)/(dta+dtd)*rad);
+          /* c += (exp(-dtd/sumd)/sum)*((dtd/(dta+dtd))*l->prev->coord->lonlat[dim_idx] + (dta/(dta+dtd))*l->next[i]->coord->lonlat[dim_idx]); */
+          /* sd += (exp(-dtd/sumd)/sum)*sqrt((dta*dtd)/(dta+dtd)*rad); */
         }
       
       assert((isnan(c) && isnan(sd)) == false);
@@ -303,7 +320,7 @@ phydbl RRW_Density_Ldsk_Location(t_ldsk *l, phydbl rad, int dim_idx, t_tree *tre
 
 void RRW_Generate_Ldsk_New_Location(t_ldsk *l, phydbl rad, int dim_idx, t_tree *tree)
 {
-  phydbl dta,dtd,sd,c,new_loc;
+  phydbl dta,dtd,sd,c,new_loc,sum,sumd;
   int err,i;
 
   err = NO;              
@@ -318,13 +335,29 @@ void RRW_Generate_Ldsk_New_Location(t_ldsk *l, phydbl rad, int dim_idx, t_tree *
           return;
         }
       
+      sumd = 0.0;
+      for(i=0;i<l->n_next;++i)
+        {
+          dtd = fabs(l->disk->time - l->next[i]->disk->time);
+          sumd += dtd;
+        }
+
+      sum = 0.0;
+      for(i=0;i<l->n_next;++i)
+        {
+          dtd = fabs(l->disk->time - l->next[i]->disk->time);
+          sum += exp(-dtd/sumd);
+        }
+
       c = 0.0;
       sd = 0.0;
       for(i=0;i<l->n_next;++i)
         {
           dtd = fabs(l->disk->time - l->next[i]->disk->time);
+          /* c += (exp(-dtd/sumd)/sum)*((dtd/(dta+dtd))*l->prev->coord->lonlat[dim_idx] + (dta/(dta+dtd))*l->next[i]->coord->lonlat[dim_idx]); */
+          /* sd += (exp(-dtd/sumd)/sum)*sqrt((dta*dtd)/(dta+dtd)*rad); */
           c += (1./(phydbl)l->n_next)*((dtd/(dta+dtd))*l->prev->coord->lonlat[dim_idx] + (dta/(dta+dtd))*l->next[i]->coord->lonlat[dim_idx]);
-          sd += (1./(phydbl)l->n_next)*sqrt((dta*dtd)/(dta+dtd)*rad);            
+          sd += (1./(phydbl)l->n_next)*sqrt((dta*dtd)/(dta+dtd)*rad);
         }
       
       assert((isnan(c) && isnan(sd)) == false);
@@ -332,9 +365,6 @@ void RRW_Generate_Ldsk_New_Location(t_ldsk *l, phydbl rad, int dim_idx, t_tree *
       new_loc = Rnorm(c,sd);
       
       l->coord->lonlat[dim_idx] = new_loc;
-
-      /* PhyML_Printf("\n. GENERATE loc: %f c: %f sd: %f",l->coord->lonlat[dim_idx],c,sd); */
-
     }
   else if(l->prev == NULL && l->next != NULL)
     {
