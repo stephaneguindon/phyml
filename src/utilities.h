@@ -96,6 +96,10 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 
 #define BIRTHDEATH 0
 #define COALESCENT 1
+
+#define STRICTCOALESCENT 0
+#define EXPCOALESCENT 1
+
 #define SLFV_GAUSSIAN 2 /* Spatial Lambda-Fleming-Viot model (Gaussian) */
 #define SLFV_UNIFORM 3 /* Spatial Lambda-Fleming-Viot model (Uniform) */
 #define RW  4 /* standard Brownian diffusion model in phylogeography */
@@ -1643,6 +1647,10 @@ typedef struct __T_Time {
   phydbl scaled_pop_size_min; 
   phydbl scaled_pop_size_max; 
 
+  phydbl exp_growth;
+  phydbl exp_growth_min;
+  phydbl exp_growth_max;
+  
   phydbl birth_rate;
   phydbl birth_rate_min;
   phydbl birth_rate_max;
@@ -1689,8 +1697,9 @@ typedef struct __T_Time {
 
   phydbl *mean_t; /*! average values of nd_t taken across the sampled values during the MCMC */
 
-  int model_id;
-
+  short int model_id;
+  short int coalescent_model_id;
+  
   int update_time_norm_const;
 
   short int augmented_coalescent;
@@ -1768,6 +1777,7 @@ typedef struct __Tmcmc {
   int num_move_phyrex_ldscape_lim;
   int num_move_phyrex_sigsq;
   int num_move_time_neff;
+  int num_move_time_exp_growth;
   int num_move_phyrex_sim;
   int num_move_phyrex_traj;
   int num_move_phyrex_indel_disk_serial;

@@ -6661,6 +6661,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%s\t","rad");
           for(int i=0;i<tree->mmod->n_dim;++i) PhyML_Fprintf(fp_stats,"%s%s\t","sigSq",(i==0)?("Lon"):((i==1)?("Lat"):("xx")));
           PhyML_Fprintf(fp_stats,"%s\t","nEff");
+          PhyML_Fprintf(fp_stats,"%s\t","expGrowth");
           PhyML_Fprintf(fp_stats,"%s\t","neigh");
           PhyML_Fprintf(fp_stats,"%s\t","rhoe");
           PhyML_Fprintf(fp_stats,"%s\t","dispDist");
@@ -6776,6 +6777,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->rad);
       for(int i=0;i<tree->mmod->n_dim;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->sigsq[i]);
       PhyML_Fprintf(fp_stats,"%g\t",tree->times->scaled_pop_size);
+      PhyML_Fprintf(fp_stats,"%g\t",tree->times->exp_growth);
       PhyML_Fprintf(fp_stats,"%g\t",SLFV_Neighborhood_Size(tree));
       PhyML_Fprintf(fp_stats,"%g\t",SLFV_Effective_Density(tree));
       PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Realized_Dispersal_Dist(tree));

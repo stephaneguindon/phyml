@@ -320,6 +320,17 @@ void PHYREX_XML(char *xml_filename)
         {
           mixt_tree->times->neff_prior_mean = String_To_Dbl(prior);
         }
+
+      char *expgrowth;
+      expgrowth = XML_Get_Attribute_Value(xnd,"expgrowth");
+      if(expgrowth != NULL)
+        {
+          int select = XML_Validate_Attr_Int(expgrowth,6,
+                                             "true","yes","y",
+                                             "false","no","n");
+          if(select < 3) mixt_tree->times->coalescent_model_id = EXPCOALESCENT;
+          else mixt_tree->times->coalescent_model_id = STRICTCOALESCENT;
+        }      
     }
 
   
@@ -632,7 +643,8 @@ void PHYREX_XML(char *xml_filename)
   char *s = LOCATION_Model_Id(mixt_tree->mmod);
   PhyML_Printf("\n. Spatial diffusion model: %s",s);
   Free(s);
-  PhyML_Printf("\n. Neff prior mean: %f",mixt_tree->times->neff_prior_mean);
+  PhyML_Printf("\n. Ne prior mean: %f",mixt_tree->times->neff_prior_mean);
+  PhyML_Printf("\n. Exponential growth of Ne: %s",(mixt_tree->times->coalescent_model_id == EXPCOALESCENT)?"yes":"no");
   PhyML_Printf("\n. Dispersal distance prior mean: %f",mixt_tree->mmod->disp_prior_mean);
   PhyML_Printf("\n. Init lnL(seq|phylo): %f",mixt_tree->c_lnL);
   PhyML_Printf("\n. Init lnL(rates|phylo): %f",mixt_tree->rates->c_lnL);
@@ -980,6 +992,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_rad")) MCMC_PHYREX_Radius(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_sigsq")) MCMC_PHYREX_Sigsq(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_neff")) MCMC_PHYREX_Neff(tree);
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_exp_growth")) MCMC_PHYREX_Exp_Growth(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_disk")) MCMC_PHYREX_Indel_Disk(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_hit")) MCMC_PHYREX_Indel_Hit(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_move_disk_ud")) MCMC_PHYREX_Move_Disk_Updown(tree);

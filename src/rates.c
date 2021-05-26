@@ -69,11 +69,12 @@ phydbl RATES_Clock_R_Prior(t_tree *tree)
   lnP += Log_Dnorm(log(tree->rates->clock_r),mean-sd*sd/2.,sd,&err);
   lnP -= log(tree->rates->clock_r);
 
-  /* PhyML_Printf("\n. prior mean: %f var: %f || mean: %f sd: %f [%f] lnL: %f", */
+  /* PhyML_Printf("\n. prior mean: %f var: %f || mean: %f sd: %f [%f;%f] lnL: %f", */
   /*              tree->rates->clock_r_prior_mean, */
   /*              tree->rates->clock_r_prior_var, */
   /*              mean, */
   /*              sd, */
+  /*              tree->rates->clock_r, */
   /*              log(tree->rates->clock_r), */
   /*              lnP); */
 

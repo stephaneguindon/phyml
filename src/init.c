@@ -616,6 +616,7 @@ void Set_Defaults_Input(option* io)
   io->rates->model_id = LOGNORMAL;
   TIMES_Init_Time_Struct(io->times,NULL,-1);
   io->times->model_id = COALESCENT;
+  io->times->coalescent_model_id = STRICTCOALESCENT;
 }
 
 //////////////////////////////////////////////////////////////
@@ -909,11 +910,16 @@ void TIMES_Init_Time_Struct(t_time *times, t_time *existing_times, int n_otu)
   else
     {
       times->model_id = COALESCENT;
+      times->coalescent_model_id = STRICTCOALESCENT;
     }
 
   times->scaled_pop_size     = 1.E+1;
   times->scaled_pop_size_min = 1.E-1;
   times->scaled_pop_size_max = 1.E+3;
+
+  times->exp_growth     = 1.0;
+  times->exp_growth_min = -1.E+3;
+  times->exp_growth_max = +1.E+3;
   
   times->c_lnL         = UNLIKELY;
   times->p_lnL         = UNLIKELY;

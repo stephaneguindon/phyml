@@ -856,9 +856,10 @@ phydbl TIMES_Lk_Coalescent(t_tree *tree)
 {  
   t_node *n;
   int n_lineages;
-  phydbl lnP,Ne;
+  phydbl lnP,Ne,dt,exp_g;
 
   Ne = tree->times->scaled_pop_size;
+  exp_g = tree->times->exp_growth;
 
   if(Ne > tree->times->scaled_pop_size_max || Ne < tree->times->scaled_pop_size_min)
     {
@@ -875,9 +876,14 @@ phydbl TIMES_Lk_Coalescent(t_tree *tree)
     {
       if(n->tax == YES) n_lineages--;
       else n_lineages++;
-      
-      lnP += -n_lineages * (n_lineages-1.) / (2.*Ne) * fabs(tree->times->nd_t[n->num] - tree->times->nd_t[n->rk_next->num]);
 
+      dt = fabs(tree->times->nd_t[n->num] - tree->times->nd_t[n->rk_next->num]);
+      
+      if(tree->times->coalescent_model_id == STRICTCOALESCENT)
+        lnP += -n_lineages * (n_lineages-1.) / (2.*Ne) * dt;
+      else if(tree->times->coalescent_model_id == EXPCOALESCENT)
+        lnP += -n_lineages * (n_lineages-1.) / (2.*Ne) * (exp(exp_g*dt)-1.) / exp_g + exp_g*dt;
+        
       // Multifurcations not allowed under standard Kingman coalescent
       if(fabs(tree->times->nd_t[n->num] - tree->times->nd_t[n->rk_next->num]) < SMALL &&
          n->tax == NO && n->rk_next->tax == NO)
@@ -961,10 +967,12 @@ phydbl TIMES_Lk_Coalescent(t_tree *tree)
 phydbl TIMES_Lk_Coalescent_Range(t_dsk *young, t_dsk *old, t_tree *tree)
 {
   int n_lineages;
-  phydbl disk_lnP,lnP,Ne;
+  phydbl disk_lnP,lnP,Ne,dt,exp_g;
   t_dsk *disk;
 
   Ne = tree->times->scaled_pop_size;  
+  exp_g = tree->times->exp_growth;
+
   if(Ne > tree->times->scaled_pop_size_max || Ne < tree->times->scaled_pop_size_min) return(UNLIKELY);
   
   lnP = 0.0;
@@ -975,7 +983,12 @@ phydbl TIMES_Lk_Coalescent_Range(t_dsk *young, t_dsk *old, t_tree *tree)
       n_lineages = disk->next->n_ldsk_a;
       n_lineages -= (disk->next->ldsk ? (disk->next->ldsk->n_next -1) : 0);
 
-      disk_lnP = -n_lineages * (n_lineages-1.) / (2.*Ne) * fabs(disk->time - disk->next->time);      
+      dt = fabs(disk->time - disk->next->time);
+      if(tree->times->coalescent_model_id == STRICTCOALESCENT)
+        disk_lnP = -n_lineages * (n_lineages-1.) / (2.*Ne) * dt;
+      else if(tree->times->coalescent_model_id == EXPCOALESCENT)
+        disk_lnP = -n_lineages * (n_lineages-1.) / (2.*Ne) * (exp(exp_g*dt)-1.) / exp_g + exp_g*dt;      
+
       lnP += disk_lnP;
 
 
