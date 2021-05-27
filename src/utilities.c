@@ -12622,7 +12622,7 @@ phydbl Haversine_Distance(phydbl lon1, phydbl lat1, phydbl lon2, phydbl lat2)
 {
 
   phydbl R = 6371.; // Earth radius, in km
-  phydbl a,b;
+  phydbl a;
   
   lon1 = lon1 * PI / 180.;
   lat1 = lat1 * PI / 180.;
@@ -12633,9 +12633,7 @@ phydbl Haversine_Distance(phydbl lon1, phydbl lat1, phydbl lon2, phydbl lat2)
   a = pow(sin(.5*(lat2-lat1)),2);
   a += cos(lat1)*cos(lat2)*pow(sin(.5*(lon2-lon1)),2);
 
-  b = 2.*atan2(sqrt(a),sqrt(1.-a));
-
-  return(R * b);
+  return(2.* R * asin(sqrt(a)));
 }
 
 /*////////////////////////////////////////////////////////////

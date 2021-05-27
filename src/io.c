@@ -6665,6 +6665,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%s\t","neigh");
           PhyML_Fprintf(fp_stats,"%s\t","rhoe");
           PhyML_Fprintf(fp_stats,"%s\t","dispDist");
+          PhyML_Fprintf(fp_stats,"%s\t","dispDistAlt");
           PhyML_Fprintf(fp_stats,"%s\t","nInt");
           PhyML_Fprintf(fp_stats,"%s\t","nCoal");
           PhyML_Fprintf(fp_stats,"%s\t","nHit");
@@ -6781,6 +6782,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%g\t",SLFV_Neighborhood_Size(tree));
       PhyML_Fprintf(fp_stats,"%g\t",SLFV_Effective_Density(tree));
       PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Realized_Dispersal_Dist(tree));
+      PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Realized_Dispersal_Dist_Alt(tree));
       PhyML_Fprintf(fp_stats,"%d\t",PHYREX_Total_Number_Of_Intervals(tree));
       PhyML_Fprintf(fp_stats,"%d\t",PHYREX_Total_Number_Of_Coal_Disks(tree));
       PhyML_Fprintf(fp_stats,"%d\t",PHYREX_Total_Number_Of_Hit_Disks(tree));

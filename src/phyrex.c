@@ -3848,6 +3848,52 @@ phydbl PHYREX_Realized_Dispersal_Dist(t_tree *tree)
 {
   t_dsk *disk,*root_disk;
   phydbl dist,dt;
+  phydbl tot_dist,tot_dt;
+  int i;
+  
+  disk = tree->young_disk;
+  while(disk->prev) disk = disk->prev;
+  root_disk = disk;
+
+  tot_dist = 0.0;
+  tot_dt = 0.0;
+  dist = 0.0;
+  dt = 0.0;
+  disk = root_disk;
+  do
+    {
+      if(disk->ldsk != NULL)
+        {
+          for(i=0;i<disk->ldsk->n_next;++i)
+            {
+              dt = disk->ldsk->next[i]->disk->time - disk->time;
+              
+              dist =
+                Haversine_Distance(disk->ldsk->coord->lonlat[0], 
+                                   disk->ldsk->coord->lonlat[1],
+                                   disk->ldsk->next[i]->coord->lonlat[0],
+                                   disk->ldsk->next[i]->coord->lonlat[1]);
+
+              tot_dist += dist;
+              tot_dt += dt;
+              
+            }
+        }
+      disk = disk->next;
+    }
+  while(disk);
+  return(tot_dist/tot_dt);
+}
+
+////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+// Mean Haversine distance (in km) per year (measured on all paths between each internal node and its children) 
+phydbl PHYREX_Realized_Dispersal_Dist_Alt(t_tree *tree)
+{
+  t_dsk *disk,*root_disk;
+  phydbl dist,dt;
+  phydbl mean_disp;
   int n,i;
   
   disk = tree->young_disk;
@@ -3857,6 +3903,7 @@ phydbl PHYREX_Realized_Dispersal_Dist(t_tree *tree)
   dist = 0.0;
   dt = 0.0;
   n = 0;
+  mean_disp = 0.0;
   disk = root_disk;
   do
     {
@@ -3864,24 +3911,28 @@ phydbl PHYREX_Realized_Dispersal_Dist(t_tree *tree)
         {
           for(i=0;i<disk->ldsk->n_next;++i)
             {
-              dt += disk->ldsk->next[i]->disk->time - disk->time;
-              n++;
+              dt = disk->ldsk->next[i]->disk->time - disk->time;
               
-              dist +=
+              dist =
                 Haversine_Distance(disk->ldsk->coord->lonlat[0], 
                                    disk->ldsk->coord->lonlat[1],
                                    disk->ldsk->next[i]->coord->lonlat[0],
                                    disk->ldsk->next[i]->coord->lonlat[1]);
+              
+              if(fabs(dt) > 1.E-6)
+                {
+                  mean_disp += dist / dt;
+                  n++;
+                }
             }
         }
       disk = disk->next;
     }
   while(disk);
-  /* return(dist/(phydbl)n); */
-  return(dist/dt);
+  return(mean_disp/(phydbl)n);
 }
 
-////////////////////////////////////////////////////////////
+/*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
 phydbl PHYREX_Tip_To_Root_Realized_Sigsq(t_tree *tree)

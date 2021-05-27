@@ -3213,17 +3213,35 @@ void MCMC_Randomize_Nu(t_tree *tree)
 void MCMC_Randomize_Clock_Rate(t_tree *tree)
 {  
   phydbl u;
+  
   u = Uni();
+
   if(tree->mod->s_opt->opt_clock_r == YES)
     {
       tree->rates->clock_r = u * (1.0 - tree->rates->min_clock) + tree->rates->min_clock;
+
       if(tree->rates->clock_r_has_prior == YES)
         {
           phydbl mean,sd;
+          int iter;
+          
           mean = tree->rates->clock_r_prior_mean;
           sd = sqrt(tree->rates->clock_r_prior_var);
-          tree->rates->clock_r = Rnorm(mean-sd*sd/2.,sd);
-          tree->rates->clock_r = exp(tree->rates->clock_r);
+
+          iter = 0;
+          do
+            {
+              tree->rates->clock_r = Rnorm(mean-sd*sd/2.,sd);
+              tree->rates->clock_r = exp(tree->rates->clock_r);
+              iter++;
+              if(iter > 1000)
+                {
+                  PhyML_Fprintf(stderr,"\n. Could not initialize clock rate properly.");
+                  assert(false);
+                }
+            }
+          while(tree->rates->clock_r < tree->rates->min_clock ||
+                tree->rates->clock_r > tree->rates->max_clock);
         }
     }
 }
@@ -6919,7 +6937,7 @@ void MCMC_PHYREX_Sigsq(t_tree *tree)
       
       ratio = 0.0;
       /* K = tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_sigsq]; */
-      K = 0.3;
+      K = 0.1;
       
       min_sigsq = tree->mmod->min_sigsq;
       max_sigsq = tree->mmod->max_sigsq;
@@ -7325,7 +7343,7 @@ void MCMC_PHYREX_Exp_Growth(t_tree *tree)
       ratio = 0.0;
       
       /* K = tree->mcmc->tune_move[tree->mcmc->num_move_time_exp_growth]; */
-      K = 0.3;
+      K = 0.1;
       
       cur_tlnL = tree->times->c_lnL;
       new_tlnL = UNLIKELY;
@@ -12303,7 +12321,6 @@ void MCMC_PHYREX_Exchange_Core(t_tree *aux_tree)
   aux_tree->mcmc->print_every      = -1;
 
   n_mcmc_steps = aux_tree->n_otu*3;
-  /* n_mcmc_steps = aux_tree->n_otu*3; /\* !!!!!!!!!!!!!!! *\/ */
 
   TIMES_Lk(aux_tree);
   LOCATION_Lk(aux_tree);
