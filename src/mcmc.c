@@ -10466,7 +10466,7 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree)
   /* Make sure rad[j], which is a tuning parameter, does not keep on changing after burnin phase */
   /* for(j=0;j<tree->mmod->n_dim;++j) rad[j] = 0.1*(tree->mmod->lim_up->lonlat[j] - tree->mmod->lim_do->lonlat[j]);; */
   /* for(j=0;j<tree->mmod->n_dim;++j) rad[j] = (1./K)*(tree->mmod->lim_up->lonlat[j] - tree->mmod->lim_do->lonlat[j]);; */
-  for(j=0;j<tree->mmod->n_dim;++j) rad[j] = 2.0*tree->mmod->sigsq[j];
+  for(j=0;j<tree->mmod->n_dim;++j) rad[j] = 1.0*tree->mmod->sigsq[j];
 
     
   disk = tree->young_disk->prev;
@@ -11749,7 +11749,7 @@ void MCMC_PHYREX_Ldsk_Tip_To_Root(t_tree *tree)
   /* Make sure rad[j], which is a tuning parameter, does not keep on changing after burnin phase */
   /* for(j=0;j<tree->mmod->n_dim;++j) rad[j] = 0.1*(tree->mmod->lim_up->lonlat[j] - tree->mmod->lim_do->lonlat[j]);; */
   /* for(j=0;j<tree->mmod->n_dim;++j) rad[j] = (1./K)*(tree->mmod->lim_up->lonlat[j] - tree->mmod->lim_do->lonlat[j]);; */
-  for(j=0;j<tree->mmod->n_dim;++j) rad[j] = 2.0*tree->mmod->sigsq[j];
+  for(j=0;j<tree->mmod->n_dim;++j) rad[j] = 1.0*tree->mmod->sigsq[j];
 
   n_moves = (int)(1+0.2*sqrt(tree->n_otu));
 
