@@ -996,7 +996,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_disk")) MCMC_PHYREX_Indel_Disk(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_hit")) MCMC_PHYREX_Indel_Hit(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_move_disk_ud")) MCMC_PHYREX_Move_Disk_Updown(tree);
-      if(!strcmp(tree->mcmc->move_name[move],"phyrex_swap_disk")) MCMC_PHYREX_Swap_Disk(tree);
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_swap_disk")) MCMC_PHYREX_Swap_Disk(tree);      
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_scale_times")) MCMC_PHYREX_Scale_Times(tree,NO);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr")) MCMC_PHYREX_Prune_Regraft(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr_slide")) MCMC_PHYREX_Prune_Regraft_Slide(tree);
@@ -1019,6 +1019,13 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"clock")) MCMC_Clock_R(tree);
       if(!strcmp(tree->mcmc->move_name[move],"nu")) MCMC_Nu(tree);
 
+      /* if(tree->mcmc->run > 500000) */
+      /*   { */
+      /*     PHYREX_Evolve_All(tree); */
+      /*     assert(false); */
+      /*   } */
+            
+  
       if(tree->mmod->c_lnL < UNLIKELY || tree->c_lnL < UNLIKELY || tree->rates->c_lnL < UNLIKELY || tree->times->c_lnL < UNLIKELY)
         {
           PhyML_Printf("\n. Move: %s tree->mmod->c_lnL: %f tree->c_lnL: %f",
@@ -3847,16 +3854,53 @@ phydbl PHYREX_Root_To_Tip_Realized_Sigsq(t_tree *tree)
 phydbl PHYREX_Realized_Dispersal_Dist(t_tree *tree)
 {
   t_dsk *disk,*root_disk;
-  phydbl dist,dt;
-  phydbl tot_dist,tot_dt;
-  int i;
+  phydbl dist,dt,dist_mean,dt_mean;
+  phydbl num,denom;
+  int i,n;
   
   disk = tree->young_disk;
   while(disk->prev) disk = disk->prev;
   root_disk = disk;
+  
+  dist_mean = 0.0;
+  dt_mean = 0.0;
+  dist = 0.0;
+  dt = 0.0;
+  n = 0;
+  disk = root_disk;
+  do
+    {
+      if(disk->ldsk != NULL)
+        {
+          for(i=0;i<disk->ldsk->n_next;++i)
+            {
+              dt = disk->ldsk->next[i]->disk->time - disk->time;
+              
+              dist =
+                /* Haversine_Distance(disk->ldsk->coord->lonlat[0],  */
+                /*                    disk->ldsk->coord->lonlat[1], */
+                /*                    disk->ldsk->next[i]->coord->lonlat[0], */
+                /*                    disk->ldsk->next[i]->coord->lonlat[1]); */
+                Manhattan_Dist(disk->ldsk->coord,disk->ldsk->next[i]->coord);
+                
+              dist_mean += dist;
+              dt_mean += sqrt(dt);
+              n++;
+            }
+        }
+      disk = disk->next;
+    }
+  while(disk);
+  dist_mean /= n;
+  dt_mean /= n;
 
-  tot_dist = 0.0;
-  tot_dt = 0.0;
+
+  disk = tree->young_disk;
+  while(disk->prev) disk = disk->prev;
+  root_disk = disk;
+
+  num = 0.0;
+  denom = 0.0;
   dist = 0.0;
   dt = 0.0;
   disk = root_disk;
@@ -3869,20 +3913,23 @@ phydbl PHYREX_Realized_Dispersal_Dist(t_tree *tree)
               dt = disk->ldsk->next[i]->disk->time - disk->time;
               
               dist =
-                Haversine_Distance(disk->ldsk->coord->lonlat[0], 
-                                   disk->ldsk->coord->lonlat[1],
-                                   disk->ldsk->next[i]->coord->lonlat[0],
-                                   disk->ldsk->next[i]->coord->lonlat[1]);
+                /* Haversine_Distance(disk->ldsk->coord->lonlat[0],  */
+                /*                    disk->ldsk->coord->lonlat[1], */
+                /*                    disk->ldsk->next[i]->coord->lonlat[0], */
+                /*                    disk->ldsk->next[i]->coord->lonlat[1]); */
+                Manhattan_Dist(disk->ldsk->coord,disk->ldsk->next[i]->coord);
 
-              tot_dist += dist;
-              tot_dt += dt;
-              
+              /* num += (sqrt(dt) - dt_mean)*(dist - dist_mean); */
+              /* denom += pow(sqrt(dt) - dt_mean,2); */
+              num += sqrt(dt)*dist;
+              denom += dt;
             }
         }
       disk = disk->next;
     }
   while(disk);
-  return(tot_dist/tot_dt);
+  
+  return(num/denom*111.32);
 }
 
 ////////////////////////////////////////////////////////////
@@ -3892,18 +3939,20 @@ phydbl PHYREX_Realized_Dispersal_Dist(t_tree *tree)
 phydbl PHYREX_Realized_Dispersal_Dist_Alt(t_tree *tree)
 {
   t_dsk *disk,*root_disk;
-  phydbl dist,dt;
-  phydbl mean_disp;
-  int n,i;
+  phydbl dt,sum_dist;
+  phydbl mean,var;
+  int n,i,j;
+  t_geo_coord *new_coord;
+
+  new_coord = GEO_Make_Geo_Coord(tree->mmod->n_dim);
   
   disk = tree->young_disk;
   while(disk->prev) disk = disk->prev;
   root_disk = disk;
 
-  dist = 0.0;
-  dt = 0.0;
+
   n = 0;
-  mean_disp = 0.0;
+  sum_dist = 0.0;
   disk = root_disk;
   do
     {
@@ -3912,16 +3961,16 @@ phydbl PHYREX_Realized_Dispersal_Dist_Alt(t_tree *tree)
           for(i=0;i<disk->ldsk->n_next;++i)
             {
               dt = disk->ldsk->next[i]->disk->time - disk->time;
-              
-              dist =
-                Haversine_Distance(disk->ldsk->coord->lonlat[0], 
-                                   disk->ldsk->coord->lonlat[1],
-                                   disk->ldsk->next[i]->coord->lonlat[0],
-                                   disk->ldsk->next[i]->coord->lonlat[1]);
-              
-              if(fabs(dt) > 1.E-6)
+
+              if(dt > 1.0)
                 {
-                  mean_disp += dist / dt;
+                  for(j=0;j<tree->mmod->n_dim;++j)
+                    {
+                      mean = disk->ldsk->coord->lonlat[j] + (disk->ldsk->next[i]->coord->lonlat[j] - disk->ldsk->coord->lonlat[j]) * 1.0 / dt;
+                      var  = tree->mmod->sigsq[j] * (dt - 1.)/dt;
+                      new_coord->lonlat[j] = Rnorm(mean,sqrt(var));
+                    }
+                  sum_dist += Haversine_Distance(disk->ldsk->coord,new_coord);
                   n++;
                 }
             }
@@ -3929,7 +3978,10 @@ phydbl PHYREX_Realized_Dispersal_Dist_Alt(t_tree *tree)
       disk = disk->next;
     }
   while(disk);
-  return(mean_disp/(phydbl)n);
+
+  Free_Geo_Coord(new_coord);
+
+  return(sum_dist / n);
 }
 
 /*////////////////////////////////////////////////////////////
@@ -4633,6 +4685,51 @@ phydbl PHYREX_Get_Posterior(t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+void PHYREX_Evolve_All(t_tree *tree)
+{
+  int i;
+  RRW_Generate(tree);
+  PhyML_Printf("\n. Done with RRW_Generate");
+
+  for(i=0;i<tree->n_otu;++i)
+    {
+      PhyML_Printf("\n<clade id=\"clad%d\">",i+1);
+      PhyML_Printf("\n\t<taxon value=\"%s\"/>",tree->a_nodes[i]->name);
+      PhyML_Printf("\n</clade>");
+
+      PhyML_Printf("\n<calibration id=\"cal%d\">",i+1);
+      PhyML_Printf("\n\t<lower>%f</lower>",tree->times->nd_t[tree->a_nodes[i]->num]);
+      PhyML_Printf("\n\t<upper>%f</upper>",tree->times->nd_t[tree->a_nodes[i]->num]);
+      PhyML_Printf("\n\t<appliesto clade.id=\"clad%d\"/>",i+1);
+      PhyML_Printf("\n</calibration>");
+    }
+
+  PhyML_Printf("#traits\t latMg\t longMg");
+  PhyML_Printf("\n|SouthWest| -26 +40");
+  PhyML_Printf("\n|NorthEast| -11 +53");
+  
+  for(i=0;i<tree->n_otu;++i)
+    {
+      PhyML_Printf("\n%s\t%f\t%f",
+                   tree->a_nodes[i]->name,
+                   tree->a_nodes[i]->ldsk->coord->lonlat[1],
+                   tree->a_nodes[i]->ldsk->coord->lonlat[0]);
+    }
+
+  PhyML_Printf("\n. dispDist: %f",PHYREX_Realized_Dispersal_Dist(tree));
+  PhyML_Printf("\n. dispDistAlt: %f",PHYREX_Realized_Dispersal_Dist_Alt(tree));
+  PhyML_Printf("\n. sigSqLon: %f",tree->mmod->sigsq[0]);
+  PhyML_Printf("\n. sigSqLat: %f",tree->mmod->sigsq[1]);
+  PhyML_Printf("\n. neff: %f",tree->times->scaled_pop_size);
+  PhyML_Printf("\n. growth: %f",tree->times->exp_growth);
+  PhyML_Printf("\n. root time: %f",tree->times->nd_t[tree->n_root->num]);
+  PhyML_Printf("\n. root lon: %f",tree->n_root->ldsk->coord->lonlat[0]);
+  PhyML_Printf("\n. root lat: %f",tree->n_root->ldsk->coord->lonlat[1]);
+}
+
+
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

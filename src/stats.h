@@ -137,6 +137,8 @@ phydbl Rnorm_Trunc_Algo1(phydbl alpha, phydbl beta);
 phydbl Rnorm_Trunc_Algo2(phydbl alpha, phydbl beta);
 phydbl Rnorm_Trunc_Algo3(phydbl alpha, phydbl beta);
 phydbl Rnorm_Trunc_Algo4(phydbl alpha, phydbl beta);
+phydbl Manhattan_Dist(t_geo_coord *x, t_geo_coord *y);
+phydbl Haversine_Distance(t_geo_coord *x, t_geo_coord *y);
 
 
 

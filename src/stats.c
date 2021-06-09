@@ -5083,6 +5083,53 @@ phydbl Euclidean_Dist(t_geo_coord *x, t_geo_coord *y)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+phydbl Manhattan_Dist(t_geo_coord *x, t_geo_coord *y)
+{
+  int i;
+  phydbl dist;
+  
+  if(x->dim != y->dim)
+    {
+      PhyML_Printf("\n. x->dim: %d y->dim: %d",x->dim,y->dim);
+      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
+    }
+  
+  dist = 0.0;
+  for(i=0;i<x->dim;i++) dist += fabs(x->lonlat[i]-y->lonlat[i]);
+
+  return(dist);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+// Haversine distance between (lon1,lat1) and (lon2,lat2) where
+// coordinates are expressed using decimals
+phydbl Haversine_Distance(t_geo_coord *x, t_geo_coord *y)
+{
+
+  phydbl R = 6371.; // Earth radius, in km
+  phydbl a;
+  phydbl lon1,lat1,lon2,lat2;
+  
+  lon1 = x->lonlat[0] * PI / 180.;
+  lat1 = x->lonlat[1] * PI / 180.;
+
+  lon2 = y->lonlat[0] * PI / 180.;
+  lat2 = y->lonlat[1] * PI / 180.;
+
+  a = pow(sin(.5*(lat2-lat1)),2);
+  a += cos(lat1)*cos(lat2)*pow(sin(.5*(lon2-lon1)),2);
+
+  return(2.* R * asin(sqrt(a)));
+
+  /* return(sqrt(pow(lon1-lon2,2)+pow(lat1-lat2,2))); */
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
 /* Return a vector rk such that rk[i] gives the index of the i-th largest element in x */
 int *Ranks(phydbl *x, int len)
 {

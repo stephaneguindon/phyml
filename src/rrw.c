@@ -177,7 +177,7 @@ phydbl RRW_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
           sd =
             log(tree->mmod->sigsq[i]) +
             log(tree->mmod->sigsq_scale[nd_d->num]) +
-            log(tree->mmod->rrw_norm_fact) +
+            log(tree->mmod->rrw_norm_fact) + 
             log(fabs(ldsk->disk->time-ldsk->prev->disk->time));
 
           sd = sqrt(exp(sd));
@@ -252,7 +252,7 @@ void RRW_Rescale_Times_Pre(t_node *a, t_node *d, phydbl cur_ta, int prod, t_tree
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-phydbl RRW_Density_Ldsk_Location(t_ldsk *l, phydbl rad, int dim_idx, t_tree *tree)
+phydbl RRW_Density_Ldsk_Location(t_ldsk *l, phydbl rad, int dim_idx, int child_only, t_tree *tree)
 {
   phydbl dta,dtd,sd,c,sumd,sum;
   int err,i;
@@ -263,6 +263,8 @@ phydbl RRW_Density_Ldsk_Location(t_ldsk *l, phydbl rad, int dim_idx, t_tree *tre
     {
       dta = fabs(l->prev->disk->time - l->disk->time);
       
+      if(child_only == YES) dta = TWO_TO_THE_LARGE;
+
       if(dta<SMALL) return(1.0);
 
       sumd = 0.0;
@@ -318,7 +320,7 @@ phydbl RRW_Density_Ldsk_Location(t_ldsk *l, phydbl rad, int dim_idx, t_tree *tre
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void RRW_Generate_Ldsk_New_Location(t_ldsk *l, phydbl rad, int dim_idx, t_tree *tree)
+void RRW_Generate_Ldsk_New_Location(t_ldsk *l, phydbl rad, int dim_idx, int child_only, t_tree *tree)
 {
   phydbl dta,dtd,sd,c,new_loc,sum,sumd;
   int err,i;
@@ -328,6 +330,8 @@ void RRW_Generate_Ldsk_New_Location(t_ldsk *l, phydbl rad, int dim_idx, t_tree *
   if(l->prev != NULL && l->next != NULL)
     {
       dta = fabs(l->prev->disk->time - l->disk->time);
+
+      if(child_only == YES) dta = TWO_TO_THE_LARGE;
       
       if(dta<SMALL)
         {
@@ -440,3 +444,52 @@ phydbl RRW_Mean_Displacement_Rate(t_tree *tree)
     }
   return(disp/dt);
 }
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void RRW_Generate(t_tree *tree)
+{
+  t_ldsk *ldsk;
+  t_dsk *disk;
+  int i,j;
+
+  ldsk = tree->n_root->ldsk;
+  disk = tree->n_root->ldsk->disk;
+  
+  for(j=0;j<tree->mmod->n_dim;++j) ldsk->coord->lonlat[j] = 0.5*(tree->mmod->lim_up->lonlat[j] + tree->mmod->lim_do->lonlat[j]);;
+
+  /* disk = disk->next; */
+  do
+    {
+      if(disk->ldsk != NULL)
+        {
+          ldsk = disk->ldsk;
+          
+          for(i=0;i<ldsk->n_next;++i)
+            {
+              for(j=0;j<tree->mmod->n_dim;++j)
+                {
+                  ldsk->next[i]->coord->lonlat[j] = Rnorm(ldsk->coord->lonlat[j],
+                                                          sqrt((ldsk->next[i]->disk->time - ldsk->disk->time)*tree->mmod->sigsq[j]));
+                }
+            }
+        }
+      
+      disk = disk->next;
+    }
+  while(disk);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////

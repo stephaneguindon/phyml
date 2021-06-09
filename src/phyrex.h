@@ -141,5 +141,6 @@ void PHYREX_Update_Ldsk_Sigsq_Given_Edges(t_tree *tree);
 void PHYREX_Duplicate_Ldsk_Struct(t_tree *from, t_tree *where);
 phydbl PHYREX_Get_Posterior(t_tree *tree);
 phydbl PHYREX_Realized_Dispersal_Dist_Alt(t_tree *tree);
+void PHYREX_Evolve_All(t_tree *tree);
 
 #endif

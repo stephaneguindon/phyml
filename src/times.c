@@ -1001,9 +1001,6 @@ phydbl TIMES_Lk_Coalescent_Range(t_dsk *young, t_dsk *old, t_tree *tree)
       n_lineages = disk->next->n_ldsk_a;
       n_lineages -= (disk->next->ldsk ? (disk->next->ldsk->n_next -1) : 0);
 
-      dt = fabs(disk->time - disk->next->time);
-
-
 
       if(tree->times->coalescent_model_id == STRICTCOALESCENT)
         dt = fabs(disk->time - disk->next->time);
@@ -1020,7 +1017,6 @@ phydbl TIMES_Lk_Coalescent_Range(t_dsk *young, t_dsk *old, t_tree *tree)
         disk_lnP += exp_g * fabs(disk->time-T);
       
       lnP += disk_lnP;
-
 
       // Multifurcations not allowed under standard Kingman coalescent
       if(fabs(disk->time - disk->next->time) < SMALL &&

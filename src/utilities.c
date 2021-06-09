@@ -7656,9 +7656,10 @@ void Evolve(calign *data, t_mod *mod, int first_site_pos, t_tree *tree)
   phydbl *orig_l;
   /* phydbl shape,scale,var,mean; */
   int switch_to_yes;
+
   
   orig_l = (phydbl *)mCalloc(2*tree->n_otu-3,sizeof(phydbl));
-  For(i,2*tree->n_otu-3) orig_l[i] = tree->a_edges[i]->l->v;
+  for(i=0;i<2*tree->n_otu-3;++i) orig_l[i] = tree->a_edges[i]->l->v;
 
   data->n_otu = tree->n_otu;
   data->io    = tree->io;
@@ -12612,28 +12613,6 @@ void Refactor_Internal(t_node *a, t_node *d, t_edge *b, int *idx_nd, int *idx_br
             }
         }      
     }
-}
-
-/*////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////*/
-// Haversine distance between (lon1,lat1) and (lon2,lat2) where
-// coordinates are expressed using decimals
-phydbl Haversine_Distance(phydbl lon1, phydbl lat1, phydbl lon2, phydbl lat2)
-{
-
-  phydbl R = 6371.; // Earth radius, in km
-  phydbl a;
-  
-  lon1 = lon1 * PI / 180.;
-  lat1 = lat1 * PI / 180.;
-
-  lon2 = lon2 * PI / 180.;
-  lat2 = lat2 * PI / 180.;
-
-  a = pow(sin(.5*(lat2-lat1)),2);
-  a += cos(lat1)*cos(lat2)*pow(sin(.5*(lon2-lon1)),2);
-
-  return(2.* R * asin(sqrt(a)));
 }
 
 /*////////////////////////////////////////////////////////////

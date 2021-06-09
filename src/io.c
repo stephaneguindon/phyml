@@ -6652,26 +6652,22 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%s\t","lnTime");
           PhyML_Fprintf(fp_stats,"%s\t","lnDisp");
           PhyML_Fprintf(fp_stats,"%s\t","substRate");
-          PhyML_Fprintf(fp_stats,"%s\t","treeLenDivTime");
-          PhyML_Fprintf(fp_stats,"%s\t","meanSubstRate");
-          PhyML_Fprintf(fp_stats,"%s\t","diffRate");
-          PhyML_Fprintf(fp_stats,"%s\t","meandiffRate");
           PhyML_Fprintf(fp_stats,"%s\t","lbda");
           PhyML_Fprintf(fp_stats,"%s\t","mu");
           PhyML_Fprintf(fp_stats,"%s\t","rad");
           for(int i=0;i<tree->mmod->n_dim;++i) PhyML_Fprintf(fp_stats,"%s%s\t","sigSq",(i==0)?("Lon"):((i==1)?("Lat"):("xx")));
           PhyML_Fprintf(fp_stats,"%s\t","nEff");
           PhyML_Fprintf(fp_stats,"%s\t","expGrowth");
-          PhyML_Fprintf(fp_stats,"%s\t","neigh");
-          PhyML_Fprintf(fp_stats,"%s\t","rhoe");
           PhyML_Fprintf(fp_stats,"%s\t","dispDist");
           PhyML_Fprintf(fp_stats,"%s\t","dispDistAlt");
-          PhyML_Fprintf(fp_stats,"%s\t","nInt");
-          PhyML_Fprintf(fp_stats,"%s\t","nCoal");
-          PhyML_Fprintf(fp_stats,"%s\t","nHit");
           PhyML_Fprintf(fp_stats,"%s\t","rootTime");
           PhyML_Fprintf(fp_stats,"%s\t","rootLon");
           PhyML_Fprintf(fp_stats,"%s\t","rootLat");
+          PhyML_Fprintf(fp_stats,"%s\t","neigh");
+          PhyML_Fprintf(fp_stats,"%s\t","rhoe");
+          PhyML_Fprintf(fp_stats,"%s\t","nInt");
+          PhyML_Fprintf(fp_stats,"%s\t","nCoal");
+          PhyML_Fprintf(fp_stats,"%s\t","nHit");
           for(int i=0;i<Scalar_Len(tree->mod->kappa);++i) PhyML_Fprintf(fp_stats,"tstv%d\t",i);
           if(tree->mod->ras->free_mixt_rates == NO) PhyML_Fprintf(fp_stats,"alpha\t");
           else
@@ -6723,9 +6719,9 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
               PhyML_Fprintf(fp_stats,"aux%dTimeLnL\t",i);
             }
 
-          for(int i=0;i<tree->n_otu;++i) PhyML_Fprintf(fp_stats,"sigsqTip%d\t",i);
-          PhyML_Fprintf(fp_stats,"sigsqRoot1\t");
-          PhyML_Fprintf(fp_stats,"sigsqRoot2\t");
+          /* for(int i=0;i<tree->n_otu;++i) PhyML_Fprintf(fp_stats,"sigsqTip%d\t",i); */
+          /* PhyML_Fprintf(fp_stats,"sigsqRoot1\t"); */
+          /* PhyML_Fprintf(fp_stats,"sigsqRoot2\t"); */
 
 
 
@@ -6769,26 +6765,22 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%g\t",tree->times->c_lnL);
       PhyML_Fprintf(fp_stats,"%g\t",RRW_Prior_Sigsq_Scale(tree));
       PhyML_Fprintf(fp_stats,"%g\t",tree->rates->clock_r);
-      PhyML_Fprintf(fp_stats,"%g\t",RATES_Realized_Substitution_Rate(tree));
-      PhyML_Fprintf(fp_stats,"%g\t",RATES_Get_Mean_Rate_In_Subtree(tree->n_root,tree));
-      PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->sigsq[0]+tree->mmod->sigsq[1]);
-      PhyML_Fprintf(fp_stats,"%g\t",RRW_Mean_Displacement_Rate(tree));
       PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->lbda);
       PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->mu);
       PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->rad);
       for(int i=0;i<tree->mmod->n_dim;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->sigsq[i]);
       PhyML_Fprintf(fp_stats,"%g\t",tree->times->scaled_pop_size);
       PhyML_Fprintf(fp_stats,"%g\t",tree->times->exp_growth);
-      PhyML_Fprintf(fp_stats,"%g\t",SLFV_Neighborhood_Size(tree));
-      PhyML_Fprintf(fp_stats,"%g\t",SLFV_Effective_Density(tree));
       PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Realized_Dispersal_Dist(tree));
       PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Realized_Dispersal_Dist_Alt(tree));
-      PhyML_Fprintf(fp_stats,"%d\t",PHYREX_Total_Number_Of_Intervals(tree));
-      PhyML_Fprintf(fp_stats,"%d\t",PHYREX_Total_Number_Of_Coal_Disks(tree));
-      PhyML_Fprintf(fp_stats,"%d\t",PHYREX_Total_Number_Of_Hit_Disks(tree));
       PhyML_Fprintf(fp_stats,"%g\t",tree->n_root->ldsk->disk->time);
       PhyML_Fprintf(fp_stats,"%g\t",tree->n_root->ldsk->coord->lonlat[0]);
       PhyML_Fprintf(fp_stats,"%g\t",tree->n_root->ldsk->coord->lonlat[1]);
+      PhyML_Fprintf(fp_stats,"%g\t",SLFV_Neighborhood_Size(tree));
+      PhyML_Fprintf(fp_stats,"%g\t",SLFV_Effective_Density(tree));
+      PhyML_Fprintf(fp_stats,"%d\t",PHYREX_Total_Number_Of_Intervals(tree));
+      PhyML_Fprintf(fp_stats,"%d\t",PHYREX_Total_Number_Of_Coal_Disks(tree));
+      PhyML_Fprintf(fp_stats,"%d\t",PHYREX_Total_Number_Of_Hit_Disks(tree));
       Output_Scalar_Dbl(tree->mod->kappa,"\t",fp_stats);
       if(tree->mod->ras->free_mixt_rates == NO) PhyML_Fprintf(fp_stats,"%g\t",tree->mod->ras->alpha->v);
       else
@@ -6841,9 +6833,9 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[i]->times->c_lnL);
         }
 
-      for(int i=0;i<tree->n_otu;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->sigsq_scale[i]);
-      PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->sigsq_scale[tree->n_root->v[1]->num]);
-      PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->sigsq_scale[tree->n_root->v[2]->num]);
+      /* for(int i=0;i<tree->n_otu;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->sigsq_scale[i]); */
+      /* PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->sigsq_scale[tree->n_root->v[1]->num]); */
+      /* PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->sigsq_scale[tree->n_root->v[2]->num]); */
       /* for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->sigsq_scale[i]); */
       /* for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->times->nd_t[i]-tree->times->nd_t[tree->a_nodes[i]->anc->num]); */
       /* for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->a_nodes[i]->ldsk->coord->lonlat[0]); */
