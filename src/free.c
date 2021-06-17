@@ -418,9 +418,14 @@ void Free_Tree_Lk(t_tree *mixt_tree)
 
       if(tree->is_mixt_tree == NO)
         {
-          Free(tree->eigen_lr_left);
-          Free(tree->eigen_lr_rght);
           Free(tree->dot_prod);
+          Free(tree->p_lk_left_pi);
+          Free(tree->l_ev);
+          Free(tree->_tPij1);
+          Free(tree->_tPij2);
+          Free(tree->_pmat1plk1);
+          Free(tree->_pmat2plk2);
+          Free(tree->_plk0);
           
           for(i=0;i<3;i++) Free(tree->log_lks_aLRT[i]);
           Free(tree->log_lks_aLRT);

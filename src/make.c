@@ -19,6 +19,11 @@ void Make_Tree_For_Lk(t_tree *tree)
   int i;
   calign *cdata;
 
+  const unsigned int ns = tree->mod->ns;
+  const unsigned int ncatg = tree->mod->ras->n_catg;
+  const unsigned int nsns =  ns * ns;
+  const unsigned int sz = (int)BYTE_ALIGN / 8;
+  
   cdata = tree->data;
   assert(cdata);
 
@@ -33,21 +38,39 @@ void Make_Tree_For_Lk(t_tree *tree)
   
 #if (defined(__AVX__) || defined(__SSE3__))
 #ifndef WIN32
-  if(posix_memalign((void **)&tree->eigen_lr_left,BYTE_ALIGN,(size_t)MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-  if(posix_memalign((void **)&tree->eigen_lr_rght,BYTE_ALIGN,(size_t)MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   if(posix_memalign((void **)&tree->dot_prod,BYTE_ALIGN,(size_t)tree->n_pattern*tree->mod->ns*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   if(posix_memalign((void **)&tree->expl,BYTE_ALIGN,(size_t)3*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&tree->p_lk_left_pi,BYTE_ALIGN,(size_t) ns * sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&tree->l_ev,BYTE_ALIGN,(size_t) nsns * sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&tree->_tPij1,BYTE_ALIGN,(size_t)(ncatg * nsns / sz) * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&tree->_tPij2,BYTE_ALIGN,(size_t)(ncatg * nsns / sz) * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&tree->_pmat1plk1,BYTE_ALIGN,(size_t)ns / sz * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&tree->_pmat2plk2,BYTE_ALIGN,(size_t)ns / sz * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&tree->_plk0,BYTE_ALIGN,(size_t)(ns / sz) * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&tree->_l_ev,BYTE_ALIGN,(size_t) nsns / sz * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&tree->_r_ev,BYTE_ALIGN,(size_t) nsns / sz * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&tree->_prod_left,BYTE_ALIGN,(size_t) ns / sz * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+  if(posix_memalign((void **)&tree->_prod_rght,BYTE_ALIGN,(size_t) ns / sz * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 #else
-  tree->eigen_lr_left = _aligned_malloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
-  tree->eigen_lr_rght = _aligned_malloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
-  tree->dot_prod = _aligned_malloc(tree->n_pattern*tree->mod->ns*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*sizeof(phydbl),BYTE_ALIGN);
-  tree->expl = _aligned_malloc(3*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
+  tree->dot_prod     = _aligned_malloc(tree->n_pattern*tree->mod->ns*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*sizeof(phydbl),BYTE_ALIGN);
+  tree->expl         = _aligned_malloc(3*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(phydbl),BYTE_ALIGN);
+  tree->p_lk_left_pi = _aligned_malloc(ns * sizeof(phydbl),BYTE_ALIGN);
+  tree->l_ev         = _aligned_malloc(ns * ns * sizeof(phydbl),BYTE_ALIGN);
+  tree->_tPij1       = _aligned_malloc(ncatg * nsns / sz * sizeof(__m256d),BYTE_ALIGN);
+  tree->_tPij2       = _aligned_malloc(ncatg * nsns / sz * sizeof(__m256d),BYTE_ALIGN);
+  tree->_pmat1plk1   = _aligned_malloc(ns / sz * sizeof(__m256d),BYTE_ALIGN);
+  tree->_pmat2plk2   = _aligned_malloc(ns / sz * sizeof(__m256d),BYTE_ALIGN);
+  tree->_plk0        = _aligned_malloc(ns / sz * sizeof(__m256d),BYTE_ALIGN);
+  tree->_l_ev        = _aligned_malloc(ns * ns / sz * sizeof(__m256d),BYTE_ALIGN);
+  tree->_r_ev        = _aligned_malloc(ns * ns / sz * sizeof(__m256d),BYTE_ALIGN);
+  tree->_prod_left   = _aligned_malloc(ns / sz * sizeof(__m256d),BYTE_ALIGN);
+  tree->_prod_rght   = _aligned_malloc(ns / sz * sizeof(__m256d),BYTE_ALIGN);
 #endif
 #else
-  tree->eigen_lr_left = (phydbl *)mCalloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns,sizeof(phydbl));
-  tree->eigen_lr_rght = (phydbl *)mCalloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns,sizeof(phydbl));
   tree->dot_prod = (phydbl *)mCalloc(tree->n_pattern*tree->mod->ns*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(phydbl));
   tree->expl = (phydbl *)mCalloc(3*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns,sizeof(phydbl));
+  tree->p_lk_left_pi = (phydbl *)mCalloc(ns,sizeof(phydbl));
+  tree->l_ev = (phydbl *)mCalloc(nsns,sizeof(phydbl));
 #endif
 
 

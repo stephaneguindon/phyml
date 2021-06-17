@@ -907,7 +907,12 @@ phydbl TIMES_Lk_Coalescent(t_tree *tree)
           return(UNLIKELY);
         }
             
-      assert((isnan(lnP) || isinf(lnP)) == FALSE);
+      if((isnan(lnP) || isinf(lnP)) == TRUE)
+        {
+          tree->times->c_lnL = UNLIKELY;
+          return(UNLIKELY);
+        }
+        
       n = n->rk_next;
     }
 
@@ -1001,7 +1006,8 @@ phydbl TIMES_Lk_Coalescent_Range(t_dsk *young, t_dsk *old, t_tree *tree)
       n_lineages = disk->next->n_ldsk_a;
       n_lineages -= (disk->next->ldsk ? (disk->next->ldsk->n_next -1) : 0);
 
-
+      dt = 0.0;
+      
       if(tree->times->coalescent_model_id == STRICTCOALESCENT)
         dt = fabs(disk->time - disk->next->time);
       else if(tree->times->coalescent_model_id == EXPCOALESCENT)

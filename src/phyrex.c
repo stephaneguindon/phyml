@@ -979,9 +979,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       
       assert(!(move == tree->mcmc->n_moves));
 
-
+      /* !!!!!!!!!!!!!!!!!!!!!!!!! */
       /* tree->mmod->use_locations = NO; */
-
+      
       /* phydbl prev_lnL = tree->c_lnL; */
       /* phydbl prev_loc_lnL = tree->mmod->c_lnL; */
       /* phydbl prev_rates_lnL = tree->rates->c_lnL; */
@@ -1000,6 +1000,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_scale_times")) MCMC_PHYREX_Scale_Times(tree,NO);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr")) MCMC_PHYREX_Prune_Regraft(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr_slide")) MCMC_PHYREX_Prune_Regraft_Slide(tree);
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_narrow_exchange")) MCMC_PHYREX_Narrow_Exchange(tree);
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_wide_exchange")) MCMC_PHYREX_Wide_Exchange(tree);
       if(!strcmp(tree->mcmc->move_name[move],"root_time")) MCMC_Root_Time(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_traj")) MCMC_PHYREX_Lineage_Traj(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_disk_multi")) MCMC_PHYREX_Disk_Multi(tree);
@@ -1151,9 +1153,56 @@ void PHYREX_Insert_Disk(t_dsk *ins, t_tree *tree)
   disk = tree->young_disk;
   while(disk->prev != NULL && disk->prev->time > ins->time) disk = disk->prev;
   
-  ins->prev       = disk->prev;
-  ins->next       = disk;
-  disk->prev      = ins;
+  PHYREX_Insert_Disk_At(ins,disk);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+void PHYREX_Move_Disk_Updown(t_dsk *this, phydbl target_time, t_tree *tree)
+{
+  t_dsk *disk;
+
+  if(target_time < this->time)
+    {
+      disk = this->prev;
+      while(disk && target_time < disk->time)
+        {
+          if(disk->prev != NULL && disk->prev->time < target_time)
+            {
+              PHYREX_Remove_Disk(this);
+              PHYREX_Insert_Disk_At(this,disk);
+              break;
+            }
+          disk = disk->prev;
+          assert(disk);
+        }
+    }
+  else
+    {
+      disk = this->next;
+      while(disk && target_time > disk->time)
+        {
+          if(disk->next != NULL && disk->next->time > target_time)
+            {
+              PHYREX_Remove_Disk(this);
+              PHYREX_Insert_Disk_At(this,disk->next);
+              break;
+            }
+          disk = disk->next;
+          assert(disk);
+        }
+    }
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+void PHYREX_Insert_Disk_At(t_dsk *ins, t_dsk *disk)
+{
+  ins->prev = disk->prev;
+  ins->next = disk;
+  disk->prev = ins;
   if(ins->prev != NULL) ins->prev->next = ins;
 }
 

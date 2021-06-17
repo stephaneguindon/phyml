@@ -47,7 +47,8 @@ AC_CHECK_FUNCS([floor pow rint sqrt strchr strstr])
 
 dnl DEFAULT_VECTOR_FLAG=
 dnl DEFAULT_VECTOR_FLAG="-mavx -mfma"
-dnl DEFAULT_VECTOR_FLAG=-msse3
+dnl DEFAULT_VECTOR_FLAG="-mavx2"
+dnl DEFAULT_VECTOR_FLAG=-msse2
 DEFAULT_VECTOR_FLAG="-march=native"
 dnl DEFAULT_VECTOR_FLAG="-march=skylake -mprefer-vector-width=256"
 

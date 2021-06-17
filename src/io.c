@@ -6688,6 +6688,8 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%s\t","speed");
           PhyML_Fprintf(fp_stats,"%s\t","accSPR");
           PhyML_Fprintf(fp_stats,"%s\t","accSPRsLide");
+          PhyML_Fprintf(fp_stats,"%s\t","accNarrowExchange");
+          PhyML_Fprintf(fp_stats,"%s\t","accWideExchange");
           /* PhyML_Fprintf(fp_stats,"%s\t","accPath"); */
           /* PhyML_Fprintf(fp_stats,"%s\t","accIndelDiskSerial"); */
           /* PhyML_Fprintf(fp_stats,"%s\t","accIndelHitSerial"); */
@@ -6711,7 +6713,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           /* PhyML_Fprintf(fp_stats,"%s\t","accAuxTipToRoot"); */
           /* PhyML_Fprintf(fp_stats,"%s\t","accAuxLdskGivenDisk"); */
 
-          /* PhyML_Fprintf(fp_stats,"%s\t","tuneAuxSlide"); */
+          PhyML_Fprintf(fp_stats,"%s\t","tuneScale");
 
           for(int i=0;i<3;++i)
             {
@@ -6801,6 +6803,8 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%g\t",difftime(tree->mcmc->time_end,tree->mcmc->time_beg)/(phydbl)tree->mcmc->sample_interval);
       PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_spr]);
       PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_spr_slide]);
+      PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_narrow_exchange]);
+      PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_wide_exchange]);
       /* PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_traj]); */
       /* PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_indel_disk_serial]); */
       /* PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_indel_hit_serial]); */
@@ -6811,11 +6815,11 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       /* PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_disk_multi]); */
       /* PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_move_disk_ud]); */
       /* PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_add_remove_jump]); */
-      PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_ldsk_tip_to_root]);
+      PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_ldsk_tip_to_root]);      
       /* PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_sigsq_scale]); */
       /* PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_br_r]); */
 
-      /* PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_spr_slide]); */
+      PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_scale_times]);
 
 
       /* PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[0]->mcmc->acc_rate[tree->aux_tree[0]->mcmc->num_move_phyrex_move_disk_ud]); */

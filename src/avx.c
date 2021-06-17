@@ -13,7 +13,7 @@ the GNU public licence. See http://www.opensource.org for details.
 #include "assert.h"
 #include "avx.h"
 
-#if defined(__AVX__)
+#if (defined(__AVX__) || defined(__AVX2__))
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -35,24 +35,14 @@ void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree)
   phydbl *l_ev,*r_ev;
 
   __m256d *_l_ev,*_r_ev,*_prod_left,*_prod_rght;
-  
-#ifndef WIN32
-  if(posix_memalign((void **)&p_lk_left_pi,BYTE_ALIGN,(size_t) ns * sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-  if(posix_memalign((void **)&l_ev,BYTE_ALIGN,(size_t) ns * ns * sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-  if(posix_memalign((void **)&_l_ev,BYTE_ALIGN,(size_t) ns * ns / sz * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-  if(posix_memalign((void **)&_r_ev,BYTE_ALIGN,(size_t) ns * ns / sz * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-  if(posix_memalign((void **)&_prod_left,BYTE_ALIGN,(size_t) ns / sz * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-  if(posix_memalign((void **)&_prod_rght,BYTE_ALIGN,(size_t) ns / sz * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-#else
-  p_lk_left_pi = _aligned_malloc(ns * sizeof(phydbl),BYTE_ALIGN);
-  l_ev         = _aligned_malloc(ns * ns * sizeof(phydbl),BYTE_ALIGN);
-  _l_ev        = _aligned_malloc(ns * ns / sz * sizeof(__m256d),BYTE_ALIGN);
-  _r_ev        = _aligned_malloc(ns * ns / sz * sizeof(__m256d),BYTE_ALIGN);
-  _prod_left   = _aligned_malloc(ns / sz * sizeof(__m256d),BYTE_ALIGN);
-  _prod_rght   = _aligned_malloc(ns / sz * sizeof(__m256d),BYTE_ALIGN);
-#endif
-  
 
+  p_lk_left_pi = tree->p_lk_left_pi;
+  l_ev         = tree->l_ev;
+  _l_ev        = tree->_l_ev;
+  _r_ev        = tree->_r_ev;
+  _prod_left   = tree->_prod_left;
+  _prod_rght   = tree->_prod_rght;
+    
   assert(sz == 4);
   assert(tree->update_eigen_lr == YES);
   
@@ -74,9 +64,6 @@ void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree)
       r_ev += ns;
       l_ev += ns;
     }
-          
-  l_ev -= ns*ns;
-  r_ev -= ns*ns;
   
   p_lk_left = b->left->tax ? b->p_lk_tip_l : b->p_lk_left;
   p_lk_rght = b->rght->tax ? b->p_lk_tip_r : b->p_lk_rght;
@@ -115,13 +102,6 @@ void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree)
           dot_prod += ncatgns;
         }
     }
-
-  Free(l_ev);
-  Free(_l_ev);
-  Free(_r_ev);
-  Free(_prod_left);
-  Free(_prod_rght);
-  Free(p_lk_left_pi);
 }
 
 //////////////////////////////////////////////////////////////
@@ -353,27 +333,13 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
   const unsigned int sz = (int)BYTE_ALIGN / 8;
   const unsigned nblocks = ns/sz;
 
-  __m256d *_tPij1,*_tPij2,*_pmat1plk1,*_pmat2plk2,*_plk0,*_init_tPij1,*_init_tPij2;
+  __m256d *_tPij1,*_tPij2,*_pmat1plk1,*_pmat2plk2,*_plk0;
 
-    
-#ifndef WIN32
-  if(posix_memalign((void **)&_tPij1,BYTE_ALIGN,(size_t)(ncatg * nsns / sz) * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-  if(posix_memalign((void **)&_tPij2,BYTE_ALIGN,(size_t)(ncatg * nsns / sz) * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-  if(posix_memalign((void **)&_pmat1plk1,BYTE_ALIGN,(size_t)ns / sz * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-  if(posix_memalign((void **)&_pmat2plk2,BYTE_ALIGN,(size_t)ns / sz * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-  if(posix_memalign((void **)&_plk0,BYTE_ALIGN,(size_t)(ns / sz) * sizeof(__m256d))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-#else
-  _tPij1     = _aligned_malloc(ncatg * nsns / sz * sizeof(__m256d),BYTE_ALIGN);
-  _tPij2     = _aligned_malloc(ncatg * nsns / sz * sizeof(__m256d),BYTE_ALIGN);
-  tPij1      = _aligned_malloc(ncatg * nsns / sz * sizeof(__m256d),BYTE_ALIGN);
-  tPij2      = _aligned_malloc(ncatg * nsns / sz * sizeof(__m256d),BYTE_ALIGN);
-  _pmat1plk1 = _aligned_malloc(ns / sz * sizeof(__m256d),BYTE_ALIGN);
-  _pmat2plk2 = _aligned_malloc(ns / sz * sizeof(__m256d),BYTE_ALIGN);
-  _plk0      = _aligned_malloc(ns / sz * sizeof(__m256d),BYTE_ALIGN);
-#endif
-
-  _init_tPij1 = _tPij1;
-  _init_tPij2 = _tPij2;
+  _tPij1     = tree->_tPij1;
+  _tPij2     = tree->_tPij2;
+  _pmat1plk1 = tree->_pmat1plk1;
+  _pmat2plk2 = tree->_pmat2plk2;
+  _plk0      = tree->_plk0;
   
   sum_scale_v1_val            = 0;
   sum_scale_v2_val            = 0;
@@ -384,7 +350,6 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
   sum_scale_v1 = sum_scale_v2 = NULL;
   p_lk_loc                    = NULL;
   state_v1 = state_v2         = -1;
-
   
   Set_All_Partial_Lk(&n_v1,&n_v2,
                      &plk0,&sum_scale,&p_lk_loc,
@@ -408,8 +373,8 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
           _tPij2 += nblocks;
         }
     }
-  _tPij1 = _init_tPij1;
-  _tPij2 = _init_tPij2;
+  _tPij1 -= ncatg*ns*nblocks;
+  _tPij2 -= ncatg*ns*nblocks;
 
   if(tree->mod->augmented == YES)
     {
@@ -437,9 +402,6 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
               ambiguity_check_v2 = n_v2->c_seq->is_ambigu[site];
               if(ambiguity_check_v2 == NO) state_v2 = n_v2->c_seq->d_state[site];
             }
-
-          _tPij1 = _init_tPij1;
-          _tPij2 = _init_tPij2;
       
           for(catg=0;catg<ncatg;++catg)
             {                                                          
@@ -478,6 +440,9 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
               plk1 += (n_v1->tax) ? 0 : ns;
               plk2 += (n_v2->tax) ? 0 : ns;
             }
+          
+          _tPij1 -= ncatg * nsns / sz;
+          _tPij2 -= ncatg * nsns / sz;
    
           plk1 += (n_v1->tax) ? ns : 0;
           plk2 += (n_v2->tax) ? ns : 0;
@@ -544,12 +509,6 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
           plk2 += (n_v2->tax) ? ns : ncatgns;          
         }
     }
-  Free(_init_tPij1);
-  Free(_init_tPij2);
-  Free(_pmat1plk1);
-  Free(_pmat2plk2);
-  Free(_plk0);
-  
 }
 
 //////////////////////////////////////////////////////////////

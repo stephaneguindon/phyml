@@ -34,11 +34,11 @@ the GNU public licence. See http://www.opensource.org for details.
 /* #include <malloc/malloc.h> */
 /* #include <malloc.h> */
 
-#if (defined(__AVX__))
+#if (defined(__AVX__) || defined(__AVX2__))
 #include <xmmintrin.h>
 #include <pmmintrin.h>
 #include <immintrin.h>
-#elif (defined(__SSE3__))
+#elif (defined(__SSE__) || defined(__SSE2__) || defined(__SSE3__))
 #include <emmintrin.h>
 #include <pmmintrin.h>
 #endif
@@ -113,9 +113,9 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define CT 4
 #define GT 5
 
-#if (defined __AVX__)
+#if (defined __AVX__ || defined __AVX2__)
 #define BYTE_ALIGN 32
-#elif (defined __SSE3__)
+#elif (defined(__SSE__) || defined(__SSE2__) ||  defined __SSE3__)
 #define BYTE_ALIGN 16
 #else
 #define BYTE_ALIGN 1
@@ -750,8 +750,15 @@ typedef struct __Tree{
   struct __Generic_LL              *edge_list;
   struct __Generic_LL              *node_list;
   struct __Independent_Contrasts       *ctrst; /*! Pointer to data structure used for independent contrasts */
-  
 
+#if (defined(__AVX__) || defined(__AVX2__))
+  __m256d *_tPij1,*_tPij2,*_pmat1plk1,*_pmat2plk2,*_plk0,*_l_ev,*_r_ev,*_prod_left,*_prod_rght;
+#elif (defined(__SSE__) || defined(__SSE2__) || defined(__SSE3__))
+  __m128d *_tPij1,*_tPij2,*_pmat1plk1,*_pmat2plk2,*_plk0,*_l_ev,*_r_ev,*_prod_left,*_prod_rght;
+#endif
+
+  phydbl                  *p_lk_left_pi,*l_ev;
+  
   short int                         eval_alnL; /*! Evaluate likelihood for genetic data */
   short int                         eval_rlnL; /*! Evaluate likelihood for rates along the tree */
   short int                         eval_glnL; /*! Evaluate tree likelihood */
@@ -789,8 +796,6 @@ typedef struct __Tree{
   int                                json_num;
   short int                   update_eigen_lr;
   int                                tip_root; /*! Index of tip node used as the root */
-  phydbl                       *eigen_lr_left;
-  phydbl                       *eigen_lr_rght;
   phydbl                            *dot_prod;
 
   phydbl                                *expl;
@@ -1773,6 +1778,8 @@ typedef struct __Tmcmc {
   int num_move_phyrex_indel_hit;
   int num_move_phyrex_spr;
   int num_move_phyrex_spr_slide;
+  int num_move_phyrex_narrow_exchange;
+  int num_move_phyrex_wide_exchange;
   int num_move_phyrex_scale_times;
   int num_move_phyrex_ldscape_lim;
   int num_move_phyrex_sigsq;
@@ -2509,5 +2516,11 @@ void Set_Prior(t_tree *tree);
 #include "m4.h"
 #endif
 
+
+#if (defined(__AVX__) || defined(__AVX2__))
+#include "avx.h"
+#elif (defined(__SSE__) || defined(__SSE2__) || defined(__SSE3__))
+#include "sse.h"
+#endif
 
 #endif

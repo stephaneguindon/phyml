@@ -23,7 +23,7 @@ the GNU public licence.  See http://www.opensource.org for details.
 #include "mixt.h"
 
 
-#if defined(__AVX__)
+#if (defined(__AVX__) || defined(__AVX2__))
 
 void AVX_Update_Partial_Lk(t_tree *tree,t_edge *b_fcus,t_node *n);
 void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree);

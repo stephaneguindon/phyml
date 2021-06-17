@@ -142,5 +142,7 @@ void PHYREX_Duplicate_Ldsk_Struct(t_tree *from, t_tree *where);
 phydbl PHYREX_Get_Posterior(t_tree *tree);
 phydbl PHYREX_Realized_Dispersal_Dist_Alt(t_tree *tree);
 void PHYREX_Evolve_All(t_tree *tree);
+void PHYREX_Insert_Disk_At(t_dsk *ins, t_dsk *disk);
+void PHYREX_Move_Disk_Updown(t_dsk *this, phydbl target_time, t_tree *tree);
 
 #endif
