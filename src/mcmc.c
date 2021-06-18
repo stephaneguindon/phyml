@@ -6218,41 +6218,8 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
 
   /* We start with small tuning parameter values in order to have inflated ESS
      for clock_r */
-  for(i=0;i<mcmc->n_moves;i++)
-    {
-      switch(mcmc->move_type[i])
-	{
-	case MCMC_MOVE_RANDWALK_NORMAL:
-	  {
-	    /* mcmc->tune_move[i] = 1.E-1; */
-	    mcmc->tune_move[i] = 100.;
-	    break;
-	  }
-	case MCMC_MOVE_RANDWALK_UNIFORM:
-	  {
-	    /* mcmc->tune_move[i] = 2.0; */
-	    mcmc->tune_move[i] = 20.0;
-	    break;
-	  }
-	case MCMC_MOVE_SCALE_GAMMA:
-	  {
-	    mcmc->tune_move[i] = 2.0;
-	    /* mcmc->tune_move[i] = 10.0; */
-	    break;
-	  }
-	case MCMC_MOVE_SCALE_THORNE:
-	  {
-	    mcmc->tune_move[i] = 2.0;
-	    break;
-	  }
-        default :
-          {
-            mcmc->tune_move[i] = 2.0;
-	    break;
-          }
-	}
-    }
-  
+  for(i=0;i<mcmc->n_moves;i++) mcmc->tune_move[i] = 1.;
+ 
   mcmc->move_weight[mcmc->num_move_br_r]                  = 1.0; 
   mcmc->move_weight[mcmc->num_move_nd_r]                  = 0.0;
   mcmc->move_weight[mcmc->num_move_times]                 = 0.0;
@@ -6306,10 +6273,10 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_indel_hit]             = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ud]          = 3.0;
   mcmc->move_weight[mcmc->num_move_phyrex_swap_disk]             = 3.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_spr]                   = 10.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_spr_slide]             = 8.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_narrow_exchange]       = 8.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_wide_exchange]         = 8.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_spr]                   = 6.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_spr_slide]             = 5.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_narrow_exchange]       = 5.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_wide_exchange]         = 5.0;
   mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           = 3.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldscape_lim]           = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 0.0;
@@ -8831,6 +8798,8 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
   a_root_dsk->ldsk = a_root_ldsk;
   for(j=0;j<tree->mmod->n_dim;++j) a_root_ldsk->coord->lonlat[j] = 0.5*(tree->mmod->lim_up->lonlat[j] + tree->mmod->lim_do->lonlat[j]);;
   
+  PHYREX_Update_Ldsk_Rates_Given_Edges(tree);
+  PHYREX_Update_Ldsk_Sigsq_Given_Edges(tree);
 
   while(n_iter--)
     {      
@@ -9084,6 +9053,8 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
 
       PHYREX_Ldsk_To_Tree(tree);
       PHYREX_Update_Node_Times_Given_Disks(tree);
+      PHYREX_Update_Edge_Rates_Given_Ldsks(tree);
+      PHYREX_Update_Edge_Sigsq_Given_Ldsks(tree);
       RATES_Update_Edge_Lengths(tree);
       
       assert(tree->n_root->ldsk->disk->prev == NULL);
@@ -9189,8 +9160,7 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
           
           a_root_dsk->next->prev = NULL;
           a_root_ldsk->next[0]->prev = NULL;
-          
-          
+                    
           PHYREX_Update_Lindisk_List_Range(youngest_disk,oldest_disk,tree);
       
           PHYREX_Free_Ldisk(regraft_ldsk);
@@ -9200,6 +9170,9 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
           PHYREX_Update_Node_Times_Given_Disks(tree);
           RATES_Fill_Lca_Table(tree);
 
+          PHYREX_Update_Edge_Rates_Given_Ldsks(tree);
+          PHYREX_Update_Edge_Sigsq_Given_Ldsks(tree);
+          
           RATES_Update_Edge_Lengths(tree);
           
           Reset_Lk(tree);
@@ -9287,6 +9260,7 @@ void MCMC_PHYREX_Prune_Regraft_Slide(t_tree *tree)
   phydbl *rad;
   phydbl dt_orig,dt_new;
   phydbl cur_t,new_t,K;
+  short int root_select;
   
   if(tree->mod->s_opt->opt_topo == NO) return;
 
@@ -9309,6 +9283,8 @@ void MCMC_PHYREX_Prune_Regraft_Slide(t_tree *tree)
   a_root_dsk->ldsk = a_root_ldsk;    
   for(j=0;j<tree->mmod->n_dim;++j) a_root_ldsk->coord->lonlat[j] = 0.5*(tree->mmod->lim_up->lonlat[j] + tree->mmod->lim_do->lonlat[j]);;
 
+  PHYREX_Update_Ldsk_Rates_Given_Edges(tree);
+  PHYREX_Update_Ldsk_Sigsq_Given_Edges(tree);
 
   while(n_iter--)
     {
@@ -9405,7 +9381,10 @@ void MCMC_PHYREX_Prune_Regraft_Slide(t_tree *tree)
       assert(prune_ldsk_daughter != NULL);
 
       prune_ldsk = prune_ldsk_daughter->prev;
-           
+
+      root_select = NO;
+      if(prune_ldsk == tree->n_root->ldsk) root_select = YES;
+      
       /* prune_ldsk_daughter is the next coalescent event or tip node */
       while(prune_ldsk_daughter->n_next == 1) prune_ldsk_daughter = prune_ldsk_daughter->next[0];
 
@@ -9418,7 +9397,7 @@ void MCMC_PHYREX_Prune_Regraft_Slide(t_tree *tree)
       // TO DO: add similar function for SLFV
       
       /* Set time of regraft_ldsk */
-      K = (tree->young_disk->time - tree->n_root->ldsk->disk->time)/20.; /* Needs updating if new node age is above that of (old) root node */
+      K = (tree->young_disk->time - tree->n_root->ldsk->disk->time) / 20. ; /* Needs updating if new node age is above that of (old) root node */
       cur_t = prune_ldsk->disk->time;
       new_t = Rnorm_Trunc(cur_t,K,-TWO_TO_THE_LARGE,prune_ldsk_daughter->disk->time,&err);
       hr -= Log_Dnorm_Trunc(new_t,cur_t,K,-TWO_TO_THE_LARGE,prune_ldsk_daughter->disk->time,&err);
@@ -9599,6 +9578,8 @@ void MCMC_PHYREX_Prune_Regraft_Slide(t_tree *tree)
 
       PHYREX_Ldsk_To_Tree(tree);
       PHYREX_Update_Node_Times_Given_Disks(tree);
+      PHYREX_Update_Edge_Rates_Given_Ldsks(tree);
+      PHYREX_Update_Edge_Sigsq_Given_Ldsks(tree);
       RATES_Update_Edge_Lengths(tree);
 
       assert(tree->n_root->ldsk->disk->prev == NULL);
@@ -9617,7 +9598,7 @@ void MCMC_PHYREX_Prune_Regraft_Slide(t_tree *tree)
       
       /* Remaining of Hastings ratio for regraft and prune node age */
       /* Note that root time may be distinct from that of current tree, hence the need to update K. */
-      K = (tree->young_disk->time - tree->n_root->ldsk->disk->time)/20.;
+      K = (tree->young_disk->time - tree->n_root->ldsk->disk->time) / 20.;
       hr += Log_Dnorm_Trunc(cur_t,new_t,K,-TWO_TO_THE_LARGE,prune_ldsk_daughter->disk->time,&err);
       /* K = (tree->young_disk->time - tree->n_root->ldsk->disk->time)/10.; */
       /* hr += Log_Dnorm_Trunc(cur_t,new_t,K,2.*new_t-prune_ldsk_daughter->disk->time,prune_ldsk_daughter->disk->time,&err); */
@@ -9655,15 +9636,22 @@ void MCMC_PHYREX_Prune_Regraft_Slide(t_tree *tree)
       /* if(tree->eval_alnL == YES) */
 
       /* if(above_root == YES) */
-        /* PhyML_Printf("\n SPRS cycle: %d alnL: [%16f->%16f] glnL: [%16f->%16f] rlnL: [%16f->%16f] tlnL: [%16f->%16f] T: [%16f] [%f;%f;%f] hr: %14f alpha: %12f K=%15f", */
-        /*              tree->mcmc->run, */
-        /*              cur_alnL,new_alnL, */
-        /*              cur_glnL,new_glnL, */
-        /*              cur_rlnL,new_rlnL, */
-        /*              cur_tlnL,new_tlnL, */
-        /*              prune_ldsk->disk->time,regraft_ldsk->disk->time, */
-        /*              tree->n_root->ldsk->disk->time,tree->times->nd_t[tree->n_root->num], */
-        /*              hr,alpha,K); */
+      if(root_select == YES)
+        {
+          /* PhyML_Printf("\n SLIDE %5d alnL[%16f->%16f] glnL[%16f->%16f] rlnL[%16f->%16f] tlnL[%16f->%16f] t[%10f->%10f] hr: %14f alpha: %12f K=%15f", */
+          /*              tree->mcmc->run, */
+          /*              cur_alnL,new_alnL, */
+          /*              cur_glnL,new_glnL, */
+          /*              cur_rlnL,new_rlnL, */
+          /*              cur_tlnL,new_tlnL, */
+          /*              cur_t,new_t, */
+          /*              hr,alpha,K); */
+          /* TIMES_Time_To_Bl(tree); */
+          /* tree->bl_ndigits = 3; */
+          /* tree->write_tax_names = NO; */
+          /* PhyML_Printf("\n. AP: %s",Write_Tree(tree)); */
+          /* Exit("\n"); */
+        }
       
       u = Uni();
       
@@ -9701,11 +9689,10 @@ void MCMC_PHYREX_Prune_Regraft_Slide(t_tree *tree)
 
           PHYREX_Ldsk_To_Tree(tree);
           PHYREX_Update_Node_Times_Given_Disks(tree);
+          PHYREX_Update_Edge_Rates_Given_Ldsks(tree);
+          PHYREX_Update_Edge_Sigsq_Given_Ldsks(tree);
+
           RATES_Fill_Lca_Table(tree);
-
-          /* PHYREX_Update_Edge_Rates_Given_Ldsks(tree); */
-          /* PHYREX_Update_Edge_Sigsq_Given_Ldsks(tree); */
-
           RATES_Update_Edge_Lengths(tree);
           
           Reset_Lk(tree);
@@ -12354,6 +12341,8 @@ void MCMC_PHYREX_Narrow_Exchange(t_tree *tree)
 
   for(j=0;j<tree->mmod->n_dim;++j) rad[j] = 1.*tree->mmod->sigsq[j];
  
+  PHYREX_Update_Ldsk_Rates_Given_Edges(tree);
+  PHYREX_Update_Ldsk_Sigsq_Given_Edges(tree);
 
   while(n_iter--)
     {
@@ -12434,7 +12423,7 @@ void MCMC_PHYREX_Narrow_Exchange(t_tree *tree)
       
       /* PHYREX_Update_Ldsk_Rates_Given_Edges(tree); */
 
-          /* Set new position of regraft_ldsk */
+      /* Set new position of regraft_ldsk */
       /* if(tree->mmod->use_locations == YES) */
       /*   { */
       /*     for(j=0;j<tree->mmod->n_dim;j++) */
@@ -12533,6 +12522,7 @@ void MCMC_PHYREX_Narrow_Exchange(t_tree *tree)
           PHYREX_Update_Lindisk_List_Range(d->disk,a->disk,tree);
           
           PHYREX_Ldsk_To_Tree(tree);
+
           RATES_Fill_Lca_Table(tree);
           RATES_Update_Edge_Lengths(tree);
           
@@ -12543,9 +12533,6 @@ void MCMC_PHYREX_Narrow_Exchange(t_tree *tree)
           tree->mmod->c_lnL = new_glnL;
           tree->times->c_lnL = new_tlnL;
           
-          /* Shouldn't be required, right ? */
-          PHYREX_Update_Ldsk_Rates_Given_Edges(tree);
-
           tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_narrow_exchange]++;
         }
       
@@ -12586,6 +12573,9 @@ void MCMC_PHYREX_Wide_Exchange(t_tree *tree)
 
   for(j=0;j<tree->mmod->n_dim;++j) rad[j] = 1.*tree->mmod->sigsq[j];
  
+  PHYREX_Update_Ldsk_Rates_Given_Edges(tree);
+  PHYREX_Update_Ldsk_Sigsq_Given_Edges(tree);
+
   while(n_iter--)
     {
       tree->mcmc->run_move[tree->mcmc->num_move_phyrex_wide_exchange]++;
@@ -12695,7 +12685,6 @@ void MCMC_PHYREX_Wide_Exchange(t_tree *tree)
       PHYREX_Update_Lindisk_List_Range(w->disk,a->disk,tree);
       
       PHYREX_Ldsk_To_Tree(tree);
-      PHYREX_Update_Node_Times_Given_Disks(tree);
       RATES_Update_Edge_Lengths(tree);
 
       assert(tree->n_root->ldsk->disk->prev == NULL);
@@ -12769,7 +12758,7 @@ void MCMC_PHYREX_Wide_Exchange(t_tree *tree)
           PHYREX_Update_Lindisk_List_Range(d->disk,a->disk,tree);
           
           PHYREX_Ldsk_To_Tree(tree);
-          PHYREX_Update_Node_Times_Given_Disks(tree);
+
           RATES_Fill_Lca_Table(tree);
           RATES_Update_Edge_Lengths(tree);
           
@@ -12779,11 +12768,6 @@ void MCMC_PHYREX_Wide_Exchange(t_tree *tree)
         {
           tree->mmod->c_lnL = new_glnL;
           tree->times->c_lnL = new_tlnL;
-          
-          /* Shouldn't be required, right ? */
-          PHYREX_Update_Ldsk_Rates_Given_Edges(tree);
-          PHYREX_Update_Ldsk_Sigsq_Given_Edges(tree);
-
           tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_wide_exchange]++;
         }
       

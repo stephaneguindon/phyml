@@ -16,7 +16,7 @@ the GNU public licence. See http://www.opensource.org for details.
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined(__SSE__) || defined(__SSE2__) || defined(__SSE3__))
+#if ((defined(__SSE__) || defined(__SSE2__) || defined(__SSE3__)) && !((defined __AVX__ || defined __AVX2__)))
 
 void SSE_Update_Eigen_Lr(t_edge *b, t_tree *tree)
 {
