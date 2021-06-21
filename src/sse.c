@@ -504,14 +504,29 @@ void SSE_Matrix_Vect_Prod(const __m128d *_m_transpose, const phydbl *_v, const i
   unsigned int i,j;  
   __m128d _x;
 
-  for(i=0;i<nblocks;++i) _u[i] = _mm_setzero_pd();
 
-  for(i=0;i<ns;++i)
+  _x = _mm_set1_pd(_v[0]);
+  for(j=0;j<nblocks;++j) _u[j] = _mm_mul_pd(_m_transpose[j],_x);
+  _m_transpose = _m_transpose + nblocks;
+  
+  for(i=1;i<ns;++i)
     {
       _x = _mm_set1_pd(_v[i]);
-      for(j=0;j<nblocks;++j) _u[j] = _mm_add_pd(_u[j],_mm_mul_pd(_m_transpose[j],_x));
+      for(j=0;j<nblocks;++j)
+        {
+          _u[j] = _mm_add_pd(_u[j],_mm_mul_pd(_m_transpose[j],_x));
+        }
       _m_transpose = _m_transpose + nblocks;
     }
+
+  /* for(i=0;i<nblocks;++i) _u[i] = _mm_setzero_pd(); */
+
+  /* for(i=0;i<ns;++i) */
+  /*   { */
+  /*     _x = _mm_set1_pd(_v[i]); */
+  /*     for(j=0;j<nblocks;++j) _u[j] = _mm_add_pd(_u[j],_mm_mul_pd(_m_transpose[j],_x)); */
+  /*     _m_transpose = _m_transpose + nblocks; */
+  /*   } */
 }
 
 //////////////////////////////////////////////////////////////
