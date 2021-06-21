@@ -587,9 +587,11 @@ void AVX_Matrix_Vect_Prod(const __m256d *_m_transpose, const phydbl *_v, const i
   unsigned int i,j;  
   __m256d _x;
 
-  for(i=0;i<nblocks;++i) _u[i] = _mm256_setzero_pd();
-
-  for(i=0;i<ns;++i)
+  _x = _mm256_set1_pd(_v[0]);
+  for(j=0;j<nblocks;++j) _u[j] = _mm256_mul_pd(_m_transpose[j],_x);
+  _m_transpose = _m_transpose + nblocks;
+  
+  for(i=1;i<ns;++i)
     {
       _x = _mm256_set1_pd(_v[i]);
       for(j=0;j<nblocks;++j)
@@ -602,6 +604,23 @@ void AVX_Matrix_Vect_Prod(const __m256d *_m_transpose, const phydbl *_v, const i
         }
       _m_transpose = _m_transpose + nblocks;
     }
+
+/*   for(i=0;i<nblocks;++i) _u[i] = _mm256_setzero_pd(); */
+  
+/*   for(i=0;i<ns;++i) */
+/*     { */
+/*       _x = _mm256_set1_pd(_v[i]); */
+/*       for(j=0;j<nblocks;++j) */
+/*         { */
+/* #if (defined(__FMA__)) */
+/*           _u[j] = _mm256_fmadd_pd(_m_transpose[j],_x,_u[j]); */
+/* #else */
+/*           _u[j] = _mm256_add_pd(_u[j],_mm256_mul_pd(_m_transpose[j],_x)); */
+/* #endif */
+/*         } */
+/*       _m_transpose = _m_transpose + nblocks; */
+/*     } */
+
 }
 
 //////////////////////////////////////////////////////////////

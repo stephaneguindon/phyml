@@ -6271,8 +6271,8 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_time_exp_growth]              = 0.3;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_disk]            = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_indel_hit]             = 1.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ud]          = 3.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_swap_disk]             = 3.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ud]          = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_swap_disk]             = 4.0;
   mcmc->move_weight[mcmc->num_move_phyrex_spr]                   = 6.0;
   mcmc->move_weight[mcmc->num_move_phyrex_spr_slide]             = 5.0;
   mcmc->move_weight[mcmc->num_move_phyrex_narrow_exchange]       = 5.0;
@@ -8063,12 +8063,182 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree, short int print)
 #ifdef PHYREX
 void MCMC_PHYREX_Swap_Disk(t_tree *tree)
 {
+  /* phydbl u,alpha,ratio; */
+  /* phydbl cur_glnL, new_glnL; */
+  /* phydbl cur_alnL, new_alnL; */
+  /* phydbl cur_rlnL, new_rlnL; */
+  /* phydbl cur_tlnL, new_tlnL; */
+  /* phydbl hr,t,t_min,t_max,*ori_time,K; */
+  /* t_dsk  *disk,*target_disk,**valid_disks; */
+  /* int i,j,block,n_valid_disks,*permut,n_swaps,err; */
+
+
+  /* K = tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_swap_disk]; */
+  
+  /* tree->mcmc->run_move[tree->mcmc->num_move_phyrex_swap_disk]++; */
+  
+  /* /\* if(RRW_Is_Rw(tree->mmod) == YES && tree->times->augmented_coalescent == NO) return; *\/ */
+
+  /* valid_disks = NULL; */
+  /* block       = 100; */
+
+  /* disk = tree->young_disk->prev; */
+  /* if(!disk->prev) return; */
+
+  /* n_valid_disks = 0; */
+  /* do */
+  /*   { */
+  /*     /\* Record disk with a lineage displacement or coalescent that is not the root disk and not a disk with sampled taxa on it *\/ */
+  /*     if(disk && disk->prev && disk->ldsk && disk->ldsk->n_next >= 1 && disk->age_fixed == NO) */
+  /*       { */
+  /*         if(!(disk->ldsk->n_next > 1 && tree->mod->s_opt->opt_bl == NO)) */
+  /*           { */
+  /*             if(!n_valid_disks) valid_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *)); */
+  /*             else if(!(n_valid_disks%block)) valid_disks = (t_dsk **)mRealloc(valid_disks,n_valid_disks+block,sizeof(t_dsk *)); */
+  /*             valid_disks[n_valid_disks] = disk; */
+  /*             n_valid_disks++; */
+  /*           } */
+  /*       } */
+  /*     disk = disk->prev; */
+  /*   } */
+  /* while(disk && disk->prev); */
+
+  /* if(n_valid_disks < 2) return; */
+  
+  /* permut = Permutate(n_valid_disks); */
+  /* n_swaps = (int)(1 + 0.01*n_valid_disks); */
+
+  /* ori_time = (phydbl *)mCalloc(n_swaps,sizeof(phydbl)); */
+  
+  
+  /* Set_Lk(tree); */
+
+  /* new_glnL       = UNLIKELY; */
+  /* cur_glnL       = tree->mmod->c_lnL; */
+  
+  /* new_tlnL       = UNLIKELY; */
+  /* cur_tlnL       = tree->times->c_lnL; */
+  
+  /* new_alnL       = UNLIKELY; */
+  /* cur_alnL       = tree->c_lnL; */
+  
+  /* new_rlnL       = UNLIKELY; */
+  /* cur_rlnL       = tree->rates->c_lnL; */
+  
+  /* hr             = 0.0; */
+  
+  /* for(j=0;j<n_swaps;++j) */
+  /*   { */
+
+  /*     disk           = NULL; */
+  /*     target_disk    = NULL; */
+
+  /*     /\* Uniform selection of a valid disk *\/ */
+  /*     target_disk = valid_disks[permut[j]]; */
+      
+  /*     ori_time[j]    = target_disk->time; */
+      
+  /*     t_min = target_disk->ldsk->prev->disk->time; */
+  /*     t_max = +INFINITY; */
+  /*     for(i=0;i<target_disk->ldsk->n_next;++i) */
+  /*       if(target_disk->ldsk->next[i]->disk->time < t_max)  */
+  /*         { */
+  /*           t_max = target_disk->ldsk->next[i]->disk->time; */
+  /*         } */
+      
+  /*     t_max = t_max - SMALL; */
+  /*     t_min = t_min + SMALL; */
+
+  /*     if(!(t_max > t_min)) */
+  /*       { */
+  /*         PhyML_Printf("\n. t_max: %g t_min: %g",t_max,t_min); */
+  /*         assert(t_max > t_min); */
+  /*       } */
+  /*     /\* t = Uni()*(t_max - t_min) + t_min; *\/ */
+  /*     t = Rnorm_Trunc(ori_time[j], */
+  /*                     (t_max - t_min)*K, */
+  /*                     t_min,t_max, */
+  /*                     &err); */
+  /*     hr -= Log_Dnorm_Trunc(t,ori_time[j],(t_max - t_min)*K, */
+  /*                           t_min,t_max,&err); */
+  /*     hr += Log_Dnorm_Trunc(ori_time[j],t,(t_max - t_min)*K, */
+  /*                           t_min,t_max,&err); */
+      
+  /*     PHYREX_Move_Disk_Updown(target_disk,t,tree); */
+  /*     target_disk->time = t; */
+  /*   } */
+
+  
+  /* PHYREX_Update_Lindisk_List(tree); */
+  /* PHYREX_Update_Node_Times_Given_Disks(tree); */
+        
+  /* if(tree->eval_glnL == YES) */
+  /*   { */
+  /*     new_glnL = (tree->mmod->use_locations == YES) ? LOCATION_Lk(tree) : 0.0; */
+  /*     new_tlnL = TIMES_Lk(tree); */
+  /*     if(PHYREX_Total_Number_Of_Intervals(tree) > tree->mmod->max_num_of_intervals) new_glnL = UNLIKELY; */
+  /*   } */
+
+  /* if(tree->eval_alnL == YES) new_alnL = Lk(NULL,tree); */
+  /* if(tree->eval_rlnL == YES) new_rlnL = RATES_Lk(tree); */
+  
+  /* ratio = 0.0; */
+  /* if(tree->eval_alnL == YES) ratio += (new_alnL - cur_alnL); */
+  /* if(tree->eval_rlnL == YES) ratio += (new_rlnL - cur_rlnL); */
+  /* if(tree->eval_glnL == YES) ratio += (new_glnL - cur_glnL); */
+  /* if(tree->eval_glnL == YES) ratio += (new_tlnL - cur_tlnL); */
+  /* ratio += hr; */
+  
+  /* ratio = exp(ratio); */
+  /* alpha = MIN(1.,ratio); */
+  
+  /* /\* Always accept move *\/ */
+  /* if(tree->mcmc->always_yes == YES && new_glnL > UNLIKELY) alpha = 1.0; */
+  
+  /* u = Uni(); */
+  
+  /* printf("\n- Swap glnL: [%12f->%12f] alnL: [%12f->%12f] tlnL: [%12f->%12f] hr: %12f u:%12f alpha: %12f K:%12f", */
+  /*        cur_glnL,new_glnL, */
+  /*        cur_alnL,new_alnL, */
+  /*        cur_tlnL,new_tlnL, */
+  /*        hr,u,alpha,K); */
+  
+  /* assert(isnan(u) == NO && isinf(fabs(u)) == NO); */
+  
+  /* if(u > alpha) /\* Reject *\/ */
+  /*   { */
+  /*     /\* printf("\n- Reject %f %f",target_disk->time,ori_time); *\/           */
+  /*     for(j=0;j<n_swaps;++j) */
+  /*       { */
+  /*         PHYREX_Move_Disk_Updown(valid_disks[permut[j]],ori_time[j],tree); */
+  /*         valid_disks[permut[j]]->time = ori_time[j]; */
+  /*       } */
+      
+  /*     PHYREX_Update_Lindisk_List(tree); */
+  /*     PHYREX_Update_Node_Times_Given_Disks(tree);       */
+  /*     Reset_Lk(tree); */
+  /*   } */
+  /* else */
+  /*   { */
+  /*     /\* printf("\n- Accept %f %f",target_disk->time,ori_time); *\/ */
+  /*     tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_swap_disk]++; */
+  /*   } */
+
+  /* tree->mcmc->run++; */
+  /* PHYREX_Print_MCMC_Stats(tree); */
+  /* PHYREX_Print_MCMC_Tree(tree); */
+  /* PHYREX_Print_MCMC_Summary(tree); */
+  
+  /* Free(ori_time); */
+  /* Free(valid_disks); */
+  /* Free(permut); */
+
   phydbl u,alpha,ratio;
   phydbl cur_glnL, new_glnL;
   phydbl cur_alnL, new_alnL;
   phydbl cur_rlnL, new_rlnL;
   phydbl cur_tlnL, new_tlnL;
-  phydbl hr,t,t_min,t_max,ori_time;
+  phydbl hr,t,t_min,t_max,*ori_time;
   t_dsk  *disk,*target_disk,**valid_disks;
   t_ldsk *ldsk_next;
   int i,j,block,n_valid_disks,*permut,n_swaps;
@@ -8103,6 +8273,9 @@ void MCMC_PHYREX_Swap_Disk(t_tree *tree)
   
   permut = Permutate(n_valid_disks);
   n_swaps = (int)(1 + 0.2*n_valid_disks);
+
+  ori_time = (phydbl *)mCalloc(n_swaps,sizeof(phydbl));
+
   
   for(j=0;j<n_swaps;++j)
     {
@@ -8129,12 +8302,12 @@ void MCMC_PHYREX_Swap_Disk(t_tree *tree)
       /* Uniform selection of a valid disk */
       target_disk = valid_disks[permut[j]];
       
-      ori_time       = target_disk->time;
+      ori_time[j]    = target_disk->time;
       
       t_min = target_disk->ldsk->prev->disk->time;
       t_max = +INFINITY;
       for(i=0;i<target_disk->ldsk->n_next;++i)
-        if(target_disk->ldsk->next[i]->disk->time < t_max) 
+        if(target_disk->ldsk->next[i]->disk->time < t_max)
           {
             t_max = target_disk->ldsk->next[i]->disk->time;
             ldsk_next = target_disk->ldsk->next[i];
@@ -8143,9 +8316,6 @@ void MCMC_PHYREX_Swap_Disk(t_tree *tree)
       t_max = t_max - SMALL;
       t_min = t_min + SMALL;
 
-      
-      
-      
       if(!(t_max > t_min))
         {
           PhyML_Printf("\n. t_max: %g t_min: %g",t_max,t_min);
@@ -8201,16 +8371,15 @@ void MCMC_PHYREX_Swap_Disk(t_tree *tree)
       if(u > alpha) /* Reject */
         {
           /* printf("\n- Reject %f %f",target_disk->time,ori_time); */
-          
-          PHYREX_Move_Disk_Updown(target_disk,ori_time,tree);
-          target_disk->time = ori_time;
+          PHYREX_Move_Disk_Updown(target_disk,ori_time[j],tree);
+          target_disk->time = ori_time[j];
 
           PHYREX_Ldsk_To_Tree(tree);
           if(target_disk->ldsk && target_disk->ldsk->nd)
             {
               for(i=0;i<2*tree->n_otu-1;++i)
                 if(tree->a_nodes[i]->ldsk == target_disk->ldsk)
-                  tree->times->nd_t[i] = ori_time;
+                  tree->times->nd_t[i] = ori_time[j];
             }
 
           PHYREX_Update_Lindisk_List_Range(ldsk_next->disk,target_disk->ldsk->prev->disk,tree);
@@ -8230,6 +8399,7 @@ void MCMC_PHYREX_Swap_Disk(t_tree *tree)
 
     }
 
+  Free(ori_time);
   Free(valid_disks);
   Free(permut);
 }

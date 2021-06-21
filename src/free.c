@@ -1272,7 +1272,6 @@ void TIMES_Free_Times(t_time *times)
   Free(times->numb_calib_chosen);
   for(int i=0;i<times->n_cal;i++) Free_Calib(times->a_cal[i]);
   Free(times->a_cal);
-  Free(times->has_survived);
   Free(times->n_jps);
   Free(times->t_jps);
   Free(times->time_slice_lims);

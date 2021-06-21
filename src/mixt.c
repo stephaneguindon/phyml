@@ -3451,7 +3451,7 @@ void MIXT_Sample_Ancestral_Seq(int fullmutmap, int fromprior, t_tree *mixt_tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 // Propagate changes in the "master" tree to other trees. Partial
-// likelihood vectors (and scaling stuff) is not update here so
+// likelihood vectors (and scaling stuff) is not up-to-date here so
 // requires full tree traversal to be updated properly.
 void MIXT_Propagate_Tree_Update(t_tree *mixt_tree)
 {
@@ -3466,18 +3466,18 @@ void MIXT_Propagate_Tree_Update(t_tree *mixt_tree)
   do
     {
       for(i=0;i<2*mixt_tree->n_otu-1;++i)
-        {          
+        {
           tree->a_nodes[i]->v[0] = mixt_tree->a_nodes[i]->v[0] ? tree->a_nodes[mixt_tree->a_nodes[i]->v[0]->num] : NULL;
           tree->a_nodes[i]->v[1] = mixt_tree->a_nodes[i]->v[1] ? tree->a_nodes[mixt_tree->a_nodes[i]->v[1]->num] : NULL;
           tree->a_nodes[i]->v[2] = mixt_tree->a_nodes[i]->v[2] ? tree->a_nodes[mixt_tree->a_nodes[i]->v[2]->num] : NULL;
-
           if(tree->times != NULL) tree->times->nd_t[i] = mixt_tree->times->nd_t[i];
         }
 
-      Connect_Edges_To_Nodes_Serial(tree);          
+      Connect_Edges_To_Nodes_Serial(tree);
 
-      Reorganize_Edges_Given_Lk_Struct(tree);
-      Init_Partial_Lk_Tips_Double(tree);
+      /* Necessary? Increase computation time due to large number of calls from Ldsk_To_Tree function */
+      /* Reorganize_Edges_Given_Lk_Struct(tree); */
+      /* Init_Partial_Lk_Tips_Double(tree); */
       
       if(mixt_tree->n_root != NULL)
         {

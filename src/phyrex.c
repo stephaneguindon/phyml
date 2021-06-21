@@ -664,21 +664,23 @@ void PHYREX_XML(char *xml_filename)
   for(int i=0;i<3;++i) if(mixt_tree->aux_tree && mixt_tree->aux_tree[i]) PHYREX_Free_Ldsk_Struct(mixt_tree->aux_tree[i]);
   RATES_Free_Rates(mixt_tree->rates);
   for(int i=0;i<3;++i) if(mixt_tree->aux_tree && mixt_tree->aux_tree[i]) RATES_Free_Rates(mixt_tree->aux_tree[i]->rates);
+
+
   TIMES_Free_Times(mixt_tree->times);
   for(int i=0;i<3;++i) if(mixt_tree->aux_tree && mixt_tree->aux_tree[i]) TIMES_Free_Times(mixt_tree->aux_tree[i]->times);
-  MCMC_Free_MCMC(mixt_tree->mcmc);
+  /* MCMC_Free_MCMC(mixt_tree->mcmc); */
   for(int i=0;i<3;++i) if(mixt_tree->aux_tree && mixt_tree->aux_tree[i]) MCMC_Free_MCMC(mixt_tree->aux_tree[i]->mcmc);
   Free_Mmod(mixt_tree->mmod);
   Free_Spr_List_One_Edge(mixt_tree);
   Free_Tree_Pars(mixt_tree);
   Free_Tree_Lk(mixt_tree);
 
+  
   if(mixt_tree->io->fp_out_trees)      fclose(mixt_tree->io->fp_out_trees);
   if(mixt_tree->io->fp_out_tree)       fclose(mixt_tree->io->fp_out_tree);
   if(mixt_tree->io->fp_out_stats)      fclose(mixt_tree->io->fp_out_stats);
   if(mixt_tree->io->fp_out_json_trace) fclose(mixt_tree->io->fp_out_json_trace);
   Free_Input(mixt_tree->io);
-
 
   tree = mixt_tree;
   do
@@ -687,6 +689,7 @@ void PHYREX_XML(char *xml_filename)
       tree = tree->next_mixt;
     }
   while(tree);
+
 
   tree = mixt_tree;
   do
@@ -699,7 +702,6 @@ void PHYREX_XML(char *xml_filename)
   
   Free_Model_Complete(mixt_tree->mod);
   Free_Model_Basic(mixt_tree->mod);
-  for(int i=0;i<3;++i) if(mixt_tree->aux_tree && mixt_tree->aux_tree[i]) MCMC_Free_MCMC(mixt_tree->aux_tree[i]->mcmc);
   for(int i=0;i<3;++i) if(mixt_tree->aux_tree && mixt_tree->aux_tree[i]) Free_Tree(mixt_tree->aux_tree[i]);  
   Free_Tree(mixt_tree);  
   Free(res);
@@ -1109,7 +1111,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   while(tree->mcmc->run < tree->mcmc->chain_len);
 
   PhyML_Fprintf(stdout,"\n. The analysis completed !");
-
+  
   return(NULL);
 }
 #endif
