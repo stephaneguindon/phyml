@@ -27,7 +27,7 @@ phydbl RRW_Lk(t_tree *tree)
   RRW_Update_Normalization_Factor(tree);
 
   d_fwd = RRW_Forward_Lk_Range(tree->young_disk,NULL,tree);
-  
+
 #ifdef PHYREX
   if(PHYREX_Total_Number_Of_Intervals(tree) > tree->mmod->max_num_of_intervals)
     {
@@ -194,7 +194,7 @@ phydbl RRW_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
               PhyML_Printf("\n. la=%f ld=%f sd=%f dt=[%f,%f] sigsq=%f",la,ld,sd,ldsk->disk->time,ldsk->prev->disk->time,tree->mmod->sigsq);
               assert(FALSE);
             }
-          /* PhyML_Printf(" disk_lnP: %12f",disk_lnP);  */
+          /* PhyML_Printf("\n. time: %f disk_lnP: %12f sd: %12f",ldsk->disk->time,disk_lnP,sd); */
         }
 
       lnP += disk_lnP;

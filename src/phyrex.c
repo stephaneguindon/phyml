@@ -1053,7 +1053,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           
           phydbl c_lnL = tree->c_lnL;
           Lk(NULL,tree);
-          if(Are_Equal(c_lnL,tree->c_lnL,1.E-5) == NO)
+          if(Are_Equal(c_lnL,tree->c_lnL,1.E-3) == NO)
             {
               PhyML_Fprintf(stdout,"\n. a_lnL: %f -> %f [%g]",c_lnL,tree->c_lnL,c_lnL-tree->c_lnL);
               failed = YES;
@@ -1062,7 +1062,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           phydbl g_lnL = tree->mmod->c_lnL;
           LOCATION_Lk(tree);
 
-          if(Are_Equal(g_lnL,tree->mmod->c_lnL,1.E-4) == NO)
+          if(Are_Equal(g_lnL,tree->mmod->c_lnL,1.E-3) == NO)
             {
               PhyML_Fprintf(stdout,"\n. g_lnL: %f -> %f [%g]",g_lnL,tree->mmod->c_lnL,g_lnL-tree->mmod->c_lnL);
               failed = YES;
@@ -1070,7 +1070,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
           phydbl r_lnL = tree->rates->c_lnL;
           RATES_Lk(tree);
-          if(Are_Equal(r_lnL,tree->rates->c_lnL,1.E-5) == NO)
+          if(Are_Equal(r_lnL,tree->rates->c_lnL,1.E-3) == NO)
             {
               PhyML_Fprintf(stderr,"\n. r_lnL: %f -> %f [%g]",r_lnL,tree->rates->c_lnL,r_lnL-tree->rates->c_lnL);
               failed = YES;
@@ -1078,7 +1078,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
           phydbl t_lnL = tree->times->c_lnL;
           TIMES_Lk(tree);
-          if(Are_Equal(t_lnL,tree->times->c_lnL,1.E-4) == NO)
+          if(Are_Equal(t_lnL,tree->times->c_lnL,1.E-3) == NO)
             {
               PhyML_Fprintf(stdout,"\n. t_lnL: %f -> %f [%g]",t_lnL,tree->times->c_lnL,t_lnL-tree->times->c_lnL);
               failed = YES;
@@ -1092,13 +1092,13 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           
           /* RATES_Check_Rates(tree); */
 
-          /* phydbl subsrate = RATES_Realized_Substitution_Rate(tree); */
-          /* if(Are_Equal(subsrate,tree->rates->clock_r,1.E-8) == NO) */
-          /*   { */
-          /*     PhyML_Fprintf(stderr,"\n. Problem detected with move %s",tree->mcmc->move_name[move]); */
-          /*     PhyML_Fprintf(stderr,"\n. rate : %f -> %f",subsrate,tree->rates->clock_r); */
-          /*     Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
-          /*   } */
+          phydbl subsrate = RATES_Realized_Substitution_Rate(tree);
+          if(Are_Equal(subsrate,tree->rates->clock_r,1.E-8) == NO)
+            {
+              PhyML_Fprintf(stderr,"\n. Problem detected with move %s",tree->mcmc->move_name[move]);
+              PhyML_Fprintf(stderr,"\n. rate : %f -> %f",subsrate,tree->rates->clock_r);
+              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+            }
           
           assert(PHYREX_Check_Struct(tree,YES));
         }
@@ -1170,14 +1170,13 @@ void PHYREX_Move_Disk_Updown(t_dsk *this, phydbl target_time, t_tree *tree)
       disk = this->prev;
       while(disk && target_time < disk->time)
         {
-          if(disk->prev != NULL && disk->prev->time < target_time)
+          if((disk->prev != NULL && disk->prev->time < target_time) || (disk->prev == NULL))
             {
               PHYREX_Remove_Disk(this);
               PHYREX_Insert_Disk_At(this,disk);
               break;
             }
           disk = disk->prev;
-          assert(disk);
         }
     }
   else
@@ -3621,86 +3620,30 @@ void PHYREX_Strip_And_Reconnect_Tree(t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-int PHYREX_Scale_All(phydbl scale, t_dsk *start_disk, t_tree *tree)
+phydbl PHYREX_Scale_All(t_ldsk *ldsk, phydbl scale, int *n_scaled, t_tree *tree)
 {
-  t_dsk *disk;
-  t_dsk **sorted_disk;
-  int n_disk,n_disks_scaled,n_nodes_scaled,n_hits_scaled,sorted,i;
-  
-  n_disk            = 0;
-  n_disks_scaled    = 0;
-  n_nodes_scaled    = 0;
-  n_hits_scaled     = 0;
-  
-  disk = start_disk->prev;
-  assert(disk);
-  
-  disk = start_disk->prev;
-  do
-    {      
-      if(disk->age_fixed == NO)
-        {
-          disk->time = disk->time * scale + start_disk->time * (1.-scale);
-          n_disks_scaled++;
-          if(disk->ldsk && disk->ldsk->n_next > 1) n_nodes_scaled++;
-          if(disk->ldsk && disk->ldsk->n_next == 1) n_hits_scaled++;
-        }
-      
-      n_disk++;
-      disk = disk->prev;
-    }
-  while(disk);
-
-  
-  sorted_disk = (t_dsk **)mCalloc(n_disk,sizeof(t_dsk *));
-  disk = start_disk->prev;
-  n_disk = 0;
-  do
-    {
-      sorted_disk[n_disk] = disk;
-      n_disk++;
-      disk = disk->prev;
-    }
-  while(disk);
-  
-
-  do
-    {
-      sorted = YES;
-      for(i=0;i<n_disk-1;++i)
-        {
-          if(sorted_disk[i]->time < sorted_disk[i+1]->time)
-            {
-              sorted = NO;
-              disk             = sorted_disk[i];
-              sorted_disk[i]   = sorted_disk[i+1];
-              sorted_disk[i+1] = disk;
-            }
-        }
-    }
-  while(sorted == NO);
-
-  
-  for(i=0;i<n_disk;++i)
-    {
-      PHYREX_Remove_Disk(sorted_disk[i]);
-      PHYREX_Insert_Disk(sorted_disk[i],tree);
-    }
-
-  Free(sorted_disk);
-
-  if(tree->mmod->model_id == SLFV_GAUSSIAN || tree->mmod->model_id == SLFV_UNIFORM) return(n_disks_scaled);
+  if(ldsk->next == NULL) return(ldsk->disk->time);
   else
     {
-      if(tree->times->model_id == COALESCENT)
+      phydbl base_line, min_base_line,new_time;
+
+      base_line = +INFINITY;
+      min_base_line = +INFINITY;
+      for(int i=0;i<ldsk->n_next;++i)
         {
-          if(tree->times->augmented_coalescent == NO)
-            return(n_nodes_scaled);
-          else
-            return(n_hits_scaled + n_nodes_scaled);
+          base_line = PHYREX_Scale_All(ldsk->next[i],scale,n_scaled,tree);
+          if(base_line < min_base_line) min_base_line = base_line;
         }
+
+      new_time = ldsk->disk->time * scale + min_base_line * (1.-scale);
+      PHYREX_Move_Disk_Updown(ldsk->disk,new_time,tree);
+      ldsk->disk->time = new_time;
+      (*n_scaled)++;
+      
+      assert(ldsk->disk->age_fixed == NO);
+      
+      return(min_base_line);
     }
-  return(-1);
 }
 
 /*////////////////////////////////////////////////////////////

@@ -1394,9 +1394,7 @@ void MCMC_Root_Time(t_tree *tree)
   if(tree->eval_alnL == YES) ratio += (new_lnL_seq - cur_lnL_seq);
   if(tree->eval_rlnL == YES) ratio += (new_lnL_rate - cur_lnL_rate);
   if(tree->eval_glnL == YES) ratio += (new_lnL_time - cur_lnL_time);
-#ifdef PHYREX
   if(tree->eval_glnL == YES) ratio += (new_lnL_loc - cur_lnL_loc);
-#endif
 
   ratio += hr;
   
@@ -3229,8 +3227,7 @@ void MCMC_Randomize_Clock_Rate(t_tree *tree)
           iter = 0;
           do
             {
-              tree->rates->clock_r = Rnorm(mean-sd*sd/2.,sd);
-              tree->rates->clock_r = exp(tree->rates->clock_r);
+              tree->rates->clock_r = Rnorm(mean,sd);
               iter++;
               if(iter > 1000)
                 {
@@ -3240,6 +3237,7 @@ void MCMC_Randomize_Clock_Rate(t_tree *tree)
             }
           while(tree->rates->clock_r < tree->rates->min_clock ||
                 tree->rates->clock_r > tree->rates->max_clock);
+
         }
     }
 }
@@ -7942,7 +7940,6 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree, short int print)
   phydbl scale_fact_times;
   int n_disks;
   phydbl K;
-  t_dsk *start_disk;
   
   if(tree->mod->s_opt->opt_bl == NO) return;
   
@@ -7967,13 +7964,9 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree, short int print)
 
   u = Uni();
   scale_fact_times = exp(K*(u-.5));
-
-  /* start_disk = tree->old_samp_disk; */
-  start_disk = tree->young_disk;
-  assert(start_disk);
   
-  n_disks = PHYREX_Scale_All(scale_fact_times,start_disk,tree);
-
+  n_disks = 0;
+  PHYREX_Scale_All(tree->n_root->ldsk,scale_fact_times,&n_disks,tree);
   
   if(n_disks < 0)
     {
@@ -8024,10 +8017,12 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree, short int print)
 
   /* if(print == YES) */
     /* { */
-      /* PhyML_Printf("\n. Scale times new_glnL: %15f cur_glnL: %15f[%d] new_alnL: %15f cur_alnL: %15f[%d] new_rlnL: %15f cur_rlnL: %15f[%d] ratio: %8f scale: %8f neff=%8f T=%5f", */
-      /*              new_glnL,cur_glnL,tree->eval_glnL, */
-      /*              new_alnL,cur_alnL,tree->eval_alnL, */
-      /*              new_rlnL,cur_rlnL,tree->eval_rlnL, */
+      /* PhyML_Printf("\n. [%6d] Scale times glnL: %15f->%15f[%d] alnL: %15f->%15f[%d] rlnL: %15f->%15f[%d] tlnL: %15f->%15f[%d] ratio: %8f scale: %8f neff=%8f T=%5f", */
+      /*              tree->mcmc->run, */
+      /*              cur_glnL,new_glnL,tree->eval_glnL, */
+      /*              cur_alnL,new_alnL,tree->eval_alnL, */
+      /*              cur_rlnL,new_rlnL,tree->eval_rlnL, */
+      /*              cur_tlnL,new_tlnL,tree->eval_glnL, */
       /*              ratio,scale_fact_times, */
       /*              tree->times->scaled_pop_size, */
       /*              tree->times->nd_t[tree->n_root->num]); */
@@ -8037,7 +8032,7 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree, short int print)
   
   if(u > alpha) /* Reject */
     {
-      PHYREX_Scale_All(1./scale_fact_times,start_disk,tree);  
+      PHYREX_Scale_All(tree->n_root->ldsk,1./scale_fact_times,&n_disks,tree);  
       if(tree->eval_alnL == YES && tree->mod->s_opt->opt_clock_r == YES) tree->rates->clock_r *= scale_fact_times;
       PHYREX_Update_Lindisk_List(tree);
       PHYREX_Update_Node_Times_Given_Disks(tree);
