@@ -1332,7 +1332,8 @@ typedef struct __Option { /*! mostly used in 'help.c' */
   int                leave_duplicates;/* Leave duplicated sequences */
   int                       precision;/* Decimal output precision for values in stats file */
   int               n_boot_replicates;
-  
+
+  short int        print_mat_and_exit;
   short int            print_node_num; /*! print node numbers if print_node_num=1 */
   short int         print_support_val;
   

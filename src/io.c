@@ -2228,6 +2228,7 @@ void Print_Mat(matrix *mat)
 {
   int i,j;
 
+  PhyML_Printf("\n\n");
   PhyML_Printf("%d",mat->n_otu);
   PhyML_Printf("\n");
   

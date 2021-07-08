@@ -130,6 +130,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
       {"leave_duplicates",    no_argument,NULL,81},
       {"precision",           required_argument,NULL,82},
       {"l_min",               required_argument,NULL,83},
+      {"print_mat_and_exit",  no_argument,NULL,84},
       {0,0,0,0}
     };
 
@@ -147,6 +148,11 @@ int Read_Command_Line(option *io, int argc, char **argv)
 
       switch(c)
 	{
+        case 84 :
+          {
+            io->print_mat_and_exit = YES;
+            break;
+          }
         case 83 :
           {
             io->mod->l_min = String_To_Dbl(optarg);

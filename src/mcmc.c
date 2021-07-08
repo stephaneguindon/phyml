@@ -537,7 +537,9 @@ void MCMC_Rates_All(t_tree *tree)
   Lk(NULL,tree);
   MCMC_One_Rate(tree->n_root->v[1],tree->n_root->v[2],YES,tree);
   MCMC_One_Rate(tree->n_root->v[2],tree->n_root->v[1],YES,tree);
+#ifdef PHYREX
   if(tree->mmod->safe_phyrex == YES) PHYREX_Update_Ldsk_Rates_Given_Edges(tree);
+#endif
   RATES_Update_Edge_Lengths(tree);
   Set_Both_Sides(NO,tree);
   Lk(NULL,tree); /* Required in order to rescale all branch rates */
@@ -1291,7 +1293,9 @@ void MCMC_Root_Time(t_tree *tree)
   phydbl t1_cur, t1_new;
   phydbl cur_lnL_seq, new_lnL_seq;
   phydbl cur_lnL_rate, new_lnL_rate;
+#ifdef PHYREX
   phydbl cur_lnL_loc, new_lnL_loc;
+#endif
   phydbl cur_lnL_time, new_lnL_time;
   phydbl ratio,alpha,hr;
   phydbl t2,t3;
@@ -1344,8 +1348,10 @@ void MCMC_Root_Time(t_tree *tree)
       cur_lnL_rate = tree->rates->c_lnL;
       new_lnL_rate = UNLIKELY;
       
+#ifdef PHYREX
       cur_lnL_loc = tree->mmod->c_lnL;
       new_lnL_loc = UNLIKELY;
+#endif
       
       cur_lnL_time = tree->times->c_lnL;
       new_lnL_time = UNLIKELY;

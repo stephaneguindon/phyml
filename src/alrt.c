@@ -933,7 +933,7 @@ phydbl Statistics_To_Probabilities(phydbl in)
       fa=0.01;
       fb=0.025;
     }
-  else if(in>0.000982 && in<0.00393)
+  else if(in>=0.000982 && in<0.00393)
     {
       a=0.000982;
       b=0.00393;

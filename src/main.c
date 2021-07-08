@@ -149,8 +149,21 @@ int main(int argc, char **argv)
                   // Make the initial tree
                   switch(io->in_tree)
                     {
-                    case 0 : case 1 : { tree = Dist_And_BioNJ(cdata,mod,io); break; }
-                    case 2 :          { tree = Read_User_Tree(cdata,mod,io); break; }
+                    case 0 : case 1 :
+                      {
+                        tree = Dist_And_BioNJ(cdata,mod,io);
+                        if(io->print_mat_and_exit == YES)
+                          {
+                            Print_Mat(tree->mat);
+                            exit(-1);
+                          }
+                        break;
+                      }
+                    case 2 :
+                      {
+                        tree = Read_User_Tree(cdata,mod,io);
+                        break;
+                      }
                     }
 
                   if(io->mod->s_opt->opt_topo == YES) Remove_Duplicates(cdata,io,tree);

@@ -605,6 +605,7 @@ void Set_Defaults_Input(option* io)
   io->print_node_num             = NO;
   io->print_support_val          = NO;
   io->n_boot_replicates          = 0;
+  io->print_mat_and_exit         = NO;
   
 #ifdef BEAGLE
   io->beagle_resource            = 0;
