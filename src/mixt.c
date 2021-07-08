@@ -675,12 +675,6 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
   len           = -1.;
   ns            = 0;
   
-  /* MIXT_Update_Br_Len_Multipliers(mixt_tree->mod); */
-
-#if (defined PHYTIME || defined INVITEE || defined PHYREX || defined DATE)
-  if((mixt_tree->rates) && (mixt_tree->rates->bl_from_rt)) RATES_Update_Edge_Lengths(mixt_tree);
-#endif
-
   
   /* Update RAS structure (mixt_tree level) */
   tree = mixt_tree;
@@ -725,7 +719,16 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
     }
   else
     {
-      MIXT_Update_PMat_At_Given_Edge(mixt_b,mixt_tree);
+      if(mixt_tree->n_root &&
+         (mixt_b == mixt_tree->n_root->b[1] || mixt_b == mixt_tree->n_root->b[2]) &&
+         mixt_tree->ignore_root == YES)
+        {
+          MIXT_Update_PMat_At_Given_Edge(mixt_tree->e_root,mixt_tree);
+        }
+      else
+        {
+          MIXT_Update_PMat_At_Given_Edge(mixt_b,mixt_tree);
+        }
     }
 
   if(!cpy_mixt_b)

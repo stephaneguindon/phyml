@@ -879,26 +879,31 @@ phydbl TIMES_Lk_Coalescent(t_tree *tree)
   n = tree->n_root;
   while(n->rk_next)
     {
+      dt = fabs(tree->times->nd_t[n->num] - tree->times->nd_t[n->rk_next->num]);
+      
+      assert(!(tree->times->nd_t[n->num] > tree->times->nd_t[n->rk_next->num]));
+      
       if(n->tax == YES) n_lineages--;
       else n_lineages++;
 
-      dt = 0.0;
-      
-      if(tree->times->coalescent_model_id == STRICTCOALESCENT)
-        dt = fabs(tree->times->nd_t[n->num] - tree->times->nd_t[n->rk_next->num]);
-      else if(tree->times->coalescent_model_id == EXPCOALESCENT)
-        dt =
-          1./exp_g *
-          (exp(exp_g * fabs(tree->times->nd_t[n->num]-T)) -
-           exp(exp_g * fabs(tree->times->nd_t[n->rk_next->num]-T)));
 
-      /* PhyML_Printf("\n. dt: %f lnP: %f exp_g: %f t: %f",dt,lnP,exp_g,tree->times->nd_t[n->num]); */
+      if(tree->times->coalescent_model_id == EXPCOALESCENT)
+        {
+          dt =
+            1./exp_g *
+            (exp(exp_g * fabs(tree->times->nd_t[n->num]-T)) -
+             exp(exp_g * fabs(tree->times->nd_t[n->rk_next->num]-T)));
+        }
       
       lnP += -n_lineages * (n_lineages-1.) / (2.*Ne) * dt;
-        
-      if(tree->times->coalescent_model_id == EXPCOALESCENT)
-        lnP += exp_g * fabs(tree->times->nd_t[n->num]-T);
-            
+      
+      if(tree->times->coalescent_model_id == EXPCOALESCENT && n->tax == NO)
+        lnP +=
+          exp_g * fabs(tree->times->nd_t[n->num]-T) +
+          exp_g * fabs(tree->times->nd_t[n->rk_next->num]-T);
+
+      if(n->tax == NO) lnP -= log(Ne);
+      
       // Multifurcations not allowed under standard Kingman coalescent
       if(fabs(tree->times->nd_t[n->num] - tree->times->nd_t[n->rk_next->num]) < SMALL &&
          n->tax == NO && n->rk_next->tax == NO)
@@ -915,70 +920,10 @@ phydbl TIMES_Lk_Coalescent(t_tree *tree)
         
       n = n->rk_next;
     }
-
-  lnP -= (tree->n_otu-1) * log(Ne);
-
-    
-  /* if(tree->times->augmented_coalescent == YES) */
-  /*   { */
-  /*     int n_hits; */
-  /*     t_dsk *disk; */
-  /*     phydbl dt,Z; */
-      
-  /*     disk = tree->young_disk->prev; */
-  /*     assert(disk); */
-
-  /*     /\* PhyML_Printf("\n\n ====="); *\/ */
-
-  /*     n_hits = 0; */
-  /*     dt = 0.0; */
-  /*     do */
-  /*       { */
-  /*         Z = 0.0; */
-  /*         if(disk->ldsk && disk->ldsk->n_next == 1) */
-  /*           { */
-  /*             n_hits++; */
-  /*             assert(disk->next); */
-  /*             dt += fabs(disk->time - disk->next->time); */
-  /*             /\* PhyML_Printf("\n. T disk=%s time=%f Z=%f lnP=%f n_next=%d n_lineages=%d", *\/ */
-  /*             /\*              disk->id, *\/ */
-  /*             /\*              disk->time, *\/ */
-  /*             /\*              Z, *\/ */
-  /*             /\*              lnP, *\/ */
-  /*             /\*              disk->ldsk ? disk->ldsk->n_next : 0, *\/ */
-  /*             /\*              disk->n_ldsk_a); *\/ */
-  /*           } */
-          
-  /*         if((n_hits > 0) && ((disk->ldsk && disk->ldsk->n_next > 1) || (disk->age_fixed == YES))) */
-  /*           { */
-  /*             Z = LnGamma(n_hits+1); */
-  /*             assert(disk->next); */
-  /*             dt += fabs(disk->time - disk->next->time); */
-  /*             assert(dt>0.0); */
-  /*             Z -= n_hits*log(dt); */
-  /*             dt = 0.0; */
-  /*             n_hits = 0; */
-  /*             lnP += Z; */
-  /*             /\* PhyML_Printf("\n. T disk=%s time=%f Z=%f lnP=%f n_next=%d n_lineages=%d", *\/ */
-  /*             /\*              disk->id, *\/ */
-  /*             /\*              disk->time, *\/ */
-  /*             /\*              Z, *\/ */
-  /*             /\*              lnP, *\/ */
-  /*             /\*              disk->ldsk ? disk->ldsk->n_next : 0, *\/ */
-  /*             /\*              disk->n_ldsk_a); *\/ */
-  /*           } */
-          
-  /*         disk = disk->prev; */
-  /*       } */
-  /*     while(disk); */
-
-  /*     /\* PhyML_Printf("\n. T lnP=%f",lnP); *\/ */
-
-  /*   } */
   
   tree->times->c_lnL = lnP;
 
-  return(lnP);  
+  return(lnP);
 }
 
 //////////////////////////////////////////////////////////////
@@ -2589,6 +2534,19 @@ void TIMES_Copy_Time_Struct(t_time *from, t_time *to, int n_otu)
   to->scaled_pop_size = from->scaled_pop_size;
   to->scaled_pop_size_min = from->scaled_pop_size_min;
   to->scaled_pop_size_max = from->scaled_pop_size_max;
+
+  to->exp_growth = from->exp_growth;
+  to->exp_growth_min = from->exp_growth_min;
+  to->exp_growth_max = from->exp_growth_max;
+
+  to->model_id = from->model_id;
+  to->coalescent_model_id = from->coalescent_model_id;
+
+  to->update_time_norm_const = from->update_time_norm_const;
+
+  to->augmented_coalescent = from->augmented_coalescent;
+
+  to->neff_prior_mean = from->neff_prior_mean;
   
   for(i=0;i<2*n_otu-1;++i) to->nd_t[i] = from->nd_t[i];
   for(i=0;i<2*n_otu-1;++i) to->buff_t[i] = from->buff_t[i];

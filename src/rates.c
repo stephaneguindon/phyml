@@ -1125,14 +1125,23 @@ void RATES_Update_Edge_Lengths_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree
 
 void RATES_Update_One_Edge_Length(t_edge *b, t_tree *tree)
 {
-  phydbl dt,rr,ra,rd,ta,td,nu,cr,Z;
-  t_node *a, *d;
 
-  if(b == tree->e_root)
+  if(b == tree->e_root || b == tree->n_root->b[1] || b == tree->n_root->b[2])
     {
-      RATES_Update_One_Edge_Length(tree->n_root->b[1],tree);
-      RATES_Update_One_Edge_Length(tree->n_root->b[2],tree);
-
+      if(b == tree->e_root)
+        {
+          RATES_Update_One_Edge_Length_Core(tree->n_root->b[1],tree);
+          RATES_Update_One_Edge_Length_Core(tree->n_root->b[2],tree);
+        }
+      else if(b == tree->n_root->b[1])
+        {
+          RATES_Update_One_Edge_Length_Core(tree->n_root->b[1],tree);
+        }
+      else if(b == tree->n_root->b[2])
+        {
+          RATES_Update_One_Edge_Length_Core(tree->n_root->b[2],tree);
+        }
+      
       if(tree->mod && tree->mod->log_l == YES)
         {
           tree->e_root->l->v = 
@@ -1170,108 +1179,114 @@ void RATES_Update_One_Edge_Length(t_edge *b, t_tree *tree)
     }
   else
     {
-      if(b->left->anc == b->rght)
-        {
-          d = b->left;
-          a = b->rght;
-        }
-      else
-        {
-          d = b->rght;
-          a = b->left;
-        }
-      
-      
-      assert(a);
-      assert(d);
-      assert(d->anc == a);
-      
-      ra = rd = -1.;
-      
-      if(tree->rates->model_id == LOGNORMAL ||
-         tree->rates->model_id == THORNE ||
-         tree->rates->model_id == STRICTCLOCK)
-        {
-          rd = tree->rates->br_r[d->num];
-          ra = tree->rates->br_r[a->num];
-        }
-      else if(tree->rates->model_id == GUINDON)
-        {
-          rd = tree->rates->nd_r[d->num];
-          ra = tree->rates->nd_r[a->num];
-        }
-      else assert(FALSE);
-      
-      dt = fabs(tree->times->nd_t[d->num] - tree->times->nd_t[a->num]);
-      cr = tree->rates->clock_r;
-      td = tree->times->nd_t[d->num];
-      ta = tree->times->nd_t[a->num];
-      nu = tree->rates->nu;
-      Z = tree->rates->norm_fact;
-      rr = -1.0;
-      
-      if(tree->rates->model_id == LOGNORMAL)
-        {
-          tree->rates->cur_l[d->num] = dt*rd*cr*Z;
-        }
-      
-      if(tree->rates->model_id == THORNE)
-        {
-          rr = (ra+rd)/2.;          
-          tree->rates->cur_l[d->num] = dt*rr*cr*Z;
-        }
-      
-      if(tree->rates->model_id == GUINDON)
-        {
-          phydbl m,v;
-          
-          Integrated_Geometric_Brownian_Bridge_Moments(dt,ra,rd,nu,&m,&v);
-          
-          if(isnan(m) || isnan(v) || m < 0.0 || v < 0.0)
-            {
-              PhyML_Fprintf(stderr,"\n. dt: %G ra: %G rd: %G nu: %G m: %G v: %G a is root ? %d d is root ? %d",
-                            dt,ra,rd,nu,m,v,
-                            a==tree->n_root,
-                            d==tree->n_root);
-            }
-          
-          m *= dt*cr; // the actual rate average is m * dt. We multiply by dt in order to derive the value for the branch length
-          v *= (dt*dt)*(cr*cr);
-          
-          tree->rates->cur_gamma_prior_mean[d->num] = m;
-          tree->rates->cur_gamma_prior_var[d->num]  = v;
-          
-          tree->rates->cur_l[d->num] = tree->rates->cur_gamma_prior_mean[d->num]; // Required for having proper branch lengths in Write_Tree function
-        }
-      
-      if(tree->rates->model_id == STRICTCLOCK)
-        {
-          tree->rates->cur_l[d->num] = dt*cr;          
-        }
-      
-      /* printf("\n. td: %12f ta: %12f dt: %12f cr: %12f ra: %12f rd: %12f l: %12f", */
-      /*        tree->times->nd_t[d->num], */
-      /*        tree->times->nd_t[a->num], */
-      /*        dt,cr,ra,rd,tree->rates->cur_l[d->num]); */
-      
-      
-      if(tree->mod && tree->mod->log_l == YES) tree->rates->cur_l[d->num] = log(tree->rates->cur_l[d->num]);
-      
-      if(b)
-        {
-          b->l->v                      = tree->rates->cur_l[d->num];
-          tree->rates->u_cur_l[b->num] = tree->rates->cur_l[d->num];
-          b->l_var->v                  = tree->rates->cur_gamma_prior_var[d->num];
-        }
-      
-      if(b && (isnan(b->l->v) || isnan(b->l_var->v)))
-        {
-          PhyML_Fprintf(stderr,"\n. dt=%G rr=%G cr=%G ra=%G rd=%G nu=%G %f %f ",dt,rr,tree->rates->clock_r,ra,rd,nu,b->l_var->v,b->l->v);	  
-          PhyML_Fprintf(stderr,"\n. ta=%G td=%G ra*cr=%G rd*cr=%G sd=%G",ta,td,ra,rd,SQRT(dt*nu));
-          /* assert(FALSE); */
-        }
+      RATES_Update_One_Edge_Length_Core(b,tree);
     }
 }
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void RATES_Update_One_Edge_Length_Core(t_edge *b, t_tree *tree)
+{      
+  phydbl dt,rr,ra,rd,ta,td,nu,cr,Z;
+  t_node *a, *d;
+
+  if(b->left->anc == b->rght)
+    {
+      d = b->left;
+      a = b->rght;
+    }
+  else
+    {
+      d = b->rght;
+      a = b->left;
+    }
+  
+  
+  assert(a);
+  assert(d);
+  assert(d->anc == a);
+  
+  ra = rd = -1.;
+  
+  if(tree->rates->model_id == LOGNORMAL ||
+     tree->rates->model_id == THORNE ||
+     tree->rates->model_id == STRICTCLOCK)
+    {
+      rd = tree->rates->br_r[d->num];
+      ra = tree->rates->br_r[a->num];
+    }
+  else if(tree->rates->model_id == GUINDON)
+    {
+      rd = tree->rates->nd_r[d->num];
+      ra = tree->rates->nd_r[a->num];
+    }
+  else assert(FALSE);
+  
+  dt = fabs(tree->times->nd_t[d->num] - tree->times->nd_t[a->num]);
+  cr = tree->rates->clock_r;
+  td = tree->times->nd_t[d->num];
+  ta = tree->times->nd_t[a->num];
+  nu = tree->rates->nu;
+  Z = tree->rates->norm_fact;
+  rr = -1.0;
+  
+  if(tree->rates->model_id == LOGNORMAL)
+    {
+      tree->rates->cur_l[d->num] = dt*rd*cr*Z;
+    }
+  
+  if(tree->rates->model_id == THORNE)
+    {
+      rr = (ra+rd)/2.;          
+      tree->rates->cur_l[d->num] = dt*rr*cr*Z;
+    }
+  
+  if(tree->rates->model_id == GUINDON)
+    {
+      phydbl m,v;
+      
+      Integrated_Geometric_Brownian_Bridge_Moments(dt,ra,rd,nu,&m,&v);
+      
+      if(isnan(m) || isnan(v) || m < 0.0 || v < 0.0)
+        {
+          PhyML_Fprintf(stderr,"\n. dt: %G ra: %G rd: %G nu: %G m: %G v: %G a is root ? %d d is root ? %d",
+                        dt,ra,rd,nu,m,v,
+                        a==tree->n_root,
+                        d==tree->n_root);
+        }
+      
+      m *= dt*cr; // the actual rate average is m * dt. We multiply by dt in order to derive the value for the branch length
+      v *= (dt*dt)*(cr*cr);
+      
+      tree->rates->cur_gamma_prior_mean[d->num] = m;
+      tree->rates->cur_gamma_prior_var[d->num]  = v;
+      
+      tree->rates->cur_l[d->num] = tree->rates->cur_gamma_prior_mean[d->num]; // Required for having proper branch lengths in Write_Tree function
+    }
+  
+  if(tree->rates->model_id == STRICTCLOCK)
+    {
+      tree->rates->cur_l[d->num] = dt*cr;          
+    }
+  
+  if(tree->mod && tree->mod->log_l == YES) tree->rates->cur_l[d->num] = log(tree->rates->cur_l[d->num]);
+  
+  if(b)
+    {
+      b->l->v                      = tree->rates->cur_l[d->num];
+      tree->rates->u_cur_l[b->num] = tree->rates->cur_l[d->num];
+      b->l_var->v                  = tree->rates->cur_gamma_prior_var[d->num];
+    }
+  
+  if(b && (isnan(b->l->v) || isnan(b->l_var->v)))
+    {
+      PhyML_Fprintf(stderr,"\n. dt=%G rr=%G cr=%G ra=%G rd=%G nu=%G %f %f ",dt,rr,tree->rates->clock_r,ra,rd,nu,b->l_var->v,b->l->v);	  
+      PhyML_Fprintf(stderr,"\n. ta=%G td=%G ra*cr=%G rd*cr=%G sd=%G",ta,td,ra,rd,SQRT(dt*nu));
+      /* assert(FALSE); */
+    }
+}
+
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

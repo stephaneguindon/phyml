@@ -101,7 +101,7 @@ void PHYREX_Simulate_Disk_And_Node_Times(t_tree *tree);
 int PHYREX_Number_Of_Outgoing_Ldsks(t_dsk *disk);
 t_ldsk *PHYREX_Random_Select_Outgoing_Ldsk(t_dsk *disk);
 void PHYREX_Strip_And_Reconnect_Tree(t_tree *tree);
-phydbl PHYREX_Scale_All(t_ldsk *ldsk, phydbl scale, int *n_scaled, t_tree *tree);
+int PHYREX_Scale_All(phydbl scale, t_tree *tree);
 void  PHYREX_Update_Lindisk_List_Range(t_dsk *young, t_dsk *old, t_tree *tree);
 phydbl PHYREX_Lk_Core_Range(t_dsk *young, t_dsk *old, t_tree *tree);
 int PHYREX_Number_Of_Intervals_Range(t_dsk *young, t_dsk *old, t_tree *tree);
@@ -144,5 +144,7 @@ phydbl PHYREX_Realized_Dispersal_Dist_Alt(t_tree *tree);
 void PHYREX_Evolve_All(t_tree *tree);
 void PHYREX_Insert_Disk_At(t_dsk *ins, t_dsk *disk);
 void PHYREX_Move_Disk_Updown(t_dsk *this, phydbl target_time, t_tree *tree);
+void PHYREX_Restore_Disk_Times(t_tree *tree);
+void PHYREX_Record_Disk_Times(t_tree *tree);
 
 #endif

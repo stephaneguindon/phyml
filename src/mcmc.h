@@ -183,5 +183,7 @@ void MCMC_PHYREX_Exp_Growth(t_tree *tree);
 void MCMC_PHYREX_Narrow_Exchange(t_tree *tree);
 void MCMC_PHYREX_Narrow_Exchange(t_tree *tree);
 void MCMC_PHYREX_Wide_Exchange(t_tree *tree);
+void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree);
+void MCMC_PHYREX_Node_Times(t_tree *tree);
 
 #endif

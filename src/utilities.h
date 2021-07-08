@@ -644,11 +644,9 @@ typedef struct __Edge {
   short int           *div_post_pred_rght; /*! posterior prediction of nucleotide/aa diversity (rght-hand subtree) */
   short int                    does_exist;
 
-
-
   phydbl            *p_lk_left,*p_lk_rght; /*! likelihoods of the subtree on the left and right side (for each site and each relative rate category) */
   phydbl         *p_lk_tip_r, *p_lk_tip_l;
-
+  
 
 #ifdef BEAGLE
   int        p_lk_left_idx, p_lk_rght_idx;
@@ -1800,6 +1798,7 @@ typedef struct __Tmcmc {
   int num_move_phyrex_ldsk_tip_to_root;
   int num_move_phyrex_sigsq_scale;
   int num_move_phyrex_ldsk_tips;
+  int num_move_phyrex_node_times;
 
   int nd_t_digits;
   int *monitor;
@@ -2059,19 +2058,23 @@ typedef struct __Migrep_Model{
 
 typedef struct __Disk_Event{
   struct __Geo_Coord      *centr;
-  phydbl                    time;
   struct __Disk_Event      *next;
   struct __Disk_Event      *prev;
   struct __Disk_Event       *img;
   struct __Lindisk_Node **ldsk_a; // array of lindisk nodes corresponding to this disk event.
-  int                   n_ldsk_a; // size of ldsk_a.
   struct __Lindisk_Node    *ldsk;
   struct __Migrep_Model    *mmod;
-  char                       *id;
-
+  
   phydbl                cum_glnL; // cumulative log-likelihood (locations)
   phydbl                cum_tlnL; // cumulative log-likelihood (times);
+  phydbl                    time;
+  phydbl                time_bkp;
+  
   short int            age_fixed; // time is fixed for disks corresponding to samples.
+
+  int                   n_ldsk_a; // size of ldsk_a.
+  char                       *id;
+
 }t_dsk;
 
 /*!********************************************************/
@@ -2103,11 +2106,15 @@ typedef struct __Lindisk_Node{
   struct __Lindisk_Node    *img;
   struct __Geo_Coord     *coord; 
   struct __Geo_Coord *cpy_coord; 
+  struct __Node             *nd;
+
   short int              is_hit;
+
   int                    n_next;
+
   phydbl                     rr;
   phydbl                  sigsq;
-  struct __Node             *nd;
+  phydbl              base_line;
 }t_ldsk;
 
 /*!********************************************************/
@@ -2465,6 +2472,7 @@ void Reset_Lk(t_tree *tree);
 void Set_Lk(t_tree *tree);
 void Reset_Prior(t_tree *tree);
 void Set_Prior(t_tree *tree);
+t_edge *Get_Edge(t_node *a, t_node *d, t_tree *tree);
 
 
 #include "xml.h"

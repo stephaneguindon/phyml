@@ -284,22 +284,7 @@ void Post_Order_Lk(t_node *a, t_node *d, t_tree *tree)
   int i,dir;
 
   dir = -1;
-  
-  /* PhyML_Printf("\n. %p a: %3d d: %3d root: %3d root->v1: %3d root->v2: %3d [%3d %3d %3d] (%3d %3d) (%3d %3d)", */
-  /*              tree, */
-  /*              a->num, */
-  /*              d->num, */
-  /*              tree->n_root?tree->n_root->num:-1, */
-  /*              tree->n_root->v[1]->num, */
-  /*              tree->n_root->v[2]->num, */
-  /*              d->v[0]?d->v[0]->num:-1, */
-  /*              d->v[1]?d->v[1]->num:-1, */
-  /*              d->v[2]?d->v[2]->num:-1, */
-  /*              tree->a_nodes[5]->num, */
-  /*              tree->a_nodes[5]->v[0]->num, */
-  /*              tree->mixt_tree? tree->mixt_tree->a_nodes[5]->num : -1, */
-  /*              tree->mixt_tree? tree->mixt_tree->a_nodes[5]->v[0]->num : -1); */
-  
+    
   if(d->tax) return;
   else
     {
@@ -309,9 +294,9 @@ void Post_Order_Lk(t_node *a, t_node *d, t_tree *tree)
           return;
         }
 
-      if(tree->n_root)
+      if(tree->n_root != NULL)
         {
-          for(i=0;i<3;i++)
+          for(i=0;i<3;++i)
             {
               if(d->v[i] != a && d->b[i] != tree->e_root)
                 Post_Order_Lk(d,d->v[i],tree);
@@ -343,6 +328,16 @@ void Post_Order_Lk(t_node *a, t_node *d, t_tree *tree)
                        tree->e_root?tree->e_root->num:-1);
           assert(FALSE);
         }
+
+      /* PhyML_Printf("\n. a:%d [%d] d:%d dir:%d [%p %p] [%p %p %p] [%p %p]", */
+      /*              a->num, */
+      /*              a == tree->n_root, */
+      /*              d->num, */
+      /*              dir, */
+      /*              d->b[dir], */
+      /*              tree->e_root, */
+      /*              d->b[0],d->b[1],d->b[2], */
+      /*              tree->n_root->b[1],tree->n_root->b[2]); */
       
       if(tree->ignore_root == NO && d->b[dir] == tree->e_root)
         {
@@ -479,10 +474,6 @@ phydbl Lk(t_edge *b, t_tree *tree)
   tree->old_lnL = tree->c_lnL;
   
 
-#if (defined PHYTIME || defined INVITEE || defined PHYREX)
-  if((tree->rates) && (tree->rates->bl_from_rt)) RATES_Update_Edge_Lengths(tree);
-#endif
-
   if(tree->rates && tree->io && tree->io->lk_approx == NORMAL)
     {
 #ifdef BEAGLE
@@ -519,9 +510,21 @@ phydbl Lk(t_edge *b, t_tree *tree)
               Update_PMat_At_Given_Edge(tree->n_root->b[2],tree);
             }
         }
-      else//Update PMat for a specific edge
+      else //Update PMat for a specific edge
         {
-          if(tree->use_eigen_lr == NO) Update_PMat_At_Given_Edge(b,tree);
+          if(tree->use_eigen_lr == NO)
+            {
+              if(tree->n_root &&
+                 (b == tree->n_root->b[1] || b == tree->n_root->b[2]) &&
+                 tree->ignore_root == YES)
+                {
+                  Update_PMat_At_Given_Edge(tree->e_root,tree);
+                }
+              else
+                {
+                  Update_PMat_At_Given_Edge(b,tree);
+                }
+            }
         }
       
       if(!b)
@@ -2163,22 +2166,8 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
   phydbl l_min, l_max;
   phydbl shape, scale, mean, var;
   
-  if(b_fcus->Pij_rr == NULL)
-    {
-      PhyML_Printf("\n. b_fcus is e_root ? %d node left: %d node rght: %d left is root ? %d right is root ? %d [%p] [%d]",
-                   (b_fcus == tree->e_root) ? 1 : 0,
-                   b_fcus->left->num,
-                   b_fcus->rght->num,
-                   (b_fcus->left == tree->n_root) ? 1 : 0,
-                   (b_fcus->rght == tree->n_root) ? 1 : 0,
-                   tree->aux_tree,
-                   tree->eval_alnL);
-      assert(false);
-    }
-  
   assert(b_fcus);
   assert(tree);
-  assert(b_fcus->Pij_rr);
   assert(tree->eval_alnL == YES);
   
   if(tree->is_mixt_tree == YES)
@@ -2186,21 +2175,31 @@ void Update_PMat_At_Given_Edge(t_edge *b_fcus, t_tree *tree)
       MIXT_Update_PMat_At_Given_Edge(b_fcus,tree);
       return;
     }
+  
+  if(b_fcus->Pij_rr == NULL)
+    {
+      PhyML_Printf("\n. b_fcus is e_root ? %d node left: %d node rght: %d left is root ? %d right is root ? %d [%p] [%d] [%d]",
+                   (b_fcus == tree->e_root) ? 1 : 0,
+                   b_fcus->left->num,
+                   b_fcus->rght->num,
+                   (b_fcus->left == tree->n_root) ? 1 : 0,
+                   (b_fcus->rght == tree->n_root) ? 1 : 0,
+                   tree->aux_tree,
+                   tree->eval_alnL,
+                   tree->is_mixt_tree);
+      assert(false);
+    }
 
   if(tree->mixt_tree != NULL) assert(tree->mod->ras->n_catg == 1);
-    
+  
   if(tree->io->mod->gamma_mgf_bl == YES) Set_Br_Len_Var(b_fcus,tree);
 
   l_min = tree->mod->l_min;
   l_max = tree->mod->l_max;
 
-  
   len = -1.0;
 
   if(tree->mod->log_l == YES) b_fcus->l->v = exp(b_fcus->l->v);
-
-  /* if(b_fcus->l->v < l_min) b_fcus->l->v = l_min; */
-  /* if(b_fcus->l->v > l_max) b_fcus->l->v = l_max; */
 
   for(i=0;i<tree->mod->ras->n_catg;i++)
     {
@@ -2864,7 +2863,6 @@ void Set_All_Partial_Lk(t_node **n_v1, t_node **n_v2,
         {
           *p_lk      = b->p_lk_left;
           *sum_scale = b->sum_scale_left;
-          *p_lk_loc  = b->p_lk_loc_left;
 #ifdef BEAGLE
           *dest_p_idx = b->p_lk_left_idx;
 #endif
@@ -2873,7 +2871,6 @@ void Set_All_Partial_Lk(t_node **n_v1, t_node **n_v2,
         {
           *p_lk      = b->p_lk_rght;
           *sum_scale = b->sum_scale_rght;
-          *p_lk_loc  = b->p_lk_loc_rght;
 #ifdef BEAGLE
           *dest_p_idx = b->p_lk_rght_idx;
 #endif
@@ -2925,7 +2922,6 @@ void Set_All_Partial_Lk(t_node **n_v1, t_node **n_v2,
             {
               *p_lk      = tree->n_root->b[1]->p_lk_left;
               *sum_scale = tree->n_root->b[1]->sum_scale_left;
-              *p_lk_loc  = tree->n_root->b[1]->p_lk_loc_left;
 #ifdef BEAGLE
               *dest_p_idx = tree->n_root->b[1]->p_lk_left_idx;
 #endif
@@ -2934,7 +2930,6 @@ void Set_All_Partial_Lk(t_node **n_v1, t_node **n_v2,
             {
               *p_lk      = tree->n_root->b[2]->p_lk_left;
               *sum_scale = tree->n_root->b[2]->sum_scale_left;
-              *p_lk_loc  = tree->n_root->b[2]->p_lk_loc_left;
 #ifdef BEAGLE
               *dest_p_idx = tree->n_root->b[2]->p_lk_left_idx;
 #endif
@@ -2980,7 +2975,6 @@ void Set_All_Partial_Lk(t_node **n_v1, t_node **n_v2,
                 {
                   *p_lk      = tree->n_root->b[1]->p_lk_rght;
                   *sum_scale = tree->n_root->b[1]->sum_scale_rght;
-                  *p_lk_loc  = tree->n_root->b[1]->p_lk_loc_left;
 #ifdef BEAGLE
                   *dest_p_idx = tree->n_root->b[1]->p_lk_rght_idx;
 #endif
@@ -2989,7 +2983,6 @@ void Set_All_Partial_Lk(t_node **n_v1, t_node **n_v2,
                 {
                   *p_lk      = tree->n_root->b[2]->p_lk_rght;
                   *sum_scale = tree->n_root->b[2]->sum_scale_rght;
-                  *p_lk_loc  = tree->n_root->b[2]->p_lk_loc_rght;
 #ifdef BEAGLE
                   *dest_p_idx = tree->n_root->b[2]->p_lk_rght_idx;
 #endif

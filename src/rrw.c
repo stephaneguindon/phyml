@@ -138,6 +138,9 @@ phydbl RRW_Lk_Core(t_dsk *disk, t_tree *tree)
       for(i=0;i<disk->ldsk->n_next;++i)
         {          
           lnP += RRW_Forward_Lk_Path(disk->ldsk,disk->ldsk->next[i],tree);
+          /* PhyML_Printf("\n. RRW_LK_CORE disk: %p time: %12f lnP: %12f [%12f %12f]", */
+          /*              disk,disk->time,lnP, */
+          /*              disk->time,disk->ldsk->next[i]->disk->time); */
         }
     }
 
@@ -194,7 +197,16 @@ phydbl RRW_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
               PhyML_Printf("\n. la=%f ld=%f sd=%f dt=[%f,%f] sigsq=%f",la,ld,sd,ldsk->disk->time,ldsk->prev->disk->time,tree->mmod->sigsq);
               assert(FALSE);
             }
-          /* PhyML_Printf("\n. time: %f disk_lnP: %12f sd: %12f",ldsk->disk->time,disk_lnP,sd); */
+          
+          /* PhyML_Printf("\n. RRW_PATH time: %12f (%12f) disk_lnP: %12f sd: %12f [%12f %12f] [%12f %12f %12f %12f]", */
+          /*              ldsk->disk->time,ldsk->prev->disk->time, */
+          /*              disk_lnP, */
+          /*              sd, */
+          /*              ld,la, */
+          /*              tree->mmod->sigsq[i], */
+          /*              tree->mmod->sigsq_scale[nd_d->num], */
+          /*              tree->mmod->rrw_norm_fact, */
+          /*              ldsk->disk->time-ldsk->prev->disk->time); */
         }
 
       lnP += disk_lnP;

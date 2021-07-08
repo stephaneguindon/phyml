@@ -97,23 +97,23 @@ void Make_Tree_For_Lk(t_tree *tree)
           Free_Edge_Loc_Rght(tree->n_root->b[1]);
           Free_Edge_Loc_Rght(tree->n_root->b[2]);
 
-          tree->n_root->b[1]->p_lk_rght  = tree->e_root->p_lk_left;
-          tree->n_root->b[2]->p_lk_rght  = tree->e_root->p_lk_rght;
+          tree->n_root->b[1]->p_lk_rght = tree->e_root->p_lk_left;
+          tree->n_root->b[2]->p_lk_rght = tree->e_root->p_lk_rght;
           
           tree->n_root->b[1]->p_lk_tip_r = tree->e_root->p_lk_tip_l;      
           tree->n_root->b[2]->p_lk_tip_r = tree->e_root->p_lk_tip_r;
           
-          tree->n_root->b[1]->div_post_pred_rght  = tree->e_root->div_post_pred_rght;
-          tree->n_root->b[2]->div_post_pred_rght  = tree->e_root->div_post_pred_left;
+          tree->n_root->b[1]->div_post_pred_rght = tree->e_root->div_post_pred_left;
+          tree->n_root->b[2]->div_post_pred_rght = tree->e_root->div_post_pred_rght;
           
-          tree->n_root->b[1]->sum_scale_rght  = tree->e_root->sum_scale_rght;
-          tree->n_root->b[2]->sum_scale_rght  = tree->e_root->sum_scale_left;
+          tree->n_root->b[1]->sum_scale_rght = tree->e_root->sum_scale_left;
+          tree->n_root->b[2]->sum_scale_rght = tree->e_root->sum_scale_rght;
           
-          tree->n_root->b[1]->sum_scale_rght_cat  = tree->e_root->sum_scale_rght_cat;
-          tree->n_root->b[2]->sum_scale_rght_cat  = tree->e_root->sum_scale_left_cat;
+          tree->n_root->b[1]->sum_scale_rght_cat = tree->e_root->sum_scale_left_cat;
+          tree->n_root->b[2]->sum_scale_rght_cat = tree->e_root->sum_scale_rght_cat;
           
-          tree->n_root->b[1]->patt_id_rght  = tree->e_root->patt_id_rght;
-          tree->n_root->b[2]->patt_id_rght  = tree->e_root->patt_id_left;
+          tree->n_root->b[1]->patt_id_rght = tree->e_root->patt_id_left;
+          tree->n_root->b[2]->patt_id_rght = tree->e_root->patt_id_rght;
         }
     }
 }
@@ -362,7 +362,7 @@ void Make_Edge_Lk_Rght(t_edge *b, t_tree *tree)
 
   b->sum_scale_rght_cat = (int *)mCalloc(MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(int));
 
-  if(b->rght && !b->rght->tax)
+  if(b->rght && b->rght->tax == NO)
     b->sum_scale_rght = (int *)mCalloc(tree->data->crunch_len*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(int));
   else
     b->sum_scale_rght = NULL;

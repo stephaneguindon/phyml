@@ -913,11 +913,11 @@ void TIMES_Init_Time_Struct(t_time *times, t_time *existing_times, int n_otu)
       times->coalescent_model_id = STRICTCOALESCENT;
     }
 
-  times->scaled_pop_size     = 1.E+1;
-  times->scaled_pop_size_min = 1.E-1;
+  times->scaled_pop_size     = 1.E-0;
+  times->scaled_pop_size_min = 1.E-2;
   times->scaled_pop_size_max = 1.E+3;
 
-  times->exp_growth     = -1.0E-3;
+  times->exp_growth     = 1E-6;
   times->exp_growth_min = -1.E+3;
   times->exp_growth_max = +1.E+3;
   
@@ -3557,8 +3557,7 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->prior_param_sigsq = 10.0;
 
   assert(t->n_dim > 0);
-  /* for(int i=0;i<t->n_dim;++i) t->sigsq[i] = t->min_sigsq + (t->max_sigsq-t->min_sigsq)/20.; */
-  for(int i=0;i<t->n_dim;++i) t->sigsq[i] = 10.0;
+  for(int i=0;i<t->n_dim;++i) t->sigsq[i] = t->min_sigsq + (t->max_sigsq-t->min_sigsq)/20.;
   
   t->nu = 1.0E-0;
 

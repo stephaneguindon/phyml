@@ -10121,7 +10121,6 @@ void Set_Taxa_Id_Ranking(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Get_Edge_Binary_Coding_Number(t_tree *tree)
 {
   int i,j;
@@ -12657,6 +12656,28 @@ void Set_Prior(t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+t_edge *Get_Edge(t_node *a, t_node *d, t_tree *tree)
+{
+  
+  for(int i=0;i<3;++i) if(d->v[i] == a) return(d->b[i]);
+  if(tree->n_root && a == tree->n_root)
+    {
+      if(tree->ignore_root == NO)
+        {
+          if(d == a->v[1]) return(a->b[1]);
+          else if(d == a->v[2]) return(a->b[2]);
+          else assert(false);
+        }
+      else
+        {
+          return(tree->e_root);
+        }
+    }
+  else assert(false);
+  return(NULL);
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////
