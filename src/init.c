@@ -915,12 +915,12 @@ void TIMES_Init_Time_Struct(t_time *times, t_time *existing_times, int n_otu)
     }
 
   times->scaled_pop_size     = 1.E-0;
-  times->scaled_pop_size_min = 1.E-2;
+  times->scaled_pop_size_min = 1.E-1;
   times->scaled_pop_size_max = 1.E+3;
 
   times->exp_growth     = 1E-6;
-  times->exp_growth_min = -1.E+3;
-  times->exp_growth_max = +1.E+3;
+  times->exp_growth_min = -5.;
+  times->exp_growth_max = +5.;
   
   times->c_lnL         = UNLIKELY;
   times->p_lnL         = UNLIKELY;
@@ -3553,7 +3553,7 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->prior_param_rad   = 1.;
   t->update_rad        = NO;
   
-  t->min_sigsq         = 0.0;
+  t->min_sigsq         = 1.E-1;
   t->max_sigsq         = 1.E+2;
   t->prior_param_sigsq = 10.0;
 
