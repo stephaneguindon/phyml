@@ -3682,8 +3682,7 @@ int PHYREX_Scale_All(phydbl scale, t_tree *tree)
     {      
       if(disk->age_fixed == NO)
         {
-          disk->time = disk->time * scale + base_line * (1.-scale);
-          
+          disk->time = disk->time * scale + base_line * (1.-scale);          
           n_disks_scaled++;
           if(disk->ldsk && disk->ldsk->n_next > 1) n_nodes_scaled++;
           if(disk->ldsk && disk->ldsk->n_next == 1) n_hits_scaled++;

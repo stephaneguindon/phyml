@@ -6159,7 +6159,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   strcpy(mcmc->move_name[mcmc->num_move_phyrex_spr_slide],"phyrex_spr_slide");
   strcpy(mcmc->move_name[mcmc->num_move_phyrex_narrow_exchange],"phyrex_narrow_exchange");
   strcpy(mcmc->move_name[mcmc->num_move_phyrex_wide_exchange],"phyrex_wide_exchange");
-  /* strcpy(mcmc->move_name[mcmc->num_move_phyrex_scale_times],"phyrex_scale_times"); */
+  strcpy(mcmc->move_name[mcmc->num_move_phyrex_scale_times],"phyrex_scale_times");
   strcpy(mcmc->move_name[mcmc->num_move_phyrex_ldscape_lim],"phyrex_ldscape_lim");
   strcpy(mcmc->move_name[mcmc->num_move_phyrex_sigsq],"phyrex_sigsq");
   strcpy(mcmc->move_name[mcmc->num_move_time_neff],"phyrex_neff");
@@ -6290,7 +6290,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_spr_slide]             = 3.0;
   mcmc->move_weight[mcmc->num_move_phyrex_narrow_exchange]       = 3.0;
   mcmc->move_weight[mcmc->num_move_phyrex_wide_exchange]         = 3.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           = 2.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldscape_lim]           = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 1.0;
@@ -8012,6 +8012,7 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree, short int print)
   phydbl scale_fact_times;
   int n_disks;
   phydbl K;
+
   
   if(tree->mod->s_opt->opt_bl == NO) return;
   
@@ -8036,7 +8037,6 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree, short int print)
 
   u = Uni();
   scale_fact_times = exp(K*(u-.5));
-  
   
   n_disks = PHYREX_Scale_All(scale_fact_times,tree);
   

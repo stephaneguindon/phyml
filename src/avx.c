@@ -340,7 +340,7 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
   _pmat1plk1 = tree->_pmat1plk1;
   _pmat2plk2 = tree->_pmat2plk2;
   _plk0      = tree->_plk0;
-  
+    
   sum_scale_v1_val            = 0;
   sum_scale_v2_val            = 0;
   n_v1 = n_v2                 = NULL;
@@ -356,7 +356,7 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
                      &Pij1,&tPij1,&plk1,&sum_scale_v1,
                      &Pij2,&tPij2,&plk2,&sum_scale_v2,
                      d,b,tree);
-  
+
   // Copy transpose of transition matrices into AVX registers
   for(i=0;i<ncatg;++i)
     {

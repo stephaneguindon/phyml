@@ -69,9 +69,7 @@ void Make_Tree_For_Lk(t_tree *tree)
   tree->_prod_left   = _aligned_malloc(ns / sz * sizeof(__m256d),BYTE_ALIGN);
   tree->_prod_rght   = _aligned_malloc(ns / sz * sizeof(__m256d),BYTE_ALIGN);
 #endif
-#endif
-
-#if (defined(__SSE__) || defined(__SSE2__) || defined(__SSE3__))
+#elif (defined(__SSE__) || defined(__SSE2__) || defined(__SSE3__))
 #ifndef WIN32
   if(posix_memalign((void **)&tree->dot_prod,BYTE_ALIGN,(size_t)tree->n_pattern*tree->mod->ns*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
   if(posix_memalign((void **)&tree->expl,BYTE_ALIGN,(size_t)3*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns*sizeof(phydbl))) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
@@ -101,9 +99,7 @@ void Make_Tree_For_Lk(t_tree *tree)
   tree->_prod_left   = _aligned_malloc(ns / sz * sizeof(__m128d),BYTE_ALIGN);
   tree->_prod_rght   = _aligned_malloc(ns / sz * sizeof(__m128d),BYTE_ALIGN);
 #endif
-#endif
-
-#if (!(defined(__AVX__) || defined(__AVX2__) || defined(__SSE__) || defined(__SSE2__) || defined(__SSE3__)))
+#elif (!(defined(__AVX__) || defined(__AVX2__) || defined(__SSE__) || defined(__SSE2__) || defined(__SSE3__)))
   tree->dot_prod = (phydbl *)mCalloc(tree->n_pattern*tree->mod->ns*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes),sizeof(phydbl));
   tree->expl = (phydbl *)mCalloc(3*MAX(tree->mod->ras->n_catg,tree->mod->n_mixt_classes)*tree->mod->ns,sizeof(phydbl));
   tree->p_lk_left_pi = (phydbl *)mCalloc(ns,sizeof(phydbl));
