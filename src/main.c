@@ -603,15 +603,21 @@ int main(int argc, char **argv)
   for(i=0;i<io->n_otu;i++)
     {
       sscanf(io->data[i]->name,"%d",&year);
-      PhyML_Printf("\n<clade id=\"clad%d\">",i+1);
-      PhyML_Printf("\n\t<taxon value=\"%s\"/>",io->data[i]->name);
-      PhyML_Printf("\n</clade>");
-      PhyML_Printf("\n<calibration id=\"cal%d\">",i+1);
-      PhyML_Printf("\n\t<lower>%d</lower>",year);
-      PhyML_Printf("\n\t<upper>%d</upper>",year);
-      PhyML_Printf("\n\t<appliesto clade.id=\"clad%d\"/>",i+1);
-      PhyML_Printf("\n</calibration>");
+      PhyML_Printf("\n%s\t%d",io->data[i]->name,year);
     }
+
+  /* for(i=0;i<io->n_otu;i++) */
+  /*   { */
+  /*     sscanf(io->data[i]->name,"%d",&year); */
+  /*     PhyML_Printf("\n<clade id=\"clad%d\">",i+1); */
+  /*     PhyML_Printf("\n\t<taxon value=\"%s\"/>",io->data[i]->name); */
+  /*     PhyML_Printf("\n</clade>"); */
+  /*     PhyML_Printf("\n<calibration id=\"cal%d\">",i+1); */
+  /*     PhyML_Printf("\n\t<lower>%d</lower>",year); */
+  /*     PhyML_Printf("\n\t<upper>%d</upper>",year); */
+  /*     PhyML_Printf("\n\t<appliesto clade.id=\"clad%d\"/>",i+1); */
+  /*     PhyML_Printf("\n</calibration>"); */
+  /*   } */
 
   /* FILE *fp; */
   /* char *name,*date; */

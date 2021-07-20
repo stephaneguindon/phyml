@@ -146,5 +146,6 @@ void PHYREX_Insert_Disk_At(t_dsk *ins, t_dsk *disk);
 void PHYREX_Move_Disk_Updown(t_dsk *this, phydbl target_time, t_tree *tree);
 void PHYREX_Restore_Disk_Times(t_tree *tree);
 void PHYREX_Record_Disk_Times(t_tree *tree);
+t_dsk *PHYREX_Next_Floating_Disk(t_dsk *disk);
 
 #endif

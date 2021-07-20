@@ -109,12 +109,6 @@ void RATES_Lk_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 
   dt_a = -1.;
   if(a != tree->n_root) dt_a = tree->times->nd_t[a->num] - tree->times->nd_t[a->anc->num];
-
-  /* if(a == tree->n_root) */
-  /*   { */
-  /*     tree->rates->br_r[a->num] = 1.0; */
-  /*     tree->rates->nd_r[a->num] = 1.0; */
-  /*   } */
   
   mu_a = tree->rates->br_r[a->num];
   r_a  = tree->rates->nd_r[a->num];
@@ -217,7 +211,6 @@ phydbl RATES_Lk_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl nd_r_d,
         int err;
         phydbl log_br_r_d = log(br_r_d);
         log_dens = Log_Dnorm(log_br_r_d,-tree->rates->nu*tree->rates->nu/2.,tree->rates->nu,&err);
-        /* log_dens = Log_Dnorm(log_br_r_d,-tree->rates->nu*tree->rates->nu*dt_d*dt_d/2.,sqrt(tree->rates->nu*tree->rates->nu*dt_d),&err); */
         log_dens -= log_br_r_d;
         break;
       }
