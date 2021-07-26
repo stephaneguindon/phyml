@@ -9265,7 +9265,7 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
       assert(prune_ldsk_daughter->disk->time > tree->n_root->ldsk->disk->time);
 
       /* Set time of regraft_ldsk */
-      K = (tree->young_disk->time - tree->n_root->ldsk->disk->time)/5.; /* Needs updating if new node age is above that of (old) root node */
+      K = (tree->young_disk->time - tree->n_root->ldsk->disk->time)/20.; /* Needs updating if new node age is above that of (old) root node */
       cur_t = prune_ldsk->disk->time;
       new_t = Rnorm_Trunc(cur_t,K,-TWO_TO_THE_LARGE,prune_ldsk_daughter->disk->time,&err);
       hr -= Log_Dnorm_Trunc(new_t,cur_t,K,-TWO_TO_THE_LARGE,prune_ldsk_daughter->disk->time,&err);
@@ -9433,7 +9433,7 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
 
       /* Remaining of Hastings ratio for regraft and prune node age. */
       /* Note that root time may be distinct from that of current tree, hence the need to update K. */
-      K = (tree->young_disk->time - root_ldsk->disk->time)/5.;
+      K = (tree->young_disk->time - root_ldsk->disk->time)/20.;
       hr += Log_Dnorm_Trunc(cur_t,new_t,K,-TWO_TO_THE_LARGE,prune_ldsk_daughter->disk->time,&err);
 
       /* Remaining of the Hastings ratio for the number of lineages the regraft edge can connect to */
