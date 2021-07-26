@@ -853,18 +853,18 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
   /* Important to start from high subst. rate to ``reveal'' time structure */
   /* Low rate, and thus old root, makes serially sampled data look like */
   /* tips all have the same age. */
-  rates->clock_r          = 1.E-1;
+  rates->clock_r          = 1.E-3;
   rates->min_clock        = 1.E-8;
   rates->max_clock        = 1.E+2;
 
   rates->clock_r_has_prior  = NO;
-  rates->clock_r_prior_mean = -1.0;
-  rates->clock_r_prior_var  = -1.0;
+  rates->clock_r_prior_mean = 1.0E-3;
+  rates->clock_r_prior_var  = 1.0E-8;
   
   rates->max_rate         = 1.E+1;
   rates->min_rate         = 1.E-1;
 
-  rates->nu               = 3.0;
+  rates->nu               = 1.0;
   rates->min_nu           = 0.0;
   rates->max_nu           = 1.0E+3;
   
@@ -914,7 +914,7 @@ void TIMES_Init_Time_Struct(t_time *times, t_time *existing_times, int n_otu)
       times->coalescent_model_id = STRICTCOALESCENT;
     }
 
-  times->scaled_pop_size     = 1.E-0;
+  times->scaled_pop_size     = 1.E+2;
   times->scaled_pop_size_min = 1.E-1;
   times->scaled_pop_size_max = 1.E+3;
 

@@ -36,9 +36,10 @@ phydbl RATES_Lk(t_tree *tree)
   
   err = NO;
 
-  sd = 1.;
-  tree->rates->c_lnL += Log_Dnorm(log(tree->rates->br_r[tree->n_root->num]),-sd*sd/2.,sd,&err);
-  tree->rates->c_lnL -= log(tree->rates->br_r[tree->n_root->num]);
+  /* !!!!!!!!!!!!!!!! */
+  /* sd = 1.; */
+  /* tree->rates->c_lnL += Log_Dnorm(log(tree->rates->br_r[tree->n_root->num]),-sd*sd/2.,sd,&err); */
+  /* tree->rates->c_lnL -= log(tree->rates->br_r[tree->n_root->num]); */
 
   if(tree->rates->clock_r_has_prior == YES)
     {
@@ -92,6 +93,7 @@ phydbl RATES_Prior(t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
 void RATES_Lk_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 {
   int i;
@@ -113,7 +115,7 @@ void RATES_Lk_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
   mu_a = tree->rates->br_r[a->num];
   r_a  = tree->rates->nd_r[a->num];
   n_a  = tree->times->n_jps[a->num];
-  
+
   dt_d = FABS(tree->times->nd_t[d->num] - tree->times->nd_t[a->num]);
   mu_d = tree->rates->br_r[d->num];
   r_d  = tree->rates->nd_r[d->num];
@@ -1373,7 +1375,6 @@ void RATES_Get_Cov_Matrix_Rooted(phydbl *unroot_cov, t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void RATES_Get_Cov_Matrix_Rooted_Pre(t_node *a, t_node *d, t_edge *b, phydbl *cov, t_tree *tree)
 {

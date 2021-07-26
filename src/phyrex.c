@@ -936,6 +936,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   for(i=0;i<mcmc->n_moves;i++) tree->mcmc->start_ess[i] = YES;
     
   Set_Update_Eigen(YES,tree->mod);
+  RATES_Update_Edge_Lengths(tree);
   Lk(NULL,tree);
   Set_Update_Eigen(NO,tree->mod);
   RATES_Lk(tree);

@@ -6653,7 +6653,6 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%s\t","lnTime");
           PhyML_Fprintf(fp_stats,"%s\t","lnDisp");
           PhyML_Fprintf(fp_stats,"%s\t","substRate");
-          PhyML_Fprintf(fp_stats,"%s\t","realSubstRate");
           PhyML_Fprintf(fp_stats,"%s\t","lbda");
           PhyML_Fprintf(fp_stats,"%s\t","mu");
           PhyML_Fprintf(fp_stats,"%s\t","rad");
@@ -6773,7 +6772,6 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%g\t",tree->times->c_lnL);
       PhyML_Fprintf(fp_stats,"%g\t",RRW_Prior_Sigsq_Scale(tree));
       PhyML_Fprintf(fp_stats,"%g\t",tree->rates->clock_r);
-      PhyML_Fprintf(fp_stats,"%g\t",RATES_Realized_Substitution_Rate(tree));
       PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->lbda);
       PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->mu);
       PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->rad);

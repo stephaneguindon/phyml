@@ -676,37 +676,38 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
   ns            = 0;
   
   
-  /* Update RAS structure (mixt_tree level) */
-  tree = mixt_tree;
-  do
-    {
-      Update_RAS(tree->mod);
-      tree = tree->next_mixt;
-    }
-  while(tree);
-
-  /* Update other model structure (tree level) */
-  tree = mixt_tree->next;
-  do
-    {
-      if(tree->is_mixt_tree == YES) tree = tree->next;
+ if(mixt_b == NULL)
+   {
+     /* Update RAS structure (mixt_tree level) */
+     tree = mixt_tree;
+     do
+       {
+         Update_RAS(tree->mod);
+         tree = tree->next_mixt;
+       }
+     while(tree);
+     
+     /* Update other model structure (tree level) */
+     tree = mixt_tree->next;
+     do
+       {
+         if(tree->is_mixt_tree == YES) tree = tree->next;
+         
+         if(!cpy_mixt_b)
+           {
+             if(!Update_Boundaries(tree->mod) ||
+                !Update_Efrq(tree->mod) ||
+                !Update_Eigen(tree->mod))
+               {
+                 PhyML_Fprintf(stderr,"\n. move: %s",mixt_tree->mcmc->move_name[mixt_tree->mcmc->move_idx]);
+                 Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+               }
+           }         
+         tree = tree->next;
+       }
+     while(tree);
+   }
       
-      if(!cpy_mixt_b)
-        {
-          if(!Update_Boundaries(tree->mod) ||
-             !Update_Efrq(tree->mod) ||
-             !Update_Eigen(tree->mod))
-            {
-              PhyML_Fprintf(stderr,"\n. move: %s",mixt_tree->mcmc->move_name[mixt_tree->mcmc->move_idx]);
-              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-            }
-        }
-      
-      tree = tree->next;
-    }
-  while(tree);
-
-  
   if(!cpy_mixt_b)
     {
       for(br=0;br<2*mixt_tree->n_otu-3;++br) MIXT_Update_PMat_At_Given_Edge(mixt_tree->a_edges[br],mixt_tree);
@@ -719,7 +720,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
     }
   else
     {
-      if(mixt_tree->n_root &&
+      if(mixt_tree->n_root != NULL &&
          (mixt_b == mixt_tree->n_root->b[1] || mixt_b == mixt_tree->n_root->b[2]) &&
          mixt_tree->ignore_root == YES)
         {
