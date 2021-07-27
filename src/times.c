@@ -898,9 +898,7 @@ phydbl TIMES_Lk_Coalescent(t_tree *tree)
       lnP += -n_lineages * (n_lineages-1.) / (2.*Ne) * dt;
       
       if(tree->times->coalescent_model_id == EXPCOALESCENT && n->tax == NO)
-        lnP +=
-          exp_g * fabs(tree->times->nd_t[n->num]-T) +
-          exp_g * fabs(tree->times->nd_t[n->rk_next->num]-T);
+        lnP += exp_g * fabs(tree->times->nd_t[n->num]-T);
 
       if(n->tax == NO) lnP -= log(Ne);
       
