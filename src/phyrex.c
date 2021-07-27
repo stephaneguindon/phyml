@@ -3662,44 +3662,39 @@ phydbl PHYREX_Get_Baseline_Times(t_ldsk *ldsk, t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-int PHYREX_Scale_All(phydbl scale, t_tree *tree)
+int PHYREX_Scale_All(phydbl scale, t_dsk *start_disk, t_tree *tree)
 {
-  t_dsk *disk,*disk_next;
+  t_dsk *disk;
   t_dsk **sorted_disk;
   int n_disk,n_disks_scaled,n_nodes_scaled,n_hits_scaled,sorted,i;
-  phydbl base_line;
   
   n_disk            = 0;
   n_disks_scaled    = 0;
   n_nodes_scaled    = 0;
   n_hits_scaled     = 0;
-
-  PHYREX_Record_Disk_Times(tree);
   
-  disk = tree->young_disk->prev;
+  disk = start_disk->prev;
   assert(disk);
   
+  disk = start_disk->prev;
   do
-    {
+    {      
       if(disk->age_fixed == NO)
         {
-          /* PhyML_Printf("\n. Set disk %p time %12f (%12f)",disk,disk->time_bkp,disk->time,disk->time_bkp); */
-          disk_next = PHYREX_Next_Floating_Disk(disk);
-          if(disk_next == NULL) disk_next = tree->young_disk;
-          disk->time = disk_next->time - (disk_next->time_bkp - disk->time) * scale;
-          /* PhyML_Printf(" at %f",disk->time); */
+          disk->time = disk->time * scale + start_disk->time * (1.-scale);
           n_disks_scaled++;
           if(disk->ldsk && disk->ldsk->n_next > 1) n_nodes_scaled++;
           if(disk->ldsk && disk->ldsk->n_next == 1) n_hits_scaled++;
         }
-      /* else PhyML_Printf("\n. ==="); */
+      
       n_disk++;
       disk = disk->prev;
     }
   while(disk);
+
   
   sorted_disk = (t_dsk **)mCalloc(n_disk,sizeof(t_dsk *));
-  disk = tree->young_disk->prev;
+  disk = start_disk->prev;
   n_disk = 0;
   do
     {

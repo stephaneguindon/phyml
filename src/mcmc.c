@@ -6253,7 +6253,6 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   for(i=0;i<mcmc->n_moves;i++) mcmc->tune_move[i] = 1.;
   mcmc->tune_move[mcmc->num_move_time_exp_growth] = 0.01;
   mcmc->tune_move[mcmc->num_move_root_time] = 1.0;
-  mcmc->tune_move[mcmc->num_move_phyrex_scale_times] = 0.01;
  
   mcmc->move_weight[mcmc->num_move_br_r]                  = 4.0; 
   mcmc->move_weight[mcmc->num_move_nd_r]                  = 0.0;
@@ -6313,7 +6312,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_spr_slide]             = 3.0;
   mcmc->move_weight[mcmc->num_move_phyrex_narrow_exchange]       = 3.0;
   mcmc->move_weight[mcmc->num_move_phyrex_wide_exchange]         = 3.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           = 0.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           = 30.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldscape_lim]           = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_traj]                  = 1.0;
@@ -8061,7 +8060,7 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree, short int print)
   u = Uni();
   scale_fact_times = exp(K*(u-.5));
   
-  n_disks = PHYREX_Scale_All(scale_fact_times,tree);
+  n_disks = PHYREX_Scale_All(scale_fact_times,tree->old_samp_disk,tree);
   
   if(n_disks < 0) return; // Root age cannot be younger than age of oldest sample
   
@@ -8129,7 +8128,7 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree, short int print)
   
   if(u > alpha) /* Reject */
     {
-      PHYREX_Scale_All(1./scale_fact_times,tree);
+      PHYREX_Scale_All(1./scale_fact_times,tree->old_samp_disk,tree);
       if(tree->eval_alnL == YES && tree->mod->s_opt->opt_clock_r == YES) tree->rates->clock_r *= scale_fact_times;
       PHYREX_Update_Lindisk_List(tree);
       PHYREX_Update_Node_Times_Given_Disks(tree);
