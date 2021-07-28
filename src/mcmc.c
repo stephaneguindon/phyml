@@ -12332,6 +12332,7 @@ void MCMC_PHYREX_Exchange_Core(t_tree *aux_tree)
   for(move=0;move<aux_tree->mcmc->n_moves;move++) aux_tree->mcmc->move_weight[move] = 0.0;
   for(move=0;move<aux_tree->mcmc->n_moves;move++)
     {
+      if(!strcmp(aux_tree->mcmc->move_name[move],"phyrex_scale_times")) aux_tree->mcmc->move_weight[move] = 1.0;
       if(!strcmp(aux_tree->mcmc->move_name[move],"phyrex_node_times")) aux_tree->mcmc->move_weight[move] = 1.0;
       if(!strcmp(aux_tree->mcmc->move_name[move],"root_time")) aux_tree->mcmc->move_weight[move] = 1.0;
       if(!strcmp(aux_tree->mcmc->move_name[move],"phyrex_spr")) aux_tree->mcmc->move_weight[move] = 1.0;
@@ -12365,6 +12366,7 @@ void MCMC_PHYREX_Exchange_Core(t_tree *aux_tree)
       u = Uni();
       for(move=0;move<aux_tree->mcmc->n_moves;move++) if(aux_tree->mcmc->move_weight[move] > u-1.E-10) break;
       
+      if(!strcmp(aux_tree->mcmc->move_name[move],"phyrex_scale_times")) MCMC_PHYREX_Scale_Times(aux_tree,NO);
       if(!strcmp(aux_tree->mcmc->move_name[move],"phyrex_node_times")) MCMC_PHYREX_Node_Times(aux_tree);
       if(!strcmp(aux_tree->mcmc->move_name[move],"root_time")) MCMC_Root_Time(aux_tree);
       if(!strcmp(aux_tree->mcmc->move_name[move],"phyrex_spr")) MCMC_PHYREX_Prune_Regraft(aux_tree);
