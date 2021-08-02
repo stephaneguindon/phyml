@@ -25,7 +25,6 @@ the GNU public licence. See http://www.opensource.org for details.
 phydbl RATES_Lk(t_tree *tree)
 {
   int err;
-  phydbl sd;
   
   if(tree->eval_rlnL == NO) return UNLIKELY;
 
@@ -36,10 +35,25 @@ phydbl RATES_Lk(t_tree *tree)
   
   err = NO;
 
-  /* !!!!!!!!!!!!!!!! */
-  /* sd = 1.; */
-  /* tree->rates->c_lnL += Log_Dnorm(log(tree->rates->br_r[tree->n_root->num]),-sd*sd/2.,sd,&err); */
-  /* tree->rates->c_lnL -= log(tree->rates->br_r[tree->n_root->num]); */
+  switch(tree->rates->model_id)
+    {
+    case LOGNORMAL :
+      {
+        tree->rates->c_lnL += Log_Dnorm(log(tree->rates->br_r[tree->n_root->num]),-tree->rates->nu*tree->rates->nu/2.,tree->rates->nu,&err);
+        tree->rates->c_lnL -= log(tree->rates->br_r[tree->n_root->num]);        
+        break;
+      }
+    case STRICTCLOCK :
+      {
+        tree->rates->c_lnL += 0.0;
+	break;
+      }      
+    default : 
+      {
+	PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
+	Warn_And_Exit("");
+      }
+    }
 
   if(tree->rates->clock_r_has_prior == YES)
     {
@@ -970,6 +984,7 @@ void RATES_Update_Normalization_Factor(t_tree *tree)
       T+=dt;
       RT+=rdt;
     }
+  assert(RT!=0.0);
   tree->rates->norm_fact = T/RT;
 }
 
@@ -1276,7 +1291,7 @@ void RATES_Update_One_Edge_Length_Core(t_edge *b, t_tree *tree)
   
   if(b && (isnan(b->l->v) || isnan(b->l_var->v)))
     {
-      PhyML_Fprintf(stderr,"\n. dt=%G rr=%G cr=%G ra=%G rd=%G nu=%G %f %f ",dt,rr,tree->rates->clock_r,ra,rd,nu,b->l_var->v,b->l->v);	  
+      PhyML_Fprintf(stderr,"\n. dt=%G rr=%G cr=%G ra=%G rd=%G nu=%G b->l_var=%f b->l=%f Z=%f",dt,rr,tree->rates->clock_r,ra,rd,nu,b->l_var->v,b->l->v,Z);	  
       PhyML_Fprintf(stderr,"\n. ta=%G td=%G ra*cr=%G rd*cr=%G sd=%G",ta,td,ra,rd,SQRT(dt*nu));
       /* assert(FALSE); */
     }

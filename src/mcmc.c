@@ -533,15 +533,22 @@ void MCMC_Sample_Joint_Rates_Prior(t_tree *tree)
 
 void MCMC_Rates_All(t_tree *tree)
 {
+  if(tree->rates->model_id == STRICTCLOCK) return;
+  if(tree->rates->model_id == GUINDON) return;
+
   Set_Both_Sides(YES,tree);
   Lk(NULL,tree);
+
   MCMC_One_Rate(tree->n_root->v[1],tree->n_root->v[2],YES,tree);
   if(tree->eval_alnL == YES) Update_Partial_Lk(tree,tree->e_root,tree->n_root->v[2]);
   MCMC_One_Rate(tree->n_root->v[2],tree->n_root->v[1],YES,tree);
+
 #ifdef PHYREX
   if(tree->mmod->safe_phyrex == YES) PHYREX_Update_Ldsk_Rates_Given_Edges(tree);
 #endif
+
   RATES_Update_Edge_Lengths(tree);
+
   Set_Both_Sides(NO,tree);
   Lk(NULL,tree); /* Required in order to rescale all branch rates */
 }
@@ -8132,7 +8139,7 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree, short int print)
       if(tree->eval_alnL == YES && tree->mod->s_opt->opt_clock_r == YES) tree->rates->clock_r *= scale_fact_times;
       PHYREX_Update_Lindisk_List(tree);
       PHYREX_Update_Node_Times_Given_Disks(tree);
-      RATES_Update_Edge_Lengths(tree);
+      if(tree->eval_alnL == YES) RATES_Update_Edge_Lengths(tree);
       Reset_Lk(tree);
     }
   else
@@ -12342,6 +12349,7 @@ void MCMC_PHYREX_Exchange_Core(t_tree *aux_tree)
       if(!strcmp(aux_tree->mcmc->move_name[move],"phyrex_ldsk_tip_to_root")) aux_tree->mcmc->move_weight[move] = 2.0;
       if(!strcmp(aux_tree->mcmc->move_name[move],"phyrex_ldsk_given_disk")) aux_tree->mcmc->move_weight[move] = 2.0;
     }
+  
   sum = 0.0;
   for(move=0;move<aux_tree->mcmc->n_moves;move++) sum += aux_tree->mcmc->move_weight[move];
   for(move=0;move<aux_tree->mcmc->n_moves;move++) aux_tree->mcmc->move_weight[move] /= sum;
@@ -12357,6 +12365,8 @@ void MCMC_PHYREX_Exchange_Core(t_tree *aux_tree)
 
   n_mcmc_steps = aux_tree->n_otu*3;
 
+  LOCATION_Lk(aux_tree);
+  TIMES_Lk(aux_tree);
 
   if(aux_tree->times->c_lnL < UNLIKELY || aux_tree->mmod->c_lnL < UNLIKELY) return;
   
@@ -12397,6 +12407,7 @@ void MCMC_PHYREX_Exchange_Core(t_tree *aux_tree)
             {
               PhyML_Fprintf(stdout,"\n. Problem detected with move %s. Iteration %d",aux_tree->mcmc->move_name[move],aux_tree->mcmc->run);
               PhyML_Fprintf(stdout,"\n. g_lnL: %f -> %f [%g]",g_lnL,aux_tree->mmod->c_lnL,g_lnL-aux_tree->mmod->c_lnL);
+              PhyML_Fprintf(stdout,"\n. tune scale: %f",aux_tree->mcmc->tune_move[aux_tree->mcmc->num_move_phyrex_scale_times]);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
           
