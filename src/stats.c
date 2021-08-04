@@ -536,9 +536,6 @@ phydbl Rnorm_Trunc(phydbl mean, phydbl sd, phydbl min, phydbl max, int *error)
   d_alpha = Dnorm(alpha,0.0,1.0);
   d_beta  = Dnorm(beta,0.0,1.0);
 
-  /* PhyML_Printf("\n. alpha: %f beta: %f d_alpha: %f d_beta: %f",alpha,beta,d_alpha,d_beta); */
-
-
   if(beta < alpha) return NAN;
   else
     {

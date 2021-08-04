@@ -534,8 +534,6 @@ stats.c stats.h\
 rates.c rates.h\
 mcmc.c mcmc.h\
 times.c times.h\
-tiporder.c tiporder.h\
-mg.c mg.h\
 io.c io.h\
 make.c make.h\
 nexus.c nexus.h\

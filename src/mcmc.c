@@ -3190,12 +3190,15 @@ void MCMC_Randomize_Sigsq_Scale(t_tree *tree)
      tree->mmod->model_id == RRW_LOGNORMAL)
     {
       int i;
+      phydbl sd;
+
+      sd = 0.1;
       
       for(i=0;i<2*tree->n_otu-2;++i)
         {
           do
             {
-              tree->mmod->sigsq_scale[tree->a_nodes[i]->num] = Rgamma(1./0.1,0.1);
+              tree->mmod->sigsq_scale[tree->a_nodes[i]->num] = Rgamma(1./sd,sd);
             }
           while(tree->mmod->sigsq_scale[tree->a_nodes[i]->num] < tree->mmod->sigsq_scale_min ||
                 tree->mmod->sigsq_scale[tree->a_nodes[i]->num] > tree->mmod->sigsq_scale_max);
@@ -6255,8 +6258,6 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_type[mcmc->num_move_phyrex_ldsk_tips] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_phyrex_node_times] = MCMC_MOVE_SCALE_THORNE;
 
-  /* We start with small tuning parameter values in order to have inflated ESS
-     for clock_r */
   for(i=0;i<mcmc->n_moves;i++) mcmc->tune_move[i] = 1.;
   mcmc->tune_move[mcmc->num_move_time_exp_growth] = 0.01;
   mcmc->tune_move[mcmc->num_move_root_time] = 1.0;
@@ -6947,6 +6948,10 @@ void MCMC_PHYREX_Sigsq_Scale(t_tree *tree)
   
   K  = 0.1/tree->n_otu; // Required so as to facilitate convergence of exchange algo
   n_changes = (int)(1. + 0.1*tree->n_otu); // Same here
+
+
+  /* K  = 1.0; // Required so as to facilitate convergence of exchange algo */
+  /* n_changes = (int)(1. + 0.8*tree->n_otu); // Same here */
 
   hr = 0.0;
   
@@ -8041,8 +8046,9 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree, short int print)
   phydbl scale_fact_times;
   int n_disks;
   phydbl K;
+  t_dsk *ref_disk;
 
-  
+ 
   if(tree->mod->s_opt->opt_bl == NO) return;
   
   Set_Lk(tree);
@@ -8063,12 +8069,13 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree, short int print)
   hr         = 0.0;
 
   tree->mcmc->run_move[tree->mcmc->num_move_phyrex_scale_times]++;
-    
+
+  ref_disk = tree->young_disk;
+  
   u = Uni();
   scale_fact_times = exp(K*(u-.5));
   
-  n_disks = PHYREX_Scale_All(scale_fact_times,tree->old_samp_disk,tree);
-  /* n_disks = PHYREX_Scale_All(scale_fact_times,tree->young_disk,tree); */
+  n_disks = PHYREX_Scale_All(scale_fact_times,ref_disk,tree);
   
   if(n_disks < 0) return; // Root age cannot be younger than age of oldest sample
   
@@ -8136,7 +8143,7 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree, short int print)
   
   if(u > alpha) /* Reject */
     {
-      PHYREX_Scale_All(1./scale_fact_times,tree->old_samp_disk,tree);
+      PHYREX_Scale_All(1./scale_fact_times,ref_disk,tree);
       if(tree->eval_alnL == YES && tree->mod->s_opt->opt_clock_r == YES) tree->rates->clock_r *= scale_fact_times;
       PHYREX_Update_Lindisk_List(tree);
       PHYREX_Update_Node_Times_Given_Disks(tree);
@@ -9274,7 +9281,7 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
       /* Set time of regraft_ldsk */
       cur_t = prune_ldsk->disk->time;
       /* K = (tree->young_disk->time - tree->n_root->ldsk->disk->time)/10.; /\* Needs updating if new node age is above that of (old) root node *\/ */
-      K = (tree->young_disk->time - cur_t)/5.; /* Needs updating if new node age is above that of (old) root node */
+      K = (tree->young_disk->time - cur_t)/20.; /* Needs updating if new node age is above that of (old) root node */
       new_t = Rnorm_Trunc(cur_t,K,-TWO_TO_THE_LARGE,prune_ldsk_daughter->disk->time,&err);
       hr -= Log_Dnorm_Trunc(new_t,cur_t,K,-TWO_TO_THE_LARGE,prune_ldsk_daughter->disk->time,&err);
 
@@ -9442,7 +9449,7 @@ void MCMC_PHYREX_Prune_Regraft(t_tree *tree)
       /* Remaining of Hastings ratio for regraft and prune node age. */
       /* Note that root time may be distinct from that of current tree, hence the need to update K. */
       /* K = (tree->young_disk->time - root_ldsk->disk->time)/10.; */
-      K = (tree->young_disk->time - new_t)/5.;
+      K = (tree->young_disk->time - new_t)/20.;
       hr += Log_Dnorm_Trunc(cur_t,new_t,K,-TWO_TO_THE_LARGE,prune_ldsk_daughter->disk->time,&err);
 
       /* Remaining of the Hastings ratio for the number of lineages the regraft edge can connect to */
@@ -10814,14 +10821,14 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree)
             SLFV_Generate_Ldsk_New_Location(disk->ldsk,disk->ldsk,rad[j],&hr,j,tree);
           else if(RRW_Is_Rw(tree->mmod) == YES)
             {
-              /* hr += RRW_Density_Ldsk_Location(disk->ldsk,rad[j],j,NO,tree); */
-              /* RRW_Generate_Ldsk_New_Location(disk->ldsk,rad[j],j,NO,tree); */
-              /* hr -= RRW_Density_Ldsk_Location(disk->ldsk,rad[j],j,NO,tree); */
+              hr += RRW_Density_Ldsk_Location(disk->ldsk,rad[j],j,NO,tree);
+              RRW_Generate_Ldsk_New_Location(disk->ldsk,rad[j],j,NO,tree);
+              hr -= RRW_Density_Ldsk_Location(disk->ldsk,rad[j],j,NO,tree);
 
-              int err;
-              disk->ldsk->coord->lonlat[j] = Rnorm_Trunc(disk->ldsk->coord->lonlat[j],rad[j],tree->mmod->lim_do->lonlat[j],tree->mmod->lim_up->lonlat[j],&err);
-              hr -= Log_Dnorm_Trunc(disk->ldsk->coord->lonlat[j],disk->ldsk->coord->cpy->lonlat[j],rad[j],tree->mmod->lim_do->lonlat[j],tree->mmod->lim_up->lonlat[j],&err);
-              hr += Log_Dnorm_Trunc(disk->ldsk->coord->cpy->lonlat[j],disk->ldsk->coord->lonlat[j],rad[j],tree->mmod->lim_do->lonlat[j],tree->mmod->lim_up->lonlat[j],&err);
+              /* int err; */
+              /* disk->ldsk->coord->lonlat[j] = Rnorm_Trunc(disk->ldsk->coord->lonlat[j],rad[j],tree->mmod->lim_do->lonlat[j],tree->mmod->lim_up->lonlat[j],&err); */
+              /* hr -= Log_Dnorm_Trunc(disk->ldsk->coord->lonlat[j],disk->ldsk->coord->cpy->lonlat[j],rad[j],tree->mmod->lim_do->lonlat[j],tree->mmod->lim_up->lonlat[j],&err); */
+              /* hr += Log_Dnorm_Trunc(disk->ldsk->coord->cpy->lonlat[j],disk->ldsk->coord->lonlat[j],rad[j],tree->mmod->lim_do->lonlat[j],tree->mmod->lim_up->lonlat[j],&err); */
             }
         }
       
@@ -12093,14 +12100,17 @@ void MCMC_PHYREX_Ldsk_Tip_To_Root(t_tree *tree)
                 SLFV_Generate_Ldsk_New_Location(ldsk,ldsk,rad[j],&hr,j,tree);
               else if(RRW_Is_Rw(tree->mmod) == YES)
                 {
-                  /* hr += RRW_Density_Ldsk_Location(ldsk,rad[j],j,YES,tree); */
-                  /* RRW_Generate_Ldsk_New_Location(ldsk,rad[j],j,YES,tree); */
-                  /* hr -= RRW_Density_Ldsk_Location(ldsk,rad[j],j,YES,tree); */
+                  hr += RRW_Density_Ldsk_Location(ldsk,rad[j],j,YES,tree);
+                  RRW_Generate_Ldsk_New_Location(ldsk,rad[j],j,YES,tree);
+                  hr -= RRW_Density_Ldsk_Location(ldsk,rad[j],j,YES,tree);
 
-                  int err;
-                  ldsk->coord->lonlat[j] = Rnorm_Trunc(ldsk->coord->lonlat[j],rad[j],tree->mmod->lim_do->lonlat[j],tree->mmod->lim_up->lonlat[j],&err);
-                  hr -= Log_Dnorm_Trunc(ldsk->coord->lonlat[j],ldsk->coord->cpy->lonlat[j],rad[j],tree->mmod->lim_do->lonlat[j],tree->mmod->lim_up->lonlat[j],&err);
-                  hr += Log_Dnorm_Trunc(ldsk->coord->cpy->lonlat[j],ldsk->coord->lonlat[j],rad[j],tree->mmod->lim_do->lonlat[j],tree->mmod->lim_up->lonlat[j],&err);
+                  /* PhyML_Printf("\n. %f %f %f %f", */
+                  /*              ldsk->coord->lonlat[j],rad[j],tree->mmod->lim_do->lonlat[j],tree->mmod->lim_up->lonlat[j]); */
+
+                  /* int err; */
+                  /* ldsk->coord->lonlat[j] = Rnorm_Trunc(ldsk->coord->lonlat[j],rad[j],tree->mmod->lim_do->lonlat[j],tree->mmod->lim_up->lonlat[j],&err); */
+                  /* hr -= Log_Dnorm_Trunc(ldsk->coord->lonlat[j],ldsk->coord->cpy->lonlat[j],rad[j],tree->mmod->lim_do->lonlat[j],tree->mmod->lim_up->lonlat[j],&err); */
+                  /* hr += Log_Dnorm_Trunc(ldsk->coord->cpy->lonlat[j],ldsk->coord->lonlat[j],rad[j],tree->mmod->lim_do->lonlat[j],tree->mmod->lim_up->lonlat[j],&err); */
                 }
             }
           
@@ -12756,8 +12766,6 @@ void MCMC_PHYREX_Wide_Exchange(t_tree *tree)
       
       assert(w != d);
 
-      /* if(a->prev == NULL) PhyML_Printf("\n. WIDE SELECT ROOT"); */
-
       if(w->disk->time < d->disk->time || v->disk->time < a->disk->time) continue;
 
       v->prev = a;
@@ -12765,7 +12773,7 @@ void MCMC_PHYREX_Wide_Exchange(t_tree *tree)
       w->prev = d;
       d->next[dv] = w;
       
-      /* PHYREX_Swap_Coords(a,d,tree); */
+      PHYREX_Swap_Coords(a,d,tree);
 
       if(w->disk->time > v->disk->time) PHYREX_Update_Lindisk_List_Range(w->disk,a->disk,tree);
       else PHYREX_Update_Lindisk_List_Range(v->disk,a->disk,tree);
@@ -12845,7 +12853,7 @@ void MCMC_PHYREX_Wide_Exchange(t_tree *tree)
           /* PHYREX_Restore_Geo_Coord(a->coord);           */
           /* PHYREX_Restore_Geo_Coord(d->coord);           */
           
-          /* PHYREX_Swap_Coords(a,d,tree); */
+          PHYREX_Swap_Coords(a,d,tree);
           
           if(w->disk->time > v->disk->time) PHYREX_Update_Lindisk_List_Range(w->disk,a->disk,tree);
           else PHYREX_Update_Lindisk_List_Range(v->disk,a->disk,tree);

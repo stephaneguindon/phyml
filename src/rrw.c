@@ -191,6 +191,9 @@ phydbl RRW_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
           disk_lnP += Log_Dnorm(ld,la,sd,&err);
           
           if(isinf(lnP) || isnan(lnP)) return(UNLIKELY);
+          
+          if(ld < tree->mmod->lim_do->lonlat[i] || ld > tree->mmod->lim_up->lonlat[i] ||
+             la < tree->mmod->lim_do->lonlat[i] || la > tree->mmod->lim_up->lonlat[i]) return(UNLIKELY);
 
           if(isnan(lnP))
             {

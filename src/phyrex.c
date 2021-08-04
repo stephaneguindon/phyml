@@ -983,7 +983,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       
       assert(!(move == tree->mcmc->n_moves));
 
-      /* /\* !!!!!!!!!!!!!!!!!!!!!!!!! *\/ */
+      /* !!!!!!!!!!!!!!!!!!!!!!!!! */
       /* tree->mmod->use_locations = NO; */
       
       /* phydbl prev_lnL = tree->c_lnL; */
@@ -3401,6 +3401,29 @@ void PHYREX_Print_Disk_Lk(t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
+void PHYREX_Print_Disk(t_tree *tree)
+{
+  t_dsk *disk;
+
+
+  disk = tree->n_root->ldsk->disk;
+
+  do
+    {
+      PhyML_Printf("\n. Disk: %s time: %12f %2d",
+                   disk->id,
+                   disk->time,
+                   disk->age_fixed ? 1 : 0);
+      
+      disk = disk->next;
+    }
+  while(disk);
+  
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
 t_ldsk *PHYREX_Find_Lca_Pair_Of_Ldsk(t_ldsk *n1, t_ldsk *n2, t_tree *tree)
 {
   t_ldsk **list1, **list2, *lca;
@@ -3720,7 +3743,6 @@ int PHYREX_Scale_All(phydbl scale, t_dsk *start_disk, t_tree *tree)
         }
     }
   while(sorted == NO);
-
   
   for(i=0;i<n_disk;++i)
     {

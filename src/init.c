@@ -853,12 +853,12 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
   /* Important to start from high subst. rate to ``reveal'' time structure */
   /* Low rate, and thus old root, makes serially sampled data look like */
   /* tips all have the same age. */
-  rates->clock_r          = 1.E-3;
+  rates->clock_r          = 1.E-1;
   rates->min_clock        = 1.E-8;
   rates->max_clock        = 1.E+2;
 
   rates->clock_r_has_prior  = NO;
-  rates->clock_r_prior_mean = 1.0E-3;
+  rates->clock_r_prior_mean = 1.0E-1;
   rates->clock_r_prior_var  = 1.0E-8;
   
   rates->max_rate         = 1.E+1;
