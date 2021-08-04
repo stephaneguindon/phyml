@@ -6694,7 +6694,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           /* PhyML_Fprintf(fp_stats,"%s\t","accPath"); */
           /* PhyML_Fprintf(fp_stats,"%s\t","accIndelDiskSerial"); */
           /* PhyML_Fprintf(fp_stats,"%s\t","accIndelHitSerial"); */
-          /* PhyML_Fprintf(fp_stats,"%s\t","accLdskGivenDisk"); */
+          PhyML_Fprintf(fp_stats,"%s\t","accLdskGivenDisk");
           /* PhyML_Fprintf(fp_stats,"%s\t","accDiskGivenLdsk"); */
           /* PhyML_Fprintf(fp_stats,"%s\t","accDiskAndLdsk"); */
           /* PhyML_Fprintf(fp_stats,"%s\t","accLdskMulti"); */
@@ -6717,6 +6717,8 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           /* PhyML_Fprintf(fp_stats,"%s\t","accAuxLdskGivenDisk"); */
 
           PhyML_Fprintf(fp_stats,"%s\t","tuneScale");
+          PhyML_Fprintf(fp_stats,"%s\t","tuneLdskGivenDisk");
+          PhyML_Fprintf(fp_stats,"%s\t","tuneLdskTipToRoot");
 
           for(int i=0;i<3;++i)
             {
@@ -6813,7 +6815,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       /* PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_traj]); */
       /* PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_indel_disk_serial]); */
       /* PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_indel_hit_serial]); */
-      /* PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_ldsk_given_disk]); */
+      PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_ldsk_given_disk]);
       /* PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_disk_given_ldsk]); */
       /* PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_ldsk_and_disk]); */
       /* PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_ldsk_multi]); */
@@ -6828,8 +6830,8 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
 
       
       PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_scale_times]);
-      /* PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_swap_disk]); */
-
+      PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_ldsk_given_disk]);
+      PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_ldsk_tip_to_root]);
 
       /* PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[0]->mcmc->acc_rate[tree->aux_tree[0]->mcmc->num_move_phyrex_move_disk_ud]); */
       /* PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[0]->mcmc->acc_rate[tree->aux_tree[0]->mcmc->num_move_root_time]); */

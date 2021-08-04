@@ -7454,12 +7454,14 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
 
   tree = Make_Tree_From_Scratch(n_otu,NULL);
 
+#if (defined PHYREX || PHYTIME)
   tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
   RATES_Init_Rate_Struct(tree->rates,NULL,tree->n_otu);
 
   tree->times = TIMES_Make_Time_Struct(tree->n_otu);
   TIMES_Init_Time_Struct(tree->times,NULL,tree->n_otu);
-
+#endif
+  
   for(i=0;i<2*tree->n_otu-2;++i)
     {
       tree->a_nodes[i]->v[1] = NULL;
@@ -7631,7 +7633,9 @@ t_tree *Generate_Random_Tree_From_Scratch(int n_otu, int rooted)
       Free_Node(root);
     }
   
+#if (defined PHYREX || PHYTIME)
   RATES_Random_Branch_Lengths(tree);
+#endif
   
   Free(available_nodes);
   Free(connected);

@@ -3638,6 +3638,8 @@ void Optimize_Lambda(t_tree *mixt_tree, int verbose)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYTIME)
+
 void Least_Square_Node_Ages(t_tree *tree)
 {
 
@@ -3700,7 +3702,12 @@ void Least_Square_Node_Ages(t_tree *tree)
               /*              tree->times->nd_t[n->v[dir1]->num], */
               /*              tree->times->nd_t[n->v[dir2]->num]); */
             }
+
+          
+#if (defined PHYREX || PHYRIME)
           if(RATES_Check_Node_Times(tree)) Exit("\n");
+#endif
+
         }
 
       sum_error += Generic_Brent(&(tree->rates->clock_r),
@@ -3718,6 +3725,7 @@ void Least_Square_Node_Ages(t_tree *tree)
   while(fabs(new_error-cur_error) > 1.E-10);
 
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

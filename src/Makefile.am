@@ -297,11 +297,6 @@ cl.c  cl.h\
 spr.c spr.h\
 draw.c  draw.h\
 stats.c stats.h\
-rates.c rates.h\
-mcmc.c mcmc.h\
-times.c times.h\
-tiporder.c tiporder.h\
-mg.c mg.h\
 io.c io.h\
 make.c make.h\
 nexus.c nexus.h\
@@ -309,7 +304,6 @@ init.c init.h\
 xml.c xml.h\
 mixt.c mixt.h\
 tbe.c tbe.h \
-date.c date.h\
 sse.c sse.h\
 avx.c avx.h\
 ancestral.c ancestral.h\
@@ -680,21 +674,15 @@ cl.c  cl.h\
 spr.c spr.h\
 draw.c  draw.h\
 stats.c stats.h\
-rates.c rates.h\
-mcmc.c mcmc.h\
-times.c times.h\
-tiporder.c tiporder.h\
 io.c io.h\
 make.c make.h\
 nexus.c nexus.h\
 init.c init.h\
 xml.c xml.h\
-date.c date.h\
 sse.c sse.h\
 avx.c avx.h\
 tbe.c tbe.h \
 ancestral.c ancestral.h \
-location.c location.h \
 mixt.c mixt.h
 phyml_LDADD = -lm
 endif
