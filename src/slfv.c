@@ -1515,8 +1515,24 @@ phydbl SLFV_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_mergers,
           new_disk->time = new_time;
           
           /* Coordinates of new event */
-          for(j=0;j<mmod->n_dim;++j) new_disk->centr->lonlat[j] = Uni()*(mmod->lim_up->lonlat[j]-mmod->lim_do->lonlat[j])+mmod->lim_do->lonlat[j];
-
+          for(j=0;j<mmod->n_dim;++j)
+            {
+              switch(mmod->model_id)
+                {
+                case SLFV_UNIFORM : case SLFV_GAUSSIAN : 
+                  { 
+                    new_disk->centr->lonlat[j] = Uni()*(mmod->lim_up->lonlat[j]-mmod->lim_do->lonlat[j])+mmod->lim_do->lonlat[j];
+                    break; 
+                  }
+                case RW : case RRW_GAMMA : case RRW_LOGNORMAL :  
+                  { 
+                    new_disk->centr->lonlat[j] = disk->ldsk_a[Rand_Int(0,disk->n_ldsk_a-1)]->coord->lonlat[j];
+                    break; 
+                  }
+                default : break;
+                }
+            }
+          
           for(j=0;j<mmod->n_dim;++j) lnL += log(1./(mmod->lim_up->lonlat[j]-mmod->lim_do->lonlat[j]));
           
           /* Populate new_disk->ldsk_a array */
@@ -1534,7 +1550,7 @@ phydbl SLFV_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_mergers,
                     prob_hit = mmod->mu; 
                     break; 
                   }
-                case SLFV_GAUSSIAN : case RW : case RRW_GAMMA : case RRW_LOGNORMAL :  
+                case SLFV_GAUSSIAN :   
                   { 
                     prob_hit = log(mmod->mu);
                     for(j=0;j<mmod->n_dim;++j)
@@ -1543,9 +1559,13 @@ phydbl SLFV_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_mergers,
                           -pow(new_disk->ldsk_a[i]->coord->lonlat[j] -
                                new_disk->centr->lonlat[j],2)/(2.*pow(mmod->rad,2));
                       }
-                    prob_hit = exp(prob_hit);                    
+                    prob_hit = exp(prob_hit);
                     break; 
                   }
+                  case RW : case RRW_GAMMA : case RRW_LOGNORMAL :
+                    {
+                      prob_hit = 1./(new_disk->n_ldsk_a+1.);
+                    }
                 }
 
               

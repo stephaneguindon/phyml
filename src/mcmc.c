@@ -6316,10 +6316,10 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_weight[mcmc->num_move_phyrex_indel_hit]             = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_move_disk_ud]          = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_swap_disk]             = 0.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_spr]                   = 4.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_spr_slide]             = 4.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_narrow_exchange]       = 4.0;
-  mcmc->move_weight[mcmc->num_move_phyrex_wide_exchange]         = 4.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_spr]                   = 1.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_spr_slide]             = 2.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_narrow_exchange]       = 2.0;
+  mcmc->move_weight[mcmc->num_move_phyrex_wide_exchange]         = 1.0;
   mcmc->move_weight[mcmc->num_move_phyrex_scale_times]           = 2.0;
   mcmc->move_weight[mcmc->num_move_phyrex_ldscape_lim]           = 0.0;
   mcmc->move_weight[mcmc->num_move_phyrex_sim]                   = 0.0;
@@ -7215,7 +7215,7 @@ void MCMC_PHYREX_Neff(t_tree *tree)
       phydbl K;
       
       ratio = 0.0;
-      
+
       K = 0.1;
       
       cur_tlnL = tree->times->c_lnL;
@@ -7418,7 +7418,7 @@ void MCMC_PHYREX_Exp_Growth(t_tree *tree)
       phydbl K;
       
       ratio = 0.0;
-      
+
       K = 0.01;
       
       cur_tlnL = tree->times->c_lnL;
@@ -8459,10 +8459,10 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree)
   
   assert(t_max > t_min);
   
-  /* new_t = Uni()*(t_max - t_min) + t_min; */
-  new_t = Rnorm_Trunc(cur_t,(t_max - t_min)/50.,t_min,t_max,&err);
-  hr -= Log_Dnorm_Trunc(new_t,cur_t,(t_max - t_min)/50.,t_min,t_max,&err);
-  hr += Log_Dnorm_Trunc(cur_t,new_t,(t_max - t_min)/50.,t_min,t_max,&err);
+  new_t = Uni()*(t_max - t_min) + t_min;
+  /* new_t = Rnorm_Trunc(cur_t,(t_max - t_min)/50.,t_min,t_max,&err); */
+  /* hr -= Log_Dnorm_Trunc(new_t,cur_t,(t_max - t_min)/50.,t_min,t_max,&err); */
+  /* hr += Log_Dnorm_Trunc(cur_t,new_t,(t_max - t_min)/50.,t_min,t_max,&err); */
   /* new_t = Rnorm_Trunc(cur_t,(t_max - t_min)/100.,t_min,t_max,&err); */
   /* hr -= Log_Dnorm_Trunc(new_t,cur_t,(t_max - t_min)/100.,t_min,t_max,&err); */
   /* hr += Log_Dnorm_Trunc(cur_t,new_t,(t_max - t_min)/100.,t_min,t_max,&err); */

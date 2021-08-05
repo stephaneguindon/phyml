@@ -960,8 +960,10 @@ phydbl Log_Dnorm(phydbl x, phydbl mean, phydbl sd, int *err)
   
   x = (x-mean)/sd;
   
-  dens = -LOG_SQRT_2PI - x*x*0.5 - log(sd);
-
+  dens = -LOG_SQRT_2PI;
+  dens -= pow(x,2)*.5;
+  dens -= log(sd);
+  
   if(dens < -BIG)
     {
       PhyML_Printf("\n. dens=%f -- x=%f mean=%f sd=%f\n",dens,x,mean,sd);

@@ -551,13 +551,12 @@ void PHYREX_XML(char *xml_filename)
   /* Initialize parameters of migrep model */
   mixt_tree->mmod->lbda = 10.0;
   mixt_tree->mmod->mu   = 1.0;
-
+  
   if(mixt_tree->mmod->model_id == SLFV_GAUSSIAN || mixt_tree->mmod->model_id == SLFV_UNIFORM)
     mixt_tree->mmod->rad  = 0.05*((mixt_tree->mmod->lim_up->lonlat[0]-mixt_tree->mmod->lim_do->lonlat[0])+
                                   (mixt_tree->mmod->lim_up->lonlat[1]-mixt_tree->mmod->lim_do->lonlat[1]));
   else if(RRW_Is_Rw(mixt_tree->mmod) == YES)
-    mixt_tree->mmod->rad  = 1.0*((mixt_tree->mmod->lim_up->lonlat[0]-mixt_tree->mmod->lim_do->lonlat[0])+
-                                 (mixt_tree->mmod->lim_up->lonlat[1]-mixt_tree->mmod->lim_do->lonlat[1]));
+    mixt_tree->mmod->rad = mixt_tree->mmod->sigsq[0];
   
   mixt_tree->mmod->sigsq[0] = PHYREX_Update_Sigsq(mixt_tree);
   for(int i=1;i<mixt_tree->mmod->n_dim;++i) mixt_tree->mmod->sigsq[i] = mixt_tree->mmod->sigsq[0];
@@ -566,9 +565,9 @@ void PHYREX_XML(char *xml_filename)
     {
       if(mixt_tree->aux_tree && mixt_tree->aux_tree[i])
         {
-          mixt_tree->aux_tree[i]->mmod->lbda  = mixt_tree->mmod->lbda;
-          mixt_tree->aux_tree[i]->mmod->mu    = mixt_tree->mmod->mu;
-          mixt_tree->aux_tree[i]->mmod->rad   = mixt_tree->mmod->rad;
+          mixt_tree->aux_tree[i]->mmod->lbda     = mixt_tree->mmod->lbda;
+          mixt_tree->aux_tree[i]->mmod->mu       = mixt_tree->mmod->mu;
+          mixt_tree->aux_tree[i]->mmod->rad      = mixt_tree->mmod->rad;
           mixt_tree->aux_tree[i]->mmod->sigsq[0] = mixt_tree->mmod->sigsq[0];
           for(int j=1;j<mixt_tree->mmod->n_dim;++j) mixt_tree->aux_tree[i]->mmod->sigsq[j] = mixt_tree->mmod->sigsq[0];
         }
@@ -1055,7 +1054,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
               PhyML_Fprintf(stdout,"\n. a_lnL: %f -> %f [%g]",c_lnL,tree->c_lnL,c_lnL-tree->c_lnL);
               failed = YES;
             }
-
+          
           phydbl g_lnL = tree->mmod->c_lnL;
           LOCATION_Lk(tree);
 
