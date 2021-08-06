@@ -1312,7 +1312,7 @@ void MCMC_Root_Time(t_tree *tree)
   phydbl r1_new,r2_new;
   phydbl t2,t1;
   t_node *v2,*v1;
-  phydbl K;
+  phydbl tune,K;
   int move_num,err,iter,n_tot_iter;
   t_node *root;
 
@@ -1324,6 +1324,8 @@ void MCMC_Root_Time(t_tree *tree)
 
   move_num  = tree->mcmc->num_move_root_time;
 
+  tune = tree->mcmc->tune_move[tree->mcmc->num_move_root_time];
+  
   r1_cur = -1.;
   r2_cur = -1.;
 
@@ -1381,10 +1383,10 @@ void MCMC_Root_Time(t_tree *tree)
       t0_cur = tree->times->nd_t[root->num];
 
       assert(tree->young_disk);
-      K = (tree->young_disk->time - t0_cur) / 20.;
+      K = (tree->young_disk->time - t0_cur) * tune;
       t0_new = Rnorm_Trunc(t0_cur,K,-TWO_TO_THE_LARGE,t_max,&err);
       hr -= Log_Dnorm_Trunc(t0_new,t0_cur,K,-TWO_TO_THE_LARGE,t_max,&err);
-      K = (tree->young_disk->time - t0_new) / 20.;
+      K = (tree->young_disk->time - t0_new) * tune;
       hr += Log_Dnorm_Trunc(t0_cur,t0_new,K,-TWO_TO_THE_LARGE,t_max,&err);
 
       
@@ -3496,7 +3498,6 @@ void MCMC_Get_Acc_Rates(t_mcmc *mcmc)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void MCMC_Adjust_Tuning_Parameter(int move, t_mcmc *mcmc)
 {
@@ -6260,7 +6261,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
 
   for(i=0;i<mcmc->n_moves;i++) mcmc->tune_move[i] = 1.;
   mcmc->tune_move[mcmc->num_move_time_exp_growth] = 0.01;
-  mcmc->tune_move[mcmc->num_move_root_time] = 1.0;
+  mcmc->tune_move[mcmc->num_move_root_time] = 0.1;
  
   mcmc->move_weight[mcmc->num_move_br_r]                  = 4.0; 
   mcmc->move_weight[mcmc->num_move_nd_r]                  = 0.0;
@@ -8365,6 +8366,8 @@ void MCMC_PHYREX_Node_Times(t_tree *tree)
       Set_Both_Sides(YES,tree);
       Lk(NULL,tree);
     }
+
+  MCMC_Root_Time(tree);
   
   assert(tree->n_root->ldsk->n_next == 2);
   MCMC_PHYREX_Node_Times_Pre(tree->n_root->ldsk,tree->n_root->ldsk->next[0],tree);
@@ -12440,7 +12443,7 @@ void MCMC_PHYREX_Exchange_Core(t_tree *aux_tree)
         {
           phydbl g_lnL = aux_tree->mmod->c_lnL;
           LOCATION_Lk(aux_tree);
-          if(Are_Equal(g_lnL,aux_tree->mmod->c_lnL,1.E-3) == NO)
+          if(Are_Equal(g_lnL,aux_tree->mmod->c_lnL,1.E-1) == NO)
             {
               PhyML_Fprintf(stdout,"\n. Problem detected with move %s. Iteration %d",aux_tree->mcmc->move_name[move],aux_tree->mcmc->run);
               PhyML_Fprintf(stdout,"\n. g_lnL: %f -> %f [%g]",g_lnL,aux_tree->mmod->c_lnL,g_lnL-aux_tree->mmod->c_lnL);
@@ -12450,7 +12453,7 @@ void MCMC_PHYREX_Exchange_Core(t_tree *aux_tree)
           
           phydbl t_lnL = aux_tree->times->c_lnL;
           TIMES_Lk(aux_tree);
-          if(Are_Equal(t_lnL,aux_tree->times->c_lnL,1.E-3) == NO)
+          if(Are_Equal(t_lnL,aux_tree->times->c_lnL,1.E-1) == NO)
             {
               PhyML_Fprintf(stdout,"\n. Problem detected with move %s. Iteration %d",aux_tree->mcmc->move_name[move],aux_tree->mcmc->run);
               PhyML_Fprintf(stdout,"\n. t_lnL: %f -> %f [%g]",g_lnL,aux_tree->times->c_lnL,g_lnL-aux_tree->times->c_lnL);

@@ -39,7 +39,7 @@ phydbl RW_Prior_Sigsq(t_tree *tree)
 
   lnP = 0.0;
   lbda = 1.0 / tree->mmod->disp_prior_mean;
-  for(int i=0;i<tree->mmod->n_dim;++i) lnP += log(lbda)-lbda*(tree->mmod->sigsq[i]);
+  for(int i=0;i<tree->mmod->n_dim;++i) lnP += log(lbda)-lbda*tree->mmod->sigsq[i];
   return(lnP);
 }
 
