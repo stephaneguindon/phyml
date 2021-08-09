@@ -6783,7 +6783,7 @@ void MCMC_PHYREX_Sigsq(t_tree *tree)
                   return;
                 }
               
-              MCMC_PHYREX_Exchange_Core(aux_tree);
+              MCMC_PHYREX_Exchange_Core(aux_tree,tree);
 
               aux_tree->mmod->sigsq[dim_idx] = cur_sigsq;
               cur_glnL_aux = LOCATION_Lk(aux_tree);
@@ -7015,7 +7015,7 @@ void MCMC_PHYREX_Sigsq_Scale(t_tree *tree)
               return;
             }
 
-          MCMC_PHYREX_Exchange_Core(aux_tree);
+          MCMC_PHYREX_Exchange_Core(aux_tree,tree);
           
           for(i=0;i<2*aux_tree->n_otu-1;++i) aux_tree->mmod->sigsq_scale[i] = sigsq_scale_bkp[i];
           cur_glnL_aux = LOCATION_Lk(aux_tree);
@@ -7153,7 +7153,7 @@ void MCMC_PHYREX_Neff(t_tree *tree)
                   return;
                 }
 
-              MCMC_PHYREX_Exchange_Core(aux_tree);
+              MCMC_PHYREX_Exchange_Core(aux_tree,tree);
               
               aux_tree->times->scaled_pop_size = cur_neff;
               cur_lnL_aux = TIMES_Lk(aux_tree);
@@ -7175,7 +7175,8 @@ void MCMC_PHYREX_Neff(t_tree *tree)
       ratio = exp(ratio);
       alpha = MIN(1.,ratio);
       
-      /* PhyML_Printf("\n. NEFF lnL: %f->%f lnP: %f->%f aux: %f->%f T: %f hr: %f alpha: %f", */
+      /* PhyML_Printf("\n. Ne %15f->%15f lnL: %12.2f->%12.2f lnP: %12.2f->%12.2f aux: %12.2f->%12.2f T: %12f hr: %12f alpha: %12f", */
+      /*              cur_neff,new_neff, */
       /*              cur_lnL,new_lnL, */
       /*              new_lnP,cur_lnP, */
       /*              new_lnL_aux,cur_lnL_aux, */
@@ -7360,7 +7361,7 @@ void MCMC_PHYREX_Exp_Growth(t_tree *tree)
                   return;
                 }
 
-              MCMC_PHYREX_Exchange_Core(aux_tree);
+              MCMC_PHYREX_Exchange_Core(aux_tree,tree);
               
               aux_tree->times->exp_growth = cur_growth;
               cur_lnL_aux = TIMES_Lk(aux_tree);
@@ -8054,6 +8055,8 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree, short int print)
   
   Set_Lk(tree);
   
+  PHYREX_Record_Disk_Times(tree);
+  
   cur_alnL   = tree->c_lnL;
   new_alnL   = UNLIKELY;
 
@@ -8096,7 +8099,7 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree, short int print)
       
       PHYREX_Update_Lindisk_List(tree);
       PHYREX_Update_Node_Times_Given_Disks(tree);
-      RATES_Update_Edge_Lengths(tree);
+      if(tree->eval_alnL == YES) RATES_Update_Edge_Lengths(tree);
       
       if(tree->eval_glnL == YES)
         {          
@@ -8123,32 +8126,33 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree, short int print)
 
   u = Uni();
 
-  /* if(print == YES) */
-  /* { */
-  /* PhyML_Printf("\n. [%6d] Scale times glnL: %10g->%10g[%2d] alnL: %10g->%10g[%2d] rlnL: %10g->%10g[%2d] tlnL: %10g->%10g[%2d] ratio: %10g scale: %10g neff=%10g T=%10g->%10g clock: %10g check: %2d", */
-  /*              tree->mcmc->run, */
-  /*              cur_glnL,new_glnL,tree->eval_glnL, */
-  /*              cur_alnL,new_alnL,tree->eval_alnL, */
-  /*              cur_rlnL,new_rlnL,tree->eval_rlnL, */
-  /*              cur_tlnL,new_tlnL,tree->eval_glnL, */
-  /*              ratio,scale_fact_times, */
-  /*              tree->times->scaled_pop_size, */
-  /*              tree->n_root->ldsk->disk->time_bkp, */
-  /*              tree->n_root->ldsk->disk->time, */
-  /*              tree->rates->clock_r, */
-  /*              PHYREX_Check_Struct(tree,NO)); */
-    /* } */
+  if(print == YES)
+    {
+      PhyML_Printf("\n. [%6d] Scale times glnL: %10g->%10g[%2d] alnL: %10g->%10g[%2d] rlnL: %10g->%10g[%2d] tlnL: %10g->%10g[%2d] ratio: %10g scale: %10g neff=%10g T=%10g->%10g clock: %10g check: %2d",
+                   tree->mcmc->run,
+                   cur_glnL,new_glnL,tree->eval_glnL,
+                   cur_alnL,new_alnL,tree->eval_alnL,
+                   cur_rlnL,new_rlnL,tree->eval_rlnL,
+                   cur_tlnL,new_tlnL,tree->eval_glnL,
+                   ratio,scale_fact_times,
+                   tree->times->scaled_pop_size,
+                   tree->n_root->ldsk->disk->time_bkp,
+                   tree->n_root->ldsk->disk->time,
+                   tree->rates->clock_r,
+                   PHYREX_Check_Struct(tree,NO));
+    }
   
   
   assert(isnan(u) == NO && isinf(fabs(u)) == NO);
   
   if(u > alpha) /* Reject */
     {
-      PHYREX_Scale_All(1./scale_fact_times,ref_disk,tree);
+      PHYREX_Restore_Disk_Times(tree);
       if(tree->eval_alnL == YES && tree->mod->s_opt->opt_clock_r == YES) tree->rates->clock_r *= scale_fact_times;
       PHYREX_Update_Lindisk_List(tree);
       PHYREX_Update_Node_Times_Given_Disks(tree);
       if(tree->eval_alnL == YES) RATES_Update_Edge_Lengths(tree);
+      PHYREX_Check_Disk_Times(tree);
       Reset_Lk(tree);
     }
   else
@@ -8160,8 +8164,6 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree, short int print)
   PHYREX_Print_MCMC_Stats(tree);
   PHYREX_Print_MCMC_Tree(tree);
   PHYREX_Print_MCMC_Summary(tree);
-
-
 }
 #endif
 
@@ -8483,7 +8485,7 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree)
       r1_new = r1_cur * (t1 - t0_cur) / (t1 - t0_new);
       r2_new = r2_cur * (t2 - t0_cur) / (t2 - t0_new);
       
-      if(tree->eval_alnL == YES) hr += log(r0_new/r0_cur) + log(r1_new/r1_cur) + log(r2_new/r2_cur);
+      if(tree->eval_alnL == YES && tree->eval_rlnL == YES) hr += log(r0_new/r0_cur) + log(r1_new/r1_cur) + log(r2_new/r2_cur);
       
       tree->rates->br_r[v0->num] = r0_new;
       tree->rates->br_r[v1->num] = r1_new;
@@ -8498,7 +8500,9 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree)
     }
 
   
-  if(tree->eval_alnL == YES && tree->rates->model_id == STRICTCLOCK)
+  if(tree->eval_alnL == YES &&
+     tree->eval_rlnL == YES &&
+     tree->rates->model_id == STRICTCLOCK)
     {
       t_edge *bp,*bc;
       bp = Get_Edge(d_ldsk->nd->anc,d_ldsk->nd,tree);
@@ -8561,7 +8565,9 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree)
           tree->rates->br_r[v2->num] = r2_cur;
         }
       
-      if(tree->eval_alnL == YES && tree->rates->model_id == STRICTCLOCK)
+      if(tree->eval_alnL == YES &&
+         tree->eval_rlnL == YES &&
+         tree->rates->model_id == STRICTCLOCK)
         {
           t_edge *bp,*bc;
           bp = Get_Edge(d_ldsk->nd->anc,d_ldsk->nd,tree);
@@ -12371,23 +12377,24 @@ void MCMC_PHYREX_Ldsk_Tips(t_tree *tree)
 ////////////////////////////////////////////////////////////*/
 
 #ifdef PHYREX
-void MCMC_PHYREX_Exchange_Core(t_tree *aux_tree)
+void MCMC_PHYREX_Exchange_Core(t_tree *aux_tree, t_tree *tree)
 {
   phydbl u,sum;
-  int move,n_mcmc_steps,run;
+  int move,n_mcmc_steps,run,failed;
+  int aux_lnL_mmod_ok_run,aux_lnL_times_ok_run;
   
   for(move=0;move<aux_tree->mcmc->n_moves;move++) aux_tree->mcmc->move_weight[move] = 0.0;
   for(move=0;move<aux_tree->mcmc->n_moves;move++)
     {
-      if(!strcmp(aux_tree->mcmc->move_name[move],"phyrex_scale_times")) aux_tree->mcmc->move_weight[move] = 1.0;
-      if(!strcmp(aux_tree->mcmc->move_name[move],"phyrex_node_times")) aux_tree->mcmc->move_weight[move] = 1.0;
-      if(!strcmp(aux_tree->mcmc->move_name[move],"root_time")) aux_tree->mcmc->move_weight[move] = 1.0;
-      if(!strcmp(aux_tree->mcmc->move_name[move],"phyrex_spr")) aux_tree->mcmc->move_weight[move] = 1.0;
-      if(!strcmp(aux_tree->mcmc->move_name[move],"phyrex_spr_slide")) aux_tree->mcmc->move_weight[move] = 1.0;
-      if(!strcmp(aux_tree->mcmc->move_name[move],"phyrex_narrow_exchange")) aux_tree->mcmc->move_weight[move] = 1.0;
-      if(!strcmp(aux_tree->mcmc->move_name[move],"phyrex_wide_exchange")) aux_tree->mcmc->move_weight[move] = 1.0;
-      if(!strcmp(aux_tree->mcmc->move_name[move],"phyrex_ldsk_tip_to_root")) aux_tree->mcmc->move_weight[move] = 2.0;
-      if(!strcmp(aux_tree->mcmc->move_name[move],"phyrex_ldsk_given_disk")) aux_tree->mcmc->move_weight[move] = 2.0;
+      if(!strcmp(aux_tree->mcmc->move_name[move],"phyrex_scale_times")) aux_tree->mcmc->move_weight[move] = tree->mcmc->move_weight[move];
+      if(!strcmp(aux_tree->mcmc->move_name[move],"phyrex_node_times")) aux_tree->mcmc->move_weight[move] = tree->mcmc->move_weight[move];
+      if(!strcmp(aux_tree->mcmc->move_name[move],"root_time")) aux_tree->mcmc->move_weight[move] = tree->mcmc->move_weight[move];
+      if(!strcmp(aux_tree->mcmc->move_name[move],"phyrex_spr")) aux_tree->mcmc->move_weight[move] = tree->mcmc->move_weight[move];
+      if(!strcmp(aux_tree->mcmc->move_name[move],"phyrex_spr_slide")) aux_tree->mcmc->move_weight[move] = tree->mcmc->move_weight[move];
+      if(!strcmp(aux_tree->mcmc->move_name[move],"phyrex_narrow_exchange")) aux_tree->mcmc->move_weight[move] = tree->mcmc->move_weight[move];
+      if(!strcmp(aux_tree->mcmc->move_name[move],"phyrex_wide_exchange")) aux_tree->mcmc->move_weight[move] = tree->mcmc->move_weight[move];
+      if(!strcmp(aux_tree->mcmc->move_name[move],"phyrex_ldsk_tip_to_root")) aux_tree->mcmc->move_weight[move] = tree->mcmc->move_weight[move];
+      if(!strcmp(aux_tree->mcmc->move_name[move],"phyrex_ldsk_given_disk")) aux_tree->mcmc->move_weight[move] = tree->mcmc->move_weight[move];
     }
   
   sum = 0.0;
@@ -12409,6 +12416,9 @@ void MCMC_PHYREX_Exchange_Core(t_tree *aux_tree)
   TIMES_Lk(aux_tree);
 
   if(aux_tree->times->c_lnL < UNLIKELY || aux_tree->mmod->c_lnL < UNLIKELY) return;
+
+  aux_lnL_mmod_ok_run = -1;
+  aux_lnL_times_ok_run = -1;
   
   /* MH-within-MH step */
   do
@@ -12426,6 +12436,9 @@ void MCMC_PHYREX_Exchange_Core(t_tree *aux_tree)
       if(!strcmp(aux_tree->mcmc->move_name[move],"phyrex_ldsk_tip_to_root")) MCMC_PHYREX_Ldsk_Tip_To_Root(aux_tree);
       if(!strcmp(aux_tree->mcmc->move_name[move],"phyrex_ldsk_given_disk")) MCMC_PHYREX_Ldsk_Given_Disk(aux_tree);
 
+      if(aux_tree->mmod->c_lnL > tree->mmod->c_lnL && aux_lnL_mmod_ok_run < 0) aux_lnL_mmod_ok_run = aux_tree->mcmc->run-run;
+      if(aux_tree->times->c_lnL > tree->times->c_lnL && aux_lnL_times_ok_run < 0) aux_lnL_times_ok_run = aux_tree->mcmc->run-run;
+
       if(!(aux_tree->mmod->c_lnL > UNLIKELY))
         {
           PhyML_Fprintf(stdout,"\n. move: %s",aux_tree->mcmc->move_name[move]);
@@ -12438,32 +12451,48 @@ void MCMC_PHYREX_Exchange_Core(t_tree *aux_tree)
       /*              aux_tree->mmod->c_lnL, */
       /*              aux_tree->times->c_lnL); */
     
+      failed = NO;
       
       if(aux_tree->mmod->safe_phyrex == YES)
         {
           phydbl g_lnL = aux_tree->mmod->c_lnL;
           LOCATION_Lk(aux_tree);
-          if(Are_Equal(g_lnL,aux_tree->mmod->c_lnL,1.E-1) == NO)
+          if(Are_Equal(g_lnL,aux_tree->mmod->c_lnL,1.E-8) == NO)
             {
-              PhyML_Fprintf(stdout,"\n. Problem detected with move %s. Iteration %d",aux_tree->mcmc->move_name[move],aux_tree->mcmc->run);
               PhyML_Fprintf(stdout,"\n. g_lnL: %f -> %f [%g]",g_lnL,aux_tree->mmod->c_lnL,g_lnL-aux_tree->mmod->c_lnL);
               PhyML_Fprintf(stdout,"\n. tune scale: %f",aux_tree->mcmc->tune_move[aux_tree->mcmc->num_move_phyrex_scale_times]);
-              Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+              failed = YES;
             }
           
           phydbl t_lnL = aux_tree->times->c_lnL;
           TIMES_Lk(aux_tree);
-          if(Are_Equal(t_lnL,aux_tree->times->c_lnL,1.E-1) == NO)
+          if(Are_Equal(t_lnL,aux_tree->times->c_lnL,1.E-8) == NO)
             {
-              PhyML_Fprintf(stdout,"\n. Problem detected with move %s. Iteration %d",aux_tree->mcmc->move_name[move],aux_tree->mcmc->run);
               PhyML_Fprintf(stdout,"\n. t_lnL: %f -> %f [%g]",g_lnL,aux_tree->times->c_lnL,g_lnL-aux_tree->times->c_lnL);
+              failed = YES;
+            }
+          if(failed == YES)
+            {
+              PhyML_Fprintf(stdout,"\n. Problem detected with move %s [%s]. Iteration %d",aux_tree->mcmc->move_name[move],tree->mcmc->move_name[tree->mcmc->move_idx],aux_tree->mcmc->run);
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
             }
         }
       
       MCMC_Get_Acc_Rates(aux_tree->mcmc);
     }
+  /* while(aux_tree->mcmc->run-run < n_mcmc_steps || */
+  /*       aux_lnL_times_ok < 0 || */
+  /*       aux_lnL_mmod_ok < 0); */
   while(aux_tree->mcmc->run-run < n_mcmc_steps);
+
+  /* PhyML_Printf("\n. run: %6d/%6d [%6d;%6d] %20s [%15f,%15f]", */
+  /*              aux_tree->mcmc->run-run, */
+  /*              n_mcmc_steps, */
+  /*              aux_lnL_mmod_ok_run, */
+  /*              aux_lnL_times_ok_run, */
+  /*              tree->mcmc->move_name[tree->mcmc->move_idx], */
+  /*              aux_tree->mcmc->tune_move[aux_tree->mcmc->num_move_phyrex_ldsk_tip_to_root], */
+  /*              aux_tree->mcmc->tune_move[aux_tree->mcmc->num_move_phyrex_ldsk_given_disk]); */
 }
 #endif
 

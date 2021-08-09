@@ -982,6 +982,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       
       assert(!(move == tree->mcmc->n_moves));
 
+          
       /* !!!!!!!!!!!!!!!!!!!!!!!!! */
       /* tree->mmod->use_locations = NO; */
       
@@ -1142,10 +1143,11 @@ void PHYREX_Remove_Disk(t_dsk *disk)
   prev = disk->prev;
   next = disk->next;
 
-  assert(next != NULL);
-  
   if(prev != NULL) prev->next = next;
-  next->prev = prev;
+  if(next != NULL) next->prev = prev;
+
+  disk->next = NULL;
+  disk->prev = NULL;
 }
 
 /*////////////////////////////////////////////////////////////
@@ -1160,8 +1162,11 @@ void PHYREX_Insert_Disk(t_dsk *ins, t_tree *tree)
   assert(ins != NULL);
   
   disk = tree->young_disk;
-  while(disk->prev != NULL && disk->prev->time > ins->time) disk = disk->prev;
-  
+  while(disk->prev != NULL && disk->prev->time > ins->time)
+    {
+      /* PhyML_Printf("\n disk->prev->time: %f ins->time: %f",disk->prev->time,ins->time); */
+      disk = disk->prev;
+    }
   PHYREX_Insert_Disk_At(ins,disk);
 }
 
@@ -1856,12 +1861,15 @@ int PHYREX_Check_Struct(t_tree *tree, int exit)
             {
               if(disk->ldsk->next[i]->disk->time < disk->time)
                 {
-                  /* PhyML_Printf("\n. disk->time: %f [%f] disk->ldsk->next[i]->disk->time: %f [%f]", */
-                  /*              disk->time, */
-                  /*              disk->ldsk->base_line, */
-                  /*              disk->ldsk->next[i]->disk->time, */
-                  /*              disk->ldsk->next[i]->disk->ldsk->base_line); */
-                  if(exit == YES) assert(FALSE);
+                  if(exit == YES)
+                    {
+                      PhyML_Printf("\n. disk->time: %f [%f] disk->ldsk->next[i]->disk->time: %f [%f]",
+                                   disk->time,
+                                   disk->ldsk->base_line,
+                                   disk->ldsk->next[i]->disk->time,
+                                   disk->ldsk->next[i]->disk->ldsk->base_line);
+                      assert(FALSE);
+                    }
                   return(0);
                 }
             }
@@ -3687,70 +3695,71 @@ phydbl PHYREX_Get_Baseline_Times(t_ldsk *ldsk, t_tree *tree)
 int PHYREX_Scale_All(phydbl scale, t_dsk *start_disk, t_tree *tree)
 {
   t_dsk *disk;
-  t_dsk **sorted_disk;
-  int n_disk,n_disks_scaled,n_nodes_scaled,n_hits_scaled,sorted,i;
+  int n_disk,n_disks_scaled,n_nodes_scaled,n_hits_scaled,i,n_samp_disks;
+  t_dsk **samp_disks_a;
+  
   
   n_disk            = 0;
   n_disks_scaled    = 0;
   n_nodes_scaled    = 0;
   n_hits_scaled     = 0;
+  n_samp_disks      = 0;
+  samp_disks_a      = NULL;
   
   disk = start_disk->prev;
   assert(disk);
-  
+
   disk = start_disk->prev;
   do
-    {      
+    {
       if(disk->age_fixed == NO)
         {
-          disk->time = disk->time * scale + start_disk->time * (1.-scale);
           n_disks_scaled++;
           if(disk->ldsk && disk->ldsk->n_next > 1) n_nodes_scaled++;
           if(disk->ldsk && disk->ldsk->n_next == 1) n_hits_scaled++;
         }
-      
-      n_disk++;
-      disk = disk->prev;
-    }
-  while(disk);
-
-  
-  sorted_disk = (t_dsk **)mCalloc(n_disk,sizeof(t_dsk *));
-  disk = start_disk->prev;
-  n_disk = 0;
-  do
-    {
-      sorted_disk[n_disk] = disk;
-      n_disk++;
-      disk = disk->prev;
-    }
-  while(disk);
-  
-
-  do
-    {
-      sorted = YES;
-      for(i=0;i<n_disk-1;++i)
+      else
         {
-          if(sorted_disk[i]->time < sorted_disk[i+1]->time)
-            {
-              sorted = NO;
-              disk             = sorted_disk[i];
-              sorted_disk[i]   = sorted_disk[i+1];
-              sorted_disk[i+1] = disk;
-            }
+          n_samp_disks++;
         }
+      n_disk++;
+      disk = disk->prev;
     }
-  while(sorted == NO);
-  
-  for(i=0;i<n_disk;++i)
+  while(disk);
+
+
+  samp_disks_a = (t_dsk **)mCalloc(n_samp_disks,sizeof(t_dsk *));
+
+  i = 0;
+  disk = start_disk->prev;
+  do
     {
-      PHYREX_Remove_Disk(sorted_disk[i]);
-      PHYREX_Insert_Disk(sorted_disk[i],tree);
+      if(disk->age_fixed == YES)
+        {
+          samp_disks_a[i] = disk;
+          i++;
+        }
+      disk = disk->prev;
     }
+  while(disk);
 
-  Free(sorted_disk);
+  disk = start_disk->prev;
+  do
+    {
+      if(disk->age_fixed == NO)
+        {
+          disk->time = disk->time * scale + start_disk->time * (1.-scale);
+        }
+      disk = disk->prev;
+    }
+  while(disk);
 
+  for(i=0;i<n_samp_disks;++i) PHYREX_Remove_Disk(samp_disks_a[i]);
+
+  for(i=0;i<n_samp_disks;++i) PHYREX_Insert_Disk(samp_disks_a[i],tree);
+  
+  Free(samp_disks_a);
+  
   if(tree->mmod->model_id == SLFV_GAUSSIAN || tree->mmod->model_id == SLFV_UNIFORM) return(n_disks_scaled);
   else
     {
@@ -4321,9 +4330,12 @@ void PHYREX_Remove_All_Disks_Except_Coal_And_Tips(t_tree *tree)
         {
           if(disk->ldsk == NULL) 
             {
+              t_dsk *prev,*next;
+              prev = disk->prev;
+              next = disk->next;
+              assert(next && prev);
               PHYREX_Remove_Disk(disk);
-              assert(disk->next && disk->prev);
-              PHYREX_Update_Lindisk_List_Range(disk->next,disk->prev,tree);
+              PHYREX_Update_Lindisk_List_Range(next,prev,tree);
               PHYREX_Free_Disk(disk);
             }
           else if(disk->ldsk != NULL && disk->ldsk->nd == NULL)
@@ -4880,15 +4892,69 @@ void PHYREX_Record_Disk_Times(t_tree *tree)
 void PHYREX_Restore_Disk_Times(t_tree *tree)
 {
   t_dsk *disk;
+  int n_disk,n_disks_scaled,n_nodes_scaled,n_hits_scaled,i,n_samp_disks;
+  t_dsk **samp_disks_a;
+    
+  n_disk            = 0;
+  n_disks_scaled    = 0;
+  n_nodes_scaled    = 0;
+  n_hits_scaled     = 0;
+  n_samp_disks      = 0;
+  samp_disks_a      = NULL;
+  
+  disk = tree->young_disk->prev;
+  assert(disk);
 
-  disk = tree->n_root->ldsk->disk;
-
+  disk = tree->young_disk->prev;
   do
     {
-      disk->time = disk->time_bkp;
-      disk = disk->next;
+      if(disk->age_fixed == NO)
+        {
+          n_disks_scaled++;
+          if(disk->ldsk && disk->ldsk->n_next > 1) n_nodes_scaled++;
+          if(disk->ldsk && disk->ldsk->n_next == 1) n_hits_scaled++;
+        }
+      else
+        {
+          n_samp_disks++;
+        }
+      n_disk++;
+      disk = disk->prev;
     }
   while(disk);
+
+
+  samp_disks_a = (t_dsk **)mCalloc(n_samp_disks,sizeof(t_dsk *));
+
+  i = 0;
+  disk = tree->young_disk->prev;
+  do
+    {
+      if(disk->age_fixed == YES)
+        {
+          samp_disks_a[i] = disk;
+          i++;
+        }
+      disk = disk->prev;
+    }
+  while(disk);
+
+  disk = tree->young_disk->prev;
+  do
+    {
+      if(disk->age_fixed == NO)
+        {
+          disk->time = disk->time_bkp;
+        }
+      disk = disk->prev;
+    }
+  while(disk);
+
+  for(i=0;i<n_samp_disks;++i) PHYREX_Remove_Disk(samp_disks_a[i]);
+
+  for(i=0;i<n_samp_disks;++i) PHYREX_Insert_Disk(samp_disks_a[i],tree);
+  
+  Free(samp_disks_a);
 }
 
 /*////////////////////////////////////////////////////////////
@@ -4906,10 +4972,26 @@ void PHYREX_Swap_Coords(t_ldsk *a, t_ldsk *b, t_tree *tree)
     }
 }
 
-
-
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+void PHYREX_Check_Disk_Times(t_tree *tree)
+{
+  t_dsk *disk;
+
+  disk = tree->young_disk;
+
+  do
+    {
+      if(Are_Equal(disk->time,disk->time_bkp,1.E-10) == NO)
+        {
+          PhyML_Printf("\n. Disk %s time inconsistency detected (t: %f t.bkup: %f -- diff: %g).",disk->id,disk->time,disk->time_bkp,disk->id,disk->time-disk->time_bkp);
+        }
+      disk = disk->prev;
+    }
+  while(disk);
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

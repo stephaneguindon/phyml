@@ -177,7 +177,7 @@ void MCMC_PHYREX_Ldsk_Tip_To_Root(t_tree *tree);
 void MCMC_PHYREX_Neff(t_tree *tree);
 void MCMC_PHYREX_Sigsq_Scale(t_tree *tree);
 void MCMC_PHYREX_Ldsk_Tips(t_tree *tree);
-void MCMC_PHYREX_Exchange_Core(t_tree *aux_tree);
+void MCMC_PHYREX_Exchange_Core(t_tree *aux_tree, t_tree *tree);
 void MCMC_Randomize_Sigsq_Scale(t_tree *tree);
 void MCMC_PHYREX_Exp_Growth(t_tree *tree);
 void MCMC_PHYREX_Narrow_Exchange(t_tree *tree);

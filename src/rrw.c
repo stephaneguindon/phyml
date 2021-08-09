@@ -153,7 +153,7 @@ phydbl RRW_Lk_Core(t_dsk *disk, t_tree *tree)
 phydbl RRW_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
 {
   t_ldsk *ldsk;
-  phydbl lnP,ld,la,disk_lnP,sd;
+  phydbl lnP,ld,la,disk_lnP,sd,dt;
   int i,err;
   t_node *nd_d;
 
@@ -177,13 +177,18 @@ phydbl RRW_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
       
       for(i=0;i<tree->mmod->n_dim;++i)
         {
+          dt = fabs(ldsk->disk->time-ldsk->prev->disk->time);
+
           sd =
             log(tree->mmod->sigsq[i]) +
             log(tree->mmod->sigsq_scale[nd_d->num]) +
-            log(tree->mmod->rrw_norm_fact) + 
-            log(fabs(ldsk->disk->time-ldsk->prev->disk->time));
+            log(tree->mmod->rrw_norm_fact) +
+            log(dt);
 
           sd = sqrt(exp(sd));
+
+          /* sd = tree->mmod->sigsq[i]*tree->mmod->sigsq_scale[nd_d->num]*tree->mmod->rrw_norm_fact*dt; */
+          /* sd = sqrt(sd); */
           
           ld = ldsk->coord->lonlat[i];
           la = ldsk->prev->coord->lonlat[i];
