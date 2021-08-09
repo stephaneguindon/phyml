@@ -3709,7 +3709,6 @@ int PHYREX_Scale_All(phydbl scale, t_dsk *start_disk, t_tree *tree)
   disk = start_disk->prev;
   assert(disk);
 
-  /* !!! */
   disk = start_disk->prev;
   do
     {
