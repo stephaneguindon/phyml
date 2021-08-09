@@ -991,7 +991,6 @@ phydbl TIMES_Lk_Coalescent_Range(t_dsk *young, t_dsk *old, t_tree *tree)
 
 phydbl TIMES_Prior_Coalescent(t_tree *tree)
 {
-  return(0.0); /* !!!!!!!!!!!!!!!!!! */
   phydbl lbda;
   lbda = 1./tree->times->neff_prior_mean;
   return(log(lbda)-lbda*tree->times->scaled_pop_size);
