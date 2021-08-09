@@ -12446,6 +12446,8 @@ void MCMC_PHYREX_Exchange_Core(t_tree *aux_tree, t_tree *tree)
           assert(FALSE);
         }
 
+      /* !!!! */
+
       /* PhyML_Printf("\n> %30s %15f %15f", */
       /*              aux_tree->mcmc->move_name[move], */
       /*              aux_tree->mmod->c_lnL, */
