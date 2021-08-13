@@ -723,8 +723,6 @@ void Swap_Nodes_On_Edges(t_edge *e1, t_edge *e2, int swap, t_tree *tree)
 {
   t_node *buff;
 
-  printf("\n. Swap edge %d (%d %d) with %d (%d %d)",e1->num,e1->left->num,e1->rght->num,e2->num,e2->left->num,e2->rght->num);
-
   if(swap == NO)
     {
       buff = e1->left;
@@ -6436,7 +6434,6 @@ void Check_Path(t_node *a, t_node *d, t_node *target, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Connect_Two_Nodes(t_node *a, t_node *d)
 {
   a->v[0] = d;
@@ -6674,7 +6671,6 @@ void Swap_Partial_Lk(t_edge *a, t_edge *b, int side_a, int side_b, t_tree *tree)
   int *buff_p_lk_loc, *buff_patt_id;
   phydbl *buff_p_lk_tip;
   int *buff_ui;
-  
   
   if(side_a == LEFT && side_b == LEFT)
     {
@@ -12684,8 +12680,168 @@ t_edge *Get_Edge(t_node *a, t_node *d, t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
-/*////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////*/
+
+void Exchange_Nodes(t_node *a, t_node *d, t_node *w, t_node *v, t_tree *tree)
+{
+  short int i,dw,dv,root_side;
+  t_edge *ba,*bd;
+  void *dum;
+  
+  /* PhyML_Printf("\n. a:%p a->num: %d %d %d %d", */
+  /*              a, */
+  /*              a->num, */
+  /*              a->v[0] ? a->v[0]->num : -1, */
+  /*              a->v[1] ? a->v[1]->num : -1, */
+  /*              a->v[2] ? a->v[2]->num : -1); */
+
+  /* PhyML_Printf("\n. w:%p w->num: %d %d %d %d", */
+  /*               w, */
+  /*               w->num, */
+  /*               w->v[0] ? w->v[0]->num : -1, */
+  /*               w->v[1] ? w->v[1]->num : -1, */
+  /*               w->v[2] ? w->v[2]->num : -1); */
+  
+  /* PhyML_Printf("\n. d:%p d->num: %d %d %d %d", */
+  /*              d, */
+  /*              d->num, */
+  /*              d->v[0] ? d->v[0]->num : -1, */
+  /*              d->v[1] ? d->v[1]->num : -1, */
+  /*              d->v[2] ? d->v[2]->num : -1); */
+
+  /* PhyML_Printf("\n. v:%p v->num: %d %d %d %d", */
+  /*              v, */
+  /*              v->num, */
+  /*              v->v[0] ? v->v[0]->num : -1, */
+  /*              v->v[1] ? v->v[1]->num : -1, */
+  /*              v->v[2] ? v->v[2]->num : -1); */
+
+  /* a is root node */
+  if(a == tree->n_root)
+    {
+      if(w == a->v[1]) root_side = 1;
+      else if(w == a->v[2]) root_side = 2;
+      else assert(false);      
+    }
+
+  for(i=0;i<3;++i) if(a->v[i] == w) { dw = i; break; }
+  assert(i!=3);
+  
+  for(i=0;i<3;++i) if(d->v[i] == v) { dv = i; break; }
+  assert(i!=3);
+
+  ba = a->b[dw];
+  bd = d->b[dv];
+
+  /* PhyML_Printf("\n> ba: %d ba->left: %d ba->rght: %d", */
+  /*              ba->num, */
+  /*              ba->left->num, */
+  /*              ba->rght->num); */
+  /* PhyML_Printf("\n> bd: %d bd->left: %d bd->rght: %d", */
+  /*              bd->num, */
+  /*              bd->left->num, */
+  /*              bd->rght->num); */
+  
+  /* Connect nodes */
+
+  dum = w->v[0];
+  w->v[0] = v->v[0];
+  v->v[0] = dum;
+  
+  w->anc = d;
+  v->anc = a;
+  
+  a->v[dw] = v;
+  d->v[dv] = w;      
+
+  /* Connect edges */
+  if(ba->left == w) ba->left = v;
+  else ba->rght = v;
+  
+  if(bd->left == v) bd->left = w;
+  else bd->rght = w;
+
+  w->b[0] = bd;
+  v->b[0] = ba;
+
+
+  if(w->tax == YES)
+    {
+      bd->rght = w;
+      bd->left = d;
+    }
+
+  if(v->tax == YES)
+    {
+      ba->rght = v;
+      ba->left = a;
+    }
+
+  /* PhyML_Printf("\n< ba: %d ba->left: %d ba->rght: %d", */
+  /*              ba->num, */
+  /*              ba->left->num, */
+  /*              ba->rght->num); */
+  /* PhyML_Printf("\n< bd: %d bd->left: %d bd->rght: %d", */
+  /*              bd->num, */
+  /*              bd->left->num, */
+  /*              bd->rght->num); */
+
+  Set_Edge_Dirs(ba,ba->left,ba->rght,tree);
+  Set_Edge_Dirs(bd,bd->left,bd->rght,tree);
+  
+  /* a is root node */
+  if(a == tree->n_root)
+    {
+      a->v[root_side] = v;
+      v->b[0] = tree->e_root;
+      v->v[0] = a->v[root_side==1?2:1];
+
+      if(tree->e_root->left == w)
+        {
+          tree->e_root->left = v;
+          assert(tree->e_root->rght->v[tree->e_root->r_l] = w);
+          tree->e_root->rght->v[tree->e_root->r_l] = v;
+        }
+      else if(tree->e_root->rght == w)
+        {
+          tree->e_root->rght = v;
+          assert(tree->e_root->left->v[tree->e_root->l_r] = w);
+          tree->e_root->left->v[tree->e_root->l_r] = v;
+        }
+      else assert(false);
+
+      if(tree->e_root->left->tax == YES)
+        {
+          dum = tree->e_root->left;
+          tree->e_root->left = tree->e_root->rght;
+          tree->e_root->rght = dum;
+        }
+      Set_Edge_Dirs(tree->e_root,tree->e_root->left,tree->e_root->rght,tree);
+    }
+
+
+  if(tree->is_mixt_tree == NO)
+    {
+      if(a != tree->n_root) Swap_Partial_Lk(ba,bd,ba->left==v?LEFT:RGHT,bd->left==w?LEFT:RGHT,tree);
+      else if(v == tree->e_root->left) Swap_Partial_Lk(tree->e_root,bd,LEFT,bd->left==w?LEFT:RGHT,tree);
+      else if(v == tree->e_root->rght) Swap_Partial_Lk(tree->e_root,bd,RGHT,bd->left==w?LEFT:RGHT,tree);
+    }
+  
+  /* if(a->prev == NULL) */
+  /*   PhyML_Printf("\n< b1: %d [%d;%d] v1: %d b2: %d [%d;%d] v2: %d e_root->left: %d e_root->rght: %d", */
+  /*                a->b[1]->num, */
+  /*                a->b[1]->left->num, */
+  /*                a->b[1]->rght->num, */
+  /*                a->v[1]->num, */
+  /*                a->b[2]->num, */
+  /*                a->b[2]->left->num, */
+  /*                a->b[2]->rght->num, */
+  /*                a->v[2]->num, */
+  /*                tree->e_root->left->num, */
+  /*                tree->e_root->rght->num); */
+
+  if(tree->is_mixt_tree == YES) MIXT_Exchange_Nodes(a,d,w,v,tree);
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

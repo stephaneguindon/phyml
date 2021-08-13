@@ -197,8 +197,8 @@ phydbl RRW_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
           
           if(isinf(lnP) || isnan(lnP)) return(UNLIKELY);
           
-          if(ld < tree->mmod->lim_do->lonlat[i] || ld > tree->mmod->lim_up->lonlat[i] ||
-             la < tree->mmod->lim_do->lonlat[i] || la > tree->mmod->lim_up->lonlat[i]) return(UNLIKELY);
+          /* if(ld < tree->mmod->lim_do->lonlat[i] || ld > tree->mmod->lim_up->lonlat[i] || */
+          /*    la < tree->mmod->lim_do->lonlat[i] || la > tree->mmod->lim_up->lonlat[i]) return(UNLIKELY); */
 
           if(isnan(lnP))
             {
@@ -222,7 +222,6 @@ phydbl RRW_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
       assert(ldsk);
     }
   while(ldsk != a);
-
   return(lnP);
 }
 

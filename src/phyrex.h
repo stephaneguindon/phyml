@@ -150,5 +150,6 @@ t_dsk *PHYREX_Next_Floating_Disk(t_dsk *disk);
 void PHYREX_Swap_Coords(t_ldsk *a, t_ldsk *b, t_tree *tree);
 void PHYREX_Print_Disk(t_tree *tree);
 void PHYREX_Check_Disk_Times(t_tree *tree);
+void PHYREX_Exchange_Ldsk(t_ldsk *a, t_ldsk *d, t_ldsk *w, t_ldsk *v, int aw, int dv, t_tree *tree);
 
 #endif

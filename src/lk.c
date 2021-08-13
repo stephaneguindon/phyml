@@ -2827,7 +2827,6 @@ void Pull_Scaling_Factors(int site, t_edge *b, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 /*     |
        |
        |b
@@ -3160,6 +3159,12 @@ void Set_Partial_Lk_One_Side(phydbl **Pij, phydbl **tPij, phydbl **p_lk,  int **
 #ifdef BEAGLE
           *child_p_idx = b->rght->tax? b->p_lk_tip_idx: b->p_lk_rght_idx;
 #endif
+
+          if(*p_lk == NULL) PhyML_Printf("\n. b:%d b->left:%d b->rght:%d d:%d",
+                                         b->num,
+                                         b->left->num,
+                                         b->rght->num,
+                                         d->num);
           assert(*p_lk);
         }
       else
@@ -3169,6 +3174,12 @@ void Set_Partial_Lk_One_Side(phydbl **Pij, phydbl **tPij, phydbl **p_lk,  int **
 #ifdef BEAGLE
           *child_p_idx   = b->rght->tax? b->p_lk_tip_idx: b->p_lk_left_idx;
 #endif
+
+          if(*p_lk == NULL) PhyML_Printf("\n. b:%d b->left:%d b->rght:%d d:%d",
+                                         b->num,
+                                         b->left->num,
+                                         b->rght->num,
+                                         d->num);
           assert(*p_lk);
         }
     }
@@ -3179,6 +3190,8 @@ void Set_Partial_Lk_One_Side(phydbl **Pij, phydbl **tPij, phydbl **p_lk,  int **
 #endif
       *p_lk        = NULL;
       *sum_scale   = NULL;
+      PhyML_Printf("\n. WARNING. p_lk set to NULL. d->num: %d b->num: %d",d->num,b->num);
+        
     }
 }
 

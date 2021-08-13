@@ -1236,6 +1236,7 @@ void MCMC_Free_MCMC(t_mcmc *mcmc)
   Free(mcmc->adjust_tuning);
   Free(mcmc->out_filename);
   Free(mcmc->move_weight);
+  Free(mcmc->move_prob);
   Free(mcmc->acc_move);
   Free(mcmc->run_move);
   Free(mcmc->prev_acc_move);

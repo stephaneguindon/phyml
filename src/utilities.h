@@ -1719,6 +1719,7 @@ typedef struct __Tmcmc {
 
   phydbl *tune_move;
   phydbl *move_weight;
+  phydbl *move_prob;
 
   phydbl *acc_rate;
   int *acc_move;
@@ -2474,6 +2475,7 @@ void Set_Lk(t_tree *tree);
 void Reset_Prior(t_tree *tree);
 void Set_Prior(t_tree *tree);
 t_edge *Get_Edge(t_node *a, t_node *d, t_tree *tree);
+void Exchange_Nodes(t_node *a, t_node *d, t_node *w, t_node *v, t_tree *tree);
 
 
 #include "xml.h"

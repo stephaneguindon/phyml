@@ -350,6 +350,7 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
   sum_scale_v1 = sum_scale_v2 = NULL;
   p_lk_loc                    = NULL;
   state_v1 = state_v2         = -1;
+
   
   Set_All_Partial_Lk(&n_v1,&n_v2,
                      &plk0,&sum_scale,&p_lk_loc,
@@ -357,6 +358,15 @@ void AVX_Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
                      &Pij2,&tPij2,&plk2,&sum_scale_v2,
                      d,b,tree);
 
+
+  /* PhyML_Printf("\n. b: %d b->left:%d b->rght:%d d:%d [%p,%p]", */
+  /*              b->num, */
+  /*              b->left->num, */
+  /*              b->rght->num, */
+  /*              d->num, */
+  /*              plk0, */
+  /*              b->p_lk_rght); */
+  
   // Copy transpose of transition matrices into AVX registers
   for(i=0;i<ncatg;++i)
     {

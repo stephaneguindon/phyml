@@ -3481,8 +3481,18 @@ void MIXT_Propagate_Tree_Update(t_tree *mixt_tree)
           if(tree->times != NULL) tree->times->nd_t[i] = mixt_tree->times->nd_t[i];
         }
 
-      Connect_Edges_To_Nodes_Serial(tree);
-
+      /* Connect_Edges_To_Nodes_Serial(tree); */
+      for(i=0;i<2*mixt_tree->n_otu-1;++i)
+        {
+          if(mixt_tree->n_root == NULL ||
+             (mixt_tree->a_edges[i] != mixt_tree->n_root->b[1] &&
+              mixt_tree->a_edges[i] != mixt_tree->n_root->b[2]))
+            Connect_One_Edge_To_Two_Nodes(tree->a_nodes[mixt_tree->a_edges[i]->left->num],
+                                          tree->a_nodes[mixt_tree->a_edges[i]->rght->num],
+                                          tree->a_edges[mixt_tree->a_edges[i]->num],tree);
+          tree->a_edges[mixt_tree->a_edges[i]->num]->num = mixt_tree->a_edges[i]->num;                
+        }
+      
       /* Necessary? Increase computation time due to large number of calls from Ldsk_To_Tree function */
       /* Reorganize_Edges_Given_Lk_Struct(tree); */
       /* Init_Partial_Lk_Tips_Double(tree); */
@@ -3514,7 +3524,6 @@ void MIXT_Propagate_Tree_Update(t_tree *mixt_tree)
       Update_Ancestors(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
 
       tree = tree->next;
-      
     }
   while(tree);
 }
@@ -3804,6 +3813,27 @@ void MIXT_Print_Site_Lk(t_tree *mixt_tree, FILE *fp)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void MIXT_Exchange_Nodes(t_node *a, t_node *d, t_node *w, t_node *v, t_tree *mixt_tree)
+{
+  t_tree *tree;
+  int i;
+  
+  tree = mixt_tree->next;
+  i = 0;
+  do
+    {
+      Exchange_Nodes(tree->a_nodes[a->num],
+                     tree->a_nodes[d->num],
+                     tree->a_nodes[w->num],
+                     tree->a_nodes[v->num],
+                     tree);
+      i++;
+      tree = tree->next;
+    }
+  while(tree);
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

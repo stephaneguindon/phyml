@@ -115,7 +115,7 @@ void RATES_Lk_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
   int n_a,n_d;
 
   log_dens = -1.;
-
+  
   if(d->anc != a)
     {
       PhyML_Fprintf(stderr,"\n. d=%d d->anc=%d a=%d root=%d",d->num,d->anc->num,a->num,tree->n_root->num);
@@ -1104,13 +1104,19 @@ phydbl RATES_Lk_Jumps(t_tree *tree)
 
 void RATES_Update_Edge_Lengths(t_tree *tree)
 {
+  if(tree->is_mixt_tree == YES)
+    {
+      MIXT_RATES_Update_Edge_Lengths(tree);
+      return;
+    }
+  
   RATES_Update_Normalization_Factor(tree);
+
   RATES_Update_Edge_Lengths_Pre(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
   RATES_Update_Edge_Lengths_Pre(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
   
   RATES_Update_One_Edge_Length(tree->e_root,tree);
   
-  if(tree->is_mixt_tree == YES) MIXT_RATES_Update_Edge_Lengths(tree);
 }
 
 //////////////////////////////////////////////////////////////
@@ -1211,7 +1217,17 @@ void RATES_Update_One_Edge_Length_Core(t_edge *b, t_tree *tree)
       d = b->rght;
       a = b->left;
     }
-  
+
+  if(d->anc != a)
+    {
+      PhyML_Printf("\n. a->num: %d d->num: %d d->anc: %d b->left: %d b->rght: %d b->num: %d",
+                   a->num,
+                   d->num,
+                   d->anc->num,
+                   b->left->num,
+                   b->rght->num,
+                   b->num);
+    }
   
   assert(a);
   assert(d);

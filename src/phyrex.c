@@ -597,6 +597,7 @@ void PHYREX_XML(char *xml_filename)
   Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree->n_root->b[2],mixt_tree);
   Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree->n_root->b[1],mixt_tree);  
     
+
   MCMC_Randomize_Rate_Across_Sites(mixt_tree);
   MCMC_Randomize_Rates(mixt_tree);
   MCMC_Randomize_Clock_Rate(mixt_tree);
@@ -964,7 +965,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   move             = -1;
   do
     {
-      MIXT_Propagate_Tree_Update(tree);
+      /* MIXT_Propagate_Tree_Update(tree); */
 
       if(mcmc->run > mcmc->chain_len_burnin)
         for(i=0;i<mcmc->n_moves;i++) tree->mcmc->adjust_tuning[i] = NO;
@@ -981,8 +982,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       tree->mcmc->move_idx = move;
       
       assert(!(move == tree->mcmc->n_moves));
-
-          
+      
       /* !!!!!!!!!!!!!!!!!!!!!!!!! */
       /* tree->mmod->use_locations = NO; */
       
@@ -1036,7 +1036,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
                        tree->times->c_lnL);
           assert(FALSE);
         }
-            
+      
       if(tree->mmod->safe_phyrex == YES)
         {
           short int failed = NO;
@@ -1097,20 +1097,20 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           /*     Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
           /*   } */
           
-          
-          for(int i=0;i<2*tree->n_otu-1;++i)
-            {
-              if(Are_Equal(tree->a_nodes[i]->ldsk->rr,tree->rates->br_r[tree->a_nodes[i]->num],1.E-6) == NO)
-                {
-                  PhyML_Fprintf(stderr,"\n. Problem detected with move %s",tree->mcmc->move_name[move]);
-                  PhyML_Fprintf(stderr,"\n. rate : %f -> %f",tree->a_nodes[i]->ldsk->rr,tree->rates->br_r[tree->a_nodes[i]->num]);
-                  Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-                }
-            }
+
+          /* !!!!!!!!!!!!!!!!! */
+          /* for(int i=0;i<2*tree->n_otu-1;++i) */
+          /*   { */
+          /*     if(Are_Equal(tree->a_nodes[i]->ldsk->rr,tree->rates->br_r[tree->a_nodes[i]->num],1.E-6) == NO) */
+          /*       { */
+          /*         PhyML_Fprintf(stderr,"\n. Problem detected with move %s",tree->mcmc->move_name[move]); */
+          /*         PhyML_Fprintf(stderr,"\n. rate : %f -> %f",tree->a_nodes[i]->ldsk->rr,tree->rates->br_r[tree->a_nodes[i]->num]); */
+          /*         Generic_Exit(__FILE__,__LINE__,__FUNCTION__); */
+          /*       } */
+          /*   } */
 
           assert(PHYREX_Check_Struct(tree,YES));
         }
-
       
       MCMC_Get_Acc_Rates(tree->mcmc);
             
@@ -2416,9 +2416,9 @@ void PHYREX_Ldsk_To_Tree(t_tree *tree)
   t_ldsk *root_ldsk;
   
   /* Reset */
-  for(i=0;i<2*tree->n_otu-1;++i) 
+  for(i=0;i<2*tree->n_otu-1;++i)
     {
-      for(j=0;j<3;++j) 
+      for(j=0;j<3;++j)
         {
           tree->a_nodes[i]->v[j] = NULL;
           tree->a_nodes[i]->b[j] = NULL;
@@ -2452,18 +2452,18 @@ void PHYREX_Ldsk_To_Tree(t_tree *tree)
   
   for(i=0;i<tree->n_otu;++i) assert(tree->a_nodes[i]->v[0]);
 
-  for(i=0;i<3;++i) 
-    if(tree->n_root->v[1]->v[i] == tree->n_root) 
-      { 
-        tree->n_root->v[1]->v[i] = tree->n_root->v[2]; 
-        break; 
+  for(i=0;i<3;++i)
+    if(tree->n_root->v[1]->v[i] == tree->n_root)
+      {
+        tree->n_root->v[1]->v[i] = tree->n_root->v[2];
+        break;
       }
 
-  for(i=0;i<3;++i) 
-    if(tree->n_root->v[2]->v[i] == tree->n_root) 
-      { 
-        tree->n_root->v[2]->v[i] = tree->n_root->v[1]; 
-        break; 
+  for(i=0;i<3;++i)
+    if(tree->n_root->v[2]->v[i] == tree->n_root)
+      {
+        tree->n_root->v[2]->v[i] = tree->n_root->v[1];
+        break;
       }
 
   Connect_Edges_To_Nodes_Serial(tree);
@@ -2473,7 +2473,7 @@ void PHYREX_Ldsk_To_Tree(t_tree *tree)
     {
       if((tree->a_edges[i]->left == tree->n_root->v[1] && tree->a_edges[i]->rght == tree->n_root->v[2]) ||
          (tree->a_edges[i]->left == tree->n_root->v[2] && tree->a_edges[i]->rght == tree->n_root->v[1]))
-        {        
+        {
           tree->e_root = tree->a_edges[i];
           break;
         }
@@ -2492,7 +2492,7 @@ void PHYREX_Ldsk_To_Tree(t_tree *tree)
   Update_Ancestors(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
   Update_Ancestors(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
   
-  MIXT_Propagate_Tree_Update(tree);  
+  MIXT_Propagate_Tree_Update(tree);
 }
 
 /*////////////////////////////////////////////////////////////
@@ -2503,7 +2503,7 @@ void PHYREX_Ldsk_To_Tree_Post(t_node *a, t_ldsk *ldsk, int *available, t_tree *t
   assert(ldsk);
   assert(a);
 
-  ldsk->nd = a;  
+  ldsk->nd = a;
   a->ldsk = ldsk;
   tree->times->nd_t[a->num] = ldsk->disk->time;
 
@@ -2520,12 +2520,12 @@ void PHYREX_Ldsk_To_Tree_Post(t_node *a, t_ldsk *ldsk, int *available, t_tree *t
       idx_next     = 0;
       do
         {
-          t = ldsk->next[idx_next]; 
+          t = ldsk->next[idx_next];
 
           // Descend along that lineage as long as
           // one has not reached a tip (t->next == NULL)
           // or a coalescent event (t->n_next > 1)
-          while(t->next && t->n_next <= 1) t = t->next[0];          
+          while(t->next && t->n_next <= 1) t = t->next[0];
           
           if(t->nd == NULL) // t->disk is not a sampled disk
             {
@@ -2539,17 +2539,17 @@ void PHYREX_Ldsk_To_Tree_Post(t_node *a, t_ldsk *ldsk, int *available, t_tree *t
               son = t->nd;
             }
 
-          PHYREX_Ldsk_To_Tree_Post(son,t,available,tree);          
+          PHYREX_Ldsk_To_Tree_Post(son,t,available,tree);
 
           // Resolve multifurcation
-          if(parent->v[2] != NULL && idx_next >= 2) 
+          if(parent->v[2] != NULL && idx_next >= 2)
             {
               t_node *new_parent;
 
               new_parent = tree->a_nodes[*available];
               new_parent->ldsk = ldsk;
               
-              (*available) = (*available)-1;              
+              (*available) = (*available)-1;
 
               new_parent->v[0]       = parent;
               new_parent->v[1]       = parent->v[2];
@@ -2569,7 +2569,7 @@ void PHYREX_Ldsk_To_Tree_Post(t_node *a, t_ldsk *ldsk, int *available, t_tree *t
             }
           else
             {
-              son->v[0] = parent;          
+              son->v[0] = parent;
               if(!parent->v[1]) parent->v[1] = son;
               else              parent->v[2] = son;
               
@@ -2581,6 +2581,161 @@ void PHYREX_Ldsk_To_Tree_Post(t_node *a, t_ldsk *ldsk, int *available, t_tree *t
       while(idx_next != ldsk->n_next);
     }
 }
+
+
+/* /\*\//////////////////////////////////////////////////////////// */
+/* ////////////////////////////////////////////////////////////\*\/ */
+/* /\* Update the tree structure given the whole set of ldsk events *\/ */
+/* /\* Coalescent events involving multiple lineages are resolved using *\/ */
+/* /\* very short internal edges. Tip nodes in the tree are always connected *\/ */
+/* /\* to the corresponding ldsks. *\/ */
+/* void PHYREX_Ldsk_To_Tree(t_tree *tree) */
+/* { */
+/*   int i,j,idx_node; */
+/*   t_dsk *disk; */
+  
+/*   assert(tree->n_root); */
+
+/*   /\* Reset *\/ */
+/*   for(i=0;i<2*tree->n_otu-1;++i)  */
+/*     { */
+/*       for(j=0;j<3;++j)  */
+/*         { */
+/*           tree->a_nodes[i]->v[j] = NULL; */
+/*           tree->a_nodes[i]->b[j] = NULL; */
+/*         } */
+/*       tree->a_nodes[i]->ldsk = NULL; */
+/*     } */
+
+/*   idx_node = tree->n_otu; */
+/*   disk = tree->young_disk; */
+/*   do */
+/*     { */
+/*       if(disk->ldsk != NULL && disk->ldsk->n_next > 1 && disk->ldsk->nd == NULL && disk->age_fixed == NO) */
+/*         { */
+/*           disk->ldsk->nd = tree->a_nodes[idx_node]; */
+/*           idx_node++; */
+/*         } */
+/*       if(disk->prev == NULL) break; */
+/*       disk = disk->prev; */
+/*     } */
+/*   while(disk); */
+  
+/*   assert(disk->prev == NULL); */
+/*   PHYREX_Ldsk_To_Tree_Post(tree->n_root,disk->ldsk,&i,tree); */
+  
+/*   for(i=0;i<tree->n_otu;++i) assert(tree->a_nodes[i]->v[0]); */
+
+/*   for(i=0;i<3;++i)  */
+/*     if(tree->n_root->v[1]->v[i] == tree->n_root)  */
+/*       {  */
+/*         tree->n_root->v[1]->v[i] = tree->n_root->v[2];  */
+/*         break;  */
+/*       } */
+
+/*   for(i=0;i<3;++i)  */
+/*     if(tree->n_root->v[2]->v[i] == tree->n_root)  */
+/*       {  */
+/*         tree->n_root->v[2]->v[i] = tree->n_root->v[1];  */
+/*         break;  */
+/*       } */
+
+/*   Connect_Edges_To_Nodes_Serial(tree); */
+
+/*   tree->e_root = NULL; */
+/*   for(i=0;i<2*tree->n_otu-3;++i) */
+/*     { */
+/*       if((tree->a_edges[i]->left == tree->n_root->v[1] && tree->a_edges[i]->rght == tree->n_root->v[2]) || */
+/*          (tree->a_edges[i]->left == tree->n_root->v[2] && tree->a_edges[i]->rght == tree->n_root->v[1])) */
+/*         {         */
+/*           tree->e_root = tree->a_edges[i]; */
+/*           break; */
+/*         } */
+/*     } */
+/*   assert(!(tree->e_root == NULL)); */
+  
+/*   tree->n_root->b[1] = tree->a_edges[2*tree->n_otu-3]; */
+/*   tree->n_root->b[2] = tree->a_edges[2*tree->n_otu-2]; */
+
+/*   tree->n_root->b[1]->left = tree->n_root; */
+/*   tree->n_root->b[1]->rght = tree->n_root->v[1]; */
+
+/*   tree->n_root->b[2]->left = tree->n_root; */
+/*   tree->n_root->b[2]->rght = tree->n_root->v[2]; */
+  
+/*   Update_Ancestors(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree); */
+/*   Update_Ancestors(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree); */
+  
+/*   MIXT_Propagate_Tree_Update(tree);   */
+/* } */
+
+/* /\*\//////////////////////////////////////////////////////////// */
+/* ////////////////////////////////////////////////////////////\*\/ */
+
+/* void PHYREX_Ldsk_To_Tree_Post(t_node *a, t_ldsk *ldsk, int *available, t_tree *tree) */
+/* { */
+/*   int i,j; */
+  
+/*   if(ldsk->n_next == 1) */
+/*     { */
+/*       PHYREX_Ldsk_To_Tree_Post(a,ldsk->next[0],available,tree); */
+/*       return; */
+/*     } */
+
+/*   PhyML_Printf("\n. a->num: %d ldsk->n_next: %d",a->num,ldsk->n_next); */
+  
+/*   assert(ldsk); */
+/*   assert(a); */
+
+/*   if(ldsk->disk->age_fixed == NO) */
+/*     { */
+/*       assert(ldsk->nd); */
+/*       assert(ldsk->n_next == 2); */
+      
+/*       ldsk->nd->ldsk = ldsk; */
+/*       ldsk->nd->v[0] = a; */
+      
+/*       for(i=1;i<3;++i) */
+/*         { */
+/*           if(a->v[i] == NULL) */
+/*             { */
+/*               a->v[i] = ldsk->nd; */
+/*               break; */
+/*             } */
+/*         } */
+/*       assert(i!=3); */
+/*     } */
+/*   else */
+/*     { */
+/*       assert(ldsk->disk->age_fixed == YES); */
+
+/*       for(i=0;i<ldsk->disk->n_ldsk_a;++i) */
+/*         { */
+/*           if(ldsk->disk->ldsk_a[i]->nd->v[0] == NULL) */
+/*             { */
+/*               ldsk->disk->ldsk_a[i]->nd->v[0] = a; */
+/*               for(j=1;j<3;++j) */
+/*                 { */
+/*                   if(a->v[j] == NULL) */
+/*                     { */
+/*                       a->v[j] = ldsk->disk->ldsk_a[i]->nd; */
+/*                       break; */
+/*                     } */
+/*                 } */
+/*               assert(j!=3); */
+/*               return; */
+/*             } */
+/*         } */
+/*     } */
+
+/*   assert(ldsk->n_next == 2); */
+/*   for(i=0;i<2;++i) */
+/*     { */
+/*       PHYREX_Ldsk_To_Tree_Post(ldsk->nd,ldsk->next[i],available,tree);     */
+/*     } */
+  
+/*   return; */
+/* } */
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
@@ -4994,5 +5149,34 @@ void PHYREX_Check_Disk_Times(t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+void PHYREX_Exchange_Ldsk(t_ldsk *a, t_ldsk *d, t_ldsk *w, t_ldsk *v, int aw, int dv, t_tree *tree)
+{
+  t_edge *ba,*bd;
+  t_ldsk *zv,*zw;
+  void *dumz;
+  int i,dzw,dzv,root_side;
+  
+  assert(a->disk->time < d->disk->time);
+
+  zv = v;
+  while(zv->n_next == 1) zv = zv->next[0]; 
+  assert(zv->nd);
+  
+  zw = w;
+  while(zw->n_next == 1) zw = zw->next[0]; 
+  assert(zw->nd);
+    
+  /* Connect ldsks */
+  v->prev     = a;
+  a->next[aw] = v;
+  w->prev     = d;
+  d->next[dv] = w;
+
+  Exchange_Nodes(a->nd,d->nd,zw->nd,zv->nd,tree);
+}
+
+
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/

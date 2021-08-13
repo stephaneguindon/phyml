@@ -117,5 +117,6 @@ void MIXT_Init_NNI_Score(phydbl val, t_edge *mixt_b, t_tree *mixt_tree);
 t_tree *MIXT_Duplicate_Tree(t_tree *ori);
 void MIXT_Set_Model_Parameters(t_mod *mixt_mod);
 void MIXT_Print_Site_Lk(t_tree *mixt_tree, FILE *fp);
+void MIXT_Exchange_Nodes(t_node *a, t_node *d, t_node *w, t_node *v, t_tree *mixt_tree);
 
 #endif
