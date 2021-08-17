@@ -74,7 +74,6 @@ phydbl PHYREX_Mean_Time_Between_Events(t_tree *tree);
 void PHYREX_All_Pairs_Coal_Times_Dist(t_tree *tree);
 void PHYREX_Rand_Pairs_Coal_Times_Dist(t_tree *tree);
 void PHYREX_Read_Tip_Coordinates(t_tree *tree);
-void MCMC_PHYREX_Sigsq(t_tree *tree);
 phydbl PHYREX_LnPrior_Sigsq(t_tree *tree);
 phydbl PHYREX_Tree_Height(t_tree *tree);
 int PHYREX_Random_Insert_Ldsk_In_Next_List(t_ldsk *ins, t_ldsk *where);

@@ -6682,6 +6682,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%s\t","tuneScale");
           PhyML_Fprintf(fp_stats,"%s\t","tuneLdskGivenDisk");
           PhyML_Fprintf(fp_stats,"%s\t","tuneLdskTipToRoot");
+          PhyML_Fprintf(fp_stats,"%s\t","tuneRootTime");
 
           for(int i=0;i<1;++i)
             {
@@ -6702,6 +6703,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%s\t","auxtuneScale");
           PhyML_Fprintf(fp_stats,"%s\t","auxtuneLdskGivenDisk");
           PhyML_Fprintf(fp_stats,"%s\t","auxtuneLdskTipToRoot");
+          PhyML_Fprintf(fp_stats,"%s\t","auxtuneRootTime");
 
           /* for(int i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"sigSq%d\t",i); */
           /* for(int i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"auxsigSq%d\t",i); */
@@ -6757,6 +6759,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_scale_times]);
       PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_ldsk_given_disk]);
       PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_ldsk_tip_to_root]);
+      PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_root_time]);
 
       
       for(int i=0;i<1;++i)
@@ -6779,6 +6782,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[0]->mcmc->tune_move[tree->aux_tree[0]->mcmc->num_move_phyrex_scale_times]);
       PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[0]->mcmc->tune_move[tree->aux_tree[0]->mcmc->num_move_phyrex_ldsk_given_disk]);
       PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[0]->mcmc->tune_move[tree->aux_tree[0]->mcmc->num_move_phyrex_ldsk_tip_to_root]);
+      PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[0]->mcmc->tune_move[tree->aux_tree[0]->mcmc->num_move_root_time]);
 
       /* for(int i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->sigsq_scale[i]); */
       /* for(int i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[0]->mmod->sigsq_scale[i]); */
@@ -6857,7 +6861,7 @@ void PHYREX_Print_MCMC_Tree(t_tree *tree)
 void PHYREX_Print_MCMC_Summary(t_tree *tree)
 {
   if(tree->mcmc->run == 0)
-     PhyML_Fprintf(stdout,"\n. %10s\t%25s\t%15s\t%15s\t%15s\t%15s\t%13s\t%10s\t%23s",
+     PhyML_Fprintf(stdout,"\n. %23s\t%25s\t%15s\t%15s\t%15s\t%15s\t%13s\t%10s\t%19s",
                    "run (aux.run)",
                    "operator",
                    "lnSpac",

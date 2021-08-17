@@ -12715,6 +12715,9 @@ void Exchange_Nodes(t_node *a, t_node *d, t_node *w, t_node *v, t_tree *tree)
   /*              v->v[1] ? v->v[1]->num : -1, */
   /*              v->v[2] ? v->v[2]->num : -1); */
 
+
+  root_side = -1;
+  
   /* a is root node */
   if(a == tree->n_root)
     {
