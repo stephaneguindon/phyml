@@ -154,7 +154,7 @@ int main(int argc, char **argv)
                         tree = Dist_And_BioNJ(cdata,mod,io);
                         if(io->print_mat_and_exit == YES)
                           {
-                            Print_Mat(tree->mat);
+                            Print_Mat(ML_Dist(cdata,mod));
                             exit(-1);
                           }
                         break;
