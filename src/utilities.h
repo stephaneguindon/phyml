@@ -99,6 +99,7 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 
 #define STRICTCOALESCENT 0
 #define EXPCOALESCENT 1
+#define POWLAW 2
 
 #define SLFV_GAUSSIAN 2 /* Spatial Lambda-Fleming-Viot model (Gaussian) */
 #define SLFV_UNIFORM 3 /* Spatial Lambda-Fleming-Viot model (Uniform) */
@@ -1651,9 +1652,9 @@ typedef struct __T_Time {
   phydbl scaled_pop_size_min; 
   phydbl scaled_pop_size_max; 
 
-  phydbl exp_growth;
-  phydbl exp_growth_min;
-  phydbl exp_growth_max;
+  phydbl neff_growth;
+  phydbl neff_growth_min;
+  phydbl neff_growth_max;
   
   phydbl birth_rate;
   phydbl birth_rate_min;
@@ -1784,7 +1785,7 @@ typedef struct __Tmcmc {
   int num_move_phyrex_ldscape_lim;
   int num_move_phyrex_sigsq;
   int num_move_time_neff;
-  int num_move_time_exp_growth;
+  int num_move_time_neff_growth;
   int num_move_phyrex_sim;
   int num_move_phyrex_traj;
   int num_move_phyrex_indel_disk_serial;

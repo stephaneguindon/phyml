@@ -6124,7 +6124,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->num_move_phyrex_ldscape_lim       = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_phyrex_sigsq             = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_time_neff                = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_time_exp_growth          = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_time_neff_growth          = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_phyrex_sim               = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_phyrex_traj              = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_phyrex_indel_disk_serial = mcmc->n_moves; mcmc->n_moves += 1;
@@ -6214,7 +6214,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   strcpy(mcmc->move_name[mcmc->num_move_phyrex_ldscape_lim],"phyrex_ldscape_lim");
   strcpy(mcmc->move_name[mcmc->num_move_phyrex_sigsq],"phyrex_sigsq");
   strcpy(mcmc->move_name[mcmc->num_move_time_neff],"phyrex_neff");
-  strcpy(mcmc->move_name[mcmc->num_move_time_exp_growth],"phyrex_exp_growth");
+  strcpy(mcmc->move_name[mcmc->num_move_time_neff_growth],"phyrex_neff_growth");
   strcpy(mcmc->move_name[mcmc->num_move_phyrex_sim],"phyrex_sim");
   strcpy(mcmc->move_name[mcmc->num_move_phyrex_traj],"phyrex_traj");
   strcpy(mcmc->move_name[mcmc->num_move_phyrex_indel_disk_serial],"phyrex_indel_disk_serial");
@@ -6269,7 +6269,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_type[mcmc->num_move_phyrex_scale_times] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_phyrex_sigsq] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_time_neff] = MCMC_MOVE_SCALE_THORNE;
-  mcmc->move_type[mcmc->num_move_time_exp_growth] = MCMC_MOVE_RANDWALK_NORMAL;
+  mcmc->move_type[mcmc->num_move_time_neff_growth] = MCMC_MOVE_RANDWALK_NORMAL;
   mcmc->move_type[mcmc->num_move_phyrex_indel_hit] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_phyrex_indel_disk] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_phyrex_ldsk_tip_to_root] = MCMC_MOVE_SCALE_THORNE;
@@ -6278,7 +6278,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_type[mcmc->num_move_phyrex_node_times] = MCMC_MOVE_SCALE_THORNE;
 
   for(i=0;i<mcmc->n_moves;i++) mcmc->tune_move[i] = 1.;
-  mcmc->tune_move[mcmc->num_move_time_exp_growth] = 0.01;
+  mcmc->tune_move[mcmc->num_move_time_neff_growth] = 0.01;
   mcmc->tune_move[mcmc->num_move_root_time] = 0.1;
  
   mcmc->move_prob[mcmc->num_move_br_r]                  = 4.0; 
@@ -6329,7 +6329,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_prob[mcmc->num_move_phyrex_rad]                   = 1.0;
   mcmc->move_prob[mcmc->num_move_phyrex_sigsq]                 = 0.5;
   mcmc->move_prob[mcmc->num_move_time_neff]                    = 0.5;
-  mcmc->move_prob[mcmc->num_move_time_exp_growth]              = 0.5;
+  mcmc->move_prob[mcmc->num_move_time_neff_growth]              = 0.5;
   mcmc->move_prob[mcmc->num_move_phyrex_sigsq_scale]           = 0.5;
   mcmc->move_prob[mcmc->num_move_phyrex_indel_disk]            = 1.0;
   mcmc->move_prob[mcmc->num_move_phyrex_indel_hit]             = 1.0;
@@ -6363,7 +6363,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_prob[mcmc->num_move_phyrex_rad]                   = 0.0;
   mcmc->move_prob[mcmc->num_move_phyrex_sigsq]                 = 0.0;
   mcmc->move_prob[mcmc->num_move_time_neff]                    = 0.0;
-  mcmc->move_prob[mcmc->num_move_time_exp_growth]              = 0.0;
+  mcmc->move_prob[mcmc->num_move_time_neff_growth]              = 0.0;
   mcmc->move_prob[mcmc->num_move_phyrex_indel_disk]            = 0.0;
   mcmc->move_prob[mcmc->num_move_phyrex_indel_hit]             = 0.0;
   mcmc->move_prob[mcmc->num_move_phyrex_move_disk_ud]          = 0.0;
@@ -6787,7 +6787,7 @@ void MCMC_PHYREX_Sigsq(t_tree *tree, int print)
               for(int i=0;i<2*aux_tree->n_otu-2;++i) aux_tree->mmod->sigsq_scale[i] = tree->mmod->sigsq_scale[i];
 
               aux_tree->times->scaled_pop_size = tree->times->scaled_pop_size;
-              aux_tree->times->exp_growth = tree->times->exp_growth;
+              aux_tree->times->neff_growth = tree->times->neff_growth;
 
               TIMES_Lk(aux_tree);
               LOCATION_Lk(aux_tree);
@@ -7018,7 +7018,7 @@ void MCMC_PHYREX_Sigsq_Scale(t_tree *tree, int print)
           for(i=0;i<2*aux_tree->n_otu-1;++i) aux_tree->mmod->sigsq_scale[i] = tree->mmod->sigsq_scale[i];
           
           aux_tree->times->scaled_pop_size = tree->times->scaled_pop_size;
-          aux_tree->times->exp_growth = tree->times->exp_growth;
+          aux_tree->times->neff_growth = tree->times->neff_growth;
 
           TIMES_Lk(aux_tree);
           LOCATION_Lk(aux_tree);
@@ -7156,7 +7156,7 @@ void MCMC_PHYREX_Neff(t_tree *tree, int print)
               for(int i=0;i<2*aux_tree->n_otu-2;++i) aux_tree->mmod->sigsq_scale[i] = tree->mmod->sigsq_scale[i];
 
               aux_tree->times->scaled_pop_size = new_neff;
-              aux_tree->times->exp_growth = tree->times->exp_growth;
+              aux_tree->times->neff_growth = tree->times->neff_growth;
                             
               TIMES_Lk(aux_tree);
               LOCATION_Lk(aux_tree);
@@ -7310,10 +7310,10 @@ void MCMC_PHYREX_Neff(t_tree *tree, int print)
 ////////////////////////////////////////////////////////////*/
 
 #ifdef PHYREX
-void MCMC_PHYREX_Exp_Growth(t_tree *tree, int print)
+void MCMC_PHYREX_Neff_Growth(t_tree *tree, int print)
 {
   if(tree->times->model_id == COALESCENT &&
-     tree->times->coalescent_model_id == EXPCOALESCENT &&
+     (tree->times->coalescent_model_id == EXPCOALESCENT || tree->times->coalescent_model_id == POWLAW) &&
      tree->mmod->sampling_scheme == SPATIAL_SAMPLING_SURVEY)
     {
       phydbl cur_growth,new_growth;
@@ -7345,28 +7345,28 @@ void MCMC_PHYREX_Exp_Growth(t_tree *tree, int print)
       cur_lnL_aux = UNLIKELY;
       new_lnL_aux = UNLIKELY;
       
-      cur_growth = tree->times->exp_growth;
+      cur_growth = tree->times->neff_growth;
             
       MCMC_Make_Move(&cur_growth,
                      &new_growth,
-                     tree->times->exp_growth_min,
-                     tree->times->exp_growth_max,
+                     tree->times->neff_growth_min,
+                     tree->times->neff_growth_max,
                      &hr,K,
-                     tree->mcmc->move_type[tree->mcmc->num_move_time_exp_growth]);
+                     tree->mcmc->move_type[tree->mcmc->num_move_time_neff_growth]);
       
-      if(new_growth < tree->times->exp_growth_max &&
-         new_growth > tree->times->exp_growth_min)
+      if(new_growth < tree->times->neff_growth_max &&
+         new_growth > tree->times->neff_growth_min)
         {
-          tree->times->exp_growth = new_growth;
+          tree->times->neff_growth = new_growth;
           new_lnL = TIMES_Lk(tree);
           new_lnP = TIMES_Prior(tree);
           
-          if(tree->mcmc->run_move[tree->mcmc->num_move_time_exp_growth] >= 0)
+          if(tree->mcmc->run_move[tree->mcmc->num_move_time_neff_growth] >= 0)
             {
               for(int i=0;i<tree->mmod->n_dim;++i) aux_tree->mmod->sigsq[i] = tree->mmod->sigsq[i];
               for(int i=0;i<2*aux_tree->n_otu-2;++i) aux_tree->mmod->sigsq_scale[i] = tree->mmod->sigsq_scale[i];
               aux_tree->times->scaled_pop_size = tree->times->scaled_pop_size;
-              aux_tree->times->exp_growth = new_growth;
+              aux_tree->times->neff_growth = new_growth;
                             
               TIMES_Lk(aux_tree);
               LOCATION_Lk(aux_tree);
@@ -7374,7 +7374,7 @@ void MCMC_PHYREX_Exp_Growth(t_tree *tree, int print)
               if(aux_tree->times->c_lnL < UNLIKELY ||
                  aux_tree->mmod->c_lnL < UNLIKELY)
                 {
-                  tree->times->exp_growth = cur_growth;
+                  tree->times->neff_growth = cur_growth;
                   Reset_Lk(tree);
                   Reset_Prior(tree);
                   return;
@@ -7382,10 +7382,10 @@ void MCMC_PHYREX_Exp_Growth(t_tree *tree, int print)
 
               MCMC_PHYREX_Exchange_Core(aux_tree,tree,NO);
               
-              aux_tree->times->exp_growth = new_growth;
+              aux_tree->times->neff_growth = new_growth;
               new_lnL_aux = TIMES_Lk(aux_tree);              
 
-              aux_tree->times->exp_growth = cur_growth;
+              aux_tree->times->neff_growth = cur_growth;
               cur_lnL_aux = TIMES_Lk(aux_tree);
             }
         }
@@ -7412,23 +7412,23 @@ void MCMC_PHYREX_Exp_Growth(t_tree *tree, int print)
       
       if(u > alpha) /* Reject */
         {
-          tree->times->exp_growth = cur_growth;
+          tree->times->neff_growth = cur_growth;
           Reset_Lk(tree);
           Reset_Prior(tree);
         }
       else
         {
-          tree->mcmc->acc_move[tree->mcmc->num_move_time_exp_growth]++;
+          tree->mcmc->acc_move[tree->mcmc->num_move_time_neff_growth]++;
         }
       
       tree->mcmc->run++;
       PHYREX_Print_MCMC_Stats(tree);
       PHYREX_Print_MCMC_Tree(tree);
       PHYREX_Print_MCMC_Summary(tree);
-      tree->mcmc->run_move[tree->mcmc->num_move_time_exp_growth]++;
+      tree->mcmc->run_move[tree->mcmc->num_move_time_neff_growth]++;
     }
   else if(tree->times->model_id == COALESCENT &&
-          tree->times->coalescent_model_id == EXPCOALESCENT &&
+          (tree->times->coalescent_model_id == EXPCOALESCENT || tree->times->coalescent_model_id == POWLAW) &&
           RRW_Is_Rw(tree->mmod) == YES  &&
           tree->mmod->sampling_scheme == SPATIAL_SAMPLING_DETECTION)
     {
@@ -7449,21 +7449,21 @@ void MCMC_PHYREX_Exp_Growth(t_tree *tree, int print)
       cur_tlnP = tree->times->c_lnP;
       new_tlnP = UNLIKELY;
       
-      cur_growth = tree->times->exp_growth;
-      new_growth = tree->times->exp_growth;
+      cur_growth = tree->times->neff_growth;
+      new_growth = tree->times->neff_growth;
       
-      min_growth = tree->times->exp_growth_min;
-      max_growth = tree->times->exp_growth_max;
+      min_growth = tree->times->neff_growth_min;
+      max_growth = tree->times->neff_growth_max;
       
       Set_Lk(tree);
       Set_Prior(tree);
       
       hr = 0.0;
-      MCMC_Make_Move(&cur_growth,&new_growth,min_growth,max_growth,&hr,K,tree->mcmc->move_type[tree->mcmc->num_move_time_exp_growth]);
+      MCMC_Make_Move(&cur_growth,&new_growth,min_growth,max_growth,&hr,K,tree->mcmc->move_type[tree->mcmc->num_move_time_neff_growth]);
       
       if(new_growth < max_growth && new_growth > min_growth)
         {
-          tree->times->exp_growth = new_growth;          
+          tree->times->neff_growth = new_growth;          
           new_tlnL = TIMES_Lk(tree);
           new_tlnP = TIMES_Prior(tree);
         }
@@ -7491,16 +7491,16 @@ void MCMC_PHYREX_Exp_Growth(t_tree *tree, int print)
       
       if(u > alpha) /* Reject */
         {
-          tree->times->exp_growth = cur_growth;
+          tree->times->neff_growth = cur_growth;
           Reset_Lk(tree);
           Reset_Prior(tree);
         }
       else
         {
-          tree->mcmc->acc_move[tree->mcmc->num_move_time_exp_growth]++;
+          tree->mcmc->acc_move[tree->mcmc->num_move_time_neff_growth]++;
         }
     
-      tree->mcmc->run_move[tree->mcmc->num_move_time_exp_growth]++;
+      tree->mcmc->run_move[tree->mcmc->num_move_time_neff_growth]++;
       tree->mcmc->run++;
       
 #ifdef PHYREX

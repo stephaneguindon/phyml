@@ -918,9 +918,9 @@ void TIMES_Init_Time_Struct(t_time *times, t_time *existing_times, int n_otu)
   times->scaled_pop_size_min = 1.E-1;
   times->scaled_pop_size_max = 1.E+3;
 
-  times->exp_growth     = 1E-6;
-  times->exp_growth_min = -5.;
-  times->exp_growth_max = +5.;
+  times->neff_growth     = 1E-6;
+  times->neff_growth_min = -5.;
+  times->neff_growth_max = +5.;
   
   times->c_lnL         = UNLIKELY;
   times->p_lnL         = UNLIKELY;

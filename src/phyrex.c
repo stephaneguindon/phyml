@@ -331,6 +331,17 @@ void PHYREX_XML(char *xml_filename)
           if(select < 3) mixt_tree->times->coalescent_model_id = EXPCOALESCENT;
           else mixt_tree->times->coalescent_model_id = STRICTCOALESCENT;
         }      
+
+      char *powgrowth;
+      powgrowth = XML_Get_Attribute_Value(xnd,"powgrowth");
+      if(powgrowth != NULL)
+        {
+          int select = XML_Validate_Attr_Int(powgrowth,6,
+                                             "true","yes","y",
+                                             "false","no","n");
+          if(select < 3) mixt_tree->times->coalescent_model_id = POWLAW;
+          else mixt_tree->times->coalescent_model_id = STRICTCOALESCENT;
+        }
     }
 
   
@@ -996,7 +1007,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_rad")) MCMC_PHYREX_Radius(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_sigsq")) MCMC_PHYREX_Sigsq(tree,NO);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_neff")) MCMC_PHYREX_Neff(tree,NO);
-      if(!strcmp(tree->mcmc->move_name[move],"phyrex_exp_growth")) MCMC_PHYREX_Exp_Growth(tree,NO);
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_neff_growth")) MCMC_PHYREX_Neff_Growth(tree,NO);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_disk")) MCMC_PHYREX_Indel_Disk(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_hit")) MCMC_PHYREX_Indel_Hit(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_move_disk_ud")) MCMC_PHYREX_Move_Disk_Updown(tree,NO);
@@ -5018,7 +5029,7 @@ void PHYREX_Evolve_All(t_tree *tree)
   PhyML_Printf("\n. sigSqLon: %f",tree->mmod->sigsq[0]);
   PhyML_Printf("\n. sigSqLat: %f",tree->mmod->sigsq[1]);
   PhyML_Printf("\n. neff: %f",tree->times->scaled_pop_size);
-  PhyML_Printf("\n. growth: %f",tree->times->exp_growth);
+  PhyML_Printf("\n. growth: %f",tree->times->neff_growth);
   PhyML_Printf("\n. root time: %f",tree->times->nd_t[tree->n_root->num]);
   PhyML_Printf("\n. root lon: %f",tree->n_root->ldsk->coord->lonlat[0]);
   PhyML_Printf("\n. root lat: %f",tree->n_root->ldsk->coord->lonlat[1]);

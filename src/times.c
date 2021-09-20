@@ -860,7 +860,7 @@ phydbl TIMES_Lk_Coalescent(t_tree *tree)
   phydbl T;
   
   Ne = tree->times->scaled_pop_size;
-  exp_g = tree->times->exp_growth;
+  exp_g = tree->times->neff_growth;
   
   if(Ne > tree->times->scaled_pop_size_max || Ne < tree->times->scaled_pop_size_min)
     {
@@ -894,12 +894,21 @@ phydbl TIMES_Lk_Coalescent(t_tree *tree)
             (exp(exp_g * fabs(tree->times->nd_t[n->num]-T)) -
              exp(exp_g * fabs(tree->times->nd_t[n->rk_next->num]-T)));
         }
+      else if(tree->times->coalescent_model_id == POWLAW)
+        {
+          dt =
+            1./(1.+exp_g) *
+            (pow(fabs(tree->times->nd_t[n->num]-T)+1,exp_g+1.) -
+             pow(fabs(tree->times->nd_t[n->rk_next->num]-T)+1,exp_g+1.));
+        }
       
       lnP += -n_lineages * (n_lineages-1.) / (2.*Ne) * dt;
       
       if(tree->times->coalescent_model_id == EXPCOALESCENT && n->tax == NO)
         lnP += exp_g * fabs(tree->times->nd_t[n->num]-T);
-
+      else if(tree->times->coalescent_model_id == POWLAW && n->tax == NO)
+        lnP += exp_g * log(fabs(tree->times->nd_t[n->num]-T) + 1.);
+      
       if(n->tax == NO) lnP -= log(Ne);
       
       // Multifurcations not allowed under standard Kingman coalescent
@@ -934,7 +943,7 @@ phydbl TIMES_Lk_Coalescent_Range(t_dsk *young, t_dsk *old, t_tree *tree)
   t_dsk *disk;
 
   Ne = tree->times->scaled_pop_size;  
-  exp_g = tree->times->exp_growth;
+  exp_g = tree->times->neff_growth;
   T = tree->young_disk->time;
   
   if(Ne > tree->times->scaled_pop_size_max || Ne < tree->times->scaled_pop_size_min) return(UNLIKELY);
@@ -2533,9 +2542,9 @@ void TIMES_Copy_Time_Struct(t_time *from, t_time *to, int n_otu)
   to->scaled_pop_size_min = from->scaled_pop_size_min;
   to->scaled_pop_size_max = from->scaled_pop_size_max;
 
-  to->exp_growth = from->exp_growth;
-  to->exp_growth_min = from->exp_growth_min;
-  to->exp_growth_max = from->exp_growth_max;
+  to->neff_growth = from->neff_growth;
+  to->neff_growth_min = from->neff_growth_min;
+  to->neff_growth_max = from->neff_growth_max;
 
   to->model_id = from->model_id;
   to->coalescent_model_id = from->coalescent_model_id;

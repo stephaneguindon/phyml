@@ -2848,24 +2848,37 @@ statistical phylogeographic framework''. 2014. Systematic Biology.
 
 
 
-\subsection{PhyREX}\index{PhyREX} PhyREX is a program that implements the spatial
-$\Lambda$-Fleming-Viot model
+\subsection{PhyREX}
+
+\index{PhyREX}PhyREX is a program that is part of the PhyML package which implements phylogeographic
+models, i.e., models that analyse geo-referenced genetic sequences so as to infer the rate of
+diffusion of lineages in space along with other parameters of biological interest.
+
+
+Previous versions of PhyREX implemented the {\bf spatial $\Lambda$-Fleming-Viot model}
 \cite{etheridge2008,berestycki2009,barton2010,barton2010b,veber2012,barton2013} or \sfv\ for short.
 This model can be thought of as a structured-coalescent where space is considered as continuous
-rather than organized into separate demes.
-Under the \sfv\ model, the spatial distribution of individuals in a population is uniform and does
+rather than organized into separate demes. Under the \sfv\ model, the spatial distribution of individuals in a population is uniform and does
 not change during the course of evolution, as opposed to other models such as the very popular
 isolation by distance model proposed by Wright and Mal\'ecot. The \sfv\ model  does not
 suffer from the ``pain in the torus'' \cite{felsenstein1975} and clumps of individuals with
 increasing densities do not arise. Also, estimates of migration parameters are not sensitive to
 variation in sampling intensities across regions, unlike ``mugration'' or ``discrete trait
-analysis'' models \cite{lemey2009}.
-
-PhyREX implements an original data augmentation technique embedded in a Bayesian sampler to
+analysis'' models \cite{lemey2009}. PhyREX implements an original data augmentation technique embedded in a Bayesian sampler to
 estimate two important biological parameters: the neighorhood size ($\mathcal{N}$) and the dispersal
 intensity ($\sigma^2$). These two parameters are closely related to the effective size of the
 population of interest per unit area since $\mathcal{N}$ is defined as follows: $\mathcal{N} := 4\pi
 \rho_e \sigma^2$, where $\rho_e$ is the effective population density.
+
+Instead of the \sfv\ process, more recent releases of PhyREX implement various versions of the {\bf
+  Relaxed Random Walk} (RRW) model
+\cite{lemey2010}\index{RRW (model)}. This approach relies on a Brownian diffusion process running
+along the phylogeny that governs the random fluctuations of 2d-coordinates during the course of
+evolution. As opposed to the \sfv\ model, the RRW approach is not mechanistic in the sense that
+it is not built on biological hypotheses about the migration and reproduction process at at the
+individual level. Yet, it defines a flexible framework to model the dispersal of organisms and is
+able, at least in principle, to capture important features of the underlying processes.
+
 
 \subsubsection{Installing PhyREX}
 
@@ -2890,7 +2903,7 @@ standard PHYLIP (or NEXUS) format along with a file providing the spatial coordi
 corresponding sequences.  An example of the coordinates file is given
 below:
 \begin{Verbatim}[frame=single, label=Valid PhyREX spatial location file, samepage=true, baselinestretch=0.5]
-# state.name lon lat
+# state.name lat lon
 |SouthWest| 0 0
 |NorthEast| 10 10 
 levosl 5.082206 4.133893 
@@ -2907,29 +2920,65 @@ pfrnpk 4.117791 4.489819
 elwdvr 5.649958 4.824092 
 lptxiv 4.563302 4.005124 
 \end{Verbatim}
-This first column in this  file gives the sequence names, the second is  the longitude and the third
-column gives the latitude. The first row in this file gives the names of the columns. It starts with
+This first column in this  file gives the sequence names, the second is  the latitude and the third
+column gives the longitude. The first row in this file gives the names of the columns. It starts with
 the  `\#' character  signaling  a comment.  The  second and  third  rows define  the  limits of  the
 population's habitat.  At the moment,  this habitat is  assumed to be  a rectangle. The  position in
 space of that rectangle are determined by  the coordinates of the bottom-left corner (\x{|SouthWest|
 0 0}) and the top-right one (\x{|NorthEast| 10  10}). The `\x{|}' characters help identify the terms
 in the list of coordinate corresponding indeed to these two particular points and should thus not be
-omitted. The  remaining row give  the coordinates of  each taxon. Every  taxon in the  sequence file
+omitted. The geographical limits of the habitat are considered as data under the \sfv\ model while
+they are ignored under the RRW model (although one needs to define these coordinates such that all
+samples are located within the corresponding rectangle). The  following rows give  the coordinates
+of each taxon. Every  taxon in the  sequence file
 should also be listed in the coordinate file.
 
-Below is an excerpt of a XML file that can be used as input to run a PhyREX analysis. The \sfv\
-model parameters are estimated using a Bayesian sampler which hyperparameters (number of
-samples, frequency at which samples are collected, length of the ``burnin'' phase, etc.) are set
-through the corresponding XML attributes (see \ref{sec:phytimesettings}). PhyREX is similar to
-PhyTime in the sense that substitution rates and times are separate parameters. The rates can
-vary across lineages (using for instance a log-normal model) or not (strict clock). In case all
-sequences were collected at (approximately) the same time, it is recommended to set the average
-rate of evolution to a specific value (\x{<clockrate value="1E-4"/>}). Yet, with serially-sampled
-data, the average rate of evolution can be estimated directly from the data and setting it to
-a particular value is thus not mandatory. Finally, it is necessary to give information about the
-time at which each sequence was collected. This is done through seeting appropriate calibration
-constraints. From a technical perspective, these constraints apply to clades where each clade here
-is a single tip.
+Below is an excerpt of a XML file that can be used as input to run a PhyREX analysis. The
+phylogeographic model parameters are estimated using a Bayesian sampler which hyperparameters
+(number of samples, frequency at which samples are collected, length of the ``burnin'' phase, etc.)
+are set through the corresponding XML attributes (see \ref{sec:phytimesettings}). Below is the list
+of the main options :
+\begin{itemize}
+\item {\em Evolution of spatial coordinates along the tree.} \x{<spatialmodel>} component. This is
+  the part where the RRW model is parametrized. Users need to specify what probabilistic distribution is to be used in order to
+  model the variation of the spatial dispersal rates across lineages. Using \x{name="rw"} implements
+  a ``strict'' random walk, i.e., the dispersal rate is the same throughout the whole
+  tree. \x{name="rrw+gamma"} and \x{name="rrw+lognormal"} implements the relaxed random walk model
+  using a gamma or a lognormal distribution of the relative rate of dispersal respectively. The modes
+  of these distributions is set to one and the standard deviation is fixed to 2.0. The dispersal
+  rate itself is a composite parameter that is estimated from the data. Each spatial dimension,
+  corresponding to the North-South and East-West axes, has its own dispersal parameter. The prior
+  distribution that applies to each of these two parameter is an exponential distribution with mean defined by
+  the user through the \x{dispersal.prior.mean} attribute. Finally, the \x{sampling} attribute is
+  either \x{survey} or \x{detection} (default). This attribute specifies the spatial sampling
+  scheme. \x{detection} corresponds to the case where sampling is proportional to the underlying
+  population spatial density (i.e., the most densely populated areas are also the most sampled
+  ones). \x{survey} corresponds to the situation where sampling and population densities are
+  decoupled, corresponding to situations where some areas of the habitat are easier to access for instance.
+\item {\em Substitution rate (a.k.a., clock rate).} \x{<clockrate>} component. In case all sequences were collected at (approximately) the same time, it is recommended to set the average rate
+of evolution to a specific value (\x{<clockrate value="1E-4"/>}). It is also possible to apply a
+lognormal prior on the clock rate with mean parameter and variance defined as in the following example: \x{<clockrate
+prior.mean="0.001" prior.var="1.E-8"/>}. With serially-sampled data, the average rate of evolution
+can be estimated directly from the data and setting it to a particular value or using an informative
+prior is not mandatory. 
+\item {\em Variation of rates across lineages (a.k.a. relaxed clock\index{relaxed clock (model)}).}
+  \x{<lineagerates>} component.
+  PhyREX is similar to PhyTime in the sense that substitution rates and times are separate parameters. 
+The rates can vary across lineages (using for instance a log-normal model: \x{<lineagerates
+  model="lognormal"/>}) or not (strict clock: \x{<lineagerates model="strictclock"/>}). Finally, it is necessary to give information about the time at which each
+sequence was collected. This is done through seeting appropriate calibration constraints. From a
+technical perspective, these constraints apply to clades where each clade here is a single tip.
+\item {\em Tree generating model.} \x{<treegenerating>} component. Using \x{model="coalescent"}
+    fits a coalescent model to the data. If no other options are given, Kingman's coalescent is
+    used. Using \x{powgrowth="yes"} fits a coalescent where the population size varies according to
+    a power function $N(t) = N_e(t+1)^{-g}$ where $N_e$ is the effective population size at time $t=0$
+    and $g$ is the growth parameter, which is to be estimated from the data. Using
+    \x{expgrowth="yes"} fits a coalescent where the population size varies according to an
+    exponential function  $N(t) = N_ee^{-gt}$. The prior distribution on the growth parameter $g$ is
+    exponential with mean set through the \x{neff.prior.mean} attribute value.
+\end{itemize}
+
+
 
 
 \begin{Verbatim}[frame=single, label=Example (excerpt) of PhyREX XML file, samepage=true, baselinestretch=0.5,
@@ -2944,12 +2993,16 @@ is a single tip.
   <!-- ``Standard'' stuff goes here, i.e., <topology>, -->
   <!-- <partitionelem>, etc -->
   
-  <!-- Model of rate variation across lineages -->
-  <lineagerates model="lognormal"/>
+  <!-- Model of variation of spatial diffusion across lineages -->
+  <spatialmodel name="rrw+gamma" sampling="survey"
+  dispersal.prior.mean="2."/>
   
-  <!-- Set the average (clock) rate of substitution -->
-  <!-- to a fixed value (optional) -->
-  <clockrate value="1E-4"/>
+  <!-- Lognormal prior on the rate of substitutions -->
+  <clockrate prior.mean="0.001" prior.var="1.E-8"/>
+
+  <!-- Model of rate variation across lineages -->
+  <treegenerating model="coalescent" neff.prior.mean="10.0"
+  powgrowth="yes"/>
 
   <-- File where 2-D spatial coordinates are found --> 
   <coordinates id="coordinates" file.name="./usa_coord.txt"/>
@@ -2986,47 +3039,40 @@ is a single tip.
 
 PhyREX generates correlated samples from the posterior distribution of the \sfv\ model
 parameters. The estimated distributions and related summary statistics can be monitored during the
-analysis using the MCMC vizualization software Icylog. Figure \ref{fig:phyrextrace} shows the traces
-for two parameters after about an hour of calculation on the example data set (36 taxa, 50
-geographic locations). Most of the names of the sampled parameters are self-explanatory but some of
-them (listed below) need explanations:
+analysis using the MCMC vizualization software Icylog or Tracer. Most of the names of the sampled
+parameters are self-explanatory but some of them (listed below) require more explanations:
 \begin{itemize}
-\item \texttt{lnP} : log-posterior.
-\item \texttt{alnL} : logarithm of the probability of the sequence alignment given the current tree.
-\item \texttt{glnL} : logarithm of the probability of the current tree and location data. 
-\item \texttt{clock} : substitution rate
-\item \texttt{lbda} : value of $\lambda$, the rate at which REX events take place in the \sfv~model.
-\item \texttt{mu} : value of $\mu$, the term governing the probability for the lineage to be hit by
-  a REX event.
-\item \texttt{rad} : value of the parameter $\theta$, i.e., the radius parameter in the \sfv~model.
-\item \texttt{neigh} : neighborhood size (equal to $2/\mu$ under the \sfv~model).
-\item \texttt{rhoe} : effective population density.
-\item \texttt{sigsq} : $\sigma^2 := 4\theta^4\lambda \pi \mu /s$ where $s$ is the surface of the habitat.
-\item \texttt{sigsqobs} : mean, taken over the (most recent) tips, of one half (in a two-dimensional space) times the Euclidean distance
-  covered in one unit of time, squared.
-\item \texttt{dispdist} : mean, taken over the (most recent) tips, of the Haversine distance
-  covered in one unit of time.
-\item \texttt{nInt} : number of REX events.
-\item \texttt{nCoal} : number of coalescent events.
-\item \texttt{nHit} : number of REX events where a single lineage was hit.
-\item \texttt{rootTime} : time at the root node.
-\item \texttt{rootLon} : longitude of the root node location.
-\item \texttt{rootLat} : latitude of the root node location.
+\item \texttt{lnPost}: log-posterior density.
+\item \texttt{lnAlgn}: logarithm of the probability of the sequence alignment given the current tree.
+\item \texttt{lnSpac}: logarithm of the probability density of the location data given the current tree. 
+\item \texttt{lnRate}: logarithm of the probability density of the substitution rates along the tree. 
+\item \texttt{lnTime}: logarithm of the probability density of the tree given the tree-generating model. 
+\item \texttt{substRate}: substitution rate.
+\item \texttt{siqSqLon}: diffusion rate along the East-West axis.
+\item \texttt{siqSqLat}: diffusion rate along the North-South axis.
+\item \texttt{nEff}: effective population size.
+\item \texttt{growth}: coalescent population growth parameter.
+\item \texttt{dispDistAlt}: effective diffusion rate (average number of kilometers covered in one unit
+  of time). 
+\item \texttt{rootTime}: calendar time corresponding to the MRCA node. 
+
+\item \texttt{rootLon}: longitude of the root node location.
+\item \texttt{rootLat}: latitude of the root node location.
 \end{itemize}
 If you
 are unsure about the precise definition of one of these parameters or have any questions regarding
 how to interpret the results returned by PhyREX, please do not hesitate to contact me (\url{guindon@lirmm.fr}).
 
-\begin{figure}
-\begin{center}
-  \includegraphics[width=13.8cm]{./fig/phyrexlog}
-\end{center}
-\caption{{\bf Statistics file generated by PhyREX and loaded on Icylog
-    (\url{http://tgvaughan.github.io/icylog/icylog.html}).} The traces for the neighborhood size
-  (top) and
-the dispersal intensity (bottom) are shown here.} 
-\label{fig:phyrextrace}
-\end{figure}
+% \begin{figure}
+% \begin{center}
+%   \includegraphics[width=13.8cm]{./fig/phyrexlog}
+% \end{center}
+% \caption{{\bf Statistics file generated by PhyREX and loaded on Icylog
+%     (\url{http://tgvaughan.github.io/icylog/icylog.html}).} The traces for the neighborhood size
+%   (top) and
+% the dispersal intensity (bottom) are shown here.} 
+% \label{fig:phyrextrace}
+% \end{figure}
 
 \subsubsection{Citing PhyREX}
 
