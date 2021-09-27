@@ -225,13 +225,27 @@ void Bootstrap_MPI(t_tree *tree)
           boot_tree->mat = boot_mat;
         }
 
-      boot_tree->mod                = boot_mod;
-      boot_tree->io                 = tree->io;
-      boot_tree->data               = boot_data;
-      boot_tree->verbose            = VL0;
-      boot_tree->n_pattern          = boot_tree->data->crunch_len;
-      boot_tree->io->print_site_lnl = 0;
-      boot_tree->io->print_trace    = 0;
+      boot_tree->mod                  = boot_mod;
+      boot_tree->io                   = tree->io;
+      boot_tree->data                 = boot_data;
+      boot_tree->verbose              = VL0;
+      boot_tree->n_pattern            = boot_tree->data->crunch_len;
+      boot_tree->io->print_site_lnl   = NO;
+      boot_tree->io->print_trace      = NO;
+      boot_tree->io->print_json_trace = NO;
+      boot_tree->n_root               = NULL;
+      boot_tree->e_root               = NULL;
+      boot_tree->_tPij1               = tree->_tPij1;
+      boot_tree->_tPij2               = tree->_tPij2;
+      boot_tree->_pmat1plk1           = tree->_pmat1plk1;
+      boot_tree->_pmat2plk2           = tree->_pmat2plk2;
+      boot_tree->_plk0                = tree->_plk0;
+      boot_tree->l_ev                 = tree->l_ev;
+      boot_tree->p_lk_left_pi         = tree->p_lk_left_pi;
+      boot_tree->_l_ev                = tree->_l_ev;
+      boot_tree->_r_ev                = tree->_r_ev;
+      boot_tree->_prod_left           = tree->_prod_left;
+      boot_tree->_prod_rght           = tree->_prod_rght;
 
       Set_Both_Sides(YES,boot_tree);
       
