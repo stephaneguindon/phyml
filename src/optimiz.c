@@ -3077,11 +3077,11 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
           if(tree->mod->s_opt->serial_free_rates == YES)
             {
               fast = YES;
-              lk_before = tree->c_lnL;
+              lk_before = mixt_tree->c_lnL;
               Optimize_Free_Rate_Weights(tree,fast,verbose);
-              lk_after = tree->c_lnL;
+              lk_after = mixt_tree->c_lnL;
               Optimize_Free_Rate_Rr(tree,fast,verbose);
-              lk_after = tree->c_lnL;
+              lk_after = mixt_tree->c_lnL;
 
               if(lk_after < lk_before - tree->mod->s_opt->min_diff_lk_global)
                 {
@@ -3099,7 +3099,7 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
               cpy = (phydbl *)mCalloc(2*tree->mod->ras->n_catg,sizeof(phydbl));
 
               
-              lk_before = tree->c_lnL;
+              lk_before = mixt_tree->c_lnL;
 
               pos = 0;
               for(i=0;i<tree->mod->ras->n_catg;i++) x[pos++] = tree->mod->ras->gamma_rr_unscaled->v+i;
@@ -3168,7 +3168,7 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
                 }
 
               
-              lk_after = tree->c_lnL;
+              lk_after = mixt_tree->c_lnL;
 
               if(lk_after < lk_before - tree->mod->s_opt->min_diff_lk_global)
                 {
