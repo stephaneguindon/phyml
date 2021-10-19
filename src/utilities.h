@@ -44,9 +44,9 @@ the GNU public licence. See http://www.opensource.org for details.
 #endif
 
 
-#if !defined(__FMA__) && (defined(__AVX__) || defined(__AVX2__))
-#define __FMA__ 1
-#endif
+/* #if !defined(__FMA__) && (defined(__AVX__) || defined(__AVX2__)) */
+/* #define __FMA__ 1 */
+/* #endif */
 
 extern int n_sec1;
 extern int n_sec2;
