@@ -1123,8 +1123,8 @@ int Read_Command_Line(option *io, int argc, char **argv)
                     io->do_alrt           = NO;
 		    io->ratio_test        = 0;
 		    io->n_boot_replicates = (int)atoi(optarg);
-		    io->print_boot_trees  = 1;
-		    
+		    io->print_boot_trees  = YES;
+
 		    if(io->n_data_sets > 1)
 		      {
 			char choix;
@@ -1652,13 +1652,14 @@ int Read_Command_Line(option *io, int argc, char **argv)
       io->fp_out_trees = Openfile(io->out_trees_file,1);
     }
   
-  if((io->print_boot_trees) && (io->do_boot == YES) && (io->fp_in_align != NULL))
+  if((io->print_boot_trees) && (io->do_boot == YES || io->do_tbe == YES) && (io->fp_in_align != NULL))
     {
       strcpy(io->out_boot_tree_file,io->in_align_file);
       strcat(io->out_boot_tree_file,"_phyml_boot_trees");
       if(io->append_run_ID) { strcat(io->out_boot_tree_file,"_"); strcat(io->out_boot_tree_file,io->run_id_string); }
       strcat(io->out_boot_tree_file,".txt");
       io->fp_out_boot_tree = Openfile(io->out_boot_tree_file,1);
+      
       
       strcpy(io->out_boot_stats_file,io->in_align_file);
       strcat(io->out_boot_stats_file,"_phyml_boot_stats");
