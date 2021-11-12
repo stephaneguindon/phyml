@@ -780,7 +780,7 @@ int Update_Efrq(t_mod *mod)
 //////////////////////////////////////////////////////////////
 
 int Set_Model_Parameters(t_mod *mod)
-{
+{  
   if(!Update_Boundaries(mod)) return 0;
   if(!Update_RAS(mod))        return 0;
   if(!Update_Efrq(mod))       return 0;
@@ -829,6 +829,7 @@ int Update_Boundaries(t_mod *mod)
       for(i=0;i<6;i++) if(mod->r_mat->rr->v[i] > RR_MAX) mod->r_mat->rr->v[i] = RR_MAX;
     }
 
+
   for(i=0;i<mod->ns;i++)
     {
       if(mod->e_frq->pi_unscaled->v[i] < UNSCALED_E_FRQ_MIN)
@@ -836,7 +837,7 @@ int Update_Boundaries(t_mod *mod)
 
       if(mod->e_frq->pi_unscaled->v[i] > UNSCALED_E_FRQ_MAX)
         mod->e_frq->pi_unscaled->v[i] = UNSCALED_E_FRQ_MAX;
-            
+
       if(mod->e_frq->pi->v[i] < E_FRQ_MIN)
         mod->e_frq->pi->v[i] = E_FRQ_MIN;
 

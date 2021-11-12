@@ -757,6 +757,8 @@ typedef struct __Tree{
 #endif
 
   phydbl                  *p_lk_left_pi,*l_ev;
+  phydbl                        *big_lk_array;
+  int                        big_lk_array_pos;
   
   short int                         eval_alnL; /*! Evaluate likelihood for genetic data */
   short int                         eval_rlnL; /*! Evaluate likelihood for rates along the tree */
@@ -2477,6 +2479,9 @@ void Reset_Prior(t_tree *tree);
 void Set_Prior(t_tree *tree);
 t_edge *Get_Edge(t_node *a, t_node *d, t_tree *tree);
 void Exchange_Nodes(t_node *a, t_node *d, t_node *w, t_node *v, t_tree *tree);
+void Init_T_Beg(t_tree *tree);
+void Set_Ignore_Root(int yesno, t_tree *tree);
+void Set_Bl_From_Rt(int yesno, t_tree *tree);
 
 
 #include "xml.h"

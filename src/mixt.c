@@ -51,6 +51,7 @@ void MIXT_Chain_All(t_tree *mixt_tree)
     }
   while(next);
 
+  MIXT_Chain_Models(mixt_tree);
   MIXT_Chain_Edges(mixt_tree);
   MIXT_Chain_Nodes(mixt_tree);
   MIXT_Chain_Sprs(mixt_tree);
@@ -97,6 +98,50 @@ void MIXT_Chain_Edges(t_tree *mixt_tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void MIXT_Chain_Models(t_tree *mixt_tree)
+{
+  t_tree *tree;
+
+  tree = mixt_tree;
+  do
+    {
+      if(tree->next != NULL)
+        {
+          tree->mod->next = tree->next->mod;
+          tree->next->mod->prev = tree->mod;
+        }
+      else
+        {
+          tree->mod->next = NULL;
+        }
+      tree = tree->next;
+    }
+  while(tree);
+
+
+  tree = mixt_tree;
+  do
+    {
+      if(tree->next_mixt != NULL)
+        {
+          tree->mod->next_mixt = tree->next_mixt->mod;
+          tree->next_mixt->mod->prev_mixt = tree->mod;
+        }
+      else
+        {
+          tree->mod->next_mixt = NULL;
+        }
+      
+      tree = tree->next_mixt;
+    }
+  while(tree);
+
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 
 void MIXT_Chain_Nodes(t_tree *mixt_tree)
 {
@@ -1750,13 +1795,17 @@ void MIXT_Set_Ignore_Root(int yesno, t_tree *mixt_tree)
 {
   t_tree *tree;
 
-  tree = mixt_tree;
-  do
+  tree = mixt_tree->next;
+
+  if(tree != NULL)
     {
-      tree->ignore_root = yesno;
-      tree = tree->next;
+      do
+        {
+          Set_Ignore_Root(yesno,tree);
+          tree = tree->next;
+        }
+      while(tree);
     }
-  while(tree);
 }
 
 //////////////////////////////////////////////////////////////
@@ -2278,36 +2327,19 @@ void MIXT_Update_Br_Len_Multipliers(t_mod *mod)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void MIXT_Init_Model(t_tree *mixt_tree)
+void MIXT_Init_Model(t_mod *mod)
 {
-  t_mod *mod,*mixt_mod;
-  option *io;
-  t_tree *tree;
+  mod = mod->next;
 
-  assert(mixt_tree);
-
-  mixt_mod = mixt_tree->mod;
-  io       = mixt_tree->io;
-
-  mod = mixt_mod;
-  do
+  if(mod != NULL)
     {
-      Init_Model(mod->io->cdata,mod,io);
-      mod = mod->next;
-    }
-  while(mod);
-
-  tree = mixt_tree;
-  do
-    {
-      if(tree->next_mixt != NULL)
+      do
         {
-          tree->mod->next_mixt = tree->next_mixt->mod;
-          tree->next_mixt->mod->prev_mixt = tree->mod;
+          Init_Model(mod->io->cdata,mod,mod->io);
+          mod = mod->next;
         }
-      tree = tree->next_mixt;
+      while(mod);
     }
-  while(tree);
 }
 
 //////////////////////////////////////////////////////////////
@@ -2410,17 +2442,18 @@ t_tree *MIXT_Starting_Tree(t_tree *mixt_tree)
 void MIXT_Connect_Cseqs_To_Nodes(t_tree *mixt_tree)
 {
   t_tree *tree;
+  
+  tree = mixt_tree->next;
 
-  Copy_Tree(mixt_tree,mixt_tree->next);
-  
-  tree = mixt_tree;
-  do
+  if(tree != NULL)
     {
-      Connect_CSeqs_To_Nodes(tree->data,mixt_tree->io,tree);
-      tree = tree->next;
+      do
+        {
+          Connect_CSeqs_To_Nodes(tree->data,mixt_tree->io,tree);
+          tree = tree->next;
+        }
+      while(tree);
     }
-  while(tree);
-  
 }
 
 //////////////////////////////////////////////////////////////
@@ -2429,15 +2462,10 @@ void MIXT_Connect_Cseqs_To_Nodes(t_tree *mixt_tree)
 void MIXT_Init_T_Beg(t_tree *mixt_tree)
 {
   t_tree *tree;
-
+  
   /*! Initialize t_beg in each mixture tree */
-  tree = mixt_tree;
-  do
-    {
-      time(&(tree->t_beg));
-      tree = tree->next_mixt;
-    }
-  while(tree);
+  tree = mixt_tree->next_mixt;
+  if(tree != NULL) Init_T_Beg(tree);
 }
 
 //////////////////////////////////////////////////////////////
@@ -2465,7 +2493,8 @@ void MIXT_Prepare_All(int num_rand_tree, t_tree *mixt_tree)
   t_tree *tree;
 
   MIXT_Check_Model_Validity(mixt_tree);
-  MIXT_Init_Model(mixt_tree);
+  Init_Model(mixt_tree->mod->io->cdata,mixt_tree->mod,mixt_tree->mod->io);
+  Set_Model_Parameters(mixt_tree->mod);
   Print_Data_Structure(NO,stdout,mixt_tree);
   tree = MIXT_Starting_Tree(mixt_tree);
   Copy_Tree(tree,mixt_tree);
@@ -2481,7 +2510,7 @@ void MIXT_Prepare_All(int num_rand_tree, t_tree *mixt_tree)
   MIXT_Init_T_Beg(mixt_tree);
   
   MIXT_Make_Tree_For_Pars(mixt_tree);
-  MIXT_Make_Tree_For_Lk(mixt_tree);
+  Make_Tree_For_Lk(mixt_tree);
   MIXT_Make_Spr(mixt_tree);
   
   MIXT_Chain_All(mixt_tree);
@@ -2498,13 +2527,17 @@ void MIXT_Make_Spr(t_tree *mixt_tree)
 {
   t_tree *tree;
 
-  tree = mixt_tree;
-  do
+  tree = mixt_tree->next;
+
+  if(tree != NULL)
     {
-      Make_Spr(tree);
-      tree = tree->next;
+      do
+        {
+          Make_Spr(tree);
+          tree = tree->next;
+        }
+      while(tree);
     }
-  while(tree);
 }
 
 //////////////////////////////////////////////////////////////
@@ -3535,14 +3568,17 @@ void MIXT_Set_Bl_From_Rt(int yn, t_tree *mixt_tree)
 {
   t_tree *tree;
 
-  tree = mixt_tree;
-  do
+  tree = mixt_tree->next;
+
+  if(tree != NULL)
     {
-      assert(tree->rates);
-      tree->rates->bl_from_rt = yn;
-      tree = tree->next;
+      do
+        {
+          Set_Bl_From_Rt(yn,tree);
+          tree = tree->next;
+        }
+      while(tree);  
     }
-  while(tree);  
 }
 
 //////////////////////////////////////////////////////////////

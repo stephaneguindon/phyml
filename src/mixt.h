@@ -71,7 +71,7 @@ phydbl MIXT_Rescale_Free_Rate_Tree(t_tree *mixt_tree);
 void MIXT_Set_Br_Len_Var(t_edge *mixt_b, t_tree *mixt_tree);
 void MIXT_Optimize_Br_Len_Multiplier(t_tree *mixt_tree);
 void MIXT_Update_Br_Len_Multipliers(t_mod *mod);
-void MIXT_Init_Model(t_tree *mixt_tree);
+void MIXT_Init_Model(t_mod *mod);
 t_tree *MIXT_Starting_Tree(t_tree *mixt_tree);
 void MIXT_Connect_Cseqs_To_Nodes(t_tree *mixt_tree);
 void MIXT_Check_Edge_Lens_In_One_Elem(t_tree *mixt_tree);
@@ -118,5 +118,6 @@ t_tree *MIXT_Duplicate_Tree(t_tree *ori);
 void MIXT_Set_Model_Parameters(t_mod *mixt_mod);
 void MIXT_Print_Site_Lk(t_tree *mixt_tree, FILE *fp);
 void MIXT_Exchange_Nodes(t_node *a, t_node *d, t_node *w, t_node *v, t_tree *mixt_tree);
+void MIXT_Chain_Models(t_tree *mixt_tree);
 
 #endif

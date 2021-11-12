@@ -118,7 +118,6 @@ rates.c rates.h\
 mcmc.c mcmc.h\
 stats.c stats.h\
 mg.c mg.h\
-tiporder.c tiporder.h\
 io.c io.h\
 make.c make.h\
 mixt.c mixt.h\
@@ -154,8 +153,7 @@ rates.c rates.h\
 mcmc.c mcmc.h\
 tbe.c tbe.h \
 stats.c stats.h\
-mg.c mg.h\
-tiporder.c tiporder.h
+mg.c mg.h
 # continuous.c continuous.h
 phycont_LDADD = -lm
 else 
@@ -213,8 +211,7 @@ mg.c mg.h\
 spr.c spr.h\
 tbe.c tbe.h \
 draw.c draw.h\
-stats.c stats.h\
-tiporder.c tiporder.h
+stats.c stats.h
 part_LDADD = -lm
 else
 if WANT_TIPORDER
@@ -261,10 +258,6 @@ cl.c  cl.h\
 spr.c spr.h\
 draw.c  draw.h\
 stats.c stats.h\
-rates.c rates.h\
-mcmc.c mcmc.h\
-times.c times.h\
-tiporder.c tiporder.h\
 mg.c mg.h\
 io.c io.h\
 make.c make.h\
@@ -273,7 +266,6 @@ init.c init.h\
 xml.c xml.h\
 mixt.c mixt.h\
 tbe.c tbe.h \
-date.c date.h\
 ancestral.c ancestral.h\
 sse.c sse.h\
 avx.c avx.h
@@ -332,7 +324,6 @@ stats.c stats.h\
 rates.c rates.h\
 mcmc.c mcmc.h\
 times.c times.h\
-tiporder.c tiporder.h\
 mg.c mg.h\
 io.c io.h\
 make.c make.h\
@@ -368,7 +359,6 @@ stats.c stats.h\
 rates.c rates.h\
 mcmc.c mcmc.h\
 times.c times.h\
-tiporder.c tiporder.h\
 mg.c mg.h\
 io.c io.h\
 make.c make.h\
@@ -403,7 +393,6 @@ stats.c stats.h\
 rates.c rates.h\
 mcmc.c mcmc.h\
 times.c times.h\
-tiporder.c tiporder.h\
 mg.c mg.h\
 io.c io.h\
 make.c make.h\
@@ -437,7 +426,6 @@ stats.c stats.h\
 rates.c rates.h\
 mcmc.c mcmc.h\
 times.c times.h\
-tiporder.c tiporder.h\
 mg.c mg.h\
 io.c io.h\
 make.c make.h\
@@ -468,7 +456,6 @@ stats.c stats.h\
 rates.c rates.h\
 mcmc.c mcmc.h\
 times.c times.h\
-tiporder.c tiporder.h\
 mg.c mg.h\
 io.c io.h\
 make.c make.h\
@@ -501,7 +488,6 @@ stats.c stats.h\
 rates.c rates.h\
 mcmc.c mcmc.h\
 times.c times.h\
-tiporder.c tiporder.h\
 mg.c mg.h\
 io.c io.h\
 make.c make.h\
@@ -573,7 +559,6 @@ stats.c stats.h\
 rates.c rates.h\
 mcmc.c mcmc.h\
 times.c times.h\
-tiporder.c tiporder.h\
 mg.c mg.h\
 io.c io.h\
 make.c make.h\
@@ -610,7 +595,6 @@ stats.c stats.h\
 rates.c rates.h\
 mcmc.c mcmc.h\
 times.c times.h\
-tiporder.c tiporder.h\
 mg.c mg.h\
 tbe.c tbe.h \
 io.c io.h\
@@ -643,7 +627,6 @@ stats.c stats.h\
 rates.c rates.h\
 mcmc.c mcmc.h\
 times.c times.h\
-tiporder.c tiporder.h\
 mg.c mg.h\
 io.c io.h\
 make.c make.h\

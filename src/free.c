@@ -408,6 +408,7 @@ void Free_Tree_Lk(t_tree *mixt_tree)
   tree = mixt_tree;
   do
     {
+      Free(tree->big_lk_array);
       Free(tree->c_lnL_sorted);
       Free(tree->cur_site_lk);
       Free(tree->old_site_lk);
@@ -428,6 +429,10 @@ void Free_Tree_Lk(t_tree *mixt_tree)
           Free(tree->_pmat1plk1);
           Free(tree->_pmat2plk2);
           Free(tree->_plk0);
+          Free(tree->_l_ev);
+          Free(tree->_r_ev);
+          Free(tree->_prod_left);
+          Free(tree->_prod_rght);
 #endif
           
           for(i=0;i<3;i++) Free(tree->log_lks_aLRT[i]);
@@ -453,10 +458,6 @@ void Free_Tree_Lk(t_tree *mixt_tree)
           
           if(tree->n_root != NULL)
             {
-              Free(tree->n_root->b[1]->Pij_rr);
-              Free(tree->n_root->b[2]->Pij_rr);
-              Free(tree->n_root->b[1]->tPij_rr);
-              Free(tree->n_root->b[2]->tPij_rr);
               Free_Edge_Lk_Left(tree->n_root->b[1]);
               Free_Edge_Lk_Left(tree->n_root->b[2]);
               Free_Edge_Loc_Left(tree->n_root->b[1]);
@@ -518,7 +519,6 @@ void Free_Edge_Lk_Rght(t_edge *b)
 
   if(b->p_lk_rght)
     {
-      Free(b->p_lk_rght);
       if(b->sum_scale_rght) Free(b->sum_scale_rght);
     }
 
@@ -537,7 +537,6 @@ void Free_Edge_Lk_Left(t_edge *b)
 
   if(b->p_lk_left)
     {
-      Free(b->p_lk_left);
       if(b->sum_scale_left) Free(b->sum_scale_left);
     }
 
@@ -550,10 +549,7 @@ void Free_Edge_Lk_Left(t_edge *b)
 //////////////////////////////////////////////////////////////
 
 void Free_Edge_Lk(t_edge *b)
-{
-  Free(b->tPij_rr);
-  Free(b->Pij_rr);
-  
+{  
   Free_Edge_Lk_Left(b);
   Free_Edge_Lk_Rght(b);
 }

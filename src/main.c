@@ -141,7 +141,8 @@ int main(int argc, char **argv)
                     if(!io->quiet) PhyML_Printf("\n\n. [Random start %3d/%3d]",num_rand_tree+1,io->mod->s_opt->n_rand_starts);
 
                   Init_Model(cdata,mod,io);
-
+                  Set_Model_Parameters(mod);
+                  
 #ifdef M4
                   if(io->mod->use_m4mod) M4_Init_Model(mod->m4mod,cdata,mod);
 #endif

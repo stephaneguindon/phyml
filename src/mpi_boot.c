@@ -187,8 +187,10 @@ void Bootstrap_MPI(t_tree *tree)
 					     requires to leave the value of s_opt unchanged during the boostrap. */
       boot_mod->io    = tree->io; /* WARNING: re-using the same address here instead of creating a copying
 				     requires to leave the value of io unchanged during the boostrap. */
-      Init_Model(boot_data,boot_mod,tree->io);
 
+      Init_Model(boot_data,boot_mod,tree->io);
+      Set_Model_Parameters(boot_mod);
+      
       if(tree->io->in_tree == 2)
         {
 	  switch(tree->io->tree_file_format)

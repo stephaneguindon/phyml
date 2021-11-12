@@ -4425,7 +4425,10 @@ option *PhyML_XML(char *xml_filename)
   for(num_rand_tree=0;num_rand_tree<io->mod->s_opt->n_rand_starts;num_rand_tree++)
     {
       MIXT_Check_Model_Validity(mixt_tree);
-      MIXT_Init_Model(mixt_tree);
+      MIXT_Chain_Models(mixt_tree);
+      Init_Model(mixt_tree->mod->io->cdata,mixt_tree->mod,mixt_tree->mod->io);
+      Set_Model_Parameters(mixt_tree->mod);        
+
       Print_Data_Structure(NO,stdout,mixt_tree);
       tree = MIXT_Starting_Tree(mixt_tree);
       Copy_Tree(tree,mixt_tree);
@@ -4437,12 +4440,13 @@ option *PhyML_XML(char *xml_filename)
           Random_Tree(mixt_tree);
         }
   
-      MIXT_Connect_Cseqs_To_Nodes(mixt_tree);
-      MIXT_Init_T_Beg(mixt_tree);
+      Copy_Tree(mixt_tree,mixt_tree->next);
+      Connect_CSeqs_To_Nodes(mixt_tree->mod->io->cdata,mixt_tree->mod->io,mixt_tree);
+      Init_T_Beg(mixt_tree);
       
-      MIXT_Make_Tree_For_Pars(mixt_tree);
-      MIXT_Make_Tree_For_Lk(mixt_tree);
-      MIXT_Make_Spr(mixt_tree);
+      Make_Tree_For_Pars(mixt_tree);
+      Make_Tree_For_Lk(mixt_tree);
+      Make_Spr(mixt_tree);
       
       MIXT_Chain_All(mixt_tree);
       MIXT_Check_Edge_Lens_In_All_Elem(mixt_tree);

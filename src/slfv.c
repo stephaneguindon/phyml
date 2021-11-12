@@ -1771,7 +1771,8 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
   RATES_Update_Edge_Lengths(tree);
 
   Init_Model(cdata,mod,io);
-
+  Set_Model_Parameters(mod);
+  
   tree->mod->ras->n_catg   = 1;
   tree->mod->whichmodel    = HKY85;
   tree->mod->kappa->v      = 4.0;

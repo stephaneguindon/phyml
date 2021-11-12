@@ -1466,7 +1466,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
   
   Init_Eigen_Struct(mod->eigen);
 
-  Set_Model_Parameters(mod);
+  if(mod->is_mixt_mod == YES) MIXT_Init_Model(mod);
   
   free(dr);
   free(di);

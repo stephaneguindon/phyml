@@ -1502,7 +1502,9 @@ void MCMC_Root_Time(t_tree *tree, int print)
   
   Set_Both_Sides(NO,tree);
   RATES_Update_Edge_Lengths(tree);
+#ifdef PHYREX
   PHYREX_Update_Ldsk_Rates_Given_Edges(tree);
+#endif
   if(tree->eval_alnL == YES) Lk(NULL,tree);  
 }
 
@@ -6124,7 +6126,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->num_move_phyrex_ldscape_lim       = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_phyrex_sigsq             = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_time_neff                = mcmc->n_moves; mcmc->n_moves += 1;
-  mcmc->num_move_time_neff_growth          = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_time_neff_growth         = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_phyrex_sim               = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_phyrex_traj              = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_phyrex_indel_disk_serial = mcmc->n_moves; mcmc->n_moves += 1;
@@ -8265,7 +8267,7 @@ void MCMC_PHYREX_Swap_Disk(t_tree *tree, int print)
       /* Uniform selection of a valid disk */
       target_disk = valid_disks[permut[j]];
       
-      ori_time[j]    = target_disk->time;
+      ori_time[j] = target_disk->time;
       
       t_min = (target_disk->ldsk->prev != NULL) ? target_disk->ldsk->prev->disk->time : -TWO_TO_THE_LARGE;
       t_max = +INFINITY;

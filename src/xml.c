@@ -462,15 +462,7 @@ t_tree *XML_Process_Base(char *xml_filename)
           tree->next = mixt_tree;
           mixt_tree->prev = tree;
         }
-      
-      /*! Do the same for the model
-       */
-      if(mod)
-        {
-          mod->next = iomod;
-          iomod->prev = mod;
-        }
-      
+            
       if(!root_tree) root_tree = mixt_tree;
       
       /*! Tree size scaling factor */
@@ -1118,13 +1110,13 @@ t_tree *XML_Process_Base(char *xml_filename)
 
   
   /*! Finish making the models */
-  mod = mixt_tree->mod;
+  tree = mixt_tree;
   do
     {
-      Make_Model_Complete(mod);
-      mod = mod->next;
+      Make_Model_Complete(tree->mod);
+      tree = tree->next;
     }
-  while(mod);
+  while(tree);
 
   Check_Taxa_Sets(mixt_tree);
   

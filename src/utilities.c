@@ -3181,7 +3181,8 @@ void Bootstrap(t_tree *tree)
                                      requires to leave the value of io unchanged during the boostrap. */
 
       Init_Model(boot_data,boot_mod,tree->io);
-
+      Set_Model_Parameters(boot_mod);
+                                       
       if(tree->io->in_tree == 2)
         {
           rewind(tree->io->fp_in_tree);
@@ -10273,6 +10274,34 @@ char *To_Upper_String(char *in)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+void Set_Ignore_Root(int yesno, t_tree *tree)
+{
+  tree->ignore_root = yesno;
+  if(tree->is_mixt_tree == YES) MIXT_Set_Ignore_Root(yesno,tree);  
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Set_Bl_From_Rt(int yesno, t_tree *tree)
+{
+  assert(tree->rates);
+  tree->rates->bl_from_rt = yesno;
+  if(tree->is_mixt_tree == YES) MIXT_Set_Bl_From_Rt(yesno,tree);  
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Init_T_Beg(t_tree *tree)
+{
+  time(&(tree->t_beg));
+  if(tree->is_mixt_tree == YES) MIXT_Init_T_Beg(tree);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 void Connect_CSeqs_To_Nodes(calign *cdata, option *io, t_tree *tree)
 {
   int i,j,n_otu_tree,n_otu_cdata;
@@ -10302,6 +10331,8 @@ void Connect_CSeqs_To_Nodes(calign *cdata, option *io, t_tree *tree)
         }
       tree->a_nodes[i]->c_seq = cdata->c_seq[j];
     }
+
+  if(tree->is_mixt_tree == YES) MIXT_Connect_Cseqs_To_Nodes(tree);
 }
 
 //////////////////////////////////////////////////////////////
