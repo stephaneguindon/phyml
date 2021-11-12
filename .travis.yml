@@ -1,34 +1,34 @@
-sudo: required
-cache: apt
-language: c
+# sudo: required
+# cache: apt
+# language: c
 
-os:
-  - linux
-  - osx
+# os:
+#   - linux
+#   - osx
   
-compiler:
-  - gcc
+# compiler:
+#   - gcc
 
-script:
-# build and install software into $HOME/local
-  - ./autogen.sh
-  - ./configure
-  - make
-  - sudo make install
-  - ./configure --enable-phyrex
-  - make clean
-  - make
-  - ./configure --enable-phytime
-  - make clean
-  - make
+# script:
+# # build and install software into $HOME/local
+#   - ./autogen.sh
+#   - ./configure
+#   - make
+#   - sudo make install
+#   - ./configure --enable-phyrex
+#   - make clean
+#   - make
+#   - ./configure --enable-phytime
+#   - make clean
+#   - make
   
-# put the installed binary into the $PATH
-  - export PATH=$HOME/local/bin:$PATH
+# # put the installed binary into the $PATH
+#   - export PATH=$HOME/local/bin:$PATH
 
-# install testiphy
-#  - cd
-#  - git clone https://gitlab.com/testiphy/testiphy.git
+# # install testiphy
+# #  - cd
+# #  - git clone https://gitlab.com/testiphy/testiphy.git
 
-# run testiphy
-#  - cd testiphy
-#  - ./testiphy phyml
+# # run testiphy
+# #  - cd testiphy
+# #  - ./testiphy phyml
