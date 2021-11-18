@@ -1028,6 +1028,7 @@ t_tree *XML_Process_Base(char *xml_filename)
                             }
                           else
                             {
+                              /* Free existing edge lengths, which will be replaced with those read from <branchlengths> !*/
                               for(i=0;i<2*tree->n_otu-1;++i)
                                 {
                                   Free_Scalar_Dbl(tree->a_edges[i]->l);
@@ -1060,7 +1061,7 @@ t_tree *XML_Process_Base(char *xml_filename)
                               Exit("\n");
                             }
                           
-                          For(i,2*tree->n_otu-1)
+                          for(i=0;i<2*tree->n_otu-1;++i)
                             {
                               tree->a_edges[i]->l          = lens[i];
                               mixt_tree->a_edges[i]->l     = lens[i];
@@ -1081,7 +1082,7 @@ t_tree *XML_Process_Base(char *xml_filename)
                       if(first_m_elem > 1) // Done with this component, move to the next tree and model
                         {
                           if(tree->next) tree = tree->next;
-                          if(mod->next)   mod  = mod->next;
+                          if(mod->next)  mod  = mod->next;
                         }                      
                     }
                   else if(list[j] != ' ')

@@ -1640,7 +1640,6 @@ void MIXT_Multiply_Scalar_Dbl(scalar_dbl *this, phydbl scalar)
 void MIXT_Br_Len_Opt(t_edge *mixt_b, t_tree *mixt_tree)
 {
   t_edge *b;
-  t_tree *tree;
   scalar_dbl *l;
 
   MIXT_Turn_Branches_OnOff_In_All_Elem(ON,mixt_tree);
@@ -1648,33 +1647,14 @@ void MIXT_Br_Len_Opt(t_edge *mixt_b, t_tree *mixt_tree)
   mixt_tree->ignore_mixt_info = YES;
   
   b = mixt_b;
-  tree = mixt_tree;
-  l = NULL;
+  l = b->l;
   
   do
     {
-      while(tree->is_mixt_tree == YES)
-        {
-          tree = tree->next;
-          b = b->next;
-        }
-
-      l = b->l;
-      do
-        {
-          if(l->onoff == ON)
-            {
-              Br_Len_Opt(&(l->v),mixt_b,mixt_tree);      
-              l->onoff = OFF;
-            }
-          l = l->next;
-        }
-      while(l);
-      
-      tree = tree->next;
-      b    = b->next;
+      if(l->onoff == ON) Br_Len_Opt(&(l->v),mixt_b,mixt_tree);      
+      l = l->next;
     }
-  while(tree);
+  while(l);    
 
   mixt_tree->ignore_mixt_info = NO;
 }
@@ -2281,7 +2261,7 @@ void MIXT_RATES_Update_Edge_Lengths(t_tree *mixt_tree)
 #if (defined PHYREX || PHYTIME)
       RATES_Update_Edge_Lengths(tree);
 #endif
-
+      if(tree->is_mixt_tree == YES) return;
       tree = tree->next;
     }
   while(tree);
@@ -2336,6 +2316,7 @@ void MIXT_Init_Model(t_mod *mod)
       do
         {
           Init_Model(mod->io->cdata,mod,mod->io);
+          if(mod->is_mixt_mod == YES) return;
           mod = mod->next;
         }
       while(mod);
@@ -2511,33 +2492,13 @@ void MIXT_Prepare_All(int num_rand_tree, t_tree *mixt_tree)
   
   MIXT_Make_Tree_For_Pars(mixt_tree);
   Make_Tree_For_Lk(mixt_tree);
-  MIXT_Make_Spr(mixt_tree);
+  Make_Spr(mixt_tree);
   
   MIXT_Chain_All(mixt_tree);
   MIXT_Check_Edge_Lens_In_All_Elem(mixt_tree);
   MIXT_Turn_Branches_OnOff_In_All_Elem(ON,mixt_tree);
   MIXT_Check_Invar_Struct_In_Each_Partition_Elem(mixt_tree);
   MIXT_Check_RAS_Struct_In_Each_Partition_Elem(mixt_tree);
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-void MIXT_Make_Spr(t_tree *mixt_tree)
-{
-  t_tree *tree;
-
-  tree = mixt_tree->next;
-
-  if(tree != NULL)
-    {
-      do
-        {
-          Make_Spr(tree);
-          tree = tree->next;
-        }
-      while(tree);
-    }
 }
 
 //////////////////////////////////////////////////////////////
@@ -3283,16 +3244,18 @@ void MIXT_Set_Both_Sides(int yesno, t_tree *mixt_tree)
   
   assert(mixt_tree->is_mixt_tree == YES);
 
-  tree = mixt_tree;
-  
-  do
-    {
-      if(tree->is_mixt_tree == YES) tree = tree->next;        
-      Set_Both_Sides(yesno,tree);
-      tree = tree->next;
-    }
-  while(tree);
+  tree = mixt_tree->next;
 
+  if(tree != NULL)
+    {
+      do
+        {
+          Set_Both_Sides(yesno,tree);
+          if(tree->is_mixt_tree == YES) return;
+          tree = tree->next;
+        }
+      while(tree);
+    }
 }
 
 //////////////////////////////////////////////////////////////
@@ -3307,6 +3270,7 @@ void MIXT_Set_Model_Parameters(t_mod *mixt_mod)
       do
         {
           Set_Model_Parameters(mod);
+          if(mod->is_mixt_mod == YES) return;
           mod = mod->next;
         }
       while(mod);
@@ -3341,23 +3305,21 @@ void MIXT_Update_Eigen_Lr(t_edge *mixt_b, t_tree *mixt_tree)
   t_edge *b;
   t_tree *tree;
 
-  tree = mixt_tree;
-  b    = mixt_b;
+  tree = mixt_tree->next;
+  b    = mixt_b->next;
 
-  do
+  if(tree != NULL)
     {
-      if(tree->is_mixt_tree == YES)
-        {
+      do
+        {      
+          Update_Eigen_Lr(b,tree);
+          if(tree->is_mixt_tree == YES) return;
+          
           tree = tree->next;
           b    = b->next;
         }
-      
-      Update_Eigen_Lr(b,tree);
-
-      tree = tree->next;
-      b    = b->next;
+      while(tree);
     }
-  while(tree);
 }
 
 
@@ -3575,6 +3537,7 @@ void MIXT_Set_Bl_From_Rt(int yn, t_tree *mixt_tree)
       do
         {
           Set_Bl_From_Rt(yn,tree);
+          if(tree->is_mixt_tree == YES) return;
           tree = tree->next;
         }
       while(tree);  
@@ -3647,13 +3610,8 @@ void MIXT_Init_NNI_Score(phydbl val, t_edge *mixt_b, t_tree *mixt_tree)
   b = mixt_b->next;
   do
     {
-      if(tree->is_mixt_tree)
-        {
-          tree = tree->next;
-          b = b->next;
-        }
-      
       Init_NNI_Score(val,b,tree);
+      if(tree->is_mixt_tree == YES) return;
       tree = tree->next;
       b = b->next;
     }
@@ -3666,39 +3624,87 @@ void MIXT_Init_NNI_Score(phydbl val, t_edge *mixt_b, t_tree *mixt_tree)
 
 t_tree *MIXT_Duplicate_Tree(t_tree *ori)
 {
-  t_tree *cpy,*first,*prev;
-  int dum;
+  t_tree *tree,*cpy;
+  int i;
+
+  assert(ori->is_mixt_tree == YES);
   
   ori->is_mixt_tree = NO;
-  first = Duplicate_Tree(ori);
-  first->prev = NULL;
-  first->is_mixt_tree = YES;
+  cpy = Duplicate_Tree(ori);
   ori->is_mixt_tree = YES;
-
-  ori = ori->next;
-  prev = cpy = first;
+  cpy->is_mixt_tree = YES;
+  cpy->prev = NULL;
+  tree = ori;
+  
   do
     {
-      dum = ori->is_mixt_tree;
-      ori->is_mixt_tree = NO;
+      if(tree->next != NULL)
+        {
+          i = tree->next->is_mixt_tree;
+          tree->next->is_mixt_tree = NO;
+          cpy->next = Duplicate_Tree(tree->next);
+          tree->next->is_mixt_tree = i;
 
-      prev = cpy;
-
-      cpy = Duplicate_Tree(ori);
-
-      ori->is_mixt_tree = dum;      
-      cpy->is_mixt_tree = ori->is_mixt_tree; 
-
-      cpy->prev = prev;
-      prev->next = cpy;
+          cpy->next->is_mixt_tree = tree->next->is_mixt_tree;
+          cpy->next->prev = cpy;
+        }
+      else break;
       
-      ori = ori->next;
+      tree = tree->next;
+      cpy  = cpy->next;
     }
-  while(ori);
+  while(tree != NULL);
 
-  cpy->next = NULL;
+  do cpy = cpy->prev; while(cpy->prev);
+
+  do
+    {
+      for(i=0;i<2*tree->n_otu-1;++i)
+        {
+          Free_Scalar_Dbl(cpy->a_edges[i]->l);
+          Free_Scalar_Dbl(cpy->a_edges[i]->l_old);
+          Free_Scalar_Dbl(cpy->a_edges[i]->l_var);
+          Free_Scalar_Dbl(cpy->a_edges[i]->l_var_old);
+        }
+      
+      if(cpy->next == NULL) break;
+      
+      cpy = cpy->next;
+    }
+  while(1);
   
-  return(first);
+  do cpy = cpy->prev; while(cpy->prev);
+  
+  for(i=0;i<2*tree->n_otu-1;++i)
+    {
+      cpy->a_edges[i]->l         = Duplicate_Scalar_Dbl(ori->a_edges[i]->l);
+      cpy->a_edges[i]->l_old     = Duplicate_Scalar_Dbl(ori->a_edges[i]->l_old);
+      cpy->a_edges[i]->l_var     = Duplicate_Scalar_Dbl(ori->a_edges[i]->l_var);
+      cpy->a_edges[i]->l_var_old = Duplicate_Scalar_Dbl(ori->a_edges[i]->l_var_old);
+    }
+  
+
+  tree = cpy;
+  
+  do
+    {
+      for(i=0;i<2*tree->n_otu-1;++i)
+        {
+          cpy->a_edges[i]->l         = tree->a_edges[i]->l;
+          cpy->a_edges[i]->l_old     = tree->a_edges[i]->l_old;
+          cpy->a_edges[i]->l_var     = tree->a_edges[i]->l_var;
+          cpy->a_edges[i]->l_var_old = tree->a_edges[i]->l_var_old;
+        }
+      
+      if(cpy->next == NULL) break;
+      
+      cpy = cpy->next;
+    }
+  while(1);
+
+  do cpy = cpy->prev; while(cpy->prev);
+
+  return(cpy);
 }
 
 //////////////////////////////////////////////////////////////
@@ -3864,6 +3870,7 @@ void MIXT_Exchange_Nodes(t_node *a, t_node *d, t_node *w, t_node *v, t_tree *mix
                      tree->a_nodes[w->num],
                      tree->a_nodes[v->num],
                      tree);
+      if(tree->is_mixt_tree == YES) return;
       i++;
       tree = tree->next;
     }
@@ -3872,8 +3879,69 @@ void MIXT_Exchange_Nodes(t_node *a, t_node *d, t_node *w, t_node *v, t_tree *mix
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void MIXT_Free_Tree(t_tree *mixt_tree)
+{
+  t_tree *tree;
+  t_tree *next;
+  
+  Free_All_Edges_Lens(mixt_tree);
+
+  tree = mixt_tree;
+  do
+    {
+      if(tree->mat)     Free_Mat(tree->mat);
+      if(tree->t_dir)   Free(tree->t_dir);
+      if(tree->short_l) Free(tree->short_l);
+      if(tree->mutmap)  Free(tree->mutmap);
+      Free_Bip(tree);
+      Free(tree->curr_path);
+      Free_All_Nodes_Light(tree);
+      Free_All_Edges_Light(tree);
+      tree = tree->next;
+    }
+  while(tree);
+
+
+  tree = mixt_tree;
+  next = mixt_tree->next;
+  do
+    {
+      Free(tree);
+      tree = next;
+      if(!tree) break;
+      next = next->next;
+    }
+  while(tree);
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+void MIXT_Repeat_Task(void (*Task_Function)(), t_tree *mixt_tree)
+{
+  t_tree *tree,*next;
+
+  tree = mixt_tree->next;
+
+  if(tree != NULL)
+    {
+      do
+        {
+          next = tree->next;
+          (*Task_Function)(tree);
+          if(tree->is_mixt_tree == YES) return;
+          tree = next;
+        }
+      while(tree != NULL);
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
 

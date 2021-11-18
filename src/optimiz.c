@@ -612,7 +612,6 @@ phydbl Br_Len_Opt(phydbl *l, t_edge *b, t_tree *tree)
 {
   phydbl lk_begin, lk_end;
 
-  
   if(tree->is_mixt_tree == YES && tree->ignore_mixt_info == NO)
     {
       MIXT_Br_Len_Opt(b,tree);
@@ -718,16 +717,6 @@ void Optimize_Br_Len_Serie(int n_max_iter, t_tree *tree)
 {
   phydbl lk_init,lk_end;
   int iter;
-
-
-  /* if(tree->n_tot_bl_opt == 0) */
-    /* { */
-    /*   for(int i=0;i<2*tree->n_otu-3;++i) Set_Scalar_Dbl(1.E-6,tree->a_edges[i]->l); */
-    /*   for(int i=0;i<2*tree->n_otu-3;++i) Set_Scalar_Dbl_Min_Thresh(tree->mod->l_min,tree->a_edges[i]->l); */
-    /*   for(int i=0;i<2*tree->n_otu-3;++i) Set_Scalar_Dbl_Max_Thresh(tree->mod->l_max,tree->a_edges[i]->l); */
-    /* } */
-
-
   
   Set_Both_Sides(NO,tree);
   Lk(NULL,tree);
@@ -795,12 +784,7 @@ void Optimize_Br_Len_Serie(int n_max_iter, t_tree *tree)
         }
 
       iter++;
-
-
-      /* PhyML_Printf("\n. lnL: %f %f %f %d",tree->c_lnL,Rgamma((phydbl)(iter+1),(phydbl)(1./(iter+1))),(phydbl)(iter+1)*(phydbl)(1./(iter+1))*(phydbl)(1./(iter+1)),iter); */
-
     }
-  /* while(lk_end - lk_init > tree->mod->s_opt->min_diff_lk_local && iter < n_max_iter); */
   while(iter < 1);
 }
 

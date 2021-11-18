@@ -24,52 +24,40 @@ void Free_Clade(t_clad *this)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Free_All_Nodes_Light(t_tree *mixt_tree)
+void Free_All_Nodes_Light(t_tree *tree)
 {
-  int i;
-  t_tree *tree;
-
-  tree = mixt_tree;
-  do
+  if(tree->a_nodes != NULL)
     {
-      for(i=0;i<2*tree->n_otu-1;++i) if(tree->a_nodes[i] != NULL) Free_Node(tree->a_nodes[i]);
+      for(int i=0;i<2*tree->n_otu-1;++i) if(tree->a_nodes[i] != NULL) Free_Node(tree->a_nodes[i]);
       Free(tree->a_nodes);
-      tree = tree->next;
     }
-  while(tree);
-
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Free_All_Edges_Light(t_tree *mixt_tree)
+void Free_All_Edges_Light(t_tree *tree)
 {
-  int i;
-  t_tree *tree;
-
-  tree = mixt_tree;
-
-  for(i=0;i<2*tree->n_otu-1;++i)
+  if(tree->a_edges != NULL)
     {
-      if(tree->a_edges[i] != NULL)
-        {
-          Free_Scalar_Dbl(tree->a_edges[i]->l);
-          Free_Scalar_Dbl(tree->a_edges[i]->l_old);
-          Free_Scalar_Dbl(tree->a_edges[i]->l_var);
-          Free_Scalar_Dbl(tree->a_edges[i]->l_var_old);
-        }
-    }
-
-  do
-    {
-      for(i=0;i<2*tree->n_otu-1;++i)
+      for(int i=0;i<2*tree->n_otu-1;++i)
         if(tree->a_edges[i] != NULL)
           Free_Edge(tree->a_edges[i]);
       Free(tree->a_edges);
-      tree = tree->next;
     }
-  while(tree);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Free_All_Edges_Lens(t_tree *tree)
+{
+  if(tree->a_edges != NULL)
+    {
+      for(int i=0;i<2*tree->n_otu-1;++i)
+        if(tree->a_edges[i] != NULL)
+          Free_Edge_Length(tree->a_edges[i]);                      
+    }
 }
 
 //////////////////////////////////////////////////////////////
@@ -77,10 +65,10 @@ void Free_All_Edges_Light(t_tree *mixt_tree)
 
 void Free_Edge_Length(t_edge *b)
 {
-  if(b->l) Free_Scalar_Dbl(b->l);
-  if(b->l_old) Free_Scalar_Dbl(b->l_old);
-  if(b->l_var) Free_Scalar_Dbl(b->l_var);
-  if(b->l_var_old) Free_Scalar_Dbl(b->l_var_old);
+  if(b->l != NULL) Free_Scalar_Dbl(b->l);
+  if(b->l_old != NULL) Free_Scalar_Dbl(b->l_old);
+  if(b->l_var != NULL) Free_Scalar_Dbl(b->l_var);
+  if(b->l_var_old != NULL) Free_Scalar_Dbl(b->l_var_old);
 }
 
 //////////////////////////////////////////////////////////////
@@ -120,11 +108,7 @@ void Free_Node(t_node *n)
     }
   
   if(n->ori_name) { Free(n->ori_name); n->ori_name = NULL; }
-
-  /* if(n->name)     { Free(n->name);     n->name     = NULL; }  */
-  /* Don't do that: see Copy_Tax_Names_To_Tip_Labels
-     tree->a_nodes[i]->ori_name = tree->a_nodes[i]->name; */
-
+  
   Free(n);
 }
 
@@ -160,57 +144,34 @@ void Free_Mat(matrix *mat)
 void Free_Partial_Lk(phydbl *p_lk, int len, int n_catg)
 {
   Free(p_lk);
-
-/*   int i,j; */
-/*   for(i=0;i<len;i++) */
-/*     { */
-/*       for(j=0;j<n_catg;j++) Free((*p_lk)[i][j]); */
-/*       Free((*p_lk)[i]); */
-/*     } */
-/*   Free((*p_lk)); */
-/*   (*p_lk) = NULL; */
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Free_Tree(t_tree *mixt_tree)
+void Free_Tree(t_tree *tree)
 {
-  t_tree *tree;
-  t_tree *next;
-
-  tree = mixt_tree;
-  do
+  if(tree->is_mixt_tree == YES)
+    {
+      MIXT_Free_Tree(tree);
+    }
+  else
     {
       if(tree->mat) Free_Mat(tree->mat);
-      Free(tree->t_dir);
+      if(tree->t_dir) Free(tree->t_dir);
       if(tree->short_l) Free(tree->short_l);
-      if(tree->mutmap)  Free(tree->mutmap);
+      if(tree->mutmap) Free(tree->mutmap);
       Free_Bip(tree);
-      Free(tree->curr_path);
-      tree = tree->next;
-    }
-  while(tree);
-
-  Free_All_Edges_Light(mixt_tree);
-  Free_All_Nodes_Light(mixt_tree);
-
-  tree = mixt_tree;
-  next = mixt_tree->next;
-  do
-    {
+      Free(tree->curr_path);      
+      Free_All_Edges_Lens(tree);
+      Free_All_Edges_Light(tree);
+      Free_All_Nodes_Light(tree);
       Free(tree);
-      tree = next;
-      if(!tree) break;
-      next = next->next;
     }
-  while(tree);
-
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void Free_Bip(t_tree *tree)
 {
@@ -219,11 +180,11 @@ void Free_Bip(t_tree *tree)
   if(tree->has_bip)
     {
       For(i,2*tree->n_otu-2)
-    {
-      Free(tree->a_nodes[i]->bip_size);
-      for(j=0;j<3;j++) Free(tree->a_nodes[i]->bip_node[j]);
-      Free(tree->a_nodes[i]->bip_node);
-    }
+        {
+          Free(tree->a_nodes[i]->bip_size);
+          for(j=0;j<3;j++) Free(tree->a_nodes[i]->bip_node[j]);
+          Free(tree->a_nodes[i]->bip_node);
+        }
     }
   tree->has_bip = NO;
 }
@@ -334,36 +295,27 @@ void Free_Tree_Ins_Tar(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Free_Tree_Pars(t_tree *mixt_tree)
+void Free_Tree_Pars(t_tree *tree)
 {
   int i;
-  t_tree *tree;
 
-  tree = mixt_tree;
-  do
+  Free(tree->step_mat);
+  Free(tree->site_pars);
+  
+  for(i=0;i<2*tree->n_otu-3;++i) Free_Edge_Pars(tree->a_edges[i]);
+    
+  if(tree->n_root)
     {
-      Free(tree->step_mat);
-      Free(tree->site_pars);
-      
-      for(i=0;i<2*tree->n_otu-3;++i) 
-        {
-          Free_Edge_Pars(tree->a_edges[i]);
+      Free_Edge_Pars_Left(tree->n_root->b[1]);
+      Free_Edge_Pars_Left(tree->n_root->b[2]);
         }
-
-      if(tree->n_root)
-        {
-          Free_Edge_Pars_Left(tree->n_root->b[1]);
-          Free_Edge_Pars_Left(tree->n_root->b[2]);
-        }
-      else
-        {
-          Free_Edge_Pars(tree->a_edges[2*tree->n_otu-3]);
-          Free_Edge_Pars(tree->a_edges[2*tree->n_otu-2]);
-        }
-
-      tree = tree->next;
+  else
+    {
+      Free_Edge_Pars(tree->a_edges[2*tree->n_otu-3]);
+      Free_Edge_Pars(tree->a_edges[2*tree->n_otu-2]);
     }
-  while(tree);
+  
+  if(tree->is_mixt_tree == YES) MIXT_Repeat_Task(Free_Tree_Pars,tree);
 }
 
 //////////////////////////////////////////////////////////////
@@ -400,82 +352,76 @@ void Free_Edge_Pars(t_edge *b)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Free_Tree_Lk(t_tree *mixt_tree)
+void Free_Tree_Lk(t_tree *tree)
 {
   int i;
-  t_tree *tree;
 
-  tree = mixt_tree;
-  do
+  Free(tree->big_lk_array);
+  Free(tree->c_lnL_sorted);
+  Free(tree->cur_site_lk);
+  Free(tree->old_site_lk);
+  Free(tree->site_lk_cat);
+  Free(tree->fact_sum_scale);
+  Free(tree->unscaled_site_lk_cat);
+  Free(tree->expl);
+
+  for(i=0;i<3;i++) Free(tree->log_lks_aLRT[i]);
+  Free(tree->log_lks_aLRT);
+  
+  for(i=0;i<2*tree->n_otu-1;++i) Free_NNI(tree->a_edges[i]->nni);          
+  for(i=0;i<2*tree->n_otu-3;++i) Free_Edge_Lk(tree->a_edges[i]);
+  for(i=0;i<2*tree->n_otu-3;++i) Free_Edge_Loc(tree->a_edges[i]);
+  
+  if(tree->is_mixt_tree == NO)
     {
-      Free(tree->big_lk_array);
-      Free(tree->c_lnL_sorted);
-      Free(tree->cur_site_lk);
-      Free(tree->old_site_lk);
-      Free(tree->site_lk_cat);
-      Free(tree->fact_sum_scale);
-      Free(tree->unscaled_site_lk_cat);
-      Free(tree->expl);
-
-      if(tree->is_mixt_tree == NO)
-        {
-          Free(tree->dot_prod);
-          Free(tree->p_lk_left_pi);
-          Free(tree->l_ev);
-
+      Free(tree->dot_prod);
+      Free(tree->p_lk_left_pi);
+      Free(tree->l_ev);
+      
 #if (defined(__AVX__) || defined(__AVX2__) || defined(__SSE__) || defined(__SSE2__) || defined(__SSE3__))
-          Free(tree->_tPij1);
-          Free(tree->_tPij2);
-          Free(tree->_pmat1plk1);
-          Free(tree->_pmat2plk2);
-          Free(tree->_plk0);
-          Free(tree->_l_ev);
-          Free(tree->_r_ev);
-          Free(tree->_prod_left);
-          Free(tree->_prod_rght);
+      Free(tree->_tPij1);
+      Free(tree->_tPij2);
+      Free(tree->_pmat1plk1);
+      Free(tree->_pmat2plk2);
+      Free(tree->_plk0);
+      Free(tree->_l_ev);
+      Free(tree->_r_ev);
+      Free(tree->_prod_left);
+      Free(tree->_prod_rght);
 #endif
-          
-          for(i=0;i<3;i++) Free(tree->log_lks_aLRT[i]);
-          Free(tree->log_lks_aLRT);
-          
-          Free(tree->div_post_pred_extra_0);
-          Free(tree->sum_scale_cat_extra_0);
-          Free(tree->sum_scale_extra_0);
-          Free(tree->patt_id_extra_0);
-          Free(tree->p_lk_extra_0);
-          Free(tree->p_lk_tip_extra_0);
-          
-          Free(tree->div_post_pred_extra_1);
-          Free(tree->sum_scale_cat_extra_1);
-          Free(tree->sum_scale_extra_1);
-          Free(tree->patt_id_extra_1);
-          Free(tree->p_lk_extra_1);
-          Free(tree->p_lk_tip_extra_1);
-                    
-          for(i=0;i<2*tree->n_otu-1;++i) Free_NNI(tree->a_edges[i]->nni);          
-          for(i=0;i<2*tree->n_otu-3;++i) Free_Edge_Lk(tree->a_edges[i]);
-          for(i=0;i<2*tree->n_otu-3;++i) Free_Edge_Loc(tree->a_edges[i]);
-          
-          if(tree->n_root != NULL)
-            {
-              Free_Edge_Lk_Left(tree->n_root->b[1]);
-              Free_Edge_Lk_Left(tree->n_root->b[2]);
-              Free_Edge_Loc_Left(tree->n_root->b[1]);
-              Free_Edge_Loc_Left(tree->n_root->b[2]);
-            }
-          else
-            {
-              Free_Edge_Lk(tree->a_edges[2*tree->n_otu-3]);
-              Free_Edge_Lk(tree->a_edges[2*tree->n_otu-2]);
-              Free_Edge_Loc(tree->a_edges[2*tree->n_otu-3]);
-              Free_Edge_Loc(tree->a_edges[2*tree->n_otu-2]);
-            }
+            
+      Free(tree->div_post_pred_extra_0);
+      Free(tree->sum_scale_cat_extra_0);
+      Free(tree->sum_scale_extra_0);
+      Free(tree->patt_id_extra_0);
+      Free(tree->p_lk_extra_0);
+      Free(tree->p_lk_tip_extra_0);
+      
+      Free(tree->div_post_pred_extra_1);
+      Free(tree->sum_scale_cat_extra_1);
+      Free(tree->sum_scale_extra_1);
+      Free(tree->patt_id_extra_1);
+      Free(tree->p_lk_extra_1);
+      Free(tree->p_lk_tip_extra_1);
+      
+      
+      if(tree->n_root != NULL)
+        {
+          Free_Edge_Lk_Left(tree->n_root->b[1]);
+          Free_Edge_Lk_Left(tree->n_root->b[2]);
+          Free_Edge_Loc_Left(tree->n_root->b[1]);
+          Free_Edge_Loc_Left(tree->n_root->b[2]);
         }
-      
-      tree = tree->next;
-      
+      else
+        {
+          Free_Edge_Lk(tree->a_edges[2*tree->n_otu-3]);
+          Free_Edge_Lk(tree->a_edges[2*tree->n_otu-2]);
+          Free_Edge_Loc(tree->a_edges[2*tree->n_otu-3]);
+          Free_Edge_Loc(tree->a_edges[2*tree->n_otu-2]);
+        }
     }
-  while(tree);
+  
+  if(tree->is_mixt_tree == YES) MIXT_Repeat_Task(Free_Tree_Lk,tree);
   
 }
 
@@ -984,7 +930,6 @@ void Free_Tree_List(t_treelist *list)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Free_St(supert_tree *st)
 {
   int i;
@@ -1045,43 +990,39 @@ void Free_One_Spr(t_spr *this_spr)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Free_Spr_List_One_Edge(t_tree *mixt_tree)
+void Free_Spr_List_One_Edge(t_tree *tree)
 {
   int i;
-  t_tree *tree;
 
-  tree = mixt_tree;
-  do
-    {
-      for(i=0;i<tree->size_spr_list_one_edge+1;++i) Free_One_Spr(tree->spr_list_one_edge[i]);
-      Free(tree->spr_list_one_edge);
-      tree = tree->next;
-    }
-  while(tree);
-
+  for(i=0;i<tree->size_spr_list_one_edge+1;++i) Free_One_Spr(tree->spr_list_one_edge[i]);
+  if(tree->is_mixt_tree == YES) MIXT_Repeat_Task(Free_Spr_List_One_Edge,tree);
+  Free(tree->spr_list_one_edge);
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Free_Spr_List_All_Edge(t_tree *mixt_tree)
+void Free_Spr_List_All_Edge(t_tree *tree)
 {
   int i;
-  t_tree *tree;
 
-  tree = mixt_tree;
-  do
-    {
-      for(i=0;i<tree->size_spr_list_all_edge+1;++i) Free_One_Spr(tree->spr_list_all_edge[i]);
-      Free(tree->spr_list_all_edge);
-      tree = tree->next;
-    }
-  while(tree);
-
+  for(i=0;i<tree->size_spr_list_all_edge+1;++i) Free_One_Spr(tree->spr_list_all_edge[i]);
+  if(tree->is_mixt_tree == YES) MIXT_Repeat_Task(Free_Spr_List_All_Edge,tree);
+  Free(tree->spr_list_all_edge);
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void Free_Best_Spr(t_tree *tree)
+{
+  Free_One_Spr(tree->best_spr);
+  if(tree->is_mixt_tree == YES) MIXT_Repeat_Task(Free_Best_Spr,tree);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 
 void Free_Actual_CSeq(calign *data)
 {

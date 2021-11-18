@@ -324,7 +324,7 @@ int main(int argc, char **argv)
 #ifdef BEAGLE
                   finalize_beagle_instance(tree);
 #endif
-                  Free_One_Spr(tree->best_spr);
+                  Free_Best_Spr(tree);
                   Free_Spr_List_One_Edge(tree);
                   Free_Spr_List_All_Edge(tree);
                   Free_Tree_Pars(tree);

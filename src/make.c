@@ -763,7 +763,6 @@ t_tree *Make_Tree(int n_otu)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Make_Tree_Path(t_tree *tree)
 {
   tree->curr_path = (t_node **)mCalloc(tree->n_otu,sizeof(t_node *));
@@ -1293,7 +1292,7 @@ void Make_Spr(t_tree *tree)
   Make_Spr_List_One_Edge(tree);
   Make_Spr_List_All_Edge(tree);
   Make_Best_Spr(tree);
-  if(tree->is_mixt_tree == YES) MIXT_Make_Spr(tree);
+  if(tree->is_mixt_tree == YES) MIXT_Repeat_Task(Make_Spr,tree);
 }
 
 //////////////////////////////////////////////////////////////

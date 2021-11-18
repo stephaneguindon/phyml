@@ -4948,102 +4948,106 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
       MIXT_Copy_Tree(ori,cpy);
       return;
     }
-
-  for(i=0;i<2*ori->n_otu-1;++i)
-    {      
-      if(ori->a_nodes[i] != NULL)
-        {
-          cpy->a_nodes[i]->anc =
-            (ori->a_nodes[i]->anc != NULL) ?
-            cpy->a_nodes[ori->a_nodes[i]->anc->num] :
-            NULL;
-          
-          for(j=0;j<3;++j)
+  else
+    {
+      for(i=0;i<2*ori->n_otu-1;++i)
+        {      
+          if(ori->a_nodes[i] != NULL)
             {
-              if(ori->a_nodes[i]->v[j] != NULL)
+              cpy->a_nodes[i]->anc =
+                (ori->a_nodes[i]->anc != NULL) ?
+                cpy->a_nodes[ori->a_nodes[i]->anc->num] :
+                NULL;
+              
+              for(j=0;j<3;++j)
                 {
-                  cpy->a_nodes[i]->v[j] = cpy->a_nodes[ori->a_nodes[i]->v[j]->num];
-                  cpy->a_nodes[i]->b[j] = cpy->a_edges[ori->a_nodes[i]->b[j]->num];
-                }
-              else
-                {
-                  cpy->a_nodes[i]->v[j] = NULL;
-                  cpy->a_nodes[i]->b[j] = NULL;
+                  if(ori->a_nodes[i]->v[j] != NULL)
+                    {
+                      cpy->a_nodes[i]->v[j] = cpy->a_nodes[ori->a_nodes[i]->v[j]->num];
+                      cpy->a_nodes[i]->b[j] = cpy->a_edges[ori->a_nodes[i]->b[j]->num];
+                    }
+                  else
+                    {
+                      cpy->a_nodes[i]->v[j] = NULL;
+                      cpy->a_nodes[i]->b[j] = NULL;
+                    }
                 }
             }
+          cpy->a_nodes[i]->c_seq = ori->a_nodes[i]->c_seq;
         }
-      cpy->a_nodes[i]->c_seq = ori->a_nodes[i]->c_seq;
-    }
-
-  for(i=0;i<2*ori->n_otu-1;++i)
-    {
-      if(ori->a_edges[i] != NULL)
+      
+      for(i=0;i<2*ori->n_otu-1;++i)
         {
-          cpy->a_edges[i]->l->v             = ori->a_edges[i]->l->v;
-          cpy->a_edges[i]->l_old->v         = ori->a_edges[i]->l_old->v;
-          cpy->a_edges[i]->l_var->v         = ori->a_edges[i]->l_var->v;
-          cpy->a_edges[i]->l_var_old->v     = ori->a_edges[i]->l_var_old->v;
-          cpy->a_edges[i]->left             = ori->a_edges[i]->left ? cpy->a_nodes[ori->a_edges[i]->left->num] : NULL;
-          cpy->a_edges[i]->rght             = ori->a_edges[i]->rght ? cpy->a_nodes[ori->a_edges[i]->rght->num] : NULL;
-          cpy->a_edges[i]->l_v1             = ori->a_edges[i]->l_v1;
-          cpy->a_edges[i]->l_v2             = ori->a_edges[i]->l_v2;
-          cpy->a_edges[i]->r_v1             = ori->a_edges[i]->r_v1;
-          cpy->a_edges[i]->r_v2             = ori->a_edges[i]->r_v2;
-          cpy->a_edges[i]->l_r              = ori->a_edges[i]->l_r;
-          cpy->a_edges[i]->r_l              = ori->a_edges[i]->r_l;
-          cpy->a_edges[i]->does_exist       = ori->a_edges[i]->does_exist;
-          cpy->a_edges[i]->support_val      = ori->a_edges[i]->support_val;
-          
+          if(ori->a_edges[i] != NULL)
+            {
+              cpy->a_edges[i]->l->v             = ori->a_edges[i]->l->v;
+              cpy->a_edges[i]->l_old->v         = ori->a_edges[i]->l_old->v;
+              cpy->a_edges[i]->l_var->v         = ori->a_edges[i]->l_var->v;
+              cpy->a_edges[i]->l_var_old->v     = ori->a_edges[i]->l_var_old->v;
+              cpy->a_edges[i]->left             = ori->a_edges[i]->left ? cpy->a_nodes[ori->a_edges[i]->left->num] : NULL;
+              cpy->a_edges[i]->rght             = ori->a_edges[i]->rght ? cpy->a_nodes[ori->a_edges[i]->rght->num] : NULL;
+              cpy->a_edges[i]->l_v1             = ori->a_edges[i]->l_v1;
+              cpy->a_edges[i]->l_v2             = ori->a_edges[i]->l_v2;
+              cpy->a_edges[i]->r_v1             = ori->a_edges[i]->r_v1;
+              cpy->a_edges[i]->r_v2             = ori->a_edges[i]->r_v2;
+              cpy->a_edges[i]->l_r              = ori->a_edges[i]->l_r;
+              cpy->a_edges[i]->r_l              = ori->a_edges[i]->r_l;
+              cpy->a_edges[i]->does_exist       = ori->a_edges[i]->does_exist;
+              cpy->a_edges[i]->support_val      = ori->a_edges[i]->support_val;
+              
 #ifdef BEAGLE
-          cpy->a_edges[i]->p_lk_left_idx    = ori->a_edges[i]->p_lk_left_idx;
-          cpy->a_edges[i]->p_lk_rght_idx    = ori->a_edges[i]->p_lk_rght_idx;
-          cpy->a_edges[i]->p_lk_tip_idx     = ori->a_edges[i]->p_lk_tip_idx;
+              cpy->a_edges[i]->p_lk_left_idx    = ori->a_edges[i]->p_lk_left_idx;
+              cpy->a_edges[i]->p_lk_rght_idx    = ori->a_edges[i]->p_lk_rght_idx;
+              cpy->a_edges[i]->p_lk_tip_idx     = ori->a_edges[i]->p_lk_tip_idx;
 #endif
+            }
         }
-    }
       
       
-  for(i=0;i<ori->n_otu;++i)
-    {
-      cpy->a_nodes[i]->tax = YES;
-
-      Free(cpy->a_nodes[i]->name);
-
-      cpy->a_nodes[i]->name = (char *)mCalloc(strlen(ori->a_nodes[i]->name)+1,sizeof(char));
-      cpy->a_nodes[i]->ori_name = cpy->a_nodes[i]->name ;
-
-      strcpy(cpy->a_nodes[i]->name,ori->a_nodes[i]->name);
-    }
-
-  
-  if(ori->n_root)
-    {
-      cpy->e_root     = cpy->a_edges[ori->e_root->num];
-      cpy->n_root     = cpy->a_nodes[ori->n_root->num];
-      cpy->n_root_pos = ori->n_root_pos;
+      for(i=0;i<ori->n_otu;++i)
+        {
+          cpy->a_nodes[i]->tax = YES;
+          
+          Free(cpy->a_nodes[i]->name);
+          
+          cpy->a_nodes[i]->name = (char *)mCalloc(strlen(ori->a_nodes[i]->name)+1,sizeof(char));
+          cpy->a_nodes[i]->ori_name = cpy->a_nodes[i]->name ;
+          
+          strcpy(cpy->a_nodes[i]->name,ori->a_nodes[i]->name);
+        }
       
-      cpy->n_root->b[1] = cpy->a_edges[ori->n_root->b[1]->num];
-      cpy->n_root->b[2] = cpy->a_edges[ori->n_root->b[2]->num];
-    }
-
-  cpy->num_curr_branch_available = 0;
-  cpy->t_beg                     = ori->t_beg;
-  cpy->verbose                   = ori->verbose;
-  
+      
+      if(ori->n_root)
+        {
+          cpy->e_root     = cpy->a_edges[ori->e_root->num];
+          cpy->n_root     = cpy->a_nodes[ori->n_root->num];
+          cpy->n_root_pos = ori->n_root_pos;
+          
+          cpy->n_root->b[1] = cpy->a_edges[ori->n_root->b[1]->num];
+          cpy->n_root->b[2] = cpy->a_edges[ori->n_root->b[2]->num];
+        }
+      
+      cpy->num_curr_branch_available = 0;
+      cpy->t_beg                     = ori->t_beg;
+      cpy->verbose                   = ori->verbose;
+      
 #ifdef BEAGLE
-  cpy->b_inst = ori->b_inst;
+      cpy->b_inst = ori->b_inst;
 #endif
+    }
 }
-
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
 t_tree *Duplicate_Tree(t_tree *ori)
 {
   if(ori->is_mixt_tree == YES) return MIXT_Duplicate_Tree(ori);
-  t_tree *cpy = Make_Tree_From_Scratch(ori->n_otu,ori->data);
-  Copy_Tree(ori,cpy);
-  return(cpy);
+  else
+    {
+      t_tree *cpy = Make_Tree_From_Scratch(ori->n_otu,ori->data);
+      Copy_Tree(ori,cpy);
+      return(cpy);
+    }
 }
 
 //////////////////////////////////////////////////////////////
@@ -11248,7 +11252,7 @@ void Set_Scalar_Dbl_Min_Thresh(phydbl thresh, scalar_dbl *from)
   f = from;
   do
     {
-      if(f->v < thresh) f->v = thresh;;
+      if(f->v < thresh) f->v = thresh;
       f = f->next;
     }
   while(f);
@@ -11264,7 +11268,7 @@ void Set_Scalar_Dbl_Max_Thresh(phydbl thresh, scalar_dbl *from)
   f = from;
   do
     {
-      if(f->v > thresh) f->v = thresh;;
+      if(f->v > thresh) f->v = thresh;
       f = f->next;
     }
   while(f);
