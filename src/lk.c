@@ -1280,7 +1280,6 @@ void Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
   if((tree->io->do_alias_subpatt == YES) &&
      (tree->update_alias_subpatt == YES))
     Alias_One_Subpatt((d==b->left)?(b->rght):(b->left),d,tree);
-
   if(d->tax) return;
 
   

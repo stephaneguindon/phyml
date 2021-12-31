@@ -33,8 +33,6 @@ the GNU public licence. See http://www.opensource.org for details.
 #include "beagle_utils.h"
 #endif
 
-
-
 #if (defined PHYML || EVOLVE)
 
 int main(int argc, char **argv)

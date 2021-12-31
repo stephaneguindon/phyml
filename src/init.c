@@ -149,7 +149,7 @@ void Init_Tree(t_tree *tree, int n_otu)
   tree->eval_alnL                 = YES;
   tree->eval_rlnL                 = YES;
   tree->eval_glnL                 = YES;
-  tree->scaling_method            = SCALE_FAST;
+  tree->scaling_method            = NO;
   tree->perform_spr_right_away    = YES;
   tree->tip_root                  = 0;
   tree->n_edges_traversed         = 0;

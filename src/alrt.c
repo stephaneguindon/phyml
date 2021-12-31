@@ -61,15 +61,14 @@ int Check_NNI_Five_Branches(t_tree *tree)
       init_lnL = Lk(NULL,tree);
       MIXT_Set_Alias_Subpatt(NO,tree);
       
-      
-      //For every branch
+      // For every branch
       for(i=0;i<2*tree->n_otu-3;++i)
-        {
+        {          
           //if this branch is not terminal
           if((!tree->a_edges[i]->left->tax) && (!tree->a_edges[i]->rght->tax))
             {
               result = -1;
-              
+
               //Try every NNIs for the tested branch
               result = NNI_Neigh_BL(tree->a_edges[i],tree);
               
@@ -389,7 +388,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
       PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n\n",__FILE__,__LINE__);
       Exit("");
     }
-
+  
   /*! edges */
   e1 = b_fcus->left->b[b_fcus->l_v1];
   e2 = b_fcus->left->b[b_fcus->l_v2];
@@ -406,6 +405,8 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   var_e3 = Duplicate_Scalar_Dbl(e3->l_var);
   var_e4 = Duplicate_Scalar_Dbl(e4->l_var);
 
+
+  
   /*! Optimize branch lengths and update likelihoods for
     the original configuration.
   */
@@ -430,6 +431,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
             lk_temp = Br_Len_Opt(&(b_fcus->rght->b[i]->l->v),b_fcus->rght->b[i],tree);
           }
       Update_Partial_Lk(tree,b_fcus,b_fcus->rght);
+      lk_temp = Br_Len_Opt(&(b_fcus->l->v),b_fcus,tree);
 
       if(lk_temp < lk0 - tree->mod->s_opt->min_diff_lk_local)
         {
@@ -440,6 +442,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
     }
   while(fabs(lk_temp-lk0) > tree->mod->s_opt->min_diff_lk_global);
   //until no significative improvement is detected
+
   
   lk0 = tree->c_lnL;
  
@@ -485,6 +488,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
     }
 
 
+  
   /*! Do first possible swap */
   Swap(v2,b_fcus->left,b_fcus->rght,v3,tree);
   MIXT_Set_Alias_Subpatt(YES,tree);
@@ -493,6 +497,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   Update_Partial_Lk(tree,b_fcus,b_fcus->rght);
   lk1 = Lk(b_fcus,tree);
   MIXT_Set_Alias_Subpatt(NO,tree);
+
 
   for(i=0;i<3;i++)
     if(b_fcus->left->v[i] != b_fcus->rght)
@@ -527,7 +532,8 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
           }
       
       Update_Partial_Lk(tree,b_fcus,b_fcus->rght);
-      
+      lk_temp = Br_Len_Opt(&(b_fcus->l->v),b_fcus,tree);
+
       if(lk_temp < lk1 - tree->mod->s_opt->min_diff_lk_local)
         {
           PhyML_Fprintf(stderr,"\n. lk_temp = %f lk1 = %f\n",lk_temp,lk1);
@@ -576,6 +582,15 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   MIXT_Set_Alias_Subpatt(YES,tree);
   Update_Partial_Lk(tree,b_fcus,b_fcus->rght);
   Update_Partial_Lk(tree,b_fcus,b_fcus->left);
+
+  for(i=0;i<3;i++)
+    if(b_fcus->left->v[i] != b_fcus->rght)
+      Update_Partial_Lk(tree,b_fcus->left->b[i],b_fcus->left);
+  
+  for(i=0;i<3;i++)
+    if(b_fcus->rght->v[i] != b_fcus->left)
+      Update_Partial_Lk(tree,b_fcus->rght->b[i],b_fcus->rght);
+
   lk_temp = Lk(b_fcus,tree);
   MIXT_Set_Alias_Subpatt(NO,tree);
   if((lk_temp > lk_init + tree->mod->s_opt->min_diff_lk_local) || (lk_temp < lk_init - tree->mod->s_opt->min_diff_lk_local))
@@ -584,7 +599,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
       PhyML_Fprintf(stderr,"\n== Err. in file %s at line %d\n",__FILE__,__LINE__);
       Warn_And_Exit("");
     }
-    
+      
   /*! do the second possible swap */
   Swap(v2,b_fcus->left,b_fcus->rght,v4,tree);
   Set_Both_Sides(YES,tree);
@@ -652,7 +667,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
           }
       
       Update_Partial_Lk(tree,b_fcus,b_fcus->rght);
-      
+      lk_temp = Br_Len_Opt(&(b_fcus->l->v),b_fcus,tree);      
     }
   while(FABS(lk_temp-lk2) > tree->mod->s_opt->min_diff_lk_global);
   //until no significative improvement is detected
@@ -694,6 +709,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   Update_PMat_At_Given_Edge(e4,tree);
   Update_PMat_At_Given_Edge(b_fcus,tree);
 
+
   MIXT_Set_Alias_Subpatt(YES,tree);
   Update_Partial_Lk(tree,b_fcus,b_fcus->left);
   Update_Partial_Lk(tree,b_fcus,b_fcus->rght);
@@ -717,7 +733,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
       Warn_And_Exit("");
     }
 
-
+  
   //save likelihoods in NNI structures
   b_fcus->nni->lk0 = lk0;
   b_fcus->nni->lk1 = lk1;
@@ -755,7 +771,7 @@ int NNI_Neigh_BL(t_edge *b_fcus, t_tree *tree)
   Free_Scalar_Dbl(var_e3);
   Free_Scalar_Dbl(var_e4);
   Free_Scalar_Dbl(v_init);
-
+  
   return result;
 }
 
