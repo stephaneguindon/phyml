@@ -843,8 +843,7 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
 {
   int i;
   phydbl lk_init;
-
-  
+                  
   lk_init = tree->c_lnL;
   
   if(tree->mod->s_opt->constrained_br_len == YES)
@@ -869,6 +868,7 @@ void Optimize_Br_Len_Serie_Post(t_node *a, t_node *d, t_edge *b_fcus, t_tree *tr
 
   if(tree->c_lnL < lk_init - tree->mod->s_opt->min_diff_lk_local)
     {
+
       PhyML_Fprintf(stderr,"\n. %f -- %f",lk_init,tree->c_lnL);
       PhyML_Fprintf(stderr,"\n. Edge: %d",b_fcus->num);
       PhyML_Fprintf(stderr,"\n. is_mixt_tree: %d",tree->is_mixt_tree);
@@ -3390,7 +3390,7 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
     {
       if(tree->next) tree = tree->next;
 
-      if((tree->mod->s_opt->opt_state_freq) && (tree->io->datatype == NT))
+      if(tree->mod->s_opt->state_freq == ML)
         {
           int iter;
           
@@ -3439,7 +3439,7 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
               
               if(verbose)
                 {
-                  Print_Lk(mixt_tree,"[Nucleotide freqs.  ]");
+                  Print_Lk(mixt_tree,"[Character freqs.  ]");
                 }
               
               lk_new = mixt_tree->c_lnL;
@@ -3593,12 +3593,14 @@ void Optimize_Lambda(t_tree *mixt_tree, int verbose)
           
           if(tree->mod->s_opt->opt_lambda)
             {
+              /* PhyML_Printf("\n-- Lambda: %f",tree->c_lnL); */
               Generic_Brent_Lk(&(tree->mod->lambda->v),
                                0.001,100.,
                                tree->mod->s_opt->min_diff_lk_local,
                                tree->mod->s_opt->brent_it_max,
                                tree->mod->s_opt->quickdirty,
                                Wrap_Lk,NULL,mixt_tree,NULL,NO);
+              /* PhyML_Printf("\n++ Lambda: %f",tree->c_lnL); */
               
               if(verbose)
                 {

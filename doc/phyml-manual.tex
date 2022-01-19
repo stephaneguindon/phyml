@@ -560,7 +560,7 @@ GTR &   \x{-m 123456}\\
 This option is compulsory when analysing amino-acid sequences under a `custom' model (see above). \x{file\_name}
 should provide a rate matrix and equilibrium amino acid in PAML format (see Section \ref{sec:customaa}).
 
-\item \x{-f e}, \x{m}, or \x{fA,fC,fG,fT} \index{frequencies!nucleotide}\index{frequencies!amino-acid}\index{stationary frequencies}\index{command-line options!\x{-f}}\\
+\item \x{-f e}, \x{m}, \x{o} or \x{fA,fC,fG,fT} \index{frequencies!nucleotide}\index{frequencies!amino-acid}\index{stationary frequencies}\index{command-line options!\x{-f}}\\
 Nucleotide or amino-acid frequencies.
 \begin{itemize}
 \item \x{e} : the character frequencies are determined as follows :
@@ -573,11 +573,13 @@ Nucleotide or amino-acid frequencies.
 
 \item \x{m} : the character frequencies are determined as follows :
 \begin{itemize}
-\item {\it Nucleotide sequences}: (ML) the equilibrium base frequencies are estimated using maximum
-  likelihood.
+\item {\it Nucleotide sequences}: (Model) the equilibrium base frequencies are derived from the
+  model (e.g., 1/4 for JC69 or K80).
 \item {\it Amino-acid sequences}: (Model) the equilibrium amino-acid frequencies are estimated using
                  the frequencies defined by the substitution model.
 \end{itemize}
+
+\item \x{o} : the character frequencies are optimized using maximum likelihood.
 
 \item \x{fA,fC,fG,fT}: only valid for nucleotide-based models. \x{fA}, \x{fC}, \x{fG} and \x{fT} are floating numbers that
 correspond to the frequencies of A, C, G and T respectively.
@@ -1712,11 +1714,10 @@ Each instance of a \x{equfreqs} component has the following options:
 \begin{itemize}
 \item \x{base.freqs="a,b,c,d"} where \x{a-d} are nucleotide frequencies. Make sure that these
   frequencies are separated by comas and no space character is inserted.
-\item \x{aa.freqs="empirical|model"}. Amino-acid frequencies are derived from counting the number of
-  occurence of each amino-acid in the alignment (\x{aa.freqs="empirical"}) or given by the
-  substitution model (\x{aa.freqs="model"}).
-\item \x{optimise.freqs="true|yes|false|no"}. Nucleotide frequencies can be optimised so as to maximise
-  the likelihood (\x{optimise.freqs="yes|true"}).
+\item \x{freqs="empirical|model|user|optimized"}. Character frequencies are derived from counting the number of
+  occurence of each amino-acid in the alignment (\x{freqs="empirical"}), given by the
+  substitution model (\x{freqs="model"}), user-defined (\x{freqs="user"}, only available for
+  nucleotide data) or estimated using maximum likelihood (\x{freqs="optimized"}).
 \end{itemize}
 
 The {\tt equfreqs} component has the attribute {\tt optimise.weights=yes/no} (default is {\tt

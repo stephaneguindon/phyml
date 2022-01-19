@@ -595,29 +595,38 @@ void Launch_Interface_Model(option *io)
 	     (io->mod->whichmodel == GTR)   ||
 	     (io->mod->whichmodel == CUSTOM))
 	    {
-/* 	      PhyML_Printf("                [F] " */
-/* 		     ".......... Base frequency estimates (empirical/ML) " */
-/* 		     " %-15s \n", */
-/* 		     (io->mod->s_opt->opt_state_freq)?("ML"):("empirical")); */
-/* 	    } */
-/* 	  else if(io->mod->whichmodel == CUSTOM) */
-/* 	    { */
 	      PhyML_Printf("                [F] "
 		     "................. Optimise equilibrium frequencies "
 		     " %-15s \n",
-		     (io->mod->s_opt->opt_state_freq)?("yes"):("no"));
+		     (io->mod->s_opt->state_freq == ML)?("yes"):("no"));
 	    }
 
 
 	  if(io->mod->whichmodel == CUSTOM)
 	    {
-	      if(!io->mod->s_opt->opt_state_freq)
-		{
-		  PhyML_Printf("                [E] "
-			 "......... Equilibrium frequencies (empirical/user) "
-			 " %-15s \n",
-			 (io->mod->e_frq->user_state_freq)?("user defined"):("empirical"));
-		}
+              if(io->mod->s_opt->state_freq == EMPIRICAL)
+                {
+                  PhyML_Printf("                [E] "
+                               "......... Equilibrium frequencies "
+                               " %-15s \n",
+                               "empirical");
+                }
+              else if(io->mod->s_opt->state_freq == USER)
+                {
+                  PhyML_Printf("                [E] "
+                               "......... Equilibrium frequencies "
+                               " %-15s \n",
+                               "user-defined");
+                }
+              else if(io->mod->s_opt->state_freq == ML)
+                {
+                  PhyML_Printf("                [E] "
+                               "......... Equilibrium frequencies "
+                               " %-15s \n",
+                               "optimized");
+                }
+
+              
 	      PhyML_Printf("                [K] "
 		     "............................. Current custom model "
 		     " %-15s \n", io->mod->custom_mod_string->s);
@@ -634,10 +643,21 @@ void Launch_Interface_Model(option *io)
 	     "................ Model of amino-acids substitution "
 	     " %-15s \n", io->mod->modelname->s);
 
-      PhyML_Printf("                [F] "
-	     ". Amino acid frequencies (empirical/model defined) "
-	     " %-15s \n",
-	     (io->mod->s_opt->opt_state_freq)?("empirical"):("model"));
+      if(io->mod->s_opt->state_freq == EMPIRICAL)
+        PhyML_Printf("                [F] "
+                     ". Amino acid frequencies "
+                     " %-15s \n",
+                     "empirical");
+      else if(io->mod->s_opt->state_freq == MODEL)
+        PhyML_Printf("                [F] "
+                     ". Amino acid frequencies "
+                     " %-15s \n",
+                     "model");
+      else if(io->mod->s_opt->state_freq == ML)
+        PhyML_Printf("                [F] "
+                     ". Amino acid frequencies "
+                     " %-15s \n",
+                     "optimized");      
     }
   else if(io->datatype == GENERIC)
     {
@@ -870,69 +890,69 @@ void Launch_Interface_Model(option *io)
 
 	if(io->mod->whichmodel == CUSTOM)
 	  {
-	    io->mod->e_frq->user_state_freq = (io->mod->e_frq->user_state_freq)?(0):(1);
-
-	    if(io->mod->e_frq->user_state_freq)
-	      {
-		if(!io->mod->s_opt->opt_state_freq)
-		  {
-		    char **bases;
-		    char *bs;
-		    phydbl sum;
-		    int n_trial;
-		    
-		    bases = (char **)mCalloc(4,sizeof(char *));
-		    for(i=0;i<4;i++) bases[i] = (char *)mCalloc(50,sizeof(char));
-		    bs = (char *)mCalloc(100,sizeof(char));
-		    
-		    strcpy(bases[0],". f(A)> ");
-		    strcpy(bases[1],". f(C)> ");
-		    strcpy(bases[2],". f(G)> ");
-		    strcpy(bases[3],". f(T)> ");
-		    
-		    PhyML_Printf("\n. Set nucleotide frequencies \n");
-		    sum = .0;
-		    for(i=0;i<4;i++)
-		      {
-			PhyML_Printf("%s",bases[i]);
-			Getstring_Stdin(bs);
-			n_trial = 0;
-			
-			while((atof(bs) < .0001) || (bs[0] == '\0'))
-			  {
-			    if(++n_trial > 10)
-			      Exit("\n== Err : the value of this parameter must be a positive number\n");
-			    PhyML_Printf("\n. The value of this parameter must be a positive number\n");
-			    PhyML_Printf("\n. Enter a new value > ");
-			    Getstring_Stdin(bs);
-			  }
-			io->mod->e_frq->user_b_freq->v[i] = (phydbl)atof(bs);
-			sum += io->mod->e_frq->user_b_freq->v[i];
-		      }
+            if(io->mod->s_opt->state_freq == EMPIRICAL) io->mod->s_opt->state_freq = ML;
+            else if(io->mod->s_opt->state_freq == ML) io->mod->s_opt->state_freq = USER;
+            else if(io->mod->s_opt->state_freq == USER) io->mod->s_opt->state_freq = MODEL;
+            else if(io->mod->s_opt->state_freq == MODEL) io->mod->s_opt->state_freq = EMPIRICAL;
+            
+            if(io->mod->s_opt->state_freq == USER)
+              {
+                char **bases;
+                char *bs;
+                phydbl sum;
+                int n_trial;
+                
+                bases = (char **)mCalloc(4,sizeof(char *));
+                for(i=0;i<4;i++) bases[i] = (char *)mCalloc(50,sizeof(char));
+                bs = (char *)mCalloc(100,sizeof(char));
 		
-		    for(i=0;i<4;i++) io->mod->e_frq->user_b_freq->v[i] /= sum;
-
-		    if(sum > 1.0 || sum < 1.0)
-		      {
-			PhyML_Printf("\n. The nucleotide frequencies have to be normalised in order to sum to 1.0.\n");
-			PhyML_Printf("\n. The frequencies are now : f(A)=%f, f(C)=%f, f(G)=%f, f(T)=%f.\n",
-			       io->mod->e_frq->user_b_freq->v[0],
-			       io->mod->e_frq->user_b_freq->v[1],
-			       io->mod->e_frq->user_b_freq->v[2],
-			       io->mod->e_frq->user_b_freq->v[3]);			  
-			PhyML_Printf("\n. Enter any key to continue.\n");
-			if(!scanf("%c",bs)) Exit("\n");
-		      }
-
-		    for(i=0;i<4;i++) Free(bases[i]);
-		    Free(bases);
-		    Free(bs);
-		  }
-		else
-		  {
-		    Warn_And_Exit("\n. 'E' is not a valid option with these model settings.\n");
-		  }
-	      }	    
+                strcpy(bases[0],". f(A)> ");
+                strcpy(bases[1],". f(C)> ");
+                strcpy(bases[2],". f(G)> ");
+                strcpy(bases[3],". f(T)> ");
+		
+                PhyML_Printf("\n. Set nucleotide frequencies \n");
+                sum = .0;
+                for(i=0;i<4;i++)
+                  {
+                    PhyML_Printf("%s",bases[i]);
+                    Getstring_Stdin(bs);
+                    n_trial = 0;
+                    
+                    while((atof(bs) < .0001) || (bs[0] == '\0'))
+                      {
+                        if(++n_trial > 10)
+                          Exit("\n== Err : the value of this parameter must be a positive number\n");
+                        PhyML_Printf("\n. The value of this parameter must be a positive number\n");
+                        PhyML_Printf("\n. Enter a new value > ");
+                        Getstring_Stdin(bs);
+                      }
+                    io->mod->e_frq->user_b_freq->v[i] = (phydbl)atof(bs);
+                    sum += io->mod->e_frq->user_b_freq->v[i];
+                  }
+		
+                for(i=0;i<4;i++) io->mod->e_frq->user_b_freq->v[i] /= sum;
+                
+                if(sum > 1.0 || sum < 1.0)
+                  {
+                    PhyML_Printf("\n. The nucleotide frequencies have to be normalised in order to sum to 1.0.\n");
+                    PhyML_Printf("\n. The frequencies are now : f(A)=%f, f(C)=%f, f(G)=%f, f(T)=%f.\n",
+                                 io->mod->e_frq->user_b_freq->v[0],
+                                 io->mod->e_frq->user_b_freq->v[1],
+                                 io->mod->e_frq->user_b_freq->v[2],
+                                 io->mod->e_frq->user_b_freq->v[3]);			  
+                    PhyML_Printf("\n. Enter any key to continue.\n");
+                    if(!scanf("%c",bs)) Exit("\n");
+                  }
+                
+                for(i=0;i<4;i++) Free(bases[i]);
+                Free(bases);
+                Free(bs);
+              }
+            else
+              {
+                Warn_And_Exit("\n. 'E' is not a valid option with these model settings.\n");
+              }   	    
 	  }
 	break;
       }
@@ -1208,7 +1228,12 @@ void Launch_Interface_Model(option *io)
 	  {
 	    Warn_And_Exit("\n. 'F' is not a valid choice with these model settings.\n");
 	  }
-	io->mod->s_opt->opt_state_freq = (io->mod->s_opt->opt_state_freq)?(0):(1);
+
+        if(io->mod->s_opt->state_freq == EMPIRICAL) io->mod->s_opt->state_freq = ML;
+        else if(io->mod->s_opt->state_freq == ML) io->mod->s_opt->state_freq = USER;
+        else if(io->mod->s_opt->state_freq == USER) io->mod->s_opt->state_freq = MODEL;
+        else if(io->mod->s_opt->state_freq == MODEL) io->mod->s_opt->state_freq = EMPIRICAL;
+
 	break;
       }
 

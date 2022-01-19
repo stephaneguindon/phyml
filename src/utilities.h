@@ -53,6 +53,12 @@ extern int n_sec2;
 
 #define __FUNCTION__ NULL
 
+#define EMPIRICAL 0
+#define ML 1
+#define USER 2
+#define MODEL 3
+
+
 #define For(i,n)                     for(i=0; i<n; i++)
 #define Fors(i,n,s)                  for(i=0; i<n; i+=s)
 #define PointGamma(prob,alpha,beta)  PointChi2(prob,2.0*(alpha))/(2.0*(beta))
@@ -152,11 +158,11 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define  R_MAT_WEIGHT_MIN 0.01
 #define  R_MAT_WEIGHT_MAX 100.
 
-#define  E_FRQ_MIN 0.01
-#define  E_FRQ_MAX 0.99
+#define  E_FRQ_MIN 0.001
+#define  E_FRQ_MAX 0.999
 
 #define  UNSCALED_E_FRQ_MIN -1000.
-#define  UNSCALED_E_FRQ_MAX +10.
+#define  UNSCALED_E_FRQ_MAX +1000.
 
 
 #define  TSTV_MIN 0.05
@@ -1103,8 +1109,6 @@ typedef struct __EquFreq {
 
   phydbl                  *b_frq; /*! vector of empirical state frequencies */
   
-  short int empirical_state_freq;
-  short int      user_state_freq;
   vect_dbl          *user_b_freq; /*! user-defined nucleotide frequencies */
 
   struct __EquFreq         *next;
@@ -1353,7 +1357,7 @@ typedef struct __Optimiz { /*! parameters to be optimised (mostly used in 'optim
   short int                opt_kappa; /*! =1 -> the ts/tv ratio parameter is optimised */
   short int               opt_lambda; /*! =1 -> the F84|TN93 model specific parameter is optimised */
   short int               opt_pinvar; /*! =1 -> the proportion of invariants is optimised */
-  short int           opt_state_freq; /*! =1 -> the nucleotide frequencies are optimised */
+  short int               state_freq; 
   short int                   opt_rr; /*! =1 -> the relative rate parameters of the GTR or the customn model are optimised */
   short int          opt_subst_param; /*! if opt_topo=0 and opt_subst_param=1 -> the numerical parameters of the
                    model are optimised. if opt_topo=0 and opt_free_param=0 -> no parameter is

@@ -764,12 +764,8 @@ t_tree *XML_Process_Base(char *xml_filename)
                               
                               ds->next = (t_ds *)mCalloc(1,sizeof(t_ds));
                               ds = ds->next;
-                              ds->obj = (int *)(&mod->s_opt->opt_state_freq);
-                              
-                              ds->next = (t_ds *)mCalloc(1,sizeof(t_ds));
-                              ds = ds->next;
-                              ds->obj = (int *)(&mod->e_frq->user_state_freq);
-                              
+                              ds->obj = (int *)(&mod->s_opt->state_freq);
+                                                            
                               ds->next = (t_ds *)mCalloc(1,sizeof(t_ds));
                               ds = ds->next;
                               ds->obj = (vect_dbl *)(mod->e_frq->user_b_freq);                              
@@ -782,11 +778,8 @@ t_tree *XML_Process_Base(char *xml_filename)
                               mod->e_frq = (t_efrq *)ds->obj;
                               
                               ds = ds->next;
-                              mod->s_opt->opt_state_freq = *((int *)ds->obj);
-                              
-                              ds = ds->next;
-                              mod->e_frq->user_state_freq = *((int *)ds->obj);
-                              
+                              mod->s_opt->state_freq = *((int *)ds->obj);
+                                                            
                               ds = ds->next;
                               mod->e_frq->user_b_freq = (vect_dbl *)ds->obj;
                             }

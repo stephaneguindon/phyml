@@ -27,7 +27,6 @@ void PMat_JC69(phydbl l, int pos, phydbl *Pij, t_mod *mod)
 
   ns = mod->ns;
 
-
   for(i=0;i<ns;i++) Pij[pos+ ns*i+i] = 1. - ((ns - 1.)/ns)*(1. - exp(-ns*l/(ns - 1.)));
   for(i=0;i<ns-1;i++)
     for(j=i+1;j<ns;j++)
@@ -422,7 +421,7 @@ void PMat(phydbl l, t_mod *mod, int pos, phydbl *Pij, phydbl *tPij)
 #ifdef BEAGLE
       //when there is no active instance (i.e. when we are building the initial tree)
       if(UNINITIALIZED == mod->b_inst) PMat_Empirical(l,mod,pos,Pij,tPij);
-#else
+#else      
       PMat_Empirical(l,mod,pos,Pij,tPij);
 #endif
     }
@@ -430,7 +429,6 @@ void PMat(phydbl l, t_mod *mod, int pos, phydbl *Pij, phydbl *tPij)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 int GetDaa (phydbl *daa, phydbl *pi, char *file_name)
 {
@@ -481,8 +479,7 @@ int GetDaa (phydbl *daa, phydbl *pi, char *file_name)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-void Update_Qmat_Generic(phydbl *rr, phydbl *pi, int ns, phydbl *qmat)
+phydbl Update_Qmat_Generic(phydbl *rr, phydbl *pi, int ns, phydbl *qmat)
 {
   int i,j;
   phydbl sum,mr;
@@ -495,16 +492,10 @@ void Update_Qmat_Generic(phydbl *rr, phydbl *pi, int ns, phydbl *qmat)
       assert(FALSE);
     }
   
-  /* PhyML_Printf("\n"); */
-  /* For(i,(int)(ns*(ns-1)/2)) */
+  /* for(i=0;i<(int)(ns*(ns-1)/2);++i) */
   /*   { */
-  /*     PhyML_Printf("\n> rr %d = %f",i,rr[i]); */
+  /*     rr[i] /= rr[(int)(ns*(ns-1)/2)-1]; */
   /*   } */
-
-  for(i=0;i<(int)(ns*(ns-1)/2);++i)
-    {
-      rr[i] /= rr[(int)(ns*(ns-1)/2)-1];
-    }
   
   /* Fill the non-diagonal parts */
   for(i=0;i<ns;i++)
@@ -536,7 +527,9 @@ void Update_Qmat_Generic(phydbl *rr, phydbl *pi, int ns, phydbl *qmat)
       mr += sum * pi[i];
     }
 
-  /* for(i=0;i<ns;i++) for(j=0;j<ns;j++) qmat[i*ns+j] /= mr; */
+  for(i=0;i<ns*ns;i++) qmat[i] /= mr;
+
+  return(mr);
 }
 
 //////////////////////////////////////////////////////////////
@@ -597,7 +590,6 @@ void Update_Qmat_GTR(phydbl *rr, phydbl *rr_val, int *rr_num, phydbl *pi, phydbl
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Update_Qmat_HKY(phydbl kappa, phydbl *pi, phydbl *qmat)
 {
   int i;
@@ -626,7 +618,42 @@ void Update_Qmat_HKY(phydbl kappa, phydbl *pi, phydbl *qmat)
 
   /* compute diagonal terms of Q and mean rate mr = l/t */
   mr = .0;
-  For (i,4) mr += pi[i] * (-qmat[i*4+i]);
+  for(i=0;i<4;++i) mr += pi[i] * (-qmat[i*4+i]);
+  for(i=0;i<16;i++) qmat[i] /= mr;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Update_Qmat_TN93(phydbl kappa, phydbl lambda, phydbl *pi, phydbl *qmat)
+{
+  int i;
+  phydbl mr;
+
+  /* A -> C */ qmat[0*4+1] = (phydbl)(pi[1]);
+  /* A -> G */ qmat[0*4+2] = (phydbl)(kappa*lambda*pi[2]);
+  /* A -> T */ qmat[0*4+3] = (phydbl)(pi[3]);
+
+  /* C -> A */ qmat[1*4+0] = (phydbl)(pi[0]);
+  /* C -> G */ qmat[1*4+2] = (phydbl)(pi[2]);
+  /* C -> T */ qmat[1*4+3] = (phydbl)(kappa*pi[3]);
+
+  /* G -> A */ qmat[2*4+0] = (phydbl)(kappa*lambda*pi[0]);
+  /* G -> C */ qmat[2*4+1] = (phydbl)(pi[1]);
+  /* G -> T */ qmat[2*4+3] = (phydbl)(pi[3]);
+
+  /* T -> A */ qmat[3*4+0] = (phydbl)(pi[0]);
+  /* T -> C */ qmat[3*4+1] = (phydbl)(kappa*pi[1]);
+  /* T -> G */ qmat[3*4+2] = (phydbl)(pi[2]);
+
+  qmat[0*4+0] = (phydbl)(-(qmat[0*4+1]+qmat[0*4+2]+qmat[0*4+3]));
+  qmat[1*4+1] = (phydbl)(-(qmat[1*4+0]+qmat[1*4+2]+qmat[1*4+3]));
+  qmat[2*4+2] = (phydbl)(-(qmat[2*4+0]+qmat[2*4+1]+qmat[2*4+3]));
+  qmat[3*4+3] = (phydbl)(-(qmat[3*4+0]+qmat[3*4+1]+qmat[3*4+2]));
+
+  /* compute diagonal terms of Q and mean rate mr = l/t */
+  mr = .0;
+  for (i=0;i<4;++i) mr += pi[i] * (-qmat[i*4+i]);
   for(i=0;i<16;i++) qmat[i] /= mr;
 }
 
@@ -757,7 +784,7 @@ int Update_Efrq(t_mod *mod)
   unsigned int i;
   phydbl sum;
 
-  if((mod->io->datatype == NT) && (mod->s_opt->opt_state_freq == YES))
+  if(mod->s_opt->state_freq == ML)
     {
       for(i=0;i<mod->ns;++i) mod->e_frq->pi->v[i] = exp(mod->e_frq->pi_unscaled->v[i]);
       sum = 0.0;
@@ -875,20 +902,27 @@ int Update_Eigen(t_mod *mod)
             Update_Qmat_GTR(mod->r_mat->rr->v, mod->r_mat->rr_val->v, mod->r_mat->rr_num->v, mod->e_frq->pi->v, mod->r_mat->qmat->v, mod->s_opt->opt_rr);
           else if(mod->whichmodel == HKY85)
             Update_Qmat_HKY(mod->kappa->v, mod->e_frq->pi->v, mod->r_mat->qmat->v);
+          else if(mod->whichmodel == TN93)
+            Update_Qmat_TN93(mod->kappa->v, mod->lambda->v, mod->e_frq->pi->v, mod->r_mat->qmat->v);
           else /* Any other nucleotide-based t_mod */
             Update_Qmat_HKY(mod->kappa->v, mod->e_frq->pi->v, mod->r_mat->qmat->v);
+        }
+      else if(mod->io->datatype == AA)
+        {
+          Update_Qmat_Generic(mod->r_mat->rr_val->v,mod->e_frq->pi->v,mod->ns,mod->r_mat->qmat->v);
         }
       else if(mod->io->datatype == GENERIC)
         {
           Update_Qmat_Generic(mod->r_mat->rr_val->v,mod->e_frq->pi->v,mod->ns,mod->r_mat->qmat->v);
         }
+
+
       
       //Now compute the eigen vectors and values
       scalar   = 1.0;
       n_iter   = 0;
       result   = 0;
 
-      
       for(i=0;i<mod->ns*mod->ns;++i)
         {
           mod->r_mat->qmat_buff->v[i] = mod->r_mat->qmat->v[i];
@@ -934,7 +968,7 @@ int Update_Eigen(t_mod *mod)
                   Exit("\n");
                 }
 
-              For (i,mod->eigen->size*mod->eigen->size) mod->eigen->l_e_vect[i] = mod->eigen->r_e_vect[i];
+              for(i=0;i<mod->eigen->size*mod->eigen->size;++i) mod->eigen->l_e_vect[i] = mod->eigen->r_e_vect[i];
               n_iter++;
 	      if(n_iter > 100) 
                 {                  

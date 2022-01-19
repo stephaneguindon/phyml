@@ -79,10 +79,8 @@ void Init_String(t_string *ts)
 
 void Init_Efrq(phydbl *b_frq, t_efrq *f)
 {
-  f->user_state_freq      = NO;
-  f->empirical_state_freq = NO;
-  f->next                 = NULL;
-  f->prev                 = NULL;
+  f->next = NULL;
+  f->prev = NULL;
 }
 
 //////////////////////////////////////////////////////////////
@@ -777,10 +775,12 @@ void Set_Defaults_Optimiz(t_opt *s_opt)
   s_opt->opt_rmat_weight      = NO;
   s_opt->opt_efrq_weight      = NO;
 
-  s_opt->skip_tree_traversal     = NO;
-  s_opt->serial_free_rates       = YES;
+  s_opt->skip_tree_traversal = NO;
+  s_opt->serial_free_rates = YES;
 
-  s_opt->curr_opt_free_rates     = NO;
+  s_opt->curr_opt_free_rates = NO;
+
+  s_opt->state_freq = EMPIRICAL;
 }
 
 //////////////////////////////////////////////////////////////
@@ -1035,7 +1035,6 @@ void Init_Model(calign *data, t_mod *mod, option *io)
 {
   int i,j;
   phydbl sum,aux;
-  int result;
   phydbl *dr, *di, *space;
 
   assert(data);
@@ -1073,7 +1072,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
       for(i=0;i<mod->ras->n_catg;i++)
         {
           sum = 0.0;
-          For(j,i+1) sum += mod->ras->gamma_r_proba->v[j];
+          for(j=0;j<i+1;++j) sum += mod->ras->gamma_r_proba->v[j];
           mod->ras->gamma_r_proba_unscaled->v[i] = sum * mod->ras->gamma_r_proba_unscaled->v[mod->ras->n_catg-1];
         }
     }
@@ -1168,89 +1167,89 @@ void Init_Model(calign *data, t_mod *mod, option *io)
         {
           mod->e_frq->pi->v[0] = mod->e_frq->pi->v[1] = mod->e_frq->pi->v[2] = mod->e_frq->pi->v[3] = .25;
           mod->kappa->v = 1.;
-          mod->s_opt->opt_state_freq = NO;
-          mod->s_opt->opt_kappa      = NO;
-          mod->s_opt->opt_lambda     = NO;
-          mod->update_eigen          = NO;
+          mod->s_opt->state_freq = MODEL;
+          mod->s_opt->opt_kappa  = NO;
+          mod->s_opt->opt_lambda = NO;
         }
       
       if(mod->whichmodel == K80)
         {
           mod->e_frq->pi->v[0] = mod->e_frq->pi->v[1] = mod->e_frq->pi->v[2] = mod->e_frq->pi->v[3] = .25;
-          mod->s_opt->opt_state_freq = NO;
-          mod->s_opt->opt_lambda     = NO;
-          mod->update_eigen          = NO;
+          mod->s_opt->state_freq = MODEL;
+          mod->s_opt->opt_lambda = NO;
         }
       
       if(mod->whichmodel == F81)
         {
-          if(mod->e_frq->user_state_freq == NO) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
-          else for(i=0;i<4;i++) mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
-          for(i=0;i<mod->ns;i++) mod->e_frq->pi_unscaled->v[i] = log(mod->e_frq->pi->v[i]);
+          if(mod->s_opt->state_freq == EMPIRICAL ||
+             mod->s_opt->state_freq == ML) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
+          else if(mod->s_opt->state_freq == USER)
+            for(i=0;i<4;i++) mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
           mod->kappa->v = 1.;
-          mod->update_eigen = NO;
         }
       
       if(mod->whichmodel == F84)
         {
-          if(mod->e_frq->user_state_freq == NO) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
-          else for(i=0;i<4;i++) mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
-          for(i=0;i<mod->ns;i++) mod->e_frq->pi_unscaled->v[i] = log(mod->e_frq->pi->v[i]);
+          if(mod->s_opt->state_freq == EMPIRICAL ||
+             mod->s_opt->state_freq == ML) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
+          else if(mod->s_opt->state_freq == USER)
+            for(i=0;i<4;i++) mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
+          else
+            {
+              PhyML_Fprintf(stderr,"\n. The F84 model is not compatible with the '-f m' option (use '-f e' or '-f o' instead. See the documentation).\n"); 
+              assert(false);
+            }
+          
           aux = ((mod->e_frq->pi->v[0]+mod->e_frq->pi->v[2])-(mod->e_frq->pi->v[1]+mod->e_frq->pi->v[3]))/(2.*mod->kappa->v);
           mod->lambda->v = ((mod->e_frq->pi->v[1]+mod->e_frq->pi->v[3]) + aux)/((mod->e_frq->pi->v[0]+mod->e_frq->pi->v[2]) - aux);
-          mod->update_eigen = NO;
         }
       
       if(mod->whichmodel == TN93)
         {
-          if(mod->e_frq->user_state_freq == NO)
+          if(mod->s_opt->state_freq == EMPIRICAL ||
+             mod->s_opt->state_freq == ML)
             Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
+          else if(mod->s_opt->state_freq == USER)
+            for(i=0;i<4;i++) mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
           else
-            for(i=0;i<4;i++)
-              mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
-          for(i=0;i<mod->ns;i++)
-            mod->e_frq->pi_unscaled->v[i] = log(mod->e_frq->pi->v[i]);
-          mod->update_eigen = NO;
+            {
+              PhyML_Fprintf(stderr,"\n. The TN93 model is not compatible with the '-f m' option (use '-f e' or '-f o' instead. See the documentation).\n"); 
+              assert(false);
+            }
+          
           if(io->mod->s_opt->opt_kappa) io->mod->s_opt->opt_lambda = YES;
 
         }
 
       if(mod->whichmodel == HKY85)
         {
-          if(mod->e_frq->user_state_freq == NO)
+          if(mod->s_opt->state_freq == EMPIRICAL ||
+             mod->s_opt->state_freq == ML)
             Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
+          else if(mod->s_opt->state_freq == USER)
+            for(i=0;i<4;i++) mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
           else
-            for(i=0;i<4;i++)
-              mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
-          for(i=0;i<mod->ns;i++)
-            mod->e_frq->pi_unscaled->v[i] = log(mod->e_frq->pi->v[i]);
-          mod->update_eigen = NO;
+            {
+              PhyML_Fprintf(stderr,"\n. The HKY85 model is not compatible with the '-f m' option (use '-f e' or '-f o' instead. See the documentation).\n"); 
+              assert(false);
+            }
         }
       
       if(mod->whichmodel == GTR)
         {
-          if (mod->e_frq->user_state_freq == NO)
+          if(mod->s_opt->state_freq == EMPIRICAL ||
+             mod->s_opt->state_freq == ML)
             Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);
+          else if(mod->s_opt->state_freq == USER)
+            for(i=0;i<4;i++) mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
           else
-            for(i=0;i<4;i++)
-              mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
-          for(i=0;i<mod->ns;i++)
-            mod->e_frq->pi_unscaled->v[i] = log(mod->e_frq->pi->v[i]);
-          mod->kappa->v     = 1.;
-          mod->update_eigen = NO;
-        }
-      
-      if(mod->whichmodel == CUSTOM)
-        {
-          if(mod->e_frq->user_state_freq == NO) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
-          else for(i=0;i<4;i++) mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
-          for(i=0;i<mod->ns;i++) mod->e_frq->pi_unscaled->v[i] = log(mod->e_frq->pi->v[i]);
-          mod->kappa->v     = 1.;
-          mod->update_eigen = NO;
-        }
-      
-      if(mod->whichmodel == GTR)
-        {
+            {
+              PhyML_Fprintf(stderr,"\n. The GTR model is not compatible with the '-f m' option (use '-f e' or '-f o' instead. See the documentation).\n"); 
+              assert(false);
+            }
+          
+          mod->kappa->v = 1.;
+
           mod->custom_mod_string->s[0] = '0';
           mod->custom_mod_string->s[1] = '1';
           mod->custom_mod_string->s[2] = '2';
@@ -1259,135 +1258,132 @@ void Init_Model(calign *data, t_mod *mod, option *io)
           mod->custom_mod_string->s[5] = '5';
           Translate_Custom_Mod_String(mod);
         }
+      
+      if(mod->whichmodel == CUSTOM)
+        {
+          if(mod->s_opt->state_freq == EMPIRICAL) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
+          else for(i=0;i<4;i++) mod->e_frq->pi->v[i] = mod->e_frq->user_b_freq->v[i];
+          mod->kappa->v = 1.;
+        }
+
+      for(i=0;i<mod->ns;i++) mod->e_frq->pi_unscaled->v[i] = log(mod->e_frq->pi->v[i]);
+
     }
   else if(mod->io->datatype == AA)
     {
       
       /* init for amino-acids */
       /* see comments of PMat_Empirical for details */
-      /* read pi and Q from file */
+      phydbl *qmat,*rr,*f;
+
+      qmat = mod->r_mat->qmat->v;
+      rr   = mod->r_mat->rr_val->v;
+      f    = mod->e_frq->pi->v;
       
-      /* These initialisations are needed when analysing multiple
-       * data sets
-       */
-      For(i,mod->ns*mod->ns) mod->r_mat->qmat->v[i] = .0;
-      For(i,mod->ns        ) mod->e_frq->pi->v[i]   = .0;
+      for(i=0;i<mod->ns*mod->ns;++i) qmat[i] = .0;
+      for(i=0;i<mod->ns;++i) f[i] = .0;
       
       switch(mod->whichmodel)
         {
         case DAYHOFF :
           {
-            Init_Qmat_Dayhoff(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-            if(mod->e_frq->empirical_state_freq == YES) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
+            Init_Qmat_Dayhoff(qmat,f);
             break;
           }
         case JTT :
           {
-            Init_Qmat_JTT(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-            if(mod->e_frq->empirical_state_freq == YES) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
+            Init_Qmat_JTT(qmat,f);
             break;
           }
         case MTREV :
           {
-            Init_Qmat_MtREV(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-            if(mod->e_frq->empirical_state_freq == YES) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
+            Init_Qmat_MtREV(qmat,f);
             break;
           }
         case LG :
           {
-            Init_Qmat_LG(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-            if(mod->e_frq->empirical_state_freq == YES) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
+            Init_Qmat_LG(qmat,f);
             break;
           }
         case WAG :
           {
-            Init_Qmat_WAG(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-            if(mod->e_frq->empirical_state_freq == YES) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
+            Init_Qmat_WAG(qmat,f);
             break;
           }
         case DCMUT :
           {
-            Init_Qmat_DCMut(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-            if(mod->e_frq->empirical_state_freq == YES) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
+            Init_Qmat_DCMut(qmat,f);
             break;
           }
         case RTREV :
           {
-            Init_Qmat_RtREV(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-            if(mod->e_frq->empirical_state_freq == YES) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
+            Init_Qmat_RtREV(qmat,f);
             break;
           }
         case CPREV :
           {
-            Init_Qmat_CpREV(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-            if(mod->e_frq->empirical_state_freq == YES) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
+            Init_Qmat_CpREV(qmat,f);
             break;
           }
         case VT :
           {
-            Init_Qmat_VT(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-            if(mod->e_frq->empirical_state_freq == YES) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
+            Init_Qmat_VT(qmat,f);
             break;
           }
         case BLOSUM62 :
           {
-            Init_Qmat_Blosum62(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-            if(mod->e_frq->empirical_state_freq == YES) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
+            Init_Qmat_Blosum62(qmat,f);
             break;
           }
         case MTMAM :
           {
-            Init_Qmat_MtMam(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-            if(mod->e_frq->empirical_state_freq == YES) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
+            Init_Qmat_MtMam(qmat,f);
             break;
           }
         case MTART :
           {
-            Init_Qmat_MtArt(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-            if(mod->e_frq->empirical_state_freq == YES) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
+            Init_Qmat_MtArt(qmat,f);
             break;
           }
         case HIVW :
           {
-            Init_Qmat_HIVw(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-            if(mod->e_frq->empirical_state_freq == YES) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
+            Init_Qmat_HIVw(qmat,f);
             break;
           }
         case HIVB :
           {
-            Init_Qmat_HIVb(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-            if(mod->e_frq->empirical_state_freq == YES) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
+            Init_Qmat_HIVb(qmat,f);
             break;
           }
          case AB :
           {
-            Init_Qmat_AB(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-            if(mod->e_frq->empirical_state_freq == YES) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
+            Init_Qmat_AB(qmat,f);
             break;
           } 
         case CUSTOMAA :
           {
             mod->fp_aa_rate_mat = Openfile(mod->aa_rate_mat_file->s,READ);
-            Read_Qmat(mod->r_mat->qmat->v,mod->e_frq->pi->v,mod->fp_aa_rate_mat);
+            Read_Qmat(qmat,f,mod->fp_aa_rate_mat);
             fclose(mod->fp_aa_rate_mat);
-            if(mod->e_frq->empirical_state_freq == YES) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
 	    break;
 	  }
 	case FLU : 
 	  {
-	    Init_Qmat_FLU(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-            if(mod->e_frq->empirical_state_freq == YES) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
+	    Init_Qmat_FLU(qmat,f);
             break;
           }
         default :
           {
-            Init_Qmat_LG(mod->r_mat->qmat->v,mod->e_frq->pi->v);
-            if(mod->e_frq->empirical_state_freq == YES) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);  
+            Init_Qmat_LG(qmat,f);
             break;
           }
         }
       
-      if(mod->s_opt->opt_state_freq == YES) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);
+      for(i=0;i<mod->ns;i++)
+        for(j=i+1;j<mod->ns;j++)
+          rr[MIN(i,j) * mod->ns + MAX(i,j) - (MIN(i,j)+1+(int)POW(MIN(i,j)+1,2))/2] = qmat[i*mod->ns+j];
+      
+      if(mod->s_opt->state_freq == EMPIRICAL) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);
 
 
       // Adjust equilibrium state frequencies if some of them are too close to zero
@@ -1403,57 +1399,18 @@ void Init_Model(calign *data, t_mod *mod, option *io)
         }
       while(iter < 10);                       
 
-      /* multiply the nth col of Q by the nth term of pi/100 just as in PAML */
-      for(i=0;i<mod->ns;i++) for(j=0;j<mod->ns;j++) mod->r_mat->qmat->v[i*mod->ns+j] *= mod->e_frq->pi->v[j] / 100.0;
-      
-      /* compute diagonal terms of Q and mean rate mr = l/t */
-      mod->mr->v= .0;
-      For (i,mod->ns)
-        {
-          sum=.0;
-          For(j, mod->ns) sum += mod->r_mat->qmat->v[i*mod->ns+j];
-          mod->r_mat->qmat->v[i*mod->ns+i] = -sum;
-          mod->mr->v += mod->e_frq->pi->v[i] * sum;
-        }
-      
-      /* scale instantaneous rate matrix so that mu=1 */
-      For (i,mod->ns*mod->ns) mod->r_mat->qmat->v[i] /= mod->mr->v;
-      
-      /* compute eigenvectors/values */
-      result = 0;
-      
-      For(i,mod->ns*mod->ns) mod->r_mat->qmat_buff->v[i] = mod->r_mat->qmat->v[i];
-      
-      if(!Eigen(1,mod->r_mat->qmat_buff->v,mod->eigen->size,mod->eigen->e_val,
-                mod->eigen->e_val_im,mod->eigen->r_e_vect,
-                mod->eigen->r_e_vect_im,mod->eigen->space))
-        {
-          /* compute inverse(Vr) into Vi */
-          For (i,mod->ns*mod->ns) mod->eigen->l_e_vect[i] = mod->eigen->r_e_vect[i];
-          if(!Matinv(mod->eigen->l_e_vect,mod->eigen->size,mod->eigen->size,YES))
-            {
-              PhyML_Fprintf(stderr,"\n. Err in file %s at line %d.",__FILE__,__LINE__);
-              Exit("\n");
-            }
-          
-          /* compute the diagonal terms of exp(D) */
-          for(i=0;i<mod->ns;i++) mod->eigen->e_val[i] = (phydbl)exp(mod->eigen->e_val[i]);
-        }
-      else
-        {
-          if (result==-1) PhyML_Printf("\n. Eigenvalues/vectors computation does not converge : computation cancelled");
-          else if (result==1) PhyML_Printf("\n. Complex eigenvalues/vectors : computation cancelled");
-        }
+      for(i=0;i<mod->ns;i++) mod->e_frq->pi_unscaled->v[i] = log(mod->e_frq->pi->v[i]);
+
+      mod->mr->v = Update_Qmat_Generic(rr,f,mod->ns,qmat);
     }
   else if(mod->io->datatype == GENERIC)
     {
       /* Uniform state frequencies */
-      for(i=0;i<mod->ns;i++)  mod->e_frq->pi->v[i] = 1./(phydbl)mod->ns;
+      for(i=0;i<mod->ns;i++) mod->e_frq->pi->v[i] = 1./(phydbl)mod->ns;
       mod->kappa->v = 1;
-      mod->s_opt->opt_state_freq = NO;
+      mod->s_opt->state_freq     = MODEL;
       mod->s_opt->opt_kappa      = NO;
       mod->s_opt->opt_lambda     = NO;
-      mod->update_eigen          = NO;
       for(i=0;i<mod->ns*(mod->ns-1)/2;i++) mod->r_mat->rr_val->v[i] = 0.0;
       for(i=0;i<mod->ns*(mod->ns-1)/2;i++) mod->r_mat->rr->v[i] = 1.0;
     }
@@ -1465,7 +1422,10 @@ void Init_Model(calign *data, t_mod *mod, option *io)
     }
   
   Init_Eigen_Struct(mod->eigen);
-
+  
+  mod->update_eigen = YES;
+  Update_Eigen(mod);
+  
   if(mod->is_mixt_mod == YES) MIXT_Init_Model(mod);
   
   free(dr);
@@ -3774,7 +3734,7 @@ void M4_Init_Model(m4 *m4mod, calign *data, t_mod *mod)
                                                              under a standard non covarion type of model. Use these
                                                              frequencies as they have been set according to the
                                                              nucleotide substitution model chosen (e.g., 1/4 for JC69). !*/
-  For(i,(int)(m4mod->n_h)) m4mod->multipl[i] = 1.;
+  for(i=0;i<(int)(m4mod->n_h);++i) m4mod->multipl[i] = 1.;
   
   ct = 0;
   for(i=0;i<m4mod->n_o-1;i++)
@@ -3786,7 +3746,7 @@ void M4_Init_Model(m4 *m4mod, calign *data, t_mod *mod)
         }
     }
 
-  For(i,(int)(m4mod->n_h*(m4mod->n_h-1)/2)) m4mod->h_rr[i] = 1.;
+  for(i=0;i<(int)(m4mod->n_h*(m4mod->n_h-1)/2);++i) m4mod->h_rr[i] = 1.;
   fq = (phydbl)(1./m4mod->n_h);
 
   if(mod->s_opt->opt_cov_delta) m4mod->delta = 1.0;

@@ -2917,21 +2917,22 @@ void Print_Settings(option *io)
   
   
   if(io->datatype == AA)
-    PhyML_Printf("\n        . Amino acid equilibrium frequencies:\t\t %s", (io->mod->s_opt->opt_state_freq) ? ("empirical"):("model"));
+    {
+      if(io->mod->s_opt->state_freq == ML) PhyML_Printf("\n        . Amino-acid equilibrium frequencies:\t\t optimized");
+      else if(io->mod->s_opt->state_freq == EMPIRICAL) PhyML_Printf("\n        . Amino-acid equilibrium frequencies:\t\t empirical");
+      else if(io->mod->s_opt->state_freq == USER) PhyML_Printf("\n        . Amino-acid equilibrium frequencies:\t\t user-defined");
+      else if(io->mod->s_opt->state_freq == MODEL) PhyML_Printf("\n        . Amino-acid equilibrium frequencies:\t\t model-defined");
+    }
   else if(io->datatype == NT)
     {
       if((io->mod->whichmodel != JC69) &&
          (io->mod->whichmodel != K80)  &&
          (io->mod->whichmodel != F81))
         {
-          if(io->mod->s_opt && !io->mod->e_frq->user_state_freq)
-            {
-              PhyML_Printf("\n        . Nucleotide equilibrium frequencies:\t\t %s", (io->mod->s_opt->opt_state_freq) ? ("ML"):("empirical"));
-            }
-          else
-            {
-              PhyML_Printf("\n        . Nucleotide equilibrium frequencies:\t\t %s","user-defined");
-            }
+          if(io->mod->s_opt->state_freq == ML) PhyML_Printf("\n        . Nucleotide equilibrium frequencies:\t\t optimized");
+          else if(io->mod->s_opt->state_freq == EMPIRICAL) PhyML_Printf("\n        . Nucleotide equilibrium frequencies:\t\t empirical");
+          else if(io->mod->s_opt->state_freq == USER) PhyML_Printf("\n        . Nucleotide equilibrium frequencies:\t\t user-defined");
+          else if(io->mod->s_opt->state_freq == MODEL) PhyML_Printf("\n        . Nucleotide equilibrium frequencies:\t\t model-defined");
         }
     }
   
@@ -4109,7 +4110,7 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
              tree->mod->whichmodel != JC69 &&
              tree->mod->whichmodel != K80)
             {
-              PhyML_Fprintf(fp,"\n   Optimise nucleotide freq.:\t%20s",tree->mod->s_opt->opt_state_freq?"yes":"no");
+              PhyML_Fprintf(fp,"\n   Optimise nucleotide freq.:\t%20s",tree->mod->s_opt->state_freq == ML ?"yes":"no");
               if(final == YES)
                 {
                   PhyML_Fprintf(fp,"\n   Freq(A):\t\t\t%20.2f",tree->mod->e_frq->pi->v[0]);
@@ -4124,13 +4125,17 @@ void Print_Data_Structure(int final, FILE *fp, t_tree *mixt_tree)
 
               s = (char *)mCalloc(50,sizeof(char));
 
-              if(tree->mod->s_opt->opt_state_freq == YES)
+              if(tree->mod->s_opt->state_freq == EMPIRICAL)
                 {
                   strcpy(s,"Empirical");
                 }
-              else
+              else if(tree->mod->s_opt->state_freq == MODEL)
                 {
                   strcpy(s,"Model");
+                }
+              else if(tree->mod->s_opt->state_freq == ML)
+                {
+                  strcpy(s,"Optimized");
                 }
               
               PhyML_Fprintf(fp,"\n   Amino-acid freq.:\t\t%20s",s);
@@ -4937,37 +4942,26 @@ void Make_Efrq_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
   mod->e_frq = (t_efrq *)Make_Efrq(mod->ns);
   Init_Efrq(NULL,mod->e_frq);
 
-  buff = XML_Get_Attribute_Value(instance,"optimise.freqs");
 
-  if(buff)
-    {
-      if(!strcmp(buff,"yes") || !strcmp(buff,"true"))
-        {
-          if(io->datatype == AA)
-            {
-              PhyML_Fprintf(stderr,"\n. Option 'optimise.freqs' set to 'yes' (or 'true')");
-              PhyML_Fprintf(stderr,"\n. is not allowed with amino-acid data.");
-              Exit("\n");
-            }
-          mod->s_opt->opt_state_freq = YES;
-        }
-    }
-
-  buff = XML_Get_Attribute_Value(instance,"aa.freqs");
+  buff = XML_Get_Attribute_Value(instance,"freqs");
 
   if(buff)
     {
       if(!strcmp(buff,"empirical"))
         {
-          if(io->datatype == AA)
-            {
-              mod->s_opt->opt_state_freq       = YES;
-              mod->e_frq->empirical_state_freq = YES;
-            }
-          else if(io->datatype == NT)
-            {
-              mod->s_opt->opt_state_freq = NO;
-            }
+          mod->s_opt->state_freq = EMPIRICAL;
+        }
+      if(!strcmp(buff,"model"))
+        {
+          mod->s_opt->state_freq = MODEL;
+        }
+      else if(!strcmp(buff,"optimized"))
+        {
+          mod->s_opt->state_freq = ML;
+        }
+      else if(!strcmp(buff,"user"))
+        {
+          mod->s_opt->state_freq = ML;
         }
     }
   
@@ -4984,13 +4978,19 @@ void Make_Efrq_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
       else
         {
           phydbl A,C,G,T;
+          
+          if(mod->s_opt->state_freq != USER)
+            {
+              PhyML_Fprintf(stderr,"\n. Please set 'freqs=user'.");
+              Exit("\n");
+            }
+          
           sscanf(buff,"%lf,%lf,%lf,%lf",&A,&C,&G,&T);
           mod->e_frq->user_b_freq->v[0] = (phydbl)A;
           mod->e_frq->user_b_freq->v[1] = (phydbl)C;
           mod->e_frq->user_b_freq->v[2] = (phydbl)G;
           mod->e_frq->user_b_freq->v[3] = (phydbl)T;
-          mod->e_frq->user_state_freq = YES;
-          mod->s_opt->opt_state_freq  = NO;
+          mod->s_opt->state_freq = USER;
         }
     }
 
