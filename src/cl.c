@@ -1177,42 +1177,15 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	    if(!strcmp(optarg,"e")) // empirical state frequencies
 	      {
                 io->mod->s_opt->state_freq = EMPIRICAL;
-                
-                /* if(io->datatype == NT) */
-		/*   { */
-                /*     io->mod->s_opt->opt_state_freq = NO; */
-                /*   } */
-		/* else if (io->datatype == AA) */
-		/*   { */
-                /*     io->mod->s_opt->opt_state_freq = YES; */
-                /*   } */
-		/* else */
-		/*   { */
-		/*     PhyML_Printf("\n. Please define the data type (nt or aa) before setting the -f option\n"); */
-		/*     Exit("\n"); */
-		/*   } */
-	      }
+              }
 	    else if(!strcmp(optarg,"o")) // ML estimation 
 	      {
                 io->mod->s_opt->state_freq = ML;
-
-	        /* if (io->datatype == NT) */
-		/*   { */
-                /*     io->mod->s_opt->opt_state_freq = YES; */
-                /*   } */
-		/* else if (io->datatype == AA) */
-		/*   { */
-                /*     io->mod->s_opt->opt_state_freq = NO; */
-                /*   } */
-		/* else */
-		/*   { */
-		/*     PhyML_Printf("\n. Please define the data type (nt or aa) before setting the -f option\n"); */
-		/*     Exit("\n"); */
-		/*   } */
 	      }
             else if(!strcmp(optarg,"m")) // Given by the model
               {
-                io->mod->s_opt->state_freq = MODEL;
+                if(io->datatype == AA) io->mod->s_opt->state_freq = MODEL;
+                else if(io->datatype == NT) io->mod->s_opt->state_freq = ML;
               }
           
 	    else if(!isalpha(optarg[0]))

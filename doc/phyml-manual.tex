@@ -573,13 +573,13 @@ Nucleotide or amino-acid frequencies.
 
 \item \x{m} : the character frequencies are determined as follows :
 \begin{itemize}
-\item {\it Nucleotide sequences}: (Model) the equilibrium base frequencies are derived from the
-  model (e.g., 1/4 for JC69 or K80).
+\item {\it Nucleotide sequences}: (Model) the equilibrium base frequencies are optimized using
+  maximum likelihood.
 \item {\it Amino-acid sequences}: (Model) the equilibrium amino-acid frequencies are estimated using
                  the frequencies defined by the substitution model.
 \end{itemize}
 
-\item \x{o} : the character frequencies are optimized using maximum likelihood.
+\item \x{o} : the character frequencies (nucleotides or amino-acids) are optimized using maximum likelihood.
 
 \item \x{fA,fC,fG,fT}: only valid for nucleotide-based models. \x{fA}, \x{fC}, \x{fG} and \x{fT} are floating numbers that
 correspond to the frequencies of A, C, G and T respectively.
