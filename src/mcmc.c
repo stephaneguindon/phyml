@@ -4158,8 +4158,8 @@ void MCMC_Free_Mixt_Rate(t_tree *mixt_tree)
 
               for(i=0;i<k;++i)
                 {
-                  if(u[i] < GAMMA_RR_UNSCALED_MIN || u[i] > GAMMA_RR_UNSCALED_MAX) break;
-                  if(v[i] < GAMMA_R_PROBA_UNSCALED_MIN || v[i] > GAMMA_R_PROBA_UNSCALED_MAX) break;
+                  if(v[i] < GAMMA_RR_UNSCALED_MIN || v[i] > GAMMA_RR_UNSCALED_MAX) break;
+                  if(u[i] < GAMMA_R_PROBA_UNSCALED_MIN || u[i] > GAMMA_R_PROBA_UNSCALED_MAX) break;
                 }
               if(i != k) new_lnL_seq = -INFINITY;
               else if(mixt_tree->eval_alnL == YES) new_lnL_seq = Lk(NULL,mixt_tree);

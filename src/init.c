@@ -1063,8 +1063,10 @@ void Init_Model(calign *data, t_mod *mod, option *io)
   // Init unscaled relative rate frequencies
   if(mod->ras->init_r_proba == YES)
     {
-      for(i=0;i<mod->ras->n_catg;i++) mod->ras->gamma_r_proba->v[i]          = (phydbl)1./mod->ras->n_catg;
-      for(i=0;i<mod->ras->n_catg;i++) mod->ras->gamma_r_proba_unscaled->v[i] = (phydbl)(i+1);
+      /* for(i=0;i<mod->ras->n_catg;i++) mod->ras->gamma_r_proba->v[i]          = (phydbl)1./mod->ras->n_catg; */
+      /* for(i=0;i<mod->ras->n_catg;i++) mod->ras->gamma_r_proba_unscaled->v[i] = (phydbl)(i+1); */
+
+      for(i=0;i<mod->ras->n_catg;i++) mod->ras->gamma_r_proba_unscaled->v[i] = 1.0;
     }
   else
     {
@@ -1082,8 +1084,10 @@ void Init_Model(calign *data, t_mod *mod, option *io)
     {
       if(mod->ras->n_catg > 1)
         {
-          for(i=0;i<mod->ras->n_catg;i++) mod->ras->gamma_rr->v[i]          = (phydbl)i;
-          for(i=0;i<mod->ras->n_catg;i++) mod->ras->gamma_rr_unscaled->v[i] = (phydbl)i;
+          /* for(i=0;i<mod->ras->n_catg;i++) mod->ras->gamma_rr->v[i]          = (phydbl)i; */
+          /* for(i=0;i<mod->ras->n_catg;i++) mod->ras->gamma_rr_unscaled->v[i] = (phydbl)i; */
+
+          for(i=0;i<mod->ras->n_catg;i++) mod->ras->gamma_rr_unscaled->v[i] = 1.0 + (phydbl)i/10.;
         }
       else
         {

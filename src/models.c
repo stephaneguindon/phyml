@@ -720,8 +720,7 @@ int Update_RAS(t_mod *mod)
       // Update class frequencies
 #ifndef PHYML
       Qksort(mod->ras->gamma_r_proba_unscaled->v,NULL,0,mod->ras->n_catg-1); // Unscaled class frequencies sorted in increasing order
-#endif
-      
+
       mod->ras->gamma_r_proba->v[0] = mod->ras->gamma_r_proba_unscaled->v[0] / mod->ras->gamma_r_proba_unscaled->v[mod->ras->n_catg-1];
       for(i=1;i<mod->ras->n_catg;i++)
         {
@@ -730,37 +729,35 @@ int Update_RAS(t_mod *mod)
              mod->ras->gamma_r_proba_unscaled->v[i-1]) /
             mod->ras->gamma_r_proba_unscaled->v[mod->ras->n_catg-1];
         }
-
-#ifndef PHYREX
-      do
-        {
-          sum = .0;
-          for(i=0;i<mod->ras->n_catg;i++)
-            {
-              if(mod->ras->gamma_r_proba->v[i] < 0.01) mod->ras->gamma_r_proba->v[i]=0.01;
-              if(mod->ras->gamma_r_proba->v[i] > 0.99) mod->ras->gamma_r_proba->v[i]=0.99;
-              sum += mod->ras->gamma_r_proba->v[i];
-            }
-          for(i=0;i<mod->ras->n_catg;i++) mod->ras->gamma_r_proba->v[i]/=sum;
-        }
-      while((sum > 1.01) || (sum < 0.99));
 #endif
-      
 
+#ifdef PHYML
+      sum = 0.0;
+      for(i=0;i<mod->ras->n_catg;i++) sum += exp(mod->ras->gamma_r_proba_unscaled->v[i]);
+      for(i=0;i<mod->ras->n_catg;i++) mod->ras->gamma_r_proba->v[i] = exp(mod->ras->gamma_r_proba_unscaled->v[i])/sum;
+#endif
+
+      
       // Update class rates
       if(mod->ras->normalise_rr == YES)
         {
+#ifdef PHYML
           sum = .0;
-          for(i=0;i<mod->ras->n_catg;i++) sum += mod->ras->gamma_r_proba->v[i] * mod->ras->gamma_rr_unscaled->v[i];
-          for(i=0;i<mod->ras->n_catg;i++) mod->ras->gamma_rr->v[i] = mod->ras->gamma_rr_unscaled->v[i]/sum;
+          for(i=0;i<mod->ras->n_catg;i++) sum += mod->ras->gamma_r_proba->v[i] * exp(mod->ras->gamma_rr_unscaled->v[i]);
+          for(i=0;i<mod->ras->n_catg;i++) mod->ras->gamma_rr->v[i] = exp(mod->ras->gamma_rr_unscaled->v[i])/sum;
+#else
+          sum = .0;
+          for(i=0;i<mod->ras->n_catg;i++) sum += mod->ras->gamma_r_proba->v[i] * fabs(mod->ras->gamma_rr_unscaled->v[i]);
+          for(i=0;i<mod->ras->n_catg;i++) mod->ras->gamma_rr->v[i] = fabs(mod->ras->gamma_rr_unscaled->v[i])/sum;
+#endif
         }
       else
         {
-          for(i=0;i<mod->ras->n_catg;i++) mod->ras->gamma_rr->v[i] = mod->ras->gamma_rr_unscaled->v[i] * mod->ras->free_rate_mr->v;
+          for(i=0;i<mod->ras->n_catg;i++) mod->ras->gamma_rr->v[i] = exp(mod->ras->gamma_rr_unscaled->v[i]);
         }
       
       /* printf("\n"); */
-      /* for(i=0;i<mod->ras->n_catg;i++)  */
+      /* for(i=0;i<mod->ras->n_catg;i++) */
       /*   printf("\nx %3d %12f %12f xx %12f %12f", */
       /*          mod->ras->normalise_rr, */
       /*          mod->ras->gamma_r_proba->v[i], */
@@ -772,6 +769,14 @@ int Update_RAS(t_mod *mod)
   if(UNINITIALIZED != mod->b_inst)
       update_beagle_ras(mod);
 #endif
+  
+  /* for(i=0;i<mod->ras->n_catg;i++) PhyML_Printf("\n. REALW%d: %12f [%12f] (%12f;%12f--%2d)", */
+  /*                                              i, */
+  /*                                              mod->ras->gamma_r_proba->v[i], */
+  /*                                              mod->ras->gamma_r_proba_unscaled->v[i], */
+  /*                                              mod->ras->gamma_rr->v[i], */
+  /*                                              mod->ras->gamma_rr_unscaled->v[i], */
+  /*                                              mod->ras->normalise_rr); */
 
   return 1;
 }
@@ -808,10 +813,10 @@ int Update_Efrq(t_mod *mod)
 
 int Set_Model_Parameters(t_mod *mod)
 {  
-  if(!Update_Boundaries(mod)) return 0;
   if(!Update_RAS(mod))        return 0;
   if(!Update_Efrq(mod))       return 0;
   if(!Update_Eigen(mod))      return 0;
+  if(!Update_Boundaries(mod)) return 0;
   if(mod->is_mixt_mod == YES) MIXT_Set_Model_Parameters(mod);
   return 1;
 }

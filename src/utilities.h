@@ -178,11 +178,25 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define UNSCALED_RR_MAX log(RR_MAX)
 
 
+#ifdef PHYML
+#define GAMMA_RR_UNSCALED_MIN -5.
+#define GAMMA_RR_UNSCALED_MAX 5.
+/* #define GAMMA_RR_UNSCALED_MIN 0.01 */
+/* #define GAMMA_RR_UNSCALED_MAX 100. */
+#else
 #define GAMMA_RR_UNSCALED_MIN 0.01
 #define GAMMA_RR_UNSCALED_MAX 200.
+#endif
 
+
+#ifdef PHYML
+#define GAMMA_R_PROBA_UNSCALED_MIN -5.
+#define GAMMA_R_PROBA_UNSCALED_MAX 5.
+#else
 #define GAMMA_R_PROBA_UNSCALED_MIN 0.01
 #define GAMMA_R_PROBA_UNSCALED_MAX 200.
+#endif
+
 
 #define PHYREX_UNIFORM 0
 #define PHYREX_NORMAL  1
