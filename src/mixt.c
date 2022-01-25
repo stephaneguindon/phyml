@@ -2345,7 +2345,7 @@ void MIXT_Check_Model_Validity(t_tree *mixt_tree)
               if(mod_in->e_frq == mod_out->e_frq)
                 {
                   if(mod_in->io->datatype == NT &&
-                     mod_in->e_frq->user_state_freq == NO &&
+                     mod_in->s_opt->state_freq != USER &&
                      mod_in->whichmodel != JC69 &&
                      mod_in->whichmodel != K80)
                     {
@@ -2354,7 +2354,7 @@ void MIXT_Check_Model_Validity(t_tree *mixt_tree)
                       PhyML_Fprintf(stderr,"\n. please amend your file accordingly.");          
                       Exit("\n");
                     }
-                  else if(mod_in->io->datatype == AA && mod_in->e_frq->empirical_state_freq == YES)
+                  else if(mod_in->io->datatype == AA && mod_in->s_opt->state_freq == EMPIRICAL)
                     {
                       PhyML_Fprintf(stderr,"\n. A vector of observed amino-acid frequencies should correspond ");
                       PhyML_Fprintf(stderr,"\n. to one data set only. If you are using the XML interface, ");

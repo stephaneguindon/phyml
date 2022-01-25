@@ -30,7 +30,7 @@ void PMat_Gamma(phydbl l, t_mod *mod, int pos, phydbl *Pij);
 int GetDaa (phydbl *daa, phydbl *pi, char *file_name);
 void Update_Qmat_GTR(phydbl *rr, phydbl *rr_val, int *rr_num, phydbl *pi, phydbl *qmat, int opt_rr);
 void Update_Qmat_HKY(phydbl kappa, phydbl *pi, phydbl *qmat);
-void Update_Qmat_Generic(phydbl *rr, phydbl *pi, int ns, phydbl *qmat);
+phydbl Update_Qmat_Generic(phydbl *rr, phydbl *pi, int ns, phydbl *qmat);
 void Translate_Custom_Mod_String(t_mod *mod);
 int Set_Model_Parameters(t_mod *mod);
 phydbl GTR_Dist(phydbl *F, phydbl alpha, eigen *eigen_struct);
@@ -44,5 +44,6 @@ int Update_RAS(t_mod *mod);
 int Update_Efrq(t_mod *mod);
 void PMat_MGF_Gamma(phydbl *Pij, phydbl shape, phydbl scale, phydbl scaling_fact, t_mod *mod);
 int Update_Boundaries(t_mod *mod);
+void Update_Qmat_TN93(phydbl kappa, phydbl lambda, phydbl *pi, phydbl *qmat);
 
 #endif

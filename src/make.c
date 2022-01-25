@@ -988,11 +988,9 @@ void Make_Model_Complete(t_mod *mod)
       Translate_Custom_Mod_String(mod);
     }
   
-  if(mod->io->datatype == NT && mod->whichmodel == GTR)
-    {
-      Make_Custom_Model(mod);
-    }
-  else if(mod->io->datatype == GENERIC)
+  if((mod->io->datatype == NT && mod->whichmodel == GTR) ||
+     mod->io->datatype == AA ||
+     mod->io->datatype == GENERIC)
     {
       Make_Custom_Model(mod);
     }

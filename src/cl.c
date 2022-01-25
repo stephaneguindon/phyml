@@ -1174,30 +1174,20 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	  }
 	case 'f':
 	  {
-	    if(!strcmp(optarg,"e"))
+	    if(!strcmp(optarg,"e")) // empirical state frequencies
 	      {
-	        if(io->datatype == NT)
-		  io->mod->s_opt->opt_state_freq = NO;
-		else if (io->datatype == AA)
-		  io->mod->s_opt->opt_state_freq = YES;
-		else
-		  {
-		    PhyML_Printf("\n. Please define the data type (nt or aa) before setting the -f option\n");
-		    Exit("\n");
-		  }
-	      }
-	    else if(!strcmp(optarg,"m"))
+                io->mod->s_opt->state_freq = EMPIRICAL;
+              }
+	    else if(!strcmp(optarg,"o")) // ML estimation 
 	      {
-	        if (io->datatype == NT)
-		  io->mod->s_opt->opt_state_freq = YES;
-		else if (io->datatype == AA)
-		  io->mod->s_opt->opt_state_freq = NO;
-		else
-		  {
-		    PhyML_Printf("\n. Please define the data type (nt or aa) before setting the -f option\n");
-		    Exit("\n");
-		  }
+                io->mod->s_opt->state_freq = ML;
 	      }
+            else if(!strcmp(optarg,"m")) // Given by the model
+              {
+                if(io->datatype == AA) io->mod->s_opt->state_freq = MODEL;
+                else if(io->datatype == NT) io->mod->s_opt->state_freq = ML;
+              }
+          
 	    else if(!isalpha(optarg[0]))
 	      {
 		phydbl sum;
@@ -1206,8 +1196,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
                 io->mod->e_frq = (t_efrq *)Make_Efrq(4);
                 Init_Efrq(NULL,io->mod->e_frq);
 
-		io->mod->s_opt->opt_state_freq  = NO;
-                io->mod->e_frq->user_state_freq = YES;
+		io->mod->s_opt->state_freq = USER;
 
 		sscanf(optarg,"%lf,%lf,%lf,%lf",&val1,&val2,&val3,&val4);
 		io->mod->e_frq->user_b_freq->v[0] = (phydbl)val1;
