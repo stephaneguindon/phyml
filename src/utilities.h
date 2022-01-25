@@ -171,8 +171,8 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define  PINV_MIN 0.00001
 #define  PINV_MAX 0.99999
 
-#define RR_MIN 0.001
-#define RR_MAX 1000.0
+#define RR_MIN 0.0001
+#define RR_MAX 10000.0
 
 #define UNSCALED_RR_MIN log(RR_MIN)
 #define UNSCALED_RR_MAX log(RR_MAX)
