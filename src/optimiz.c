@@ -3252,13 +3252,14 @@ void Optimize_Free_Rate_Weights(t_tree *tree, int fast, int verbose)
   phydbl wm, lk_before, lk_after;
 
   lk_before = tree->c_lnL;
-
+  
   if(fast == YES)
     {
       tree->mod->ras->normalise_rr = NO;
       for(i=0;i<tree->mod->ras->n_catg;i++) tree->mod->ras->gamma_rr_unscaled->v[i] = log(tree->mod->ras->gamma_rr->v[i]);
     }
-    
+
+  
   for(i=0;i<tree->mod->ras->n_catg;i++)
     {
       phydbl a,c;
@@ -3287,6 +3288,9 @@ void Optimize_Free_Rate_Weights(t_tree *tree, int fast, int verbose)
 
   tree->mod->ras->normalise_rr = YES;
 
+  tree->mod->ras->gamma_rr_unscaled->v[0] = 0.0;
+  for(j=1;j<tree->mod->ras->n_catg;j++) tree->mod->ras->gamma_rr_unscaled->v[j] = log(tree->mod->ras->gamma_rr->v[j]/tree->mod->ras->gamma_rr->v[0]);
+          
   lk_after = tree->c_lnL;
 
   if(lk_after < lk_before - tree->mod->s_opt->min_diff_lk_global)
