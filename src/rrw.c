@@ -101,7 +101,7 @@ phydbl RRW_Prior_Sigsq_Scale(t_tree *tree)
   sd  = 2.0; // Value of hyper-prior governing the variance of relative dispersal rates across lineages
   
   if(tree->mmod->model_id == RW) return(-1.0);
-                                              
+  
   for(int i=0;i<2*tree->n_otu-2;++i)
     {
       if(tree->mmod->model_id == RRW_GAMMA)

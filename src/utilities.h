@@ -179,8 +179,8 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 
 
 #ifdef PHYML
-#define GAMMA_RR_UNSCALED_MIN -100.
-#define GAMMA_RR_UNSCALED_MAX 100.
+#define GAMMA_RR_UNSCALED_MIN -1000.
+#define GAMMA_RR_UNSCALED_MAX 1000.
 /* #define GAMMA_RR_UNSCALED_MIN 0.01 */
 /* #define GAMMA_RR_UNSCALED_MAX 100. */
 #else

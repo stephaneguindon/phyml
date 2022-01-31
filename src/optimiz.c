@@ -3194,16 +3194,17 @@ void Optimize_Free_Rate_Rr(t_tree *tree, int fast, int verbose)
           
           a = tree->mod->ras->gamma_rr_unscaled->v[i] - 2.0;
           c = tree->mod->ras->gamma_rr_unscaled->v[i] + 2.0;
-          
+                    
           Generic_Brent_Lk(&(tree->mod->ras->gamma_rr_unscaled->v[i]),
                            a,c,
                            tree->mod->s_opt->min_diff_lk_local,
                            tree->mod->s_opt->brent_it_max,
                            tree->mod->s_opt->quickdirty,
                            Wrap_Lk,NULL,tree,NULL,NO);
+          
 
           lk_after = tree->c_lnL;
-
+          
           if(lk_after < lk_before - tree->mod->s_opt->min_diff_lk_global)
             {
               PhyML_Fprintf(stderr,"\n. lk_before: %f lk_after: %f diff: %G",lk_before,lk_after,lk_before-lk_after);
@@ -3252,13 +3253,12 @@ void Optimize_Free_Rate_Weights(t_tree *tree, int fast, int verbose)
   phydbl wm, lk_before, lk_after;
 
   lk_before = tree->c_lnL;
-  
+
   if(fast == YES)
     {
       tree->mod->ras->normalise_rr = NO;
       for(i=0;i<tree->mod->ras->n_catg;i++) tree->mod->ras->gamma_rr_unscaled->v[i] = log(tree->mod->ras->gamma_rr->v[i]);
     }
-
   
   for(i=0;i<tree->mod->ras->n_catg;i++)
     {
