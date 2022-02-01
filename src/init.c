@@ -1116,7 +1116,8 @@ void Init_Model(calign *data, t_mod *mod, option *io)
         {
           for(i=0;i<6;i++)
             {
-              mod->r_mat->rr_val->v[i] = 0.0;
+              mod->r_mat->rr_val->v[i] = log(1.0);
+              /* mod->r_mat->rr_val->v[i] = exp(1.0); */
               mod->r_mat->rr->v[i] = 1.0;
             }
           
@@ -1130,6 +1131,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
               for(i=1;i<mod->r_mat->n_diff_rr;i++)
                 {
                   mod->r_mat->rr_val->v[i] = log(2.0);
+                  /* mod->r_mat->rr_val->v[i] = exp(2.0); */
                   mod->r_mat->rr->v[i] = 2.0;
                 }
             }
@@ -1137,6 +1139,9 @@ void Init_Model(calign *data, t_mod *mod, option *io)
             {
               mod->r_mat->rr_val->v[AG] = log(2.0);
               mod->r_mat->rr_val->v[CT] = log(2.0);
+
+              /* mod->r_mat->rr_val->v[AG] = exp(2.0); */
+              /* mod->r_mat->rr_val->v[CT] = exp(2.0); */
 
               mod->r_mat->rr->v[AG] = 2.0;
               mod->r_mat->rr->v[CT] = 2.0;
@@ -1146,11 +1151,14 @@ void Init_Model(calign *data, t_mod *mod, option *io)
         {
           if(mod->s_opt->opt_rr == YES)
             {
-              for(i=0;i<6;i++) mod->r_mat->rr_val->v[i] = 0.0;
+              for(i=0;i<6;i++) mod->r_mat->rr_val->v[i] = log(1.0);
+              /* for(i=0;i<6;i++) mod->r_mat->rr_val->v[i] = exp(1.0); */
               for(i=0;i<6;i++) mod->r_mat->rr->v[i] = 1.0;
               
               mod->r_mat->rr_val->v[AG] = log(2.0);
               mod->r_mat->rr_val->v[CT] = log(2.0);
+              /* mod->r_mat->rr_val->v[AG] = exp(2.0); */
+              /* mod->r_mat->rr_val->v[CT] = exp(2.0); */
               
               mod->r_mat->rr->v[AG] = 2.0;
               mod->r_mat->rr->v[CT] = 2.0;
@@ -1415,7 +1423,8 @@ void Init_Model(calign *data, t_mod *mod, option *io)
       mod->s_opt->state_freq     = MODEL;
       mod->s_opt->opt_kappa      = NO;
       mod->s_opt->opt_lambda     = NO;
-      for(i=0;i<mod->ns*(mod->ns-1)/2;i++) mod->r_mat->rr_val->v[i] = 0.0;
+      for(i=0;i<mod->ns*(mod->ns-1)/2;i++) mod->r_mat->rr_val->v[i] = log(1.0);
+      /* for(i=0;i<mod->ns*(mod->ns-1)/2;i++) mod->r_mat->rr_val->v[i] = exp(1.0); */
       for(i=0;i<mod->ns*(mod->ns-1)/2;i++) mod->r_mat->rr->v[i] = 1.0;
     }
   else

@@ -164,7 +164,6 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define  UNSCALED_E_FRQ_MIN -1000.
 #define  UNSCALED_E_FRQ_MAX +1000.
 
-
 #define  TSTV_MIN 0.05
 #define  TSTV_MAX 100.0
 
@@ -2249,13 +2248,13 @@ void Br_Len_Involving_Invar(t_tree *tree);
 void Br_Len_Not_Involving_Invar(t_tree *tree);
 void Getstring_Stdin(char *s);
 phydbl Num_Derivatives_One_Param(phydbl (*func)(t_tree *tree), t_tree *tree,
-                                 phydbl f0, phydbl *param, int which, int n_param, phydbl stepsize, int logt,
+                                 phydbl f0, phydbl *param, int which, int n_param, phydbl stepsize, short int logt, short int expt,
                                  phydbl *err, int precise, int is_positive);
 phydbl Num_Derivatives_One_Param_Nonaligned(phydbl (*func)(t_tree *tree), t_tree *tree,
-                                            phydbl f0, phydbl **param, int which, int n_param, phydbl stepsize, int logt,
+                                            phydbl f0, phydbl **param, int which, int n_param, phydbl stepsize, short int logt, short int expt,
                                             phydbl *err, int precise, int is_positive);
-int Num_Derivative_Several_Param(t_tree *tree,phydbl *param,int n_param,phydbl stepsize,int logt,phydbl(*func)(t_tree *tree),phydbl *derivatives, int is_positive);
-int Num_Derivative_Several_Param_Nonaligned(t_tree *tree, phydbl **param, int n_param, phydbl stepsize, int logt,
+int Num_Derivative_Several_Param(t_tree *tree, phydbl *param, int n_param, phydbl stepsize, short int logt, short int expt, phydbl(*func)(t_tree *tree),phydbl *derivatives, int is_positive);
+int Num_Derivative_Several_Param_Nonaligned(t_tree *tree, phydbl **param, int n_param, phydbl stepsize, short int logt, short int expt,
                                             phydbl (*func)(t_tree *tree), phydbl *derivatives, int is_positive);
 int Compare_Two_States(char *state1,char *state2,int state_size);
 void Copy_One_State(char *from,char *to,int state_size);

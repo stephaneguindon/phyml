@@ -95,11 +95,10 @@ void BFGS(t_tree *tree,
 	  phydbl gtol, 
           phydbl difff,
 	  phydbl step_size,
-          int logt,
-          int is_positive,
+          short int logt, short int expt, short int is_positive,
 	  phydbl(*func)(t_tree *tree), 
-	  int(*dfunc)(t_tree *tree,phydbl *param,int n_param,phydbl stepsize,int logt,phydbl(*func)(t_tree *tree),phydbl *derivatives, int is_positive), 
-	  int(*lnsrch)(t_tree *tree, int n, phydbl *xold, phydbl fold,phydbl *g, phydbl *p, phydbl *x,phydbl *f, phydbl stpmax, int *check, int logt, int is_positive),
+	  int(*dfunc)(t_tree *tree,phydbl *param,int n_param,phydbl stepsize,short int logt, short int expt, phydbl(*func)(t_tree *tree),phydbl *derivatives, int is_positive), 
+	  int(*lnsrch)(t_tree *tree, int n, phydbl *xold, phydbl fold,phydbl *g, phydbl *p, phydbl *x,phydbl *f, phydbl stpmax, int *check, short int logt, short int expt, int is_positive),
 	  int *failed);
 
 void BFGS_Nonaligned(t_tree *tree, 
@@ -108,11 +107,10 @@ void BFGS_Nonaligned(t_tree *tree,
                      phydbl gtol, 
                      phydbl difff,
                      phydbl step_size,
-                     int logt,
-                     int is_positive,
+                     short int logt, short int expt, short int is_positive,
                      phydbl(*func)(t_tree *tree), 
-                     int(*dfunc_nonaligned)(t_tree *tree,phydbl **param,int n_param,phydbl stepsize,int logt,phydbl(*func)(t_tree *tree),phydbl *derivatives, int is_positive), 
-                     int(*lnsrch_nonaligned)(t_tree *tree, int n, phydbl **xold, phydbl fold,phydbl *g, phydbl *p, phydbl *x,phydbl *f, phydbl stpmax, int *check, int logt, int is_positive),
+                     int(*dfunc_nonaligned)(t_tree *tree,phydbl **param,int n_param,phydbl stepsize,short int logt, short int expt, phydbl(*func)(t_tree *tree),phydbl *derivatives, int is_positive), 
+                     int(*lnsrch_nonaligned)(t_tree *tree, int n, phydbl **xold, phydbl fold,phydbl *g, phydbl *p, phydbl *x,phydbl *f, phydbl stpmax, int *check, short int logt, short int expt, int is_positive),
                      int *failed);
 
 
@@ -154,16 +152,16 @@ phydbl Node_Time_Brent_Fixed_Br_Len(phydbl ax, phydbl bx, phydbl cx, phydbl tol,
 int Generic_Brent_Lk(phydbl *param, phydbl ax, phydbl cx, phydbl tol, 
                      int n_iter_max, int quickdirty,
                      phydbl (*obj_func)(t_edge *,t_tree *,supert_tree *), 
-                     t_edge *branch, t_tree *tree, supert_tree *stree, int logt);
+                     t_edge *branch, t_tree *tree, supert_tree *stree, short int logt, short int expt);
 void Round_Optimize_Node_Heights(t_tree *tree);
 void Opt_Node_Heights_Recurr_Pre(t_node *a, t_node *d, t_tree *tree);
 void Opt_Node_Heights_Recurr(t_tree *tree);
 
 int Lnsrch(t_tree *tree, int n, phydbl *xold, phydbl fold, phydbl *g, phydbl *p, phydbl *x,
-	   phydbl *f, phydbl stpmax, int *check, int logt, int is_positive);
+	   phydbl *f, phydbl stpmax, int *check, short int logt, short int expt, int is_positive);
 
 int Lnsrch_Nonaligned(t_tree *tree, int n, phydbl **xold, phydbl fold, phydbl *g, phydbl *p, phydbl *x,
-                      phydbl *f, phydbl stpmax, int *check, int logt, int is_positive);
+                      phydbl *f, phydbl stpmax, int *check, short int logt, short int expt, int is_positive);
 
 void Optimize_RR_Params(t_tree *mixt_tree, int verbose);
 void Optimize_TsTv(t_tree *mixt_tree, int verbose);
