@@ -6970,7 +6970,9 @@ void MCMC_PHYREX_Sigsq_Scale(t_tree *tree, int print)
   
   K  = 0.1/tree->n_otu; // Required so as to facilitate convergence of exchange algo
   n_changes = (int)(1. + 0.1*tree->n_otu); // Same here
-  /* K = 0.1; */
+
+  /* !!!!!!!!!!!!!!!!!! */
+  K = 1.0;
   /* n_changes = (int)(1. + 1.0*tree->n_otu); // Same here */
   
   hr = 0.0;

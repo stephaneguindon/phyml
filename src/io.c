@@ -6712,7 +6712,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%s\t","auxtuneLdskTipToRoot");
           PhyML_Fprintf(fp_stats,"%s\t","auxtuneRootTime");
 
-          /* for(int i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"sigSq%d\t",i); */
+          for(int i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"sigSq%d\t",i);
           /* for(int i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"auxsigSq%d\t",i); */
 
         }
@@ -6791,7 +6791,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[0]->mcmc->tune_move[tree->aux_tree[0]->mcmc->num_move_phyrex_ldsk_tip_to_root]);
       PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[0]->mcmc->tune_move[tree->aux_tree[0]->mcmc->num_move_root_time]);
 
-      /* for(int i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->sigsq_scale[i]); */
+      for(int i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->sigsq_scale[i]);
       /* for(int i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[0]->mmod->sigsq_scale[i]); */
 
       fflush(NULL);

@@ -161,8 +161,8 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define  E_FRQ_MIN 0.001
 #define  E_FRQ_MAX 0.999
 
-#define  UNSCALED_E_FRQ_MIN -1000.
-#define  UNSCALED_E_FRQ_MAX +1000.
+#define  UNSCALED_E_FRQ_MIN -100.
+#define  UNSCALED_E_FRQ_MAX +100.
 
 #define  TSTV_MIN 0.05
 #define  TSTV_MAX 100.0

@@ -50,6 +50,9 @@ int Eigen(int job, phydbl *A, int n, phydbl *rr, phydbl *ri,
     int low,hi,i,j,k, it, istate=0;
     phydbl tiny, t; 
 
+    for(i=0;i<n*n;++i) assert(isnan(A[i]) == NO); 
+    for(i=0;i<n*n;++i) assert(isinf(A[i]) == NO); 
+
     tiny=SQRT(POW((phydbl)BASE,(phydbl)(1-(int)DIGITS)));
     /* tiny=FLT_MIN; */
     /* tiny = SMALL; */
@@ -247,6 +250,7 @@ void balance(phydbl *mat, int n,int *low, int *hi, phydbl *scale)
    */
   phydbl c,f,g,r,s;
   int i,j,k,l,done;
+
   /* search for rows isolating an eigenvalue and push them down */
   for (k = n - 1; k >= 0; k--) 
     {

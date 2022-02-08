@@ -521,7 +521,6 @@ int Br_Len_Brak(phydbl *ax, phydbl *bx, phydbl *cx,
    *fc=-Lk(b_fcus,tree);
    while (*fb > *fc + tree->mod->s_opt->min_diff_lk_local)
      {
-       PhyML_Printf("fb=%f fc=%f\n",*fb,*fc);
        r=(*bx-*ax)*(*fb-*fc);
        q=(*bx-*cx)*(*fb-*fa);
        u=(*bx)-((*bx-*cx)*q-(*bx-*ax)*r)/
@@ -797,6 +796,7 @@ void Optimize_Br_Len_Multiplier(t_tree *mixt_tree, int verbose)
   phydbl lk_init;
   t_tree *tree;
 
+  /* PhyML_Printf("\n. Optimizing Br_Len_Multiplier"); */
   
   tree = mixt_tree;
   
@@ -2214,6 +2214,8 @@ int Optimiz_Alpha_And_Pinv(t_tree *mixt_tree, int verbose)
   t_tree *tree;
   int i;
 
+  /* PhyML_Printf("\n. Optimizing Alpha and Inv"); */
+  
   Set_Update_Eigen(NO,mixt_tree->mod);
 
   alpha   = NULL;
@@ -2774,7 +2776,9 @@ void Optimize_RR_Params(t_tree *mixt_tree, int verbose)
   phydbl lk_new,lk_old;
   phydbl a,b;
   phydbl *opt_val;
-  
+
+  /* PhyML_Printf("\n. Optimizing RR params"); */
+
   Set_Update_Eigen(YES,mixt_tree->mod);
 
   n_r_mat = 0;
@@ -2905,6 +2909,8 @@ void Optimize_TsTv(t_tree *mixt_tree, int verbose)
   t_tree *tree;
   int i;
 
+  /* PhyML_Printf("\n. Optimizing Tstv"); */
+
   Set_Update_Eigen(YES,mixt_tree->mod);
 
   tstv   = NULL;
@@ -2969,6 +2975,8 @@ void Optimize_Pinv(t_tree *mixt_tree, int verbose)
   t_tree *tree;
   int i;
 
+  /* PhyML_Printf("\n. Optimizing Pinv"); */
+
   Set_Update_Eigen(NO,mixt_tree->mod);
 
   pinv   = NULL;
@@ -3021,6 +3029,8 @@ void Optimize_Alpha(t_tree *mixt_tree, int verbose)
   int n_alpha;
   t_tree *tree;
   int i;
+
+  /* PhyML_Printf("\n. Optimizing Alpha"); */
 
   Set_Update_Eigen(NO,mixt_tree->mod);
 
@@ -3083,6 +3093,8 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
   int *permut;
   phydbl lk_before, lk_after;
   tree = mixt_tree;
+
+  /* PhyML_Printf("\n. Optimizing Free_Rate"); */
 
   lk_before = lk_after = UNLIKELY;
 
@@ -3333,6 +3345,8 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
   int *permut;
   phydbl *opt_val;
 
+  /* PhyML_Printf("\n. Optimizing State Freqs"); */
+  
   Set_Update_Eigen(YES,mixt_tree->mod);
 
   /* freqs   = NULL; */
@@ -3395,7 +3409,7 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
               
               if(verbose)
                 {
-                  Print_Lk(mixt_tree,"[Character freqs.  ]");
+                  Print_Lk(mixt_tree,"[Character freqs.   ]");
                 }
               
               lk_new = mixt_tree->c_lnL;
@@ -3435,6 +3449,8 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
 void Optimize_Rmat_Weights(t_tree *mixt_tree, int verbose)
 {
   scalar_dbl *r_mat_weight;
+
+  /* PhyML_Printf("\n. Optimizing Rmat Weights"); */
 
   Set_Update_Eigen(NO,mixt_tree->mod);
 
@@ -3479,6 +3495,8 @@ void Optimize_Efrq_Weights(t_tree *mixt_tree, int verbose)
 {
   scalar_dbl *e_frq_weight;
 
+  /* PhyML_Printf("\n. Optimizing Efrq Weights"); */
+
   Set_Update_Eigen(NO,mixt_tree->mod);
 
   if(mixt_tree->is_mixt_tree == NO) return;
@@ -3520,13 +3538,14 @@ void Optimize_Efrq_Weights(t_tree *mixt_tree, int verbose)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Optimize_Lambda(t_tree *mixt_tree, int verbose)
 {
   scalar_dbl **lambda;
   int n_lambda;
   t_tree *tree;
   int i;
+
+  /* PhyML_Printf("\n. Optimizing Lambda"); */
 
   Set_Update_Eigen(YES,mixt_tree->mod);
 

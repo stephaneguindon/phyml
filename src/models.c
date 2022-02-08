@@ -789,7 +789,7 @@ int Update_Efrq(t_mod *mod)
 {
   unsigned int i;
   phydbl sum;
-
+                                      
   if(mod->s_opt->state_freq == ML)
     {
       for(i=0;i<mod->ns;++i) mod->e_frq->pi->v[i] = exp(mod->e_frq->pi_unscaled->v[i]);
@@ -802,9 +802,10 @@ int Update_Efrq(t_mod *mod)
         update_beagle_efrqs(mod);
 #endif
 
-      for(i=0;i<mod->ns;++i) if(mod->e_frq->pi->v[i] < E_FRQ_MIN) mod->e_frq->pi->v[i] = E_FRQ_MIN;
-      for(i=0;i<mod->ns;++i) if(mod->e_frq->pi->v[i] > E_FRQ_MAX) mod->e_frq->pi->v[i] = E_FRQ_MAX;
     }
+
+  for(i=0;i<mod->ns;++i) if(mod->e_frq->pi->v[i] < E_FRQ_MIN) mod->e_frq->pi->v[i] = E_FRQ_MIN;
+  for(i=0;i<mod->ns;++i) if(mod->e_frq->pi->v[i] > E_FRQ_MAX) mod->e_frq->pi->v[i] = E_FRQ_MAX;
 
   return 1;
 }
