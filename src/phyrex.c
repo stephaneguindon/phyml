@@ -4480,6 +4480,14 @@ void PHYREX_Label_Edges(t_tree *tree)
     }
 
 
+  for(int i=0;i<2*tree->n_otu-1;++i)
+    {
+      if(tree->a_nodes[i] != tree->n_root)
+        {
+          sprintf(tree->a_nodes[i]->b[0]->label->val,"%f",tree->rates->br_r[tree->a_nodes[i]->num]);
+          sprintf(tree->a_nodes[i]->b[0]->label->next->val,"%f",tree->mmod->sigsq_scale[tree->a_nodes[i]->num]);
+        }
+    }
 }
 
 /*////////////////////////////////////////////////////////////

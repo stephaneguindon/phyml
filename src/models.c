@@ -486,11 +486,11 @@ phydbl Update_Qmat_Generic(phydbl *rr, phydbl *pi, int ns, phydbl *qmat)
 
   for(i=0;i<ns*ns;++i) qmat[i] = .0;
 
-  if(rr[(int)(ns*(ns-1)/2)-1] < 0.00001)
-    {
-      PhyML_Fprintf(stderr,"\n. rr[%d]=%f",(int)(ns*(ns-1)/2)-1,rr[(int)(ns*(ns-1)/2)-1]);
-      assert(FALSE);
-    }
+  /* if(rr[(int)(ns*(ns-1)/2)-1] < 0.00001) */
+  /*   { */
+  /*     PhyML_Fprintf(stderr,"\n. rr[%d]=%f",(int)(ns*(ns-1)/2)-1,rr[(int)(ns*(ns-1)/2)-1]); */
+  /*     assert(FALSE); */
+  /*   } */
   
   /* for(i=0;i<(int)(ns*(ns-1)/2);++i) */
   /*   { */

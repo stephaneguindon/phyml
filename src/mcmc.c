@@ -6970,11 +6970,12 @@ void MCMC_PHYREX_Sigsq_Scale(t_tree *tree, int print)
   
   K  = 0.1/tree->n_otu; // Required so as to facilitate convergence of exchange algo
   n_changes = (int)(1. + 0.1*tree->n_otu); // Same here
-
-  /* !!!!!!!!!!!!!!!!!! */
-  K = 1.0;
   /* n_changes = (int)(1. + 1.0*tree->n_otu); // Same here */
   
+
+  /* !!!!!!!!!!!!!!!!! */
+  K = 1.0;
+
   hr = 0.0;
   
   aux_tree = NULL;
@@ -7007,6 +7008,8 @@ void MCMC_PHYREX_Sigsq_Scale(t_tree *tree, int print)
          new_scale > tree->mmod->sigsq_scale_max) break;
       
       tree->mmod->sigsq_scale[permut[i]] = new_scale;
+
+      if(print == YES) PhyML_Printf("\n. %12f->%12f",cur_scale,new_scale);
     }
 
   Free(permut);
@@ -7058,7 +7061,7 @@ void MCMC_PHYREX_Sigsq_Scale(t_tree *tree, int print)
   alpha = MIN(1.,ratio);
 
   if(print == YES)
-    PhyML_Printf("\n. SIGSQSCAL lnL: %f->%f lnP: %f->%f aux: %f->%f T: %f hr: %f alpha: %f",
+    PhyML_Printf("\n. SIGSQSCAL v: %12f->%12f lnL: %12f->%12f lnP: %12f->%12f aux: %12f->%12f T: %12f hr: %12f alpha: %12f",
                  cur_lnL_geo,new_lnL_geo,
                  new_lnP_geo,cur_lnP_geo,
                  new_glnL_aux,cur_glnL_aux,
@@ -9678,7 +9681,6 @@ void MCMC_PHYREX_Prune_Regraft_Slide(t_tree *tree, int print)
   phydbl *rad;
   phydbl dt_orig,dt_new;
   phydbl cur_t,new_t,K;
-  short int root_select;
   
   if(tree->mod->s_opt->opt_topo == NO) return;
 
@@ -9798,9 +9800,6 @@ void MCMC_PHYREX_Prune_Regraft_Slide(t_tree *tree, int print)
       assert(prune_ldsk_daughter != NULL);
 
       prune_ldsk = prune_ldsk_daughter->prev;
-
-      root_select = NO;
-      if(prune_ldsk == tree->n_root->ldsk) root_select = YES;
       
       /* prune_ldsk_daughter is the next coalescent event or tip node */
       while(prune_ldsk_daughter->n_next == 1) prune_ldsk_daughter = prune_ldsk_daughter->next[0];
@@ -12206,7 +12205,6 @@ void MCMC_PHYREX_Ldsk_Tip_To_Root(t_tree *tree, int print)
   Free(permut);
 
 
-  /* /\* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! *\/ */
 
   /* phydbl u,alpha,ratio,hr,*rad; */
   /* phydbl cur_glnL, new_glnL; */

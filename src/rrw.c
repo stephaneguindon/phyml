@@ -98,9 +98,7 @@ phydbl RRW_Prior_Sigsq_Scale(t_tree *tree)
   
   lnP = 0.0;
   err = NO;
-  /* sd  = 2.0; // Value of hyper-prior governing the variance of relative dispersal rates across lineages */
-  /* !!!!!!!!!!! */
-  sd  = 10.0; // Value of hyper-prior governing the variance of relative dispersal rates across lineages
+  sd  = 2.0; // Value of hyper-prior governing the variance of relative dispersal rates across lineages
   
   if(tree->mmod->model_id == RW) return(-1.0);
   
@@ -441,10 +439,7 @@ void RRW_Update_Normalization_Factor(t_tree *tree)
       T+=dt;
       RT+=rdt;
     }
-  /* tree->mmod->rrw_norm_fact = T/RT; */
-  /* !!!!!!!!!!!!!!!!!!!!! */
-  tree->mmod->rrw_norm_fact = 1.0;
-  
+  tree->mmod->rrw_norm_fact = T/RT;
 }
 
 //////////////////////////////////////////////////////////////
