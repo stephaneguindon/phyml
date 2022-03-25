@@ -48,7 +48,8 @@ phydbl LOCATION_Lk(t_tree *tree)
       }
     case RRW_GAMMA : case RRW_LOGNORMAL :
       {
-        lnL = RRW_Lk(tree);
+        if(tree->mmod->integrateAncestralLocations == NO) lnL = RRW_Lk(tree);
+        else lnL = RRW_Independent_Contrasts(tree);
         break;
       }
     case RW :

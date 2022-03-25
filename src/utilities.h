@@ -2031,6 +2031,8 @@ typedef struct __Migrep_Model{
   int           max_num_of_intervals;
   int                     update_rad;
 
+  short int integrateAncestralLocations;
+  
   phydbl                        lbda; // rate at which events occur
   phydbl                    min_lbda; // min of rate at which events occur
   phydbl                    max_lbda; // max of rate at which events occur
@@ -2074,6 +2076,8 @@ typedef struct __Migrep_Model{
 
   phydbl             disp_prior_mean;
 
+  phydbl            rrw_param_val; // value of parameter governing the variance of diffusion coefficient across edges  
+  
 }t_phyrex_mod;
 
 /*!********************************************************/

@@ -62,7 +62,7 @@ phydbl RW_Independent_Contrasts(t_tree *tree)
 {
   phydbl lnP;
   t_node *n1,*n2;
-  phydbl v1,v2,u,s;
+  phydbl v1,v2,v1pv2,u,s;
   
   lnP = 0.0;
 
@@ -79,20 +79,32 @@ phydbl RW_Independent_Contrasts(t_tree *tree)
       v1 = fabs(tree->ctrst->tprime[n1->num]-tree->times->nd_t[tree->n_root->num]);
       v2 = fabs(tree->ctrst->tprime[n2->num]-tree->times->nd_t[tree->n_root->num]);
 
+      v1pv2 = v1+v2;
+      if(v1pv2 < SMALL) v1pv2 = SMALL;
+            
       // x6
       tree->ctrst->x[tree->n_root->num] =
-        (v2/(v2+v1))*tree->ctrst->x[n1->num] +
-        (v1/(v2+v1))*tree->ctrst->x[n2->num] ;
+        (v2/(v1pv2))*tree->ctrst->x[n1->num] +
+        (v1/(v1pv2))*tree->ctrst->x[n2->num] ;
 
       // u1
       u = tree->ctrst->x[n1->num] - tree->ctrst->x[n2->num];
 
       // t6'
-      tree->ctrst->tprime[tree->n_root->num] = tree->times->nd_t[tree->n_root->num] + (v1*v2)/(v1+v2);
+      tree->ctrst->tprime[tree->n_root->num] = tree->times->nd_t[tree->n_root->num] + (v1*v2)/(v1pv2);
       
       s = tree->mmod->sigsq[i];
-      lnP -= log(sqrt(2.*PI*s*(v1+v2)));
-      lnP -= (1./(2.*s*(v1+v2)))*u*u;
+      lnP -= log(sqrt(2.*PI*s*(v1pv2)));
+      lnP -= (1./(2.*s*(v1pv2)))*u*u;
+
+      if(lnP < UNLIKELY)
+        {
+          PhyML_Printf("\n. v1: %f v2: %f",v1,v2);
+          PhyML_Printf("\n. ctrst1: %f ctrst2: %f",tree->ctrst->x[n1->num],tree->ctrst->x[n2->num]);
+          PhyML_Printf("\n. tprime: %f",tree->ctrst->tprime[tree->n_root->num]);
+          PhyML_Printf("\n. t: %f",tree->times->nd_t[tree->n_root->num]);
+          assert(false);
+        } 
     }
   
   return(lnP);
@@ -107,7 +119,7 @@ void RW_Independent_Contrasts_Post(t_node *a, t_node *d, phydbl sd, phydbl *lnP,
   else
     {
       t_node *n1,*n2;
-      phydbl v1,v2,u;
+      phydbl v1,v2,v1pv2,u;
       
       n1 = n2 = NULL;
       for(int i=0;i<3;++i)
@@ -124,19 +136,31 @@ void RW_Independent_Contrasts_Post(t_node *a, t_node *d, phydbl sd, phydbl *lnP,
       v1 = fabs(tree->ctrst->tprime[n1->num]-tree->times->nd_t[d->num]);
       v2 = fabs(tree->ctrst->tprime[n2->num]-tree->times->nd_t[d->num]);
 
+      v1pv2 = v1+v2;
+      if(v1pv2 < SMALL) v1pv2 = SMALL;
+
       // x6
       tree->ctrst->x[d->num] =
-        (v2/(v2+v1))*tree->ctrst->x[n1->num] +
-        (v1/(v2+v1))*tree->ctrst->x[n2->num] ;
+        (v2/(v1pv2))*tree->ctrst->x[n1->num] +
+        (v1/(v1pv2))*tree->ctrst->x[n2->num] ;
 
       // u1
       u = tree->ctrst->x[n1->num] - tree->ctrst->x[n2->num];
 
       // t6'
-      tree->ctrst->tprime[d->num] = tree->times->nd_t[d->num] + (v1*v2)/(v1+v2);
+      tree->ctrst->tprime[d->num] = tree->times->nd_t[d->num] + (v1*v2)/(v1pv2);
       
-      *lnP -= log(sqrt(2.*PI*sd*(v1+v2)));
-      *lnP -= (1./(2.*sd*(v1+v2)))*u*u;
+      *lnP -= log(sqrt(2.*PI*sd*(v1pv2)));
+      *lnP -= (1./(2.*sd*(v1pv2)))*u*u;
+
+      if(*lnP < UNLIKELY)
+        {
+          PhyML_Printf("\n. v1: %f v2: %f",v1,v2);
+          PhyML_Printf("\n. ctrst1: %f ctrst2: %f",tree->ctrst->x[n1->num],tree->ctrst->x[n2->num]);
+          PhyML_Printf("\n. tprime: %f",tree->ctrst->tprime[d->num]);
+          PhyML_Printf("\n. t: %f",tree->times->nd_t[d->num]);
+          assert(false);
+        }
     }
 }
 

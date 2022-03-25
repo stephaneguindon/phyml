@@ -3485,6 +3485,7 @@ void PHYREX_Init_Migrep_Mod(t_phyrex_mod *t, int n_dim, phydbl min_lat, phydbl m
   t->max_rad = 1.0*((max_lat-min_lat)+(max_lon-min_lon));
   t->rad = 0.01*((max_lat-min_lat)+(max_lon-min_lon));
   t->prior_param_rad = 1./(0.1*((max_lat-min_lat)+(max_lon-min_lon)));
+
 }
 
 //////////////////////////////////////////////////////////////
@@ -3495,8 +3496,8 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   for(int i=0;i<2*n_otu-1;++i) t->sigsq_scale[i] = 1.0;
 
   /* !!!!!!!!!!!!!!!!!!!! */
-  t->sigsq_scale_min = 1.E-5;
-  t->sigsq_scale_max = 1.E+5;
+  t->sigsq_scale_min = 1.E-4;
+  t->sigsq_scale_max = 1.E+4;
   /* t->sigsq_scale_min = 0.1; */
   /* t->sigsq_scale_max = 10.; */
 
@@ -3551,6 +3552,10 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->max_num_of_intervals = 10000000;
 
   t->disp_prior_mean = 1.0;
+
+  t->integrateAncestralLocations = YES;
+
+  t->rrw_param_val = 2.0;
 }
 
 //////////////////////////////////////////////////////////////
@@ -3784,15 +3789,8 @@ void M4_Init_Model(m4 *m4mod, calign *data, t_mod *mod)
 // one dimension (with index dim_idx)
 void RW_Init_Contrasts(int dim_idx, t_tree *tree)
 {
-  for(int i=0;i<tree->n_otu;++i)
-    {
-      tree->ctrst->x[i] = tree->a_nodes[i]->ldsk->coord->lonlat[dim_idx];
-    }
-  
-  for(int i=0;i<2*tree->n_otu-1;++i)
-    {
-      tree->ctrst->tprime[i] = tree->times->nd_t[i];
-    }
+  for(int i=0;i<tree->n_otu;++i) tree->ctrst->x[i] = tree->a_nodes[i]->ldsk->coord->lonlat[dim_idx];
+  for(int i=0;i<2*tree->n_otu-1;++i) tree->ctrst->tprime[i] = tree->times->nd_t[i];
 }
 
 //////////////////////////////////////////////////////////////

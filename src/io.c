@@ -6744,8 +6744,12 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Realized_Dispersal_Dist(tree));
       PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Realized_Dispersal_Dist_Alt(tree));
       PhyML_Fprintf(fp_stats,"%.2f\t",tree->n_root->ldsk->disk->time);
+
+      if(RRW_Is_Rw(tree->mmod) == YES && tree->mmod->integrateAncestralLocations == YES) RRW_Sample_Node_Location(tree->n_root->ldsk,tree);
+
       PhyML_Fprintf(fp_stats,"%g\t",tree->n_root->ldsk->coord->lonlat[0]);
       PhyML_Fprintf(fp_stats,"%g\t",tree->n_root->ldsk->coord->lonlat[1]);
+
       /* Output_Scalar_Dbl(tree->mod->kappa,"\t",fp_stats); */
       /* if(tree->mod->ras->free_mixt_rates == NO) PhyML_Fprintf(fp_stats,"%g\t",tree->mod->ras->alpha->v); */
       /* else */
@@ -6884,6 +6888,8 @@ void PHYREX_Print_MCMC_Summary(t_tree *tree)
      
   if(!(tree->mcmc->run%tree->mcmc->print_every) && tree->mcmc->print_every > 0)
     {
+      if(RRW_Is_Rw(tree->mmod) == YES && tree->mmod->integrateAncestralLocations == YES) RRW_Sample_Node_Location(tree->n_root->ldsk,tree);
+
       PhyML_Fprintf(stdout,"\n. %10d (%10d)\t%25s\t%15.2f\t%15.2f\t%15.2f\t%15.2f\t%13.1f\t%10f\t(%8.2f;%8.2f)",
                     tree->mcmc->run,
                     tree->aux_tree[0]->mcmc->run,

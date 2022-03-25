@@ -98,7 +98,7 @@ phydbl RRW_Prior_Sigsq_Scale(t_tree *tree)
   
   lnP = 0.0;
   err = NO;
-  sd  = 2.0; // Value of hyper-prior governing the variance of relative dispersal rates across lineages
+  sd  = tree->mmod->rrw_param_val; // Value of hyper-prior governing the variance of relative dispersal rates across lineages
   
   if(tree->mmod->model_id == RW) return(-1.0);
   
@@ -232,9 +232,12 @@ phydbl RRW_Independent_Contrasts(t_tree *tree)
 {
   phydbl lnL;
   
+  RRW_Update_Normalization_Factor(tree);
+  RATES_Record_Times(tree);
   RRW_Rescale_Times(YES,tree);
   lnL = RW_Independent_Contrasts(tree);
-  RRW_Rescale_Times(NO,tree);
+  RATES_Reset_Times(tree);
+  /* RRW_Rescale_Times(NO,tree); */
 
   return(lnL);
 }
@@ -260,9 +263,9 @@ void RRW_Rescale_Times_Pre(t_node *a, t_node *d, phydbl cur_ta, int prod, t_tree
   ta = tree->times->nd_t[a->num];
 
   if(prod == YES)
-    tree->times->nd_t[d->num] = ta + (td-cur_ta) * tree->mmod->sigsq_scale[d->num];
+    tree->times->nd_t[d->num] = ta + (td-cur_ta) * (tree->mmod->sigsq_scale[d->num] * tree->mmod->rrw_norm_fact);
   else
-    tree->times->nd_t[d->num] = ta + (td-cur_ta) / tree->mmod->sigsq_scale[d->num];
+    tree->times->nd_t[d->num] = ta + (td-cur_ta) / (tree->mmod->sigsq_scale[d->num] * tree->mmod->rrw_norm_fact);
   
   if(d->tax == YES) return;
   else for(i=0;i<3;++i) if(d->v[i] != a && d->b[i] != tree->e_root) RRW_Rescale_Times_Pre(d,d->v[i],td,prod,tree);
@@ -502,8 +505,100 @@ void RRW_Generate(t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void RRW_Sample_Node_Location(t_ldsk *d, t_tree *tree)
+{
+  int i;
+  t_node *nd_d;
+  t_ldsk *ldsk;
+
+  RRW_Update_Normalization_Factor(tree);
+
+  ldsk = d;
+  while(ldsk->n_next == 1) ldsk = ldsk->next[0];
+  nd_d = ldsk->nd;
+  assert(nd_d->tax == NO);
+
+  for(i=0;i<tree->mmod->n_dim;++i)
+    {
+      RW_Init_Contrasts(i,tree);
+      
+      RRW_Sample_Node_Location_Pre(ldsk,tree->mmod->sigsq[i],tree);
+
+      ldsk->coord->lonlat[i] = Rnorm(tree->ctrst->x[nd_d->num],sqrt(1./tree->ctrst->tprime[nd_d->num]));
+
+      /* PhyML_Printf("\n. mean = %f sd = %f --> %f", */
+      /*              tree->ctrst->x[nd_d->num], */
+      /*              sqrt(1./tree->ctrst->tprime[nd_d->num]), */
+      /*              ldsk->coord->lonlat[i]); */
+    }
+  
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void RRW_Sample_Node_Location_Pre(t_ldsk *d, phydbl sigsq, t_tree *tree)
+{
+  t_node *nd_d;
+  t_ldsk *ldsk;
+  
+  ldsk = d;
+  while(ldsk->n_next == 1) ldsk = ldsk->next[0];
+  nd_d = ldsk->nd;
+  
+  if(d->n_next == 0)
+    {
+      // Precision component at tip node (mean component was initialized with RW_Init_Contrasts)
+      tree->ctrst->tprime[nd_d->num] =
+        log(sigsq) +
+        log(tree->mmod->sigsq_scale[nd_d->num]) + 
+        log(tree->mmod->rrw_norm_fact) +
+        log(fabs(tree->times->nd_t[nd_d->num]-tree->times->nd_t[nd_d->v[0]->num]));
+
+      tree->ctrst->tprime[nd_d->num] = exp(tree->ctrst->tprime[nd_d->num]);
+
+      tree->ctrst->tprime[nd_d->num] = 1./ tree->ctrst->tprime[nd_d->num];
+
+      return;
+    }
+  else
+    {
+      phydbl p1, p2; // precisions for sons of n (1 and 2)
+      phydbl pd; // precision for n
+      phydbl dt;
+      int i;
+      
+      assert(nd_d->tax == NO);
+
+      for(i=0;i<d->n_next;++i) RRW_Sample_Node_Location_Pre(d->next[i],sigsq,tree);
+
+      if(d->prev != NULL)
+        dt = fabs(d->disk->time-d->prev->disk->time);
+      else dt = LARGE; // Consider that edge above root is of infinite length
+      
+      pd =
+        log(sigsq) +
+        log(tree->mmod->sigsq_scale[nd_d->num]) + 
+        log(tree->mmod->rrw_norm_fact) +
+        log(dt);
+      
+      pd = exp(pd);
+      pd = 1./pd;
+
+      p1 = tree->ctrst->tprime[nd_d->v[1]->num];
+      p2 = tree->ctrst->tprime[nd_d->v[2]->num];
+      
+      // Mean (Equ. S10 in Pybus et al. 10.1073/pnas.1206598109, SI)
+      tree->ctrst->x[nd_d->num] = p1 * tree->ctrst->x[nd_d->v[1]->num] + p2 * tree->ctrst->x[nd_d->v[2]->num];
+      tree->ctrst->x[nd_d->num] /= p1 + p2;
+      
+      // Precision
+      if(d->prev != NULL) tree->ctrst->tprime[nd_d->num] = 1./(1./pd + 1./(p1+p2));
+      else tree->ctrst->tprime[nd_d->num] = p1+p2;
+    }
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

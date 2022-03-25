@@ -287,9 +287,30 @@ void PHYREX_XML(char *xml_filename)
       char *prior;
       prior = XML_Get_Attribute_Value(xnd,"dispersal.prior.mean");
 
-      if(prior != NULL)
+      if(prior != NULL) mixt_tree->mmod->disp_prior_mean = String_To_Dbl(prior);
+
+
+      char *integrateAncestralLocations;
+      integrateAncestralLocations = XML_Get_Attribute_Value(xnd,"integrateAncestralLocations");
+
+      if(integrateAncestralLocations != NULL)
         {
-          mixt_tree->mmod->disp_prior_mean = String_To_Dbl(prior);
+          int select = XML_Validate_Attr_Int(integrateAncestralLocations,6,
+                                             "true","yes","y",
+                                             "false","no","n");
+          if(select < 3) mixt_tree->mmod->integrateAncestralLocations = YES;
+          else mixt_tree->mmod->integrateAncestralLocations = NO;
+        }
+
+
+      char *rrw_param_val;
+      rrw_param_val = XML_Get_Attribute_Value(xnd,"rrw.param.val");
+
+      if(rrw_param_val != NULL)
+        {
+          char *val;
+          val = XML_Get_Attribute_Value(xnd,"rrw.param.val");
+          if(val != NULL) mixt_tree->mmod->rrw_param_val = String_To_Dbl(val);
         }
     }
   else
@@ -454,6 +475,7 @@ void PHYREX_XML(char *xml_filename)
   srand(seed);
   mixt_tree->io->r_seed = seed;
 
+  
   MIXT_Check_Model_Validity(mixt_tree);
   MIXT_Chain_Models(mixt_tree);
   Init_Model(mixt_tree->mod->io->cdata,mixt_tree->mod,mixt_tree->mod->io);
@@ -469,6 +491,7 @@ void PHYREX_XML(char *xml_filename)
   Make_Tree_For_Lk(mixt_tree);
   Make_Tree_For_Pars(mixt_tree);
   Make_Spr(mixt_tree);  
+
 
   MIXT_Chain_All(mixt_tree);
   MIXT_Check_Edge_Lens_In_All_Elem(mixt_tree);
@@ -998,7 +1021,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       
       assert(!(move == tree->mcmc->n_moves));
       
-      /* !!!!!!!!!!!!!!!!!!!!!!!!! */
       /* tree->mmod->use_locations = NO; */
       
       /* phydbl prev_lnL = tree->c_lnL; */
@@ -1017,8 +1039,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_move_disk_ud")) MCMC_PHYREX_Move_Disk_Updown(tree,NO);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_swap_disk")) MCMC_PHYREX_Swap_Disk(tree,NO);      
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_scale_times")) MCMC_PHYREX_Scale_Times(tree,NO);
-      if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr")) MCMC_PHYREX_Prune_Regraft(tree,NO);
-      if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr_slide")) MCMC_PHYREX_Prune_Regraft_Slide(tree,NO);
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr")) MCMC_PHYREX_Prune_Regraft(tree,YES);
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr_slide")) MCMC_PHYREX_Prune_Regraft_Slide(tree,YES);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_narrow_exchange")) MCMC_PHYREX_Narrow_Exchange(tree,NO);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_wide_exchange")) MCMC_PHYREX_Wide_Exchange(tree,NO);
       if(!strcmp(tree->mcmc->move_name[move],"root_time")) MCMC_Root_Time(tree,NO);
@@ -1041,6 +1063,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"clock")) MCMC_Clock_R(tree);
       if(!strcmp(tree->mcmc->move_name[move],"nu")) MCMC_Nu(tree);
   
+
       if(tree->mmod->c_lnL < UNLIKELY || tree->c_lnL < UNLIKELY || tree->rates->c_lnL < UNLIKELY || tree->times->c_lnL < UNLIKELY)
         {
           PhyML_Printf("\n. Move: %s tree->mmod->c_lnL: %f tree->c_lnL: %f",
@@ -1113,7 +1136,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
           /*   } */
           
 
-          /* !!!!!!!!!!!!!!!!! */
           /* for(int i=0;i<2*tree->n_otu-1;++i) */
           /*   { */
           /*     if(Are_Equal(tree->a_nodes[i]->ldsk->rr,tree->rates->br_r[tree->a_nodes[i]->num],1.E-6) == NO) */
@@ -4488,6 +4510,11 @@ void PHYREX_Label_Edges(t_tree *tree)
           sprintf(tree->a_nodes[i]->b[0]->label->next->val,"%f",tree->mmod->sigsq_scale[tree->a_nodes[i]->num]);
         }
     }
+  sprintf(tree->n_root->b[1]->label->val,"%f",tree->rates->br_r[tree->n_root->v[1]->num]);
+  sprintf(tree->n_root->b[1]->label->next->val,"%f",tree->mmod->sigsq_scale[tree->n_root->v[1]->num]);
+
+  sprintf(tree->n_root->b[2]->label->val,"%f",tree->rates->br_r[tree->n_root->v[2]->num]);
+  sprintf(tree->n_root->b[2]->label->next->val,"%f",tree->mmod->sigsq_scale[tree->n_root->v[2]->num]);
 }
 
 /*////////////////////////////////////////////////////////////
