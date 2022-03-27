@@ -80,7 +80,11 @@ phydbl RW_Independent_Contrasts(t_tree *tree)
       v2 = fabs(tree->ctrst->tprime[n2->num]-tree->times->nd_t[tree->n_root->num]);
 
       v1pv2 = v1+v2;
-      if(v1pv2 < SMALL) v1pv2 = SMALL;
+      if(v1pv2 < SMALL)
+        {
+          v1 = v2 = 1.;
+          v1pv2 = 2.;
+        }
             
       // x6
       tree->ctrst->x[tree->n_root->num] =
@@ -137,7 +141,11 @@ void RW_Independent_Contrasts_Post(t_node *a, t_node *d, phydbl sd, phydbl *lnP,
       v2 = fabs(tree->ctrst->tprime[n2->num]-tree->times->nd_t[d->num]);
 
       v1pv2 = v1+v2;
-      if(v1pv2 < SMALL) v1pv2 = SMALL;
+      if(v1pv2 < SMALL)
+        {
+          v1 = v2 = 1.;
+          v1pv2 = 2.;
+        }
 
       // x6
       tree->ctrst->x[d->num] =
