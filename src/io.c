@@ -6720,8 +6720,6 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
 
           PhyML_Fprintf(fp_stats,"rrSon1\t");
           PhyML_Fprintf(fp_stats,"rrSon2\t");
-
-          for(int i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"rr%d\t",i);
         }
     }
 
@@ -6810,8 +6808,6 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
 
       PhyML_Fprintf(fp_stats,"%f\t",tree->rates->br_r[tree->n_root->v[1]->num]);
       PhyML_Fprintf(fp_stats,"%f\t",tree->rates->br_r[tree->n_root->v[2]->num]);
-
-      for(int i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"%f\t",tree->rates->br_r[i]);
       
       fflush(NULL);
       

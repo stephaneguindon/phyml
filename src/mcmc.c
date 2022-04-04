@@ -6849,12 +6849,12 @@ void MCMC_PHYREX_Sigsq(t_tree *tree, int print)
       alpha = MIN(1.,ratio);
       
       /* if(print == YES) */
-        PhyML_Printf("\n. SIGSQ lnL: %f->%f lnP: %f->%f aux: %f->%f T: %f hr: %f alpha: %f",
-                     cur_glnL,new_glnL,
-                     new_glnP,cur_glnP,
-                     new_glnL_aux,cur_glnL_aux,
-                     aux_tree->n_root->ldsk->disk->time,
-                     hr,alpha);
+        /* PhyML_Printf("\n. SIGSQ lnL: %f->%f lnP: %f->%f aux: %f->%f T: %f hr: %f alpha: %f", */
+        /*              cur_glnL,new_glnL, */
+        /*              new_glnP,cur_glnP, */
+        /*              new_glnL_aux,cur_glnL_aux, */
+        /*              aux_tree->n_root->ldsk->disk->time, */
+        /*              hr,alpha); */
 
             
       
