@@ -207,6 +207,12 @@ void PHYREX_XML(char *xml_filename)
               mixt_tree->mod->gamma_mgf_bl = NO;
               strcpy(mixt_tree->rates->model_name,"lognormal (uncorrelated)"); 
             }
+          else if(!strcmp(model_name,"gamma"))
+            {
+              mixt_tree->rates->model_id = GAMMA;
+              mixt_tree->mod->gamma_mgf_bl = NO;
+              strcpy(mixt_tree->rates->model_name,"gamma (uncorrelated)"); 
+            }
           else if(!strcmp(model_name,"strictclock"))
             {
               mixt_tree->rates->model_id = STRICTCLOCK;
@@ -429,6 +435,20 @@ void PHYREX_XML(char *xml_filename)
           PhyML_Printf("\n. Please use ``prior.mean='value', prior.var='value'.");
           assert(false);
         }
+
+      char *autocor_prior;
+      autocor_prior = XML_Get_Attribute_Value(xnd,"autocor.prior.rate");
+      if(autocor_prior != NULL)
+        {
+          mixt_tree->rates->autocor_rate_prior = String_To_Dbl(autocor_prior);
+          if(mixt_tree->rates->autocor_rate_prior < 0.0)
+            {
+              PhyML_Printf("\n. Autocorrelation prior needs to be stricly positive.");
+              assert(false);
+            }
+        }
+
+      
     }
 
   

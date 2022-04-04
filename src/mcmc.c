@@ -632,6 +632,7 @@ void MCMC_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
 
       RATES_Update_One_Edge_Length(b,tree);
       Update_PMat_At_Given_Edge(b,tree);
+      RATES_Update_Normalization_Factor(tree);
                 
       tree->c_lnL        = cur_lnL_seq;
       tree->rates->c_lnL = cur_lnL_rate;
@@ -1327,7 +1328,7 @@ void MCMC_Root_Time(t_tree *tree, int print)
   
   move_num  = tree->mcmc->num_move_root_time;
 
-  tune = tree->mcmc->tune_move[tree->mcmc->num_move_root_time];
+  tune = MIN(10.,tree->mcmc->tune_move[tree->mcmc->num_move_root_time]);
   
   r1_cur = -1.;
   r2_cur = -1.;
@@ -1382,17 +1383,21 @@ void MCMC_Root_Time(t_tree *tree, int print)
       new_lnL_time = UNLIKELY;
       
       
-      t_min = -TWO_TO_THE_LARGE;
 
       t0_cur = tree->times->nd_t[root->num];
+      /* t_min = -TWO_TO_THE_LARGE; */
+      t_min = t0_cur - 1.*(t_max - t0_cur);
 
       assert(tree->young_disk);
-      K = (tree->young_disk->time - t0_cur) * tune;
-      t0_new = Rnorm_Trunc(t0_cur,K,-TWO_TO_THE_LARGE,t_max,&err);
-      hr -= Log_Dnorm_Trunc(t0_new,t0_cur,K,-TWO_TO_THE_LARGE,t_max,&err);
+      K = (tree->young_disk->time - t0_cur) * tune;      
+      t0_new = Rnorm_Trunc(t0_cur,K,t_min,t_max,&err);
+      /* PhyML_Printf("\n. K=%f t0_cur: %f t0_new: %f t_max:%f t_min:%f",K,t0_cur,t0_new,t_max,t_min); */
+      hr -= Log_Dnorm_Trunc(t0_new,t0_cur,K,t_min,t_max,&err);
+      t_min = t0_new - 1.*(t_max - t0_new);
       K = (tree->young_disk->time - t0_new) * tune;
-      hr += Log_Dnorm_Trunc(t0_cur,t0_new,K,-TWO_TO_THE_LARGE,t_max,&err);
+      hr += Log_Dnorm_Trunc(t0_cur,t0_new,K,t_min,t_max,&err);
 
+      t_min = t0_cur - 1.*(t_max - t0_cur);
       
       if(isnan(t0_new))
         {
@@ -1410,7 +1415,7 @@ void MCMC_Root_Time(t_tree *tree, int print)
             {
               r1_cur = tree->rates->br_r[tree->n_root->v[1]->num];
               r2_cur = tree->rates->br_r[tree->n_root->v[2]->num];
-              
+
               r1_new = r1_cur * (t1 - t0_cur)/(t1 - t0_new);
               r2_new = r2_cur * (t2 - t0_cur)/(t2 - t0_new);
               
@@ -1418,11 +1423,14 @@ void MCMC_Root_Time(t_tree *tree, int print)
               if(r1_new < tree->rates->min_rate || r1_new > tree->rates->max_rate ||
                  r2_new < tree->rates->min_rate || r2_new > tree->rates->max_rate)
                 failed = YES;
-              
-              if(tree->eval_alnL == YES) hr += log(r1_new/r1_cur) + log(r2_new/r2_cur);
-              
-              tree->rates->br_r[tree->n_root->v[1]->num] = r1_new;
-              tree->rates->br_r[tree->n_root->v[2]->num] = r2_new;
+
+              if(failed == NO)
+                {
+                  if(tree->eval_alnL == YES) hr += log(r1_new/r1_cur) + log(r2_new/r2_cur);
+                  
+                  tree->rates->br_r[tree->n_root->v[1]->num] = r1_new;
+                  tree->rates->br_r[tree->n_root->v[2]->num] = r2_new;
+                }
             }
 
           if(failed == NO)
@@ -1455,16 +1463,24 @@ void MCMC_Root_Time(t_tree *tree, int print)
       alpha = MIN(1.,ratio);
       u = Uni();
       
-      /* printf("\n. [%4d] Root time t: %10f->%10f alnL:%10f->%10f tlnL: %10f->%10f glnL: %10f->%10f  rlnL: %10f->%10f tun: %10f hr: %f ratio: %10f K: %10f failed: %d", */
-      /*        tree->mcmc->run, */
-      /*        t0_cur,t0_new, */
-      /*        cur_lnL_seq,new_lnL_seq, */
-      /*        cur_lnL_time,new_lnL_time, */
-      /*        cur_lnL_loc,new_lnL_loc, */
-      /*        cur_lnL_rate,new_lnL_rate, */
-      /*        tree->mcmc->tune_move[move_num], */
-      /*        hr, */
-      /*        ratio,K,failed); */
+
+      /* if(tree->aux_tree != NULL) */
+      /*   { */
+      /*     PhyML_Printf("\n. [%4d] Root time t: %10f->%10f t1:%f t2: %f r1: %10f->%10f r2: %10f->%10f R: %12f alnL:%10f->%10f[%d] tlnL: %10f->%10f[%d] glnL: %10f->%10f[%d]  rlnL: %10f->%10f[%d] tune: %10f hr: %f ratio: %10f K: %10f failed: %d", */
+      /*                  tree->mcmc->run, */
+      /*                  t0_cur,t0_new, */
+      /*                  t1,t2, */
+      /*                  r1_cur,r1_new, */
+      /*                  r2_cur,r2_new, */
+      /*                  tree->rates->norm_fact, */
+      /*                  cur_lnL_seq,new_lnL_seq,tree->eval_alnL, */
+      /*                  cur_lnL_time,new_lnL_time,tree->eval_glnL, */
+      /*                  cur_lnL_loc,new_lnL_loc,tree->eval_glnL, */
+      /*                  cur_lnL_rate,new_lnL_rate,tree->eval_rlnL, */
+      /*                  tune, */
+      /*                  hr, */
+      /*                  ratio,K,failed); */
+      /*   } */
       
       assert(isnan(u) == NO && isinf(fabs(u)) == NO);
       
@@ -1480,6 +1496,7 @@ void MCMC_Root_Time(t_tree *tree, int print)
           
           if(tree->n_root->ldsk) tree->n_root->ldsk->disk->time = tree->times->nd_t[root->num];
           RATES_Update_One_Edge_Length(tree->e_root,tree);
+          RATES_Update_Normalization_Factor(tree);
           Reset_Lk(tree);
         }
       else
@@ -6831,7 +6848,7 @@ void MCMC_PHYREX_Sigsq(t_tree *tree, int print)
       ratio = exp(ratio);
       alpha = MIN(1.,ratio);
       
-      if(print == YES)
+      /* if(print == YES) */
         PhyML_Printf("\n. SIGSQ lnL: %f->%f lnP: %f->%f aux: %f->%f T: %f hr: %f alpha: %f",
                      cur_glnL,new_glnL,
                      new_glnP,cur_glnP,
@@ -6957,7 +6974,8 @@ void MCMC_PHYREX_Sigsq_Scale(t_tree *tree, int print)
   phydbl m;
   phydbl cur_lnL_geo,new_lnL_geo;
   phydbl cur_lnP_geo,new_lnP_geo;
-  phydbl cur_glnL_aux,new_glnL_aux;
+  phydbl cur_lnL_geo_aux,new_lnL_geo_aux;
+  phydbl cur_lnP_geo_aux,new_lnP_geo_aux;
   phydbl cur_scale,new_scale;
   phydbl alpha,ratio,u,K,hr;
   phydbl *sigsq_scale_bkp;
@@ -6970,14 +6988,10 @@ void MCMC_PHYREX_Sigsq_Scale(t_tree *tree, int print)
   
   sigsq_scale_bkp = (phydbl *)mCalloc(2*tree->n_otu-2,sizeof(phydbl));
   
-  K  = 0.1/tree->n_otu; // Required so as to facilitate convergence of exchange algo
-  n_changes = (int)(1. + 0.1*tree->n_otu); // Same here
-  /* n_changes = (int)(1. + 1.0*tree->n_otu); // Same here */
-  
-
-  /* !!!!!!!!!!!!!!!!! */
+  /* K  = 10.0/tree->n_otu; // Small so as to facilitate convergence of exchange algo */
   K = 1.0;
-
+  n_changes = (int)(1. + 0.2*tree->n_otu); // Same here
+  
   hr = 0.0;
   
   aux_tree = NULL;
@@ -6990,9 +7004,12 @@ void MCMC_PHYREX_Sigsq_Scale(t_tree *tree, int print)
   
   cur_lnP_geo = tree->mmod->c_lnP;
   new_lnP_geo = UNLIKELY;
+
+  cur_lnP_geo_aux = UNLIKELY;
+  new_lnP_geo_aux = UNLIKELY;
   
-  cur_glnL_aux = UNLIKELY;
-  new_glnL_aux = UNLIKELY;
+  cur_lnL_geo_aux = UNLIKELY;
+  new_lnL_geo_aux = UNLIKELY;
   
   for(i=0;i<2*tree->n_otu-1;++i) sigsq_scale_bkp[i] = tree->mmod->sigsq_scale[i];
 
@@ -7011,7 +7028,8 @@ void MCMC_PHYREX_Sigsq_Scale(t_tree *tree, int print)
       
       tree->mmod->sigsq_scale[permut[i]] = new_scale;
 
-      if(print == YES) PhyML_Printf("\n. %12f->%12f",cur_scale,new_scale);
+      /* if(print == YES) PhyML_Printf("\n. %12f->%12f",cur_scale,new_scale); */
+      /* PhyML_Printf("\n. %12f->%12f",cur_scale,new_scale); */
     }
 
   Free(permut);
@@ -7044,10 +7062,12 @@ void MCMC_PHYREX_Sigsq_Scale(t_tree *tree, int print)
           MCMC_PHYREX_Exchange_Core(aux_tree,tree,NO);
                     
           for(i=0;i<2*aux_tree->n_otu-1;++i) aux_tree->mmod->sigsq_scale[i] = tree->mmod->sigsq_scale[i];
-          new_glnL_aux = LOCATION_Lk(aux_tree);
-
+          new_lnL_geo_aux = LOCATION_Lk(aux_tree);
+          new_lnP_geo_aux =  + LOCATION_Prior(aux_tree);
+            
           for(i=0;i<2*aux_tree->n_otu-1;++i) aux_tree->mmod->sigsq_scale[i] = sigsq_scale_bkp[i];
-          cur_glnL_aux = LOCATION_Lk(aux_tree);
+          cur_lnL_geo_aux = LOCATION_Lk(aux_tree);
+          cur_lnP_geo_aux =  + LOCATION_Prior(aux_tree);
         }
 
       new_lnL_geo = LOCATION_Lk(tree);
@@ -7055,20 +7075,25 @@ void MCMC_PHYREX_Sigsq_Scale(t_tree *tree, int print)
     }
   
   ratio = 0.0;
-  if(tree->eval_glnL == YES) ratio += (new_lnL_geo - cur_lnL_geo);
-  if(tree->eval_glnL == YES) ratio += (cur_glnL_aux - new_glnL_aux);
-  if(tree->eval_glnL == YES) ratio += (new_lnP_geo - cur_lnP_geo);
+  if(tree->eval_glnL == YES)
+    {
+      ratio += (new_lnL_geo - cur_lnL_geo);
+      ratio += (new_lnP_geo - cur_lnP_geo);
+      ratio += (cur_lnL_geo_aux - new_lnL_geo_aux);
+      ratio += (cur_lnP_geo_aux - new_lnP_geo_aux);
+    }
   ratio += hr;
   ratio = exp(ratio);
   alpha = MIN(1.,ratio);
 
-  if(print == YES)
-    PhyML_Printf("\n. SIGSQSCAL v: %12f->%12f lnL: %12f->%12f lnP: %12f->%12f aux: %12f->%12f T: %12f hr: %12f alpha: %12f",
-                 cur_lnL_geo,new_lnL_geo,
-                 new_lnP_geo,cur_lnP_geo,
-                 new_glnL_aux,cur_glnL_aux,
-                 aux_tree ? aux_tree->n_root->ldsk->disk->time : -1.,
-                 hr,alpha);
+  /* if(print == YES) */
+    /* PhyML_Printf("\n. SIGSQSCAL lnL: %12f->%12f lnP: %12f->%12f lnLaux: %12f->%12f lnPaux: %12f->%12f T: %12f hr: %12f alpha: %12f", */
+    /*              cur_lnL_geo,new_lnL_geo, */
+    /*              cur_lnP_geo,new_lnP_geo, */
+    /*              cur_lnL_geo_aux,new_lnL_geo_aux, */
+    /*              cur_lnP_geo_aux,new_lnP_geo_aux, */
+    /*              aux_tree ? aux_tree->n_root->ldsk->disk->time : -1., */
+    /*              hr,alpha); */
 
   
   /* Always accept move */
@@ -8525,11 +8550,14 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
          r1_new < tree->rates->min_rate || r1_new > tree->rates->max_rate ||
          r2_new < tree->rates->min_rate || r2_new > tree->rates->max_rate) failed = YES;
 
-      if(tree->eval_alnL == YES && tree->eval_rlnL == YES) hr += log(r0_new/r0_cur) + log(r1_new/r1_cur) + log(r2_new/r2_cur);
-      
-      tree->rates->br_r[v0->num] = r0_new;
-      tree->rates->br_r[v1->num] = r1_new;
-      tree->rates->br_r[v2->num] = r2_new;
+      if(failed == NO)
+        {
+          if(tree->eval_alnL == YES && tree->eval_rlnL == YES) hr += log(r0_new/r0_cur) + log(r1_new/r1_cur) + log(r2_new/r2_cur);
+
+          tree->rates->br_r[v0->num] = r0_new;
+          tree->rates->br_r[v1->num] = r1_new;
+          tree->rates->br_r[v2->num] = r2_new;
+        }
     }
 
   if(failed == NO)
@@ -8625,6 +8653,7 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
             }
         }
 
+      RATES_Update_Normalization_Factor(tree);
       PHYREX_Update_Lindisk_List_Range(ldsk_next->disk,d_ldsk->prev->disk,tree);
       Reset_Lk(tree);
     }
@@ -12767,10 +12796,7 @@ void MCMC_PHYREX_Wide_Exchange(t_tree *tree, int print)
   for(j=0;j<tree->mmod->n_dim;++j) rad[j] = 1.*tree->mmod->sigsq[j];
 
   while(n_iter--)
-    {
-      /* !!!!!!!!!!!!!!!1 */
-      LOCATION_Lk(tree);
-      
+    {      
       tree->mcmc->run_move[tree->mcmc->num_move_phyrex_wide_exchange]++;
 
       Set_Lk(tree);

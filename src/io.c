@@ -6674,7 +6674,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           /*     for(int i=0;i<tree->mod->ras->n_catg;++i) PhyML_Fprintf(fp_stats,"p(%d)\t",i+1); */
           /*     for(int i=0;i<tree->mod->ras->n_catg;++i) PhyML_Fprintf(fp_stats,"rr(%d)\t",i+1); */
           /*   } */
-          /* PhyML_Fprintf(fp_stats,"%s\t","nu"); */
+          PhyML_Fprintf(fp_stats,"%s\t","nu");
           /* PhyML_Fprintf(fp_stats,"%s\t","treeLen"); */
           /* PhyML_Fprintf(fp_stats,"%s\t","speed"); */
 
@@ -6718,6 +6718,10 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           PhyML_Fprintf(fp_stats,"sigSqSon1\t");
           PhyML_Fprintf(fp_stats,"sigSqSon2\t");
 
+          PhyML_Fprintf(fp_stats,"rrSon1\t");
+          PhyML_Fprintf(fp_stats,"rrSon2\t");
+
+          for(int i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"rr%d\t",i);
         }
     }
 
@@ -6757,7 +6761,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       /*     for(int i=0;i<tree->mod->ras->n_catg;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->mod->ras->gamma_r_proba->v[i]); */
       /*     for(int i=0;i<tree->mod->ras->n_catg;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->mod->ras->gamma_rr->v[i]); */
       /*   } */
-      /* PhyML_Fprintf(fp_stats,"%g\t",tree->rates->nu); */
+      PhyML_Fprintf(fp_stats,"%g\t",tree->rates->nu);
       /* PhyML_Fprintf(fp_stats,"%g\t",Tree_Length(tree)); */
 
       /* PhyML_Fprintf(fp_stats,"%g\t",difftime(tree->mcmc->time_end,tree->mcmc->time_beg)/(phydbl)tree->mcmc->sample_interval); */
@@ -6804,6 +6808,11 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%f\t",tree->mmod->sigsq_scale[tree->n_root->v[1]->num]);
       PhyML_Fprintf(fp_stats,"%f\t",tree->mmod->sigsq_scale[tree->n_root->v[2]->num]);
 
+      PhyML_Fprintf(fp_stats,"%f\t",tree->rates->br_r[tree->n_root->v[1]->num]);
+      PhyML_Fprintf(fp_stats,"%f\t",tree->rates->br_r[tree->n_root->v[2]->num]);
+
+      for(int i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"%f\t",tree->rates->br_r[i]);
+      
       fflush(NULL);
       
       time(&(tree->mcmc->time_beg));

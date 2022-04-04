@@ -188,5 +188,6 @@ void RATES_Update_Normalization_Factor(t_tree *tree);
 phydbl RATES_Clock_R_Prior(t_tree *tree);
 phydbl RATES_Prior(t_tree *tree);
 void RATES_Update_One_Edge_Length_Core(t_edge *b, t_tree *tree);
+phydbl RATES_Autocor_Prior(t_tree *tree);
 
 #endif

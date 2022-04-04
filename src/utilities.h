@@ -381,6 +381,7 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define THORNE         4
 #define GUINDON        5
 #define STRICTCLOCK    6
+#define GAMMA          7
 #define NONE          -1
 
 #define ALRTSTAT       1
@@ -1585,6 +1586,7 @@ typedef struct __T_Rate {
   phydbl nu; /*! Parameter of the Exponential distribution for the corresponding model */
   phydbl min_nu;
   phydbl max_nu;
+  phydbl autocor_rate_prior;
   phydbl covdet;
   phydbl sum_invalid_areas;
 

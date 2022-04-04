@@ -187,8 +187,6 @@ phydbl RRW_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
 
           sd = sqrt(exp(sd));
 
-          /* sd = tree->mmod->sigsq[i]*tree->mmod->sigsq_scale[nd_d->num]*tree->mmod->rrw_norm_fact*dt; */
-          /* sd = sqrt(sd); */
           
           ld = ldsk->coord->lonlat[i];
           la = ldsk->prev->coord->lonlat[i];
@@ -197,9 +195,6 @@ phydbl RRW_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
           
           if(isinf(lnP) || isnan(lnP)) return(UNLIKELY);
           
-          /* if(ld < tree->mmod->lim_do->lonlat[i] || ld > tree->mmod->lim_up->lonlat[i] || */
-          /*    la < tree->mmod->lim_do->lonlat[i] || la > tree->mmod->lim_up->lonlat[i]) return(UNLIKELY); */
-
           if(isnan(lnP))
             {
               PhyML_Printf("\n. la=%f ld=%f sd=%f dt=[%f,%f] sigsq=%f",la,ld,sd,ldsk->disk->time,ldsk->prev->disk->time,tree->mmod->sigsq);
@@ -237,7 +232,6 @@ phydbl RRW_Independent_Contrasts(t_tree *tree)
   RRW_Rescale_Times(YES,tree);
   lnL = RW_Independent_Contrasts(tree);
   RATES_Reset_Times(tree);
-  /* RRW_Rescale_Times(NO,tree); */
 
   return(lnL);
 }

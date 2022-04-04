@@ -862,11 +862,15 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
   rates->clock_r_prior_var  = 1.0E-8;
   
   rates->max_rate         = 1.E+1;
-  rates->min_rate         = 1.E-1;
+  rates->min_rate         = 1.E-5;
+  /* rates->max_rate         = 5.; */
+  /* rates->min_rate         = 0.2; */
 
   rates->nu               = 1.0;
   rates->min_nu           = 0.0;
   rates->max_nu           = 1.0E+3;
+
+  rates->autocor_rate_prior = 1.0;
   
   rates->min_dt           = 0.0;
 

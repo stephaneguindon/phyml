@@ -35,30 +35,37 @@ phydbl RATES_Lk(t_tree *tree)
   
   err = NO;
 
-  switch(tree->rates->model_id)
-    {
-    case LOGNORMAL :
-      {
-        tree->rates->c_lnL += Log_Dnorm(log(tree->rates->br_r[tree->n_root->num]),-tree->rates->nu*tree->rates->nu/2.,tree->rates->nu,&err);
-        tree->rates->c_lnL -= log(tree->rates->br_r[tree->n_root->num]);        
-        break;
-      }
-    case STRICTCLOCK :
-      {
-        tree->rates->c_lnL += 0.0;
-	break;
-      }      
-    default : 
-      {
-	PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
-	Warn_And_Exit("");
-      }
-    }
+  /* switch(tree->rates->model_id) */
+  /*   { */
+  /*   case LOGNORMAL : */
+  /*     { */
+  /*       tree->rates->c_lnL += Log_Dnorm(log(tree->rates->br_r[tree->n_root->num]),-tree->rates->nu*tree->rates->nu/2.,tree->rates->nu,&err); */
+  /*       tree->rates->c_lnL -= log(tree->rates->br_r[tree->n_root->num]);         */
+  /*       break; */
+  /*     } */
+  /*   case GAMMA : */
+  /*     { */
+  /*       tree->rates->c_lnL += log(Dgamma(tree->rates->br_r[tree->n_root->num],1./tree->rates->nu,tree->rates->nu)); */
+  /*       break; */
+  /*     } */
+  /*   case STRICTCLOCK : */
+  /*     { */
+  /*       tree->rates->c_lnL += 0.0; */
+  /*       break; */
+  /*     }       */
+  /*   default :  */
+  /*     { */
+  /*       PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__); */
+  /*       Warn_And_Exit(""); */
+  /*     } */
+  /*   } */
 
-  if(tree->rates->clock_r_has_prior == YES)
-    {
-      tree->rates->c_lnL += RATES_Clock_R_Prior(tree);      
-    }
+
+  // Priors on clock rate and rate autocorrelation.
+  // Should be separated from likelihood function...
+  if(tree->rates->clock_r_has_prior == YES) tree->rates->c_lnL += RATES_Clock_R_Prior(tree);      
+  
+  tree->rates->c_lnL += RATES_Autocor_Prior(tree);      
   
   if(isnan(tree->rates->c_lnL) || err == YES) assert(false);
   
@@ -95,6 +102,30 @@ phydbl RATES_Clock_R_Prior(t_tree *tree)
 
   return(lnP);
 }
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl RATES_Autocor_Prior(t_tree *tree)
+{
+  phydbl lnP;
+  phydbl lbda;
+
+  lbda = tree->rates->autocor_rate_prior;
+  
+  lnP = 0.0;
+
+  if(tree->rates->model_id == THORNE ||
+     tree->rates->model_id == GUINDON ||
+     tree->rates->model_id == LOGNORMAL ||
+     tree->rates->model_id == GAMMA)
+    lnP += log(lbda) - lbda * tree->rates->nu;
+
+  /* PhyML_Printf("\n. lbda: %f nu: %f lnP: %f",lbda,tree->rates->nu,lnP); */
+  
+  return(lnP);  
+}
+
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -228,6 +259,11 @@ phydbl RATES_Lk_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl nd_r_d,
         phydbl log_br_r_d = log(br_r_d);
         log_dens = Log_Dnorm(log_br_r_d,-tree->rates->nu*tree->rates->nu/2.,tree->rates->nu,&err);
         log_dens -= log_br_r_d;
+        break;
+      }
+    case GAMMA :
+      {
+        log_dens = log(Dgamma(br_r_d,1./tree->rates->nu,tree->rates->nu));
         break;
       }
     case STRICTCLOCK :
@@ -1237,6 +1273,7 @@ void RATES_Update_One_Edge_Length_Core(t_edge *b, t_tree *tree)
   
   if(tree->rates->model_id == LOGNORMAL ||
      tree->rates->model_id == THORNE ||
+     tree->rates->model_id == GAMMA ||
      tree->rates->model_id == STRICTCLOCK)
     {
       rd = tree->rates->br_r[d->num];
@@ -1257,7 +1294,7 @@ void RATES_Update_One_Edge_Length_Core(t_edge *b, t_tree *tree)
   Z = tree->rates->norm_fact;
   rr = -1.0;
   
-  if(tree->rates->model_id == LOGNORMAL)
+  if(tree->rates->model_id == LOGNORMAL || tree->rates->model_id == GAMMA)
     {
       tree->rates->cur_l[d->num] = dt*rd*cr*Z;
     }
@@ -2088,6 +2125,7 @@ void RATES_Get_Mean_Rate_In_Subtree_Pre(t_node *a, t_node *d, phydbl *sum, int *
   /* (*sum) += exp(tree->rates->nd_r[d->num]); */
   
   if(tree->rates->model_id == LOGNORMAL ||
+     tree->rates->model_id == GAMMA ||
      tree->rates->model_id == THORNE ||
      tree->rates->model_id == STRICTCLOCK)
     {
@@ -2130,6 +2168,7 @@ char *RATES_Get_Model_Name(int model)
     case GUINDON     : {strcpy(s,"integrated"); break;}
     case THORNE      : {strcpy(s,"autocorrelated"); break;}
     case LOGNORMAL   : {strcpy(s,"uncorrelated"); break;}
+    case GAMMA       : {strcpy(s,"uncorrelated"); break;}
     case STRICTCLOCK : {strcpy(s,"strict clock"); break;}
     default : 
       {

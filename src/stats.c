@@ -524,6 +524,9 @@ phydbl Rnorm_Trunc_Algo4(phydbl alpha, phydbl beta)
 }
 
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 phydbl Rnorm_Trunc(phydbl mean, phydbl sd, phydbl min, phydbl max, int *error)
 {
   phydbl alpha,beta;
