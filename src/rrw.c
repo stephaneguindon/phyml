@@ -226,7 +226,7 @@ phydbl RRW_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
 phydbl RRW_Independent_Contrasts(t_tree *tree)
 {
   phydbl lnL;
-  
+
   RRW_Update_Normalization_Factor(tree);
   RATES_Record_Times(tree);
   RRW_Rescale_Times(YES,tree);
@@ -256,10 +256,14 @@ void RRW_Rescale_Times_Pre(t_node *a, t_node *d, phydbl cur_ta, int prod, t_tree
   td = tree->times->nd_t[d->num];
   ta = tree->times->nd_t[a->num];
 
+  assert(!(cur_ta > td));
+
   if(prod == YES)
     tree->times->nd_t[d->num] = ta + (td-cur_ta) * (tree->mmod->sigsq_scale[d->num] * tree->mmod->rrw_norm_fact);
   else
     tree->times->nd_t[d->num] = ta + (td-cur_ta) / (tree->mmod->sigsq_scale[d->num] * tree->mmod->rrw_norm_fact);
+
+  assert(!(tree->times->nd_t[d->num] < ta));
   
   if(d->tax == YES) return;
   else for(i=0;i<3;++i) if(d->v[i] != a && d->b[i] != tree->e_root) RRW_Rescale_Times_Pre(d,d->v[i],td,prod,tree);

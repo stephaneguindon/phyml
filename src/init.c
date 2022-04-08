@@ -862,7 +862,7 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
   rates->clock_r_prior_var  = 1.0E-8;
   
   rates->max_rate         = 1.E+1;
-  rates->min_rate         = 1.E-5;
+  rates->min_rate         = 1.E-1;
   /* rates->max_rate         = 5.; */
   /* rates->min_rate         = 0.2; */
 
@@ -3499,11 +3499,8 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
 {
   for(int i=0;i<2*n_otu-1;++i) t->sigsq_scale[i] = 1.0;
 
-  /* !!!!!!!!!!!!!!!!!!!! */
-  t->sigsq_scale_min = 1.E-4;
-  t->sigsq_scale_max = 1.E+4;
-  /* t->sigsq_scale_min = 0.1; */
-  /* t->sigsq_scale_max = 10.; */
+  t->sigsq_scale_min = 0.1;
+  t->sigsq_scale_max = 10.;
 
   t->rrw_norm_fact = 1.0;
   

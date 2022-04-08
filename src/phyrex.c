@@ -559,6 +559,7 @@ void PHYREX_XML(char *xml_filename)
           PHYREX_Set_Default_Migrep_Mod(mixt_tree->n_otu,aux_tree->mmod);
           aux_tree->mmod->model_id = mixt_tree->mmod->model_id; 
           aux_tree->mmod->use_locations = mixt_tree->mmod->use_locations;
+          aux_tree->mmod->integrateAncestralLocations = mixt_tree->mmod->integrateAncestralLocations;
           
           Copy_Tree(mixt_tree,aux_tree);
 

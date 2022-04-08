@@ -36,9 +36,9 @@ phydbl String_To_Dbl(char *string)
 
   if(string == endptr || errno == ERANGE)
     {
-      PhyML_Printf("\n. Error in translating string '%s' to double.",string);
-      PhyML_Printf("\n. %d",errno == ERANGE);
-      PhyML_Printf("\n. buff = %f",buff);
+      PhyML_Fprintf(stderr,"\n. Error in translating string '%s' to double.",string);
+      PhyML_Fprintf(stderr,"\n. %d",errno == ERANGE);
+      PhyML_Fprintf(stderr,"\n. buff = %f",buff);
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
     }
   return buff;

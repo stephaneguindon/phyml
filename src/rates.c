@@ -35,36 +35,9 @@ phydbl RATES_Lk(t_tree *tree)
   
   err = NO;
 
-  /* switch(tree->rates->model_id) */
-  /*   { */
-  /*   case LOGNORMAL : */
-  /*     { */
-  /*       tree->rates->c_lnL += Log_Dnorm(log(tree->rates->br_r[tree->n_root->num]),-tree->rates->nu*tree->rates->nu/2.,tree->rates->nu,&err); */
-  /*       tree->rates->c_lnL -= log(tree->rates->br_r[tree->n_root->num]);         */
-  /*       break; */
-  /*     } */
-  /*   case GAMMA : */
-  /*     { */
-  /*       tree->rates->c_lnL += log(Dgamma(tree->rates->br_r[tree->n_root->num],1./tree->rates->nu,tree->rates->nu)); */
-  /*       break; */
-  /*     } */
-  /*   case STRICTCLOCK : */
-  /*     { */
-  /*       tree->rates->c_lnL += 0.0; */
-  /*       break; */
-  /*     }       */
-  /*   default :  */
-  /*     { */
-  /*       PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__); */
-  /*       Warn_And_Exit(""); */
-  /*     } */
-  /*   } */
-
-
   // Priors on clock rate and rate autocorrelation.
   // Should be separated from likelihood function...
-  if(tree->rates->clock_r_has_prior == YES) tree->rates->c_lnL += RATES_Clock_R_Prior(tree);      
-  
+  tree->rates->c_lnL += RATES_Clock_R_Prior(tree);      
   tree->rates->c_lnL += RATES_Autocor_Prior(tree);      
   
   if(isnan(tree->rates->c_lnL) || err == YES) assert(false);
@@ -80,7 +53,7 @@ phydbl RATES_Clock_R_Prior(t_tree *tree)
   phydbl mean,sd,lnP;
   int err;
 
-  if(tree->rates->clock_r_has_prior == NO) return(UNLIKELY);
+  if(tree->rates->clock_r_has_prior == NO) return(0.0);
   
   err = NO;
   lnP = 0.0;
@@ -120,8 +93,6 @@ phydbl RATES_Autocor_Prior(t_tree *tree)
      tree->rates->model_id == LOGNORMAL ||
      tree->rates->model_id == GAMMA)
     lnP += log(lbda) - lbda * tree->rates->nu;
-
-  /* PhyML_Printf("\n. lbda: %f nu: %f lnP: %f",lbda,tree->rates->nu,lnP); */
   
   return(lnP);  
 }

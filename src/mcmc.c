@@ -1313,7 +1313,7 @@ void MCMC_Root_Time(t_tree *tree, int print)
   phydbl r1_new,r2_new;
   phydbl t2,t1;
   t_node *v2,*v1;
-  phydbl tune,K;
+  phydbl tune,K,eps;
   int move_num,err,iter,n_tot_iter;
   t_node *root;
   short int failed;
@@ -1323,12 +1323,13 @@ void MCMC_Root_Time(t_tree *tree, int print)
   if(tree->eval_alnL == YES) Lk(NULL,tree);
   
   root = tree->n_root;
-
+  eps = -1.;
   failed = NO;
   
   move_num  = tree->mcmc->num_move_root_time;
 
-  tune = MIN(10.,tree->mcmc->tune_move[tree->mcmc->num_move_root_time]);
+  /* tune = MIN(10.,tree->mcmc->tune_move[tree->mcmc->num_move_root_time]); */
+  tune = 0.2;
   
   r1_cur = -1.;
   r2_cur = -1.;
@@ -1386,26 +1387,27 @@ void MCMC_Root_Time(t_tree *tree, int print)
 
       t0_cur = tree->times->nd_t[root->num];
       /* t_min = -TWO_TO_THE_LARGE; */
-      t_min = t0_cur - 1.*(t_max - t0_cur);
+      t_min = t0_cur - (t_max - t0_cur);
 
-      assert(tree->young_disk);
-      K = (tree->young_disk->time - t0_cur) * tune;      
-      t0_new = Rnorm_Trunc(t0_cur,K,t_min,t_max,&err);
-      /* PhyML_Printf("\n. K=%f t0_cur: %f t0_new: %f t_max:%f t_min:%f",K,t0_cur,t0_new,t_max,t_min); */
-      hr -= Log_Dnorm_Trunc(t0_new,t0_cur,K,t_min,t_max,&err);
-      t_min = t0_new - 1.*(t_max - t0_new);
-      K = (tree->young_disk->time - t0_new) * tune;
-      hr += Log_Dnorm_Trunc(t0_cur,t0_new,K,t_min,t_max,&err);
-
-      t_min = t0_cur - 1.*(t_max - t0_cur);
       
+      assert(tree->young_disk);
+      eps = 0.05 * (tree->young_disk->time - t_max);
+      K = (tree->young_disk->time - t0_cur) * tune;      
+      t0_new = Rnorm_Trunc(t0_cur,K,t_min-eps,t_max,&err);
+      hr -= Log_Dnorm_Trunc(t0_new,t0_cur,K,t_min-eps,t_max,&err);
+      K = (tree->young_disk->time - t0_new) * tune;
+      t_min = t0_new - (t_max - t0_new);
+      hr += Log_Dnorm_Trunc(t0_cur,t0_new,K,t_min-eps,t_max,&err);
+
+      t_min = t0_cur - (t_max - t0_cur);
+            
       if(isnan(t0_new))
         {
           PhyML_Printf("\n. t_max=%f t0_cur=%f t0_new=%f",t_max,t0_cur,t0_new);
           assert(FALSE);
         }
             
-      if(t0_new > t_min && t0_new < t_max) 
+      if(t0_new > t_min-eps && t0_new < t_max) 
         {
           tree->times->nd_t[root->num] = t0_new;
           
@@ -1426,7 +1428,7 @@ void MCMC_Root_Time(t_tree *tree, int print)
 
               if(failed == NO)
                 {
-                  if(tree->eval_alnL == YES) hr += log(r1_new/r1_cur) + log(r2_new/r2_cur);
+                  if(tree->eval_rlnL == YES) hr += log(r1_new/r1_cur) + log(r2_new/r2_cur);
                   
                   tree->rates->br_r[tree->n_root->v[1]->num] = r1_new;
                   tree->rates->br_r[tree->n_root->v[2]->num] = r2_new;
@@ -1465,22 +1467,28 @@ void MCMC_Root_Time(t_tree *tree, int print)
       
 
       /* if(tree->aux_tree != NULL) */
-      /*   { */
-      /*     PhyML_Printf("\n. [%4d] Root time t: %10f->%10f t1:%f t2: %f r1: %10f->%10f r2: %10f->%10f R: %12f alnL:%10f->%10f[%d] tlnL: %10f->%10f[%d] glnL: %10f->%10f[%d]  rlnL: %10f->%10f[%d] tune: %10f hr: %f ratio: %10f K: %10f failed: %d", */
-      /*                  tree->mcmc->run, */
-      /*                  t0_cur,t0_new, */
-      /*                  t1,t2, */
-      /*                  r1_cur,r1_new, */
-      /*                  r2_cur,r2_new, */
-      /*                  tree->rates->norm_fact, */
-      /*                  cur_lnL_seq,new_lnL_seq,tree->eval_alnL, */
-      /*                  cur_lnL_time,new_lnL_time,tree->eval_glnL, */
-      /*                  cur_lnL_loc,new_lnL_loc,tree->eval_glnL, */
-      /*                  cur_lnL_rate,new_lnL_rate,tree->eval_rlnL, */
-      /*                  tune, */
-      /*                  hr, */
-      /*                  ratio,K,failed); */
-      /*   } */
+        {
+          PhyML_Printf("\n.");
+          PhyML_Printf("\n. %c [%4d] \n. t: %1f->%1f t1:%f t2: %f \n. r1: %10f->%10f r2: %10f->%10f \n. R: %12f alnL:%10f->%10f[%d] \n. tlnL: %10f->%10f[%d] \n. glnL: %10f->%10f[%d] \n. rlnL: %10f->%10f[%d] \n. tune: %10f hr: %f [%f,%f] [%f,%f,%f] ratio: %10f K: %10f failed: %d",
+                       (tree->aux_tree != NULL) ? '*' : 'X',
+                       tree->mcmc->run,
+                       t0_cur,t0_new,
+                       t1,t2,
+                       r1_cur,r1_new,
+                       r2_cur,r2_new,
+                       tree->rates->norm_fact,
+                       cur_lnL_seq,new_lnL_seq,tree->eval_alnL,
+                       cur_lnL_time,new_lnL_time,tree->eval_glnL,
+                       cur_lnL_loc,new_lnL_loc,tree->eval_glnL,
+                       cur_lnL_rate,new_lnL_rate,tree->eval_rlnL,
+                       tune,
+                       hr,
+                       Log_Dnorm_Trunc(t0_new,t0_cur,(tree->young_disk->time - t0_cur) * tune,t0_cur - (t_max - t0_cur)-eps,t_max,&err),
+                       Log_Dnorm_Trunc(t0_cur,t0_new,(tree->young_disk->time - t0_new) * tune,t0_new - (t_max - t0_new)-eps,t_max,&err),
+                       t0_cur - (t_max - t0_cur)-eps,t0_new - (t_max - t0_new)-eps,t_max,
+                       ratio,K,failed);
+          PhyML_Printf("\n.");
+        }
       
       assert(isnan(u) == NO && isinf(fabs(u)) == NO);
       
@@ -6989,8 +6997,8 @@ void MCMC_PHYREX_Sigsq_Scale(t_tree *tree, int print)
   sigsq_scale_bkp = (phydbl *)mCalloc(2*tree->n_otu-2,sizeof(phydbl));
   
   /* K  = 10.0/tree->n_otu; // Small so as to facilitate convergence of exchange algo */
-  K = 1.0;
-  n_changes = (int)(1. + 0.2*tree->n_otu); // Same here
+  K = 0.3;
+  n_changes = (int)(1. + 0.1*tree->n_otu); // Same here
   
   hr = 0.0;
   
@@ -8463,7 +8471,7 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
   phydbl cur_tlnL,new_tlnL;
   phydbl ratio,alpha,hr;
   int i;
-  int move_num;
+  int move_num,err;
   t_ldsk *ldsk_next;
   phydbl r0_cur,r1_cur,r2_cur;
   phydbl r0_new,r1_new,r2_new;
@@ -8524,10 +8532,10 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
   
   assert(t_max > t_min);
   
-  new_t = Uni()*(t_max - t_min) + t_min;
-  /* new_t = Rnorm_Trunc(cur_t,(t_max - t_min)/50.,t_min,t_max,&err); */
-  /* hr -= Log_Dnorm_Trunc(new_t,cur_t,(t_max - t_min)/50.,t_min,t_max,&err); */
-  /* hr += Log_Dnorm_Trunc(cur_t,new_t,(t_max - t_min)/50.,t_min,t_max,&err); */
+  /* new_t = Uni()*(t_max - t_min) + t_min; */
+  new_t = Rnorm_Trunc(cur_t,(t_max - t_min)/20.,t_min,t_max,&err);
+  hr -= Log_Dnorm_Trunc(new_t,cur_t,(t_max - t_min)/20.,t_min,t_max,&err);
+  hr += Log_Dnorm_Trunc(cur_t,new_t,(t_max - t_min)/20.,t_min,t_max,&err);
   /* new_t = Rnorm_Trunc(cur_t,(t_max - t_min)/100.,t_min,t_max,&err); */
   /* hr -= Log_Dnorm_Trunc(new_t,cur_t,(t_max - t_min)/100.,t_min,t_max,&err); */
   /* hr += Log_Dnorm_Trunc(cur_t,new_t,(t_max - t_min)/100.,t_min,t_max,&err); */
@@ -8552,7 +8560,7 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
 
       if(failed == NO)
         {
-          if(tree->eval_alnL == YES && tree->eval_rlnL == YES) hr += log(r0_new/r0_cur) + log(r1_new/r1_cur) + log(r2_new/r2_cur);
+          if(tree->eval_rlnL == YES) hr += log(r0_new/r0_cur) + log(r1_new/r1_cur) + log(r2_new/r2_cur);
 
           tree->rates->br_r[v0->num] = r0_new;
           tree->rates->br_r[v1->num] = r1_new;
@@ -8621,6 +8629,19 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
                  cur_rlnL,new_rlnL,
                  cur_tlnL,new_tlnL,
                  alpha);
+
+
+  if(tree->aux_tree == NULL && (v0 == tree->n_root->v[1] || v0 == tree->n_root->v[2]))
+    {
+      PhyML_Printf("\n! cur_t: %f new_t: %f t_min: %f t_max: %f alnL:%f->%f glnL:%f->%f rlnL:%f->%f tlnL:%f->%f hr: %f alpha:%f",
+                   cur_t,new_t,t_min,t_max,
+                   cur_alnL,new_alnL,
+                   cur_glnL,new_glnL,
+                   cur_rlnL,new_rlnL,
+                   cur_tlnL,new_tlnL,
+                   hr,
+                   alpha);      
+    }
 
   assert(isnan(u) == NO && isinf(fabs(u)) == NO);
   
