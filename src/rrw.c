@@ -504,44 +504,44 @@ void RRW_Generate(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void RRW_Sample_Arealin_Plot(t_tree *tree)
-{
-  int i,j;
-  t_ldsk *ldsk;
-  t_dsk *disk;
+/* void RRW_Sample_Arealin_Plot(t_tree *tree) */
+/* { */
+/*   int i,j; */
+/*   t_ldsk *ldsk; */
+/*   t_dsk *disk; */
   
-  RRW_Update_Normalization_Factor(tree);
+/*   RRW_Update_Normalization_Factor(tree); */
 
-  for(i=0;i<tree->mmod->n_dim;++i)
-    {
-      RRW_Init_Contmod(i,tree);
-      RRW_Lk_Integrated_Post(NULL,tree->n_root,tree->mmod->sigsq[i],tree,YES);
-      RRW_Lk_Integrated_Pre(tree->n_root,tree->n_root->v[1],tree->mmod->sigsq[i],tree);
-      RRW_Lk_Integrated_Pre(tree->n_root,tree->n_root->v[2],tree->mmod->sigsq[i],tree);      
-
-
-      disk = tree->young_disk;
-
-      do
-        {
-          for(j=0;j<disk->n_ldsk_al++j)
-            {
-              if(disk->ldsk_a[j] == disk->ldsk)
-                {
-                  assert(disk->ldsk->nd != NULL && disk->ldsk->nd->tax == NO);
-
-                  disk-ldsk->coord->lonlat[i] =
-                    RRW_Sample_Location(tree->a_nodes[j]->anc->num,
-                                        tree->a_nodes[j]->num,
-                                        tree->mmod->sigsq[i],tree);                  
-                }
-            }
-          disk = disk->prev;
-        }
-      while(disk);
+/*   for(i=0;i<tree->mmod->n_dim;++i) */
+/*     { */
+/*       RRW_Init_Contmod(i,tree); */
+/*       RRW_Lk_Integrated_Post(NULL,tree->n_root,tree->mmod->sigsq[i],tree,YES); */
+/*       RRW_Lk_Integrated_Pre(tree->n_root,tree->n_root->v[1],tree->mmod->sigsq[i],tree); */
+/*       RRW_Lk_Integrated_Pre(tree->n_root,tree->n_root->v[2],tree->mmod->sigsq[i],tree);       */
 
 
-}
+/*       disk = tree->young_disk; */
+
+/*       do */
+/*         { */
+/*           for(j=0;j<disk->n_ldsk_al++j) */
+/*             { */
+/*               if(disk->ldsk_a[j] == disk->ldsk) */
+/*                 { */
+/*                   assert(disk->ldsk->nd != NULL && disk->ldsk->nd->tax == NO); */
+
+/*                   disk-ldsk->coord->lonlat[i] = */
+/*                     RRW_Sample_Location(tree->a_nodes[j]->anc->num, */
+/*                                         tree->a_nodes[j]->num, */
+/*                                         tree->mmod->sigsq[i],tree);                   */
+/*                 } */
+/*             } */
+/*           disk = disk->prev; */
+/*         } */
+/*       while(disk); */
+
+
+/* } */
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -564,8 +564,8 @@ void RRW_Sample_Node_Locations(t_tree *tree)
           if(tree->a_nodes[j]->tax == NO && tree->a_nodes[j] != tree->n_root)
             {
               tree->a_nodes[j]->ldsk->coord->lonlat[i] =
-                RRW_Sample_Location(tree->a_nodes[j]->anc->num,
-                                    tree->a_nodes[j]->num,
+                RRW_Sample_Location(tree->a_nodes[j]->anc,
+                                    tree->a_nodes[j],
                                     tree->mmod->sigsq[i],tree);
             }
         }
