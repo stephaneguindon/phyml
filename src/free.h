@@ -102,5 +102,6 @@ void TIMES_Free_Times(t_time *times);
 void Free_Best_Spr(t_tree *tree);
 void Free_All_Edges_Light(t_tree *tree);
 void Free_All_Edges_Lens(t_tree *tree);
+void Free_Contmod(t_contmod *contmod);
 
 #endif

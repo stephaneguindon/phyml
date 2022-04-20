@@ -86,4 +86,5 @@ void Make_Extra_Edge_Lk(t_tree *tree);
 void Make_Spr(t_tree *tree);
 t_label *Make_Label();
 void Make_Contrasts(t_tree *tree);
+void Make_Contmod(t_tree *tree);
 #endif

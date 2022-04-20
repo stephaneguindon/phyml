@@ -1467,28 +1467,28 @@ void MCMC_Root_Time(t_tree *tree, int print)
       
 
       /* if(tree->aux_tree != NULL) */
-        {
-          PhyML_Printf("\n.");
-          PhyML_Printf("\n. %c [%4d] \n. t: %1f->%1f t1:%f t2: %f \n. r1: %10f->%10f r2: %10f->%10f \n. R: %12f alnL:%10f->%10f[%d] \n. tlnL: %10f->%10f[%d] \n. glnL: %10f->%10f[%d] \n. rlnL: %10f->%10f[%d] \n. tune: %10f hr: %f [%f,%f] [%f,%f,%f] ratio: %10f K: %10f failed: %d",
-                       (tree->aux_tree != NULL) ? '*' : 'X',
-                       tree->mcmc->run,
-                       t0_cur,t0_new,
-                       t1,t2,
-                       r1_cur,r1_new,
-                       r2_cur,r2_new,
-                       tree->rates->norm_fact,
-                       cur_lnL_seq,new_lnL_seq,tree->eval_alnL,
-                       cur_lnL_time,new_lnL_time,tree->eval_glnL,
-                       cur_lnL_loc,new_lnL_loc,tree->eval_glnL,
-                       cur_lnL_rate,new_lnL_rate,tree->eval_rlnL,
-                       tune,
-                       hr,
-                       Log_Dnorm_Trunc(t0_new,t0_cur,(tree->young_disk->time - t0_cur) * tune,t0_cur - (t_max - t0_cur)-eps,t_max,&err),
-                       Log_Dnorm_Trunc(t0_cur,t0_new,(tree->young_disk->time - t0_new) * tune,t0_new - (t_max - t0_new)-eps,t_max,&err),
-                       t0_cur - (t_max - t0_cur)-eps,t0_new - (t_max - t0_new)-eps,t_max,
-                       ratio,K,failed);
-          PhyML_Printf("\n.");
-        }
+        /* { */
+        /*   PhyML_Printf("\n."); */
+        /*   PhyML_Printf("\n. %c [%4d] \n. t: %1f->%1f t1:%f t2: %f \n. r1: %10f->%10f r2: %10f->%10f \n. R: %12f alnL:%10f->%10f[%d] \n. tlnL: %10f->%10f[%d] \n. glnL: %10f->%10f[%d] \n. rlnL: %10f->%10f[%d] \n. tune: %10f hr: %f [%f,%f] [%f,%f,%f] ratio: %10f K: %10f failed: %d", */
+        /*                (tree->aux_tree != NULL) ? '*' : 'X', */
+        /*                tree->mcmc->run, */
+        /*                t0_cur,t0_new, */
+        /*                t1,t2, */
+        /*                r1_cur,r1_new, */
+        /*                r2_cur,r2_new, */
+        /*                tree->rates->norm_fact, */
+        /*                cur_lnL_seq,new_lnL_seq,tree->eval_alnL, */
+        /*                cur_lnL_time,new_lnL_time,tree->eval_glnL, */
+        /*                cur_lnL_loc,new_lnL_loc,tree->eval_glnL, */
+        /*                cur_lnL_rate,new_lnL_rate,tree->eval_rlnL, */
+        /*                tune, */
+        /*                hr, */
+        /*                Log_Dnorm_Trunc(t0_new,t0_cur,(tree->young_disk->time - t0_cur) * tune,t0_cur - (t_max - t0_cur)-eps,t_max,&err), */
+        /*                Log_Dnorm_Trunc(t0_cur,t0_new,(tree->young_disk->time - t0_new) * tune,t0_new - (t_max - t0_new)-eps,t_max,&err), */
+        /*                t0_cur - (t_max - t0_cur)-eps,t0_new - (t_max - t0_new)-eps,t_max, */
+        /*                ratio,K,failed); */
+        /*   PhyML_Printf("\n."); */
+        /* } */
       
       assert(isnan(u) == NO && isinf(fabs(u)) == NO);
       
@@ -7036,6 +7036,17 @@ void MCMC_PHYREX_Sigsq_Scale(t_tree *tree, int print)
       
       tree->mmod->sigsq_scale[permut[i]] = new_scale;
 
+
+      /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+      if(permut[i] == tree->n_root->v[1]->num ||
+         permut[i] == tree->n_root->v[2]->num)
+        {
+          if(new_scale > cur_scale + 0.5)
+            {
+              PhyML_Printf("\n\n. %f -> %f",new_scale,cur_scale);
+            }
+        }
+
       /* if(print == YES) PhyML_Printf("\n. %12f->%12f",cur_scale,new_scale); */
       /* PhyML_Printf("\n. %12f->%12f",cur_scale,new_scale); */
     }
@@ -8631,17 +8642,17 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
                  alpha);
 
 
-  if(tree->aux_tree == NULL && (v0 == tree->n_root->v[1] || v0 == tree->n_root->v[2]))
-    {
-      PhyML_Printf("\n! cur_t: %f new_t: %f t_min: %f t_max: %f alnL:%f->%f glnL:%f->%f rlnL:%f->%f tlnL:%f->%f hr: %f alpha:%f",
-                   cur_t,new_t,t_min,t_max,
-                   cur_alnL,new_alnL,
-                   cur_glnL,new_glnL,
-                   cur_rlnL,new_rlnL,
-                   cur_tlnL,new_tlnL,
-                   hr,
-                   alpha);      
-    }
+  /* if(tree->aux_tree == NULL && (v0 == tree->n_root->v[1] || v0 == tree->n_root->v[2])) */
+  /*   { */
+  /*     PhyML_Printf("\n! cur_t: %f new_t: %f t_min: %f t_max: %f alnL:%f->%f glnL:%f->%f rlnL:%f->%f tlnL:%f->%f hr: %f alpha:%f", */
+  /*                  cur_t,new_t,t_min,t_max, */
+  /*                  cur_alnL,new_alnL, */
+  /*                  cur_glnL,new_glnL, */
+  /*                  cur_rlnL,new_rlnL, */
+  /*                  cur_tlnL,new_tlnL, */
+  /*                  hr, */
+  /*                  alpha);       */
+  /*   } */
 
   assert(isnan(u) == NO && isinf(fabs(u)) == NO);
   

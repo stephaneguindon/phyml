@@ -1863,6 +1863,19 @@ void Make_Contrasts(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+void Make_Contmod(t_tree *tree)
+{
+  tree->contmod = (t_contmod *)mCalloc(1,sizeof(t_contmod));
+
+  tree->contmod->mu_down = (phydbl *)mCalloc(2*tree->n_otu,sizeof(phydbl));
+  tree->contmod->var_down = (phydbl *)mCalloc(2*tree->n_otu,sizeof(phydbl));
+  tree->contmod->logrem_down = (phydbl *)mCalloc(2*tree->n_otu,sizeof(phydbl));
+
+  tree->contmod->mu_up = (phydbl *)mCalloc(2*tree->n_otu,sizeof(phydbl));
+  tree->contmod->var_up = (phydbl *)mCalloc(2*tree->n_otu,sizeof(phydbl));
+  tree->contmod->logrem_up = (phydbl *)mCalloc(2*tree->n_otu,sizeof(phydbl));
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 

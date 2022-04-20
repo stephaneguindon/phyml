@@ -3796,6 +3796,21 @@ void RW_Init_Contrasts(int dim_idx, t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void RRW_Init_Contmod(int dim_idx, t_tree *tree)
+{
+  for(int i=0;i<tree->n_otu;++i)
+    {
+      tree->contmod->mu_down[i] = tree->a_nodes[i]->ldsk->coord->lonlat[dim_idx];
+      tree->contmod->var_down[i] = 0.0;
+      tree->contmod->logrem_down[i] = 0.0;
+
+      tree->contmod->mu_up[i] = 0.0;
+      tree->contmod->var_up[i] = 0.0;
+      tree->contmod->logrem_up[i] = 0.0;
+    }
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

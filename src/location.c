@@ -46,17 +46,19 @@ phydbl LOCATION_Lk(t_tree *tree)
         assert(false);
         break;
       }
-    case RRW_GAMMA : case RRW_LOGNORMAL :
+    case RRW_GAMMA : case RRW_LOGNORMAL : case RW : 
       {
         if(tree->mmod->integrateAncestralLocations == NO) lnL = RRW_Lk(tree);
-        else lnL = RRW_Independent_Contrasts(tree);
+        else
+          {
+            /* lnL = RRW_Independent_Contrasts(tree); */
+            /* PhyML_Printf("\n. "); */
+            /* PhyML_Printf(" IC: %f",lnL); */
+            lnL = RRW_Lk_Integrated(tree);
+            /* PhyML_Printf("-- Int: %f",lnL); */
+          }
         break;
       }
-    case RW :
-      {
-        lnL = RW_Lk(tree);
-        break;
-      }      
     default : assert(false);
     }
 

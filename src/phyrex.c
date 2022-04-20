@@ -672,7 +672,10 @@ void PHYREX_XML(char *xml_filename)
     {
       Make_Contrasts(mixt_tree);
       for(int i=0;i<3;++i) Make_Contrasts(mixt_tree->aux_tree[i]);
-      
+
+      Make_Contmod(mixt_tree);
+      for(int i=0;i<3;++i) Make_Contmod(mixt_tree->aux_tree[i]);
+
 
       mixt_tree->times->augmented_coalescent = NO;
       for(int i=0;i<3;++i) mixt_tree->aux_tree[i]->times->augmented_coalescent = NO;
@@ -690,7 +693,6 @@ void PHYREX_XML(char *xml_filename)
     }
 
   assert(PHYREX_Check_Struct(mixt_tree,YES));
-  LOCATION_Lk(mixt_tree);
   TIMES_Lk(mixt_tree);
   RATES_Lk(mixt_tree);
   LOCATION_Prior(mixt_tree);
@@ -698,6 +700,7 @@ void PHYREX_XML(char *xml_filename)
   RATES_Prior(mixt_tree);
   Set_Update_Eigen(YES,mixt_tree->mod);
   RATES_Update_Edge_Lengths(mixt_tree);
+  LOCATION_Lk(mixt_tree);
   Lk(NULL,mixt_tree);
   Set_Update_Eigen(NO,mixt_tree->mod);
   char *s = LOCATION_Model_Id(mixt_tree->mmod);
@@ -1018,7 +1021,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   PHYREX_Print_MCMC_Stats(tree);
   PHYREX_Print_MCMC_Tree(tree);
   PHYREX_Print_MCMC_Summary(tree);
-  
+
+
   Set_Both_Sides(NO,tree);
   mcmc->always_yes = NO;
   move             = -1;
@@ -1042,6 +1046,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       
       assert(!(move == tree->mcmc->n_moves));
       
+
       /* tree->mmod->use_locations = NO; */
       
       /* phydbl prev_lnL = tree->c_lnL; */
@@ -1049,6 +1054,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       /* phydbl prev_rates_lnL = tree->rates->c_lnL; */
       /* phydbl prev_times_lnL = tree->times->c_lnL; */
             
+      
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_lbda")) MCMC_PHYREX_Lbda(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_mu")) MCMC_PHYREX_Mu(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_rad")) MCMC_PHYREX_Radius(tree);

@@ -6723,8 +6723,8 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           /* for(int i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"sigSq%d\t",i); */
           /* for(int i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"auxsigSq%d\t",i); */
 
-          PhyML_Fprintf(fp_stats,"sigSqSon1\t");
-          PhyML_Fprintf(fp_stats,"sigSqSon2\t");
+          /* PhyML_Fprintf(fp_stats,"sigSqSon1\t"); */
+          /* PhyML_Fprintf(fp_stats,"sigSqSon2\t"); */
 
           PhyML_Fprintf(fp_stats,"rrSon1\t");
           PhyML_Fprintf(fp_stats,"rrSon2\t");
@@ -6761,7 +6761,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Realized_Dispersal_Dist_Alt(tree));
       PhyML_Fprintf(fp_stats,"%.2f\t",tree->n_root->ldsk->disk->time);
 
-      if(RRW_Is_Rw(tree->mmod) == YES && tree->mmod->integrateAncestralLocations == YES) RRW_Sample_Node_Location(tree->n_root->ldsk,tree);
+      if(RRW_Is_Rw(tree->mmod) == YES && tree->mmod->integrateAncestralLocations == YES) RRW_Sample_Node_Locations(tree);
 
       PhyML_Fprintf(fp_stats,"%g\t",tree->n_root->ldsk->coord->lonlat[0]);
       PhyML_Fprintf(fp_stats,"%g\t",tree->n_root->ldsk->coord->lonlat[1]);
@@ -6819,8 +6819,8 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       /* for(int i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->sigsq_scale[i]); */
       /* for(int i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[0]->mmod->sigsq_scale[i]); */
 
-      PhyML_Fprintf(fp_stats,"%f\t",tree->mmod->sigsq_scale[tree->n_root->v[1]->num]);
-      PhyML_Fprintf(fp_stats,"%f\t",tree->mmod->sigsq_scale[tree->n_root->v[2]->num]);
+      /* PhyML_Fprintf(fp_stats,"%f\t",tree->mmod->sigsq_scale[tree->n_root->v[1]->num]); */
+      /* PhyML_Fprintf(fp_stats,"%f\t",tree->mmod->sigsq_scale[tree->n_root->v[2]->num]); */
 
       PhyML_Fprintf(fp_stats,"%f\t",tree->rates->br_r[tree->n_root->v[1]->num]);
       PhyML_Fprintf(fp_stats,"%f\t",tree->rates->br_r[tree->n_root->v[2]->num]);
@@ -6870,6 +6870,7 @@ void PHYREX_Print_MCMC_Tree(t_tree *tree)
 
   if(!(tree->mcmc->run%tree->mcmc->sample_interval) && tree->mcmc->sample_interval > 0)
     {
+      if(RRW_Is_Rw(tree->mmod) == YES && tree->mmod->integrateAncestralLocations == YES) RRW_Sample_Node_Locations(tree);
       Record_Br_Len(tree);
       TIMES_Time_To_Bl(tree);
       tree->bl_ndigits = 3;
@@ -6909,7 +6910,7 @@ void PHYREX_Print_MCMC_Summary(t_tree *tree)
      
   if(!(tree->mcmc->run%tree->mcmc->print_every) && tree->mcmc->print_every > 0)
     {
-      if(RRW_Is_Rw(tree->mmod) == YES && tree->mmod->integrateAncestralLocations == YES) RRW_Sample_Node_Location(tree->n_root->ldsk,tree);
+      if(RRW_Is_Rw(tree->mmod) == YES && tree->mmod->integrateAncestralLocations == YES) RRW_Sample_Node_Locations(tree);
 
       PhyML_Fprintf(stdout,"\n. %10d (%10d)\t%25s\t%15.2f\t%15.2f\t%15.2f\t%15.2f\t%13.1f\t%10f\t(%8.2f;%8.2f)",
                     tree->mcmc->run,

@@ -769,7 +769,8 @@ typedef struct __Tree{
   struct __Generic_LL              *edge_list;
   struct __Generic_LL              *node_list;
   struct __Independent_Contrasts       *ctrst; /*! Pointer to data structure used for independent contrasts */
-
+  struct __Continuous_Model          *contmod;
+  
 #if (defined(__AVX__) || defined(__AVX2__))
   __m256d *_tPij1,*_tPij2,*_pmat1plk1,*_pmat2plk2,*_plk0,*_l_ev,*_r_ev,*_prod_left,*_prod_rght;
 #elif (defined(__SSE__) || defined(__SSE2__) || defined(__SSE3__))
@@ -2116,11 +2117,24 @@ typedef struct __Independent_Contrasts{
 
 /*!********************************************************/
 
+typedef struct __Continuous_Model{
+  phydbl *mu_down;
+  phydbl *var_down;
+  phydbl *logrem_down;
+
+  phydbl *mu_up;
+  phydbl *var_up;
+  phydbl *logrem_up;
+}t_contmod;
+
+
+/*!********************************************************/
+
 typedef struct __Geo_Coord{
-  phydbl             *lonlat; /* longitude-latitude vector */
-  int                    dim;
-  char                   *id;
-  struct __Geo_Coord    *cpy; /* keep a copy of this coordinate */
+  phydbl          *lonlat; /* longitude-latitude vector */
+  int                 dim;
+  char                *id;
+  struct __Geo_Coord *cpy; /* keep a copy of this coordinate */
 
 }t_geo_coord;
 

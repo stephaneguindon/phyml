@@ -504,104 +504,315 @@ void RRW_Generate(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void RRW_Sample_Node_Location(t_ldsk *d, t_tree *tree)
+void RRW_Sample_Arealin_Plot(t_tree *tree)
 {
-  int i;
-  t_node *nd_d;
+  int i,j;
   t_ldsk *ldsk;
-
+  t_dsk *disk;
+  
   RRW_Update_Normalization_Factor(tree);
-
-  ldsk = d;
-  while(ldsk->n_next == 1) ldsk = ldsk->next[0];
-  nd_d = ldsk->nd;
-  assert(nd_d->tax == NO);
 
   for(i=0;i<tree->mmod->n_dim;++i)
     {
-      RW_Init_Contrasts(i,tree);
-      
-      RRW_Sample_Node_Location_Pre(ldsk,tree->mmod->sigsq[i],tree);
+      RRW_Init_Contmod(i,tree);
+      RRW_Lk_Integrated_Post(NULL,tree->n_root,tree->mmod->sigsq[i],tree,YES);
+      RRW_Lk_Integrated_Pre(tree->n_root,tree->n_root->v[1],tree->mmod->sigsq[i],tree);
+      RRW_Lk_Integrated_Pre(tree->n_root,tree->n_root->v[2],tree->mmod->sigsq[i],tree);      
 
-      ldsk->coord->lonlat[i] = Rnorm(tree->ctrst->x[nd_d->num],sqrt(1./tree->ctrst->tprime[nd_d->num]));
 
-      /* PhyML_Printf("\n. mean = %f sd = %f --> %f", */
-      /*              tree->ctrst->x[nd_d->num], */
-      /*              sqrt(1./tree->ctrst->tprime[nd_d->num]), */
-      /*              ldsk->coord->lonlat[i]); */
-    }
-  
+      disk = tree->young_disk;
+
+      do
+        {
+          for(j=0;j<disk->n_ldsk_al++j)
+            {
+              if(disk->ldsk_a[j] == disk->ldsk)
+                {
+                  assert(disk->ldsk->nd != NULL && disk->ldsk->nd->tax == NO);
+
+                  disk-ldsk->coord->lonlat[i] =
+                    RRW_Sample_Location(tree->a_nodes[j]->anc->num,
+                                        tree->a_nodes[j]->num,
+                                        tree->mmod->sigsq[i],tree);                  
+                }
+            }
+          disk = disk->prev;
+        }
+      while(disk);
+
+
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void RRW_Sample_Node_Location_Pre(t_ldsk *d, phydbl sigsq, t_tree *tree)
+void RRW_Sample_Node_Locations(t_tree *tree)
 {
-  t_node *nd_d;
-  t_ldsk *ldsk;
+  int i,j;
   
-  ldsk = d;
-  while(ldsk->n_next == 1) ldsk = ldsk->next[0];
-  nd_d = ldsk->nd;
-  
-  if(d->n_next == 0)
+  RRW_Update_Normalization_Factor(tree);
+
+  for(i=0;i<tree->mmod->n_dim;++i)
     {
-      // Precision component at tip node (mean component was initialized with RW_Init_Contrasts)
-      tree->ctrst->tprime[nd_d->num] =
-        log(sigsq) +
-        log(tree->mmod->sigsq_scale[nd_d->num]) + 
-        log(tree->mmod->rrw_norm_fact) +
-        log(fabs(tree->times->nd_t[nd_d->num]-tree->times->nd_t[nd_d->v[0]->num]));
+      RRW_Init_Contmod(i,tree);
+      RRW_Lk_Integrated_Post(NULL,tree->n_root,tree->mmod->sigsq[i],tree,YES);
+      RRW_Lk_Integrated_Pre(tree->n_root,tree->n_root->v[1],tree->mmod->sigsq[i],tree);
+      RRW_Lk_Integrated_Pre(tree->n_root,tree->n_root->v[2],tree->mmod->sigsq[i],tree);      
 
-      tree->ctrst->tprime[nd_d->num] = exp(tree->ctrst->tprime[nd_d->num]);
+      for(j=0;j<2*tree->n_otu-2;++j)
+        {
+          if(tree->a_nodes[j]->tax == NO && tree->a_nodes[j] != tree->n_root)
+            {
+              tree->a_nodes[j]->ldsk->coord->lonlat[i] =
+                RRW_Sample_Location(tree->a_nodes[j]->anc->num,
+                                    tree->a_nodes[j]->num,
+                                    tree->mmod->sigsq[i],tree);
+            }
+        }
 
-      tree->ctrst->tprime[nd_d->num] = 1./ tree->ctrst->tprime[nd_d->num];
+      assert(isnan(tree->contmod->var_down[tree->n_root->num]) == NO);
+      
+      tree->n_root->ldsk->coord->lonlat[i] =
+        Rnorm(tree->contmod->mu_down[tree->n_root->num],
+              sqrt(tree->contmod->var_down[tree->n_root->num]));
 
+      PhyML_Printf("\n. mu_down: %f var_down: %f --> %f",
+                   tree->contmod->mu_down[tree->n_root->num],
+                   tree->contmod->var_down[tree->n_root->num],
+                   tree->n_root->ldsk->coord->lonlat[i]);
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl RRW_Sample_Location(t_node *a, t_node *d, phydbl sigsq, t_tree *tree)
+{
+  phydbl mu_up,mu_down;
+  phydbl var,var_up,var_down;
+  phydbl mean,sd;
+  
+  mu_up = tree->contmod->mu_up[d->num];
+  mu_down = tree->contmod->mu_down[d->num];
+  
+  var_up = tree->contmod->var_up[d->num];
+  var_down = tree->contmod->var_down[d->num];
+  
+  var = 
+    log(sigsq) +
+    log(tree->mmod->sigsq_scale[d->num]) + 
+    log(tree->mmod->rrw_norm_fact) +
+    log(fabs(tree->times->nd_t[d->num]-tree->times->nd_t[a->num]));
+  
+  var = exp(var);
+  
+  assert(var+var_up+var_down > 0.0);
+  
+  mean = (mu_down*(var+var_up) + mu_up*var_down)/(var+var_up+var_down);
+  sd = sqrt((var+var_up)*var_down/(var+var_up+var_down));
+  
+  assert(isnan(sd) == NO);
+  
+  return(Rnorm(mean,sd));
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl RRW_Lk_Integrated(t_tree *tree)
+{
+  phydbl lnL;
+  int i;
+  
+  RRW_Update_Normalization_Factor(tree);
+
+  lnL = 0.0;
+
+  for(i=0;i<tree->mmod->n_dim;++i)
+    {
+      RRW_Init_Contmod(i,tree);
+      RRW_Lk_Integrated_Post(NULL,tree->n_root,tree->mmod->sigsq[i],tree,NO);
+      lnL += tree->contmod->logrem_down[tree->n_root->num];
+    }
+  return(lnL);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void RRW_Lk_Integrated_Post(t_node *a, t_node *d, phydbl sigsq, t_tree *tree, short int print)
+{
+  if(d->tax == TRUE)
+    {
       return;
     }
   else
     {
-      phydbl p1, p2; // precisions for sons of n (1 and 2)
-      phydbl pd; // precision for n
-      phydbl dt;
       int i;
+      t_node *v1, *v2;
+      phydbl v1mu,v2mu;
+      phydbl v1var,v2var;
+      phydbl dv1var,dv2var;
+      phydbl v1logrem,v2logrem;
       
-      assert(nd_d->tax == NO);
+      for(i=0;i<3;++i)
+        {
+          if(d->v[i] != a && d->b[i] != tree->e_root)
+            {
+              RRW_Lk_Integrated_Post(d,d->v[i],sigsq,tree,print);
+            }
+        }
 
-      for(i=0;i<d->n_next;++i) RRW_Sample_Node_Location_Pre(d->next[i],sigsq,tree);
+      v1 = v2 = NULL;
+      for(i=0;i<3;++i)
+        {
+          if(d->v[i] != a && d->b[i] != tree->e_root)
+            {
+              if(v1 == NULL) v1 = d->v[i];
+              else v2 = d->v[i];
+            }
+        }
 
-      if(d->prev != NULL)
-        dt = fabs(d->disk->time-d->prev->disk->time);
-      else dt = LARGE; // Consider that edge above root is of infinite length
+      v1mu = tree->contmod->mu_down[v1->num];
+      v2mu = tree->contmod->mu_down[v2->num];
+
+      v1var = tree->contmod->var_down[v1->num];
+      v2var = tree->contmod->var_down[v2->num];
+
+      v1logrem = tree->contmod->logrem_down[v1->num];
+      v2logrem = tree->contmod->logrem_down[v2->num];
       
-      pd =
+      dv1var =
         log(sigsq) +
-        log(tree->mmod->sigsq_scale[nd_d->num]) + 
+        log(tree->mmod->sigsq_scale[v1->num]) + 
         log(tree->mmod->rrw_norm_fact) +
-        log(dt);
-      
-      pd = exp(pd);
-      pd = 1./pd;
+        log(fabs(tree->times->nd_t[v1->num]-tree->times->nd_t[d->num]));
 
-      p1 = tree->ctrst->tprime[nd_d->v[1]->num];
-      p2 = tree->ctrst->tprime[nd_d->v[2]->num];
+      dv1var = exp(dv1var);
       
-      // Mean (Equ. S10 in Pybus et al. 10.1073/pnas.1206598109, SI)
-      tree->ctrst->x[nd_d->num] = p1 * tree->ctrst->x[nd_d->v[1]->num] + p2 * tree->ctrst->x[nd_d->v[2]->num];
-      tree->ctrst->x[nd_d->num] /= p1 + p2;
+
+      dv2var =
+        log(sigsq) +
+        log(tree->mmod->sigsq_scale[v2->num]) + 
+        log(tree->mmod->rrw_norm_fact) +
+        log(fabs(tree->times->nd_t[v2->num]-tree->times->nd_t[d->num]));
+
+      dv2var = exp(dv2var);
       
-      // Precision
-      if(d->prev != NULL) tree->ctrst->tprime[nd_d->num] = 1./(1./pd + 1./(p1+p2));
-      else tree->ctrst->tprime[nd_d->num] = p1+p2;
+
+      if(d == tree->n_root && print == YES)
+        {
+          PhyML_Printf("\n. v1mu=%f v2mu=%f v1var=%f dv1var=%f v2var=%f dv2var=%f t=%f t1=%f t2=%f",
+                       v1mu,
+                       v2mu,
+                       v1var,dv1var,
+                       v2var,dv2var,
+                       tree->times->nd_t[d->num],
+                       tree->times->nd_t[v1->num],
+                       tree->times->nd_t[v2->num]);
+        }
+      
+      tree->contmod->mu_down[d->num] = (v1mu*(v2var+dv2var) + v2mu*(v1var+dv1var))/(v2var+dv2var+v1var+dv1var);
+      
+      tree->contmod->var_down[d->num] = (v2var+dv2var)*(v1var+dv1var)/(v2var+dv2var+v1var+dv1var);
+
+      tree->contmod->logrem_down[d->num] = v1logrem + v2logrem;
+      tree->contmod->logrem_down[d->num] -= .5*log(2.*PI*(v2var+dv2var+v1var+dv1var));
+      tree->contmod->logrem_down[d->num] -= .5*pow(v1mu-v2mu,2)/(v2var+dv2var+v1var+dv1var);      
     }
+  
+  return;
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
+
+void RRW_Lk_Integrated_Pre(t_node *a, t_node *d, phydbl sigsq, t_tree *tree)
+{
+  int i;
+  t_node *v1, *v2;
+  phydbl v1mu,v2mu;
+  phydbl v1var,v2var;
+  phydbl av1var,av2var;
+  phydbl v1logrem,v2logrem;
+  
+  
+  v1 = NULL;
+  if(a != tree->n_root)
+    {
+      v1 = a->anc;
+      assert(v1);
+    }
+  
+  v2 = NULL;
+  for(i=0;i<3;++i)
+    {
+      if(a->v[i] != d && a->v[i] != v1 && a->b[i] != tree->e_root)
+        {
+          v2 = a->v[i];
+          break;
+        }
+    }
+
+  assert(v2->anc == a);
+  
+  
+  v2mu     = tree->contmod->mu_down[v2->num];
+  v2var    = tree->contmod->var_down[v2->num];
+  v2logrem = tree->contmod->logrem_down[v2->num];
+  
+  av2var =
+    log(sigsq) +
+    log(tree->mmod->sigsq_scale[v2->num]) + 
+    log(tree->mmod->rrw_norm_fact) +
+    log(fabs(tree->times->nd_t[v2->num]-tree->times->nd_t[a->num]));
+  
+  av2var = exp(av2var);
+  
+  
+  
+  if(v1 != NULL)
+    {
+      v1mu     = tree->contmod->mu_up[v1->num];
+      v1var    = tree->contmod->var_up[v1->num];
+      v1logrem = tree->contmod->logrem_up[v1->num];
+      
+      av1var =
+        log(sigsq) +
+        log(tree->mmod->sigsq_scale[v1->num]) + 
+        log(tree->mmod->rrw_norm_fact) +
+        log(fabs(tree->times->nd_t[v1->num]-tree->times->nd_t[a->num]));
+      
+      av1var = exp(av1var);
+      
+      tree->contmod->mu_up[a->num] = (v1mu*(v2var+av2var) + v2mu*(v1var+av1var))/(v2var+av2var+v1var+av1var);
+      
+      tree->contmod->var_up[a->num] = (v2var+av2var)*(v1var+av1var)/(v2var+av2var+v1var+av1var);
+      
+      tree->contmod->logrem_up[a->num] = v1logrem + v2logrem;
+      tree->contmod->logrem_up[a->num] -= .5*log(2.*PI*(v2var+av2var+v1var+av1var));
+      tree->contmod->logrem_up[a->num] -= .5*pow(v1mu-v2mu,2)/(v2var+av2var+v1var+av1var);      
+    }
+  else
+    {
+      tree->contmod->mu_up[a->num]     = v2mu;
+      tree->contmod->var_up[a->num]    = v2var + av2var;
+      tree->contmod->logrem_up[a->num] = v2logrem;
+    }
+  
+  if(d->tax == TRUE) return;
+  else
+    {
+      for(i=0;i<3;++i)
+        {
+          if(d->v[i] != a && d->b[i] != tree->e_root)
+            {
+              RRW_Lk_Integrated_Pre(d,d->v[i],sigsq,tree);
+            }
+        }
+    }
+  return;
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
