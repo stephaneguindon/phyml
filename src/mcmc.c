@@ -1465,7 +1465,7 @@ void MCMC_Root_Time(t_tree *tree, int print)
       alpha = MIN(1.,ratio);
       u = Uni();
       
-
+#ifdef PHYREX
       /* if(tree->aux_tree != NULL) */
         /* { */
         /*   PhyML_Printf("\n."); */
@@ -1489,6 +1489,7 @@ void MCMC_Root_Time(t_tree *tree, int print)
         /*                ratio,K,failed); */
         /*   PhyML_Printf("\n."); */
         /* } */
+#endif
       
       assert(isnan(u) == NO && isinf(fabs(u)) == NO);
       

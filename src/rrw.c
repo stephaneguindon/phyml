@@ -504,44 +504,123 @@ void RRW_Generate(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-/* void RRW_Sample_Arealin_Plot(t_tree *tree) */
-/* { */
-/*   int i,j; */
-/*   t_ldsk *ldsk; */
-/*   t_dsk *disk; */
+void RRW_Sample_Arealin_Plot(t_tree *tree)
+{
+  int i,j;
+  t_ldsk *ldsk;
+  t_dsk *disk;
+  t_geo_coord **coord_array;
+
+
+  coord_array = (t_geo_coord **)mCalloc(tree->n_otu,sizeof(t_geo_coord *));
+  for(j=0;j<tree->n_otu;++j) 
+    {
+      coord_array[j] = GEO_Make_Geo_Coord(tree->mmod->n_dim);
+      GEO_Init_Coord(coord_array[j],tree->mmod->n_dim);      
+    }
   
-/*   RRW_Update_Normalization_Factor(tree); */
+  RRW_Update_Normalization_Factor(tree);
+  
+  for(i=0;i<tree->mmod->n_dim;++i)
+    {
+      RRW_Init_Contmod(i,tree);
+      RRW_Lk_Integrated_Post(NULL,tree->n_root,tree->mmod->sigsq[i],tree,NO);
+      RRW_Lk_Integrated_Pre(tree->n_root,tree->n_root->v[1],tree->mmod->sigsq[i],tree);
+      RRW_Lk_Integrated_Pre(tree->n_root,tree->n_root->v[2],tree->mmod->sigsq[i],tree);
+    }
+  
+  /* Sample location on every ldsk */
+  disk = tree->young_disk;      
+  do
+    {
+      for(j=0;j<disk->n_ldsk_a;++j)
+        {
+          if(disk->ldsk_a[j] == disk->ldsk)
+            {
+              assert(disk->ldsk->nd != NULL && disk->ldsk->nd->tax == NO);
+              
+              for(i=0;i<tree->mmod->n_dim;++i)
+                {
+                  coord_array[j]->lonlat[i] =
+                    RRW_Sample_Location(disk->ldsk->nd->anc,
+                                        disk->ldsk->nd,
+                                        fabs(tree->times->nd_t[disk->ldsk->nd->anc->num]-tree->times->nd_t[disk->ldsk->nd->num]),
+                                        0.0,                                        
+                                        tree->mmod->sigsq[i],tree);
+                }
+            }
+          else if(disk->age_fixed == NO || (disk->age_fixed == YES && disk->ldsk_a[j]->disk != disk))
+            {
+              t_ldsk *ldsk_a,*ldsk_d;
+              
+              ldsk_a = NULL;
+              ldsk_d = NULL;
+              
+              ldsk = disk->ldsk_a[j];
+              do ldsk = ldsk->prev; while(ldsk->nd == NULL);
+              ldsk_a = ldsk;
+              
+              ldsk_d = disk->ldsk_a[j];
+              
+              assert(ldsk_d->nd != NULL);
+              
+              for(i=0;i<tree->mmod->n_dim;++i)
+                {
+                  coord_array[j]->lonlat[i] =
+                    RRW_Sample_Location(ldsk_a->nd,
+                                        ldsk_d->nd,
+                                        tree->mmod->sigsq[i],
+                                        fabs(disk->time-tree->times->nd_t[ldsk_a->nd->num]),                                        
+                                        fabs(disk->time-tree->times->nd_t[ldsk_d->nd->num]),tree);
+                }
+            }
+          else 
+            {
+              assert(disk->age_fixed == YES);
+              for(i=0;i<tree->mmod->n_dim;++i) coord_array[j]->lonlat[i] = disk->ldsk_a[j]->coord->lonlat[i];                    
+            }
+        }
+      
+      /* Get barycenter, radius and then area for every disk */
+      phydbl max_dist,dist,area;
+      t_geo_coord *barycentr;
+      
+      PhyML_Printf("\n<> ");
 
-/*   for(i=0;i<tree->mmod->n_dim;++i) */
-/*     { */
-/*       RRW_Init_Contmod(i,tree); */
-/*       RRW_Lk_Integrated_Post(NULL,tree->n_root,tree->mmod->sigsq[i],tree,YES); */
-/*       RRW_Lk_Integrated_Pre(tree->n_root,tree->n_root->v[1],tree->mmod->sigsq[i],tree); */
-/*       RRW_Lk_Integrated_Pre(tree->n_root,tree->n_root->v[2],tree->mmod->sigsq[i],tree);       */
-
-
-/*       disk = tree->young_disk; */
-
-/*       do */
-/*         { */
-/*           for(j=0;j<disk->n_ldsk_al++j) */
-/*             { */
-/*               if(disk->ldsk_a[j] == disk->ldsk) */
-/*                 { */
-/*                   assert(disk->ldsk->nd != NULL && disk->ldsk->nd->tax == NO); */
-
-/*                   disk-ldsk->coord->lonlat[i] = */
-/*                     RRW_Sample_Location(tree->a_nodes[j]->anc->num, */
-/*                                         tree->a_nodes[j]->num, */
-/*                                         tree->mmod->sigsq[i],tree);                   */
-/*                 } */
-/*             } */
-/*           disk = disk->prev; */
-/*         } */
-/*       while(disk); */
-
-
-/* } */
+      barycentr = GEO_Make_Geo_Coord(tree->mmod->n_dim);
+      GEO_Init_Coord(barycentr,tree->mmod->n_dim);
+          
+      for(i=0;i<tree->mmod->n_dim;++i) 
+        {
+          barycentr->lonlat[i] = 0.0;
+          for(j=0;j<disk->n_ldsk_a;++j) barycentr->lonlat[i] += coord_array[j]->lonlat[i];
+          barycentr->lonlat[i] /= disk->n_ldsk_a;
+        }
+      
+      max_dist = -1.;
+      dist = -1.;
+      for(j=0;j<disk->n_ldsk_a;++j)
+        {
+          dist = Euclidean_Dist(barycentr,coord_array[j]);
+          if(dist > max_dist) max_dist = dist;
+        }
+      
+            
+      assert(!(max_dist < 0.0));
+      
+      area = 2.*PI*max_dist*max_dist;
+      
+      PhyML_Printf("(%f;%f;%d)",area,disk->time,disk->n_ldsk_a);
+      
+      Free_Geo_Coord(barycentr);
+      
+      disk = disk->prev;
+    }
+  while(disk);
+  
+  for(j=0;j<tree->n_otu;++j) Free_Geo_Coord(coord_array[j]);
+  Free(coord_array);  
+}
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -555,7 +634,7 @@ void RRW_Sample_Node_Locations(t_tree *tree)
   for(i=0;i<tree->mmod->n_dim;++i)
     {
       RRW_Init_Contmod(i,tree);
-      RRW_Lk_Integrated_Post(NULL,tree->n_root,tree->mmod->sigsq[i],tree,YES);
+      RRW_Lk_Integrated_Post(NULL,tree->n_root,tree->mmod->sigsq[i],tree,NO);
       RRW_Lk_Integrated_Pre(tree->n_root,tree->n_root->v[1],tree->mmod->sigsq[i],tree);
       RRW_Lk_Integrated_Pre(tree->n_root,tree->n_root->v[2],tree->mmod->sigsq[i],tree);      
 
@@ -566,7 +645,10 @@ void RRW_Sample_Node_Locations(t_tree *tree)
               tree->a_nodes[j]->ldsk->coord->lonlat[i] =
                 RRW_Sample_Location(tree->a_nodes[j]->anc,
                                     tree->a_nodes[j],
-                                    tree->mmod->sigsq[i],tree);
+                                    tree->mmod->sigsq[i],
+                                    fabs(tree->times->nd_t[tree->a_nodes[j]->anc->num]-tree->times->nd_t[tree->a_nodes[j]->num]),
+                                    0.0,
+                                    tree);
             }
         }
 
@@ -575,21 +657,29 @@ void RRW_Sample_Node_Locations(t_tree *tree)
       tree->n_root->ldsk->coord->lonlat[i] =
         Rnorm(tree->contmod->mu_down[tree->n_root->num],
               sqrt(tree->contmod->var_down[tree->n_root->num]));
-
-      PhyML_Printf("\n. mu_down: %f var_down: %f --> %f",
-                   tree->contmod->mu_down[tree->n_root->num],
-                   tree->contmod->var_down[tree->n_root->num],
-                   tree->n_root->ldsk->coord->lonlat[i]);
     }
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-phydbl RRW_Sample_Location(t_node *a, t_node *d, phydbl sigsq, t_tree *tree)
+phydbl RRW_Sample_Location(t_node *a, t_node *d, phydbl sigsq, phydbl t_za, phydbl t_zd, t_tree *tree)
 {
+  /*     
+         a
+        /\ 
+       /  \
+      z    \
+     /
+    /
+    d
+   /\
+  /  \
+
+  */
+  
   phydbl mu_up,mu_down;
-  phydbl var,var_up,var_down;
+  phydbl var_zd,var_za,var_up,var_down;
   phydbl mean,sd;
   
   mu_up = tree->contmod->mu_up[d->num];
@@ -597,19 +687,38 @@ phydbl RRW_Sample_Location(t_node *a, t_node *d, phydbl sigsq, t_tree *tree)
   
   var_up = tree->contmod->var_up[d->num];
   var_down = tree->contmod->var_down[d->num];
-  
-  var = 
+
+  var_zd = 
     log(sigsq) +
     log(tree->mmod->sigsq_scale[d->num]) + 
-    log(tree->mmod->rrw_norm_fact) +
-    log(fabs(tree->times->nd_t[d->num]-tree->times->nd_t[a->num]));
+    log(tree->mmod->rrw_norm_fact);
+
+  var_za = var_zd;
+  var_za += log(t_za);
+  var_za = exp(var_za);
+
+  if(t_zd > SMALL)
+    {    
+      var_zd += log(t_zd);    
+      var_zd = exp(var_zd);
+    }
+  else
+    {
+      var_zd = 0.0;
+    }
+
+  if(!(var_zd+var_za+var_up+var_down > 0.0))
+    {
+      PhyML_Printf("\n. a: %d d: %d t_za: %f t_zd: %f var_up: %f var_down = %f var_zd = %f var_za = %f",
+                   a->num,d->num,
+                   t_za,t_zd,
+                   var_up,var_down,
+                   var_zd,var_za);
+    }
+  assert(var_zd+var_za+var_up+var_down > 0.0);
   
-  var = exp(var);
-  
-  assert(var+var_up+var_down > 0.0);
-  
-  mean = (mu_down*(var+var_up) + mu_up*var_down)/(var+var_up+var_down);
-  sd = sqrt((var+var_up)*var_down/(var+var_up+var_down));
+  mean = (mu_down*(var_za+var_up) + mu_up*(var_zd+var_down))/(var_zd+var_za+var_up+var_down);
+  sd = sqrt((var_za+var_up)*(var_zd+var_down)/(var_za+var_zd+var_up+var_down));
   
   assert(isnan(sd) == NO);
   

@@ -6830,8 +6830,11 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       time(&(tree->mcmc->time_beg));
       
       tree->mcmc->sample_num++;
+
+
+      if(RRW_Is_Rw(tree->mmod) == YES && tree->mmod->integrateAncestralLocations == YES) RRW_Sample_Arealin_Plot(tree);
+
     }
-  
 }
 #endif
 
