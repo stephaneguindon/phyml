@@ -585,7 +585,7 @@ void RRW_Sample_Arealin_Plot(t_tree *tree)
       phydbl max_dist,dist,area;
       t_geo_coord *barycentr;
       
-      PhyML_Printf("\n<> ");
+      /* PhyML_Printf("\n<> "); */
 
       barycentr = GEO_Make_Geo_Coord(tree->mmod->n_dim);
       GEO_Init_Coord(barycentr,tree->mmod->n_dim);
@@ -610,7 +610,7 @@ void RRW_Sample_Arealin_Plot(t_tree *tree)
       
       area = 2.*PI*max_dist*max_dist;
       
-      PhyML_Printf("(%f;%f;%d)",area,disk->time,disk->n_ldsk_a);
+      /* PhyML_Printf("(%f;%f;%d)",area,disk->time,disk->n_ldsk_a); */
       
       Free_Geo_Coord(barycentr);
       

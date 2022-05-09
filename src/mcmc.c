@@ -7036,20 +7036,6 @@ void MCMC_PHYREX_Sigsq_Scale(t_tree *tree, int print)
          new_scale > tree->mmod->sigsq_scale_max) break;
       
       tree->mmod->sigsq_scale[permut[i]] = new_scale;
-
-
-      /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
-      if(permut[i] == tree->n_root->v[1]->num ||
-         permut[i] == tree->n_root->v[2]->num)
-        {
-          if(new_scale > cur_scale + 0.5)
-            {
-              PhyML_Printf("\n\n. %f -> %f",new_scale,cur_scale);
-            }
-        }
-
-      /* if(print == YES) PhyML_Printf("\n. %12f->%12f",cur_scale,new_scale); */
-      /* PhyML_Printf("\n. %12f->%12f",cur_scale,new_scale); */
     }
 
   Free(permut);
