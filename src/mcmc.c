@@ -7083,11 +7083,11 @@ void MCMC_PHYREX_Sigsq_Scale(t_tree *tree, int print)
                     
           for(i=0;i<2*aux_tree->n_otu-1;++i) aux_tree->mmod->sigsq_scale[i] = tree->mmod->sigsq_scale[i];
           new_lnL_geo_aux = LOCATION_Lk(aux_tree);
-          new_lnP_geo_aux =  + LOCATION_Prior(aux_tree);
+          new_lnP_geo_aux = LOCATION_Prior(aux_tree);
             
           for(i=0;i<2*aux_tree->n_otu-1;++i) aux_tree->mmod->sigsq_scale[i] = sigsq_scale_bkp[i];
           cur_lnL_geo_aux = LOCATION_Lk(aux_tree);
-          cur_lnP_geo_aux =  + LOCATION_Prior(aux_tree);
+          cur_lnP_geo_aux = LOCATION_Prior(aux_tree);
         }
 
       new_lnL_geo = LOCATION_Lk(tree);
@@ -7225,7 +7225,6 @@ void MCMC_PHYREX_Neff(t_tree *tree, int print)
                 }
 
               MCMC_PHYREX_Exchange_Core(aux_tree,tree,NO);
-              
               
               aux_tree->times->scaled_pop_size = new_neff;
               new_lnL_aux = TIMES_Lk(aux_tree);

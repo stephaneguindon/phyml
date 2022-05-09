@@ -6723,8 +6723,8 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           /* for(int i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"sigSq%d\t",i); */
           /* for(int i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"auxsigSq%d\t",i); */
 
-          /* PhyML_Fprintf(fp_stats,"sigSqSon1\t"); */
-          /* PhyML_Fprintf(fp_stats,"sigSqSon2\t"); */
+          PhyML_Fprintf(fp_stats,"sigSqSon1\t");
+          PhyML_Fprintf(fp_stats,"sigSqSon2\t");
 
           PhyML_Fprintf(fp_stats,"rrSon1\t");
           PhyML_Fprintf(fp_stats,"rrSon2\t");
@@ -6819,8 +6819,8 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       /* for(int i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->sigsq_scale[i]); */
       /* for(int i=0;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->aux_tree[0]->mmod->sigsq_scale[i]); */
 
-      /* PhyML_Fprintf(fp_stats,"%f\t",tree->mmod->sigsq_scale[tree->n_root->v[1]->num]); */
-      /* PhyML_Fprintf(fp_stats,"%f\t",tree->mmod->sigsq_scale[tree->n_root->v[2]->num]); */
+      PhyML_Fprintf(fp_stats,"%f\t",tree->mmod->sigsq_scale[tree->n_root->v[1]->num]);
+      PhyML_Fprintf(fp_stats,"%f\t",tree->mmod->sigsq_scale[tree->n_root->v[2]->num]);
 
       PhyML_Fprintf(fp_stats,"%f\t",tree->rates->br_r[tree->n_root->v[1]->num]);
       PhyML_Fprintf(fp_stats,"%f\t",tree->rates->br_r[tree->n_root->v[2]->num]);
