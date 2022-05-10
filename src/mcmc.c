@@ -6998,8 +6998,8 @@ void MCMC_PHYREX_Sigsq_Scale(t_tree *tree, int print)
   sigsq_scale_bkp = (phydbl *)mCalloc(2*tree->n_otu-2,sizeof(phydbl));
   
   /* K  = 10.0/tree->n_otu; // Small so as to facilitate convergence of exchange algo */
-  K = 0.3;
-  n_changes = (int)(1. + 0.1*tree->n_otu); // Same here
+  K = 0.1;
+  n_changes = (int)(1. + 0.05*tree->n_otu); // Same here
   
   hr = 0.0;
   
