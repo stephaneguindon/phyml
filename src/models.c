@@ -450,23 +450,24 @@ int GetDaa (phydbl *daa, phydbl *pi, char *file_name)
    for(i=0; i<naa; i++)
      for(j=0; j<i; j++)
        {
-/* 	 if(fscanf(fdaa, "%lf", &daa[i*naa+j])) Exit("\n. err aaRatefile"); */
-     if(fscanf(fdaa, "%lf", &val)) Exit("\n. err aaRatefile");
-     daa[i*naa+j] = (phydbl)val;
-     daa[j*naa+i]=daa[i*naa+j];
-     if (dmax<daa[i*naa+j]) dmax=daa[i*naa+j];
-     if (dmin>daa[i*naa+j]) dmin=daa[i*naa+j];
+         /* 	 if(fscanf(fdaa, "%lf", &daa[i*naa+j])) Exit("\n. err aaRatefile"); */
+         if(fscanf(fdaa, "%lf", &val)) Exit("\n. err aaRatefile");
+         daa[i*naa+j] = (phydbl)val;
+         daa[j*naa+i]=daa[i*naa+j];
+         if (dmax<daa[i*naa+j]) dmax=daa[i*naa+j];
+         if (dmin>daa[i*naa+j]) dmin=daa[i*naa+j];
        }
 
    for(i=0;i<naa;i++)
      {
-/*        if(fscanf(fdaa,"%lf",&pi[i])!=1) Exit("\n. err aaRatefile"); */
+       /*        if(fscanf(fdaa,"%lf",&pi[i])!=1) Exit("\n. err aaRatefile"); */
        if(fscanf(fdaa,"%lf",&val)!=1) Exit("\n. err aaRatefile");
        pi[i] = (phydbl)val;
      }
+   
    sum = 0.0;
-   For(i, naa) sum += pi[i];
-   if (FABS(1-sum)>1e-4) {
+   for(i=0;i<naa;++i) sum += pi[i];
+   if (FABS(1.-sum)>1e-4) {
      PhyML_Printf("\nSum of freq. = %.6f != 1 in aaRateFile\n",sum);
      exit(-1);
    }

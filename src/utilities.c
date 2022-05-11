@@ -3774,7 +3774,8 @@ void Record_Model(t_mod *ori, t_mod *cpy)
 
   strcpy(cpy->modelname->s,ori->modelname->s);
   strcpy(cpy->custom_mod_string->s,ori->custom_mod_string->s);
-
+  strcpy(cpy->aa_rate_mat_file->s,ori->aa_rate_mat_file->s);
+  
   cpy->mod_num              = ori->mod_num;
   cpy->whichmodel           = ori->whichmodel;
   cpy->update_eigen         = ori->update_eigen;
@@ -3789,7 +3790,7 @@ void Record_Model(t_mod *ori, t_mod *cpy)
 
   if((ori->whichmodel == CUSTOM) || (ori->whichmodel == GTR))
     {
-      For(i,ori->ns*(ori->ns-1)/2)
+      for(i=0;i<ori->ns*(ori->ns-1)/2;++i)
         {
           cpy->r_mat->rr_num->v[i]       = ori->r_mat->rr_num->v[i];
           cpy->r_mat->rr_val->v[i]       = ori->r_mat->rr_val->v[i];
@@ -3805,7 +3806,7 @@ void Record_Model(t_mod *ori, t_mod *cpy)
       cpy->e_frq->user_b_freq->v[i] = ori->e_frq->user_b_freq->v[i];
     }
   
-  For(i,cpy->ns*cpy->ns) cpy->r_mat->qmat->v[i] = ori->r_mat->qmat->v[i];
+  for(i=0;i<cpy->ns*cpy->ns;++i) cpy->r_mat->qmat->v[i] = ori->r_mat->qmat->v[i];
   
   for(i=0;i<cpy->ras->n_catg;i++)
     {
@@ -3818,15 +3819,15 @@ void Record_Model(t_mod *ori, t_mod *cpy)
   cpy->use_m4mod = ori->use_m4mod;
   
   cpy->eigen->size = ori->eigen->size;
-  For(i,2*ori->ns)       cpy->eigen->space[i]       = ori->eigen->space[i];
-  For(i,2*ori->ns)       cpy->eigen->space_int[i]   = ori->eigen->space_int[i];
+  for(i=0;i<2*ori->ns;++i)       cpy->eigen->space[i]       = ori->eigen->space[i];
+  for(i=0;i<2*ori->ns;++i)       cpy->eigen->space_int[i]   = ori->eigen->space_int[i];
   for(i=0;i<ori->ns;i++)         cpy->eigen->e_val[i]       = ori->eigen->e_val[i];
   for(i=0;i<ori->ns;i++)         cpy->eigen->e_val_im[i]    = ori->eigen->e_val_im[i];
-  For(i,ori->ns*ori->ns) cpy->eigen->r_e_vect[i]    = ori->eigen->r_e_vect[i];
-  For(i,ori->ns*ori->ns) cpy->eigen->r_e_vect[i]    = ori->eigen->r_e_vect[i];
-  For(i,ori->ns*ori->ns) cpy->eigen->r_e_vect_im[i] = ori->eigen->r_e_vect_im[i];
-  For(i,ori->ns*ori->ns) cpy->eigen->l_e_vect[i]    = ori->eigen->l_e_vect[i];
-  For(i,ori->ns*ori->ns) cpy->eigen->q[i]           = ori->eigen->q[i];
+  for(i=0;i<ori->ns*ori->ns;++i) cpy->eigen->r_e_vect[i]    = ori->eigen->r_e_vect[i];
+  for(i=0;i<ori->ns*ori->ns;++i) cpy->eigen->r_e_vect[i]    = ori->eigen->r_e_vect[i];
+  for(i=0;i<ori->ns*ori->ns;++i) cpy->eigen->r_e_vect_im[i] = ori->eigen->r_e_vect_im[i];
+  for(i=0;i<ori->ns*ori->ns;++i) cpy->eigen->l_e_vect[i]    = ori->eigen->l_e_vect[i];
+  for(i=0;i<ori->ns*ori->ns;++i) cpy->eigen->q[i]           = ori->eigen->q[i];
   
 #ifdef BEAGLE
   cpy->b_inst              = ori->b_inst;
@@ -3834,9 +3835,6 @@ void Record_Model(t_mod *ori, t_mod *cpy)
 #endif
   
 }
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -9028,118 +9026,118 @@ void Set_Model_Name(t_mod *mod)
     {
     case JC69:
       {
-    strcpy(mod->modelname->s, "JC69");
-    break;
+        strcpy(mod->modelname->s, "JC69");
+        break;
       }
     case K80:
       {
-    strcpy(mod->modelname->s, "K80");
-    break;
+        strcpy(mod->modelname->s, "K80");
+        break;
       }
     case F81:
       {
-    strcpy(mod->modelname->s, "F81");
-    break;
+        strcpy(mod->modelname->s, "F81");
+        break;
       }
     case HKY85:
       {
-    strcpy(mod->modelname->s, "HKY85");
-    break;
+        strcpy(mod->modelname->s, "HKY85");
+        break;
       }
     case F84:
       {
-    strcpy(mod->modelname->s, "F84");
-    break;
+        strcpy(mod->modelname->s, "F84");
+        break;
       }
     case TN93:
       {
-    strcpy(mod->modelname->s, "TN93");
-    break;
+        strcpy(mod->modelname->s, "TN93");
+        break;
       }
     case GTR:
       {
-    strcpy(mod->modelname->s, "GTR");
-    break;
+        strcpy(mod->modelname->s, "GTR");
+        break;
       }
     case CUSTOM:
       {
-    strcpy(mod->modelname->s, "Custom");
-    break;
+        strcpy(mod->modelname->s, "Custom");
+        break;
       }
     case DAYHOFF:
       {
-    strcpy(mod->modelname->s, "Dayhoff");
-    break;
+        strcpy(mod->modelname->s, "Dayhoff");
+        break;
       }
     case JTT:
       {
-    strcpy(mod->modelname->s, "JTT");
-    break;
+        strcpy(mod->modelname->s, "JTT");
+        break;
       }
     case MTREV:
       {
-    strcpy(mod->modelname->s, "MtREV");
-    break;
+        strcpy(mod->modelname->s, "MtREV");
+        break;
       }
     case LG:
       {
-    strcpy(mod->modelname->s, "LG");
-    break;
+        strcpy(mod->modelname->s, "LG");
+        break;
       }
     case WAG:
       {
-    strcpy(mod->modelname->s, "WAG");
-    break;
+        strcpy(mod->modelname->s, "WAG");
+        break;
       }
     case DCMUT:
       {
-    strcpy(mod->modelname->s, "DCMut");
-    break;
+        strcpy(mod->modelname->s, "DCMut");
+        break;
       }
     case RTREV:
       {
-    strcpy(mod->modelname->s, "RtREV");
-    break;
+        strcpy(mod->modelname->s, "RtREV");
+        break;
       }
     case CPREV:
       {
-    strcpy(mod->modelname->s, "CpREV");
-    break;
+        strcpy(mod->modelname->s, "CpREV");
+        break;
       }
     case VT:
       {
-    strcpy(mod->modelname->s, "VT");
-    break;
+        strcpy(mod->modelname->s, "VT");
+        break;
       }
     case BLOSUM62:
       {
-    strcpy(mod->modelname->s, "Blosum62");
-    break;
+        strcpy(mod->modelname->s, "Blosum62");
+        break;
       }
     case MTMAM:
       {
-    strcpy(mod->modelname->s, "MtMam");
-    break;
+        strcpy(mod->modelname->s, "MtMam");
+        break;
       }
     case MTART:
       {
-    strcpy(mod->modelname->s, "MtArt");
-    break;
+        strcpy(mod->modelname->s, "MtArt");
+        break;
       }
     case HIVW:
       {
-    strcpy(mod->modelname->s, "HIVw");
-    break;
+        strcpy(mod->modelname->s, "HIVw");
+        break;
       }
     case HIVB:
       {
-    strcpy(mod->modelname->s, "HIVb");
-    break;
+        strcpy(mod->modelname->s, "HIVb");
+        break;
       }
     case AB:
       {
-    strcpy(mod->modelname->s, "AB");
-    break;
+        strcpy(mod->modelname->s, "AB");
+        break;
       }
     case CUSTOMAA:
       {
@@ -9153,10 +9151,10 @@ void Set_Model_Name(t_mod *mod)
       }
     default:
       {
-    PhyML_Printf("\n. Unknown model name.\n");
-    PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
-    Warn_And_Exit("\n. PhyML finished prematurely.");
-    break;
+        PhyML_Printf("\n. Unknown model name.\n");
+        PhyML_Printf("\n. Err in file %s at line %d\n",__FILE__,__LINE__);
+        Warn_And_Exit("\n. PhyML finished prematurely.");
+        break;
       }
     }
 }
