@@ -1729,15 +1729,15 @@ void Print_Site_Lk(t_tree *tree, FILE *fp)
     {
       s = (char *)mCalloc(T_MAX_LINE,sizeof(char));
       
-      PhyML_Fprintf(fp,"Note : P(D|M) is the probability of site D given the model M (i.e., the site likelihood)\n");
+      PhyML_Fprintf(fp,"# Note : P(D|M) is the probability of site D given the model M (i.e., the site likelihood)\n");
       if(tree->mod->ras->n_catg > 1 || tree->mod->ras->invar)
         {
-          PhyML_Fprintf(fp,"P*(D|M,rr[x]) is the scaled probability of site D given the model M and the relative rate\n");
-          PhyML_Fprintf(fp,"of evolution rr[x], where x is the class of rate to be considered.\n");
-          PhyML_Fprintf(fp,"The actual conditional probability is given by P*(D|M,rr[x])/2^F, where\n");
-          PhyML_Fprintf(fp,"F is the scaling factor (see column 'Scaler').\n");
-          PhyML_Fprintf(fp,"For invariant sites, P(D|M,rr[0]=0) is the actual conditional probability\n");
-          PhyML_Fprintf(fp,"(i.e., it is not scaled).\n");
+          PhyML_Fprintf(fp,"# P*(D|M,rr[x]) is the scaled probability of site D given the model M and the relative rate\n");
+          PhyML_Fprintf(fp,"# of evolution rr[x], where x is the class of rate to be considered.\n");
+          PhyML_Fprintf(fp,"# The actual conditional probability is given by P*(D|M,rr[x])/2^F, where\n");
+          PhyML_Fprintf(fp,"# F is the scaling factor (see column 'Scaler').\n");
+          PhyML_Fprintf(fp,"# For invariant sites, P(D|M,rr[0]=0) is the actual conditional probability\n");
+          PhyML_Fprintf(fp,"# (i.e., it is not scaled).\n");
         }
 
       PhyML_Fprintf(fp,"\n\n");

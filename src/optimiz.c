@@ -3358,7 +3358,7 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
 
   do
     {
-      if(tree->next) tree = tree->next;
+      if(tree == mixt_tree && tree->next != NULL) tree = tree->next;
 
       if(tree->mod->s_opt->state_freq == ML)
         {
@@ -3380,7 +3380,7 @@ void Optimize_State_Freqs(t_tree *mixt_tree, int verbose)
                    &Num_Derivative_Several_Param,
                    &Lnsrch,&failed);
               /* PhyML_Printf("\n. ++ BFGS lk=%f",mixt_tree->c_lnL); */
-
+              /* for(i=0;i<tree->mod->ns;i++) PhyML_Printf("\n. %p %f %f",tree,tree->mod->e_frq->pi_unscaled->v[i],tree->mod->e_frq->pi->v[i]); */
               
               if(failed == YES) for(i=0;i<tree->mod->ns;i++) tree->mod->e_frq->pi_unscaled->v[i] = opt_val[i];
 

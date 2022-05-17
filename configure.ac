@@ -48,6 +48,7 @@ dnl DEFAULT_VECTOR_FLAG="-mavx -mfma"
 dnl DEFAULT_VECTOR_FLAG="-mavx2"
 dnl DEFAULT_VECTOR_FLAG=-msse4.2
 DEFAULT_VECTOR_FLAG="-march=native"
+dnl DEFAULT_VECTOR_FLAG="-mtune=native"
 dnl DEFAULT_VECTOR_FLAG="-march=skylake -mprefer-vector-width=256"
 
 

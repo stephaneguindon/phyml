@@ -3726,15 +3726,15 @@ void MIXT_Print_Site_Lk(t_tree *mixt_tree, FILE *fp)
       tree = mixt_tree;
       do
         {
-          PhyML_Fprintf(fp,"Note : P(D|M) is the probability of site D given the model M (i.e., the site likelihood)\n");
+          PhyML_Fprintf(fp,"# Note : P(D|M) is the probability of site D given the model M (i.e., the site likelihood)\n");
           if(tree->mod->ras->n_catg > 1 || tree->mod->ras->invar)
             {
-              PhyML_Fprintf(fp,"P*(D|M,rr[x]) is the scaled probability of site D given the model M and the relative rate\n");
-              PhyML_Fprintf(fp,"of evolution rr[x], where x is the class of rate to be considered.\n");
-              PhyML_Fprintf(fp,"The actual conditional probability is given by P*(D|M,rr[x])/2^F, where\n");
-              PhyML_Fprintf(fp,"F is the scaling factor (see column 'Scaler').\n");
-              PhyML_Fprintf(fp,"For invariant sites, P(D|M,rr[0]=0) is the actual conditional probability\n");
-              PhyML_Fprintf(fp,"(i.e., it is not scaled).\n");
+              PhyML_Fprintf(fp,"# P*(D|M,rr[x]) is the scaled probability of site D given the model M and the relative rate\n");
+              PhyML_Fprintf(fp,"# of evolution rr[x], where x is the class of rate to be considered.\n");
+              PhyML_Fprintf(fp,"# The actual conditional probability is given by P*(D|M,rr[x])/2^F, where\n");
+              PhyML_Fprintf(fp,"# F is the scaling factor (see column 'Scaler').\n");
+              PhyML_Fprintf(fp,"# For invariant sites, P(D|M,rr[0]=0) is the actual conditional probability\n");
+              PhyML_Fprintf(fp,"# (i.e., it is not scaled).\n");
               break;
             }
           tree = tree->next_mixt;
@@ -3747,7 +3747,21 @@ void MIXT_Print_Site_Lk(t_tree *mixt_tree, FILE *fp)
 
       do
         {
-          PhyML_Fprintf(fp,"Alignment file name: %s\n\n",mixt_tree->io->in_align_file);
+          PhyML_Fprintf(fp,"# Alignment file name: %s\n\n",mixt_tree->io->in_align_file);
+
+          if(mixt_tree->mod->ras->n_catg > 1)
+            {
+              PhyML_Fprintf(fp,"\n# Estimated class frequencies:");
+              for(catg=0;catg<mixt_tree->mod->ras->n_catg;++catg)
+                {
+                  sprintf(s,"\n# P(rr[%d]=%5.4f)=%5.4f",
+                          catg+1,
+                          mixt_tree->mod->ras->gamma_rr->v[catg],
+                          mixt_tree->mod->ras->gamma_r_proba->v[catg]);
+                  PhyML_Fprintf(fp,"%-23s",s);
+                }
+              PhyML_Fprintf(fp,"\n\n");
+            }
 
           sprintf(s,"Site");
           PhyML_Fprintf(fp, "%-12s",s);
