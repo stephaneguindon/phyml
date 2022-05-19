@@ -192,9 +192,11 @@ void Usage()
   PhyML_Printf("\n");
   PhyML_Printf("\t\t%so%s : the character frequencies (amino-acids or nucleotides) are optimized using maximum likelihood \n",LINE,FLAT);
   PhyML_Printf("\n");
-  PhyML_Printf("\t\t%sfA,fC,fG,fT%s : only valid for nucleotide-based models. fA, fC, fG and fT are floating numbers that \n",LINE,FLAT);
+  PhyML_Printf("\t\t%sf1,f2,...,fn%s. For nucleotide data, n=4 and f1, f2, f3 and f4 are floating numbers that \n",LINE,FLAT);
   PhyML_Printf("\t\t correspond to the frequencies of A, C, G and T respectively (WARNING: do not use any blank space between\n");
   PhyML_Printf("\t\t your values of nucleotide frequencies, only commas!)\n");
+  PhyML_Printf("\t\t The same option can be used to specify user-defined amino-acid frequencies in the following order:\n");
+  PhyML_Printf("\t\t Ala Arg Asn Asp Cys Gln Glu Gly His Ile Leu Lys Met Phe Pro Ser Thr Trp Tyr Val\n");
   PhyML_Printf("\n");
   #endif
 
