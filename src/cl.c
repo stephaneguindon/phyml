@@ -136,14 +136,47 @@ int Read_Command_Line(option *io, int argc, char **argv)
 
   io->datatype = UNDEFINED;
 
-  #ifndef PHYML
+  idx=-1;
+
+  // Find out about the data type first...
+  do
+    {
+      c = getopt_long(argc,argv,"qi:d:t:m:b:n:f:zk:v:c:a:u:ho:s:x:g:l:ep",longopts,&idx);
+
+      switch(c)
+        {
+        case 'd':case 7:
+	  {
+	    if(!strcmp(optarg,"nt"))
+	      {
+		io->datatype        = NT;
+	      }
+	    else if (!strcmp(optarg,"aa"))
+	      {
+		io->datatype              = AA;
+	      }
+	    else if ((!strcmp(optarg,"generic")) || (!strcmp(optarg,"gen")))
+	      {
+		io->datatype = GENERIC;
+	      }
+	    break;
+          }
+        }
+    }
+  while(c != -1);
+    
+  // "Rewind" getopt_long
+  optind = 1;
+  
+#ifndef PHYML
   int open_ps_file = 0;
-  #endif
+#endif
+
 
   idx=-1;
 
-    do
-    {     
+  do
+    {
       c = getopt_long(argc,argv,"qi:d:t:m:b:n:f:zk:v:c:a:u:ho:s:x:g:l:ep",longopts,&idx);
 
       switch(c)
@@ -797,7 +830,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	    break;
 	  }
 	  
-	case 'd':case 7:
+	case 'd': case 7 :
 	  {
 	    if(!strcmp(optarg,"nt"))
 	      {
@@ -1188,6 +1221,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	      }
             else if(!strcmp(optarg,"m")) // Given by the model
               {
+                assert(io->datatype != UNDEFINED);
                 if(io->datatype == AA) io->mod->s_opt->state_freq = MODEL;
                 else if(io->datatype == NT) io->mod->s_opt->state_freq = ML;
               }
@@ -1195,42 +1229,92 @@ int Read_Command_Line(option *io, int argc, char **argv)
 	    else if(!isalpha(optarg[0]))
 	      {
 		phydbl sum;
-		double val1,val2,val3,val4;
-		
-                io->mod->e_frq = (t_efrq *)Make_Efrq(4);
-                Init_Efrq(NULL,io->mod->e_frq);
 
-		io->mod->s_opt->state_freq = USER;
+                if(io->datatype == NT)
+                  {
+                    double val1,val2,val3,val4;
 
-		sscanf(optarg,"%lf,%lf,%lf,%lf",&val1,&val2,&val3,&val4);
-		io->mod->e_frq->user_b_freq->v[0] = (phydbl)val1;
-		io->mod->e_frq->user_b_freq->v[1] = (phydbl)val2;
-		io->mod->e_frq->user_b_freq->v[2] = (phydbl)val3;
-		io->mod->e_frq->user_b_freq->v[3] = (phydbl)val4;
-		
-		sum =
-		  (io->mod->e_frq->user_b_freq->v[0] +
-		   io->mod->e_frq->user_b_freq->v[1] +
-		   io->mod->e_frq->user_b_freq->v[2] +
-		   io->mod->e_frq->user_b_freq->v[3]);
-		
-		io->mod->e_frq->user_b_freq->v[0] /= sum;
-		io->mod->e_frq->user_b_freq->v[1] /= sum;
-		io->mod->e_frq->user_b_freq->v[2] /= sum;
-		io->mod->e_frq->user_b_freq->v[3] /= sum;
-		
-                
-		if(io->mod->e_frq->user_b_freq->v[0] < .0 ||
-		   io->mod->e_frq->user_b_freq->v[1] < .0 ||
-		   io->mod->e_frq->user_b_freq->v[2] < .0 ||
-		   io->mod->e_frq->user_b_freq->v[3] < .0 ||
-		   io->mod->e_frq->user_b_freq->v[0] > 1. ||
-		   io->mod->e_frq->user_b_freq->v[1] > 1. ||
-		   io->mod->e_frq->user_b_freq->v[2] > 1. ||
-		   io->mod->e_frq->user_b_freq->v[3] > 1.)
-		  {
-		    Warn_And_Exit("\n. Invalid base frequencies.\n");
-		  }
+                    io->mod->e_frq = (t_efrq *)Make_Efrq(4);
+                    Init_Efrq(NULL,io->mod->e_frq);
+                    
+                    io->mod->s_opt->state_freq = USER;
+                    
+                    sscanf(optarg,"%lf,%lf,%lf,%lf",&val1,&val2,&val3,&val4);
+                    io->mod->e_frq->user_b_freq->v[0] = (phydbl)val1;
+                    io->mod->e_frq->user_b_freq->v[1] = (phydbl)val2;
+                    io->mod->e_frq->user_b_freq->v[2] = (phydbl)val3;
+                    io->mod->e_frq->user_b_freq->v[3] = (phydbl)val4;
+                    
+                    sum =
+                      (io->mod->e_frq->user_b_freq->v[0] +
+                       io->mod->e_frq->user_b_freq->v[1] +
+                       io->mod->e_frq->user_b_freq->v[2] +
+                       io->mod->e_frq->user_b_freq->v[3]);
+                    
+                    io->mod->e_frq->user_b_freq->v[0] /= sum;
+                    io->mod->e_frq->user_b_freq->v[1] /= sum;
+                    io->mod->e_frq->user_b_freq->v[2] /= sum;
+                    io->mod->e_frq->user_b_freq->v[3] /= sum;
+                    
+                    
+                    if(io->mod->e_frq->user_b_freq->v[0] < .0 ||
+                       io->mod->e_frq->user_b_freq->v[1] < .0 ||
+                       io->mod->e_frq->user_b_freq->v[2] < .0 ||
+                       io->mod->e_frq->user_b_freq->v[3] < .0 ||
+                       io->mod->e_frq->user_b_freq->v[0] > 1. ||
+                       io->mod->e_frq->user_b_freq->v[1] > 1. ||
+                       io->mod->e_frq->user_b_freq->v[2] > 1. ||
+                       io->mod->e_frq->user_b_freq->v[3] > 1.)
+                      {
+                        Warn_And_Exit("\n. Invalid base frequencies.\n");
+                      }
+                  }
+                else
+                  {
+                    double val1,val2,val3,val4,val5,val6,val7,val8,val9,val10,val11,val12,val13,val14,val15,val16,val17,val18,val19,val20;
+
+                    io->mod->e_frq = (t_efrq *)Make_Efrq(20);
+                    Init_Efrq(NULL,io->mod->e_frq);
+                    
+                    io->mod->s_opt->state_freq = USER;
+                    
+                    sscanf(optarg,"%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf",
+                           &val1,&val2,&val3,&val4,&val5,
+                           &val6,&val7,&val8,&val9,&val10,
+                           &val11,&val12,&val13,&val14,&val15,
+                           &val16,&val17,&val18,&val19,&val20);
+                    
+                    io->mod->e_frq->user_b_freq->v[0] = (phydbl)val1;
+                    io->mod->e_frq->user_b_freq->v[1] = (phydbl)val2;
+                    io->mod->e_frq->user_b_freq->v[2] = (phydbl)val3;
+                    io->mod->e_frq->user_b_freq->v[3] = (phydbl)val4;
+                    io->mod->e_frq->user_b_freq->v[4] = (phydbl)val5;
+                    io->mod->e_frq->user_b_freq->v[5] = (phydbl)val6;
+                    io->mod->e_frq->user_b_freq->v[6] = (phydbl)val7;
+                    io->mod->e_frq->user_b_freq->v[7] = (phydbl)val8;
+                    io->mod->e_frq->user_b_freq->v[8] = (phydbl)val9;
+                    io->mod->e_frq->user_b_freq->v[9] = (phydbl)val10;
+                    io->mod->e_frq->user_b_freq->v[10] = (phydbl)val11;
+                    io->mod->e_frq->user_b_freq->v[11] = (phydbl)val12;
+                    io->mod->e_frq->user_b_freq->v[12] = (phydbl)val13;
+                    io->mod->e_frq->user_b_freq->v[13] = (phydbl)val14;
+                    io->mod->e_frq->user_b_freq->v[14] = (phydbl)val15;
+                    io->mod->e_frq->user_b_freq->v[15] = (phydbl)val16;
+                    io->mod->e_frq->user_b_freq->v[16] = (phydbl)val17;
+                    io->mod->e_frq->user_b_freq->v[17] = (phydbl)val18;
+                    io->mod->e_frq->user_b_freq->v[18] = (phydbl)val19;
+                    io->mod->e_frq->user_b_freq->v[19] = (phydbl)val20;
+
+                    sum = .0;
+                    for(int i=0;i<20;++i) sum += io->mod->e_frq->user_b_freq->v[i];
+                    for(int i=0;i<20;++i) io->mod->e_frq->user_b_freq->v[i] /= sum;
+                    for(int i=0;i<20;++i)
+                      if(io->mod->e_frq->user_b_freq->v[i] > 1. ||
+                         io->mod->e_frq->user_b_freq->v[i] < 0.)
+                        {
+                          Warn_And_Exit("\n. Invalid user-defined amino-acid frequencies");
+                        }
+                  }
 	      }
 	    break;
 	  }

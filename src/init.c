@@ -1395,11 +1395,14 @@ void Init_Model(calign *data, t_mod *mod, option *io)
           }
         }
       
+
       for(i=0;i<mod->ns;i++)
         for(j=i+1;j<mod->ns;j++)
           rr[MIN(i,j) * mod->ns + MAX(i,j) - (MIN(i,j)+1+(int)POW(MIN(i,j)+1,2))/2] = qmat[i*mod->ns+j];
       
-      if(mod->s_opt->state_freq == EMPIRICAL) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);
+      if(mod->s_opt->state_freq == USER)
+        for(i=0;i<20;i++) f[i] = mod->e_frq->user_b_freq->v[i];
+      else if(mod->s_opt->state_freq == EMPIRICAL) Init_Efrqs_Using_Observed_Freqs(mod->e_frq,data->obs_state_frq,mod->ns);
 
 
       // Adjust equilibrium state frequencies if some of them are too close to zero
