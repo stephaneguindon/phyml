@@ -97,7 +97,7 @@ void TIMES_Least_Square_Node_Times_Pre(t_node *a, t_node *d, phydbl *A, phydbl *
       int i;
        
       for(i=0;i<3;++i)
-	if((d->v[i] != a) && (d->b[i] != tree->e_root))
+	if((d->v[i] != a) && !(a == tree->n_root && d->b[i] == tree->e_root))
 	  TIMES_Least_Square_Node_Times_Pre(d,d->v[i],A,b,n,tree);
       
       A[d->num * n + d->num] = 1.;
@@ -145,7 +145,7 @@ void TIMES_Adjust_Node_Times_Pre(t_node *a, t_node *d, t_tree *tree)
       phydbl min_height;
 
       for(i=0;i<3;i++)
-	if((d->v[i] != a) && (d->b[i] != tree->e_root))
+	if((d->v[i] != a) && !(a == tree->n_root && d->b[i] == tree->e_root))
 	  {
 	    TIMES_Adjust_Node_Times_Pre(d,d->v[i],tree);
 	  }
@@ -153,7 +153,7 @@ void TIMES_Adjust_Node_Times_Pre(t_node *a, t_node *d, t_tree *tree)
       min_height = 0.0;
       for(i=0;i<3;i++)
 	{
-	  if((d->v[i] != a) && (d->b[i] != tree->e_root))
+	  if((d->v[i] != a) && !(a == tree->n_root && d->b[i] == tree->e_root))
 	    {
 	      if(tree->times->nd_t[d->v[i]->num] < min_height)
 		{
@@ -208,7 +208,7 @@ void TIMES_Print_Node_Times(t_node *a, t_node *d, t_tree *tree)
     {
       int i;
       for(i=0;i<3;i++)
-	if((d->v[i] != a) && (d->b[i] != tree->e_root))
+	if((d->v[i] != a) && !(a == tree->n_root && d->b[i] == tree->e_root))
 	  TIMES_Print_Node_Times(d,d->v[i],tree);
     }
 }
@@ -279,14 +279,14 @@ void TIMES_Set_All_Node_Priors_Bottom_Up(t_node *a, t_node *d, t_tree *tree)
 
       for(i=0;i<3;i++)
 	{
-	  if((d->v[i] != a) && (d->b[i] != tree->e_root))
+	  if((d->v[i] != a) && !(a == tree->n_root && d->b[i] == tree->e_root))
 	    {
 	      TIMES_Set_All_Node_Priors_Bottom_Up(d,d->v[i],tree);	      
 	    }
 	}
       
       v1 = v2 = NULL;
-      for(i=0;i<3;i++) if((d->v[i] != a) && (d->b[i] != tree->e_root)) 
+      for(i=0;i<3;i++) if((d->v[i] != a) && !(a == tree->n_root && d->b[i] == tree->e_root)) 
 	{
 	  if(!v1) v1 = d->v[i]; 
 	  else    v2 = d->v[i];
@@ -347,7 +347,7 @@ void TIMES_Set_All_Node_Priors_Top_Down(t_node *a, t_node *d, t_tree *tree)
             
       for(i=0;i<3;i++)
 	{
-	  if((d->v[i] != a) && (d->b[i] != tree->e_root))
+	  if((d->v[i] != a) && !(a == tree->n_root && d->b[i] == tree->e_root))
 	    {
 	      TIMES_Set_All_Node_Priors_Top_Down(d,d->v[i],tree);
 	    }
@@ -385,7 +385,7 @@ void TIMES_Set_Floor_Post(t_node *a, t_node *d, t_tree *tree)
       v1 = v2 = NULL;
       for(i=0;i<3;i++)
 	{
-	  if(d->v[i] != a && d->b[i] != tree->e_root)
+	  if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
 	    {
 	      TIMES_Set_Floor_Post(d,d->v[i],tree);
 	      if(!v1) v1 = d->v[i];
@@ -694,7 +694,7 @@ void TIMES_Lk_Times_Trav(t_node *a, t_node *d, phydbl lim_inf, phydbl lim_sup, p
     {      
       for(i=0;i<3;i++)
 	{
-	  if(d->v[i] != a && d->b[i] != tree->e_root)
+	  if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
 	    {
 	      TIMES_Lk_Times_Trav(d,d->v[i],lim_inf,lim_sup,logdens,tree);
 	    }
@@ -780,7 +780,7 @@ void TIMES_Log_Number_Of_Ranked_Labelled_Histories_Post(t_node *a, t_node *d, in
 
       for(i=0;i<3;i++)
 	{
-	  if(d->v[i] != a && d->b[i] != tree->e_root)
+	  if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
 	    {
 	      TIMES_Log_Number_Of_Ranked_Labelled_Histories_Post(d,d->v[i],per_slice,logn,tree);
 	    }
@@ -789,7 +789,7 @@ void TIMES_Log_Number_Of_Ranked_Labelled_Histories_Post(t_node *a, t_node *d, in
       v1 = v2 = NULL;
       for(i=0;i<3;i++)
 	{
-	  if(d->v[i] != a && d->b[i] != tree->e_root)
+	  if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
 	    {
 	      if(v1 == NULL) {v1 = d->v[i];}
 	      else           {v2 = d->v[i];}
@@ -1235,7 +1235,7 @@ void TIMES_Get_Number_Of_Time_Slices_Post(t_node *a, t_node *d, t_tree *tree)
   else
     {
       for(i=0;i<3;i++)
-	if(d->v[i] != a && d->b[i] != tree->e_root)
+	if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
 	  TIMES_Get_Number_Of_Time_Slices_Post(d,d->v[i],tree);
     }
 }
@@ -1281,7 +1281,7 @@ void TIMES_Lk_Uniform_Post(t_node *a, t_node *d, t_tree *tree)
 
       for(i=0;i<3;i++)
 	{
-	  if(d->v[i] != a && d->b[i] != tree->e_root)
+	  if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
 	    {
 	      TIMES_Lk_Uniform_Post(d,d->v[i],tree);
 	    }
@@ -2242,7 +2242,7 @@ int TIMES_Check_Node_Height_Ordering_Post(t_node *a, t_node *d, t_tree *tree)
       int i;
       for(i=0;i<3;i++)
         {
-          if(d->v[i] != a && d->b[i] != tree->e_root)
+          if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
             if(!TIMES_Check_Node_Height_Ordering_Post(d,d->v[i],tree))
               return NO;
         }
@@ -2281,7 +2281,7 @@ void TIMES_Pre_Least_Square_Criterion(t_node *a, t_node *d, t_edge *b, phydbl *s
   if(d->tax) return;
   
   for(i=0;i<3;++i)
-    if(d->v[i] != a && d->b[i] != tree->e_root)
+    if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
       TIMES_Pre_Least_Square_Criterion(d,d->v[i],d->b[i],score,tree);  
 }
 
@@ -2312,12 +2312,12 @@ void TIMES_Post_Randomize_Node_Ages(t_node *a, t_node *d, t_tree *tree)
       int i,dir1,dir2;
       
       for(i=0;i<3;++i)
-        if(d->v[i] != a && d->b[i] != tree->e_root)
+        if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
           TIMES_Post_Randomize_Node_Ages(d,d->v[i],tree);
 
       dir1 = dir2 = -1;
       for(i=0;i<3;++i)
-        if(d->v[i] != a && d->b[i] != tree->e_root)
+        if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
           {
             if(dir1 < 0) dir1 = i;
             else dir2 = i;
@@ -2411,7 +2411,7 @@ void TIMES_Time_To_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
   else
     {
       for(i=0;i<3;i++)
-        if((d->v[i] != a) && (d->b[i] != tree->e_root))
+        if((d->v[i] != a) && !(a == tree->n_root && d->b[i] == tree->e_root))
           TIMES_Time_To_Bl_Pre(d,d->v[i],d->b[i],tree);
     }
 }
@@ -2486,7 +2486,7 @@ void TIMES_Bl_To_Times_Post(t_node *a, t_node *d, t_edge *b, t_tree *tree)
       
       dir1 = dir2 = -1;
       for(int i=0;i<3;i++)
-        if((d->v[i] != a) && (d->b[i] != tree->e_root))
+        if((d->v[i] != a) && !(a == tree->n_root && d->b[i] == tree->e_root))
           {
             TIMES_Bl_To_Times_Post(d,d->v[i],d->b[i],tree);
             if(dir1 < 0) dir1 = i;

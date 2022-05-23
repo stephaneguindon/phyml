@@ -658,7 +658,7 @@ void MCMC_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
       else
         {
           for(i=0;i<3;++i)
-            if(d->v[i] != a && d->b[i] != tree->e_root)
+            if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
               {                
                 if(tree->eval_alnL == YES) Update_Partial_Lk(tree,d->b[i],d->v[i]);
                 MCMC_One_Rate(d,d->v[i],YES,tree);
@@ -702,7 +702,7 @@ void MCMC_One_Node_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
       else
 	{
 	  for(i=0;i<3;i++)
-	    if(d->v[i] != a && d->b[i] != tree->e_root)
+	    if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
 	      {
 		MCMC_One_Node_Rate(d,d->v[i],YES,tree);
 	      }
@@ -928,7 +928,7 @@ void MCMC_Times_And_Rates_Recur(t_node *a, t_node *d, int traversal, t_tree *tre
   
   v2 = v3 = NULL;
   for(i=0;i<3;++i)
-    if((d->v[i] != a) && (d->b[i] != tree->e_root))
+    if((d->v[i] != a) && !(a == tree->n_root && d->b[i] == tree->e_root))
       {
 	if(!v2) { v2 = d->v[i]; }
 	else    { v3 = d->v[i]; }
@@ -1050,7 +1050,7 @@ void MCMC_Times_And_Rates_Recur(t_node *a, t_node *d, int traversal, t_tree *tre
   else
     {
       for(i=0;i<3;i++)
-        if(d->v[i] != a && d->b[i] != tree->e_root)
+        if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
           {
             MCMC_Times_And_Rates_Recur(d,d->v[i],YES,tree);
           }
@@ -1105,7 +1105,7 @@ void MCMC_Time_Recur(t_node *a, t_node *d, int traversal, t_tree *tree)
   
   v2 = v3 = NULL;
   for(i=0;i<3;i++)
-    if((d->v[i] != a) && (d->b[i] != tree->e_root))
+    if((d->v[i] != a) && !(a == tree->n_root && d->b[i] == tree->e_root))
       {
 	if(!v2) { v2 = d->v[i]; }
 	else    { v3 = d->v[i]; }
@@ -1118,7 +1118,7 @@ void MCMC_Time_Recur(t_node *a, t_node *d, int traversal, t_tree *tree)
 
   b2 = b3 = NULL;
   for(i=0;i<3;i++)
-    if((d->v[i] != a) && (d->b[i] != tree->e_root))
+    if((d->v[i] != a) && !(a == tree->n_root && d->b[i] == tree->e_root))
       {
 	if(!b2) { b2 = d->b[i]; }
 	else    { b3 = d->b[i]; }
@@ -1284,7 +1284,7 @@ void MCMC_Time_Recur(t_node *a, t_node *d, int traversal, t_tree *tree)
       else
 	{
           for(i=0;i<3;i++)
-            if(d->v[i] != a && d->b[i] != tree->e_root)
+            if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
               {
                 if(tree->eval_alnL == YES) Update_Partial_Lk(tree,d->b[i],d);
                 MCMC_Time_Recur(d,d->v[i],YES,tree);
@@ -3218,7 +3218,7 @@ void MCMC_Randomize_Rates_Pre(t_node *a, t_node *d, t_tree *tree)
   else
     {
       for(i=0;i<3;++i)
-	if(d->v[i] != a && d->b[i] != tree->e_root)
+	if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
 	  MCMC_Randomize_Rates_Pre(d,d->v[i],tree);
     }
 }
@@ -3444,7 +3444,7 @@ void MCMC_Randomize_Node_Times_Bottom_Up(t_node *a, t_node *d, t_tree *tree)
 
       for(i=0;i<3;i++)
 	{
-	  if((d->v[i] != a) && (d->b[i] != tree->e_root))
+	  if((d->v[i] != a) && !(a == tree->n_root && d->b[i] == tree->e_root))
 	    {
 	      MCMC_Randomize_Node_Times_Bottom_Up(d,d->v[i],tree);
 	    }
@@ -3453,7 +3453,7 @@ void MCMC_Randomize_Node_Times_Bottom_Up(t_node *a, t_node *d, t_tree *tree)
       v1 = v2 = NULL;
       for(i=0;i<3;i++)
       	{
-      	  if(d->v[i] != a && d->b[i] != tree->e_root)
+      	  if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
       	    {
       	      if(!v1) v1 = d->v[i];
       	      else    v2 = d->v[i];
@@ -3497,7 +3497,7 @@ void MCMC_Randomize_Node_Times_Top_Down(t_node *a, t_node *d, t_tree *tree)
 
       for(i=0;i<3;i++)
 	{
-	  if((d->v[i] != a) && (d->b[i] != tree->e_root))
+	  if((d->v[i] != a) && !(a == tree->n_root && d->b[i] == tree->e_root))
 	    {
 	      MCMC_Randomize_Node_Times_Top_Down(d,d->v[i],tree);
 	    }
@@ -4983,7 +4983,7 @@ void MCMC_Sim_Rate(t_node *a, t_node *d, t_tree *tree)
       int i;
 
       for(i=0;i<3;i++)
-	if(d->v[i] != a && d->b[i] != tree->e_root)
+	if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
 	  MCMC_Sim_Rate(d,d->v[i],tree);
     }
 }
@@ -6540,7 +6540,7 @@ void MCMC_Slice_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
       else
 	{
 	  for(i=0;i<3;i++)
-	    if(d->v[i] != a && d->b[i] != tree->e_root)
+	    if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
 	      {
 		if(tree->io->lk_approx == EXACT) Update_Partial_Lk(tree,d->b[i],d);
 		MCMC_Slice_One_Rate(d,d->v[i],YES,tree);

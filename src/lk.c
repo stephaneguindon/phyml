@@ -298,7 +298,7 @@ void Post_Order_Lk(t_node *a, t_node *d, t_tree *tree)
         {
           for(i=0;i<3;++i)
             {
-              if(d->v[i] != a && d->b[i] != tree->e_root)
+              if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
                 Post_Order_Lk(d,d->v[i],tree);
               else dir = i;
             }
@@ -371,7 +371,7 @@ void Pre_Order_Lk(t_node *a, t_node *d, t_tree *tree)
         {
           for(i=0;i<3;++i)
             {
-              if(d->v[i] != a && d->b[i] != tree->e_root)
+              if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
                 {
                   Update_Partial_Lk(tree,d->b[i],d);
                   Pre_Order_Lk(d,d->v[i],tree);

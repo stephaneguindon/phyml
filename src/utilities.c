@@ -1415,8 +1415,8 @@ void Share_Spr_Struct(t_tree *t_full, t_tree *t_empt)
 {
   t_empt->size_spr_list_one_edge = t_full->size_spr_list_one_edge;
   t_empt->spr_list_one_edge      = t_full->spr_list_one_edge;
-  t_empt->best_spr      = t_full->best_spr;
-  t_empt->spr_list_all_edge = t_full->spr_list_all_edge;
+  t_empt->best_spr               = t_full->best_spr;
+  t_empt->spr_list_all_edge      = t_full->spr_list_all_edge;
   t_empt->size_spr_list_all_edge = t_full->size_spr_list_all_edge;
 }
 
@@ -1430,7 +1430,7 @@ void Share_Pars_Struct(t_tree *t_full, t_tree *t_empt)
   t_empt->site_pars = t_full->site_pars;
   t_empt->step_mat  = t_full->step_mat;
 
-  For(i,2*t_full->n_otu-3)
+  for(i=0;i<2*t_full->n_otu-3;++i)
     {
       t_empt->a_edges[i]->ui_l     = t_full->a_edges[i]->ui_l;
       t_empt->a_edges[i]->ui_r     = t_full->a_edges[i]->ui_r;
@@ -7144,17 +7144,12 @@ int Get_State_From_Partial_Lk(phydbl *p_lk, int pos, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 int Get_State_From_Partial_Pars(short int *p_pars, int pos, t_tree *tree)
 {
   int i;
   for(i=0;i<tree->mod->ns;i++) if(p_pars[pos+i] > .0) return i;
   return -1;
 }
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -8429,7 +8424,7 @@ void Dist_To_Root_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
   else
     {
       for(i=0;i<3;i++)
-        if((d->v[i] != a) && (d->b[i] != tree->e_root))
+        if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
           Dist_To_Root_Pre(d,d->v[i],d->b[i],tree);
     }
 }
@@ -8796,7 +8791,7 @@ void Branch_Lengths_To_Rate_Lengths_Pre(t_node *a, t_node *d, t_tree *tree)
   else
     {
       for(i=0;i<3;i++)
-    if((d->v[i] != a) && (d->b[i] != tree->e_root))
+    if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
       Branch_Lengths_To_Rate_Lengths_Pre(d,d->v[i],tree);
     }
 }
@@ -8858,7 +8853,6 @@ void Find_Clade_Pre(t_node *a, t_node *d, int *tax_num_list, int list_size, int 
   int i,j,k;
   int score;
 
-
   for(i=0;i<3;i++)
     if((d->v[i] == a) || (d->b[i] == tree->e_root))
       {
@@ -8884,7 +8878,7 @@ void Find_Clade_Pre(t_node *a, t_node *d, int *tax_num_list, int list_size, int 
   if(d->tax) return;
   else
     for(i=0;i<3;i++)
-      if((d->v[i] != a) && (d->b[i] != tree->e_root))
+      if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
         Find_Clade_Pre(d,d->v[i],tax_num_list,list_size,num,tree);
 }
 
@@ -9318,7 +9312,7 @@ void Get_Best_Root_Position_Post(t_node *a, t_node *d, int *has_outgrp, t_tree *
       int i;
       
       for(i=0;i<3;i++)
-        if(d->v[i] != a && (d->b[i] != tree->e_root))
+        if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
           Get_Best_Root_Position_Post(d,d->v[i],has_outgrp,tree);
       
       Get_OutIn_Scores(a,d);
@@ -9345,11 +9339,11 @@ void Get_Best_Root_Position_Pre(t_node *a, t_node *d, t_tree *tree)
       int i;
 
       for(i=0;i<3;i++)
-    if(d->v[i] != a && (d->b[i] != tree->e_root))
-      {
-        Get_OutIn_Scores(d->v[i],d);
-        Get_Best_Root_Position_Pre(d,d->v[i],tree);
-      }
+        if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
+          {
+            Get_OutIn_Scores(d->v[i],d);
+            Get_Best_Root_Position_Pre(d,d->v[i],tree);
+          }
     }
 }
 
@@ -9464,7 +9458,7 @@ int Scale_Subtree_Height(t_node *a, phydbl K, phydbl floor, int *n_nodes, t_tree
         }
       
       for(i=0;i<3;i++)
-        if(a->v[i] != a->anc && a->b[i] != tree->e_root)
+        if(a->v[i] != a->anc)
           {
             Scale_Node_Heights_Post(a,a->v[i],K,floor,n_nodes,tree);
           }
@@ -9508,7 +9502,7 @@ void Scale_Node_Heights_Post(t_node *a, t_node *d, phydbl K, phydbl floor, int *
         }
       
       for(i=0;i<3;i++)
-        if(d->v[i] != a && d->b[i] != tree->e_root)
+        if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
           Scale_Node_Heights_Post(d,d->v[i],K,floor,n_nodes,tree);
       
     }
@@ -9603,7 +9597,7 @@ void Get_Node_Ranks_Pre(t_node *a, t_node *d, t_tree *tree)
       
       for(i=0;i<3;i++)
         {
-          if(d->v[i] != a && d->b[i] != tree->e_root)
+          if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
             {
               Get_Node_Ranks_Pre(d,d->v[i],tree);
             }
@@ -10110,12 +10104,12 @@ void Find_Surviving_Edges_In_Small_Tree_Post(t_node *a, t_node *d, t_tree *small
       int i;
 
       for(i=0;i<3;i++)
-    {
-      if(d->v[i] != a && d->b[i] != big_tree->e_root)
         {
-          Find_Surviving_Edges_In_Small_Tree_Post(d,d->v[i],small_tree,big_tree);
+          if(d->v[i] != a && !(a == big_tree->n_root && d->b[i] == big_tree->e_root))
+            {
+              Find_Surviving_Edges_In_Small_Tree_Post(d,d->v[i],small_tree,big_tree);
+            }
         }
-    }
     }
 }
 
@@ -10841,14 +10835,15 @@ int Number_Of_Diff_States_One_Site(int site, t_tree *tree)
 {
   int n_states;
 
+  Update_Dirs(tree);
+  
   Number_Of_Diff_States_One_Site_Post(tree->a_nodes[0],
                                       tree->a_nodes[0]->v[0],
                                       tree->a_nodes[0]->b[0],
                                       site,tree);
   
   n_states = Sum_Bits(tree->a_nodes[0]->b[0]->ui_r[site] | tree->a_nodes[0]->b[0]->ui_l[site],tree->mod->ns);
-
-
+  
   return(n_states);
 }
 
@@ -10856,14 +10851,14 @@ int Number_Of_Diff_States_One_Site(int site, t_tree *tree)
 //////////////////////////////////////////////////////////////
 
 void Number_Of_Diff_States_One_Site_Post(t_node *a, t_node *d, t_edge *b, int site, t_tree *tree)
-{
+{  
   if(d->tax) return;
   else
     {
       int i;
 
       for(i=0;i<3;i++)
-        if(d->v[i] != a && d->b[i] != tree->e_root)
+        if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
           Number_Of_Diff_States_One_Site_Post(d,d->v[i],d->b[i],site,tree);
 
       Number_Of_Diff_States_One_Site_Core(a,d,b,site,tree);
@@ -10879,6 +10874,8 @@ int Number_Of_Diff_States_One_Site_Core(t_node *a, t_node *d, t_edge *b, int sit
   int sum;
   t_node *v1, *v2;
   
+
+
   ui = ui_v1 = ui_v2 = NULL;
   v1 = v2 = NULL;
   
@@ -10982,13 +10979,8 @@ int Number_Of_Diff_States_One_Site_Core(t_node *a, t_node *d, t_edge *b, int sit
   ui[site] = ui_v1[site] | ui_v2[site];
       
   sum = Sum_Bits(ui[site],tree->mod->ns);
-
-  /* printf("\n. ui_v1: %d ui_v2: %d ui: %d sum: %d",ui_v1[site],ui_v2[site],ui[site],sum); fflush(NULL); */
   
-  if(sum-1 > tree->mod->ns-1)
-    {
-      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-    }
+  if(sum-1 > tree->mod->ns-1) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
   return sum;
 }
@@ -11653,7 +11645,6 @@ void Get_List_Of_Reachable_Tips_Post(t_node *a, t_node *d, t_ll **list, t_tree *
 {
   if(d->tax)
     {
-      /* printf("\n. push %d list: %p",d->num,list->head); */
       Push_Bottom_Linked_List(d,list,YES);
       return;
     }
@@ -11662,7 +11653,7 @@ void Get_List_Of_Reachable_Tips_Post(t_node *a, t_node *d, t_ll **list, t_tree *
       int i;
       for(i=0;i<3;i++)
         {
-          if(d->v[i] != a && d->b[i] != tree->e_root)
+          if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
             Get_List_Of_Reachable_Tips_Post(d,d->v[i],list,tree);
         }
     }  
@@ -12053,7 +12044,7 @@ void Random_Tax_Idx(t_node *a, t_node *d, int *idx, t_tree *tree)
     {
       for(int i=0;i<3;++i)
         {
-          if(d->v[i] != a && d->b[i] != tree->e_root)
+          if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
             {
               Random_Tax_Idx(d,d->v[i],idx,tree);
             }
@@ -12074,7 +12065,7 @@ void List_Taxa_In_Clade(t_node *a, t_node *d, t_tree *tree)
     {
       for(int i=0;i<3;++i)
         {
-          if(d->v[i] != a && d->b[i] != tree->e_root)
+          if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
             {
               List_Taxa_In_Clade(d,d->v[i],tree);
             }
@@ -12145,7 +12136,7 @@ void Alias_One_Subpatt(t_node *a, t_node *d, t_tree *tree)
       v1 = v2 = NULL;
       for(i=0;i<3;i++)
     {
-      if(d->v[i] != a && d->b[i] != tree->e_root)
+      if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
         {
           if(!v1) { v1=d->v[i]; b1=d->b[i];}
           else    { v2=d->v[i]; b2=d->b[i];}
@@ -12224,14 +12215,14 @@ void Alias_Subpatt_Post(t_node *a, t_node *d, t_tree *tree)
   else
     {
       int i;
-
+      
       for(i=0;i<3;i++)
-    {
-      if(d->v[i] != a && d->b[i] != tree->e_root)
         {
-          Alias_Subpatt_Post(d,d->v[i],tree);
+          if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
+            {
+              Alias_Subpatt_Post(d,d->v[i],tree);
+            }
         }
-    }
       Alias_One_Subpatt(a, d, tree);
     }
 }
@@ -12248,7 +12239,7 @@ void Alias_Subpatt_Pre(t_node *a, t_node *d, t_tree *tree)
       
       for(i=0;i<3;++i)
         {
-          if(d->v[i] != a && d->b[i] != tree->e_root)
+          if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
             {
               Alias_One_Subpatt(d->v[i],d,tree);
               Alias_Subpatt_Pre(d,d->v[i],tree);
@@ -12485,7 +12476,7 @@ phydbl Tree_Height(t_tree *tree)
     {
       for(i=0;i<3;++i)
         {
-          if(n->v[i] && n->v[i] != anc && n->b[i] != tree->e_root)
+          if(n->v[i] && n->v[i] != anc)
             {
               h += n->b[i]->l->v;
               break;
@@ -12535,13 +12526,13 @@ void Post_Inflate_Times_To_Get_Reasonnable_Edge_Lengths(t_node *a, t_node *d, t_
       phydbl l1,l2;
 
       for(i=0;i<3;++i)
-        if(d->v[i] != a && d->b[i] != tree->e_root)
+        if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
           Post_Inflate_Times_To_Get_Reasonnable_Edge_Lengths(d,d->v[i],d->b[i],min_l,tree);
       
       dir1 = dir2 = -1;
       for(i=0;i<3;++i)
         {
-          if(d->v[i] != a && d->b[i] != tree->e_root)
+          if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
             {
               if(dir1 < 0) dir1 = i;
               else         dir2 = i;
@@ -12629,7 +12620,7 @@ void Refactor_External(t_node *a, t_node *d, int *idx, t_tree *tree)
     {
       for(int i=0;i<3;++i)
         {
-          if(d->v[i] != a && d->b[i] != tree->e_root)
+          if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
             {
               Refactor_External(d,d->v[i],idx,tree);
             }    
@@ -12658,7 +12649,7 @@ void Refactor_Internal(t_node *a, t_node *d, t_edge *b, int *idx_nd, int *idx_br
       
       for(int i=0;i<3;++i)
         {
-          if(d->v[i] != a && d->b[i] != tree->e_root)
+          if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
             {
               Refactor_Internal(d,d->v[i],d->b[i],idx_nd,idx_br,tree);
             }

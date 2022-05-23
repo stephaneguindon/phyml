@@ -188,6 +188,7 @@ void Init_Ui_Tips(t_tree *tree)
               /* 					    state_v);	       */
               tree->a_nodes[i]->b[0]->ui_r[curr_site] = 0;
               for(j=0;j<tree->mod->ns;j++) tree->a_nodes[i]->b[0]->ui_r[curr_site] += (int)(state_v[j] * POW(2,j));
+
             }
           else if(tree->io->datatype == AA)
             {

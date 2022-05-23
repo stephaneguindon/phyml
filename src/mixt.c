@@ -3855,6 +3855,7 @@ void MIXT_Print_Site_Lk(t_tree *mixt_tree, FILE *fp)
                 }
               
               assert(mixt_tree->next != NULL);
+
               PhyML_Fprintf(fp,"%-16d",Number_Of_Diff_States_One_Site(mixt_tree->data->sitepatt[site],mixt_tree->next));
               
               PhyML_Fprintf(fp,"\n");

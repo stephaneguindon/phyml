@@ -154,7 +154,7 @@ void RATES_Lk_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
     {
       for(i=0;i<3;i++)
 	{
-	  if((d->v[i] != a) && (d->b[i] != tree->e_root))
+	  if((d->v[i] != a) && !(a == tree->n_root && d->b[i] == tree->e_root))
 	    {
 	      RATES_Lk_Pre(d,d->v[i],d->b[i],tree);
 	    }
@@ -608,7 +608,7 @@ void RATES_Print_Rates_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 
       for(i=0;i<3;i++) 
 	{
-	  if((d->v[i] != a) && (d->b[i] != tree->e_root))
+	  if((d->v[i] != a) && !(a == tree->n_root && d->b[i] == tree->e_root))
 	    {
 	      RATES_Print_Rates_Pre(d,d->v[i],d->b[i],tree);
 	    }
@@ -692,7 +692,7 @@ void RATES_Check_Node_Times_Pre(t_node *a, t_node *d, int *err, t_tree *tree)
       int i;
 
       for(i=0;i<3;i++)
-	if((d->v[i] != a) && (d->b[i] != tree->e_root))	  
+	if((d->v[i] != a) && !(a == tree->n_root && d->b[i] == tree->e_root))	  
 	  RATES_Check_Node_Times_Pre(d,d->v[i],err,tree);
     }
 }
@@ -937,7 +937,7 @@ void RATES_Get_Mean_Rates_Pre(t_node *a, t_node *d, t_edge *b, phydbl r_a, t_tre
       
       for(i=0;i<3;i++)
 	{
-	  if((d->v[i] != a) && (d->b[i] != tree->e_root))
+	  if((d->v[i] != a) && !(a == tree->n_root && d->b[i] == tree->e_root))
 	    {
 	      RATES_Get_Mean_Rates_Pre(d,d->v[i],d->b[i],r_d,tree);
 	    }
@@ -1138,7 +1138,7 @@ void RATES_Update_Edge_Lengths_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree
     {
       int i;
       for(i=0;i<3;++i) 
-	if((d->v[i] != a) && (d->b[i] != tree->e_root)) 
+	if((d->v[i] != a) && !(a == tree->n_root && d->b[i] == tree->e_root)) 
 	  RATES_Update_Edge_Lengths_Pre(d,d->v[i],d->b[i],tree);
     }
 }
@@ -1352,7 +1352,7 @@ void RATES_Bl_To_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
       int i;
 
       for(i=0;i<3;i++) 
-	if((d->v[i] != a) && (d->b[i] != tree->e_root)) 
+	if((d->v[i] != a) && !(a == tree->n_root && d->b[i] == tree->e_root)) 
 	  RATES_Bl_To_Bl_Pre(d,d->v[i],d->b[i],tree);
     }
 }
@@ -1387,7 +1387,7 @@ void RATES_Bl_To_Ml_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
       int i;
 
       for(i=0;i<3;i++) 
-	if((d->v[i] != a) && (d->b[i] != tree->e_root)) 
+	if((d->v[i] != a) && !(a == tree->n_root && d->b[i] == tree->e_root)) 
 	  RATES_Bl_To_Ml_Pre(d,d->v[i],d->b[i],tree);
     }
 }
@@ -1462,7 +1462,7 @@ void RATES_Get_Cov_Matrix_Rooted_Pre(t_node *a, t_node *d, t_edge *b, phydbl *co
   else
     {
       for(i=0;i<3;i++)
-	if((d->v[i] != a) && (d->b[i] != tree->e_root)) 
+	if((d->v[i] != a) && !(a == tree->n_root && d->b[i] == tree->e_root)) 
 	  RATES_Get_Cov_Matrix_Rooted_Pre(d,d->v[i],d->b[i],cov,tree);
     }
 }
@@ -1536,7 +1536,7 @@ void RATES_Variance_Mu_Pre(t_node *a, t_node *d, t_tree *tree)
   dir1 = dir2 = -1;
   for(i=0;i<3;i++)
     {
-      if((d->v[i] != a) && (d->b[i] != tree->e_root))
+      if((d->v[i] != a) && !(a == tree->n_root && d->b[i] == tree->e_root))
 	{
 	  if(dir1 < 0) dir1 = i;
 	  else         dir2 = i;
@@ -1558,7 +1558,7 @@ void RATES_Variance_Mu_Pre(t_node *a, t_node *d, t_tree *tree)
 
   for(i=0;i<3;i++)
     {
-      if((d->v[i] != a) && (d->b[i] != tree->e_root))
+      if((d->v[i] != a) && !(a == tree->n_root && d->b[i] == tree->e_root))
 	{
 	  RATES_Variance_Mu_Pre(d,d->v[i],tree);
 	}
@@ -1817,7 +1817,7 @@ void RATES_Expected_Tree_Length_Pre(t_node *a, t_node *d, phydbl eranc, phydbl *
   if(d->tax) return;
   else
     for(i=0;i<3;i++)
-      if(d->v[i] != a && d->b[i] != tree->e_root)
+      if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
 	RATES_Expected_Tree_Length_Pre(d,d->v[i],erdes,mean,n,tree);
 }
 
@@ -2117,7 +2117,7 @@ void RATES_Get_Mean_Rate_In_Subtree_Pre(t_node *a, t_node *d, phydbl *sum, int *
       int i;
       for(i=0;i<3;++i)
 	{
-	  if(d->v[i] != a && d->b[i] != tree->e_root)
+	  if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
 	    {
 	      RATES_Get_Mean_Rate_In_Subtree_Pre(d,d->v[i],sum,n,tree);
 	    }
