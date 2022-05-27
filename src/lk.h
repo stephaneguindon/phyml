@@ -124,6 +124,8 @@ void Partial_Lk_Inin(const phydbl *Pij1, const phydbl *plk1, const phydbl *Pij2,
 void Partial_Lk_Exex(const phydbl *Pij1, const int state1, const phydbl *Pij2, const int state2, const int ns, phydbl *plk0);
 void Partial_Lk_Exin(const phydbl *Pij1, const int state1, const phydbl *Pij2, const phydbl *plk2, const int ns, phydbl *plk0);
 
+void Lk_Contmod_Pre(t_node *a, t_node *d, phydbl sigsq, t_tree *tree);
+void Lk_Contmod_Post(t_node *a, t_node *d, phydbl sigsq, t_tree *tree, short int print);
 
 #endif
 
