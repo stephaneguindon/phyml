@@ -51,11 +51,7 @@ phydbl LOCATION_Lk(t_tree *tree)
         if(tree->mmod->integrateAncestralLocations == NO) lnL = RRW_Lk(tree);
         else
           {
-            /* lnL = RRW_Independent_Contrasts(tree); */
-            /* PhyML_Printf("\n. "); */
-            /* PhyML_Printf(" IC: %f",lnL); */
             lnL = RRW_Lk_Integrated(tree);
-            /* PhyML_Printf("-- Int: %f",lnL); */
           }
         break;
       }

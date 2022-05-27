@@ -1696,12 +1696,31 @@ void GEO_Make_Geo_Complete(int ldscape_sz, int n_dim, int n_tax, t_geo *t)
 t_geo_coord *GEO_Make_Geo_Coord(int dim)
 {
   t_geo_coord *t;
+  
   t = (t_geo_coord *)mCalloc(1,sizeof(t_geo_coord));
   t->lonlat = (phydbl *)mCalloc(dim,sizeof(phydbl));
   t->id = (char *)mCalloc(T_MAX_ID_COORD,sizeof(char));
 
   t->cpy = (t_geo_coord *)mCalloc(1,sizeof(t_geo_coord));
   t->cpy->lonlat = (phydbl *)mCalloc(dim,sizeof(phydbl));
+  t->cpy->id = (char *)mCalloc(T_MAX_ID_COORD,sizeof(char));
+
+  return(t);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+t_geo_veloc *GEO_Make_Geo_Veloc(int dim)
+{
+  t_geo_veloc *t;
+  
+  t = (t_geo_veloc *)mCalloc(1,sizeof(t_geo_veloc));
+  t->deriv = (phydbl *)mCalloc(dim,sizeof(phydbl));
+  t->id = (char *)mCalloc(T_MAX_ID_COORD,sizeof(char));
+
+  t->cpy = (t_geo_veloc *)mCalloc(1,sizeof(t_geo_veloc));
+  t->cpy->deriv = (phydbl *)mCalloc(dim,sizeof(phydbl));
   t->cpy->id = (char *)mCalloc(T_MAX_ID_COORD,sizeof(char));
 
   return(t);
@@ -1745,8 +1764,10 @@ t_ldsk *PHYREX_Make_Lindisk_Node(int n_dim)
   t = (t_ldsk *)mCalloc(1,sizeof(t_ldsk));
   t->coord     = GEO_Make_Geo_Coord(n_dim);
   t->cpy_coord = GEO_Make_Geo_Coord(n_dim);
+  t->veloc     = GEO_Make_Geo_Veloc(n_dim);
   return(t);
 }
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 

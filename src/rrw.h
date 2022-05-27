@@ -35,8 +35,6 @@ phydbl RRW_Prior_Sigsq(t_tree *tree);
 phydbl RRW_Prior(t_tree *tree);
 void RRW_Generate(t_tree *tree);
 phydbl RRW_Lk_Integrated(t_tree *tree);
-void RRW_Lk_Integrated_Post(t_node *a, t_node *d, phydbl sigsq, t_tree *tree, short int print);
-void RRW_Lk_Integrated_Pre(t_node *a, t_node *d, phydbl sigsq, t_tree *tree);
 void RRW_Sample_Node_Locations(t_tree *tree);
 phydbl RRW_Sample_Location(t_node *a, t_node *d, phydbl sigsq, phydbl t_za, phydbl t_zd, t_tree *tree);
 void RRW_Sample_Arealin_Plot(t_tree *tree);

@@ -87,4 +87,5 @@ void Make_Spr(t_tree *tree);
 t_label *Make_Label();
 void Make_Contrasts(t_tree *tree);
 void Make_Contmod(t_tree *tree);
+t_geo_veloc *GEO_Make_Geo_Veloc(int dim);
 #endif

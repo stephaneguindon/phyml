@@ -43,11 +43,6 @@ the GNU public licence. See http://www.opensource.org for details.
 #include <pmmintrin.h>
 #endif
 
-
-/* #if !defined(__FMA__) && (defined(__AVX__) || defined(__AVX2__)) */
-/* #define __FMA__ 1 */
-/* #endif */
-
 extern int n_sec1;
 extern int n_sec2;
 
@@ -604,6 +599,7 @@ typedef struct __Node {
   int                            rank_max;
 
   struct __Geo_Coord               *coord;
+  struct __Geo_Veloc               *veloc;
 
 }t_node;
 
@@ -2127,7 +2123,6 @@ typedef struct __Continuous_Model{
   phydbl *logrem_up;
 }t_contmod;
 
-
 /*!********************************************************/
 
 typedef struct __Geo_Coord{
@@ -2140,6 +2135,16 @@ typedef struct __Geo_Coord{
 
 /*!********************************************************/
 
+typedef struct __Geo_Velocity{
+  phydbl              *deriv; /* derivative of longitude-latitude vector */
+  int                    dim;
+  char                   *id;
+  struct __Geo_Velocity *cpy; /* keep a copy of this velocity */
+
+}t_geo_veloc;
+
+/*!********************************************************/
+
 typedef struct __Lindisk_Node{
   struct __Disk_Event     *disk;
   struct __Disk_Event *baseline;
@@ -2148,6 +2153,7 @@ typedef struct __Lindisk_Node{
   struct __Lindisk_Node    *img;
   struct __Geo_Coord     *coord; 
   struct __Geo_Coord *cpy_coord; 
+  struct __Geo_Velocity  *veloc; 
   struct __Node             *nd;
 
   short int              is_hit;

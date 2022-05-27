@@ -75,6 +75,8 @@ void Init_NNI_Score(phydbl val, t_edge *b, t_tree *tree);
 void M4_Init_Model(m4 *m4mod, calign *data, t_mod *mod);
 void RW_Init_Contrasts(int dim_idx, t_tree *tree);
 void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t);
-void RRW_Init_Contmod(int dim_idx, t_tree *tree);
+void RRW_Init_Contmod_Locations(int dim_idx, t_tree *tree);
+void IBM_Init_Contmod_Velocities(int dim_idx, t_tree *tree);
+void GEO_Init_Veloc(t_geo_veloc *t, int n_dim);
 
 #endif

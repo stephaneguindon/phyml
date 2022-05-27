@@ -2587,6 +2587,10 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
             PhyML_Fprintf(fp_out," \"A simple, fast, and accurate algorithm to estimate large phylogenies by maximum likelihood\"\n");
             PhyML_Fprintf(fp_out," Systematic Biology. 2003. 52(5):696-704.\n");
             PhyML_Fprintf(fp_out," oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo\n");
+
+            PhyML_Fprintf(fp_out,"\n\n Please consider making a donation to support PhyML development by clicking on the following link:\n");
+            PhyML_Fprintf(fp_out,"\n          https://fondation-cnrs.org/faire-un-don/");
+            PhyML_Fprintf(fp_out,"\n\n              ~ Thank you ! ~\n\n");
           }
 	else
           {

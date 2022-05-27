@@ -1305,6 +1305,20 @@ void Free_Geo(t_geo *t)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
+void Free_Geo_Veloc(t_geo_veloc *t)
+{
+  Free(t->cpy->deriv); 
+  Free(t->cpy->id);
+  Free(t->cpy);
+
+  Free(t->deriv); 
+  Free(t->id);
+  Free(t);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
 void Free_Geo_Coord(t_geo_coord *t)
 {
   Free(t->cpy->lonlat); 
@@ -1337,6 +1351,7 @@ void PHYREX_Free_Ldisk(t_ldsk *t)
     {
       Free(t->next);
       Free_Geo_Coord(t->coord);
+      Free_Geo_Veloc(t->veloc);
       if(t->cpy_coord) Free_Geo_Coord(t->cpy_coord);
       Free(t);
     }

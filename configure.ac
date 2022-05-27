@@ -43,7 +43,7 @@ AC_FUNC_SETVBUF_REVERSED
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([floor pow rint sqrt strchr strstr])
 
-dnl DEFAULT_VECTOR_FLAG=
+dnl DEFAULT_VECTOR_FLAG=""
 dnl DEFAULT_VECTOR_FLAG="-mavx -mfma"
 dnl DEFAULT_VECTOR_FLAG="-mavx2"
 dnl DEFAULT_VECTOR_FLAG=-msse4.2
@@ -55,6 +55,7 @@ dnl DEFAULT_VECTOR_FLAG="-march=skylake -mprefer-vector-width=256"
 AC_ARG_ENABLE([native],
               [AS_HELP_STRING([--disable-native],
                               [Remove AVX or SSE compilation options.])])
+
 AS_IF([test "x$enable_native" = "xno"],
       [VECTOR_FLAG=],
       [VECTOR_FLAG="${DEFAULT_VECTOR_FLAG}"])
