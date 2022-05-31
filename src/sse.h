@@ -37,6 +37,7 @@ void SSE_Partial_Lk_Exex(const __m128d *_tPij1, const int state1, const __m128d 
 void SSE_Partial_Lk_Exin(const __m128d *_tPij1, const int state1, const __m128d *_tPij2, const phydbl *_plk2, __m128d *_pmat2plk2, const int ns, __m128d *_plk0);
 void SSE_Partial_Lk_Inin(const __m128d *_tPij1, const phydbl *plk1, __m128d *_pmat1plk1, const __m128d *_tPij2, const phydbl *plk2, __m128d *_pmat2plk2, const int ns, __m128d *_plk0);
 void SSE_Matrix_Vect_Prod(const __m128d *_m_transpose, const phydbl *_v, const int ns, __m128d *_u);
+__m128 _mm_hadd4_ps(__m128 i);
 
 #endif
 #endif

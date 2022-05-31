@@ -3209,18 +3209,20 @@ void Bootstrap(t_tree *tree)
       boot_tree->io->print_json_trace = NO;
       boot_tree->n_root               = NULL;
       boot_tree->e_root               = NULL;
+      boot_tree->l_ev                 = tree->l_ev;
+      boot_tree->p_lk_left_pi         = tree->p_lk_left_pi;
+
+#if (defined(__AVX__) || defined(__AVX2__) || defined(__SSE__) || defined(__SSE2__) || defined(__SSE3__))
       boot_tree->_tPij1               = tree->_tPij1;
       boot_tree->_tPij2               = tree->_tPij2;
       boot_tree->_pmat1plk1           = tree->_pmat1plk1;
       boot_tree->_pmat2plk2           = tree->_pmat2plk2;
       boot_tree->_plk0                = tree->_plk0;
-      boot_tree->l_ev                 = tree->l_ev;
-      boot_tree->p_lk_left_pi         = tree->p_lk_left_pi;
       boot_tree->_l_ev                = tree->_l_ev;
       boot_tree->_r_ev                = tree->_r_ev;
       boot_tree->_prod_left           = tree->_prod_left;
       boot_tree->_prod_rght           = tree->_prod_rght;
-      
+#endif
 
       Set_Both_Sides(YES,boot_tree);
 

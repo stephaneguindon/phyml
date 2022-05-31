@@ -43,11 +43,6 @@ the GNU public licence. See http://www.opensource.org for details.
 #include <pmmintrin.h>
 #endif
 
-
-/* #if !defined(__FMA__) && (defined(__AVX__) || defined(__AVX2__)) */
-/* #define __FMA__ 1 */
-/* #endif */
-
 extern int n_sec1;
 extern int n_sec2;
 
@@ -112,6 +107,7 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define RW  4 /* standard Brownian diffusion model in phylogeography */
 #define RRW_GAMMA  5 /* Lemey's relaxed random walk (Gamma distributed relative diffusion rates) */
 #define RRW_LOGNORMAL  6 /* Lemey's relaxed random walk (Lognormal distributed relative diffusion rates) */
+#define IBM  7 /* Integrated Brownian Motion */
 
 #define AC 0
 #define AG 1
@@ -604,6 +600,7 @@ typedef struct __Node {
   int                            rank_max;
 
   struct __Geo_Coord               *coord;
+  struct __Geo_Veloc               *veloc;
 
 }t_node;
 
@@ -1824,6 +1821,7 @@ typedef struct __Tmcmc {
   int num_move_phyrex_sigsq_scale;
   int num_move_phyrex_ldsk_tips;
   int num_move_phyrex_node_times;
+  int num_move_phyrex_velocities;
 
   int nd_t_digits;
   int *monitor;
@@ -2026,7 +2024,7 @@ typedef struct __Migrep_Model{
   phydbl             sigsq_scale_min;
   phydbl             sigsq_scale_max;
 
-  phydbl               rrw_norm_fact;
+  phydbl       sigsq_scale_norm_fact;
   
   short int                 model_id;
   int                          n_dim;
@@ -2127,7 +2125,6 @@ typedef struct __Continuous_Model{
   phydbl *logrem_up;
 }t_contmod;
 
-
 /*!********************************************************/
 
 typedef struct __Geo_Coord{
@@ -2140,6 +2137,16 @@ typedef struct __Geo_Coord{
 
 /*!********************************************************/
 
+typedef struct __Geo_Velocity{
+  phydbl              *deriv; /* derivative of longitude-latitude vector */
+  int                    dim;
+  char                   *id;
+  struct __Geo_Velocity *cpy; /* keep a copy of this velocity */
+
+}t_geo_veloc;
+
+/*!********************************************************/
+
 typedef struct __Lindisk_Node{
   struct __Disk_Event     *disk;
   struct __Disk_Event *baseline;
@@ -2148,6 +2155,7 @@ typedef struct __Lindisk_Node{
   struct __Lindisk_Node    *img;
   struct __Geo_Coord     *coord; 
   struct __Geo_Coord *cpy_coord; 
+  struct __Geo_Velocity  *veloc; 
   struct __Node             *nd;
 
   short int              is_hit;
@@ -2551,6 +2559,7 @@ void Set_Bl_From_Rt(int yesno, t_tree *tree);
 #include "rrw.h"
 #include "slfv.h"
 #include "location.h"
+#include "ibm.h"
 #endif
 
 #ifdef MPI

@@ -3442,11 +3442,21 @@ int Init_Qmat_AB(phydbl *daa, phydbl *pi)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void GEO_Init_Coord(t_geo_coord *t, int n_dim)
 {
   t->dim = n_dim;
   Random_String(t->id,3);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void GEO_Init_Veloc(t_geo_veloc *t, int n_dim)
+{
+  t->dim = n_dim;
+  Random_String(t->id,3);
+  
+  for(int i=0;i<n_dim;++i) t->deriv[i] = Uni()*2.-1.;
 }
 
 //////////////////////////////////////////////////////////////
@@ -3505,7 +3515,7 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->sigsq_scale_min = 0.1;
   t->sigsq_scale_max = 10.;
 
-  t->rrw_norm_fact = 1.0;
+  t->sigsq_scale_norm_fact = 1.0;
   
   t->model_id = -1;
   t->use_locations = -1;
@@ -3577,8 +3587,11 @@ void PHYREX_Init_Lindisk_Node(t_ldsk *t, t_dsk *disk, int n_dim)
   t->n_next  = 0;
   t->rr      = 1.0;
   t->sigsq   = 1.0;
+  
   GEO_Init_Coord(t->coord,    n_dim);
   GEO_Init_Coord(t->cpy_coord,n_dim);
+
+  GEO_Init_Veloc(t->veloc,n_dim);
 }
 
 //////////////////////////////////////////////////////////////
@@ -3800,7 +3813,7 @@ void RW_Init_Contrasts(int dim_idx, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void RRW_Init_Contmod(int dim_idx, t_tree *tree)
+void RRW_Init_Contmod_Locations(int dim_idx, t_tree *tree)
 {
   for(int i=0;i<tree->n_otu;++i)
     {
@@ -3816,9 +3829,22 @@ void RRW_Init_Contmod(int dim_idx, t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
+
+void IBM_Init_Contmod_Velocities(int dim_idx, t_tree *tree)
+{
+  for(int i=0;i<tree->n_otu;++i)
+    {
+      tree->contmod->mu_down[i] = tree->a_nodes[i]->ldsk->veloc->deriv[dim_idx];
+      tree->contmod->var_down[i] = 0.0;
+      tree->contmod->logrem_down[i] = 0.0;
+
+      tree->contmod->mu_up[i] = 0.0;
+      tree->contmod->var_up[i] = 0.0;
+      tree->contmod->logrem_up[i] = 0.0;
+    }
+}
+
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

@@ -119,7 +119,14 @@ phydbl SSE_Lk_Core_One_Class_Eigen_Lr(phydbl *dot_prod, phydbl *expl, int ns)
   if(expl != NULL) for(l=0;l<nblocks;++l) _prod[l] = _mm_mul_pd(_prod[l],_mm_load_pd(expl + l*sz));
   _x = _mm_setzero_pd();
   for(l=0;l<nblocks;++l) _x = _mm_add_pd(_x,_prod[l]);
+
+#if(defined(__SSE3__))
   _x = _mm_hadd_pd(_x,_x);
+#else
+  PhyML_Printf("\n. SSE3 required. Try turning on the '-msse3' or '-march=native' or '-mcpu=native' option in configure.ac.");
+  assert(false);
+#endif
+  
   _mm_store_sd(&lk,_x);
   
   return lk;
@@ -181,7 +188,14 @@ phydbl SSE_Lk_Core_One_Class_No_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, p
       lk = 0.0;
       for(i=0;i<nblocks;++i)
         {
+
+#if(defined(__SSE3__) || defined(__SSE2__) || defined(__SSE__))
           _plk = _mm_hadd_pd(_plk_r[i],_plk_r[i]);
+#else
+          PhyML_Printf("\n. SSE3 required. Try turning on the '-msse3' or '-march=native' or '-mcpu=native' option in configure.ac.");
+          assert(false);
+#endif
+          
           _mm_store_sd(&dum,_plk);
           lk += dum;
         }
@@ -215,7 +229,14 @@ phydbl SSE_Lk_Core_One_Class_No_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, p
       for(i=0;i<nblocks;++i)
         {
           _plk = _mm_mul_pd(_pijplk[i],_plk_r[i]);
+
+#if(defined(__SSE3__) || defined(__SSE2__) || defined(__SSE__))
           _plk = _mm_hadd_pd(_plk,_plk);
+#else
+          PhyML_Printf("\n. SSE3 required. Try turning on the '-msse3' or '-march=native' or '-mcpu=native' option in configure.ac.");
+          assert(false);
+#endif
+          
           _mm_store_sd(&dum,_plk);
           lk += dum;
         }

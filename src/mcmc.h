@@ -186,5 +186,6 @@ void MCMC_PHYREX_Wide_Exchange(t_tree *tree, int print);
 void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, int print);
 void MCMC_PHYREX_Node_Times(t_tree *tree, int print);
 void MCMC_PHYREX_Sigsq(t_tree *tree, int print);
+void MCMC_PHYREX_Update_Velocities(t_tree *tree);
 
 #endif

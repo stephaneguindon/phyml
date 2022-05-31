@@ -51,12 +51,13 @@ phydbl LOCATION_Lk(t_tree *tree)
         if(tree->mmod->integrateAncestralLocations == NO) lnL = RRW_Lk(tree);
         else
           {
-            /* lnL = RRW_Independent_Contrasts(tree); */
-            /* PhyML_Printf("\n. "); */
-            /* PhyML_Printf(" IC: %f",lnL); */
             lnL = RRW_Lk_Integrated(tree);
-            /* PhyML_Printf("-- Int: %f",lnL); */
           }
+        break;
+      }
+    case IBM : 
+      {
+        lnL = IBM_Lk(tree);
         break;
       }
     default : assert(false);
@@ -97,7 +98,7 @@ phydbl LOCATION_Prior(t_tree *tree)
         lnP = UNLIKELY;
         break;
       }
-    case RRW_GAMMA : case RRW_LOGNORMAL :
+    case RRW_GAMMA : case RRW_LOGNORMAL : case IBM : 
       {
         lnP = RRW_Prior(tree);
         break;
@@ -304,6 +305,11 @@ char *LOCATION_Model_Id(t_phyrex_mod *mmod)
     case RRW_LOGNORMAL :
       {
         strcpy(s,"relaxed random walk (Lognormal)");
+        break;
+      }
+    case IBM :
+      {
+        strcpy(s,"integrated Brownian motion");
         break;
       }
     default : assert(FALSE);
