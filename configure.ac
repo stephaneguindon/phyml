@@ -11,8 +11,16 @@ AC_DEFINE([DEBUG],[1],[Debug tag on])
 
 AC_CANONICAL_HOST
 
-AC_PROG_CC([gcc])
+PROC=""
+AS_CASE([$host_cpu], [x86_64], [PROC="x86_64"], [arm*], [PROC="arm"])
 
+AS_IF([test "$PROC" = "x86_64"],[DEFAULT_VECTOR_FLAG="-march=native"])
+AS_IF([test "$PROC" = "arm"],[DEFAULT_VECTOR_FLAG="-mcpu=native"])
+AS_IF([test "x$PROC" = "x"],[DEFAULT_VECTOR_FLAG="-msse3"])
+
+AC_MSG_NOTICE(["$PROC"])
+
+AC_PROG_CC([gcc])
 
 # Checks for libraries.
 AC_CHECK_LIB([m], [log])
@@ -43,14 +51,14 @@ AC_FUNC_SETVBUF_REVERSED
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([floor pow rint sqrt strchr strstr])
 
+
 dnl DEFAULT_VECTOR_FLAG=""
 dnl DEFAULT_VECTOR_FLAG="-mavx -mfma"
 dnl DEFAULT_VECTOR_FLAG="-mavx2"
-dnl DEFAULT_VECTOR_FLAG=-msse4.2
-DEFAULT_VECTOR_FLAG="-march=native"
+dnl DEFAULT_VECTOR_FLAG=-msse3
+dnl DEFAULT_VECTOR_FLAG="-march=native"
 dnl DEFAULT_VECTOR_FLAG="-mtune=native"
-dnl DEFAULT_VECTOR_FLAG="-march=skylake -mprefer-vector-width=256"
-
+dnl DEFAULT_VECTOR_FLAG="-mcpu=native"
 
 AC_ARG_ENABLE([native],
               [AS_HELP_STRING([--disable-native],

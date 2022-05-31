@@ -267,6 +267,7 @@ void PHYREX_XML(char *xml_filename)
           else if(!strcmp(modname,"rw")) mixt_tree->mmod->model_id = RW;
           else if(!strcmp(modname,"rrw+gamma")) mixt_tree->mmod->model_id = RRW_GAMMA;
           else if(!strcmp(modname,"rrw+lognormal")) mixt_tree->mmod->model_id = RRW_LOGNORMAL;
+          else if(!strcmp(modname,"ibm")) mixt_tree->mmod->model_id = IBM;
           else
             {
               PhyML_Printf("\n. Unknown spatial model name '%s'. Aborting. ",modname);
@@ -655,7 +656,6 @@ void PHYREX_XML(char *xml_filename)
 
   Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree->n_root->b[2],mixt_tree);
   Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree->n_root->b[1],mixt_tree);  
-    
 
   MCMC_Randomize_Rate_Across_Sites(mixt_tree);
   MCMC_Randomize_Rates(mixt_tree);
@@ -893,6 +893,11 @@ phydbl PHYREX_Lk(t_tree *tree)
         lnP = RRW_Lk(tree) + TIMES_Lk_Coalescent(tree);
         break;
       }
+    case IBM : 
+      {
+        lnP = IBM_Lk(tree) + TIMES_Lk_Coalescent(tree);
+        break;
+      }
     default : assert(FALSE);
     }
 
@@ -906,6 +911,8 @@ phydbl PHYREX_Lk_Core(t_dsk *disk, t_tree *tree)
 {
   phydbl lnL;
   
+  lnL = UNLIKELY;
+  
   switch(tree->mmod->model_id)
     {
     case SLFV_GAUSSIAN : case SLFV_UNIFORM :
@@ -918,6 +925,12 @@ phydbl PHYREX_Lk_Core(t_dsk *disk, t_tree *tree)
           lnL = RRW_Lk_Core(disk,tree);
           break;
         }
+    case IBM :
+      {
+        PhyML_Printf("\n. PHYREX_Lk_Core function not implemented for IBM model");
+        Exit("\n");
+        break;
+      }
     default : assert(FALSE);
     }
   
@@ -945,6 +958,12 @@ phydbl PHYREX_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
     case RRW_GAMMA : case RRW_LOGNORMAL :
       {
         return(RRW_Lk_Range(young,old,tree) + TIMES_Lk_Coalescent_Range(young,old,tree));
+        break;
+      }
+    case IBM :
+      {
+        PhyML_Printf("\n. PHYREX_Lk_Core function not implemented for IBM model");
+        Exit("\n");
         break;
       }
     default : assert(FALSE);
@@ -1083,6 +1102,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_add_remove_jump")) MCMC_PHYREX_Add_Remove_Jump(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_sigsq_scale")) MCMC_PHYREX_Sigsq_Scale(tree,NO);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_node_times")) MCMC_PHYREX_Node_Times(tree,NO);
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_velocities")) MCMC_PHYREX_Update_Velocities(tree);
       if(!strcmp(tree->mcmc->move_name[move],"kappa")) MCMC_Kappa(tree);
       if(!strcmp(tree->mcmc->move_name[move],"rr")) MCMC_RR(tree);
       if(!strcmp(tree->mcmc->move_name[move],"ras")) MCMC_Rate_Across_Sites(tree);
@@ -4613,7 +4633,7 @@ phydbl PHYREX_Path_Logdensity(t_ldsk *young, t_ldsk *old, phydbl *sd, t_tree *tr
         return(SLFV_Path_Logdensity(young,old,sd,tree));
         break;
       }      
-    case RW : case RRW_GAMMA : case RRW_LOGNORMAL :
+    case RW : case RRW_GAMMA : case RRW_LOGNORMAL : case IBM : 
       {
         return(0.0);
         break;
@@ -4636,7 +4656,7 @@ void PHYREX_Sample_Path(t_ldsk *young, t_ldsk *old, phydbl *sd, phydbl *global_h
         break;
       }
       
-    case RW : case RRW_GAMMA : case RRW_LOGNORMAL :
+    case RW : case RRW_GAMMA : case RRW_LOGNORMAL : case IBM : 
       {
         assert(FALSE);
         break;
@@ -4657,7 +4677,7 @@ t_ldsk *PHYREX_Generate_Path(t_ldsk *young, t_ldsk *old, phydbl n_evt, phydbl *s
         return(SLFV_Generate_Path(young,old,n_evt,sd,tree));
         break;
       }      
-    case RW : case RRW_GAMMA : case RRW_LOGNORMAL : 
+    case RW : case RRW_GAMMA : case RRW_LOGNORMAL : case IBM :  
       {
         return(SLFV_Generate_Path(young,old,0,sd,tree));
         break;
@@ -4680,7 +4700,7 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda
         break;
       }
       
-    case RW : case RRW_GAMMA : case RRW_LOGNORMAL : 
+    case RW : case RRW_GAMMA : case RRW_LOGNORMAL : case IBM :  
       {
         assert(FALSE);
         break;
@@ -4703,7 +4723,7 @@ void PHYREX_Simulate_Backward_Core(t_dsk *disk,int avoid_multiple_mergers, t_tre
         break;
       }
       
-    case RW : case RRW_GAMMA : case RRW_LOGNORMAL : 
+    case RW : case RRW_GAMMA : case RRW_LOGNORMAL : case IBM :  
       {
         SLFV_Simulate_Backward_Core(disk,avoid_multiple_mergers,tree);
         break;
@@ -4727,12 +4747,12 @@ phydbl PHYREX_Update_Sigsq(t_tree *tree)
         break;
       }
 
-    case RW : case RRW_GAMMA : case RRW_LOGNORMAL :
+    case RW : case RRW_GAMMA : case RRW_LOGNORMAL : case IBM : 
       {
         return(tree->mmod->sigsq[0]);
         break;
       }
-
+      
     default : assert(FALSE);
 
     }

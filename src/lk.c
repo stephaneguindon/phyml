@@ -3331,7 +3331,7 @@ void Lk_Contmod_Post(t_node *a, t_node *d, phydbl sigsq, t_tree *tree, short int
       
       for(i=0;i<3;++i)
         {
-          if(d->v[i] != a && d->b[i] != tree->e_root)
+          if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
             {
               Lk_Contmod_Post(d,d->v[i],sigsq,tree,print);
             }
@@ -3340,7 +3340,7 @@ void Lk_Contmod_Post(t_node *a, t_node *d, phydbl sigsq, t_tree *tree, short int
       v1 = v2 = NULL;
       for(i=0;i<3;++i)
         {
-          if(d->v[i] != a && d->b[i] != tree->e_root)
+          if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
             {
               if(v1 == NULL) v1 = d->v[i];
               else v2 = d->v[i];
@@ -3359,7 +3359,7 @@ void Lk_Contmod_Post(t_node *a, t_node *d, phydbl sigsq, t_tree *tree, short int
       dv1var =
         log(sigsq) +
         log(tree->mmod->sigsq_scale[v1->num]) + 
-        log(tree->mmod->rrw_norm_fact) +
+        log(tree->mmod->sigsq_scale_norm_fact) +
         log(fabs(tree->times->nd_t[v1->num]-tree->times->nd_t[d->num]));
 
       dv1var = exp(dv1var);
@@ -3368,7 +3368,7 @@ void Lk_Contmod_Post(t_node *a, t_node *d, phydbl sigsq, t_tree *tree, short int
       dv2var =
         log(sigsq) +
         log(tree->mmod->sigsq_scale[v2->num]) + 
-        log(tree->mmod->rrw_norm_fact) +
+        log(tree->mmod->sigsq_scale_norm_fact) +
         log(fabs(tree->times->nd_t[v2->num]-tree->times->nd_t[d->num]));
 
       dv2var = exp(dv2var);
@@ -3421,7 +3421,7 @@ void Lk_Contmod_Pre(t_node *a, t_node *d, phydbl sigsq, t_tree *tree)
   v2 = NULL;
   for(i=0;i<3;++i)
     {
-      if(a->v[i] != d && a->v[i] != v1 && a->b[i] != tree->e_root)
+      if(a->v[i] != d && a->v[i] != v1 && !(v1 == tree->n_root && a->b[i] == tree->e_root))
         {
           v2 = a->v[i];
           break;
@@ -3438,40 +3438,39 @@ void Lk_Contmod_Pre(t_node *a, t_node *d, phydbl sigsq, t_tree *tree)
   av2var =
     log(sigsq) +
     log(tree->mmod->sigsq_scale[v2->num]) + 
-    log(tree->mmod->rrw_norm_fact) +
+    log(tree->mmod->sigsq_scale_norm_fact) +
     log(fabs(tree->times->nd_t[v2->num]-tree->times->nd_t[a->num]));
   
   av2var = exp(av2var);
-  
-  
+    
   
   if(v1 != NULL)
     {
-      v1mu     = tree->contmod->mu_up[v1->num];
-      v1var    = tree->contmod->var_up[v1->num];
-      v1logrem = tree->contmod->logrem_up[v1->num];
+      v1mu     = tree->contmod->mu_up[a->num];
+      v1var    = tree->contmod->var_up[a->num];
+      v1logrem = tree->contmod->logrem_up[a->num];
       
       av1var =
         log(sigsq) +
-        log(tree->mmod->sigsq_scale[v1->num]) + 
-        log(tree->mmod->rrw_norm_fact) +
+        log(tree->mmod->sigsq_scale[a->num]) + 
+        log(tree->mmod->sigsq_scale_norm_fact) +
         log(fabs(tree->times->nd_t[v1->num]-tree->times->nd_t[a->num]));
       
       av1var = exp(av1var);
       
-      tree->contmod->mu_up[a->num] = (v1mu*(v2var+av2var) + v2mu*(v1var+av1var))/(v2var+av2var+v1var+av1var);
+      tree->contmod->mu_up[d->num] = (v1mu*(v2var+av2var) + v2mu*(v1var+av1var))/(v2var+av2var+v1var+av1var);
       
-      tree->contmod->var_up[a->num] = (v2var+av2var)*(v1var+av1var)/(v2var+av2var+v1var+av1var);
+      tree->contmod->var_up[d->num] = (v2var+av2var)*(v1var+av1var)/(v2var+av2var+v1var+av1var);
       
-      tree->contmod->logrem_up[a->num] = v1logrem + v2logrem;
-      tree->contmod->logrem_up[a->num] -= .5*log(2.*PI*(v2var+av2var+v1var+av1var));
-      tree->contmod->logrem_up[a->num] -= .5*pow(v1mu-v2mu,2)/(v2var+av2var+v1var+av1var);      
+      tree->contmod->logrem_up[d->num] = v1logrem + v2logrem;
+      tree->contmod->logrem_up[d->num] -= .5*log(2.*PI*(v2var+av2var+v1var+av1var));
+      tree->contmod->logrem_up[d->num] -= .5*pow(v1mu-v2mu,2)/(v2var+av2var+v1var+av1var);      
     }
   else
     {
-      tree->contmod->mu_up[a->num]     = v2mu;
-      tree->contmod->var_up[a->num]    = v2var + av2var;
-      tree->contmod->logrem_up[a->num] = v2logrem;
+      tree->contmod->mu_up[d->num]     = v2mu;
+      tree->contmod->var_up[d->num]    = v2var + av2var;
+      tree->contmod->logrem_up[d->num] = v2logrem;
     }
   
   if(d->tax == TRUE) return;
@@ -3479,7 +3478,7 @@ void Lk_Contmod_Pre(t_node *a, t_node *d, phydbl sigsq, t_tree *tree)
     {
       for(i=0;i<3;++i)
         {
-          if(d->v[i] != a && d->b[i] != tree->e_root)
+          if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
             {
               Lk_Contmod_Pre(d,d->v[i],sigsq,tree);
             }
@@ -3490,3 +3489,76 @@ void Lk_Contmod_Pre(t_node *a, t_node *d, phydbl sigsq, t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+/* log(Variance) = log_var_multiplier + log(dt) */
+phydbl Sample_Ancestral_Trait_Contmod(t_node *a, t_node *d, phydbl t_za, phydbl t_zd, phydbl log_var_multiplier, int print, t_tree *tree)
+{
+  /*     
+         a
+        /\ 
+       /  \
+      z    \
+     /
+    /
+    d
+   /\
+  /  \
+
+  */
+  
+  phydbl mu_up,mu_down;
+  phydbl var_zd,var_za,var_up,var_down;
+  phydbl mean,sd;
+  
+  mu_up   = tree->contmod->mu_up[d->num];
+  mu_down = tree->contmod->mu_down[d->num];
+  
+  var_up   = tree->contmod->var_up[d->num];
+  var_down = tree->contmod->var_down[d->num];
+
+  var_zd = log_var_multiplier;
+
+  var_za = var_zd;
+  var_za += log(t_za);
+  var_za = exp(var_za);
+
+  if(t_zd > SMALL)
+    {    
+      var_zd += log(t_zd);    
+      var_zd = exp(var_zd);
+    }
+  else
+    {
+      var_zd = 0.0;
+    }
+
+  if(!(var_zd+var_za+var_up+var_down > 0.0))
+    {
+      PhyML_Printf("\n. a: %d d: %d t_za: %f t_zd: %f var_up: %f var_down = %f var_zd = %f var_za = %f",
+                   a->num,d->num,
+                   t_za,t_zd,
+                   var_up,var_down,
+                   var_zd,var_za);
+    }
+  assert(var_zd+var_za+var_up+var_down > 0.0);
+  
+  mean = (mu_down*(var_za+var_up) + mu_up*(var_zd+var_down))/(var_zd+var_za+var_up+var_down);
+  sd = sqrt((var_za+var_up)*(var_zd+var_down)/(var_za+var_zd+var_up+var_down));
+  
+  if(print == YES)
+    {
+      PhyML_Printf("\n. log_var_multiplier: %f mu_up: %f mu_down: %f var_up: %f var_down: %f mean: %f sd: %f",
+                   log_var_multiplier,
+                   mu_up,mu_down,
+                   var_up,var_down,
+                   mean,sd);
+    }
+
+  assert(isnan(sd) == NO);
+  
+  return(Rnorm(mean,sd));
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+

@@ -113,6 +113,11 @@ phydbl RRW_Prior_Sigsq_Scale(t_tree *tree)
           lnP += Log_Dnorm(log(tree->mmod->sigsq_scale[i]),-sd*sd/2.,sd,&err);
           lnP -= log(tree->mmod->sigsq_scale[i]);
         }
+      else if(tree->mmod->model_id == IBM)
+        {
+          lnP += Log_Dnorm(log(tree->mmod->sigsq_scale[i]),-sd*sd/2.,sd,&err);
+          lnP -= log(tree->mmod->sigsq_scale[i]);
+        }
     }
 
   return(lnP);
@@ -138,9 +143,6 @@ phydbl RRW_Lk_Core(t_dsk *disk, t_tree *tree)
       for(i=0;i<disk->ldsk->n_next;++i)
         {          
           lnP += RRW_Forward_Lk_Path(disk->ldsk,disk->ldsk->next[i],tree);
-          /* PhyML_Printf("\n. RRW_LK_CORE disk: %p time: %12f lnP: %20f [%12f %12f]", */
-          /*              disk,disk->time,lnP, */
-          /*              disk->time,disk->ldsk->next[i]->disk->time); */
         }
     }
 
@@ -182,7 +184,7 @@ phydbl RRW_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
           sd =
             log(tree->mmod->sigsq[i]) +
             log(tree->mmod->sigsq_scale[nd_d->num]) +
-            log(tree->mmod->rrw_norm_fact) +
+            log(tree->mmod->sigsq_scale_norm_fact) +
             log(dt);
 
           sd = sqrt(exp(sd));
@@ -208,7 +210,7 @@ phydbl RRW_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
           /*              ld,la, */
           /*              tree->mmod->sigsq[i], */
           /*              tree->mmod->sigsq_scale[nd_d->num], */
-          /*              tree->mmod->rrw_norm_fact, */
+          /*              tree->mmod->sigsq_scale_norm_fact, */
           /*              ldsk->disk->time-ldsk->prev->disk->time,Log_Dnorm(ld,la,sd,&err)); */
         }
 
@@ -259,9 +261,9 @@ void RRW_Rescale_Times_Pre(t_node *a, t_node *d, phydbl cur_ta, int prod, t_tree
   assert(!(cur_ta > td));
 
   if(prod == YES)
-    tree->times->nd_t[d->num] = ta + (td-cur_ta) * (tree->mmod->sigsq_scale[d->num] * tree->mmod->rrw_norm_fact);
+    tree->times->nd_t[d->num] = ta + (td-cur_ta) * (tree->mmod->sigsq_scale[d->num] * tree->mmod->sigsq_scale_norm_fact);
   else
-    tree->times->nd_t[d->num] = ta + (td-cur_ta) / (tree->mmod->sigsq_scale[d->num] * tree->mmod->rrw_norm_fact);
+    tree->times->nd_t[d->num] = ta + (td-cur_ta) / (tree->mmod->sigsq_scale[d->num] * tree->mmod->sigsq_scale_norm_fact);
 
   assert(!(tree->times->nd_t[d->num] < ta));
   
@@ -415,7 +417,8 @@ short int RRW_Is_Rw(t_phyrex_mod *mod)
 {
   if(mod->model_id == RW ||
      mod->model_id == RRW_GAMMA ||
-     mod->model_id == RRW_LOGNORMAL) return(YES);
+     mod->model_id == RRW_LOGNORMAL ||
+     mod->model_id == IBM) return(YES);
   return(NO);
 }
 
@@ -440,7 +443,7 @@ void RRW_Update_Normalization_Factor(t_tree *tree)
       T+=dt;
       RT+=rdt;
     }
-  tree->mmod->rrw_norm_fact = T/RT;
+  tree->mmod->sigsq_scale_norm_fact = T/RT;
 }
 
 //////////////////////////////////////////////////////////////
@@ -460,7 +463,7 @@ phydbl RRW_Mean_Displacement_Rate(t_tree *tree)
         fabs(tree->times->nd_t[i] - tree->times->nd_t[tree->a_nodes[i]->anc->num]) *
         tree->mmod->sigsq_scale[tree->a_nodes[i]->num]*
         (tree->mmod->sigsq[0]+tree->mmod->sigsq[1])*
-        tree->mmod->rrw_norm_fact;
+        tree->mmod->sigsq_scale_norm_fact;
     }
   return(disp/dt);
 }
@@ -524,9 +527,9 @@ void RRW_Sample_Arealin_Plot(t_tree *tree)
   for(i=0;i<tree->mmod->n_dim;++i)
     {
       RRW_Init_Contmod_Locations(i,tree);
-      RRW_Lk_Integrated_Post(NULL,tree->n_root,tree->mmod->sigsq[i],tree,NO);
-      RRW_Lk_Integrated_Pre(tree->n_root,tree->n_root->v[1],tree->mmod->sigsq[i],tree);
-      RRW_Lk_Integrated_Pre(tree->n_root,tree->n_root->v[2],tree->mmod->sigsq[i],tree);
+      Lk_Contmod_Post(NULL,tree->n_root,tree->mmod->sigsq[i],tree,NO);
+      Lk_Contmod_Pre(tree->n_root,tree->n_root->v[1],tree->mmod->sigsq[i],tree);
+      Lk_Contmod_Pre(tree->n_root,tree->n_root->v[2],tree->mmod->sigsq[i],tree);
     }
   
   /* Sample location on every ldsk */
@@ -542,11 +545,15 @@ void RRW_Sample_Arealin_Plot(t_tree *tree)
               for(i=0;i<tree->mmod->n_dim;++i)
                 {
                   coord_array[j]->lonlat[i] =
-                    RRW_Sample_Location(disk->ldsk->nd->anc,
-                                        disk->ldsk->nd,
-                                        fabs(tree->times->nd_t[disk->ldsk->nd->anc->num]-tree->times->nd_t[disk->ldsk->nd->num]),
-                                        0.0,                                        
-                                        tree->mmod->sigsq[i],tree);
+                    Sample_Ancestral_Trait_Contmod(disk->ldsk->nd->anc,
+                                                   disk->ldsk->nd,
+                                                   fabs(tree->times->nd_t[disk->ldsk->nd->anc->num]-tree->times->nd_t[disk->ldsk->nd->num]),
+                                                   0.0,
+                                                   log(tree->mmod->sigsq[i]) +
+                                                   log(tree->mmod->sigsq_scale[disk->ldsk->nd->num]) + 
+                                                   log(tree->mmod->sigsq_scale_norm_fact),                                                   
+                                                   NO,
+                                                   tree);
                 }
             }
           else if(disk->age_fixed == NO || (disk->age_fixed == YES && disk->ldsk_a[j]->disk != disk))
@@ -567,11 +574,15 @@ void RRW_Sample_Arealin_Plot(t_tree *tree)
               for(i=0;i<tree->mmod->n_dim;++i)
                 {
                   coord_array[j]->lonlat[i] =
-                    RRW_Sample_Location(ldsk_a->nd,
-                                        ldsk_d->nd,
-                                        tree->mmod->sigsq[i],
-                                        fabs(disk->time-tree->times->nd_t[ldsk_a->nd->num]),                                        
-                                        fabs(disk->time-tree->times->nd_t[ldsk_d->nd->num]),tree);
+                    Sample_Ancestral_Trait_Contmod(ldsk_a->nd,
+                                                   ldsk_d->nd,
+                                                   fabs(disk->time-tree->times->nd_t[ldsk_a->nd->num]),                                        
+                                                   fabs(disk->time-tree->times->nd_t[ldsk_d->nd->num]),
+                                                   log(tree->mmod->sigsq[i]) +
+                                                   log(tree->mmod->sigsq_scale[ldsk_d->nd->num]) + 
+                                                   log(tree->mmod->sigsq_scale_norm_fact),                                                   
+                                                   NO,
+                                                   tree);
                 }
             }
           else 
@@ -641,12 +652,15 @@ void RRW_Sample_Node_Locations(t_tree *tree)
           if(tree->a_nodes[j]->tax == NO && tree->a_nodes[j] != tree->n_root)
             {
               tree->a_nodes[j]->ldsk->coord->lonlat[i] =
-                RRW_Sample_Location(tree->a_nodes[j]->anc,
-                                    tree->a_nodes[j],
-                                    tree->mmod->sigsq[i],
-                                    fabs(tree->times->nd_t[tree->a_nodes[j]->anc->num]-tree->times->nd_t[tree->a_nodes[j]->num]),
-                                    0.0,
-                                    tree);
+                Sample_Ancestral_Trait_Contmod(tree->a_nodes[j]->anc,
+                                               tree->a_nodes[j],
+                                               fabs(tree->times->nd_t[tree->a_nodes[j]->anc->num]-tree->times->nd_t[tree->a_nodes[j]->num]),
+                                               0.0,
+                                               log(tree->mmod->sigsq[i]) +
+                                               log(tree->mmod->sigsq_scale[tree->a_nodes[j]->num]) + 
+                                               log(tree->mmod->sigsq_scale_norm_fact),
+                                               NO,
+                                               tree);
             }
         }
 
@@ -656,71 +670,6 @@ void RRW_Sample_Node_Locations(t_tree *tree)
         Rnorm(tree->contmod->mu_down[tree->n_root->num],
               sqrt(tree->contmod->var_down[tree->n_root->num]));
     }
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-phydbl RRW_Sample_Location(t_node *a, t_node *d, phydbl sigsq, phydbl t_za, phydbl t_zd, t_tree *tree)
-{
-  /*     
-         a
-        /\ 
-       /  \
-      z    \
-     /
-    /
-    d
-   /\
-  /  \
-
-  */
-  
-  phydbl mu_up,mu_down;
-  phydbl var_zd,var_za,var_up,var_down;
-  phydbl mean,sd;
-  
-  mu_up = tree->contmod->mu_up[d->num];
-  mu_down = tree->contmod->mu_down[d->num];
-  
-  var_up = tree->contmod->var_up[d->num];
-  var_down = tree->contmod->var_down[d->num];
-
-  var_zd = 
-    log(sigsq) +
-    log(tree->mmod->sigsq_scale[d->num]) + 
-    log(tree->mmod->rrw_norm_fact);
-
-  var_za = var_zd;
-  var_za += log(t_za);
-  var_za = exp(var_za);
-
-  if(t_zd > SMALL)
-    {    
-      var_zd += log(t_zd);    
-      var_zd = exp(var_zd);
-    }
-  else
-    {
-      var_zd = 0.0;
-    }
-
-  if(!(var_zd+var_za+var_up+var_down > 0.0))
-    {
-      PhyML_Printf("\n. a: %d d: %d t_za: %f t_zd: %f var_up: %f var_down = %f var_zd = %f var_za = %f",
-                   a->num,d->num,
-                   t_za,t_zd,
-                   var_up,var_down,
-                   var_zd,var_za);
-    }
-  assert(var_zd+var_za+var_up+var_down > 0.0);
-  
-  mean = (mu_down*(var_za+var_up) + mu_up*(var_zd+var_down))/(var_zd+var_za+var_up+var_down);
-  sd = sqrt((var_za+var_up)*(var_zd+var_down)/(var_za+var_zd+var_up+var_down));
-  
-  assert(isnan(sd) == NO);
-  
-  return(Rnorm(mean,sd));
 }
 
 //////////////////////////////////////////////////////////////

@@ -3515,7 +3515,7 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->sigsq_scale_min = 0.1;
   t->sigsq_scale_max = 10.;
 
-  t->rrw_norm_fact = 1.0;
+  t->sigsq_scale_norm_fact = 1.0;
   
   t->model_id = -1;
   t->use_locations = -1;

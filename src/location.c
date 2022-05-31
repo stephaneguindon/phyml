@@ -55,6 +55,11 @@ phydbl LOCATION_Lk(t_tree *tree)
           }
         break;
       }
+    case IBM : 
+      {
+        lnL = IBM_Lk(tree);
+        break;
+      }
     default : assert(false);
     }
 
@@ -93,7 +98,7 @@ phydbl LOCATION_Prior(t_tree *tree)
         lnP = UNLIKELY;
         break;
       }
-    case RRW_GAMMA : case RRW_LOGNORMAL :
+    case RRW_GAMMA : case RRW_LOGNORMAL : case IBM : 
       {
         lnP = RRW_Prior(tree);
         break;
@@ -300,6 +305,11 @@ char *LOCATION_Model_Id(t_phyrex_mod *mmod)
     case RRW_LOGNORMAL :
       {
         strcpy(s,"relaxed random walk (Lognormal)");
+        break;
+      }
+    case IBM :
+      {
+        strcpy(s,"integrated Brownian motion");
         break;
       }
     default : assert(FALSE);

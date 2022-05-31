@@ -126,6 +126,7 @@ void Partial_Lk_Exin(const phydbl *Pij1, const int state1, const phydbl *Pij2, c
 
 void Lk_Contmod_Pre(t_node *a, t_node *d, phydbl sigsq, t_tree *tree);
 void Lk_Contmod_Post(t_node *a, t_node *d, phydbl sigsq, t_tree *tree, short int print);
+phydbl Sample_Ancestral_Trait_Contmod(t_node *a, t_node *d, phydbl t_za, phydbl t_zd, phydbl log_var_multiplier, int print, t_tree *tree);
 
 #endif
 

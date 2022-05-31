@@ -107,6 +107,7 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define RW  4 /* standard Brownian diffusion model in phylogeography */
 #define RRW_GAMMA  5 /* Lemey's relaxed random walk (Gamma distributed relative diffusion rates) */
 #define RRW_LOGNORMAL  6 /* Lemey's relaxed random walk (Lognormal distributed relative diffusion rates) */
+#define IBM  7 /* Integrated Brownian Motion */
 
 #define AC 0
 #define AG 1
@@ -1820,6 +1821,7 @@ typedef struct __Tmcmc {
   int num_move_phyrex_sigsq_scale;
   int num_move_phyrex_ldsk_tips;
   int num_move_phyrex_node_times;
+  int num_move_phyrex_velocities;
 
   int nd_t_digits;
   int *monitor;
@@ -2022,7 +2024,7 @@ typedef struct __Migrep_Model{
   phydbl             sigsq_scale_min;
   phydbl             sigsq_scale_max;
 
-  phydbl               rrw_norm_fact;
+  phydbl       sigsq_scale_norm_fact;
   
   short int                 model_id;
   int                          n_dim;
@@ -2557,6 +2559,7 @@ void Set_Bl_From_Rt(int yesno, t_tree *tree);
 #include "rrw.h"
 #include "slfv.h"
 #include "location.h"
+#include "ibm.h"
 #endif
 
 #ifdef MPI

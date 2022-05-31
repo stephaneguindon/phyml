@@ -6169,6 +6169,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->num_move_phyrex_sigsq_scale       = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_phyrex_ldsk_tips         = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_phyrex_node_times        = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_phyrex_velocities        = mcmc->n_moves; mcmc->n_moves += 1;
   
   mcmc->run_move       = (int *)mCalloc(mcmc->n_moves,sizeof(int));
   mcmc->acc_move       = (int *)mCalloc(mcmc->n_moves,sizeof(int));
@@ -6259,6 +6260,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   strcpy(mcmc->move_name[mcmc->num_move_phyrex_sigsq_scale],"phyrex_sigsq_scale");
   strcpy(mcmc->move_name[mcmc->num_move_phyrex_ldsk_tips],"phyrex_ldsk_tips");
   strcpy(mcmc->move_name[mcmc->num_move_phyrex_node_times],"phyrex_node_times");
+  strcpy(mcmc->move_name[mcmc->num_move_phyrex_velocities],"phyrex_velocities");
 
 
   for(i=0;i<mcmc->n_moves;i++) mcmc->move_type[i] = -1;
@@ -6304,6 +6306,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_type[mcmc->num_move_phyrex_sigsq_scale] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_phyrex_ldsk_tips] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_phyrex_node_times] = MCMC_MOVE_SCALE_THORNE;
+  mcmc->move_type[mcmc->num_move_phyrex_velocities] = MCMC_MOVE_SCALE_THORNE;
 
   for(i=0;i<mcmc->n_moves;i++) mcmc->tune_move[i] = 1.;
   mcmc->tune_move[mcmc->num_move_time_neff_growth] = 0.01;
@@ -6383,6 +6386,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_prob[mcmc->num_move_phyrex_ldsk_tip_to_root]      = 6.0;
   mcmc->move_prob[mcmc->num_move_phyrex_ldsk_tips]             = 0.0;
   mcmc->move_prob[mcmc->num_move_phyrex_node_times]            = 4.0;
+  mcmc->move_prob[mcmc->num_move_phyrex_velocities]            = 4.0;
 
 # else
 
@@ -6417,6 +6421,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_prob[mcmc->num_move_phyrex_sigsq_scale]           = 0.0;
   mcmc->move_prob[mcmc->num_move_phyrex_ldsk_tips]             = 0.0;
   mcmc->move_prob[mcmc->num_move_phyrex_node_times]            = 0.0;
+  mcmc->move_prob[mcmc->num_move_phyrex_velocities]            = 0.0;
 
 #endif
   
@@ -6991,7 +6996,9 @@ void MCMC_PHYREX_Sigsq_Scale(t_tree *tree, int print)
   t_tree *aux_tree;
 
   if(tree->mmod->use_locations == NO) return;
-  if(RRW_Is_Rw(tree->mmod) == NO || tree->mmod->model_id == RW) return;
+  if(RRW_Is_Rw(tree->mmod) == NO ||
+     tree->mmod->model_id == RW ||
+     tree->mmod->model_id == IBM) return;
 
   tree->mcmc->run_move[tree->mcmc->num_move_phyrex_sigsq_scale]++;
   
@@ -12979,6 +12986,20 @@ void MCMC_PHYREX_Wide_Exchange(t_tree *tree, int print)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+#ifdef PHYREX
+void MCMC_PHYREX_Update_Velocities(t_tree *tree)
+{
+  if(tree->mmod->model_id == IBM)
+    {
+      IBM_Sample_Locations(tree);
+      IBM_Sample_Velocities(tree);
+      LOCATION_Lk(tree);
+    }
+}
+#endif
+
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

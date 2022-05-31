@@ -123,7 +123,7 @@ phydbl SSE_Lk_Core_One_Class_Eigen_Lr(phydbl *dot_prod, phydbl *expl, int ns)
 #if(defined(__SSE3__))
   _x = _mm_hadd_pd(_x,_x);
 #else
-  PhyML_Printf("\n. SSE3 needs to be enabled. Try turning on the '-march=native' option in configure.ac.");
+  PhyML_Printf("\n. SSE3 required. Try turning on the '-msse3' or '-march=native' or '-mcpu=native' option in configure.ac.");
   assert(false);
 #endif
   
@@ -189,10 +189,10 @@ phydbl SSE_Lk_Core_One_Class_No_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, p
       for(i=0;i<nblocks;++i)
         {
 
-#if(defined(__SSE3__))
+#if(defined(__SSE3__) || defined(__SSE2__) || defined(__SSE__))
           _plk = _mm_hadd_pd(_plk_r[i],_plk_r[i]);
 #else
-          PhyML_Printf("\n. SSE3 needs to be enabled... Try turning on the '-march=native' option in configure.ac.");
+          PhyML_Printf("\n. SSE3 required. Try turning on the '-msse3' or '-march=native' or '-mcpu=native' option in configure.ac.");
           assert(false);
 #endif
           
@@ -230,10 +230,10 @@ phydbl SSE_Lk_Core_One_Class_No_Eigen_Lr(phydbl *p_lk_left, phydbl *p_lk_rght, p
         {
           _plk = _mm_mul_pd(_pijplk[i],_plk_r[i]);
 
-#if(defined(__SSE3__))
+#if(defined(__SSE3__) || defined(__SSE2__) || defined(__SSE__))
           _plk = _mm_hadd_pd(_plk,_plk);
 #else
-          PhyML_Printf("\n. SSE3 needs to be enabled... Try turning on the '-march=native' option in configure.ac.");
+          PhyML_Printf("\n. SSE3 required. Try turning on the '-msse3' or '-march=native' or '-mcpu=native' option in configure.ac.");
           assert(false);
 #endif
           

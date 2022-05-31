@@ -1464,6 +1464,7 @@ phydbl SLFV_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_mergers,
   reached_oldest_disk = NO;
   if(init_disk->prev == NULL) reached_oldest_disk = YES; // Only one sampled disk
 
+
   lnL = 0.0;
   disk = init_disk;
   do
@@ -1473,7 +1474,7 @@ phydbl SLFV_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_mergers,
 
       /* Proposed new time */
       new_time = disk->time - Rexp(mmod->lbda);
-
+      
       lnL += log(mmod->lbda) - mmod->lbda * fabs(disk->time - new_time);
       
       /* New time is older than previous sampled disk (disk->prev) */
@@ -1524,7 +1525,7 @@ phydbl SLFV_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_mergers,
                     new_disk->centr->lonlat[j] = Uni()*(mmod->lim_up->lonlat[j]-mmod->lim_do->lonlat[j])+mmod->lim_do->lonlat[j];
                     break; 
                   }
-                case RW : case RRW_GAMMA : case RRW_LOGNORMAL :  
+                case RW : case RRW_GAMMA : case RRW_LOGNORMAL : case IBM :   
                   { 
                     new_disk->centr->lonlat[j] = disk->ldsk_a[Rand_Int(0,disk->n_ldsk_a-1)]->coord->lonlat[j];
                     break; 
@@ -1562,7 +1563,7 @@ phydbl SLFV_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_mergers,
                     prob_hit = exp(prob_hit);
                     break; 
                   }
-                  case RW : case RRW_GAMMA : case RRW_LOGNORMAL :
+                case RW : case RRW_GAMMA : case RRW_LOGNORMAL : case IBM : 
                     {
                       prob_hit = 1./(new_disk->n_ldsk_a+1.);
                     }
@@ -1588,7 +1589,7 @@ phydbl SLFV_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_mergers,
                             PHYREX_Runif_Rectangle_Overlap(new_disk->ldsk,new_disk,tree->mmod);
                             break;
                           }
-                        case SLFV_GAUSSIAN : case RW : case RRW_GAMMA : case RRW_LOGNORMAL :
+                        case SLFV_GAUSSIAN : case RW : case RRW_GAMMA : case RRW_LOGNORMAL : case IBM : 
                           {
                             PHYREX_Rnorm_Trunc(new_disk->ldsk,new_disk,tree->mmod);
                             for(j=0;j<tree->mmod->n_dim;++j)
