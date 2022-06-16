@@ -369,6 +369,9 @@ phydbl Rnorm(phydbl mean, phydbl sd)
 {
   /* Box-Muller transformation */
   phydbl u1, u2, res;
+
+  assert((isinf(mean) || isinf(sd)) == NO);
+  assert((isnan(mean) || isnan(sd)) == NO);
   
   /* u1=Uni(); */
   /* u2=Uni(); */

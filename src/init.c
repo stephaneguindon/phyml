@@ -861,8 +861,8 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
   rates->clock_r_prior_mean = 1.0E-1;
   rates->clock_r_prior_var  = 1.0E-8;
   
-  rates->max_rate         = 1.E+1;
-  rates->min_rate         = 1.E-1;
+  rates->max_rate         = 1.E+3;
+  rates->min_rate         = 1.E-3;
   /* rates->max_rate         = 5.; */
   /* rates->min_rate         = 0.2; */
 
@@ -3548,6 +3548,10 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->max_sigsq         = 1.E+3;
   t->prior_param_sigsq = 10.0;
 
+  t->min_veloc = -10.;
+  t->max_veloc = +10.;
+ 
+  
   assert(t->n_dim > 0);
   for(int i=0;i<t->n_dim;++i) t->sigsq[i] = t->min_sigsq + (t->max_sigsq-t->min_sigsq)/20.;
   
@@ -3818,6 +3822,30 @@ void RRW_Init_Contmod_Locations(int dim_idx, t_tree *tree)
   for(int i=0;i<tree->n_otu;++i)
     {
       tree->contmod->mu_down[i] = tree->a_nodes[i]->ldsk->coord->lonlat[dim_idx];
+      tree->contmod->var_down[i] = 0.0;
+      tree->contmod->logrem_down[i] = 0.0;
+
+      tree->contmod->mu_up[i] = 0.0;
+      tree->contmod->var_up[i] = 0.0;
+      tree->contmod->logrem_up[i] = 0.0;
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void IBM_Init_Contmod_Locations(int dim_idx, t_tree *tree)
+{
+  phydbl dt,avey;
+
+  dt = avey = -1.;
+  
+  for(int i=0;i<tree->n_otu;++i)
+    {
+      dt = fabs(tree->times->nd_t[tree->a_nodes[i]->num] - tree->times->nd_t[tree->a_nodes[i]->v[0]->num]);
+      avey = .5*(tree->a_nodes[i]->ldsk->veloc->deriv[dim_idx] + tree->a_nodes[i]->v[0]->ldsk->veloc->deriv[dim_idx]);
+      
+      tree->contmod->mu_down[i] = tree->a_nodes[i]->ldsk->coord->lonlat[dim_idx] + avey*dt;
       tree->contmod->var_down[i] = 0.0;
       tree->contmod->logrem_down[i] = 0.0;
 

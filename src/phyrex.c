@@ -539,7 +539,7 @@ void PHYREX_XML(char *xml_filename)
   
   MIXT_Propagate_Tree_Update(mixt_tree);
 
-  if(RRW_Is_Rw(mixt_tree->mmod) == YES)
+  if(RRW_Is_Rw(mixt_tree->mmod) == YES || mixt_tree->mmod->model_id == IBM)
     {
       mixt_tree->aux_tree = (t_tree **)mCalloc(3,sizeof(t_tree *));
 
@@ -615,12 +615,12 @@ void PHYREX_XML(char *xml_filename)
   if(mixt_tree->mmod->model_id == SLFV_GAUSSIAN || mixt_tree->mmod->model_id == SLFV_UNIFORM)
     mixt_tree->mmod->rad  = 0.05*((mixt_tree->mmod->lim_up->lonlat[0]-mixt_tree->mmod->lim_do->lonlat[0])+
                                   (mixt_tree->mmod->lim_up->lonlat[1]-mixt_tree->mmod->lim_do->lonlat[1]));
-  else if(RRW_Is_Rw(mixt_tree->mmod) == YES)
+  else if(RRW_Is_Rw(mixt_tree->mmod) == YES || mixt_tree->mmod->model_id == IBM)
     mixt_tree->mmod->rad = mixt_tree->mmod->sigsq[0];
   
   mixt_tree->mmod->sigsq[0] = PHYREX_Update_Sigsq(mixt_tree);
   for(int i=1;i<mixt_tree->mmod->n_dim;++i) mixt_tree->mmod->sigsq[i] = mixt_tree->mmod->sigsq[0];
-
+  
   for(int i=0;i<3;++i)
     {
       if(mixt_tree->aux_tree && mixt_tree->aux_tree[i])
@@ -639,7 +639,7 @@ void PHYREX_XML(char *xml_filename)
     {
     case 0 : case 1 :
       {
-        if(RRW_Is_Rw(mixt_tree->mmod) == YES)
+        if(RRW_Is_Rw(mixt_tree->mmod) == YES || mixt_tree->mmod->model_id == IBM)
           PHYREX_Simulate_Backward_Core(mixt_tree->young_disk,YES,mixt_tree);
         else
           PHYREX_Simulate_Backward_Core(mixt_tree->young_disk,NO,mixt_tree);
@@ -668,14 +668,13 @@ void PHYREX_XML(char *xml_filename)
   PHYREX_Oldest_Sampled_Disk(mixt_tree);
   for(int i=0;i<3;++i) if(mixt_tree->aux_tree && mixt_tree->aux_tree[i]) PHYREX_Oldest_Sampled_Disk(mixt_tree->aux_tree[i]);
 
-  if(RRW_Is_Rw(mixt_tree->mmod) == YES)
+  if(RRW_Is_Rw(mixt_tree->mmod) == YES || mixt_tree->mmod->model_id == IBM)
     {
       Make_Contrasts(mixt_tree);
       for(int i=0;i<3;++i) Make_Contrasts(mixt_tree->aux_tree[i]);
 
       Make_Contmod(mixt_tree);
       for(int i=0;i<3;++i) Make_Contmod(mixt_tree->aux_tree[i]);
-
 
       mixt_tree->times->augmented_coalescent = NO;
       for(int i=0;i<3;++i) mixt_tree->aux_tree[i]->times->augmented_coalescent = NO;
@@ -1073,7 +1072,6 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       /* phydbl prev_rates_lnL = tree->rates->c_lnL; */
       /* phydbl prev_times_lnL = tree->times->c_lnL; */
             
-      
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_lbda")) MCMC_PHYREX_Lbda(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_mu")) MCMC_PHYREX_Mu(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_rad")) MCMC_PHYREX_Radius(tree);
@@ -1495,8 +1493,8 @@ void PHYREX_One_New_Traj_Given_Disk(t_ldsk *y_ldsk, t_ldsk *o_ldsk, t_tree *tree
           continue;
         }
       
-      PHYREX_Store_Geo_Coord(ldsk->coord);
-      PHYREX_Store_Geo_Coord(ldsk->disk->centr);
+      PHYREX_Store_Geo_Coord(ldsk->coord,NULL);
+      PHYREX_Store_Geo_Coord(ldsk->disk->centr,NULL);
 
       for(i=0;i<tree->mmod->n_dim;i++)
         {
@@ -1968,25 +1966,99 @@ int PHYREX_Check_Struct(t_tree *tree, int exit)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-void PHYREX_Store_Geo_Coord(t_geo_coord *t)
+void PHYREX_Record_Coord(t_tree *tree)
+{
+  t_dsk *disk;
+  t_geo_veloc *v;
+  int i,j;
+  
+  disk = tree->n_root->ldsk->disk;
+
+  do
+    {
+      if(disk->ldsk != NULL) PHYREX_Store_Geo_Coord(disk->ldsk->coord,disk->ldsk->veloc);
+      disk = disk->next;
+    }
+  while(disk);
+
+  v = NULL;
+  for(i=0;i<tree->n_otu;++i)
+    {
+      v = tree->a_nodes[i]->ldsk->veloc;
+      for(j=0;j<v->dim;j++) v->cpy->deriv[j] = v->deriv[j];  
+      v->cpy->dim = v->dim;
+      strcpy(v->cpy->id,v->id);
+    }
+}
+
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+void PHYREX_Restore_Coord(t_tree *tree)
+{
+  t_dsk *disk;
+  t_geo_veloc *v;
+  int i,j;
+  
+  disk = tree->n_root->ldsk->disk;
+
+  do
+    {
+      if(disk->ldsk != NULL) PHYREX_Restore_Geo_Coord(disk->ldsk->coord,disk->ldsk->veloc);
+      disk = disk->next;
+    }
+  while(disk);
+
+
+  v = NULL;
+  for(i=0;i<tree->n_otu;++i)
+    {
+      v = tree->a_nodes[i]->ldsk->veloc;
+      for(j=0;j<v->dim;j++) v->deriv[j] = v->cpy->deriv[j];  
+      v->dim = v->cpy->dim;
+      strcpy(v->id,v->cpy->id);
+    }
+}
+
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+void PHYREX_Store_Geo_Coord(t_geo_coord *t, t_geo_veloc *v)
 {
   int i;
 
   for(i=0;i<t->dim;i++) t->cpy->lonlat[i] = t->lonlat[i];  
   t->cpy->dim = t->dim;
   strcpy(t->cpy->id,t->id);
+
+
+  if(v != NULL)
+    {
+      for(i=0;i<v->dim;i++) v->cpy->deriv[i] = v->deriv[i];  
+      v->cpy->dim = v->dim;
+      strcpy(v->cpy->id,v->id);
+    }
 }
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-
-void PHYREX_Restore_Geo_Coord(t_geo_coord *t)
+void PHYREX_Restore_Geo_Coord(t_geo_coord *t, t_geo_veloc *v)
 {
   int i;
+
   for(i=0;i<t->dim;i++) t->lonlat[i] = t->cpy->lonlat[i];  
   t->dim = t->cpy->dim;
   strcpy(t->id,t->cpy->id);
+
+  if(v != NULL)
+    {
+      for(i=0;i<v->dim;i++) v->deriv[i] = v->cpy->deriv[i];  
+      v->dim = v->cpy->dim;
+      strcpy(v->id,v->cpy->id);
+    }
 }
 
 /*////////////////////////////////////////////////////////////
@@ -2200,7 +2272,7 @@ phydbl PHYREX_Wrap_Prior_Radius(t_edge *e, t_tree *tree, supert_tree *st)
 
 phydbl PHYREX_LnPrior_Lbda(t_tree *tree)
 {
-  if(RRW_Is_Rw(tree->mmod) == YES)  return(0.0);
+  if(RRW_Is_Rw(tree->mmod) == YES || tree->mmod->model_id == IBM)  return(0.0);
   
   if(tree->mmod->lbda < tree->mmod->min_lbda) return UNLIKELY;
   if(tree->mmod->lbda > tree->mmod->max_lbda) return UNLIKELY;
@@ -2222,7 +2294,7 @@ phydbl PHYREX_LnPrior_Lbda(t_tree *tree)
 
 phydbl PHYREX_LnPrior_Mu(t_tree *tree)
 {
-  if(RRW_Is_Rw(tree->mmod) == YES)  return(0.0);
+  if(RRW_Is_Rw(tree->mmod) == YES || tree->mmod->model_id == IBM)  return(0.0);
 
   if(tree->mmod->mu < tree->mmod->min_mu) return UNLIKELY;
   if(tree->mmod->mu > tree->mmod->max_mu) return UNLIKELY;
@@ -2239,7 +2311,7 @@ phydbl PHYREX_LnPrior_Mu(t_tree *tree)
 
 phydbl PHYREX_LnPrior_Radius(t_tree *tree)
 {
-  if(RRW_Is_Rw(tree->mmod) == YES) return(0.0);
+  if(RRW_Is_Rw(tree->mmod) == YES || tree->mmod->model_id == IBM) return(0.0);
 
   if(tree->mmod->rad < tree->mmod->min_rad) return UNLIKELY;
   if(tree->mmod->rad > tree->mmod->max_rad) return UNLIKELY;
@@ -2446,8 +2518,8 @@ void PHYREX_Restore_Disk_Ldsk_Subtree_Pre(t_ldsk *old_ldsk, t_ldsk *young_ldsk, 
     {
       int i;
 
-      PHYREX_Restore_Geo_Coord(young_ldsk->coord);
-      PHYREX_Restore_Geo_Coord(young_ldsk->disk->centr);
+      PHYREX_Restore_Geo_Coord(young_ldsk->coord,NULL);
+      PHYREX_Restore_Geo_Coord(young_ldsk->disk->centr,NULL);
 
       for(i=0;i<young_ldsk->n_next;i++)
         {
@@ -2977,7 +3049,7 @@ void PHYREX_Tree_To_Ldsk_Post(t_node *a, t_node *d, t_dsk *a_disk, t_tree *tree)
           
           for(i=0;i<3;++i)
             {
-              if(d->v[i] != a && d->b[i] != tree->e_root)
+              if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
                 {
                   PHYREX_Tree_To_Ldsk_Post(d,d->v[i],d_disk,tree);
                 }
@@ -2990,7 +3062,7 @@ void PHYREX_Tree_To_Ldsk_Post(t_node *a, t_node *d, t_dsk *a_disk, t_tree *tree)
 
           for(i=0;i<3;++i)
             {
-              if(d->v[i] != a && d->b[i] != tree->e_root)
+              if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
                 {
                   PHYREX_Tree_To_Ldsk_Post(d,d->v[i],a_disk,tree);
                 }

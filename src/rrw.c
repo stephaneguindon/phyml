@@ -417,8 +417,7 @@ short int RRW_Is_Rw(t_phyrex_mod *mod)
 {
   if(mod->model_id == RW ||
      mod->model_id == RRW_GAMMA ||
-     mod->model_id == RRW_LOGNORMAL ||
-     mod->model_id == IBM) return(YES);
+     mod->model_id == RRW_LOGNORMAL) return(YES);
   return(NO);
 }
 

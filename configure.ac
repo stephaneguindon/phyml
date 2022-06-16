@@ -11,16 +11,14 @@ AC_DEFINE([DEBUG],[1],[Debug tag on])
 
 AC_CANONICAL_HOST
 
-PROC=""
-AS_CASE([$host_cpu], [x86_64], [PROC="x86_64"], [arm*], [PROC="arm"])
+AC_PROG_CC([gcc clang mpicc])
 
-AS_IF([test "$PROC" = "x86_64"],[DEFAULT_VECTOR_FLAG="-march=native"])
-AS_IF([test "$PROC" = "arm"],[DEFAULT_VECTOR_FLAG="-mcpu=native"])
-AS_IF([test "x$PROC" = "x"],[DEFAULT_VECTOR_FLAG="-msse3"])
+AS_IF([test "$CC" = "gcc"],[DEFAULT_VECTOR_FLAG="-march=native"])
+AS_IF([test "$CC" = "clang"],[DEFAULT_VECTOR_FLAG="-mcpu=native"])
+AS_IF([test "$CC" = "mpicc"],[DEFAULT_VECTOR_FLAG="-march=native"])
 
-AC_MSG_NOTICE(["$PROC"])
+AC_MSG_NOTICE(["$CC"])
 
-AC_PROG_CC([gcc])
 
 # Checks for libraries.
 AC_CHECK_LIB([m], [log])

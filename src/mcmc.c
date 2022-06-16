@@ -1442,7 +1442,14 @@ void MCMC_Root_Time(t_tree *tree, int print)
               if(tree->eval_glnL == YES)
                 {
 #ifdef PHYREX
-                  new_lnL_loc = LOCATION_Lk(tree); 
+                  if(tree->mmod->model_id == IBM)
+                    {
+                      PHYREX_Record_Coord(tree);
+                      IBM_Sample_Locations_Conditional(tree);
+                      IBM_Sample_Velocities_Conditional(tree);
+                      new_lnL_loc = cur_lnL_loc; /* Sampling from posterior */
+                    }
+                  else new_lnL_loc = LOCATION_Lk(tree); 
 #endif
                   new_lnL_time = TIMES_Lk(tree);
                 }
@@ -1504,12 +1511,18 @@ void MCMC_Root_Time(t_tree *tree, int print)
             }
           
           if(tree->n_root->ldsk) tree->n_root->ldsk->disk->time = tree->times->nd_t[root->num];
+
+#ifdef PHYREX
+          if(tree->mmod->model_id == IBM && failed == NO && tree->eval_glnL == YES) PHYREX_Restore_Coord(tree);
+#endif
+
           RATES_Update_One_Edge_Length(tree->e_root,tree);
           RATES_Update_Normalization_Factor(tree);
           Reset_Lk(tree);
         }
       else
         {
+          if(tree->mmod->model_id == IBM) LOCATION_Lk(tree);
           tree->mcmc->acc_move[move_num]++;
         }
       
@@ -3228,10 +3241,11 @@ void MCMC_Randomize_Rates_Pre(t_node *a, t_node *d, t_tree *tree)
 
 void MCMC_Randomize_Sigsq_Scale(t_tree *tree)
 {
+  int i;
+
   if(tree->mmod->model_id == RRW_GAMMA ||
      tree->mmod->model_id == RRW_LOGNORMAL)
     {
-      int i;
       phydbl sd;
 
       sd = 0.1;
@@ -3246,6 +3260,9 @@ void MCMC_Randomize_Sigsq_Scale(t_tree *tree)
                 tree->mmod->sigsq_scale[tree->a_nodes[i]->num] > tree->mmod->sigsq_scale_max);
         }
     }
+  
+  if(tree->mmod->model_id == IBM) for(i=0;i<2*tree->n_otu-2;++i) tree->mmod->sigsq_scale[tree->a_nodes[i]->num] = 1.;
+
 }
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -6894,7 +6911,7 @@ void MCMC_PHYREX_Sigsq(t_tree *tree, int print)
       PHYREX_Print_MCMC_Summary(tree);
       tree->mcmc->run_move[tree->mcmc->num_move_phyrex_sigsq]++;
     }  
-  else if(RRW_Is_Rw(tree->mmod) == YES && tree->mmod->sampling_scheme == SPATIAL_SAMPLING_DETECTION)
+  else if((RRW_Is_Rw(tree->mmod) == YES || tree->mmod->model_id == IBM) && tree->mmod->sampling_scheme == SPATIAL_SAMPLING_DETECTION)
    {      
       phydbl cur_sigsq,new_sigsq;
       phydbl min_sigsq,max_sigsq;
@@ -7270,7 +7287,7 @@ void MCMC_PHYREX_Neff(t_tree *tree, int print)
       tree->mcmc->run_move[tree->mcmc->num_move_time_neff]++;
     }
   else if(tree->times->model_id == COALESCENT &&
-          RRW_Is_Rw(tree->mmod) == YES  &&
+          (RRW_Is_Rw(tree->mmod) == YES || tree->mmod->model_id == IBM)  &&
           tree->mmod->sampling_scheme == SPATIAL_SAMPLING_DETECTION)
     {
       phydbl cur_Ne,new_Ne;
@@ -7475,7 +7492,7 @@ void MCMC_PHYREX_Neff_Growth(t_tree *tree, int print)
     }
   else if(tree->times->model_id == COALESCENT &&
           (tree->times->coalescent_model_id == EXPCOALESCENT || tree->times->coalescent_model_id == POWLAW) &&
-          RRW_Is_Rw(tree->mmod) == YES  &&
+          (RRW_Is_Rw(tree->mmod) == YES || tree->mmod->model_id == IBM)  &&
           tree->mmod->sampling_scheme == SPATIAL_SAMPLING_DETECTION)
     {
       phydbl cur_growth,new_growth;
@@ -7571,7 +7588,7 @@ void MCMC_PHYREX_Indel_Disk(t_tree *tree)
   phydbl cur_rad,new_rad;
   t_dsk *disk;
 
-  if(RRW_Is_Rw(tree->mmod) == YES) return;  
+  if(RRW_Is_Rw(tree->mmod) == YES || tree->mmod->model_id == IBM) return;  
   if(tree->mmod->use_locations == NO) return;
   
   hr       = 0.0;  
@@ -7637,7 +7654,7 @@ void MCMC_PHYREX_Delete_Disk(phydbl hr, int n_delete_disks, phydbl cur_lbda, phy
   t_dsk  *disk,**target_disk,**valid_disks;
   int i,j,block,n_valid_disks,*permut;
 
-  assert(RRW_Is_Rw(tree->mmod) == NO);
+  assert(RRW_Is_Rw(tree->mmod) == NO && tree->mmod->model_id != IBM);
 
   tree->mcmc->run_move[tree->mcmc->num_move_phyrex_indel_disk]++;
 
@@ -7785,7 +7802,7 @@ void MCMC_PHYREX_Insert_Disk(phydbl hr, int n_insert_disks, phydbl cur_lbda, phy
   phydbl u,alpha,ratio;
   int i,j,n_valid_disks,num_prec_issue;
 
-  assert(RRW_Is_Rw(tree->mmod) == NO);
+  assert(RRW_Is_Rw(tree->mmod) == NO && tree->mmod->model_id != IBM);
 
   tree->mcmc->run_move[tree->mcmc->num_move_phyrex_indel_disk]++;
 
@@ -8573,15 +8590,7 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
     }
 
   if(failed == NO)
-    {
-      if(tree->eval_glnL == YES)
-        {
-          new_glnL = (tree->mmod->use_locations == YES) ? LOCATION_Lk(tree) : 0.0;
-          new_tlnL = TIMES_Lk(tree);
-          if(PHYREX_Total_Number_Of_Intervals(tree) > tree->mmod->max_num_of_intervals) new_glnL = UNLIKELY;
-        }
-      
-      
+    {      
       if(tree->eval_alnL == YES &&
          tree->eval_rlnL == YES &&
          tree->rates->model_id == STRICTCLOCK)
@@ -8601,7 +8610,14 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
       
       if(tree->eval_glnL == YES)
         {
-          new_glnL = (tree->mmod->use_locations == YES) ? LOCATION_Lk(tree) : 0.0; 
+          if(tree->mmod->model_id == IBM)
+            {
+              PHYREX_Record_Coord(tree);              
+              IBM_Sample_Locations_Conditional(tree);
+              IBM_Sample_Velocities_Conditional(tree);
+              new_glnL = cur_glnL; /* Sampling from posterior */
+            }
+          else new_glnL = (tree->mmod->use_locations == YES) ? LOCATION_Lk(tree) : 0.0; 
           new_tlnL = TIMES_Lk(tree);
           if(PHYREX_Total_Number_Of_Intervals(tree) > tree->mmod->max_num_of_intervals) new_glnL = UNLIKELY;
         }
@@ -8655,6 +8671,8 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
       d_ldsk->disk->time = cur_t;
       tree->times->nd_t[d_ldsk->nd->num] = cur_t; // Ok only if tree is binary
 
+      if(tree->mmod->model_id == IBM && failed == NO && tree->eval_glnL == YES) PHYREX_Restore_Coord(tree);
+
       if(tree->rates->model_id != STRICTCLOCK)
         {
           tree->rates->br_r[v0->num] = r0_cur;
@@ -8684,6 +8702,7 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
     }
   else
     {
+      if(tree->mmod->model_id == IBM) LOCATION_Lk(tree);
       tree->mcmc->acc_move[move_num]++;
     }
   
@@ -8722,7 +8741,7 @@ void MCMC_PHYREX_Indel_Hit(t_tree *tree)
   phydbl cur_mu,new_mu;
   phydbl cur_rad,new_rad;
  
-  if(RRW_Is_Rw(tree->mmod) == YES) return;
+  if(RRW_Is_Rw(tree->mmod) == YES || tree->mmod->model_id == IBM) return;
   if(tree->mmod->use_locations == NO) return;
 
   hr       = 0.0;
@@ -8791,7 +8810,7 @@ void MCMC_PHYREX_Insert_Hit(phydbl hr, int n_insert_disks, phydbl cur_lbda, phyd
   phydbl u,alpha,ratio;
   int i,j,*dir_old_young,n_valid_disks,err,num_prec_issue;
 
-  assert(RRW_Is_Rw(tree->mmod) == NO);
+  assert(RRW_Is_Rw(tree->mmod) == NO && tree->mmod->model_id != IBM);
 
   tree->mcmc->run_move[tree->mcmc->num_move_phyrex_indel_hit]++;
 
@@ -8922,7 +8941,7 @@ void MCMC_PHYREX_Insert_Hit(phydbl hr, int n_insert_disks, phydbl cur_lbda, phyd
             {
               c = new_disk[j]->centr->lonlat[i];
             }
-          else if(RRW_Is_Rw(tree->mmod) == YES)
+          else if(RRW_Is_Rw(tree->mmod) == YES || tree->mmod->model_id == IBM)
             {
               c = .5*(old_ldsk[j]->coord->lonlat[i] + young_ldsk[j]->coord->lonlat[i]);
             }
@@ -9033,7 +9052,7 @@ void MCMC_PHYREX_Delete_Hit(phydbl hr, int n_delete_disks, phydbl cur_lbda, phyd
   t_ldsk **target_ldsk,**old_ldsk,**young_ldsk;
   int i,j,block,n_valid_disks,*dir_old_young,*permut,err;
 
-  assert(RRW_Is_Rw(tree->mmod) == NO);
+  assert(RRW_Is_Rw(tree->mmod) == NO && tree->mmod->model_id != IBM);
 
   tree->mcmc->run_move[tree->mcmc->num_move_phyrex_indel_hit]++;
 
@@ -9132,7 +9151,7 @@ void MCMC_PHYREX_Delete_Hit(phydbl hr, int n_delete_disks, phydbl cur_lbda, phyd
             {
               c = target_disk[j]->centr->lonlat[i];
             }
-          else if(RRW_Is_Rw(tree->mmod) == YES)
+          else if(RRW_Is_Rw(tree->mmod) == YES || tree->mmod->model_id == IBM)
             {
               c = .5*(target_ldsk[j]->prev->coord->lonlat[i] + target_ldsk[j]->next[0]->coord->lonlat[i]);
             }
@@ -9739,7 +9758,6 @@ void MCMC_PHYREX_Prune_Regraft_Slide(t_tree *tree, int print)
   phydbl cur_t,new_t,K;
   
   if(tree->mod->s_opt->opt_topo == NO) return;
-
   
   /* n_iter = (int)(1+Rand_Int(0,0.2*tree->n_otu)); */
   n_iter = (int)(1+0.2*tree->n_otu);
@@ -10233,7 +10251,7 @@ void MCMC_PHYREX_Lineage_Traj(t_tree *tree)
   int pos,*permut,dir_next;
   phydbl area,*rad;
   
-  if(RRW_Is_Rw(tree->mmod) == YES) return;
+  if(RRW_Is_Rw(tree->mmod) == YES || tree->mmod->model_id == IBM) return;
   if(tree->mmod->use_locations == NO) return;
 
 
@@ -10425,7 +10443,7 @@ void MCMC_PHYREX_Disk_Multi(t_tree *tree)
   int i,j,block,n_all_disks,n_move_disks,*permut;
   int err;
 
-  if(RRW_Is_Rw(tree->mmod) == YES) return;
+  if(RRW_Is_Rw(tree->mmod) == YES || tree->mmod->model_id == IBM) return;
   if(tree->mmod->use_locations == NO) return;
   if(tree->mmod->integrateAncestralLocations == YES) return;
 
@@ -10480,7 +10498,7 @@ void MCMC_PHYREX_Disk_Multi(t_tree *tree)
   
       assert(target_disk[i]);
 
-      PHYREX_Store_Geo_Coord(target_disk[i]->centr);
+      PHYREX_Store_Geo_Coord(target_disk[i]->centr,NULL);
       
       if(target_disk[i]->ldsk != NULL)
         {
@@ -10557,7 +10575,7 @@ void MCMC_PHYREX_Disk_Multi(t_tree *tree)
 
   if(u > alpha) /* Reject */
     {
-      for(i=0;i<n_move_disks;i++) PHYREX_Restore_Geo_Coord(target_disk[i]->centr);
+      for(i=0;i<n_move_disks;i++) PHYREX_Restore_Geo_Coord(target_disk[i]->centr,NULL);
       Reset_Lk(tree);
     }
   else
@@ -10637,7 +10655,7 @@ void MCMC_PHYREX_Ldsk_Multi(t_tree *tree)
     {
       target_disk[i] = all_disks[permut[i]];
       
-      PHYREX_Store_Geo_Coord(target_disk[i]->ldsk->coord);
+      PHYREX_Store_Geo_Coord(target_disk[i]->ldsk->coord,NULL);
 
       for(j=0;j<tree->mmod->n_dim;j++)
         {
@@ -10671,7 +10689,7 @@ void MCMC_PHYREX_Ldsk_Multi(t_tree *tree)
 
   if(u > alpha) /* Reject */
     {
-      for(i=0;i<n_move_ldsk;i++) PHYREX_Restore_Geo_Coord(target_disk[i]->ldsk->coord);
+      for(i=0;i<n_move_ldsk;i++) PHYREX_Restore_Geo_Coord(target_disk[i]->ldsk->coord,NULL);
       Reset_Lk(tree);
     }
   else
@@ -10703,7 +10721,7 @@ void MCMC_PHYREX_Ldsk_And_Disk(t_tree *tree)
   int i,j,block,n_all_disks,n_move_ldsk,*permut;
   int err;
 
-  if(RRW_Is_Rw(tree->mmod) == YES) return;
+  if(RRW_Is_Rw(tree->mmod) == YES || tree->mmod->model_id == IBM) return;
   if(tree->mmod->use_locations == NO) return;
   if(tree->mmod->integrateAncestralLocations == YES) return;
 
@@ -10755,8 +10773,8 @@ void MCMC_PHYREX_Ldsk_And_Disk(t_tree *tree)
     {
       target_disk[i] = all_disks[permut[i]];
       
-      PHYREX_Store_Geo_Coord(target_disk[i]->ldsk->coord);
-      PHYREX_Store_Geo_Coord(target_disk[i]->centr);
+      PHYREX_Store_Geo_Coord(target_disk[i]->ldsk->coord,NULL);
+      PHYREX_Store_Geo_Coord(target_disk[i]->centr,NULL);
             
       for(j=0;j<tree->mmod->n_dim;j++)
         {
@@ -10825,8 +10843,8 @@ void MCMC_PHYREX_Ldsk_And_Disk(t_tree *tree)
 
   if(u > alpha) /* Reject */
     {
-      for(i=0;i<n_move_ldsk;i++) PHYREX_Restore_Geo_Coord(target_disk[i]->ldsk->coord);
-      for(i=0;i<n_move_ldsk;i++) PHYREX_Restore_Geo_Coord(target_disk[i]->centr);
+      for(i=0;i<n_move_ldsk;i++) PHYREX_Restore_Geo_Coord(target_disk[i]->ldsk->coord,NULL);
+      for(i=0;i<n_move_ldsk;i++) PHYREX_Restore_Geo_Coord(target_disk[i]->centr,NULL);
       Reset_Lk(tree);
     }
   else
@@ -10911,7 +10929,7 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree, int print)
       /*     else new_glnL -= LOCATION_Lk_Core(disk,tree); */
       /*   } */
             
-      PHYREX_Store_Geo_Coord(disk->ldsk->coord);
+      PHYREX_Store_Geo_Coord(disk->ldsk->coord,NULL);
       
       tree->mcmc->run_move[tree->mcmc->num_move_phyrex_ldsk_given_disk]++;
 
@@ -10967,7 +10985,7 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree, int print)
       
       if(u > alpha) /* Reject */
         {
-          PHYREX_Restore_Geo_Coord(disk->ldsk->coord);          
+          PHYREX_Restore_Geo_Coord(disk->ldsk->coord,NULL);          
           tree->mmod->c_lnL = cur_glnL;
         }
       else
@@ -10999,7 +11017,7 @@ void MCMC_PHYREX_Disk_Given_Ldsk(t_tree *tree)
   t_dsk  *disk,**all_disks;
   int i,j,n_all_disks,block,n_move_ldsk,*permut;
 
-  if(RRW_Is_Rw(tree->mmod) == YES) return;
+  if(RRW_Is_Rw(tree->mmod) == YES || tree->mmod->model_id == IBM) return;
   if(tree->mmod->use_locations == NO) return;
 
   block       = 100;
@@ -11036,7 +11054,7 @@ void MCMC_PHYREX_Disk_Given_Ldsk(t_tree *tree)
       
       if(tree->eval_glnL == YES) new_glnL -= LOCATION_Lk_Core(disk,tree);
  
-      PHYREX_Store_Geo_Coord(disk->centr);
+      PHYREX_Store_Geo_Coord(disk->centr,NULL);
 
       for(j=0;j<tree->mmod->n_dim;j++)
         {
@@ -11058,7 +11076,7 @@ void MCMC_PHYREX_Disk_Given_Ldsk(t_tree *tree)
 
       if(u > alpha) /* Reject */
         {
-          PHYREX_Restore_Geo_Coord(disk->centr);          
+          PHYREX_Restore_Geo_Coord(disk->centr,NULL);          
         }
       else
         {
@@ -11093,7 +11111,7 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
   phydbl T,t,pindel,*rad,c;
   int n_valid_disks,num_prec_issue;
   
-  if(RRW_Is_Rw(tree->mmod) == YES) return;
+  if(RRW_Is_Rw(tree->mmod) == YES || tree->mmod->model_id == IBM) return;
   if(tree->mmod->use_locations == NO) return;
 
   cur_glnL       = tree->mmod->c_lnL;
@@ -11542,7 +11560,7 @@ void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree)
   phydbl log_lk_centr;
   phydbl T,t,pindel;
 
-  if(RRW_Is_Rw(tree->mmod) == YES) return;
+  if(RRW_Is_Rw(tree->mmod) == YES || tree->mmod->model_id == IBM) return;
   if(tree->mmod->use_locations == NO) return;
 
   cur_glnL       = tree->mmod->c_lnL;
@@ -11779,7 +11797,7 @@ void MCMC_PHYREX_Add_Remove_Jump(t_tree *tree)
   phydbl *rad,c;
   phydbl n_no_hit;
   
-  if(RRW_Is_Rw(tree->mmod) == YES) return;
+  if(RRW_Is_Rw(tree->mmod) == YES || tree->mmod->model_id == IBM) return;
   if(tree->mmod->use_locations == NO) return;
   if(tree->mmod->integrateAncestralLocations == YES) return;
 
@@ -12195,7 +12213,7 @@ void MCMC_PHYREX_Ldsk_Tip_To_Root(t_tree *tree, int print)
           /*   } */
           
           
-          PHYREX_Store_Geo_Coord(ldsk->coord);
+          PHYREX_Store_Geo_Coord(ldsk->coord,NULL);
           
           tree->mcmc->run_move[tree->mcmc->num_move_phyrex_ldsk_tip_to_root]++;
           
@@ -12244,7 +12262,7 @@ void MCMC_PHYREX_Ldsk_Tip_To_Root(t_tree *tree, int print)
           
           if(u > alpha) /* Reject */
             {
-              PHYREX_Restore_Geo_Coord(ldsk->coord);
+              PHYREX_Restore_Geo_Coord(ldsk->coord,NULL);
               tree->mmod->c_lnL = cur_glnL;
             }
           else
@@ -12303,7 +12321,7 @@ void MCMC_PHYREX_Ldsk_Tip_To_Root(t_tree *tree, int print)
 
   /*     do */
   /*       { */
-  /*         PHYREX_Store_Geo_Coord(ldsk->coord); */
+  /*         PHYREX_Store_Geo_Coord(ldsk->coord,NULL); */
 
   /*         for(j=0;j<tree->mmod->n_dim;j++) */
   /*           { */
@@ -12344,7 +12362,7 @@ void MCMC_PHYREX_Ldsk_Tip_To_Root(t_tree *tree, int print)
   /*         ldsk = tree->a_nodes[permut[i]]->ldsk->prev; */
   /*         do */
   /*           { */
-  /*             PHYREX_Restore_Geo_Coord(ldsk->coord); */
+  /*             PHYREX_Restore_Geo_Coord(ldsk->coord,NULL); */
   /*             ldsk = ldsk->prev; */
   /*           } */
   /*         while(ldsk != NULL); */
@@ -12412,7 +12430,7 @@ void MCMC_PHYREX_Ldsk_Tips(t_tree *tree)
         }
           
           
-      PHYREX_Store_Geo_Coord(ldsk->coord);
+      PHYREX_Store_Geo_Coord(ldsk->coord,NULL);
       
       tree->mcmc->run_move[tree->mcmc->num_move_phyrex_ldsk_tips]++;
           
@@ -12452,7 +12470,7 @@ void MCMC_PHYREX_Ldsk_Tips(t_tree *tree)
       if(u > alpha) /* Reject */
         {
           /* PhyML_Printf(" -- reject"); */
-          PHYREX_Restore_Geo_Coord(ldsk->coord);          
+          PHYREX_Restore_Geo_Coord(ldsk->coord,NULL);          
         }
       else
         {
@@ -12693,6 +12711,9 @@ void MCMC_PHYREX_Narrow_Exchange(t_tree *tree, int print)
 
       PHYREX_Exchange_Ldsk(a,d,w,v,aw,dv,tree);
       
+      Update_Ancestors(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
+      Update_Ancestors(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);  
+
       /* PHYREX_Swap_Coords(a,d,tree); */
 
       if(w->disk->time > v->disk->time) PHYREX_Update_Lindisk_List_Range(w->disk,a->disk,tree);
@@ -12705,7 +12726,14 @@ void MCMC_PHYREX_Narrow_Exchange(t_tree *tree, int print)
       
       if(tree->eval_glnL == YES)
         {
-          new_glnL = (tree->mmod->use_locations == YES) ? LOCATION_Lk(tree) : 0.0; 
+          if(tree->mmod->model_id == IBM)
+            {
+              PHYREX_Record_Coord(tree);              
+              IBM_Sample_Locations_Conditional(tree);
+              IBM_Sample_Velocities_Conditional(tree);
+              new_glnL = cur_glnL;
+            }
+          else new_glnL = (tree->mmod->use_locations == YES) ? LOCATION_Lk(tree) : 0.0; 
           new_tlnL = TIMES_Lk(tree);
           if(PHYREX_Total_Number_Of_Intervals(tree) > tree->mmod->max_num_of_intervals) new_glnL = UNLIKELY;
         }
@@ -12767,18 +12795,23 @@ void MCMC_PHYREX_Narrow_Exchange(t_tree *tree, int print)
           if(w->disk->time > v->disk->time) PHYREX_Update_Lindisk_List_Range(w->disk,a->disk,tree);
           else PHYREX_Update_Lindisk_List_Range(v->disk,a->disk,tree);
           
+          if(tree->mmod->model_id == IBM) PHYREX_Restore_Coord(tree);
+
           PHYREX_Update_Node_Times_Given_Disks(tree);
           
           RATES_Fill_Lca_Table(tree);
           RATES_Update_Edge_Lengths(tree);
           
+          Update_Ancestors(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
+          Update_Ancestors(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);  
+
           Reset_Lk(tree);
         }
       else
         {
-          tree->mmod->c_lnL = new_glnL;
-          tree->times->c_lnL = new_tlnL;
-          
+          if(tree->mmod->model_id == IBM) LOCATION_Lk(tree);
+          else tree->mmod->c_lnL = new_glnL;
+          tree->times->c_lnL = new_tlnL;          
           tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_narrow_exchange]++;
         }
       
@@ -12885,6 +12918,9 @@ void MCMC_PHYREX_Wide_Exchange(t_tree *tree, int print)
 
       PHYREX_Exchange_Ldsk(a,d,w,v,aw,dv,tree);
       
+      Update_Ancestors(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
+      Update_Ancestors(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);  
+
       /* PHYREX_Swap_Coords(a,d,tree); */
 
       if(w->disk->time > v->disk->time) PHYREX_Update_Lindisk_List_Range(w->disk,a->disk,tree);
@@ -12897,7 +12933,14 @@ void MCMC_PHYREX_Wide_Exchange(t_tree *tree, int print)
       
       if(tree->eval_glnL == YES)
         {
-          new_glnL = (tree->mmod->use_locations == YES) ? LOCATION_Lk(tree) : 0.0; 
+          if(tree->mmod->model_id == IBM)
+            {
+              PHYREX_Record_Coord(tree);              
+              IBM_Sample_Locations_Conditional(tree);
+              IBM_Sample_Velocities_Conditional(tree);
+              new_glnL = cur_glnL;
+            }
+          else new_glnL = (tree->mmod->use_locations == YES) ? LOCATION_Lk(tree) : 0.0; 
           new_tlnL = TIMES_Lk(tree);
           if(PHYREX_Total_Number_Of_Intervals(tree) > tree->mmod->max_num_of_intervals) new_glnL = UNLIKELY;
         }
@@ -12958,17 +13001,23 @@ void MCMC_PHYREX_Wide_Exchange(t_tree *tree, int print)
           if(w->disk->time > v->disk->time) PHYREX_Update_Lindisk_List_Range(w->disk,a->disk,tree);
           else PHYREX_Update_Lindisk_List_Range(v->disk,a->disk,tree);
           
+          if(tree->mmod->model_id == IBM) PHYREX_Restore_Coord(tree);
+
           PHYREX_Update_Node_Times_Given_Disks(tree);
 
           RATES_Fill_Lca_Table(tree);
           RATES_Update_Edge_Lengths(tree);
-          
+
+          Update_Ancestors(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
+          Update_Ancestors(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);  
+         
           Reset_Lk(tree);
         }
       else
         {
-          tree->mmod->c_lnL = new_glnL;
           tree->times->c_lnL = new_tlnL;
+          if(tree->mmod->model_id == IBM) LOCATION_Lk(tree);
+          else tree->mmod->c_lnL = new_glnL;
           tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_wide_exchange]++;
         }
 
@@ -12992,9 +13041,20 @@ void MCMC_PHYREX_Update_Velocities(t_tree *tree)
 {
   if(tree->mmod->model_id == IBM)
     {
-      IBM_Sample_Locations(tree);
-      IBM_Sample_Velocities(tree);
+      int iter = 0;
+      do
+        {
+          IBM_Sample_Locations_Conditional(tree);
+          IBM_Sample_Velocities_Conditional(tree);
+        }
+      while(++iter < 1000);
+      
       LOCATION_Lk(tree);
+
+      tree->mcmc->run++;
+      PHYREX_Print_MCMC_Stats(tree);
+      PHYREX_Print_MCMC_Tree(tree);
+      PHYREX_Print_MCMC_Summary(tree);
     }
 }
 #endif

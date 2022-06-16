@@ -3554,7 +3554,8 @@ phydbl Sample_Ancestral_Trait_Contmod(t_node *a, t_node *d, phydbl t_za, phydbl 
                    mean,sd);
     }
 
-  assert(isnan(sd) == NO);
+  assert(isnan(sd) == NO && isinf(sd) == NO);
+  assert(isnan(mean) == NO && isinf(mean) == NO);
   
   return(Rnorm(mean,sd));
 }

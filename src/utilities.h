@@ -95,6 +95,10 @@ static inline int isinf_d  (double      x) { return isnan (x - x); }
 static inline int isinf_ld (long double x) { return isnan (x - x); }
 #endif
 
+#define LOG12 2.4849066497880003546
+#define LOG4 1.3862943611198905725
+#define LOG3 1.0986122886681097821
+
 #define BIRTHDEATH 0
 #define COALESCENT 1
 
@@ -2057,6 +2061,9 @@ typedef struct __Migrep_Model{
   phydbl                         rho; // intensity parameter of the Poisson point processs
   phydbl                gen_cal_time; // duration of one generation in calendar time unit
   phydbl                          nu; // parameter of hyperprior on sigsq_scale (see Eq. (1) in Lemey et al., 2010).
+  
+  phydbl                   min_veloc;
+  phydbl                   max_veloc;
   
   phydbl                       c_lnL; // current value of log-likelihood 
   phydbl                       p_lnL; // previous value of log-likelihood 

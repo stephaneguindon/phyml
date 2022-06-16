@@ -2551,7 +2551,97 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
               }
             //PhyML_Fprintf(fp_out,"\n");
           }
-	
+
+	if(tree->io->datatype == AA && (tree->mod->s_opt->state_freq == ML || tree->mod->s_opt->state_freq == EMPIRICAL))
+          {
+            if(precision > 0)
+              {
+                PhyML_Fprintf(fp_out,"\n- f(Ala)= ");
+                PhyML_Fprintf(fp_out,format,tree->mod->e_frq->pi->v[0]);
+                PhyML_Fprintf(fp_out," f(Arg)= ");
+                PhyML_Fprintf(fp_out,format,tree->mod->e_frq->pi->v[1]);
+                PhyML_Fprintf(fp_out," f(Asn)= ");
+                PhyML_Fprintf(fp_out,format,tree->mod->e_frq->pi->v[2]);
+                PhyML_Fprintf(fp_out,"\n- f(Asp)= ");
+                PhyML_Fprintf(fp_out,format,tree->mod->e_frq->pi->v[3]);
+                PhyML_Fprintf(fp_out," f(Cys)= ");
+                PhyML_Fprintf(fp_out,format,tree->mod->e_frq->pi->v[4]);
+                PhyML_Fprintf(fp_out," f(Gln)= ");
+                PhyML_Fprintf(fp_out,format,tree->mod->e_frq->pi->v[5]);
+                PhyML_Fprintf(fp_out,"\n- f(Glu)= ");
+                PhyML_Fprintf(fp_out,format,tree->mod->e_frq->pi->v[6]);
+                PhyML_Fprintf(fp_out," f(Gly)= ");
+                PhyML_Fprintf(fp_out,format,tree->mod->e_frq->pi->v[7]);
+                PhyML_Fprintf(fp_out," f(His)= ");
+                PhyML_Fprintf(fp_out,format,tree->mod->e_frq->pi->v[8]);
+                PhyML_Fprintf(fp_out,"\n- f(Ile)= ");
+                PhyML_Fprintf(fp_out,format,tree->mod->e_frq->pi->v[9]);
+                PhyML_Fprintf(fp_out," f(Leu)= ");
+                PhyML_Fprintf(fp_out,format,tree->mod->e_frq->pi->v[10]);
+                PhyML_Fprintf(fp_out," f(Lys)= ");
+                PhyML_Fprintf(fp_out,format,tree->mod->e_frq->pi->v[11]);
+                PhyML_Fprintf(fp_out,"\n- f(Met)= ");
+                PhyML_Fprintf(fp_out,format,tree->mod->e_frq->pi->v[12]);
+                PhyML_Fprintf(fp_out," f(Phe)= ");
+                PhyML_Fprintf(fp_out,format,tree->mod->e_frq->pi->v[13]);
+                PhyML_Fprintf(fp_out," f(Pro)= ");
+                PhyML_Fprintf(fp_out,format,tree->mod->e_frq->pi->v[14]);
+                PhyML_Fprintf(fp_out,"\n- f(Ser)= ");
+                PhyML_Fprintf(fp_out,format,tree->mod->e_frq->pi->v[15]);
+                PhyML_Fprintf(fp_out," f(Thr)= ");
+                PhyML_Fprintf(fp_out,format,tree->mod->e_frq->pi->v[16]);
+                PhyML_Fprintf(fp_out," f(Trp)= ");
+                PhyML_Fprintf(fp_out,format,tree->mod->e_frq->pi->v[17]);
+                PhyML_Fprintf(fp_out,"\n- f(Tyr)= ");
+                PhyML_Fprintf(fp_out,format,tree->mod->e_frq->pi->v[18]);
+                PhyML_Fprintf(fp_out," f(Val)= ");
+                PhyML_Fprintf(fp_out,format,tree->mod->e_frq->pi->v[19]);            
+              }
+            else
+              {
+                PhyML_Fprintf(fp_out,"\n- f(Ala)= ");
+                PhyML_Fprintf(fp_out,"%f",tree->mod->e_frq->pi->v[0]);
+                PhyML_Fprintf(fp_out," f(Arg)= ");
+                PhyML_Fprintf(fp_out,"%f",tree->mod->e_frq->pi->v[1]);
+                PhyML_Fprintf(fp_out," f(Asn)= ");
+                PhyML_Fprintf(fp_out,"%f",tree->mod->e_frq->pi->v[2]);
+                PhyML_Fprintf(fp_out,"\n- f(Asp)= ");
+                PhyML_Fprintf(fp_out,"%f",tree->mod->e_frq->pi->v[3]);
+                PhyML_Fprintf(fp_out," f(Cys)= ");
+                PhyML_Fprintf(fp_out,"%f",tree->mod->e_frq->pi->v[4]);
+                PhyML_Fprintf(fp_out," f(Gln)= ");
+                PhyML_Fprintf(fp_out,"%f",tree->mod->e_frq->pi->v[5]);
+                PhyML_Fprintf(fp_out,"\n- f(Glu)= ");
+                PhyML_Fprintf(fp_out,"%f",tree->mod->e_frq->pi->v[6]);
+                PhyML_Fprintf(fp_out," f(Gly)= ");
+                PhyML_Fprintf(fp_out,"%f",tree->mod->e_frq->pi->v[7]);
+                PhyML_Fprintf(fp_out," f(His)= ");
+                PhyML_Fprintf(fp_out,"%f",tree->mod->e_frq->pi->v[8]);
+                PhyML_Fprintf(fp_out,"\n- f(Ile)= ");
+                PhyML_Fprintf(fp_out,"%f",tree->mod->e_frq->pi->v[9]);
+                PhyML_Fprintf(fp_out," f(Leu)= ");
+                PhyML_Fprintf(fp_out,"%f",tree->mod->e_frq->pi->v[10]);
+                PhyML_Fprintf(fp_out," f(Lys)= ");
+                PhyML_Fprintf(fp_out,"%f",tree->mod->e_frq->pi->v[11]);
+                PhyML_Fprintf(fp_out,"\n- f(Met)= ");
+                PhyML_Fprintf(fp_out,"%f",tree->mod->e_frq->pi->v[12]);
+                PhyML_Fprintf(fp_out," f(Phe)= ");
+                PhyML_Fprintf(fp_out,"%f",tree->mod->e_frq->pi->v[13]);
+                PhyML_Fprintf(fp_out," f(Pro)= ");
+                PhyML_Fprintf(fp_out,"%f",tree->mod->e_frq->pi->v[14]);
+                PhyML_Fprintf(fp_out,"\n- f(Ser)= ");
+                PhyML_Fprintf(fp_out,"%f",tree->mod->e_frq->pi->v[15]);
+                PhyML_Fprintf(fp_out," f(Thr)= ");
+                PhyML_Fprintf(fp_out,"%f",tree->mod->e_frq->pi->v[16]);
+                PhyML_Fprintf(fp_out," f(Trp)= ");
+                PhyML_Fprintf(fp_out,"%f",tree->mod->e_frq->pi->v[17]);
+                PhyML_Fprintf(fp_out,"\n- f(Tyr)= ");
+                PhyML_Fprintf(fp_out,"%f",tree->mod->e_frq->pi->v[18]);
+                PhyML_Fprintf(fp_out," f(Val)= ");
+                PhyML_Fprintf(fp_out,"%f",tree->mod->e_frq->pi->v[19]);            
+              }
+          }
+        
 	/*****************************************/
 	if(io->ratio_test == 1)
           {
@@ -6736,9 +6826,11 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           PhyML_Fprintf(fp_stats,"rootVeloc1\t");
           PhyML_Fprintf(fp_stats,"rootVeloc2\t");
 
-          PhyML_Fprintf(fp_stats,"tipVeloc1\t");
-          PhyML_Fprintf(fp_stats,"tipVeloc2\t");
-          
+          for(int i=0;i<tree->n_otu;++i)
+            {
+              PhyML_Fprintf(fp_stats,"%s_0\t",tree->a_nodes[i]->name);
+              PhyML_Fprintf(fp_stats,"%s_1\t",tree->a_nodes[i]->name);
+            }
         }
     }
 
@@ -6840,17 +6932,18 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%g\t",tree->n_root->ldsk->veloc->deriv[0]);
       PhyML_Fprintf(fp_stats,"%g\t",tree->n_root->ldsk->veloc->deriv[1]);
 
-      PhyML_Fprintf(fp_stats,"%g\t",tree->a_nodes[0]->ldsk->veloc->deriv[0]);
-      PhyML_Fprintf(fp_stats,"%g\t",tree->a_nodes[0]->ldsk->veloc->deriv[1]);
-
+      for(int i=0;i<tree->n_otu;++i)
+        {
+          PhyML_Fprintf(fp_stats,"%g\t",tree->a_nodes[i]->ldsk->veloc->deriv[0]);
+          PhyML_Fprintf(fp_stats,"%g\t",tree->a_nodes[i]->ldsk->veloc->deriv[1]);
+        }
+      
       fflush(NULL);
       
       time(&(tree->mcmc->time_beg));
       
       tree->mcmc->sample_num++;
 
-
-      if(RRW_Is_Rw(tree->mmod) == YES && tree->mmod->integrateAncestralLocations == YES) RRW_Sample_Arealin_Plot(tree);
 
     }
 }
