@@ -12,6 +12,9 @@ the GNU public licence. See http://www.opensource.org for details.
 
 #include "nexus.h"
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 void Find_Nexus_Com(char *token, nexcom **found_com, nexparm **default_parm, nexcom **com_list)
 {
   int i,j,tokenlen,ndiff;
@@ -40,7 +43,6 @@ void Find_Nexus_Com(char *token, nexcom **found_com, nexparm **default_parm, nex
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void Find_Nexus_Parm(char *token, nexparm **found_parm, nexcom *curr_com)
 {
@@ -77,7 +79,6 @@ void Find_Nexus_Parm(char *token, nexparm **found_parm, nexcom *curr_com)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 int Read_Nexus_Taxa(char *token, nexparm *curr_parm, option *io)
 {
 
@@ -85,58 +86,55 @@ int Read_Nexus_Taxa(char *token, nexparm *curr_parm, option *io)
 
   do
     {
-      Get_Token(io->fp_in_align,token);
+      Get_Token(curr_parm->fp,token);
       if(token[0] == ';') break;
     }while(strlen(token) > 0);
   
-  fseek(io->fp_in_align,-1*sizeof(char),SEEK_CUR);
+  fseek(curr_parm->fp,-1*sizeof(char),SEEK_CUR);
 
   return 1;
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 int Read_Nexus_Translate(char *token, nexparm *curr_parm, option *io)
 {
   int tax_num;
   char *end;
 
-  PhyML_Printf("\n. Reading 'translate' block");
+  /* PhyML_Printf("\n. Reading 'translate' block"); */
   io->size_tax_names = 0;
 
   do
     {
-      Get_Token(io->fp_in_tree,token);
+      Get_Token(curr_parm->fp,token);
       if(token[0] == ';') break;
       tax_num = (int)strtol(token,&end,10);
       if(*end =='\0' && token[0])
 	{
 	  io->size_tax_names++;
-
 	  io->short_tax_names = (char **)realloc(io->short_tax_names,io->size_tax_names*sizeof(char *));
 	  io->short_tax_names[io->size_tax_names-1] = (char *)mCalloc(strlen(token)+1,sizeof(char));
 	  sprintf(io->short_tax_names[io->size_tax_names-1],"%d",tax_num);
 
-	  Get_Token(io->fp_in_tree,token);
+	  Get_Token(curr_parm->fp,token);
 
 	  io->long_tax_names = (char **)realloc(io->long_tax_names,io->size_tax_names*sizeof(char *));
 	  io->long_tax_names[io->size_tax_names-1] = (char *)mCalloc(strlen(token)+1,sizeof(char));
-	  strcpy(io->long_tax_names[io->size_tax_names-1],token);
+	  strncpy(io->long_tax_names[io->size_tax_names-1],token+1,strlen(token)-2); /* Remove ''' characters at the beginning and end of token */
 
-/* 	  printf("\n. Copying %s number %d",io->long_tax_names[io->size_long_tax_names-1],tax_num-1); */
+	  /* PhyML_Printf("\n. Copying %s number %d",io->long_tax_names[io->size_tax_names-1],tax_num-1); */
 	}
     }while(strlen(token) > 0);
   
-  fseek(io->fp_in_tree,-1*sizeof(char),SEEK_CUR);
+  fseek(curr_parm->fp,-1*sizeof(char),SEEK_CUR);
 
   return 1;
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 int Read_Nexus_Matrix(char *token, nexparm *curr_parm, option *io)
 {
@@ -144,7 +142,7 @@ int Read_Nexus_Matrix(char *token, nexparm *curr_parm, option *io)
   if(io->interleaved) io->data = Read_Seq_Interleaved(io);
   else                io->data = Read_Seq_Sequential(io);
 
-  fseek(io->fp_in_align,-1*sizeof(char),SEEK_CUR);
+  fseek(curr_parm->fp,-1*sizeof(char),SEEK_CUR);
 
   return 1;
 }
@@ -152,11 +150,11 @@ int Read_Nexus_Matrix(char *token, nexparm *curr_parm, option *io)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 int Read_Nexus_Tree(char *token, nexparm *curr_parm, option *io)
 {
   io->treelist->tree = (t_tree **)realloc(io->treelist->tree,(io->treelist->list_size+1)*sizeof(t_tree *));
-  io->tree = Read_Tree_File_Phylip(io->fp_in_tree);
+  io->tree = Read_Tree_File_Phylip(curr_parm->fp);  
+  Replace_Short_With_Long_Tax_Names(io->tree,io);
   if(!(io->treelist->list_size%10) && io->treelist->list_size > 1) 
     {
       PhyML_Printf("\n. Reading tree %d",io->treelist->list_size);
@@ -165,13 +163,12 @@ int Read_Nexus_Tree(char *token, nexparm *curr_parm, option *io)
     }
   io->treelist->tree[io->treelist->list_size] = io->tree;
   io->treelist->list_size++;
-  fseek(io->fp_in_tree,-1*sizeof(char),SEEK_CUR);
+  fseek(curr_parm->fp,-1*sizeof(char),SEEK_CUR);
   return 1;
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 int Read_Nexus_Begin(char *token, nexparm *curr_parm, option *io)
 {
@@ -197,7 +194,6 @@ int Read_Nexus_Begin(char *token, nexparm *curr_parm, option *io)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 int Read_Nexus_Dimensions(char *token, nexparm *curr_parm, option *io)
 {
@@ -226,7 +222,6 @@ int Read_Nexus_Dimensions(char *token, nexparm *curr_parm, option *io)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 int Read_Nexus_Format(char *token, nexparm *curr_parm, option *io)
 {
   int i;  
@@ -239,12 +234,9 @@ int Read_Nexus_Format(char *token, nexparm *curr_parm, option *io)
       Exit("");
     }
 
-  For(i,strlen(token)) Lowercase(token+i);
+  for(i=0;i<strlen(token);++i) Lowercase(token+i);
 
   strcpy(curr_parm->value,token);
-
-
-  /* printf("\n. >> %s",curr_parm->value); */
     
   if(!strcmp(curr_parm->name,"datatype"))
     {

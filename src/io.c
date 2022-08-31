@@ -30,6 +30,8 @@ t_tree *Read_Tree(char **s_tree)
   int degree,len;
   t_node *root_node;
   
+  /* PhyML_Printf("\n. Reading tree %s",(*s_tree)); */
+
   n_int = n_ext = 0;
 
   n_otu=0;
@@ -39,17 +41,13 @@ t_tree *Read_Tree(char **s_tree)
       if((*s_tree)[i] == ',') n_otu++;
     }
   n_otu+=1;
-  
+
   tree = Make_Tree_From_Scratch(n_otu,NULL);
   subs = Sub_Trees((*s_tree),&degree);
   Clean_Multifurcation(subs,degree,3);
 
   if(degree == 2)
     {
-      /* Unroot_Tree(subs); */
-      /* degree = 3; */
-      /* root_node = tree->a_nodes[n_otu]; */
-
       root_node      = tree->a_nodes[2*n_otu-2];
       root_node->num = 2*n_otu-2;
       tree->n_root   = root_node;
@@ -94,16 +92,18 @@ t_tree *Read_Tree(char **s_tree)
     
   tree->has_branch_lengths = 0;
   tree->num_curr_branch_available = tree->n_otu;
-  for(i=0;i<degree;i++) R_rtree((*s_tree),subs[i],root_node,tree,&n_int,&n_ext);
-
+  for(i=0;i<degree;i++)
+    {
+      /* PhyML_Printf("\n. i=%d subs[i]: %s",i,subs[i]); */
+      R_rtree((*s_tree),subs[i],root_node,tree,&n_int,&n_ext);
+    }
+  
   i = degree;
   while(subs[i] != NULL) Free(subs[i++]);
   Free(subs);
-  
-  
+    
   if(tree->n_root)
     {
-
       if(tree->n_root->v[1]->tax == NO && tree->n_root->v[2]->tax == NO)
         {
           tree->e_root       = tree->a_edges[tree->num_curr_branch_available];
@@ -123,6 +123,11 @@ t_tree *Read_Tree(char **s_tree)
       tree->n_root->v[2]->v[0] = tree->n_root->v[1];
       tree->n_root->v[1]->v[0] = tree->n_root->v[2];
 
+      tree->n_root->b[1]->left = tree->n_root;
+      tree->n_root->b[2]->left = tree->n_root;
+      tree->n_root->b[1]->rght = tree->n_root->v[1];
+      tree->n_root->b[2]->rght = tree->n_root->v[2];
+      
       // Reading edge lengths
       subs = Sub_Trees((*s_tree),&degree);
       Read_Branch_Length(subs[0],(*s_tree),tree->n_root->b[1],tree);
@@ -140,12 +145,10 @@ t_tree *Read_Tree(char **s_tree)
       else
         tree->n_root_pos = .5;
 
-
       Update_Ancestors(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
       Update_Ancestors(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
-
     }
-
+  
   return tree;
 }
 
@@ -211,8 +214,7 @@ void R_rtree(char *s_tree_a, char *s_tree_d, t_node *a, t_tree *tree, int *n_int
       
       if(!(tree->n_root && a == tree->n_root)) Connect_One_Edge_To_Two_Nodes(a,d,tree->a_edges[tree->num_curr_branch_available],tree);
 
-      subs=Sub_Trees(s_tree_d,&degree);
-
+      subs = Sub_Trees(s_tree_d,&degree);
       
       if(degree < 2)
         {
@@ -233,9 +235,9 @@ void R_rtree(char *s_tree_a, char *s_tree_d, t_node *a, t_tree *tree, int *n_int
           while(subs[i] != NULL) Free(subs[i++]);
           Free(subs);
           
-          subs=Sub_Trees(s_tree_d,&degree);
+          subs = Sub_Trees(s_tree_d,&degree);
         }
-
+      
       R_rtree(s_tree_d,subs[0],d,tree,n_int,n_ext);
       R_rtree(s_tree_d,subs[1],d,tree,n_int,n_ext);
       
@@ -430,7 +432,6 @@ void Read_Node_Label(char *s_d, char *s_a, t_node *n)
       s_lab[strlen(s_lab)]=']';
       s_lab[strlen(s_lab)]='\0';      
 
-      /* PhyML_Printf("\n. READ LABEL for s_d: %s b: %s",s_d,s_lab); */
       
       n->label = Read_Labels(s_lab);
     }
@@ -515,8 +516,12 @@ char **Sub_Trees(char *tree, int *degree)
       subs[(*degree)][posend-posbeg+1]='\0'; /* Thanks to Jean-Baka Domelevo-Entfellner */
       
       posend += 1;
-      if(tree[posend] == '[') { while(tree[posend] != ']') posend++; posend++; } /* Skip label */
-      while((tree[posend] != ',') && (tree[posend] != ')')) posend++;
+      if(tree[posend] == '[') { while(tree[posend] != ']') posend++; posend++; } /* Skip branch label */
+      while((tree[posend] != ',') && (tree[posend] != ')'))
+        {
+          posend++;
+          if(tree[posend] == '[') { while(tree[posend] != ']') posend++; posend++; } /* Skip other label, possibly after ':' */
+        }
       posend++;
             
       (*degree)++;
@@ -528,7 +533,7 @@ char **Sub_Trees(char *tree, int *degree)
         }
     }
   while(tree[posend-1] != ')');
-
+  
   subs = (char **)mRealloc(subs,*degree+1,sizeof(char *));
   subs[(*degree)] = NULL;
 
@@ -916,8 +921,8 @@ align **Get_Seq(option *io)
     case NEXUS:
       {
         io->nex_com_list = Make_Nexus_Com();
-        Init_Nexus_Format(io->nex_com_list);
-        Get_Nexus_Data(io->fp_in_align,io);
+        Init_Nexus_Format(io->nex_com_list,io->fp_in_align);
+        Get_Nexus_Data(io);
         Free_Nexus(io);
     break;
       }
@@ -994,100 +999,17 @@ void Post_Process_Data(option *io)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-/* align **Get_Seq_Nexus(option *io) */
-/* { */
-/*   char *s,*ori_s; */
-/*   char *token; */
-/*   int in_comment; */
-/*   nexcom *curr_com; */
-/*   nexparm *curr_parm; */
-/*   int nxt_token_t,cur_token_t; */
-
-/*   s = (char *)mCalloc(T_MAX_LINE,sizeof(char)); */
-/*   token = (char *)mCalloc(T_MAX_TOKEN,sizeof(char)); */
-
-/*   ori_s      = s; */
-/*   in_comment = NO; */
-/*   curr_com   = NULL; */
-/*   curr_parm  = NULL; */
-/*   nxt_token_t = NEXUS_COM;  */
-/*   cur_token_t = -1;  */
-
-/*   while(fgets(s,T_MAX_LINE,io->fp_in_align)) */
-/*     {       */
-/*       do */
-/* 	{	   */
-/* 	  Get_Token(&s,token);	   */
-
-/* /\* 	  PhyML_Printf("\n. Token: '%s' next_token=%d cur_token=%d",token,nxt_token_t,cur_token_t); *\/ */
-
-/* 	  if(token[0] == '\0') break; */
-
-/* 	  if(token[0] == ';')  */
-/* 	    { */
-/* 	      curr_com   = NULL; */
-/* 	      curr_parm  = NULL; */
-/* 	      nxt_token_t = NEXUS_COM; */
-/* 	      cur_token_t = -1; */
-/* 	      break; /\* End of command *\/  */
-/* 	    } */
-
-/* 	  if(nxt_token_t == NEXUS_EQUAL)  */
-/* 	    { */
-/* 	      cur_token_t = NEXUS_VALUE; */
-/* 	      nxt_token_t = NEXUS_PARM; */
-/* 	      continue; */
-/* 	    } */
-
-/* 	  if((nxt_token_t == NEXUS_COM) && (cur_token_t != NEXUS_VALUE))  */
-/* 	    { */
-/* 	      Find_Nexus_Com(token,&curr_com,&curr_parm,io->nex_com_list); */
-/* 	      if(curr_com)  */
-/* 		{ */
-/* 		  nxt_token_t = curr_com->nxt_token_t; */
-/* 		  cur_token_t = curr_com->cur_token_t; */
-/* 		} */
-/* 	      if(cur_token_t != NEXUS_VALUE) continue; */
-/* 	    } */
-
-/* 	  if((nxt_token_t == NEXUS_PARM) && (cur_token_t != NEXUS_VALUE))  */
-/* 	    { */
-/* 	      Find_Nexus_Parm(token,&curr_parm,curr_com); */
-/* 	      if(curr_parm)  */
-/* 		{ */
-/* 		  nxt_token_t = curr_parm->nxt_token_t; */
-/* 		  cur_token_t = curr_parm->cur_token_t; */
-/* 		} */
-/* 	      if(cur_token_t != NEXUS_VALUE) continue; */
-/* 	    } */
-
-/* 	  if(cur_token_t == NEXUS_VALUE) */
-/* 	    { */
-/* 	      if((curr_parm->fp)(token,curr_parm,io))  /\* Read in parameter value *\/ */
-/* 		{ */
-/* 		  nxt_token_t = NEXUS_PARM; */
-/* 		  cur_token_t = -1; */
-/* 		} */
-/* 	    } */
-/* 	} */
-/*       while(strlen(token) > 0); */
-/*     } */
-
-/*   Free(ori_s); */
-/*   Free(token); */
-
-/*   return io->data; */
-/* } */
-
-/* /\*********************************************************\/ */
-
-void Get_Nexus_Data(FILE *fp, option *io)
+void Get_Nexus_Data(option *io)
 {
   char *token;
   nexcom *curr_com;
   nexparm *curr_parm;
   int nxt_token_t,cur_token_t;
+  FILE *fp;
 
+  assert(io->nex_com_list[0] != NULL);
+  fp = io->nex_com_list[0]->fp;
+  
   token = (char *)mCalloc(T_MAX_TOKEN,sizeof(char));
 
   curr_com   = NULL;
@@ -1097,9 +1019,8 @@ void Get_Nexus_Data(FILE *fp, option *io)
 
   do
     {
-      if(!Get_Token(fp,token)) break;
-
       /* PhyML_Printf("\n+ Token: '%s' next_token=%d cur_token=%d",token,nxt_token_t,cur_token_t); */
+      if(!Get_Token(fp,token)) break;
 
       if(token[0] == ';')
         {
@@ -1140,7 +1061,7 @@ void Get_Nexus_Data(FILE *fp, option *io)
       
       if(cur_token_t == NEXUS_VALUE)
         {
-          if((curr_parm->fp)(token,curr_parm,io))  /* Read in parameter value */
+          if((curr_parm->func)(token,curr_parm,io))  /* Read in parameter value */
             {
               nxt_token_t = NEXUS_PARM;
               cur_token_t = -1;
@@ -1159,6 +1080,8 @@ int Get_Token(FILE *fp, char *token)
 {
   char c;
 
+  assert(fp != NULL);
+  
   c = ' ';
 
   while(c == ' ' || c == '\t' || c == '\n' || c == '\r')
@@ -2554,6 +2477,7 @@ void Print_Fp_Out(FILE *fp_out, time_t t_beg, time_t t_end, t_tree *tree, option
 
 	if(tree->io->datatype == AA && (tree->mod->s_opt->state_freq == ML || tree->mod->s_opt->state_freq == EMPIRICAL))
           {
+            PhyML_Fprintf(fp_out,"\n. Amino-acid frequences"); 
             if(precision > 0)
               {
                 PhyML_Fprintf(fp_out,"\n- f(Ala)= ");
@@ -3620,9 +3544,37 @@ t_tree *Read_User_Tree(calign *cdata, t_mod *mod, option *io)
   
   PhyML_Printf("\n. Reading tree..."); fflush(NULL);
   if(io->n_trees == 1) rewind(io->fp_in_tree);
-  tree = Read_Tree_File_Phylip(io->fp_in_tree);
-  /* fclose(io->fp_in_tree); */
-  /* io->fp_in_tree = NULL; */
+
+
+  Detect_Tree_File_Format(io);
+
+  tree = NULL;
+  
+  switch(io->tree_file_format)
+    {
+    case PHYLIP :       
+      {
+        tree = Read_Tree_File_Phylip(io->fp_in_tree);
+        break;
+      }
+    case NEXUS :       
+      {
+        io->nex_com_list = Make_Nexus_Com();
+        Init_Nexus_Format(io->nex_com_list,io->fp_in_tree);
+        Get_Nexus_Data(io);
+        tree = io->tree;                          
+        Free_Nexus(io);
+        break;
+      }
+      
+    default :
+      {
+        PhyML_Fprintf(stderr,"\n. Problem detected with tree file format");
+        Exit("\n");
+        break;
+      }
+    }
+
   if(tree == NULL) Exit("\n. Input tree not found...");
   /* Add branch lengths if necessary */
   if(tree->has_branch_lengths == NO) Add_BioNJ_Branch_Lengths(tree,cdata,mod,NULL);
@@ -6401,9 +6353,11 @@ void Output_Scalar_Dbl(scalar_dbl *t, char *sep, FILE *fp)
 t_label *Read_Labels(char *s)
 {
   t_label *lab,*init_lab;
-  char *s_cpy,*s_big,*s_small;
+  char *s_cpy,*s_small;
   char *label;
   char *key,*val;
+  int cur,op;
+  short int finished;
   
   if(s[0] != '[' || s[(int)strlen(s)-1] != ']')
     {
@@ -6415,19 +6369,36 @@ t_label *Read_Labels(char *s)
   lab = Make_Label();
   init_lab = lab;
   
-  s_cpy = (char *)mCalloc((int)strlen(s)-1,sizeof(char));
-  strncpy(s_cpy,s+1,(strlen(s)-2)*sizeof(char));
-  s_cpy[strlen(s)-2]='\0';
+  s_cpy = (char *)mCalloc((int)strlen(s)+1,sizeof(char));
+  strcpy(s_cpy,s);
+  s_cpy++; /* Skip '[' */
+  
+  label = (char *)mCalloc(strlen(s),sizeof(char));
   
 
-  label = strtok_r(s_cpy,",",&s_big);
-
-  while(label != NULL)
+  cur = 0;
+  finished = NO;
+  do
     {
+      cur++;
+      op = 0;
+      do
+        {
+          if(s_cpy[cur] == '{') op++;
+          if(s_cpy[cur] == '}') op--;
+          cur++;
+        }
+      while(!(s_cpy[cur] == ',' && op == 0) && s_cpy[cur] != ']');
+      if(s_cpy[cur] == ']') finished = YES;
+      else finished = NO;
+      s_cpy[cur] = '\0';
+      
+      strcpy(label,s_cpy);
       
       key=strtok_r(label,"=",&s_small);
       val=strtok_r(NULL,"=",&s_small);
 
+      
       Free(lab->key);
       lab->key = (char *)mCalloc(strlen(key)+1,sizeof(char));
       strcpy(lab->key,key);
@@ -6436,17 +6407,20 @@ t_label *Read_Labels(char *s)
       lab->val = (char *)mCalloc(strlen(val)+1,sizeof(char));
       strcpy(lab->val,val);
       
-      label = strtok_r(NULL,",",&s_big);
-
-      if(label != NULL)
+      if(finished == NO)
         {
           lab->sep=',';
           lab->next = Make_Label();
           lab = lab->next;
         }
-    }  
-
+    }
+  while(finished == NO);
+  
   lab = init_lab;
+
+  Free(label);
+  s_cpy--;
+  Free(s_cpy);
   
   return(lab);
 }
@@ -6782,10 +6756,11 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
 
           /* PhyML_Fprintf(fp_stats,"%s\t","accSPR"); */
           /* PhyML_Fprintf(fp_stats,"%s\t","accSPRsLide"); */
-          /* PhyML_Fprintf(fp_stats,"%s\t","accNarrowExchange"); */
-          /* PhyML_Fprintf(fp_stats,"%s\t","accWideExchange"); */
+          PhyML_Fprintf(fp_stats,"%s\t","accNarrowExchange");
+          PhyML_Fprintf(fp_stats,"%s\t","accWideExchange");
           /* PhyML_Fprintf(fp_stats,"%s\t","accLdskGivenDisk"); */
-          /* PhyML_Fprintf(fp_stats,"%s\t","accMoveRootTime"); */
+          PhyML_Fprintf(fp_stats,"%s\t","accMoveRootTime");
+          PhyML_Fprintf(fp_stats,"%s\t","accMoveScaleTime");
           /* PhyML_Fprintf(fp_stats,"%s\t","accLdskTipToRoot"); */
 
           /* PhyML_Fprintf(fp_stats,"%s\t","tuneScale"); */
@@ -6885,10 +6860,11 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
 
       /* PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_spr]); */
       /* PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_spr_slide]); */
-      /* PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_narrow_exchange]); */
-      /* PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_wide_exchange]); */
+      PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_narrow_exchange]);
+      PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_wide_exchange]);
       /* PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_ldsk_given_disk]); */
-      /* PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_root_time]); */
+      PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_root_time]);
+      PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_scale_times]);
       /* PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_ldsk_tip_to_root]);       */
 
       /* PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_scale_times]); */

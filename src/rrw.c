@@ -100,7 +100,7 @@ phydbl RRW_Prior_Sigsq_Scale(t_tree *tree)
   err = NO;
   sd  = tree->mmod->rrw_param_val; // Value of hyper-prior governing the variance of relative dispersal rates across lineages
   
-  if(tree->mmod->model_id == RW) return(-1.0);
+  if(tree->mmod->model_id == RW || tree->mmod->model_id == IBM) return(-1.0);
   
   for(int i=0;i<2*tree->n_otu-2;++i)
     {
@@ -113,7 +113,7 @@ phydbl RRW_Prior_Sigsq_Scale(t_tree *tree)
           lnP += Log_Dnorm(log(tree->mmod->sigsq_scale[i]),-sd*sd/2.,sd,&err);
           lnP -= log(tree->mmod->sigsq_scale[i]);
         }
-      else if(tree->mmod->model_id == IBM)
+      else if(tree->mmod->model_id == RIBM)
         {
           lnP += Log_Dnorm(log(tree->mmod->sigsq_scale[i]),-sd*sd/2.,sd,&err);
           lnP -= log(tree->mmod->sigsq_scale[i]);
@@ -230,10 +230,10 @@ phydbl RRW_Independent_Contrasts(t_tree *tree)
   phydbl lnL;
 
   RRW_Update_Normalization_Factor(tree);
-  RATES_Record_Times(tree);
+  TIMES_Record_Times(tree);
   RRW_Rescale_Times(YES,tree);
   lnL = RW_Independent_Contrasts(tree);
-  RATES_Reset_Times(tree);
+  TIMES_Reset_Times(tree);
 
   return(lnL);
 }

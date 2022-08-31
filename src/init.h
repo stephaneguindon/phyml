@@ -27,7 +27,7 @@ void Init_Tree(t_tree *tree,int n_otu);
 void Init_Edge_Light(t_edge *b,int num);
 void Init_Node_Light(t_node *n,int num);
 void Init_NNI(t_nni *a_nni);
-void Init_Nexus_Format(nexcom **com);
+void Init_Nexus_Format(nexcom **com, FILE *fp);
 void Init_Mat(matrix *mat,calign *data);
 void Set_Defaults_Input(option *io);
 void Set_Defaults_Model(t_mod *mod);

@@ -19,33 +19,77 @@ phydbl IBM_Lk(t_tree *tree)
 {
   phydbl lnL_loc, lnL_veloc;
 
+  RRW_Update_Normalization_Factor(tree);
+
   lnL_loc   = UNLIKELY;
   lnL_veloc = UNLIKELY;
 
-  lnL_loc = IBM_Lk_Locations(tree);
+  lnL_loc   = IBM_Lk_Locations(tree);
   lnL_veloc = IBM_Lk_Velocities(tree);
 
-  /* PhyML_Printf("\n. Sigsq: %f %f",tree->mmod->sigsq[0],tree->mmod->sigsq[1]); */
-  /* PhyML_Printf("\n. IBM locations: %f",lnL_loc); */
-  /* PhyML_Printf("\n. IBM velocities: %f",lnL_veloc); */
-  /* PhyML_Printf("\n. Sum: %f",lnL_loc + lnL_veloc); */
+  if(tree->mmod->print_lk == YES)
+    {
+      PhyML_Printf("\n. Sigsq: %f %f",tree->mmod->sigsq[0],tree->mmod->sigsq[1]);
+      PhyML_Printf("\n. IBM locations: %f",lnL_loc);
+      PhyML_Printf("\n. IBM velocities: %f",lnL_veloc);
+      PhyML_Printf("\n. Sum: %f",lnL_loc + lnL_veloc);
+    }
+
   return(lnL_loc + lnL_veloc);
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void IBM_Sample_Velocities_Conditional(t_tree *tree)
+short int IBM_Is_Ibm(t_phyrex_mod *mod)
 {
-  int i,j,k,print;
-  phydbl mean,var,dt,zi;
-  phydbl xu,xv,xz,xw;
-  phydbl yu,yv,yw;
-  phydbl tu,tv,tz;
-  phydbl muu,muv,muz;
-  phydbl sigsqu,sigsqv,sigsqz;
-  short int diru;
+  if(mod->model_id == IBM ||
+     mod->model_id == RIBM) return(YES);
+  return(NO);
+}
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl IBM_Sample_Velocities_And_Locations(int *node_order, t_tree *tree)
+{
+  phydbl log_hr;
+
+  RRW_Update_Normalization_Factor(tree);
+
+  log_hr = 0.0;
+  log_hr += IBM_Locations_Conditional(YES,node_order,tree);
+  log_hr += IBM_Velocities_Conditional(YES,node_order,tree);
+
+  return(log_hr);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl IBM_Velocities_Conditional(short int sample, int *node_order, t_tree *tree)
+{
+  int j,idx;
+  phydbl log_hr;
+  
+  
+  log_hr = 0.0;
+  idx = -1;
+  
+  for(j=0;j<2*tree->n_otu-1;++j)
+    {
+      idx = (node_order != NULL) ? node_order[j] : j;
+      log_hr += IBM_Velocity_One_Node(tree->a_nodes[idx],sample,tree);
+    }
+
+  return(log_hr);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl IBM_Velocity_One_Node(t_node *n, short int sample, t_tree *tree)
+{
   /*          w
               |
               |
@@ -56,224 +100,251 @@ void IBM_Sample_Velocities_Conditional(t_tree *tree)
      
      The x's are the locations. The y's the velocities
   */ 
-  
-  print = NO;
 
+  t_node *z,*u,*v;
+  int i,k;
+  phydbl mean,var,dt,zi;
+  phydbl xu,xv,xz,xw;
+  phydbl yu,yv,yw;
+  phydbl tu,tv,tz;
+  phydbl muu,muv,muz;
+  phydbl sigsqu,sigsqv,sigsqz;
+  phydbl log_hr;
+  short int diru;
+  int err;
+
+  err = NO;
+  mean = var = -1.;
+  
   xu = xv = xz = xw = -1.;
   yu = yv = yw = -1.;
   tu = tv = tz = -1.;
   muu = muv = muz = -1.;
   sigsqu = sigsqv = sigsqz = -1.;
   diru = -1;
+  log_hr = 0.0;
+  z = n;
+  u = v = NULL;
   
-  tree->mmod->sigsq_scale_norm_fact = 1.0;
-
-  
-  /* Sample ancestral velocities given locations and velocities at tips */
   for(i=0;i<tree->mmod->n_dim;++i)
     {
-      for(j=0;j<2*tree->n_otu-2;++j)
+      if(n->tax == NO && n != tree->n_root) /* Internal node that is not root node */
         {
-          if(tree->a_nodes[j]->tax == NO && tree->a_nodes[j] != tree->n_root)
+          xz = n->ldsk->coord->lonlat[i];
+      
+          diru = -1.;
+          for(k=0;k<3;++k)
             {
-              xz = tree->a_nodes[j]->ldsk->coord->lonlat[i];
-              
-              diru = -1.;
-              for(k=0;k<3;++k)
+              if(n->v[k] != n->anc && n->b[k] != tree->e_root)
                 {
-                  if(tree->a_nodes[j]->v[k] != tree->a_nodes[j]->anc && tree->a_nodes[j]->b[k] != tree->e_root)
+                  if(diru < 0)
                     {
-                      if(diru < 0)
-                        {
-                          diru = k;
-                          xu = tree->a_nodes[j]->v[k]->ldsk->coord->lonlat[i];
-                          yu = tree->a_nodes[j]->v[k]->ldsk->veloc->deriv[i];
-                          tu = fabs(tree->times->nd_t[tree->a_nodes[j]->v[k]->num] - tree->times->nd_t[tree->a_nodes[j]->num]);
-                        }
-                      else
-                        {
-                          xv = tree->a_nodes[j]->v[k]->ldsk->coord->lonlat[i];
-                          yv = tree->a_nodes[j]->v[k]->ldsk->veloc->deriv[i];
-                          tv = fabs(tree->times->nd_t[tree->a_nodes[j]->v[k]->num] - tree->times->nd_t[tree->a_nodes[j]->num]);
-                        }
+                      diru = k;
+                      u  = n->v[k];
+                      xu = n->v[k]->ldsk->coord->lonlat[i];
+                      yu = n->v[k]->ldsk->veloc->deriv[i];
+                      tu = fabs(tree->times->nd_t[n->v[k]->num] - tree->times->nd_t[n->num]);
                     }
                   else
                     {
-                      xw = tree->a_nodes[j]->v[k]->ldsk->coord->lonlat[i];
-                      yw = tree->a_nodes[j]->v[k]->ldsk->veloc->deriv[i];
-                      tz = fabs(tree->times->nd_t[tree->a_nodes[j]->v[k]->num] - tree->times->nd_t[tree->a_nodes[j]->num]);
+                      v  = n->v[k];
+                      xv = n->v[k]->ldsk->coord->lonlat[i];
+                      yv = n->v[k]->ldsk->veloc->deriv[i];
+                      tv = fabs(tree->times->nd_t[n->v[k]->num] - tree->times->nd_t[n->num]);
                     }
                 }
-
-              assert(tu > 0.);
-              assert(tv > 0.);
-              assert(tz > 0.);
-              
-              muu = 3.*(xu-xz)/(2.*tu) - yu/2.;
-
-              sigsqu =
-                log(tree->mmod->sigsq[i]) +
-                log(tree->mmod->sigsq_scale_norm_fact) +
-                log(tu)-
-                LOG4;
-              sigsqu = exp(sigsqu);
-
-
-              muv = 3.*(xv-xz)/(2.*tv) - yv/2.;
-
-              sigsqv =
-                log(tree->mmod->sigsq[i]) +
-                log(tree->mmod->sigsq_scale_norm_fact) +
-                log(tv)-
-                LOG4;
-              sigsqv = exp(sigsqv);
-
-
-
-              muz = 3.*(xz-xw)/(2.*tz) - yw/2.;
-              
-              sigsqz =
-                log(tree->mmod->sigsq[i]) +
-                log(tree->mmod->sigsq_scale_norm_fact) +
-                3.*log(tz) -
-                LOG4;
-              sigsqz = exp(sigsqz);
-
-              
-              assert(sigsqu > 0.0);
-              assert(sigsqv > 0.0);
-              assert(sigsqz > 0.0);
-              
-              var = 1./sigsqu + 1./sigsqv + 1./sigsqz;
-              var = 1./var;
-              
-              mean = (muu/sigsqu + muv/sigsqv + muz/sigsqz)*var;
-              
-              /* PhyML_Printf("\n. VIT Node %d xu: %f yu: %f tu: %f xv: %f yv: %f tv: %f -- muu: %f sigsqu: %f | muv: %f sigsqv: %f | mean: %f var: %f [sigsq: %f] --> %f", */
-              /*              j, */
-              /*              xu,yu,tu, */
-              /*              xv,yv,tv, */
-              /*              muu,sigsqu, */
-              /*              muv,sigsqv, */
-              /*              mean,var, */
-              /*              tree->mmod->sigsq[i], */
-              /*              LOCATION_Lk(tree)); */
-
-              assert(isinf(mean) == NO && isnan(mean) == NO);
-              assert(isinf(var) == NO && isnan(var) == NO);
-              
-              tree->a_nodes[j]->ldsk->veloc->deriv[i] = Rnorm(mean,sqrt(var));
-
-              if(tree->a_nodes[j]->ldsk->veloc->deriv[i] < tree->mmod->min_veloc)
-                tree->a_nodes[j]->ldsk->veloc->deriv[i] = tree->mmod->min_veloc;
-
-              if(tree->a_nodes[j]->ldsk->veloc->deriv[i] > tree->mmod->max_veloc)
-                tree->a_nodes[j]->ldsk->veloc->deriv[i] = tree->mmod->max_veloc;
+              else if(n->v[k] == n->anc)
+                {
+                  xw = n->v[k]->ldsk->coord->lonlat[i];
+                  yw = n->v[k]->ldsk->veloc->deriv[i];
+                  tz = fabs(tree->times->nd_t[n->v[k]->num] - tree->times->nd_t[n->num]);
+                }
+              else if(n->b[k] == tree->e_root)
+                {
+                  xw = tree->n_root->ldsk->coord->lonlat[i];
+                  yw = tree->n_root->ldsk->veloc->deriv[i];
+                  tz = fabs(tree->times->nd_t[tree->n_root->num] - tree->times->nd_t[n->num]);
+                }
             }
+          
+          assert(tu > 0.);
+          assert(tv > 0.);
+          assert(tz > 0.);
+          
+          muu = 3.*(xu-xz)/(2.*tu) - yu/2.;
+
+          
+          sigsqu =
+            log(tree->mmod->sigsq[i]) +
+            log(tree->mmod->sigsq_scale[u->num]) +
+            log(tree->mmod->sigsq_scale_norm_fact) +
+            log(tu)-
+            LOG4;
+          sigsqu = exp(sigsqu);
+          
+          
+          muv = 3.*(xv-xz)/(2.*tv) - yv/2.;
+          
+          sigsqv =
+            log(tree->mmod->sigsq[i]) +
+            log(tree->mmod->sigsq_scale[v->num]) +
+            log(tree->mmod->sigsq_scale_norm_fact) +
+            log(tv)-
+            LOG4;
+          sigsqv = exp(sigsqv);
+                    
+          
+          muz = 3.*(xz-xw)/(2.*tz) - yw/2.;
+          
+          sigsqz =
+            log(tree->mmod->sigsq[i]) +
+            log(tree->mmod->sigsq_scale[z->num]) +
+            log(tree->mmod->sigsq_scale_norm_fact) +
+            log(tz)-
+            LOG4;
+          sigsqz = exp(sigsqz);
+          
+          
+          assert(sigsqu > 0.0);
+          assert(sigsqv > 0.0);
+          assert(sigsqz > 0.0);
+          
+          var = 1./sigsqu + 1./sigsqv + 1./sigsqz;
+          var = 1./var;
+          
+          mean = (muu/sigsqu + muv/sigsqv + muz/sigsqz)*var;
+          
+          /* PhyML_Printf("\n. VIT Node %d xu: %f yu: %f tu: %f xv: %f yv: %f tv: %f -- muu: %f sigsqu: %f | muv: %f sigsqv: %f | mean: %f var: %f [sigsq: %f] --> %f", */
+          /*              j, */
+          /*              xu,yu,tu, */
+          /*              xv,yv,tv, */
+          /*              muu,sigsqu, */
+          /*              muv,sigsqv, */
+          /*              mean,var, */
+          /*              tree->mmod->sigsq[i], */
+          /*              LOCATION_Lk(tree)); */
+          
+          assert(isinf(mean) == NO && isnan(mean) == NO);
+          assert(isinf(var) == NO && isnan(var) == NO);
+          
         }
-      
-      assert(isnan(tree->contmod->var_down[tree->n_root->num]) == NO);
-
-
-      /* Root node */
-
-      xz = tree->n_root->ldsk->coord->lonlat[i];
-
-      xu = tree->n_root->v[1]->ldsk->coord->lonlat[i];
-      yu = tree->n_root->v[1]->ldsk->veloc->deriv[i];
-      tu = fabs(tree->times->nd_t[tree->n_root->v[1]->num] - tree->times->nd_t[tree->n_root->num]);
-
-      xv = tree->n_root->v[2]->ldsk->coord->lonlat[i];
-      yv = tree->n_root->v[2]->ldsk->veloc->deriv[i];
-      tv = fabs(tree->times->nd_t[tree->n_root->v[2]->num] - tree->times->nd_t[tree->n_root->num]);
-
-      
-      assert(tu > 0.0);
-      muu = 3.*(xu-xz)/(2.*tu) - yu/2.;
-      sigsqu =
-        log(tree->mmod->sigsq[i]) +
-        log(tree->mmod->sigsq_scale_norm_fact) +
-        log(tu)-
-        LOG4;
-      sigsqu = exp(sigsqu);
-      
-      assert(tv > 0.0);
-      muv = 3.*(xv-xz)/(2.*tv) - yv/2.;
-      sigsqv =
-        log(tree->mmod->sigsq[i]) +
-        log(tree->mmod->sigsq_scale_norm_fact) +
-        log(tv)-
-        LOG4;
-      sigsqv = exp(sigsqv);
-
-
-      assert(sigsqu > 0.0);
-      assert(sigsqv > 0.0);
-      
-      var = 1./sigsqu + 1./sigsqv;
-      var = 1./var;
-
-      
-      mean = (muu/sigsqu + muv/sigsqv)*var;
-
-      /* PhyML_Printf("\n. VIT %d Root xz: %f xu: %f yu: %f tu: %f xv: %f yv: %f tv: %f -- muu: %f sigsqu: %f | muv: %f sigsqv: %f | mean: %f var: %f --> %f", */
-      /*              i, */
-      /*              xz, */
-      /*              xu,yu,tu, */
-      /*              xv,yv,tv, */
-      /*              muu,sigsqu, */
-      /*              muv,sigsqv, */
-      /*              mean,var,LOCATION_Lk(tree)); */
-
-      
-      assert(isinf(mean) == NO && isnan(mean) == NO);
-      assert(isinf(var) == NO && isnan(var) == NO);
-      
-      tree->n_root->ldsk->veloc->deriv[i] = Rnorm(mean,sqrt(var));
-
-
-      if(tree->n_root->ldsk->veloc->deriv[i] < tree->mmod->min_veloc)
-        tree->n_root->ldsk->veloc->deriv[i] = tree->mmod->min_veloc;
-      
-      if(tree->n_root->ldsk->veloc->deriv[i] > tree->mmod->max_veloc)
-        tree->n_root->ldsk->veloc->deriv[i] = tree->mmod->max_veloc;
-
-      /* PhyML_Printf(" --> %f",tree->n_root->ldsk->veloc->deriv[i]); */
-    }
-
-
-  /* Sample velocities at tips given ancestral velocities */
-  for(i=0;i<tree->mmod->n_dim;++i)
-    {
-      for(j=0;j<tree->n_otu;++j)
+      else if(n->tax == YES) /* Tip node */
         {
-          dt = fabs(tree->times->nd_t[tree->a_nodes[j]->v[0]->num]-tree->times->nd_t[tree->a_nodes[j]->num]);
-          zi = tree->a_nodes[j]->ldsk->coord->lonlat[i] - tree->a_nodes[j]->v[0]->ldsk->coord->lonlat[i];
+          dt = fabs(tree->times->nd_t[n->v[0]->num]-tree->times->nd_t[n->num]);
+          zi = n->ldsk->coord->lonlat[i] - n->v[0]->ldsk->coord->lonlat[i];
           
           assert(dt > 0.0);
           
-          mean = 0.5*(3.*zi/dt - tree->a_nodes[j]->v[0]->ldsk->veloc->deriv[i]);
+          mean = 0.5*(3.*zi/dt - n->v[0]->ldsk->veloc->deriv[i]);
+
 
           var =
             log(dt) +
             log(tree->mmod->sigsq[i]) +
+            log(tree->mmod->sigsq_scale[n->num]) +
             log(tree->mmod->sigsq_scale_norm_fact) -
             LOG4;
           
           var = exp(var);
-
-          assert(isinf(mean) == NO && isnan(mean) == NO);
-          assert(isinf(var) == NO && isnan(var) == NO);
-          
-          tree->a_nodes[j]->ldsk->veloc->deriv[i] = Rnorm(mean,sqrt(var));
-
-          if(tree->a_nodes[j]->ldsk->veloc->deriv[i] < tree->mmod->min_veloc)
-            tree->a_nodes[j]->ldsk->veloc->deriv[i] = tree->mmod->min_veloc;
-          
-          if(tree->a_nodes[j]->ldsk->veloc->deriv[i] > tree->mmod->max_veloc)
-            tree->a_nodes[j]->ldsk->veloc->deriv[i] = tree->mmod->max_veloc;
         }
+      else if(n == tree->n_root) /* Root node */
+        {
+          xz = tree->n_root->ldsk->coord->lonlat[i];
+          
+          u  = tree->n_root->v[1];
+          xu = tree->n_root->v[1]->ldsk->coord->lonlat[i];
+          yu = tree->n_root->v[1]->ldsk->veloc->deriv[i];
+          tu = fabs(tree->times->nd_t[tree->n_root->v[1]->num] - tree->times->nd_t[tree->n_root->num]);
+          
+          v  = tree->n_root->v[2];
+          xv = tree->n_root->v[2]->ldsk->coord->lonlat[i];
+          yv = tree->n_root->v[2]->ldsk->veloc->deriv[i];
+          tv = fabs(tree->times->nd_t[tree->n_root->v[2]->num] - tree->times->nd_t[tree->n_root->num]);
+          
+
+          
+          assert(tu > 0.0);
+          muu = 3.*(xu-xz)/(2.*tu) - yu/2.;
+          sigsqu =
+            log(tree->mmod->sigsq[i]) +
+            log(tree->mmod->sigsq_scale[u->num]) +
+            log(tree->mmod->sigsq_scale_norm_fact) +
+            log(tu)-
+            LOG4;
+          sigsqu = exp(sigsqu);
+          
+          assert(tv > 0.0);
+          muv = 3.*(xv-xz)/(2.*tv) - yv/2.;
+          sigsqv =
+            log(tree->mmod->sigsq[i]) +
+            log(tree->mmod->sigsq_scale[v->num]) +
+            log(tree->mmod->sigsq_scale_norm_fact) +
+            log(tv)-
+            LOG4;
+          sigsqv = exp(sigsqv);
+          
+          
+          assert(sigsqu > 0.0);
+          assert(sigsqv > 0.0);
+          
+          var = 1./sigsqu + 1./sigsqv;
+          var = 1./var;
+          
+          
+          mean = (muu/sigsqu + muv/sigsqv)*var;
+        }
+      
+      
+      if(tree->mmod->print_lk == YES)
+        PhyML_Printf("\n. VIT %d Root xz: %f xu: %f yu: %f tu: %f xv: %f yv: %f tv: %f -- muu: %f sigsqu: %f | muv: %f sigsqv: %f | mean: %f var: %f",
+                     i,
+                     xz,
+                     xu,yu,tu,
+                     xv,yv,tv,
+                     muu,sigsqu,
+                     muv,sigsqv,
+                     mean,var);
+      
+      
+      assert(isinf(mean) == NO && isnan(mean) == NO);
+      assert(isinf(var) == NO && isnan(var) == NO);
+
+
+      /* !!!!!!!!!!!!!!!!!!!!1 */
+      
+      /* log_hr += Log_Dnorm_Trunc(n->ldsk->veloc->deriv[i],mean,sqrt(var),tree->mmod->min_veloc,tree->mmod->max_veloc,&err); */
+      
+      /* if(sample == YES) */
+      /*   { */
+      /*     n->ldsk->veloc->deriv[i] = Rnorm_Trunc(mean,sqrt(var),tree->mmod->min_veloc,tree->mmod->max_veloc,&err); */
+      /*     if(err == YES) assert(false); */
+      /*   } */
+      
+      /* log_hr -= Log_Dnorm_Trunc(n->ldsk->veloc->deriv[i],mean,sqrt(var),tree->mmod->min_veloc,tree->mmod->max_veloc,&err); */
+
+
+      log_hr += Log_Dnorm(n->ldsk->veloc->deriv[i],mean,sqrt(var),&err);
+      
+      if(sample == YES)
+        {
+          n->ldsk->veloc->deriv[i] = Rnorm(mean,sqrt(var));
+
+          if(n->ldsk->veloc->deriv[i] > tree->mmod->max_veloc)
+            {
+              n->ldsk->veloc->deriv[i] = tree->mmod->max_veloc;
+            }
+          
+          if(n->ldsk->veloc->deriv[i] < tree->mmod->min_veloc)
+            {
+              n->ldsk->veloc->deriv[i] = tree->mmod->min_veloc;
+            }
+          
+        }
+      
+      log_hr -= Log_Dnorm(n->ldsk->veloc->deriv[i],mean,sqrt(var),&err);
     }
+
+  return(log_hr);
 }
 
 //////////////////////////////////////////////////////////////
@@ -320,17 +391,40 @@ void IBM_Sample_Locations(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void IBM_Sample_Locations_Conditional(t_tree *tree)
+phydbl IBM_Locations_Conditional(short int sample, int *node_order, t_tree *tree)
 {
-  int i,j,k,print;
+  int j,idx;
+  phydbl log_hr;
+  
+  idx = -1;  
+  log_hr = 0.0;
+
+  
+  for(j=0;j<2*tree->n_otu-1;++j)
+    {
+      idx = (node_order != NULL) ? node_order[j] : j;
+      log_hr += IBM_Location_One_Node(tree->a_nodes[idx],sample,tree);
+    }
+
+  return(log_hr);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl IBM_Location_One_Node(t_node *n, short int sample, t_tree *tree)
+{
+  t_node *z,*u,*v;
+  int i,k;
   phydbl mean,var;
   phydbl xu,xv,xw;
   phydbl yu,yv,yz,yw;
   phydbl tu,tv,tz;
   phydbl muu,muv,muz;
   phydbl sigsqu,sigsqv,sigsqz;
+  phydbl log_hr;
   short int diru,dirv;
-  
+  int err;
   
   /*          w
               |
@@ -343,8 +437,9 @@ void IBM_Sample_Locations_Conditional(t_tree *tree)
      The x's are the locations. The y's the velocities
   */ 
   
-  print = NO;
-
+  err = NO;
+  mean = var = -1.;
+  
   xu = xv = xw = -1.;
   yu = yv = yz = yw = -1.;
   tu = tv = tz = -1.;
@@ -352,160 +447,177 @@ void IBM_Sample_Locations_Conditional(t_tree *tree)
   sigsqu = sigsqv = sigsqz = -1.;
   diru = -1;
   
-  tree->mmod->sigsq_scale_norm_fact = 1.0;
+  log_hr = 0.0;
+  z = n;
+  u = v = NULL;
   
   /* Sample ancestral locations given locations at tips and velocities everywhere */
   for(i=0;i<tree->mmod->n_dim;++i)
-    {
-      for(j=0;j<2*tree->n_otu-2;++j)
+    {  
+      if(n->tax == NO && n != tree->n_root)
         {
-          if(tree->a_nodes[j]->tax == NO && tree->a_nodes[j] != tree->n_root)
+          yz = n->ldsk->veloc->deriv[i];
+          
+          diru = dirv = -1.;
+          for(k=0;k<3;++k)
             {
-              yz = tree->a_nodes[j]->ldsk->veloc->deriv[i];
-              
-              diru = dirv = -1.;
-              for(k=0;k<3;++k)
+              if(n->v[k] != n->anc && n->b[k] != tree->e_root)
                 {
-                  if(tree->a_nodes[j]->v[k] != tree->a_nodes[j]->anc && tree->a_nodes[j]->b[k] != tree->e_root)
+                  if(diru < 0)
                     {
-                      if(diru < 0)
-                        {
-                          diru = k;
-                          xu = tree->a_nodes[j]->v[k]->ldsk->coord->lonlat[i];
-                          yu = tree->a_nodes[j]->v[k]->ldsk->veloc->deriv[i];
-                          tu = fabs(tree->times->nd_t[tree->a_nodes[j]->v[k]->num] - tree->times->nd_t[tree->a_nodes[j]->num]);
-                        }
-                      else
-                        {
-                          dirv = k;
-                          xv = tree->a_nodes[j]->v[k]->ldsk->coord->lonlat[i];
-                          yv = tree->a_nodes[j]->v[k]->ldsk->veloc->deriv[i];
-                          tv = fabs(tree->times->nd_t[tree->a_nodes[j]->v[k]->num] - tree->times->nd_t[tree->a_nodes[j]->num]);
-                        }
+                      diru = k;
+                      u  = n->v[k];
+                      xu = n->v[k]->ldsk->coord->lonlat[i];
+                      yu = n->v[k]->ldsk->veloc->deriv[i];
+                      tu = fabs(tree->times->nd_t[n->v[k]->num] - tree->times->nd_t[n->num]);
                     }
                   else
                     {
-                      xw = tree->a_nodes[j]->v[k]->ldsk->coord->lonlat[i];
-                      yw = tree->a_nodes[j]->v[k]->ldsk->veloc->deriv[i];
-                      tz = fabs(tree->times->nd_t[tree->a_nodes[j]->v[k]->num] - tree->times->nd_t[tree->a_nodes[j]->num]);
+                      dirv = k;
+                      v  = n->v[k];
+                      xv = n->v[k]->ldsk->coord->lonlat[i];
+                      yv = n->v[k]->ldsk->veloc->deriv[i];
+                      tv = fabs(tree->times->nd_t[n->v[k]->num] - tree->times->nd_t[n->num]);
                     }
                 }
-              
-              assert(tu > 0.);
-              assert(tv > 0.);
-              assert(tz > 0.);
-              
-              muu = xu - (yu+yz)/2.*tu;
-              
-              sigsqu =
-                log(tree->mmod->sigsq[i]) +
-                log(tree->mmod->sigsq_scale_norm_fact) +
-                3.*log(tu)-
-                LOG12;
-              sigsqu = exp(sigsqu);
-              
-              
-              muv = xv - (yv+yz)/2.*tv;
-              
-              sigsqv =
-                log(tree->mmod->sigsq[i]) +
-                log(tree->mmod->sigsq_scale_norm_fact) +
-                3.*log(tv)-
-                LOG12;
-              sigsqv = exp(sigsqv);
-              
-              
-              
-              muz = xw + (yw+yz)/2.*tz;;
-              
-              sigsqz =
-                log(tree->mmod->sigsq[i]) +
-                log(tree->mmod->sigsq_scale_norm_fact) +
-                3.*log(tz)-
-                LOG12;
-              sigsqz = exp(sigsqz);
-              
-              
-              assert(sigsqu > 0.0);
-              assert(sigsqv > 0.0);
-              assert(sigsqz > 0.0);
-              
-              var = 1./sigsqu + 1./sigsqv + 1./sigsqz;
-              var = 1./var;
-              
-              mean = (muu/sigsqu + muv/sigsqv + muz/sigsqz)*var;
-              
-              
-              
-              assert(isinf(mean) == NO && isnan(mean) == NO);
-              assert(isinf(var) == NO && isnan(var) == NO);
-              
-              phydbl dum = tree->a_nodes[j]->ldsk->coord->lonlat[i];
-              tree->a_nodes[j]->ldsk->coord->lonlat[i] = Rnorm(mean,sqrt(var));
-              
-              /* PhyML_Printf("\n. LOC Node %d xu: %f yu: %f tu: %f xv: %f yv: %f tv: %f xw: %f yw: %f tz: %f -- muu: %f sigsqu: %f | muv: %f sigsqv: %f | muz: %f sigsqz: %f mean: %f var: %f [sigsq: %f] --> %f", */
-              /*                  j, */
-              /*                  xu,yu,tu, */
-              /*                  xv,yv,tv, */
-              /*                  xw,yw,tz, */
-              /*                  muu,sigsqu, */
-              /*                  muv,sigsqv, */
-              /*                  muz,sigsqz, */
-              /*                  mean,var, */
-              /*                  tree->mmod->sigsq[i],tree->mmod->c_lnL); */
-              /*     PhyML_Printf(" %f --> %f",dum,tree->a_nodes[j]->ldsk->coord->lonlat[i]); */
-            
+              else if(n->v[k] == n->anc)
+                {
+                  xw = n->v[k]->ldsk->coord->lonlat[i];
+                  yw = n->v[k]->ldsk->veloc->deriv[i];
+                  tz = fabs(tree->times->nd_t[n->v[k]->num] - tree->times->nd_t[n->num]);
+                }
+              else if(n->b[k] == tree->e_root)
+                {
+                  xw = tree->n_root->ldsk->coord->lonlat[i];
+                  yw = tree->n_root->ldsk->veloc->deriv[i];
+                  tz = fabs(tree->times->nd_t[tree->n_root->num] - tree->times->nd_t[n->num]);
+                }
             }
+
+          assert(tu > 0.);
+          assert(tv > 0.);
+          assert(tz > 0.);
+          
+          muu = xu - (yu+yz)/2.*tu;
+          
+          sigsqu =
+            log(tree->mmod->sigsq[i]) +
+            log(tree->mmod->sigsq_scale[u->num]) +
+            log(tree->mmod->sigsq_scale_norm_fact) +
+            3.*log(tu)-
+            LOG12;
+          sigsqu = exp(sigsqu);
+          
+          
+          muv = xv - (yv+yz)/2.*tv;
+          
+          sigsqv =
+            log(tree->mmod->sigsq[i]) +
+            log(tree->mmod->sigsq_scale[v->num]) +
+            log(tree->mmod->sigsq_scale_norm_fact) +
+            3.*log(tv)-
+            LOG12;
+          sigsqv = exp(sigsqv);
+          
+          
+          muz = xw + (yw+yz)/2.*tz;;
+          
+          sigsqz =
+            log(tree->mmod->sigsq[i]) +
+            log(tree->mmod->sigsq_scale[z->num]) +
+            log(tree->mmod->sigsq_scale_norm_fact) +
+            3.*log(tz)-
+            LOG12;
+          sigsqz = exp(sigsqz);
+          
+          
+          assert(sigsqu > 0.0);
+          assert(sigsqv > 0.0);
+          assert(sigsqz > 0.0);
+          
+          var = 1./sigsqu + 1./sigsqv + 1./sigsqz;
+          var = 1./var;
+          
+          mean = (muu/sigsqu + muv/sigsqv + muz/sigsqz)*var;
+          
+          if(tree->mmod->print_lk == YES)
+            {
+              PhyML_Printf("\n. LOC Node %d xu: %f yu: %f tu: %f xv: %f yv: %f tv: %f xw: %f yw: %f tz: %f -- muu: %f sigsqu: %f | muv: %f sigsqv: %f | muz: %f sigsqz: %f mean: %f var: %f [sigsq: %f] --> %f",
+                           n->num,
+                           xu,yu,tu,
+                           xv,yv,tv,
+                           xw,yw,tz,
+                           muu,sigsqu,
+                           muv,sigsqv,
+                           muz,sigsqz,
+                           mean,var,
+                           tree->mmod->sigsq[i],tree->mmod->c_lnL);
+            }
+          
+          /*     PhyML_Printf(" %f --> %f",dum,n->ldsk->coord->lonlat[i]); */
+          
         }
-      
+      else if(n == tree->n_root) /* Root node */
+        {
+          yz = tree->n_root->ldsk->veloc->deriv[i];
 
-      /* Root node */
-
-      yz = tree->n_root->ldsk->veloc->deriv[i];
-
-      xu = tree->n_root->v[1]->ldsk->coord->lonlat[i];
-      yu = tree->n_root->v[1]->ldsk->veloc->deriv[i];
-      tu = fabs(tree->times->nd_t[tree->n_root->v[1]->num] - tree->times->nd_t[tree->n_root->num]); 
-
-      xv = tree->n_root->v[2]->ldsk->coord->lonlat[i];
-      yv = tree->n_root->v[2]->ldsk->veloc->deriv[i];
-      tv = fabs(tree->times->nd_t[tree->n_root->v[2]->num] - tree->times->nd_t[tree->n_root->num]); 
-
-      
-      assert(tu > 0.0);
-
-      muu = xu - (yu+yz)/2.*tu;
-
-      sigsqu =
-        log(tree->mmod->sigsq[i]) +
-        log(tree->mmod->sigsq_scale_norm_fact) +
-        3.*log(tu)-
-        LOG12;
-      sigsqu = exp(sigsqu);
-      
-      
-      muv = xv - (yv+yz)/2.*tv;
-      
-      sigsqv = 
-        log(tree->mmod->sigsq[i]) +
-        log(tree->mmod->sigsq_scale_norm_fact) +
-        3.*log(tv)-
-        LOG12;
-      sigsqv = exp(sigsqv);
-      
-      assert(sigsqu > 0.0);
-      assert(sigsqv > 0.0);
-      
-      var = 1./sigsqu + 1./sigsqv;
-      var = 1./var;
-
-      mean = (muu/sigsqu + muv/sigsqv)*var;
+          u  = tree->n_root->v[1];
+          xu = tree->n_root->v[1]->ldsk->coord->lonlat[i];
+          yu = tree->n_root->v[1]->ldsk->veloc->deriv[i];
+          tu = fabs(tree->times->nd_t[tree->n_root->v[1]->num] - tree->times->nd_t[tree->n_root->num]); 
+          
+          v  = tree->n_root->v[2];
+          xv = tree->n_root->v[2]->ldsk->coord->lonlat[i];
+          yv = tree->n_root->v[2]->ldsk->veloc->deriv[i];
+          tv = fabs(tree->times->nd_t[tree->n_root->v[2]->num] - tree->times->nd_t[tree->n_root->num]); 
+          
+          
+          assert(tu > 0.0);
+          
+          muu = xu - (yu+yz)/2.*tu;
+          
+          sigsqu =
+            log(tree->mmod->sigsq[i]) +
+            log(tree->mmod->sigsq_scale[u->num]) +
+            log(tree->mmod->sigsq_scale_norm_fact) +
+            3.*log(tu)-
+            LOG12;
+          sigsqu = exp(sigsqu);
+          
+          
+          muv = xv - (yv+yz)/2.*tv;
+          
+          sigsqv = 
+            log(tree->mmod->sigsq[i]) +
+            log(tree->mmod->sigsq_scale[v->num]) +
+            log(tree->mmod->sigsq_scale_norm_fact) +
+            3.*log(tv)-
+            LOG12;
+          sigsqv = exp(sigsqv);
+          
+          assert(sigsqu > 0.0);
+          assert(sigsqv > 0.0);
+          
+          var = 1./sigsqu + 1./sigsqv;
+          var = 1./var;
+          
+          mean = (muu/sigsqu + muv/sigsqv)*var;
+        }
       
       assert(isinf(mean) == NO && isnan(mean) == NO);
       assert(isinf(var) == NO && isnan(var) == NO);
       
-      tree->n_root->ldsk->coord->lonlat[i] = Rnorm(mean,sqrt(var));
+      if(n->tax == NO)
+        {
+          log_hr += Log_Dnorm(n->ldsk->coord->lonlat[i],mean,sqrt(var),&err);
+          
+          if(sample == YES) n->ldsk->coord->lonlat[i] = Rnorm(mean,sqrt(var));
+          
+          log_hr -= Log_Dnorm(n->ldsk->coord->lonlat[i],mean,sqrt(var),&err);
 
+          RRW_Update_Normalization_Factor(tree);
+        }
+      
       /* PhyML_Printf("\n. LOC yz: %f Root xu: %f yu: %f tu: %f xv: %f yv: %f tv: %f -- muu: %f sigsqu: %f | muv: %f sigsqv: %f | mean: %f var: %f --> %f", */
       /*              yz, */
       /*              xu,yu,tu, */
@@ -516,7 +628,11 @@ void IBM_Sample_Locations_Conditional(t_tree *tree)
       /*              LOCATION_Lk(tree)); */
       /* PhyML_Printf(" --> %f",tree->n_root->ldsk->coord->lonlat[i]); */
     }
+
+  return(log_hr);
+
 }
+
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -756,6 +872,7 @@ phydbl IBM_Velocities_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
           sd =
             log(tree->mmod->sigsq[i]) +
             log(tree->mmod->sigsq_scale[nd_d->num]) +
+            log(tree->mmod->sigsq_scale_norm_fact) +
             log(dt)-
             LOG4;
 
@@ -766,6 +883,20 @@ phydbl IBM_Velocities_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
 
           disk_lnP += Log_Dnorm(ld,mean,sd,&err);
                     
+          if(tree->mmod->print_lk == YES)
+            PhyML_Printf("\n. VEL %2d Time: %10f d->coord: %10f a->coord: %10f a->veloc: %10f mean: %10f sd: %10f dt: %10f [%10f; %10f] x: %10f lk: %10f",
+                         i,
+                         ldsk->disk->time,
+                         ldsk->coord->lonlat[i],
+                         ldsk->prev->coord->lonlat[i],
+                         ldsk->prev->veloc->deriv[i],
+                         mean,
+                         sd,
+                         dt,
+                         ldsk->disk->time,ldsk->prev->disk->time,
+                         ld,
+                         disk_lnP);
+
           if(isinf(lnP) || isnan(lnP)) return(UNLIKELY);
           
           if(isnan(lnP))
@@ -816,17 +947,12 @@ phydbl IBM_Locations_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
         {
           dt = fabs(ldsk->disk->time-ldsk->prev->disk->time);
           
-          /* mean = ldsk->prev->coord->lonlat[i] + 0.5*dt*(ldsk->veloc->deriv[i] + ldsk->prev->veloc->deriv[i]); */
           mean = ldsk->prev->coord->lonlat[i] + dt*ldsk->prev->veloc->deriv[i];
 
-          /* sd = */
-          /*   log(tree->mmod->sigsq[i]) + */
-          /*   log(tree->mmod->sigsq_scale[nd_d->num]) + */
-          /*   3.*log(dt)- */
-          /*   LOG12; */
           sd =
             log(tree->mmod->sigsq[i]) +
             log(tree->mmod->sigsq_scale[nd_d->num]) +
+            log(tree->mmod->sigsq_scale_norm_fact) +
             3.*log(dt)-
             LOG3;
 
@@ -836,7 +962,25 @@ phydbl IBM_Locations_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
           ld = ldsk->coord->lonlat[i];
 
           disk_lnP += Log_Dnorm(ld,mean,sd,&err);
-                    
+
+          if(tree->mmod->print_lk == YES)
+            PhyML_Printf("\n. LOC %2d Time: %10f nd_d: %d sigsq: (%f,%f,%f) a->coord: %10f a->veloc: %10f mean: %10f sd: %10f dt: %10f [%10f %10f] x: %10f lk: %10f",
+                         i,
+                         ldsk->disk->time,
+                         nd_d->num,
+                         tree->mmod->sigsq[i],
+                         tree->mmod->sigsq_scale[nd_d->num],
+                         tree->mmod->sigsq_scale_norm_fact,
+                         ldsk->prev->coord->lonlat[i],
+                         ldsk->prev->veloc->deriv[i],
+                         mean,
+                         sd,
+                         dt,
+                         ldsk->disk->time,ldsk->prev->disk->time,
+                         ld,
+                         disk_lnP);
+          
+          
           if(isinf(lnP) || isnan(lnP)) return(UNLIKELY);
           
           if(isnan(lnP))

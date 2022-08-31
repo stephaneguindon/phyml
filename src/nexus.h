@@ -31,5 +31,5 @@ int Read_Nexus_Taxlabel(char *token,nexparm *curr_parm,option *io);
 int Read_Nexus_Charstatelabels(char *token,nexparm *curr_parm,option *io);
 int Read_Nexus_Charlabels(char *token,nexparm *curr_parm,option *io);
 int Read_Nexus_Statelabels(char *token,nexparm *curr_parm,option *io);
-
+void Backtranslate_Nexus_Tree(t_tree *tree, option *io);
 #endif

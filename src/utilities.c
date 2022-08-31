@@ -11743,6 +11743,36 @@ phydbl Length_Of_Path_Between_List_Of_Tips(t_ll *tips0, t_ll *tips1, matrix *mat
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
+void Replace_Short_With_Long_Tax_Names(t_tree *tree, option *io)
+{
+  int i,j;
+  
+  for(i=0; i<tree->n_otu; ++i)
+    {
+      for(j=0; j<tree->n_otu; ++j)
+        {
+          if(!strcmp(io->short_tax_names[i],tree->a_nodes[j]->name))
+            {
+              Free(tree->a_nodes[j]->name);
+              tree->a_nodes[j]->name = (char *)mCalloc(strlen(io->long_tax_names[i])+1,sizeof(char));
+              strcpy(tree->a_nodes[j]->name,io->long_tax_names[i]);
+              tree->a_nodes[i]->ori_name = tree->a_nodes[j]->name;
+              break;
+            }
+        }
+      if(j == tree->n_otu)
+        {
+          PhyML_Printf("\n. Taxon '%s' with short name '%s' not found in the tree",
+                       io->long_tax_names[i],
+                       io->short_tax_names[i]);
+          assert(false);
+        }
+    }
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
 void Random_Walk_Along_Tree_On_Radius(t_node *a, t_node *d, t_edge *b, phydbl *radius, t_edge **target_edge, t_node **target_nd, phydbl *target_time, t_tree *tree)
 {
   assert(tree->rates);

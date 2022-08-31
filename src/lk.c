@@ -777,9 +777,9 @@ phydbl Lk_Core(int state, int ambiguity_check,
         {
           if(ns == 4 || ns == 20)
             {
-#if (defined(__AVX__) || defined(__AVX2__))
+#if ((defined(__AVX__) || defined(__AVX2__)) && !defined(DISABLE_NATIVE))
               tree->site_lk_cat[catg] = AVX_Lk_Core_One_Class_No_Eigen_Lr(p_lk_left,p_lk_rght,Pij_rr,tPij_rr,pi,ns,ambiguity_check,state);
-#elif (defined(__SSE__) || defined(__SSE2__) || defined(__SSE3__))
+#elif ((defined(__SSE__) || defined(__SSE2__) || defined(__SSE3__)) && !defined(DISABLE_NATIVE))
               tree->site_lk_cat[catg] = SSE_Lk_Core_One_Class_No_Eigen_Lr(p_lk_left,p_lk_rght,Pij_rr,tPij_rr,pi,ns,ambiguity_check,state);
 #else
               tree->site_lk_cat[catg] = Lk_Core_One_Class_No_Eigen_Lr(p_lk_left,p_lk_rght,Pij_rr,pi,ns,ambiguity_check,state);
@@ -868,9 +868,9 @@ phydbl Lk_Core_Eigen_Lr(phydbl *expl, phydbl *dot_prod, t_edge *b, t_tree *tree)
         {
           if(tree->mod->io->datatype == NT || tree->mod->io->datatype == AA)
             {
-#if (defined(__AVX__) || defined(__AVX2__))
+#if ((defined(__AVX__) || defined(__AVX2__)) && !defined(DISABLE_NATIVE))
               tree->site_lk_cat[catg] = AVX_Lk_Core_One_Class_Eigen_Lr(dot_prod,expl ? expl : NULL,ns);
-#elif (defined(__SSE__) || defined(__SSE2__) || defined(__SSE3__))
+#elif ((defined(__SSE__) || defined(__SSE2__) || defined(__SSE3__)) && !defined(DISABLE_NATIVE))
               tree->site_lk_cat[catg] = SSE_Lk_Core_One_Class_Eigen_Lr(dot_prod,expl ? expl : NULL,ns);
 #else
               tree->site_lk_cat[catg] = Lk_Core_One_Class_Eigen_Lr(dot_prod,expl ? expl : NULL,ns);
@@ -959,11 +959,11 @@ void Lk_dLk_Core_Eigen_Lr(phydbl *expl, phydbl *dot_prod, t_edge *b, phydbl *lk,
         {
           if(tree->mod->io->datatype == NT || tree->mod->io->datatype == AA)
             {
-#if (defined(__AVX__) || defined(__AVX2__))
+#if ((defined(__AVX__) || defined(__AVX2__)) && !defined(DISABLE_NATIVE))
               AVX_Lk_dLk_Core_One_Class_Eigen_Lr(dot_prod,
                                                  expl ? expl : NULL,
                                                  ns,&core_lk,&core_dlk);
-#elif (defined(__SSE__) || defined(__SSE2__) ||  defined(__SSE3__))
+#elif ((defined(__SSE__) || defined(__SSE2__) ||  defined(__SSE3__)) && !defined(DISABLE_NATIVE))
               SSE_Lk_dLk_Core_One_Class_Eigen_Lr(dot_prod,
                                                  expl ? expl : NULL,
                                                  ns,&core_lk,&core_dlk);
@@ -1042,10 +1042,10 @@ void Update_Eigen_Lr(t_edge *b, t_tree *tree)
 
   if(tree->mod->ns == 4 || tree->mod->ns == 20)
     {
-#if (defined(__AVX__) || defined(__AVX2__))
+#if ((defined(__AVX__) || defined(__AVX2__)) && !defined(DISABLE_NATIVE))
       AVX_Update_Eigen_Lr(b,tree);
       return;
-#elif (defined(__SSE__) || defined(__SSE2__) ||  defined(__SSE3__))
+#elif ((defined(__SSE__) || defined(__SSE2__) ||  defined(__SSE3__)) && !defined(DISABLE_NATIVE))
       SSE_Update_Eigen_Lr(b,tree);
       return;
 #endif
@@ -1290,9 +1290,9 @@ void Update_Partial_Lk(t_tree *tree, t_edge *b, t_node *d)
     {
       if(tree->mod->ns == 4 || tree->mod->ns == 20)
         {
-#if (defined(__AVX__) || defined(__AVX2__))
+#if ((defined(__AVX__) || defined(__AVX2__)) && !defined(DISABLE_NATIVE))
           AVX_Update_Partial_Lk(tree,b,d);
-#elif (defined(__SSE__) || defined(__SSE2__) || defined(__SSE3__))
+#elif ((defined(__SSE__) || defined(__SSE2__) || defined(__SSE3__)) && !defined(DISABLE_NATIVE))
           SSE_Update_Partial_Lk(tree,b,d);
 #else
           Default_Update_Partial_Lk(tree,b,d);

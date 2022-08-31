@@ -13,7 +13,7 @@ the GNU public licence. See http://www.opensource.org for details.
 #include "assert.h"
 #include "avx.h"
 
-#if (defined(__AVX__) || defined(__AVX2__))
+#if ((defined(__AVX__) || defined(__AVX2__)) && !defined(DISABLE_NATIVE))
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

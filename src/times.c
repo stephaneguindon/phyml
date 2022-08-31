@@ -858,9 +858,10 @@ phydbl TIMES_Lk_Coalescent(t_tree *tree)
   int n_lineages;
   phydbl lnP,Ne,dt,exp_g;
   phydbl T;
-  
+
   Ne = tree->times->scaled_pop_size;
   exp_g = tree->times->neff_growth;
+  
   
   if(Ne > tree->times->scaled_pop_size_max || Ne < tree->times->scaled_pop_size_min)
     {
@@ -868,6 +869,7 @@ phydbl TIMES_Lk_Coalescent(t_tree *tree)
       return(tree->times->c_lnL);
     }
   
+
   Get_Node_Ranks_From_Times(tree);
 
   n = tree->n_root;
@@ -911,13 +913,13 @@ phydbl TIMES_Lk_Coalescent(t_tree *tree)
       
       if(n->tax == NO) lnP -= log(Ne);
       
-      // Multifurcations not allowed under standard Kingman coalescent
-      if(fabs(tree->times->nd_t[n->num] - tree->times->nd_t[n->rk_next->num]) < SMALL &&
-         n->tax == NO && n->rk_next->tax == NO)
-        {
-          tree->times->c_lnL = UNLIKELY;
-          return(UNLIKELY);
-        }
+      /* // Multifurcations not allowed under standard Kingman coalescent */
+      /* if(fabs(tree->times->nd_t[n->num] - tree->times->nd_t[n->rk_next->num]) < SMALL && */
+      /*    n->tax == NO && n->rk_next->tax == NO) /\* This condition does not really test for multifurcation... *\/ */
+      /*   { */
+      /*     /\* tree->times->c_lnL = UNLIKELY; *\/ */
+      /*     /\* return(UNLIKELY); *\/ */
+      /*   } */
             
       if((isnan(lnP) || isinf(lnP)) == TRUE)
         {
@@ -929,7 +931,7 @@ phydbl TIMES_Lk_Coalescent(t_tree *tree)
     }
   
   tree->times->c_lnL = lnP;
-
+    
   return(lnP);
 }
 
@@ -976,14 +978,14 @@ phydbl TIMES_Lk_Coalescent_Range(t_dsk *young, t_dsk *old, t_tree *tree)
       
       lnP += disk_lnP;
 
-      // Multifurcations not allowed under standard Kingman coalescent
-      if(fabs(disk->time - disk->next->time) < SMALL &&
-         disk->ldsk && disk->ldsk->n_next > 1 &&
-         disk->next->ldsk && disk->next->ldsk->n_next > 1)
-        {
-          tree->times->c_lnL = UNLIKELY;
-          return(UNLIKELY);
-        }
+      /* // Multifurcations not allowed under standard Kingman coalescent */
+      /* if(fabs(disk->time - disk->next->time) < SMALL && */
+      /*    disk->ldsk && disk->ldsk->n_next > 1 && */
+      /*    disk->next->ldsk && disk->next->ldsk->n_next > 1) */
+      /*   { */
+      /*     tree->times->c_lnL = UNLIKELY; */
+      /*     return(UNLIKELY); */
+      /*   } */
 
       assert((isnan(lnP) || isinf(lnP)) == FALSE);
       disk = disk->prev;
@@ -1425,6 +1427,48 @@ void TIMES_Set_Calibration(t_tree *tree)
     }
 
   TIMES_Set_All_Node_Priors(tree);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void TIMES_Record_Times(t_tree *mixt_tree)
+{
+  int i;
+  t_tree *tree;
+
+  tree = mixt_tree;
+  do
+    {
+      if(tree->times->nd_t_recorded == YES)
+        {
+          PhyML_Fprintf(stderr,"\n. Overwriting recorded times is forbidden.\n");
+          PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
+          Exit("\n");
+        }
+
+      For(i,2*tree->n_otu-1) tree->times->buff_t[i] = tree->times->nd_t[i];
+      tree = tree->next;
+    }
+  while(tree);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void TIMES_Reset_Times(t_tree *mixt_tree)
+{
+  int i;
+  t_tree *tree;
+
+  tree = mixt_tree;
+  do
+    {
+      tree->times->nd_t_recorded = NO;
+      for(i=0;i<2*tree->n_otu-1;++i) tree->times->nd_t[i] = tree->times->buff_t[i];
+      tree = tree->next;
+    }
+  while(tree);
 }
 
 //////////////////////////////////////////////////////////////
@@ -2456,7 +2500,7 @@ void TIMES_Bl_To_Times(t_tree *tree)
   t1 = tree->times->nd_t[v1->num] - MIXT_Get_Mean_Edge_Len(tree->n_root->b[1],tree) / (tree->rates->clock_r * tree->rates->br_r[v1->num]);
   t2 = tree->times->nd_t[v2->num] - MIXT_Get_Mean_Edge_Len(tree->n_root->b[2],tree) / (tree->rates->clock_r * tree->rates->br_r[v2->num]);
   
-  if(Are_Equal(t1,t2,1.E-6) == NO)
+  if(Are_Equal(t1,t2,1.E-2) == NO)
     {
       PhyML_Fprintf(stderr,"\n. It looks as if the edge lengths suplied do not define an ultrametric tree.");
       PhyML_Fprintf(stderr,"\n. Please amend these lengths so as it becomes straightforward to transform your tree");
@@ -2468,7 +2512,6 @@ void TIMES_Bl_To_Times(t_tree *tree)
     }
       
   tree->times->nd_t[tree->n_root->num] = t1;
-  
   
 }
 
@@ -2499,19 +2542,22 @@ void TIMES_Bl_To_Times_Post(t_node *a, t_node *d, t_edge *b, t_tree *tree)
       t1 = tree->times->nd_t[v1->num] - MIXT_Get_Mean_Edge_Len(d->b[dir1],tree) / (tree->rates->clock_r * tree->rates->br_r[v1->num]);
       t2 = tree->times->nd_t[v2->num] - MIXT_Get_Mean_Edge_Len(d->b[dir2],tree) / (tree->rates->clock_r * tree->rates->br_r[v2->num]);
 
-      if(Are_Equal(t1,t2,1.E-6) == NO)
+      if(Are_Equal(t1,t2,1.E-2) == NO)
         {
           PhyML_Fprintf(stderr,"\n. It looks at if the edge lengths suplied do not define an ultrametric tree.");
           PhyML_Fprintf(stderr,"\n. Please amend these lengths so as it becomes straightforward to transform your tree");
           PhyML_Fprintf(stderr,"\n. into a time-tree.");
+          PhyML_Fprintf(stderr,"\n. v1->tax: %d v2->tax: %d",v1->tax,v2->tax);
           PhyML_Fprintf(stderr,"\n. l1: %f l2: %f",MIXT_Get_Mean_Edge_Len(d->b[dir1],tree),MIXT_Get_Mean_Edge_Len(d->b[dir2],tree));
           PhyML_Fprintf(stderr,"\n. t1: %f t2: %f",tree->times->nd_t[v1->num],tree->times->nd_t[v2->num]);
           PhyML_Fprintf(stderr,"\n. rr1: %f rr2: %f",tree->rates->br_r[v1->num],tree->rates->br_r[v2->num]);
           PhyML_Fprintf(stderr,"\n. est: %f %f diff: %G",t1,t2,t1-t2);
+          PhyML_Fprintf(stderr,"\n. clock_r %f",tree->rates->clock_r);
           Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
         }
       
       tree->times->nd_t[d->num] = t1;
+      
     }
 }
 
@@ -2584,6 +2630,7 @@ void TIMES_Copy_Time_Struct(t_time *from, t_time *to, int n_otu)
 
 phydbl TIMES_Lk(t_tree *tree)
 {
+  
   switch(tree->times->model_id)
     {
     case COALESCENT :

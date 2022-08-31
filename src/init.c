@@ -277,26 +277,27 @@ void Init_NNI(t_nni *a_nni)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Init_Nexus_Format(nexcom **com)
+void Init_Nexus_Format(nexcom **com, FILE *fp)
 {
-
   /*****************************/
 
   strcpy(com[0]->name,"dimensions");
+  com[0]->fp = fp;
   com[0]->nparm = 2;
   com[0]->nxt_token_t = NEXUS_PARM;
   com[0]->cur_token_t = NEXUS_COM;
 
   com[0]->parm[0] = Make_Nexus_Parm();
   strcpy(com[0]->parm[0]->name,"ntax");
-  com[0]->parm[0]->fp = Read_Nexus_Dimensions;
+  com[0]->parm[0]->fp = fp;
+  com[0]->parm[0]->func = Read_Nexus_Dimensions;
   com[0]->parm[0]->com = com[0];
   com[0]->parm[0]->nxt_token_t = NEXUS_EQUAL;
   com[0]->parm[0]->cur_token_t = NEXUS_PARM;
 
   com[0]->parm[1] = Make_Nexus_Parm();
   strcpy(com[0]->parm[1]->name,"nchar");
-  com[0]->parm[1]->fp = Read_Nexus_Dimensions;
+  com[0]->parm[1]->func = Read_Nexus_Dimensions;
   com[0]->parm[1]->com = com[0];
   com[0]->parm[1]->nxt_token_t = NEXUS_EQUAL;
   com[0]->parm[1]->cur_token_t = NEXUS_PARM;
@@ -304,83 +305,95 @@ void Init_Nexus_Format(nexcom **com)
   /*****************************/
 
   strcpy(com[1]->name,"format");
+  com[1]->fp = fp;
   com[1]->nparm = 11;
   com[1]->nxt_token_t = NEXUS_PARM;
   com[1]->cur_token_t = NEXUS_COM;
 
   com[1]->parm[0] = Make_Nexus_Parm();
   strcpy(com[1]->parm[0]->name,"datatype");
-  com[1]->parm[0]->fp = Read_Nexus_Format;
+  com[1]->parm[0]->fp = fp;
+  com[1]->parm[0]->func = Read_Nexus_Format;
   com[1]->parm[0]->com = com[1];
   com[1]->parm[0]->nxt_token_t = NEXUS_EQUAL;
   com[1]->parm[0]->cur_token_t = NEXUS_PARM;
 
   com[1]->parm[1] = Make_Nexus_Parm();
   strcpy(com[1]->parm[1]->name,"respectcase");
-  com[1]->parm[1]->fp = Read_Nexus_Format;
+  com[1]->parm[1]->fp = fp;
+  com[1]->parm[1]->func = Read_Nexus_Format;
   com[1]->parm[1]->com = com[1];
   com[1]->parm[1]->nxt_token_t = NEXUS_PARM;
   com[1]->parm[1]->cur_token_t = NEXUS_VALUE;
 
   com[1]->parm[2] = Make_Nexus_Parm();
   strcpy(com[1]->parm[2]->name,"missing");
-  com[1]->parm[2]->fp = Read_Nexus_Format;
+  com[1]->parm[2]->fp = fp;
+  com[1]->parm[2]->func = Read_Nexus_Format;
   com[1]->parm[2]->com = com[1];
   com[1]->parm[2]->nxt_token_t = NEXUS_EQUAL;
   com[1]->parm[2]->cur_token_t = NEXUS_PARM;
 
   com[1]->parm[3] = Make_Nexus_Parm();
   strcpy(com[1]->parm[3]->name,"gap");
-  com[1]->parm[3]->fp = Read_Nexus_Format;
+  com[1]->parm[3]->fp = fp;
+  com[1]->parm[3]->func = Read_Nexus_Format;
   com[1]->parm[3]->com = com[1];
   com[1]->parm[3]->nxt_token_t = NEXUS_EQUAL;
   com[1]->parm[3]->cur_token_t = NEXUS_PARM;
 
   com[1]->parm[4] = Make_Nexus_Parm();
   strcpy(com[1]->parm[4]->name,"symbols");
-  com[1]->parm[4]->fp = Read_Nexus_Format;
+  com[1]->parm[4]->fp = fp;
+  com[1]->parm[4]->func = Read_Nexus_Format;
   com[1]->parm[4]->com = com[1];
   com[1]->parm[4]->nxt_token_t = NEXUS_EQUAL;
   com[1]->parm[4]->cur_token_t = NEXUS_PARM;
 
   com[1]->parm[5] = Make_Nexus_Parm();
   strcpy(com[1]->parm[5]->name,"equate");
-  com[1]->parm[5]->fp = Read_Nexus_Format;
+  com[1]->parm[5]->fp = fp;
+  com[1]->parm[5]->func = Read_Nexus_Format;
   com[1]->parm[5]->com = com[1];
   com[1]->parm[5]->nxt_token_t = NEXUS_EQUAL;
   com[1]->parm[5]->cur_token_t = NEXUS_PARM;
 
   com[1]->parm[6] = Make_Nexus_Parm();
   strcpy(com[1]->parm[6]->name,"matchchar");
-  com[1]->parm[6]->fp = Read_Nexus_Format;
+  com[1]->parm[6]->fp = fp;
+  com[1]->parm[6]->func = Read_Nexus_Format;
   com[1]->parm[6]->com = com[1];
   com[1]->parm[6]->nxt_token_t = NEXUS_EQUAL;
   com[1]->parm[6]->cur_token_t = NEXUS_PARM;
 
   com[1]->parm[7] = Make_Nexus_Parm();
   strcpy(com[1]->parm[7]->name,"transpose");
-  com[1]->parm[7]->fp = Read_Nexus_Format;
+  com[1]->parm[7]->fp = fp;
+  com[1]->parm[7]->func = Read_Nexus_Format;
   com[1]->parm[7]->com = com[1];
   com[1]->parm[7]->nxt_token_t = NEXUS_PARM;
   com[1]->parm[7]->cur_token_t = NEXUS_VALUE;
 
   com[1]->parm[8] = Make_Nexus_Parm();
   strcpy(com[1]->parm[8]->name,"interleave");
-  com[1]->parm[8]->fp = Read_Nexus_Format;
+  com[1]->parm[8]->fp = fp;
+  com[1]->parm[8]->func = Read_Nexus_Format;
   com[1]->parm[8]->com = com[1];
   com[1]->parm[8]->nxt_token_t = NEXUS_PARM;
   com[1]->parm[8]->cur_token_t = NEXUS_VALUE;
 
   com[1]->parm[9] = Make_Nexus_Parm();
   strcpy(com[1]->parm[9]->name,"items");
-  com[1]->parm[9]->fp = Read_Nexus_Format;
+  com[1]->parm[9]->fp = fp;
+  com[1]->parm[9]->func = Read_Nexus_Format;
   com[1]->parm[9]->com = com[1];
   com[1]->parm[9]->nxt_token_t = NEXUS_EQUAL;
   com[1]->parm[9]->cur_token_t = NEXUS_PARM;
 
   com[1]->parm[10] = Make_Nexus_Parm();
   strcpy(com[1]->parm[10]->name,"statesformat");
-  com[1]->parm[10]->fp = Read_Nexus_Format;
+  com[1]->parm[10]->fp = fp;
+  com[1]->parm[10]->func = Read_Nexus_Format;
   com[1]->parm[10]->com = com[1];
   com[1]->parm[10]->nxt_token_t = NEXUS_EQUAL;
   com[1]->parm[10]->cur_token_t = NEXUS_PARM;
@@ -388,6 +401,7 @@ void Init_Nexus_Format(nexcom **com)
   /*****************************/
 
   strcpy(com[2]->name,"eliminate");
+  com[2]->fp = fp;
   com[2]->nparm = 0;
   com[2]->nxt_token_t = NEXUS_VALUE;
   com[2]->cur_token_t = NEXUS_COM;
@@ -395,6 +409,7 @@ void Init_Nexus_Format(nexcom **com)
   /*****************************/
 
   strcpy(com[3]->name,"taxlabels");
+  com[3]->fp = fp;
   com[3]->nparm = 0;
   com[3]->nxt_token_t = -1;
   com[3]->cur_token_t = -1;
@@ -402,6 +417,7 @@ void Init_Nexus_Format(nexcom **com)
  /*****************************/
 
   strcpy(com[4]->name,"charstatelabels");
+  com[4]->fp = fp;
   com[4]->nparm = 0;
   com[4]->nxt_token_t = -1;
   com[4]->cur_token_t = -1;
@@ -409,6 +425,7 @@ void Init_Nexus_Format(nexcom **com)
   /*****************************/
 
   strcpy(com[5]->name,"charlabels");
+  com[5]->fp = fp;
   com[5]->nparm = 0;
   com[5]->nxt_token_t = -1;
   com[5]->cur_token_t = -1;
@@ -416,6 +433,7 @@ void Init_Nexus_Format(nexcom **com)
   /*****************************/
 
   strcpy(com[6]->name,"statelabels");
+  com[6]->fp = fp;
   com[6]->nparm = 0;
   com[6]->nxt_token_t = -1;
   com[6]->cur_token_t = -1;
@@ -423,14 +441,16 @@ void Init_Nexus_Format(nexcom **com)
   /*****************************/
 
   strcpy(com[7]->name,"matrix");
+  com[7]->fp = fp;
   com[7]->nparm = 1;
   com[7]->nxt_token_t = NEXUS_COM;
   com[7]->cur_token_t = NEXUS_VALUE; /* This will allow us to skip directly
                     to the matrix reading function */
 
   com[7]->parm[0] = Make_Nexus_Parm();
+  com[7]->parm[0]->fp = fp;
   strcpy(com[7]->parm[0]->name,"matrix");
-  com[7]->parm[0]->fp = Read_Nexus_Matrix;
+  com[7]->parm[0]->func = Read_Nexus_Matrix;
   com[7]->parm[0]->com = com[7];
   com[7]->parm[0]->nxt_token_t = NEXUS_COM;
   com[7]->parm[0]->cur_token_t = -1;
@@ -438,14 +458,15 @@ void Init_Nexus_Format(nexcom **com)
   /*****************************/
 
   strcpy(com[8]->name,"begin");
+  com[8]->fp = fp;
   com[8]->nparm = 3;
-
   com[8]->nxt_token_t = NEXUS_PARM;
   com[8]->cur_token_t = NEXUS_COM;
 
   com[8]->parm[0] = Make_Nexus_Parm();
   strcpy(com[8]->parm[0]->name,"data");
-  com[8]->parm[0]->fp = Read_Nexus_Begin;
+  com[8]->parm[0]->fp = fp;
+  com[8]->parm[0]->func = Read_Nexus_Begin;
   com[8]->parm[0]->com = com[8];
   com[8]->parm[0]->nxt_token_t = NEXUS_COM;
   com[8]->parm[0]->cur_token_t = NEXUS_PARM;
@@ -453,7 +474,8 @@ void Init_Nexus_Format(nexcom **com)
 
   com[8]->parm[1] = Make_Nexus_Parm();
   strcpy(com[8]->parm[1]->name,"trees");
-  com[8]->parm[1]->fp = Read_Nexus_Begin;
+  com[8]->parm[1]->fp = fp;
+  com[8]->parm[1]->func = Read_Nexus_Begin;
   com[8]->parm[1]->com = com[8];
   com[8]->parm[1]->nxt_token_t = NEXUS_COM;
   com[8]->parm[1]->cur_token_t = NEXUS_PARM;
@@ -461,7 +483,8 @@ void Init_Nexus_Format(nexcom **com)
 
   com[8]->parm[2] = Make_Nexus_Parm();
   strcpy(com[8]->parm[2]->name,"taxa");
-  com[8]->parm[2]->fp = Read_Nexus_Taxa;
+  com[8]->parm[2]->fp = fp;
+  com[8]->parm[2]->func = Read_Nexus_Taxa;
   com[8]->parm[2]->com = com[8];
   com[8]->parm[2]->nxt_token_t = NEXUS_COM;
   com[8]->parm[2]->cur_token_t = NEXUS_VALUE;
@@ -470,6 +493,7 @@ void Init_Nexus_Format(nexcom **com)
   /*****************************/
 
   strcpy(com[9]->name,"end");
+  com[9]->fp = fp;
   com[9]->nparm = 0;
   com[9]->nxt_token_t = -1;
   com[9]->cur_token_t = -1;
@@ -477,13 +501,15 @@ void Init_Nexus_Format(nexcom **com)
   /*****************************/
 
   strcpy(com[10]->name,"translate");
+  com[10]->fp = fp;
   com[10]->nparm = 1;
   com[10]->nxt_token_t = NEXUS_COM;
   com[10]->cur_token_t = NEXUS_VALUE;
 
   com[10]->parm[0] = Make_Nexus_Parm();
   strcpy(com[10]->parm[0]->name,"translate");
-  com[10]->parm[0]->fp = Read_Nexus_Translate;
+  com[10]->parm[0]->fp = fp;
+  com[10]->parm[0]->func = Read_Nexus_Translate;
   com[10]->parm[0]->com = com[10];
   com[10]->parm[0]->nxt_token_t = NEXUS_COM;
   com[10]->parm[0]->cur_token_t = -1;
@@ -491,13 +517,15 @@ void Init_Nexus_Format(nexcom **com)
   /*****************************/
 
   strcpy(com[11]->name,"tree");
+  com[11]->fp = fp;
   com[11]->nparm = 1;
   com[11]->nxt_token_t = NEXUS_COM;
   com[11]->cur_token_t = NEXUS_VALUE;
 
   com[11]->parm[0] = Make_Nexus_Parm();
   strcpy(com[11]->parm[0]->name,"tree");
-  com[11]->parm[0]->fp = Read_Nexus_Tree;
+  com[11]->parm[0]->fp = fp;
+  com[11]->parm[0]->func = Read_Nexus_Tree;
   com[11]->parm[0]->com = com[11];
   com[11]->parm[0]->nxt_token_t = -1;
   com[11]->parm[0]->cur_token_t = -1;
@@ -731,7 +759,8 @@ void Set_Defaults_Optimiz(t_opt *s_opt)
   s_opt->n_improvements       = 0;
   s_opt->max_spr_depth        = 0;
   s_opt->opt_clock_r          = YES;
-  
+  s_opt->opt_node_ages        = YES;
+    
   s_opt->min_diff_lk_local    = 1.E-03;
   s_opt->min_diff_lk_global   = 1.E-03;
   s_opt->min_diff_lk_move     = 1.E-03;
@@ -861,10 +890,10 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
   rates->clock_r_prior_mean = 1.0E-1;
   rates->clock_r_prior_var  = 1.0E-8;
   
-  rates->max_rate         = 1.E+3;
-  rates->min_rate         = 1.E-3;
-  /* rates->max_rate         = 5.; */
-  /* rates->min_rate         = 0.2; */
+  rates->max_rate         = 1.E+6;
+  rates->min_rate         = 1.E-6;
+  /* rates->max_rate         = 10.; */
+  /* rates->min_rate         = 0.1; */
 
   rates->nu               = 1.0;
   rates->min_nu           = 0.0;
@@ -3548,8 +3577,8 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->max_sigsq         = 1.E+3;
   t->prior_param_sigsq = 10.0;
 
-  t->min_veloc = -10.;
-  t->max_veloc = +10.;
+  t->min_veloc = -1.E+3;
+  t->max_veloc = +1.E+3;
  
   
   assert(t->n_dim > 0);
@@ -3574,6 +3603,8 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->integrateAncestralLocations = YES;
 
   t->rrw_param_val = 2.0;
+
+  t->print_lk = NO;
 }
 
 //////////////////////////////////////////////////////////////

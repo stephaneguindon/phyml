@@ -32,7 +32,7 @@ void R_wtree_Custom(t_node *pere,t_node *fils,int *available,char **s_tree,int *
 void Detect_Align_File_Format(option *io);
 void Detect_Tree_File_Format(option *io);
 align **Get_Seq(option *io);
-void Get_Nexus_Data(FILE *fp,option *io);
+void Get_Nexus_Data(option *io);
 int Get_Token(FILE *fp,char *token);
 align **Get_Seq_Phylip(option *io);
 void Read_Ntax_Len_Phylip(FILE *fp,int *n_otu,int *n_tax);

@@ -55,7 +55,7 @@ phydbl LOCATION_Lk(t_tree *tree)
           }
         break;
       }
-    case IBM : 
+    case IBM : case RIBM :
       {
         lnL = IBM_Lk(tree);
         break;
@@ -98,12 +98,12 @@ phydbl LOCATION_Prior(t_tree *tree)
         lnP = UNLIKELY;
         break;
       }
-    case RRW_GAMMA : case RRW_LOGNORMAL : case IBM : 
+    case RRW_GAMMA : case RRW_LOGNORMAL : case RIBM :  
       {
         lnP = RRW_Prior(tree);
         break;
       }
-    case RW :
+    case RW : case IBM : 
       {
         lnP = RW_Prior(tree);
         break;
@@ -310,6 +310,11 @@ char *LOCATION_Model_Id(t_phyrex_mod *mmod)
     case IBM :
       {
         strcpy(s,"integrated Brownian motion");
+        break;
+      }
+    case RIBM :
+      {
+        strcpy(s,"relaxed integrated Brownian motion");
         break;
       }
     default : assert(FALSE);

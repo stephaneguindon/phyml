@@ -97,6 +97,8 @@ phydbl TIMES_Lk(t_tree *tree);
 phydbl TIMES_Prior_Coalescent(t_tree *tree);
 phydbl TIMES_Prior(t_tree *tree);
 phydbl TIMES_Prior_SLFV(t_tree *tree);
+void TIMES_Record_Times(t_tree *mixt_tree);
+void TIMES_Reset_Times(t_tree *mixt_tree);
 
 
 #endif

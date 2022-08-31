@@ -111,7 +111,8 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define RW  4 /* standard Brownian diffusion model in phylogeography */
 #define RRW_GAMMA  5 /* Lemey's relaxed random walk (Gamma distributed relative diffusion rates) */
 #define RRW_LOGNORMAL  6 /* Lemey's relaxed random walk (Lognormal distributed relative diffusion rates) */
-#define IBM  7 /* Integrated Brownian Motion */
+#define IBM 7 /* Integrated Brownian Motion */
+#define RIBM 8 /* Relaxed Integrated Brownian Motion */
 
 #define AC 0
 #define AG 1
@@ -333,7 +334,6 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define  SCALE_POW             10    /*! Scaling factor will be 2^SCALE_POW or 2^(-SCALE_POW) [[ WARNING: SCALE_POW < 31 ]]*/
 #define  DEFAULT_SIZE_SPR_LIST 20
 #define  NEWICK                 0
-#define  NEXUS                  1
 #define  OUTPUT_TREE_FORMAT NEWICK
 #define  MAX_PARS      1000000000
 
@@ -1381,12 +1381,12 @@ typedef struct __Optimiz { /*! parameters to be optimised (mostly used in 'optim
   short int            opt_cov_delta;
   short int            opt_cov_alpha;
   short int       opt_cov_free_rates;
-  
   short int              opt_clock_r;
-
   short int                   opt_bl; /*! =1 -> the branch lengths are optimised */
   short int                 opt_topo; /*! =1 -> the tree topology is optimised */
   short int              topo_search;
+  short int            opt_node_ages;
+  
   phydbl               init_lk; /*! initial loglikelihood value */
   int                 n_it_max; /*! maximum bnumber of iteration during an optimisation step */
   int                 last_opt; /*! =1 -> the numerical parameters are optimised further while the
@@ -1826,7 +1826,8 @@ typedef struct __Tmcmc {
   int num_move_phyrex_ldsk_tips;
   int num_move_phyrex_node_times;
   int num_move_phyrex_velocities;
-
+  int num_move_phyrex_shuffle_node_times;
+  
   int nd_t_digits;
   int *monitor;
 
@@ -1883,22 +1884,24 @@ typedef struct __Tpart {
 
 /*!********************************************************/
 
-typedef struct __Tnexcom {
+typedef struct __Tnexcom { /*! Nexus command */
   char *name;
   int nparm;
   int nxt_token_t;
   int cur_token_t;
+  FILE *fp;
   struct __Tnexparm **parm;
 }nexcom;
 
 /*!********************************************************/
 
-typedef struct __Tnexparm {
+typedef struct __Tnexparm { /*! Nexus parameter value */
   char *name;
   char *value;
   int nxt_token_t;
   int cur_token_t;
-  int (*fp)(char *, struct __Tnexparm *, struct __Option *);
+  FILE *fp;
+  int (*func)(char *, struct __Tnexparm *, struct __Option *);
   struct __Tnexcom *com;
 }nexparm;
 
@@ -2084,8 +2087,10 @@ typedef struct __Migrep_Model{
 
   phydbl             disp_prior_mean;
 
-  phydbl            rrw_param_val; // value of parameter governing the variance of diffusion coefficient across edges  
+  phydbl               rrw_param_val; // value of parameter governing the variance of diffusion coefficient across edges  
   
+  short int                 print_lk;
+
 }t_phyrex_mod;
 
 /*!********************************************************/
@@ -2231,7 +2236,6 @@ typedef struct __Label{
 
 void Unroot_Tree(char **subtrees);
 void Set_Edge_Dirs(t_edge *b,t_node *a,t_node *d,t_tree *tree);
-void Init_Nexus_Format(nexcom **com);
 void Restrict_To_Coding_Position(align **data,option *io);
 void Uppercase(char *ch);
 void Lowercase(char *ch);
@@ -2534,6 +2538,7 @@ void Exchange_Nodes(t_node *a, t_node *d, t_node *w, t_node *v, t_tree *tree);
 void Init_T_Beg(t_tree *tree);
 void Set_Ignore_Root(int yesno, t_tree *tree);
 void Set_Bl_From_Rt(int yesno, t_tree *tree);
+void Replace_Short_With_Long_Tax_Names(t_tree *tree, option *io);
 
 
 #include "xml.h"

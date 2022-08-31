@@ -187,5 +187,9 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
 void MCMC_PHYREX_Node_Times(t_tree *tree, int print);
 void MCMC_PHYREX_Sigsq(t_tree *tree, int print);
 void MCMC_PHYREX_Update_Velocities(t_tree *tree);
+void MCMC_PHYREX_Shuffle_Node_Times(t_tree *tree, int print);
+void MCMC_Randomize_Veloc(t_tree *tree);
+void MCMC_Randomize_Locations(t_tree *tree);
+void MCMC_Randomize_Locations_Pre(t_node *a, t_node *d, t_tree *tree);
 
 #endif

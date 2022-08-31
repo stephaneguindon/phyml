@@ -1525,7 +1525,7 @@ phydbl SLFV_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_mergers,
                     new_disk->centr->lonlat[j] = Uni()*(mmod->lim_up->lonlat[j]-mmod->lim_do->lonlat[j])+mmod->lim_do->lonlat[j];
                     break; 
                   }
-                case RW : case RRW_GAMMA : case RRW_LOGNORMAL : case IBM :   
+                case RW : case RRW_GAMMA : case RRW_LOGNORMAL : case IBM : case RIBM :    
                   { 
                     new_disk->centr->lonlat[j] = disk->ldsk_a[Rand_Int(0,disk->n_ldsk_a-1)]->coord->lonlat[j];
                     break; 
@@ -1563,7 +1563,7 @@ phydbl SLFV_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_mergers,
                     prob_hit = exp(prob_hit);
                     break; 
                   }
-                case RW : case RRW_GAMMA : case RRW_LOGNORMAL : case IBM : 
+                case RW : case RRW_GAMMA : case RRW_LOGNORMAL : case IBM : case RIBM : 
                     {
                       prob_hit = 1./(new_disk->n_ldsk_a+1.);
                     }
@@ -1589,7 +1589,7 @@ phydbl SLFV_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_mergers,
                             PHYREX_Runif_Rectangle_Overlap(new_disk->ldsk,new_disk,tree->mmod);
                             break;
                           }
-                        case SLFV_GAUSSIAN : case RW : case RRW_GAMMA : case RRW_LOGNORMAL : case IBM : 
+                        case SLFV_GAUSSIAN : case RW : case RRW_GAMMA : case RRW_LOGNORMAL : case IBM : case RIBM : 
                           {
                             PHYREX_Rnorm_Trunc(new_disk->ldsk,new_disk,tree->mmod);
                             for(j=0;j<tree->mmod->n_dim;++j)

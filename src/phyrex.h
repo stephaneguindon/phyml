@@ -152,6 +152,7 @@ void PHYREX_Check_Disk_Times(t_tree *tree);
 void PHYREX_Exchange_Ldsk(t_ldsk *a, t_ldsk *d, t_ldsk *w, t_ldsk *v, int aw, int dv, t_tree *tree);
 void PHYREX_Record_Coord(t_tree *tree);
 void PHYREX_Restore_Coord(t_tree *tree);
+void PHYREX_Update_Disk_Times_Given_Nodes(t_tree *tree);
 
 
 #endif

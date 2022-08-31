@@ -1148,6 +1148,11 @@ void RATES_Update_Edge_Lengths_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree
 
 void RATES_Update_One_Edge_Length(t_edge *b, t_tree *tree)
 {
+  if(tree->is_mixt_tree == YES)
+    {
+      MIXT_RATES_Update_One_Edge_Length(b,tree);
+      return;
+    }
 
   if(b == tree->e_root || b == tree->n_root->b[1] || b == tree->n_root->b[2])
     {
@@ -1213,7 +1218,7 @@ void RATES_Update_One_Edge_Length_Core(t_edge *b, t_tree *tree)
 {      
   phydbl dt,rr,ra,rd,ta,td,nu,cr,Z;
   t_node *a, *d;
-
+  
   if(b->left->anc == b->rght)
     {
       d = b->left;
@@ -1890,48 +1895,6 @@ void RATES_Set_Mean_L(t_tree *tree)
     {
       tree->rates->mean_l[i] = tree->a_edges[i]->l->v;
     }
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-void RATES_Record_Times(t_tree *mixt_tree)
-{
-  int i;
-  t_tree *tree;
-
-  tree = mixt_tree;
-  do
-    {
-      if(tree->times->nd_t_recorded == YES)
-        {
-          PhyML_Fprintf(stderr,"\n. Overwriting recorded times is forbidden.\n");
-          PhyML_Fprintf(stderr,"\n. Err. in file %s at line %d\n",__FILE__,__LINE__);
-          Exit("\n");
-        }
-
-      For(i,2*tree->n_otu-1) tree->times->buff_t[i] = tree->times->nd_t[i];
-      tree = tree->next;
-    }
-  while(tree);
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-void RATES_Reset_Times(t_tree *mixt_tree)
-{
-  int i;
-  t_tree *tree;
-
-  tree = mixt_tree;
-  do
-    {
-      tree->times->nd_t_recorded = NO;
-      for(i=0;i<2*tree->n_otu-1;++i) tree->times->nd_t[i] = tree->times->buff_t[i];
-      tree = tree->next;
-    }
-  while(tree);
 }
 
 //////////////////////////////////////////////////////////////

@@ -114,8 +114,6 @@ phydbl RATES_Dmu_One(phydbl mu, phydbl dt, phydbl a, phydbl b, phydbl lexp);
 phydbl RATES_Compound_Core(phydbl mu1, phydbl mu2, int n1, int n2, phydbl dt1, phydbl dt2, phydbl alpha, phydbl beta, phydbl lexp, phydbl eps, int approx);
 void RATES_Record_Rates(t_tree *tree);
 void RATES_Reset_Rates(t_tree *tree);
-void RATES_Record_Times(t_tree *tree);
-void RATES_Reset_Times(t_tree *tree);
 void RATES_Update_T_Rates_Pre(t_node *a, t_node *d, t_tree *tree);
 void RATES_Update_T_Rates(t_tree *tree);
 void RATES_Get_Rates_From_Bl(t_tree *tree);

@@ -477,50 +477,88 @@ phydbl Rnorm_Trunc_Inverse(phydbl mean, phydbl sd, phydbl min, phydbl max, int *
 //////////////////////////////////////////////////////////////
 /* Borrowed from https://github.com/olafmersmann/truncnorm/blob/afc91b696db8a3feda25d39435fd979bacd962c6/src/rtruncnorm.c */
 
-phydbl Rnorm_Trunc_Algo1(phydbl alpha, phydbl beta)
+phydbl Rnorm_Trunc_Algo1(phydbl alpha, phydbl beta, int *err)
 {
   phydbl z = -DBL_MAX;
+  int iter = 0;
   while(z < alpha || z > beta)
     {
       z = Rnorm(0.0,1.0);
+      ++iter;
+      if(iter > 1E+5)
+        {
+          *err = YES;
+          break;
+        }
     }
   return(z);
 }
 
-phydbl Rnorm_Trunc_Algo2(phydbl alpha, phydbl beta)
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl Rnorm_Trunc_Algo2(phydbl alpha, phydbl beta, int *err)
 {
   phydbl z = 0.0;
-  phydbl d_alpha = Dnorm(alpha,0.0,1.0);
+  phydbl d_alpha = Dnorm(alpha,0.0,1.0);  
   const double ub = alpha < 0.0 && beta > 0.0 ? M_1_SQRT_2PI : d_alpha;
+  int iter = 0;
   do
     {
       z = Uni()*(beta-alpha) + alpha;
+      ++iter;
+      if(iter > 1E+5)
+        {
+          *err = YES;
+          break;
+        }
     }
   while(Uni() * ub > Dnorm(z,0.0,1.0));
   return(z);
 }
 
-phydbl Rnorm_Trunc_Algo3(phydbl alpha, phydbl beta)
-{
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
+phydbl Rnorm_Trunc_Algo3(phydbl alpha, phydbl beta, int *err)
+{
   phydbl z = alpha - 1.0;
+  int iter = 0;
+  *err = NO;
   while(z < alpha || z > beta)
     {
       z = Rnorm(0,1);
       z = fabs(z);
+      ++iter;
+      if(iter > 1E+5)
+        {
+          *err = YES;
+          break;
+        }
     }
   return(z);
 }
 
-phydbl Rnorm_Trunc_Algo4(phydbl alpha, phydbl beta)
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl Rnorm_Trunc_Algo4(phydbl alpha, phydbl beta, int *err)
 {
   phydbl z = 0.0;
   const phydbl ainv = 1.0/alpha;
   phydbl rho;
+  int iter = 0;
+  *err = NO;
   do
     {
       z = Rexp(ainv) + alpha;
       rho = exp(-0.5 * pow((z-alpha),2));
+      ++iter;
+      if(iter > 1E+5)
+        {
+          *err = YES;
+          break;
+        }
     }
   while(Uni() > rho || z > beta);
   return(z);
@@ -549,12 +587,12 @@ phydbl Rnorm_Trunc(phydbl mean, phydbl sd, phydbl min, phydbl max, int *error)
         {
           if(!(d_alpha > 0.15) || !(d_beta > 0.15))
             {
-              z = Rnorm_Trunc_Algo1(alpha,beta);
+              z = Rnorm_Trunc_Algo1(alpha,beta,error);
               return(mean + sd * z);
             }
           else
             {
-              z = Rnorm_Trunc_Algo2(alpha,beta);
+              z = Rnorm_Trunc_Algo2(alpha,beta,error);
               return(mean + sd * z);
             }
         }
@@ -562,19 +600,19 @@ phydbl Rnorm_Trunc(phydbl mean, phydbl sd, phydbl min, phydbl max, int *error)
         {
           if(!(d_alpha / d_beta > 2.18))
             {
-              z = Rnorm_Trunc_Algo2(alpha,beta);
+              z = Rnorm_Trunc_Algo2(alpha,beta,error);
               return(mean + sd * z);
             }
           else
             {
               if(!(alpha > 0.725))
                 {
-                  z = Rnorm_Trunc_Algo3(alpha,beta);
+                  z = Rnorm_Trunc_Algo3(alpha,beta,error);
                   return(mean + sd * z);
                 }
               else
                 {
-                  z = Rnorm_Trunc_Algo4(alpha,beta);
+                  z = Rnorm_Trunc_Algo4(alpha,beta,error);
                   return(mean + sd * z);
                 }
             }
@@ -583,17 +621,17 @@ phydbl Rnorm_Trunc(phydbl mean, phydbl sd, phydbl min, phydbl max, int *error)
         {
           if(!(d_beta / d_alpha > 2.18))
             {
-              z = Rnorm_Trunc_Algo2(alpha,beta);
+              z = Rnorm_Trunc_Algo2(alpha,beta,error);
               return(mean - sd * z);
             }
           else if(beta > -0.725)
             {
-              z = Rnorm_Trunc_Algo3(alpha,beta);
+              z = Rnorm_Trunc_Algo3(alpha,beta,error);
               return(mean - sd * z);
             }
           else
             {              
-              z = Rnorm_Trunc_Algo4(alpha,beta);
+              z = Rnorm_Trunc_Algo4(alpha,beta,error);
               return(mean - sd * z);
             }
         }
@@ -4627,6 +4665,20 @@ int *Permutate(int len)
   return(x);
 } 
  
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+int *Reverse(int *v, int len)
+{
+  int *rev,i;
+
+  rev = (int *)mCalloc(len,sizeof(int));
+  for(i=0;i<len;++i) rev[len-1-i] = v[i]; 
+
+  return(rev);
+
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 // Returns the p-value for the Mantel test of correlation between

@@ -63,7 +63,7 @@ AC_ARG_ENABLE([native],
                               [Remove AVX or SSE compilation options.])])
 
 AS_IF([test "x$enable_native" = "xno"],
-      [VECTOR_FLAG=],
+      [VECTOR_FLAG="-DDISABLE_NATIVE"],
       [VECTOR_FLAG="${DEFAULT_VECTOR_FLAG}"])
 
 
