@@ -309,8 +309,8 @@ spr.c spr.h\
 draw.c  draw.h\
 stats.c stats.h\
 rates.c rates.h\
-mcmc.c mcmc.h\
 times.c times.h\
+mcmc.c mcmc.h\
 io.c io.h\
 make.c make.h\
 nexus.c nexus.h\

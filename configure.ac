@@ -96,6 +96,7 @@ AS_IF([test "x$enable_safemode" = "xyes"],
 AC_ARG_ENABLE([gprof],
               [AS_HELP_STRING([--enable-gprof],
                               [Remove optimization options and add profiling informations.])])
+
 AS_IF([test "x$enable_gprof" = "xyes"],
       [CFLAGS="-g -pg -fno-inline -fprofile-arcs -ftest-coverage ${VECTOR_FLAG}"],
       [AS_IF([test "x$enable_debug" = "xno"],[CFLAGS="${DEFAULT_C_FLAG}"])])

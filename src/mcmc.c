@@ -241,6 +241,7 @@ void MCMC_Update_Mode(int move_num, t_mcmc *mcmc, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYREX || PHYTIME)
 void MCMC_Clock_R(t_tree *tree)
 {
   phydbl new_lnL_seq, cur_lnL_seq;
@@ -309,6 +310,7 @@ void MCMC_Clock_R(t_tree *tree)
   PHYREX_Print_MCMC_Summary(tree);
 #endif
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -489,6 +491,7 @@ void MCMC_GEO_Loc(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYREX || PHYTIME)
 void MCMC_Sample_Joint_Rates_Prior(t_tree *tree)
 {
   int i,dim;
@@ -526,10 +529,12 @@ void MCMC_Sample_Joint_Rates_Prior(t_tree *tree)
 				r,
 				dim);
 }
-  
+#endif
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYREX || PHYTIME)
 void MCMC_Rates_All(t_tree *tree)
 {
   if(tree->rates->model_id == STRICTCLOCK) return;
@@ -551,10 +556,12 @@ void MCMC_Rates_All(t_tree *tree)
   Set_Both_Sides(NO,tree);
   Lk(NULL,tree); /* Required in order to rescale all branch rates */
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYREX || PHYTIME)
 void MCMC_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
 {
   t_edge *b;
@@ -668,10 +675,12 @@ void MCMC_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
         }
     }
 }
+#endif
 
 /* ////////////////////////////////////////////////////////////// */
 /* ////////////////////////////////////////////////////////////// */
 
+#if (defined PHYREX || PHYTIME)
 void MCMC_One_Node_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
 {
   t_edge *b;
@@ -708,20 +717,24 @@ void MCMC_One_Node_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
 	}
     }
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYREX || PHYTIME)
 void MCMC_Times_And_Rates_All(t_tree *tree)
 {
   MCMC_Times_And_Rates_Root(tree);
   MCMC_Times_And_Rates_Recur(tree->n_root,tree->n_root->v[1],YES,tree);
   MCMC_Times_And_Rates_Recur(tree->n_root,tree->n_root->v[2],YES,tree);
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYREX || PHYTIME)
 void MCMC_Times_And_Rates_Root(t_tree *tree)
 {
   phydbl u;
@@ -886,10 +899,12 @@ void MCMC_Times_And_Rates_Root(t_tree *tree)
 #endif
     }   
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYREX || PHYTIME)
 void MCMC_Times_And_Rates_Recur(t_node *a, t_node *d, int traversal, t_tree *tree)
 {
   phydbl u;
@@ -1055,10 +1070,12 @@ void MCMC_Times_And_Rates_Recur(t_node *a, t_node *d, int traversal, t_tree *tre
           }
     }	    
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYREX || PHYTIME)
 void MCMC_Times_All(t_tree *tree)
 {
   // Down partials may not be up to date.
@@ -1070,10 +1087,12 @@ void MCMC_Times_All(t_tree *tree)
   if(tree->eval_alnL == YES) Update_Partial_Lk(tree,tree->e_root,tree->n_root->v[1]);
   MCMC_Time_Recur(tree->n_root,tree->n_root->v[2],YES,tree);
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYREX || PHYTIME)
 void MCMC_Time_Recur(t_node *a, t_node *d, int traversal, t_tree *tree)
 {
   phydbl u;
@@ -1295,10 +1314,12 @@ void MCMC_Time_Recur(t_node *a, t_node *d, int traversal, t_tree *tree)
         }
     }	    
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYREX || PHYTIME)
 void MCMC_Root_Time(t_tree *tree, int print)
 {
   phydbl u;
@@ -1535,10 +1556,12 @@ void MCMC_Root_Time(t_tree *tree, int print)
 #endif
   if(tree->eval_alnL == YES) Lk(NULL,tree);  
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYREX || PHYTIME)
 void MCMC_Tree_Height(t_tree *tree)
 {
   phydbl K,mult,u,alpha,ratio;
@@ -1616,17 +1639,19 @@ void MCMC_Tree_Height(t_tree *tree)
 
   tree->mcmc->run_move[tree->mcmc->num_move_tree_height]++;
   tree->mcmc->run++;
-
+  
 #ifdef PHYREX
   PHYREX_Print_MCMC_Stats(tree);
   PHYREX_Print_MCMC_Tree(tree);
   PHYREX_Print_MCMC_Summary(tree);
 #endif
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYREX || PHYTIME)
 void MCMC_Updown_T_Cr(t_tree *tree)
 {
   /*! TO DO: make sure to change the values of clock_r across 
@@ -1731,10 +1756,12 @@ void MCMC_Updown_T_Cr(t_tree *tree)
   PHYREX_Print_MCMC_Summary(tree);
 #endif
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYREX || PHYTIME)
 void MCMC_Updown_T_Br(t_tree *tree)
 {
   
@@ -1829,10 +1856,12 @@ void MCMC_Updown_T_Br(t_tree *tree)
   PHYREX_Print_MCMC_Summary(tree);
 #endif
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYREX || PHYTIME)
 void MCMC_Subtree_Height(t_tree *tree)
 {
   phydbl K,mult,u,alpha,ratio;
@@ -1916,12 +1945,13 @@ void MCMC_Subtree_Height(t_tree *tree)
   PHYREX_Print_MCMC_Tree(tree);
   PHYREX_Print_MCMC_Summary(tree);
 #endif
-
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYREX || PHYTIME)
 void MCMC_Tree_Rates(t_tree *tree)
 {
   phydbl K,mult,u,alpha,ratio;
@@ -2007,12 +2037,13 @@ void MCMC_Tree_Rates(t_tree *tree)
   PHYREX_Print_MCMC_Tree(tree);
   PHYREX_Print_MCMC_Summary(tree);
 #endif
-
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYREX || PHYTIME)
 void MCMC_Subtree_Rates(t_tree *tree)
 {  phydbl K,mult,u,alpha,ratio;
   phydbl cur_lnL_rate,new_lnL_rate;
@@ -2087,12 +2118,13 @@ void MCMC_Subtree_Rates(t_tree *tree)
   PHYREX_Print_MCMC_Tree(tree);
   PHYREX_Print_MCMC_Summary(tree);
 #endif
-
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYREX || PHYTIME)
 void MCMC_Swing(t_tree *tree)
 {
   int i;
@@ -2187,12 +2219,13 @@ void MCMC_Swing(t_tree *tree)
   PHYREX_Print_MCMC_Tree(tree);
   PHYREX_Print_MCMC_Summary(tree);
 #endif
-
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYREX || PHYTIME)
 void MCMC_Updown_Nu_Cr(t_tree *tree)
 {
   phydbl K,mult,u,alpha,ratio;
@@ -2276,10 +2309,12 @@ void MCMC_Updown_Nu_Cr(t_tree *tree)
   PHYREX_Print_MCMC_Summary(tree);
 #endif
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYREX || PHYTIME)
 void MCMC_Time_Slice(t_tree *tree)
 {
   int i;
@@ -2376,11 +2411,12 @@ void MCMC_Time_Slice(t_tree *tree)
   PHYREX_Print_MCMC_Tree(tree);
   PHYREX_Print_MCMC_Summary(tree);
 #endif
-
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
 
 void MCMC_Print_Param_Stdin(t_mcmc *mcmc, t_tree *tree)
 {
@@ -2388,8 +2424,6 @@ void MCMC_Print_Param_Stdin(t_mcmc *mcmc, t_tree *tree)
 
   time(&cur_time);
   
-
-
   if(mcmc->run == 1)
     {
       PhyML_Printf("\n\n");
@@ -2399,7 +2433,7 @@ void MCMC_Print_Param_Stdin(t_mcmc *mcmc, t_tree *tree)
       PhyML_Printf("  %10s","Prior");
       PhyML_Printf("  %19s","SubstRate[ ESS ]");
       PhyML_Printf("  %17s","TreeHeight[ ESS ]");    
-      if(tree->rates->model_id == THORNE || tree->rates->model_id == GUINDON) PhyML_Printf("  %16s","AutoCor[ ESS ]");    
+      if(tree->rates != NULL && (tree->rates->model_id == THORNE || tree->rates->model_id == GUINDON)) PhyML_Printf("  %16s","AutoCor[ ESS ]");    
       else PhyML_Printf("  %16s","RateVar[ ESS ]");
       PhyML_Printf("  %15s","BirthR[ ESS ]");
       PhyML_Printf("  %8s","MinESS");    
@@ -2413,7 +2447,9 @@ void MCMC_Print_Param_Stdin(t_mcmc *mcmc, t_tree *tree)
       PhyML_Printf("  %5d",(int)(cur_time-mcmc->t_beg));
       PhyML_Printf("  %10.2f",tree->c_lnL);
       PhyML_Printf("  %10.2f",(tree->rates ? tree->rates->c_lnL+tree->times->c_lnL : +1));
+#if (defined PHYREX || PHYTIME)
       PhyML_Printf("  %12.6f[%5.0f]",RATES_Average_Substitution_Rate(tree),tree->mcmc->ess[tree->mcmc->num_move_clock_r]);
+#endif
       /* PhyML_Printf("\t%12.6f[%5.0f]",tree->rates->clock_r,tree->mcmc->ess[tree->mcmc->num_move_clock_r]); */
       PhyML_Printf("  %9f[%5.0f]",
                    (tree->rates ? tree->rates->nu : -1.),
@@ -2431,40 +2467,15 @@ void MCMC_Print_Param(t_mcmc *mcmc, t_tree *tree)
 {
   int i;
   FILE *fp;
-  char *s;
   int orig_approx;
   phydbl orig_lnL;
-  char *s_tree;
+  char *s;
   
   if(tree->mcmc->run > mcmc->chain_len) return;
 
   s = (char *)mCalloc(100,sizeof(char));
 
   fp = mcmc->out_fp_stats;
-
-/*   if(tree->mcmc->run == 0) */
-/*     { */
-/*       PhyML_Fprintf(stdout," ["); */
-/*       fflush(NULL); */
-/*     } */
-  
-/*   if(!(mcmc->run%(mcmc->chain_len/10))) */
-/*     { */
-/*       PhyML_Fprintf(stdout,"."); */
-/*       fflush(NULL); */
-/*     } */
-
-/*   if(tree->mcmc->run == mcmc->chain_len) */
-/*     { */
-/*       PhyML_Fprintf(stdout,"]"); */
-/*       fflush(NULL); */
-/*     } */
-
-
-/*   MCMC_Print_Means(mcmc,tree); */
-/*   MCMC_Print_Last(mcmc,tree); */
-
-
 
   if(!(mcmc->run%mcmc->sample_interval)) 
     {
@@ -2513,7 +2524,9 @@ void MCMC_Print_Param(t_mcmc *mcmc, t_tree *tree)
 	  PhyML_Fprintf(fp,"LnTimes\t");
 	  PhyML_Fprintf(fp,"LnPosterior\t");
 	  PhyML_Fprintf(fp,"ClockRate\t");
+#if (defined PHYREX || PHYTIME)
 	  PhyML_Fprintf(fp,"EvolRate\t");
+#endif
 	  PhyML_Fprintf(fp,"Nu\t");
 	  PhyML_Fprintf(fp,"BirthRate\t");
 	  PhyML_Fprintf(fp,"TsTv\t");
@@ -2658,7 +2671,9 @@ void MCMC_Print_Param(t_mcmc *mcmc, t_tree *tree)
       PhyML_Fprintf(fp,"%G\t",tree->times->c_lnL);
       PhyML_Fprintf(fp,"%G\t",tree->c_lnL+tree->rates->c_lnL+tree->times->c_lnL);
       PhyML_Fprintf(fp,"%G\t",tree->rates->clock_r);
+#if (defined PHYREX || PHYTIME)
       PhyML_Fprintf(fp,"%G\t",RATES_Average_Substitution_Rate(tree));
+#endif
       PhyML_Fprintf(fp,"%G\t",tree->rates->nu);
       PhyML_Fprintf(fp,"%G\t",tree->times->birth_rate);
       PhyML_Fprintf(fp,"%G\t",tree->mod->kappa->v);
@@ -2692,7 +2707,7 @@ void MCMC_Print_Param(t_mcmc *mcmc, t_tree *tree)
       /* for(i=0;i<2*tree->n_otu-1;i++) PhyML_Fprintf(fp,"%.4f\t",log(tree->rates->nd_r[i])); */
       
       // Average rate along edges: length divided by elapsed time
-      For(i,2*tree->n_otu-2)
+      for(i=0;i<2*tree->n_otu-2;++i)
 	PhyML_Fprintf(fp,"%.4f\t",
 		      tree->rates->cur_l[i]/(tree->times->nd_t[tree->a_nodes[i]->num] - tree->times->nd_t[tree->a_nodes[i]->anc->num]));
 
@@ -2795,12 +2810,14 @@ void MCMC_Print_Param(t_mcmc *mcmc, t_tree *tree)
       /* fclose(fp); */
       
       // TREES
+#if (defined PHYREX || PHYTIME)
       TIMES_Time_To_Bl(tree);
       tree->bl_ndigits = 3;
-      s_tree = Write_Tree(tree);
+      char *s_tree = Write_Tree(tree);
       tree->bl_ndigits = 7;
       PhyML_Fprintf(mcmc->out_fp_trees,"TREE %8d [%f] = [&R] %s\n",mcmc->run,tree->c_lnL,s_tree);
       Free(s_tree);
+#endif
     }
 
   if(tree->mcmc->run == mcmc->chain_len) PhyML_Fprintf(mcmc->out_fp_trees,"END;\n");
@@ -2813,7 +2830,6 @@ void MCMC_Print_Param(t_mcmc *mcmc, t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void MCMC_Print_Means(t_mcmc *mcmc, t_tree *tree)
 {
@@ -2857,7 +2873,6 @@ void MCMC_Print_Means(t_mcmc *mcmc, t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void MCMC_Print_Last(t_mcmc *mcmc, t_tree *tree)
 {
@@ -3064,7 +3079,6 @@ void MCMC_Copy_MCMC_Struct(t_mcmc *ori, t_mcmc *cpy, char *filename)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void MCMC_Close_MCMC(t_mcmc *mcmc)
 {
   fclose(mcmc->out_fp_trees);
@@ -3221,6 +3235,7 @@ void MCMC_Randomize_Node_Rates(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYREX || PHYTIME)
 void MCMC_Randomize_Rates(t_tree *tree)
 {
 
@@ -3247,10 +3262,12 @@ void MCMC_Randomize_Rates(t_tree *tree)
   PHYREX_Update_Ldsk_Rates_Given_Edges(tree);
 #endif
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYREX || PHYTIME)
 void MCMC_Randomize_Rates_Pre(t_node *a, t_node *d, t_tree *tree)
 {
   int i;
@@ -3273,10 +3290,12 @@ void MCMC_Randomize_Rates_Pre(t_node *a, t_node *d, t_tree *tree)
 	  MCMC_Randomize_Rates_Pre(d,d->v[i],tree);
     }
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYREX)
 void MCMC_Randomize_Sigsq_Scale(t_tree *tree)
 {
   int i;
@@ -3302,10 +3321,12 @@ void MCMC_Randomize_Sigsq_Scale(t_tree *tree)
   
   if(tree->mmod->model_id == IBM) for(i=0;i<2*tree->n_otu-2;++i) tree->mmod->sigsq_scale[tree->a_nodes[i]->num] = 1.;
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYREX)
 void MCMC_Randomize_Veloc(t_tree *tree)
 {
   int i,j;
@@ -3324,10 +3345,12 @@ void MCMC_Randomize_Veloc(t_tree *tree)
         }
     }
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYREX || PHYTIME)
 void MCMC_Randomize_Birth(t_tree *tree)
 {
   phydbl min_b,max_b;
@@ -3339,10 +3362,12 @@ void MCMC_Randomize_Birth(t_tree *tree)
   u = Uni();
   tree->times->birth_rate = (max_b - min_b) * u + min_b;
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYREX || PHYTIME)
 void MCMC_Randomize_Death(t_tree *tree)
 {
   phydbl min_d,max_d;
@@ -3354,11 +3379,12 @@ void MCMC_Randomize_Death(t_tree *tree)
   u = Uni();
   tree->times->death_rate = (max_d - min_d) * u + min_d;
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
+#if (defined PHYREX || PHYTIME)
 void MCMC_Randomize_Nu(t_tree *tree)
 {
   phydbl min_nu,max_nu;
@@ -3379,10 +3405,12 @@ void MCMC_Randomize_Nu(t_tree *tree)
   u = Uni();
   tree->rates->nu = (max_nu - min_nu) * u + min_nu;
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYREX || PHYTIME)
 void MCMC_Randomize_Clock_Rate(t_tree *tree)
 {  
   phydbl mean,sd;
@@ -3408,11 +3436,12 @@ void MCMC_Randomize_Clock_Rate(t_tree *tree)
             tree->rates->clock_r > tree->rates->max_clock);   
     }
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
+#if (defined PHYREX || PHYTIME)
 void MCMC_Randomize_Alpha(t_tree *tree)
 {
   phydbl u;
@@ -3420,10 +3449,12 @@ void MCMC_Randomize_Alpha(t_tree *tree)
   u = Uni();
   tree->rates->alpha = u*6.0+1.0;
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYREX || PHYTIME)
 void MCMC_Randomize_Node_Times(t_tree *tree)
 {
   phydbl t_sup, t_inf;
@@ -3503,10 +3534,12 @@ void MCMC_Randomize_Node_Times(t_tree *tree)
 
   if(RATES_Check_Node_Times(tree)) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);  
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYREX || PHYTIME)
 void MCMC_Randomize_Node_Times_Bottom_Up(t_node *a, t_node *d, t_tree *tree)
 {
   if(tree->mod->s_opt->opt_node_ages == NO) return;
@@ -3550,11 +3583,12 @@ void MCMC_Randomize_Node_Times_Bottom_Up(t_node *a, t_node *d, t_tree *tree)
 	tree->times->nd_t[d->num] = u;
     }  
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
+#if (defined PHYREX || PHYTIME)
 void MCMC_Randomize_Node_Times_Top_Down(t_node *a, t_node *d, t_tree *tree)
 {
   if(tree->mod->s_opt->opt_node_ages == NO) return;
@@ -3584,6 +3618,7 @@ void MCMC_Randomize_Node_Times_Top_Down(t_node *a, t_node *d, t_tree *tree)
 	}
     }
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -4328,7 +4363,6 @@ void MCMC_Free_Mixt_Rate(t_tree *mixt_tree)
       tree = tree->next_mixt;
     }
   while(tree);
-
 }
 
 //////////////////////////////////////////////////////////////
@@ -4388,7 +4422,6 @@ void MCMC_Covarion_Rates(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void MCMC_Covarion_Switch(t_tree *tree)
 {
   if(tree->mod->use_m4mod == NO) return;
@@ -4403,6 +4436,7 @@ void MCMC_Covarion_Switch(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYTIME)
 void MCMC_Birth_Rate(t_tree *tree)
 {
   phydbl cur_birth_rate,new_birth_rate;
@@ -4550,10 +4584,12 @@ void MCMC_Birth_Rate(t_tree *tree)
   PHYREX_Print_MCMC_Summary(tree);
 #endif
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYTIME)
 void MCMC_Death_Rate(t_tree *tree)
 {
   
@@ -4741,10 +4777,12 @@ void MCMC_Death_Rate(t_tree *tree)
   PHYREX_Print_MCMC_Summary(tree);
 #endif
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYTIME)
 void MCMC_Birth_Death_Updown(t_tree *tree)
 { 
   phydbl cur_death_rate,new_death_rate;
@@ -4885,10 +4923,12 @@ void MCMC_Birth_Death_Updown(t_tree *tree)
   PHYREX_Print_MCMC_Summary(tree);
 #endif
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYREX || PHYTIME)
 void MCMC_Nu(t_tree *tree)
 {
   phydbl cur_nu,new_nu,cur_lnL_rate,new_lnL_rate;
@@ -4961,10 +5001,12 @@ void MCMC_Nu(t_tree *tree)
   PHYREX_Print_MCMC_Summary(tree);
 #endif
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYTIME)
 void MCMC_Clade_Change(t_tree *tree)
 {
   phydbl u,alpha,ratio;
@@ -5028,12 +5070,13 @@ void MCMC_Clade_Change(t_tree *tree)
   PHYREX_Print_MCMC_Tree(tree);
   PHYREX_Print_MCMC_Summary(tree);
 #endif
-
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYREX || PHYTIME)
 /* Only works when simulating from prior */
 void MCMC_Sim_Rate(t_node *a, t_node *d, t_tree *tree)
 {
@@ -5067,10 +5110,12 @@ void MCMC_Sim_Rate(t_node *a, t_node *d, t_tree *tree)
 	  MCMC_Sim_Rate(d,d->v[i],tree);
     }
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYTIME)
 void MCMC_Prune_Regraft(t_tree *tree)
 {
   phydbl u,alpha,ratio;
@@ -5434,10 +5479,12 @@ void MCMC_Prune_Regraft(t_tree *tree)
     }
   /* Free(prob_idx); */
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYTIME)
 void MCMC_Prune_Regraft_Weighted(t_tree *tree)
 {
   phydbl u,alpha,ratio;
@@ -5716,13 +5763,14 @@ void MCMC_Prune_Regraft_Weighted(t_tree *tree)
       PHYREX_Print_MCMC_Tree(tree);
       PHYREX_Print_MCMC_Summary(tree);
 #endif
-
     }
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYTIME)
 void MCMC_Prune_Regraft_Local(t_tree *tree)
 {
   phydbl u,alpha,ratio;
@@ -6169,7 +6217,8 @@ void MCMC_Prune_Regraft_Local(t_tree *tree)
 #endif
     }
 }
-  
+#endif
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
@@ -6550,6 +6599,7 @@ void MCMC_Copy_To_New_Param_Val(t_mcmc *mcmc, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYREX || PHYTIME)
 void MCMC_Slice_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
 {
   phydbl L,R; /* Left and Right limits of the slice */
@@ -6639,6 +6689,7 @@ void MCMC_Slice_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
       if(tree->io->lk_approx == EXACT) Update_Partial_Lk(tree,b,d);
     }
 }
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
