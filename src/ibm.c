@@ -51,35 +51,44 @@ short int IBM_Is_Ibm(t_phyrex_mod *mod)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-phydbl IBM_Sample_Velocities_And_Locations(int *node_order, t_tree *tree)
+phydbl IBM_Sample_Velocities_And_Locations(int *node_order, int n_nodes, t_tree *tree)
 {
   phydbl log_hr;
-
+  int i,j,idx;
+  
   RRW_Update_Normalization_Factor(tree);
 
   log_hr = 0.0;
-  log_hr += IBM_Locations_Conditional(YES,node_order,tree);
-  log_hr += IBM_Velocities_Conditional(YES,node_order,tree);
 
+  for(j=0;j<n_nodes;++j)
+    {
+      idx = (node_order != NULL) ? node_order[j] : j;
+
+      for(i=0;i<tree->mmod->n_dim;++i)
+        {
+          log_hr += IBM_Velocity_One_Node(tree->a_nodes[idx],YES,i,tree);
+          log_hr += IBM_Location_One_Node(tree->a_nodes[idx],YES,i,tree);
+        }
+    }
+  
   return(log_hr);
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-phydbl IBM_Velocities_Conditional(short int sample, int *node_order, t_tree *tree)
+phydbl IBM_Velocities_Conditional(short int sample, int *node_order, short int dim, t_tree *tree)
 {
   int j,idx;
   phydbl log_hr;
-  
-  
+    
   log_hr = 0.0;
   idx = -1;
   
   for(j=0;j<2*tree->n_otu-1;++j)
     {
       idx = (node_order != NULL) ? node_order[j] : j;
-      log_hr += IBM_Velocity_One_Node(tree->a_nodes[idx],sample,tree);
+      log_hr += IBM_Velocity_One_Node(tree->a_nodes[idx],sample,dim,tree);
     }
 
   return(log_hr);
@@ -88,7 +97,7 @@ phydbl IBM_Velocities_Conditional(short int sample, int *node_order, t_tree *tre
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-phydbl IBM_Velocity_One_Node(t_node *n, short int sample, t_tree *tree)
+phydbl IBM_Velocity_One_Node(t_node *n, short int sample, short int dim, t_tree *tree)
 {
   /*          w
               |
@@ -102,7 +111,7 @@ phydbl IBM_Velocity_One_Node(t_node *n, short int sample, t_tree *tree)
   */ 
 
   t_node *z,*u,*v;
-  int i,k;
+  int k;
   phydbl mean,var,dt,zi;
   phydbl xu,xv,xz,xw;
   phydbl yu,yv,yw;
@@ -126,11 +135,11 @@ phydbl IBM_Velocity_One_Node(t_node *n, short int sample, t_tree *tree)
   z = n;
   u = v = NULL;
   
-  for(i=0;i<tree->mmod->n_dim;++i)
+  /* for(dim=0;dim<tree->mmod->n_dim;++dim) */
     {
       if(n->tax == NO && n != tree->n_root) /* Internal node that is not root node */
         {
-          xz = n->ldsk->coord->lonlat[i];
+          xz = n->ldsk->coord->lonlat[dim];
       
           diru = -1.;
           for(k=0;k<3;++k)
@@ -141,28 +150,28 @@ phydbl IBM_Velocity_One_Node(t_node *n, short int sample, t_tree *tree)
                     {
                       diru = k;
                       u  = n->v[k];
-                      xu = n->v[k]->ldsk->coord->lonlat[i];
-                      yu = n->v[k]->ldsk->veloc->deriv[i];
+                      xu = n->v[k]->ldsk->coord->lonlat[dim];
+                      yu = n->v[k]->ldsk->veloc->deriv[dim];
                       tu = fabs(tree->times->nd_t[n->v[k]->num] - tree->times->nd_t[n->num]);
                     }
                   else
                     {
                       v  = n->v[k];
-                      xv = n->v[k]->ldsk->coord->lonlat[i];
-                      yv = n->v[k]->ldsk->veloc->deriv[i];
+                      xv = n->v[k]->ldsk->coord->lonlat[dim];
+                      yv = n->v[k]->ldsk->veloc->deriv[dim];
                       tv = fabs(tree->times->nd_t[n->v[k]->num] - tree->times->nd_t[n->num]);
                     }
                 }
               else if(n->v[k] == n->anc)
                 {
-                  xw = n->v[k]->ldsk->coord->lonlat[i];
-                  yw = n->v[k]->ldsk->veloc->deriv[i];
+                  xw = n->v[k]->ldsk->coord->lonlat[dim];
+                  yw = n->v[k]->ldsk->veloc->deriv[dim];
                   tz = fabs(tree->times->nd_t[n->v[k]->num] - tree->times->nd_t[n->num]);
                 }
               else if(n->b[k] == tree->e_root)
                 {
-                  xw = tree->n_root->ldsk->coord->lonlat[i];
-                  yw = tree->n_root->ldsk->veloc->deriv[i];
+                  xw = tree->n_root->ldsk->coord->lonlat[dim];
+                  yw = tree->n_root->ldsk->veloc->deriv[dim];
                   tz = fabs(tree->times->nd_t[tree->n_root->num] - tree->times->nd_t[n->num]);
                 }
             }
@@ -172,10 +181,9 @@ phydbl IBM_Velocity_One_Node(t_node *n, short int sample, t_tree *tree)
           assert(tz > 0.);
           
           muu = 3.*(xu-xz)/(2.*tu) - yu/2.;
-
           
           sigsqu =
-            log(tree->mmod->sigsq[i]) +
+            log(tree->mmod->sigsq[dim]) +
             log(tree->mmod->sigsq_scale[u->num]) +
             log(tree->mmod->sigsq_scale_norm_fact) +
             log(tu)-
@@ -186,18 +194,17 @@ phydbl IBM_Velocity_One_Node(t_node *n, short int sample, t_tree *tree)
           muv = 3.*(xv-xz)/(2.*tv) - yv/2.;
           
           sigsqv =
-            log(tree->mmod->sigsq[i]) +
+            log(tree->mmod->sigsq[dim]) +
             log(tree->mmod->sigsq_scale[v->num]) +
             log(tree->mmod->sigsq_scale_norm_fact) +
             log(tv)-
             LOG4;
           sigsqv = exp(sigsqv);
-                    
-          
+
           muz = 3.*(xz-xw)/(2.*tz) - yw/2.;
           
           sigsqz =
-            log(tree->mmod->sigsq[i]) +
+            log(tree->mmod->sigsq[dim]) +
             log(tree->mmod->sigsq_scale[z->num]) +
             log(tree->mmod->sigsq_scale_norm_fact) +
             log(tz)-
@@ -214,15 +221,14 @@ phydbl IBM_Velocity_One_Node(t_node *n, short int sample, t_tree *tree)
           
           mean = (muu/sigsqu + muv/sigsqv + muz/sigsqz)*var;
           
-          /* PhyML_Printf("\n. VIT Node %d xu: %f yu: %f tu: %f xv: %f yv: %f tv: %f -- muu: %f sigsqu: %f | muv: %f sigsqv: %f | mean: %f var: %f [sigsq: %f] --> %f", */
-          /*              j, */
+          /* PhyML_Printf("\n. VIT Node %d xu: %f yu: %f tu: %f xv: %f yv: %f tv: %f -- muu: %f sigsqu: %f | muv: %f sigsqv: %f | mean: %f var: %f [sigsq: %f]", */
+          /*              n->num, */
           /*              xu,yu,tu, */
           /*              xv,yv,tv, */
           /*              muu,sigsqu, */
           /*              muv,sigsqv, */
           /*              mean,var, */
-          /*              tree->mmod->sigsq[i], */
-          /*              LOCATION_Lk(tree)); */
+          /*              tree->mmod->sigsq[dim]); */
           
           assert(isinf(mean) == NO && isnan(mean) == NO);
           assert(isinf(var) == NO && isnan(var) == NO);
@@ -230,17 +236,16 @@ phydbl IBM_Velocity_One_Node(t_node *n, short int sample, t_tree *tree)
         }
       else if(n->tax == YES) /* Tip node */
         {
-          dt = fabs(tree->times->nd_t[n->v[0]->num]-tree->times->nd_t[n->num]);
-          zi = n->ldsk->coord->lonlat[i] - n->v[0]->ldsk->coord->lonlat[i];
+          dt = fabs(tree->times->nd_t[n->anc->num]-tree->times->nd_t[n->num]);
+          zi = n->ldsk->coord->lonlat[dim] - n->anc->ldsk->coord->lonlat[dim];
           
           assert(dt > 0.0);
           
-          mean = 0.5*(3.*zi/dt - n->v[0]->ldsk->veloc->deriv[i]);
-
-
+          mean = 0.5*(3.*zi/dt - n->anc->ldsk->veloc->deriv[dim]);
+          
           var =
             log(dt) +
-            log(tree->mmod->sigsq[i]) +
+            log(tree->mmod->sigsq[dim]) +
             log(tree->mmod->sigsq_scale[n->num]) +
             log(tree->mmod->sigsq_scale_norm_fact) -
             LOG4;
@@ -249,16 +254,16 @@ phydbl IBM_Velocity_One_Node(t_node *n, short int sample, t_tree *tree)
         }
       else if(n == tree->n_root) /* Root node */
         {
-          xz = tree->n_root->ldsk->coord->lonlat[i];
+          xz = tree->n_root->ldsk->coord->lonlat[dim];
           
           u  = tree->n_root->v[1];
-          xu = tree->n_root->v[1]->ldsk->coord->lonlat[i];
-          yu = tree->n_root->v[1]->ldsk->veloc->deriv[i];
+          xu = tree->n_root->v[1]->ldsk->coord->lonlat[dim];
+          yu = tree->n_root->v[1]->ldsk->veloc->deriv[dim];
           tu = fabs(tree->times->nd_t[tree->n_root->v[1]->num] - tree->times->nd_t[tree->n_root->num]);
           
           v  = tree->n_root->v[2];
-          xv = tree->n_root->v[2]->ldsk->coord->lonlat[i];
-          yv = tree->n_root->v[2]->ldsk->veloc->deriv[i];
+          xv = tree->n_root->v[2]->ldsk->coord->lonlat[dim];
+          yv = tree->n_root->v[2]->ldsk->veloc->deriv[dim];
           tv = fabs(tree->times->nd_t[tree->n_root->v[2]->num] - tree->times->nd_t[tree->n_root->num]);
           
 
@@ -266,7 +271,7 @@ phydbl IBM_Velocity_One_Node(t_node *n, short int sample, t_tree *tree)
           assert(tu > 0.0);
           muu = 3.*(xu-xz)/(2.*tu) - yu/2.;
           sigsqu =
-            log(tree->mmod->sigsq[i]) +
+            log(tree->mmod->sigsq[dim]) +
             log(tree->mmod->sigsq_scale[u->num]) +
             log(tree->mmod->sigsq_scale_norm_fact) +
             log(tu)-
@@ -276,7 +281,7 @@ phydbl IBM_Velocity_One_Node(t_node *n, short int sample, t_tree *tree)
           assert(tv > 0.0);
           muv = 3.*(xv-xz)/(2.*tv) - yv/2.;
           sigsqv =
-            log(tree->mmod->sigsq[i]) +
+            log(tree->mmod->sigsq[dim]) +
             log(tree->mmod->sigsq_scale[v->num]) +
             log(tree->mmod->sigsq_scale_norm_fact) +
             log(tv)-
@@ -297,7 +302,7 @@ phydbl IBM_Velocity_One_Node(t_node *n, short int sample, t_tree *tree)
       
       if(tree->mmod->print_lk == YES)
         PhyML_Printf("\n. VIT %d Root xz: %f xu: %f yu: %f tu: %f xv: %f yv: %f tv: %f -- muu: %f sigsqu: %f | muv: %f sigsqv: %f | mean: %f var: %f",
-                     i,
+                     dim,
                      xz,
                      xu,yu,tu,
                      xv,yv,tv,
@@ -312,36 +317,35 @@ phydbl IBM_Velocity_One_Node(t_node *n, short int sample, t_tree *tree)
 
       /* !!!!!!!!!!!!!!!!!!!!1 */
       
-      /* log_hr += Log_Dnorm_Trunc(n->ldsk->veloc->deriv[i],mean,sqrt(var),tree->mmod->min_veloc,tree->mmod->max_veloc,&err); */
+      /* log_hr += Log_Dnorm_Trunc(n->ldsk->veloc->deriv[dim],mean,sqrt(var),tree->mmod->min_veloc,tree->mmod->max_veloc,&err); */
       
       /* if(sample == YES) */
       /*   { */
-      /*     n->ldsk->veloc->deriv[i] = Rnorm_Trunc(mean,sqrt(var),tree->mmod->min_veloc,tree->mmod->max_veloc,&err); */
+      /*     n->ldsk->veloc->deriv[dim] = Rnorm_Trunc(mean,sqrt(var),tree->mmod->min_veloc,tree->mmod->max_veloc,&err); */
       /*     if(err == YES) assert(false); */
       /*   } */
       
-      /* log_hr -= Log_Dnorm_Trunc(n->ldsk->veloc->deriv[i],mean,sqrt(var),tree->mmod->min_veloc,tree->mmod->max_veloc,&err); */
+      /* log_hr -= Log_Dnorm_Trunc(n->ldsk->veloc->deriv[dim],mean,sqrt(var),tree->mmod->min_veloc,tree->mmod->max_veloc,&err); */
 
 
-      log_hr += Log_Dnorm(n->ldsk->veloc->deriv[i],mean,sqrt(var),&err);
+      log_hr += Log_Dnorm(n->ldsk->veloc->deriv[dim],mean,sqrt(var),&err);
       
       if(sample == YES)
         {
-          n->ldsk->veloc->deriv[i] = Rnorm(mean,sqrt(var));
+          n->ldsk->veloc->deriv[dim] = Rnorm(mean,sqrt(var));
 
-          if(n->ldsk->veloc->deriv[i] > tree->mmod->max_veloc)
+          if(n->ldsk->veloc->deriv[dim] > tree->mmod->max_veloc)
             {
-              n->ldsk->veloc->deriv[i] = tree->mmod->max_veloc;
+              n->ldsk->veloc->deriv[dim] = tree->mmod->max_veloc;
             }
           
-          if(n->ldsk->veloc->deriv[i] < tree->mmod->min_veloc)
+          if(n->ldsk->veloc->deriv[dim] < tree->mmod->min_veloc)
             {
-              n->ldsk->veloc->deriv[i] = tree->mmod->min_veloc;
-            }
-          
+              n->ldsk->veloc->deriv[dim] = tree->mmod->min_veloc;
+            }          
         }
       
-      log_hr -= Log_Dnorm(n->ldsk->veloc->deriv[i],mean,sqrt(var),&err);
+      log_hr -= Log_Dnorm(n->ldsk->veloc->deriv[dim],mean,sqrt(var),&err);
     }
 
   return(log_hr);
@@ -350,48 +354,7 @@ phydbl IBM_Velocity_One_Node(t_node *n, short int sample, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void IBM_Sample_Locations(t_tree *tree)
-{
-  int i,j;
-  
-  /* Sample ancestral locations given locations at tips and velocities at all nodes */
-  for(i=0;i<tree->mmod->n_dim;++i)
-    {
-      RRW_Init_Contmod_Locations(i,tree);
-      Lk_Contmod_Post(NULL,tree->n_root,tree->mmod->sigsq[i],tree,NO);
-      Lk_Contmod_Pre(tree->n_root,tree->n_root->v[1],tree->mmod->sigsq[i],tree);
-      Lk_Contmod_Pre(tree->n_root,tree->n_root->v[2],tree->mmod->sigsq[i],tree);      
-      
-      for(j=0;j<2*tree->n_otu-2;++j)
-        {
-          if(tree->a_nodes[j]->tax == NO && tree->a_nodes[j] != tree->n_root)
-            {
-              tree->a_nodes[j]->ldsk->coord->lonlat[i] =
-                Sample_Ancestral_Trait_Contmod(tree->a_nodes[j]->anc,
-                                               tree->a_nodes[j],
-                                               fabs(tree->times->nd_t[tree->a_nodes[j]->anc->num]-tree->times->nd_t[tree->a_nodes[j]->num]),
-                                               0.0,
-                                               -log(12.)+
-                                               log(tree->mmod->sigsq[i]) +
-                                               log(tree->mmod->sigsq_scale[tree->a_nodes[j]->num]) +
-                                               log(pow(fabs(tree->times->nd_t[tree->a_nodes[j]->anc->num]-tree->times->nd_t[tree->a_nodes[j]->num]),2)),
-                                               NO,
-                                               tree);
-            }
-        }
-      
-      assert(isnan(tree->contmod->var_down[tree->n_root->num]) == NO);
-      
-      tree->n_root->ldsk->coord->lonlat[i] =
-        Rnorm(tree->contmod->mu_down[tree->n_root->num],
-              sqrt(tree->contmod->var_down[tree->n_root->num]));
-    }
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-phydbl IBM_Locations_Conditional(short int sample, int *node_order, t_tree *tree)
+phydbl IBM_Locations_Conditional(short int sample, int *node_order, short int dim, t_tree *tree)
 {
   int j,idx;
   phydbl log_hr;
@@ -403,7 +366,7 @@ phydbl IBM_Locations_Conditional(short int sample, int *node_order, t_tree *tree
   for(j=0;j<2*tree->n_otu-1;++j)
     {
       idx = (node_order != NULL) ? node_order[j] : j;
-      log_hr += IBM_Location_One_Node(tree->a_nodes[idx],sample,tree);
+      log_hr += IBM_Location_One_Node(tree->a_nodes[idx],sample,dim,tree);
     }
 
   return(log_hr);
@@ -412,10 +375,10 @@ phydbl IBM_Locations_Conditional(short int sample, int *node_order, t_tree *tree
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-phydbl IBM_Location_One_Node(t_node *n, short int sample, t_tree *tree)
+phydbl IBM_Location_One_Node(t_node *n, short int sample, short int dim, t_tree *tree)
 {
   t_node *z,*u,*v;
-  int i,k;
+  int k;
   phydbl mean,var;
   phydbl xu,xv,xw;
   phydbl yu,yv,yz,yw;
@@ -452,11 +415,11 @@ phydbl IBM_Location_One_Node(t_node *n, short int sample, t_tree *tree)
   u = v = NULL;
   
   /* Sample ancestral locations given locations at tips and velocities everywhere */
-  for(i=0;i<tree->mmod->n_dim;++i)
+  /* for(dim=0;dim<tree->mmod->n_dim;++dim) */
     {  
       if(n->tax == NO && n != tree->n_root)
         {
-          yz = n->ldsk->veloc->deriv[i];
+          yz = n->ldsk->veloc->deriv[dim];
           
           diru = dirv = -1.;
           for(k=0;k<3;++k)
@@ -467,29 +430,29 @@ phydbl IBM_Location_One_Node(t_node *n, short int sample, t_tree *tree)
                     {
                       diru = k;
                       u  = n->v[k];
-                      xu = n->v[k]->ldsk->coord->lonlat[i];
-                      yu = n->v[k]->ldsk->veloc->deriv[i];
+                      xu = n->v[k]->ldsk->coord->lonlat[dim];
+                      yu = n->v[k]->ldsk->veloc->deriv[dim];
                       tu = fabs(tree->times->nd_t[n->v[k]->num] - tree->times->nd_t[n->num]);
                     }
                   else
                     {
                       dirv = k;
                       v  = n->v[k];
-                      xv = n->v[k]->ldsk->coord->lonlat[i];
-                      yv = n->v[k]->ldsk->veloc->deriv[i];
+                      xv = n->v[k]->ldsk->coord->lonlat[dim];
+                      yv = n->v[k]->ldsk->veloc->deriv[dim];
                       tv = fabs(tree->times->nd_t[n->v[k]->num] - tree->times->nd_t[n->num]);
                     }
                 }
               else if(n->v[k] == n->anc)
                 {
-                  xw = n->v[k]->ldsk->coord->lonlat[i];
-                  yw = n->v[k]->ldsk->veloc->deriv[i];
+                  xw = n->v[k]->ldsk->coord->lonlat[dim];
+                  yw = n->v[k]->ldsk->veloc->deriv[dim];
                   tz = fabs(tree->times->nd_t[n->v[k]->num] - tree->times->nd_t[n->num]);
                 }
               else if(n->b[k] == tree->e_root)
                 {
-                  xw = tree->n_root->ldsk->coord->lonlat[i];
-                  yw = tree->n_root->ldsk->veloc->deriv[i];
+                  xw = tree->n_root->ldsk->coord->lonlat[dim];
+                  yw = tree->n_root->ldsk->veloc->deriv[dim];
                   tz = fabs(tree->times->nd_t[tree->n_root->num] - tree->times->nd_t[n->num]);
                 }
             }
@@ -501,7 +464,7 @@ phydbl IBM_Location_One_Node(t_node *n, short int sample, t_tree *tree)
           muu = xu - (yu+yz)/2.*tu;
           
           sigsqu =
-            log(tree->mmod->sigsq[i]) +
+            log(tree->mmod->sigsq[dim]) +
             log(tree->mmod->sigsq_scale[u->num]) +
             log(tree->mmod->sigsq_scale_norm_fact) +
             3.*log(tu)-
@@ -512,7 +475,7 @@ phydbl IBM_Location_One_Node(t_node *n, short int sample, t_tree *tree)
           muv = xv - (yv+yz)/2.*tv;
           
           sigsqv =
-            log(tree->mmod->sigsq[i]) +
+            log(tree->mmod->sigsq[dim]) +
             log(tree->mmod->sigsq_scale[v->num]) +
             log(tree->mmod->sigsq_scale_norm_fact) +
             3.*log(tv)-
@@ -520,10 +483,10 @@ phydbl IBM_Location_One_Node(t_node *n, short int sample, t_tree *tree)
           sigsqv = exp(sigsqv);
           
           
-          muz = xw + (yw+yz)/2.*tz;;
+          muz = xw + (yw+yz)/2.*tz;
           
           sigsqz =
-            log(tree->mmod->sigsq[i]) +
+            log(tree->mmod->sigsq[dim]) +
             log(tree->mmod->sigsq_scale[z->num]) +
             log(tree->mmod->sigsq_scale_norm_fact) +
             3.*log(tz)-
@@ -551,24 +514,24 @@ phydbl IBM_Location_One_Node(t_node *n, short int sample, t_tree *tree)
                            muv,sigsqv,
                            muz,sigsqz,
                            mean,var,
-                           tree->mmod->sigsq[i],tree->mmod->c_lnL);
+                           tree->mmod->sigsq[dim],tree->mmod->c_lnL);
             }
           
-          /*     PhyML_Printf(" %f --> %f",dum,n->ldsk->coord->lonlat[i]); */
+          /*     PhyML_Printf(" %f --> %f",dum,n->ldsk->coord->lonlat[dim]); */
           
         }
       else if(n == tree->n_root) /* Root node */
         {
-          yz = tree->n_root->ldsk->veloc->deriv[i];
+          yz = tree->n_root->ldsk->veloc->deriv[dim];
 
           u  = tree->n_root->v[1];
-          xu = tree->n_root->v[1]->ldsk->coord->lonlat[i];
-          yu = tree->n_root->v[1]->ldsk->veloc->deriv[i];
+          xu = tree->n_root->v[1]->ldsk->coord->lonlat[dim];
+          yu = tree->n_root->v[1]->ldsk->veloc->deriv[dim];
           tu = fabs(tree->times->nd_t[tree->n_root->v[1]->num] - tree->times->nd_t[tree->n_root->num]); 
           
           v  = tree->n_root->v[2];
-          xv = tree->n_root->v[2]->ldsk->coord->lonlat[i];
-          yv = tree->n_root->v[2]->ldsk->veloc->deriv[i];
+          xv = tree->n_root->v[2]->ldsk->coord->lonlat[dim];
+          yv = tree->n_root->v[2]->ldsk->veloc->deriv[dim];
           tv = fabs(tree->times->nd_t[tree->n_root->v[2]->num] - tree->times->nd_t[tree->n_root->num]); 
           
           
@@ -577,7 +540,7 @@ phydbl IBM_Location_One_Node(t_node *n, short int sample, t_tree *tree)
           muu = xu - (yu+yz)/2.*tu;
           
           sigsqu =
-            log(tree->mmod->sigsq[i]) +
+            log(tree->mmod->sigsq[dim]) +
             log(tree->mmod->sigsq_scale[u->num]) +
             log(tree->mmod->sigsq_scale_norm_fact) +
             3.*log(tu)-
@@ -588,7 +551,7 @@ phydbl IBM_Location_One_Node(t_node *n, short int sample, t_tree *tree)
           muv = xv - (yv+yz)/2.*tv;
           
           sigsqv = 
-            log(tree->mmod->sigsq[i]) +
+            log(tree->mmod->sigsq[dim]) +
             log(tree->mmod->sigsq_scale[v->num]) +
             log(tree->mmod->sigsq_scale_norm_fact) +
             3.*log(tv)-
@@ -609,11 +572,11 @@ phydbl IBM_Location_One_Node(t_node *n, short int sample, t_tree *tree)
       
       if(n->tax == NO)
         {
-          log_hr += Log_Dnorm(n->ldsk->coord->lonlat[i],mean,sqrt(var),&err);
+          log_hr += Log_Dnorm(n->ldsk->coord->lonlat[dim],mean,sqrt(var),&err);
           
-          if(sample == YES) n->ldsk->coord->lonlat[i] = Rnorm(mean,sqrt(var));
+          if(sample == YES) n->ldsk->coord->lonlat[dim] = Rnorm(mean,sqrt(var));
           
-          log_hr -= Log_Dnorm(n->ldsk->coord->lonlat[i],mean,sqrt(var),&err);
+          log_hr -= Log_Dnorm(n->ldsk->coord->lonlat[dim],mean,sqrt(var),&err);
 
           RRW_Update_Normalization_Factor(tree);
         }
@@ -626,7 +589,7 @@ phydbl IBM_Location_One_Node(t_node *n, short int sample, t_tree *tree)
       /*              muv,sigsqv, */
       /*              mean,var, */
       /*              LOCATION_Lk(tree)); */
-      /* PhyML_Printf(" --> %f",tree->n_root->ldsk->coord->lonlat[i]); */
+      /* PhyML_Printf(" --> %f",tree->n_root->ldsk->coord->lonlat[dim]); */
     }
 
   return(log_hr);
@@ -867,7 +830,7 @@ phydbl IBM_Velocities_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
         {
           dt = fabs(ldsk->disk->time-ldsk->prev->disk->time);
 
-          mean = 0.5*(3.*(ldsk->coord->lonlat[i] - ldsk->prev->coord->lonlat[i])/dt - ldsk->prev->veloc->deriv[i]); 
+          mean = 0.5*(3.*(ldsk->coord->lonlat[i] - ldsk->prev->coord->lonlat[i])/dt - ldsk->prev->veloc->deriv[i]);
 
           sd =
             log(tree->mmod->sigsq[i]) +
@@ -876,13 +839,20 @@ phydbl IBM_Velocities_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
             log(dt)-
             LOG4;
 
-          sd = sqrt(exp(sd));
+          /* mean = ldsk->prev->veloc->deriv[i]; */
 
+          /* sd = */
+          /*   log(tree->mmod->sigsq[i]) + */
+          /*   log(tree->mmod->sigsq_scale[nd_d->num]) + */
+          /*   log(tree->mmod->sigsq_scale_norm_fact) + */
+          /*   log(dt); */
+
+          sd = sqrt(exp(sd));
           
           ld = ldsk->veloc->deriv[i];
-
+          
           disk_lnP += Log_Dnorm(ld,mean,sd,&err);
-                    
+          
           if(tree->mmod->print_lk == YES)
             PhyML_Printf("\n. VEL %2d Time: %10f d->coord: %10f a->coord: %10f a->veloc: %10f mean: %10f sd: %10f dt: %10f [%10f; %10f] x: %10f lk: %10f",
                          i,
@@ -956,6 +926,15 @@ phydbl IBM_Locations_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
             3.*log(dt)-
             LOG3;
 
+          /* mean = ldsk->prev->coord->lonlat[i] + .5*(ldsk->prev->veloc->deriv[i] + ldsk->veloc->deriv[i])*dt; */
+
+          /* sd = */
+          /*   log(tree->mmod->sigsq[i]) + */
+          /*   log(tree->mmod->sigsq_scale[nd_d->num]) + */
+          /*   log(tree->mmod->sigsq_scale_norm_fact) + */
+          /*   3.*log(dt)-             */
+          /*   LOG12; */
+          
           sd = sqrt(exp(sd));
 
           
@@ -1000,10 +979,134 @@ phydbl IBM_Locations_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void IBM_Generate_Velocities_Then_Locations(t_tree *tree)
+{
+  RRW_Update_Normalization_Factor(tree);
+  IBM_Generate_Velocities(tree);
+  IBM_Generate_Locations_Given_Velocities(tree);
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+/* Generate velocities under a Brownian process. Locations are 
+   not known */
+void IBM_Generate_Velocities(t_tree *tree)
+{
+  IBM_Generate_Velocities_Pre(tree->n_root,tree->n_root->v[1],tree);
+  IBM_Generate_Velocities_Pre(tree->n_root,tree->n_root->v[2],tree);
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void IBM_Generate_Velocities_Pre(t_node *a, t_node *d, t_tree *tree)
+{
+  int i;
+  phydbl mean,sd,dt;
+
+  mean = sd = dt = -1.;
+  
+  if(a == tree->n_root)
+    {
+      for(i=0;i<tree->mmod->n_dim;++i)
+        {
+          a->ldsk->veloc->deriv[i] = Rnorm(0.0,1.);
+        }
+    }
+  
+  for(i=0;i<tree->mmod->n_dim;++i)
+    {
+      dt = fabs(tree->times->nd_t[d->num] - tree->times->nd_t[a->num]);
+      
+      mean = a->ldsk->veloc->deriv[i];
+
+      sd   =
+        log(tree->mmod->sigsq[i]) +
+        log(tree->mmod->sigsq_scale[i]) +
+        log(tree->mmod->sigsq_scale_norm_fact) +
+        log(dt);
+      
+      sd = exp(sd);
+      sd = sqrt(sd);
+        
+      d->ldsk->veloc->deriv[i] = Rnorm(mean,sd);
+    }
+  
+  if(d->tax == YES) return;
+  else
+    {
+      for(i = 0; i<3; ++i)
+        {
+          if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
+            {
+              IBM_Generate_Velocities_Pre(d,d->v[i],tree);
+            }
+        }
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void IBM_Generate_Locations_Given_Velocities(t_tree *tree)
+{
+  IBM_Generate_Locations_Given_Velocities_Pre(tree->n_root,tree->n_root->v[1],tree);
+  IBM_Generate_Locations_Given_Velocities_Pre(tree->n_root,tree->n_root->v[2],tree);
+}
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void IBM_Generate_Locations_Given_Velocities_Pre(t_node *a, t_node *d, t_tree *tree)
+{
+  int i;
+  phydbl mean,sd,dt;
+
+  mean = sd = dt = -1.;
+  
+  if(a == tree->n_root)
+    {
+      for(i=0;i<tree->mmod->n_dim;++i)
+        {
+          a->ldsk->coord->lonlat[i] = Rnorm(0.0,1.0);
+        }
+    }
+  
+  for(i=0;i<tree->mmod->n_dim;++i)
+    {
+      dt = fabs(tree->times->nd_t[d->num] - tree->times->nd_t[a->num]);
+      
+      mean = a->ldsk->coord->lonlat[i] + dt * (a->ldsk->veloc->deriv[i]+d->ldsk->veloc->deriv[i])/2.;
+
+      sd   =
+        log(tree->mmod->sigsq[i]) +
+        log(tree->mmod->sigsq_scale[i]) +
+        log(tree->mmod->sigsq_scale_norm_fact) +
+        3.*log(dt) -
+        LOG12;
+      
+      sd = exp(sd);
+      sd = sqrt(sd);
+        
+      d->ldsk->coord->lonlat[i] = Rnorm(mean,sd);
+    }
+  
+  if(d->tax == YES) return;
+  else
+    {
+      for(i = 0; i<3; ++i)
+        {
+          if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
+            {
+              IBM_Generate_Locations_Given_Velocities_Pre(d,d->v[i],tree);
+            }
+        }
+    }
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

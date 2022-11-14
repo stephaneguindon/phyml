@@ -637,7 +637,7 @@ void MCMC_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
       tree->rates->br_r[d->num] = cur_mu;	  
 
       RATES_Update_One_Edge_Length(b,tree);
-      Update_PMat_At_Given_Edge(b,tree);
+      if(tree->eval_alnL == YES) Update_PMat_At_Given_Edge(b,tree);
       RATES_Update_Normalization_Factor(tree);
                 
       tree->c_lnL        = cur_lnL_seq;
@@ -1339,7 +1339,7 @@ void MCMC_Root_Time(t_tree *tree, int print)
   phydbl tune,K,eps;
   int move_num,err,iter,n_tot_iter;
   t_node *root;
-  short int failed;
+  short int rate_failed;
 
   if(tree->mod->s_opt->opt_node_ages == NO) return;
 
@@ -1347,7 +1347,7 @@ void MCMC_Root_Time(t_tree *tree, int print)
   
   root = tree->n_root;
   eps = -1.;
-  failed = NO;
+  rate_failed = NO;
   
   move_num  = tree->mcmc->num_move_root_time;
 
@@ -1386,7 +1386,7 @@ void MCMC_Root_Time(t_tree *tree, int print)
     {
       ratio = 0.0;
       hr    = 0.0;
-      failed = NO;
+      rate_failed = NO;
       
       if(FABS(tree->times->t_prior_min[root->num] - tree->times->t_prior_max[root->num]) < 1.E-10) return;
       
@@ -1443,12 +1443,12 @@ void MCMC_Root_Time(t_tree *tree, int print)
               r1_new = r1_cur * (t1 - t0_cur)/(t1 - t0_new);
               r2_new = r2_cur * (t2 - t0_cur)/(t2 - t0_new);
               
-              failed = NO;
+              rate_failed = NO;
               if(r1_new < tree->rates->min_rate || r1_new > tree->rates->max_rate ||
                  r2_new < tree->rates->min_rate || r2_new > tree->rates->max_rate)
-                failed = YES;
+                rate_failed = YES;
 
-              if(failed == NO)
+              if(rate_failed == NO)
                 {
                   if(tree->eval_rlnL == YES) hr += log(r1_new/r1_cur) + log(r2_new/r2_cur);
                   
@@ -1469,14 +1469,16 @@ void MCMC_Root_Time(t_tree *tree, int print)
           
           if(tree->eval_rlnL == YES) new_lnL_rate = RATES_Lk(tree);
           
-          if(tree->eval_alnL == YES && (failed == YES || tree->rates->model_id == STRICTCLOCK))
+          if(tree->eval_alnL == YES && tree->rates->model_id == STRICTCLOCK)
             {              
-              if(tree->eval_alnL == YES && tree->rates->model_id == STRICTCLOCK) new_lnL_seq = Lk(tree->e_root,tree);
+              new_lnL_seq = Lk(tree->e_root,tree);
             }
         }
-      
+
+      if(tree->eval_alnL == YES) new_lnL_seq = rate_failed ? UNLIKELY : cur_lnL_seq;
+            
       ratio = 0.0;
-      if(tree->eval_alnL == YES && (tree->rates->model_id == STRICTCLOCK || failed == YES)) ratio += (new_lnL_seq - cur_lnL_seq);
+      if(tree->eval_alnL == YES) ratio += (new_lnL_seq - cur_lnL_seq);
       if(tree->eval_rlnL == YES) ratio += (new_lnL_rate - cur_lnL_rate);
       if(tree->eval_glnL == YES) ratio += (new_lnL_time - cur_lnL_time);
 #ifdef PHYREX
@@ -1492,7 +1494,7 @@ void MCMC_Root_Time(t_tree *tree, int print)
       /* if(tree->aux_tree != NULL) */
         /* { */
           /* PhyML_Printf("\n."); */
-          /* PhyML_Printf("\n. %c [%4d] \n. t: %1f->%1f t1:%f t2: %f \n. r1: %10f->%10f r2: %10f->%10f \n. R: %12f alnL:%10f->%10f[%d] \n. tlnL: %10f->%10f[%d] \n. glnL: %10f->%10f[%d] \n. rlnL: %10f->%10f[%d] \n. tune: %10f hr: %f [%f,%f] [%f,%f,%f] ratio: %10f K: %10f failed: %d", */
+          /* PhyML_Printf("\n. %c [%4d] \n. t: %1f->%1f t1:%f t2: %f \n. r1: %10f->%10f r2: %10f->%10f \n. R: %12f alnL:%10f->%10f[%d] \n. tlnL: %10f->%10f[%d] \n. glnL: %10f->%10f[%d] \n. rlnL: %10f->%10f[%d] \n. tune: %10f hr: %f [%f,%f] [%f,%f,%f] ratio: %10f K: %10f rate_failed: %d", */
           /*              (tree->aux_tree != NULL) ? '*' : 'X', */
           /*              tree->mcmc->run, */
           /*              t0_cur,t0_new, */
@@ -1509,7 +1511,7 @@ void MCMC_Root_Time(t_tree *tree, int print)
           /*              Log_Dnorm_Trunc(t0_new,t0_cur,(tree->young_disk->time - t0_cur) * tune,t0_cur - (t_max - t0_cur)-eps,t_max,&err), */
           /*              Log_Dnorm_Trunc(t0_cur,t0_new,(tree->young_disk->time - t0_new) * tune,t0_new - (t_max - t0_new)-eps,t_max,&err), */
           /*              t0_cur - (t_max - t0_cur)-eps,t0_new - (t_max - t0_new)-eps,t_max, */
-          /*              ratio,K,failed); */
+          /*              ratio,K,rate_failed); */
           /* PhyML_Printf("\n."); */
         /* } */
 #endif
@@ -1521,7 +1523,7 @@ void MCMC_Root_Time(t_tree *tree, int print)
           tree->times->nd_t[root->num] = t0_cur;
           if(tree->n_root->ldsk) tree->n_root->ldsk->disk->time = t0_cur;
           
-          if(tree->rates->model_id != STRICTCLOCK && failed == NO)
+          if(tree->rates->model_id != STRICTCLOCK)
             {
               tree->rates->br_r[tree->n_root->v[1]->num] = r1_cur;
               tree->rates->br_r[tree->n_root->v[2]->num] = r2_cur;
@@ -1550,11 +1552,14 @@ void MCMC_Root_Time(t_tree *tree, int print)
   while(++iter < n_tot_iter);
   
   Set_Both_Sides(NO,tree);
-  RATES_Update_Edge_Lengths(tree);
+
+  /* !!!!!!!!!!!!!!!!!!!!!!!!! */
+  /* RATES_Update_Edge_Lengths(tree); */
+  /* if(tree->eval_alnL == YES) Lk(NULL,tree);   */
+
 #ifdef PHYREX
   PHYREX_Update_Ldsk_Rates_Given_Edges(tree);
 #endif
-  if(tree->eval_alnL == YES) Lk(NULL,tree);  
 }
 #endif
 
@@ -8785,7 +8790,7 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
   phydbl r0_new,r1_new,r2_new;
   t_node *v0,*v1,*v2;
   phydbl t0_cur,t0_new,t0_anc,t1,t2;
-  short int failed;
+  short int rate_failed;
 
   if(tree->mod->s_opt->opt_node_ages == NO) return;
 
@@ -8808,7 +8813,7 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
   
   Set_Lk(tree);
 
-  failed   = NO;
+  rate_failed   = NO;
   
   move_num = tree->mcmc->num_move_phyrex_node_times;
   cur_t    = d_ldsk->disk->time;
@@ -8843,9 +8848,9 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
   assert(t_max > t_min);
   
   /* new_t = Uni()*(t_max - t_min) + t_min; */
-  new_t = Rnorm_Trunc(cur_t,(t_max - t_min)/20.,t_min,t_max,&err);
-  hr -= Log_Dnorm_Trunc(new_t,cur_t,(t_max - t_min)/20.,t_min,t_max,&err);
-  hr += Log_Dnorm_Trunc(cur_t,new_t,(t_max - t_min)/20.,t_min,t_max,&err);
+  new_t = Rnorm_Trunc(cur_t,(t_max - t_min)/10.,t_min,t_max,&err);
+  hr -= Log_Dnorm_Trunc(new_t,cur_t,(t_max - t_min)/10.,t_min,t_max,&err);
+  hr += Log_Dnorm_Trunc(cur_t,new_t,(t_max - t_min)/10.,t_min,t_max,&err);
   /* new_t = Rnorm_Trunc(cur_t,(t_max - t_min)/100.,t_min,t_max,&err); */
   /* hr -= Log_Dnorm_Trunc(new_t,cur_t,(t_max - t_min)/100.,t_min,t_max,&err); */
   /* hr += Log_Dnorm_Trunc(cur_t,new_t,(t_max - t_min)/100.,t_min,t_max,&err); */
@@ -8864,12 +8869,18 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
       r1_new = r1_cur * (t1 - t0_cur) / (t1 - t0_new);
       r2_new = r2_cur * (t2 - t0_cur) / (t2 - t0_new);
 
-      failed = NO;
+      rate_failed = NO;
       if(r0_new < tree->rates->min_rate || r0_new > tree->rates->max_rate ||
          r1_new < tree->rates->min_rate || r1_new > tree->rates->max_rate ||
-         r2_new < tree->rates->min_rate || r2_new > tree->rates->max_rate) failed = YES;
+         r2_new < tree->rates->min_rate || r2_new > tree->rates->max_rate) rate_failed = YES;
 
-      if(failed == NO)
+      /* PhyML_Printf("\n. r0_new: %12f r1_new: %12f r2_new: %12f rate_failed ? %3d", */
+      /*              r0_new, */
+      /*              r1_new, */
+      /*              r2_new, */
+      /*              rate_failed); */
+      
+      if(rate_failed == NO)
         {
           if(tree->eval_rlnL == YES) hr += log(r0_new/r0_cur) + log(r1_new/r1_cur) + log(r2_new/r2_cur);
 
@@ -8888,8 +8899,8 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
 
   if(tree->eval_rlnL == YES) new_rlnL = RATES_Lk(tree);
   
-  if(tree->eval_alnL == YES && (failed == YES || tree->rates->model_id == STRICTCLOCK))
-    {    
+  if(tree->eval_alnL == YES && tree->rates->model_id == STRICTCLOCK)
+    {
       t_edge *bp,*bc;
       bp = Get_Edge(d_ldsk->nd->anc,d_ldsk->nd,tree);
       RATES_Update_One_Edge_Length(bp,tree);
@@ -8902,10 +8913,11 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
       Update_Partial_Lk(tree,bp,d_ldsk->nd);
       new_alnL = Lk(bp,tree);
     }
-  
-  
+
+  if(tree->eval_alnL == YES) new_alnL = rate_failed ? UNLIKELY : cur_alnL;
+    
   ratio = 0.0;
-  if(tree->eval_alnL == YES && tree->rates->model_id == STRICTCLOCK) ratio += (new_alnL - cur_alnL);
+  if(tree->eval_alnL == YES) ratio += (new_alnL - cur_alnL);
   if(tree->eval_rlnL == YES) ratio += (new_rlnL - cur_rlnL);
   if(tree->eval_glnL == YES) ratio += (new_tlnL - cur_tlnL);
   if(tree->eval_glnL == YES && tree->mmod->use_locations == YES) ratio += (new_glnL - cur_glnL);
@@ -8949,7 +8961,7 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
       tree->rates->br_r[v1->num] = r1_cur;
       tree->rates->br_r[v2->num] = r2_cur;
         
-      if(tree->eval_alnL == YES && (failed == YES || tree->rates->model_id == STRICTCLOCK))
+      if(tree->eval_alnL == YES && tree->rates->model_id == STRICTCLOCK)
         {
           t_edge *bp,*bc;
           bp = Get_Edge(d_ldsk->nd->anc,d_ldsk->nd,tree);
@@ -13307,148 +13319,194 @@ void MCMC_PHYREX_Update_Velocities(t_tree *tree)
   
   if(IBM_Is_Ibm(tree->mmod) == YES)
     {
-      int iter = 0;
+      int iter,*permut;
+
+      iter = 0;
       do
         {
-          IBM_Sample_Velocities_And_Locations(NULL,tree);
+          permut = Permutate(2*tree->n_otu-1);
+
+          IBM_Sample_Velocities_And_Locations(permut,tree->n_otu,tree);
+
+          Free(permut);
         }
-      while(++iter < 10.*tree->n_otu);
+      while(++iter < 1);
+      /* while(++iter < 0.1 * tree->n_otu); */
+      /* while(++iter < tree->n_otu); */
+      /* while(++iter < 10.* tree->n_otu); */
       
-      LOCATION_Lk(tree);
 
 
-    /*   int *permut,i; */
-    /*   phydbl u,alpha,ratio,hr; */
-    /*   phydbl cur_glnL, new_glnL; */
-    /*   t_node *n; */
+
+
       
-      
-    /*   int iter = 0; */
-    /*   do */
-    /*     { */
-    /*       permut = Permutate(2*tree->n_otu-1); */
+      /* int *permut,i,j; */
+      /* phydbl u,alpha,ratio,hr,m; */
+      /* phydbl cur_glnL, new_glnL; */
+      /* phydbl K; */
+      /* t_node *n; */
+
+      /* K = 0.1; */
+      /* m = 0.0; */
+      /* int iter = 0; */
+      /* do */
+      /*   { */
+      /*     permut = Permutate(2*tree->n_otu-1); */
           
-    /*       /\* Velocities *\/ */
-    /*       for(i=0;i<2*tree->n_otu-1;++i) */
-    /*         { */
-    /*           tree->mcmc->run_move[tree->mcmc->num_move_phyrex_velocities]++; */
+      /*     /\* Velocities *\/ */
+      /*     for(i=0;i<tree->n_otu-1;++i) */
+      /*     /\* for(i=0;i<2*tree->n_otu-1;++i) *\/ */
+      /*       { */
+      /*         tree->mcmc->run_move[tree->mcmc->num_move_phyrex_velocities]++; */
               
-    /*           cur_glnL = tree->mmod->c_lnL; */
-    /*           new_glnL = tree->mmod->c_lnL; */
+      /*         for(j=0;j<tree->mmod->n_dim;++j) */
+      /*           { */
+      /*             cur_glnL = tree->mmod->c_lnL; */
+      /*             new_glnL = tree->mmod->c_lnL; */
+                  
+      /*             hr = 0.0; */
+                  
+      /*             n = tree->a_nodes[permut[i]]; */
               
-    /*           hr = 0.0; */
+      /*             PHYREX_Store_Geo_Coord(n->ldsk->coord,n->ldsk->veloc); */
               
-    /*           n = tree->a_nodes[permut[i]]; */
-              
-    /*           PHYREX_Store_Geo_Coord(n->ldsk->coord,n->ldsk->veloc); */
-              
-    /*           hr += IBM_Velocity_One_Node(n,YES,tree); */
-              
-    /*           new_glnL = LOCATION_Lk(tree); */
-              
-    /*           ratio = 0.0; */
-    /*           ratio += (new_glnL - cur_glnL); */
-    /*           ratio += hr; */
-              
-    /*           ratio = exp(ratio); */
-    /*           alpha = MIN(1.,ratio); */
-              
-    /*           /\* PhyML_Printf("\n. VELOC %12f->%12f %12f [%12f,%12f]", *\/ */
-    /*           /\*              cur_glnL,new_glnL, *\/ */
-    /*           /\*              tree->mmod->sigsq_scale[n->num], *\/ */
-    /*           /\*              tree->mmod->sigsq[0], *\/ */
-    /*           /\*              tree->mmod->sigsq[1]); *\/ */
-              
-    /*           if(Are_Equal(ratio,1.,1.E-5) == NO) */
-    /*             { */
-    /*               PhyML_Printf("\n. VELOC -- Node %3d tip? %d root? %d ratio: %14f sigsq_scale: %f", */
-    /*                            n->num, */
-    /*                            n->tax ? 1 : 0, */
-    /*                            (n == tree->n_root) ? 1 : 0, */
-    /*                            ratio, */
-    /*                            tree->mmod->sigsq_scale[n->num]); */
-    /*               /\* assert(NO); *\/ */
-    /*             } */
-              
-    /*           u = Uni(); */
-              
-    /*           if(u > alpha) /\* Reject *\/ */
-    /*             { */
-    /*               PHYREX_Restore_Geo_Coord(n->ldsk->coord,n->ldsk->veloc); */
-    /*               tree->mmod->c_lnL = cur_glnL; */
-    /*             } */
-    /*           else */
-    /*             { */
-    /*               tree->mmod->c_lnL = new_glnL; */
-    /*               tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_velocities]++; */
-    /*             } */
-    /*         } */
+      /*             /\* hr += IBM_Velocity_One_Node(n,YES,j,tree); *\/ */
+                   
+      /*             /\* m = exp(K*(Uni()-.5)); *\/ */
+      /*             /\* n->ldsk->veloc->deriv[j] *= m; *\/ */
+      /*             /\* hr += log(m); *\/ */
+
+      /*             n->ldsk->veloc->deriv[j] = Rnorm(n->ldsk->veloc->deriv[j],1.0); */
+                  
+      /*             new_glnL = LOCATION_Lk(tree); */
+                  
+      /*             ratio = 0.0; */
+      /*             ratio += (new_glnL - cur_glnL); */
+      /*             ratio += hr; */
+                  
+      /*             ratio = exp(ratio); */
+      /*             alpha = MIN(1.,ratio); */
+                  
+      /*             /\* PhyML_Printf("\n. VELOC %12f->%12f %12f [%12f,%12f]", *\/ */
+      /*             /\*              cur_glnL,new_glnL, *\/ */
+      /*             /\*              tree->mmod->sigsq_scale[n->num], *\/ */
+      /*             /\*              tree->mmod->sigsq[0], *\/ */
+      /*             /\*              tree->mmod->sigsq[1]); *\/ */
+                  
+      /*             /\* if(Are_Equal(ratio,1.,1.E-5) == NO) *\/ */
+      /*             /\*   { *\/ */
+      /*             /\*     PhyML_Printf("\n. VELOC -- Node %3d(%p) anc %3d(%p) tip? %d root? %d ratio: %14f sigsq: %f sigsq_scale: %f deriv: %f dt: %f", *\/ */
+      /*             /\*                  n->num, *\/ */
+      /*             /\*                  n->ldsk, *\/ */
+      /*             /\*                  n->anc->num, *\/ */
+      /*             /\*                  n->anc->ldsk, *\/ */
+      /*             /\*                  n->tax ? 1 : 0, *\/ */
+      /*             /\*                  (n == tree->n_root) ? 1 : 0, *\/ */
+      /*             /\*                  ratio, *\/ */
+      /*             /\*                  tree->mmod->sigsq[j], *\/ */
+      /*             /\*                  tree->mmod->sigsq_scale[n->num], *\/ */
+      /*             /\*                  n->ldsk->veloc->deriv[j], *\/ */
+      /*             /\*                  fabs(tree->times->nd_t[n->num] - tree->times->nd_t[n->v[0]->num])); *\/ */
+                                            
+      /*             /\*     assert(NO); *\/ */
+      /*             /\*   } *\/ */
+                  
+      /*             u = Uni(); */
+                  
+      /*             if(u > alpha) /\* Reject *\/ */
+      /*               { */
+      /*                 PHYREX_Restore_Geo_Coord(n->ldsk->coord,n->ldsk->veloc); */
+      /*                 tree->mmod->c_lnL = cur_glnL; */
+      /*               } */
+      /*             else */
+      /*               { */
+      /*                 tree->mmod->c_lnL = new_glnL; */
+      /*                 tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_velocities]++; */
+      /*               } */
+      /*           } */
+      /*       } */
           
+      /*     Free(permut); */
           
-    /*       /\* Locations *\/ */
-    /*       for(i=0;i<2*tree->n_otu-1;++i) */
-    /*         { */
-    /*           tree->mcmc->run_move[tree->mcmc->num_move_phyrex_velocities]++; */
+      /*     permut = Permutate(2*tree->n_otu-1); */
+
+      /*     /\* Locations *\/ */
+      /*     for(i=0;i<tree->n_otu-1;++i) */
+      /*     /\* for(i=0;i<2*tree->n_otu-1;++i) *\/ */
+      /*       { */
+      /*         tree->mcmc->run_move[tree->mcmc->num_move_phyrex_velocities]++; */
               
-    /*           cur_glnL = tree->mmod->c_lnL; */
-    /*           new_glnL = tree->mmod->c_lnL; */
+      /*         for(j=0;j<tree->mmod->n_dim;++j) */
+      /*           { */
+      /*             cur_glnL = tree->mmod->c_lnL; */
+      /*             new_glnL = tree->mmod->c_lnL; */
+                  
+      /*             hr = 0.0; */
+                  
+      /*             n = tree->a_nodes[permut[i]]; */
               
-    /*           hr = 0.0; */
-              
-    /*           n = tree->a_nodes[permut[i]]; */
-              
-    /*           PHYREX_Store_Geo_Coord(n->ldsk->coord,n->ldsk->veloc); */
-              
-    /*           hr += IBM_Location_One_Node(n,YES,tree); */
-              
-    /*           new_glnL = LOCATION_Lk(tree); */
-              
-    /*           ratio = 0.0; */
-    /*           ratio += (new_glnL - cur_glnL); */
-    /*           ratio += hr; */
-              
-    /*           ratio = exp(ratio); */
-    /*           alpha = MIN(1.,ratio); */
-              
-    /*           /\* PhyML_Printf("\n. LOCAT %12f->%12f %12f [%12f,%12f]", *\/ */
-    /*           /\*              cur_glnL,new_glnL, *\/ */
-    /*           /\*              tree->mmod->sigsq_scale[n->num], *\/ */
-    /*           /\*              tree->mmod->sigsq[0], *\/ */
-    /*           /\*              tree->mmod->sigsq[1]); *\/ */
-              
-    /*           if(Are_Equal(ratio,1.,1.E-5) == NO) */
-    /*             { */
-    /*               PhyML_Printf("\n. LOCATION -- Node %3d tip? %d root? %d ratio: %14f sigsq_scale: %f", */
-    /*                            n->num, */
-    /*                            n->tax ? 1 : 0, */
-    /*                            (n == tree->n_root) ? 1 : 0, */
-    /*                            ratio, */
-    /*                            tree->mmod->sigsq_scale[n->num]); */
-    /*               /\* assert(NO); *\/ */
-    /*             } */
-              
-              
-    /*           u = Uni(); */
-              
-    /*           if(u > alpha) /\* Reject *\/ */
-    /*             { */
-    /*               PHYREX_Restore_Geo_Coord(n->ldsk->coord,n->ldsk->veloc); */
-    /*               tree->mmod->c_lnL = cur_glnL; */
-    /*             } */
-    /*           else */
-    /*             { */
-    /*               tree->mmod->c_lnL = new_glnL; */
-    /*               tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_velocities]++; */
-    /*             } */
-    /*         } */
-          
+      /*             PHYREX_Store_Geo_Coord(n->ldsk->coord,n->ldsk->veloc); */
+                  
+      /*             hr += IBM_Location_One_Node(n,YES,j,tree); */
+
+
+      /*             /\* n->ldsk->coord->lonlat[j] = Rnorm(n->ldsk->coord->lonlat[j],1.0); *\/ */
+                  
+      /*             /\* new_glnL = LOCATION_Lk(tree); *\/ */
+                  
+      /*             ratio = 0.0; */
+      /*             /\* ratio += (new_glnL - cur_glnL); *\/ */
+      /*             /\* ratio += hr; *\/ */
+                  
+      /*             ratio = exp(ratio); */
+      /*             alpha = MIN(1.,ratio); */
+                  
+      /*             /\* PhyML_Printf("\n. LOCAT %12f->%12f %12f [%12f,%12f]", *\/ */
+      /*             /\*              cur_glnL,new_glnL, *\/ */
+      /*             /\*              tree->mmod->sigsq_scale[n->num], *\/ */
+      /*             /\*              tree->mmod->sigsq[0], *\/ */
+      /*             /\*              tree->mmod->sigsq[1]); *\/ */
+                  
+      /*             if(Are_Equal(ratio,1.,1.E-5) == NO) */
+      /*               { */
+      /*                 PhyML_Printf("\n. LOCATION -- Node %3d tip? %d root? %d ratio: %14f sigsq_scale: %f", */
+      /*                              n->num, */
+      /*                              n->tax ? 1 : 0, */
+      /*                              (n == tree->n_root) ? 1 : 0, */
+      /*                              ratio, */
+      /*                              tree->mmod->sigsq_scale[n->num]); */
+      /*                 assert(NO); */
+      /*               } */
+                                    
+      /*             u = Uni(); */
+                  
+      /*             if(u > alpha) /\* Reject *\/ */
+      /*               { */
+      /*                 PHYREX_Restore_Geo_Coord(n->ldsk->coord,n->ldsk->veloc); */
+      /*                 tree->mmod->c_lnL = cur_glnL; */
+      /*               } */
+      /*             else */
+      /*               { */
+      /*                 tree->mmod->c_lnL = new_glnL; */
+      /*                 tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_velocities]++; */
+      /*               } */
+      /*           } */
+      /*       } */
+
           tree->mcmc->run++;
           PHYREX_Print_MCMC_Stats(tree);
           PHYREX_Print_MCMC_Tree(tree);
           PHYREX_Print_MCMC_Summary(tree);
-    /*     } */
-    /*   while(++iter < 10.*tree->n_otu); */
+          
+      /*     Free(permut); */
+      /*   } */
+      /* /\* while(++iter < 10.*tree->n_otu); *\/ */
+      /* /\* while(++iter < 0.1*tree->n_otu); *\/ */
+      /* while(++iter < 1); */
     }
+
+  LOCATION_Lk(tree);
+
 }
 #endif
   

@@ -1025,6 +1025,11 @@ void RATES_Random_Branch_Lengths(t_tree *tree)
 #if (defined PHYREX || PHYTIME)
 void RATES_Update_Normalization_Factor(t_tree *tree)
 {
+  /* !!!!!!!!!!!!!!!!! */
+  tree->rates->norm_fact = 1.0;
+  return;
+
+  
   phydbl dt,rdt,T,RT;
   int i;
 

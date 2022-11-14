@@ -1637,6 +1637,25 @@ void MIXT_Multiply_Scalar_Dbl(scalar_dbl *this, phydbl scalar)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+void MIXT_Set_Scalar_Dbl(scalar_dbl *this, phydbl value)
+{
+  if(this == NULL) return;
+  else
+    {
+      scalar_dbl *buff;
+      buff = this;
+      do
+        {
+          buff->v = value;
+          buff = buff->next;
+        }
+      while(buff);
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 void MIXT_Br_Len_Opt(t_edge *mixt_b, t_tree *mixt_tree)
 {
   t_edge *b;

@@ -2488,7 +2488,7 @@ void TIMES_Bl_To_Times(t_tree *tree)
   t_node *v1,*v2;
   int dir1,dir2;
   phydbl t1,t2;
-  
+    
   TIMES_Bl_To_Times_Post(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
   TIMES_Bl_To_Times_Post(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
 
@@ -2503,7 +2503,7 @@ void TIMES_Bl_To_Times(t_tree *tree)
   
   if(Are_Equal(t1,t2,1.E-2) == NO)
     {
-      PhyML_Fprintf(stderr,"\n. It looks as if the edge lengths suplied do not define an ultrametric tree.");
+      PhyML_Fprintf(stderr,"\n. It looks as if the edge lengths suplied do not define valid tree distances.");
       PhyML_Fprintf(stderr,"\n. Please amend these lengths so as it becomes straightforward to transform your tree");
       PhyML_Fprintf(stderr,"\n. into a time-tree. Please contact me (guindon@lirmm.fr) for more information.");
       PhyML_Fprintf(stderr,"\n. l1: %f l2: %f",MIXT_Get_Mean_Edge_Len(tree->n_root->b[1],tree),MIXT_Get_Mean_Edge_Len(tree->n_root->b[2],tree));
@@ -2545,7 +2545,7 @@ void TIMES_Bl_To_Times_Post(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 
       if(Are_Equal(t1,t2,1.E-2) == NO)
         {
-          PhyML_Fprintf(stderr,"\n. It looks at if the edge lengths suplied do not define an ultrametric tree.");
+          PhyML_Fprintf(stderr,"\n. It looks as if the edge lengths suplied do not define a valid tree distances.");
           PhyML_Fprintf(stderr,"\n. Please amend these lengths so as it becomes straightforward to transform your tree");
           PhyML_Fprintf(stderr,"\n. into a time-tree.");
           PhyML_Fprintf(stderr,"\n. v1->tax: %d v2->tax: %d",v1->tax,v2->tax);

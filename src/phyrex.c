@@ -471,10 +471,8 @@ void PHYREX_XML(char *xml_filename)
               PhyML_Printf("\n. Initial value for clock rate should be positive.");
               assert(false);
             }
-        }
-      
+        }      
     }
-
   
   // Looking for calibration info
   xnd = XML_Search_Node_Name("calibration",YES,xroot);
@@ -529,6 +527,7 @@ void PHYREX_XML(char *xml_filename)
   if(mixt_tree->io->in_tree < 2) Add_Root(tree->a_edges[0],tree);
   Copy_Tree(tree,mixt_tree);
   Free_Tree(tree);
+  if(mixt_tree->mod->io->edge_len_unit == CALENDAR) Convert_Lengths_From_Calendar_To_Substitutions(mixt_tree);
   Copy_Tree(mixt_tree,mixt_tree->next);
   Connect_CSeqs_To_Nodes(mixt_tree->mod->io->cdata,mixt_tree->mod->io,mixt_tree);
   Init_T_Beg(mixt_tree);  
@@ -656,7 +655,6 @@ void PHYREX_XML(char *xml_filename)
         }
     }
   
-
   /* Random genealogy or user-defined tree */
   switch(mixt_tree->io->in_tree)
     {
@@ -715,9 +713,6 @@ void PHYREX_XML(char *xml_filename)
           Update_Ancestors(mixt_tree->aux_tree[i]->n_root,mixt_tree->aux_tree[i]->n_root->v[1],mixt_tree->aux_tree[i]->n_root->b[1],mixt_tree->aux_tree[i]);  
         }
     }
-
-
-
   
   assert(PHYREX_Check_Struct(mixt_tree,YES));
   TIMES_Lk(mixt_tree);
@@ -1069,7 +1064,48 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   PHYREX_Print_MCMC_Tree(tree);
   PHYREX_Print_MCMC_Summary(tree);
 
- 
+  /* tree->mmod->sigsq[1] = 0.1; */
+  /* tree->mmod->sigsq[0] = 0.1; */
+  /* IBM_Generate_Velocities_Then_Locations(tree); */
+
+  /* PhyML_Printf("\n name lat lon velolat velolon dt"); */
+  /* PhyML_Printf("\n Root  %12f %12f  %12f %12f %12f", */
+  /*              tree->n_root->ldsk->coord->lonlat[1], */
+  /*              tree->n_root->ldsk->coord->lonlat[0], */
+  /*              tree->n_root->ldsk->veloc->deriv[1], */
+  /*              tree->n_root->ldsk->veloc->deriv[0],0.0); */
+
+  /* for(int i=0; i<tree->n_otu; ++i) */
+  /*   { */
+  /*     PhyML_Printf("\n %40s  %12f %12f  %12f %12f %12f", */
+  /*                  tree->a_nodes[i]->name, */
+  /*                  tree->a_nodes[i]->ldsk->coord->lonlat[1], */
+  /*                  tree->a_nodes[i]->ldsk->coord->lonlat[0], */
+  /*                  tree->a_nodes[i]->ldsk->veloc->deriv[1], */
+  /*                  tree->a_nodes[i]->ldsk->veloc->deriv[0], */
+  /*                  fabs(tree->times->nd_t[tree->a_nodes[i]->num] - tree->times->nd_t[tree->a_nodes[i]->anc->num])); */
+  /*   } */
+
+  /* PhyML_Printf("\n >>> "); */
+  /* for(int i=0; i<tree->n_otu; ++i) */
+  /*   { */
+  /*     PhyML_Printf("\n %s %12f %12f", */
+  /*                  tree->a_nodes[i]->name, */
+  /*                  tree->a_nodes[i]->ldsk->coord->lonlat[1], */
+  /*                  tree->a_nodes[i]->ldsk->coord->lonlat[0]); */
+  /*   } */
+  /* PhyML_Printf("\n >>> "); */
+  /* for(int i=0; i<tree->n_otu; ++i) */
+  /*   { */
+  /*     PhyML_Printf("\n%s_%f_%f \t ATGC", */
+  /*                  tree->a_nodes[i]->name, */
+  /*                  tree->a_nodes[i]->ldsk->coord->lonlat[1], */
+  /*                  tree->a_nodes[i]->ldsk->coord->lonlat[0]); */
+  /*   } */
+
+  /* Exit("\n"); */
+
+
   Set_Both_Sides(NO,tree);
   mcmc->always_yes = NO;
   move             = -1;
@@ -1130,7 +1166,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_swap_disk")) MCMC_PHYREX_Swap_Disk(tree,NO);      
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_scale_times")) MCMC_PHYREX_Scale_Times(tree,NO);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr")) MCMC_PHYREX_Prune_Regraft(tree,YES);
-      if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr_slide")) MCMC_PHYREX_Prune_Regraft_Slide(tree,YES);
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr_slide")) MCMC_PHYREX_Prune_Regraft_Slide(tree,YES);      
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_narrow_exchange")) MCMC_PHYREX_Narrow_Exchange(tree,NO);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_wide_exchange")) MCMC_PHYREX_Wide_Exchange(tree,NO);
       if(!strcmp(tree->mcmc->move_name[move],"root_time")) MCMC_Root_Time(tree,NO);
@@ -3430,7 +3466,8 @@ void PHYREX_Read_Tip_Coordinates(t_tree *tree)
       for(i=0;i<strlen(s);++i) if(s[i] == '#') break; /* skip comment */
       if(i != strlen(s)) continue;
       
-      for(i=0;i<tree->n_otu;i++) if(strstr(tree->a_nodes[i]->name,s)) break;
+      /* for(i=0;i<tree->n_otu;i++) if(strstr(tree->a_nodes[i]->name,s)) break; */
+      for(i=0;i<tree->n_otu;i++) if(!strcmp(tree->a_nodes[i]->name,s)) break;
 
       if(i != tree->n_otu) /* Found a match */
         {
@@ -3464,13 +3501,13 @@ void PHYREX_Read_Tip_Coordinates(t_tree *tree)
     }
   while(1);
   
-  if(found_ne == NO)
+  if(found_ne == NO && (tree->mmod->model_id == SLFV_UNIFORM || tree->mmod->model_id == SLFV_GAUSSIAN))
     {
       PhyML_Fprintf(stderr,"\n. Could not find coordinates for northernmost  point.");
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
     }
 
-  if(found_sw == NO)
+  if(found_sw == NO && (tree->mmod->model_id == SLFV_UNIFORM || tree->mmod->model_id == SLFV_GAUSSIAN))
     {
       PhyML_Fprintf(stderr,"\n. Could not find coordinates for southernmost point.");
       Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
@@ -4377,11 +4414,8 @@ phydbl PHYREX_Realized_Dispersal_Dist(t_tree *tree)
               dt = disk->ldsk->next[i]->disk->time - disk->time;
               
               dist =
-                /* Haversine_Distance(disk->ldsk->coord->lonlat[0],  */
-                /*                    disk->ldsk->coord->lonlat[1], */
-                /*                    disk->ldsk->next[i]->coord->lonlat[0], */
-                /*                    disk->ldsk->next[i]->coord->lonlat[1]); */
-                Manhattan_Dist(disk->ldsk->coord,disk->ldsk->next[i]->coord);
+                Haversine_Distance(disk->ldsk->coord,disk->ldsk->next[i]->coord);
+                /* Manhattan_Dist(disk->ldsk->coord,disk->ldsk->next[i]->coord); */
                 
               dist_mean += dist;
               dt_mean += sqrt(dt);
@@ -4413,11 +4447,8 @@ phydbl PHYREX_Realized_Dispersal_Dist(t_tree *tree)
               dt = disk->ldsk->next[i]->disk->time - disk->time;
               
               dist =
-                /* Haversine_Distance(disk->ldsk->coord->lonlat[0],  */
-                /*                    disk->ldsk->coord->lonlat[1], */
-                /*                    disk->ldsk->next[i]->coord->lonlat[0], */
-                /*                    disk->ldsk->next[i]->coord->lonlat[1]); */
-                Manhattan_Dist(disk->ldsk->coord,disk->ldsk->next[i]->coord);
+                Haversine_Distance(disk->ldsk->coord,disk->ldsk->next[i]->coord);
+                /* Manhattan_Dist(disk->ldsk->coord,disk->ldsk->next[i]->coord); */
 
               /* num += (sqrt(dt) - dt_mean)*(dist - dist_mean); */
               /* denom += pow(sqrt(dt) - dt_mean,2); */
@@ -5353,7 +5384,11 @@ void PHYREX_Swap_Coords(t_ldsk *a, t_ldsk *b, t_tree *tree)
       buff = a->coord->lonlat[i];
       a->coord->lonlat[i] = b->coord->lonlat[i];
       b->coord->lonlat[i] = buff;
-    }
+
+      buff = a->veloc->deriv[i];
+      a->veloc->deriv[i] = b->veloc->deriv[i];
+      b->veloc->deriv[i] = buff;
+}
 }
 
 /*////////////////////////////////////////////////////////////

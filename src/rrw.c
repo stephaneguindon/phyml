@@ -27,7 +27,7 @@ phydbl RRW_Lk(t_tree *tree)
   RRW_Update_Normalization_Factor(tree);
 
   d_fwd = RRW_Forward_Lk_Range(tree->young_disk,NULL,tree);
-
+  
 #ifdef PHYREX
   if(PHYREX_Total_Number_Of_Intervals(tree) > tree->mmod->max_num_of_intervals)
     {
@@ -38,6 +38,7 @@ phydbl RRW_Lk(t_tree *tree)
 
   tree->mmod->c_lnL = d_fwd;
 
+  
   return(tree->mmod->c_lnL);
 }
 
@@ -426,23 +427,26 @@ short int RRW_Is_Rw(t_phyrex_mod *mod)
 
 void RRW_Update_Normalization_Factor(t_tree *tree)
 {
-  phydbl dt,rdt,T,RT;
-  int i;
-
-  rdt = 0.0;
-  dt  = 0.0;
-  T   = 0.0;
-  RT  = 0.0;
+  /* !!!!!!!!!!!!!!!!!!!!! */
+  tree->mmod->sigsq_scale_norm_fact = 1.0;
   
-  for(i=0;i<2*tree->n_otu-2;++i)
-    {
-      assert(tree->a_nodes[i] != tree->n_root);
-      dt = fabs(tree->times->nd_t[i] - tree->times->nd_t[tree->a_nodes[i]->anc->num]);
-      rdt = dt*tree->mmod->sigsq_scale[tree->a_nodes[i]->num];
-      T+=dt;
-      RT+=rdt;
-    }
-  tree->mmod->sigsq_scale_norm_fact = T/RT;
+  /* phydbl dt,rdt,T,RT; */
+  /* int i; */
+
+  /* rdt = 0.0; */
+  /* dt  = 0.0; */
+  /* T   = 0.0; */
+  /* RT  = 0.0; */
+  
+  /* for(i=0;i<2*tree->n_otu-2;++i) */
+  /*   { */
+  /*     assert(tree->a_nodes[i] != tree->n_root); */
+  /*     dt = fabs(tree->times->nd_t[i] - tree->times->nd_t[tree->a_nodes[i]->anc->num]); */
+  /*     rdt = dt*tree->mmod->sigsq_scale[tree->a_nodes[i]->num]; */
+  /*     T+=dt; */
+  /*     RT+=rdt; */
+  /*   } */
+  /* tree->mmod->sigsq_scale_norm_fact = T/RT; */
 }
 
 //////////////////////////////////////////////////////////////

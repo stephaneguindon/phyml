@@ -632,6 +632,7 @@ void Set_Defaults_Input(option* io)
   io->print_support_val          = NO;
   io->n_boot_replicates          = 0;
   io->print_mat_and_exit         = NO;
+  io->edge_len_unit              = SUBSTITUTIONS;    
   
 #ifdef BEAGLE
   io->beagle_resource            = 0;
@@ -891,7 +892,7 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
   rates->clock_r_prior_var  = 1.0E-8;
   
   rates->max_rate         = 1.E+6;
-  rates->min_rate         = 1.E-6;
+  rates->min_rate         = 0.0;
   /* rates->max_rate         = 10.; */
   /* rates->min_rate         = 0.1; */
 
@@ -3549,7 +3550,7 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->model_id = -1;
   t->use_locations = -1;
   t->sampling_scheme = -1;
-  t->safe_phyrex = YES;
+  t->safe_phyrex = NO;
   
   t->lim_up->lonlat[0] = 100.;
   t->lim_up->lonlat[1] = 100.;

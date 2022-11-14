@@ -391,6 +391,10 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define ABAYES         5
 
 
+#define CALENDAR      0
+#define SUBSTITUTIONS 1
+
+
 /*  /\* Uncomment the lines below to switch to single precision *\/ */
 /*  typedef	float phydbl; */
 /*  #define LOG logf */
@@ -1363,6 +1367,8 @@ typedef struct __Option { /*! mostly used in 'help.c' */
   short int                    do_tbe;
   short int                   do_boot;
   short int                   do_alrt;
+
+  short int             edge_len_unit;
 
 }option;
 
@@ -2539,6 +2545,8 @@ void Init_T_Beg(t_tree *tree);
 void Set_Ignore_Root(int yesno, t_tree *tree);
 void Set_Bl_From_Rt(int yesno, t_tree *tree);
 void Replace_Short_With_Long_Tax_Names(t_tree *tree, option *io);
+void Convert_Lengths_From_Calendar_To_Substitutions(t_tree *tree);
+void Convert_Lengths_From_Calendar_To_Substitutions_Post(t_node *a, t_node *d, t_tree *tree);
 
 
 #include "xml.h"

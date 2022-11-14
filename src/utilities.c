@@ -939,11 +939,14 @@ void *mCalloc(int nb, size_t size)
   void *allocated;
 
   if((allocated = calloc((size_t)nb,size)) != NULL)
-/*   if((allocated = malloc((size_t)nb*(size_t)size)) != NULL) */
     return allocated;
   else
-    Generic_Exit(__FILE__,__LINE__,__FUNCTION__);    
-
+    {
+      PhyML_Fprintf(stderr,"\n. Problem encountered in allocating block of size %d",nb);
+      assert(false);
+      /* Generic_Exit(__FILE__,__LINE__,__FUNCTION__);     */
+    }
+  
   return NULL;
 }
 
@@ -2981,7 +2984,6 @@ char Reciproc_Assign_State(int i_state, int datatype)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 int Assign_State_With_Ambiguity(char *c, int datatype, int stepsize)
 {
@@ -7452,7 +7454,6 @@ void Update_Ancestors(t_node *a, t_node *d, t_edge *b, t_tree *tree)
   
   d->anc = a;
   d->b_anc = b;
-  
   
   if(a == tree->n_root) a->anc = NULL;
 
@@ -12924,8 +12925,49 @@ void Exchange_Nodes(t_node *a, t_node *d, t_node *w, t_node *v, t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+void Convert_Lengths_From_Calendar_To_Substitutions(t_tree *tree)
+{
+  Convert_Lengths_From_Calendar_To_Substitutions_Post(tree->n_root,tree->n_root->v[1],tree);
+  Convert_Lengths_From_Calendar_To_Substitutions_Post(tree->n_root,tree->n_root->v[2],tree);
+  MIXT_Multiply_Scalar_Dbl(tree->n_root->b[1]->l,tree->rates->clock_r * tree->rates->br_r[tree->n_root->v[1]->num]);
+  MIXT_Multiply_Scalar_Dbl(tree->n_root->b[2]->l,tree->rates->clock_r * tree->rates->br_r[tree->n_root->v[2]->num]);
+  MIXT_Set_Scalar_Dbl(tree->e_root->l,tree->n_root->b[1]->l->v + tree->n_root->b[2]->l->v);
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+void Convert_Lengths_From_Calendar_To_Substitutions_Post(t_node *a, t_node *d, t_tree *tree)
+{
+  int i;
+
+  assert(tree->rates != NULL);
+  
+  
+  for(i=0;i<3;++i)
+    {
+      if(d->v[i] == a && a != tree->n_root)
+        {
+          MIXT_Multiply_Scalar_Dbl(d->b[i]->l,tree->rates->clock_r * tree->rates->br_r[d->num]);
+          break;
+        }
+    }
+  assert(!(i == 3 && a != tree->n_root));
+
+  if(d->tax == YES) return;
+  else
+    {
+      for(i=0;i<3;++i)
+        {
+          if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
+            {
+              Convert_Lengths_From_Calendar_To_Substitutions_Post(d,d->v[i],tree);
+            }
+        }
+    }
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
