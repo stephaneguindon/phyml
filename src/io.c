@@ -480,6 +480,8 @@ char **Sub_Trees(char *tree, int *degree)
   char **subs;
   int posbeg,posend;
   int i;
+
+  subs = NULL;
   
   if(tree[0] != '(')
     {
@@ -6832,6 +6834,11 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
                   PhyML_Fprintf(fp_stats,"%s_VelocLon\t",tree->a_nodes[i]->name);
                   PhyML_Fprintf(fp_stats,"%s_VelocLat\t",tree->a_nodes[i]->name);
                 }
+              for(int i=0;i<tree->n_otu-1;++i)
+                {
+                  PhyML_Fprintf(fp_stats,"%d_IntVelocLon\t",tree->a_nodes[tree->n_otu+i]->num);
+                  PhyML_Fprintf(fp_stats,"%d_IntVelocLat\t",tree->a_nodes[tree->n_otu+i]->num);
+                }
             }
 
           if(IBM_Is_Ibm(tree->mmod) == YES)
@@ -6889,6 +6896,10 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%.2f\t",tree->n_root->ldsk->disk->time);
 
       if(RRW_Is_Rw(tree->mmod) == YES && tree->mmod->integrateAncestralLocations == YES) RRW_Sample_Node_Locations(tree);
+
+      /* !!!!!!!!!!!!!!!!!!!!!!!!! */
+      /* if(IBM_Is_Ibm(tree->mmod) == YES && tree->mmod->integrateAncestralLocations == YES) IBM_Sample_Node_Locations(tree); */
+
 
       PhyML_Fprintf(fp_stats,"%g\t",tree->n_root->ldsk->coord->lonlat[0]);
       PhyML_Fprintf(fp_stats,"%g\t",tree->n_root->ldsk->coord->lonlat[1]);
@@ -6955,23 +6966,24 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%f\t",tree->rates->br_r[tree->n_root->v[1]->num]);
       PhyML_Fprintf(fp_stats,"%f\t",tree->rates->br_r[tree->n_root->v[2]->num]);
 
+      
       if(IBM_Is_Ibm(tree->mmod) == YES)
         {
           PhyML_Fprintf(fp_stats,"%g\t",tree->n_root->ldsk->veloc->deriv[0]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->n_root->ldsk->veloc->deriv[1]);
-        }
-      
-      if(IBM_Is_Ibm(tree->mmod) == YES)
-        {
+
           for(int i=0;i<tree->n_otu;++i)
             {
               PhyML_Fprintf(fp_stats,"%g\t",tree->a_nodes[i]->ldsk->veloc->deriv[0]);
               PhyML_Fprintf(fp_stats,"%g\t",tree->a_nodes[i]->ldsk->veloc->deriv[1]);
             }
-        }
-      
-      if(IBM_Is_Ibm(tree->mmod) == YES)
-        {
+
+          for(int i=0;i<tree->n_otu-1;++i)
+            {
+              PhyML_Fprintf(fp_stats,"%g\t",tree->a_nodes[i+tree->n_otu]->ldsk->veloc->deriv[0]);
+              PhyML_Fprintf(fp_stats,"%g\t",tree->a_nodes[i+tree->n_otu]->ldsk->veloc->deriv[1]);
+            }
+
           for(int i=0;i<tree->n_otu;++i)
             {
               PhyML_Fprintf(fp_stats,"%g\t",

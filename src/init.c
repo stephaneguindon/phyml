@@ -3574,7 +3574,7 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->prior_param_rad   = 1.;
   t->update_rad        = NO;
   
-  t->min_sigsq         = 1.E-1;
+  t->min_sigsq         = 1.E-3;
   t->max_sigsq         = 1.E+3;
   t->prior_param_sigsq = 10.0;
 
@@ -3861,6 +3861,17 @@ void RRW_Init_Contmod_Locations(int dim_idx, t_tree *tree)
       tree->contmod->var_up[i] = 0.0;
       tree->contmod->logrem_up[i] = 0.0;
     }
+  
+  for(int i=tree->n_otu;i<2*tree->n_otu-1;++i)
+    {
+      tree->contmod->mu_down[i] = 0.0;
+      tree->contmod->var_down[i] = 0.0;
+      tree->contmod->logrem_down[i] = 0.0;
+
+      tree->contmod->mu_up[i] = 0.0;
+      tree->contmod->var_up[i] = 0.0;
+      tree->contmod->logrem_up[i] = 0.0;
+    }
 }
 
 //////////////////////////////////////////////////////////////
@@ -3874,10 +3885,11 @@ void IBM_Init_Contmod_Locations(int dim_idx, t_tree *tree)
   
   for(int i=0;i<tree->n_otu;++i)
     {
-      dt = fabs(tree->times->nd_t[tree->a_nodes[i]->num] - tree->times->nd_t[tree->a_nodes[i]->v[0]->num]);
-      avey = .5*(tree->a_nodes[i]->ldsk->veloc->deriv[dim_idx] + tree->a_nodes[i]->v[0]->ldsk->veloc->deriv[dim_idx]);
+      /* dt = fabs(tree->times->nd_t[tree->a_nodes[i]->num] - tree->times->nd_t[tree->a_nodes[i]->anc->num]); */
+      /* avey = .5*(tree->a_nodes[i]->ldsk->veloc->deriv[dim_idx] + tree->a_nodes[i]->anc->ldsk->veloc->deriv[dim_idx]); */
       
-      tree->contmod->mu_down[i] = tree->a_nodes[i]->ldsk->coord->lonlat[dim_idx] + avey*dt;
+      /* tree->contmod->mu_down[i] = tree->a_nodes[i]->ldsk->coord->lonlat[dim_idx] + avey*dt; */
+      tree->contmod->mu_down[i] = tree->a_nodes[i]->ldsk->coord->lonlat[dim_idx];
       tree->contmod->var_down[i] = 0.0;
       tree->contmod->logrem_down[i] = 0.0;
 
@@ -3885,6 +3897,18 @@ void IBM_Init_Contmod_Locations(int dim_idx, t_tree *tree)
       tree->contmod->var_up[i] = 0.0;
       tree->contmod->logrem_up[i] = 0.0;
     }
+
+  for(int i=tree->n_otu;i<2*tree->n_otu-1;++i)
+    {
+      tree->contmod->mu_down[i] = 0.0;
+      tree->contmod->var_down[i] = 0.0;
+      tree->contmod->logrem_down[i] = 0.0;
+
+      tree->contmod->mu_up[i] = 0.0;
+      tree->contmod->var_up[i] = 0.0;
+      tree->contmod->logrem_up[i] = 0.0;
+    }
+
 }
 
 //////////////////////////////////////////////////////////////
@@ -3902,6 +3926,18 @@ void IBM_Init_Contmod_Velocities(int dim_idx, t_tree *tree)
       tree->contmod->var_up[i] = 0.0;
       tree->contmod->logrem_up[i] = 0.0;
     }
+
+    for(int i=tree->n_otu;i<2*tree->n_otu-1;++i)
+    {
+      tree->contmod->mu_down[i] = 0.0;
+      tree->contmod->var_down[i] = 0.0;
+      tree->contmod->logrem_down[i] = 0.0;
+
+      tree->contmod->mu_up[i] = 0.0;
+      tree->contmod->var_up[i] = 0.0;
+      tree->contmod->logrem_up[i] = 0.0;
+    }
+
 }
 
 

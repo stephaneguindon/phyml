@@ -34,9 +34,12 @@ phydbl RRW_Mean_Displacement_Rate(t_tree *tree);
 phydbl RRW_Prior_Sigsq(t_tree *tree);
 phydbl RRW_Prior(t_tree *tree);
 void RRW_Generate(t_tree *tree);
-phydbl RRW_Lk_Integrated(t_tree *tree);
 void RRW_Sample_Node_Locations(t_tree *tree);
 void RRW_Sample_Arealin_Plot(t_tree *tree);
+phydbl RRW_Integrated_Lk(t_tree *tree);
+void RRW_Integrated_Lk_Location_Pre(t_node *a, t_node *d, short int dim, t_tree *tree);
+void RRW_Integrated_Lk_Location_Post(t_node *a, t_node *d, short int dim, t_tree *tree, short int print);
+phydbl RRW_Location_Variance_Along_Edge(t_node *d, short int dim, t_tree *tree);
 
 
 #endif

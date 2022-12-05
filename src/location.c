@@ -48,11 +48,7 @@ phydbl LOCATION_Lk(t_tree *tree)
       }
     case RRW_GAMMA : case RRW_LOGNORMAL : case RW : 
       {
-        if(tree->mmod->integrateAncestralLocations == NO) lnL = RRW_Lk(tree);
-        else
-          {
-            lnL = RRW_Lk_Integrated(tree);
-          }
+        lnL = RRW_Lk(tree);
         break;
       }
     case IBM : case RIBM :
@@ -323,5 +319,20 @@ char *LOCATION_Model_Id(t_phyrex_mod *mmod)
   return(s);
  
 }
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl LOCATION_Mean_Lonlat(short int dim, t_tree *tree)
+{
+  phydbl sum;
+  int i;
+
+  sum = 0.0;
+  for(i=0;i<tree->n_otu;++i) sum += tree->a_nodes[i]->ldsk->coord->lonlat[dim];
+
+  return(sum/tree->n_otu);
+}
+
 
 #endif

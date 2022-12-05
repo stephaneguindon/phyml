@@ -38,5 +38,16 @@ void IBM_Generate_Velocities_Pre(t_node *a, t_node *d, t_tree *tree);
 void IBM_Generate_Locations_Given_Velocities(t_tree *tree);
 void IBM_Generate_Locations_Given_Velocities_Pre(t_node *a, t_node *d, t_tree *tree);
 void IBM_Generate_Velocities_Then_Locations(t_tree *tree);
+phydbl IBM_Integrated_Lk_Location(t_tree *tree);
+void IBM_Sample_Node_Locations(t_tree *tree);
+phydbl IBM_Integrated_Lk_Location(t_tree *tree);
+phydbl IBM_Location_Variance_Along_Edge(t_node *d, short int dim, t_tree *tree);
+void IBM_Integrated_Lk_Location_Post(t_node *a, t_node *d, short int dim, t_tree *tree, short int print);
+void IBM_Integrated_Lk_Location_Pre(t_node *a, t_node *d, short int dim, t_tree *tree);
+void IBM_Sample_Node_Velocities(t_tree *tree);
+phydbl IBM_Integrated_Lk_Velocity(t_tree *tree);
+phydbl IBM_Velocity_Variance_Along_Edge(t_node *d, short int dim, t_tree *tree);
+void IBM_Integrated_Lk_Velocity_Post(t_node *a, t_node *d, short int dim, t_tree *tree, short int print);
+void IBM_Integrated_Lk_Velocity_Pre(t_node *a, t_node *d, short int dim, t_tree *tree);
 
 #endif

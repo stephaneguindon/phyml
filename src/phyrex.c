@@ -1128,27 +1128,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       tree->mcmc->move_idx = move;
       
       assert(!(move == tree->mcmc->n_moves));
-      
-
-      /* if(tree->mmod->model_id == IBM) */
-      /*   { */
-      /*     MCMC_PHYREX_Update_Velocities(tree); */
-      /*     LOCATION_Lk(tree); */
-      /*   } */
-      
-
-      /* if(tree->mcmc->run < 1E+5) */
-      /*   { */
-      /*     tree->mmod->use_locations = NO; */
-      /*     tree->mmod->c_lnL = 0.0; */
-      /*   } */
-      /* else */
-      /*   { */
-      /*     tree->mmod->use_locations = YES; */
-      /*     MCMC_PHYREX_Update_Velocities(tree); */
-      /*     LOCATION_Lk(tree); */
-      /*   } */
-          
+                
       /* phydbl prev_lnL = tree->c_lnL; */
       /* phydbl prev_loc_lnL = tree->mmod->c_lnL; */
       /* phydbl prev_rates_lnL = tree->rates->c_lnL; */

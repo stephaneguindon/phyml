@@ -20,24 +20,30 @@ phydbl RRW_Lk(t_tree *tree)
 {
   phydbl d_fwd;
   
-  d_fwd = UNLIKELY;
-  
-  assert(RRW_Is_Rw(tree->mmod) == YES);
-
-  RRW_Update_Normalization_Factor(tree);
-
-  d_fwd = RRW_Forward_Lk_Range(tree->young_disk,NULL,tree);
-  
-#ifdef PHYREX
-  if(PHYREX_Total_Number_Of_Intervals(tree) > tree->mmod->max_num_of_intervals)
+  if(tree->mmod->integrateAncestralLocations == YES)
     {
-      tree->mmod->c_lnL = UNLIKELY;
-      return(UNLIKELY);
+      tree->mmod->c_lnL = RRW_Integrated_Lk(tree);
     }
+  else
+    {
+      d_fwd = UNLIKELY;
+      
+      assert(RRW_Is_Rw(tree->mmod) == YES);
+      
+      RRW_Update_Normalization_Factor(tree);
+      
+      d_fwd = RRW_Forward_Lk_Range(tree->young_disk,NULL,tree);
+      
+#ifdef PHYREX
+      if(PHYREX_Total_Number_Of_Intervals(tree) > tree->mmod->max_num_of_intervals)
+        {
+          tree->mmod->c_lnL = UNLIKELY;
+          return(UNLIKELY);
+        }
 #endif
-
-  tree->mmod->c_lnL = d_fwd;
-
+      
+      tree->mmod->c_lnL = d_fwd;
+    }
   
   return(tree->mmod->c_lnL);
 }
@@ -530,9 +536,9 @@ void RRW_Sample_Arealin_Plot(t_tree *tree)
   for(i=0;i<tree->mmod->n_dim;++i)
     {
       RRW_Init_Contmod_Locations(i,tree);
-      Lk_Contmod_Post(NULL,tree->n_root,tree->mmod->sigsq[i],tree,NO);
-      Lk_Contmod_Pre(tree->n_root,tree->n_root->v[1],tree->mmod->sigsq[i],tree);
-      Lk_Contmod_Pre(tree->n_root,tree->n_root->v[2],tree->mmod->sigsq[i],tree);
+      RRW_Integrated_Lk_Location_Post(NULL,tree->n_root,tree->mmod->sigsq[i],tree,NO);
+      RRW_Integrated_Lk_Location_Pre(tree->n_root,tree->n_root->v[1],tree->mmod->sigsq[i],tree);
+      RRW_Integrated_Lk_Location_Pre(tree->n_root,tree->n_root->v[2],tree->mmod->sigsq[i],tree);
     }
   
   /* Sample location on every ldsk */
@@ -640,30 +646,33 @@ void RRW_Sample_Arealin_Plot(t_tree *tree)
 void RRW_Sample_Node_Locations(t_tree *tree)
 {
   int i,j;
+  t_node *n;
+  phydbl au,bu,varu,var,mean;
+
+  n = NULL;
+  au = bu = varu = var = mean = -1;
   
   RRW_Update_Normalization_Factor(tree);
 
   for(i=0;i<tree->mmod->n_dim;++i)
     {
       RRW_Init_Contmod_Locations(i,tree);
-      Lk_Contmod_Post(NULL,tree->n_root,tree->mmod->sigsq[i],tree,NO);
-      Lk_Contmod_Pre(tree->n_root,tree->n_root->v[1],tree->mmod->sigsq[i],tree);
-      Lk_Contmod_Pre(tree->n_root,tree->n_root->v[2],tree->mmod->sigsq[i],tree);      
+      RRW_Integrated_Lk_Location_Post(NULL,tree->n_root,i,tree,NO);
+      RRW_Integrated_Lk_Location_Pre(tree->n_root,tree->n_root->v[1],i,tree);
+      RRW_Integrated_Lk_Location_Pre(tree->n_root,tree->n_root->v[2],i,tree);      
 
       for(j=0;j<2*tree->n_otu-2;++j)
         {
           if(tree->a_nodes[j]->tax == NO && tree->a_nodes[j] != tree->n_root)
             {
-              tree->a_nodes[j]->ldsk->coord->lonlat[i] =
-                Sample_Ancestral_Trait_Contmod(tree->a_nodes[j]->anc,
-                                               tree->a_nodes[j],
-                                               fabs(tree->times->nd_t[tree->a_nodes[j]->anc->num]-tree->times->nd_t[tree->a_nodes[j]->num]),
-                                               0.0,
-                                               log(tree->mmod->sigsq[i]) +
-                                               log(tree->mmod->sigsq_scale[tree->a_nodes[j]->num]) + 
-                                               log(tree->mmod->sigsq_scale_norm_fact),
-                                               NO,
-                                               tree);
+              n = tree->a_nodes[j];
+              au = 1.0;
+              bu = 0.0;
+              varu = RRW_Location_Variance_Along_Edge(n,i,tree); 
+              var = 1./tree->contmod->var_down[n->num] + 1. / (pow(au,2)*tree->contmod->var_up[n->num]+varu);
+              var = 1./var;
+              mean = (tree->contmod->mu_down[n->num]/tree->contmod->var_down[n->num] + (au*tree->contmod->mu_up[n->num]+bu)/(pow(au,2)*tree->contmod->var_up[n->num]+varu))*var;
+              tree->a_nodes[j]->ldsk->coord->lonlat[i] = Rnorm(mean,sqrt(var));
             }
         }
 
@@ -678,7 +687,7 @@ void RRW_Sample_Node_Locations(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-phydbl RRW_Lk_Integrated(t_tree *tree)
+phydbl RRW_Integrated_Lk(t_tree *tree)
 {
   phydbl lnL;
   int i;
@@ -690,7 +699,7 @@ phydbl RRW_Lk_Integrated(t_tree *tree)
   for(i=0;i<tree->mmod->n_dim;++i)
     {
       RRW_Init_Contmod_Locations(i,tree);
-      Lk_Contmod_Post(NULL,tree->n_root,tree->mmod->sigsq[i],tree,NO);
+      RRW_Integrated_Lk_Location_Post(NULL,tree->n_root,i,tree,NO);
       lnL += tree->contmod->logrem_down[tree->n_root->num];
     }
   return(lnL);
@@ -699,3 +708,195 @@ phydbl RRW_Lk_Integrated(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+phydbl RRW_Location_Variance_Along_Edge(t_node *d, short int dim, t_tree *tree)
+{
+  phydbl logvar;
+
+  assert(d != tree->n_root);
+  
+  logvar =
+    log(tree->mmod->sigsq[dim]) +
+    log(tree->mmod->sigsq_scale[d->num]) + 
+    log(tree->mmod->sigsq_scale_norm_fact) +
+    log(fabs(tree->times->nd_t[d->num]-tree->times->nd_t[d->anc->num]));
+  
+  return(exp(logvar));
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+// See Pybus et al. 10.1073/pnas.1206598109 + see my technical notes
+void RRW_Integrated_Lk_Location_Post(t_node *a, t_node *d, short int dim, t_tree *tree, short int print)
+{
+  if(d->tax == TRUE)
+    {
+      return;
+    }
+  else
+    {
+      int i,err;
+      t_node *v1, *v2;
+      phydbl v1mu,v2mu;
+      phydbl v1var,v2var;
+      phydbl dv1var,dv2var;
+      phydbl v1logrem,v2logrem;
+      phydbl av1, av2;
+      phydbl bv1, bv2;
+      
+      for(i=0;i<3;++i)
+        {
+          if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
+            {
+              RRW_Integrated_Lk_Location_Post(d,d->v[i],dim,tree,print);
+            }
+        }
+
+      v1 = v2 = NULL;
+      for(i=0;i<3;++i)
+        {
+          if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
+            {
+              if(v1 == NULL) v1 = d->v[i];
+              else v2 = d->v[i];
+            }
+        }
+
+      err = -1;
+      
+      v1mu = tree->contmod->mu_down[v1->num];
+      v2mu = tree->contmod->mu_down[v2->num];
+
+      v1var = tree->contmod->var_down[v1->num];
+      v2var = tree->contmod->var_down[v2->num];
+
+      v1logrem = tree->contmod->logrem_down[v1->num];
+      v2logrem = tree->contmod->logrem_down[v2->num];
+
+      dv1var = RRW_Location_Variance_Along_Edge(v1,dim,tree);
+      dv2var = RRW_Location_Variance_Along_Edge(v2,dim,tree);
+      
+      av1 = 1.0;
+      av2 = 1.0;
+
+      bv1 = 0.0;
+      bv2 = 0.0;
+
+      if(d == tree->n_root && print == YES)
+        {
+          PhyML_Printf("\n. v1mu=%f v2mu=%f v1var=%f dv1var=%f v2var=%f dv2var=%f t=%f t1=%f t2=%f",
+                       v1mu,
+                       v2mu,
+                       v1var,dv1var,
+                       v2var,dv2var,
+                       tree->times->nd_t[d->num],
+                       tree->times->nd_t[v1->num],
+                       tree->times->nd_t[v2->num]);
+        }
+      
+      tree->contmod->var_down[d->num] = pow(av1,2)/(v1var + dv1var) + pow(av2,2)/(v2var + dv2var);
+      tree->contmod->var_down[d->num] = 1./tree->contmod->var_down[d->num];
+
+      tree->contmod->mu_down[d->num] = (av1*(v1mu-bv1)/(v1var + dv1var) + av2*(v2mu-bv2)/(v2var + dv2var)) * tree->contmod->var_down[d->num];
+      
+      tree->contmod->logrem_down[d->num]  = v1logrem + v2logrem;
+      tree->contmod->logrem_down[d->num] -= log(fabs(av2*av1));
+      tree->contmod->logrem_down[d->num] += Log_Dnorm((v1mu-bv1)/av1,(v2mu-bv2)/av2,sqrt((v1var+dv1var)/pow(av1,2)+(v2var+dv2var)/pow(av2,2)),&err);
+
+    }
+  
+  return;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void RRW_Integrated_Lk_Location_Pre(t_node *a, t_node *d, short int dim, t_tree *tree)
+{
+  int i,err;
+  t_node *v1, *v2;
+  phydbl v1mu,v2mu;
+  phydbl v1var,v2var;
+  phydbl av1var,av2var;
+  phydbl v1logrem,v2logrem;
+  phydbl av1, av2;
+  phydbl bv1, bv2;
+  
+  
+  v1 = NULL;
+  if(a != tree->n_root)
+    {
+      v1 = a->anc;
+      assert(v1);
+    }
+  
+  v2 = NULL;
+  for(i=0;i<3;++i)
+    {
+      if(a->v[i] != d && a->v[i] != v1 && !(v1 == tree->n_root && a->b[i] == tree->e_root))
+        {
+          v2 = a->v[i];
+          break;
+        }
+    }
+
+  err = -1;
+  
+  assert(v2->anc == a);
+  assert(v2->anc->anc == v1);
+    
+  v2mu     = tree->contmod->mu_down[v2->num];
+  v2var    = tree->contmod->var_down[v2->num];
+  v2logrem = tree->contmod->logrem_down[v2->num];
+  av2var   = RRW_Location_Variance_Along_Edge(v2,dim,tree);    
+
+  av2      = 1.0;
+  bv2      = 0.0;
+      
+  if(v1 != NULL)
+    {
+      v1mu     = tree->contmod->mu_up[a->num];
+      v1var    = tree->contmod->var_up[a->num];
+      v1logrem = tree->contmod->logrem_up[a->num];
+      av1var   = RRW_Location_Variance_Along_Edge(a,dim,tree);
+
+      av1      = 1.0;
+      bv1      = 0.0;
+  
+      tree->contmod->var_up[d->num] = pow(av2,2)/(v2var + av2var) + 1./(pow(av1,2)*v1var+av1var);
+      tree->contmod->var_up[d->num] = 1./tree->contmod->var_up[d->num];
+
+      tree->contmod->mu_up[d->num] = (av2*(v2mu-bv2)/(v2var + av2var) + (av1*v1mu+bv1)/(pow(av1,2)*v1var+av1var)) * tree->contmod->var_up[d->num];
+      
+      tree->contmod->logrem_up[d->num]  = v1logrem + v2logrem;
+      tree->contmod->logrem_up[d->num] -= log(fabs(av2));
+      tree->contmod->logrem_up[d->num] += Log_Dnorm((v2mu-bv2)/av2,av1*v1mu+bv1,sqrt((v2var+av2var)/pow(av2,2)+pow(av1,2)*v1var+av1var),&err);
+    }
+  else
+    {
+      tree->contmod->mu_up[d->num]     = (v2mu-bv2)/av2;
+      tree->contmod->var_up[d->num]    = (v2var + av2var)/pow(av2,2);
+      tree->contmod->logrem_up[d->num] = v2logrem;
+    }
+  
+  if(d->tax == TRUE) return;
+  else
+    {
+      for(i=0;i<3;++i)
+        {
+          if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
+            {
+              RRW_Integrated_Lk_Location_Pre(d,d->v[i],dim,tree);
+            }
+        }
+    }
+  return;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
