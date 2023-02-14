@@ -581,7 +581,7 @@ phydbl SLFV_Update_Sigsq(t_tree *tree)
 */
 phydbl SLFV_Neighborhood_Size_Regression(t_tree *tree)
 {
-  int i,j,pair;
+  int i,j,pair,ij_dist;
   t_node *anc;
   phydbl *dist,min_dist;
   phydbl QA,Qr,*fst,fst0,fst_min_dist;
@@ -597,13 +597,14 @@ phydbl SLFV_Neighborhood_Size_Regression(t_tree *tree)
 
   pair = 0;
   fst0 = 0.0;
+  ij_dist = 0;
   for(i=0;i<tree->n_otu-1;i++)
     {
       fst_min_dist = 0.0;
       min_dist = MDBL_MAX;
       for(j=i+1;j<tree->n_otu;j++)
         {
-          anc = Find_Lca_Pair_Of_Nodes(tree->a_nodes[i],tree->a_nodes[j],tree);
+          anc = Find_Lca_Pair_Of_Nodes(tree->a_nodes[i],tree->a_nodes[j],&ij_dist,tree);
           if(anc == NULL) 
             {
               PhyML_Fprintf(stderr,"\n. %s",Write_Tree(tree));
@@ -1525,7 +1526,8 @@ phydbl SLFV_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_mergers,
                     new_disk->centr->lonlat[j] = Uni()*(mmod->lim_up->lonlat[j]-mmod->lim_do->lonlat[j])+mmod->lim_do->lonlat[j];
                     break; 
                   }
-                case RW : case RRW_GAMMA : case RRW_LOGNORMAL : case IBM : case RIBM :    
+                case RW : case RRW_GAMMA : case RRW_LOGNORMAL :
+                case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : 
                   { 
                     new_disk->centr->lonlat[j] = disk->ldsk_a[Rand_Int(0,disk->n_ldsk_a-1)]->coord->lonlat[j];
                     break; 
@@ -1563,8 +1565,9 @@ phydbl SLFV_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_mergers,
                     prob_hit = exp(prob_hit);
                     break; 
                   }
-                case RW : case RRW_GAMMA : case RRW_LOGNORMAL : case IBM : case RIBM : 
-                    {
+                case RW : case RRW_GAMMA : case RRW_LOGNORMAL :
+                case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : 
+                  {
                       prob_hit = 1./(new_disk->n_ldsk_a+1.);
                     }
                 }
@@ -1589,7 +1592,8 @@ phydbl SLFV_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_mergers,
                             PHYREX_Runif_Rectangle_Overlap(new_disk->ldsk,new_disk,tree->mmod);
                             break;
                           }
-                        case SLFV_GAUSSIAN : case RW : case RRW_GAMMA : case RRW_LOGNORMAL : case IBM : case RIBM : 
+                        case SLFV_GAUSSIAN : case RW : case RRW_GAMMA : case RRW_LOGNORMAL :
+                        case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : 
                           {
                             PHYREX_Rnorm_Trunc(new_disk->ldsk,new_disk,tree->mmod);
                             for(j=0;j<tree->mmod->n_dim;++j)

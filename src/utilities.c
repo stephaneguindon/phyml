@@ -8605,7 +8605,8 @@ char *Basename(char *path)
 //////////////////////////////////////////////////////////////
 
 /* Find the Last Common Ancestor of n1 and n2 */
-t_node *Find_Lca_Pair_Of_Nodes(t_node *n1, t_node *n2, t_tree *tree)
+/* dist is the number of nodes between n1 and n2 */
+t_node *Find_Lca_Pair_Of_Nodes(t_node *n1, t_node *n2, int *dist, t_tree *tree)
 {
   t_node **list1, **list2, *lca;
   int size1, size2;
@@ -8632,6 +8633,8 @@ t_node *Find_Lca_Pair_Of_Nodes(t_node *n1, t_node *n2, t_tree *tree)
       if(size1 < 0 || size2 < 0) break;
     }
 
+  *dist = (size1+1)+(size2+1)-1;
+  
   lca = list1[size1+1];
 
   Free(list1);

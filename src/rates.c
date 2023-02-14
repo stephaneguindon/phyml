@@ -1662,16 +1662,17 @@ void RATES_Variance_Mu_Pre(t_node *a, t_node *d, t_tree *tree)
 #if (defined PHYREX || PHYTIME)
 void RATES_Fill_Lca_Table(t_tree *tree)
 {
-  int i,j;
+  int i,j,dist;
   int dim;
-  
+
+  dist = 0;
   dim = 2*tree->n_otu-1;
 
   for(i=0;i<dim;i++)
     {
       for(j=i;j<dim;j++)
 	{
-	  tree->rates->lca[i*dim+j] = Find_Lca_Pair_Of_Nodes(tree->a_nodes[i],tree->a_nodes[j],tree);
+	  tree->rates->lca[i*dim+j] = Find_Lca_Pair_Of_Nodes(tree->a_nodes[i],tree->a_nodes[j],&dist,tree);
 	  tree->rates->lca[j*dim+i] = tree->rates->lca[i*dim+j];
 	}
     }

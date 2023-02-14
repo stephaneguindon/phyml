@@ -113,6 +113,10 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define RRW_LOGNORMAL  6 /* Lemey's relaxed random walk (Lognormal distributed relative diffusion rates) */
 #define IBM 7 /* Integrated Brownian Motion */
 #define RIBM 8 /* Relaxed Integrated Brownian Motion */
+#define IWNc 9 /* Integrated white noise */
+#define RIWNc 10 /* Relaxed integrated white noise */
+#define IWNu 11 /* Integrated white noise uncorrelated */
+#define RIWNu 12 /* Relaxed integrated white noise uncorrelated */
 
 #define AC 0
 #define AG 1
@@ -1833,6 +1837,7 @@ typedef struct __Tmcmc {
   int num_move_phyrex_node_times;
   int num_move_phyrex_velocities;
   int num_move_phyrex_shuffle_node_times;
+  int num_move_phyrex_iwn_omega;
   
   int nd_t_digits;
   int *monitor;
@@ -2070,6 +2075,11 @@ typedef struct __Migrep_Model{
   phydbl                         rho; // intensity parameter of the Poisson point processs
   phydbl                gen_cal_time; // duration of one generation in calendar time unit
   phydbl                          nu; // parameter of hyperprior on sigsq_scale (see Eq. (1) in Lemey et al., 2010).
+
+  phydbl                       omega; // step size in white noise jump model
+  phydbl                   min_omega;
+  phydbl                   max_omega;
+  
   
   phydbl                   min_veloc;
   phydbl                   max_veloc;
@@ -2388,7 +2398,7 @@ phydbl Get_Tree_Size(t_tree *tree);
 void Dist_To_Root_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree);
 void Dist_To_Root(t_tree *tree);
 char *Basename(char *path);
-t_node *Find_Lca_Pair_Of_Nodes(t_node *n1,t_node *n2,t_tree *tree);
+t_node *Find_Lca_Pair_Of_Nodes(t_node *n1, t_node *n2, int *dist, t_tree *tree);
 t_node *Find_Lca_Clade(t_node **node_list,int node_list_size,t_tree *tree);
 int Get_List_Of_Ancestors(t_node *ref_node,t_node **list,int *size,t_tree *tree);
 int Edge_Num_To_Node_Num(int edge_num,t_tree *tree);
@@ -2580,6 +2590,8 @@ void Convert_Lengths_From_Calendar_To_Substitutions_Post(t_node *a, t_node *d, t
 #include "slfv.h"
 #include "location.h"
 #include "ibm.h"
+#include "iwn.h"
+#include "velocity.h"
 #endif
 
 #ifdef MPI

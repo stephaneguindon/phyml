@@ -891,16 +891,16 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
   rates->clock_r_prior_mean = 1.0E-1;
   rates->clock_r_prior_var  = 1.0E-8;
   
-  rates->max_rate         = 1.E+6;
-  rates->min_rate         = 0.0;
+  rates->max_rate         = 1.E+2;
+  rates->min_rate         = 1.E-2;
   /* rates->max_rate         = 10.; */
   /* rates->min_rate         = 0.1; */
 
-  rates->nu               = 1.0;
+  rates->nu               = 0.1;
   rates->min_nu           = 0.0;
   rates->max_nu           = 1.0E+3;
 
-  rates->autocor_rate_prior = 1.0;
+  rates->autocor_rate_prior = 1.0E+1;
   
   rates->min_dt           = 0.0;
 
@@ -3550,7 +3550,7 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->model_id = -1;
   t->use_locations = -1;
   t->sampling_scheme = -1;
-  t->safe_phyrex = NO;
+  t->safe_phyrex = YES;
   
   t->lim_up->lonlat[0] = 100.;
   t->lim_up->lonlat[1] = 100.;
@@ -3578,9 +3578,12 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->max_sigsq         = 1.E+3;
   t->prior_param_sigsq = 10.0;
 
-  t->min_veloc = -1.E+3;
-  t->max_veloc = +1.E+3;
+  t->min_veloc         = -1.E+3;
+  t->max_veloc         = +1.E+3;
  
+  t->omega             = 1.E-3;
+  t->min_omega         = 0.0;
+  t->max_omega         = 1.E+3;
   
   assert(t->n_dim > 0);
   for(int i=0;i<t->n_dim;++i) t->sigsq[i] = t->min_sigsq + (t->max_sigsq-t->min_sigsq)/20.;
@@ -3877,7 +3880,7 @@ void RRW_Init_Contmod_Locations(int dim_idx, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void IBM_Init_Contmod_Locations(int dim_idx, t_tree *tree)
+void VELOC_Init_Contmod_Locations(int dim_idx, t_tree *tree)
 {
   phydbl dt,avey;
 
@@ -3914,7 +3917,7 @@ void IBM_Init_Contmod_Locations(int dim_idx, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void IBM_Init_Contmod_Velocities(int dim_idx, t_tree *tree)
+void VELOC_Init_Contmod_Velocities(int dim_idx, t_tree *tree)
 {
   for(int i=0;i<tree->n_otu;++i)
     {

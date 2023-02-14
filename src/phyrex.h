@@ -153,6 +153,7 @@ void PHYREX_Exchange_Ldsk(t_ldsk *a, t_ldsk *d, t_ldsk *w, t_ldsk *v, int aw, in
 void PHYREX_Record_Coord(t_tree *tree);
 void PHYREX_Restore_Coord(t_tree *tree);
 void PHYREX_Update_Disk_Times_Given_Nodes(t_tree *tree);
+void PHYREX_Label_Nodes_With_Velocities(t_tree *tree);
 
 
 #endif

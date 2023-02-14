@@ -6759,6 +6759,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%s\t","growth");
           PhyML_Fprintf(fp_stats,"%s\t","dispDist");
           PhyML_Fprintf(fp_stats,"%s\t","dispDistAlt");
+          if(IWN_Is_Iwn(tree->mmod) == YES) PhyML_Fprintf(fp_stats,"%s\t","stickiness");
           PhyML_Fprintf(fp_stats,"%s\t","rootTime");
           PhyML_Fprintf(fp_stats,"%s\t","rootLon");
           PhyML_Fprintf(fp_stats,"%s\t","rootLat");
@@ -6821,13 +6822,13 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           PhyML_Fprintf(fp_stats,"rrSonLeft\t");
           PhyML_Fprintf(fp_stats,"rrSonRght\t");
 
-          if(IBM_Is_Ibm(tree->mmod) == YES)
+          if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES)
             {
               PhyML_Fprintf(fp_stats,"rootVelocLon\t");
               PhyML_Fprintf(fp_stats,"rootVelocLat\t");
             }
           
-          if(IBM_Is_Ibm(tree->mmod) == YES)
+          if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES)
             {
               for(int i=0;i<tree->n_otu;++i)
                 {
@@ -6841,7 +6842,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
                 }
             }
 
-          if(IBM_Is_Ibm(tree->mmod) == YES)
+          if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES)
             {
               for(int i=0;i<tree->n_otu;++i)
                 {
@@ -6865,14 +6866,8 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
 
   if(!(tree->mcmc->run%tree->mcmc->sample_interval) && tree->mcmc->sample_interval > 0)
     {
-      /* Lk(NULL,tree); */
-      /* TIMES_Lk(tree); */
-      /* RATES_Lk(tree); */
-      /* LOCATION_Lk(tree); */
-
       time(&(tree->mcmc->time_end));
-
-      
+ 
       PhyML_Fprintf(fp_stats,"\n");
       PhyML_Fprintf(fp_stats,"%6d\t",tree->mcmc->run);
       PhyML_Fprintf(fp_stats,"%.2f\t",PHYREX_Get_Posterior(tree));
@@ -6893,6 +6888,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%g\t",tree->times->neff_growth);
       PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Realized_Dispersal_Dist(tree));
       PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Realized_Dispersal_Dist_Alt(tree));
+      if(IWN_Is_Iwn(tree->mmod) == YES) PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->omega);
       PhyML_Fprintf(fp_stats,"%.2f\t",tree->n_root->ldsk->disk->time);
 
       if(RRW_Is_Rw(tree->mmod) == YES && tree->mmod->integrateAncestralLocations == YES) RRW_Sample_Node_Locations(tree);
@@ -6913,6 +6909,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       /*   } */
       PhyML_Fprintf(fp_stats,"%g\t",tree->rates->nu);
       PhyML_Fprintf(fp_stats,"%g\t",tree->rates->norm_fact);
+
       PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->sigsq_scale_norm_fact);
       /* PhyML_Fprintf(fp_stats,"%g\t",Tree_Length(tree)); */
 
@@ -6967,7 +6964,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%f\t",tree->rates->br_r[tree->n_root->v[2]->num]);
 
       
-      if(IBM_Is_Ibm(tree->mmod) == YES)
+      if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES)
         {
           PhyML_Fprintf(fp_stats,"%g\t",tree->n_root->ldsk->veloc->deriv[0]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->n_root->ldsk->veloc->deriv[1]);
@@ -7031,10 +7028,7 @@ void PHYREX_Print_MCMC_Tree(t_tree *tree)
       PhyML_Fprintf(fp_tree,"\n\nBegin taxa;");
       PhyML_Fprintf(fp_tree,"\n\tDimensions ntax=%d;",tree->n_otu);
       PhyML_Fprintf(fp_tree,"\n\tTaxlabels");
-      for(int i=0;i<tree->n_otu;++i)
-        {
-          PhyML_Fprintf(fp_tree,"\n\t\t'%s'",tree->a_nodes[i]->name);
-        }
+      for(int i=0;i<tree->n_otu;++i) PhyML_Fprintf(fp_tree,"\n\t\t'%s'",tree->a_nodes[i]->name);
       PhyML_Fprintf(fp_tree,"\n\t;");
       PhyML_Fprintf(fp_tree,"\n\tend;");
       PhyML_Fprintf(fp_tree,"\n\n");
@@ -7051,12 +7045,14 @@ void PHYREX_Print_MCMC_Tree(t_tree *tree)
   if(!(tree->mcmc->run%tree->mcmc->sample_interval) && tree->mcmc->sample_interval > 0)
     {
       if(RRW_Is_Rw(tree->mmod) == YES && tree->mmod->integrateAncestralLocations == YES) RRW_Sample_Node_Locations(tree);
+      if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES && tree->mmod->integrateAncestralLocations == YES) VELOC_Sample_Node_Locations(tree);
       Record_Br_Len(tree);
       TIMES_Time_To_Bl(tree);
       tree->bl_ndigits = 3;
       /* tree->bl_ndigits = 7; */
       tree->write_tax_names = NO;
       PHYREX_Label_Nodes_With_Locations(tree);
+      if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES) PHYREX_Label_Nodes_With_Velocities(tree);
       PHYREX_Label_Edges(tree);
       char *s = Write_Tree(tree);
       PhyML_Fprintf(fp_tree,"\ntree %d [&lnP=%f,precision={1.e-1,1e-02,1e-01}] = [&R] %s",tree->mcmc->run,tree->c_lnL,s);

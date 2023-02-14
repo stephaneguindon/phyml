@@ -327,7 +327,9 @@ location.c location.h\
 slfv.c slfv.h\
 rw.c rw.h\
 rrw.c rrw.h\
-ibm.c ibm.h
+ibm.c ibm.h\
+iwn.c iwn.h\
+velocity.c velocity.h
 phyrex_LDADD = -lm 
 else
 if WANT_PHYREXSIM

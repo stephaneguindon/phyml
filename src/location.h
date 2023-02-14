@@ -26,6 +26,7 @@ phydbl LOCATION_Lk_Path(t_dsk *young, t_dsk *old, t_tree *tree);
 char *LOCATION_Model_Id(t_phyrex_mod *mmod);
 phydbl LOCATION_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree);
 phydbl LOCATION_Mean_Lonlat(short int dim, t_tree *tree);
+phydbl LOCATION_Wrap_Lk(t_edge *b, t_tree *tree, supert_tree *stree);
 
 
 #endif

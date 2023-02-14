@@ -269,6 +269,10 @@ void PHYREX_XML(char *xml_filename)
           else if(!strcmp(modname,"rrw+lognormal")) mixt_tree->mmod->model_id = RRW_LOGNORMAL;
           else if(!strcmp(modname,"ibm")) mixt_tree->mmod->model_id = IBM;
           else if(!strcmp(modname,"ribm")) mixt_tree->mmod->model_id = RIBM;
+          else if(!strcmp(modname,"iwn")) mixt_tree->mmod->model_id = IWNc;
+          else if(!strcmp(modname,"riwn")) mixt_tree->mmod->model_id = RIWNc;
+          else if(!strcmp(modname,"iwnu")) mixt_tree->mmod->model_id = IWNu;
+          else if(!strcmp(modname,"riwnu")) mixt_tree->mmod->model_id = RIWNu;
           else
             {
               PhyML_Printf("\n. Unknown spatial model name '%s'. Aborting. ",modname);
@@ -561,7 +565,7 @@ void PHYREX_XML(char *xml_filename)
   
   MIXT_Propagate_Tree_Update(mixt_tree);
 
-  if(RRW_Is_Rw(mixt_tree->mmod) == YES || IBM_Is_Ibm(mixt_tree->mmod) == YES)
+  if(RRW_Is_Rw(mixt_tree->mmod) == YES || VELOC_Is_Integrated_Velocity(mixt_tree->mmod) == YES)
     {
       mixt_tree->aux_tree = (t_tree **)mCalloc(3,sizeof(t_tree *));
 
@@ -613,6 +617,7 @@ void PHYREX_XML(char *xml_filename)
     }
 
   
+  
   /* Create ldsks and connect tree tips to them */
   /* once tip dates have been set properly (in */
   /* TIMES_Randomize_Tree_With_Time_Constraints) */
@@ -637,7 +642,7 @@ void PHYREX_XML(char *xml_filename)
   if(mixt_tree->mmod->model_id == SLFV_GAUSSIAN || mixt_tree->mmod->model_id == SLFV_UNIFORM)
     mixt_tree->mmod->rad  = 0.05*((mixt_tree->mmod->lim_up->lonlat[0]-mixt_tree->mmod->lim_do->lonlat[0])+
                                   (mixt_tree->mmod->lim_up->lonlat[1]-mixt_tree->mmod->lim_do->lonlat[1]));
-  else if(RRW_Is_Rw(mixt_tree->mmod) == YES || IBM_Is_Ibm(mixt_tree->mmod) == YES)
+  else if(RRW_Is_Rw(mixt_tree->mmod) == YES || VELOC_Is_Integrated_Velocity(mixt_tree->mmod) == YES)
     mixt_tree->mmod->rad = mixt_tree->mmod->sigsq[0];
   
   mixt_tree->mmod->sigsq[0] = PHYREX_Update_Sigsq(mixt_tree);
@@ -655,12 +660,13 @@ void PHYREX_XML(char *xml_filename)
         }
     }
   
+  
   /* Random genealogy or user-defined tree */
   switch(mixt_tree->io->in_tree)
     {
     case 0 : case 1 :
       {
-        if(RRW_Is_Rw(mixt_tree->mmod) == YES || IBM_Is_Ibm(mixt_tree->mmod) == YES)
+        if(RRW_Is_Rw(mixt_tree->mmod) == YES || VELOC_Is_Integrated_Velocity(mixt_tree->mmod) == YES)
           PHYREX_Simulate_Backward_Core(mixt_tree->young_disk,YES,mixt_tree);
         else
           PHYREX_Simulate_Backward_Core(mixt_tree->young_disk,NO,mixt_tree);
@@ -688,10 +694,11 @@ void PHYREX_XML(char *xml_filename)
   Set_Ignore_Root(YES,mixt_tree);
   Set_Bl_From_Rt(YES,mixt_tree);
 
+
   PHYREX_Oldest_Sampled_Disk(mixt_tree);
   for(int i=0;i<3;++i) if(mixt_tree->aux_tree && mixt_tree->aux_tree[i]) PHYREX_Oldest_Sampled_Disk(mixt_tree->aux_tree[i]);
 
-  if(RRW_Is_Rw(mixt_tree->mmod) == YES || IBM_Is_Ibm(mixt_tree->mmod) == YES)
+  if(RRW_Is_Rw(mixt_tree->mmod) == YES || VELOC_Is_Integrated_Velocity(mixt_tree->mmod) == YES)
     {
       Make_Contrasts(mixt_tree);
       for(int i=0;i<3;++i) Make_Contrasts(mixt_tree->aux_tree[i]);
@@ -916,9 +923,9 @@ phydbl PHYREX_Lk(t_tree *tree)
         lnP = RRW_Lk(tree) + TIMES_Lk_Coalescent(tree);
         break;
       }
-    case IBM : case RIBM :
+    case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : 
       {
-        lnP = IBM_Lk(tree) + TIMES_Lk_Coalescent(tree);
+        lnP = VELOC_Lk(tree) + TIMES_Lk_Coalescent(tree);
         break;
       }
     default : assert(FALSE);
@@ -948,9 +955,9 @@ phydbl PHYREX_Lk_Core(t_dsk *disk, t_tree *tree)
           lnL = RRW_Lk_Core(disk,tree);
           break;
         }
-    case IBM : case RIBM : 
+    case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : 
       {
-        PhyML_Printf("\n. PHYREX_Lk_Core function not implemented for IBM model");
+        PhyML_Printf("\n. PHYREX_Lk_Core function not implemented for IBM not IWN model");
         Exit("\n");
         break;
       }
@@ -983,9 +990,9 @@ phydbl PHYREX_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
         return(RRW_Lk_Range(young,old,tree) + TIMES_Lk_Coalescent_Range(young,old,tree));
         break;
       }
-    case IBM : case RIBM : 
+    case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : 
       {
-        PhyML_Printf("\n. PHYREX_Lk_Core function not implemented for IBM model");
+        PhyML_Printf("\n. PHYREX_Lk_Core function not implemented for IBM nor IWN models");
         Exit("\n");
         break;
       }
@@ -1170,6 +1177,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"br_rate")) MCMC_Rates_All(tree);
       if(!strcmp(tree->mcmc->move_name[move],"clock")) MCMC_Clock_R(tree);
       if(!strcmp(tree->mcmc->move_name[move],"nu")) MCMC_Nu(tree);
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_iwn_omega")) MCMC_PHYREX_IWN_Update_Omega(tree);
   
 
       if(tree->mmod->c_lnL < UNLIKELY || tree->c_lnL < UNLIKELY || tree->rates->c_lnL < UNLIKELY || tree->times->c_lnL < UNLIKELY)
@@ -2338,7 +2346,7 @@ phydbl PHYREX_Wrap_Prior_Radius(t_edge *e, t_tree *tree, supert_tree *st)
 
 phydbl PHYREX_LnPrior_Lbda(t_tree *tree)
 {
-  if(RRW_Is_Rw(tree->mmod) == YES || IBM_Is_Ibm(tree->mmod))  return(0.0);
+  if(RRW_Is_Rw(tree->mmod) == YES || VELOC_Is_Integrated_Velocity(tree->mmod))  return(0.0);
   
   if(tree->mmod->lbda < tree->mmod->min_lbda) return UNLIKELY;
   if(tree->mmod->lbda > tree->mmod->max_lbda) return UNLIKELY;
@@ -2360,7 +2368,7 @@ phydbl PHYREX_LnPrior_Lbda(t_tree *tree)
 
 phydbl PHYREX_LnPrior_Mu(t_tree *tree)
 {
-  if(RRW_Is_Rw(tree->mmod) == YES || IBM_Is_Ibm(tree->mmod) == YES)  return(0.0);
+  if(RRW_Is_Rw(tree->mmod) == YES || VELOC_Is_Integrated_Velocity(tree->mmod) == YES)  return(0.0);
 
   if(tree->mmod->mu < tree->mmod->min_mu) return UNLIKELY;
   if(tree->mmod->mu > tree->mmod->max_mu) return UNLIKELY;
@@ -2377,7 +2385,7 @@ phydbl PHYREX_LnPrior_Mu(t_tree *tree)
 
 phydbl PHYREX_LnPrior_Radius(t_tree *tree)
 {
-  if(RRW_Is_Rw(tree->mmod) == YES || IBM_Is_Ibm(tree->mmod)) return(0.0);
+  if(RRW_Is_Rw(tree->mmod) == YES || VELOC_Is_Integrated_Velocity(tree->mmod)) return(0.0);
 
   if(tree->mmod->rad < tree->mmod->min_rad) return UNLIKELY;
   if(tree->mmod->rad > tree->mmod->max_rad) return UNLIKELY;
@@ -3393,16 +3401,17 @@ void PHYREX_Rand_Pairs_Coal_Times_Dist(t_tree *tree)
 {
   t_node *anc;
   phydbl dist;
-  int i, j;
+  int i,j,ij_dist;
 
   i = Rand_Int(0,tree->n_otu-1);
   j = Rand_Int(0,tree->n_otu-1);
+  ij_dist = 0;
 
   if(i == j) PhyML_Printf("\nxxWxx 0.0 0.0");
   else
     {
 
-      anc = Find_Lca_Pair_Of_Nodes(tree->a_nodes[i],tree->a_nodes[j],tree);
+      anc = Find_Lca_Pair_Of_Nodes(tree->a_nodes[i],tree->a_nodes[j],&ij_dist,tree);
       if(anc == NULL) 
         {
           PhyML_Fprintf(stderr,"\n. %s",Write_Tree(tree));
@@ -4584,6 +4593,88 @@ phydbl PHYREX_Tip_To_Root_Realized_Ter_Sigsq(t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
+void PHYREX_Label_Nodes_With_Velocities(t_tree *tree)
+{
+  t_dsk *disk;
+  t_node *n;
+  phydbl veloclon,veloclat;
+
+
+  veloclon = veloclat = -1.;
+  
+  for(int i=0;i<tree->n_otu;++i)
+    {
+      if(tree->a_nodes[i]->label == NULL)
+        {
+          tree->a_nodes[i]->label = Make_Label();
+          tree->a_nodes[i]->label->next = Make_Label();
+        }
+
+      veloclat = tree->a_nodes[i]->ldsk->veloc->deriv[1];
+      veloclon = tree->a_nodes[i]->ldsk->veloc->deriv[0];
+
+      sprintf(tree->a_nodes[i]->label->key,"&velocity");
+      sprintf(tree->a_nodes[i]->label->val,"{%f,%f}",veloclat,veloclon);
+      sprintf(tree->a_nodes[i]->label->next->key,"velocity");
+      sprintf(tree->a_nodes[i]->label->next->val,"{%f,%f}",veloclat,veloclon);
+    }
+
+  disk = tree->young_disk->prev;
+
+  do
+    {
+      if(disk->ldsk && disk->ldsk->nd != NULL)
+        {
+          n = disk->ldsk->nd;
+          if(n->label == NULL)
+            {
+              n->label = Make_Label();
+              n->label->next = Make_Label();
+            }
+
+          veloclat = disk->ldsk->veloc->deriv[1];
+          veloclon = disk->ldsk->veloc->deriv[0];
+
+          sprintf(n->label->key,"&velocity");
+          sprintf(n->label->val,"{%f,%f}",veloclat,veloclon);
+          sprintf(n->label->next->key,"velocity");
+          sprintf(n->label->next->val,"{%f,%f}",veloclat,veloclon);
+
+          /* Print same label on all internal nodes with exactly the */
+          /* same coalescence time. */
+          for(int i=tree->n_otu;i<2*tree->n_otu-1;++i)
+            {
+              if(tree->a_nodes[i] != n &&
+                 Are_Equal(tree->times->nd_t[i],
+                           tree->times->nd_t[n->num],
+                           1.E-10) == YES)
+                {
+                  n = tree->a_nodes[i];
+                  if(n->label == NULL)
+                    {
+                      n->label = Make_Label();
+                      n->label->next = Make_Label();
+                    }
+
+                  veloclat = disk->ldsk->veloc->deriv[1];
+                  veloclon = disk->ldsk->veloc->deriv[0];
+                  
+                  sprintf(n->label->key,"&velocity");
+                  sprintf(n->label->val,"{%f,%f}",veloclat,veloclon);
+                  sprintf(n->label->next->key,"velocity");
+                  sprintf(n->label->next->val,"{%f,%f}",veloclat,veloclon);
+                }
+            }
+        }
+      
+      disk = disk->prev;
+    }
+  while(disk);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
 void PHYREX_Label_Nodes_With_Locations(t_tree *tree)
 {
   t_dsk *disk;
@@ -4768,7 +4859,8 @@ phydbl PHYREX_Path_Logdensity(t_ldsk *young, t_ldsk *old, phydbl *sd, t_tree *tr
         return(SLFV_Path_Logdensity(young,old,sd,tree));
         break;
       }      
-    case RW : case RRW_GAMMA : case RRW_LOGNORMAL : case IBM : case RIBM : 
+    case RW : case RRW_GAMMA : case RRW_LOGNORMAL : 
+    case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : 
       {
         return(0.0);
         break;
@@ -4791,7 +4883,8 @@ void PHYREX_Sample_Path(t_ldsk *young, t_ldsk *old, phydbl *sd, phydbl *global_h
         break;
       }
       
-    case RW : case RRW_GAMMA : case RRW_LOGNORMAL : case IBM : case RIBM : 
+    case RW : case RRW_GAMMA : case RRW_LOGNORMAL : 
+    case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : 
       {
         assert(FALSE);
         break;
@@ -4812,7 +4905,8 @@ t_ldsk *PHYREX_Generate_Path(t_ldsk *young, t_ldsk *old, phydbl n_evt, phydbl *s
         return(SLFV_Generate_Path(young,old,n_evt,sd,tree));
         break;
       }      
-    case RW : case RRW_GAMMA : case RRW_LOGNORMAL : case IBM : case RIBM :  
+    case RW : case RRW_GAMMA : case RRW_LOGNORMAL :  
+    case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : 
       {
         return(SLFV_Generate_Path(young,old,0,sd,tree));
         break;
@@ -4835,7 +4929,8 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda
         break;
       }
       
-    case RW : case RRW_GAMMA : case RRW_LOGNORMAL : case IBM : case RIBM :  
+    case RW : case RRW_GAMMA : case RRW_LOGNORMAL :
+    case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : 
       {
         assert(FALSE);
         break;
@@ -4858,7 +4953,8 @@ void PHYREX_Simulate_Backward_Core(t_dsk *disk,int avoid_multiple_mergers, t_tre
         break;
       }
       
-    case RW : case RRW_GAMMA : case RRW_LOGNORMAL : case IBM : case RIBM :  
+    case RW : case RRW_GAMMA : case RRW_LOGNORMAL :
+    case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : 
       {
         SLFV_Simulate_Backward_Core(disk,avoid_multiple_mergers,tree);
         break;
@@ -4882,7 +4978,8 @@ phydbl PHYREX_Update_Sigsq(t_tree *tree)
         break;
       }
 
-    case RW : case RRW_GAMMA : case RRW_LOGNORMAL : case IBM : case RIBM : 
+    case RW : case RRW_GAMMA : case RRW_LOGNORMAL :
+    case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : 
       {
         return(tree->mmod->sigsq[0]);
         break;

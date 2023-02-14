@@ -21,6 +21,14 @@ the GNU public licence. See http://www.opensource.org for details.
 
 #ifdef PHYREX
 
+phydbl LOCATION_Wrap_Lk(t_edge *b, t_tree *tree, supert_tree *stree)
+{
+  return(LOCATION_Lk(tree));  
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 phydbl LOCATION_Lk(t_tree *tree)
 {
   phydbl lnL;
@@ -51,9 +59,9 @@ phydbl LOCATION_Lk(t_tree *tree)
         lnL = RRW_Lk(tree);
         break;
       }
-    case IBM : case RIBM :
+    case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : 
       {
-        lnL = IBM_Lk(tree);
+        lnL = VELOC_Lk(tree);
         break;
       }
     default : assert(false);
@@ -102,6 +110,11 @@ phydbl LOCATION_Prior(t_tree *tree)
     case RW : case IBM : 
       {
         lnP = RW_Prior(tree);
+        break;
+      }
+    case IWNc : case IWNu : case RIWNc : case RIWNu : 
+      {
+        lnP = IWN_Prior(tree);
         break;
       }
     default : assert(false);
@@ -311,6 +324,26 @@ char *LOCATION_Model_Id(t_phyrex_mod *mmod)
     case RIBM :
       {
         strcpy(s,"relaxed integrated Brownian motion");
+        break;
+      }
+    case IWNc :
+      {
+        strcpy(s,"integrated white noise (correlated)");
+        break;
+      }
+    case IWNu :
+      {
+        strcpy(s,"integrated white noise (uncorrelated)");
+        break;
+      }
+    case RIWNc :
+      {
+        strcpy(s,"integrated white noise (relaxed, correlated)");
+        break;
+      }
+    case RIWNu :
+      {
+        strcpy(s,"integrated white noise (relaxed, uncorrelated)");
         break;
       }
     default : assert(FALSE);
