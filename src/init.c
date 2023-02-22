@@ -900,7 +900,7 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
   rates->min_nu           = 0.0;
   rates->max_nu           = 1.0E+3;
 
-  rates->autocor_rate_prior = 1.0E+1;
+  rates->autocor_rate_prior = 1.0E+2;
   
   rates->min_dt           = 0.0;
 
@@ -3884,14 +3884,10 @@ void VELOC_Init_Contmod_Locations(int dim_idx, t_tree *tree)
 {
   phydbl dt,avey;
 
-  dt = avey = -1.;
+  avey = -1.;
   
   for(int i=0;i<tree->n_otu;++i)
     {
-      /* dt = fabs(tree->times->nd_t[tree->a_nodes[i]->num] - tree->times->nd_t[tree->a_nodes[i]->anc->num]); */
-      /* avey = .5*(tree->a_nodes[i]->ldsk->veloc->deriv[dim_idx] + tree->a_nodes[i]->anc->ldsk->veloc->deriv[dim_idx]); */
-      
-      /* tree->contmod->mu_down[i] = tree->a_nodes[i]->ldsk->coord->lonlat[dim_idx] + avey*dt; */
       tree->contmod->mu_down[i] = tree->a_nodes[i]->ldsk->coord->lonlat[dim_idx];
       tree->contmod->var_down[i] = 0.0;
       tree->contmod->logrem_down[i] = 0.0;

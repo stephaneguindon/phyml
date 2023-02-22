@@ -1045,7 +1045,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   PHYREX_Update_Ldsk_Sigsq_Given_Edges(tree);
   
   for(i=0;i<mcmc->n_moves;i++) tree->mcmc->start_ess[i] = YES;
-    
+
   Set_Update_Eigen(YES,tree->mod);
   RATES_Update_Edge_Lengths(tree);
   Lk(NULL,tree);
@@ -1112,7 +1112,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
 
   /* Exit("\n"); */
 
-
+  
   Set_Both_Sides(NO,tree);
   mcmc->always_yes = NO;
   move             = -1;

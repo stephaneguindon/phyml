@@ -36,6 +36,7 @@ phydbl RATES_Lk(t_tree *tree)
   
   err = NO;
 
+  
   // Priors on clock rate and rate autocorrelation.
   // Should be separated from likelihood function...
   tree->rates->c_lnL += RATES_Clock_R_Prior(tree);      

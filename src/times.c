@@ -876,12 +876,13 @@ phydbl TIMES_Lk_Coalescent(t_tree *tree)
   n = tree->n_root;
   while(n->rk_next) n = n->rk_next;
   T = tree->times->nd_t[n->num];
+
   
   lnP = 0.0;
   n_lineages = 1;
   n = tree->n_root;
   while(n->rk_next)
-    {
+    {      
       dt = fabs(tree->times->nd_t[n->num] - tree->times->nd_t[n->rk_next->num]);
       
       assert(!(tree->times->nd_t[n->num] > tree->times->nd_t[n->rk_next->num]));
