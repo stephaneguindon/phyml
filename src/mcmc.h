@@ -192,5 +192,7 @@ void MCMC_Randomize_Veloc(t_tree *tree);
 void MCMC_Randomize_Locations(t_tree *tree);
 void MCMC_Randomize_Locations_Pre(t_node *a, t_node *d, t_tree *tree);
 void MCMC_PHYREX_IWN_Update_Omega(t_tree *tree);
+void MCMC_PHYREX_IOU_Update_Theta(t_tree *tree);
+void MCMC_PHYREX_IOU_Update_Mu(t_tree *tree);
 
 #endif

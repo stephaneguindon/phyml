@@ -27,7 +27,7 @@ phydbl VELOC_Wrap_Lk(t_edge *b, t_tree *tree, supert_tree *stree)
 
 short int VELOC_Is_Integrated_Velocity(t_phyrex_mod *mod)
 {
-  return(IWN_Is_Iwn(mod) || IBM_Is_Ibm(mod));
+  return(IWN_Is_Iwn(mod) || IBM_Is_Ibm(mod) || IOU_Is_Iou(mod));
 }
 
 //////////////////////////////////////////////////////////////
@@ -480,6 +480,16 @@ void VELOC_Integrated_Lk_Location_Post(t_node *a, t_node *d, short int dim, t_tr
                                        tree->contmod->var_down+d->num,
                                        tree->contmod->logrem_down+d->num);
         }
+      else if(IOU_Is_Iou(tree->mmod) == YES)
+        {
+          IOU_Integrated_Location_Down(dtv1,dtv2,
+                                       av1,bv1,v1mu,v1var,dv1var,
+                                       av2,bv2,v2mu,v2var,dv2var,
+                                       v1logrem,v2logrem,
+                                       tree->contmod->mu_down+d->num,
+                                       tree->contmod->var_down+d->num,
+                                       tree->contmod->logrem_down+d->num);
+        }
 
       /* if(v1->tax && v2->tax) */
         /* { */
@@ -591,10 +601,22 @@ void VELOC_Integrated_Lk_Location_Pre(t_node *a, t_node *d, short int dim, t_tre
                                      tree->contmod->logrem_up+d->num,
                                      NO);
         }
+      else if(IOU_Is_Iou(tree->mmod) == YES)
+        {
+          IOU_Integrated_Location_Up(dtv1,dtv2,
+                                     av1,bv1,v1mu,v1var,av1var,
+                                     av2,bv2,v2mu,v2var,av2var,
+                                     v1logrem,v2logrem,
+                                     tree->contmod->mu_down+d->num,
+                                     tree->contmod->var_down+d->num,
+                                     tree->contmod->logrem_down+d->num,
+                                     NO);
+        }
+
     }
   else
     {
-        if(IBM_Is_Ibm(tree->mmod) == YES)
+      if(IBM_Is_Ibm(tree->mmod) == YES)
         {
           IBM_Integrated_Location_Up(dtv1,dtv2,
                                      av1,bv1,v1mu,v1var,av1var,
@@ -613,6 +635,17 @@ void VELOC_Integrated_Lk_Location_Pre(t_node *a, t_node *d, short int dim, t_tre
                                      v1logrem,v2logrem,
                                      a->ldsk->veloc->deriv[dim],-INFINITY,v2->ldsk->veloc->deriv[dim],
                                      tree->mmod->omega,
+                                     tree->contmod->mu_up+d->num,
+                                     tree->contmod->var_up+d->num,
+                                     tree->contmod->logrem_up+d->num,
+                                     YES);
+        }
+      else if(IOU_Is_Iou(tree->mmod) == YES)
+        {
+          IOU_Integrated_Location_Up(dtv1,dtv2,
+                                     av1,bv1,v1mu,v1var,av1var,
+                                     av2,bv2,v2mu,v2var,av2var,
+                                     v1logrem,v2logrem,
                                      tree->contmod->mu_up+d->num,
                                      tree->contmod->var_up+d->num,
                                      tree->contmod->logrem_up+d->num,
@@ -647,6 +680,10 @@ phydbl VELOC_Velocity_Variance_Along_Edge(t_node *d, short int dim, t_tree *tree
     {
       return(IWN_Velocity_Variance_Along_Edge(d,dim,tree));
     }
+  else if(IOU_Is_Iou(tree->mmod) == YES)
+    {
+      return(IOU_Velocity_Variance_Along_Edge(d,dim,tree));
+    }
   else assert(false);
 }
 
@@ -662,6 +699,10 @@ phydbl VELOC_Location_Variance_Along_Edge(t_node *d, short int dim, t_tree *tree
   else if(IWN_Is_Iwn(tree->mmod) == YES)
     {
       return(IWN_Location_Variance_Along_Edge(d,dim,tree));
+    }
+  else if(IOU_Is_Iou(tree->mmod) == YES)
+    {
+      return(IOU_Location_Variance_Along_Edge(d,dim,tree));
     }
   else assert(false);
 }
@@ -679,6 +720,10 @@ phydbl VELOC_Velocity_Mean_Along_Edge(t_node *d, short int dim, t_tree *tree)
     {
       return(IWN_Velocity_Mean_Along_Edge(d,dim,tree));
     }
+  else if(IOU_Is_Iou(tree->mmod) == YES)
+    {
+      return(IOU_Velocity_Mean_Along_Edge(d,dim,tree));
+    }
   else assert(false);
 }
 
@@ -694,6 +739,10 @@ phydbl VELOC_Location_Mean_Along_Edge(t_node *d, short int dim, t_tree *tree)
   else if(IWN_Is_Iwn(tree->mmod) == YES)
     {
       return(IWN_Location_Mean_Along_Edge(d,dim,tree));
+    }
+  else if(IOU_Is_Iou(tree->mmod) == YES)
+    {
+      return(IOU_Location_Mean_Along_Edge(d,dim,tree));
     }
   else assert(false);
 }

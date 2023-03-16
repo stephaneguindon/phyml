@@ -329,6 +329,7 @@ rw.c rw.h\
 rrw.c rrw.h\
 ibm.c ibm.h\
 iwn.c iwn.h\
+iou.c iou.h\
 velocity.c velocity.h
 phyrex_LDADD = -lm 
 else

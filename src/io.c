@@ -6760,6 +6760,8 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%s\t","dispDist");
           PhyML_Fprintf(fp_stats,"%s\t","dispDistAlt");
           if(IWN_Is_Iwn(tree->mmod) == YES) PhyML_Fprintf(fp_stats,"%s\t","stickiness");
+          if(IOU_Is_Iou(tree->mmod) == YES) PhyML_Fprintf(fp_stats,"%s\t","stickiness");
+          if(IOU_Is_Iou(tree->mmod) == YES) PhyML_Fprintf(fp_stats,"%s\t","trend");
           PhyML_Fprintf(fp_stats,"%s\t","rootTime");
           PhyML_Fprintf(fp_stats,"%s\t","rootLon");
           PhyML_Fprintf(fp_stats,"%s\t","rootLat");
@@ -6889,6 +6891,8 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Realized_Dispersal_Dist(tree));
       PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Realized_Dispersal_Dist_Alt(tree));
       if(IWN_Is_Iwn(tree->mmod) == YES) PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->omega);
+      if(IOU_Is_Iou(tree->mmod) == YES) PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->ou_theta);
+      if(IOU_Is_Iou(tree->mmod) == YES) PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->ou_mu);
       PhyML_Fprintf(fp_stats,"%.2f\t",tree->n_root->ldsk->disk->time);
 
       if(RRW_Is_Rw(tree->mmod) == YES && tree->mmod->integrateAncestralLocations == YES) RRW_Sample_Node_Locations(tree);

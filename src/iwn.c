@@ -50,7 +50,10 @@ phydbl IWN_Velocity_Variance_Along_Edge(t_node *d, short int dim, t_tree *tree)
   /*              dt, */
   /*              !(tree->mmod->omega < dt)); */
   
-  if(!(tree->mmod->omega < dt)) return(0.0);
+  if(!(tree->mmod->omega < dt))
+    {
+      return(0.0);
+    }
   else
     {
       logvar =

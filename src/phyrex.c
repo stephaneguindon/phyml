@@ -273,6 +273,7 @@ void PHYREX_XML(char *xml_filename)
           else if(!strcmp(modname,"riwn")) mixt_tree->mmod->model_id = RIWNc;
           else if(!strcmp(modname,"iwnu")) mixt_tree->mmod->model_id = IWNu;
           else if(!strcmp(modname,"riwnu")) mixt_tree->mmod->model_id = RIWNu;
+          else if(!strcmp(modname,"iou")) mixt_tree->mmod->model_id = IOU;
           else
             {
               PhyML_Printf("\n. Unknown spatial model name '%s'. Aborting. ",modname);
@@ -923,7 +924,7 @@ phydbl PHYREX_Lk(t_tree *tree)
         lnP = RRW_Lk(tree) + TIMES_Lk_Coalescent(tree);
         break;
       }
-    case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : 
+    case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : case IOU :  
       {
         lnP = VELOC_Lk(tree) + TIMES_Lk_Coalescent(tree);
         break;
@@ -955,7 +956,7 @@ phydbl PHYREX_Lk_Core(t_dsk *disk, t_tree *tree)
           lnL = RRW_Lk_Core(disk,tree);
           break;
         }
-    case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : 
+    case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : case IOU : 
       {
         PhyML_Printf("\n. PHYREX_Lk_Core function not implemented for IBM not IWN model");
         Exit("\n");
@@ -990,7 +991,7 @@ phydbl PHYREX_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree)
         return(RRW_Lk_Range(young,old,tree) + TIMES_Lk_Coalescent_Range(young,old,tree));
         break;
       }
-    case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : 
+    case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : case IOU : 
       {
         PhyML_Printf("\n. PHYREX_Lk_Core function not implemented for IBM nor IWN models");
         Exit("\n");
@@ -1141,6 +1142,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       /* phydbl prev_rates_lnL = tree->rates->c_lnL; */
       /* phydbl prev_times_lnL = tree->times->c_lnL; */
 
+
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_lbda")) MCMC_PHYREX_Lbda(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_mu")) MCMC_PHYREX_Mu(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_rad")) MCMC_PHYREX_Radius(tree);
@@ -1178,6 +1180,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"clock")) MCMC_Clock_R(tree);
       if(!strcmp(tree->mcmc->move_name[move],"nu")) MCMC_Nu(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_iwn_omega")) MCMC_PHYREX_IWN_Update_Omega(tree);
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_iou_theta")) MCMC_PHYREX_IOU_Update_Theta(tree);
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_iou_mu")) MCMC_PHYREX_IOU_Update_Mu(tree);
   
 
       if(tree->mmod->c_lnL < UNLIKELY || tree->c_lnL < UNLIKELY || tree->rates->c_lnL < UNLIKELY || tree->times->c_lnL < UNLIKELY)
@@ -4860,7 +4864,7 @@ phydbl PHYREX_Path_Logdensity(t_ldsk *young, t_ldsk *old, phydbl *sd, t_tree *tr
         break;
       }      
     case RW : case RRW_GAMMA : case RRW_LOGNORMAL : 
-    case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : 
+    case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : case IOU : 
       {
         return(0.0);
         break;
@@ -4884,7 +4888,7 @@ void PHYREX_Sample_Path(t_ldsk *young, t_ldsk *old, phydbl *sd, phydbl *global_h
       }
       
     case RW : case RRW_GAMMA : case RRW_LOGNORMAL : 
-    case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : 
+    case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : case IOU :
       {
         assert(FALSE);
         break;
@@ -4906,7 +4910,7 @@ t_ldsk *PHYREX_Generate_Path(t_ldsk *young, t_ldsk *old, phydbl n_evt, phydbl *s
         break;
       }      
     case RW : case RRW_GAMMA : case RRW_LOGNORMAL :  
-    case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : 
+    case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : case IOU : 
       {
         return(SLFV_Generate_Path(young,old,0,sd,tree));
         break;
@@ -4930,7 +4934,7 @@ t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda
       }
       
     case RW : case RRW_GAMMA : case RRW_LOGNORMAL :
-    case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : 
+    case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : case IOU : 
       {
         assert(FALSE);
         break;
@@ -4954,7 +4958,7 @@ void PHYREX_Simulate_Backward_Core(t_dsk *disk,int avoid_multiple_mergers, t_tre
       }
       
     case RW : case RRW_GAMMA : case RRW_LOGNORMAL :
-    case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : 
+    case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : case IOU : 
       {
         SLFV_Simulate_Backward_Core(disk,avoid_multiple_mergers,tree);
         break;
@@ -4979,7 +4983,7 @@ phydbl PHYREX_Update_Sigsq(t_tree *tree)
       }
 
     case RW : case RRW_GAMMA : case RRW_LOGNORMAL :
-    case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : 
+    case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : case IOU : 
       {
         return(tree->mmod->sigsq[0]);
         break;

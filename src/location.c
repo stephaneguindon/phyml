@@ -59,7 +59,7 @@ phydbl LOCATION_Lk(t_tree *tree)
         lnL = RRW_Lk(tree);
         break;
       }
-    case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : 
+    case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : case IOU : 
       {
         lnL = VELOC_Lk(tree);
         break;
@@ -115,6 +115,11 @@ phydbl LOCATION_Prior(t_tree *tree)
     case IWNc : case IWNu : case RIWNc : case RIWNu : 
       {
         lnP = IWN_Prior(tree);
+        break;
+      }
+    case IOU :
+      {
+        lnP = IOU_Prior(tree);
         break;
       }
     default : assert(false);
@@ -324,6 +329,11 @@ char *LOCATION_Model_Id(t_phyrex_mod *mmod)
     case RIBM :
       {
         strcpy(s,"relaxed integrated Brownian motion");
+        break;
+      }
+    case IOU :
+      {
+        strcpy(s,"integrated Ornstein-Uhlenbeck");
         break;
       }
     case IWNc :

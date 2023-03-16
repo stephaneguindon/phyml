@@ -117,6 +117,7 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define RIWNc 10 /* Relaxed integrated white noise */
 #define IWNu 11 /* Integrated white noise uncorrelated */
 #define RIWNu 12 /* Relaxed integrated white noise uncorrelated */
+#define IOU 13 /* Integrated Ornstein-Uhlenbeck */
 
 #define AC 0
 #define AG 1
@@ -1838,6 +1839,8 @@ typedef struct __Tmcmc {
   int num_move_phyrex_velocities;
   int num_move_phyrex_shuffle_node_times;
   int num_move_phyrex_iwn_omega;
+  int num_move_phyrex_iou_theta;
+  int num_move_phyrex_iou_mu;
   
   int nd_t_digits;
   int *monitor;
@@ -2079,8 +2082,15 @@ typedef struct __Migrep_Model{
   phydbl                       omega; // step size in white noise jump model
   phydbl                   min_omega;
   phydbl                   max_omega;
-  
-  
+
+  phydbl                    ou_theta; // "stickiness" parameter in OU model
+  phydbl                min_ou_theta;
+  phydbl                max_ou_theta;
+
+  phydbl                       ou_mu; // drift parameter in OU model
+  phydbl                   min_ou_mu;
+  phydbl                   max_ou_mu;
+
   phydbl                   min_veloc;
   phydbl                   max_veloc;
   
@@ -2592,6 +2602,7 @@ void Convert_Lengths_From_Calendar_To_Substitutions_Post(t_node *a, t_node *d, t
 #include "ibm.h"
 #include "iwn.h"
 #include "velocity.h"
+#include "iou.h"
 #endif
 
 #ifdef MPI

@@ -3332,7 +3332,8 @@ void MCMC_Randomize_Sigsq_Scale(t_tree *tree)
   
   if(tree->mmod->model_id == IBM  ||
      tree->mmod->model_id == IWNc ||
-     tree->mmod->model_id == IWNu) for(i=0;i<2*tree->n_otu-2;++i) tree->mmod->sigsq_scale[tree->a_nodes[i]->num] = 1.;
+     tree->mmod->model_id == IWNu ||
+     tree->mmod->model_id == IOU) for(i=0;i<2*tree->n_otu-2;++i) tree->mmod->sigsq_scale[tree->a_nodes[i]->num] = 1.;
 }
 #endif
 
@@ -6313,6 +6314,8 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->num_move_phyrex_velocities         = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_phyrex_shuffle_node_times = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_phyrex_iwn_omega          = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_phyrex_iou_theta          = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_phyrex_iou_mu             = mcmc->n_moves; mcmc->n_moves += 1;
   
   mcmc->run_move       = (int *)mCalloc(mcmc->n_moves,sizeof(int));
   mcmc->acc_move       = (int *)mCalloc(mcmc->n_moves,sizeof(int));
@@ -6405,7 +6408,9 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   strcpy(mcmc->move_name[mcmc->num_move_phyrex_node_times],"phyrex_node_times");
   strcpy(mcmc->move_name[mcmc->num_move_phyrex_velocities],"phyrex_velocities");
   strcpy(mcmc->move_name[mcmc->num_move_phyrex_shuffle_node_times],"phyrex_shuffle_node_times");
-  strcpy(mcmc->move_name[mcmc->num_move_phyrex_shuffle_node_times],"phyrex_iwn_omega");
+  strcpy(mcmc->move_name[mcmc->num_move_phyrex_iwn_omega],"phyrex_iwn_omega");
+  strcpy(mcmc->move_name[mcmc->num_move_phyrex_iou_theta],"phyrex_iou_theta");
+  strcpy(mcmc->move_name[mcmc->num_move_phyrex_iou_mu],"phyrex_iou_mu");
 
 
   for(i=0;i<mcmc->n_moves;i++) mcmc->move_type[i] = -1;
@@ -6454,6 +6459,8 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_type[mcmc->num_move_phyrex_velocities] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_phyrex_shuffle_node_times] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_phyrex_iwn_omega] = MCMC_MOVE_SCALE_THORNE;
+  mcmc->move_type[mcmc->num_move_phyrex_iou_theta] = MCMC_MOVE_SCALE_THORNE;
+  mcmc->move_type[mcmc->num_move_phyrex_iou_mu] = MCMC_MOVE_RANDWALK_NORMAL;
 
   for(i=0;i<mcmc->n_moves;i++) mcmc->tune_move[i] = 1.;
   mcmc->tune_move[mcmc->num_move_time_neff_growth] = 0.01;
@@ -6536,6 +6543,8 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_prob[mcmc->num_move_phyrex_velocities]            = 4.0;
   mcmc->move_prob[mcmc->num_move_phyrex_shuffle_node_times]    = 2.0;
   mcmc->move_prob[mcmc->num_move_phyrex_iwn_omega]             = 1.0;
+  mcmc->move_prob[mcmc->num_move_phyrex_iou_theta]             = 1000.0;
+  mcmc->move_prob[mcmc->num_move_phyrex_iou_mu]                = 1.0;
 
 # else
 
@@ -6573,6 +6582,8 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_prob[mcmc->num_move_phyrex_velocities]            = 0.0;
   mcmc->move_prob[mcmc->num_move_phyrex_shuffle_node_times]    = 0.0;
   mcmc->move_prob[mcmc->num_move_phyrex_iwn_omega]             = 0.0;
+  mcmc->move_prob[mcmc->num_move_phyrex_iou_theta]             = 0.0;
+  mcmc->move_prob[mcmc->num_move_phyrex_iou_mu]                = 0.0;
 
 #endif
   
@@ -7157,7 +7168,8 @@ void MCMC_PHYREX_Sigsq_Scale(t_tree *tree, int print)
   if(tree->mmod->model_id == RW   ||
      tree->mmod->model_id == IBM  ||
      tree->mmod->model_id == IWNc ||
-     tree->mmod->model_id == IWNu) return;
+     tree->mmod->model_id == IWNu ||
+     tree->mmod->model_id == IOU) return;
 
   tree->mcmc->run_move[tree->mcmc->num_move_phyrex_sigsq_scale]++;
   
@@ -13349,7 +13361,7 @@ void MCMC_PHYREX_Update_Velocities(t_tree *tree)
           
           cur = new = -1.;
           mean = var = -1.;
-          move_prob = 0.5;
+          move_prob = 1.5;
           
           iter = 0;
 
@@ -13627,7 +13639,45 @@ void MCMC_PHYREX_IWN_Update_Omega(t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+#ifdef PHYREX
+void MCMC_PHYREX_IOU_Update_Theta(t_tree *tree)
+{
+  if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES)
+    {
+      MCMC_Single_Param_Generic(&(tree->mmod->ou_theta),
+                                tree->mmod->min_ou_theta,
+                                tree->mmod->max_ou_theta,
+                                tree->mcmc->num_move_phyrex_iou_theta,
+                                NULL,&(tree->mmod->c_lnL),
+                                NULL,LOCATION_Wrap_Lk,
+                                tree->mcmc->move_type[tree->mcmc->num_move_phyrex_iou_theta],
+                                NO,NULL,tree,NULL);
+    }
+}
+
+#endif
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+#ifdef PHYREX
+void MCMC_PHYREX_IOU_Update_Mu(t_tree *tree)
+{
+  if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES)
+    {
+      MCMC_Single_Param_Generic(&(tree->mmod->ou_mu),
+                              tree->mmod->min_ou_mu,
+                              tree->mmod->max_ou_mu,
+                              tree->mcmc->num_move_phyrex_iou_mu,
+                              NULL,&(tree->mmod->c_lnL),
+                              NULL,LOCATION_Wrap_Lk,
+                              tree->mcmc->move_type[tree->mcmc->num_move_phyrex_iou_mu],
+                              NO,NULL,tree,NULL);
+    }
+}
+
+#endif
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
