@@ -1002,11 +1002,28 @@ phydbl TIMES_Lk_Coalescent_Range(t_dsk *young, t_dsk *old, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-phydbl TIMES_Prior_Coalescent(t_tree *tree)
+phydbl TIMES_Prior_Neff(t_tree *tree)
 {
-  phydbl lbda;
-  lbda = 1./tree->times->neff_prior_mean;
-  return(log(lbda)-lbda*tree->times->scaled_pop_size);
+  phydbl lnP;
+  int err;
+  
+  lnP = 0.0;
+  
+  if(tree->times->neff_prior_distrib == EXPONENTIAL_PRIOR)
+    {
+      lnP += Log_Dexp(tree->times->scaled_pop_size,
+                      tree->times->neff_prior_mean);
+    }
+  else if(tree->times->neff_prior_distrib == NORMAL_PRIOR)
+    {
+      lnP += Log_Dnorm(tree->times->scaled_pop_size,
+                       tree->times->neff_prior_mean,
+                       sqrt(tree->times->neff_prior_var),
+                       &err);
+    }
+  else assert(false);
+
+  return(lnP);
 }
 
 //////////////////////////////////////////////////////////////
@@ -1020,7 +1037,7 @@ phydbl TIMES_Prior(t_tree *tree)
     {
     case COALESCENT :
       {
-        tree->times->c_lnP = TIMES_Prior_Coalescent(tree);
+        tree->times->c_lnP = TIMES_Prior_Neff(tree);
         break;
       }
     case SLFV_GAUSSIAN : case SLFV_UNIFORM :
@@ -2590,7 +2607,7 @@ void TIMES_Copy_Time_Struct(t_time *from, t_time *to, int n_otu)
   to->scaled_pop_size_min = from->scaled_pop_size_min;
   to->scaled_pop_size_max = from->scaled_pop_size_max;
 
-  to->neff_growth = from->neff_growth;
+  to->neff_growth     = from->neff_growth;
   to->neff_growth_min = from->neff_growth_min;
   to->neff_growth_max = from->neff_growth_max;
 
@@ -2601,7 +2618,9 @@ void TIMES_Copy_Time_Struct(t_time *from, t_time *to, int n_otu)
 
   to->augmented_coalescent = from->augmented_coalescent;
 
-  to->neff_prior_mean = from->neff_prior_mean;
+  to->neff_prior_mean    = from->neff_prior_mean;
+  to->neff_prior_var     = from->neff_prior_var;
+  to->neff_prior_distrib = from->neff_prior_distrib;
   
   for(i=0;i<2*n_otu-1;++i) to->nd_t[i] = from->nd_t[i];
   for(i=0;i<2*n_otu-1;++i) to->buff_t[i] = from->buff_t[i];

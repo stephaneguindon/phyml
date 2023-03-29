@@ -53,6 +53,7 @@ int    Choose(int n, int k);
 phydbl LnChoose(int n, int k);
 phydbl Ppois(phydbl x, phydbl param);
 phydbl Dexp(phydbl x, phydbl param);
+phydbl Log_Dexp(phydbl x, phydbl param);
 phydbl Dpois(phydbl x, phydbl param, int logit);
 phydbl Rand_Normal_Deviate(phydbl mean, phydbl sd);
 phydbl Rnorm(phydbl mean, phydbl sd);

@@ -3004,10 +3004,6 @@ void MCMC_Terminate()
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-
 void MCMC_Copy_MCMC_Struct(t_mcmc *ori, t_mcmc *cpy, char *filename)
 {
   int pid;
@@ -6543,7 +6539,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_prob[mcmc->num_move_phyrex_velocities]            = 4.0;
   mcmc->move_prob[mcmc->num_move_phyrex_shuffle_node_times]    = 2.0;
   mcmc->move_prob[mcmc->num_move_phyrex_iwn_omega]             = 1.0;
-  mcmc->move_prob[mcmc->num_move_phyrex_iou_theta]             = 1000.0;
+  mcmc->move_prob[mcmc->num_move_phyrex_iou_theta]             = 1.0;
   mcmc->move_prob[mcmc->num_move_phyrex_iou_mu]                = 1.0;
 
 # else
@@ -7314,6 +7310,8 @@ void MCMC_PHYREX_Sigsq_Scale(t_tree *tree, int print)
 #ifdef PHYREX
 void MCMC_PHYREX_Neff(t_tree *tree, int print)
 {
+  if(tree->mod->s_opt->opt_neff == NO) return;
+  
   if(tree->times->model_id == COALESCENT &&
      RRW_Is_Rw(tree->mmod) == YES &&
      VELOC_Is_Integrated_Velocity(tree->mmod) == NO && 
@@ -12800,6 +12798,14 @@ void MCMC_PHYREX_Exchange_Core(t_tree *aux_tree, t_tree *tree, int print)
   int move,n_mcmc_steps,run,failed;
   int aux_lnL_mmod_ok_run,aux_lnL_times_ok_run;
   int i;
+  int init_topo_opt, init_node_times_opt;
+
+  init_topo_opt       = aux_tree->mod->s_opt->opt_topo;
+  init_node_times_opt = aux_tree->mod->s_opt->opt_node_ages;
+
+  aux_tree->mod->s_opt->opt_topo = YES;
+  aux_tree->mod->s_opt->opt_node_ages = YES;
+
   
   for(move=0;move<aux_tree->mcmc->n_moves;move++) aux_tree->mcmc->move_prob[move] = 0.0;
   for(move=0;move<aux_tree->mcmc->n_moves;move++)
@@ -12915,6 +12921,13 @@ void MCMC_PHYREX_Exchange_Core(t_tree *aux_tree, t_tree *tree, int print)
           aux_tree->mcmc->run > tree->mcmc->run + 1E+3));
   /* while(aux_tree->mcmc->run-run < n_mcmc_steps); */
 
+
+
+
+  aux_tree->mod->s_opt->opt_topo      = init_topo_opt;
+  aux_tree->mod->s_opt->opt_node_ages = init_node_times_opt;
+
+  
   /* PhyML_Printf("\n. run: %6d/%6d (%6d) [%6d;%6d] %20s [%15f,%15f]", */
   /*              aux_tree->mcmc->run-run, */
   /*              n_mcmc_steps, */
@@ -13402,9 +13415,9 @@ void MCMC_PHYREX_Update_Velocities(t_tree *tree)
                             {
                               cur = n->ldsk->coord->lonlat[j];
 
-                              /* new = Rnorm(cur,sqrt(fabs(cur)+1.)); */
-                              /* hr -= Log_Dnorm(new,cur,sqrt(fabs(cur)+1.),&err); */
-                              /* hr += Log_Dnorm(cur,new,sqrt(fabs(new)+1.),&err); */
+                              /* new = Rnorm(cur,0.5*sqrt(fabs(cur)+1.)); */
+                              /* hr -= Log_Dnorm(new,cur,0.5*sqrt(fabs(cur)+1.),&err); */
+                              /* hr += Log_Dnorm(cur,new,0.5*sqrt(fabs(new)+1.),&err); */
 
                               new = Rnorm(cur,1.);
                               hr -= Log_Dnorm(new,cur,1.,&err);
@@ -13666,14 +13679,15 @@ void MCMC_PHYREX_IOU_Update_Mu(t_tree *tree)
 {
   if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES)
     {
-      MCMC_Single_Param_Generic(&(tree->mmod->ou_mu),
-                              tree->mmod->min_ou_mu,
-                              tree->mmod->max_ou_mu,
-                              tree->mcmc->num_move_phyrex_iou_mu,
-                              NULL,&(tree->mmod->c_lnL),
-                              NULL,LOCATION_Wrap_Lk,
-                              tree->mcmc->move_type[tree->mcmc->num_move_phyrex_iou_mu],
-                              NO,NULL,tree,NULL);
+      for(int i=0; i<tree->mmod->n_dim; ++i)
+        MCMC_Single_Param_Generic(&(tree->mmod->ou_mu[i]),
+                                  tree->mmod->min_ou_mu,
+                                  tree->mmod->max_ou_mu,
+                                  tree->mcmc->num_move_phyrex_iou_mu,
+                                  NULL,&(tree->mmod->c_lnL),
+                                  NULL,LOCATION_Wrap_Lk,
+                                  tree->mcmc->move_type[tree->mcmc->num_move_phyrex_iou_mu],
+                                  NO,NULL,tree,NULL);
     }
 }
 

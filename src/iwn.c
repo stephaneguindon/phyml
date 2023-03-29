@@ -144,7 +144,7 @@ int IWN_Get_Gt(phydbl t, phydbl omega)
 
 phydbl IWN_Prior(t_tree *tree)
 {
-  return(IWN_Prior_Omega(tree));
+  return(PHYREX_LnPrior_Sigsq(tree)+IWN_Prior_Omega(tree));
 }
 
 //////////////////////////////////////////////////////////////
@@ -156,6 +156,7 @@ phydbl IWN_Prior_Omega(t_tree *tree)
 
   lbda = 1.0;
   lnP = log(lbda)-lbda*tree->mmod->omega;
+
   return(lnP);
 }
 

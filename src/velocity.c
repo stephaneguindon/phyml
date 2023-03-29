@@ -442,8 +442,12 @@ void VELOC_Integrated_Lk_Location_Post(t_node *a, t_node *d, short int dim, t_tr
       av1 = 1.0;
       av2 = 1.0;
 
-      bv1 = (v1->ldsk->veloc->deriv[dim] + d->ldsk->veloc->deriv[dim])*.5*dtv1;
-      bv2 = (v2->ldsk->veloc->deriv[dim] + d->ldsk->veloc->deriv[dim])*.5*dtv2;
+      /* Below is only correct for IBM... !!!!!!!!!!!!!!!!!!! */
+      /* bv1 = (v1->ldsk->veloc->deriv[dim] + d->ldsk->veloc->deriv[dim])*.5*dtv1; */
+      /* bv2 = (v2->ldsk->veloc->deriv[dim] + d->ldsk->veloc->deriv[dim])*.5*dtv2; */
+
+      bv1 = VELOC_Location_Mean_Along_Edge(v1,dim,tree) - d->ldsk->coord->lonlat[dim];
+      bv2 = VELOC_Location_Mean_Along_Edge(v2,dim,tree) - d->ldsk->coord->lonlat[dim];
 
       if(d == tree->n_root && print == YES)
         {
@@ -563,7 +567,9 @@ void VELOC_Integrated_Lk_Location_Pre(t_node *a, t_node *d, short int dim, t_tre
   av2var   = VELOC_Location_Variance_Along_Edge(v2,dim,tree);    
 
   av2      = 1.0;
-  bv2      = (v2->ldsk->veloc->deriv[dim] + a->ldsk->veloc->deriv[dim])*.5*dtv2;
+  /* Below is only correct for IBM... !!!!!!!!!!!!!!!!!!! */
+  /* bv2      = (v2->ldsk->veloc->deriv[dim] + a->ldsk->veloc->deriv[dim])*.5*dtv2; */
+  bv2      = VELOC_Location_Mean_Along_Edge(v2,dim,tree) - a->ldsk->coord->lonlat[dim];
       
   if(v1 != NULL)
     {
@@ -574,7 +580,9 @@ void VELOC_Integrated_Lk_Location_Pre(t_node *a, t_node *d, short int dim, t_tre
       av1var   = VELOC_Location_Variance_Along_Edge(a,dim,tree);
 
       av1      = 1.0;
-      bv1      = (a->ldsk->veloc->deriv[dim] + v1->ldsk->veloc->deriv[dim])*.5*dtv1;
+      /* Below is only correct for IBM... !!!!!!!!!!!!!!!!!!! */
+      /* bv1      = (a->ldsk->veloc->deriv[dim] + v1->ldsk->veloc->deriv[dim])*.5*dtv1; */
+      bv1      = VELOC_Location_Mean_Along_Edge(a,dim,tree) - v1->ldsk->coord->lonlat[dim];
   
 
       if(IBM_Is_Ibm(tree->mmod) == YES)
@@ -583,9 +591,9 @@ void VELOC_Integrated_Lk_Location_Pre(t_node *a, t_node *d, short int dim, t_tre
                                      av1,bv1,v1mu,v1var,av1var,
                                      av2,bv2,v2mu,v2var,av2var,
                                      v1logrem,v2logrem,
-                                     tree->contmod->mu_down+d->num,
-                                     tree->contmod->var_down+d->num,
-                                     tree->contmod->logrem_down+d->num,
+                                     tree->contmod->mu_up+d->num,
+                                     tree->contmod->var_up+d->num,
+                                     tree->contmod->logrem_up+d->num,
                                      NO);
         }
       else if(IWN_Is_Iwn(tree->mmod) == YES)
@@ -607,9 +615,9 @@ void VELOC_Integrated_Lk_Location_Pre(t_node *a, t_node *d, short int dim, t_tre
                                      av1,bv1,v1mu,v1var,av1var,
                                      av2,bv2,v2mu,v2var,av2var,
                                      v1logrem,v2logrem,
-                                     tree->contmod->mu_down+d->num,
-                                     tree->contmod->var_down+d->num,
-                                     tree->contmod->logrem_down+d->num,
+                                     tree->contmod->mu_up+d->num,
+                                     tree->contmod->var_up+d->num,
+                                     tree->contmod->logrem_up+d->num,
                                      NO);
         }
 
@@ -776,7 +784,9 @@ void VELOC_Sample_Node_Locations(t_tree *tree)
               dt = fabs(tree->times->nd_t[n->num]-tree->times->nd_t[n->anc->num]);
 
               au = 1.0;
-              bu = (n->ldsk->veloc->deriv[i] + n->anc->ldsk->veloc->deriv[i])*.5*dt;
+              /* Below is only correct for IBM model !!!!!!!!!!!!!!!!!!!!!! */
+              /* bu = (n->ldsk->veloc->deriv[i] + n->anc->ldsk->veloc->deriv[i])*.5*dt; */
+              bu   = VELOC_Location_Mean_Along_Edge(n,i,tree) - n->anc->ldsk->coord->lonlat[i];
               varu = VELOC_Location_Variance_Along_Edge(n,i,tree); 
 
 

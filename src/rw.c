@@ -27,20 +27,7 @@ phydbl RW_Lk(t_tree *tree)
 
 phydbl RW_Prior(t_tree *tree)
 {
-  return(RW_Prior_Sigsq(tree));
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-phydbl RW_Prior_Sigsq(t_tree *tree)
-{
-  phydbl lbda,lnP;
-
-  lnP = 0.0;
-  lbda = 1.0 / tree->mmod->disp_prior_mean;
-  for(int i=0;i<tree->mmod->n_dim;++i) lnP += log(lbda)-lbda*tree->mmod->sigsq[i];
-  return(lnP);
+  return(PHYREX_LnPrior_Sigsq(tree));
 }
 
 //////////////////////////////////////////////////////////////

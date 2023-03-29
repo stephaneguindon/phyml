@@ -104,6 +104,27 @@ void PHYREX_XML(char *xml_filename)
   if(dum_string != NULL) mixt_tree->io->mcmc->chain_len_burnin = (int)String_To_Dbl(dum_string);
 
 
+  dum_string = XML_Get_Attribute_Value(xnd,"mcmc.output.times");
+  if(dum_string != NULL)
+    {
+      int select = XML_Validate_Attr_Int(dum_string,6,
+                                         "true","yes","y",
+                                         "false","no","n");
+      if(select < 3) mixt_tree->io->mcmc_output_times = YES;
+      else mixt_tree->io->mcmc_output_times = NO;
+    }
+
+  dum_string = XML_Get_Attribute_Value(xnd,"mcmc.output.trees");
+  if(dum_string != NULL)
+    {
+      int select = XML_Validate_Attr_Int(dum_string,6,
+                                         "true","yes","y",
+                                         "false","no","n");
+      if(select < 3) mixt_tree->io->mcmc_output_trees = YES;
+      else mixt_tree->io->mcmc_output_trees = NO;
+    }
+
+  
   dum_string = XML_Get_Attribute_Value(xnd,"ignore.sequences");
   if(!dum_string) dum_string = XML_Get_Attribute_Value(xnd,"ignore.seq");
   if(!dum_string) dum_string = XML_Get_Attribute_Value(xnd,"ignore.data");
@@ -297,12 +318,29 @@ void PHYREX_XML(char *xml_filename)
         }
 
 
-      char *prior;
-      prior = XML_Get_Attribute_Value(xnd,"dispersal.prior.mean");
+      char *prior_mean;
+      prior_mean = XML_Get_Attribute_Value(xnd,"dispersal.prior.mean");
+      if(prior_mean != NULL) mixt_tree->mmod->disp_prior_mean = String_To_Dbl(prior_mean);
 
-      if(prior != NULL) mixt_tree->mmod->disp_prior_mean = String_To_Dbl(prior);
+      char *prior_var;
+      prior_var = XML_Get_Attribute_Value(xnd,"dispersal.prior.var");
+      if(prior_var != NULL) mixt_tree->mmod->disp_prior_var = String_To_Dbl(prior_var);
+
+      char *prior_distrib;
+      prior_distrib = XML_Get_Attribute_Value(xnd,"dispersal.prior.distrib");
+      if(prior_distrib != NULL)
+        {
+          if(!strcmp(prior_distrib,"exponential")) mixt_tree->mmod->disp_prior_distrib = EXPONENTIAL_PRIOR;
+          else if(!strcmp(prior_distrib,"normal")) mixt_tree->mmod->disp_prior_distrib = NORMAL_PRIOR;
+          else
+            {
+              PhyML_Printf("\n. Unknown prior distribution '%s'. Aborting. ",prior_distrib);
+              assert(FALSE);
+            }
+        }
 
 
+      
       char *integrateAncestralLocations;
       integrateAncestralLocations = XML_Get_Attribute_Value(xnd,"integrateAncestralLocations");
 
@@ -316,14 +354,15 @@ void PHYREX_XML(char *xml_filename)
         }
 
 
-      char *rrw_param_val;
-      rrw_param_val = XML_Get_Attribute_Value(xnd,"rrw.param.val");
+      
+      char *rrw_prior_sd;
+      rrw_prior_sd = XML_Get_Attribute_Value(xnd,"rrw.prior.sd");
 
-      if(rrw_param_val != NULL)
+      if(rrw_prior_sd != NULL)
         {
           char *val;
-          val = XML_Get_Attribute_Value(xnd,"rrw.param.val");
-          if(val != NULL) mixt_tree->mmod->rrw_param_val = String_To_Dbl(val);
+          val = XML_Get_Attribute_Value(xnd,"rrw.prior.sd");
+          if(val != NULL) mixt_tree->mmod->rrw_prior_sd = String_To_Dbl(val);
         }
     }
   else
@@ -347,14 +386,28 @@ void PHYREX_XML(char *xml_filename)
           assert(false);
         }
       
-      char *prior;
-      prior = XML_Get_Attribute_Value(xnd,"neff.prior.mean");
+      char *prior_mean;
+      prior_mean = XML_Get_Attribute_Value(xnd,"neff.prior.mean");
+      if(prior_mean != NULL) mixt_tree->times->neff_prior_mean = String_To_Dbl(prior_mean);
+      
+      char *prior_var;
+      prior_var = XML_Get_Attribute_Value(xnd,"neff.prior.var");
+      if(prior_var != NULL) mixt_tree->times->neff_prior_var = String_To_Dbl(prior_var);
 
-      if(prior != NULL)
+      char *prior_distrib;
+      prior_distrib = XML_Get_Attribute_Value(xnd,"neff.prior.distrib");
+      if(prior_distrib != NULL)
         {
-          mixt_tree->times->neff_prior_mean = String_To_Dbl(prior);
+          if(!strcmp(prior_distrib,"exponential")) mixt_tree->times->neff_prior_distrib = EXPONENTIAL_PRIOR;
+          else if(!strcmp(prior_distrib,"normal")) mixt_tree->times->neff_prior_distrib = NORMAL_PRIOR;
+          else
+            {
+              PhyML_Printf("\n. Unknown prior distribution '%s'. Aborting. ",prior_distrib);
+              assert(FALSE);
+            }
         }
 
+      
       char *expgrowth;
       expgrowth = XML_Get_Attribute_Value(xnd,"expgrowth");
       if(expgrowth != NULL)
@@ -364,7 +417,7 @@ void PHYREX_XML(char *xml_filename)
                                              "false","no","n");
           if(select < 3) mixt_tree->times->coalescent_model_id = EXPCOALESCENT;
           else mixt_tree->times->coalescent_model_id = STRICTCOALESCENT;
-        }      
+        }
 
       char *powgrowth;
       powgrowth = XML_Get_Attribute_Value(xnd,"powgrowth");
@@ -387,6 +440,18 @@ void PHYREX_XML(char *xml_filename)
           if(select < 3) mixt_tree->mod->s_opt->opt_node_ages = NO;
           else mixt_tree->mod->s_opt->opt_node_ages = YES;
         }
+
+      char *fix_neff;
+      fix_neff = XML_Get_Attribute_Value(xnd,"fix.neff");
+      if(fix_neff != NULL)
+        {
+          int select = XML_Validate_Attr_Int(fix_neff,6,
+                                             "true","yes","y",
+                                             "false","no","n");
+          if(select < 3) mixt_tree->mod->s_opt->opt_neff = NO;
+          else mixt_tree->mod->s_opt->opt_neff = YES;
+        }
+      
     }
 
   
@@ -580,7 +645,7 @@ void PHYREX_XML(char *xml_filename)
           aux_tree = mixt_tree->aux_tree[i];
           
           aux_tree->mod = mixt_tree->mod;
-          aux_tree->io = mixt_tree->io;
+          aux_tree->io = mixt_tree->io;          
           
           aux_tree->mmod = PHYREX_Make_Migrep_Model(mixt_tree->n_otu,2);
           aux_tree->mmod->n_dim = 2;
@@ -1047,6 +1112,10 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   
   for(i=0;i<mcmc->n_moves;i++) tree->mcmc->start_ess[i] = YES;
 
+  /* /\* !!!!!!!!!!!!!!!!!!! *\/ */
+  /* tree->mmod->ou_theta = 0.08; */
+  /* tree->mmod->ou_mu = -3.0; */
+
   Set_Update_Eigen(YES,tree->mod);
   RATES_Update_Edge_Lengths(tree);
   Lk(NULL,tree);
@@ -1072,6 +1141,8 @@ phydbl *PHYREX_MCMC(t_tree *tree)
   PHYREX_Print_MCMC_Tree(tree);
   PHYREX_Print_MCMC_Summary(tree);
 
+
+  
   /* tree->mmod->sigsq[1] = 0.1; */
   /* tree->mmod->sigsq[0] = 0.1; */
   /* IBM_Generate_Velocities_Then_Locations(tree); */
@@ -2340,76 +2411,32 @@ phydbl PHYREX_Rnorm_Trunc(t_ldsk *ldsk, t_dsk *disk, t_phyrex_mod *mmod)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-phydbl PHYREX_Wrap_Prior_Radius(t_edge *e, t_tree *tree, supert_tree *st)
-{
-  return PHYREX_LnPrior_Radius(tree);
-}
-
-/*////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////*/
-
-phydbl PHYREX_LnPrior_Lbda(t_tree *tree)
-{
-  if(RRW_Is_Rw(tree->mmod) == YES || VELOC_Is_Integrated_Velocity(tree->mmod))  return(0.0);
-  
-  if(tree->mmod->lbda < tree->mmod->min_lbda) return UNLIKELY;
-  if(tree->mmod->lbda > tree->mmod->max_lbda) return UNLIKELY;
-
-  /* tree->mmod->c_ln_prior_lbda = */
-  /*   log(tree->mmod->prior_param_lbda) - */
-  /*   tree->mmod->prior_param_lbda*tree->mmod->lbda; */
-
-  /* tree->mmod->c_ln_prior_lbda -= log(exp(-tree->mmod->prior_param_lbda*tree->mmod->min_lbda)- */
-  /*                                    exp(-tree->mmod->prior_param_lbda*tree->mmod->max_lbda)); */
-
-  tree->mmod->c_ln_prior_lbda = -log(tree->mmod->max_lbda - tree->mmod->min_lbda);;
-
-  return(tree->mmod->c_ln_prior_lbda);
-}
-
-/*////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////*/
-
-phydbl PHYREX_LnPrior_Mu(t_tree *tree)
-{
-  if(RRW_Is_Rw(tree->mmod) == YES || VELOC_Is_Integrated_Velocity(tree->mmod) == YES)  return(0.0);
-
-  if(tree->mmod->mu < tree->mmod->min_mu) return UNLIKELY;
-  if(tree->mmod->mu > tree->mmod->max_mu) return UNLIKELY;
-
-  tree->mmod->c_ln_prior_mu = -log(tree->mmod->max_mu - tree->mmod->min_mu);
-
-  /* tree->mmod->c_ln_prior_mu = -2.*log(tree->mmod->mu); */
-
-  return(tree->mmod->c_ln_prior_mu);
-}
-
-/*////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////*/
-
-phydbl PHYREX_LnPrior_Radius(t_tree *tree)
-{
-  if(RRW_Is_Rw(tree->mmod) == YES || VELOC_Is_Integrated_Velocity(tree->mmod)) return(0.0);
-
-  if(tree->mmod->rad < tree->mmod->min_rad) return UNLIKELY;
-  if(tree->mmod->rad > tree->mmod->max_rad) return UNLIKELY;
-
-  tree->mmod->c_ln_prior_rad =
-    log(tree->mmod->prior_param_rad) -
-    tree->mmod->prior_param_rad*tree->mmod->rad;
-
-  tree->mmod->c_ln_prior_rad -= log(exp(-tree->mmod->prior_param_rad*tree->mmod->min_rad)-
-                                    exp(-tree->mmod->prior_param_rad*tree->mmod->max_rad));
-
-  return(tree->mmod->c_ln_prior_rad);
-}
-
-/*////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////*/
-
 phydbl PHYREX_LnPrior_Sigsq(t_tree *tree)
 {
-  return(0.0);
+  phydbl lnP;
+  int i,err;
+  
+  lnP = 0.0;
+  
+  if(tree->mmod->disp_prior_distrib == EXPONENTIAL_PRIOR)
+    {
+      for(i=0;i<tree->mmod->n_dim;++i)
+        lnP += Log_Dexp(tree->mmod->sigsq[i],
+                        tree->mmod->disp_prior_mean);
+    }
+  else if(tree->mmod->disp_prior_distrib == NORMAL_PRIOR)
+    {
+      for(i=0;i<tree->mmod->n_dim;++i)
+        {
+          lnP += Log_Dnorm(tree->mmod->sigsq[i],
+                         tree->mmod->disp_prior_mean,
+                         sqrt(tree->mmod->disp_prior_var),
+                         &err);
+        }
+    }
+  else assert(false);
+
+  return(lnP);
 }
 
 /*////////////////////////////////////////////////////////////

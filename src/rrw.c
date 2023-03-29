@@ -53,7 +53,7 @@ phydbl RRW_Lk(t_tree *tree)
 
 phydbl RRW_Prior(t_tree *tree)
 {
-  return(RW_Prior_Sigsq(tree) + RRW_Prior_Sigsq_Scale(tree));
+  return(PHYREX_LnPrior_Sigsq(tree) + RRW_Prior_Sigsq_Scale(tree));
 }
 
 //////////////////////////////////////////////////////////////
@@ -105,7 +105,7 @@ phydbl RRW_Prior_Sigsq_Scale(t_tree *tree)
   
   lnP = 0.0;
   err = NO;
-  sd  = tree->mmod->rrw_param_val; // Value of hyper-prior governing the variance of relative dispersal rates across lineages
+  sd  = tree->mmod->rrw_prior_sd; // Value of hyper-prior governing the variance of relative dispersal rates across lineages
   
   if(tree->mmod->model_id == RW || tree->mmod->model_id == IBM) return(-1.0);
   

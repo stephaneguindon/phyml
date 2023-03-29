@@ -33,6 +33,7 @@ phydbl IBM_Velocity_Variance_Along_Edge(t_node *d, short int dim, t_tree *tree);
 phydbl IBM_Velocity_Mean_Along_Edge(t_node *d, short int dim, t_tree *tree);
 phydbl IBM_Location_Variance_Along_Edge(t_node *d, short int dim, t_tree *tree);
 phydbl IBM_Location_Mean_Along_Edge(t_node *d, short int dim, t_tree *tree);
+phydbl IBM_Prior(t_tree *tree);
 
 
 void IBM_Integrated_Location_Down(phydbl dt1, phydbl dt2,

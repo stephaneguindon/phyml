@@ -6761,7 +6761,9 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%s\t","dispDistAlt");
           if(IWN_Is_Iwn(tree->mmod) == YES) PhyML_Fprintf(fp_stats,"%s\t","stickiness");
           if(IOU_Is_Iou(tree->mmod) == YES) PhyML_Fprintf(fp_stats,"%s\t","stickiness");
-          if(IOU_Is_Iou(tree->mmod) == YES) PhyML_Fprintf(fp_stats,"%s\t","trend");
+          if(IOU_Is_Iou(tree->mmod) == YES)
+            for(int i=0;i<tree->mmod->n_dim;++i)
+              PhyML_Fprintf(fp_stats,"%s%s\t","tren",(i==0)?("Lon"):((i==1)?("Lat"):("xx")));
           PhyML_Fprintf(fp_stats,"%s\t","rootTime");
           PhyML_Fprintf(fp_stats,"%s\t","rootLon");
           PhyML_Fprintf(fp_stats,"%s\t","rootLat");
@@ -6828,10 +6830,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
             {
               PhyML_Fprintf(fp_stats,"rootVelocLon\t");
               PhyML_Fprintf(fp_stats,"rootVelocLat\t");
-            }
-          
-          if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES)
-            {
+
               for(int i=0;i<tree->n_otu;++i)
                 {
                   PhyML_Fprintf(fp_stats,"%s_VelocLon\t",tree->a_nodes[i]->name);
@@ -6842,14 +6841,19 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
                   PhyML_Fprintf(fp_stats,"%d_IntVelocLon\t",tree->a_nodes[tree->n_otu+i]->num);
                   PhyML_Fprintf(fp_stats,"%d_IntVelocLat\t",tree->a_nodes[tree->n_otu+i]->num);
                 }
-            }
 
-          if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES)
-            {
+
               for(int i=0;i<tree->n_otu;++i)
                 {
                   PhyML_Fprintf(fp_stats,"%s_Speed\t",tree->a_nodes[i]->name);
                 }
+            }
+
+          
+          for(int i=0;i<tree->n_otu;++i)
+            {
+              PhyML_Fprintf(fp_stats,"%s_DispLon\t",tree->a_nodes[i]->name);
+              PhyML_Fprintf(fp_stats,"%s_DispLat\t",tree->a_nodes[i]->name);
             }
           
           for(int i=0;i<tree->n_otu;++i)
@@ -6862,7 +6866,11 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
               PhyML_Fprintf(fp_stats,"%d_Lon\t",tree->a_nodes[tree->n_otu+i]->num);
               PhyML_Fprintf(fp_stats,"%d_Lat\t",tree->a_nodes[tree->n_otu+i]->num);
             }
-
+          
+          if(tree->io->mcmc_output_times == YES)
+            {
+              for(int i=tree->n_otu;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"%d_Time\t",tree->a_nodes[i]->num);
+            }
         }
     }
 
@@ -6892,7 +6900,9 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Realized_Dispersal_Dist_Alt(tree));
       if(IWN_Is_Iwn(tree->mmod) == YES) PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->omega);
       if(IOU_Is_Iou(tree->mmod) == YES) PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->ou_theta);
-      if(IOU_Is_Iou(tree->mmod) == YES) PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->ou_mu);
+      if(IOU_Is_Iou(tree->mmod) == YES)
+        for(int i=0;i<tree->mmod->n_dim;++i)
+          PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->ou_mu[i]);
       PhyML_Fprintf(fp_stats,"%.2f\t",tree->n_root->ldsk->disk->time);
 
       if(RRW_Is_Rw(tree->mmod) == YES && tree->mmod->integrateAncestralLocations == YES) RRW_Sample_Node_Locations(tree);
@@ -6985,24 +6995,59 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
               PhyML_Fprintf(fp_stats,"%g\t",tree->a_nodes[i+tree->n_otu]->ldsk->veloc->deriv[1]);
             }
 
+
           for(int i=0;i<tree->n_otu;++i)
             {
+              /* PhyML_Fprintf(fp_stats,"%g\t", */
+              /*               111.*fabs(sqrt(pow(tree->a_nodes[i]->ldsk->veloc->deriv[0],2)+pow(tree->a_nodes[i]->ldsk->veloc->deriv[1],2)))); */
               PhyML_Fprintf(fp_stats,"%g\t",
-                            111.*fabs(sqrt(pow(tree->a_nodes[i]->ldsk->veloc->deriv[0],2)+pow(tree->a_nodes[i]->ldsk->veloc->deriv[1],2))));
+                            fabs(tree->a_nodes[i]->ldsk->veloc->deriv[0])+fabs(tree->a_nodes[i]->ldsk->veloc->deriv[1]));
             }
+        }
+
+      
+      for(int i=0;i<tree->n_otu;++i)
+        {
+          PhyML_Fprintf(fp_stats,"%g\t%g\t",
+                        (tree->a_nodes[i]->ldsk->coord->lonlat[0] - tree->a_nodes[i]->anc->ldsk->coord->lonlat[0])/
+                        fabs(tree->times->nd_t[tree->a_nodes[i]->num] - tree->times->nd_t[tree->a_nodes[i]->anc->num]),
+                        (tree->a_nodes[i]->ldsk->coord->lonlat[1] - tree->a_nodes[i]->anc->ldsk->coord->lonlat[1])/
+                        fabs(tree->times->nd_t[tree->a_nodes[i]->num] - tree->times->nd_t[tree->a_nodes[i]->anc->num]));
         }
       
       for(int i=0;i<tree->n_otu;++i)
         {
           PhyML_Fprintf(fp_stats,"%g\t",
-                        Haversine_Distance(tree->a_nodes[i]->ldsk->coord,tree->a_nodes[i]->ldsk->prev->coord)/
+                        /* Haversine_Distance(tree->a_nodes[i]->ldsk->coord,tree->a_nodes[i]->ldsk->prev->coord)/ */
+                        Euclidean_Dist(tree->a_nodes[i]->ldsk->coord,tree->a_nodes[i]->anc->ldsk->coord)/
                         fabs(tree->times->nd_t[tree->a_nodes[i]->num] - tree->times->nd_t[tree->a_nodes[i]->anc->num]));
+
+          /* if(i == 1) */
+          /*   { */
+          /*     PhyML_Printf("\n. %s coord: [%f %f] [%f %f] | dist: %f | time: %f | disp: %f [%f]", */
+          /*                  tree->a_nodes[i]->name, */
+          /*                  tree->a_nodes[i]->ldsk->coord->lonlat[0], */
+          /*                  tree->a_nodes[i]->ldsk->coord->lonlat[1], */
+          /*                  tree->a_nodes[i]->anc->ldsk->coord->lonlat[0], */
+          /*                  tree->a_nodes[i]->anc->ldsk->coord->lonlat[1], */
+          /*                  Euclidean_Dist(tree->a_nodes[i]->ldsk->coord,tree->a_nodes[i]->anc->ldsk->coord), */
+          /*                  fabs(tree->times->nd_t[tree->a_nodes[i]->num] - tree->times->nd_t[tree->a_nodes[i]->anc->num]), */
+          /*                  Euclidean_Dist(tree->a_nodes[i]->ldsk->coord,tree->a_nodes[i]->anc->ldsk->coord)/ */
+          /*                  fabs(tree->times->nd_t[tree->a_nodes[i]->num] - tree->times->nd_t[tree->a_nodes[i]->anc->num]), */
+          /*                  fabs(tree->a_nodes[i]->ldsk->veloc->deriv[0]) + fabs(tree->a_nodes[i]->ldsk->veloc->deriv[1])); */
+          /*   } */
+
         }
 
       for(int i=0;i<tree->n_otu-1;++i)
         {
           PhyML_Fprintf(fp_stats,"%g\t",tree->a_nodes[tree->n_otu+i]->ldsk->coord->lonlat[0]);
           PhyML_Fprintf(fp_stats,"%g\t",tree->a_nodes[tree->n_otu+i]->ldsk->coord->lonlat[1]);
+        }
+      
+      if(tree->io->mcmc_output_times == YES)
+        {
+          for(int i=tree->n_otu;i<2*tree->n_otu-1;++i) PhyML_Fprintf(fp_stats,"%f\t",tree->times->nd_t[tree->a_nodes[i]->num]);
         }
       
       fflush(NULL);
@@ -7023,6 +7068,9 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
 void PHYREX_Print_MCMC_Tree(t_tree *tree)
 {
   FILE *fp_tree;
+
+  if(tree->io->mcmc_output_trees == NO) return;
+
   
   fp_tree = tree->io->fp_out_tree;
 

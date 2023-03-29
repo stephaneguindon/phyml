@@ -42,6 +42,9 @@ void SLFV_Integrated_Coal_Rate(t_ldsk *l0, t_ldsk *l1, phydbl T, t_tree *tree);
 void SLFV_Sum_Coal_Rate(t_ldsk *l0, t_ldsk *l1, int n, t_tree *tree);
 phydbl SLFV_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree);
 void SLFV_Generate_Ldsk_New_Location(t_ldsk *l, t_ldsk *prev_l, phydbl rad, phydbl *hr, int dim_idx, t_tree *tree);
+phydbl SLFV_LnPrior_Lbda(t_tree *tree);
+phydbl SLFV_LnPrior_Mu(t_tree *tree);
+phydbl SLFV_LnPrior_Radius(t_tree *tree);
 
 #endif
 

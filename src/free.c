@@ -1405,6 +1405,7 @@ void Free_Mmod(t_phyrex_mod *mmod)
   Free_Geo_Coord(mmod->lim_do);
   Free(mmod->sigsq_scale);
   Free(mmod->sigsq);
+  Free(mmod->ou_mu);
   Free(mmod);
 }
 

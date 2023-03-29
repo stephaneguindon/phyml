@@ -2245,6 +2245,63 @@ void SLFV_Generate_Ldsk_New_Location(t_ldsk *l, t_ldsk *prev_l, phydbl rad, phyd
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+phydbl SLFV_LnPrior_Lbda(t_tree *tree)
+{
+  if(RRW_Is_Rw(tree->mmod) == YES || VELOC_Is_Integrated_Velocity(tree->mmod))  return(0.0);
+  
+  if(tree->mmod->lbda < tree->mmod->min_lbda) return UNLIKELY;
+  if(tree->mmod->lbda > tree->mmod->max_lbda) return UNLIKELY;
+
+  /* tree->mmod->c_ln_prior_lbda = */
+  /*   log(tree->mmod->prior_param_lbda) - */
+  /*   tree->mmod->prior_param_lbda*tree->mmod->lbda; */
+
+  /* tree->mmod->c_ln_prior_lbda -= log(exp(-tree->mmod->prior_param_lbda*tree->mmod->min_lbda)- */
+  /*                                    exp(-tree->mmod->prior_param_lbda*tree->mmod->max_lbda)); */
+
+  tree->mmod->c_ln_prior_lbda = -log(tree->mmod->max_lbda - tree->mmod->min_lbda);;
+
+  return(tree->mmod->c_ln_prior_lbda);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+phydbl SLFV_LnPrior_Mu(t_tree *tree)
+{
+  if(RRW_Is_Rw(tree->mmod) == YES || VELOC_Is_Integrated_Velocity(tree->mmod) == YES)  return(0.0);
+
+  if(tree->mmod->mu < tree->mmod->min_mu) return UNLIKELY;
+  if(tree->mmod->mu > tree->mmod->max_mu) return UNLIKELY;
+
+  tree->mmod->c_ln_prior_mu = -log(tree->mmod->max_mu - tree->mmod->min_mu);
+
+  /* tree->mmod->c_ln_prior_mu = -2.*log(tree->mmod->mu); */
+
+  return(tree->mmod->c_ln_prior_mu);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+phydbl SLFV_LnPrior_Radius(t_tree *tree)
+{
+  if(RRW_Is_Rw(tree->mmod) == YES || VELOC_Is_Integrated_Velocity(tree->mmod)) return(0.0);
+
+  if(tree->mmod->rad < tree->mmod->min_rad) return UNLIKELY;
+  if(tree->mmod->rad > tree->mmod->max_rad) return UNLIKELY;
+
+  tree->mmod->c_ln_prior_rad =
+    log(tree->mmod->prior_param_rad) -
+    tree->mmod->prior_param_rad*tree->mmod->rad;
+
+  tree->mmod->c_ln_prior_rad -= log(exp(-tree->mmod->prior_param_rad*tree->mmod->min_rad)-
+                                    exp(-tree->mmod->prior_param_rad*tree->mmod->max_rad));
+
+  return(tree->mmod->c_ln_prior_rad);
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

@@ -379,6 +379,9 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 // Ala Arg Asn Asp Cys Gln Glu Gly His Ile Leu Lys Met Phe Pro Ser Thr Trp Tyr Val
 
 
+#define EXPONENTIAL_PRIOR 0
+#define NORMAL_PRIOR      1
+
 #define COMPOUND_COR   0
 #define COMPOUND_NOCOR 1
 #define EXPONENTIAL    2
@@ -1375,6 +1378,10 @@ typedef struct __Option { /*! mostly used in 'help.c' */
 
   short int             edge_len_unit;
 
+
+  short int         mcmc_output_times;
+  short int         mcmc_output_trees;
+  
 }option;
 
 /*!********************************************************/
@@ -1397,6 +1404,7 @@ typedef struct __Optimiz { /*! parameters to be optimised (mostly used in 'optim
   short int                 opt_topo; /*! =1 -> the tree topology is optimised */
   short int              topo_search;
   short int            opt_node_ages;
+  short int                 opt_neff;
   
   phydbl               init_lk; /*! initial loglikelihood value */
   int                 n_it_max; /*! maximum bnumber of iteration during an optimisation step */
@@ -1743,7 +1751,9 @@ typedef struct __T_Time {
 
   short int augmented_coalescent;
 
-  phydbl neff_prior_mean;
+  phydbl       neff_prior_mean;
+  phydbl        neff_prior_var;
+  short int neff_prior_distrib;
   
 }t_time;
 
@@ -1883,6 +1893,9 @@ typedef struct __Tmcmc {
   phydbl *mode;
   int always_yes; /* Always accept proposed move (as long as log-likelihood > UNLIKELY) */
   int is; /* Importance sampling? Yes or NO */
+
+
+
 }t_mcmc;
 
 /*!********************************************************/
@@ -2087,7 +2100,7 @@ typedef struct __Migrep_Model{
   phydbl                min_ou_theta;
   phydbl                max_ou_theta;
 
-  phydbl                       ou_mu; // drift parameter in OU model
+  phydbl                      *ou_mu; // drift parameter in OU model
   phydbl                   min_ou_mu;
   phydbl                   max_ou_mu;
 
@@ -2112,8 +2125,11 @@ typedef struct __Migrep_Model{
   short int            use_locations;
 
   phydbl             disp_prior_mean;
+  phydbl              disp_prior_var;
+  short int       disp_prior_distrib;
 
-  phydbl               rrw_param_val; // value of parameter governing the variance of diffusion coefficient across edges  
+  
+  phydbl                rrw_prior_sd; // value of parameter governing the variance of diffusion coefficient across edges  
   
   short int                 print_lk;
 

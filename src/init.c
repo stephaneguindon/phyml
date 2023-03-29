@@ -645,6 +645,9 @@ void Set_Defaults_Input(option* io)
   TIMES_Init_Time_Struct(io->times,NULL,-1);
   io->times->model_id = COALESCENT;
   io->times->coalescent_model_id = STRICTCOALESCENT;
+
+  io->mcmc_output_times          = NO;
+  io->mcmc_output_trees          = YES;
 }
 
 //////////////////////////////////////////////////////////////
@@ -811,6 +814,8 @@ void Set_Defaults_Optimiz(t_opt *s_opt)
   s_opt->curr_opt_free_rates = NO;
 
   s_opt->state_freq = EMPIRICAL;
+
+  s_opt->opt_neff = YES;
 }
 
 //////////////////////////////////////////////////////////////
@@ -900,7 +905,7 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
   rates->min_nu           = 0.0;
   rates->max_nu           = 1.0E+3;
 
-  rates->autocor_rate_prior = 1.0E+2;
+  rates->autocor_rate_prior = 1.0E+0;
   
   rates->min_dt           = 0.0;
 
@@ -952,6 +957,10 @@ void TIMES_Init_Time_Struct(t_time *times, t_time *existing_times, int n_otu)
   times->scaled_pop_size_min = 1.E-1;
   times->scaled_pop_size_max = 1.E+3;
 
+  times->neff_prior_mean    = 1.0;
+  times->neff_prior_var     = 1.0;
+  times->neff_prior_distrib = EXPONENTIAL_PRIOR;
+  
   times->neff_growth     = 1E-6;
   times->neff_growth_min = -5.;
   times->neff_growth_max = +5.;
@@ -3585,13 +3594,13 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->min_omega         = 0.0;
   t->max_omega         = 1.E+3;
 
-  t->ou_theta             = 0.2;
-  t->min_ou_theta         = 0.0;
-  t->max_ou_theta         = 1.0;
+  t->ou_theta             = 1.0;
+  t->min_ou_theta         = 1.0E-3;
+  t->max_ou_theta         = 10.0;
 
-  t->ou_mu                = 0.0;
-  t->min_ou_mu            = -1.E+3;
-  t->max_ou_mu            = 1.E+3;
+  for(int i=0;i<t->n_dim;++i) t->ou_mu[i] = 0.0;
+  t->min_ou_mu            = -10.;
+  t->max_ou_mu            = 10.;
 
   
   assert(t->n_dim > 0);
@@ -3611,11 +3620,13 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   
   t->max_num_of_intervals = 10000000;
 
-  t->disp_prior_mean = 1.0;
-
+  t->disp_prior_mean    = 1.0;
+  t->disp_prior_var     = 1.0;
+  t->disp_prior_distrib = EXPONENTIAL_PRIOR;
+  
   t->integrateAncestralLocations = YES;
 
-  t->rrw_param_val = 2.0;
+  t->rrw_prior_sd = 1.0;
 
   t->print_lk = NO;
 }
@@ -3667,7 +3678,7 @@ void MCMC_Init_MCMC_Struct(char *filename, option *io, t_mcmc *mcmc)
   mcmc->always_yes       = NO;
   mcmc->max_lag          = 1000;
   mcmc->sample_num       = 0;
-
+  
   if(filename)
     {
       char *s;

@@ -1736,6 +1736,7 @@ t_phyrex_mod *PHYREX_Make_Migrep_Model(int n_otu,int dim)
   t->lim_up = GEO_Make_Geo_Coord(dim);
   t->lim_do = GEO_Make_Geo_Coord(dim);
   t->sigsq = (phydbl *)mCalloc(dim,sizeof(phydbl));
+  t->ou_mu = (phydbl *)mCalloc(dim,sizeof(phydbl));
   t->sigsq_scale = (phydbl *)mCalloc(2*n_otu-1,sizeof(phydbl));
   return(t);
 }
