@@ -6828,14 +6828,15 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
 
           if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES)
             {
-              PhyML_Fprintf(fp_stats,"rootVelocLon\t");
-              PhyML_Fprintf(fp_stats,"rootVelocLat\t");
+              PhyML_Fprintf(fp_stats,"root_VelocLon\t");
+              PhyML_Fprintf(fp_stats,"root_VelocLat\t");
 
               for(int i=0;i<tree->n_otu;++i)
                 {
                   PhyML_Fprintf(fp_stats,"%s_VelocLon\t",tree->a_nodes[i]->name);
                   PhyML_Fprintf(fp_stats,"%s_VelocLat\t",tree->a_nodes[i]->name);
                 }
+
               for(int i=0;i<tree->n_otu-1;++i)
                 {
                   PhyML_Fprintf(fp_stats,"%d_IntVelocLon\t",tree->a_nodes[tree->n_otu+i]->num);
@@ -6998,8 +6999,6 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
 
           for(int i=0;i<tree->n_otu;++i)
             {
-              /* PhyML_Fprintf(fp_stats,"%g\t", */
-              /*               111.*fabs(sqrt(pow(tree->a_nodes[i]->ldsk->veloc->deriv[0],2)+pow(tree->a_nodes[i]->ldsk->veloc->deriv[1],2)))); */
               PhyML_Fprintf(fp_stats,"%g\t",
                             fabs(tree->a_nodes[i]->ldsk->veloc->deriv[0])+fabs(tree->a_nodes[i]->ldsk->veloc->deriv[1]));
             }
@@ -7018,7 +7017,6 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       for(int i=0;i<tree->n_otu;++i)
         {
           PhyML_Fprintf(fp_stats,"%g\t",
-                        /* Haversine_Distance(tree->a_nodes[i]->ldsk->coord,tree->a_nodes[i]->ldsk->prev->coord)/ */
                         Euclidean_Dist(tree->a_nodes[i]->ldsk->coord,tree->a_nodes[i]->anc->ldsk->coord)/
                         fabs(tree->times->nd_t[tree->a_nodes[i]->num] - tree->times->nd_t[tree->a_nodes[i]->anc->num]));
 
