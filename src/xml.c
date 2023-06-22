@@ -24,7 +24,8 @@ t_tree *XML_Process_Base(char *xml_filename)
   int lens_size;
   int first;
   int *class_num;
-
+  int n_partitionelem;
+  
 
   fp = fopen(xml_filename,"r");
   if(!fp)
@@ -275,13 +276,15 @@ t_tree *XML_Process_Base(char *xml_filename)
       if(select >= 3) io->mem_question = NO;
     }
 
+  n_partitionelem = 0;
   /*! Read all partitionelem nodes and mixturelem nodes in each of them
    */
-  do
-    {
+  do {
       p_elem = XML_Search_Node_Name("partitionelem",YES,p_elem);
+
       
       if(p_elem == NULL) break;
+      else n_partitionelem++;
       
       buff = (option *)Make_Input();
       Set_Defaults_Input(buff);
@@ -1090,9 +1093,14 @@ t_tree *XML_Process_Base(char *xml_filename)
             } // end of partitionelem processing
         }
       while(1);
-    }
+  }
   while(1);
   
+  if(n_partitionelem == 0)
+    {
+      PhyML_Fprintf(stderr,"\n. No <partitionelem> found. Please amend your XML file accordingly.");
+      Exit("\n");
+    }
   
   if(ori_lens)         Free(ori_lens);
   if(ori_lens_old)     Free(ori_lens_old);
