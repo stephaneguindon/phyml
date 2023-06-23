@@ -352,9 +352,8 @@ spr.c spr.h\
 draw.c  draw.h\
 stats.c stats.h\
 rates.c rates.h\
-mcmc.c mcmc.h\
 times.c times.h\
-mg.c mg.h\
+mcmc.c mcmc.h\
 io.c io.h\
 make.c make.h\
 nexus.c nexus.h\
@@ -366,7 +365,15 @@ tbe.c tbe.h \
 sse.c sse.h\
 avx.c avx.h\
 ancestral.c ancestral.h\
-phyrex.c phyrex.h
+phyrex.c phyrex.h\
+location.c location.h\
+slfv.c slfv.h\
+rw.c rw.h\
+rrw.c rrw.h\
+ibm.c ibm.h\
+iwn.c iwn.h\
+iou.c iou.h\
+velocity.c velocity.h
 phyrexsim_LDADD = -lm
 else
 if WANT_DATE

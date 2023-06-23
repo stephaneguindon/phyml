@@ -45,6 +45,7 @@ void SLFV_Generate_Ldsk_New_Location(t_ldsk *l, t_ldsk *prev_l, phydbl rad, phyd
 phydbl SLFV_LnPrior_Lbda(t_tree *tree);
 phydbl SLFV_LnPrior_Mu(t_tree *tree);
 phydbl SLFV_LnPrior_Radius(t_tree *tree);
+phydbl SLFV_Lineage_Velocity(t_ldsk *l, short int dim, t_tree *tree);
 
 #endif
 

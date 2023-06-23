@@ -2304,6 +2304,32 @@ phydbl SLFV_LnPrior_Radius(t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+phydbl SLFV_Lineage_Velocity(t_ldsk *l, short int dim, t_tree *tree)
+{
+  phydbl dist,dt;
+  
+ 
+  dist = 0.0;
+  dt = 0.0;
+  do
+    {
+      dist += l->coord->lonlat[dim] - l->prev->coord->lonlat[dim];
+      dt += l->disk->time - l->prev->disk->time;
+      l = l->prev;
+      assert(l);
+    }
+  while(l->nd == NULL);
+  
+  return(dist / dt);
+}
+
+
+
+
+
+
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////////////////////////////

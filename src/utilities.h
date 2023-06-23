@@ -2609,7 +2609,7 @@ void Convert_Lengths_From_Calendar_To_Substitutions_Post(t_node *a, t_node *d, t
 #include "geo.h"
 #endif
 
-#ifdef PHYREX
+#if (defined PHYREX || PHYREXSIM)
 #include "phyrex.h"
 #include "rw.h"
 #include "rrw.h"

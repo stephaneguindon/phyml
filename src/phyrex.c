@@ -900,6 +900,15 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   tree = PHYREX_Simulate(n_otus,n_sites,width,height,lbda,rad,mu,seed,modid);
   /* tree = PHYREX_Simulate_Independent_Loci(n_otus,500,20.,20.,seed); */
 
+  for(i=0;i<tree->n_otu;++i)
+    {
+      PhyML_Printf("\n %s %f %f",
+                   tree->a_nodes[i]->name,
+                   SLFV_Lineage_Velocity(tree->a_nodes[i],0,tree),
+                   SLFV_Lineage_Velocity(tree->a_nodes[i],1,tree));
+    }
+
+  
   disk = tree->young_disk;
   for(i=0;i<disk->n_ldsk_a;i++) PHYREX_Free_Ldisk(disk->ldsk_a[i]);
   while(disk->prev)

@@ -23,7 +23,7 @@ short int IOU_Is_Iou(t_phyrex_mod *mod)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
+/* Mean velocity at the end of an edge, given the velocity at the start of it */
 phydbl IOU_Velocity_Mean_Along_Edge(t_node *d, short int dim, t_tree *tree)
 {
   phydbl y0,t,ta,mu;
@@ -40,7 +40,7 @@ phydbl IOU_Velocity_Mean_Along_Edge(t_node *d, short int dim, t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
+/* Variance of velocity at the end of an edge, given the velocity at the start of it */
 phydbl IOU_Velocity_Variance_Along_Edge(t_node *d, short int dim, t_tree *tree)
 {
   phydbl var,t,sg,ta;
@@ -60,7 +60,8 @@ phydbl IOU_Velocity_Variance_Along_Edge(t_node *d, short int dim, t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
+/* Mean of location at the end of the edge, given velocities
+   at both extremities */
 phydbl IOU_Location_Mean_Along_Edge(t_node *d, short int dim, t_tree *tree)
 {
   phydbl t,x0,y0,yt,mean,ta,mu;

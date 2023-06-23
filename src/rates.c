@@ -22,7 +22,8 @@ the GNU public licence. See http://www.opensource.org for details.
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
+
 phydbl RATES_Lk(t_tree *tree)
 {
   int err;
@@ -51,7 +52,7 @@ phydbl RATES_Lk(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 phydbl RATES_Clock_R_Prior(t_tree *tree)
 {
   phydbl mean,sd,lnP;
@@ -84,7 +85,7 @@ phydbl RATES_Clock_R_Prior(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 phydbl RATES_Autocor_Prior(t_tree *tree)
 {
   phydbl lnP;
@@ -107,7 +108,7 @@ phydbl RATES_Autocor_Prior(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 phydbl RATES_Prior(t_tree *tree)
 {
   tree->rates->c_lnP = 0.0;
@@ -118,7 +119,7 @@ phydbl RATES_Prior(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Lk_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 {
   int i;
@@ -175,7 +176,7 @@ void RATES_Lk_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 phydbl RATES_Lk_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl nd_r_d, int n_a, int n_d, phydbl dt_a, phydbl dt_d, t_tree *tree)
 {
   phydbl log_dens,mean,sd,min_r, max_r,cr;
@@ -277,7 +278,7 @@ phydbl RATES_Lk_Core(phydbl br_r_a, phydbl br_r_d, phydbl nd_r_a, phydbl nd_r_d,
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 phydbl RATES_Lk_Change_One_Rate(t_node *d, phydbl new_rate, t_tree *tree)
 {
   tree->rates->br_r[d->num] = new_rate;
@@ -290,7 +291,7 @@ phydbl RATES_Lk_Change_One_Rate(t_node *d, phydbl new_rate, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 phydbl RATES_Lk_Change_One_Time(t_node *n, phydbl new_t, t_tree *tree)
 {  
   if(n == tree->n_root)
@@ -320,7 +321,7 @@ phydbl RATES_Lk_Change_One_Time(t_node *n, phydbl new_t, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Update_Triplet(t_node *n, t_tree *tree)
 {
   phydbl curr_triplet,new_triplet;
@@ -466,7 +467,7 @@ void RATES_Update_Triplet(t_node *n, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Print_Triplets(t_tree *tree)
 {
   int i;
@@ -477,7 +478,7 @@ void RATES_Print_Triplets(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Print_Rates(t_tree *tree)
 {
   RATES_Print_Rates_Pre(tree->n_root,tree->n_root->v[2],NULL,tree);
@@ -488,7 +489,7 @@ void RATES_Print_Rates(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Copy_Rate_Struct(t_rate *from, t_rate *to, int n_otu)
 {
   int i;
@@ -580,7 +581,7 @@ void RATES_Copy_Rate_Struct(t_rate *from, t_rate *to, int n_otu)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Duplicate_Calib_Struct(t_tree *from, t_tree *to)
 {
   int i,j;
@@ -598,7 +599,7 @@ void RATES_Duplicate_Calib_Struct(t_tree *from, t_tree *to)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Print_Rates_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 {  
   if((d == tree->n_root->v[2] && d->tax) || (d == tree->n_root->v[1] && d->tax))
@@ -646,7 +647,7 @@ void RATES_Print_Rates_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 phydbl RATES_Average_Rate(t_tree *tree)
 {
   int i;
@@ -660,7 +661,7 @@ phydbl RATES_Average_Rate(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 phydbl RATES_Average_Substitution_Rate(t_tree *tree)
 {
   phydbl l,dt;
@@ -684,7 +685,7 @@ phydbl RATES_Average_Substitution_Rate(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 phydbl RATES_Check_Mean_Rates_True(t_tree *tree)
 {
   phydbl sum;
@@ -699,7 +700,7 @@ phydbl RATES_Check_Mean_Rates_True(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 int RATES_Check_Node_Times(t_tree *tree)
 {
   int err;
@@ -713,7 +714,7 @@ int RATES_Check_Node_Times(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Check_Node_Times_Pre(t_node *a, t_node *d, int *err, t_tree *tree)
 {
   if((tree->times->nd_t[d->num] < tree->times->nd_t[a->num]) || (FABS(tree->times->nd_t[d->num] - tree->times->nd_t[a->num]) < 1.E-20))
@@ -738,7 +739,7 @@ void RATES_Check_Node_Times_Pre(t_node *a, t_node *d, int *err, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Bracket_N_Jumps(int *up, int *down, phydbl param)
 {
   phydbl cdf,eps,a,b,c;
@@ -795,7 +796,7 @@ void RATES_Bracket_N_Jumps(int *up, int *down, phydbl param)
 /* compute f(mu;dt,a,b,lexp), the probability density of mu. We need to integrate over the
    possible number of jumps (n) during the time interval dt */
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 phydbl RATES_Dmu(phydbl mu, int n_jumps, phydbl dt, phydbl a, phydbl b, phydbl lexp, int min_n, int jps_dens)
 {
   if(n_jumps < 0) /* Marginal, i.e., the number of jumps is not fixed */
@@ -856,7 +857,7 @@ phydbl RATES_Dmu(phydbl mu, int n_jumps, phydbl dt, phydbl a, phydbl b, phydbl l
    instantaneous rate at t_node a, this function works out an expected number of (amino-acids or 
    nucleotide) substitutions per site.
 */
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Expect_Number_Subst(phydbl t_beg, phydbl t_end, phydbl r_beg,  int *n_jumps, phydbl *mean_r, phydbl *r_end, t_rate *rates, t_tree *tree)
 {
   phydbl curr_r, curr_t, next_t;
@@ -955,7 +956,7 @@ void RATES_Expect_Number_Subst(phydbl t_beg, phydbl t_end, phydbl r_beg,  int *n
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Get_Mean_Rates_Pre(t_node *a, t_node *d, t_edge *b, phydbl r_a, t_tree *tree)
 {
   phydbl a_t,d_t;
@@ -996,7 +997,7 @@ void RATES_Get_Mean_Rates_Pre(t_node *a, t_node *d, t_edge *b, phydbl r_a, t_tre
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Random_Branch_Lengths(t_tree *tree)
 {
   phydbl r0;
@@ -1023,7 +1024,7 @@ void RATES_Random_Branch_Lengths(t_tree *tree)
 //////////////////////////////////////////////////////////////
 
 /* Scale relative rates (on edges) so that they average to one */
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Update_Normalization_Factor(t_tree *tree)
 {
   /* !!!!!!!!!!!!!!!!! */
@@ -1055,7 +1056,7 @@ void RATES_Update_Normalization_Factor(t_tree *tree)
 //////////////////////////////////////////////////////////////
 
 /* Test whether rates are normalized */
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Check_Rates(t_tree *tree)
 {
   phydbl scale,dt,T,eps;
@@ -1087,7 +1088,7 @@ void RATES_Check_Rates(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Init_Triplets(t_tree *tree)
 {
   int i;
@@ -1098,7 +1099,7 @@ void RATES_Init_Triplets(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Initialize_True_Rates(t_tree *tree)
 {
   int i;
@@ -1109,7 +1110,7 @@ void RATES_Initialize_True_Rates(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Get_Rates_From_Bl(t_tree *tree)
 {
   phydbl dt,cr;
@@ -1145,7 +1146,7 @@ void RATES_Get_Rates_From_Bl(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 phydbl RATES_Lk_Jumps(t_tree *tree)
 {
   int i,n_jps;
@@ -1175,7 +1176,7 @@ phydbl RATES_Lk_Jumps(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Update_Edge_Lengths(t_tree *tree)
 {
   if(tree->is_mixt_tree == YES)
@@ -1196,7 +1197,7 @@ void RATES_Update_Edge_Lengths(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Update_Edge_Lengths_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 {
   RATES_Update_One_Edge_Length(b,tree);
@@ -1215,7 +1216,7 @@ void RATES_Update_Edge_Lengths_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Update_One_Edge_Length(t_edge *b, t_tree *tree)
 {
   if(tree->is_mixt_tree == YES)
@@ -1285,7 +1286,7 @@ void RATES_Update_One_Edge_Length(t_edge *b, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Update_One_Edge_Length_Core(t_edge *b, t_tree *tree)
 {      
   phydbl dt,rr,ra,rd,ta,td,nu,cr,Z;
@@ -1402,7 +1403,7 @@ void RATES_Update_One_Edge_Length_Core(t_edge *b, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Bl_To_Bl(t_tree *tree)
 {
   RATES_Bl_To_Bl_Pre(tree->n_root,tree->n_root->v[2],NULL,tree);
@@ -1417,7 +1418,7 @@ void RATES_Bl_To_Bl(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Bl_To_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 {
 
@@ -1441,7 +1442,7 @@ void RATES_Bl_To_Bl_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Bl_To_Ml(t_tree *tree)
 {
   RATES_Bl_To_Ml_Pre(tree->n_root,tree->n_root->v[2],NULL,tree);
@@ -1455,7 +1456,7 @@ void RATES_Bl_To_Ml(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Bl_To_Ml_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 {
 
@@ -1480,7 +1481,7 @@ void RATES_Bl_To_Ml_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Get_Cov_Matrix_Rooted(phydbl *unroot_cov, t_tree *tree)
 {
   int i,dim;
@@ -1501,7 +1502,7 @@ void RATES_Get_Cov_Matrix_Rooted(phydbl *unroot_cov, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Get_Cov_Matrix_Rooted_Pre(t_node *a, t_node *d, t_edge *b, phydbl *cov, t_tree *tree)
 {
   int i, dim;
@@ -1558,7 +1559,7 @@ void RATES_Get_Cov_Matrix_Rooted_Pre(t_node *a, t_node *d, t_edge *b, phydbl *co
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Covariance_Mu(t_tree *tree)
 {
   int i,j;
@@ -1610,7 +1611,7 @@ void RATES_Covariance_Mu(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Variance_Mu_Pre(t_node *a, t_node *d, t_tree *tree)
 {
   int dim;
@@ -1660,7 +1661,7 @@ void RATES_Variance_Mu_Pre(t_node *a, t_node *d, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Fill_Lca_Table(t_tree *tree)
 {
   int i,j,dist;
@@ -1683,7 +1684,7 @@ void RATES_Fill_Lca_Table(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 /* Get V(L_{i} | L_{-i}) for all i */
 void RATES_Get_Conditional_Variances(t_tree *tree)
 {
@@ -1722,7 +1723,7 @@ void RATES_Get_Conditional_Variances(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Get_All_Reg_Coeff(t_tree *tree)
 {
   int i,j;
@@ -1754,7 +1755,7 @@ void RATES_Get_All_Reg_Coeff(t_tree *tree)
 //////////////////////////////////////////////////////////////
 
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 /* Get V(L_{i} | L_{-i}) for all i */
 void RATES_Get_Trip_Conditional_Variances(t_tree *tree)
 {
@@ -1795,7 +1796,7 @@ void RATES_Get_Trip_Conditional_Variances(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Get_All_Trip_Reg_Coeff(t_tree *tree)
 {
   int i,j;
@@ -1830,7 +1831,7 @@ void RATES_Get_All_Trip_Reg_Coeff(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Check_Lk_Rates(t_tree *tree, int *err)
 {
   int i;
@@ -1859,7 +1860,7 @@ void RATES_Check_Lk_Rates(t_tree *tree, int *err)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 phydbl RATES_Realized_Substitution_Rate(t_tree *tree)
 {
   RATES_Update_Edge_Lengths(tree);
@@ -1870,7 +1871,7 @@ phydbl RATES_Realized_Substitution_Rate(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 phydbl RATES_Expected_Tree_Length(t_tree *tree)
 {
   int n;
@@ -1895,7 +1896,7 @@ phydbl RATES_Expected_Tree_Length(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Expected_Tree_Length_Pre(t_node *a, t_node *d, phydbl eranc, phydbl *mean, int *n, t_tree *tree)
 {
   phydbl erdes;
@@ -1941,7 +1942,7 @@ phydbl Sample_Average_Rate(t_node *a, t_node *d, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Update_Mean_Br_Len(int iter, t_tree *tree)
 {
   int i,dim;
@@ -1964,7 +1965,7 @@ void RATES_Update_Mean_Br_Len(int iter, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Update_Cov_Br_Len(int iter, t_tree *tree)
 {
   int i,j,dim;
@@ -1995,7 +1996,7 @@ void RATES_Update_Cov_Br_Len(int iter, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Set_Mean_L(t_tree *tree)
 {
   int i;
@@ -2009,7 +2010,7 @@ void RATES_Set_Mean_L(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Record_Rates(t_tree *tree)
 {
   int i;
@@ -2029,7 +2030,7 @@ void RATES_Record_Rates(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Reset_Rates(t_tree *tree)
 {
   int i;
@@ -2042,7 +2043,7 @@ void RATES_Reset_Rates(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Set_Clock_And_Nu_Max(t_tree *tree)
 {
   phydbl dt,nu;
@@ -2095,7 +2096,7 @@ void RATES_Set_Clock_And_Nu_Max(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Set_Birth_Rate_Boundaries(t_tree *tree)
 {
   phydbl lbda;
@@ -2134,7 +2135,7 @@ void RATES_Set_Birth_Rate_Boundaries(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 phydbl RATES_Get_Mean_Rate_In_Subtree(t_node *root, t_tree *tree)
 {
   phydbl sum;
@@ -2173,7 +2174,7 @@ phydbl RATES_Get_Mean_Rate_In_Subtree(t_node *root, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Get_Mean_Rate_In_Subtree_Pre(t_node *a, t_node *d, phydbl *sum, int *n, t_tree *tree)
 {
   /* (*sum) += exp(tree->rates->nd_r[d->num]); */
@@ -2212,7 +2213,7 @@ void RATES_Get_Mean_Rate_In_Subtree_Pre(t_node *a, t_node *d, phydbl *sum, int *
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 char *RATES_Get_Model_Name(int model)
 {
   char *s;
@@ -2240,7 +2241,7 @@ char *RATES_Get_Model_Name(int model)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if (defined PHYREX || PHYTIME)
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
 int RATES_Check_Edge_Length_Consistency(t_tree *mixt_tree)
 {
   int i;
