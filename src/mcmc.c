@@ -558,9 +558,9 @@ void MCMC_Rates_All(t_tree *tree)
 
   MCMC_One_Rate(tree->n_root,tree->n_root->v[1],YES,tree);
   /* !!!!!!!!!!!!!!!!!!!!!!!!!!!! */
-  Set_Both_Sides(YES,tree);
-  Lk(NULL,tree);
-  /* if(tree->eval_alnL == YES) Update_Partial_Lk(tree,tree->e_root,tree->n_root->v[1]); */
+  /* Set_Both_Sides(YES,tree); */
+  /* Lk(NULL,tree); */
+  if(tree->eval_alnL == YES) Update_Partial_Lk(tree,tree->e_root,tree->n_root->v[1]);
   MCMC_One_Rate(tree->n_root,tree->n_root->v[2],YES,tree);
 
   RATES_Update_Normalization_Factor(tree);
@@ -596,13 +596,13 @@ void MCMC_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
   if(tree->rates->model_id == GUINDON) return;
 
   /* !!!!!!!!!!!!!!!!!!!!!!!!!!!! */
-  Set_Both_Sides(YES,tree);
-  Lk(NULL,tree);
+  /* Set_Both_Sides(YES,tree); */
+  /* Lk(NULL,tree); */
 
-  PhyML_Printf("\n# %6d %12f (%3d %3d) (%3d %3d %3d)",
-               tree->mcmc->run,tree->c_lnL,
-               a->num,d->num,
-               tree->n_root->num,tree->n_root->v[1]->num,tree->n_root->v[2]->num);
+  /* PhyML_Printf("\n# %6d %12f (%3d %3d) (%3d %3d %3d)", */
+  /*              tree->mcmc->run,tree->c_lnL, */
+  /*              a->num,d->num, */
+  /*              tree->n_root->num,tree->n_root->v[1]->num,tree->n_root->v[2]->num); */
                
   b = Get_Edge(a,d,tree);
   assert(b);

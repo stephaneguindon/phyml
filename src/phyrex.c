@@ -3490,6 +3490,9 @@ void PHYREX_Read_Tip_Coordinates(t_tree *tree)
   fp   = tree->io->fp_in_coord;
   done = (int *)mCalloc(tree->n_otu,sizeof(int));
 
+  sw_lon = sw_lat = 0.0;
+  ne_lon = ne_lat = 1.0;
+    
   rewind(fp);
   
   found_sw = NO;
@@ -4512,8 +4515,6 @@ phydbl PHYREX_Realized_Dispersal_Dist_Alt(t_tree *tree)
   int n,i,j;
   t_geo_coord *new_coord;
 
-  /* !!!!!!!!!!!!!!!!!!! */
-  return(0.0);
   
   new_coord = GEO_Make_Geo_Coord(tree->mmod->n_dim);
   
