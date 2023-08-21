@@ -19,7 +19,6 @@ the GNU public licence. See http://www.opensource.org for details.
 
 void MCMC_Lexp(t_tree *tree);
 void MCMC_Print_Param(t_mcmc *mcmc, t_tree *tree);
-t_mcmc *MCMC_Make_MCMC_Struct();
 void MCMC_Free_MCMC(t_mcmc *mcmc);
 void MCMC_Alpha(t_tree *tree);
 void MCMC_Randomize_Branch_Lengths(t_tree *tree);
@@ -94,7 +93,7 @@ void MCMC_Print_Param_Stdin(t_mcmc *mcmc, t_tree *tree);
 void MCMC_Subtree_Rates(t_tree *tree);
 void MCMC_Get_Acc_Rates(t_mcmc *mcmc);
 void MCMC_Update_Effective_Sample_Size(int move_num, t_mcmc *mcmc, t_tree *tree);
-void MCMC_Terminate();
+void MCMC_Terminate(void);
 void MCMC_Copy_To_New_Param_Val(t_mcmc *mcmc, t_tree *tree);
 void MCMC_Randomize_Node_Rates(t_tree *tree);
 void MCMC_One_Node_Rate(t_node *a, t_node *d, int traversal, t_tree *tree);

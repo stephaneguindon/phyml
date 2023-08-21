@@ -23,7 +23,7 @@ the GNU public licence. See http://www.opensource.org for details.
 
 
 void Launch_Interface(option *input);
-void Clear();
+void Clear(void);
 void Launch_Interface_Input(option *input);
 void Launch_Interface_Data_Type(option *input);
 void Launch_Interface_Model(option *input);

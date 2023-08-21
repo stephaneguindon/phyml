@@ -831,7 +831,7 @@ void XML_Init_Attribute(xml_attr *attr)
 void XML_Init_Node(xml_node *parent, xml_node *new_node, char *name)
 {
   if(name) strcpy(new_node->name,name);
-
+  
   new_node->parent   = parent ? parent : NULL;
   new_node->next     = NULL;
   new_node->prev     = NULL;
@@ -896,14 +896,14 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
   rates->clock_r_prior_mean = 1.0E-1;
   rates->clock_r_prior_var  = 1.0E-8;
   
-  rates->max_rate         = 1.E+2;
+  rates->max_rate         = 1.E+8;
   rates->min_rate         = 1.E-2;
   /* rates->max_rate         = 10.; */
   /* rates->min_rate         = 0.1; */
 
   rates->nu               = 0.1;
   rates->min_nu           = 0.0;
-  rates->max_nu           = 1.0E+3;
+  rates->max_nu           = 3.0;
 
   rates->autocor_rate_prior = 1.0E+0;
   
@@ -3559,7 +3559,7 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->model_id = -1;
   t->use_locations = -1;
   t->sampling_scheme = -1;
-  t->safe_phyrex = YES;
+  t->safe_phyrex = NO;
   
   t->lim_up->lonlat[0] = 100.;
   t->lim_up->lonlat[1] = 100.;
@@ -3583,7 +3583,7 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->prior_param_rad   = 1.;
   t->update_rad        = NO;
   
-  t->min_sigsq         = 1.E-3;
+  t->min_sigsq         = 0.0;
   t->max_sigsq         = 1.E+3;
   t->prior_param_sigsq = 10.0;
 
@@ -3601,7 +3601,6 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   for(int i=0;i<t->n_dim;++i) t->ou_mu[i] = 0.0;
   t->min_ou_mu            = -10.;
   t->max_ou_mu            = 10.;
-
   
   assert(t->n_dim > 0);
   for(int i=0;i<t->n_dim;++i) t->sigsq[i] = t->min_sigsq + (t->max_sigsq-t->min_sigsq)/20.;

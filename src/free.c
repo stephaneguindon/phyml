@@ -1489,6 +1489,19 @@ void Free_TBE_Matrices(int n_otu,  short unsigned*** i_matrix, short unsigned***
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+void Free_All_Node_Labels(t_tree *tree)
+{
+  for(int i=0;i<2*tree->n_otu-1;++i)
+    if(tree->a_nodes[i] != NULL)
+      {
+        Free_Label(tree->a_nodes[i]->label);
+        tree->a_nodes[i]->label = NULL;
+      }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 void Free_Label(t_label *lab)
 {
   if(lab == NULL) return;

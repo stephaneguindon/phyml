@@ -246,6 +246,7 @@ void MCMC_Clock_R(t_tree *tree)
 {
   phydbl new_lnL_seq, cur_lnL_seq;
   phydbl new_lnL_rates, cur_lnL_rates;
+  phydbl new_lnP_rates, cur_lnP_rates;
   phydbl u, ratio, alpha;
   phydbl new_clock_r, cur_clock_r;
   phydbl min, max;
@@ -270,6 +271,9 @@ void MCMC_Clock_R(t_tree *tree)
   cur_lnL_rates  = tree->rates->c_lnL;
   new_lnL_rates  = UNLIKELY;
   
+  cur_lnP_rates  = tree->rates->c_lnP;
+  new_lnP_rates  = UNLIKELY;
+
   MCMC_Make_Move(&cur_clock_r,&new_clock_r,min,max,&ratio,K,tree->mcmc->move_type[move_num]);
   
   if(new_clock_r > min && new_clock_r < max)
@@ -277,12 +281,20 @@ void MCMC_Clock_R(t_tree *tree)
       tree->rates->clock_r = new_clock_r;
       RATES_Update_Edge_Lengths(tree);
       if(tree->eval_alnL == YES) new_lnL_seq = Lk(NULL,tree);
-      if(tree->eval_rlnL == YES) new_lnL_rates = RATES_Lk(tree);
+      if(tree->eval_rlnL == YES)
+        {
+          new_lnL_rates = RATES_Lk(tree);
+          new_lnP_rates = RATES_Prior(tree);
+        }
     }
 
-  ratio += (new_lnL_seq - cur_lnL_seq);
-  ratio += (new_lnL_rates - cur_lnL_rates);
-            
+  if(tree->eval_alnL == YES) ratio += (new_lnL_seq - cur_lnL_seq);
+  if(tree->eval_rlnL == YES)
+    {
+      ratio += (new_lnL_rates - cur_lnL_rates);
+      ratio += (new_lnP_rates - cur_lnP_rates);
+    }
+  
   ratio = exp(ratio);
   alpha = MIN(1.,ratio);
   
@@ -293,6 +305,7 @@ void MCMC_Clock_R(t_tree *tree)
       tree->rates->clock_r = cur_clock_r;
       tree->c_lnL          = cur_lnL_seq;
       tree->rates->c_lnL   = cur_lnL_rates;
+      tree->rates->c_lnP   = cur_lnP_rates;
       RATES_Update_Edge_Lengths(tree);
     }
   else
@@ -543,18 +556,22 @@ void MCMC_Rates_All(t_tree *tree)
   Set_Both_Sides(YES,tree);
   Lk(NULL,tree);
 
-  MCMC_One_Rate(tree->n_root->v[1],tree->n_root->v[2],YES,tree);
-  if(tree->eval_alnL == YES) Update_Partial_Lk(tree,tree->e_root,tree->n_root->v[2]);
-  MCMC_One_Rate(tree->n_root->v[2],tree->n_root->v[1],YES,tree);
+  MCMC_One_Rate(tree->n_root,tree->n_root->v[1],YES,tree);
+  /* !!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+  Set_Both_Sides(YES,tree);
+  Lk(NULL,tree);
+  /* if(tree->eval_alnL == YES) Update_Partial_Lk(tree,tree->e_root,tree->n_root->v[1]); */
+  MCMC_One_Rate(tree->n_root,tree->n_root->v[2],YES,tree);
 
-#ifdef PHYREX
-  if(tree->mmod->safe_phyrex == YES) PHYREX_Update_Ldsk_Rates_Given_Edges(tree);
-#endif
-
+  RATES_Update_Normalization_Factor(tree);
   RATES_Update_Edge_Lengths(tree);
-
   Set_Both_Sides(NO,tree);
   Lk(NULL,tree); /* Required in order to rescale all branch rates */
+
+#ifdef PHYREX
+  PHYREX_Update_Ldsk_Rates_Given_Edges(tree);
+#endif
+
 }
 #endif
 
@@ -578,9 +595,19 @@ void MCMC_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
   if(tree->rates->model_id == STRICTCLOCK) return;
   if(tree->rates->model_id == GUINDON) return;
 
+  /* !!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+  Set_Both_Sides(YES,tree);
+  Lk(NULL,tree);
+
+  PhyML_Printf("\n# %6d %12f (%3d %3d) (%3d %3d %3d)",
+               tree->mcmc->run,tree->c_lnL,
+               a->num,d->num,
+               tree->n_root->num,tree->n_root->v[1]->num,tree->n_root->v[2]->num);
+               
   b = Get_Edge(a,d,tree);
   assert(b);
-  
+
+
   cur_mu       = tree->rates->br_r[d->num];
   new_mu       = tree->rates->br_r[d->num];
   
@@ -589,31 +616,36 @@ void MCMC_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
   
   ratio        = 0.0;
   move_num     = tree->mcmc->num_move_br_r;
-  K            = 1.0;
+  K            = 0.01;
   
   cur_lnL_seq  = tree->c_lnL;
   new_lnL_seq  = UNLIKELY;
   
   cur_lnL_rate = tree->rates->c_lnL;
   new_lnL_rate = UNLIKELY;
-
+  
   hr = 0.0;
   
   MCMC_Make_Move(&cur_mu,&new_mu,r_min,r_max,&hr,K,tree->mcmc->move_type[move_num]);
-    
-  if(new_mu > r_min && new_mu < r_max)
+  
+  if(new_mu < r_min || new_mu > r_max)
     {
-      tree->rates->br_r[d->num] = new_mu;
-      tree->rates->br_do_updt[d->num] = YES;
-      
-      if(a != NULL)
-        {
-          RATES_Update_One_Edge_Length(b,tree);
-          if(tree->eval_alnL == YES) new_lnL_seq  = Lk(b,tree);
-        }
-      if(tree->eval_rlnL == YES) new_lnL_rate = RATES_Lk(tree);
+      tree->mcmc->run_move[move_num]++;
+      tree->mcmc->run++;
+      return;
     }
-
+  
+  tree->rates->br_r[d->num] = new_mu;
+  tree->rates->br_do_updt[d->num] = YES;
+  
+  if(a != NULL)
+    {
+      RATES_Update_One_Edge_Length(b,tree);
+      if(tree->eval_alnL == YES) new_lnL_seq  = Lk(b,tree);
+    }
+  if(tree->eval_rlnL == YES) new_lnL_rate = RATES_Lk(tree);
+    
+  
   
   ratio = 0.0;
   if(tree->eval_alnL == YES) ratio += (new_lnL_seq - cur_lnL_seq);
@@ -636,12 +668,8 @@ void MCMC_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
   if(u > alpha) /* Reject */
     {
       tree->rates->br_r[d->num] = cur_mu;
-
       RATES_Update_One_Edge_Length(b,tree);
-      if(tree->eval_alnL == YES) Update_PMat_At_Given_Edge(b,tree);
-
-      RATES_Update_Normalization_Factor(tree);
-      
+      if(tree->eval_alnL == YES) Update_PMat_At_Given_Edge(b,tree);      
       tree->c_lnL        = cur_lnL_seq;
       tree->rates->c_lnL = cur_lnL_rate;
     }
@@ -652,14 +680,14 @@ void MCMC_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
   
   tree->mcmc->run_move[move_num]++;
   tree->mcmc->run++;
-
+  
   
 #ifdef PHYREX
   PHYREX_Print_MCMC_Stats(tree);
   PHYREX_Print_MCMC_Tree(tree);
   PHYREX_Print_MCMC_Summary(tree);
 #endif
-  
+    
   
   if(traversal == YES)
     {
@@ -669,7 +697,7 @@ void MCMC_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
           for(i=0;i<3;++i)
             if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
               {                
-                if(tree->eval_alnL == YES) Update_Partial_Lk(tree,d->b[i],d->v[i]);
+                if(tree->eval_alnL == YES) Update_Partial_Lk(tree,d->b[i],d);
                 MCMC_One_Rate(d,d->v[i],YES,tree);
               }
 
@@ -1085,10 +1113,15 @@ void MCMC_Times_All(t_tree *tree)
   Set_Both_Sides(YES,tree);
   if(tree->eval_alnL == YES) Lk(NULL,tree);
   Set_Both_Sides(NO,tree);
+  
   MCMC_Root_Time(tree,NO);
   MCMC_Time_Recur(tree->n_root,tree->n_root->v[1],YES,tree);
   if(tree->eval_alnL == YES) Update_Partial_Lk(tree,tree->e_root,tree->n_root->v[1]);
   MCMC_Time_Recur(tree->n_root,tree->n_root->v[2],YES,tree);
+
+#ifdef PHYREX
+  if(tree->mmod->safe_phyrex == YES) PHYREX_Update_Disk_Times_Given_Nodes(tree);
+#endif
 }
 #endif
 
@@ -1335,8 +1368,6 @@ void MCMC_Root_Time(t_tree *tree, int print)
 #endif
   phydbl cur_lnL_time, new_lnL_time;
   phydbl ratio,alpha,hr;
-  phydbl r1_cur,r2_cur;
-  phydbl r1_new,r2_new;
   phydbl t2,t1;
   t_node *v2,*v1;
   phydbl tune,K,eps;
@@ -1357,12 +1388,6 @@ void MCMC_Root_Time(t_tree *tree, int print)
   /* tune = MIN(10.,tree->mcmc->tune_move[tree->mcmc->num_move_root_time]); */
   tune = 0.2;
   
-  r1_cur = tree->rates->br_r[tree->n_root->v[1]->num];
-  r2_cur = tree->rates->br_r[tree->n_root->v[2]->num];
-
-  r1_new = -1.;
-  r2_new = -1.;
-
   v1 = root->v[1];
   v2 = root->v[2];
   
@@ -1395,9 +1420,6 @@ void MCMC_Root_Time(t_tree *tree, int print)
       
       Set_Lk(tree);
       
-      r1_cur = tree->rates->br_r[tree->n_root->v[1]->num];
-      r2_cur = tree->rates->br_r[tree->n_root->v[2]->num];
-
       cur_lnL_seq  = tree->c_lnL;
       new_lnL_seq  = UNLIKELY;
       
@@ -1416,22 +1438,24 @@ void MCMC_Root_Time(t_tree *tree, int print)
 
       t0_cur = tree->times->nd_t[root->num];
       /* t_min = -TWO_TO_THE_LARGE; */
-      t_min = t0_cur - (t_max - t0_cur);
+      
+      /* t_min = t0_cur - (t_max - t0_cur); */      
+      /* assert(tree->young_disk); */
+      /* eps = 0.1 * (tree->young_disk->time - t_max); // Required in case root node is "glued" to one of its descendant */
+      /* K = (tree->young_disk->time - t0_cur) * tune; */
+      /* t0_new = Rnorm_Trunc(t0_cur,K,t_min-eps,t_max,&err); */
+      /* hr -= Log_Dnorm_Trunc(t0_new,t0_cur,K,t_min-eps,t_max,&err); */
+      /* K = (tree->young_disk->time - t0_new) * tune; */
+      /* t_min = t0_new - (t_max - t0_new); */
+      /* hr += Log_Dnorm_Trunc(t0_cur,t0_new,K,t_min-eps,t_max,&err); */
+      /* t_min = t0_cur - (t_max - t0_cur); */
+      
+      t_min = t0_cur - 0.1 * (tree->young_disk->time - t0_cur);
+      t0_new = Uni()*(t_max - t_min) + t_min;
+      hr -= log(1./(t_max - (t0_cur - 0.1 * (tree->young_disk->time - t0_cur))));
+      hr += log(1./(t_max - (t0_new - 0.1 * (tree->young_disk->time - t0_new))));
 
       
-      assert(tree->young_disk);
-      eps = 0.1 * (tree->young_disk->time - t_max); // Required in case root node is "glued" to one of its descendant
-      K = (tree->young_disk->time - t0_cur) * tune;
-      t0_new = Rnorm_Trunc(t0_cur,K,t_min-eps,t_max,&err);
-      hr -= Log_Dnorm_Trunc(t0_new,t0_cur,K,t_min-eps,t_max,&err);
-      K = (tree->young_disk->time - t0_new) * tune;
-      t_min = t0_new - (t_max - t0_new);
-      hr += Log_Dnorm_Trunc(t0_cur,t0_new,K,t_min-eps,t_max,&err);
-      t_min = t0_cur - (t_max - t0_cur);
-
-      /* t0_new = Uni()*(t_max - t_min) + t_min; */
-      /* t0_new = t0_cur; */
-            
       if(isnan(t0_new))
         {
           PhyML_Printf("\n. t_max=%f t0_cur=%f t0_new=%f",t_max,t0_cur,t0_new);
@@ -1443,43 +1467,18 @@ void MCMC_Root_Time(t_tree *tree, int print)
           tree->times->nd_t[root->num] = t0_new;          
           if(tree->n_root->ldsk) tree->n_root->ldsk->disk->time = tree->times->nd_t[root->num];
 
-          rate_failed = NO;
-          if(tree->rates->model_id != STRICTCLOCK)
-            {
-              r1_new = r1_cur * (t1 - t0_cur)/(t1 - t0_new);
-              r2_new = r2_cur * (t2 - t0_cur)/(t2 - t0_new);
-              
-              rate_failed = NO;
-              if(r1_new < tree->rates->min_rate || r1_new > tree->rates->max_rate ||
-                 r2_new < tree->rates->min_rate || r2_new > tree->rates->max_rate)
-                rate_failed = YES;
-
-              if(rate_failed == NO)
-                {
-                  if(tree->eval_rlnL == YES) hr += log(r1_new/r1_cur) + log(r2_new/r2_cur);
-                  
-                  tree->rates->br_r[tree->n_root->v[1]->num] = r1_new;
-                  tree->rates->br_r[tree->n_root->v[2]->num] = r2_new;
-                }
-            }
-
-          if(rate_failed == NO)
-            {
-              if(tree->rates->model_id == STRICTCLOCK) RATES_Update_One_Edge_Length(tree->e_root,tree);
+          RATES_Update_One_Edge_Length(tree->e_root,tree);
           
-              if(tree->eval_glnL == YES)
-                {
+          if(tree->eval_glnL == YES)
+            {
 #ifdef PHYREX
-                  new_lnL_loc = LOCATION_Lk(tree); 
+              new_lnL_loc = LOCATION_Lk(tree); 
 #endif
-                  new_lnL_time = TIMES_Lk(tree);
-                }
-              
-              if(tree->eval_rlnL == YES) new_lnL_rate = RATES_Lk(tree);
-              if(tree->eval_alnL == YES) new_lnL_seq = (tree->rates->model_id == STRICTCLOCK) ? Lk(tree->e_root,tree) : cur_lnL_seq;
-              
+              new_lnL_time = TIMES_Lk(tree);
             }
-          else new_lnL_seq = UNLIKELY;
+              
+          if(tree->eval_rlnL == YES) new_lnL_rate = RATES_Lk(tree);
+          if(tree->eval_alnL == YES) new_lnL_seq  = Lk(tree->e_root,tree);
         }
             
       ratio = 0.0;
@@ -1499,7 +1498,7 @@ void MCMC_Root_Time(t_tree *tree, int print)
       /* if(tree->aux_tree != NULL) */
         /* { */
           /* PhyML_Printf("\n."); */
-          /* PhyML_Printf("\n. %c [%4d] \n. t: %1f->%1f t1:%f t2: %f \n. r1: %10f->%10f r2: %10f->%10f \n. R: %12f alnL:%10f->%10f[%d] \n. tlnL: %10f->%10f[%d] \n. glnL: %10f->%10f[%d] \n. rlnL: %10f->%10f[%d] \n. tune: %10f hr: %f [%f,%f] [%f,%f,%f] ratio: %10f K: %10f rate_failed: %d", */
+          /* PhyML_Printf("\n. %c [%4d] \n. t: %1f->%1f t1:%f t2: %f \n. r1: %10f->%10f r2: %10f->%10f \n. R: %12f alnL:%10f->%10f[%d] \n. tlnL: %10f->%10f[%d] \n. glnL: %10f->%10f[%d] \n. rlnL: %10f->%10f[%d] \n. tune: %10f hr: %f ratio: %10f K: %10f rate_failed: %d", */
           /*              (tree->aux_tree != NULL) ? '*' : 'X', */
           /*              tree->mcmc->run, */
           /*              t0_cur,t0_new, */
@@ -1513,9 +1512,6 @@ void MCMC_Root_Time(t_tree *tree, int print)
           /*              cur_lnL_rate,new_lnL_rate,tree->eval_rlnL, */
           /*              tune, */
           /*              hr, */
-          /*              Log_Dnorm_Trunc(t0_new,t0_cur,(tree->young_disk->time - t0_cur) * tune,t0_cur - (t_max - t0_cur)-eps,t_max,&err), */
-          /*              Log_Dnorm_Trunc(t0_cur,t0_new,(tree->young_disk->time - t0_new) * tune,t0_new - (t_max - t0_new)-eps,t_max,&err), */
-          /*              t0_cur - (t_max - t0_cur)-eps,t0_new - (t_max - t0_new)-eps,t_max, */
           /*              ratio,K,rate_failed); */
           /* PhyML_Printf("\n."); */
         /* } */
@@ -1526,16 +1522,8 @@ void MCMC_Root_Time(t_tree *tree, int print)
       if(u > alpha) /* Reject */
         {
           tree->times->nd_t[root->num] = t0_cur;
-          if(tree->n_root->ldsk) tree->n_root->ldsk->disk->time = t0_cur;
-          
-          if(tree->rates->model_id != STRICTCLOCK)
-            {
-              tree->rates->br_r[tree->n_root->v[1]->num] = r1_cur;
-              tree->rates->br_r[tree->n_root->v[2]->num] = r2_cur;
-            }
-                   
+          if(tree->n_root->ldsk) tree->n_root->ldsk->disk->time = t0_cur;                   
           RATES_Update_One_Edge_Length(tree->e_root,tree);
-          RATES_Update_Normalization_Factor(tree);
           Reset_Lk(tree);
         }
       else
@@ -1556,12 +1544,8 @@ void MCMC_Root_Time(t_tree *tree, int print)
     }
   while(++iter < n_tot_iter);
   
-  Set_Both_Sides(NO,tree);
-
-  /* RATES_Update_Edge_Lengths(tree); */
-  /* if(tree->eval_alnL == YES) Lk(NULL,tree); */
-
 #ifdef PHYREX
+  PHYREX_Update_Disk_Times_Given_Nodes(tree);
   PHYREX_Update_Ldsk_Rates_Given_Edges(tree);
 #endif
 }
@@ -1670,6 +1654,7 @@ void MCMC_Updown_T_Cr(t_tree *tree)
   int i;
   phydbl K,mult,u,alpha,ratio;
   phydbl cur_lnL_rate,new_lnL_rate;
+  phydbl cur_lnP_rate,new_lnP_rate;
   phydbl cur_lnL_time,new_lnL_time;
   phydbl cur_lnL_seq,new_lnL_seq;
   phydbl floor;
@@ -1684,14 +1669,21 @@ void MCMC_Updown_T_Cr(t_tree *tree)
 
   K            = tree->mcmc->tune_move[tree->mcmc->num_move_updown_t_cr];
   ratio        = 0.0;
+
   cur_lnL_rate = tree->rates->c_lnL;
-  new_lnL_rate = tree->rates->c_lnL;
+  new_lnL_rate = UNLIKELY;
+
+  cur_lnP_rate = tree->rates->c_lnP;
+  new_lnP_rate = UNLIKELY;
+
   cur_lnL_seq  = tree->c_lnL;
-  new_lnL_seq  = tree->c_lnL;
+  new_lnL_seq  = UNLIKELY;
+
   cur_lnL_time = tree->times->c_lnL;
-  new_lnL_time = tree->times->c_lnL;
+  new_lnL_time = UNLIKELY;
+
   cur_lnL_seq  = tree->c_lnL;
-  new_lnL_seq  = tree->c_lnL;
+  new_lnL_seq  = UNLIKELY;
 
 
   u = Uni();
@@ -1715,7 +1707,11 @@ void MCMC_Updown_T_Cr(t_tree *tree)
   RATES_Update_Edge_Lengths(tree);      
 
   if(tree->eval_alnL == YES) new_lnL_seq  = Lk(NULL,tree);
-  if(tree->eval_rlnL == YES) new_lnL_rate = RATES_Lk(tree);
+  if(tree->eval_rlnL == YES)
+    {
+      new_lnL_rate = RATES_Lk(tree);
+      new_lnP_rate = RATES_Prior(tree);
+    }
   if(tree->eval_glnL == YES) new_lnL_time = TIMES_Lk(tree);
 
   /* The Hastings ratio is actually mult^(n) when changing the absolute
@@ -1724,9 +1720,13 @@ void MCMC_Updown_T_Cr(t_tree *tree)
   */
   ratio += (n_nodes - 1)*log(mult);
 
-  ratio += (new_lnL_seq - cur_lnL_seq);
-  ratio += (new_lnL_rate - cur_lnL_rate);
-  ratio += (new_lnL_time - cur_lnL_time);
+  if(tree->eval_alnL == YES) ratio += (new_lnL_seq - cur_lnL_seq);
+  if(tree->eval_rlnL == YES)
+    {
+      ratio += (new_lnL_rate - cur_lnL_rate);
+      ratio += (new_lnP_rate - cur_lnP_rate);
+    }
+  if(tree->eval_glnL == YES) ratio += (new_lnL_time - cur_lnL_time);
   
   ratio = exp(ratio);
   alpha = MIN(1.,ratio);
@@ -1748,6 +1748,7 @@ void MCMC_Updown_T_Cr(t_tree *tree)
       RATES_Update_Edge_Lengths(tree);      
       tree->c_lnL = cur_lnL_seq;
       tree->rates->c_lnL = cur_lnL_rate;
+      tree->rates->c_lnP = cur_lnP_rate;
       tree->times->c_lnL = cur_lnL_time;
     }
   else
@@ -1773,97 +1774,148 @@ void MCMC_Updown_T_Cr(t_tree *tree)
 #if (defined PHYREX || PHYTIME)
 void MCMC_Updown_T_Br(t_tree *tree)
 {
-  
   int i;
   phydbl K,mult,u,alpha,ratio;
   phydbl cur_lnL_seq,new_lnL_seq;
   phydbl cur_lnL_rate,new_lnL_rate;
   phydbl cur_lnL_time,new_lnL_time;
+  phydbl cur_lnL_geo,new_lnL_geo;
   phydbl floor;
   int n_nodes, target;
-
+  
   /*! Check that sequences are isochronous. */
   for(i=0;i<tree->n_otu-1;i++) if(!Are_Equal(tree->times->nd_t[i+1],tree->times->nd_t[i],1.E-10)) return; 
 
   if(FABS(tree->times->t_prior_max[tree->n_root->num] - tree->times->t_prior_min[tree->n_root->num]) < 1.E-10) return;
 
   TIMES_Record_Times(tree);
-
-  K            = tree->mcmc->tune_move[tree->mcmc->num_move_updown_t_br];
-  ratio        = 0.0;
-  cur_lnL_seq = tree->c_lnL;
-  new_lnL_seq = tree->c_lnL;
-  cur_lnL_rate = tree->rates->c_lnL;
-  new_lnL_rate = tree->rates->c_lnL;
-  cur_lnL_time = tree->times->c_lnL;
-  new_lnL_time = tree->times->c_lnL;
-
   RATES_Record_Rates(tree);
+
+  /* K           = tree->mcmc->tune_move[tree->mcmc->num_move_updown_t_br]; */
+  K           = 0.01;
+  ratio       = 0.0;
+
+  cur_lnL_seq = tree->c_lnL;
+  new_lnL_seq = UNLIKELY;
+
+  cur_lnL_rate = tree->rates->c_lnL;
+  new_lnL_rate = UNLIKELY;
+
+  cur_lnL_time = tree->times->c_lnL;
+  new_lnL_time = UNLIKELY;
+
+  cur_lnL_geo = tree->mmod->c_lnL;
+  new_lnL_geo = UNLIKELY;
 
   u = Uni();
   mult = exp(K*(u-0.5));
   
+  /* target = tree->n_root->num; */
+  /* floor = 0.0; */
+  /* Scale_Subtree_Height(tree->a_nodes[target],mult,floor,&n_nodes,tree); */
+  /* assert(n_nodes == tree->n_otu-1); */
+  
+  /* for(i=0;i<2*tree->n_otu-1;++i) */
+  /*   { */
+  /*     if(tree->times->nd_t[i] > tree->times->t_prior_max[i] || */
+  /*        tree->times->nd_t[i] < tree->times->t_prior_min[i]) */
+  /*       { */
+  /*         TIMES_Reset_Times(tree); */
+  /*         tree->mcmc->run_move[tree->mcmc->num_move_updown_t_br]++; */
+  /*         return; */
+  /*       } */
+  /*   } */
 
-  target = Rand_Int(tree->n_otu,2*tree->n_otu-3);
-  floor = 0.0;
-  Scale_Subtree_Height(tree->a_nodes[target],mult,floor,&n_nodes,tree);
-
-  for(i=0;i<2*tree->n_otu-1;++i)
+  for(i=0;i<2*tree->n_otu-2;++i)
     {
-      if(tree->times->nd_t[i] > tree->times->t_prior_max[i] ||
-  	 tree->times->nd_t[i] < tree->times->t_prior_min[i])
-  	{
+      assert(tree->a_nodes[i] != tree->n_root);
+      
+      if(tree->a_nodes[i]->anc != tree->n_root) tree->rates->br_r[tree->a_nodes[i]->num] /= mult;
+
+      if(tree->rates->br_r[tree->a_nodes[i]->num] < tree->rates->min_rate ||
+         tree->rates->br_r[tree->a_nodes[i]->num] > tree->rates->max_rate)
+        {
   	  TIMES_Reset_Times(tree);
-	  tree->mcmc->run_move[tree->mcmc->num_move_updown_t_br]++;
-  	  return;
-  	}
+          RATES_Reset_Rates(tree);
+          tree->mcmc->run_move[tree->mcmc->num_move_updown_t_br]++;
+          return;
+        }
     }
+  
+  PHYREX_Update_Disk_Times_Given_Nodes(tree);
+  PHYREX_Update_Ldsk_Rates_Given_Edges(tree);
+  RATES_Update_Normalization_Factor(tree);
+  RATES_Update_Edge_Lengths(tree);      
 
   if(RATES_Check_Node_Times(tree)) Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
 
-
-  if(tree->eval_alnL == YES) new_lnL_seq = Lk(NULL,tree);
+  if(tree->eval_alnL == YES) new_lnL_seq  = Lk(NULL,tree);
   if(tree->eval_rlnL == YES) new_lnL_rate = RATES_Lk(tree);
-  if(tree->eval_glnL == YES) new_lnL_time = TIMES_Lk(tree);
+  if(tree->eval_glnL == YES)
+    {
+      new_lnL_time = TIMES_Lk(tree);
+      new_lnL_geo  = LOCATION_Lk(tree);
+    }
 
-  ratio += n_nodes*log(mult);
+  /* ratio += (n_nodes-2)*log(mult); */
+  /* ratio += log(mult); */
+  ratio += (-(2.*tree->n_otu-2.))*log(mult);
 
-  /* Likelihood ratio */
-  ratio += (new_lnL_seq - cur_lnL_seq);
-  ratio += (new_lnL_rate - cur_lnL_rate);
-  ratio += (new_lnL_time - cur_lnL_time);
+  /* Metropolis ratio */
+  if(tree->eval_alnL == YES) ratio += (new_lnL_seq - cur_lnL_seq);
+  if(tree->eval_rlnL == YES) ratio += (new_lnL_rate - cur_lnL_rate);
+  if(tree->eval_glnL == YES)
+    {
+      ratio += (new_lnL_time - cur_lnL_time);
+      ratio += (new_lnL_geo - cur_lnL_geo);
+    }
   
   ratio = exp(ratio);
   alpha = MIN(1.,ratio);
   u = Uni();
+
+  /* PhyML_Printf("\n. mult: %f new_lnL_seq: %f cur_lnL_seq: %f new_lnL_rate: %f cur_lnL_rate: %f new_lnL_time: %f cur_lnL_time: %f", */
+  /*              mult, */
+  /*              new_lnL_seq,cur_lnL_seq, */
+  /*              new_lnL_rate,cur_lnL_rate, */
+  /*              new_lnL_time,cur_lnL_time); */
   
+
   assert(isnan(u) == NO && isinf(fabs(u)) == NO);
 
   if(u > alpha)
     {
       TIMES_Reset_Times(tree);
       RATES_Reset_Rates(tree);
+#ifdef PHYREX
+      PHYREX_Update_Disk_Times_Given_Nodes(tree);
+      PHYREX_Update_Ldsk_Rates_Given_Edges(tree);
+#endif
+      RATES_Update_Normalization_Factor(tree);
       RATES_Update_Edge_Lengths(tree);      
-      tree->c_lnL              = cur_lnL_seq;
+      tree->c_lnL        = cur_lnL_seq;
       tree->rates->c_lnL = cur_lnL_rate;
       tree->times->c_lnL = cur_lnL_time;
+      tree->mmod->c_lnL  = cur_lnL_geo;
     }
   else
     {
-#ifdef PHYREX
-      PHYREX_Update_Ldsk_Rates_Given_Edges(tree);
-#endif
       tree->mcmc->acc_move[tree->mcmc->num_move_updown_t_br]++;
     }
 
+  
   tree->mcmc->run_move[tree->mcmc->num_move_updown_t_br]++;
   tree->mcmc->run++;
+
 
 #ifdef PHYREX
   PHYREX_Print_MCMC_Stats(tree);
   PHYREX_Print_MCMC_Tree(tree);
   PHYREX_Print_MCMC_Summary(tree);
 #endif
+
+  
+
 }
 #endif
 
@@ -1965,6 +2017,7 @@ void MCMC_Tree_Rates(t_tree *tree)
 {
   phydbl K,mult,u,alpha,ratio;
   phydbl cur_lnL_rate,new_lnL_rate;
+  phydbl cur_lnP_rate,new_lnP_rate;
   phydbl cur_lnL_seq,new_lnL_seq;
   int n_nodes;
   phydbl init_clock;
@@ -1977,12 +2030,18 @@ void MCMC_Tree_Rates(t_tree *tree)
   tree->mcmc->run_move[tree->mcmc->num_move_tree_rates]++;
 
   K             = tree->mcmc->tune_move[tree->mcmc->num_move_tree_rates];
+
   cur_lnL_rate  = tree->rates->c_lnL;
   new_lnL_rate  = UNLIKELY;
-  init_clock    = tree->rates->clock_r;
-  ratio         = 0.0;
+
+  cur_lnP_rate  = tree->rates->c_lnP;
+  new_lnP_rate  = UNLIKELY;
+
   cur_lnL_seq   = tree->c_lnL;
   new_lnL_seq   = UNLIKELY;
+
+  init_clock    = tree->rates->clock_r;
+  ratio         = 0.0;
     
   u = Uni();
   mult = exp(K*(u-0.5));
@@ -2009,13 +2068,21 @@ void MCMC_Tree_Rates(t_tree *tree)
     }
 
   if(tree->eval_alnL == YES) new_lnL_seq = Lk(NULL,tree);  
-  if(tree->eval_rlnL == YES) new_lnL_rate = RATES_Lk(tree);
-
+  if(tree->eval_rlnL == YES)
+    {
+      new_lnL_rate = RATES_Lk(tree);
+      new_lnP_rate = RATES_Prior(tree);
+    }
+  
   if(tree->mod->s_opt->opt_clock_r == YES) ratio += (n_nodes-1)*log(mult);
   else ratio += (n_nodes-2)*log(mult);
 
-  ratio += (new_lnL_rate - cur_lnL_rate);
-  ratio += (new_lnL_seq - cur_lnL_seq);
+  if(tree->eval_alnL == YES) ratio += (new_lnL_seq - cur_lnL_seq);
+  if(tree->eval_rlnL == YES)
+    {
+      ratio += (new_lnL_rate - cur_lnL_rate);
+      ratio += (new_lnP_rate - cur_lnP_rate);
+    }
 
   ratio = exp(ratio);
   alpha = MIN(1.,ratio);
@@ -2029,6 +2096,7 @@ void MCMC_Tree_Rates(t_tree *tree)
       RATES_Reset_Rates(tree);
       RATES_Update_Edge_Lengths(tree);
       tree->rates->c_lnL = cur_lnL_rate;
+      tree->rates->c_lnP = cur_lnP_rate;
       tree->c_lnL = cur_lnL_seq;
     }
   else
@@ -2239,13 +2307,18 @@ void MCMC_Updown_Nu_Cr(t_tree *tree)
 {
   phydbl K,mult,u,alpha,ratio;
   phydbl cur_lnL_rate,new_lnL_rate;
+  phydbl cur_lnP_rate,new_lnP_rate;
   
   RATES_Record_Rates(tree);
 
   K            = tree->mcmc->tune_move[tree->mcmc->num_move_updown_nu_cr];
+
   cur_lnL_rate = tree->rates->c_lnL;
-  new_lnL_rate = tree->rates->c_lnL;
-  
+  new_lnL_rate = UNLIKELY;
+
+  cur_lnP_rate = tree->rates->c_lnP;
+  new_lnP_rate = UNLIKELY;
+
   u = Uni();
   mult = exp(K*(u-0.5));
 
@@ -2281,7 +2354,11 @@ void MCMC_Updown_Nu_Cr(t_tree *tree)
       return;
     }
   
-  if(tree->eval_rlnL == YES) new_lnL_rate = RATES_Lk(tree);
+  if(tree->eval_rlnL == YES)
+    {
+      new_lnL_rate = RATES_Lk(tree);
+      new_lnP_rate = RATES_Prior(tree);
+    }
 
   ratio = 0.0;
   /* Proposal ratio: 2n-2=> number of multiplications, 1=>number of divisions */
@@ -2302,6 +2379,7 @@ void MCMC_Updown_Nu_Cr(t_tree *tree)
       tree->rates->nu /= mult;
       RATES_Reset_Rates(tree);
       tree->rates->c_lnL = cur_lnL_rate;
+      tree->rates->c_lnP = cur_lnP_rate;
     }
   else
     {
@@ -2330,6 +2408,7 @@ void MCMC_Time_Slice(t_tree *tree)
   phydbl K,mult,u,alpha,ratio;
   phydbl cur_lnL_seq,new_lnL_seq;
   phydbl cur_lnL_rate,new_lnL_rate;
+  phydbl cur_lnP_rate,new_lnP_rate;
   phydbl cur_lnL_time,new_lnL_time;
   phydbl floor;
   int n_nodes;
@@ -2340,12 +2419,19 @@ void MCMC_Time_Slice(t_tree *tree)
   TIMES_Record_Times(tree);
   
   K            = tree->mcmc->tune_move[tree->mcmc->num_move_time_slice];
+
   cur_lnL_seq = tree->c_lnL;
   new_lnL_seq = UNLIKELY;
+
   cur_lnL_rate = tree->rates->c_lnL;
   new_lnL_rate = UNLIKELY;
+
+  cur_lnP_rate = tree->rates->c_lnP;
+  new_lnP_rate = UNLIKELY;
+
   cur_lnL_time = tree->times->c_lnL;
   new_lnL_time = UNLIKELY;
+
   ratio        = 0.0;
   
   u = Uni();
@@ -2364,12 +2450,21 @@ void MCMC_Time_Slice(t_tree *tree)
       if(new_lnL_time > UNLIKELY)
         {
           if(tree->eval_alnL == YES) new_lnL_seq = Lk(NULL,tree);      
-          if(tree->eval_rlnL == YES) new_lnL_rate = RATES_Lk(tree);
+          if(tree->eval_rlnL == YES)
+            {
+              new_lnL_rate = RATES_Lk(tree);
+              new_lnP_rate = RATES_Prior(tree);
+            }
         }
       
       ratio += (phydbl)(n_nodes)*log(mult);
       if(tree->eval_alnL == YES) ratio += (new_lnL_seq - cur_lnL_seq);      
-      if(tree->eval_rlnL == YES) ratio += (new_lnL_rate - cur_lnL_rate);
+      if(tree->eval_rlnL == YES)
+        {
+          ratio += (new_lnL_rate - cur_lnL_rate);
+          ratio += (new_lnP_rate - cur_lnP_rate);
+        }
+      
       ratio += (new_lnL_time - cur_lnL_time);
       
       /* printf("\n. seq: %f<-%f times: %f<-%f rates: %f<-%f acc.: [%d/%d] k: %f t: %f x: %f", */
@@ -2397,8 +2492,9 @@ void MCMC_Time_Slice(t_tree *tree)
       TIMES_Reset_Times(tree);
       RATES_Update_Edge_Lengths(tree);
       tree->times->c_lnL = TIMES_Lk(tree); // Required in order to set t_prior_min/max to their original values
-      tree->c_lnL              = cur_lnL_seq;
+      tree->c_lnL        = cur_lnL_seq;
       tree->rates->c_lnL = cur_lnL_rate;
+      tree->rates->c_lnP = cur_lnP_rate;
 
       if(Are_Equal(tree->times->c_lnL,cur_lnL_time,1.E-3) == NO)
         {
@@ -2989,7 +3085,7 @@ void MCMC_Pause(t_mcmc *mcmc)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void MCMC_Terminate()
+void MCMC_Terminate(void)
 {
   char choice;
   PhyML_Printf("\n\n. Do you really want to terminate [Y/n]: ");
@@ -3283,8 +3379,11 @@ void MCMC_Randomize_Rates_Pre(t_node *a, t_node *d, t_tree *tree)
   max_r = tree->rates->max_rate;
   err   = -1;
 
-  tree->rates->br_r[d->num] = Rnorm_Trunc(1.0,tree->rates->nu,min_r,max_r,&err);  
-  
+  if(a != tree->n_root)
+    tree->rates->br_r[d->num] = Rnorm_Trunc(1.0,tree->rates->nu,min_r,max_r,&err);
+  else
+    tree->rates->br_r[d->num] = 1.0;
+      
   if(err == YES) assert(false);
 
   if(d->tax) return;
@@ -4940,20 +5039,26 @@ void MCMC_Birth_Death_Updown(t_tree *tree)
 #if (defined PHYREX || PHYTIME)
 void MCMC_Nu(t_tree *tree)
 {
-  phydbl cur_nu,new_nu,cur_lnL_rate,new_lnL_rate;
+  phydbl cur_nu,new_nu;
+  phydbl cur_lnL_rate,new_lnL_rate;
+  phydbl cur_lnP_rate,new_lnP_rate;  
+  phydbl cur_lnL_seq, new_lnL_seq;
   phydbl u,alpha,ratio;
   phydbl min_nu,max_nu;
   phydbl K;
-  phydbl cur_lnL_seq, new_lnL_seq;
 
-  if(tree->rates->model_id == STRICTCLOCK) return;
   
+  if(tree->rates->model_id == STRICTCLOCK) return;
+    
   ratio = 0.0;
 
   K = tree->mcmc->tune_move[tree->mcmc->num_move_nu];
   
   cur_lnL_rate = tree->rates->c_lnL;
   new_lnL_rate = UNLIKELY;
+
+  cur_lnP_rate = tree->rates->c_lnP;
+  new_lnP_rate = UNLIKELY;
 
   cur_lnL_seq = tree->c_lnL;
   new_lnL_seq = UNLIKELY;
@@ -4970,7 +5075,11 @@ void MCMC_Nu(t_tree *tree)
     {
       tree->rates->nu = new_nu;
       
-      if(tree->eval_rlnL == YES) new_lnL_rate = RATES_Lk(tree);      
+      if(tree->eval_rlnL == YES)
+        {
+          new_lnL_rate = RATES_Lk(tree);
+          new_lnP_rate = RATES_Prior(tree);
+        }
 
       if(tree->rates->model_id == GUINDON)
 	{
@@ -4979,11 +5088,25 @@ void MCMC_Nu(t_tree *tree)
 	}
     }
 
-  if(tree->eval_rlnL == YES) ratio += (new_lnL_rate - cur_lnL_rate);
+  if(tree->eval_rlnL == YES)
+    {
+      ratio += (new_lnL_rate - cur_lnL_rate);
+      ratio += (new_lnP_rate - cur_lnP_rate);
+    }
+  
   if(tree->eval_alnL == YES && tree->rates->model_id == GUINDON) ratio += (new_lnL_seq - cur_lnL_seq);
   
   ratio = exp(ratio);
   alpha = MIN(1.,ratio);
+
+  /* PhyML_Printf("\n. cur_nu: %f new_nu: %f cur_lnL_rate: %f new_lnL_rate: %f cur_lnP_rate: %f new_lnP_rate: %f ratio: %f", */
+  /*              cur_nu, */
+  /*              new_nu, */
+  /*              cur_lnL_rate, */
+  /*              new_lnL_rate, */
+  /*              cur_lnP_rate, */
+  /*              new_lnP_rate, */
+  /*              ratio); */
   
   u = Uni();
   
@@ -4993,6 +5116,7 @@ void MCMC_Nu(t_tree *tree)
     {
       tree->rates->nu    = cur_nu;
       tree->rates->c_lnL = cur_lnL_rate;
+      tree->rates->c_lnP = cur_lnP_rate;
       tree->c_lnL        = cur_lnL_seq;
       if(tree->rates->model_id == GUINDON && tree->eval_alnL == YES) RATES_Update_Edge_Lengths(tree);
     }
@@ -6489,7 +6613,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_prob[mcmc->num_move_birth_rate]            = 0.0;
   mcmc->move_prob[mcmc->num_move_death_rate]            = 0.0;
   mcmc->move_prob[mcmc->num_move_birth_death_updown]    = 0.0;
-  mcmc->move_prob[mcmc->num_move_updown_t_br]           = 0.0;
+  mcmc->move_prob[mcmc->num_move_updown_t_br]           = 1.0;
 #if defined (INVITEE)
   mcmc->move_prob[mcmc->num_move_jump_calibration]      = 0.0;
 #else
@@ -7169,7 +7293,7 @@ void MCMC_PHYREX_Sigsq_Scale(t_tree *tree, int print)
 
   tree->mcmc->run_move[tree->mcmc->num_move_phyrex_sigsq_scale]++;
   
-  sigsq_scale_bkp = (phydbl *)mCalloc(2*tree->n_otu-2,sizeof(phydbl));
+  sigsq_scale_bkp = (phydbl *)mCalloc(2*tree->n_otu-1,sizeof(phydbl));
   
   /* K  = 10.0/tree->n_otu; // Small so as to facilitate convergence of exchange algo */
   K = 0.1;
@@ -7848,7 +7972,7 @@ void MCMC_PHYREX_Delete_Disk(phydbl hr, int n_delete_disks, phydbl cur_lbda, phy
       if(!disk->ldsk && disk->age_fixed == NO)
         {
           if(!n_valid_disks) valid_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
-          else if(!(n_valid_disks%block)) valid_disks = (t_dsk **)mRealloc(valid_disks,n_valid_disks+block,sizeof(t_dsk *));
+          else if(!((n_valid_disks+1)%block)) valid_disks = (t_dsk **)mRealloc(valid_disks,n_valid_disks+block,sizeof(t_dsk *));
           valid_disks[n_valid_disks] = disk;
           n_valid_disks++;
         }
@@ -8127,7 +8251,7 @@ void MCMC_PHYREX_Move_Disk_Updown(t_tree *tree, int print)
       if(disk->age_fixed == NO && !(disk->ldsk && disk->ldsk->n_next > 1 && tree->mod->s_opt->opt_bl == NO))
         {
           if(!n_all_disks) all_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
-          else if(!(n_all_disks%block)) all_disks = (t_dsk **)mRealloc(all_disks,n_all_disks+block,sizeof(t_dsk *));
+          else if(!((n_all_disks+1)%block)) all_disks = (t_dsk **)mRealloc(all_disks,n_all_disks+block,sizeof(t_dsk *));
           all_disks[n_all_disks] = disk;
           n_all_disks++;
         }
@@ -8285,6 +8409,7 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree, int print)
   phydbl cur_tlnL, new_tlnL;
   phydbl cur_alnL, new_alnL;
   phydbl cur_rlnL, new_rlnL;
+  phydbl cur_rlnP, new_rlnP;
   phydbl scale_fact_times;
   int n_disks;
   phydbl K;
@@ -8293,6 +8418,7 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree, int print)
   if(tree->mod->s_opt->opt_node_ages == NO) return;
   
   Set_Lk(tree);
+  Set_Prior(tree);
   
   PHYREX_Record_Disk_Times(tree);
   
@@ -8304,6 +8430,9 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree, int print)
 
   cur_rlnL   = tree->rates->c_lnL;
   new_rlnL   = UNLIKELY;
+
+  cur_rlnP   = tree->rates->c_lnP;
+  new_rlnP   = UNLIKELY;
 
   cur_tlnL   = tree->times->c_lnL;
   new_tlnL   = UNLIKELY;
@@ -8332,7 +8461,7 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree, int print)
          for the multiplier, which is not the case here.
       */
       if(tree->eval_alnL == YES && tree->mod->s_opt->opt_clock_r == YES)
-        hr = (n_disks+1)*log(scale_fact_times);
+        hr = (n_disks-1)*log(scale_fact_times);
       else
         hr = n_disks*log(scale_fact_times);
       
@@ -8347,13 +8476,22 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree, int print)
         }
       
       if(tree->eval_alnL == YES) new_alnL = Lk(NULL,tree);
-      if(tree->eval_rlnL == YES) new_rlnL = RATES_Lk(tree);
+      if(tree->eval_rlnL == YES)
+        {
+          new_rlnL = RATES_Lk(tree);
+          new_rlnP = RATES_Prior(tree);
+        }
     }
   
   ratio = 0.0;
   if(tree->eval_alnL == YES) ratio += (new_alnL - cur_alnL);
   if(tree->eval_glnL == YES) ratio += (new_glnL - cur_glnL);
-  if(tree->eval_rlnL == YES) ratio += (new_rlnL - cur_rlnL);
+  if(tree->eval_rlnL == YES)
+    {
+      ratio += (new_rlnL - cur_rlnL);
+      ratio += (new_rlnP - cur_rlnP);
+    }
+  
   if(tree->eval_glnL == YES) ratio += (new_tlnL - cur_tlnL);
   ratio += hr;
   
@@ -8393,6 +8531,7 @@ void MCMC_PHYREX_Scale_Times(t_tree *tree, int print)
       if(tree->eval_alnL == YES) RATES_Update_Edge_Lengths(tree);
       PHYREX_Check_Disk_Times(tree);
       Reset_Lk(tree);
+      Reset_Prior(tree);
     }
   else
     {
@@ -8438,7 +8577,7 @@ void MCMC_PHYREX_Swap_Disk(t_tree *tree, int print)
           if(!(disk->ldsk->n_next > 1 && tree->mod->s_opt->opt_bl == NO))
             {
               if(!n_valid_disks) valid_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
-              else if(!(n_valid_disks%block)) valid_disks = (t_dsk **)mRealloc(valid_disks,n_valid_disks+block,sizeof(t_dsk *));
+              else if(!((n_valid_disks+1)%block)) valid_disks = (t_dsk **)mRealloc(valid_disks,n_valid_disks+block,sizeof(t_dsk *));
               valid_disks[n_valid_disks] = disk;
               n_valid_disks++;
             }
@@ -8685,7 +8824,6 @@ void MCMC_PHYREX_Shuffle_Node_Times(t_tree *tree, int print)
   while(--n_nodes > 0);
   
   RATES_Update_Edge_Lengths(tree);
-  RATES_Update_Normalization_Factor(tree);
   
   if(tree->eval_glnL == YES)
     {
@@ -8736,7 +8874,6 @@ void MCMC_PHYREX_Shuffle_Node_Times(t_tree *tree, int print)
         }
 
       RATES_Update_Edge_Lengths(tree);
-      RATES_Update_Normalization_Factor(tree);
       PHYREX_Update_Lindisk_List(tree);
       Reset_Lk(tree);
     }
@@ -8764,7 +8901,7 @@ void MCMC_PHYREX_Node_Times(t_tree *tree, int print)
 {
   if(tree->mod->s_opt->opt_node_ages == NO) return;
   
-  if(tree->eval_alnL == YES && tree->rates->model_id == STRICTCLOCK)
+  if(tree->eval_alnL == YES)
     {
       Set_Both_Sides(YES,tree);
       Lk(NULL,tree);
@@ -8775,20 +8912,16 @@ void MCMC_PHYREX_Node_Times(t_tree *tree, int print)
   assert(tree->n_root->ldsk->n_next == 2);
   MCMC_PHYREX_Node_Times_Pre(tree->n_root->ldsk,tree->n_root->ldsk->next[0],tree,print);
   
-  if(tree->eval_alnL == YES && tree->rates->model_id == STRICTCLOCK) Update_Partial_Lk(tree,
-                                                                                       tree->e_root,
-                                                                                       tree->n_root->ldsk->next[0]->nd);
+  if(tree->eval_alnL == YES) Update_Partial_Lk(tree,
+                                               tree->e_root,
+                                               tree->n_root->ldsk->next[0]->nd);
   
   MCMC_PHYREX_Node_Times_Pre(tree->n_root->ldsk,tree->n_root->ldsk->next[1],tree,print);
 
-  PHYREX_Update_Ldsk_Rates_Given_Edges(tree);
-  RATES_Update_Edge_Lengths(tree);
+#ifdef PHYREX
+  if(tree->mmod->safe_phyrex == YES) PHYREX_Update_Disk_Times_Given_Nodes(tree);
+#endif
 
-  if(tree->eval_alnL == YES)
-    {
-      Set_Both_Sides(NO,tree);
-      Lk(NULL,tree); /* Required in order to rescale all branch rates */
-    }
 }
 #endif
 
@@ -8809,11 +8942,8 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
   int i;
   int move_num,err;
   t_ldsk *ldsk_next;
-  phydbl r0_cur,r1_cur,r2_cur;
-  phydbl r0_new,r1_new,r2_new;
   t_node *v0,*v1,*v2;
   phydbl t0_cur,t0_new,t0_anc,t1,t2;
-  short int rate_failed;
 
   if(tree->mod->s_opt->opt_node_ages == NO) return;
 
@@ -8825,18 +8955,13 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
   v1 = d_ldsk->next[0]->nd;
   v2 = d_ldsk->next[1]->nd;
 
-  r0_cur = tree->rates->br_r[v0->num];
-  r1_cur = tree->rates->br_r[v1->num];
-  r2_cur = tree->rates->br_r[v2->num];
-
   t0_anc = tree->times->nd_t[a_ldsk->nd->num];
   t0_cur = tree->times->nd_t[v0->num];
+
   t1 = tree->times->nd_t[v1->num];
   t2 = tree->times->nd_t[v2->num];
   
   Set_Lk(tree);
-
-  rate_failed   = NO;
   
   move_num = tree->mcmc->num_move_phyrex_node_times;
   cur_t    = d_ldsk->disk->time;
@@ -8884,57 +9009,31 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
 
   PHYREX_Update_Lindisk_List_Range(ldsk_next->disk,d_ldsk->prev->disk,tree);
 
-  rate_failed = NO;
-  if(tree->rates->model_id != STRICTCLOCK)
+  t0_new = new_t;
+
+  if(tree->eval_glnL == YES)
     {
-      t0_new = new_t;
-      r0_new = r0_cur * (t0_cur - t0_anc) / (t0_new - t0_anc);
-      r1_new = r1_cur * (t1 - t0_cur) / (t1 - t0_new);
-      r2_new = r2_cur * (t2 - t0_cur) / (t2 - t0_new);
-
-      rate_failed = NO;
-      if(r0_new < tree->rates->min_rate || r0_new > tree->rates->max_rate ||
-         r1_new < tree->rates->min_rate || r1_new > tree->rates->max_rate ||
-         r2_new < tree->rates->min_rate || r2_new > tree->rates->max_rate) rate_failed = YES;
-      
-      if(rate_failed == NO)
-        {
-          if(tree->eval_rlnL == YES) hr += log(r0_new/r0_cur) + log(r1_new/r1_cur) + log(r2_new/r2_cur);
-
-          tree->rates->br_r[v0->num] = r0_new;
-          tree->rates->br_r[v1->num] = r1_new;
-          tree->rates->br_r[v2->num] = r2_new;
-        }
+      new_glnL = (tree->mmod->use_locations == YES) ? LOCATION_Lk(tree) : 0.0; 
+      new_tlnL = TIMES_Lk(tree);
+      if(PHYREX_Total_Number_Of_Intervals(tree) > tree->mmod->max_num_of_intervals) new_glnL = UNLIKELY;
     }
+      
+  if(tree->eval_rlnL == YES) new_rlnL = RATES_Lk(tree);
 
-  if(rate_failed == NO)
+  if(tree->eval_alnL == YES)
     {
-      if(tree->eval_glnL == YES)
+      t_edge *bp,*bc;
+      bp = Get_Edge(d_ldsk->nd->anc,d_ldsk->nd,tree);
+      RATES_Update_One_Edge_Length(bp,tree);
+      for(i=0;i<d_ldsk->n_next;++i)
         {
-          new_glnL = (tree->mmod->use_locations == YES) ? LOCATION_Lk(tree) : 0.0; 
-          new_tlnL = TIMES_Lk(tree);
-          if(PHYREX_Total_Number_Of_Intervals(tree) > tree->mmod->max_num_of_intervals) new_glnL = UNLIKELY;
+          bc = Get_Edge(d_ldsk->nd,d_ldsk->next[i]->nd,tree);
+          RATES_Update_One_Edge_Length(bc,tree);
+          Update_PMat_At_Given_Edge(bc,tree);
         }
-      
-      if(tree->eval_rlnL == YES) new_rlnL = RATES_Lk(tree);
-      
-      if(tree->eval_alnL == YES && tree->rates->model_id == STRICTCLOCK)
-        {
-          t_edge *bp,*bc;
-          bp = Get_Edge(d_ldsk->nd->anc,d_ldsk->nd,tree);
-          RATES_Update_One_Edge_Length(bp,tree);
-          for(i=0;i<d_ldsk->n_next;++i)
-            {
-              bc = Get_Edge(d_ldsk->nd,d_ldsk->next[i]->nd,tree);
-              RATES_Update_One_Edge_Length(bc,tree);
-              Update_PMat_At_Given_Edge(bc,tree);
-            }
-          Update_Partial_Lk(tree,bp,d_ldsk->nd);
-          new_alnL = Lk(bp,tree);
-        }
-      else if(tree->eval_alnL == YES && tree->rates->model_id != STRICTCLOCK) new_alnL = cur_alnL;
+      Update_Partial_Lk(tree,bp,d_ldsk->nd);
+      new_alnL = Lk(bp,tree);
     }
-  else new_alnL = UNLIKELY;
   
   ratio = 0.0;
   if(tree->eval_alnL == YES) ratio += (new_alnL - cur_alnL);
@@ -8959,14 +9058,14 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
 
   /* if(tree->aux_tree == NULL && (v0 == tree->n_root->v[1] || v0 == tree->n_root->v[2])) */
   /*   { */
-  /*     PhyML_Printf("\n! cur_t: %f new_t: %f t_min: %f t_max: %f alnL:%f->%f glnL:%f->%f rlnL:%f->%f tlnL:%f->%f hr: %f alpha:%f", */
-  /*                  cur_t,new_t,t_min,t_max, */
-  /*                  cur_alnL,new_alnL, */
-  /*                  cur_glnL,new_glnL, */
-  /*                  cur_rlnL,new_rlnL, */
-  /*                  cur_tlnL,new_tlnL, */
-  /*                  hr, */
-  /*                  alpha); */
+      /* PhyML_Printf("\n! cur_t: %f new_t: %f t_min: %f t_max: %f alnL:%f->%f glnL:%f->%f rlnL:%f->%f tlnL:%f->%f hr: %f alpha:%f", */
+      /*              cur_t,new_t,t_min,t_max, */
+      /*              cur_alnL,new_alnL, */
+      /*              cur_glnL,new_glnL, */
+      /*              cur_rlnL,new_rlnL, */
+      /*              cur_tlnL,new_tlnL, */
+      /*              hr, */
+      /*              alpha); */
   /*   } */
 
   assert(isnan(u) == NO && isinf(fabs(u)) == NO);
@@ -8976,12 +9075,8 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
       PHYREX_Move_Disk_Updown(d_ldsk->disk,cur_t,tree);
       d_ldsk->disk->time = cur_t;
       tree->times->nd_t[d_ldsk->nd->num] = cur_t; // Ok only if tree is binary
-
-      tree->rates->br_r[v0->num] = r0_cur;
-      tree->rates->br_r[v1->num] = r1_cur;
-      tree->rates->br_r[v2->num] = r2_cur;
         
-      if(tree->eval_alnL == YES && tree->rates->model_id == STRICTCLOCK)
+      if(tree->eval_alnL == YES)
         {
           t_edge *bp,*bc;
           bp = Get_Edge(d_ldsk->nd->anc,d_ldsk->nd,tree);
@@ -8993,9 +9088,10 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
               RATES_Update_One_Edge_Length(bc,tree);
               Update_PMat_At_Given_Edge(bc,tree);
             }
+          Update_Partial_Lk(tree,bp,d_ldsk->nd);
         }
 
-      RATES_Update_Normalization_Factor(tree);
+      
       PHYREX_Update_Lindisk_List_Range(ldsk_next->disk,d_ldsk->prev->disk,tree);
       Reset_Lk(tree);
     }
@@ -9015,11 +9111,11 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
 
   for(i=0;i<d_ldsk->n_next;i++)
     {
-      if(tree->eval_alnL == YES && tree->rates->model_id == STRICTCLOCK) Update_Partial_Lk(tree,Get_Edge(d_ldsk->nd,d_ldsk->next[i]->nd,tree),d_ldsk->next[i]->nd);
+      if(tree->eval_alnL == YES) Update_Partial_Lk(tree,Get_Edge(d_ldsk->nd,d_ldsk->next[i]->nd,tree),d_ldsk->nd);
       MCMC_PHYREX_Node_Times_Pre(d_ldsk,d_ldsk->next[i],tree,print);
     }
   
-  if(tree->eval_alnL == YES && d_ldsk->nd->anc != tree->n_root && tree->rates->model_id == STRICTCLOCK)
+  if(tree->eval_alnL == YES && d_ldsk->nd->anc != tree->n_root)
     Update_Partial_Lk(tree,Get_Edge(d_ldsk->nd->anc,d_ldsk->nd,tree),d_ldsk->nd);
 
 }
@@ -9396,7 +9492,7 @@ void MCMC_PHYREX_Delete_Hit(phydbl hr, int n_delete_disks, phydbl cur_lbda, phyd
       if(disk->ldsk != NULL && disk->ldsk->n_next == 1) 
         {
           if(!n_valid_disks) valid_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
-          else if(!(n_valid_disks%block)) valid_disks = (t_dsk **)mRealloc(valid_disks,n_valid_disks+block,sizeof(t_dsk *));
+          else if(!((n_valid_disks+1)%block)) valid_disks = (t_dsk **)mRealloc(valid_disks,n_valid_disks+block,sizeof(t_dsk *));
           valid_disks[n_valid_disks] = disk;
           n_valid_disks++;
         }
@@ -10581,7 +10677,7 @@ void MCMC_PHYREX_Lineage_Traj(t_tree *tree)
       if(disk->ldsk && disk->ldsk->n_next >= 2)
         {
           if(!n_valid_disks) valid_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
-          else if(!(n_valid_disks%block)) valid_disks = (t_dsk **)mRealloc(valid_disks,n_valid_disks+block,sizeof(t_dsk *));
+          else if(!((n_valid_disks+1)%block)) valid_disks = (t_dsk **)mRealloc(valid_disks,n_valid_disks+block,sizeof(t_dsk *));
           valid_disks[n_valid_disks] = disk;
           n_valid_disks++;
         }
@@ -10770,7 +10866,7 @@ void MCMC_PHYREX_Disk_Multi(t_tree *tree)
       if(disk->age_fixed == NO)
         {
           if(!n_all_disks) all_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
-          else if(!(n_all_disks%block)) all_disks = (t_dsk **)mRealloc(all_disks,n_all_disks+block,sizeof(t_dsk *));
+          else if(!((n_all_disks+1)%block)) all_disks = (t_dsk **)mRealloc(all_disks,n_all_disks+block,sizeof(t_dsk *));
           all_disks[n_all_disks] = disk;
           n_all_disks++;
         }
@@ -10933,7 +11029,7 @@ void MCMC_PHYREX_Ldsk_Multi(t_tree *tree)
       if(disk->ldsk != NULL && ((disk->ldsk->nd != NULL && disk->ldsk->nd->tax == NO) || (disk->ldsk->nd == NULL)))
         {
           if(!n_all_disks) all_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
-          else if(!(n_all_disks%block)) all_disks = (t_dsk **)mRealloc(all_disks,n_all_disks+block,sizeof(t_dsk *));
+          else if(!((n_all_disks+1)%block)) all_disks = (t_dsk **)mRealloc(all_disks,n_all_disks+block,sizeof(t_dsk *));
           all_disks[n_all_disks] = disk;
           n_all_disks++;
         }
@@ -11050,7 +11146,7 @@ void MCMC_PHYREX_Ldsk_And_Disk(t_tree *tree)
          ((disk->ldsk->nd != NULL && disk->ldsk->nd->tax == NO) || disk->ldsk->nd == NULL))
         {
           if(!n_all_disks) all_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
-          else if(!(n_all_disks%block)) all_disks = (t_dsk **)mRealloc(all_disks,n_all_disks+block,sizeof(t_dsk *));
+          else if(!((n_all_disks+1)%block)) all_disks = (t_dsk **)mRealloc(all_disks,n_all_disks+block,sizeof(t_dsk *));
           all_disks[n_all_disks] = disk;
           n_all_disks++;
         }
@@ -11200,7 +11296,7 @@ void MCMC_PHYREX_Ldsk_Given_Disk(t_tree *tree, int print)
       if(disk->ldsk != NULL)
         {
           if(!n_all_disks) all_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
-          else if(!(n_all_disks%block)) all_disks = (t_dsk **)mRealloc(all_disks,n_all_disks+block,sizeof(t_dsk *));
+          else if(!((n_all_disks+1)%block)) all_disks = (t_dsk **)mRealloc(all_disks,n_all_disks+block,sizeof(t_dsk *));
           all_disks[n_all_disks] = disk;
           n_all_disks++;            
         }
@@ -11326,7 +11422,7 @@ void MCMC_PHYREX_Disk_Given_Ldsk(t_tree *tree)
   do
     {
       if(!n_all_disks) all_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
-      else if(!(n_all_disks%block)) all_disks = (t_dsk **)mRealloc(all_disks,n_all_disks+block,sizeof(t_dsk *));
+      else if(!((n_all_disks+1)%block)) all_disks = (t_dsk **)mRealloc(all_disks,n_all_disks+block,sizeof(t_dsk *));
       all_disks[n_all_disks] = disk;
       n_all_disks++;    
       disk = disk->prev;
@@ -11674,7 +11770,7 @@ void MCMC_PHYREX_Indel_Hit_Serial(t_tree *tree)
               if(disk->ldsk && disk->ldsk->n_next == 1)
                 {
                   if(!n_valid_disks) valid_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
-                  else if(!(n_valid_disks%block)) valid_disks = (t_dsk **)mRealloc(valid_disks,n_valid_disks+block,sizeof(t_dsk *));
+                  else if(!((n_valid_disks+1)%block)) valid_disks = (t_dsk **)mRealloc(valid_disks,n_valid_disks+block,sizeof(t_dsk *));
                   valid_disks[n_valid_disks] = disk;
                   n_valid_disks++;
                 }
@@ -12001,7 +12097,7 @@ void MCMC_PHYREX_Indel_Disk_Serial(t_tree *tree)
               if(!disk->ldsk && disk->age_fixed == NO)
                 {
                   if(!n_valid_disks) valid_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
-                  else if(!(n_valid_disks%block)) valid_disks = (t_dsk **)mRealloc(valid_disks,n_valid_disks+block,sizeof(t_dsk *));
+                  else if(!((n_valid_disks+1)%block)) valid_disks = (t_dsk **)mRealloc(valid_disks,n_valid_disks+block,sizeof(t_dsk *));
                   valid_disks[n_valid_disks] = disk;
                   n_valid_disks++;
                 }
@@ -12133,7 +12229,7 @@ void MCMC_PHYREX_Add_Remove_Jump(t_tree *tree)
              ((disk->ldsk != NULL && disk->ldsk->n_next == 1) || disk->ldsk == NULL))
             {
               if(!n_valid_disks) valid_disks = (t_dsk **)mCalloc(block,sizeof(t_dsk *));
-              else if(!(n_valid_disks%block)) valid_disks = (t_dsk **)mRealloc(valid_disks,n_valid_disks+block,sizeof(t_dsk *));
+              else if(!((n_valid_disks+1)%block)) valid_disks = (t_dsk **)mRealloc(valid_disks,n_valid_disks+block,sizeof(t_dsk *));
               valid_disks[n_valid_disks] = disk;
               n_valid_disks++;
               if(disk->ldsk == NULL) n_no_hit += 1.0;
@@ -13495,37 +13591,40 @@ void MCMC_PHYREX_Update_Velocities(t_tree *tree)
                   
                   u = Uni();
                   
-                  if(u < move_prob)
+                  /* if(u < move_prob) */
                     {
                       for(j=0;j<tree->mmod->n_dim;++j)
                         {
                           
                           cur = n->ldsk->veloc->deriv[j];
                           
-                          new = Rnorm(cur,sqrt(fabs(cur)+1.E-6));
-                          hr -= Log_Dnorm(new,cur,sqrt(fabs(cur)+1.E-6),&err);
-                          hr += Log_Dnorm(cur,new,sqrt(fabs(new)+1.E-6),&err);
+                          /* new = Rnorm(cur,sqrt(fabs(cur)+1.E-6)); */
+                          /* hr -= Log_Dnorm(new,cur,sqrt(fabs(cur)+1.E-6),&err); */
+                          /* hr += Log_Dnorm(cur,new,sqrt(fabs(new)+1.E-6),&err); */
+                          new = Rnorm(cur,0.1);
+                          hr -= Log_Dnorm(new,cur,0.1,&err);
+                          hr += Log_Dnorm(cur,new,0.1,&err);
                           
                           n->ldsk->veloc->deriv[j] = new;
                         }
                     }
-                  else
-                    {
-                      hr -= log(1.-move_prob);
-                      hr += log(move_prob);
+                  /* else */
+                  /*   { */
+                  /*     hr -= log(1.-move_prob); */
+                  /*     hr += log(move_prob); */
 
-                      for(j=0;j<tree->mmod->n_dim;++j)
-                        {
-                          cur = n->ldsk->veloc->deriv[j];
+                  /*     for(j=0;j<tree->mmod->n_dim;++j) */
+                  /*       { */
+                  /*         cur = n->ldsk->veloc->deriv[j]; */
                           
-                          if(n->ldsk->prev != NULL) new = n->ldsk->prev->veloc->deriv[j];
-                          else new = cur;
+                  /*         if(n->ldsk->prev != NULL) new = n->ldsk->prev->veloc->deriv[j]; */
+                  /*         else new = cur; */
 
-                          hr += Log_Dnorm(cur,new,sqrt(fabs(new)+1.E-6),&err);
+                  /*         hr += Log_Dnorm(cur,new,sqrt(fabs(new)+1.E-6),&err); */
                           
-                          n->ldsk->veloc->deriv[j] = new;
-                        }
-                    }
+                  /*         n->ldsk->veloc->deriv[j] = new; */
+                  /*       } */
+                  /*   } */
                                     
                   new_glnL = LOCATION_Lk(tree);
 
@@ -13568,51 +13667,51 @@ void MCMC_PHYREX_Update_Velocities(t_tree *tree)
 
 
 
-              /* Update all velocities simultaneously using same scalar */
-              tree->mcmc->run_move[tree->mcmc->num_move_phyrex_velocities]++;
+              /* /\* Update all velocities simultaneously using same scalar *\/ */
+              /* tree->mcmc->run_move[tree->mcmc->num_move_phyrex_velocities]++; */
               
 
-              phydbl min,max,a;
+              /* phydbl min,max,a; */
 
-              min = -6.;
-              max = +6.;
+              /* min = -6.; */
+              /* max = +6.; */
               
-              for(j=0;j<tree->mmod->n_dim;++j)
-                {
-                  cur_glnL = tree->mmod->c_lnL;
-                  new_glnL = tree->mmod->c_lnL;
+              /* for(j=0;j<tree->mmod->n_dim;++j) */
+              /*   { */
+              /*     cur_glnL = tree->mmod->c_lnL; */
+              /*     new_glnL = tree->mmod->c_lnL; */
 
-                  a = Uni()*(max-min)+min;
+              /*     a = Uni()*(max-min)+min; */
               
-                  for(i=0;i<2*tree->n_otu-1;++i)
-                    {
-                      n = tree->a_nodes[i];
-                      PHYREX_Store_Geo_Coord(n->ldsk->coord,n->ldsk->veloc);
-                      n->ldsk->veloc->deriv[j] += a;
-                    }
+              /*     for(i=0;i<2*tree->n_otu-1;++i) */
+              /*       { */
+              /*         n = tree->a_nodes[i]; */
+              /*         PHYREX_Store_Geo_Coord(n->ldsk->coord,n->ldsk->veloc); */
+              /*         n->ldsk->veloc->deriv[j] += a; */
+              /*       } */
                   
-                  new_glnL = LOCATION_Lk(tree);
+              /*     new_glnL = LOCATION_Lk(tree); */
               
-                  ratio = 0.0;
-                  ratio += (new_glnL - cur_glnL);
+              /*     ratio = 0.0; */
+              /*     ratio += (new_glnL - cur_glnL); */
               
-                  ratio = exp(ratio);
-                  alpha = MIN(1.,ratio);
+              /*     ratio = exp(ratio); */
+              /*     alpha = MIN(1.,ratio); */
 
                   
-                  u = Uni();
+              /*     u = Uni(); */
                   
-                  if(u > alpha) /* Reject */
-                    {
-                      for(i=0;i<2*tree->n_otu-1;++i) PHYREX_Restore_Geo_Coord(tree->a_nodes[i]->ldsk->coord,tree->a_nodes[i]->ldsk->veloc);
-                      tree->mmod->c_lnL = cur_glnL;
-                    }
-                  else
-                    {
-                      tree->mmod->c_lnL = new_glnL;
-                      tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_velocities]++;
-                    }
-                }
+              /*     if(u > alpha) /\* Reject *\/ */
+              /*       { */
+              /*         for(i=0;i<2*tree->n_otu-1;++i) PHYREX_Restore_Geo_Coord(tree->a_nodes[i]->ldsk->coord,tree->a_nodes[i]->ldsk->veloc); */
+              /*         tree->mmod->c_lnL = cur_glnL; */
+              /*       } */
+              /*     else */
+              /*       { */
+              /*         tree->mmod->c_lnL = new_glnL; */
+              /*         tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_velocities]++; */
+              /*       } */
+              /*   } */
                   
               tree->mcmc->run++;
               PHYREX_Print_MCMC_Stats(tree);

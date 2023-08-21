@@ -80,10 +80,11 @@ void Bootstrap_MPI(t_tree *tree)
     {
       nbRep = (tree->io->n_boot_replicates / Global_numTask) + 1;
       tree->io->n_boot_replicates = nbRep * Global_numTask;
-      if (Global_myRank == 0) {
-        PhyML_Printf("\n\n. The number of replicates is not a multiple of %d CPUs.\n", Global_numTask);
-        PhyML_Printf("\n. Will run %d replicates.\n", tree->io->n_boot_replicates);
-      }
+      if (Global_myRank == 0)
+        {
+          PhyML_Printf("\n\n. The number of replicates is not a multiple of %d CPUs.\n", Global_numTask);
+          PhyML_Printf("\n. Will run %d replicates.\n", tree->io->n_boot_replicates);
+        }
     }
   else
     nbRep = tree->io->n_boot_replicates/Global_numTask;
@@ -92,18 +93,15 @@ void Bootstrap_MPI(t_tree *tree)
   if (Global_myRank == 0) 
     {
       score_tot = (int *)mCalloc((2*tree->n_otu - 3),sizeof(int));
-      For(i,2*tree->n_otu-3)
-        score_tot[i] = 0;
+      for(i=0;i<2*tree->n_otu-3;++i) score_tot[i] = 0;
     }
   else
     score_tot = NULL;
 
   score_par = (int *)mCalloc((2*tree->n_otu - 3),sizeof(int));
-  For(i,2*tree->n_otu-3)
-    score_par[i] = 0;
+  for(i=0;i<2*tree->n_otu-3;++i) score_par[i] = 0;
 
-  if (Global_myRank == 0)
-    PhyML_Printf("\n  [");
+  if (Global_myRank == 0) PhyML_Printf("\n  [");
 
   for(replicate=0;replicate<nbRep;++replicate)
     {
@@ -158,8 +156,6 @@ void Bootstrap_MPI(t_tree *tree)
           fprintf (stderr, "\ntask %d, receiving random from task %d done\n", Global_myRank, Stat.MPI_SOURCE);
           fflush(stderr);
 #endif
-
-
         }
 
       init_len = 0;
@@ -364,14 +360,15 @@ void Bootstrap_MPI(t_tree *tree)
 	      }
             Free(bootStr);
           }
-          else {
-	    MPI_Ssend (s, T_MAX_LINE, MPI_CHAR, 0, BootTreeTag, MPI_COMM_WORLD);
-	    MPI_Ssend (t, T_MAX_LINE, MPI_CHAR, 0, BootStatTag, MPI_COMM_WORLD);
+          else
+            {
+              MPI_Ssend (s, T_MAX_LINE, MPI_CHAR, 0, BootTreeTag, MPI_COMM_WORLD);
+              MPI_Ssend (t, T_MAX_LINE, MPI_CHAR, 0, BootStatTag, MPI_COMM_WORLD);
 #ifdef MPI_DEBUG
-fprintf (stderr, "\ntask %d, sending bootstraps done\n", Global_myRank);
-fflush(stderr);
+              fprintf (stderr, "\ntask %d, sending bootstraps done\n", Global_myRank);
+              fflush(stderr);
 #endif
-          }
+            }
           Free(t);
           Free(s);
         }
@@ -385,7 +382,7 @@ fflush(stdout);
       Free_Model(boot_mod);
 
       //Each process computes the Bip score sum for all its bootstrap trees
-      For(i,2*tree->n_otu-3) score_par[i] = tree->a_edges[i]->bip_score;
+      for(i=0;i<2*tree->n_otu-3;++i) score_par[i] = tree->a_edges[i]->bip_score;
 
       //Each process sends its Bip score sum. The sums are summed.
       MPI_Reduce(score_par, score_tot, 2*tree->n_otu - 3, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
@@ -394,14 +391,12 @@ fflush(stdout);
   
   if (Global_myRank == 0) 
     {
-      For(i,2*tree->n_otu-3)
-        tree->a_edges[i]->bip_score = score_tot[i];
+      for(i=0;i<2*tree->n_otu-3;++i) tree->a_edges[i]->bip_score = score_tot[i];
       Free (score_tot);
     }
   Free (score_par);
   
-  if (Global_myRank == 0)
-    if(((bootRecv)%tree->io->boot_prog_every)) PhyML_Printf("] %4d/%4d\n ",bootRecv,tree->io->n_boot_replicates);
+  if(Global_myRank == 0) if(((bootRecv)%tree->io->boot_prog_every)) PhyML_Printf("] %4d/%4d\n ",bootRecv,tree->io->n_boot_replicates);
   
   PhyML_Printf("\n\n. Exiting bootstrap function normally."); fflush(NULL);
   tree->lock_topo = 1; /* Topology should not be modified afterwards */

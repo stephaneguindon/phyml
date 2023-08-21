@@ -1475,7 +1475,7 @@ phydbl SLFV_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_mergers,
 
       /* Proposed new time */
       new_time = disk->time - Rexp(mmod->lbda);
-      
+
       lnL += log(mmod->lbda) - mmod->lbda * fabs(disk->time - new_time);
       
       /* New time is older than previous sampled disk (disk->prev) */
@@ -1623,13 +1623,12 @@ phydbl SLFV_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_mergers,
     }
   while(1);  
   disk->prev = NULL;
-
   return(lnL);
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-// Simulate Etheridge-Barton model backwards in time, following n_otu lineages
+// Simulate Etheridge-Barton model backwards in time, following n_otu lineages, sampled in time interval deltat,
 // on a rectangle of dimension width w x h
 // See Kelleher, Barton & Etheridge, Bioinformatics, 2013.
 t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, phydbl rad, phydbl mu, int r_seed)
@@ -1643,7 +1642,10 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
   t_opt *s_opt;
   calign *cdata;
   /* phydbl T; */
-
+  FILE *fp;
+  char *dum;
+  xml_node *root,*nd,*ndnd,*ndndnd;
+  
   n_dim = 2; // 2-dimensional landscape
 
   io    = (option *)Make_Input();
@@ -1689,7 +1691,9 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
 
   /* Allocate migrep model */
   mmod = PHYREX_Make_Migrep_Model(tree->n_otu,n_dim);
-  tree->mmod = mmod;
+  tree->mmod        = mmod;
+  tree->mmod->n_dim = 2;
+  PHYREX_Set_Default_Migrep_Mod(tree->n_otu,tree->mmod);
   PHYREX_Init_Migrep_Mod(mmod,n_dim,0.0,0.0,w,h);
 
   mmod->lbda = lbda;
@@ -1703,7 +1707,6 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
   if(mmod->lbda < mmod->min_lbda) mmod->lbda = mmod->min_lbda;
   if(mmod->rad < mmod->min_rad) mmod->rad = mmod->min_rad;
   if(mmod->mu < mmod->min_mu) mmod->mu = mmod->min_mu;
-
 
   mmod->sigsq[0] = SLFV_Update_Sigsq(tree);
   
@@ -1721,7 +1724,8 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
   tree->young_disk->age_fixed = YES;
   tree->young_disk->centr->lonlat[0] = .5*(tree->mmod->lim_up->lonlat[0]-tree->mmod->lim_do->lonlat[0]);
   tree->young_disk->centr->lonlat[1] = .5*(tree->mmod->lim_up->lonlat[1]-tree->mmod->lim_do->lonlat[1]);   
-  tree->young_disk->n_ldsk_a         = tree->n_otu;
+  tree->young_disk->n_ldsk_a = tree->n_otu;
+
 
   for(i=0;i<tree->n_otu;++i) 
     {
@@ -1734,6 +1738,8 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
       Free(tree->young_disk->ldsk_a[i]->coord->id);
       tree->young_disk->ldsk_a[i]->coord->id = s;
     }
+
+
   
   /* Generate coordinates for the tip nodes (uniform distribution on the rectangle) */
   for(i=0;i<tree->n_otu;i++)
@@ -1742,19 +1748,16 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
       tree->young_disk->ldsk_a[i]->coord->lonlat[1] = Uni()*(tree->mmod->lim_up->lonlat[1]-tree->mmod->lim_do->lonlat[1])+tree->mmod->lim_do->lonlat[1]; // latitude
     }
 
-  /* /\* !!!!!!!!!!!!!!!!!!!!!!!!!! *\/ */
-  /* /\* Fix coordinates of first two tips *\/ */
-  /* tree->young_disk->ldsk_a[0]->coord->lonlat[0] = (tree->mmod->lim_up->lonlat[0]+tree->mmod->lim_do->lonlat[0])/2; // longitude */
-  /* tree->young_disk->ldsk_a[0]->coord->lonlat[1] = (tree->mmod->lim_up->lonlat[1]+tree->mmod->lim_do->lonlat[1])/2; // latitude */
-  /* tree->young_disk->ldsk_a[1]->coord->lonlat[0] = (tree->mmod->lim_up->lonlat[1]+tree->mmod->lim_do->lonlat[1])/2 + 1; // longitude */
-  /* tree->young_disk->ldsk_a[1]->coord->lonlat[1] = (tree->mmod->lim_up->lonlat[1]+tree->mmod->lim_do->lonlat[1])/2 + 1; // latitude */
-
   
   for(i=0;i<tree->n_otu;i++)
     {
       tree->young_disk->ldsk_a[i]->nd = tree->a_nodes[i];
       tree->a_nodes[i]->ldsk = tree->young_disk->ldsk_a[i];
     }
+  
+
+
+
   
   SLFV_Simulate_Backward_Core(tree->young_disk,NO,tree);
 
@@ -1767,12 +1770,16 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
   /* min_rate = 1.E-5; */
   /* max_rate = 1.E-4; */
 
-  phydbl T = PHYREX_Tree_Height(tree);
+  // phydbl T = PHYREX_Tree_Height(tree);
+  phydbl L = PHYREX_Time_Tree_Length(tree);
 
+  
   tree->rates->bl_from_rt = YES;
-  tree->rates->clock_r    = 0.1/fabs(2.*T);
-  tree->rates->model_id      = STRICTCLOCK;
+  // tree->rates->clock_r    = 0.1/fabs(2.*T);
+  tree->rates->clock_r    = 0.05 / L * (2*tree->n_otu-2);
+  tree->rates->model_id   = STRICTCLOCK;
 
+  
   RATES_Update_Edge_Lengths(tree);
 
   Init_Model(cdata,mod,io);
@@ -1786,21 +1793,29 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
   Make_Tree_For_Lk(tree);
   Make_Spr(tree);
   Evolve(tree->data,tree->mod,0,tree);
-
-  PhyML_Printf("@@@ %G %G %G : ",mmod->lbda,mmod->mu,mmod->rad);
-  for(int i=0;i<tree->n_otu-1;++i) for(int j=i+1;j<tree->n_otu;++j) PhyML_Printf("%G ",PHYREX_Dist_Between_Two_Ldsk(tree->a_nodes[i]->ldsk,tree->a_nodes[j]->ldsk,tree));
-  PhyML_Printf(" : ");
-  for(int i=0;i<tree->n_otu-1;++i) for(int j=i+1;j<tree->n_otu;++j) PhyML_Printf("%G ",Euclidean_Dist(tree->a_nodes[i]->ldsk->coord,tree->a_nodes[j]->ldsk->coord));
-  PhyML_Printf("\n");
-  for(int i=0;i<tree->n_otu;++i) PhyML_Printf("\n%20s %12G %12G",
-                                              tree->a_nodes[i]->name,
-                                              tree->a_nodes[i]->ldsk->coord->lonlat[0],
-                                              tree->a_nodes[i]->ldsk->coord->lonlat[1]);
-  PhyML_Printf("\n\n");
-  PhyML_Printf(">> SEQUENCES\n");
-  Print_CSeq(stdout,NO,tree->data,tree);
-  PhyML_Printf("<< SEQUENCES");
   
+  dum = (char *)mCalloc(100,sizeof(char));
+  sprintf(dum,"%s%s%s%d%s","sim_","slfv_","data_",r_seed,".txt");
+  fp = Openfile(dum,WRITE);
+  Print_CSeq(fp,NO,tree->data,tree);
+  fclose(fp);
+  Free(dum);
+  
+
+
+  dum = (char *)mCalloc(100,sizeof(char));
+  sprintf(dum,"%s%s%s%d%s","sim_","slfv_","coord_",r_seed,".txt");
+  fp = Openfile(dum,WRITE);
+  PhyML_Fprintf(fp,"%s\t%s\t%s","Name","Lat","Lon");
+  for(int i=0;i<tree->n_otu;++i) PhyML_Fprintf(fp,"\n%s\t%f\t%f",
+                                              tree->a_nodes[i]->name,
+                                              tree->a_nodes[i]->ldsk->coord->lonlat[1],
+                                              tree->a_nodes[i]->ldsk->coord->lonlat[0]);
+  fclose(fp);
+  Free(dum);
+  
+
+
   /* Init_Partial_Lk_Tips_Double(tree); */
   /* Init_Partial_Lk_Loc(tree); */
 
@@ -1827,8 +1842,23 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
                disk->ldsk->coord->lonlat[1],
                Nucleotide_Diversity(tree->data));
   
-  Exit("\n");
-  
+
+  dum = (char *)mCalloc(100,sizeof(char));
+  sprintf(dum,"%s%s%s%d%s","sim_","slfv_","veloc_",r_seed,".txt");
+  fp = Openfile(dum,WRITE);
+  for(i=0;i<tree->n_otu;++i)
+    {
+      PhyML_Fprintf(fp,"\n%s\t%f\t%f",
+                    tree->a_nodes[i]->name,
+                    SLFV_Lineage_Velocity(tree->a_nodes[i]->ldsk,0,tree),
+                    SLFV_Lineage_Velocity(tree->a_nodes[i]->ldsk,1,tree));
+    }
+
+  fclose(fp);
+  Free(dum);
+
+
+
   /* PhyML_Printf("\n. Tree: "); */
   /* PhyML_Printf("\n. %s \n",Write_Tree(tree)); */
 
@@ -1853,6 +1883,164 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
   /*     PhyML_Printf("\n\t<appliesto clade.id=\"clad%d\"/>",i+1); */
   /*     PhyML_Printf("\n</calibration>"); */
   /*   } */
+
+
+  
+  root = XML_Make_Node("phyrex");
+  XML_Init_Node(NULL,root,"phyrex");
+  root->attr = XML_Make_Attribute(NULL,"run.id","slfv");
+  XML_Add_Attribute(root,"output.file","xxx");
+  XML_Add_Attribute(root,"mcmc.chain.len","1E+8");
+  XML_Add_Attribute(root,"mcmc.sample.every","1E+4");
+  XML_Add_Attribute(root,"mcmc.print.every","1E+4");
+  XML_Add_Attribute(root,"mcmc.burnin","1E+5");
+  XML_Add_Attribute(root,"mutmap","no");
+  XML_Add_Attribute(root,"ignore.sequences","no");
+  XML_Add_Attribute(root,"mcmc.output.trees","no");
+
+  nd = XML_Add_Node(root,"spatialmodel");
+  nd->attr = XML_Make_Attribute(NULL,"name","ibm");
+  XML_Add_Attribute(nd,"sampling","detection");
+  XML_Add_Attribute(nd,"dispersal.prior.mean","1.0");
+  XML_Add_Attribute(nd,"integrateAncestralLocations","true");
+  XML_Add_Attribute(nd,"rrw.param.val","10.");
+
+  nd = XML_Add_Node(root,"lineagerates");
+  nd->attr = XML_Make_Attribute(NULL,"model","lognormal");
+
+  nd = XML_Add_Node(root,"treegenerating");
+  nd->attr = XML_Make_Attribute(NULL,"model","coalescent");
+  XML_Add_Attribute(nd,"neff.prior.mean","1.");
+  XML_Add_Attribute(nd,"expgrowth","no");
+  XML_Add_Attribute(nd,"fix.node.ages","no");
+
+  nd = XML_Add_Node(root,"clockrate");
+  dum = (char *)mCalloc(100,sizeof(char));
+  sprintf(dum,"%f",tree->rates->clock_r);
+  nd->attr = XML_Make_Attribute(NULL,"init.value",dum);
+  XML_Add_Attribute(nd,"opt.clock","yes");
+  XML_Add_Attribute(nd,"prior.mean",dum);
+  sprintf(dum,"%f",10.+tree->rates->clock_r);
+  XML_Add_Attribute(nd,"prior.var",dum);
+  Free(dum);
+
+  
+  nd = XML_Add_Node(root,"topology");
+  ndnd = XML_Add_Node(nd,"instance");
+  ndnd->attr = XML_Make_Attribute(NULL,"id","T1");
+  XML_Add_Attribute(ndnd,"init.tree","BioNJ");
+  
+  nd = XML_Add_Node(root,"ratematrices");
+  nd->attr = XML_Make_Attribute(NULL,"id","RM1");
+  ndnd = XML_Add_Node(nd,"instance");
+  ndnd->attr = XML_Make_Attribute(NULL,"id","M1");
+  XML_Add_Attribute(ndnd,"model","HKY85");
+  XML_Add_Attribute(ndnd,"optimise.tstv","yes");
+
+  
+  nd = XML_Add_Node(root,"siterates");
+  nd->attr = XML_Make_Attribute(NULL,"id","SR1");
+  ndnd = XML_Add_Node(nd,"instance");
+  ndnd->attr = XML_Make_Attribute(NULL,"id","R1");
+  XML_Add_Attribute(ndnd,"init.value","1.0");
+  ndnd = XML_Add_Node(nd,"weights");
+  ndnd->attr = XML_Make_Attribute(NULL,"id","D1");
+  XML_Add_Attribute(ndnd,"family","freerates");
+  ndndnd = XML_Add_Node(ndnd,"instance");
+  ndndnd->attr = XML_Make_Attribute(NULL,"appliesto","R1");
+  XML_Add_Attribute(ndndnd,"value","0.25");
+  
+
+  nd = XML_Add_Node(root,"equfreqs");
+  nd->attr = XML_Make_Attribute(NULL,"id","EF1");
+  ndnd = XML_Add_Node(nd,"instance");
+  ndnd->attr = XML_Make_Attribute(NULL,"id","F1");
+  XML_Add_Attribute(ndnd,"optimise.freqs","no");
+
+
+  nd = XML_Add_Node(root,"branchlengths");
+  nd->attr = XML_Make_Attribute(NULL,"id","BL1");
+  ndnd = XML_Add_Node(nd,"instance");
+  ndnd->attr = XML_Make_Attribute(NULL,"id","L1");
+  XML_Add_Attribute(ndnd,"optimise.lens","yes");
+
+  
+  nd = XML_Add_Node(root,"partitionelem");
+  nd->attr = XML_Make_Attribute(NULL,"id","partition1");
+  dum = (char *)mCalloc(100,sizeof(char));
+  sprintf(dum,"%s%s%s%d%s","./sim_","slfv_","data_",r_seed,".txt");
+  XML_Add_Attribute(nd,"file.name",dum);
+  XML_Add_Attribute(nd,"data.type","nt");
+  XML_Add_Attribute(nd,"interleaved","no");
+  Free(dum);
+
+  ndnd = XML_Add_Node(nd,"mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL,"list","T1");
+  ndnd = XML_Add_Node(nd,"mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL,"list","M1");
+  ndnd = XML_Add_Node(nd,"mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL,"list","F1");
+  ndnd = XML_Add_Node(nd,"mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL,"list","R1");
+  ndnd = XML_Add_Node(nd,"mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL,"list","L1");
+
+  
+  nd = XML_Add_Node(root,"coordinates");
+  nd->attr = XML_Make_Attribute(NULL,"id","coordinates");
+  dum = (char *)mCalloc(100,sizeof(char));
+  sprintf(dum,"%s%s%s%d%s","./sim_","slfv_","coord_",r_seed,".txt");
+  XML_Add_Attribute(nd,"file.name",dum);
+
+
+  for(i=0;i<tree->n_otu;++i)
+    {
+      nd = XML_Add_Node(root,"clade");
+      dum = (char *)mCalloc(100,sizeof(char));
+      sprintf(dum,"%s%d","clad",i+1);      
+      nd->attr = XML_Make_Attribute(NULL,"id",dum);
+      Free(dum);
+      
+      ndnd = XML_Add_Node(nd,"taxon");
+      dum = (char *)mCalloc(100,sizeof(char));
+      sprintf(dum,"%s",tree->a_nodes[i]->name);      
+      ndnd->attr = XML_Make_Attribute(NULL,"value",dum);
+      Free(dum);
+
+      nd = XML_Add_Node(root,"calibration");
+      dum = (char *)mCalloc(100,sizeof(char));
+      sprintf(dum,"%s%d","cal",i+1);      
+      nd->attr = XML_Make_Attribute(NULL,"id",dum);
+      Free(dum);
+
+      ndnd = XML_Add_Node(nd,"lower");
+      dum = (char *)mCalloc(100,sizeof(char));
+      sprintf(dum,"%f",tree->times->nd_t[tree->a_nodes[i]->num]);      
+      XML_Set_Node_Value(ndnd,dum);
+      Free(dum);
+
+      ndnd = XML_Add_Node(nd,"upper");
+      dum = (char *)mCalloc(100,sizeof(char));
+      sprintf(dum,"%f",tree->times->nd_t[tree->a_nodes[i]->num]);      
+      XML_Set_Node_Value(ndnd,dum);
+      Free(dum);
+
+      ndnd = XML_Add_Node(nd,"appliesto");
+      dum = (char *)mCalloc(100,sizeof(char));
+      sprintf(dum,"%s%d","clad",i+1);      
+      ndnd->attr = XML_Make_Attribute(NULL,"clade.id",dum);
+      Free(dum);
+
+    }
+
+
+  
+  dum = (char *)mCalloc(100,sizeof(char));
+  sprintf(dum,"%s%s%s%d%s","sim_","slfv_","config_",r_seed,".xml");
+  fp = Openfile(dum,WRITE);
+  XML_Write_XML_Graph(fp,root);
+  fclose(fp);
+  Free(dum);
 
   return(tree);
 }

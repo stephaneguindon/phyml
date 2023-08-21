@@ -32,7 +32,7 @@ the GNU public licence. See http://www.opensource.org for details.
 /* See: ACM Transactions on Modelling and Computer Simulation, */
 /* Vol. 4, No. 3, 1994, pages 254-266. */
 
-phydbl tt800()
+phydbl tt800(void)
 {
   int M=7;
   unsigned long y;
@@ -73,7 +73,7 @@ phydbl tt800()
 
 /*********************************************************************/
 
-phydbl Uni()
+phydbl Uni(void)
 {
   phydbl r,mx;
   mx = (phydbl)RAND_MAX;

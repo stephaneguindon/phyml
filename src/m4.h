@@ -35,7 +35,7 @@ the GNU public licence. See http://www.opensource.org for details.
 
 int M4_main(int argc, char **argv);
 void M4_Make_Complete(int n_h, int n_o, m4 *m4mod);
-m4 *M4_Make_Light();
+m4 *M4_Make_Light(void);
 void M4_Free_M4_Model(m4 *m4mod);
 void M4_Init_Qmat(m4 *m4mod, calign *data, t_mod *mod);
 void M4_Update_Qmat(m4 *m4mod, t_mod *mod);

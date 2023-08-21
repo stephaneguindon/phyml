@@ -26,26 +26,33 @@ the GNU public licence. See http://www.opensource.org for details.
 
 phydbl RATES_Lk(t_tree *tree)
 {
-  int err;
   
   if(tree->eval_rlnL == NO) return UNLIKELY;
-
+  
   tree->rates->c_lnL  = .0;
 
   RATES_Lk_Pre(tree->n_root,tree->n_root->v[2],NULL,tree);
   RATES_Lk_Pre(tree->n_root,tree->n_root->v[1],NULL,tree);
-  
-  err = NO;
-
-  
-  // Priors on clock rate and rate autocorrelation.
-  // Should be separated from likelihood function...
-  tree->rates->c_lnL += RATES_Clock_R_Prior(tree);      
-  tree->rates->c_lnL += RATES_Autocor_Prior(tree);      
-  
-  if(isnan(tree->rates->c_lnL) || err == YES) assert(false);
+    
+  if(isnan(tree->rates->c_lnL)) assert(false);
   
   return tree->rates->c_lnL;
+}
+#endif
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
+phydbl RATES_Prior(t_tree *tree)
+{
+  // Priors on clock rate and rate autocorrelation.
+  tree->rates->c_lnP = 0.0;
+
+  tree->rates->c_lnP += RATES_Clock_R_Prior(tree);
+  tree->rates->c_lnP += RATES_Autocor_Prior(tree);
+
+  return(tree->rates->c_lnP);
 }
 #endif
 
@@ -92,7 +99,7 @@ phydbl RATES_Autocor_Prior(t_tree *tree)
   phydbl lbda;
 
   lbda = tree->rates->autocor_rate_prior;
-  
+
   lnP = 0.0;
 
   if(tree->rates->model_id == THORNE ||
@@ -100,19 +107,8 @@ phydbl RATES_Autocor_Prior(t_tree *tree)
      tree->rates->model_id == LOGNORMAL ||
      tree->rates->model_id == GAMMA)
     lnP += log(lbda) - lbda * tree->rates->nu;
-  
+
   return(lnP);  
-}
-#endif
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-#if (defined PHYREX || PHYTIME || PHYREXSIM)
-phydbl RATES_Prior(t_tree *tree)
-{
-  tree->rates->c_lnP = 0.0;
-  return(tree->rates->c_lnP);
 }
 #endif
 
@@ -1027,11 +1023,6 @@ void RATES_Random_Branch_Lengths(t_tree *tree)
 #if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Update_Normalization_Factor(t_tree *tree)
 {
-  /* !!!!!!!!!!!!!!!!! */
-  tree->rates->norm_fact = 1.0;
-  return;
-
-  
   phydbl dt,rdt,T,RT;
   int i;
 
@@ -1042,13 +1033,50 @@ void RATES_Update_Normalization_Factor(t_tree *tree)
   for(i=0;i<2*tree->n_otu-2;++i)
     {
       assert(tree->a_nodes[i] != tree->n_root);
-      dt = fabs(tree->times->nd_t[i] - tree->times->nd_t[tree->a_nodes[i]->anc->num]);
+      /* dt = fabs(tree->times->nd_t[i] - tree->times->nd_t[tree->a_nodes[i]->anc->num]); */
+      dt = 1.0;
       rdt = dt*tree->rates->br_r[i];
       T+=dt;
       RT+=rdt;
     }
   assert(RT!=0.0);
   tree->rates->norm_fact = T/RT;
+}
+#endif
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
+void RATES_Normalize_Rates(t_tree *tree)
+{  
+  phydbl dt,rdt,T,RT,Z;
+  int i;
+
+  rdt = 0.0;
+  dt = 0.0;
+  T = 0.0;
+  RT = 0.0;
+  for(i=0;i<2*tree->n_otu-2;++i)
+    {
+      assert(tree->a_nodes[i] != tree->n_root);
+      /* dt = fabs(tree->times->nd_t[i] - tree->times->nd_t[tree->a_nodes[i]->anc->num]); */
+      /* rdt = dt*tree->rates->br_r[i]; */
+      dt = 1.0;
+      rdt = dt*tree->rates->br_r[i];
+      T+=dt;
+      RT+=rdt;
+    }
+  assert(RT!=0.0);
+
+  Z = RT/T;
+  
+  for(i=0;i<2*tree->n_otu-2;++i)
+    {
+      tree->rates->br_r[i] /= Z;
+      if(tree->rates->br_r[i] < tree->rates->min_rate) tree->rates->br_r[i] = tree->rates->min_rate;
+      if(tree->rates->br_r[i] > tree->rates->max_rate) tree->rates->br_r[i] = tree->rates->max_rate;
+    }
 }
 #endif
 
@@ -2296,8 +2324,40 @@ int RATES_Check_Edge_Length_Consistency(t_tree *mixt_tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
+phydbl RATES_Mean_Rate_Multiplier(t_tree *tree)
+{
+  int i;
+  phydbl mean;
+
+  mean = 0.0;
+  
+  for(i=0;i<2*tree->n_otu-2;++i)
+    {
+      assert(tree->a_nodes[i] != tree->n_root);
+      
+      /* mean += tree->rates->norm_fact * tree->rates->br_r[tree->a_nodes[i]->num]; */
+      mean += tree->rates->br_r[tree->a_nodes[i]->num];
+    }
+
+  return(mean / (2*tree->n_otu-2));
+}
+#endif
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+#if (defined PHYREX || PHYTIME || PHYREXSIM)
+void RATES_Swap_Rates(t_node *x, t_node *y, t_tree *tree)
+{
+  phydbl buff;
+  
+  buff                      = tree->rates->br_r[x->num];
+  tree->rates->br_r[x->num] = tree->rates->br_r[y->num];
+  tree->rates->br_r[y->num] = buff;  
+}
+#endif
+
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

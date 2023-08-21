@@ -21,5 +21,5 @@ the GNU public licence. See http://www.opensource.org for details.
 #include "free.h"
 #include "interface.h"
 
-void Usage();
+void Usage(void);
 #endif

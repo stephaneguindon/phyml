@@ -104,5 +104,6 @@ void Free_All_Edges_Light(t_tree *tree);
 void Free_All_Edges_Lens(t_tree *tree);
 void Free_Contmod(t_contmod *contmod);
 void Free_Geo_Veloc(t_geo_veloc *t);
+void Free_All_Node_Labels(t_tree *tree);
 
 #endif

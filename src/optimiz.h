@@ -88,7 +88,7 @@ phydbl Brent_1dim(phydbl ax, phydbl bx, phydbl cx,
 		  phydbl *p, phydbl *xi, phydbl n);
 
 int Min_With_Derivatives(t_tree *tree, phydbl *p, int n, phydbl ftol, phydbl step_size, 
-			 phydbl (*func) (), void (*dfunc)(), phydbl (*linmin)());
+			 phydbl (*func) (void), void (*dfunc)(void), phydbl (*linmin)(void));
 void BFGS(t_tree *tree, 
 	  phydbl *p, 
 	  int n, 

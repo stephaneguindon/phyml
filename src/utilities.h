@@ -2266,7 +2266,8 @@ typedef struct __Label{
   char *key;
   char *val;
   char sep;
-  struct __Label    *next;
+  struct __Label *next;
+  struct __Label *prev;
 }t_label;
 
 
@@ -2583,6 +2584,7 @@ void Set_Bl_From_Rt(int yesno, t_tree *tree);
 void Replace_Short_With_Long_Tax_Names(t_tree *tree, option *io);
 void Convert_Lengths_From_Calendar_To_Substitutions(t_tree *tree);
 void Convert_Lengths_From_Calendar_To_Substitutions_Post(t_node *a, t_node *d, t_tree *tree);
+t_label *Get_Next_Label(t_label *curr_lab);
 
 
 #include "xml.h"

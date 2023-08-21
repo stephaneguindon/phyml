@@ -280,7 +280,7 @@ int M4_main(int argc, char **argv)
 
 
 /* Allocate memory */
-m4 *M4_Make_Light()
+m4 *M4_Make_Light(void)
 {
   m4 *m4mod;
 

@@ -12768,35 +12768,6 @@ void Exchange_Nodes(t_node *a, t_node *d, t_node *w, t_node *v, t_tree *tree)
   t_edge *ba,*bd;
   void *dum;
   
-  /* PhyML_Printf("\n. a:%p a->num: %d %d %d %d", */
-  /*              a, */
-  /*              a->num, */
-  /*              a->v[0] ? a->v[0]->num : -1, */
-  /*              a->v[1] ? a->v[1]->num : -1, */
-  /*              a->v[2] ? a->v[2]->num : -1); */
-
-  /* PhyML_Printf("\n. w:%p w->num: %d %d %d %d", */
-  /*               w, */
-  /*               w->num, */
-  /*               w->v[0] ? w->v[0]->num : -1, */
-  /*               w->v[1] ? w->v[1]->num : -1, */
-  /*               w->v[2] ? w->v[2]->num : -1); */
-  
-  /* PhyML_Printf("\n. d:%p d->num: %d %d %d %d", */
-  /*              d, */
-  /*              d->num, */
-  /*              d->v[0] ? d->v[0]->num : -1, */
-  /*              d->v[1] ? d->v[1]->num : -1, */
-  /*              d->v[2] ? d->v[2]->num : -1); */
-
-  /* PhyML_Printf("\n. v:%p v->num: %d %d %d %d", */
-  /*              v, */
-  /*              v->num, */
-  /*              v->v[0] ? v->v[0]->num : -1, */
-  /*              v->v[1] ? v->v[1]->num : -1, */
-  /*              v->v[2] ? v->v[2]->num : -1); */
-
-
   root_side = -1;
   
   /* a is root node */
@@ -12816,17 +12787,7 @@ void Exchange_Nodes(t_node *a, t_node *d, t_node *w, t_node *v, t_tree *tree)
   ba = a->b[dw];
   bd = d->b[dv];
 
-  /* PhyML_Printf("\n> ba: %d ba->left: %d ba->rght: %d", */
-  /*              ba->num, */
-  /*              ba->left->num, */
-  /*              ba->rght->num); */
-  /* PhyML_Printf("\n> bd: %d bd->left: %d bd->rght: %d", */
-  /*              bd->num, */
-  /*              bd->left->num, */
-  /*              bd->rght->num); */
-  
   /* Connect nodes */
-
   dum = w->v[0];
   w->v[0] = v->v[0];
   v->v[0] = dum;
@@ -12835,7 +12796,7 @@ void Exchange_Nodes(t_node *a, t_node *d, t_node *w, t_node *v, t_tree *tree)
   v->anc = a;
   
   a->v[dw] = v;
-  d->v[dv] = w;      
+  d->v[dv] = w;
 
   /* Connect edges */
   if(ba->left == w) ba->left = v;
@@ -12859,15 +12820,6 @@ void Exchange_Nodes(t_node *a, t_node *d, t_node *w, t_node *v, t_tree *tree)
       ba->rght = v;
       ba->left = a;
     }
-
-  /* PhyML_Printf("\n< ba: %d ba->left: %d ba->rght: %d", */
-  /*              ba->num, */
-  /*              ba->left->num, */
-  /*              ba->rght->num); */
-  /* PhyML_Printf("\n< bd: %d bd->left: %d bd->rght: %d", */
-  /*              bd->num, */
-  /*              bd->left->num, */
-  /*              bd->rght->num); */
 
   Set_Edge_Dirs(ba,ba->left,ba->rght,tree);
   Set_Edge_Dirs(bd,bd->left,bd->rght,tree);
@@ -12910,19 +12862,6 @@ void Exchange_Nodes(t_node *a, t_node *d, t_node *w, t_node *v, t_tree *tree)
       else if(v == tree->e_root->rght) Swap_Partial_Lk(tree->e_root,bd,RGHT,bd->left==w?LEFT:RGHT,tree);
     }
   
-  /* if(a->prev == NULL) */
-  /*   PhyML_Printf("\n< b1: %d [%d;%d] v1: %d b2: %d [%d;%d] v2: %d e_root->left: %d e_root->rght: %d", */
-  /*                a->b[1]->num, */
-  /*                a->b[1]->left->num, */
-  /*                a->b[1]->rght->num, */
-  /*                a->v[1]->num, */
-  /*                a->b[2]->num, */
-  /*                a->b[2]->left->num, */
-  /*                a->b[2]->rght->num, */
-  /*                a->v[2]->num, */
-  /*                tree->e_root->left->num, */
-  /*                tree->e_root->rght->num); */
-
   if(tree->is_mixt_tree == YES) MIXT_Exchange_Nodes(a,d,w,v,tree);
 }
 
@@ -12974,3 +12913,24 @@ void Convert_Lengths_From_Calendar_To_Substitutions_Post(t_node *a, t_node *d, t
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
+t_label *Get_Next_Label(t_label *curr_lab)
+{
+  t_label *next_lab;
+
+
+  next_lab = Make_Label();
+
+  if(curr_lab == NULL)
+    {
+      next_lab->prev = NULL;
+      next_lab->next = NULL;
+    }
+  else
+    {
+      while(curr_lab->next != NULL) curr_lab = curr_lab->next;
+      next_lab->prev = curr_lab;
+      curr_lab->next = next_lab;
+    }
+      
+  return(next_lab);
+}

@@ -1012,7 +1012,7 @@ phydbl TIMES_Prior_Neff(t_tree *tree)
   if(tree->times->neff_prior_distrib == EXPONENTIAL_PRIOR)
     {
       lnP += Log_Dexp(tree->times->scaled_pop_size,
-                      tree->times->neff_prior_mean);
+                      1./tree->times->neff_prior_mean);
     }
   else if(tree->times->neff_prior_distrib == NORMAL_PRIOR)
     {

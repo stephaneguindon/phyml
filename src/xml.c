@@ -1554,7 +1554,7 @@ int XML_Add_Attribute(xml_node *n, char *attr_name, char *attr_value)
   attr = n->attr;
   while(attr->next != NULL) attr = attr->next;
   assert(attr);
-
+  
   attr->next = XML_Make_Attribute(attr,attr_name,attr_value);
   XML_Init_Attribute(attr);
   n->n_attr++;
@@ -2169,6 +2169,7 @@ void XML_Write_XML_Node(FILE *fp, int *indent, xml_node *root)
   char *s;
   int i;
 
+
   s = (char *)mCalloc((*indent)+1,sizeof(char));
   for(i=0;i<(*indent);++i) s[i]='\t';
   s[i]='\0';
@@ -2198,8 +2199,6 @@ void XML_Write_XML_Node(FILE *fp, int *indent, xml_node *root)
     }
 
   PhyML_Fprintf(fp,"\n%s</%s>",s,n->name);
-
-  PhyML_Fprintf(fp,"\n");
 
   if(n->next) XML_Write_XML_Node(fp,indent,n->next);  
 
