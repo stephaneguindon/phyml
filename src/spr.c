@@ -732,11 +732,10 @@ void Global_Spr_Search(t_tree *tree)
   phydbl best_lnL;
   t_tree *best_tree;
   time_t t_cur;
-  phydbl mean_delta_lnL_spr,max_delta_lnL_spr,tune_l_mult;
+  phydbl max_delta_lnL_spr,tune_l_mult;
   
   unsigned int no_improv  = 0;
   unsigned int last_best_found = 0;
-  unsigned int hit_zero_improv = 0;
   unsigned int freq = 1;
   const unsigned int round_freq = 10;
   
@@ -768,9 +767,7 @@ void Global_Spr_Search(t_tree *tree)
   tree->mod->s_opt->eval_list_regraft         = NO;
   tree->mod->s_opt->max_delta_lnL_spr_current = 0.0;
   tree->mod->s_opt->min_n_triple_moves        = 1;
-  mean_delta_lnL_spr                          = 0.0;
   max_delta_lnL_spr                           = 0.0;
-  hit_zero_improv                             = 0;
   tune_l_mult                                 = 0.01;
   best_lnL                                    = tree->c_lnL;
   
@@ -817,15 +814,11 @@ void Global_Spr_Search(t_tree *tree)
        
       if((iter%4) > 0 || iter == 0)
         {
-          mean_delta_lnL_spr += tree->mod->s_opt->max_delta_lnL_spr_current;
           if(tree->mod->s_opt->max_delta_lnL_spr_current > max_delta_lnL_spr) max_delta_lnL_spr = tree->mod->s_opt->max_delta_lnL_spr_current;
         }
       else if(iter > 0)
         {
-          mean_delta_lnL_spr /= 4.0;
-          /* tree->mod->s_opt->max_delta_lnL_spr = MAX(50.,MIN(2.0*mean_delta_lnL_spr,0.5*tree->mod->s_opt->max_delta_lnL_spr)); */
           tree->mod->s_opt->max_delta_lnL_spr = MAX(50.,2.*max_delta_lnL_spr);
-          mean_delta_lnL_spr = tree->mod->s_opt->max_delta_lnL_spr_current;
           max_delta_lnL_spr = 0.0;
         }
       
@@ -838,12 +831,7 @@ void Global_Spr_Search(t_tree *tree)
           if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf(" +");
           if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace);
         }
-      
-      if(tree->mod->s_opt->n_improvements == 0)
-        {
-          hit_zero_improv++;
-        }
-      
+            
       no_improv++;
       iter++;
     }
@@ -863,9 +851,7 @@ void Global_Spr_Search(t_tree *tree)
   tree->mod->s_opt->max_delta_lnL_spr_current = 0.0;
   tree->mod->s_opt->min_n_triple_moves        = 1;
   tree->mod->s_opt->deepest_path              = 0;
-  mean_delta_lnL_spr                          = 0.0;
   max_delta_lnL_spr                           = 0.0;
-  hit_zero_improv                             = 0;
   no_improv                                   = 0;
   
   do
@@ -904,14 +890,11 @@ void Global_Spr_Search(t_tree *tree)
       
       if((iter%4) > 0 || iter == 0)
         {
-          mean_delta_lnL_spr += tree->mod->s_opt->max_delta_lnL_spr_current;
           if(tree->mod->s_opt->max_delta_lnL_spr_current > max_delta_lnL_spr) max_delta_lnL_spr = tree->mod->s_opt->max_delta_lnL_spr_current;
         }
       else if(iter > 0)
         {
-          mean_delta_lnL_spr /= 4.0;
           tree->mod->s_opt->max_delta_lnL_spr = MAX(20.,2.*max_delta_lnL_spr);
-          mean_delta_lnL_spr = tree->mod->s_opt->max_delta_lnL_spr_current;
           max_delta_lnL_spr = 0.0;
         }
       
@@ -923,11 +906,6 @@ void Global_Spr_Search(t_tree *tree)
           Copy_Tree(tree,best_tree);
           if(tree->verbose > VL0 && tree->io->quiet == NO) PhyML_Printf(" +");
           if(tree->io->print_json_trace == YES) JSON_Tree_Io(tree,tree->io->fp_out_json_trace);
-        }
-      
-      if(tree->mod->s_opt->n_improvements == 0)
-        {
-          hit_zero_improv++;
         }
       
       no_improv++;
@@ -1948,7 +1926,7 @@ void Spr_Shuffle(t_tree *mixt_tree)
 
 void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int do_rnd, int max_cycles)
 {
-  int step,i,n_targets,n_rand,no_improvement;
+  int step,i,n_targets,n_rand;
   t_tree *best_tree;
   scalar_dbl **best_bl;
   t_node *rnd_node;
@@ -1978,7 +1956,6 @@ void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int d
   best_bl                             = Copy_Br_Len(tree);
   target_list                         = (t_edge **)mCalloc(2*tree->n_otu-3,sizeof(t_edge *));
   n_targets                           = 0;
-  no_improvement                      = 0;
   tree->annealing_temp                = anneal_temp;
   Copy_Tree(tree,best_tree);
 
@@ -2057,18 +2034,12 @@ void Spr_Random_Explore(t_tree *tree, phydbl anneal_temp, phydbl prop_spr, int d
       /* Record the current best log-likelihood and parsimony */
       if(tree->c_lnL > true_best_lnL)
         {
-          no_improvement = 0;
           true_best_lnL = tree->c_lnL;
           For(i,2*tree->n_otu-1) Free_Scalar_Dbl(best_bl[i]);
           Free(best_bl);
           best_bl = Copy_Br_Len(tree);
           Copy_Tree(tree,best_tree); /* Record tree topology, branch lengths and model parameters */
         }
-      else
-        {
-          no_improvement++;
-        }
-      
       Transfer_Br_Len_To_Tree(best_bl,tree);
       Copy_Tree(best_tree,tree);
 

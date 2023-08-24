@@ -207,12 +207,8 @@ void IWN_Integrated_Location_Down(phydbl dt1, phydbl dt2,
     }
   else // Null variance along d - v1 and d - v2
     {
-      phydbl m1, m2;
+      phydbl m1;
       
-      epst = dt2 - omega;
-      if(epst > .0) m2 = v2mu + omega * veloc_v2 + epst * veloc_d;
-      else m2 = v2mu + omega * veloc_v2;
-
       epst = dt1 - omega;
       if(epst > .0) m1 = v1mu + omega * veloc_v1 + epst * veloc_d;
       else m1 = v1mu + omega * veloc_v1;
@@ -285,18 +281,12 @@ void IWN_Integrated_Location_Up(phydbl dt1, phydbl dt2,
         }
       else
         {
-          phydbl m1,m2;
+          phydbl m1;
           
           epst = dt1 - omega;
           if(epst > .0) m1 = v1mu + omega * veloc_a + epst * veloc_v1;
           else m1 = v1mu + omega * veloc_v1;
-          
-          epst = dt2 - omega;
-          if(epst > .0) m2 = v2mu + omega * veloc_v2 + epst * veloc_a;
-          else m2 = v2mu + omega * veloc_v2;
-          
-          /* assert(fabs(m1-m2) < 1.E-10); */
-          
+                    
           m = m1;
         }
     }

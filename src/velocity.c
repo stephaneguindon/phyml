@@ -394,7 +394,7 @@ void VELOC_Integrated_Lk_Location_Post(t_node *a, t_node *d, short int dim, t_tr
     }
   else
     {
-      int i,err;
+      int i;
       t_node *v1, *v2;
       phydbl v1mu,v2mu;
       phydbl v1var,v2var;
@@ -421,8 +421,6 @@ void VELOC_Integrated_Lk_Location_Post(t_node *a, t_node *d, short int dim, t_tr
               else v2 = d->v[i];
             }
         }
-
-      err = -1;
       
       v1mu = tree->contmod->mu_down[v1->num];
       v2mu = tree->contmod->mu_down[v2->num];
@@ -522,7 +520,7 @@ void VELOC_Integrated_Lk_Location_Post(t_node *a, t_node *d, short int dim, t_tr
 
 void VELOC_Integrated_Lk_Location_Pre(t_node *a, t_node *d, short int dim, t_tree *tree)
 {
-  int i,err;
+  int i;
   t_node *v1, *v2;
   phydbl v1mu,v2mu;
   phydbl v1var,v2var;
@@ -549,8 +547,6 @@ void VELOC_Integrated_Lk_Location_Pre(t_node *a, t_node *d, short int dim, t_tre
           break;
         }
     }
-
-  err = -1;
 
   av1 = bv1 = -1.;
   v1mu = v1var = v1logrem = -1.;
@@ -762,10 +758,10 @@ void VELOC_Sample_Node_Locations(t_tree *tree)
 {
   int i,j;
   t_node *n;
-  phydbl dt,au,bu,varu,var,mean;
+  phydbl au,bu,varu,var,mean;
 
   n = NULL;
-  dt = au = bu = varu = var = mean = -1;
+  au = bu = varu = var = mean = -1;
   
   RRW_Update_Normalization_Factor(tree);
 
@@ -781,7 +777,6 @@ void VELOC_Sample_Node_Locations(t_tree *tree)
           if(tree->a_nodes[j]->tax == NO && tree->a_nodes[j] != tree->n_root)
             {
               n = tree->a_nodes[j];
-              dt = fabs(tree->times->nd_t[n->num]-tree->times->nd_t[n->anc->num]);
 
               au = 1.0;
               /* Below is only correct for IBM model !!!!!!!!!!!!!!!!!!!!!! */

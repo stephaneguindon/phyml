@@ -282,9 +282,7 @@ phydbl Generic_Brent(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
   phydbl e=0.0;
   phydbl old_score;
   phydbl bx = *param;
-  int n_opt_step;
   
-  n_opt_step = 0;
   d=0.0;
   a=((ax < cx) ? ax : cx);
   b=((ax > cx) ? ax : cx);
@@ -339,7 +337,6 @@ phydbl Generic_Brent(phydbl *param, phydbl ax, phydbl cx, phydbl tol,
 
       u=(fabs(d) >= tol1 ? x+d : x+SIGN(tol1,d));
       (*param) = u;
-      n_opt_step++;
       old_score = fu;
       fu = (*obj_func)(tree);
       /* PhyML_Printf("\n. iter=%d/%d param=%f lnL=%f u: %f x: %f d: %f logt: %d",iter,BRENT_IT_MAX,*param,fu,u,x,d,logt); */

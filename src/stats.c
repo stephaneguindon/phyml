@@ -3339,10 +3339,8 @@ int Matinv(phydbl *x, const int n, const int m, const int verbose)
    int i,j,k;
    int *irow;
    phydbl ee, t,t1,xmax;
-   phydbl det;
 
    ee = 1.0E-10;
-   det = 1.0;
    
    irow = (int *)mCalloc(n,sizeof(int));
 
@@ -3356,7 +3354,6 @@ int Matinv(phydbl *x, const int n, const int m, const int verbose)
 	     irow[i]=j;
 	   }
 
-      det *= xmax;
       if (xmax < ee)
 	{
 	  Free(irow);

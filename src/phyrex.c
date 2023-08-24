@@ -412,6 +412,7 @@ void PHYREX_XML(char *xml_filename)
         {
           if(!strcmp(prior_distrib,"exponential")) mixt_tree->times->neff_prior_distrib = EXPONENTIAL_PRIOR;
           else if(!strcmp(prior_distrib,"normal")) mixt_tree->times->neff_prior_distrib = NORMAL_PRIOR;
+          else if(!strcmp(prior_distrib,"flat")) mixt_tree->times->neff_prior_distrib = FLAT_PRIOR;
           else
             {
               PhyML_Printf("\n. Unknown prior distribution '%s'. Aborting. ",prior_distrib);
@@ -1222,6 +1223,9 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       
       if(!strcmp(tree->mcmc->move_name[move],"nu")) MCMC_Nu(tree);
       if(!strcmp(tree->mcmc->move_name[move],"br_rate")) MCMC_Rates_All(tree);
+
+      if(!strcmp(tree->mcmc->move_name[move],"rates_shrink")) MCMC_Rates_Shrink(tree);
+
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_lbda")) MCMC_PHYREX_Lbda(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_mu")) MCMC_PHYREX_Mu(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_rad")) MCMC_PHYREX_Radius(tree);
@@ -1233,12 +1237,10 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_move_disk_ud")) MCMC_PHYREX_Move_Disk_Updown(tree,NO);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_swap_disk")) MCMC_PHYREX_Swap_Disk(tree,NO);      
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_scale_times")) MCMC_PHYREX_Scale_Times(tree,NO);
-
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr")) MCMC_PHYREX_Prune_Regraft(tree,YES);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr_slide")) MCMC_PHYREX_Prune_Regraft_Slide(tree,YES);      
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_narrow_exchange")) MCMC_PHYREX_Narrow_Exchange(tree,NO);
-      if(!strcmp(tree->mcmc->move_name[move],"phyrex_wide_exchange")) MCMC_PHYREX_Wide_Exchange(tree,NO);
-      
+      if(!strcmp(tree->mcmc->move_name[move],"phyrex_wide_exchange")) MCMC_PHYREX_Wide_Exchange(tree,NO);        
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_traj")) MCMC_PHYREX_Lineage_Traj(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_disk_multi")) MCMC_PHYREX_Disk_Multi(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_ldsk_multi")) MCMC_PHYREX_Ldsk_Multi(tree);
@@ -1260,7 +1262,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_iwn_omega")) MCMC_PHYREX_IWN_Update_Omega(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_iou_theta")) MCMC_PHYREX_IOU_Update_Theta(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_iou_mu")) MCMC_PHYREX_IOU_Update_Mu(tree);
-      /* if(!strcmp(tree->mcmc->move_name[move],"updown_t_br")) MCMC_Updown_T_Br(tree); */
+      if(!strcmp(tree->mcmc->move_name[move],"updown_t_br")) MCMC_Updown_T_Br(tree);
   
       if(tree->mmod->c_lnL < UNLIKELY || tree->c_lnL < UNLIKELY || tree->rates->c_lnL < UNLIKELY || tree->times->c_lnL < UNLIKELY)
         {
@@ -4135,11 +4137,9 @@ phydbl PHYREX_Get_Baseline_Times(t_ldsk *ldsk, t_tree *tree)
 int PHYREX_Scale_All(phydbl scale, t_dsk *start_disk, t_tree *tree)
 {
   t_dsk *disk;
-  int n_disk,n_disks_scaled,n_nodes_scaled,n_hits_scaled,i,n_samp_disks;
+  int n_disks_scaled,n_nodes_scaled,n_hits_scaled,i,n_samp_disks;
   t_dsk **samp_disks_a;
   
-  
-  n_disk            = 0;
   n_disks_scaled    = 0;
   n_nodes_scaled    = 0;
   n_hits_scaled     = 0;
@@ -4162,7 +4162,6 @@ int PHYREX_Scale_All(phydbl scale, t_dsk *start_disk, t_tree *tree)
         {
           n_samp_disks++;
         }
-      n_disk++;
       disk = disk->prev;
     }
   while(disk);
@@ -4431,19 +4430,16 @@ phydbl PHYREX_Root_To_Tip_Realized_Sigsq(t_tree *tree)
 phydbl PHYREX_Realized_Dispersal_Dist(t_tree *tree)
 {
   t_dsk *disk,*root_disk;
-  phydbl dist,dt,dist_mean,dt_mean;
+  phydbl dist,dt;
   phydbl num,denom;
-  int i,n;
+  int i;
   
   disk = tree->young_disk;
   while(disk->prev) disk = disk->prev;
   root_disk = disk;
   
-  dist_mean = 0.0;
-  dt_mean = 0.0;
   dist = 0.0;
   dt = 0.0;
-  n = 0;
   disk = root_disk;
   do
     {
@@ -4456,17 +4452,11 @@ phydbl PHYREX_Realized_Dispersal_Dist(t_tree *tree)
               dist =
                 Haversine_Distance(disk->ldsk->coord,disk->ldsk->next[i]->coord);
                 /* Manhattan_Dist(disk->ldsk->coord,disk->ldsk->next[i]->coord); */
-                
-              dist_mean += dist;
-              dt_mean += sqrt(dt);
-              n++;
             }
         }
       disk = disk->next;
     }
   while(disk);
-  dist_mean /= n;
-  dt_mean /= n;
 
 
   disk = tree->young_disk;
@@ -5491,13 +5481,9 @@ void PHYREX_Record_Disk_Times(t_tree *tree)
 void PHYREX_Restore_Disk_Times(t_tree *tree)
 {
   t_dsk *disk;
-  int n_disk,n_disks_scaled,n_nodes_scaled,n_hits_scaled,i,n_samp_disks;
+  int i,n_samp_disks;
   t_dsk **samp_disks_a;
     
-  n_disk            = 0;
-  n_disks_scaled    = 0;
-  n_nodes_scaled    = 0;
-  n_hits_scaled     = 0;
   n_samp_disks      = 0;
   samp_disks_a      = NULL;
   
@@ -5507,17 +5493,10 @@ void PHYREX_Restore_Disk_Times(t_tree *tree)
   disk = tree->young_disk->prev;
   do
     {
-      if(disk->age_fixed == NO)
-        {
-          n_disks_scaled++;
-          if(disk->ldsk && disk->ldsk->n_next > 1) n_nodes_scaled++;
-          if(disk->ldsk && disk->ldsk->n_next == 1) n_hits_scaled++;
-        }
-      else
+      if(disk->age_fixed == YES)
         {
           n_samp_disks++;
         }
-      n_disk++;
       disk = disk->prev;
     }
   while(disk);

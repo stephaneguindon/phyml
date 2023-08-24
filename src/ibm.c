@@ -107,7 +107,7 @@ void IBM_Integrated_Location_Down(phydbl dt1, phydbl dt2,
                                   phydbl v1logrem, phydbl v2logrem,
                                   phydbl *mean, phydbl *var, phydbl *logrem)
 {
-  phydbl m,v,logr,epst;
+  phydbl m,v,logr;
   int err;
 
   err = 0;
@@ -134,12 +134,7 @@ void IBM_Integrated_Location_Down(phydbl dt1, phydbl dt2,
     }
   else
     {
-      phydbl m1, m2;
-
-      m1 = (v1mu-bv1)/av1;
-      m2 = (v2mu-bv2)/av2;
-
-      m = m1;
+      m = (v1mu-bv1)/av1;
     }
 
   *mean = m;
@@ -158,7 +153,7 @@ void IBM_Integrated_Location_Up(phydbl dt1, phydbl dt2,
                                 phydbl *mean, phydbl *var, phydbl *logrem,
                                 short int a_is_root)
 {
-  phydbl m,v,logr,epst;
+  phydbl m,v,logr;
   int err;
   
   v = logr = 0.0;
@@ -187,12 +182,7 @@ void IBM_Integrated_Location_Up(phydbl dt1, phydbl dt2,
         }
       else
         {
-          phydbl m1,m2;
-          
-          m1 = (v1mu-bv1)/av1;
-          m2 = (v2mu-bv2)/av2;
-                    
-          m = m1;
+          m = (v1mu-bv1)/av1;
         }
     }
   else

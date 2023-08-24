@@ -3913,10 +3913,8 @@ void MIXT_Print_Site_Lk(t_tree *mixt_tree, FILE *fp)
 void MIXT_Exchange_Nodes(t_node *a, t_node *d, t_node *w, t_node *v, t_tree *mixt_tree)
 {
   t_tree *tree;
-  int i;
   
   tree = mixt_tree->next;
-  i = 0;
   do
     {
       Exchange_Nodes(tree->a_nodes[a->num],
@@ -3925,7 +3923,6 @@ void MIXT_Exchange_Nodes(t_node *a, t_node *d, t_node *w, t_node *v, t_tree *mix
                      tree->a_nodes[v->num],
                      tree);
       if(tree->is_mixt_tree == YES) return;
-      i++;
       tree = tree->next;
     }
   while(tree);
@@ -3972,7 +3969,7 @@ void MIXT_Free_Tree(t_tree *mixt_tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void MIXT_Repeat_Task(void (*Task_Function)(), t_tree *mixt_tree)
+void MIXT_Repeat_Task(void (*Task_Function)(t_tree *tree), t_tree *mixt_tree)
 {
   t_tree *tree,*next;
 

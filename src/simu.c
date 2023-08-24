@@ -79,23 +79,18 @@ int Simu(t_tree *tree, int n_step_max, phydbl delta_lnL, phydbl init_T, phydbl d
 
 void Simu_Pars(t_tree *tree, int n_step_max)
 {
-  phydbl old_pars,n_iter,lambda;
-  int i,n_neg,n_tested,n_without_swap,n_tot_swap,step;
+  phydbl old_pars,lambda;
+  int i,n_neg,n_tested,step;
   t_edge **sorted_b,**tested_b;
-  int each;
 
   sorted_b = (t_edge **)mCalloc(tree->n_otu-3,sizeof(t_edge *));
   tested_b = (t_edge **)mCalloc(tree->n_otu-3,sizeof(t_edge *));
 
   old_pars            = 0;
   tree->c_pars        = 0;
-  n_iter              = 1.0;
   n_tested            = 0;
-  n_without_swap      = 0;
   step                = 0;
-  each                = 4;
   lambda              = 0.5;
-  n_tot_swap          = 0;
 
   Update_Dirs(tree);
 
@@ -105,9 +100,7 @@ void Simu_Pars(t_tree *tree, int n_step_max)
     {
       ++step;
       
-      if(step > n_step_max) break;
-      
-      each--;
+      if(step > n_step_max) break;      
       
       Set_Both_Sides(YES,tree);
       Pars(NULL,tree);
@@ -150,13 +143,7 @@ void Simu_Pars(t_tree *tree, int n_step_max)
             tested_b[n_tested++] = sorted_b[i];
           
           Make_N_Swap(tree,tested_b,0,n_tested);
-          
-          n_tot_swap += n_tested;
-          
-          if(n_tested > 0) n_without_swap = 0;
-          else             n_without_swap++;
         }
-      n_iter+=1.0;
     }
   while(1);
   

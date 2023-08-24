@@ -2147,21 +2147,19 @@ int Filexists(char *filename)
 matrix *K80_dist(calign *data, phydbl g_shape)
 {
   int i,j,k;
-  int diff;
   matrix *mat;
   phydbl **len;
-
+  
   len = (phydbl **)mCalloc(data->n_otu,sizeof(phydbl *));
   for(i=0;i<data->n_otu;i++)
     len[i] = (phydbl *)mCalloc(data->n_otu,sizeof(phydbl));
-
-  mat = Make_Mat(data->n_otu);
-
-  Init_Mat(mat,data);
-
-  diff = 0;
   
-  For(i,data->c_seq[0]->len)
+  mat = Make_Mat(data->n_otu);
+  
+  Init_Mat(mat,data);
+  
+  
+  for(i=0;i<data->c_seq[0]->len;++i)
     {
       for(j=0;j<data->n_otu-1;j++)
         {
@@ -2172,7 +2170,6 @@ matrix *K80_dist(calign *data, phydbl g_shape)
                  ((data->c_seq[j]->state[i] == 'C' || data->c_seq[j]->state[i] == 'T') &&
                   (data->c_seq[k]->state[i] == 'A' || data->c_seq[k]->state[i] == 'G')))
                 {
-                  diff++;
                   mat->Q[j][k]+=data->wght[i];
                   len[j][k]+=data->wght[i];
                   len[k][j]=len[j][k];
@@ -2184,7 +2181,6 @@ matrix *K80_dist(calign *data, phydbl g_shape)
                    ((data->c_seq[j]->state[i] == 'C' && data->c_seq[k]->state[i] == 'T') ||
                     (data->c_seq[j]->state[i] == 'T' && data->c_seq[k]->state[i] == 'C')))
                   {
-                    diff++;
                     mat->P[j][k]+=data->wght[i];
                     len[j][k]+=data->wght[i];
                     len[k][j]=len[j][k];
@@ -2210,37 +2206,37 @@ matrix *K80_dist(calign *data, phydbl g_shape)
   for(i=0;i<data->n_otu-1;i++)
     for(j=i+1;j<data->n_otu;j++)
       {
-    if(len[i][j] > .0)
-      {
-        mat->P[i][j] /= len[i][j];
-        mat->Q[i][j] /= len[i][j];
+        if(len[i][j] > .0)
+          {
+            mat->P[i][j] /= len[i][j];
+            mat->Q[i][j] /= len[i][j];
+          }
+        else
+          {
+            mat->P[i][j] = .5;
+            mat->Q[i][j] = .5;
+          }
+        
+        mat->P[j][i] = mat->P[i][j];
+        mat->Q[j][i] = mat->Q[i][j];
+        
+        
+        if((1-2*mat->P[i][j]-mat->Q[i][j] <= .0) || (1-2*mat->Q[i][j] <= .0))
+          {
+            mat->dist[i][j] = -1.;
+            mat->dist[j][i] = -1.;
+            continue;
+          }
+        
+        mat->dist[i][j] = (g_shape/2)*
+          (POW(1-2*mat->P[i][j]-mat->Q[i][j],-1./g_shape) +
+           0.5*POW(1-2*mat->Q[i][j],-1./g_shape) - 1.5);
+        
+        if(mat->dist[i][j] > DIST_MAX) mat->dist[i][j] = DIST_MAX;
+        
+        mat->dist[j][i] = mat->dist[i][j];
       }
-    else
-      {
-        mat->P[i][j] = .5;
-        mat->Q[i][j] = .5;
-      }
-
-    mat->P[j][i] = mat->P[i][j];
-    mat->Q[j][i] = mat->Q[i][j];
-
-
-    if((1-2*mat->P[i][j]-mat->Q[i][j] <= .0) || (1-2*mat->Q[i][j] <= .0))
-      {
-        mat->dist[i][j] = -1.;
-        mat->dist[j][i] = -1.;
-        continue;
-      }
-
-    mat->dist[i][j] = (g_shape/2)*
-      (POW(1-2*mat->P[i][j]-mat->Q[i][j],-1./g_shape) +
-       0.5*POW(1-2*mat->Q[i][j],-1./g_shape) - 1.5);
-
-    if(mat->dist[i][j] > DIST_MAX) mat->dist[i][j] = DIST_MAX;
-
-    mat->dist[j][i] = mat->dist[i][j];
-      }
-
+  
   for(i=0;i<data->n_otu;i++) free(len[i]);
   free(len);
   return mat;
@@ -4115,7 +4111,7 @@ int Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only)
 /*   int *bip1,*bip2; */
   t_node **bip1, **bip2;
   int bip_size1, bip_size2, bip_size;
-  int different,identical;
+  int identical;
   int n_edges;
 
 
@@ -4138,7 +4134,6 @@ int Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only)
 
 
   identical = 0;
-  different = 0;
   for(i=0;i<2*tree1->n_otu-3;++i)
     {
       b1 = tree1->a_edges[i];
@@ -4224,12 +4219,7 @@ int Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only)
                           identical++;
                           goto out;
                         }
-                      else
-                        {
-                          different++; // Bipartitions have identical sizes but distinct elements
-                        }
                     }
-                  else different++; // Biparition have different sizes
                 }
             }
         }
@@ -4237,7 +4227,6 @@ int Compare_Bip(t_tree *tree1, t_tree *tree2, int on_existing_edges_only)
     }
 
   return n_edges - identical;
-  /* return different; */
 }
 
 
@@ -6538,46 +6527,6 @@ t_node *Common_Nodes_Btw_Two_Edges(t_edge *a, t_edge *b)
   Warn_And_Exit("\n. PhyML finished prematurely.");
 
   return NULL;
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-int KH_Test(phydbl *site_lk_M1, phydbl *site_lk_M2, t_tree *tree)
-{
-  phydbl *delta,mean,sd,obs_stat,threshold;
-  int i;
-
-
-  delta = (phydbl *)mCalloc(tree->data->init_len,sizeof(phydbl));
-
-  threshold = .0;
-  mean = .0;
-  obs_stat = .0;
-  for(i=0;i<tree->n_pattern;i++)
-    {
-      delta[i] = site_lk_M1[i] - site_lk_M2[i];
-      mean += ((int)tree->data->wght[i])*delta[i];
-    }
-
-  obs_stat = mean;
-
-  mean /= tree->data->init_len;
-
-  for(i=0;i<tree->data->init_len;i++) delta[i] -= mean;
-
-  sd = .0;
-  for(i=0;i<tree->data->init_len;i++) sd += POW(delta[i],2);
-  sd /= (phydbl)(tree->data->init_len-1.);
-
-/*   threshold = tree->dnorm_thresh*SQRT(sd*tree->data->init_len); */
-
-
-/*   PhyML_Printf("\nObs stat = %f Threshold = %f\n",obs_stat,threshold); */
-  Free(delta);
-
-  if(obs_stat > threshold) return 1;
-  else                     return 0;
 }
 
 //////////////////////////////////////////////////////////////

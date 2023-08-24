@@ -115,7 +115,7 @@ phydbl SLFV_Coalescence_Rate(t_tree *tree)
 // Log-density of path, conditionned on its length
 phydbl SLFV_Path_Logdensity(t_ldsk *young, t_ldsk *old, phydbl *sd, t_tree *tree)
 {
-  int i,j,err;
+  int i,err;
   t_ldsk *ldsk;
   phydbl lnP,mode,var;
   phydbl X,Y,Xp,Yp;
@@ -129,7 +129,6 @@ phydbl SLFV_Path_Logdensity(t_ldsk *young, t_ldsk *old, phydbl *sd, t_tree *tree
     
   for(i=0;i<tree->mmod->n_dim;i++)
     {
-      j    = 0;
       ldsk = young->prev;
 
       X = old->coord->lonlat[i];
@@ -186,7 +185,6 @@ phydbl SLFV_Path_Logdensity(t_ldsk *young, t_ldsk *old, phydbl *sd, t_tree *tree
                                  tree->mmod->lim_up->lonlat[i],&err);
 
           ldsk = ldsk->prev;
-          j++;
         }
     }
   
@@ -205,7 +203,6 @@ void SLFV_Sample_Path(t_ldsk *young, t_ldsk *old, phydbl *sd, phydbl *global_hr,
   int n_mcmc_iter;
   int i,err;
   t_ldsk *ldsk;
-  int accept,reject;
   int path_len;
 
   path_len = PHYREX_Path_Len(young,old)-2;
@@ -215,7 +212,6 @@ void SLFV_Sample_Path(t_ldsk *young, t_ldsk *old, phydbl *sd, phydbl *global_hr,
   new_glnL = cur_glnL = tree->mmod->c_lnL;
   
   n_mcmc_iter = 0;
-  accept = reject = 0;
   do
     {          
       ldsk = young->prev;
@@ -328,12 +324,10 @@ void SLFV_Sample_Path(t_ldsk *young, t_ldsk *old, phydbl *sd, phydbl *global_hr,
             {
               PHYREX_Restore_Geo_Coord(ldsk->coord,NULL);
               PHYREX_Restore_Geo_Coord(ldsk->disk->centr,NULL);
-              reject++;
             }
           else
             {
               cur_glnL = new_glnL;
-              accept++;
             }
           
           ldsk = ldsk->prev;
@@ -343,8 +337,6 @@ void SLFV_Sample_Path(t_ldsk *young, t_ldsk *old, phydbl *sd, phydbl *global_hr,
       n_mcmc_iter++;
     }
   while(n_mcmc_iter < 100 * path_len);
-  /* while(n_mcmc_iter < 1); */
-  /* PhyML_Printf("\n. ratio: %f %d %d",(phydbl)(accept)/(phydbl)(accept+reject),accept,reject); */
 }
 
 /*////////////////////////////////////////////////////////////
@@ -787,7 +779,6 @@ phydbl SLFV_Lk_Gaussian_Core(t_dsk *disk, t_tree *tree)
 phydbl SLFV_Lk_Gaussian(t_tree *tree)
 {  
   t_dsk *disk;
-  int n_evt;
     
   assert(!tree->young_disk->next);
   assert(tree->young_disk->prev);
@@ -813,11 +804,9 @@ phydbl SLFV_Lk_Gaussian(t_tree *tree)
 
   tree->mmod->c_lnL += SLFV_Lk_Gaussian_Core(tree->young_disk,tree);
   
-  n_evt = 0;
   disk = tree->young_disk->prev;
   do
     {
-      if(disk->age_fixed == NO) n_evt++;
 
       assert(disk);
       if(disk->time > disk->next->time)
@@ -833,9 +822,6 @@ phydbl SLFV_Lk_Gaussian(t_tree *tree)
       disk = disk->prev;      
     }
   while(1);
-
-  /* tree->mmod->c_lnL += TIMES_Lk_SLFV(tree); */
-  /* tree->mmod->c_lnL += n_evt * log(tree->mmod->lbda) - tree->mmod->lbda * fabs(tree->young_disk->time - disk->time); */
     
   if(isinf(tree->mmod->c_lnL) || isnan(tree->mmod->c_lnL)) tree->mmod->c_lnL = UNLIKELY;
 
@@ -1345,8 +1331,6 @@ t_sarea *SLFV_Simulate_Forward_Core(int n_sites, t_tree *tree)
   disk->centr->lonlat[0] = .5*(tree->mmod->lim_up->lonlat[0]-tree->mmod->lim_do->lonlat[0]);
   disk->centr->lonlat[1] = .5*(tree->mmod->lim_up->lonlat[1]-tree->mmod->lim_do->lonlat[1]);      
   disk->n_ldsk_a         = n_otu;  
-
-  int n_discs = 0;
   
   n_lineages = n_otu;
   do
@@ -1412,12 +1396,10 @@ t_sarea *SLFV_Simulate_Forward_Core(int n_sites, t_tree *tree)
 
   disk = tree->young_disk;
   tree_height = disk->time;
-  n_discs = 0;
   while(disk)
     {
       disk->time -= tree_height;
       disk = disk->prev;
-      n_discs++;
     }
 
   Free(ldsk_a_tmp);
@@ -2511,12 +2493,6 @@ phydbl SLFV_Lineage_Velocity(t_ldsk *l, short int dim, t_tree *tree)
   
   return(dist / dt);
 }
-
-
-
-
-
-
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/

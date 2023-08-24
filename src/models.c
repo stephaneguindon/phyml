@@ -1104,8 +1104,6 @@ phydbl General_Dist(phydbl *F, t_mod *mod, eigen *eigen_struct)
   phydbl *pi,*mod_pi;
   int i,j,k;
   phydbl dist;
-  phydbl sum;
-  phydbl sum_ev;
   phydbl *F_phydbl;
 
 
@@ -1117,13 +1115,11 @@ phydbl General_Dist(phydbl *F, t_mod *mod, eigen *eigen_struct)
 
   for(i=0;i<mod->ns;i++) mod_pi[i] = mod->e_frq->pi->v[i];
 
-  sum = .0;
   for(i=0;i<eigen_struct->size;i++)
     {
       for(j=0;j<eigen_struct->size;j++)
         {
           pi[i] += (F[eigen_struct->size*i+j] + F[eigen_struct->size*j+i])/2.;
-          sum += F[eigen_struct->size*i+j];
         }
     }
 
@@ -1176,10 +1172,6 @@ phydbl General_Dist(phydbl *F, t_mod *mod, eigen *eigen_struct)
   dist = .0;
   for(i=0;i<eigen_struct->size;i++) dist+=F[eigen_struct->size*i+i];
 
-  sum_ev = .0;
-  for(i=0;i<mod->ns;i++) sum_ev += mod->eigen->e_val[i];
-
-/*   dist /= sum_ev; */
   dist /= -4.;
 
   Free(pi);
@@ -1198,7 +1190,6 @@ phydbl GTR_Dist(phydbl *F, phydbl alpha, eigen *eigen_struct)
   phydbl *pi;
   int i,j,k;
   phydbl dist;
-  phydbl sum;
   phydbl *F_phydbl;
 
   pi       = (phydbl *)mCalloc(eigen_struct->size,sizeof(phydbl));
@@ -1210,13 +1201,11 @@ phydbl GTR_Dist(phydbl *F, phydbl alpha, eigen *eigen_struct)
 /*   F[4*2+0] = 73./4898.;   F[4*2+1] = 0./4898.;    F[4*2+2] = 578./4898.; F[4*2+3] = 0./4898.; */
 /*   F[4*3+0] = 3./4898.;    F[4*3+1] = 117./4898.;  F[4*3+2] = 1./4898.;   F[4*3+3] = 1126./4898.; */
 
-  sum = 0.0;
   for(i=0;i<eigen_struct->size;i++)
     {
       for(j=0;j<eigen_struct->size;j++)
         {
           pi[i] += (F[eigen_struct->size*i+j] + F[eigen_struct->size*j+i])/2.;
-          sum += F[eigen_struct->size*i+j];
         }
     }
 
@@ -1251,29 +1240,28 @@ phydbl GTR_Dist(phydbl *F, phydbl alpha, eigen *eigen_struct)
   for(i=0;i<eigen_struct->size;i++)
     {
       if(eigen_struct->e_val[i] < 0.0)
-    {
-      eigen_struct->e_val[i] = 0.0001;
-    }
+        {
+          eigen_struct->e_val[i] = 0.0001;
+        }
       if(alpha < .0)
-    eigen_struct->e_val[i] = (phydbl)log(eigen_struct->e_val[i]);
+        eigen_struct->e_val[i] = (phydbl)log(eigen_struct->e_val[i]);
       else
-    eigen_struct->e_val[i] = alpha * (1. - (phydbl)POW(eigen_struct->e_val[i],-1./alpha));
-     }
-
+        eigen_struct->e_val[i] = alpha * (1. - (phydbl)POW(eigen_struct->e_val[i],-1./alpha));
+    }
+  
   /* Matrix multiplications pi x log(pi^{-1} x F) */
   for(i=0;i<eigen_struct->size;i++) for(j=0;j<eigen_struct->size;j++)
-    eigen_struct->r_e_vect[eigen_struct->size*i+j] =
-    eigen_struct->r_e_vect[eigen_struct->size*i+j] * eigen_struct->e_val[j];
+                                      eigen_struct->r_e_vect[eigen_struct->size*i+j] =
+                                        eigen_struct->r_e_vect[eigen_struct->size*i+j] * eigen_struct->e_val[j];
   for(i=0;i<eigen_struct->size;i++) for(j=0;j<eigen_struct->size;j++) F[eigen_struct->size*i+j] = .0;
   for(i=0;i<eigen_struct->size;i++) for(j=0;j<eigen_struct->size;j++) for(k=0;k<eigen_struct->size;k++)
-    F[eigen_struct->size*i+j] += eigen_struct->r_e_vect[eigen_struct->size*i+k] * eigen_struct->l_e_vect[eigen_struct->size*k+j];
+                                                                        F[eigen_struct->size*i+j] += eigen_struct->r_e_vect[eigen_struct->size*i+k] * eigen_struct->l_e_vect[eigen_struct->size*k+j];
   for(i=0;i<eigen_struct->size;i++) for(j=0;j<eigen_struct->size;j++) F[eigen_struct->size*i+j] *= pi[i];
-
+  
   /* Trace */
   dist = .0;
   for(i=0;i<eigen_struct->size;i++) dist-=F[eigen_struct->size*i+i];
-
-
+  
   Free(pi);
   Free(F_phydbl);
 

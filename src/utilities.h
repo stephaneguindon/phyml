@@ -381,6 +381,7 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 
 #define EXPONENTIAL_PRIOR 0
 #define NORMAL_PRIOR      1
+#define FLAT_PRIOR        2
 
 #define COMPOUND_COR   0
 #define COMPOUND_NOCOR 1
@@ -1801,6 +1802,7 @@ typedef struct __Tmcmc {
   int num_move_updown_t_cr;
   int num_move_updown_t_br;
   int num_move_ras;
+  int num_move_rates_shrink;
   int num_move_cov_rates;
   int num_move_cov_switch;
   int num_move_birth_rate;
@@ -2384,7 +2386,6 @@ void Connect_Two_Nodes(t_node *a,t_node *d);
 void Get_List_Of_Adjacent_Targets(t_node *a, t_node *d, t_node ***node_list, t_edge ***edge_list, int *list_size, int curr_depth, int max_depth);
 void Sort_List_Of_Adjacent_Targets(t_edge ***list,int list_size);
 t_node *Common_Nodes_Btw_Two_Edges(t_edge *a,t_edge *b);
-int KH_Test(phydbl *site_lk_M1,phydbl *site_lk_M2,t_tree *tree);
 void Random_Tree(t_tree *tree);
 void Reorganize_Edges_Given_Lk_Struct(t_tree *tree);
 void Random_NNI(int n_moves,t_tree *tree);

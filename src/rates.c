@@ -1041,6 +1041,9 @@ void RATES_Update_Normalization_Factor(t_tree *tree)
     }
   assert(RT!=0.0);
   tree->rates->norm_fact = T/RT;
+
+  /* !!!!!!!!!!!!!!!!!!!!!!!!! */
+  /* tree->rates->norm_fact = 1.0; */
 }
 #endif
 

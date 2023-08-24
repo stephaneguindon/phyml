@@ -488,7 +488,6 @@ phydbl TIMES_Lk_Yule_Joint(t_tree *tree)
   int *tr;
   phydbl top_t;
   short int *interrupted;
-  phydbl sumdt;
 
   interrupted = (short int *)mCalloc(tree->n_otu,sizeof(short int));
 
@@ -503,7 +502,6 @@ phydbl TIMES_Lk_Yule_Joint(t_tree *tree)
 
   loglk = .0;
 
-  sumdt = .0;
   n = 1;
   For(i,2*tree->n_otu-2) // t[tr[0]] is the time of the oldest node, t[tr[1]], the second oldest and so on...
     {
@@ -517,7 +515,6 @@ phydbl TIMES_Lk_Yule_Joint(t_tree *tree)
       
       top_t = t[tr[i+1]];
       dt = top_t - t[tr[i]];
-      sumdt += dt;
 
       /* printf("\n. %d node up=%d [%f] node do=%d [%f] dt=%f",i,tr[i],t[tr[i]],tr[i+1],t[tr[i+1]],dt); */
 
@@ -532,7 +529,6 @@ phydbl TIMES_Lk_Yule_Joint(t_tree *tree)
       n++;      
     }
 
-  /* printf("\n. sumdt = %f th=%f",sumdt,tree->times->nd_t[tree->n_root->num]); */
   /* printf("\n0 loglk = %f",loglk); */
 
   for(i=0;i<tree->times->n_time_slices-1;i++)
@@ -1009,6 +1005,7 @@ phydbl TIMES_Prior_Neff(t_tree *tree)
   
   lnP = 0.0;
   
+             
   if(tree->times->neff_prior_distrib == EXPONENTIAL_PRIOR)
     {
       lnP += Log_Dexp(tree->times->scaled_pop_size,
@@ -1020,6 +1017,10 @@ phydbl TIMES_Prior_Neff(t_tree *tree)
                        tree->times->neff_prior_mean,
                        sqrt(tree->times->neff_prior_var),
                        &err);
+    }
+  else if(tree->times->neff_prior_distrib == FLAT_PRIOR)
+    {
+      lnP += 0.0;
     }
   else assert(false);
 

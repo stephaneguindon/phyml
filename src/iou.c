@@ -196,7 +196,7 @@ void IOU_Integrated_Location_Up(phydbl dt1, phydbl dt2,
                                 phydbl *mean, phydbl *var, phydbl *logrem,
                                 short int a_is_root)
 {
-  phydbl m,v,logr,epst;
+  phydbl m,v,logr;
   int err;
   
   v = logr = 0.0;
