@@ -621,7 +621,7 @@ void RRW_Sample_Arealin_Plot(t_tree *tree)
       dist = -1.;
       for(j=0;j<disk->n_ldsk_a;++j)
         {
-          dist = Euclidean_Dist(barycentr,coord_array[j]);
+          dist = Euclidean_Distance(barycentr,coord_array[j]);
           if(dist > max_dist) max_dist = dist;
         }
       

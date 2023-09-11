@@ -9528,6 +9528,64 @@ int Scale_Subtree_Rates_Post(t_node *a, t_node *d, phydbl mult, int *n_nodes, t_
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+int Scale_Subtree_Veloc(t_node *a, phydbl mult, int *n_nodes, int dim, t_tree *tree)
+{
+  int res;
+  int i;
+
+  assert(a->tax == NO);
+  
+  *n_nodes = 0;
+  res      = 1;
+
+  if(a == tree->n_root)
+    {
+      res = Scale_Subtree_Veloc_Post(a,a->v[2],mult,n_nodes,dim,tree);
+      if(res) res = Scale_Subtree_Veloc_Post(a,a->v[1],mult,n_nodes,dim,tree);
+      return res;
+    }
+  else
+    {
+      for(i=0;i<3;i++)
+        if((a->v[i] != a->anc) &&
+           (a->b[i] != tree->e_root) &&
+           (res == 1)) res = Scale_Subtree_Veloc_Post(a,a->v[i],mult,n_nodes,dim,tree);
+      return res;
+    }
+  
+  return(-1);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+int Scale_Subtree_Veloc_Post(t_node *a, t_node *d, phydbl mult, int *n_nodes, int dim, t_tree *tree)
+{
+
+  assert(d->ldsk);
+  d->ldsk->veloc->deriv[dim] *= mult;  
+
+  *n_nodes = *n_nodes+1;
+    
+  if(d->tax) return 1;
+  else
+    {
+      int i,res;
+      
+      res = 1;
+      for(i=0;i<3;++i)
+        {
+          if((d->v[i] != a) &&
+             (d->b[i] != tree->e_root) &&
+             (res == 1))
+            {
+              res = Scale_Subtree_Veloc_Post(d,d->v[i],mult,n_nodes,dim,tree);
+            }
+        }
+      return res;
+    }
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 

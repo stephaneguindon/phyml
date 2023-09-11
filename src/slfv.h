@@ -46,6 +46,7 @@ phydbl SLFV_LnPrior_Lbda(t_tree *tree);
 phydbl SLFV_LnPrior_Mu(t_tree *tree);
 phydbl SLFV_LnPrior_Radius(t_tree *tree);
 phydbl SLFV_Lineage_Velocity(t_ldsk *l, short int dim, t_tree *tree);
+phydbl SLFV_Lineage_Speed(t_ldsk *l, t_tree *tree);
 
 #endif
 

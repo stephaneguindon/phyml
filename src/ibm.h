@@ -48,5 +48,6 @@ void IBM_Integrated_Location_Up(phydbl dt1, phydbl dt2,
                                 phydbl v1logrem, phydbl v2logrem,
                                 phydbl *mean, phydbl *var, phydbl *logrem,
                                 short int is_root);
+phydbl IBM_Mean_Speed(t_tree *tree);
 
 #endif

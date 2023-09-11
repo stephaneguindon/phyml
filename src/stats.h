@@ -119,7 +119,7 @@ int Is_In_Polygon(t_geo_coord *point, t_poly *poly);
 phydbl Variance(phydbl *x, int l);
 phydbl Bessi0(phydbl x);
 phydbl Bessk0(phydbl x);
-phydbl Euclidean_Dist(t_geo_coord *x, t_geo_coord *y);
+phydbl Euclidean_Distance(t_geo_coord *x, t_geo_coord *y);
 int *Ranks(phydbl *x, int len);
 phydbl Rpois(phydbl mmu);
 phydbl Rgeom(phydbl p);
@@ -138,7 +138,7 @@ phydbl Rnorm_Trunc_Algo1(phydbl alpha, phydbl beta, int *err);
 phydbl Rnorm_Trunc_Algo2(phydbl alpha, phydbl beta, int *err);
 phydbl Rnorm_Trunc_Algo3(phydbl alpha, phydbl beta, int *err);
 phydbl Rnorm_Trunc_Algo4(phydbl alpha, phydbl beta, int *err);
-phydbl Manhattan_Dist(t_geo_coord *x, t_geo_coord *y);
+phydbl Manhattan_Distance(t_geo_coord *x, t_geo_coord *y);
 phydbl Haversine_Distance(t_geo_coord *x, t_geo_coord *y);
 int *Reverse(int *v, int len);
 

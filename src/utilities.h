@@ -46,6 +46,11 @@ the GNU public licence. See http://www.opensource.org for details.
 extern int n_sec1;
 extern int n_sec2;
 
+
+#define HAVERSINE 0
+#define MANHATTAN 1
+#define EUCLIDEAN 2
+
 #define __FUNCTION__ NULL
 
 #define EMPIRICAL 0
@@ -2586,6 +2591,8 @@ void Replace_Short_With_Long_Tax_Names(t_tree *tree, option *io);
 void Convert_Lengths_From_Calendar_To_Substitutions(t_tree *tree);
 void Convert_Lengths_From_Calendar_To_Substitutions_Post(t_node *a, t_node *d, t_tree *tree);
 t_label *Get_Next_Label(t_label *curr_lab);
+int Scale_Subtree_Veloc(t_node *a, phydbl mult, int *n_nodes, int dim, t_tree *tree);
+int Scale_Subtree_Veloc_Post(t_node *a, t_node *d, phydbl mult, int *n_nodes, int dim, t_tree *tree);
 
 
 #include "xml.h"

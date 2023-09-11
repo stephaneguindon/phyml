@@ -5018,7 +5018,7 @@ phydbl Bessk0(phydbl x)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-phydbl Euclidean_Dist(t_geo_coord *x, t_geo_coord *y)
+phydbl Euclidean_Distance(t_geo_coord *x, t_geo_coord *y)
 {
   int i;
   phydbl dist;
@@ -5038,7 +5038,7 @@ phydbl Euclidean_Dist(t_geo_coord *x, t_geo_coord *y)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-phydbl Manhattan_Dist(t_geo_coord *x, t_geo_coord *y)
+phydbl Manhattan_Distance(t_geo_coord *x, t_geo_coord *y)
 {
   int i;
   phydbl dist;

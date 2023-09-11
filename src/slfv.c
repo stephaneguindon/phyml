@@ -27,7 +27,7 @@ phydbl SLFV_Prob_Two_Lineages_Coal(t_ldsk *l0, t_ldsk *l1, t_tree *tree)
   
   area = W*H;  
 
-  eucl = Euclidean_Dist(l0->coord,l1->coord);
+  eucl = Euclidean_Distance(l0->coord,l1->coord);
   
   prob = 0.0;
   prob += 2.*log(tree->mmod->mu);
@@ -604,7 +604,7 @@ phydbl SLFV_Neighborhood_Size_Regression(t_tree *tree)
               Generic_Exit(__FILE__,__LINE__,__FUNCTION__);            
             }
           
-          dist[pair] = Euclidean_Dist(tree->a_nodes[i]->ldsk->coord,tree->a_nodes[j]->ldsk->coord);
+          dist[pair] = Euclidean_Distance(tree->a_nodes[i]->ldsk->coord,tree->a_nodes[j]->ldsk->coord);
           dist[pair] = log(dist[pair]);
 
           Qr = Pairwise_Identity(i,j,tree->data);
@@ -1815,7 +1815,7 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
                tree->rates->clock_r,
                mmod->sigsq[0]);
 
-  PhyML_Printf("\n. Useful statistics: t.root=%f n.int=%d n.coal=%d n.hit=%d root.x=%f root.y=%f nt.div=%f\n",
+  PhyML_Printf("\n. Useful statistics: t.root=%f n.int=%d n.coal=%d n.hit=%d root.x=%f root.y=%f nt.div=%f",
                disk->time,
                PHYREX_Total_Number_Of_Intervals(tree),
                PHYREX_Total_Number_Of_Coal_Disks(tree),
@@ -1823,11 +1823,29 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
                disk->ldsk->coord->lonlat[0],
                disk->ldsk->coord->lonlat[1],
                Nucleotide_Diversity(tree->data));
+
+
+  phydbl speed;
+  int count;
   
+  speed = 0.0;
+  count = 0;
+  for(i=0;i<2*tree->n_otu-1;++i)
+    {
+      if(tree->a_nodes[i] != tree->n_root)
+        {
+          speed += SLFV_Lineage_Speed(tree->a_nodes[i]->ldsk,tree);
+          count++;
+        }
+    }
+
+  PhyML_Printf("\n. Average speed: %f",speed/(phydbl)count);
+  PhyML_Printf("\n");
 
   dum = (char *)mCalloc(100,sizeof(char));
   sprintf(dum,"%s%s%s%d%s","sim_","slfv_","veloc_",r_seed,".txt");
   fp = Openfile(dum,WRITE);
+  PhyML_Fprintf(fp,"\nName\tVeloLon\tVeloLat");
   for(i=0;i<tree->n_otu;++i)
     {
       PhyML_Fprintf(fp,"\n%s\t%f\t%f",
@@ -1835,6 +1853,7 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
                     SLFV_Lineage_Velocity(tree->a_nodes[i]->ldsk,0,tree),
                     SLFV_Lineage_Velocity(tree->a_nodes[i]->ldsk,1,tree));
     }
+
 
   fclose(fp);
   Free(dum);
@@ -1871,7 +1890,9 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
   root = XML_Make_Node("phyrex");
   XML_Init_Node(NULL,root,"phyrex");
   root->attr = XML_Make_Attribute(NULL,"run.id","slfv");
-  XML_Add_Attribute(root,"output.file","xxx");
+  dum = (char *)mCalloc(100,sizeof(char));
+  sprintf(dum,"%d",r_seed);
+  XML_Add_Attribute(root,"output.file",dum);
   XML_Add_Attribute(root,"mcmc.chain.len","1E+8");
   XML_Add_Attribute(root,"mcmc.sample.every","1E+4");
   XML_Add_Attribute(root,"mcmc.print.every","1E+4");
@@ -1879,7 +1900,8 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
   XML_Add_Attribute(root,"mutmap","no");
   XML_Add_Attribute(root,"ignore.sequences","no");
   XML_Add_Attribute(root,"mcmc.output.trees","no");
-
+  Free(dum);
+  
   nd = XML_Add_Node(root,"spatialmodel");
   nd->attr = XML_Make_Attribute(NULL,"name","ibm");
   XML_Add_Attribute(nd,"sampling","detection");
@@ -1889,11 +1911,11 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
 
   nd = XML_Add_Node(root,"lineagerates");
   nd->attr = XML_Make_Attribute(NULL,"model","lognormal");
+  XML_Add_Attribute(nd,"autocor.prior.rate","50");
 
   nd = XML_Add_Node(root,"treegenerating");
   nd->attr = XML_Make_Attribute(NULL,"model","coalescent");
-  XML_Add_Attribute(nd,"neff.prior.mean","1.");
-  XML_Add_Attribute(nd,"expgrowth","no");
+  XML_Add_Attribute(nd,"neff.prior.distrib","flat");
   XML_Add_Attribute(nd,"fix.node.ages","no");
 
   nd = XML_Add_Node(root,"clockrate");
@@ -1902,7 +1924,7 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
   nd->attr = XML_Make_Attribute(NULL,"init.value",dum);
   XML_Add_Attribute(nd,"opt.clock","yes");
   XML_Add_Attribute(nd,"prior.mean",dum);
-  sprintf(dum,"%f",10.+tree->rates->clock_r);
+  sprintf(dum,"%f",1.E-6);
   XML_Add_Attribute(nd,"prior.var",dum);
   Free(dum);
 
@@ -2496,5 +2518,25 @@ phydbl SLFV_Lineage_Velocity(t_ldsk *l, short int dim, t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+
+phydbl SLFV_Lineage_Speed(t_ldsk *l, t_tree *tree)
+{
+  phydbl dist,dt;
+  int i;
+ 
+  dist = 0.0;
+  dt = 0.0;
+  do
+    {
+      for(i=0;i<tree->mmod->n_dim;++i) dist += fabs(l->coord->lonlat[i] - l->prev->coord->lonlat[i]);
+      dt += l->disk->time - l->prev->disk->time;
+      l = l->prev;
+      assert(l);
+    }
+  while(l->nd == NULL);
+  
+  return(dist / dt);
+}
+
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/

@@ -955,7 +955,7 @@ void TIMES_Init_Time_Struct(t_time *times, t_time *existing_times, int n_otu)
 
   times->scaled_pop_size     = 1.E+2;
   times->scaled_pop_size_min = 1.E-1;
-  times->scaled_pop_size_max = 1.E+3;
+  times->scaled_pop_size_max = 1.E+6;
 
   times->neff_prior_mean    = 1.0;
   times->neff_prior_var     = 1.0;

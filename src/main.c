@@ -165,6 +165,8 @@ int main(int argc, char **argv)
                       }
                     }
 
+                  PhyML_Printf("\n. HAS ROOT ? %p IGNORE %d",tree->n_root,tree->ignore_root);
+                  
                   if(io->mod->s_opt->opt_topo == YES) Remove_Duplicates(cdata,io,tree);
 
                   if(io->fp_in_constraint_tree != NULL)

@@ -1004,7 +1004,7 @@ phydbl TIMES_Prior_Neff(t_tree *tree)
   int err;
   
   lnP = 0.0;
-  
+
              
   if(tree->times->neff_prior_distrib == EXPONENTIAL_PRIOR)
     {

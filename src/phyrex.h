@@ -110,7 +110,7 @@ t_ldsk *PHYREX_Find_Ldsk_From_Id(char *id, t_ldsk *root);
 t_geo_coord *PHYREX_Mean_Next_Loc(t_ldsk *ldsk, t_tree *tree);
 phydbl PHYREX_Root_To_Tip_Realized_Sigsq(t_tree *tree);
 phydbl PHYREX_Tip_To_Root_Realized_Sigsq(t_tree *tree);
-phydbl PHYREX_Realized_Dispersal_Dist(t_tree *tree);
+phydbl PHYREX_Realized_Dispersal_Dist(short int dist_type, t_tree *tree);
 phydbl PHYREX_Tip_To_Root_Realized_Bis_Sigsq(t_tree *tree);
 void PHYREX_Label_Nodes_With_Locations(t_tree *tree);
 void PHYREX_Label_Edges(t_tree *tree);
@@ -150,6 +150,8 @@ void PHYREX_Record_Coord(t_tree *tree);
 void PHYREX_Restore_Coord(t_tree *tree);
 void PHYREX_Update_Disk_Times_Given_Nodes(t_tree *tree);
 void PHYREX_Label_Nodes_With_Velocities(t_tree *tree);
-
+void PHYREX_Restore_All_Geo_Coord(t_tree *tree);
+void PHYREX_Store_All_Geo_Coord(t_tree *tree);
+phydbl PHYREX_Realized_Displacement_Dist(short int dist_type, t_tree *tree);
 
 #endif

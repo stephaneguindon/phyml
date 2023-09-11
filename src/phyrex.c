@@ -2191,6 +2191,35 @@ void PHYREX_Restore_Coord(t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
+void PHYREX_Store_All_Geo_Coord(t_tree *tree)
+{
+  int i;
+
+  for(i=0;i<2*tree->n_otu-1;++i)
+    {
+      PHYREX_Store_Geo_Coord(tree->a_nodes[i]->ldsk->coord,
+                             tree->a_nodes[i]->ldsk->veloc);
+    }
+}
+
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+void PHYREX_Restore_All_Geo_Coord(t_tree *tree)
+{
+  int i;
+
+  for(i=0;i<2*tree->n_otu-1;++i)
+    {
+      PHYREX_Restore_Geo_Coord(tree->a_nodes[i]->ldsk->coord,
+                               tree->a_nodes[i]->ldsk->veloc);
+    }
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
 void PHYREX_Store_Geo_Coord(t_geo_coord *t, t_geo_veloc *v)
 {
   int i;
@@ -3470,7 +3499,7 @@ void PHYREX_Rand_Pairs_Coal_Times_Dist(t_tree *tree)
         }
       
       PhyML_Printf("\nxxWxx %12f",tree->times->nd_t[anc->num]);
-      dist = Euclidean_Dist(tree->a_nodes[i]->ldsk->coord,tree->a_nodes[j]->ldsk->coord);
+      dist = Euclidean_Distance(tree->a_nodes[i]->ldsk->coord,tree->a_nodes[j]->ldsk->coord);
       PhyML_Printf(" %f",dist);
     }
 }
@@ -4415,7 +4444,7 @@ phydbl PHYREX_Root_To_Tip_Realized_Sigsq(t_tree *tree)
   
   disk = tree->young_disk;
   for(i=0;i<disk->n_ldsk_a;++i)
-    sigsq[i] = pow(Euclidean_Dist(root_disk->ldsk->coord,disk->ldsk_a[i]->coord) / (t_tip - t_root),2);
+    sigsq[i] = pow(Euclidean_Distance(root_disk->ldsk->coord,disk->ldsk_a[i]->coord) / (t_tip - t_root),2);
 
   res = Quantile(sigsq,disk->n_ldsk_a,0.5);
   
@@ -4426,20 +4455,58 @@ phydbl PHYREX_Root_To_Tip_Realized_Sigsq(t_tree *tree)
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
-// Mean Haversine distance (in km) per year (measured on all paths between each internal node and its children) 
-phydbl PHYREX_Realized_Dispersal_Dist(t_tree *tree)
+
+/* Sum of displacements as derived from the comparison between coordinates at the two ends of each branch */
+phydbl PHYREX_Realized_Displacement_Dist(short int dist_type, t_tree *tree)
+{
+  int i;
+  phydbl disp;
+
+  disp = 0.0;
+  for(i=0;i<2*tree->n_otu-1;++i)
+    {
+      if(tree->a_nodes[i] != tree->n_root)
+        {
+          switch(dist_type)
+            {
+            case HAVERSINE :
+              {
+                disp += Haversine_Distance(tree->a_nodes[i]->anc->ldsk->coord,tree->a_nodes[i]->ldsk->coord);
+                break;
+              }
+            case MANHATTAN :
+              {
+                disp += Manhattan_Distance(tree->a_nodes[i]->anc->ldsk->coord,tree->a_nodes[i]->ldsk->coord);
+                break;
+              }
+            case EUCLIDEAN :
+              {
+                disp += Euclidean_Distance(tree->a_nodes[i]->anc->ldsk->coord,tree->a_nodes[i]->ldsk->coord);
+                break;
+              }
+            default : assert(false);
+            }
+        }
+    }
+  
+  return(disp);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+/* Sum of actual distances travelled between the two ends of each branch. May differ from dispersal distance when "jumps" take place along edges, such as with the SLFV model */
+phydbl PHYREX_Realized_Dispersal_Dist(short int dist_type, t_tree *tree)
 {
   t_dsk *disk,*root_disk;
-  phydbl dist,dt;
-  phydbl num,denom;
+  phydbl dist;
   int i;
   
   disk = tree->young_disk;
   while(disk->prev) disk = disk->prev;
   root_disk = disk;
-  
+
   dist = 0.0;
-  dt = 0.0;
   disk = root_disk;
   do
     {
@@ -4447,50 +4514,32 @@ phydbl PHYREX_Realized_Dispersal_Dist(t_tree *tree)
         {
           for(i=0;i<disk->ldsk->n_next;++i)
             {
-              dt = disk->ldsk->next[i]->disk->time - disk->time;
-              
-              dist =
-                Haversine_Distance(disk->ldsk->coord,disk->ldsk->next[i]->coord);
-                /* Manhattan_Dist(disk->ldsk->coord,disk->ldsk->next[i]->coord); */
-            }
-        }
-      disk = disk->next;
-    }
-  while(disk);
-
-
-  disk = tree->young_disk;
-  while(disk->prev) disk = disk->prev;
-  root_disk = disk;
-
-  num = 0.0;
-  denom = 0.0;
-  dist = 0.0;
-  dt = 0.0;
-  disk = root_disk;
-  do
-    {
-      if(disk->ldsk != NULL)
-        {
-          for(i=0;i<disk->ldsk->n_next;++i)
-            {
-              dt = disk->ldsk->next[i]->disk->time - disk->time;
-              
-              dist =
-                Haversine_Distance(disk->ldsk->coord,disk->ldsk->next[i]->coord);
-                /* Manhattan_Dist(disk->ldsk->coord,disk->ldsk->next[i]->coord); */
-
-              /* num += (sqrt(dt) - dt_mean)*(dist - dist_mean); */
-              /* denom += pow(sqrt(dt) - dt_mean,2); */
-              num += sqrt(dt)*dist;
-              denom += dt;
+              switch(dist_type)
+                {
+                case HAVERSINE :
+                  {
+                    dist += Haversine_Distance(disk->ldsk->coord,disk->ldsk->next[i]->coord);
+                    break;
+                  }
+                case MANHATTAN :
+                  {
+                    dist += Manhattan_Distance(disk->ldsk->coord,disk->ldsk->next[i]->coord);
+                    break;
+                  }
+                case EUCLIDEAN :
+                  {
+                    dist += Euclidean_Distance(disk->ldsk->coord,disk->ldsk->next[i]->coord);
+                    break;
+                  }
+                default : assert(false);
+                }
             }
         }
       disk = disk->next;
     }
   while(disk);
   
-  return(num/denom*111.32);
+  return(dist);
 }
 
 ////////////////////////////////////////////////////////////
@@ -4563,8 +4612,8 @@ phydbl PHYREX_Tip_To_Root_Realized_Sigsq(t_tree *tree)
   for(i=0;i<disk->n_ldsk_a;++i)
     {
       sigsq[i] =
-        pow(Euclidean_Dist(disk->ldsk_a[i]->coord,
-                           disk->ldsk_a[i]->prev->coord)/fabs(disk->time - disk->ldsk_a[i]->prev->disk->time),2);
+        pow(Euclidean_Distance(disk->ldsk_a[i]->coord,
+                               disk->ldsk_a[i]->prev->coord)/fabs(disk->time - disk->ldsk_a[i]->prev->disk->time),2);
                    
     }
 
@@ -4589,8 +4638,8 @@ phydbl PHYREX_Tip_To_Root_Realized_Bis_Sigsq(t_tree *tree)
   disk = tree->young_disk;
   for(i=0;i<disk->n_ldsk_a;++i)
     {
-      sumdist += pow(Euclidean_Dist(disk->ldsk_a[i]->coord,
-                                    disk->ldsk_a[i]->prev->coord),2);
+      sumdist += pow(Euclidean_Distance(disk->ldsk_a[i]->coord,
+                                        disk->ldsk_a[i]->prev->coord),2);
       sumt += tree->mmod->n_dim * fabs(disk->time - disk->ldsk_a[i]->prev->disk->time);                   
     }
   
@@ -4615,7 +4664,7 @@ phydbl PHYREX_Tip_To_Root_Realized_Ter_Sigsq(t_tree *tree)
           ldsk = ldsk->prev;
           if(ldsk == NULL) return(-1.);
         }
-      dist = Euclidean_Dist(ldsk->coord,tree->young_disk->ldsk_a[i]->coord);
+      dist = Euclidean_Distance(ldsk->coord,tree->young_disk->ldsk_a[i]->coord);
       mean += pow(dist,2);
       
       /* PhyML_Printf("\n. %3d (%12f %12f) (%12f %12f) dist: %12f mean: %12f", */
@@ -4624,7 +4673,7 @@ phydbl PHYREX_Tip_To_Root_Realized_Ter_Sigsq(t_tree *tree)
       /*              tree->young_disk->ldsk_a[i]->coord->lonlat[1], */
       /*              ldsk->coord->lonlat[0],                   */
       /*              ldsk->coord->lonlat[1], */
-      /*              Euclidean_Dist(ldsk->coord,tree->young_disk->ldsk_a[i]->coord), */
+      /*              Euclidean_Distance(ldsk->coord,tree->young_disk->ldsk_a[i]->coord), */
       /*              mean); */
                    
     }
@@ -5447,8 +5496,7 @@ void PHYREX_Evolve_All(t_tree *tree)
                    tree->a_nodes[i]->ldsk->coord->lonlat[0]);
     }
 
-  PhyML_Printf("\n. dispDist: %f",PHYREX_Realized_Dispersal_Dist(tree));
-  PhyML_Printf("\n. dispDistAlt: %f",PHYREX_Realized_Dispersal_Dist_Alt(tree));
+  PhyML_Printf("\n. dispDist: %f",PHYREX_Realized_Dispersal_Dist(HAVERSINE,tree));
   PhyML_Printf("\n. sigSqLon: %f",tree->mmod->sigsq[0]);
   PhyML_Printf("\n. sigSqLat: %f",tree->mmod->sigsq[1]);
   PhyML_Printf("\n. neff: %f",tree->times->scaled_pop_size);
