@@ -2040,12 +2040,26 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
 
   
   dum = (char *)mCalloc(100,sizeof(char));
-  sprintf(dum,"%s%s%s%d%s","sim_","slfv_","config_",r_seed,".xml");
+  sprintf(dum,"%s%s%s%d%s","sim_","ibm_","config_",r_seed,".xml");
   fp = Openfile(dum,WRITE);
   XML_Write_XML_Graph(fp,root);
   fclose(fp);
   Free(dum);
 
+
+
+  
+  nd = XML_Search_Node_Name("spatialmodel",NO,root);
+  XML_Set_Attribute_Value(nd,"name","rrw+gamma");
+  
+  dum = (char *)mCalloc(100,sizeof(char));
+  sprintf(dum,"%s%s%s%d%s","sim_","rrw_","config_",r_seed,".xml");
+  fp = Openfile(dum,WRITE);
+  XML_Write_XML_Graph(fp,root);
+  fclose(fp);
+  Free(dum);
+
+  
   return(tree);
 }
 
