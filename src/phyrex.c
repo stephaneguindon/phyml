@@ -3536,10 +3536,12 @@ void PHYREX_Read_Tip_Coordinates(t_tree *tree)
   do
     {
       if(fscanf(fp,"%s",s) == EOF) break;
+
+      PhyML_Printf("\n s : %s",s);
+      
       for(i=0;i<strlen(s);++i) if(s[i] == '#') break; /* skip comment */
       if(i != strlen(s)) continue;
       
-      /* for(i=0;i<tree->n_otu;i++) if(strstr(tree->a_nodes[i]->name,s)) break; */
       for(i=0;i<tree->n_otu;i++) if(!strcmp(tree->a_nodes[i]->name,s)) break;
 
       if(i != tree->n_otu) /* Found a match */
