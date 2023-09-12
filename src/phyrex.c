@@ -3539,40 +3539,40 @@ void PHYREX_Read_Tip_Coordinates(t_tree *tree)
 
       PhyML_Printf("\n s : %s",s);
       
-      /* for(i=0;i<strlen(s);++i) if(s[i] == '#') break; /\* skip comment *\/ */
-      /* if(i != strlen(s)) continue; */
+      for(i=0;i<strlen(s);++i) if(s[i] == '#') break; /* skip comment */
+      if(i != strlen(s)) continue;
       
-      /* for(i=0;i<tree->n_otu;i++) if(!strcmp(tree->a_nodes[i]->name,s)) break; */
+      for(i=0;i<tree->n_otu;i++) if(!strcmp(tree->a_nodes[i]->name,s)) break;
 
-      /* if(i != tree->n_otu) /\* Found a match *\/ */
-      /*   { */
-      /*     assert(tree->a_nodes[i]->ldsk); */
-      /*     // First column: latitude, second one: longitude */
-      /*     if(fscanf(fp,"%lf",&(tree->a_nodes[i]->ldsk->coord->lonlat[1])) == EOF) break; */
-      /*     if(fscanf(fp,"%lf",&(tree->a_nodes[i]->ldsk->coord->lonlat[0])) == EOF) break; */
-      /*     done[i] = YES; */
-      /*   } */
-      /* else */
-      /*   { */
-      /*     if(!strcmp(s,"|SouthWest|") || !strcmp(s,"|southwest|") || !strcmp(s,"|Southwest|")) */
-      /*       { */
-      /*         found_sw = YES; */
-      /*         if(fscanf(fp,"%lf",&(sw_lat)) == EOF) break;               */
-      /*         if(fscanf(fp,"%lf",&(sw_lon)) == EOF) break; */
-      /*       } */
-      /*     else if(!strcmp(s,"|NorthEast|") || !strcmp(s,"|northeast|") || !strcmp(s,"|Northeast|")) */
-      /*       { */
-      /*         found_ne = YES; */
-      /*         if(fscanf(fp,"%lf",&(ne_lat)) == EOF) break; */
-      /*         if(fscanf(fp,"%lf",&(ne_lon)) == EOF) break; */
-      /*       } */
-      /*     else /\* Haven't found any match but still need to skip long and lat for unsampled location *\/ */
-      /*       { */
-      /*         // phydbl dum; */
-      /*         // if(fscanf(fp,"%lf",&dum) == EOF) break; */
-      /*         // if(fscanf(fp,"%lf",&dum) == EOF) break; */
-      /*       } */
-        /* } */
+      if(i != tree->n_otu) /* Found a match */
+        {
+          assert(tree->a_nodes[i]->ldsk);
+          // First column: latitude, second one: longitude
+          if(fscanf(fp,"%lf",&(tree->a_nodes[i]->ldsk->coord->lonlat[1])) == EOF) break;
+          if(fscanf(fp,"%lf",&(tree->a_nodes[i]->ldsk->coord->lonlat[0])) == EOF) break;
+          done[i] = YES;
+        }
+      else
+        {
+          if(!strcmp(s,"|SouthWest|") || !strcmp(s,"|southwest|") || !strcmp(s,"|Southwest|"))
+            {
+              found_sw = YES;
+              if(fscanf(fp,"%lf",&(sw_lat)) == EOF) break;              
+              if(fscanf(fp,"%lf",&(sw_lon)) == EOF) break;
+            }
+          else if(!strcmp(s,"|NorthEast|") || !strcmp(s,"|northeast|") || !strcmp(s,"|Northeast|"))
+            {
+              found_ne = YES;
+              if(fscanf(fp,"%lf",&(ne_lat)) == EOF) break;
+              if(fscanf(fp,"%lf",&(ne_lon)) == EOF) break;
+            }
+          else /* Haven't found any match but still need to skip long and lat for unsampled location */
+            {
+              // phydbl dum;
+              // if(fscanf(fp,"%lf",&dum) == EOF) break;
+              // if(fscanf(fp,"%lf",&dum) == EOF) break;
+            }
+        }
     }
   while(1);
   
