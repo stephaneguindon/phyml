@@ -882,6 +882,7 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   int n_sites,n_otus;
   phydbl width,height;
   phydbl lbda, rad,mu;
+  char *datadir;
   
   s = (char *)mCalloc(T_MAX_NAME,sizeof(char));
 
@@ -894,11 +895,12 @@ int PHYREX_Main_Simulate(int argc, char *argv[])
   mu      = (phydbl)atof(argv[6]);
   seed    = (int)atoi(argv[7]);
   modid   = (int)atoi(argv[8]);
+  datadir = argv[9];
   
   printf("\n. seed: %d",seed);
   srand(seed);
   
-  tree = PHYREX_Simulate(n_otus,n_sites,width,height,lbda,rad,mu,seed,modid);
+  tree = PHYREX_Simulate(n_otus,n_sites,width,height,lbda,rad,mu,seed,modid,datadir);
   /* tree = PHYREX_Simulate_Independent_Loci(n_otus,500,20.,20.,seed); */
   
   disk = tree->young_disk;
@@ -5065,13 +5067,13 @@ t_ldsk *PHYREX_Generate_Path(t_ldsk *young, t_ldsk *old, phydbl n_evt, phydbl *s
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, phydbl rad, phydbl mu, int r_seed, int modid)
+t_tree *PHYREX_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, phydbl rad, phydbl mu, int r_seed, int modid, char *datadir)
 {
   switch(modid)
     {
     case SLFV_UNIFORM : case SLFV_GAUSSIAN : 
       {
-        return(SLFV_Simulate(n_otu,n_sites,w,h,lbda,rad,mu,r_seed));
+        return(SLFV_Simulate(n_otu,n_sites,w,h,lbda,rad,mu,r_seed,datadir));
         break;
       }
       

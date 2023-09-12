@@ -36,7 +36,7 @@ phydbl SLFV_Lk_Gaussian(t_tree *tree);
 phydbl SLFV_Lk_Gaussian_Core(t_dsk *disk, t_tree *tree);
 t_sarea *SLFV_Simulate_Forward_Core(int n_sites, t_tree *tree);
 phydbl SLFV_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_mergers, t_tree *tree);
-t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, phydbl rad, phydbl mu, int r_seed);
+t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, phydbl rad, phydbl mu, int r_seed, char *datadir);
 t_tree *SLFV_Simulate_Independent_Loci(int n_otu, int n_loci, phydbl w, phydbl h, int r_seed);
 void SLFV_Integrated_Coal_Rate(t_ldsk *l0, t_ldsk *l1, phydbl T, t_tree *tree);
 void SLFV_Sum_Coal_Rate(t_ldsk *l0, t_ldsk *l1, int n, t_tree *tree);

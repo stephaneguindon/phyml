@@ -1613,7 +1613,7 @@ phydbl SLFV_Simulate_Backward_Core(t_dsk *init_disk, int avoid_multiple_mergers,
 // Simulate Etheridge-Barton model backwards in time, following n_otu lineages, sampled in time interval deltat,
 // on a rectangle of dimension width w x h
 // See Kelleher, Barton & Etheridge, Bioinformatics, 2013.
-t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, phydbl rad, phydbl mu, int r_seed)
+t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, phydbl rad, phydbl mu, int r_seed, char *datadir)
 {  
   t_tree *tree;
   int n_dim,i;
@@ -1628,6 +1628,8 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
   char *dum;
   xml_node *root,*nd,*ndnd,*ndndnd;
   
+  chdir(datadir);
+
   n_dim = 2; // 2-dimensional landscape
 
   io    = (option *)Make_Input();
@@ -1804,25 +1806,30 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
   disk = tree->young_disk->prev;
   while(disk->prev) disk = disk->prev;
   
-  PhyML_Printf("\n. Parameter boundaries: lambda:[%G,%G]; mu=[%G,%G]; rad=[%G,%G]",
-               mmod->min_lbda,mmod->max_lbda,
-               mmod->min_mu,mmod->max_mu,
-               mmod->min_rad,mmod->max_rad);
-  PhyML_Printf("\n. Useful parameters: lambda=%G; mu=%G; rad=%G; clockr=%G; sigsq=%G",
-               mmod->lbda,
-               mmod->mu,
-               mmod->rad,
-               tree->rates->clock_r,
-               mmod->sigsq[0]);
+  dum = (char *)mCalloc(100,sizeof(char));
+  sprintf(dum,"%s%s%s%d%s","sim_","slfv_","params_",r_seed,".txt");
+  fp = Openfile(dum,WRITE);
 
-  PhyML_Printf("\n. Useful statistics: t.root=%f n.int=%d n.coal=%d n.hit=%d root.x=%f root.y=%f nt.div=%f",
-               disk->time,
-               PHYREX_Total_Number_Of_Intervals(tree),
-               PHYREX_Total_Number_Of_Coal_Disks(tree),
-               PHYREX_Total_Number_Of_Hit_Disks(tree),
-               disk->ldsk->coord->lonlat[0],
-               disk->ldsk->coord->lonlat[1],
-               Nucleotide_Diversity(tree->data));
+  PhyML_Fprintf(fp,"\n. Parameter boundaries: lambda:[%G,%G]; mu=[%G,%G]; rad=[%G,%G]",
+                mmod->min_lbda,mmod->max_lbda,
+                mmod->min_mu,mmod->max_mu,
+                mmod->min_rad,mmod->max_rad);
+  PhyML_Fprintf(fp,"\n. Useful parameters: lambda=%G; mu=%G; rad=%G; clockr=%G; sigsq=%G",
+                mmod->lbda,
+                mmod->mu,
+                mmod->rad,
+                tree->rates->clock_r,
+                mmod->sigsq[0]);
+
+  
+  PhyML_Fprintf(fp,"\n. Useful statistics: t.root=%f n.int=%d n.coal=%d n.hit=%d root.x=%f root.y=%f nt.div=%f",
+                disk->time,
+                PHYREX_Total_Number_Of_Intervals(tree),
+                PHYREX_Total_Number_Of_Coal_Disks(tree),
+                PHYREX_Total_Number_Of_Hit_Disks(tree),
+                disk->ldsk->coord->lonlat[0],
+                disk->ldsk->coord->lonlat[1],
+                Nucleotide_Diversity(tree->data));
 
 
   phydbl speed;
@@ -1839,9 +1846,13 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
         }
     }
 
-  PhyML_Printf("\n. Average speed: %f",speed/(phydbl)count);
-  PhyML_Printf("\n");
+  PhyML_Fprintf(fp,"\n. Average speed: %f",speed/(phydbl)count);
+  PhyML_Fprintf(fp,"\n");
 
+  fclose(fp);
+  Free(dum);
+
+  
   dum = (char *)mCalloc(100,sizeof(char));
   sprintf(dum,"%s%s%s%d%s","sim_","slfv_","veloc_",r_seed,".txt");
   fp = Openfile(dum,WRITE);
@@ -1889,7 +1900,7 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
   
   root = XML_Make_Node("phyrex");
   XML_Init_Node(NULL,root,"phyrex");
-  root->attr = XML_Make_Attribute(NULL,"run.id","slfv");
+  root->attr = XML_Make_Attribute(NULL,"run.id","ibm");
   dum = (char *)mCalloc(100,sizeof(char));
   sprintf(dum,"%d",r_seed);
   XML_Add_Attribute(root,"output.file",dum);
@@ -2036,8 +2047,6 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
       Free(dum);
 
     }
-
-
   
   dum = (char *)mCalloc(100,sizeof(char));
   sprintf(dum,"%s%s%s%d%s","sim_","ibm_","config_",r_seed,".xml");
@@ -2049,6 +2058,8 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
 
 
   
+  XML_Set_Attribute_Value(root,"run.id","rrw");
+
   nd = XML_Search_Node_Name("spatialmodel",NO,root);
   XML_Set_Attribute_Value(nd,"name","rrw+gamma");
   
