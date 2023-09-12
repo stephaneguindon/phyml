@@ -3536,8 +3536,6 @@ void PHYREX_Read_Tip_Coordinates(t_tree *tree)
   do
     {
       if(fscanf(fp,"%s",s) == EOF) break;
-
-      PhyML_Printf("\n s : %s",s);
       
       for(i=0;i<strlen(s);++i) if(s[i] == '#') break; /* skip comment */
       if(i != strlen(s)) continue;
@@ -3565,12 +3563,6 @@ void PHYREX_Read_Tip_Coordinates(t_tree *tree)
               found_ne = YES;
               if(fscanf(fp,"%lf",&(ne_lat)) == EOF) break;
               if(fscanf(fp,"%lf",&(ne_lon)) == EOF) break;
-            }
-          else /* Haven't found any match but still need to skip long and lat for unsampled location */
-            {
-              // phydbl dum;
-              // if(fscanf(fp,"%lf",&dum) == EOF) break;
-              // if(fscanf(fp,"%lf",&dum) == EOF) break;
             }
         }
     }
