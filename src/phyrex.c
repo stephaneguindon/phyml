@@ -3568,9 +3568,9 @@ void PHYREX_Read_Tip_Coordinates(t_tree *tree)
             }
           else /* Haven't found any match but still need to skip long and lat for unsampled location */
             {
-              phydbl dum;
-              if(fscanf(fp,"%lf",&dum) == EOF) break;
-              if(fscanf(fp,"%lf",&dum) == EOF) break;
+              // phydbl dum;
+              // if(fscanf(fp,"%lf",&dum) == EOF) break;
+              // if(fscanf(fp,"%lf",&dum) == EOF) break;
             }
         }
     }
