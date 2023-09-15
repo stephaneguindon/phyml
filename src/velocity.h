@@ -43,6 +43,7 @@ void VELOC_Sample_Node_Locations(t_tree *tree);
 void VELOC_Integrated_Lk_Velocity_Post(t_node *a, t_node *d, short int dim, t_tree *tree, short int print);
 void VELOC_Integrated_Lk_Velocity_Pre(t_node *a, t_node *d, short int dim, t_tree *tree);
 void VELOC_Veloc_Gibbs_Mean_Var(t_node *n, phydbl *mean, phydbl *var, short int dim, t_tree *tree);
+phydbl VELOC_Mean_Speed(t_tree *tree);
 
 
 #endif

@@ -210,32 +210,6 @@ void IBM_Integrated_Location_Up(phydbl dt1, phydbl dt2,
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-/* For IBM models, take the average of speed taken at each node of the treez */
-phydbl IBM_Mean_Speed(t_tree *tree)
-{
-  if(IBM_Is_Ibm(tree->mmod) == NO) return(-1);
-  else
-    {
-      int i,j;
-      phydbl mean_speed,edge_speed;
-
-      mean_speed = 0.0;
-      for(i=0;i<2*tree->n_otu-1;++i)
-        {
-          edge_speed = 0.0;
-          for(j=0;j<tree->mmod->n_dim;++j)
-            {
-              edge_speed += POW(tree->a_nodes[i]->ldsk->veloc->deriv[j],2);
-            }
-          mean_speed += SQRT(edge_speed);
-        }
-      return(mean_speed / (phydbl)(2*tree->n_otu-1));
-    }
-  return(-1.);
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 

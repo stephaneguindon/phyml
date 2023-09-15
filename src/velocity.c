@@ -1164,3 +1164,32 @@ void VELOC_Veloc_Gibbs_Mean_Var(t_node *n, phydbl *mean, phydbl *var, short int 
     }
 }
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+/* Take the average of speed taken at each node of the treez */
+phydbl VELOC_Mean_Speed(t_tree *tree)
+{
+  if(VELOC_Is_Integrated_Velocity(tree->mmod) == NO) return(-1);
+  else
+    {
+      int i,j;
+      phydbl mean_speed,edge_speed;
+
+      mean_speed = 0.0;
+      for(i=0;i<2*tree->n_otu-1;++i)
+        {
+          edge_speed = 0.0;
+          for(j=0;j<tree->mmod->n_dim;++j)
+            {
+              edge_speed += POW(tree->a_nodes[i]->ldsk->veloc->deriv[j],2);
+            }
+          mean_speed += SQRT(edge_speed);
+        }
+      return(mean_speed / (phydbl)(2*tree->n_otu-1));
+    }
+  return(-1.);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////

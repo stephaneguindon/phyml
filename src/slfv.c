@@ -1779,7 +1779,7 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
   Evolve(tree->data,tree->mod,0,tree);
   
   dum = (char *)mCalloc(100,sizeof(char));
-  sprintf(dum,"%s%s%s%d%s","sim_","slfv_","data_",r_seed,".txt");
+  sprintf(dum,"%s%d%s","./",r_seed,"_sim_slfv_data.txt");
   fp = Openfile(dum,WRITE);
   Print_CSeq(fp,NO,tree->data,tree);
   fclose(fp);
@@ -1788,7 +1788,7 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
 
 
   dum = (char *)mCalloc(100,sizeof(char));
-  sprintf(dum,"%s%s%s%d%s","sim_","slfv_","coord_",r_seed,".txt");
+  sprintf(dum,"%s%d%s","./",r_seed,"_sim_slfv_coord.txt");
   fp = Openfile(dum,WRITE);
   PhyML_Fprintf(fp,"%s\t%s\t%s","Name","Lat","Lon");
   for(int i=0;i<tree->n_otu;++i) PhyML_Fprintf(fp,"\n%s\t%f\t%f",
@@ -1807,7 +1807,7 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
   while(disk->prev) disk = disk->prev;
   
   dum = (char *)mCalloc(100,sizeof(char));
-  sprintf(dum,"%s%s%s%d%s","sim_","slfv_","params_",r_seed,".txt");
+  sprintf(dum,"%s%d%s","./",r_seed,"_sim_slfv_params.txt");
   fp = Openfile(dum,WRITE);
 
   PhyML_Fprintf(fp,"\n. Parameter boundaries: lambda:[%G,%G]; mu=[%G,%G]; rad=[%G,%G]",
@@ -1832,21 +1832,18 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
                 Nucleotide_Diversity(tree->data));
 
 
-  phydbl speed;
-  int count;
+  phydbl tot_dist;
   
-  speed = 0.0;
-  count = 0;
+  tot_dist = 0.0;
   for(i=0;i<2*tree->n_otu-1;++i)
     {
       if(tree->a_nodes[i] != tree->n_root)
         {
-          speed += SLFV_Lineage_Speed(tree->a_nodes[i]->ldsk,tree);
-          count++;
+          tot_dist += SLFV_Lineage_Dist(tree->a_nodes[i]->ldsk,tree);
         }
     }
 
-  PhyML_Fprintf(fp,"\n. Average speed: %f",speed/(phydbl)count);
+  PhyML_Fprintf(fp,"\n. Average speed: %f",tot_dist / PHYREX_Time_Tree_Length(tree));
   PhyML_Fprintf(fp,"\n");
 
   fclose(fp);
@@ -1854,7 +1851,7 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
 
   
   dum = (char *)mCalloc(100,sizeof(char));
-  sprintf(dum,"%s%s%s%d%s","sim_","slfv_","veloc_",r_seed,".txt");
+  sprintf(dum,"%s%d%s","./",r_seed,"_sim_slfv_veloc.txt");
   fp = Openfile(dum,WRITE);
   PhyML_Fprintf(fp,"\nName\tVeloLon\tVeloLat");
   for(i=0;i<tree->n_otu;++i)
@@ -1983,7 +1980,7 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
   nd = XML_Add_Node(root,"partitionelem");
   nd->attr = XML_Make_Attribute(NULL,"id","partition1");
   dum = (char *)mCalloc(100,sizeof(char));
-  sprintf(dum,"%s%s%s%d%s","./sim_","slfv_","data_",r_seed,".txt");
+  sprintf(dum,"%s%d%s","./",r_seed,"_sim_slfv_data.txt");
   XML_Add_Attribute(nd,"file.name",dum);
   XML_Add_Attribute(nd,"data.type","nt");
   XML_Add_Attribute(nd,"interleaved","no");
@@ -2004,7 +2001,7 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
   nd = XML_Add_Node(root,"coordinates");
   nd->attr = XML_Make_Attribute(NULL,"id","coordinates");
   dum = (char *)mCalloc(100,sizeof(char));
-  sprintf(dum,"%s%s%s%d%s","./sim_","slfv_","coord_",r_seed,".txt");
+  sprintf(dum,"%s%d%s","./",r_seed,"_sim_slfv_coord.txt");
   XML_Add_Attribute(nd,"file.name",dum);
 
 
@@ -2049,12 +2046,11 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
     }
   
   dum = (char *)mCalloc(100,sizeof(char));
-  sprintf(dum,"%s%s%s%d%s","sim_","ibm_","config_",r_seed,".xml");
+  sprintf(dum,"%s%d%s","./",r_seed,"_sim_ibm_config.xml");
   fp = Openfile(dum,WRITE);
   XML_Write_XML_Graph(fp,root);
   fclose(fp);
   Free(dum);
-
 
 
   
@@ -2064,7 +2060,34 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
   XML_Set_Attribute_Value(nd,"name","rrw+gamma");
   
   dum = (char *)mCalloc(100,sizeof(char));
-  sprintf(dum,"%s%s%s%d%s","sim_","rrw_","config_",r_seed,".xml");
+  sprintf(dum,"%s%d%s","./",r_seed,"_sim_rrw_config.xml");
+  fp = Openfile(dum,WRITE);
+  XML_Write_XML_Graph(fp,root);
+  fclose(fp);
+  Free(dum);
+
+
+
+  XML_Set_Attribute_Value(root,"run.id","iou");
+
+  nd = XML_Search_Node_Name("spatialmodel",NO,root);
+  XML_Set_Attribute_Value(nd,"name","iou");
+  
+  dum = (char *)mCalloc(100,sizeof(char));
+  sprintf(dum,"%s%d%s","./",r_seed,"_sim_iou_config.xml");
+  fp = Openfile(dum,WRITE);
+  XML_Write_XML_Graph(fp,root);
+  fclose(fp);
+  Free(dum);
+
+
+  XML_Set_Attribute_Value(root,"run.id","iwn");
+
+  nd = XML_Search_Node_Name("spatialmodel",NO,root);
+  XML_Set_Attribute_Value(nd,"name","iwn");
+  
+  dum = (char *)mCalloc(100,sizeof(char));
+  sprintf(dum,"%s%d%s","./",r_seed,"_sim_iwn_config.xml");
   fp = Openfile(dum,WRITE);
   XML_Write_XML_Graph(fp,root);
   fclose(fp);
@@ -2561,6 +2584,26 @@ phydbl SLFV_Lineage_Speed(t_ldsk *l, t_tree *tree)
   while(l->nd == NULL);
   
   return(dist / dt);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+phydbl SLFV_Lineage_Dist(t_ldsk *l, t_tree *tree)
+{
+  phydbl dist;
+  int i;
+ 
+  dist = 0.0;
+  do
+    {
+      for(i=0;i<tree->mmod->n_dim;++i) dist += fabs(l->coord->lonlat[i] - l->prev->coord->lonlat[i]);
+      l = l->prev;
+      assert(l);
+    }
+  while(l->nd == NULL);
+  
+  return(dist);
 }
 
 /*////////////////////////////////////////////////////////////
