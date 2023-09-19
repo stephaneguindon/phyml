@@ -87,7 +87,11 @@ int main(int argc, char **argv)
 #endif
 
   r_seed = (io->r_seed < 0)?(time(NULL)):(io->r_seed);
+#ifdef MPI
+  srand(r_seed+Global_myRank);
+#else
   srand(r_seed);
+#endif
   io->r_seed = r_seed;
 
   if(io->in_tree == 2) Test_Multiple_Data_Set_Format(io);
