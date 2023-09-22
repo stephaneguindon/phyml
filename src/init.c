@@ -896,10 +896,10 @@ void RATES_Init_Rate_Struct(t_rate *rates, t_rate *existing_rates, int n_otu)
   rates->clock_r_prior_mean = 1.0E-1;
   rates->clock_r_prior_var  = 1.0E-8;
   
-  rates->max_rate         = 1.E+8;
-  rates->min_rate         = 1.E-2;
-  /* rates->max_rate         = 10.; */
-  /* rates->min_rate         = 0.1; */
+  /* rates->max_rate         = 1.E+8; */
+  /* rates->min_rate         = 1.E-2; */
+  rates->max_rate         = 10.;
+  rates->min_rate         = 0.1;
 
   rates->nu               = 0.1;
   rates->min_nu           = 0.0;

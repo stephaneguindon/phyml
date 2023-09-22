@@ -125,7 +125,6 @@ void DR_Print_Postscript_EOF(FILE *fp)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void DR_Print_Tree_Postscript(int page_num, int render_name, FILE *fp, t_tree *tree)
 {
   tdraw *draw;
@@ -159,7 +158,6 @@ void DR_Print_Tree_Postscript(int page_num, int render_name, FILE *fp, t_tree *t
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void DR_Print_Tree_Postscript_Pre(t_node *a, t_node *d, t_edge *b, int render_name, FILE *fp, tdraw *w, t_tree *tree)
 {
@@ -343,15 +341,11 @@ void DR_Print_Tree_Postscript_Pre(t_node *a, t_node *d, t_edge *b, int render_na
 	if(d->v[i] != a && d->b[i] != tree->e_root) DR_Print_Tree_Postscript_Pre(d,d->v[i],d->b[i],render_name,fp,w,tree);
     }
 
-
-
-
   return;
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-
 
 void DR_Get_X_Coord_Pre(t_node *a, t_node *d, t_edge *b, tdraw *w, int fixed_tips, t_tree *tree)
 {
@@ -590,6 +584,47 @@ void DR_Get_Cdf_Mat(t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+void PHYREX_Draw_Tree(FILE *fp, t_tree *tree)
+{
+  int i;
+  t_dsk *disk;
+  
+  
+  disk = tree->young_disk;
+  do disk = disk->prev; while(disk->prev);
+
+  PhyML_Fprintf(fp,"plot(c(%f,%f),c(%f,%f),type=\"n\");",
+                tree->mmod->lim_do->lonlat[0],
+                tree->mmod->lim_up->lonlat[0],
+                tree->young_disk->time,
+                disk->time);
+  
+  disk = tree->young_disk;
+
+  for(i=0;i<disk->n_ldsk_a;++i)
+    PhyML_Fprintf(fp,"\n segments(%f,%f,%f,%f);",
+                  disk->ldsk_a[i]->coord->lonlat[0], 
+                  disk->time,
+                  disk->ldsk_a[i]->prev->coord->lonlat[0], 
+                  disk->ldsk_a[i]->prev->disk->time);
+
+  disk = disk->prev;
+  do
+    {
+      if(disk->ldsk != NULL)
+        {
+          PhyML_Fprintf(fp,"\n segments(%f,%f,%f,%f);",
+                        disk->ldsk->coord->lonlat[0],
+                        disk->time,
+                        disk->ldsk->prev->coord->lonlat[0],
+                        disk->ldsk->prev->disk->time);
+       }
+      disk = disk->prev;
+    }
+  while(disk->prev);
+
+}
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

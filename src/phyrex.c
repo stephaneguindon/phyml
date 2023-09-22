@@ -1225,9 +1225,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       
       if(!strcmp(tree->mcmc->move_name[move],"nu")) MCMC_Nu(tree);
       if(!strcmp(tree->mcmc->move_name[move],"br_rate")) MCMC_Rates_All(tree);
-
       if(!strcmp(tree->mcmc->move_name[move],"rates_shrink")) MCMC_Rates_Shrink(tree);
-
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_lbda")) MCMC_PHYREX_Lbda(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_mu")) MCMC_PHYREX_Mu(tree);
       if(!strcmp(tree->mcmc->move_name[move],"phyrex_rad")) MCMC_PHYREX_Radius(tree);
@@ -5625,7 +5623,7 @@ void PHYREX_Exchange_Ldsk(t_ldsk *a, t_ldsk *d, t_ldsk *w, t_ldsk *v, int aw, in
 {
   t_ldsk *zv,*zw;
   
-  assert(a->disk->time < d->disk->time);
+  assert(!(a->disk->time > d->disk->time));
 
   zv = v;
   while(zv->n_next == 1) zv = zv->next[0]; 
@@ -5644,7 +5642,6 @@ void PHYREX_Exchange_Ldsk(t_ldsk *a, t_ldsk *d, t_ldsk *w, t_ldsk *v, int aw, in
   Exchange_Nodes(a->nd,d->nd,zw->nd,zv->nd,tree);
 }
 
-
-
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
+

@@ -611,7 +611,8 @@ void MCMC_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
   ratio        = 0.0;
   move_num     = tree->mcmc->num_move_br_r;
   /* K            = 0.01; */
-  K            = 1.0;
+  /* K            = 1.0; */
+  K            = 0.1;
   
   cur_lnL_seq  = tree->c_lnL;
   new_lnL_seq  = UNLIKELY;
@@ -627,6 +628,11 @@ void MCMC_One_Rate(t_node *a, t_node *d, int traversal, t_tree *tree)
     {
       tree->mcmc->run_move[move_num]++;
       tree->mcmc->run++;
+#ifdef PHYREX
+      PHYREX_Print_MCMC_Stats(tree);
+      PHYREX_Print_MCMC_Tree(tree);
+      PHYREX_Print_MCMC_Summary(tree);
+#endif
       return;
     }
   
@@ -13300,7 +13306,8 @@ void MCMC_PHYREX_Wide_Exchange(t_tree *tree, int print)
       int wv_dist = 0;
       Find_Lca_Pair_Of_Nodes(v->nd,w->nd,&wv_dist,tree);
       
-      if(w->disk->time < d->disk->time || v->disk->time < a->disk->time || wv_dist > 7) continue;
+      if(w->disk->time < d->disk->time || v->disk->time < a->disk->time) continue;
+      /* if(w->disk->time < d->disk->time || v->disk->time < a->disk->time || wv_dist > 7) continue; */
       
       PHYREX_Exchange_Ldsk(a,d,w,v,aw,dv,tree);
       

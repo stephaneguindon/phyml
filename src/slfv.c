@@ -1731,6 +1731,11 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
       tree->young_disk->ldsk_a[i]->coord->lonlat[0] = Uni()*(tree->mmod->lim_up->lonlat[0]-tree->mmod->lim_do->lonlat[0])+tree->mmod->lim_do->lonlat[0]; // longitude
       tree->young_disk->ldsk_a[i]->coord->lonlat[1] = Uni()*(tree->mmod->lim_up->lonlat[1]-tree->mmod->lim_do->lonlat[1])+tree->mmod->lim_do->lonlat[1]; // latitude
     }
+  /* for(i=0;i<tree->n_otu;i++) */
+  /*   { */
+  /*     tree->young_disk->ldsk_a[i]->coord->lonlat[0] = Uni()*2.+4.; // longitude */
+  /*     tree->young_disk->ldsk_a[i]->coord->lonlat[1] = Uni()*2.+4.; // latitude */
+  /*   } */
 
   
   for(i=0;i<tree->n_otu;i++)
@@ -1745,6 +1750,15 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
   
   SLFV_Simulate_Backward_Core(tree->young_disk,NO,tree);
 
+  dum = (char *)mCalloc(100,sizeof(char));
+  sprintf(dum,"%s%d%s","./",r_seed,"_sim_slfv_tree.txt");
+  fp = Openfile(dum,WRITE);
+  PHYREX_Draw_Tree(fp,tree);
+  fclose(fp);
+  Free(dum);
+
+
+  
   PHYREX_Ldsk_To_Tree(tree);
   Update_Ancestors(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
   Update_Ancestors(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
@@ -1760,7 +1774,7 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
   
   tree->rates->bl_from_rt = YES;
   // tree->rates->clock_r    = 0.1/fabs(2.*T);
-  tree->rates->clock_r    = 0.05 / L * (2*tree->n_otu-2);
+  tree->rates->clock_r    = 0.1 / L * (2*tree->n_otu-2);
   tree->rates->model_id   = STRICTCLOCK;
 
   
@@ -2592,12 +2606,11 @@ phydbl SLFV_Lineage_Speed(t_ldsk *l, t_tree *tree)
 phydbl SLFV_Lineage_Dist(t_ldsk *l, t_tree *tree)
 {
   phydbl dist;
-  int i;
  
   dist = 0.0;
   do
     {
-      for(i=0;i<tree->mmod->n_dim;++i) dist += fabs(l->coord->lonlat[i] - l->prev->coord->lonlat[i]);
+      dist += Euclidean_Distance(l->coord,l->prev->coord);
       l = l->prev;
       assert(l);
     }

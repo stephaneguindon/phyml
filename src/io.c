@@ -6770,7 +6770,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
 
           PhyML_Fprintf(fp_stats,"%s\t","speed");
           PhyML_Fprintf(fp_stats,"%s\t","displacement");
-          if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES) PhyML_Fprintf(fp_stats,"%s\t","speedfromveloc");
+          PhyML_Fprintf(fp_stats,"%s\t","speedfromveloc");
 
           if(IWN_Is_Iwn(tree->mmod) == YES) PhyML_Fprintf(fp_stats,"%s\t","stickiness");
           if(IOU_Is_Iou(tree->mmod) == YES) PhyML_Fprintf(fp_stats,"%s\t","stickiness");
@@ -6844,11 +6844,11 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           PhyML_Fprintf(fp_stats,"rrSonLeft\t");
           PhyML_Fprintf(fp_stats,"rrSonRght\t");
 
-          /* for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"rr%d%c\t", */
-          /*                                                  i, */
-          /*                                                  (tree->a_nodes[i] == tree->n_root->v[1] || */
-          /*                                                   tree->a_nodes[i] == tree->n_root->v[2]) ? */
-          /*                                                  '*':' '); */
+          for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"rr%d%c\t",
+                                                           i,
+                                                           (tree->a_nodes[i] == tree->n_root->v[1] ||
+                                                            tree->a_nodes[i] == tree->n_root->v[2]) ?
+                                                           '*':' ');
 
           if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES)
             {
@@ -6922,7 +6922,8 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Realized_Dispersal_Dist(EUCLIDEAN,tree)/PHYREX_Time_Tree_Length(tree));
       PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Realized_Displacement_Dist(EUCLIDEAN,tree)/PHYREX_Time_Tree_Length(tree));
       if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES) PhyML_Fprintf(fp_stats,"%g\t",VELOC_Mean_Speed(tree));
-
+      else PhyML_Fprintf(fp_stats,"-1.\t");
+        
       if(IWN_Is_Iwn(tree->mmod) == YES) PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->omega);
       if(IOU_Is_Iou(tree->mmod) == YES) PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->ou_theta);
       if(IOU_Is_Iou(tree->mmod) == YES) for(int i=0;i<tree->mmod->n_dim;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->ou_mu[i]);
@@ -6999,7 +7000,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%f\t",tree->rates->br_r[tree->n_root->v[1]->num]);
       PhyML_Fprintf(fp_stats,"%f\t",tree->rates->br_r[tree->n_root->v[2]->num]);
 
-      /* for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"%f\t",tree->rates->br_r[tree->a_nodes[i]->num]); */
+      for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"%f\t",tree->rates->br_r[tree->a_nodes[i]->num]);
       
       if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES)
         {

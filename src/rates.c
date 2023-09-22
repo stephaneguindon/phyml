@@ -1033,8 +1033,8 @@ void RATES_Update_Normalization_Factor(t_tree *tree)
   for(i=0;i<2*tree->n_otu-2;++i)
     {
       assert(tree->a_nodes[i] != tree->n_root);
-      /* dt = fabs(tree->times->nd_t[i] - tree->times->nd_t[tree->a_nodes[i]->anc->num]); */
-      dt = 1.0;
+      dt = fabs(tree->times->nd_t[i] - tree->times->nd_t[tree->a_nodes[i]->anc->num]);
+      /* dt = 1.0; */
       rdt = dt*tree->rates->br_r[i];
       T+=dt;
       RT+=rdt;
