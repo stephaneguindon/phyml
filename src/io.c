@@ -6844,11 +6844,11 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           PhyML_Fprintf(fp_stats,"rrSonLeft\t");
           PhyML_Fprintf(fp_stats,"rrSonRght\t");
 
-          for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"rr%d%c\t",
-                                                           i,
-                                                           (tree->a_nodes[i] == tree->n_root->v[1] ||
-                                                            tree->a_nodes[i] == tree->n_root->v[2]) ?
-                                                           '*':' ');
+          /* for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"rr%d%c\t", */
+          /*                                                  i, */
+          /*                                                  (tree->a_nodes[i] == tree->n_root->v[1] || */
+          /*                                                   tree->a_nodes[i] == tree->n_root->v[2]) ? */
+          /*                                                  '*':' '); */
 
           if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES)
             {
@@ -7000,7 +7000,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%f\t",tree->rates->br_r[tree->n_root->v[1]->num]);
       PhyML_Fprintf(fp_stats,"%f\t",tree->rates->br_r[tree->n_root->v[2]->num]);
 
-      for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"%f\t",tree->rates->br_r[tree->a_nodes[i]->num]);
+      /* for(int i=0;i<2*tree->n_otu-2;++i) PhyML_Fprintf(fp_stats,"%f\t",tree->rates->br_r[tree->a_nodes[i]->num]); */
       
       if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES)
         {
