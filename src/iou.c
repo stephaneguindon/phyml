@@ -79,8 +79,15 @@ phydbl IOU_Location_Mean_Along_Edge(t_node *d, short int dim, t_tree *tree)
   mu = tree->mmod->ou_mu[dim];
   
   mean =
-    x0 + (cosh(ta*t)-1.)/sinh(ta*t)/ta*(yt+y0) +
-    mu*t - (mu/ta)*(1.-exp(-ta*t))*(1.+(cosh(ta*t)-1.)/sinh(ta*t));
+    /* x0 + (cosh(ta*t)-1.)/(sinh(ta*t)*ta)*(yt+y0) + */
+    /* mu*t - (mu/ta)*(1.-exp(-ta*t))*(1.+(cosh(ta*t)-1.)/sinh(ta*t)); */
+    x0 + (1./tanh(ta*t) - 1./sinh(ta*t))*(yt+y0)/ta +
+    mu*t - (mu/ta)*(1.-exp(-ta*t))*(1.+1./tanh(ta*t)-1./sinh(ta*t));
+
+  /* PhyML_Printf("\n. t: %f x0: %f y0: %f yt: %f ta: %f mu: %f cosh: %f sinh: %f", */
+  /*              t,x0,y0,yt,ta,mu,cosh(ta*t),sinh(ta*t)); */
+  
+  assert(isnan(mean) == NO);
   
   return(mean);
     
@@ -245,7 +252,21 @@ void IOU_Integrated_Location_Up(phydbl dt1, phydbl dt2,
           logr = 0.0;
         }
     }
+
+
+  if(isnan(m))
+    {
+      PhyML_Printf("\n. a_is_root ? %d",a_is_root);
+      PhyML_Printf("\n. dt1: %f dt2: %f av1: %f av2: %f bv1: %f bv2: %f v1mu: %f v1var: %f av1var: %f v2mu: %f v2var: %f av2var: %f",
+                   dt1, dt2,
+                   av1, bv1, v1mu, v1var, av1var,
+                   av2, bv2, v2mu, v2var, av2var);
+                                
+    }
   
+  assert((isinf(m) || isinf(v)) == NO);
+  assert((isnan(m) || isnan(v)) == NO);
+
   *mean = m;
   *var  = v;
   *logrem = logr;

@@ -13427,6 +13427,7 @@ void MCMC_PHYREX_Wide_Exchange(t_tree *tree, int print)
 void MCMC_PHYREX_Update_Velocities(t_tree *tree)
 {
   if(tree->mmod->use_locations == NO) return;
+
   
   if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES)
     {

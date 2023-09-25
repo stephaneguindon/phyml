@@ -493,6 +493,19 @@ void VELOC_Integrated_Lk_Location_Post(t_node *a, t_node *d, short int dim, t_tr
                                        tree->contmod->logrem_down+d->num);
         }
 
+      if(isnan(tree->contmod->mu_down[d->num]) == YES)
+        {
+          PhyML_Printf("\n. %f %f %f %f %f %f %f %f %f %f %f %f %f",
+                       dtv1,dtv2,
+                       av1,bv1,v1mu,v1var,dv1var,
+                       av2,bv2,v2mu,v2var,dv2var);
+          PhyML_Printf("\n. bv2: %f",VELOC_Location_Mean_Along_Edge(v2,dim,tree));
+        }
+      
+
+      assert(isnan(tree->contmod->mu_down[d->num]) == NO);
+      assert(isnan(tree->contmod->var_down[d->num]) == NO && !(tree->contmod->var_down[d->num] < 0.0));
+      
       /* if(v1->tax && v2->tax) */
         /* { */
         /*   PhyML_Printf("\n. LOCATION  %c %d (%d,%d) loc: v1:%f v2:%f -- mean: %f sd: %f dt1: %f dt2: %f sigsq: %f derivatives: %f %f %f av1: %f bv1: %f v1mu: %f av2: %f bv2: %f v2mu: %f ", */
@@ -656,6 +669,9 @@ void VELOC_Integrated_Lk_Location_Pre(t_node *a, t_node *d, short int dim, t_tre
                                      YES);
         }
     }
+
+  assert(isnan(tree->contmod->mu_up[d->num]) == NO);
+  assert(isnan(tree->contmod->var_up[d->num]) == NO && !(tree->contmod->var_down[d->num] < 0.0));
   
   if(d->tax == TRUE) return;
   else
