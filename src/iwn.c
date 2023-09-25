@@ -131,12 +131,14 @@ phydbl IWN_Location_Variance_Along_Edge(t_node *d, short int dim, t_tree *tree)
 
 int IWN_Get_Gt(phydbl t, phydbl omega)
 {
-  int gt;
+  /* int gt; */
   
-  gt = 0;
-  while(!(gt*omega > t)) { gt++; }
+  /* gt = 0; */
+  /* while(!(gt*omega > t)) { gt++; } */
 
-  return(gt-1);
+  /* return(gt-1); */
+
+  return((int)(t/omega));
 }
 
 //////////////////////////////////////////////////////////////

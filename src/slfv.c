@@ -1933,7 +1933,7 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
 
   nd = XML_Add_Node(root,"lineagerates");
   nd->attr = XML_Make_Attribute(NULL,"model","lognormal");
-  XML_Add_Attribute(nd,"autocor.prior.rate","50");
+  XML_Add_Attribute(nd,"autocor.prior.rate","100");
 
   nd = XML_Add_Node(root,"treegenerating");
   nd->attr = XML_Make_Attribute(NULL,"model","coalescent");
