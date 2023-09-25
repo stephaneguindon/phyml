@@ -328,30 +328,6 @@ void PHYREX_XML(char *xml_filename)
               assert(FALSE);
             }
         }
-
-
-      char *prior_mean;
-      prior_mean = XML_Get_Attribute_Value(xnd,"dispersal.prior.mean");
-      if(prior_mean != NULL) mixt_tree->mmod->disp_prior_mean = String_To_Dbl(prior_mean);
-
-      char *prior_var;
-      prior_var = XML_Get_Attribute_Value(xnd,"dispersal.prior.var");
-      if(prior_var != NULL) mixt_tree->mmod->disp_prior_var = String_To_Dbl(prior_var);
-
-      char *prior_distrib;
-      prior_distrib = XML_Get_Attribute_Value(xnd,"dispersal.prior.distrib");
-      if(prior_distrib != NULL)
-        {
-          if(!strcmp(prior_distrib,"exponential")) mixt_tree->mmod->disp_prior_distrib = EXPONENTIAL_PRIOR;
-          else if(!strcmp(prior_distrib,"normal")) mixt_tree->mmod->disp_prior_distrib = NORMAL_PRIOR;
-          else
-            {
-              PhyML_Printf("\n. Unknown prior distribution '%s'. Aborting. ",prior_distrib);
-              assert(FALSE);
-            }
-        }
-
-
       
       char *integrateAncestralLocations;
       integrateAncestralLocations = XML_Get_Attribute_Value(xnd,"integrateAncestralLocations");
@@ -804,7 +780,6 @@ void PHYREX_XML(char *xml_filename)
   Free(s);
   PhyML_Printf("\n. Ne prior mean: %f",mixt_tree->times->neff_prior_mean);
   PhyML_Printf("\n. Exponential growth of Ne: %s",(mixt_tree->times->coalescent_model_id == EXPCOALESCENT)?"yes":"no");
-  PhyML_Printf("\n. Dispersal distance prior mean: %f",mixt_tree->mmod->disp_prior_mean);
   PhyML_Printf("\n. Init lnL(seq|phylo): %f",mixt_tree->c_lnL);
   PhyML_Printf("\n. Init lnL(rates|phylo): %f",mixt_tree->rates->c_lnL);
   PhyML_Printf("\n. Init lnL(coord|phylo): %f",mixt_tree->mmod->c_lnL);
@@ -1215,7 +1190,7 @@ phydbl *PHYREX_MCMC(t_tree *tree)
       /* phydbl prev_loc_lnL = tree->mmod->c_lnL; */
       /* phydbl prev_rates_lnL = tree->rates->c_lnL; */
       /* phydbl prev_times_lnL = tree->times->c_lnL; */
-
+      
       /* PhyML_Printf("\n. Move: %s tree->mmod->c_lnL: %f tree->c_lnL: %f", */
       /*              tree->mcmc->move_name[move], */
       /*              tree->mmod->c_lnL, */
@@ -2481,6 +2456,10 @@ phydbl PHYREX_LnPrior_Sigsq(t_tree *tree)
                          sqrt(tree->mmod->disp_prior_var),
                          &err);
         }
+    }
+  else if(tree->mmod->disp_prior_distrib == FLAT_PRIOR)
+    {
+      lnP += 0.0;
     }
   else assert(false);
 

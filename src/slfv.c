@@ -1929,7 +1929,6 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
   XML_Add_Attribute(nd,"sampling","detection");
   XML_Add_Attribute(nd,"dispersal.prior.mean","1.0");
   XML_Add_Attribute(nd,"integrateAncestralLocations","true");
-  XML_Add_Attribute(nd,"rrw.param.val","10.");
 
   nd = XML_Add_Node(root,"lineagerates");
   nd->attr = XML_Make_Attribute(NULL,"model","lognormal");
