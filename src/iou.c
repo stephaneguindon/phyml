@@ -43,18 +43,32 @@ phydbl IOU_Velocity_Mean_Along_Edge(t_node *d, short int dim, t_tree *tree)
 /* Variance of velocity at the end of an edge, given the velocity at the start of it */
 phydbl IOU_Velocity_Variance_Along_Edge(t_node *d, short int dim, t_tree *tree)
 {
-  phydbl var,t,sg,ta;
+  phydbl var,t,sg2,ta;
   
   assert(d != tree->n_root);
 
+  /* t = fabs(tree->times->nd_t[d->num] - tree->times->nd_t[d->anc->num]); */
+  /* sg = tree->mmod->sigsq[dim]; */
+  /* ta = tree->mmod->ou_theta; */
+  
+  /* var = sg/(2.*ta)*(1.-exp(-2.*ta*t)); */
+
   t = fabs(tree->times->nd_t[d->num] - tree->times->nd_t[d->anc->num]);
-  sg = tree->mmod->sigsq[dim];
+  sg2 = tree->mmod->sigsq[dim] * tree->mmod->sigsq_scale[d->num] * tree->mmod->sigsq_scale_norm_fact;
   ta = tree->mmod->ou_theta;
   
-  var = sg/(2.*ta)*(1.-exp(-2.*ta*t));
-     
+  var = sg2 /(2.*ta) * (1. - exp(-2.*ta*t));
+  
   if(var < 0.0) var = 0.0;
 
+  if(isinf(var) || isnan(var))
+    {
+      PhyML_Printf("\n. ta: %f t: %f sg2: %f sinh: %f",ta,t,sg2,sinh(ta*t));
+    }
+  
+  assert(isnan(var) == NO);
+  assert(isinf(var) == NO);
+  
   return(var);
 }
 
@@ -107,9 +121,12 @@ phydbl IOU_Location_Variance_Along_Edge(t_node *d, short int dim, t_tree *tree)
   ta = tree->mmod->ou_theta;
   sg = tree->mmod->sigsq[dim];
   
-  var = sg/pow(ta,3)*(ta*t-2.*(cosh(ta*t)-1.)/sinh(ta*t));
+  /* var = sg/pow(ta,3)*(ta*t-2.*(cosh(ta*t)-1.)/sinh(ta*t)); */
+  var = sg/pow(ta,3)*(ta*t-2.*(1./tanh(ta*t) - 1./sinh(ta*t)));
 
   if(var < 0.0) var = 0.0;
+
+  assert(isnan(var) == NO);
 
   return(var);
 }
@@ -119,9 +136,12 @@ phydbl IOU_Location_Variance_Along_Edge(t_node *d, short int dim, t_tree *tree)
 
 phydbl IOU_Prior(t_tree *tree)
 {
-  return(IOU_Prior_Theta(tree) +
-         IOU_Prior_Mu(tree) +
-         PHYREX_LnPrior_Sigsq(tree));
+  tree->mmod->c_lnP =
+    IOU_Prior_Theta(tree) +
+    IOU_Prior_Mu(tree) +
+    PHYREX_LnPrior_Sigsq(tree);
+
+  return(tree->mmod->c_lnP);
 }
 
 //////////////////////////////////////////////////////////////

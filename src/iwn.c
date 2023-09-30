@@ -146,6 +146,10 @@ int IWN_Get_Gt(phydbl t, phydbl omega)
 
 phydbl IWN_Prior(t_tree *tree)
 {
+  tree->mmod->c_lnP =
+    IWN_Prior_Omega(tree) +
+    PHYREX_LnPrior_Sigsq(tree);
+
   return(PHYREX_LnPrior_Sigsq(tree)+IWN_Prior_Omega(tree));
 }
 

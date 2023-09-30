@@ -2438,7 +2438,7 @@ phydbl PHYREX_LnPrior_Sigsq(t_tree *tree)
   int i,err;
   
   lnP = 0.0;
-  
+
   if(tree->mmod->disp_prior_distrib == EXPONENTIAL_PRIOR)
     {
       for(i=0;i<tree->mmod->n_dim;++i)

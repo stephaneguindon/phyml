@@ -3595,7 +3595,7 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->max_omega         = 1.E+3;
 
   t->ou_theta             = 1.0;
-  t->min_ou_theta         = 1.0E-3;
+  t->min_ou_theta         = 1.0E-4;
   t->max_ou_theta         = 10.0;
 
   for(int i=0;i<t->n_dim;++i) t->ou_mu[i] = 0.0;
@@ -3621,7 +3621,7 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
 
   t->disp_prior_mean    = 1.0;
   t->disp_prior_var     = 1.0;
-  t->disp_prior_distrib = FLAT_PRIOR;
+  t->disp_prior_distrib = EXPONENTIAL_PRIOR;
   
   t->integrateAncestralLocations = YES;
 

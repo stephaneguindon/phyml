@@ -7192,7 +7192,6 @@ void MCMC_PHYREX_Sigsq(t_tree *tree, int print)
       
       Set_Lk(tree);
       Set_Prior(tree);
-
       
       cur_glnL = tree->mmod->c_lnL;
       new_glnL = UNLIKELY;
@@ -7226,9 +7225,12 @@ void MCMC_PHYREX_Sigsq(t_tree *tree, int print)
       u = Uni();
       
       if(print == YES)
-        PhyML_Printf("\n. SIGSQ glnL: %f->%f glnP: %f->%f",
-                     new_glnL,cur_glnL,
-                     new_glnP,cur_glnP);
+        PhyML_Printf("\n. SIGSQ glnL: %f->%f glnP: %f->%f sigsq: %f->%f alpha: %f %d",
+                     cur_glnL,new_glnL,
+                     cur_glnP,new_glnP,
+                     cur_sigsq,new_sigsq,
+                     alpha,
+                     dim_idx);
       
       assert(isnan(u) == NO && isinf(fabs(u)) == NO);
       
@@ -13828,8 +13830,8 @@ void MCMC_PHYREX_IWN_Update_Omega(t_tree *tree)
                               tree->mmod->min_omega,
                               tree->mmod->max_omega,
                               tree->mcmc->num_move_phyrex_iwn_omega,
-                              NULL,&(tree->mmod->c_lnL),
-                              NULL,LOCATION_Wrap_Lk,
+                              &(tree->mmod->c_lnP),&(tree->mmod->c_lnL),
+                              LOCATION_Wrap_Prior,LOCATION_Wrap_Lk,
                               tree->mcmc->move_type[tree->mcmc->num_move_phyrex_iwn_omega],
                               NO,NULL,tree,NULL);
 }
@@ -13848,8 +13850,8 @@ void MCMC_PHYREX_IOU_Update_Theta(t_tree *tree)
                                 tree->mmod->min_ou_theta,
                                 tree->mmod->max_ou_theta,
                                 tree->mcmc->num_move_phyrex_iou_theta,
-                                NULL,&(tree->mmod->c_lnL),
-                                NULL,LOCATION_Wrap_Lk,
+                                &(tree->mmod->c_lnP),&(tree->mmod->c_lnL),
+                                LOCATION_Wrap_Prior,LOCATION_Wrap_Lk,
                                 tree->mcmc->move_type[tree->mcmc->num_move_phyrex_iou_theta],
                                 NO,NULL,tree,NULL);
     }
@@ -13870,8 +13872,8 @@ void MCMC_PHYREX_IOU_Update_Mu(t_tree *tree)
                                   tree->mmod->min_ou_mu,
                                   tree->mmod->max_ou_mu,
                                   tree->mcmc->num_move_phyrex_iou_mu,
-                                  NULL,&(tree->mmod->c_lnL),
-                                  NULL,LOCATION_Wrap_Lk,
+                                  &(tree->mmod->c_lnP),&(tree->mmod->c_lnL),
+                                  LOCATION_Wrap_Prior,LOCATION_Wrap_Lk,
                                   tree->mcmc->move_type[tree->mcmc->num_move_phyrex_iou_mu],
                                   NO,NULL,tree,NULL);
     }
