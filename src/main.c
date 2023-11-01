@@ -591,78 +591,48 @@ int main(int argc, char **argv)
 int main(int argc, char **argv)
 {
   option *io;
-  int i;
-  char *year,*lat,*lon;
+  xml_node *root,*taxa,*taxon,*date,*loc;
+  int indent;
   
   io = (option *)Get_Input(argc,argv);
   if(!io) return(0);
 
-  Get_Seq(io);
-
-  /* for(i=0;i<io->n_otu;i++) */
-  /*   { */
-  /*     sscanf(io->data[i]->name,"%d",&year); */
-  /*     PhyML_Printf("\n%s\t%d",io->data[i]->name,year); */
-  /*   } */
-
-  for(i=0;i<io->n_otu;i++)
-    {
-      /* sscanf(io->data[i]->name,"%[^_]_%[^_]_%lf",a,b,&year); */
-      /* PhyML_Printf("\n. a: %s b: %s",a,b); */
-      strtok(io->data[i]->name,"_");
-      char *a = strtok(NULL,"_");
-      year = strtok(NULL,"_");
-      lat = strtok(NULL,"_");
-      lon = strtok(NULL,"_");
-
-
-      PhyML_Printf("\n\t <taxon id=\"%s_%s_%s\">",io->data[i]->name,a,year);
-      PhyML_Printf("\n\t\t <date value=\"%s\" direction=\"forwards\" units=\"years\"/>",year);
-      PhyML_Printf("\n\t\t <attr name=\"lat\">");
-      PhyML_Printf("\n\t\t\t %s",lat);
-      PhyML_Printf("\n\t\t </attr>");
-      PhyML_Printf("\n\t\t <attr name=\"lon\">");
-      PhyML_Printf("\n\t\t\t %s",lon);
-      PhyML_Printf("\n\t\t </attr>");
-      PhyML_Printf("\n\t\t <attr name=\"location\">");
-      PhyML_Printf("\n\t\t\t %s %s",lat,lon);
-      PhyML_Printf("\n\t\t </attr>");
-      PhyML_Printf("\n\t </taxon>");
-      
-      /* PhyML_Printf("\n<clade id=\"clad%d\">",i+1); */
-      /* PhyML_Printf("\n\t<taxon value=\"%s\"/>",io->data[i]->name); */
-      /* PhyML_Printf("\n</clade>"); */
-      /* PhyML_Printf("\n<calibration id=\"cal%d\">",i+1); */
-      /* PhyML_Printf("\n\t<lower>%d</lower>",year); */
-      /* PhyML_Printf("\n\t<upper>%d</upper>",year); */
-      /* PhyML_Printf("\n\t<appliesto clade.id=\"clad%d\"/>",i+1); */
-      /* PhyML_Printf("\n</calibration>"); */
-    }
-
-  /* FILE *fp; */
-  /* char *name,*date; */
-  /* int i; */
+  root = XML_Load_File(io->fp_in_xml);
   
-  /* name = (char *)mCalloc(T_MAX_NAME,sizeof(char)); */
-  /* date = (char *)mCalloc(T_MAX_NAME,sizeof(char)); */
+  taxa = XML_Search_Node_Name("taxa",NO,root);
 
-  /* i = 0; */
-  /* fp = Openfile(argv[1],READ); */
-  /* do */
-  /*   { */
-  /*     if(fscanf(fp,"%s",name) == EOF) break; */
-  /*     if(fscanf(fp,"%s",date) == EOF) break; */
-  /*     PhyML_Printf("\n<clade id=\"clad%d\">",i+1); */
-  /*     PhyML_Printf("\n\t<taxon value=\"%s\"/>",name); */
-  /*     PhyML_Printf("\n</clade>"); */
-  /*     PhyML_Printf("\n<calibration id=\"cal%d\">",i+1); */
-  /*     PhyML_Printf("\n\t<lower>%s</lower>",date); */
-  /*     PhyML_Printf("\n\t<upper>%s</upper>",date); */
-  /*     PhyML_Printf("\n\t<appliesto clade.id=\"clad%d\"/>",i+1); */
-  /*     PhyML_Printf("\n</calibration>"); */
-  /*     ++i; */
-  /*   } */
-  /* while(1); */
+  taxon = taxa->child;
+  do
+    {
+      PhyML_Printf("\n");
+      PhyML_Printf(" %s",XML_Get_Attribute_Value(taxon,"id"));
+
+      loc = XML_Search_Node_Generic("attr","name","latitude",NO,taxon);
+      PhyML_Printf("\t %s",loc->value);
+      
+      loc = XML_Search_Node_Generic("attr","name","longitude",NO,taxon);
+      PhyML_Printf("\t %s",loc->value);
+
+      taxon = taxon->next;
+    }
+  while(taxon);
+  
+
+  taxon = taxa->child;
+  do
+    {
+      PhyML_Printf("\n");
+      PhyML_Printf(" %s",XML_Get_Attribute_Value(taxon,"id"));
+
+      date = XML_Search_Node_Name("date",NO,taxon);
+      PhyML_Printf("\t %s",XML_Get_Attribute_Value(date,"value"));
+
+      taxon = taxon->next;
+    }
+  while(taxon);
+
+  
+
   
 }
 

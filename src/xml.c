@@ -1167,6 +1167,7 @@ xml_node *XML_Load_File(FILE *fp)
   parent  = NULL;
   node    = NULL;
 
+  
   while((c = fgetc(fp)) != EOF)
     {
       if(c == '<' && bufptr > buffer) 
@@ -2157,12 +2158,12 @@ void XML_Write_XML_Graph(FILE *fp, xml_node *root)
 {
   int indent;
   indent = 0;
-  XML_Write_XML_Node(fp,&indent,root);
+  XML_Write_XML_Node(fp,&indent,YES,YES,root);
 }
 
 //////////////////////////////////////////////////////////////
 
-void XML_Write_XML_Node(FILE *fp, int *indent, xml_node *root)
+void XML_Write_XML_Node(FILE *fp, int *indent, short int recurr_next, short int recurr_child, xml_node *root)
 {
   xml_node *n;
   xml_attr *attr;
@@ -2191,16 +2192,16 @@ void XML_Write_XML_Node(FILE *fp, int *indent, xml_node *root)
 
   if(n->value != NULL) XML_Write_Node_Value(fp,s,n);
 
-  if(n->child)
+  if(n->child && recurr_child == YES)
     {
       (*indent)++;
-      XML_Write_XML_Node(fp,indent,n->child);
+      XML_Write_XML_Node(fp,indent,recurr_next,recurr_child,n->child);
       (*indent)--;
     }
 
   PhyML_Fprintf(fp,"\n%s</%s>",s,n->name);
 
-  if(n->next) XML_Write_XML_Node(fp,indent,n->next);  
+  if(n->next && recurr_next == YES) XML_Write_XML_Node(fp,indent,recurr_next,recurr_child,n->next);  
 
   Free(s);
 }

@@ -376,9 +376,12 @@ phydbl VELOC_Integrated_Lk_Location(t_tree *tree)
       
       lnL += tree->contmod->logrem_down[tree->n_root->num];
       lnL += Log_Dnorm(tree->contmod->mu_down[tree->n_root->num],root_mean,sqrt(root_var+tree->contmod->var_down[tree->n_root->num]),&err);
-      /* PhyML_Printf("\n. root mean: %f var: %f", */
+      /* PhyML_Printf("\n. %d root mu: %f mean: %f var: %f rem: %f", */
+      /*              i, */
+      /*              tree->contmod->mu_down[tree->n_root->num], */
       /*              root_mean, */
-      /*              root_var+tree->contmod->var_down[tree->n_root->num]); */
+      /*              root_var+tree->contmod->var_down[tree->n_root->num], */
+      /*              tree->contmod->logrem_down[tree->n_root->num]); */
     }
   return(lnL);
 }
@@ -447,16 +450,16 @@ void VELOC_Integrated_Lk_Location_Post(t_node *a, t_node *d, short int dim, t_tr
       bv1 = VELOC_Location_Mean_Along_Edge(v1,dim,tree) - d->ldsk->coord->lonlat[dim];
       bv2 = VELOC_Location_Mean_Along_Edge(v2,dim,tree) - d->ldsk->coord->lonlat[dim];
 
-      if(d == tree->n_root && print == YES)
+      /* if(d == tree->n_root && print == YES) */
         {
-          PhyML_Printf("\n. v1mu=%f v2mu=%f v1var=%f dv1var=%f v2var=%f dv2var=%f t=%f t1=%f t2=%f",
-                       v1mu,
-                       v2mu,
-                       v1var,dv1var,
-                       v2var,dv2var,
-                       tree->times->nd_t[d->num],
-                       tree->times->nd_t[v1->num],
-                       tree->times->nd_t[v2->num]);
+          /* PhyML_Printf("\n. v1mu=%f v2mu=%f v1var=%f dv1var=%f v2var=%f dv2var=%f t=%f t1=%f t2=%f", */
+          /*              v1mu, */
+          /*              v2mu, */
+          /*              v1var,dv1var, */
+          /*              v2var,dv2var, */
+          /*              tree->times->nd_t[d->num], */
+          /*              tree->times->nd_t[v1->num], */
+          /*              tree->times->nd_t[v2->num]); */
         }
       
                          
@@ -508,19 +511,23 @@ void VELOC_Integrated_Lk_Location_Post(t_node *a, t_node *d, short int dim, t_tr
       
       /* if(v1->tax && v2->tax) */
         /* { */
-        /*   PhyML_Printf("\n. LOCATION  %c %d (%d,%d) loc: v1:%f v2:%f -- mean: %f sd: %f dt1: %f dt2: %f sigsq: %f derivatives: %f %f %f av1: %f bv1: %f v1mu: %f av2: %f bv2: %f v2mu: %f ", */
-        /*                d == tree->n_root ? '*' : ' ', */
-        /*                d->num, */
-        /*                v1->num,v2->num, */
-        /*                v1->ldsk->coord->lonlat[dim],v2->ldsk->coord->lonlat[dim], */
-        /*                tree->contmod->mu_down[d->num],sqrt(tree->contmod->var_down[d->num]), */
-        /*                dtv1,dtv2, */
-        /*                tree->mmod->sigsq[dim], */
-        /*                v1->ldsk->veloc->deriv[dim], */
-        /*                v2->ldsk->veloc->deriv[dim], */
-        /*                d->ldsk->veloc->deriv[dim], */
-        /*                av1,bv1,v1mu, */
-        /*                av2,bv2,v2mu); */
+        /* PhyML_Printf("\n. LOCATION  %c %d (%d,%d) -- mean: %f sd: %f rem %f dt1: %f dt2: %f sigsq: %f derivatives: %f %f %f av1: %f bv1: %f v1mu: %f v1var: %f dv1var: %f av2: %f bv2: %f v2mu: %f v2var: %f dv2var: %f v1logrem: %f v2logrem: %f small ? %d %d", */
+        /*              d == tree->n_root ? '*' : ' ', */
+        /*              d->num, */
+        /*              v1->num,v2->num, */
+        /*              tree->contmod->mu_down[d->num], */
+        /*              tree->contmod->var_down[d->num], */
+        /*              tree->contmod->logrem_down[d->num], */
+        /*              dtv1,dtv2, */
+        /*              tree->mmod->sigsq[dim], */
+        /*              v1->ldsk->veloc->deriv[dim], */
+        /*              v2->ldsk->veloc->deriv[dim], */
+        /*              d->ldsk->veloc->deriv[dim], */
+        /*              av1,bv1,v1mu,v1var,dv1var, */
+        /*              av2,bv2,v2mu,v2var,dv2var, */
+        /*              v1logrem,v2logrem, */
+        /*              dv1var + v1var > SMALL, */
+        /*              dv2var + v2var > SMALL); */
         /* } */
 
     }
@@ -1183,25 +1190,35 @@ void VELOC_Veloc_Gibbs_Mean_Var(t_node *n, phydbl *mean, phydbl *var, short int 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+phydbl VELOC_Mean_Velocity(short int dim, t_tree *tree)
+{
+  if(VELOC_Is_Integrated_Velocity(tree->mmod) == NO) return(-1);
+  else
+    {
+      int i;
+      phydbl mean;
+
+      mean = 0.0;
+      for(i=0;i<2*tree->n_otu-1;++i) mean += tree->a_nodes[i]->ldsk->veloc->deriv[dim];
+      return(mean / (phydbl)(2*tree->n_otu-1));
+    }
+  return(-1.);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 /* Take the average of speed taken at each node of the treez */
 phydbl VELOC_Mean_Speed(t_tree *tree)
 {
   if(VELOC_Is_Integrated_Velocity(tree->mmod) == NO) return(-1);
   else
     {
-      int i,j;
-      phydbl mean_speed,edge_speed;
+      int i;
+      phydbl mean_speed;
 
       mean_speed = 0.0;
-      for(i=0;i<2*tree->n_otu-1;++i)
-        {
-          edge_speed = 0.0;
-          for(j=0;j<tree->mmod->n_dim;++j)
-            {
-              edge_speed += POW(tree->a_nodes[i]->ldsk->veloc->deriv[j],2);
-            }
-          mean_speed += SQRT(edge_speed);
-        }
+      for(i=0;i<2*tree->n_otu-1;++i) mean_speed += VELOC_Veloc_To_Speed(tree->a_nodes[i]->ldsk->veloc,tree);
       return(mean_speed / (phydbl)(2*tree->n_otu-1));
     }
   return(-1.);
@@ -1209,3 +1226,90 @@ phydbl VELOC_Mean_Speed(t_tree *tree)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+
+phydbl VELOC_Veloc_To_Speed(t_geo_veloc *v, t_tree *tree)
+{
+  t_geo_coord *p1,*p2;
+  int i;
+  phydbl speed;
+  
+  p1 = GEO_Make_Geo_Coord(tree->mmod->n_dim);
+  GEO_Init_Coord(p1,tree->mmod->n_dim);
+  for(i=0;i<tree->mmod->n_dim;++i) p1->lonlat[i] = 0.0;
+  
+  p2 = GEO_Make_Geo_Coord(tree->mmod->n_dim);
+  GEO_Init_Coord(p2,tree->mmod->n_dim);
+  for(i=0;i<tree->mmod->n_dim;++i) p2->lonlat[i] = v->deriv[i];
+
+  speed = -1.0;
+  
+  switch(tree->mmod->dist_type)
+    {
+    case HAVERSINE :
+      {
+        speed = Haversine_Distance(p1,p2);
+        break;
+      }
+    case EUCLIDEAN :
+      {
+        speed = Euclidean_Distance(p1,p2);
+        break;
+      }
+    case MANHATTAN :
+      {
+        speed = Manhattan_Distance(p1,p2);
+        break;
+      }
+    default : assert(false);
+    }
+
+  Free_Geo_Coord(p1);
+  Free_Geo_Coord(p2);
+
+  return(speed);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl PHYREX_Degrees_To_Km(phydbl deg, t_tree *tree)
+{
+  t_geo_coord *p1,*p2;
+  phydbl km;
+  
+  p1 = GEO_Make_Geo_Coord(1);
+  GEO_Init_Coord(p1,1);
+  p1->lonlat[0] = 0.0;
+
+  p2 = GEO_Make_Geo_Coord(1);
+  GEO_Init_Coord(p2,1);
+  p2->lonlat[0] = fabs(deg);
+  
+  km = -1.0;
+  
+  switch(tree->mmod->dist_type)
+    {
+    case HAVERSINE :
+      {
+        km = Haversine_Distance(p1,p2);
+        break;
+      }
+    case EUCLIDEAN :
+      {
+        km = Euclidean_Distance(p1,p2);
+        break;
+      }
+    case MANHATTAN :
+      {
+        km = Manhattan_Distance(p1,p2);
+        break;
+      }
+    default : assert(false);
+    }
+
+  Free_Geo_Coord(p1);
+  Free_Geo_Coord(p2);
+
+  return(km);
+
+}

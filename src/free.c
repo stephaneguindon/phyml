@@ -870,6 +870,7 @@ void Free_Input(option *io)
       Free(io->in_tree_file);
       Free(io->in_constraint_tree_file);
       Free(io->in_coord_file);
+      Free(io->in_xml_file);
       Free(io->out_file);
       Free(io->out_tree_file);
       Free(io->out_trees_file);

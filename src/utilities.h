@@ -316,6 +316,7 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define  T_MAX_SEQ        2000000
 #define  T_MAX_OPTION         100
 #define  T_MAX_STATE            5
+#define  S_TREE_CHUNK       10000
 
 #define  NODE_DEG_MAX        2000
 #define  BRENT_IT_MAX        1000
@@ -1303,6 +1304,9 @@ typedef struct __Option { /*! mostly used in 'help.c' */
   FILE         *fp_out_ancestral_seq; /*! pointer to the file containing the ancestral sequences */
   FILE        *fp_out_ancestral_tree; /*! pointer to the file containing the tree with labels on internal nodes  */
 
+  char                  *in_xml_file;
+  FILE                    *fp_in_xml; /*! pointer to the file containing XML formatted data */
+  
   char                *in_coord_file; /*! name of input file containing coordinates */
   FILE                  *fp_in_coord; /*! pointer to the file containing coordinates */
 
@@ -1858,6 +1862,7 @@ typedef struct __Tmcmc {
   int num_move_phyrex_iwn_omega;
   int num_move_phyrex_iou_theta;
   int num_move_phyrex_iou_mu;
+  int num_move_obs_var;
   
   int nd_t_digits;
   int *monitor;
@@ -2068,6 +2073,7 @@ typedef struct __Migrep_Model{
   phydbl       sigsq_scale_norm_fact;
   
   short int                 model_id;
+  short int                dist_type;
   int                          n_dim;
   int                    safe_phyrex;
   int           max_num_of_intervals;
@@ -2131,9 +2137,9 @@ typedef struct __Migrep_Model{
   short int          sampling_scheme;
   short int            use_locations;
 
-  phydbl             disp_prior_mean;
-  phydbl              disp_prior_var;
-  short int       disp_prior_distrib;
+  phydbl               rw_prior_mean;
+  phydbl                 rw_prior_sd;
+  short int         rw_prior_distrib;
 
   
   phydbl                rrw_prior_sd; // value of parameter governing the variance of diffusion coefficient across edges  
@@ -2184,6 +2190,12 @@ typedef struct __Continuous_Model{
   phydbl *mu_up;
   phydbl *var_up;
   phydbl *logrem_up;
+
+  phydbl obs_var;  // Variance of observational model
+  phydbl obs_var_min;
+  phydbl obs_var_max;  
+  short int obs_model; // Observational model 0/1
+  
 }t_contmod;
 
 /*!********************************************************/

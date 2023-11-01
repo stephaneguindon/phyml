@@ -79,5 +79,6 @@ void RRW_Init_Contmod_Locations(int dim_idx, t_tree *tree);
 void VELOC_Init_Contmod_Velocities(int dim_idx, t_tree *tree);
 void GEO_Init_Veloc(t_geo_veloc *t, int n_dim);
 void VELOC_Init_Contmod_Locations(int dim_idx, t_tree *tree);
+void Set_Defaults_Contmod(t_tree *tree);
 
 #endif

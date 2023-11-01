@@ -153,5 +153,6 @@ void PHYREX_Label_Nodes_With_Velocities(t_tree *tree);
 void PHYREX_Restore_All_Geo_Coord(t_tree *tree);
 void PHYREX_Store_All_Geo_Coord(t_tree *tree);
 phydbl PHYREX_Realized_Displacement_Dist(short int dist_type, t_tree *tree);
+short int PHYREX_Check_Lk(t_tree *tree);
 
 #endif

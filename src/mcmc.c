@@ -1227,7 +1227,7 @@ void MCMC_Times_All(t_tree *tree)
   MCMC_Time_Recur(tree->n_root,tree->n_root->v[2],YES,tree);
 
 #ifdef PHYREX
-  if(tree->mmod->safe_phyrex == YES) PHYREX_Update_Disk_Times_Given_Nodes(tree);
+  /* if(tree->mmod->safe_phyrex == YES) PHYREX_Update_Disk_Times_Given_Nodes(tree); */
 #endif
 }
 #endif
@@ -1559,7 +1559,7 @@ void MCMC_Root_Time(t_tree *tree, int print)
           if(tree->eval_glnL == YES)
             {
 #ifdef PHYREX
-              new_lnL_loc = LOCATION_Lk(tree); 
+              new_lnL_loc = (tree->mmod->use_locations == YES) ? LOCATION_Lk(tree) : 0.0;
 #endif
               new_lnL_time = TIMES_Lk(tree);
             }
@@ -1573,7 +1573,7 @@ void MCMC_Root_Time(t_tree *tree, int print)
       if(tree->eval_rlnL == YES) ratio += (new_lnL_rate - cur_lnL_rate);
       if(tree->eval_glnL == YES) ratio += (new_lnL_time - cur_lnL_time);
 #ifdef PHYREX
-      if(tree->eval_glnL == YES) ratio += (new_lnL_loc - cur_lnL_loc);
+      if(tree->eval_glnL == YES && tree->mmod->use_locations == YES) ratio += (new_lnL_loc - cur_lnL_loc);
 #endif
       ratio += hr;
       
@@ -3179,6 +3179,18 @@ void MCMC_Close_MCMC(t_mcmc *mcmc)
   fclose(mcmc->out_fp_constree);
   /* fclose(mcmc->out_fp_means); */
   /* fclose(mcmc->out_fp_last); */
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void MCMC_Randomize_Contmod(t_tree *tree)
+{
+  int i;
+
+  if(tree->contmod == NULL) return;
+  if(tree->contmod->obs_model == NO) return;
+  tree->contmod->obs_var = Uni()*2.;
 }
 
 //////////////////////////////////////////////////////////////
@@ -6427,6 +6439,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->num_move_phyrex_iou_theta          = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_phyrex_iou_mu             = mcmc->n_moves; mcmc->n_moves += 1;
   mcmc->num_move_rates_shrink              = mcmc->n_moves; mcmc->n_moves += 1;
+  mcmc->num_move_obs_var                   = mcmc->n_moves; mcmc->n_moves += 1;
   
   mcmc->run_move       = (int *)mCalloc(mcmc->n_moves,sizeof(int));
   mcmc->acc_move       = (int *)mCalloc(mcmc->n_moves,sizeof(int));
@@ -6523,6 +6536,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   strcpy(mcmc->move_name[mcmc->num_move_phyrex_iou_theta],"phyrex_iou_theta");
   strcpy(mcmc->move_name[mcmc->num_move_phyrex_iou_mu],"phyrex_iou_mu");
   strcpy(mcmc->move_name[mcmc->num_move_rates_shrink],"rates_shrink");
+  strcpy(mcmc->move_name[mcmc->num_move_obs_var],"observational_var");
 
 
   for(i=0;i<mcmc->n_moves;i++) mcmc->move_type[i] = -1;
@@ -6574,6 +6588,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_type[mcmc->num_move_phyrex_iou_theta] = MCMC_MOVE_SCALE_THORNE;
   mcmc->move_type[mcmc->num_move_phyrex_iou_mu] = MCMC_MOVE_RANDWALK_NORMAL;
   mcmc->move_type[mcmc->num_move_rates_shrink] = MCMC_MOVE_SCALE_THORNE;
+  mcmc->move_type[mcmc->num_move_obs_var] = MCMC_MOVE_SCALE_THORNE;
 
   for(i=0;i<mcmc->n_moves;i++) mcmc->tune_move[i] = 1.;
   mcmc->tune_move[mcmc->num_move_time_neff_growth] = 0.01;
@@ -6620,6 +6635,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_prob[mcmc->num_move_geo_dum]               = 0.0;
   mcmc->move_prob[mcmc->num_move_clade_change]          = 0.0;
   mcmc->move_prob[mcmc->num_move_rates_shrink]          = 1.0;
+  mcmc->move_prob[mcmc->num_move_obs_var]               = 1.0;
 
 # if defined (PHYREX)
 
@@ -6659,7 +6675,7 @@ void MCMC_Complete_MCMC(t_mcmc *mcmc, t_tree *tree)
   mcmc->move_prob[mcmc->num_move_phyrex_iwn_omega]             = 1.0;
   mcmc->move_prob[mcmc->num_move_phyrex_iou_theta]             = 1.0;
   mcmc->move_prob[mcmc->num_move_phyrex_iou_mu]                = 1.0;
-
+  
 # else
 
   mcmc->move_prob[mcmc->num_move_phyrex_lbda]                  = 0.0;
@@ -8923,7 +8939,7 @@ void MCMC_PHYREX_Node_Times(t_tree *tree, int print)
     }
   
 #ifdef PHYREX
-  if(tree->mmod->safe_phyrex == YES) PHYREX_Update_Disk_Times_Given_Nodes(tree);
+  /* if(tree->mmod->safe_phyrex == YES) PHYREX_Update_Disk_Times_Given_Nodes(tree); */
 #endif
 
 }
@@ -9004,8 +9020,8 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
   if(tree->eval_glnL == YES)
     {
       new_glnL = (tree->mmod->use_locations == YES) ? LOCATION_Lk(tree) : 0.0; 
-      new_tlnL = TIMES_Lk(tree);
       if(PHYREX_Total_Number_Of_Intervals(tree) > tree->mmod->max_num_of_intervals) new_glnL = UNLIKELY;
+      new_tlnL = TIMES_Lk(tree);
     }
       
   if(tree->eval_rlnL == YES) new_rlnL = RATES_Lk(tree);
@@ -9062,6 +9078,7 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
   
   if(u > alpha) /* Reject */
     {
+      /* PhyML_Printf("\n. Reject"); */
       PHYREX_Move_Disk_Updown(d_ldsk->disk,cur_t,tree);
       d_ldsk->disk->time = cur_t;
       tree->times->nd_t[d_ldsk->nd->num] = cur_t; // Ok only if tree is binary
@@ -9087,6 +9104,7 @@ void MCMC_PHYREX_Node_Times_Pre(t_ldsk *a_ldsk, t_ldsk *d_ldsk, t_tree *tree, in
     }
   else
     {
+      /* PhyML_Printf("\n. Accept"); */
       tree->mcmc->acc_move[move_num]++;
     }
   
@@ -13543,6 +13561,10 @@ void MCMC_PHYREX_Update_Velocities(t_tree *tree)
           /* Velocity */
           
           permut = Permutate(2*tree->n_otu-1);
+
+          phydbl *mean_v = (phydbl *)mCalloc(tree->mmod->n_dim,sizeof(phydbl));
+          for(j=0;j<tree->mmod->n_dim;++j) mean_v[j] = VELOC_Mean_Velocity(j,tree);
+
           
           for(i=0;i<2*tree->n_otu-1;++i)
             {
@@ -13566,34 +13588,34 @@ void MCMC_PHYREX_Update_Velocities(t_tree *tree)
                   /* new = Rnorm(cur,sqrt(fabs(cur)/5.+1.E-6)); */
                   /* hr -= Log_Dnorm(new,cur,sqrt(fabs(cur)/5.+1.E-6),&err); */
                   /* hr += Log_Dnorm(cur,new,sqrt(fabs(new)/5.+1.E-6),&err); */
+
+                  new = Rnorm(cur,sqrt(fabs(mean_v[j]/2.)));
+                  hr -= Log_Dnorm(new,cur,sqrt(fabs(mean_v[j]/2.)),&err);
+                  hr += Log_Dnorm(cur,new,sqrt(fabs(mean_v[j]/2.)),&err);
                   
-                  /* new = Rnorm(cur,0.01); */
-                  /* hr -= Log_Dnorm(new,cur,0.01,&err); */
-                  /* hr += Log_Dnorm(cur,new,0.01,&err); */
-                  
-                  if(n->ldsk->prev != NULL)
-                    {
-                      phydbl dt,sd;
+                  /* if(n->ldsk->prev != NULL) */
+                  /*   { */
+                  /*     phydbl dt,sd; */
                       
-                      dt = fabs(n->ldsk->disk->time-n->ldsk->prev->disk->time);
+                  /*     dt = fabs(n->ldsk->disk->time-n->ldsk->prev->disk->time); */
                       
-                      sd =
-                        log(tree->mmod->sigsq[j])+
-                        log(tree->mmod->sigsq_scale[n->num])+
-                        log(tree->mmod->sigsq_scale_norm_fact)+
-                        log(dt);
-                      sd = sqrt(exp(sd));
+                  /*     sd = */
+                  /*       log(tree->mmod->sigsq[j])+ */
+                  /*       log(tree->mmod->sigsq_scale[n->num])+ */
+                  /*       log(tree->mmod->sigsq_scale_norm_fact)+ */
+                  /*       log(dt); */
+                  /*     sd = sqrt(exp(sd)); */
                       
-                      new = Rnorm(n->ldsk->prev->veloc->deriv[j],sd);
-                      hr -= Log_Dnorm(new,n->ldsk->prev->veloc->deriv[j],sd,&err);
-                      hr += Log_Dnorm(cur,n->ldsk->prev->veloc->deriv[j],sd,&err);
-                    }                          
-                  else
-                    {
-                      new = Rnorm(cur,sqrt(fabs(cur)/5.+1.E-6));
-                      hr -= Log_Dnorm(new,cur,sqrt(fabs(cur)/5.+1.E-6),&err);
-                      hr += Log_Dnorm(cur,new,sqrt(fabs(new)/5.+1.E-6),&err);
-                    }
+                  /*     new = Rnorm(n->ldsk->prev->veloc->deriv[j],sd); */
+                  /*     hr -= Log_Dnorm(new,n->ldsk->prev->veloc->deriv[j],sd,&err); */
+                  /*     hr += Log_Dnorm(cur,n->ldsk->prev->veloc->deriv[j],sd,&err); */
+                  /*   }                           */
+                  /* else */
+                  /*   { */
+                  /*     new = Rnorm(cur,sqrt(fabs(cur)/5.+1.E-6)); */
+                  /*     hr -= Log_Dnorm(new,cur,sqrt(fabs(cur)/5.+1.E-6),&err); */
+                  /*     hr += Log_Dnorm(cur,new,sqrt(fabs(new)/5.+1.E-6),&err); */
+                  /*   } */
                   
                   n->ldsk->veloc->deriv[j] = new;
                 }
@@ -13641,7 +13663,7 @@ void MCMC_PHYREX_Update_Velocities(t_tree *tree)
             }
           
           Free(permut);
-          
+          Free(mean_v);
           
           
           
@@ -13699,7 +13721,7 @@ void MCMC_PHYREX_Update_Velocities(t_tree *tree)
                   tree->mcmc->run++;
                   PHYREX_Print_MCMC_Stats(tree);
                   PHYREX_Print_MCMC_Tree(tree);
-                  PHYREX_Print_MCMC_Summary(tree);                  
+                  PHYREX_Print_MCMC_Summary(tree);
                   
                 }
             }
@@ -13814,8 +13836,7 @@ void MCMC_PHYREX_Update_Velocities(t_tree *tree)
       while(++iter < 1);
       
     }
-  LOCATION_Lk(tree);
-    
+  /* LOCATION_Lk(tree); */    
 }
 #endif
 
@@ -13876,6 +13897,27 @@ void MCMC_PHYREX_IOU_Update_Mu(t_tree *tree)
                                   LOCATION_Wrap_Prior,LOCATION_Wrap_Lk,
                                   tree->mcmc->move_type[tree->mcmc->num_move_phyrex_iou_mu],
                                   NO,NULL,tree,NULL);
+    }
+}
+
+#endif
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+#ifdef PHYREX
+void MCMC_Obs_Var(t_tree *tree)
+{
+  if(tree->contmod->obs_model == YES)
+    {
+      MCMC_Single_Param_Generic(&(tree->contmod->obs_var),
+                                tree->contmod->obs_var_min,
+                                tree->contmod->obs_var_max,
+                                tree->mcmc->num_move_obs_var,
+                                &(tree->mmod->c_lnP),&(tree->mmod->c_lnL),
+                                LOCATION_Wrap_Prior,LOCATION_Wrap_Lk,
+                                tree->mcmc->move_type[tree->mcmc->num_move_obs_var],
+                                NO,NULL,tree,NULL);
     }
 }
 

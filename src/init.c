@@ -3556,10 +3556,11 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
 
   t->sigsq_scale_norm_fact = 1.0;
   
-  t->model_id = -1;
-  t->use_locations = -1;
+  t->model_id        = -1;
+  t->use_locations   = -1;
   t->sampling_scheme = -1;
-  t->safe_phyrex = NO;
+  t->safe_phyrex     = YES;
+  t->dist_type       = HAVERSINE;
   
   t->lim_up->lonlat[0] = 100.;
   t->lim_up->lonlat[1] = 100.;
@@ -3619,9 +3620,9 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   
   t->max_num_of_intervals = 10000000;
 
-  t->disp_prior_mean    = 1.0;
-  t->disp_prior_var     = 1.0;
-  t->disp_prior_distrib = EXPONENTIAL_PRIOR;
+  t->rw_prior_mean    = 1.0;
+  t->rw_prior_sd      = 1.0;
+  t->rw_prior_distrib = EXPONENTIAL_PRIOR;
   
   t->integrateAncestralLocations = YES;
 
@@ -3871,12 +3872,23 @@ void RW_Init_Contrasts(int dim_idx, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+void Set_Defaults_Contmod(t_tree *tree)
+{
+  tree->contmod->obs_model = NO;
+  tree->contmod->obs_var = 0.0;
+  tree->contmod->obs_var_min = 0.0;
+  tree->contmod->obs_var_max = 1.E+6;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 void RRW_Init_Contmod_Locations(int dim_idx, t_tree *tree)
 {
   for(int i=0;i<tree->n_otu;++i)
     {
       tree->contmod->mu_down[i] = tree->a_nodes[i]->ldsk->coord->lonlat[dim_idx];
-      tree->contmod->var_down[i] = 0.0;
+      tree->contmod->var_down[i] = tree->contmod->obs_var;
       tree->contmod->logrem_down[i] = 0.0;
 
       tree->contmod->mu_up[i] = 0.0;
@@ -3904,7 +3916,7 @@ void VELOC_Init_Contmod_Locations(int dim_idx, t_tree *tree)
   for(int i=0;i<tree->n_otu;++i)
     {
       tree->contmod->mu_down[i] = tree->a_nodes[i]->ldsk->coord->lonlat[dim_idx];
-      tree->contmod->var_down[i] = 0.0;
+      tree->contmod->var_down[i] = tree->contmod->obs_var;
       tree->contmod->logrem_down[i] = 0.0;
 
       tree->contmod->mu_up[i] = 0.0;

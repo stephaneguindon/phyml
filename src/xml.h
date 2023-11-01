@@ -30,7 +30,7 @@ void XML_Check_Duplicate_ID(xml_node *n);
 void XML_Count_Number_Of_Node_With_ID(char *id, int *count, xml_node *n);
 void XML_Count_Number_Of_Node_With_Name(char *name, int *count, xml_node *n);
 void XML_Write_XML_Graph(FILE *fp, xml_node *root);
-void XML_Write_XML_Node(FILE *fp, int *indent, xml_node *root);
+void XML_Write_XML_Node(FILE *fp, int *indent, short int recurr_next, short int recurr_child, xml_node *root);
 xml_attr *XML_Search_Attribute(xml_node *n, char *target_attr_name);
 xml_node *XML_Copy_XML_Graph(xml_node *root);
 void XML_Copy_XML_Node(xml_node *cpy_root, xml_node *root);

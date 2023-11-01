@@ -193,5 +193,7 @@ void MCMC_PHYREX_IWN_Update_Omega(t_tree *tree);
 void MCMC_PHYREX_IOU_Update_Theta(t_tree *tree);
 void MCMC_PHYREX_IOU_Update_Mu(t_tree *tree);
 void MCMC_Rates_Shrink(t_tree *tree);
+void MCMC_Obs_Var(t_tree *tree);
+void MCMC_Randomize_Contmod(t_tree *tree);
 
 #endif

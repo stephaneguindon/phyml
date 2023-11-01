@@ -114,7 +114,7 @@ void IBM_Integrated_Location_Down(phydbl dt1, phydbl dt2,
   err = 0;
   v = logr = 0.0;
 
-  if(dv1var + v1var > SMALL && dv2var + v2var > SMALL) // Standard case
+  if(dv1var + v1var > 1.E-7 && dv2var + v2var > 1.E-7) // Standard case
     {
       v = pow(av1,2)/(v1var + dv1var) + pow(av2,2)/(v2var + dv2var);
       v = 1/v;
@@ -125,11 +125,11 @@ void IBM_Integrated_Location_Down(phydbl dt1, phydbl dt2,
       logr -= log(fabs(av2*av1));
       logr += Log_Dnorm((v1mu-bv1)/av1,(v2mu-bv2)/av2,sqrt((v1var+dv1var)/pow(av1,2)+(v2var+dv2var)/pow(av2,2)),&err);
     }
-  else if(dv1var + v1var > SMALL) // Null variance along d - v2
+  else if(dv1var + v1var > 1.E-7) // Null variance along d - v2
     {
       m = (v2mu-bv2)/av2;
     }
-  else if(dv2var + v2var > SMALL) // Null variance along d - v1
+  else if(dv2var + v2var > 1.E-7) // Null variance along d - v1
     {
       m = (v1mu-bv1)/av1;
     }
@@ -162,7 +162,7 @@ void IBM_Integrated_Location_Up(phydbl dt1, phydbl dt2,
 
   if(a_is_root == NO)
     {
-      if(pow(av1,2)*v1var+av1var > SMALL && av2var + v2var > SMALL) // Standard case
+      if(pow(av1,2)*v1var+av1var > 1.E-7 && av2var + v2var > 1.E-7) // Standard case
         {
           v     = pow(av2,2)/(v2var + av2var) + 1./(pow(av1,2)*v1var+av1var);
           v     = 1./v;
@@ -173,11 +173,11 @@ void IBM_Integrated_Location_Up(phydbl dt1, phydbl dt2,
           logr -= log(fabs(av2));
           logr += Log_Dnorm((v2mu-bv2)/av2,av1*v1mu+bv1,sqrt((v2var+av2var)/pow(av2,2)+pow(av1,2)*v1var+av1var),&err);
         }
-      else if(pow(av1,2)*v1var+av1var > SMALL) // Null variance along d - v2
+      else if(pow(av1,2)*v1var+av1var > 1.E-7) // Null variance along d - v2
         {
           m = (v2mu-bv2)/av2;
         }
-      else if(av2var + v2var > SMALL) // Null variance along d - v1
+      else if(av2var + v2var > 1.E-7) // Null variance along d - v1
         {
           m = (v1mu-bv1)/av1;
         }
@@ -188,7 +188,7 @@ void IBM_Integrated_Location_Up(phydbl dt1, phydbl dt2,
     }
   else
     {
-      if(v2var + av2var > SMALL)
+      if(v2var + av2var > 1.E-7)
         {
           m    = (v2mu-bv2)/av2;
           v    = (v2var + av2var)/pow(av2,2);

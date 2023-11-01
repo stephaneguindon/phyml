@@ -713,9 +713,9 @@ int RATES_Check_Node_Times(t_tree *tree)
 #if (defined PHYREX || PHYTIME || PHYREXSIM)
 void RATES_Check_Node_Times_Pre(t_node *a, t_node *d, int *err, t_tree *tree)
 {
-  if((tree->times->nd_t[d->num] < tree->times->nd_t[a->num]) || (FABS(tree->times->nd_t[d->num] - tree->times->nd_t[a->num]) < 1.E-20))
+  if(tree->times->nd_t[d->num] < tree->times->nd_t[a->num])
     {
-      PhyML_Printf("\n. a->t=%f d->t=%f",tree->times->nd_t[a->num],tree->times->nd_t[d->num]);
+      PhyML_Printf("\n. a->t=%f d->t=%f diff: %g",tree->times->nd_t[a->num],tree->times->nd_t[d->num],tree->times->nd_t[a->num]-tree->times->nd_t[d->num]);
       PhyML_Printf("\n. a->t_prior_min=%f a->t_prior_max=%f",tree->times->t_prior_min[a->num],tree->times->t_prior_max[a->num]);
       PhyML_Printf("\n. d->t_prior_min=%f d->t_prior_max=%f",tree->times->t_prior_min[d->num],tree->times->t_prior_max[d->num]);
       *err = YES;

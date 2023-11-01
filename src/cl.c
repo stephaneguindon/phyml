@@ -283,6 +283,9 @@ int Read_Command_Line(option *io, int argc, char **argv)
           }
 	case 73:
 	  {
+            strcpy(io->in_xml_file, optarg);
+            io->fp_in_xml = Openfile(io->in_xml_file,READ);
+
 #ifdef INVITEE
             
             Free_Optimiz(io->mod->s_opt);
@@ -314,9 +317,13 @@ int Read_Command_Line(option *io, int argc, char **argv)
             Free_Model_Basic(io->mod);
             Free_Input(io);
             PHYREX_XML(optarg);
-            return 0;
-            
+            return 0;            
 #endif
+            
+#ifdef TEST
+            return 1;
+#endif
+
             break;
 	  }
 	case 72:
