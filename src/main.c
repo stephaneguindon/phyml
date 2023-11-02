@@ -595,8 +595,15 @@ int main(int argc, char **argv)
 int main(int argc, char **argv)
 {
   option *io;
-  xml_node *root,*taxa,*taxon,*date,*loc;
-  int indent;
+  xml_node *root,*taxa,*taxon,*date,*loc,*seq;
+  int indent,i;
+  FILE *fp;
+  char *filename;
+
+  filename = (char *)mCalloc(100,sizeof(char));
+
+  strcpy(filename,"coord.txt");
+  fp = Openfile(filename,WRITE);
   
   io = (option *)Get_Input(argc,argv);
   if(!io) return(0);
@@ -608,34 +615,61 @@ int main(int argc, char **argv)
   taxon = taxa->child;
   do
     {
-      PhyML_Printf("\n");
-      PhyML_Printf(" %s",XML_Get_Attribute_Value(taxon,"id"));
+      PhyML_Fprintf(fp,"\n");
+      PhyML_Fprintf(fp," %s",XML_Get_Attribute_Value(taxon,"id"));
 
       loc = XML_Search_Node_Generic("attr","name","latitude",NO,taxon);
-      PhyML_Printf("\t %s",loc->value);
+      PhyML_Fprintf(fp,"\t %s",loc->value);
       
       loc = XML_Search_Node_Generic("attr","name","longitude",NO,taxon);
-      PhyML_Printf("\t %s",loc->value);
+      PhyML_Fprintf(fp,"\t %s",loc->value);
 
       taxon = taxon->next;
     }
   while(taxon);
-  
+  fclose(fp);
+
+  strcpy(filename,"dates.txt");
+  fp = Openfile(filename,WRITE);
 
   taxon = taxa->child;
+  i = 0;
   do
     {
-      PhyML_Printf("\n");
-      PhyML_Printf(" %s",XML_Get_Attribute_Value(taxon,"id"));
-
       date = XML_Search_Node_Name("date",NO,taxon);
-      PhyML_Printf("\t %s",XML_Get_Attribute_Value(date,"value"));
 
+      PhyML_Fprintf(fp,"\n<clade id=\"clad%d\">",i+1);
+      PhyML_Fprintf(fp,"\n\t<taxon value=\"%s\"/>",XML_Get_Attribute_Value(taxon,"id"));
+      PhyML_Fprintf(fp,"\n</clade>");
+      PhyML_Fprintf(fp,"\n<calibration id=\"cal%d\">",i+1);
+      PhyML_Fprintf(fp,"\n\t<lower>%s</lower>",XML_Get_Attribute_Value(date,"value"));
+      PhyML_Fprintf(fp,"\n\t<upper>%s</upper>",XML_Get_Attribute_Value(date,"value"));
+      PhyML_Fprintf(fp,"\n\t<appliesto clade.id=\"clad%d\"/>",i+1);
+      PhyML_Fprintf(fp,"\n</calibration>");
+
+      ++i;
       taxon = taxon->next;
     }
   while(taxon);
-
+  fclose(fp);
   
+  strcpy(filename,"seq.txt");
+  fp = Openfile(filename,WRITE);
+
+  seq = taxa->next->child;
+  assert(seq);
+  i = 0;
+  do
+    {
+      taxon = XML_Search_Node_Name("taxon",NO,seq);
+      assert(taxon);
+      PhyML_Fprintf(fp,"\n%s",XML_Get_Attribute_Value(taxon,"idref"));
+      PhyML_Fprintf(fp,"\t\t%s",taxon->value);
+      ++i;
+      seq = seq->next;
+    }
+  while(seq);
+  fclose(fp);
 
   
 }
