@@ -53,7 +53,8 @@ phydbl RRW_Lk(t_tree *tree)
 
 phydbl RRW_Prior(t_tree *tree)
 {
-  return(PHYREX_LnPrior_Sigsq(tree) + RRW_Prior_Sigsq_Scale(tree));
+  tree->mmod->c_lnP = RW_Prior_Sigsq(tree) + RRW_Prior_Sigsq_Scale(tree);
+  return(tree->mmod->c_lnP);
 }
 
 //////////////////////////////////////////////////////////////

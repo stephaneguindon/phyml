@@ -3875,7 +3875,6 @@ void RW_Init_Contrasts(int dim_idx, t_tree *tree)
 void Set_Defaults_Contmod(t_tree *tree)
 {
   tree->contmod->obs_model = NO;
-  tree->contmod->obs_var = 0.0;
   tree->contmod->obs_var_min = 0.0;
   tree->contmod->obs_var_max = 1.E+6;
 }
@@ -3888,7 +3887,7 @@ void RRW_Init_Contmod_Locations(int dim_idx, t_tree *tree)
   for(int i=0;i<tree->n_otu;++i)
     {
       tree->contmod->mu_down[i] = tree->a_nodes[i]->ldsk->coord->lonlat[dim_idx];
-      tree->contmod->var_down[i] = tree->contmod->obs_var;
+      tree->contmod->var_down[i] = tree->contmod->obs_var[dim_idx];
       tree->contmod->logrem_down[i] = 0.0;
 
       tree->contmod->mu_up[i] = 0.0;
@@ -3916,7 +3915,7 @@ void VELOC_Init_Contmod_Locations(int dim_idx, t_tree *tree)
   for(int i=0;i<tree->n_otu;++i)
     {
       tree->contmod->mu_down[i] = tree->a_nodes[i]->ldsk->coord->lonlat[dim_idx];
-      tree->contmod->var_down[i] = tree->contmod->obs_var;
+      tree->contmod->var_down[i] = tree->contmod->obs_var[dim_idx];
       tree->contmod->logrem_down[i] = 0.0;
 
       tree->contmod->mu_up[i] = 0.0;
@@ -3945,7 +3944,7 @@ void VELOC_Init_Contmod_Velocities(int dim_idx, t_tree *tree)
   for(int i=0;i<tree->n_otu;++i)
     {
       tree->contmod->mu_down[i] = tree->a_nodes[i]->ldsk->veloc->deriv[dim_idx];
-      tree->contmod->var_down[i] = 0.0;
+      tree->contmod->var_down[i] = 1.0E+7;
       tree->contmod->logrem_down[i] = 0.0;
 
       tree->contmod->mu_up[i] = 0.0;

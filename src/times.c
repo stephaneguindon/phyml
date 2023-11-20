@@ -2507,7 +2507,8 @@ void TIMES_Bl_To_Times(t_tree *tree)
   t_node *v1,*v2;
   int dir1,dir2;
   phydbl t1,t2;
-    
+
+  
   TIMES_Bl_To_Times_Post(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
   TIMES_Bl_To_Times_Post(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
 

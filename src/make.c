@@ -1896,6 +1896,8 @@ void Make_Contmod(t_tree *tree)
   tree->contmod->mu_up = (phydbl *)mCalloc(2*tree->n_otu,sizeof(phydbl));
   tree->contmod->var_up = (phydbl *)mCalloc(2*tree->n_otu,sizeof(phydbl));
   tree->contmod->logrem_up = (phydbl *)mCalloc(2*tree->n_otu,sizeof(phydbl));
+  
+  tree->contmod->obs_var = (phydbl *)mCalloc(tree->mmod->n_dim,sizeof(phydbl));
 }
 
 //////////////////////////////////////////////////////////////

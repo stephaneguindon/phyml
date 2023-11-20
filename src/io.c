@@ -147,7 +147,6 @@ t_tree *Read_Tree(char **s_tree)
       Update_Ancestors(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
     }
   
-
   return tree;
 }
 
@@ -281,6 +280,7 @@ void R_rtree(char *s_tree_a, char *s_tree_d, t_node *a, t_tree *tree, int *n_int
         }
       
       d->num=*n_ext;
+
       (*n_ext)+=1;
     }
 
@@ -304,7 +304,7 @@ void Read_Node_Name(t_node *d, char *s_tree_d, t_edge *b, t_tree *tree)
 void Read_Branch_Support(char *s_d, char *s_a, t_edge *b, t_tree *tree)
 {
   char *sub_tp;
-  char *p;
+  char *p,c;
   
   if(s_d[0] != '(') return; // b is an external edge -> no edge support on it
   
@@ -315,7 +315,9 @@ void Read_Branch_Support(char *s_d, char *s_a, t_edge *b, t_tree *tree)
   strcat(sub_tp,s_d);
   p = strstr(s_a,sub_tp);
 
-  if(!p)
+  c = p[1 + strlen(s_d)];
+  
+  if(!p || !(c == '[' || c == ':'))
     {
       sub_tp[0] = ',';
       sub_tp[1] = '\0';
@@ -345,7 +347,7 @@ void Read_Branch_Support(char *s_d, char *s_a, t_edge *b, t_tree *tree)
 void Read_Branch_Length(char *s_d, char *s_a, t_edge *b, t_tree *tree)
 {
   char *sub_tp;
-  char *p;
+  char *p,c;
 
   sub_tp = (char *)mCalloc(10+strlen(s_d)+1,sizeof(char));
 
@@ -354,7 +356,9 @@ void Read_Branch_Length(char *s_d, char *s_a, t_edge *b, t_tree *tree)
   strcat(sub_tp,s_d);
   p = strstr(s_a,sub_tp);
 
-  if(!p)
+  c = p[1 + strlen(s_d)];
+  
+  if(!p || !(c == '[' || c == ':'))
     {
       sub_tp[0] = ',';
       sub_tp[1] = '\0';
@@ -6770,7 +6774,8 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
               PhyML_Fprintf(fp_stats,"%s%s\t","tren",(i==0)?("Lon"):((i==1)?("Lat"):("xx")));
 
 
-          if(tree->contmod->obs_model == YES) PhyML_Fprintf(fp_stats,"%s\t","obsVar");
+          if(tree->contmod->obs_model == YES) PhyML_Fprintf(fp_stats,"%s\t","obsVarLon");
+          if(tree->contmod->obs_model == YES) PhyML_Fprintf(fp_stats,"%s\t","obsVarLat");
 
           PhyML_Fprintf(fp_stats,"%s\t","rootTime");
           PhyML_Fprintf(fp_stats,"%s\t","rootLon");
@@ -6923,7 +6928,8 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       if(IOU_Is_Iou(tree->mmod) == YES) PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->ou_theta);
       if(IOU_Is_Iou(tree->mmod) == YES) for(int i=0;i<tree->mmod->n_dim;++i) PhyML_Fprintf(fp_stats,"%g\t",tree->mmod->ou_mu[i]);
 
-      if(tree->contmod->obs_model == YES) PhyML_Fprintf(fp_stats,"%g\t",tree->contmod->obs_var);
+      if(tree->contmod->obs_model == YES) PhyML_Fprintf(fp_stats,"%g\t",tree->contmod->obs_var[0]);
+      if(tree->contmod->obs_model == YES) PhyML_Fprintf(fp_stats,"%g\t",tree->contmod->obs_var[1]);
 
       PhyML_Fprintf(fp_stats,"%.2f\t",tree->n_root->ldsk->disk->time);
 
@@ -7003,7 +7009,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES)
         {
           PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Degrees_To_Km(tree->n_root->ldsk->veloc->deriv[0],tree));
-          PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Degrees_To_Km(tree->n_root->ldsk->veloc->deriv[0],tree));
+          PhyML_Fprintf(fp_stats,"%g\t",PHYREX_Degrees_To_Km(tree->n_root->ldsk->veloc->deriv[1],tree));
 
           for(int i=0;i<tree->n_otu;++i)
             {
@@ -7150,7 +7156,7 @@ void PHYREX_Print_MCMC_Summary(t_tree *tree)
       if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES) sprintf(s,"%13f",VELOC_Mean_Speed(tree));
       else if(RRW_Is_Rw(tree->mmod) == YES) sprintf(s,"%13f",PHYREX_Realized_Dispersal_Dist(tree->mmod->dist_type,tree)/PHYREX_Time_Tree_Length(tree));      
       
-      PhyML_Fprintf(stdout,"\n. %10d (%10d)\t%25s\t%f\t%15.2f\t%15.2f\t%13.1f\t%10f\t(%8.2f;%8.2f)\t%13s",
+      PhyML_Fprintf(stdout,"\n. %10d (%10d)\t%25s\t%15.2f\t%15.2f\t%15.2f\t%13.1f\t%10f\t(%8.2f;%8.2f)\t%13s",
                     tree->mcmc->run,
                     tree->aux_tree[0]->mcmc->run,
                     tree->mcmc->move_idx > -1 ? tree->mcmc->move_name[tree->mcmc->move_idx] : "",

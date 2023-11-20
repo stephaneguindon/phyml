@@ -3186,11 +3186,9 @@ void MCMC_Close_MCMC(t_mcmc *mcmc)
 
 void MCMC_Randomize_Contmod(t_tree *tree)
 {
-  int i;
-
   if(tree->contmod == NULL) return;
   if(tree->contmod->obs_model == NO) return;
-  tree->contmod->obs_var = Uni()*2.;
+  for(int i=0;i<tree->mmod->n_dim;++i) tree->contmod->obs_var[i] = Uni()*2.;
 }
 
 //////////////////////////////////////////////////////////////
@@ -13910,14 +13908,15 @@ void MCMC_Obs_Var(t_tree *tree)
 {
   if(tree->contmod->obs_model == YES)
     {
-      MCMC_Single_Param_Generic(&(tree->contmod->obs_var),
-                                tree->contmod->obs_var_min,
-                                tree->contmod->obs_var_max,
-                                tree->mcmc->num_move_obs_var,
-                                &(tree->mmod->c_lnP),&(tree->mmod->c_lnL),
-                                LOCATION_Wrap_Prior,LOCATION_Wrap_Lk,
-                                tree->mcmc->move_type[tree->mcmc->num_move_obs_var],
-                                NO,NULL,tree,NULL);
+      for(int i=0;i<tree->mmod->n_dim;++i)        
+        MCMC_Single_Param_Generic(&(tree->contmod->obs_var[i]),
+                                  tree->contmod->obs_var_min,
+                                  tree->contmod->obs_var_max,
+                                  tree->mcmc->num_move_obs_var,
+                                  &(tree->mmod->c_lnP),&(tree->mmod->c_lnL),
+                                  LOCATION_Wrap_Prior,LOCATION_Wrap_Lk,
+                                  tree->mcmc->move_type[tree->mcmc->num_move_obs_var],
+                                  NO,NULL,tree,NULL);
     }
 }
 

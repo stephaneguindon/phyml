@@ -239,7 +239,7 @@ phydbl VELOC_Augmented_Lk_Velocities_Core(t_dsk *disk, t_tree *tree)
   phydbl lnP,root_mean,root_var;
 
   root_mean = 0.0;
-  root_var = 0.0;
+  root_var = 100.0;
 
   assert(disk);
   
@@ -259,8 +259,6 @@ phydbl VELOC_Augmented_Lk_Velocities_Core(t_dsk *disk, t_tree *tree)
         {
           for(i=0;i<tree->mmod->n_dim;++i)
             {
-              root_mean = 0.0;
-              root_var  = 10.;
               lnP += Log_Dnorm(disk->ldsk->veloc->deriv[i],root_mean,sqrt(root_var),&err); /* Marginal density of velocity at root */
             }
         }

@@ -2191,7 +2191,7 @@ typedef struct __Continuous_Model{
   phydbl *var_up;
   phydbl *logrem_up;
 
-  phydbl obs_var;  // Variance of observational model
+  phydbl *obs_var;  // Variance of observational model (one param for each spatial dimension)
   phydbl obs_var_min;
   phydbl obs_var_max;  
   short int obs_model; // Observational model 0/1

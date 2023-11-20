@@ -596,80 +596,118 @@ int main(int argc, char **argv)
 {
   option *io;
   xml_node *root,*taxa,*taxon,*date,*loc,*seq;
-  int indent,i;
-  FILE *fp;
+  int i,n_selected;
+  FILE *fp_coord,*fp_date,*fp_seq;
   char *filename;
+  phydbl date_recent, date_old, date_f;
+  phydbl samp_prop,u;
 
+    
   filename = (char *)mCalloc(100,sizeof(char));
 
-  strcpy(filename,"coord.txt");
-  fp = Openfile(filename,WRITE);
-  
+
+
   io = (option *)Get_Input(argc,argv);
   if(!io) return(0);
 
+  date_recent = atof(argv[2]);
+  date_old = atof(argv[3]);
+
+  PhyML_Printf("\n. Time interval considered: [%f,%f]",date_old,date_recent);
+  assert(date_old < date_recent);
+
+
+
+
+  strcpy(filename,"coord.txt");
+  fp_coord = Openfile(filename,WRITE);
+  
+  strcpy(filename,"dates.txt");
+  fp_date = Openfile(filename,WRITE);
+
+  strcpy(filename,"seq.txt");
+  fp_seq = Openfile(filename,WRITE);
+
+  
   root = XML_Load_File(io->fp_in_xml);
   
   taxa = XML_Search_Node_Name("taxa",NO,root);
 
+  samp_prop = 0.3;
+  
+  i = 1;
+  n_selected = 0;
   taxon = taxa->child;
-  do
-    {
-      PhyML_Fprintf(fp,"\n");
-      PhyML_Fprintf(fp," %s",XML_Get_Attribute_Value(taxon,"id"));
-
-      loc = XML_Search_Node_Generic("attr","name","latitude",NO,taxon);
-      PhyML_Fprintf(fp,"\t %s",loc->value);
-      
-      loc = XML_Search_Node_Generic("attr","name","longitude",NO,taxon);
-      PhyML_Fprintf(fp,"\t %s",loc->value);
-
-      taxon = taxon->next;
-    }
-  while(taxon);
-  fclose(fp);
-
-  strcpy(filename,"dates.txt");
-  fp = Openfile(filename,WRITE);
-
-  taxon = taxa->child;
-  i = 0;
   do
     {
       date = XML_Search_Node_Name("date",NO,taxon);
+      assert(date);
 
-      PhyML_Fprintf(fp,"\n<clade id=\"clad%d\">",i+1);
-      PhyML_Fprintf(fp,"\n\t<taxon value=\"%s\"/>",XML_Get_Attribute_Value(taxon,"id"));
-      PhyML_Fprintf(fp,"\n</clade>");
-      PhyML_Fprintf(fp,"\n<calibration id=\"cal%d\">",i+1);
-      PhyML_Fprintf(fp,"\n\t<lower>%s</lower>",XML_Get_Attribute_Value(date,"value"));
-      PhyML_Fprintf(fp,"\n\t<upper>%s</upper>",XML_Get_Attribute_Value(date,"value"));
-      PhyML_Fprintf(fp,"\n\t<appliesto clade.id=\"clad%d\"/>",i+1);
-      PhyML_Fprintf(fp,"\n</calibration>");
+      date_f = atof(XML_Get_Attribute_Value(date,"value"));
 
-      ++i;
+      u = Uni();
+      
+      if(date_f < date_recent && date_f > date_old && u < samp_prop)
+        {
+
+          n_selected++;
+          
+          PhyML_Fprintf(fp_date,"\n<clade id=\"clad%d\">",i+1);
+          PhyML_Fprintf(fp_date,"\n\t<taxon value=\"%s\"/>",XML_Get_Attribute_Value(taxon,"id"));
+          PhyML_Fprintf(fp_date,"\n</clade>");
+          PhyML_Fprintf(fp_date,"\n<calibration id=\"cal%d\">",i+1);
+          PhyML_Fprintf(fp_date,"\n\t<lower>%s</lower>",XML_Get_Attribute_Value(date,"value"));
+          PhyML_Fprintf(fp_date,"\n\t<upper>%s</upper>",XML_Get_Attribute_Value(date,"value"));
+          PhyML_Fprintf(fp_date,"\n\t<appliesto clade.id=\"clad%d\"/>",i+1);
+          PhyML_Fprintf(fp_date,"\n</calibration>");
+          
+          ++i;
+          
+          
+          
+          PhyML_Fprintf(fp_coord,"\n");
+          PhyML_Fprintf(fp_coord," %s",XML_Get_Attribute_Value(taxon,"id"));
+          
+          loc = XML_Search_Node_Generic("attr","name","latitude",NO,taxon);
+          assert(loc);
+          PhyML_Fprintf(fp_coord,"\t %s",loc->value);
+          
+          loc = XML_Search_Node_Generic("attr","name","longitude",NO,taxon);
+          assert(loc);
+          PhyML_Fprintf(fp_coord,"\t %s",loc->value);
+          
+          
+          
+          seq = XML_Search_Node_Attribute_Value("idref",XML_Get_Attribute_Value(taxon,"id"),NO,root);
+          assert(seq);
+          PhyML_Fprintf(fp_seq,"\n%s",XML_Get_Attribute_Value(taxon,"id"));
+          PhyML_Fprintf(fp_seq,"\t\t%s",seq->value);
+        }
+          
       taxon = taxon->next;
     }
   while(taxon);
-  fclose(fp);
-  
-  strcpy(filename,"seq.txt");
-  fp = Openfile(filename,WRITE);
 
-  seq = taxa->next->child;
-  assert(seq);
-  i = 0;
-  do
-    {
-      taxon = XML_Search_Node_Name("taxon",NO,seq);
-      assert(taxon);
-      PhyML_Fprintf(fp,"\n%s",XML_Get_Attribute_Value(taxon,"idref"));
-      PhyML_Fprintf(fp,"\t\t%s",taxon->value);
-      ++i;
-      seq = seq->next;
-    }
-  while(seq);
-  fclose(fp);
+  PhyML_Printf("\n. number of selected sequences: %d",n_selected);
+  fclose(fp_coord);
+  fclose(fp_date);
+  fclose(fp_seq);
+
+
+  /* seq = taxa->next->child; */
+  /* assert(seq); */
+  /* i = 0; */
+  /* do */
+  /*   { */
+  /*     taxon = XML_Search_Node_Name("taxon",NO,seq); */
+  /*     assert(taxon); */
+  /*     PhyML_Fprintf(fp,"\n%s",XML_Get_Attribute_Value(taxon,"idref")); */
+  /*     PhyML_Fprintf(fp,"\t\t%s",taxon->value); */
+  /*     ++i; */
+  /*     seq = seq->next; */
+  /*   } */
+  /* while(seq); */
+  /* fclose(fp); */
 
   
 }

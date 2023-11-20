@@ -27,7 +27,45 @@ phydbl RW_Lk(t_tree *tree)
 
 phydbl RW_Prior(t_tree *tree)
 {
-  return(PHYREX_LnPrior_Sigsq(tree));
+  tree->mmod->c_lnP = RW_Prior_Sigsq(tree);
+  return(tree->mmod->c_lnP);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl RW_Prior_Sigsq(t_tree *tree)
+{
+  phydbl lnP;
+  int i,err;
+  
+  lnP = 0.0;
+  
+  if(tree->mmod->rw_prior_distrib == EXPONENTIAL_PRIOR)
+    {
+      for(i=0;i<tree->mmod->n_dim;++i)
+        {
+          lnP += Log_Dexp(tree->mmod->sigsq[i],
+                        1./tree->mmod->rw_prior_mean);
+        }
+    }
+  else if(tree->mmod->rw_prior_distrib == NORMAL_PRIOR)
+    {
+      for(i=0;i<tree->mmod->n_dim;++i)
+        {
+          lnP += Log_Dnorm(tree->mmod->sigsq[i],
+                           tree->mmod->rw_prior_mean,
+                           tree->mmod->rw_prior_sd,
+                           &err);
+        }
+    }
+  else if(tree->mmod->rw_prior_distrib == FLAT_PRIOR)
+    {
+      lnP += 0.0;
+    }
+  else assert(false);
+  
+  return(lnP);
 }
 
 //////////////////////////////////////////////////////////////

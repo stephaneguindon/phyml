@@ -1535,6 +1535,8 @@ void Free_Contmod(t_contmod *contmod)
   Free(contmod->var_up);
   Free(contmod->logrem_up);
 
+  Free(contmod->obs_var);
+
   Free(contmod);
 }
 

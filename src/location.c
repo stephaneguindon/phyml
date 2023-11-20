@@ -115,9 +115,14 @@ phydbl LOCATION_Prior(t_tree *tree)
         lnP = RRW_Prior(tree);
         break;
       }
-    case RW : case IBM : 
+    case RW : 
       {
         lnP = RW_Prior(tree);
+        break;
+      }
+    case IBM : 
+      {
+        lnP = IBM_Prior(tree);
         break;
       }
     case IWNc : case IWNu : case RIWNc : case RIWNu : 

@@ -1825,7 +1825,7 @@ xml_node *XML_Search_Node_Attribute_Value(char *attr_name, char *value, int skip
         {
           sname = To_Lower_String(attr->name);
           sval  = To_Lower_String(attr->value);
-
+          
           if(!strcmp(sname,qname) && !strcmp(sval,qval)) 
             {
               match = node;
@@ -1848,18 +1848,18 @@ xml_node *XML_Search_Node_Attribute_Value(char *attr_name, char *value, int skip
     }
 
   if(match) return(match);
-
-  if(node->child)
+  else
     {
-      match = XML_Search_Node_Attribute_Value(attr_name,value,NO,node->child);
-      return match;
+      if(node->child)
+        {
+          match = XML_Search_Node_Attribute_Value(attr_name,value,NO,node->child);
+        }
+      if(node->next && !match)
+        {
+          match = XML_Search_Node_Attribute_Value(attr_name,value,NO,node->next);
+        }
     }
-  if(node->next && !match)
-    {
-      match = XML_Search_Node_Attribute_Value(attr_name,value,NO,node->next);
-      return match;
-    }
-  return NULL;
+  return match;
 }
 
 //////////////////////////////////////////////////////////////

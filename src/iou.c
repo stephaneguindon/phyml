@@ -139,7 +139,7 @@ phydbl IOU_Prior(t_tree *tree)
   tree->mmod->c_lnP =
     IOU_Prior_Theta(tree) +
     IOU_Prior_Mu(tree) +
-    PHYREX_LnPrior_Sigsq(tree);
+    RW_Prior_Sigsq(tree);
 
   return(tree->mmod->c_lnP);
 }
