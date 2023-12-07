@@ -13052,7 +13052,7 @@ void Edge_Labels_To_Rates(t_tree *tree)
 void Node_Labels_To_Velocities(t_tree *tree)
 {
   t_label *lab;
-  int i,j;
+  int i;
   
   assert(tree->rates);
 
@@ -13060,19 +13060,7 @@ void Node_Labels_To_Velocities(t_tree *tree)
     {
       lab = tree->a_nodes[i]->label;
       
-      j = 0;
-      while(lab && strcmp(lab->key,"velocity"))
-        {
-          PhyML_Printf("\n. labkey: (%d) %s:%s",j,lab->key,lab->val);
-          lab = lab->next;
-          j++;
-        }
-      PhyML_Printf("\n. i: %d(%d,%d,%d)  j: %d %s %s",
-                   i,
-                   tree->a_nodes[i] == tree->n_root,
-                   tree->a_nodes[i] == tree->n_root->v[1],
-                   tree->a_nodes[i] == tree->n_root->v[2],
-                   j,lab ? lab->key:"", lab ? lab->val:"");
+      while(lab && strcmp(lab->key,"velocity")) lab = lab->next;
       assert(lab);
       sscanf(lab->val,"{%lf,%lf}",
              tree->a_nodes[i]->ldsk->veloc->deriv,    

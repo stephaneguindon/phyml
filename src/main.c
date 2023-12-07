@@ -598,7 +598,17 @@ int main(int argc, char **argv)
   option *io;
   t_tree *tree;
   xml_node *root;
+  phydbl date_old,date_recent,burnin;
+  short int first;
   
+  date_recent = atof(argv[4]);
+  date_old = atof(argv[5]);
+  burnin = atof(argv[6]);
+  first = YES;
+  
+  PhyML_Printf("\n. Time interval considered: [%f,%f]",date_old,date_recent);
+  assert(date_old < date_recent);
+
 
   io = (option *)Get_Input(argc,argv);
   if(!io) return(0);
@@ -609,47 +619,56 @@ int main(int argc, char **argv)
 
   for(int i=0;i<io->treelist->list_size;++i)
     {
-      PhyML_Printf("\n. Processing tree %d",i+1);
-      tree = io->treelist->tree[i];
-      
-      tree->times = TIMES_Make_Time_Struct(tree->n_otu);
-      TIMES_Init_Time_Struct(tree->times,NULL,tree->n_otu);
-      
-      tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
-      RATES_Init_Rate_Struct(tree->rates,NULL,tree->n_otu);
+      if(i > (int)(burnin*io->treelist->list_size))
+        {
+          PhyML_Fprintf(stderr,"\n. Processing tree %d",i+1);
+          tree = io->treelist->tree[i];
 
-      tree->mmod = PHYREX_Make_Migrep_Model(tree->n_otu,2);
-      tree->mmod->n_dim = 2;
-      PHYREX_Set_Default_Migrep_Mod(tree->n_otu,tree->mmod);
-
-      XML_Read_Calibration(root,tree);
-      MIXT_Chain_Cal(tree);
-      
-      TIMES_Randomize_Tip_Times_Given_Calibrations(tree); // Topology is unchanged
-      /* Edge_Labels_To_Rates(tree); */
-      tree->rates->clock_r = 1.0;
-      TIMES_Bl_To_Times(tree);
-      Update_Ancestors(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
-      Update_Ancestors(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
-
-      PHYREX_Make_And_Connect_Tip_Disks(tree);
-      /* PHYREX_Read_Tip_Coordinates(tree); */
-      PHYREX_Tree_To_Ldsk(tree);
-      
-      Node_Labels_To_Velocities(tree);
-      Node_Labels_To_Locations(tree);
-      
-      /* for(int j=0;j<2*tree->n_otu-1;++j) */
-      /*   { */
-      /*     if(tree->times->nd_t[j] > date_old && tree->times->nd_t[j] < date_recent) */
-      /*       { */
-      /*         PhyML_Printf("%f %f %f", */
-      /*                      tree->times->nd_t[j], */
-      /*                      tree->a_nodes[j]->ldsk->coord->lonlat[0] + tree->a_nodes[j]->ldsk->veloc->deriv[0], */
-      /*                      tree->a_nodes[j]->ldsk->coord->lonlat[1] + tree->a_nodes[j]->ldsk->veloc->deriv[1]); */
-      /*       } */
-      /*   } */
-
+          tree->times = TIMES_Make_Time_Struct(tree->n_otu);
+          TIMES_Init_Time_Struct(tree->times,NULL,tree->n_otu);
+          
+          tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
+          RATES_Init_Rate_Struct(tree->rates,NULL,tree->n_otu);
+          
+          tree->mmod = PHYREX_Make_Migrep_Model(tree->n_otu,2);
+          tree->mmod->n_dim = 2;
+          PHYREX_Set_Default_Migrep_Mod(tree->n_otu,tree->mmod);
+          
+          XML_Read_Calibration(root,tree);
+          MIXT_Chain_Cal(tree);
+          
+          TIMES_Randomize_Tip_Times_Given_Calibrations(tree); // Topology is unchanged
+          /* Edge_Labels_To_Rates(tree); */
+          tree->rates->clock_r = 1.0;
+          TIMES_Bl_To_Times(tree);
+          Update_Ancestors(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
+          Update_Ancestors(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
+          
+          PHYREX_Make_And_Connect_Tip_Disks(tree);
+          /* PHYREX_Read_Tip_Coordinates(tree); */
+          PHYREX_Tree_To_Ldsk(tree);
+          
+          Node_Labels_To_Velocities(tree);
+          Node_Labels_To_Locations(tree);
+          
+          if(first == YES) PhyML_Printf("\n. XXX Tree\t Time\t Tax\t Longitude\t Latitude\t NextLongitude\t NextLatitude");
+          first = NO;
+          
+          for(int j=0;j<2*tree->n_otu-1;++j)
+            {
+              if(tree->times->nd_t[j] > date_old && tree->times->nd_t[j] < date_recent)
+                {
+                  PhyML_Printf("\n. XXX %d\t %f\t %d\t %f\t %f\t %f\t %f",
+                               i+1,
+                               tree->times->nd_t[j],
+                               tree->a_nodes[j]->tax,
+                               tree->a_nodes[j]->ldsk->coord->lonlat[0],
+                               tree->a_nodes[j]->ldsk->coord->lonlat[1],
+                               tree->a_nodes[j]->ldsk->coord->lonlat[0] + tree->a_nodes[j]->ldsk->veloc->deriv[0],
+                               tree->a_nodes[j]->ldsk->coord->lonlat[1] + tree->a_nodes[j]->ldsk->veloc->deriv[1]);
+                }
+            }
+        }
     }
       
   Exit("\n");

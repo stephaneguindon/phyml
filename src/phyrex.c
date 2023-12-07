@@ -2820,161 +2820,6 @@ void PHYREX_Ldsk_To_Tree_Post(t_node *a, t_ldsk *ldsk, int *available, t_tree *t
     }
 }
 
-
-/* /\*\//////////////////////////////////////////////////////////// */
-/* ////////////////////////////////////////////////////////////\*\/ */
-/* /\* Update the tree structure given the whole set of ldsk events *\/ */
-/* /\* Coalescent events involving multiple lineages are resolved using *\/ */
-/* /\* very short internal edges. Tip nodes in the tree are always connected *\/ */
-/* /\* to the corresponding ldsks. *\/ */
-/* void PHYREX_Ldsk_To_Tree(t_tree *tree) */
-/* { */
-/*   int i,j,idx_node; */
-/*   t_dsk *disk; */
-  
-/*   assert(tree->n_root); */
-
-/*   /\* Reset *\/ */
-/*   for(i=0;i<2*tree->n_otu-1;++i)  */
-/*     { */
-/*       for(j=0;j<3;++j)  */
-/*         { */
-/*           tree->a_nodes[i]->v[j] = NULL; */
-/*           tree->a_nodes[i]->b[j] = NULL; */
-/*         } */
-/*       tree->a_nodes[i]->ldsk = NULL; */
-/*     } */
-
-/*   idx_node = tree->n_otu; */
-/*   disk = tree->young_disk; */
-/*   do */
-/*     { */
-/*       if(disk->ldsk != NULL && disk->ldsk->n_next > 1 && disk->ldsk->nd == NULL && disk->age_fixed == NO) */
-/*         { */
-/*           disk->ldsk->nd = tree->a_nodes[idx_node]; */
-/*           idx_node++; */
-/*         } */
-/*       if(disk->prev == NULL) break; */
-/*       disk = disk->prev; */
-/*     } */
-/*   while(disk); */
-  
-/*   assert(disk->prev == NULL); */
-/*   PHYREX_Ldsk_To_Tree_Post(tree->n_root,disk->ldsk,&i,tree); */
-  
-/*   for(i=0;i<tree->n_otu;++i) assert(tree->a_nodes[i]->v[0]); */
-
-/*   for(i=0;i<3;++i)  */
-/*     if(tree->n_root->v[1]->v[i] == tree->n_root)  */
-/*       {  */
-/*         tree->n_root->v[1]->v[i] = tree->n_root->v[2];  */
-/*         break;  */
-/*       } */
-
-/*   for(i=0;i<3;++i)  */
-/*     if(tree->n_root->v[2]->v[i] == tree->n_root)  */
-/*       {  */
-/*         tree->n_root->v[2]->v[i] = tree->n_root->v[1];  */
-/*         break;  */
-/*       } */
-
-/*   Connect_Edges_To_Nodes_Serial(tree); */
-
-/*   tree->e_root = NULL; */
-/*   for(i=0;i<2*tree->n_otu-3;++i) */
-/*     { */
-/*       if((tree->a_edges[i]->left == tree->n_root->v[1] && tree->a_edges[i]->rght == tree->n_root->v[2]) || */
-/*          (tree->a_edges[i]->left == tree->n_root->v[2] && tree->a_edges[i]->rght == tree->n_root->v[1])) */
-/*         {         */
-/*           tree->e_root = tree->a_edges[i]; */
-/*           break; */
-/*         } */
-/*     } */
-/*   assert(!(tree->e_root == NULL)); */
-  
-/*   tree->n_root->b[1] = tree->a_edges[2*tree->n_otu-3]; */
-/*   tree->n_root->b[2] = tree->a_edges[2*tree->n_otu-2]; */
-
-/*   tree->n_root->b[1]->left = tree->n_root; */
-/*   tree->n_root->b[1]->rght = tree->n_root->v[1]; */
-
-/*   tree->n_root->b[2]->left = tree->n_root; */
-/*   tree->n_root->b[2]->rght = tree->n_root->v[2]; */
-  
-/*   Update_Ancestors(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree); */
-/*   Update_Ancestors(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree); */
-  
-/*   MIXT_Propagate_Tree_Update(tree);   */
-/* } */
-
-/* /\*\//////////////////////////////////////////////////////////// */
-/* ////////////////////////////////////////////////////////////\*\/ */
-
-/* void PHYREX_Ldsk_To_Tree_Post(t_node *a, t_ldsk *ldsk, int *available, t_tree *tree) */
-/* { */
-/*   int i,j; */
-  
-/*   if(ldsk->n_next == 1) */
-/*     { */
-/*       PHYREX_Ldsk_To_Tree_Post(a,ldsk->next[0],available,tree); */
-/*       return; */
-/*     } */
-
-/*   PhyML_Printf("\n. a->num: %d ldsk->n_next: %d",a->num,ldsk->n_next); */
-  
-/*   assert(ldsk); */
-/*   assert(a); */
-
-/*   if(ldsk->disk->age_fixed == NO) */
-/*     { */
-/*       assert(ldsk->nd); */
-/*       assert(ldsk->n_next == 2); */
-      
-/*       ldsk->nd->ldsk = ldsk; */
-/*       ldsk->nd->v[0] = a; */
-      
-/*       for(i=1;i<3;++i) */
-/*         { */
-/*           if(a->v[i] == NULL) */
-/*             { */
-/*               a->v[i] = ldsk->nd; */
-/*               break; */
-/*             } */
-/*         } */
-/*       assert(i!=3); */
-/*     } */
-/*   else */
-/*     { */
-/*       assert(ldsk->disk->age_fixed == YES); */
-
-/*       for(i=0;i<ldsk->disk->n_ldsk_a;++i) */
-/*         { */
-/*           if(ldsk->disk->ldsk_a[i]->nd->v[0] == NULL) */
-/*             { */
-/*               ldsk->disk->ldsk_a[i]->nd->v[0] = a; */
-/*               for(j=1;j<3;++j) */
-/*                 { */
-/*                   if(a->v[j] == NULL) */
-/*                     { */
-/*                       a->v[j] = ldsk->disk->ldsk_a[i]->nd; */
-/*                       break; */
-/*                     } */
-/*                 } */
-/*               assert(j!=3); */
-/*               return; */
-/*             } */
-/*         } */
-/*     } */
-
-/*   assert(ldsk->n_next == 2); */
-/*   for(i=0;i<2;++i) */
-/*     { */
-/*       PHYREX_Ldsk_To_Tree_Post(ldsk->nd,ldsk->next[i],available,tree);     */
-/*     } */
-  
-/*   return; */
-/* } */
-
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 // Make sure PHYREX_Make_And_Connect_Tip_Disks was called beforehand
@@ -3083,7 +2928,7 @@ void PHYREX_Tree_To_Ldsk_Post(t_node *a, t_node *d, t_dsk *a_disk, t_tree *tree)
     }
   else
     {
-      if(tree->times->nd_t[d->num] > tree->times->nd_t[a->num])
+      /* if(tree->times->nd_t[d->num] > tree->times->nd_t[a->num]) */
         {
           t_dsk *d_disk;
           
@@ -3138,20 +2983,6 @@ void PHYREX_Tree_To_Ldsk_Post(t_node *a, t_node *d, t_dsk *a_disk, t_tree *tree)
             }
 
         }
-      else // time[d] == time[a] -> add lineage to a_disk instead of creating d_disk
-        {
-          assert(false);
-
-          d->ldsk = a_disk->ldsk;
-
-          for(i=0;i<3;++i)
-            {
-              if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
-                {
-                  PHYREX_Tree_To_Ldsk_Post(d,d->v[i],a_disk,tree);
-                }
-            }
-        } 
     }
 }
 
