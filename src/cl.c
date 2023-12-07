@@ -1797,7 +1797,7 @@ int Read_Command_Line(option *io, int argc, char **argv)
       Exit("\n");
     }
   
-#if !defined(PHYTIME) 
+#if !defined(PHYTIME) && !defined(TEST) 
   // Make sure you don't erase the input file...
   if(!strcmp(io->out_tree_file,io->in_align_file) ||
      !strcmp(io->out_stats_file,io->in_align_file)) 

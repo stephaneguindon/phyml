@@ -2345,6 +2345,7 @@ void XML_Read_Calibration(xml_node *xroot, t_tree *tree)
           cal->upper = up;
           cal->is_primary = YES;
 
+          
           tree->times->a_cal[tree->times->n_cal] = cal;
           tree->times->n_cal++;
           
@@ -2505,6 +2506,7 @@ void XML_Read_Calibration(xml_node *xroot, t_tree *tree)
     }
   
   PhyML_Printf("\n\n");
+  PhyML_Printf("\n. Number of calibrations: %d",tree->times->n_cal);
   PhyML_Printf("\n. Is asynchronous: %s",tree->times->is_asynchronous ? "yes" : "no");
 }
 

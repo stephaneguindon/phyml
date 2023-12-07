@@ -158,8 +158,8 @@ int Read_Nexus_Tree(char *token, nexparm *curr_parm, option *io)
   if(!(io->treelist->list_size%10) && io->treelist->list_size > 1) 
     {
       PhyML_Printf("\n. Reading tree %d",io->treelist->list_size);
-      if(io->tree->n_root) PhyML_Printf(" (that is a rooted tree)");
-      else                 PhyML_Printf(" (that is an unrooted tree)");
+      if(io->tree->n_root) PhyML_Printf(" (a rooted tree)");
+      else                 PhyML_Printf(" (an unrooted tree)");
     }
   io->treelist->tree[io->treelist->list_size] = io->tree;
   io->treelist->list_size++;

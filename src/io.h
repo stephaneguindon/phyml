@@ -21,10 +21,10 @@ t_tree *Read_Tree(char **s_tree);
 void R_rtree(char *s_tree_a,char *s_tree_d,t_node *a,t_tree *tree,int *n_int,int *n_ext);
 void Read_Node_Label(char *s_d, char *s_a, t_node *n);
 void Read_Branch_Length(char *s_d, char *s_a, t_edge *b, t_tree *tree);
-void Read_Node_Name(t_node *d, char *s_tree_d, t_edge *b, t_tree *tree);
+void Read_Node_Name(char *s_tree_d, char *s_tree_a, t_node *d, t_tree *tree);
 void Clean_Multifurcation(char **subtrees,int current_deg,int end_deg);
 char **Sub_Trees(char *tree,int *degree);
-int Next_Par(char *s,int pos);
+int Next_Matching_Char(char *s, char o, char c,int pos);
 void Print_List(t_ll *list);
 void Print_Tree(FILE *fp,t_tree *tree);
 char *Write_Tree(t_tree *tree);
@@ -110,6 +110,7 @@ int PhyML_Fscanf(FILE *fp, char *format, ...);
 void Output_Scalar_Dbl(scalar_dbl *t, char *sep, FILE *fp);
 t_label *Read_Labels(char *s);
 void Print_Labels(FILE *fp_where, char *s_where, t_label *label);
+void Read_Edge_Label(char *s_d, char *s_a, t_edge *b);
 
 #ifdef PHYREX
 void PHYREX_Print_MultiTypeTree_Config_File(int n_sites, char *filename, t_tree *tree);

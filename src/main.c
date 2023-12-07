@@ -594,105 +594,171 @@ int main(int argc, char **argv)
 #include "xml.h"
 int main(int argc, char **argv)
 {
+
   option *io;
-  xml_node *root,*taxa,*taxon,*date,*loc,*seq;
-  int i,n_selected;
-  FILE *fp_coord,*fp_date,*fp_seq;
-  char *filename;
-  phydbl date_recent, date_old, date_f;
-  phydbl samp_prop,u;
-
-    
-  filename = (char *)mCalloc(100,sizeof(char));
-
-
+  t_tree *tree;
+  xml_node *root;
+  
 
   io = (option *)Get_Input(argc,argv);
   if(!io) return(0);
 
-  date_recent = atof(argv[2]);
-  date_old = atof(argv[3]);
+  Read_User_Tree(NULL,NULL,io);
 
-  PhyML_Printf("\n. Time interval considered: [%f,%f]",date_old,date_recent);
-  assert(date_old < date_recent);
-
-
-
-
-  strcpy(filename,"coord.txt");
-  fp_coord = Openfile(filename,WRITE);
-  
-  strcpy(filename,"dates.txt");
-  fp_date = Openfile(filename,WRITE);
-
-  strcpy(filename,"seq.txt");
-  fp_seq = Openfile(filename,WRITE);
-
-  
   root = XML_Load_File(io->fp_in_xml);
-  
-  taxa = XML_Search_Node_Name("taxa",NO,root);
 
-  samp_prop = 0.3;
-  
-  i = 1;
-  n_selected = 0;
-  taxon = taxa->child;
-  do
+  for(int i=0;i<io->treelist->list_size;++i)
     {
-      date = XML_Search_Node_Name("date",NO,taxon);
-      assert(date);
-
-      date_f = atof(XML_Get_Attribute_Value(date,"value"));
-
-      u = Uni();
+      PhyML_Printf("\n. Processing tree %d",i+1);
+      tree = io->treelist->tree[i];
       
-      if(date_f < date_recent && date_f > date_old && u < samp_prop)
-        {
+      tree->times = TIMES_Make_Time_Struct(tree->n_otu);
+      TIMES_Init_Time_Struct(tree->times,NULL,tree->n_otu);
+      
+      tree->rates = RATES_Make_Rate_Struct(tree->n_otu);
+      RATES_Init_Rate_Struct(tree->rates,NULL,tree->n_otu);
 
-          n_selected++;
-          
-          PhyML_Fprintf(fp_date,"\n<clade id=\"clad%d\">",i+1);
-          PhyML_Fprintf(fp_date,"\n\t<taxon value=\"%s\"/>",XML_Get_Attribute_Value(taxon,"id"));
-          PhyML_Fprintf(fp_date,"\n</clade>");
-          PhyML_Fprintf(fp_date,"\n<calibration id=\"cal%d\">",i+1);
-          PhyML_Fprintf(fp_date,"\n\t<lower>%s</lower>",XML_Get_Attribute_Value(date,"value"));
-          PhyML_Fprintf(fp_date,"\n\t<upper>%s</upper>",XML_Get_Attribute_Value(date,"value"));
-          PhyML_Fprintf(fp_date,"\n\t<appliesto clade.id=\"clad%d\"/>",i+1);
-          PhyML_Fprintf(fp_date,"\n</calibration>");
-          
-          ++i;
-          
-          
-          
-          PhyML_Fprintf(fp_coord,"\n");
-          PhyML_Fprintf(fp_coord," %s",XML_Get_Attribute_Value(taxon,"id"));
-          
-          loc = XML_Search_Node_Generic("attr","name","latitude",NO,taxon);
-          assert(loc);
-          PhyML_Fprintf(fp_coord,"\t %s",loc->value);
-          
-          loc = XML_Search_Node_Generic("attr","name","longitude",NO,taxon);
-          assert(loc);
-          PhyML_Fprintf(fp_coord,"\t %s",loc->value);
-          
-          
-          
-          seq = XML_Search_Node_Attribute_Value("idref",XML_Get_Attribute_Value(taxon,"id"),NO,root);
-          assert(seq);
-          PhyML_Fprintf(fp_seq,"\n%s",XML_Get_Attribute_Value(taxon,"id"));
-          PhyML_Fprintf(fp_seq,"\t\t%s",seq->value);
-        }
-          
-      taxon = taxon->next;
+      tree->mmod = PHYREX_Make_Migrep_Model(tree->n_otu,2);
+      tree->mmod->n_dim = 2;
+      PHYREX_Set_Default_Migrep_Mod(tree->n_otu,tree->mmod);
+
+      XML_Read_Calibration(root,tree);
+      MIXT_Chain_Cal(tree);
+      
+      TIMES_Randomize_Tip_Times_Given_Calibrations(tree); // Topology is unchanged
+      /* Edge_Labels_To_Rates(tree); */
+      tree->rates->clock_r = 1.0;
+      TIMES_Bl_To_Times(tree);
+      Update_Ancestors(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
+      Update_Ancestors(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
+
+      PHYREX_Make_And_Connect_Tip_Disks(tree);
+      /* PHYREX_Read_Tip_Coordinates(tree); */
+      PHYREX_Tree_To_Ldsk(tree);
+      
+      Node_Labels_To_Velocities(tree);
+      Node_Labels_To_Locations(tree);
+      
+      /* for(int j=0;j<2*tree->n_otu-1;++j) */
+      /*   { */
+      /*     if(tree->times->nd_t[j] > date_old && tree->times->nd_t[j] < date_recent) */
+      /*       { */
+      /*         PhyML_Printf("%f %f %f", */
+      /*                      tree->times->nd_t[j], */
+      /*                      tree->a_nodes[j]->ldsk->coord->lonlat[0] + tree->a_nodes[j]->ldsk->veloc->deriv[0], */
+      /*                      tree->a_nodes[j]->ldsk->coord->lonlat[1] + tree->a_nodes[j]->ldsk->veloc->deriv[1]); */
+      /*       } */
+      /*   } */
+
     }
-  while(taxon);
+      
+  Exit("\n");
 
-  PhyML_Printf("\n. number of selected sequences: %d",n_selected);
-  fclose(fp_coord);
-  fclose(fp_date);
-  fclose(fp_seq);
+  
+  
+  /* /\* Select samples in the 801 sequence WNV data set within a user defined date range ./test --xml=../WNV_RRW_tree_1.xml 2000 1990 1.0 *\/ */
+  /* option *io; */
+  /* xml_node *root,*taxa,*taxon,*date,*loc,*seq; */
+  /* int i,n_selected; */
+  /* FILE *fp_coord,*fp_date,*fp_seq; */
+  /* char *filename; */
+  /* phydbl date_recent, date_old, date_f; */
+  /* phydbl samp_prop,u; */
 
+    
+  /* filename = (char *)mCalloc(100,sizeof(char)); */
+
+
+  /* io = (option *)Get_Input(argc,argv); */
+  /* if(!io) return(0); */
+
+  /* date_recent = atof(argv[2]); */
+  /* date_old = atof(argv[3]); */
+  /* samp_prop = atof(argv[4]);; */
+
+  /* PhyML_Printf("\n. Time interval considered: [%f,%f]",date_old,date_recent); */
+  /* assert(date_old < date_recent); */
+
+  /* PhyML_Printf("\n. Sampling proportion: %f",samp_prop); */
+  /* assert(samp_prop > 0.0 && samp_prop <= 1.0); */
+
+
+  /* strcpy(filename,"coord.txt"); */
+  /* fp_coord = Openfile(filename,WRITE); */
+  
+  /* strcpy(filename,"dates.txt"); */
+  /* fp_date = Openfile(filename,WRITE); */
+
+  /* strcpy(filename,"seq.txt"); */
+  /* fp_seq = Openfile(filename,WRITE); */
+
+  
+  /* root = XML_Load_File(io->fp_in_xml); */
+  
+  /* taxa = XML_Search_Node_Name("taxa",NO,root); */
+
+  
+  /* i = 1; */
+  /* n_selected = 0; */
+  /* taxon = taxa->child; */
+  /* do */
+  /*   { */
+  /*     date = XML_Search_Node_Name("date",NO,taxon); */
+  /*     assert(date); */
+
+  /*     date_f = atof(XML_Get_Attribute_Value(date,"value")); */
+
+  /*     u = Uni(); */
+      
+  /*     if(date_f < date_recent && date_f > date_old && u < samp_prop) */
+  /*       { */
+
+  /*         n_selected++; */
+          
+  /*         PhyML_Fprintf(fp_date,"\n<clade id=\"clad%d\">",i+1); */
+  /*         PhyML_Fprintf(fp_date,"\n\t<taxon value=\"%s\"/>",XML_Get_Attribute_Value(taxon,"id")); */
+  /*         PhyML_Fprintf(fp_date,"\n</clade>"); */
+  /*         PhyML_Fprintf(fp_date,"\n<calibration id=\"cal%d\">",i+1); */
+  /*         PhyML_Fprintf(fp_date,"\n\t<lower>%s</lower>",XML_Get_Attribute_Value(date,"value")); */
+  /*         PhyML_Fprintf(fp_date,"\n\t<upper>%s</upper>",XML_Get_Attribute_Value(date,"value")); */
+  /*         PhyML_Fprintf(fp_date,"\n\t<appliesto clade.id=\"clad%d\"/>",i+1); */
+  /*         PhyML_Fprintf(fp_date,"\n</calibration>"); */
+          
+  /*         ++i; */
+          
+          
+          
+  /*         PhyML_Fprintf(fp_coord,"\n"); */
+  /*         PhyML_Fprintf(fp_coord," %s",XML_Get_Attribute_Value(taxon,"id")); */
+          
+  /*         loc = XML_Search_Node_Generic("attr","name","latitude",NO,taxon); */
+  /*         assert(loc); */
+  /*         PhyML_Fprintf(fp_coord,"\t %s",loc->value); */
+          
+  /*         loc = XML_Search_Node_Generic("attr","name","longitude",NO,taxon); */
+  /*         assert(loc); */
+  /*         PhyML_Fprintf(fp_coord,"\t %s",loc->value); */
+          
+          
+          
+  /*         seq = XML_Search_Node_Attribute_Value("idref",XML_Get_Attribute_Value(taxon,"id"),NO,root); */
+  /*         assert(seq); */
+  /*         PhyML_Fprintf(fp_seq,"\n%s",XML_Get_Attribute_Value(taxon,"id")); */
+  /*         PhyML_Fprintf(fp_seq,"\t\t%s",seq->value); */
+  /*       } */
+          
+  /*     taxon = taxon->next; */
+  /*   } */
+  /* while(taxon); */
+
+  /* PhyML_Printf("\n. number of selected sequences: %d",n_selected); */
+  /* fclose(fp_coord); */
+  /* fclose(fp_date); */
+  /* fclose(fp_seq); */
+
+
+
+  
 
   /* seq = taxa->next->child; */
   /* assert(seq); */

@@ -19,7 +19,7 @@ the GNU public licence. See http://www.opensource.org for details.
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-#if(defined PHYREX || PHYREXSIM)
+#if(defined PHYREX || PHYREXSIM || TEST)
 
 phydbl LOCATION_Wrap_Lk(t_edge *b, t_tree *tree, supert_tree *stree)
 {

@@ -2605,6 +2605,12 @@ void Convert_Lengths_From_Calendar_To_Substitutions_Post(t_node *a, t_node *d, t
 t_label *Get_Next_Label(t_label *curr_lab);
 int Scale_Subtree_Veloc(t_node *a, phydbl mult, int *n_nodes, int dim, t_tree *tree);
 int Scale_Subtree_Veloc_Post(t_node *a, t_node *d, phydbl mult, int *n_nodes, int dim, t_tree *tree);
+void Label_Edges(t_tree *tree);
+void Label_Nodes_With_Velocities(t_tree *tree);
+void Label_Nodes_With_Locations(t_tree *tree);
+void Edge_Labels_To_Rates(t_tree *tree);
+void Node_Labels_To_Velocities(t_tree *tree);
+void Node_Labels_To_Locations(t_tree *tree);
 
 
 #include "xml.h"
@@ -2631,7 +2637,7 @@ int Scale_Subtree_Veloc_Post(t_node *a, t_node *d, phydbl mult, int *n_nodes, in
 #include "geo.h"
 #endif
 
-#if (defined PHYREX || PHYREXSIM)
+#if (defined PHYREX || PHYREXSIM || TEST)
 #include "phyrex.h"
 #include "rw.h"
 #include "rrw.h"

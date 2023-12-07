@@ -256,6 +256,15 @@ mixt.c mixt.h\
 sse.c sse.h\
 avx.c avx.h\
 ancestral.c ancestral.h\
+phyrex.c phyrex.h\
+location.c location.h\
+velocity.c velocity.h\
+rrw.c rrw.h\
+slfv.c slfv.h\
+rw.c rw.h\
+iou.c iou.h\
+iwn.c iwn.h\
+ibm.c ibm.h\
 date.c date.h
 test_LDADD = -lm
 else

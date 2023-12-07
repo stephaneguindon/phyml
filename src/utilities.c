@@ -12769,6 +12769,343 @@ t_edge *Get_Edge(t_node *a, t_node *d, t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
+void Label_Nodes_With_Velocities(t_tree *tree)
+{
+  t_dsk *disk;
+  t_node *n;
+  phydbl veloclon,veloclat;
+  t_label *lab;
+
+  lab = NULL;
+  veloclon = veloclat = -1.;
+  
+  for(int i=0;i<tree->n_otu;++i)
+    {
+      lab = Get_Next_Label(tree->a_nodes[i]->label);
+      if(tree->a_nodes[i]->label == NULL) tree->a_nodes[i]->label = lab;
+      
+      /* if(tree->a_nodes[i]->label == NULL) */
+      /*   { */
+      /*     tree->a_nodes[i]->label = Make_Label(); */
+      /*     lab = tree->a_nodes[i]->label; */
+      /*   } */
+      /* else */
+      /*   { */
+      /*     lab = tree->a_nodes[i]->label; */
+      /*     while(lab->next != NULL) lab = lab->next; */
+      /*     lab->next = Make_Label(); */
+      /*     lab = lab->next; */
+      /*   } */
+
+      veloclat = tree->a_nodes[i]->ldsk->veloc->deriv[1];
+      veloclon = tree->a_nodes[i]->ldsk->veloc->deriv[0];
+
+      sprintf(lab->key,"velocity");
+      sprintf(lab->val,"{%f,%f}",veloclat,veloclon);
+    }
+
+  disk = tree->young_disk->prev;
+
+  do
+    {
+      if(disk->ldsk && disk->ldsk->nd != NULL)
+        {
+          n = disk->ldsk->nd;
+
+          lab = Get_Next_Label(n->label);
+          if(n->label == NULL) n->label = lab;
+
+          /* if(n->label == NULL) */
+          /*   { */
+          /*     n->label = Make_Label(); */
+          /*     lab = n->label; */
+          /*   } */
+          /* else */
+          /*   { */
+          /*     lab = n->label; */
+          /*     while(lab->next != NULL) lab = lab->next; */
+          /*     lab->next = Make_Label(); */
+          /*     lab = lab->next; */
+          /*   } */
+
+          veloclat = disk->ldsk->veloc->deriv[1];
+          veloclon = disk->ldsk->veloc->deriv[0];
+
+          sprintf(lab->key,"velocity");
+          sprintf(lab->val,"{%f,%f}",veloclat,veloclon);
+
+          /* Print same label on all internal nodes with exactly the */
+          /* same coalescence time. */
+          for(int i=tree->n_otu;i<2*tree->n_otu-1;++i)
+            {
+              if(tree->a_nodes[i] != n &&
+                 Are_Equal(tree->times->nd_t[i],
+                           tree->times->nd_t[n->num],
+                           1.E-10) == YES)
+                {
+                  n = tree->a_nodes[i];
+                  lab = Get_Next_Label(n->label);
+                  if(n->label == NULL) n->label = lab;
+
+                  /* if(n->label == NULL) */
+                  /*   { */
+                  /*     n->label = Make_Label(); */
+                  /*     lab = n->label; */
+                  /*   } */
+                  /* else */
+                  /*   { */
+                  /*     lab = n->label; */
+                  /*     while(lab->next != NULL) lab = lab->next; */
+                  /*     lab->next = Make_Label(); */
+                  /*     lab = lab->next; */
+                  /*   } */
+
+                  veloclat = disk->ldsk->veloc->deriv[1];
+                  veloclon = disk->ldsk->veloc->deriv[0];
+                  
+                  sprintf(lab->key,"velocity");
+                  sprintf(lab->val,"{%f,%f}",veloclat,veloclon);
+                }
+            }
+        }
+      
+      disk = disk->prev;
+    }
+  while(disk);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+void Label_Nodes_With_Locations(t_tree *tree)
+{
+  t_dsk *disk;
+  t_node *n;
+  phydbl lon,lat;
+  t_label *lab;
+  
+  lab = NULL;
+  lon = lat = -1.;
+  
+  for(int i=0;i<tree->n_otu;++i)
+    {
+
+      lab = Get_Next_Label(tree->a_nodes[i]->label);
+      if(tree->a_nodes[i]->label == NULL) tree->a_nodes[i]->label = lab;
+      
+      /* if(tree->a_nodes[i]->label == NULL) */
+      /*   { */
+      /*     tree->a_nodes[i]->label = Make_Label(); */
+      /*     lab = tree->a_nodes[i]->label; */
+      /*   } */
+      /* else */
+      /*   { */
+      /*     lab = tree->a_nodes[i]->label; */
+      /*     while(lab->next != NULL) lab = lab->next; */
+      /*     lab->next = Make_Label(); */
+      /*     lab = lab->next; */
+      /*   } */
+
+      lat = tree->a_nodes[i]->ldsk->coord->lonlat[1];
+      lon = tree->a_nodes[i]->ldsk->coord->lonlat[0];
+
+      sprintf(lab->key,"location");
+      sprintf(lab->val,"{%f,%f}",lat,lon);
+    }
+
+  disk = tree->young_disk->prev;
+
+  do
+    {
+      if(disk->ldsk && disk->ldsk->nd != NULL)
+        {
+          n = disk->ldsk->nd;
+
+          lab = Get_Next_Label(n->label);
+          if(n->label == NULL) n->label = lab;
+
+          /* if(n->label == NULL) */
+          /*   { */
+          /*     n->label = Make_Label(); */
+          /*     lab = n->label; */
+          /*   } */
+          /* else */
+          /*   { */
+          /*     lab = n->label; */
+          /*     while(lab->next != NULL) lab = lab->next; */
+          /*     lab->next = Make_Label(); */
+          /*     lab = lab->next; */
+          /*   } */
+
+          lat = disk->ldsk->coord->lonlat[1];
+          lon = disk->ldsk->coord->lonlat[0];
+
+          sprintf(lab->key,"location");
+          sprintf(lab->val,"{%f,%f}",lat,lon);
+
+          /* Print same label on all internal nodes with exactly the */
+          /* same coalescence time. */
+          for(int i=tree->n_otu;i<2*tree->n_otu-1;++i)
+            {
+              if(tree->a_nodes[i] != n &&
+                 Are_Equal(tree->times->nd_t[i],
+                           tree->times->nd_t[n->num],
+                           1.E-10) == YES)
+                {
+                  n = tree->a_nodes[i];
+
+                  lab = Get_Next_Label(n->label);
+                  if(n->label == NULL) n->label = lab;
+
+                  /* if(n->label == NULL) */
+                  /*   { */
+                  /*     n->label = Make_Label(); */
+                  /*     lab = n->label; */
+                  /*   } */
+                  /* else */
+                  /*   { */
+                  /*     lab = n->label; */
+                  /*     while(lab->next != NULL) lab = lab->next; */
+                  /*     lab->next = Make_Label(); */
+                  /*     lab = lab->next; */
+                  /*   } */
+
+
+                  lat = disk->ldsk->coord->lonlat[1];
+                  lon = disk->ldsk->coord->lonlat[0];
+                  
+                  sprintf(lab->key,"location");
+                  sprintf(lab->val,"{%f,%f}",lat,lon);
+                }
+            }
+        }
+      
+      disk = disk->prev;
+    }
+  while(disk);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+void Label_Edges(t_tree *tree)
+{
+  for(int i=0;i<2*tree->n_otu-1;++i)
+    {
+      if(tree->a_edges[i]->label == NULL)
+        {
+          tree->a_edges[i]->label = Make_Label();
+          tree->a_edges[i]->label->next = Make_Label();
+        }
+      
+      sprintf(tree->a_edges[i]->label->key,"rate");
+      sprintf(tree->a_edges[i]->label->val,"0.0");
+      
+      sprintf(tree->a_edges[i]->label->next->key,"location.rate");
+      sprintf(tree->a_edges[i]->label->next->val,"0.0");
+    }
+
+
+  for(int i=0;i<2*tree->n_otu-1;++i)
+    {
+      if(tree->a_nodes[i] != tree->n_root)
+        {
+          sprintf(tree->a_nodes[i]->b[0]->label->val,"%f",tree->rates->br_r[tree->a_nodes[i]->num]);
+          sprintf(tree->a_nodes[i]->b[0]->label->next->val,"%f",tree->mmod->sigsq_scale[tree->a_nodes[i]->num]);
+        }
+    }
+  sprintf(tree->n_root->b[1]->label->val,"%f",tree->rates->br_r[tree->n_root->v[1]->num]);
+  sprintf(tree->n_root->b[1]->label->next->val,"%f",tree->mmod->sigsq_scale[tree->n_root->v[1]->num]);
+
+  sprintf(tree->n_root->b[2]->label->val,"%f",tree->rates->br_r[tree->n_root->v[2]->num]);
+  sprintf(tree->n_root->b[2]->label->next->val,"%f",tree->mmod->sigsq_scale[tree->n_root->v[2]->num]);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+/* Get relative rate from edge label and copy it to the rate structure */
+void Edge_Labels_To_Rates(t_tree *tree)
+{
+  t_label *lab;
+  int i;
+  
+  assert(tree->rates);
+  
+  for(i=0;i<2*tree->n_otu-1;++i)
+    {
+      if(tree->a_nodes[i] != tree->n_root)
+        {
+          if(tree->a_nodes[i] == tree->n_root->v[1]) lab = tree->n_root->b[1]->label;
+          else if(tree->a_nodes[i] == tree->n_root->v[2]) lab = tree->n_root->b[2]->label;
+          else lab = tree->a_nodes[i]->b[0]->label;
+
+          while(lab && strcmp(lab->key,"&rate")) lab = lab->next;        
+          assert(lab);
+          tree->rates->br_r[tree->a_nodes[i]->num] = lab ? atof(lab->val) : -1.;
+        }
+    }
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+void Node_Labels_To_Velocities(t_tree *tree)
+{
+  t_label *lab;
+  int i,j;
+  
+  assert(tree->rates);
+
+  for(i=0;i<2*tree->n_otu-1;++i)
+    {
+      lab = tree->a_nodes[i]->label;
+      
+      j = 0;
+      while(lab && strcmp(lab->key,"velocity"))
+        {
+          PhyML_Printf("\n. labkey: (%d) %s:%s",j,lab->key,lab->val);
+          lab = lab->next;
+          j++;
+        }
+      PhyML_Printf("\n. i: %d(%d,%d,%d)  j: %d %s %s",
+                   i,
+                   tree->a_nodes[i] == tree->n_root,
+                   tree->a_nodes[i] == tree->n_root->v[1],
+                   tree->a_nodes[i] == tree->n_root->v[2],
+                   j,lab ? lab->key:"", lab ? lab->val:"");
+      assert(lab);
+      sscanf(lab->val,"{%lf,%lf}",
+             tree->a_nodes[i]->ldsk->veloc->deriv,    
+             tree->a_nodes[i]->ldsk->veloc->deriv+1);    
+    }
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+void Node_Labels_To_Locations(t_tree *tree)
+{
+  t_label *lab;
+  int i;
+  
+  assert(tree->rates);
+  
+  for(i=0;i<2*tree->n_otu-1;++i)
+    {
+      lab = tree->a_nodes[i]->label;
+      
+      while(lab && strcmp(lab->key,"&location")) lab = lab->next;        
+      assert(lab);
+      sscanf(lab->val,"{%lf,%lf}",
+             tree->a_nodes[i]->ldsk->coord->lonlat,    
+             tree->a_nodes[i]->ldsk->coord->lonlat+1);    
+    }
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+
 void Exchange_Nodes(t_node *a, t_node *d, t_node *w, t_node *v, t_tree *tree)
 {
   short int i,dw,dv,root_side;

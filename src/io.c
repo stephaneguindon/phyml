@@ -129,9 +129,15 @@ t_tree *Read_Tree(char **s_tree)
       subs = Sub_Trees((*s_tree),&degree);
       Read_Branch_Length(subs[0],(*s_tree),tree->n_root->b[1],tree);
       Read_Branch_Length(subs[1],(*s_tree),tree->n_root->b[2],tree);
+      // Edge labels
+      Read_Edge_Label(subs[0],(*s_tree),tree->n_root->b[1]);
+      Read_Edge_Label(subs[1],(*s_tree),tree->n_root->b[2]);
+      // Node labels
+      Read_Node_Label(subs[0],(*s_tree),tree->n_root);
+      Read_Node_Label(subs[1],(*s_tree),tree->n_root);
+      
       Free(subs);
-      
-      
+
       Connect_One_Edge_To_Two_Nodes(tree->n_root->v[2],
                                     tree->n_root->v[1],
                                     tree->e_root,
@@ -187,7 +193,8 @@ void R_rtree(char *s_tree_a, char *s_tree_d, t_node *a, t_tree *tree, int *n_int
       d->num = n_otu + *n_int;
       d->tax = 0;
       b      = tree->a_edges[tree->num_curr_branch_available];
-      
+
+      Read_Edge_Label(s_tree_d,s_tree_a,b);
       Read_Branch_Support(s_tree_d,s_tree_a,b,tree);
       Read_Branch_Length(s_tree_d,s_tree_a,b,tree);
       Read_Node_Label(s_tree_d,s_tree_a,d);
@@ -252,10 +259,13 @@ void R_rtree(char *s_tree_a, char *s_tree_d, t_node *a, t_tree *tree, int *n_int
       d      = tree->a_nodes[*n_ext];
       d->tax = 1;
       
-      Read_Node_Name(d,s_tree_d,tree->a_edges[*n_ext],tree);
+      Read_Edge_Label(s_tree_d,s_tree_a,tree->a_edges[*n_ext]);
+      Read_Node_Name(s_tree_d,s_tree_a,d,tree);
       Read_Branch_Length(s_tree_d,s_tree_a,tree->a_edges[*n_ext],tree);
       Read_Node_Label(s_tree_d,s_tree_a,d);
 
+
+           
       if(tree->n_root && a == tree->n_root)
         {
           if(!a->v[1]) a->v[1] = d;
@@ -291,10 +301,23 @@ void R_rtree(char *s_tree_a, char *s_tree_d, t_node *a, t_tree *tree, int *n_int
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Read_Node_Name(t_node *d, char *s_tree_d, t_edge *b, t_tree *tree)
+void Read_Node_Name(char *s_d, char *s_a, t_node *d, t_tree *tree)
 {
-  d->name = (char *)mCalloc(strlen(s_tree_d)+1,sizeof(char ));
-  strcpy(d->name,s_tree_d);
+  char *p;
+  int i;
+  
+  assert(s_d[0] != '(');
+
+  d->name = (char *)mCalloc(strlen(s_d)+1,sizeof(char ));
+
+  p = strstr(s_a,s_d);
+  i = 0;
+  while(p[i] != ':' && p[i] != '[')
+    {
+      d->name[i] = p[i];
+      i++;
+    }
+  d->name[i] = '\0';
   d->ori_name = d->name;
 }
 
@@ -304,8 +327,9 @@ void Read_Node_Name(t_node *d, char *s_tree_d, t_edge *b, t_tree *tree)
 void Read_Branch_Support(char *s_d, char *s_a, t_edge *b, t_tree *tree)
 {
   char *sub_tp;
-  char *p,c;
-  
+  char *p;
+  int i;
+
   if(s_d[0] != '(') return; // b is an external edge -> no edge support on it
   
   sub_tp = (char *)mCalloc(10+strlen(s_d)+1,sizeof(char));
@@ -315,29 +339,24 @@ void Read_Branch_Support(char *s_d, char *s_a, t_edge *b, t_tree *tree)
   strcat(sub_tp,s_d);
   p = strstr(s_a,sub_tp);
 
-  c = p[1 + strlen(s_d)];
-  
-  if(!p || !(c == '[' || c == ':'))
+  if(!p)
     {
       sub_tp[0] = ',';
       sub_tp[1] = '\0';
       strcat(sub_tp,s_d);
-      p = strstr(s_a,sub_tp);
+      p = strstr(s_a,sub_tp);      
     }
+  assert(p);
 
+  p++;
 
-  if(p)
-    {
-      b->support_val = atof((char *)p+(int)strlen(sub_tp));
-
-      p = p + strlen(sub_tp);
-      if(p[0] == '[') { while(p[0] != ']') p++; p++; } // Skip label      
-      b->support_val = atof((char *)p);
-
-      /* PhyML_Printf("\n. READ SUPPORT for s_d: %s b: %f",s_d,b->support_val); */
-
-    }
-
+  i = 0;
+  if(p[i] == '(') i = Next_Matching_Char(p,'(',')',i);
+  i++;  
+  if(p[i] == '[') i = Next_Matching_Char(p,'[',']',i);
+  i++;
+  if(p[i] != ':') b->support_val = atof((char *)p);
+    
   Free(sub_tp);
 }
 
@@ -347,8 +366,11 @@ void Read_Branch_Support(char *s_d, char *s_a, t_edge *b, t_tree *tree)
 void Read_Branch_Length(char *s_d, char *s_a, t_edge *b, t_tree *tree)
 {
   char *sub_tp;
-  char *p,c;
+  char *p;
+  int i;
 
+  b->l->v = -1.;
+  
   sub_tp = (char *)mCalloc(10+strlen(s_d)+1,sizeof(char));
 
   sub_tp[0] = '(';
@@ -356,59 +378,57 @@ void Read_Branch_Length(char *s_d, char *s_a, t_edge *b, t_tree *tree)
   strcat(sub_tp,s_d);
   p = strstr(s_a,sub_tp);
 
-  c = p[1 + strlen(s_d)];
-  
-  if(!p || !(c == '[' || c == ':'))
+  if(!p)
     {
       sub_tp[0] = ',';
       sub_tp[1] = '\0';
       strcat(sub_tp,s_d);
-      p = strstr(s_a,sub_tp);
+      p = strstr(s_a,sub_tp);      
     }
+  assert(p);
 
-
-  if(p)
+  p++;
+  
+  i = 0;
+  while(p[i] != ':' && p[i] != '\0')
     {
-      p = p + strlen(sub_tp);
-      while(p[0] != ':' && p[0] != '\0') p++;
-      if(p[0] == ':')
+      if(p[i] == '(') i = Next_Matching_Char(p,'(',')',i);
+      if(p[i] == '[') i = Next_Matching_Char(p,'[',']',i);
+      i++;
+    }
+  if(p[i] == ':')
+    {
+      i++;  
+      if(p[i] == '[')
         {
-          p++;
-          if(p[0] == '[') { do p++; while(p[0]!=']'); p++; } /* Skip edge label */                       
-          b->l->v = atof((char *)p);
-          /* PhyML_Printf("\n. READ LENGTH for s_d: %s b: %f",s_d,b->l->v); */
-          tree->has_branch_lengths = YES;
-          b->does_exist = YES;
+          i = Next_Matching_Char(p,'[',']',i);
+          i++;
         }
-      else
-        {
-          b->l->v = -1.;
-        }      
-    }
-  else
-    {
-      b->l->v = -1.;
+      b->l->v = atof(p+i);
+      tree->has_branch_lengths = YES;
+      b->does_exist = YES;
+      /* PhyML_Printf("\n. READ LENGTH for s_d: %s b: %f",s_d,b->l->v); */
     }
 
   Free(sub_tp);
+
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void Read_Node_Label(char *s_d, char *s_a, t_node *n)
+void Read_Edge_Label(char *s_d, char *s_a, t_edge *b)
 {
-  char *sub_tp,*s_lab;
+  char *sub_tp;
   char *p;
+  int i;
 
-  sub_tp = (char *)mCalloc(3+(int)strlen(s_d)+1,sizeof(char));
-  s_lab = (char *)mCalloc(strlen(s_a)+1,sizeof(char));
   
-  
+  sub_tp = (char *)mCalloc(10+strlen(s_d)+1,sizeof(char));
+
   sub_tp[0] = '(';
   sub_tp[1] = '\0';
   strcat(sub_tp,s_d);
-  strcat(sub_tp,"[\0");
   p = strstr(s_a,sub_tp);
 
   if(!p)
@@ -416,32 +436,111 @@ void Read_Node_Label(char *s_d, char *s_a, t_node *n)
       sub_tp[0] = ',';
       sub_tp[1] = '\0';
       strcat(sub_tp,s_d);
-      strcat(sub_tp,"[\0");
-      p = strstr(s_a,sub_tp);
+      p = strstr(s_a,sub_tp);      
+    }
+  assert(p);
+
+  p++;
+  
+  i = 0;
+  while(p[i] != ':' && p[i] != '\0')
+    {
+      if(p[i] == '(') i = Next_Matching_Char(p,'(',')',i);
+      if(p[i] == '[') i = Next_Matching_Char(p,'[',']',i);
+      i++;
+    }
+  if(p[i] == ':')
+    {
+      i++;  
+      if(p[i] == '[')
+        {
+          char *s_lab;
+          
+          s_lab = (char *)mCalloc(strlen(s_a)+1,sizeof(char));
+          s_lab[0]='[';
+          
+          if(sscanf(p+i,"[%[^]]]",s_lab+1) != 1)
+            {
+              PhyML_Fprintf(stderr,"\n. Edge label is in wrong format. A proper label should");
+              PhyML_Fprintf(stderr,"\n. look as follows: \"[xxx={yyy},xxxx={yy},...]\"");
+              assert(FALSE);
+            }
+          
+          s_lab[strlen(s_lab)]=']';
+          s_lab[strlen(s_lab)]='\0';
+          
+          b->label = Read_Labels(s_lab);
+          
+          /* PhyML_Printf("\n. READ EDGE LABEL for s_d: %s lab.keyval: %s:%s",s_d,b->label->key,b->label->val); */
+          Free(s_lab);
+          i++;
+        }
     }
 
-  if(p)
+  Free(sub_tp);
+}
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Read_Node_Label(char *s_d, char *s_a, t_node *n)
+{
+  char *sub_tp;
+  char *p;
+  int i;
+
+  
+  sub_tp = (char *)mCalloc(10+strlen(s_d)+1,sizeof(char));
+
+  sub_tp[0] = '(';
+  sub_tp[1] = '\0';
+  strcat(sub_tp,s_d);
+  p = strstr(s_a,sub_tp);
+
+  if(!p)
     {
-      p = p+strlen(sub_tp)-1;
-      assert(p[0]=='[');
+      sub_tp[0] = ',';
+      sub_tp[1] = '\0';
+      strcat(sub_tp,s_d);
+      p = strstr(s_a,sub_tp);      
+    }
+  assert(p);
+
+  p++;
+
+  i = 0;
+  if(p[0] == '(') i = Next_Matching_Char(p,'(',')',i);
+  while(p[i] != '[' && p[i] != '\0') i++;
+
+  if(p[i] == '[')
+    {
+
+      char *s_lab;
       
+      s_lab = (char *)mCalloc(strlen(s_a)+1,sizeof(char));
       s_lab[0]='[';
-      if(sscanf(p,"[%[^]]]",s_lab+1) != 1)
+          
+      if(sscanf(p+i,"[%[^]]]",s_lab+1) != 1)
         {
-          PhyML_Fprintf(stderr,"\n. Label is in wrong format. A proper label should");
+          PhyML_Fprintf(stderr,"\n. Node label is in wrong format. A proper label should");
           PhyML_Fprintf(stderr,"\n. look as follows: \"[xxx={yyy},xxxx={yy},...]\"");
-          assert(FALSE);          
+          assert(FALSE);
         }
-
+      
       s_lab[strlen(s_lab)]=']';
-      s_lab[strlen(s_lab)]='\0';      
-
+      s_lab[strlen(s_lab)]='\0';
       
       n->label = Read_Labels(s_lab);
+          
+      /* PhyML_Printf("\n. READ NODE LABEL for s_d: %s %s lab.keyval: %s:%s %s:%s", */
+      /*              s_d, */
+      /*              s_lab, */
+      /*              n->label->key,n->label->val, */
+      /*              n->label->next->key,n->label->next->val); */
+      Free(s_lab);
     }
-  
   Free(sub_tp);
-  Free(s_lab);
 }
 
 //////////////////////////////////////////////////////////////
@@ -481,6 +580,70 @@ void Clean_Multifurcation(char **subtrees, int current_deg, int end_deg)
 
 char **Sub_Trees(char *tree, int *degree)
 {
+  /* char **subs; */
+  /* int posbeg,posend; */
+  /* int i; */
+
+  /* subs = NULL; */
+  
+  /* if(tree[0] != '(') */
+  /*   { */
+  /*     *degree = 1; */
+  /*     return NULL; */
+  /*   } */
+
+  /* posbeg=posend=1; */
+  /* (*degree)=0; */
+  /* do */
+  /*   { */
+  /*     posbeg = posend; */
+  /*     if(tree[posend] != '(') */
+  /*       { */
+  /*         while((tree[posend] != ',' ) && */
+  /*               (tree[posend] != ':' ) && */
+  /*               (tree[posend] != '#' ) && */
+  /*               (tree[posend] != ')' ) && */
+  /*               (tree[posend] != '[' )) */
+  /*           { */
+  /*             posend++ ; */
+  /*           } */
+  /*         posend -= 1; */
+  /*       } */
+  /*     else posend = Next_Matching_Char(tree,')',posend);       */
+      
+  /*     if(*degree == 0) */
+  /*       subs = (char **)mCalloc(1,sizeof(char *)); */
+  /*     else */
+  /*       subs = (char **)mRealloc(subs,*degree+1,sizeof(char *)); */
+      
+  /*     subs[(*degree)] = (char *)mCalloc(strlen(tree)+1,sizeof(char)); */
+  /*     strncpy(subs[(*degree)],tree+posbeg,posend-posbeg+1); */
+  /*     subs[(*degree)][posend-posbeg+1]='\0'; /\* Thanks to Jean-Baka Domelevo-Entfellner *\/ */
+      
+  /*     posend += 1; */
+  /*     if(tree[posend] == '[') { while(tree[posend] != ']') posend++; posend++; } /\* Skip branch label *\/ */
+  /*     while((tree[posend] != ',') && (tree[posend] != ')')) */
+  /*       { */
+  /*         posend++; */
+  /*         if(tree[posend] == '[') { while(tree[posend] != ']') posend++; posend++; } /\* Skip other label, possibly after ':' *\/ */
+  /*       } */
+  /*     posend++; */
+            
+  /*     (*degree)++; */
+  /*     if((*degree) == NODE_DEG_MAX) */
+  /*       { */
+  /*         for(i=0;i<(*degree);++i) PhyML_Fprintf(stderr,"\n. Subtree %d : %s\n",i+1,subs[i]);           */
+  /*         PhyML_Fprintf(stderr,"\n. The degree of a t_node cannot be greater than %d\n",NODE_DEG_MAX); */
+  /*         Warn_And_Exit("\n"); */
+  /*       } */
+  /*   } */
+  /* while(tree[posend-1] != ')'); */
+  
+  /* subs = (char **)mRealloc(subs,*degree+1,sizeof(char *)); */
+  /* subs[(*degree)] = NULL; */
+
+  /* return subs; */
+
   char **subs;
   int posbeg,posend;
   int i;
@@ -493,24 +656,20 @@ char **Sub_Trees(char *tree, int *degree)
       return NULL;
     }
 
+  
   posbeg=posend=1;
   (*degree)=0;
   do
     {
       posbeg = posend;
-      if(tree[posend] != '(')
+      while(tree[posend] != ',' && tree[posend] != ')')
         {
-          while((tree[posend] != ',' ) &&
-                (tree[posend] != ':' ) &&
-                (tree[posend] != '#' ) &&
-                (tree[posend] != ')' ) &&
-                (tree[posend] != '[' ))
-            {
-              posend++ ;
-            }
-          posend -= 1;
+          if(tree[posend] == '(') posend = Next_Matching_Char(tree,'(',')',posend);
+          if(tree[posend] == '[') posend = Next_Matching_Char(tree,'[',']',posend);
+          posend++;
         }
-      else posend = Next_Par(tree,posend);      
+
+      posend -= 1;
       
       if(*degree == 0)
         subs = (char **)mCalloc(1,sizeof(char *));
@@ -520,15 +679,8 @@ char **Sub_Trees(char *tree, int *degree)
       subs[(*degree)] = (char *)mCalloc(strlen(tree)+1,sizeof(char));
       strncpy(subs[(*degree)],tree+posbeg,posend-posbeg+1);
       subs[(*degree)][posend-posbeg+1]='\0'; /* Thanks to Jean-Baka Domelevo-Entfellner */
-      
-      posend += 1;
-      if(tree[posend] == '[') { while(tree[posend] != ']') posend++; posend++; } /* Skip branch label */
-      while((tree[posend] != ',') && (tree[posend] != ')'))
-        {
-          posend++;
-          if(tree[posend] == '[') { while(tree[posend] != ']') posend++; posend++; } /* Skip other label, possibly after ':' */
-        }
-      posend++;
+
+      posend += 2;
             
       (*degree)++;
       if((*degree) == NODE_DEG_MAX)
@@ -544,21 +696,21 @@ char **Sub_Trees(char *tree, int *degree)
   subs[(*degree)] = NULL;
 
   return subs;
+
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
-int Next_Par(char *s, int pos)
+int Next_Matching_Char(char *s, char o, char c, int pos)
 {
   int curr;
 
   curr=pos+1;
 
-  while(*(s+curr) != ')')
+  while(*(s+curr) != c)
     {
-      if(*(s+curr) == '(') curr=Next_Par(s,curr);
+      if(*(s+curr) == o) curr=Next_Matching_Char(s,o,c,curr);
       curr++;
     }
 
@@ -1127,7 +1279,8 @@ int Get_Token(FILE *fp, char *token)
   else if(c == '-') { *token = c; token++; }
   else
     {
-      while(isgraph(c) && c != ';' && c != '-' && c != ',' && c != '=')
+      /* while(isgraph(c) && c != ';' && c != '-' && c != ',' && c != '=') */
+      while(isgraph(c) && c != ';' && c != ',' && c != '=')
         {
           *(token++) = c;
           c = fgetc(fp);
@@ -3574,7 +3727,12 @@ t_tree *Read_User_Tree(calign *cdata, t_mod *mod, option *io)
 
   if(tree == NULL) Exit("\n. Input tree not found...");
   /* Add branch lengths if necessary */
-  if(tree->has_branch_lengths == NO) Add_BioNJ_Branch_Lengths(tree,cdata,mod,NULL);
+  if(tree->has_branch_lengths == NO)
+    {
+      assert(cdata != NULL);
+      assert(mod != NULL);
+      Add_BioNJ_Branch_Lengths(tree,cdata,mod,NULL);
+    }
   return tree;
 }
 
@@ -6371,7 +6529,7 @@ t_label *Read_Labels(char *s)
   char *s_cpy,*s_small;
   char *label;
   char *key,*val;
-  int cur,op;
+  int cur,beg,op;
   short int finished;
   
   if(s[0] != '[' || s[(int)strlen(s)-1] != ']')
@@ -6386,29 +6544,30 @@ t_label *Read_Labels(char *s)
   
   s_cpy = (char *)mCalloc((int)strlen(s)+1,sizeof(char));
   strcpy(s_cpy,s);
-  s_cpy++; /* Skip '[' */
   
   label = (char *)mCalloc(strlen(s),sizeof(char));
   
-
-  cur = 0;
+  cur = beg = 0;
   finished = NO;
   do
     {
       cur++;
+      beg = cur;
       op = 0;
       do
         {
           if(s_cpy[cur] == '{') op++;
           if(s_cpy[cur] == '}') op--;
+          
           cur++;
         }
       while(!(s_cpy[cur] == ',' && op == 0) && s_cpy[cur] != ']');
+
       if(s_cpy[cur] == ']') finished = YES;
       else finished = NO;
       s_cpy[cur] = '\0';
       
-      strcpy(label,s_cpy);
+      strcpy(label,s_cpy+beg);
       
       key=strtok_r(label,"=",&s_small);
       val=strtok_r(NULL,"=",&s_small);
@@ -6434,7 +6593,6 @@ t_label *Read_Labels(char *s)
   lab = init_lab;
 
   Free(label);
-  s_cpy--;
   Free(s_cpy);
   
   return(lab);
@@ -7104,9 +7262,9 @@ void PHYREX_Print_MCMC_Tree(t_tree *tree)
       tree->bl_ndigits = 3;
       /* tree->bl_ndigits = 7; */
       tree->write_tax_names = NO;
-      PHYREX_Label_Nodes_With_Locations(tree);
-      if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES) PHYREX_Label_Nodes_With_Velocities(tree);
-      PHYREX_Label_Edges(tree);
+      Label_Nodes_With_Locations(tree);
+      if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES) Label_Nodes_With_Velocities(tree);
+      Label_Edges(tree);
       char *s = Write_Tree(tree);
       Free_All_Node_Labels(tree);
       PhyML_Fprintf(fp_tree,"\ntree %d [&lnP=%f,precision={1.e-1,1e-02,1e-01}] = [&R] %s",tree->mcmc->run,tree->c_lnL,s);

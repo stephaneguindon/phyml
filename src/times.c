@@ -15,7 +15,7 @@ the GNU public licence. See http://www.opensource.org for details.
 
 #include "times.h"
 
-#if(defined PHYREX || PHYTIME || PHYREXSIM)
+#if(defined PHYREX || PHYTIME || PHYREXSIM || TEST)
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -2444,7 +2444,7 @@ void TIMES_Randomize_Tip_Times_Given_Calibrations(t_tree *tree)
           assert(clade->target_nd->tax == YES);
           tree->times->nd_t[clade->target_nd->num] = Uni()*(cal->upper - cal->lower) + cal->lower;
         }
-      
+
       cal = cal->next;
     }
   while(cal);
@@ -2512,6 +2512,8 @@ void TIMES_Bl_To_Times(t_tree *tree)
   TIMES_Bl_To_Times_Post(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
   TIMES_Bl_To_Times_Post(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
 
+
+  
   dir1 = 1;
   dir2 = 2;
   
@@ -2565,15 +2567,23 @@ void TIMES_Bl_To_Times_Post(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 
       if(Are_Equal(t1,t2,1.E-2) == NO)
         {
-          PhyML_Fprintf(stderr,"\n. It looks as if the edge lengths suplied do not define a valid tree distances.");
+          PhyML_Fprintf(stderr,"\n. It looks as if the edge lengths suplied do not define valid tree distances.");
           PhyML_Fprintf(stderr,"\n. Please amend these lengths so as it becomes straightforward to transform your tree");
           PhyML_Fprintf(stderr,"\n. into a time-tree.");
           PhyML_Fprintf(stderr,"\n. v1->tax: %d v2->tax: %d",v1->tax,v2->tax);
+          PhyML_Fprintf(stderr,"\n. v1->name: %s v2->name: %s",v1->tax?v1->name:"",v2->tax?v2->name:"");
+          PhyML_Fprintf(stderr,"\n. v1->num: %d v2->num: %d",v1->num,v2->num);          
           PhyML_Fprintf(stderr,"\n. l1: %f l2: %f",MIXT_Get_Mean_Edge_Len(d->b[dir1],tree),MIXT_Get_Mean_Edge_Len(d->b[dir2],tree));
+          PhyML_Fprintf(stderr,"\n. l1: %f l2: %f",d->b[dir1]->l->v,d->b[dir2]->l->v);
           PhyML_Fprintf(stderr,"\n. t1: %f t2: %f",tree->times->nd_t[v1->num],tree->times->nd_t[v2->num]);
           PhyML_Fprintf(stderr,"\n. rr1: %f rr2: %f",tree->rates->br_r[v1->num],tree->rates->br_r[v2->num]);
           PhyML_Fprintf(stderr,"\n. est: %f %f diff: %G",t1,t2,t1-t2);
           PhyML_Fprintf(stderr,"\n. clock_r %f",tree->rates->clock_r);
+          PhyML_Fprintf(stderr,"\n. root->num: %d root->v1->num: %d root->v2->num: %d",
+                        tree->n_root->num,
+                        tree->n_root->v[1]->num,
+                        tree->n_root->v[2]->num);
+
           Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
         }
       
