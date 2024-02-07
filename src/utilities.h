@@ -31,6 +31,7 @@ the GNU public licence. See http://www.opensource.org for details.
 #include <assert.h>
 #include <stdbool.h>
 #include <signal.h>
+#include <execinfo.h>
 /* #include <malloc/malloc.h> */
 /* #include <malloc.h> */
 
@@ -803,7 +804,8 @@ typedef struct __Tree{
   
   short int                         eval_alnL; /*! Evaluate likelihood for genetic data */
   short int                         eval_rlnL; /*! Evaluate likelihood for rates along the tree */
-  short int                         eval_glnL; /*! Evaluate tree likelihood */
+  short int                         eval_glnL; /*! Evaluate likelihood under phylogeo model */
+  short int                         eval_tlnL; /*! Evaluate likelihood under tree-generating process */
   short int                    scaling_method;
   short int                     fully_nni_opt;
   short int                 numerical_warning;
@@ -1863,6 +1865,7 @@ typedef struct __Tmcmc {
   int num_move_phyrex_iou_theta;
   int num_move_phyrex_iou_mu;
   int num_move_obs_var;
+  int num_move_phyrex_tip_loc;
   
   int nd_t_digits;
   int *monitor;

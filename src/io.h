@@ -111,8 +111,7 @@ void Output_Scalar_Dbl(scalar_dbl *t, char *sep, FILE *fp);
 t_label *Read_Labels(char *s);
 void Print_Labels(FILE *fp_where, char *s_where, t_label *label);
 void Read_Edge_Label(char *s_d, char *s_a, t_edge *b);
-
-#ifdef PHYREX
+xml_node *Generate_PhyREX_XMLObj(char *run_id, char *out_file_name, char *seq_file_name, char *coord_file_name);
 void PHYREX_Print_MultiTypeTree_Config_File(int n_sites, char *filename, t_tree *tree);
 void PHYREX_Print_MCMC_Tree(t_tree *tree);
 void PHYREX_Print_MCMC_Stats(t_tree *tree);
@@ -121,6 +120,6 @@ void PHYREX_Output_Tree_Structure(FILE *fp, t_tree *tree);
 void PHYREX_Input_Tree_Structure(FILE *fp);
 char *PHYREX_Print_Tree_Structure(t_tree *tree);
 void PHYREX_Check_Point(FILE *fp, t_tree *tree);
-#endif
+void Print_Trace(void);
 
 #endif

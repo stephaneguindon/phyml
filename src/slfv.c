@@ -219,8 +219,8 @@ void SLFV_Sample_Path(t_ldsk *young, t_ldsk *old, phydbl *sd, phydbl *global_hr,
         {
           assert(ldsk->prev);
           
-          PHYREX_Store_Geo_Coord(ldsk->coord,NULL);
-          PHYREX_Store_Geo_Coord(ldsk->disk->centr,NULL);
+          PHYREX_Store_Geo_Coord(ldsk->coord);
+          PHYREX_Store_Geo_Coord(ldsk->disk->centr);
           
           hr = 0.0;
           ratio = 0.0;
@@ -322,8 +322,8 @@ void SLFV_Sample_Path(t_ldsk *young, t_ldsk *old, phydbl *sd, phydbl *global_hr,
           
           if(u > alpha) /* Reject */
             {
-              PHYREX_Restore_Geo_Coord(ldsk->coord,NULL);
-              PHYREX_Restore_Geo_Coord(ldsk->disk->centr,NULL);
+              PHYREX_Restore_Geo_Coord(ldsk->coord);
+              PHYREX_Restore_Geo_Coord(ldsk->disk->centr);
             }
           else
             {
@@ -2105,7 +2105,6 @@ t_tree *SLFV_Simulate(int n_otu, int n_sites, phydbl w, phydbl h, phydbl  lbda, 
   XML_Write_XML_Graph(fp,root);
   fclose(fp);
   Free(dum);
-
   
   return(tree);
 }

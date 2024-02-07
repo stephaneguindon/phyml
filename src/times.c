@@ -2441,6 +2441,8 @@ void TIMES_Randomize_Tip_Times_Given_Calibrations(t_tree *tree)
 
       if(clade->n_tax == 1)
         {
+          assert(clade);
+          assert(clade->target_nd);
           assert(clade->target_nd->tax == YES);
           tree->times->nd_t[clade->target_nd->num] = Uni()*(cal->upper - cal->lower) + cal->lower;
         }
@@ -2502,40 +2504,49 @@ phydbl TIMES_Tree_Length(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void TIMES_Bl_To_Times(t_tree *tree)
+/* Work out node ages with edge lengths. If prepost = 1, post-traversal: internal node ages
+   derive from tip ages and edge lengths. If prepos = 0, pre-traversal: internal node ages derive
+   from the root age (arbitrarily set to 0) and the edge lengths */ 
+void TIMES_Bl_To_Times(short int prepost, t_tree *tree)
 {
-  t_node *v1,*v2;
-  int dir1,dir2;
-  phydbl t1,t2;
 
-  
-  TIMES_Bl_To_Times_Post(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
-  TIMES_Bl_To_Times_Post(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
-
-
-  
-  dir1 = 1;
-  dir2 = 2;
-  
-  v1 = tree->n_root->v[dir1];
-  v2 = tree->n_root->v[dir2];
-  
-  t1 = tree->times->nd_t[v1->num] - MIXT_Get_Mean_Edge_Len(tree->n_root->b[1],tree) / (tree->rates->clock_r * tree->rates->br_r[v1->num]);
-  t2 = tree->times->nd_t[v2->num] - MIXT_Get_Mean_Edge_Len(tree->n_root->b[2],tree) / (tree->rates->clock_r * tree->rates->br_r[v2->num]);
-  
-  if(Are_Equal(t1,t2,1.E-2) == NO)
+  if(prepost == 1)
     {
-      PhyML_Fprintf(stderr,"\n. It looks as if the edge lengths suplied do not define valid tree distances.");
-      PhyML_Fprintf(stderr,"\n. Please amend these lengths so as it becomes straightforward to transform your tree");
-      PhyML_Fprintf(stderr,"\n. into a time-tree. Please contact me (guindon@lirmm.fr) for more information.");
-      PhyML_Fprintf(stderr,"\n. l1: %f l2: %f",MIXT_Get_Mean_Edge_Len(tree->n_root->b[1],tree),MIXT_Get_Mean_Edge_Len(tree->n_root->b[2],tree));
-      PhyML_Fprintf(stderr,"\n. t1: %f t2: %f",tree->times->nd_t[v1->num],tree->times->nd_t[v2->num]);
-      PhyML_Fprintf(stderr,"\n. rr1: %f rr2: %f",tree->rates->br_r[v1->num],tree->rates->br_r[v2->num]);
-      Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
-    }
+      t_node *v1,*v2;
+      int dir1,dir2;
+      phydbl t1,t2;
       
-  tree->times->nd_t[tree->n_root->num] = t1;
-  
+      TIMES_Bl_To_Times_Post(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
+      TIMES_Bl_To_Times_Post(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);
+            
+      dir1 = 1;
+      dir2 = 2;
+      
+      v1 = tree->n_root->v[dir1];
+      v2 = tree->n_root->v[dir2];
+      
+      t1 = tree->times->nd_t[v1->num] - MIXT_Get_Mean_Edge_Len(tree->n_root->b[1],tree) / (tree->rates->clock_r * tree->rates->br_r[v1->num]);
+      t2 = tree->times->nd_t[v2->num] - MIXT_Get_Mean_Edge_Len(tree->n_root->b[2],tree) / (tree->rates->clock_r * tree->rates->br_r[v2->num]);
+      
+      if(Are_Equal(t1,t2,1.E-2) == NO)
+        {
+          PhyML_Fprintf(stderr,"\n. It looks as if the edge lengths suplied do not define valid tree distances.");
+          PhyML_Fprintf(stderr,"\n. Please amend these lengths so as it becomes straightforward to transform your tree");
+          PhyML_Fprintf(stderr,"\n. into a time-tree. Please contact me (guindon@lirmm.fr) for more information.");
+          PhyML_Fprintf(stderr,"\n. l1: %f l2: %f",MIXT_Get_Mean_Edge_Len(tree->n_root->b[1],tree),MIXT_Get_Mean_Edge_Len(tree->n_root->b[2],tree));
+          PhyML_Fprintf(stderr,"\n. t1: %f t2: %f",tree->times->nd_t[v1->num],tree->times->nd_t[v2->num]);
+          PhyML_Fprintf(stderr,"\n. rr1: %f rr2: %f",tree->rates->br_r[v1->num],tree->rates->br_r[v2->num]);
+          Generic_Exit(__FILE__,__LINE__,__FUNCTION__);
+        }
+      
+      tree->times->nd_t[tree->n_root->num] = t1;
+    }
+  else if(prepost == 0)
+    {
+      tree->times->nd_t[tree->n_root->num] = 0.0;
+      TIMES_Bl_To_Times_Pre(tree->n_root,tree->n_root->v[1],tree->n_root->b[1],tree);
+      TIMES_Bl_To_Times_Pre(tree->n_root,tree->n_root->v[2],tree->n_root->b[2],tree);      
+    }
 }
 
 //////////////////////////////////////////////////////////////
@@ -2590,6 +2601,22 @@ void TIMES_Bl_To_Times_Post(t_node *a, t_node *d, t_edge *b, t_tree *tree)
       tree->times->nd_t[d->num] = t1;
       
     }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void TIMES_Bl_To_Times_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
+{
+  tree->times->nd_t[d->num] = tree->times->nd_t[a->num] - MIXT_Get_Mean_Edge_Len(b,tree) / (tree->rates->clock_r * tree->rates->br_r[d->num]);;
+  
+  if(d->tax == YES) return;
+  
+  for(int i=0;i<3;i++)
+    if((d->v[i] != a) && !(a == tree->n_root && d->b[i] == tree->e_root))
+      {
+        TIMES_Bl_To_Times_Pre(d,d->v[i],d->b[i],tree);
+      }    
 }
 
 //////////////////////////////////////////////////////////////

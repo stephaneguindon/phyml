@@ -46,7 +46,7 @@ phydbl RW_Prior_Sigsq(t_tree *tree)
       for(i=0;i<tree->mmod->n_dim;++i)
         {
           lnP += Log_Dexp(tree->mmod->sigsq[i],
-                        1./tree->mmod->rw_prior_mean);
+                          1./tree->mmod->rw_prior_mean);
         }
     }
   else if(tree->mmod->rw_prior_distrib == NORMAL_PRIOR)

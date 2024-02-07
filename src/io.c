@@ -3661,6 +3661,7 @@ t_tree *Read_User_Tree(calign *cdata, t_mod *mod, option *io)
       }
     }
 
+  
   if(tree == NULL) Exit("\n. Input tree not found...");
   /* Add branch lengths if necessary */
   if(tree->has_branch_lengths == NO)
@@ -6797,7 +6798,7 @@ void PHYREX_Print_MultiTypeTree_Config_File(int n_sites, char *filename, t_tree 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-#if (defined PHYREX)
+#if (defined PHYREX || PHYTIME)
 void PHYREX_Print_MCMC_Stats(t_tree *tree)
 {
 
@@ -6899,6 +6900,8 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
           PhyML_Fprintf(fp_stats,"%s\t","accMoveScaleTime");
           PhyML_Fprintf(fp_stats,"%s\t","accNodeTimes");
           PhyML_Fprintf(fp_stats,"%s\t","accRatesShrink");
+          PhyML_Fprintf(fp_stats,"%s\t","accSigsq");          
+          PhyML_Fprintf(fp_stats,"%s\t","accVeloc");          
           PhyML_Fprintf(fp_stats,"%s\t","tuneRatesShrink");
           PhyML_Fprintf(fp_stats,"%s\t","tuneVeloc");
           /* PhyML_Fprintf(fp_stats,"%s\t","accLdskTipToRoot"); */
@@ -7057,6 +7060,8 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_scale_times]);
       PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_node_times]);
       PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_rates_shrink]);
+      PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_sigsq]);
+      PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_velocities]);
       PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_rates_shrink]);
       PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_velocities]);
       /* PhyML_Fprintf(fp_stats,"%g\t",tree->mcmc->acc_rate[tree->mcmc->num_move_phyrex_ldsk_tip_to_root]);       */
@@ -7160,7 +7165,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-#if (defined PHYREX)
+#if (defined PHYREX || defined TEST)
 void PHYREX_Print_MCMC_Tree(t_tree *tree)
 {
   FILE *fp_tree;
@@ -7217,7 +7222,7 @@ void PHYREX_Print_MCMC_Tree(t_tree *tree)
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-#if (defined PHYREX)
+#if (defined PHYREX || defined TEST)
 void PHYREX_Print_MCMC_Summary(t_tree *tree)
 {
   char *s;
@@ -7271,6 +7276,136 @@ void PHYREX_Print_MCMC_Summary(t_tree *tree)
 
 }
 #endif
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+xml_node *Generate_PhyREX_XMLObj(char *run_id, char *out_file_name, char *seq_file_name, char *coord_file_name)
+{    
+  xml_node *root,*nd,*ndnd,*ndndnd;
+
+  root = XML_Make_Node("phyrex");
+  XML_Init_Node(NULL,root,"phyrex");
+  root->attr = XML_Make_Attribute(NULL,"run.id",run_id);
+
+  XML_Add_Attribute(root,"output.file",out_file_name);
+  XML_Add_Attribute(root,"mcmc.chain.len","2E+8");
+  XML_Add_Attribute(root,"mcmc.sample.every","1E+4");
+  XML_Add_Attribute(root,"mcmc.print.every","1E+4");
+  XML_Add_Attribute(root,"mcmc.burnin","1E+6");
+  XML_Add_Attribute(root,"mutmap","no");
+  XML_Add_Attribute(root,"ignore.sequences","no");
+  XML_Add_Attribute(root,"mcmc.output.trees","yes");
+  
+  nd = XML_Add_Node(root,"spatialmodel");
+  nd->attr = XML_Make_Attribute(NULL,"name","ibm");
+  XML_Add_Attribute(nd,"rw.prior.distrib","flat");
+  XML_Add_Attribute(nd,"rw.prior.mean","1.");
+  XML_Add_Attribute(nd,"sampling","detection");
+  XML_Add_Attribute(nd,"integrateAncestralLocations","true");
+  XML_Add_Attribute(nd,"distance.type","greatcircle");
+  XML_Add_Attribute(nd,"observational.model","yes");
+
+  nd = XML_Add_Node(root,"lineagerates");
+  nd->attr = XML_Make_Attribute(NULL,"model","lognormal");
+  XML_Add_Attribute(nd,"autocor.prior.rate","100");
+
+  nd = XML_Add_Node(root,"treegenerating");
+  nd->attr = XML_Make_Attribute(NULL,"model","coalescent");
+  XML_Add_Attribute(nd,"neff.prior.distrib","flat");
+  XML_Add_Attribute(nd,"fix.node.ages","no");
+
+
+  nd = XML_Add_Node(root,"clockrate");
+  nd->attr = XML_Make_Attribute(NULL,"prior.mean","0.00058");
+  XML_Add_Attribute(nd,"prior.var","1.E-2");
+
+  
+  nd = XML_Add_Node(root,"topology");
+  ndnd = XML_Add_Node(nd,"instance");
+  ndnd->attr = XML_Make_Attribute(NULL,"id","T1");
+  XML_Add_Attribute(ndnd,"init.tree","BioNJ");
+  
+  nd = XML_Add_Node(root,"ratematrices");
+  nd->attr = XML_Make_Attribute(NULL,"id","RM1");
+  ndnd = XML_Add_Node(nd,"instance");
+  ndnd->attr = XML_Make_Attribute(NULL,"id","M1");
+  XML_Add_Attribute(ndnd,"model","HKY85");
+  XML_Add_Attribute(ndnd,"optimise.tstv","yes");
+
+  
+  nd = XML_Add_Node(root,"siterates");
+  nd->attr = XML_Make_Attribute(NULL,"id","SR1");
+  ndnd = XML_Add_Node(nd,"instance");
+  ndnd->attr = XML_Make_Attribute(NULL,"id","R1");
+  XML_Add_Attribute(ndnd,"init.value","1.0");
+  ndnd = XML_Add_Node(nd,"weights");
+  ndnd->attr = XML_Make_Attribute(NULL,"id","D1");
+  XML_Add_Attribute(ndnd,"family","freerates");
+  ndndnd = XML_Add_Node(ndnd,"instance");
+  ndndnd->attr = XML_Make_Attribute(NULL,"appliesto","R1");
+  XML_Add_Attribute(ndndnd,"value","0.25");
+  
+
+  nd = XML_Add_Node(root,"equfreqs");
+  nd->attr = XML_Make_Attribute(NULL,"id","EF1");
+  ndnd = XML_Add_Node(nd,"instance");
+  ndnd->attr = XML_Make_Attribute(NULL,"id","F1");
+  XML_Add_Attribute(ndnd,"optimise.freqs","no");
+
+
+  nd = XML_Add_Node(root,"branchlengths");
+  nd->attr = XML_Make_Attribute(NULL,"id","BL1");
+  ndnd = XML_Add_Node(nd,"instance");
+  ndnd->attr = XML_Make_Attribute(NULL,"id","L1");
+  XML_Add_Attribute(ndnd,"optimise.lens","yes");
+
+  
+  nd = XML_Add_Node(root,"partitionelem");
+  nd->attr = XML_Make_Attribute(NULL,"id","partition1");
+  XML_Add_Attribute(nd,"file.name",seq_file_name);
+  XML_Add_Attribute(nd,"data.type","nt");
+  XML_Add_Attribute(nd,"interleaved","no");
+
+  ndnd = XML_Add_Node(nd,"mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL,"list","T1");
+  ndnd = XML_Add_Node(nd,"mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL,"list","M1");
+  ndnd = XML_Add_Node(nd,"mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL,"list","F1");
+  ndnd = XML_Add_Node(nd,"mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL,"list","R1");
+  ndnd = XML_Add_Node(nd,"mixtureelem");
+  ndnd->attr = XML_Make_Attribute(NULL,"list","L1");
+
+  
+  nd = XML_Add_Node(root,"coordinates");
+  nd->attr = XML_Make_Attribute(NULL,"id","coordinates");
+  XML_Add_Attribute(nd,"file.name",coord_file_name);
+
+  return(root);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+void Print_Trace(void)
+{
+    void *array[10];
+    char **strings;
+    int size, i;
+    
+    size = backtrace(array, 10);
+    strings = backtrace_symbols(array, size);
+
+    if (strings != NULL)
+      {
+        PhyML_Printf("\n\n. Obtained %d stack frames.\n", size);
+        for (i = 0; i < size; ++i) PhyML_Printf("\n. %s", strings[i]);
+        
+      Free(strings);
+    }
+}
 
 /*////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/

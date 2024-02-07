@@ -84,7 +84,7 @@ AC_ARG_ENABLE([debug],
               [AS_HELP_STRING([--enable-debug],
                               [Remove optimization options and add debug informations.])])
 AS_IF([test "x$enable_debug" = "xyes"],
-      [CFLAGS="-ansi ${VECTOR_FLAG} -pedantic -Wall -std=c99 -O0 -g -Wuninitialized -Wunused -Wunreachable-code"],
+      [CFLAGS="-ansi ${VECTOR_FLAG} -pedantic -Wall -std=c99 -O0 -g -Wuninitialized -Wunused -Wunreachable-code -Og"],
       [CFLAGS="${DEFAULT_C_FLAG}"])
 
 AC_ARG_ENABLE([safemode],

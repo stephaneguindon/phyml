@@ -38,8 +38,6 @@ void PHYREX_Connect_Ldsk_Given_Disk(t_dsk **disk, int n_disk, t_ldsk *y_ldsk, t_
 void PHYREX_Print_Struct(char sign, t_tree *tree);
 phydbl PHYREX_Uniform_Path_Density(t_ldsk *y_ldsk, t_ldsk *o_ldsk, t_tree *tree);
 int PHYREX_Check_Struct(t_tree *tree, int exit);
-void PHYREX_Store_Geo_Coord(t_geo_coord *t, t_geo_veloc *v);
-void PHYREX_Restore_Geo_Coord(t_geo_coord *t, t_geo_veloc *v);
 int PHYREX_Total_Number_Of_Intervals(t_tree *tree);
 int PHYREX_Total_Number_Of_Coal_Disks(t_tree *tree);
 int PHYREX_Total_Number_Of_Hit_Disks(t_tree *tree);
@@ -144,12 +142,16 @@ void PHYREX_Swap_Coords(t_ldsk *a, t_ldsk *b, t_tree *tree);
 void PHYREX_Print_Disk(t_tree *tree);
 void PHYREX_Check_Disk_Times(t_tree *tree);
 void PHYREX_Exchange_Ldsk(t_ldsk *a, t_ldsk *d, t_ldsk *w, t_ldsk *v, int aw, int dv, t_tree *tree);
-void PHYREX_Record_Coord(t_tree *tree);
-void PHYREX_Restore_Coord(t_tree *tree);
 void PHYREX_Update_Disk_Times_Given_Nodes(t_tree *tree);
 void PHYREX_Label_Nodes_With_Velocities(t_tree *tree);
 void PHYREX_Restore_All_Geo_Coord(t_tree *tree);
 void PHYREX_Store_All_Geo_Coord(t_tree *tree);
+void PHYREX_Store_Geo_Coord(t_geo_coord *t);
+void PHYREX_Restore_Geo_Coord(t_geo_coord *t);
+void PHYREX_Restore_All_Veloc(t_tree *tree);
+void PHYREX_Store_All_Veloc(t_tree *tree);
+void PHYREX_Store_Veloc(t_geo_veloc *t);
+void PHYREX_Restore_Veloc(t_geo_veloc *t);
 phydbl PHYREX_Realized_Displacement_Dist(short int dist_type, t_tree *tree);
 short int PHYREX_Check_Lk(t_tree *tree);
 

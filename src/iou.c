@@ -181,8 +181,12 @@ void IOU_Integrated_Location_Down(phydbl dt1, phydbl dt2,
   err = 0;
   m = epst = -1.;
   v = 0.0;
-  logr = 0.0;
   
+  logr  = v1logrem + v2logrem;
+  logr -= log(fabs(av2*av1));
+  logr += Log_Dnorm((v1mu-bv1)/av1,(v2mu-bv2)/av2,sqrt((v1var+dv1var)/pow(av1,2)+(v2var+dv2var)/pow(av2,2)),&err);
+
+
   if(dv1var + v1var > SMALL && dv2var + v2var > SMALL) // Standard case
     {
       v = pow(av1,2)/(v1var + dv1var) + pow(av2,2)/(v2var + dv2var);
@@ -190,9 +194,6 @@ void IOU_Integrated_Location_Down(phydbl dt1, phydbl dt2,
 
       m = (av1*(v1mu-bv1)/(v1var + dv1var) + av2*(v2mu-bv2)/(v2var + dv2var)) * v;
 
-      logr  = v1logrem + v2logrem;
-      logr -= log(fabs(av2*av1));
-      logr += Log_Dnorm((v1mu-bv1)/av1,(v2mu-bv2)/av2,sqrt((v1var+dv1var)/pow(av1,2)+(v2var+dv2var)/pow(av2,2)),&err);
     }
   else if(dv1var + v1var > SMALL) // Null variance along d - v2
     {
@@ -232,6 +233,10 @@ void IOU_Integrated_Location_Up(phydbl dt1, phydbl dt2,
   
   if(a_is_root == NO)
     {
+      logr  = v1logrem + v2logrem;
+      logr -= log(fabs(av2));
+      logr += Log_Dnorm((v2mu-bv2)/av2,av1*v1mu+bv1,sqrt((v2var+av2var)/pow(av2,2)+pow(av1,2)*v1var+av1var),&err);
+
       if(pow(av1,2)*v1var+av1var > SMALL && av2var + v2var > SMALL) // Standard case
         {
           v     = pow(av2,2)/(v2var + av2var) + 1./(pow(av1,2)*v1var+av1var);
@@ -239,9 +244,6 @@ void IOU_Integrated_Location_Up(phydbl dt1, phydbl dt2,
           
           m     = (av2*(v2mu-bv2)/(v2var + av2var) + (av1*v1mu+bv1)/(pow(av1,2)*v1var+av1var)) * v;          
           
-          logr  = v1logrem + v2logrem;
-          logr -= log(fabs(av2));
-          logr += Log_Dnorm((v2mu-bv2)/av2,av1*v1mu+bv1,sqrt((v2var+av2var)/pow(av2,2)+pow(av1,2)*v1var+av1var),&err);
         }
       else if(pow(av1,2)*v1var+av1var > SMALL) // Null variance along d - v2
         {
@@ -258,18 +260,18 @@ void IOU_Integrated_Location_Up(phydbl dt1, phydbl dt2,
     }
   else
     {
+      logr = v2logrem;
+      logr -= log(fabs(av2));
+
       if(v2var + av2var > SMALL)
         {
           m    = (v2mu-bv2)/av2;
           v    = (v2var + av2var)/pow(av2,2);
-          logr = v2logrem;
-          logr -= log(fabs(av2));
         }
       else
         {
           m    = (v2mu-bv2)/av2;
           v    = 0.0;
-          logr = 0.0;
         }
     }
 

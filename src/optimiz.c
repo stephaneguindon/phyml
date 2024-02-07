@@ -1690,8 +1690,6 @@ int Lnsrch(t_tree *tree, int n, phydbl *xold, phydbl fold,
       fold2=fold;
       alam=MAX(tmplam,0.1*alam);
     }
-  Free(sign);
-  Free(local_xold);
   return 1;
 }
 

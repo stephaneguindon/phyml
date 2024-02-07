@@ -44,7 +44,6 @@ phydbl VELOC_Lk(t_tree *tree)
   
   lnL_loc = (tree->mmod->integrateAncestralLocations == NO) ? (VELOC_Augmented_Lk_Locations(tree)) : (VELOC_Integrated_Lk_Location(tree));
   lnL_veloc = VELOC_Augmented_Lk_Velocities(tree);
-
   
   if(tree->mmod->print_lk == YES)
     {
@@ -239,7 +238,7 @@ phydbl VELOC_Augmented_Lk_Velocities_Core(t_dsk *disk, t_tree *tree)
   phydbl lnP,root_mean,root_var;
 
   root_mean = 0.0;
-  root_var = 100.0;
+  root_var = 0.1;
 
   assert(disk);
   
@@ -370,16 +369,9 @@ phydbl VELOC_Integrated_Lk_Location(t_tree *tree)
       VELOC_Integrated_Lk_Location_Post(NULL,tree->n_root,i,tree,NO);
 
       /* root_mean = 0.0; */
-      root_mean = LOCATION_Mean_Lonlat(i,tree);
-      
+      root_mean = LOCATION_Mean_Lonlat(i,tree);      
       lnL += tree->contmod->logrem_down[tree->n_root->num];
       lnL += Log_Dnorm(tree->contmod->mu_down[tree->n_root->num],root_mean,sqrt(root_var+tree->contmod->var_down[tree->n_root->num]),&err);
-      /* PhyML_Printf("\n. %d root mu: %f mean: %f var: %f rem: %f", */
-      /*              i, */
-      /*              tree->contmod->mu_down[tree->n_root->num], */
-      /*              root_mean, */
-      /*              root_var+tree->contmod->var_down[tree->n_root->num], */
-      /*              tree->contmod->logrem_down[tree->n_root->num]); */
     }
   return(lnL);
 }
@@ -434,7 +426,7 @@ void VELOC_Integrated_Lk_Location_Post(t_node *a, t_node *d, short int dim, t_tr
 
       dv1var = VELOC_Location_Variance_Along_Edge(v1,dim,tree);
       dv2var = VELOC_Location_Variance_Along_Edge(v2,dim,tree);
-
+      
       dtv1 = fabs(tree->times->nd_t[v1->num] - tree->times->nd_t[d->num]);
       dtv2 = fabs(tree->times->nd_t[v2->num] - tree->times->nd_t[d->num]);
       
@@ -469,7 +461,8 @@ void VELOC_Integrated_Lk_Location_Post(t_node *a, t_node *d, short int dim, t_tr
                                        v1logrem,v2logrem,
                                        tree->contmod->mu_down+d->num,
                                        tree->contmod->var_down+d->num,
-                                       tree->contmod->logrem_down+d->num);
+                                       tree->contmod->logrem_down+d->num,
+                                       tree);
         }
       else if(IWN_Is_Iwn(tree->mmod) == YES)
         {

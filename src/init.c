@@ -147,6 +147,7 @@ void Init_Tree(t_tree *tree, int n_otu)
   tree->eval_alnL                 = YES;
   tree->eval_rlnL                 = YES;
   tree->eval_glnL                 = YES;
+  tree->eval_tlnL                 = YES;
   tree->scaling_method            = NO;
   tree->perform_spr_right_away    = YES;
   tree->tip_root                  = 0;
@@ -3876,7 +3877,7 @@ void Set_Defaults_Contmod(t_tree *tree)
 {
   tree->contmod->obs_model = NO;
   tree->contmod->obs_var_min = 0.0;
-  tree->contmod->obs_var_max = 1.E+6;
+  tree->contmod->obs_var_max = 1.E+2;
 }
 
 //////////////////////////////////////////////////////////////
@@ -3952,19 +3953,17 @@ void VELOC_Init_Contmod_Velocities(int dim_idx, t_tree *tree)
       tree->contmod->logrem_up[i] = 0.0;
     }
 
-    for(int i=tree->n_otu;i<2*tree->n_otu-1;++i)
+  for(int i=tree->n_otu;i<2*tree->n_otu-1;++i)
     {
       tree->contmod->mu_down[i] = 0.0;
       tree->contmod->var_down[i] = 0.0;
       tree->contmod->logrem_down[i] = 0.0;
-
+      
       tree->contmod->mu_up[i] = 0.0;
       tree->contmod->var_up[i] = 0.0;
       tree->contmod->logrem_up[i] = 0.0;
     }
-
 }
-
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

@@ -3016,8 +3016,8 @@ int Assign_State_With_Ambiguity(char *c, int datatype, int stepsize)
                 break;
               }
             }
-          return (stepsize>1)?(state[0]*16+state[1]*4+state[2]):(state[0]);
         }
+      return (stepsize>1)?(state[0]*16+state[1]*4+state[2]):(state[0]);
     }
   else if(datatype == AA)
     {
@@ -5038,6 +5038,7 @@ void Copy_Tree(t_tree *ori, t_tree *cpy)
       cpy->num_curr_branch_available = 0;
       cpy->t_beg                     = ori->t_beg;
       cpy->verbose                   = ori->verbose;
+
       
 #ifdef BEAGLE
       cpy->b_inst = ori->b_inst;
@@ -13063,8 +13064,8 @@ void Node_Labels_To_Velocities(t_tree *tree)
       while(lab && strcmp(lab->key,"velocity")) lab = lab->next;
       assert(lab);
       sscanf(lab->val,"{%lf,%lf}",
-             tree->a_nodes[i]->ldsk->veloc->deriv,    
-             tree->a_nodes[i]->ldsk->veloc->deriv+1);    
+             tree->a_nodes[i]->ldsk->veloc->deriv+1,
+             tree->a_nodes[i]->ldsk->veloc->deriv);    
     }
 }
 
@@ -13085,8 +13086,8 @@ void Node_Labels_To_Locations(t_tree *tree)
       while(lab && strcmp(lab->key,"&location")) lab = lab->next;        
       assert(lab);
       sscanf(lab->val,"{%lf,%lf}",
-             tree->a_nodes[i]->ldsk->coord->lonlat,    
-             tree->a_nodes[i]->ldsk->coord->lonlat+1);    
+             tree->a_nodes[i]->ldsk->coord->lonlat+1,
+             tree->a_nodes[i]->ldsk->coord->lonlat);    
     }
 }
 

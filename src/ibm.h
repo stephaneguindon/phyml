@@ -40,7 +40,8 @@ void IBM_Integrated_Location_Down(phydbl dt1, phydbl dt2,
                                   phydbl av1, phydbl bv1, phydbl v1mu, phydbl v1var, phydbl dv1var,
                                   phydbl av2, phydbl bv2, phydbl v2mu, phydbl v2var, phydbl dv2var,
                                   phydbl v1logrem, phydbl v2logrem,
-                                  phydbl *mean, phydbl *var, phydbl *logrem);
+                                  phydbl *mean, phydbl *var, phydbl *logrem,
+                                  t_tree *tree);
 
 void IBM_Integrated_Location_Up(phydbl dt1, phydbl dt2,
                                 phydbl av1, phydbl bv1, phydbl v1mu, phydbl v1var, phydbl av1var,

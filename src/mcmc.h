@@ -74,7 +74,7 @@ void MCMC_Single_Param_Generic(phydbl *val,
 			       phydbl *lnLike,
 			       phydbl (*prior_func)(t_edge *,t_tree *,supert_tree *), 
 			       phydbl (*like_func)(t_edge *,t_tree *,supert_tree *),
-			       int move_type, int _log,
+			       int move_type, int _log, short int print,
 			       t_edge *branch, t_tree *tree, supert_tree *stree);
 void MCMC_Scale_Br_Lens(t_tree *tree);
 void MCMC_Update_Mean_Br_Len(t_tree *tree);
@@ -195,5 +195,10 @@ void MCMC_PHYREX_IOU_Update_Mu(t_tree *tree);
 void MCMC_Rates_Shrink(t_tree *tree);
 void MCMC_Obs_Var(t_tree *tree);
 void MCMC_Randomize_Contmod(t_tree *tree);
+int MCMC_Run(t_tree *tree);
+void MCMC_Run_Core(t_tree *tree);
+t_mcmc *MCMC_Preprocess(t_tree *tree);
+void MCMC_PHYREX_Tip_Location(int tip_num, t_tree *tree);
+void MCMC_Crossvalidate_Locations(t_tree *tree);
 
 #endif

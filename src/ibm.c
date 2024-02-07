@@ -106,24 +106,26 @@ void IBM_Integrated_Location_Down(phydbl dt1, phydbl dt2,
                                   phydbl av1, phydbl bv1, phydbl v1mu, phydbl v1var, phydbl dv1var,
                                   phydbl av2, phydbl bv2, phydbl v2mu, phydbl v2var, phydbl dv2var,
                                   phydbl v1logrem, phydbl v2logrem,
-                                  phydbl *mean, phydbl *var, phydbl *logrem)
+                                  phydbl *mean, phydbl *var, phydbl *logrem,
+                                  t_tree *tree)
 {
   phydbl m,v,logr;
   int err;
 
   err = 0;
-  v = logr = 0.0;
+  v = 0.0;
 
-  if(dv1var + v1var > 1.E-7 && dv2var + v2var > 1.E-7) // Standard case
+  logr  = v1logrem + v2logrem;
+  logr -= log(fabs(av2*av1));
+  logr += Log_Dnorm((v1mu-bv1)/av1,(v2mu-bv2)/av2,sqrt((v1var+dv1var)/pow(av1,2)+(v2var+dv2var)/pow(av2,2)),&err);
+
+  if((dv1var + v1var > 1.E-7) && (dv2var + v2var > 1.E-7)) // Standard case
     {
       v = pow(av1,2)/(v1var + dv1var) + pow(av2,2)/(v2var + dv2var);
       v = 1/v;
 
       m = (av1*(v1mu-bv1)/(v1var + dv1var) + av2*(v2mu-bv2)/(v2var + dv2var)) * v;
 
-      logr  = v1logrem + v2logrem;
-      logr -= log(fabs(av2*av1));
-      logr += Log_Dnorm((v1mu-bv1)/av1,(v2mu-bv2)/av2,sqrt((v1var+dv1var)/pow(av1,2)+(v2var+dv2var)/pow(av2,2)),&err);
     }
   else if(dv1var + v1var > 1.E-7) // Null variance along d - v2
     {
@@ -131,8 +133,8 @@ void IBM_Integrated_Location_Down(phydbl dt1, phydbl dt2,
     }
   else if(dv2var + v2var > 1.E-7) // Null variance along d - v1
     {
-      m = (v1mu-bv1)/av1;
-    }
+      m = (v1mu-bv1)/av1; 
+   }
   else
     {
       m = (v1mu-bv1)/av1;
@@ -162,16 +164,16 @@ void IBM_Integrated_Location_Up(phydbl dt1, phydbl dt2,
 
   if(a_is_root == NO)
     {
+      logr  = v1logrem + v2logrem;
+      logr -= log(fabs(av2));
+      logr += Log_Dnorm((v2mu-bv2)/av2,av1*v1mu+bv1,sqrt((v2var+av2var)/pow(av2,2)+pow(av1,2)*v1var+av1var),&err);
+
       if(pow(av1,2)*v1var+av1var > 1.E-7 && av2var + v2var > 1.E-7) // Standard case
         {
           v     = pow(av2,2)/(v2var + av2var) + 1./(pow(av1,2)*v1var+av1var);
           v     = 1./v;
           
-          m     = (av2*(v2mu-bv2)/(v2var + av2var) + (av1*v1mu+bv1)/(pow(av1,2)*v1var+av1var)) * v;          
-          
-          logr  = v1logrem + v2logrem;
-          logr -= log(fabs(av2));
-          logr += Log_Dnorm((v2mu-bv2)/av2,av1*v1mu+bv1,sqrt((v2var+av2var)/pow(av2,2)+pow(av1,2)*v1var+av1var),&err);
+          m     = (av2*(v2mu-bv2)/(v2var + av2var) + (av1*v1mu+bv1)/(pow(av1,2)*v1var+av1var)) * v;                    
         }
       else if(pow(av1,2)*v1var+av1var > 1.E-7) // Null variance along d - v2
         {
@@ -188,18 +190,18 @@ void IBM_Integrated_Location_Up(phydbl dt1, phydbl dt2,
     }
   else
     {
+      logr = v2logrem;
+      logr -= log(fabs(av2));
+
       if(v2var + av2var > 1.E-7)
         {
           m    = (v2mu-bv2)/av2;
           v    = (v2var + av2var)/pow(av2,2);
-          logr = v2logrem;
-          logr -= log(fabs(av2));
         }
       else
         {
           m    = (v2mu-bv2)/av2;
           v    = 0.0;
-          logr = 0.0;
         }
     }
 

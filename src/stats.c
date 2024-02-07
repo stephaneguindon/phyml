@@ -369,9 +369,17 @@ phydbl Rnorm(phydbl mean, phydbl sd)
 {
   /* Box-Muller transformation */
   phydbl u1, u2, res;
-  
-  assert((isinf(mean) || isinf(sd)) == NO);
-  assert((isnan(mean) || isnan(sd)) == NO);
+
+  if(isinf(mean) || isinf(sd))
+    {
+      Print_Trace();
+      assert(false);
+    }
+  else if(isnan(mean) || isnan(sd))
+    {
+      Print_Trace();
+      assert(false);
+    }
   
   /* u1=Uni(); */
   /* u2=Uni(); */
@@ -637,8 +645,7 @@ phydbl Rnorm_Trunc(phydbl mean, phydbl sd, phydbl min, phydbl max, int *error)
         }
     }
   
-  ret_val = mean + sd*z;
-  return ret_val;
+  return -1.;
 }
 
 //////////////////////////////////////////////////////////////
@@ -4660,7 +4667,7 @@ int *Permutate(int len)
 
   for(i=0;i<len;i++)
     {
-      pos = Rand_Int(i,len-1);
+      pos = Rand_Int(0,len-1);
       
       tmp    = x[i];
       x[i]   = x[pos];
