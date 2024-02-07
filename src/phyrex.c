@@ -664,23 +664,7 @@ void PHYREX_XML(char *xml_filename)
     {
       TIMES_Randomize_Tip_Times_Given_Calibrations(mixt_tree); // Topology is unchanged
 
-      /* TIMES_Bl_To_Times(1,mixt_tree); */
-
-      TIMES_Bl_To_Times(0,mixt_tree);
-      for(int i=0;i<mixt_tree->n_otu;++i)
-        {
-          PhyML_Printf("\n<clade id=\"clad%d\">",i+1);
-          PhyML_Printf("\n\t<taxon value=\"%s\"/>",mixt_tree->a_nodes[i]->name);
-          PhyML_Printf("\n</clade>");
-          PhyML_Printf("\n<calibration id=\"cal%d\">",i+1);
-          PhyML_Printf("\n\t<lower>-%f</lower>",mixt_tree->times->nd_t[i]-19737.049317);
-          PhyML_Printf("\n\t<upper>-%f</upper>",mixt_tree->times->nd_t[i]-19737.049317);
-          PhyML_Printf("\n\t<appliesto clade.id=\"clad%d\"/>",i+1);
-          PhyML_Printf("\n</calibration>");
-        }
-
-      Exit("\n");
-      
+      TIMES_Bl_To_Times(1,mixt_tree);      
       
       Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[2],mixt_tree->n_root->b[2],mixt_tree);
       Update_Ancestors(mixt_tree->n_root,mixt_tree->n_root->v[1],mixt_tree->n_root->b[1],mixt_tree);
