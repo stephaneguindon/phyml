@@ -64,6 +64,8 @@ phydbl RW_Prior_Sigsq(t_tree *tree)
       lnP += 0.0;
     }
   else assert(false);
+
+  
   
   return(lnP);
 }

@@ -402,7 +402,7 @@ phydbl Rnorm(phydbl mean, phydbl sd)
 
   res = u1*sd+mean;
 
-  if(isnan(res) || isinf(res)) printf("\n. res=%f sd=%f mean=%f u1=%f u2=%f",res,sd,mean,u1,u2);
+  if(isnan(res) || isinf(res)) PhyML_Printf("\n. res=%f sd=%f mean=%f u1=%f u2=%f",res,sd,mean,u1,u2);
 
   return res;
 }

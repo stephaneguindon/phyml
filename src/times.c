@@ -2608,7 +2608,7 @@ void TIMES_Bl_To_Times_Post(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 
 void TIMES_Bl_To_Times_Pre(t_node *a, t_node *d, t_edge *b, t_tree *tree)
 {
-  tree->times->nd_t[d->num] = tree->times->nd_t[a->num] - MIXT_Get_Mean_Edge_Len(b,tree) / (tree->rates->clock_r * tree->rates->br_r[d->num]);;
+  tree->times->nd_t[d->num] = tree->times->nd_t[a->num] + MIXT_Get_Mean_Edge_Len(b,tree) / (tree->rates->clock_r * tree->rates->br_r[d->num]);;
   
   if(d->tax == YES) return;
   

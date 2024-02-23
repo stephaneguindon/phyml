@@ -200,5 +200,6 @@ void MCMC_Run_Core(t_tree *tree);
 t_mcmc *MCMC_Preprocess(t_tree *tree);
 void MCMC_PHYREX_Tip_Location(int tip_num, t_tree *tree);
 void MCMC_Crossvalidate_Locations(t_tree *tree);
+void MCMC_Randomize_Sigsq(t_tree *tree);
 
 #endif

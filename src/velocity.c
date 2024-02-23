@@ -90,7 +90,7 @@ phydbl VELOC_Augmented_Lk_Locations_Core(t_dsk *disk, t_tree *tree)
   phydbl root_mean,root_var;
 
   root_mean = 0.0;
-  root_var = 100.;
+  root_var  = 1.E+2;
   
   assert(disk);
   
@@ -217,7 +217,7 @@ phydbl VELOC_Augmented_Lk_Velocities(t_tree *tree)
   disk_lnP = 0.0;
   lnP = 0.0;
   disk = tree->young_disk;
-  
+
   do
     {
       disk_lnP = VELOC_Augmented_Lk_Velocities_Core(disk,tree);
@@ -238,7 +238,7 @@ phydbl VELOC_Augmented_Lk_Velocities_Core(t_dsk *disk, t_tree *tree)
   phydbl lnP,root_mean,root_var;
 
   root_mean = 0.0;
-  root_var = 0.1;
+  root_var = 100.;
 
   assert(disk);
   
@@ -284,6 +284,9 @@ phydbl VELOC_Velocities_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
   ldsk = d;
   while(ldsk->n_next == 1) ldsk = ldsk->next[0];
   nd_d = ldsk->nd;
+
+  assert(nd_d->anc->ldsk == d->prev);
+  assert(d->prev == a);
   
   ldsk = d;
   assert(a!=d);
@@ -359,7 +362,6 @@ phydbl VELOC_Integrated_Lk_Location(t_tree *tree)
   RRW_Update_Normalization_Factor(tree);
   
   lnL = 0.0;
-  /* root_var = 1.0; */
   root_var = 100.;
   root_mean = 0.0;
   
@@ -368,10 +370,13 @@ phydbl VELOC_Integrated_Lk_Location(t_tree *tree)
       VELOC_Init_Contmod_Locations(i,tree);
       VELOC_Integrated_Lk_Location_Post(NULL,tree->n_root,i,tree,NO);
 
-      /* root_mean = 0.0; */
-      root_mean = LOCATION_Mean_Lonlat(i,tree);      
+      root_mean = LOCATION_Mean_Lonlat(i,tree);
+
       lnL += tree->contmod->logrem_down[tree->n_root->num];
-      lnL += Log_Dnorm(tree->contmod->mu_down[tree->n_root->num],root_mean,sqrt(root_var+tree->contmod->var_down[tree->n_root->num]),&err);
+      lnL += Log_Dnorm(tree->contmod->mu_down[tree->n_root->num],
+                       root_mean,
+                       sqrt(root_var+tree->contmod->var_down[tree->n_root->num]),
+                       &err);
     }
   return(lnL);
 }
@@ -772,10 +777,13 @@ void VELOC_Sample_Node_Locations(t_tree *tree)
 {
   int i,j;
   t_node *n;
-  phydbl au,bu,varu,var,mean;
+  phydbl au,bu,varu,var,mean,root_var,root_mean;
 
   n = NULL;
   au = bu = varu = var = mean = -1;
+
+  root_mean = 0.0;
+  root_var = 100.;
   
   RRW_Update_Normalization_Factor(tree);
 
@@ -807,15 +815,13 @@ void VELOC_Sample_Node_Locations(t_tree *tree)
                 }
               else if(tree->contmod->var_down[n->num] > SMALL)
                 {
-                  var = 1./tree->contmod->var_down[n->num];
-                  var = 1./var;
-                  mean = tree->contmod->mu_down[n->num];
+                  var = 0.0;
+                  mean = au*tree->contmod->mu_up[n->num]+bu;
                 }
               else if(pow(au,2)*tree->contmod->var_up[n->num]+varu > SMALL)
                 {
-                  var = 1. / (pow(au,2)*tree->contmod->var_up[n->num]+varu);
-                  var = 1./var;
-                  mean = au*tree->contmod->mu_up[n->num]+bu;
+                  var = 0.0;
+                  mean = tree->contmod->mu_down[n->num];
                 }
               else
                 {
@@ -834,10 +840,13 @@ void VELOC_Sample_Node_Locations(t_tree *tree)
       /*              tree->contmod->mu_down[tree->n_root->num], */
       /*              tree->contmod->var_down[tree->n_root->num]); */
       
-      /* Below is only valid if prior distribution at root is flat */
-      tree->n_root->ldsk->coord->lonlat[i] =
-        Rnorm(tree->contmod->mu_down[tree->n_root->num],
-              sqrt(tree->contmod->var_down[tree->n_root->num]));
+      var = 1./tree->contmod->var_down[tree->n_root->num] + 1./root_var;
+      var = 1./var;
+      
+      mean = (tree->contmod->mu_down[tree->n_root->num]/tree->contmod->var_down[tree->n_root->num] +
+              root_mean / root_var)*var;
+
+      tree->n_root->ldsk->coord->lonlat[i] = Rnorm(mean,sqrt(var));
     }
 }
 
@@ -1303,4 +1312,47 @@ phydbl PHYREX_Degrees_To_Km(phydbl deg, t_tree *tree)
 
   return(km);
 
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+/* WARNING : Code below only works for IBM model */
+void VELOC_Simulate_Velocities(t_tree *tree)
+{
+  phydbl root_mean,root_var;
+ 
+  root_mean = 0.0;
+  root_var = 100;
+
+  for(int i=0;i<tree->mmod->n_dim;++i) tree->n_root->ldsk->veloc->deriv[i] = Rnorm(root_mean,sqrt(root_var));
+
+  VELOC_Simulate_Velocities_Pre(tree->n_root->ldsk,tree->n_root->ldsk->next[0],tree);
+  VELOC_Simulate_Velocities_Pre(tree->n_root->ldsk,tree->n_root->ldsk->next[1],tree);
+      
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void VELOC_Simulate_Velocities_Pre(t_ldsk *a, t_ldsk *d, t_tree *tree)
+{
+  phydbl mean,var;
+  int i;
+  
+  for(i=0;i<tree->mmod->n_dim;++i)
+    {
+      mean = a->veloc->deriv[i];
+
+      var =
+        fabs(a->disk->time - d->disk->time) *
+        tree->mmod->sigsq[i];
+      
+      d->veloc->deriv[i] = Rnorm(mean,sqrt(var));
+    }
+
+  if(d->nd->tax) return;
+  else
+    {
+      for(i=0;i<d->n_next;++i) VELOC_Simulate_Velocities_Pre(d,d->next[i],tree);
+    }
 }

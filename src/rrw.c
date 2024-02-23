@@ -665,11 +665,29 @@ void RRW_Sample_Node_Locations(t_tree *tree)
               au = 1.0;
               bu = 0.0;
               varu = RRW_Location_Variance_Along_Edge(n,i,tree); 
-              assert(tree->contmod->var_down[n->num]>0.0);
-              assert(tree->contmod->var_up[n->num]>0.0);
-              var = 1./tree->contmod->var_down[n->num] + 1. / (pow(au,2)*tree->contmod->var_up[n->num]+varu);
-              var = 1./var;
-              mean = (tree->contmod->mu_down[n->num]/tree->contmod->var_down[n->num] + (au*tree->contmod->mu_up[n->num]+bu)/(pow(au,2)*tree->contmod->var_up[n->num]+varu))*var;
+
+              if(tree->contmod->var_down[n->num] > SMALL && pow(au,2)*tree->contmod->var_up[n->num]+varu > SMALL)
+                {
+                  var = 1./tree->contmod->var_down[n->num] + 1. / (pow(au,2)*tree->contmod->var_up[n->num]+varu);
+                  var = 1./var;
+                  mean = (tree->contmod->mu_down[n->num]/tree->contmod->var_down[n->num] + (au*tree->contmod->mu_up[n->num]+bu)/(pow(au,2)*tree->contmod->var_up[n->num]+varu))*var;
+                }
+              else if(tree->contmod->var_down[n->num] > SMALL)
+                {
+                  var = 0.0;
+                  mean = au*tree->contmod->mu_up[n->num]+bu;
+                }
+              else if(pow(au,2)*tree->contmod->var_up[n->num]+varu > SMALL)
+                {
+                  var = 0.0;
+                  mean = tree->contmod->mu_down[n->num];
+                }
+              else
+                {
+                  var = 0.0;
+                  mean = tree->contmod->mu_down[n->num];
+                }
+              
               tree->a_nodes[j]->ldsk->coord->lonlat[i] = Rnorm(mean,sqrt(var));
             }
         }

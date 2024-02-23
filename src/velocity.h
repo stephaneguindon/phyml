@@ -49,4 +49,8 @@ phydbl VELOC_Mean_Velocity(short int dim, t_tree *tree);
 phydbl PHYREX_Degrees_To_Km(phydbl deg, t_tree *tree);
 
 
+void VELOC_Simulate_Velocities(t_tree *tree);
+void VELOC_Simulate_Velocities_Pre(t_ldsk *a, t_ldsk *d, t_tree *tree);
+
+
 #endif

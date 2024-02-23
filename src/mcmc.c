@@ -3457,6 +3457,41 @@ void MCMC_Randomize_Sigsq_Scale(t_tree *tree)
 //////////////////////////////////////////////////////////////
 
 #if (defined PHYREX)
+void MCMC_Randomize_Sigsq(t_tree *tree)
+{
+  int i;
+
+  for(i=0;i<tree->mmod->n_dim;++i)
+    {
+      switch(tree->mmod->rw_prior_distrib)
+        {
+        case EXPONENTIAL_PRIOR:
+          {
+            tree->mmod->sigsq[i] = Rexp(1./tree->mmod->rw_prior_mean);
+            break;
+          }
+        case NORMAL_PRIOR:
+          {
+            tree->mmod->sigsq[i] = Rnorm(tree->mmod->rw_prior_mean,
+                                         tree->mmod->rw_prior_sd);
+
+            break;
+          }
+        case FLAT_PRIOR:
+          {
+            tree->mmod->sigsq[i] = 50.;
+            break;
+          }
+        default : assert(false);
+        }      
+    }
+}
+#endif
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+#if (defined PHYREX)
 void MCMC_Randomize_Veloc(t_tree *tree)
 {
   int i,j;
@@ -6894,12 +6929,12 @@ void MCMC_Run_Core(t_tree *tree)
   if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_disk")) MCMC_PHYREX_Indel_Disk(tree);
   if(!strcmp(tree->mcmc->move_name[move],"phyrex_indel_hit")) MCMC_PHYREX_Indel_Hit(tree);
   if(!strcmp(tree->mcmc->move_name[move],"phyrex_move_disk_ud")) MCMC_PHYREX_Move_Disk_Updown(tree,NO);
-  if(!strcmp(tree->mcmc->move_name[move],"phyrex_swap_disk")) MCMC_PHYREX_Swap_Disk(tree,NO);      
+  if(!strcmp(tree->mcmc->move_name[move],"phyrex_swap_disk")) MCMC_PHYREX_Swap_Disk(tree,NO);
   if(!strcmp(tree->mcmc->move_name[move],"phyrex_scale_times")) MCMC_PHYREX_Scale_Times(tree,NO);
   if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr")) MCMC_PHYREX_Prune_Regraft(tree,YES);
-  if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr_slide")) MCMC_PHYREX_Prune_Regraft_Slide(tree,YES);      
+  if(!strcmp(tree->mcmc->move_name[move],"phyrex_spr_slide")) MCMC_PHYREX_Prune_Regraft_Slide(tree,YES);
   if(!strcmp(tree->mcmc->move_name[move],"phyrex_narrow_exchange")) MCMC_PHYREX_Narrow_Exchange(tree,NO);
-  if(!strcmp(tree->mcmc->move_name[move],"phyrex_wide_exchange")) MCMC_PHYREX_Wide_Exchange(tree,NO);        
+  if(!strcmp(tree->mcmc->move_name[move],"phyrex_wide_exchange")) MCMC_PHYREX_Wide_Exchange(tree,NO);
   if(!strcmp(tree->mcmc->move_name[move],"phyrex_traj")) MCMC_PHYREX_Lineage_Traj(tree);
   if(!strcmp(tree->mcmc->move_name[move],"phyrex_disk_multi")) MCMC_PHYREX_Disk_Multi(tree);
   if(!strcmp(tree->mcmc->move_name[move],"phyrex_ldsk_multi")) MCMC_PHYREX_Ldsk_Multi(tree);
@@ -6923,6 +6958,7 @@ void MCMC_Run_Core(t_tree *tree)
   if(!strcmp(tree->mcmc->move_name[move],"phyrex_iou_mu")) MCMC_PHYREX_IOU_Update_Mu(tree);
   if(!strcmp(tree->mcmc->move_name[move],"updown_t_br")) MCMC_Updown_T_Br(tree);
   if(!strcmp(tree->mcmc->move_name[move],"observational_var")) MCMC_Obs_Var(tree);
+
   
   if(tree->mmod->c_lnL < UNLIKELY || tree->c_lnL < UNLIKELY || tree->rates->c_lnL < UNLIKELY || tree->times->c_lnL < UNLIKELY)
     {
@@ -7504,6 +7540,7 @@ void MCMC_PHYREX_Sigsq_Scale(t_tree *tree, int print)
   phydbl alpha,ratio,u,K,hr;
   phydbl *sigsq_scale_bkp;
   t_tree *aux_tree;
+  short int serial;
   
   if(tree->mmod->use_locations == NO) return;
 
@@ -7513,140 +7550,222 @@ void MCMC_PHYREX_Sigsq_Scale(t_tree *tree, int print)
      tree->mmod->model_id == IWNu ||
      tree->mmod->model_id == IOU) return;
 
-  tree->mcmc->run_move[tree->mcmc->num_move_phyrex_sigsq_scale]++;
-  
-  sigsq_scale_bkp = (phydbl *)mCalloc(2*tree->n_otu-1,sizeof(phydbl));
-  
-  /* K  = 10.0/tree->n_otu; // Small so as to facilitate convergence of exchange algo */
-  K = 0.1;
-  n_changes = (int)(1. + 0.05*tree->n_otu); // Same here
-  
-  hr = 0.0;
-  
-  aux_tree = NULL;
-  
-  Set_Lk(tree);
-  Set_Prior(tree);
-  
-  cur_lnL_geo = tree->mmod->c_lnL;
-  new_lnL_geo = UNLIKELY;
-  
-  cur_lnP_geo = tree->mmod->c_lnP;
-  new_lnP_geo = UNLIKELY;
 
-  cur_lnP_geo_aux = UNLIKELY;
-  new_lnP_geo_aux = UNLIKELY;
-  
-  cur_lnL_geo_aux = UNLIKELY;
-  new_lnL_geo_aux = UNLIKELY;
-  
-  for(i=0;i<2*tree->n_otu-1;++i) sigsq_scale_bkp[i] = tree->mmod->sigsq_scale[i];
 
-  permut = Permutate(2*tree->n_otu-1);
+  serial = YES;
   
-  for(i=0;i<n_changes;++i)
+  if(serial == NO)
     {
-      cur_scale = tree->mmod->sigsq_scale[permut[i]];
-      m = exp(K*(Uni()-.5));
-      new_scale = m * cur_scale;
+      tree->mcmc->run_move[tree->mcmc->num_move_phyrex_sigsq_scale]++;
 
-      hr += log(m);
+      sigsq_scale_bkp = (phydbl *)mCalloc(2*tree->n_otu-1,sizeof(phydbl));
       
-      if(new_scale < tree->mmod->sigsq_scale_min ||
-         new_scale > tree->mmod->sigsq_scale_max) break;
-      
-      tree->mmod->sigsq_scale[permut[i]] = new_scale;
-    }
-
-  Free(permut);
-  
-  if(i == n_changes)
-    {
+      /* K  = 10.0/tree->n_otu; // Small so as to facilitate convergence of exchange algo */
       if(tree->mmod->sampling_scheme == SPATIAL_SAMPLING_SURVEY)
-        {          
-          aux_tree = tree->aux_tree[0];
-          
-          for(i=0;i<aux_tree->mmod->n_dim;++i) aux_tree->mmod->sigsq[i] = tree->mmod->sigsq[i];
-          
-          for(i=0;i<2*aux_tree->n_otu-1;++i) aux_tree->mmod->sigsq_scale[i] = tree->mmod->sigsq_scale[i];
-          
-          aux_tree->times->scaled_pop_size = tree->times->scaled_pop_size;
-          aux_tree->times->neff_growth = tree->times->neff_growth;
-
-          TIMES_Lk(aux_tree);
-          LOCATION_Lk(aux_tree);
-          
-          if(aux_tree->times->c_lnL < UNLIKELY ||
-             aux_tree->mmod->c_lnL < UNLIKELY)
-            {
-              for(i=0;i<2*aux_tree->n_otu-1;++i) tree->mmod->sigsq_scale[i] = sigsq_scale_bkp[i];
-              Reset_Lk(tree);
-              Reset_Prior(tree);
-              return;
-            }
-
-          MCMC_PHYREX_Exchange_Core(aux_tree,tree,NO);
-                    
-          for(i=0;i<2*aux_tree->n_otu-1;++i) aux_tree->mmod->sigsq_scale[i] = tree->mmod->sigsq_scale[i];
-          new_lnL_geo_aux = LOCATION_Lk(aux_tree);
-          new_lnP_geo_aux = LOCATION_Prior(aux_tree);
-            
-          for(i=0;i<2*aux_tree->n_otu-1;++i) aux_tree->mmod->sigsq_scale[i] = sigsq_scale_bkp[i];
-          cur_lnL_geo_aux = LOCATION_Lk(aux_tree);
-          cur_lnP_geo_aux = LOCATION_Prior(aux_tree);
+        {
+          K = 0.1;
+          n_changes = (int)(1. + 0.05*tree->n_otu); // Same here
         }
-
-      new_lnL_geo = LOCATION_Lk(tree);
-      new_lnP_geo = LOCATION_Prior(tree);
-    }
-  
-  ratio = 0.0;
-  if(tree->eval_glnL == YES)
-    {
-      ratio += (new_lnL_geo - cur_lnL_geo);
-      ratio += (new_lnP_geo - cur_lnP_geo);
-      ratio += (cur_lnL_geo_aux - new_lnL_geo_aux);
-      ratio += (cur_lnP_geo_aux - new_lnP_geo_aux);
-    }
-  ratio += hr;
-  ratio = exp(ratio);
-  alpha = MIN(1.,ratio);
-
-  if(print == YES)
-    PhyML_Printf("\n. SIGSQSCAL lnL: %12f->%12f lnP: %12f->%12f lnLaux: %12f->%12f lnPaux: %12f->%12f T: %12f hr: %12f alpha: %12f",
-                 cur_lnL_geo,new_lnL_geo,
-                 cur_lnP_geo,new_lnP_geo,
-                 cur_lnL_geo_aux,new_lnL_geo_aux,
-                 cur_lnP_geo_aux,new_lnP_geo_aux,
-                 aux_tree ? aux_tree->n_root->ldsk->disk->time : -1.,
-                 hr,alpha);
-
-  
-  /* Always accept move */
-  if(tree->mcmc->always_yes == YES && new_lnL_geo > UNLIKELY) alpha = 1.0;
-  
-  u = Uni();
-  
-  assert(isnan(u) == NO && isinf(fabs(u)) == NO);
-  
-  if(u > alpha) /* Reject */
-    {
-      for(i=0;i<2*tree->n_otu-2;++i) tree->mmod->sigsq_scale[i] = sigsq_scale_bkp[i];
-      Reset_Lk(tree);
-      Reset_Prior(tree);
+      else
+        {
+          K = 0.5;
+          n_changes = (int)(1. + 0.2*tree->n_otu); // Same here
+        }
+      
+      hr = 0.0;
+      
+      aux_tree = NULL;
+      
+      Set_Lk(tree);
+      Set_Prior(tree);
+      
+      cur_lnL_geo = tree->mmod->c_lnL;
+      new_lnL_geo = UNLIKELY;
+      
+      cur_lnP_geo = tree->mmod->c_lnP;
+      new_lnP_geo = UNLIKELY;
+      
+      cur_lnP_geo_aux = UNLIKELY;
+      new_lnP_geo_aux = UNLIKELY;
+      
+      cur_lnL_geo_aux = UNLIKELY;
+      new_lnL_geo_aux = UNLIKELY;
+      
+      for(i=0;i<2*tree->n_otu-1;++i) sigsq_scale_bkp[i] = tree->mmod->sigsq_scale[i];
+      
+      permut = Permutate(2*tree->n_otu-1);
+      
+      for(i=0;i<n_changes;++i)
+        {
+          cur_scale = tree->mmod->sigsq_scale[permut[i]];
+          m = exp(K*(Uni()-.5));
+          new_scale = m * cur_scale;
+          
+          hr += log(m);
+          
+          if(new_scale < tree->mmod->sigsq_scale_min ||
+             new_scale > tree->mmod->sigsq_scale_max) break;
+          
+          tree->mmod->sigsq_scale[permut[i]] = new_scale;
+        }
+      
+      Free(permut);
+      
+      if(i == n_changes)
+        {
+          if(tree->mmod->sampling_scheme == SPATIAL_SAMPLING_SURVEY)
+            {          
+              aux_tree = tree->aux_tree[0];
+              
+              for(i=0;i<aux_tree->mmod->n_dim;++i) aux_tree->mmod->sigsq[i] = tree->mmod->sigsq[i];
+              
+              for(i=0;i<2*aux_tree->n_otu-1;++i) aux_tree->mmod->sigsq_scale[i] = tree->mmod->sigsq_scale[i];
+              
+              aux_tree->times->scaled_pop_size = tree->times->scaled_pop_size;
+              aux_tree->times->neff_growth = tree->times->neff_growth;
+              
+              TIMES_Lk(aux_tree);
+              LOCATION_Lk(aux_tree);
+              
+              if(aux_tree->times->c_lnL < UNLIKELY ||
+                 aux_tree->mmod->c_lnL < UNLIKELY)
+                {
+                  for(i=0;i<2*aux_tree->n_otu-1;++i) tree->mmod->sigsq_scale[i] = sigsq_scale_bkp[i];
+                  Reset_Lk(tree);
+                  Reset_Prior(tree);
+                  return;
+                }
+              
+              MCMC_PHYREX_Exchange_Core(aux_tree,tree,NO);
+              
+              for(i=0;i<2*aux_tree->n_otu-1;++i) aux_tree->mmod->sigsq_scale[i] = tree->mmod->sigsq_scale[i];
+              new_lnL_geo_aux = LOCATION_Lk(aux_tree);
+              new_lnP_geo_aux = LOCATION_Prior(aux_tree);
+              
+              for(i=0;i<2*aux_tree->n_otu-1;++i) aux_tree->mmod->sigsq_scale[i] = sigsq_scale_bkp[i];
+              cur_lnL_geo_aux = LOCATION_Lk(aux_tree);
+              cur_lnP_geo_aux = LOCATION_Prior(aux_tree);
+            }
+          
+          new_lnL_geo = LOCATION_Lk(tree);
+          new_lnP_geo = LOCATION_Prior(tree);
+        }
+      
+      ratio = 0.0;
+      if(tree->eval_glnL == YES)
+        {
+          ratio += (new_lnL_geo - cur_lnL_geo);
+          ratio += (new_lnP_geo - cur_lnP_geo);
+          ratio += (cur_lnL_geo_aux - new_lnL_geo_aux);
+          ratio += (cur_lnP_geo_aux - new_lnP_geo_aux);
+        }
+      ratio += hr;
+      ratio = exp(ratio);
+      alpha = MIN(1.,ratio);
+      
+      if(print == YES)
+        PhyML_Printf("\n. SIGSQSCAL lnL: %12f->%12f lnP: %12f->%12f lnLaux: %12f->%12f lnPaux: %12f->%12f T: %12f hr: %12f alpha: %12f",
+                     cur_lnL_geo,new_lnL_geo,
+                     cur_lnP_geo,new_lnP_geo,
+                     cur_lnL_geo_aux,new_lnL_geo_aux,
+                     cur_lnP_geo_aux,new_lnP_geo_aux,
+                     aux_tree ? aux_tree->n_root->ldsk->disk->time : -1.,
+                     hr,alpha);
+      
+      
+      /* Always accept move */
+      if(tree->mcmc->always_yes == YES && new_lnL_geo > UNLIKELY) alpha = 1.0;
+      
+      u = Uni();
+      
+      assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+      
+      if(u > alpha) /* Reject */
+        {
+          for(i=0;i<2*tree->n_otu-2;++i) tree->mmod->sigsq_scale[i] = sigsq_scale_bkp[i];
+          Reset_Lk(tree);
+          Reset_Prior(tree);
+        }
+      else
+        {
+          tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_sigsq_scale]++;
+        }
+      
+      tree->mcmc->run++;
+      PHYREX_Print_MCMC_Stats(tree);
+      PHYREX_Print_MCMC_Tree(tree);
+      PHYREX_Print_MCMC_Summary(tree);
+      
+      Free(sigsq_scale_bkp);
     }
   else
     {
-      tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_sigsq_scale]++;
+      if(tree->mmod->sampling_scheme == SPATIAL_SAMPLING_SURVEY) assert(false);
+
+      permut = Permutate(2*tree->n_otu-1);
+
+      for(i=0;i<2*tree->n_otu-1;++i)
+        {
+          tree->mcmc->run_move[tree->mcmc->num_move_phyrex_sigsq_scale]++;
+
+          Set_Lk(tree);
+          Set_Prior(tree);
+          
+          cur_lnL_geo = tree->mmod->c_lnL;
+          new_lnL_geo = UNLIKELY;
+          
+          cur_lnP_geo = tree->mmod->c_lnP;
+          new_lnP_geo = UNLIKELY;
+      
+           
+          K = 1.0;
+          cur_scale = tree->mmod->sigsq_scale[permut[i]];
+          m = exp(K*(Uni()-.5));
+          new_scale = m * cur_scale;
+          
+          hr = log(m);
+          
+          if(new_scale < tree->mmod->sigsq_scale_max && new_scale > tree->mmod->sigsq_scale_min) 
+            {
+              tree->mmod->sigsq_scale[permut[i]] = new_scale;
+
+              
+              ratio = 0.0;
+              if(tree->eval_glnL == YES)
+                {
+                  new_lnL_geo = LOCATION_Lk(tree);
+                  new_lnP_geo = LOCATION_Prior(tree);
+                  ratio += (new_lnL_geo - cur_lnL_geo);
+                  ratio += (new_lnP_geo - cur_lnP_geo);
+                }
+              ratio += hr;
+              ratio = exp(ratio);
+              alpha = MIN(1.,ratio);
+      
+              u = Uni();
+              
+              assert(isnan(u) == NO && isinf(fabs(u)) == NO);
+      
+              if(u > alpha) /* Reject */
+                {
+                  tree->mmod->sigsq_scale[permut[i]] = cur_scale;
+                  Reset_Lk(tree);
+                  Reset_Prior(tree);
+                }
+              else
+                {
+                  tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_sigsq_scale]++;
+                }
+            }
+          tree->mcmc->run++;
+          PHYREX_Print_MCMC_Stats(tree);
+          PHYREX_Print_MCMC_Tree(tree);
+          PHYREX_Print_MCMC_Summary(tree);          
+        }
+      Free(permut);      
     }
   
-  tree->mcmc->run++;
-  PHYREX_Print_MCMC_Stats(tree);
-  PHYREX_Print_MCMC_Tree(tree);
-  PHYREX_Print_MCMC_Summary(tree);
-
-  Free(sigsq_scale_bkp);
-  
+    
 }
 #endif
 
@@ -13781,7 +13900,7 @@ void MCMC_PHYREX_Update_Velocities(t_tree *tree)
           
           
           
-          /* Velocity */
+          /* Velocities */
           
           permut = Permutate(2*tree->n_otu-1);
 
@@ -13816,9 +13935,13 @@ void MCMC_PHYREX_Update_Velocities(t_tree *tree)
                   /* hr -= Log_Dnorm(new,cur,sqrt(fabs(mean_v[j]/2.)),&err); */
                   /* hr += Log_Dnorm(cur,new,sqrt(fabs(mean_v[j]/2.)),&err); */
 
-                  new = Rnorm(cur,0.1);
-                  hr -= Log_Dnorm(new,cur,0.1,&err);
-                  hr += Log_Dnorm(cur,new,0.1,&err);
+                  /* new = Rnorm(cur,0.1); */
+                  /* hr -= Log_Dnorm(new,cur,0.1,&err); */
+                  /* hr += Log_Dnorm(cur,new,0.1,&err); */
+
+                  new = Rnorm(cur,1.E-2);
+                  hr -= Log_Dnorm(new,cur,1.E-2,&err);
+                  hr += Log_Dnorm(cur,new,1.E-2,&err);
                   
                   /* if(n->ldsk->prev != NULL) */
                   /*   { */
@@ -13846,9 +13969,9 @@ void MCMC_PHYREX_Update_Velocities(t_tree *tree)
                   
                   n->ldsk->veloc->deriv[j] = new;
                 }
-                            
-              new_glnL = LOCATION_Lk(tree);
               
+              new_glnL = LOCATION_Lk(tree);
+
               ratio = 0.0;
               ratio += (new_glnL - cur_glnL);
               ratio += hr;
@@ -13881,7 +14004,6 @@ void MCMC_PHYREX_Update_Velocities(t_tree *tree)
                   tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_velocities]++;
                 }
               
-              
               tree->mcmc->run++;
               PHYREX_Print_MCMC_Stats(tree);
               PHYREX_Print_MCMC_Tree(tree);
@@ -13891,8 +14013,6 @@ void MCMC_PHYREX_Update_Velocities(t_tree *tree)
           
           Free(permut);
           Free(mean_v);
-          
-          
           
           
           
@@ -13943,8 +14063,7 @@ void MCMC_PHYREX_Update_Velocities(t_tree *tree)
                       tree->mmod->c_lnL = new_glnL;
                       tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_velocities]++;
                     }
-                  
-                  
+                                    
                   tree->mcmc->run++;
                   PHYREX_Print_MCMC_Stats(tree);
                   PHYREX_Print_MCMC_Tree(tree);
@@ -14050,7 +14169,6 @@ void MCMC_PHYREX_Update_Velocities(t_tree *tree)
                       tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_velocities]++;
                     }
                   
-                  
                   tree->mcmc->run++;
                   PHYREX_Print_MCMC_Stats(tree);
                   PHYREX_Print_MCMC_Tree(tree);
@@ -14063,7 +14181,6 @@ void MCMC_PHYREX_Update_Velocities(t_tree *tree)
       while(++iter < 1);
       
     }
-  /* LOCATION_Lk(tree); */    
 }
 #endif
 
