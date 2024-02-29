@@ -238,7 +238,7 @@ phydbl VELOC_Augmented_Lk_Velocities_Core(t_dsk *disk, t_tree *tree)
   phydbl lnP,root_mean,root_var;
 
   root_mean = 0.0;
-  root_var = 100.;
+  root_var = 0.1;
 
   assert(disk);
   
@@ -371,7 +371,7 @@ phydbl VELOC_Integrated_Lk_Location(t_tree *tree)
       VELOC_Integrated_Lk_Location_Post(NULL,tree->n_root,i,tree,NO);
 
       root_mean = LOCATION_Mean_Lonlat(i,tree);
-
+      
       lnL += tree->contmod->logrem_down[tree->n_root->num];
       lnL += Log_Dnorm(tree->contmod->mu_down[tree->n_root->num],
                        root_mean,
@@ -843,6 +843,9 @@ void VELOC_Sample_Node_Locations(t_tree *tree)
       var = 1./tree->contmod->var_down[tree->n_root->num] + 1./root_var;
       var = 1./var;
       
+      root_mean = LOCATION_Mean_Lonlat(i,tree);
+
+
       mean = (tree->contmod->mu_down[tree->n_root->num]/tree->contmod->var_down[tree->n_root->num] +
               root_mean / root_var)*var;
 
