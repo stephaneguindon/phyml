@@ -371,6 +371,10 @@ phydbl VELOC_Integrated_Lk_Location(t_tree *tree)
       VELOC_Integrated_Lk_Location_Post(NULL,tree->n_root,i,tree,NO);
 
       root_mean = LOCATION_Mean_Lonlat(i,tree);
+
+      /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+      root_var = 1.0;
+      root_mean = (i == 0) ? 35.27 : 31.50;
       
       lnL += tree->contmod->logrem_down[tree->n_root->num];
       lnL += Log_Dnorm(tree->contmod->mu_down[tree->n_root->num],
