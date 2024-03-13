@@ -3089,7 +3089,7 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
   phydbl lk_before, lk_after;
   tree = mixt_tree;
 
-  /* PhyML_Printf("\n. Optimizing Free_Rate"); */
+  /* PhyML_Printf("\n. Optimizing Free_Rate --> %f",mixt_tree->next->a_edges[0]->l->v); */
 
   lk_before = lk_after = UNLIKELY;
 
@@ -3099,7 +3099,7 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
         {
           if(tree->mod->s_opt->serial_free_rates == YES)
             {
-              fast = YES;
+              fast = NO;
               lk_before = mixt_tree->c_lnL;
               Optimize_Free_Rate_Weights(tree,fast,verbose);
               lk_after = mixt_tree->c_lnL;
@@ -3113,6 +3113,7 @@ void Optimize_Free_Rate(t_tree *mixt_tree, int verbose)
                   Exit("");
                 }
             }
+
 
           if(FABS(lk_before - lk_after) > 0.001)
             {
