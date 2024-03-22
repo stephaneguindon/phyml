@@ -1114,6 +1114,7 @@ void Init_Model(calign *data, t_mod *mod, option *io)
     }
   else
     {
+#ifndef PHYML
       mod->ras->gamma_r_proba_unscaled->v[mod->ras->n_catg-1] = 1.0;
       for(i=0;i<mod->ras->n_catg;i++)
         {
@@ -1121,6 +1122,15 @@ void Init_Model(calign *data, t_mod *mod, option *io)
           for(j=0;j<i+1;++j) sum += mod->ras->gamma_r_proba->v[j];
           mod->ras->gamma_r_proba_unscaled->v[i] = sum * mod->ras->gamma_r_proba_unscaled->v[mod->ras->n_catg-1];
         }
+#endif
+
+#ifdef PHYML
+      for(i=0;i<mod->ras->n_catg;i++)
+        {
+          assert(mod->ras->gamma_r_proba->v[i]>0.0);
+          mod->ras->gamma_r_proba_unscaled->v[i] = log(mod->ras->gamma_r_proba->v[i]);
+        }      
+#endif      
     }
 
   // Init unscaled relative rates
@@ -1141,7 +1151,12 @@ void Init_Model(calign *data, t_mod *mod, option *io)
     }
   else
     {      
+#ifndef PHYML
       for(i=0;i<mod->ras->n_catg;i++) mod->ras->gamma_rr_unscaled->v[i] = mod->ras->gamma_rr->v[i];      
+#endif
+#ifdef PHYML
+      for(i=0;i<mod->ras->n_catg;i++) mod->ras->gamma_rr_unscaled->v[i] = log(mod->ras->gamma_rr->v[i]);      
+#endif   
     }
   
   if(io->datatype == NT)
