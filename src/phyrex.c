@@ -876,7 +876,6 @@ void PHYREX_XML(char *xml_filename)
   PhyML_Printf("\n. Init clock rate: %f",mixt_tree->rates->clock_r);
   PhyML_Printf("\n. Random seed: %d",mixt_tree->io->r_seed);
 
-
   MCMC_Crossvalidate_Locations(mixt_tree);
 
   /* res = PHYREX_MCMC(mixt_tree); */

@@ -3575,7 +3575,7 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->model_id        = -1;
   t->use_locations   = -1;
   t->sampling_scheme = -1;
-  t->safe_phyrex     = YES;
+  t->safe_phyrex     = NO;
   t->dist_type       = HAVERSINE;
   
   t->lim_up->lonlat[0] = 100.;

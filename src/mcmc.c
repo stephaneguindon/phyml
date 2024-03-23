@@ -3494,20 +3494,73 @@ void MCMC_Randomize_Sigsq(t_tree *tree)
 #if (defined PHYREX)
 void MCMC_Randomize_Veloc(t_tree *tree)
 {
-  int i,j;
+  int j;
+  phydbl mean, var;
 
   if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES)
     {
-      for(i=0;i<2*tree->n_otu-1;++i)
+      /* for(i=0;i<2*tree->n_otu-1;++i) */
+      /*   { */
+      /*     for(j=0;j<tree->mmod->n_dim;++j) */
+      /*       { */
+      /*         tree->a_nodes[i]->ldsk->veloc->deriv[j] = Uni()*2.-1; */
+      /*         assert(tree->a_nodes[i]->ldsk->veloc->deriv[j] > tree->mmod->min_veloc); */
+      /*         assert(tree->a_nodes[i]->ldsk->veloc->deriv[j] < tree->mmod->max_veloc); */
+      /*       } */
+      /*   } */
+
+  
+      for(j=0;j<tree->mmod->n_dim;++j)
         {
+          mean = 0.0;          
+          var = 1.0;
+          
           for(j=0;j<tree->mmod->n_dim;++j)
             {
-              tree->a_nodes[i]->ldsk->veloc->deriv[j] = Uni()*2.-1;
-              assert(tree->a_nodes[i]->ldsk->veloc->deriv[j] > tree->mmod->min_veloc);
-              assert(tree->a_nodes[i]->ldsk->veloc->deriv[j] < tree->mmod->max_veloc);
+              tree->n_root->ldsk->veloc->deriv[j] = Rnorm(mean,sqrt(var));
+              
+              assert(tree->n_root->ldsk->veloc->deriv[j] > tree->mmod->min_veloc);
+              assert(tree->n_root->ldsk->veloc->deriv[j] < tree->mmod->max_veloc);
             }
         }
+      
+      MCMC_Randomize_Veloc_Pre(tree->n_root,tree->n_root->v[1],tree);
+      MCMC_Randomize_Veloc_Pre(tree->n_root,tree->n_root->v[2],tree);
+      
     }
+}
+#endif
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+#if (defined PHYREX)
+void MCMC_Randomize_Veloc_Pre(t_node *a, t_node *d, t_tree *tree)
+{
+  int i,j;
+  phydbl mean, var;
+  
+  for(j=0;j<tree->mmod->n_dim;++j)
+    {
+      
+      mean = VELOC_Velocity_Mean_Along_Edge(d,j,tree);          
+      var = VELOC_Velocity_Variance_Along_Edge(d,j,tree);
+                   
+      d->ldsk->veloc->deriv[j] = Rnorm(mean,sqrt(var));
+
+      assert(d->ldsk->veloc->deriv[j] > tree->mmod->min_veloc);
+      assert(d->ldsk->veloc->deriv[j] < tree->mmod->max_veloc);
+    }
+
+  if(d->tax) return;
+  for(i=0;i<3;++i)
+    {
+      if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
+        {
+          MCMC_Randomize_Veloc_Pre(d,d->v[i],tree);
+        }
+    }
+  
 }
 #endif
 
@@ -13935,13 +13988,14 @@ void MCMC_PHYREX_Update_Velocities(t_tree *tree)
                   /* hr -= Log_Dnorm(new,cur,sqrt(fabs(mean_v[j]/2.)),&err); */
                   /* hr += Log_Dnorm(cur,new,sqrt(fabs(mean_v[j]/2.)),&err); */
 
-                  new = Rnorm(cur,0.01);
-                  hr -= Log_Dnorm(new,cur,0.01,&err);
-                  hr += Log_Dnorm(cur,new,0.01,&err);
+                  /* new = Rnorm(cur,0.01); */
+                  /* hr -= Log_Dnorm(new,cur,0.01,&err); */
+                  /* hr += Log_Dnorm(cur,new,0.01,&err); */
 
-                  /* new = Rnorm(cur,1.E-0); */
-                  /* hr -= Log_Dnorm(new,cur,1.E-0,&err); */
-                  /* hr += Log_Dnorm(cur,new,1.E-0,&err); */
+                  /* !!!!!!!!!!!!!!!!!!!!! */
+                  new = Rnorm(cur,1.E-0);
+                  hr -= Log_Dnorm(new,cur,1.E-0,&err);
+                  hr += Log_Dnorm(cur,new,1.E-0,&err);
                   
                   /* if(n->ldsk->prev != NULL) */
                   /*   { */
@@ -13990,6 +14044,7 @@ void MCMC_PHYREX_Update_Velocities(t_tree *tree)
               /*                  tree->mmod->sigsq_scale[n->num]); */
               /*     assert(NO); */
               /*   } */
+              
               
               u = Uni();
               

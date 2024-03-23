@@ -44,6 +44,8 @@ phydbl VELOC_Lk(t_tree *tree)
   
   lnL_loc = (tree->mmod->integrateAncestralLocations == NO) ? (VELOC_Augmented_Lk_Locations(tree)) : (VELOC_Integrated_Lk_Location(tree));
   lnL_veloc = VELOC_Augmented_Lk_Velocities(tree);
+
+  /* PhyML_Printf("\n. lnL_loc: %f lnL_veloc: %f",lnL_loc,lnL_veloc); */
   
   if(tree->mmod->print_lk == YES)
     {
@@ -238,7 +240,7 @@ phydbl VELOC_Augmented_Lk_Velocities_Core(t_dsk *disk, t_tree *tree)
   phydbl lnP,root_mean,root_var;
 
   root_mean = 0.0;
-  root_var = 0.1;
+  root_var = 1.0;
 
   assert(disk);
   
@@ -253,7 +255,7 @@ phydbl VELOC_Augmented_Lk_Velocities_Core(t_dsk *disk, t_tree *tree)
         {          
           lnP += VELOC_Velocities_Forward_Lk_Path(disk->ldsk,disk->ldsk->next[i],tree);
         }
-
+      
       if(disk->ldsk->prev == NULL) /* root node */
         {
           for(i=0;i<tree->mmod->n_dim;++i)
@@ -320,6 +322,7 @@ phydbl VELOC_Velocities_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
           disk_lnP += Log_Dnorm(ld,mean,sqrt(var),&err);
           
           if(tree->mmod->print_lk == YES)
+          /* if(isinf(disk_lnP) == YES) */
             PhyML_Printf("\n. VEL %2d Time: %10f d->coord: %10f a->coord: %10f a->veloc: %10f d->veloc: %10f mean: %10f var: %10f dt: %10f [%10f; %10f] x: %10f lk: %10f",
                          i,
                          ldsk->disk->time,
@@ -371,10 +374,6 @@ phydbl VELOC_Integrated_Lk_Location(t_tree *tree)
       VELOC_Integrated_Lk_Location_Post(NULL,tree->n_root,i,tree,NO);
 
       root_mean = LOCATION_Mean_Lonlat(i,tree);
-
-      /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
-      root_var = 1.0;
-      root_mean = (i == 0) ? 35.27 : 31.50;
       
       lnL += tree->contmod->logrem_down[tree->n_root->num];
       lnL += Log_Dnorm(tree->contmod->mu_down[tree->n_root->num],
