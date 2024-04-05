@@ -2198,7 +2198,7 @@ typedef struct __Continuous_Model{
   phydbl obs_var_min;
   phydbl obs_var_max;  
   short int obs_model; // Observational model 0/1
-  
+  short int obs_model_est; // Estimate variance of observational model 0/1
 }t_contmod;
 
 /*!********************************************************/

@@ -30,10 +30,10 @@
   
   <!-- Amino-acid equilibrium frequencies are given by the models -->
   <equfreqs id="EF1">
-    <instance id="F1" aa.freqs="model"/>
-    <instance id="F2" aa.freqs="model"/>
-    <instance id="F3" aa.freqs="model"/>
-    <instance id="F4" aa.freqs="model"/>
+    <instance id="F1" freqs="model"/>
+    <instance id="F2" freqs="model"/>
+    <instance id="F3" freqs="model"/>
+    <instance id="F4" freqs="model"/>
   </equfreqs>
 
 

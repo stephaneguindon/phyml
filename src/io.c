@@ -5102,7 +5102,7 @@ void Make_Efrq_From_XML_Node(xml_node *instance, option *io, t_mod *mod)
           mod->s_opt->state_freq = ML;
         }
     }
-  
+
 
   buff = XML_Get_Attribute_Value(instance,"base.freqs");
 

@@ -3208,7 +3208,7 @@ void MCMC_Close_MCMC(t_mcmc *mcmc)
 void MCMC_Randomize_Contmod(t_tree *tree)
 {
   if(tree->contmod == NULL) return;
-  if(tree->contmod->obs_model == NO) return;
+  if(tree->contmod->obs_model == NO || tree->contmod->obs_model_est == NO) return;
   for(int i=0;i<tree->mmod->n_dim;++i) tree->contmod->obs_var[i] = Uni()*2.;
 }
 
@@ -14307,8 +14307,9 @@ void MCMC_PHYREX_IOU_Update_Mu(t_tree *tree)
 #ifdef PHYREX
 void MCMC_Obs_Var(t_tree *tree)
 {
-  if(tree->contmod->obs_model == YES)
+  if(tree->contmod->obs_model == YES && tree->contmod->obs_model_est == YES)
     {
+      PhyML_Printf("\.n HERE");
       for(int i=0;i<tree->mmod->n_dim;++i)        
         {
           MCMC_Single_Param_Generic(&(tree->contmod->obs_var[i]),

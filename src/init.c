@@ -3891,6 +3891,7 @@ void RW_Init_Contrasts(int dim_idx, t_tree *tree)
 void Set_Defaults_Contmod(t_tree *tree)
 {
   tree->contmod->obs_model = NO;
+  tree->contmod->obs_model_est = YES;
   tree->contmod->obs_var_min = 0.0;
   tree->contmod->obs_var_max = 1.E+2;
 }

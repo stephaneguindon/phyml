@@ -418,6 +418,28 @@ void PHYREX_XML(char *xml_filename)
           else mixt_tree->contmod->obs_model = NO;
         }
 
+      char *observational_var;
+      observational_var = XML_Get_Attribute_Value(xnd,"observational.var");
+
+      if(observational_var != NULL)
+        {
+          phydbl v = String_To_Dbl(observational_var);
+          mixt_tree->contmod->obs_var[0] = v;
+          mixt_tree->contmod->obs_var[1] = v;
+        }
+
+      char *observational_est;
+      observational_est = XML_Get_Attribute_Value(xnd,"observational.var.est");
+
+      if(observational_est != NULL)
+        {
+          int select = XML_Validate_Attr_Int(observational_est,6,
+                                             "true","yes","y",
+                                             "false","no","n");
+          if(select < 3) mixt_tree->contmod->obs_model_est = YES;
+          else mixt_tree->contmod->obs_model_est = NO;
+        }
+
     }
   else
     {
@@ -745,6 +767,7 @@ void PHYREX_XML(char *xml_filename)
 
           aux_tree->contmod->obs_var = mixt_tree->contmod->obs_var;
           aux_tree->contmod->obs_model = mixt_tree->contmod->obs_model;
+          aux_tree->contmod->obs_model_est = mixt_tree->contmod->obs_model_est;
         }
     }
 

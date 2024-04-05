@@ -851,7 +851,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
       r_mat_weight_sum = MIXT_Get_Sum_Chained_Scalar_Dbl(mixt_tree->next->mod->r_mat_weight);
       e_frq_weight_sum = MIXT_Get_Sum_Chained_Scalar_Dbl(mixt_tree->next->mod->e_frq_weight);
       sum_probas       = MIXT_Get_Sum_Of_Probas_Across_Mixtures(r_mat_weight_sum,e_frq_weight_sum,mixt_tree);
-
+      
 
       b    = mixt_b->next;
       tree = mixt_tree->next;
@@ -937,7 +937,7 @@ phydbl MIXT_Lk(t_edge *mixt_b, t_tree *mixt_tree)
                   tree = tree->next;
                   b    = b->next;
                 }
-
+              
               ns                     = tree->mod->ns;
               tree->curr_site        = site;
               tree->apply_lk_scaling = NO;
