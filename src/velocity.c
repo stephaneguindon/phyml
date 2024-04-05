@@ -365,7 +365,7 @@ phydbl VELOC_Integrated_Lk_Location(t_tree *tree)
   RRW_Update_Normalization_Factor(tree);
   
   lnL = 0.0;
-  root_var = 100.;
+  root_var = tree->mmod->rw_root_var;
   root_mean = 0.0;
   
   for(i=0;i<tree->mmod->n_dim;++i)

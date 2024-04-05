@@ -13988,9 +13988,9 @@ void MCMC_PHYREX_Update_Velocities(t_tree *tree)
                   /* hr -= Log_Dnorm(new,cur,sqrt(fabs(mean_v[j]/2.)),&err); */
                   /* hr += Log_Dnorm(cur,new,sqrt(fabs(mean_v[j]/2.)),&err); */
 
-                  /* new = Rnorm(cur,0.01); */
-                  /* hr -= Log_Dnorm(new,cur,0.01,&err); */
-                  /* hr += Log_Dnorm(cur,new,0.01,&err); */
+                  /* new = Rnorm(cur,0.1); */
+                  /* hr -= Log_Dnorm(new,cur,0.1,&err); */
+                  /* hr += Log_Dnorm(cur,new,0.1,&err); */
 
                   /* !!!!!!!!!!!!!!!!!!!!! */
                   new = Rnorm(cur,1.E-0);
