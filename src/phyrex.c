@@ -405,7 +405,23 @@ void PHYREX_XML(char *xml_filename)
             }
         }
 
+      char *rw_root_mean;
+      rw_root_mean = XML_Get_Attribute_Value(xnd,"rw.root.mean");
 
+      if(rw_root_mean != NULL)
+        {
+          mixt_tree->mmod->rw_root_mean = String_To_Dbl(rw_root_mean);
+        }
+
+      char *rw_root_var;
+      rw_root_var = XML_Get_Attribute_Value(xnd,"rw.root.var");
+
+      if(rw_root_var != NULL)
+        {
+          mixt_tree->mmod->rw_root_var = String_To_Dbl(rw_root_var);
+        }
+
+      
       char *observational_model;
       observational_model = XML_Get_Attribute_Value(xnd,"observational.model");
 

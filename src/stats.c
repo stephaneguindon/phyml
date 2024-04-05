@@ -580,7 +580,7 @@ phydbl Rnorm_Trunc(phydbl mean, phydbl sd, phydbl min, phydbl max, int *error)
 {
   phydbl alpha,beta;
   phydbl d_alpha,d_beta;
-  phydbl z,ret_val;
+  phydbl z;
   
   alpha = (min - mean)/sd;
   beta  = (max - mean)/sd;

@@ -3640,6 +3640,9 @@ void PHYREX_Set_Default_Migrep_Mod(int n_otu, t_phyrex_mod *t)
   t->rw_prior_sd      = 1.0;
   t->rw_prior_distrib = EXPONENTIAL_PRIOR;
   
+  t->rw_root_mean     = 0.0;
+  t->rw_root_var      = 1.0;
+
   t->integrateAncestralLocations = YES;
 
   t->rrw_prior_sd = 1.0;

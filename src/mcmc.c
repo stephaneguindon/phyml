@@ -14309,7 +14309,6 @@ void MCMC_Obs_Var(t_tree *tree)
 {
   if(tree->contmod->obs_model == YES && tree->contmod->obs_model_est == YES)
     {
-      PhyML_Printf("\.n HERE");
       for(int i=0;i<tree->mmod->n_dim;++i)        
         {
           MCMC_Single_Param_Generic(&(tree->contmod->obs_var[i]),
@@ -14357,7 +14356,7 @@ void MCMC_Crossvalidate_Locations(t_tree *tree)
 {
   t_mcmc *mcmc;
   phydbl mse;
-  int i,j;
+  int i;
     
   MCMC_Run(tree);
   mcmc = tree->mcmc;

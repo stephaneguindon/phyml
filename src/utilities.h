@@ -2144,6 +2144,8 @@ typedef struct __Migrep_Model{
   phydbl                 rw_prior_sd;
   short int         rw_prior_distrib;
 
+  phydbl                rw_root_mean;
+  phydbl                 rw_root_var;
   
   phydbl                rrw_prior_sd; // value of parameter governing the variance of diffusion coefficient across edges  
   

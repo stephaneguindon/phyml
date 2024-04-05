@@ -644,9 +644,14 @@ void RRW_Sample_Node_Locations(t_tree *tree)
   int i,j;
   t_node *n;
   phydbl au,bu,varu,var,mean;
-
+  phydbl root_var, root_mean;
+  
   n = NULL;
   au = bu = varu = var = mean = -1;
+
+  root_var = tree->mmod->rw_root_var;
+  root_mean = -BIG;
+
   
   RRW_Update_Normalization_Factor(tree);
 
@@ -688,12 +693,21 @@ void RRW_Sample_Node_Locations(t_tree *tree)
                   mean = tree->contmod->mu_down[n->num];
                 }
               
+              /* Below is only valid if prior distribution of location at that node is flat */
               tree->a_nodes[j]->ldsk->coord->lonlat[i] = Rnorm(mean,sqrt(var));
             }
         }
 
       assert(isnan(tree->contmod->var_down[tree->n_root->num]) == NO);
       
+      var = 1./tree->contmod->var_down[tree->n_root->num] + 1./root_var;
+      var = 1./var;
+      
+      root_mean = LOCATION_Mean_Lonlat(i,tree);
+
+      mean = (tree->contmod->mu_down[tree->n_root->num]/tree->contmod->var_down[tree->n_root->num] +
+              root_mean / root_var)*var;
+
       tree->n_root->ldsk->coord->lonlat[i] =
         Rnorm(tree->contmod->mu_down[tree->n_root->num],
               sqrt(tree->contmod->var_down[tree->n_root->num]));
@@ -709,8 +723,8 @@ phydbl RRW_Integrated_Lk(t_tree *tree)
   int i,err;
 
   /* root_var = 1.0; */
-  root_var = 100.;
-  root_mean = 0.0;
+  root_var = tree->mmod->rw_root_var;
+  root_mean = -BIG;
 
   RRW_Update_Normalization_Factor(tree);
 
