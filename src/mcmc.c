@@ -3513,15 +3513,12 @@ void MCMC_Randomize_Veloc(t_tree *tree)
       for(j=0;j<tree->mmod->n_dim;++j)
         {
           mean = 0.0;          
-          var = 1.0;
+          var = 0.1;
           
-          for(j=0;j<tree->mmod->n_dim;++j)
-            {
-              tree->n_root->ldsk->veloc->deriv[j] = Rnorm(mean,sqrt(var));
-              
-              assert(tree->n_root->ldsk->veloc->deriv[j] > tree->mmod->min_veloc);
-              assert(tree->n_root->ldsk->veloc->deriv[j] < tree->mmod->max_veloc);
-            }
+          tree->n_root->ldsk->veloc->deriv[j] = Rnorm(mean,sqrt(var));
+          
+          assert(tree->n_root->ldsk->veloc->deriv[j] > tree->mmod->min_veloc);
+          assert(tree->n_root->ldsk->veloc->deriv[j] < tree->mmod->max_veloc);
         }
       
       MCMC_Randomize_Veloc_Pre(tree->n_root,tree->n_root->v[1],tree);
@@ -3547,7 +3544,7 @@ void MCMC_Randomize_Veloc_Pre(t_node *a, t_node *d, t_tree *tree)
       var = VELOC_Velocity_Variance_Along_Edge(d,j,tree);
                    
       d->ldsk->veloc->deriv[j] = Rnorm(mean,sqrt(var));
-
+      
       assert(d->ldsk->veloc->deriv[j] > tree->mmod->min_veloc);
       assert(d->ldsk->veloc->deriv[j] < tree->mmod->max_veloc);
     }
@@ -14071,63 +14068,63 @@ void MCMC_PHYREX_Update_Velocities(t_tree *tree)
           
           
           
-          /* /\* Scale all velocities *\/ */
-          /* permut = Permutate(tree->n_otu-1); */
+          /* Scale all velocities */
+          permut = Permutate(tree->n_otu-1);
           
-          /* for(i=0;i<tree->n_otu-1;++i) */
-          /*   { */
-          /*     for(j=0;j<tree->mmod->n_dim;++j) */
-          /*       { */
-          /*         tree->mcmc->run_move[tree->mcmc->num_move_phyrex_velocities]++; */
+          for(i=0;i<tree->n_otu-1;++i)
+            {
+              for(j=0;j<tree->mmod->n_dim;++j)
+                {
+                  tree->mcmc->run_move[tree->mcmc->num_move_phyrex_velocities]++;
                   
-          /*         cur_glnL = tree->mmod->c_lnL; */
-          /*         new_glnL = UNLIKELY; */
+                  cur_glnL = tree->mmod->c_lnL;
+                  new_glnL = UNLIKELY;
                   
-          /*         hr = 0.0; */
+                  hr = 0.0;
                   
-          /*         n = tree->a_nodes[tree->n_otu+permut[i]]; */
+                  n = tree->a_nodes[tree->n_otu+permut[i]];
                   
-          /*         PHYREX_Store_All_Veloc(tree); */
+                  PHYREX_Store_All_Veloc(tree);
                   
-          /*         u = Uni(); */
-          /*         mult = exp((u-0.5)); */
+                  u = Uni();
+                  mult = exp((u-0.5));
                   
-          /*         n_nodes = 0; */
-          /*         Scale_Subtree_Veloc(n,mult,&n_nodes,j,tree); */
+                  n_nodes = 0;
+                  Scale_Subtree_Veloc(n,mult,&n_nodes,j,tree);
                   
-          /*         new_glnL = LOCATION_Lk(tree); */
+                  new_glnL = LOCATION_Lk(tree);
                   
-          /*         ratio = 0.0; */
-          /*         ratio += (new_glnL - cur_glnL); */
-          /*         ratio += n_nodes*log(mult); */
+                  ratio = 0.0;
+                  ratio += (new_glnL - cur_glnL);
+                  ratio += n_nodes*log(mult);
                   
-          /*         ratio = exp(ratio); */
-          /*         alpha = MIN(1.,ratio); */
+                  ratio = exp(ratio);
+                  alpha = MIN(1.,ratio);
                   
                   
                   
-          /*         u = Uni(); */
+                  u = Uni();
                   
-          /*         if(u > alpha) /\* Reject *\/ */
-          /*           { */
-          /*             PHYREX_Restore_All_Veloc(tree); */
-          /*             tree->mmod->c_lnL = cur_glnL; */
-          /*           } */
-          /*         else */
-          /*           { */
-          /*             tree->mmod->c_lnL = new_glnL; */
-          /*             tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_velocities]++; */
-          /*           } */
+                  if(u > alpha) /* Reject */
+                    {
+                      PHYREX_Restore_All_Veloc(tree);
+                      tree->mmod->c_lnL = cur_glnL;
+                    }
+                  else
+                    {
+                      tree->mmod->c_lnL = new_glnL;
+                      tree->mcmc->acc_move[tree->mcmc->num_move_phyrex_velocities]++;
+                    }
                                     
-          /*         tree->mcmc->run++; */
-          /*         PHYREX_Print_MCMC_Stats(tree); */
-          /*         PHYREX_Print_MCMC_Tree(tree); */
-          /*         PHYREX_Print_MCMC_Summary(tree); */
+                  tree->mcmc->run++;
+                  PHYREX_Print_MCMC_Stats(tree);
+                  PHYREX_Print_MCMC_Tree(tree);
+                  PHYREX_Print_MCMC_Summary(tree);
                   
-          /*       } */
-          /*   } */
+                }
+            }
           
-          /* Free(permut); */
+          Free(permut);
           
           
 
