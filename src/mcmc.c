@@ -7496,7 +7496,8 @@ void MCMC_PHYREX_Sigsq(t_tree *tree, int print)
       int dim_idx;
       
       ratio = 0.0;
-      K = 1.0;
+      /* K = 1.0; */
+      K = tree->mcmc->tune_move[tree->mcmc->num_move_phyrex_sigsq];
       
       min_sigsq = tree->mmod->min_sigsq;
       max_sigsq = tree->mmod->max_sigsq;
@@ -14086,23 +14087,29 @@ void MCMC_PHYREX_Update_Velocities(t_tree *tree)
                   
                   PHYREX_Store_All_Veloc(tree);
                   
-                  u = Uni();
-                  mult = exp((u-0.5));
+                  cur = n->ldsk->veloc->deriv[j];
+                  new = Rnorm(cur,1.E-0);
+                  hr -= Log_Dnorm(new,cur,1.E-0,&err);
+                  hr += Log_Dnorm(cur,new,1.E-0,&err);
+
+                  /* u = Uni(); */
+                  /* mult = exp((u-0.5)); */
                   
                   n_nodes = 0;
-                  Scale_Subtree_Veloc(n,mult,&n_nodes,j,tree);
+                  /* Scale_Subtree_Veloc(n,mult,&n_nodes,j,tree); */
+                  Add_Subtree_Veloc(n,new-cur,&n_nodes,j,tree);
                   
                   new_glnL = LOCATION_Lk(tree);
                   
                   ratio = 0.0;
                   ratio += (new_glnL - cur_glnL);
-                  ratio += n_nodes*log(mult);
+                  /* ratio += n_nodes*log(mult); */
+                  ratio += hr;
                   
                   ratio = exp(ratio);
                   alpha = MIN(1.,ratio);
                   
-                  
-                  
+                                    
                   u = Uni();
                   
                   if(u > alpha) /* Reject */

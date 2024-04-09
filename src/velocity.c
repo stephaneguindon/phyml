@@ -91,7 +91,7 @@ phydbl VELOC_Augmented_Lk_Locations_Core(t_dsk *disk, t_tree *tree)
   int i,err;
   phydbl root_mean,root_var;
 
-  root_mean = -BIG;
+  root_mean = 0.0;
   root_var  = tree->mmod->rw_root_var;
   
   assert(disk);

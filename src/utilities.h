@@ -2616,6 +2616,8 @@ void Label_Nodes_With_Locations(t_tree *tree);
 void Edge_Labels_To_Rates(t_tree *tree);
 void Node_Labels_To_Velocities(t_tree *tree);
 void Node_Labels_To_Locations(t_tree *tree);
+int Add_Subtree_Veloc(t_node *a, phydbl add, int *n_nodes, int dim, t_tree *tree);
+int Add_Subtree_Veloc_Post(t_node *a, t_node *d, phydbl add, int *n_nodes, int dim, t_tree *tree);
 
 
 #include "xml.h"
