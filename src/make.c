@@ -1889,15 +1889,18 @@ void Make_Contmod(t_tree *tree)
 {
   tree->contmod = (t_contmod *)mCalloc(1,sizeof(t_contmod));
 
-  tree->contmod->mu_down = (phydbl *)mCalloc(2*tree->n_otu,sizeof(phydbl));
-  tree->contmod->var_down = (phydbl *)mCalloc(2*tree->n_otu,sizeof(phydbl));
-  tree->contmod->logrem_down = (phydbl *)mCalloc(2*tree->n_otu,sizeof(phydbl));
+  tree->contmod->mu_down = (phydbl *)mCalloc(4*tree->n_otu,sizeof(phydbl));
+  tree->contmod->var_down = (phydbl *)mCalloc(4*tree->n_otu,sizeof(phydbl));
+  tree->contmod->logrem_down = (phydbl *)mCalloc(4*tree->n_otu,sizeof(phydbl));
 
-  tree->contmod->mu_up = (phydbl *)mCalloc(2*tree->n_otu,sizeof(phydbl));
-  tree->contmod->var_up = (phydbl *)mCalloc(2*tree->n_otu,sizeof(phydbl));
-  tree->contmod->logrem_up = (phydbl *)mCalloc(2*tree->n_otu,sizeof(phydbl));
-  
-  tree->contmod->obs_var = (phydbl *)mCalloc(tree->mmod->n_dim,sizeof(phydbl));
+  tree->contmod->mu_up = (phydbl *)mCalloc(4*tree->n_otu,sizeof(phydbl));
+  tree->contmod->var_up = (phydbl *)mCalloc(4*tree->n_otu,sizeof(phydbl));
+  tree->contmod->logrem_up = (phydbl *)mCalloc(4*tree->n_otu,sizeof(phydbl));
+
+  tree->contmod->lnL_up = (phydbl *)mCalloc(4*tree->n_otu,sizeof(phydbl));
+  tree->contmod->lnL_down = (phydbl *)mCalloc(4*tree->n_otu,sizeof(phydbl));
+
+  tree->contmod->obs_var = (phydbl *)mCalloc(2*tree->mmod->n_dim,sizeof(phydbl));
 }
 
 //////////////////////////////////////////////////////////////

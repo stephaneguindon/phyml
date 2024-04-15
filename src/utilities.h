@@ -188,6 +188,8 @@ static inline int isinf_ld (long double x) { return isnan (x - x); }
 #define UNSCALED_RR_MIN log(RR_MIN)
 #define UNSCALED_RR_MAX log(RR_MAX)
 
+#define LOCATION 0
+#define VELOCITY 1
 
 #ifdef PHYML
 #define GAMMA_RR_UNSCALED_MIN -1000.
@@ -2196,6 +2198,9 @@ typedef struct __Continuous_Model{
   phydbl *var_up;
   phydbl *logrem_up;
 
+  phydbl *lnL_up;
+  phydbl *lnL_down;
+  
   phydbl *obs_var;  // Variance of observational model (one param for each spatial dimension)
   phydbl obs_var_min;
   phydbl obs_var_max;  
@@ -2618,6 +2623,7 @@ void Node_Labels_To_Velocities(t_tree *tree);
 void Node_Labels_To_Locations(t_tree *tree);
 int Add_Subtree_Veloc(t_node *a, phydbl add, int *n_nodes, int dim, t_tree *tree);
 int Add_Subtree_Veloc_Post(t_node *a, t_node *d, phydbl add, int *n_nodes, int dim, t_tree *tree);
+int Contmod_Start(short int datatype, short int dim_idx, t_tree *tree);
 
 
 #include "xml.h"

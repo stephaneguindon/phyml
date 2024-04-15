@@ -13329,3 +13329,33 @@ t_label *Get_Next_Label(t_label *curr_lab)
       
   return(next_lab);
 }
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+int Contmod_Start(short int datatype, short int dim_idx, t_tree *tree)
+{
+  int n_nodes;
+
+  n_nodes = 2*tree->n_otu-1;
+  
+  switch(datatype)
+    {
+    case LOCATION :
+        {
+          return(dim_idx*n_nodes);
+          break;
+        }
+    case VELOCITY :
+      {
+        return(tree->mmod->n_dim*n_nodes + dim_idx*n_nodes);
+        break;
+      }
+    default :
+      {
+        assert(false);
+        break;
+      }
+    }
+  return(-1);
+}

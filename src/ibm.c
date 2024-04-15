@@ -781,7 +781,7 @@ void IBM_Augmented_Lk_Locations_Post(t_node *a, t_node *d, phydbl sigsq, int dim
     }
   else
     {
-      int i;
+      int i,start;
       t_node *v1, *v2;
       phydbl v1mu,v2mu;
       phydbl v1var,v2var;
@@ -806,14 +806,16 @@ void IBM_Augmented_Lk_Locations_Post(t_node *a, t_node *d, phydbl sigsq, int dim
             }
         }
 
-      v1mu = tree->contmod->mu_down[v1->num];      
-      v2mu = tree->contmod->mu_down[v2->num];
+      start = Contmod_Start(LOCATION,dim,tree);
 
-      v1var = tree->contmod->var_down[v1->num];
-      v2var = tree->contmod->var_down[v2->num];
+      v1mu = tree->contmod->mu_down[start+v1->num];      
+      v2mu = tree->contmod->mu_down[start+v2->num];
 
-      v1logrem = tree->contmod->logrem_down[v1->num];
-      v2logrem = tree->contmod->logrem_down[v2->num];
+      v1var = tree->contmod->var_down[start+v1->num];
+      v2var = tree->contmod->var_down[start+v2->num];
+
+      v1logrem = tree->contmod->logrem_down[start+v1->num];
+      v2logrem = tree->contmod->logrem_down[start+v2->num];
       
       dv1var =
         log(sigsq) +
@@ -844,13 +846,13 @@ void IBM_Augmented_Lk_Locations_Post(t_node *a, t_node *d, phydbl sigsq, int dim
                        tree->times->nd_t[v2->num]);
         }
       
-      tree->contmod->mu_down[d->num] = (v1mu*(v2var+dv2var) + v2mu*(v1var+dv1var))/(v2var+dv2var+v1var+dv1var);
+      tree->contmod->mu_down[start+d->num] = (v1mu*(v2var+dv2var) + v2mu*(v1var+dv1var))/(v2var+dv2var+v1var+dv1var);
       
-      tree->contmod->var_down[d->num] = (v2var+dv2var)*(v1var+dv1var)/(v2var+dv2var+v1var+dv1var);
+      tree->contmod->var_down[start+d->num] = (v2var+dv2var)*(v1var+dv1var)/(v2var+dv2var+v1var+dv1var);
 
-      tree->contmod->logrem_down[d->num] = v1logrem + v2logrem;
-      tree->contmod->logrem_down[d->num] -= .5*log(2.*PI*(v2var+dv2var+v1var+dv1var));
-      tree->contmod->logrem_down[d->num] -= .5*pow(v1mu-v2mu,2)/(v2var+dv2var+v1var+dv1var);      
+      tree->contmod->logrem_down[start+d->num] = v1logrem + v2logrem;
+      tree->contmod->logrem_down[start+d->num] -= .5*log(2.*PI*(v2var+dv2var+v1var+dv1var));
+      tree->contmod->logrem_down[start+d->num] -= .5*pow(v1mu-v2mu,2)/(v2var+dv2var+v1var+dv1var);      
     }
   
   return;

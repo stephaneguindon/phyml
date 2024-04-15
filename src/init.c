@@ -3902,85 +3902,82 @@ void Set_Defaults_Contmod(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void RRW_Init_Contmod_Locations(int dim_idx, t_tree *tree)
+void Init_Contmod_Locations(t_tree *tree)
 {
-  for(int i=0;i<tree->n_otu;++i)
-    {
-      tree->contmod->mu_down[i] = tree->a_nodes[i]->ldsk->coord->lonlat[dim_idx];
-      tree->contmod->var_down[i] = tree->contmod->obs_var[dim_idx];
-      tree->contmod->logrem_down[i] = 0.0;
-
-      tree->contmod->mu_up[i] = 0.0;
-      tree->contmod->var_up[i] = 0.0;
-      tree->contmod->logrem_up[i] = 0.0;
-    }
+  int i,j,start;
   
-  for(int i=tree->n_otu;i<2*tree->n_otu-1;++i)
+  for(i=0;i < tree->mmod->n_dim;++i)
     {
-      tree->contmod->mu_down[i] = 0.0;
-      tree->contmod->var_down[i] = 0.0;
-      tree->contmod->logrem_down[i] = 0.0;
+      start = Contmod_Start(LOCATION,i,tree);
 
-      tree->contmod->mu_up[i] = 0.0;
-      tree->contmod->var_up[i] = 0.0;
-      tree->contmod->logrem_up[i] = 0.0;
-    }
-}
+      for(j=0;j<tree->n_otu;++j)
+        {          
+          tree->contmod->mu_down[start + j] = tree->a_nodes[j]->ldsk->coord->lonlat[i];
+          tree->contmod->var_down[start + j] = tree->contmod->obs_var[i];
+          tree->contmod->logrem_down[start + j] = 0.0;
+          
+          tree->contmod->mu_up[start + j] = 0.0;
+          tree->contmod->var_up[start + j] = 0.0;
+          tree->contmod->logrem_up[start + j] = 0.0;
 
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-void VELOC_Init_Contmod_Locations(int dim_idx, t_tree *tree)
-{
-  for(int i=0;i<tree->n_otu;++i)
-    {
-      tree->contmod->mu_down[i] = tree->a_nodes[i]->ldsk->coord->lonlat[dim_idx];
-      tree->contmod->var_down[i] = tree->contmod->obs_var[dim_idx];
-      tree->contmod->logrem_down[i] = 0.0;
-
-      tree->contmod->mu_up[i] = 0.0;
-      tree->contmod->var_up[i] = 0.0;
-      tree->contmod->logrem_up[i] = 0.0;
-    }
-
-  for(int i=tree->n_otu;i<2*tree->n_otu-1;++i)
-    {
-      tree->contmod->mu_down[i] = 0.0;
-      tree->contmod->var_down[i] = 0.0;
-      tree->contmod->logrem_down[i] = 0.0;
-
-      tree->contmod->mu_up[i] = 0.0;
-      tree->contmod->var_up[i] = 0.0;
-      tree->contmod->logrem_up[i] = 0.0;
-    }
-
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
-void VELOC_Init_Contmod_Velocities(int dim_idx, t_tree *tree)
-{
-  for(int i=0;i<tree->n_otu;++i)
-    {
-      tree->contmod->mu_down[i] = tree->a_nodes[i]->ldsk->veloc->deriv[dim_idx];
-      tree->contmod->var_down[i] = 1.0E+7;
-      tree->contmod->logrem_down[i] = 0.0;
-
-      tree->contmod->mu_up[i] = 0.0;
-      tree->contmod->var_up[i] = 0.0;
-      tree->contmod->logrem_up[i] = 0.0;
-    }
-
-  for(int i=tree->n_otu;i<2*tree->n_otu-1;++i)
-    {
-      tree->contmod->mu_down[i] = 0.0;
-      tree->contmod->var_down[i] = 0.0;
-      tree->contmod->logrem_down[i] = 0.0;
+          tree->contmod->lnL_down[start + j] = 0.0;
+          tree->contmod->lnL_up[start + j] = 0.0; 
+        }
       
-      tree->contmod->mu_up[i] = 0.0;
-      tree->contmod->var_up[i] = 0.0;
-      tree->contmod->logrem_up[i] = 0.0;
+      for(j=tree->n_otu;j<2*tree->n_otu-1;++j)
+        {
+          tree->contmod->mu_down[start + j] = 0.0;
+          tree->contmod->var_down[start +j] = 0.0;
+          tree->contmod->logrem_down[start + j] = 0.0;
+          
+          tree->contmod->mu_up[start + j] = 0.0;
+          tree->contmod->var_up[start + j] = 0.0;
+          tree->contmod->logrem_up[start +j] = 0.0;
+
+          tree->contmod->lnL_down[start + j] = 0.0;
+          tree->contmod->lnL_up[start + j] = 0.0; 
+        }
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void Init_Contmod_Velocities(t_tree *tree)
+{
+  int i,j,start;
+  
+  for(i=0;i<tree->mmod->n_dim;++i)
+    {
+      start = Contmod_Start(VELOCITY,i,tree);
+
+      for(j=0;j<tree->n_otu;++j)
+        {
+          tree->contmod->mu_down[start + j] = tree->a_nodes[j]->ldsk->veloc->deriv[i];
+          tree->contmod->var_down[start + j] = 1.0E+7;
+          tree->contmod->logrem_down[start + j] = 0.0;
+          
+          tree->contmod->mu_up[start + j] = 0.0;
+          tree->contmod->var_up[start +j] = 0.0;
+          tree->contmod->logrem_up[start + j] = 0.0;
+
+          tree->contmod->lnL_down[start + j] = 0.0;
+          tree->contmod->lnL_up[start + j] = 0.0;
+        }
+      
+      for(j=tree->n_otu;j<2*tree->n_otu-1;++j)
+        {
+          tree->contmod->mu_down[start +j] = 0.0;
+          tree->contmod->var_down[start +j] = 0.0;
+          tree->contmod->logrem_down[start + j] = 0.0;
+          
+          tree->contmod->mu_up[start + j] = 0.0;
+          tree->contmod->var_up[start + j] = 0.0;
+          tree->contmod->logrem_up[start + j] = 0.0;
+
+          tree->contmod->lnL_down[start + j] = 0.0;
+          tree->contmod->lnL_up[start + j] = 0.0;
+        }
     }
 }
 

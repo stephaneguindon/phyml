@@ -529,9 +529,10 @@ void RRW_Sample_Arealin_Plot(t_tree *tree)
   
   RRW_Update_Normalization_Factor(tree);
   
+  Init_Contmod_Locations(tree);
+
   for(i=0;i<tree->mmod->n_dim;++i)
     {
-      RRW_Init_Contmod_Locations(i,tree);
       RRW_Integrated_Lk_Location_Post(NULL,tree->n_root,tree->mmod->sigsq[i],tree,NO);
       RRW_Integrated_Lk_Location_Pre(tree->n_root,tree->n_root->v[1],tree->mmod->sigsq[i],tree);
       RRW_Integrated_Lk_Location_Pre(tree->n_root,tree->n_root->v[2],tree->mmod->sigsq[i],tree);
@@ -641,7 +642,7 @@ void RRW_Sample_Arealin_Plot(t_tree *tree)
 
 void RRW_Sample_Node_Locations(t_tree *tree)
 {
-  int i,j;
+  int i,j,start;
   t_node *n;
   phydbl au,bu,varu,var,mean;
   phydbl root_var, root_mean;
@@ -651,16 +652,18 @@ void RRW_Sample_Node_Locations(t_tree *tree)
 
   root_var = tree->mmod->rw_root_var;
   root_mean = -BIG;
-
   
   RRW_Update_Normalization_Factor(tree);
 
+  Init_Contmod_Locations(tree);
+
   for(i=0;i<tree->mmod->n_dim;++i)
     {
-      RRW_Init_Contmod_Locations(i,tree);
       RRW_Integrated_Lk_Location_Post(NULL,tree->n_root,i,tree,NO);
       RRW_Integrated_Lk_Location_Pre(tree->n_root,tree->n_root->v[1],i,tree);
       RRW_Integrated_Lk_Location_Pre(tree->n_root,tree->n_root->v[2],i,tree);      
+
+      start = Contmod_Start(LOCATION,i,tree);
 
       for(j=0;j<2*tree->n_otu-2;++j)
         {
@@ -670,27 +673,27 @@ void RRW_Sample_Node_Locations(t_tree *tree)
               au = 1.0;
               bu = 0.0;
               varu = RRW_Location_Variance_Along_Edge(n,i,tree); 
-
-              if(tree->contmod->var_down[n->num] > SMALL && pow(au,2)*tree->contmod->var_up[n->num]+varu > SMALL)
+        
+              if(tree->contmod->var_down[start+n->num] > SMALL && pow(au,2)*tree->contmod->var_up[start+n->num]+varu > SMALL)
                 {
-                  var = 1./tree->contmod->var_down[n->num] + 1. / (pow(au,2)*tree->contmod->var_up[n->num]+varu);
+                  var = 1./tree->contmod->var_down[start+n->num] + 1. / (pow(au,2)*tree->contmod->var_up[start+n->num]+varu);
                   var = 1./var;
-                  mean = (tree->contmod->mu_down[n->num]/tree->contmod->var_down[n->num] + (au*tree->contmod->mu_up[n->num]+bu)/(pow(au,2)*tree->contmod->var_up[n->num]+varu))*var;
+                  mean = (tree->contmod->mu_down[start+n->num]/tree->contmod->var_down[start+n->num] + (au*tree->contmod->mu_up[start+n->num]+bu)/(pow(au,2)*tree->contmod->var_up[start+n->num]+varu))*var;
                 }
-              else if(tree->contmod->var_down[n->num] > SMALL)
+              else if(tree->contmod->var_down[start+n->num] > SMALL)
                 {
                   var = 0.0;
-                  mean = au*tree->contmod->mu_up[n->num]+bu;
+                  mean = au*tree->contmod->mu_up[start+n->num]+bu;
                 }
-              else if(pow(au,2)*tree->contmod->var_up[n->num]+varu > SMALL)
+              else if(pow(au,2)*tree->contmod->var_up[start+n->num]+varu > SMALL)
                 {
                   var = 0.0;
-                  mean = tree->contmod->mu_down[n->num];
+                  mean = tree->contmod->mu_down[start+n->num];
                 }
               else
                 {
                   var = 0.0;
-                  mean = tree->contmod->mu_down[n->num];
+                  mean = tree->contmod->mu_down[start+n->num];
                 }
               
               /* Below is only valid if prior distribution of location at that node is flat */
@@ -698,19 +701,19 @@ void RRW_Sample_Node_Locations(t_tree *tree)
             }
         }
 
-      assert(isnan(tree->contmod->var_down[tree->n_root->num]) == NO);
+      assert(isnan(tree->contmod->var_down[start+tree->n_root->num]) == NO);
       
-      var = 1./tree->contmod->var_down[tree->n_root->num] + 1./root_var;
+      var = 1./tree->contmod->var_down[start+tree->n_root->num] + 1./root_var;
       var = 1./var;
       
       root_mean = LOCATION_Mean_Lonlat(i,tree);
 
-      mean = (tree->contmod->mu_down[tree->n_root->num]/tree->contmod->var_down[tree->n_root->num] +
+      mean = (tree->contmod->mu_down[start+tree->n_root->num]/tree->contmod->var_down[start+tree->n_root->num] +
               root_mean / root_var)*var;
 
       tree->n_root->ldsk->coord->lonlat[i] =
-        Rnorm(tree->contmod->mu_down[tree->n_root->num],
-              sqrt(tree->contmod->var_down[tree->n_root->num]));
+        Rnorm(tree->contmod->mu_down[start+tree->n_root->num],
+              sqrt(tree->contmod->var_down[start+tree->n_root->num]));
     }
 }
 
@@ -720,7 +723,7 @@ void RRW_Sample_Node_Locations(t_tree *tree)
 phydbl RRW_Integrated_Lk(t_tree *tree)
 {
   phydbl lnL,root_mean,root_var;
-  int i,err;
+  int i,err,start;
 
   /* root_var = 1.0; */
   root_var = tree->mmod->rw_root_var;
@@ -730,15 +733,18 @@ phydbl RRW_Integrated_Lk(t_tree *tree)
 
   lnL = 0.0;
 
+  Init_Contmod_Locations(tree);
+
   for(i=0;i<tree->mmod->n_dim;++i)
     {
-      RRW_Init_Contmod_Locations(i,tree);
       RRW_Integrated_Lk_Location_Post(NULL,tree->n_root,i,tree,NO);
+
+      start = Contmod_Start(LOCATION,i,tree);
 
       /* root_mean = 0.0; */
       root_mean = LOCATION_Mean_Lonlat(i,tree);      
-      lnL += tree->contmod->logrem_down[tree->n_root->num];
-      lnL += Log_Dnorm(tree->contmod->mu_down[tree->n_root->num],root_mean,sqrt(root_var+tree->contmod->var_down[tree->n_root->num]),&err);
+      lnL += tree->contmod->logrem_down[start+tree->n_root->num];
+      lnL += Log_Dnorm(tree->contmod->mu_down[start+tree->n_root->num],root_mean,sqrt(root_var+tree->contmod->var_down[start+tree->n_root->num]),&err);
     }
   
   return(lnL);
@@ -773,7 +779,7 @@ void RRW_Integrated_Lk_Location_Post(t_node *a, t_node *d, short int dim, t_tree
     }
   else
     {
-      int i,err;
+      int i,err,start;
       t_node *v1, *v2;
       phydbl v1mu,v2mu;
       phydbl v1var,v2var;
@@ -800,16 +806,18 @@ void RRW_Integrated_Lk_Location_Post(t_node *a, t_node *d, short int dim, t_tree
             }
         }
 
+      start = Contmod_Start(LOCATION,dim,tree);
+
       err = -1;
       
-      v1mu = tree->contmod->mu_down[v1->num];
-      v2mu = tree->contmod->mu_down[v2->num];
+      v1mu = tree->contmod->mu_down[start+v1->num];
+      v2mu = tree->contmod->mu_down[start+v2->num];
 
-      v1var = tree->contmod->var_down[v1->num];
-      v2var = tree->contmod->var_down[v2->num];
+      v1var = tree->contmod->var_down[start+v1->num];
+      v2var = tree->contmod->var_down[start+v2->num];
 
-      v1logrem = tree->contmod->logrem_down[v1->num];
-      v2logrem = tree->contmod->logrem_down[v2->num];
+      v1logrem = tree->contmod->logrem_down[start+v1->num];
+      v2logrem = tree->contmod->logrem_down[start+v2->num];
 
       dv1var = RRW_Location_Variance_Along_Edge(v1,dim,tree);
       dv2var = RRW_Location_Variance_Along_Edge(v2,dim,tree);
@@ -833,32 +841,32 @@ void RRW_Integrated_Lk_Location_Post(t_node *a, t_node *d, short int dim, t_tree
         }
 
 
-      tree->contmod->var_down[d->num]    = 0.0;
-      tree->contmod->mu_down[d->num]     = 0.0;
-      tree->contmod->logrem_down[d->num] = 0.0;
+      tree->contmod->var_down[start+d->num]    = 0.0;
+      tree->contmod->mu_down[start+d->num]     = 0.0;
+      tree->contmod->logrem_down[start+d->num] = 0.0;
       
       if((dv1var + v1var > 1.E-7) && (dv2var + v2var > 1.E-7)) // Standard case
         {
-          tree->contmod->var_down[d->num] = pow(av1,2)/(v1var + dv1var) + pow(av2,2)/(v2var + dv2var);
-          tree->contmod->var_down[d->num] = 1./tree->contmod->var_down[d->num];      
-          tree->contmod->mu_down[d->num] = (av1*(v1mu-bv1)/(v1var + dv1var) + av2*(v2mu-bv2)/(v2var + dv2var)) * tree->contmod->var_down[d->num];
+          tree->contmod->var_down[start+d->num] = pow(av1,2)/(v1var + dv1var) + pow(av2,2)/(v2var + dv2var);
+          tree->contmod->var_down[start+d->num] = 1./tree->contmod->var_down[start+d->num];      
+          tree->contmod->mu_down[start+d->num] = (av1*(v1mu-bv1)/(v1var + dv1var) + av2*(v2mu-bv2)/(v2var + dv2var)) * tree->contmod->var_down[d->num];
         }
       else if(dv1var + v1var > 1.E-7) // Null variance along d - v2
         {
-          tree->contmod->mu_down[d->num] = (v2mu-bv2)/av2;
+          tree->contmod->mu_down[start+d->num] = (v2mu-bv2)/av2;
         }
       else if(dv2var + v2var > 1.E-7) // Null variance along d - v1
         {
-          tree->contmod->mu_down[d->num] = (v1mu-bv1)/av1;
+          tree->contmod->mu_down[start+d->num] = (v1mu-bv1)/av1;
         }
       else
         {
-          tree->contmod->mu_down[d->num] = (v1mu-bv1)/av1;
+          tree->contmod->mu_down[start+d->num] = (v1mu-bv1)/av1;
         }
       
-      tree->contmod->logrem_down[d->num]  = v1logrem + v2logrem;
-      tree->contmod->logrem_down[d->num] -= log(fabs(av2*av1));
-      tree->contmod->logrem_down[d->num] += Log_Dnorm((v1mu-bv1)/av1,(v2mu-bv2)/av2,sqrt((v1var+dv1var)/pow(av1,2)+(v2var+dv2var)/pow(av2,2)),&err);
+      tree->contmod->logrem_down[start+d->num]  = v1logrem + v2logrem;
+      tree->contmod->logrem_down[start+d->num] -= log(fabs(av2*av1));
+      tree->contmod->logrem_down[start+d->num] += Log_Dnorm((v1mu-bv1)/av1,(v2mu-bv2)/av2,sqrt((v1var+dv1var)/pow(av1,2)+(v2var+dv2var)/pow(av2,2)),&err);
     }
   
   return;
@@ -869,7 +877,7 @@ void RRW_Integrated_Lk_Location_Post(t_node *a, t_node *d, short int dim, t_tree
 
 void RRW_Integrated_Lk_Location_Pre(t_node *a, t_node *d, short int dim, t_tree *tree)
 {
-  int i,err;
+  int i,err,start;
   t_node *v1, *v2;
   phydbl v1mu,v2mu;
   phydbl v1var,v2var;
@@ -900,24 +908,26 @@ void RRW_Integrated_Lk_Location_Pre(t_node *a, t_node *d, short int dim, t_tree 
   
   assert(v2->anc == a);
   assert(v2->anc->anc == v1);
-    
-  v2mu     = tree->contmod->mu_down[v2->num];
-  v2var    = tree->contmod->var_down[v2->num];
-  v2logrem = tree->contmod->logrem_down[v2->num];
+
+  start = Contmod_Start(LOCATION,dim,tree);
+      
+  v2mu     = tree->contmod->mu_down[start+v2->num];
+  v2var    = tree->contmod->var_down[start+v2->num];
+  v2logrem = tree->contmod->logrem_down[start+v2->num];
   av2var   = RRW_Location_Variance_Along_Edge(v2,dim,tree);    
 
   av2      = 1.0;
   bv2      = 0.0;
 
-  tree->contmod->var_up[d->num]    = 0.0;
-  tree->contmod->mu_up[d->num]     = 0.0;
-  tree->contmod->logrem_up[d->num] = 0.0;
+  tree->contmod->var_up[start+d->num]    = 0.0;
+  tree->contmod->mu_up[start+d->num]     = 0.0;
+  tree->contmod->logrem_up[start+d->num] = 0.0;
   
   if(v1 != NULL)
     {
-      v1mu     = tree->contmod->mu_up[a->num];
-      v1var    = tree->contmod->var_up[a->num];
-      v1logrem = tree->contmod->logrem_up[a->num];
+      v1mu     = tree->contmod->mu_up[start+a->num];
+      v1var    = tree->contmod->var_up[start+a->num];
+      v1logrem = tree->contmod->logrem_up[start+a->num];
       av1var   = RRW_Location_Variance_Along_Edge(a,dim,tree);
 
       av1      = 1.0;
@@ -925,33 +935,33 @@ void RRW_Integrated_Lk_Location_Pre(t_node *a, t_node *d, short int dim, t_tree 
   
       if(pow(av1,2)*v1var+av1var > 1.E-7 && av2var + v2var > 1.E-7) // Standard case
         {
-          tree->contmod->var_up[d->num] = pow(av2,2)/(v2var + av2var) + 1./(pow(av1,2)*v1var+av1var);
-          tree->contmod->var_up[d->num] = 1./tree->contmod->var_up[d->num];
+          tree->contmod->var_up[start+d->num] = pow(av2,2)/(v2var + av2var) + 1./(pow(av1,2)*v1var+av1var);
+          tree->contmod->var_up[start+d->num] = 1./tree->contmod->var_up[start+d->num];
 
-          tree->contmod->mu_up[d->num] = (av2*(v2mu-bv2)/(v2var + av2var) + (av1*v1mu+bv1)/(pow(av1,2)*v1var+av1var)) * tree->contmod->var_up[d->num];
+          tree->contmod->mu_up[start+d->num] = (av2*(v2mu-bv2)/(v2var + av2var) + (av1*v1mu+bv1)/(pow(av1,2)*v1var+av1var)) * tree->contmod->var_up[start+d->num];
         }
       else if(pow(av1,2)*v1var+av1var > 1.E-7) // Null variance along d - v2
         {
-          tree->contmod->mu_up[d->num] = (v2mu-bv2)/av2;
+          tree->contmod->mu_up[start+d->num] = (v2mu-bv2)/av2;
         }
       else if(av2var + v2var > 1.E-7) // Null variance along d - v1
         {
-          tree->contmod->mu_up[d->num] = (v1mu-bv1)/av1;
+          tree->contmod->mu_up[start+d->num] = (v1mu-bv1)/av1;
         }
       else
         {
-          tree->contmod->mu_up[d->num] = (v1mu-bv1)/av1;
+          tree->contmod->mu_up[start+d->num] = (v1mu-bv1)/av1;
         }
 
-      tree->contmod->logrem_up[d->num]  = v1logrem + v2logrem;
-      tree->contmod->logrem_up[d->num] -= log(fabs(av2));
-      tree->contmod->logrem_up[d->num] += Log_Dnorm((v2mu-bv2)/av2,av1*v1mu+bv1,sqrt((v2var+av2var)/pow(av2,2)+pow(av1,2)*v1var+av1var),&err);
+      tree->contmod->logrem_up[start+d->num]  = v1logrem + v2logrem;
+      tree->contmod->logrem_up[start+d->num] -= log(fabs(av2));
+      tree->contmod->logrem_up[start+d->num] += Log_Dnorm((v2mu-bv2)/av2,av1*v1mu+bv1,sqrt((v2var+av2var)/pow(av2,2)+pow(av1,2)*v1var+av1var),&err);
     }
   else
     {
-      tree->contmod->mu_up[d->num]     = (v2mu-bv2)/av2;
-      tree->contmod->var_up[d->num]    = (v2var + av2var)/pow(av2,2);
-      tree->contmod->logrem_up[d->num] = v2logrem;
+      tree->contmod->mu_up[start+d->num]     = (v2mu-bv2)/av2;
+      tree->contmod->var_up[start+d->num]    = (v2var + av2var)/pow(av2,2);
+      tree->contmod->logrem_up[start+d->num] = v2logrem;
     }
   
   if(d->tax == TRUE) return;
