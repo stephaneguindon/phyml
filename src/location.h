@@ -17,7 +17,7 @@ the GNU public licence. See http://www.opensource.org for details.
 
 #include "utilities.h"
 
-phydbl LOCATION_Lk(t_tree *tree);
+phydbl LOCATION_Lk(t_node *z, t_tree *tree);
 phydbl LOCATION_Prior(t_tree *tree);
 phydbl LOCATION_Lk_Range(t_dsk *young, t_dsk *old, t_tree *tree);
 phydbl LOCATION_Lk_Core(t_dsk *disk, t_tree *tree);
@@ -28,6 +28,7 @@ phydbl LOCATION_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree);
 phydbl LOCATION_Mean_Lonlat(short int dim, t_tree *tree);
 phydbl LOCATION_Wrap_Lk(t_edge *b, t_tree *tree, supert_tree *stree);
 phydbl LOCATION_Wrap_Prior(t_edge *b, t_tree *tree, supert_tree *stree);
+void LOCATION_Update_Lk_Down(t_node *a, t_node *d, t_tree *tree);
 
 
 #endif

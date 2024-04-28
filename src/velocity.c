@@ -19,7 +19,7 @@ the GNU public licence. See http://www.opensource.org for details.
 
 phydbl VELOC_Wrap_Lk(t_edge *b, t_tree *tree, supert_tree *stree)
 {
-  return(VELOC_Lk(tree));  
+  return(VELOC_Lk(NULL,tree));  
 }
 
 //////////////////////////////////////////////////////////////
@@ -33,20 +33,18 @@ short int VELOC_Is_Integrated_Velocity(t_phyrex_mod *mod)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-phydbl VELOC_Lk(t_tree *tree)
+phydbl VELOC_Lk(t_node *z, t_tree *tree)
 {
   phydbl lnL_loc, lnL_veloc;
 
   RRW_Update_Normalization_Factor(tree);
-
+  
   lnL_loc   = UNLIKELY;
   lnL_veloc = UNLIKELY;
-  
-  lnL_loc = (tree->mmod->integrateAncestralLocations == NO) ? (VELOC_Augmented_Lk_Locations(tree)) : (VELOC_Integrated_Lk_Location(tree));
-  lnL_veloc = VELOC_Augmented_Lk_Velocities(tree);
 
-  /* PhyML_Printf("\n. lnL_loc: %f lnL_veloc: %f",lnL_loc,lnL_veloc); */
-  
+  lnL_loc = (tree->mmod->integrateAncestralLocations == NO) ? (VELOC_Augmented_Lk_Locations(z,tree)) : (VELOC_Integrated_Lk_Location(z,tree));
+  lnL_veloc = VELOC_Augmented_Lk_Velocity(z,tree);
+    
   if(tree->mmod->print_lk == YES)
     {
       PhyML_Printf("\n. Sigsq: %f %f",tree->mmod->sigsq[0],tree->mmod->sigsq[1]);
@@ -55,6 +53,8 @@ phydbl VELOC_Lk(t_tree *tree)
       PhyML_Printf("\n. Sum: %f",lnL_loc + lnL_veloc);
     }
 
+  tree->contmod->combined_lnL = lnL_loc + lnL_veloc;
+  
   return(lnL_loc + lnL_veloc);
 }
 
@@ -62,7 +62,7 @@ phydbl VELOC_Lk(t_tree *tree)
 //////////////////////////////////////////////////////////////
 
 /* Returns log[Pr(locations at all nodes | velocities at all nodes, tree)] */
-phydbl VELOC_Augmented_Lk_Locations(t_tree *tree)
+phydbl VELOC_Augmented_Lk_Locations(t_node *z, t_tree *tree)
 {
   phydbl lnP,disk_lnP;
   t_dsk *disk;
@@ -78,7 +78,7 @@ phydbl VELOC_Augmented_Lk_Locations(t_tree *tree)
       disk = disk->prev;
     }
   while(disk);
-  
+
   return(lnP);
 }
 
@@ -211,24 +211,87 @@ phydbl VELOC_Locations_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
 //////////////////////////////////////////////////////////////
 
 /* Returns log[Pr(velocities at all nodes | tree)] */
-phydbl VELOC_Augmented_Lk_Velocities(t_tree *tree)
+phydbl VELOC_Augmented_Lk_Velocity(t_node *z, t_tree *tree)
 {
-  phydbl lnP,disk_lnP;
-  t_dsk *disk;
+  /* phydbl lnP,disk_lnP; */
+  /* t_dsk *disk; */
 
-  disk_lnP = 0.0;
-  lnP = 0.0;
-  disk = tree->young_disk;
+  /* disk_lnP = 0.0; */
+  /* lnP = 0.0; */
+  /* disk = tree->young_disk; */
 
-  do
-    {
-      disk_lnP = VELOC_Augmented_Lk_Velocities_Core(disk,tree);
-      lnP += disk_lnP;      
-      disk = disk->prev;
-    }  
-  while(disk);
+  /* do */
+  /*   { */
+  /*     disk_lnP = VELOC_Augmented_Lk_Velocities_Core(disk,tree); */
+  /*     lnP += disk_lnP;       */
+  /*     disk = disk->prev; */
+  /*   }   */
+  /* while(disk); */
   
-  return(lnP);
+  /* return(lnP); */
+
+
+  phydbl lnL;
+  phydbl root_mean,root_var;
+  int i,err,start;
+
+  lnL = UNLIKELY;
+  
+  if(z == NULL)
+    {
+      Init_Contmod_Velocities(tree);
+
+      RRW_Update_Normalization_Factor(tree);
+      
+      lnL = 0.0;
+
+      VELOC_Augmented_Lk_Velocity_Post(NULL,tree->n_root,tree);
+
+      if(tree->contmod->both_sides[VELOCITY] == YES)
+        {
+          VELOC_Augmented_Lk_Velocity_Pre(tree->n_root,tree->n_root->v[1],tree);
+          VELOC_Augmented_Lk_Velocity_Pre(tree->n_root,tree->n_root->v[2],tree);
+        }
+          
+      root_var = tree->mmod->rw_root_var;
+      root_mean = tree->mmod->rw_root_mean;
+
+      for(i=0;i<tree->mmod->n_dim;++i)
+        {
+          start = Contmod_Start(VELOCITY,i,tree);
+
+          tree->contmod->lnL[VELOCITY*tree->mmod->n_dim+i] = tree->contmod->lnL_down[start + tree->n_root->num];
+          tree->contmod->lnL[VELOCITY*tree->mmod->n_dim+i] += Log_Dnorm(tree->n_root->ldsk->veloc->deriv[i],
+                                                                        root_mean,
+                                                                        sqrt(root_var),
+                                                                        &err);
+
+          lnL += tree->contmod->lnL[VELOCITY*tree->mmod->n_dim+i];
+        }
+    }
+  else
+    {
+      lnL = 0.0;
+      
+      root_var = tree->mmod->rw_root_var;
+      root_mean = tree->mmod->rw_root_mean;
+
+      for(i=0;i<tree->mmod->n_dim;++i)
+        {
+          start = Contmod_Start(VELOCITY,i,tree);
+
+          tree->contmod->lnL[VELOCITY*tree->mmod->n_dim+i] = tree->contmod->lnL_down[start + z->num];
+          if(z != tree->n_root) tree->contmod->lnL[VELOCITY*tree->mmod->n_dim+i] += tree->contmod->lnL_up[start + z->num];
+          tree->contmod->lnL[VELOCITY*tree->mmod->n_dim+i] += Log_Dnorm(z->ldsk->veloc->deriv[i],
+                                                                        root_mean,
+                                                                        sqrt(root_var),
+                                                                        &err);
+
+          lnL += tree->contmod->lnL[VELOCITY*tree->mmod->n_dim+i];
+        }
+    }
+              
+  return(lnL);
 }
 
 //////////////////////////////////////////////////////////////
@@ -305,15 +368,6 @@ phydbl VELOC_Velocities_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
         {
           dt = fabs(ldsk->disk->time-ldsk->prev->disk->time);
 
-          /* mean = 0.5*(3.*(ldsk->coord->lonlat[i] - ldsk->prev->coord->lonlat[i])/dt - ldsk->prev->veloc->deriv[i]); */
-
-          /* sd = */
-          /*   log(tree->mmod->sigsq[i]) + */
-          /*   log(tree->mmod->sigsq_scale[nd_d->num]) + */
-          /*   log(tree->mmod->sigsq_scale_norm_fact) + */
-          /*   log(dt)- */
-          /*   LOG4; */
-
           mean = VELOC_Velocity_Mean_Along_Edge(nd_d,i,tree);          
           var = VELOC_Velocity_Variance_Along_Edge(nd_d,i,tree);
           
@@ -357,334 +411,50 @@ phydbl VELOC_Velocities_Forward_Lk_Path(t_ldsk *a, t_ldsk *d, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-phydbl VELOC_Integrated_Lk_Location(t_tree *tree)
+void VELOC_Augmented_Lk_Velocity_Post(t_node *a, t_node *d, t_tree *tree)
 {
-  phydbl lnL,root_mean,root_var;
-  int i,err,start;
+  int i,start;
   
-  RRW_Update_Normalization_Factor(tree);
-  
-  lnL = 0.0;
-  root_var = tree->mmod->rw_root_var;
-  root_mean = 0.0;
-  
-  Init_Contmod_Locations(tree);
-
-  for(i=0;i<tree->mmod->n_dim;++i)
-    {
-      VELOC_Integrated_Lk_Location_Post(NULL,tree->n_root,i,tree,NO);
-
-      root_mean = LOCATION_Mean_Lonlat(i,tree);
-
-      start = Contmod_Start(LOCATION,i,tree);
-      
-      lnL += tree->contmod->logrem_down[start + tree->n_root->num];
-      lnL += Log_Dnorm(tree->contmod->mu_down[start + tree->n_root->num],
-                       root_mean,
-                       sqrt(root_var+tree->contmod->var_down[start + tree->n_root->num]),
-                       &err);
-    }
-  return(lnL);
-}
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-// See Pybus et al. 10.1073/pnas.1206598109 + see my technical notes
-void VELOC_Integrated_Lk_Location_Post(t_node *a, t_node *d, short int dim, t_tree *tree, short int print)
-{
   if(d->tax == TRUE)
-    {
+    {      
+      for(i=0;i<tree->mmod->n_dim;++i)
+        {
+          start = Contmod_Start(VELOCITY,i,tree);
+          tree->contmod->lnL_down[start+d->num] = 1.0;
+        }
       return;
     }
   else
     {
-      int i,start;
-      t_node *v1, *v2;
-      phydbl v1mu,v2mu;
-      phydbl v1var,v2var;
-      phydbl dv1var,dv2var;
-      phydbl v1logrem,v2logrem;
-      phydbl dtv1, dtv2;
-      phydbl av1, av2;
-      phydbl bv1, bv2;
       
       for(i=0;i<3;++i)
         {
           if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
             {
-              VELOC_Integrated_Lk_Location_Post(d,d->v[i],dim,tree,print);
+              VELOC_Augmented_Lk_Velocity_Post(d,d->v[i],tree);
             }
         }
-
-      v1 = v2 = NULL;
-      for(i=0;i<3;++i)
-        {
-          if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
-            {
-              if(v1 == NULL) v1 = d->v[i];
-              else v2 = d->v[i];
-            }
-        }
-
-      start = Contmod_Start(LOCATION,dim,tree);
       
-      v1mu = tree->contmod->mu_down[start + v1->num];
-      v2mu = tree->contmod->mu_down[start + v2->num];
-
-      v1var = tree->contmod->var_down[start + v1->num];
-      v2var = tree->contmod->var_down[start + v2->num];
-
-      v1logrem = tree->contmod->logrem_down[start + v1->num];
-      v2logrem = tree->contmod->logrem_down[start + v2->num];
-
-      dv1var = VELOC_Location_Variance_Along_Edge(v1,dim,tree);
-      dv2var = VELOC_Location_Variance_Along_Edge(v2,dim,tree);
-      
-      dtv1 = fabs(tree->times->nd_t[v1->num] - tree->times->nd_t[d->num]);
-      dtv2 = fabs(tree->times->nd_t[v2->num] - tree->times->nd_t[d->num]);
-      
-      av1 = 1.0;
-      av2 = 1.0;
-
-      /* Below is only correct for IBM... !!!!!!!!!!!!!!!!!!! */
-      /* bv1 = (v1->ldsk->veloc->deriv[dim] + d->ldsk->veloc->deriv[dim])*.5*dtv1; */
-      /* bv2 = (v2->ldsk->veloc->deriv[dim] + d->ldsk->veloc->deriv[dim])*.5*dtv2; */
-
-      bv1 = VELOC_Location_Mean_Along_Edge(v1,dim,tree) - d->ldsk->coord->lonlat[dim];
-      bv2 = VELOC_Location_Mean_Along_Edge(v2,dim,tree) - d->ldsk->coord->lonlat[dim];
-
-      /* if(d == tree->n_root && print == YES) */
-        {
-          /* PhyML_Printf("\n. v1mu=%f v2mu=%f v1var=%f dv1var=%f v2var=%f dv2var=%f t=%f t1=%f t2=%f", */
-          /*              v1mu, */
-          /*              v2mu, */
-          /*              v1var,dv1var, */
-          /*              v2var,dv2var, */
-          /*              tree->times->nd_t[d->num], */
-          /*              tree->times->nd_t[v1->num], */
-          /*              tree->times->nd_t[v2->num]); */
-        }
-      
-                         
-      if(IBM_Is_Ibm(tree->mmod) == YES)
-        {
-          IBM_Integrated_Location_Down(dtv1,dtv2,
-                                       av1,bv1,v1mu,v1var,dv1var,
-                                       av2,bv2,v2mu,v2var,dv2var,
-                                       v1logrem,v2logrem,
-                                       tree->contmod->mu_down+start+d->num,
-                                       tree->contmod->var_down+start+d->num,
-                                       tree->contmod->logrem_down+start+d->num,
-                                       tree);
-        }
-      else if(IWN_Is_Iwn(tree->mmod) == YES)
-        {
-          IWN_Integrated_Location_Down(dtv1,dtv2,
-                                       av1,bv1,v1mu,v1var,dv1var,
-                                       av2,bv2,v2mu,v2var,dv2var,
-                                       v1logrem,v2logrem,
-                                       d->ldsk->veloc->deriv[dim],v1->ldsk->veloc->deriv[dim],v2->ldsk->veloc->deriv[dim],
-                                       tree->mmod->omega,
-                                       tree->contmod->mu_down+start+d->num,
-                                       tree->contmod->var_down+start+d->num,
-                                       tree->contmod->logrem_down+start+d->num);
-        }
-      else if(IOU_Is_Iou(tree->mmod) == YES)
-        {
-          IOU_Integrated_Location_Down(dtv1,dtv2,
-                                       av1,bv1,v1mu,v1var,dv1var,
-                                       av2,bv2,v2mu,v2var,dv2var,
-                                       v1logrem,v2logrem,
-                                       tree->contmod->mu_down+start+d->num,
-                                       tree->contmod->var_down+start+d->num,
-                                       tree->contmod->logrem_down+start+d->num);
-        }
-
-      if(isnan(tree->contmod->mu_down[start+d->num]) == YES)
-        {
-          PhyML_Printf("\n. %f %f %f %f %f %f %f %f %f %f %f %f %f",
-                       dtv1,dtv2,
-                       av1,bv1,v1mu,v1var,dv1var,
-                       av2,bv2,v2mu,v2var,dv2var);
-          PhyML_Printf("\n. bv2: %f",VELOC_Location_Mean_Along_Edge(v2,dim,tree));
-        }
-      
-
-      assert(isnan(tree->contmod->mu_down[start+d->num]) == NO);
-      assert(isnan(tree->contmod->var_down[start+d->num]) == NO && !(tree->contmod->var_down[start+d->num] < 0.0));
-      
-      /* if(v1->tax && v2->tax) */
-        /* { */
-        /* PhyML_Printf("\n. LOCATION  %c %d (%d,%d) -- mean: %f sd: %f rem %f dt1: %f dt2: %f sigsq: %f derivatives: %f %f %f av1: %f bv1: %f v1mu: %f v1var: %f dv1var: %f av2: %f bv2: %f v2mu: %f v2var: %f dv2var: %f v1logrem: %f v2logrem: %f small ? %d %d", */
-        /*              d == tree->n_root ? '*' : ' ', */
-        /*              d->num, */
-        /*              v1->num,v2->num, */
-        /*              tree->contmod->mu_down[start+d->num], */
-        /*              tree->contmod->var_down[start+d->num], */
-        /*              tree->contmod->logrem_down[start+d->num], */
-        /*              dtv1,dtv2, */
-        /*              tree->mmod->sigsq[dim], */
-        /*              v1->ldsk->veloc->deriv[dim], */
-        /*              v2->ldsk->veloc->deriv[dim], */
-        /*              d->ldsk->veloc->deriv[dim], */
-        /*              av1,bv1,v1mu,v1var,dv1var, */
-        /*              av2,bv2,v2mu,v2var,dv2var, */
-        /*              v1logrem,v2logrem, */
-        /*              dv1var + v1var > SMALL, */
-        /*              dv2var + v2var > SMALL); */
-        /* } */
-
+      VELOC_Update_Lk_Velocity_Down(a,d,tree);
     }
-  
   return;
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void VELOC_Integrated_Lk_Location_Pre(t_node *a, t_node *d, short int dim, t_tree *tree)
+void VELOC_Augmented_Lk_Velocity_Pre(t_node *a, t_node *d, t_tree *tree)
 {
-  int i,start;
-  t_node *v1, *v2;
-  phydbl v1mu,v2mu;
-  phydbl v1var,v2var;
-  phydbl av1var,av2var;
-  phydbl v1logrem,v2logrem;
-  phydbl dtv1, dtv2;
-  phydbl av1, av2;
-  phydbl bv1, bv2;
-  
-  
-  v1 = NULL;
-  if(a != tree->n_root)
+  int i;
+
+  if(d == tree->n_root)
     {
-      v1 = a->anc;
-      assert(v1);
+      VELOC_Augmented_Lk_Velocity_Pre(tree->n_root,tree->n_root->v[1],tree);
+      VELOC_Augmented_Lk_Velocity_Pre(tree->n_root,tree->n_root->v[2],tree);
+      return;
     }
   
-  v2 = NULL;
-  for(i=0;i<3;++i)
-    {
-      if(a->v[i] != d && a->v[i] != v1 && !(v1 == tree->n_root && a->b[i] == tree->e_root))
-        {
-          v2 = a->v[i];
-          break;
-        }
-    }
-
-  av1 = bv1 = -1.;
-  v1mu = v1var = v1logrem = -1.;
-  dtv1 = -1.;
-  av1var = -1.;
-  
-  assert(v2->anc == a);
-  assert(v2->anc->anc == v1);
-
-  start = Contmod_Start(LOCATION,dim,tree);
-
-  v2mu     = tree->contmod->mu_down[start+v2->num];
-  v2var    = tree->contmod->var_down[start+v2->num];
-  v2logrem = tree->contmod->logrem_down[start+v2->num];
-  dtv2     = fabs(tree->times->nd_t[v2->num] - tree->times->nd_t[a->num]);      
-  av2var   = VELOC_Location_Variance_Along_Edge(v2,dim,tree);    
-
-  av2      = 1.0;
-  /* Below is only correct for IBM... !!!!!!!!!!!!!!!!!!! */
-  /* bv2      = (v2->ldsk->veloc->deriv[dim] + a->ldsk->veloc->deriv[dim])*.5*dtv2; */
-  bv2      = VELOC_Location_Mean_Along_Edge(v2,dim,tree) - a->ldsk->coord->lonlat[dim];
-      
-  if(v1 != NULL)
-    {
-      v1mu     = tree->contmod->mu_up[start+a->num];
-      v1var    = tree->contmod->var_up[start+a->num];
-      v1logrem = tree->contmod->logrem_up[start+a->num];
-      dtv1     = fabs(tree->times->nd_t[a->num] - tree->times->nd_t[v1->num]);          
-      av1var   = VELOC_Location_Variance_Along_Edge(a,dim,tree);
-
-      av1      = 1.0;
-      /* Below is only correct for IBM... !!!!!!!!!!!!!!!!!!! */
-      /* bv1      = (a->ldsk->veloc->deriv[dim] + v1->ldsk->veloc->deriv[dim])*.5*dtv1; */
-      bv1      = VELOC_Location_Mean_Along_Edge(a,dim,tree) - v1->ldsk->coord->lonlat[dim];
-  
-
-      if(IBM_Is_Ibm(tree->mmod) == YES)
-        {
-          IBM_Integrated_Location_Up(dtv1,dtv2,
-                                     av1,bv1,v1mu,v1var,av1var,
-                                     av2,bv2,v2mu,v2var,av2var,
-                                     v1logrem,v2logrem,
-                                     tree->contmod->mu_up+start+d->num,
-                                     tree->contmod->var_up+start+d->num,
-                                     tree->contmod->logrem_up+start+d->num,
-                                     NO);
-        }
-      else if(IWN_Is_Iwn(tree->mmod) == YES)
-        {
-          IWN_Integrated_Location_Up(dtv1,dtv2,
-                                     av1,bv1,v1mu,v1var,av1var,
-                                     av2,bv2,v2mu,v2var,av2var,
-                                     v1logrem,v2logrem,
-                                     a->ldsk->veloc->deriv[dim],v1->ldsk->veloc->deriv[dim],v2->ldsk->veloc->deriv[dim],
-                                     tree->mmod->omega,
-                                     tree->contmod->mu_up+start+d->num,
-                                     tree->contmod->var_up+start+d->num,
-                                     tree->contmod->logrem_up+start+d->num,
-                                     NO);
-        }
-      else if(IOU_Is_Iou(tree->mmod) == YES)
-        {
-          IOU_Integrated_Location_Up(dtv1,dtv2,
-                                     av1,bv1,v1mu,v1var,av1var,
-                                     av2,bv2,v2mu,v2var,av2var,
-                                     v1logrem,v2logrem,
-                                     tree->contmod->mu_up+start+d->num,
-                                     tree->contmod->var_up+start+d->num,
-                                     tree->contmod->logrem_up+start+d->num,
-                                     NO);
-        }
-
-    }
-  else
-    {
-      if(IBM_Is_Ibm(tree->mmod) == YES)
-        {
-          IBM_Integrated_Location_Up(dtv1,dtv2,
-                                     av1,bv1,v1mu,v1var,av1var,
-                                     av2,bv2,v2mu,v2var,av2var,
-                                     v1logrem,v2logrem,
-                                     tree->contmod->mu_up+start+d->num,
-                                     tree->contmod->var_up+start+d->num,
-                                     tree->contmod->logrem_up+start+d->num,
-                                     YES);
-        }
-      else if(IWN_Is_Iwn(tree->mmod) == YES)
-        {
-          IWN_Integrated_Location_Up(dtv1,dtv2,
-                                     av1,bv1,v1mu,v1var,av1var,
-                                     av2,bv2,v2mu,v2var,av2var,
-                                     v1logrem,v2logrem,
-                                     a->ldsk->veloc->deriv[dim],-INFINITY,v2->ldsk->veloc->deriv[dim],
-                                     tree->mmod->omega,
-                                     tree->contmod->mu_up+start+d->num,
-                                     tree->contmod->var_up+start+d->num,
-                                     tree->contmod->logrem_up+start+d->num,
-                                     YES);
-        }
-      else if(IOU_Is_Iou(tree->mmod) == YES)
-        {
-          IOU_Integrated_Location_Up(dtv1,dtv2,
-                                     av1,bv1,v1mu,v1var,av1var,
-                                     av2,bv2,v2mu,v2var,av2var,
-                                     v1logrem,v2logrem,
-                                     tree->contmod->mu_up+start+d->num,
-                                     tree->contmod->var_up+start+d->num,
-                                     tree->contmod->logrem_up+start+d->num,
-                                     YES);
-        }
-    }
-
-  assert(isnan(tree->contmod->mu_up[start+d->num]) == NO);
-  assert(isnan(tree->contmod->var_up[start+d->num]) == NO && !(tree->contmod->var_down[start+d->num] < 0.0));
+  VELOC_Update_Lk_Velocity_Up(a,d,tree);
   
   if(d->tax == TRUE) return;
   else
@@ -693,11 +463,443 @@ void VELOC_Integrated_Lk_Location_Pre(t_node *a, t_node *d, short int dim, t_tre
         {
           if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
             {
-              VELOC_Integrated_Lk_Location_Pre(d,d->v[i],dim,tree);
+              VELOC_Augmented_Lk_Velocity_Pre(d,d->v[i],tree);
             }
         }
     }
   return;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void VELOC_Update_Lk_Velocity_Up(t_node *a, t_node *d, t_tree *tree)
+{
+  int i,start,err;
+  t_node *dad, *son, *bro;
+  phydbl eps;
+
+  dad = a;
+  son = d;
+  bro = NULL;
+
+  for(i=0;i<3;++i)
+    if(a->v[i] != d && a->v[i] != a->anc && a->b[i] != tree->e_root)
+      {
+        bro = a->v[i];
+        break;
+      }
+
+  assert(bro->anc == dad);
+  assert(bro != son);
+
+
+  for(i=0;i<tree->mmod->n_dim;++i)
+    {
+      start = Contmod_Start(VELOCITY,i,tree);
+
+      tree->contmod->lnL_up[start+son->num] =
+        tree->contmod->lnL_up[start+dad->num] +
+        tree->contmod->lnL_down[start+bro->num] ;
+      
+      tree->contmod->lnL_up[start+son->num] +=
+        Log_Dnorm(son->ldsk->veloc->deriv[i],VELOC_Velocity_Mean_Along_Edge(son,i,tree),sqrt(VELOC_Velocity_Variance_Along_Edge(son,i,tree)),&err) +
+        Log_Dnorm(bro->ldsk->veloc->deriv[i],VELOC_Velocity_Mean_Along_Edge(bro,i,tree),sqrt(VELOC_Velocity_Variance_Along_Edge(bro,i,tree)),&err);
+
+      tree->contmod->lnL_up[start+son->num] +=
+        -Log_Dnorm(son->ldsk->veloc->deriv[i],tree->mmod->rw_root_mean,sqrt(tree->mmod->rw_root_var),&err) +
+         Log_Dnorm(dad->ldsk->veloc->deriv[i],tree->mmod->rw_root_mean,sqrt(tree->mmod->rw_root_var),&err);
+
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void VELOC_Update_Lk_Velocity_Down(t_node *a, t_node *d, t_tree *tree)
+{
+  int i,start,err;
+  t_node *son, *bro, *dad;
+  phydbl eps;
+
+  
+  if(d->tax == YES)
+    {
+      for(i=0;i<tree->mmod->n_dim;++i)
+        {
+          start = Contmod_Start(VELOCITY,i,tree);
+          tree->contmod->lnL_down[start+d->num]    = 0;
+          tree->contmod->mu_down[start+d->num]     = d->ldsk->veloc->deriv[i];
+          tree->contmod->var_down[start+d->num]    = 0.0;
+          tree->contmod->logrem_down[start+d->num] = 0.0;
+        }
+      return;
+    }
+  
+  dad = d;
+  son = bro = NULL;
+  for(i=0;i<3;++i)
+    {
+      if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
+        {
+          if(son == NULL) son = d->v[i];
+          else bro = d->v[i];
+        }
+    }
+  
+  for(i=0;i<tree->mmod->n_dim;++i)
+    {
+      start = Contmod_Start(VELOCITY,i,tree);
+      
+      tree->contmod->lnL_down[start+dad->num] =
+        tree->contmod->lnL_down[start+son->num] +
+        tree->contmod->lnL_down[start+bro->num] ;
+      
+      tree->contmod->lnL_down[start+dad->num] +=
+        Log_Dnorm(son->ldsk->veloc->deriv[i],VELOC_Velocity_Mean_Along_Edge(son,i,tree),sqrt(VELOC_Velocity_Variance_Along_Edge(son,i,tree)),&err) +
+        Log_Dnorm(bro->ldsk->veloc->deriv[i],VELOC_Velocity_Mean_Along_Edge(bro,i,tree),sqrt(VELOC_Velocity_Variance_Along_Edge(bro,i,tree)),&err);
+
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl VELOC_Integrated_Lk_Location(t_node *z, t_tree *tree)
+{
+  phydbl lnL;
+
+  lnL = UNLIKELY;
+  
+  if(z == NULL)
+    {
+      phydbl root_mean,root_var;
+      int i,err,start;
+  
+      RRW_Update_Normalization_Factor(tree);
+      
+      lnL = 0.0;
+            
+      VELOC_Integrated_Lk_Location_Post(NULL,tree->n_root,tree);
+
+      if(tree->contmod->both_sides[LOCATION] == YES)
+        {
+          VELOC_Integrated_Lk_Location_Pre(tree->n_root,tree->n_root->v[1],tree);
+          VELOC_Integrated_Lk_Location_Pre(tree->n_root,tree->n_root->v[2],tree);
+        }
+          
+      root_var = tree->mmod->rw_root_var;
+      root_mean = tree->mmod->rw_root_mean;
+
+      for(i=0;i<tree->mmod->n_dim;++i)
+        {
+          start = Contmod_Start(LOCATION,i,tree);
+
+          tree->contmod->lnL[LOCATION*tree->mmod->n_dim+i] = 0.0;
+          tree->contmod->lnL[LOCATION*tree->mmod->n_dim+i] += tree->contmod->logrem_down[start + tree->n_root->num];
+          tree->contmod->lnL[LOCATION*tree->mmod->n_dim+i] += Log_Dnorm(tree->contmod->mu_down[start + tree->n_root->num],
+                                                                        root_mean,
+                                                                        sqrt(root_var+tree->contmod->var_down[start + tree->n_root->num]),
+                                                                        &err);
+
+          lnL += tree->contmod->lnL[LOCATION*tree->mmod->n_dim+i];
+        }
+    }
+  else
+    {
+      lnL = VELOC_Integrated_Lk_Location_Node(z,tree);
+    }
+              
+  return(lnL);
+    
+}
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+phydbl VELOC_Integrated_Lk_Location_Node(t_node *z, t_tree *tree)
+{
+  phydbl lnL;
+  int i,start,err;
+  phydbl z_mean_down, z_mean_up;
+  phydbl z_var_down, z_var_up;
+  phydbl z_logrem_down, z_logrem_up;
+  
+  lnL = 0.0;
+  
+  for(i=0;i<tree->mmod->n_dim;++i)
+    {
+      start = Contmod_Start(LOCATION,i,tree);
+
+      z_mean_down   = tree->contmod->mu_down[start+z->num];
+      z_var_down    = tree->contmod->var_down[start+z->num];
+      z_logrem_down = tree->contmod->logrem_down[start+z->num];
+
+      if(z == tree->n_root)
+        {
+          z_mean_up   = tree->mmod->rw_root_mean;
+          z_var_up    = tree->mmod->rw_root_var;
+          z_logrem_up = 0.0;
+        }
+      else
+        {
+          z_mean_up   = tree->contmod->mu_up[start+z->num];
+          z_var_up    = tree->contmod->var_up[start+z->num];
+          z_logrem_up = tree->contmod->logrem_up[start+z->num];
+        }
+      
+      tree->contmod->lnL[LOCATION*tree->mmod->n_dim+i] = 0.0;
+      tree->contmod->lnL[LOCATION*tree->mmod->n_dim+i] += z_logrem_down + z_logrem_up;
+      tree->contmod->lnL[LOCATION*tree->mmod->n_dim+i] += Log_Dnorm(z_mean_down,z_mean_up,sqrt(z_var_up+z_var_down),&err);
+
+      lnL += tree->contmod->lnL[LOCATION*tree->mmod->n_dim+i];
+    }
+    
+  return(lnL);
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+// See Pybus et al. 10.1073/pnas.1206598109 + see my technical notes
+
+void VELOC_Integrated_Lk_Location_Post(t_node *a, t_node *d, t_tree *tree)
+{
+  if(d->tax == TRUE)
+    {
+      return;
+    }
+  else
+    {
+      int i;
+      
+      for(i=0;i<3;++i)
+        {
+          if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
+            {
+              VELOC_Integrated_Lk_Location_Post(d,d->v[i],tree);
+            }
+        }
+      
+      VELOC_Update_Lk_Location_Down(a,d,tree);
+      
+    } 
+  return;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void VELOC_Integrated_Lk_Location_Pre(t_node *a, t_node *d, t_tree *tree)
+{
+  int i;
+
+  if(d == tree->n_root)
+    {
+      VELOC_Integrated_Lk_Location_Pre(tree->n_root,tree->n_root->v[1],tree);
+      VELOC_Integrated_Lk_Location_Pre(tree->n_root,tree->n_root->v[2],tree);
+      return;
+    }
+
+  VELOC_Update_Lk_Location_Up(a,d,tree);
+  
+  if(d->tax == TRUE) return;
+  else
+    {
+      for(i=0;i<3;++i)
+        {
+          if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
+            {
+              VELOC_Integrated_Lk_Location_Pre(d,d->v[i],tree);
+            }
+        }
+    }
+  return;
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void VELOC_Update_Lk_Location_Up(t_node *a, t_node *d, t_tree *tree)
+{
+  int i,start;
+  t_node *dad, *son, *bro;
+  phydbl dad_mu_up, dad_var_up, dad_logrem_up;
+  phydbl son_a, son_b, son_var;
+  phydbl bro_a, bro_b, bro_mu_down, bro_var_down, bro_var, bro_logrem_down;
+    
+  dad = a;
+  son = d;
+  bro = NULL;
+
+  for(i=0;i<3;++i)
+    if(a->v[i] != d && a->v[i] != a->anc && a->b[i] != tree->e_root)
+      {
+        bro = a->v[i];
+        break;
+      }
+
+  assert(bro->anc == dad);
+  assert(bro != son);
+
+  for(i=0;i<tree->mmod->n_dim;++i)
+    {
+      start = Contmod_Start(LOCATION,i,tree);
+
+      bro_mu_down     = tree->contmod->mu_down[start+bro->num];
+      bro_var_down    = tree->contmod->var_down[start+bro->num];
+      bro_logrem_down = tree->contmod->logrem_down[start+bro->num];
+      bro_var         = VELOC_Location_Variance_Along_Edge(bro,i,tree);    
+
+      bro_a           = 1.0;
+      bro_b           = VELOC_Location_Mean_Along_Edge(bro,i,tree) - bro_a*dad->ldsk->coord->lonlat[i];
+
+      son_var         = VELOC_Location_Variance_Along_Edge(son,i,tree);
+      son_a           = 1.0;
+      son_b           = VELOC_Location_Mean_Along_Edge(son,i,tree) - son_a*dad->ldsk->coord->lonlat[i];
+      
+      if(dad != tree->n_root)
+        {
+          dad_mu_up     = tree->contmod->mu_up[start+dad->num];
+          dad_var_up    = tree->contmod->var_up[start+dad->num];
+          dad_logrem_up = tree->contmod->logrem_up[start+dad->num];
+        }
+      else
+        {
+          dad_mu_up     = tree->mmod->rw_root_mean;
+          dad_var_up    = tree->mmod->rw_root_var;
+          dad_logrem_up = 0.0;
+        }
+      
+      
+      if(IBM_Is_Ibm(tree->mmod) == YES)
+        {
+          IBM_Integrated_Location_Up(dad_mu_up,dad_var_up,dad_logrem_up,
+                                     son_a,son_b,son_var,
+                                     bro_a,bro_b,bro_mu_down,bro_var_down,bro_var,bro_logrem_down,
+                                     tree->contmod->mu_up+start+son->num,
+                                     tree->contmod->var_up+start+son->num,
+                                     tree->contmod->logrem_up+start+son->num);
+        }
+      else if(IWN_Is_Iwn(tree->mmod) == YES)
+        {
+          PhyML_Printf("\n. Not implemented yet");
+          assert(false);
+        }
+      else if(IOU_Is_Iou(tree->mmod) == YES)
+        {
+          IOU_Integrated_Location_Up(dad_mu_up,dad_var_up,dad_logrem_up,
+                                     son_a,son_b,son_var,
+                                     bro_a,bro_b,bro_mu_down,bro_var_down,bro_var,bro_logrem_down,
+                                     tree->contmod->mu_up+start+son->num,
+                                     tree->contmod->var_up+start+son->num,
+                                     tree->contmod->logrem_up+start+son->num);
+        }
+
+      assert(isnan(tree->contmod->mu_up[start+d->num]) == NO);
+      assert(isnan(tree->contmod->var_up[start+d->num]) == NO && !(tree->contmod->var_down[start+d->num] < 0.0));
+
+      
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void VELOC_Update_Lk_Location_Down(t_node *a, t_node *d, t_tree *tree)
+{
+  int i,start;
+  t_node *son, *bro, *dad;
+  phydbl son_mu_down,bro_mu_down;
+  phydbl son_var_down,bro_var_down;
+  phydbl son_var,bro_var;
+  phydbl son_logrem_down,bro_logrem_down;
+  phydbl son_a, bro_a;
+  phydbl son_b, bro_b;
+  
+
+  if(d->tax)
+    {
+      for(i=0;i<tree->mmod->n_dim;++i)
+        {
+          start = Contmod_Start(LOCATION,i,tree);
+          tree->contmod->lnL_down[start+d->num] = 0.0;
+        }
+      return;
+    }
+
+
+  dad = d;
+  son = bro = NULL;
+  for(i=0;i<3;++i)
+    {
+      if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
+        {
+          if(son == NULL) son = d->v[i];
+          else bro = d->v[i];
+        }
+    }
+  
+  for(i=0;i<tree->mmod->n_dim;++i)
+    {
+      start = Contmod_Start(LOCATION,i,tree);
+      
+      son_mu_down = tree->contmod->mu_down[start + son->num];
+      bro_mu_down = tree->contmod->mu_down[start + bro->num];
+      
+      son_var_down = tree->contmod->var_down[start + son->num];
+      bro_var_down = tree->contmod->var_down[start + bro->num];
+      
+      son_logrem_down = tree->contmod->logrem_down[start + son->num];
+      bro_logrem_down = tree->contmod->logrem_down[start + bro->num];
+      
+      son_var = VELOC_Location_Variance_Along_Edge(son,i,tree);
+      bro_var = VELOC_Location_Variance_Along_Edge(bro,i,tree);
+      
+      son_a = 1.0;
+      bro_a = 1.0;
+      
+      son_b = VELOC_Location_Mean_Along_Edge(son,i,tree) - son_a*dad->ldsk->coord->lonlat[i];
+      bro_b = VELOC_Location_Mean_Along_Edge(bro,i,tree) - bro_a*dad->ldsk->coord->lonlat[i];
+      
+      if(IBM_Is_Ibm(tree->mmod) == YES)
+        {
+          IBM_Integrated_Location_Down(son_a,son_b,son_mu_down,son_var_down,son_var,
+                                       bro_a,bro_b,bro_mu_down,bro_var_down,bro_var,
+                                       son_logrem_down,bro_logrem_down,
+                                       tree->contmod->mu_down+start+dad->num,
+                                       tree->contmod->var_down+start+dad->num,
+                                       tree->contmod->logrem_down+start+dad->num);
+        }
+      else if(IWN_Is_Iwn(tree->mmod) == YES)
+        {
+          phydbl dt_son,dt_bro;
+          dt_son = fabs(tree->times->nd_t[son->num] - tree->times->nd_t[dad->num]);
+          dt_bro = fabs(tree->times->nd_t[bro->num] - tree->times->nd_t[dad->num]);
+          
+          IWN_Integrated_Location_Down(dt_son,dt_bro,
+                                       son_a,son_b,son_mu_down,son_var_down,son_var,
+                                       bro_a,bro_b,bro_mu_down,bro_var_down,bro_var,
+                                       son_logrem_down,bro_logrem_down,
+                                       d->ldsk->veloc->deriv[i],son->ldsk->veloc->deriv[i],bro->ldsk->veloc->deriv[i],
+                                       tree->mmod->omega,
+                                       tree->contmod->mu_down+start+dad->num,
+                                       tree->contmod->var_down+start+dad->num,
+                                       tree->contmod->logrem_down+start+dad->num);
+        }
+      else if(IOU_Is_Iou(tree->mmod) == YES)
+        {
+          IOU_Integrated_Location_Down(son_a,son_b,son_mu_down,son_var_down,son_var,
+                                       bro_a,bro_b,bro_mu_down,bro_var_down,bro_var,
+                                       son_logrem_down,bro_logrem_down,
+                                       tree->contmod->mu_down+start+dad->num,
+                                       tree->contmod->var_down+start+dad->num,
+                                       tree->contmod->logrem_down+start+dad->num);
+        }
+      
+      assert(isnan(tree->contmod->mu_down[start+dad->num]) == NO);
+      assert(isnan(tree->contmod->var_down[start+dad->num]) == NO && !(tree->contmod->var_down[start+dad->num] < 0.0));      
+    }  
 }
 
 //////////////////////////////////////////////////////////////
@@ -783,91 +985,73 @@ phydbl VELOC_Location_Mean_Along_Edge(t_node *d, short int dim, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void VELOC_Sample_Node_Locations(t_tree *tree)
+void VELOC_Sample_All_Node_Locations(t_tree *tree)
 {
-  int i,j,start;
-  t_node *n;
-  phydbl au,bu,varu,var,mean,root_var,root_mean;
+  int i;
 
-  n = NULL;
-  au = bu = varu = var = mean = -1;
-
-  root_mean = -BIG;
-  root_var = tree->mmod->rw_root_var;
-  
   RRW_Update_Normalization_Factor(tree);
 
-  Init_Contmod_Locations(tree);
-
-  for(i=0;i<tree->mmod->n_dim;++i)
-    {
-      VELOC_Integrated_Lk_Location_Post(NULL,tree->n_root,i,tree,NO);
-      VELOC_Integrated_Lk_Location_Pre(tree->n_root,tree->n_root->v[1],i,tree);
-      VELOC_Integrated_Lk_Location_Pre(tree->n_root,tree->n_root->v[2],i,tree);
-
-      start = Contmod_Start(LOCATION,i,tree);
-
-      for(j=0;j<2*tree->n_otu-2;++j)
-        {
-          if(tree->a_nodes[j]->tax == NO && tree->a_nodes[j] != tree->n_root)
-            {
-              n = tree->a_nodes[j];
-
-              au = 1.0;
-              /* Below is only correct for IBM model !!!!!!!!!!!!!!!!!!!!!! */
-              /* bu = (n->ldsk->veloc->deriv[i] + n->anc->ldsk->veloc->deriv[i])*.5*dt; */
-              bu   = VELOC_Location_Mean_Along_Edge(n,i,tree) - n->anc->ldsk->coord->lonlat[i];
-              varu = VELOC_Location_Variance_Along_Edge(n,i,tree); 
-
-
-              if(tree->contmod->var_down[start+n->num] > SMALL && pow(au,2)*tree->contmod->var_up[start+n->num]+varu > SMALL)
-                {
-                  var = 1./tree->contmod->var_down[start+n->num] + 1. / (pow(au,2)*tree->contmod->var_up[start+n->num]+varu);
-                  var = 1./var;
-                  mean = (tree->contmod->mu_down[start+n->num]/tree->contmod->var_down[start+n->num] + (au*tree->contmod->mu_up[start+n->num]+bu)/(pow(au,2)*tree->contmod->var_up[start+n->num]+varu))*var;
-                }
-              else if(tree->contmod->var_down[start+n->num] > SMALL)
-                {
-                  var = 0.0;
-                  mean = au*tree->contmod->mu_up[start+n->num]+bu;
-                }
-              else if(pow(au,2)*tree->contmod->var_up[start+n->num]+varu > SMALL)
-                {
-                  var = 0.0;
-                  mean = tree->contmod->mu_down[start+n->num];
-                }
-              else
-                {
-                  var = 0.0;
-                  mean = tree->contmod->mu_down[start+n->num];
-                }
-              
-              /* Below is only valid if prior distribution of location at that node is flat */
-              tree->a_nodes[j]->ldsk->coord->lonlat[i] = Rnorm(mean,sqrt(var));
-            }
-        }
-
-      assert(isnan(tree->contmod->var_down[start+tree->n_root->num]) == NO);
-      
-      /* PhyML_Printf("\n\n. root mean: %f var: %f", */
-      /*              tree->contmod->mu_down[tree->n_root->num], */
-      /*              tree->contmod->var_down[tree->n_root->num]); */
-      
-      var = 1./tree->contmod->var_down[start+tree->n_root->num] + 1./root_var;
-      var = 1./var;
-      
-      root_mean = LOCATION_Mean_Lonlat(i,tree);
-
-      mean = (tree->contmod->mu_down[start+tree->n_root->num]/tree->contmod->var_down[start+tree->n_root->num] +
-              root_mean / root_var)*var;
-
-      tree->n_root->ldsk->coord->lonlat[i] = Rnorm(mean,sqrt(var));
-    }
+  VELOC_Integrated_Lk_Location_Post(NULL,tree->n_root,tree);
+  VELOC_Integrated_Lk_Location_Pre(tree->n_root,tree->n_root->v[1],tree);
+  VELOC_Integrated_Lk_Location_Pre(tree->n_root,tree->n_root->v[2],tree);
+  
+  for(i=tree->n_otu;i<2*tree->n_otu-1;++i) VELOC_Sample_One_Node_Location(tree->a_nodes[i],tree);
 }
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
+void VELOC_Sample_One_Node_Location(t_node *z, t_tree *tree)
+{
+  int i,start;
+  phydbl var_down,var_up;
+  phydbl mu_down,mu_up;
+  phydbl var,mean;
+  
+  for(i=0;i<tree->mmod->n_dim;++i)
+    {
+      start = Contmod_Start(LOCATION,i,tree);
+      var = mean = -1.;
+      
+      mu_down  = tree->contmod->mu_down[start+z->num];
+      var_down = tree->contmod->var_down[start+z->num];
+
+      if(z != tree->n_root)
+        {
+          mu_up     = tree->contmod->mu_down[start+z->num];
+          var_up    = tree->contmod->var_down[start+z->num];
+        }
+      else
+        {
+          mu_up     = tree->mmod->rw_root_mean;
+          var_up    = tree->mmod->rw_root_var;
+        }
+
+      if(var_up > SMALL && var_down > SMALL)
+        {
+          var = 1./var_up + 1./var_down;
+          var = 1./var;
+
+          mean = var * (mu_down / var_down + mu_up / var_up);
+        }
+      else if(var_up > SMALL)
+        {
+          var = 0.0;
+          mean = mu_down;
+        }
+      else if(var_down > SMALL)
+        {
+          var = 0.0;
+          mean = mu_up;          
+        }
+
+      z->ldsk->coord->lonlat[i] = Rnorm(mean,sqrt(var));
+
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 phydbl VELOC_Mean_Velocity(short int dim, t_tree *tree)
 {
   if(VELOC_Is_Integrated_Velocity(tree->mmod) == NO) return(-1);

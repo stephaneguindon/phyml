@@ -3897,6 +3897,8 @@ void Set_Defaults_Contmod(t_tree *tree)
   tree->contmod->obs_model_est = YES;
   tree->contmod->obs_var_min = 0.0;
   tree->contmod->obs_var_max = 1.E+2;
+  tree->contmod->both_sides[LOCATION] = NO;
+  tree->contmod->combined_lnL = UNLIKELY;
 }
 
 //////////////////////////////////////////////////////////////
@@ -3906,6 +3908,7 @@ void Init_Contmod_Locations(t_tree *tree)
 {
   int i,j,start;
   
+
   for(i=0;i < tree->mmod->n_dim;++i)
     {
       start = Contmod_Start(LOCATION,i,tree);
@@ -3920,7 +3923,7 @@ void Init_Contmod_Locations(t_tree *tree)
           tree->contmod->var_up[start + j] = 0.0;
           tree->contmod->logrem_up[start + j] = 0.0;
 
-          tree->contmod->lnL_down[start + j] = 0.0;
+          tree->contmod->lnL_down[start + j] = 1.0;
           tree->contmod->lnL_up[start + j] = 0.0; 
         }
       
@@ -3946,7 +3949,7 @@ void Init_Contmod_Locations(t_tree *tree)
 void Init_Contmod_Velocities(t_tree *tree)
 {
   int i,j,start;
-  
+
   for(i=0;i<tree->mmod->n_dim;++i)
     {
       start = Contmod_Start(VELOCITY,i,tree);
@@ -3954,7 +3957,7 @@ void Init_Contmod_Velocities(t_tree *tree)
       for(j=0;j<tree->n_otu;++j)
         {
           tree->contmod->mu_down[start + j] = tree->a_nodes[j]->ldsk->veloc->deriv[i];
-          tree->contmod->var_down[start + j] = 1.0E+7;
+          tree->contmod->var_down[start + j] = 0.0;
           tree->contmod->logrem_down[start + j] = 0.0;
           
           tree->contmod->mu_up[start + j] = 0.0;

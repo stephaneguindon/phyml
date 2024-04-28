@@ -888,6 +888,7 @@ void PHYREX_XML(char *xml_filename)
           Update_Ancestors(mixt_tree->aux_tree[i]->n_root,mixt_tree->aux_tree[i]->n_root->v[1],mixt_tree->aux_tree[i]->n_root->b[1],mixt_tree->aux_tree[i]);  
         }
     }
+
   
   assert(PHYREX_Check_Struct(mixt_tree,YES));
   TIMES_Lk(mixt_tree);
@@ -897,7 +898,13 @@ void PHYREX_XML(char *xml_filename)
   RATES_Prior(mixt_tree);
   Set_Update_Eigen(YES,mixt_tree->mod);
   RATES_Update_Edge_Lengths(mixt_tree);
-  LOCATION_Lk(mixt_tree);
+
+  Init_Contmod_Locations(mixt_tree);
+  MCMC_Randomize_Veloc(mixt_tree);
+  mixt_tree->contmod->both_sides[LOCATION] = NO;
+  mixt_tree->contmod->both_sides[VELOCITY] = NO;
+  LOCATION_Lk(NULL,mixt_tree);
+
   Lk(NULL,mixt_tree);
   Set_Update_Eigen(NO,mixt_tree->mod);
   char *s = LOCATION_Model_Id(mixt_tree->mmod);
@@ -915,10 +922,12 @@ void PHYREX_XML(char *xml_filename)
   PhyML_Printf("\n. Init clock rate: %f",mixt_tree->rates->clock_r);
   PhyML_Printf("\n. Random seed: %d",mixt_tree->io->r_seed);
 
-  MCMC_Crossvalidate_Locations(mixt_tree);
 
-  /* res = PHYREX_MCMC(mixt_tree); */
-  /* Free(res); */
+  
+  /* MCMC_Crossvalidate_Locations(mixt_tree); */
+
+  res = PHYREX_MCMC(mixt_tree);
+  Free(res);
   
   // Cleaning up...
   PHYREX_Free_Ldsk_Struct(mixt_tree);
@@ -1095,7 +1104,7 @@ phydbl PHYREX_Lk(t_tree *tree)
       }
     case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : case IOU :  
       {
-        lnP = VELOC_Lk(tree) + TIMES_Lk_Coalescent(tree);
+        lnP = VELOC_Lk(NULL,tree) + TIMES_Lk_Coalescent(tree);
         break;
       }
     default : assert(FALSE);
@@ -5005,7 +5014,7 @@ short int PHYREX_Check_Lk(t_tree *tree)
       if(tree->mmod->use_locations == YES)
         {
           phydbl g_lnL = tree->mmod->c_lnL;
-          LOCATION_Lk(tree);
+          LOCATION_Lk(NULL,tree);
           
           if(Are_Equal(g_lnL,tree->mmod->c_lnL,1.E-3) == NO)
             {

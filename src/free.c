@@ -1537,9 +1537,12 @@ void Free_Contmod(t_contmod *contmod)
 
   Free(contmod->lnL_up);
   Free(contmod->lnL_down);
+  Free(contmod->lnL);
 
   Free(contmod->obs_var);
 
+  Free(contmod->both_sides);
+  
   Free(contmod);
 }
 

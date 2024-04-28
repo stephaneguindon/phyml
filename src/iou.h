@@ -29,19 +29,17 @@ phydbl IOU_Prior(t_tree *tree);
 phydbl IOU_Prior_Theta(t_tree *tree);
 phydbl IOU_Prior_Mu(t_tree *tree);
 
-void IOU_Integrated_Location_Down(phydbl dt1, phydbl dt2,
-                                  phydbl av1, phydbl bv1, phydbl v1mu, phydbl v1var, phydbl dv1var,
-                                  phydbl av2, phydbl bv2, phydbl v2mu, phydbl v2var, phydbl dv2var,
-                                  phydbl v1logrem, phydbl v2logrem,
+void IOU_Integrated_Location_Down(phydbl son_a, phydbl son_b, phydbl son_mu_down, phydbl son_var_down, phydbl son_var,
+                                  phydbl bro_a, phydbl bro_b, phydbl bro_mu_down, phydbl bro_var_down, phydbl bro_var,
+                                  phydbl son_logrem, phydbl bro_logrem,
                                   phydbl *mean, phydbl *var, phydbl *logrem);
 
-void IOU_Integrated_Location_Up(phydbl dt1, phydbl dt2,
-                                phydbl av1, phydbl bv1, phydbl v1mu, phydbl v1var, phydbl av1var,
-                                phydbl av2, phydbl bv2, phydbl v2mu, phydbl v2var, phydbl av2var,
-                                phydbl v1logrem, phydbl v2logrem,
-                                phydbl *mean, phydbl *var, phydbl *logrem,
-                                short int a_is_root);
+void IOU_Integrated_Location_Up(phydbl dad_mu_up, phydbl dad_var_up, phydbl dad_logrem_up,
+                                phydbl son_a, phydbl son_b, phydbl son_var,
+                                phydbl bro_a, phydbl bro_b, phydbl bro_mu_down, phydbl bro_var_down, phydbl bro_var, phydbl bro_logrem_down,
+                                
 
+                                phydbl *mean, phydbl *var, phydbl *logrem);
 
 
 #endif

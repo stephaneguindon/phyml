@@ -85,6 +85,8 @@ phydbl IOU_Location_Mean_Along_Edge(t_node *d, short int dim, t_tree *tree)
   
   t = fabs(tree->times->nd_t[d->num] - tree->times->nd_t[d->anc->num]);
 
+  if(t < SMALL) return(d->anc->ldsk->coord->lonlat[dim]);
+
   x0 = d->anc->ldsk->coord->lonlat[dim];
   y0 = d->anc->ldsk->veloc->deriv[dim];
   yt = d->ldsk->veloc->deriv[dim];
@@ -116,18 +118,21 @@ phydbl IOU_Location_Variance_Along_Edge(t_node *d, short int dim, t_tree *tree)
   phydbl var,t,ta,sg;
   
   assert(d != tree->n_root);
+
   
   t  = fabs(tree->times->nd_t[d->num] - tree->times->nd_t[d->anc->num]);
   ta = tree->mmod->ou_theta;
   sg = tree->mmod->sigsq[dim];
   
+  if(t < SMALL) return(0.0);
+
   /* var = sg/pow(ta,3)*(ta*t-2.*(cosh(ta*t)-1.)/sinh(ta*t)); */
   var = sg/pow(ta,3)*(ta*t-2.*(1./tanh(ta*t) - 1./sinh(ta*t)));
 
   if(var < 0.0) var = 0.0;
-
+  
   assert(isnan(var) == NO);
-
+  
   return(var);
 }
 
@@ -168,44 +173,39 @@ phydbl IOU_Prior_Mu(t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void IOU_Integrated_Location_Down(phydbl dt1, phydbl dt2,
-                                  phydbl av1, phydbl bv1, phydbl v1mu, phydbl v1var, phydbl dv1var,
-                                  phydbl av2, phydbl bv2, phydbl v2mu, phydbl v2var, phydbl dv2var,
-                                  phydbl v1logrem, phydbl v2logrem,
+void IOU_Integrated_Location_Down(phydbl son_a, phydbl son_b, phydbl son_mu_down, phydbl son_var_down, phydbl son_var,
+                                  phydbl bro_a, phydbl bro_b, phydbl bro_mu_down, phydbl bro_var_down, phydbl bro_var,
+                                  phydbl son_logrem, phydbl bro_logrem,
                                   phydbl *mean, phydbl *var, phydbl *logrem)
 {
-
-  phydbl m,v,logr,epst;
+  phydbl m,v,logr;
   int err;
 
   err = 0;
-  m = epst = -1.;
   v = 0.0;
-  
-  logr  = v1logrem + v2logrem;
-  logr -= log(fabs(av2*av1));
-  logr += Log_Dnorm((v1mu-bv1)/av1,(v2mu-bv2)/av2,sqrt((v1var+dv1var)/pow(av1,2)+(v2var+dv2var)/pow(av2,2)),&err);
 
+  logr  = son_logrem + bro_logrem;
+  logr -= log(fabs(bro_a*son_a));
+  logr += Log_Dnorm((son_mu_down-son_b)/son_a,(bro_mu_down-bro_b)/bro_a,sqrt((son_var_down+son_var)/pow(son_a,2)+(bro_var_down+bro_var)/pow(bro_a,2)),&err);
 
-  if(dv1var + v1var > SMALL && dv2var + v2var > SMALL) // Standard case
+  if((son_var + son_var_down > 1.E-7) && (bro_var + bro_var_down > 1.E-7)) // Standard case
     {
-      v = pow(av1,2)/(v1var + dv1var) + pow(av2,2)/(v2var + dv2var);
+      v = pow(son_a,2)/(son_var_down + son_var) + pow(bro_a,2)/(bro_var_down + bro_var);
       v = 1/v;
 
-      m = (av1*(v1mu-bv1)/(v1var + dv1var) + av2*(v2mu-bv2)/(v2var + dv2var)) * v;
-
+      m = (son_a*(son_mu_down-son_b)/(son_var_down + son_var) + bro_a*(bro_mu_down-bro_b)/(bro_var_down + bro_var)) * v;
     }
-  else if(dv1var + v1var > SMALL) // Null variance along d - v2
+  else if(son_var + son_var_down > 1.E-7) // Null variance along d - v2
     {
-      m = (v2mu-bv2)/av2;
+      m = (bro_mu_down-bro_b)/bro_a;
     }
-  else if(dv2var + v2var > SMALL) // Null variance along d - v1
+  else if(bro_var + bro_var_down > 1.E-7) // Null variance along d - v1
     {
-      m = (v1mu-bv1)/av1;
-    }
-  else // Null variance along d - v1 and d - v2
+      m = (son_mu_down-son_b)/son_a; 
+   }
+  else
     {
-      m = (v1mu-bv1)/av1;
+      m = (son_mu_down-son_b)/son_a;
     }
 
   *mean = m;
@@ -217,12 +217,10 @@ void IOU_Integrated_Location_Down(phydbl dt1, phydbl dt2,
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-void IOU_Integrated_Location_Up(phydbl dt1, phydbl dt2,
-                                phydbl av1, phydbl bv1, phydbl v1mu, phydbl v1var, phydbl av1var,
-                                phydbl av2, phydbl bv2, phydbl v2mu, phydbl v2var, phydbl av2var,
-                                phydbl v1logrem, phydbl v2logrem,
-                                phydbl *mean, phydbl *var, phydbl *logrem,
-                                short int a_is_root)
+void IOU_Integrated_Location_Up(phydbl dad_mu_up, phydbl dad_var_up, phydbl dad_logrem_up,
+                                phydbl son_a, phydbl son_b, phydbl son_var,
+                                phydbl bro_a, phydbl bro_b, phydbl bro_mu_down, phydbl bro_var_down, phydbl bro_var, phydbl bro_logrem_down,
+                                phydbl *mean, phydbl *var, phydbl *logrem)
 {
   phydbl m,v,logr;
   int err;
@@ -230,70 +228,40 @@ void IOU_Integrated_Location_Up(phydbl dt1, phydbl dt2,
   v = logr = 0.0;
   err = 0;
 
+  logr  = dad_logrem_up + bro_logrem_down;
+  logr -= log(fabs(bro_a));
+  logr += Log_Dnorm((bro_mu_down-bro_b)/bro_a,dad_mu_up,sqrt((bro_var_down+bro_var)/(bro_a*bro_a)+dad_var_up),&err);
   
-  if(a_is_root == NO)
+  if((bro_var_down + bro_var) > 1.E-7 && dad_var_up > 1.E-7) // Standard case
     {
-      logr  = v1logrem + v2logrem;
-      logr -= log(fabs(av2));
-      logr += Log_Dnorm((v2mu-bv2)/av2,av1*v1mu+bv1,sqrt((v2var+av2var)/pow(av2,2)+pow(av1,2)*v1var+av1var),&err);
-
-      if(pow(av1,2)*v1var+av1var > SMALL && av2var + v2var > SMALL) // Standard case
-        {
-          v     = pow(av2,2)/(v2var + av2var) + 1./(pow(av1,2)*v1var+av1var);
-          v     = 1./v;
-          
-          m     = (av2*(v2mu-bv2)/(v2var + av2var) + (av1*v1mu+bv1)/(pow(av1,2)*v1var+av1var)) * v;          
-          
-        }
-      else if(pow(av1,2)*v1var+av1var > SMALL) // Null variance along d - v2
-        {
-          m = (v2mu-bv2)/av2;
-        }
-      else if(av2var + v2var > SMALL) // Null variance along d - v1
-        {
-          m = (v1mu-bv1)/av1;
-        }
-      else
-        {
-          m = (v1mu-bv1)/av1;
-        }
+      
+      v += dad_var_up * (bro_var_down + bro_var);
+      v /= bro_a * bro_a * dad_var_up + bro_var_down + bro_var;
+      
+      m = v * (bro_a * (bro_mu_down - bro_b) / (bro_var_down + bro_var) + dad_mu_up / dad_var_up);
+      m = son_a * m + son_b;
+      
+      v = son_a * son_a * v + son_var;
+    }
+  else if(dad_var_up > 1.E-7) // Null variance along bro
+    {
+      v = son_var;
+      m = son_a * (bro_mu_down - bro_b) / bro_a + son_b;
+    }
+  else if((bro_var_down + bro_var) > 1.E-7) // Null variance along dad
+    {
+      v = son_var;
+      m = son_a * dad_mu_up + son_b;
     }
   else
     {
-      logr = v2logrem;
-      logr -= log(fabs(av2));
-
-      if(v2var + av2var > SMALL)
-        {
-          m    = (v2mu-bv2)/av2;
-          v    = (v2var + av2var)/pow(av2,2);
-        }
-      else
-        {
-          m    = (v2mu-bv2)/av2;
-          v    = 0.0;
-        }
+      v = son_var;
+      m = son_b;
     }
-
-
-  if(isnan(m))
-    {
-      PhyML_Printf("\n. a_is_root ? %d",a_is_root);
-      PhyML_Printf("\n. dt1: %f dt2: %f av1: %f av2: %f bv1: %f bv2: %f v1mu: %f v1var: %f av1var: %f v2mu: %f v2var: %f av2var: %f",
-                   dt1, dt2,
-                   av1, bv1, v1mu, v1var, av1var,
-                   av2, bv2, v2mu, v2var, av2var);
-                                
-    }
-  
-  assert((isinf(m) || isinf(v)) == NO);
-  assert((isnan(m) || isnan(v)) == NO);
 
   *mean = m;
   *var  = v;
   *logrem = logr;
-
 }
-  
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

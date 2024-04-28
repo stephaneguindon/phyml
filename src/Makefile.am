@@ -90,7 +90,7 @@ sse.c sse.h\
 avx.c avx.h\
 ancestral.c ancestral.h\
 xml.c xml.h
-phytime_LDADD = -lm
+# phytime_LDADD = -lm
 else 
 # if WANT_RWRAP
 # lib_LTLIBRARIES = librwrap.la
@@ -156,7 +156,7 @@ tbe.c tbe.h \
 ancestral.c ancestral.h\
 sse.c sse.h\
 avx.c avx.h
-rf_LDADD = -lm
+# rf_LDADD = -lm
 else
 if WANT_MPI
 phyml_mpi_SOURCES = main.c \
@@ -187,7 +187,7 @@ sse.c sse.h\
 avx.c avx.h\
 ancestral.c ancestral.h\
 mpi_boot.c mpi_boot.h
-phyml_mpi_LDADD = -lm
+# phyml_mpi_LDADD = -lm
 else
 if WANT_WIN
 phyml_windows_SOURCES = main.c \
@@ -222,7 +222,7 @@ sse.c sse.h\
 avx.c avx.h\
 ancestral.c ancestral.h\
 date.c date.h
-phyml_windows_LDADD = -lm
+# phyml_windows_LDADD = -lm
 else
 if WANT_TEST
 test_SOURCES = main.c \
@@ -266,7 +266,7 @@ iou.c iou.h\
 iwn.c iwn.h\
 ibm.c ibm.h\
 date.c date.h
-test_LDADD = -lm
+# test_LDADD = -lm
 else
 if WANT_EVOLVE
 evolve_SOURCES = main.c\
@@ -297,7 +297,7 @@ nexus.c nexus.h\
 init.c init.h\
 xml.c xml.h\
 mixt.c mixt.h
-evolve_LDADD = -lm 
+# evolve_LDADD = -lm 
 else
 if WANT_PHYREX
 phyrex_SOURCES = main.c\
@@ -340,7 +340,7 @@ ibm.c ibm.h\
 iwn.c iwn.h\
 iou.c iou.h\
 velocity.c velocity.h
-phyrex_LDADD = -lm 
+# phyrex_LDADD = -lm 
 else
 if WANT_PHYREXSIM
 phyrexsim_SOURCES = main.c\
@@ -383,7 +383,7 @@ ibm.c ibm.h\
 iwn.c iwn.h\
 iou.c iou.h\
 velocity.c velocity.h
-phyrexsim_LDADD = -lm
+# phyrexsim_LDADD = -lm
 else
 if WANT_DATE
 date_SOURCES = main.c \
@@ -415,7 +415,7 @@ xml.c xml.h\
 tbe.c tbe.h \
 mixt.c mixt.h\
 date.c date.h
-date_LDADD = -lm
+# date_LDADD = -lm
 else
 phyml_SOURCES = main.c \
 utilities.c  utilities.h\
@@ -444,7 +444,7 @@ avx.c avx.h\
 tbe.c tbe.h \
 ancestral.c ancestral.h \
 mixt.c mixt.h
-phyml_LDADD = -lm
+# phyml_LDADD = -lm
 endif
 endif
 endif

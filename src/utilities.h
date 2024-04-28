@@ -1861,7 +1861,8 @@ typedef struct __Tmcmc {
   int num_move_phyrex_sigsq_scale;
   int num_move_phyrex_ldsk_tips;
   int num_move_phyrex_node_times;
-  int num_move_phyrex_velocities;
+  int num_move_phyrex_node_veloc;
+  int num_move_phyrex_all_veloc;
   int num_move_phyrex_shuffle_node_times;
   int num_move_phyrex_iwn_omega;
   int num_move_phyrex_iou_theta;
@@ -2200,12 +2201,18 @@ typedef struct __Continuous_Model{
 
   phydbl *lnL_up;
   phydbl *lnL_down;
+  phydbl *lnL;
+
+  phydbl combined_lnL;
   
   phydbl *obs_var;  // Variance of observational model (one param for each spatial dimension)
   phydbl obs_var_min;
   phydbl obs_var_max;  
   short int obs_model; // Observational model 0/1
   short int obs_model_est; // Estimate variance of observational model 0/1
+
+  short int *both_sides;
+
 }t_contmod;
 
 /*!********************************************************/

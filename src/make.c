@@ -1887,20 +1887,29 @@ void Make_Contrasts(t_tree *tree)
 
 void Make_Contmod(t_tree *tree)
 {
+  int n_nodes,n_dim,n_char;
+
+  n_nodes = 2*tree->n_otu-1;
+  n_char = 2;
+  n_dim = tree->mmod->n_dim;
+  
   tree->contmod = (t_contmod *)mCalloc(1,sizeof(t_contmod));
 
-  tree->contmod->mu_down = (phydbl *)mCalloc(4*tree->n_otu,sizeof(phydbl));
-  tree->contmod->var_down = (phydbl *)mCalloc(4*tree->n_otu,sizeof(phydbl));
-  tree->contmod->logrem_down = (phydbl *)mCalloc(4*tree->n_otu,sizeof(phydbl));
+  tree->contmod->mu_down = (phydbl *)mCalloc(n_nodes*n_char*n_dim,sizeof(phydbl));
+  tree->contmod->var_down = (phydbl *)mCalloc(n_nodes*n_char*n_dim,sizeof(phydbl));
+  tree->contmod->logrem_down = (phydbl *)mCalloc(n_nodes*n_char*n_dim,sizeof(phydbl));
 
-  tree->contmod->mu_up = (phydbl *)mCalloc(4*tree->n_otu,sizeof(phydbl));
-  tree->contmod->var_up = (phydbl *)mCalloc(4*tree->n_otu,sizeof(phydbl));
-  tree->contmod->logrem_up = (phydbl *)mCalloc(4*tree->n_otu,sizeof(phydbl));
+  tree->contmod->mu_up = (phydbl *)mCalloc(n_nodes*n_char*n_dim,sizeof(phydbl));
+  tree->contmod->var_up = (phydbl *)mCalloc(n_nodes*n_char*n_dim,sizeof(phydbl));
+  tree->contmod->logrem_up = (phydbl *)mCalloc(n_nodes*n_char*n_dim,sizeof(phydbl));
 
-  tree->contmod->lnL_up = (phydbl *)mCalloc(4*tree->n_otu,sizeof(phydbl));
-  tree->contmod->lnL_down = (phydbl *)mCalloc(4*tree->n_otu,sizeof(phydbl));
+  tree->contmod->lnL_up = (phydbl *)mCalloc(n_nodes*n_char*n_dim,sizeof(phydbl));
+  tree->contmod->lnL_down = (phydbl *)mCalloc(n_nodes*n_char*n_dim,sizeof(phydbl));
+  tree->contmod->lnL = (phydbl *)mCalloc(4,sizeof(phydbl));
 
   tree->contmod->obs_var = (phydbl *)mCalloc(2*tree->mmod->n_dim,sizeof(phydbl));
+
+  tree->contmod->both_sides = (short int *)mCalloc(2,sizeof(short int));
 }
 
 //////////////////////////////////////////////////////////////

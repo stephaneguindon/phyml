@@ -23,7 +23,7 @@ the GNU public licence. See http://www.opensource.org for details.
 
 phydbl LOCATION_Wrap_Lk(t_edge *b, t_tree *tree, supert_tree *stree)
 {
-  return(LOCATION_Lk(tree));  
+  return(LOCATION_Lk(NULL,tree));  
 }
 
 //////////////////////////////////////////////////////////////
@@ -37,7 +37,7 @@ phydbl LOCATION_Wrap_Prior(t_edge *b, t_tree *tree, supert_tree *stree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-phydbl LOCATION_Lk(t_tree *tree)
+phydbl LOCATION_Lk(t_node *z, t_tree *tree)
 {
   phydbl lnL;
 
@@ -69,7 +69,7 @@ phydbl LOCATION_Lk(t_tree *tree)
       }
     case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : case IOU : 
       {
-        lnL = VELOC_Lk(tree);
+        lnL = VELOC_Lk(z,tree);
         break;
       }
     default : assert(false);
@@ -81,6 +81,39 @@ phydbl LOCATION_Lk(t_tree *tree)
   
   return(tree->mmod->c_lnL);
       
+}
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+void LOCATION_Update_Lk_Down(t_node *a, t_node *d, t_tree *tree)
+{
+  switch(tree->mmod->model_id)
+    {
+    case SLFV_GAUSSIAN :
+      {
+        assert(false);
+        break;
+      }
+    case SLFV_UNIFORM :
+      {
+        PhyML_Fprintf(stderr,"\n. SLFV model with rectangle is not implemented. Sorry...");
+        assert(false);
+        break;
+      }
+    case RRW_GAMMA : case RRW_LOGNORMAL : case RW : 
+      {
+        assert(false);
+        break;
+      }
+    case IBM : case RIBM : case IWNc : case IWNu : case RIWNc : case RIWNu : case IOU : 
+      {
+        VELOC_Update_Lk_Velocity_Down(a,d,tree);
+        VELOC_Update_Lk_Location_Down(a,d,tree);
+        break;
+      }
+    default : assert(false);
+    }      
 }
 
 //////////////////////////////////////////////////////////////

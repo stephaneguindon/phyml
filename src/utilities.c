@@ -13342,10 +13342,10 @@ int Contmod_Start(short int datatype, short int dim_idx, t_tree *tree)
   switch(datatype)
     {
     case LOCATION :
-        {
-          return(dim_idx*n_nodes);
-          break;
-        }
+      {
+        return(dim_idx*n_nodes);
+        break;
+      }
     case VELOCITY :
       {
         return(tree->mmod->n_dim*n_nodes + dim_idx*n_nodes);
