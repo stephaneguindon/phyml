@@ -7040,7 +7040,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%.2f\t",tree->n_root->ldsk->disk->time);
 
       if(RRW_Is_Rw(tree->mmod) == YES && tree->mmod->integrateAncestralLocations == YES) RRW_Sample_Node_Locations(tree);
-      if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES && tree->mmod->integrateAncestralLocations == YES) VELOC_Sample_One_Node_Location(tree->n_root,tree);
+      if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES && tree->mmod->integrateAncestralLocations == YES) VELOC_Sample_All_Node_Locations(tree);
 
       PhyML_Fprintf(fp_stats,"%g\t",tree->n_root->ldsk->coord->lonlat[0]);
       PhyML_Fprintf(fp_stats,"%g\t",tree->n_root->ldsk->coord->lonlat[1]);
@@ -7212,8 +7212,8 @@ void PHYREX_Print_MCMC_Tree(t_tree *tree)
 
   if(!(tree->mcmc->run%tree->mcmc->sample_interval) && tree->mcmc->sample_interval > 0)
     {
-      if(RRW_Is_Rw(tree->mmod) == YES && tree->mmod->integrateAncestralLocations == YES) RRW_Sample_Node_Locations(tree);
-      if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES && tree->mmod->integrateAncestralLocations == YES) VELOC_Sample_All_Node_Locations(tree);
+      /* if(RRW_Is_Rw(tree->mmod) == YES && tree->mmod->integrateAncestralLocations == YES) RRW_Sample_Node_Locations(tree); */
+      /* if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES && tree->mmod->integrateAncestralLocations == YES) VELOC_Sample_All_Node_Locations(tree); */
       Record_Br_Len(tree);
       TIMES_Time_To_Bl(tree);
       tree->bl_ndigits = 3;
