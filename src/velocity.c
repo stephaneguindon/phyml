@@ -253,7 +253,7 @@ phydbl VELOC_Augmented_Lk_Velocity(t_node *z, t_tree *tree)
           VELOC_Augmented_Lk_Velocity_Pre(tree->n_root,tree->n_root->v[2],tree);
         }
           
-      root_var = tree->mmod->rw_root_var;
+      root_var  = tree->mmod->rw_root_var;
       root_mean = tree->mmod->rw_root_mean;
 
       for(i=0;i<tree->mmod->n_dim;++i)
@@ -273,7 +273,7 @@ phydbl VELOC_Augmented_Lk_Velocity(t_node *z, t_tree *tree)
     {
       lnL = 0.0;
       
-      root_var = tree->mmod->rw_root_var;
+      root_var  = tree->mmod->rw_root_var;
       root_mean = tree->mmod->rw_root_mean;
 
       for(i=0;i<tree->mmod->n_dim;++i)
@@ -303,7 +303,7 @@ phydbl VELOC_Augmented_Lk_Velocities_Core(t_dsk *disk, t_tree *tree)
   phydbl lnP,root_mean,root_var;
 
   root_mean = tree->mmod->rw_root_mean;
-  root_var = tree->mmod->rw_root_var;
+  root_var  = tree->mmod->rw_root_var;
 
   assert(disk);
   
@@ -588,11 +588,13 @@ phydbl VELOC_Integrated_Lk_Location(t_node *z, t_tree *tree)
           VELOC_Integrated_Lk_Location_Pre(tree->n_root,tree->n_root->v[2],tree);
         }
           
-      root_var = tree->mmod->rw_root_var;
-      root_mean = tree->mmod->rw_root_mean;
 
       for(i=0;i<tree->mmod->n_dim;++i)
         {
+          root_var  = tree->mmod->rw_root_var;
+          root_mean = LOCATION_Mean_Lonlat(i,tree);
+          /* root_mean = tree->mmod->rw_root_mean; */
+          
           start = Contmod_Start(LOCATION,i,tree);
 
           tree->contmod->lnL[LOCATION*tree->mmod->n_dim+i] = 0.0;
@@ -638,7 +640,8 @@ phydbl VELOC_Integrated_Lk_Location_Node(t_node *z, t_tree *tree)
 
       if(z == tree->n_root)
         {
-          z_mean_up   = tree->mmod->rw_root_mean;
+          /* z_mean_up   = tree->mmod->rw_root_mean; */
+          z_mean_up   = LOCATION_Mean_Lonlat(i,tree);
           z_var_up    = tree->mmod->rw_root_var;
           z_logrem_up = 0.0;
         }
@@ -766,7 +769,8 @@ void VELOC_Update_Lk_Location_Up(t_node *a, t_node *d, t_tree *tree)
         }
       else
         {
-          dad_mu_up     = tree->mmod->rw_root_mean;
+          dad_mu_up     = LOCATION_Mean_Lonlat(i,tree);
+          /* dad_mu_up     = tree->mmod->rw_root_mean; */
           dad_var_up    = tree->mmod->rw_root_var;
           dad_logrem_up = 0.0;
         }
@@ -1018,13 +1022,14 @@ void VELOC_Sample_One_Node_Location(t_node *z, t_tree *tree)
 
       if(z != tree->n_root)
         {
-          mu_up     = tree->contmod->mu_down[start+z->num];
-          var_up    = tree->contmod->var_down[start+z->num];
+          mu_up  = tree->contmod->mu_down[start+z->num];
+          var_up = tree->contmod->var_down[start+z->num];
         }
       else
         {
-          mu_up     = tree->mmod->rw_root_mean;
-          var_up    = tree->mmod->rw_root_var;
+          /* mu_up  = tree->mmod->rw_root_mean; */
+          mu_up  = LOCATION_Mean_Lonlat(i,tree);
+          var_up = tree->mmod->rw_root_var;
         }
 
       if(var_up > SMALL && var_down > SMALL)
@@ -1036,12 +1041,12 @@ void VELOC_Sample_One_Node_Location(t_node *z, t_tree *tree)
         }
       else if(var_up > SMALL)
         {
-          var = 0.0;
+          var  = 0.0;
           mean = mu_down;
         }
       else if(var_down > SMALL)
         {
-          var = 0.0;
+          var  = 0.0;
           mean = mu_up;          
         }
 

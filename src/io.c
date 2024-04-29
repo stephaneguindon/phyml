@@ -6800,8 +6800,7 @@ void PHYREX_Print_MultiTypeTree_Config_File(int n_sites, char *filename, t_tree 
 
 #if (defined PHYREX || PHYTIME)
 void PHYREX_Print_MCMC_Stats(t_tree *tree)
-{
-
+{  
   FILE *fp_stats;
 
   fp_stats = tree->io->fp_out_stats;  
@@ -7041,7 +7040,7 @@ void PHYREX_Print_MCMC_Stats(t_tree *tree)
       PhyML_Fprintf(fp_stats,"%.2f\t",tree->n_root->ldsk->disk->time);
 
       if(RRW_Is_Rw(tree->mmod) == YES && tree->mmod->integrateAncestralLocations == YES) RRW_Sample_Node_Locations(tree);
-      if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES && tree->mmod->integrateAncestralLocations == YES) VELOC_Sample_All_Node_Locations(tree);
+      if(VELOC_Is_Integrated_Velocity(tree->mmod) == YES && tree->mmod->integrateAncestralLocations == YES) VELOC_Sample_One_Node_Location(tree->n_root,tree);
 
       PhyML_Fprintf(fp_stats,"%g\t",tree->n_root->ldsk->coord->lonlat[0]);
       PhyML_Fprintf(fp_stats,"%g\t",tree->n_root->ldsk->coord->lonlat[1]);
