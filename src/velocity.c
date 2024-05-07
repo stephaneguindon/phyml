@@ -415,15 +415,7 @@ void VELOC_Augmented_Lk_Velocity_Post(t_node *a, t_node *d, t_tree *tree)
 {
   int i,start;
   
-  if(d->tax == TRUE)
-    {      
-      for(i=0;i<tree->mmod->n_dim;++i)
-        {
-          start = Contmod_Start(VELOCITY,i,tree);
-          tree->contmod->lnL_down[start+d->num] = 1.0;
-        }
-      return;
-    }
+  if(d->tax == TRUE) return;
   else
     {
       
@@ -558,7 +550,6 @@ void VELOC_Update_Lk_Velocity_Down(t_node *a, t_node *d, t_tree *tree)
       tree->contmod->lnL_down[start+dad->num] +=
         Log_Dnorm(son->ldsk->veloc->deriv[i],VELOC_Velocity_Mean_Along_Edge(son,i,tree),sqrt(VELOC_Velocity_Variance_Along_Edge(son,i,tree)),&err) +
         Log_Dnorm(bro->ldsk->veloc->deriv[i],VELOC_Velocity_Mean_Along_Edge(bro,i,tree),sqrt(VELOC_Velocity_Variance_Along_Edge(bro,i,tree)),&err);
-
     }
 }
 

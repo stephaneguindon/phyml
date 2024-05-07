@@ -45,11 +45,13 @@ phydbl IBM_Velocity_Mean_Along_Edge(t_node *d, short int dim, t_tree *tree)
 
 phydbl IBM_Velocity_Variance_Along_Edge(t_node *d, short int dim, t_tree *tree)
 {
-  phydbl dt,logvar;
+  phydbl dt,logvar,eps;
+
+  eps = 0.0;
   
   assert(d != tree->n_root);
   
-  dt = fabs(tree->times->nd_t[d->num] - tree->times->nd_t[d->anc->num]);
+  dt = fabs(tree->times->nd_t[d->num] - tree->times->nd_t[d->anc->num]+eps);
   
   logvar =
     log(tree->mmod->sigsq[dim]) +
@@ -65,11 +67,13 @@ phydbl IBM_Velocity_Variance_Along_Edge(t_node *d, short int dim, t_tree *tree)
 
 phydbl IBM_Location_Mean_Along_Edge(t_node *d, short int dim, t_tree *tree)
 {
-  phydbl dt, loc_beg, veloc_beg, veloc_end;
+  phydbl dt, loc_beg, veloc_beg, veloc_end, eps;
   
   assert(d != tree->n_root);
+
+  eps = 0.0;
   
-  dt = fabs(tree->times->nd_t[d->num] - tree->times->nd_t[d->anc->num]);
+  dt = fabs(tree->times->nd_t[d->num] - tree->times->nd_t[d->anc->num] + eps);
 
   loc_beg = d->anc->ldsk->coord->lonlat[dim];
   veloc_beg = d->anc->ldsk->veloc->deriv[dim];
@@ -85,15 +89,17 @@ phydbl IBM_Location_Mean_Along_Edge(t_node *d, short int dim, t_tree *tree)
 
 phydbl IBM_Location_Variance_Along_Edge(t_node *d, short int dim, t_tree *tree)
 {
-  phydbl logvar;
+  phydbl logvar,eps;
 
+  eps = 0.0;
+  
   assert(d != tree->n_root);
   
   logvar =
     log(tree->mmod->sigsq[dim]) +
     log(tree->mmod->sigsq_scale[d->num]) +
     log(tree->mmod->sigsq_scale_norm_fact) +
-    3.*log(fabs(tree->times->nd_t[d->num]-tree->times->nd_t[d->anc->num])) -
+    3.*log(fabs(tree->times->nd_t[d->num]-tree->times->nd_t[d->anc->num]+eps)) -
     LOG12;
 
   return(exp(logvar));

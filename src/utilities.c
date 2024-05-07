@@ -7925,7 +7925,6 @@ void Subtree_Union(t_node *n, t_edge *b_fcus, t_tree *tree)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-
 void Binary_Decomposition(int value, int *bit_vect, int size)
 {
   int i,cumul;
@@ -11701,6 +11700,62 @@ void Remove_From_Linked_List(t_ll *elem, void *val, t_ll **list)
       ll = ll->next;
     }
   while(ll != NULL);
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+t_ll *Get_Velocity_Targets(t_node *a, t_node *d, t_tree *tree)
+{
+  t_ll *list;
+  int i;
+  phydbl var;
+
+  if(a != NULL)
+    {
+      var = 0.0;
+      for(i=0;i<tree->mmod->n_dim;++i) var += VELOC_Velocity_Variance_Along_Edge(d,i,tree);
+      if(var < 1.E-1) return NULL;
+    }
+  
+  list = NULL;
+
+  Push_Bottom_Linked_List(d,&list,NO);
+
+  for(i=0;i<3;i++)
+    {      
+      if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
+        Get_Velocity_Targets_Post(d, d->v[i], &list, tree);
+    }
+
+  return list;
+}
+
+/*////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+void Get_Velocity_Targets_Post(t_node *a, t_node *d, t_ll **list, t_tree *tree)
+{
+  int i;
+  phydbl var;
+
+  var = 0.0;
+  for(i=0;i<tree->mmod->n_dim;++i) var += VELOC_Velocity_Variance_Along_Edge(d,i,tree);
+
+  if(var < 1.E-1) Push_Bottom_Linked_List(d,list,NO);
+  else return;
+  
+  if(d->tax == YES) return;
+  else
+    {
+      for(i=0;i<3;i++)
+        {
+          if(d->v[i] != a && !(a == tree->n_root && d->b[i] == tree->e_root))
+            Get_Velocity_Targets_Post(d, d->v[i], list, tree);
+        }
+    }
+  
+  return;
 }
 
 /*////////////////////////////////////////////////////////////

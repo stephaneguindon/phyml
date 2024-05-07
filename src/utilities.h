@@ -1862,6 +1862,7 @@ typedef struct __Tmcmc {
   int num_move_phyrex_ldsk_tips;
   int num_move_phyrex_node_times;
   int num_move_phyrex_node_veloc;
+  int num_move_phyrex_correlated_node_veloc;
   int num_move_phyrex_all_veloc;
   int num_move_phyrex_shuffle_node_times;
   int num_move_phyrex_iwn_omega;
@@ -2631,6 +2632,8 @@ void Node_Labels_To_Locations(t_tree *tree);
 int Add_Subtree_Veloc(t_node *a, phydbl add, int *n_nodes, int dim, t_tree *tree);
 int Add_Subtree_Veloc_Post(t_node *a, t_node *d, phydbl add, int *n_nodes, int dim, t_tree *tree);
 int Contmod_Start(short int datatype, short int dim_idx, t_tree *tree);
+t_ll *Get_Velocity_Targets(t_node *a, t_node *d, t_tree *tree);
+void Get_Velocity_Targets_Post(t_node *a, t_node *d, t_ll **list, t_tree *tree);
 
 
 #include "xml.h"
